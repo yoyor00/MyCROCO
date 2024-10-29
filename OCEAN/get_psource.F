@@ -52,7 +52,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 
         ierr=nf_inq_varid (ncidqbar, 'qbar_time', qbar_tid)
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) 'qbar_time', qbarname(1:lstr)
+          write(STDOUT,3) 'qbar_time', qbarname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -64,7 +64,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ierr=nf_inq_varndims (ncidqbar, qbar_id, i)
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxQBAR)(1:lvar), qbarname(1:lstr)
+          write(STDOUT,3) vname(1,indxQBAR)(1:lvar), qbarname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -102,7 +102,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
       ierr=nf_get_var1_FTYPE (ncidqbar, qbar_tid, qbar_rec, cff)
 
       if (ierr .ne. nf_noerr) then
-        write(stdout,6) 'qbar_time', qbar_rec
+        write(STDOUT,6) 'qbar_time', qbar_rec
         goto 99                 !--> ERROR
       endif
 # ifdef USE_CALENDAR
@@ -117,15 +117,15 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
       c=(/ 1,Nsrc /)
 
       ierr=nf_get_vara_FTYPE(ncidqbar,qbar_id,s,c,qbarg(1:Nsrc,i))
-CR      write(*,*)'====='
-CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
+CR      write(STDOUT,*)'====='
+CR      write(STDOUT,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
       if (ierr .ne. nf_noerr) then
-        write(stdout,6) 'QBAR', qbar_rec
+        write(STDOUT,6) 'QBAR', qbar_rec
         goto 99                 !--> ERROR
       endif
 
       itqbar=i
-      MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+      MPI_master_only write(STDOUT,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &     'GET_PSOURCE --',
      &     'Read Run-off flow fields      for time =', cff
 # ifdef USE_CALENDAR
@@ -148,13 +148,13 @@ CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
 !
   3   format(/,' GET_PSOURCE - ERROR: unable to find forcing variable',
      &                   ': ',a,/,11x,'in runoff NetCDF file: ',a)
-  4   write(stdout,5) qbarname(1:lstr)
+  4   write(STDOUT,5) qbarname(1:lstr)
   5   format(/,' GET_PSOURCE - ERROR: unable to open runoff NetCDF ',
      &                                                  'file: ',a)
       goto 99
   6   format(/,' GET_PSOURCE - ERROR while reading variable: ',a,2x,
      &                                      ' at TIME index = ',i4)
-  7   write(stdout,8) qbar_rec, ntqbar, qbarname(1:lstr), tdays,
+  7   write(STDOUT,8) qbar_rec, ntqbar, qbarname(1:lstr), tdays,
      &                                      qbar_time(itqbar)*sec2day
 # ifdef USE_CALENDAR
      &  -qbar_origin_date_in_sec*sec2day
@@ -181,7 +181,7 @@ CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
 # include "sources.h"
 # include "compute_extended_bounds.h"
 !
-CR      write(*,*)'Enter set_psource_tile...'
+CR      write(STDOUT,*)'Enter set_psource_tile...'
 
       it1=3-itqbar
       it2=itqbar
@@ -211,7 +211,7 @@ CR      write(*,*)'Enter set_psource_tile...'
         cff2=cff2*cff
         do i=1,Nsrc
           Qbar(i)=cff1*qbarg(i,it1)+cff2*qbarg(i,it2)
-CR          write(*,*)'i=',i,' -- Qbar(i)=',Qbar(i)
+CR          write(STDOUT,*)'i=',i,' -- Qbar(i)=',Qbar(i)
         enddo
 !
 !  Unable to set-up QBAR:
@@ -219,7 +219,7 @@ CR          write(*,*)'i=',i,' -- Qbar(i)=',Qbar(i)
 !
       else
         if (ZEROTH_TILE) then
-          write(stdout,1) 'qbar_time', tdays, qbar_time(it2)*sec2day
+          write(STDOUT,1) 'qbar_time', tdays, qbar_time(it2)*sec2day
 # ifdef USE_CALENDAR
      &  -qbar_origin_date_in_sec*sec2day
 # endif

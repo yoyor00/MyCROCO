@@ -93,7 +93,7 @@
       count(2)=1
       ierr=nf_put_vara_int (nciddia, diaTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step', record, ierr
+        write(STDOUT,1) 'time_step', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -103,7 +103,7 @@
       ierr=nf_put_var1_FTYPE (nciddia, diaTime, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -113,7 +113,7 @@
       ierr=nf_put_var1_FTYPE (nciddia, diaTime2, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -262,36 +262,36 @@
       j=20
       k=10
       itrc=1
-      write(*,*) 'Write diag TS his at : i='
+      write(STDOUT,*) 'Write diag TS his at : i='
      &                ,i,' j=',j,' k=',k,' iTS=',itrc
-      write(*,*) 'TXadv(i,j,k,itrc) ',TXadv(i,j,k,itrc)
-      write(*,*) 'TYadv(i,j,k,itrc) ',TYadv(i,j,k,itrc)
-      write(*,*) 'TVadv(i,j,k,itrc) ',TVadv(i,j,k,itrc)
-      write(*,*) 'THmix(i,j,k,itrc) ',THmix(i,j,k,itrc)
-      write(*,*) 'TVmix(i,j,k,itrc) ',TVmix(i,j,k,itrc)
-      write(*,*) 'TForc(i,j,k,itrc) ',TForc(i,j,k,itrc)
-      write(*,*) 'Trate(i,j,k,itrc) ',Trate(i,j,k,itrc)
+      write(STDOUT,*) 'TXadv(i,j,k,itrc) ',TXadv(i,j,k,itrc)
+      write(STDOUT,*) 'TYadv(i,j,k,itrc) ',TYadv(i,j,k,itrc)
+      write(STDOUT,*) 'TVadv(i,j,k,itrc) ',TVadv(i,j,k,itrc)
+      write(STDOUT,*) 'THmix(i,j,k,itrc) ',THmix(i,j,k,itrc)
+      write(STDOUT,*) 'TVmix(i,j,k,itrc) ',TVmix(i,j,k,itrc)
+      write(STDOUT,*) 'TForc(i,j,k,itrc) ',TForc(i,j,k,itrc)
+      write(STDOUT,*) 'Trate(i,j,k,itrc) ',Trate(i,j,k,itrc)
 
-      write(*,*) 'SumTShis(i,j,k,itrc) = ',TXadv(i,j,k,itrc)
+      write(STDOUT,*) 'SumTShis(i,j,k,itrc) = ',TXadv(i,j,k,itrc)
      &                                  +  TYadv(i,j,k,itrc)
      &                                  +  TVadv(i,j,k,itrc)
      &                                  +  THmix(i,j,k,itrc)
      &                                  +  TVmix(i,j,k,itrc)
      &                                  +  TForc(i,j,k,itrc)
      &                                  -  Trate(i,j,k,itrc)
-      write(*,*) '========================================='
-      write(*,*) 'Write diag TS_MLD his at : i='
+      write(STDOUT,*) '========================================='
+      write(STDOUT,*) 'Write diag TS_MLD his at : i='
      &                ,i,' j=',j,' iTS=',itrc
-      write(*,*) 'TXadv_mld(i,j,k,itrc) ',TXadv_mld(i,j,itrc)
-      write(*,*) 'TYadv_mld(i,j,k,itrc) ',TYadv_mld(i,j,itrc)
-      write(*,*) 'TVadv_mld(i,j,k,itrc) ',TVadv_mld(i,j,itrc)
-      write(*,*) 'THmix_mld(i,j,k,itrc) ',THmix_mld(i,j,itrc)
-      write(*,*) 'TVmix_mld(i,j,k,itrc) ',TVmix_mld(i,j,itrc)
-      write(*,*) 'TForc_mld(i,j,k,itrc) ',TForc_mld(i,j,itrc)
-      write(*,*) 'Trate_mld(i,j,k,itrc) ',Trate_mld(i,j,itrc)
-      write(*,*) 'Tentr_mld(i,j,k,itrc) ',Tentr_mld(i,j,itrc)
+      write(STDOUT,*) 'TXadv_mld(i,j,k,itrc) ',TXadv_mld(i,j,itrc)
+      write(STDOUT,*) 'TYadv_mld(i,j,k,itrc) ',TYadv_mld(i,j,itrc)
+      write(STDOUT,*) 'TVadv_mld(i,j,k,itrc) ',TVadv_mld(i,j,itrc)
+      write(STDOUT,*) 'THmix_mld(i,j,k,itrc) ',THmix_mld(i,j,itrc)
+      write(STDOUT,*) 'TVmix_mld(i,j,k,itrc) ',TVmix_mld(i,j,itrc)
+      write(STDOUT,*) 'TForc_mld(i,j,k,itrc) ',TForc_mld(i,j,itrc)
+      write(STDOUT,*) 'Trate_mld(i,j,k,itrc) ',Trate_mld(i,j,itrc)
+      write(STDOUT,*) 'Tentr_mld(i,j,k,itrc) ',Tentr_mld(i,j,itrc)
 
-      write(*,*) 'SumTShis_mld(i,j,k,itrc) = ',TXadv_mld(i,j,itrc)
+      write(STDOUT,*) 'SumTShis_mld(i,j,k,itrc) = ',TXadv_mld(i,j,itrc)
      &                                  +  TYadv_mld(i,j,itrc)
      &                                  +  TVadv_mld(i,j,itrc)
      &                                  +  THmix_mld(i,j,itrc)
@@ -299,7 +299,7 @@
      &                                  +  TForc_mld(i,j,itrc)
      &                                  +  Tentr_mld(i,j,itrc)
      &                                  -  Trate_mld(i,j,itrc)
-      write(*,*) '-----------------------------------------'
+      write(STDOUT,*) '-----------------------------------------'
 # endif /* DEBUG */
 !--#undef DEBUG
 
@@ -330,12 +330,12 @@
 
 
       if (ierr .eq. nf_noerr) then
-        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+        MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAG -- wrote ',
      &            'diag fields into time record =', record, '/',
      &             nrecdia  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)')
+        MPI_master_only write(STDOUT,'(/1x,2A/)')
      &             'WRT_DIAG ERROR: Cannot ',
      &             'synchronize/close diag netCDF file.'
         may_day_flag=3

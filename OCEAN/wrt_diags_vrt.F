@@ -94,7 +94,7 @@
       count(2)=1
       ierr=nf_put_vara_int (nciddiags_vrt, diags_vrtTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step', record, ierr
+        write(STDOUT,1) 'time_step', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -104,7 +104,7 @@
       ierr=nf_put_var1_FTYPE (nciddiags_vrt, diags_vrtTime, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -114,7 +114,7 @@
       ierr=nf_put_var1_FTYPE (nciddiags_vrt, diags_vrtTime2, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -237,27 +237,27 @@
 # ifdef DEBUG
       i=5
       j=5
-      write(*,*) 'Write diag vrt his at : i='
+      write(STDOUT,*) 'Write diag vrt his at : i='
      &                      ,i,' j=',j
-      write(*,*) 'vrtXadv(i,j)   ',vrtXadv(i,j)
-      write(*,*) 'vrtYadv(i,j)   ',vrtYadv(i,j)
-      write(*,*) 'vrtCor(i,j)    ',vrtCor(i,j)
-      write(*,*) 'vrtPrsgrd(i,j) ',vrtPrsgrd(i,j)
-      write(*,*) 'vrtHmix(i,j)   ',vrtHmix(i,j)
-      write(*,*) 'vrtVmix(i,j)   ',vrtVmix(i,j)
+      write(STDOUT,*) 'vrtXadv(i,j)   ',vrtXadv(i,j)
+      write(STDOUT,*) 'vrtYadv(i,j)   ',vrtYadv(i,j)
+      write(STDOUT,*) 'vrtCor(i,j)    ',vrtCor(i,j)
+      write(STDOUT,*) 'vrtPrsgrd(i,j) ',vrtPrsgrd(i,j)
+      write(STDOUT,*) 'vrtHmix(i,j)   ',vrtHmix(i,j)
+      write(STDOUT,*) 'vrtVmix(i,j)   ',vrtVmix(i,j)
 #  if defined DIAGNOSTICS_BARO
-      write(*,*) 'vrtPrsgrd(i,j) ',vrtPrsgrd(i,j)
+      write(STDOUT,*) 'vrtPrsgrd(i,j) ',vrtPrsgrd(i,j)
 #  endif
-      write(*,*) 'vrtrate(i,j)   ',vrtrate(i,j)
+      write(STDOUT,*) 'vrtrate(i,j)   ',vrtrate(i,j)
 
-      write(*,*) 'SumUVhis(i,j) = ',vrtXadv(i,j)
+      write(STDOUT,*) 'SumUVhis(i,j) = ',vrtXadv(i,j)
      &                                  +  vrtYadv(i,j)
      &                                  +  vrtCor(i,j)
      &                                  +  vrtPrsgrd(i,j)
      &                                  +  vrtHmix(i,j)
      &                                  +  vrtVmix(i,j)
      &                                  -  vrtrate(i,j)
-      write(*,*) '-----------------------------------------'
+      write(STDOUT,*) '-----------------------------------------'
 # endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_VRT ERROR while writing variable ''', A,
@@ -287,12 +287,12 @@
 
 
       if (ierr .eq. nf_noerr) then
-        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+        MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAGS_VRT -- wrote',
      &            ' diag fields into time record =', record, '/',
      &             nrecdiags_vrt  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)')
+        MPI_master_only write(STDOUT,'(/1x,2A/)')
      &             'WRT_DIAGS_VRT ERROR: Cannot ',
      &             'synchronize/close diag netCDF file.'
         may_day_flag=3

@@ -259,7 +259,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !        call start_timers()
         call init_arrays (tile)
       enddo
-CR      write(*,*) '-11' MYID
+CR      write(STDOUT,*) '-11' MYID
 !
 !----------------------------------------------------------------------
 !  Set horizontal grid, model bathymetry and Land/Sea mask
@@ -288,13 +288,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call setup_grid1 (tile)
       enddo
-CR      write(*,*) '-10' MYID
+CR      write(STDOUT,*) '-10' MYID
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call setup_grid2 (tile)
       enddo
-CR      write(*,*) ' -9' MYID
+CR      write(STDOUT,*) ' -9' MYID
 !
 !----------------------------------------------------------------------
 !  Setup vertical grid variables setup vertical S-coordinates
@@ -312,7 +312,7 @@ CR      write(*,*) ' -9' MYID
 !
       call set_weights
 # endif
-CR      write(*,*) ' -8' MYID
+CR      write(STDOUT,*) ' -8' MYID
 !
 !  Create three-dimensional S-coordinate system,
 !  which may be needed by ana_initial
@@ -323,7 +323,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
       enddo
-CR      write(*,*) ' -7' MYID
+CR      write(STDOUT,*) ' -7' MYID
 !
 !  Make grid diagnostics
 !
@@ -492,7 +492,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call  pisces_ini_tile (tile)
       enddo
 # endif
-CR      write(*,*) ' -6' MYID
+CR      write(STDOUT,*) ' -6' MYID
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
 !
 !----------------------------------------------------------------------
@@ -510,7 +510,7 @@ C$OMP PARALLEL DO PRIVATE(tile)      ! Create three-dimensional
                                      ! a non-zero field, either
                                      ! analytically or from restart.
       enddo
-CR      write(*,*)  ' -5' MYID
+CR      write(STDOUT,*)  ' -5' MYID
 # endif
 
 # ifdef SOLVE3D
@@ -604,13 +604,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_HUV (tile)
       enddo
-CR      write(*,*)  ' -4' MYID
+CR      write(STDOUT,*)  ' -4' MYID
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call omega (tile)
         call rho_eos (tile)
       enddo
-CR      write(*,*)  ' -3' MYID
+CR      write(STDOUT,*)  ' -3' MYID
 # endif /* SOLVE3D */
 !
 !----------------------------------------------------------------------
@@ -664,7 +664,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #  endif
       enddo !<-- tile
 # endif
-CR      write(*,*) ' -2' MYID
+CR      write(STDOUT,*) ' -2' MYID
 !
 !  Read bottom sediment grain size [m] and density [kg/m^3]
 !  from input NetCDF file;
@@ -716,7 +716,7 @@ CR      write(*,*) ' -2' MYID
 #  endif
 C$OMP BARRIER
 C$OMP MASTER
-      MPI_master_only write(stdout,'(/1x,A/)')
+      MPI_master_only write(STDOUT,'(/1x,A/)')
      &     'WKB: started child wave computation.'
 C$OMP END MASTER
       wkb_agrif_done=.false.
@@ -780,12 +780,12 @@ C$OMP PARALLEL DO PRIVATE(tile)
 
 C$OMP BARRIER
 C$OMP MASTER
-        MPI_master_only write(stdout,'(/1x,A/)')
+        MPI_master_only write(STDOUT,'(/1x,A/)')
      &     'WKB: completed child wave computation.'
 C$OMP END MASTER
 # endif /* WKB_WWAVE */
 !
-CR      write(*,*) ' -1' MYID
+CR      write(STDOUT,*) ' -1' MYID
       if (may_day_flag.ne.0) goto 99     !-->  EXIT
 
 !
@@ -815,7 +815,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
 # endif
 
-CR      write(*,*) '  0' MYID
+CR      write(STDOUT,*) '  0' MYID
       if (may_day_flag.ne.0) goto 99     !-->  EXIT
 
  99   continue

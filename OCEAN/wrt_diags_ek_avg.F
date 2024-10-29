@@ -95,7 +95,7 @@
       ierr=nf_put_vara_int (nciddiags_ek_avg, diags_ekTstep_avg,
      &                       start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step_avg', record, ierr
+        write(STDOUT,1) 'time_step_avg', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -106,7 +106,7 @@
      &                       record, timediags_ek_avg)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -117,7 +117,7 @@
      &                       record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -367,25 +367,25 @@
 # ifdef DEBUG
       i=5
       j=5
-      write(*,*) 'Write diag ek his at : i='
+      write(STDOUT,*) 'Write diag ek his at : i='
      &                      ,i,' j=',j
-      write(*,*) 'ekHadv_avg(i,j)   ',ekHadv_avg(i,j)
-      write(*,*) 'ekHdiff_avg(i,j)   ',ekHdiff_avg(i,j)
-      write(*,*) 'ekVadv_avg(i,j)   ',ekVadv_avg(i,j)
-      write(*,*) 'ekCor_avg(i,j)    ',ekCor_avg(i,j)
-      write(*,*) 'ekPrsgrd_avg(i,j) ',ekPrsgrd_avg(i,j)
-      write(*,*) 'ekHmix_avg(i,j)   ',ekHmix_avg(i,j)
-      write(*,*) 'ekVmix_avg(i,j)   ',ekVmix_avg(i,j)
-      write(*,*) 'ekvol_avg(i,j)   ',ekvol_avg(i,j)
+      write(STDOUT,*) 'ekHadv_avg(i,j)   ',ekHadv_avg(i,j)
+      write(STDOUT,*) 'ekHdiff_avg(i,j)   ',ekHdiff_avg(i,j)
+      write(STDOUT,*) 'ekVadv_avg(i,j)   ',ekVadv_avg(i,j)
+      write(STDOUT,*) 'ekCor_avg(i,j)    ',ekCor_avg(i,j)
+      write(STDOUT,*) 'ekPrsgrd_avg(i,j) ',ekPrsgrd_avg(i,j)
+      write(STDOUT,*) 'ekHmix_avg(i,j)   ',ekHmix_avg(i,j)
+      write(STDOUT,*) 'ekVmix_avg(i,j)   ',ekVmix_avg(i,j)
+      write(STDOUT,*) 'ekvol_avg(i,j)   ',ekvol_avg(i,j)
 #  if defined DIAGNOSTICS_BARO
-      write(*,*) 'ekBaro_avg(i,j) ',ekBaro_avg(i,j)
+      write(STDOUT,*) 'ekBaro_avg(i,j) ',ekBaro_avg(i,j)
 #  endif
 #  if defined M3FAST
-      write(*,*) 'ekfast_avg(i,j) ',ekfast_avg(i,j)
+      write(STDOUT,*) 'ekfast_avg(i,j) ',ekfast_avg(i,j)
 #  endif
-      write(*,*) 'ekrate_avg(i,j)   ',ekrate_avg(i,j)
+      write(STDOUT,*) 'ekrate_avg(i,j)   ',ekrate_avg(i,j)
 
-      write(*,*) 'SumUVhis_avg(i,j) = ',ekHadv_avg(i,j)
+      write(STDOUT,*) 'SumUVhis_avg(i,j) = ',ekHadv_avg(i,j)
      &                                  +  ekVadv_avg(i,j)
      &                                  +  ekCor_avg(i,j)
      &                                  +  ekPrsgrd_avg(i,j)
@@ -393,7 +393,7 @@
      &                                  +  ekVmix_avg(i,j)
      &                                  +  ekvol_avg(i,j)
      &                                  -  ekrate_avg(i,j)
-      write(*,*) '-----------------------------------------'
+      write(STDOUT,*) '-----------------------------------------'
 # endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_EK_AVG ERROR while writing variable ''', A,
@@ -424,12 +424,12 @@
 
 
       if (ierr .eq. nf_noerr) then
-        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+        MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAGS_EK_AVG -- wrote',
      &            ' diag fields into time record =', record, '/',
      &             nrecdiags_ek_avg  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)')
+        MPI_master_only write(STDOUT,'(/1x,2A/)')
      &             'WRT_DIAGS_EK_AVG ERROR: Cannot ',
      &             'synchronize/close diag netCDF file.'
         may_day_flag=3

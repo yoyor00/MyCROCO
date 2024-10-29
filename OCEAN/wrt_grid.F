@@ -50,7 +50,7 @@
      &                                         'F')
 #endif
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'spherical', ncname(1:lstr)
+        write(STDOUT,2) 'spherical', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !
@@ -59,13 +59,13 @@
       ierr=nf_inq_varid (ncid, 'xl', varid)
       ierr=nf_put_var1_FTYPE (ncid, varid, 1, xl)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'xl', ncname(1:lstr)
+        write(STDOUT,2) 'xl', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       ierr=nf_inq_varid (ncid, 'el', varid)
       ierr=nf_put_var1_FTYPE (ncid, varid, 1, el)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'el', ncname(1:lstr)
+        write(STDOUT,2) 'el', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
@@ -76,7 +76,7 @@
       ierr=nf_inq_varid (ncid, 'Dcrit', varid)
       ierr=nf_put_var1_FTYPE (ncid, varid, 1, D_wetdry)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'xl', ncname(1:lstr)
+        write(STDOUT,2) 'xl', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 #endif
@@ -91,42 +91,42 @@
       ierr=nf_inq_varid (ncid, 's_rho', varid)
       ierr=nf_put_var_FTYPE(ncid, varid, sc_r)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 's_rho', ncname(1:lstr)
+        write(STDOUT,2) 's_rho', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
 
       ierr=nf_inq_varid (ncid, 's_w', varid)
       ierr=nf_put_var_FTYPE(ncid, varid, sc_w)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 's_w', ncname(1:lstr)
+        write(STDOUT,2) 's_w', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
 
       ierr=nf_inq_varid (ncid, 'Cs_rho', varid)
       ierr=nf_put_var_FTYPE(ncid,varid ,Cs_r)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'Cs_rho', ncname(1:lstr)
+        write(STDOUT,2) 'Cs_rho', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
 !
       ierr=nf_inq_varid (ncid, 'Cs_w', varid)
       ierr=nf_put_var_FTYPE(ncid,varid ,Cs_w)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'Cs_w', ncname(1:lstr)
+        write(STDOUT,2) 'Cs_w', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
 !
       ierr=nf_inq_varid (ncid, 'hc', varid)
       ierr=nf_put_var1_FTYPE (ncid, varid, 1, hc)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'hc', ncname(1:lstr)
+        write(STDOUT,2) 'hc', ncname(1:lstr)
         goto 99                 !--> ERROR
       endif
 !
       ierr=nf_inq_varid (ncid, 'Vtransform', varid)
       ierr=nf_put_var1_FTYPE (ncid, varid, 1, Vtransform)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'Vtransform', ncname(1:lstr)
+        write(STDOUT,2) 'Vtransform', ncname(1:lstr)
         goto 99                 !--> ERROR
       endif
 !
@@ -137,7 +137,7 @@
   1   ierr=nf_inq_varid(ncid,'h',varid)
       ierr=nf_fwrite (h(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'h', ncname(1:lstr)
+        write(STDOUT,2) 'h', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !
@@ -146,7 +146,7 @@
       ierr=nf_inq_varid(ncid,'f',varid)
       ierr=nf_fwrite (f(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'f', ncname(1:lstr)
+        write(STDOUT,2) 'f', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !
@@ -155,13 +155,13 @@
       ierr=nf_inq_varid(ncid,'pm',varid)
       ierr=nf_fwrite (pm(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'pm', ncname(1:lstr)
+        write(STDOUT,2) 'pm', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       ierr=nf_inq_varid(ncid,'pn',varid)
       ierr=nf_fwrite (pn(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'pn', ncname(1:lstr)
+        write(STDOUT,2) 'pn', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !
@@ -171,50 +171,50 @@
       ierr=nf_inq_varid(ncid,'lon_rho',varid)
       ierr=nf_fwrite (lonr(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'lon_rho', ncname(1:lstr)
+        write(STDOUT,2) 'lon_rho', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       ierr=nf_inq_varid(ncid,'lat_rho',varid)
       ierr=nf_fwrite (latr(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'lat_rho', ncname(1:lstr)
+        write(STDOUT,2) 'lat_rho', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       ierr=nf_inq_varid(ncid,'lon_u',varid)
       ierr=nf_fwrite (lonu(START_2D_ARRAY), ncid, varid, 0, u2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'lon_u', ncname(1:lstr)
+        write(STDOUT,2) 'lon_u', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       ierr=nf_inq_varid(ncid,'lat_u',varid)
       ierr=nf_fwrite (latu(START_2D_ARRAY), ncid, varid, 0, u2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'lat_u', ncname(1:lstr)
+        write(STDOUT,2) 'lat_u', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       ierr=nf_inq_varid(ncid,'lon_v',varid)
       ierr=nf_fwrite (lonv(START_2D_ARRAY), ncid, varid, 0, v2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'lon_v', ncname(1:lstr)
+        write(STDOUT,2) 'lon_v', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       ierr=nf_inq_varid(ncid,'lat_v',varid)
       ierr=nf_fwrite (latv(START_2D_ARRAY), ncid, varid, 0, v2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'lat_v', ncname(1:lstr)
+        write(STDOUT,2) 'lat_v', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 #else
       ierr=nf_inq_varid(ncid,'x_rho',varid)
       ierr=nf_fwrite (xr(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'x_rho', ncname(1:lstr)
+        write(STDOUT,2) 'x_rho', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       ierr=nf_inq_varid(ncid,'y_rho',varid)
       ierr=nf_fwrite (yr(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'y_rho', ncname(1:lstr)
+        write(STDOUT,2) 'y_rho', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 #endif
@@ -225,7 +225,7 @@
       ierr=nf_inq_varid(ncid,'angle',varid)
       ierr=nf_fwrite (angler(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'angle', ncname(1:lstr)
+        write(STDOUT,2) 'angle', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 #endif
@@ -236,7 +236,7 @@
       ierr=nf_inq_varid(ncid,'mask_rho',varid)
       ierr=nf_fwrite (rmask(START_2D_ARRAY), ncid, varid, 0, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'mask_rho', ncname(1:lstr)
+        write(STDOUT,2) 'mask_rho', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 #endif
@@ -247,29 +247,29 @@
       ierr=nf_inq_varid (ncid, 'xi_rho', varid)
       ierr=nf_fwrite_x (ncid, varid, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'xi_rho', ncname(1:lstr)
+        write(STDOUT,2) 'xi_rho', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
       ierr=nf_inq_varid (ncid, 'eta_rho', varid)
       ierr=nf_fwrite_y (ncid, varid, r2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'eta_rho', ncname(1:lstr)
+        write(STDOUT,2) 'eta_rho', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
       ierr=nf_inq_varid (ncid, 'xi_u', varid)
       ierr=nf_fwrite_x (ncid, varid, u2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'xi_u', ncname(1:lstr)
+        write(STDOUT,2) 'xi_u', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
       ierr=nf_inq_varid (ncid, 'eta_v', varid)
       ierr=nf_fwrite_y (ncid, varid, v2dvar)
       if (ierr.ne.nf_noerr) then
-        write(stdout,2) 'eta_v', ncname(1:lstr)
+        write(STDOUT,2) 'eta_v', ncname(1:lstr)
         goto 99                !--> ERROR
       endif
 
-      MPI_master_only write(stdout,'(6x,4A,2x,A,I4)')
+      MPI_master_only write(STDOUT,'(6x,4A,2x,A,I4)')
      &                 'WRT_GRID -- wrote grid ',
      &                 'data into file ''', ncname(1:lstr), '''.'
      &                  MYID

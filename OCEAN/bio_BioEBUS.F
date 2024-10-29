@@ -1160,28 +1160,28 @@
 
 ! error = trend - SMS (mmol/m3/s)
 !-----------------------------------------------------------------
-        write(*,*)'====================================='
-        write(*,*)'trend-SMS(NO3) ',k,trend_NO3 -budget_NO3
-        write(*,*)'trend-SMS(NO2) ',k,trend_NO2 -budget_NO2
-        write(*,*)'trend-SMS(NH4) ',k,trend_NH4 -budget_NH4
-        write(*,*)'trend-SMS(SPhy)',k,trend_SPhy-budget_SPhy
-        write(*,*)'trend-SMS(LPhy)',k,trend_LPhy-budget_LPhy
-        write(*,*)'trend-SMS(SZoo)',k,trend_SZoo-budget_SZoo
-        write(*,*)'trend-SMS(LZoo)',k,trend_LZoo-budget_LZoo
-        write(*,*)'trend-SMS(SDet)',k,trend_SDet-budget_SDet
-        write(*,*)'trend-SMS(LDet)',k,trend_LDet-budget_LDet
-        write(*,*)'trend-SMS(DON) ',k,trend_DON -budget_DON
-        write(*,*)'-------------------------------------'
-        write(*,*)'trend (N total)                :',k,trend_N
-        write(*,*)'SMS (N total)                  :',k,budget_N
-        write(*,*)'N loss + vertical sinking      :',k,N_loss+sinking
-        write(*,*)'The three have to be the same !!'
-        write(*,*)'-------------------------------------'
-        write(*,*)'error (N total) = trend - SMS :',
+        write(STDOUT,*)'====================================='
+        write(STDOUT,*)'trend-SMS(NO3) ',k,trend_NO3 -budget_NO3
+        write(STDOUT,*)'trend-SMS(NO2) ',k,trend_NO2 -budget_NO2
+        write(STDOUT,*)'trend-SMS(NH4) ',k,trend_NH4 -budget_NH4
+        write(STDOUT,*)'trend-SMS(SPhy)',k,trend_SPhy-budget_SPhy
+        write(STDOUT,*)'trend-SMS(LPhy)',k,trend_LPhy-budget_LPhy
+        write(STDOUT,*)'trend-SMS(SZoo)',k,trend_SZoo-budget_SZoo
+        write(STDOUT,*)'trend-SMS(LZoo)',k,trend_LZoo-budget_LZoo
+        write(STDOUT,*)'trend-SMS(SDet)',k,trend_SDet-budget_SDet
+        write(STDOUT,*)'trend-SMS(LDet)',k,trend_LDet-budget_LDet
+        write(STDOUT,*)'trend-SMS(DON) ',k,trend_DON -budget_DON
+        write(STDOUT,*)'-------------------------------------'
+        write(STDOUT,*)'trend (N total)                :',k,trend_N
+        write(STDOUT,*)'SMS (N total)                  :',k,budget_N
+        write(STDOUT,*)'N loss + vertical sinking      :',k,N_loss+sinking
+        write(STDOUT,*)'The three have to be the same !!'
+        write(STDOUT,*)'-------------------------------------'
+        write(STDOUT,*)'error (N total) = trend - SMS :',
      &                                               k,trend_N- budget_N
-        write(*,*)'-------------------------------------'
-        write(*,*)'-------------------------------------'
-        write(*,*)'error (O2)      = trend - SMS :',
+        write(STDOUT,*)'-------------------------------------'
+        write(STDOUT,*)'-------------------------------------'
+        write(STDOUT,*)'error (O2)      = trend - SMS :',
      &                                               k,trend_O2-budget_O2
 
 
@@ -1196,11 +1196,11 @@
          trend_N2O  = (( min(t(i,j,k,nnew,iN2O),0.) + N2O(k) )
      &                     - t(i,j,k,nnew,iN2O)) / dt
 
-        write(*,*)'-------------------------------------'
-        write(*,*)'-------------------------------------'
-        write(*,*)'error (N2O)      = trend - SMS :',
+        write(STDOUT,*)'-------------------------------------'
+        write(STDOUT,*)'-------------------------------------'
+        write(STDOUT,*)'error (N2O)      = trend - SMS :',
      &                                k,trend_N2O-budget_Nitrous_oxide
-        write(*,*)'====================================='
+        write(STDOUT,*)'====================================='
 
 #  endif
 
@@ -1243,9 +1243,9 @@
 
 
 
-!         write(*,*)'====================================='
-!!         write(*,*)'O2GasExcFlux ',GasExcFlux(50,50,1)
- !        write(*,*)'====================================='
+!         write(STDOUT,*)'====================================='
+!!         write(STDOUT,*)'O2GasExcFlux ',GasExcFlux(50,50,1)
+ !        write(STDOUT,*)'====================================='
 
       return
 

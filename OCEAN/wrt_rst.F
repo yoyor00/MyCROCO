@@ -133,7 +133,7 @@
       count(2)=1
       ierr=nf_put_vara_int (ncidrst, rstTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        MPI_master_only write(stdout,1) 'time_step', record, ierr
+        MPI_master_only write(STDOUT,1) 'time_step', record, ierr
      &                   MYID
         goto 99                                           !--> ERROR
       endif
@@ -151,7 +151,7 @@
       count(2)=1
       ierr=nf_put_vara_int (ncidrst, rstTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        MPI_master_only write(stdout,1) 'time_step_surf', record, ierr
+        MPI_master_only write(STDOUT,1) 'time_step_surf', record, ierr
      &                   MYID
       endif
 #endif
@@ -168,7 +168,7 @@
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -181,7 +181,7 @@
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -194,7 +194,7 @@
      &                                      rstZ, record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxZ))
-        write(stdout,1) vname(1,indxZ)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxZ)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -207,7 +207,7 @@
      &                                     rstUb, record, u2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxUb))
-        write(stdout,1) vname(1,indxUb)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxUb)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -219,7 +219,7 @@
      &                                     rstVb, record, v2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxVb))
-        write(stdout,1) vname(1,indxVb)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxVb)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -232,7 +232,7 @@
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
-        write(stdout,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar), record, ierr
+        write(STDOUT,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -247,7 +247,7 @@
      &                                        record, u3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxU))
-        write(stdout,1) vname(1,indxU)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxU)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -259,7 +259,7 @@
      &                                        record, v3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxV))
-        write(stdout,1) vname(1,indxV)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxV)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -273,7 +273,7 @@
      &                             rstT(itrc), record, r3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxV+itrc))
-          write(stdout,1) vname(1,indxV+itrc)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxV+itrc)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
@@ -294,7 +294,7 @@
 !     &                             rstHbl, record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxHbl))
-          write(stdout,1) vname(1,indxHbl)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxHbl)(1:lvar), record,
      &         ierr MYID
           goto 99               !--> ERROR
         endif
@@ -311,7 +311,7 @@
      &                             rstHbbl, record, r2dvar)
         if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxHbbl))
-            write(stdout,1) vname(1,indxHbbl)(1:lvar), record,
+            write(STDOUT,1) vname(1,indxHbbl)(1:lvar), record,
      &                    ierr MYID
             goto 99                                         !--> ERROR
         endif
@@ -328,7 +328,7 @@
      &                             rstTke, record, w3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxTke))
-          write(stdout,1) vname(1,indxTke)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxTke)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
@@ -339,7 +339,7 @@
      &                             rstGls, record, w3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxGls))
-          write(stdout,1) vname(1,indxGls)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxGls)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
@@ -351,7 +351,7 @@
      &                             rstAkv, record, w3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxAkv))
-          write(stdout,1) vname(1,indxAkv)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxAkv)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
@@ -363,7 +363,7 @@
      &                             rstAkt, record, w3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxAkt))
-          write(stdout,1) vname(1,indxAkt)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxAkt)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
@@ -376,7 +376,7 @@
      &                             rstAks, record, w3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxAks))
-          write(stdout,1) vname(1,indxAks)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxAks)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
@@ -393,7 +393,7 @@
      &                             rstBustr, record, u2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxBustr))
-          write(stdout,1) vname(1,indxBustr)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxBustr)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
@@ -405,7 +405,7 @@
      &                             rstBvstr, record, v2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxBvstr))
-          write(stdout,1) vname(1,indxBvstr)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxBvstr)(1:lvar), record,
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
@@ -421,7 +421,7 @@
 
         if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxrufrc))
-            write(stdout,1) vname(1,indxrufrc)(1:lvar), record,
+            write(STDOUT,1) vname(1,indxrufrc)(1:lvar), record,
      &                    ierr MYID
             goto 99                                         !--> ERROR
         endif
@@ -433,7 +433,7 @@
 
         if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxrvfrc))
-            write(stdout,1) vname(1,indxrvfrc)(1:lvar), record,
+            write(STDOUT,1) vname(1,indxrvfrc)(1:lvar), record,
      &                    ierr MYID
             goto 99                                         !--> ERROR
           endif
@@ -447,7 +447,7 @@
      &                               record, u3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxru_nbq))
-        write(stdout,1) vname(1,indxru_nbq)(1:lvar),
+        write(STDOUT,1) vname(1,indxru_nbq)(1:lvar),
      &                  record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
@@ -460,7 +460,7 @@
      &                               record, v3dvar)
        if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxrv_nbq))
-         write(stdout,1) vname(1,indxrv_nbq)(1:lvar),
+         write(STDOUT,1) vname(1,indxrv_nbq)(1:lvar),
      &                  record, ierr
      &                  MYID
          goto 99                                           !--> ERROR
@@ -474,7 +474,7 @@
      &                               record, u3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxru_nbq_avg2))
-        write(stdout,1) vname(1,indxru_nbq_avg2)(1:lvar),
+        write(STDOUT,1) vname(1,indxru_nbq_avg2)(1:lvar),
      &                  record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
@@ -487,7 +487,7 @@
      &                               record, v3dvar)
        if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxrv_nbq_avg2))
-         write(stdout,1) vname(1,indxrv_nbq_avg2)(1:lvar),
+         write(STDOUT,1) vname(1,indxrv_nbq_avg2)(1:lvar),
      &                  record, ierr
      &                  MYID
          goto 99                                           !--> ERROR
@@ -501,7 +501,7 @@
      &                               record, u3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxqdmu_nbq))
-        write(stdout,1) vname(1,indxqdmu_nbq)(1:lvar),
+        write(STDOUT,1) vname(1,indxqdmu_nbq)(1:lvar),
      &                  record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
@@ -514,7 +514,7 @@
      &                               record, v3dvar)
        if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxqdmv_nbq))
-         write(stdout,1) vname(1,indxqdmv_nbq)(1:lvar),
+         write(STDOUT,1) vname(1,indxqdmv_nbq)(1:lvar),
      &                  record, ierr
      &                  MYID
          goto 99                                           !--> ERROR
@@ -532,7 +532,7 @@
      &                               record, u3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxdRdx))
-        write(stdout,1) vname(1,indxdRdx)(1:lvar),
+        write(STDOUT,1) vname(1,indxdRdx)(1:lvar),
      &                  record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
@@ -543,7 +543,7 @@
      &                               record, v3dvar)
        if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxdRde))
-         write(stdout,1) vname(1,indxdRde)(1:lvar),
+         write(STDOUT,1) vname(1,indxdRde)(1:lvar),
      &                  record, ierr
      &                  MYID
          goto 99                                           !--> ERROR
@@ -561,20 +561,20 @@
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxBTHK))
-        write(stdout,1) vname(1,indxBTHK)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxBTHK)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
-CR      write(*,*) 'wrt_rst:  Bed_thick' MYID
+CR      write(STDOUT,*) 'wrt_rst:  Bed_thick' MYID
       ierr=nf_fwrite(bed_poros, ncidrst, rstSed(2),
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxBPOR))
-        write(stdout,1) vname(1,indxBPOR)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxBPOR)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
-CR      write(*,*) 'wrt_rst:  Bed_poros' MYID
+CR      write(STDOUT,*) 'wrt_rst:  Bed_poros' MYID
 
       do itrc=1,NST
         indxWrk=indxBFRA(1)+itrc-1
@@ -582,13 +582,13 @@ CR      write(*,*) 'wrt_rst:  Bed_poros' MYID
      &             ncidrst, rstSed(itrc+2), record, b3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWrk))
-          write(stdout,1) vname(1,indxWrk)(1:lvar), record,
+          write(STDOUT,1) vname(1,indxWrk)(1:lvar), record,
      &                ierr
      &                MYID
           goto 99                                         !--> ERROR
         endif
       enddo
-CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
+CR      write(STDOUT,*) 'wrt_rst:  Bed_frac' MYID
 
 # endif /* SEDIMENT */
 
@@ -601,7 +601,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
      &                                       record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -612,7 +612,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
      &                                       record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -626,7 +626,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -640,7 +640,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -655,7 +655,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -671,7 +671,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
      &                                       record, b3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indx))
-          write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+          write(STDOUT,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
           goto 99                                         !--> ERROR
         endif
@@ -687,30 +687,30 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       ierr=nf_fwrite(h, ncidrst, rstHm, record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxHm))
-        write(stdout,1) vname(1,indxHm)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxHm)(1:lvar), record, ierr
      &                    MYID
         goto 99                                         !--> ERROR
       endif
-CR      write(*,*) 'wrt_rst:  Hm' MYID
+CR      write(STDOUT,*) 'wrt_rst:  Hm' MYID
 #endif
 
 #ifdef BBL
       ierr=nf_fwrite(Hripple, ncidrst, rstBBL(1), record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxHrip))
-        write(stdout,1) vname(1,indxHrip)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxHrip)(1:lvar), record, ierr
      &                    MYID
         goto 99                                         !--> ERROR
       endif
-CR      write(*,*) 'wrt_rst:  Hripple' MYID
+CR      write(STDOUT,*) 'wrt_rst:  Hripple' MYID
       ierr=nf_fwrite(Lripple, ncidrst, rstBBL(2), record, r2dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxLrip))
-        write(stdout,1) vname(1,indxLrip)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxLrip)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
-CR      write(*,*) 'wrt_rst:  Lripple' MYID
+CR      write(STDOUT,*) 'wrt_rst:  Lripple' MYID
 #endif /* BBL */
 
 #ifdef FLOATS
@@ -720,7 +720,7 @@ CR      write(*,*) 'wrt_rst:  Lripple' MYID
 ! write nfloats
       ierr=nf_put_vara_int (ncidrst, rstnfloats, record, 1, nfloats)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'nfloats', record, ierr, nf_strerror(ierr)
+        write(STDOUT,1) 'nfloats', record, ierr, nf_strerror(ierr)
      &                   MYID
         goto 99                                           !--> ERROR
       endif
@@ -737,7 +737,7 @@ CR      write(*,*) 'wrt_rst:  Lripple' MYID
       ierr=nf_put_vara_FTYPE (ncidrst, rstTinfo, startTinfo,
      &   countTinfo, Tinfo)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'Tinfo', record, ierr, nf_strerror(ierr)
+        write(STDOUT,1) 'Tinfo', record, ierr, nf_strerror(ierr)
      &                   MYID
         goto 99                                           !--> ERROR
       endif
@@ -751,7 +751,7 @@ CR      write(*,*) 'wrt_rst:  Lripple' MYID
 
       ierr=nf_put_vara_int (ncidrst, rstfltgrd, start, count, fltgrd)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'grid level', record, ierr, nf_strerror(ierr)
+        write(STDOUT,1) 'grid level', record, ierr, nf_strerror(ierr)
      &                   MYID
         goto 99                                           !--> ERROR
       endif
@@ -799,7 +799,7 @@ CR      write(*,*) 'wrt_rst:  Lripple' MYID
       ierr=nf_put_vara_FTYPE (ncidrst, rsttrack, starttrack,
      &   counttrack, bufftrack)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'track', record, ierr, nf_strerror(ierr)
+        write(STDOUT,1) 'track', record, ierr, nf_strerror(ierr)
      &                   MYID
         goto 99                                           !--> ERROR
       endif
@@ -831,12 +831,12 @@ CR      write(*,*) 'wrt_rst:  Lripple' MYID
       endif
 #endif
       if (ierr .eq. nf_noerr) then
-      MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+      MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_RST -- wrote ',
      &            'restart fields into time record =', record, '/',
      &             nrecrst  MYID
       else
-      MPI_master_only  write(stdout,'(/1x,2A/)')
+      MPI_master_only  write(STDOUT,'(/1x,2A/)')
      &             'WRT_RST ERROR: Cannot ',
      &             'synchronize/close restart netCDF file.'
         may_day_flag=3

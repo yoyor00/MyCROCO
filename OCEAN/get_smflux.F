@@ -45,7 +45,7 @@ c**        call opencdf (frcname,N)
 
         ierr=nf_inq_varid (ncidfrc, 'sms_time', sms_tid)
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) 'sms_time', frcname(1:lstr)
+          write(STDOUT,3) 'sms_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -62,7 +62,7 @@ c**        call opencdf (frcname,N)
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxSUSTR)(1:lvar),frcname(1:lstr)
+          write(STDOUT,3) vname(1,indxSUSTR)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -79,7 +79,7 @@ c**        call opencdf (frcname,N)
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxSVSTR)(1:lvar),frcname(1:lstr)
+          write(STDOUT,3) vname(1,indxSVSTR)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -115,7 +115,7 @@ c**        call opencdf (frcname,N)
 
         ierr=nf_get_var1_FTYPE(ncidfrc, sms_tid, sms_rec, cff)
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'sms_time', sms_rec
+          write(STDOUT,6) 'sms_time', sms_rec
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
@@ -143,7 +143,7 @@ c**        call opencdf (frcname,N)
 #endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'sustr', sms_rec
+          write(STDOUT,6) 'sustr', sms_rec
           goto 99                                         !--> ERROR
         endif
 
@@ -164,12 +164,12 @@ c**        call opencdf (frcname,N)
 #endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'svstr', sms_rec
+          write(STDOUT,6) 'svstr', sms_rec
           goto 99                                         !--> ERROR
         endif
 
        itsms=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(STDOUT,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &              'GET_SMFLUX --',
      &              'Read surface momentum stresses for time =', cff
 # ifdef USE_CALENDAR
@@ -187,12 +187,12 @@ c**        call opencdf (frcname,N)
   3   format(/,' GET_SMFLUX - unable to find forcing variable: ',A,
      &                          /,14x,'in forcing netCDF file: ',A)
       goto 99
-  4   write(stdout,5) frcname(1:lstr)
+  4   write(STDOUT,5) frcname(1:lstr)
   5   format(/,' GET_SMFLUX - unable to open forcing netCDF file:',
      &                                                        1x,A)
   6   format(/,' GET_SMFLUX - error while reading variable: ',A,2x,
      &                                      ' at TIME index = ',i4)
-  7   write(stdout,8) sms_rec, ntsms, frcname(1:lstr), tdays,
+  7   write(STDOUT,8) sms_rec, ntsms, frcname(1:lstr), tdays,
      &                                sms_time(itsms)*sec2day
 # ifdef USE_CALENDAR
      &  -sms_origin_date_in_sec*sec2day
@@ -358,7 +358,7 @@ c**        call opencdf (frcname,N)
 !
       else
         if (ZEROTH_TILE) then
-          write(stdout,1) 'sms_time', tdays, sms_time(it1)*sec2day
+          write(STDOUT,1) 'sms_time', tdays, sms_time(it1)*sec2day
 # ifdef USE_CALENDAR
      &  -sms_origin_date_in_sec*sec2day
 # endif

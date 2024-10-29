@@ -86,7 +86,7 @@
               if (req_rec.le.max_rec) then
                 record=req_rec
               else
-       MPI_master_only write(stdout,'(/1x,2A,I4,1x,A/12x,A,I4,1x,3A/)')
+       MPI_master_only write(STDOUT,'(/1x,2A,I4,1x,A/12x,A,I4,1x,3A/)')
      &           '### ERROR: get_initial :: requested restart time ',
      &           'record',  req_rec, 'exceeds number',  'of records',
      &                       max_rec,  'available in netCDF file ''',
@@ -104,7 +104,7 @@
           goto 99
         endif
       else
-        MPI_master_only write(stdout,'(/1x,4A/12x,A/)')
+        MPI_master_only write(STDOUT,'(/1x,4A/12x,A/)')
      &               '### ERROR: get_initial :: ',
      &               'Cannot open netCDF file ''',   ininame(1:lstr),
      &                                  '''.',     nf_strerror(ierr)
@@ -198,7 +198,7 @@
             elseif (units(1:3).eq.'day') then
               time_scale=day2sec
             else
-              MPI_master_only write(stdout,'(/1x,4A/8x,3A/)')
+              MPI_master_only write(STDOUT,'(/1x,4A/8x,3A/)')
      &              'GET_INITIAL ',
      &              'ERROR: unknown units of for variable ''',
      &                               vname(1,indxTime)(1:lvar), '''',
@@ -226,7 +226,7 @@
 
 #if defined USE_CALENDAR
             call tool_origindate(ncid,varid,origin_date_in_sec)
-      MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+      MPI_master_only write(STDOUT,'(/2x,A,1x,A/)')
      &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
      &    tool_sectodat(origin_date_in_sec)
       origin_date=tool_sectodat(origin_date_in_sec)
@@ -243,7 +243,7 @@
       vname(3,indxTime2)='seconds since '
      &                     //tool_sectodat(origin_date_in_sec)
 # if defined XIOS
-      MPI_master_only write(stdout,'(/3x,A,/)')
+      MPI_master_only write(STDOUT,'(/3x,A,/)')
      &    '!!! WARNING: Using XIOS with USE_CALENDAR.',
      &    ' USING USE_CALENDAR origin date for XIOS ',
      &    ' (instead of xios_origin_date)'
@@ -273,7 +273,7 @@
                   if (abs(start_time-time_bak-dt) .lt. 0.001*dt) then
                     forw_start=1
                   else
-              MPI_master_only write(stdout,'(/1x,2A,2I4/10x,4A/10x,A/)')
+              MPI_master_only write(STDOUT,'(/1x,2A,2I4/10x,4A/10x,A/)')
      &                'WARNING: Exact restart is requested, but ',
      &                'is not possible: records', record,record+1,
      &                'in ''',   ininame(1:lstr),   ''' are not ',
@@ -281,14 +281,14 @@
      &                          'with forward initial time step.'
                   endif
                 else
-                  MPI_master_only write(stdout,2)
+                  MPI_master_only write(STDOUT,2)
      &                       vname(1,indxTime)(1:lvar), record,
      &                       ininame(1:lstr), nf_strerror(ierr)
                   goto 99
 
                 endif
               else
-                MPI_master_only write(stdout,'(/1x,2A/10x,4A,A/)')
+                MPI_master_only write(STDOUT,'(/1x,2A/10x,4A,A/)')
      &                  'WARNING: Exact restart ',
      &                  'is requested, but is not possible: initial',
      &                  'file ''',  ininame(1:lstr),  ''' does not ',
@@ -299,7 +299,7 @@
             endif
 #endif
           else
-            MPI_master_only write (stdout,'(/1x,2A/8x,5A/)')
+            MPI_master_only write(STDOUT,'(/1x,2A/8x,5A/)')
      &             'GET_INITIAL ERROR: ',
      &             'cannot read attribute ''units'' for variable',
      &             '''', vname(1,indxTime)(1:lvar),
@@ -307,13 +307,13 @@
             goto 99                                       !--> ERROR
           endif
         else
-          MPI_master_only write(stdout,2) vname(1,indxTime)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxTime)(1:lvar)
      &                                , record, ininame(1:lstr)
      &                                , nf_strerror(ierr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,1) vname(1,indxTime)(1:lvar)
+        MPI_master_only write(STDOUT,1) vname(1,indxTime)(1:lvar)
      &                                , ininame(1:lstr)
      &                                , nf_strerror(ierr)
         goto 99                                           !--> ERROR
@@ -399,7 +399,7 @@
               if (ibuff(1) .eq. ntstart+1) then
                 forw_start=1
               else
-          MPI_master_only write(stdout,'(/1x,3A,2I4/10x,4A/10x,A)')
+          MPI_master_only write(STDOUT,'(/1x,3A,2I4/10x,4A/10x,A)')
      &           'WARNING: ',
      &           'Exact restart is requested, but is not possible: ',
      &           'records', record,record+1, 'in ''',ininame(1:lstr),
@@ -407,7 +407,7 @@
      &                         'with', 'forward initial time step.'
               endif
             else
-             write(*,2) 'time_step', record, ininame(1:lstr),
+             write(STDOUT,2) 'time_step', record, ininame(1:lstr),
      &                                     nf_strerror(ierr)
               goto 99
             endif
@@ -416,12 +416,12 @@
           if (tindx.eq.1) then
 
             if (forw_start.eq.1) then
-              MPI_master_only write(stdout,6)
+              MPI_master_only write(STDOUT,6)
      &             start_time*sec2day, record,
      &             ntstart, nrecrst, nrechis
             else
 #endif
-              MPI_master_only  write(stdout,7)
+              MPI_master_only  write(STDOUT,7)
      &             start_time*sec2day, record,
      &             ntstart, nrecrst, nrechis
 #ifdef EXACT_RESTART
@@ -430,7 +430,7 @@
 
 #endif
         else
-          MPI_master_only write(stdout,'(/1x,2A/)')
+          MPI_master_only write(STDOUT,'(/1x,2A/)')
      &         'GET_INITIAL ERROR: Cannot ',
      &         'read time and record indices.'
           goto 99                                         !--> ERROR
@@ -462,7 +462,7 @@
 #ifdef AVERAGES
         nrecavg=0
 #endif
-        MPI_master_only write(stdout,'(/1x,2A,G12.4,1x,A,I4)')
+        MPI_master_only write(STDOUT,'(/1x,2A,G12.4,1x,A,I4)')
      &          'GET_INITIAL -- ',
      &       'Processing data for time =', start_time*sec2day,
      &                                      'record =', record
@@ -476,7 +476,7 @@
 
 !      if (tindx.eq.1) then
 !        if (ntstart.gt.1) then
-!          MPI_master_only write(stdout,'(/4x,A,I5,A,I5/)')
+!          MPI_master_only write(STDOUT,'(/4x,A,I5,A,I5/)')
 !     &         'Adjusting averaging phase ntsavg =',  ntsavg,
 !     &                          ' ---> ', ntsavg + ntstart-1
 !          ntsavg=ntsavg + ntstart-1
@@ -508,12 +508,12 @@
             ntimes=ntstart+ntimes-1
           endif
 
-!          write(*,*)'==============='
-!          write(*,*)'FORW_START=',forw_start
-!          write(*,*)'==============='
-!          write(*,*)'==============='
-!          write(*,*)'RECORD=',record
-!          write(*,*)'==============='
+!          write(STDOUT,*)'==============='
+!          write(STDOUT,*)'FORW_START=',forw_start
+!          write(STDOUT,*)'==============='
+!          write(STDOUT,*)'==============='
+!          write(STDOUT,*)'RECORD=',record
+!          write(STDOUT,*)'==============='
 
 !
 !
@@ -525,13 +525,13 @@
         ierr=nf_fread (zeta(START_2D_ARRAY,1), ncid, varid,
      &                                         record, r2dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxZ)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxZ)(1:lvar)
      &                                ,record,ininame(1:lstr)
 
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only  write(stdout,1) vname(1,indxZ)(1:lvar)
+        MPI_master_only  write(STDOUT,1) vname(1,indxZ)(1:lvar)
      &                                ,ininame(1:lstr)
 
         goto 99                                           !--> ERROR
@@ -545,12 +545,12 @@
         ierr=nf_fread (ubar(START_2D_ARRAY,1), ncid, varid,
      &                                         record, u2dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxUb)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxUb)(1:lvar)
      &                                  , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,1) vname(1,indxUb)(1:lvar)
+        MPI_master_only write(STDOUT,1) vname(1,indxUb)(1:lvar)
      &                                ,ininame(1:lstr)
         goto 99                                           !--> ERROR
       endif
@@ -563,12 +563,12 @@
         ierr=nf_fread (vbar(START_2D_ARRAY,1), ncid, varid,
      &                                         record, v2dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxVb)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxVb)(1:lvar)
      &                                , record, ininame(1:lstr)
           goto 99                                          !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,1) vname(1,indxVb)(1:lvar)
+        MPI_master_only write(STDOUT,1) vname(1,indxVb)(1:lvar)
      &                                ,ininame(1:lstr)
         goto 99                                           !--> ERROR
       endif
@@ -582,12 +582,12 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (h, ncid, varid, record, r2dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxHm)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxHm)(1:lvar)
      &                                   , record,ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only  write(stdout,3) vname(1,indxHm)(1:lvar)
+        MPI_master_only  write(STDOUT,3) vname(1,indxHm)(1:lvar)
      &                                          ,ininame(1:lstr)
       endif
 #endif
@@ -602,12 +602,12 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (Hripple, ncid, varid, record, r2dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxHrip)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxHrip)(1:lvar)
      &                                    , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,3) vname(1,indxHrip)(1:lvar)
+        MPI_master_only write(STDOUT,3) vname(1,indxHrip)(1:lvar)
      &                                , ininame(1:lstr)
         got_inibed(1)=.false.
       endif
@@ -620,12 +620,12 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (Lripple, ncid, varid, record, r2dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxLrip)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxLrip)(1:lvar)
      &                                    , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,3) vname(1,indxLrip)(1:lvar)
+        MPI_master_only write(STDOUT,3) vname(1,indxLrip)(1:lvar)
      &                                , ininame(1:lstr)
         got_inibed(2)=.false.
       endif
@@ -641,12 +641,12 @@
         ierr=nf_fread (u(START_2D_ARRAY,1,tindx), ncid, varid,
      &                                         record, u3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxU)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxU)(1:lvar)
      &                                 , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,1) vname(1,indxU)(1:lvar)
+        MPI_master_only write(STDOUT,1) vname(1,indxU)(1:lvar)
      &                                ,ininame(1:lstr)
         goto 99                                           !--> ERROR
       endif
@@ -659,12 +659,12 @@
         ierr=nf_fread (v(START_2D_ARRAY,1,tindx), ncid, varid,
      &                                         record, v3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxV)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxV)(1:lvar)
      &                                 , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,1) vname(1,indxV)(1:lvar)
+        MPI_master_only write(STDOUT,1) vname(1,indxV)(1:lvar)
      &                                ,ininame(1:lstr)
         goto 99                                           !--> ERROR
       endif
@@ -680,12 +680,12 @@
           ierr=nf_fread (t(START_2D_ARRAY,1,tindx,itrc), ncid, varid,
      &                                                record, r3dvar)
           if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxV+itrc)(1:lvar)
+            MPI_master_only write(STDOUT,2) vname(1,indxV+itrc)(1:lvar)
      &                                        , record, ininame(1:lstr)
             goto 99                                       !--> ERROR
           endif
         else
-          MPI_master_only write(stdout,3) vname(1,indxV+itrc)(1:lvar),
+          MPI_master_only write(STDOUT,3) vname(1,indxV+itrc)(1:lvar),
      &                                    ininame(1:lstr)
           got_tini(itrc)=.false.
         endif
@@ -702,12 +702,12 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (bed_thick, ncid, varid, record, b3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxBTHK)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxBTHK)(1:lvar)
      &                                    , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,3) vname(1,indxBTHK)(1:lvar)
+        MPI_master_only write(STDOUT,3) vname(1,indxBTHK)(1:lvar)
      &     ,ininame(1:lstr)
         got_inised(1)=.false.
       endif
@@ -720,12 +720,12 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (bed_poros, ncid, varid, record, b3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxBPOR)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxBPOR)(1:lvar)
      &                                    , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,3) vname(1,indxBPOR)(1:lvar)
+        MPI_master_only write(STDOUT,3) vname(1,indxBPOR)(1:lvar)
      &       , ininame(1:lstr)
      &       , nf_strerror(ierr)
         got_inised(2)=.false.
@@ -742,12 +742,12 @@
         ierr=nf_fread (bed_frac(START_2D_ARRAY,1,itrc), ncid, varid,
      &                                               record, b3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxWrk)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxWrk)(1:lvar)
      &                                   , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,3) vname(1,indxWrk)(1:lvar)
+        MPI_master_only write(STDOUT,3) vname(1,indxWrk)(1:lvar)
      &                                , ininame(1:lstr)
         got_inised(3)=.false.
       endif
@@ -769,12 +769,12 @@
 !#   endif
      &                                         1, r2dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxHbl)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxHbl)(1:lvar)
      &                                   , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,4) vname(1,indxHbl)(1:lvar)
+        MPI_master_only write(STDOUT,4) vname(1,indxHbl)(1:lvar)
      &                                , ininame(1:lstr)
       endif
 #   endif /* LMD_SKPP2005 */
@@ -791,12 +791,12 @@
         ierr=nf_fread (hbbl(START_2D_ARRAY), ncid, varid,
      &                                         1, r2dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxHbbl)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxHbbl)(1:lvar)
      &                                    , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,4) vname(1,indxHbbl)(1:lvar)
+        MPI_master_only write(STDOUT,4) vname(1,indxHbbl)(1:lvar)
      &                                , ininame(1:lstr)
       endif
 
@@ -814,12 +814,12 @@
           ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,itke), ncid,
      &                                    varid, record, w3dvar)
           if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxTke)(1:lvar)
+            MPI_master_only write(STDOUT,2) vname(1,indxTke)(1:lvar)
      &                                     , record, ininame(1:lstr)
             goto 99                                       !--> ERROR
           endif
         else
-          MPI_master_only write(stdout,4) vname(1,indxTke)(1:lvar)
+          MPI_master_only write(STDOUT,4) vname(1,indxTke)(1:lvar)
      &                                  , ininame(1:lstr)
       endif
 
@@ -832,12 +832,12 @@
           ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,igls), ncid,
      &                                    varid, record, w3dvar)
           if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxGls)(1:lvar)
+            MPI_master_only write(STDOUT,2) vname(1,indxGls)(1:lvar)
      &                                     , record, ininame(1:lstr)
             goto 99                                       !--> ERROR
           endif
         else
-          MPI_master_only write(stdout,4) vname(1,indxGls)(1:lvar)
+          MPI_master_only write(STDOUT,4) vname(1,indxGls)(1:lvar)
      &                                  , ininame(1:lstr)
       endif
 
@@ -850,12 +850,12 @@
           ierr=nf_fread (Akv(START_2D_ARRAY,0), ncid,
      &                                    varid, record, w3dvar)
           if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxAkv)(1:lvar)
+            MPI_master_only write(STDOUT,2) vname(1,indxAkv)(1:lvar)
      &                                     , record, ininame(1:lstr)
             goto 99                                       !--> ERROR
           endif
         else
-          MPI_master_only write(stdout,4) vname(1,indxAkv)(1:lvar)
+          MPI_master_only write(STDOUT,4) vname(1,indxAkv)(1:lvar)
      &                                  , ininame(1:lstr)
         endif
 
@@ -869,12 +869,12 @@
           ierr=nf_fread (Akt(START_2D_ARRAY,0,itemp), ncid,
      &                                    varid, record, w3dvar)
           if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxAkt)(1:lvar)
+            MPI_master_only write(STDOUT,2) vname(1,indxAkt)(1:lvar)
      &                                     , record, ininame(1:lstr)
             goto 99                                       !--> ERROR
           endif
         else
-          MPI_master_only write(stdout,4) vname(1,indxAkt)(1:lvar)
+          MPI_master_only write(STDOUT,4) vname(1,indxAkt)(1:lvar)
      &                                  , ininame(1:lstr)
         endif
 #  endif /* TEMPERATURE */
@@ -889,12 +889,12 @@
           ierr=nf_fread (Akt(START_2D_ARRAY,0,isalt), ncid,
      &                                    varid, record, w3dvar)
           if (ierr .ne. nf_noerr) then
-            MPI_master_only write(stdout,2) vname(1,indxAks)(1:lvar)
+            MPI_master_only write(STDOUT,2) vname(1,indxAks)(1:lvar)
      &                                     , record, ininame(1:lstr)
             goto 99                                       !--> ERROR
           endif
         else
-          MPI_master_only write(stdout,4) vname(1,indxAks)(1:lvar)
+          MPI_master_only write(STDOUT,4) vname(1,indxAks)(1:lvar)
      &                                  , ininame(1:lstr)
         endif
 
@@ -912,12 +912,12 @@
       ierr=nf_fread (bustr(START_2D_ARRAY), ncid,
      &                                     varid, record, u2dvar)
         if (ierr .ne. nf_noerr) then
-         MPI_master_only write(stdout,2) vname(1,indxBustr)(1:lvar)
+         MPI_master_only write(STDOUT,2) vname(1,indxBustr)(1:lvar)
      &                                    , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,4) vname(1,indxBustr)(1:lvar)
+        MPI_master_only write(STDOUT,4) vname(1,indxBustr)(1:lvar)
      &                                , ininame(1:lstr)
       endif
 !
@@ -929,12 +929,12 @@
        ierr=nf_fread (bvstr(START_2D_ARRAY), ncid,
      &                                     varid, record, v2dvar)
          if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxBvstr)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxBvstr)(1:lvar)
      &                                     , record, ininame(1:lstr)
            goto 99                                        !--> ERROR
          endif
        else
-         MPI_master_only write(stdout,4)  vname(1,indxBvstr)(1:lvar)
+         MPI_master_only write(STDOUT,4)  vname(1,indxBvstr)(1:lvar)
      &                                  , ininame(1:lstr)
         endif
 #  endif
@@ -950,12 +950,12 @@
       ierr=nf_fread (rufrc_bak(START_2D_ARRAY,3-tindx), ncid,
      &                                     varid, record, u2dvar)
         if (ierr .ne. nf_noerr) then
-         MPI_master_only write(stdout,2) vname(1,indxrufrc)(1:lvar)
+         MPI_master_only write(STDOUT,2) vname(1,indxrufrc)(1:lvar)
      &                                    , record, ininame(1:lstr)
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxrufrc)(1:lvar)
+        MPI_master_only write(STDOUT,5) vname(1,indxrufrc)(1:lvar)
      &                                , ininame(1:lstr)
       endif
 !
@@ -967,12 +967,12 @@
        ierr=nf_fread (rvfrc_bak(START_2D_ARRAY,3-tindx), ncid,
      &                                     varid, record, v2dvar)
          if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxrvfrc)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxrvfrc)(1:lvar)
      &                                     , record, ininame(1:lstr)
            goto 99                                        !--> ERROR
          endif
        else
-         MPI_master_only write(stdout,5)  vname(1,indxrvfrc)(1:lvar)
+         MPI_master_only write(STDOUT,5)  vname(1,indxrvfrc)(1:lvar)
      &                                  , ininame(1:lstr)
         endif
 
@@ -987,13 +987,13 @@
         ierr=nf_fread (ru_nbq(START_2D_ARRAY,1), ncid, varid,
      &                                         record, u3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2)
+          MPI_master_only write(STDOUT,2)
      &                           vname(1,indxru_nbq)(1:lvar)
      &                         , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxru_nbq)(1:lvar)
+        MPI_master_only write(STDOUT,5) vname(1,indxru_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1006,13 +1006,13 @@
         ierr=nf_fread (rv_nbq(START_2D_ARRAY,1), ncid, varid,
      &                                         record, v3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2)
+          MPI_master_only write(STDOUT,2)
      &                           vname(1,indxrv_nbq)(1:lvar)
      &                             , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxrv_nbq)(1:lvar)
+        MPI_master_only write(STDOUT,5) vname(1,indxrv_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1025,13 +1025,13 @@
         ierr=nf_fread (ru_nbq_avg2(START_2D_ARRAY,1), ncid, varid,
      &                                         record, u3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2)
+          MPI_master_only write(STDOUT,2)
      &                           vname(1,indxru_nbq_avg2)(1:lvar)
      &                                  , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxru_nbq_avg2)(1:lvar)
+        MPI_master_only write(STDOUT,5) vname(1,indxru_nbq_avg2)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1044,13 +1044,13 @@
         ierr=nf_fread (rv_nbq_avg2(START_2D_ARRAY,1), ncid, varid,
      &                                         record, v3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2)
+          MPI_master_only write(STDOUT,2)
      &                           vname(1,indxrv_nbq_avg2)(1:lvar)
      &                         , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxrv_nbq_avg2)(1:lvar)
+        MPI_master_only write(STDOUT,5) vname(1,indxrv_nbq_avg2)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1063,13 +1063,13 @@
         ierr=nf_fread (qdmu_nbq(START_2D_ARRAY,1), ncid, varid,
      &                                         record, u3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2)
+          MPI_master_only write(STDOUT,2)
      &                           vname(1,indxqdmu_nbq)(1:lvar)
      &                         , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxqdmu_nbq)(1:lvar)
+        MPI_master_only write(STDOUT,5) vname(1,indxqdmu_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1082,13 +1082,13 @@
         ierr=nf_fread (qdmv_nbq(START_2D_ARRAY,1), ncid, varid,
      &                                         record, v3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2)
+          MPI_master_only write(STDOUT,2)
      &                           vname(1,indxqdmv_nbq)(1:lvar)
      &                         , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxqdmv_nbq)(1:lvar)
+        MPI_master_only write(STDOUT,5) vname(1,indxqdmv_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 
@@ -1105,13 +1105,13 @@
         ierr=nf_fread (dRdx(START_2D_ARRAY,1), ncid, varid,
      &                                         record, u3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2)
+          MPI_master_only write(STDOUT,2)
      &                           vname(1,indxdRdx)(1:lvar)
      &                           , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxdRdx)(1:lvar)
+        MPI_master_only write(STDOUT,5) vname(1,indxdRdx)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1123,12 +1123,12 @@
         ierr=nf_fread (dRde(START_2D_ARRAY,1), ncid, varid,
      &                                         record, v3dvar)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) vname(1,indxdRde)(1:lvar)
+          MPI_master_only write(STDOUT,2) vname(1,indxdRde)(1:lvar)
      &                                    , record, ininame(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxdRde)(1:lvar)
+        MPI_master_only write(STDOUT,5) vname(1,indxdRde)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 #  endif /* TS_MIX_ISO_FILT */
@@ -1149,7 +1149,7 @@
 # endif
         call cpl_prism_define
         oasis_time = 0
-        MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
+        MPI_master_only write(STDOUT,*)'CPL-CROCO: OASIS_TIME',oasis_time
 #  if defined EXACT_RESTART   
       endif
 # endif

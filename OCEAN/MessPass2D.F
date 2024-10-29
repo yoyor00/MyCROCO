@@ -67,7 +67,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       jsize=Npts*jshft                  ! in XI and ETA directions
 
 # define write !
-c*      write(*,'(2(6x,A3,I2,2x,A5,I3,2x,A5,I3))')
+c*      write(STDOUT,'(2(6x,A3,I2,2x,A5,I3,2x,A5,I3))')
 c*     &        'ii=',ii,'imin=',imin,'imax=',imax,
 c*     &        'jj=',jj,'jmin=',jmin,'jmax=',jmax
                             !  Message passing split into two stages
@@ -503,7 +503,7 @@ c          endif
        endif
 
 
-c      write(*,*) 'MessPass2D:    ', mynode,' exit'
+c      write(STDOUT,*) 'MessPass2D:    ', mynode,' exit'
 
 
       return

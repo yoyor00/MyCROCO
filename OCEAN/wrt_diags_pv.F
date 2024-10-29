@@ -96,7 +96,7 @@
       ierr=nf_put_vara_int (nciddiags_pv, diags_pvTstep,
      &                                            start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step', record, ierr
+        write(STDOUT,1) 'time_step', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -106,7 +106,7 @@
       ierr=nf_put_var1_FTYPE (nciddiags_pv, diags_pvTime, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -116,7 +116,7 @@
       ierr=nf_put_var1_FTYPE (nciddiags_pv, diags_pvTime2, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -216,12 +216,12 @@
 
 
       if (ierr .eq. nf_noerr) then
-        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+        MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAGS_PV -- wrote',
      &            ' diag fields into time record =', record, '/',
      &             nrecdiags_pv  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)')
+        MPI_master_only write(STDOUT,'(/1x,2A/)')
      &             'WRT_DIAGS_PV ERROR: Cannot ',
      &             'synchronize/close diag netCDF file.'
         may_day_flag=3

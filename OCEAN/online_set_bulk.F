@@ -283,7 +283,7 @@
       !====== == ==== ==============
       else
         if (ZEROTH_TILE) then
-          write(stdout,1) 'bulk_timeO',tdays,bulk_timeO(it2,blkvar_id)*sec2day
+          write(STDOUT,1) 'bulk_timeO',tdays,bulk_timeO(it2,blkvar_id)*sec2day
   1       format(/,' SET_BULK - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
      &           2x,'TEND = ',g12.4)

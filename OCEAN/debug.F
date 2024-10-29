@@ -153,7 +153,7 @@
      &    .and.mynode.eq.0
 #   endif
      &    ) then
-      write(*,*)'iic.gt.start_debug check_tab2d write'
+      write(STDOUT,*)'iic.gt.start_debug check_tab2d write'
 #  endif /* RVTK_DEBUG_PERFRST */
       
 #  if defined MPI
@@ -195,8 +195,8 @@
      &    .and.mynode.eq.0
 #   endif
      &    ) then
-        !write(*,*)'iic=',iic
-        write(*,*)'iic.gt.start_debug_read check_tab2d read'
+        !write(STDOUT,*)'iic=',iic
+        write(STDOUT,*)'iic.gt.start_debug_read check_tab2d read'
 #  endif /* RVTK_DEBUG_PERFRST */
         
       if (non_strict) max_abs=0.
@@ -237,12 +237,12 @@
                        print *,'GRID# ',Agrif_CFixed()
 #  endif                    
                        if (.not.correct_l) then
-                        write(*,'(A)')comment_bug
+                        write(STDOUT,'(A)')comment_bug
                        mystop=.true.
                        exit DebugExit
                       else
                         comment_bug = TRIM(comment_bug) // '-- CORRECTED'
-                        write(*,'(A)')comment_bug
+                        write(STDOUT,'(A)')comment_bug
                         tab(i,j) = tabread(i0,j0)
                       endif
                      endif
@@ -382,7 +382,7 @@
      &    .and.mynode.eq.0
 #   endif
      &         ) then         
-            write(*,*)'iic.gt.start_debug check_tab3d write'
+            write(STDOUT,*)'iic.gt.start_debug check_tab3d write'
 #  endif /* defined RVTK_DEBUG_PERFRST   */
             
 #  if defined MPI
@@ -413,8 +413,8 @@
      &    .and.mynode.eq.0
 #   endif
      &     ) then
-        !write(*,*)'iic ',iic
-        write(*,*)'iic.gt.start_debug_read check_tab3d read'
+        !write(STDOUT,*)'iic ',iic
+        write(STDOUT,*)'iic.gt.start_debug_read check_tab3d read'
 #  endif /* defined RVTK_DEBUG_PERFRST  */
       
 #  ifdef OPENACC
@@ -462,7 +462,7 @@
                      endif
                      if (diff>tolerance)
      &                              then
-                       write(*,'(A,A,2x,6i4,3e20.12)')'BUGBIN = ',
+                       write(STDOUT,'(A,A,2x,6i4,3e20.12)')'BUGBIN = ',
      &                 comment,
      &                 mynode,i0,j0,i,j,k,
      &                 tabread(i0,j0,k),tab(i,j,k),

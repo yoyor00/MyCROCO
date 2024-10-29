@@ -98,7 +98,7 @@ C$OMP END PARALLEL
 # endif /* OA_COUPLING */
 #endif
 !#ifdef ONLINE_ANALYSIS
-!     if (mynode.eq.0) write(6,*) 'appel',iic,iif
+!     if (mynode.eq.0) write(STDOUT,*) 'appel',iic,iif
 !     call croco_oa(1)
 !#endif
       return

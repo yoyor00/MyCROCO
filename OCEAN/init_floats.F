@@ -47,7 +47,7 @@
       lstr=lenstr(fposnam)
       open(iunit,file=fposnam(1:lstr),form='formatted',
      &  status='old', err=195)
-c     write(stdout,10)
+c     write(STDOUT,10)
 c 10  format(/,' FLOATS processing parameters:',/)
 !
 !  Read input parameters according to their input card number.
@@ -60,7 +60,7 @@ c 10  format(/,' FLOATS processing parameters:',/)
         if (icard.eq.1) then
           read(iunit,'(a)',err=70) Ftitle
           lstr=lenstr(Ftitle)
-          write(stdout,20) Ftitle(1:lstr)
+          write(STDOUT,20) Ftitle(1:lstr)
   20      format(1x,'(',a,')',/)
 !
 !  Read in initial floats location.
@@ -68,7 +68,7 @@ c 10  format(/,' FLOATS processing parameters:',/)
         elseif (icard.eq.2) then
           i=0
           nfloats=0
-c         write(stdout,30)
+c         write(STDOUT,30)
 c30       format(1x,'Fcoor',2x,'Ftype',2x,'Fcount',2x,'Ft0',
 c    &        2x,'Fx0',2x,'Fy0',2x,'Fz0',2x,'Fgrd',2x,'Fdt',
 c    &                           2x,'Fdx',2x,'Fdy',2x,'Fdz',/)
@@ -87,12 +87,12 @@ c           endif
 c# else
 c             frmt='(i1,i2,i5,f10.4,3f8.2,2x,i1,4f9.3)'
 c# endif
-c           write(stdout,frmt) Fcoor(i), Ftype(i), Fcount(i),
+c           write(STDOUT,frmt) Fcoor(i), Ftype(i), Fcount(i),
 c    &                         Ft0(i), Fx0(i), Fy0(i), Fz0(i),
 c    &                   Fgrd(i),Fdt(i), Fdx(i), Fdy(i), Fdz(i)
           enddo
   40      if (Ft0(i).ne.99.0) then
-            write(stdout,50) icard, i, fposnam
+            write(STDOUT,50) icard, i, fposnam
   50        format(/,' INIT_FLOATS - error while reading input card: ',
      &             i2, ', floats location entry: ',i3,/,15x,
      &             'in input script: ',a)
@@ -103,7 +103,7 @@ c    &                   Fgrd(i),Fdt(i), Fdx(i), Fdy(i), Fdz(i)
             goto 90
           endif
           if (Mfloats.lt.nfloats) then
-            write(stdout,60) Mfloats, nfloats
+            write(STDOUT,60) Mfloats, nfloats
   60        format(/,' INIT_FLOATS - too small dimension parameter,',
      &             ' Mfloats',2i6,/,15x,'change file  param.h  and',
      &             ' recompile.')
@@ -119,12 +119,12 @@ c    &                   Fgrd(i),Fdt(i), Fdx(i), Fdy(i), Fdz(i)
 !
 !  Error while reading input parameters.
 !
-  70  write(stdout,80) icard, fposnam
+  70  write(STDOUT,80) icard, fposnam
   80  format(/,' INIT_FLOATS - error while reading input card: ',
      &       i2,15x,'in input script: ',a)
 
   90  close(iunit)
-      write(stdout,100) nfloats
+      write(STDOUT,100) nfloats
  100  format(/,2x,i6,4x,'nfloats',t26,
      &       'Number of float trajectories to compute.',/)
 !
@@ -222,7 +222,7 @@ c    &                   Fgrd(i),Fdt(i), Fdx(i), Fdy(i), Fdz(i)
 !
       return
 
- 195  write(stdout,205) fposnam
+ 195  write(STDOUT,205) fposnam
  205  format(/,'float file ',A,/,' not found => float initialization',
      &   ' using restart file')
 
@@ -231,7 +231,7 @@ c    &                   Fgrd(i),Fdt(i), Fdx(i), Fdy(i), Fdz(i)
 
 C! Test de l'initialisation des flotteurs xa
 C      do nc=1,nfloats
-C      write(stdout,53) nc, Tinfo(ixgrd,nc), Tinfo(iygrd,nc),
+C      write(STDOUT,53) nc, Tinfo(ixgrd,nc), Tinfo(iygrd,nc),
 C     &    Tinfo(izgrd,nc), NINT(Tinfo(igrd,nc)), Tinfo(itstr,nc)
 C      enddo
 C! Fin test

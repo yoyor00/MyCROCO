@@ -124,7 +124,7 @@
       count(1)=imax-imin+1
       count(2)=jmax-jmin+1
 
-c**   write(stdout,'(1x,A,i4,1x,A,i2,2(3x,A,I2,2x,A,I3,2x,A,I3))')
+c**   write(STDOUT,'(1x,A,i4,1x,A,i2,2(3x,A,I2,2x,A,I3,2x,A,I3))')
 c**  &      'NF_READ/WRITE: mynode=',mynode,'horiz_grid',horiz_type,
 c**  &                         'ii=',ii, 'imin=',imin, 'imax=',imax,
 C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
@@ -166,11 +166,11 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #endif
       else
 #ifndef WRITER
-        write(*,'(/1x,2A,I3/)') 'NF_FREAD ERROR: ',
+        write(STDOUT,'(/1x,2A,I3/)') 'NF_FREAD ERROR: ',
      &                'illegal grid type', type
         nf_fread=nf_noerr+1
 #else
-        write(*,'(/1x,2A,I4/)') 'NF_FWRITE ERROR: ',
+        write(STDOUT,'(/1x,2A,I4/)') 'NF_FWRITE ERROR: ',
      &                'illegal grid type', type
         nf_fwrite=nf_noerr+1
 #endif
@@ -193,7 +193,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 # endif
       nf_fread=ierr
       if (ierr .ne. nf_noerr) then
-        write(*,'(/1x,2A,I5,1x,A,I4/)') 'NF_FREAD ERROR: ',
+        write(STDOUT,'(/1x,2A,I5,1x,A,I4/)') 'NF_FREAD ERROR: ',
      &             'nf_get_vara netCDF error code =', ierr
      &              MYID
         return
@@ -243,7 +243,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 # endif
       nf_fwrite=ierr
       if (ierr.ne.nf_noerr) then
-        write(*,'(/1x,2A,I5,1x,A,I4/)') 'NF_FWRITE ERROR: ',
+        write(STDOUT,'(/1x,2A,I5,1x,A,I4/)') 'NF_FWRITE ERROR: ',
      &              'nf_put_vara netCDF error code =', ierr
      &               MYID
       endif

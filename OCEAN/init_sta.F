@@ -53,7 +53,7 @@
       lstr=lenstr(staposname)
       open(iunit,file=staposname(1:lstr),form='formatted',
      &  status='old', err=195)
-!!     write(stdout,10)
+!!     write(STDOUT,10)
 !! 10  format(/,' STATION processing parameters:',/)
 !
 !  Read input parameters according to their input card number.
@@ -67,7 +67,7 @@
         if (icard.eq.1) then
           read(iunit,'(a)',err=70) statitle
           lstr=lenstr(statitle)
-!!          MPI_master_only write(stdout,20) statitle(1:lstr)
+!!          MPI_master_only write(STDOUT,20) statitle(1:lstr)
 !!  20      format(/,2x,a)
 !
 !  Read in station location.
@@ -82,7 +82,7 @@
             nstas=i
           enddo
   40      if (stat0(i).ne.99.0) then
-            write(stdout,50) icard, i, staposname
+            write(STDOUT,50) icard, i, staposname
   50        format(/,
      &            ' INIT_STATIONS - error while reading input card: ',
      &            i2, ', STATIONS location entry: ',i3,/,15x,
@@ -93,7 +93,7 @@
             goto 90
           endif
           if (Msta.lt.nstas) then
-            write(stdout,60) Msta, nstas
+            write(STDOUT,60) Msta, nstas
   60        format(/,' INIT_STATIONS - too small dimension parameter,',
      &             ' Msta',2i6,/,15x,'change file  param.h  and',
      &             ' recompile.')
@@ -109,13 +109,13 @@
 !
 !  Error while reading input parameters.
 !
-  70  write(stdout,80) icard, staposname
+  70  write(STDOUT,80) icard, staposname
   80  format(/,' INIT_STATIONS - error while reading input card: ',
      &       i2,15x,'in input script: ',a)
 
   90  close(iunit)
 
-      MPI_master_only write(stdout,100) nstas
+      MPI_master_only write(STDOUT,100) nstas
  100  format(2x,' INIT_STATIONS -- Number of stations (nstas) : ',i6,/)
 !
 !---------------------------------------------------------------------
@@ -188,7 +188,7 @@
 !
       return
 
- 195  write(stdout,205) staposname
+ 195  write(STDOUT,205) staposname
  205  format(/,'station file ',A,/,
      &   ' not found => station initialization using restart file')
 
@@ -197,7 +197,7 @@
 
 ! Test initialization
 !      do nc=1,nfloats
-!      write(stdout,53) nc, Tinfo(ixgrd,nc), Tinfo(iygrd,nc),
+!      write(STDOUT,53) nc, Tinfo(ixgrd,nc), Tinfo(iygrd,nc),
 !     &    Tinfo(izgrd,nc), NINT(Tinfo(igrd,nc)), Tinfo(itstr,nc)
 !      enddo
 ! Fin test

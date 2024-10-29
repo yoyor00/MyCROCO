@@ -94,7 +94,7 @@
       count(2)=1
       ierr=nf_put_vara_int (nciddiaM, diaTstepM, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step', record, ierr
+        write(STDOUT,1) 'time_step', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -104,7 +104,7 @@
       ierr=nf_put_var1_FTYPE (nciddiaM, diaTimeM, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -114,7 +114,7 @@
       ierr=nf_put_var1_FTYPE (nciddiaM, diaTime2M, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -287,36 +287,36 @@
       j=20
       k=10
       itrc=1
-      write(*,*) 'Write diag UV his at : i='
+      write(STDOUT,*) 'Write diag UV his at : i='
      &                      ,i,' j=',j,' k=',k,' iUV=',itrc
-      write(*,*) 'MXadv(i,j,k,itrc)   ',MXadv(i,j,k,itrc)
-      write(*,*) 'MYadv(i,j,k,itrc)   ',MYadv(i,j,k,itrc)
-      write(*,*) 'MVadv(i,j,k,itrc)   ',MVadv(i,j,k,itrc)
-      write(*,*) 'MCor(i,j,k,itrc)    ',MCor(i,j,k,itrc)
-      write(*,*) 'MPrsgrd(i,j,k,itrc) ',MPrsgrd(i,j,k,itrc)
-      write(*,*) 'MHmix(i,j,k,itrc)   ',MHmix(i,j,k,itrc,nstp)
-      write(*,*) 'MHdiff(i,j,k,itrc)  ',MHdiff(i,j,k,itrc)
-      write(*,*) 'MVmix(i,j,k,itrc)   ',MVmix(i,j,k,itrc)
-      write(*,*) 'MVmix2(i,j,k,itrc)  ',MVmix2(i,j,k,itrc)
+      write(STDOUT,*) 'MXadv(i,j,k,itrc)   ',MXadv(i,j,k,itrc)
+      write(STDOUT,*) 'MYadv(i,j,k,itrc)   ',MYadv(i,j,k,itrc)
+      write(STDOUT,*) 'MVadv(i,j,k,itrc)   ',MVadv(i,j,k,itrc)
+      write(STDOUT,*) 'MCor(i,j,k,itrc)    ',MCor(i,j,k,itrc)
+      write(STDOUT,*) 'MPrsgrd(i,j,k,itrc) ',MPrsgrd(i,j,k,itrc)
+      write(STDOUT,*) 'MHmix(i,j,k,itrc)   ',MHmix(i,j,k,itrc,nstp)
+      write(STDOUT,*) 'MHdiff(i,j,k,itrc)  ',MHdiff(i,j,k,itrc)
+      write(STDOUT,*) 'MVmix(i,j,k,itrc)   ',MVmix(i,j,k,itrc)
+      write(STDOUT,*) 'MVmix2(i,j,k,itrc)  ',MVmix2(i,j,k,itrc)
 #  if defined DIAGNOSTICS_BARO
-      write(*,*) 'MBaro(i,j,k,itrc) ',MBaro(i,j,k,itrc)
+      write(STDOUT,*) 'MBaro(i,j,k,itrc) ',MBaro(i,j,k,itrc)
 #  endif
 #  if defined M3FAST
-      write(*,*) 'Mfast(i,j,k,itrc) ',Mfast(i,j,k,itrc)
+      write(STDOUT,*) 'Mfast(i,j,k,itrc) ',Mfast(i,j,k,itrc)
 #  endif
 #  ifdef MRL_WCI
-      write(*,*) 'Mvf(i,j,k,itrc)     ',Mvf(i,j,k,itrc)
-      write(*,*) 'Mbrk(i,j,k,itrc)    ',Mbrk(i,j,k,itrc)
-      write(*,*) 'MStCo(i,j,k,itrc)   ',MStCo(i,j,k,itrc)
-      write(*,*) 'MVvf(i,j,k,itrc)    ',MVvf(i,j,k,itrc)
-      write(*,*) 'MPrscrt(i,j,k,itrc) ',MPrscrt(i,j,k,itrc)
-      write(*,*) 'Msbk(i,j,k,itrc)    ',Msbk(i,j,k,itrc)
-      write(*,*) 'Mbwf(i,j,k,itrc)    ',Mbwf(i,j,k,itrc)
-      write(*,*) 'Mfrc(i,j,k,itrc)    ',Mfrc(i,j,k,itrc)
+      write(STDOUT,*) 'Mvf(i,j,k,itrc)     ',Mvf(i,j,k,itrc)
+      write(STDOUT,*) 'Mbrk(i,j,k,itrc)    ',Mbrk(i,j,k,itrc)
+      write(STDOUT,*) 'MStCo(i,j,k,itrc)   ',MStCo(i,j,k,itrc)
+      write(STDOUT,*) 'MVvf(i,j,k,itrc)    ',MVvf(i,j,k,itrc)
+      write(STDOUT,*) 'MPrscrt(i,j,k,itrc) ',MPrscrt(i,j,k,itrc)
+      write(STDOUT,*) 'Msbk(i,j,k,itrc)    ',Msbk(i,j,k,itrc)
+      write(STDOUT,*) 'Mbwf(i,j,k,itrc)    ',Mbwf(i,j,k,itrc)
+      write(STDOUT,*) 'Mfrc(i,j,k,itrc)    ',Mfrc(i,j,k,itrc)
 #  endif
-      write(*,*) 'Mrate(i,j,k,itrc)   ',Mrate(i,j,k,itrc)
+      write(STDOUT,*) 'Mrate(i,j,k,itrc)   ',Mrate(i,j,k,itrc)
 
-      write(*,*) 'SumUVhis(i,j,k,itrc) = ',MXadv(i,j,k,itrc)
+      write(STDOUT,*) 'SumUVhis(i,j,k,itrc) = ',MXadv(i,j,k,itrc)
      &                                  +  MYadv(i,j,k,itrc)
      &                                  +  MVadv(i,j,k,itrc)
      &                                  +  MCor(i,j,k,itrc)
@@ -338,7 +338,7 @@
      &                                  +  Mfrc(i,j,k,itrc)
 #  endif
      &                                  -  Mrate(i,j,k,itrc)
-      write(*,*) '-----------------------------------------'
+      write(STDOUT,*) '-----------------------------------------'
 # endif /* DEBUG */
 !--#undef DEBUG
 
@@ -369,12 +369,12 @@
 
 
       if (ierr .eq. nf_noerr) then
-        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+        MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAGM -- wrote',
      &            ' diag fields into time record =', record, '/',
      &             nrecdiaM  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)')
+        MPI_master_only write(STDOUT,'(/1x,2A/)')
      &             'WRT_DIAGM ERROR: Cannot ',
      &             'synchronize/close diag netCDF file.'
         may_day_flag=3

@@ -108,9 +108,9 @@ c--#define VERBOSE
       cmd(11:lstr+10)=cmd(1:lstr)    ! pid of its own process and
       lstr=lstr+10                   ! executes re-nice command.
       cmd(1:10)='renice 19 '
-      write(*,'(/3A/)') 'Autorenice: executing ''',cmd(1:lstr),'''.'
+      write(STDOUT,'(/3A/)') 'Autorenice: executing ''',cmd(1:lstr),'''.'
       call system(cmd(1:lstr))
-      write(*,*)
+      write(STDOUT,*)
 #endif
 #ifdef TIMING
 # ifdef __IFC
@@ -136,7 +136,7 @@ c--#define VERBOSE
  
       narg=iargc()
       if (narg .lt. 3) then
-        write(*,'(/1x,A/32x,A/)')      'Usage of partit should be:',
+        write(STDOUT,'(/1x,A/32x,A/)')      'Usage of partit should be:',
      &                       'partit NP_X NP_E ncname1 ... ncnameN'
         stop
       endif
@@ -149,7 +149,7 @@ c--#define VERBOSE
         if (j.ge.0 .and. j.le.9) then
           NP_XI=10*NP_XI+j
         else
-          write(*,'(/8x,3A/)')     '### ERROR: First argument ',
+          write(STDOUT,'(/8x,3A/)')     '### ERROR: First argument ',
      &           string(1:lstr), ', must be an integer number.'
           stop
         endif
@@ -163,13 +163,13 @@ c--#define VERBOSE
         if (j.ge.0 .and. j.le.9) then
           NP_ETA=10*NP_ETA+j
         else
-          write(*,'(/8x,3A/)')    '### ERROR: Second argument ',
+          write(STDOUT,'(/8x,3A/)')    '### ERROR: Second argument ',
      &           string(1:lstr), ', must be an integer number.'
           stop
         endif
       enddo
       nnodes=NP_XI*NP_ETA
-      write(*,'(/1x,2(4x,A,I3)/)') 'NP_XI =',  NP_XI,
+      write(STDOUT,'(/1x,2(4x,A,I3)/)') 'NP_XI =',  NP_XI,
      &                             'NP_ETA =', NP_ETA
  
       allocate(ncid(0:nnodes-1))
@@ -202,25 +202,25 @@ c--#define VERBOSE
         if (ierr .eq. nf_noerr) then
           ierr=nf_inq_att (ncsrc, nf_global, 'partition', i,j)
           if (ierr .eq. nf_noerr) then
-            write(*,'(/1x,4A/14x,2A/)')'### WARNING: netCDF file ''',
+            write(STDOUT,'(/1x,4A/14x,2A/)')'### WARNING: netCDF file ''',
      &        src_name(1:lsrc),  ''' is already ', 'a partial file ',
      &       'and cannot be partitioned any further ==> ignoring it.'
             goto 97     !--> next file
           endif
         else
-          write(*,'(/1x,4A/14x,A)')      '### WARNING: Cannot open ',
+          write(STDOUT,'(/1x,4A/14x,A)')      '### WARNING: Cannot open ',
      &    'netCDF file ''',src_name(1:lsrc),'''.', nf_strerror(ierr)
           goto 97     !--> next file
         endif
  
  
-        write(*,'(1x,3A)') 'Processing netCDF file ''',
+        write(STDOUT,'(1x,3A)') 'Processing netCDF file ''',
      &                        src_name(1:lsrc), '''...'
  
         ierr=nf_inq (ncsrc, ndims, nvars, ngatts, unlimdimid)
         if (ierr.eq.nf_noerr) then
           if (ndims .gt. maxdims) then
-            write(*,'(/1x,2A,I4,1x,4A/12x,A,I4,2A/)')  '### ERROR: ',
+            write(STDOUT,'(/1x,2A,I4,1x,4A/12x,A,I4,2A/)')  '### ERROR: ',
      &        'Number of dimensions',      ndims,       'in netCDF ',
      &        'file ''', src_name(1:lsrc), ''' exceeds the limit of',
      &        'maxdims =',     maxdims,      '. Increase parameter ',
@@ -228,7 +228,7 @@ c--#define VERBOSE
             ierr=ierr+1
           endif
           if (nvars .gt. maxvars) then
-            write(*,'(/1x,2A,I4,1x,3A/12x,A,I4,2A/)')  '### ERROR: ',
+            write(STDOUT,'(/1x,2A,I4,1x,3A/12x,A,I4,2A/)')  '### ERROR: ',
      &           'Number of variables',  nvars,  'in netCDF file ''',
      &            src_name(1:lsrc),       ''' exceeds the limit of ',
      &           'maxvars =',     maxvars,   '. Increase parameter ',
@@ -236,7 +236,7 @@ c--#define VERBOSE
             ierr=ierr+1
           endif
         else
-          write(*,'(/1x,4A/12x,A/)')       '### ERROR: Cannot make ',
+          write(STDOUT,'(/1x,4A/12x,A/)')       '### ERROR: Cannot make ',
      &                         'general inquiry into netCDF file ''',
      &                    src_name(1:lsrc), '''.', nf_strerror(ierr)
         endif
@@ -256,7 +256,7 @@ c--#define VERBOSE
               dimsize(i)=nf_unlimited
             endif
           else
-            write(*,'(/1x,2A,I4/12x,3A/12x,A/)')       '### ERROR: ',
+            write(STDOUT,'(/1x,2A,I4/12x,3A/12x,A/)')       '### ERROR: ',
      &              'Cannot determine name and size for dimension #',
      &              i,  'in netCDF file ''', src_name(1:lsrc), '''.',
      &                                             nf_strerror(ierr)
@@ -270,7 +270,7 @@ c--#define VERBOSE
 ! readress obsolete (redundant) dimensions according to the rules:
  
 #ifdef VERBOSE
-        write(*,'(4x,A)') 'Identifying dimensions:'
+        write(STDOUT,'(4x,A)') 'Identifying dimensions:'
 #endif
         xi_rho=0
         id_xi_rho=0               ! Mapping redundant dimensions:
@@ -309,7 +309,7 @@ c--#define VERBOSE
             id_eta_u=i
           endif
 #ifdef VERBOSE
-          write(*,'(8x,I3,1x,A,T24,I3)') i, dimname(i)(1:lvar),
+          write(STDOUT,'(8x,I3,1x,A,T24,I3)') i, dimname(i)(1:lvar),
      &                                              dimsize(i)
 #endif
         enddo
@@ -326,7 +326,7 @@ c--#define VERBOSE
         endif
         if (xi_rho.eq.0  .or. xi_u.eq.0 .or.
      &      eta_rho.eq.0 .or. eta_v.eq.0) then
-          write(*,'(/8x,2A/15x,3A/)')       '### ERROR: not all ',
+          write(STDOUT,'(/8x,2A/15x,3A/)')       '### ERROR: not all ',
      &            'partitionable dimensions are found in netCDF ',
      &                         'file ''', src_name(1:lsrc), '''.'
           goto 97     !--> next file
@@ -362,10 +362,10 @@ c--#define VERBOSE
             ierr=nf_create (ncname(node)(1:lstr),  nf_clobber +
      &                                nf_64bit_offset, ncid(node))
             if (ierr .eq. nf_noerr) then
-              write(*,'(4x,3A)')      'Created partitioned file ''',
+              write(STDOUT,'(4x,3A)')      'Created partitioned file ''',
      &                                  ncname(node)(1:lstr), '''.'
             else
-              write(*,'(/8x,A,1x,3A/8x,A)')    '### ERROR: cannot ',
+              write(STDOUT,'(/8x,A,1x,3A/8x,A)')    '### ERROR: cannot ',
      &                'create netCDF file ''', ncname(node)(1:lstr),
      &                                    '''.',  nf_strerror(ierr)
             endif
@@ -403,36 +403,36 @@ c--#define VERBOSE
             dimid(i)=0
             lvar=lenstr(dimname(i))
             if (i.ne.unlimdimid .and. size.eq.0) then
-              if (node.eq.0) write(*,'(4x,4A)')     'Suppressing ',
+              if (node.eq.0) write(STDOUT,'(4x,4A)')     'Suppressing ',
      &          'zero-size dimension ''', dimname(i)(1:lvar), '''.'
             elseif  (i.eq.unlimdimid .and. tsize.eq.0) then
-              if (node.eq.0) write(*,'(4x,4A)')     'Suppressing ',
+              if (node.eq.0) write(STDOUT,'(4x,4A)')     'Suppressing ',
      &                          'zero-size unlimited dimension ''',
      &                                 dimname(i)(1:lvar), '''.'
             elseif (i.eq.id_xi_psi) then
-              if (node.eq.0) write(*,'(4x,2A)')     'Suppressing ',
+              if (node.eq.0) write(STDOUT,'(4x,2A)')     'Suppressing ',
      &                            'obsolete dimension ''xi_psi''.'
             elseif (i.eq.id_xi_v) then
-              if (node.eq.0) write(*,'(4x,2A)')     'Suppressing ',
+              if (node.eq.0) write(STDOUT,'(4x,2A)')     'Suppressing ',
      &                              'obsolete dimension ''xi_v''.'
             elseif (i.eq.id_eta_psi) then
-              if (node.eq.0) write(*,'(4x,2A)')     'Suppressing ',
+              if (node.eq.0) write(STDOUT,'(4x,2A)')     'Suppressing ',
      &                           'obsolete dimension ''eta_psi''.'
             elseif (i.eq.id_eta_u)  then
-              if (node.eq.0) write(*,'(4x,2A)')     'Suppressing ',
+              if (node.eq.0) write(STDOUT,'(4x,2A)')     'Suppressing ',
      &                              'obsolete dimension ''xi_u''.'
             else
               ierr=nf_def_dim (ncid(node), dimname(i)(1:lvar),
      &                                           size, dimid(i))
               if (ierr .ne. nf_noerr) then
                 ierr_all=ierr_all+1
-                write(*,'(/1x,4A,I8,A,I4/12x,A)') '### ERROR: Cannot ',
+                write(STDOUT,'(/1x,4A,I8,A,I4/12x,A)') '### ERROR: Cannot ',
      &                       'define dimension ''', dimname(i)(1:lvar),
      &        ''' of size =', size,',  node=', node, nf_strerror(ierr)
 #ifdef VERBOSE
               else
                 ierr_all=ierr_all+1
-                write(*,'(8x,2A,I2,2x,2A,I4,T50,A,I4)') 'Defined ',
+                write(STDOUT,'(8x,2A,I2,2x,2A,I4,T50,A,I4)') 'Defined ',
      &                  'dimension #',dimid(i), dimname(i)(1:lvar),
      &                                 ' =', size, 'node =', node
 #endif
@@ -472,7 +472,7 @@ c--#define VERBOSE
               if (ierr. ne. nf_noerr) then
                 ierr_all=ierr_all+1
                 lstr=lenstr(ncname(node))
-                write(*,'(/1x,7A/12x,A)')  '### ERROR: Cannot copy ',
+                write(STDOUT,'(/1x,7A/12x,A)')  '### ERROR: Cannot copy ',
      &             'global attribute ''', string(1:lvar), ''' into ',
      &             'netCDF file ''',   ncname(node)(1:lstr),   '''.',
      &                                             nf_strerror(ierr)
@@ -481,7 +481,7 @@ c--#define VERBOSE
             enddo
           else
             lstr=lenstr(ncname(0))
-            write(*,'(/1x,2A,I3,1x,4A/12x,A/)') '### ERROR: Cannot ',
+            write(STDOUT,'(/1x,2A,I3,1x,4A/12x,A/)') '### ERROR: Cannot ',
      &       'determine name of global attribute #', i, 'in netCDF ',
      &       'file ''', src_name(1:lsrc), '''.',  nf_strerror(ierr)
             goto 97
@@ -495,7 +495,7 @@ c--#define VERBOSE
           ierr=nf_inq_var (ncsrc,   i, varname(i),  vartype(i),
      &                     vardims(i), dimids(1,i),   varatts)
           if (ierr.ne.nf_noerr) then
-             write(*,'(/1x,2A,I3/12x,3A/12x,A/)')     '### ERROR: ',
+             write(STDOUT,'(/1x,2A,I3/12x,3A/12x,A/)')     '### ERROR: ',
      &            'Cannot make general inquiry about variable ID =',
      &             i, 'in netCDF file ''',  src_name(1:lsrc), ''',',
      &                                            nf_strerror(ierr)
@@ -547,8 +547,8 @@ c--#define VERBOSE
                 if (dimids(j,i).eq.k) ibuff(j)=dimid(k)
               enddo
             enddo
-c**         write(*,*) 'old_dimids:', (dimids(j,i),j=1,vardims(i))
-c**         write(*,*) 'new_dimids:',    (ibuff(j),j=1,vardims(i))
+c**         write(STDOUT,*) 'old_dimids:', (dimids(j,i),j=1,vardims(i))
+c**         write(STDOUT,*) 'new_dimids:',    (ibuff(j),j=1,vardims(i))
  
             lvar=lenstr(varname(i))
             do node=0,nnodes-1
@@ -571,12 +571,12 @@ c**         write(*,*) 'new_dimids:',    (ibuff(j),j=1,vardims(i))
                 ierr=nf_def_var (ncid(node), varname(i)(1:lvar),
      &                vartype(i), vardims(i), ibuff, vid(i,node))
                 if (ierr.ne.nf_noerr) then
-                  write(*,'(/1x,4A,I4/12x,A/)') '### ERROR: Cannot ',
+                  write(STDOUT,'(/1x,4A,I4/12x,A/)') '### ERROR: Cannot ',
      &                    'create variable ''',   varname(i)(1:lvar),
      &                  ''', node =',   node,    nf_strerror(ierr)
 #ifdef VERBOSE
                 else
-                 write(*,'(I3,3A,T36,2(A,I3,1x),2(1x,A,L1),1x,A,I4)')
+                 write(STDOUT,'(I3,3A,T36,2(A,I3,1x),2(1x,A,L1),1x,A,I4)')
      &                 i, ' Created variable ''', varname(i)(1:lvar),
      &                 '''',  'varid =',   vid(i,node),  'vardims =',
      &                    vardims(i), 'part_switch=', part_switch(i),
@@ -589,14 +589,14 @@ c**         write(*,*) 'new_dimids:',    (ibuff(j),j=1,vardims(i))
                 ierr=nf_def_var (ncid(node), varname(i)(1:lvar),
      &                           vartype(i), 0, ibuff, vid(i,node))
 # ifdef VERBOSE
-                write(*,'(I3,4A,T84,A,I4)')     i, ' Created dummy ',
+                write(STDOUT,'(I3,4A,T84,A,I4)')     i, ' Created dummy ',
      &                'scalar variable ''', varname(i)(1:lvar), '''',
      &                                              'node =', node
 # endif
 #else
 # ifdef VERBOSE
               else
-                write(*,'(I3,4A,T84,A,I4)')      i, ' Suppressed ',
+                write(STDOUT,'(I3,4A,T84,A,I4)')      i, ' Suppressed ',
      &                     'variable ''', varname(i)(1:lvar), '''',
      &                                              'node =', node
 # endif
@@ -611,7 +611,7 @@ c**         write(*,*) 'new_dimids:',    (ibuff(j),j=1,vardims(i))
                   ierr=nf_copy_att (ncsrc, i, string(1:lvar),
      &                              ncid(node), vid(i,node))
                   if (ierr.ne.nf_noerr) then
-                    write(*,'(/1x,4A,I4/12x,A/)') '### ERROR: ',
+                    write(STDOUT,'(/1x,4A,I4/12x,A/)') '### ERROR: ',
      &               'Cannot copy attribute ''', string(1:lvar),
      &               ''' for variable ''',   varname(i)(1:lvar),
      &               ''', node =',   node,    nf_strerror(ierr)
@@ -631,14 +631,14 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
           ierr=nf_enddef(ncid(node))
           if (ierr.ne.nf_noerr) then
             ierr_all=ierr_all+1
-            write(*,'(1x,3A,I4,1x,A)')   '### ERROR: Cannot switch ',
+            write(STDOUT,'(1x,3A,I4,1x,A)')   '### ERROR: Cannot switch ',
      &          'partial netCDF file from definitin to input mode, ',
      &                             'node =', node, nf_strerror(ierr)
           endif
         enddo
         if (ierr_all.ne.0) stop
 #ifdef VERBOSE
-        write(*,'(/4x,A/)') 'Left definition mode.'
+        write(STDOUT,'(/4x,A/)') 'Left definition mode.'
 #endif
 #ifdef TIMING
         nclk=3-nclk
@@ -663,13 +663,13 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
 !========= ========= ==== ===== ======= ======
  
         do rec=1,max(tsize,1)
-          if (tsize.gt.1) write(*,'(8x,2(1x,A,I5))')
+          if (tsize.gt.1) write(STDOUT,'(8x,2(1x,A,I5))')
      &      'Processing record', rec, 'out of', tsize
           do i=1,nvars
 #ifdef VERBOSE
             if (tsize.eq.1) then
               lvar=lenstr(varname(i))
-              write(*,'(16x,I4,1x,A,I4,1x,3A)') i, 'of', nvars,
+              write(STDOUT,'(16x,I4,1x,A,I4,1x,3A)') i, 'of', nvars,
      &           'processing variable ''', varname(i)(1:lvar), '''.'
             endif
 #endif
@@ -697,7 +697,7 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                   ierr=nf_get_var_double (ncsrc, i, buff)
                 else
                   lvar=lenstr(varname(i))
-                  write(*,'(/8x,4A/)') '### ERROR: Scalar variable ',
+                  write(STDOUT,'(/8x,4A/)') '### ERROR: Scalar variable ',
      &              '''', varname(i)(1:lvar), ''' has unknown type.'
                   stop
                 endif
@@ -726,7 +726,7 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                       if (ierr .ne. nf_noerr) then
                         lvar=lenstr(varname(i))
                         lstr=lenstr(ncname(node))
-                        write(*,'(/1x,3A/12x,3A/12x,A/)')
+                        write(STDOUT,'(/1x,3A/12x,3A/12x,A/)')
      &                  '### ERROR: Cannot write scalar variable ''',
      &                     varname(i)(1:lvar),     ''' into netCDF ',
      &                  'file ''',    ncname(node)(1:lstr),    '''.',
@@ -737,7 +737,7 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                   enddo
                 else
                   lvar=lenstr(varname(i))
-                  write(*,'(/1x,3A/12x,3A/12x,A/)')
+                  write(STDOUT,'(/1x,3A/12x,3A/12x,A/)')
      &                  '### ERROR: Cannot read scalar variable ''',
      &                   varname(i)(1:lvar),      ''' from netCDF ',
      &                  'file ''',     src_name(1:lsrc),      '''.',
@@ -772,7 +772,7 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                   size=size*8
                 else
                   lvar=lenstr(varname(i))
-                  write(*,'(/8x,3A/)')   '### ERROR: variable ''',
+                  write(STDOUT,'(/8x,3A/)')   '### ERROR: variable ''',
      &                 varname(i)(1:lvar), ''' has unknown type.'
                   goto 97
                 endif
@@ -783,7 +783,7 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                   allocate (buff(max_buff_size))
  
 #ifdef VERBOSE
-                  write(*,*) 'Allocated buffer size =', max_buff_size
+                  write(STDOUT,*) 'Allocated buffer size =', max_buff_size
 #endif
                 endif
  
@@ -831,7 +831,7 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                       if (ierr .ne. nf_noerr) then
                         lvar=lenstr(varname(i))
                         lstr=lenstr(ncname(node))
-                        write(*,'(/1x,A,I4,1x,3A/12x,3A/12x,A/)')
+                        write(STDOUT,'(/1x,A,I4,1x,3A/12x,3A/12x,A/)')
      &                    '### ERROR: Cannot write time record =',
      &                     rec,   'for nonpartitionable array ''',
      &                     varname(i)(1:lvar),   '''into netCDF ',
@@ -843,7 +843,7 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                   enddo
                 else
                   lvar=lenstr(varname(i))
-                  write(*,'(/1x,A,I4,1x,3A/12x,3A/12x,A/)')
+                  write(STDOUT,'(/1x,A,I4,1x,3A/12x,3A/12x,A/)')
      &                    '### ERROR: Cannot read time record =',
      &                     rec,  'for nonpartitionable array ''',
      &                     varname(i)(1:lvar),  ''' from netCDF',
@@ -859,7 +859,7 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                   if (vid(i,node).gt.0) then
 #ifdef VERBOSE
                     lvar=lenstr(varname(i))
-                    write(*,'(24x,A,I4,4x,3A,I3)')  'part var id =',
+                    write(STDOUT,'(24x,A,I4,4x,3A,I3)')  'part var id =',
      &                           i, 'name = ''', varname(i)(1:lvar),
      &                                           ''' node =', node
 #endif
@@ -918,9 +918,9 @@ c**          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                       endif
                       size=size*count(j)
                     enddo
-c**               write(*,*) 'dimids:', (dimids(j,i),j=1,vardims(i))
-c**               write(*,*) ' start:',    (start(j),j=1,vardims(i))
-c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
+c**               write(STDOUT,*) 'dimids:', (dimids(j,i),j=1,vardims(i))
+c**               write(STDOUT,*) ' start:',    (start(j),j=1,vardims(i))
+c**               write(STDOUT,*) ' count:',    (count(j),j=1,vardims(i))
  
  
                     if (vartype(i) .eq. nf_char .or.
@@ -936,7 +936,7 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
                       size=size*8
                     else
                       lvar=lenstr(varname(i))
-                      write(*,'(/1x,4A/)') '### ERROR: variable ''',
+                      write(STDOUT,'(/1x,4A/)') '### ERROR: variable ''',
      &                   varname(i)(1:lvar), ''' has unknown type.'
                       goto 97
                     endif
@@ -947,7 +947,7 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
                       max_buff_size=(size+7)/8
                       allocate (buff(max_buff_size))
 #ifdef VERBOSE
-                 write(*,*) 'Allocated buffer size =',max_buff_size
+                 write(STDOUT,*) 'Allocated buffer size =',max_buff_size
 #endif
                     endif
  
@@ -994,7 +994,7 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
                       if (ierr .ne. nf_noerr) then
                         lvar=lenstr(varname(i))
                         lstr=lenstr(ncname(node))
-                        write(*,'(/1x,A,I4,1x,3A/12x,3A/12x,A)')
+                        write(STDOUT,'(/1x,A,I4,1x,3A/12x,3A/12x,A)')
      &                 '### ERROR: Cannot write time record =',  rec,
      &                 'of partitioned array ''', varname(i)(1:lvar),
      &                 '''',  'into netCDF file ''',
@@ -1003,13 +1003,13 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
                       endif
                     else
                       lvar=lenstr(varname(i))
-                      write(*,'(/1x,A,I4,1x,3A/12x,3A/12x,A)')
+                      write(STDOUT,'(/1x,A,I4,1x,3A/12x,3A/12x,A)')
      &                 '### ERROR: Cannot read time record =',   rec,
      &                 'of partitioned array ''', varname(i)(1:lvar),
      &                 '''', 'from netCDF file ''', src_name(1:lsrc),
      &                                     '''.',  nf_strerror(ierr)
-                      write(*,*) 'start =', start
-                      write(*,*) 'count =', count
+                      write(STDOUT,*) 'start =', start
+                      write(STDOUT,*) 'count =', count
                       goto 97
                     endif
                   endif
@@ -1021,13 +1021,13 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
  
 ! Close all netCDF files
  
-  97    write(*,*) 'closing files...'
+  97    write(STDOUT,*) 'closing files...'
         ierr=nf_close (ncsrc)
-        write(*,*) '...........input'
+        write(STDOUT,*) '...........input'
         do node=0,nnodes-1
          ierr=nf_close (ncid(node))
         enddo
-        write(*,*) '..........output'
+        write(STDOUT,*) '..........output'
       enddo       ! <-- arg=3,narg
  
 #ifdef TIMING
@@ -1038,7 +1038,7 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
 # endif
       RUN_time=RUN_time-tstart
  
-      write(*,'(/3(1x,A,F11.2,1x))') 'CPU_time:  run =', RUN_time,
+      write(STDOUT,'(/3(1x,A,F11.2,1x))') 'CPU_time:  run =', RUN_time,
      &                   'usr =', CPU_time(1),  'sys =', CPU_time(2)
  
       if (clk_rate.gt.0) then
@@ -1047,9 +1047,9 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
         inc_clk=iclk(nclk)-iclk(3-nclk)
         net_gray_clk=net_gray_clk+inc_clk
         GrayTime=net_gray_clk/dble(clk_rate)
-        write(*,'(14x,A,22x,F12.2,1x,A)') 'Gray time :',GrayTime,'sec'
+        write(STDOUT,'(14x,A,22x,F12.2,1x,A)') 'Gray time :',GrayTime,'sec'
         inc_clk=iclk(nclk)-iclk_init
-        write(*,'(47x,A/12x,A,11x,F12.2,1x,A/)') '------------------',
+        write(STDOUT,'(47x,A/12x,A,11x,F12.2,1x,A/)') '------------------',
      &   'Elapsed wall-clock time:', inc_clk/dble(clk_rate), 'sec'
       endif
 #endif
@@ -1108,7 +1108,7 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
       Lm=(LLm+NP_XI-1)/NP_XI         !
       Mm=(MMm+NP_ETA-1)/NP_ETA       !
 #ifdef VERBOSE
-        write(*,'(4x,2A,2I5,4x,A,2I5)') 'mpi_setup: found grid ',
+        write(STDOUT,'(4x,2A,2I5,4x,A,2I5)') 'mpi_setup: found grid ',
      &          'sizes: LLm,MMm =',  LLm,MMm,  'Lm,Mm =', Lm,Mm
 #endif
  
@@ -1181,7 +1181,7 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
         endif
  
 #ifdef VERBOSE
-        write(*,'(A,3I5,2x,A,4(1x,L1))') 'node =', node, inode,jnode,
+        write(STDOUT,'(A,3I5,2x,A,4(1x,L1))') 'node =', node, inode,jnode,
      &                    'western,eastern,southern,northern_edge =',
      &                      western_edge(node),   eastern_edge(node),
      &                      southern_edge(node), northern_edge(node)

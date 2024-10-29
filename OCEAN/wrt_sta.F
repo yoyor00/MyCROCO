@@ -87,9 +87,9 @@
       else                              !!! by main.
         record=1+mod(nrecsta-1, nrpfsta)
       endif
-c     write(*,*) 'nrecsta = ', nrecsta
-c     write(*,*) 'nrpfsta = ', nrpfsta
-c     write(*,*) 'record = ', record
+c     write(STDOUT,*) 'nrecsta = ', nrecsta
+c     write(STDOUT,*) 'nrpfsta = ', nrpfsta
+c     write(STDOUT,*) 'record = ', record
 
 !
 ! Write out evolving model variables:
@@ -105,7 +105,7 @@ c     write(*,*) 'record = ', record
       count(2)=1
       ierr=nf_put_vara_int (ncidsta, staTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step', record, ierr, nf_strerror(ierr)
+        write(STDOUT,1) 'time_step', record, ierr, nf_strerror(ierr)
      &                   MYID
         goto 99                                           !--> ERROR
       endif
@@ -115,7 +115,7 @@ c     write(*,*) 'record = ', record
       ierr=nf_put_var1_FTYPE (ncidsta, staTime, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr,
+        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -152,7 +152,7 @@ c      if (iic.eq.0) then
         if (ierr .ne. nf_noerr) then
           vinfo='grid level'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -169,7 +169,7 @@ c      if (iic.eq.0) then
         if (ierr .ne. nf_noerr) then
           vinfo='Lat'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -181,7 +181,7 @@ c      if (iic.eq.0) then
         if (ierr .ne. nf_noerr) then
           vinfo='Lon'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -200,7 +200,7 @@ c      if (iic.eq.0) then
         if (ierr .ne. nf_noerr) then
           vinfo='Xgrid'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                   nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -215,7 +215,7 @@ c      if (iic.eq.0) then
         if (ierr .ne. nf_noerr) then
           vinfo='Ygrid'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -235,7 +235,7 @@ c      endif ! iic=0
         if (ierr .ne. nf_noerr) then
           vinfo='Depth'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -249,7 +249,7 @@ c      if(iic.eq.0) then      ! store only first value
         if (ierr .ne. nf_noerr) then
           vinfo='Depth'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                     nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -262,7 +262,7 @@ c      endif ! iic=0
         if (ierr .ne. nf_noerr) then
           vinfo='Zgrid'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -295,7 +295,7 @@ c      endif ! iic=0
         if (ierr .ne. nf_noerr) then
           vinfo='Temp'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -323,7 +323,7 @@ c      endif ! iic=0
         if (ierr .ne. nf_noerr) then
           vinfo='Salt'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -353,7 +353,7 @@ c      endif ! iic=0
         if (ierr .ne. nf_noerr) then
           vinfo='MUSTANG var.'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -383,7 +383,7 @@ c      endif ! iic=0
         if (ierr .ne. nf_noerr) then
           vinfo='Den'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -411,7 +411,7 @@ c      endif ! iic=0
         if (ierr .ne. nf_noerr) then
           vinfo='u'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -433,7 +433,7 @@ c      endif ! iic=0
         if (ierr .ne. nf_noerr) then
           vinfo='v'
           lvar=lenstr(vinfo)
-          write(stdout,1) vinfo(1:lvar), record, ierr,
+          write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                           !--> ERROR
         endif
@@ -449,7 +449,7 @@ c      endif ! iic=0
       if (ierr .ne. nf_noerr) then
         vinfo='zeta'
         lvar=lenstr(vinfo)
-        write(stdout,1) vinfo(1:lvar), record, ierr,
+        write(STDOUT,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -473,19 +473,19 @@ c      endif ! iic=0
 # else
       if (nrpfsta.gt.0 .and. record.ge.nrpfsta) then
         ierr=nf_close (ncidsta)
-!        write(*,*) 'STATION FILE IS CLOSED (XA) '
+!        write(STDOUT,*) 'STATION FILE IS CLOSED (XA) '
         ncidsta=-1
       else
         ierr=nf_sync(ncidsta)
       endif
 # endif
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+       MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
      &       'WRT_STA -- wrote ',
      &       'station fields into time record =', record, '/',
      &        nrecsta  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)')
+        MPI_master_only write(STDOUT,'(/1x,2A/)')
      &        'WRT_STA ERROR: Cannot ',
      &        'synchronize/close station netCDF file.'
          may_day_flag=3
@@ -506,7 +506,7 @@ c      endif ! iic=0
 
 # ifdef MPI
       if (mynode.eq.0 .and. nstas.eq.0 .and. nstas0.gt.0) then
-        MPI_master_only write(stdout,'(6x,A)')
+        MPI_master_only write(STDOUT,'(6x,A)')
      &                      'WRT_STA -- wrote station fields'
       endif
 # endif

@@ -260,13 +260,13 @@
 !
 ! Call output routines
 !
-!        write(*,*) "wrtdia3D ",wrtdia3D
-!        write(*,*) "wrtdia2D ",wrtdia2D
-!        write(*,*) "wrtdia_avg3D ",wrtdia3D_avg
-!        write(*,*) "wrtdia_avg2D ",wrtdia2D_avg
+!        write(STDOUT,*) "wrtdia3D ",wrtdia3D
+!        write(STDOUT,*) "wrtdia2D ",wrtdia2D
+!        write(STDOUT,*) "wrtdia_avg3D ",wrtdia3D_avg
+!        write(STDOUT,*) "wrtdia_avg2D ",wrtdia2D_avg
 !!
-!        write(*,*) "wrtdiaM ",wrtdiaM
-!        write(*,*) "wrtdiaM_avg ",wrtdiaM_avg
+!        write(STDOUT,*) "wrtdiaM ",wrtdiaM
+!        write(STDOUT,*) "wrtdiaM_avg ",wrtdiaM_avg
 !
         if (mod(ilc-1,nrst).eq.0
 #ifdef EXACT_RESTART

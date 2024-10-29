@@ -86,7 +86,7 @@
 !
       narg=iargc()
       if (narg .lt. 3) then
-        write(stdout,'(/1x,A,1x,A/32x,A/)') 'Usage of partit',
+        write(STDOUT,'(/1x,A,1x,A/32x,A/)') 'Usage of partit',
      &    'should be:', 'partit NP_X NP_E ncname1 ... ncnameN'
         stop
       endif
@@ -99,7 +99,7 @@
         if (j.ge.0 .and. j.le.9) then
           NP_XI=10*NP_XI+j
         else
-          write(stdout,'(/8x,2(A,1x),2A/)') 'ERROR: illegal first',
+          write(STDOUT,'(/8x,2(A,1x),2A/)') 'ERROR: illegal first',
      &     'argument', string(1:lvar), ', must be an integer number.'
           stop
         endif
@@ -113,19 +113,19 @@
         if (j.ge.0 .and. j.le.9) then
           NP_ETA=10*NP_ETA+j
         else
-          write(stdout,'(/8x,2(A,1x),2A/)') 'ERROR: illegal second',
+          write(STDOUT,'(/8x,2(A,1x),2A/)') 'ERROR: illegal second',
      &      'argument', string(1:lvar), ', must be an integer number.'
           stop
         endif
       enddo
       NNODES=NP_XI*NP_ETA
       if (NNODES.gt.maxnodes) then
-        write(stdout,'(/8x,A,1x,A,I3,1x,A/15x,A/)') 'ERROR:',
+        write(STDOUT,'(/8x,A,1x,A,I3,1x,A/15x,A/)') 'ERROR:',
      &      'requested number of nodes',NNODES,'exceeds limit.',
      &      'Increase parameter maxnodes in file "partit.F".'
         stop
       endif
-      write(stdout,'(/4x,2(4x,A,I3)/)') 'NP_XI =',  NP_XI,
+      write(STDOUT,'(/4x,2(4x,A,I3)/)') 'NP_XI =',  NP_XI,
      &                                  'NP_ETA =', NP_ETA
 !
 ! Process netCDF files: open, determine if it is already
@@ -138,35 +138,35 @@
         lstr=lenstr(ncname0)
         ierr=nf_open (ncname0(1:lstr), nf_nowrite, ncid0)
         if (ierr .ne. nf_noerr) then
-          write(stdout,'(/8x,A,1x,A,1x,A,A/)') 'ERROR: Cannot',
+          write(STDOUT,'(/8x,A,1x,A,1x,A,A/)') 'ERROR: Cannot',
      &                  'open netCDF file', ncname0(1:lstr),'.'
           goto 97     !--> next file
         endif
         ierr=nf_inq_att (ncid0, nf_global, 'partition', i,j)
         if (ierr .eq. nf_noerr) then
-          write(stdout,'(/8x,3A/17x,A/)') 'WARNING: netCDF file ''',
+          write(STDOUT,'(/8x,3A/17x,A/)') 'WARNING: netCDF file ''',
      &                 ncname0(1:lstr), ''' is already partitioned',
      &                 'file. It cannot be partitioned any further.'
           goto 97     !--> next file
         endif
 
-        write(stdout,'(8x,3A)') 'Processing netCDF file ''',
+        write(STDOUT,'(8x,3A)') 'Processing netCDF file ''',
      &                               ncname0(1:lstr), '''...'
 
         ierr=nf_inq (ncid0, ndims, nvars, ngatts, unlimdimid)
         if (ierr .ne. nf_noerr) then
-           write(stdout,'(/8x,A,1x,A/15x,A,1x,A,A/)') 'ERROR:',
+           write(STDOUT,'(/8x,A,1x,A/15x,A,1x,A,A/)') 'ERROR:',
      &        'Cannot determine number of dimensions, variables',
      &        'and attributes in netCDF file',ncname0(1:lstr),'.'
           goto 97     !--> next file
         elseif (ndims .gt. maxdims) then
-          write(stdout,'(/8x,A,I4,1x,4A/15x,A,1x,A/)')
+          write(STDOUT,'(/8x,A,I4,1x,4A/15x,A,1x,A/)')
      &        'ERROR: number of dimensions', ndims,  'in netCDF',
      &        'file ''', ncname0(1:lstr), '''', 'exceeds limit.',
      &        'Increase parameter maxdims in file "partit.F".'
           goto 97     !--> next file
          elseif (nvars .gt. maxvars) then
-          write(stdout,'(/8x,A,I4,1x,4A/15x,A,1x,A/)')
+          write(STDOUT,'(/8x,A,I4,1x,4A/15x,A,1x,A/)')
      &        'ERROR: number of variables',  nvars,  'in netCDF',
      &        'file ''', ncname0(1:lstr), '''', 'exceeds limit.',
      &        'Increase parameter maxvars in file "partit.F".'
@@ -182,7 +182,7 @@
         do i=1,ndims
           ierr=nf_inq_dimname (ncid0, i, dimname(i))
           if (ierr .ne. nf_noerr) then
-             write(stdout,'(/8x,A,I3/15x,3A/)')
+             write(STDOUT,'(/8x,A,I3/15x,3A/)')
      &           'ERROR: Cannot determine name for dimension ID =',
      &            i,  'in netCDF file ''',  ncname0(1:lstr),  '''.' 
              goto 97     !--> next file
@@ -190,7 +190,7 @@
           ierr=nf_inq_dimlen  (ncid0, i, dimsize(i))
           if (ierr .ne. nf_noerr) then
              lvar=lenstr(dimname(i))
-             write(stdout,'(/8x,A,A,A/15x,3A/)')
+             write(STDOUT,'(/8x,A,A,A/15x,3A/)')
      &            'ERROR: Cannot determine length of dimension ''',
      &             dimname(i)(1:lvar),  '''',  'in netCDF file ''',
      &                                       ncname0(1:lstr), '''.'
@@ -238,11 +238,11 @@
           elseif (lvar.eq.5 .and. dimname(i)(1:lvar).eq.'eta_u') then
             id_eta_u=i
           endif
-c**       write(*,'(I3,1x,A,T16,I3)') i,dimname(i)(1:lvar),dimsize(i)
+c**       write(STDOUT,'(I3,1x,A,T16,I3)') i,dimname(i)(1:lvar),dimsize(i)
         enddo
         if (id_xi_rho.eq.0  .or. id_xi_u.eq.0 .or.
      &      id_eta_rho.eq.0 .or. id_eta_v.eq.0) then
-          write(stdout,'(/8x,2A/15x,3A/)') 'ERROR: not all ',
+          write(STDOUT,'(/8x,2A/15x,3A/)') 'ERROR: not all ',
      &            'partitionable dimensions are found',
      &            'in netCDF file ''', ncname0(1:lstr), '''.'
           goto 97     !--> next file 
@@ -262,7 +262,7 @@ c**       write(*,'(I3,1x,A,T16,I3)') i,dimname(i)(1:lvar),dimsize(i)
           XiPeriodic=.true.
           subXI=xi_rho/NP_XI
           if (subXI*NP_XI .ne. xi_rho) then
-            write(stdout,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
+            write(STDOUT,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
      &         'ERROR: Cannot partition XI-direction:', 'xi_rho =',
      &          xi_rho,  'is',  'not divisible by NP_XI =',  NP_XI,
      &         'in XI-periodic case.'
@@ -276,14 +276,14 @@ c**       write(*,'(I3,1x,A,T16,I3)') i,dimname(i)(1:lvar),dimsize(i)
           margin_X=(NP_XI*chunk_size_X-LLm)/2
           
 C          if (subXI*NP_XI .ne. xi_rho-2) then
-C            write(stdout,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
+C            write(STDOUT,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
 C     &         'ERROR: Cannot partition XI-direction:', 'xi_rho-2 =',
 C     &          xi_rho-2,  'is',  'not divisible by NP_XI =',  NP_XI,
 C     &         'in nonperiodic XI case.'
 C            goto 97
 C          endif
         else
-          write(stdout,'(/8x,2A/)') 'ERROR: inconsistent ',
+          write(STDOUT,'(/8x,2A/)') 'ERROR: inconsistent ',
      &                'dimensions ''xi_rho'' and ''xi_u''.' 
           goto 97     !--> next file
         endif
@@ -293,7 +293,7 @@ C          endif
           subETA=eta_rho/NP_ETA
       
           if (subETA*NP_ETA .ne. eta_rho) then
-            write(stdout,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
+            write(STDOUT,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
      &         'ERROR: Cannot partition ETA-direction:', 'eta_rho =',
      &          eta_rho,  'is',  'not divisible by NP_ETA =', NP_ETA,
      &         'in ETA-periodic case.'
@@ -308,14 +308,14 @@ C          endif
           margin_E=(NP_ETA*chunk_size_E-MMm)/2          
 
 C          if (subETA*NP_ETA .ne. eta_rho-2) then
-C            write(stdout,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
+C            write(STDOUT,'(/8x,A,1x,A,I4,1x,A/15x,A,I3,1x,A/)')
 C     &        'ERROR: Cannot partition ETA-direction:','eta_rho-2 =',
 C     &         eta_rho-2, 'is',  'not divisible by NP_ETA =', NP_ETA,
 C     &        'in nonperiodic ETA case.'
 C            goto 97
 C          endif
         else
-          write(stdout,'(/8x,A,1x,A/)') 'ERROR: inconsistent',
+          write(STDOUT,'(/8x,A,1x,A/)') 'ERROR: inconsistent',
      &                 'dimensions ''eta_rho'' and ''eta_v''.'
           goto 97     !--> next file
         endif
@@ -333,10 +333,10 @@ C          endif
           ierr=nf_create(ncname(node)(1:lstr),
      &                   nf_64bit_offset,ncid(node))
           if (ierr .eq. nf_noerr) then
-            write(stdout,'(12x,3A)') 'Created partitioned file ''',
+            write(STDOUT,'(12x,3A)') 'Created partitioned file ''',
      &                                  ncname(node)(1:lstr), '''.' 
           else
-            write(stdout,'(/8x,A,1x,3A/)') 'ERROR: cannot create',
+            write(STDOUT,'(/8x,A,1x,3A/)') 'ERROR: cannot create',
      &              'netCDF file ''', ncname(node)(1:lstr), '''.'
             goto 97     !--> next file
           endif
@@ -390,11 +390,11 @@ C          endif
               ierr=nf_def_dim (ncid(node), dimname(i)(1:lvar),
      &                                         size, dimid(i))
               if (ierr .ne. nf_noerr) then
-                write(stdout,'(/8x,4A/15x,A,I4,A)') 'ERROR: ',
+                write(STDOUT,'(/8x,4A/15x,A,I4,A)') 'ERROR: ',
      &            'Cannot define dimension ''', dimname(i)(1:lvar),
      &            '''.',    'netCDF ettor status =',       ierr, '.'
               endif
-c**           write(*,'(2I3,4x,2I3,I4,1x,A)') i, dimid(i), ii,
+c**           write(STDOUT,'(2I3,4x,2I3,I4,1x,A)') i, dimid(i), ii,
 c**  &                            jj, size, dimname(i)(1:lvar)
             else
               dimid(i)=0
@@ -432,7 +432,7 @@ c**  &                            jj, size, dimname(i)(1:lvar)
      &                                     ncid(node), nf_global)
               if (ierr. ne. nf_noerr) then
                 lstr=lenstr(ncname(node))
-                write(stdout,'(/8x,4A/15x,3A/)')  'ERROR: Cannot ',
+                write(STDOUT,'(/8x,4A/15x,3A/)')  'ERROR: Cannot ',
      &            'copy global attribute ''', string(1:lvar), '''',
      &            'into netCDF file ''', ncname(node)(1:lstr),'''.'
                 goto 97
@@ -440,7 +440,7 @@ c**  &                            jj, size, dimname(i)(1:lvar)
             enddo
           else
             lstr=lenstr(ncname(0))
-            write(stdout,'(/8x,2A,I3/15x,3A/)') 'ERROR: Cannot ',
+            write(STDOUT,'(/8x,2A,I3/15x,3A/)') 'ERROR: Cannot ',
      &         'determine mame of global attribute with ID =', i,
      &         'from netCDF file ''',    ncname0(1:lstr),   '''.'
             goto 97
@@ -495,15 +495,15 @@ c**  &                            jj, size, dimname(i)(1:lvar)
               if (dimids(j,i).eq.k) ibuff(j)=dimid(k)
             enddo
           enddo
-c**       write(*,*) 'old_dimids:', (dimids(j,i),j=1,vardims(i))
-c**       write(*,*) 'new_dimids:',    (ibuff(j),j=1,vardims(i))
+c**       write(STDOUT,*) 'old_dimids:', (dimids(j,i),j=1,vardims(i))
+c**       write(STDOUT,*) 'new_dimids:',    (ibuff(j),j=1,vardims(i))
 
           lvar=lenstr(varname(i))
           do node=0,NNODES-1
             ierr=nf_def_var (ncid(node), varname(i)(1:lvar),
      &              vartype(i), vardims(i), ibuff, varid(i))
           enddo
-c**       write(stdout,'(I3,1x,A,T20,I3,1x,L1,1x,L1)') i,
+c**       write(STDOUT,'(I3,1x,A,T20,I3,1x,L1,1x,L1)') i,
 c**  &                        varname(i)(1:lvar), vardims(i),
 c**  &                            part_switch(i),  series(i)
           do j=1,varatts
@@ -526,7 +526,7 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
 ! Transfer variables into newly created files. 
 !
         do rec=1,tsize
-          if (tsize.gt.1) write(stdout,'(16x,A,I4,A)')
+          if (tsize.gt.1) write(STDOUT,'(16x,A,I4,A)')
      &                 'Processing record', rec, '...'
           do i=1,nvars
             if (series(i) .or. rec.eq.1) then
@@ -544,7 +544,7 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                   ierr=nf_get_var_double (ncid0, i, buff)
                 else
                   lvar=lenstr(varname(i))
-                  write(stdout,'(/8x,4A/)') 'ERROR: scalar variable',
+                  write(STDOUT,'(/8x,4A/)') 'ERROR: scalar variable',
      &              ' ''', varname(i)(1:lvar), ''' has unknown type.'
                   goto 97
                 endif
@@ -562,7 +562,7 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                     if (ierr .ne. nf_noerr) then
                       lvar=lenstr(varname(i))
                       lstr=lenstr(ncname(node))
-                      write(stdout,'(/8x,3A/15x,3A,I4,A/)')
+                      write(STDOUT,'(/8x,3A/15x,3A,I4,A/)')
      &                    'ERROR: Cannot write scalar variable ''',
      &                     varname(i)(1:lvar), ''' into netCDF file',
      &                    '''',  ncname(node)(1:lstr), 
@@ -572,7 +572,7 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                   enddo
                 else
                   lvar=lenstr(varname(i))
-                  write(stdout,'(/8x,4A/)') 'ERROR: Cannot read ',
+                  write(STDOUT,'(/8x,4A/)') 'ERROR: Cannot read ',
      &             'scalar variable ''', varname(i)(1:lvar), '''.'
                   goto 97
                 endif
@@ -601,12 +601,12 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                   size=size*8
                 else
                   lvar=lenstr(varname(i))
-                  write(stdout,'(/8x,3A/)') 'ERROR: variable ''',
+                  write(STDOUT,'(/8x,3A/)') 'ERROR: variable ''',
      &                 varname(i)(1:lvar), ''' has unknown type.'
                   goto 97
                 endif
                 if (size .gt. 8*max_buff_size) then
-                  write(stdout,'(/8x,A,3(/15x,A,I10,1x,A)/)')
+                  write(STDOUT,'(/8x,A,3(/15x,A,I10,1x,A)/)')
      &              'ERROR: unsufficient buffer size in "partit.F":',
      &              'requested:',         size,      'Bytes,',
      &              'available:',   8*max_buff_size, 'Bytes.',
@@ -645,7 +645,7 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                     if (ierr .ne. nf_noerr) then
                       lvar=lenstr(varname(i))
                       lstr=lenstr(ncname(node))
-                      write(stdout,'(/8x,3A,I3/15x,3A,I4,A/)')
+                      write(STDOUT,'(/8x,3A,I3/15x,3A,I4,A/)')
      &                  'ERROR: Cannot write variable ''',
      &                   varname(i)(1:lvar),''' for time record',rec,
      &                  'into netCDF file ''',  ncname(node)(1:lstr),
@@ -656,7 +656,7 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                 else
                   lstr=lenstr(ncname0)
                   lvar=lenstr(varname(i))
-                  write(stdout,'(/8x,4A,I3/15x,3A,I4/)') 'ERROR: ',
+                  write(STDOUT,'(/8x,4A,I3/15x,3A,I4/)') 'ERROR: ',
      &              'Cannot read variable ''',  varname(i)(1:lvar),
      &              ''' for time record',rec,'from netCDF file ''',
      &              ncname0(1:lstr),'''. netCDF error code =',ierr
@@ -732,9 +732,9 @@ c          ierr=nf_set_fill (ncid(node), nf_nofill, i)
                     endif
                     size=size*count(j)
                   enddo
-c**               write(*,*) 'dimids:', (dimids(j,i),j=1,vardims(i))
-c**               write(*,*) ' start:',    (start(j),j=1,vardims(i))
-c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
+c**               write(STDOUT,*) 'dimids:', (dimids(j,i),j=1,vardims(i))
+c**               write(STDOUT,*) ' start:',    (start(j),j=1,vardims(i))
+c**               write(STDOUT,*) ' count:',    (count(j),j=1,vardims(i))
 
 
                   if (vartype(i) .eq. nf_char) then
@@ -747,12 +747,12 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
                     size=size*8
                   else
                     lvar=lenstr(varname(i))
-                    write(stdout,'(/8x,4A/)') 'ERROR: variable ''',
+                    write(STDOUT,'(/8x,4A/)') 'ERROR: variable ''',
      &                   varname(i)(1:lvar), ''' has unknown type.'
                     goto 97
                   endif
                   if (size .gt. 8*max_buff_size) then
-                    write(stdout,'(/8x,A,3(/15x,A,I10,1x,A)/)')
+                    write(STDOUT,'(/8x,A,3(/15x,A,I10,1x,A)/)')
      &              'ERROR: unsufficient buffer size in "partit.F":',
      &              'requested:',         size,      'Bytes,',
      &              'available:',   8*max_buff_size, 'Bytes.',
@@ -791,7 +791,7 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
                     if (ierr .ne. nf_noerr) then
                       lvar=lenstr(varname(i))
                       lstr=lenstr(ncname(node))
-                      write(stdout,'(/8x,3A,I3/15x,3A,I4,A/)')
+                      write(STDOUT,'(/8x,3A,I3/15x,3A,I4,A/)')
      &                  'ERROR: Cannot write partitioned array ''',
      &                   varname(i)(1:lvar),''' for time record',rec,
      &                  'into netCDF file ''',  ncname(node)(1:lstr),
@@ -801,7 +801,7 @@ c**               write(*,*) ' count:',    (count(j),j=1,vardims(i))
                   else
                     lstr=lenstr(ncname0)
                     lvar=lenstr(varname(i))
-                    write(stdout,'(/8x,3A,I3/15x,3A,I4,A/)')
+                    write(STDOUT,'(/8x,3A,I3/15x,3A,I4,A/)')
      &                  'ERROR: Cannot read partitioned array ''',
      &                   varname(i)(1:lvar),   ''' for time record',
      &                   rec, 'from netCDF file ''',ncname0(1:lstr),

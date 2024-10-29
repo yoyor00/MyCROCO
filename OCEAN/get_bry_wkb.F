@@ -39,58 +39,58 @@
       if (iic.eq.0 ) then
         if (brywkb_id.eq.-1) then
           ierr=nf_open (brywkb_file(1:lstr), nf_nowrite, brywkb_id)
-          if (ierr.ne.nf_noerr) write(stdout,'(/1x,4A/)') 'ERROR ',
+          if (ierr.ne.nf_noerr) write(STDOUT,'(/1x,4A/)') 'ERROR ',
      &               'in get_bry_wkb: can not open netCDF file ''',
      &                                   brywkb_file(1:lstr),   '''.'
         endif
         if (ierr.eq.nf_noerr) then
           ierr_all=0
           ierr=nf_inq_varid (brywkb_id, 'brywkb_time',  brywkb_time_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'brywkb_time'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'brywkb_time'
           ierr_all=ierr_all+ierr
 
 # ifdef WKB_OBC_WEST
           ierr=nf_inq_varid (brywkb_id, 'wac_west', wacbry_west_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wac_west'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wac_west'
           ierr_all=ierr_all+ierr
           ierr=nf_inq_varid (brywkb_id, 'wkx_west', wkxbry_west_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wkx_west'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wkx_west'
           ierr_all=ierr_all+ierr
           ierr=nf_inq_varid (brywkb_id, 'wke_west', wkebry_west_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wke_west'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wke_west'
           ierr_all=ierr_all+ierr
 # endif
 # ifdef WKB_OBC_EAST
           ierr=nf_inq_varid (brywkb_id, 'wac_east', wacbry_east_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wac_east'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wac_east'
           ierr_all=ierr_all+ierr
           ierr=nf_inq_varid (brywkb_id, 'wkx_east', wkxbry_east_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wkx_east'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wkx_east'
           ierr_all=ierr_all+ierr
           ierr=nf_inq_varid (brywkb_id, 'wke_east', wkebry_east_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wke_east'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wke_east'
           ierr_all=ierr_all+ierr
 # endif
 # ifdef WKB_OBC_SOUTH
           ierr=nf_inq_varid (brywkb_id, 'wac_south', wacbry_south_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wac_south'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wac_south'
           ierr_all=ierr_all+ierr
           ierr=nf_inq_varid (brywkb_id, 'wkx_south', wkxbry_south_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wkx_south'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wkx_south'
           ierr_all=ierr_all+ierr
           ierr=nf_inq_varid (brywkb_id, 'wke_south', wkebry_south_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wke_south'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wke_south'
           ierr_all=ierr_all+ierr
 # endif
 # ifdef WKB_OBC_NORTH
           ierr=nf_inq_varid (brywkb_id, 'wac_north', wacbry_north_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wac_north'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wac_north'
           ierr_all=ierr_all+ierr
           ierr=nf_inq_varid (brywkb_id, 'wkx_north', wkxbry_north_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wkx_north'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wkx_north'
           ierr_all=ierr_all+ierr
           ierr=nf_inq_varid (brywkb_id, 'wke_north', wkebry_north_id)
-          if (ierr.ne.nf_noerr) write(stdout,1) 'wke_north'
+          if (ierr.ne.nf_noerr) write(STDOUT,1) 'wke_north'
           ierr_all=ierr_all+ierr
 # endif
           ierr=ierr_all
@@ -101,7 +101,7 @@
             brywkb_time(1)=-1.E+20
             brywkb_time(2)=-1.E+20
           else
-            write(stdout,'(8x,4A)') 'ERROR(s) occur while examining',
+            write(STDOUT,'(8x,4A)') 'ERROR(s) occur while examining',
      &          ' content of netCDF file ''', brywkb_file(1:lstr), '''.'
           endif
         endif
@@ -129,62 +129,62 @@
 # ifdef WKB_OBC_WEST
             ierr=nf_read_bry_EW (wacbry_west_dt(START_1D_ARRAYETA,itbrywkb
      &          ), brywkb_id,wacbry_west_id, brywkb_rec, r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wac_west'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wac_west'
             ierr_all=ierr_all+ierr
             ierr=nf_read_bry_EW (wkxbry_west_dt(START_1D_ARRAYETA,itbrywkb
      &          ), brywkb_id,wkxbry_west_id, brywkb_rec, r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wkx_west'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wkx_west'
             ierr_all=ierr_all+ierr
             ierr=nf_read_bry_EW (wkebry_west_dt(START_1D_ARRAYETA,itbrywkb
      &          ), brywkb_id,wkebry_west_id, brywkb_rec, r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wke_west'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wke_west'
             ierr_all=ierr_all+ierr
 # endif
 # ifdef WKB_OBC_EAST
             ierr=nf_read_bry_EW (wacbry_east_dt(START_1D_ARRAYETA,itbrywkb
      &          ), brywkb_id,wacbry_east_id, brywkb_rec, r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wac_east'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wac_east'
             ierr_all=ierr_all+ierr
             ierr=nf_read_bry_EW (wkxbry_east_dt(START_1D_ARRAYETA,itbrywkb
      &          ), brywkb_id,wkxbry_east_id, brywkb_rec, r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wkx_east'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wkx_east'
             ierr_all=ierr_all+ierr
             ierr=nf_read_bry_EW (wkebry_east_dt(START_1D_ARRAYETA,itbrywkb
      &          ), brywkb_id,wkebry_east_id, brywkb_rec, r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wke_east'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wke_east'
             ierr_all=ierr_all+ierr
 # endif
 # ifdef WKB_OBC_SOUTH
             ierr=nf_read_bry_NS (wacbry_south_dt(START_1D_ARRAYXI,itbrywkb
      &          ), brywkb_id,wacbry_south_id, brywkb_rec,  r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wac_south'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wac_south'
             ierr_all=ierr_all+ierr
             ierr=nf_read_bry_NS (wkxbry_south_dt(START_1D_ARRAYXI,itbrywkb
      &          ), brywkb_id,wkxbry_south_id, brywkb_rec,  r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wkx_south'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wkx_south'
             ierr_all=ierr_all+ierr
             ierr=nf_read_bry_NS (wkebry_south_dt(START_1D_ARRAYXI,itbrywkb
      &          ), brywkb_id,wkebry_south_id, brywkb_rec,  r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wke_south'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wke_south'
             ierr_all=ierr_all+ierr
 # endif
 # ifdef WKB_OBC_NORTH
             ierr=nf_read_bry_NS (wacbry_north_dt(START_1D_ARRAYXI,itbrywkb
      &          ), brywkb_id,wacbry_north_id, brywkb_rec, r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wac_north'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wac_north'
             ierr_all=ierr_all+ierr
             ierr=nf_read_bry_NS (wkxbry_north_dt(START_1D_ARRAYXI,itbrywkb
      &          ), brywkb_id,wkxbry_north_id, brywkb_rec, r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wkx_north'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wkx_north'
             ierr_all=ierr_all+ierr
             ierr=nf_read_bry_NS (wkebry_north_dt(START_1D_ARRAYXI,itbrywkb
      &          ), brywkb_id,wkebry_north_id, brywkb_rec, r2dvar)
-            if (ierr.ne.nf_noerr) write(stdout,2) 'wke_north'
+            if (ierr.ne.nf_noerr) write(STDOUT,2) 'wke_north'
             ierr_all=ierr_all+ierr
 # endif
             ierr=ierr_all
             if (ierr.eq.0) then
-              write(stdout,'(6x,A,9x,A,1x,G12.4,1x,I4)')
+              write(STDOUT,'(6x,A,9x,A,1x,G12.4,1x,I4)')
      &       'GET_BRY_WKB - Read wave boundary data',
      &                                  'for time =', cff
 # ifdef USE_CALENDAR
@@ -194,15 +194,15 @@
      &                                              , mynode
 # endif
             else
-              write(stdout,'(1x,2A,I4/8x,3A)')
+              write(STDOUT,'(1x,2A,I4/8x,3A)')
      &           'ERROR(s) occur while trying to read record ',
      &            brywkb_rec,  'in file ''',brywkb_file(1:lstr),'''.'
             endif
           else
-            write(stdout,2) 'brywkb_time'
+            write(STDOUT,2) 'brywkb_time'
           endif
         else
-           write(stdout,'(/1x,A,I4,1x,A,I4/7x,4A/7x,2(A,G12.4)/)')
+           write(STDOUT,'(/1x,A,I4,1x,A,I4/7x,4A/7x,2(A,G12.4)/)')
      &    'ERROR in get_bry_all: requested time record ',  brywkb_rec,
      &    'exeeds the last record', ntbrywkb,  'available in netCDF ',
      &    'file ''',   brywkb_file(1:lstr),  '''',  'tdays = ',tdays,
@@ -303,7 +303,7 @@
         endif
 # endif
       elseif (ZEROTH_TILE) then
-        write(stdout,'(/2(1x,A)/3(1x,A,F16.10)/)')
+        write(STDOUT,'(/2(1x,A)/3(1x,A,F16.10)/)')
      &   'SET_BRY_WKB_TILE - current model time is out of bounds of',
      &   '''brywkb_time''.',     'BRY_WKB_TSTART=', brywkb_time(it1)*sec2day
 # ifdef USE_CALENDAR
