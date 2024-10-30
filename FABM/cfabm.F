@@ -35,8 +35,9 @@
 
 ! -- hes 2024
 ! For FABM coupling
-# include "fabm"
-# include "fabm_config"
+# include "fabm.h"
+# include "fabm_config.h"
+# include "set_global_definitions.h"
 ! --
 
 #  ifdef EW_PERIODIC
@@ -59,25 +60,24 @@
 
       ! == SINTEF 2024
       ! These initially used wider arrays (Istr-4:Iend+3), but I could not find a CROCO equivalent, so I'm trying this
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng), NT(ng)) :: w      ! ROMS vertical sinking velocity [m/s] positive downward
+      integer, dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng)) :: ksource
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng), NBT) :: state_old ! Old state (accounting for clipping)
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng), NBT) :: dBdt      ! FABM term (units [C/s])
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, NBT) :: flux_sf          ! FABM surface fluxes (units [Matter/m2/s])
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, NSAT) :: sms_sf          ! FABM surface-attached terms (units [Matter/m2/s])
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, NBT) :: flux_bt          ! FABM bottom fluxes (units [Matter/m2/s])
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, NBAT) :: sms_bt          ! FABM bottom-attached terms (units [Matter/m2/s])
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, 0:N(ng)) :: FC
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng)) :: Hz_inv
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng)) :: Hz_inv2
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng)) :: Hz_inv3
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng)) :: WL
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng)) :: WR
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng)) :: bL
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng)) :: bR
+      real(r8), dimension(PRIVATE_1DXI_SCRATCH_ARRAY, N(ng)) :: qc
       ! ==
-      real(r8), dimension(Istr:Iend, N(ng), NT(ng)) :: w      ! ROMS vertical sinking velocity [m/s] positive downward
-      integer, dimension(Istr:Iend, N(ng)) :: ksource
-      real(r8), dimension(Istr:Iend, N(ng), NBT) :: state_old ! Old state (accounting for clipping)
-      real(r8), dimension(Istr:Iend, N(ng), NBT) :: dBdt      ! FABM term (units [C/s])
-      real(r8), dimension(Istr:Iend, NBT) :: flux_sf          ! FABM surface fluxes (units [Matter/m2/s])
-      real(r8), dimension(Istr:Iend, NSAT) :: sms_sf          ! FABM surface-attached terms (units [Matter/m2/s])
-      real(r8), dimension(Istr:Iend, NBT) :: flux_bt          ! FABM bottom fluxes (units [Matter/m2/s])
-      real(r8), dimension(Istr:Iend, NBAT) :: sms_bt          ! FABM bottom-attached terms (units [Matter/m2/s])
-      real(r8), dimension(Istr:Iend, 0:N(ng)) :: FC
-      real(r8), dimension(Istr:Iend, N(ng)) :: Hz_inv
-      real(r8), dimension(Istr:Iend, N(ng)) :: Hz_inv2
-      real(r8), dimension(Istr:Iend, N(ng)) :: Hz_inv3
-      real(r8), dimension(Istr:Iend, N(ng)) :: WL
-      real(r8), dimension(Istr:Iend, N(ng)) :: WR
-      real(r8), dimension(Istr:Iend, N(ng)) :: bL
-      real(r8), dimension(Istr:Iend, N(ng)) :: bR
-      real(r8), dimension(Istr:Iend, N(ng)) :: qc
-
 ! Chunksize variables for calls to FABM APIs
       nx = Iend-Istr+1
       ny = Jend-Jstr+1
@@ -128,8 +128,8 @@
       ! (Done here to ensure use of latest values (operator splitting))
       !-----------------------------------------------------------------------
       DO k=1,N(ng)
-        DO j=Jstr,Jend
-          DO i=Istr,Iend
+        DO j=J_range
+          DO i=I_range
             tss(i,j,k) = 0.0_r8
           END DO
         END DO
