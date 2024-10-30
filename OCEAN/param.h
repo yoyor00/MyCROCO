@@ -576,6 +576,7 @@
 
 # ifdef CFABM
       parameter (NT = isalt + NSAT + NBAT + NPAT)
+      parameter (NumFluxTerms = NPAT) /* This one is most likely wrong, just here for illustrative purposes*/
 # endif /* CFABM */
 
 !
