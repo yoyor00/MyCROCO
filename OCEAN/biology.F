@@ -18,8 +18,11 @@
 #elif defined SOLVE3D && defined BIOLOGY && defined BIO_BioEBUS
 # include "bio_BioEBUS.F"
 
+! == Added by SINTEF 2024
 #elif defined SOLVE3D && defined CFABM
-# include "mod_fabm.h"
+# include "cfabm.h"
+! ==
+
 #else
       subroutine biology_empty
       end
