@@ -17,6 +17,9 @@
 # include "bio_N2ChlPZD2.F"
 #elif defined SOLVE3D && defined BIOLOGY && defined BIO_BioEBUS
 # include "bio_BioEBUS.F"
+
+#elif defined SOLVE3D && defined CFABM
+# include "mod_fabm.h"
 #else
       subroutine biology_empty
       end
