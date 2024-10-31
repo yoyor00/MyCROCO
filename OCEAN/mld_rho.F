@@ -46,19 +46,19 @@
 #  include "compute_extended_bounds.h"
 !
 
-
       do j=JstrR,JendR
         do i=IstrR,IendR
 
-          kbl_rho(i,j) = N-1
+          kbl_rho(i,j) = N
             
-            do k=N-1,1,-1
-              if ((rho1(i,j,k)-rho1(i,j,N)) .lt. 0.03) then
-                kbl_rho(i,j) = k
-              endif
-            enddo   ! <-- k
+          do k=N-1,1,-1
+            if ((rho1(i,j,k)-rho1(i,j,N)) .lt. 0.03) then
+              kbl_rho(i,j) = k
+            endif
+          enddo   ! <-- k
             
-            hbl_rho(i,j) = ( z_w(i,j,N) - z_r(i,j,kbl_rho(i,j)) )
+          hbl_rho(i,j) = ( z_w(i,j,N) - z_r(i,j,kbl_rho(i,j)) )
+
 #  ifdef MASKING
      &                                                *rmask(i,j)
 #  endif     

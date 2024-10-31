@@ -812,7 +812,7 @@ CR      write(*,*) 'wrt_his:  wrtAks' MYID
 !
       if (wrthis(indxHbl)) then
 #  ifdef MLD_RHO 
-        work2d=hbl_rho(i,j)
+        work2d=hbl_rho
 #  elif defined LMD_SKPP2005
         work2d=hbls(:,:,nstp)
 #  else

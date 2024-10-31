@@ -2,6 +2,7 @@
 !----------------------------------------------------------
 ! Compute adiabatic buoyancy gradients
 ! used to diagnose diapycnal fluxes and diapycnal velocity 
+! in sigma coordinates
 !----------------------------------------------------------
 !
 
@@ -82,8 +83,8 @@
      &                -z_r(i,j,k)-z_r(i-1,j,k))
 
             cff2=( rho1(i,j,k)-rho1(i-1,j,k)          ! Elementary
-     &                +(qp1(i,j,k)-qp1(i-1,j,k))         ! adiabatic
-     &                     *dpth*(1.-qp2*dpth) )           ! difference
+     &                +(qp1(i,j,k)-qp1(i-1,j,k))      ! adiabatic
+     &                     *dpth*(1.-qp2*dpth) )      ! difference
 #   else
             cff2=(rho(i,j,k)-rho(i-1,j,k))
 #   endif

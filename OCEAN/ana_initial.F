@@ -1237,8 +1237,8 @@ C$OMP BARRIER
         ! ------ SET UP GRID ------       
         do j=JstrR,JendR ! compute grid coordinates (approx)  
           do i=IstrR,IendR
-            xr(i,j) = (1./pm(1,1))*(float(i+iminmpi-1-1)+0.5)*1.e-3 ! km 
-            yr(i,j) = (1./pn(1,1))*(float(j+jminmpi-1-1)+0.5)*1.e-3
+            xr(i,j) = (1./pm(i,j))*(float(i+iminmpi-1-1)+0.5)*1.e-3 ! km 
+            yr(i,j) = (1./pn(i,j))*(float(j+jminmpi-1-1)+0.5)*1.e-3
           enddo
         enddo
 

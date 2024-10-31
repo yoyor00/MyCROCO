@@ -159,6 +159,16 @@
 !======================================================================
 !
       do itrc=1,NT
+
+#  if defined DIAGNOSTICS_TS_MLD && defined MLD_RHO
+        do j=Jstr,Jend
+          do i=Istr,Iend
+           TXout_mld(i,j,itrc) = 0.
+           TYout_mld(i,j,itrc) = 0.
+          enddo
+        enddo
+#  endif
+
         do k=1,N
 
 #  ifdef BIO_HADV_WENO5
@@ -455,7 +465,6 @@
           do i=Istr,Iend
 
            TXout_mld(i,j,itrc) = 0.
-           TYout_mld(i,j,itrc) = 0.
 
             cff=pm(i,j)*pn(i,j)
 !     &          /(z_w(i,j,N)-z_w(i,j,kbl_rho(i,j)-1))
@@ -1097,7 +1106,8 @@
         do j=Jstr,Jend
           do i=Istr,Iend
 #  if defined MLD_RHO
-           kmld=kbl_rho(i,j)
+            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl_rho(i,j)
+            kmld=kbl_nstp(i,j)
 #  else
 #    if defined LMD_SKPP || defined GLS_MIXING
             if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
@@ -1111,7 +1121,11 @@
               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                        t(i,j,k,nstp,itrc)*cff
             enddo
+#  if defined MLD_RHO
+            if (itrc .eq. NT) kbl_nstp(i,j)=kbl_rho(i,j)
+#  else
             if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
+#  endif
           enddo
         enddo
         do j=Jstr,Jend
@@ -1130,38 +1144,6 @@
 #    undef T_mld_nstp
 #   endif /* DIAGNOSTICS_TS_MLD */
 
-#   ifdef DIAGNOSTICS_DEBUG
-        if (istr.eq.1 .and. jstr.eq.1
-#    ifdef TEMPERATURE
-     &       .and. itrc.eq.itemp
-#    endif /* TEMPERATURE */
-     &       ) then
-          i=5
-          j=5
-#    if defined DIAGNOSTICS_TS_MLD
-          cff=Trate_mld(i,j,itrc)-
-     &        TXadv_mld(i,j,itrc)-
-     &        TYadv_mld(i,j,itrc)-
-     &        TVadv_mld(i,j,itrc)-
-     &        TVmix_mld(i,j,itrc)-
-     &        THmix_mld(i,j,itrc)-
-     &        Tentr_mld(i,j,itrc)-
-     &        TForc_mld(i,j,itrc)
-             MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &       ' STEP3D_T: T budget closure MLD     :', cff
-!
-#    endif /* DIAGNOSTICS_TS_MLD */
-          cff=Trate(i,j,N-5,itrc)-
-     &        TXadv(i,j,N-5,itrc)-
-     &        TYadv(i,j,N-5,itrc)-
-     &        TVadv(i,j,N-5,itrc)-
-     &        TVmix(i,j,N-5,itrc)-
-     &        THmix(i,j,N-5,itrc)-
-     &        TForc(i,j,N-5,itrc)
-            MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &      ' STEP3D_T: T budget closure at k=N-5:', cff
-        endif
-#   endif /* DIAGNOSTICS_DEBUG */
 #  endif /* DIAGNOSTICS_TS */
 !
 !

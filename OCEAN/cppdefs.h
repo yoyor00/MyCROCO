@@ -393,6 +393,7 @@
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
                                                || defined MUSTANG
 #  define BIO_HADV_WENO5
+#  define BIO_VADV_WENO5
 # endif
                       /*   Choice of Biology models   */
 # ifdef BIOLOGY

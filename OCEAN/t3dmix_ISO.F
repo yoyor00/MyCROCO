@@ -1010,7 +1010,7 @@
 #  endif
 #  endif
            do k=N,kmld,-1
-             cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+             cff=Hz(i,j,k) !/(z_w(i,j,N)-z_w(i,j,kmld-1))
              THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itrc)*cff
 #  ifdef TS_MIX_IMP
@@ -1026,7 +1026,8 @@
        do j=Jstr,Jend
          do i=Istr,Iend
 #  if defined MLD_RHO
-           kmld=kbl_rho(i,j)
+           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl_rho(i,j)
+           kmld=kbl_nstp(i,j)
 #  else
 #  if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
@@ -1036,11 +1037,15 @@
 #  endif
 #  endif
            do k=N,kmld,-1
-             cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+             cff=Hz_bak(i,j,k) !/(z_w(i,j,N)-z_w(i,j,kmld-1))
              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
-           if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
+#  if defined MLD_RHO
+            if (itrc .eq. NT) kbl_nstp(i,j)=kbl_rho(i,j)
+#  else
+            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
+#  endif         
          enddo
        enddo
        do j=Jstr,Jend
@@ -1059,34 +1064,6 @@
 #  undef T_mld_nstp
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
-# ifdef DIAGNOSTICS_DEBUG
-       if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
-         i=5
-         j=5
-#  if defined DIAGNOSTICS_TS_MLD
-        cff=Trate_mld(i,j,itrc)-
-     &      TXadv_mld(i,j,itrc)-
-     &      TYadv_mld(i,j,itrc)-
-     &      TVadv_mld(i,j,itrc)-
-     &      TVmix_mld(i,j,itrc)-
-     &      THmix_mld(i,j,itrc)-
-     &      Tentr_mld(i,j,itrc)-
-     &      TForc_mld(i,j,itrc)
-           MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &     ' T3DMIX: T budget closure MLD     :', cff
-
-#  endif /* DIAGNOSTICS_TS_MLD */
-        cff=Trate(i,j,N-5,itrc)-
-     &       TXadv(i,j,N-5,itrc)-
-     &       TYadv(i,j,N-5,itrc)-
-     &       TVadv(i,j,N-5,itrc)-
-     &       TVmix(i,j,N-5,itrc)-
-     &       THmix(i,j,N-5,itrc)-
-     &       TForc(i,j,N-5,itrc)
-           MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &     ' T3DMIX: T budget closure at k=N-5:', cff
-      endif
-# endif /* DIAGNOSTICS_DEBUG */
 #endif /* DIAGNOSTICS_TS */
 !
 !
