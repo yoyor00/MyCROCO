@@ -101,7 +101,7 @@
 
 # endif
 
-#  ifdef DIAGNOSTICS_DIAPYCNAL
+#  if defined DIAGNOSTICS_DIAPYCNAL && ! defined DIAGNOSTICS_TRACER_ISO
 
       real dbdx(GLOBAL_2D_ARRAY,N)
       real dbdy(GLOBAL_2D_ARRAY,N)

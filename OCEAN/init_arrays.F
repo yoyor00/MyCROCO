@@ -504,6 +504,60 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 #  endif /*DIAGNOSTICS_TS_MLD*/
+
+# if defined DIAGNOSTICS_TRACER_ISO
+      do k=0,N
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+            dbdz(i,j,k)=init
+          enddo
+        enddo
+      enddo
+      do k=1,N
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+            dbdx(i,j,k)=init
+            dbdy(i,j,k)=init
+          enddo
+        enddo
+      enddo
+      do itrc=1,NT
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              TF_xHmix(i,j,k,itrc)=init
+              TF_yHmix(i,j,k,itrc)=init
+              TF_Xadv(i,j,k,itrc)=init
+              TF_Yadv(i,j,k,itrc)=init
+            enddo
+          enddo
+        enddo
+      enddo
+      do itrc=1,NT
+        do k=0,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              TF_zHmix(i,j,k,itrc)=init
+              TF_zVmix(i,j,k,itrc)=init
+              TF_Vadv(i,j,k,itrc)=init
+            enddo
+          enddo
+        enddo
+      enddo
+      do itrc=1,8
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              TF(i,j,k,itrc)=init
+#  ifdef AVERAGES
+              TF_avg(i,j,k,itrc)=init
+#  endif /* AVERAGES*/
+            enddo
+          enddo
+        enddo
+      enddo
+# endif /*DIAGNOSTICS_TRACER_ISO*/
+
 # endif /*DIAGNOSTICS_TS*/
 
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
@@ -663,6 +717,7 @@ C$    integer omp_get_thread_num
 
 # ifdef DIAGNOSTICS_PV
 #  if defined DIAGNOSTICS_DIAPYCNAL
+#  if ! defined DIAGNOSTICS_TRACER_ISO
       do k=0,N
         do j=jstrR,jendR             ! 3-D primitive
           do i=istrR,iendR           ! variables.
@@ -675,6 +730,13 @@ C$    integer omp_get_thread_num
           do i=istrR,iendR           ! variables.
             dbdx(i,j,k)=init
             dbdy(i,j,k)=init
+          enddo
+        enddo
+      enddo
+# endif
+      do k=1,N
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
             bflux(i,j,k)=init
 #   ifdef AVERAGES
             bflux_avg(i,j,k)=init
@@ -717,7 +779,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-# if defined DIAGNOSTICS_DIAPYCNAL
+# if ! defined DIAGNOSTICS_TRACER_ISO
       do itrc=1,NTA
         do k=1,N
           do j=JstrR,JendR
@@ -728,7 +790,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-      do itrc=1,2
+      do itrc=1,NTA
         do k=0,N
           do j=JstrR,JendR
             do i=IstrR,IendR

@@ -588,6 +588,7 @@
 !
 #if defined SOLVE3D
       integer   ntrc_diats, ntrc_diauv, ntrc_diabio
+      integer   ntrc_diats_iso
       integer   ntrc_diavrt, ntrc_diaek, ntrc_diapv
       integer   ntrc_diaeddy, ntrc_surf
 # ifdef BIOLOGY
@@ -992,6 +993,11 @@
       parameter (ntrc_diats=20*NT)
 #  else
       parameter (ntrc_diats=8*NT)
+#  endif
+#  ifdef DIAGNOSTICS_TRACER_ISO
+      parameter (ntrc_diats_iso=8)
+#  else
+      parameter (ntrc_diats_iso=0)
 #  endif
 # else
       parameter (ntrc_diats=0)

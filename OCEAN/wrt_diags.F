@@ -270,53 +270,27 @@
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
       enddo
+
+
+# if defined DIAGNOSTICS_TRACER_ISO 
+
+        do itrc=1,8
+          if (wrtdia3D(1)) then
 !
-!--# define DEBUG
-# ifdef DEBUG
-      i=20
-      j=20
-      k=10
-      itrc=1
-      write(*,*) 'Write diag TS his at : i='
-     &                ,i,' j=',j,' k=',k,' iTS=',itrc
-      write(*,*) 'TXadv(i,j,k,itrc) ',TXadv(i,j,k,itrc)
-      write(*,*) 'TYadv(i,j,k,itrc) ',TYadv(i,j,k,itrc)
-      write(*,*) 'TVadv(i,j,k,itrc) ',TVadv(i,j,k,itrc)
-      write(*,*) 'THmix(i,j,k,itrc) ',THmix(i,j,k,itrc)
-      write(*,*) 'TVmix(i,j,k,itrc) ',TVmix(i,j,k,itrc)
-      write(*,*) 'TForc(i,j,k,itrc) ',TForc(i,j,k,itrc)
-      write(*,*) 'Trate(i,j,k,itrc) ',Trate(i,j,k,itrc)
+! indxTF
+!
+           workr=TF(:,:,:,itrc)
+           call fillvalue3d(workr,nciddia,diags_TF(itrc),
+     &                      indxTF+itrc-1,
+     &                      record,r3dvar,type)
 
-      write(*,*) 'SumTShis(i,j,k,itrc) = ',TXadv(i,j,k,itrc)
-     &                                  +  TYadv(i,j,k,itrc)
-     &                                  +  TVadv(i,j,k,itrc)
-     &                                  +  THmix(i,j,k,itrc)
-     &                                  +  TVmix(i,j,k,itrc)
-     &                                  +  TForc(i,j,k,itrc)
-     &                                  -  Trate(i,j,k,itrc)
-      write(*,*) '========================================='
-      write(*,*) 'Write diag TS_MLD his at : i='
-     &                ,i,' j=',j,' iTS=',itrc
-      write(*,*) 'TXadv_mld(i,j,k,itrc) ',TXadv_mld(i,j,itrc)
-      write(*,*) 'TYadv_mld(i,j,k,itrc) ',TYadv_mld(i,j,itrc)
-      write(*,*) 'TVadv_mld(i,j,k,itrc) ',TVadv_mld(i,j,itrc)
-      write(*,*) 'THmix_mld(i,j,k,itrc) ',THmix_mld(i,j,itrc)
-      write(*,*) 'TVmix_mld(i,j,k,itrc) ',TVmix_mld(i,j,itrc)
-      write(*,*) 'TForc_mld(i,j,k,itrc) ',TForc_mld(i,j,itrc)
-      write(*,*) 'Trate_mld(i,j,k,itrc) ',Trate_mld(i,j,itrc)
-      write(*,*) 'Tentr_mld(i,j,k,itrc) ',Tentr_mld(i,j,itrc)
+          endif
+        enddo
 
-      write(*,*) 'SumTShis_mld(i,j,k,itrc) = ',TXadv_mld(i,j,itrc)
-     &                                  +  TYadv_mld(i,j,itrc)
-     &                                  +  TVadv_mld(i,j,itrc)
-     &                                  +  THmix_mld(i,j,itrc)
-     &                                  +  TVmix_mld(i,j,itrc)
-     &                                  +  TForc_mld(i,j,itrc)
-     &                                  +  Tentr_mld(i,j,itrc)
-     &                                  -  Trate_mld(i,j,itrc)
-      write(*,*) '-----------------------------------------'
-# endif /* DEBUG */
-!--#undef DEBUG
+#endif /* DIAGNOSTICS_TRACER_ISO  */
+
+
+
 
   1   format(/1x,'WRT_DIAG ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',

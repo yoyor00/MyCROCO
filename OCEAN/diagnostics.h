@@ -230,6 +230,48 @@
 #  endif
 # endif
 #endif /* DIAGNOSTICS_UV */
+
+
+#  if defined DIAGNOSTICS_TRACER_ISO
+      real TF(GLOBAL_2D_ARRAY,N,8)
+!CSDISTRIBUTE_RESHAPE TF(BLOCK_PATTERN,*) BLOCK_CLAUSE
+
+      common /diag_TF/TF
+
+# ifdef AVERAGES
+      real TF_avg(GLOBAL_2D_ARRAY,N,8)
+!CSDISTRIBUTE_RESHAPE TF_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
+
+      common /diag_TF_avg/TF_avg
+# endif
+
+
+      real dbdx(GLOBAL_2D_ARRAY,N)
+      real dbdy(GLOBAL_2D_ARRAY,N)
+      real dbdz(GLOBAL_2D_ARRAY,0:N)
+
+      common /diag_dbdx/dbdx
+     &       /diag_dbdy/dbdy
+     &       /diag_dbdz/dbdz
+
+      real TF_xHmix(GLOBAL_2D_ARRAY,N,NT)
+      real TF_yHmix(GLOBAL_2D_ARRAY,N,NT)
+      real TF_zHmix(GLOBAL_2D_ARRAY,0:N,NT)
+      real TF_zVmix(GLOBAL_2D_ARRAY,0:N,NT)
+      real TF_Xadv(GLOBAL_2D_ARRAY,N,NT)
+      real TF_Yadv(GLOBAL_2D_ARRAY,N,NT)
+      real TF_Vadv(GLOBAL_2D_ARRAY,0:N,NT)
+
+      common /diag_TF_xHmix/TF_xHmix
+     &       /diag_TF_yHmix/TF_yHmix
+     &       /diag_TF_zHmix/TF_zHmix
+     &       /diag_TF_zVmix/TF_zVmix
+     &       /diag_TF_Xadv/TF_Xadv
+     &       /diag_TF_Yadv/TF_Yadv
+     &       /diag_TF_Vadv/TF_Vadv
+
+# endif
+
 #ifdef DIAGNOSTICS_BIO
 # ifdef PISCES
 #  ifdef key_trc_diaadd

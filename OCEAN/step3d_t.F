@@ -61,7 +61,7 @@
 #  ifdef DIAGNOSTICS_TS
 #   include "diagnostics.h"
 #  endif
-#  ifdef DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_PV
 #   include "diags_pv.h"
 #  endif
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx, kmld
@@ -330,7 +330,8 @@
 !----------------------------------------------------------
 !
 
-#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_DIAPYCNAL
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_DIAPYCNAL\
+                             || defined DIAGNOSTICS_TRACER_ISO
 
           do j=Jstr,Jend
             do i=Istr,Iend
@@ -342,8 +343,11 @@
 !
 # if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
 
-#  if defined DIAGNOSTICS_DIAPYCNAL
-      if (itrc.le.NTA) then 
+#  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+#   if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
+
         do j=Jstr,Jend
           do i=Istr,Iend+1
               TF_xHmix(i,j,k,itrc)= FX(i,j)
@@ -355,8 +359,12 @@
               TF_yHmix(i,j,k,itrc)= FE(i,j)
           enddo
         enddo
+
+#   if defined DIAGNOSTICS_DIAPYCNAL
       endif
-#   endif
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
+#  endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
+
 
 !
 ! Compute centered scheme fluxes FX and FE to separate
@@ -397,8 +405,10 @@
           enddo
         enddo
 
-#  if defined DIAGNOSTICS_DIAPYCNAL
-      if (itrc.le.NTA) then 
+#  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+#   if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
         do j=Jstr,Jend
           do i=Istr,Iend+1
               TF_xHmix(i,j,k,itrc)= TF_xHmix(i,j,k,itrc) - FX(i,j)
@@ -410,8 +420,24 @@
               TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
           enddo
         enddo
+#    if defined DIAGNOSTICS_DIAPYCNAL
       endif
-#     endif
+#    endif /* defined DIAGNOSTICS_DIAPYCNAL */
+#  endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
+
+#  if defined DIAGNOSTICS_TRACER_ISO
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_Xadv(i,j,k,itrc)= FX(i,j)
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_Yadv(i,j,k,itrc)= FE(i,j)
+          enddo
+        enddo
+#  endif /* defined DIAGNOSTICS_TRACER_ISO*/
 
 #   else /* defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3*/
 
@@ -423,8 +449,10 @@
         enddo
 
 
-#  if defined DIAGNOSTICS_DIAPYCNAL
-      if (itrc.le.NTA) then 
+#  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+#   if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
         do j=Jstr,Jend
           do i=Istr,Iend+1
               TF_xHmix(i,j,k,itrc)= 0
@@ -436,72 +464,90 @@
               TF_yHmix(i,j,k,itrc)= 0
           enddo
         enddo
+#    if defined DIAGNOSTICS_DIAPYCNAL
       endif
-#   endif
+#    endif /* defined DIAGNOSTICS_DIAPYCNAL */
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
+
+#  if defined DIAGNOSTICS_TRACER_ISO
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+              TF_Xadv(i,j,k,itrc)= FX(i,j)
+          enddo
+        enddo
+
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+              TF_Yadv(i,j,k,itrc)= FE(i,j)
+          enddo
+        enddo
+#  endif /* defined DIAGNOSTICS_TRACER_ISO*/
 
 #  endif /* defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3*/
 
-#  if defined DIAGNOSTICS_DIAPYCNAL
-      if (itrc.le.NTA) then 
+#  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+#   if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
         do j=Jstr,Jend
           do i=Istr,Iend
               TF_zHmix(i,j,k,itrc)= 0.
           enddo
         enddo
-      endif 
-#   endif
+#    if defined DIAGNOSTICS_DIAPYCNAL
+      endif
+#    endif /* defined DIAGNOSTICS_DIAPYCNAL */
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
 
 #  endif /* DIAGNOSTICS_TS || DIAGNOSTICS_DIAPYCNAL */
 
-        enddo    !<-- k
-        
-        
-        
-        
-        
+
 #  if defined DIAGNOSTICS_TS_MLD && defined MLD_RHO
 
         do j=Jstr,Jend
           do i=Istr,Iend
 
-           TXout_mld(i,j,itrc) = 0.
+            if (k .ge. kbl_rho(i,j)) then
 
-            cff=pm(i,j)*pn(i,j)
-!     &          /(z_w(i,j,N)-z_w(i,j,kbl_rho(i,j)-1))
-           
-            if (kbl_rho(i+1,j) .gt. kbl_rho(i,j)) then
-              do k=kbl_rho(i,j),kbl_rho(i+1,j)-1
-                TXout_mld(i,j,itrc)=TXout_mld(i,j,itrc)
-     &                              -cff*FX(i+1,j)
-              enddo
-            endif
-            
-            if (kbl_rho(i-1,j) .gt. kbl_rho(i,j)) then
-              do k=kbl_rho(i,j),kbl_rho(i-1,j)-1
-                TXout_mld(i,j,itrc)=TXout_mld(i,j,itrc)
-     &                              +cff*FX(i,j)
-              enddo
-            endif
-            
-            if (kbl_rho(i,j+1) .gt. kbl_rho(i,j)) then
-              do k=kbl_rho(i,j),kbl_rho(i,j+1)-1
-                TYout_mld(i,j,itrc)=TYout_mld(i,j,itrc)
-     &                              -cff*FE(i,j+1)
-              enddo
-            endif
-            
-            if (kbl_rho(i,j-1) .gt. kbl_rho(i,j)) then
-              do k=kbl_rho(i,j),kbl_rho(i,j-1)-1
-                TYout_mld(i,j,itrc)=TYout_mld(i,j,itrc)
-     &                              +cff*FE(i,j)
-              enddo
-            endif
+              cff=pm(i,j)*pn(i,j)
 
+              if (kbl_rho(i+1,j).gt.kbl_rho(i,j)
+     &            .and. k.lt.kbl_rho(i+1,j)) then
+                TXout_mld(i,j,itrc)=TXout_mld(i,j,itrc)
+     &                              -cff*FX(i+1,j)   SWITCH rmask(i,j)
+              endif
+            
+              if (kbl_rho(i-1,j).gt.kbl_rho(i,j)
+     &            .and. k.lt.kbl_rho(i-1,j)) then
+                TXout_mld(i,j,itrc)=TXout_mld(i,j,itrc)
+     &                              +cff*FX(i,j)     SWITCH rmask(i,j)
+              endif
+            
+              if (kbl_rho(i,j+1).gt.kbl_rho(i,j)
+     &            .and. k.lt.kbl_rho(i,j+1)) then
+                TYout_mld(i,j,itrc)=TYout_mld(i,j,itrc)
+     &                              -cff*FE(i,j+1)   SWITCH rmask(i,j)
+              endif
+            
+              if (kbl_rho(i,j-1).gt.kbl_rho(i,j)
+     &            .and. k.lt.kbl_rho(i,j-1)) then
+                TYout_mld(i,j,itrc)=TYout_mld(i,j,itrc)
+     &                              +cff*FE(i,j)     SWITCH rmask(i,j)
+              endif
+
+            endif
           enddo
         enddo
 
-
 #   endif
+
+
+
+
+
+
+        enddo    !<-- k
+  
         
       enddo    !<-- itrc
 !
@@ -632,6 +678,15 @@
               enddo
             enddo
 #  endif /* DIAGNOSTICS_TS */
+
+#  if defined DIAGNOSTICS_TRACER_ISO
+            do k=0,N
+              do i=Istr,Iend
+                TF_Vadv(i,j,k,itrc) = FC(i,k)
+              enddo
+            enddo
+#  endif /* defined DIAGNOSTICS_TRACER_ISO*/
+
 #  if defined MUSTANG && defined key_sand2D
           endif
 #  endif

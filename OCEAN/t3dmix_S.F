@@ -263,8 +263,10 @@
           enddo
         enddo
 
-#  if defined DIAGNOSTICS_DIAPYCNAL
-        do j=Jstr,Jend
+#  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+#   if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */        do j=Jstr,Jend
           do i=Istr,Iend+1
               TF_xHmix(i,j,k,itrc)= TF_xHmix(i,j,k,itrc) - FX(i,j)
           enddo
@@ -275,7 +277,10 @@
               TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
           enddo
         enddo
-#   endif
+#    if defined DIAGNOSTICS_DIAPYCNAL
+      endif
+#    endif /* defined DIAGNOSTICS_DIAPYCNAL */
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
 
 
 # endif /* DIAGNOSTICS */
@@ -484,8 +489,10 @@
           enddo
         enddo
 
-#  if defined DIAGNOSTICS_DIAPYCNAL
-      if (itrc.le.NTA) then 
+#  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+#   if defined DIAGNOSTICS_DIAPYCNAL
+      if (itrc.le.NTA) then
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
         do j=Jstr,Jend
           do i=Istr,Iend+1
               TF_xHmix(i,j,k,itrc)= TF_xHmix(i,j,k,itrc) - FX(i,j)
@@ -497,8 +504,10 @@
               TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
           enddo
         enddo
+#    if defined DIAGNOSTICS_DIAPYCNAL
       endif
-#   endif
+#    endif /* defined DIAGNOSTICS_DIAPYCNAL */
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
 
 # endif /* DIAGNOSTICS_TS */
 

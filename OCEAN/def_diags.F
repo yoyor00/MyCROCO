@@ -80,6 +80,10 @@
 #  define vidTYout_mld diaTYout_mld
 #endif
 !
+# if defined DIAGNOSTICS_TRACER_ISO 
+#  define viddiags_TF diags_TF
+# endif /*DIAGNOSTICS_TRACER_ISO*/
+!
 # else /* AVRH */
 !
 #  define ncname dianame_avg
@@ -113,6 +117,10 @@
 #  define vidTXout_mld diaTXout_mld_avg
 #  define vidTYout_mld diaTYout_mld_avg
 #endif
+!
+# if defined DIAGNOSTICS_TRACER_ISO 
+#  define viddiags_TF diags_TF_avg
+# endif
 !
         character*60 text
 !
@@ -831,6 +839,55 @@
 !
 #endif /* DIAGNOSTICS_TS_MLD */
        enddo
+
+
+
+# if defined DIAGNOSTICS_TRACER_ISO
+
+! Isopycnal/Diapycnal diagnostics variables.
+! -------- ----------- --------
+
+        do itrc=1,8
+
+          if (wrt3D(1)) then
+
+!------------------------------
+!
+! indxTF
+!
+           lvar=lenstr(vname(1,indxTF+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxTF+itrc-1)(1:lvar),
+     &                      NF_FOUT, 4, r3dgrd, viddiags_TF(itrc))
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,viddiags_TF(itrc),nf_collective)
+# endif
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxTF+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_TF(itrc), 'long_name',
+     &                       lvar, vname(2,indxTF+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxTF+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, viddiags_TF(itrc), 'long_name',
+     &                                            lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxTF+itrc-1))
+           ierr=nf_put_att_text (ncid, viddiags_TF(itrc), 'units',
+     &                          lvar,vname(3,indxTF+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxTF+itrc-1))
+           ierr=nf_put_att_text (ncid,viddiags_TF(itrc), 'field',
+     &                       lvar, vname(4,indxTF+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,viddiags_TF(itrc)
+     &                       ,indxTF+itrc-1,5,NF_FOUT, ierr)
+!
+!------------------------------
+
+        endif
+      enddo
+
+# endif /*DIAGNOSTICS_TRACER_ISO*/
+
 !
 !
 ! Leave definition mode.
@@ -1220,6 +1277,38 @@
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
       enddo
+
+
+# if defined DIAGNOSTICS_TRACER_ISO
+
+! Isopycnal/Diapycnal diagnostics variables.
+! -------- ----------- --------
+      do itrc=1,8
+        if (wrt3D(1)) then
+!
+! indxTF
+!
+          lvar=lenstr(vname(1,indxTF+itrc-1))
+          ierr=nf_inq_varid (ncid, vname(1,indxTF+itrc-1)(1:lvar),
+     &                                            viddiags_TF(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxTF+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,viddiags_TF(itrc),nf_collective)
+# endif
+!
+        endif
+      enddo
+
+! ---------------------------------
+
+# endif /*DIAGNOSTICS_TRACER_ISO*/
+
+
+
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_DIAG -- Opened ',
@@ -1302,6 +1391,10 @@
 #undef vidTXout_mld
 #undef vidTYout_mld
 #endif /*DIAGNOSTICS_TS_MLD*/
+!
+#ifdef DIAGNOSTICS_TRACER_ISO 
+#undef viddiags_TF
+#endif /*DIAGNOSTICS_TRACER_ISO*/
 !
 # ifdef AVERAGES
 #  ifndef AVRH

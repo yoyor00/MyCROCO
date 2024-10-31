@@ -515,7 +515,9 @@ C$OMP BARRIER
 # if defined DIAGNOSTICS_PV
         call set_diags_pv (tile)
 # endif
-
+# if defined DIAGNOSTICS_TRACER_ISO 
+        call set_diags_tracer_iso (tile)
+# endif
 # if defined AVERAGES && ! defined XIOS
         call set_avg (tile)
 #  if defined ABL1D
@@ -920,7 +922,7 @@ C$OMP BARRIER
 
         call omega (tile)
 
-# if defined DIAGNOSTICS_DIAPYCNAL
+# if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
         call compute_buoyancy_gradient (tile)
 # endif
 

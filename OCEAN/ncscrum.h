@@ -333,6 +333,9 @@
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
      &        indxTentr_mld,indxTXout_mld,indxTYout_mld
 #  endif
+#  if defined DIAGNOSTICS_TRACER_ISO
+     &       ,indxTF
+#  endif
       parameter (indxTXadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
      &           ntrc_bio+ntrc_sed+1,
      &           indxTYadv=indxTXadv+NT,
@@ -356,7 +359,14 @@
      &           indxTrate_mld=indxTForc_mld+NT,
      &           indxTentr_mld=indxTrate_mld+NT,
      &           indxTXout_mld=indxTentr_mld+NT,
-     &           indxTYout_mld=indxTXout_mld+NT
+     &           indxTYout_mld=indxTXout_mld+NT,
+#  if defined DIAGNOSTICS_TRACER_ISO
+     &           indxTF=indxTYout_mld+NT
+#  endif
+# else
+#  if defined DIAGNOSTICS_TRACER_ISO
+     &           indxTF=indxTrate+NT
+#  endif
 #  endif
      &                                         )
 # endif
@@ -365,8 +375,8 @@
      &        indxMPrsgrd,indxMHmix,indxMVmix,indxMrate,
      &        indxMVmix2,indxMHdiff
       parameter (indxMXadv=indxV+ntrc_temp+ntrc_salt+
-     &           ntrc_pas+ntrc_bio+ntrc_sed
-     &                                                  +ntrc_diats+1,
+     &           ntrc_pas+ntrc_bio+ntrc_sed+
+     &           ntrc_diats+ntrc_diats_iso+1,
      &           indxMYadv=indxMXadv+2,
      &           indxMVadv=indxMYadv+2,
      &           indxMCor=indxMVadv+2,
@@ -390,8 +400,9 @@
      &        indxvrtPrsgrd,indxvrtHmix,indxvrtVmix,indxvrtrate,
      &        indxvrtVmix2,indxvrtWind,indxvrtDrag
       parameter (indxvrtXadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
-     &                         ntrc_bio+ntrc_sed
-     &                        +ntrc_diats+ntrc_diauv+1,
+     &                         ntrc_bio+ntrc_sed+
+     &                         ntrc_diats+ntrc_diats_iso+
+     &                         ntrc_diauv+1,
      &           indxvrtYadv=indxvrtXadv+1,
      &           indxvrtHdiff=indxvrtYadv+1,
      &           indxvrtCor=indxvrtHdiff+1,
@@ -417,7 +428,8 @@
      &        indxekvol,indxekVmix2,indxekWind,indxekDrag
       parameter (indxekHadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
      &           ntrc_bio+ntrc_sed+
-     &           ntrc_diats+ntrc_diauv+ntrc_diavrt+1,
+     &           ntrc_diats+ntrc_diats_iso+
+     &           ntrc_diauv+ntrc_diavrt+1,
      &           indxekHdiff=indxekHadv+1,
      &           indxekVadv=indxekHdiff+1,
      &           indxekCor=indxekVadv+1,
@@ -464,7 +476,8 @@
       integer indxpvMrhs,indxpvTrhs
       parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
      &                ntrc_bio+ntrc_sed+
-     &                ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
+     &                ntrc_diats+ntrc_diats_iso+
+     &                ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
      &           indxpvMrhs=indxpvTrhs+8)
 #  ifdef DIAGNOSTICS_DIAPYCNAL
       integer indxpvbflux,indxpvdiffusivity
@@ -481,7 +494,8 @@
      &        indxeddyugsu,indxeddyvgsv
       parameter (indxeddyzz=indxV+ntrc_temp+ntrc_salt
      &                           +ntrc_pas+ntrc_bio+ntrc_sed
-     &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
+     &                           +ntrc_diats+ntrc_diats_iso
+     &                           +ntrc_diauv+ntrc_diavrt
      &                           +ntrc_diaek+ntrc_diapv+400,
      &           indxeddyuu=indxeddyzz+1,
      &           indxeddyvv=indxeddyuu+1,
@@ -503,7 +517,8 @@
      &        indxsurfv
       parameter (indxsurft=indxV+ntrc_temp+ntrc_salt
      &                           +ntrc_pas+ntrc_bio+ntrc_sed
-     &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
+     &                           +ntrc_diats+ntrc_diats_iso
+     &                           +ntrc_diauv+ntrc_diavrt
      &                           +ntrc_diaek+ntrc_diapv+ntrc_diaeddy+400,
      &           indxsurfs=indxsurft+1,
      &           indxsurfz=indxsurfs+1,
@@ -517,7 +532,8 @@
 #  endif
       parameter (indxbioFlux=indxV+ntrc_temp+ntrc_salt
      &                           +ntrc_pas+ntrc_bio+ntrc_sed
-     &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
+     &                           +ntrc_diats+ntrc_diats_iso
+     &                           +ntrc_diauv+ntrc_diavrt
      &                           +ntrc_diaek+ntrc_diapv+ntrc_diaeddy
      &                                               +ntrc_surf+400)
       parameter (indxbioVSink=indxbioFlux+NumFluxTerms)
@@ -542,7 +558,8 @@
 #   endif
 #  endif
 # endif
-     &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
+     &           +ntrc_diats+ntrc_diats_iso
+     &           +ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
      &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
@@ -1214,6 +1231,9 @@
      &      , diaTForc_mld(NT), diaTrate_mld(NT), diaTentr_mld(NT)
      &      , diaTXout_mld(NT), diaTYout_mld(NT)
 #  endif
+# ifdef DIAGNOSTICS_TRACER_ISO
+     &      , diags_TF(8)
+# endif
 # endif
 # ifdef DIAGNOSTICS_UV
         integer nciddiaM, nrecdiaM, nrpfdiaM
@@ -1423,6 +1443,9 @@
      &      , diaTentr_mld_avg(NT)
      &      , diaTXout_mld_avg(NT), diaTYout_mld_avg(NT)
 #   endif
+# ifdef DIAGNOSTICS_TRACER_ISO
+     &      , diags_TF_avg(8)
+# endif
 #  endif
 #  ifdef DIAGNOSTICS_UV
        integer nciddiaM_avg, nrecdiaM_avg, nrpfdiaM_avg
@@ -1741,6 +1764,9 @@
      &      , diaTVmix_mld, diaTForc_mld, diaTrate_mld, diaTentr_mld
      &      , diaTXout_mld, diaTYout_mld
 # endif
+# ifdef DIAGNOSTICS_TRACER_ISO
+     &      , diags_TF
+# endif
 # ifdef AVERAGES
      &      , nciddia_avg, nrecdia_avg, nrpfdia_avg
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
@@ -1756,6 +1782,9 @@
      &      , diaTrate_mld_avg, diaTentr_mld_avg
      &      , diaTXout_mld_avg, diaTYout_mld_avg
 #  endif
+# ifdef DIAGNOSTICS_TRACER_ISO
+     &      , diags_TF_avg
+# endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV

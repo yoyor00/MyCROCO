@@ -83,6 +83,7 @@ include Makedefs
 	set_diags_ek.F	set_diags_ek_avg.F	wrt_diags_ek_avg.F\
 	def_diags_pv.F	wrt_diags_pv.F\
 	set_diags_pv.F	set_diags_pv_avg.F	wrt_diags_pv_avg.F\
+	set_diags_tracer_iso.F\
 	def_diags_eddy.F\
 	set_diags_eddy_avg.F	wrt_diags_eddy_avg.F\
 	def_surf.F	wrt_surf.F\

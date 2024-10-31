@@ -167,6 +167,23 @@
         enddo
 # endif /* DIAGNOSTICS_TS_MLD  */
 
+
+
+# if defined DIAGNOSTICS_TRACER_ISO 
+        do itrc=1,8
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                TF_avg(i,j,k,itrc) = cff *
+     &                     ( cff1*TF_avg(i,j,k,itrc) +
+     &                            TF(i,j,k,itrc) )
+              enddo
+            enddo
+          enddo
+        enddo
+#endif /* DIAGNOSTICS_TRACER_ISO  */
+
+
       endif
       return
       end

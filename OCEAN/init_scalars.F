@@ -3037,6 +3037,50 @@ CR       write(stdout,'(20x,A)') vname(1,indxTYout_mld+itrc-1)
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc
+
+#  if defined DIAGNOSTICS_TRACER_ISO
+      do i=1,8
+
+        ! we only save one tracer for now.
+        itrc = NTA+1
+
+CR       write(stdout,'(1x,A,I3)') 'indxTF = ',indxTF+i-1
+       lvar=lenstr(vname(1,indxT+itrc-1))
+       nametrc=vname(1,indxT+itrc-1)(1:lvar)
+       lvar=lenstr(nametrc)
+       unitt=vname(3,indxT+itrc-1)
+
+       if (i.eq.1) then
+         write(vname1,*) trim(nametrc),'_xHmix                    '
+       elseif (i.eq.2) then
+         write(vname1,*) trim(nametrc),'_yHmix                    '
+       elseif (i.eq.3) then
+         write(vname1,*) trim(nametrc),'_zHmix                    '
+       elseif (i.eq.4) then
+         write(vname1,*) trim(nametrc),'_zVmix                    '
+       elseif (i.eq.5) then
+         write(vname1,*) trim(nametrc),'_Xadv                     '
+       elseif (i.eq.6) then
+         write(vname1,*) trim(nametrc),'_Yadv                     '
+       elseif (i.eq.7) then
+         write(vname1,*) trim(nametrc),'_Vadv                     '
+       elseif (i.eq.8) then
+         write(vname1,*) trim(nametrc),'_null                     '
+       endif
+
+       vname(1,indxTF+i-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTF+itrc-1)
+       vname(2,indxTF+i-1)='right hand side                '
+       write(vname3,*) trim(unitt),' second-1              '
+       vname(3,indxTF+i-1)=vname3
+       vname(4,indxTF+i-1)='                               '
+       vname(5,indxTF+i-1)='                               '
+       vname(7,indxTF+i-1)='                               '
+
+      enddo  ! itrc
+#endif  /* DIAGNOSTICS_TRACER_ISO */
+
+
 #endif  /* DIAGNOSTICS_TS */
 
 #ifdef DIAGNOSTICS_UV

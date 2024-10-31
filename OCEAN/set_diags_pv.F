@@ -1,6 +1,6 @@
 #include "cppdefs.h"
 
-#if defined DIAGNOSTICS_DIAPYCNAL
+#if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
       subroutine compute_buoyancy_gradient (tile)
 !
       implicit none
@@ -33,11 +33,15 @@
 #  include "ocean3d.h"
 #  include "coupling.h"
 #  include "scalars.h"
+# if defined DIAGNOSTICS_DIAPYCNAL
 #  include "diags_pv.h"
+# endif
+# if defined DIAGNOSTICS_TRACER_ISO
+#   include "diagnostics.h"
+# endif
 !
 #  include "compute_auxiliary_bounds.h"
 !#  include "compute_extended_bounds.h"
-
 !
 #  include "compute_buoyancy_gradient.h"
 
@@ -47,7 +51,7 @@
 #else
       subroutine compute_buoyancy_gradient_empty
       end
-#endif /* DIAGNOSTICS_DIAPYCNAL*/
+#endif /* DIAGNOSTICS_DIAPYCNAL || DIAGNOSTICS_TRACER_ISO*/
 
 
 !======================================================================
@@ -146,13 +150,16 @@
 
 
 
-! compute horizontal dbdx, dbdy, dbdz (on rho-grid)
+! compute sigma dbdx, dbdy, dbdz (on rho-grid)
 ! # include "compute_buoyancy_gradient.h"
+! this has been moved to step.F (after predictor)
 
 ! product of fluxes and buoyancy gradients (on sigma-levels)
 # include "compute_diapycnal_fluxes.h"
 
-! compute horizontal dbdx, dbdy, dbdz (on rho-grid)
+! convert  dbdx, dbdy, dbdz 
+! from sigma to horizontal derivatives
+! this is used to compute the 3d-gradient norm
 # include "compute_buoyancy_gradient_horizontal.h"
 
       do k=1,N
@@ -186,14 +193,14 @@
      &                         / max(eps, gradbuoy(i,j,k) )
 
 
-                  ! rate of buoyancy equation
+                  ! rate in buoyancy equation
                   Trhs(i,j,k,3)=  (  alfa(i,j)*Trate(i,j,k,1)
 # ifdef SALINITY
      &                             - beta(i,j)*Trate(i,j,k,2)
 # endif
      &                             ) * g
 
-                  ! rate of buoyancy equation
+                  ! advection in buoyancy equation
                   Trhs(i,j,k,4)=  (  alfa(i,j)*TXadv(i,j,k,1)
      &                             + alfa(i,j)*TYadv(i,j,k,1)
      &                             + alfa(i,j)*TVadv(i,j,k,1)
@@ -204,7 +211,7 @@
 # endif
      &                             ) * g
 
-
+                  ! diapycnal buoyancy flux
                   bflux(i,j,k) = - g * (
      &                            alfa(i,j)* TF_xHmix_rot(i,j,k,1)
      &                          + alfa(i,j)* TF_yHmix_rot(i,j,k,1)
@@ -218,7 +225,7 @@
 # endif
      &                              )
 
-
+                  ! diapycnal diffusivity
                   diffusivity(i,j,k)  = bflux(i,j,k)
      &                          / max(eps, gradbuoy(i,j,k)**2 )
 
@@ -232,9 +239,7 @@
                   !Trhs(i,j,k,6) =  TF_yHmix(i,j,k,2)
                   !Trhs(i,j,k,7) =  TF_zHmix(i,j,k,2)
                   !Trhs(i,j,k,8) =  TF_zVmix(i,j,k,2)
-
                   !bflux(i,j,k)     =  gradbuoy(i,j,k)
-
                   !diffusivity(i,j,k)    =  TF_zVmix(i,j,k,1)
 
 
