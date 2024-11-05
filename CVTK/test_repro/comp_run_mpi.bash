@@ -2,7 +2,7 @@
 #===================================
 
 set -u
-###set -x
+#set -x
 ###DO NOT USE SET -E !
 
 source CONFIGURE_GLOBAL

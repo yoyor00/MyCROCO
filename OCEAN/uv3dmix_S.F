@@ -221,6 +221,10 @@
 #ifdef UV_VIS_SMAGO
      &                     ,visc3d_p(i,j,k)
 #endif
+#ifdef TKE3D_MIXING
+     &                     ,0.25*( Akv(i  ,j-1,k)
+     &          + Akv(i  ,j  ,k) + Akv(i-1,j  ,k) + Akv(i-1,j-1,k) )
+#endif
      &                    )*
      &             (Hz(i-1,j,k)+Hz(i,j,k)+Hz(i-1,j-1,k)+Hz(i,j-1,k))*
 #if defined CLIMAT_UV_MIXH || defined CLIMAT_UV_MIXH_FINE

@@ -1164,18 +1164,19 @@ C$OMP MASTER
 C$OMP END MASTER
 # endif
 
-# if defined TRACERS
+# if defined TRACERS || defined TKE3D_MIXING
       do tile=my_first,my_last
+# ifdef TRACERS
 #  if defined TS_DIF2 || defined TS_DIF4
         call t3dmix (tile)
 #  endif
 #  if defined SPONGE_DIF2
         call t3dmix_spg (tile)
 #  endif
-      enddo
-C$OMP BARRIER
-
 # endif /* TRACERS */
+      enddo
+# endif /* TRACERS || TKE3D_MIXING */
+C$OMP BARRIER
 
 # ifdef MORPHODYN
       do tile=my_first,my_last

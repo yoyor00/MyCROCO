@@ -1400,7 +1400,7 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING && !defined TKE3D_MIXING
             Akv(i,j,k)=Akv_bak
 # else
             Akv(i,j,k)=init
