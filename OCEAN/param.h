@@ -489,6 +489,8 @@
 #   else
       parameter (ntrc_bio=5)
 #   endif
+#  elif defined BIO_NPZD_FRANKS
+      parameter (ntrc_bio=4)
 #  elif defined BIO_N2ChlPZD2
       parameter (ntrc_bio=7)
 #  elif defined BIO_BioEBUS
@@ -678,6 +680,16 @@
      &          , NumFluxTerms
 #   endif
      &          , NFlux_VSinkP1, NFlux_VSinkD1
+     &          , NumVSinkTerms
+#  elif defined BIO_NPZD_FRANKS
+     &          , iNO3_, iPhy1, iZoo1
+     &          , iDet1
+     &          , NFlux_NewProd, NFlux_Grazing, NFlux_SlopFeed
+     &          , NFlux_Pmort, NFlux_Zmetab, NFlux_Zmort, NFlux_ReminD
+     &          , NumFluxTermsN
+     &          , NumGasExcTerms
+     &          , NumFluxTerms
+     &          , NFlux_VSinkD1
      &          , NumVSinkTerms
 #  elif defined BIO_N2ChlPZD2
      &          , iNO3_, iNH4_, iChla, iPhy1, iZoo1
@@ -875,6 +887,25 @@
      &           NFlux_VSinkD1  = 2,
      &           NumVSinkTerms  = 2)
 
+#  elif defined BIO_NPZD_FRANKS
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
+      parameter (iNO3_=itrc_bio,
+     &           iPhy1=iNO3_+1,
+     &           iZoo1=iNO3_+2,
+     &           iDet1=iNO3_+3)
+      parameter (NFlux_NewProd  = 1,
+     &           NFlux_Grazing  = 2,
+     &           NFlux_SlopFeed = 3,
+     &           NFlux_Pmort    = 4,
+     &           NFlux_Zmetab   = 5,
+     &           NFlux_Zmort    = 6,
+     &           NFlux_ReminD   = 7,
+     &           NumFluxTermsN  = 7,
+     &           NumGasExcTerms = 0,
+     &           NumFluxTerms   = 7,
+     &           NFlux_VSinkD1  = 1,
+     &           NumVSinkTerms  = 1)
+
 #  elif defined BIO_N2ChlPZD2
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
       parameter (iNO3_=itrc_bio, iNH4_=iNO3_+1, iChla=iNO3_+2,
@@ -984,7 +1015,7 @@
 ! ===  BIOLOGY DIAGS ===
 !
 
-#  if defined BIO_NChlPZD || defined BIO_N2ChlPZD2 || defined PISCES \
+#  if defined BIO_NChlPZD || BIO_NPZD_FRANKS || defined BIO_N2ChlPZD2 || defined PISCES \
                           || defined BIO_BioEBUS
 #   ifdef DIAGNOSTICS_BIO
       parameter (ntrc_diabio=NumFluxTerms+

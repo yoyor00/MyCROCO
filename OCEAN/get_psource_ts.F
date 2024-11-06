@@ -172,6 +172,50 @@ c     goto 99                                     !--> ERROR
 c     goto 99                                     !--> ERROR
             endif
 #  endif
+!
+#  ifdef BIO_NPZD_FRANKS
+          elseif (itrc.eq.iNO3_) then
+            got_tsrc(itrc)=.true.
+            ierr=nf_inq_varid (ncidqbar,'no3_src_time', tsrc_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tsrc(itrc)=.false.
+              MPI_master_only write(stdout,3) 'no3_src_time',
+     &                                                 qbarname(1:lstr)
+c     goto 99           !--> ERROR
+            endif
+!
+          elseif (itrc.eq.iPhy1) then
+            got_tsrc(itrc)=.true.
+            ierr=nf_inq_varid (ncidqbar,'phyto_src_time',
+     &                                             tsrc_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tsrc(itrc)=.false.
+              MPI_master_only write(stdout,3) 'phyto_src_time',
+     &                                                 qbarname(1:lstr)
+c     goto 99           !--> ERROR
+            endif
+!
+          elseif (itrc.eq.iZoo1) then
+            got_tsrc(itrc)=.true.
+            ierr=nf_inq_varid (ncidqbar,'zoo_src_time', tsrc_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tsrc(itrc)=.false.
+              MPI_master_only write(stdout,3) 'zoo_src_time',
+     &                                                 qbarname(1:lstr)
+c     goto 99           !--> ERROR
+            endif
+!
+          elseif (itrc.eq.iDet1) then
+            got_tsrc(itrc)=.true.
+            ierr=nf_inq_varid (ncidqbar,'det_src_time', tsrc_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tsrc(itrc)=.false.
+              MPI_master_only write(stdout,3) 'det_src_time',
+     &                                                 qbarname(1:lstr)
+c     goto 99           !--> ERROR
+            endif
+#  endif /* BIO_NPZD_FRANKS */
+!
 #  ifdef BIO_BioEBUS
           elseif (itrc.eq.iNO3_) then
             got_tsrc(itrc)=.true.

@@ -400,7 +400,42 @@ c              goto 99                                     !--> ERROR
             endif
           endif
 #   endif
+#  elif defined BIO_NPZD_FRANKS
 
+          if (itrc.eq.iNO3_) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'no3_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+              write(stdout,3) 'no3_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iPhy1) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'phyto_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+              write(stdout,3) 'phyto_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iZoo1) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'zoo_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+              write(stdout,3) 'zoo_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          elseif (itrc.eq.iDet1) then
+            got_tclm(itrc)=.true.
+            ierr=nf_inq_varid (ncidclm, 'det_time', tclm_tid(itrc))
+            if (ierr .ne. nf_noerr) then
+              got_tclm(itrc)=.false.
+              write(stdout,3) 'det_time', clmname(1:lstr)
+c              goto 99                                     !--> ERROR
+            endif
+          endif
+#   endif
 #  elif defined BIO_NChlPZD
 
           if (itrc.eq.iNO3_) then
