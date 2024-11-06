@@ -13,6 +13,8 @@
 # include "biology_pisces.F"
 #elif defined SOLVE3D && defined BIOLOGY && defined BIO_NChlPZD
 # include "bio_NChlPZD.F"
+#elif defined SOLVE3D && defined BIOLOGY && defined BIO_NPZD_FRANKS
+# include "bio_npzd_franks.F"
 #elif defined SOLVE3D && defined BIOLOGY && defined BIO_N2ChlPZD2
 # include "bio_N2ChlPZD2.F"
 #elif defined SOLVE3D && defined BIOLOGY && defined BIO_BioEBUS

@@ -430,7 +430,44 @@ c     goto 99                                     !--> ERROR
 c     goto 99                                     !--> ERROR
               endif
 #  endif
-
+# ifdef BIO_NPZD_FRANKS
+            elseif (itrc.eq.iNO3_) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'no3_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                write(stdout,3) 'NO3', bry_file(1:lstr)
+c              goto 99                                     !--> ERROR
+              endif
+            elseif (itrc.eq.iPhy1) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'phyto_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                write(stdout,3) 'PHYTO', bry_file(1:lstr)
+c              goto 99                                     !--> ERROR
+              endif
+            elseif (itrc.eq.iZoo1) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'zoo_time', bry_tid(itrc))
+            !  ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                write(stdout,3) 'ZOO', bry_file(1:lstr)
+c              goto 99                                     !--> ERROR
+              endif
+            elseif (itrc.eq.iDet1) then
+              got_tbry(itrc)=.true.
+              ierr=nf_inq_varid (bry_id, 'det_time', bry_tid(itrc))
+             ! ierr_all=ierr_all+ierr
+              if (ierr .ne. nf_noerr) then
+                got_tbry(itrc)=.false.
+                write(stdout,3) 'DET', bry_file(1:lstr)
+c              goto 99                                     !--> ERROR
+              endif
+# endif
 # elif (defined BIO_NChlPZD || defined BIO_N2ChlPZD2)
             elseif (itrc.eq.iNO3_) then
               got_tbry(itrc)=.true.
@@ -621,7 +658,7 @@ c              goto 99
 c     goto 99                                     !--> ERROR
               endif
 #  endif
-# endif     /* PISCES or (BIO_NChlPZD || BIO_N2ChlPZ2) or BIO_BioEBUS */
+# endif     /* PISCES or BIO_NPZD_FRANKS or (BIO_NChlPZD || BIO_N2ChlPZ2) or BIO_BioEBUS */
             endif   !condition on itrc value
           enddo   ! loop on itrc
 !
