@@ -61,6 +61,7 @@
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
+#include "coupling.h"
 
 # ifdef K3FAST
 #  ifdef NONLIN_EOS      
@@ -596,6 +597,13 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
       rho_sdl = 500. / rho0 
 #  endif
 # endif
+          do j=JR_RANGE
+            do i=IR_RANGE
+               rufrc_bak(i,j,1) = 0 
+               rufrc_bak(i,j,2) = 0 
+            enddo
+          enddo
+
 !$acc end kernels      
 !
 !----------------------------------------------------------

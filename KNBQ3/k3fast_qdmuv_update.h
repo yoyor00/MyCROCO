@@ -590,6 +590,7 @@
 ! !********************************
 ! !
 # ifdef PSOURCE
+!$acc kernels if(compute_on_device) default(present)
       do is=1,Nsrc 
 #  ifdef MPI
         i=Isrc_mpi(is,mynode)
@@ -621,6 +622,7 @@
           endif
         endif
       enddo
+!$acc end kernels      
 # endif
 ! !********************************
 ! !  U & V momentum wet mask
