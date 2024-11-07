@@ -30,7 +30,7 @@
 # include "mixing.h"
 
       real K_ext, K_NO3, K_phy, Vm_NO3, PhyMR, ZooGR, ZooMR,
-     &     ZooMD, ZooGA, ZooEC, DetRR, xDet
+     &     ZooMD, ZooGA, ZooEC, DetRR, wDet
       integer ITERMAX
       integer nsink
 # ifdef DIAGNOSTICS_BIO
@@ -65,8 +65,8 @@
       integer i,j,k, ITER, iB
       real    NO3(N), Phyt(N), Zoo(N), Det(N),
      &        aJ(N),FC(0:N),
-     &        PAR, PARsup, attn, Vp, Epp, cu, aL,aR, dtdays, L_NO3,
-     &        E_NO3,cff,cff0,cff1,cff2,cff6,
+     &        PAR, PARsup, attn, Vp, Epp, cu, aL,aR, dtdays, dtsec, L_NO3,
+     &        E_NO3,cff,cff1,cff2,cff3,cff6,
      &        SB(N,nsink),dSB(0:N,nsink),wSB(nsink)
 
 # if defined DIAGNOSTICS_BIO
@@ -158,7 +158,7 @@
         do k=N,1,-1     !<-- irreversible
 ! (1) NO3 uptake by Phyto
 !
-          ccf=Phyt(k)*cff1*EXP(K_ext*z_r(i,j,k))/(K_NO3+NO3(k))
+          cff=Phyt(k)*cff1*EXP(K_ext*z_r(i,j,k))/(K_NO3+NO3(k))
           NO3(k)=No3(k)/(1.+cff)
           Phyt(k)=Phyt(k)+NO3(k)*cff
 # ifdef DIAGNOSTICS_BIO
