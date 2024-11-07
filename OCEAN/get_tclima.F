@@ -435,7 +435,6 @@ c              goto 99                                     !--> ERROR
 c              goto 99                                     !--> ERROR
             endif
           endif
-#   endif
 #  elif defined BIO_NChlPZD
 
           if (itrc.eq.iNO3_) then

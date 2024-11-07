@@ -1622,7 +1622,6 @@ C$OMP BARRIER
               t(i,j,k,1,iDet1)=0.04
               t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
             endif
-#   endif
 #  elif defined BIO_NChlPZD
             if (.not.got_tini(iChla)) then
               t(i,j,k,1,iChla)=0.08
