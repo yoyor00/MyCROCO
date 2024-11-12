@@ -732,12 +732,12 @@ END SUBROUTINE sed_gradvit
           write(stdout,'(/1x,A,I4,A/16x,A,I4,A/16x,3A/)')   &
                  'SEDINIT_FROMFILE ERROR: requested restart time record', &
                   nrrec, ' exceeds',  'number of available records', &
-                  indx,'in netCDF file', '''',ininame(1:lstr),'''.'
+                  indx,'in netCDF file', '''',inised_name(1:lstr),'''.'
           goto 99                                        !--> ERROR
         endif
       else
         write(stdout,'(/1x,2A/15x,3A)') 'SEDINIT_FROMFILE ERROR: Cannot ', &
-                    'open netCDF file', '''', ininame(1:lstr) ,'''.'
+                    'open netCDF file', '''', inised_name(1:lstr) ,'''.'
         goto 99                                           !--> ERROR
       endif
 
