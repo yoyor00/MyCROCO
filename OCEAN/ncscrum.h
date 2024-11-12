@@ -547,7 +547,7 @@
      &                       +ntrc_pas+ntrc_bio+ntrc_sed
      &                       +ntrc_diats+ntrc_diauv+ntrc_diavrt
      &                       +ntrc_diaek+ntrc_diapv+ntrc_diaeddy
-     &                       +ntrc_surf+400)
+     &                       +ntrc_surf+600)
       parameter (indxBLMdiag2d=indxBLMdiag1d+NumBLMdiag1d)
       parameter (indxBLMdiag3d=indxBLMdiag2d+NumBLMdiag2d)
 # endif
