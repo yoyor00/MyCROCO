@@ -441,6 +441,11 @@ public
         !processes are not calculated
 #endif
 
+    CHARACTER(len=lchain) :: dredging_location_file ! TODO DREDGING
+    CHARACTER(len=lchain) :: dredging_settings_file ! TODO DREDGING
+    CHARACTER(len=lchain) :: dredging_out_file ! TODO DREDGING
+    REAL(KIND=rsh) :: dredging_dt ! TODO DREDGING
+    REAL(KIND=rsh) :: dredging_dt_out ! TODO DREDGING
 
 ! end namelist variables
 
@@ -541,7 +546,6 @@ public
     REAL(KIND=rlg) :: tstart_morpho   ! time beginning morphodynamic
     REAL(KIND=rlg) :: t_morpho        ! time of next morphodynamic step
     REAL(KIND=rsh) :: MF_dhsed
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: morpho0
 
 #ifdef key_MUSTANG_V2
     REAL(KIND=rsh) :: coeff_dzsmin

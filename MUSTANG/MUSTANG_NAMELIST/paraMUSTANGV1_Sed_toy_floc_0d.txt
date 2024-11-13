@@ -27,6 +27,8 @@
 :                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
+: namdredging              : parameters to activate dredging effect
+
 
 &namsedim_init
    l_unised = .true. 
@@ -91,4 +93,5 @@
    f_fp = 0.1     
    f_fy = 1.0e-10   
    f_collfragparam = 0.01   / 
-
+&namdredging
+/

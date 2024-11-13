@@ -57,8 +57,6 @@
 # define ARRAY_LATLON GLOBAL_2D_ARRAY
 #endif
 
-#define  ARRAY_morpho GLOBAL_2D_ARRAY
-
 /* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
 !*/
 # define NUMBER_PI pi

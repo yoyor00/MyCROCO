@@ -27,6 +27,7 @@
 :                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
+: namdredging              : parameters to activate dredging effect
 
 &namsedim_init
    date_start_dyninsed='2000/01/30 00:00:00'  
@@ -104,7 +105,8 @@
 /
 &namflocmod
 /   
-
+&namdredging
+/
 
 
    

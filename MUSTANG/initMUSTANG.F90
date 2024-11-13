@@ -142,6 +142,8 @@ MODULE initMUSTANG
                             l_outsed_z0hydro, &
                             l_outsed_consolidation
 
+    namelist /namdredging/ dredging_location_file, dredging_settings_file,    &
+            dredging_out_file, dredging_dt, dredging_dt_out
 
 #ifdef key_MUSTANG_V2
     namelist /namsedim_poro/ poro_option, poro_min,                           &
@@ -191,6 +193,7 @@ CONTAINS
     !&E
     !&E------------------------------------------------------------------------
    !! * Modules used
+    USE dredging, ONLY : dredging_init_param, dredging_init_hsed0, l_dredging
     USE coupler_MUSTANG,  ONLY : coupl_conv2MUSTANG
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
 #ifdef key_MUSTANG_splitlayersurf
@@ -262,6 +265,9 @@ CONTAINS
         f_clim, diam_sed(imud1:nvpc), ros(imud1:nvpc),      &
         RHOREF, l_0Dcase, ierrorlog)
 #endif
+
+    CALL dredging_init_param(ifirst,ilast,jfirst,jlast)
+
 
     ! Information on screen
     CALL MUSTANG_param_log()  
@@ -371,11 +377,15 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
     ! call even if no morpho, initialization of hsed in all cases, 
     ! even if initfromfile
-    CALL MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION   &
+    CALL MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast   &
 #if defined MORPHODYN  
                                                 ,dhsed               &
 #endif
             )
+
+    IF (l_dredging) THEN
+        CALL dredging_init_hsed0
+    ENDIF
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Evaluation of Z0_hydro if l_z0_coupl_init
@@ -383,6 +393,7 @@ CONTAINS
     IF(l_z0hydro_coupl_init) THEN
         CALL sed_MUSTANG_comp_z0hydro(ifirst, ilast, jfirst, jlast, z0hydro)
     ENDIF
+
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Initialization of output tables
@@ -448,8 +459,10 @@ CONTAINS
 #endif
 #ifdef key_MUSTANG_flocmod
     ! module FLOCULATION
-    READ(50,namflocmod); rewind(50)
+    READ(50, namflocmod); rewind(50)
 #endif
+    READ(50, namdredging); rewind(50)
+
     CLOSE(50) 
    
     END SUBROUTINE MUSTANG_readnml
@@ -2150,113 +2163,46 @@ CONTAINS
 !!==========================================================================================================
 
 
-    SUBROUTINE MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION  &
+    SUBROUTINE MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast   &
 #if defined MORPHODYN 
                   , dhsed                                                &
 #endif
                   )
-
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE morphoinit  ***
     !&E
-    !&E ** Purpose : initialization of hsed, hsed0, hsed_previous,
-    !&E                 morpho0 
-    !&E
-    !&E ** Description :
-    !&E
+    !&E ** Purpose : initialization of hsed, hsed_previous
     !&E ** Called by :  MUSTANG_init_sediment 
-    !&E
     !&E--------------------------------------------------------------------------
 
     !! * Arguments 
     INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
-    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(INOUT)        :: BATHY_H0                         
-    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
 #if defined MORPHODYN
     REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)           :: dhsed                       
 #endif
     !! * Local declarations
     INTEGER :: i, j, k
-
-    !! * Executable part
-
-    IF(l_morphocoupl) THEN
-        ! morpho = 1 if morphodynamic effective
-        ! morpho = 0 if depth not vary
-        morpho0(ARRAY_morpho)=1.0_rsh
-        !  **TODO** To Program
-        !   morpho0(boundaries)=0.0_rsh
-    ENDIF
- 
  
     !!  initialisation of hsed  inside the domain  !!!
-    !!  eliminate the meshes at open boundaries
+    !!  eliminate the meshes at open boundaries ??? not reuse from MARS? TODO or not ?
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO j=jfirst,jlast
     DO i=ifirst,ilast
-        !  WARNING : not in first and last mesh on i and j axis (boundaries)
+        !  WARNING : not in first and last mesh on i and j axis (boundaries) ! ??? not reuse from MARS? TODO or not ?
         hsed(i,j)=0.0_rsh
         DO k=ksmi(i,j),ksma(i,j)
             hsed(i,j)=hsed(i,j)+dzs(k,i,j)
-        ENDDO
-    ENDDO
-    ENDDO       
+        ENDDO   
 
-    IF(l_morphocoupl)THEN
-        DO j=jfirst,jlast
-        DO i=ifirst,ilast
-            !  WARNING: not in first and last mesh on i and j axis (boundaries)
-            hsed_previous(i,j)=hsed(i,j)
-        ENDDO
-        ENDDO       
-        
-        IF(.NOT.l_repsed)THEN   
-            hsed0(:,:)=0.0_rsh
-            DO j=jfirst,jlast
-            DO i=ifirst,ilast
-                !  WARNING : not in first and last mesh on i and j axis (boundaries)
-                hsed0(i,j)=hsed(i,j)
-            ENDDO
-            ENDDO
-        ENDIF                         
-
-    ENDIF   ! endif l_morphocoupl
-
-    IF(l_morphocoupl)THEN    
-
-        IF(l_repsed)THEN          
-
-        !!  update bathy and water elevation if initalisation from file !!!
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        DO j=jfirst,jlast
-        DO i=ifirst,ilast
-            !ssh(i,j)=MAX(ssh(i,j),-BATHY_H0(i,j))         
-            SURF_ELEVATION_ij=MAX(SURF_ELEVATION_ij,-BATHY_H0(i,j))         
-        ENDDO
-        ENDDO
-         
-        !!  echange MPI of BATHY_H0 and WATER_ELEVATION for neighboring cells
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-        !! To Program, has not been program for CROCO **TODO** CALL sed_exchange_hxe_MARS(1,xh0=BATHY_H0,xssh=WATER_ELEVATION)
-
-        ENDIF   ! endif l_repsed
-
-
-
+        IF(l_morphocoupl)THEN
+            !  WARNING: not in first and last mesh on i and j axis (boundaries)! ??? not reuse from MARS? TODO or not ?
+            hsed_previous(i,j)=hsed(i,j)      
 #if defined MORPHODYN
-        DO j=jfirst,jlast
-        DO i=ifirst,ilast
-            dhsed(i,j)=hsed0(i,j)-hsed(i,j)
-#ifdef key_MUSTANG_debug
-            IF (i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-                MPI_master_only write(*,*) 'dhsed(',i,',',j,') initial:',dhsed(i,j),hsed0(i,j),hsed(i,j)
-            ENDIF
+            dhsed(i,j)=hsed_previous(i,j)-hsed(i,j)
 #endif
-        ENDDO
-        ENDDO
-#endif
-
-    ENDIF        ! endif l_morphocoupl
+        ENDIF        ! endif l_morphocoupl
+    ENDDO
+    ENDDO
 
     END SUBROUTINE MUSTANG_morphoinit
 !!===========================================================================
@@ -2456,7 +2402,6 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!
     IF(l_morphocoupl) THEN
     !! Warning : no hx, hy in other model than MARS 
-        ALLOCATE(morpho0(ARRAY_morpho))
         ALLOCATE(hsed0(PROC_IN_ARRAY))
         ALLOCATE(hsed_previous(PROC_IN_ARRAY))
         hsed0(PROC_IN_ARRAY) = 0.0_rsh

@@ -27,6 +27,7 @@
 :                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
+: namdredging              : parameters to activate dredging effect
 
 
 :------------------------------------------------------------------------------
@@ -730,7 +731,25 @@
    f_fy = 1.0e-10   
    f_collfragparam = 0.01
    f_clim = 0.001   / 
+:
+:-------------------------------------------------------------------------------
+:  Namelist relative to dredging effect
+:-------------------------------------------------------------------------------
+:    dredging_dt : dredging time step (s)
+:    dredging_location_file : input netcdf file path containing :
+:               - dredging areas location and name 
+:               - dumping area location and name
+:    dredging_settings_file : parameters input file path containing association 
+:               between dredging area and dumping area and 
+:               level limit for dredging
+:    dredging_out_file : output netcdf file path containing for every sediment 
+:               class and every dredging area the cummulation mass dredged
+:-------------------------------------------------------------------------------
+&namdredging
+   dredging_location_file = ''
+   dredging_settings_file = ''
+   dredging_out_file = ''
+   dredging_dt = 3600.   
+   dredging_dt_out = 3600.   /
 
 
-
-   

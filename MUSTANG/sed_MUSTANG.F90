@@ -186,6 +186,7 @@ MODULE sed_MUSTANG
    USE OBSTRUCTIONS1DV, ONLY : o1dv_comp_z0sedim
    USE com_OBSTRUCTIONS, ONLY : obst_position, obst_height, obst_dens_inst, obst_width_inst
 #endif
+    USE dredging, ONLY : l_dredging, dredging_main
 
    !! * Arguments
    INTEGER, INTENT(IN)                                       :: ifirst, ilast, jfirst, jlast                           
@@ -457,6 +458,10 @@ MODULE sed_MUSTANG
    ENDIF  ! end if coef_erolat
 #endif
 
+  IF (l_dredging) THEN
+    CALL dredging_main(ifirst, ilast, jfirst,jlast)
+  ENDIF
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!! save cumulated erosion Fluxes  of constitutive particulate variables !!
@@ -483,6 +488,8 @@ MODULE sed_MUSTANG
        END DO
      END DO
    ENDIF
+
+   
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
