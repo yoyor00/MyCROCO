@@ -125,7 +125,6 @@ MODULE sed_MUSTANG
  
   SUBROUTINE MUSTANG_update(ifirst, ilast, jfirst, jlast,     &
                WATER_CONCENTRATION, z0hydro,                  &
-               WATER_ELEVATION,                               &
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
                BAROTROP_VELOCITY_U, BAROTROP_VELOCITY_V,             &
 #endif
@@ -142,7 +141,7 @@ MODULE sed_MUSTANG
    !&E         loops  :ifirst,ilast,jfirst,jlast
    !&E         parametres ref  :RHOREF, saliref_lin,temperef_lin
    !&E         time  :dt_true,t (DOUBLE PRECISION)
-   !&E         hydro  :WATER_ELEVATION,BAROTROP_VELOCITY_U,BAROTROP_VELOCITY_V
+   !&E         hydro  :BAROTROP_VELOCITY_U,BAROTROP_VELOCITY_V
    !&E         concentrations  : WATER_CONCENTRATION,SALINITY_MOD,TEMPERATURE_MOD
    !&E         [settling velocities (transmitted as argument or by USE as in MARS or in CROCO)]
    !&E
@@ -192,8 +191,7 @@ MODULE sed_MUSTANG
    INTEGER, INTENT(IN)                                       :: ifirst, ilast, jfirst, jlast                           
    REAL(KIND=rsh),INTENT(IN)                                 :: saliref_lin, temperef_lin 
    REAL(KIND=rlg),INTENT(IN)                                 :: dt_true  ! !  (dt_true=halfdt in MARS)
-   REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)          :: z0hydro                         
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT)  :: WATER_ELEVATION                         
+   REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)          :: z0hydro                        
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload                        
    REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_U),INTENT(IN)          :: BAROTROP_VELOCITY_U                        
    REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_V),INTENT(IN)          :: BAROTROP_VELOCITY_V   
@@ -224,7 +222,7 @@ MODULE sed_MUSTANG
     ! coupler for some calculations specific to each model ==> htot, alt_cw1, epn_bottom
     ! + computation of bottom concentrations..
     iappel=1
-    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,iappel,BATHY_H0,WATER_ELEVATION,   &
+    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,iappel,&
                        WATER_CONCENTRATION)
             
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -516,7 +514,6 @@ MODULE sed_MUSTANG
   !!==============================================================================
   
   SUBROUTINE MUSTANG_deposition(ifirst, ilast, jfirst, jlast,  &
-                        WATER_ELEVATION,                       &
                         WATER_CONCENTRATION)
               
    !&E--------------------------------------------------------------------------
@@ -532,7 +529,6 @@ MODULE sed_MUSTANG
    !&E ** Description : 
    !&E  arguments IN : 
    !&E         loops  :ifirst,ilast,jfirst,jlast
-   !&E         hydro  :WATER_ELEVATION
    !&E         concentrations  : WATER_CONCENTRATION,SALINITY_MOD,TEMPERATURE_MOD
    !&E
    !&E  arguments OUT:
@@ -550,7 +546,6 @@ MODULE sed_MUSTANG
 #endif
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast 
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
 #if defined key_BLOOM_insed
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT)  :: WATER_CONCENTRATION   
 #else
@@ -577,7 +572,6 @@ MODULE sed_MUSTANG
 
     iappel=2
     CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,iappel,    &
-                            BATHY_H0,WATER_ELEVATION,            &
                             WATER_CONCENTRATION )        
         
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3027,6 +3021,7 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
+   USE dredging, ONLY : l_dredging, dump_gravel_flx
 
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast
@@ -3158,6 +3153,15 @@ MODULE sed_MUSTANG
               END IF             
 #endif
             ENDDO
+
+            IF (l_dredging) THEN
+              DO iv=igrav1,igrav2
+                flx_w2s_loc(iv) = flx_w2s_loc(iv) + dump_gravel_flx(iv,i,j)
+                ! reset to zero after deposit
+                dump_gravel_flx(iv,i,j) = 0.
+              ENDDO
+            ENDIF
+
 
             fludep=0.0_rsh
             DO iv=1,nvpc
@@ -3922,6 +3926,7 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
+   USE dredging, ONLY : l_dredging, dump_gravel_flx
 
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast
@@ -3971,6 +3976,15 @@ MODULE sed_MUSTANG
               IF (l_outsed_flx_s2w_w2s) var2D_flx_w2s(iv,i,j)=var2D_flx_w2s(iv,i,j)+flx_w2s_loc(iv)
 
             ENDDO
+
+            IF (l_dredging) THEN
+              DO iv=igrav1,igrav2
+                flx_w2s_loc(iv) = flx_w2s_loc(iv) + dump_gravel_flx(iv,i,j)
+                ! reset to zero after deposit
+                dump_gravel_flx(iv,i,j) = 0.
+              ENDDO
+            ENDIF
+
 
             fludep=0.0_rsh
             DO iv=1,nvpc
@@ -8582,7 +8596,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
            !!==============================================================================
      ENDIF                                   
 
-     ! sedimask_h0plusxe : = 1 si BATHY_H0(i,j)+WATER_ELEVATION(i,j) .GT. 1    = 0 sinon
+     ! sedimask_h0plusxe : = 1 si h+ssh .GT. 1    = 0 sinon
      ! ==> Le flux charrie en X et Y est mis a 0 si la maille voisine est a terre
      !TODO : put this in subroutine in sed_MUSTANG_HOST because it is host dependant (raphbx&raphby)
 

@@ -143,7 +143,8 @@ MODULE initMUSTANG
                             l_outsed_consolidation
 
     namelist /namdredging/ dredging_location_file, dredging_settings_file,    &
-            dredging_out_file, dredging_dt, dredging_dt_out
+            dredging_out_file, dredging_dumping_layer, &
+            dredging_dt, dredging_dt_out
 
 #ifdef key_MUSTANG_V2
     namelist /namsedim_poro/ poro_option, poro_min,                           &
@@ -177,7 +178,6 @@ CONTAINS
   
 !!=============================================================================
     SUBROUTINE MUSTANG_init(ifirst, ilast, jfirst, jlast,                     &
-            WATER_ELEVATION,                                                  &
 #if defined MORPHODYN  
             dhsed,                                                            &
 #endif
@@ -209,8 +209,7 @@ CONTAINS
     !! * Arguments
     INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
     REAL(KIND=rsh),INTENT(IN)              :: h0fondin
-    REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)        :: z0hydro                         
-    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT):: WATER_ELEVATION                         
+    REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)        :: z0hydro                      
     REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)       :: WATER_CONCENTRATION  
 #if defined MORPHODYN 
     REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)          :: dhsed                       
@@ -278,8 +277,7 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! here iappel = 0 
     ! only WATER_CONCENTRATION, SALINITY_MOD, TEMPERATURE_MOD are used     
-    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,0,BATHY_H0,             &
-                            WATER_ELEVATION, WATER_CONCENTRATION )
+    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,0,WATER_CONCENTRATION )
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Reading new bathy issued from a previous run with morphocoupl 

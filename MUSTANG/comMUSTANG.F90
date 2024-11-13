@@ -444,6 +444,7 @@ public
     CHARACTER(len=lchain) :: dredging_location_file ! TODO DREDGING
     CHARACTER(len=lchain) :: dredging_settings_file ! TODO DREDGING
     CHARACTER(len=lchain) :: dredging_out_file ! TODO DREDGING
+    INTEGER :: dredging_dumping_layer ! TODO DREDGING
     REAL(KIND=rsh) :: dredging_dt ! TODO DREDGING
     REAL(KIND=rsh) :: dredging_dt_out ! TODO DREDGING
 

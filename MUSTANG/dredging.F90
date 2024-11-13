@@ -6,15 +6,16 @@ MODULE dredging
    !!                   ***  MODULE  dredging  ***
    !!
    !! This module manage dredging effect on sediment.
-   !! This is done by removing sediments in areas where a sediment height is
-   !! exceeded and optionnaly dumping them in other areas of the domain.
+   !! This is done by removing sediments in areas where a given sediment height
+   !! is exceeded and optionnaly dumping them in other areas of the domain.
    !!
-   !! This module is linked to MUSTANG and SUBSTANCE modules.
+   !! This module is linked to modules : module_substance, module_MUSTANG,
+   !! comsubstance, comMUSTANG
+   !! This module also use netcdf
    !!
    !! This module has been adapted and generalized in 2024 by F. Grasso and
    !! S. Le Gac from the work of J.P. Lemoine in a MARS version for ARES
-   !! hindcast in the SEINE
-   !! estuary.
+   !! hindcast in the SEINE estuary.
    !============================================================================
 
 #include "cppdefs.h"
@@ -23,10 +24,11 @@ MODULE dredging
 
    USE module_substance ! for GLOBAL_2D_ARRAY, h, t
    USE module_MUSTANG ! for z_w
-   USE comsubstance, ONLY: lchain, rsh, rlg, riosh, nvp, isand1, surf_cell
+   USE comsubstance, ONLY: lchain, rsh, rlg, riosh, nvp, isand1, isand2, &
+                           igrav1, igrav2, surf_cell, l_subs2D
    USE comMUSTANG, ONLY: dredging_location_file, dredging_settings_file, &
-                         dredging_out_file, dredging_dt, &
-                         hsed, ksmi, ksma, cv_sed, dzs
+                         dredging_out_file, dredging_dt, dredging_dt_out, &
+                         dredging_dumping_layer, hsed, ksmi, ksma, cv_sed, dzs
 
    IMPLICIT NONE
    PRIVATE
@@ -34,6 +36,7 @@ MODULE dredging
    PUBLIC dredging_init_param, dredging_init_hsed0 ! called by initMUSTANG
    PUBLIC dredging_main ! called by MUSTANG_update
    PUBLIC l_dredging ! boolean , TRUE to activate dredging
+   PUBLIC dump_gravel_flx
 
    ! Shared module variables
    LOGICAL :: l_dredging ! boolean , TRUE to activate dredging
@@ -45,6 +48,8 @@ MODULE dredging
 
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: dump_surface
 
+   REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: dump_gravel_flx
+
    INTEGER, DIMENSION(:, :, :), ALLOCATABLE :: dredg_loc
    INTEGER, DIMENSION(:, :, :), ALLOCATABLE :: dump_loc
    CHARACTER(lchain), DIMENSION(:), ALLOCATABLE :: dredg_name
@@ -55,6 +60,9 @@ MODULE dredging
    REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: dredg_hsed_init
    INTEGER :: n_dredg_loc
    INTEGER :: n_dump_loc
+   REAL(KIND=rsh) :: dredging_time
+
+   INTEGER, DIMENSION(:), ALLOCATABLE :: dump_layer
 
 CONTAINS
 
@@ -78,13 +86,15 @@ CONTAINS
          IF (n_dredg_loc == 0) THEN
             l_dredging = .FALSE.
          ELSE
+            !! check_param
+            CALL dredging_check_param
             !! allocate all arrays
             CALL dredging_alloc
             !! reading association dredging/dumping areas and dredging depths
             CALL dredging_read_settings_file
             !! reading dredging_location and dumping_location
             CALL dredging_read_location_file
-            !! initialize dump_surface and checking compatibilities
+            !! initialize dump_surface and dredg_flag
             CALL dredging_init_var(imin, imax, jmin, jmax)
          END IF ! test if there is at least one dredging area
 
@@ -98,7 +108,7 @@ CONTAINS
       !!------------------------------------------------------------------------
       !!    *** SUBROUTINE dredging_get_dimension_from_settings_file ***
       !!
-      !! ** Purpose : Get n_dredg_locand n_dump_loc values from file
+      !! ** Purpose : Get n_dredg_loc and n_dump_loc values from file
       !!
       !!------------------------------------------------------------------------
       IMPLICIT NONE
@@ -172,6 +182,12 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_read_settings_file
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_read_settings_file  ***
+      !!
+      !! ** Purpose : TODO
+      !!
+      !!------------------------------------------------------------------------
 
       INTEGER :: i, ios, iz, idump
       CHARACTER(len=1000) :: line
@@ -182,7 +198,6 @@ CONTAINS
       OPEN (unit=51, file=dredging_settings_file, &
             status='old', action='read', iostat=ios)
       IF (ios /= 0) THEN
-         WRITE (stdout, *) "Error dredging_read_settings_file"
          WRITE (stdout, *) "Error opening dredging_settings_file : ", &
             dredging_settings_file
          STOP 1
@@ -260,6 +275,11 @@ CONTAINS
 
       DO iz = 1, n_dump_loc
          name = TRIM(dump_name(iz))
+         IF (name == "none") THEN
+            WRITE (stdout, *) "Invalid dump variable name: ", name
+            WRITE (stdout, *) "none can not be used as a dump zone name"
+            STOP 1
+         END IF
          status = NF90_INQ_VARID(ncid, name, varid)
          IF (status /= NF90_NOERR) THEN
             WRITE (stdout, *) "Unable to retrieve dump variable id: ", iz, " ", name
@@ -284,11 +304,22 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_init_var(imin, imax, jmin, jmax)
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_init_var  ***
+      !!
+      !! ** Purpose :
       !! Initialize dredg_flag from all dredg_loc.
       !! In case of overlapping dredging zone, the deepest dredging is keeped
+      !!
+      !!------------------------------------------------------------------------
+
       INTEGER, INTENT(IN) :: imin, imax, jmin, jmax
 
-      INTEGER :: i, j, iz, tmp_flag
+      INTEGER :: i, j, iz, iv, tmp_flag
+      LOGICAL :: warning_out
+
+      dredging_time = time
+      warning_out = .FALSE.
 
       DO j = jmin, jmax
          DO i = imin, imax
@@ -313,35 +344,102 @@ CONTAINS
          END DO !i
       END DO !j
 
+      IF (warning_out) THEN
+         WRITE (stdout, *) "WARNING - dredging"
+         WRITE (stdout, *) "Overlapping of dredging zone"
+         WRITE (stdout, *) "The deepest one is keeped"
+      END IF
+
+      dump_layer(:) = dredging_dumping_layer
+#ifdef key_sand2D
+      DO iv = isand1, isand2
+         IF (l_subs2D(iv)) THEN
+            dump_layer(iv) = 1
+         END IF
+      END DO
+#endif
+
    END SUBROUTINE dredging_init_var
    !============================================================================
 
+   SUBROUTINE dredging_check_param
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_check_param  ***
+      !!
+      !! ** Purpose : Check values of param in namelist
+      !!
+      !!------------------------------------------------------------------------
+
+      IF (dredging_dumping_layer > N) THEN
+         WRITE (stdout, *) "Error dredging_dumping_layer should be <= N"
+         WRITE (stdout, *) "N = ", N
+         WRITE (stdout, *) "dredging_dumping_layer = ", dredging_dumping_layer
+         STOP 1
+      END IF
+      IF (dredging_dumping_layer < 1) THEN
+         WRITE (stdout, *) "Error dredging_dumping_layer should be >= 1"
+         WRITE (stdout, *) "dredging_dumping_layer = ", dredging_dumping_layer
+         STOP 1
+      END IF
+      IF (dredging_dt <= 0.) THEN
+         WRITE (stdout, *) "Error dredging_dt should be > 0."
+         WRITE (stdout, *) "dredging_dt = ", dredging_dt
+         STOP 1
+      END IF
+      IF (dredging_dt_out < dredging_dt) THEN
+         WRITE (stdout, *) "Error dredging_dt_out should be >= dredging_dt"
+         WRITE (stdout, *) "dredging_dt = ", dredging_dt
+         WRITE (stdout, *) "dredging_dt_out = ", dredging_dt_out
+         STOP 1
+      END IF
+      IF (dredging_dt_out <= 0.) THEN
+         WRITE (stdout, *) "Error dredging_dt_out should be > 0."
+         WRITE (stdout, *) "dredging_dt_out = ", dredging_dt_out
+         STOP 1
+      END IF
+
+   END SUBROUTINE dredging_check_param
+   !============================================================================
+
    SUBROUTINE dredging_alloc
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_alloc ***
+      !!
+      !! ** Purpose : Allocate arrays for the dredging module
+      !!
+      !!------------------------------------------------------------------------
+
+      ALLOCATE (dredg_name(n_dredg_loc))
+      ALLOCATE (dump_name(n_dump_loc))
 
       ALLOCATE (dredg_mass_byclass(nvp))
       ALLOCATE (dredg_mass_byclass_byloc(n_dredg_loc, nvp))
       ALLOCATE (dump_mass_byclass_byloc(n_dump_loc, nvp))
       ALLOCATE (dredg_mass_byclass_byloc_cum(n_dredg_loc, nvp))
-      ALLOCATE (dredg_loc(n_dredg_loc, GLOBAL_2D_ARRAY))
-      ALLOCATE (dump_loc(n_dump_loc, GLOBAL_2D_ARRAY))
-      ALLOCATE (dredg_name(n_dredg_loc))
-      ALLOCATE (dump_name(n_dump_loc))
-      ALLOCATE (dredg_depth(n_dredg_loc))
-      ALLOCATE (dredg_dump_flag(n_dredg_loc))
-      ALLOCATE (dredg_flag(GLOBAL_2D_ARRAY))
-      ALLOCATE (dredg_hsed_init(GLOBAL_2D_ARRAY))
-      ALLOCATE (dump_surface(n_dump_loc))
-
       dredg_mass_byclass(:) = 0.0_rsh
       dredg_mass_byclass_byloc(:, :) = 0.0_rsh
       dump_mass_byclass_byloc(:, :) = 0.0_rsh
       dredg_mass_byclass_byloc_cum(:, :) = 0.0_rsh
 
+      ALLOCATE (dredg_loc(n_dredg_loc, GLOBAL_2D_ARRAY))
+      ALLOCATE (dump_loc(n_dump_loc, GLOBAL_2D_ARRAY))
       dredg_loc(:, :, :) = 0
       dump_loc(:, :, :) = 0
+
+      ALLOCATE (dump_gravel_flx(igrav1:igrav2, GLOBAL_2D_ARRAY))
+      dump_gravel_flx(:, :, :) = 0.
+
+      ALLOCATE (dump_layer(nvp))
+      dump_layer(:) = 1
+
+      ALLOCATE (dredg_depth(n_dredg_loc))
+      ALLOCATE (dredg_dump_flag(n_dredg_loc))
+      ALLOCATE (dredg_flag(GLOBAL_2D_ARRAY))
+      ALLOCATE (dredg_hsed_init(GLOBAL_2D_ARRAY))
+      ALLOCATE (dump_surface(n_dump_loc))
+      dredg_depth(:) = 0.0_rsh
       dredg_dump_flag(:) = 0
       dredg_flag(:, :) = 0
-      dredg_depth(:) = 0.0_rsh
       dredg_hsed_init(:, :) = 0.0_rsh
       dump_surface(:) = 0.0_rsh
 
@@ -349,6 +447,12 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_init_hsed0
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_init_hsed0 ***
+      !!
+      !! ** Purpose : TODO
+      !!
+      !!------------------------------------------------------------------------
 
       dredg_hsed_init(:, :) = hsed(:, :)
 
@@ -356,29 +460,47 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_main(imin, imax, jmin, jmax)
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_main ***
+      !!
+      !! ** Purpose : TODO
+      !!
+      !!------------------------------------------------------------------------
+
       INTEGER, INTENT(IN) :: imin, imax, jmin, jmax
 
-      CALL dredging_compute_mass(imin, imax, jmin, jmax)
+      IF (time .GE. dredging_time) THEN
 
-      CALL dumping_compute_mass
+         CALL dredging_compute_mass(imin, imax, jmin, jmax)
 
-      dredg_mass_byclass_byloc_cum(:, :) = &
-         dredg_mass_byclass_byloc_cum(:, :) + &
-         dredg_mass_byclass_byloc(:, :)
+         CALL dumping_compute_mass
 
-      CALL dredging_mpi_mass
+         dredg_mass_byclass_byloc_cum(:, :) = &
+            dredg_mass_byclass_byloc_cum(:, :) + &
+            dredg_mass_byclass_byloc(:, :)
 
-      CALL dredging_dump_mass
+         CALL dredging_mpi_mass
 
-      CALL dredging_mpi_waterconcentration
+         CALL dredging_dump_mass
 
-      CALL dredging_output
+         CALL dredging_mpi_waterconcentration
+
+         CALL dredging_output
+
+         ! update next time
+         dredging_time = dredging_time + dredging_dt
+      END IF
 
    END SUBROUTINE dredging_main
    !============================================================================
 
    SUBROUTINE dredging_compute_mass(imin, imax, jmin, jmax)
-      ! computation of dredged masses
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_compute_mass ***
+      !!
+      !! ** Purpose : computation of dredged masses
+      !!
+      !!------------------------------------------------------------------------
       INTEGER, INTENT(IN) :: imin, imax, jmin, jmax
 
       INTEGER :: i, j, iv, iz, k
@@ -413,8 +535,12 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dumping_compute_mass
-      ! computation of dumping masses
-
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dumping_compute_mass ***
+      !!
+      !! ** Purpose : computation of dumping masses
+      !!
+      !!------------------------------------------------------------------------
       INTEGER :: iz, idump
 
       dump_mass_byclass_byloc(:, :) = 0.0_rsh
@@ -432,19 +558,35 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_dump_mass
-      ! transfer of dredged masses to dumping areas
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_dump_mass ***
+      !!
+      !! ** Purpose : Transfer of dredged masses to dumping areas
+      !!
+      !!------------------------------------------------------------------------
 
       INTEGER :: i, j, idump, iv
+
+      dump_gravel_flx(:, :, :) = 0.0_rsh
 
       DO idump = 1, n_dump_loc
          IF (sum(dump_mass_byclass_byloc(:, idump)) > 0.0_rsh) THEN
             ! if there is mass to dump
             DO iv = isand1, nvp ! gravels are treated separately !! TODO add gravels in flx_ws_loc !!
-               t(:, :, 1, nstp, itsubs1 - 1 + iv) = &
-                  t(:, :, 1, nstp, itsubs1 - 1 + iv) + &
+               t(:, :, dump_layer(iv), nstp, itsubs1 - 1 + iv) = &
+                  t(:, :, dump_layer(iv), nstp, itsubs1 - 1 + iv) + &
                   REAL(dump_loc(idump, :, :), rsh) &
                   *dump_mass_byclass_byloc(iv, idump) &
-                  /dump_surface(idump)/(z_w(:, :, 1) - z_w(:, :, 0))
+                  /dump_surface(idump) &
+                  /(z_w(:, :, dredging_dumping_layer) &
+                    - z_w(:, :, dredging_dumping_layer - 1))
+            END DO
+
+            DO iv = igrav1, igrav2
+               dump_gravel_flx(iv, :, :) = dump_gravel_flx(iv, :, :) &
+                                           + REAL(dump_loc(idump, :, :), rsh) &
+                                           *dump_mass_byclass_byloc(iv, idump) &
+                                           /dump_surface(idump)
             END DO
 
          END IF
@@ -454,6 +596,12 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_mpi_mass
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_mpi_mass ***
+      !!
+      !! ** Purpose : MPI treatment of dredged and dumped mass
+      !!
+      !!------------------------------------------------------------------------
 
       !! TODO
 
@@ -461,6 +609,12 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_mpi_waterconcentration
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_mpi_waterconcentration ***
+      !!
+      !! ** Purpose : MPI exchange of water concentration
+      !!
+      !!------------------------------------------------------------------------
 
       !! TODO
 
@@ -468,6 +622,12 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_output
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_output ***
+      !!
+      !! ** Purpose : Output cummulative dredging mass
+      !!
+      !!------------------------------------------------------------------------
 
       !! TODO
 

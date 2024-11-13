@@ -749,6 +749,7 @@
    dredging_location_file = ''
    dredging_settings_file = ''
    dredging_out_file = ''
+   dredging_dumping_layer = 1
    dredging_dt = 3600.   
    dredging_dt_out = 3600.   /
 
