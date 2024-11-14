@@ -2007,6 +2007,13 @@ c        close(testunit)
         read(input,*,err=95)  (wrtdia3D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia3D(itrc)) wrtdia3D(NT+1)=.true.
+
+# ifdef DIAGNOSTICS_TS_MLD
+          if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
+              wrtdia3D(itrc)=.false.
+          endif
+# endif  /* DIAGNOSTICS_TS_MLD */
+
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia3D(itrc),
      &        'write Tracer equation terms ',
@@ -2038,6 +2045,13 @@ c        close(testunit)
         read(input,*,err=95) (wrtdia3D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia3D_avg(itrc)) wrtdia3D_avg(NT+1)=.true.
+
+# ifdef DIAGNOSTICS_TS_MLD
+          if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
+              wrtdia3D_avg(itrc)=.false.
+          endif
+# endif  /* DIAGNOSTICS_TS_MLD */
+
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia3D_avg(itrc),
      &        'write Avg Tracer equation terms ',

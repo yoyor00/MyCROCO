@@ -2907,6 +2907,9 @@ CR       write(stdout,'(20x,A)') vname(1,indxTrate+itrc-1)
 ! Tracer diagnostics variables averaged over the MLD
 !
 # ifdef DIAGNOSTICS_TS_MLD
+
+       vname(1,indxT)='temp_CRT1                                  '
+
 CR       write(stdout,'(1x,A,I3)') 'indxTXadv_mld = ',indxTXadv_mld+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))
        nametrc=vname(1,indxT+itrc-1)(1:lvar)
@@ -3035,9 +3038,10 @@ CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
        vname(6,indxTaver_mld+itrc-1)='                            '
        vname(7,indxTaver_mld+itrc-1)='                            '
 
+
 CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
        nametrc=vname(1,indxT+itrc-1)
-       write(vname1,*) trim(nametrc),'_Tcrit_mld                  '
+       write(vname1,*) trim(nametrc),'_depth_mld                  '
        vname(1,indxTcrit_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
        vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
@@ -3058,6 +3062,8 @@ CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
        vname(5,indxTcrit_mld+itrc-1)=vname3
        vname(6,indxTcrit_mld+itrc-1)='                            '
        vname(7,indxTcrit_mld+itrc-1)='                            '
+
+       vname(1,indxT)='temp                                        '
 
 # endif /* DIAGNOSTICS_TS_MLD */
 

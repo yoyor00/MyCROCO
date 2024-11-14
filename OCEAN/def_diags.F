@@ -798,6 +798,10 @@
        call nf_add_attribute(ncid,vidTaver_mld(itrc),
      &      vname(:,indxTaver_mld+itrc-1), 5, NF_FOUT, ierr)
 
+
+
+       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
+       
 !
 !
 ! Tcrit indxTcrit on MLD
@@ -825,7 +829,7 @@
        call nf_add_attribute(ncid,vidTcrit_mld(itrc),
      &      vname(:,indxTcrit_mld+itrc-1), 5, NF_FOUT, ierr)
 
-
+       endif
 
          endif
 

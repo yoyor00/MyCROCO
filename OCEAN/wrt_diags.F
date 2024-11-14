@@ -259,6 +259,7 @@
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
 
+       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
 !
 ! indxTcrit_mld
 !
@@ -266,6 +267,8 @@
            call fillvalue2d(work2d,nciddia,diaTcrit_mld(itrc),
      &                      vname(1,indxTcrit_mld+itrc-1),
      &                      record,r2dvar,type)
+       endif
+
         endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/
