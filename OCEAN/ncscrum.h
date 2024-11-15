@@ -208,7 +208,7 @@
       parameter (indxS=indxV+ntrc_temp+1)
 #  endif
 
-# if defined DIAGNOSTICS_TS_MLD
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
       integer indxCRT2,indxCRT3
       parameter (indxCRT2=indxV+ntrc_temp+ntrc_salt+1,
      &           indxCRT3=indxCRT2+1)
@@ -346,8 +346,10 @@
 #  if defined DIAGNOSTICS_TS_MLD
      &       ,indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
-     &        indxTentr_mld
-     &       ,indxTaver_mld,indxTcrit_mld
+     &        indxTentr_mld,indxTaver_mld
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+     &       ,indxTcrit_mld
+# endif
 
 #  endif
       parameter (indxTXadv=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+
@@ -371,9 +373,11 @@
      &           indxTVmix_mld=indxTHmix_mld+NT,
      &           indxTForc_mld=indxTVmix_mld+NT,
      &           indxTrate_mld=indxTForc_mld+NT,
-     &           indxTentr_mld=indxTrate_mld+NT
-     &          ,indxTaver_mld=indxTentr_mld+NT,
-     &           indxTcrit_mld=indxTaver_mld+NT
+     &           indxTentr_mld=indxTrate_mld+NT,
+     &           indxTaver_mld=indxTentr_mld+NT
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+     &          ,indxTcrit_mld=indxTaver_mld+NT
+# endif
 #  endif
      &                                         )
 # endif
@@ -1227,7 +1231,10 @@
      &      , diaTXadv_mld(NT), diaTYadv_mld(NT), diaTVadv_mld(NT)
      &      , diaTHmix_mld(NT), diaTVmix_mld(NT)
      &      , diaTForc_mld(NT), diaTrate_mld(NT), diaTentr_mld(NT)
-     &      , diaTaver_mld(NT), diaTcrit_mld(NT)
+     &      , diaTaver_mld(NT)
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+     &      , diaTcrit_mld(NT)
+# endif
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
@@ -1435,8 +1442,10 @@
      &      , diaTVadv_mld_avg(NT)
      &      , diaTHmix_mld_avg(NT), diaTVmix_mld_avg(NT)
      &      , diaTForc_mld_avg(NT), diaTrate_mld_avg(NT)
-     &      , diaTentr_mld_avg(NT)
-     &      , diaTaver_mld_avg(NT), diaTcrit_mld_avg(NT)
+     &      , diaTentr_mld_avg(NT), diaTaver_mld_avg(NT)
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+     &      , diaTcrit_mld_avg(NT)
+# endif
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_UV
@@ -1752,7 +1761,10 @@
 # if defined DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld, diaTYadv_mld, diaTVadv_mld, diaTHmix_mld
      &      , diaTVmix_mld, diaTForc_mld, diaTrate_mld, diaTentr_mld
-     &      , diaTaver_mld, diaTcrit_mld
+     &      , diaTaver_mld
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+     &      , diaTcrit_mld
+# endif
 # endif
 # ifdef AVERAGES
      &      , nciddia_avg, nrecdia_avg, nrpfdia_avg
@@ -1766,8 +1778,10 @@
 #  ifdef DIAGNOSTICS_TS_MLD
      &      , diaTXadv_mld_avg, diaTYadv_mld_avg, diaTVadv_mld_avg
      &      , diaTHmix_mld_avg, diaTVmix_mld_avg, diaTForc_mld_avg
-     &      , diaTrate_mld_avg, diaTentr_mld_avg
-     &      , diaTaver_mld_avg, diaTcrit_mld_avg
+     &      , diaTrate_mld_avg, diaTentr_mld_avg, diaTaver_mld_avg
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+     &      , diaTcrit_mld_avg
+# endif
 #  endif
 # endif
 #endif

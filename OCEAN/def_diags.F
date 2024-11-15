@@ -76,7 +76,9 @@
 #   define vidTrate_mld diaTrate_mld
 #   define vidTentr_mld diaTentr_mld
 #   define vidTaver_mld diaTaver_mld
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
 #   define vidTcrit_mld diaTcrit_mld
+# endif
 #  endif
 !
 # else /* AVRH */
@@ -110,7 +112,9 @@
 #   define vidTrate_mld diaTrate_mld_avg
 #   define vidTentr_mld diaTentr_mld_avg
 #   define vidTaver_mld diaTaver_mld_avg
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
 #   define vidTcrit_mld diaTcrit_mld_avg
+# endif
 #  endif
 !
         character*60 text
@@ -799,7 +803,7 @@
      &      vname(:,indxTaver_mld+itrc-1), 5, NF_FOUT, ierr)
 
 
-
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
        if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
        
 !
@@ -830,6 +834,8 @@
      &      vname(:,indxTcrit_mld+itrc-1), 5, NF_FOUT, ierr)
 
        endif
+
+#endif /* DIAGNOSTICS_TS_MLD_CRIT */
 
          endif
 
@@ -1209,6 +1215,9 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTaver_mld(itrc),nf_collective)
 #  endif
+
+
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
 !          
 !
 ! indxTcrit on MLD
@@ -1226,7 +1235,7 @@
 #  endif
 
 !
-
+# endif /*DIAGNOSTICS_TS_MLD_CRIT*/
 
 !
         endif
@@ -1314,7 +1323,9 @@
 #  undef vidTrate_mld
 #  undef vidTentr_mld
 #  undef vidTaver_mld
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
 #  undef vidTcrit_mld
+# endif
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
 # ifdef AVERAGES

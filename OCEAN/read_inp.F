@@ -1209,7 +1209,7 @@ c        close(testunit)
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
 # ifdef TRACERS
         do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
          if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
            MPI_master_only write(stdout, '(6x,A,2x,A,I2,A,I2,A)')
      &                     'F', 'write T(', itrc,
@@ -1220,7 +1220,7 @@ c        close(testunit)
           MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
      &                     wrthis(indxV+itrc), 'write T(', itrc,
      &                              ')  Tracer of index', itrc,'.'
-# ifdef DIAGNOSTICS_TS_MLD
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
          endif
 # endif 
         enddo
@@ -1977,7 +1977,7 @@ c        close(testunit)
 
 
 #if defined DIAGNOSTICS_TS
-# if defined DIAGNOSTICS_TS_MLD
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
       elseif (keyword(1:kwlen).eq.'diag_mld_crit_threshold') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) mld_crit_D, mld_crit_T, mld_crit_T2
@@ -1993,7 +1993,7 @@ c        close(testunit)
         MPI_master_only write(stdout,'(/1x,A,/1x,I6,2x,A,1x/)')
      &   'Depth reference for Mixed Layer calculation:',
      &        mld_depth_ref, 'mld_depth_ref     Depth reference [m]'
-# endif  /* DIAGNOSTICS_TS_MLD */
+# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
 # endif  /* DIAGNOSTICS_TS */
 
 
@@ -2008,11 +2008,11 @@ c        close(testunit)
         do itrc=1,NT
           if (wrtdia3D(itrc)) wrtdia3D(NT+1)=.true.
 
-# ifdef DIAGNOSTICS_TS_MLD
+# ifdef DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
           if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
               wrtdia3D(itrc)=.false.
           endif
-# endif  /* DIAGNOSTICS_TS_MLD */
+# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
 
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia3D(itrc),
@@ -2046,11 +2046,11 @@ c        close(testunit)
         do itrc=1,NT
           if (wrtdia3D_avg(itrc)) wrtdia3D_avg(NT+1)=.true.
 
-# ifdef DIAGNOSTICS_TS_MLD
+# ifdef DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
           if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
               wrtdia3D_avg(itrc)=.false.
           endif
-# endif  /* DIAGNOSTICS_TS_MLD */
+# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
 
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia3D_avg(itrc),

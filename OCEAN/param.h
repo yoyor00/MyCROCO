@@ -458,7 +458,7 @@
 # else
       parameter (ntrc_salt=0)
 # endif
-#if defined DIAGNOSTICS_TS_MLD
+#if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
       parameter (ntrc_mld=2)
 # else
       parameter (ntrc_mld=0)
@@ -634,7 +634,7 @@
 # ifdef SALINITY
      &          , isalt
 # endif
-# if defined DIAGNOSTICS_TS_MLD
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
      &          , iCRT2, iCRT3
 # endif
 # ifdef PASSIVE_TRACER
@@ -753,7 +753,7 @@
 # ifdef SALINITY
       parameter (isalt=itemp+1)
 # endif
-# if defined DIAGNOSTICS_TS_MLD
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
       parameter (iCRT2=itemp+ntrc_salt+1)
       parameter (iCRT3=itemp+ntrc_salt+2)
 # endif

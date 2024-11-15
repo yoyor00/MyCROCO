@@ -74,7 +74,7 @@
 #  include "forces.h"
 #  ifdef DIAGNOSTICS_TS
 #   include "diagnostics.h"
-#  if defined DIAGNOSTICS_TS_MLD
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
       real nearest_diff
       integer indx_depth
 #  endif
@@ -997,7 +997,7 @@
 #   ifdef DIAGNOSTICS_TS_MLD
 #    define T_mld_nnew FX
 #    define T_mld_nstp FE
-
+#    ifdef DIAGNOSTICS_TS_MLD_CRIT
          do j=Jstr,Jend
             do i=Istr,Iend
 
@@ -1044,6 +1044,8 @@
             enddo
          enddo
 
+#    endif  /* DIAGNOSTICS_TS_MLD_CRIT */
+
         do j=Jstr,Jend
           do i=Istr,Iend
             TXadv_mld(i,j,itrc)=0.
@@ -1066,6 +1068,7 @@
             kmld=N-5
 #    endif
             do k=N,kmld,-1
+#    ifdef DIAGNOSTICS_TS_MLD_CRIT
               if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
               cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
               TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
@@ -1082,6 +1085,7 @@
      &                            t(i,j,k,nnew,itemp)*cff
 
               else
+# endif
               cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
               TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
      &                            TXadv(i,j,k,itrc)*cff
@@ -1095,7 +1099,9 @@
      &                            TForc(i,j,k,itrc)*cff
               T_mld_nnew(i,j)     =T_mld_nnew(i,j)+
      &                            t(i,j,k,nnew,itrc)*cff
+#    ifdef DIAGNOSTICS_TS_MLD_CRIT
               endif
+# endif
             enddo
           enddo
         enddo
@@ -1117,13 +1123,18 @@
 #     endif
             do k=N,kmld,-1
               cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+#    ifdef DIAGNOSTICS_TS_MLD_CRIT
+
               if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
                 T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                        t(i,j,k,nstp,itemp)*cff
               else
+# endif
                 T_mld_nstp(i,j)=T_mld_nstp(i,j)+              
      &                        t(i,j,k,nstp,itrc)*cff
+#    ifdef DIAGNOSTICS_TS_MLD_CRIT
               endif
+# endif
             enddo
             if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
           enddo

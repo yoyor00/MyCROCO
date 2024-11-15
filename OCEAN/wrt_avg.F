@@ -279,7 +279,7 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
 !
 #  ifdef TRACERS
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
          if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3) then
 # endif
          if (wrtavg(indxV+itrc)) then
@@ -289,7 +289,7 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
      &        vname(1,indxV+itrc), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          endif
-# ifdef DIAGNOSTICS_TS_MLD
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
         endif
 # endif
       enddo

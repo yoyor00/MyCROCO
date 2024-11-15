@@ -1247,7 +1247,7 @@ C$OMP BARRIER
 !  Initial conditions for MLD CRIT2 & CRIT3
 !--------------------------------------------------------------------
 !
-#if defined DIAGNOSTICS_TS_MLD
+#if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
       do k=1,N
         do j=JR_RANGE
           do i=IR_RANGE

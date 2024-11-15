@@ -541,7 +541,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
 #  endif
       vname(7,indxT)='                                            '
 
-# if defined DIAGNOSTICS_TS_MLD
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
 CR      write(stdout,'(1x,A,I3)') 'indxCRT2 = ',indxCRT2
       vname(1,indxCRT2)='temp_CRT2                                  '
       vname(2,indxCRT2)='potential temperature                       '
@@ -567,7 +567,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxCRT3 = ',indxCRT3
       vname(6,indxCRT3)='x_rho y_rho                                 '
 #  endif
       vname(7,indxCRT3)='                                            '
-# endif
+# endif /* DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_CRIT */
 # endif /* TEMPERATURE */
 
 # ifdef SALINITY
@@ -2908,7 +2908,9 @@ CR       write(stdout,'(20x,A)') vname(1,indxTrate+itrc-1)
 !
 # ifdef DIAGNOSTICS_TS_MLD
 
+# if defined DIAGNOSTICS_TS_MLD_CRIT
        vname(1,indxT)='temp_CRT1                                  '
+# endif
 
 CR       write(stdout,'(1x,A,I3)') 'indxTXadv_mld = ',indxTXadv_mld+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))
@@ -3038,7 +3040,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
        vname(6,indxTaver_mld+itrc-1)='                            '
        vname(7,indxTaver_mld+itrc-1)='                            '
 
-
+# if defined DIAGNOSTICS_TS_MLD_CRIT
 CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
        nametrc=vname(1,indxT+itrc-1)
        write(vname1,*) trim(nametrc),'_depth_mld                  '
@@ -3064,6 +3066,8 @@ CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
        vname(7,indxTcrit_mld+itrc-1)='                            '
 
        vname(1,indxT)='temp                                        '
+
+# endif /* DIAGNOSTICS_TS_MLD_CRIT */
 
 # endif /* DIAGNOSTICS_TS_MLD */
 
