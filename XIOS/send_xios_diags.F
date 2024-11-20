@@ -882,6 +882,12 @@ C apar_file
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='Cs_rho'
      &     , value='have a look at variable Cs_rho in this file')
+      CALL iom_set_file_global_attr_char   (cdid
+     &     ,type='string',name='s_w'
+     &     , value='have a look at variable s_w in this file')
+      CALL iom_set_file_global_attr_char   (cdid
+     &     ,type='string',name='s_rho'
+     &     , value='have a look at variable s_rho in this file')     
 #endif
       CALL iom_set_file_global_attr_int   (cdid
      &     ,type='int',name='ntimes', value=ntimes)
@@ -1917,8 +1923,8 @@ C 				  endif
       CALL iom_set_axis_attr( "s_rho", sc_r(1:N) )
       CALL iom_set_axis_attr( "s_w"  , sc_w(0:N) )
 # ifdef M3FAST_SEDLAYERS
-      CALL iom_set_axis_attr( "s_rho_full", sc_r )      
-      CALL iom_set_axis_attr( "s_w_full"  , sc_w )
+      CALL iom_set_axis_attr( "s_rho_total", sc_r(-N_sl+1:N) )      
+      CALL iom_set_axis_attr( "s_w_total"  , sc_w(-N_sl:N) )
 # endif      
 # ifdef SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
@@ -2426,18 +2432,6 @@ C 				  endif
       call xios_send_field("Cs_w",Cs_w(0:N))
 # ifdef M3FAST_SEDLAYERS   
       call xios_send_field("Cs_w_total",Cs_w(-N_sl:N))
-# endif      
-      endif
-      if (xios_field_is_active("sc_r")) then
-      call xios_send_field("sc_r",sc_r(1:N))
-# ifdef M3FAST_SEDLAYERS   
-      call xios_send_field("sc_r_total",sc_r(-N_sl+1:N))
-# endif      
-      endif
-      if (xios_field_is_active("sc_w")) then
-      call xios_send_field("sc_w",sc_w(0:N))
-# ifdef M3FAST_SEDLAYERS   
-      call xios_send_field("sc_w_total",sc_w(-N_sl:N))
 # endif      
       endif
       if (xios_field_is_active("hc")) then
