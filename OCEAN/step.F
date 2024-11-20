@@ -24,9 +24,6 @@
 #include "ocean3d.h"
 #include "ocean2d.h"
 #include "mpi_cpl.h"
-#ifdef MUSTANG
-# include "coupler_define_MUSTANG.h"
-#endif
 
 #ifdef AGRIF
       IF (agrif_fixed().NE.sortedint(nbtimes)) return
@@ -1027,16 +1024,15 @@ C$OMP END MASTER
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
       use comMUSTANG, only : l_morphocoupl, t_morpho
 # endif
-# if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
+# if defined RVTK_DEBUG && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
       use comMUSTANG, only : dzs
 #  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
       use comMUSTANG , only : flx_bx, flx_by
       use comsubstance, only : ibedload1, ibedload2
-#  endif
-# endif
-# include "coupler_define_MUSTANG.h"
-#endif
+#  endif /* key_MUSTANG_bedload  key_MUSTANG_V2 */
+# endif /* RVTK_DEBUG_AVANCED  SOLVE3D */
+#endif /* MUSTANG */
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -1124,7 +1120,7 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
-# if defined RVTK_DEBUG_AVANCED && defined SOLVE3D
+# if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
 C$OMP MASTER
       do itrc = 1, NT
         call check_tab3d(Akt(:,:,1:N,itrc),'Akt step3d_t','r')
@@ -1133,10 +1129,14 @@ C$OMP MASTER
         call check_tab3d(trb(:,:,1:N,nstp,igls),'gls step3d_t','r')
         call check_tab3d(trb(:,:,1:N,nstp,itke),'tke step3d_t','r')
 #  endif
+C$OMP END MASTER
+# endif
+# if defined RVTK_DEBUG && defined SOLVE3D
+C$OMP MASTER
 #  if defined MUSTANG
         do ilay = ksdmin, ksdmax
-            call check_tab2d(c_sedtot(ilay, :, :),'c_sedtotx step3d_t','r')
-            call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','r')
+            call check_tab2d(c_sedtot(ilay, :, :),'c_sedtot step3d_t','rint')
+            call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','rint')
         enddo
 #   if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
         do itrc = ibedload1, ibedload2
@@ -1168,7 +1168,7 @@ C$OMP BARRIER
         call ana_morphodyn (tile)
 #   endif
 #  elif defined MUSTANG
-        if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) then
+        if (l_morphocoupl .AND. time .GE. t_morpho ) then
             call mustang_morpho_main (tile)
         endif
 #  endif

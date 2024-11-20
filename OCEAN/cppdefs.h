@@ -657,7 +657,6 @@ cppdef.h by hand for the common setups.
 #  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  define WAVE_OFFLINE
-#  undef  key_MUSTANG_specif_outputs
 # endif
 /*
 !

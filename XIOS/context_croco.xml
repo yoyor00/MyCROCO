@@ -16,8 +16,8 @@
   <domain_definition src="./domain_def_croco.xml"/>
   
   <axis_definition>
-    <axis id="s_rho"/>
-    <axis id="s_w"/>
+    <axis id="s_rho" long_name="S-coordinate at RHO-points"/>
+    <axis id="s_w" long_name="S-coordinate at W-points"/>
     <axis id="s_b"/>      <!-- For Sediment -->
     <axis id="s_rhoS"/> <!-- For Sediment + PISCES -->
   </axis_definition>

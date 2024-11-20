@@ -43,7 +43,8 @@ if [ ${USE_ATM} == 1 ]; then
             for nest_nb in `seq 1 ${num_mv_nest}`; do
                 coef=$(( ${coef}*$( echo "${ref_coef}" | cut -d " " -f $(( ${nest_nb})) ) ))
             done
-            sed -e "s|<atmdt>|$(( ${DT_ATM} / ${coef} ))|g" \
+            tmp_dt_atm=$(awk "BEGIN {print ${DT_ATM} / ${coef}.0}")
+            sed -e "s|<atmdt>|${tmp_dt_atm}|g" \
                 ./namcouple>tmp$$
             mv tmp$$ namcouple
         elif [[ ${dom} == $(echo ${wrfcpldom} | awk '{print $NF}' )  ]]; then 
