@@ -22,10 +22,10 @@ MODULE dredging
 
 #if defined MUSTANG
 
-   USE module_substance ! for GLOBAL_2D_ARRAY, h, t
+   USE module_substance ! for GLOBAL_2D_ARRAY, h, t, time
    USE module_MUSTANG ! for z_w
    USE comsubstance, ONLY: lchain, rsh, rlg, riosh, nvp, isand1, isand2, &
-                           igrav1, igrav2, surf_cell, l_subs2D
+                           igrav1, igrav2, surf_cell, l_subs2D, name_var
    USE comMUSTANG, ONLY: dredging_location_file, dredging_settings_file, &
                          dredging_out_file, dredging_dt, dredging_dt_out, &
                          dredging_dumping_layer, hsed, ksmi, ksma, cv_sed, dzs
@@ -61,6 +61,13 @@ MODULE dredging
    INTEGER :: n_dredg_loc
    INTEGER :: n_dump_loc
    REAL(KIND=rsh) :: dredging_time
+   REAL(KIND=rsh) :: dredging_time_out
+   INTEGER :: dredging_ncid
+   INTEGER :: dredging_t_dimid, dredging_t_varid
+   INTEGER :: dredging_next_record
+   INTEGER :: dredging_area_dimid, dredging_area_varid
+   INTEGER :: dredging_class_dimid, dredging_class_varid
+   INTEGER :: dredging_mass_varid
 
    INTEGER, DIMENSION(:), ALLOCATABLE :: dump_layer
 
@@ -74,6 +81,7 @@ CONTAINS
       !! ** Purpose : Initialization of dredging parameters and variables
       !!
       !!------------------------------------------------------------------------
+      IMPLICIT NONE
       INTEGER, INTENT(IN) :: imin, imax, jmin, jmax
 
       l_dredging = .TRUE.
@@ -96,6 +104,8 @@ CONTAINS
             CALL dredging_read_location_file
             !! initialize dump_surface and dredg_flag
             CALL dredging_init_var(imin, imax, jmin, jmax)
+            !! initialize output file
+            CALL dredging_def_output
          END IF ! test if there is at least one dredging area
 
       END IF ! test if there is dreddging
@@ -114,10 +124,10 @@ CONTAINS
       IMPLICIT NONE
 
       INTEGER :: i, ios, idump
-      CHARACTER(len=1000) :: line
-      CHARACTER(len=lchain) :: temp_dredging, temp_dumping
-      CHARACTER(len=lchain), DIMENSION(:), ALLOCATABLE :: temp_dumping_name
-      REAL(kind=rsh) :: temp_depth
+      CHARACTER(LEN=1000) :: line
+      CHARACTER(LEN=lchain) :: temp_dredging, temp_dumping
+      CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: temp_dumping_name
+      REAL(KIND=rsh) :: temp_depth
       LOGICAL :: new_dump_zone, line_ok
 
       OPEN (unit=51, file=dredging_settings_file, &
@@ -189,10 +199,11 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+      IMPLICIT NONE
       INTEGER :: i, ios, iz, idump
-      CHARACTER(len=1000) :: line
-      CHARACTER(len=lchain) :: temp_dredging, temp_dumping
-      REAL(kind=rsh) :: temp_depth
+      CHARACTER(LEN=1000) :: line
+      CHARACTER(LEN=lchain) :: temp_dredging, temp_dumping
+      REAL(KIND=rsh) :: temp_depth
       LOGICAL :: new_dump_zone
 
       OPEN (unit=51, file=dredging_settings_file, &
@@ -249,9 +260,9 @@ CONTAINS
       USE netcdf
       IMPLICIT NONE
 
-      INTEGER iz, ncid, varid, status
-      CHARACTER(lchain) name
-      REAL tmp(GLOBAL_2D_ARRAY)
+      INTEGER :: iz, ncid, varid, status
+      CHARACTER(lchain) :: name
+      REAL(KIND=rsh) :: tmp(GLOBAL_2D_ARRAY)
 
       ! Open input NetCDF file.
       status = NF90_OPEN(dredging_location_file, NF90_NOWRITE, ncid)
@@ -313,6 +324,7 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+      IMPLICIT NONE
       INTEGER, INTENT(IN) :: imin, imax, jmin, jmax
 
       INTEGER :: i, j, iz, iv, tmp_flag
@@ -370,6 +382,7 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+      IMPLICIT NONE
       IF (dredging_dumping_layer > N) THEN
          WRITE (stdout, *) "Error dredging_dumping_layer should be <= N"
          WRITE (stdout, *) "N = ", N
@@ -409,6 +422,7 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+      IMPLICIT NONE
       ALLOCATE (dredg_name(n_dredg_loc))
       ALLOCATE (dump_name(n_dump_loc))
 
@@ -454,6 +468,7 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+      IMPLICIT NONE
       dredg_hsed_init(:, :) = hsed(:, :)
 
    END SUBROUTINE dredging_init_hsed0
@@ -467,6 +482,7 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+      IMPLICIT NONE
       INTEGER, INTENT(IN) :: imin, imax, jmin, jmax
 
       IF (time .GE. dredging_time) THEN
@@ -485,10 +501,13 @@ CONTAINS
 
          CALL dredging_mpi_waterconcentration
 
-         CALL dredging_output
-
+         IF (time .GE. dredging_time_out) THEN
+            MPI_master_only CALL dredging_write_output
+            ! update next time for output
+            dredging_time_out = time + dredging_dt_out
+         END IF
          ! update next time
-         dredging_time = dredging_time + dredging_dt
+         dredging_time = time + dredging_dt
       END IF
 
    END SUBROUTINE dredging_main
@@ -501,6 +520,8 @@ CONTAINS
       !! ** Purpose : computation of dredged masses
       !!
       !!------------------------------------------------------------------------
+
+      IMPLICIT NONE
       INTEGER, INTENT(IN) :: imin, imax, jmin, jmax
 
       INTEGER :: i, j, iv, iz, k
@@ -514,8 +535,8 @@ CONTAINS
             END DO
             iz = dredg_flag(i, j)
             IF (iz > 0) THEN ! in dredging area
-               DO WHILE ((h(i, j) - (hsed(i, j) - dredg_hsed_init(i, j))) &
-                         .LE. (dredg_depth(iz)) .AND. ksma(i, j) > 0)
+               DO WHILE (((h(i, j) - (hsed(i, j) - dredg_hsed_init(i, j))) &
+                         .LT. dredg_depth(iz)) .AND. ksma(i, j) > 0)
                   k = ksma(i, j)
                   DO iv = 1, nvp
                      dredg_mass_byclass_byloc(iz, iv) = &
@@ -541,6 +562,8 @@ CONTAINS
       !! ** Purpose : computation of dumping masses
       !!
       !!------------------------------------------------------------------------
+
+      IMPLICIT NONE
       INTEGER :: iz, idump
 
       dump_mass_byclass_byloc(:, :) = 0.0_rsh
@@ -565,6 +588,7 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+      IMPLICIT NONE
       INTEGER :: i, j, idump, iv
 
       dump_gravel_flx(:, :, :) = 0.0_rsh
@@ -603,6 +627,7 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+      IMPLICIT NONE
       !! TODO
 
    END SUBROUTINE dredging_mpi_mass
@@ -616,29 +641,191 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+      IMPLICIT NONE
       !! TODO
 
    END SUBROUTINE dredging_mpi_waterconcentration
    !============================================================================
 
-   SUBROUTINE dredging_output
+   SUBROUTINE dredging_def_output
       !!------------------------------------------------------------------------
-      !!       *** SUBROUTINE dredging_output ***
+      !!       *** SUBROUTINE dredging_def_output ***
+      !!
+      !! ** Purpose : Define netcdf file to output cummulative dredging mass
+      !!
+      !!------------------------------------------------------------------------
+
+      USE netcdf
+
+      IMPLICIT NONE
+      INTEGER :: j, lchain_dimid
+
+      INTEGER :: name_area_varid
+      REAL(KIND=rlg), DIMENSION(:), ALLOCATABLE :: area_var
+      CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: area_name
+      INTEGER, DIMENSION(2) :: dimids2_area
+
+      INTEGER :: name_class_varid
+      REAL(KIND=rlg), DIMENSION(:), ALLOCATABLE :: class_var
+      CHARACTER(LEN=lchain), DIMENSION(:), ALLOCATABLE :: class_name
+      INTEGER, DIMENSION(2) :: dimids2_class
+
+      INTEGER, DIMENSION(3) :: dimids3_mass_t
+
+#ifdef MPI
+      IF (mynode .eq. 0) THEN
+#endif
+         CALL dredging_check( &
+            nf90_create(dredging_out_file, NF90_SHARE, dredging_ncid))
+
+         CALL dredging_check( &
+            nf90_def_dim(dredging_ncid, 'lchain', lchain, lchain_dimid))
+         CALL dredging_check( &
+            nf90_def_dim(dredging_ncid, 'time', NF90_UNLIMITED, &
+                         dredging_t_dimid))
+         CALL dredging_check( &
+            nf90_def_var(dredging_ncid, "time", NF90_DOUBLE, &
+                         dredging_t_dimid, dredging_t_varid))
+         CALL dredging_check( &
+            nf90_put_att(dredging_ncid, dredging_t_varid, &
+                         "units", "seconds since 1900-01-01"))
+
+         CALL dredging_check( &
+            nf90_def_dim(dredging_ncid, 'area', &
+                         n_dredg_loc, dredging_area_dimid))
+         CALL dredging_check( &
+            nf90_def_var(dredging_ncid, "area", NF90_DOUBLE, &
+                         dredging_area_dimid, dredging_area_varid))
+         dimids2_area = (/lchain_dimid, dredging_area_dimid/)
+         CALL dredging_check( &
+            nf90_def_var(dredging_ncid, 'area_name', NF90_CHAR, &
+                         dimids2_area, name_area_varid))
+
+         CALL dredging_check( &
+            nf90_def_dim(dredging_ncid, 'class', &
+                         nvp, dredging_class_dimid))
+         CALL dredging_check( &
+            nf90_def_var(dredging_ncid, "class", NF90_DOUBLE, &
+                         dredging_class_dimid, dredging_class_varid))
+         dimids2_class = (/lchain_dimid, dredging_class_dimid/)
+         CALL dredging_check( &
+            nf90_def_var(dredging_ncid, 'class_name', NF90_CHAR, &
+                         dimids2_class, name_class_varid))
+
+         dimids3_mass_t = (/dredging_area_dimid, dredging_class_dimid, &
+                            dredging_t_dimid/)
+         CALL dredging_check( &
+            nf90_def_var(dredging_ncid, 'cummulative_mass', NF90_DOUBLE, &
+                         dimids3_mass_t, dredging_mass_varid))
+         CALL dredging_check( &
+            nf90_put_att(dredging_ncid, dredging_mass_varid, &
+                         "description", "Cummulative mass"))
+
+         CALL dredging_check(nf90_enddef(dredging_ncid))
+         CALL dredging_check(nf90_sync(dredging_ncid))
+
+         ALLOCATE (area_var(n_dredg_loc))
+         ALLOCATE (area_name(n_dredg_loc))
+         DO j = 1, n_dredg_loc
+            area_var(j) = j
+            area_name(j) = dredg_name(j)
+         END DO
+         CALL dredging_check( &
+            nf90_put_var(dredging_ncid, dredging_area_varid, area_var(:), &
+                         start=(/1/), count=(/n_dredg_loc/)))
+         CALL dredging_check( &
+            nf90_put_var(dredging_ncid, name_area_varid, area_name, &
+                         start=(/1, 1/), count=(/lchain, n_dredg_loc/)))
+
+         CALL dredging_check(nf90_sync(dredging_ncid))
+
+         IF (nvp .gt. 0) THEN
+            ALLOCATE (class_var(nvp))
+            ALLOCATE (class_name(nvp))
+            DO j = 1, nvp
+               class_var(j) = j
+               class_name(j) = name_var(j)
+            end do
+            CALL dredging_check( &
+               nf90_put_var(dredging_ncid, dredging_class_varid, class_var(:), &
+                            start=(/1/), count=(/nvp/)))
+            CALL dredging_check( &
+               nf90_put_var(dredging_ncid, name_class_varid, &
+                            class_name, &
+                            start=(/1, 1/), count=(/lchain, nvp/)))
+         END IF
+
+         CALL dredging_check(nf90_sync(dredging_ncid))
+
+         dredging_next_record = 1
+
+#ifdef MPI
+      END IF
+#endif
+
+   END SUBROUTINE dredging_def_output
+   !============================================================================
+
+   SUBROUTINE dredging_write_output
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dredging_write_output ***
       !!
       !! ** Purpose : Output cummulative dredging mass
       !!
       !!------------------------------------------------------------------------
 
-      !! TODO
+      USE netcdf
 
-   END SUBROUTINE dredging_output
+      IMPLICIT NONE
+      integer :: iv, iz
+      integer, dimension(3) :: start
+
+      ! write time
+      call dredging_check( &
+         nf90_put_var(dredging_ncid, dredging_t_varid, &
+                      time, (/dredging_next_record/)))
+
+      ! write open line
+      do iz = 1, n_dredg_loc
+         do iv = 1, nvp
+            start = (/iz, iv, dredging_next_record/)
+            call dredging_check( &
+               nf90_put_var(dredging_ncid, &
+                            dredging_mass_varid, &
+                            dredg_mass_byclass_byloc_cum(iz, iv), start))
+         end do
+      end do
+
+      call dredging_check(nf90_sync(dredging_ncid))
+
+      dredging_next_record = dredging_next_record + 1
+
+   END SUBROUTINE dredging_write_output
    !============================================================================
+
+   SUBROUTINE dredging_check(status)
+      !!------------------------------------------------------------------------
+      !!                 *** SUBROUTINE dredging_check  ***
+      !!
+      !! ** Purpose : check netcdf function
+      !!------------------------------------------------------------------------
+
+      USE netcdf
+      INTEGER, intent(in) :: status
+
+      IF (status /= nf90_noerr) THEN
+         WRITE (stdout, *) 'dredging_check(): '
+         WRITE (stdout, *) TRIM(nf90_strerror(status))
+         STOP 1
+      END IF
+
+   END SUBROUTINE dredging_check
 
    SUBROUTINE dredging_ncget2D(ncid, varid, tmp)
       !!------------------------------------------------------------------------
       !!                 *** SUBROUTINE dredging_ncget2D  ***
       !!
-      !! ** Purpose : Purpose : get var from netcdf
+      !! ** Purpose : get var from netcdf
       !!              (from nf_fread.F translate in f90)
       !!------------------------------------------------------------------------
       USE netcdf
@@ -655,24 +842,24 @@ CONTAINS
       start(2) = 1
 
 #ifdef MPI
-      if (ii .gt. 0) THEN
+      IF (ii .gt. 0) THEN
          start(1) = 1 - imin + iminmpi
          imin = 1
-      end if
-      if (ii .eq. NP_XI - 1) THEN
+      END IF
+      IF (ii .eq. NP_XI - 1) THEN
          imax = Lmmpi + 1
-      else
+      ELSE
          imax = Lmmpi
-      end if
-      if (jj .gt. 0) THEN
+      END IF
+      IF (jj .gt. 0) THEN
          start(2) = 1 - jmin + jminmpi
          jmin = 1
-      end if
-      if (jj .eq. NP_ETA - 1) THEN
+      END IF
+      IF (jj .eq. NP_ETA - 1) THEN
          jmax = Mmmpi + 1
-      else
+      ELSE
          jmax = Mmmpi
-      end if
+      END IF
 #else
       imax = Lm + 1
       jmax = Mm + 1
@@ -702,6 +889,6 @@ CONTAINS
 
    END SUBROUTINE dredging_ncget2D
 
-# endif /* ifdef MUSTANG */
+#endif /* ifdef MUSTANG */
    !============================================================================
 END MODULE dredging

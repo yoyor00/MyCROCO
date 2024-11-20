@@ -735,7 +735,6 @@
 :-------------------------------------------------------------------------------
 :  Namelist relative to dredging effect
 :-------------------------------------------------------------------------------
-:    dredging_dt : dredging time step (s)
 :    dredging_location_file : input netcdf file path containing :
 :               - dredging areas location and name 
 :               - dumping area location and name
@@ -744,6 +743,11 @@
 :               level limit for dredging
 :    dredging_out_file : output netcdf file path containing for every sediment 
 :               class and every dredging area the cummulation mass dredged
+:    dredging_dumping_layer : water layer where the mud and sand are dumped 
+:               (gravel are directly in deposit)
+:               integer between 1 and number of layer in water.
+:    dredging_dt : dredging time step (s)
+:    dredging_dt_out : dredging output time step (s) (> dredging_dt)
 :-------------------------------------------------------------------------------
 &namdredging
    dredging_location_file = ''

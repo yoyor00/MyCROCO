@@ -3497,7 +3497,7 @@ MODULE sed_MUSTANG
                     print *,'poro = ',poro(ksmax,i,j)
                   END IF
 #endif            
-                  dzs(ksmax,i,j)=mass_tot/((1.0_rsh-poro(ksmax,i,j))*ros(1))
+                  dzs(ksmax,i,j)=max(mass_tot/((1.0_rsh-poro(ksmax,i,j))*ros(1)),epsi30_MUSTANG) !to avoid Nan in cv_sed due to too small thickness
                   dzsi=1.0_rsh/dzs(ksmax,i,j)
 
                   DO iv=igrav1,imud2
@@ -3729,7 +3729,7 @@ MODULE sed_MUSTANG
                END IF
 
                ksmax=ksmax+1
-               dzs(ksmax,i,j)=dzs_dep
+               dzs(ksmax,i,j)=max(dzs_dep,epsi30_MUSTANG) !to avoid Nan in cv_sed due to too small thickness
                dzsi=1.0_rsh/dzs(ksmax,i,j)
 
                DO iv=igrav1,imud2
@@ -4373,7 +4373,7 @@ MODULE sed_MUSTANG
                 IF(ksmax.EQ.ksdmax)CALL sed_MUSTANG_fusion(i,j,ksmax)
                 dzsa=0.0_rsh
                 ksmax=ksmax+1
-                dzs(ksmax,i,j)=dzsnew
+                dzs(ksmax,i,j)=max(dzsnew,epsi30_MUSTANG) !to avoid Nan in cv_sed due to too small thickness
                 dzsi=1.0_rsh/dzs(ksmax,i,j)
                 DO iv=igrav1,igrav2
                   cv_sed(iv,ksmax,i,j)=voldepgrv*frdep(iv)*dzsi
@@ -4537,17 +4537,6 @@ MODULE sed_MUSTANG
                 ENDIF  !  porewater > porewatera
               ENDIF  ! dwsnew > dzsmin
  
-              ! control writing :            
-              !if(poro(k,i,j).ge.0.9999_rsh)then
-              !  write(*,*)'dans effdep, a',t,'  en kij:',k,i,j
-              !  write(*,555)k,dzs(k,i,j),c_sedtot(k,i,j),poro(k,i,j)
-              !  write(*,*)dzsa,dzsgrv,dzssan,dzsmud,voldepgrv,voldepsan, &
-              !            masdepmud,frdep,(cv_sed(iv,k,i,j),iv=1,4)
-              !  write(*,*)igrav1,igrav2,isand1,isand2,imud1,imud2
-              !  write(*,*)(fluevs(iv,i,j),iv=1,5)
-              !  write(*,*)cvasr,cvascr,ddzs,ddzs1,ddzs2,ddzs3,ddzs4,ddzs5
-              !  write(*,*)ddzsici,dvolgrv,dvolsan,cvolinigrv,cvolinisan,dzsaici
-              !endif
 
            ! pour eviter l augmentation de l epaisseur de la couche de surface 
               IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN

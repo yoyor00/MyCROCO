@@ -440,8 +440,10 @@ CONTAINS
     READ(50, namsedim_erosion); rewind(50)
 #ifdef key_MUSTANG_V2
     READ(50, namsedim_poro); rewind(50)
+#ifdef key_MUSTANG_bedload
     READ(50, namsedim_bedload); rewind(50)
-#endif    
+#endif  
+#endif     
     READ(50, namsedim_lateral_erosion); rewind(50)
     READ(50, namsedim_consolidation); rewind(50)
     READ(50, namsedim_diffusion); rewind(50)
@@ -486,7 +488,9 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namsedim_deposition)
 #ifdef key_MUSTANG_V2
     MPI_master_only WRITE(iscreenlog, namsedim_poro)
+#ifdef key_MUSTANG_bedload
     MPI_master_only WRITE(iscreenlog, namsedim_bedload)
+#endif  
 #else
     MPI_master_only WRITE(iscreenlog, namsedim_erosion)
 #endif
