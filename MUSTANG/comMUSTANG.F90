@@ -347,18 +347,32 @@ public
 #endif
 
 
-    ! namsedoutput  
-    LOGICAL :: l_outsed_flx_WS_all ! set to .true. if output fluxes threw 
-        ! interface Water/sediment (2 2D variables per 
-        ! constitutive particulate variable)
-    LOGICAL :: l_outsed_flx_WS_int ! set to .true. if output fluxes threw 
-        ! interface Water/sediment (integration on all 
-        ! constitutive particulate variables)
-    LOGICAL :: l_outsed_saltemp ! set to .true. if output Salinity and 
-        ! Temperature in sediment
+    ! namsedoutput 
+    LOGICAL :: l_outsed_nb_lay_sed ! To output the current number of layer
+    LOGICAL :: l_outsed_hsed ! To the sediment thickness
+    LOGICAL :: l_outsed_tauskin ! To output the total skin stress
+    LOGICAL :: l_outsed_tauskin_cw ! To output the current skin stress and the wave skin stress
+    LOGICAL :: l_outsed_poro  ! To output the porosity
+    LOGICAL :: l_outsed_dzs  ! To output the sediment thickness of each layer
+    LOGICAL :: l_outsed_temp_sed ! To output the temperature in sediment 
+    LOGICAL :: l_outsed_salt_sed ! To output the salinity in sediment 
+    LOGICAL :: l_outsed_cv_sed ! To output each sediment class concentration
+    LOGICAL :: l_outsed_ws ! To output each MUD class settling velocities
+    LOGICAL :: l_outsed_toce ! To output the critical erosion stress 
+    LOGICAL :: l_outsed_flx_s2w_w2s ! To output the sediment to water and the water to sediment fluxes
+    LOGICAL :: l_outsed_pephm_fcor ! To output the hindering exposure factor 
+    LOGICAL :: l_outsed_bedload ! To output the bedload flux along x/y-axis  andthe divergence of bedload flux 
+    LOGICAL :: l_outsed_fsusp ! To output the fraction of transport in susp
+    LOGICAL :: l_outsed_frmudsup ! To output mud fraction in the ksmax layer
+    LOGICAL :: l_outsed_dzs_ksmax ! To output layer thickness at sed. surface
+    LOGICAL :: l_outsed_theoric_active_layer ! To output theoric act. lay.
+    LOGICAL :: l_outsed_ero_details ! To output iterations in sed_erosion and part in coh and noncoh during time step
+    LOGICAL :: l_outsed_z0sed ! Skin roughness length
+    LOGICAL :: l_outsed_z0hydro ! Hydrodynamic roughness length
+    LOGICAL :: l_outsed_consolidation ! To output consolidation variables
     INTEGER :: nk_nivsed_out ! number of saved sediment layers 
-        ! unused if choice_nivsed_out = 1                     
-        ! <ksdmax if choice_nivsed_out = 2, 
+        ! =ksdmax if choice_nivsed_out = 1                     
+        ! <=ksdmax if choice_nivsed_out = 2, 
         ! unused if choice_nivsed_out = 3
         !  <6 if choice_nivsed_out = 4, 
     INTEGER :: choice_nivsed_out ! choice of saving output  (1 to 4)
@@ -431,7 +445,7 @@ public
 ! end namelist variables
 
 
-    REAL(KIND=rsh) :: h0fond  ! RESIDUAL_THICKNESS_WAT see coupler_define (m)
+    REAL(KIND=rsh) :: h0fond  ! residual thickness in water  (m)
 
     ! fwet =1 if not used  
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: fwet
@@ -553,31 +567,65 @@ public
         REAL(KIND=rlg)   :: t_start_debug
 #endif
 #endif
-   
 
     ! Sedim output
-    INTEGER :: nv_out3Dk_specif
-    INTEGER :: nv_out3Dnv_specif
-    INTEGER :: nv_out2D_specif
+    INTEGER, DIMENSION(:), ALLOCATABLE :: rstMust                    ! Output identifier
+    INTEGER, DIMENSION(:), ALLOCATABLE :: hisMust                    ! Output identifier
+    INTEGER, DIMENSION(:), ALLOCATABLE :: avgMust                    ! Output identifier
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: rstoutintegerMust          ! To indicate if the output variable is integer
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: rstout2DMust               ! To indicate if the output variable is 2D or 3D
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: rstout3DsedMust            ! To indicate if the output variable is 3D with sediment vertical axis
+    INTEGER                            :: outMust_nbvar              ! Number of variables available in output
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: outMust                    ! To choose which variable is outputed
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: out2DMust                  ! To indicate if the output variable is 2D or 3D
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: out3DsedMust            ! To indicate if the output variable is 3D with sediment vertical axis
+    CHARACTER(LEN=75), DIMENSION(:, :), ALLOCATABLE :: vname_Must    ! Vector of characteristics of each outputed variables
+    CHARACTER(LEN=75), DIMENSION(:, :), ALLOCATABLE :: vname_rstMust    ! Vector of characteristics of each outputed variables
+
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: ep_nivsed_outp1
-    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: nivsed_out
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE :: var2D_hsed
     REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_cvsed
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_poro
     REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_dzs
     REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_TEMP
     REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3D_SAL
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_flx_s2w
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_flx_w2s
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_pephm_fcor
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_flx_bx
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_flx_by
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_bil_bedload
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_fsusp
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_toce
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_frmudsup
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_dzs_ksmax
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_theoric_active_layer
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_tero_noncoh
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_tero_coh
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_pct_iter_noncoh
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_pct_iter_coh
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_niter_ero
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_flx_s2w_coh
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_flx_w2s_coh
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_flx_s2w_noncoh 
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_flx_w2s_noncoh
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_flx_bx_int
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_flx_by_int
+    REAL(KIND=riosh), DIMENSION(:,:), ALLOCATABLE  :: var2D_bil_bedload_int
+
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3Dksed_loadograv
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3Dksed_permeab
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3Dksed_sigmapsg
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3Dksed_dtsdzs
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3Dksed_hinder
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3Dksed_sed_rate
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3Dksed_sigmadjge
+    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE :: var3Dksed_stateconsol
+
 #if defined key_BLOOM_insed
     REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_diagsed
     REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_diagsed
 #endif
-#ifdef key_MUSTANG_specif_outputs
-    REAL(KIND=rsh), DIMENSION(:,:,:,:), ALLOCATABLE    :: varspecif3Dk_save
-    REAL(KIND=rsh), DIMENSION(:,:,:,:), ALLOCATABLE    :: varspecif3Dnv_save
-    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: varspecif3Dnv_out
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE      :: varspecif2D_save
-    REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE    :: varspecif2D_out
-    REAL(KIND=riosh), DIMENSION(:,:,:,:), ALLOCATABLE  :: var3D_specifout
-#endif
-
 
 !**TODO** put under cpp key #if defined key_MUSTANG_lateralerosion
 !  used in erosion only but exchange and dimensions could depend on grid model 
