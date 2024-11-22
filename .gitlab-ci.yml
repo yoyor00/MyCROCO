@@ -212,7 +212,7 @@ reg_cpl_toy:
   tags:
     - ci.inria.fr
     - large
-  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel_oasis:1.0.0
+  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/TEST_CASES/CPL_TOY
