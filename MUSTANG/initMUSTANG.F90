@@ -1269,13 +1269,12 @@ CONTAINS
     !&E ** Purpose : prepare needed output arrays
     !&E--------------------------------------------------------------------------
 
-#if defined key_BLOOM_insed
-        USE bioloinit,  ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
 
-        ALLOCATE(var2D_diagsed(PROC_IN_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
-        ALLOCATE(var3D_diagsed(nk_nivsed_out,PROC_IN_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
+#if defined BLOOM && defined key_BLOOM_insed
+    USE comBIOLink , ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
+    ALLOCATE(var2D_diagsed(PROC_IN_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
+    ALLOCATE(var3D_diagsed(nk_nivsed_out,PROC_IN_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
 #endif
-
         IF (l_outsed_hsed) THEN
             ALLOCATE(var2D_hsed(PROC_IN_ARRAY))
             var2D_hsed(PROC_IN_ARRAY) = 0.0_rsh

@@ -23,14 +23,6 @@ MODULE substance
    USE comMUSTANG , ONLY : D0_funcT_opt,D0_m0,D0_m1
 #endif
 
-#if defined ECO3M
-# define REPFICNAMELIST 'BIOLINK_NAMELIST'
-#elif defined MUSTANG
-# define REPFICNAMELIST 'MUSTANG_NAMELIST'
-#else
-# define REPFICNAMELIST 'SUBSTANCE_NAMELIST'
-#endif
-
    IMPLICIT NONE
    PRIVATE
     
@@ -697,6 +689,29 @@ CONTAINS
    l_outsandrouse(:)=.false.
 #endif
 
+
+
+   ! -------------------------------------------------------------------
+   ! final tables
+   ! -------------------------------------------------------------------
+   DO iv=1,ntrc_subs
+      ivr=iv+ivTS
+      name_var(iv)=name_var_r(irk_fil(iv))
+      standard_name_var(iv)=standard_name_var_r(irk_fil(iv))
+      long_name_var(iv)=long_name_var_r(irk_fil(iv))
+      unit_var(iv)=unit_var_r(irk_fil(iv))
+      l_out_subs(iv)=l_out_subs_r(irk_fil(iv)) 
+
+      cini_wat(ivr)=cini_wat_r(irk_fil(iv))
+      cobc_wat(ivr)=cobc_wat_r(irk_fil(iv))
+      cini_air(ivr)=cini_air_r(irk_fil(iv))
+      init_cv_name(ivr)=init_cv_name_r(irk_fil(iv))
+      obc_cv_name(ivr)=obc_cv_name_r(irk_fil(iv))
+      cv_rain(ivr)=cv_rain_r(irk_fil(iv))
+      sub_flx_atm(ivr)=flx_atm_r(irk_fil(iv))
+   END DO
+
+
 ! a priori si pour l instant on ne rajoute pas des variables supplementaires crees a partir 
 ! des premieres (varaibles de tracage N ou P avec BIOLO)
 !  on a plus besoin de reordonner le tableau puisque qu'on rempli le tableau 
@@ -711,6 +726,7 @@ CONTAINS
    ! ------------------------------------------------------------------------------------
    ALLOCATE(irkm_var_assoc(nvp))
    irkm_var_assoc(:)=0
+
 #ifdef MUSTANG
    DO iv=1,nv_sorb
      isubs=nvpc+nv_ncp+iv
@@ -862,25 +878,6 @@ CONTAINS
     MPI_master_only WRITE(stdout,*)'number of BENTHIC                     : ',nv_bent
     MPI_master_only WRITE(stdout,*)
 
-   ! -------------------------------------------------------------------
-   ! final tables
-   ! -------------------------------------------------------------------
-    DO iv=1,ntrc_subs
-      ivr=iv+ivTS
-      name_var(iv)=name_var_r(irk_fil(iv))
-      standard_name_var(iv)=standard_name_var_r(irk_fil(iv))
-      long_name_var(iv)=long_name_var_r(irk_fil(iv))
-      unit_var(iv)=unit_var_r(irk_fil(iv))
-      l_out_subs(iv)=l_out_subs_r(irk_fil(iv)) 
-
-      cini_wat(ivr)=cini_wat_r(irk_fil(iv))
-      cobc_wat(ivr)=cobc_wat_r(irk_fil(iv))
-      cini_air(ivr)=cini_air_r(irk_fil(iv))
-      init_cv_name(ivr)=init_cv_name_r(irk_fil(iv))
-      obc_cv_name(ivr)=obc_cv_name_r(irk_fil(iv))
-      cv_rain(ivr)=cv_rain_r(irk_fil(iv))
-      sub_flx_atm(ivr)=flx_atm_r(irk_fil(iv))
-    END DO
   ! memorisation des noms des variables
   !  remplissage du tableau vname declare dans ncscrum.h
    !write(*,*)'in substance indxT=',indxT
