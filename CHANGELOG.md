@@ -8,6 +8,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
+  advection in NBQ
+
 ### Changed
 
 - Issue #163 : for MUSTANG output, 
