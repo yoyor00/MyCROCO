@@ -395,6 +395,7 @@
 # ifdef BIOLOGY
 #  undef  PISCES
 #  undef  BIO_NChlPZD
+#  undef  BIO_NPZD_FRANKS
 #  undef  BIO_N2ChlPZD2
 #  define BIO_BioEBUS
                       /*   Biology options    */

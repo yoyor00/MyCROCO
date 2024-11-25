@@ -1091,6 +1091,11 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iGON_)=1.e-2
             tclm(i,j,k,iGOP_)=1.e-2
 #    endif
+#   elif defined BIO_NPZD_FRANKS
+            tclm(i,j,k,iNO3_)=1.67
+            tclm(i,j,k,iPhy1)=0.08
+            tclm(i,j,k,iZoo1)=0.06
+            tclm(i,j,k,iDet1)=0.04
 #   elif defined BIO_NChlPZD
             tclm(i,j,k,iChla)=0.08
             tclm(i,j,k,iPhy1)=0.1
@@ -1202,6 +1207,12 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iGON_)) tclm(i,j,k,iGON_)=0.01
             if (.not.got_tclm(iGOP_)) tclm(i,j,k,iGOP_)=0.01
 #    endif
+#   elif defined BIO_NPZD_FRANKS
+            if (.not.got_tclm(iNO3_)) tclm(i,j,k,iNO3_)=1.67
+            if (.not.got_tclm(iPhy1)) tclm(i,j,k,iPhy1)=0.08
+            if (.not.got_tclm(iZoo1)) tclm(i,j,k,iZoo1)=0.06
+            if (.not.got_tclm(iDet1)) tclm(i,j,k,iDet1)=0.04
+#   elif defined BIO_N2ChlPZD2
 #   elif defined BIO_NChlPZD
             if (.not.got_tclm(iChla)) tclm(i,j,k,iChla)=0.08
             if (.not.got_tclm(iPhy1)) tclm(i,j,k,iPhy1)=0.1
@@ -2415,6 +2426,27 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iGON_)=Tsrc0(is,iGON_)
           Tsrc(is,k,iGOP_)=Tsrc0(is,iGOP_)
 #    endif
+
+#   elif defined BIO_NPZD_FRANKS
+#    ifdef PSOURCE_NCFILE_TS
+          if (.not.got_tsrc(iNO3_)) then
+            Tsrc0(is,iNO3_)=1.67
+          endif
+          if (.not.got_tsrc(iPhy1)) then
+            Tsrc0(is,iPhy1)=0.08
+          endif
+          if (.not.got_tsrc(iZoo1)) then
+            Tsrc0(is,iZoo1)=0.06
+          endif
+          if (.not.got_tsrc(iDet1)) then
+            Tsrc0(is,iDet1)=0.04
+          endif
+#    endif   /* PSOURCE_NCFILE_TS    */
+          Tsrc(is,k,iNO3_)=Tsrc0(is,iNO3_)
+          Tsrc(is,k,iPhy1)=Tsrc0(is,iPhy1)
+          Tsrc(is,k,iZoo1)=Tsrc0(is,iZoo1)
+          Tsrc(is,k,iDet1)=Tsrc0(is,iDet1)
+
 #   elif defined BIO_NChlPZD
 #    ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iChla)) then
@@ -2434,7 +2466,7 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iPhy1)=Tsrc0(is,iPhy1)
           Tsrc(is,k,iZoo1)=Tsrc0(is,iZoo1)
           Tsrc(is,k,iDet1)=Tsrc0(is,iDet1)
-
+          
 #   elif defined BIO_N2ChlPZD2
 #    ifdef PSOURCE_NCFILE_TS
           if (.not.got_tsrc(iNH4_)) then
@@ -2513,7 +2545,7 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iDON)=Tsrc0(is,iDON)*exp(zsrc/100.)
           Tsrc(is,k,iN2O)=-(0.008*exp(zsrc/100.)-0.01)
           if (Tsrc(is,k,iN2O).lt.0.) Tsrc(is,k,iN2O)=0.
-#   endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS*/
+#   endif /* PISCES or BIO_NPZD_FRANKS or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS*/
 !----------------------------------------------------------------------
         enddo
       enddo
@@ -3288,6 +3320,11 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iPhy1)) tbry_west(j,k,iPhy1)=0.1
             if (.not.got_tbry(iZoo1)) tbry_west(j,k,iZoo1)=0.06
             if (.not.got_tbry(iDet1)) tbry_west(j,k,iDet1)=0.02
+#  elif defined BIO_NPZD_FRANKS
+            if (.not.got_tbry(iNO3_)) tbry_west(j,k,iNO3_)=1.67
+            if (.not.got_tbry(iPhy1)) tbry_west(j,k,iPhy1)=0.08
+            if (.not.got_tbry(iZoo1)) tbry_west(j,k,iZoo1)=0.06
+            if (.not.got_tbry(iDet1)) tbry_west(j,k,iDet1)=0.04
 #  elif defined BIO_N2ChlPZD2
             if (.not.got_tbry(iNH4_)) tbry_west(j,k,iNH4_)=0.1
             if (.not.got_tbry(iChla)) tbry_west(j,k,iChla)=0.08
@@ -3318,7 +3355,7 @@ C$    integer  trd, omp_get_thread_num
      &                              exp(zbry/100.)-0.01)
             if (tbry_west(j,k,iN2O).lt.0.) tbry_west(j,k,iN2O)=0.
 #   endif
-#  endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
+#  endif /* PISCES or BIO_NPZD_FRANKS or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
           enddo
         enddo
       endif
@@ -3390,6 +3427,11 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iPhy1)) tbry_east(j,k,iPhy1)=0.1
             if (.not.got_tbry(iZoo1)) tbry_east(j,k,iZoo1)=0.06
             if (.not.got_tbry(iDet1)) tbry_east(j,k,iDet1)=0.02
+#  elif defined BIO_NPZD_FRANKS
+            if (.not.got_tbry(iNO3_)) tbry_east(j,k,iNO3_)=1.67
+            if (.not.got_tbry(iPhy1)) tbry_east(j,k,iPhy1)=0.08
+            if (.not.got_tbry(iZoo1)) tbry_east(j,k,iZoo1)=0.06
+            if (.not.got_tbry(iDet1)) tbry_east(j,k,iDet1)=0.04
 #  elif defined BIO_N2ChlPZD2
             if (.not.got_tbry(iNH4_)) tbry_east(j,k,iNH4_)=0.1
             if (.not.got_tbry(iChla)) tbry_east(j,k,iChla)=0.08
@@ -3420,7 +3462,7 @@ C$    integer  trd, omp_get_thread_num
      &                               exp(zbry/100.)-0.01)
              if (tbry_east(j,k,iN2O).lt.0.) tbry_east(j,k,iN2O)=0.
 #   endif
-#  endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
+#  endif /* PISCES or BIO_NPZD_FRANKS or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
            enddo
          enddo
        endif
@@ -3492,6 +3534,11 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iPhy1)) tbry_north(j,k,iPhy1)=0.1
              if (.not.got_tbry(iZoo1)) tbry_north(j,k,iZoo1)=0.06
              if (.not.got_tbry(iDet1)) tbry_north(j,k,iDet1)=0.02
+#  elif defined BIO_NPZD_FRANKS
+             if (.not.got_tbry(iNO3_)) tbry_north(j,k,iNO3_)=1.67
+             if (.not.got_tbry(iPhy1)) tbry_north(j,k,iPhy1)=0.08
+             if (.not.got_tbry(iZoo1)) tbry_north(j,k,iZoo1)=0.06
+             if (.not.got_tbry(iDet1)) tbry_north(j,k,iDet1)=0.04
 #  elif defined BIO_N2ChlPZD2
              if (.not.got_tbry(iNH4_)) tbry_north(j,k,iNH4_)=0.1
              if (.not.got_tbry(iChla)) tbry_north(j,k,iChla)=0.08
@@ -3522,7 +3569,7 @@ C$    integer  trd, omp_get_thread_num
      &                                 exp(zbry/100.)-0.01)
             if (tbry_north(j,k,iN2O).lt.0.) tbry_north(j,k,iN2O)=0.
 #   endif
-#  endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
+#  endif /* PISCES or BIO_NPZD_FRANKS or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
            enddo
          enddo
        endif
@@ -3594,6 +3641,11 @@ C$    integer  trd, omp_get_thread_num
              if (.not.got_tbry(iPhy1)) tbry_south(j,k,iPhy1)=0.1
              if (.not.got_tbry(iZoo1)) tbry_south(j,k,iZoo1)=0.06
              if (.not.got_tbry(iDet1)) tbry_south(j,k,iDet1)=0.02
+#  elif defined BIO_NPZD_FRANKS
+             if (.not.got_tbry(iNO3_)) tbry_south(j,k,iNO3_)=1.67
+             if (.not.got_tbry(iPhy1)) tbry_south(j,k,iPhy1)=0.08
+             if (.not.got_tbry(iZoo1)) tbry_south(j,k,iZoo1)=0.06
+             if (.not.got_tbry(iDet1)) tbry_south(j,k,iDet1)=0.04
 #  elif defined BIO_N2ChlPZD2
              if (.not.got_tbry(iNH4_)) tbry_south(j,k,iNH4_)=0.1
              if (.not.got_tbry(iChla)) tbry_south(j,k,iChla)=0.08
@@ -3626,7 +3678,7 @@ C$    integer  trd, omp_get_thread_num
                 tbry_south(j,k,iN2O)=0.
               endif
 #   endif
-#  endif /* PISCES or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
+#  endif /* PISCES or BIO_NPZD_FRANKS or BIO_NChlPZD or BIO_N2ChlPZD2 or BIO_BioEBUS */
            enddo
          enddo
        endif

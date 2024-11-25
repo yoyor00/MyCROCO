@@ -664,6 +664,7 @@
 #    endif
 #   endif
 #  elif defined BIO_NChlPZD
+#  elif defined BIO_NPZD_FRANKS
 #  elif defined BIO_N2ChlPZD2
 #  elif defined BIO_BioEBUS
 #  endif

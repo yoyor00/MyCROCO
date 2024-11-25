@@ -1605,6 +1605,23 @@ C$OMP BARRIER
               t(i,j,k,2,iGOP_)=t(i,j,k,1,iGOP_)
             endif
 #   endif
+#  elif defined BIO_NPZD_FRANKS
+            if (.not.got_tini(iNO3_)) then
+              t(i,j,k,1,iNO3_)=1.67
+              t(i,j,k,2,iNO3_)=t(i,j,k,1,iNO3_)
+            endif
+            if (.not.got_tini(iPhy1)) then
+              t(i,j,k,1,iPhy1)=0.08
+              t(i,j,k,2,iPhy1)=t(i,j,k,1,iPhy1)
+            endif
+            if (.not.got_tini(iZoo1)) then
+              t(i,j,k,1,iZoo1)=0.06
+              t(i,j,k,2,iZoo1)=t(i,j,k,1,iZoo1)
+            endif
+            if (.not.got_tini(iDet1)) then
+              t(i,j,k,1,iDet1)=0.04
+              t(i,j,k,2,iDet1)=t(i,j,k,1,iDet1)
+            endif
 #  elif defined BIO_NChlPZD
             if (.not.got_tini(iChla)) then
               t(i,j,k,1,iChla)=0.08

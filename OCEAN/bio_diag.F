@@ -51,6 +51,11 @@
       my_itrc(2)=iPhy1
       my_itrc(3)=iZoo1
       my_itrc(4)=iDet1
+# elif defined BIO_NPZD_FRANKS
+      my_itrc(1)=iNO3_
+      my_itrc(2)=iPhy1
+      my_itrc(3)=iZoo1
+      my_itrc(4)=iDet1
 # elif defined BIO_N2ChlPZD2
       my_itrc(1)=iNO3_
       my_itrc(2)=iPhy1
@@ -153,6 +158,11 @@ C$OMP CRITICAL (bio_cr_rgn)
             if (first_time.eq.0) then
               first_time=1
 # ifdef BIO_NChlPZD
+              write(stdout,1) 'STEP','time[DAYS]','       NO3',
+     &                   '     PHYTO','       ZOO','    DETRIT',
+     &                   'trd'
+   1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,3x,A3)
+# elif defined BIO_NPZD_FRANKS
               write(stdout,1) 'STEP','time[DAYS]','       NO3',
      &                   '     PHYTO','       ZOO','    DETRIT',
      &                   'trd'

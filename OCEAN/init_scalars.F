@@ -1071,6 +1071,43 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(7,indxGOP)='                                          '
 #   endif
 
+#  elif defined BIO_NPZD_FRANKS
+CR      write(stdout,'(1x,A,I3)') 'indxNO3 =',indxNO3
+      vname(1,indxNO3)='NO3                                       '
+      vname(2,indxNO3)='NO3 Nutrient                              '
+      vname(3,indxNO3)='mMol N m-3                                '
+      vname(4,indxNO3)='NO3, scalar, series                       '
+      vname(5,indxNO3)='                                          '
+      vname(6,indxNO3)='lat_rho lon_rho                           '
+      vname(7,indxNO3)='                                          '
+
+CR      write(stdout,'(1x,A,I3)') 'indxPhy1 =',indxPhy1
+      vname(1,indxPhy1)='PHYTO                                    '
+      vname(2,indxPhy1)='Phytoplankton                            '
+      vname(3,indxPhy1)='mMol N m-3                               '
+      vname(4,indxPhy1)='Phytoplankton, scalar, series            '
+      vname(5,indxPhy1)='                                         '
+      vname(6,indxPhy1)='lat_rho lon_rho                          '
+      vname(7,indxPhy1)='                                         '
+
+CR      write(stdout,'(1x,A,I3)') 'indxZoo1 =',indxZoo1
+      vname(1,indxZoo1)='ZOO                                      '
+      vname(2,indxZoo1)='Zooplankton                              '
+      vname(3,indxZoo1)='mMol N m-3                               '
+      vname(4,indxZoo1)='Zooplankton, scalar, series              '
+      vname(5,indxZoo1)='                                         '
+      vname(6,indxZoo1)='lat_rho lon_rho                          '
+      vname(7,indxZoo1)='                                         '
+
+CR      write(stdout,'(1x,A,I3)') 'indxDet1 =',indxDet1
+      vname(1,indxDet1)='DET                                      '
+      vname(2,indxDet1)='Detritus Nutrient                        '
+      vname(3,indxDet1)='mMol N m-3                               '
+      vname(4,indxDet1)='Detritus, scalar, series                 '
+      vname(5,indxDet1)='                                         '
+      vname(6,indxDet1)='lat_rho lon_rho                          '
+      vname(7,indxDet1)='                                         '
+
 #  elif defined BIO_NChlPZD
 
 CR      write(stdout,'(1x,A,I3)') 'indxNO3 =',indxNO3
@@ -1331,7 +1368,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxN2O =',indxN2O
 
 #   endif
 
-#  endif /* PISCES || BIO_NChlPZD || BIO_N2ChlPZD2 || BIO_BioEBUS */
+#  endif /* PISCES || BIO_NPZD_FRANKS || BIO_NChlPZD || BIO_N2ChlPZD2 || BIO_BioEBUS */
 !----------------------------------------------------------------------------
 
 # endif /* BIOLOGY */
@@ -4107,8 +4144,86 @@ CR     &                          ,indxGasExcFlux
       vname(4,indxGasExcFlux)=
      &     'GasExchangeO2, scalar, series   '
 #  endif /* OXYGEN */
-
 !====================================================================
+
+# elif defined BIO_NPZD_FRANKS
+CR      write(stdout,'(1x,A,I3)') 'indxbioFlux(NFlux_NewProd)='
+CR     &                          ,indxbioFlux+NFlux_NewProd-1
+      vname(1,indxbioFlux+NFlux_NewProd-1)='NFlux_NewProd'
+      vname(2,indxbioFlux+NFlux_NewProd-1)=
+     &  'Flux of N due to new production   '
+      vname(3,indxbioFlux+NFlux_NewProd-1)=
+     &  'mmol N m-3 s-1                    '
+      vname(4,indxbioFlux+NFlux_NewProd-1)=
+     &  'NFlux_NewProd, scalar, series     '
+
+      vname(1,indxbioFlux+NFlux_Grazing-1)='NFlux_Grazing'
+      vname(2,indxbioFlux+NFlux_Grazing-1)=
+     &  'Flux of N due to grazing          '
+      vname(3,indxbioFlux+NFlux_Grazing-1)=
+     &  'mmol N m-3 s-1                    '
+      vname(4,indxbioFlux+NFlux_Grazing-1)=
+     &  'NFlux_Grazing, scalar, series     '
+
+      vname(1,indxbioFlux+NFlux_SlopFeed-1)=
+     &  'NFlux_SlopFeed                    '
+      vname(2,indxbioFlux+NFlux_SlopFeed-1)=
+     &  'Flux of N due to sloppy feeding   '
+      vname(3,indxbioFlux+NFlux_SlopFeed-1)=
+     &  'mmol N m-3 s-1                    '
+      vname(4,indxbioFlux+NFlux_SlopFeed-1)=
+     &  'NFlux_SlopFeed, scalar, series    '
+
+      vname(1,indxbioFlux+NFlux_Pmort-1)='NFlux_Pmort'
+      vname(2,indxbioFlux+NFlux_Pmort-1)=
+     &  'Flux of N due to phytoplankton mortality'
+      vname(3,indxbioFlux+NFlux_Pmort-1)=
+     &  'mmol N m-3 s-1                  '
+      vname(4,indxbioFlux+NFlux_Pmort-1)=
+     &  'NFlux_Pmort, scalar, series     '
+
+      vname(1,indxbioFlux+NFlux_Zmetab-1)=
+     &  'NFlux_Zmetab                  '
+      vname(2,indxbioFlux+NFlux_Zmetab-1)=
+     &  'Flux of N due to zooplankton metabolism'
+      vname(3,indxbioFlux+NFlux_Zmetab-1)=
+     &  'mmol N m-3 s-1                 '
+      vname(4,indxbioFlux+NFlux_Zmetab-1)=
+     &  'NFlux_Zmetab, scalar, series   '
+
+      vname(1,indxbioFlux+NFlux_Zmort-1)=
+     &  'NFlux_Zmort                    '
+      vname(2,indxbioFlux+NFlux_Zmort-1)=
+     &  'Flux of N due to zooplankton mortality'
+      vname(3,indxbioFlux+NFlux_Zmort-1)=
+     &  'mmol N m-3 s-1                       '
+      vname(4,indxbioFlux+NFlux_Zmort-1)=
+     &  'NFlux_Zmort, scalar, series '
+
+CR      write(stdout,'(1x,A,I3)') 'indxbioFlux(NFlux_ReminD)='
+CR     &                          ,indxbioFlux+NFlux_ReminD-1
+      vname(1,indxbioFlux+NFlux_ReminD-1)=
+     &  'NFlux_ReminD                         '
+      vname(2,indxbioFlux+NFlux_ReminD-1)=
+     &  'Flux of N due to remin. of detritus  '
+      vname(3,indxbioFlux+NFlux_ReminD-1)=
+     &  'mmol N m-3 s-1                       '
+      vname(4,indxbioFlux+NFlux_ReminD-1)=
+     &  'NFlux_ReminD, scalar, series         '
+
+! vertical sinking terms
+CR      write(stdout,'(1x,A,I3)') 'indxbioVSink(NFlux_VSinkD1)='
+CR     &                          ,indxbioVSink+NFlux_VSinkD1-1
+      vname(1,indxbioVSink+NFlux_VSinkD1-1)=
+     &     'NFlux_VSinkD1                   '
+      vname(2,indxbioVSink+NFlux_VSinkD1-1)=
+     &     'Vertical sinking flux of detritus N'
+      vname(3,indxbioVSink+NFlux_VSinkD1-1)=
+     &     'mmol N m-3 s-1                  '
+      vname(4,indxbioVSink+NFlux_VSinkD1-1)=
+     &     'NFlux_VSinkD1, scalar, series   '
+!====================================================================
+
 # elif defined BIO_N2ChlPZD2
 !--
 !     BioFlux terms
