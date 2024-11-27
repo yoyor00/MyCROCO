@@ -499,18 +499,18 @@
 #   else
       parameter (ntrc_bio=11)
 #   endif
+!!! FABM related edit start
+#  elif defined CFABM
+      parameter (NBT=1) /* No. pelagic biology state variables */
+      parameter (NSAT=1) /* No. surface-attached state variables */
+      parameter (NBAT=1) /* No. bottom-attached (benthic) state variables*/
+      parameter (ntrc_bio=NBT+NSAT+NBAT)
+!!! FABM related edit end
 #  endif
 # else
       parameter (ntrc_bio=0)
 # endif /* BIOLOGY */
 
-/*! ==== Modified by SINTEF 2024 ==== */
-# ifdef CFABM
-      parameter (NSAT = 1) /* No. surface-attached state variables */
-      parameter (NBAT = 1) /* No. bottom-attached (benthic) state variables*/
-      parameter (NPAT = 1) /* No. pelagic state variables */
-# endif
-/*! ================================= */
 
 /*! === SUBSTANCE ===*/
 !
@@ -575,11 +575,6 @@
 # else
       parameter (ntrc_sed=0)
 # endif /* SEDIMENT */
-
-# ifdef CFABM
-      parameter (NT = isalt + NSAT + NBAT + NPAT)
-      parameter (NumFluxTerms = NPAT) /* This one is most likely wrong, just here for illustrative purposes*/
-# endif /* CFABM */
 
 !
 ! Total number of active tracers
@@ -722,7 +717,12 @@
      &          , NFlux_VSinkP1
      &          , NFlux_VSinkD1, NFlux_VSinkD2
      &          , NumVSinkTerms
-
+!!! FABM related edit start
+#  elif defined CFABM
+     &          , ibio, isat, ibat
+     &          , NumFluxTerms, NumGasExcTerms
+     &          , NumVSinkTerms
+!!! FABM related edit end
 #  elif defined BIO_BioEBUS
      &          , iNO3_, iNO2_, iNH4_, iPhy1, iPhy2, iZoo1, iZoo2
      &          , iDet1, iDet2, iDON, iO2
@@ -946,6 +946,13 @@
      &           NFlux_VSinkD2  = 3,
      &           NumVSinkTerms  = 3)
 
+#  elif defined CFABM
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
+      parameter (ibio=itrc_bio, isat=ibio+NBT, ibat=ibio+NBT+NSAT)
+      parameter (NumFluxTerms = NBT)
+      parameter (NumGasExcTerms = 0)
+      parameter (NumVSinkTerms = NBT)
+
 #  elif defined BIO_BioEBUS
 #   ifdef NITROUS_OXIDE
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
@@ -1030,7 +1037,7 @@
 !
 
 #  if defined BIO_NChlPZD || BIO_NPZD_FRANKS || defined BIO_N2ChlPZD2 || defined PISCES \
-                          || defined BIO_BioEBUS
+                          || defined BIO_BioEBUS || defined CFABM
 #   ifdef DIAGNOSTICS_BIO
       parameter (ntrc_diabio=NumFluxTerms+
      &                       NumGasExcTerms+NumVSinkTerms)

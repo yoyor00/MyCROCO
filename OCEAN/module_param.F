@@ -18,22 +18,20 @@
         logical, allocatable :: needsT(:)
         logical, allocatable :: needsS(:)
       END TYPE T_FABM
-      TYPE (T_FABM), allocatable :: FMODEL(:)
+      TYPE (T_FABM), allocatable :: FMODEL
 
       ! Not sure that this translates well from ROMS to CROCO, the multi nesting is not trivial...
       IF (.not.allocated(FMODEL)) THEN
-            allocate ( FMODEL(gridlist%nitems) )
-            DO ng=1, gridlist%nitems
-                  Ntiles=NP_XI*NP_ETA-1
-                  allocate ( FMODEL(ng) % f(-1:Ntiles) )
-                  allocate ( FMODEL(ng) % id_temp(-1:Ntiles) )
-                  allocate ( FMODEL(ng) % id_salt(-1:Ntiles) )
-                  allocate ( FMODEL(ng) % needsT(-1:Ntiles) )
-                  allocate ( FMODEL(ng) % needsS(-1:Ntiles) )
-                  DO ivar=-1,Ntiles
-                        FMODEL(ng) % needsT(ivar) = .false. ! Will be .true. for FABM models that require temperature
-                        FMODEL(ng) % needsS(ivar) = .false. ! Will be .true. for FABM models that require salinity
-                  END DO
+            allocate ( FMODEL )
+            Ntiles=NP_XI*NP_ETA-1         !TODO: or is it: Ntiles=NSUB_X*NSUB_E-1
+            allocate ( FMODEL % f(-1:Ntiles) )
+            allocate ( FMODEL % id_temp(-1:Ntiles) )
+            allocate ( FMODEL % id_salt(-1:Ntiles) )
+            allocate ( FMODEL % needsT(-1:Ntiles) )
+            allocate ( FMODEL % needsS(-1:Ntiles) )
+            DO ivar=-1,Ntiles
+                  FMODEL % needsT(ivar) = .false. ! Will be .true. for FABM models that require temperature
+                  FMODEL % needsS(ivar) = .false. ! Will be .true. for FABM models that require salinity
             END DO
       END IF
       ! ==
