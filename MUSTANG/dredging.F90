@@ -21,14 +21,12 @@ MODULE dredging
 #include "cppdefs.h"
 
 #if defined MUSTANG
-
-   USE module_substance ! for GLOBAL_2D_ARRAY, h, t, time
-   USE module_MUSTANG ! for z_w
+   USE module_substance ! for dimension
    USE comsubstance, ONLY: lchain, rsh, rlg, riosh, nvp, isand1, isand2, &
-                           igrav1, igrav2, surf_cell, l_subs2D, name_var
+                           igrav1, igrav2, surf_cell, l_subs2D, name_var, nv_tot
    USE comMUSTANG, ONLY: dredging_location_file, dredging_settings_file, &
                          dredging_out_file, dredging_dt, dredging_dt_out, &
-                         dredging_dumping_layer, hsed, ksmi, ksma, cv_sed, dzs
+                         dredging_dumping_layer
 
    IMPLICIT NONE
    PRIVATE
@@ -263,6 +261,7 @@ CONTAINS
       INTEGER :: iz, ncid, varid, status
       CHARACTER(lchain) :: name
       REAL(KIND=rsh) :: tmp(GLOBAL_2D_ARRAY)
+      tmp(:,:) = 0.
 
       ! Open input NetCDF file.
       status = NF90_OPEN(dredging_location_file, NF90_NOWRITE, ncid)
@@ -276,7 +275,8 @@ CONTAINS
          name = TRIM(dredg_name(iz))
          status = NF90_INQ_VARID(ncid, name, varid)
          IF (status /= NF90_NOERR) THEN
-            WRITE (stdout, *) "Unable to retrieve dredg variable id: ", iz, " ", name
+            WRITE (stdout, *) "Unable to retrieve dredg variable id: ", &
+               iz, " ", name
             WRITE (stdout, *) TRIM(NF90_STRERROR(status))
             STOP 1
          END IF
@@ -293,7 +293,8 @@ CONTAINS
          END IF
          status = NF90_INQ_VARID(ncid, name, varid)
          IF (status /= NF90_NOERR) THEN
-            WRITE (stdout, *) "Unable to retrieve dump variable id: ", iz, " ", name
+            WRITE (stdout, *) "Unable to retrieve dump variable id: ", &
+               iz, " ", name
             WRITE (stdout, *) TRIM(NF90_STRERROR(status))
             STOP 1
          END IF
@@ -331,6 +332,7 @@ CONTAINS
       LOGICAL :: warning_out
 
       dredging_time = time
+      dredging_time_out = time
       warning_out = .FALSE.
 
       DO j = jmin, jmax
@@ -460,7 +462,7 @@ CONTAINS
    END SUBROUTINE dredging_alloc
    !============================================================================
 
-   SUBROUTINE dredging_init_hsed0
+   SUBROUTINE dredging_init_hsed0(hsed)
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_init_hsed0 ***
       !!
@@ -469,12 +471,15 @@ CONTAINS
       !!------------------------------------------------------------------------
 
       IMPLICIT NONE
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN) :: hsed
+
       dredg_hsed_init(:, :) = hsed(:, :)
 
    END SUBROUTINE dredging_init_hsed0
    !============================================================================
 
-   SUBROUTINE dredging_main(imin, imax, jmin, jmax)
+   SUBROUTINE dredging_main(imin, imax, jmin, jmax, watconc, z_w, hmod, hsed, &
+                            dzs, ksmi, ksma, cv_sed)
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_main ***
       !!
@@ -484,10 +489,22 @@ CONTAINS
 
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: imin, imax, jmin, jmax
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, N, 3, NT), &
+         INTENT(INOUT) :: watconc
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 0:N), INTENT(IN) ::  z_w
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN) :: hmod
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(INOUT) :: hsed
+      REAL(KIND=rsh), DIMENSION(ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
+         INTENT(INOUT) :: dzs
+      INTEGER, DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN) :: ksmi
+      INTEGER, DIMENSION(GLOBAL_2D_ARRAY), INTENT(INOUT) :: ksma
+      REAL(KIND=rsh), DIMENSION(-1:nv_tot, ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
+         INTENT(INOUT) :: cv_sed
 
       IF (time .GE. dredging_time) THEN
 
-         CALL dredging_compute_mass(imin, imax, jmin, jmax)
+         CALL dredging_compute_mass(imin, imax, jmin, jmax, hmod, hsed, &
+                                    dzs, ksmi, ksma, cv_sed)
 
          CALL dumping_compute_mass
 
@@ -497,7 +514,7 @@ CONTAINS
 
          CALL dredging_mpi_mass
 
-         CALL dredging_dump_mass
+         CALL dredging_dump_mass(watconc, z_w)
 
          CALL dredging_mpi_waterconcentration
 
@@ -513,7 +530,8 @@ CONTAINS
    END SUBROUTINE dredging_main
    !============================================================================
 
-   SUBROUTINE dredging_compute_mass(imin, imax, jmin, jmax)
+   SUBROUTINE dredging_compute_mass(imin, imax, jmin, jmax, hmod, hsed, &
+                                    dzs, ksmi, ksma, cv_sed)
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_compute_mass ***
       !!
@@ -523,6 +541,14 @@ CONTAINS
 
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: imin, imax, jmin, jmax
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN) :: hmod
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(INOUT) :: hsed
+      REAL(KIND=rsh), DIMENSION(ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
+         INTENT(INOUT) :: dzs
+      INTEGER, DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN) :: ksmi
+      INTEGER, DIMENSION(GLOBAL_2D_ARRAY), INTENT(INOUT) :: ksma
+      REAL(KIND=rsh), DIMENSION(-1:nv_tot, ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
+         INTENT(INOUT) :: cv_sed
 
       INTEGER :: i, j, iv, iz, k
 
@@ -535,8 +561,8 @@ CONTAINS
             END DO
             iz = dredg_flag(i, j)
             IF (iz > 0) THEN ! in dredging area
-               DO WHILE (((h(i, j) - (hsed(i, j) - dredg_hsed_init(i, j))) &
-                         .LT. dredg_depth(iz)) .AND. ksma(i, j) > 0)
+               DO WHILE (((hmod(i, j) - (hsed(i, j) - dredg_hsed_init(i, j))) &
+                          .LT. dredg_depth(iz)) .AND. ksma(i, j) > 0)
                   k = ksma(i, j)
                   DO iv = 1, nvp
                      dredg_mass_byclass_byloc(iz, iv) = &
@@ -580,7 +606,7 @@ CONTAINS
 
    !============================================================================
 
-   SUBROUTINE dredging_dump_mass
+   SUBROUTINE dredging_dump_mass(watconc, z_w)
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_dump_mass ***
       !!
@@ -589,27 +615,35 @@ CONTAINS
       !!------------------------------------------------------------------------
 
       IMPLICIT NONE
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, N, 3, NT), &
+         INTENT(INOUT) :: watconc
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 0:N), INTENT(IN) :: z_w
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: layer_thickness
       INTEGER :: i, j, idump, iv
 
       dump_gravel_flx(:, :, :) = 0.0_rsh
 
+
+      layer_thickness(:,:) = max(1e-30_rsh,&
+         z_w(:, :, dredging_dumping_layer) &
+         - z_w(:, :, dredging_dumping_layer - 1))
+
       DO idump = 1, n_dump_loc
-         IF (sum(dump_mass_byclass_byloc(:, idump)) > 0.0_rsh) THEN
+         IF (sum(dump_mass_byclass_byloc(idump, :)) > 0.0_rsh) THEN
             ! if there is mass to dump
-            DO iv = isand1, nvp ! gravels are treated separately !! TODO add gravels in flx_ws_loc !!
-               t(:, :, dump_layer(iv), nstp, itsubs1 - 1 + iv) = &
-                  t(:, :, dump_layer(iv), nstp, itsubs1 - 1 + iv) + &
+            DO iv = isand1, nvp ! gravels are treated separately
+               watconc(:, :, dump_layer(iv), nstp, itsubs1 - 1 + iv) = &
+                  watconc(:, :, dump_layer(iv), nstp, itsubs1 - 1 + iv) + &
                   REAL(dump_loc(idump, :, :), rsh) &
-                  *dump_mass_byclass_byloc(iv, idump) &
+                  *dump_mass_byclass_byloc(idump, iv) &
                   /dump_surface(idump) &
-                  /(z_w(:, :, dredging_dumping_layer) &
-                    - z_w(:, :, dredging_dumping_layer - 1))
+                  /layer_thickness(:,:)
             END DO
 
             DO iv = igrav1, igrav2
                dump_gravel_flx(iv, :, :) = dump_gravel_flx(iv, :, :) &
                                            + REAL(dump_loc(idump, :, :), rsh) &
-                                           *dump_mass_byclass_byloc(iv, idump) &
+                                           *dump_mass_byclass_byloc(idump, iv) &
                                            /dump_surface(idump)
             END DO
 
@@ -811,7 +845,7 @@ CONTAINS
       !!------------------------------------------------------------------------
 
       USE netcdf
-      INTEGER, intent(in) :: status
+      INTEGER, INTENT(IN) :: status
 
       IF (status /= nf90_noerr) THEN
          WRITE (stdout, *) 'dredging_check(): '
@@ -832,7 +866,7 @@ CONTAINS
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: ncid, varid
-      REAL, INTENT(INOUT) ::  tmp(GLOBAL_2D_ARRAY)
+      REAL(KIND=rsh), INTENT(INOUT) ::  tmp(GLOBAL_2D_ARRAY)
 
       INTEGER :: imin, imax, jmin, jmax, start(2), count(2), status
 
@@ -883,7 +917,8 @@ CONTAINS
 # define LOCALLM Lm
 # define LOCALMM Mm
 #endif
-#if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI /* exchange needed */
+#if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI 
+   !!/* exchange needed */
       CALL exchange_r2d_tile(1, LOCALLM, 1, LOCALMM, tmp)
 #endif /* MPI */
 

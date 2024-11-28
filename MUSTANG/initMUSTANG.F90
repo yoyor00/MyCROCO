@@ -382,7 +382,7 @@ CONTAINS
             )
 
     IF (l_dredging) THEN
-        CALL dredging_init_hsed0
+        CALL dredging_init_hsed0(hsed)
     ENDIF
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

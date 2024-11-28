@@ -99,6 +99,7 @@ MODULE sed_MUSTANG
    USE module_substance
 
    USE comMUSTANG 
+   USE module_MUSTANG, ONLY : z_w
    USE coupler_MUSTANG 
 
    IMPLICIT NONE
@@ -196,11 +197,8 @@ MODULE sed_MUSTANG
    REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_U),INTENT(IN)          :: BAROTROP_VELOCITY_U                        
    REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_V),INTENT(IN)          :: BAROTROP_VELOCITY_V   
 #endif                      
-#if defined key_MUSTANG_flocmod || defined key_BLOOM_insed
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT) :: WATER_CONCENTRATION         
-#else
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION         
-#endif 
+
 
    !! * Local declarations
    INTEGER        ::  i,j,k,iv,ivp,ksmin,ksmax,iappel
@@ -457,7 +455,8 @@ MODULE sed_MUSTANG
 #endif
 
   IF (l_dredging) THEN
-    CALL dredging_main(ifirst, ilast, jfirst,jlast)
+    CALL dredging_main(ifirst, ilast, jfirst, jlast, t, z_w, h, hsed, &
+      dzs, ksmi, ksma, cv_sed)
   ENDIF
 
 
@@ -3497,7 +3496,7 @@ MODULE sed_MUSTANG
                     print *,'poro = ',poro(ksmax,i,j)
                   END IF
 #endif            
-                  dzs(ksmax,i,j)=max(mass_tot/((1.0_rsh-poro(ksmax,i,j))*ros(1)),epsi30_MUSTANG) !to avoid Nan in cv_sed due to too small thickness
+                  dzs(ksmax,i,j)=mass_tot/((1.0_rsh-poro(ksmax,i,j))*ros(1))
                   dzsi=1.0_rsh/dzs(ksmax,i,j)
 
                   DO iv=igrav1,imud2
@@ -3729,7 +3728,7 @@ MODULE sed_MUSTANG
                END IF
 
                ksmax=ksmax+1
-               dzs(ksmax,i,j)=max(dzs_dep,epsi30_MUSTANG) !to avoid Nan in cv_sed due to too small thickness
+               dzs(ksmax,i,j)=dzs_dep
                dzsi=1.0_rsh/dzs(ksmax,i,j)
 
                DO iv=igrav1,imud2
@@ -3763,7 +3762,7 @@ MODULE sed_MUSTANG
                      cv_sed(iv,ksmax,i,j)= flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*    &
                                         cv_sed(ivp_assoc,ksmax,i,j)
                    ELSE
-                     cv_sed(iv,ksmax,i,j)=flx_w2s_loc(iv)/dzs_dep
+                     cv_sed(iv,ksmax,i,j)=flx_w2s_loc(iv)*dzsi
                    END IF 
                  ENDDO
                ENDIF
@@ -3955,6 +3954,7 @@ MODULE sed_MUSTANG
 
       DO j=jfirst,jlast
         DO i=ifirst,ilast
+
           IF(htot(i,j) > h0fond) THEN
 
             ksmax=ksma(i,j)
@@ -3984,7 +3984,6 @@ MODULE sed_MUSTANG
                 dump_gravel_flx(iv,i,j) = 0.
               ENDDO
             ENDIF
-
 
             fludep=0.0_rsh
             DO iv=1,nvpc
@@ -4373,7 +4372,7 @@ MODULE sed_MUSTANG
                 IF(ksmax.EQ.ksdmax)CALL sed_MUSTANG_fusion(i,j,ksmax)
                 dzsa=0.0_rsh
                 ksmax=ksmax+1
-                dzs(ksmax,i,j)=max(dzsnew,epsi30_MUSTANG) !to avoid Nan in cv_sed due to too small thickness
+                dzs(ksmax,i,j)=dzsnew
                 dzsi=1.0_rsh/dzs(ksmax,i,j)
                 DO iv=igrav1,igrav2
                   cv_sed(iv,ksmax,i,j)=voldepgrv*frdep(iv)*dzsi
@@ -4596,6 +4595,7 @@ MODULE sed_MUSTANG
             IF (l_outsed_dzs_ksmax) var2D_dzs_ksmax(i,j)=dzs(ksmax,i,j)  ! dzs at sediment surface
        
           END IF ! test on htot
+
         END DO  ! loop on i
     END DO    ! loop on j
 
