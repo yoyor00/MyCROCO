@@ -941,61 +941,58 @@
 # if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
+        do j=Jstr,Jend
+          do i=Istr,Iend
 
-         do j=Jstr,Jend
-            do i=Istr,Iend
-
-
-
-              indx_depth = N
-              nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
+            indx_depth = N
+            nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
 ! Find the index corresponding to the reference depth mld_depth_ref
-              do k=N-1,1,-1
-                if (abs(z_r(i,j,k) + mld_depth_ref) < nearest_diff) then
-                  nearest_diff = abs(z_r(i,j,k) + mld_depth_ref)
-                  indx_depth = k
+            do k=N-1,1,-1
+              if (abs(z_r(i,j,k) + mld_depth_ref) < nearest_diff) then
+                nearest_diff = abs(z_r(i,j,k) + mld_depth_ref)
+                indx_depth = k
+              endif
+            enddo
+
+            kbl(i,j)=N
+            cff=0
+            do k=N,1,-1
+              if (itrc.eq.iCRT2) then
+                if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &          t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
+                  kbl(i,j)=k
                 endif
-              enddo
+                if (t(i,j,k,nnew,itemp).le.
+     &          t(i,j,indx_depth,nnew,itemp)-mld_crit_T)  cff=1
 
+              elseif (itrc.eq.iCRT3) then
+                if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &          t(i,j,indx_depth,nnew,itemp)-mld_crit_T2) then
+                  kbl(i,j)=k
+                endif
+                if (t(i,j,k,nnew,itemp).le.
+     &          t(i,j,indx_depth,nnew,itemp)-mld_crit_T2)  cff=1
 
+              else
+                if (cff.eq.0.and.rho(i,j,k).lt.
+     &          rho(i,j,indx_depth)+mld_crit_D) then
+                  kbl(i,j)=k
+                endif
+                if (rho(i,j,k).ge.
+     &          rho(i,j,indx_depth)+mld_crit_D)  cff=1
+              endif
+            enddo
 
-               kbl(i,j)=N
-               cff=0
-               do k=N,1,-1
-                  if (itrc.eq.iCRT2) then
-                  if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
-     &                      t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
-                     kbl(i,j)=k
-                  endif
-                  if (t(i,j,k,nnew,itemp).le.
-     &                t(i,j,indx_depth,nnew,itemp)-mld_crit_T)  cff=1
-
-                  if (itrc.eq.iCRT3) then
-                 if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
-     &                      t(i,j,indx_depth,nnew,itemp)-mld_crit_T2) then
-                     kbl(i,j)=k
-                  endif
-                  if (t(i,j,k,nnew,itemp).le.
-     &                  t(i,j,indx_depth,nnew,itemp)-mld_crit_T2)  cff=1
-
-                  else
-                  if (cff.eq.0.and.rho(i,j,k).lt.
-     &                 rho(i,j,indx_depth)+mld_crit_D) then
-                     kbl(i,j)=k
-                  endif
-                  if (rho(i,j,k).ge.
-     &                   rho(i,j,indx_depth)+mld_crit_D)  cff=1
-
-                  endif
      ! CALCULATE MIXED LAYER DEPTH            
-               Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbl(i,j))
+            Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbl(i,j))
 #     ifdef MASKING
      &                        * rmask(i,j)
 #                 endif                 
 
-               enddo
-            enddo
+           enddo
          enddo
+#    endif /*  DIAGNOSTICS_TS_MLD_CRIT    */
 
        do j=Jstr,Jend
          do i=Istr,Iend
@@ -1016,6 +1013,7 @@
 #  endif
            do k=N,kmld,-1
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
              if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then 
                THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itemp)*cff
@@ -1027,6 +1025,7 @@
      &                       t(i,j,k,nnew,itemp)*cff
 
              else
+# endif /*  DIAGNOSTICS_TS_MLD_CRIT    */
                THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itrc)*cff
 #  ifdef TS_MIX_IMP
@@ -1035,7 +1034,9 @@
 #  endif
                T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
              endif
+#  endif/*  DIAGNOSTICS_TS_MLD_CRIT    */
            enddo
          enddo
        enddo
@@ -1050,14 +1051,18 @@
 #  endif
            do k=N,kmld,-1
              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
              if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then 
                T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itemp)*cff
 
              else
+#  endif/*  DIAGNOSTICS_TS_MLD_CRIT    */
                T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
              endif
+#  endif/*  DIAGNOSTICS_TS_MLD_CRIT    */
            enddo
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
          enddo

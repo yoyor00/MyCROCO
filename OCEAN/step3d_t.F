@@ -998,51 +998,51 @@
 #    define T_mld_nnew FX
 #    define T_mld_nstp FE
 #    ifdef DIAGNOSTICS_TS_MLD_CRIT
-         do j=Jstr,Jend
-            do i=Istr,Iend
+        do j=Jstr,Jend
+          do i=Istr,Iend
 
-              indx_depth = N
-              nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
+            indx_depth = N
+            nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
 ! Find the index corresponding to the reference depth mld_depth_ref
-              do k=N-1,1,-1
-                if (abs(z_r(i,j,k) + mld_depth_ref) < nearest_diff) then
-                  nearest_diff = abs(z_r(i,j,k) + mld_depth_ref)
-                  indx_depth = k
-                endif
-              enddo
-
-               kbl(i,j)=N
-               cff=0
-               do k=N,1,-1
-
-                  if (itrc.eq.iCRT2) then
-                  if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
-     &                   t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
-                     kbl(i,j)=k
-                  endif
-                  if (t(i,j,k,nnew,itemp).le.
-     &                   t(i,j,indx_depth,nnew,itemp)-mld_crit_T)  cff=1
-
-                  elseif (itrc.eq.iCRT3) then
-                  if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
-     &                   t(i,j,indx_depth,nnew,itemp)-mld_crit_T2) then
-                     kbl(i,j)=k
-                  endif
-                  if (t(i,j,k,nnew,itemp).le.
-     &                 t(i,j,indx_depth,nnew,itemp)-mld_crit_T2)  cff=1
-
-                  else
-                  if (cff.eq.0.and.rho(i,j,k).lt.
-     &                     rho(i,j,indx_depth)+mld_crit_D) then
-                     kbl(i,j)=k
-                  endif
-                  if (rho(i,j,k).ge.
-     &                 rho(i,j,indx_depth)+mld_crit_D)  cff=1
-                  
-                  endif
-               enddo 
+            do k=N-1,1,-1
+              if (abs(z_r(i,j,k) + mld_depth_ref) < nearest_diff) then
+              nearest_diff = abs(z_r(i,j,k) + mld_depth_ref)
+                indx_depth = k
+              endif
             enddo
-         enddo
+
+            kbl(i,j)=N
+            cff=0
+            do k=N,1,-1
+              if (itrc.eq.iCRT2) then
+                if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &          t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
+                  kbl(i,j)=k
+                endif
+                if (t(i,j,k,nnew,itemp).le.
+     &          t(i,j,indx_depth,nnew,itemp)-mld_crit_T)  cff=1
+
+              elseif (itrc.eq.iCRT3) then
+                if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &          t(i,j,indx_depth,nnew,itemp)-mld_crit_T2) then
+                  kbl(i,j)=k
+                endif
+                if (t(i,j,k,nnew,itemp).le.
+     &          t(i,j,indx_depth,nnew,itemp)-mld_crit_T2)  cff=1
+
+              else
+                if (cff.eq.0.and.rho(i,j,k).lt.
+     &          rho(i,j,indx_depth)+mld_crit_D) then
+                  kbl(i,j)=k
+                endif
+                if (rho(i,j,k).ge.
+     &          rho(i,j,indx_depth)+mld_crit_D)  cff=1           
+              endif
+            enddo 
+          enddo
+               MPI_master_only write(stdout,'(A,2x,F10.4)')
+     &            ' RHO(i,j,kbl(i,j)) :', rho(i,j,kbl(i,j))
+        enddo
 
 #    endif  /* DIAGNOSTICS_TS_MLD_CRIT */
 
@@ -1070,34 +1070,34 @@
             do k=N,kmld,-1
 #    ifdef DIAGNOSTICS_TS_MLD_CRIT
               if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
-              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-              TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
+                cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+                TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
      &                            TXadv(i,j,k,itemp)*cff
-              TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
+                TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
      &                            TYadv(i,j,k,itemp)*cff
-              TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
+                TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
      &                            TVadv(i,j,k,itemp)*cff
-              TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
+                TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
      &                            TVmix(i,j,k,itemp)*cff
-              TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
+                TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
      &                            TForc(i,j,k,itemp)*cff
-              T_mld_nnew(i,j)     =T_mld_nnew(i,j)+
+                T_mld_nnew(i,j)    =T_mld_nnew(i,j)+
      &                            t(i,j,k,nnew,itemp)*cff
 
               else
 # endif
-              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-              TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
+                cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+                TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
      &                            TXadv(i,j,k,itrc)*cff
-              TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
+                TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
      &                            TYadv(i,j,k,itrc)*cff
-              TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
+                TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
      &                            TVadv(i,j,k,itrc)*cff
-              TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
+                TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
      &                            TVmix(i,j,k,itrc)*cff
-              TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
+                TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
      &                            TForc(i,j,k,itrc)*cff
-              T_mld_nnew(i,j)     =T_mld_nnew(i,j)+
+                T_mld_nnew(i,j)    =T_mld_nnew(i,j)+
      &                            t(i,j,k,nnew,itrc)*cff
 #    ifdef DIAGNOSTICS_TS_MLD_CRIT
               endif
@@ -1117,9 +1117,9 @@
           do i=Istr,Iend
 #     if defined LMD_SKPP || defined GLS_MIXING
             if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
-            kmld=kbl_nstp(i,j)
+              kmld=kbl_nstp(i,j)
 #     else
-            kmld=N-5
+              kmld=N-5
 #     endif
             do k=N,kmld,-1
               cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
