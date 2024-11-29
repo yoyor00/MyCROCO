@@ -19,7 +19,7 @@ MODULE stomod
    IMPLICIT NONE
    PRIVATE
 
-   INTEGER, PARAMETER :: jpstomax=100   ! maximum number of stochastic arrays
+   !INTEGER, PARAMETER :: jpstomax=100   ! maximum number of stochastic arrays
 
    PUBLIC sto_mod, sto_mod_init, sto_mod_finalize
 

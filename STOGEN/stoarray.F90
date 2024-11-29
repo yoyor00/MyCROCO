@@ -71,7 +71,7 @@ MODULE stoarray
 
    ! Size of stochastic arrays
    INTEGER, PUBLIC :: jpsto = 0            ! total number of rrquested stochastic fields
-   INTEGER, PUBLIC :: jpstomax = 0         ! maximum number of rrquested stochastic fields
+   INTEGER, PUBLIC :: jpstomax = 100       ! maximum number of rrquested stochastic fields
    INTEGER, PUBLIC :: jpsto0d = 0          ! number of 0D stochastic parameters
    INTEGER, PUBLIC :: jpsto2d = 0          ! number of 2D stochastic parameters
    INTEGER, PUBLIC :: jpsto3d = 0          ! number of 3D stochastic parameters
