@@ -224,8 +224,8 @@
 #  ifdef PISCES
       integer indxDIC, indxTAL, indxOXY, indxCAL, indxPO4,
      &        indxPOC, indxSIL, indxPHY, indxZOO, indxDOC,
-     &        indxDIA, indxMES, indxBSI, indxFER, indxBFE,
-     &        indxGOC, indxSFE, indxDFE, indxDSI, indxNFE,
+     &        indxDIA, indxMES, indxDSI, indxFER, indxBFE,
+     &        indxGOC, indxSFE, indxDFE, indxGSI, indxNFE,
      &        indxNCH, indxDCH, indxNO3, indxNH4
       parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+ntrc_stogen+ntrc_pas+1,
      &           indxTAL =indxDIC+1, indxOXY=indxDIC+2)
@@ -239,10 +239,10 @@
      &           indxPOC=indxDIC+5, indxSIL=indxDIC+6,
      &           indxPHY =indxDIC+7, indxZOO=indxDIC+8,
      &           indxDOC =indxDIC+9, indxDIA=indxDIC+10,
-     &           indxMES =indxDIC+11, indxBSI=indxDIC+12,
+     &           indxMES =indxDIC+11, indxDSI=indxDIC+12,
      &           indxFER =indxDIC+13, indxBFE=indxDIC+14,
      &           indxGOC =indxDIC+15, indxSFE=indxDIC+16,
-     &           indxDFE =indxDIC+17, indxDSI=indxDIC+18,
+     &           indxDFE =indxDIC+17, indxGSI=indxDIC+18,
      &           indxNFE =indxDIC+19, indxNCH=indxDIC+20,
      &           indxDCH =indxDIC+21, indxNO3=indxDIC+22,
      &           indxNH4 =indxDIC+23)
@@ -542,18 +542,6 @@
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
       parameter (indxO=indxV+ntrc_temp+ntrc_salt+ntrc_stogen+ntrc_pas+ntrc_bio
      &                      +ntrc_sed+ntrc_substot
-# ifdef MUSTANG
-     &              +ntrc_subs+16
-#  ifdef key_MUSTANG_specif_outputs
-     &              +3*ntrc_subs +2
-#   ifdef key_MUSTANG_V2
-     &              +1*ntrc_subs +13
-#   endif
-#   ifdef key_MUSTANG_bedload
-     &              +4*ntrc_subs +3
-#   endif
-#  endif
-# endif
      &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
@@ -1088,9 +1076,6 @@
 # ifdef SEDIMENT
       integer rstSed(NST+2)
 # endif
-# ifdef MUSTANG
-      integer rstMUS(NT+3)
-# endif
 #endif
 #ifdef EXACT_RESTART
       integer rstrufrc,rstrvfrc
@@ -1197,20 +1182,6 @@
 #  endif
      & )
 # endif /* SEDIMENT */
-
-# ifdef MUSTANG
-      integer hisMust(ntrc_subs+6
-#  ifdef key_MUSTANG_specif_outputs
-     &                +3*ntrc_subs + 2
-#   ifdef key_MUSTANG_V2
-     &                +1*ntrc_subs + 13
-#    ifdef key_MUSTANG_bedload
-     &                +4*ntrc_subs + 3
-#    endif
-#   endif
-#  endif
-     &               )
-# endif /* MUSTANG */
 
 # if defined DIAGNOSTICS_TS
       integer nciddia, nrecdia, nrpfdia
@@ -1397,9 +1368,6 @@
      &      +1
 #   endif
      & )
-#  endif
-#  ifdef MUSTANG
-      integer avgMust(ntrc_subs+6)
 #  endif
 
 # endif /* SOLVE3D */
@@ -1662,9 +1630,6 @@
 # ifdef SEDIMENT
      &                         , rstSed
 # endif
-# ifdef MUSTANG
-     &                         , rstMUS
-# endif
 #endif
 #ifdef MORPHODYN
      &                         , rstHm
@@ -1732,9 +1697,6 @@
 # endif  /* BIOLOGY */
 # ifdef SEDIMENT
      &      , hisSed
-# endif
-# ifdef MUSTANG
-     &      , hisMust
 # endif
 #endif
 #ifdef BBL
