@@ -782,6 +782,9 @@
            lvar=lenstr(vname(1,indxTaver_mld+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxTaver_mld+itrc-1)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidTaver_mld(itrc))
+#  ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,vidTaver_mld(itrc),nf_collective)
+#  endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxTaver_mld+itrc-1))
            ierr=nf_put_att_text (ncid, vidTaver_mld(itrc), 'long_name',
@@ -813,6 +816,9 @@
            lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidTcrit_mld(itrc))
+#  ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
+#  endif
 # ifndef AVRH
            lvar=lenstr(vname(2,indxTcrit_mld+itrc-1))
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc), 'long_name',

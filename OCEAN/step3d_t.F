@@ -1040,8 +1040,6 @@
               endif
             enddo 
           enddo
-               MPI_master_only write(stdout,'(A,2x,F10.4)')
-     &            ' RHO(i,j,kbl(i,j)) :', rho(i,j,kbl(i,j))
         enddo
 
 #    endif  /* DIAGNOSTICS_TS_MLD_CRIT */

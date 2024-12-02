@@ -80,7 +80,7 @@
       elseif (typefile ==filetype_abl) then
          text='WRT_ABL'
       endif
- !
+!
 # ifdef FILLVAL
 ! Fill with spval where rmask==0 .
       mask = (work2d_tmp.eq.mask2)
