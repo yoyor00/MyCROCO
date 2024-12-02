@@ -164,8 +164,6 @@ variables:
     RUN_MK_NAME: "reg"
     RUN_NAME_CONFIGURE: "CONFIGURE_REG_PERFRST"
     RUNNER_SCRIPT_TIMEOUT: 120m
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 ana_run_gfortran:
   extends:
