@@ -808,7 +808,6 @@
 
 # ifdef DIAGNOSTICS_TS_MLD_CRIT
        if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
-       
 !
 !
 ! Tcrit indxTcrit on MLD
@@ -1224,12 +1223,13 @@
 
 
 # ifdef DIAGNOSTICS_TS_MLD_CRIT
+        if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
 !          
 !
 ! indxTcrit on MLD
 !
-        lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
-        ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
+          lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
+          ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                                        vidTcrit_mld(itrc))
           if (ierr .ne. nf_noerr) then
             write(stdout,1) vname(1,indxTcrit_mld+itrc-1)(1:lvar),
@@ -1239,7 +1239,7 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
 #  endif
-
+        endif
 !
 # endif /*DIAGNOSTICS_TS_MLD_CRIT*/
 
@@ -1276,6 +1276,7 @@
 !
       endif             !<--  create_new_file
 !
+
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_DIAG ERROR: Cannot ',
