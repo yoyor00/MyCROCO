@@ -200,13 +200,11 @@
      &      JstrR.le.jjs .and. jjs.le.JendR .and.
      &      jjs.eq.j) then
           do k=1,N
-            We(iis,jjs,k)=We(iis,jjs,k-1)-                           
-     &                 (Huon(iis+1,jjs,k)-Huon(iis,jjs,k)+            
-     &                  Hvom(iis,jjs+1,k)-Hvom(iis,jjs,k))          
-     &                     -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
-     &                                *om_r(iis,jjs)*on_r(iis,jjs)
-     &                     + Qsrc(is,k)
-
+            FC(iis,k)=FC(iis,k-1) -Huon(iis+1,jjs,k)+Huon(iis,jjs,k)
+     &                            -Hvom(iis,jjs+1,k)+Hvom(iis,jjs,k)
+     &                            -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
+     &                            *om_r(iis,jjs)*on_r(iis,jjs) 
+     &                            + Qsrc(is,k)
           enddo 
         endif
       enddo
