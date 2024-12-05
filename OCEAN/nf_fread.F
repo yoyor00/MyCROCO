@@ -37,17 +37,19 @@
 #include "param.h"
 #if defined MUSTANG
       real A(GLOBAL_2D_ARRAY,max(N+1,nk_nivsed_out))
+      real buff((Lm+5)*(Mm+5)*max(N+1,nk_nivsed_out))
 #else
 # if defined ABL1D
       real A(GLOBAL_2D_ARRAY,max(N+1,N_abl+1))
 # else
       real A(GLOBAL_2D_ARRAY,N+1)
 # endif
+#include "buffer.h"
 #endif
       integer ncid,  type,   vert_type,  imin, imax,  start(4)
      &      , varid, record, horiz_type, jmin, jmax,  count(4)
      &      , i,j,k, shift,  ierr
-#include "buffer.h"
+
 #if defined MPI
 # include "scalars.h"
 #endif
