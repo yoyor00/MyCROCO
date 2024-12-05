@@ -1814,7 +1814,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_bedload .and. l_out_subs(isubs) .and. &
+            IF (l_outsed_fsusp .and. l_out_subs(isubs) .and. &
                 ((isubs .GE. ibedload1) .AND. (isubs .LE. ibedload2))) THEN
                 outMust(indx) = .TRUE.
             ENDIF
