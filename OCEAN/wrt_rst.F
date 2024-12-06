@@ -17,7 +17,8 @@
 #endif
 
 #if defined MUSTANG
-      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
+      USE comMUSTANG, only: ksmi,ksma,cv_sed,dzs
+# include "coupler_define_MUSTANG.h"
 #endif
 
 !     implicit none
@@ -268,6 +269,10 @@
 # ifdef TRACERS
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,:))
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &  .and. itrc.ne.iCRT4) then
+# endif
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)
         if (ierr .ne. nf_noerr) then
@@ -276,6 +281,9 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+       endif
+# endif
       enddo
 # endif
 
@@ -595,23 +603,23 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 
 ! ksmi, ksma
       work2d=ksmi
-      indx=1
-      ierr=nf_fwrite(work2d, ncidrst, rstMust(1),
+      indx=indxT+ntrc_salt+ntrc_substot+ntrc_subs+6+1
+      ierr=nf_fwrite(work2d, ncidrst, rstMUS(1),
      &                                       record, r2dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname_rstMust(1,indx))
-        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
 
       work2d=ksma
       indx=indx+1
-      ierr=nf_fwrite(work2d, ncidrst, rstMust(2),
+      ierr=nf_fwrite(work2d, ncidrst, rstMUS(2),
      &                                       record, r2dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname_rstMust(1,indx))
-        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -620,12 +628,12 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       do k=1,ksdmax
         workrsed(:,:,k)=dzs(k,:,:)
       enddo
-      indx=indx+1
-      ierr=nf_fwrite(workrsed, ncidrst, rstMust(3),
+      indx=indxT+ntrc_salt+ntrc_substot+4
+      ierr=nf_fwrite(workrsed, ncidrst, rstMUS(3),
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname_rstMust(1,indx))
-        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -634,12 +642,12 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       do k=1,ksdmax
         workrsed(:,:,k)=cv_sed(-1,k,:,:)
       enddo
-      indx=indx+1
-      ierr=nf_fwrite(workrsed, ncidrst, rstMust(4),
+      indx=indxT+ntrc_salt+ntrc_substot+5
+      ierr=nf_fwrite(workrsed, ncidrst, rstMUS(4),
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname_rstMust(1,indx))
-        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -648,29 +656,29 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       do k=1,ksdmax
          workrsed(:,:,k)=cv_sed(0,k,:,:)
       enddo
-       indx=indx+1
+       indx=indxT+ntrc_salt+ntrc_substot+6
 
-      ierr=nf_fwrite(workrsed, ncidrst, rstMust(5),
+      ierr=nf_fwrite(workrsed, ncidrst, rstMUS(5),
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname_rstMust(1,indx))
-        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname(1,indx))
+        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
 
 ! cvsed
        do itrc=1,ntrc_subs
-         indx=indx+1           ! 3D: traceurSed
+         indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
          do k=1,ksdmax
            workrsed(:,:,k)=cv_sed(itrc,k,:,:)
          enddo
 
-        ierr=nf_fwrite(workrsed, ncidrst, rstMust(indx),
+        ierr=nf_fwrite(workrsed, ncidrst, rstMUS(itrc+5),
      &                                       record, b3dvar)
         if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname_rstMust(1,indx))
-          write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+          lvar=lenstr(vname(1,indx))
+          write(stdout,1) vname(1,indx)(1:lvar), record, ierr
      &                  MYID
           goto 99                                         !--> ERROR
         endif

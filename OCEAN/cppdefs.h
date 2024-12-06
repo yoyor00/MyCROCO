@@ -178,6 +178,7 @@
 #  ifdef ONLINE
 #   undef  AROME
 #   undef  ERA_ECMWF
+#   undef  FORMATTED
 #  endif
 #  undef READ_PATM
 #  ifdef READ_PATM
@@ -349,6 +350,9 @@
 # ifdef DIAGNOSTICS_TS
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
+#  ifdef DIAGNOSTICS_TS_MLD
+#   define DIAGNOSTICS_TS_MLD_CRIT
+#  endif
 # endif
 
 # undef DIAGNOSTICS_TSVAR
@@ -647,6 +651,7 @@
 #  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  define WAVE_OFFLINE
+#  undef  key_MUSTANG_specif_outputs
 # endif
 /*
 !
