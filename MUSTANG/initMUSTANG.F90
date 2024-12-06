@@ -431,7 +431,9 @@ CONTAINS
     READ(50, namsedim_erosion); rewind(50)
 #ifdef key_MUSTANG_V2
     READ(50, namsedim_poro); rewind(50)
+#ifdef key_MUSTANG_bedload
     READ(50, namsedim_bedload); rewind(50)
+#endif   
 #endif    
     READ(50, namsedim_lateral_erosion); rewind(50)
     READ(50, namsedim_consolidation); rewind(50)
@@ -448,7 +450,7 @@ CONTAINS
 #endif
 #ifdef key_MUSTANG_flocmod
     ! module FLOCULATION
-    READ(50,namflocmod); rewind(50)
+    READ(50, namflocmod); rewind(50)
 #endif
     CLOSE(50) 
    
