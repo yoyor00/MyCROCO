@@ -6,8 +6,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
-### Fixed
+- Issue #195 : added RAIN_FLUX cppkey to take into account water and temp flux 
+  from rain
 
+### Fixed
 
 - Issue #252 : fix PSOURCE_MASS capabilities broken by previous change
 - Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
