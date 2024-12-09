@@ -21,7 +21,9 @@ MODULE stoexternal
 #endif
 
    ! import MPI include file                                         |
+#ifdef MPI
    include 'mpif.h'
+#endif
 
    ! Type of variables
    INTEGER, PUBLIC, PARAMETER ::   sp = SELECTED_REAL_KIND( 6, 37)   !: single precision (real 4)
@@ -209,8 +211,13 @@ C$    integer  trd, omp_get_thread_num
       ! need some updates for other options ...
       ! jpi = Lm+4+padd_X  !size_XI
       ! jpj = Mm+4+padd_E  !size_ETA
+# ifdef SPHERICAL
       jpi = size(lonr,1)
       jpj = size(lonr,2)
+# else
+      jpi = size(xr,1)
+      jpj = size(xr,2)
+# endif
       jpk = N
 
       ! Define global grid size (with all subdomains)
@@ -234,13 +241,20 @@ C$    integer  trd, omp_get_thread_num
       Jend2 = Jend
 
       ! Associate the grid pointers with the CROCO common block arrays
+# ifdef SPHERICAL
       glamt(1:jpi,1:jpj) => lonr
       gphit(1:jpi,1:jpj) => latr
+# else
+      glamt(1:jpi,1:jpj) => xr
+      gphit(1:jpi,1:jpj) => yr
+# endif
 
       ! Associate the mask pointers with the CROCO common block arrays
+# ifdef MASKING
       rmask2d(1:jpi,1:jpj) => rmask
       umask2d(1:jpi,1:jpj) => umask
       vmask2d(1:jpi,1:jpj) => vmask
+# endif
 
       ! Define index of grid points (of local subdomain) in global grid (all subdomains)
       ALLOCATE(mig(1:jpi))
