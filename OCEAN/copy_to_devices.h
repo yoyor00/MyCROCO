@@ -691,8 +691,6 @@
 # if defined BIOLOGY && defined DIAGNOSTICS_BIO
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 # ifdef MUSTANG
-#  ifdef key_MUSTANG_specif_outputs
-#  endif
 # endif
 # ifdef BIOLOGY
 #  ifdef BIO_BioEBUS
@@ -839,10 +837,6 @@
 # ifdef SEDIMENT
 # endif /* SEDIMENT */
 # ifdef MUSTANG
-#  ifdef key_MUSTANG_specif_outputs
-#   ifdef key_MUSTANG_V2
-#   endif
-#  endif
 # endif /* MUSTANG */
 # if defined DIAGNOSTICS_TS
 !$acc&, diaTXadv, diaTYadv, diaTVadv

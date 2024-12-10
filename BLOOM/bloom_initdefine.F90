@@ -89,9 +89,8 @@
 
 
   INTEGER            :: iso,IERR_MPI
-#ifdef key_CROCO
-   INTEGER           :: lstr,lenstr
-#endif
+  INTEGER           :: lstr,lenstr
+
 #ifdef key_N_tracer
    CHARACTER(LEN=19) :: date_start_tracerN
    REAL(KIND=rlg)        :: tool_datosec
