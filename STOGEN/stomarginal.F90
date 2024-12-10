@@ -1,4 +1,8 @@
 MODULE stomarginal
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  stomarginaldiff  ***
    !! Purpose : transform marginal N(0,1) variates
@@ -166,5 +170,7 @@ CONTAINS
 
       ! do nothing
    END SUBROUTINE sto_marginal_init
+
+#endif /* if defined STOGEN */
 
 END MODULE stomarginal

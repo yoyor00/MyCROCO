@@ -1,4 +1,8 @@
 MODULE stoarray
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  stoarray  ***
    !! Stochastic parameters : definition and storage of stochastic fields
@@ -544,6 +548,8 @@ CONTAINS
       ENDIF
 
    END SUBROUTINE check_options
+
+#endif /* if defined STOGEN */
 
 END MODULE stoarray
 

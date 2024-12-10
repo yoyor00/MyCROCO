@@ -1,4 +1,8 @@
 MODULE stoexternal
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  stoexternal  ***
    !! Purpose        : external resources provide by the model (user supplied)
@@ -287,5 +291,7 @@ C$    integer  trd, omp_get_thread_num
 #endif
  
    END SUBROUTINE broadcast_array
+
+#endif /* if defined STOGEN */
 
 END MODULE stoexternal

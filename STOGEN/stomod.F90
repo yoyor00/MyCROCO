@@ -1,4 +1,8 @@
 MODULE stomod
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE stomod  ***
    !!
@@ -86,4 +90,7 @@ CONTAINS
    END SUBROUTINE sto_mod_finalize
 
    !!======================================================================
+
+#endif /* if defined STOGEN */
+
 END MODULE stomod

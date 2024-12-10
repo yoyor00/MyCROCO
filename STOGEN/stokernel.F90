@@ -1,4 +1,8 @@
 MODULE stokernel
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  stokernel  ***
    !! Purpose : apply kernel method to generate new random field
@@ -463,5 +467,7 @@ CONTAINS
       sph_distance = c / toRadians
 
    END FUNCTION sph_distance
+
+#endif /* if defined STOGEN */
 
 END MODULE stokernel

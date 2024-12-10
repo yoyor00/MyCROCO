@@ -1,4 +1,8 @@
 MODULE storng_kiss
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  storng_kiss  ***
    !! Random number generator, used in NEMO stochastic parameterization
@@ -513,4 +517,7 @@ CONTAINS
       ENDDO
 
    END SUBROUTINE kiss_sample
+
+#endif /* if defined STOGEN */
+
 END MODULE storng_kiss

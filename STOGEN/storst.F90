@@ -1,4 +1,8 @@
 MODULE storst
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  storst  ***
    !! Purpose        : read and write restart files for stochastic fields
@@ -219,5 +223,7 @@ CONTAINS
       IF (ierr.NE.0) STOP 'Error closing output restart file'
 
    END SUBROUTINE sto_rst_write
+
+#endif /* if defined STOGEN */
 
 END MODULE storst

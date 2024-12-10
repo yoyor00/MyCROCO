@@ -1,4 +1,8 @@
 MODULE stodiff
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  stodiff  ***
    !! Purpose : apply diffusion method to generate new random field
@@ -231,5 +235,7 @@ CONTAINS
       diff_operator_factor = ratio
 
    END FUNCTION diff_operator_factor
+
+#endif /* if defined STOGEN */
 
 END MODULE stodiff

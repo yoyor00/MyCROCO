@@ -1,4 +1,8 @@
 MODULE stobulk
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE stobulk  ***
    !!
@@ -128,4 +132,7 @@ CONTAINS
    END SUBROUTINE read_parameters
 
    !!======================================================================
+
+#endif /* if defined STOGEN */
+
 END MODULE stobulk
