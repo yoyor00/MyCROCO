@@ -245,9 +245,6 @@
           do i=Istr,Iend
             !We(i,j,k)=FC(i,k)-DC(i,N)*DC(i,k)
             We(i,j,k)=We(i,j,k)-DC(i,N)*DC(i,k)
-            !if (i==3 .and. j==3) then
-            !  write(stdout,*)'DC,We N',DC(i,N),We(i,j,N)
-           ! endif
           enddo
         enddo
         do i=Istr,Iend
