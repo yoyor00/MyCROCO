@@ -901,7 +901,6 @@ c
           do i=IstrR,IendR
             !set a value in cm/day , converson is done in m/s
             EmP(i,j)=-0.1*0.01/86400.
-            !if (i==3 .and. j==3) write(stdout,*)'Ana EMP',EmP(i,j)
           enddo
         enddo
 #   endif
