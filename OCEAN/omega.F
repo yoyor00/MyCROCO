@@ -225,9 +225,6 @@
      &              -((Hz(i,j,N)-Hz_bak(i,j,N))/dt)
      &                          *om_r(i,j)*on_r(i,j)
      &              - EmP(i,j)*om_r(i,j)*on_r(i,j)       
-      !if (i==3 .and. j==3) then
-      !  write(stdout,*)'We,EmP',We(i,j,N),EmP(i,j)
-      !endif
       enddo
 #endif
 
