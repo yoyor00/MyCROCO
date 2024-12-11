@@ -168,7 +168,7 @@
      &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
      &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
      &                                  *om_r(i,j)*on_r(i,j)
-            We(i,j,k)=FC(i,k)
+            !We(i,j,k)=FC(i,k)
             DC(i,k)=DC(i,k-1) + Hz(i,j,k)
 !
 !---------------------------------------------------------
@@ -219,7 +219,7 @@
 !---------------------------------------------------------
 #ifdef RAIN_FLUX
       do i=Istr,Iend
-          We(i,j,N)=We(i,j,N-1)-                           
+          FC(i,N)=FC(i,N-1)-                           
      &              (Huon(i+1,j,N)-Huon(i,j,N)+            
      &              Hvom(i,j+1,N)-Hvom(i,j,N))          
      &              -((Hz(i,j,N)-Hz_bak(i,j,N))/dt)
@@ -235,13 +235,11 @@
 !---------------------------------------------------------
 !
         do i=Istr,Iend
-          !DC(i,N)=FC(i,N)/DC(i,N)
-          DC(i,N)=We(i,j,N)/DC(i,N)
+          DC(i,N)=FC(i,N)/DC(i,N)
         enddo
         do k=1,N-1,+1
           do i=Istr,Iend
-            !We(i,j,k)=FC(i,k)-DC(i,N)*DC(i,k)
-            We(i,j,k)=We(i,j,k)-DC(i,N)*DC(i,k)
+            We(i,j,k)=FC(i,k)-DC(i,N)*DC(i,k)
           enddo
         enddo
         do i=Istr,Iend
