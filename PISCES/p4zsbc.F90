@@ -340,7 +340,7 @@ CONTAINS
          IF (ierr .NE. nf_noerr .AND. lwp ) THEN
             WRITE(numout,5) "ndepo", bioname
          ENDIF
-         ierr = nf_inq_dimid(ncid,"dust_time",dimid)
+         ierr = nf_inq_dimid(ncid,"ndepo_time",dimid)
          ierr = nf_inq_dimlen(ncid,dimid,nrec_dust)
          ALLOCATE( no3deptmp(GLOBAL_2D_ARRAY,nrec_dust), no3depmo(GLOBAL_2D_ARRAY,12) )
          ALLOCATE( no3dep(PRIV_2D_BIOARRAY) )
@@ -380,7 +380,7 @@ CONTAINS
          IF (ierr .NE. nf_noerr .AND. lwp ) THEN
             WRITE(numout,5) "nhxdepo", bioname
          ENDIF
-         ierr = nf_inq_dimid(ncid,"dust_time",dimid)
+         ierr = nf_inq_dimid(ncid,"ndepo_time",dimid)
          ierr = nf_inq_dimlen(ncid,dimid,nrec_dust)
          ALLOCATE( nh4deptmp(GLOBAL_2D_ARRAY,nrec_dust), nh4depmo(GLOBAL_2D_ARRAY,12) )
          ALLOCATE( nh4dep(PRIV_2D_BIOARRAY) )
