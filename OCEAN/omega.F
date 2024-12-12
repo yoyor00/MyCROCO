@@ -168,7 +168,6 @@
      &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
      &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
      &                                  *om_r(i,j)*on_r(i,j)
-            !We(i,j,k)=FC(i,k)
             DC(i,k)=DC(i,k-1) + Hz(i,j,k)
 !
 !---------------------------------------------------------
