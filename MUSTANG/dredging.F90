@@ -506,13 +506,13 @@ CONTAINS
          CALL dredging_compute_mass(imin, imax, jmin, jmax, hmod, hsed, &
                                     dzs, ksmi, ksma, cv_sed)
 
-         CALL dumping_compute_mass
+         CALL dredging_mpi_mass
 
+         CALL dumping_compute_mass
+         
          dredg_mass_byclass_byloc_cum(:, :) = &
             dredg_mass_byclass_byloc_cum(:, :) + &
             dredg_mass_byclass_byloc(:, :)
-
-         CALL dredging_mpi_mass
 
          CALL dredging_dump_mass(watconc, z_w)
 
@@ -662,7 +662,20 @@ CONTAINS
       !!------------------------------------------------------------------------
 
       IMPLICIT NONE
-      !! TODO
+
+# ifdef MPI
+      INTEGER :: iv, iz, ierror
+      REAL(KIND=rsh) :: tmp
+
+      DO iv = 1, nvp
+         DO iz = 1, n_dredg_loc
+            CALL MPI_ALLREDUCE( dredg_mass_byclass_byloc(iz, iv), &
+               tmp, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, ierror)
+            dredg_mass_byclass_byloc(iz, iv) = tmp
+         END DO
+      END DO
+
+#endif /*MPI*/
 
    END SUBROUTINE dredging_mpi_mass
    !============================================================================
