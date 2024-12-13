@@ -108,10 +108,23 @@
       integer istr1,iend1,jstr1,jend1
 #endif
 #ifdef PASSIVE_TRACER
-      integer xc,yc,radius,dxc,dyc
-      real rr,ztarget,ztarget2,dzz,drr,grr,rhotarget,rhotarget2,drho 
+      integer xc,yc
+      real rr,drr,grr
       real xr(0:Lm,0:Mm)  
       real yr(0:Lm,0:Mm)
+
+#ifdef RREXNUM
+# ifdef RREXNUM_RHO
+      real drho,rhotarget
+# elif defined RREXNUM_Z
+      real hab,dzz,ztarget
+# elif defined RREXNUM_SIGMA
+      real dsig,sigtarget
+# else
+      real drho,rhotarget,rhotarget2,dxc,dyc
+# endif
+#endif
+
 #if defined PORCUP
       integer kbl
 #endif
@@ -1276,22 +1289,372 @@ C$OMP BARRIER
 
       endif ! got_tini(itpas) 
 
-#else
+#elif defined RREXNUM
 
       if (.not.got_tini(itpas)) then ! consider if no tracer1 there are no other tracer either    
+
+        drr = 2 ! 2km   
+
+# ifdef RREXNUM_RHO
+! 
+! Density criteria
+! 
+
+        ! ------ FIRST TRACER PATCH ------
+        xc = 251.2 !314. !267  center of the patch in km    
+        yc = 524.8 !656.
+
+        rhotarget = 1027.831 ! .834 .82245
+        drho      = 0.0001 ! 0.0008
+        t(:,:,:,1,itpas)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr= exp(-rr**2/(2*(drr**2))) 
+          ! if (rr.le.drr) then
+            do k=1,N
+!               t(i,j,k,1,itpas)=grr*exp(-((rho1(i,j,k)+rhoref)-
+!      &                     rhotarget1)**2/(2*(drho**2)))
+!               if ( i.eq.0 .and. j.eq.0 ) then
+!                 write(*,*) 'rho', rho1(i,j,k)
+!               endif
+               t(i,j,k,1,itpas)=grr*exp(-((rho1(i,j,k)+rho0)-rhotarget
+     &                               )**2/(2*(drho**2)))
+            enddo ! k loop
+           ! endif
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ SECOND TRACER PATCH ------
+        xc = 244 !305. ! center of the patch in km    
+        yc = 470.4 !588.
+        rhotarget = 1027.835 !83
+        drho      = 0.001
+        t(:,:,:,1,itpas+1)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            !write(*,*) ' morning30 !  '
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+
+             t(i,j,k,1,itpas+1)=grr*exp(-((rho1(i,j,k)+rho0)-rhotarget
+     &                               )**2/(2*(drho**2)))
+
+
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ THIRD TRACER PATCH ------
+        xc = 328 !410. ! center of the patch in km    
+        yc = 496!620.
+        rhotarget = 1027.837  !836
+        drho      = 0.0001   ! 0.001
+        t(:,:,:,1,itpas+2)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            !write(*,*) ' morning30 !  '
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+
+             t(i,j,k,1,itpas+2)=grr*exp(-((rho1(i,j,k)+rho0)-rhotarget
+     &                               )**2/(2*(drho**2)))
+
+
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ FOURTH TRACER PATCH ------
+        xc = 349.6!437. ! center of the patch in km    
+        yc = 476.8!596.
+        rhotarget = 1027.84
+        drho      = 0.001
+        t(:,:,:,1,itpas+3)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            !write(*,*) ' morning30 !  '
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+
+             t(i,j,k,1,itpas+3)=grr*exp(-((rho1(i,j,k)+rho0)-rhotarget
+     &                               )**2/(2*(drho**2)))
+
+                                           
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+
+        ! ------ FIFTH TRACER PATCH ------
+        xc = 184.0!230. ! center of the patch in km    
+        yc = 112.0!140.
+        rhotarget = 1027.838
+        drho      = 0.0001
+        t(:,:,:,1,itpas+4)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            !write(*,*) ' morning30 !  '
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+
+             t(i,j,k,1,itpas+4)=grr*exp(-((rho1(i,j,k)+rho0)-rhotarget
+     &                               )**2/(2*(drho**2)))
+
+
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ SIXTH TRACER PATCH ------
+        xc = 222.4!278. ! center of the patch in km    
+        yc = 107.2!134.
+        rhotarget = 1027.83 ! 825
+        drho      = 0.002   ! 0.0025
+        t(:,:,:,1,itpas+5)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            !write(*,*) ' morning30 !  '
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+
+             t(i,j,k,1,itpas+5)=grr*exp(-((rho1(i,j,k)+rho0)-rhotarget
+     &                               )**2/(2*(drho**2)))
+
+
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+
+# elif defined RREXNUM_Z
+! 
+! Depth criteria
+! 
+
+
+        ! ------ FIRST TRACER PATCH ------
+        xc = 251.2 !314. !267  center of the patch in km    
+        yc = 524.8 !656.
+
+        ztarget = 0
+        dzz     = 60
+
+        t(:,:,:,1,itpas)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr= exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+               hab = z_r(i,j,k)-z_w(i,j,0)
+               t(i,j,k,1,itpas)=grr
+     &                       * exp(-(hab-ztarget)**2/(2*(dzz**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ SECOND TRACER PATCH ------
+        xc = 244 !305. ! center of the patch in km    
+        yc = 470.4 !588.
+        t(:,:,:,1,itpas+1)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+               hab = z_r(i,j,k)-z_w(i,j,0)
+               t(i,j,k,1,itpas+1)=grr
+     &                       * exp(-(hab-ztarget)**2/(2*(dzz**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ THIRD TRACER PATCH ------
+        xc = 328 !410. ! center of the patch in km    
+        yc = 496!620.
+        t(:,:,:,1,itpas+2)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+               hab = z_r(i,j,k)-z_w(i,j,0)
+               t(i,j,k,1,itpas+2)=grr
+     &                       * exp(-(hab-ztarget)**2/(2*(dzz**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ FOURTH TRACER PATCH ------
+        xc = 349.6!437. ! center of the patch in km    
+        yc = 476.8!596.
+        t(:,:,:,1,itpas+3)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+               hab = z_r(i,j,k)-z_w(i,j,0)
+               t(i,j,k,1,itpas+3)=grr
+     &                       * exp(-(hab-ztarget)**2/(2*(dzz**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+
+        ! ------ FIFTH TRACER PATCH ------
+        xc = 184.0!230. ! center of the patch in km    
+        yc = 112.0!140.
+        t(:,:,:,1,itpas+4)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+               hab = z_r(i,j,k)-z_w(i,j,0)
+               t(i,j,k,1,itpas+4)=grr
+     &                       * exp(-(hab-ztarget)**2/(2*(dzz**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ SIXTH TRACER PATCH ------
+        xc = 222.4!278. ! center of the patch in km    
+        yc = 107.2!134.
+        t(:,:,:,1,itpas+5)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+               hab = z_r(i,j,k)-z_w(i,j,0)
+               t(i,j,k,1,itpas+5)=grr
+     &                       * exp(-(hab-ztarget)**2/(2*(dzz**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+# elif defined RREXNUM_SIGMA
+! 
+! Sigma levels
+! 
+
+        ! ------ FIRST TRACER PATCH ------
+        xc = 251.2 !314. !267  center of the patch in km    
+        yc = 524.8 !656.
+        sigtarget = 1
+        dsig      = 5
+        t(:,:,:,1,itpas)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr= exp(-rr**2/(2*(drr**2))) 
+            do k=1,N
+               t(i,j,k,1,itpas)=grr
+     &                         *exp(-(k-sigtarget)**2/(2*(dsig**2)))
+            !write(*,*) 'k,exp',k,exp(-(k-sigtarget)**2/(2*(dsig**2)))
+            !write(*,*) 'grr',grr
+            !write(*,*) 't(i,j,k,1,itpas)',t(i,j,k,1,itpas)
+
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ SECOND TRACER PATCH ------
+        xc = 244 !305. ! center of the patch in km    
+        yc = 470.4 !588.
+        t(:,:,:,1,itpas+1)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+             t(i,j,k,1,itpas+1)=grr
+     &                         *exp(-(k-sigtarget)**2/(2*(dsig**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ THIRD TRACER PATCH ------
+        xc = 328 !410. ! center of the patch in km    
+        yc = 496!620.
+        t(:,:,:,1,itpas+2)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+             t(i,j,k,1,itpas+2)=grr
+     &                         *exp(-(k-sigtarget)**2/(2*(dsig**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ FOURTH TRACER PATCH ------
+        xc = 349.6!437. ! center of the patch in km    
+        yc = 476.8!596.
+        t(:,:,:,1,itpas+3)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+             t(i,j,k,1,itpas+3)=grr
+     &                         *exp(-(k-sigtarget)**2/(2*(dsig**2)))                
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+
+        ! ------ FIFTH TRACER PATCH ------
+        xc = 184.0!230. ! center of the patch in km    
+        yc = 112.0!140.
+        t(:,:,:,1,itpas+4)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+             t(i,j,k,1,itpas+4)=grr
+     &                         *exp(-(k-sigtarget)**2/(2*(dsig**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+        ! ------ SIXTH TRACER PATCH ------
+        xc = 222.4!278. ! center of the patch in km    
+        yc = 107.2!134.
+        t(:,:,:,1,itpas+5)=0.0
+        do j=JR_RANGE
+          do i=IR_RANGE
+            rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
+            grr=exp(-rr**2/(2*(drr**2)))
+            do k=1,N
+             t(i,j,k,1,itpas+5)=grr
+     &                         *exp(-(k-sigtarget)**2/(2*(dsig**2)))
+            enddo ! k loop
+          enddo ! i loop 
+        enddo ! j loop 
+
+
+# else 
+! 
+! older tracer setup
+! 
 
         xc = 400.
         yc = 320.
         dxc = 100
         dyc = 100
-
         drr = 20 !2 km
-
         rhotarget = 1027.70
         rhotarget2 = 1027.775
         drho = 0.02
-
-
 
         ! ------ TRACER 2.1 PATCH ------
 
@@ -1301,7 +1664,7 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas)=  t(i,j,k,1,itpas)
           enddo ! k loop
@@ -1316,7 +1679,7 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc-dxc)**2.+(yr(i,j)-yc-dyc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas+1)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas+1)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas+1)=  t(i,j,k,1,itpas+1)
             enddo ! k loop
@@ -1330,7 +1693,7 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc-dxc)**2.+(yr(i,j)-yc+dyc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas+2)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas+2)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas+2)=  t(i,j,k,1,itpas+2)
             enddo ! k loop
@@ -1344,7 +1707,7 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc+dxc)**2.+(yr(i,j)-yc-dyc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas+3)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas+3)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas+3)=  t(i,j,k,1,itpas+3)
             enddo ! k loop
@@ -1358,7 +1721,7 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc+dxc)**2.+(yr(i,j)-yc+dyc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas+4)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas+4)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas+4)=  t(i,j,k,1,itpas+4)
             enddo ! k loop
@@ -1373,7 +1736,7 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc)**2.+(yr(i,j)-yc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas+5)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas+5)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget2)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas+5)=  t(i,j,k,1,itpas+5)
             enddo ! k loop
@@ -1387,7 +1750,7 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc-dxc)**2.+(yr(i,j)-yc-dyc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas+6)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas+6)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget2)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas+6)=  t(i,j,k,1,itpas+6)
             enddo ! k loop
@@ -1401,7 +1764,7 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc-dxc)**2.+(yr(i,j)-yc+dyc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas+7)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas+7)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget2)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas+7)=  t(i,j,k,1,itpas+7)
             enddo ! k loop
@@ -1415,7 +1778,7 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc+dxc)**2.+(yr(i,j)-yc-dyc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas+8)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas+8)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget2)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas+8)=  t(i,j,k,1,itpas+8)
             enddo ! k loop
@@ -1429,12 +1792,15 @@ C$OMP BARRIER
             rr = sqrt((xr(i,j)-xc+dxc)**2.+(yr(i,j)-yc+dyc)**2.)
             grr=exp(-rr**2/(2*(drr**2)))
             do k=1,N
-                t(i,j,k,1,itpas+9)=grr*exp(-((rho1(i,j,k)+1027.4)-
+                t(i,j,k,1,itpas+9)=grr*exp(-((rho1(i,j,k)+rho0)-
      &                               rhotarget2)**2/(2*(drho**2)))
                 t(i,j,k,2,itpas+9)=  t(i,j,k,1,itpas+9)
             enddo ! k loop
           enddo ! i loop
         enddo ! j loop
+
+#endif /* RREXNUM_RHO or RREXNUM_Z or RREXNUM_SIGMA or ... */
+
 
       endif ! got_tini(itpas) 
 
