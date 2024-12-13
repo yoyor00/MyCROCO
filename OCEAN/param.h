@@ -994,14 +994,14 @@
 #  else
       parameter (ntrc_diats=8*NT)
 #  endif
+# else
+      parameter (ntrc_diats=0)
+# endif
 #  ifdef DIAGNOSTICS_TRACER_ISO
       parameter (ntrc_diats_iso=8)
 #  else
       parameter (ntrc_diats_iso=0)
 #  endif
-# else
-      parameter (ntrc_diats=0)
-# endif
 # ifdef DIAGNOSTICS_UV
       parameter (ntrc_diauv=24)
 # else
