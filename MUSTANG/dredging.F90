@@ -104,6 +104,8 @@ CONTAINS
             CALL dredging_init_var(imin, imax, jmin, jmax)
             !! initialize output file
             CALL dredging_def_output
+            !! mpi case for dumping_surface variable
+            CALL dumping_mpi_surface
          END IF ! test if there is at least one dredging area
 
       END IF ! test if there is dreddging
@@ -261,7 +263,7 @@ CONTAINS
       INTEGER :: iz, ncid, varid, status
       CHARACTER(lchain) :: name
       REAL(KIND=rsh) :: tmp(GLOBAL_2D_ARRAY)
-      tmp(:,:) = 0.
+      tmp(:, :) = 0.
 
       ! Open input NetCDF file.
       status = NF90_OPEN(dredging_location_file, NF90_NOWRITE, ncid)
@@ -479,7 +481,7 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_main(imin, imax, jmin, jmax, watconc, z_w, hmod, hsed, &
-                            dzs, ksmi, ksma, cv_sed)
+                            dzs, ksmi, ksma, cv_sed, c_sedtot)
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_main ***
       !!
@@ -500,23 +502,25 @@ CONTAINS
       INTEGER, DIMENSION(GLOBAL_2D_ARRAY), INTENT(INOUT) :: ksma
       REAL(KIND=rsh), DIMENSION(-1:nv_tot, ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
          INTENT(INOUT) :: cv_sed
+      REAL(KIND=rsh), DIMENSION( ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
+         INTENT(INOUT) :: c_sedtot
 
       IF (time .GE. dredging_time) THEN
 
          CALL dredging_compute_mass(imin, imax, jmin, jmax, hmod, hsed, &
-                                    dzs, ksmi, ksma, cv_sed)
+                                    dzs, ksmi, ksma, cv_sed, c_sedtot)
 
          CALL dredging_mpi_mass
 
          CALL dumping_compute_mass
-         
+
          dredg_mass_byclass_byloc_cum(:, :) = &
             dredg_mass_byclass_byloc_cum(:, :) + &
             dredg_mass_byclass_byloc(:, :)
 
          CALL dredging_dump_mass(watconc, z_w)
 
-         CALL dredging_mpi_waterconcentration
+         CALL dredging_mpi_waterconcentration(imin, imax, jmin, jmax, watconc)
 
          IF (time .GE. dredging_time_out) THEN
             MPI_master_only CALL dredging_write_output
@@ -531,7 +535,7 @@ CONTAINS
    !============================================================================
 
    SUBROUTINE dredging_compute_mass(imin, imax, jmin, jmax, hmod, hsed, &
-                                    dzs, ksmi, ksma, cv_sed)
+                                    dzs, ksmi, ksma, cv_sed, c_sedtot)
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_compute_mass ***
       !!
@@ -549,6 +553,8 @@ CONTAINS
       INTEGER, DIMENSION(GLOBAL_2D_ARRAY), INTENT(INOUT) :: ksma
       REAL(KIND=rsh), DIMENSION(-1:nv_tot, ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
          INTENT(INOUT) :: cv_sed
+      REAL(KIND=rsh), DIMENSION( ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
+         INTENT(INOUT) :: c_sedtot
 
       INTEGER :: i, j, iv, iz, k
 
@@ -572,6 +578,7 @@ CONTAINS
                   END DO
                   hsed(i, j) = hsed(i, j) - dzs(k, i, j)
                   dzs(k, i, j) = 0.0_rsh
+                  c_sedtot(k, i, j) = 0.0_rsh
                   ksma(i, j) = ksma(i, j) - 1
                END DO
             END IF
@@ -618,15 +625,9 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, N, 3, NT), &
          INTENT(INOUT) :: watconc
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 0:N), INTENT(IN) :: z_w
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: layer_thickness
       INTEGER :: i, j, idump, iv
 
       dump_gravel_flx(:, :, :) = 0.0_rsh
-
-
-      layer_thickness(:,:) = max(1e-30_rsh,&
-         z_w(:, :, dredging_dumping_layer) &
-         - z_w(:, :, dredging_dumping_layer - 1))
 
       DO idump = 1, n_dump_loc
          IF (sum(dump_mass_byclass_byloc(idump, :)) > 0.0_rsh) THEN
@@ -636,8 +637,9 @@ CONTAINS
                   watconc(:, :, dump_layer(iv), nstp, itsubs1 - 1 + iv) + &
                   REAL(dump_loc(idump, :, :), rsh) &
                   *dump_mass_byclass_byloc(idump, iv) &
-                  /dump_surface(idump) &
-                  /layer_thickness(:,:)
+                  /max(1e-30_rsh, dump_surface(idump)) &
+                  /max(1e-30_rsh, z_w(:, :, dredging_dumping_layer) &
+                       - z_w(:, :, dredging_dumping_layer - 1))
             END DO
 
             DO iv = igrav1, igrav2
@@ -653,6 +655,38 @@ CONTAINS
    END SUBROUTINE dredging_dump_mass
    !============================================================================
 
+   SUBROUTINE dumping_mpi_surface
+      !!------------------------------------------------------------------------
+      !!       *** SUBROUTINE dumping_mpi_surface ***
+      !!
+      !! ** Purpose : MPI treatment of dredged and dumped mass
+      !!
+      !!------------------------------------------------------------------------
+
+      IMPLICIT NONE
+
+# ifdef MPI
+      include 'mpif.h'
+      integer status(MPI_STATUS_SIZE), blank, ierr
+#  ifdef XIOS
+#include "mpi_cpl.h"
+#  endif
+
+      INTEGER :: iz, ierror
+      REAL(KIND=rsh) :: tmp
+
+      DO iz = 1, n_dump_loc
+         CALL MPI_ALLREDUCE(dump_surface(iz), &
+                               tmp, 1, MPI_DOUBLE_PRECISION, MPI_SUM, &
+                               MPI_COMM_WORLD, ierror)
+            dump_surface(iz) = tmp
+      END DO
+
+#endif /*MPI*/
+
+   END SUBROUTINE dumping_mpi_surface
+   !============================================================================
+
    SUBROUTINE dredging_mpi_mass
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_mpi_mass ***
@@ -664,13 +698,20 @@ CONTAINS
       IMPLICIT NONE
 
 # ifdef MPI
+      include 'mpif.h'
+      integer status(MPI_STATUS_SIZE), blank, ierr
+#  ifdef XIOS
+#include "mpi_cpl.h"
+#  endif
+
       INTEGER :: iv, iz, ierror
       REAL(KIND=rsh) :: tmp
 
       DO iv = 1, nvp
          DO iz = 1, n_dredg_loc
-            CALL MPI_ALLREDUCE( dredg_mass_byclass_byloc(iz, iv), &
-               tmp, 1, MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, ierror)
+            CALL MPI_ALLREDUCE(dredg_mass_byclass_byloc(iz, iv), &
+                               tmp, 1, MPI_DOUBLE_PRECISION, MPI_SUM, &
+                               MPI_COMM_WORLD, ierror)
             dredg_mass_byclass_byloc(iz, iv) = tmp
          END DO
       END DO
@@ -680,7 +721,7 @@ CONTAINS
    END SUBROUTINE dredging_mpi_mass
    !============================================================================
 
-   SUBROUTINE dredging_mpi_waterconcentration
+   SUBROUTINE dredging_mpi_waterconcentration(Istr, Iend, Jstr, Jend, watconc)
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_mpi_waterconcentration ***
       !!
@@ -689,7 +730,25 @@ CONTAINS
       !!------------------------------------------------------------------------
 
       IMPLICIT NONE
-      !! TODO
+
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, N, 3, NT), &
+         INTENT(INOUT) :: watconc
+      INTEGER, INTENT(IN) :: Istr, Iend, Jstr, Jend
+
+# ifdef MPI
+      include 'mpif.h'
+      integer status(MPI_STATUS_SIZE), blank, ierr
+#  ifdef XIOS
+#include "mpi_cpl.h"
+#  endif
+
+      INTEGER :: itrc
+
+      do itrc = 1, NT
+         call exchange_r3d_3pts_tile(Istr, Iend, Jstr, Jend, &
+                                     watconc(START_2D_ARRAY, 1, nstp, itrc))
+      end do
+#endif /*MPI*/
 
    END SUBROUTINE dredging_mpi_waterconcentration
    !============================================================================
@@ -930,7 +989,7 @@ CONTAINS
 # define LOCALLM Lm
 # define LOCALMM Mm
 #endif
-#if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI 
+#if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI
    !!/* exchange needed */
       CALL exchange_r2d_tile(1, LOCALLM, 1, LOCALMM, tmp)
 #endif /* MPI */

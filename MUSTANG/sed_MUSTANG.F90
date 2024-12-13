@@ -456,7 +456,7 @@ MODULE sed_MUSTANG
 
   IF (l_dredging) THEN
     CALL dredging_main(ifirst, ilast, jfirst, jlast, t, z_w, h, hsed, &
-      dzs, ksmi, ksma, cv_sed)
+      dzs, ksmi, ksma, cv_sed, c_sedtot)
   ENDIF
 
 
