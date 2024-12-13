@@ -130,7 +130,7 @@
      &                latr(GLOBAL_2D_ARRAY),
      &                rhumg(GLOBAL_2D_ARRAY,iblkrec))
 
-# ifndef AROME
+# if ! defined AROME && ! defined ERA5
         do j=J_RANGE
           do i=I_RANGE
             ew=6.1121*(1.0007+3.46e-6*Pref)*
