@@ -12,7 +12,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined DIAGNOSTICS_DIAPYCNAL
+#if defined DIAGNOSTICS_PV
       subroutine alfabeta_k_tile (Istr,Iend,Jstr,Jend,k, alpha,beta)
 !
 !--------------------------------------------------------------------

@@ -733,6 +733,26 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+      do itrc=1,NTA
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              TF_xHmix(i,j,k,itrc)=init
+              TF_yHmix(i,j,k,itrc)=init
+            enddo
+          enddo
+        enddo
+      enddo
+      do itrc=1,NTA
+        do k=0,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              TF_zHmix(i,j,k,itrc)=init
+              TF_zVmix(i,j,k,itrc)=init
+            enddo
+          enddo
+        enddo
+      enddo
 # endif
       do k=1,N
         do j=jstrR,jendR             ! 3-D primitive
@@ -779,28 +799,6 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-# if ! defined DIAGNOSTICS_TRACER_ISO
-      do itrc=1,NTA
-        do k=1,N
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              TF_xHmix(i,j,k,itrc)=init
-              TF_yHmix(i,j,k,itrc)=init
-            enddo
-          enddo
-        enddo
-      enddo
-      do itrc=1,NTA
-        do k=0,N
-          do j=JstrR,JendR
-            do i=IstrR,IendR
-              TF_zHmix(i,j,k,itrc)=init
-              TF_zVmix(i,j,k,itrc)=init
-            enddo
-          enddo
-        enddo
-      enddo
-# endif
 # endif /* DIAGNOSTICS_PV */
 
 # ifdef DIAGNOSTICS_BIO

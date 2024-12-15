@@ -173,9 +173,6 @@
      &                                  + dbdy(i,j,k)**2
      &                                  + dbdz(i,j,k)**2 )
 
-
-
-
                   ! r.h.s. of buoyancy equation
                   Trhs(i,j,k,1)=  (  alfa(i,j)*TVmix(i,j,k,1)
      &                             + alfa(i,j)*TForc(i,j,k,1)
@@ -191,7 +188,6 @@
                   ! the density gradient is computed in prsgrd.F
                   Trhs(i,j,k,2)=  Trhs(i,j,k,1)
      &                         / max(eps, gradbuoy(i,j,k) )
-
 
                   ! rate in buoyancy equation
                   Trhs(i,j,k,3)=  (  alfa(i,j)*Trate(i,j,k,1)

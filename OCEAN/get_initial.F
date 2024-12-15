@@ -355,38 +355,38 @@
 ! The "-1" is because we write history but not diagnostics at initialisation 
 !
 # ifdef DIAGNOSTICS_VRT
-          nrecdiags_vrt=ibuff(3)-1
+          nrecdiags_vrt=max(ibuff(3)-1,0)
 #  ifdef AVERAGES
           nrecdiags_vrt_avg=ibuff(4)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_EK
-          nrecdiags_ek=ibuff(3)-1
+          nrecdiags_ek=max(ibuff(3)-1,0)
 #  ifdef AVERAGES
           nrecdiags_ek_avg=ibuff(4)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_PV
-          nrecdiags_pv=ibuff(3)-1
+          nrecdiags_pv=max(ibuff(3)-1,0)
 #  ifdef AVERAGES
           nrecdiags_pv_avg=ibuff(4)
 #  endif
 # endif
 
-# if defined DIAGNOSTICS_EDDY && ! defined XIOS
-          nrecdiags_eddy=ibuff(3)-1
+# if defined DIAGNOSTICS_EDDY
+          nrecdiags_eddy=max(ibuff(3)-1,0)
 #  ifdef AVERAGES
           nrecdiags_eddy_avg=ibuff(4)
 #  endif
 # endif
 # if defined DIAGNOSTICS_TS
-          nrecdia=ibuff(3)-1
+          nrecdia=max(ibuff(3)-1,0)
 #  ifdef AVERAGES
           nrecdia_avg=ibuff(4)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
-          nrecdiaM=ibuff(3)-1
+          nrecdiaM=max(ibuff(3)-1,0)
 #  ifdef AVERAGES
           nrecdiaM_avg=ibuff(4)
 #  endif
