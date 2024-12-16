@@ -3062,11 +3062,6 @@ c !$acc wait
 #   endif
       call xios_send_field("hbl",work2d)
       endif
-#  elif defined GLS_MIXING
-!      work2d=hbl
-      if (xios_field_is_active("hbl")) then
-!      call xios_send_field("hbl",work2d)
-      endif
 #  endif
 #  ifdef LMD_BKPP
       if (xios_field_is_active("hbbl")) then
