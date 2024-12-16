@@ -12,14 +12,22 @@ import json
 import shutil
 import platform
 import subprocess
+
 # internal
 from .config import Config
-from .helpers import move_in_dir, run_shell_command, apply_vars_in_str, Messaging, patch_lines
+from .helpers import (
+    move_in_dir,
+    run_shell_command,
+    apply_vars_in_str,
+    Messaging,
+    patch_lines,
+)
 from .hyperfine import run_hyperfine
 from .check import compare_netcdf_files
 from .crocosetup.cmake import CMakeCrocoSetup
 from .crocosetup.jobcomp import JobcompCrocoSetup
 from .meshdrawer import MeshDrawer
+
 
 ##########################################################
 class Croco:
@@ -35,11 +43,11 @@ class Croco:
         self.dirname = os.path.abspath(self.dirname)
 
         # extract infos
-        self.case = config.config['cases'][case_name]
-        self.variant = config.config['variants'][variant_name]
+        self.case = config.config["cases"][case_name]
+        self.variant = config.config["variants"][variant_name]
 
         # if use old croco
-        #self.old_croco = None
+        # self.old_croco = None
         if config.has_cmake and not self.config.force_jobcomp:
             self.croco_build = CMakeCrocoSetup(self.config, self.dirname)
         else:
@@ -62,31 +70,31 @@ class Croco:
         # extract some needed vars
         croco_source_dir = self.config.croco_source_dir
         dirname = self.dirname
-        case_cpp_key = self.case['case']
-        tuning_familly = self.variant['tuning_familly']
-        tuning_flags = self.config.host['tuning'][tuning_familly]
+        case_cpp_key = self.case["case"]
+        tuning_familly = self.variant["tuning_familly"]
+        tuning_flags = self.config.host["tuning"][tuning_familly]
         croco_build = self.croco_build
 
         # create dir
         os.makedirs(dirname, exist_ok=True)
 
         # extract options
-        configure_variant_options = self.variant['configure']
+        configure_variant_options = self.variant["configure"]
         configure_case_option = f"--with-case={case_cpp_key}"
         configure_compiler_option = ""
-        if tuning_flags != '':
-            configure_compiler_option = f"FFLAGS=\"{tuning_flags}\""
+        if tuning_flags != "":
+            configure_compiler_option = f'FFLAGS="{tuning_flags}"'
 
         # Add cppkeys
         configure_cppkeys_options = ""
-        if 'cppkeys' in self.case:
+        if "cppkeys" in self.case:
             reshape = []
-            for key, value in self.case['cppkeys'].items():
+            for key, value in self.case["cppkeys"].items():
                 if value:
                     reshape.append(f"+{key}")
                 else:
                     reshape.append(f"-{key}")
-            reshape_str = ','.join(reshape)
+            reshape_str = ",".join(reshape)
             configure_cppkeys_options = f"--with-keys={reshape_str}"
 
         # debug
@@ -98,7 +106,9 @@ class Croco:
 
         # build command
         command = f"{croco_source_dir}/configure {configure_compiler_option} {configure_case_option} {configure_cppkeys_options} {configure_variant_options} {debug_option}"
-        command = apply_vars_in_str(command, {'case': self.case, 'tuning': self.config.host['tuning']})
+        command = apply_vars_in_str(
+            command, {"case": self.case, "tuning": self.config.host["tuning"]}
+        )
 
         # jump in & configure
         croco_build.configure(command)
@@ -121,13 +131,13 @@ class Croco:
         rvtk_ref_variant_name = self.config.variant_ref_name
 
         # enable what we need
-        croco_build.cppdef_h_set_key('RVTK_DEBUG', True)
+        croco_build.cppdef_h_set_key("RVTK_DEBUG", True)
 
         # except for variant we enable RVTK_DEBUG_READ
         if variant_name == rvtk_ref_variant_name:
-            croco_build.cppdef_h_set_key('RVTK_DEBUG_WRITE', True)
+            croco_build.cppdef_h_set_key("RVTK_DEBUG_WRITE", True)
         else:
-            croco_build.cppdef_h_set_key('RVTK_DEBUG_READ', True)
+            croco_build.cppdef_h_set_key("RVTK_DEBUG_READ", True)
 
     def build(self, extra_info: str = "", force_rebuild: bool = False):
         if self.config.continue_on_error:
@@ -135,10 +145,14 @@ class Croco:
                 self.build_internal(extra_info, force_rebuild)
             except Exception as e:
                 Messaging.step_error("Fail to build !")
-                self.config.report.report_status(self.case_name, self.variant_name, 'build', False, str(e))
+                self.config.report.report_status(
+                    self.case_name, self.variant_name, "build", False, str(e)
+                )
         else:
             self.build_internal(extra_info, force_rebuild)
-        self.config.report.report_status(self.case_name, self.variant_name, 'build', True)
+        self.config.report.report_status(
+            self.case_name, self.variant_name, "build", True
+        )
 
     def build_internal(self, extra_info: str = "", force_rebuild: bool = False):
         # display
@@ -175,9 +189,7 @@ class Croco:
         refdir = os.path.join(ref_rundir, "check_file_*")
 
         # debug_infos
-        extra_files = [
-            f"{ref_rundir}/debug_infos"
-        ]
+        extra_files = [f"{ref_rundir}/debug_infos"]
 
         # link all
         for file in glob.glob(refdir) + extra_files:
@@ -190,26 +202,28 @@ class Croco:
         Messaging.step(f"Directory: {self.dirname}")
 
         # extract some vars
-        command_prefix = self.variant['command_prefix']
-        environ = self.variant.get('environ', {}).copy()
+        command_prefix = self.variant["command_prefix"]
+        environ = self.variant.get("environ", {}).copy()
         dirname = self.dirname
         runs = self.config.runs
         results = self.config.results
-        host_tuning = self.config.host['tuning']
+        host_tuning = self.config.host["tuning"]
         rvtk = self.config.rvtk
-        is_rvtk_ref = (self.variant_name == self.config.variant_ref_name)
+        is_rvtk_ref = self.variant_name == self.config.variant_ref_name
 
         # load tuning env & override if needed
-        for key, value in host_tuning['environ'].items():
+        for key, value in host_tuning["environ"].items():
             environ[key] = value
 
         # apply vars
-        command_prefix = apply_vars_in_str(command_prefix, {'case': self.case, 'tuning': host_tuning})
+        command_prefix = apply_vars_in_str(
+            command_prefix, {"case": self.case, "tuning": host_tuning}
+        )
 
         # build end
         env_line = ""
         for var, value in environ.items():
-            env_line += f"{var}=\"{value}\" "
+            env_line += f'{var}="{value}" '
 
         # build command and run
         command = f"{env_line} ../../../scripts/correct_end.sh {command_prefix} ./croco"
@@ -221,49 +235,63 @@ class Croco:
             # run
             if self.config.continue_on_error:
                 try:
-                    result = run_hyperfine(command, runs=runs, verbose=self.config.verbose)
+                    result = run_hyperfine(
+                        command,
+                        logfilename="croco.log",
+                        runs=runs,
+                        verbose=self.config.verbose,
+                    )
                 except Exception as e:
                     Messaging.step_error("Error while running...")
                     result = {
-                        'results': [
+                        "results": [
                             {
-                                'command': command,
-                                'mean': 0,
-                                'median': 0,
-                                'stddev': 0,
-                                'min': 0,
-                                'max': 0,
-                                'times': [0]
+                                "command": command,
+                                "mean": 0,
+                                "median": 0,
+                                "stddev": 0,
+                                "min": 0,
+                                "max": 0,
+                                "times": [0],
                             }
                         ],
-                        'error': str(e)
+                        "error": str(e),
                     }
             else:
-                result = run_hyperfine(command, runs=runs, verbose=self.config.verbose)
+                result = run_hyperfine(
+                    command,
+                    logfilename="croco.log",
+                    runs=runs,
+                    verbose=self.config.verbose,
+                )
 
         # status
-        if 'error' in result:
-            self.config.report.report_status(self.case_name, self.variant_name, 'run', False, result['error'])
+        if "error" in result:
+            self.config.report.report_status(
+                self.case_name, self.variant_name, "run", False, result["error"]
+            )
         else:
-            self.config.report.report_status(self.case_name, self.variant_name, 'run', True)
+            self.config.report.report_status(
+                self.case_name, self.variant_name, "run", True
+            )
 
         # calc output
         output_filename = f"{results}/result-{self.full_name}.json"
 
         # add some infos
-        result['name'] = self.full_name
-        result['original_path'] = output_filename
-        result['hostname'] = platform.node()
-        result['selected_host_config'] = self.config.use_host_config
-        result['run_config'] = {
-            'host': self.config.host,
-            'case': self.case,
-            'variant': self.variant
+        result["name"] = self.full_name
+        result["original_path"] = output_filename
+        result["hostname"] = platform.node()
+        result["selected_host_config"] = self.config.use_host_config
+        result["run_config"] = {
+            "host": self.config.host,
+            "case": self.case,
+            "variant": self.variant,
         }
 
         # dump results
         with open(output_filename, "w+") as fp:
-            json.dump(result, fp=fp, indent='\t')
+            json.dump(result, fp=fp, indent="\t")
 
     def apply_patches(self, patches):
         # vars
@@ -284,24 +312,27 @@ class Croco:
                     # @todo: Force adding 'mode' in all cases and patch the
                     # provided config JSON files to match.
                     # Orignally 'replace' was default.
-                    if change.get('mode', 'replace') == 'replace':
-                        patch_lines(file_filtered, [
-                            {
-                                "mode": "replace",
-                                "after": change['next_to'],
-                                "what": change['what'] + '\n',
-                                "by": change['by'] + '\n',
-                                "descr": change['descr']
-                            }
-                        ])
+                    if change.get("mode", "replace") == "replace":
+                        patch_lines(
+                            file_filtered,
+                            [
+                                {
+                                    "mode": "replace",
+                                    "after": change["next_to"],
+                                    "what": change["what"] + "\n",
+                                    "by": change["by"] + "\n",
+                                    "descr": change["descr"],
+                                }
+                            ],
+                        )
                     else:
                         patch_lines(file_filtered, [change])
 
     def setup_case(self):
         # apply the case paches
         case_name = self.case_name
-        patches = self.case.get('patches', {})
-        cppkeys = self.case.get('cppkeys', {})
+        patches = self.case.get("patches", {})
+        cppkeys = self.case.get("cppkeys", {})
 
         # display
         Messaging.step(f"Apply case config : {case_name}")
@@ -310,8 +341,8 @@ class Croco:
     def setup_variant(self):
         # apply the case paches
         variant_name = self.variant_name
-        patches = self.variant.get('patches', {})
-        cppkeys = self.variant.get('cppkeys', {})
+        patches = self.variant.get("patches", {})
+        cppkeys = self.variant.get("cppkeys", {})
 
         # display
         Messaging.step(f"Apply variant config : {variant_name}")
@@ -325,7 +356,9 @@ class Croco:
 
         # if ref variant skip
         if self.variant_name == variant_ref_name:
-            Messaging.step(f"Checking {case_name} / {filename} skiped for '{variant_ref_name}'")
+            Messaging.step(
+                f"Checking {case_name} / {filename} skiped for '{variant_ref_name}'"
+            )
             return
         else:
             Messaging.step(f"Checking {case_name} / {filename}")
@@ -334,7 +367,9 @@ class Croco:
         seq_dir = self.calc_rundir(variant_ref_name, case_name)
         seq_file = os.path.join(seq_dir, filename)
         if not os.path.exists(seq_file):
-            raise Exception(f"Missing '{seq_file}', are you sure you ran case '{variant_ref_name}' first to get a reference for checks ?")
+            raise Exception(
+                f"Missing '{seq_file}', are you sure you ran case '{variant_ref_name}' first to get a reference for checks ?"
+            )
 
         # compare
         actual_file = f"{dirname}/{filename}"
@@ -352,8 +387,10 @@ class Croco:
         # error
         ref_file = f"{refdir}/{case_name}/{filename}"
         if not os.path.exists(ref_file):
-            raise Exception(f"Missing '{ref_file}', are you sure you ran case {case_name} in reference directory {refdir} ?")
-        
+            raise Exception(
+                f"Missing '{ref_file}', are you sure you ran case {case_name} in reference directory {refdir} ?"
+            )
+
         # compare
         actual_file = f"{dirname}/{filename}"
         compare_netcdf_files(ref_file, actual_file)
@@ -365,12 +402,16 @@ class Croco:
                 self.check_one_file_internal(filename)
             except Exception as e:
                 Messaging.step_error("Failed to compare !")
-                self.config.report.report_status(self.case_name, self.variant_name, 'check', False, str(e))
+                self.config.report.report_status(
+                    self.case_name, self.variant_name, "check", False, str(e)
+                )
         else:
             self.check_one_file_internal(filename)
 
         # report
-        self.config.report.report_status(self.case_name, self.variant_name, 'check', True)
+        self.config.report.report_status(
+            self.case_name, self.variant_name, "check", True
+        )
 
     def check_one_file_internal(self, filename: str):
         # vars
@@ -383,7 +424,7 @@ class Croco:
             self.check_one_file_from_seq_ref(filename)
 
     def check(self):
-        for filename in self.case['check_outputs']:
+        for filename in self.case["check_outputs"]:
             self.check_one_file(filename)
 
     def dump_mesh(self, anim: bool = False):
@@ -393,7 +434,7 @@ class Croco:
         result_dir = self.config.results
 
         # loop each
-        for filename in self.case['check_outputs']:
+        for filename in self.case["check_outputs"]:
             actual_file = f"{dirname}/{filename}"
             dump_in_file = f"{result_dir}/mesh-{full_name}/"
             if anim:
@@ -414,13 +455,13 @@ class Croco:
         dirname = self.dirname
         patches_and_keys = {
             "case": {
-                "patches": self.case.get('patches', {}),
-                "keys": self.case.get('keys', {}),
+                "patches": self.case.get("patches", {}),
+                "keys": self.case.get("keys", {}),
             },
             "variant": {
-                "patches": self.variant.get('patches', {}),
-                "keys": self.variant.get('keys', {}),
-            }
+                "patches": self.variant.get("patches", {}),
+                "keys": self.variant.get("keys", {}),
+            },
         }
 
         # check
@@ -438,7 +479,7 @@ class Croco:
         os.makedirs(refdir_case, exist_ok=True)
 
         # copy the files there
-        for filename in self.case['check_outputs']:
+        for filename in self.case["check_outputs"]:
             orig_path = f"{dirname}/{filename}"
             dest_path = f"{refdir_case}/{filename}"
             Messaging.step(f"Storing file {case_name} / {filename}")
@@ -459,8 +500,13 @@ class Croco:
 
         # dump case info
         with open(f"{refdir}/{case_name}/case.json", "w+") as fp:
-            json.dump(self.case, fp, indent='\t')
+            json.dump(self.case, fp, indent="\t")
 
         # dump git info
         with open(f"{refdir}/{case_name}/git.log", "w+") as fp:
-            fp.write(subprocess.getoutput("git log HEAD~1..HEAD 2>/dev/null || echo 'No git !'") + "\n")
+            fp.write(
+                subprocess.getoutput(
+                    "git log HEAD~1..HEAD 2>/dev/null || echo 'No git !'"
+                )
+                + "\n"
+            )

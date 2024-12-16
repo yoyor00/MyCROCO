@@ -1,4 +1,3 @@
-
 ##########################################################
 #  CROCO psyclone build system, under CeCILL-C
 #  From Sébastien Valat (INRIA & LJK) - 2023
@@ -6,12 +5,12 @@
 ##########################################################
 
 ##########################################################
-'''
-Hyperfie (https://github.com/sharkdp/hyperfine) is a runner to measure perf
+"""
+Hyperfine (https://github.com/sharkdp/hyperfine) is a runner to measure perf
 of a command.
 I provide here a python short replacement as it is not installed by default
 systems.
-'''
+"""
 
 ##########################################################
 import numpy
@@ -22,67 +21,87 @@ from tempfile import NamedTemporaryFile
 from .messaging import Messaging
 from .helpers import run_shell_command_time, run_shell_command
 
+
 ##########################################################
-def emulate_hyperfine(command: str, progress_bar: tqdm = None, runs: int = 2, retries: int = 8, verbose: bool = False) -> dict:
-        # prepare some vars
-        measures = []
+def emulate_hyperfine(
+    command: str,
+    logfilename=None,
+    progress_bar: tqdm = None,
+    runs: int = 2,
+    retries: int = 8,
+    verbose: bool = False,
+) -> dict:
+    # prepare some vars
+    measures = []
 
-        # display
-        Messaging.command(command)
+    # display
+    Messaging.command(command)
 
-        # update progress bar
+    # update progress bar
+    if progress_bar is not None:
+        progress_bar.refresh()
+
+    # repeat
+    for iteration in range(runs):
+        # run
+        Messaging.step(f"Running iteration - [ {iteration + 1} / {runs} ]")
+        logiteration = "%s_%i.log" % (logfilename.split(".")[0], iteration + 1)
+        runtime = run_shell_command_time(f"{command}", logiteration, verbose)
+        Messaging.step(f"Runtime = {runtime}")
+        measures.append(runtime)
+
+        # progress forward
         if progress_bar is not None:
-            progress_bar.refresh()
+            progress_bar.update(1)
 
-        # repeat
-        for iteration in range(runs):
-            # run
-            Messaging.step(f"Running iteration - [ {iteration + 1} / {runs} ]")
-            runtime = run_shell_command_time(f"{command}", verbose)
-            Messaging.step(f"Runtime = {runtime}")
-            measures.append(runtime)
+    # build summary
+    Messaging.step(f"All = {measures}")
+    summary = {
+        "results": [
+            {
+                "command": command,
+                "mean": numpy.mean(measures),
+                "median": numpy.median(measures),
+                "stddev": numpy.std(measures),
+                "min": numpy.min(measures),
+                "max": numpy.max(measures),
+                "times": measures,
+            }
+        ]
+    }
 
-            # progress forward
-            if progress_bar is not None:
-                progress_bar.update(1)
+    # return
+    return summary
 
-        # build summary
-        Messaging.step(f"All = {measures}")
-        summary = {
-            'results': [
-                {
-                    'command': command,
-                    'mean': numpy.mean(measures),
-                    'median': numpy.median(measures),
-                    'stddev': numpy.std(measures),
-                    'min': numpy.min(measures),
-                    'max': numpy.max(measures),
-                    'times': measures
-                }
-            ]
-        }
-
-        # return
-        return summary
 
 ##########################################################
 def native_hyperfine(command: str, runs: int = 2, verbose: bool = False) -> dict:
     with NamedTemporaryFile() as fp:
-        hyper_command = f"hyperfine --export-json={fp.name} --warmup 0 --output /tmp/croco.log --runs {runs} \"{command}\""
+        hyper_command = f'hyperfine --export-json={fp.name} --warmup 0 --output /tmp/croco.log --runs {runs} "{command}"'
         try:
             run_shell_command(hyper_command, capture=not verbose)
             result = json.load(fp)
             return result
         except Exception as e:
-            with open('/tmp/croco.log', 'r') as fp_log:
+            with open("/tmp/croco.log", "r") as fp_log:
                 content = fp_log.read()
                 print(content)
             raise Exception("CROCO failed to run !")
 
+
 ##########################################################
-def run_hyperfine(command: str, progress_bar: tqdm = None, runs: int = 2, retries: int = 8, verbose: bool = False):
-    hyperfine = False #shutil.which("hyperfine")
+def run_hyperfine(
+    command: str,
+    logfilename=None,
+    progress_bar: tqdm = None,
+    runs: int = 2,
+    retries: int = 8,
+    verbose: bool = False,
+):
+    hyperfine = False  # shutil.which("hyperfine")
     if hyperfine:
         return native_hyperfine(command, runs, verbose=verbose)
     else:
-        return emulate_hyperfine(command, progress_bar, runs, verbose=verbose)
+        return emulate_hyperfine(
+            command, logfilename, progress_bar, runs, verbose=verbose
+        )
