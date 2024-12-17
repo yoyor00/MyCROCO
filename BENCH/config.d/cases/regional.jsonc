@@ -31,6 +31,6 @@
 				"descr":   "Set stepping (steps=120, dt=900, fast=60)"
 			}
 		},
-		"check_outputs": [ "croco_his.nc" ]
+		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
 	}
 }
