@@ -6,9 +6,23 @@ stages:
 variables:
   TERM: "xterm-256color"
   DATAREG: "/data"
-  SOURCE_CROCO: "$CI_PROJECT_DIR/OCEAN"
 
-test_bench:
+test_bench_basin:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - ./bench-croco.py --case BASIN --variants sequential,openmp-2,openmp-4,mpi-2,mpi-4 --jobcomp --rebuild --host host_ci
+  artifacts:
+    paths:
+      - BENCH/results
+      - BENCH/rundir
+    when: always
+
+test_bench_regional:
   stage: bench
   tags:
     - ci.inria.fr
@@ -20,7 +34,6 @@ test_bench:
     - mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - ./bench-croco.py --case BASIN --variants sequential,openmp-2,openmp-4,mpi-2,mpi-4 --jobcomp --rebuild --host host_ci
     - ./bench-croco.py --case REGIONAL --variants mpi-4 --jobcomp --rebuild --host host_ci
   artifacts:
     paths:

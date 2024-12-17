@@ -3,7 +3,7 @@
 	"REGIONAL": {
 		"title": "BENGUELA",
 		"case": "REGIONAL",
-		"croco_files_path": "/home/data/",
+		"croco_files_path": "/data/",
 		"mpi": {
 			"1":  {"splitting": "1x1"},
 			"2":  {"splitting": "1x2"},
