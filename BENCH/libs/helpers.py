@@ -167,6 +167,9 @@ def patch_lines(path: str, rules: list, allow_already_done=False):
             if not (allow_already_done and rule["by"] in lines):
                 id = lines.index(rule["what"])
                 lines[id] = rule["by"]
+        # replace all rule
+        if rule["mode"] == "replace-all":
+            lines = [line.replace(rule["what"], rule["by"]) for line in lines]
         # insert after a given line
         elif rule["mode"] == "insert-after":
             id = lines.index(rule["what"])

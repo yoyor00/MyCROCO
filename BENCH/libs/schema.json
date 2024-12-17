@@ -121,11 +121,10 @@
                         "additionalProperties": {
                             "type": ["array", "object"],
                             "properties": {
-                                "next_to": {"type": "string"},
                                 "what": {"type": "string"},
                                 "by": {"type": "string"}
                             },
-                            "required": ["next_to", "what", "by"]
+                            "required": ["what", "by"]
                         }
                     },
                     "check_outputs": {

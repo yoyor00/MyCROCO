@@ -243,7 +243,7 @@ class Croco:
             env_line += f'{var}="{value}" '
 
         # build command and run
-        command = f"{env_line} ../../../scripts/correct_end.sh {command_prefix} ./croco TEST_CASES/croco.in.{self.case_name.capitalize()}"
+        command = f"{env_line} ../../../scripts/correct_end.sh {command_prefix} ./croco TEST_CASES/croco.in.{self.case['case'].capitalize()}"
         with move_in_dir(dirname):
             # link ref files
             if rvtk and not is_rvtk_ref:
@@ -455,16 +455,25 @@ class Croco:
             self.plot_diag_script = os.path.join(dirname, self.case["plot_diag_script"])
             Messaging.step(f"Plotting {full_name}")
 
-            command = [self.plot_diag_script, "--no-show", "--makepng", "--file", actual_file, "--output-dir",result_dir ]
+            command = [
+                self.plot_diag_script,
+                "--no-show",
+                "--makepng",
+                "--file",
+                actual_file,
+                "--output-dir",
+                result_dir,
+            ]
 
             try:
                 subprocess.run(command, check=True)  # Exécute la commande
-                print(f"Successfully executed {self.plot_diag_script} with arguments --no-show --makepng")
+                print(
+                    f"Successfully executed {self.plot_diag_script} with arguments --no-show --makepng"
+                )
             except subprocess.CalledProcessError as e:
                 print(f"Error during execution of {self.plot_diag_script}: {e}")
         else:
             Messaging.step(f"No Plotting script provided")
-
 
     def dump_mesh(self, anim: bool = False):
         # vars
