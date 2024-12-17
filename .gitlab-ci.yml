@@ -43,29 +43,6 @@ variables:
   DATAANA: ""
   #
 
-.gfortran_base: &gfortran_base
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
-  variables:
-    CI_FC: "gfortran"
-    CI_MPIF90: "mpif90"
-    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
-    CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
-    PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_gfortran"
-
-.intel_base: &intel_base
-  tags:
-    - croco-vm-docker
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
-  variables:
-    CI_FC: "ifort"
-    CI_MPIF90: "mpiifort"
-    CROCO_CI_MPIRUN: "mpirun"
-    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
-    PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
-
 .get_reg_data: &get_reg_data # reusable block as YAML sequence
   - |
     if [[ "$LOCALDATA" == "true" ]]; then
@@ -78,147 +55,18 @@ variables:
       mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
     fi   
 
-.get_var_repro: &get_var_repro
-  variables:
-    RUN_HOME: $CVTKHOME
-    RUN_WORK: $CVTKWORK
-    RUN_MK: "mk_TESTALL"
-    RUN_GATHER: "gather_recap"
-
-.get_var_perfrst: &get_var_perfrst
-  variables:
-    RUN_HOME: $PERFRSTHOME
-    RUN_WORK: $PERFRSTWORK
-    RUN_MK: "mk_TESTALL_perfrst"
-    RUN_GATHER: "gather_recap_perfrst"
-
-.run_base:
-  stage: run
-  script:
-    - ulimit -s unlimited
-    - mkdir -p $DATADIR
-    - mkdir -p $CVTKWORK
-    - mkdir -p $PERFRSTDIR
-    - mkdir -p $PERFRSTWORK
-    - cd $RUN_HOME/Scripts_${RUN_NAME_SCRIPT}
-    - ./create_link_master_${RUN_NAME_SCRIPT}.sh
-    - cd -
-    - cd $RUN_WORK/${RUN_NAME}
-    - ./${RUN_MK}.bash ${RUN_NAME_CONFIGURE} ${RUN_MK_NAME}
-    - ./${RUN_GATHER}.bash ${RUN_NAME} > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Compilation failure" ${RUN_NAME}_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Execution failure" ${RUN_NAME}_gather_recap_*_git*' > /dev/null 2>&1
-    - /bin/sh -c '! grep -i "Parallel reproducibility failed" ${RUN_NAME}_gather_recap_*_git*' > /dev/null 2>&1  
-  artifacts:
-    paths:
-      - $RUN_WORK/ftp
-      - $RUN_WORK/${RUN_NAME}/*/*.log
-    when: always
-
-
-.ana_run_base: &ana_run_base
-  extends: 
-    - .run_base
-    - .get_var_repro
-  variables:
-    RUN_NAME: "KTEST"
-    RUN_NAME_SCRIPT: "ana"
-    RUN_MK_NAME: "ana"
-    RUN_NAME_CONFIGURE: "CONFIGURE_ANA"
-
-.vort_run_base: &vort_run_base
-  extends: 
-    - .run_base
-    - .get_var_repro
-  variables:
-    RUN_NAME: "VORT"
-    RUN_NAME_SCRIPT: "vort"
-    RUN_MK_NAME: "vort"
-    RUN_NAME_CONFIGURE: "CONFIGURE_VORT"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-
-.reg_run_base: &reg_run_base
-  extends: 
-    - .run_base
-    - .get_var_repro
-  before_script:
-    - *get_reg_data
-  variables:
-    RUN_NAME: "REG"
-    RUN_NAME_SCRIPT: "reg"
-    RUN_MK_NAME: "reg"
-    RUN_NAME_CONFIGURE: "CONFIGURE_REG"
-    RUNNER_SCRIPT_TIMEOUT: 180m
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-
-.reg_perfrst_base: &reg_perfrst_base
-  extends: 
-    - .run_base
-    - .get_var_perfrst 
-  before_script:
-    - *get_reg_data
-  variables:
-    RUN_NAME: "REG"
-    RUN_NAME_SCRIPT: "reg_perfrst"
-    RUN_MK_NAME: "reg"
-    RUN_NAME_CONFIGURE: "CONFIGURE_REG_PERFRST"
-    RUNNER_SCRIPT_TIMEOUT: 120m
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-
-ana_run_gfortran:
-  extends:
-    - .gfortran_base
-    - .ana_run_base
-
-ana_run_intel:
-  extends:
-    - .intel_base
-    - .ana_run_base
-
-vort_run_gfortran:
-  extends:
-    - .gfortran_base
-    - .vort_run_base
-
-vort_run_intel:
-  extends:
-    - .intel_base
-    - .vort_run_base
-
-reg_run_gfortran:
-  extends:
-    - .gfortran_base
-    - .reg_run_base
-
-reg_run_intel:
-  extends:
-    - .intel_base
-    - .reg_run_base
-
-reg_perfrst_gfortran:
-  extends:
-    - .gfortran_base
-    - .reg_perfrst_base
-
-reg_perfrst_intel:
-  extends:
-    - .intel_base
-    - .reg_perfrst_base
-
-
-
 test_bench:
   stage: bench
   tags:
     - ci.inria.fr
     - large
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  before_script:
+    - *get_reg_data
   script:
     - cd BENCH
     - ./bench-croco.py --case BASIN --variants sequential,openmp-2,openmp-4,mpi-2,mpi-4 --jobcomp --rebuild --host host_ci
+    - ./bench-croco.py --case REGIONAL --variants mpi-4 --jobcomp --rebuild --host host_ci
   artifacts:
     paths:
       - BENCH/results

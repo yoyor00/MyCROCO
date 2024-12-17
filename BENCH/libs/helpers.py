@@ -102,7 +102,7 @@ def run_shell_command_time(command, logfilename=None, verbose: bool = False):
                 number=1,
             )
         except:
-            display_run_error(command, log_fp.read())
+            display_run_error(command, log_fp)
             raise Exception("Fail to run command !")
 
 

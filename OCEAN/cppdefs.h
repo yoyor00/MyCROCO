@@ -78,7 +78,7 @@ cppdef.h by hand for the common setups.
 !
 */
                       /* Configuration Name */
-# define BENGUELA_LR
+# define BENGUELA_VHR
                       /* Parallelization */
 # undef  OPENMP
 # undef  MPI

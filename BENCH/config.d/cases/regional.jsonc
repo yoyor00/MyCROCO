@@ -1,0 +1,36 @@
+{
+	// BENGUELA case
+	"REGIONAL": {
+		"title": "BENGUELA",
+		"case": "REGIONAL",
+		"croco_files_path": "/home/data/ForCI-INRIA/VHR_CROCO_FILES_BCK/",
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "1x4"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "#if defined BENGUELA",
+				"what":    "      parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR",
+				"by":      "      parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR",
+				"descr":   "Set mesh size to (167 x 170 x 32)"
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.Regional": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                720      900      60      1",
+				"by":      "                720      900      60      1",
+				"descr":   "Set stepping (steps=720, dt=900, fast=60)"
+			}
+		},
+		"check_outputs": [ "croco_his.nc" ]
+	}
+}

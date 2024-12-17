@@ -97,6 +97,23 @@ class Croco:
             reshape_str = ",".join(reshape)
             configure_cppkeys_options = f"--with-keys={reshape_str}"
 
+        if "croco_files_path" in self.case:
+            self.croco_files_path = self.case["croco_files_path"]
+            dest_dir = dirname
+            # remove CROCO_FILES and DATA directories
+            for dirtmp in ["CROCO_FILES", "DATA"]:
+                directory = os.path.join(dirname, dirtmp)
+                if os.path.exists(directory):
+                    if os.path.isdir(directory):
+                        shutil.rmtree(directory)
+            for item in os.listdir(self.croco_files_path):
+                item_path = os.path.join(self.croco_files_path, item)
+                link_path = os.path.join(dest_dir, item)
+                if os.path.isfile(item_path):
+                    os.symlink(item_path, link_path)
+                elif os.path.isdir(item_path):
+                    os.symlink(item_path, link_path)
+
         # debug
         debug_option = ""
         if self.config.debug_build:
@@ -226,7 +243,7 @@ class Croco:
             env_line += f'{var}="{value}" '
 
         # build command and run
-        command = f"{env_line} ../../../scripts/correct_end.sh {command_prefix} ./croco"
+        command = f"{env_line} ../../../scripts/correct_end.sh {command_prefix} ./croco TEST_CASES/croco.in.{self.case_name.capitalize()}"
         with move_in_dir(dirname):
             # link ref files
             if rvtk and not is_rvtk_ref:
