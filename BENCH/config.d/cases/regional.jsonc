@@ -3,7 +3,7 @@
 	"REGIONAL": {
 		"title": "BENGUELA",
 		"case": "REGIONAL",
-		"croco_files_path": "/home/data/ForCI-INRIA/VHR_CROCO_FILES_BCK/",
+		"croco_files_path": "/home/data/",
 		"mpi": {
 			"1":  {"splitting": "1x1"},
 			"2":  {"splitting": "1x2"},
@@ -26,9 +26,9 @@
 			// Change the dt
 			"TEST_CASES/croco.in.Regional": {
 				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-				"what":    "                720      900      60      1",
-				"by":      "                720      900      60      1",
-				"descr":   "Set stepping (steps=720, dt=900, fast=60)"
+				"what":    "                120      900      60      1",
+				"by":      "                120      900      60      1",
+				"descr":   "Set stepping (steps=120, dt=900, fast=60)"
 			}
 		},
 		"check_outputs": [ "croco_his.nc" ]
