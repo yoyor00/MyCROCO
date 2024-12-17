@@ -42,7 +42,9 @@ real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_stok_sed
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_stok_wat
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_stok_wat_fix
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flx_obc_cum
+real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flx_obc_positive_cum
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flx_obczon_cum
+real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flx_obczon_positive_cum
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flx_bdl_cum
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flx_bdlzon_cum
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flx_in_cum
@@ -51,7 +53,9 @@ real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_stokw_total
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_stoks_total
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_stokwfix_total
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flxobc_total
+real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flxobc_positive_total
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flxobczon_total
+real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flxobczon_positive_total
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flxbdl_total
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flxbdlzon_total
 real(kind = rlg), dimension(:,:), allocatable      :: submassbalance_flxin_total
@@ -68,6 +72,7 @@ integer :: submassbalance_tracer_fix_dimid, submassbalance_tracer_fix_varid
 integer :: submassbalance_border_flux_varid, submassbalance_budget_tot_varid
 integer :: submassbalance_budget_stwat_varid, submassbalance_budget_fix_varid
 integer :: submassbalance_budget_flux_obc_varid, submassbalance_budget_flux_in_varid
+integer :: submassbalance_budget_posflux_obc_varid,submassbalance_border_posflux_varid
 #ifdef MUSTANG
 integer :: submassbalance_budget_stsed_varid, submassbalance_budget_flux_ws_varid
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
@@ -175,21 +180,25 @@ subroutine submassbalance_readdomain()
     if (submassbalance_nb_open > 0) then
         allocate(submassbalance_flx_obc_cum(submassbalance_nb_open, 1:nv_adv))
         allocate(submassbalance_flxobc_total(submassbalance_nb_open, 1:nv_adv))
+        allocate(submassbalance_flx_obc_positive_cum(submassbalance_nb_open, 1:nv_adv))
+        allocate(submassbalance_flxobc_positive_total(submassbalance_nb_open, 1:nv_adv))
 #ifdef MUSTANG
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
         allocate(submassbalance_flx_bdl_cum(submassbalance_nb_open, 1:nv_adv))
         allocate(submassbalance_flxbdl_total(submassbalance_nb_open, 1:nv_adv))
 #endif
 #endif
-    endif
+    endif 
     if (submassbalance_nb_close > 0) then
         allocate(submassbalance_iclose(submassbalance_nb_close))
         allocate(submassbalance_mask_bud_in(submassbalance_nb_close, GLOBAL_2D_ARRAY))
         allocate(mask_bud_in_tmp(submassbalance_nb_close, 1:LLm, 1:MMm))
         allocate(submassbalance_flx_in_cum(submassbalance_nb_close, 1:nv_adv))
         allocate(submassbalance_flx_obczon_cum(submassbalance_nb_close, 1:nv_adv))
+        allocate(submassbalance_flx_obczon_positive_cum(submassbalance_nb_close, 1:nv_adv))
         allocate(submassbalance_flxin_total(submassbalance_nb_close, 1:nv_adv))
         allocate(submassbalance_flxobczon_total(submassbalance_nb_close, 1:nv_adv))
+        allocate(submassbalance_flxobczon_positive_total(submassbalance_nb_close, 1:nv_adv))
 #ifdef MUSTANG
         allocate(submassbalance_stok_sed(submassbalance_nb_close, 1:nv_adv))
         allocate(submassbalance_flx_ws_cum(submassbalance_nb_close, 1:nv_adv))
@@ -528,6 +537,11 @@ subroutine submassbalance_flxcum_kiv(Istr, Iend, Jstr, Jend, FX, FE, iv)
                     submassbalance_flx_obc_cum(ib, iv) = submassbalance_flx_obc_cum(ib, iv)   &
                         + real(submassbalance_mask_bord_north(ib, i, j) * dt * FE(i, j), rlg) &
                         + real(submassbalance_mask_bord_east(ib, i, j) * dt * FX(i, j), rlg)
+                    submassbalance_flx_obc_positive_cum(ib, iv) = submassbalance_flx_obc_positive_cum(ib, iv)   &
+                        + real(submassbalance_mask_bord_north(ib, i, j) * dt * 0.5                           &
+                          *(FE(i, j)+submassbalance_mask_bord_north(ib, i, j) * abs(FE(i, j))), rlg) &
+                        + real(submassbalance_mask_bord_east(ib, i, j) * dt *  0.5                           & 
+                          *(FX(i, j)+submassbalance_mask_bord_east(ib, i, j) * abs(FX(i, j))), rlg)
                 enddo
 
                 do iz = 1 , submassbalance_nb_close
@@ -535,6 +549,12 @@ subroutine submassbalance_flxcum_kiv(Istr, Iend, Jstr, Jend, FX, FE, iv)
                     submassbalance_flx_obczon_cum(iz, iv) = submassbalance_flx_obczon_cum(iz, iv)  &
                         + real(submassbalance_mask_bord_north(iborder, i, j) * dt * FE(i, j), rlg) &
                         + real(submassbalance_mask_bord_east(iborder, i, j) * dt * FX(i, j), rlg)
+                    submassbalance_flx_obczon_positive_cum(iz, iv) = submassbalance_flx_obczon_positive_cum(iz, iv)   &
+                        + real(submassbalance_mask_bord_north(iborder, i, j) * dt * 0.5                           &
+                          *(FE(i, j)+submassbalance_mask_bord_north(iborder, i, j) * abs(FE(i, j))), rlg) &
+                        + real(submassbalance_mask_bord_east(iborder, i, j) * dt *  0.5                           &
+                          *(FX(i, j)+submassbalance_mask_bord_east(iborder, i, j) * abs(FX(i, j))), rlg)
+
                 enddo
             enddo
         enddo
@@ -690,7 +710,7 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
     submassbalance_t_out = time + submassbalance_dtout
 
     ! initialisation to 0
-    submassbalance_stok_wat(:, 1:nv_adv) = 0.0_rlg
+    if (submassbalance_nb_close > 0) submassbalance_stok_wat(:, 1:nv_adv) = 0.0_rlg
     if(nv_fix > 0) submassbalance_stok_wat_fix(:, 1:nv_fix) = 0.0_rsh
 #ifdef MUSTANG
     submassbalance_stok_sed(:, 1:nv_adv) = 0.0_rlg
@@ -783,9 +803,13 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
             1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)
         CALL MPI_REDUCE( submassbalance_flx_obczon_cum(iz,iv), submassbalance_flxobczon_total(iz,iv), & 
             1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)
+        CALL MPI_REDUCE( submassbalance_flx_obczon_positive_cum(iz,iv), submassbalance_flxobczon_positive_total(iz,iv), &
+            1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)
         enddo
         do ib=1,submassbalance_nb_open
         CALL MPI_REDUCE( submassbalance_flx_obc_cum(ib,iv), submassbalance_flxobc_total(ib,iv), & 
+            1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)
+        CALL MPI_REDUCE( submassbalance_flx_obc_positive_cum(ib,iv), submassbalance_flxobc_positive_total(ib,iv), &
             1, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierror)
         enddo
     enddo
@@ -822,9 +846,11 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
             submassbalance_stokw_total(iz,iv) = submassbalance_stok_wat(iz,iv)
             submassbalance_flxin_total(iz,iv) = submassbalance_flx_in_cum(iz,iv)
             submassbalance_flxobczon_total(iz,iv) = submassbalance_flx_obczon_cum(iz,iv)
+            submassbalance_flxobczon_positive_total(iz,iv) = submassbalance_flx_obczon_positive_cum(iz,iv)
         enddo
         do ib=1,submassbalance_nb_open
             submassbalance_flxobc_total(ib,iv) = submassbalance_flx_obc_cum(ib,iv)
+            submassbalance_flxobc_positive_total(ib,iv) = submassbalance_flx_obc_positive_cum(ib,iv)
         enddo
     enddo
 #ifdef MUSTANG
@@ -997,6 +1023,11 @@ subroutine submassbalance_def_outnc()
                 dimids3_border_t, submassbalance_border_flux_varid))
             call submassbalance_check( nf90_put_att(submassbalance_ncid, submassbalance_border_flux_varid, &
                 "description", "FLux through line") )
+            call submassbalance_check( nf90_def_var(submassbalance_ncid, 'border_positive_flux', NF90_DOUBLE, &
+                dimids3_border_t, submassbalance_border_posflux_varid))
+            call submassbalance_check( nf90_put_att(submassbalance_ncid, submassbalance_border_posflux_varid, &
+                "description", "FLux (>0) through line") )
+
 #ifdef MUSTANG
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
             call submassbalance_check( nf90_def_var(submassbalance_ncid, 'border_flux_bedload', NF90_DOUBLE, &
@@ -1036,6 +1067,10 @@ subroutine submassbalance_def_outnc()
                 dimids3_budget_t, submassbalance_budget_flux_obc_varid))
             call submassbalance_check( nf90_put_att(submassbalance_ncid, submassbalance_budget_flux_obc_varid, &
                 "description", "FLux from zone boundaries (>0 if in)") )
+            call submassbalance_check( nf90_def_var(submassbalance_ncid, 'budget_positive_flux_obc', NF90_DOUBLE, &
+                dimids3_budget_t, submassbalance_budget_posflux_obc_varid))
+            call submassbalance_check( nf90_put_att(submassbalance_ncid, submassbalance_budget_posflux_obc_varid, &
+                "description", "Inward fLux from zone boundaries") )
             call submassbalance_check( nf90_def_var(submassbalance_ncid, 'budget_flux_source', NF90_DOUBLE, &
                 dimids3_budget_t, submassbalance_budget_flux_in_varid))
             call submassbalance_check( nf90_put_att(submassbalance_ncid, submassbalance_budget_flux_in_varid, &
@@ -1270,14 +1305,14 @@ subroutine submassbalance_wrt_outnc()
         submassbalance_t_varid, time, (/ submassbalance_next_record /)) )
 
     ! write close line
-    submassbalance_bil(:,:) = 0.0_rlg
+    if (submassbalance_nb_close > 0) submassbalance_bil(:,:) = 0.0_rlg
     do iz=1,submassbalance_nb_close
         ! compute total
         submassbalance_bil(iz,1:nv_adv) = submassbalance_stokw_total(iz,1:nv_adv) &
 #ifdef MUSTANG
                             + submassbalance_stoks_total(iz,1:nv_adv)     &
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-                            - submassbalance_flxbdlzon_total(iz,1:nv_adv) &
+                             - submassbalance_flxbdlzon_total(iz,1:nv_adv) &
 #endif
 #endif
                             - submassbalance_flxobczon_total(iz,1:nv_adv) &
@@ -1301,6 +1336,8 @@ subroutine submassbalance_wrt_outnc()
             call submassbalance_check( nf90_put_var(submassbalance_ncid, &
                 submassbalance_budget_flux_obc_varid, submassbalance_flxobczon_total(iz,iv), start) )
             call submassbalance_check( nf90_put_var(submassbalance_ncid, &
+                submassbalance_budget_posflux_obc_varid, submassbalance_flxobczon_positive_total(iz,iv), start) )
+            call submassbalance_check( nf90_put_var(submassbalance_ncid, &
                 submassbalance_budget_flux_in_varid, submassbalance_flxin_total(iz,iv), start) )
         enddo
         do iv=1,nv_fix
@@ -1315,13 +1352,15 @@ subroutine submassbalance_wrt_outnc()
             start = (/ iz, iv, submassbalance_next_record /)
             call submassbalance_check( nf90_put_var(submassbalance_ncid, &
                 submassbalance_border_flux_varid, submassbalance_flxobc_total(iz,iv), start) )
+            call submassbalance_check( nf90_put_var(submassbalance_ncid, &
+                submassbalance_border_posflux_varid, submassbalance_flxobc_positive_total(iz,iv), start) )
 #ifdef MUSTANG
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
             call submassbalance_check( nf90_put_var(submassbalance_ncid, &
                 submassbalance_border_flux_bdl_varid, submassbalance_flxbdl_total(iz,iv), start) )
 #endif
 #endif
-        enddo
+         enddo
     enddo
 
     call submassbalance_check( nf90_sync(submassbalance_ncid))

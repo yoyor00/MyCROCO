@@ -368,7 +368,7 @@
 #    endif
             enddo
 #    ifdef NETCDF_BRY_SUBSTANCE 
-          do itrc=ntrc_salt+1,NT 
+          do itrc=isalt+1,NT 
 #      ifdef SUBSTANCE
             if(obc_cv_name(itrc) .ne. 'none') then
 #      endif
@@ -439,7 +439,7 @@
             enddo
 
 #    ifdef NETCDF_BRY_SUBSTANCE 
-          do itrc=ntrc_salt+1,NT 
+          do itrc=isalt+1,NT 
 #      ifdef SUBSTANCE
             if(obc_cv_name(itrc) .ne. 'none') then
 #      endif
@@ -511,7 +511,7 @@
             enddo
 
 #    ifdef NETCDF_BRY_SUBSTANCE 
-          do itrc=ntrc_salt+1,NT 
+          do itrc=isalt+1,NT 
 #      ifdef SUBSTANCE
             if(obc_cv_name(itrc) .ne. 'none') then
 #      endif
@@ -582,7 +582,7 @@
             enddo
 
 #    ifdef NETCDF_BRY_SUBSTANCE 
-          do itrc=ntrc_salt+1,NT 
+          do itrc=isalt+1,NT 
 #      ifdef SUBSTANCE
             if(obc_cv_name(itrc) .ne. 'none') then
 #      endif
@@ -736,7 +736,7 @@
             enddo
           enddo
 #    ifdef NETCDF_BRY_SUBSTANCE
-          do itrc=1+ntrc_salt,NT
+          do itrc=1+isalt,NT
 #      ifdef SUBSTANCE
            if(obc_cv_name(itrc) .ne. 'none') then
 #      endif
@@ -814,7 +814,7 @@
             enddo
           enddo
 #    ifdef NETCDF_BRY_SUBSTANCE
-          do itrc=1+ntrc_salt,NT
+          do itrc=1+isalt,NT
 #      ifdef SUBSTANCE
            if(obc_cv_name(itrc) .ne. 'none') then
 #      endif
@@ -892,7 +892,7 @@
             enddo
           enddo
 #    ifdef NETCDF_BRY_SUBSTANCE
-          do itrc=1+ntrc_salt,NT
+          do itrc=1+isalt,NT
 #      ifdef SUBSTANCE
            if(obc_cv_name(itrc) .ne. 'none') then
 #      endif
@@ -970,7 +970,7 @@
             enddo
           enddo
 #    ifdef NETCDF_BRY_SUBSTANCE
-          do itrc=1+ntrc_salt,NT
+          do itrc=1+isalt,NT
 #      ifdef SUBSTANCE
            if(obc_cv_name(itrc) .ne. 'none') then
 #      endif

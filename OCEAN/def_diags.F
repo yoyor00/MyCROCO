@@ -1,6 +1,7 @@
+! $Id: def_diags.F 1571 2014-07-01 12:38:05Z gcambon $
+!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -315,7 +316,7 @@
 !
           lvar=lenstr(vname(1,indxTXadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxTXadv+itrc-1)(1:lvar),
-     &          NF_FOUT, 4, r3dgrd, vidTXadv(itrc))
+     &          NF_DOUBLE, 4, r3dgrd, vidTXadv(itrc))
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTXadv(itrc),nf_collective)
 # endif
@@ -343,7 +344,7 @@
 !
            lvar=lenstr(vname(1,indxTYadv+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxTYadv+itrc-1)(1:lvar),
-     &                           NF_FOUT, 4, r3dgrd, vidTYadv(itrc))
+     &                           NF_DOUBLE, 4, r3dgrd, vidTYadv(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid,vidTYadv(itrc),nf_collective)
 # endif
