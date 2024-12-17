@@ -282,6 +282,10 @@
 # endif /* SALINITY && SFLX_CORR */
 !
 !
+# if defined RAIN_FLUX
+      real EmP(GLOBAL_2D_ARRAY)
+      common /rainflux/ EmP
+#  endif
 # if defined BULK_FLUX
 !
 !  HEAT FLUX BULK FORMULATION
