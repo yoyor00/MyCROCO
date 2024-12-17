@@ -444,6 +444,28 @@ class Croco:
         for filename in self.case["check_outputs"]:
             self.check_one_file(filename)
 
+    def plotphy(self):
+        dirname = self.dirname
+        full_name = self.full_name
+        filename = self.case["check_outputs"][0]  # to check
+        actual_file = f"{dirname}/{filename}"
+        result_dir = self.config.results
+
+        if "plot_diag_script" in self.case:
+            self.plot_diag_script = os.path.join(dirname, self.case["plot_diag_script"])
+            Messaging.step(f"Plotting {full_name}")
+
+            command = [self.plot_diag_script, "--no-show", "--makepng", "--file", actual_file, "--output-dir",result_dir ]
+
+            try:
+                subprocess.run(command, check=True)  # Exécute la commande
+                print(f"Successfully executed {self.plot_diag_script} with arguments --no-show --makepng")
+            except subprocess.CalledProcessError as e:
+                print(f"Error during execution of {self.plot_diag_script}: {e}")
+        else:
+            Messaging.step(f"No Plotting script provided")
+
+
     def dump_mesh(self, anim: bool = False):
         # vars
         dirname = self.dirname

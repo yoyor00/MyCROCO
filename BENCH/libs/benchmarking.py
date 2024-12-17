@@ -108,7 +108,7 @@ class Benchmarking:
                 instance.build(extra_info=f" - [ {id + 1} / {cnt} ]", force_rebuild = self.config.rebuild)
 
         # run
-        if 'run' in self.config.modes or 'check' in self.config.modes or 'mesh' in self.config.modes or 'anim' in self.config.modes:
+        if 'run' in self.config.modes or 'check' in self.config.modes or 'plotphy' in self.config.modes or 'mesh' in self.config.modes or 'anim' in self.config.modes:
             instance: Croco
             for id, instance in enumerate(self.instances):
                 # run
@@ -117,6 +117,10 @@ class Benchmarking:
                 # check
                 if 'check' in self.config.modes:
                     instance.check()
+                # physical plot
+                if 'plotphy' in self.config.modes:
+                #
+                    instance.plotphy()             
                 # render meshes
                 if 'mesh' in self.config.modes:
                     instance.dump_mesh()
