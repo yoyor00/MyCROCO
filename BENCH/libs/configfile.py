@@ -14,6 +14,7 @@ from jsonschema import validate
 import copy
 from .messaging import Messaging
 
+
 ##########################################################
 class ConfigFile:
     def __init__(self, file_path: str):
@@ -22,7 +23,7 @@ class ConfigFile:
     def load(self) -> dict:
         self._load_config()
         return self.config
-    
+
     @staticmethod
     def _apply_vars(value: str, var_name: str, var_value: str) -> str:
         return value.replace("{" + var_name + "}", str(var_value))
@@ -34,9 +35,13 @@ class ConfigFile:
                 if isinstance(entry, int) or entry is None:
                     pass
                 elif isinstance(entry, str):
-                    element[key] = ConfigFile._apply_vars(entry, var_name, var_value)
-                elif isinstance(element, (dict|list)):
-                    ConfigFile._tranverse_and_apply_vars(entry, var_name, var_value)
+                    element[key] = ConfigFile._apply_vars(
+                        entry, var_name, var_value
+                    )
+                elif isinstance(element, (dict | list)):
+                    ConfigFile._tranverse_and_apply_vars(
+                        entry, var_name, var_value
+                    )
                 else:
                     raise Exception(f"Unsupported type in tree : {type(entry)}")
         elif isinstance(element, dict):
@@ -44,44 +49,54 @@ class ConfigFile:
                 if isinstance(entry, int) or entry is None:
                     pass
                 elif isinstance(entry, str):
-                    element[key] = ConfigFile._apply_vars(entry, var_name, var_value)
-                elif isinstance(element, (dict|list)):
-                    ConfigFile._tranverse_and_apply_vars(entry, var_name, var_value)
+                    element[key] = ConfigFile._apply_vars(
+                        entry, var_name, var_value
+                    )
+                elif isinstance(element, (dict | list)):
+                    ConfigFile._tranverse_and_apply_vars(
+                        entry, var_name, var_value
+                    )
                 else:
                     raise Exception(f"Unsupported type in tree : {type(entry)}")
         else:
             raise Exception(f"Unsupported type in tree : {type(element)}")
 
     def _unpack_variant_vars(self) -> None:
-        '''Unpack the vars {xxx} in variant names'''
-        variants = self.config['variants']
+        """Unpack the vars {xxx} in variant names"""
+        variants = self.config["variants"]
         new_variants = {}
         to_delete = []
         for name, variant in variants.items():
-            if 'unpack' in variant:
+            if "unpack" in variant:
                 # check
-                if len(variant['unpack']) > 1:
-                    raise Exception("Do not yet support multiple variable applying, need to think how to run over & mix !")
+                if len(variant["unpack"]) > 1:
+                    raise Exception(
+                        "Do not yet support multiple variable applying, need to think how to run over & mix !"
+                    )
 
                 # loop on vars
-                for var_name, var_values in variant['unpack'].items():
+                for var_name, var_values in variant["unpack"].items():
                     for var_value in var_values:
                         # copy & make not anymore a template
                         variant_copy = copy.deepcopy(variant)
-                        del variant_copy['unpack']
+                        del variant_copy["unpack"]
 
                         # apply
-                        ConfigFile._tranverse_and_apply_vars(variant_copy, var_name, var_value)
+                        ConfigFile._tranverse_and_apply_vars(
+                            variant_copy, var_name, var_value
+                        )
 
                         # calc new name
-                        name_copy = ConfigFile._apply_vars(name, var_name, var_value)
+                        name_copy = ConfigFile._apply_vars(
+                            name, var_name, var_value
+                        )
 
                         # inject
                         new_variants[name_copy] = variant_copy
 
                 # remove template
                 to_delete.append(name)
-                
+
         # inject & clean
         for name in to_delete:
             del variants[name]
@@ -89,7 +104,7 @@ class ConfigFile:
             variants[key] = value
 
     def _load_config(self) -> None:
-        '''Load the config file and extract some infos'''
+        """Load the config file and extract some infos"""
         # message
         Messaging.section("Loading configuration file")
         Messaging.step(f"Reading {self.file_path}")
@@ -103,16 +118,16 @@ class ConfigFile:
         # unpack variant templates
         self._unpack_variant_vars()
 
-    def load_json_yaml_file(self, fname:str) -> dict:
-        with open(fname, 'r') as fp:
-            if fname.endswith('.yaml'):
+    def load_json_yaml_file(self, fname: str) -> dict:
+        with open(fname, "r") as fp:
+            if fname.endswith(".yaml"):
                 return yaml.load(fp, Loader)
             else:
                 return json5.load(fp)
 
     def _handle_imports(self):
         # loop on patterns
-        for target, patterns in self.config['imports'].items():
+        for target, patterns in self.config["imports"].items():
             for pattern in patterns:
                 # loop on found sub files
                 for file in glob.glob(pattern):
@@ -125,12 +140,14 @@ class ConfigFile:
                         if self.config[target] == None:
                             self.config[target] = {}
                         if key in self.config[target]:
-                            raise Exception(f"Try to override an already existing key in {file} : {target}.{key}")
+                            raise Exception(
+                                f"Try to override an already existing key in {file} : {target}.{key}"
+                            )
                         self.config[target][key] = value
 
         schema_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            'schema.json')
+            os.path.dirname(os.path.abspath(__file__)), "schema.json"
+        )
         with open(schema_path, "r") as fp:
             schema = json5.load(fp)
         validate(instance=self.config, schema=schema)

@@ -122,7 +122,14 @@ class Croco:
             debug_option += " --enable-twin-checker"
 
         # build command
-        command = f"{croco_source_dir}/configure {configure_compiler_option} {configure_case_option} {configure_cppkeys_options} {configure_variant_options} {debug_option}"
+        command = "%s/configure %s %s %s %s %s" % (
+            croco_source_dir,
+            configure_compiler_option,
+            configure_case_option,
+            configure_cppkeys_options,
+            configure_variant_options,
+            debug_option,
+        )
         command = apply_vars_in_str(
             command, {"case": self.case, "tuning": self.config.host["tuning"]}
         )
@@ -243,7 +250,10 @@ class Croco:
             env_line += f'{var}="{value}" '
 
         # build command and run
-        command = f"{env_line} ../../../scripts/correct_end.sh {command_prefix} ./croco TEST_CASES/croco.in.{self.case['case'].capitalize()}"
+        command = (
+            "%s ../../../scripts/correct_end.sh %s ./croco TEST_CASES/croco.in.%s"
+            % (env_line, command_prefix, self.case["case"].capitalize())
+        )
         with move_in_dir(dirname):
             # link ref files
             if rvtk and not is_rvtk_ref:
@@ -385,7 +395,8 @@ class Croco:
         seq_file = os.path.join(seq_dir, filename)
         if not os.path.exists(seq_file):
             raise Exception(
-                f"Missing '{seq_file}', are you sure you ran case '{variant_ref_name}' first to get a reference for checks ?"
+                "Missing '%s', are you sure you ran case '%s' first to get a reference for checks ?"
+                % (seq_file, variant_ref_name)
             )
 
         # compare
@@ -405,7 +416,8 @@ class Croco:
         ref_file = f"{refdir}/{case_name}/{filename}"
         if not os.path.exists(ref_file):
             raise Exception(
-                f"Missing '{ref_file}', are you sure you ran case {case_name} in reference directory {refdir} ?"
+                f"Missing '%s', are you sure you ran case %s in reference directory %s ?"
+                % (ref_file, case_name, refdir)
             )
 
         # compare
@@ -452,7 +464,9 @@ class Croco:
         result_dir = self.config.results
 
         if "plot_diag_script" in self.case:
-            self.plot_diag_script = os.path.join(dirname, self.case["plot_diag_script"])
+            self.plot_diag_script = os.path.join(
+                dirname, self.case["plot_diag_script"]
+            )
             Messaging.step(f"Plotting {full_name}")
 
             command = [
@@ -468,7 +482,8 @@ class Croco:
             try:
                 subprocess.run(command, check=True)  # Exécute la commande
                 print(
-                    f"Successfully executed {self.plot_diag_script} with arguments --no-show --makepng"
+                    "Successfully executed %s with arguments --no-show --makepng"
+                    % self.plot_diag_script
                 )
             except subprocess.CalledProcessError as e:
                 print(f"Error during execution of {self.plot_diag_script}: {e}")
@@ -540,7 +555,9 @@ class Croco:
         case_capitalized = case_name.capitalize()
         case_file = f"TEST_CASES/croco.in.{case_capitalized}"
         os.makedirs(f"{refdir}/{case_name}/TEST_CASES", exist_ok=True)
-        shutil.copyfile(f"{dirname}/{case_file}", f"{refdir}/{case_name}/{case_file}")
+        shutil.copyfile(
+            f"{dirname}/{case_file}", f"{refdir}/{case_name}/{case_file}"
+        )
 
         # copy the case file under croco.in
         if not os.path.exists(f"{refdir}/{case_name}/croco.in"):

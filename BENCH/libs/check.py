@@ -11,6 +11,7 @@ from netCDF4 import Dataset
 import math
 import numpy
 
+
 ##########################################################
 class CompareErrorLogger:
     def __init__(self, max_stored: int = 10, max_total: int = 50):
@@ -20,7 +21,14 @@ class CompareErrorLogger:
         self.max_stored = max_stored
         self.max_total = max_total
 
-    def append(self, varname: str, ref, actual, coord: list, is_strict_compare: bool = True):
+    def append(
+        self,
+        varname: str,
+        ref,
+        actual,
+        coord: list,
+        is_strict_compare: bool = True,
+    ):
         # to help readability with right operator displayed
         if is_strict_compare:
             compare_name = "strict"
@@ -33,7 +41,11 @@ class CompareErrorLogger:
         diff = abs(ref - actual)
 
         # build message
-        self.append_raw(varname, f"Non {compare_name} equality in variable '{varname}' at ({','.join(coord)}): ref {operator} actual : {ref} {operator} {actual} (diff={diff})")
+        self.append_raw(
+            varname,
+            "Non %s equality in variable '%s' at ({','.join(coord)}): ref %s actual : %s %s %s (diff=%s)"
+            % (compare_name, varname, operator, ref, operator, actual, diff),
+        )
 
     def append_raw(self, varname: str, message: str):
         # count it
@@ -49,7 +61,7 @@ class CompareErrorLogger:
         var_error_log = self.var_error_logs[varname]
 
         # extract some meaning on limits
-        can_still_log_var = (len(var_error_log) <= self.max_stored)
+        can_still_log_var = len(var_error_log) <= self.max_stored
 
         # if can still log
         if can_still_log_var:
@@ -60,38 +72,54 @@ class CompareErrorLogger:
 
     def __str__(self):
         # prepare some vars
-        error_var_names = ', '.join(self.var_error_logs.keys())
+        error_var_names = ", ".join(self.var_error_logs.keys())
         total_error_count = self.count
 
         # prep per variable messages
         var_messages = []
         log_count = 0
         for varname, log in self.var_error_logs.items():
-            var_messages.append(f"-------------------- {varname} ---------------------")
+            var_messages.append(
+                f"-------------------- {varname} ---------------------"
+            )
             for entry in log:
                 log_count += 1
                 if log_count < self.max_total:
                     var_messages.append(entry)
                 elif log_count == self.max_total:
-                    var_messages.append(f".................... too many errors (>{self.max_total}), stop logging details .............")
+                    var_messages.append(
+                        f".................... too many errors "
+                        + f"(>{self.max_total}), stop logging details ............."
+                    )
 
         # assemble details
-        details = '\n'.join(var_messages)
+        details = "\n".join(var_messages)
 
         # build full message
         message = f"Found {total_error_count} errors in : {error_var_names}\n{details}"
-        
+
         # ok
         return message
 
+
 ##########################################################
-def recurse_compare_current_dim(error_log: CompareErrorLogger, varname:str, shape_ref: tuple, shape_actual: tuple, cusor_ref, cursor_actual, dim_id: int, current_dims: list = []) -> None:
-    '''
+def recurse_compare_current_dim(
+    error_log: CompareErrorLogger,
+    varname: str,
+    shape_ref: tuple,
+    shape_actual: tuple,
+    cusor_ref,
+    cursor_actual,
+    dim_id: int,
+    current_dims: list = [],
+) -> None:
+    """
     Recursively compare the values of each dimensions of the mesh.
 
-    It is usefull mostly if we want to see which value is incorrect opposite to numpy who currently say only
-    what is the mistake. It also offer a different approach to crosscheck we are right with the way of using
-    numpy on top of netcdf.
+    It is usefull mostly if we want to see which value is incorrect opposite to
+    numpy who currently say only what is the mistake. It also offer a different
+    approach to crosscheck we are right with the way of using numpy on top of
+    netcdf.
 
     Parameters:
     -----------
@@ -102,12 +130,14 @@ def recurse_compare_current_dim(error_log: CompareErrorLogger, varname:str, shap
     shape_actual: tuple
         Size of each dimensions in ref file.
     cursor_ref:
-        Dimension we are looping over. At first call it is a netCDF4.Variable, after if is an array in principle.
+        Dimension we are looping over. At first call it is a netCDF4.Variable,
+        after if is an array in principle.
     cursor_actual:
-        Dimension we are looping over. At first call it is a netCDF4.Variable, after if is an array in principle.
+        Dimension we are looping over. At first call it is a netCDF4.Variable,
+        after if is an array in principle.
     dim_id: int
         The current dimension we are looping in.
-    '''
+    """
     # check
     if len(shape_ref) != len(shape_actual):
         f"Shape is not same in both file for '{varname}'"
@@ -128,19 +158,41 @@ def recurse_compare_current_dim(error_log: CompareErrorLogger, varname:str, shap
         # loop
         for i in range(shape_actual[dim_id]):
             if not math.isclose(cusor_ref[i], cursor_actual[i]):
-                error_log.append(varname, cusor_ref[i], cursor_actual[i], current_dims+[str(i)])
+                error_log.append(
+                    varname,
+                    cusor_ref[i],
+                    cursor_actual[i],
+                    current_dims + [str(i)],
+                )
             if not cusor_ref[i] == cursor_actual[i]:
-                error_log.append(varname, cusor_ref[i], cursor_actual[i], current_dims+[str(i)])
+                error_log.append(
+                    varname,
+                    cusor_ref[i],
+                    cursor_actual[i],
+                    current_dims + [str(i)],
+                )
     else:
         for i in range(shape_actual[dim_id]):
-            recurse_compare_current_dim(error_log, varname, shape_ref, shape_actual, cusor_ref[i], cursor_actual[i], dim_id+1, current_dims=current_dims+[str(i)])
+            recurse_compare_current_dim(
+                error_log,
+                varname,
+                shape_ref,
+                shape_actual,
+                cusor_ref[i],
+                cursor_actual[i],
+                dim_id + 1,
+                current_dims=current_dims + [str(i)],
+            )
+
 
 ##########################################################
-def compare_netcdf_variables(ref: Dataset, actual: Dataset, skiped=['hc']) -> None:
+def compare_netcdf_variables(
+    ref: Dataset, actual: Dataset, skiped=["hc"]
+) -> None:
     # loop on vars to check
     for var in ref.variables.keys():
         # print
-        #print(f"---------------- Checking {var} -------------------")
+        # print(f"---------------- Checking {var} -------------------")
 
         # skip
         if var in skiped:
@@ -167,24 +219,41 @@ def compare_netcdf_variables(ref: Dataset, actual: Dataset, skiped=['hc']) -> No
         need_value_compare = False
         if not numpy.allclose(np_ref, np_actual):
             need_value_compare = True
-            error_logger.append_raw(var, f"Variable '{var}' not close equal via numpy.allclose()")
+            error_logger.append_raw(
+                var, f"Variable '{var}' not close equal via numpy.allclose()"
+            )
         if (np_ref != np_actual).any():
             need_value_compare = True
-            error_logger.append_raw(var, f"Variable '{var}' not strict equal via numpy.any()")
+            error_logger.append_raw(
+                var, f"Variable '{var}' not strict equal via numpy.any()"
+            )
 
         # ------------ if needed for debug
         # Note : kept if we want to see the exact failing value for debug
         # Same but by hand recusion
         if need_value_compare:
             # log all errors
-            recurse_compare_current_dim(error_logger, var, shape_ref, shape_actual, ref.variables[var], actual.variables[var], 0)
+            recurse_compare_current_dim(
+                error_logger,
+                var,
+                shape_ref,
+                shape_actual,
+                ref.variables[var],
+                actual.variables[var],
+                0,
+            )
 
             # in case it is not compared the same way we should not let go
             if not error_logger.has_error():
-                raise Exception(f"Ref is different from actual because need_value_compare has been set to true. Nevertheless, error_logger did not catch the error(s). This is a bug.")
-            
+                raise Exception(
+                    f"Ref is different from actual because need_value_compare "
+                    + "has been set to true. Nevertheless, error_logger did "
+                    + "not catch the error(s). This is a bug."
+                )
+
             # log errors
             raise Exception(f"Detect some errors : \n{error_logger}")
+
 
 ##########################################################
 def compare_netcdf_files(ref_file: str, actual_file: str) -> None:
@@ -196,7 +265,13 @@ def compare_netcdf_files(ref_file: str, actual_file: str) -> None:
     try:
         compare_netcdf_variables(ref, actual)
     except Exception as e:
-        raise Exception(f"Error while checking\n - refere : {ref_file}\n - actual : {actual_file}\n-----------------------------------------------\n" + str(e))
+        raise Exception(
+            f"Error while checking\n"
+            + f" - refere : {ref_file}\n"
+            + f" - actual : {actual_file}\n"
+            + "-----------------------------------------------\n"
+            + str(e)
+        )
     finally:
         ref.close()
         actual.close()

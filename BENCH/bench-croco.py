@@ -6,14 +6,15 @@
 ##########################################################
 
 ##########################################################
-'''
+"""
 This script aimed at benchmarking CROCO to compare the various parallel modes.
-'''
+"""
 
 ##########################################################
 from libs.config import Config
 from libs.helpers import print_exception
 from libs.benchmarking import Benchmarking
+
 
 ##########################################################
 def main():
@@ -26,8 +27,9 @@ def main():
     bench = Benchmarking(config)
     bench.run()
 
+
 ##########################################################
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
     except Exception as e:

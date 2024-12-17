@@ -35,7 +35,10 @@ class Config:
 
         # register options
         parser.add_argument(
-            "-w", "--workdir", help="Working sub-directory name.", default="rundir"
+            "-w",
+            "--workdir",
+            help="Working sub-directory name.",
+            default="rundir",
         )
         parser.add_argument(
             "-c", "--cases", help="Specific case to run.", default="@default"
@@ -69,7 +72,9 @@ class Config:
             "-j", "--jobs", help="Make -j option value to build", default="8"
         )
         parser.add_argument(
-            "--results", help="Name of the results directory to use.", default="results"
+            "--results",
+            help="Name of the results directory to use.",
+            default="results",
         )
         parser.add_argument(
             "-t",
@@ -108,7 +113,10 @@ class Config:
             action="store_true",
         )
         parser.add_argument(
-            "--host", help="Force host config to use.", type=str, default=selected_host
+            "--host",
+            help="Force host config to use.",
+            type=str,
+            default=selected_host,
         )
         parser.add_argument(
             "--enable-debug",
@@ -292,7 +300,9 @@ class Config:
         self.case_names = final_cases
 
         # apply whildcard
-        self.case_names = self.apply_wildcard_enabling(self.case_names, avail_cases)
+        self.case_names = self.apply_wildcard_enabling(
+            self.case_names, avail_cases
+        )
         self.variant_names = self.apply_wildcard_enabling(
             self.variant_names, avail_variants
         )

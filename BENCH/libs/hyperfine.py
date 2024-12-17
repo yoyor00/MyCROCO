@@ -75,9 +75,14 @@ def emulate_hyperfine(
 
 
 ##########################################################
-def native_hyperfine(command: str, runs: int = 2, verbose: bool = False) -> dict:
+def native_hyperfine(
+    command: str, runs: int = 2, verbose: bool = False
+) -> dict:
     with NamedTemporaryFile() as fp:
-        hyper_command = f'hyperfine --export-json={fp.name} --warmup 0 --output /tmp/croco.log --runs {runs} "{command}"'
+        hyper_command = (
+            'hyperfine --export-json=%s --warmup 0 --output /tmp/croco.log --runs %s "%s"'
+            % (fp.name, runs, command)
+        )
         try:
             run_shell_command(hyper_command, capture=not verbose)
             result = json.load(fp)

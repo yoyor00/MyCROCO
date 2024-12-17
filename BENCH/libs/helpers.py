@@ -50,7 +50,9 @@ def print_exception(exception: Exception) -> None:
 
 
 ##########################################################
-def run_shell_command(command, logfilename=None, capture=True, show_on_error=True):
+def run_shell_command(
+    command, logfilename=None, capture=True, show_on_error=True
+):
     """Print the command and run it. On failure it prints the output."""
 
     # print command

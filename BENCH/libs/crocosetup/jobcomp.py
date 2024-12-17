@@ -134,7 +134,9 @@ class JobcompCrocoConfig:
         # apply
         patch_lines(os.path.join(self.builddir, "jobcomp"), rules)
 
-    def jobcomp_configure_set_compiler(self, fortran_compiler: str, mpi: bool = False):
+    def jobcomp_configure_set_compiler(
+        self, fortran_compiler: str, mpi: bool = False
+    ):
         """
         Change the compiler.
         """
@@ -226,7 +228,9 @@ class JobcompCrocoConfig:
 
         # apply
         patch_lines(
-            os.path.join(self.builddir, "jobcomp"), rules, allow_already_done=True
+            os.path.join(self.builddir, "jobcomp"),
+            rules,
+            allow_already_done=True,
         )
 
 
@@ -314,7 +318,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         else:
             return filename
 
-    def handle_variables(self, arg_vars: list, is_mpi: bool, extra_vars: dict) -> dict:
+    def handle_variables(
+        self, arg_vars: list, is_mpi: bool, extra_vars: dict
+    ) -> dict:
         """
         Apply to ops required when getting some variables on the command line.
 
@@ -344,7 +350,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             elif var_name == "FC":
                 # @todo: here there might be still something to fix when wanted to use non gfrotran
                 # mpi based due to requirement to patch FC & MPIF90.
-                self.croco_config.jobcomp_configure_set_compiler(var_value, mpi=is_mpi)
+                self.croco_config.jobcomp_configure_set_compiler(
+                    var_value, mpi=is_mpi
+                )
             else:
                 raise Exception(f"Unsupported variable : {entry}")
 
@@ -391,7 +399,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             default="1x4",
         )
         parser.add_argument(
-            "--enable-debug", action="store_true", help="Enable debugging mode (-O0 -g)"
+            "--enable-debug",
+            action="store_true",
+            help="Enable debugging mode (-O0 -g)",
         )
         parser.add_argument(
             "VARS",
@@ -416,7 +426,8 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             # because this !**ù$$m script does not like getting a full path
             rel_path = os.path.relpath(self.builddir)
             run_shell_command(
-                f"./create_config.bash -f -n {rel_path}", capture=self.config.capture
+                f"./create_config.bash -f -n {rel_path}",
+                capture=self.config.capture,
             )
 
     def configure(self, minicroco_args: str) -> None:
@@ -486,9 +497,13 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         self.cppdef_h_enable_openacc(use_openacc)
         self.cppdef_h_enable_openacc_psyclone(use_openacc_psyclone)
         if use_openmp:
-            self.croco_config.param_h_configure_openmp_split(options.with_threads)
+            self.croco_config.param_h_configure_openmp_split(
+                options.with_threads
+            )
         if use_mpi:
-            self.croco_config.param_h_configure_mpi_split(options.with_splitting)
+            self.croco_config.param_h_configure_mpi_split(
+                options.with_splitting
+            )
 
         # fix issue
         self.croco_config.fix_jobcomp_missing_return_status()
@@ -504,7 +519,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # move in dir & call jobcomp
         with move_in_dir(self.builddir):
             run_shell_command(
-                f"./jobcomp", logfilename="jobcomp.log", capture=self.config.capture
+                f"./jobcomp",
+                logfilename="jobcomp.log",
+                capture=self.config.capture,
             )
 
     def copy_config(
