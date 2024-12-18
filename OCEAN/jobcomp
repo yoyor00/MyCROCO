@@ -2,12 +2,15 @@
 ####################################################
 #               COMPILATION JOB                    #
 ####################################################
-
+#
 # This script assumes default compilation options, to
 # change those options : 
-# it can either be  edited to add your own options
-# or take into account the following 
-# environment variables for compilation choices :
+# it can either 
+# 1. be  edited to add your own options
+# 2. take environment variables
+# 3. take argument variables
+#
+# CROCO_SRC : sources for CROCO
 #
 # CROCO_NETCDFLIB      : netcdf library
 # CROCO_NETCDFINC      : netcdf include 
@@ -15,18 +18,22 @@
 # CROCO_XIOS_ROOT_DIR  : XIOS directory
 #
 # CROCO_CFT1           : compiler
-# CROCO_FFLAGS1        : compilation otpions
+# CROCO_FFLAGS1        : compilation options
+# NPROCS               : number of process at compilation
 #
-# Note that environment variables overwrite hard-coded
-# options
+# Note that environment or commande line
+# variables overwrite hard-coded options
+#
 
+####################################################
+# BEGIN OF USER'S MODIFICATIONS
+####################################################
 #
-# set source, compilation and run directories
+# set source
 #
-SOURCE=../croco/OCEAN
-SCRDIR=./Compile
-RUNDIR=`pwd`
-ROOT_DIR=$SOURCE/..
+
+SOURCE1=../croco/OCEAN
+
 #
 # determine operating system
 #
@@ -73,9 +80,82 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 #-----------------------------------------------------------
 XIOS_ROOT_DIR=$HOME/xios
 
-#
+####################################################
 # END OF USER'S MODIFICATIONS
 ####################################################
+
+# EDIT ALL WHAT FOLLOWS AT YOUR OWN RISKS
+
+# Function to display help
+function show_help() {
+    echo "Usage: $0 [OPTIONS]"
+    echo "Options:"
+    echo "  -h, --help                  Show this help message and exit."
+    echo "  --src <path>                Specify the CROCO source directory "
+    echo "  --fc <compiler>             Specify the Fortran compiler (default: gfortran)."
+    echo "  --fflags <flags>            Specify the compilation flags."
+    echo "  --jobs <flags>              Number of processes for compilation"
+    echo "  --netcdf-inc <path>         Specify the NetCDF include directory."
+    echo "  --netcdf-lib <path>         Specify the NetCDF library directory."
+    echo "  --xios-dir <path>           Specify the XIOS root directory."
+    echo "  --prism-dir <path>          Specify the OASIS-MCT root directory."
+
+}
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --src)
+            CROCO_SRC="$2"
+            shift 2
+            ;;
+        --fc)
+            CROCO_CFT1="$2"
+            shift 2
+            ;;
+        --fflags)
+            CROCO_FFLAGS1="$2"
+            shift 2
+            ;;
+        --xios-dir)
+            CROCO_XIOS_ROOT_DIR="$2"
+            shift 2
+            ;;
+        --prism-dir)
+            CROCO_PRISM_ROOT_DIR="$2"
+            shift 2
+            ;;
+        --netcdf-inc)
+            CROCO_NETCDFINC="$2"
+            shift 2
+            ;;
+        --netcdf-lib)
+            CROCO_NETCDFLIB="$2"
+            shift 2
+            ;;
+         --jobs)
+            NPROCS="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+
+NPROCS=${NPROCS:-1}
+SOURCE=${CROCO_SRC-$SOURCE1}
+SCRDIR=./Compile
+RUNDIR=`pwd`
+ROOT_DIR=$SOURCE/..
+
 #
 # Use GNU Make command, else make
 #
@@ -269,6 +349,7 @@ fi
 # prepare and compile the library
 #
 if [[ $COMPILEAGRIF ]] ; then
+    NPROCS=1   #compile on whar process only !
 # Find the default C compiler
     CC1=$(echo -e 'dummy_target:\n\t@echo $(CC)' | $MAKE -f - dummy_target)
     CFLAGS1=$(echo -e 'dummy_target:\n\t@echo $(CFLAGS)' | $MAKE -f - dummy_target)
@@ -361,9 +442,14 @@ rm -f flags.tmp
 # compile croco
 #
 $MAKE depend
-$MAKE || exit 1
-  
+$MAKE -j ${NPROCS} || exit 1
+
+
 [[ -f croco  ]] && mv croco $RUNDIR
 [[ -f partit ]] && mv partit $RUNDIR
 [[ -f ncjoin ]] && mv ncjoin  $RUNDIR
+
+cat ../../OCEAN/croco_ascii.txt
+echo CROCO is OK
+
 #
