@@ -25,8 +25,7 @@ test_bench_basin:
 test_bench_basin_ifort:
   stage: bench
   tags:
-    - ci.inria.fr
-    - large
+    - croco-vm-docker
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
