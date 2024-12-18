@@ -49,7 +49,7 @@ test_bench_regional:
     - tar -xf ForCI-INRIA.tar.gz ;
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - ./bench-croco.py --case BENGUELA_VHR_TIDES_BULK --variants sequential,mpi-4 --jobcomp --rebuild --host host_ci
+    - ./bench-croco.py --case BENGUELA_VHR_TIDES_BULK --variants sequential,mpi-4 --jobcomp --rebuild --host host_ci --data-root-path $DATAREG/ForCI-INRIA
   artifacts:
     paths:
       - BENCH/results

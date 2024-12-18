@@ -98,21 +98,25 @@ class Croco:
             configure_cppkeys_options = f"--with-keys={reshape_str}"
 
         if "croco_files_path" in self.case:
-            self.croco_files_path = self.case["croco_files_path"]
-            dest_dir = dirname
-            # remove CROCO_FILES and DATA directories
+            self.input_dir = os.path.join(
+                self.config.data_root_path, self.case["croco_files_path"]
+            )
+            if not (os.path.isdir(self.config.data_root_path)):
+                raise Exception("Folder not found : %s" % self.config.data_root_path)
+            if not (os.path.isdir(self.input_dir)):
+                raise Exception("Folder not found : %s" % self.input_dir)
+            # create CROCO_FILES and DATA directories
             for dirtmp in ["CROCO_FILES", "DATA"]:
-                directory = os.path.join(dirname, dirtmp)
-                if os.path.exists(directory):
-                    if os.path.isdir(directory):
-                        shutil.rmtree(directory)
-            for item in os.listdir(self.croco_files_path):
-                item_path = os.path.join(self.croco_files_path, item)
-                link_path = os.path.join(dest_dir, item)
-                if os.path.isfile(item_path):
-                    os.symlink(item_path, link_path)
-                elif os.path.isdir(item_path):
-                    os.symlink(item_path, link_path)
+                dest_dir = os.path.join(dirname, dirtmp)
+                os.makedirs(dest_dir, exist_ok=True)
+                in_dir = os.path.join(self.input_dir, dirtmp)
+                for item in os.listdir(in_dir):
+                    item_path = os.path.join(in_dir, item)
+                    link_path = os.path.join(dest_dir, item)
+                    if os.path.isfile(item_path):
+                        os.symlink(item_path, link_path)
+                    elif os.path.isdir(item_path):
+                        os.symlink(item_path, link_path)
 
         # debug
         debug_option = ""
@@ -464,9 +468,7 @@ class Croco:
         result_dir = self.config.results
 
         if "plot_diag_script" in self.case:
-            self.plot_diag_script = os.path.join(
-                dirname, self.case["plot_diag_script"]
-            )
+            self.plot_diag_script = os.path.join(dirname, self.case["plot_diag_script"])
             Messaging.step(f"Plotting {full_name}")
 
             command = [
@@ -555,9 +557,7 @@ class Croco:
         case_capitalized = case_name.capitalize()
         case_file = f"TEST_CASES/croco.in.{case_capitalized}"
         os.makedirs(f"{refdir}/{case_name}/TEST_CASES", exist_ok=True)
-        shutil.copyfile(
-            f"{dirname}/{case_file}", f"{refdir}/{case_name}/{case_file}"
-        )
+        shutil.copyfile(f"{dirname}/{case_file}", f"{refdir}/{case_name}/{case_file}")
 
         # copy the case file under croco.in
         if not os.path.exists(f"{refdir}/{case_name}/croco.in"):

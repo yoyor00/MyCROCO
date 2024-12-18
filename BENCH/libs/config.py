@@ -148,6 +148,9 @@ class Config:
         parser.add_argument(
             "--report", help="Build a status report.", action="store_true"
         )
+        parser.add_argument(
+            "--data-root-path", help="Input data path", type=str, default=""
+        )
 
         # parse
         self.args = parser.parse_args()
@@ -175,6 +178,7 @@ class Config:
         self.twin_chercker = self.args.twin_checker
         self.continue_on_error = self.args.continue_on_error
         self.report = self.args.report
+        self.data_root_path = self.args.data_root_path
 
         # swithc
         if self.report:
@@ -300,9 +304,7 @@ class Config:
         self.case_names = final_cases
 
         # apply whildcard
-        self.case_names = self.apply_wildcard_enabling(
-            self.case_names, avail_cases
-        )
+        self.case_names = self.apply_wildcard_enabling(self.case_names, avail_cases)
         self.variant_names = self.apply_wildcard_enabling(
             self.variant_names, avail_variants
         )

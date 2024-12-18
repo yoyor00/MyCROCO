@@ -3,7 +3,7 @@
 	"BENGUELA_VHR_TIDES_BULK": {
 		"title": "BENGUELA_VHR_TIDES_BULK",
 		"case": "REGIONAL",
-		"croco_files_path": "/data/ForCI-INRIA/VHR_CROCO_FILES_BCK/",
+		"croco_files_path": "VHR_CROCO_FILES_BCK",
 		"mpi": {
 			"1":  {"splitting": "1x1"},
 			"2":  {"splitting": "1x2"},
