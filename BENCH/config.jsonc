@@ -13,6 +13,7 @@
 			},
 			"tuning": {
 				"gnu": "-march=native",
+				"intel": "",
 				"nvfortran": "-tp=native",
 				"environ":{
 					"OMP_PROC_BIND": "spread"
@@ -101,6 +102,16 @@
 		"sequential-nvfortran": {
 			"configure": "FC=nvfortran",
 			"tuning_familly": "nvfortran",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
+		// seq default
+		"sequential-ifort": {
+			"configure": "FC=ifort",
+			"tuning_familly": "intel",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {

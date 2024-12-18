@@ -25,6 +25,7 @@
                         "type" : "object",
                          "properties": {
                             "gnu": {"type" : "string"},
+                            "intel": {"type" : "string"},
                             "nvfortran": {"type" : "string"},
                             "mpi_options": {"type" : "string"},
                             "environ": { "type": "object" },
@@ -37,7 +38,7 @@
                                 "required": [ "openmp", "mpirun" ]
                             }
                         },
-                        "required" : [ "gnu", "nvfortran", "mpi_options", "environ" ]
+                        "required" : [ "gnu", "intel", "nvfortran", "mpi_options", "environ" ]
                     }
                 },
                 "required" : [ "ressources", "tuning" ]

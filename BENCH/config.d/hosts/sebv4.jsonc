@@ -8,6 +8,7 @@
 		},
 		"tuning": {
 			"gnu": "-march=native",
+			"intel": "",
 			"nvfortran": "-tp=native",
 			"environ": {
 				"OMP_PROC_BIND": "spread"
