@@ -3,6 +3,7 @@
 	"UPWELLING": {
 		"title": "UPWELLING - (16 x 64 x 16 : 410)",
 		"case": "UPWELLING",
+		"plot_diag_script": "./TEST_CASES/plot_upwelling.py",
 		"mpi": {
 			"1":  {"splitting": "1x1"},
 			"2":  {"splitting": "1x2"},
