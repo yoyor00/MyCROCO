@@ -1,7 +1,7 @@
 title:
         BENGUELA TEST MODEL
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                120      900      60      1
+                3840      3600      60      1
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                      1         1000         0.01
 S-coord: THETA_S,   THETA_B,    Hc (m)
@@ -33,14 +33,14 @@ initial: NRREC / filename
           1 
     CROCO_FILES/croco_ini.nc
 restart:          NRST, NRPFRST / filename
-                   720    -1
+                   384    -1
     CROCO_FILES/croco_rst.nc
     
 history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T      72     0
+            T      48     0
     CROCO_FILES/croco_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
-            1      72     0
+            1      48     0
     CROCO_FILES/croco_avg.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
@@ -85,11 +85,11 @@ nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
                 1.      360.      3.      360.
 
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
-                  T        72         0
+                  T        48         0
     CROCO_FILES/croco_dia.nc
 
 diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
-               T          1           72            0
+               T          1           48            0
     CROCO_FILES/croco_dia_avg.nc
 
 diag3D_history_fields:    diag_tracers3D(1:NT) 
@@ -105,11 +105,11 @@ diag2D_average_fields:    diag_tracers2D_avg(1:NT)
                             50*T
 
 diagnosticsM:   ldefdiaM   nwrtdiaM    nrpfdiaM /filename
-                   T          72          0
+                   T          48          0
     CROCO_FILES/croco_diaM.nc
 
 diagM_avg: ldefdiaM_avg  ntsdiaM_avg  nwrtdiaM_avg  nprfdiaM_avg /filename
-               T          1           72            0
+               T          1           48            0
     CROCO_FILES/croco_diaM_avg.nc
 
 diagM_history_fields: diag_momentum(1:2)
@@ -120,11 +120,11 @@ diagM_average_fields: diag_momentum_avg(1:2)
 
 
 diags_vrt:   ldefdiags_vrt, nwrtdiags_vrt, nrpfdiags_vrt /filename
-                   T          72        0
+                   T          48        0
     CROCO_FILES/croco_diags_vrt.nc
 
 diags_vrt_avg: ldefdiags_vrt_avg  ntsdiags_vrt_avg  nwrtdiags_vrt_avg  nprfdiags_vrt_avg /filename 
-               T          1          72          0
+               T          1          48          0
     CROCO_FILES/croco_diags_vrt_avg.nc
 
 diags_vrt_history_fields: diags_vrt
@@ -135,11 +135,11 @@ diags_vrt_average_fields: diags_vrt_avg
 
 
 diags_ek:   ldefdiags_ek, nwrtdiags_ek, nrpfdiags_ek /filename
-                   T          72        0
+                   T          48        0
     CROCO_FILES/croco_diags_ek.nc
 
 diags_ek_avg: ldefdiags_ek_avg  ntsdiags_ek_avg  nwrtdiags_ek_avg  nprfdiags_ek_avg /filename
-               T          1           72          0
+               T          1           48          0
     CROCO_FILES/croco_diags_ek_avg.nc
 
 diags_ek_history_fields: diags_ek
@@ -164,11 +164,11 @@ surf_average_fields: surf_avg
 
 
 diags_pv:   ldefdiags_pv, nwrtdiags_pv, nrpfdiags_pv /filename
-                   T          72        0
+                   T          48        0
     CROCO_FILES/croco_diags_pv.nc
 
 diags_pv_avg: ldefdiags_pv_avg  ntsdiags_pv_avg  nwrtdiags_pv_avg  nprfdiags_pv_avg /filename
-               T          1           72          0
+               T          1           48          0
     CROCO_FILES/croco_diags_pv_avg.nc
 
 diags_pv_history_fields: diags_pv(1:NT)
@@ -179,11 +179,11 @@ diags_pv_average_fields: diags_pv_avg(1:NT)
 
 
 diags_eddy:   ldefdiags_eddy, nwrtdiags_eddy, nrpfdiags_eddy /filename
-                   T          72        0
+                   T          48        0
     CROCO_FILES/croco_diags_eddy.nc
 
 diags_eddy_avg: ldefdiags_eddy_avg  ntsdiags_eddy_avg  nwrtdiags_eddy_avg  nprfdiags_eddy_avg /filename
-               T          1           72          0
+               T          1           48          0
     CROCO_FILES/croco_diags_eddy_avg.nc
 
 diags_eddy_history_fields: diags_eddy
@@ -194,11 +194,11 @@ diags_eddy_average_fields: diags_eddy_avg
 
 
 diagnostics_bio:   ldefdiabio   nwrtdiabio    nrpfdiabio /filename
-                        T          72             0
+                        T          48             0
     CROCO_FILES/croco_diabio.nc
 
 diagbio_avg: ldefdiabio_avg  ntsdiabio_avg  nwrtdiabio_avg  nprfdiabio_avg /filename
-                  T              1              72              0
+                  T              1              48              0
     CROCO_FILES/croco_diabio_avg.nc
 
 diagbioFlux_history_fields:    wrtdiabioFlux 
