@@ -205,34 +205,6 @@ class JobcompCrocoConfig:
         # apply
         patch_lines(os.path.join(self.builddir, "param.h"), rules)
 
-    def fix_jobcomp_missing_return_status(self) -> None:
-        """
-        Some fixes (to be merged once).
-
-        This one fix the fact that if `make` fails, jobcomp currently still
-        return an OK status.
-
-        TODO: probably also make sure that the `croco` binary is not there anymore
-        if build has failed. Not using it without noticing it has not been rebuilt.
-        """
-
-        # build rule
-        rules = [
-            {
-                "mode": "replace",
-                "what": "$MAKE\n",
-                "by": f"$MAKE || exit 1\n",
-                "descr": f"Fix missing return make status in jobcomp",
-            }
-        ]
-
-        # apply
-        patch_lines(
-            os.path.join(self.builddir, "jobcomp"),
-            rules,
-            allow_already_done=True,
-        )
-
 
 ##########################################################
 class JobcompCrocoSetup(AbstractCrocoSetup):
@@ -504,9 +476,6 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             self.croco_config.param_h_configure_mpi_split(
                 options.with_splitting
             )
-
-        # fix issue
-        self.croco_config.fix_jobcomp_missing_return_status()
 
     def make(self, make_jobs: str):
         """
