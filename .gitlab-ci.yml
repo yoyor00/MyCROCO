@@ -30,8 +30,8 @@ test_bench_basin_ifort:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - #note : --jobs 1 mandatory with intel compiler
-    - #note : check not available because sequentiel is not done here
+    #note : --jobs 1 mandatory with intel compiler
+    #note : check not available because sequentiel is not done here
     - ./bench-croco.py --case BASIN --variants sequential-ifort --jobcomp --rebuild --host host_ci --jobs 1 --steps build,run
   artifacts:
     paths:
