@@ -449,7 +449,7 @@ $MAKE -j ${NPROCS} || exit 1
 [[ -f partit ]] && mv partit $RUNDIR
 [[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 
-cat ../../OCEAN/croco_ascii.txt
+cat $ROOT_DIR/OCEAN/croco_ascii.txt
 echo CROCO is OK
 
 #

@@ -26,8 +26,8 @@
 			// Change the dt
 			"TEST_CASES/croco.in.Regional": {
 				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-				"by":      "                3840      3600      60      1",
 				"what":    "                3840      3600      60      1",
+				"by":      "                3840      3600      60      1",
 				"descr":   "Do nothing ..."
 			},
 			// Change the configuration name
@@ -44,5 +44,44 @@
 			}]
 		},
 		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
+	},
+	"BENGUELA_VHR_TIDES_BULK": {
+		"title": "BENGUELA_VHR_TIDES_BULK",
+		"case": "REGIONAL",
+		"croco_files_path": "VHR_CROCO_FILES_BCK",
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "2x2"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the dt
+			"TEST_CASES/croco.in.Regional": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                3840      3600      60      1",
+				"by":      "                120      900      60      1",
+				"descr":   "Set stepping (steps=120, dt=900, fast=60)"
+			},
+			// Change the configuration name
+			"cppdefs.h": [{
+				"mode": "replace-all",
+				"what":   "# undef  TIDES",
+				"by":     "# define  TIDES",
+				"descr":   "Set TIDES"
+			},{
+				"next_to": "                      /* Parallelization */",
+				"what":   "# define BENGUELA_LR",
+				"by":     "# define BENGUELA_VHR",
+				"descr":   "Unset BENGUELA_LR"
+			}]
+		},
+		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
 	}
+
 }
