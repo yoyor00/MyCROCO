@@ -18,7 +18,7 @@ test_bench_debug:
     - tar -xf ForCI-INRIA.tar.gz ;
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - ./bench-croco.py --case @debug --variants @debug --jobcomp --rebuild --host host_ci --data-root-path $DATAREG/ForCI-INRIA
+    - ./bench-croco.py --case @debug --variants @debug --jobcomp --rebuild --host host_ci --compare-to sequential-debug --data-root-path $DATAREG/ForCI-INRIA
   artifacts:
     paths:
       - BENCH/results
