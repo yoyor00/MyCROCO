@@ -270,6 +270,12 @@ else
 	echo "Unknown Operating System"
 	exit
 fi
+#
+# Take environment variables for compiler and options
+#
+FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
+CFT1=${CROCO_CFT1-$CFT1}
+
 # Netcdf for netcdf.mod in F90
 FFLAGS1="$FFLAGS1 $NETCDFINC"
 #
@@ -299,13 +305,6 @@ if $($CPP1 testkeys.F | grep -i -q mpiisdefined) ; then
 	FFLAGS1="$FFLAGS1 $MPIINC"
 	CFT1="${MPIF90}"
 fi
-
-#
-# Take environment variables for compiler and options
-#
-FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
-CFT1=${CROCO_CFT1-$CFT1}
-
 #
 # - Determine if XIOS librairies is required 
 # - if it is the case :
