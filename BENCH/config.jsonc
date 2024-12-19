@@ -37,9 +37,9 @@
 			"sequential-debug",
 			"mpi-debug-4"
 		],
-		"@ifort-debug": [
-			"sequential-ifort-debug",
-			"mpi-ifort-debug-4"
+		"@debug-ifort": [
+			"sequential-debug-ifort",
+			"mpi-debug-ifort-4"
 		],
 		"@wip-all": [
 			"sequential",
@@ -82,7 +82,7 @@
 			"BASIN",
 			"BENGUELA_VHR_TIDES_BULK"
 		],
-		"@ifort-debug": [
+		"@debug-ifort": [
 			"BASIN",
 			"BENGUELA_VHR_TIDES_BULK"
 		]

@@ -37,7 +37,7 @@ test_bench_debug_ifort:
     - cd $CI_PROJECT_DIR/BENCH
     #note : --jobs 1 mandatory with intel compiler
     #note : check not available because sequentiel is not done here
-    - ./bench-croco.py --case @ifort-debug --variants @ifort-debug --jobcomp --rebuild --host host_ci_ifort --jobs 1 --steps build,run --data-root-path $DATAREG/ForCI-INRIA
+    - ./bench-croco.py --case @debug-ifort --variants @debug-ifort --jobcomp --rebuild --host host_ci_ifort --jobs 1 --steps build,run --data-root-path $DATAREG/ForCI-INRIA
   artifacts:
     paths:
       - BENCH/results
