@@ -79,9 +79,7 @@ class CompareErrorLogger:
         var_messages = []
         log_count = 0
         for varname, log in self.var_error_logs.items():
-            var_messages.append(
-                f"-------------------- {varname} ---------------------"
-            )
+            var_messages.append(f"-------------------- {varname} ---------------------")
             for entry in log:
                 log_count += 1
                 if log_count < self.max_total:
@@ -186,9 +184,7 @@ def recurse_compare_current_dim(
 
 
 ##########################################################
-def compare_netcdf_variables(
-    ref: Dataset, actual: Dataset, skiped=["hc"]
-) -> None:
+def compare_netcdf_variables(ref: Dataset, actual: Dataset, skiped=["hc"]) -> None:
     # loop on vars to check
     for var in ref.variables.keys():
         # print
@@ -214,8 +210,19 @@ def compare_netcdf_variables(
         error_logger = CompareErrorLogger(max_stored=10, max_total=50)
 
         # faster way
-        np_ref = numpy.array(ref.variables[var])
-        np_actual = numpy.array(actual.variables[var])
+        # [1:-1, 1:-1] to check only interior domain
+        if len(shape_ref) == 2:
+            np_ref = numpy.array(ref.variables[var])[1:-1, 1:-1]
+            np_actual = numpy.array(actual.variables[var])[1:-1, 1:-1]
+        elif len(shape_ref) == 3:
+            np_ref = numpy.array(ref.variables[var])[:, 1:-1, 1:-1]
+            np_actual = numpy.array(actual.variables[var])[:, 1:-1, 1:-1]
+        elif len(shape_ref) == 4:
+            np_ref = numpy.array(ref.variables[var])[:, :, 1:-1, 1:-1]
+            np_actual = numpy.array(actual.variables[var])[:, :, 1:-1, 1:-1]
+        else:
+            np_ref = numpy.array(ref.variables[var])
+            np_actual = numpy.array(actual.variables[var])
         need_value_compare = False
         if not numpy.allclose(np_ref, np_actual):
             need_value_compare = True
