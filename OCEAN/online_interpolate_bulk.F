@@ -59,7 +59,12 @@
 # include "grid.h"
 # include "online.h"
       integer, intent(in) :: NXref, NYref, blkvar_id, iblkrec
+# if defined IRREG_INTERP
+      real(kind=8), intent(in) :: lonref(1:NYref,1:NXref), 
+     &                            latref(1:NYref,1:NXref)
+# else
       real(kind=8), intent(in) :: lonref(1:NXref), latref(1:NYref)
+# endif
       real(kind=8), intent(in) :: varref(1:NXref,1:NYref)
       real blk_dum1(GLOBAL_2D_ARRAY)
       real blk_dum2(GLOBAL_2D_ARRAY)
@@ -93,11 +98,17 @@
 #  define MYINTERP linterp2d
 # endif
 
+! A voir plus tard comment se passer dune clef
+# ifdef IRREG_INTERP
+#  define MYINTERP irrinterp2D
+# endif
+
       if (blkvar_id.eq.1) then
 !
 ! 1 process Tair
 ! Temperature: Convert from Kelvin to Celsius
 !
+
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,
      &                I_RANGE,J_RANGE,
@@ -105,11 +116,14 @@
      &                latr(GLOBAL_2D_ARRAY),
      &                tairg(GLOBAL_2D_ARRAY,iblkrec))
 
+
+#ifndef FORMATTED
         do j=J_RANGE
           do i=I_RANGE
             tairg(i,j,iblkrec)=tairg(i,j,iblkrec)-273.15
           enddo
         enddo
+#endif
 
 # ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,
@@ -129,7 +143,7 @@
      &                latr(GLOBAL_2D_ARRAY),
      &                rhumg(GLOBAL_2D_ARRAY,iblkrec))
 
-# ifndef AROME
+# ifdef ERA_ECMWF
         do j=J_RANGE
           do i=I_RANGE
             ew=6.1121*(1.0007+3.46e-6*Pref)*
@@ -161,7 +175,9 @@
 
         do j=J_RANGE
           do i=I_RANGE
+#ifndef FORMATTED
             prateg(i,j,iblkrec)=prateg(i,j,iblkrec)*8640.
+#endif
             if (1.e-4.gt.abs(prateg(i,j,iblkrec))) then
               prateg(i,j,iblkrec)=0.
             endif
@@ -178,7 +194,7 @@
 ! 4 process radsw (warning!! first (4) downward then (5) upward)
 ! Net solar shortwave radiation: Downwards short wave
 !
-# if defined ERA_ECMWF || defined AROME
+# if defined ERA_ECMWF || defined AROME || defined FORMATTED
 ! In the case of ERA we used the net short wave - downward short wave is not used
 # else
         call MYINTERP(1, NXref, 1, NYref,
@@ -210,7 +226,7 @@
         do j=J_RANGE
           do i=I_RANGE
 
-# if defined ERA_ECMWF || defined AROME
+# if defined ERA_ECMWF || defined AROME || defined FORMATTED
             radswg(i,j,iblkrec)=blk_dum1(i,j)
 # else
             radswg(i,j,iblkrec)=radswg_down(i,j,iblkrec)

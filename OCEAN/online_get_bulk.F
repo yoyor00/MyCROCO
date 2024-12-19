@@ -62,9 +62,15 @@
       logical firstiter
       real bulkstart, bulkend
       real daycfsr, timestp, gap
+# if defined IRREG_INTERP
+      real(kind=4), dimension(:,:), allocatable :: lon0, lat0
+      real(kind=8), dimension(:,:), allocatable :: lon, lat
+      real(kind=8), dimension(:,:), allocatable :: var
+# else
       real(kind=4), dimension(:), allocatable :: lon0, lat0
       real(kind=8), dimension(:), allocatable :: lon, lat
       real(kind=8), dimension(:,:), allocatable :: var
+#endif
 # ifdef ABL1D
       real(kind=8), dimension(:,:,:), allocatable :: var3d
 # endif
@@ -88,7 +94,7 @@
 ! Do not process #7 :  upward longwave is obsolete
 !
         if (blkvar_id.eq.7) goto 10
-# if defined ERA_ECMWF || defined AROME
+# if defined ERA_ECMWF || defined AROME || defined FORMATTED
 !
 ! In the case of ERA the net short wave is used
 ! Net Short wave - 5 downward short wave not used
@@ -143,17 +149,47 @@
 !
 ! Read Longitude dimension
 !
+# if defined IRREG_INTERP
+
+          ierr=nf_inq_dimid(ncidbulkO(blkvar_id),'x',blk_dimlonid)
+          if (ierr. ne. nf_noerr) goto 99           !--> ERROR
+          ierr=nf_inq_dimlen(ncidbulkO(blkvar_id),blk_dimlonid,
+     &                       NX0(blkvar_id))
+# else
+
+
           ierr=nf_inq_dimid(ncidbulkO(blkvar_id),'lon',blk_dimlonid)
           if (ierr. ne. nf_noerr) goto 99           !--> ERROR
           ierr=nf_inq_dimlen(ncidbulkO(blkvar_id),blk_dimlonid,
      &                       NX0(blkvar_id))
+
+
+# endif
+
+
+
 !
 ! Read Latitude dimension
 !
+
+# if defined IRREG_INTERP
+          ierr=nf_inq_dimid(ncidbulkO(blkvar_id),'y',blk_dimlatid)
+          if (ierr. ne. nf_noerr) goto 99           !--> ERROR
+          ierr=nf_inq_dimlen(ncidbulkO(blkvar_id),blk_dimlatid,
+     &                       NY0(blkvar_id))
+
+
+# else
+
+
           ierr=nf_inq_dimid(ncidbulkO(blkvar_id),'lat',blk_dimlatid)
           if (ierr. ne. nf_noerr) goto 99           !--> ERROR
           ierr=nf_inq_dimlen(ncidbulkO(blkvar_id),blk_dimlatid,
      &                       NY0(blkvar_id))
+
+# endif
+
+
 !
 !======= === =============== ======= == === ========== === =============
 ! Define the caracteristics, limits, of the extraction and interpolation
@@ -203,6 +239,8 @@
           itbulkO(blkvar_id)=2
 
         endif
+
+
 !
 !======== ==== ==== === ======= ======= === ==============
 ! Reading data from the forcing dataset and interpolation:
@@ -338,10 +376,53 @@
             itbulkO(blkvar_id)=iblk
             goto 1
           endif
-!
+
 ! ========== == === == ======== === === ======== == ===== ========
 ! Extraction of the 2D forcings for the variable of index blkvar_id:
 ! ========== == === == ======== === === ======== == ===== ========
+# if defined IRREG_INTERP
+! Hypothesis: The irregular grid is the subset, as it is already formatted.
+!
+! Get CFSR longitude
+!
+          allocate(lon0(1:NX0(blkvar_id),1:NY0(blkvar_id)))
+          ierr=nf_inq_varid (ncidbulkO(blkvar_id), 'lon', blk_lonid)
+          if (ierr. ne. nf_noerr) goto 99
+          ierr=nf_get_var_real(ncidbulkO(blkvar_id),blk_lonid,lon0)
+          if (ierr. ne. nf_noerr) goto 99
+!
+! Get CFSR latitude
+!
+          allocate(lat0(1:NX0(blkvar_id),1:NY0(blkvar_id)))
+          ierr=nf_inq_varid (ncidbulkO(blkvar_id), 'lat', blk_latid)
+          if (ierr. ne. nf_noerr) goto 99
+          ierr=nf_get_var_real(ncidbulkO(blkvar_id),blk_latid,lat0)
+          if (ierr. ne. nf_noerr) goto 99
+
+
+! Already the better dimension
+          imin=1
+          imax=NX0(blkvar_id)
+          jmin=1
+          jmax=NY0(blkvar_id)
+
+!
+! New CFSR subgrid caracteristics
+! Size: NX x NY
+!
+          NX=1+imax-imin
+          NY=1+jmax-jmin
+!
+! Allocate lon and lat for CFSR data
+!
+          allocate(lon(1:NX,1:NY))
+          allocate(lat(1:NX,1:NY))
+          lon=lon0(imin:imax,jmin:jmax)
+          lat=lat0(imin:imax,jmin:jmax)
+
+
+
+# else
 !
 ! Get CFSR longitude
 !
@@ -358,8 +439,10 @@
           if (ierr. ne. nf_noerr) goto 99
           ierr=nf_get_var_real(ncidbulkO(blkvar_id),blk_latid,lat0)
           if (ierr. ne. nf_noerr) goto 99
+
 !
 ! Get a subgrid agreing with the limits of the model domain
+!# if defined IRREG_INTERP ! dans lidee denlever les autres clef era5,AROME,...
 !
 ! lonmin<lon0<lonmax
 !
@@ -410,7 +493,7 @@
           allocate(lat(1:NY))
           lon=lon0(imin:imax)
           lat=lat0(jmin:jmax)
-
+# endif
 ! ---------------------------------------------------------------------
 ! Read vertical grid for abl
 ! ---------------------------------------------------------------------
@@ -585,7 +668,6 @@
 !-----
 !
 !
-
 
           call interpolate_bulk_online(NX,NY,lon,lat,var,
      &                                 blkvar_id,iblk)

@@ -571,3 +571,489 @@
  100  continue
       print*, 'error in cinterp2d'
       END SUBROUTINE cinterp2d
+
+! ******************************************************************************
+! FUNCTION TO INTERPOLATE IRREGULAR GRID ON CROCO_GRID
+!
+      SUBROUTINE irrinterp2d (LBx, UBx, LBy, UBy,
+     &                      Xinp, Yinp, Finp,
+     &                      Istr, Iend, Jstr, Jend,
+     &                      Xout, Yout, Fout)
+
+      implicit none
+#include "param.h"
+!
+!  Imported variable declarations.
+!
+      integer, intent(in) :: LBx, UBx, LBy, UBy
+      integer, intent(in) :: Istr, Iend, Jstr, Jend
+!
+      real(kind=8), intent(in) :: Xinp(LBx:UBx,LBy:UBy)
+      real(kind=8), intent(in) :: Yinp(LBx:UBx,LBy:UBy)
+      real(kind=8), intent(in) :: Finp(LBx:UBx,LBy:UBy)
+!
+      real(kind=8), intent(in) :: Xout(GLOBAL_2D_ARRAY)
+      real(kind=8), intent(in) :: Yout(GLOBAL_2D_ARRAY)
+!
+      real(kind=8), intent(out) :: Fout(GLOBAL_2D_ARRAY)
+
+      real(kind=8), dimension(Istr:Iend,Jstr:Jend) :: xi,eta
+      integer(kind=4), dimension(Istr:Iend,Jstr:Jend) :: ip,jp
+      real(kind=8), dimension(LBx:UBx,LBy:UBy) :: srX,srY,sXY,sYX
+!
+!!!!!!!!!!!!
+! ORIGINAL !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!      call r2r_interp_init_thread( nx,ny,x,y, ncx,ncy, xc,yc,
+!     &                                                ip,jp, xi,eta)
+!
+!      call spln2d(nx,ny, src, srX,srY,sXY,sYX)
+!
+!      call spln2d_interp(nx,ny, src, srX, srY, sXY,
+!     &                           ncx,ncy, ip,jp, xi,eta, targ) 
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      call spln2d(UBx,UBy, Finp, srX,srY,sXY,sYX)
+
+
+      call r2r_interp_init_thread(UBx,UBy,Xinp,Yinp,Istr,Iend,
+     &                             Jstr,Jend, Xout,Yout ,ip,jp, xi,eta)
+
+
+
+      call spln2d_interp(UBx,UBy, Finp, srX, srY, sXY,
+     &                      Istr, Iend, Jstr, Jend, ip,jp, xi,eta, Fout)
+
+            
+
+      RETURN
+      END SUBROUTINE irrinterp2d
+
+
+      SUBROUTINE r2r_interp_init_thread( nx,ny,x,y,Istr, ncx,Jstr,ncy,
+     &                                            xc,yc, ip,jp, xi,eta)
+
+! Initialize interpolation between two arbitrary oriented curvilinear
+! grids: given arrays of coordinates [x(nx,ny),y(nx,ny)] for points of
+! a non-Cartesian "source" grid, and similar [xc(ncx,ncy),yc(ncx,ncy)]
+! for the "target" grid (hereafter "c" stands for "child") find arrays
+! of indices [ip(ncx,ncy),jp(ncx,ncy)] and arrays fractional distances
+! [xi(ncx,ncy),eta(ncx,ncy)] such that each point of the target grid
+! (xc,yc) is surrounded by 4 points of the source,
+!
+!              [x,y](ip,jp+1) --__
+!                     /             --__ [x,y](ip+1,jp+1)
+!                    /   [xc,yc]            /
+!                   /                      /
+!              [x,y](ip,jp) -- __         /
+!                               --__ [x,y](ip+1,jp)
+!
+! such that bi-linear interpolation of [x,y] into location of [xc,yc]
+! yields [xc,yc] themselves,
+!
+!             xc = (1-xi)*(1-eta)*x(i,j) + xi*(1-eta)*x(i+1,j)
+!                 +(1-xi)* eta *x(i,j+1) + xi* eta *x(i+1,j+1)
+!
+!             yc = (1-xi)*(1-eta)*y(i,j) + xi*(1-eta)*y(i+1,j)
+!                 +(1-xi)* eta *y(i,j+1) + xi* eta *y(i+1,j+1)
+!
+! in other words, (ip+xi,jp+eta) are coordinates of point (xc,yc) in
+! "continuous index" space (i,j) of the source grid.
+
+! Normally the target grid is expected to be entirely within the area
+! covered by the source, however it is not strictly required by the
+! algorithm below: if some portions of the target grid are outside the
+! source (hence interpolation is impossible for these locations) then
+! ip=-1 and jp=-1 are set as special values.
+
+      implicit none
+      integer nx,ny, ncx,ncy,Istr,Jstr
+      real(kind=8), dimension(nx,ny) :: x,y
+      real(kind=8), dimension(ncx,ncy) :: xc,yc, xi,eta
+      integer(kind=4), dimension(ncx,ncy) :: ip,jp
+      integer icmin,icmax,jcmin,jcmax
+C$    integer numthreads, trd, chunk_size
+C$    integer omp_get_num_threads, omp_get_thread_num
+C$    numthreads=omp_get_num_threads() ; trd=omp_get_thread_num()
+C$    chunk_size=(ncy+numthreads-1)/numthreads
+      icmin=1 ; icmax=ncx ; jcmin=1 ; jcmax=ncy
+C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
+
+      call search_indices_tile(icmin,icmax,jcmin,jcmax, nx,ny, x,y,
+     &                                       ncx,ncy, xc,yc, ip,jp)
+
+      call comp_offsets_tile(  icmin,icmax,jcmin,jcmax, nx,ny, x,y,
+     &                               ncx,ncy, xc,yc, ip,jp, xi,eta)
+      END SUBROUTINE
+
+
+      SUBROUTINE search_indices_tile(icmin,icmax,jcmin,jcmax, nx,ny,
+     &                                  x,y, ncx,ncy, xc,yc, ip,jp)
+      implicit none
+      integer nx,ny, ncx,ncy, icmin,icmax,jcmin,jcmax
+      real(kind=8), dimension(nx,ny) :: x,y
+      real(kind=8), dimension(ncx,ncy) :: xc,yc         !   4 <---- 3
+      integer(kind=4), dimension(ncx,ncy) :: ip,jp      !   !       ^ 
+      integer i,j, ic,jc, inew,jnew, iinc               !   !       !
+      real(kind=8) dx4,dy4, dx3,dy3, r41,r34,           !   v       !
+     &             dx1,dy1, dx2,dy2, r12,r23            !   1 ----> 2
+
+! The search algorithm is organized as follows:
+!
+!    initialization: select starting point ic,jc
+!    and compute cyclic vector products r12...r41
+!
+!    do while(.true.)
+!      do while( r12...r41 >= 0 -- meaning that point
+!                 ic,jc is inside of [i:i+1]x[j:j+1] )
+!
+!        record ip,jp for this point, and proceed to the next point
+!        of target grid using by incrementing only ONE index, either
+!        "ic" or "jc" -- if "ic" already reached its bound, while
+!        simultaneously reversing the direction of "ic" sweep -- the
+!        reversing is done to make sure that the next target point is
+!        always nearby, to maximize the probability that it is still
+!        inside of [i:i+1]x[j:j+1] cell, so the inner while-loop would
+!        not break off too often. Recompute r12...r41 for the next
+!        ic,jc point to check logical condition during next iteration
+!        of while loop; [Note that there is no attempt to change
+!        source-grid indices i,j inside this loop.]
+!
+!      enddo
+!
+!      once the while(r12...r41 >= 0) loop breaks off, it means that
+!      the point ic,jc is no longer inside [i:i+1]x[j:j+1], so i and/or
+!      j index of source grid must be incremented, depending which of
+!      the r12...r41 is negative.  The indices i,j are incremented by
+!      one and are restricted to be within the range of source grid.
+!      This leads to two possibilities:
+!      either
+!             (i) at least one of them, i,j is incremented, then keep
+!                 ic,jc the same and proceed with recomputing r12...r41
+!                 to resume while(r12...r41 >= 0) loop;
+!      or
+!            (ii) both increments of i and j are canceled by the
+!                 restriction, so i,j get "stuck"  which is detected
+!                 by inew,jnew both having the same values. This means
+!                 that this ic,jc point cannot be bounded properly
+!                 because its location is outside the source grid, so
+!                 mark it by special values of ip,jp (essentially skip
+!                 this point) and proceed to the next one by
+!                 incrementing  ip,jp;
+!
+!    enddo !<-- while(.true.)
+!
+! Note (a) that not having special care for (i) leads to an infinite
+!          loop in the algorithm if some of the target points cannot be
+!          bounded; and
+!      (b) assuming that the target grid has finer resolution than the
+!          source, it is expected that most of the computing time is
+!          spent inside while(r12...r41 >= 0) loop, hence its body is
+!          minimized at the expense of somewhat awkwardness of what is
+!          around it.
+      i=nx/2 ; j=ny/2 ; ic=icmin ; jc=jcmin ; iinc=+1
+
+      dx1=x(i+1,j  )-xc(ic,jc) ; dy1=y(i+1,j  )-yc(ic,jc)   !  3 <-- 2
+      dx2=x(i+1,j+1)-xc(ic,jc) ; dy2=y(i+1,j+1)-yc(ic,jc)   !  !     !
+      dx3=x(i  ,j+1)-xc(ic,jc) ; dy3=y(i  ,j+1)-yc(ic,jc)   !  !     !
+      dx4=x(i  ,j  )-xc(ic,jc) ; dy4=y(i  ,j  )-yc(ic,jc)   !  4 --> 1
+
+      r12=dx1*dy2-dx2*dy1 ; r23=dx2*dy3-dx3*dy2
+      r34=dx3*dy4-dx4*dy3 ; r41=dx4*dy1-dx1*dy4
+
+      do while(.true.)
+        do while( r12 >= 0.D0 .and. r23 >= 0.D0
+     &      .and. r34 >= 0.D0 .and. r41 >= 0.D0 )
+
+          ip(ic,jc)=i ; jp(ic,jc)=j        !<-- record bounding indices
+
+          if (iinc > 0 .and. ic < icmax) then    !--> proceed to the
+            ic=ic+1                              !    next target point
+          elseif (iinc < 0 .and. ic > icmin) then
+            ic=ic-1
+          else
+            jc=jc+1 ; iinc=-iinc ; if (jc > jcmax) return
+          endif
+
+          dx1=x(i+1,j  )-xc(ic,jc) ; dy1=y(i+1,j  )-yc(ic,jc)
+          dx2=x(i+1,j+1)-xc(ic,jc) ; dy2=y(i+1,j+1)-yc(ic,jc)
+          dx3=x(i  ,j+1)-xc(ic,jc) ; dy3=y(i  ,j+1)-yc(ic,jc)
+          dx4=x(i  ,j  )-xc(ic,jc) ; dy4=y(i  ,j  )-yc(ic,jc)
+
+          r12=dx1*dy2-dx2*dy1 ; r23=dx2*dy3-dx3*dy2
+          r34=dx3*dy4-dx4*dy3 ; r41=dx4*dy1-dx1*dy4
+        enddo
+        inew=i ; jnew=j
+        if (r12 < 0.D0) inew=min(inew+1, nx-1)
+        if (r23 < 0.D0) jnew=min(jnew+1, ny-1)
+        if (r34 < 0.D0) inew=max(inew-1,    1)
+        if (r41 < 0.D0) jnew=max(jnew-1,    1)
+
+        if (inew == i .and. jnew == j) then
+          ip(ic,jc)=-1 ; jp(ic,jc)=-1       !<-- cannot be bounded
+          if (iinc > 0 .and. ic < icmax) then  !--> proceed to the
+            ic=ic+1                            !    next target point
+          elseif (iinc < 0 .and. ic > icmin) then
+            ic=ic-1
+          else
+            jc=jc+1 ; iinc=-iinc ; if (jc > jcmax) return
+          endif
+        else
+          i=inew ; j=jnew       !<-- accept move of source location.
+        endif
+
+        dx1=x(i+1,j  )-xc(ic,jc) ; dy1=y(i+1,j  )-yc(ic,jc)
+        dx2=x(i+1,j+1)-xc(ic,jc) ; dy2=y(i+1,j+1)-yc(ic,jc)
+        dx3=x(i  ,j+1)-xc(ic,jc) ; dy3=y(i  ,j+1)-yc(ic,jc)
+        dx4=x(i  ,j  )-xc(ic,jc) ; dy4=y(i  ,j  )-yc(ic,jc)
+
+        r12=dx1*dy2-dx2*dy1 ; r23=dx2*dy3-dx3*dy2
+        r34=dx3*dy4-dx4*dy3 ; r41=dx4*dy1-dx1*dy4
+
+      enddo
+      END SUBROUTINE
+
+
+      SUBROUTINE comp_offsets_tile(icmin,icmax,jcmin,jcmax, nx,ny,
+     &                         x,y, ncx,ncy, xc,yc, ip,jp, xi,eta)
+      implicit none
+      integer nx,ny, ncx,ncy, icmin,icmax,jcmin,jcmax
+      real(kind=8), dimension(nx,ny) :: x,y
+      real(kind=8), dimension(ncx,ncy) :: xc,yc, xi,eta
+      integer(kind=4), dimension(ncx,ncy) :: ip,jp
+      integer ic,jc, i,j, iter
+      real(kind=8) a11,a12,a21,a22, det, dX,dY, p,p1,q,q1
+      do jc=jcmin,jcmax
+        do ic=icmin,icmax
+          i=ip(ic,jc) ; j=jp(ic,jc)
+          if (i > 0 .and. j > 0) then
+            a11=0.5D0*(x(i+1,j+1)-x(i,j+1) +x(i+1,j)-x(i,j))
+            a12=0.5D0*(x(i+1,j+1)-x(i+1,j) +x(i,j+1)-x(i,j))
+            a21=0.5D0*(y(i+1,j+1)-y(i,j+1) +y(i+1,j)-y(i,j))
+            a22=0.5D0*(y(i+1,j+1)-y(i+1,j) +y(i,j+1)-y(i,j))
+
+            dX=xc(ic,jc)-0.25D0*(x(i+1,j+1)+x(i,j+1)+x(i+1,j)+x(i,j))
+            dY=yc(ic,jc)-0.25D0*(y(i+1,j+1)+y(i,j+1)+y(i+1,j)+y(i,j))
+
+            det=1.D0/(a11*a22-a12*a21)
+            xi(ic,jc) =0.5D0 + det*(a22*dX-a12*dY)
+            eta(ic,jc)=0.5D0 + det*(a11*dY-a21*dX)
+          else
+            xi(ic,jc)=-1.D0 ; eta(ic,jc)=-1.D0  !<-- special values
+          endif
+        enddo
+        do iter=1,10
+          do ic=icmin,icmax
+            i=ip(ic,jc) ; j=jp(ic,jc)
+            if (i > 0 .and. j > 0) then
+              p=xi(ic,jc)  ; p1=1.D0-p
+              q=eta(ic,jc) ; q1=1.D0-q
+
+              a11=q*(x(i+1,j+1)-x(i,j+1)) +q1*(x(i+1,j)-x(i,j))
+              a12=p*(x(i+1,j+1)-x(i+1,j)) +p1*(x(i,j+1)-x(i,j))
+              a21=q*(y(i+1,j+1)-y(i,j+1)) +q1*(y(i+1,j)-y(i,j))
+              a22=p*(y(i+1,j+1)-y(i+1,j)) +p1*(y(i,j+1)-y(i,j))
+
+              dX=xc(ic,jc) -p*q*x(i+1,j+1) -p1*q*x(i,j+1)
+     &                      -p*q1*x(i+1,j)  -p1*q1*x(i,j)
+              dY=yc(ic,jc) -p*q*y(i+1,j+1) -p1*q*y(i,j+1)
+     &                      -p*q1*y(i+1,j)  -p1*q1*y(i,j)
+
+              det=1.D0/(a11*a22-a12*a21)
+
+              xi(ic,jc) =p + det*(a22*dX-a12*dY)
+              eta(ic,jc)=q + det*(a11*dY-a21*dX)
+!            else
+!            print *,'xi, eta = -1 pour ic,jc = ',ic,jc
+            endif
+          enddo
+        enddo
+      enddo
+      END SUBROUTINE
+
+
+
+
+
+
+      SUBROUTINE spln2d(nx,ny, src, srX,srY,sXY,sYX)
+! The following routine takes a two-dimensional array "src" and
+! computes its derivatives
+!
+!        d src           d src           d^2 src           d^2 src
+! srX = -------   srY = -------   sXY = ---------   sYX = ---------
+!          dx             dy              dx dy             dy dx
+!
+! to construct  bi-cubic spline interpolation.  All the derivatives
+! are defined at the same grid locations as the field itself and are
+! obtained from the condition of continuity of the second derivative
+! in the same direction.  The spline algorithm is one-dimensional
+! Gaussian elimination procedure applied individually in each
+! direction, so the mixed derivatives are computed as derivative of
+! previously computed derivative in transversal direction.
+! It is expected that sXY == sYX, however this routine computes both
+! of them (just a matter of which direction goes first and which
+! follows) and compares the outcome.
+!
+! All the derivatives are defined as "with respect to array index",
+! i.e., dx=dy=1 in both directions.
+
+! "Natural" boundary conditions are assumed on the sides (the second
+! derivative vanishes at the ends).
+
+! Array "src" which can be be either single or double precision,
+! matching TYPE in the name of the subroutine, however all computed
+! derivatives srX,srY,sXY,sYX are stored in double precision arrays
+! regardless of type of "src".
+
+
+      implicit none
+      integer nx,ny, i,j
+      real(kind=8), dimension(nx,ny) :: src
+      real(kind=8), dimension(nx,ny) :: srX,srY,sXY,sYX
+      real(kind=8) cff, error
+      real(kind=8), dimension(nx) :: CF
+      real(kind=8), dimension(ny) :: FC
+!      allocate(CF(1:nx))
+!      allocate(FC(1:ny))
+      CF(1)=0.5D0
+      do j=1,ny
+        srX(1,j)=1.5D0*(src(2,j)-src(1,j))
+      enddo
+      do i=2,nx-1,+1
+        CF(i)=1.D0/(4.D0-CF(i-1))
+        cff=CF(i)
+        do j=1,ny
+          srX(i,j)=cff*(3.D0*(src(i+1,j)-src(i-1,j)) -srX(i-1,j))
+        enddo
+      enddo
+      cff=1.D0/(2.D0-CF(nx-1))
+      do j=1,ny
+        srX(nx,j)=cff*(3.D0*(src(nx,j)-src(nx-1,j))-srX(nx-1,j))
+      enddo
+      do i=nx-1,1,-1
+        cff=CF(i)
+        do j=1,ny
+          srX(i,j)=srX(i,j)-cff*srX(i+1,j)
+        enddo
+      enddo
+      FC(1)=0.5D0
+      do i=1,nx
+        srY(i,1)=1.5D0*(src(i,2)-src(i,1))
+        sXY(i,1)=1.5D0*(srX(i,2)-srX(i,1))
+      enddo
+      do j=2,ny-1,+1
+        FC(j)=1.D0/(4.D0-FC(j-1))
+        cff=FC(j)
+        do i=1,nx
+          srY(i,j)=cff*( 3.D0*(src(i,j+1)-src(i,j-1)) -srY(i,j-1))
+          sXY(i,j)=cff*( 3.D0*(srX(i,j+1)-srX(i,j-1)) -sXY(i,j-1))
+        enddo
+      enddo
+      cff=1.D0/(2.D0-FC(ny-1))
+      do i=1,nx
+        srY(i,ny)=cff*( 3.D0*(src(i,ny)-src(i,ny-1)) -srY(i,ny-1))
+        sXY(i,ny)=cff*( 3.D0*(srX(i,ny)-srX(i,ny-1)) -sXY(i,ny-1))
+      enddo
+      do j=ny-1,1,-1
+        cff=FC(j)
+        do i=1,nx
+          srY(i,j)=srY(i,j)-cff*srY(i,j+1)
+          sXY(i,j)=sXY(i,j)-cff*sXY(i,j+1)
+        enddo
+      enddo
+      CF(1)=0.5D0
+      do j=1,ny
+        sYX(1,j)=1.5D0*(srY(2,j)-srY(1,j))
+      enddo
+      do i=2,nx-1,+1
+        CF(i)=1.D0/(4.D0-CF(i-1))
+        cff=CF(i)
+        do j=1,ny
+          sYX(i,j)=cff*(3.D0*(srY(i+1,j)-srY(i-1,j)) -sYX(i-1,j))
+        enddo
+      enddo
+      cff=1.D0/(2.D0-CF(nx-1))
+      do j=1,ny
+        sYX(nx,j)=cff*(3.D0*(srY(nx,j)-srY(nx-1,j))-sYX(nx-1,j))
+      enddo
+      do i=nx-1,1,-1
+        cff=CF(i)
+        do j=1,ny
+          sYX(i,j)=sYX(i,j)-cff*sYX(i+1,j)
+        enddo
+      enddo
+      error=0.D0
+      do j=1,ny
+        do i=1,nx
+          sXY(1,j)=0.5D0*(sXY(i,j)+sYX(i,j))
+        enddo
+      enddo
+      END SUBROUTINE spln2d
+
+
+
+      SUBROUTINE spln2d_interp(nx,ny, src, srX, srY, sXY,
+     &                          Istr, ncx,Jstr,ncy, ip,jp, xi,eta, targ)
+      implicit none
+      integer nx,ny, ncx,ncy, Istr, Jstr
+      real(kind=8), dimension(nx,ny) :: src
+      real(kind=8),    dimension(nx,ny) :: srX,srY,sXY
+      integer(kind=4), dimension(ncx,ncy) :: ip,jp
+      real(kind=8),    dimension(ncx,ncy) :: xi,eta
+      real(kind=8), dimension(ncx,ncy) :: targ
+      integer icmin,icmax,jcmin,jcmax, chunk_size
+      icmin=1 ; icmax=ncx ; jcmin=1 ; jcmax=ncy ; chunk_size=0
+
+      call spln2d_interp_tile(nx,ny, src, srX, srY, sXY,
+     &                           ncx,ncy, ip,jp, xi,eta, targ,
+     &                               icmin,icmax,jcmin,jcmax)
+      END SUBROUTINE spln2d_interp
+
+      SUBROUTINE spln2d_interp_tile(nx,ny, src, srX, srY, sXY,
+     &                                 ncx,ncy, ip,jp, xi,eta, targ,
+     &                                     icmin,icmax,jcmin,jcmax)
+      implicit none
+      integer nx,ny, ncx,ncy, icmin,icmax,jcmin,jcmax
+      real(kind=8), dimension(nx,ny) :: src
+      real(kind=8),    dimension(nx,ny) :: srX,srY,sXY
+      integer(kind=4), dimension(ncx,ncy) :: ip,jp
+      real(kind=8),    dimension(ncx,ncy) :: xi,eta
+      real(kind=8), dimension(ncx,ncy) :: targ
+!-->  internal variables
+      integer ic,jc, iL,iR, jL,jR
+      real(kind=8) px,qx,pqx, HxR,HxL,GxR,GxL,
+     &             py,qy,pqy, HyR,HyL,GyR,GyL
+     
+      do jc=jcmin,jcmax
+        do ic=icmin,icmax
+          if (ip(ic,jc) > 0 .and. jp(ic,jc) > 0) then
+            iL=ip(ic,jc)  ;  px=xi(ic,jc)
+            iR=iL+1       ;  qx=1.D0-px ; pqx=px*qx
+            GxR=-px*pqx   ;  HxR=px*(px+2.D0*pqx)
+            GxL= qx*pqx   ;  HxL=qx*(qx+2.D0*pqx)
+
+            jL=jp(ic,jc)  ;  py=eta(ic,jc)
+            jR=jL+1       ;  qy=1.D0-py ; pqy=py*qy
+            GyR=-py*pqy   ;  HyR=py*(py+2.D0*pqy)
+            GyL= qy*pqy   ;  HyL=qy*(qy+2.D0*pqy)
+
+            targ(ic,jc) = HxL*HyL*src(iL,jL) + HxR*HyL*src(iR,jL)
+     &                  + HxL*HyR*src(iL,jR) + HxR*HyR*src(iR,jR)
+
+     &                  + GxL*HyL*srX(iL,jL) + GxR*HyL*srX(iR,jL)
+     &                  + GxL*HyR*srX(iL,jR) + GxR*HyR*srX(iR,jR)
+
+     &                  + HxL*GyL*srY(iL,jL) + HxR*GyL*srY(iR,jL)
+     &                  + HxL*GyR*srY(iL,jR) + HxR*GyR*srY(iR,jR)
+
+     &                  + GxL*GyL*sXY(iL,jL) + GxR*GyL*sXY(iR,jL)
+     &                  + GxL*GyR*sXY(iL,jR) + GxR*GyR*sXY(iR,jR)
+          else
+            targ(ic,jc) = 0.D0
+          endif
+        enddo
+      enddo
+
+      END SUBROUTINE spln2d_interp_tile
+
