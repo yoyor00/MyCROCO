@@ -157,6 +157,8 @@ SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
 
+MPIF90=${CROCO_MPIF90-$MPIF90}
+
 #
 # Use GNU Make command, else make
 #
