@@ -51,7 +51,9 @@ class Croco:
         if config.has_cmake and not self.config.force_jobcomp:
             self.croco_build = CMakeCrocoSetup(self.config, self.dirname)
         else:
-            self.croco_build = JobcompCrocoSetup(self.config, self.dirname)
+            self.croco_build = JobcompCrocoSetup(
+                self.config, self.dirname, self.variant["tuning_familly"]
+            )
 
     def calc_rundir(self, variant_name, case_name):
         return f"{self.config.workdir}/{case_name}/{variant_name}"
@@ -120,8 +122,6 @@ class Croco:
 
         # debug
         debug_option = ""
-        if self.config.debug_build:
-            debug_option = "--enable-debug"
         if self.config.twin_chercker:
             debug_option += " --enable-twin-checker"
 

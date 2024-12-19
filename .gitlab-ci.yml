@@ -7,31 +7,37 @@ variables:
   TERM: "xterm-256color"
   DATAREG: "/data"
 
-test_bench_basin:
+test_bench_debug:
   stage: bench
   tags:
     - ci.inria.fr
     - large
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  before_script:
+    - cd $DATAREG ;
+    - tar -xf ForCI-INRIA.tar.gz ;
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - ./bench-croco.py --case BASIN --variants sequential,openmp-2,openmp-4,mpi-2,mpi-4 --jobcomp --rebuild --host host_ci
+    - ./bench-croco.py --case @debug --variants @debug --jobcomp --rebuild --host host_ci --data-root-path $DATAREG/ForCI-INRIA
   artifacts:
     paths:
       - BENCH/results
       - BENCH/rundir
     when: always
 
-test_bench_basin_ifort:
+test_bench_debug_ifort:
   stage: bench
   tags:
     - croco-vm-docker
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
+  before_script:
+    - cd $DATAREG ;
+    - tar -xf ForCI-INRIA.tar.gz ;
   script:
     - cd $CI_PROJECT_DIR/BENCH
     #note : --jobs 1 mandatory with intel compiler
     #note : check not available because sequentiel is not done here
-    - ./bench-croco.py --case BASIN --variants sequential-ifort --jobcomp --rebuild --host host_ci --jobs 1 --steps build,run
+    - ./bench-croco.py --case @ifort-debug --variants @ifort-debug --jobcomp --rebuild --host host_ci_ifort --jobs 1 --steps build,run --data-root-path $DATAREG/ForCI-INRIA
   artifacts:
     paths:
       - BENCH/results

@@ -114,66 +114,6 @@ class JobcompCrocoConfig:
         # apply
         patch_lines(os.path.join(self.builddir, "param.h"), rules)
 
-    def jobcomp_configure_set_extra_fflags(self, fflags: str):
-        """
-        Permit to append some extra fortran flags for the compiler. Typically
-        the `-march` one to be tuned for the local CPU we want.
-        """
-
-        # build the rule
-        rules = [
-            {
-                "mode": "insert-after-before",
-                "after": "FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}",
-                "before": "CFT1=${CROCO_CFT1-$CFT1}",
-                "insert": f"FFLAGS1=$FFLAGS1 {fflags}\n",
-                "descr": f"Set FFLAGS to {fflags}",
-            }
-        ]
-
-        # apply
-        patch_lines(os.path.join(self.builddir, "jobcomp"), rules)
-
-    def jobcomp_configure_set_compiler(
-        self, fortran_compiler: str, mpi: bool = False
-    ):
-        """
-        Change the compiler.
-        """
-
-        # build the rull
-        if mpi:
-            rules = [
-                {
-                    "mode": "replace",
-                    "what": 'MPIF90="mpif90"\n',
-                    "by": f'MPIF90="{fortran_compiler}"\n',
-                    "descr": f"Set fortran compiler to MPIF90={fortran_compiler}",
-                }
-            ]
-        else:
-            if self.minicroco:
-                rules = [
-                    {
-                        "mode": "replace",
-                        "what": 'test -z "$!FC" && FC=gfortran\n',
-                        "by": f'test -z "$!FC" && FC={fortran_compiler}\n',
-                        "descr": f"Set fortran compiler to FC={fortran_compiler}",
-                    }
-                ]
-            else:
-                rules = [
-                    {
-                        "mode": "replace",
-                        "what": "FC=gfortran\n",
-                        "by": f"FC={fortran_compiler}\n",
-                        "descr": f"Set fortran compiler to FC={fortran_compiler}",
-                    }
-                ]
-
-        # apply
-        patch_lines(os.path.join(self.builddir, "jobcomp"), rules)
-
     def param_h_configure_mpi_split(self, splitting: str):
         """
         Configure the MPI domain splitting and usable number of ranks.
@@ -213,11 +153,16 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
     use bench on the master branch of croco.
     """
 
-    def __init__(self, config: Config, builddir: str):
+    def __init__(self, config: Config, builddir: str, tuning_familly: str):
         super().__init__(config, builddir)
         self.croco_config = JobcompCrocoConfig(
-            builddir, minicroco=config.is_minicroco_jobcomp
+            builddir,
+            minicroco=config.is_minicroco_jobcomp,
         )
+        self.tuning_familly = tuning_familly
+        self.fflags = ""
+        self.fc = "gfortran"
+        self.mpif90 = "mpifort"
 
     @staticmethod
     def convert_arg_for_argparse(arg_string: str) -> list:
@@ -290,9 +235,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         else:
             return filename
 
-    def handle_variables(
-        self, arg_vars: list, is_mpi: bool, extra_vars: dict
-    ) -> dict:
+    def handle_variables(self, arg_vars: list, is_mpi: bool, extra_vars: dict) -> dict:
         """
         Apply to ops required when getting some variables on the command line.
 
@@ -318,13 +261,20 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
 
             # apply vars
             if var_name == "FFLAGS":
-                self.croco_config.jobcomp_configure_set_extra_fflags(var_value)
+                self.fflags = var_value
             elif var_name == "FC":
-                # @todo: here there might be still something to fix when wanted to use non gfrotran
-                # mpi based due to requirement to patch FC & MPIF90.
-                self.croco_config.jobcomp_configure_set_compiler(
-                    var_value, mpi=is_mpi
-                )
+                if is_mpi:
+                    self.mpif90 = var_value
+                if self.tuning_familly == "gnu":
+                    self.fc = "gfortran"
+                elif self.tuning_familly == "intel":
+                    self.fc = "ifort"
+                elif self.tuning_familly == "nvfortran":
+                    self.fc = "nvfortran"
+                else:
+                    raise Exception(
+                        f"Unsupported tuning familly : {self.tuning_familly}"
+                    )
             else:
                 raise Exception(f"Unsupported variable : {entry}")
 
@@ -369,11 +319,6 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             required=False,
             help="Select the MPI domain splitting.",
             default="1x4",
-        )
-        parser.add_argument(
-            "--enable-debug",
-            action="store_true",
-            help="Enable debugging mode (-O0 -g)",
         )
         parser.add_argument(
             "VARS",
@@ -428,11 +373,6 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # extra vars to complete
         extra_vars = {"FFLAGS": [], "LDFLAGS": []}
 
-        # enable debug
-        if options.enable_debug:
-            extra_vars["FFLAGS"].append("-O0 -DDEBUG -g")
-            extra_vars["LDFLAGS"].append("-O0 -g")
-
         # config
         use_openmp = False
         use_mpi = False
@@ -469,13 +409,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         self.cppdef_h_enable_openacc(use_openacc)
         self.cppdef_h_enable_openacc_psyclone(use_openacc_psyclone)
         if use_openmp:
-            self.croco_config.param_h_configure_openmp_split(
-                options.with_threads
-            )
+            self.croco_config.param_h_configure_openmp_split(options.with_threads)
         if use_mpi:
-            self.croco_config.param_h_configure_mpi_split(
-                options.with_splitting
-            )
+            self.croco_config.param_h_configure_mpi_split(options.with_splitting)
 
     def make(self, make_jobs: str):
         """
@@ -488,7 +424,12 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # move in dir & call jobcomp
         with move_in_dir(self.builddir):
             run_shell_command(
-                f"./jobcomp",
+                "./jobcomp --fc %s --mpif90 %s --fflags '%s'"
+                % (
+                    self.fc,
+                    self.mpif90,
+                    self.fflags,
+                ),
                 logfilename="jobcomp.log",
                 capture=self.config.capture,
             )

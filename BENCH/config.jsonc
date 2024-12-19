@@ -33,6 +33,14 @@
 	},
 	////////////////////////////// PRE-SELECTIONS //////////////////////////////
 	"meta_variants": {
+		"@debug": [
+			"sequential-debug",
+			"mpi-debug-4"
+		],
+		"@ifort-debug": [
+			"sequential-ifort-debug",
+			"mpi-ifort-debug-4"
+		],
 		"@wip-all": [
 			"sequential",
 			"openmp-2",
@@ -58,8 +66,7 @@
 			"openacc-psyclone"
 		],
 		"@ci": [
-			"sequential",
-			"poseidon"
+			"sequential"
 		],
 		"@nvhpc": [
 			"sequential",
@@ -71,16 +78,30 @@
 		]
 	},
 	"meta_cases": {
-		"@ci": [
+		"@debug": [
 			"BASIN",
-			"SOLITON"
+			"BENGUELA_VHR_TIDES_BULK"
+		],
+		"@ifort-debug": [
+			"BASIN",
+			"BENGUELA_VHR_TIDES_BULK"
 		]
 	},
 	////////////////////////////// VARIANTS ////////////////////////////////////
 	"variants": {
 		// seq default
 		"sequential": {
-			"configure": "",
+			"configure": "FFLAGS='-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy'",
+			"tuning_familly": "gnu",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
+		// seq debug
+		"sequential-debug": {
+			"configure": "FFLAGS='-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888'",
 			"tuning_familly": "gnu",
 			"environ": {},
 			"command_prefix": "",
@@ -100,7 +121,7 @@
 		},
 		// seq default
 		"sequential-nvfortran": {
-			"configure": "FC=nvfortran",
+			"configure": "FC=nvfortran FFLAGS='-O2 -fast -g -r8 -i4 -mcmodel=medium'",
 			"tuning_familly": "nvfortran",
 			"environ": {},
 			"command_prefix": "",
@@ -110,7 +131,17 @@
 		},
 		// seq default
 		"sequential-ifort": {
-			"configure": "FC=ifort",
+			"configure": "FC=ifort FFLAGS='-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise'",
+			"tuning_familly": "intel",
+			"environ": {},
+			"command_prefix": "",
+			"requires": {
+				"cpu": 1
+			}
+		},
+		// seq default
+		"sequential-debug-ifort": {
+			"configure": "FC=ifort FFLAGS='-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1'",
 			"tuning_familly": "intel",
 			"environ": {},
 			"command_prefix": "",
@@ -160,8 +191,53 @@
 		},
 		// mpi
 		"mpi-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort",
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort FFLAGS='-O2 -fdefault-real-8 -fdefault-double-8 -std=legacy'",
 			"tuning_familly": "gnu",
+			"environ": {
+				"OMP_NUM_THREADS": 1
+			},
+			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
+			"unpack": {
+				"tasks": [2, 4, 6, 8, 16, 32, 64]
+			},
+			"requires": {
+				"cpu": "{tasks}"
+			}
+		},
+		// mpi-debug
+		"mpi-debug-{tasks}": {
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort FFLAGS='-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888'",
+			"tuning_familly": "gnu",
+			"environ": {
+				"OMP_NUM_THREADS": 1
+			},
+			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
+			"unpack": {
+				"tasks": [2, 4, 6, 8, 16, 32, 64]
+			},
+			"requires": {
+				"cpu": "{tasks}"
+			}
+		},
+		// mpi-ifort
+		"mpi-ifort-{tasks}": {
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort FFLAGS='-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise'",
+			"tuning_familly": "intel",
+			"environ": {
+				"OMP_NUM_THREADS": 1
+			},
+			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
+			"unpack": {
+				"tasks": [2, 4, 6, 8, 16, 32, 64]
+			},
+			"requires": {
+				"cpu": "{tasks}"
+			}
+		},
+		// mpi-debug-ifort
+		"mpi-debug-ifort-{tasks}": {
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort FFLAGS='-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1'",
+			"tuning_familly": "intel",
 			"environ": {
 				"OMP_NUM_THREADS": 1
 			},

@@ -1,0 +1,22 @@
+{
+	// for gitlab-ci (docker image)
+	"host_ci_ifort": {
+		"ressources": {
+			"cpu": 4,
+			"gpu": 1
+		},
+		"tuning": {
+			"gnu": "-march=native",
+			"intel": "",
+			"nvfortran": "-tp=native",
+			"environ": {
+				"OMP_PROC_BIND": "spread"
+			},
+			"mpi_options": "",
+			"hwloc_bind": {
+				"openmp": "",
+				"mpirun": ""
+			}
+		}
+	}
+}
