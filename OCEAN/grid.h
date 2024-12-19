@@ -112,9 +112,9 @@
       common /grid_latv/latv /grid_lonv/lonv
 #else
       real xp(GLOBAL_2D_ARRAY)
-      real xr(GLOBAL_2D_ARRAY)
+      real, TARGET :: xr(GLOBAL_2D_ARRAY)
       real yp(GLOBAL_2D_ARRAY)
-      real yr(GLOBAL_2D_ARRAY)
+      real, TARGET :: yr(GLOBAL_2D_ARRAY)
       common /grid_xr/xr /grid_xp/xp /grid_yp/yp /grid_yr/yr
 #endif
 

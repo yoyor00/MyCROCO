@@ -1,4 +1,8 @@
 MODULE storng_ziggurat
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  storng_ziggurat  ***
    !! Random number generator, used in NEMO stochastic parameterization
@@ -399,5 +403,7 @@ CONTAINS
 
       RETURN
    END FUNCTION shr3_normal
+
+#endif /* if defined STOGEN */
 
 END MODULE storng_ziggurat

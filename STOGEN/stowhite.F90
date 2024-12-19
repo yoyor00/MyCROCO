@@ -1,4 +1,8 @@
 MODULE stowhite
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  stowhite  ***
    !! Stochastic parameters : get uncorrelated normal random numbers
@@ -223,6 +227,8 @@ CONTAINS
       ENDIF
 
    END SUBROUTINE sto_white_init
+
+#endif /* if defined STOGEN */
 
 END MODULE stowhite
 

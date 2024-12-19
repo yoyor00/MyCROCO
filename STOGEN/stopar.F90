@@ -1,4 +1,8 @@
 MODULE stopar
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  stopar  ***
    !! Stochastic parameters : definition and time stepping
@@ -572,6 +576,8 @@ CONTAINS
       sto0d(jidxset,jsto) = b * sto0d(jidx0,jsto) + a * sto0d(jidx1,jsto)
 
    END SUBROUTINE time_interp_0d
+
+#endif /* if defined STOGEN */
 
 END MODULE stopar
 

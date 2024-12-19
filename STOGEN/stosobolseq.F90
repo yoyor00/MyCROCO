@@ -5,6 +5,10 @@
 !> Note that this uses the gray code implementation, so
 !> Generated numbers are shuffled compared to the original series.
 module stosobolseq
+
+#include "cppdefs.h"
+#if defined STOGEN
+
   USE stoexternal , only : wp
   implicit none
   private
@@ -133,4 +137,7 @@ function i4_bit_lo0(num)
     if (.not. btest(num,i4_bit_lo0-1)) return
   enddo
 end function i4_bit_lo0
+
+#endif /* if defined STOGEN */
+
 end module stosobolseq

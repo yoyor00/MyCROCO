@@ -60,6 +60,8 @@
 # if (!defined OA_GRID_UV)
       real,dimension(GLOBAL_2D_ARRAY) :: tab_u_tmp
       real,dimension(GLOBAL_2D_ARRAY) :: tab_v_tmp
+      real,dimension(GLOBAL_2D_ARRAY) :: sustr_t_tmp
+      real,dimension(GLOBAL_2D_ARRAY) :: svstr_t_tmp
 # endif
 
 # ifdef AGRIF
@@ -211,7 +213,7 @@
                enddo
                enddo
                sustr  = tab_u_tmp / rho0
-               if (iok_taum == 0) tab_u_tmp = tab_t_tmp ! temporary storage...
+               if (iok_taum == 0) sustr_t_tmp = tab_t_tmp / rho0 ! temporary storage...
 #  else
                call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                sustr  = tab_t_tmp / rho0
@@ -232,11 +234,11 @@
                   tab_v_tmp(io,jo)=0.5*(tab_t_tmp(io,jo-1)+tab_t_tmp(io,jo))
                enddo
                enddo
-               svstr = tab_v_tmp(:,:) / rho0
-               if (iok_taum == 0) tab_v_tmp = tab_t_tmp ! temporary storage...
+               svstr = tab_v_tmp / rho0
+               if (iok_taum == 0) svstr_t_tmp = tab_t_tmp / rho0 ! temporary storage...
 #  else
                call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-               svstr = tab_t_tmp(:,:) / rho0
+               svstr = tab_t_tmp / rho0
 #  endif
             endif
          end if
@@ -588,12 +590,12 @@
 !     Compute CROCO module stress when not exchanged
 !-------------------------------------------------
 #  if (!defined OA_GRID_UV)
-         smstr = sqrt(tab_u_tmp**2 + tab_v_tmp**2)  / rho0
+         smstr = sqrt(sustr_t_tmp**2 + svstr_t_tmp**2)
 #  else
          do jo=jmin_halo-1,jmax_halo+1
          do io=imin_halo-1,imax_halo+1
              smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
-     &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2) / rho0
+     &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2)
          enddo
          enddo
 #  endif

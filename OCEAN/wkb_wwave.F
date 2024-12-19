@@ -545,7 +545,11 @@ C$OMP BARRIER
         do i=istr-1,iend+1
 # ifdef MRL_CEW
 #  if defined WKB_KZ_FILTER || defined WKB_TIME_FILTER
+#   ifdef WET_DRY
+          Dstp(i,j)=max(h(i,j)+zwave(i,j,wmod),Dcrit(i,j))
+#   else
           Dstp(i,j)=max(h(i,j)+zwave(i,j,wmod),eps)
+#   endif
 #  else
           Dstp(i,j)=max(h(i,j)+zeta(i,j,knew),eps)
 #  endif
@@ -573,8 +577,8 @@ C$OMP BARRIER
 !---------------------------------------------------------------------
 !
 # ifdef WKB_ADD_DIFF
-      cffX=1.   ! isotropic diffusion
-      cffE=1.
+      cffX=0.   ! isotropic diffusion
+      cffE=0.
 # endif
 !
       do j=jstr,jend
@@ -593,10 +597,10 @@ C$OMP BARRIER
           kh =min(wvn(i,j,wstp)*Dstp(i,j),khmax)
           a0 =frq(i,j,wstp)*wvn(i,j,wstp)/max(sinh(2.0*kh),eps)
 # if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
-          cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-5.)))   ! innershelf only
+          cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
           cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
-          cffX=20.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
-          cffE=20.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
+          cffX=10.*min(1.,max(0.,cff1*cff2*rke(i,j)**2))
+          cffE=10.*min(1.,max(0.,cff1*cff2*rkx(i,j)**2))
 # endif
           wkx(i,j,wnew)=wkx(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
      &                *( a0*0.5*on_r(i,j)*(Dstp(i+1,j)-Dstp(i-1,j))
@@ -645,6 +649,11 @@ C$OMP BARRIER
 ! Solve primary action balance equation
 !---------------------------------------------------------------------
 !
+# ifdef WKB_ADD_DIFF
+      cffX=0.5   ! isotropic diffusion
+      cffE=0.5
+# endif
+!
       do j=jstr-1,jend                    ! 1st order upwind scheme
         do i=istr-1,iend
 # ifdef MRL_CEW
@@ -666,8 +675,8 @@ C$OMP BARRIER
 # if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
           cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
           cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
-          cffX=20.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
-          cffE=20.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
+          cffX=10.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
+          cffE=10.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
 # endif
           wac(i,j,wnew)=wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &                   *(acx(i,j)-acx(i-1,j)+ace(i,j)-ace(i,j-1)
@@ -678,10 +687,6 @@ C$OMP BARRIER
      &                          -2.*wac(i,j,wprv)+wac(i,j-1,wprv))
 # endif
      &                            ) +wsb(i,j,wstp)+wfc(i,j,wstp) )
-# ifdef WKB_NUDGING
-     &                                -dtwave/3600*(wac(i,j,wnew)-
-     &                   0.125/(2*pi)*g*(whrm(i,j)**2)*Pwave(i,j))
-# endif
 # ifdef MASKING
           wac(i,j,wnew)=wac(i,j,wnew)*rmask(i,j)
 # endif
@@ -753,8 +758,8 @@ C$OMP BARRIER
 !---------------------------------------------------------------------
 !
 !$acc kernels if(compute_on_device) default(present)
-      do j=jstr,jend
-        do i=istr,iend
+      do j=jstr-1,jend+1
+        do i=istr-1,iend+1
           wvn(i,j,wnew)=max(sqrt(wkx(i,j,wnew)**2+wke(i,j,wnew)**2),eps)
           inv_k =1.0/wvn(i,j,wnew)
           khn =min(wvn(i,j,wnew)*Dstp(i,j),khmax)
@@ -1148,13 +1153,19 @@ c        cff1=3.D0/16.D0
 #   ifdef MASKING
      &                        *rmask(i-1,j)
 #   endif
+#   ifdef WET_DRY
+     &                        *rmask_wet(i-1,j)
+#   endif
             GX(i,j)=(wrk2(i,j)-wrk2(i-1,j))
 #   ifdef MASKING
-     &                        *pmask(i-1,j)
+     &                        *pmask(i,j)
+#   endif
+#   ifdef WET_DRY
+     &                        *pmask_wet(i,j)
 #   endif
             ZX(i,j)=(wrk3(i,j)-wrk3(i-1,j))
 #   ifdef MASKING
-     &                          *umask(i,j)
+     &                        *umask(i,j)
 #   endif
           enddo
         enddo
@@ -1162,15 +1173,21 @@ c        cff1=3.D0/16.D0
           do i=istr-1,iend+1
             FE(i,j)=(wrk1(i,j)-wrk1(i,j-1))
 #   ifdef MASKING
-     &                          *pmask(i,j)
+     &                        *pmask(i,j)
+#   endif
+#   ifdef WET_DRY
+     &                        *pmask_wet(i,j)
 #   endif
             GE(i,j)=(wrk2(i,j)-wrk2(i,j-1))
 #   ifdef MASKING
      &                        *rmask(i,j-1)
 #   endif
+#   ifdef WET_DRY
+     &                        *rmask_wet(i,j-1)
+#   endif
             ZE(i,j)=(wrk3(i,j)-wrk3(i,j-1))
 #   ifdef MASKING
-     &                          *vmask(i,j)
+     &                        *vmask(i,j)
 #   endif
           enddo
         enddo
@@ -1197,17 +1214,23 @@ c        cff1=3.D0/16.D0
         do j=jstr,jend
           do i=istr,iend
             wrk1(i,j)=wrk1(i,j)+cff1*( FX(i+1,j)-FX(i,j)
-     &                             +FE1(i,j+1)-FE1(i,j))
+     &                                +FE1(i,j+1)-FE1(i,j))
 #   ifdef MASKING
             wrk1(i,j)=wrk1(i,j)*umask(i,j)
 #   endif
+#   ifdef WET_DRY
+     &                         *umask_wet(i,j)
+#   endif
             wrk2(i,j)=wrk2(i,j)+cff1*( GX(i+1,j)-GX(i,j)
-     &                            +GE1(i,j+1)-GE1(i,j))
+     &                                +GE1(i,j+1)-GE1(i,j))
 #   ifdef MASKING
             wrk2(i,j)=wrk2(i,j)*vmask(i,j)
 #   endif
+#   ifdef WET_DRY
+     &                         *vmask_wet(i,j)
+#   endif
             wrk3(i,j)=wrk3(i,j)+cff1*( ZX(i+1,j)-ZX(i,j)
-     &                            +ZE1(i,j+1)-ZE1(i,j))
+     &                                +ZE1(i,j+1)-ZE1(i,j))
 #   ifdef MASKING
             wrk3(i,j)=wrk3(i,j)*rmask(i,j)
 #   endif
@@ -1286,6 +1309,10 @@ c        cff1=3.D0/16.D0
             uwave(i,j,wint)=uwave(i,j,wint)*umask(i,j)
             vwave(i,j,wint)=vwave(i,j,wint)*vmask(i,j)
             zwave(i,j,wint)=zwave(i,j,wint)*rmask(i,j)
+#   endif
+#   ifdef WET_DRY
+            uwave(i,j,wint)=uwave(i,j,wint)*umask_wet(i,j)
+            vwave(i,j,wint)=vwave(i,j,wint)*vmask_wet(i,j)
 #   endif
           enddo
         enddo
