@@ -34,6 +34,25 @@
 		"check_outputs": [ "basin_his.nc" ],
 	},
 	// Default BASIN case
+	"BASIN_small": {
+		"title": "BASIN (60 x 50 x 10 : 3240)",
+		"case": "BASIN",
+		"plot_diag_script": "./TEST_CASES/plot_basin.py",
+		"mpi": {
+			"4":  {"splitting": "1x4"},
+		},
+		"patches": {
+			// CHange the dt
+			"TEST_CASES/croco.in.Basin": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                3240     9600     65      1",
+				"by":      "                 500     9600     65      1",
+				"descr":   "Set stepping (steps=500, dt=9600, fast=65)"
+			}
+		},
+		"check_outputs": [ "basin_his.nc" ],
+	},
+	// Default BASIN case
 	"BASIN-SMALL": {
 		"title": "BASIN-SMALL (60 x 50 x 10 : 140)",
 		"case": "BASIN",

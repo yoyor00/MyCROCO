@@ -119,11 +119,6 @@ class Config:
             default=selected_host,
         )
         parser.add_argument(
-            "--enable-debug",
-            help="Use cmake debug build instead of release.",
-            action="store_true",
-        )
-        parser.add_argument(
             "--rvtk",
             help="Enable usage of RVTK_DEBUG and give name of variant reference.",
             action="store_true",
@@ -172,7 +167,6 @@ class Config:
         self.use_ref = self.args.use_ref
         self.force_jobcomp = self.args.jobcomp
         self.use_host_config = self.args.host
-        self.debug_build = self.args.enable_debug
         self.variant_ref_name = self.args.compare_to
         self.rvtk = self.args.rvtk
         self.twin_chercker = self.args.twin_checker
@@ -298,7 +292,7 @@ class Config:
         final_cases = []
         for case in self.case_names:
             if case.startswith("@"):
-                final_cases += self.config["meta_cases"][variant]
+                final_cases += self.config["meta_cases"][case]
             else:
                 final_cases.append(case)
         self.case_names = final_cases

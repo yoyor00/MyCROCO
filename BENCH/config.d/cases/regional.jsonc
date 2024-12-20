@@ -1,5 +1,50 @@
 {
 	// BENGUELA case
+	"BENGUELA_LR_TIDES_BULK": {
+		"title": "BENGUELA_LR_TIDES_BULK",
+		"case": "REGIONAL",
+        "croco_files_path": "LR_CROCO_FILES_BCK",
+		"mpi": {
+			"1":  {"splitting": "1x1"},
+			"2":  {"splitting": "1x2"},
+			"4":  {"splitting": "2x2"},
+			"6":  {"splitting": "1x6"},
+			"8":  {"splitting": "2x4"},
+			"12": {"splitting": "2x6"},
+			"16": {"splitting": "1x16"},
+			"32": {"splitting": "1x32"},
+			"64": {"splitting": "1x64"}
+		},
+		"patches": {
+			// Change the size of the mesh
+			"param_override.h": {
+				"next_to": "",
+				"what":    "",
+				"by":      "",
+				"descr":   "Do nothing..."
+			},
+			// Change the dt
+			"TEST_CASES/croco.in.Regional": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                3840      3600      60      1",
+				"by":      "                3840      3600      60      1",
+				"descr":   "Do nothing ..."
+			},
+			// Change the configuration name
+			"cppdefs.h": [{
+				"mode":  "replace-all",
+				"what":  "# undef  TIDES",
+				"by":    "# define TIDES",
+				"descr": "Set TIDES"
+			},{
+				"mode":  "replace-all",
+				"what":  "#  undef  BULK_FLUX",
+				"by":    "#  define BULK_FLUX",
+				"descr": "Define BULK_FLUX ..."
+			}]
+		},
+		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
+	},
 	"BENGUELA_VHR_TIDES_BULK": {
 		"title": "BENGUELA_VHR_TIDES_BULK",
 		"case": "REGIONAL",
@@ -16,17 +61,10 @@
 			"64": {"splitting": "1x64"}
 		},
 		"patches": {
-			// Change the size of the mesh
-			"param_override.h": {
-				"next_to": "#if defined BENGUELA",
-				"what":    "      parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR",
-				"by":      "      parameter (LLm0=167,  MMm0=170,  N=32)   ! BENGUELA_VHR",
-				"descr":   "Set mesh size to (167 x 170 x 32)"
-			},
 			// Change the dt
 			"TEST_CASES/croco.in.Regional": {
 				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-				"what":    "                120      900      60      1",
+				"what":    "                3840      3600      60      1",
 				"by":      "                120      900      60      1",
 				"descr":   "Set stepping (steps=120, dt=900, fast=60)"
 			},
@@ -44,5 +82,37 @@
 			}]
 		},
 		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
+	},
+	"BENGUELA_VHR_TIDES_BULK_small": {
+		"title": "BENGUELA_VHR_TIDES_BULK_functionnal",
+		"case": "REGIONAL",
+		"croco_files_path": "VHR_CROCO_FILES_BCK",
+		"mpi": {
+			"4":  {"splitting": "2x2"},
+		},
+		"patches": {
+			// Change the dt
+			"TEST_CASES/croco.in.Regional": {
+				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                3840      3600      60      1",
+				"by":      "                  10      900      60      1",
+				"descr":   "Set stepping (steps=10, dt=900, fast=60)"
+			},
+			// Change the configuration name
+			"cppdefs.h": [{
+				"mode": "replace-all",
+				"what":   "# undef  TIDES",
+				"by":     "# define  TIDES",
+				"descr":   "Set TIDES"
+			},{
+				"next_to": "                      /* Parallelization */",
+				"what":   "# define BENGUELA_LR",
+				"by":     "# define BENGUELA_VHR",
+				"descr":   "Unset BENGUELA_LR"
+			}]
+		},
+		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
 	}
+
+
 }
