@@ -41,6 +41,18 @@
 			"sequential-debug-ifort",
 			"mpi-debug-ifort-4"
 		],
+		"@functionnal": [
+			"sequential-debug",
+			"mpi-debug-4",
+			"sequential",
+			"mpi-4"
+		],
+		"@functionnal-ifort": [
+			"sequential-debug-ifort",
+			"mpi-debug-ifort-4",
+			"sequential-ifort",
+			"mpi-ifort-4"
+		],
 		"@wip-all": [
 			"sequential",
 			"openmp-2",
@@ -79,13 +91,13 @@
 	},
 	"meta_cases": {
 		"@debug": [
-			"BASIN",
-			"BENGUELA_VHR_TIDES_BULK"
+			"BASIN_small",
+			"BENGUELA_VHR_TIDES_BULK_small"
 		],
-		"@debug-ifort": [
-			"BASIN",
-			"BENGUELA_VHR_TIDES_BULK"
-		]
+		"@functionnal": [
+			"BASIN_small",
+			"BENGUELA_VHR_TIDES_BULK_small"
+		],
 	},
 	////////////////////////////// VARIANTS ////////////////////////////////////
 	"variants": {
