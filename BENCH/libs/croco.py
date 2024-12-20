@@ -487,8 +487,15 @@ class Croco:
                     "Successfully executed %s with arguments --no-show --makepng"
                     % self.plot_diag_script
                 )
+                # report
+                self.config.report.report_status(
+                    self.case_name, self.variant_name, "plotphy", True
+                )
             except subprocess.CalledProcessError as e:
                 print(f"Error during execution of {self.plot_diag_script}: {e}")
+                self.config.report.report_status(
+                    self.case_name, self.variant_name, "plotphy", False, str(e)
+                )
         else:
             Messaging.step(f"No Plotting script provided")
 

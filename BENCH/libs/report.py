@@ -37,6 +37,7 @@ class Report:
                     "build": {"status": None},
                     "run": {"status": None},
                     "check": {"status": None},
+                    "plotphy": {"status": None},
                 },
             }
         self.report[full_name]["status"][step] = {
@@ -46,11 +47,19 @@ class Report:
         }
 
     def save(self) -> None:
-        status_report_file = os.path.join(
-            self.config.results, "status_report.json"
-        )
+        status_report_file = os.path.join(self.config.results, "status_report.json")
         with open(status_report_file, "w+") as fp:
             json.dump(self.report, fp, indent="\t")
+
+    def get_color(self, status):
+        if status is True:
+            return "green"
+        elif status is False:
+            return "red"
+        elif status is None:
+            return "cyan"
+        else:
+            return "white"
 
     def print(self) -> None:
         print(
@@ -62,8 +71,16 @@ class Report:
         status_build = "Build"
         status_run = "Run"
         status_check = "Check"
+        status_plotphy = "Plotphy"
         print(
-            f"{full_name:<40}    {str(status_build):<8}  {str(status_run):<8}      {str(status_check)}"
+            "%s %s %s %s %s"
+            % (
+                f"{full_name:<40}",
+                f"{str(status_build):<8}",
+                f"{str(status_run):<8}",
+                f"{str(status_check)}",
+                f"{str(status_plotphy)}",
+            )
         )
         print(
             "..................................................................................."
@@ -73,16 +90,13 @@ class Report:
             status_build = infos["status"]["build"]["status"]
             status_run = infos["status"]["run"]["status"]
             status_check = infos["status"]["check"]["status"]
-            if status_build and status_run and status_check:
-                color = "green"
-            elif not status_build or not status_run or not status_check:
-                color = "red"
-            else:
-                color = "orange"
-            cprint(
-                f"{full_name:<40}    {str(status_build):<8}  {str(status_run):<8}      {str(status_check)}",
-                color,
-            )
+            status_plotphy = infos["status"]["plotphy"]["status"]
+
+            cprint(f"{full_name:<40} ", "white", end="")
+            cprint(f"{str(status_build):<8} ", self.get_color(status_build), end="")
+            cprint(f"{str(status_run):<8} ", self.get_color(status_run), end="")
+            cprint(f"{str(status_check):<8} ", self.get_color(status_check), end="")
+            cprint(f"{str(status_plotphy):<8}", self.get_color(status_plotphy))
 
         print(
             "-----------------------------------------------------------------------------------"

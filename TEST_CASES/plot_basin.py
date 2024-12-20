@@ -62,7 +62,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Initialization
-tndx = 11
+tndx = -1
 j = 25
 
 # Read data from NetCDF file
