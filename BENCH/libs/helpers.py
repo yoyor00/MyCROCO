@@ -50,9 +50,7 @@ def print_exception(exception: Exception) -> None:
 
 
 ##########################################################
-def run_shell_command(
-    command, logfilename=None, capture=True, show_on_error=True
-):
+def run_shell_command(command, logfilename=None, capture=True, show_on_error=True):
     """Print the command and run it. On failure it prints the output."""
 
     # print command
@@ -142,7 +140,7 @@ def contains_one_of(seach_in: str, elements) -> bool:
         raise Exception("Unsupported type !")
 
 
-def patch_lines(path: str, rules: list, allow_already_done=False):
+def patch_lines_old(path: str, rules: list, allow_already_done=False):
     """
     Patch a file by inserting some lines at the given place. The changes are
     requested via a list of rules to apply.
@@ -203,6 +201,169 @@ def patch_lines(path: str, rules: list, allow_already_done=False):
     # save
     with open(path, "w+") as fp:
         fp.writelines(lines)
+
+
+def normalize_line(line):
+    """Normalize a line by removing extra spaces and trimming."""
+    if line is None:
+        return ""
+    return re.sub(r"\s+", " ", line).strip()
+
+def apply_rule(fname,lines, rule):
+    """
+    Apply a single rule to a list of lines in memory.
+    
+    Parameters:
+    - lines: a list of strings (lines from the file)
+    - rule: a dictionary with keys:
+        - "what" (str, required): The line to match (after normalization) for certain operations.
+        - "by" (str): Line used in 'replace' mode.
+        - "insert" (str): Line to insert in 'insert-before', 'insert-after', 'insert-after-before' modes.
+        - "mode" (str, required): One of 'replace', 'insert-before', 'insert-after', 'insert-after-before'.
+        - "descr" (str, optional): Description of the rule.
+        - "before" (str, required for 'insert-after-before'): The line before which to insert.
+        - "after" (str, required for 'insert-after-before'): The line after which to insert.
+    """
+    
+    mode = rule.get("mode")
+    what = normalize_line(rule.get("what", ""))
+    descr = rule.get("descr", "No description provided")
+    Messaging.step(f"Patching {fname} [ {descr} ]")
+    
+    # Determine the new line to use based on the mode
+    if mode == "replace":
+        new_line = rule.get("by")
+    else:
+        new_line = rule.get("insert")
+    
+    # Basic validations
+    if not mode:
+        print(f"Error: No mode specified for rule '{descr}'. Skipping rule.")
+        return lines
+    if mode not in ["replace", "insert-before", "insert-after", "insert-after-before"]:
+        print(f"Error: Unknown mode '{mode}' in rule '{descr}'. Skipping rule.")
+        return lines
+    if not what and mode != "insert-after-before":
+        print(f"Error: 'what' is required for mode '{mode}' in rule '{descr}'. Skipping rule.")
+        return lines
+    if not new_line and mode != "replace":
+        print(f"Error: 'insert' is required for mode '{mode}' in rule '{descr}'. Skipping rule.")
+        return lines
+    
+    # Specific check for insert-after-before mode
+    if mode == "insert-after-before":
+        line_before = normalize_line(rule.get("before", ""))
+        line_after = normalize_line(rule.get("after", ""))
+        if not line_before or not line_after or not new_line:
+            print(f"Error: 'before', 'after', and 'insert' must be provided for 'insert-after-before' in rule '{descr}'. Skipping rule.")
+            return lines
+    
+    modified_lines = []
+    inserted = False
+
+    if mode == "replace":
+        # Replace the line matching 'what' with 'by'
+        for line in lines:
+            if normalize_line(line) == what:
+                modified_lines.append(new_line + "\n")
+                inserted = True
+            else:
+                modified_lines.append(line)
+        if not inserted:
+            print(f"Warning: No line matched '{what}' for replacement in rule '{descr}'.")
+    
+    elif mode == "insert-before":
+        # Insert a new line before the line that matches 'what'
+        for line in lines:
+            if normalize_line(line) == what and not inserted:
+                modified_lines.append(new_line + "\n")
+                modified_lines.append(line)
+                inserted = True
+            else:
+                modified_lines.append(line)
+        if not inserted:
+            print(f"Warning: No line matched '{what}' to insert before in rule '{descr}'.")
+    
+    elif mode == "insert-after":
+        # Insert a new line after the line that matches 'what'
+        for line in lines:
+            if normalize_line(line) == what and not inserted:
+                modified_lines.append(line)
+                modified_lines.append(new_line + "\n")
+                inserted = True
+            else:
+                modified_lines.append(line)
+        if not inserted:
+            print(f"Warning: No line matched '{what}' to insert after in rule '{descr}'.")
+    
+    elif mode == "insert-after-before":
+        # Insert a line between two known lines: after 'after' and before 'before'
+        line_before = normalize_line(rule.get("before", ""))
+        line_after = normalize_line(rule.get("after", ""))
+
+        found_after = False
+        # Once 'after' line is found, we insert our new_line right before the 'before' line
+        for i, line in enumerate(lines):
+            current_norm = normalize_line(line)
+            modified_lines.append(line)
+            
+            # If we have found the 'after' line and the current line is 'before'
+            # we insert our new line right before it
+            if found_after and current_norm == line_before and not inserted:
+                modified_lines.insert(len(modified_lines)-1, new_line + "\n")
+                inserted = True
+
+            if current_norm == line_after:
+                found_after = True
+
+        if not inserted:
+            print(f"Warning: Could not find the sequence 'after' then 'before' for rule '{descr}'. No insertion performed.")
+    
+    return modified_lines
+
+
+def patch_lines(file_path, rules):
+    """
+    Modify a file according to a list of rules.
+    
+    Parameters:
+    - file_path: Path to the file to be modified.
+    - rules: A list of dictionaries, each representing a rule.
+    """
+    # Backup the original file
+    backup_path = f"{file_path}.backup"
+    try:
+        shutil.copyfile(file_path, backup_path)
+        print(f"Backup created: {backup_path}")
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found. Aborting.")
+        return
+    except Exception as e:
+        print(f"Error while creating backup: {e}")
+        return
+    
+    # Read the original file
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    except Exception as e:
+        print(f"Error reading the file: {e}")
+        return
+
+
+
+    
+    # Apply each rule in-memory
+    for rule in rules:
+        lines = apply_rule(file_path,lines, rule)
+    
+    # Write the final result
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.writelines(lines)
+#        print(f"Modifications completed successfully for {file_path}.")
+    except Exception as e:
+        print(f"Error writing the file: {e}")
 
 
 @contextmanager
