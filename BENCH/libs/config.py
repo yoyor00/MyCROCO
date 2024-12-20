@@ -292,7 +292,7 @@ class Config:
         final_cases = []
         for case in self.case_names:
             if case.startswith("@"):
-                final_cases += self.config["meta_cases"][variant]
+                final_cases += self.config["meta_cases"][case]
             else:
                 final_cases.append(case)
         self.case_names = final_cases
