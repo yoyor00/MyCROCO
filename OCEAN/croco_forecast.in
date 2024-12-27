@@ -89,6 +89,12 @@ diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1           120            0
                                  croco_dia_avg.nc
 
+diag_mld_crit_threshold: CRT1 (Dens [kg/m3]), CRT2 (Temp [Celsius]), CRT3 (Temp [Celsius])
+                         3.d-2                2.d-1                  5.d-1
+
+diag_mld_depth_ref: [m]
+                10
+
 diag3D_history_fields:    diag_tracers3D(1:NT) 
                             30*T
 
