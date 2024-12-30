@@ -968,7 +968,7 @@ if args.makepdf:
 # Save to PNG if requested
 if args.makepng:
     png_path = os.path.join(output_dir, "REGIONAL_sections.png")
-    plt.savefig(png_path, dpi=300)
+    plt.savefig(png_path, dpi=300, bbox_inches='tight')
     print(f"PNG file '{png_path}' has been created.")
 
 # Show plots if not suppressed
