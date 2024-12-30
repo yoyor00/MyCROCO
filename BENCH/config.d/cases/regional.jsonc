@@ -3,6 +3,7 @@
 	"BENGUELA_LR_TIDES_BULK": {
 		"title": "BENGUELA_LR_TIDES_BULK",
 		"case": "REGIONAL",
+		"plot_diag_script": "./TEST_CASES/plot_regional.py",
         "croco_files_path": "LR_CROCO_FILES_BCK",
 		"mpi": {
 			"1":  {"splitting": "1x1"},
@@ -48,6 +49,7 @@
 	"BENGUELA_VHR_TIDES_BULK": {
 		"title": "BENGUELA_VHR_TIDES_BULK",
 		"case": "REGIONAL",
+		"plot_diag_script": "./TEST_CASES/plot_regional.py",
 		"croco_files_path": "VHR_CROCO_FILES_BCK",
 		"mpi": {
 			"1":  {"splitting": "1x1"},
@@ -95,8 +97,8 @@
 			"TEST_CASES/croco.in.Regional": {
 				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                3840      3600      60      1",
-				"by":      "                  10      900      60      1",
-				"descr":   "Set stepping (steps=10, dt=900, fast=60)"
+				"by":      "                  3      900      60      1",
+				"descr":   "Set stepping (steps=3, dt=900, fast=60)"
 			},
 			// Change the configuration name
 			"cppdefs.h": [{
