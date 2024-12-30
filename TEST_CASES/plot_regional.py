@@ -962,7 +962,7 @@ os.makedirs(output_dir, exist_ok=True)  # Ensure the output directory exists
 # Save to PDF if requested
 if args.makepdf:
     pdf_path = os.path.join(output_dir, "REGIONAL_sections.pdf")
-    plt.savefig(pdf_path, transparent=True)
+    plt.savefig(pdf_path, transparent=True, bbox_inches='tight')
     print(f"PDF file '{pdf_path}' has been created.")
 
 # Save to PNG if requested
