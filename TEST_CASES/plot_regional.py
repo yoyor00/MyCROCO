@@ -820,7 +820,7 @@ if plot_horiz == 1:
     # Ajuster l'espacement des subplots
     plt.tight_layout()
     #plt.show()
-    plt.savefig('REGIONAL_maps.png')
+    #plt.savefig('REGIONAL_maps.png')
     
 #################################
 # Determine output file paths
@@ -952,7 +952,7 @@ plt.tight_layout()
 plt.suptitle(f"Vertical Sections for Variables at J/I index {idx}", fontsize=16, y=1.02)
 
 #plt.show()
-plt.savefig('REGIONAL_sections.png', bbox_inches='tight')
+#plt.savefig('REGIONAL_sections.png', bbox_inches='tight')
 
 #################################
 # Determine output file paths
