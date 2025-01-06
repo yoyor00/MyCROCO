@@ -1,5 +1,15 @@
+##########################################################
+#  CROCO under CeCILL-C
+#  CROCO website : http://www.croco-ocean.org
+##########################################################
+
+##########################################################
+# python
 import os
 import shutil
+
+# internal
+from ..helpers import Messaging
 
 
 def generate_treeview_json(root_path):
@@ -15,7 +25,7 @@ def generate_treeview_json(root_path):
                     {"text": name, "nodes": traverse_directory(full_path, base_url)}
                 )
             else:
-                if not "treeview.html" in url_path:
+                if (not "treeview.html" in url_path) and (not "styles.css" in url_path):
                     nodes.append(
                         {"text": f'<a href="{url_path}" target="main-frame">{name}</a>'}
                     )
@@ -95,7 +105,7 @@ def generate_html(
         os.path.join(data_path, "styles.css"),
     )
 
-    print(f"HTML file generated: {output_file}")
+    Messaging.step(f"HTML file generated: {output_file}")
 
 
 # Function to create index html file for all results
@@ -165,4 +175,4 @@ def generate_global_html(base_dir, style_file="libs/htmlreport/styles.css"):
         os.path.join(base_dir, "styles.css"),
     )
 
-    print(f"Index file generated: {os.path.abspath(output_file)}")
+    Messaging.step(f"Index file generated: {os.path.abspath(output_file)}")

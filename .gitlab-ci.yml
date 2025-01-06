@@ -70,10 +70,10 @@ pages:
     - ci.inria.fr
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   script:
-    - mkdir -p public/$CI_COMMIT_REF_NAME
+    - mkdir -p $CI_PROJECT_DIR/public/$CI_COMMIT_REF_NAME
     - cd $CI_PROJECT_DIR/BENCH
     - ./bench-croco.py --globalhtml
-    - cp -R $CI_PROJECT_DIR/BENCH/results public/$CI_COMMIT_REF_NAME
+    - cp -R $CI_PROJECT_DIR/BENCH/results $CI_PROJECT_DIR/public/$CI_COMMIT_REF_NAME
   artifacts:
     paths:
       - public
