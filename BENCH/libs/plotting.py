@@ -28,7 +28,7 @@ class Plotting:
 
         # calc
         fname = f"result-{name}.json"
-        avail = glob.glob(f"{results_pattern}/{fname}")
+        avail = glob.glob(f"{results_pattern}/*/*/{fname}")
 
         # has none
         if avail is None or len(avail) == 0:
@@ -184,6 +184,7 @@ class Plotting:
 
             # Save the figure and show
             pyplot.tight_layout()
+            os.makedirs(f"{results}/{case_name}", exist_ok=True)
             pyplot.savefig(f"{results}/{case_name}/plot-{case_name}.png")
             pyplot.savefig(f"{results}/{case_name}/plot-{case_name}.svg")
             pyplot.close()
