@@ -41,6 +41,8 @@ class Croco:
         # build directory name
         self.dirname = self.calc_rundir(variant_name, case_name)
         self.dirname = os.path.abspath(self.dirname)
+        self.dirname_result = self.calc_resdir(variant_name, case_name)
+        self.dirname_result = os.path.abspath(self.dirname_result)
 
         # extract infos
         self.case = config.config["cases"][case_name]
@@ -58,6 +60,9 @@ class Croco:
     def calc_rundir(self, variant_name, case_name):
         return f"{self.config.workdir}/{case_name}/{variant_name}"
 
+    def calc_resdir(self, variant_name, case_name):
+        return f"{self.config.results}/{case_name}/{variant_name}"
+
     def reset(self):
         # display
         Messaging.step("Reset")
@@ -72,6 +77,7 @@ class Croco:
         # extract some needed vars
         croco_source_dir = self.config.croco_source_dir
         dirname = self.dirname
+        dirname_result = self.dirname_result
         case_cpp_key = self.case["case"]
         tuning_familly = self.variant["tuning_familly"]
         tuning_flags = self.config.host["tuning"][tuning_familly]
@@ -79,6 +85,7 @@ class Croco:
 
         # create dir
         os.makedirs(dirname, exist_ok=True)
+        os.makedirs(dirname_result, exist_ok=True)
 
         # extract options
         configure_variant_options = self.variant["configure"]
@@ -151,6 +158,13 @@ class Croco:
 
         # jump in & build
         croco_build.make(make_jobs)
+
+        # copy log file in result dir
+        if os.path.exists(os.path.join(self.dirname, "jobcomp.log")):
+            shutil.copyfile(
+                os.path.join(self.dirname, "jobcomp.log"),
+                os.path.join(self.dirname_result, "jobcomp.log"),
+            )
 
     def enable_rvtk_checking(self):
         # vars
@@ -307,7 +321,7 @@ class Croco:
             )
 
         # calc output
-        output_filename = f"{results}/result-{self.full_name}.json"
+        output_filename = f"{self.dirname_result}/result-{self.full_name}.json"
 
         # add some infos
         result["name"] = self.full_name
@@ -323,6 +337,15 @@ class Croco:
         # dump results
         with open(output_filename, "w+") as fp:
             json.dump(result, fp=fp, indent="\t")
+
+        # copy log file in result dir
+        for iteration in range(runs):
+            logfilename = "croco_%i.log" % (iteration + 1)
+            if os.path.exists(os.path.join(self.dirname, logfilename)):
+                shutil.copyfile(
+                    os.path.join(self.dirname, logfilename),
+                    os.path.join(self.dirname_result, logfilename),
+                )
 
     def apply_patches(self, patches):
         # vars
@@ -465,7 +488,7 @@ class Croco:
         full_name = self.full_name
         filename = self.case["check_outputs"][0]  # to check
         actual_file = f"{dirname}/{filename}"
-        result_dir = self.config.results
+        result_dir = self.dirname
 
         if "plot_diag_script" in self.case:
             self.plot_diag_script = os.path.join(dirname, self.case["plot_diag_script"])
@@ -478,7 +501,7 @@ class Croco:
                 "--file",
                 actual_file,
                 "--output-dir",
-                result_dir,
+                self.dirname_result,
             ]
 
             try:
@@ -508,7 +531,7 @@ class Croco:
         # loop each
         for filename in self.case["check_outputs"]:
             actual_file = f"{dirname}/{filename}"
-            dump_in_file = f"{result_dir}/mesh-{full_name}/"
+            dump_in_file = f"{self.dirname_result}/mesh/"
             if anim:
                 Messaging.step(f"Drawing mesh-anim {full_name} / {filename}")
             else:

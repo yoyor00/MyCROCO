@@ -15,6 +15,7 @@ from .messaging import Messaging
 from .system import gen_system_info
 from .plotting import Plotting
 from .helpers import run_shell_command
+from .htmlreport.htmlreport import generate_html, generate_global_html
 
 
 ##########################################################
@@ -93,9 +94,7 @@ class Benchmarking:
                 if not variant_name in case_config.get("unsupported", []):
                     res.append(Croco(config, case_name, variant_name))
                 else:
-                    Messaging.step(
-                        f"Skip unsupported {case_name}/{variant_name}"
-                    )
+                    Messaging.step(f"Skip unsupported {case_name}/{variant_name}")
 
         # ok
         return res
@@ -140,10 +139,7 @@ class Benchmarking:
                 if "anim" in self.config.modes:
                     instance.dump_mesh(anim=True)
                 # if need to store the ref
-                if (
-                    self.config.build_ref
-                    and instance.variant_name == variant_ref_name
-                ):
+                if self.config.build_ref and instance.variant_name == variant_ref_name:
                     instance.make_ref()
 
         # plot
@@ -154,6 +150,17 @@ class Benchmarking:
         if self.config.report:
             self.config.report.save()
             self.config.report.print()
+
+        # html
+        if self.config.html:
+            generate_html(
+                self.config.results,
+                output_file=os.path.join(self.config.results, "treeview.html"),
+            )
+
+        # global html
+        if self.config.globalhtml:
+            generate_global_html(self.config.args.results)
 
     def dump_bench_infos(self):
         # dump bench infos

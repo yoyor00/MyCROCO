@@ -144,6 +144,14 @@ class Config:
             "--report", help="Build a status report.", action="store_true"
         )
         parser.add_argument(
+            "--html", help="Build a html treeview report.", action="store_true"
+        )
+        parser.add_argument(
+            "--globalhtml",
+            help="Build a global html report for all results folders.",
+            action="store_true",
+        )
+        parser.add_argument(
             "--data-root-path", help="Input data path", type=str, default=""
         )
 
@@ -172,6 +180,8 @@ class Config:
         self.twin_chercker = self.args.twin_checker
         self.continue_on_error = self.args.continue_on_error
         self.report = self.args.report
+        self.html = self.args.html
+        self.globalhtml = self.args.globalhtml
         self.data_root_path = self.args.data_root_path
 
         # swithc

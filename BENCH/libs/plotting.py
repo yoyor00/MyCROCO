@@ -67,9 +67,7 @@ class Plotting:
         # loop on all variants
         for variant_name in variant_names:
             # load json
-            case_variant_data = self.load_case_variant_data(
-                case_name, variant_name
-            )
+            case_variant_data = self.load_case_variant_data(case_name, variant_name)
 
             # merge
             if case_variant_data is not None:
@@ -80,14 +78,10 @@ class Plotting:
                 data["min"].append(case_variant_data["results"][0]["min"])
                 data["max"].append(case_variant_data["results"][0]["max"])
                 data["q1"].append(
-                    numpy.quantile(
-                        case_variant_data["results"][0]["times"], 0.25
-                    )
+                    numpy.quantile(case_variant_data["results"][0]["times"], 0.25)
                 )
                 data["q3"].append(
-                    numpy.quantile(
-                        case_variant_data["results"][0]["times"], 0.75
-                    )
+                    numpy.quantile(case_variant_data["results"][0]["times"], 0.75)
                 )
 
         # ok
@@ -190,8 +184,8 @@ class Plotting:
 
             # Save the figure and show
             pyplot.tight_layout()
-            pyplot.savefig(f"{results}/plot-{case_name}.png")
-            pyplot.savefig(f"{results}/plot-{case_name}.svg")
+            pyplot.savefig(f"{results}/{case_name}/plot-{case_name}.png")
+            pyplot.savefig(f"{results}/{case_name}/plot-{case_name}.svg")
             pyplot.close()
 
             # keep track of the previous run used results
