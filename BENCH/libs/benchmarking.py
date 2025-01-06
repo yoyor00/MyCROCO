@@ -15,7 +15,7 @@ from .messaging import Messaging
 from .system import gen_system_info
 from .plotting import Plotting
 from .helpers import run_shell_command
-from .htmlreport.htmlreport import generate_html, generate_global_html
+from .htmlreport.htmlreport import generate_html
 
 
 ##########################################################
@@ -157,10 +157,6 @@ class Benchmarking:
                 self.config.results,
                 output_file=os.path.join(self.config.results, "treeview.html"),
             )
-
-        # global html
-        if self.config.globalhtml:
-            generate_global_html(self.config.args.results)
 
     def dump_bench_infos(self):
         # dump bench infos

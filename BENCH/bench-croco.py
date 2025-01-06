@@ -23,9 +23,12 @@ def main():
     config.parse()
     config.load_config()
 
-    # benchmark
-    bench = Benchmarking(config)
-    bench.run()
+    if config.globalhtml:
+        config.html_global_report()
+    else:
+        # benchmark
+        bench = Benchmarking(config)
+        bench.run()
 
 
 ##########################################################

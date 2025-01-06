@@ -14,6 +14,7 @@ from datetime import datetime
 from .messaging import Messaging
 from .configfile import ConfigFile
 from .report import Report
+from .htmlreport.htmlreport import generate_global_html
 
 
 ##########################################################
@@ -148,7 +149,7 @@ class Config:
         )
         parser.add_argument(
             "--globalhtml",
-            help="Build a global html report for all results folders.",
+            help="Build a global html report for all results folders. In this case bench is not run !",
             action="store_true",
         )
         parser.add_argument(
@@ -360,3 +361,8 @@ class Config:
 
         # apply
         self.host = hosts[selected_host]
+
+    def html_global_report(self):
+        # global html
+        if self.globalhtml:
+            generate_global_html(self.args.results)

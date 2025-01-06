@@ -19,7 +19,7 @@ test_bench_debug:
     - tar -xf ForCI-INRIA.tar.gz ;
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - ./bench-croco.py --case @debug --variants @debug --jobcomp --rebuild --host host_ci --compare-to sequential-debug --data-root-path $DATAREG/ForCI-INRIA --globalhtml
+    - ./bench-croco.py --case @debug --variants @debug --jobcomp --rebuild --host host_ci --compare-to sequential-debug --data-root-path $DATAREG/ForCI-INRIA --html
   artifacts:
     paths:
       - BENCH/results
@@ -38,7 +38,7 @@ test_bench_debug_ifort:
     - cd $CI_PROJECT_DIR/BENCH
     #note : --jobs 1 mandatory with intel compiler
     #note : check not available because sequentiel is not done here
-    - ./bench-croco.py --case @debug --variants @debug-ifort --jobcomp --rebuild --host host_ci_ifort --jobs 1 --steps build,run --data-root-path $DATAREG/ForCI-INRIA --globalhtml
+    - ./bench-croco.py --case @debug --variants @debug-ifort --jobcomp --rebuild --host host_ci_ifort --jobs 1 --steps build,run --data-root-path $DATAREG/ForCI-INRIA --html
   artifacts:
     paths:
       - BENCH/results
@@ -56,7 +56,7 @@ test_bench_regional:
     - tar -xf ForCI-INRIA.tar.gz ;
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - ./bench-croco.py --case BENGUELA_VHR_TIDES_BULK --variants sequential,mpi-4 --jobcomp --rebuild --host host_ci --data-root-path $DATAREG/ForCI-INRIA --globalhtml
+    - ./bench-croco.py --case BENGUELA_VHR_TIDES_BULK --variants sequential,mpi-4 --jobcomp --rebuild --host host_ci --data-root-path $DATAREG/ForCI-INRIA --html
   artifacts:
     paths:
       - BENCH/results
@@ -70,6 +70,9 @@ pages:
     - ci.inria.fr
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
   script:
+    - mkdir -p public/$CI_COMMIT_REF_NAME
+    - cd $CI_PROJECT_DIR/BENCH
+    - ./bench-croco.py --globalhtml
     - cp -R $CI_PROJECT_DIR/BENCH/results public/$CI_COMMIT_REF_NAME
   artifacts:
     paths:
