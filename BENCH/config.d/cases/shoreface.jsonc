@@ -17,14 +17,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#elif defined SHOREFACE",
+				"mode": "replace",
+				"after": "#elif defined SHOREFACE",
 				"what":    "      parameter (LLm0=59,   MMm0=1,    N=20)   ! 20 m Planar Beach",
 				"by":      "      parameter (LLm0=59,   MMm0=1,    N=20)   ! 20 m Planar Beach",
 				"descr":   "Set mesh size to (59 x 1 x 20)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.ShoreFace": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                7200     5.       30       72 ",
 				"by":      "                7200     5.       30       72 ",
 				"descr":   "Set stepping (steps=7200, dt=5, fast=30)"

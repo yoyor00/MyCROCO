@@ -18,14 +18,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined BASIN",
+				"mode": "replace",
+				"after": "#if defined BASIN",
 				"what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
 				"by":      "      parameter (LLm0=60,   MMm0=50,   N=10)",
 				"descr":   "Set mesh size to (60 x 50 x 10)"
 			},
 			// CHange the dt
 			"TEST_CASES/croco.in.Basin": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                3240     9600     65      1",
 				"by":      "                3240     9600     65      1",
 				"descr":   "Set stepping (steps=3240, dt=9600, fast=65)"
@@ -35,7 +37,7 @@
 	},
 	// Default BASIN case
 	"BASIN_small": {
-		"title": "BASIN (60 x 50 x 10 : 3240)",
+		"title": "BASIN (60 x 50 x 10 : 500)",
 		"case": "BASIN",
 		"plot_diag_script": "./TEST_CASES/plot_basin.py",
 		"mpi": {
@@ -44,7 +46,8 @@
 		"patches": {
 			// CHange the dt
 			"TEST_CASES/croco.in.Basin": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                3240     9600     65      1",
 				"by":      "                 500     9600     65      1",
 				"descr":   "Set stepping (steps=500, dt=9600, fast=65)"
@@ -70,14 +73,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined BASIN",
+				"mode": "replace",
+				"after": "#if defined BASIN",
 				"what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
 				"by":      "      parameter (LLm0=60,   MMm0=50,   N=10)",
 				"descr":   "Set mesh size to (60 x 50 x 10)"
 			},
 			// CHange the dt
 			"TEST_CASES/croco.in.Basin": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                3240     9600     65      1",
 				"by":      "                 140     9600     65      1",
 				"descr":   "Set stepping (steps=140, dt=9600, fast=65)"
@@ -103,14 +108,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined BASIN",
+				"mode": "replace",
+				"after": "#if defined BASIN",
 				"what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
 				"by":      "      parameter (LLm0=200,  MMm0=200,  N=50)",
 				"descr":   "Set mesh size to (200 x 200 x 50)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.Basin": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                3240     9600     65      1",
 				"by":      "                100      2400     65      1",
 				"descr":   "Set stepping (steps=100, dt=2400, fast=65)"
@@ -136,14 +143,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined BASIN",
+				"mode": "replace",
+				"after": "#if defined BASIN",
 				"what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
 				"by":      "      parameter (LLm0=400,  MMm0=400,  N=100)",
 				"descr":   "Set mesh size to (400 x 400 x 100)"
 			},
 			// CHange the dt
 			"TEST_CASES/croco.in.Basin": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                3240     9600     65      1",
 				"by":      "                100      1200     65      1",
 				"descr":   "Set stepping (steps=100, dt=1200, fast=65)"

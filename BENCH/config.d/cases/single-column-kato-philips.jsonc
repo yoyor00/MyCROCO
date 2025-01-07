@@ -20,14 +20,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "# ifdef KATO_PHILIPS",
+				"mode": "replace",
+				"after": "# ifdef KATO_PHILIPS",
 				"what":    "      parameter (LLm0=5 ,   MMm0=5,    N=100)",
 				"by":      "      parameter (LLm0=5 ,   MMm0=5,    N=100)",
 				"descr":   "Set mesh size to (5 x 5 x 100)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.KATO_PHILLIPS": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                3600      30      60      1",
 				"by":      "                3600      30      60      1",
 				"descr":   "Set stepping (steps=3600, dt=30, fast=60)"

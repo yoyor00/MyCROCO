@@ -20,14 +20,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#elif defined IGW",
+				"mode": "replace",
+				"after": "#elif defined IGW",
 				"what":    "       parameter (LLm0=256, MMm0=3,    N=40)",
 				"by":      "       parameter (LLm0=256, MMm0=3,    N=40)",
 				"descr":   "Set mesh size to (257 x 3 x 40)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.IGW_nbq": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                 5    50.    60     500 ",
 				"by":      "                 5    50.    60     500 ",
 				"descr":   "Set stepping (steps=5, dt=50, fast=500)"

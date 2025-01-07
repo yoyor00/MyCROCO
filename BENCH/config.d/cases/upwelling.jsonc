@@ -18,14 +18,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined UPWELLING",
+				"mode": "replace",
+				"after": "#if defined UPWELLING",
 				"what":    "      parameter (LLm0=16,   MMm0=64,   N=16)",
 				"by":      "      parameter (LLm0=16,   MMm0=64,   N=16)",
 				"descr":   "Set mesh size to (64 x 64 x 20)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.Upwelling": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "               410      960      48       1",
 				"by":      "               410      960      48       1",
 				"descr":   "Set stepping (steps=410, dt=960, fast=48)"

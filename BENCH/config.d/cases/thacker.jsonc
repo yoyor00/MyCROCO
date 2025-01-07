@@ -20,14 +20,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined THACKER",
+				"mode": "replace",
+				"after": "#if defined THACKER",
 				"what":    "      parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution",
 				"by":      "      parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution",
 				"descr":   "Set mesh size to (200 x 200 x 5)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.Thacker": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "               4320      60       30       1",
 				"by":      "                600      60       30       1",
 				"descr":   "Set stepping (steps=600, dt=60, fast=30)"

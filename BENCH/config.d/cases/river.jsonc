@@ -17,14 +17,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined RIVER",
+				"mode": "replace",
+				"after": "#if defined RIVER",
 				"what":    "      parameter (LLm0=40,   MMm0=80,   N=20)",
 				"by":      "      parameter (LLm0=40,   MMm0=80,   N=20)",
 				"descr":   "Set mesh size to (40 x 80 x 20)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.River": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "               800      540       60      1",
 				"by":      "               800      540       60      1",
 				"descr":   "Set stepping (steps=800, dt=540, fast=60)"

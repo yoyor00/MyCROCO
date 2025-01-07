@@ -78,23 +78,51 @@ class JobcompCrocoConfig:
         # caution here, the space in '# define' is required due to croco tricks
         # do not remove it or it behave strangely
         if status:
-            to_insert = f"# undef {key_name}\n# define {key_name}\n"
+            # build the patch rule
+            rules = [
+                {
+                    "mode": "replace",
+                    "what": f"# undef {key_name}",
+                    "by": f"# define {key_name}\n",
+                    "descr": f"Set {key_name} to {status}",
+                }
+            ]
+            # apply
+            patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
+            # build the patch rule
+            rules = [
+                {
+                    "mode": "insert-before",
+                    "what": "/*",
+                    "insert": f"# define {key_name}\n",
+                    "descr": f"Set {key_name} to {status}",
+                }
+            ]
+            # apply
+            patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
         else:
-            to_insert = f"# undef {key_name}\n"
-
-        # build the patch rule
-        rules = [
-            {
-                "mode": "insert-after-before",
-                "after": f"#endif /* END OF CONFIGURATION CHOICE */",
-                "before": '#include "cppdefs_dev.h"',
-                "insert": to_insert,
-                "descr": f"Set {key_name} to {status}",
-            }
-        ]
-
-        # apply
-        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
+            # build the patch rule
+            rules = [
+                {
+                    "mode": "replace",
+                    "what": f"# define {key_name}",
+                    "by": f"# undef {key_name}\n",
+                    "descr": f"Unset {key_name} to {status}",
+                }
+            ]
+            # apply
+            patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
+            # build the patch rule
+            rules = [
+                {
+                    "mode": "insert-before",
+                    "what": "/*",
+                    "insert": f"# undef {key_name}\n",
+                    "descr": f"Unset {key_name} to {status}",
+                }
+            ]
+            # apply
+            patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
 
     def param_h_configure_openmp_split(self, threads: int):
         """
@@ -321,6 +349,12 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             default="1x4",
         )
         parser.add_argument(
+            "--with-keys",
+            required=False,
+            help="Change cppdefs definition",
+            default=None,
+        )
+        parser.add_argument(
             "VARS",
             nargs="*",
             type=str,
@@ -408,6 +442,16 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         self.cppdef_h_set_openmp(use_openmp)
         self.cppdef_h_enable_openacc(use_openacc)
         self.cppdef_h_enable_openacc_psyclone(use_openacc_psyclone)
+        if options.with_keys is not None:
+            # Split the string into individual key-value representations
+            keys_list = options.with_keys.split(",")
+            for key in keys_list:
+                if key.startswith("+"):
+                    status = True
+                elif key.startswith("-"):
+                    status = False
+                # Apply key and status
+                self.croco_config.cppdef_h_set_key(key[1:], status)
         if use_openmp:
             self.croco_config.param_h_configure_openmp_split(options.with_threads)
         if use_mpi:

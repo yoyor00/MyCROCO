@@ -24,14 +24,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#elif defined RIP",
+				"mode": "replace",
+				"after": "#elif defined RIP",
 				"what":    "      parameter (LLm0= 48,  MMm0= 48,  N=20)   ! 16 m resolution",
 				"by":      "      parameter (LLm0= 48,  MMm0= 48,  N=20)   ! 16 m resolution",
 				"descr":   "Set mesh size to (48 x 48 x 20)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.Rip": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                1800      4        20      10",
 				"by":      "                1800      4        20      10",
 				"descr":   "Set stepping (steps=1800, dt=4, fast=20)"

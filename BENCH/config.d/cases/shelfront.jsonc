@@ -17,14 +17,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined SHELFRONT",
+				"mode": "replace",
+				"after": "#if defined SHELFRONT",
 				"what":    "      parameter (LLm0=3,    MMm0=40,   N=10)",
 				"by":      "      parameter (LLm0=3,    MMm0=40,   N=10)",
 				"descr":   "Set mesh size to (3 x 40 x 10)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.Shelfront": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "               720      1200     50      1",
 				"by":      "               720      1200     50      1",
 				"descr":   "Set stepping (steps=720, dt=1200, fast=50)"

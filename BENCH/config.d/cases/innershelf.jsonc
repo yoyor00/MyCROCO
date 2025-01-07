@@ -17,14 +17,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined INNERSHELF",
+				"mode": "replace",
+				"after": "#if defined INNERSHELF",
 				"what":    "      parameter (LLm0=200,  MMm0=3,    N=60)",
 				"by":      "      parameter (LLm0=200,  MMm0=3,    N=60)",
 				"descr":   "Set mesh size to (200 x 3 x 60)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.Innershelf": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "               5760      300      50       10",
 				"by":      "               5760      300      50       10",
 				"descr":   "Set stepping (steps=5760, dt=300, fast=50)"

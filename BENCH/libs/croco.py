@@ -363,24 +363,7 @@ class Croco:
 
                 # loop on all changes
                 for change in changes:
-                    # @todo: Force adding 'mode' in all cases and patch the
-                    # provided config JSON files to match.
-                    # Orignally 'replace' was default.
-                    if change.get("mode", "replace") == "replace":
-                        patch_lines(
-                            file_filtered,
-                            [
-                                {
-                                    "mode": "replace",
-                                    "after": change["next_to"],
-                                    "what": change["what"] + "\n",
-                                    "by": change["by"] + "\n",
-                                    "descr": change["descr"],
-                                }
-                            ],
-                        )
-                    else:
-                        patch_lines(file_filtered, [change])
+                    patch_lines(file_filtered, [change])
 
     def setup_case(self):
         # apply the case paches
@@ -488,7 +471,7 @@ class Croco:
         full_name = self.full_name
         filename = self.case["check_outputs"][0]  # to check
         actual_file = f"{dirname}/{filename}"
-        result_dir = self.dirname
+        result_dir = self.dirname_result
 
         if "plot_diag_script" in self.case:
             self.plot_diag_script = os.path.join(dirname, self.case["plot_diag_script"])
@@ -501,7 +484,7 @@ class Croco:
                 "--file",
                 actual_file,
                 "--output-dir",
-                self.dirname_result,
+                result_dir,
             ]
 
             try:
@@ -526,12 +509,12 @@ class Croco:
         # vars
         dirname = self.dirname
         full_name = self.full_name
-        result_dir = self.config.results
+        result_dir = self.dirname_result
 
         # loop each
         for filename in self.case["check_outputs"]:
             actual_file = f"{dirname}/{filename}"
-            dump_in_file = f"{self.dirname_result}/mesh/"
+            dump_in_file = f"{result_dir}/mesh/"
             if anim:
                 Messaging.step(f"Drawing mesh-anim {full_name} / {filename}")
             else:

@@ -17,14 +17,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined EQUATOR",
+				"mode": "replace",
+				"after": "#if defined EQUATOR",
 				"what":    "      parameter (LLm0=40,   MMm0=32,   N=32)   ! 100 km resolution",
 				"by":      "      parameter (LLm0=40,   MMm0=32,   N=32)   ! 100 km resolution",
 				"descr":   "Set mesh size to (40 x 32 x 32)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.Equator": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "               3600     8640     45       1",
 				"by":      "               3600     8640     45       1",
 				"descr":   "Set stepping (steps=3600, dt=8640, fast=45)"

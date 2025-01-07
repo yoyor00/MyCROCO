@@ -17,14 +17,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined CANYON",
+				"mode": "replace",
+				"after": "#if defined CANYON",
 				"what":    "      parameter (LLm0=65,   MMm0=48,   N=16)",
 				"by":      "      parameter (LLm0=65,   MMm0=48,   N=16)",
 				"descr":   "Set mesh size to (65 x 48 x 16)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.Canyon": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                240     360     65      1",
 				"by":      "                240     360     65      1",
 				"descr":   "Set stepping (steps=240, dt=360, fast=65)"

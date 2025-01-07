@@ -17,14 +17,16 @@
 		"patches": {
 			// Change the size of the mesh
 			"param_override.h": {
-				"next_to": "#if defined SEAMOUNT",
+				"mode": "replace",
+				"after": "#if defined SEAMOUNT",
 				"what":    "      parameter (LLm0=64,   MMm0=64,   N=20)",
 				"by":      "      parameter (LLm0=64,   MMm0=64,   N=20)",
 				"descr":   "Set mesh size to (64 x 64 x 20)"
 			},
 			// Change the dt
 			"TEST_CASES/croco.in.Seamount": {
-				"next_to": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "               360      1000     50       1",
 				"by":      "               360      1000     50       1",
 				"descr":   "Set stepping (steps=360, dt=1000, fast=50)"
