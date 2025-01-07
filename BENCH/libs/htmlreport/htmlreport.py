@@ -6,29 +6,100 @@
 ##########################################################
 # python
 import os
+import json
 import shutil
 
 # internal
 from ..helpers import Messaging
 
 
+def format_status(value):
+    if value is True:
+        format_td = '<td class="status-true">Done</td>'
+    elif value is False:
+        format_td = '<td class="status-false">Error</td>'
+    else:
+        format_td = '<td class="status-null">N/A</td>'
+    return format_td
+
+
+def generate_status_html(data):
+    html_rows = ""
+    for key, entry in data.items():
+        case = entry["case"]
+        variant = entry["variant"]
+        status = entry["status"]
+        html_rows += f"""
+            <tr>
+               <td>{case}</td>
+               <td>{variant}</td>
+               {format_status(status['build']['status'])}
+               {format_status(status['run']['status'])}
+               {format_status(status['check']['status'])}
+               {format_status(status['plotphy']['status'])}
+            </tr>
+            """
+    html_table = f"""
+        <table>
+            <thead>
+                  <tr>
+                     <th>Case</th>
+                     <th>Variant</th>
+                     <th>Build Status</th>
+                     <th>Run Status</th>
+                     <th>Check Status</th>
+                     <th>Plotphy Status</th>
+                  </tr>
+            </thead>
+            <tbody>
+                  {html_rows}
+            </tbody>
+        </table>"""
+
+    return html_table
+
+
 def generate_treeview_json(root_path):
     def traverse_directory(path, base_url=""):
         nodes = []
-        for name in os.listdir(path):
+        files = []
+        directories = []
+        status_report_node = None  # To store the status_report.json node
+
+        for name in sorted(os.listdir(path), key=str.lower):
             full_path = os.path.join(path, name)
             relative_path = os.path.relpath(full_path, root_path)
             url_path = os.path.join(base_url, relative_path).replace(os.sep, "/")
 
             if os.path.isdir(full_path):
-                nodes.append(
-                    {"text": name, "nodes": traverse_directory(full_path, base_url)}
-                )
+                if not os.path.islink(full_path):
+                    directories.append(
+                        {"text": name, "nodes": traverse_directory(full_path, base_url)}
+                    )
             else:
-                if (not "treeview.html" in url_path) and (not "styles.css" in url_path):
-                    nodes.append(
+                if name == "status_report.json":
+                    # Special handling for status_report.json
+                    status_report_node = {
+                        "text": generate_status_html(json.load(open(full_path, "r")))
+                    }
+
+                elif (not "treeview.html" in url_path) and (
+                    not "styles.css" in url_path
+                ):
+                    files.append(
                         {"text": f'<a href="{url_path}" target="main-frame">{name}</a>'}
                     )
+
+        # Sort files and directories alphabetically
+        files = sorted(files, key=lambda x: x["text"].lower())
+        directories = sorted(directories, key=lambda x: x["text"].lower())
+
+        # Place status_report.json node first (if it exists), then sorted files, then sorted directories
+        if status_report_node:
+            nodes.append(status_report_node)
+        nodes.extend(files)
+        nodes.extend(directories)
+
         return nodes
 
     tree_structure = traverse_directory(root_path)
@@ -65,24 +136,24 @@ def generate_html(
 ):
     json_data = generate_treeview_json(data_path)
 
-    html_output = (
-        """
+    html_output = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CROCO test html report</title>
+    <title>CROCO test report</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     %s
     <main>
-    <h1>CROCO test html report</h1>
+    <h1>CROCO test report - %s</h1>
 
     <div class="tree">
-"""
-        % navigation_content
+""" % (
+        navigation_content,
+        os.path.split(data_path)[-1],
     )
 
     html_output += json_to_html(json_data)
@@ -118,11 +189,12 @@ def generate_global_html(base_dir, style_file="libs/htmlreport/styles.css"):
         folder
         for folder in os.listdir(base_dir)
         if os.path.isdir(os.path.join(base_dir, folder))
+        and not os.path.islink(os.path.join(base_dir, folder))
     ]
 
     # navigation in folders (relative paths using ../)
     nav_in_folder = f"""  <nav>
-      <h2>Results</h2>
+      <h2><a href="../index.html">Results</a></h2>
       <ul>
          {"".join(
              f'<li><a href="../{folder}/treeview.html">View {folder}</a></li>' 
@@ -151,7 +223,7 @@ def generate_global_html(base_dir, style_file="libs/htmlreport/styles.css"):
    </head>
    <body>
    <nav>
-      <h2>Results</h2>
+      <h2><a href="index.html">Results</a></h2>
       <ul>
          {"".join(
              f'<li><a href="{folder}/treeview.html">View {folder}</a></li>' 

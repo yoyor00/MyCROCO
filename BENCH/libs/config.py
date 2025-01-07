@@ -84,6 +84,12 @@ class Config:
             default=".",
         )
         parser.add_argument(
+            "-g",
+            "--group",
+            help="A possible group folder for the result directory name",
+            default=".",
+        )
+        parser.add_argument(
             "-a",
             "--auto-skip",
             help="Automatically skip the cases with not enougth ressources.",
@@ -193,7 +199,8 @@ class Config:
         use_host_config = self.use_host_config
         run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         self.results = os.path.join(
-            self.args.results, self.title, f"{use_host_config}-{run_date}"
+            self.args.results,
+            f"{self.title}-{use_host_config}-{run_date}",
         )
 
         # pattern to search results files (to also take the previous runs if not re-run all)
@@ -201,7 +208,8 @@ class Config:
             self.results = self.results
         else:
             self.results_pattern = os.path.join(
-                self.args.results, self.title, f"{use_host_config}-*"
+                self.args.results,
+                f"{self.title}-{use_host_config}-*",
             )
 
         # extract some many time used paths
