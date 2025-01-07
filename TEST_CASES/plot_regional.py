@@ -1,45 +1,37 @@
 #!/usr/bin/env python3
 
-from abc import update_abstractmethods
-from asyncio.subprocess import SubprocessStreamProtocol
 import os
-import numpy as np
-import matplotlib.pyplot as plt
-from netCDF4 import Dataset
+import math
 import argparse
-
 import numpy as np
+from netCDF4 import Dataset
 import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
 import cartopy.crs as ccrs
 import cartopy.mpl.ticker as cticker
-
-from matplotlib.colors import Normalize
-from matplotlib.ticker import MaxNLocator
-
-import math
 
 
 #################################################################
 def read_latlonmask(fname, var_type):
     """
-    Lit les latitudes, longitudes et le masque depuis un fichier NetCDF CROCO.
+    Read latitudes and longitudes and mask from CROCO netcdf file.
 
     Args:
-        fname (str): Nom du fichier NetCDF CROCO.
-        var_type (str): Type de variable ('r' pour rho, 'w', 'u', ou 'v').
+        fname (str): CROCO netcdf file
+        var_type (str): variable type ('r' for rho, 'w', 'u', or 'v').
 
     Returns:
-        lat (np.ndarray): Latitude (matrice 2D).
-        lon (np.ndarray): Longitude (matrice 2D).
-        mask (np.ndarray): Masque (1 pour la mer, NaN pour la terre).
+        lat (np.ndarray): Latitude (matrix 2D).
+        lon (np.ndarray): Longitude (matrix 2D).
+        mask (np.ndarray): Mask (1 for sea, NaN for land).
     """
-    # Ouverture du fichier NetCDF
+    # Open NetCDF file
     nc = Dataset(fname)
     lat = nc.variables["lat_rho"][:]
     lon = nc.variables["lon_rho"][:]
     mask = nc.variables.get("mask_rho", np.ones_like(lon))
 
-    # Gestion des types spécifiques
+    # Manage specific types
     if var_type == "u":
         lat = rho2u_2d(lat)
         lon = rho2u_2d(lon)
@@ -49,7 +41,7 @@ def read_latlonmask(fname, var_type):
         lon = rho2v_2d(lon)
         mask = mask[:-1, :] * mask[1:, :]
 
-    # Conversion du masque : 0 -> NaN
+    # Convert mask : 0 -> NaN
     mask = np.where(mask == 0, np.nan, mask)
 
     return lat, lon, mask
@@ -58,7 +50,7 @@ def read_latlonmask(fname, var_type):
 #################################################################
 def rho2u_2d(var):
     """
-    Convertit une variable rho-grid vers u-grid.
+    Convert 2D variable from rho-grid to u-grid.
     """
     return 0.5 * (var[:, :-1] + var[:, 1:])
 
@@ -66,25 +58,32 @@ def rho2u_2d(var):
 #################################################################
 def rho2v_2d(var):
     """
-    Convertit une variable rho-grid vers v-grid.
+    Convert 2D variable from rho-grid to v-grid.
     """
     return 0.5 * (var[:-1, :] + var[1:, :])
 
 
 #################################################################
 def rho2u_3d(var):
+    """
+    Convert 3D variable from rho-grid to u-grid.
+    """
     return 0.5 * (var[:, :, :-1] + var[:, :, 1:])
 
 
 #################################################################
 def rho2v_3d(var):
+    """
+    Convert 3D variable from rho-grid to v-grid.
+    """
     return 0.5 * (var[:, :-1, :] + var[:, 1:, :])
 
 
 #################################################################
 def get_csf(sc, theta_s, theta_b):
     """
-    function CSF = get_csf(sc,theta_s,theta_b) Get CS-Curves for the new s-ccordinate system
+    function CSF = get_csf(sc,theta_s,theta_b)
+    Get CS-Curves for the new s-coordinate system
     NOTE: Mathematical limits of CSF,csrf for theta_s, theta_b --> 0 match that under "else" logical branches.
     """
 
@@ -108,41 +107,23 @@ def scoordinate(theta_s, theta_b, N, hc, vtransform):
     Define S-Curves in domain [-1 < sc < 0] at vertical W- and RHO-points.
     Set S-Curves in domain [-1 < sc < 0] at vertical W- and RHO-points.
     """
-
-    #  sc_r = np.zeros(N)
-    #  Cs_r = np.zeros(N)
-    #  sc_w = np.zeros(N+1)
-    #  Cs_w = np.zeros(N+1)
-
-    #
     if vtransform == 2:
-        # print("NEW_S_COORD")
-
+        # "NEW_S_COORD"
         ds = 1.0 / N
-
         sc_r = ds * (np.arange(1, N + 1) - N - 0.5)
         Cs_r = get_csf(sc_r, theta_s, theta_b)
-        #
-        #    sc_w[0]   = -1.
-        #    sc_w[N]   =  0.
-        #    Cs_w[0]   = -1.
-        #    Cs_w[N]   =  0.
-
         sc_w = ds * (np.arange(0, N + 1) - N)
         Cs_w = get_csf(sc_w, theta_s, theta_b)
 
     else:
-
-        print("OLD_S_COORD")
+        # "OLD_S_COORD"
 
         cff1 = 1.0 / np.sinh(theta_s)
         cff2 = 0.5 / np.tanh(0.5 * theta_s)
-
         sc_w = (np.arange(0, N + 1) - N) / N
         Cs_w = (1.0 - theta_b) * cff1 * np.sinh(theta_s * sc_w) + theta_b * (
             cff2 * np.tanh(theta_s * (sc_w + 0.5)) - 0.5
         )
-
         sc_r = (np.arange(1, N + 1) - N - 0.5) / N
         Cs_r = (1.0 - theta_b) * cff1 * np.sinh(theta_s * sc_r) + theta_b * (
             cff2 * np.tanh(theta_s * (sc_r + 0.5)) - 0.5
@@ -180,6 +161,7 @@ def zlevs(h, zeta, theta_s, theta_b, hc, N, type, vtransform):
     else:
         print("zlevs: error - incorrect dimension for h")
         return
+        # ??? manage with try/raise to catch error
 
     hmin = h.min()
     hmax = h.max()
@@ -204,6 +186,7 @@ def zlevs(h, zeta, theta_s, theta_b, hc, N, type, vtransform):
 
         print("Problem with type = ", type)
         sys.exit()
+        # ??? manage with try/raise to catch error
 
     if vtransform == 1:
 
@@ -216,12 +199,13 @@ def zlevs(h, zeta, theta_s, theta_b, hc, N, type, vtransform):
         )
 
     elif vtransform == 2:
-        # print("NEW_S_COORD")
+        # "NEW_S_COORD"
         Cs = get_csf(sc, theta_s, theta_b)
 
     else:
         print("Problem with vtransform = ", vtransform)
         sys.exit()
+        # ??? manage with try/raise to catch error
 
     #
     #  Set vertical grid
@@ -262,22 +246,23 @@ def zlevs(h, zeta, theta_s, theta_b, hc, N, type, vtransform):
 #################################################################
 def rempoints(var, npts):
     """
-    Réduit une matrice 2D en supprimant des points aux frontières.
+    Reduce a 2Dmatrix by removing border points
 
     Args:
-        var (np.ndarray): Données à traiter (matrice 2D).
-        npts (list[int]): Nombre de points à supprimer sous la forme [west, east, south, north].
+        var (np.ndarray): input 2D matrix
+        npts (list[int]): number of points to remove at each border
+                          with format [west, east, south, north].
 
     Returns:
-        np.ndarray: Matrice 2D après suppression des points de bordure.
+        np.ndarray: 2D matrix after removing border points
     """
-    # Dimensions initiales
+    # Initial dimensions
     M, L = var.shape
 
-    # Extraire les indices pour chaque direction
+    # Extract index from input
     west, east, south, north = npts
 
-    # Réduire les dimensions en fonction des points à supprimer
+    # Reduce dimensions from input number of point to remove
     var = var[south : M - north, west : L - east]
 
     return var
@@ -456,9 +441,9 @@ def get_depths(fname, gname, tindex, point_type):
 
     # Calcul des profondeurs des niveaux sigma
     vtype = point_type
-    if point_type in ('u', 'v'):
-        vtype = 'r'
-        
+    if point_type in ("u", "v"):
+        vtype = "r"
+
     z = zlevs(h, zeta, theta_s, theta_b, hc, N, vtype, vtrans)
 
     # Convertir les profondeurs si type est 'u' ou 'v'
@@ -612,8 +597,8 @@ def get_vertical_section(fname, vname, tindex, direction, idx, gname):
         gname (str): Nom du fichier de grille NetCDF.
 
     Returns:
-        dict: Contient les profondeurs, 
-                la distance (number of grid point), 
+        dict: Contient les profondeurs,
+                la distance (number of grid point),
                 et les valeurs interpolées.
     """
 
@@ -621,14 +606,14 @@ def get_vertical_section(fname, vname, tindex, direction, idx, gname):
         # Déterminer le type de grille pour obtenir les profondeurs
         if vname == "w":
             point_type = "w"  # Grille régulière pour u
-        elif vname == "u": 
+        elif vname == "u":
             point_type = "u"  # Grille régulière pour u
-        elif vname == "v": 
+        elif vname == "v":
             point_type = "v"  # Grille régulière pour v
         else:
             point_type = "r"  # Grille régulière pour les scalaires (temp, salt, etc.)
-            
-        # Lire les profondeurs        
+
+        # Lire les profondeurs
         z = get_depths(fname, gname, tindex, point_type)
         temp = np.squeeze(nc.variables[vname][tindex, :, :, :])
 
@@ -666,13 +651,13 @@ def plot_vertical_section(section_data, title="Vertical Section", unit="°C"):
 
     plt.figure(figsize=(12, 6))
     # plt.contourf(distance, -depth, variable, levels=50, cmap="viridis")
-    plt.pcolormesh(distance, depth, variable, cmap="viridis",shading='auto')
+    plt.pcolormesh(distance, depth, variable, cmap="viridis", shading="auto")
     plt.colorbar(label=unit)
     plt.title(title)
     plt.xlabel("Distance (grille)")
     plt.ylabel("Profondeur (m)")
     plt.grid(True)
-    #plt.show()
+    # plt.show()
 
 
 #################################################################
@@ -819,9 +804,9 @@ if plot_horiz == 1:
 
     # Ajuster l'espacement des subplots
     plt.tight_layout()
-    #plt.show()
-    #plt.savefig('REGIONAL_maps.png')
-    
+    # plt.show()
+    # plt.savefig('REGIONAL_maps.png')
+
 #################################
 # Determine output file paths
 output_dir = args.output_dir
@@ -868,8 +853,8 @@ if plot_section == 1:
 variables = {
     "temp": ["x", "y"],  # Coupe zonale et méridienne pour la température
     "salt": ["x", "y"],  # Coupe zonale et méridienne pour la salinité
-    "u": ["x", "y"],     # Zonal et méridien pour la vitesse zonale
-    "v": ["x", "y"],     # Zonal et méridien pour la vitesse méridienne
+    "u": ["x", "y"],  # Zonal et méridien pour la vitesse zonale
+    "v": ["x", "y"],  # Zonal et méridien pour la vitesse méridienne
 }
 
 titles = {
@@ -893,13 +878,16 @@ idx = 20  # Indice de la colonne pour la coupe
 
 # Calculer la disposition des sous-graphiques (grille optimale)
 n_vars = len(variables)
-n_dirs = sum(len(directions) for directions in variables.values())  # Nombre total de sections
+n_dirs = sum(
+    len(directions) for directions in variables.values()
+)  # Nombre total de sections
 n_cols = 2  # Nombre de colonnes fixes
 n_rows = math.ceil(n_dirs / n_cols)  # Nombre de lignes nécessaires
 
 # Initialisation des subplots
 fig, axes = plt.subplots(
-    n_rows, n_cols, figsize=(15, n_rows * 3))#, constrained_layout=True
+    n_rows, n_cols, figsize=(15, n_rows * 3)
+)  # , constrained_layout=True
 
 # Aplatir les axes pour gestion facile (en cas de grille)
 axes = axes.flatten()
@@ -951,8 +939,8 @@ plt.tight_layout()
 # Titre général
 plt.suptitle(f"Vertical Sections for Variables at J/I index {idx}", fontsize=16, y=1.02)
 
-#plt.show()
-#plt.savefig('REGIONAL_sections.png', bbox_inches='tight')
+# plt.show()
+# plt.savefig('REGIONAL_sections.png', bbox_inches='tight')
 
 #################################
 # Determine output file paths
@@ -962,13 +950,13 @@ os.makedirs(output_dir, exist_ok=True)  # Ensure the output directory exists
 # Save to PDF if requested
 if args.makepdf:
     pdf_path = os.path.join(output_dir, "REGIONAL_sections.pdf")
-    plt.savefig(pdf_path, transparent=True, bbox_inches='tight')
+    plt.savefig(pdf_path, transparent=True, bbox_inches="tight")
     print(f"PDF file '{pdf_path}' has been created.")
 
 # Save to PNG if requested
 if args.makepng:
     png_path = os.path.join(output_dir, "REGIONAL_sections.png")
-    plt.savefig(png_path, dpi=300, bbox_inches='tight')
+    plt.savefig(png_path, dpi=300, bbox_inches="tight")
     print(f"PNG file '{png_path}' has been created.")
 
 # Show plots if not suppressed

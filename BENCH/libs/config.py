@@ -81,13 +81,7 @@ class Config:
             "-t",
             "--title",
             help="A possible extra name to prepent to the result directory name",
-            default=".",
-        )
-        parser.add_argument(
-            "-g",
-            "--group",
-            help="A possible group folder for the result directory name",
-            default=".",
+            default=None,
         )
         parser.add_argument(
             "-a",
@@ -198,9 +192,13 @@ class Config:
         # compute clean result subdir name
         use_host_config = self.use_host_config
         run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        if self.title is not None:
+            folder_name = f"{self.title}-{use_host_config}-{run_date}"
+        else:
+            folder_name = f"{use_host_config}-{run_date}"
         self.results = os.path.join(
             self.args.results,
-            f"{self.title}-{use_host_config}-{run_date}",
+            folder_name,
         )
 
         # pattern to search results files (to also take the previous runs if not re-run all)
