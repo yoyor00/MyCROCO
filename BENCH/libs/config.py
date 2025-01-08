@@ -92,7 +92,7 @@ class Config:
         parser.add_argument(
             "-N",
             "--no-previous",
-            help="Do not load the preivous missing results to plot full graph.",
+            help="Do not load the previous missing results to plot full graph.",
             action="store_true",
         )
         parser.add_argument(
