@@ -1,12 +1,137 @@
 # ci croco
-
 stages:
+  - perfrst
   - bench
   - report
 
 variables:
   TERM: "xterm-256color"
+  CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro"
+  PERFRSTHOME: "$CI_PROJECT_DIR/CVTK/test_perfrst"
+  #
+  DATADIR: "$CI_PROJECT_DIR/.datadir"
+  PERFRSTDIR: "$CI_PROJECT_DIR/.perfrstdir"
+  #
   DATAREG: "/data"
+  #
+  # use in case of local gitlab-runner; put VHR_CROCO_FILES_BCK at same level than croco
+  # e.g : 
+  # gcambon lpo 4096 mars  22 14:29 croco
+  # gcambon lpo   43 juin  28  2023 VHR_CROCO_FILES_BCK
+  #
+  # In local job variables section, use of the local data
+  DATAREG_LOCAL: "$CI_PROJECT_DIR/../../../../VHR_CROCO_FILES_BCK"
+  # 
+  # For parallel repro :
+  # run local gitlab-runner using : gitlab-runner exec shell reg_run_[intel/gfortran] --env LOCALDATA="true" --timeout=7200
+  # !! do not forget the flag LOCALDATA="true" !!
+  #
+  # For exact restart (aka perfrst) repro : 
+  # run local gitlab-runner using : gitlab-runner exec shell reg_perfrst_[intel/gfortran] --env LOCALDATA="true" --timeout=7200
+  # !! do not forget the flag LOCALDATA="true" !!
+  #
+  CI_CROCO_PWD: $(pwd)
+  SOURCE_CROCO: "$CI_PROJECT_DIR/OCEAN"
+  #
+  # Here define the direcory with the input files
+  # => for BENGUELA_VHR
+  nest_position_reg: "79 137 37 117 3 3 3 3"
+  # => for VORTEX if needed
+  DATAVOR: ""
+  nest_position_vort: ""
+  # => for ANA if needed
+  DATAANA: ""
+  #
+
+.gfortran_base: &gfortran_base
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  variables:
+    CI_FC: "gfortran"
+    CI_MPIF90: "mpif90"
+    CROCO_CI_MPIRUN: "mpirun.openmpi --allow-run-as-root"
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_gfortran"
+    PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_gfortran"
+
+.intel_base: &intel_base
+  tags:
+    - croco-vm-docker
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:1.0.0
+  variables:
+    CI_FC: "ifort"
+    CI_MPIF90: "mpiifort"
+    CROCO_CI_MPIRUN: "mpirun"
+    CVTKWORK: "$CI_PROJECT_DIR/.datawork_intel"
+    PERFRSTWORK: "$CI_PROJECT_DIR/.perfrstwork_intel"
+
+.get_reg_data: &get_reg_data # reusable block as YAML sequence
+  - |
+    if [[ "$LOCALDATA" == "true" ]]; then
+      export DATAREG=${DATAREG_LOCAL} ;
+      echo "Use of local data " $DATAREG ;
+    else  
+      mkdir -p $DATAREG ;
+      cd $DATAREG ;
+      tar -xf ForCI-INRIA.tar.gz ;
+      mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
+    fi   
+
+.get_var_perfrst: &get_var_perfrst
+  variables:
+    RUN_HOME: $PERFRSTHOME
+    RUN_WORK: $PERFRSTWORK
+    RUN_MK: "mk_TESTALL_perfrst"
+    RUN_GATHER: "gather_recap_perfrst"
+
+.run_base:
+  stage: perfrst
+  script:
+    - ulimit -s unlimited
+    - mkdir -p $DATADIR
+    - mkdir -p $CVTKWORK
+    - mkdir -p $PERFRSTDIR
+    - mkdir -p $PERFRSTWORK
+    - cd $RUN_HOME/Scripts_${RUN_NAME_SCRIPT}
+    - ./create_link_master_${RUN_NAME_SCRIPT}.sh
+    - cd -
+    - cd $RUN_WORK/${RUN_NAME}
+    - ./${RUN_MK}.bash ${RUN_NAME_CONFIGURE} ${RUN_MK_NAME}
+    - ./${RUN_GATHER}.bash ${RUN_NAME} > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Compilation failure" ${RUN_NAME}_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Execution failure" ${RUN_NAME}_gather_recap_*_git*' > /dev/null 2>&1
+    - /bin/sh -c '! grep -i "Parallel reproducibility failed" ${RUN_NAME}_gather_recap_*_git*' > /dev/null 2>&1  
+  artifacts:
+    paths:
+      - $RUN_WORK/ftp
+      - $RUN_WORK/${RUN_NAME}/*/*.log
+    when: always
+
+.reg_perfrst_base: &reg_perfrst_base
+  extends: 
+    - .run_base
+    - .get_var_perfrst 
+  before_script:
+    - *get_reg_data
+  variables:
+    RUN_NAME: "REG"
+    RUN_NAME_SCRIPT: "reg_perfrst"
+    RUN_MK_NAME: "reg"
+    RUN_NAME_CONFIGURE: "CONFIGURE_REG_PERFRST"
+    RUNNER_SCRIPT_TIMEOUT: 120m
+  # rules:
+  #   - if: $CI_PIPELINE_SOURCE == "schedule"
+
+reg_perfrst_gfortran:
+  extends:
+    - .gfortran_base
+    - .reg_perfrst_base
+
+reg_perfrst_intel:
+  extends:
+    - .intel_base
+    - .reg_perfrst_base
 
 test_bench_debug:
   stage: bench
