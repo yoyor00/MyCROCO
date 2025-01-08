@@ -18,6 +18,7 @@ import os
 import re
 import sys
 import argparse
+import copy
 
 
 ###########################################################
@@ -115,9 +116,13 @@ def quick_extract_from_source(source: str, case: str, user_keys: dict) -> str:
     final = []
     depth = 0
 
+    # copy user_keys in temporary variable to avoid to wronly add
+    # # undef on keys "OPENMP", "MPI", "OPENACC", "OPENACC_PSYCLONE"
+    # as those are treated in config_post.h with_optim option of configure
+    user_keys_tmp = copy.deepcopy(user_keys)
     # we ignore some keys we don't want in the file.
     for skip in ["OPENMP", "MPI", "OPENACC", "OPENACC_PSYCLONE"]:
-        user_keys[skip] = False
+        user_keys_tmp[skip] = False
 
     # loop over all lines
     for id, line in enumerate(lines):
@@ -138,7 +143,7 @@ def quick_extract_from_source(source: str, case: str, user_keys: dict) -> str:
         # capture
         if capture:
             skip_user_defined = False
-            for key in user_keys:
+            for key in user_keys_tmp:
                 if re.compile(f"#[ \t]*undef[ \t]+{key}").match(line):
                     skip_user_defined = True
                 if re.compile(f"#[ \t]*define[ \t]+{key}").match(line):
@@ -185,7 +190,9 @@ def render_cppdef_edit_h(infos: dict) -> str:
         "/********** APPLYING CASE (extracted from ./cppdef_handler.py) ******************/"
     )
     final.append("")
-    final.append("/* Note: user keys has been removed */")
+    final.append(
+        "/* Note: user keys, OPENMP, MPI, OPENACC, OPENACC_PSYCLONE has been removed */"
+    )
     final.append("")
     final += infos["extracted"]
     final.append("")
