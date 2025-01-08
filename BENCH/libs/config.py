@@ -203,7 +203,7 @@ class Config:
 
         # pattern to search results files (to also take the previous runs if not re-run all)
         if self.no_previous:
-            self.results = self.results
+            self.results_pattern = self.results
         else:
             self.results_pattern = os.path.join(
                 self.args.results,
