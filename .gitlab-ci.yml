@@ -19,7 +19,28 @@ test_bench_debug:
     - tar -xf ForCI-INRIA.tar.gz ;
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - ./bench-croco.py --case @debug --variants @debug --jobcomp --rebuild --host host_ci --compare-to sequential-debug --data-root-path $DATAREG/ForCI-INRIA --html --title debug
+    - |
+      ./bench-croco.py \
+      --case @debug \
+      --variants @debug \
+      --title debug \
+      --jobcomp \
+      --rebuild \
+      --host host_ci \
+      --compare-to sequential-debug \
+      --data-root-path $DATAREG/ForCI-INRIA \
+      --html \
+      -N
+    - |
+      ./bench-croco.py \
+      --case @debug \
+      --variants @debug \
+      --title debug_cmake \
+      --rebuild --host host_ci \
+      --compare-to sequential-debug \
+      --data-root-path $DATAREG/ForCI-INRIA \
+      --html \
+      -N
   artifacts:
     paths:
       - BENCH/results
@@ -37,8 +58,19 @@ test_bench_debug_ifort:
   script:
     - cd $CI_PROJECT_DIR/BENCH
     #note : --jobs 1 mandatory with intel compiler
-    #note : check not available because sequentiel is not done here
-    - ./bench-croco.py --case @debug --variants @debug-ifort --jobcomp --rebuild --host host_ci_ifort --jobs 1 --steps build,run --data-root-path $DATAREG/ForCI-INRIA --html --title debug_ifort
+    #note : check not available because sequential is not done here
+    - |
+      ./bench-croco.py \
+      --case @debug \
+      --variants @debug-ifort \
+      --title debug_ifort \
+      --jobcomp  \
+      --rebuild \
+      --host host_ci_ifort \
+      --jobs 1 \
+      --steps build,run  \
+      --data-root-path $DATAREG/ForCI-INRIA  \
+      --html -N
   artifacts:
     paths:
       - BENCH/results
@@ -56,7 +88,16 @@ test_bench_regional:
     - tar -xf ForCI-INRIA.tar.gz ;
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - ./bench-croco.py --case BENGUELA_VHR_TIDES_BULK --variants sequential,mpi-4 --jobcomp --rebuild --host host_ci --data-root-path $DATAREG/ForCI-INRIA --html --title regional
+    - |
+      ./bench-croco.py \
+      --case BENGUELA_VHR_TIDES_BULK \
+      --variants sequential,mpi-4  \
+      --title regional \
+      --jobcomp  \
+      --rebuild \
+      --host host_ci  \
+      --data-root-path $DATAREG/ForCI-INRIA  \
+      --html -N
   artifacts:
     paths:
       - BENCH/results
