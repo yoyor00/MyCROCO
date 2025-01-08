@@ -190,4 +190,5 @@ class Plotting:
             pyplot.close()
 
             # keep track of the previous run used results
-            self.keep_info_of_previous_runs()
+            if not self.config.no_previous:
+                self.keep_info_of_previous_runs()
