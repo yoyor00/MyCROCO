@@ -36,6 +36,7 @@ class JobcompCrocoConfig:
 
         # progress
         Messaging.step(f"Select case : {case_name}")
+        self.case = case_name
 
         # set patching rules
         rules = []
@@ -83,7 +84,7 @@ class JobcompCrocoConfig:
                 {
                     "mode": "replace",
                     "what": f"# undef {key_name}",
-                    "by": f"# define {key_name}\n",
+                    "by": f"# define {key_name}",
                     "descr": f"Set {key_name} to {status}",
                 }
             ]
@@ -92,9 +93,9 @@ class JobcompCrocoConfig:
             # build the patch rule
             rules = [
                 {
-                    "mode": "insert-before",
-                    "what": "/*",
-                    "insert": f"# define {key_name}\n",
+                    "mode": "insert-after",
+                    "what": f"#if defined {self.case}",
+                    "insert": f"# define {key_name}",
                     "descr": f"Set {key_name} to {status}",
                 }
             ]
@@ -106,7 +107,7 @@ class JobcompCrocoConfig:
                 {
                     "mode": "replace",
                     "what": f"# define {key_name}",
-                    "by": f"# undef {key_name}\n",
+                    "by": f"# undef {key_name}",
                     "descr": f"Unset {key_name} to {status}",
                 }
             ]
@@ -115,9 +116,9 @@ class JobcompCrocoConfig:
             # build the patch rule
             rules = [
                 {
-                    "mode": "insert-before",
-                    "what": "/*",
-                    "insert": f"# undef {key_name}\n",
+                    "mode": "insert-after",
+                    "what": f"#if defined {self.case}",
+                    "insert": f"# undef {key_name}",
                     "descr": f"Unset {key_name} to {status}",
                 }
             ]
