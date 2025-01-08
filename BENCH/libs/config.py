@@ -29,6 +29,7 @@ class Config:
         parser = argparse.ArgumentParser(
             prog="bench-croco.py",
             description="Automate the benchmarking of CROCO by doing rewrite.",
+            formatter_class=argparse.RawTextHelpFormatter,  # Preserve formatting
         )
 
         # get hostname from system
@@ -36,52 +37,73 @@ class Config:
 
         # register options
         parser.add_argument(
-            "-w",
-            "--workdir",
-            help="Working sub-directory name.",
-            default="rundir",
+            "-c",
+            "--cases",
+            help="Specific case to run. For example BASIN.\n"
+            "Could also be meta-case as defined in config file. \n"
+            "(default=BASIN,BASIN-LARGE)",
+            default="@default",
         )
         parser.add_argument(
-            "-c", "--cases", help="Specific case to run.", default="@default"
-        )
-        parser.add_argument(
-            "-v", "--variants", help="Variant to run.", default="@default"
-        )
-        parser.add_argument(
-            "-V",
-            "--verbose",
-            help="Enable the full logging instead of printing just summaries.",
-            action="store_true",
+            "-v",
+            "--variants",
+            help="Variant to run defined in config file. \n"
+            "For example sequential or mpi-4.\n"
+            "Could also be meta-variant. (default=@cpu)",
+            default="@default",
         )
         parser.add_argument(
             "-r", "--rebuild", help="Force rebuilding.", action="store_true"
         )
         parser.add_argument(
-            "-C", "--config", help="Config file to use.", default="config.jsonc"
+            "-C",
+            "--config",
+            help="""Config file to use. (default="config.jsonc")""",
+            default="config.jsonc",
         )
         parser.add_argument(
             "-s",
             "--steps",
-            help="List of steps to run.",
+            help="List of steps to run. \n"
+            "Available steps are :\n"
+            "- build : code compilation\n"
+            "- run : run simulation\n"
+            "- check : perform comparison with a reference (see --compare-to option)\n"
+            "  By default, comparison is made over netcdf results file. \n"
+            "  A more precise option is available through --rvtk.\n"
+            "- plot : plot runtime of each variant\n"
+            "- plotphy : physical plot using python script specified in case config in plot_diag_script.\n"
+            "- mesh : plot raw map of variables at start/middle/end of simulation.\n"
+            "- anim : same plot as mesh with an animation over the simulation.\n"
+            "(default=build,run,check,plot)",
             dest="modes",
             default="build,run,check,plot",
         )
+
         parser.add_argument(
-            "-R", "--runs", help="Number or runs to perform.", default="1"
+            "--compare-to",
+            help="Set which variant is used as reference (default='sequential').",
+            type=str,
+            default="sequential",
         )
         parser.add_argument(
-            "-j", "--jobs", help="Make -j option value to build", default="8"
+            "--rvtk",
+            help="Enable usage of RVTK_DEBUG for comparison with a reference",
+            action="store_true",
         )
         parser.add_argument(
-            "--results",
-            help="Name of the results directory to use.",
-            default="results",
+            "-R",
+            "--runs",
+            help="Number or runs to perform. \n"
+            "Several runs could be used to make performance tests. (default=1)",
+            default="1",
         )
         parser.add_argument(
-            "-t",
-            "--title",
-            help="A possible extra name to prepent to the result directory name",
-            default=None,
+            "-j",
+            "--jobs",
+            help="Make -j option value to build \n"
+            "Note that with ifort, only -j 1 can be used (default=8)",
+            default="8",
         )
         parser.add_argument(
             "-a",
@@ -120,15 +142,31 @@ class Config:
             default=selected_host,
         )
         parser.add_argument(
-            "--rvtk",
-            help="Enable usage of RVTK_DEBUG and give name of variant reference.",
-            action="store_true",
+            "--data-root-path",
+            help="Input data path. Needed if cases to run needs external  \n"
+            "data. In this case, specified path should contain cases specific directories \n"
+            "(croco_files_path in case config file) and these directories should contains \n"
+            "CROCO_FILES and DATA directories. (default='')",
+            type=str,
+            default="",
         )
         parser.add_argument(
-            "--compare-to",
-            help="Set which variant is used as reference (default='sequential').",
-            type=str,
-            default="sequential",
+            "--results",
+            help="""Name of the results directory to use. (default="results")""",
+            default="results",
+        )
+        parser.add_argument(
+            "-t",
+            "--title",
+            help="A possible extra name to prepent to the case result directory name\n"
+            "(default=None)",
+            default=None,
+        )
+        parser.add_argument(
+            "-w",
+            "--workdir",
+            help="""Working directory name. (default = "rundir")""",
+            default="rundir",
         )
         parser.add_argument(
             "--twin-checker",
@@ -149,11 +187,15 @@ class Config:
         )
         parser.add_argument(
             "--globalhtml",
-            help="Build a global html report for all results folders. In this case bench is not run !",
+            help="Build a global html report for all results folders. \n"
+            "In this case bench steps are not run !",
             action="store_true",
         )
         parser.add_argument(
-            "--data-root-path", help="Input data path", type=str, default=""
+            "-V",
+            "--verbose",
+            help="Enable the full logging instead of printing just summaries.",
+            action="store_true",
         )
 
         # parse

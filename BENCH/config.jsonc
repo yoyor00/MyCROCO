@@ -29,7 +29,7 @@
 	////////////////////////////// DEFAULT SELECTION ///////////////////////////
 	"default_selection": {
 		"cases": ["BASIN", "BASIN-LARGE"],
-		"variants" : ["@wip-all"]
+		"variants" : ["@cpu"]
 	},
 	////////////////////////////// PRE-SELECTIONS //////////////////////////////
 	"meta_variants": {
