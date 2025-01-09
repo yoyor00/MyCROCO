@@ -6,8 +6,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
-### Fixed
+- Cmake build of CROCO (not yet implemented for AGRIF and XIOS), 
+  see documentation or README.cmake.md for more details. 
+  Jobcomp script is still available.
+- Benchmarking python tools to perform tests runs, see documentation or 
+  BENCH/README.md for more details
 
+### Fixed
 
 - Issue #252 : fix PSOURCE_MASS capabilities broken by previous change
 - Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
@@ -16,6 +21,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- Jobcomp script can now be executed with terminal options, see 
+  ```./jobcomp -h``` for more details
 - Issue #163 : for MUSTANG output, 
   - avoid possibility of overlapping in vname by 
     using a separate array vname_must

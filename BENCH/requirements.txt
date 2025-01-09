@@ -16,3 +16,4 @@ netcdf4
 termcolor
 # to treat dataset
 xarray
+cartopy

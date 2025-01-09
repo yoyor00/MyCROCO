@@ -2,7 +2,8 @@ Benchmarking scripts
 ====================
 
 The given directory aimed at providing some basic benchmarking scripts to
-compare various parallelization mode on CROCO.
+compare CROCO on various tests configurations (physical options, parallelism, 
+compilation option, compilation type of build...).
 
 Concepts
 --------
@@ -10,13 +11,14 @@ Concepts
 First you can give a look to the `config.jsonc` file. You will see the concepts
 of :
 
-- `cases` : The cases to run (BASIN, SOLITON...) and some case size bu changing
-	the grid size (eg. BASIN-LARGE, BASIN-HUGE).
+- `cases` : The cases to run (BASIN, SOLITON...) and some case size changing
+  the grid size (eg. BASIN-LARGE, BASIN-HUGE).
 - `variants`: The parallelization mode (openmp, mpi, gpu) with specification on
-	the ressources to use because CROCO needs to be rebuilt for every case du to
-	some currently static definitions in the CROCO code on the use of those ressources.
+  the ressources to use because CROCO needs to be rebuilt for every case du to
+  some currently static definitions in the CROCO code on the use of those 
+  ressources.
 - `hosts`: You will find some variables to adapt the running to the host you
-	are running on.
+  are running on.
 
 Note: you can force the host to be selected if needed by using `--host NAME`.
 
@@ -27,9 +29,6 @@ Dependencies
 
 As it will build CROCO for you, you will need to have the basic dependencies
 available (see main README.md to know what is required).
-
-You might need some extended dependences so if you built the deps prefix for
-CROCO with `create_prefix_with_deps.sh`, then just run:
 
 ```sh
 # if you already have an activated venv
@@ -62,8 +61,8 @@ The simplest way to run is :
 ./bench-croco.py -c config-mine.jsonc
 ```
 
-It will run the `cases` and `variants` combination defined in `default_selection`
-of the config file.
+It will run the `cases` and `variants` combination defined in 
+`default_selection` of the config file.
 
 You can also choose by hand some of those :
 
@@ -72,7 +71,7 @@ You can also choose by hand some of those :
 ./bench-croco.py --case BASIN --variants sequential
 
 # or many
-./bench-croco.py --case BASIN,BASIN-LARGE --variants sequential,openmp-8,mpi-8,openacc-psyclone
+./bench-croco.py --case BASIN,BASIN-LARGE --variants sequential,openmp-8,mpi-8
 ```
 
 Build & results
@@ -84,15 +83,17 @@ by default).
 The results are stored in `./results` (by default) and a graph will be produced
 for each case.
 
-By default the benchmarking script will run CROCO 4 times for each case to plot
-the error bars. You can change this easily by using :
+By default the benchmarking script will run CROCO 1 time for each case. 
+You can change the number of times each run is done to plot
+the error bars, for example 4 times by using :
 
 ```sh
-./bench-croco.py --runs 1
+./bench-croco.py --runs 4
 ```
 
 The script will keep the results of each run by `{hostname}-{date}` but you can
-also ask the script to add a subdirectory with a given name if you are making different tries.
+also ask the script to add a given name if you are making different tries
+`{title}-{hostname}-{date}` .
 
 ```sh
 # while you are developping your optimizations (trash dir)
@@ -109,8 +110,9 @@ usefull in dev process to compare without re-running everything.
 Configuration
 -------------
 
-The configuration file can be provided under `json` which also supports comments.
-It can also be splitted in subdirectory mode by merging several subfiles.
+The configuration file can be provided under `json` which also supports 
+comments. It can also be splitted in subdirectory mode by merging several 
+subfiles.
 
 In the main `config.jsonc` file, the inclusion is described by the `imports`
 section.
@@ -162,7 +164,8 @@ on what is valid or not, you can simply :
 ./bench-croco.py --case @all --variants @all -r --report
 ```
 
-You can select what is the reference variant to compare to (default is `sequential`) :
+You can select what is the reference variant to compare to (default is 
+`sequential`) :
 
 ```sh
 ./bench-croco.py --case @all --variants @all -r --report --compare-to openmp-2
@@ -171,7 +174,7 @@ You can select what is the reference variant to compare to (default is `sequenti
 You will get an output like :
 
 ```plain
-------------------------------- REPORT SUMMARY ------------------------------------
+------------------------------- REPORT SUMMARY ---------------------------------
 CASE-VARIANT                      Build     Run           Check   
 SOLITON-sequential                None      True          True    
 SOLITON-openmp-2                  None      True          True    
@@ -211,9 +214,9 @@ to ensure non regression even on the `sequential` run.
 Auto-skip
 ---------
 
-When arriving on an host, `bench` might try to run some `variants` which requires
-more ressources than available (`cores` or `gpu`). You can ask to automatically
-skip those configs :
+When arriving on an host, `bench` might try to run some `variants` which 
+requires more ressources than available (`cores` or `gpu`). You can ask to 
+automatically skip those configs :
 
 ```sh
 ./bench-croco.py --case @all --variants @all -r --auto-skip
@@ -233,16 +236,6 @@ You can set it to 4 by :
 ./bench-croco.py --case BASIN --variants @all --runs 4
 ```
 
-Debug
------
-
-You can use the various options :
-
-```sh
-# comare via RVTK using sequential as ref (or --compare-to)
-./bench-croco.py --case BASIN --variants @all --debug --rvtk
-```
-
 Variables
 ---------
 
@@ -254,19 +247,19 @@ It avoids duplicating too many entries in the file.
 You will mostly find them at two places : 
 
 - On the cases to unpack king of template not to fully duplicate all cases for
-	OpenMP and MPI.
+  OpenMP and MPI.
 - To inject some values from `host` into the `configure` cmake call.
 - To inject the mpi extra options in `command_prefix`.
 
 **Note**:
 
 - For the template base system you can recurse the template var (`{thread}`, `tasks`)
-	to build the final var name (as it is done in the default config).
+  to build the final var name (as it is done in the default config).
 - For the rest you cannot currently recurse even it can be trivial to patch the code to enable it
-	(just that I didn't had time to validate it really works by doing it).
-	For this case, you have acces to two base keys : `tuning` & `case`
-	corresponding to the corresponding par of the config file you are running
-	(host & current case).
+  (just that I didn't had time to validate it really works by doing it).
+  For this case, you have acces to two base keys : `tuning` & `case`
+  corresponding to the corresponding par of the config file you are running
+  (host & current case).
 
 Configuration patching
 ----------------------
@@ -279,19 +272,19 @@ The patching is like this :
 
 ```json
 "patches": {
-	// Define a file to patch
-	// Note : it can also contains an array of patch elements if needs to change
-	//        several lines.
-	"param_override.h": {
-		// Patch what is after this line
-		"next_to": "#if defined BASIN",
-		// What to replace (expected to be present)
-		"what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
-		// By what to replace
-		"by":      "      parameter (LLm0=200,  MMm0=200,  N=50)",
-		// Description to be printed in the terminal when applied
-		"descr":   "Set mesh size to (200 x 200 x 50)"
-	},
+  // Define a file to patch
+  // Note : it can also contains an array of patch elements if needs to change
+  //        several lines.
+  "param_override.h": {
+    // Patch mode
+    "mode": "replace",
+    // What to replace (expected to be present)
+    "what":    "      parameter (LLm0=60,   MMm0=50,   N=10)",
+    // By what to replace
+    "by":      "      parameter (LLm0=200,  MMm0=200,  N=50)",
+    // Description to be printed in the terminal when applied
+    "descr":   "Set mesh size to (200 x 200 x 50)"
+  },
 },
 ```
 
@@ -302,12 +295,14 @@ You will also notice at the head of the configuration file the `imports` section
 which allow to split the config file in multiple sub files and merge them
 at loading time.
 
-This is usefull for exemple for the `hosts` and `cases` definitions as it permits
-a user to define its own hosts without requirement to patch the files tracked by
-git and to keep its definition for himself until he finally decide the commit
-it.
+This is usefull for exemple for the `hosts` and `cases` definitions as it 
+permits a user to define its own hosts without requirement to patch the files 
+tracked by git and to keep its definition for himself until he finally decide 
+to commit it.
 
-Author
-------
+Authors
+-------
 
-- Sébastien Valat - INRIA / LJK - 2023 - 2024
+- First implementation by Sébastien Valat (INRIA / LJK) - 2023 - 2024
+- Adaptation for CROCO gitlab-ci by Rachid Benshilla (CNRS), Gildas Cambon (IRD) 
+  and Solène Le Gac (IFREMER) - 2024 - 2025

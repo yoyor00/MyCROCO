@@ -107,6 +107,7 @@ variables:
       - $RUN_WORK/ftp
       - $RUN_WORK/${RUN_NAME}/*/*.log
     when: always
+    expire_in: 1 week
 
 .reg_perfrst_base: &reg_perfrst_base
   extends: 
@@ -120,8 +121,8 @@ variables:
     RUN_MK_NAME: "reg"
     RUN_NAME_CONFIGURE: "CONFIGURE_REG_PERFRST"
     RUNNER_SCRIPT_TIMEOUT: 120m
-  # rules:
-  #   - if: $CI_PIPELINE_SOURCE == "schedule"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 reg_perfrst_gfortran:
   extends:
@@ -228,7 +229,8 @@ test_bench_regional:
       - BENCH/results
     when: always
     expire_in: 1 week
-
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 pages:
   stage: report
