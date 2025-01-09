@@ -264,6 +264,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
          - FFLAGS=-march=native
         """
         vars = {}
+        self.fflags = ""
         for entry in arg_vars:
             # split name & value
             fields = entry.split("=", maxsplit=1)
@@ -281,7 +282,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
 
             # apply vars
             if var_name == "FFLAGS":
-                self.fflags = var_value
+                self.fflags = self.fflags + " " + var_value
             elif var_name == "FC":
                 if is_mpi:
                     self.mpif90 = var_value

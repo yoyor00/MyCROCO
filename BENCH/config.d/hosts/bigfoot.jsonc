@@ -6,13 +6,27 @@
 			"gpu": 1
 		},
 		"tuning": {
-			"gnu": "-march=znver2",
-			"intel": "",
-			"nvfortran": "-tp=zen",
+			"gnu": {
+				"extra": "-march=znver2",
+				"standard": "-O2 -fdefault-real-8 -fdefault-double-8 -std=legacy",
+				"debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
+				"mpi_options": ""
+			},
+			"intel": {
+				"extra": "",
+				"standard": "-O2 -fno-alias -i4 -r8 -fp-model precise",
+				"debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
+				"mpi_options": ""
+			},
+			"nvfortran": {
+				"extra": "-tp=zen",
+				"standard": "-O2 -fast -g -r8 -i4 -mcmodel=medium",
+				"debug": "-O0 -fast -g -r8 -i4 -mcmodel=medium",
+				"mpi_options": ""
+			},
 			"environ": {
 				"OMP_PROC_BIND": "spread"
 			},
-			"mpi_options": "",
 			"hwloc_bind": {
 				"openmp": "",
 				"mpirun": ""
@@ -25,13 +39,27 @@
 			"gpu": 1
 		},
 		"tuning": {
-			"gnu": "-march=native",
-			"intel": "",
-			"nvfortran": "-tp=native",
+			"gnu": {
+				"extra": "-march=native",
+				"standard": "-O2 -fdefault-real-8 -fdefault-double-8 -std=legacy",
+				"debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
+				"mpi_options": ""
+			},
+			"intel": {
+				"extra": "",
+				"standard": "-O2 -fno-alias -i4 -r8 -fp-model precise",
+				"debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
+				"mpi_options": ""
+			},
+			"nvfortran": {
+				"extra": "-tp=native",
+				"standard": "-O2 -fast -g -r8 -i4 -mcmodel=medium",
+				"debug": "-O0 -fast -g -r8 -i4 -mcmodel=medium",
+				"mpi_options": ""
+			},
 			"environ": {
 				"OMP_PROC_BIND": "spread"
 			},
-			"mpi_options": "",
 			"hwloc_bind": {
 				"openmp": "",
 				"mpirun": ""

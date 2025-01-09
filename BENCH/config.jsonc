@@ -12,13 +12,27 @@
 				"gpu": 1
 			},
 			"tuning": {
-				"gnu": "-march=native",
-				"intel": "",
-				"nvfortran": "-tp=native",
+				"gnu": {
+					"extra": "-march=native",
+					"standard": "-O2 -fdefault-real-8 -fdefault-double-8 -std=legacy",
+					"debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
+					"mpi_options": ""
+				},
+				"intel": {
+					"extra": "",
+					"standard": "-O2 -fno-alias -i4 -r8 -fp-model precise",
+					"debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
+					"mpi_options": ""
+				},
+				"nvfortran": {
+					"extra": "-tp=native",
+					"standard": "-O2 -fast -g -r8 -i4 -mcmodel=medium",
+					"debug": "-O0 -fast -g -r8 -i4 -mcmodel=medium",
+					"mpi_options": ""
+				},
 				"environ":{
 					"OMP_PROC_BIND": "spread"
 				},
-				"mpi_options": "",
 				"hwloc_bind": {
 					"openmp": "",
 					"mpirun": ""
@@ -103,8 +117,9 @@
 	"variants": {
 		// seq default
 		"sequential": {
-			"configure": "FFLAGS='-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy'",
+			"configure": "",
 			"tuning_familly": "gnu",
+			"tuning_fflags": "standard",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
@@ -113,8 +128,9 @@
 		},
 		// seq debug
 		"sequential-debug": {
-			"configure": "FFLAGS='-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888'",
+			"configure": "",
 			"tuning_familly": "gnu",
+			"tuning_fflags": "debug",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
@@ -125,6 +141,7 @@
 		"sequential-memcheck": {
 			"configure": "FFLAGS=-fsanitize=address CFLAGS=-fsanitize=address",
 			"tuning_familly": "gnu",
+			"tuning_fflags": "standard",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
@@ -133,8 +150,9 @@
 		},
 		// seq default
 		"sequential-nvfortran": {
-			"configure": "FC=nvfortran FFLAGS='-O2 -fast -g -r8 -i4 -mcmodel=medium'",
+			"configure": "FC=nvfortran",
 			"tuning_familly": "nvfortran",
+			"tuning_fflags": "standard",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
@@ -143,8 +161,9 @@
 		},
 		// seq default
 		"sequential-ifort": {
-			"configure": "FC=ifort FFLAGS='-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise'",
+			"configure": "FC=ifort",
 			"tuning_familly": "intel",
+			"tuning_fflags": "standard",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
@@ -153,8 +172,9 @@
 		},
 		// seq default
 		"sequential-debug-ifort": {
-			"configure": "FC=ifort FFLAGS='-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1'",
+			"configure": "FC=ifort",
 			"tuning_familly": "intel",
+			"tuning_fflags": "debug",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
@@ -165,6 +185,7 @@
 		"sequential-nvfortran-acc-multicore-{threads}": {
 			"configure": "FC=nvfortran FFLAGS=-acc=multicore -DOPENACC=yes",
 			"tuning_familly": "nvfortran",
+			"tuning_fflags": "standard",
 			"environ": {
 				"OMP_NUM_THREADS": "{threads}"
 			},
@@ -180,6 +201,7 @@
 		"poseidon": {
 			"configure": "--with-optim=poseidon",
 			"tuning_familly": "gnu",
+			"tuning_fflags": "standard",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
@@ -190,6 +212,7 @@
 		"openmp-{threads}": {
 			"configure": "--with-optim=openmp --with-threads={threads}",
 			"tuning_familly": "gnu",
+			"tuning_fflags": "standard",
 			"environ": {
 				"OMP_NUM_THREADS": "{threads}"
 			},
@@ -203,12 +226,13 @@
 		},
 		// mpi
 		"mpi-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort FFLAGS='-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy'",
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort",
 			"tuning_familly": "gnu",
+			"tuning_fflags": "standard",
 			"environ": {
 				"OMP_NUM_THREADS": 1
 			},
-			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
+			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.gnu.mpi_options}",
 			"unpack": {
 				"tasks": [2, 4, 6, 8, 16, 32, 64]
 			},
@@ -218,12 +242,13 @@
 		},
 		// mpi-debug
 		"mpi-debug-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort FFLAGS='-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888'",
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort",
 			"tuning_familly": "gnu",
+			"tuning_fflags": "debug",
 			"environ": {
 				"OMP_NUM_THREADS": 1
 			},
-			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
+			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.gnu.mpi_options}",
 			"unpack": {
 				"tasks": [2, 4, 6, 8, 16, 32, 64]
 			},
@@ -233,12 +258,13 @@
 		},
 		// mpi-ifort
 		"mpi-ifort-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort FFLAGS='-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise'",
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort",
 			"tuning_familly": "intel",
+			"tuning_fflags": "standard",
 			"environ": {
 				"OMP_NUM_THREADS": 1
 			},
-			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
+			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.intel.mpi_options}",
 			"unpack": {
 				"tasks": [2, 4, 6, 8, 16, 32, 64]
 			},
@@ -248,12 +274,13 @@
 		},
 		// mpi-debug-ifort
 		"mpi-debug-ifort-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort FFLAGS='-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1'",
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort",
 			"tuning_familly": "intel",
+			"tuning_fflags": "debug",
 			"environ": {
 				"OMP_NUM_THREADS": 1
 			},
-			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
+			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.intel.mpi_options}",
 			"unpack": {
 				"tasks": [2, 4, 6, 8, 16, 32, 64]
 			},
@@ -265,6 +292,7 @@
 		"openacc-native": {
 			"configure": "--with-optim=openacc-native FC=nvfortran",
 			"tuning_familly": "nvfortran",
+			"tuning_fflags": "standard",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
@@ -274,6 +302,7 @@
 		"openacc-psyclone-cpu": {
 			"configure": "--with-optim=openacc-psyclone FC=nvfortran FFLAGS=-acc=host",
 			"tuning_familly": "nvfortran",
+			"tuning_fflags": "standard",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
@@ -283,6 +312,7 @@
 		"openacc-psyclone": {
 			"configure": "--with-optim=openacc-psyclone FC=nvfortran",
 			"tuning_familly": "nvfortran",
+			"tuning_fflags": "standard",
 			"environ": {},
 			"command_prefix": "",
 			"requires": {
