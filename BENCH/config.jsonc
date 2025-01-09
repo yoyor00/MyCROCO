@@ -203,7 +203,7 @@
 		},
 		// mpi
 		"mpi-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort FFLAGS='-O2 -fdefault-real-8 -fdefault-double-8 -std=legacy'",
+			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort FFLAGS='-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy'",
 			"tuning_familly": "gnu",
 			"environ": {
 				"OMP_NUM_THREADS": 1
