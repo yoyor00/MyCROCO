@@ -617,11 +617,11 @@ def get_vertical_section(fname, vname, tindex, direction, idx, gname):
         z = get_depths(fname, gname, tindex, point_type)
         temp = np.squeeze(nc.variables[vname][tindex, :, :, :])
 
-    if direction == "x":
+    if direction == "y":
         section_data = temp[:, :, idx]
         depth_section = z[:, :, idx]
         distance = np.arange(section_data.shape[1])  # Distance en points de grille
-    elif direction == "y":
+    elif direction == "x":
         section_data = temp[:, idx, :]
         depth_section = z[:, idx, :]
         distance = np.arange(section_data.shape[1])  # Distance en points de grille
@@ -648,9 +648,9 @@ def plot_vertical_section(section_data, title="Vertical Section", unit="°C"):
     depth = section_data["depth"]
     distance = section_data["distance"]
     variable = section_data["variable"]
+    variable[variable == 0] = np.nan
 
     plt.figure(figsize=(12, 6))
-    # plt.contourf(distance, -depth, variable, levels=50, cmap="viridis")
     plt.pcolormesh(distance, depth, variable, cmap="viridis", shading="auto")
     plt.colorbar(label=unit)
     plt.title(title)
@@ -901,16 +901,18 @@ for var, directions in variables.items():
         # Extraire les données de la section
         print(f"Processing {var} in direction {direction}")
         section = get_vertical_section(hisfile, var, tindex, direction, idx, gridfile)
-
+        data = section["variable"]
+        m_data = np.ma.masked_equal(data, 0)
         # Configurer les axes
         ax = axes[axis_index]
         im = ax.pcolor(
             section["distance"],
             section["depth"],
-            section["variable"],
+            m_data,
             cmap="viridis",
             shading="auto",
         )
+        ax.grid(True)
 
         # Titre et labels
         ax.set_title(f"{titles.get(var, var)} - Along {direction}")
