@@ -1,0 +1,95 @@
+{
+   // seq default
+   "sequential": {
+      "configure": "",
+      "tuning_familly": "gnu",
+      "tuning_fflags": "standard",
+      "environ": {},
+      "command_prefix": "",
+      "requires": {
+         "cpu": 1
+      }
+   },
+   // seq debug
+   "sequential-debug": {
+      "configure": "",
+      "tuning_familly": "gnu",
+      "tuning_fflags": "debug",
+      "environ": {},
+      "command_prefix": "",
+      "requires": {
+         "cpu": 1
+      }
+   },
+   // seq default
+   "sequential-memcheck": {
+      "configure": "FFLAGS=-fsanitize=address CFLAGS=-fsanitize=address",
+      "tuning_familly": "gnu",
+      "tuning_fflags": "standard",
+      "environ": {},
+      "command_prefix": "",
+      "requires": {
+         "cpu": 1
+      }
+   },
+   // seq default
+   "sequential-nvfortran": {
+      "configure": "FC=nvfortran",
+      "tuning_familly": "nvfortran",
+      "tuning_fflags": "standard",
+      "environ": {},
+      "command_prefix": "",
+      "requires": {
+         "cpu": 1
+      }
+   },
+   // seq default
+   "sequential-ifort": {
+      "configure": "FC=ifort",
+      "tuning_familly": "intel",
+      "tuning_fflags": "standard",
+      "environ": {},
+      "command_prefix": "",
+      "requires": {
+         "cpu": 1
+      }
+   },
+   // seq default
+   "sequential-debug-ifort": {
+      "configure": "FC=ifort",
+      "tuning_familly": "intel",
+      "tuning_fflags": "debug",
+      "environ": {},
+      "command_prefix": "",
+      "requires": {
+         "cpu": 1
+      }
+   },
+   // seq default
+   "sequential-nvfortran-acc-multicore-{threads}": {
+      "configure": "FC=nvfortran FFLAGS=-acc=multicore -DOPENACC=yes",
+      "tuning_familly": "nvfortran",
+      "tuning_fflags": "standard",
+      "environ": {
+         "OMP_NUM_THREADS": "{threads}"
+      },
+      "command_prefix": "{tuning.hwloc_bind.openmp}",
+      "unpack": {
+         "threads": [2, 4, 6, 8, 16, 32, 64]
+      },
+      "requires": {
+         "cpu": "{threads}"
+      }
+   },
+   // seq default
+   "poseidon": {
+      "configure": "--with-optim=poseidon",
+      "tuning_familly": "gnu",
+      "tuning_fflags": "standard",
+      "environ": {},
+      "command_prefix": "",
+      "requires": {
+         "cpu": 1
+      }
+   }
+}
