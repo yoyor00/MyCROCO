@@ -33,6 +33,9 @@
 #if defined MUSTANG
       USE comMUSTANG, only: nk_nivsed_out
 #endif
+#if defined BIOLOGY && defined PISCES && defined key_sediment
+      USE par_sed, only: jpksed
+#endif
       implicit none
 #include "param.h"
 #if defined MUSTANG
@@ -161,6 +164,13 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
       elseif (vert_type.eq.4) then
         count(3)=N_abl
         count(4)=1                !--> 3D ABL-grid
+        start(3)=1
+        start(4)=record
+#endif
+#if defined BIOLOGY && defined PISCES && defined key_sediment
+      elseif (vert_type.eq.5) then
+        count(3)=jpksed
+        count(4)=1                !--> 3D DIAGENITIC-grid
         start(3)=1
         start(4)=record
 #endif

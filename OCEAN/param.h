@@ -468,7 +468,7 @@
 # endif
 # ifdef BIOLOGY
 #  ifdef PISCES
-#   ifdef key_pisces_light
+#   ifdef key_pisces_npzd
          parameter (ntrc_bio=9)
 #   elif defined key_pisces_quota
 #    ifdef key_ligand
@@ -755,11 +755,11 @@
 #  ifdef PISCES
       parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
       parameter (iDIC_=itrc_bio, iTAL_=iDIC_+1, iOXY_=iDIC_+2)
-#   ifdef key_pisces_light
+#   ifdef key_pisces_npzd
       parameter ( iPOC_=iDIC_+3,  iPHY_=iDIC_+4, iZOO_=iDIC_+5,
      &            iDOC_=iDIC_+6,  iNO3_=iDIC_+7, iFER_=iDIC_+8)
 #   endif
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       parameter ( iCAL_=iDIC_+3,  iPO4_=iDIC_+4,
      &            iPOC_=iDIC_+5,  iSIL_=iDIC_+6,  iPHY_=iDIC_+7,
      &            iZOO_=iDIC_+8,  iDOC_=iDIC_+9,  iDIA_=iDIC_+10,
@@ -799,16 +799,16 @@
      &            Nfixo2    = 9,
      &            Nirondep  = 10,
      &            Nironsed  = 11,
-     &            Npronew   = 12,
-#    if defined key_pisces_light
+     &            Npronewo2 = 12,
+     &            Npronew   = 13,
+#    if defined key_pisces_npzd
      &            NumFluxTerms = Npronew)
 #    else
-     &            Npronewd  = 13,
-     &            Nprorcad  = 14,
-     &            Nprobsi   = 15,
-     &            Nprofen   = 16,
-     &            Nprofed   = 17,
-     &            Npronewo2 = 18,
+     &            Npronewd  = 14,
+     &            Nprorcad  = 15,
+     &            Nprobsi   = 16,
+     &            Nprofen   = 17,
+     &            Nprofed   = 18,
      &            Nprorego2 = 19,
      &            Ngrapoc2  = 20,
      &            Nmeso2    = 21,
@@ -824,7 +824,7 @@
      &            Nheup     = 6,
      &            Nno3dep   = 7,
      &            Nnitrpot  = 8,
-#    if defined key_pisces_light
+#    if defined key_pisces_npzd
      &            NumGasExcTerms = 0,
      &            NumVSinkTerms = Nnitrpot)
 #    else
