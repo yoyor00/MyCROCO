@@ -502,7 +502,7 @@ CONTAINS
       INTEGER, DIMENSION(GLOBAL_2D_ARRAY), INTENT(INOUT) :: ksma
       REAL(KIND=rsh), DIMENSION(-1:nv_tot, ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
          INTENT(INOUT) :: cv_sed
-      REAL(KIND=rsh), DIMENSION( ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
+      REAL(KIND=rsh), DIMENSION(ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
          INTENT(INOUT) :: c_sedtot
 
       IF (time .GE. dredging_time) THEN
@@ -553,7 +553,7 @@ CONTAINS
       INTEGER, DIMENSION(GLOBAL_2D_ARRAY), INTENT(INOUT) :: ksma
       REAL(KIND=rsh), DIMENSION(-1:nv_tot, ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
          INTENT(INOUT) :: cv_sed
-      REAL(KIND=rsh), DIMENSION( ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
+      REAL(KIND=rsh), DIMENSION(ksdmin:ksdmax, GLOBAL_2D_ARRAY), &
          INTENT(INOUT) :: c_sedtot
 
       INTEGER :: i, j, iv, iz, k
@@ -677,9 +677,9 @@ CONTAINS
 
       DO iz = 1, n_dump_loc
          CALL MPI_ALLREDUCE(dump_surface(iz), &
-                               tmp, 1, MPI_DOUBLE_PRECISION, MPI_SUM, &
-                               MPI_COMM_WORLD, ierror)
-            dump_surface(iz) = tmp
+                            tmp, 1, MPI_DOUBLE_PRECISION, MPI_SUM, &
+                            MPI_COMM_WORLD, ierror)
+         dump_surface(iz) = tmp
       END DO
 
 #endif /*MPI*/
