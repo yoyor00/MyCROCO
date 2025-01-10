@@ -49,9 +49,11 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     -e "s/<mo1>/${MONTH_BEGIN_JOB}/g"   -e "s/<mo2>/${MONTH_END_JOB}/g"  \
     -e "s/<dy1>/${DAY_BEGIN_JOB}/g"   -e "s/<dy2>/${DAY_END_JOB}/g"  \
     -e "s/<hr1>/${hh}/g"   -e "s/<hr2>/24/g"  \
-    -e "s/<rst>/$rst/g"              -e "s/<rst_int_h>/$(( ${TOTAL_JOB_DUR} * 24 ))/g"            \
-    -e "s/<his_int_h>/${atm_his_h}/g"         -e "s/<his_nb_out>/${atm_his_frames}/g"    \
-    -e "s/<xtrm_int_m>/${atm_diag_int_m}/g"   -e "s/<xtrm_nb_out>/${atm_diag_frames}/g"  \
+    -e "s/<rst>/$rst/g"              -e "s/<rst_int>/$(( ${TOTAL_JOB_DUR} * 24 *60 ))/g"            \
+    -e "s/<his_int_d01>/${atm_his_d01}/g"        -e "s/<his_int_d02>/${atm_his_d02}/g"   \
+    -e "s/<his_int_d03>/${atm_his_d03}/g"         -e "s/<his_nb_out>/${atm_his_frames}/g"    \
+    -e "s/<xtrm_int_m_d01>/${atm_diag_int_m_d01}/g"   -e "s/<xtrm_int_m_d02>/${atm_diag_int_m_d02}/g"  \
+    -e "s/<xtrm_int_m_d03>/${atm_diag_int_m_d03}/g"   -e "s/<xtrm_nb_out>/${atm_diag_frames}/g"  \
     -e "s/<nproc_x>/${atm_nprocX}/g"            -e "s/<nproc_y>/${atm_nprocY}/g"             \
     -e "s/<niotaskpg>/${atm_niotaskpg}/g"       -e "s/<niogp>/${atm_niogp}/g"                \
     -e "s/<dt>/${DT_ATM}/g" \
@@ -60,7 +62,7 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
     $ATM_NAM_DIR/${atmnamelist} > ./namelist.input
 
 if [[ ! -z $atm_iofields ]] ; then
-    sed "/ debug_level.*/a \ iofields_filename                   = '${atm_iofields}'," namelist.input > namelist.input.tmp
+    sed "/ debug_level.*/a \ iofields_filename                   = '${atm_iofields}','${atm_iofields}','${atm_iofields}'," namelist.input > namelist.input.tmp
     mv namelist.input.tmp namelist.input
     cpfile $ATM_NAM_DIR/$atm_iofields .
 fi
@@ -235,11 +237,11 @@ if [[ ${ATM_CASE} == "MOVING_NEST" ]]; then
     for lineadd in `seq 0 $(( ${nbline} - 2))` ; do
         line1=${linetoadd[${lineadd}]}
         linep1=${linetoadd[$(( ${lineadd} +1 ))]}
-        [[ ${linep1} == "vortex_interval" ]] && newline="vortex_interval                     = ${vortex_interval},${vortex_interval},${vortex_interval},"
-        [[ ${linep1} == "max_vortex_speed" ]] && newline="max_vortex_speed                    = ${max_vortex_speed},${max_vortex_speed},${max_vortex_speed},"
-        [[ ${linep1} == "corral_dist" ]] && newline="corral_dist                         = ${corral_dist},${corral_dist},${corral_dist},"
-        [[ ${linep1} == "track_level" ]] && newline="track_level                         = ${track_level},"
-        [[ ${linep1} == "time_to_move" ]] && newline="time_to_move                        = ${time_to_move},${time_to_move},${time_to_move},"
+        [[ ${linep1} == "vortex_interval" ]] && newline=" vortex_interval                     = ${vortex_interval},${vortex_interval},${vortex_interval},"
+        [[ ${linep1} == "max_vortex_speed" ]] && newline=" max_vortex_speed                    = ${max_vortex_speed},${max_vortex_speed},${max_vortex_speed},"
+        [[ ${linep1} == "corral_dist" ]] && newline=" corral_dist                         = ${corral_dist_d01},${corral_dist_d02},${corral_dist_d03},"
+        [[ ${linep1} == "track_level" ]] && newline=" track_level                         = ${track_level},"
+        [[ ${linep1} == "time_to_move" ]] && newline=" time_to_move                        = ${time_to_move},${time_to_move},${time_to_move},"
 
         sed -e "/${line1}.*/ a ${newline}" \
             ./namelist.input > ./namelist.input.tmp
