@@ -21,6 +21,7 @@ from .helpers import (
     apply_vars_in_str,
     Messaging,
     patch_lines,
+    copy_tree_with_absolute_symlinks,
 )
 from .hyperfine import run_hyperfine
 from .check import compare_netcdf_files
@@ -97,18 +98,7 @@ class Croco:
                 raise Exception("Folder not found : %s" % self.config.data_root_path)
             if not (os.path.isdir(self.input_dir)):
                 raise Exception("Folder not found : %s" % self.input_dir)
-            # create CROCO_FILES and DATA directories
-            for dirtmp in ["CROCO_FILES", "DATA"]:
-                dest_dir = os.path.join(dirname, dirtmp)
-                os.makedirs(dest_dir, exist_ok=True)
-                in_dir = os.path.join(self.input_dir, dirtmp)
-                for item in os.listdir(in_dir):
-                    item_path = os.path.join(in_dir, item)
-                    link_path = os.path.join(dest_dir, item)
-                    if os.path.isfile(item_path):
-                        os.symlink(item_path, link_path)
-                    elif os.path.isdir(item_path):
-                        os.symlink(item_path, link_path)
+            copy_tree_with_absolute_symlinks(self.input_dir, dirname)
 
         # extract options
         configure_variant_options = self.variant["configure"]

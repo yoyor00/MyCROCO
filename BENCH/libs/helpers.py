@@ -209,10 +209,11 @@ def normalize_line(line):
         return ""
     return re.sub(r"\s+", " ", line).strip()
 
-def apply_rule(fname,lines, rule):
+
+def apply_rule(fname, lines, rule):
     """
     Apply a single rule to a list of lines in memory.
-    
+
     Parameters:
     - lines: a list of strings (lines from the file)
     - rule: a dictionary with keys:
@@ -224,18 +225,18 @@ def apply_rule(fname,lines, rule):
         - "before" (str, required for 'insert-after-before'): The line before which to insert.
         - "after" (str, required for 'insert-after-before'): The line after which to insert.
     """
-    
+
     mode = rule.get("mode")
     what = normalize_line(rule.get("what", ""))
     descr = rule.get("descr", "No description provided")
     Messaging.step(f"Patching {fname} [ {descr} ]")
-    
+
     # Determine the new line to use based on the mode
     if mode == "replace":
         new_line = rule.get("by")
     else:
         new_line = rule.get("insert")
-    
+
     # Basic validations
     if not mode:
         print(f"Error: No mode specified for rule '{descr}'. Skipping rule.")
@@ -244,20 +245,26 @@ def apply_rule(fname,lines, rule):
         print(f"Error: Unknown mode '{mode}' in rule '{descr}'. Skipping rule.")
         return lines
     if not what and mode != "insert-after-before":
-        print(f"Error: 'what' is required for mode '{mode}' in rule '{descr}'. Skipping rule.")
+        print(
+            f"Error: 'what' is required for mode '{mode}' in rule '{descr}'. Skipping rule."
+        )
         return lines
     if not new_line and mode != "replace":
-        print(f"Error: 'insert' is required for mode '{mode}' in rule '{descr}'. Skipping rule.")
+        print(
+            f"Error: 'insert' is required for mode '{mode}' in rule '{descr}'. Skipping rule."
+        )
         return lines
-    
+
     # Specific check for insert-after-before mode
     if mode == "insert-after-before":
         line_before = normalize_line(rule.get("before", ""))
         line_after = normalize_line(rule.get("after", ""))
         if not line_before or not line_after or not new_line:
-            print(f"Error: 'before', 'after', and 'insert' must be provided for 'insert-after-before' in rule '{descr}'. Skipping rule.")
+            print(
+                f"Error: 'before', 'after', and 'insert' must be provided for 'insert-after-before' in rule '{descr}'. Skipping rule."
+            )
             return lines
-    
+
     modified_lines = []
     inserted = False
 
@@ -270,8 +277,10 @@ def apply_rule(fname,lines, rule):
             else:
                 modified_lines.append(line)
         if not inserted:
-            print(f"Warning: No line matched '{what}' for replacement in rule '{descr}'.")
-    
+            print(
+                f"Warning: No line matched '{what}' for replacement in rule '{descr}'."
+            )
+
     elif mode == "insert-before":
         # Insert a new line before the line that matches 'what'
         for line in lines:
@@ -282,8 +291,10 @@ def apply_rule(fname,lines, rule):
             else:
                 modified_lines.append(line)
         if not inserted:
-            print(f"Warning: No line matched '{what}' to insert before in rule '{descr}'.")
-    
+            print(
+                f"Warning: No line matched '{what}' to insert before in rule '{descr}'."
+            )
+
     elif mode == "insert-after":
         # Insert a new line after the line that matches 'what'
         for line in lines:
@@ -294,8 +305,10 @@ def apply_rule(fname,lines, rule):
             else:
                 modified_lines.append(line)
         if not inserted:
-            print(f"Warning: No line matched '{what}' to insert after in rule '{descr}'.")
-    
+            print(
+                f"Warning: No line matched '{what}' to insert after in rule '{descr}'."
+            )
+
     elif mode == "insert-after-before":
         # Insert a line between two known lines: after 'after' and before 'before'
         line_before = normalize_line(rule.get("before", ""))
@@ -306,26 +319,28 @@ def apply_rule(fname,lines, rule):
         for i, line in enumerate(lines):
             current_norm = normalize_line(line)
             modified_lines.append(line)
-            
+
             # If we have found the 'after' line and the current line is 'before'
             # we insert our new line right before it
             if found_after and current_norm == line_before and not inserted:
-                modified_lines.insert(len(modified_lines)-1, new_line + "\n")
+                modified_lines.insert(len(modified_lines) - 1, new_line + "\n")
                 inserted = True
 
             if current_norm == line_after:
                 found_after = True
 
         if not inserted:
-            print(f"Warning: Could not find the sequence 'after' then 'before' for rule '{descr}'. No insertion performed.")
-    
+            print(
+                f"Warning: Could not find the sequence 'after' then 'before' for rule '{descr}'. No insertion performed."
+            )
+
     return modified_lines
 
 
 def patch_lines(file_path, rules):
     """
     Modify a file according to a list of rules.
-    
+
     Parameters:
     - file_path: Path to the file to be modified.
     - rules: A list of dictionaries, each representing a rule.
@@ -341,7 +356,7 @@ def patch_lines(file_path, rules):
     except Exception as e:
         print(f"Error while creating backup: {e}")
         return
-    
+
     # Read the original file
     try:
         with open(file_path, "r", encoding="utf-8") as f:
@@ -350,18 +365,15 @@ def patch_lines(file_path, rules):
         print(f"Error reading the file: {e}")
         return
 
-
-
-    
     # Apply each rule in-memory
     for rule in rules:
-        lines = apply_rule(file_path,lines, rule)
-    
+        lines = apply_rule(file_path, lines, rule)
+
     # Write the final result
     try:
         with open(file_path, "w", encoding="utf-8") as f:
             f.writelines(lines)
-#        print(f"Modifications completed successfully for {file_path}.")
+    #        print(f"Modifications completed successfully for {file_path}.")
     except Exception as e:
         print(f"Error writing the file: {e}")
 
@@ -401,3 +413,62 @@ def apply_vars_in_str(value: str, vars: {}) -> str:
 
     # ok
     return value
+
+
+def copy_tree_with_absolute_symlinks(src, dest):
+    """
+    Copies a directory tree, recreating folders and replacing files with
+    absolute symbolic links.
+    Existing symbolic links in the source are recreated as symbolic links in
+    the destination.
+
+
+    :param src: Path to the source directory tree.
+    :param dest: Path to the destination directory tree.
+    """
+    for root, dirs, files in os.walk(src, followlinks=True):
+        # Compute the corresponding path in the destination
+        relative_path = os.path.relpath(root, src)
+        dest_dir = os.path.join(dest, relative_path)
+
+        # Recreate folders in the destination
+        os.makedirs(dest_dir, exist_ok=True)
+
+        # Process directories and files in the current folder
+        for name in dirs + files:
+            src_path = os.path.join(root, name)
+            dest_path = os.path.join(dest_dir, name)
+
+            # Check if the source is a symbolic link
+            if os.path.islink(src_path):
+                # Get the target of the symbolic link
+                link_target = os.readlink(src_path)
+                # Convert to absolute path if necessary
+                link_target = os.path.join(os.path.dirname(src_path), link_target)
+                link_target = os.path.abspath(link_target)
+
+                # Check if the target is a file or directory
+                if os.path.isfile(link_target):
+                    # Create the symbolic link in the destination
+                    try:
+                        os.symlink(link_target, dest_path)
+                    except FileExistsError:
+                        print(
+                            f"The symbolic link {dest_path} already exists, link not created."
+                        )
+                    except OSError as e:
+                        print(f"Error creating symbolic link for {src_path}: {e}")
+
+                elif os.path.isdir(link_target):
+                    pass
+            elif os.path.isfile(src_path):
+                # Create a symbolic link for a regular file
+                try:
+                    os.symlink(os.path.abspath(src_path), dest_path)
+                except FileExistsError:
+                    print(f"The file {dest_path} already exists, link not created.")
+                except OSError as e:
+                    print(f"Error creating link for {src_path}: {e}")
+            elif os.path.isdir(src_path):
+                # Skip folders as they are already handled by os.walk
+                pass
