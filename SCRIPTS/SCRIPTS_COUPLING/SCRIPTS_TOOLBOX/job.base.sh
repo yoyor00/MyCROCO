@@ -237,7 +237,7 @@ cd ${EXEDIR}
         FILES_OCE="layout.dat ocean.output* namelist out_run.txt *time.step solver.stat* croco.log"        
         [ ${USE_OCE} -eq 1 ] && {  for file in ${FILES_OCE}; do cpfile2 ${file} ${JOBDIR}; done; echo ""; }
 # if atmosphere
-        FILES_ATM="namelist.input rsl.error.0000 rsl.out.0000"
+        FILES_ATM="namelist.input"
         [ ${USE_ATM} -eq 1 ] && {  for file in ${FILES_ATM}; do cpfile2 ${file} ${JOBDIR}; done; echo ""; }
 # if wave
         FILES_WAV="log.ww3 strt.out ounf.out prnc.*.out grid.out"
