@@ -584,7 +584,7 @@ def do_plot(lon, lat, var, colmin, colmax, ncol, hisfile, gridfile, tindex, vlev
 
 
 #################################################################
-def get_vertical_section(fname, vname, tindex, direction, idx, gname):
+def get_vertical_section(fname, vname, tindex, direction, ind_sec, gname):
     """
     Extrait une section verticale d'une variable 3D.
 
@@ -593,7 +593,7 @@ def get_vertical_section(fname, vname, tindex, direction, idx, gname):
         vname (str): Nom de la variable (par exemple, "temp").
         tindex (int): Index temporel.
         direction (str): Direction de la section ("x" pour zonale ou "y" pour méridienne).
-        idx (int): Indice de la ligne ou colonne pour la coupe.
+        ind_sec (int): Indice de la ligne ou colonne pour la coupe.
         gname (str): Nom du fichier de grille NetCDF.
 
     Returns:
@@ -603,13 +603,16 @@ def get_vertical_section(fname, vname, tindex, direction, idx, gname):
     """
 
     with Dataset(fname, "r") as nc:
+        topo = np.squeeze(nc.variables["h"][:, :])
         # Déterminer le type de grille pour obtenir les profondeurs
         if vname == "w":
             point_type = "w"  # Grille régulière pour u
         elif vname == "u":
             point_type = "u"  # Grille régulière pour u
+            topo = rho2u_2d(topo)
         elif vname == "v":
             point_type = "v"  # Grille régulière pour v
+            topo = rho2v_2d(topo)
         else:
             point_type = "r"  # Grille régulière pour les scalaires (temp, salt, etc.)
 
@@ -618,17 +621,20 @@ def get_vertical_section(fname, vname, tindex, direction, idx, gname):
         temp = np.squeeze(nc.variables[vname][tindex, :, :, :])
 
     if direction == "y":
-        section_data = temp[:, :, idx]
-        depth_section = z[:, :, idx]
+        section_data = temp[:, :, ind_sec]
+        depth_section = z[:, :, ind_sec]
         distance = np.arange(section_data.shape[1])  # Distance en points de grille
+        topo_section = -topo[:, ind_sec]
     elif direction == "x":
-        section_data = temp[:, idx, :]
-        depth_section = z[:, idx, :]
+        section_data = temp[:, ind_sec, :]
+        depth_section = z[:, ind_sec, :]
         distance = np.arange(section_data.shape[1])  # Distance en points de grille
+        topo_section = -topo[ind_sec, :]
     else:
         raise ValueError("Direction invalide. Choisissez 'x' ou 'y'.")
 
     return {
+        "topo": topo_section,
         "depth": depth_section,
         "distance": distance,
         "variable": section_data,
@@ -646,12 +652,20 @@ def plot_vertical_section(section_data, title="Vertical Section", unit="°C"):
         unit (str): Unité de la variable.
     """
     depth = section_data["depth"]
+    topo = section_data["topo"]
     distance = section_data["distance"]
     variable = section_data["variable"]
     variable[variable == 0] = np.nan
 
     plt.figure(figsize=(12, 6))
     plt.pcolormesh(distance, depth, variable, cmap="viridis", shading="auto")
+    plt.plot(
+        distance,
+        topo,
+        color="black",
+        linestyle="--",
+        linewidth=1.5,
+    )
     plt.colorbar(label=unit)
     plt.title(title)
     plt.xlabel("Distance (grille)")
@@ -722,6 +736,11 @@ N = np.shape(temp)[1]
 plot_horiz = 1
 plot_section = 1
 
+# Parameters for vertical sections
+gridfile = hisfile  # Grid file
+tindex = -1  # Last time step
+ind_sec = 17  # Column index for the vertical slice
+
 # FOR THE HORIZONTAL PLOT
 if plot_horiz == 1:
     #
@@ -782,6 +801,22 @@ if plot_horiz == 1:
         # # Ajout des lignes de côte
         # ax.coastlines()
 
+        # Ajout des sections sur la cartes
+        ax.plot(
+            lon[ind_sec, :],
+            lat[ind_sec, :],
+            color="black",
+            linestyle="--",
+            linewidth=1.5,
+        )
+        ax.plot(
+            lon[:, ind_sec],
+            lat[:, ind_sec],
+            color="black",
+            linestyle="--",
+            linewidth=1.5,
+        )
+
         # Ajout des longitudes et latitudes
         ax.set_xticks(
             np.arange(np.floor(lon.min()), np.ceil(lon.max()) + 1, 5),
@@ -838,15 +873,17 @@ if plot_section == 1:
 
     tindex = -1  # Dernier pas de temps
     direction = "x"  # Coupe zonale
-    idx = 20  # Indice de la colonne pour la coupe
+    # ind_sec = 15  # Indice de la colonne pour la coupe
 
     # Extraire les données
     var_sec = "temp"
-    section = get_vertical_section(hisfile, var_sec, tindex, direction, idx, gridfile)
+    section = get_vertical_section(
+        hisfile, var_sec, tindex, direction, ind_sec, gridfile
+    )
 
     # Tracer la section verticale
     plot_vertical_section(
-        section, title=f"Zonal Vertical section -  {var_sec} - j={idx}", unit="°C"
+        section, title=f"Zonal Vertical section -  {var_sec} - j={ind_sec}", unit="°C"
     )
 
 # Exemple de dictionnaire avec variables et leurs directions
@@ -870,11 +907,6 @@ units = {
     "u": "m/s",
     "v": "m/s",
 }
-
-# Paramètres pour les sections verticales
-gridfile = hisfile  # Fichier de la grille
-tindex = -1  # Dernier pas de temps
-idx = 20  # Indice de la colonne pour la coupe
 
 # Calculer la disposition des sous-graphiques (grille optimale)
 n_vars = len(variables)
@@ -900,7 +932,9 @@ for var, directions in variables.items():
     for direction in directions:
         # Extraire les données de la section
         print(f"Processing {var} in direction {direction}")
-        section = get_vertical_section(hisfile, var, tindex, direction, idx, gridfile)
+        section = get_vertical_section(
+            hisfile, var, tindex, direction, ind_sec, gridfile
+        )
         data = section["variable"]
         m_data = np.ma.masked_equal(data, 0)
         # Configurer les axes
@@ -913,6 +947,25 @@ for var, directions in variables.items():
             shading="auto",
         )
         ax.grid(True)
+
+        # # Add x-ticks every 1 unit
+        # xticks = np.arange(section["distance"].min(), section["distance"].max() + 1, 1)
+        # ax.set_xticks(xticks)
+
+        # # Orientation verticale des étiquettes
+        # ax.tick_params(axis="x", labelrotation=90)
+
+        # Add a black line for topo section
+        topo_profile = section["topo"]
+        distance_profile = section["distance"]
+        # Plot the depth profile as a black dashed line
+        ax.plot(
+            distance_profile,
+            topo_profile,
+            color="black",
+            linestyle="--",
+            linewidth=1.5,
+        )
 
         # Titre et labels
         ax.set_title(f"{titles.get(var, var)} - Along {direction}")
@@ -939,7 +992,9 @@ for j in range(n_dirs, len(axes)):
 plt.tight_layout()
 
 # Titre général
-plt.suptitle(f"Vertical Sections for Variables at J/I index {idx}", fontsize=16, y=1.02)
+plt.suptitle(
+    f"Vertical Sections for Variables at J/I index {ind_sec}", fontsize=16, y=1.02
+)
 
 # plt.show()
 # plt.savefig('REGIONAL_sections.png', bbox_inches='tight')
