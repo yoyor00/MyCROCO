@@ -147,7 +147,7 @@ def normalize_line(line):
     return re.sub(r"\s+", " ", line).strip()
 
 
-ddef apply_rule(fname, lines, rule):
+def apply_rule(fname, lines, rule):
     """
     Apply a single rule to a list of lines in memory.
 
