@@ -24,10 +24,30 @@
                     "tuning" : {
                         "type" : "object",
                          "properties": {
-                            "gnu": {"type" : "string"},
-                            "intel": {"type" : "string"},
-                            "nvfortran": {"type" : "string"},
-                            "mpi_options": {"type" : "string"},
+                            "gnu": {
+                                "mpi_options": {"type" : "string"},
+                                "fc": {"type" : "string"},
+                                "mpifc": {"type" : "string"},
+                                "extra": {"type" : "string"},
+                                "standard": {"type" : "string"},
+                                "debug": {"type" : "string"},
+                                },
+                            "intel": {
+                                "mpi_options": {"type" : "string"},
+                                "fc": {"type" : "string"},
+                                "mpifc": {"type" : "string"},
+                                "extra": {"type" : "string"},
+                                "standard": {"type" : "string"},
+                                "debug": {"type" : "string"},
+                                },
+                            "nvfortran": {
+                                "mpi_options": {"type" : "string"},
+                                "fc": {"type" : "string"},
+                                "mpifc": {"type" : "string"},
+                                "extra": {"type" : "string"},
+                                "standard": {"type" : "string"},
+                                "debug": {"type" : "string"},
+                                },
                             "environ": { "type": "object" },
                             "hwloc_bind": {
                                 "type": "object",
@@ -38,7 +58,7 @@
                                 "required": [ "openmp", "mpirun" ]
                             }
                         },
-                        "required" : [ "gnu", "intel", "nvfortran", "mpi_options", "environ" ]
+                        "required" : [ "gnu", "intel", "nvfortran", "environ" ]
                     }
                 },
                 "required" : [ "ressources", "tuning" ]

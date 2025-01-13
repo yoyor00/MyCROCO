@@ -79,51 +79,42 @@ class JobcompCrocoConfig:
         # caution here, the space in '# define' is required due to croco tricks
         # do not remove it or it behave strangely
         if status:
-            # build the patch rule
-            rules = [
-                {
-                    "mode": "replace",
-                    "what": f"# undef {key_name}",
-                    "by": f"# define {key_name}",
-                    "descr": f"Set {key_name} to {status}",
-                }
-            ]
-            # apply
-            patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
-            # build the patch rule
-            rules = [
-                {
-                    "mode": "insert-after",
-                    "what": f"#if defined {self.case}",
-                    "insert": f"# define {key_name}",
-                    "descr": f"Set {key_name} to {status}",
-                }
-            ]
-            # apply
-            patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
+            status_tochange = "undef"
+            status_wanted = "define"
         else:
-            # build the patch rule
-            rules = [
-                {
-                    "mode": "replace",
-                    "what": f"# define {key_name}",
-                    "by": f"# undef {key_name}",
-                    "descr": f"Unset {key_name} to {status}",
-                }
-            ]
-            # apply
-            patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
-            # build the patch rule
-            rules = [
-                {
-                    "mode": "insert-after",
-                    "what": f"#if defined {self.case}",
-                    "insert": f"# undef {key_name}",
-                    "descr": f"Unset {key_name} to {status}",
-                }
-            ]
-            # apply
-            patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
+            status_tochange = "define"
+            status_wanted = "undef"
+
+        if self.case == "REGIONAL":
+            case_line_to_find = f"#if defined {self.case}"
+        else:
+            case_line_to_find = f"#elif defined {self.case}"
+
+        # First, change possible existant status to match the wanted one
+        # -------------------------------------------------------------------
+        # build the patch rule
+        rules = [
+            {
+                "mode": "replace",
+                "what": f"# {status_tochange} {key_name}",
+                "by": f"# {status_wanted} {key_name}",
+                "descr": f"Set {key_name} to {status}",
+            }
+        ]
+        # apply
+        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
+        # Then, add wanted key and status in the right case place
+        # -------------------------------------------------------------------
+        rules = [
+            {
+                "mode": "insert-after",
+                "what": case_line_to_find,
+                "insert": f"# {status_wanted} {key_name}",
+                "descr": f"Set {key_name} to {status}",
+            }
+        ]
+        # apply
+        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
 
     def param_h_configure_openmp_split(self, threads: int):
         """
@@ -273,6 +264,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
          - FFLAGS=-march=native
         """
         vars = {}
+        self.fflags = ""
         for entry in arg_vars:
             # split name & value
             fields = entry.split("=", maxsplit=1)
@@ -290,7 +282,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
 
             # apply vars
             if var_name == "FFLAGS":
-                self.fflags = var_value
+                self.fflags = self.fflags + " " + var_value
             elif var_name == "FC":
                 if is_mpi:
                     self.mpif90 = var_value

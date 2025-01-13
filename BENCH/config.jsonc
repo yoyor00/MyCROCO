@@ -2,7 +2,8 @@
 	///////////////////////////// IMPOTS ///////////////////////////////////////
 	"imports": {
 		"hosts": [ "config.d/hosts/*" ],
-		"cases": [ "config.d/cases/*" ]
+		"cases": [ "config.d/cases/*" ],
+		"variants": [ "config.d/variants/*" ]
 	},
 	///////////////////////////// TUNING ///////////////////////////////////////
 	"hosts": {
@@ -12,13 +13,27 @@
 				"gpu": 1
 			},
 			"tuning": {
-				"gnu": "-march=native",
-				"intel": "",
-				"nvfortran": "-tp=native",
+				"gnu": {
+					"extra": "-march=native",
+					"standard": "-O2 -fdefault-real-8 -fdefault-double-8 -std=legacy",
+					"debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
+					"mpi_options": ""
+				},
+				"intel": {
+					"extra": "",
+					"standard": "-O2 -fno-alias -i4 -r8 -fp-model precise",
+					"debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
+					"mpi_options": ""
+				},
+				"nvfortran": {
+					"extra": "-tp=native",
+					"standard": "-O2 -fast -g -r8 -i4 -mcmodel=medium",
+					"debug": "-O0 -fast -g -r8 -i4 -mcmodel=medium",
+					"mpi_options": ""
+				},
 				"environ":{
 					"OMP_PROC_BIND": "spread"
 				},
-				"mpi_options": "",
 				"hwloc_bind": {
 					"openmp": "",
 					"mpirun": ""
@@ -101,194 +116,7 @@
 	},
 	////////////////////////////// VARIANTS ////////////////////////////////////
 	"variants": {
-		// seq default
-		"sequential": {
-			"configure": "FFLAGS='-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy'",
-			"tuning_familly": "gnu",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"cpu": 1
-			}
-		},
-		// seq debug
-		"sequential-debug": {
-			"configure": "FFLAGS='-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888'",
-			"tuning_familly": "gnu",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"cpu": 1
-			}
-		},
-		// seq default
-		"sequential-memcheck": {
-			"configure": "FFLAGS=-fsanitize=address CFLAGS=-fsanitize=address",
-			"tuning_familly": "gnu",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"cpu": 1
-			}
-		},
-		// seq default
-		"sequential-nvfortran": {
-			"configure": "FC=nvfortran FFLAGS='-O2 -fast -g -r8 -i4 -mcmodel=medium'",
-			"tuning_familly": "nvfortran",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"cpu": 1
-			}
-		},
-		// seq default
-		"sequential-ifort": {
-			"configure": "FC=ifort FFLAGS='-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise'",
-			"tuning_familly": "intel",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"cpu": 1
-			}
-		},
-		// seq default
-		"sequential-debug-ifort": {
-			"configure": "FC=ifort FFLAGS='-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1'",
-			"tuning_familly": "intel",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"cpu": 1
-			}
-		},
-		// seq default
-		"sequential-nvfortran-acc-multicore-{threads}": {
-			"configure": "FC=nvfortran FFLAGS=-acc=multicore -DOPENACC=yes",
-			"tuning_familly": "nvfortran",
-			"environ": {
-				"OMP_NUM_THREADS": "{threads}"
-			},
-			"command_prefix": "{tuning.hwloc_bind.openmp}",
-			"unpack": {
-				"threads": [2, 4, 6, 8, 16, 32, 64]
-			},
-			"requires": {
-				"cpu": "{threads}"
-			}
-		},
-		// seq default
-		"poseidon": {
-			"configure": "--with-optim=poseidon",
-			"tuning_familly": "gnu",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"cpu": 1
-			}
-		},
-		// openmp
-		"openmp-{threads}": {
-			"configure": "--with-optim=openmp --with-threads={threads}",
-			"tuning_familly": "gnu",
-			"environ": {
-				"OMP_NUM_THREADS": "{threads}"
-			},
-			"command_prefix": "{tuning.hwloc_bind.openmp}",
-			"unpack": {
-				"threads": [2, 4, 6, 8, 16, 32, 64]
-			},
-			"requires": {
-				"cpu": "{threads}"
-			}
-		},
-		// mpi
-		"mpi-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort FFLAGS='-O2 -fdefault-real-8 -fdefault-double-8 -std=legacy'",
-			"tuning_familly": "gnu",
-			"environ": {
-				"OMP_NUM_THREADS": 1
-			},
-			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
-			"unpack": {
-				"tasks": [2, 4, 6, 8, 16, 32, 64]
-			},
-			"requires": {
-				"cpu": "{tasks}"
-			}
-		},
-		// mpi-debug
-		"mpi-debug-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort FFLAGS='-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888'",
-			"tuning_familly": "gnu",
-			"environ": {
-				"OMP_NUM_THREADS": 1
-			},
-			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
-			"unpack": {
-				"tasks": [2, 4, 6, 8, 16, 32, 64]
-			},
-			"requires": {
-				"cpu": "{tasks}"
-			}
-		},
-		// mpi-ifort
-		"mpi-ifort-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort FFLAGS='-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise'",
-			"tuning_familly": "intel",
-			"environ": {
-				"OMP_NUM_THREADS": 1
-			},
-			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
-			"unpack": {
-				"tasks": [2, 4, 6, 8, 16, 32, 64]
-			},
-			"requires": {
-				"cpu": "{tasks}"
-			}
-		},
-		// mpi-debug-ifort
-		"mpi-debug-ifort-{tasks}": {
-			"configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort FFLAGS='-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1'",
-			"tuning_familly": "intel",
-			"environ": {
-				"OMP_NUM_THREADS": 1
-			},
-			"command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.mpi_options}",
-			"unpack": {
-				"tasks": [2, 4, 6, 8, 16, 32, 64]
-			},
-			"requires": {
-				"cpu": "{tasks}"
-			}
-		},
-		// openacc
-		"openacc-native": {
-			"configure": "--with-optim=openacc-native FC=nvfortran",
-			"tuning_familly": "nvfortran",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"gpu": 1
-			}
-		},
-		"openacc-psyclone-cpu": {
-			"configure": "--with-optim=openacc-psyclone FC=nvfortran FFLAGS=-acc=host",
-			"tuning_familly": "nvfortran",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"gpu": 1
-			}
-		},
-		"openacc-psyclone": {
-			"configure": "--with-optim=openacc-psyclone FC=nvfortran",
-			"tuning_familly": "nvfortran",
-			"environ": {},
-			"command_prefix": "",
-			"requires": {
-				"gpu": 1
-			}
-		}
+		// Look inside condif.d/variants/* to see what is imported here from dir.
 	},
 	////////////////////////////// CASES ///////////////////////////////////////
 	"cases": {

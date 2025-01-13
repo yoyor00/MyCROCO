@@ -21,6 +21,7 @@ from .helpers import (
     apply_vars_in_str,
     Messaging,
     patch_lines,
+    copy_tree_with_absolute_symlinks,
 )
 from .hyperfine import run_hyperfine
 from .check import compare_netcdf_files
@@ -80,19 +81,31 @@ class Croco:
         dirname_result = self.dirname_result
         case_cpp_key = self.case["case"]
         tuning_familly = self.variant["tuning_familly"]
-        tuning_flags = self.config.host["tuning"][tuning_familly]
+        tuning_fflags = self.variant["tuning_fflags"]
+        tuning_flags = self.config.host["tuning"][tuning_familly][tuning_fflags]
+        tuning_flags_extra = self.config.host["tuning"][tuning_familly]["extra"]
         croco_build = self.croco_build
 
         # create dir
         os.makedirs(dirname, exist_ok=True)
         os.makedirs(dirname_result, exist_ok=True)
+        # link data dir
+        if "croco_files_path" in self.case:
+            self.input_dir = os.path.join(
+                self.config.data_root_path, self.case["croco_files_path"]
+            )
+            if not (os.path.isdir(self.config.data_root_path)):
+                raise Exception("Folder not found : %s" % self.config.data_root_path)
+            if not (os.path.isdir(self.input_dir)):
+                raise Exception("Folder not found : %s" % self.input_dir)
+            copy_tree_with_absolute_symlinks(self.input_dir, dirname)
 
         # extract options
         configure_variant_options = self.variant["configure"]
         configure_case_option = f"--with-case={case_cpp_key}"
         configure_compiler_option = ""
         if tuning_flags != "":
-            configure_compiler_option = f'FFLAGS="{tuning_flags}"'
+            configure_compiler_option = f'FFLAGS="{tuning_flags} {tuning_flags_extra}"'
 
         # Add cppkeys
         configure_cppkeys_options = ""
@@ -105,27 +118,6 @@ class Croco:
                     reshape.append(f"-{key}")
             reshape_str = ",".join(reshape)
             configure_cppkeys_options = f"--with-keys={reshape_str}"
-
-        if "croco_files_path" in self.case:
-            self.input_dir = os.path.join(
-                self.config.data_root_path, self.case["croco_files_path"]
-            )
-            if not (os.path.isdir(self.config.data_root_path)):
-                raise Exception("Folder not found : %s" % self.config.data_root_path)
-            if not (os.path.isdir(self.input_dir)):
-                raise Exception("Folder not found : %s" % self.input_dir)
-            # create CROCO_FILES and DATA directories
-            for dirtmp in ["CROCO_FILES", "DATA"]:
-                dest_dir = os.path.join(dirname, dirtmp)
-                os.makedirs(dest_dir, exist_ok=True)
-                in_dir = os.path.join(self.input_dir, dirtmp)
-                for item in os.listdir(in_dir):
-                    item_path = os.path.join(in_dir, item)
-                    link_path = os.path.join(dest_dir, item)
-                    if os.path.isfile(item_path):
-                        os.symlink(item_path, link_path)
-                    elif os.path.isdir(item_path):
-                        os.symlink(item_path, link_path)
 
         # debug
         debug_option = ""
