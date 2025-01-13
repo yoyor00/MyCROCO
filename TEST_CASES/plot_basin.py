@@ -5,26 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import argparse
-
-
-def zlevs(h, zeta, theta_s, theta_b, hc, N, vtype="r"):
-    """
-    Compute vertical sigma levels for the grid.
-    """
-    if vtype == "r":  # rho points
-        Cs = (1 - theta_b) * np.sinh(theta_s * np.linspace(-1, 0, N)) / np.sinh(
-            theta_s
-        ) + theta_b * (
-            np.tanh(theta_s * (np.linspace(-1, 0, N) + 0.5))
-            / (2 * np.tanh(0.5 * theta_s))
-        )
-    else:
-        raise ValueError(f"Unsupported grid type: {vtype}")
-    z = np.zeros((N, h.shape[0], h.shape[1]))
-    for k in range(N):
-        z0 = (hc * (Cs[k] - Cs[0]) + (h - hc) * Cs[k]) / (h + hc)
-        z[k, :, :] = zeta + (zeta + h) * z0
-    return z
+import croco_utils as cr
 
 
 # Parse command-line arguments
@@ -84,10 +65,11 @@ rho = R0 - TCOEF * t
 N, M = t.shape
 theta_s = nc.theta_s
 theta_b = nc.theta_b
+vtrans = np.squeeze(nc.variables.get("Vtransform", None))
 hc = nc.hc
 nc.close()
 
-zr = zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r",vtrans)
 zr = zr[:, j, :]
 xr = np.tile(x / 1000, (N, 1))  # Convert to km
 

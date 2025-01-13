@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 import cartopy.crs as ccrs
 import cartopy.mpl.ticker as cticker
+import croco_utils as cr
 
 
 #################################################################
@@ -133,117 +134,6 @@ def scoordinate(theta_s, theta_b, N, hc, vtransform):
 
 
 ###################################################
-def zlevs(h, zeta, theta_s, theta_b, hc, N, type, vtransform):
-    """
-    function z=zlevs(h,zeta,theta_s,theta_b,hc,N,type,vtransform)
-
-     this function compute the depth of rho or w points for CROCO
-
-     On Input:
-
-       type    'r': rho point 'w': w point
-       vtransform  1=> old v transform (Song, 1994);
-                   2=> new v transform (Shcheptekin, 2006)
-     On Output:
-
-       z       Depths (m) of RHO- or W-points (3D matrix).
-    """
-
-    #
-    # Test the number of dimension for h
-    #
-
-    Ndim = np.size(np.shape(h))
-    if Ndim == 2:
-        M, L = np.squeeze(np.shape(h))
-    elif Ndim == 1:
-        L = np.squeeze(np.shape(h))
-    else:
-        print("zlevs: error - incorrect dimension for h")
-        return
-        # ??? manage with try/raise to catch error
-
-    hmin = h.min()
-    hmax = h.max()
-
-    #
-    # Set S-Curves in domain [-1 < sc < 0] at vertical W- and RHO-points.
-    #
-
-    ds = 1.0 / float(N)
-
-    if type == "w":
-
-        sc = ds * (np.arange(0, N + 1) - N)
-        Nmax = N + 1
-
-    elif type == "r":
-
-        sc = ds * (np.arange(1, N + 1) - N - 0.5)
-        Nmax = N
-
-    else:
-
-        print("Problem with type = ", type)
-        sys.exit()
-        # ??? manage with try/raise to catch error
-
-    if vtransform == 1:
-
-        print("OLD_S_COORD")
-
-        cff1 = 1.0 / np.sinh(theta_s)
-        cff2 = 0.5 / np.tanh(0.5 * theta_s)
-        Cs = (1.0 - theta_b) * cff1 * np.sinh(theta_s * sc) + theta_b * (
-            cff2 * np.tanh(theta_s * (sc + 0.5)) - 0.5
-        )
-
-    elif vtransform == 2:
-        # "NEW_S_COORD"
-        Cs = get_csf(sc, theta_s, theta_b)
-
-    else:
-        print("Problem with vtransform = ", vtransform)
-        sys.exit()
-        # ??? manage with try/raise to catch error
-
-    #
-    #  Set vertical grid
-    #
-
-    if Ndim == 2:
-        z = np.zeros([Nmax, M, L])
-    elif Ndim == 1:
-        z = np.zeros([Nmax, L])
-
-    for k in np.arange(0, Nmax):
-
-        if vtransform == 1:
-
-            cff = hc * (sc[k] - Cs[k])
-            cff1 = Cs[k]
-            z0 = cff + cff1 * h
-            hinv = 1.0 / h
-            if Ndim == 2:
-                z[k, :, :] = z0 + zeta * (1.0 + z0 * hinv)
-            elif Ndim == 1:
-                z[k, :] = z0 + zeta * (1.0 + z0 * hinv)
-
-        elif vtransform == 2:
-
-            cff = hc * sc[k]
-            cff1 = Cs[k]
-            z0 = cff + cff1 * h
-            hinv = 1.0 / (h + hc)
-            if Ndim == 2:
-                z[k, :, :] = z0 * h * hinv + zeta * (1.0 + z0 * hinv)
-            elif Ndim == 1:
-                z[k, :] = z0 * h * hinv + zeta * (1.0 + z0 * hinv)
-
-    return z
-
-
-#################################################################
 def rempoints(var, npts):
     """
     Reduce a 2Dmatrix by removing border points
@@ -444,7 +334,7 @@ def get_depths(fname, gname, tindex, point_type):
     if point_type in ("u", "v"):
         vtype = "r"
 
-    z = zlevs(h, zeta, theta_s, theta_b, hc, N, vtype, vtrans)
+    z = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, vtype, vtrans)
 
     # Convertir les profondeurs si type est 'u' ou 'v'
     if point_type == "u":
