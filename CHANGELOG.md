@@ -13,7 +13,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
   advection in NBQ
 - Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING 
-- Issue #267 : fix several bugs with MUSTANG output and initialisation
+- Issue #267 : fix several bugs with MUSTANG output, initialisation and ero_option=3
 
 ### Changed
 
