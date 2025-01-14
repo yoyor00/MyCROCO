@@ -9,9 +9,7 @@ import croco_utils as cr
 
 
 # Command-line options
-parser = argparse.ArgumentParser(
-    description="Generate plots for the CANYON test case."
-)
+parser = argparse.ArgumentParser(description="Generate plots for the CANYON test case.")
 parser.add_argument(
     "--file", type=str, default="canyon_his.nc", help="Path to the NetCDF file"
 )
@@ -21,9 +19,7 @@ parser.add_argument(
 parser.add_argument(
     "--makepng", action="store_true", help="Generate a PNG of the plots"
 )
-parser.add_argument(
-    "--noshow", action="store_true", help="Do not display the plots"
-)
+parser.add_argument("--noshow", action="store_true", help="Do not display the plots")
 parser.add_argument(
     "--output-dir",
     type=str,
@@ -43,17 +39,17 @@ except FileNotFoundError:
     print(f"Error: File '{args.file}' not found.")
     exit(1)
 
-time = nc.variables['scrum_time'][tndx] / 86400
-h = nc.variables['h'][:]
-x1 = nc.variables['x_rho'][:]
-y1 = nc.variables['y_rho'][:]
+time = nc.variables["scrum_time"][tndx] / 86400
+h = nc.variables["h"][:]
+x1 = nc.variables["x_rho"][:]
+y1 = nc.variables["y_rho"][:]
 y = y1[:, i]
-zeta = nc.variables['zeta'][tndx, :, :]
-t = nc.variables['rho'][tndx, :, :, i]
+zeta = nc.variables["zeta"][tndx, :, :]
+t = nc.variables["rho"][tndx, :, :, i]
 N, M = t.shape
-sst = nc.variables['temp'][tndx, -1, :, :]
-u = nc.variables['u'][tndx, -1, :, :]
-v = nc.variables['v'][tndx, -1, :, :]
+sst = nc.variables["temp"][tndx, -1, :, :]
+u = nc.variables["u"][tndx, -1, :, :]
+v = nc.variables["v"][tndx, -1, :, :]
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
@@ -64,7 +60,7 @@ nc.close()
 ur = 0.5 * (u[:, :-1] + u[:, 1:])  # Example replacement for MATLAB's u2rho_2d
 vr = 0.5 * (v[:-1, :] + v[1:, :])  # Example replacement for MATLAB's v2rho_2d
 
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r",vtrans)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtrans)
 zr = zr[:, :, i]
 yr = np.tile(y / 1000, (N, 1))
 

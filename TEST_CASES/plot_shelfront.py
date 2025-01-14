@@ -16,12 +16,17 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="shelfront_his.nc", help="Path to the NetCDF file (default: shelfront_his.nc)"
+    "--file",
+    type=str,
+    default="shelfront_his.nc",
+    help="Path to the NetCDF file (default: shelfront_his.nc)",
 )
 parser.add_argument("--makepdf", action="store_true", help="Generate a PDF of the plot")
 parser.add_argument("--makepng", action="store_true", help="Generate a PNG of the plot")
 parser.add_argument("--no-show", action="store_true", help="Suppress plot display")
-parser.add_argument("--output-dir", type=str, default=".", help="Directory to save output files")
+parser.add_argument(
+    "--output-dir", type=str, default=".", help="Directory to save output files"
+)
 args = parser.parse_args()
 
 # Read data from NetCDF file
@@ -35,9 +40,13 @@ except FileNotFoundError:
 tndx = 10  # Adjusted for Python's 0-based indexing (MATLAB's tndx = 11)
 time = nc.variables["scrum_time"][tndx] / (24 * 3600)  # Convert time to days
 h = nc.variables["h"][:]
-y = np.squeeze(nc.variables["y_rho"][:, 1])  # Second column (MATLAB: `(:,2)` -> Python: `[:,1]`)
+y = np.squeeze(
+    nc.variables["y_rho"][:, 1]
+)  # Second column (MATLAB: `(:,2)` -> Python: `[:,1]`)
 zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
-t = np.squeeze(nc.variables["temp"][tndx, :, :, 1])  # Second column (MATLAB: `(:,:,2)` -> Python: `[:,:,1]`)
+t = np.squeeze(
+    nc.variables["temp"][tndx, :, :, 1]
+)  # Second column (MATLAB: `(:,:,2)` -> Python: `[:,:,1]`)
 u = np.squeeze(nc.variables["u"][tndx, :, :, 1])
 N, M = t.shape
 theta_s = nc.theta_s
@@ -56,7 +65,9 @@ yr = np.tile(yr, (N, 1)) / 1000  # Convert to kilometers
 plt.figure(figsize=(10, 8))
 
 # Contour plot of temperature
-contour = plt.contourf(yr, zr, t, levels=np.arange(12, 18.5, 0.5), cmap="viridis", linestyles="none")
+contour = plt.contourf(
+    yr, zr, t, levels=np.arange(12, 18.5, 0.5), cmap="viridis", linestyles="none"
+)
 plt.colorbar(contour, label="Temperature [°C]")
 plt.clim(12, 18)
 

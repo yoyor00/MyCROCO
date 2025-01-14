@@ -12,13 +12,27 @@ import croco_utils as cr
 parser = argparse.ArgumentParser(
     description="Plot upwelling temperature and velocity from a NetCDF file and optionally save as PDF/PNG.",
     epilog="Example usage:\n  python script.py --file upwelling_his.nc --output-dir ./plots --makepdf",
-    formatter_class=argparse.RawTextHelpFormatter
+    formatter_class=argparse.RawTextHelpFormatter,
 )
-parser.add_argument("--file", type=str, default="upwelling_his.nc", help="Path to the NetCDF file (default: upwelling_his.nc)")
+parser.add_argument(
+    "--file",
+    type=str,
+    default="upwelling_his.nc",
+    help="Path to the NetCDF file (default: upwelling_his.nc)",
+)
 parser.add_argument("--makepdf", action="store_true", help="Generate a PDF of the plot")
 parser.add_argument("--makepng", action="store_true", help="Generate a PNG of the plot")
-parser.add_argument("--no-show", action="store_true", help="Do not display the plots on the screen (default: display)")
-parser.add_argument("--output-dir", type=str, default="./", help="Directory to save the output files (default: current directory)")
+parser.add_argument(
+    "--no-show",
+    action="store_true",
+    help="Do not display the plots on the screen (default: display)",
+)
+parser.add_argument(
+    "--output-dir",
+    type=str,
+    default="./",
+    help="Directory to save the output files (default: current directory)",
+)
 args = parser.parse_args()
 
 # Ensure output directory exists
@@ -39,7 +53,9 @@ time = nc.variables["scrum_time"][tndx] / (24 * 3600)  # Convert seconds to days
 h = nc.variables["h"][:]
 y = np.squeeze(nc.variables["y_rho"][:, 1])  # MATLAB's 2nd index -> Python's 1st
 zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
-t = np.squeeze(nc.variables["temp"][tndx, :, :, 1])  # MATLAB's 2nd index -> Python's 1st
+t = np.squeeze(
+    nc.variables["temp"][tndx, :, :, 1]
+)  # MATLAB's 2nd index -> Python's 1st
 u = np.squeeze(nc.variables["u"][tndx, :, :, 1])  # MATLAB's 2nd index -> Python's 1st
 N, M = t.shape
 theta_s = nc.theta_s
@@ -49,7 +65,7 @@ vtrans = np.squeeze(nc.variables.get("Vtransform", None))
 nc.close()
 
 # Compute vertical levels
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r",vtrans)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtrans)
 zr = np.squeeze(zr[:, :, 0])  # MATLAB's zr(:,:,1) -> Python's zr[:, :, 0]
 
 # Create yr
@@ -60,7 +76,9 @@ yr = np.tile(yr, (N, 1)) / 1000  # MATLAB's repmat(yr, [N 1]) and convert to km
 plt.figure(figsize=(10, 6))
 
 # Contourf plot for temperature
-contourf = plt.contourf(yr, zr, t, np.arange(9, 21, 1), cmap="viridis", linestyles="none")
+contourf = plt.contourf(
+    yr, zr, t, np.arange(9, 21, 1), cmap="viridis", linestyles="none"
+)
 plt.colorbar(contourf)
 plt.clim(10, 18)
 

@@ -10,17 +10,40 @@ import croco_utils as cr
 # Command-line arguments
 parser = argparse.ArgumentParser(
     description="Plot and analyze RIVER test case output from a CROCO NetCDF file.",
-    formatter_class=argparse.RawTextHelpFormatter
+    formatter_class=argparse.RawTextHelpFormatter,
 )
-parser.add_argument("--file", type=str, default="river_his.nc", help="Path to the NetCDF file (default: river_his.nc)")
+parser.add_argument(
+    "--file",
+    type=str,
+    default="river_his.nc",
+    help="Path to the NetCDF file (default: river_his.nc)",
+)
 parser.add_argument("--floats", action="store_true", help="Include float trajectories")
-parser.add_argument("--vname", type=str, default="salt", help="Variable name to plot (default: salt)")
-parser.add_argument("--step", type=int, default=2, help="Step size for vector field quivers (default: 2)")
-parser.add_argument("--makepdf", action="store_true", help="Generate PDF files for plots")
-parser.add_argument("--makepng", action="store_true", help="Generate PNG files for plots")
-parser.add_argument("--makemovie", action="store_true", help="Generate an MP4 movie from the plots")
+parser.add_argument(
+    "--vname", type=str, default="salt", help="Variable name to plot (default: salt)"
+)
+parser.add_argument(
+    "--step",
+    type=int,
+    default=2,
+    help="Step size for vector field quivers (default: 2)",
+)
+parser.add_argument(
+    "--makepdf", action="store_true", help="Generate PDF files for plots"
+)
+parser.add_argument(
+    "--makepng", action="store_true", help="Generate PNG files for plots"
+)
+parser.add_argument(
+    "--makemovie", action="store_true", help="Generate an MP4 movie from the plots"
+)
 parser.add_argument("--no-show", action="store_true", help="Suppress displaying plots")
-parser.add_argument("--output-dir", type=str, default="./", help="Directory to save output files (default: current directory)")
+parser.add_argument(
+    "--output-dir",
+    type=str,
+    default="./",
+    help="Directory to save output files (default: current directory)",
+)
 args = parser.parse_args()
 
 # Ensure output directory exists
@@ -65,6 +88,7 @@ if floats:
 # Prepare for movie creation
 if makemovie:
     from matplotlib.animation import FFMpegWriter
+
     writer = FFMpegWriter(fps=5, metadata={"title": "RIVER Animation"})
     movie_path = os.path.join(args.output_dir, "river_movie.mp4")
     fig, ax = plt.subplots()

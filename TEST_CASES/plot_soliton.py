@@ -14,12 +14,17 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="soliton_his.nc", help="Path to the NetCDF file (default: soliton_his.nc)"
+    "--file",
+    type=str,
+    default="soliton_his.nc",
+    help="Path to the NetCDF file (default: soliton_his.nc)",
 )
 parser.add_argument("--makepdf", action="store_true", help="Generate a PDF of the plot")
 parser.add_argument("--makepng", action="store_true", help="Generate a PNG of the plot")
 parser.add_argument("--no-show", action="store_true", help="Suppress plot display")
-parser.add_argument("--output-dir", type=str, default=".", help="Directory to save output files")
+parser.add_argument(
+    "--output-dir", type=str, default=".", help="Directory to save output files"
+)
 args = parser.parse_args()
 
 # Parameters
@@ -63,6 +68,7 @@ plt.grid()
 
 # Save outputs
 import os
+
 output_dir = args.output_dir
 os.makedirs(output_dir, exist_ok=True)  # Ensure output directory exists
 

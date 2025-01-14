@@ -69,7 +69,7 @@ vtrans = np.squeeze(nc.variables.get("Vtransform", None))
 hc = nc.hc
 nc.close()
 
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r",vtrans)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtrans)
 zr = zr[:, j, :]
 xr = np.tile(x / 1000, (N, 1))  # Convert to km
 
