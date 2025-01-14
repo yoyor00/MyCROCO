@@ -2944,7 +2944,7 @@ MODULE sed_MUSTANG
         taucr = taucr_sand
         excespowr = n_eros_sand
       ELSE IF(frmudsup .LE. frmudcr2) THEN ! II) Intermediate sand / mud 
-        coef_tmp = xexp_ero * (frmudcr1 - frmudsup) / (frmudcr2 - frmudcr1) 
+        coef_tmp = xexp_ero * (frmudcr2 - frmudsup) / (frmudcr2 - frmudcr1) 
         ! correction of  F.Ganthy which allows to avoid the shift when one approaches frmudcr2, 
         !   and allows to have a linear relation when xexp_ero tends towards 0 (but must remain different from 0)
         rapexpcoef = (EXP(coef_tmp) - 1.0_rsh) / (EXP(xexp_ero) - 1.0_rsh)
