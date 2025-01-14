@@ -34,6 +34,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - update XIOS output to have the save available variables in all MUSTANG
     output options
 
+- Issue #141 : PISCES improvements and changes
+  - Phasing of the PISCES version with that used for the CMIP7 exercise (NEMO 4.2.*)
+  - Update on the PISCES interfacing module between NEMO and CROCO
+  - Diagenetic module improvements: performance and diagenetic processes (e.g. increased number of POC classes, ...)
+  - Added creation of an independent pisces restart file (managed in namelist_pisces_ref) to improve restartability
+  - Rename the simplified version of PISCES, cpp key pisces_npzd
+  - Correction of some bug fixes
+  
 ### Deprecated
 
 ### Removed
