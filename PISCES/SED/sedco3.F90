@@ -5,20 +5,21 @@ MODULE sedco3
    !!              ***  MODULE  sedco3  ***
    !!    Sediment : carbonate in sediment pore water
    !!=====================================================================
-#if defined key_pisces
    !! * Modules used
+#if defined key_sediment
    USE sed     ! sediment global variable
    USE sedchem
-   USE sms_pisces, ONLY : rtrn
+   USE lib_mpp         ! distribued memory computing library
+
 
    IMPLICIT NONE
    PRIVATE
 
-   !!* Substitution
-#  include "ocean2pisces.h90"
-
    !! *  Routine accessibility
    PUBLIC sed_co3     
+
+   !!* Substitution
+#  include "ocean2pisces.h90"
 
    !!----------------------------------------------------------------------
    !!   OPA 9.0   !   LODYC-IPSL   (2003)
@@ -53,13 +54,12 @@ CONTAINS
       REAL(wp), DIMENSION(jpoce,jpksed) :: zhinit, zhi
      !!----------------------------------------------------------------------
 
-      IF( kt == nitsed000 ) THEN
-         IF (lwp) WRITE(numsed,*) ' sed_co3 : carbonate ion and proton concentration calculation  '
-         IF (lwp) WRITE(numsed,*) ' '
-      ENDIF
+      IF( ln_timing )  CALL timing_start('sed_co3')
 
       DO jk = 1, jpksed
-         zhinit(:,jk)   = hipor(:,jk) / densSW(:)
+         DO ji = 1, jpoce
+            zhinit(ji,jk)   = hipor(ji,jk) / densSW(ji)
+         END DO
       END DO
 
       !     -------------------------------------------
@@ -75,6 +75,8 @@ CONTAINS
             hipor(ji,jk)  = zhi(ji,jk) * densSW(ji)
          END DO
       END DO
+
+     IF( ln_timing )  CALL timing_stop('sed_co3')
 
    END SUBROUTINE sed_co3
 
