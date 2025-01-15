@@ -703,11 +703,11 @@ CR      write(STDOUT,*) 'wrt_his:  wrtV  ' MYID
 !
 #ifdef STOGEN
 !- temporary output -
-      if (wrthis(indxTMPsto)) then
-        workr=tmpout
-        call fillvalue3d(workr,ncidhis,hisTMPsto,indxTMPsto,
+      if (wrthis(indxXIsto)) then
+        workr=sto_xi
+        call fillvalue3d(workr,ncidhis,hisXIsto,indxXIsto,
      &        record,r3dvar,type)
-CR      write(STDOUT,*) 'wrt_his:  wrtTMPsto  ' MYID
+CR      write(STDOUT,*) 'wrt_his:  wrtXIsto  ' MYID
       endif
 #endif /* STOGEN */
 !

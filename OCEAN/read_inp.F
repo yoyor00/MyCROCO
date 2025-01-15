@@ -1201,7 +1201,7 @@ c        close(testunit)
 #ifdef SOLVE3D
      &                    ,  wrthis(indxU),  wrthis(indxV)
 # ifdef STOGEN
-     &                    ,  wrthis(indxTMPsto)
+     &                    ,  wrthis(indxXIsto)
 # endif
 # ifdef TRACERS
      &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT)
@@ -1222,7 +1222,7 @@ c        close(testunit)
      &    , wrthis(indxU),  'write U    ', '3D U-momentum component.'
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
 # ifdef STOGEN
-     &    , wrthis(indxTMPsto),'write tmpout', 'Temporary array.'
+     &    , wrthis(indxXIsto),'write sto_xi', 'Temporary array.'
 # endif
 # ifdef TRACERS
         do itrc=1,NT

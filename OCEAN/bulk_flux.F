@@ -691,8 +691,8 @@
 !
 #  ifdef STOGEN
 !     apply multiplicative noise to Cd
-      tmpout(:,:,N)=1.0
-      call sto_bulk_cd ( tmpout(:,:,N) )
+      sto_xi(:,:,N)=1.0
+      call sto_bulk_cd ( sto_xi(:,:,N) )
       call sto_bulk_cd ( cer )
 #  endif
 

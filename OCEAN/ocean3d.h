@@ -38,8 +38,8 @@
 # endif
 
 # ifdef STOGEN
-      real tmpout(GLOBAL_2D_ARRAY,N)
-      common /stogen/ tmpout
+      real sto_xi(GLOBAL_2D_ARRAY,N)
+      common /stogen/ sto_xi 
 # endif
 
 # ifdef NBQ

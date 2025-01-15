@@ -309,7 +309,7 @@ C$    integer omp_get_thread_num
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_UV */
 # ifdef STOGEN
-            tmpout(i,j,k)=init
+            sto_xi(i,j,k)=init
 # endif
           enddo
         enddo
