@@ -86,6 +86,9 @@ class Croco:
         tuning_flags_extra = self.config.host["tuning"][tuning_familly]["extra"]
         croco_build = self.croco_build
 
+        restart=self.variant["restart"]
+        print ('RESTART') 
+        print (restart)
         # create dir
         os.makedirs(dirname, exist_ok=True)
         os.makedirs(dirname_result, exist_ok=True)
@@ -244,6 +247,7 @@ class Croco:
         host_tuning = self.config.host["tuning"]
         rvtk = self.config.rvtk
         is_rvtk_ref = self.variant_name == self.config.variant_ref_name
+        restart=self.variant["restart"]
 
         # load tuning env & override if needed
         for key, value in host_tuning["environ"].items():
@@ -259,11 +263,19 @@ class Croco:
         for var, value in environ.items():
             env_line += f'{var}="{value}" '
 
+        print('ENVLINE') 
+        print(env_line)
+        print(command_prefix)
+        print(self.case["case"].capitalize())
         # build command and run
         command = (
             "%s ../../../scripts/correct_end.sh %s ./croco TEST_CASES/croco.in.%s"
             % (env_line, command_prefix, self.case["case"].capitalize())
         )
+        print(command)
+        if restart : command = f"{command.replace('../../../scripts/correct_end.sh', '').strip()} && {command}_rst"
+        print(command) 
+
         with move_in_dir(dirname):
             # link ref files
             if rvtk and not is_rvtk_ref:
