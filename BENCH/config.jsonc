@@ -15,13 +15,13 @@
 			"tuning": {
 				"gnu": {
 					"extra": "-march=native",
-					"standard": "-O2 -fdefault-real-8 -fdefault-double-8 -std=legacy",
+					"standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy",
 					"debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
 					"mpi_options": ""
 				},
 				"intel": {
 					"extra": "",
-					"standard": "-O2 -fno-alias -i4 -r8 -fp-model precise",
+					"standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
 					"debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
 					"mpi_options": ""
 				},
