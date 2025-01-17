@@ -325,6 +325,7 @@ class Croco:
             )
 
         # calc output
+        os.makedirs(self.dirname_result, exist_ok=True)
         output_filename = f"{self.dirname_result}/result-{self.full_name}.json"
 
         # add some infos
