@@ -5906,7 +5906,7 @@ MODULE sed_MUSTANG
                 ENDDO
                 k=ksmax
                 aa(k)=-disvi(k-1,ivv)*poroin(k-1)-winter(k-1)*fexcs
-                bb(k)=dzs(k,i,j)*poro(k,i,j)*dt_sed_inv+disvi(k-1,ivv)*poroin(k-1)+disvi(k,ivv)+winter(k)-winter(k-1)*cexcs
+                bb(k)=dzs(k,i,j)*poro(k,i,j)*dt_sed_inv+disvi(k-1,ivv)*poroin(k-1)+disvi(k,ivv)+winter(k)*fexcs-winter(k-1)*cexcs
                 cc(k)=0.0_rsh
                 fludif(iv,i,j)=disvi(k,ivv)*conc_bottom(ivv)
                 dd(k)=cv_sed(iv,k,i,j)*volpwak(k)*dt_sed_inv+fludif(iv,i,j)
