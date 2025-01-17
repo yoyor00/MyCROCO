@@ -231,24 +231,34 @@ list(APPEND CROCO_SRC_F90 tooldatosec.F90
                           tooldatetosec.F90
                           )
 # Pices files
-list(APPEND CROCO_SRCS_F90 ../PISCES/par_pisces.F90 ../PISCES/ocean2pisces.F90 ../PISCES/trc.F90
-                           ../PISCES/sms_pisces.F90 ../PISCES/p4zche.F90 ../PISCES/p4zint.F90
-                           ../PISCES/p4zlys.F90 ../PISCES/p4zflx.F90 ../PISCES/p4zlim.F90
-                           ../PISCES/p4zsink.F90 ../PISCES/p4zmicro.F90 ../PISCES/p4zmeso.F90
-                           ../PISCES/p4zmort.F90 ../PISCES/p4zopt.F90  ../PISCES/p4zprod.F90
-                           ../PISCES/p4zrem.F90 ../PISCES/p4zsbc.F90 ../PISCES/p4zsed.F90
-                           ../PISCES/trcwri_pisces.F90 ../PISCES/p4zagg.F90 ../PISCES/p4zfechem.F90
-                           ../PISCES/p4zligand.F90 ../PISCES/p4zpoc.F90 ../PISCES/p4zsms.F90
-                           ../PISCES/p5zlim.F90 ../PISCES/p5zmeso.F90 ../PISCES/p5zmicro.F90
-                           ../PISCES/p5zmort.F90 ../PISCES/p5zprod.F90 ../PISCES/p4zbio.F90
-                           ../PISCES/trcsms_pisces.F90 ../PISCES/SED/sedarr.F90 ../PISCES/SED/sedbtb.F90
-                           ../PISCES/SED/sedchem.F90 ../PISCES/SED/sedco3.F90 ../PISCES/SED/seddiff.F90
-                           ../PISCES/SED/seddsr.F90 ../PISCES/SED/seddta.F90 ../PISCES/SED/sed.F90
-                           ../PISCES/SED/sedini.F90 ../PISCES/SED/sedinitrc.F90 ../PISCES/SED/sedinorg.F90
-                           ../PISCES/SED/sedmat.F90 ../PISCES/SED/sedmbc.F90 ../PISCES/SED/sedmodel.F90
-                           ../PISCES/SED/sed_oce.F90 ../PISCES/SED/sedorg.F90 ../PISCES/SED/sedrst.F90
-                           ../PISCES/SED/sedsfc.F90 ../PISCES/SED/sedstp.F90 ../PISCES/SED/sedwri.F90
-                           ../PISCES/SED/setavg_sed.F90
+list(APPEND CROCO_SRCS_F90 ../PISCES/p2zlim.F90 ../PISCES/p2zmicro.F90 ../PISCES/p2zmort.F90
+                           ../PISCES/p2zprod.F90 ../PISCES/p4zagg.F90 ../PISCES/p4zbc.F90
+                           ../PISCES/p4zbio.F90 ../PISCES/p4zche.F90 ../PISCES/p4zdiaz.F90
+                           ../PISCES/p4zfechem.F90 ../PISCES/p4zflx.F90 ../PISCES/p4zint.F90
+                           ../PISCES/p4zligand.F90 ../PISCES/p4zlim.F90 ../PISCES/p4zlys.F90
+                           ../PISCES/p4zmeso.F90 ../PISCES/p4zmicro.F90 ../PISCES/p4zmort.F90
+                           ../PISCES/p4zopt.F90 ../PISCES/p4zpoc.F90 ../PISCES/p4zprod.F90
+                           ../PISCES/p4zrem.F90 ../PISCES/p4zsed.F90 ../PISCES/p4zsink.F90
+                           ../PISCES/p4zsms.F90 ../PISCES/p5zlim.F90 ../PISCES/p5zmeso.F90
+                           ../PISCES/p5zmicro.F90 ../PISCES/p5zmort.F90 ../PISCES/p5zprod.F90
+                           ../PISCES/par_pisces.F90 ../PISCES/pisces_ini.F90 ../PISCES/sms_pisces.F90
+                           ../PISCES/trc.F90 ../PISCES/trcini_pisces.F90 ../PISCES/trcnam_pisces.F90
+                           ../PISCES/trcsink.F90 ../PISCES/trcsms_pisces.F90 ../PISCES/trcwri_pisces.F90
+                           ../PISCES/LIB/in_out_manager.F90 ../PISCES/LIB/iom.F90 ../PISCES/LIB/lib_mpp.F90
+                           ../PISCES/LIB/oce_trc.F90 ../PISCES/LIB/prtctl.F90
+                           ../PISCES/SED/oce_sed.F90 ../PISCES/SED/sedadv.F90
+                           ../PISCES/SED/seddsr.F90 ../PISCES/SED/sedini.F90
+                           ../PISCES/SED/sedmat.F90 ../PISCES/SED/sedsfc.F90
+                           ../PISCES/SED/setavg_sed.F90 ../PISCES/SED/par_sed.F90
+                           ../PISCES/SED/sedbtb.F90 ../PISCES/SED/seddsrjac.F90
+                           ../PISCES/SED/sedinitrc.F90 ../PISCES/SED/sedmodel.F90
+                           ../PISCES/SED/sedsol.F90 ../PISCES/SED/trosk.F90 ../PISCES/SED/sed.F90
+                           ../PISCES/SED/sedchem.F90 ../PISCES/SED/seddta.F90
+                           ../PISCES/SED/sedinorg.F90 ../PISCES/SED/sedorg.F90
+                           ../PISCES/SED/sedstp.F90 ../PISCES/SED/sed_oce.F90 ../PISCES/SED/sedco3.F90
+                           ../PISCES/SED/sedfunc.F90 ../PISCES/SED/sedjac.F90
+                           ../PISCES/SED/sedrst.F90 ../PISCES/SED/sedwri.F90
+
 )
 list(APPEND CROCO_SRCS_F90 module_parameter_oa.F90)
 list(APPEND CROCO_SRCS_F90 ../MUSTANG/flocmod.F90 ../MUSTANG/comsubstance.F90 ../MUSTANG/substance.F90
