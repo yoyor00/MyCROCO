@@ -182,6 +182,7 @@ class Croco:
                 self.config.report.report_status(
                     self.case_name, self.variant_name, "build", False, str(e)
                 )
+                return
         else:
             self.build_internal(extra_info, force_rebuild)
         self.config.report.report_status(
@@ -437,6 +438,7 @@ class Croco:
                 self.config.report.report_status(
                     self.case_name, self.variant_name, "check", False, str(e)
                 )
+                return
         else:
             self.check_one_file_internal(filename)
 
@@ -482,7 +484,7 @@ class Croco:
 
             try:
                 subprocess.run(command, check=True)  # Exécute la commande
-                print(
+                Messaging.step(
                     "Successfully executed %s with arguments --no-show --makepng"
                     % self.plot_diag_script
                 )
@@ -491,7 +493,9 @@ class Croco:
                     self.case_name, self.variant_name, "plotphy", True
                 )
             except subprocess.CalledProcessError as e:
-                print(f"Error during execution of {self.plot_diag_script}: {e}")
+                Messaging.step_error(
+                    f"Error during execution of {self.plot_diag_script}: {e}"
+                )
                 self.config.report.report_status(
                     self.case_name, self.variant_name, "plotphy", False, str(e)
                 )
