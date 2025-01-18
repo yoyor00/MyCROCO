@@ -202,13 +202,13 @@
 #     if defined MPI
          if ((WEST_INTER.or.i.ne.IstrU).and.(EAST_INTER.or.i.ne.Iend)
 #      ifdef MASKING
-     &   .and.(umask(i-1,j)*umask(i+1,j) .ne. 0.)
+     &   .and.(umask(i-1,j)*umask(i+1,j)*umask(i-2,j)*umask(i,j) .ne. 0.)
 #      endif
      &      ) then
 #     else
          if (i.ne.IstrU.and.i.ne.Iend
 #      ifdef MASKING
-     &   .and.(umask(i-1,j)*umask(i+1,j) .ne. 0.)
+     &   .and.(umask(i-1,j)*umask(i+1,j)*umask(i-2,j)*umask(i,j) .ne. 0.)
 #      endif
      &      ) then
 #     endif
@@ -236,6 +236,9 @@
 #    endif  
 #   endif
               dum_s=dum_s*0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
+#   ifdef NBQ_RCSOUND
+     &                   /rcsound2_nbq
+#   endif
 #   ifdef MASKING
      &                   *umask(i,j)
 #   endif  
@@ -267,6 +270,16 @@
 ! !
 #  ifdef BSTRESS_FAST
               if (k.eq.1) dum_s=dum_s-bustr(i,j)
+     &         *(Hz(i-1,j,k)+Hz(i,j,k))
+     &      /((zeta(i  ,j,knew)+h(i  ,j))
+#   ifdef NBQ_MASS
+     &        *rhobar_nbq(i,j  ,knew)
+#   endif
+     &       +(zeta(i-1,j,knew)+h(i-1,j))
+#   ifdef NBQ_MASS
+     &        *rhobar_nbq(i-1,j,knew)
+#   endif
+     &       )
 #  endif
 ! !
 ! !................................
@@ -301,9 +314,9 @@
               if (
 !     &      (j.eq.jstr.and.SOUTHERN_EDGE)
 !     &  .or.(j.eq.jend.and.NORTHERN_EDGE)
-!     &      umask(i+1,j)*umask(i-1,j)*umask(i,j+1)*umask(i,j-1)
-!     &       .eq.0
-     &       h(i,j) .le. 1.D-1 
+     &      umask(i+1,j)*umask(i-1,j)*umask(i,j+1)*umask(i,j-1)
+     &       .eq.0
+!     &       h(i,j) .le. 1.D-1 
      &           )  then
                cff2=2.*qdmu_nbq(i,j,k)/(Hz(i,j,k)+Hz(i-1,j,k))
                cff3=0.5*(
@@ -323,7 +336,7 @@
      &         +qdmw_nbq(i-1,j,k  )/(Hz(i-1,j,k  )+Hz(i-1,j,k  )))
                endif
                cff1=pn(i,j)*0.5
-               cff=vonKar/LOG(cff1/Zob(i,j)/100.)
+               cff=vonKar/LOG(cff1/Zob(i,j)/1000.)
                cff=MIN(Cdb_max,MAX(Cdb_min,cff**2))
                dum_s=dum_s
      &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
@@ -472,13 +485,13 @@
 #     if defined MPI
          if ((SOUTH_INTER.or.j.ne.JstrV).and.(NORTH_INTER.or.j.ne.Jend)
 #      ifdef MASKING
-     &      .and.(vmask(i,j-1)*vmask(i,j+1).ne.0.) 
+     &      .and.(vmask(i,j-1)*vmask(i,j+1)*vmask(i,j-2)*vmask(i,j).ne.0.) 
 #      endif              
      &      ) then
 #     else
          if (j.ne.JstrV.and.j.ne.Jend
 #      ifdef MASKING
-     &      .and.(vmask(i,j-1)*vmask(i,j+1).ne.0.) 
+     &      .and.(vmask(i,j-1)*vmask(i,j+1)*vmask(i,j-2)*vmask(i,j).ne.0.) 
 #      endif              
      &      ) then
 #     endif
@@ -506,6 +519,9 @@
 #    endif  
 #   endif
               dum_s=dum_s*0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
+#   ifdef NBQ_RCSOUND
+     &                   /rcsound2_nbq
+#   endif
 #   ifdef MASKING
      &                   *vmask(i,j)
 #   endif  
@@ -538,6 +554,16 @@
 ! !
 #  ifdef BSTRESS_FAST
               if (k.eq.1) dum_s=dum_s-bvstr(i,j)
+     &         *(Hz(i,j-1,k)+Hz(i,j,k))
+     &      /((zeta(i,j  ,knew)+h(i,j  ))
+#   ifdef NBQ_MASS
+     &        *rhobar_nbq(i,j  ,knew)
+#   endif
+     &       +(zeta(i,j-1,knew)+h(i,j-1))
+#   ifdef NBQ_MASS
+     &        *rhobar_nbq(i,j-1,knew)
+#   endif
+     &    )
 #  endif
 ! !
 ! !................................
@@ -571,9 +597,9 @@
               if (
 !     &      (i.eq.istr.and.WESTERN_EDGE)
 !     &  .or.(i.eq.iend.and.EASTERN_EDGE)
-!     &      vmask(i+1,j)*vmask(i-1,j)*vmask(i,j+1)*vmask(i,j-1)
-!     &       .eq.0
-     &       h(i,j) .le. 1.D-1 
+     &      vmask(i+1,j)*vmask(i-1,j)*vmask(i,j+1)*vmask(i,j-1)
+     &       .eq.0
+!     &       h(i,j) .le. 1.D-1 
      &           )  then
          !  write(6,*) mynode,i,j,k
                cff2=2.*qdmv_nbq(i,j,k)/(Hz(i,j,k)+Hz(i,j-1,k))
@@ -594,7 +620,7 @@
      &         +qdmw_nbq(i,j-1,k  )/(Hz(i,j-1,k  )+Hz(i,j-1,k  )))
                endif
                cff1=pm(i,j)*0.5
-               cff=vonKar/LOG(cff1/Zob(i,j)/100.)
+               cff=vonKar/LOG(cff1/Zob(i,j)/1000.)
                cff=MIN(Cdb_max,MAX(Cdb_min,cff**2))
                dum_s=dum_s
      &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   

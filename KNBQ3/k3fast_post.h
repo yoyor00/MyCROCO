@@ -792,14 +792,14 @@ C$OMP MASTER
 ! ! Update Free-slip
 ! !********************************
 ! !
-# ifdef NBQ_FREESLIP
+# ifdef NBQ_FREESLIP 
        if (FIRST_FAST_STEP) then
           do j=JstrV-2,Jend+1
             do i=IstrU-2,Iend+1
               qdmw0_nbq(i,j)=qdmw_nbq(i,j,0)
             enddo
            enddo
-        elseif (LAST_FAST_STEP) then
+        elseif (iif.ne.ndtfast) then
           do j=JstrV-2,Jend+1
             do i=IstrU-2,Iend+1
               qdmw0_nbq(i,j)=qdmw0_nbq(i,j)+qdmw_nbq(i,j,0)

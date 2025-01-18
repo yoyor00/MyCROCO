@@ -127,13 +127,16 @@
 !     &              *umask(i,j)
 #    endif
                  dZdxq_w(i,j,k) = 
-     &           0.5*(z_w(i,j,k)-z_w(i-1,j,k))*(
+     &           (z_w(i,j,k)-z_w(i-1,j,k))*(
      &           qdmu_nbq(i,j,k+1)
-     &           *Hzu_nbq_inv(i,j,k+1)   
+     &           /(Hz(i,j,k+1)+Hz(i-1,j,k+1))
 #    ifdef MVB
 !    &           +u_mvb(i,j,knew2)   ! MVBFA to be finished
 #    endif
      &           )
+#    ifdef MASKING
+     &                           *umask(i,j)
+#    endif
               enddo
             enddo
 #   else /* ! NBQ_FREESLIP */
@@ -352,9 +355,12 @@
 !     &              *vmask(i,j)
 #    endif
                  dZdyq_w(i,j,k) = 
-     &           0.5*(z_w(i,j,k)-z_w(i,j-1,k))
+     &           (z_w(i,j,k)-z_w(i,j-1,k))
      &           *qdmv_nbq(i,j,k+1)
-     &           *Hzv_nbq_inv(i,j,k+1)       
+     &           /(Hz(i,j,k+1)+Hz(i,j-1,k+1))
+#    ifdef MASKING
+     &              *vmask(i,j)
+#    endif
               enddo
             enddo
 #   else /* ! NBQ_FREESLIP */
@@ -696,25 +702,33 @@
 ! !********************************
 ! !
 #  ifdef NBQ_FREESLIP
-#   ifndef K3FAST_SEDLAYERS
-       k = 0
-#   else
        k = -N_sl
-#   endif
             do j=Jstr,Jend  
               do i=Istr,Iend    
-                qdmw_nbq(i,j,k)=
+                qdmw_nbq(i,j,k)= 
+                
 #   if defined MVB && ! defined K3FAST_SEDLAYERS
      &       -0.5*(dh_mvb(i,j,kbak2)-dh_mvb(i,j,kstp2))/dtfast
 #   endif
-     &                         +0.5*( dZdxq_w(i  ,j,k)*pm_u(i  ,j)
-     &                               +dZdxq_w(i+1,j,k)*pm_u(i+1,j) )
-     &                             * Hzr(i,j,k+1)
+
+     &      +    ( (dZdxq_w(i,j,k)+dZdxq_w(i+1,j,k))*pm_u(i,j) 
+     &            +(dZdyq_w(i,j,k)+dZdyq_w(i,j+1,k))*pm_v(i,j))
+     &      *Hzw_nbq(i,j,k)
 #   ifdef MASKING
      &                             *rmask(i,j)
 #   endif 
               enddo
             enddo 
+#  else  
+          do j=Jstr,Jend  
+          do i=Istr,Iend   
+#    ifdef MVB
+          qdmw_nbq(i,j,k) = 0.5*w_mvb(i,j,knew2)*Hz(i,j,k+1)   ! CAUTION HERE
+#    else
+          qdmw_nbq(i,j,k) = 0.
+#    endif
+          enddo 
+          enddo 
 #  endif
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

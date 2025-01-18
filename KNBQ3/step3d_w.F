@@ -113,12 +113,16 @@
            wz(i,j,0,nnew)= 0.25*(    
      &                 u(i,j,1,nnew) * pm_u(i,j) ! Caution: u is in m/s
      &                * ( z_w(i  ,j,0)-z_w(i-1,j,0) )
+     &                * umask(i,j)
      &                +u(i+1,j,1,nnew) * pm_u(i+1,j) 
      &                * ( z_w(i+1,j,0)-z_w(i,j,0) )
+     &                * umask(i+1,j)
      &                + v(i,j,1,nnew) * pm_v(i,j) 
      &                * ( z_w(i,j  ,0)-z_w(i,j-1,0) )
+     &                * vmask(i,j)
      &                + v(i,j+1,1,nnew) * pm_v(i,j+1) 
-     &                * ( z_w(i,j+1,0)-z_w(i,j,0) ))
+     &                * ( z_w(i,j+1,0)-z_w(i,j,0) )
+     &                * vmask(i,j+1)  )
      &                    *Hz(i,j,1)
 ! !
 ! ! Association with fast mode

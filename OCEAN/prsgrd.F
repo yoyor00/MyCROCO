@@ -98,6 +98,9 @@ c********************************************************************
 #  ifdef NBQ_GRAV
 #   include "nbq.h"
 #  endif
+# ifdef POT_CUVE
+#  include "tides.h"
+# endif
 #  ifdef SED_TOY
 #   include "forces.h"
 #  endif
@@ -209,8 +212,11 @@ c********************************************************************
      &              /(z_r(i,j,N)-z_r(i,j,N-1)) )*(z_w(i,j,N)-z_r(i,j,N))
 #  ifdef POT_TIDES
           P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
-#  endif
-#  ifdef READ_PATM
+# endif
+# ifdef POT_CUVE
+          P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
+# endif
+#  ifdef READ_PATM 
          P(i,j,N) = P(i,j,N) + patm2d(i,j)/rho0
 #  endif
         enddo
@@ -594,6 +600,10 @@ c********************************************************************
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
+#  ifdef NBQ_GRAV
+#   include "nbq.h"
+#  endif
+
 #  ifdef DIAGNOSTICS_UV
 #   include "diagnostics.h"
 #  else
@@ -630,6 +640,10 @@ c********************************************************************
 ! the number of operations relatively to any other form.
 !
 !$acc kernels if(compute_on_device) default(present)
+# ifdef NBQ_GRAV
+       rho=rho-rho_nh
+# endif
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           rsurf(i,j)=rho(i,j,N) + (rho(i,j,N)-rho(i,j,N-1))
@@ -648,6 +662,9 @@ c********************************************************************
      &                                                              )
 
 #  ifdef POT_TIDES
+     &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
+#  endif
+#  ifdef POT_CUVE
      &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
 #  endif
 #  ifdef READ_PATM
@@ -763,6 +780,9 @@ c********************************************************************
      &                                                              )
 
 #  ifdef POT_TIDES
+     &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
+#  endif
+#  ifdef POT_CUVE
      &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
 #  endif
 #  ifdef READ_PATM

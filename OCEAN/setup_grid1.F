@@ -44,7 +44,14 @@ C$    integer omp_get_thread_num
         do i=IstrR,IendR                           ! is NOT to be
           fomn(i,j)=f(i,j)/(pm(i,j)*pn(i,j))       ! communicated
                                                    ! in MPI code;
-                                                   ! others are...
+					           ! others are...
+#ifdef CENTRIFUGE
+          ray(i,j)=sqrt((xr(i,j)-(-1.8))**2+(yr(i,j)-2.4)**2)
+          cosr(i,j)=(f(i,j)/2.)**2*(xr(i,j)-(-1.8))
+     &              /(pm(i,j)*pn(i,j))
+          sinr(i,j)=(f(i,j)/2.)**2*(yr(i,j)-2.4)
+     &              /(pm(i,j)*pn(i,j))
+#endif
 #if defined UV_COR_NT || defined CROCO_QH
 !
 !  Horizontal Coriolis parameter e/mn

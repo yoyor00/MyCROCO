@@ -168,6 +168,51 @@
 #    endif
      &                                  )
 #   endif
+! !
+! !................................
+! !  Lateral friction
+! !................................
+! !
+#ifdef NBQ_FRICLAT
+              if (
+!     &      (i.eq.jstr .and. .not.WESTERN_EDGE)
+!     &  .or.(i.eq.iend .and. .not.EASTERN_EDGE)
+!     &  .or.(j.eq.jstr .and. .not.SOUTHERN_EDGE)
+!     &  .or.(j.eq.jend .and. .not.NORTHERN_EDGE)
+     &    rmask(i+1,j)*rmask(i-1,j)*rmask(i,j+1)*rmask(i,j-1)
+     &       .eq.0
+!     &       h(i,j) .le. 1.D-1 
+     &           )  then
+               cff2=2.*qdmw_nbq(i,j,k)/(Hz(i,j,k+1)+Hz(i,j,k))
+               cff3=0.5*(
+     &          qdmu_nbq(i  ,j,k+1)/(Hz(i  ,j,k)+Hz(i-1,j,k+1))
+     &         +qdmu_nbq(i  ,j,k  )/(Hz(i  ,j,k)+Hz(i-1,j,k  ))
+     &         +qdmu_nbq(i+1,j,k+1)/(Hz(i+1,j,k)+Hz(i  ,j,k+1))
+     &         +qdmu_nbq(i+1,j,k  )/(Hz(i+1,j,k)+Hz(i  ,j,k  )))
+               cff4=0.5*(
+     &          qdmv_nbq(i,j  ,k+1)/(Hz(i,j  ,k+1)+Hz(i,j-1,k+1))
+     &         +qdmv_nbq(i,j  ,k  )/(Hz(i,j  ,k  )+Hz(i,j-1,k  ))
+     &         +qdmv_nbq(i,j+1,k+1)/(Hz(i,j+1,k+1)+Hz(i,j  ,k+1))
+     &         +qdmv_nbq(i,j+1,k  )/(Hz(i,j+1,k  )+Hz(i,j  ,k  )))
+!               if (
+!     &      (i   .eq.istr .and. .not.WEST_INTER)
+!     &  .or.(iend.eq.Lmmpi.and. .not.EAST_INTER)
+!     &            )  then
+                cff1=pn(i,j)*0.5
+!               else
+!                cff1=pm(i,j)*0.5
+!               endif
+               cff=vonKar/LOG(cff1/Zob(i,j)/1000.)
+               cff=MIN(Cdb_max,MAX(Cdb_min,cff**2))
+               !if (mynode==0) write(6,*) i,j,k,cff
+               dum_s=dum_s
+     &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
+     &           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
+               !if (mynode==0) write(6,*) ,k,cff,
+     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
+     !&           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
+              endif
+#endif
 ! ! 
 ! !--------------------------------
 ! !  Update qdmw_nh 
@@ -249,9 +294,10 @@
 #   endif
 ! !
 ! !********************************
-! ! Bottom BC on w
+! ! Bottom BC on w   DANGER: USELESS ???????
 ! !********************************
 ! !
+#ifdef USELESS
        k = -N_sl
 #  ifdef NBQ_FREESLIP
           do i=Istr,Iend    
@@ -261,14 +307,18 @@
 #    endif
      &       +(0.5*( qdmu_nbq(i  ,j,k+1)*Hzu_nbq_inv(i  ,j,k+1)
      &             *(z_w(i,j,k)-z_w(i-1,j,k))
+     &             *umask(i,j)
      &             +qdmu_nbq(i+1,j,k+1)*Hzu_nbq_inv(i+1,j,k+1)
      &             *(z_w(i+1,j,k)-z_w(i,j,k))
-     &           )*pm_u(i,j)
+     &             *umask(i+1,j)
+     &           )
      &       +0.5*( qdmv_nbq(i,j  ,k+1)*Hzv_nbq_inv(i,j  ,k+1)
      &             *(z_w(i,j,k)-z_w(i,j-1,k))
+     &             *vmask(i,j)
      &             +qdmv_nbq(i,j+1,k+1)*Hzv_nbq_inv(i,j+1,k+1)
      &             *(z_w(i,j+1,k)-z_w(i,j,k))
-     &           )*pm_v(i,j))
+     &             *vmask(i,j+1)
+     &           ))
      &           *Hzw_nbq(i,j,k)
 #    ifdef MASKING
            qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*rmask(i,j)
@@ -283,6 +333,7 @@
 #    endif
          enddo 
 #  endif
+#endif
 ! !
 ! !********************************
 ! ! Surface boundary condition
@@ -350,7 +401,47 @@
 #    endif
      &                           )
 #    endif    
-! ! 
+! !
+! !................................
+! !  Lateral friction
+! !................................
+! !
+#ifdef NBQ_FRICLAT
+              if (
+!     &      (i.eq.jstr.and. .not.WESTERN_EDGE)
+!     &  .or.(i.eq.iend.and. .not.EASTERN_EDGE)
+!     &  .or.(j.eq.jstr.and. .not.SOUTHERN_EDGE)
+!     &  .or.(j.eq.jend.and. .not.NORTHERN_EDGE)
+     &    rmask(i+1,j)*rmask(i-1,j)*rmask(i,j+1)*rmask(i,j-1)
+     &       .eq.0
+!     &       h(i,j) .le. 1.D-1 
+     &           )  then
+               cff2=2.*qdmw_nbq(i,j,k)/Hz(i,j,k)
+               cff3=(
+     &          qdmu_nbq(i  ,j,k)/(Hz(i  ,j,k)+Hz(i-1,j,k))
+     &         +qdmu_nbq(i+1,j,k)/(Hz(i+1,j,k)+Hz(i  ,j,k)))
+               cff4=(
+     &          qdmv_nbq(i,j  ,k)/(Hz(i,j  ,k)+Hz(i,j-1,k))
+     &         +qdmv_nbq(i,j+1,k)/(Hz(i,j+1,k)+Hz(i,j  ,k)))
+!               if (
+!     &      (i   .eq.istr .and. .not.WEST_INTER)
+!     &  .or.(iend.eq.Lmmpi.and. .not.EAST_INTER)
+!     &            )  then
+                cff1=pn(i,j)*0.5
+!               else
+!                cff1=pm(i,j)*0.5
+!               endif
+               cff=vonKar/LOG(cff1/Zob(i,j)/1000.)
+               cff=MIN(Cdb_max,MAX(Cdb_min,cff**2))
+               dum_s=dum_s
+     &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
+     &           *Hz(i,j,k)/2.
+               !if (mynode==0) write(6,*) 'N',i,j,k,cff,
+     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
+     !&           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
+             endif
+#endif
+! ! k3fast_divh.h
 ! !--------------------------------
 ! !  Update qdmw(N): fast and slow components
 ! !--------------------------------

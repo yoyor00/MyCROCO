@@ -429,14 +429,21 @@
       elseif (keyword(1:kwlen).eq.'time_stepping_nbq') then
         MPI_master_only print *,"time_stepping_nbq...."
         call cancel_kwd (keyword(1:kwlen), ierr)
+#   ifndef NBQ_RCSOUND
         read(input,*,err=95) ndtnbq, csound_nbq, visc2read_nbq
+#   else
+        read(input,*,err=95) ndtnbq, csound_nbq, visc2read_nbq
+     &                      ,rcsound2_nbq
+        rcsound2_nbq=rcsound2_nbq**2
+#   endif
         MPI_master_only write(stdout,
-     &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
+     &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A,/F10.2,2x,A/)')
      &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
      &                                                 '2D step.',
      &   csound_nbq,'csound_nbq  Sound wave celerity.',
      &   visc2read_nbq, 'visc2_nbq   Second viscosity coefficient for',
-     &                                      'compressible fluids.'
+     &                                      'compressible fluids.',
+     &   sqrt(rcsound2_nbq),' H/V soundspeed ratio.'
         if (mynode==0) print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
 # ifndef KNHINT_3M
 #  ifdef NBQ

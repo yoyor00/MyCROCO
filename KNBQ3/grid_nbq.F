@@ -137,32 +137,34 @@ c !$acc&  )
         enddo
       enddo
 
-      do k=-N_sl+1,N
-        do j=JstrV-2,Jend+1
-          do i=IstrU-1,Iend+1             
-          Hzu_nbq_inv(i,j,k)=2./max(1.e-30,
-     &                                 Hz(i-1,j,k)
-     &                                +Hz(i  ,j,k))
-     &             *pm_u(i,j)
+#ifdef USELESS
+!     do k=-N_sl+1,N
+!       do j=JstrV-2,Jend+1
+!         do i=IstrU-1,Iend+1             
+!         Hzu_nbq_inv(i,j,k)=2./max(1.e-30,
+!    &                                 Hz(i-1,j,k)
+!    &                                +Hz(i  ,j,k))
+!    &             *pm_u(i,j)
 # ifdef MASKING
-     &                         *umask(i,j)
+!    &                         *umask(i,j)
 # endif  
-          enddo
-        enddo
-      enddo 
-      do k=-N_sl+1,N
-        do j=JstrV-1,Jend+1
-          do i=IstrU-2,Iend+1
-            Hzv_nbq_inv(i,j,k)=2./max(1.e-30,
-     &                                   Hz(i,j-1,k)
-     &                                  +Hz(i,j  ,k))
-     &             *pn_v(i,j)
+!         enddo
+!       enddo
+!     enddo 
+!     do k=-N_sl+1,N
+!       do j=JstrV-1,Jend+1
+!         do i=IstrU-2,Iend+1
+!           Hzv_nbq_inv(i,j,k)=2./max(1.e-30,
+!    &                                   Hz(i,j-1,k)
+!    &                                  +Hz(i,j  ,k))
+!    &             *pn_v(i,j)
 # ifdef MASKING
-     &                          *vmask(i,j)
+!    &                          *vmask(i,j)
 # endif  
-          enddo
-        enddo
-      enddo 
+!         enddo
+!       enddo
+!     enddo 
+#endif
 
       do k=-N_sl,N
         do j=JstrV-2,Jend+1

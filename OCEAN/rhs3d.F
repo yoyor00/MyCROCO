@@ -490,6 +490,24 @@
           enddo
         enddo
 #  endif
+#  if defined CENTRIFUGE
+!--------------------------------------------------------------------
+!  Compute Centrifugal Om^Om^r force
+!  If NBQ --> done in fast mode
+!--------------------------------------------------------------------
+!
+! Add to We contributions due to (quasi-)horizontal motions
+! along S=const surfaces
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            UFx(i,j)=UFx(i,j) + cosr(i,j)*Hz(i,j,k)
+!    &     * (1.+tanh((real(iic)-100.)/200.))/2.
+            VFe(i,j)=VFe(i,j) - sinr(i,j)*Hz(i,j,k)
+!    &     * (1.+tanh((real(iic)-100.)/200.))/2.
+          enddo
+        enddo
+#  endif
+
 
         do j=Jstr,Jend
           do i=IstrU,Iend

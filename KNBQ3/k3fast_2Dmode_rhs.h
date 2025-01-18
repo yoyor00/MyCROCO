@@ -327,6 +327,44 @@ C$OMP MASTER
         enddo
       enddo
 # endif
+! !
+! !********************************
+! !  Centrifuge
+! !********************************
+! !
+#  ifdef CENTRIFUGE
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+           rubar(i,j) = rubar(i,j)+0.5*(
+     &       cosr(i,j)*(h(i,j)+zeta(i,j,knew))
+#   ifdef NBQ_MASS
+     &           *rhobar_nbq(i,j,knew)
+#   endif
+     &      +cosr(i-1,j)*(h(i-1,j)+zeta(i-1,j,knew))
+#   ifdef NBQ_MASS
+     &           *rhobar_nbq(i,j,knew)
+#   endif 
+     &                                 )
+!    &     * (1.+tanh((real(iic)-100.)/200.))/2.
+
+        enddo
+      enddo
+      do j=JstrV,Jend
+        do i=Istr,Iend
+           rvbar(i,j) = rvbar(i,j)+0.5*(
+     &       sinr(i,j)*(h(i,j)+zeta(i,j,knew))
+#   ifdef NBQ_MASS
+     &           *rhobar_nbq(i,j,knew)
+#   endif
+     &      +sinr(i,j-1)*(h(i,j-1)+zeta(i,j-1,knew))
+#   ifdef NBQ_MASS
+     &           *rhobar_nbq(i,j-1,knew)
+#   endif
+     &           )
+!    &     * (1.+tanh((real(iic)-100.)/200.))/2.
+        enddo
+      enddo
+#endif
 !$acc end kernels
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

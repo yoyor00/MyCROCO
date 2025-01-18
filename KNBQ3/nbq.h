@@ -67,6 +67,8 @@
       common /time_NBQ2/ dtnbq 
       real csound_nbq
       common /nbq_csound/ csound_nbq  
+      real rcsound2_nbq
+      common /nbq_rcsound/ rcsound2_nbq
 #  ifdef K3FAST_SACOUS
       real  period_exp  
       common/ACOUS1/period_exp
@@ -215,10 +217,10 @@
       common /avg2_rvnbq/ rv_nbq_avg2
       real Hzw_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /grid_Hzw_nbq/ Hzw_nbq
-      real Hzu_nbq_inv(GLOBAL_2D_ARRAY,NSLN)
-      common /grid_Hzu_nbq/ Hzu_nbq_inv
-      real Hzv_nbq_inv(GLOBAL_2D_ARRAY,NSLN)
-      common /grid_Hzv_nbq/ Hzv_nbq_inv
+!      real Hzu_nbq_inv(GLOBAL_2D_ARRAY,NSLN)
+!      common /grid_Hzu_nbq/ Hzu_nbq_inv
+!      real Hzv_nbq_inv(GLOBAL_2D_ARRAY,NSLN)
+!      common /grid_Hzv_nbq/ Hzv_nbq_inv
 !$acc declare create(  Hzw_nbq, Hzu_nbq_inv, Hzv_nbq_inv )      
       real rw_int_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_rwint/ rw_int_nbq   
