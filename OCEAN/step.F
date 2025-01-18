@@ -40,7 +40,7 @@
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Get phase of OASIS3
        if ( (iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1) ) then
-!         pr *, 'oasis time before get = ', oasis_time
+!         print *, 'oasis time before get = ', oasis_time
          call cpl_prism_get (oasis_time)
 #  ifdef AGRIF
        else if ((.not.agrif_root()).and.(iif==-1).and.
@@ -332,6 +332,13 @@ C$OMP BARRIER
         IF (Agrif_Root()) call clm_tides (tile)
 #  else
         call clm_tides (tile)
+#  endif
+# endif
+# if defined POT_CUVE
+#  ifdef AGRIF
+        IF (Agrif_Root()) call pot_cuve (tile)
+#  else
+        call pot_cuve (tile)
 #  endif
 # endif
       enddo
@@ -764,6 +771,13 @@ C$OMP BARRIER
 #  else
           call clm_tides (tile)
 #  endif
+# endif
+# if defined POT_CUVE
+#   ifdef AGRIF
+          IF (Agrif_Root()) call pot_cuve (tile)
+#   else
+          call pot_cuve (tile)
+#   endif
 # endif
 # ifdef AVERAGES
           call set_avg (tile)

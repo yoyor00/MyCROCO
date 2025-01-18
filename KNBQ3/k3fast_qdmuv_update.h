@@ -175,7 +175,7 @@
 #   ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,1)=(z_r(i,j,k)-z_r(i-1,j,k))       
-     &                                   *2.*dthetadiv_nbqdz_u(i,j,k) 
+     &                                   *dthetadiv_nbqdz_u(i,j,k) 
                 endif
                 dum_s=dthetadiv_nbqdz(i,j,k,1)
 #   else
@@ -294,6 +294,47 @@
 #  endif
 ! !
 ! !................................
+! !  Lateral friction
+! !................................
+! !
+#ifdef NBQ_FRICLAT
+              if (
+!     &      (j.eq.jstr.and.SOUTHERN_EDGE)
+!     &  .or.(j.eq.jend.and.NORTHERN_EDGE)
+!     &      umask(i+1,j)*umask(i-1,j)*umask(i,j+1)*umask(i,j-1)
+!     &       .eq.0
+     &       h(i,j) .le. 1.D-1 
+     &           )  then
+               cff2=2.*qdmu_nbq(i,j,k)/(Hz(i,j,k)+Hz(i-1,j,k))
+               cff3=0.5*(
+     &          qdmv_nbq(i  ,j  ,k)/(Hz(i  ,j  ,k)+Hz(i  ,j-1,k))
+     &         +qdmv_nbq(i  ,j+1,k)/(Hz(i  ,j+1,k)+Hz(i  ,j  ,k))
+     &         +qdmv_nbq(i-1,j  ,k)/(Hz(i-1,j  ,k)+Hz(i-1,j-1,k))
+     &         +qdmv_nbq(i-1,j+1,k)/(Hz(i-1,j+1,k)+Hz(i-1,j  ,k)))
+               if (k.ne.1) then
+               cff4=0.5*(
+     &          qdmw_nbq(i  ,j,k  )/(Hz(i  ,j,k  )+Hz(i  ,j,k  ))
+     &         +qdmw_nbq(i  ,j,k-1)/(Hz(i  ,j,k-1)+Hz(i  ,j,k-1))
+     &         +qdmw_nbq(i-1,j,k  )/(Hz(i-1,j,k  )+Hz(i-1,j,k  ))
+     &         +qdmw_nbq(i-1,j,k-1)/(Hz(i-1,j,k-1)+Hz(i-1,j,k-1)))
+               else
+               cff4=0.5*(
+     &          qdmw_nbq(i  ,j,k  )/(Hz(i  ,j,k  )+Hz(i  ,j,k  ))
+     &         +qdmw_nbq(i-1,j,k  )/(Hz(i-1,j,k  )+Hz(i-1,j,k  )))
+               endif
+               cff1=pn(i,j)*0.5
+               cff=vonKar/LOG(cff1/Zob(i,j)/100.)
+               cff=MIN(Cdb_max,MAX(Cdb_min,cff**2))
+               dum_s=dum_s
+     &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
+     &           *(Hz(i,j,k)+Hz(i-1,j,k))/2.
+            !If (mynode==0) write(6,*) 'u',i,j,k,cff,
+     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
+     !&           *(Hz(i,j,k)+Hz(i-1,j,k))/2.
+              endif
+#endif
+! !
+! !................................
 ! !  Compute qdmu_nbq
 ! !................................
 ! !
@@ -404,7 +445,7 @@
 #   ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,2)=(z_r(i,j,k)-z_r(i,j-1,k)) 
-     &                                  *2.*dthetadiv_nbqdz_v(i,j,k) 
+     &                                  *dthetadiv_nbqdz_v(i,j,k) 
                 endif
                 dum_s=dthetadiv_nbqdz(i,j,k,2) 
 #   else
@@ -463,11 +504,11 @@
 #    ifdef MASKING
      &                   *vmask(i,j)
 #    endif  
+#   endif
               dum_s=dum_s*0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
 #   ifdef MASKING
      &                   *vmask(i,j)
 #   endif  
-#   endif
 #  else   /* ! K3FAST_RHO */
               dum_s = 0.
               dum2_s= 0.
@@ -521,6 +562,48 @@
      &                    *vmask(i,j)
 #   endif   
 #  endif   
+! !
+! !................................
+! !  Lateral friction
+! !................................
+! !
+#ifdef NBQ_FRICLAT
+              if (
+!     &      (i.eq.istr.and.WESTERN_EDGE)
+!     &  .or.(i.eq.iend.and.EASTERN_EDGE)
+!     &      vmask(i+1,j)*vmask(i-1,j)*vmask(i,j+1)*vmask(i,j-1)
+!     &       .eq.0
+     &       h(i,j) .le. 1.D-1 
+     &           )  then
+         !  write(6,*) mynode,i,j,k
+               cff2=2.*qdmv_nbq(i,j,k)/(Hz(i,j,k)+Hz(i,j-1,k))
+               cff3=0.5*(
+     &          qdmu_nbq(i  ,j  ,k)/(Hz(i  ,j  ,k)+Hz(i-1,j  ,k))
+     &         +qdmu_nbq(i  ,j-1,k)/(Hz(i  ,j-1,k)+Hz(i-1,j-1,k))
+     &         +qdmu_nbq(i+1,j  ,k)/(Hz(i+1,j  ,k)+Hz(i  ,j  ,k))
+     &         +qdmu_nbq(i+1,j-1,k)/(Hz(i+1,j-1,k)+Hz(i  ,j-1,k)))
+               if (k.ne.1) then
+               cff4=0.5*(
+     &          qdmw_nbq(i,j  ,k  )/(Hz(i,j  ,k  )+Hz(i,j  ,k  ))
+     &         +qdmw_nbq(i,j  ,k-1)/(Hz(i,j  ,k-1)+Hz(i,j  ,k-1))
+     &         +qdmw_nbq(i,j-1,k  )/(Hz(i,j-1,k  )+Hz(i,j-1,k  ))
+     &         +qdmw_nbq(i,j-1,k-1)/(Hz(i,j-1,k-1)+Hz(i,j-1,k-1)))
+               else
+               cff4=0.5*(
+     &          qdmw_nbq(i,j  ,k  )/(Hz(i,j  ,k  )+Hz(i,j  ,k  ))
+     &         +qdmw_nbq(i,j-1,k  )/(Hz(i,j-1,k  )+Hz(i,j-1,k  )))
+               endif
+               cff1=pm(i,j)*0.5
+               cff=vonKar/LOG(cff1/Zob(i,j)/100.)
+               cff=MIN(Cdb_max,MAX(Cdb_min,cff**2))
+               dum_s=dum_s
+     &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
+     &           *(Hz(i,j,k)+Hz(i,j-1,k))/2.
+               !if (mynode==0) write(6,*) 'v',i,j,k,cff,
+     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
+     !&           *(Hz(i,j,k)+Hz(i,j-1,k))/2.
+              endif
+#endif
 ! !
 ! !................................
 ! !  Compute qdmv_nbq
