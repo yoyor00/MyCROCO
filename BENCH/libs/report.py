@@ -51,6 +51,10 @@ class Report:
         with open(status_report_file, "w+") as fp:
             json.dump(self.report, fp, indent="\t")
 
+    # To detect if report contains False values
+    def contains_false(self):
+        return "false" in json.dumps(self.report)
+
     def get_color(self, status):
         if status is True:
             return "green"
