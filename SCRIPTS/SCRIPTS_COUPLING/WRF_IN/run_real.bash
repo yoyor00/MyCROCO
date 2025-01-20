@@ -61,8 +61,8 @@ source $CONFIGURE_NAMELIST
 #============= Define OPTIONS for running the script =================
 #
 # I/O parameters
-#  his_interval_h  : history data interval time  [hours]
-his_interval_h=3
+#  his_interval  : history data interval time  [minutes]
+his_interval_h=180
 #  his_frames      : nb of history records per file
 his_frames=240
 #  diag_int_m      : diagnoses interval output [min]
@@ -71,8 +71,8 @@ diag_int_m=180
 diag_frames=240
 #  restart_flag    : .true. or .false.
 rst="false"
-#  rst_interval_h  : restart data interval       [hours]
-rst_interval_h=24
+#  rst_interval  : restart data interval       [minutes]
+rst_interval_h=1440
 #
 # SWITCH fdda # 1 : grid nudging ; 2 : spectral nudging ; 0 : no nudging
 switch_fdda=0
@@ -234,7 +234,7 @@ fi
   # Rescale parameters from configure.namelist
   #----------------------------------------------
   export interval_s=`expr $obc_freq_h \* 3600`
-  export rst_interval_m=`expr $rst_interval_h \* 60` # refresh interval in minutes
+  export rst_interval_m=$rst_interval # refresh interval in minutes
 
   for metfile in `ls $O_DATAROOT/met_em.*`
   do
@@ -341,8 +341,8 @@ for yy in `seq $start_y $end_y`; do
             -e "s/<mo1>/$mm/g"   -e "s/<mo2>/$emth/g"  \
             -e "s/<dy1>/$sday/g"   -e "s/<dy2>/$eday/g"  \
             -e "s/<hr1>/$shour/g"   -e "s/<hr2>/$ehour/g"  \
-            -e "s/<rst>/$rst/g"                    -e "s/<rst_int_h>/$rst_interval_h/g"   \
-            -e "s/<his_int_h>/${his_interval_h}/g" -e "s/<his_nb_out>/${his_frames}/g"    \
+            -e "s/<rst>/$rst/g"                    -e "s/<rst_int>/$rst_interval/g"   \
+            -e "s/<his_int>/${his_interval}/g" -e "s/<his_nb_out>/${his_frames}/g"    \
             -e " s/<xtrm_int_m>/${diag_int_m}/g"    -e "s/<xtrm_nb_out>/${diag_frames}/g"  \
             -e "s/<nproc_x>/$nprocX/g"             -e "s/<nproc_y>/$nprocY/g"             \
             -e "s/<niotaskpg>/$niowrf/g"           -e "s/<niogp>/$niogp/g"                \

@@ -17,10 +17,10 @@
  end_second                          = 00,00,00,
  interval_seconds                    = <interval_s>
  input_from_file                     = .true.,.true.,.true.,
- history_interval_h                  = <his_int_h>,<his_int_h>,<his_int_h>,
+ history_interval                    = <his_int>,<his_int>,<his_int>,
  frames_per_outfile                  = <his_nb_out>,<his_nb_out>,<his_nb_out>,
  restart                             = .<rst>.,
- restart_interval_h                  = <rst_int_h>,
+ restart_interval                    = <rst_int>,
  override_restart_timers             = .true.
  write_hist_at_0h_rst                = .true.,
  io_form_history                     = 2
