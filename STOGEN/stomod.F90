@@ -66,6 +66,7 @@ CONTAINS
       ! Here we just include the stochastic parameterization
       ! of the bulk formulation for the air-sea fluxes
       CALL sto_bulk_init
+      CALL sto_basin_init
 
       ! Initialize stochastic arrays
       CALL sto_array_init

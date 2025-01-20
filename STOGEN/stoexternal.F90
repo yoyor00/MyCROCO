@@ -57,13 +57,23 @@ MODULE stoexternal
 
    ! Description of the mask
    LOGICAL, PUBLIC, SAVE  :: use_mask3d = .FALSE.
-   INTEGER, PUBLIC, SAVE  :: grid_type = 1
+   INTEGER, PUBLIC, SAVE  :: grid_type = 1                       ! 0: u/v pts to the east/north
+                                                                 ! 1: u/v pts to the west/south
+# ifdef MASKING
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   POINTER :: rmask2d  ! land/ocean mask at T-points
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   POINTER :: umask2d  ! land/ocean mask at U-points
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   POINTER :: vmask2d  ! land/ocean mask at V-points
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: rmask3d  ! land/ocean mask at T-points
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: umask3d  ! land/ocean mask at U-points
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), POINTER :: vmask3d  ! land/ocean mask at V-points
+# else
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   ALLOCATABLE :: rmask2d  ! land/ocean mask at T-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   ALLOCATABLE :: umask2d  ! land/ocean mask at U-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:),   ALLOCATABLE :: vmask2d  ! land/ocean mask at V-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), ALLOCATABLE :: rmask3d  ! land/ocean mask at T-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), ALLOCATABLE :: umask3d  ! land/ocean mask at U-points
+   REAL(wp), PUBLIC, SAVE, DIMENSION(:,:,:), ALLOCATABLE :: vmask3d  ! land/ocean mask at V-points
+# endif
 
    ! I/O parameters
    INTEGER, PUBLIC ::   numout      =    6      !: logical unit for output print; set to stdout; do not change
@@ -229,7 +239,11 @@ C$    integer  trd, omp_get_thread_num
       jpjglo = MMm
 
       ! Define number of subdomain and index of local subdomain
+#ifdef MPI
       mppsize = NNODES
+#else
+      mppsize = 1
+#endif
       narea = mynode + 1
 #ifdef MPI
       if (narea.gt.1) then 
@@ -258,16 +272,29 @@ C$    integer  trd, omp_get_thread_num
       rmask2d(1:jpi,1:jpj) => rmask
       umask2d(1:jpi,1:jpj) => umask
       vmask2d(1:jpi,1:jpj) => vmask
+# else
+      ALLOCATE(rmask2d(1:jpi,1:jpj))
+      ALLOCATE(umask2d(1:jpi,1:jpj))
+      ALLOCATE(vmask2d(1:jpi,1:jpj))
+      rmask2d(1:jpi,1:jpj) = 1.
+      umask2d(1:jpi,1:jpj) = 1.
+      vmask2d(1:jpi,1:jpj) = 1.
 # endif
 
       ! Define index of grid points (of local subdomain) in global grid (all subdomains)
       ALLOCATE(mig(1:jpi))
       ALLOCATE(mjg(1:jpj))
       DO ji1 = 1, jpi
-        mig(ji1) = ji1 + ii * Lm
+        mig(ji1) = ji1 
+# ifdef MPI
+     &             + ii * Lm
+# endif
       ENDDO
       DO jj1 = 1, jpj
-        mjg(jj1) = jj1 + jj * Mm
+        mjg(jj1) = jj1 
+# ifdef MPI 
+     &             + jj * Mm
+# endif
       ENDDO
 
       ! Warning: glamtglo and gphitglo are left unallocated.

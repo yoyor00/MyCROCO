@@ -17,7 +17,7 @@ MODULE stobulk
    PRIVATE
 
    ! Index of stochastic field used for the drag coefficient
-   INTEGER, SAVE :: jstobulk_cd
+   INTEGER, SAVE :: jstobulk_cd, jstobasin
 
    ! Parameters of stochastic fields
    ! (default values are replaced by values read in namelist)
@@ -27,7 +27,7 @@ MODULE stobulk
    INTEGER,  SAVE :: arorder = 1  ! order of autoregressive process
    INTEGER,  SAVE :: nupdate = 1  ! update frequency of autoregressive process (in time steps)
 
-   PUBLIC sto_bulk, sto_bulk_init, sto_bulk_cd
+   PUBLIC sto_bulk, sto_bulk_init, sto_bulk_cd, sto_basin_init, sto_basin_stress
 
 CONTAINS
 
@@ -104,6 +104,63 @@ CONTAINS
       suvstr(:,:) = suvstr(:,:) * stofields(jstobulk_cd)%sto2d(:,:)
 
    END SUBROUTINE sto_bulk_cd
+
+   SUBROUTINE sto_basin_init
+      !!----------------------------------------------------------------------
+      !!
+      !!                     ***  ROUTINE sto_basin_init  ***
+      !!
+      !! This routine is calle at initialization time
+      !! to request stochastic field with appropriate features
+      !!
+      !!----------------------------------------------------------------------
+
+      ! Read namelist block corresponding to this stochastic scheme
+      CALL read_parameters
+
+      ! Request index for a new stochastic array
+      CALL sto_array_request_new(jstobasin)
+
+      ! Convert tcor parameter from days to time steps
+      tcor = tcor * 86400. / ( stodt * nupdate )
+
+      ! Set features of the requested stochastic field from parameters
+      ! 1. time structure
+      stofields(jstobasin)%type_t='arn'
+      stofields(jstobasin)%corr_t=tcor
+      stofields(jstobasin)%nar_order=arorder
+      stofields(jstobasin)%nar_update=nupdate
+      ! 2. space structure (with diffusive operator)
+      stofields(jstobasin)%type_xy='diffusive'
+      stofields(jstobasin)%diff_passes=npasses
+      stofields(jstobasin)%diff_type=1
+      ! An alternative would be to use the kernel approach
+      ! stofields(jstobasin)%type_xy='kernel'
+      ! stofields(jstobasin)%corr_xy=10.
+      ! 3. modified marginal distribution (here lognormal, with user-defined std)
+      ! stofields(jstobasin)%type_variate='lognormal'
+      ! stofields(jstobasin)%ave=1.0
+      ! stofields(jstobasin)%std=std
+   END SUBROUTINE sto_basin_init
+
+
+   SUBROUTINE sto_basin_stress ( suvstr, struct_fcn )
+      !!----------------------------------------------------------------------
+      !!
+      !!                     ***  ROUTINE sto_basin_stress  ***
+      !!
+      !! This routine implements perturbation to idealized wind stress
+      !!
+      !!----------------------------------------------------------------------
+      REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: suvstr
+      REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: struct_fcn
+
+      struct_fcn(:,:) = struct_fcn(:,:) * stofields(jstobasin)%sto2d(:,:)
+      suvstr(:,:) = suvstr(:,:) * (1 + struct_fcn(:,:))
+
+   END SUBROUTINE sto_basin_stress
+
+
 
 
    SUBROUTINE read_parameters

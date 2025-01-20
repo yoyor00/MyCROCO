@@ -382,16 +382,13 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  ifdef STOGEN
-!     apply multiplicative noise to wind stress
+!     apply additive noise to wind stress
       do j=JstrR,JendR
         do i=IstrR,IendR
           sto_xi2d(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
         enddo
       enddo
-      !sto_xi3d(:,:,N)=1.
-      call sto_bulk_cd ( sto_xi2d )
-      sustr=sustr*(1.+sto_xi2d)
-      !call sto_bulk_cd ( sustr )
+      call sto_basin_stress( sustr, sto_xi2d )
 #  endif
 # elif defined SINGLE_COLUMN && defined KATO_PHILIPS
       do j=JstrR,JendR
