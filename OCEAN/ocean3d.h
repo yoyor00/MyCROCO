@@ -37,9 +37,9 @@
 #  endif
 # endif
 
-# ifdef STOGEN
-      real sto_xi(GLOBAL_2D_ARRAY,N)
-      common /stogen/ sto_xi 
+# ifdef STO_XI3D
+      real sto_xi3d(GLOBAL_2D_ARRAY,N)
+      common /stogen3d/ sto_xi3d 
 # endif
 
 # ifdef NBQ

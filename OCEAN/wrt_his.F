@@ -701,15 +701,42 @@ CR      write(STDOUT,*) 'wrt_his:  wrtV  ' MYID
 !
 !     STOGEN stochastic modeling components 
 !
-#ifdef STOGEN
-!- temporary output -
-      if (wrthis(indxXIsto)) then
-        workr=sto_xi
-        call fillvalue3d(workr,ncidhis,hisXIsto,indxXIsto,
+!QJ: check how to writte 1D and 2D variables
+#ifdef STO_XI1D
+!!- 1D stochastic field -- TBD -
+!      if (wrthis(indxXIsto1d)) then
+!        workr=sto_xi1d
+!        call fillvalue3d(workr,ncidhis,hisXIsto1d,indxXIsto1d,
+!     &        record,r3dvar,type)
+!CR      write(STDOUT,*) 'wrt_his:  wrtXIsto  ' MYID
+!      endif
+#endif /* STO_XI1D */
+!
+#ifdef STO_XI2D
+!- 2D stochastic field -
+      if (wrthis(indxXIsto2d)) then
+        work2d=sto_xi2d
+        ierr=nf_fwrite(work2d, ncidhis, hisXIsto2d, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxXIsto2d))
+          MPI_master_only write(STDOUT,1)
+     &        vname(1,indxXIsto2d)(1:lvar), record, ierr
+     &           MYID
+          goto 99             !--> ERROR
+        endif
+CR      write(STDOUT,*) 'wrt_his:  UWstr' MYID
+      endif
+#endif /* STO_XI2D */
+!
+#ifdef STO_XI3D
+!- 3D stochastic field -
+      if (wrthis(indxXIsto3d)) then
+        workr=sto_xi3d
+        call fillvalue3d(workr,ncidhis,hisXIsto3d,indxXIsto3d,
      &        record,r3dvar,type)
 CR      write(STDOUT,*) 'wrt_his:  wrtXIsto  ' MYID
       endif
-#endif /* STOGEN */
+#endif /* STO_XI3D */
 !
 !     Tracer variables.
 !

@@ -101,8 +101,13 @@
 # undef  SEDIMENT
 # undef  MUSTANG
 # undef  BBL
-
+                      /* Stochastic and Ensemble */
 # undef STOGEN
+# ifdef STOGEN
+#  undef  STO_XI1D
+#  define STO_XI2D
+#  undef  STO_XI3D
+# endif
 # undef ENSEMBLE
 
                       /* I/O server */

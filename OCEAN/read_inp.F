@@ -1200,8 +1200,14 @@ c        close(testunit)
      &                                       ,  wrthis(indxVb)
 #ifdef SOLVE3D
      &                    ,  wrthis(indxU),  wrthis(indxV)
-# ifdef STOGEN
-     &                    ,  wrthis(indxXIsto)
+# ifdef STO_XI1D
+!     &                    ,  wrthis(indxXIsto1d)
+# endif
+# ifdef STO_XI2D
+     &                    ,  wrthis(indxXIsto2d)
+# endif
+# ifdef STO_XI3D
+     &                    ,  wrthis(indxXIsto3d)
 # endif
 # ifdef TRACERS
      &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT)
@@ -1221,8 +1227,14 @@ c        close(testunit)
 #ifdef SOLVE3D
      &    , wrthis(indxU),  'write U    ', '3D U-momentum component.'
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
-# ifdef STOGEN
-     &    , wrthis(indxXIsto),'write sto_xi', 'Temporary array.'
+# ifdef STO_XI1D
+     &    , wrthis(indxXIsto1d),'write sto_xi1d', '1D stochastic field -- NOT AVAILABLE YET'
+# endif
+# ifdef STO_XI2D
+     &    , wrthis(indxXIsto2d),'write sto_xi2d', '2D stochastic field.'
+# endif
+# ifdef STO_XI3D
+     &    , wrthis(indxXIsto3d),'write sto_xi3d', '3D stochastic field.'
 # endif
 # ifdef TRACERS
         do itrc=1,NT

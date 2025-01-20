@@ -132,7 +132,9 @@
 # define vidVWstr hisVWstr
 # define vidShflx hisShflx
 # ifdef STOGEN
-#  define vidXIsto hisXIsto
+#  define vidXIsto1d hisXIsto1d
+#  define vidXIsto2d hisXIsto2d
+#  define vidXIsto3d hisXIsto3d
 # endif
 # ifdef SALINITY
 #  define vidSwflx hisSwflx
@@ -215,7 +217,9 @@
 # define vidSwflx avgSwflx
 # define vidShflx_rsw avgShflx_rsw
 # ifdef STOGEN
-#  define vidXIsto hisXIsto
+#  define vidXIsto1d hisXIsto1d
+#  define vidXIsto2d hisXIsto2d
+#  define vidXIsto3d hisXIsto3d
 # endif
 # if defined BULK_FLUX
 #  define vidShflx_rlw avgShflx_rlw
@@ -713,35 +717,96 @@
 ! STOGEN stochastic variables.
 !---------------------------------------
 !
-# ifdef STOGEN
-        if (wrt(indxXIsto)) then
-          lvar=lenstr(vname(1,indxXIsto))
-          ierr=nf_def_var (ncid, vname(1,indxXIsto)(1:lvar),
-     &                             NF_FOUT, 4, r3dgrd, vidXIsto)
+# ifdef STO_XI1D
+        if (wrt(indxXIsto1d)) then
+          lvar=lenstr(vname(1,indxXIsto1d))
+!QJ: not sure aout the def of ierr here ...
+          ierr=nf_def_var (ncid, vname(1,indxXIsto1d)(1:lvar),
+     &                             NF_FOUT, 1, timedim, vidXIsto1d)
 # ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidXIsto,nf_collective)
+          ierr=nf_var_par_access(ncid,vidXIsto1d,nf_collective)
 # endif
 # ifndef AVRH
-          lvar=lenstr(vname(2,indxXIsto))
-          ierr=nf_put_att_text (ncid, vidXIsto, 'long_name', lvar,
-     &                                  vname(2,indxXIsto)(1:lvar))
+          lvar=lenstr(vname(2,indxXIsto1d))
+          ierr=nf_put_att_text (ncid, vidXIsto1d, 'long_name', lvar,
+     &                                  vname(2,indxXIsto1d)(1:lvar))
 # else
-          text='averaged '/ /vname(2,indxXIsto)
+          text='averaged '/ /vname(2,indxXIsto1d)
           lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, vidXIsto, 'long_name', lvar,
+          ierr=nf_put_att_text (ncid, vidXIsto1d, 'long_name', lvar,
      &                                            text(1:lvar))
 # endif
-          lvar=lenstr(vname(3,indxXIsto))
-          ierr=nf_put_att_text (ncid, vidXIsto, 'units',     lvar,
-     &                                  vname(3,indxXIsto)(1:lvar))
-          lvar=lenstr(vname(4,indxXIsto))
-          ierr=nf_put_att_text (ncid, vidXIsto, 'field',     lvar,
-     &                                  vname(4,indxXIsto)(1:lvar))
+          lvar=lenstr(vname(3,indxXIsto1d))
+          ierr=nf_put_att_text (ncid, vidXIsto1d, 'units',     lvar,
+     &                                  vname(3,indxXIsto1d)(1:lvar))
+          lvar=lenstr(vname(4,indxXIsto1d))
+          ierr=nf_put_att_text (ncid, vidXIsto1d, 'field',     lvar,
+     &                                  vname(4,indxXIsto1d)(1:lvar))
 
-          call nf_add_attribute(ncid, vidXIsto, vname(:,indxXIsto),
+          call nf_add_attribute(ncid, vidXIsto1d, vname(:,indxXIsto1d),
      &         5, NF_FOUT, ierr)
         endif
-# endif /* STOGEN */
+# endif /* STO_XI1D */
+!
+# ifdef STO_XI2D
+        if (wrt(indxXIsto2d)) then
+          lvar=lenstr(vname(1,indxXIsto2d))
+          ierr=nf_def_var (ncid, vname(1,indxXIsto2d)(1:lvar),
+     &                             NF_FOUT, 3, r2dgrd, vidXIsto2d)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto2d,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxXIsto2d))
+          ierr=nf_put_att_text (ncid, vidXIsto2d, 'long_name', lvar,
+     &                                  vname(2,indxXIsto2d)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxXIsto2d)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidXIsto2d, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxXIsto2d))
+          ierr=nf_put_att_text (ncid, vidXIsto2d, 'units',     lvar,
+     &                                  vname(3,indxXIsto2d)(1:lvar))
+          lvar=lenstr(vname(4,indxXIsto2d))
+          ierr=nf_put_att_text (ncid, vidXIsto2d, 'field',     lvar,
+     &                                  vname(4,indxXIsto2d)(1:lvar))
+
+          call nf_add_attribute(ncid, vidXIsto2d, vname(:,indxXIsto2d),
+     &         5, NF_FOUT, ierr)
+        endif
+# endif /* STO_XI2D */
+!
+# ifdef STO_XI3D
+        if (wrt(indxXIsto3d)) then
+          lvar=lenstr(vname(1,indxXIsto3d))
+          ierr=nf_def_var (ncid, vname(1,indxXIsto3d)(1:lvar),
+     &                             NF_FOUT, 4, r3dgrd, vidXIsto3d)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto3d,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxXIsto3d))
+          ierr=nf_put_att_text (ncid, vidXIsto3d, 'long_name', lvar,
+     &                                  vname(2,indxXIsto3d)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxXIsto3d)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidXIsto3d, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxXIsto3d))
+          ierr=nf_put_att_text (ncid, vidXIsto3d, 'units',     lvar,
+     &                                  vname(3,indxXIsto3d)(1:lvar))
+          lvar=lenstr(vname(4,indxXIsto3d))
+          ierr=nf_put_att_text (ncid, vidXIsto3d, 'field',     lvar,
+     &                                  vname(4,indxXIsto3d)(1:lvar))
+
+          call nf_add_attribute(ncid, vidXIsto3d, vname(:,indxXIsto3d),
+     &         5, NF_FOUT, ierr)
+        endif
+# endif /* STO_XI3D */
 !
 !-----------------------------------------------------------------------
 ! Tracer variables.
@@ -2935,19 +3000,47 @@
 !
 ! STOGEN stochastic variables.
 !
-# ifdef STOGEN
-        if (wrt(indxXIsto)) then
-          lvar=lenstr(vname(1,indxXIsto))
-          ierr=nf_inq_varid (ncid, vname(1,indxXIsto)(1:lvar), vidXIsto)
+# ifdef STO_XI1D
+        if (wrt(indxXIsto1d)) then
+          lvar=lenstr(vname(1,indxXIsto1d))
+          ierr=nf_inq_varid (ncid, vname(1,indxXIsto1d)(1:lvar), vidXIsto1d)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname(1,indxXIsto)(1:lvar), ncname(1:lstr)
+            write(STDOUT,1) vname(1,indxXIsto1d)(1:lvar), ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 # ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,vidXIsto,nf_collective)
+          ierr=nf_var_par_access(ncid,vidXIsto1d,nf_collective)
 # endif
         endif
-# endif /* STOGEN */
+# endif /* STO_XI1D */
+!
+# ifdef STO_XI2D
+        if (wrt(indxXIsto2d)) then
+          lvar=lenstr(vname(1,indxXIsto2d))
+          ierr=nf_inq_varid (ncid, vname(1,indxXIsto2d)(1:lvar), vidXIsto2d)
+          if (ierr .ne. nf_noerr) then
+            write(STDOUT,1) vname(1,indxXIsto2d)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto2d,nf_collective)
+# endif
+        endif
+# endif /* STO_XI2D */
+!
+# ifdef STO_XI3D
+        if (wrt(indxXIsto3d)) then
+          lvar=lenstr(vname(1,indxXIsto3d))
+          ierr=nf_inq_varid (ncid, vname(1,indxXIsto3d)(1:lvar), vidXIsto3d)
+          if (ierr .ne. nf_noerr) then
+            write(STDOUT,1) vname(1,indxXIsto3d)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto3d,nf_collective)
+# endif
+        endif
+# endif /* STO_XI3D */
 !
 ! Tracer variables.
 !
@@ -3818,7 +3911,9 @@
 #undef vidMust
 #undef vidObst
 #ifdef STOGEN
-# undef vidXIsto 
+# undef vidXIsto1d
+# undef vidXIsto2d
+# undef vidXIsto3d
 #endif
 
 

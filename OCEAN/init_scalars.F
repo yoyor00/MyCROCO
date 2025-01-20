@@ -557,20 +557,35 @@ CR      write(STDOUT,'(1x,A,I3)') 'indxS = ',indxS
       vname(7,indxS)='                                            '
 # endif /* SALINITY */
 
-# ifdef STOGEN
-CR      write(STDOUT,'(1x,A,I3)') 'indxXIsto = ',indxXIsto
-      vname(1,indxXIsto)='sto_xi                                    '
-      vname(2,indxXIsto)='Stochastic autoregressive process         '
-      vname(3,indxXIsto)='no unit                                   '
-      vname(4,indxXIsto)='[attrs]                                   '
-      vname(5,indxXIsto)='stochastic_field                          '
+# ifdef STO_XI2D
+CR      write(STDOUT,'(1x,A,I3)') 'indxXIsto2d = ',indxXIsto2d
+      vname(1,indxXIsto2d)='sto_xi_2d                                 '
+      vname(2,indxXIsto2d)='2D Stochastic autoregressive process      '
+      vname(3,indxXIsto2d)='no unit                                   '
+      vname(4,indxXIsto2d)='[attrs]                                   '
+      vname(5,indxXIsto2d)='stochastic_field_2d                       '
 #ifdef SPHERICAL
-      vname(6,indxXIsto)='lat_rho lon_rho                           '
+      vname(6,indxXIsto2d)='lat_rho lon_rho                           '
 #else
-      vname(6,indxXIsto)='x_rho y_rho                               '
+      vname(6,indxXIsto2d)='x_rho y_rho                               '
 #endif
-      vname(7,indxXIsto)='                                          '
-# endif /* STOGEN */
+      vname(7,indxXIsto2d)='                                          '
+# endif /* STO_XI2D */
+
+# ifdef STO_XI3D
+CR      write(STDOUT,'(1x,A,I3)') 'indxXIsto3d = ',indxXIsto3d
+      vname(1,indxXIsto3d)='sto_xi_3d                                 '
+      vname(2,indxXIsto3d)='3D Stochastic autoregressive process      '
+      vname(3,indxXIsto3d)='no unit                                   '
+      vname(4,indxXIsto3d)='[attrs]                                   '
+      vname(5,indxXIsto3d)='stochastic_field_3d                       '
+#ifdef SPHERICAL
+      vname(6,indxXIsto3d)='lat_rho lon_rho                           '
+#else
+      vname(6,indxXIsto3d)='x_rho y_rho                               '
+#endif
+      vname(7,indxXIsto3d)='                                          '
+# endif /* STO_XI3D */
 
 # ifdef PASSIVE_TRACER
       do i=1,ntrc_pas

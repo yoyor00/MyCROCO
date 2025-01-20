@@ -459,7 +459,7 @@
       parameter (ntrc_salt=0)
 # endif
 # ifdef STOGEN
-      parameter (ntrc_stogen=1)
+      parameter (ntrc_stogen=3)
 # else
       parameter (ntrc_stogen=0)
 # endif

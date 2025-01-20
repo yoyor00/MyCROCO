@@ -210,8 +210,10 @@
 #  endif
 
 #  ifdef STOGEN
-      integer indxXIsto
-      parameter (indxXIsto=indxV+ntrc_temp+ntrc_salt+1)
+      integer indxXIsto1d, indxXIsto2d, indxXIsto3d
+      parameter (indxXIsto1d=indxV+ntrc_temp+ntrc_salt+1)
+      parameter (indxXIsto2d=indxV+ntrc_temp+ntrc_salt+2)
+      parameter (indxXIsto3d=indxV+ntrc_temp+ntrc_salt+3)
 #  endif
 
 #  ifdef PASSIVE_TRACER
@@ -1140,7 +1142,7 @@
      &      , hisO,   hisW,   hisVisc, hisDiff
      &      , hisAkv, hisAkt, hisAks
 # ifdef STOGEN
-     &      , hisXIsto
+     &      , hisXIsto1d, hisXIsto2d, hisXIsto3d
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
@@ -1667,7 +1669,7 @@
      &      , hisAkv,  hisAkt,   hisAks
      &      , hisHbl,  hisHbbl
 # ifdef STOGEN
-     &      , hisXIsto
+     &      , hisXIsto1d, hisXIsto2d, hisXIsto3d
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
