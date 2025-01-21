@@ -113,11 +113,11 @@ ls ${ROOT_DIR}/MUSTANG/*       > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/MUSTANG/*
 ls ${ROOT_DIR}/OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/OBSTRUCTION/* $SCRDIR
 ls ${ROOT_DIR}/STOGEN/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/STOGEN/* $SCRDIR
 
-if [[ -e "namelist_stogen_ref" ]] ; then
-        echo "  file namelist_stogen exists in Run directory"
+if [[ -e "namelist_sto_ref" ]] ; then
+        echo "  file namelist_sto_* exist in Run directory"
 else
         \cp -f ${ROOT_DIR}/STOGEN/namelist_sto* $RUNDIR
-        echo "  file namelist_stogen copied from source directory"
+        echo "  file namelist_sto_* copied from source directory"
 fi
 
 if [[ -e "namelist_pisces_ref" ]] ; then
