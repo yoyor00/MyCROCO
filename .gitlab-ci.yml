@@ -75,6 +75,9 @@ variables:
       cd $DATAREG ;
       tar -xf ForCI-INRIA.tar.gz ;
       mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
+      # clean unneeded files and directories to have enough space left for tests
+      rm ForCI-INRIA.tar.gz ;
+      rm -R ForCI-INRIA
     fi   
 
 .get_var_repro: &get_var_repro
