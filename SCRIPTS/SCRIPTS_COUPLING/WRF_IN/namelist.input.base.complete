@@ -17,7 +17,7 @@
  end_second                          = 00,00,00,
  interval_seconds                    = <interval_s>
  input_from_file                     = .true.,.true.,.true.,
- history_interval                    = <his_int>,<his_int>,<his_int>,
+ history_interval                    = <his_int_d01>,<his_int_d02>,<his_int_d03>,
  frames_per_outfile                  = <his_nb_out>,<his_nb_out>,<his_nb_out>,
  restart                             = .<rst>.,
  restart_interval                    = <rst_int>,
@@ -34,7 +34,7 @@
  output_diagnostics                  = 1
  auxhist3_outname                    = "wrfxtrm_d<domain>_<date>"
  io_form_auxhist3                    = 2
- auxhist3_interval                   = <xtrm_int_m>,<xtrm_int_m>,<xtrm_int_m>,
+ auxhist3_interval                   = <xtrm_int_m_d01>,<xtrm_int_m_d02>,<xtrm_int_m_d03>,
  frames_per_auxhist3                 = <xtrm_nb_out>,<xtrm_nb_out>,<xtrm_nb_out>,
  debug_level                         = 0
  input_from_hires                    = .false., .false.,.false.,

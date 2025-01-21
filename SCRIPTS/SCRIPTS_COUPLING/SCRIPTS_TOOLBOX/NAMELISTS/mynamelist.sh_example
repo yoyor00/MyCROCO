@@ -227,10 +227,10 @@ export nudge_end_h="144" # time (in hours) to stop nudging after start of foreca
 # Output settings
 #----------------
 #!!! WARNING: when XIOS is activated the following values (for the model) are not taken into account
-export atm_his=6                          # output interval (minutes)
-export atm_his_frames=1000 # $((31*24))     # nb of outputs per file
-export atm_diag_int_m=$atm_his  # diag output interval (m)
-export atm_diag_frames=1000                 # nb of diag outputs per file
+export atm_his="180 180 60"               # output interval (minutes) for each domain
+export atm_his_frames=1000 # $((31*24))   # nb of outputs per file
+export atm_diag_int_m=$atm_his            # diag output interval (m)
+export atm_diag_frames=1000               # nb of diag outputs per file
 # file for specifying different than default output variables: OPTIONAL, leave empty if not used
 export atm_iofields='myoutfields.txt'
 
