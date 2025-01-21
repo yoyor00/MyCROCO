@@ -90,18 +90,18 @@
 
 #  ifdef NBQ_IMP
         ifl_imp_nbq = 1
-        MPI_master_only write(6,*)
-        MPI_master_only write(6,*) '--------------------------------'
-        MPI_master_only write(6,*) ' NBQ: semi-implicit integration '
-        MPI_master_only write(6,*) '--------------------------------'
-        MPI_master_only write(6,*)
+        MPI_master_only write(STDOUT,*)
+        MPI_master_only write(STDOUT,*) '--------------------------------'
+        MPI_master_only write(STDOUT,*) ' NBQ: semi-implicit integration '
+        MPI_master_only write(STDOUT,*) '--------------------------------'
+        MPI_master_only write(STDOUT,*)
 #  else
         ifl_imp_nbq = 0
-        MPI_master_only write(6,*)
-        MPI_master_only write(6,*) '---------------------------'
-        MPI_master_only write(6,*) ' NBQ: explicit integration '
-        MPI_master_only write(6,*) '---------------------------'
-        MPI_master_only write(6,*)
+        MPI_master_only write(STDOUT,*)
+        MPI_master_only write(STDOUT,*) '---------------------------'
+        MPI_master_only write(STDOUT,*) ' NBQ: explicit integration '
+        MPI_master_only write(STDOUT,*) '---------------------------'
+        MPI_master_only write(STDOUT,*)
 #  endif
 !
 !----------------------------------------------------------------------

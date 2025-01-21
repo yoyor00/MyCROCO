@@ -121,7 +121,7 @@
             stainfo(istazgrd,iflt)=stainfo(istazgrd,iflt)/summ
           endif
         endif
-c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
+c       write(STDOUT,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
 #  else
         stainfo(istazgrd,iflt)=0.0
 #  endif
@@ -239,7 +239,7 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
               enddo
 #   endif
            enddo
-c           write(*,*), 'sigma ', stainfo(istazgrd,1),
+c           write(STDOUT,*), 'sigma ', stainfo(istazgrd,1),
 c     &      'depth', staSigm(istadpt,1,k), ' temp ',
 c     &       staSigm(istatem,1,k)
           enddo ! all_sigma k cycle

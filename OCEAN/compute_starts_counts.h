@@ -107,7 +107,7 @@
       count(1)=imax-imin+1
       count(2)=jmax-jmin+1
 
-c**   write(stdout,'(1x,A,i4,1x,A,i2,2(3x,A,I2,2x,A,I3,2x,A,I3))')
+c**   write(STDOUT,'(1x,A,i4,1x,A,i2,2(3x,A,I2,2x,A,I3,2x,A,I3))')
 c**  &      'NF_READ/WRITE: mynode=',mynode,'horiz_grid',horiz_type,
 c**  &                         'ii=',ii, 'imin=',imin, 'imax=',imax,
 C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax

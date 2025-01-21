@@ -153,17 +153,17 @@ C$OMP CRITICAL (bio_cr_rgn)
             if (first_time.eq.0) then
               first_time=1
 # ifdef BIO_NChlPZD
-              write(stdout,1) 'STEP','time[DAYS]','       NO3',
+              write(STDOUT,1) 'STEP','time[DAYS]','       NO3',
      &                   '     PHYTO','       ZOO','    DETRIT',
      &                   'trd'
    1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,3x,A3)
 # elif defined BIO_N2ChlPZD2
-              write(stdout,1) 'STEP','time[DAYS]','       NO3',
+              write(STDOUT,1) 'STEP','time[DAYS]','       NO3',
      &                   '    PHY2 ','    ZOO2 ', '  DET2',
      &                   'trd'
    1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,3x,A3)
 # elif defined BIO_BioEBUS
-              write(stdout,1) 'STEP','time[DAYS]','       NO3',
+              write(STDOUT,1) 'STEP','time[DAYS]','       NO3',
      &                   '    PHY2 ','    ZOO2 ', '  DET2',
      &                   'trd'
    1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,3x,A3)
@@ -177,7 +177,7 @@ C$OMP CRITICAL (bio_cr_rgn)
 # endif
             endif
 # if ! defined PISCES
-            write(stdout,2) iic-1,tdays,
+            write(STDOUT,2) iic-1,tdays,
      &                      global_sum(1),
      &                      global_sum(2),
      &                      global_sum(3),
@@ -185,7 +185,7 @@ C$OMP CRITICAL (bio_cr_rgn)
      &                    , trd
    2        format(I6, F12.5, 4(1PE14.7), I3)
 # else
-            write(stdout,2) iic-1,tdays,
+            write(STDOUT,2) iic-1,tdays,
      &                      global_sum(1),
      &                      global_sum(2),
      &                      global_sum(3),

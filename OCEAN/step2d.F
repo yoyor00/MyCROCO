@@ -1909,7 +1909,7 @@ C$OMP END MASTER
         imax=imax+iminmpi-1
         jmax=jmax+jminmpi-1
 # endif
-        write(stdout,'(9(A/))')
+        write(STDOUT,'(9(A/))')
      &     '                                         ',
      &     '                                         ',
      &     ' ======================================= ',
@@ -1920,25 +1920,25 @@ C$OMP END MASTER
      &     ' ======================================= ',
      &     '                                         '
         if (VMAX.eq.666.) then
-          write(stdout,'(A,F10.2)')
+          write(STDOUT,'(A,F10.2)')
      &                                            '  VMAX (M/S) =   NaN'
         else
-          write(stdout,'(A,F10.2)')
+          write(STDOUT,'(A,F10.2)')
      &                                            '  VMAX (M/S) =',VMAX
         endif
-        write(stdout,'(A,2I6)')
+        write(STDOUT,'(A,2I6)')
      &                                       '  IMAX JMAX  =',imax,jmax
 # if defined MPI
-        write(stdout,'(A,I6)')
+        write(STDOUT,'(A,I6)')
      &                                       '  NODE  =',mynode
-        write(stdout,'(A,2I6)')
+        write(STDOUT,'(A,2I6)')
      &       '  IMAX JMAX  =',imax-iminmpi+1,jmax-jminmpi+1
 # endif
 # ifdef SOLVE3D
-        write(stdout,'(A,2I6/)')
+        write(STDOUT,'(A,2I6/)')
      &                                         '  IINT IEXT  =',iic,iif
 # else
-        write(stdout,'(A,I6/)')    '  IIC        =',iic
+        write(STDOUT,'(A,I6/)')    '  IIC        =',iic
 # endif
         may_day_flag=1
 # ifdef MPI

@@ -687,9 +687,9 @@
           Kv_O2(i,j) = Kv_O2_loc
           u10(i,j) = u10_loc
 !         if (i==10.and.j==10) then
-!            write (*,*) 'O2satu(10,10)=',O2satu(10,10)
-!            write (*,*) 'Kv_O2(10,10)=',KV_O2(10,10)
-!            write (*,*) 'u10(10,10)=',u10(10,10)
+!            write(STDOUT,*) 'O2satu(10,10)=',O2satu(10,10)
+!            write(STDOUT,*) 'Kv_O2(10,10)=',KV_O2(10,10)
+!            write(STDOUT,*) 'u10(10,10)=',u10(10,10)
 !          endif
 # endif /* OXYGEN */
         enddo

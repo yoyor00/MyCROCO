@@ -32,7 +32,7 @@
 
       n=iargc()
       if (n.ne.3) then
-        write(stdout,'(/1x,A,1x,A/32x,A/)') 'Usage of ncrename',
+        write(STDOUT,'(/1x,A,1x,A/32x,A/)') 'Usage of ncrename',
      &             'should be:', 'ncrename file.nc name newname'
         stop
       endif
@@ -51,13 +51,13 @@
       lstr=lenstr(ncname)
       ierr=nf_open (ncname(1:lstr), nf_write, ncid)
       if (ierr .ne. nf_noerr) then
-        write(stdout,'(/8x,A,1x,A,A/)') 'Cannot open netCDF file',
+        write(STDOUT,'(/8x,A,1x,A,A/)') 'Cannot open netCDF file',
      &                                          ncname(1:lstr),'.'
         goto 100
       endif
       ierr=nf_redef (ncid)
       if (ierr .ne. nf_noerr) then
-        write(stdout,'(/8x,A,1x,A,1x,A,A/)') 'Cannot switch to',
+        write(STDOUT,'(/8x,A,1x,A,1x,A,A/)') 'Cannot switch to',
      &    'redefinition mode for netCDF file', ncname(1:lstr),'.'
         goto 99
       endif
@@ -69,15 +69,15 @@
       if (ierr .ne. nf_noerr) goto 1
       ierr=nf_rename_var (ncid, varid, newname(1:lnew))
       if (ierr .eq. nf_noerr) then
-        write(stdout,'(/8x,5A/)') 'Renamed variable ''',
+        write(STDOUT,'(/8x,5A/)') 'Renamed variable ''',
      &  varname(1:lvar), ''' into ''', newname(1:lnew),'''.'
         found=.true.
       else
-        write(stdout,'(/8x,6A/8x,A,I3/)') 'Cannot rename ',
+        write(STDOUT,'(/8x,6A/8x,A,I3/)') 'Cannot rename ',
      &     'variable ''',  varname(1:lvar), ''' into ''',
      &     newname(1:lnew),'''.', 'netCDF error status =',i err
         if (ierr. eq. nf_enameinuse) then
-          write(stdout,'(8x,A)') 'This name is already in use.'
+          write(STDOUT,'(8x,A)') 'This name is already in use.'
         endif
       endif
       goto 98
@@ -89,15 +89,15 @@
       if (ierr .ne. nf_noerr) goto 2
       ierr=nf_rename_dim (ncid, varid, newname(1:lnew))
       if (ierr .eq. nf_noerr) then
-        write(stdout,'(/8x,5A/)') 'Renamed dimension ''',
+        write(STDOUT,'(/8x,5A/)') 'Renamed dimension ''',
      &    varname(1:lvar), ''' into ''', newname(1:lnew), '''.'
         found=.true.
       else
-        write(stdout,'(/8x,6A/8x,A,I3/)') 'Cannot rename ',
+        write(STDOUT,'(/8x,6A/8x,A,I3/)') 'Cannot rename ',
      &   'dimension ''', varname(1:lvar), ''' into ''',
      &    newname(1:lnew), '''.', 'netCDF error status =', ierr
         if (ierr. eq. nf_enameinuse) then
-          write(stdout,'(8x,A/)') 'This name is already in use.'
+          write(STDOUT,'(8x,A/)') 'This name is already in use.'
         endif
       endif
       goto 98
@@ -108,7 +108,7 @@
   2   ierr=nf_rename_att (ncid, nf_global, varname(1:lvar),
      &                                     newname(1:lnew))
       if (ierr .eq. nf_noerr) then
-        write(stdout,'(/8x,5A/)') 'Renamed global attribute ''',
+        write(STDOUT,'(/8x,5A/)') 'Renamed global attribute ''',
      &     varname(1:lvar), ''' into ''', newname(1:lnew), '''.'
         found=.true.
         goto 98
@@ -121,25 +121,25 @@
             if (ierr .eq. nf_noerr) then
               ierr=nf_inq_varname (ncid, varid, name)
               n=lenstr (name)
-              write(stdout,'(/8x,7A/)') 'Renamed attribute ''',
+              write(STDOUT,'(/8x,7A/)') 'Renamed attribute ''',
      &          varname(1:lvar), ''' into ''', newname(1:lnew),
      &                   ''' for variable ''', name(1:n), '''.'
               found=.true.
             endif
           enddo
         else
-          write(stdout,'(/8x,5A/)') 'Cannot determine number of ',
+          write(STDOUT,'(/8x,5A/)') 'Cannot determine number of ',
      &            'variables in netCDF file ', ncname(1:lstr), '.'
         endif
       endif
 
-      if (.not.found) write(stdout,'(/8x,6A/)') 'Cannot find ',
+      if (.not.found) write(STDOUT,'(/8x,6A/)') 'Cannot find ',
      &      'object ''', varname(1:lvar), ''' in netCDF file ',
      &                                      ncname(1:lstr), '.'
 
   98  ierr=nf_enddef (ncid)
       if (ierr. ne. nf_noerr) then
-        write(stdout,'(/8x,A,1x,A,1x,A,A/)') 'Cannot switch',
+        write(STDOUT,'(/8x,A,1x,A,1x,A,A/)') 'Cannot switch',
      &    'to data mode for netCDF file', ncname(1:lstr),'.'
       endif
   99  ierr=nf_close (ncid)

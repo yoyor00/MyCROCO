@@ -140,7 +140,7 @@
             ivc = ivc + 1
         end do
         oa_stop1 : if ( ivc /= nzvc_oa( tc_oa(ic) ) ) then
-           MPI_master_only write(stdout,fmt='(a)') '...OA-ERR-iv-ic'
+           MPI_master_only write(STDOUT,fmt='(a)') '...OA-ERR-iv-ic'
            stop
         end if oa_stop1
 
@@ -153,7 +153,7 @@
         oa_stop2 : if ( 
      &     tvar_oa( tc_oa(ic), tvc_oa(ic), ivc ) /= tupd_oa(iv) ) 
      &     then
-           MPI_master_only write(stdout,fmt='(a)') '...OA-ERR tupd_oa'
+           MPI_master_only write(STDOUT,fmt='(a)') '...OA-ERR tupd_oa'
            stop
         end if oa_stop2
       
@@ -190,7 +190,7 @@
 #else
                 ! BLXD TODO test with common space work3d_r and workr
 #ifdef OA_TRACES              
-              MPI_master_only write(stdout,fmt='(a)') 
+              MPI_master_only write(STDOUT,fmt='(a)') 
      &          '...OA var3d outputs using croco workr'
 #endif              
                 call var3d_oa_out(tile,ic,iv,workr,workim,vnamr,vnami)
@@ -207,7 +207,7 @@ C$OMP BARRIER
           endif v3d_not_scalogram
 
 #else
-           MPI_master_only write(stdout,fmt='(a)') 
+           MPI_master_only write(STDOUT,fmt='(a)') 
      &      '...Non XIOS outputs doesn''t work yet with OA'
            stop
 #endif
@@ -219,7 +219,7 @@ C$OMP BARRIER
         v2d_not_scalogram : if ( .not. tv_sclg_oa(iv) ) then 
 
 #ifdef OA_TRACES         
-              MPI_master_only write(stdout,fmt='(a)') 
+              MPI_master_only write(STDOUT,fmt='(a)') 
      &          '...OA var2d outputs using croco work2d/work2d2'
 #endif              
               ntrds=omp_get_num_threads()
@@ -240,13 +240,13 @@ C$OMP BARRIER
           endif v2d_not_scalogram
 
 #else
-           MPI_master_only write(stdout,fmt='(a)') 
+           MPI_master_only write(STDOUT,fmt='(a)') 
      &      '...Non XIOS outputs doesn''t work with OA'
            stop
 #endif
 
         else if_is_3dvar
-           MPI_master_only write(stdout,fmt='(a)') 
+           MPI_master_only write(STDOUT,fmt='(a)') 
      &      '...ERROR output_oa : unrecogn. var. dimension'
            stop
         endif if_is_3dvar
@@ -272,21 +272,21 @@ C$OMP BARRIER
      &                                ,inam,jnam,knam
      &                                ,if_imag_part)
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '...OA-Scalogram : send re to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(vvnamr), 
      &                  real(ww_re(1:nper_sclg, 1:nsclg)))
               if ( if_imag_part ) then
 #ifdef OA_TRACES_XIOS
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '...OA-Scalogram : send im to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(vvnami), 
      &                  real(ww_im(1:nper_sclg, 1:nsclg)))
               endif
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '...OA-Scalogram : send period to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(ppnam),
@@ -296,25 +296,25 @@ C$OMP BARRIER
               if ( if_record_sclg_ijpoints ) then
 
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))')
+                  write(STDOUT,fmt='(a,1(i5))')
      &        '...OA-Scalogram : send i-pt to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(inam),
      &              real(pdg%iscal0d_cr(1:nsclg)))
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))')
+                  write(STDOUT,fmt='(a,1(i5))')
      &        '...OA-Scalogram : send j-pt to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(jnam),
      &              real(pdg%jscal0d_cr(1:nsclg)))
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))')
+                  write(STDOUT,fmt='(a,1(i5))')
      &        '...OA-Scalogram : send k-pt to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(knam),
      &              real(pdg%kscal0d_cr(1:nsclg)))
 #ifdef OA_TRACES_XIOS             
-              write(*,fmt='(a,1(i5))')
+              write(STDOUT,fmt='(a,1(i5))')
      &        '...OA-Scalogram : sending END XIOS subdom',mynode
 #endif
               endif
@@ -344,7 +344,7 @@ C$OMP BARRIER
               loc_scal : if ( nsclg>0 ) then
 
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '..OA-Scalogram-loc : send re to XIOS subdom',mynode
 #endif
 
@@ -352,11 +352,11 @@ C$OMP BARRIER
      &        call xios_send_field( trim(vvnamr), 
      &                  real(wl_re(1:nper_sclg, isclg:nsclg)))
 
-     !CRBS         write(stdout,fmt='(2i,1(ES22.15E2))')mynode,                !CRBE
+     !CRBS         write(STDOUT,fmt='(2i,1(ES22.15E2))')mynode,                !CRBE
      !CRBS &                                             isclg,wl_re(1,isclg)  !CRBE
               if ( if_imag_part ) then
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '..OA-Scalogram-loc : send im to XIOS subdom',mynode
 #endif
           if (xios_field_is_active(trim(vvnami)))
@@ -364,7 +364,7 @@ C$OMP BARRIER
      &                  real(wl_im(1:nper_sclg, isclg:nsclg)))
               endif
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '..OA-Scalogram : send period to XIOS subdom',mynode
 #endif
           if (xios_field_is_active(trim(ppnam)))
@@ -374,7 +374,7 @@ C$OMP BARRIER
 
               if (if_record_sclg_ijpoints) then
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '..OA-Scalogram : send ij-pts to XIOS subdom',mynode
 #endif
               call xios_send_field( trim(inam),
@@ -385,13 +385,13 @@ C$OMP BARRIER
      &                     real(pdl%kscal0d_oa(isclg:nsclg)))
               endif
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            'OA-Scalogram-loc : sending END XIOS subdom',mynode
 #endif
               else loc_scal
 
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '..OA-Scalogram-loc :send re40 to XIOS subdo',mynode
 #endif
           if (xios_field_is_active(trim(vvnamr)))
@@ -400,12 +400,12 @@ C$OMP BARRIER
      &                  real(wl_re(1:nper_sclg, isclg:nsclg))
      &                  ,(/nper_sclg,0/) ) )
  !CRBS #ifdef OA_TRACES_XIOS                                                !CRBE 
- !CRBS             write(*,fmt='(2i,1(ES22.15E2))')mynode,             !CRBE
+ !CRBS             write(STDOUT,fmt='(2i,1(ES22.15E2))')mynode,             !CRBE
  !CRBS    &                                             isclg,wl_re(1,isclg)!CRBE
  !CRBS #endif                                                               !CRBE
               if ( if_imag_part ) then
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '..OA-Scalogram-loc :send im40 to XIOS subdo',mynode
 #endif
           if (xios_field_is_active(trim(vvnami)))
@@ -416,7 +416,7 @@ C$OMP BARRIER
 
               endif
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '..OA-Scalogram :send period40 to XIOS subdo',mynode
 #endif
           if (xios_field_is_active(trim(ppnam)))
@@ -427,7 +427,7 @@ C$OMP BARRIER
 
               if (if_record_sclg_ijpoints) then
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            '..OA-Scalogram :send ij-pts40 to XIOS subdo',mynode
 #endif
               call xios_send_field( trim(inam),
@@ -444,14 +444,14 @@ C$OMP BARRIER
      &                    ,(/0/) ) ))
               endif
 #ifdef OA_TRACES_XIOS             
-                  write(*,fmt='(a,1(i5))') 
+                  write(STDOUT,fmt='(a,1(i5))') 
      &            'OA-Scalogram-loc : sending END40 XIOS subdo',mynode
 #endif
               endif loc_scal
               pdl   => null() 
 
 #else /* MPI */
-                  write(stdout,fmt='(a)') 
+                  write(STDOUT,fmt='(a)') 
      &            '..OA-Sclg : XIOS disctribut. axis impossible'
 #endif /* MPI */
           
@@ -467,7 +467,7 @@ C$OMP BARRIER
         implicit none
         integer, intent(in)    :: verbose
         if ( verbose >=15 ) then
-            MPI_master_only write(stdout,fmt='(a13,(3(i3.3,1x)))')     
+            MPI_master_only write(STDOUT,fmt='(a13,(3(i3.3,1x)))')     
      &     'Cfg-#var-Var ',ic,ivc,iv
         end if
         return

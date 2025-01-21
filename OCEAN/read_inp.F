@@ -48,7 +48,7 @@
 #include "mpi_cpl.h"
       integer kwsize, testunit, input
       parameter (kwsize=32, testunit=40, input=15)
-      character end_signal*3, keyword*32, fname*180
+      character end_signal*3, keyword*32, fname*180, outname_ens*180
       parameter (end_signal='end')
       integer ierr, iargc, is,ie, kwlen, lstr, lenstr
 #ifdef SOLVE3D
@@ -184,7 +184,11 @@
 #elif defined SEAGRASS
       fname='TEST_CASES/croco.in.Seagrass'
 #else
+# ifdef ENSEMBLE
+      fname=cmember//'croco.in'
+# else
       fname='croco.in'
+# endif
 #endif
 #ifdef MPI
       if (mynode.eq.0 .and. iargc().GT.0) call getarg(1,fname)
@@ -303,6 +307,12 @@
       wrtdiabioGasExc_avg(NumGasExcTerms+1)=.false.
 # endif
 #endif
+
+#ifdef ENSEMBLE
+      outname_ens=cmember//'croco.out'
+      open(STDOUT,file=outname_ens)
+#endif
+
 !
 ! Read in keyword: keep trying, until keyword is found.
 ! ==== == ======== ==== ======= ===== ======= == ======
@@ -331,6 +341,7 @@
       goto 1
    4  kwlen=ie-is
       if (is.gt.1) keyword(1:kwlen)=keyword(is:is+kwlen-1)
+
 !
 ! Read input parameters according to the keyword:
 ! ==== ===== ========== ========= == === ========
@@ -341,7 +352,7 @@
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) title
         lstr=lenstr(title)
-        MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
+        MPI_master_only write(STDOUT,'(/1x,A)') title(1:lstr)
 
 
 #ifdef USE_CALENDAR
@@ -352,7 +363,7 @@
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) start_date
         lstr=lenstr(start_date)
-        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+        MPI_master_only write(STDOUT,'(/2x,A,1x,A/)')
      &   'Run start date:', start_date(1:lstr)
 # ifdef ANA_INITIAL
         if (nrrec.eq.0) then
@@ -372,17 +383,17 @@
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) end_date
         lstr=lenstr(end_date)
-        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+        MPI_master_only write(STDOUT,'(/2x,A,1x,A/)')
      &   'Run end date:', end_date(1:lstr)
 ! output time steps
       elseif (keyword(1:kwlen).eq.'output_time_steps') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) dt_his,dt_avg,dt_rst
-        MPI_master_only  write(stdout,
+        MPI_master_only  write(STDOUT,
      &  '(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
      &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
      &  'DT RST=',dt_rst,'H'
-        MPI_master_only write(stdout,*)
+        MPI_master_only write(STDOUT,*)
 #endif
 
 #ifdef XIOS
@@ -401,7 +412,7 @@
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) ntimes,dt,ndtfast, ninfo
 
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      & '(I10,2x,A,1x,A /F10.2,2x,A,2(/I10,2x,A,1x,A)/F10.4,2x,A)')
      &    ntimes,  'ntimes   Total number of timesteps for',
      &                                            '3D equations.',
@@ -413,10 +424,10 @@
         dtfast=dt/float(ndtfast)     ! set barotropic time step.
 
         if (NWEIGHT.lt.(2*ndtfast-1)) then
-          write(stdout,'(a,i3)')
+          write(STDOUT,'(a,i3)')
      &    ' Error - Number of 2D timesteps (2*ndtfast-1): ',
      &    2*ndtfast-1
-          write(stdout,'(a,i3)')
+          write(STDOUT,'(a,i3)')
      &    '           exceeds barotopic weight dimension: ',NWEIGHT
           goto 95
         endif
@@ -428,7 +439,7 @@
       elseif (keyword(1:kwlen).eq.'time_stepping_nbq') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) ndtnbq, csound_nbq, visc2_nbq
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
      &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
      &                                                 '2D step.',
@@ -446,7 +457,7 @@
       elseif (keyword(1:kwlen).eq.'S-coord') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) theta_s, theta_b, Tcline
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &                        '(3(1pe10.3,2x,A,1x,A/),32x,A)')
      &    theta_s, 'theta_s  S-coordinate surface control',
      &                                               'parameter.',
@@ -474,7 +485,7 @@
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           ininame=fname(1:lstr)
-          MPI_master_only write(stdout,'(1x,A,2x,A,4x,A,I3)')
+          MPI_master_only write(STDOUT,'(1x,A,2x,A,4x,A,I3)')
      &     'Initial State File:', ininame(1:lstr), 'Record:',nrrec
 #ifdef ANA_INITIAL
         endif
@@ -493,7 +504,7 @@
         open(testunit,file=fname(1:lstr), status='old', err=97)
         close(testunit)
         grdname=fname(1:lstr)
-        MPI_master_only write(stdout,'(10x,A,2x,A)')
+        MPI_master_only write(STDOUT,'(10x,A,2x,A)')
      &                   'Grid File:', grdname(1:lstr)
 #endif
 
@@ -539,7 +550,7 @@
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         frcname=fname(1:lstr)
-        MPI_master_only write(stdout,'(2x,A,2x,A)')
+        MPI_master_only write(STDOUT,'(2x,A,2x,A)')
      &             'Forcing Data File:', frcname(1:lstr)
 #endif  /* !defined NO_FRCFILE */
 
@@ -558,7 +569,7 @@
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         wave_file=fname(1:lstr)
-        MPI_master_only write(stdout,'(2x,A,2x,A)')
+        MPI_master_only write(STDOUT,'(2x,A,2x,A)')
      &             'Wave Data File:', wave_file(1:lstr)
 #endif  /* !defined WAVE_OFFLINE */
 
@@ -576,7 +587,7 @@
 c        open (testunit, file=fname(1:lstr), status='old', err=97)
 c        close(testunit)
         bioname=fname(1:lstr)
-        MPI_master_only write(stdout,'(2x,A,2x,A)')
+        MPI_master_only write(STDOUT,'(2x,A,2x,A)')
      &             'Biology Forcing Data File:', bioname(1:lstr)
 #endif
 !
@@ -594,7 +605,7 @@ c        close(testunit)
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           bulkname=fname(1:lstr)
-          MPI_master_only write(stdout,'(2x,A,2x,A)')
+          MPI_master_only write(STDOUT,'(2x,A,2x,A)')
      &               '   Bulk Data File:', bulkname(1:lstr)
 # endif  /* ONLINE FORCING */
 #endif
@@ -618,7 +629,7 @@ c        close(testunit)
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         clmname=fname(1:lstr)
-        MPI_master_only write(stdout,'(3x,A,2x,A)')
+        MPI_master_only write(STDOUT,'(3x,A,2x,A)')
      &            'Climatology File:', clmname(1:lstr)
 # ifdef AGRIF
        endif
@@ -641,7 +652,7 @@ c        close(testunit)
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           bry_file=fname(1:lstr)
-          MPI_master_only write(stdout,'(6x,A,2x,A)')
+          MPI_master_only write(STDOUT,'(6x,A,2x,A)')
      &          'Boundary File:', bry_file(1:lstr)
 # ifdef AGRIF
        endif
@@ -664,7 +675,7 @@ c        close(testunit)
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           brywkb_file=fname(1:lstr)
-          MPI_master_only write(stdout,'(6x,A,2x,A)')
+          MPI_master_only write(STDOUT,'(6x,A,2x,A)')
      &          'WKB Boundary File:', brywkb_file(1:lstr)
 # ifdef AGRIF
        endif
@@ -685,7 +696,7 @@ c        close(testunit)
         nrst=ceiling((dt_rst*3600.)/dt)
 #endif
         rstname=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &             '(7x,A,2x,A,4x,A,I6,4x,A,I4)')
      &             'Restart File:', rstname(1:lstr),
      &             'nrst =', nrst, 'rec/file: ', nrpfrst
@@ -704,7 +715,7 @@ c        close(testunit)
         nwrt=ceiling((dt_his*3600.)/dt)
 #endif
         hisname=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &             '(7x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &       'History File:', hisname(1:lstr),  'Create new:',
      &       ldefhis, 'nwrt =', nwrt, 'rec/file =', nrpfhis
@@ -724,7 +735,7 @@ c        close(testunit)
         navg=ceiling((dt_avg*3600.)/dt)
 # endif
         avgname=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &         '(2(I10,2x,A,1x,A/32x,A/),6x,A,2x,A,1x,A,I3)')
      &      ntsavg, 'ntsavg      Starting timestep for the',
      &         'accumulation of output', 'time-averaged data.',
@@ -746,7 +757,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         ablname=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &             '(7x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &       'Abl history File:', ablname(1:lstr),  'Create new:',
      &       ldefablhis, 'nwrtablhis =', nwrtablhis, 'rec/file =',
@@ -763,7 +774,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         ablname_avg=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
      &    'ABL averages File:',ablname_avg(1:lstr),'Create new:',
      &    ldefablavg,'nwrt =',nwrtablavg,'rec/file =',nrpfablavg,
@@ -785,7 +796,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianame=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(9x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &    'Tracer Diag File:',dianame(1:lstr),'Create new:',
      &    ldefdia,'nwrt =',nwrtdia,'rec/file =',nrpfdia
@@ -802,7 +813,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         dianame_avg=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
      &    'Tracer AVG Diag File:',dianame_avg(1:lstr),'Create new:',
      &    ldefdia_avg,'nwrt =',nwrtdia_avg,'rec/file =',nrpfdia_avg,
@@ -823,7 +834,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianameM=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &    'Momentum Diag File:', dianameM(1:lstr),  'Create new:',
      &    ldefdiaM, 'nwrt =', nwrtdiaM, 'rec/file =', nrpfdiaM
@@ -840,7 +851,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         dianameM_avg=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
      &    'Momentum AVG Diag File:',dianameM_avg(1:lstr),'Create new:',
      &    ldefdiaM_avg,'nwrt =',nwrtdiaM_avg,'rec/file =',nrpfdiaM_avg,
@@ -864,7 +875,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_vrtname=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &    'Vorticity Diag File:', diags_vrtname(1:lstr),  'Create new:',
      &    ldefdiags_vrt, 'nwrt =', nwrtdiags_vrt,
@@ -882,7 +893,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         diags_vrtname_avg=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
      &    'Vorticity AVG Diag File:',diags_vrtname_avg(1:lstr),
      &    'Create new:', ldefdiags_vrt_avg,'nwrt =',nwrtdiags_vrt_avg,
@@ -907,7 +918,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_ekname=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &    'Kinetic Energy Diag File:', diags_ekname(1:lstr),
      &    'Create new:', ldefdiags_ek, 'nwrt =', nwrtdiags_ek,
@@ -925,7 +936,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         diags_ekname_avg=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
      &    'Kinetic Energy AVG Diag File:',diags_ekname_avg(1:lstr),
      &    'Create new:', ldefdiags_ek_avg,'nwrt =',nwrtdiags_ek_avg,
@@ -949,7 +960,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_pvname=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &    'PV Diag File:', diags_pvname(1:lstr),
      &    'Create new:', ldefdiags_pv, 'nwrt =', nwrtdiags_pv,
@@ -967,7 +978,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         diags_pvname_avg=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
      &    'PV AVG Diag File:',diags_pvname_avg(1:lstr),
      &    'Create new:', ldefdiags_pv_avg,'nwrt =',nwrtdiags_pv_avg,
@@ -991,7 +1002,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_eddyname=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &    'eddy Diag File:', diags_eddyname(1:lstr),
      &    'Create new:', ldefdiags_eddy, 'nwrt =', nwrtdiags_eddy,
@@ -1009,7 +1020,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         diags_eddyname_avg=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
      &    'eddy AVG Diag File:',diags_eddyname_avg(1:lstr),
      &    'Create new:', ldefdiags_eddy_avg,'nwrt =',nwrtdiags_eddy_avg,
@@ -1033,7 +1044,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         surfname=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &    'Surface outputs File:', surfname(1:lstr),
      &    'Create new:', ldefsurf, 'nwrt =', nwrtsurf,
@@ -1051,7 +1062,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         surfname_avg=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
      &    'Surface outputs AVG File:',surfname_avg(1:lstr),
      &    'Create new:', ldefsurf_avg,'nwrt =',nwrtsurf_avg,
@@ -1075,7 +1086,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianamebio=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(8x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &    'Biology Diag File:', dianamebio(1:lstr),  'Create new:',
      &    ldefdiabio, 'nwrt =', nwrtdiabio, 'rec/file =', nrpfdiabio
@@ -1091,7 +1102,7 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         dianamebio_avg=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &    '(4x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
      &    'Biology AVG Diag File:',dianamebio_avg(1:lstr),'Create new:',
      &    ldefdiabio_avg,'nwrt =',nwrtdiabio_avg,'rec/file =',
@@ -1116,7 +1127,7 @@ c        close(testunit)
           call insert_node (fposnam, lstr, mynode2, NNODES2, ierr)
 # endif
           fltname=fname(1:lstr)
-          MPI_master_only write(stdout,
+          MPI_master_only write(STDOUT,
      &              '(9x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &        'Float File:',fltname(1:lstr),  'Create new:',
      &        ldefflt, 'nflt =', nflt, 'rec/file =', nrpfflt
@@ -1146,7 +1157,7 @@ c        close(testunit)
           call insert_node (staposname, lstr, mynode2, NNODES2, ierr)
 # endif
           staname=fname(1:lstr)
-          MPI_master_only write(stdout,
+          MPI_master_only write(STDOUT,
      &              '(9x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
      &        'Station File:',staname(1:lstr),  'Create new:',
      &        ldefsta, 'nsta =', nsta, 'rec/file =', nrpfsta
@@ -1171,13 +1182,13 @@ c        close(testunit)
         lstr=lenstr(aparnam)
         open (testunit,file=aparnam(1:lstr),status='old',err=97)
         close(testunit)
-        MPI_master_only write(stdout,'(1x,A,2x,A)')
+        MPI_master_only write(STDOUT,'(1x,A,2x,A)')
      &         'Assimilation Parameters File:', aparnam(1:lstr)
         fname=assname
         lstr=lenstr(assname)
         open (testunit,file=assname(1:lstr),status='old',err=97)
         close(testunit)
-        MPI_master_only write(stdout,'(12x,A,2x,A)')
+        MPI_master_only write(STDOUT,'(12x,A,2x,A)')
      &                    'Assimilation File:', assname(1:lstr)
 #endif
 !
@@ -1189,6 +1200,15 @@ c        close(testunit)
      &                                       ,  wrthis(indxVb)
 #ifdef SOLVE3D
      &                    ,  wrthis(indxU),  wrthis(indxV)
+# ifdef STO_XI1D
+!     &                    ,  wrthis(indxXIsto1d)
+# endif
+# ifdef STO_XI2D
+     &                    ,  wrthis(indxXIsto2d)
+# endif
+# ifdef STO_XI3D
+     &                    ,  wrthis(indxXIsto3d)
+# endif
 # ifdef TRACERS
      &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT)
 # endif
@@ -1199,7 +1219,7 @@ c        close(testunit)
 #endif
      &     ) wrthis(indxTime)=.true.
 
-        MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
      &    'Fields to be saved in history file: (T/F)'
      &    , wrthis(indxZ),  'write zeta ', 'free-surface.'
      &    , wrthis(indxUb), 'write UBAR ', '2D U-momentum component.'
@@ -1207,10 +1227,19 @@ c        close(testunit)
 #ifdef SOLVE3D
      &    , wrthis(indxU),  'write U    ', '3D U-momentum component.'
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
+# ifdef STO_XI1D
+     &    , wrthis(indxXIsto1d),'write sto_xi1d', '1D stochastic field -- NOT AVAILABLE YET'
+# endif
+# ifdef STO_XI2D
+     &    , wrthis(indxXIsto2d),'write sto_xi2d', '2D stochastic field.'
+# endif
+# ifdef STO_XI3D
+     &    , wrthis(indxXIsto3d),'write sto_xi3d', '3D stochastic field.'
+# endif
 # ifdef TRACERS
         do itrc=1,NT
           if (wrthis(indxV+itrc)) wrthis(indxTime)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,I2,A,I2,A)')
      &                     wrthis(indxV+itrc), 'write T(', itrc,
      &                              ')  Tracer of index', itrc,'.'
         enddo
@@ -1402,7 +1431,7 @@ c        close(testunit)
      &     ) wrthis(indxTime)=.true.
 
 
-        MPI_master_only write(stdout,'(8(/6x,l1,2x,A,1x,A))')
+        MPI_master_only write(STDOUT,'(8(/6x,l1,2x,A,1x,A))')
      &    wrthis(indxR),    'write RHO  ', 'Density anomaly.'
      &  , wrthis(indxO),    'write Omega', 'Omega vertical velocity.'
      &  , wrthis(indxW),    'write W    ', 'True vertical velocity.'
@@ -1505,7 +1534,7 @@ c        close(testunit)
         if (wrthis(indxTke) .or. wrthis(indxGls) .or. wrthis(indxLsc)
      &     ) wrthis(indxTime)=.true.
 
-        MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
      &    'Fields to be saved in history file: (T/F)'
      &   , wrthis(indxTke), 'write TKE ', 'turbulent kinetic energy.  '
      &   , wrthis(indxGls), 'write GLS ', 'generic length scale.'
@@ -1534,7 +1563,7 @@ c        close(testunit)
 # endif
      &     ) wrtavg(indxTime)=.true.
 
-        MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
      &  'Fields to be saved in averages file: (T/F)'
      &  , wrtavg(indxZ),  'write zeta ', 'free-surface.'
      &  , wrtavg(indxUb), 'write UBAR ', '2D U-momentum component.'
@@ -1545,7 +1574,7 @@ c        close(testunit)
 #  ifdef TRACERS
          do itrc=1,NT
           if (wrtavg(indxV+itrc)) wrtavg(indxTime)=.true.
-          MPI_master_only write(stdout,
+          MPI_master_only write(STDOUT,
      &                     '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
      &                      wrtavg(indxV+itrc), 'write T(',
      &                      itrc,')', 'Tracer of index', itrc,'.'
@@ -1723,7 +1752,7 @@ c        close(testunit)
 
 
 
-        MPI_master_only write(stdout,'(8(/6x,l1,2x,A,1x,A))')
+        MPI_master_only write(STDOUT,'(8(/6x,l1,2x,A,1x,A))')
      &    wrtavg(indxR),    'write RHO  ', 'Density anomaly'
      &  , wrtavg(indxO),    'write Omega', 'Omega vertical velocity.'
      &  , wrtavg(indxW),    'write W    ', 'True vertical velocity.'
@@ -1827,7 +1856,7 @@ c        close(testunit)
      &                       .or. wrtavg(indxGls) .or. wrtavg(indxLsc)
      &     ) wrtavg(indxTime)=.true.
 
-        MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
      &    'Fields to be saved in average file: (T/F)'
      &   , wrtavg(indxTke), 'write TKE ', 'turbulent kinetic energy.  '
      &   , wrtavg(indxGls), 'write GLS ', 'generic length scale.'
@@ -1867,7 +1896,7 @@ c        close(testunit)
      &       wrtabl(indxabl_Hzr_abl)  .or. wrtabl(indxabl_Hzw_abl)
      &     ) wrtabl(indxTime)=.true.
 !
-           MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A))')
+           MPI_master_only write(STDOUT,'(/1x,A,5(/6x,l1,2x,A))')
      &      'Fields to be saved in ABL output file: (T/F)'
      &     , wrtabl(indxabl_pu_dta)  , 'write large scale u variable'
      &     , wrtabl(indxabl_pv_dta)  , 'write large scale v variable'
@@ -1916,7 +1945,7 @@ c        close(testunit)
      &       wrtabl_avg(indxabl_Hzr_abl)  .or. wrtabl_avg(indxabl_Hzw_abl)
      &     ) wrtabl_avg(indxTime)=.true.
 !
-           MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A))')
+           MPI_master_only write(STDOUT,'(/1x,A,5(/6x,l1,2x,A))')
      &      'Fields to be saved in averages ABL output file: (T/F)'
      &     , wrtabl_avg(indxabl_pu_dta)  , 'write large scale u variable'
      &     , wrtabl_avg(indxabl_pv_dta)  , 'write large scale v variable'
@@ -1953,7 +1982,7 @@ c        close(testunit)
           read(input,*,err=95) wrtflt(indxfltGrd),
      &       wrtflt(indxfltTemp), wrtflt(indxfltSalt),
      &       wrtflt(indxfltRho), wrtflt(indxfltVel)
-           MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A))')
+           MPI_master_only write(STDOUT,'(/1x,A,5(/6x,l1,2x,A))')
      &      'Fields to be saved in floats output file: (T/F)'
      &     , wrtflt(indxfltGrd),   'write Grid location variables'
      &     , wrtflt(indxfltTemp),  'write temperature.'
@@ -1975,7 +2004,7 @@ c        close(testunit)
         read(input,*,err=95)  (wrtdia3D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia3D(itrc)) wrtdia3D(NT+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia3D(itrc),
      &        'write Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
@@ -1988,7 +2017,7 @@ c        close(testunit)
         read(input,*,err=95)  (wrtdia2D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia2D(itrc)) wrtdia2D(NT+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia2D(itrc),
      &        'write Hbl Integrated Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
@@ -2006,7 +2035,7 @@ c        close(testunit)
         read(input,*,err=95) (wrtdia3D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia3D_avg(itrc)) wrtdia3D_avg(NT+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia3D_avg(itrc),
      &        'write Avg Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
@@ -2020,7 +2049,7 @@ c        close(testunit)
         read(input,*,err=95) (wrtdia2D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia2D_avg(itrc)) wrtdia2D_avg(NT+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia2D_avg(itrc),
      &        'write Avg Hbl Integrated  Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
@@ -2042,7 +2071,7 @@ c        close(testunit)
         read(input,*,err=95)  (wrtdiaM(itrc), itrc=1,2)
          do itrc=1,2
            if (wrtdiaM(itrc)) wrtdiaM(3)=.true.
-           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+           MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiaM(itrc),
      &         'write momentum equation terms ',
      &         ' Momentum of index', itrc
@@ -2055,7 +2084,7 @@ c        close(testunit)
         read(input,*,err=95) (wrtdiaM_avg(itrc),itrc=1,2)
         do itrc=1,2
           if (wrtdiaM_avg(itrc)) wrtdiaM_avg(3)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &        wrtdiaM_avg(itrc),
      &        'write averaged momentum  equation terms ',
      &        ' Momentum of index', itrc
@@ -2074,7 +2103,7 @@ c        close(testunit)
         read(input,*,err=95)  (wrtdiags_vrt(itrc), itrc=1,1)
          do itrc=1,1
            if (wrtdiags_vrt(itrc)) wrtdiags_vrt(3)=.true.
-           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+           MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiags_vrt(itrc),
      &         'write vorticity equation terms ',
      &         ' Momentum of index', itrc
@@ -2087,7 +2116,7 @@ c        close(testunit)
         read(input,*,err=95) (wrtdiags_vrt_avg(itrc),itrc=1,1)
         do itrc=1,1
           if (wrtdiags_vrt_avg(itrc)) wrtdiags_vrt_avg(3)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &        wrtdiags_vrt_avg(itrc),
      &        'write averaged vorticity  equation terms ',
      &        ' Momentum of index', itrc
@@ -2106,7 +2135,7 @@ c        close(testunit)
         read(input,*,err=95)  (wrtdiags_ek(itrc), itrc=1,1)
          do itrc=1,1
            if (wrtdiags_ek(itrc)) wrtdiags_ek(3)=.true.
-           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+           MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiags_ek(itrc),
      &         'write energy equation terms ',
      &         ' Momentum of index', itrc
@@ -2119,7 +2148,7 @@ c        close(testunit)
         read(input,*,err=95) (wrtdiags_ek_avg(itrc),itrc=1,1)
         do itrc=1,1
           if (wrtdiags_ek_avg(itrc)) wrtdiags_ek_avg(3)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &        wrtdiags_ek_avg(itrc),
      &        'write averaged energy equation terms ',
      &        ' Momentum of index', itrc
@@ -2139,7 +2168,7 @@ c        close(testunit)
         read(input,*,err=95)  (wrtdiags_pv(itrc), itrc=1,NT)
          do itrc=1,NT
            if (wrtdiags_pv(itrc)) wrtdiags_pv(3)=.true.
-           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+           MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiags_pv(itrc),
      &         'write potential vorticity terms '
         enddo
@@ -2153,7 +2182,7 @@ c        close(testunit)
         read(input,*,err=95) (wrtdiags_pv_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdiags_pv_avg(itrc)) wrtdiags_pv_avg(3)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &        wrtdiags_pv_avg(itrc),
      &         'write potential vorticity terms '
        enddo
@@ -2172,7 +2201,7 @@ c        close(testunit)
         read(input,*,err=95)  wrtdiags_eddy(1)
          do itrc=1,1
            if (wrtdiags_eddy(itrc)) wrtdiags_eddy(3)=.true.
-           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+           MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiags_eddy(itrc),
      &         'write Reynolds stress terms '
         enddo
@@ -2184,7 +2213,7 @@ c        close(testunit)
         read(input,*,err=95) wrtdiags_eddy_avg(1)
         do itrc=1,1
           if (wrtdiags_eddy_avg(itrc)) wrtdiags_eddy_avg(3)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &        wrtdiags_eddy_avg(itrc),
      &         'write Reynolds stress terms '
        enddo
@@ -2202,7 +2231,7 @@ c        close(testunit)
         read(input,*,err=95)  (wrtsurf(itrc), itrc=1,1)
          do itrc=1,1
            if (wrtsurf(itrc)) wrtsurf(3)=.true.
-           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+           MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtsurf(itrc),
      &         'write surface outputs ',
      &         ' Momentum of index', itrc
@@ -2215,7 +2244,7 @@ c        close(testunit)
         read(input,*,err=95) (wrtsurf_avg(itrc),itrc=1,1)
         do itrc=1,1
           if (wrtsurf_avg(itrc)) wrtsurf_avg(3)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &        wrtsurf_avg(itrc),
      &        'write averaged surface outputs ',
      &        ' Momentum of index', itrc
@@ -2231,9 +2260,9 @@ c        close(testunit)
 !          wrtdiabio=.true.
       elseif (keyword(1:kwlen).eq.'diagbioFlux_history_fields') then
 !
-CR       write(*,*)'NumFluxTerms=',NumFluxTerms
-CR        write(*,*)'NumVSinkTerms=',NumVSinkTerms
-CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
+CR       write(STDOUT,*)'NumFluxTerms=',NumFluxTerms
+CR        write(STDOUT,*)'NumVSinkTerms=',NumVSinkTerms
+CR        write(STDOUT,*)'NumGasExcTerms=',NumGasExcTerms
 !
         call cancel_kwd (keyword(1:kwlen), ierr)
 !     ==
@@ -2241,7 +2270,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         do iflux=1,NumFluxTerms
           if (wrtdiabioFlux(iflux))
      &         wrtdiabioFlux(NumFluxTerms+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiabioFlux(iflux),
      &         'write equation terms ',
      &         'Flux term of index (his)', iflux
@@ -2254,7 +2283,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         do iflux=1,NumVSinkTerms
           if (wrtdiabioVSink(iflux))
      &         wrtdiabioVSink(NumVSinkTerms+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiabioVSink(iflux),
      &         'write equation terms ',
      &         'VSink term of index (his)', iflux
@@ -2268,7 +2297,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         do iflux=1,NumGasExcTerms
           if (wrtdiabioGasExc(iflux))
      &         wrtdiabioGasExc(NumGasExcTerms+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiabioGasExc(iflux),
      &         'write equation terms ',
      &         'GasExc term of index (his)', iflux
@@ -2277,7 +2306,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 ! === === ===
 # ifdef AVERAGES
 !         wrtdiabio_avg=.true.
-!        write(*,*)'=============='
+!        write(STDOUT,*)'=============='
       elseif (keyword(1:kwlen).eq.'diagbioFlux_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
 !     ==
@@ -2286,7 +2315,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         do iflux=1,NumFluxTerms
           if (wrtdiabioFlux_avg(iflux))
      &         wrtdiabioFlux_avg(NumFluxTerms+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiabioFlux_avg(iflux),
      &         'write equation terms ',
      &         'Flux term of index (avg)', iflux
@@ -2299,7 +2328,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         do iflux=1,NumVSinkTerms
           if (wrtdiabioVSink_avg(iflux))
      &         wrtdiabioVSink_avg(NumVSinkTerms+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiabioVSink_avg(iflux),
      &         'write equation terms ',
      &         'VSink term of index (avg)', iflux
@@ -2313,7 +2342,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         do iflux=1,NumGasExcTerms
           if (wrtdiabioGasExc_avg(iflux))
      &         wrtdiabioGasExc_avg(NumGasExcTerms+1)=.true.
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
+          MPI_master_only write(STDOUT, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiabioGasExc_avg(iflux),
      &         'write equation terms ',
      &         'GasExc term of index (avg)', iflux
@@ -2334,7 +2363,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           read(input,*,err=95) wrtsta(indxstaGrd),
      &       wrtsta(indxstaTemp), wrtsta(indxstaSalt),
      &       wrtsta(indxstaRho), wrtsta(indxstaVel)
-           MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A))')
+           MPI_master_only write(STDOUT,'(/1x,A,5(/6x,l1,2x,A))')
      &      'Fields to be saved in stations output  (T/F)'
      &     , wrtsta(indxstaGrd),   'write Grid location variables'
      &     , wrtsta(indxstaTemp),  'write temperature.'
@@ -2352,7 +2381,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'rho0') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) rho0
-        MPI_master_only write(stdout,'(F10.4,2x,A,1x,A)')
+        MPI_master_only write(STDOUT,'(F10.4,2x,A,1x,A)')
      &        rho0, 'rho0     Boussinesq approximation',
      &                           'mean density, kg/m3.'
 #if defined UV_VIS2 || defined UV_VIS4 || defined SPONGE_VIS2
@@ -2364,12 +2393,12 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         read(input,*,err=95) visc2, visc4
 #endif
 #if defined UV_VIS2 || defined SPONGE_VIS2
-        MPI_master_only write(stdout,9) visc2
+        MPI_master_only write(STDOUT,9) visc2
    9    format(1pe10.3,2x,'visc2    Horizontal Laplacian ',
      &       'mixing coefficient [m2/s]',/,32x,'for momentum.')
 #endif
 #ifdef UV_VIS4
-        MPI_master_only write(stdout,10) visc4
+        MPI_master_only write(STDOUT,10) visc4
   10    format(1pe10.3,2x,'visc4    Horizontal biharmonic ',
      &       'mixing coefficient [m4/s]',/,32x,'for momentum.')
 #endif
@@ -2379,7 +2408,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'bottom_drag') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) rdrg, rdrg2, Zobt, Cdb_min, Cdb_max
-        MPI_master_only write(stdout,'(5(1pe10.3,2x,A/))')
+        MPI_master_only write(STDOUT,'(5(1pe10.3,2x,A/))')
      &     rdrg, 'rdrg     Linear bottom drag coefficient (m/si).',
      &    rdrg2, 'rdrg2    Quadratic bottom drag coefficient.',
      &     Zobt, 'Zobt     Bottom roughness for logarithmic law (m).',
@@ -2391,7 +2420,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'gamma2') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) gamma2
-        MPI_master_only write(stdout,'(f10.2,2x,A,1x,A)')
+        MPI_master_only write(STDOUT,'(f10.2,2x,A,1x,A)')
      &     gamma2, 'gamma2   Slipperiness parameter:',
      &                     'free-slip +1, or no-slip -1.'
 #ifdef SOLVE3D
@@ -2404,7 +2433,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  ifdef TRACERS
         read(input,*,err=95) (tnu2(itrc),itrc=1,NT)
         do itrc=1,NT
-          MPI_master_only write(stdout,7) tnu2(itrc), itrc, itrc
+          MPI_master_only write(STDOUT,7) tnu2(itrc), itrc, itrc
    7      format(1pe10.3,'  tnu2(',i2,')  Horizontal Laplacian '
      &     ,'mixing coefficient (m2/s)',/,32x,'for tracer ',i2,'.')
         enddo
@@ -2419,7 +2448,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  ifdef TRACERS
         read(input,*,err=95) (tnu4(itrc),itrc=1,NT)
         do itrc=1,NT
-          MPI_master_only write(stdout,8) tnu4(itrc), itrc, itrc
+          MPI_master_only write(STDOUT,8) tnu4(itrc), itrc, itrc
    8      format(1pe10.3,'  tnu4(',i2,')  Horizontal biharmonic'
      &    ,' mixing coefficient [m4/s]',/,32x,'for tracer ',i2,'.')
         enddo
@@ -2436,12 +2465,12 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  ifdef TRACERS
          read(input,*,err=95) Akv_bak,(Akt_bak(itrc),itrc=1,NT)
 #  endif /* TRACERS */
-        MPI_master_only write(stdout,'(1pe10.3,2x,A,1x,A)')
+        MPI_master_only write(STDOUT,'(1pe10.3,2x,A,1x,A)')
      &      Akv_bak, 'Akv_bak    Background vertical viscosity',
      &                                     'coefficient, m2/s.'
 #  ifdef TRACERS
         do itrc=1,NT
-          MPI_master_only write(stdout,
+          MPI_master_only write(STDOUT,
      &           '(1pe10.3,2x,A,I2,A,1x,A/32x,A,I2,A)')
      &            Akt_bak(itrc), 'Akt_bak(', itrc, ')',
      &           'Background vertical mixing coefficient, m2/s,',
@@ -2454,15 +2483,15 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) levsfrc,levbfrc
         if (levsfrc.lt.1 .or. levsfrc.gt.N) then
-          MPI_master_only write(stdout,19) 'LEVSFRC = ',levsfrc
+          MPI_master_only write(STDOUT,19) 'LEVSFRC = ',levsfrc
   19      format(' READ_INP - Illegal bodyforce level, ',A,i4)
           ierr=ierr+1
         endif
         if (levbfrc.lt.1 .or. levbfrc.gt.N) then
-          MPI_master_only write(stdout,19) 'LEVBFRC = ',levbfrc
+          MPI_master_only write(STDOUT,19) 'LEVBFRC = ',levbfrc
           ierr=ierr+1
         endif
-        MPI_master_only write(stdout,20) levsfrc, levbfrc
+        MPI_master_only write(STDOUT,20) levsfrc, levbfrc
   20    format(4x,i6,2x,'levsfrc     ',
      &           'Deepest level to apply surface stress as a ',
      &           'bodyforce.',/,
@@ -2481,7 +2510,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'sponge') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) x_sponge
-        MPI_master_only write(stdout,'(1pe10.2,2x,A,1x,A)')
+        MPI_master_only write(STDOUT,'(1pe10.2,2x,A,1x,A)')
      &     x_sponge,'x_sponge Thickness of sponge',
      &     'and/or nudging layer (m)'
 !
@@ -2492,7 +2521,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'sponge') then
          call cancel_kwd (keyword(1:kwlen), ierr)
-	     MPI_master_only write(stdout,'(/,1x,A,/,25x,A/)')
+	     MPI_master_only write(STDOUT,'(/,1x,A,/,25x,A/)')
      &   'SPONGE_GRID is defined: x_sponge parameter in sponge/nudging',
      &   'layer is set generically in set_nudgcof.F routine'
 #endif
@@ -2503,9 +2532,9 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'abl_nudg_tra_cof') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) ltra_min,ltra_max
-        MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+        MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &        ltra_min,'ltra_min ABL Nudging coefficients [sec]'
-        MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+        MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &        ltra_max,'ltra_max ABL Nudging coefficients [sec]'
         ltra_min = 1./ltra_min
         ltra_max = 1./ltra_max
@@ -2514,9 +2543,9 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'abl_nudg_dyn_cof') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) ldyn_min,ldyn_max
-        MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+        MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &        ldyn_min,'ldyn_min ABL Nudging coefficients [sec]'
-        MPI_master_only write(stdout,'(1pe10.3,2x,A/)')
+        MPI_master_only write(STDOUT,'(1pe10.3,2x,A/)')
      &        ldyn_max,'ldyn_max ABL Nudging coefficients [sec]'
         ldyn_min = 1./ldyn_min
         ldyn_max = 1./ldyn_max
@@ -2541,13 +2570,13 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
           tauT_out=1./(tauT_out*86400.)
           tauM_in =1./(tauM_in *86400.)
           tauM_out=1./(tauM_out*86400.)
-          MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+          MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &        tauT_in,'tauT_in  Nudging coefficients [sec^-1]'
-          MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+          MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &       tauT_out,'tauT_out Nudging coefficients [sec^-1]'
-          MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+          MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &        tauM_in,'tauM_in  Nudging coefficients [sec^-1]'
-          MPI_master_only write(stdout,'(1pe10.3,2x,A/)')
+          MPI_master_only write(STDOUT,'(1pe10.3,2x,A/)')
      &       tauM_out,'tauM_out Nudging coefficients [sec^-1]'
 # if defined AGRIF && !defined AGRIF_OBC_M2ORLANSKI && \
      !defined AGRIF_OBC_M3ORLANSKI && !defined AGRIF_OBC_TORLANSKI
@@ -2562,7 +2591,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'lin_EOS_cff') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) R0, T0, S0, Tcoef, Scoef
-        MPI_master_only write(stdout,'(5(f10.4,2x,A,1x,A/))')
+        MPI_master_only write(STDOUT,'(5(f10.4,2x,A,1x,A/))')
      &       T0, 'T0       Background value for potential',
      &                                     'temperature (Celsius).',
      &       S0, 'S0       Background salinity (PSU),', 'constant.',
@@ -2581,7 +2610,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) sedname
 
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &              '(/9x,A,2x,A)')
      &        'Sediment input file:',sedname
       elseif (keyword(1:kwlen).eq.'sediment_history_fields') then
@@ -2609,7 +2638,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
          wrtavg(itrc)=wrthis(itrc)
         enddo
 #  endif
-        MPI_master_only write(stdout,'(3(/6x,L1,2x,A,1x,A))')
+        MPI_master_only write(STDOUT,'(3(/6x,L1,2x,A,1x,A))')
      &    wrthis(indxATHK), 'write act_thick ',
      &                            'thickness of active bed layer.'
      &  , wrthis(indxBTHK), 'write bed_thick ',
@@ -2617,36 +2646,36 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &  , wrthis(indxBPOR), 'write bed_poros ',
      &                             'porosity of sediment bed layer.'
         do itrc=1,NST
-            MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
+            MPI_master_only write(STDOUT, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxBFRA(itrc)), 'write bed_frac(',itrc,
      &                   ') Sediment fraction of index ',itrc,'.'
         enddo
 #  ifdef SUSPLOAD
         do itrc=1,NST
-            MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
+            MPI_master_only write(STDOUT, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxDFLX(itrc)), 'write deposition flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
         do itrc=1,NST
-            MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
+            MPI_master_only write(STDOUT, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxEFLX(itrc)), 'write erosion flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
 #  endif
 #  ifdef BEDLOAD
         do itrc=1,NST
-            MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
+            MPI_master_only write(STDOUT, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxBDLU(itrc)), 'write xi-bedload flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
         do itrc=1,NST
-            MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
+            MPI_master_only write(STDOUT, '(6x,L1,2x,A,I2,A,I2,A)')
      &          wrthis(indxBDLU(itrc)), 'write eta-bedload flux(',itrc,
      &                   ') for sediment of index ',itrc,'.'
         enddo
 #  endif
 #  if defined MIXED_BED || defined COHESIVE_BED
-        MPI_master_only write(stdout,'(6x,L1,2x,A,1x,A)')
+        MPI_master_only write(STDOUT,'(6x,L1,2x,A,1x,A)')
      &      wrthis(indxBTCR), 'write bed_tau_crit ',
      &                            'critical stress of bed layer.'
 #  endif
@@ -2659,11 +2688,11 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         read(input,'(A)',err=95) sedname_subst
         read(input,'(A)',err=95) sedname_must
         lstr=lenstr(sedname_subst)
-        MPI_master_only write(stdout,'(7x,A,10x,A)')
+        MPI_master_only write(STDOUT,'(7x,A,10x,A)')
      &         'Sediment input file for Substance:' ,
      &          sedname_subst(1:lstr)
         lstr=lenstr(sedname_must)
-        MPI_master_only write(stdout,'(7x,A,2x,A/)')
+        MPI_master_only write(STDOUT,'(7x,A,2x,A/)')
      &         'Sediment input file for Mustang (version):' ,
      &          sedname_must(1:lstr)
 
@@ -2674,7 +2703,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) subsname
         lstr=lenstr(subsname)
-        MPI_master_only write(stdout,'(7x,A,12x,A)')
+        MPI_master_only write(STDOUT,'(7x,A,12x,A)')
      &         'Input file for Substance:' ,
      &          subsname(1:lstr)
 #endif
@@ -2684,7 +2713,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         read(input,*,err=95)
      &                    (wrthis(itrc), itrc=indxBBL,indxBBL+5)
 
-        MPI_master_only write(stdout,'(6(/6x,L1,2x,A,1x,A))')
+        MPI_master_only write(STDOUT,'(6(/6x,L1,2x,A,1x,A))')
      &    wrthis(indxAbed), 'write Abed ',
      &                            'bed wave excursion amplitude.'
      &  , wrthis(indxHrip), 'write Hripple ',
@@ -2705,7 +2734,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) obstname
         lstr=lenstr(obstname)
-        MPI_master_only write(stdout,'(7x,A,12x,A)')
+        MPI_master_only write(STDOUT,'(7x,A,12x,A)')
      &         'Input file for Obstruction module:' ,
      &          obstname(1:lstr)
 #endif /* OBSTRUCTION */
@@ -2723,7 +2752,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         , wrthis(indxAKB), wrthis(indxAKW), wrthis(indxKVF)
      &                        , wrthis(indxCALP), wrthis(indxKAPS)
 # endif
-        MPI_master_only write(stdout,'(/1x,A,3(/6x,l1,2x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,3(/6x,l1,2x,A))')
      &    'Fields to be saved in MRL-WCI 2D history  (T/F)',
      &    wrthis(indxSUP),
      &    'write SUP    quasi-static sea-level [m]',
@@ -2732,7 +2761,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &    wrthis(indxVST2D),
      &    'write VST2D  depth-averaged ETA-Stokes velocity [m/s]'
 # ifdef SOLVE3D
-        MPI_master_only write(stdout,'(/1x,A,8(/6x,l1,2x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,8(/6x,l1,2x,A))')
      &    'Fields to be saved in MRL-WCI 3D history  (T/F)',
      &    wrthis(indxUST),
      &    'write UST  3D  XI-Stokes velocity [m/s]',
@@ -2764,7 +2793,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &         , wrtavg(indxAKB), wrtavg(indxAKW), wrtavg(indxKVF)
      &                        , wrtavg(indxCALP), wrtavg(indxKAPS)
 #  endif
-        MPI_master_only write(stdout,'(/1x,A,3(/6x,l1,2x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,3(/6x,l1,2x,A))')
      &    'Fields to be saved in MRL-WCI 2D average  (T/F)',
      &    wrtavg(indxSUP),
      &    'write SUP    quasi-static sea-level [m]',
@@ -2773,7 +2802,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &    wrtavg(indxVST2D),
      &    'write VST2D  depth-averaged ETA-Stokes velocity [m/s]'
 #  ifdef SOLVE3D
-        MPI_master_only write(stdout,'(/1x,A,8(/6x,l1,2x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,8(/6x,l1,2x,A))')
      &    'Fields to be saved in MRL-WCI 3D average  (T/F)',
      &    wrtavg(indxUST),
      &    'write UST  3D  XI-Stokes velocity [m/s]',
@@ -2802,7 +2831,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'wave_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) (wrthis(i), i=indxHRM,indxHRM+8)
-        MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,9(/6x,l1,2x,A))')
      &    'Fields to be saved in wave history  (T/F)',
      &    wrthis(indxHRM), 'write HRM  wave height (m)',
      &    wrthis(indxFRQ), 'write FRQ  intrinsic frequency (rad/s)',
@@ -2821,7 +2850,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'wave_average_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) (wrtavg(i), i=indxHRM,indxHRM+8)
-        MPI_master_only write(stdout,'(/1x,A,9(/6x,l1,2x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,9(/6x,l1,2x,A))')
      &    'Fields to be saved in wave average  (T/F)',
      &    wrtavg(indxHRM), 'write HRM  wave height (m)',
      &    wrtavg(indxFRQ), 'write FRQ  intrinsic frequency (rad/s)',
@@ -2844,7 +2873,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wkb_amp,wkb_ang,wkb_prd,wkb_tide,wkb_btg,
      &                       wkb_gam
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &             '(/1x,A,4(/3x,f10.4,2x,A),/3x,A,2(/3x,f10.4,2x,A))')
      &    'Primary waves and breaking parameters for WKB wave model',
      &   wkb_amp,   'wkb_amp    offshore wave amplitude [m]',
@@ -2870,7 +2899,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
       elseif (keyword(1:kwlen).eq.'wkb_roller') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) wkb_rsb, wkb_roller
-        MPI_master_only write(stdout,'(/1x,A,2(/3x,f10.4,2x,A))')
+        MPI_master_only write(STDOUT,'(/1x,A,2(/3x,f10.4,2x,A))')
      &  'Svenden (1984) surface roller model parameters.',
      &   wkb_rsb,   'wkb_rsb     sin(beta) roller dissipation',
      &   wkb_roller,'wkb_roller  breaking contrib to roller: [0,1]'
@@ -2895,10 +2924,10 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         qbarname=fname(1:lstr)
-        MPI_master_only write(stdout,'(2x,A,2x,A)')
+        MPI_master_only write(STDOUT,'(2x,A,2x,A)')
      &             'Runoff Data File:', qbarname(1:lstr)
         read(input,*,err=95) Nsrc
-        MPI_master_only write(stdout,'(/6x,i6,2x,A,1x,A)')
+        MPI_master_only write(STDOUT,'(/6x,i6,2x,A,1x,A)')
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
 #  ifdef PSOURCE_NCFILE_TS
@@ -2912,11 +2941,11 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #   endif /* TRACERS */
 #  endif /* PSOURCE_NCFILE_TS  */
 
-        MPI_master_only write(stdout,'(3(/6x,i6,2x,A),(/6x,F6.0,2x,A))')
+        MPI_master_only write(STDOUT,'(3(/6x,i6,2x,A),(/6x,F6.0,2x,A))')
      &    Isrc(is), 'I point source indice'
      &  , Jsrc(is), 'J point source indice'
      &  , Dsrc(is), 'Orientation of point source flow'
-!         MPI_master_only write(stdout,'(/6x,F6.0,2x,A)')
+!         MPI_master_only write(STDOUT,'(/6x,F6.0,2x,A)')
      &  , qbardir(is), 'Direction of point source flow'
 #  ifdef MPI
         if (iminmpi.LE.Isrc(is) .AND. Isrc(is).LE.imaxmpi .AND.
@@ -2930,7 +2959,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  endif
 #  ifdef TRACERS
         do itrc=1,NT
-          MPI_master_only write(stdout,
+          MPI_master_only write(STDOUT,
      &         '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
      &         Lsrc(is,itrc), 'write Lsrc(',
      &         itrc,')', 'Tracer of index', itrc,'.'
@@ -2939,7 +2968,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  ifndef PSOURCE_NCFILE_TS
 #   ifdef TRACERS
         do itrc=1,NT
-          MPI_master_only write(stdout,
+          MPI_master_only write(STDOUT,
      &         '(6x,1pe10.3,2x,A,I2,A,2x,A,I2,A)')
      &         Tsrc0(is,itrc), 'write Tsrc(',
      &         itrc,')', 'Tracer of index', itrc,'.'
@@ -2953,7 +2982,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call cancel_kwd (keyword(1:kwlen), ierr)
 
         read(input,*,err=95) Nsrc
-        MPI_master_only write(stdout,'(/6x,i6,2x,A,1x,A)')
+        MPI_master_only write(STDOUT,'(/6x,i6,2x,A,1x,A)')
      &                               Nsrc, 'Number of point sources'
         do is=1,Nsrc
           read(input,*,err=95) Isrc(is), Jsrc(is), Dsrc(is), Qbar(is)
@@ -2961,15 +2990,15 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                                    ,(Lsrc(is,itrc), itrc=1,NT)
      &                                    ,(Tsrc0(is,itrc), itrc=1,NT)
 #  endif
-          MPI_master_only write(stdout,'(3(/6x,i6,2x,A))')
+          MPI_master_only write(STDOUT,'(3(/6x,i6,2x,A))')
      &    Isrc(is), 'I point source indice'
      &  , Jsrc(is), 'J point source indice'
      &  , Dsrc(is), 'Direction of point source flow'
-          MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+          MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &    Qbar(is), 'Total transport at point source'
 #  ifdef MPI
-          MPI_master_only write(*,*)'Isrc(is)=',Isrc(is)
-          MPI_master_only write(*,*)'Jsrc(is)=',Jsrc(is)
+          MPI_master_only write(STDOUT,*)'Isrc(is)=',Isrc(is)
+          MPI_master_only write(STDOUT,*)'Jsrc(is)=',Jsrc(is)
           if (iminmpi.LE.Isrc(is) .AND. Isrc(is).LE.imaxmpi .AND.
      &        jminmpi.LE.Jsrc(is) .AND. Jsrc(is).LE.jmaxmpi) then
            Isrc_mpi(is,mynode)=Isrc(is)-iminmpi+1
@@ -2981,13 +3010,13 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  endif
 #  if defined SOLVE3D && defined TRACERS
           do itrc=1,NT
-            MPI_master_only write(stdout,
+            MPI_master_only write(STDOUT,
      &                     '(6x,L1,2x,A,I2,A,2x,A,I2,A)')
      &                      Lsrc(is,itrc), 'write Lsrc(',
      &                      itrc,')', 'Tracer of index', itrc,'.'
           enddo
           do itrc=1,NT
-            MPI_master_only write(stdout,
+            MPI_master_only write(STDOUT,
      &                     '(6x,1pe10.3,2x,A,I2,A,2x,A,I2,A)')
      &                      Tsrc0(is,itrc), 'write Tsrc(',
      &                      itrc,')', 'Tracer of index', itrc,'.'
@@ -3014,7 +3043,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         btfname=fname(1:lstr)
-        MPI_master_only write(stdout,'(2x,A,2x,A)')
+        MPI_master_only write(STDOUT,'(2x,A,2x,A)')
      &       'Bottom forcing file:', fname(1:lstr)
 #endif  /* BHFLUX || (SALINITY && BWFLUX )  */
 !
@@ -3028,22 +3057,22 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         read(input,'(A)',err=95)  fname
         lstr=lenstr(fname)
         pathbulk=fname(1:lstr)
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &         '(7x,A,1x,I4,A,1x,I2,A)')
      &         'Online forcing: first forcing, year',yearnum,
      &         ', month', monthnum,'.'
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &         '(7x,A,1x,I4,A,1x,I2,A)')
      &         'Online forcing: last forcing year',yearend,
      &         ', month', monthend,'.'
-        MPI_master_only write(stdout,
+        MPI_master_only write(STDOUT,
      &         '(7x,A,A,1x,A4,1x,I2,A)')
      &         'Online forcing: datasets in ',fname(1:lstr),
      &         'with',recordsperday, ' records per day.'
 #endif /* ONLINE */
 
       else
-        MPI_master_only write(stdout,'(/3(1x,A)/)')
+        MPI_master_only write(STDOUT,'(/3(1x,A)/)')
      &                  'WARNING: Unrecognized keyword:',
      &                   keyword(1:kwlen),' --> DISREGARDED.'
       endif
@@ -3052,14 +3081,14 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
 ! Error while reading input parameters.
 !
-  95  write(stdout,'(/1x,4A/)') 'READ_INP ERROR while reading block',
+  95  write(STDOUT,'(/1x,4A/)') 'READ_INP ERROR while reading block',
      &                    ' with keyword ''', keyword(1:kwlen), '''.'
       ierr=ierr+1
       goto 99
-  97  write(stdout,'(/1x,4A/)') 'READ_INP ERROR: Cannot find input ',
+  97  write(STDOUT,'(/1x,4A/)') 'READ_INP ERROR: Cannot find input ',
      &                                'file ''', fname(1:lstr), '''.'
 #ifdef LOGFILE
-  98  write(6,'(/1x,4A/)') 'READ_INP ERROR: Cannot open log file ',
+  98  write(STDOUT,'(/1x,4A/)') 'READ_INP ERROR: Cannot open log file ',
      &                                'file   , croco.log', '''.'
 #endif
       ierr=ierr+1
@@ -3093,7 +3122,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
         call check_switches2 (ierr)
       endif
       if (ierr.ne.0) then
-        write(stdout,'(/1x,2A,I3,1x,A/)') 'READ_INP ERROR: ',
+        write(STDOUT,'(/1x,2A,I3,1x,A/)') 'READ_INP ERROR: ',
      & 'A total of', ierr, 'configuration errors discovered.'
         return
       endif

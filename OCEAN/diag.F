@@ -326,25 +326,25 @@ C$OMP CRITICAL (diag_cr_rgn)
 
               if (first_time.eq.0) then
                 first_time=1
-                write(stdout,2) 'STEP','time[DAYS]','KINETIC_ENRG',
+                write(STDOUT,2) 'STEP','time[DAYS]','KINETIC_ENRG',
      &                  'POTEN_ENRG','TOTAL_ENRG','NET_VOLUME','trd'
    2            format(1x,A4,3x,A10,1x,A12,4x,A10,4x,A10,4x,A10,3x,A3)
               endif
               trd=omp_get_thread_num()
-              write(stdout,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
+              write(STDOUT,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
 #ifdef CALENDAR
-              write(stdout,'(a)') tool_sectodat(time)
+              write(STDOUT,'(a)') tool_sectodat(time)
 #endif
    3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)
 #ifdef DIAG_CFL
               if (mod(iic-1,ninfo).eq.0) then
-              write(stdout,4) 'CFL --  INT_3DADV  = ',Cu_adv3d,
+              write(STDOUT,4) 'CFL --  INT_3DADV  = ',Cu_adv3d,
      &                             '   EXT_GWAVES = ',Cu_max
               endif
    4          format(10x,A,F6.2,A,F6.2)
 # ifdef NBQ
               if (mod(iic-1,ninfo).eq.0) then
-              write(stdout,5) '        NBQ_HADV   = ',
+              write(STDOUT,5) '        NBQ_HADV   = ',
      &                                 sqrt(Cu_Nbq_X**2+Cu_Nbq_Y**2),
      &                             '   NBQ_IMP    = ',sqrt(Cu_Nbq),
      &                             '   NBQ_VSOUND = ',Cu_Nbq_Z

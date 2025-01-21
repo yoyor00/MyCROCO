@@ -345,9 +345,15 @@ C$    integer  trd, omp_get_thread_num
 # ifdef AGRIF
       use Agrif_UTIL
 # endif
+#ifdef STOGEN
+      USE stobulk         ! Stochastic parameterization of bulk formulation
+#endif
       implicit none
 # include "param.h"
 # include "ocean2d.h"
+#ifdef STOGEN
+# include "ocean3d.h"
+#endif
 # include "grid.h"
 # include "forces.h"
 # include "scalars.h"
@@ -375,6 +381,15 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
         enddo
       enddo
+#  ifdef STOGEN
+!     apply additive noise to wind stress
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sto_xi2d(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
+        enddo
+      enddo
+      call sto_basin_stress( sustr, sto_xi2d )
+#  endif
 # elif defined SINGLE_COLUMN && defined KATO_PHILIPS
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1828,17 +1843,17 @@ C$    integer  trd, omp_get_thread_num
 !          enddo
 # ifdef DEBUG
           if(j.eq.jck.and.i.eq.ick) then
-            write(6,*) '********** ANA_SEDIMENT ***********'
+            write(STDOUT,*) '********** ANA_SEDIMENT ***********'
             do ised=1,NST
-              write(6,*) 'Sd(ised)',Sd(ised)
+              write(STDOUT,*) 'Sd(ised)',Sd(ised)
               do ilay=1,NLAY
-                write(6,*) 'i,j,ilay,ised',i,j,ilay,ised
-                write(6,*) 'bed_frac',bed_frac(i,j,ilay,ised)
+                write(STDOUT,*) 'i,j,ilay,ised',i,j,ilay,ised
+                write(STDOUT,*) 'bed_frac',bed_frac(i,j,ilay,ised)
               enddo
             enddo
             do ilay=1,NLAY
-              write(6,*) 'bed_thick',bed_thick(i,j,ilay)
-              write(6,*) 'bed_por',bed_poros(i,j,ilay)
+              write(STDOUT,*) 'bed_thick',bed_thick(i,j,ilay)
+              write(STDOUT,*) 'bed_por',bed_poros(i,j,ilay)
             enddo
           endif
 # endif

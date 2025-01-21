@@ -31,10 +31,16 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
+#ifdef STOGEN
+      USE stobulk         ! Stochastic parameterization of bulk formulation
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
 # include "ocean3d.h"
+# ifdef STO_XI2D
+#  include "ocean2d.h"
+# endif
 # include "forces.h"
 # include "scalars.h"
 # include "params_bulk.h"
@@ -686,6 +692,13 @@
 !  Compute kinematic, surface wind stress (m2/s2).
 !======================================================================
 !
+#  ifdef STOGEN
+!     apply multiplicative noise to Cd
+      sto_xi2d=1.0
+      call sto_bulk_cd ( sto_xi2d )
+      call sto_bulk_cd ( cer )
+#  endif
+
 !$acc loop seq
       do j=jmin,jmax
 !$acc loop seq

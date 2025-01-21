@@ -28,3 +28,8 @@
       real DVom(GLOBAL_2D_ARRAY)
 #endif
 
+# ifdef STO_XI2D
+      real sto_xi2d(GLOBAL_2D_ARRAY)
+      common /stogen2d/ sto_xi2d
+# endif
+

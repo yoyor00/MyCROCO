@@ -456,8 +456,8 @@
 
 
       if ( nmod_oa /= 1 ) then
-        write (*,*) " ERROR OA : unless on going developments nmod_oa parameter must be set to 1"
-        write (*,*) "  It sets array dimensions with entries 0/1 for slow/fast mode analysis"
+        write(STDOUT,*) " ERROR OA : unless on going developments nmod_oa parameter must be set to 1"
+        write(STDOUT,*) "  It sets array dimensions with entries 0/1 for slow/fast mode analysis"
         stop
       endif
 
@@ -546,14 +546,14 @@
 
 !.....Currently output can only be handled by XIOS - Croco-Roms netCDF output types to dev.
         if ( .not. if_xios_output ) then
-            write(*,*) '...OA ERROR : outputs only handled by XIOS - Roms-Croco outputs to develope'
+            write(STDOUT,*) '...OA ERROR : outputs only handled by XIOS - Roms-Croco outputs to develope'
             stop
         endif
 
 !.....Currently output can only be handled by XIOS version >= 2.5 - backward compat. to DEV
 #ifndef XIOS2
         if ( if_xios_output ) then
-            write(*,*) 'ERROR OA : XIOS version >= 2.5 required to output Online Analysis'
+            write(STDOUT,*) 'ERROR OA : XIOS version >= 2.5 required to output Online Analysis'
             stop
         endif   
 #endif
@@ -563,7 +563,7 @@
 !     XIOS2.5 axis-based definition grid to dev/test
       if (scalogram_analysis) then
         if ( if_xios_output .and. ( .not. if_xios_dom_grid ) ) then
-            write(*,*) '...OA ERROR : XIOS grid axis not available => please change the OA namelist with if_xios_dom_grid set to T'
+            write(STDOUT,*) '...OA ERROR : XIOS grid axis not available => please change the OA namelist with if_xios_dom_grid set to T'
             stop
         endif
       endif
@@ -1222,13 +1222,13 @@
 !        pour les bilans energetiques cette variable est mise a jour automatiquement un peu plus loin.
 
          if ( ( cnb_oa(izv_oa) < 0 ) .or. ( cnb_oa(izv_oa) > nmod_oa ) ) then
-            write (*,*) " ERROR OA : possible CNB_W values are currently 0/1 for slow/fast mode analysis"
-            write (*,*) "            please modify the OA namelists accordingly or developments are needed"
+            write(STDOUT,*) " ERROR OA : possible CNB_W values are currently 0/1 for slow/fast mode analysis"
+            write(STDOUT,*) "            please modify the OA namelists accordingly or developments are needed"
             stop
          endif
 
          if ( per_oa(1,izv_oa).gt. per_oa(2,izv_oa) ) then
-            write (*,*) " ERROR OA : per_oa (1,",izv_oa,") trop grand"
+            write(STDOUT,*) " ERROR OA : per_oa (1,",izv_oa,") trop grand"
             if(if_print_node) write (io_unit,*) " ERROR OA : per_oa (1,",izv_oa,") trop grand"
             stop
          endif  
@@ -1236,7 +1236,7 @@
          if (per_oa (2,izv_oa).ne.per_oa (1,izv_oa).and.                        &
               per_oa (3,izv_oa).gt.(per_oa (2,izv_oa)-per_oa (1,izv_oa))        &
               .and.per_oa (3,izv_oa).ne.-99.) then                                                         
-            write (*,*) " ERROR : per_oa (3,",izv_oa,") trop grand"
+            write(STDOUT,*) " ERROR : per_oa (3,",izv_oa,") trop grand"
             if(if_print_node) write (io_unit,*) " ERROR : per_oa (3,",izv_oa,") trop grand"
             stop
          endif  
@@ -1250,17 +1250,17 @@
 
          if  ( tv_sclg_oa(izv_oa) .eqv. .true. ) then
              if ( dori_oa(izv_oa) /=1 ) then
-                write (*,*) " ERROR OA : scalogram is possible with discrete periods only => DORI_W=1"
+                write(STDOUT,*) " ERROR OA : scalogram is possible with discrete periods only => DORI_W=1"
                 if(if_print_node) write (io_unit,*) " ERROR OA : scalogram is possible with discrete periods only => DORI_W=1"
                 stop
              else if ( swt_d_oa(izv_oa) /=2 ) then
-                write (*,*) " ERROR OA : scalogram only possible for spatial config SWT_D_W = 2 (i,j) point"
+                write(STDOUT,*) " ERROR OA : scalogram only possible for spatial config SWT_D_W = 2 (i,j) point"
                 if(if_print_node) write (io_unit,*) " ERROR OA : scalogram only possible for spatial config SWT_D_W = 2 (i,j) point"
                 stop
              else if ( (per_oa (2,izv_oa).eq.per_oa (1,izv_oa)) .or.                            &
                        ( per_oa (3,izv_oa).gt.(per_oa (2,izv_oa)-per_oa (1,izv_oa))  .and.      &
                          per_oa (3,izv_oa).ne.-99 ) ) then
-                write (*,*) " ERROR OA : scalogram requires DP = PER_W(2)-PER_W(1)>0 and PER_W(3) = -99 or < DP"
+                write(STDOUT,*) " ERROR OA : scalogram requires DP = PER_W(2)-PER_W(1)>0 and PER_W(3) = -99 or < DP"
                 if(if_print_node) write (io_unit,*) " ERROR OA : scalogram requires DP = PER_W(2)-PER_W(1)>0 and PER_W(3) = -99 or < DP"
                 stop
              endif
@@ -1338,7 +1338,7 @@
             if(if_print_node) write(io_unit,*) '   OA analysis over Time steps ',kount_user_oa(1,izv_oa),kount_user_oa(2,izv_oa)
             if(if_print_node) write(io_unit,*) '   Simu Time step interval including initial and last',kount0(0),nt_max(0)
             if  ( (swt_t_oa(izv_oa) == 1) .or. ( swt_t_oa(izv_oa) == 2)  .or. ( swt_t_oa(izv_oa) == 3) ) then 
-                write(*,*) 'ERROR OA : option not allowed (developments required), please set SWT_T_W to 4 in the OA namelist'  
+                write(STDOUT,*) 'ERROR OA : option not allowed (developments required), please set SWT_T_W to 4 in the OA namelist'  
                 if(if_print_node) write(io_unit,*) 'ERRROR OA : option not allowed (to dev.), set SWT_T_W to 4 in the OA namelist'  
                 stop
             end if                     
@@ -1396,7 +1396,7 @@
 
          if ( ( swt_d_oa(izv_oa) == 2 ) .and. ( tv_sclg_oa(izv_oa) ) ) then
             if ( ( dk_oa(izv_oa) /= 1) .or. ( (k_oa(2,izv_oa)-k_oa(1,izv_oa))/=0 ) ) then       
-                write (*,*) " ERROR OA : scalogram only possible with a single vertical grid point"
+                write(STDOUT,*) " ERROR OA : scalogram only possible with a single vertical grid point"
                 if(if_print_node) then 
                 write (io_unit,*) " ERROR OA : scalogram only possible with a single vertical grid point"
                 write (io_unit,*) "            please set DK_W=1 and K_W=ktgt,ktgt where ktgt is your level target"
@@ -1444,8 +1444,8 @@
             isopycne_analysis = .true.
             if(if_print_node) write (io_unit,*) "....Isopycne analysis requested"
             if ( cnb_oa(izv_oa)==1 ) then
-                write (*,*) " ERROR OA : isopycne analysis currently only available in slow mode"
-                write (*,*) "            Devevlopments required for fast model mode"
+                write(STDOUT,*) " ERROR OA : isopycne analysis currently only available in slow mode"
+                write(STDOUT,*) "            Devevlopments required for fast model mode"
                 stop
             endif
          else if ( (tv_oa (izv_oa)==99) .or. (tv_oa (izv_oa)==98) .or. (tv_oa (izv_oa)==97) ) then
@@ -1468,7 +1468,7 @@
       enddo oa_config_loop
 
       if ( izv_oa /= nzv_oa ) then
-        write (*,*) "ERROR in rdnotebook_oa : izv_oa should be equal to nzv_oa"
+        write(STDOUT,*) "ERROR in rdnotebook_oa : izv_oa should be equal to nzv_oa"
         if(if_print_node) write (io_unit,*) "ERROR in rdnotebook_oa : izv_oa should be equal to nzv_oa"
         stop
       endif
@@ -1582,7 +1582,7 @@
             call var_copy_oa ( tmp_izv_oa , izv_oa )
 
          else if (tv_oa(izv_oa)>100) then
-            write (*,*) "ERROR OA : configuration above 100 is not yet hardcoded"
+            write(STDOUT,*) "ERROR OA : configuration above 100 is not yet hardcoded"
             if(if_print_node) write (io_unit,*) "ERROR OA : configuration above 100 is not yet hardcoded"
             stop
          endif
@@ -2441,7 +2441,7 @@
         enddo
        enddo 
       if ( isclg_loc .ne. nsclg_loc(imd) ) then
-        write(*,*)'ERROR OA : counts of MPI scalogram mismatch'
+        write(STDOUT,*)'ERROR OA : counts of MPI scalogram mismatch'
         if(if_print_node) write(io_unit,*)'ERROR OA : counts of MPI scalogram mismatch'
         stop
       endif 
@@ -2500,7 +2500,7 @@
              if (isclg_glo <= nzupd0d_oa(imd)) then
                 mdg(imd)%index_s_cr(isclg_glo-1) =  tupd_oa(iv)
              else
-                write(*,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
+                write(STDOUT,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
                 if(if_print_node) write(io_unit,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
                 stop
             endif
@@ -2509,13 +2509,13 @@
       enddo
 #ifdef MPI
       if ( isclg_loc .ne. nsclg_loc(imd) ) then
-        write(*,*)'ERROR OA : counts of MPI scalogram mismatch for XIOS index_s_oa axis'
+        write(STDOUT,*)'ERROR OA : counts of MPI scalogram mismatch for XIOS index_s_oa axis'
         if(if_print_node) write(io_unit,*)'ERROR OA : counts of MPI scalogram mismatch for XIOS index_s_oa axis'
         stop
       endif 
 #else
       if ( isclg_glo .ne. nzupd0d_oa(imd) ) then
-        write(*,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
+        write(STDOUT,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
         if(if_print_node) write(io_unit,*)'ERROR OA : counts of scalogram mismatch for XIOS index_s_cr axis'
         stop
       endif 
@@ -2835,7 +2835,7 @@
            ( pg%kmin /= pst%kmin ) .or. &
            ( pg%kmax /= pst%kmax ) ) then
 !$OMP ATOMIC
-        write (*,*) 'ERROR OA : error with tile dim for grid and space structure tile/node', tile, mynode
+        write(STDOUT,*) 'ERROR OA : error with tile dim for grid and space structure tile/node', tile, mynode
         stop
       else
 !.... Local variable (just to shorten loop instructions)
@@ -2865,17 +2865,17 @@
             endif
 
             if ( k_oa(1,iv_g) .gt. k_oa(2,iv_g) ) then
-               write (*,*) " k_oa(2,:) trop grand > kmax = N !"
+               write(STDOUT,*) " k_oa(2,:) trop grand > kmax = N !"
                if(if_print_node) write (io_unit,*) " k_oa(2,:) trop grand > kmax = N !"
                stop
             endif
             if ( k_oa(2,iv_g).gt.kmax ) then
-               write (*,*) " k_oa(2,:) trop grand > kmax = N !"
+               write(STDOUT,*) " k_oa(2,:) trop grand > kmax = N !"
                if(if_print_node) write (io_unit,*) " k_oa(2,:) trop grand > kmax = N !"
                stop
             endif
             if ( k_oa(1,iv_g).lt.kmin ) then
-               write (*,*) " k_oa(1,:) trop petit < kmin !"
+               write(STDOUT,*) " k_oa(1,:) trop petit < kmin !"
                if(if_print_node) write (io_unit,*) " k_oa(1,:) trop petit < kmin !"
                stop
             endif
@@ -3609,8 +3609,8 @@
                   endif
                else
                   if (ip2_t .ne. ip_t) then
-                    write(*,*)'INTEGRATED PERIOD CASE in var_time_oa iv_t, ip_t',iv_t, ip_t
-                    write(*,*)'ERROR OA : ip2_t msut be equal to ip_t ',ip2_t,ip_t
+                    write(STDOUT,*)'INTEGRATED PERIOD CASE in var_time_oa iv_t, ip_t',iv_t, ip_t
+                    write(STDOUT,*)'ERROR OA : ip2_t msut be equal to ip_t ',ip2_t,ip_t
                     stop
                   endif
                   ! BLXD Useless same as dori_oa(iv_t).eq.1
@@ -4023,14 +4023,14 @@
             is = ind
             ie = ind
             if ( .not. present(norm) ) then
-                write(*,*)'ERROR OA : calc_temporal_box_oa requires norm'
+                write(STDOUT,*)'ERROR OA : calc_temporal_box_oa requires norm'
                 if(if_print_node) write(io_unit,*)'ERROR OA : calc_temporal_box_oa requires norm'
                 stop
             else 
                 norm_r = norm
             endif
         else
-            write(*,*)'ERROR OA : calc_temporal_box_oa max index is ', ndim
+            write(STDOUT,*)'ERROR OA : calc_temporal_box_oa max index is ', ndim
             if(if_print_node) write(io_unit,*)'ERROR OA : calc_temporal_box_oa max index is ', ndim
             stop
         endif
@@ -4038,7 +4038,7 @@
         is = 1
         ie = ndim
         if ( .not. present(norm_ndim) ) then
-            write(*,*)'ERROR OA : calc_temporal_box_oa requires norm_ndim'
+            write(STDOUT,*)'ERROR OA : calc_temporal_box_oa requires norm_ndim'
             if(if_print_node) write(io_unit,*)'ERROR OA : calc_temporal_box_oa requires norm_ndim'
             stop
         endif
@@ -4532,7 +4532,7 @@
           pkount0 => kount0( ichoix  )
           pnt_max => nt_max( ichoix  )
       else
-        write(*,*) 'ERROR OA : dev needed to call count_nmsimult_oa with ichoix arg value other than 0 or 1'
+        write(STDOUT,*) 'ERROR OA : dev needed to call count_nmsimult_oa with ichoix arg value other than 0 or 1'
         stop
       endif
 
@@ -4575,7 +4575,7 @@
 
 !........Slow/Fast mode variables are screened thanks to ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )
          if ( pdti /= dti( cnb_oa(iv_m ) ) ) then
-            write(*,*) &
+            write(STDOUT,*) &
      &      'ERROR OA : count_nmsimult_oa discrete period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
             if(if_print_node)write(io_unit,*) &
      &      'ERROR OA : count_nmsimult_oa discrete period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
@@ -4818,7 +4818,7 @@
       lp2_m = begvp_oa(iv_m+1)-1
 
       if ( ( per_t2p_oa(lt_m) - lp2_m ) /= 0 ) then
-        write(*,*) &
+        write(STDOUT,*) &
      & 'ERROR OA : count_nmsimult_oa integrated period must have the time pointer connected to the last period pointer ',iv_m
         if(if_print_node)write(io_unit,*) &
      & 'ERROR OA : count_nmsimult_oa integrated period must have the time pointer connected to the last period pointer ',iv_m
@@ -4837,7 +4837,7 @@
 
 !........Slow/Fast mode variables are screened thanks to ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )
          if ( pdti /= dti( cnb_oa(iv_m ) ) ) then
-            write(*,*) &
+            write(STDOUT,*) &
      &      'ERROR OA : count_nmsimult_oa integrated period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
             if(if_print_node)write(io_unit,*) &
      &      'ERROR OA : count_nmsimult_oa integrated period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
@@ -5066,8 +5066,8 @@
       endif if_discrete_per
 
       if ( ( des_oa(iv_m)/=0 ).and.( ichoix==des_oa(iv_m) ) ) then
-        write (*,*) " ERROR OA : option never tested in Croco-Module OA interface"
-        write (*,*) "            developpers test => remove stop/modify/recompile"
+        write(STDOUT,*) " ERROR OA : option never tested in Croco-Module OA interface"
+        write(STDOUT,*) "            developpers test => remove stop/modify/recompile"
         stop
       endif
 
@@ -5321,7 +5321,7 @@
                      enddo
                  
                      if ( ( if_first_per_oa(iv_p,ip_p)==0 ) .and. ( lt_p.lt.begvt_oa(iv_p+1) ) ) then
-                            write(*,*) 'ERROR OA : inconsistent 1st conv. wind.'
+                            write(STDOUT,*) 'ERROR OA : inconsistent 1st conv. wind.'
                             if(if_print_node) then
                             write(io_unit,*) 'ERROR : two methods to get the 1st conv. wind. for var iv_p and period ip_p' 
                             write(io_unit,*) '        but inconsitent result'
@@ -5333,7 +5333,7 @@
                       found_lt_pointer_single_per : if (if_first_per_oa(iv_p,ip_p)==1) then
 
                         if ( lt_p /= lper_fst_oa(iv_p,ip_p) ) then
-                            write(*,*) 'ERROR OA : inconsistent conv. wind. pointer'
+                            write(STDOUT,*) 'ERROR OA : inconsistent conv. wind. pointer'
                             if(if_print_node) then
                             write(io_unit,*) 'ERROR : found inconsistent lt_p convolution window pointer for lper_fst_oa ',lper_fst_oa(iv_p,ip_p)
                             write(io_unit,*) 'ERROR :  see iv_p, perv_oa = ', iv_p, perv_oa(1,ip_p)
@@ -5421,7 +5421,7 @@
                            ,fc_p = fc_oa                                               )                                      
                         
                         if ( abs( scale_p - psi_p2s_oa( tpsi_oa(iv_p), perv_oa(1,ip_p), fb_oa, fc_oa) ) > myprec2 ) then
-                           write(*,*) 'ERROR OA : var_rec_oa wavelet scale calculation mismatch'
+                           write(STDOUT,*) 'ERROR OA : var_rec_oa wavelet scale calculation mismatch'
                            if(if_print_node)write(io_unit,*) 'ERROR OA : var_rec_oa wavelet scale calculation mismatch'
                            stop
                         endif
@@ -5509,7 +5509,7 @@
                      enddo
 
                      if ( ( if_first_per_oa(iv_p,ip_p)==0 ) .and. ( lt_p.lt.begvt_oa(iv_p+1) ) ) then
-                            write(*,*) 'ERROR OA : inconsistent 1st conv. wind.'
+                            write(STDOUT,*) 'ERROR OA : inconsistent 1st conv. wind.'
                             if(if_print_node) then
                             write(io_unit,*) 'ERROR : two methods to get the 1st conv. wind. for var iv_p and period ip_p' 
                             write(io_unit,*) '        but inconsitent result'
@@ -5521,7 +5521,7 @@
                      found_lt_pointer_integrated_per : if (if_first_per_oa(iv_p,ip_p)==1) then
 
                         if ( lt_p /= lper_fst_oa(iv_p,ip_p) ) then
-                            write(*,*) 'ERROR OA : inconsistent conv. wind. pointer'
+                            write(STDOUT,*) 'ERROR OA : inconsistent conv. wind. pointer'
                             if(if_print_node) then
                             write(io_unit,*) 'ERROR : found inconsistent lt_p convolution window pointer for lper_fst_oa ',lper_fst_oa(iv_p,ip_p)
                             write(io_unit,*) 'ERROR :  see iv_p, perv_oa = ', iv_p, perv_oa(1,ip_p)
@@ -5594,7 +5594,7 @@
                         ,fc_p = fc_oa                                               )                                      
 
                      if ( abs( scale_p - psi_p2s_oa( tpsi_oa(iv_p), perv_oa(1,ip_p), fb_oa, fc_oa) ) > myprec2 ) then
-                        write(*,*) 'ERROR OA : var_rec_oa wavelet scale calculation mismatch'
+                        write(STDOUT,*) 'ERROR OA : var_rec_oa wavelet scale calculation mismatch'
                         if(if_print_node)write(io_unit,*) 'ERROR OA : var_rec_oa wavelet scale calculation mismatch'
                         stop
                      endif
@@ -6760,7 +6760,7 @@
           pnt_max => nt_max( ichoix  )
           !if ( .not. if_oa_fast_mode .and. ichoix==1 ) stop
       else
-        write(*,*) 'ERROR OA : dev needed to call main_oa with ichoix arg value other than 0 or 1'
+        write(STDOUT,*) 'ERROR OA : dev needed to call main_oa with ichoix arg value other than 0 or 1'
         stop
       endif
 
@@ -6818,7 +6818,7 @@
 
 !........Slow/Fast mode variables are screened thanks to ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )
          if ( pdti /= dti( cnb_oa(iv_m )) ) then
-            write(*,*) &
+            write(STDOUT,*) &
      &      'ERROR OA : main_oa discrete period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
             if(if_print_node)write(io_unit,*) &
      &      'ERROR OA : main_oa discrete period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
@@ -6913,7 +6913,7 @@
 
 !........Slow/Fast mode variables are screened thanks to ( ichoix.eq.cnb_oa(iv_m) .or. ichoix.lt.0 )
          if ( pdti /= dti( cnb_oa(iv_m )) ) then
-            write(*,*) &
+            write(STDOUT,*) &
      &      'ERROR OA : main_oa integrated period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
             if(if_print_node)write(io_unit,*) &
      &      'ERROR OA : main_oa integrated period cfg variable with wrong mode time step ',pdti,dti( cnb_oa(iv_m ) ) 
@@ -7763,13 +7763,13 @@
          if(if_print_node) write (io_unit,*) 'Pre-calculated size for wf_oa now reached ',nmsimult_oa 
 !$OMP END MASTER
       !else if (l_a.gt.nmsimult_oa) then
-      !   write (*,*) 'ERROR OA : above pre-calculated size for wf_oa ',nmsimult_oa
+      !   write(STDOUT,*) 'ERROR OA : above pre-calculated size for wf_oa ',nmsimult_oa
       !   if(if_print_node) write (io_unit,*) 'STOP : above pre-calculated size for wf_oa ',nmsimult_oa
       !   stop
       endif
 
       if (l_a.eq.nmsimult_oa.and.associated(pst%wf_oa(l_a)%coef) ) then
-         write (*,*) 'ERROR OA : nmsimult_oa trop petit ! ', nmsimult_oa
+         write(STDOUT,*) 'ERROR OA : nmsimult_oa trop petit ! ', nmsimult_oa
          if(if_print_node) write (io_unit,*) 'ERROR OA : nmsimult_oa trop petit ! ', nmsimult_oa
          if(if_print_node) write (io_unit,*) 'si simu avec restart (to dev) fixez nmsimult_oa_max via la namelist_oa'
          stop
@@ -8940,7 +8940,7 @@
       if ( ( ichoix == 0 ) .or. ( ichoix == 1 ) ) then      
           pdti    => dti   ( ichoix  )
       else
-        write(*,*) 'ERROR OA : dev needed to call test_oa with ichoix arg value other than 0 or 1'
+        write(STDOUT,*) 'ERROR OA : dev needed to call test_oa with ichoix arg value other than 0 or 1'
         stop
       endif
 
@@ -9148,7 +9148,7 @@
          amp_test2_oa(iper) = amp_test_oa(iper)
        enddo
 
-       !write(*,*)'ERROR OA : OA test function only applied to IGW configuration ccp key'
+       !write(STDOUT,*)'ERROR OA : OA test function only applied to IGW configuration ccp key'
        !stop
 #endif
 

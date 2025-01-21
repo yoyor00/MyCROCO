@@ -93,7 +93,7 @@
       ierr=nf_put_vara_int (nciddiaM_avg, diaTstepM_avg,
      &                                             start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step_avg', record, ierr
+        write(STDOUT,1) 'time_step_avg', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -104,7 +104,7 @@
      &                                              timediaM_avg)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -115,7 +115,7 @@
      &                                              time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -296,35 +296,35 @@
       j=20
       k=10
       itrc=1
-      write(*,*) 'Write diag UV avg at : i='
+      write(STDOUT,*) 'Write diag UV avg at : i='
      &                   ,i,' j=',j,' k=',k,' iUV=',itrc
-      write(*,*) 'MXadv_avg(i,j,k,itrc)   ',MXadv_avg(i,j,k,itrc)
-      write(*,*) 'MYadv_avg(i,j,k,itrc)   ',MYadv_avg(i,j,k,itrc)
-      write(*,*) 'MVadv_avg(i,j,k,itrc)   ',MVadv_avg(i,j,k,itrc)
-      write(*,*) 'MCor_avg(i,j,k,itrc)    ',MCor_avg(i,j,k,itrc)
-      write(*,*) 'MPrsgrd_avg(i,j,k,itrc) ',MPrsgrd_avg(i,j,k,itrc)
-      write(*,*) 'MHmix_avg(i,j,k,itrc)   ',MHmix_avg(i,j,k,itrc)
-      write(*,*) 'MVmix_avg(i,j,k,itrc)   ',MVmix_avg(i,j,k,itrc)
-      write(*,*) 'MVmix2_avg(i,j,k,itrc)  ',MVmix2_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MXadv_avg(i,j,k,itrc)   ',MXadv_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MYadv_avg(i,j,k,itrc)   ',MYadv_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MVadv_avg(i,j,k,itrc)   ',MVadv_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MCor_avg(i,j,k,itrc)    ',MCor_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MPrsgrd_avg(i,j,k,itrc) ',MPrsgrd_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MHmix_avg(i,j,k,itrc)   ',MHmix_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MVmix_avg(i,j,k,itrc)   ',MVmix_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MVmix2_avg(i,j,k,itrc)  ',MVmix2_avg(i,j,k,itrc)
 #  if defined DIAGNOSTICS_BARO
-      write(*,*) 'MBaro_avg(i,j,k,itrc) ',MBaro_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MBaro_avg(i,j,k,itrc) ',MBaro_avg(i,j,k,itrc)
 #  endif
 #  if defined M3FAST
-      write(*,*) 'Mfast_avg(i,j,k,itrc) ',Mfast_avg(i,j,k,itrc)
+      write(STDOUT,*) 'Mfast_avg(i,j,k,itrc) ',Mfast_avg(i,j,k,itrc)
 #  endif
 #  ifdef MRL_WCI
-      write(*,*) 'Mvf_avg(i,j,k,itrc)     ',Mvf_avg(i,j,k,itrc)
-      write(*,*) 'Mbrk_avg(i,j,k,itrc)    ',Mbrk_avg(i,j,k,itrc)
-      write(*,*) 'MStCo_avg(i,j,k,itrc)   ',MStCo_avg(i,j,k,itrc)
-      write(*,*) 'MVvf_avg(i,j,k,itrc)    ',MVvf_avg(i,j,k,itrc)
-      write(*,*) 'MPrscrt_avg(i,j,k,itrc) ',MPrscrt_avg(i,j,k,itrc)
-      write(*,*) 'Msbk_avg(i,j,k,itrc)    ',Msbk_avg(i,j,k,itrc)
-      write(*,*) 'Mbwf_avg(i,j,k,itrc)    ',Mbwf_avg(i,j,k,itrc)
-      write(*,*) 'Mfrc_avg(i,j,k,itrc)    ',Mfrc_avg(i,j,k,itrc)
+      write(STDOUT,*) 'Mvf_avg(i,j,k,itrc)     ',Mvf_avg(i,j,k,itrc)
+      write(STDOUT,*) 'Mbrk_avg(i,j,k,itrc)    ',Mbrk_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MStCo_avg(i,j,k,itrc)   ',MStCo_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MVvf_avg(i,j,k,itrc)    ',MVvf_avg(i,j,k,itrc)
+      write(STDOUT,*) 'MPrscrt_avg(i,j,k,itrc) ',MPrscrt_avg(i,j,k,itrc)
+      write(STDOUT,*) 'Msbk_avg(i,j,k,itrc)    ',Msbk_avg(i,j,k,itrc)
+      write(STDOUT,*) 'Mbwf_avg(i,j,k,itrc)    ',Mbwf_avg(i,j,k,itrc)
+      write(STDOUT,*) 'Mfrc_avg(i,j,k,itrc)    ',Mfrc_avg(i,j,k,itrc)
 #  endif
-      write(*,*) 'Mrate_avg(i,j,k,itrc)   ',Mrate_avg(i,j,k,itrc)
+      write(STDOUT,*) 'Mrate_avg(i,j,k,itrc)   ',Mrate_avg(i,j,k,itrc)
 
-      write(*,*) 'SumUVavg(i,j,k,itrc) = ',MXadv_avg(i,j,k,itrc)
+      write(STDOUT,*) 'SumUVavg(i,j,k,itrc) = ',MXadv_avg(i,j,k,itrc)
      &                                  +  MYadv_avg(i,j,k,itrc)
      &                                  +  MVadv_avg(i,j,k,itrc)
      &                                  +  MCor_avg(i,j,k,itrc)
@@ -346,7 +346,7 @@
      &                                  +  Mfrc_avg(i,j,k,itrc)
 #  endif
      &                                  -  Mrate_avg(i,j,k,itrc)
-              write(*,*) '----------------------------------'
+              write(STDOUT,*) '----------------------------------'
 # endif /* DEBUG */
 !--# undef DEBUG
 
@@ -377,12 +377,12 @@
 
 
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+       MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAGM_AVG -- wrote ',
      &            'diagM_avg fields into time record =', record, '/',
      &             nrecdiaM_avg  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)')
+        MPI_master_only write(STDOUT,'(/1x,2A/)')
      &             'WRT_DIAGM_AVG ERROR: Cannot ',
      &             'synchronize/close diag_avg netCDF file.'
         may_day_flag=3

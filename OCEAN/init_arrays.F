@@ -94,6 +94,7 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_extended_bounds.h"
+
 !
 !  Initialize 2-D primitive variables.
 !
@@ -163,6 +164,9 @@ C$    integer omp_get_thread_num
           surfz_avg(i,j)=0. ! init
           surfu_avg(i,j)=0. ! init
           surfv_avg(i,j)=0. ! init
+#endif
+#ifdef STO_XI2D
+          sto_xi2d(i,j)=init
 #endif
         enddo
       enddo
@@ -307,6 +311,9 @@ C$    integer omp_get_thread_num
 #   endif
 #  endif /* AVERAGES */
 # endif /* DIAGNOSTICS_UV */
+# ifdef STO_XI3D
+            sto_xi3d(i,j,k)=init
+# endif
           enddo
         enddo
       enddo

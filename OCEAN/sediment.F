@@ -3619,13 +3619,13 @@ C$OMP BARRIER
 # undef DEBUG_ARMOR
 # ifdef DEBUG_ARMOR
       do ised=1,NST
-        MPI_master_only write(*,*) '================================'
-        MPI_master_only write(*,*) ' ised      :',ised
-        MPI_master_only write(*,*) ' Sd        :',1.e3*Sd(ised)
-        MPI_master_only write(*,*) ' bed_frac  :',bed_frac(25,1,1,ised)
-        MPI_master_only write(*,*) ' tau_ce_2d :',rho0
+        MPI_master_only write(STDOUT,*) '================================'
+        MPI_master_only write(STDOUT,*) ' ised      :',ised
+        MPI_master_only write(STDOUT,*) ' Sd        :',1.e3*Sd(ised)
+        MPI_master_only write(STDOUT,*) ' bed_frac  :',bed_frac(25,1,1,ised)
+        MPI_master_only write(STDOUT,*) ' tau_ce_2d :',rho0
      &                                            *tau_ce_2d(25,1,ised)
-        MPI_master_only write(*,*) '================================'
+        MPI_master_only write(STDOUT,*) '================================'
       enddo
 # endif
 !
@@ -3783,7 +3783,7 @@ C$OMP BARRIER
         if (icard.eq.1) then
           read(iunit,'(a)',err=60) Stitle
           lstr=lenstr(Stitle)
-          write(stdout,10) Stitle(1:lstr)
+          write(STDOUT,10) Stitle(1:lstr)
   10      format(1x,'(',a,')',/)
 !
 !  Read in parameter and initial values per size class.
@@ -3808,10 +3808,10 @@ C$OMP BARRIER
            tau_ce(i)=cff2*Sd(i)/1000*g*(Srho(i)-rho0)        ! tau_ce (N/m2)
 # endif
 
-           MPI_master_only write(stdout,'(/A,2x,i2)')
+           MPI_master_only write(STDOUT,'(/A,2x,i2)')
      &     'Sediment parameters for grain-size class:', i
 
-           MPI_master_only write(stdout,'(7(/f10.5,2x,A))')
+           MPI_master_only write(STDOUT,'(7(/f10.5,2x,A))')
      &     Sd(i),    'Sd      Median sediment grain diameter (mm).',
      &     Csed(i),  'Csed    Analyt. init. of sed. conc. (kg/m3).',
      &     Srho(i),  'Srho    Sediment grain density (kg/m3).',
@@ -3821,7 +3821,7 @@ C$OMP BARRIER
      &     tau_cd(i),'tau_cd  Critical shear for deposition (N/m2).'
 
            do nl=1,NLAY
-            MPI_master_only write(stdout,'(f10.5,2x,A,2x,i2)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A,2x,i2)')
      &      Bfr(nl,i), 'bed_frac   Volume fraction, layer:',nl
            enddo
 
@@ -3833,12 +3833,12 @@ C$OMP BARRIER
           enddo
 
         elseif (icard.eq.3) then
-           MPI_master_only write(stdout,'(/A)')
+           MPI_master_only write(STDOUT,'(/A)')
      &     'Bed parameters for all bed levels'
 
           read(iunit,*,err=60) (Bthk(nl),nl=1,NLAY)
            do nl=1,NLAY
-            MPI_master_only write(stdout,'(f10.5,2x,A,2x,i2,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A,2x,i2,2x,A)')
      &      Bthk(nl), 'Bthk   Init. bed thickness, layer:',nl,'(m).'
            enddo
 
@@ -3846,39 +3846,39 @@ C$OMP BARRIER
 
           read(iunit,*,err=60) (Bpor(nl),nl=1,NLAY)
            do nl=1,NLAY
-            MPI_master_only write(stdout,'(f10.5,2x,A,2x,i2,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A,2x,i2,2x,A)')
      &      Bpor(nl), 'Bpor   Init. bed porosity, layer:',nl,'(m).'
            enddo
 
         elseif (icard.eq.5) then
           read(iunit,*,err=60) Hrip
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      Hrip, 'Hrip   Init. ripple roughness (m).'
 
         elseif (icard.eq.6) then
           read(iunit,*,err=60) Lrip
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      Lrip, 'Lrip   Init. ripple height (m).'
 
         elseif (icard.eq.7) then
           read(iunit,*,err=60) bedload_coeff
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      bedload_coeff, 'bedload_coeff   Bedload rate.'
 
         elseif (icard.eq.8) then
           read(iunit,*,err=60) morph_fac
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      morph_fac, 'morph_fac   Morphological factor.'
 
 # ifdef MIXED_BED
         elseif (icard.eq.9) then
           read(iunit,*,err=60) transC
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      transC, 'transC   Cohesive transition.'
 
         elseif (icard.eq.10) then
           read(iunit,*,err=60) transN
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      transN, 'transN   Non cohesive transition.'
 # else
         elseif (icard.eq.9) then
@@ -3889,41 +3889,41 @@ C$OMP BARRIER
 # if defined COHESIVE_BED || defined MIXED_BED
         elseif (icard.eq.11) then
           read(iunit,*,err=60) tcr_min
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      tcr_min, 'tcr_min   Mud min taucr.'
 
         elseif (icard.eq.12) then
           read(iunit,*,err=60) tcr_max
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      tcr_max, 'tcr_max   Mud max taucr.'
 
         elseif (icard.eq.13) then
           read(iunit,*,err=60) tcr_slp
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      tcr_slp, 'tcr_slp   Mud taucr slope.'
 
         elseif (icard.eq.14) then
           read(iunit,*,err=60) tcr_off
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      tcr_off, 'tcr_off   Mud profile offset.'
 
         elseif (icard.eq.15) then
           read(iunit,*,err=60) tcr_tim
-            MPI_master_only write(stdout,'(f10.1,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.1,2x,A)')
      &      tcr_tim, 'tcr_tim   Mud consolidation rate.'
 
 # endif
 # ifdef SED_FLOCS
         elseif (icard.eq.16) then
           read(iunit,*,err=60) l_ADS,l_ASH,l_COLLFRAG,l_testcase
-            MPI_master_only write(stdout,'(L10,2x,A)')
+            MPI_master_only write(STDOUT,'(L10,2x,A)')
      &      l_ADS, 'l_ADS   Mud differential settling.'
-            MPI_master_only write(stdout,'(L10,2x,A)')
+            MPI_master_only write(STDOUT,'(L10,2x,A)')
      &      l_ASH, 'l_ASH   Mud shear aggregation.'
-            MPI_master_only write(stdout,'(L10,2x,A,1x,A)')
+            MPI_master_only write(STDOUT,'(L10,2x,A,1x,A)')
      &      l_COLLFRAG, 'l_COLLFRAG   Mud collision-induced',
      &                   'fragmentation.'
-            MPI_master_only write(stdout,'(L10,2x,A,1x,A)')
+            MPI_master_only write(STDOUT,'(L10,2x,A,1x,A)')
      &      l_testcase, 'l_testcase   Mud boolean for values',
      &                  'from Verney et al.'
 
@@ -3932,46 +3932,46 @@ C$OMP BARRIER
      &                         f_alpha,f_beta ,f_ater,f_ero_frac,
      &                         f_ero_nbfrag,f_collfragparam,
      &                         f_clim,f_ero_iv
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      f_dp0, 'f_dp0   Mud Primary particle size(m).'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      f_nf, 'f_nf   Mud floc fractal dimension.'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      f_dmax, 'f_dmax   Mud maximum diameter.'
-            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A,1x,A)')
      &      f_nb_frag, 'f_nb_frag   Mud Number of fragments by shear',
      &                             'erosion.'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      f_alpha, 'f_alpha   Mud flocculation efficiency.'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      f_beta, 'f_beta   Mud shear fragmentation rate.'
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      f_ater, 'f_ater   Mud ternary breakup.'
-            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A,1x,A)')
      &      f_ero_frac, 'f_ero_frac   Mud fraction of shear',
      &             'fragmentation term transfered to shear erosion.'
-            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A,1x,A)')
      &      f_ero_nbfrag, 'f_ero_nbfrag   Mud Number of fragments',
      &             'induced by shear erosion.'
-            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A,1x,A)')
      &      f_collfragparam, 'f_collfragparam   Mud Fragmentation rate',
      &             'for collision-induced breakup.'
-            MPI_master_only write(stdout,'(f10.5,2x,A,1x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A,1x,A)')
      &      f_clim, 'f_clim   Mud Min concentration below which',
      &           'flocculation processes are not calc..'
-            MPI_master_only write(stdout,'(I10,2x,A)')
+            MPI_master_only write(STDOUT,'(I10,2x,A)')
      &      f_ero_iv, 'f_ero_iv   Mud Fragment size class.'
 
 #  ifdef SED_DEFLOC
         elseif (icard.eq.18) then
           read(iunit,*,err=60) (mud_frac_eq(nl),nl=1,NMUD)
            do nl=1,NMUD
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      mud_frac_eq(nl),'mud_frac_eq   Equilibrium fractional class'
            enddo
         elseif (icard.eq.19) then
           read(iunit,*,err=60) t_dfloc
-            MPI_master_only write(stdout,'(f10.5,2x,A)')
+            MPI_master_only write(STDOUT,'(f10.5,2x,A)')
      &      t_dfloc, 't_dfloc   Floc decomposition rate.'
 #  else
         elseif (icard.eq.18) then
@@ -3999,22 +3999,22 @@ C$OMP BARRIER
 !
 !  Error while reading input parameters.
 !
-  40  write(stdout,50) icard, i, Nclass, sedname
+  40  write(STDOUT,50) icard, i, Nclass, sedname
   50  format(/,' INIT_SEDIMENTS - error reading variables in card: ',
      &             i2, ', entry: ',i3,/,15x,
      &             'nclass:',i3, 'input script: ',a)
 
-  60  write(stdout,80) icard, sedname
+  60  write(STDOUT,80) icard, sedname
   80  format(/,' INIT_SEDIMENTS - error while reading input card: ',
      &       i2,15x,'in input script: ',a)
 
- 195  write(stdout,205) sedname
+ 195  write(STDOUT,205) sedname
  205  format(/,'sediment inputfile : ',A,/,
      &   ' inputfile not found or bad sediment initialization')
       stop
 
   90  close(iunit)
-      write(stdout,100) Nclass
+      write(STDOUT,100) Nclass
  100  format(/,
      &       'Number of size classes in sediment computation:'i2)
 

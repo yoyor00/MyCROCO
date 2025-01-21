@@ -1492,7 +1492,7 @@ C$OMP CRITICAL (diag_cr_rgn)
 # endif
             if (first_time.eq.0) then
               first_time=1
-              write(*,'(5x,A,1x,A,3x,A,3x,A,2x,A)')
+              write(STDOUT,'(5x,A,1x,A,3x,A,3x,A,2x,A)')
      &         'STEP','time[DAYS]','DIFF_ACTION','DIFF_WAVENUMBER'
 !C$   &                                                      ,'trd'
             endif
@@ -1526,7 +1526,7 @@ C$OMP CRITICAL (diag_cr_rgn)
             do while (i.lt.18 .and. tstring(i:i).eq.' ')
               i=i+1
             enddo
-            write(*,'(I9,1x,A,1x,A)') iwave-1, tstring(i:i+9),
+            write(STDOUT,'(I9,1x,A,1x,A)') iwave-1, tstring(i:i+9),
      &                                       check_line(1:ie)
 
 # ifdef MPI

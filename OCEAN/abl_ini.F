@@ -126,12 +126,12 @@
 !
       Hzw_abl(Ntmp+1) = zw_abl(Ntmp+1) - zr_abl(Ntmp+1)
       !
-      MPI_master_only write(stdout,'(/1x,A/,/1x,A,10x,A/)')
+      MPI_master_only write(STDOUT,'(/1x,A/,/1x,A,10x,A/)')
      &                       'Vertical coordinate System:',
      &                       'level   rho-points    w-points',
      &                       'Hzr     Hzw  '
       do k=1,N_abl
-        MPI_master_only write(stdout,'(I6,2x,2F12.3,4x,2F7.3)')
+        MPI_master_only write(STDOUT,'(I6,2x,2F12.3,4x,2F7.3)')
      &                   k, zr_abl(k),zw_abl(k), Hzr_abl(k),Hzw_abl(k)
       enddo
 # endif
@@ -223,23 +223,23 @@
      &     + alp1_tra * bmin    + alp0_tra
       cff1 = alp3_tra * bmax**3 + alp2_tra * bmax**2
      &     + alp1_tra * bmax    + alp0_tra
-      MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+      MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &        cff*dt ,'ABL Minimum value for tracers restoring'
-      MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+      MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &        cff1*dt,'ABL Maximum value for tracers restoring'
       IF( cff > cff1  )  THEN
         ierr = ierr + 1
-        MPI_master_only write(stdout,'(A)')
+        MPI_master_only write(STDOUT,'(A)')
      &                    'Invert ltra_min and ltra_max values'
       ENDIF
       IF( cff*dt > 1.+eps .OR. cff*dt < -eps) THEN
         ierr = ierr + 1
-        MPI_master_only write(stdout,'(A)')
+        MPI_master_only write(STDOUT,'(A)')
      &                    'Wrong minimum value for ABL TRA nudging'
       ENDIF
       IF( cff1*dt > 1.+eps .OR. cff1*dt < -eps) THEN
         ierr = ierr + 1
-        MPI_master_only write(stdout,'(A)')
+        MPI_master_only write(STDOUT,'(A)')
      &                    'Wrong maximum value for ABL TRA nudging'
       ENDIF
 #  endif
@@ -256,23 +256,23 @@
      &     + alp1_dyn * bmin    + alp0_dyn
       cff1 = alp3_dyn * bmax**3 + alp2_dyn * bmax**2
      &     + alp1_dyn * bmax    + alp0_dyn
-      MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+      MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &        cff*dt ,'ABL Minimum value for dynamics restoring'
-      MPI_master_only write(stdout,'(1pe10.3,2x,A)')
+      MPI_master_only write(STDOUT,'(1pe10.3,2x,A)')
      &        cff1*dt,'ABL Maximum value for dynamics restoring'
       IF( cff > cff1  )  THEN
         ierr = ierr + 1
-        MPI_master_only write(stdout,'(A)')
+        MPI_master_only write(STDOUT,'(A)')
      &                    'Invert ldyn_min and ldyn_max values'
       ENDIF
       IF( cff*dt > 1.+eps .OR. cff*dt < -eps) THEN
         ierr = ierr + 1
-        MPI_master_only write(stdout,'(A)')
+        MPI_master_only write(STDOUT,'(A)')
      &                    'Wrong minimum value for ABL DYN nudging'
       ENDIF
       IF( cff1*dt > 1.+eps .OR. cff1*dt < -eps) THEN
         ierr = ierr + 1
-        MPI_master_only write(stdout,'(A)')
+        MPI_master_only write(STDOUT,'(A)')
      &                    'Wrong maximum value for ABL DYN nudging'
         print*,'cff1*dt = ',cff1*dt
       ENDIF

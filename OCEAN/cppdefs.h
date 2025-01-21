@@ -111,6 +111,15 @@ cppdef.h by hand for the common setups.
 # undef  SEDIMENT
 # undef  MUSTANG
 # undef  BBL
+                      /* Stochastic and Ensemble */
+# undef STOGEN
+# ifdef STOGEN
+#  undef  STO_XI1D
+#  define STO_XI2D
+#  undef  STO_XI3D
+# endif
+# undef ENSEMBLE
+
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
@@ -672,6 +681,10 @@ cppdef.h by hand for the common setups.
 */
 # undef  OPENMP
 # undef  MPI
+# undef STOGEN
+# ifdef STOGEN
+#  define STO_XI2D
+# endif
 # define UV_ADV
 # define UV_COR
 # define UV_VIS2

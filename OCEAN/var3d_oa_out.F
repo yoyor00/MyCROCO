@@ -472,16 +472,16 @@ c             vnam_oa_r = get_vnam( vnamfmt='(a5,a5,i3.3,a1,i3.3)'
 #endif
        
         if (verbose >=16 ) then
-!        MPI_master_only write(stdout,fmt='(2(22a))') 
+!        MPI_master_only write(STDOUT,fmt='(2(22a))') 
 !    &   vnam_oa_r,vnam_oa_i
-!        MPI_master_only write(stdout,fmt='(17a)') 
+!        MPI_master_only write(STDOUT,fmt='(17a)') 
 !    &   vnam_oa
 
-         MPI_master_only write(stdout,fmt='(a22)') 
+         MPI_master_only write(STDOUT,fmt='(a22)') 
      &   tmpvnam
-         MPI_master_only write(stdout,fmt='(i3.3)') 
+         MPI_master_only write(STDOUT,fmt='(i3.3)') 
      &   tvar_oa(tc_oa(ic),tvc_oa(ic),ivc)
-         MPI_master_only write(stdout,fmt='(3(i3.3,1x))') 
+         MPI_master_only write(STDOUT,fmt='(3(i3.3,1x))') 
      &   tc_oa(ic), tvc_oa(ic), ivc
         end if
 

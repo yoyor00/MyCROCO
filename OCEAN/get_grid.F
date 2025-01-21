@@ -44,7 +44,7 @@
         ierr=checkdims (ncid, grdname, lstr, varid)
         if (ierr. ne. nf_noerr) goto 99
       else
-        write(stdout,'(/3(1x,A)/)') 'GET_GRID ERROR: Cannot open',
+        write(STDOUT,'(/3(1x,A)/)') 'GET_GRID ERROR: Cannot open',
      &                       'input NetCDF file:', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
@@ -55,20 +55,20 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_get_var1_text (ncid, varid, 1, char1)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'spherical', grdname(1:lstr)
+          write(STDOUT,2) 'spherical', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'spherical', grdname(1:lstr)
+        write(STDOUT,1) 'spherical', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
       if (char1.eq.'t' .or. char1.eq.'T') then
 # ifdef SPHERICAL
-        MPI_master_only write(stdout,'(/1x,A/)')
+        MPI_master_only write(STDOUT,'(/1x,A/)')
      &                          'Spherical grid detected.'
 # else
-        write(stdout,'(/1x,A/12x,A/)')
+        write(STDOUT,'(/1x,A/12x,A/)')
      &      'GET_GRID - ERROR: Spherical grid detected, but',
      &               'model SPHERICAL CPP-switch is not set.'
         goto 99                                            !--> ERROR
@@ -81,11 +81,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_get_var1_FTYPE (ncid, varid, 1, xl)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'xl', grdname(1:lstr)
+          write(STDOUT,2) 'xl', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'xl', grdname(1:lstr)
+        write(STDOUT,1) 'xl', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
@@ -93,11 +93,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_get_var1_FTYPE (ncid, varid, 1, el)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'el', grdname(1:lstr)
+          write(STDOUT,2) 'el', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'el', grdname(1:lstr)
+        write(STDOUT,1) 'el', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !
@@ -109,11 +109,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread(h (START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'h', grdname(1:lstr)
+          write(STDOUT,2) 'h', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'h', grdname(1:lstr)
+        write(STDOUT,1) 'h', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 ! REMOVE WET DRY
@@ -125,11 +125,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (f(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'f', grdname(1:lstr)
+          write(STDOUT,2) 'f', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'f', grdname(1:lstr)
+        write(STDOUT,1) 'f', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !
@@ -140,11 +140,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (pm(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'pm', grdname(1:lstr)
+          write(STDOUT,2) 'pm', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'pm', grdname(1:lstr)
+        write(STDOUT,1) 'pm', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
@@ -152,11 +152,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (pn(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'pn', grdname(1:lstr)
+          write(STDOUT,2) 'pn', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'pn', grdname(1:lstr)
+        write(STDOUT,1) 'pn', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !
@@ -167,11 +167,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (lonr(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'lon_rho', grdname(1:lstr)
+          write(STDOUT,2) 'lon_rho', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'lon_rho', grdname(1:lstr)
+        write(STDOUT,1) 'lon_rho', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
@@ -179,11 +179,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (latr(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'lat_rho', grdname(1:lstr)
+          write(STDOUT,2) 'lat_rho', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'lat_rho', grdname(1:lstr)
+        write(STDOUT,1) 'lat_rho', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !--
@@ -191,11 +191,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (lonu(START_2D_ARRAY), ncid, varid, 0, u2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'lon_u', grdname(1:lstr)
+          write(STDOUT,2) 'lon_u', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'lon_u', grdname(1:lstr)
+        write(STDOUT,1) 'lon_u', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
@@ -203,11 +203,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (latu(START_2D_ARRAY), ncid, varid, 0, u2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'lat_u', grdname(1:lstr)
+          write(STDOUT,2) 'lat_u', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'lat_u', grdname(1:lstr)
+        write(STDOUT,1) 'lat_u', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !--
@@ -215,11 +215,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (lonv(START_2D_ARRAY), ncid, varid, 0, v2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'lon_v', grdname(1:lstr)
+          write(STDOUT,2) 'lon_v', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'lon_v', grdname(1:lstr)
+        write(STDOUT,1) 'lon_v', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
@@ -227,11 +227,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (latv(START_2D_ARRAY), ncid, varid, 0, v2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'lat_v', grdname(1:lstr)
+          write(STDOUT,2) 'lat_v', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'lat_v', grdname(1:lstr)
+        write(STDOUT,1) 'lat_v', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 !--
@@ -241,11 +241,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (xr(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'x_rho', grdname(1:lstr)
+          write(STDOUT,2) 'x_rho', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'x_rho', grdname(1:lstr)
+        write(STDOUT,1) 'x_rho', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
@@ -253,11 +253,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (yr(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'y_rho', grdname(1:lstr)
+          write(STDOUT,2) 'y_rho', grdname(1:lstr)
           goto 99                                           !--> ERROR
         endif
       else
-        write(stdout,1) 'y_rho', grdname(1:lstr)
+        write(STDOUT,1) 'y_rho', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 # endif
@@ -269,11 +269,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (angler(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'angle', grdname(1:lstr)
+          write(STDOUT,2) 'angle', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'angle', grdname(1:lstr)
+        write(STDOUT,1) 'angle', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 # endif
@@ -285,11 +285,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread(rmask(START_2D_ARRAY), ncid, varid, 0, r2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'mask_rho', grdname(1:lstr)
+          write(STDOUT,2) 'mask_rho', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'mask_rho', grdname(1:lstr)
+        write(STDOUT,1) 'mask_rho', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
 
@@ -302,11 +302,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (ureduc(START_2D_ARRAY), ncid, varid, 0, u2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'reduc_u', grdname(1:lstr)
+          write(STDOUT,2) 'reduc_u', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'reduc_u', grdname(1:lstr)
+        write(STDOUT,1) 'reduc_u', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       ureduc(:,:)=min(ureduc(:,:),1.0)
@@ -315,11 +315,11 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (vreduc(START_2D_ARRAY), ncid, varid, 0, v2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'reduc_v', grdname(1:lstr)
+          write(STDOUT,2) 'reduc_v', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'reduc_v', grdname(1:lstr)
+        write(STDOUT,1) 'reduc_v', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
       vreduc(:,:)=min(vreduc(:,:),1.0)
@@ -330,14 +330,14 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread (zob(START_2D_ARRAY), ncid, varid, 0, v2dvar)
         if (ierr .ne. nf_noerr) then
-          write(stdout,2) 'zob', grdname(1:lstr)
+          write(STDOUT,2) 'zob', grdname(1:lstr)
           goto 99                                         !--> ERROR
         endif
       else
-        write(stdout,1) 'zob', grdname(1:lstr)
+        write(STDOUT,1) 'zob', grdname(1:lstr)
         goto 99                                           !--> ERROR
       endif
-      ! write(stdout,*)'zob',
+      ! write(STDOUT,*)'zob',
      !&  minval(zob),maxval(zob),minloc(zob),maxloc(zob)
        zob(:,:)=max(zob(:,:),1e-7)
        zob_temp=maxval(zob)

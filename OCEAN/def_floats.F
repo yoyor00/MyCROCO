@@ -59,7 +59,7 @@
         lstr=lenstr(fltname)
         ierr=nf_create(fltname(1:lstr),NF_CLOBBER,ncid)
         if (ierr.ne.nf_noerr) then
-          write(stdout,11) fltname(1:lstr)
+          write(STDOUT,11) fltname(1:lstr)
           may_day_flag=3
           return                         !-->  EXIT
         endif
@@ -70,7 +70,7 @@
 !
         call put_global_atts (ncid, ierr)
         if (ierr.ne.nf_noerr) then
-          write(stdout,11) fltname(1:lstr)
+          write(STDOUT,11) fltname(1:lstr)
           may_day_flag=3
           return                         !-->  EXIT
         endif
@@ -445,7 +445,7 @@
 !
         ierr=nf_enddef(ncid)
         res=.true. ! marker that a file has been created
-        write(stdout,'(6x,4A,1x,A,i4)') 'DEF_FLOATS - Created ',
+        write(STDOUT,'(6x,4A,1x,A,i4)') 'DEF_FLOATS - Created ',
      &                'new netCDF file ''', fltname(1:lstr), '''.'
      &                 MYID
 
@@ -458,7 +458,7 @@
 !
       elseif (ncid.eq.-1) then
 
-c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
+c       write(STDOUT,*) 'I TRY TO OPEN THE FILE (XA)'
 
         ierr=nf_open (fltname(1:lstr), nf_write, ncid)
 
@@ -471,7 +471,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
             create_new_file=.true.
             goto 10
           else
-            write(stdout,'(/1x,4A,2x,A,I4/)') 'DEF_HIS/AVG ERROR: ',
+            write(STDOUT,'(/1x,4A,2x,A,I4/)') 'DEF_HIS/AVG ERROR: ',
      &                  'Cannot open file ''', fltname(1:lstr), '''.'
      &                   MYID
             goto 99                                       !--> ERROR
@@ -491,7 +491,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
 !
         ierr=nf_inq_varid (ncid, 'time_step', fltTstep)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) 'time_step', fltname(1:lstr)
+          write(STDOUT,1) 'time_step', fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -501,7 +501,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_inq_varid (ncid,vname(1,indxTime)(1:lvar),fltTime)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxTime)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vname(1,indxTime)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -514,7 +514,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltLon)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -522,7 +522,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltLat)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -533,7 +533,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltX)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -541,7 +541,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltY)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -555,7 +555,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltGlevel)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -566,7 +566,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltXgrd)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -577,7 +577,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltYgrd)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -590,7 +590,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltZgrd)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif /* SOLVE3D */
@@ -606,7 +606,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltDepth)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -617,7 +617,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltTemp)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        endif
@@ -630,7 +630,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltSal)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        endif
@@ -643,7 +643,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltDen)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        endif
@@ -656,7 +656,7 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid (ncid,vinfo(1)(1:lvar),fltVel)
         if (ierr .ne. nf_noerr) then
-          write(stdout,1) vinfo(1)(1:lvar), fltname(1:lstr)
+          write(STDOUT,1) vinfo(1)(1:lvar), fltname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        endif
@@ -666,15 +666,15 @@ c       write(*,*) 'I TRY TO OPEN THE FILE (XA)'
       ierr=nf_inq_dimid(ncid,'ftime',ftimedim)
       ierr=nf_inq_dimlen(ncid,ftimedim,nrecflt)
       nrecflt=nrecflt+1
-c     write(*,*)'nrecflt = ',nrecflt
+c     write(STDOUT,*)'nrecflt = ',nrecflt
       if (ierr .ne. nf_noerr) then
-      write(*,*)' DEF_FLOATS ERROR: cannot determine nrecflt '
+      write(STDOUT,*)' DEF_FLOATS ERROR: cannot determine nrecflt '
       endif
 
-!        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_HIS/AVG -- Opened ',
+!        write(STDOUT,'(6x,2A,i4,1x,A,i4)') 'DEF_HIS/AVG -- Opened ',
 !     &                     'existing file  from record =', rec
 !     &                      MYID
-         write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_FLOATS -- Opened ',
+         write(STDOUT,'(6x,2A,i4,1x,A,i4)') 'DEF_FLOATS -- Opened ',
      &                     'existing file  from record = ',nrecflt
 
       endif  ! create or open

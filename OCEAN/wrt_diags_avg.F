@@ -93,7 +93,7 @@
       ierr=nf_put_vara_int (nciddia_avg, diaTstep_avg,
      &                                             start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'time_step_avg', record, ierr
+        write(STDOUT,1) 'time_step_avg', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -104,7 +104,7 @@
      &                                              timedia_avg)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -115,7 +115,7 @@
      &                                              timedia_avg)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -262,36 +262,36 @@
       j=20
       k=10
       itrc=1
-      write(*,*) 'Write diag TS avg at : i='
+      write(STDOUT,*) 'Write diag TS avg at : i='
      &                ,i,' j=',j,' k=',k,' iTS=',itrc
-      write(*,*) 'TXadv_avg(i,j,k,itrc) ',TXadv_avg(i,j,k,itrc)
-      write(*,*) 'TYadv_avg(i,j,k,itrc) ',TYadv_avg(i,j,k,itrc)
-      write(*,*) 'TVadv_avg(i,j,k,itrc) ',TVadv_avg(i,j,k,itrc)
-      write(*,*) 'THmix_avg(i,j,k,itrc) ',THmix_avg(i,j,k,itrc)
-      write(*,*) 'TVmix_avg(i,j,k,itrc) ',TVmix_avg(i,j,k,itrc)
-      write(*,*) 'TForc_avg(i,j,k,itrc) ',TForc_avg(i,j,k,itrc)
-      write(*,*) 'Trate_avg(i,j,k,itrc) ',Trate_avg(i,j,k,itrc)
+      write(STDOUT,*) 'TXadv_avg(i,j,k,itrc) ',TXadv_avg(i,j,k,itrc)
+      write(STDOUT,*) 'TYadv_avg(i,j,k,itrc) ',TYadv_avg(i,j,k,itrc)
+      write(STDOUT,*) 'TVadv_avg(i,j,k,itrc) ',TVadv_avg(i,j,k,itrc)
+      write(STDOUT,*) 'THmix_avg(i,j,k,itrc) ',THmix_avg(i,j,k,itrc)
+      write(STDOUT,*) 'TVmix_avg(i,j,k,itrc) ',TVmix_avg(i,j,k,itrc)
+      write(STDOUT,*) 'TForc_avg(i,j,k,itrc) ',TForc_avg(i,j,k,itrc)
+      write(STDOUT,*) 'Trate_avg(i,j,k,itrc) ',Trate_avg(i,j,k,itrc)
 
-      write(*,*) 'SumTSavg(i,j,k,itrc) = ',TXadv_avg(i,j,k,itrc)
+      write(STDOUT,*) 'SumTSavg(i,j,k,itrc) = ',TXadv_avg(i,j,k,itrc)
      &                                  +  TYadv_avg(i,j,k,itrc)
      &                                  +  TVadv_avg(i,j,k,itrc)
      &                                  +  THmix_avg(i,j,k,itrc)
      &                                  +  TVmix_avg(i,j,k,itrc)
      &                                  +  TForc_avg(i,j,k,itrc)
      &                                  -  Trate_avg(i,j,k,itrc)
-      write(*,*) '========================================='
-      write(*,*) 'Write diag TS_MLD avg  at : i='
+      write(STDOUT,*) '========================================='
+      write(STDOUT,*) 'Write diag TS_MLD avg  at : i='
      &                ,i,' j=',j,' iTS=',itrc
-      write(*,*) 'TXadv_mld_avg(i,j,k,itrc) ',TXadv_mld_avg(i,j,itrc)
-      write(*,*) 'TYadv_mld_avg(i,j,k,itrc) ',TYadv_mld_avg(i,j,itrc)
-      write(*,*) 'TVadv_mld_avg(i,j,k,itrc) ',TVadv_mld_avg(i,j,itrc)
-      write(*,*) 'THmix_mld_avg(i,j,k,itrc) ',THmix_mld_avg(i,j,itrc)
-      write(*,*) 'TVmix_mld_avg(i,j,k,itrc) ',TVmix_mld_avg(i,j,itrc)
-      write(*,*) 'TForc_mld_avg(i,j,k,itrc) ',TForc_mld_avg(i,j,itrc)
-      write(*,*) 'Trate_mld_avg(i,j,k,itrc) ',Trate_mld_avg(i,j,itrc)
-      write(*,*) 'Tentr_mld_avg(i,j,k,itrc) ',Tentr_mld_avg(i,j,itrc)
+      write(STDOUT,*) 'TXadv_mld_avg(i,j,k,itrc) ',TXadv_mld_avg(i,j,itrc)
+      write(STDOUT,*) 'TYadv_mld_avg(i,j,k,itrc) ',TYadv_mld_avg(i,j,itrc)
+      write(STDOUT,*) 'TVadv_mld_avg(i,j,k,itrc) ',TVadv_mld_avg(i,j,itrc)
+      write(STDOUT,*) 'THmix_mld_avg(i,j,k,itrc) ',THmix_mld_avg(i,j,itrc)
+      write(STDOUT,*) 'TVmix_mld_avg(i,j,k,itrc) ',TVmix_mld_avg(i,j,itrc)
+      write(STDOUT,*) 'TForc_mld_avg(i,j,k,itrc) ',TForc_mld_avg(i,j,itrc)
+      write(STDOUT,*) 'Trate_mld_avg(i,j,k,itrc) ',Trate_mld_avg(i,j,itrc)
+      write(STDOUT,*) 'Tentr_mld_avg(i,j,k,itrc) ',Tentr_mld_avg(i,j,itrc)
 
-      write(*,*) 'SumTShis_mld_avg(i,j,k,itrc) = ',TXadv_mld_avg(i,j,itrc)
+      write(STDOUT,*) 'SumTShis_mld_avg(i,j,k,itrc) = ',TXadv_mld_avg(i,j,itrc)
      &                                  +  TYadv_mld_avg(i,j,itrc)
      &                                  +  TVadv_mld_avg(i,j,itrc)
      &                                  +  THmix_mld_avg(i,j,itrc)
@@ -299,7 +299,7 @@
      &                                  +  TForc_mld_avg(i,j,itrc)
      &                                  +  Tentr_mld_avg(i,j,itrc)
      &                                  -  Trate_mld_avg(i,j,itrc)
-              write(*,*) '----------------------------------'
+              write(STDOUT,*) '----------------------------------'
 # endif /* DEBUG */
 !--#undef DEBUG
 
@@ -332,12 +332,12 @@
 
 
       if (ierr .eq. nf_noerr) then
-        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+        MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAG_AVG -- wrote',
      &            ' diag_avg fields into time record =', record, '/',
      &             nrecdia_avg  MYID
       else
-        MPI_master_only write(stdout,'(/1x,2A/)')
+        MPI_master_only write(STDOUT,'(/1x,2A/)')
      &             'WRT_DIAG_AVG ERROR: Cannot ',
      &             'synchronize/close diag_avg netCDF file.'
         may_day_flag=3

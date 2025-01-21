@@ -223,7 +223,7 @@ C$      trd=omp_get_thread_num()
       if ( size(hu_c, 1) .ne. ( ip_ran(2) - ip_ran(1)+1 )   .or.
      &     size(hu_c, 2) .ne. ( jp_ran(2) - jp_ran(1)+1 ) ) 
      & then
-        MPI_master_only write(stdout,*) 
+        MPI_master_only write(STDOUT,*) 
      &   'STOP : inconsistent private scratch size'
         stop
       endif

@@ -54,7 +54,7 @@
 
         ierr=nf_inq_varid (ncidfrc, 'sss_time', sss_tid)
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) 'sss_time', frcname(1:lstr)
+          write(STDOUT,3) 'sss_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -71,7 +71,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxSSS)(1:lvar), frcname(1:lstr)
+          write(STDOUT,3) vname(1,indxSSS)(1:lvar), frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -80,7 +80,7 @@
         ierr=nf_inq_varid (ncidfrc, vname(1,indxdQdSST)(1:lvar),
      &                                                    dqdt_id)
         if (ierr .ne. nf_noerr) then
-          write(stdout,3) vname(1,indxdQdSST)(1:lvar),frcname(1:lstr)
+          write(STDOUT,3) vname(1,indxdQdSST)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -120,7 +120,7 @@
 
         ierr=nf_get_var1_FTYPE (ncidfrc, sss_tid, sss_rec, cff)
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'sss_time', sss_rec
+          write(STDOUT,6) 'sss_time', sss_rec
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
@@ -141,7 +141,7 @@
           ierr=nf_get_var1_FTYPE (ncidfrc, sss_id, sss_rec, sssp(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'SSS', sss_rec
+          write(STDOUT,6) 'SSS', sss_rec
           goto 99                                         !--> ERROR
         endif
 
@@ -156,17 +156,17 @@
           ierr=nf_get_var1_FTYPE (ncidfrc,dqdt_id,sss_rec,dqdtp(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(stdout,6) 'dQdSST', sss_rec
+          write(STDOUT,6) 'dQdSST', sss_rec
           goto 99                                         !--> ERROR
         endif
 # endif
        itsss=i
 # if defined SFLX_CORR && !defined SFLX_CORR_COEF && !defined QCORRECTION
-      MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+      MPI_master_only write(STDOUT,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &              'GET_SSS    --',
      &              'Read SSS and dQdSST fields     for time =', cff
 # else
-      MPI_master_only write(stdout,'(6x,A,16x,A,1x,g12.4,1x,I4)')
+      MPI_master_only write(STDOUT,'(6x,A,16x,A,1x,g12.4,1x,I4)')
      &                  'GET_SSS    -- Read SSS fields',
      &                                     'for time =', cff
 # endif
@@ -185,13 +185,13 @@
 !
   3   format(/,' GET_SSS - ERROR: unable to find forcing variable',
      &                   ': ',a,/,11x,'in forcing NetCDF file: ',a)
-  4   write(stdout,5) frcname(1:lstr)
+  4   write(STDOUT,5) frcname(1:lstr)
   5   format(/,' GET_SSS - ERROR: unable to open forcing NetCDF ',
      &                                                  'file: ',a)
       goto 99
   6   format(/,' GET_SSS - ERROR while reading variable: ',a,2x,
      &                                      ' at TIME index = ',i4)
-  7   write(stdout,8) sss_rec, ntsss, frcname(1:lstr), tdays,
+  7   write(STDOUT,8) sss_rec, ntsss, frcname(1:lstr), tdays,
      &                                      sss_time(itsss)*sec2day
   8   format(/,' GET_SSS - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available',  /,  11x,'record ',I4,
@@ -302,7 +302,7 @@
 !
       else
         if (ZEROTH_TILE) then
-          write(stdout,1) 'sss_time', tdays, sss_time(it2)*sec2day
+          write(STDOUT,1) 'sss_time', tdays, sss_time(it2)*sec2day
   1       format(/,' SET_SSS - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
      &           2x,'TEND = ',g12.4)

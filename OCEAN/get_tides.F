@@ -82,15 +82,15 @@
 !test
         status=nf_inq_varid(ncidfrc,'tide_period',varid)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'id_tide_per',frcname(1:lstr)
+          write(STDOUT,3) 'id_tide_per',frcname(1:lstr)
           STOP
         endif
         status=nf_get_var(ncidfrc,varid,Tperiod)
 #  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'TIDE PERIODS',Tperiod
+        MPI_master_only write(STDOUT,*)'TIDE PERIODS',Tperiod
 #  endif
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_per',frcname(1:lstr)
+          write(STDOUT,3) 'tide_per',frcname(1:lstr)
           STOP
         endif
 # endif
@@ -104,7 +104,7 @@
           ind=itide
           l_presence(nu(itide))=.true.
 #  ifdef TIDES_MAS_DBG
-       MPI_master_only write(stdout,*)'tide ',itide,l,
+       MPI_master_only write(STDOUT,*)'tide ',itide,l,
      &   Tperiod(itide),
      &   trim(nommar(nu(itide))),l_presence(nu(itide))
 #  endif
@@ -121,7 +121,7 @@
         status=nf_inq_varid(ncidfrc,'tide_period',varid)
         status=nf_get_var1_FTYPE(ncidfrc,varid,itide,Tperiod(itide))
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_period',itide,frcname(1:lstr)
+          write(STDOUT,3) 'tide_period',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
         Tperiod(itide)=Tperiod(itide)*3600.
@@ -141,7 +141,7 @@
           call update_device(SSH_Tamp(:,:,itide))
 #endif
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Eamp',itide,frcname(1:lstr)
+          write(STDOUT,3) 'tide_Eamp',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
 
@@ -150,7 +150,7 @@
           do i=0,LOCALLM+1
         if (l_presence(nu(itide))
      &    .and. i+iminmpi-1 .eq. 1 .and. j+jminmpi-1 .eq. 149)
-     &         write(stdout,*),'SSH_TAMP',h(i,j),SSH_Tamp(i,j,itide)
+     &         write(STDOUT,*),'SSH_TAMP',h(i,j),SSH_Tamp(i,j,itide)
           enddo
         enddo
 #  endif
@@ -159,7 +159,7 @@
         status=nf_fread(SSH_Tphase(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Ephase',itide,frcname(1:lstr)
+          write(STDOUT,3) 'tide_Ephase',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
 #  ifndef TIDES_MAS
@@ -186,29 +186,29 @@
 !  Tidal currents angle, phase, major and minor ellipse axis.
 !
 #  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'write Cangle'
+        MPI_master_only write(STDOUT,*)'write Cangle'
 #  endif
         status=nf_inq_varid(ncidfrc,'tide_Cangle',varid)
         status=nf_fread(UV_Tangle(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Cangle',itide,frcname(1:lstr)
+          write(STDOUT,3) 'tide_Cangle',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
 
 #  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'write Cphase'
+        MPI_master_only write(STDOUT,*)'write Cphase'
 #  endif
         status=nf_inq_varid(ncidfrc,'tide_Cphase',varid)
         status=nf_fread(UV_Tphase(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Cphase',itide,frcname(1:lstr)
+          write(STDOUT,3) 'tide_Cphase',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
 
 #  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'write Cmax'
+        MPI_master_only write(STDOUT,*)'write Cmax'
 #  endif
         status=nf_inq_varid(ncidfrc,'tide_Cmax',varid)
         status=nf_fread(UV_Tmajor(START_2D_ARRAY,itide),
@@ -217,12 +217,12 @@
           call update_device(UV_Tmajor(:,:,itide))
 #endif
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Cmax',itide,frcname(1:lstr)
+          write(STDOUT,3) 'tide_Cmax',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
 
 #  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'write Cmin'
+        MPI_master_only write(STDOUT,*)'write Cmin'
 #  endif
         status=nf_inq_varid(ncidfrc,'tide_Cmin',varid)
         status=nf_fread(UV_Tminor(START_2D_ARRAY,itide),
@@ -231,7 +231,7 @@
           call update_device(UV_Tminor(:,:,itide))
 #endif
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Cmin',itide,frcname(1:lstr)
+          write(STDOUT,3) 'tide_Cmin',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
         do j=0,LOCALMM+1
@@ -256,14 +256,14 @@
           call update_device(POT_Tamp(:,:,itide))
 #endif
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Pamp',itide,frcname(1:lstr)
+          write(STDOUT,3) 'tide_Pamp',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
         status=nf_inq_varid(ncidfrc,'tide_Pphase',varid)
         status=nf_fread(POT_Tphase(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,itide,r2dvar)
         if (status.ne.NF_NOERR) then
-          write(6,3) 'tide_Pphase',itide,frcname(1:lstr)
+          write(STDOUT,3) 'tide_Pphase',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
         do j=0,LOCALMM+1
@@ -278,7 +278,7 @@
 
       enddo !Ntides
 # ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'NU TIDE',nu(1:Ntides)
+        MPI_master_only write(STDOUT,*)'NU TIDE',nu(1:Ntides)
 # endif
 # ifdef TIDES_MAS
       Tperiod=Tperiod*3600.0
@@ -294,7 +294,7 @@
   3   format(/,' GET_TIDES - unable to find forcing variable: ',A,
      &                          /,14x,'in forcing netCDF file: ',A)
       goto 99
-  4   write(stdout,5) frcname(1:lstr)
+  4   write(STDOUT,5) frcname(1:lstr)
   5   format(/,' GET_TIDES - unable to open forcing netCDF file:',
      &                                                        1x,A)
   6   format(/,' GET_TIDES - error while reading variable: ',A,2x,
