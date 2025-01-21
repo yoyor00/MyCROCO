@@ -148,6 +148,17 @@
                             "required": ["what", "by"]
                         }
                     },
+                    "patches_debug": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": ["array", "object"],
+                            "properties": {
+                                "what": {"type": "string"},
+                                "by": {"type": "string"}
+                            },
+                            "required": ["what", "by"]
+                        }
+                    },
                     "check_outputs": {
                         "type": "array",
                         "additionalProperties": {

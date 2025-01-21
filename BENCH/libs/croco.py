@@ -363,7 +363,10 @@ class Croco:
     def setup_case(self):
         # apply the case paches
         case_name = self.case_name
-        patches = self.case.get("patches", {})
+        if self.variant["tuning_fflags"] == "debug":
+            patches = self.case.get("patches_debug", {})
+        else:
+            patches = self.case.get("patches", {})
         cppkeys = self.case.get("cppkeys", {})
 
         # display
