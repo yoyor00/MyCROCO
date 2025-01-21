@@ -217,7 +217,7 @@
           elem_c(i,2) = - dt * Avm_abl(i,j,2) / Hzw_abl(2)
            !
           cff1  = cd_du(i,j)
-          cff2  = 0. !cd_du(i,j) * ( ssu(ji-1, jj) + ssu(ji,jj) )
+          cff2  = Cd_du(i,j) * 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
           elem_b(i,2) = Hzr_abl( 2 ) - elem_c(i,2) + dt * cff1
           u_abl(i,j,2,nt_a) = u_abl(i,j,2,nt_a)    + dt * cff2
            !++ Top Neumann B.C.
@@ -273,7 +273,7 @@
           elem_a(i,2) = 0.
           elem_c(i,2) = - dt * Avm_abl(i,j,2) / Hzw_abl(2)
           cff1        = cd_du(i,j)
-          cff2        = 0. !0.5_wp * pcd_du(ji, jj) * ( pssv(ji, jj) + pssv(ji, jj-1) ) * rn_vfac
+          cff2        = Cd_du(i, j) * 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
           elem_b(i,2) = Hzr_abl(2) - elem_c(i,2) + dt * cff1
           v_abl(i,j,2,nt_a) =  v_abl(i,j,2,nt_a) + dt * cff2
                   !++ Top Neumann B.C.
@@ -417,7 +417,9 @@
 !======================================================================
           cff        = rhoAir*rho0i
           uwnd_r     = u_abl(i,j,2,nt_a)
+     &               - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
           vwnd_r     = v_abl(i,j,2,nt_a)
+     &               - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
           sustr(i,j) = cff*Cd_du(i,j) * uwnd_r
           svstr(i,j) = cff*Cd_du(i,j) * vwnd_r
 # ifdef MASKING
