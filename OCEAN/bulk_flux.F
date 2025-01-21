@@ -207,9 +207,13 @@
           Q        = spec_hum (RH,psurf,TairC)
 # else
           uwnd_r   = u_abl(i,j,2,nt_n)
+#  ifndef KILPATRICK
      &             - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
+#  endif
           vwnd_r   = v_abl(i,j,2,nt_n)
+#  ifndef KILPATRICK
      &             - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
+#  endif
           wspd0    = SQRT ( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
           TairK    = tq_abl ( i,j,2,nt_n,jp_ta )
           TairC    = TairK - CtoK
