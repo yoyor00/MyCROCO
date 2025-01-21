@@ -139,10 +139,7 @@ test_bench_debug:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
-  before_script:
-    - cd $DATAREG ;
-    - tar -xf ForCI-INRIA.tar.gz ;
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -154,7 +151,7 @@ test_bench_debug:
       --rebuild \
       --host host_ci \
       --compare-to sequential-debug \
-      --data-root-path $DATAREG/ForCI-INRIA \
+      --data-root-path $DATAREG \
       --html \
       -N
     - |

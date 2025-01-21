@@ -2835,7 +2835,7 @@ MODULE sed_MUSTANG
     frvolgrv = frvolgrv + cv_sed(iv,k,i,j) / ros(iv)
   ENDDO
   frvolsangrv = frvolgrv + frvolsan
-  frmudsup = sommud / (somgrav + sommud + somsan)
+  frmudsup = sommud / (somgrav + sommud + somsan + epsilon_MUSTANG)
   
    IF (isand2 > 0 .AND. somsan > 0.0_rsh) THEN
      diamsan = MAX(diamsan / (somsan + epsilon_MUSTANG), diam_sed(isand2))

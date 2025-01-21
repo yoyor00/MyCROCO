@@ -116,8 +116,9 @@ class Croco:
                     reshape.append(f"+{key}")
                 else:
                     reshape.append(f"-{key}")
-            reshape_str = ",".join(reshape)
-            configure_cppkeys_options = f"--with-keys={reshape_str}"
+            if len(reshape) > 0:
+                reshape_str = ",".join(reshape)
+                configure_cppkeys_options = f"--with-keys={reshape_str}"
 
         # debug
         debug_option = ""
