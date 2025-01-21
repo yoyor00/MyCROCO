@@ -134,7 +134,7 @@ CONTAINS
        zprnut (:,:,:) =  0.65_wp          * r1_rday * tgfunc(:,:,:)
        zprmaxn(:,:,:)  = 0.65_wp * xq10_n * r1_rday * tgfunc(:,:,:)
        zprmaxd(:,:,:)  = 0.65_wp * xq10_d * r1_rday * tgfunc(:,:,:)
-       zprmaxp(:,:,:)  = 0.50_wp * xq10_p * r1_rday * tgfunc(:,:,:)
+       zprmaxp(:,:,:)  = 0.45_wp * xq10_p * r1_rday * tgfunc(:,:,:)
 
       ! Impact of the day duration and light intermittency on phytoplankton growth
       ! Intermittency is supposed to have a similar effect on production as 
@@ -582,9 +582,7 @@ CONTAINS
             tr(ji,jj,jk,jpsil,Krhs) = tr(ji,jj,jk,jpsil,Krhs) - zprodsil
 
             tr(ji,jj,jk,jpdic,Krhs) = tr(ji,jj,jk,jpdic,Krhs) - zpptot  &
-               &                     + xpsino3 * zpronewn + xpsinh4 * zproregn   &
-               &                     + xpsino3 * zpronewp + xpsinh4 * zproregp   &
-               &                     + xpsino3 * zpronewd + xpsinh4 * zproregd  
+               &                     + xpsino3 * zpnewtot + xpsinh4 * zpregtot
 
             tr(ji,jj,jk,jptal,Krhs) = tr(ji,jj,jk,jptal,Krhs) + rno3 * ( zpnewtot - zpregtot )
             !
@@ -900,9 +898,9 @@ CONTAINS
       texcretd  = 1._wp - excretd
       tpp       = 0._wp
       !
-      xq10_n = 1. + xpsino3 * qnnmax
-      xq10_d = 1. + xpsino3 * qndmax
-      xq10_p = 1. + xpsino3 * qnpmax
+      xq10_n = 1. + xpsinh4 * qnnmax
+      xq10_d = 1. + xpsinh4 * qndmax
+      xq10_p = 1. + xpsinh4 * qnpmax
       !
    END SUBROUTINE p5z_prod_init
 

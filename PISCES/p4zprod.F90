@@ -218,9 +218,9 @@ CONTAINS
                &     * tr(ji,jj,jk,jpsil,Kbb) &
                &     * tr(ji,jj,jk,jpsil,Kbb)
             IF (gphit(ji,jj) < -30 ) THEN
-              zsilfac = 1. + 2. * zsiborn / ( zsiborn + xksi2**3 )
+              zsilfac = 1. + 2. * zsiborn / ( zsiborn + xksi2_3 )
             ELSE
-              zsilfac = 1. +      zsiborn / ( zsiborn + xksi2**3 )
+              zsilfac = 1. +      zsiborn / ( zsiborn + xksi2_3 )
             ENDIF
             zratiosi = 1.0 - tr(ji,jj,jk,jpdsi,Kbb) &
                &     / ( tr(ji,jj,jk,jpdia,Kbb) + rtrn ) &

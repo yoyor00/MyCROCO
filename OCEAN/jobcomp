@@ -193,15 +193,19 @@ else
 	echo "Unknown Operating System"
 	exit
 fi
+
 # PISCES Business
 if $($CPP1 testkeys.F | grep -i -q p2zisdefined) ; then
- cp -f namelist_pisces_cfg_p2z  namelist_pisces_cfg
- cp -f namelist_pisces_cfg_p2z  namelist_pisces_cfg.1
+        echo "Simple version of PISCES is defined : copy the appropriate namelist"
+        \cp -f $RUNDIR/namelist_pisces_cfg_p2z  $RUNDIR/namelist_pisces_cfg
+        \cp -f $RUNDIR/namelist_pisces_cfg_p2z  $RUNDIR/namelist_pisces_cfg.1
 fi
 if $($CPP1 testkeys.F | grep -i -q p5zisdefined) ; then
- cp -f namelist_pisces_cfg_p5z  namelist_pisces_cfg
- cp -f namelist_pisces_cfg_p5z  namelist_pisces_cfg.1
+        echo "Quota version of PISCES is defined : copy the appropriate namelist"
+        \cp -f $RUNDIR/namelist_pisces_cfg_p5z  $RUNDIR/namelist_pisces_cfg
+        \cp -f $RUNDIR/namelist_pisces_cfg_p5z  $RUNDIR/namelist_pisces_cfg.1
 fi
+
 
 # Netcdf for netcdf.mod in F90
 FFLAGS1="$FFLAGS1 $NETCDFINC"

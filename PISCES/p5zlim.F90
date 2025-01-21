@@ -679,6 +679,8 @@ CONTAINS
       xpsinh4  = 1.8 * rno3
       xpsiuptk = 1.0 / 6.625
       !
+      xksi2_3 = xksi2 * xksi2 * xksi2
+      !
       rlogfactnp = LOG( 4.0 / 0.8 )
       rlogfactdp = LOG( 6.0 / 0.8 )
       !
