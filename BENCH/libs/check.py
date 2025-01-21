@@ -10,6 +10,7 @@
 from netCDF4 import Dataset
 import math
 import numpy
+from .helpers import Messaging
 
 
 ##########################################################
@@ -149,6 +150,7 @@ def recurse_compare_current_dim(
 
     # check size of the dim
     if shape_actual[dim_id] != shape_ref[dim_id]:
+        Messaging.step_error(f"Shape is not same in both file for '{varname}'")
         raise Exception(f"Shape is not same in both file for '{varname}'")
 
     # is last level
@@ -200,6 +202,7 @@ def compare_netcdf_variables(ref: Dataset, actual: Dataset, skiped=["hc"]) -> No
 
         # check has same shape
         if shape_ref != shape_actual:
+            Messaging.step_error(f"Shape is not the same for variable '{var}'")
             raise Exception(f"Shape is not the same for variable '{var}'")
 
         # skip strings

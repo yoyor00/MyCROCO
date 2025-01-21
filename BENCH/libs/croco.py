@@ -95,8 +95,15 @@ class Croco:
                 self.config.data_root_path, self.case["croco_files_path"]
             )
             if not (os.path.isdir(self.config.data_root_path)):
+                Messaging.step_error(
+                    "Folder data_root_path not found :  %s" % self.config.data_root_path
+                )
                 raise Exception("Folder not found : %s" % self.config.data_root_path)
+
             if not (os.path.isdir(self.input_dir)):
+                Messaging.step_error(
+                    "Folder for input data not found :  %s" % self.input_dir
+                )
                 raise Exception("Folder not found : %s" % self.input_dir)
             copy_tree_with_absolute_symlinks(self.input_dir, dirname)
 
@@ -402,6 +409,10 @@ class Croco:
         seq_dir = self.calc_rundir(variant_ref_name, case_name)
         seq_file = os.path.join(seq_dir, filename)
         if not os.path.exists(seq_file):
+            Messaging.step_error(
+                "Reference file does not exist, check you ran reference : %s "
+                % variant_ref_name
+            )
             raise Exception(
                 "Missing '%s', are you sure you ran case '%s' first to get a reference for checks ?"
                 % (seq_file, variant_ref_name)
@@ -423,6 +434,10 @@ class Croco:
         # error
         ref_file = f"{refdir}/{case_name}/{filename}"
         if not os.path.exists(ref_file):
+            Messaging.step_error(
+                "Reference file does not exist, check your reference directory : %s "
+                % refdir
+            )
             raise Exception(
                 f"Missing '%s', are you sure you ran case %s in reference directory %s ?"
                 % (ref_file, case_name, refdir)

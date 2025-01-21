@@ -21,6 +21,24 @@
 			"BULK_FLUX":true
 		},
 		"patches": {},
+		"patches_debug": {
+			// Change the dt
+			"TEST_CASES/croco.in.Regional": [{
+				"mode": "replace",
+				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+				"what":    "                3840      3600      60      1",
+				"by":      "                   6      3600      60      1",
+				"descr":   "Set stepping (steps=6, dt=900, fast=60)"
+			},{
+				"mode": "replace",
+				"after": "output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)",
+				"what":    "                   1       6       12",
+				"by":      "                   1       6       12",
+				"descr":   "Set dtout = 1h"
+			}]
+			
+
+		},
 		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
 	},
 	"BENGUELA_VHR_TIDES_BULK": {
@@ -50,36 +68,26 @@
 				"mode": "replace",
 				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                3840      3600      60      1",
-				"by":      "                120      900      60      1",
+				"by":      "                 120       900      60      1",
 				"descr":   "Set stepping (steps=120, dt=900, fast=60)"
 			}
 		},
-		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
-	},
-	"BENGUELA_VHR_TIDES_BULK_small": {
-		"title": "BENGUELA_VHR_TIDES_BULK_functionnal",
-		"case": "REGIONAL",
-		"croco_files_path": "VHR_CROCO_FILES_BCK",
-		"mpi": {
-			"4":  {"splitting": "2x2"},
-		},
-		"cppkeys": {
-			"TIDES": true,
-			"BENGUELA_LR": false,
-			"BENGUELA_VHR":true
-		},
-		"patches": {
+		"patches_debug": {
 			// Change the dt
-			"TEST_CASES/croco.in.Regional": {
+			"TEST_CASES/croco.in.Regional": [{
 				"mode": "replace",
 				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
 				"what":    "                3840      3600      60      1",
-				"by":      "                  3      900      60      1",
-				"descr":   "Set stepping (steps=3, dt=900, fast=60)"
-			}
+				"by":      "                   6       900      60      1",
+				"descr":   "Set stepping (steps=6, dt=900, fast=60)"
+			},{
+				"mode": "replace",
+				"after": "output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)",
+				"what":    "                   1       6       12",
+				"by":      "                  0.25     6       12",
+				"descr":   "Set dtout = 1h"
+			}]
 		},
 		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
-	}
-
-
+	},
 }
