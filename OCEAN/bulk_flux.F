@@ -79,7 +79,7 @@
       REAL            :: Cdn(2), Chn, Cen
 # endif
 # ifdef BULK_ECUMEV6
-      REAL            :: partn, parqn
+      REAL            :: Cdn(2), partn, parqn
 # endif
 # ifdef BULK_WASP
       INTEGER         :: idx
@@ -338,6 +338,7 @@
                 Wstar(m) = cdiru*(deltau10n(m)-utu) + ordou
               ENDIF
             ENDDO
+            Cdn(1:mb) = (Wstar(1:mb)/deltau10n(1:mb))**2.
 !++  Neutral parameter for temperature (ECUME_V6 formulation)
             IF (deltau10n(mb) <= utt) then
               partn = (coeft0+coeft1*deltau10n(mb))
