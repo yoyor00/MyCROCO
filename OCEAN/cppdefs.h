@@ -671,6 +671,10 @@
 */
 # undef  OPENMP
 # undef  MPI
+# undef STOGEN
+# ifdef STOGEN
+#  define STO_XI2D
+# endif
 # define UV_ADV
 # define UV_COR
 # define UV_VIS2
