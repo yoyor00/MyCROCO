@@ -61,6 +61,10 @@
 # ifdef NBQ
       real qdmw_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_qdmw_nbq/ qdmw_nbq
+ #  ifdef XIOS
+      real worknbq(GLOBAL_2D_ARRAY,0:N)
+      common /work3dnbq/ worknbq
+#  endif     
 # endif
 
 !**********************************************************************
