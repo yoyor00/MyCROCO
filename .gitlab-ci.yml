@@ -78,6 +78,7 @@ variables:
       mv /data/ForCI-INRIA/VHR_CROCO_FILES_BCK/CROCO_FILES . ;
       mv /data/ForCI-INRIA/DATA . ;
       # clean unneeded files and directories to have enough space left for tests
+      cd /data;
       rm ForCI-INRIA.tar.gz ;
       rm -R ForCI-INRIA
     fi   
