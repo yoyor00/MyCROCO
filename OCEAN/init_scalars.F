@@ -580,6 +580,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
 # endif /* PASSIVE_TRACER */
 
 # ifdef ABL1D
+      vname_abl1d(:,:) = '  '
       vname_abl1d(1,indxabl_pu_dta)='pu_dta                               '
       vname_abl1d(2,indxabl_pu_dta)='u-wind                               '
       vname_abl1d(3,indxabl_pu_dta)='m/s                                  '
@@ -816,7 +817,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(6,indxNO3)='lat_rho lon_rho                           '
       vname(7,indxNO3)='                                          '
 
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       vname(1,indxCAL)='CACO3                                     '
       vname(2,indxCAL)='Calcite                                   '
       vname(3,indxCAL)='umol C L-1                                '
@@ -857,13 +858,13 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(6,indxMES)='lat_rho lon_rho                           '
       vname(7,indxMES)='                                          '
 
-      vname(1,indxBSI)='BSI                                       '
-      vname(2,indxBSI)='Diatoms silicon                           '
-      vname(3,indxBSI)='umol Si L-1                               '
-      vname(4,indxBSI)='BSi, scalar, series                       '
-      vname(5,indxBSI)='                                          '
-      vname(6,indxBSI)='lat_rho lon_rho                           '
-      vname(7,indxBSI)='                                          '
+      vname(1,indxDSI)='DSI                                       '
+      vname(2,indxDSI)='Diatoms silicon                           '
+      vname(3,indxDSI)='umol Si L-1                               '
+      vname(4,indxDSI)='DSi, scalar, series                       '
+      vname(5,indxDSI)='                                          '
+      vname(6,indxDSI)='lat_rho lon_rho                           '
+      vname(7,indxDSI)='                                          '
 
       vname(1,indxBFE)='BFE                                       '
       vname(2,indxBFE)='Iron in big particles                     '
@@ -897,13 +898,13 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(6,indxDFE)='lat_rho lon_rho                           '
       vname(7,indxDFE)='                                          '
 
-      vname(1,indxDSI)='DSI                                       '
-      vname(2,indxDSI)='Biogenic silica                           '
-      vname(3,indxDSI)='umol Si L-1                               '
-      vname(4,indxDSI)='DSI, scalar, series                       '
-      vname(5,indxDSI)='                                          '
-      vname(6,indxDSI)='lat_rho lon_rho                           '
-      vname(7,indxDSI)='                                          '
+      vname(1,indxGSI)='GSI                                       '
+      vname(2,indxGSI)='Biogenic silica                           '
+      vname(3,indxGSI)='umol Si L-1                               '
+      vname(4,indxGSI)='GSI, scalar, series                       '
+      vname(5,indxGSI)='                                          '
+      vname(6,indxGSI)='lat_rho lon_rho                           '
+      vname(7,indxGSI)='                                          '
 
       vname(1,indxNFE)='NFE                                       '
       vname(2,indxNFE)='Iron in small particles                   '
@@ -4803,7 +4804,17 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molC/m3/s                                  '
         vname(4,indxbioFlux+Nironsed-1)=
      &     'Nironsed         , scalar, series          '
-#   if defined key_pisces_light
+
+        vname(1,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2                         '
+        vname(2,indxbioFlux+Npronewo2-1)=
+     &     'o2 production by the NP         '
+        vname(3,indxbioFlux+Npronewo2-1)=
+     &     'molC/m3/s                       '
+        vname(4,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2         , scalar, series'
+
+#   if defined key_pisces_npzd
         vname(1,indxbioFlux+Npronew-1)=
      &     'Thetanano                         '
         vname(2,indxbioFlux+Npronew-1)=
@@ -4867,15 +4878,6 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molFe/m3/s                      '
       vname(4,indxbioFlux+Nprofed-1)=
      &     'PFeD          , scalar, series  '
-
-        vname(1,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2                         '
-        vname(2,indxbioFlux+Npronewo2-1)=
-     &     'o2 production by the NP         '
-        vname(3,indxbioFlux+Npronewo2-1)=
-     &     'molC/m3/s                       '
-        vname(4,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2         , scalar, series'
 
         vname(1,indxbioFlux+Nprorego2-1)=
      &     'PPRego2                                    '
@@ -4984,7 +4986,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molN/m2/s                         '
       vname(4,indxbioVSink+Nnitrpot-1)=
      &     'Nfix            , scalar, series  '
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       vname(1,indxbioVSink+Nsinkfer-1)=
      &     'EPFE100                          '
       vname(2,indxbioVSink+Nsinkfer-1)=

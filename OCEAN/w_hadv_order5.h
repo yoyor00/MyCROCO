@@ -44,8 +44,8 @@
 #  else
                 WFe(i,j)=flx5
 #  endif /* MASKING */
-              ENDDO
             ENDDO
+          ENDDO
 
 !$acc loop independent
             DO j = Jstr,Jend+1  !j_loop_y_flux_5
@@ -53,8 +53,9 @@
                IF ( j.eq.jmin-2 ) THEN
                  WFe(i,j) = Hvom_w(i,j,k)*FLUX2(
      &             wz(i,j-1,k,nrhs), wz(i,j,k,nrhs), Hvom_w(i,j,k), cdif)
-               ELSE IF ( j.eq.jmin-1 .and. jmax.ge.jmin ) THEN  ! 3rd of 4th order flux 2 in
-                                                             ! from south boundary
+                                                               !
+              ELSE IF ( j.eq.jmin-1 .and. jmax.ge.jmin ) THEN  ! 3rd of 4th-order flux 2 in
+                                                               ! from south boundary
                 flx3 = Hvom_w(i,j,k)*FLUX3(
      &             wz(i,j-2,k,nrhs), wz(i,j-1,k,nrhs),
      &             wz(i,j  ,k,nrhs), wz(i,j+1,k,nrhs),  Hvom_w(i,j,k) )
@@ -71,8 +72,9 @@
                                           ! boundary
                 WFe(i,j) = Hvom_w(i,j,k)*FLUX2(
      &             wz(i,j-1,k,nrhs), wz(i,j,k,nrhs), Hvom_w(i,j,k), cdif)
-            ELSE IF ( j.eq.jmax+1 ) THEN  ! 3rd or 4th order flux 2 in from
-                                          ! north boundary
+                                            !
+              ELSE IF ( j.eq.jmax+1 ) THEN  ! 3rd or 4th order flux 2 in from
+                                            ! north boundary
                 flx3 = Hvom_w(i,j,k)*FLUX3(
      &             wz(i,j-2,k,nrhs), wz(i,j-1,k,nrhs),
      &             wz(i,j  ,k,nrhs), wz(i,j+1,k,nrhs),  Hvom_w(i,j,k) )
@@ -84,8 +86,8 @@
 #  else
                 WFe(i,j)=flx3
 #  endif
-               ENDIF
-              ENDDO
+              ENDIF
+            ENDDO
           ENDDO ! j_loop_y_flux_5
 !
 !----------------------------------------------------------------------
@@ -94,16 +96,16 @@
 !
           DO j = Jstr,Jend
 !$acc loop independent
-            DO i = max(Istr,imin),min(Iend+1,imax)  !i_loop_x_flux_5 use full stencil
-                flx5 = Huon_w(i,j,k)*FLUX5(
+            DO i = max(Istr,imin),min(Iend+1,imax)  ! i_loop_x_flux_5 use full stencil
+              flx5 = Huon_w(i,j,k)*FLUX5(
      &             wz(i-3,j,k,nrhs), wz(i-2,j,k,nrhs),
      &             wz(i-1,j,k,nrhs), wz(i  ,j,k,nrhs),
      &             wz(i+1,j,k,nrhs), wz(i+2,j,k,nrhs),  Huon_w(i,j,k) )
 #  ifdef MASKING
-                flx3 = Huon_w(i,j,k)*FLUX3(
+              flx3 = Huon_w(i,j,k)*FLUX3(
      &             wz(i-2,j,k,nrhs), wz(i-1,j,k,nrhs),
      &             wz(i  ,j,k,nrhs), wz(i+1,j,k,nrhs),  Huon_w(i,j,k) )
-                flx2 = Huon_w(i,j,k)*FLUX2(
+              flx2 = Huon_w(i,j,k)*FLUX2(
      &             wz(i-1,j,k,nrhs), wz(i,j,k,nrhs), Huon_w(i,j,k), cdif)
 #   ifdef UP5_MASKING
                 mask0=rmask(i-1,j)*rmask(i,j)
@@ -127,8 +129,8 @@
 #  else
                 WFx(i,j)=flx5
 #  endif /* MASKING */
-              ENDDO
             ENDDO
+          ENDDO
 
           DO j = Jstr,Jend
 !$acc loop independent
@@ -141,7 +143,7 @@
                                                              ! from south boundary
                 flx3 = Huon_w(i,j,k)*FLUX3(
      &             wz(i-2,j,k,nrhs), wz(i-1,j,k,nrhs),
-     &             wz(i  ,j,k,nrhs), wz(i+1,j,k,nrhs),  Huon_w(i,j,k) )
+     &             wz(i  ,j,k,nrhs), wz(i+1,j,k,nrhs), Huon_w(i,j,k) )
 #  ifdef MASKING
                 flx2 = Huon_w(i,j,k)*FLUX2(
      &             wz(i-1,j,k,nrhs), wz(i,j,k,nrhs), Huon_w(i,j,k), cdif)
@@ -156,9 +158,9 @@
                 WFx(i,j) = Huon_w(i,j,k)*FLUX2(
      &             wz(i-1,j,k,nrhs), wz(i,j,k,nrhs), Huon_w(i,j,k), cdif)
 
-                                          !
-            ELSE IF ( i.eq.imax+1 ) THEN  ! 3rd or 4th order flux 2 in from
-                                          ! north boundary
+                                            !
+              ELSE IF ( i.eq.imax+1 ) THEN  ! 3rd or 4th order flux 2 in from
+                                            ! north boundary
                 flx3 = Huon_w(i,j,k)*FLUX3(
      &             wz(i-2,j,k,nrhs), wz(i-1,j,k,nrhs),
      &             wz(i  ,j,k,nrhs), wz(i+1,j,k,nrhs),  Huon_w(i,j,k) )
@@ -170,6 +172,6 @@
 #  else
                 WFx(i,j)=flx3
 #  endif
-            ENDIF
-          ENDDO ! i_loop_x_flux_5
+              ENDIF
+            ENDDO ! i_loop_x_flux_5
           ENDDO

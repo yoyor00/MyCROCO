@@ -40,11 +40,11 @@
       END
 
 !======================================================================
-
-      SUBROUTINE rhs3d_w_tile (istr, iend,   jstr,   jend, rw ,
-     &                           CF,   FC,  We_r ,    lap, Hzw,
-     &                          HUon_w, HVom_w,
-     &                          WFx, WFe)
+      
+      SUBROUTINE rhs3d_w_tile (istr, iend, jstr, jend, rw,
+     &                         CF, FC, We_r, lap, Hzw,
+     &                         HUon_w, HVom_w,
+     &                         WFx, WFe)
       IMPLICIT NONE
       !!
       INTEGER  :: Istr,Iend,Jstr,Jend

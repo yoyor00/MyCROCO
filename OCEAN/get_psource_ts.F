@@ -376,7 +376,7 @@ c     goto 99                                     !--> ERROR
      &                                                  qbarname(1:lstr)
 c     goto 99           !--> ERROR
             endif
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
           elseif (itrc.eq.iCAL_) then
             got_tsrc(itrc)=.true.
             ierr=nf_inq_varid (ncidqbar, 'cal_src_time',
@@ -426,7 +426,7 @@ c     goto 99                                     !--> ERROR
      &             qbarname(1:lstr)
 c     goto 99                                     !--> ERROR
             endif
-          elseif (itrc.eq.iBSI_) then
+          elseif (itrc.eq.iDSI_) then
             got_tsrc(itrc)=.true.
             ierr=nf_inq_varid (ncidqbar, 'bsi_src_time',
      &           tsrc_tid(itrc))
@@ -476,7 +476,7 @@ c     goto 99                                     !--> ERROR
      &              qbarname(1:lstr)
 c     goto 99                                     !--> ERROR
             endif
-          elseif (itrc.eq.iDSI_) then
+          elseif (itrc.eq.iGSI_) then
             got_tsrc(itrc)=.true.
             ierr=nf_inq_varid (ncidqbar, 'dsi_src_time',
      &           tsrc_tid(itrc))

@@ -906,9 +906,7 @@
 # define key_noTSdiss_insed
 # define key_nofluxwat_IWS
 #endif /* MUSTANG */
-#ifdef SUBSTANCE
-# define key_CROCO
-#endif
+
 
 /*
 ======================================================================
@@ -930,9 +928,6 @@
 #endif
 #if defined SEDIMENT || defined MUSTANG
 # undef ANA_MORPHODYN
-#endif
-#if defined MORPHODYN && defined MUSTANG
-# define MORPHODYN_MUSTANG_byHYDRO
 #endif
 #if defined MORPHODYN && defined NBQ
 # define NBQ_FREESLIP
