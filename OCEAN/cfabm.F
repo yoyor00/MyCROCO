@@ -9,9 +9,9 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined BIOLOGY && defined BIO_NPZD_FRANKS
+#if defined BIOLOGY && defined CFABM
 
-      subroutine biology_tile (Istr,Iend,Jstr,Jend)
+      subroutine biology_tile (Istr,Iend,Jstr,Jend,trd)
 !
 ! Compute biological forcing functions
 !
@@ -22,7 +22,7 @@
         use fabm_config
 
         implicit none
-        integer Istr,Iend,Jstr,Jend
+        integer Istr,Iend,Jstr,Jend,trd
 # include "param.h"
 # include "grid.h"
 # include "ocean3d.h"
@@ -101,12 +101,12 @@
 !Link environmental data to FABM (for variables that must be relinked for each time step since nnew varies)
 !Note: We cannot use variable_needs_values to parse these calls, since these will return
 !      .false. after the first linking calls in roms_fabm.F.
-      IF (FMODEL%needsT(tile)) THEN
-        CALL FMODEL%f(tile)%model%link_interior_data(               &
-      &                    FMODEL%id_temp(tile),                     &
+      IF (FMODEL%needsT(trd)) THEN
+        CALL FMODEL%f(trd)%model%link_interior_data(               &
+      &                    FMODEL%id_temp(trd),                     &
       &                    t(Istr:Iend,Jstr:Jend,1:N,nnew,1))
       END IF
-      IF (FMODEL%needsS(tile)) THEN
+      IF (FMODEL%needsS(trd)) THEN
       #ifdef FABM_NONNEG_S
         DO k=1,N
           DO j=J_RANGE
@@ -115,12 +115,12 @@
             END DO
           END DO
         END DO
-        CALL FMODEL%f(tile)%model%link_interior_data(               &
-      &                    FMODEL%id_salt(tile),                     &
+        CALL FMODEL%f(trd)%model%link_interior_data(               &
+      &                    FMODEL%id_salt(trd),                     &
       &                    Snn(Istr:Iend,Jstr:Jend,1:N))
       #else      
-        CALL FMODEL%f(tile)%model%link_interior_data(               &
-      &                    FMODEL%id_salt(tile),                     &
+        CALL FMODEL%f(trd)%model%link_interior_data(               &
+      &                    FMODEL%id_salt(trd),                     &
       &                    t(Istr:Iend,Jstr:Jend,1:N,nnew,2))
       #endif
       END IF
@@ -128,12 +128,12 @@
 ! Relink surface/bottom state data as required (due to variable nnew).
 !-----------------------------------------------------------------------
       DO itrc=1,NSAT
-        CALL FMODEL%f(tile)%model%link_surface_state_data(          &
+        CALL FMODEL%f(trd)%model%link_surface_state_data(          &
      &           itrc,state_sf(Istr:Iend,Jstr:Jend,nnew,itrc))
       END DO
 
       DO itrc=1,NBAT
-        CALL FMODEL%f(tile)%model%link_bottom_state_data(           &
+        CALL FMODEL%f(trd)%model%link_bottom_state_data(           &
      &           itrc,state_bt(Istr:Iend,Jstr:Jend,nnew,itrc))
       END DO
 !-----------------------------------------------------------------------------------
@@ -163,19 +163,19 @@
 #ifdef FABM_CHECK_STATE
       DO j1=1,ny
         DO k=1,N
-          CALL FMODEL%f(tile)%model%check_interior_state(1,nx,j1, &
+          CALL FMODEL%f(trd)%model%check_interior_state(1,nx,j1, &
      &        k,repair,valid_int)   !This will cap state1(Istr:Iend,Jstr+j1,k,1:NBT)
         END DO
       END DO
       IF (NSAT.gt.0) THEN
         DO j1=1,ny
-          CALL FMODEL%f(tile)%model%check_surface_state(1,nx,j1,  &
+          CALL FMODEL%f(trd)%model%check_surface_state(1,nx,j1,  &
      &        repair,valid_sf)      !This will cap state_sf(Istr:Iend,Jstr+j1,nnew,1:NSAT)
         END DO
       END IF
       IF (NBAT.gt.0) THEN
         DO j1=1,ny
-          CALL FMODEL%f(tile)%model%check_bottom_state(1,nx,j1,   &
+          CALL FMODEL%f(trd)%model%check_bottom_state(1,nx,j1,   &
      &        repair,valid_bt)      !This will cap state_bt(Istr:Iend,Jstr+j1,nnew,1:NBAT)
         END DO
       END IF
@@ -183,7 +183,7 @@
 !-----------------------------------------------------------------------
 !  Prepare all fields FABM needs to compute SMS terms (e.g., light)
 !-----------------------------------------------------------------------
-      CALL FMODEL(ng)%f(tile)%model%prepare_inputs()
+      CALL FMODEL%f(trd)%model%prepare_inputs()
 !
 !
 !      dtdays=dt/(24.*3600.*float(ITERMAX))  ! time step as fraction of day.
@@ -252,7 +252,7 @@
 !  Store the old interior state.
 !-----------------------------------------------------------------------
         DO itrc=1,NBT
-          DO k=1,N(ng)
+          DO k=1,N
             DO i=I_RANGE
               state_old(i,k,itrc)=state1(i,j,k,itrc)
             END DO
@@ -261,9 +261,9 @@
 !-----------------------------------------------------------------------
 !  Generate SMS terms for pelagic variables
 !-----------------------------------------------------------------------
-        DO k=1,N(ng)
+        DO k=1,N
           dBdt(Istr:Iend,k,1:NBT)=0.
-          CALL FMODEL(ng)%f(tile)%model%get_interior_sources(1,nx,j1,k, &
+          CALL FMODEL%f(trd)%model%get_interior_sources(1,nx,j1,k, &
      &                                        dBdt(Istr:Iend,k,1:NBT))
 !Note: the biological tracer indices idbio range over (NAT+NPT+NCS+NNS)+1:NT = NT-NBT+1:NT, see rfabm_mod.h
         END DO
@@ -273,7 +273,7 @@
         flux_sf = 0.
         sms_sf = 0.
         !Note: surface fluxes may still be needed even if NSAT = 0
-        CALL FMODEL(ng)%f(tile)%model%get_surface_sources(1,nx,j1,      &
+        CALL FMODEL%f(trd)%model%get_surface_sources(1,nx,j1,      &
      &         flux_sf(Istr:Iend,1:NBT),sms_sf(Istr:Iend,1:NSAT))
 !-----------------------------------------------------------------------
 !  Generate bottom fluxes and SMS terms for bottom-attached variables
@@ -281,7 +281,7 @@
         flux_bt = 0.
         sms_bt = 0.
         !Note: bottom fluxes may still be needed even if NBAT = 0
-        CALL FMODEL(ng)%f(tile)%model%get_bottom_sources(1,nx,j1,       &
+        CALL FMODEL%f(trd)%model%get_bottom_sources(1,nx,j1,       &
      &        flux_bt(Istr:Iend,1:NBT),sms_bt(Istr:Iend,1:NBAT))
 !-----------------------------------------------------------------------
 !  Add contributions from surface and bottom fluxes
@@ -339,7 +339,7 @@
 !  Get vertical sinking velocities from FABM
 !-----------------------------------------------------------------------
         DO k=1,N
-          CALL FMODEL%f(tile)%model%get_vertical_movement(          &
+          CALL FMODEL%f(trd)%model%get_vertical_movement(          &
      &           1,nx,j1,k,wSB(Istr:Iend,k,NT-NBT+1:NT))
         END DO
 !        wSB(Istr:Iend,1:N,NT-NBT+1:NT) = -1*                  &

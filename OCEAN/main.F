@@ -48,6 +48,9 @@
 #ifdef RVTK_DEBUG
       use debug
 #endif
+#ifdef CFABM
+          USE croco_fabm           ! FABM Biology coupler modue
+#endif
 #ifdef OPENACC
       use openacc
 #endif
@@ -414,6 +417,17 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call ana_initial (tile)
       enddo
+!
+!----------------------------------------------------------------------
+!  Initialize FABM biology coupler variables
+!----------------------------------------------------------------------
+!
+#if defined BIOLOGY && defined CFABM
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+            call  croco_fabm_init (tile)
+      enddo
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialize specific PISCES variables

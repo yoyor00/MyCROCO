@@ -31,6 +31,9 @@
 #  ifdef OPENACC
      &   ,A3d(1,2,trd),A3d(1,3,trd),A3d(1,4,trd),A3d(1,5,trd)
 #  endif
+#  ifdef CFABM
+     &   ,trd
+#  endif
      &                            )
 # endif /* TRACERS */      
       return
@@ -795,10 +798,12 @@
 !======================================================================
 !
 #  ifdef BIOLOGY
-      call biology_tile (Istr,Iend,Jstr,Jend)
+      call biology_tile (Istr,Iend,Jstr,Jend
+#  ifdef CFABM
+     &                  ,trd
 #  endif
-
-
+     &                  )
+#  endif
 !
 !======================================================================
 !  Compute inverse vertical Rho gradients for use in t3dmix

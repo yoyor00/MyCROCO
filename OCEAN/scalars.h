@@ -31,13 +31,23 @@
 ! tdays       Time since initialization [days];
 ! dt          Time step for 3D primitive equations [seconds];
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
+#ifdef CFABM
+! nFABM         No of FABM time steps per baroclinic time step
+! dtFABM        FABM time step (s) = nFABM * dt
+#endif
 !
       real dt, dtfast, time, time2, time_start, tdays, start_time
+#ifdef CFABM
+     &      , dtFABM
+#endif
 #ifdef USE_CALENDAR
       real time_mars, time_end
       character*19 date, end_date, start_date
 #endif
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
+#ifdef CFABM
+     &      , nFABM
+#endif
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
 #endif
@@ -57,6 +67,9 @@
       common /time_indices/  dt,dtfast, time, time2,time_start, tdays,
      &     ndtfast, iic, kstp, krhs, knew, next_kstp,
      &     start_time,
+#ifdef CFABM
+     &                       dtFABM, nFABM,
+#endif
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif

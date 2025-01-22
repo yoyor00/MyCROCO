@@ -80,6 +80,13 @@
       common /ocean_AOU/AOU
       real wind10(GLOBAL_2D_ARRAY)
       common /ocean_wind10/wind10
+#  elif defined CFABM
+      real state1(GLOBAL_2D_ARRAY,N)
+      real state_sf(GLOBAL_2D_ARRAY)
+      real state_bt(GLOBAL_2D_ARRAY)
+      common /ocean_state1/state1
+      common /ocean_state_sf/state_sf
+      common /ocean_state_bt/state_bt
 #  endif
 # endif  /* BIOLOGY */
 

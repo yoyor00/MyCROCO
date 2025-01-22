@@ -31,6 +31,8 @@
       integer nbtrc
 # if defined PISCES
       parameter(nbtrc = 9)
+# elif defined CFABM
+      parameter(nbtrc = NBT)
 # else
       parameter(nbtrc = 4)
 # endif
@@ -76,6 +78,10 @@
       my_itrc(7)=iDOC_
       my_itrc(8)=iNO3_
       my_itrc(9)=iFer_
+# elif defined CFABM
+      do itrc=0,nbtrc-1
+        my_itrc(itrc)=ibio+itrc
+      enddo
 # endif
 
       if (mod(iic-1,ninfo).eq.0) then
@@ -184,17 +190,16 @@ C$OMP CRITICAL (bio_cr_rgn)
      &                   '      NO3','     FER ', 'trd'
    1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,4x,
      &               A10,4x,A10,4x,A10,4x,A10,4x,A10,4x,3x,A30)
+# elif defined PISCES
+              write(stdout,1) 'STEP','time[DAYS]','       DIC',
+      &                   '      ALK','     OXY ', '   POC',
+      &                   '      PHY','     ZOO ', '   DOC',
+      &                   '      NO3','     FER ', 'trd'
+   1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,4x,
+      &               A10,4x,A10,4x,A10,4x,A10,4x,A10,4x,3x,A30)
 # endif
             endif
-# if ! defined PISCES
-            write(stdout,2) iic-1,tdays,
-     &                      global_sum(1),
-     &                      global_sum(2),
-     &                      global_sum(3),
-     &                      global_sum(4)
-     &                    , trd
-   2        format(I6, F12.5, 4(1PE14.7), I3)
-# else
+# if defined PISCES
             write(stdout,2) iic-1,tdays,
      &                      global_sum(1),
      &                      global_sum(2),
@@ -207,6 +212,16 @@ C$OMP CRITICAL (bio_cr_rgn)
      &                      global_sum(9),
      &                      trd
    2        format(I6, F12.5, 9(1PE14.7), I3)
+# elif defined CFABM
+            do 
+# else
+            write(stdout,2) iic-1,tdays,
+     &                      global_sum(1),
+     &                      global_sum(2),
+     &                      global_sum(3),
+     &                      global_sum(4)
+     &                    , trd
+   2        format(I6, F12.5, 4(1PE14.7), I3)
 # endif
 # ifdef MPI
             endif    ! <-- mynode.eq.0
