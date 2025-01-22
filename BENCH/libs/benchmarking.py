@@ -158,6 +158,9 @@ class Benchmarking:
                 output_file=os.path.join(self.config.results, "treeview.html"),
             )
 
+        if self.config.report.contains_false():
+            Messaging.step_error("Error : False detect in report")
+
     def dump_bench_infos(self):
         # dump bench infos
         Messaging.section("Dumping system infos")

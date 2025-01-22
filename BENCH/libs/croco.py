@@ -96,8 +96,15 @@ class Croco:
                 self.config.data_root_path, self.case["croco_files_path"]
             )
             if not (os.path.isdir(self.config.data_root_path)):
+                Messaging.step_error(
+                    "Folder data_root_path not found :  %s" % self.config.data_root_path
+                )
                 raise Exception("Folder not found : %s" % self.config.data_root_path)
+
             if not (os.path.isdir(self.input_dir)):
+                Messaging.step_error(
+                    "Folder for input data not found :  %s" % self.input_dir
+                )
                 raise Exception("Folder not found : %s" % self.input_dir)
             copy_tree_with_absolute_symlinks(self.input_dir, dirname)
 
@@ -117,8 +124,9 @@ class Croco:
                     reshape.append(f"+{key}")
                 else:
                     reshape.append(f"-{key}")
-            reshape_str = ",".join(reshape)
-            configure_cppkeys_options = f"--with-keys={reshape_str}"
+            if len(reshape) > 0:
+                reshape_str = ",".join(reshape)
+                configure_cppkeys_options = f"--with-keys={reshape_str}"
 
 
         # debug
@@ -184,6 +192,7 @@ class Croco:
                 self.config.report.report_status(
                     self.case_name, self.variant_name, "build", False, str(e)
                 )
+                return
         else:
             self.build_internal(extra_info, force_rebuild)
         self.config.report.report_status(
@@ -466,7 +475,10 @@ class Croco:
     def setup_case(self):
         # apply the case paches
         case_name = self.case_name
-        patches = self.case.get("patches", {})
+        if self.variant["tuning_fflags"] == "debug":
+            patches = self.case.get("patches_debug", {})
+        else:
+            patches = self.case.get("patches", {})
         cppkeys = self.case.get("cppkeys", {})
 
         # all this part to me moves somewhere
@@ -544,6 +556,10 @@ class Croco:
         seq_dir = self.calc_rundir(variant_ref_name, case_name)
         seq_file = os.path.join(seq_dir, filename)
         if not os.path.exists(seq_file):
+            Messaging.step_error(
+                "Reference file does not exist, check you ran reference : %s "
+                % variant_ref_name
+            )
             raise Exception(
                 "Missing '%s', are you sure you ran case '%s' first to get a reference for checks ?"
                 % (seq_file, variant_ref_name)
@@ -565,6 +581,10 @@ class Croco:
         # error
         ref_file = f"{refdir}/{case_name}/{filename}"
         if not os.path.exists(ref_file):
+            Messaging.step_error(
+                "Reference file does not exist, check your reference directory : %s "
+                % refdir
+            )
             raise Exception(
                 f"Missing '%s', are you sure you ran case %s in reference directory %s ?"
                 % (ref_file, case_name, refdir)
@@ -584,6 +604,7 @@ class Croco:
                 self.config.report.report_status(
                     self.case_name, self.variant_name, "check", False, str(e)
                 )
+                return
         else:
             self.check_one_file_internal(filename)
 
@@ -629,7 +650,7 @@ class Croco:
 
             try:
                 subprocess.run(command, check=True)  # Exécute la commande
-                print(
+                Messaging.step(
                     "Successfully executed %s with arguments --no-show --makepng"
                     % self.plot_diag_script
                 )
@@ -638,7 +659,9 @@ class Croco:
                     self.case_name, self.variant_name, "plotphy", True
                 )
             except subprocess.CalledProcessError as e:
-                print(f"Error during execution of {self.plot_diag_script}: {e}")
+                Messaging.step_error(
+                    f"Error during execution of {self.plot_diag_script}: {e}"
+                )
                 self.config.report.report_status(
                     self.case_name, self.variant_name, "plotphy", False, str(e)
                 )
