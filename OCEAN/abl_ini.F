@@ -185,8 +185,8 @@
 # ifdef EXACT_RESTART
       lstr=lenstr(ininame)
       ierr=nf_open(ininame(1:lstr), nf_nowrite, ncid)
-      lvar=lenstr(vname(1,indxabl_u_abl))
-      ierr=nf_inq_varid (ncid, vname(1,indxabl_u_abl)(1:lvar), varid)
+      lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_u_abl)(1:lvar), varid)
 # else
       ierr=nf_noerr+1
 # endif

@@ -393,7 +393,7 @@
         ierr=nf_put_att_text (ncid, rstAblU, 'field',     lvar,
      &                                  vname_abl1d(4,indxabl_u_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblU, indxabl_u_abl, 5,
+        call nf_add_attribute(ncid, rstAblU, vname_abl1d(:,indxabl_u_abl), 5,
      &                        NF_DOUBLE, ierr)
 !
 ! 3D ABL V
@@ -414,7 +414,7 @@
         ierr=nf_put_att_text (ncid, rstAblV, 'field',     lvar,
      &                                  vname_abl1d(4,indxabl_v_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblV, indxabl_v_abl, 5,
+        call nf_add_attribute(ncid, rstAblV, vname_abl1d(:,indxabl_v_abl), 5,
      &                        NF_DOUBLE, ierr)
 !
 ! 3D ABL T
@@ -435,7 +435,7 @@
         ierr=nf_put_att_text (ncid, rstAblT, 'field',     lvar,
      &                                  vname_abl1d(4,indxabl_t_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblT, indxabl_t_abl, 5,
+        call nf_add_attribute(ncid, rstAblT, vname_abl1d(:,indxabl_t_abl), 5,
      &                        NF_DOUBLE, ierr)
 !
 ! 3D ABL Q
@@ -456,7 +456,7 @@
         ierr=nf_put_att_text (ncid, rstAblQ, 'field',     lvar,
      &                                  vname_abl1d(4,indxabl_q_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblQ, indxabl_q_abl, 5,
+        call nf_add_attribute(ncid, rstAblQ, vname_abl1d(:,indxabl_q_abl), 5,
      &                        NF_DOUBLE, ierr)
 !
 ! 3D ABL TKE
@@ -498,7 +498,7 @@
         ierr=nf_put_att_text (ncid, rstAblAvm, 'field',     lvar,
      &                                  vname_abl1d(4,indxabl_avm_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblAvm, indxabl_avm_abl, 5,
+        call nf_add_attribute(ncid, rstAblAvm, vname_abl1d(:,indxabl_avm_abl), 5,
      &                        NF_DOUBLE, ierr)   
 !
 ! 3D ABL AVT
@@ -519,7 +519,7 @@
         ierr=nf_put_att_text (ncid, rstAblAvt, 'field',     lvar,
      &                                  vname_abl1d(4,indxabl_avt_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblAvt, indxabl_avt_abl, 5,
+        call nf_add_attribute(ncid, rstAblAvt, vname_abl1d(:,indxabl_avt_abl), 5,
      &                        NF_DOUBLE, ierr)            
 !
 ! 3D ABL MXLD
@@ -540,7 +540,7 @@
         ierr=nf_put_att_text (ncid, rstAblMxld, 'field',     lvar,
      &                                  vname_abl1d(4,indxabl_mxld_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblMxld, indxabl_mxld_abl, 5,
+        call nf_add_attribute(ncid, rstAblMxld, vname_abl1d(:,indxabl_mxld_abl), 5,
      &                        NF_DOUBLE, ierr)   
 !
 ! 3D ABL MXLM
@@ -561,7 +561,7 @@
         ierr=nf_put_att_text (ncid, rstAblMxlm, 'field',     lvar,
      &                                  vname_abl1d(4,indxabl_mxlm_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblMxlm, indxabl_mxlm_abl, 5,
+        call nf_add_attribute(ncid, rstAblMxlm, vname_abl1d(:,indxabl_mxlm_abl), 5,
      &                        NF_DOUBLE, ierr)           
 !
 ! 2D ABL ABLH
@@ -582,7 +582,7 @@
         ierr=nf_put_att_text (ncid, rstAblAblh, 'field',     lvar,
      &                                  vname_abl1d(4,indxabl_ablh_abl)(1:lvar))
 
-        call nf_add_attribute(ncid, rstAblAblh, indxabl_ablh_abl, 5,
+        call nf_add_attribute(ncid, rstAblAblh, vname_abl1d(:,indxabl_ablh_abl), 5,
      &                        NF_DOUBLE, ierr)        
 #endif
 
