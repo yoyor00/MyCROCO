@@ -71,11 +71,12 @@ variables:
       export DATAREG=${DATAREG_LOCAL} ;
       echo "Use of local data " $DATAREG ;
     else  
+      cd /data;
+      tar -xf ForCI-INRIA.tar.gz ;
       mkdir -p $DATAREG ;
       cd $DATAREG ;
-      tar -xf ForCI-INRIA.tar.gz ;
-      mv ForCI-INRIA/VHR_CROCO_FILES_BCK/CROCO_FILES . ;
-      mv ForCI-INRIA/DATA . ;
+      mv /data/ForCI-INRIA/VHR_CROCO_FILES_BCK/CROCO_FILES . ;
+      mv /data/ForCI-INRIA/DATA . ;
       # clean unneeded files and directories to have enough space left for tests
       rm ForCI-INRIA.tar.gz ;
       rm -R ForCI-INRIA
