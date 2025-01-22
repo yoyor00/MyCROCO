@@ -9,6 +9,24 @@
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BUILD_DIR})
 
 ###########################################################
+# copy sources to intermediate source dir
+list(APPEND CROCO_SRC_PATTERNS
+  *.F
+  *.F90
+  *.h
+  *.py
+  amr.in
+  ../XIOS/*.F
+  ../PISCES/*
+  ../PISCES/LIB/*
+  ../PISCES/SED/*
+  ../PISCES/kRGB61*
+  ../MUSTANG/*
+  ../OBSTRUCTION/*)
+
+croco_copy_sources(CROCO_SRC_PATTERNS)
+
+###########################################################
 # generate config.h
 configure_file(config.h.in config.h)
 configure_file(config_post.h.in config_post.h)
@@ -23,12 +41,12 @@ set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS}
                             -DHAVE_CMAKE_CONFIG_CPPDEF_EDIT
                             -DHAVE_CMAKE_CONFIG_OVERRIDE
                             -I${NETCDFF_INCLUDE_DIR}
-                            -I${CMAKE_CURRENT_SOURCE_DIR}
+                            -I${CROCO_SOURCE_DIR}
                             -I${CMAKE_CURRENT_BINARY_DIR}
                             -I${CMAKE_BINARY_DIR}
-                            -I${CMAKE_CURRENT_SOURCE_DIR}/include
-                            -I${CMAKE_CURRENT_SOURCE_DIR}/netcdf
-                            -I${CMAKE_CURRENT_SOURCE_DIR}/config
+                            -I${CROCO_SOURCE_DIR}/include
+                            -I${CROCO_SOURCE_DIR}/netcdf
+                            -I${CROCO_SOURCE_DIR}/config
 )
 if (MPI_FOUND)
 	set(CROCO_FORTRAN_CPP_FLAGS ${CROCO_FORTRAN_CPP_FLAGS} -I${MPI_INCLUDE_DIR})
@@ -194,7 +212,7 @@ list(APPEND CROCO_SRCS_F77 zoom.F
                            Agrif2Model.F
 )
 # 17) XIOS routines
-list(APPEND CROCO_SRCS_F77 ../XIOS/send_xios_diags.F)
+list(APPEND CROCO_SRCS_F77 send_xios_diags.F)
 # 18) OASIS coupling interface
 list(APPEND CROCO_SRCS_F77 cpl_prism_define.F
                            cpl_prism_put.F
@@ -203,7 +221,7 @@ list(APPEND CROCO_SRCS_F77 cpl_prism_define.F
                            cpl_prism_getvar.F
                            cpl_prism_grid.F
 )
-list(APPEND CROCO_SRCS_F77 ../MUSTANG/module_substance.F ../MUSTANG/module_MUSTANG.F)
+list(APPEND CROCO_SRCS_F77 module_substance.F module_MUSTANG.F)
 
 list(APPEND CROCO_SRCS_F77 online_spectral_diags.F
                            var3d_oa_out.F
@@ -231,63 +249,59 @@ list(APPEND CROCO_SRC_F90 tooldatosec.F90
                           tooldecompdat.F90
                           tooldatetosec.F90
                           )
-# Pices files
-list(APPEND CROCO_SRCS_F90 ../PISCES/p2zlim.F90 ../PISCES/p2zmicro.F90 ../PISCES/p2zmort.F90
-                           ../PISCES/p2zprod.F90 ../PISCES/p4zagg.F90 ../PISCES/p4zbc.F90
-                           ../PISCES/p4zbio.F90 ../PISCES/p4zche.F90 ../PISCES/p4zdiaz.F90
-                           ../PISCES/p4zfechem.F90 ../PISCES/p4zflx.F90 ../PISCES/p4zint.F90
-                           ../PISCES/p4zligand.F90 ../PISCES/p4zlim.F90 ../PISCES/p4zlys.F90
-                           ../PISCES/p4zmeso.F90 ../PISCES/p4zmicro.F90 ../PISCES/p4zmort.F90
-                           ../PISCES/p4zopt.F90 ../PISCES/p4zpoc.F90 ../PISCES/p4zprod.F90
-                           ../PISCES/p4zrem.F90 ../PISCES/p4zsed.F90 ../PISCES/p4zsink.F90
-                           ../PISCES/p4zsms.F90 ../PISCES/p5zlim.F90 ../PISCES/p5zmeso.F90
-                           ../PISCES/p5zmicro.F90 ../PISCES/p5zmort.F90 ../PISCES/p5zprod.F90
-                           ../PISCES/par_pisces.F90 ../PISCES/pisces_ini.F90 ../PISCES/sms_pisces.F90
-                           ../PISCES/trc.F90 ../PISCES/trcini_pisces.F90 ../PISCES/trcnam_pisces.F90
-                           ../PISCES/trcsink.F90 ../PISCES/trcsms_pisces.F90 ../PISCES/trcwri_pisces.F90
-                           ../PISCES/LIB/in_out_manager.F90 ../PISCES/LIB/iom.F90 ../PISCES/LIB/lib_mpp.F90
-                           ../PISCES/LIB/oce_trc.F90 ../PISCES/LIB/prtctl.F90
-                           ../PISCES/SED/oce_sed.F90 ../PISCES/SED/sedadv.F90
-                           ../PISCES/SED/seddsr.F90 ../PISCES/SED/sedini.F90
-                           ../PISCES/SED/sedmat.F90 ../PISCES/SED/sedsfc.F90
-                           ../PISCES/SED/setavg_sed.F90 ../PISCES/SED/par_sed.F90
-                           ../PISCES/SED/sedbtb.F90 ../PISCES/SED/seddsrjac.F90
-                           ../PISCES/SED/sedinitrc.F90 ../PISCES/SED/sedmodel.F90
-                           ../PISCES/SED/sedsol.F90 ../PISCES/SED/trosk.F90 ../PISCES/SED/sed.F90
-                           ../PISCES/SED/sedchem.F90 ../PISCES/SED/seddta.F90
-                           ../PISCES/SED/sedinorg.F90 ../PISCES/SED/sedorg.F90
-                           ../PISCES/SED/sedstp.F90 ../PISCES/SED/sed_oce.F90 ../PISCES/SED/sedco3.F90
-                           ../PISCES/SED/sedfunc.F90 ../PISCES/SED/sedjac.F90
-                           ../PISCES/SED/sedrst.F90 ../PISCES/SED/sedwri.F90
+# Pisces files
+list(APPEND CROCO_SRCS_F90 p2zlim.F90 p2zmicro.F90 p2zmort.F90
+                           p2zprod.F90 p4zagg.F90 p4zbc.F90
+                           p4zbio.F90 p4zche.F90 p4zdiaz.F90
+                           p4zfechem.F90 p4zflx.F90 p4zint.F90
+                           p4zligand.F90 p4zlim.F90 p4zlys.F90
+                           p4zmeso.F90 p4zmicro.F90 p4zmort.F90
+                           p4zopt.F90 p4zpoc.F90 p4zprod.F90
+                           p4zrem.F90 p4zsed.F90 p4zsink.F90
+                           p4zsms.F90 p5zlim.F90 p5zmeso.F90
+                           p5zmicro.F90 p5zmort.F90 p5zprod.F90
+                           par_pisces.F90 pisces_ini.F90 sms_pisces.F90
+                           trc.F90 trcini_pisces.F90 trcnam_pisces.F90
+                           trcsink.F90 trcsms_pisces.F90 trcwri_pisces.F90
+                           LIB/in_out_manager.F90 LIB/iom.F90 LIB/lib_mpp.F90
+                           LIB/oce_trc.F90 LIB/prtctl.F90
+                           oce_sed.F90 sedadv.F90
+                           seddsr.F90 sedini.F90
+                           sedmat.F90 sedsfc.F90
+                           setavg_sed.F90 par_sed.F90
+                           sedbtb.F90 seddsrjac.F90
+                           sedinitrc.F90 sedmodel.F90
+                           sedsol.F90 trosk.F90 sed.F90
+                           sedchem.F90 seddta.F90
+                           sedinorg.F90 sedorg.F90
+                           sedstp.F90 sed_oce.F90 sedco3.F90
+                           sedfunc.F90 sedjac.F90
+                           sedrst.F90 sedwri.F90
 
 )
+
 list(APPEND CROCO_SRCS_F90 module_parameter_oa.F90)
-list(APPEND CROCO_SRCS_F90 ../MUSTANG/flocmod.F90 ../MUSTANG/comsubstance.F90 ../MUSTANG/substance.F90
-                           ../MUSTANG/comMUSTANG.F90 ../MUSTANG/coupler_MUSTANG.F90
-                           ../MUSTANG/sed_MUSTANG_CROCO.F90 ../MUSTANG/sed_MUSTANG.F90 ../MUSTANG/initMUSTANG.F90
-                           ../MUSTANG/plug_MUSTANG_CROCO.F90
-)
 
 ###########################################################
 # files for copy to device
 set(COPY_TO_DEVICE_VAR_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/ocean2d.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/scalars.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/ocean3d.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/grid.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/coupling.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/private_scratch.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/mixing.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/forces.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/work.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/ncscrum.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/averages.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/lmd_kpp.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/climat.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/nbq.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/wkb_wwave.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/boundary.h
+    ${CROCO_SOURCE_DIR}/ocean2d.h
+    ${CROCO_SOURCE_DIR}/scalars.h
+    ${CROCO_SOURCE_DIR}/ocean3d.h
+    ${CROCO_SOURCE_DIR}/grid.h
+    ${CROCO_SOURCE_DIR}/coupling.h
+    ${CROCO_SOURCE_DIR}/private_scratch.h
+    ${CROCO_SOURCE_DIR}/mixing.h
+    ${CROCO_SOURCE_DIR}/forces.h
+    ${CROCO_SOURCE_DIR}/work.h
+    ${CROCO_SOURCE_DIR}/ncscrum.h
+    ${CROCO_SOURCE_DIR}/averages.h
+    ${CROCO_SOURCE_DIR}/lmd_kpp.h
+    ${CROCO_SOURCE_DIR}/climat.h
+    ${CROCO_SOURCE_DIR}/nbq.h
+    ${CROCO_SOURCE_DIR}/sources.h
+    ${CROCO_SOURCE_DIR}/wkb_wwave.h
+    ${CROCO_SOURCE_DIR}/boundary.h
 )
 
 ###########################################################
@@ -297,10 +311,10 @@ if (OPENACC)
     # build command to gen copy_to_device
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/copy_to_devices_generated.h
-        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/common2device.py
+        COMMAND python3 ${CROCO_SOURCE_DIR}/common2device.py
                 ${COPY_TO_DEVICE_VAR_FILES}
                 -o ${CMAKE_CURRENT_BINARY_DIR}/copy_to_devices_generated.h
-        MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/common2device.py
+        MAIN_DEPENDENCY ${CROCO_SOURCE_DIR}/common2device.py
         DEPENDS ${COPY_TO_DEVICE_VAR_FILES}
         VERBATIM
     )
@@ -311,8 +325,8 @@ endif()
 
 ###########################################################
 # Make absolute paths for source prepare pass
-croco_make_absolute_paths(CROCO_SRCS_F77 ${CMAKE_CURRENT_SOURCE_DIR})
-croco_make_absolute_paths(CROCO_SRCS_F90 ${CMAKE_CURRENT_SOURCE_DIR})
+croco_make_absolute_paths(CROCO_SRCS_F77 ${CROCO_SOURCE_DIR})
+croco_make_absolute_paths(CROCO_SRCS_F90 ${CROCO_SOURCE_DIR})
 
 ###########################################################
 # generate some sources files byb using some binary programs
@@ -321,7 +335,7 @@ croco_make_absolute_paths(CROCO_SRCS_F90 ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/setup_kwds.F
 	COMMAND checkkwds && mv setup_kwds.F ${CMAKE_CURRENT_BINARY_DIR}/setup_kwds.F
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	WORKING_DIRECTORY ${CROCO_SOURCE_DIR}
 	DEPENDS checkkwds
 	VERBATIM
 )
@@ -338,7 +352,7 @@ add_custom_command(
 # check_switches1.F
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/check_switches1.F
-	COMMAND cat ${CMAKE_CURRENT_SOURCE_DIR}/cppdefs.h ${CMAKE_CURRENT_SOURCE_DIR}/cppdefs_dev.h > mergcpp.txt
+	COMMAND cat ${CROCO_SOURCE_DIR}/cppdefs.h ${CROCO_SOURCE_DIR}/cppdefs_dev.h > mergcpp.txt
              && ${CMAKE_CURRENT_BINARY_DIR}/cppcheck
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	DEPENDS cppcheck cppdefs.h cppdefs_dev.h
@@ -358,7 +372,7 @@ add_library(croco_common STATIC lenstr.F insert_node.F)
 
 ###########################################################
 # build ncjoin utility
-set(NCJOIN_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/ncjoin.F)
+set(NCJOIN_SRC_F ${CROCO_SOURCE_DIR}/ncjoin.F)
 croco_cpp_and_mpc_preprocess(NCJOIN_SRC_F)
 add_executable(ncjoin ${NCJOIN_SRC_F})
 target_link_libraries(ncjoin ${NETCDFF_LIBRARY})
@@ -367,7 +381,7 @@ set_property(TARGET ncjoin PROPERTY LINKER_LANGUAGE Fortran)
 
 ###########################################################
 # build ncrename utility
-set(NCRENAME_SRC_F ${CMAKE_CURRENT_SOURCE_DIR}/ncrename.F)
+set(NCRENAME_SRC_F ${CROCO_SOURCE_DIR}/ncrename.F)
 croco_cpp_and_mpc_preprocess(CRENAME_SRC_F)
 add_executable(ncrename ${NCRENAME_SRC_F})
 target_link_libraries(ncrename ${NETCDFF_LIBRARY})

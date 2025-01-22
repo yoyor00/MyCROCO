@@ -109,8 +109,21 @@ croco_trick_create_cpp_def_override()
 
 ###########################################################
 # add subdirs
+set(CROCO_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/croco_src)
+
 add_subdirectory(AGRIF)
 add_subdirectory(OCEAN)
+
+###########################################################
+# user sources in CMAKE_BINARY_DIR
+set(USER_SRC_PATTERNS
+  *.F90 *.F *.h *.h90)
+
+set(CROCO_NO_COPY_LIST
+  cppdefs_edit.h cppdefs_dev_override.h
+  cppdefs_override.h param_override.h)
+
+croco_copy_user_sources(USER_SRC_PATTERNS CROCO_NO_COPY_LIST)
 
 ###########################################################
 # Print status to help ensure everything is correct

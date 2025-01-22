@@ -205,3 +205,45 @@ function(croco_copy_case_files)
 		file(COPY ${CMAKE_SOURCE_DIR}/TEST_CASES DESTINATION ${CMAKE_BINARY_DIR})
 	endif()
 endfunction(croco_copy_case_files)
+
+###########################################################
+# copy sources files
+function(croco_copy_sources patterns_list)
+  make_directory(${CROCO_SOURCE_DIR})
+  foreach(pattern IN LISTS ${patterns_list})
+    file(GLOB files ${CMAKE_CURRENT_SOURCE_DIR}/${pattern})
+    if(files)
+      # message(STATUS "Copying ${files} to ${CROCO_SOURCE_DIR}")
+      file(COPY ${files} DESTINATION ${CROCO_SOURCE_DIR})
+    else()
+      message(WARNING "Warning : cannot find files matching: ${pattern}")
+    endif()
+  endforeach()
+endfunction()
+
+
+# User part. A no copy_list is needed as some .h are generated in CMAKE_BINARY_DIR
+function(croco_copy_user_sources patterns_list no_copy_list)
+  make_directory(${CROCO_SOURCE_DIR})
+
+  foreach(pattern IN LISTS ${patterns_list})
+    file(GLOB files ${CMAKE_BINARY_DIR}/${pattern})
+
+    if(files)
+      set(filtered_files)
+      foreach(file IN LISTS files)
+        get_filename_component(bfile ${file} NAME)
+        list(FIND ${no_copy_list} ${bfile} index)
+        if(index EQUAL -1)
+          list(APPEND filtered_files ${file})
+        endif()
+      endforeach()
+
+      if(filtered_files)
+        message(STATUS "Copying ${filtered_files} to ${CROCO_SOURCE_DIR}")
+        file(COPY ${filtered_files} DESTINATION ${CROCO_SOURCE_DIR})
+      endif()
+    endif()
+  endforeach()
+endfunction()
+
