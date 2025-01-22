@@ -79,8 +79,7 @@ variables:
       mv /data/ForCI-INRIA/DATA . ;
       # clean unneeded files and directories to have enough space left for tests
       cd /data;
-      rm ForCI-INRIA.tar.gz ;
-      rm -R ForCI-INRIA
+      rm -R ForCI-INRIA;
     fi   
 
 .get_var_repro: &get_var_repro
