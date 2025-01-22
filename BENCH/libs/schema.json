@@ -97,6 +97,7 @@
             "additionalProperties": {
                 "type": "object",
                 "properties": {
+                    "restart": {"type": "integer"},
                     "configure": {"type": "string"},
                     "tuning_familly": {"type": "string"},
                     "environ": {

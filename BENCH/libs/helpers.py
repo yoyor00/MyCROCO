@@ -83,6 +83,7 @@ def run_shell_command(command, logfilename=None, capture=True, show_on_error=Tru
 def run_shell_command_time(command, logfilename=None, verbose: bool = False):
     """Print the command and run it by measuring time. On failure it prints the output."""
     # capture or not capture
+
     if verbose:
         return timeit(
             stmt=f"subprocess.run('{command}', check=True, shell=True)",
@@ -97,7 +98,7 @@ def run_shell_command_time(command, logfilename=None, verbose: bool = False):
 
         try:
             return timeit(
-                stmt=f"subprocess.run('{command} 2>&1 > {log_fp}', check=True, shell=True)",
+                stmt=f"subprocess.run('({command}) 2>&1 > {log_fp}', check=True, shell=True)",
                 setup="import subprocess",
                 number=1,
             )
@@ -156,7 +157,7 @@ def apply_rule(fname, lines, rule):
     - rule: a dictionary with keys:
         - "what" (str, required): The line to match (after normalization) for certain operations.
         - "by" (str): Line used in 'replace' mode.
-        - "insert" (str): Line to insert in 'insert-before', 'insert-after', 'insert-after-before' modes.
+        - "insert" (str or list): Line(s) to insert in 'insert-before', 'insert-after', 'insert-after-before' modes.
         - "mode" (str, required): One of 'replace', 'insert-before', 'insert-after', 'insert-after-before', 'insert-at-begin', 'insert-at-end'.
         - "descr" (str, optional): Description of the rule.
         - "before" (str, required for 'insert-after-before'): The line before which to insert.
@@ -168,7 +169,7 @@ def apply_rule(fname, lines, rule):
     descr = rule.get("descr", "No description provided")
     Messaging.step(f"Patching {fname} [ {descr} ]")
 
-    # Determine the new line to use based on the mode
+    # Determine the new line(s) to use based on the mode
     if mode == "replace":
         new_line = rule.get("by")
     else:
@@ -203,7 +204,10 @@ def apply_rule(fname, lines, rule):
         # Replace the line matching 'what' with 'by'
         for line in lines:
             if normalize_line(line) == what:
-                modified_lines.append(new_line + "\n")
+                if isinstance(new_line, list):
+                    modified_lines.extend([nl + "\n" for nl in new_line])
+                else:
+                    modified_lines.append(new_line + "\n")
                 inserted = True
             else:
                 modified_lines.append(line)
@@ -211,10 +215,13 @@ def apply_rule(fname, lines, rule):
             print(f"Warning: No line matched '{what}' for replacement in rule '{descr}'.")
 
     elif mode == "insert-before":
-        # Insert a new line before the line that matches 'what'
+        # Insert a new line(s) before the line that matches 'what'
         for line in lines:
             if normalize_line(line) == what and not inserted:
-                modified_lines.append(new_line + "\n")
+                if isinstance(new_line, list):
+                    modified_lines.extend([nl + "\n" for nl in new_line])
+                else:
+                    modified_lines.append(new_line + "\n")
                 modified_lines.append(line)
                 inserted = True
             else:
@@ -223,11 +230,14 @@ def apply_rule(fname, lines, rule):
             print(f"Warning: No line matched '{what}' to insert before in rule '{descr}'.")
 
     elif mode == "insert-after":
-        # Insert a new line after the line that matches 'what'
+        # Insert a new line(s) after the line that matches 'what'
         for line in lines:
             if normalize_line(line) == what and not inserted:
                 modified_lines.append(line)
-                modified_lines.append(new_line + "\n")
+                if isinstance(new_line, list):
+                    modified_lines.extend([nl + "\n" for nl in new_line])
+                else:
+                    modified_lines.append(new_line + "\n")
                 inserted = True
             else:
                 modified_lines.append(line)
@@ -235,20 +245,20 @@ def apply_rule(fname, lines, rule):
             print(f"Warning: No line matched '{what}' to insert after in rule '{descr}'.")
 
     elif mode == "insert-after-before":
-        # Insert a line between two known lines: after 'after' and before 'before'
+        # Insert a line(s) between two known lines: after 'after' and before 'before'
         line_before = normalize_line(rule.get("before", ""))
         line_after = normalize_line(rule.get("after", ""))
 
         found_after = False
-        # Once 'after' line is found, we insert our new_line right before the 'before' line
         for i, line in enumerate(lines):
             current_norm = normalize_line(line)
             modified_lines.append(line)
 
-            # If we have found the 'after' line and the current line is 'before'
-            # we insert our new line right before it
             if found_after and current_norm == line_before and not inserted:
-                modified_lines.insert(len(modified_lines) - 1, new_line + "\n")
+                if isinstance(new_line, list):
+                    modified_lines[-1:-1] = [nl + "\n" for nl in new_line]
+                else:
+                    modified_lines.insert(len(modified_lines) - 1, new_line + "\n")
                 inserted = True
 
             if current_norm == line_after:
@@ -258,20 +268,27 @@ def apply_rule(fname, lines, rule):
             print(f"Warning: Could not find the sequence 'after' then 'before' for rule '{descr}'. No insertion performed.")
 
     elif mode == "insert-at-begin":
-        # Insert a new line at the beginning of the file
+        # Insert a new line(s) at the beginning of the file
         if not inserted:
-            modified_lines.append(new_line + "\n")
+            if isinstance(new_line, list):
+                modified_lines.extend([nl + "\n" for nl in new_line])
+            else:
+                modified_lines.append(new_line + "\n")
             inserted = True
         modified_lines.extend(lines)
 
     elif mode == "insert-at-end":
-        # Insert a new line at the end of the file
+        # Insert a new line(s) at the end of the file
         modified_lines.extend(lines)
         if not inserted:
-            modified_lines.append(new_line + "\n")
+            if isinstance(new_line, list):
+                modified_lines.extend([nl + "\n" for nl in new_line])
+            else:
+                modified_lines.append(new_line + "\n")
             inserted = True
 
     return modified_lines
+
 
 
 def patch_lines(file_path, rules):

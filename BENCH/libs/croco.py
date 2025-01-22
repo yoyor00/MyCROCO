@@ -85,10 +85,8 @@ class Croco:
         tuning_flags = self.config.host["tuning"][tuning_familly][tuning_fflags]
         tuning_flags_extra = self.config.host["tuning"][tuning_familly]["extra"]
         croco_build = self.croco_build
-
         restart=self.variant["restart"]
-        print ('RESTART') 
-        print (restart)
+
         # create dir
         os.makedirs(dirname, exist_ok=True)
         os.makedirs(dirname_result, exist_ok=True)
@@ -121,6 +119,7 @@ class Croco:
                     reshape.append(f"-{key}")
             reshape_str = ",".join(reshape)
             configure_cppkeys_options = f"--with-keys={reshape_str}"
+
 
         # debug
         debug_option = ""
@@ -213,6 +212,10 @@ class Croco:
         if self.config.rvtk:
             self.enable_rvtk_checking()
 
+        if self.variant["restart"]:
+            croco_build = self.croco_build
+            croco_build.cppdef_h_set_key("EXACT_RESTART", True)
+
         # compile
         self.compile()
 
@@ -263,18 +266,12 @@ class Croco:
         for var, value in environ.items():
             env_line += f'{var}="{value}" '
 
-        print('ENVLINE') 
-        print(env_line)
-        print(command_prefix)
-        print(self.case["case"].capitalize())
         # build command and run
         command = (
             "%s ../../../scripts/correct_end.sh %s ./croco TEST_CASES/croco.in.%s"
             % (env_line, command_prefix, self.case["case"].capitalize())
         )
-        print(command)
         if restart : command = f"{command.replace('../../../scripts/correct_end.sh', '').strip()} && {command}_rst"
-        print(command) 
 
         with move_in_dir(dirname):
             # link ref files
@@ -370,11 +367,147 @@ class Croco:
                 for change in changes:
                     patch_lines(file_filtered, [change])
 
+# all functions to me moved in helpers
+    def extract_value_by_index(self, patch, key, index):
+        value = patch.get(key, '').strip()
+        values = value.split()
+        if 0 <= index < len(values):
+            return values[index]
+        else:
+            return None
+
+    def replace_value_by_index(self, patch, key, index, new_value):
+        value = patch.get(key, '').strip()
+        values = value.split()
+        if 0 <= index < len(values):
+            values[index] = new_value
+            patch[key] = ' '.join(values)
+            return True
+        else:
+            return False
+
+    def copy_and_replace_value_by_index(self, patch, key, index, new_value):
+        value = patch.get(key, '').strip()
+        values = value.split()
+        if 0 <= index < len(values):
+            new_patch = patch.copy()
+            old_value = values[index]
+            values[index] = new_value
+            new_patch[key] = ' '.join(values)
+            return new_patch
+        else:
+            return None
+
+    def extract_time_stepping_from_patches(self, patches):
+        for file, details in patches.items():
+            if 'time_stepping:' in details.get('after', ''):
+                return {
+                    "file": file,
+                    "after": details['after'],
+                    "what": details['what'],
+                    "by": details['by'],
+                    "descr": details['descr']
+                }
+        return None
+
+    def extract_patch_by_partial_filename(self,patches, partial_filename):
+        filtered_patches = {
+            file: details for file, details in patches.items() if partial_filename in file
+        }
+
+        return filtered_patches
+
+    def extract_filenames_from_patches(self,patches):
+        return list(patches.keys())
+
+
+    def suppress_patch(self, patches, patch_to_remove):
+        target_file = patch_to_remove.get('file', '')
+        target_after = patch_to_remove.get('after', '')
+        if target_file in patches:
+            patch_details = patches[target_file]
+            # Vérifie si la ligne 'after' correspond
+            if target_after in patch_details.get('after', ''):
+                del patches[target_file]  # Supprime le patch du dictionnaire
+                return True
+        return False
+
+
+# we should me able to use only one function, to be tested
+    def add_patch(self,patches, new_patch):
+        patches[new_patch["file"]] = {
+            "mode": new_patch.get("mode", "replace"),
+            "after": new_patch["after"],
+            "what": new_patch["what"],
+            "by": new_patch["by"],
+            "descr": new_patch.get("descr", "No description provided.")
+        }
+
+    def add_patch_with_list_support(self,patches, new_patch):
+        file = new_patch["file"]
+        patch_details = {
+            "mode": new_patch.get("mode", "replace"),
+            "after": new_patch.get("after", ""),
+            "what": new_patch.get("what", ""),
+            "by": new_patch.get("by", ""),
+            "insert": new_patch.get("insert", ""),
+            "descr": new_patch.get("descr", "No description provided.")
+        }
+
+        if file in patches:
+            # Convertir en liste si ce n'est pas déjà fait
+            if isinstance(patches[file], list):
+                patches[file].append(patch_details)
+            else:
+                patches[file] = [patches[file], patch_details]
+        else:
+            patches[file] = patch_details
+
     def setup_case(self):
         # apply the case paches
         case_name = self.case_name
         patches = self.case.get("patches", {})
         cppkeys = self.case.get("cppkeys", {})
+
+        # all this part to me moves somewhere
+        restart=self.variant["restart"]
+        if restart :
+            #saves initial patches and croco.in
+            patches_rst=self.extract_patch_by_partial_filename(patches,'croco.in')
+            filename=self.extract_filenames_from_patches(patches_rst)[0]
+            filename_rst=self.extract_filenames_from_patches(patches_rst)[0]+'_rst'
+            shutil.copy( os.path.join(self.dirname,filename), os.path.join(self.dirname,filename_rst))
+
+            # modifs for first croco.in
+            time_stepping_section = self.extract_time_stepping_from_patches(patches)
+            NTIMES=self.extract_value_by_index(time_stepping_section,'by',0)
+            NTIMES1=int(NTIMES)//2
+            NTIMES2=int(NTIMES)-NTIMES1
+            replacement_result=self.copy_and_replace_value_by_index(time_stepping_section,'by',0,str(NTIMES1))
+            self.suppress_patch(patches,time_stepping_section)
+            self.add_patch(patches,replacement_result)
+            newpatch={"file": filename,
+            'mode': 'insert-after',
+            'what':  'restart:          NRST, NRPFRST / filename',
+            'insert':  [  f"{str(NTIMES1)}   0", '  basin_rst.nc' ],
+            'descr': 'change restart ! wrtitng step'
+            }
+            self.add_patch_with_list_support(patches, newpatch)
+
+            # modifs for second croco.in
+            replacement_result=self.copy_and_replace_value_by_index(time_stepping_section,'by',0,str(NTIMES2))
+            self.suppress_patch(patches_rst,time_stepping_section)
+            self.add_patch(patches_rst,replacement_result)
+            patches_rst[filename_rst] = patches_rst.pop(filename)
+
+            newpatch={"file": filename_rst,
+            'mode': 'insert-after',
+            'what':  'initial: NRREC  filename ',
+            'insert':['     2','basin_rst.nc' ],
+            'descr': 'change restart ! reading step'
+            }
+            self.add_patch_with_list_support(patches_rst, newpatch)
+            self.apply_patches(patches_rst)
 
         # display
         Messaging.step(f"Apply case config : {case_name}")
@@ -389,6 +522,8 @@ class Croco:
         # display
         Messaging.step(f"Apply variant config : {variant_name}")
         self.apply_patches(patches)
+
+
 
     def check_one_file_from_seq_ref(self, filename: str) -> None:
         # extract vars
