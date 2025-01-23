@@ -2640,17 +2640,17 @@ c !$acc wait
       call xios_send_field("wke",wke(:,:,wstp))
       endif
       if (xios_field_is_active("epb")) then
-      call xios_send_field("epb",wdsp)
+      call xios_send_field("epb",wepb)
       endif
       if (xios_field_is_active("epd")) then
-      call xios_send_field("epd",wdrg)
+      call xios_send_field("epd",wepd)
       endif
 #  ifdef WAVE_ROLLER
       if (xios_field_is_active("war")) then
       call xios_send_field("war",war(:,:,wstp))
       endif
       if (xios_field_is_active("epr")) then
-      call xios_send_field("epr",rdsp)
+      call xios_send_field("epr",wepr)
       endif
 
 #  endif
