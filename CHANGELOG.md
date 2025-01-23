@@ -16,6 +16,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- Issue #281 : optimization of the PISCES code on
+  - representation of the lability of the particle pool
+  - several optimizations to the calculation of certain variables (performance).
+
 - Issue #163 : for MUSTANG output, 
   - avoid possibility of overlapping in vname by 
     using a separate array vname_must
@@ -33,7 +37,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - Diagenetic module improvements: performance and diagenetic processes (e.g. increased number of POC classes, ...)
   - Added creation of an independent pisces restart file (managed in namelist_pisces_ref) to improve restartability
   - Rename the simplified version of PISCES, cpp key pisces_npzd
-  - Correction of some bug fixes
+  - Correction of some bugs
   
 ### Deprecated
 
