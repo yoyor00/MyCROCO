@@ -224,10 +224,6 @@
 # endif
           elem_b(i,2) = Hzr_abl( 2 ) - elem_c(i,2) + dt * cff1
           u_abl(i,j,2,nt_a) = u_abl(i,j,2,nt_a)    + dt * cff2
-          !++ Top Neumann B.C.
-          !elem_a(i,N_abl ) = - dt * Avm_abl(i,j,N_abl)/Hzw_abl(N_abl)
-          !elem_c(i,N_abl ) = 0.
-          !elem_b(i,N_abl ) = Hzr_abl(N_abl) - elem_a(i,N_abl)
           !++ Top Dirichlet B.C.
           elem_a(i,     N_abl )       = 0.
           elem_c(i,     N_abl )       = 0.
@@ -284,10 +280,6 @@
 # endif
           elem_b(i,2) = Hzr_abl(2) - elem_c(i,2) + dt * cff1
           v_abl(i,j,2,nt_a) =  v_abl(i,j,2,nt_a) + dt * cff2
-          !++ Top Neumann B.C.
-          !elem_a(i,N_abl) = - dt * Avm_abl(i,j,N_abl) / Hzw_abl(N_abl)
-          !elem_c(i,N_abl) = 0.
-          !elem_b(i,N_abl) = Hzr_abl( N_abl ) - elem_a(i,N_abl)
           !++ Top Dirichlet B.C.
           elem_a(i,N_abl) = 0.
           elem_c(i,N_abl) = 0.

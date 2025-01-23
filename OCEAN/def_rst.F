@@ -1485,7 +1485,7 @@
 !
         lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
         ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_u_abl)(1:lvar), rstAblU)
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
           write(stdout,1) vname_abl1d(1,indxabl_u_abl)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1497,7 +1497,7 @@
 !
         lvar=lenstr(vname_abl1d(1,indxabl_v_abl))
         ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_v_abl)(1:lvar), rstAblV)
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
           write(stdout,1) vname_abl1d(1,indxabl_v_abl)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1509,7 +1509,7 @@
 !
         lvar=lenstr(vname_abl1d(1,indxabl_t_abl))
         ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_t_abl)(1:lvar), rstAblT)
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
           write(stdout,1) vname_abl1d(1,indxabl_t_abl)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1521,7 +1521,7 @@
 !
         lvar=lenstr(vname_abl1d(1,indxabl_q_abl))
         ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_q_abl)(1:lvar), rstAblQ)
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
           write(stdout,1) vname_abl1d(1,indxabl_q_abl)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1547,7 +1547,7 @@
 !
         lvar=lenstr(vname_abl1d(1,indxabl_avm_abl))
         ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_avm_abl)(1:lvar), rstAblAvm)
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
           write(stdout,1) vname_abl1d(1,indxabl_avm_abl)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1559,7 +1559,7 @@
 !
         lvar=lenstr(vname_abl1d(1,indxabl_avt_abl))
         ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_avt_abl)(1:lvar), rstAblAvt)
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
           write(stdout,1) vname_abl1d(1,indxabl_avt_abl)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1571,7 +1571,7 @@
 !
         lvar=lenstr(vname_abl1d(1,indxabl_mxlm_abl))
         ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_mxlm_abl)(1:lvar), rstAblMxlm)
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
           write(stdout,1) vname_abl1d(1,indxabl_mxlm_abl)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1583,7 +1583,7 @@
 !
         lvar=lenstr(vname_abl1d(1,indxabl_mxld_abl))
         ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_mxld_abl)(1:lvar), rstAblMxld)
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
           write(stdout,1) vname_abl1d(1,indxabl_mxld_abl)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1595,7 +1595,7 @@
 !
         lvar=lenstr(vname_abl1d(1,indxabl_ablh_abl))
         ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_ablh_abl)(1:lvar), rstAblAblh)
-        if (ierr. ne. nf_noerr) then
+        if (ierr .ne. nf_noerr) then
           write(stdout,1) vname_abl1d(1,indxabl_ablh_abl)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif

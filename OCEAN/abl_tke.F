@@ -137,11 +137,6 @@
           elem_c(i,1) = 0.
           elem_b(i,1) = 1.
           !++ Top Neumann B.C.
-          !elem_a (i,N_abl) = -0.5*dt*Sch*(Avm_abl(i,j,N_abl-1)
-          !  &              +Avm_abl(i,j,N_abl))  / Hzr_abl(N_abl)
-          !elem_c (i,N_abl) = 0.
-          !elem_b (i,N_abl) = Hzw_abl(N_abl) - elem_a(i,N_abl)
-          !tke_abl(i,j,N_abl,nt_a) = Hzw_abl(N_abl)*tke_abl(i,j,N_abl,nt_n)
           !++ Top Dirichlet B.C.
           elem_a(i,N_abl) = 0.
           elem_c(i,N_abl) = 0.
