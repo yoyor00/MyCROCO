@@ -13,6 +13,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
   advection in NBQ
 - Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING 
+- Issue #272 : fix CPP key incompatible for ABL1D
+- Issue #279 : fix for : - sea surface currents in ABL1D
+                         - wrong mixing length computation
+                         - ABL1D perfect restart
+                         - ECUME6/ABL1D
 
 ### Changed
 
