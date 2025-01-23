@@ -319,10 +319,10 @@ def get_type(fname, vname, vlevin):
             - vlevout (int): Output vertical level (unchanged or modified).
     """
     vlevout = vlevin
-    var_type = "r"  # Par défaut, type est 'r'
+    var_type = "r"  # By default, type is 'r'
 
     try:
-        # Ouverture du fichier NetCDF
+        # NetCDF Open NetCDF file
         with Dataset(fname, "r") as nc:
             if vname not in nc.variables:
                 return "", vlevout
@@ -331,19 +331,19 @@ def get_type(fname, vname, vlevin):
             dims = var.dimensions
             ndim = len(dims)
 
-            if ndim == 1:  # Cas d'une variable 1D
+            if ndim == 1:  # Case of 1D variable
                 return "", vlevout
 
             i = 0
             name = dims[i]
 
-            # Vérifier si la dimension est temporelle
+            # Check if temporal dimension
             if not (name.endswith("time") or name.startswith("time")):
                 print("Avertissement : Pas dépendant du temps.")
             else:
                 i += 1
 
-            # Vérifier si la dimension est verticale
+            # Check if vertical dimension
             name = dims[i]
             if name.startswith("s"):
                 if name.endswith("w"):
@@ -353,7 +353,7 @@ def get_type(fname, vname, vlevin):
             else:
                 vlevout = 0
 
-            # Vérifier si la dimension est spatiale (lat/y ou lon/x)
+            # Check if 2D-H dimension : lat/y or lon/x
             name = dims[i]
             if not (name.startswith("e") or name.startswith("y")):
                 return "", vlevout
@@ -363,7 +363,7 @@ def get_type(fname, vname, vlevin):
                 if name.endswith("u"):
                     return "u", vlevout
 
-            # Vérifier une deuxième dimension spatiale
+            # Check second variable on 2D-H
             if i + 1 < ndim:
                 name = dims[i + 1]
                 if name.startswith("x"):
@@ -373,7 +373,7 @@ def get_type(fname, vname, vlevin):
                         return "v", vlevout
 
     except Exception as e:
-        print(f"Erreur lors de la lecture du fichier NetCDF : {e}")
+        print(f"Error while reading the NetCDF file : {e}")
         return "", vlevout
 
     return var_type, vlevout
@@ -395,29 +395,27 @@ def vinterp(var, z, depth):
 
     N, Mp, Lp = z.shape
 
-    # Trouver la position des niveaux verticaux les plus proches
+    # Find the position of the nearest vertical levels
     below = z < depth
-    levs = np.sum(below, axis=0)  # Nombre de niveaux sous la profondeur spécifiée
-    levs[levs == N] = (
-        N - 1
-    )  # Limiter à l'avant-dernier niveau pour éviter les débordements
+    levs = np.sum(below, axis=0)  # Number of levels below the specified depth
+    levs[levs == N] = N - 1  # Limit to the second-to-last level to avoid overflows
 
-    # Créer un masque pour identifier les indices valides
+    # Create a mask to identify valid indices
     mask = np.where(levs > 0, 1, np.nan)
 
-    # Générer les positions linéaires pour un accès rapide
+    # Generate linear positions for quick access
     imat, jmat = np.meshgrid(np.arange(Lp), np.arange(Mp), indexing="ij")
     pos = N * Mp * imat + N * jmat + levs
     pos = pos.astype(int)  # Assurer que les indices sont des entiers
     pos[np.isnan(mask)] = 0  # Éviter les erreurs sur les valeurs NaN
 
-    # Effectuer l'interpolation
+    # Do the interpolation
     z1 = z.ravel()[pos + 1]
     z2 = z.ravel()[pos]
     v1 = var.ravel()[pos + 1]
     v2 = var.ravel()[pos]
 
-    # Calculer la variable interpolée
+    #
     vnew = mask * (((v1 - v2) * depth + v2 * z1 - v1 * z2) / (z1 - z2))
 
     return vnew.reshape(Mp, Lp)
@@ -438,18 +436,18 @@ def get_depths(fname, gname, tindex, point_type):
         numpy.ndarray: Depths of sigma levels (3D matrix).
     """
 
-    # Lecture des données de la grille
+    # Reading grid data
     with Dataset(gname, mode="r") as nc:
         h = nc.variables["h"][:]
 
-    # Lecture des données historiques
+    # Reading variables
     with Dataset(fname, mode="r") as nc:
         zeta = np.squeeze(nc.variables["zeta"][tindex, :, :])
         hmorph = nc.variables.get("hmorph", None)
         if hmorph is not None:
             h = np.squeeze(hmorph)
 
-        # Lecture des paramètres de verticalité
+        # Reading sigma grid parameter
         try:
             theta_s = nc.variables["theta_s"][:]
             theta_b = nc.variables["theta_b"][:]
@@ -476,14 +474,14 @@ def get_depths(fname, gname, tindex, point_type):
     if zeta is None:
         zeta = np.zeros_like(h)
 
-    # Calcul des profondeurs des niveaux sigma
+    # Calculating depths of sigma levels
     vtype = point_type
     if point_type in ("u", "v"):
         vtype = "r"
 
     z = zlevs(h, zeta, theta_s, theta_b, hc, N, vtype, vtrans)
 
-    # Convertir les profondeurs si type est 'u' ou 'v'
+    # Swicth to U- or V- grid
     if point_type == "u":
         z = rho2u_3d(z)
     elif point_type == "v":
@@ -518,7 +516,7 @@ def get_hslice(fname, gname, vname, tindex, level, var_type):
             var = np.squeeze(nc.variables[vname][tindex, :, :])
             var[var == 0] = np.nan
 
-            # Correction pour le mouillage/séchage
+            # Correction for wetting/drying
             with Dataset(gname, mode="r") as ng:
                 h = ng.variables["h"][:]
             hmorph = nc.variables.get("hmorph", None)
@@ -541,16 +539,16 @@ def get_hslice(fname, gname, vname, tindex, level, var_type):
             var[D <= Dcrit] = np.nan
 
         elif level > 0:
-            # Coupe à un niveau sigma spécifique
+            # Slice at a specific sigma level
             var = np.squeeze(nc.variables[vname][tindex, level - 1, :, :])
             var[var == 0] = np.nan
 
         else:
-            # Coupe horizontale à un niveau de profondeur donné
-            # Obtenir les profondeurs des niveaux sigma
+            # Horizontal slice at a given depth level
+            # Get the depths of sigma levels
             z = get_depths(fname, gname, tindex, var_type)
 
-            # Lire la variable 3D et interpoler
+            # Read the 3D variable and interpolate
             var_sigma = np.squeeze(nc.variables[vname][tindex, :, :, :])
             var = vinterp(var_sigma, z, level)
 
@@ -617,7 +615,6 @@ def do_plot(lon, lat, var, colmin, colmax, ncol, hisfile, gridfile, tindex, vlev
         norm=Normalize(vmin=colmin, vmax=colmax),
     )
     plt.colorbar(mesh, ax=ax)
-
     plt.show()
 
 
@@ -644,29 +641,29 @@ def get_vertical_section(fname, vname, tindex, direction, ind_sec, gname):
         topo = np.squeeze(nc.variables["h"][:, :])
         # Déterminer le type de grille pour obtenir les profondeurs
         if vname == "w":
-            point_type = "w"  # Grille régulière pour u
+            point_type = "w"
         elif vname == "u":
-            point_type = "u"  # Grille régulière pour u
+            point_type = "u"
             topo = rho2u_2d(topo)
         elif vname == "v":
-            point_type = "v"  # Grille régulière pour v
+            point_type = "v"
             topo = rho2v_2d(topo)
         else:
-            point_type = "r"  # Grille régulière pour les scalaires (temp, salt, etc.)
+            point_type = "r"
 
-        # Lire les profondeurs
+        # Get depths
         z = get_depths(fname, gname, tindex, point_type)
         temp = np.squeeze(nc.variables[vname][tindex, :, :, :])
 
     if direction == "y":
         section_data = temp[:, :, ind_sec]
         depth_section = z[:, :, ind_sec]
-        distance = np.arange(section_data.shape[1])  # Distance en points de grille
+        distance = np.arange(section_data.shape[1])  # Distance in grid points
         topo_section = -topo[:, ind_sec]
     elif direction == "x":
         section_data = temp[:, ind_sec, :]
         depth_section = z[:, ind_sec, :]
-        distance = np.arange(section_data.shape[1])  # Distance en points de grille
+        distance = np.arange(section_data.shape[1])  # Distance in grid points
         topo_section = -topo[ind_sec, :]
     else:
         raise ValueError("Direction invalide. Choisissez 'x' ou 'y'.")
