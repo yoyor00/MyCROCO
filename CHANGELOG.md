@@ -13,7 +13,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
   advection in NBQ
 - Issue #259 : remove unused file OCEAN/spkitlocal_nh.F90 
-- Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING 
+- Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING
+- Issue #285 : fix NBQ+XIOS compilation
 
 ### Changed
 
