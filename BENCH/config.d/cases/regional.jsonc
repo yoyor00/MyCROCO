@@ -4,42 +4,63 @@
 		"title": "BENGUELA_LR_TIDES_BULK",
 		"case": "REGIONAL",
 		"plot_diag_script": "./TEST_CASES/plot_regional.py",
-        "croco_files_path": "LR_CROCO_FILES_BCK",
+		"croco_files_path": "LR_CROCO_FILES_BCK",
 		"mpi": {
-			"1":  {"splitting": "1x1"},
-			"2":  {"splitting": "1x2"},
-			"4":  {"splitting": "2x2"},
-			"6":  {"splitting": "1x6"},
-			"8":  {"splitting": "2x4"},
-			"12": {"splitting": "2x6"},
-			"16": {"splitting": "1x16"},
-			"32": {"splitting": "1x32"},
-			"64": {"splitting": "1x64"}
+			"1": {
+				"splitting": "1x1"
+			},
+			"2": {
+				"splitting": "1x2"
+			},
+			"4": {
+				"splitting": "2x2"
+			},
+			"6": {
+				"splitting": "1x6"
+			},
+			"8": {
+				"splitting": "2x4"
+			},
+			"12": {
+				"splitting": "2x6"
+			},
+			"16": {
+				"splitting": "1x16"
+			},
+			"32": {
+				"splitting": "1x32"
+			},
+			"64": {
+				"splitting": "1x64"
+			}
 		},
 		"cppkeys": {
 			"TIDES": true,
-			"BULK_FLUX":true
+			"BULK_FLUX": true
 		},
 		"patches": {},
 		"patches_debug": {
 			// Change the dt
-			"TEST_CASES/croco.in.Regional": [{
-				"mode": "replace",
-				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-				"what":    "                3840      3600      60      1",
-				"by":      "                   6      3600      60      1",
-				"descr":   "Set stepping (steps=6, dt=900, fast=60)"
-			},{
-				"mode": "replace",
-				"after": "output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)",
-				"what":    "                   1       6       12",
-				"by":      "                   1       6       12",
-				"descr":   "Set dtout = 1h"
-			}]
-			
-
+			"TEST_CASES/croco.in.Regional": [
+				{
+					"mode": "replace",
+					"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+					"what": "                3840      3600      60      1",
+					"by": "                   6      3600      60      1",
+					"descr": "Set stepping (steps=6, dt=900, fast=60)"
+				},
+				{
+					"mode": "replace",
+					"after": "output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)",
+					"what": "                   1       6       12",
+					"by": "                   1       6       12",
+					"descr": "Set dtout = 1h"
+				}
+			]
 		},
-		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
+		"check_outputs": [
+			"CROCO_FILES/croco_his.nc"
+		]
 	},
 	"BENGUELA_VHR_TIDES_BULK": {
 		"title": "BENGUELA_VHR_TIDES_BULK",
@@ -47,47 +68,70 @@
 		"plot_diag_script": "./TEST_CASES/plot_regional.py",
 		"croco_files_path": "VHR_CROCO_FILES_BCK",
 		"mpi": {
-			"1":  {"splitting": "1x1"},
-			"2":  {"splitting": "1x2"},
-			"4":  {"splitting": "2x2"},
-			"6":  {"splitting": "1x6"},
-			"8":  {"splitting": "2x4"},
-			"12": {"splitting": "2x6"},
-			"16": {"splitting": "1x16"},
-			"32": {"splitting": "1x32"},
-			"64": {"splitting": "1x64"}
+			"1": {
+				"splitting": "1x1"
+			},
+			"2": {
+				"splitting": "1x2"
+			},
+			"4": {
+				"splitting": "2x2"
+			},
+			"6": {
+				"splitting": "1x6"
+			},
+			"8": {
+				"splitting": "2x4"
+			},
+			"12": {
+				"splitting": "2x6"
+			},
+			"16": {
+				"splitting": "1x16"
+			},
+			"32": {
+				"splitting": "1x32"
+			},
+			"64": {
+				"splitting": "1x64"
+			}
 		},
 		"cppkeys": {
 			"TIDES": true,
 			"BENGUELA_LR": false,
-			"BENGUELA_VHR":true
+			"BENGUELA_VHR": true
 		},
 		"patches": {
 			// Change the dt
 			"TEST_CASES/croco.in.Regional": {
 				"mode": "replace",
 				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-				"what":    "                3840      3600      60      1",
-				"by":      "                 120       900      60      1",
-				"descr":   "Set stepping (steps=120, dt=900, fast=60)"
+				"what": "                3840      3600      60      1",
+				"by": "                 120       900      60      1",
+				"descr": "Set stepping (steps=120, dt=900, fast=60)"
 			}
 		},
 		"patches_debug": {
 			// Change the dt
-			"TEST_CASES/croco.in.Regional": [{
-				"mode": "replace",
-				"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-				"what":    "                3840      3600      60      1",
-				"by":      "                   6       900      60      1",
-				"descr":   "Set stepping (steps=6, dt=900, fast=60)"
-			},{
-				"mode": "replace",
-				"after": "output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)",
-				"what":    "                   1       6       12",
-				"by":      "                  0.25     6       12",
-				"descr":   "Set dtout = 1h"
-			}]
+			"TEST_CASES/croco.in.Regional": [
+				{
+					"mode": "replace",
+					"after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+					"what": "                3840      3600      60      1",
+					"by": "                   6       900      60      1",
+					"descr": "Set stepping (steps=6, dt=900, fast=60)"
+				},
+				{
+					"mode": "replace",
+					"after": "output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)",
+					"what": "                   1       6       12",
+					"by": "                  0.25     6       12",
+					"descr": "Set dtout = 1h"
+				}
+			]
 		},
-		"check_outputs": [ "CROCO_FILES/croco_his.nc" ]
-	},
+		"check_outputs": [
+			"CROCO_FILES/croco_his.nc"
+		]
+	}
 }
