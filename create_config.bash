@@ -220,21 +220,22 @@ fi
 
 # Check if tools are there
 copy_tools=1
-if [[ ! -d $TOOLS_DIR  &&  $x_f -eq 0 ]]; then 
-  echo  " WARNING : croco_tools directory not found "
-  echo -n " Do you want to proceed without MATLAB tools ? [Y/n] "
-  read answer
-  answer=`echo $answer | sed 's/^[yY].*$/y/'`
-  if [  -z "$answer" -o "x$answer" = "xn" ]; then
-#    echo " Creating configuration ..."
-#    echo "  "
-#  else
-    echo " Exiting..."
-    echo "  "
-    exit
-  else
-    copy_tools=0
-  fi
+if [[ ! -d "$TOOLS_DIR" && $x_f -eq 0 ]]; then
+    echo "WARNING: croco_tools directory not found."
+    echo -n "Do you want to proceed without MATLAB tools? [Y/n] "
+    read -r answer
+    case "$answer" in
+        [nN]*) 
+        echo "Exiting..."
+        exit 1
+        ;;
+        *) 
+        echo "Creating configuration ..."
+        echo "Proceeding without MATLAB tools ..."
+        echo "  "
+        copy_tools=0
+        ;;
+    esac
 fi
  
 # Create the directory
