@@ -179,14 +179,25 @@ def apply_rule(fname, lines, rule):
     if not mode:
         print(f"Error: No mode specified for rule '{descr}'. Skipping rule.")
         return lines
-    if mode not in ["replace", "insert-before", "insert-after", "insert-after-before", "insert-at-begin", "insert-at-end"]:
+    if mode not in [
+        "replace",
+        "insert-before",
+        "insert-after",
+        "insert-after-before",
+        "insert-at-begin",
+        "insert-at-end",
+    ]:
         print(f"Error: Unknown mode '{mode}' in rule '{descr}'. Skipping rule.")
         return lines
     if not what and mode not in ["insert-at-begin", "insert-at-end"]:
-        print(f"Error: 'what' is required for mode '{mode}' in rule '{descr}'. Skipping rule.")
+        print(
+            f"Error: 'what' is required for mode '{mode}' in rule '{descr}'. Skipping rule."
+        )
         return lines
     if not new_line and mode != "replace":
-        print(f"Error: 'insert' is required for mode '{mode}' in rule '{descr}'. Skipping rule.")
+        print(
+            f"Error: 'insert' is required for mode '{mode}' in rule '{descr}'. Skipping rule."
+        )
         return lines
 
     # Specific check for insert-after-before mode
@@ -194,7 +205,9 @@ def apply_rule(fname, lines, rule):
         line_before = normalize_line(rule.get("before", ""))
         line_after = normalize_line(rule.get("after", ""))
         if not line_before or not line_after or not new_line:
-            print(f"Error: 'before', 'after', and 'insert' must be provided for 'insert-after-before' in rule '{descr}'. Skipping rule.")
+            print(
+                f"Error: 'before', 'after', and 'insert' must be provided for 'insert-after-before' in rule '{descr}'. Skipping rule."
+            )
             return lines
 
     modified_lines = []
@@ -212,7 +225,9 @@ def apply_rule(fname, lines, rule):
             else:
                 modified_lines.append(line)
         if not inserted:
-            print(f"Warning: No line matched '{what}' for replacement in rule '{descr}'.")
+            print(
+                f"Warning: No line matched '{what}' for replacement in rule '{descr}'."
+            )
 
     elif mode == "insert-before":
         # Insert a new line(s) before the line that matches 'what'
@@ -227,7 +242,9 @@ def apply_rule(fname, lines, rule):
             else:
                 modified_lines.append(line)
         if not inserted:
-            print(f"Warning: No line matched '{what}' to insert before in rule '{descr}'.")
+            print(
+                f"Warning: No line matched '{what}' to insert before in rule '{descr}'."
+            )
 
     elif mode == "insert-after":
         # Insert a new line(s) after the line that matches 'what'
@@ -242,7 +259,9 @@ def apply_rule(fname, lines, rule):
             else:
                 modified_lines.append(line)
         if not inserted:
-            print(f"Warning: No line matched '{what}' to insert after in rule '{descr}'.")
+            print(
+                f"Warning: No line matched '{what}' to insert after in rule '{descr}'."
+            )
 
     elif mode == "insert-after-before":
         # Insert a line(s) between two known lines: after 'after' and before 'before'
@@ -265,7 +284,9 @@ def apply_rule(fname, lines, rule):
                 found_after = True
 
         if not inserted:
-            print(f"Warning: Could not find the sequence 'after' then 'before' for rule '{descr}'. No insertion performed.")
+            print(
+                f"Warning: Could not find the sequence 'after' then 'before' for rule '{descr}'. No insertion performed."
+            )
 
     elif mode == "insert-at-begin":
         # Insert a new line(s) at the beginning of the file
@@ -288,7 +309,6 @@ def apply_rule(fname, lines, rule):
             inserted = True
 
     return modified_lines
-
 
 
 def patch_lines(file_path, rules):
@@ -426,3 +446,161 @@ def copy_tree_with_absolute_symlinks(src, dest):
             elif os.path.isdir(src_path):
                 # Skip folders as they are already handled by os.walk
                 pass
+
+
+def extract_patch_by_partial_filename(patches, partial_filename):
+    filtered_patches = {
+        file: details for file, details in patches.items() if partial_filename in file
+    }
+
+    return filtered_patches
+
+
+def suppress_patch(patches, patch_to_remove):
+    target_file = patch_to_remove.get("file", "")
+    target_after = patch_to_remove.get("after", "")
+    if target_file in patches:
+        patch_details = patches[target_file]
+        # Vérifie si la ligne 'after' correspond
+        if target_after in patch_details.get("after", ""):
+            del patches[target_file]  # Supprime le patch du dictionnaire
+            return True
+    return False
+
+
+def add_patch_with_list_support(patches, new_patch):
+    file = new_patch["file"]
+    patch_details = {
+        "mode": new_patch.get("mode", "replace"),
+        "after": new_patch.get("after", ""),
+        "what": new_patch.get("what", ""),
+        "by": new_patch.get("by", ""),
+        "insert": new_patch.get("insert", ""),
+        "descr": new_patch.get("descr", "No description provided."),
+    }
+
+    if file in patches:
+        if isinstance(patches[file], list):
+            patches[file].append(patch_details)
+        else:
+            patches[file] = [patches[file], patch_details]
+    else:
+        patches[file] = patch_details
+
+
+def extract_elements_from_file(file_name, keyword, line_offset=1):
+    """
+    Extracts the elements of a line located a specified number of lines
+    after a line containing a specific keyword in a file.
+
+    :param file_name: The name of the file to read (str)
+    :param keyword: The keyword to search for in a line (str)
+    :param line_offset: The number of lines to skip after the keyword (int, default 1)
+    :return: A list containing the elements of the target line
+    """
+    try:
+        # Open the file and read all lines
+        with open(file_name, "r") as file:
+            lines = file.readlines()
+
+        # Iterate through the lines to find the keyword
+        for i, line in enumerate(lines):
+            if line.strip().startswith(keyword):
+                # Calculate the target line index
+                target_line_index = i + line_offset
+                if target_line_index < len(lines):  # Ensure the index is valid
+                    target_line = lines[target_line_index].strip()
+                    return target_line.split()
+
+        # Return an empty list if the keyword is not found or no valid line exists
+        return []
+    except FileNotFoundError:
+        print(f"Error: File '{file_name}' not found.")
+        return []
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
+
+
+def delete_lines_from_file(file_name, keyword, line_offset=1, num_lines=1):
+    """
+    Deletes a specified number of lines from a file, starting from specific lines
+    after a line identified by a keyword plus an optional offset (1-based offset).
+
+    :param file_name: The name of the file to modify (str)
+    :param keyword: The keyword to search for in the file (str)
+    :param line_offset: The number of lines to skip after the keyword (1-based, int, default 1)
+    :param num_lines: The number of lines to delete (int, default 1)
+    """
+    try:
+        # Read all lines from the file
+        with open(file_name, "r") as file:
+            lines = file.readlines()
+
+        # Find the index of the line containing the keyword
+        for i, line in enumerate(lines):
+            if keyword in line:
+                # Calculate the first line to delete (adjust for 1-based offset)
+                start_index = i + line_offset
+                break
+        else:
+            print(f"Keyword '{keyword}' not found in the file.")
+            return
+
+        # Calculate the end index for deletion
+        end_index = start_index + num_lines
+
+        # Ensure the indices are within bounds
+        if 0 <= start_index < len(lines) and 0 <= end_index <= len(lines):
+            del lines[start_index:end_index]
+        else:
+            print("Error: Calculated indices are out of bounds.")
+            return
+
+        # Write the modified lines back to the file
+        with open(file_name, "w") as file:
+            file.writelines(lines)
+
+        print(f"Deleted {num_lines} line(s) starting from line {start_index + 1}.")
+
+    except FileNotFoundError:
+        print(f"Error: File '{file_name}' not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+def copy_and_replace(lst, index, new_value):
+    """
+    Creates a copy of the list and replaces the value at a specified index.
+
+    :param lst: The original list (list)
+    :param index: The index of the value to replace (int)
+    :param new_value: The new value to insert (any type)
+    :return: A new list with the replaced value
+    """
+    # Create a copy of the list
+    new_list = lst.copy()
+
+    # Replace the value at the given index
+    if 0 <= index < len(new_list):  # Ensure index is within bounds
+        new_list[index] = new_value
+    else:
+        print(f"Error: Index {index} is out of range.")
+
+    return new_list
+
+
+def delete_section_from_patch(patch, keyword):
+    """
+    Deletes a section from a patch dictionary starting from the keyword.
+
+    :param patch: The dictionary containing patches (dict)
+    :param keyword: The keyword to search for in the patch (str)
+    """
+    for file_path, operations in patch.items():
+        # Filter out operations matching the keyword
+        patch[file_path] = [
+            op for op in operations if keyword not in op.get("what", "")
+        ]
+
+    print(f"Deleted sections containing keyword '{keyword}'.")
