@@ -12,6 +12,8 @@ import json
 import shutil
 import platform
 import subprocess
+import copy
+
 
 # internal
 from .config import Config
@@ -472,6 +474,120 @@ class Croco:
         else:
             patches[file] = patch_details
 
+    def extract_elements_from_file(self,file_name, keyword, line_offset=1):
+        """
+        Extracts the elements of a line located a specified number of lines 
+        after a line containing a specific keyword in a file.
+
+        :param file_name: The name of the file to read (str)
+        :param keyword: The keyword to search for in a line (str)
+        :param line_offset: The number of lines to skip after the keyword (int, default 1)
+        :return: A list containing the elements of the target line
+        """
+        try:
+            # Open the file and read all lines
+            with open(file_name, 'r') as file:
+                lines = file.readlines()
+
+            # Iterate through the lines to find the keyword
+            for i, line in enumerate(lines):
+                if line.strip().startswith(keyword):
+                    # Calculate the target line index
+                    target_line_index = i + line_offset
+                    if target_line_index < len(lines):  # Ensure the index is valid
+                        target_line = lines[target_line_index].strip()
+                        return target_line.split()
+            
+            # Return an empty list if the keyword is not found or no valid line exists
+            return []
+        except FileNotFoundError:
+            print(f"Error: File '{file_name}' not found.")
+            return []
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return []
+
+    def delete_lines_from_file(self,file_name, keyword, line_offset=1, num_lines=1):
+        """
+        Deletes a specified number of lines from a file, starting from specific lines 
+        after a line identified by a keyword plus an optional offset (1-based offset).
+
+        :param file_name: The name of the file to modify (str)
+        :param keyword: The keyword to search for in the file (str)
+        :param line_offset: The number of lines to skip after the keyword (1-based, int, default 1)
+        :param num_lines: The number of lines to delete (int, default 1)
+        """
+        try:
+            # Read all lines from the file
+            with open(file_name, 'r') as file:
+                lines = file.readlines()
+
+            # Find the index of the line containing the keyword
+            for i, line in enumerate(lines):
+                if keyword in line:
+                    # Calculate the first line to delete (adjust for 1-based offset)
+                    start_index = i + line_offset
+                    break
+            else:
+                print(f"Keyword '{keyword}' not found in the file.")
+                return
+
+            # Calculate the end index for deletion
+            end_index = start_index + num_lines
+
+            # Ensure the indices are within bounds
+            if 0 <= start_index < len(lines) and 0 <= end_index <= len(lines):
+                del lines[start_index:end_index]
+            else:
+                print("Error: Calculated indices are out of bounds.")
+                return
+
+            # Write the modified lines back to the file
+            with open(file_name, 'w') as file:
+                file.writelines(lines)
+
+            print(f"Deleted {num_lines} line(s) starting from line {start_index + 1}.")
+
+        except FileNotFoundError:
+            print(f"Error: File '{file_name}' not found.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+
+
+    def copy_and_replace(self,lst, index, new_value):
+        """
+        Creates a copy of the list and replaces the value at a specified index.
+
+        :param lst: The original list (list)
+        :param index: The index of the value to replace (int)
+        :param new_value: The new value to insert (any type)
+        :return: A new list with the replaced value
+        """
+        # Create a copy of the list
+        new_list = lst.copy()
+        
+        # Replace the value at the given index
+        if 0 <= index < len(new_list):  # Ensure index is within bounds
+            new_list[index] = new_value
+        else:
+            print(f"Error: Index {index} is out of range.")
+        
+        return new_list
+
+    def delete_section_from_patch(self, patch, keyword):
+        """
+        Deletes a section from a patch dictionary starting from the keyword.
+
+        :param patch: The dictionary containing patches (dict)
+        :param keyword: The keyword to search for in the patch (str)
+        """
+        for file_path, operations in patch.items():
+            # Filter out operations matching the keyword
+            patch[file_path] = [op for op in operations if keyword not in op.get('what', '')]
+
+        print(f"Deleted sections containing keyword '{keyword}'.")
+
     def setup_case(self):
         # apply the case paches
         case_name = self.case_name
@@ -486,18 +602,29 @@ class Croco:
         if restart :
             #saves initial patches and croco.in
             patches_rst=self.extract_patch_by_partial_filename(patches,'croco.in')
-            filename=self.extract_filenames_from_patches(patches_rst)[0]
-            filename_rst=self.extract_filenames_from_patches(patches_rst)[0]+'_rst'
+            case_capitalized = self.case_name.capitalize()
+            filename = f"TEST_CASES/croco.in.{case_capitalized}"
+            filename_rst=filename+'_rst'
             shutil.copy( os.path.join(self.dirname,filename), os.path.join(self.dirname,filename_rst))
 
             # modifs for first croco.in
-            time_stepping_section = self.extract_time_stepping_from_patches(patches)
-            NTIMES=self.extract_value_by_index(time_stepping_section,'by',0)
+            #time_stepping_section = self.extract_time_stepping_from_patches(patches)
+            #NTIMES=self.extract_value_by_index(time_stepping_section,'by',0)        
+            TIME_LINE=self.extract_elements_from_file(os.path.join(self.dirname,filename),'time_stepping')
+            NTIMES=TIME_LINE[0]
             NTIMES1=int(NTIMES)//2
             NTIMES2=int(NTIMES)-NTIMES1
-            replacement_result=self.copy_and_replace_value_by_index(time_stepping_section,'by',0,str(NTIMES1))
-            self.suppress_patch(patches,time_stepping_section)
-            self.add_patch(patches,replacement_result)
+            NEW_TIME_LINE=self.copy_and_replace(TIME_LINE, 0, NTIMES1)           
+
+            #self.suppress_patch(patches,time_stepping_section)
+            newpatch={"file": filename,
+            'mode': 'insert-after',
+            'what': ' time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO',
+            'insert':  " ".join(map(str, NEW_TIME_LINE)), 
+            'descr': 'change duration for step 1'
+            } 
+            self.add_patch_with_list_support(patches,newpatch)
+          
             newpatch={"file": filename,
             'mode': 'insert-after',
             'what':  'restart:          NRST, NRPFRST / filename',
@@ -506,11 +633,22 @@ class Croco:
             }
             self.add_patch_with_list_support(patches, newpatch)
 
+
             # modifs for second croco.in
-            replacement_result=self.copy_and_replace_value_by_index(time_stepping_section,'by',0,str(NTIMES2))
-            self.suppress_patch(patches_rst,time_stepping_section)
-            self.add_patch(patches_rst,replacement_result)
-            patches_rst[filename_rst] = patches_rst.pop(filename)
+            patches_rst= copy.deepcopy(patches)
+            patches_rst[filename_rst]=patches_rst.pop(filename)
+            self.delete_section_from_patch(patches_rst,'time_stepping')
+
+            NEW_TIME_LINE=self.copy_and_replace(TIME_LINE, 0, NTIMES2)
+
+            newpatch={"file": filename_rst,
+            'mode': 'insert-after',
+            'what': ' time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO',
+            'insert':  " ".join(map(str, NEW_TIME_LINE)), 
+            'descr': 'change duration for step 2'
+            } 
+            self.add_patch_with_list_support(patches_rst,newpatch)
+            print(patches_rst)
 
             newpatch={"file": filename_rst,
             'mode': 'insert-after',
@@ -518,12 +656,22 @@ class Croco:
             'insert':['     2','basin_rst.nc' ],
             'descr': 'change restart ! reading step'
             }
-            self.add_patch_with_list_support(patches_rst, newpatch)
+            self.add_patch_with_list_support(patches_rst, newpatch)            
+            #self.delete_lines_from_file(os.path.join(self.dirname,filename_rst), 'initial:', line_offset=1, num_lines=1)
+      
             self.apply_patches(patches_rst)
+            #self.delete_lines_from_file(os.path.join(self.dirname,filename_rst), 'time_stepping:', line_offset=1, num_lines=1)
 
         # display
         Messaging.step(f"Apply case config : {case_name}")
         self.apply_patches(patches)
+        if restart:
+            self.delete_lines_from_file(os.path.join(self.dirname,filename), 'time_stepping', line_offset=2, num_lines=1)
+            self.delete_lines_from_file(os.path.join(self.dirname,filename), 'restart:', line_offset=3, num_lines=2)
+            self.delete_lines_from_file(os.path.join(self.dirname,filename_rst), 'time_stepping', line_offset=2, num_lines=1)
+            self.delete_lines_from_file(os.path.join(self.dirname,filename_rst), 'initial:', line_offset=3, num_lines=2)
+            self.delete_lines_from_file(os.path.join(self.dirname,filename_rst), 'restart:', line_offset=3, num_lines=2)
+
 
     def setup_variant(self):
         # apply the case paches
