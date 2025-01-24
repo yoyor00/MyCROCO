@@ -1,18 +1,27 @@
 {
-   // openmp
-   "openmp-{threads}": {
-      "configure": "--with-optim=openmp --with-threads={threads}",
-      "tuning_familly": "gnu",
-      "tuning_fflags": "standard",
-      "environ": {
-         "OMP_NUM_THREADS": "{threads}"
-      },
-      "command_prefix": "{tuning.hwloc_bind.openmp}",
-      "unpack": {
-         "threads": [2, 4, 6, 8, 16, 32, 64]
-      },
-      "requires": {
-         "cpu": "{threads}"
-      }
-   }
+	// openmp
+	"openmp-{threads}": {
+		"configure": "--with-optim=openmp --with-threads={threads}",
+		"tuning_familly": "gnu",
+		"tuning_fflags": "standard",
+		"environ": {
+			"OMP_NUM_THREADS": "{threads}"
+		},
+		"command_prefix": "{tuning.hwloc_bind.openmp}",
+		"unpack": {
+			"threads": [
+				2,
+				4,
+				6,
+				8,
+				16,
+				32,
+				64
+			]
+		},
+		"requires": {
+			"cpu": "{threads}"
+		},
+		"restart": 0
+	}
 }
