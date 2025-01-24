@@ -518,8 +518,8 @@
 #  endif
 # endif
 
-# ifdef TRACERS
         DOLOOP2D(Istr,Iend,Jstr,Jend)
+# ifdef TRACERS
 #  ifndef VADV_ADAPT_IMP 
         do k=1,N
           do i=Istr,Iend
