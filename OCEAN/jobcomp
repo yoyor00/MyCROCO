@@ -107,6 +107,7 @@ ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/* $SCRDIR
+ls ${ROOT_DIR}/PISCES/LIB/*    > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/LIB/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/* $SCRDIR
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 ls ${ROOT_DIR}/MUSTANG/*       > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/MUSTANG/* $SCRDIR
@@ -117,6 +118,8 @@ if [[ -e "namelist_pisces_ref" ]] ; then
 else
         \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
         echo "  file namelist_pisces copied from source directory"
+        \cp -f ${ROOT_DIR}/PISCES/SED/namelist_sediment* $RUNDIR
+        echo "  file namelist_sediment copied from source directory"
 fi
 
 if [[ -d MUSTANG_NAMELIST ]]; then
@@ -190,6 +193,20 @@ else
 	echo "Unknown Operating System"
 	exit
 fi
+
+# PISCES Business
+if $($CPP1 testkeys.F | grep -i -q p2zisdefined) ; then
+        echo "Simple version of PISCES is defined : copy the appropriate namelist"
+        \cp -f $RUNDIR/namelist_pisces_cfg_p2z  $RUNDIR/namelist_pisces_cfg
+        \cp -f $RUNDIR/namelist_pisces_cfg_p2z  $RUNDIR/namelist_pisces_cfg.1
+fi
+if $($CPP1 testkeys.F | grep -i -q p5zisdefined) ; then
+        echo "Quota version of PISCES is defined : copy the appropriate namelist"
+        \cp -f $RUNDIR/namelist_pisces_cfg_p5z  $RUNDIR/namelist_pisces_cfg
+        \cp -f $RUNDIR/namelist_pisces_cfg_p5z  $RUNDIR/namelist_pisces_cfg.1
+fi
+
+
 # Netcdf for netcdf.mod in F90
 FFLAGS1="$FFLAGS1 $NETCDFINC"
 #

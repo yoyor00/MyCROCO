@@ -769,7 +769,7 @@
       call set_psource_ts_tile(Istr,Iend,Jstr,Jend)
 # endif
 #endif
-#if defined PSOURCE && defined ANA_PSOURCE
+#if (defined PSOURCE || defined PSOURCE_MASS) && defined ANA_PSOURCE
 C$OMP BARRIER
 C$OMP MASTER
       call ana_psource_tile (Istr,Iend,Jstr,Jend)

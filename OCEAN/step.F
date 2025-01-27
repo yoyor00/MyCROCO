@@ -24,9 +24,6 @@
 #include "ocean3d.h"
 #include "ocean2d.h"
 #include "mpi_cpl.h"
-#ifdef MUSTANG
-# include "coupler_define_MUSTANG.h"
-#endif
 
 #ifdef AGRIF
       IF (agrif_fixed().NE.sortedint(nbtimes)) return
@@ -157,6 +154,7 @@ C$OMP END PARALLEL
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
       integer itrc
+      character(len=30) cltra
 
 #ifdef FLOATS
       integer chunk_size_flt, Lstr,Lend, flt_str
@@ -575,7 +573,8 @@ C$OMP MASTER
 
 # if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
       do itrc=1,NT
-       call check_tab3d(t(:,:,:,nnew,itrc),'t prestep3d','r',
+        write(cltra,"('( t prestep3d tracer nb ', i2')')")  itrc
+        call check_tab3d(t(:,:,:,nnew,itrc),trim(cltra),'r',
      &  ondevice=.TRUE.)
       enddo
       call check_tab3d(u(:,:,:,nnew),'u prestep3d','u',
@@ -1039,10 +1038,9 @@ C$OMP END MASTER
 #  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
       use comMUSTANG , only : flx_bx, flx_by
       use comsubstance, only : ibedload1, ibedload2
-#  endif
-# endif
-# include "coupler_define_MUSTANG.h"
-#endif
+#  endif /* key_MUSTANG_bedload  key_MUSTANG_V2 */
+# endif /* RVTK_DEBUG_AVANCED  SOLVE3D */
+#endif /* MUSTANG */
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -1081,6 +1079,8 @@ C$OMP END MASTER
       integer itrc, ilay
 
       real t1,t2,t3
+
+      character(len=30) cltra
 
       ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
@@ -1178,7 +1178,7 @@ C$OMP BARRIER
         call ana_morphodyn (tile)
 #   endif
 #  elif defined MUSTANG
-        if (l_morphocoupl .AND. CURRENT_TIME .GE. t_morpho ) then
+        if (l_morphocoupl .AND. time .GE. t_morpho ) then
             call mustang_morpho_main (tile)
         endif
 #  endif
@@ -1233,7 +1233,8 @@ C$OMP END MASTER
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
-        call check_tab3d(t(:,:,:,nnew,itrc),'t step3d','r',
+        write(cltra,"('( t step3d tracer nb ', i2')')")  itrc
+        call check_tab3d(t(:,:,:,nnew,itrc),trim(cltra),'r',
      &    ondevice=.TRUE.)
         !!!call check_tab3d(Akt(:,:,1:N,itrc),'Akt aft step3d_t','r')
       enddo

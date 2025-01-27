@@ -403,7 +403,7 @@
 #   define key_pisces
 #   define key_ligand
 #   undef key_pisces_quota
-#   undef key_pisces_light
+#   undef key_pisces_npzd
 #   undef key_sediment
 #  endif
 #  ifdef BIO_NChlPZD
@@ -647,7 +647,6 @@
 #  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  define WAVE_OFFLINE
-#  undef  key_MUSTANG_specif_outputs
 # endif
 /*
 !

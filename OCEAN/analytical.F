@@ -1054,7 +1054,7 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iZOO_)=0.01
             tclm(i,j,k,iDOC_)=5.
             tclm(i,j,k,iFER_)=6.e-4
-#    if ! defined key_pisces_light
+#    if ! defined key_pisces_npzd
             tclm(i,j,k,iCAL_)=0.01
             tclm(i,j,k,iPO4_)=tclm(i,j,k,iNO3_)/16.
             tclm(i,j,k,iSIL_)=91.51
@@ -1146,7 +1146,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iZOO_)) tclm(i,j,k,iZOO_)=0.01
             if (.not.got_tclm(iDOC_)) tclm(i,j,k,iDOC_)=5.
             if (.not.got_tclm(iFER_)) tclm(i,j,k,iFER_)=6.e-4
-#    if ! defined key_pisces_light
+#    if ! defined key_pisces_npzd
             if (.not.got_tclm(iCAL_)) tclm(i,j,k,iCAL_)=0.01
             if (.not.got_tclm(iPO4_)) then
 #     ifdef TEMPERATURE
@@ -2287,7 +2287,7 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iZOO_)) then
             Tsrc0(is,iZOO_)=0.01
           endif
-#     if ! defined key_pisces_light
+#     if ! defined key_pisces_npzd
           if (.not.got_tsrc(iCAL_)) then
             Tsrc0(is,iCAL_)=0.01
           endif
@@ -2381,7 +2381,7 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iPOC_)=Tsrc0(is,iPOC_)
           Tsrc(is,k,iPHY_)=Tsrc0(is,iPHY_)
           Tsrc(is,k,iZOO_)=Tsrc0(is,iZOO_)
-#    if ! defined key_pisces_light
+#    if ! defined key_pisces_npzd
           Tsrc(is,k,iCAL_)=Tsrc0(is,iCAL_)
           Tsrc(is,k,iDIA_)=Tsrc0(is,iDIA_)
           Tsrc(is,k,iDSI_)=Tsrc0(is,iDSI_)
@@ -2533,7 +2533,7 @@ C$    integer  trd, omp_get_thread_num
         real, intent(in) :: hij, hinvij
 
         real :: cff_w, cff_r, cff1_w, cff1_r, Hs, cff, cff1, cff2
-        real, dimension(0:N) :: z_w0 
+        real, dimension(0:N) :: z_w0
         real, dimension(1:N) :: z_r0
         integer :: k
 
@@ -3246,12 +3246,20 @@ C$    integer  trd, omp_get_thread_num
      &           +0.0003099*SiO4**3
             if (.not.got_tbry(iNO3_)) tbry_west(j,k,iNO3_)=xno3
 #  ifdef PISCES
+            if (.not.got_tbry(iDIC_)) tbry_west(j,k,iDIC_)=2150.
+            if (.not.got_tbry(iTAL_)) tbry_west(j,k,iTAL_)=2350.
+            if (.not.got_tbry(iOXY_)) tbry_west(j,k,iOXY_)=200.
             if (.not.got_tbry(iPOC_)) tbry_west(j,k,iPOC_)=0.01
             if (.not.got_tbry(iPHY_)) tbry_west(j,k,iPHY_)=0.01
             if (.not.got_tbry(iZOO_)) tbry_west(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_light
+            if (.not.got_tbry(iDOC_)) tbry_west(j,k,iDOC_)=5.
+            if (.not.got_tbry(iFER_)) tbry_west(j,k,iFER_)=6.e-4
+#   if ! defined key_pisces_npzd
             if (.not.got_tbry(iCAL_)) tbry_west(j,k,iCAL_)=0.01
+            if (.not.got_tbry(iPO4_)) tbry_west(j,k,iPO4_)=xno3/16.
+            if (.not.got_tbry(iSIL_)) tbry_west(j,k,iSIL_)=91.51
             if (.not.got_tbry(iDIA_)) tbry_west(j,k,iDIA_)=0.01
+            if (.not.got_tbry(iMES_)) tbry_west(j,k,iMES_)=0.01
             if (.not.got_tbry(iDSI_)) tbry_west(j,k,iDSI_)=1.5e-3
             if (.not.got_tbry(iBFE_)) tbry_west(j,k,iBFE_)=1.e-2*5.e-6
             if (.not.got_tbry(iGOC_)) tbry_west(j,k,iGOC_)=0.01
@@ -3267,8 +3275,8 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iLGW_)) tbry_west(j,k,iLGW_)=1.e-3
 #   endif
 #   ifdef key_pisces_quota
-!            if (.not.got_tbry(iDON_)) tbry_west(j,k,iDON_)=5.
-!            if (.not.got_tbry(iDOP_)) tbry_west(j,k,iDOP_)=5.
+            if (.not.got_tbry(iDON_)) tbry_west(j,k,iDON_)=5.
+            if (.not.got_tbry(iDOP_)) tbry_west(j,k,iDOP_)=5.
             if (.not.got_tbry(iPON_)) tbry_west(j,k,iPON_)=1.e-2
             if (.not.got_tbry(iPOP_)) tbry_west(j,k,iPOP_)=1.e-2
             if (.not.got_tbry(iNPH_)) tbry_west(j,k,iNPH_)=1.e-2
@@ -3348,12 +3356,20 @@ C$    integer  trd, omp_get_thread_num
      &           +0.0003099*SiO4**3
             if (.not.got_tbry(iNO3_)) tbry_east(j,k,iNO3_)=xno3
 #  ifdef PISCES
+            if (.not.got_tbry(iDIC_)) tbry_east(j,k,iDIC_)=2150.
+            if (.not.got_tbry(iTAL_)) tbry_east(j,k,iTAL_)=2350.
+            if (.not.got_tbry(iOXY_)) tbry_east(j,k,iOXY_)=200.
             if (.not.got_tbry(iPOC_)) tbry_east(j,k,iPOC_)=0.01
             if (.not.got_tbry(iPHY_)) tbry_east(j,k,iPHY_)=0.01
             if (.not.got_tbry(iZOO_)) tbry_east(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_light
+            if (.not.got_tbry(iDOC_)) tbry_east(j,k,iDOC_)=5.
+            if (.not.got_tbry(iFER_)) tbry_east(j,k,iFER_)=6.e-4    
+#   if ! defined key_pisces_npzd
             if (.not.got_tbry(iCAL_)) tbry_east(j,k,iCAL_)=0.01
+            if (.not.got_tbry(iPO4_)) tbry_east(j,k,iPO4_)=xno3/16.
+            if (.not.got_tbry(iSIL_)) tbry_east(j,k,iSIL_)=91.51
             if (.not.got_tbry(iDIA_)) tbry_east(j,k,iDIA_)=0.01
+            if (.not.got_tbry(iMES_)) tbry_east(j,k,iMES_)=0.01
             if (.not.got_tbry(iDSI_)) tbry_east(j,k,iDSI_)=1.5e-3
             if (.not.got_tbry(iBFE_)) tbry_east(j,k,iBFE_)=1.e-2*5.e-6
             if (.not.got_tbry(iGOC_)) tbry_east(j,k,iGOC_)=0.01
@@ -3369,8 +3385,8 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iLGW_)) tbry_east(j,k,iLGW_)=1.e-3
 #   endif
 #   ifdef key_pisces_quota
-!            if (.not.got_tbry(iDON_)) tbry_east(j,k,iDON_)=5.
-!            if (.not.got_tbry(iDOP_)) tbry_east(j,k,iDOP_)=5.
+            if (.not.got_tbry(iDON_)) tbry_east(j,k,iDON_)=5.
+            if (.not.got_tbry(iDOP_)) tbry_east(j,k,iDOP_)=5.
             if (.not.got_tbry(iPON_)) tbry_east(j,k,iPON_)=1.e-2
             if (.not.got_tbry(iPOP_)) tbry_east(j,k,iPOP_)=1.e-2
             if (.not.got_tbry(iNPH_)) tbry_east(j,k,iNPH_)=1.e-2
@@ -3450,29 +3466,37 @@ C$    integer  trd, omp_get_thread_num
      &            +0.0003099*SiO4**3
              if (.not.got_tbry(iNO3_)) tbry_north(j,k,iNO3_)=xno3
 #  ifdef PISCES
-             if (.not.got_tbry(iPOC_)) tbry_north(j,k,iPOC_)=0.01
-             if (.not.got_tbry(iPHY_)) tbry_north(j,k,iPHY_)=0.01
-             if (.not.got_tbry(iZOO_)) tbry_north(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_light
-             if (.not.got_tbry(iCAL_)) tbry_north(j,k,iCAL_)=0.01
-             if (.not.got_tbry(iDIA_)) tbry_north(j,k,iDIA_)=0.01
-             if (.not.got_tbry(iDSI_)) tbry_north(j,k,iDSI_)=1.5e-3
-             if (.not.got_tbry(iBFE_)) tbry_north(j,k,iBFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iGOC_)) tbry_north(j,k,iGOC_)=0.01
-             if (.not.got_tbry(iSFE_)) tbry_north(j,k,iSFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iDFE_)) tbry_north(j,k,iDFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iGSI_)) tbry_north(j,k,iGSI_)=1.e-2*0.15
-             if (.not.got_tbry(iNFE_)) tbry_north(j,k,iNFE_)=1.e-2*5e-6
-             if (.not.got_tbry(iNCH_)) tbry_north(j,k,iNCH_)=1.e-2*12./55.
-             if (.not.got_tbry(iDCH_)) tbry_north(j,k,iDCH_)=1.e-2*12./55.
-             if (.not.got_tbry(iNH4_)) tbry_north(j,k,iNH4_)=1.e-2
-#   endif
+            if (.not.got_tbry(iDIC_)) tbry_north(j,k,iDIC_)=2150.
+            if (.not.got_tbry(iTAL_)) tbry_north(j,k,iTAL_)=2350.
+            if (.not.got_tbry(iOXY_)) tbry_north(j,k,iOXY_)=200.
+            if (.not.got_tbry(iPOC_)) tbry_north(j,k,iPOC_)=0.01
+            if (.not.got_tbry(iPHY_)) tbry_north(j,k,iPHY_)=0.01
+            if (.not.got_tbry(iZOO_)) tbry_north(j,k,iZOO_)=0.01
+            if (.not.got_tbry(iDOC_)) tbry_north(j,k,iDOC_)=5.
+            if (.not.got_tbry(iFER_)) tbry_north(j,k,iFER_)=6.e-4
+#   if ! defined key_pisces_npzd
+            if (.not.got_tbry(iCAL_)) tbry_north(j,k,iCAL_)=0.01
+            if (.not.got_tbry(iPO4_)) tbry_north(j,k,iPO4_)=xno3/16.
+            if (.not.got_tbry(iSIL_)) tbry_north(j,k,iSIL_)=91.51
+            if (.not.got_tbry(iDIA_)) tbry_north(j,k,iDIA_)=0.01
+            if (.not.got_tbry(iMES_)) tbry_north(j,k,iMES_)=0.01
+            if (.not.got_tbry(iDSI_)) tbry_north(j,k,iDSI_)=1.5e-3
+            if (.not.got_tbry(iBFE_)) tbry_north(j,k,iBFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iGOC_)) tbry_north(j,k,iGOC_)=0.01
+            if (.not.got_tbry(iSFE_)) tbry_north(j,k,iSFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iDFE_)) tbry_north(j,k,iDFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iGSI_)) tbry_north(j,k,iGSI_)=1.e-2*0.15
+            if (.not.got_tbry(iNFE_)) tbry_north(j,k,iNFE_)=1.e-2*5e-6
+            if (.not.got_tbry(iNCH_)) tbry_north(j,k,iNCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iDCH_)) tbry_north(j,k,iDCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iNH4_)) tbry_north(j,k,iNH4_)=1.e-2
+#   endif             
 #   ifdef key_ligand
              if (.not.got_tbry(iLGW_)) tbry_north(j,k,iLGW_)=1.e-3
 #   endif
 #   ifdef key_pisces_quota
-!             if (.not.got_tbry(iDON_)) tbry_north(j,k,iDON_)=5.
-!             if (.not.got_tbry(iDOP_)) tbry_north(j,k,iDOP_)=5.
+             if (.not.got_tbry(iDON_)) tbry_north(j,k,iDON_)=5.
+             if (.not.got_tbry(iDOP_)) tbry_north(j,k,iDOP_)=5.
              if (.not.got_tbry(iPON_)) tbry_north(j,k,iPON_)=1.e-2
              if (.not.got_tbry(iPOP_)) tbry_north(j,k,iPOP_)=1.e-2
              if (.not.got_tbry(iNPH_)) tbry_north(j,k,iNPH_)=1.e-2
@@ -3552,29 +3576,37 @@ C$    integer  trd, omp_get_thread_num
      &            +0.0003099*SiO4**3
              if (.not.got_tbry(iNO3_)) tbry_south(j,k,iNO3_)=xno3
 #  ifdef PISCES
-             if (.not.got_tbry(iPOC_)) tbry_south(j,k,iPOC_)=0.01
-             if (.not.got_tbry(iPHY_)) tbry_south(j,k,iPHY_)=0.01
-             if (.not.got_tbry(iZOO_)) tbry_south(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_light
-             if (.not.got_tbry(iCAL_)) tbry_south(j,k,iCAL_)=0.01
-             if (.not.got_tbry(iDIA_)) tbry_south(j,k,iDIA_)=0.01
-             if (.not.got_tbry(iDSI_)) tbry_south(j,k,iDSI_)=1.5e-3
-             if (.not.got_tbry(iBFE_)) tbry_south(j,k,iBFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iGOC_)) tbry_south(j,k,iGOC_)=0.01
-             if (.not.got_tbry(iSFE_)) tbry_south(j,k,iSFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iDFE_)) tbry_south(j,k,iDFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iGSI_)) tbry_south(j,k,iGSI_)=1.e-2*0.15
-             if (.not.got_tbry(iNFE_)) tbry_south(j,k,iNFE_)=1.e-2*5e-6
-             if (.not.got_tbry(iNCH_)) tbry_south(j,k,iNCH_)=
-     &                                                    1.e-2*12./55.
-             if (.not.got_tbry(iDCH_)) tbry_south(j,k,iDCH_)=
-     &                                                    1.e-2*12./55.
-             if (.not.got_tbry(iNH4_)) tbry_south(j,k,iNH4_)=1.e-2
+            if (.not.got_tbry(iDIC_)) tbry_south(j,k,iDIC_)=2150.
+            if (.not.got_tbry(iTAL_)) tbry_south(j,k,iTAL_)=2350.
+            if (.not.got_tbry(iOXY_)) tbry_south(j,k,iOXY_)=200.
+            if (.not.got_tbry(iPOC_)) tbry_south(j,k,iPOC_)=0.01
+            if (.not.got_tbry(iPHY_)) tbry_south(j,k,iPHY_)=0.01
+            if (.not.got_tbry(iZOO_)) tbry_south(j,k,iZOO_)=0.01
+            if (.not.got_tbry(iDOC_)) tbry_south(j,k,iDOC_)=5.
+            if (.not.got_tbry(iFER_)) tbry_south(j,k,iFER_)=6.e-4
+#   if ! defined key_pisces_npzd
+            if (.not.got_tbry(iCAL_)) tbry_south(j,k,iCAL_)=0.01
+            if (.not.got_tbry(iPO4_)) tbry_south(j,k,iPO4_)=xno3/16.
+            if (.not.got_tbry(iSIL_)) tbry_south(j,k,iSIL_)=91.51
+            if (.not.got_tbry(iDIA_)) tbry_south(j,k,iDIA_)=0.01
+            if (.not.got_tbry(iMES_)) tbry_south(j,k,iMES_)=0.01
+            if (.not.got_tbry(iDSI_)) tbry_south(j,k,iDSI_)=1.5e-3
+            if (.not.got_tbry(iBFE_)) tbry_south(j,k,iBFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iGOC_)) tbry_south(j,k,iGOC_)=0.01
+            if (.not.got_tbry(iSFE_)) tbry_south(j,k,iSFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iDFE_)) tbry_south(j,k,iDFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iGSI_)) tbry_south(j,k,iGSI_)=1.e-2*0.15
+            if (.not.got_tbry(iNFE_)) tbry_south(j,k,iNFE_)=1.e-2*5e-6
+            if (.not.got_tbry(iNCH_)) tbry_south(j,k,iNCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iDCH_)) tbry_south(j,k,iDCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iNH4_)) tbry_south(j,k,iNH4_)=1.e-2
 #   endif
 #   ifdef key_ligand
              if (.not.got_tbry(iLGW_)) tbry_south(j,k,iLGW_)=1.e-3
 #   endif
 #   ifdef key_pisces_quota
+             if (.not.got_tbry(iDON_)) tbry_south(j,k,iDON_)=5.
+             if (.not.got_tbry(iDOP_)) tbry_south(j,k,iDOP_)=5.
              if (.not.got_tbry(iPON_)) tbry_south(j,k,iPON_)=1.e-2
              if (.not.got_tbry(iPOP_)) tbry_south(j,k,iPOP_)=1.e-2
              if (.not.got_tbry(iNPH_)) tbry_south(j,k,iNPH_)=1.e-2

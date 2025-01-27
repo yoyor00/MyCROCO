@@ -817,7 +817,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(6,indxNO3)='lat_rho lon_rho                           '
       vname(7,indxNO3)='                                          '
 
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       vname(1,indxCAL)='CACO3                                     '
       vname(2,indxCAL)='Calcite                                   '
       vname(3,indxCAL)='umol C L-1                                '
@@ -4804,7 +4804,17 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molC/m3/s                                  '
         vname(4,indxbioFlux+Nironsed-1)=
      &     'Nironsed         , scalar, series          '
-#   if defined key_pisces_light
+
+        vname(1,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2                         '
+        vname(2,indxbioFlux+Npronewo2-1)=
+     &     'o2 production by the NP         '
+        vname(3,indxbioFlux+Npronewo2-1)=
+     &     'molC/m3/s                       '
+        vname(4,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2         , scalar, series'
+
+#   if defined key_pisces_npzd
         vname(1,indxbioFlux+Npronew-1)=
      &     'Thetanano                         '
         vname(2,indxbioFlux+Npronew-1)=
@@ -4868,15 +4878,6 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molFe/m3/s                      '
       vname(4,indxbioFlux+Nprofed-1)=
      &     'PFeD          , scalar, series  '
-
-        vname(1,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2                         '
-        vname(2,indxbioFlux+Npronewo2-1)=
-     &     'o2 production by the NP         '
-        vname(3,indxbioFlux+Npronewo2-1)=
-     &     'molC/m3/s                       '
-        vname(4,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2         , scalar, series'
 
         vname(1,indxbioFlux+Nprorego2-1)=
      &     'PPRego2                                    '
@@ -4985,7 +4986,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molN/m2/s                         '
       vname(4,indxbioVSink+Nnitrpot-1)=
      &     'Nfix            , scalar, series  '
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       vname(1,indxbioVSink+Nsinkfer-1)=
      &     'EPFE100                          '
       vname(2,indxbioVSink+Nsinkfer-1)=
