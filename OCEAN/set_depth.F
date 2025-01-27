@@ -788,10 +788,9 @@ C$    integer omp_get_thread_num
       real :: z_decal
       real,parameter :: dzpena_min=0.25
       real :: pena_ref
-      real z_u,z_bot,z_top,z_v,z_h,z_right,z_r1
-      real :: s1
+      real z_bottom,r_bottom,r1
       real cff4,cff5,cff6,cff7,cff8
-      integer :: i1,j1,k1
+      integer :: kbottom
       real eps
       parameter (eps=1.e-14)
 !
