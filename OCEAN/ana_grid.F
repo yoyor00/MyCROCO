@@ -589,10 +589,10 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
             h(i,j)=depth-ridge_height
           endif
 #  endif
-# if defined PENALIZATION
-          h_pena_target(i,j) = h(i,j)
-          h(i,j) = 0.5*(depth + h(i,j)) 
-#endif
+#  ifdef PENALIZATION
+          h_pena_target(i,j)=h(i,j)
+          h(i,j)=0.5*(depth+h(i,j)) 
+#  endif
         enddo
       enddo
 
@@ -610,11 +610,11 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         do i=IstrR,IendR
           h(i,j)=depth*(1-0.6*exp(-cff*((xr(i,j)-0.5*xl)**2+
      &                                  (yr(i,j)-0.5*el)**2)))
-#  if defined POROSITY || defined PERMEABILITY
+#  ifdef PENALIZATION
 ! Pressure gradient test
           h_pena_target(i,j) = h(i,j)
           h(i,j) = depth
-#endif
+#  endif
         enddo
       enddo
 

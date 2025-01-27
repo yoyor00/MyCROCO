@@ -1293,10 +1293,10 @@
           do i=IstrU,Iend
 #   if defined POROSITY
             DC3D(i,j,k)=0.5625*(Hzf(i  ,j,k)+Hzf(i-1,j,k))
-     &             -0.0625*(Hzf(i+1,j,k)+Hzf(i-2,j,k))
+     &                 -0.0625*(Hzf(i+1,j,k)+Hzf(i-2,j,k))
 #   else
             DC3D(i,j,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
-     &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
+     &                 -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
 #   endif
           enddo
         enddo
@@ -1333,7 +1333,7 @@
 #  ifdef UV_VADV_SPLINES
         do k=1,N
           do i=IstrU,Iend
-            DC(i,k)=DC3(i,j,k)
+            DC(i,k)=DC3D(i,j,k)
           enddo
         enddo
         do i=IstrU,Iend     ! Construct parabolic splines: here
