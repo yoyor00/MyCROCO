@@ -4,6 +4,7 @@ stages:
   - run
 
 variables:
+  GIT_STRATEGY: clone
   TERM: "xterm-256color"
   CVTKHOME: "$CI_PROJECT_DIR/CVTK/test_repro"
   PERFRSTHOME: "$CI_PROJECT_DIR/CVTK/test_perfrst"
