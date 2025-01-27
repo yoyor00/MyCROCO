@@ -235,12 +235,12 @@ C$    integer omp_get_thread_num
       endif
 #  endif
 !$acc end kernels
-
+ 
 #  undef I_RANGE
 #  undef J_RANGE
 
 #  if defined BD_EXCHANGE
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_r(START_2D_ARRAY,1))
@@ -369,7 +369,7 @@ C$    integer omp_get_thread_num
 #   undef J_RANGE
 
 #   if defined BD_EXCHANGE
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_r(START_2D_ARRAY,1))
@@ -817,9 +817,8 @@ C$    integer omp_get_thread_num
 !
 
       z_decal = 2.19722/smooth_crit
-      epsilon_pena=dt/2.
 
-      do k=N,1,-1
+      do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
             pena_r(i,j,k)=0.
@@ -829,42 +828,52 @@ C$    integer omp_get_thread_num
 
       do j=JstrR,JendR
         do i=IstrR,IendR
-          z_u=-h_pena_target(i,j)
-          z_h=-hgrid(i,j)
-          if (abs(z_h-z_u)<=-0.1) then
-            pena_r(i,j,:)=0.
-          else
-            cff5=-HUGE(1.)
-            do k=N,1,-1 ! compute velocity above floor
-              cff7=(z_r(i,j,k)-z_u)/Zob(i,j)
-              if (cff7>=1.) then
-                cff4=0.5*(v(i  ,j,k,nrhs)+v(i  ,j+1,k,nrhs))
-                cff6=0.5*(u(i  ,j,k,nrhs)+u(i+1,j ,k,nrhs))
-                cff5=SQRT(cff6*cff6+cff4*cff4)
-                k1 = k  ! Vertical index of last level
-                cff4=min(Cdb_max,max((vonKar/LOG(cff7))**2,Cdb_min))
-                pena_ref=dt*cff4*cff5/(0.5*(Hz(i-1,j,k)+Hz(i,j,k)))
-                pena_ref=max(min(pena_ref,1.-1.D-4),1.D-4)
-                z_bot=z_w(i,j,k-1)
-                z_top=z_w(i,j,k)
-                z_r1=(z_u-(z_r(i,j,k)))/(z_top-z_bot)
-              else 
-                exit
-              endif
-            enddo
-            s1=2.*atanh(1.-2.*pena_ref)/(z_decal-z_r1)
-            do k=N,1,-1
-              z_bot=z_w(i,j,k-1)
-              z_top=z_w(i,j,k)
-              z_right=(z_u-(z_r(i,j,k)))/(z_top-z_bot)
-              if (z_right<1.0001*z_r1) then
-                pena_r(i,j,k)=0.
-              else
-                pena_r(i,j,k)=pena_ref+(1.-pena_ref)*
-     &                       (tanh(smooth_crit*0.5*(z_right-z_r1)))
-              endif
-            enddo
-          endif
+          z_bottom=-h_pena_target(i,j)
+          do k=N,1,-1
+            ! compute kbottom Vertical index of last wet level
+            ! such that z(r) > z_bottom + Zob 
+            if (z_r(i,j,k)>=z_bottom+Zob(i,j)) then
+              kbottom = k
+            else 
+              exit
+            endif
+          enddo
+
+          ! Compute velocity magnitude at last wet level
+          cff4=0.5*(v(i  ,j,kbottom,nrhs)+v(i  ,j+1,kbottom,nrhs))
+          cff6=0.5*(u(i  ,j,kbottom,nrhs)+u(i+1,j ,kbottom,nrhs))
+          cff5=SQRT(cff6*cff6+cff4*cff4)
+
+          ! Deduce pena_ref the permeability equivalent to the friction
+
+          cff7 = (z_r(i,j,kbottom)-z_bottom)/Zob(i,j)
+          cff4=min(Cdb_max,max((vonKar/LOG(cff7))**2,Cdb_min))
+          pena_ref=dt*cff4*cff5/Hz(i,j,kbottom)
+
+          ! Clipping
+          pena_ref=max(min(pena_ref,1.),0.)
+
+          ! Distance between the last ocean level (at T points) and the bottom 
+          ! scaled by the last ocean layer height
+
+          r_bottom=(z_bottom-(z_r(i,j,kbottom)))/Hzf(i,j,kbottom)
+
+          do k=N,1,-1
+          ! Distance between the ocean level k (at T points) and the bottom 
+          ! scaled by the height of layer k
+            r1=(z_bottom-z_r(i,j,k))/Hzf(i,j,k)
+
+            ! No friction above last ocean level
+            if (k > kbottom) then
+              pena_r(i,j,k)=0.
+            else
+            ! The friction varies from pena_ref at the last ocean level to 1 
+            ! inside the solid region
+
+              pena_r(i,j,k)=pena_ref+(1.-pena_ref)*
+     &                    (tanh(smooth_crit*0.5*(r1-r_bottom)))
+            endif
+          enddo
         enddo
       enddo
        
@@ -1259,7 +1268,7 @@ C$    integer omp_get_thread_num
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined BD_EXCHANGE
-#   ifdef THREE_GHOST_POINTS_UV  
+#   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
