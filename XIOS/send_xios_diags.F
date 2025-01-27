@@ -2628,18 +2628,6 @@ c !$acc wait
       endif
 
 # ifdef ABL1D
-      if (xios_field_is_active("uwnd")) then
-      call xios_send_field("uwnd",u_abl(:,:,2,nstp))
-      endif
-      if (xios_field_is_active("vwnd")) then
-      call xios_send_field("vwnd",v_abl(:,:,2,nstp))
-      endif
-      if (xios_field_is_active("tair")) then
-      call xios_send_field("tair",tq_abl(:,:,2,nstp,1))
-      endif
-      if (xios_field_is_active("rhum")) then
-      call xios_send_field("rhum",tq_abl(:,:,2,nstp,2))
-      endif
       if (xios_field_is_active("zr_abl")) then
       call xios_send_field("zr_abl",zr_abl)
       endif
