@@ -82,8 +82,6 @@ variables:
       echo "Data for reg run ready :" $DATAREG
     fi   
 
-    fi   
-
 .get_var_repro: &get_var_repro
   variables:
     RUN_HOME: $CVTKHOME
