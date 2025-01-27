@@ -1333,8 +1333,7 @@
 #  ifdef UV_VADV_SPLINES
         do k=1,N
           do i=IstrU,Iend
-            DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i-1,j,k))
-     &             -0.0625*(HZR(i+1,j,k)+HZR(i-2,j,k))
+            DC(i,k)=DC3(i,j,k)
           enddo
         enddo
         do i=IstrU,Iend     ! Construct parabolic splines: here
@@ -1586,8 +1585,7 @@
 #  ifdef UV_VADV_SPLINES
           do k=1,N
             do i=Istr,Iend
-              DC(i,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
-     &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
+              DC(i,k)=DC3D(i,j,k)
             enddo
           enddo
           do i=Istr,Iend    ! Construct parabolic splines: here
