@@ -22,12 +22,12 @@
       common /ablgrid_ght/zr_abl /ablgrid_ghw/zw_abl
       common /ablgrid_e3t/Hzr_abl /ablgrid_e3w/Hzw_abl
 
-      real avm_abl (GLOBAL_2D_ARRAY,N_abl       )
-      real avt_abl (GLOBAL_2D_ARRAY,N_abl       )
-      real mxld_abl(GLOBAL_2D_ARRAY,N_abl       )
-      real mxlm_abl(GLOBAL_2D_ARRAY,N_abl       )
+      real avm_abl (GLOBAL_2D_ARRAY,N_abl,jptime)
+      real avt_abl (GLOBAL_2D_ARRAY,N_abl,jptime)
+      real mxld_abl(GLOBAL_2D_ARRAY,N_abl,jptime)
+      real mxlm_abl(GLOBAL_2D_ARRAY,N_abl,jptime)
       real tke_abl (GLOBAL_2D_ARRAY,N_abl,jptime)
-      real ablh    (GLOBAL_2D_ARRAY             )
+      real ablh    (GLOBAL_2D_ARRAY,      jptime)
       common /ablturb_avm/avm_abl /ablturb_avt/avt_abl
       common /ablturb_mxld/mxld_abl /ablturb_mxlm/mxlm_abl
       common /ablturb_tke/tke_abl /ablturb_ablh/ablh
