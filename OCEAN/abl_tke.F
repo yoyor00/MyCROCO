@@ -136,7 +136,6 @@
           elem_a(i,1) = 0.
           elem_c(i,1) = 0.
           elem_b(i,1) = 1.
-          !++ Top Neumann B.C.
           !++ Top Dirichlet B.C.
           elem_a(i,N_abl) = 0.
           elem_c(i,N_abl) = 0.
