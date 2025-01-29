@@ -28,7 +28,6 @@ class ConfigFile:
     def _apply_vars(value: str, var_name: str, var_value: str) -> str:
         return value.replace("{" + var_name + "}", str(var_value))
 
-
     @staticmethod
     def _tranverse_and_apply_vars(element, var_name: str, var_value):
         if isinstance(element, list):

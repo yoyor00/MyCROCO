@@ -184,7 +184,10 @@ def recurse_compare_current_dim(
                 current_dims=current_dims + [str(i)],
             )
 
-def compare_netcdf_variables(ref: Dataset, actual: Dataset, skipped=["spherical","hc"]) -> None:
+
+def compare_netcdf_variables(
+    ref: Dataset, actual: Dataset, skipped=["spherical", "hc"]
+) -> None:
     """
     Compare variables between two NetCDF datasets, checking for shape consistency
     and value equality. Logs detailed errors if discrepancies are found.
@@ -207,12 +210,14 @@ def compare_netcdf_variables(ref: Dataset, actual: Dataset, skipped=["spherical"
             # Log detailed errors with recursion if needed
             log_comparison_errors(ref, actual, var, error_logger)
 
+
 def compare_shapes(ref: Dataset, actual: Dataset, var: str) -> None:
     shape_ref = ref.variables[var].shape
     shape_actual = actual.variables[var].shape
     if shape_ref != shape_actual:
         Messaging.step_error(f"Shape is not the same for variable '{var}'")
         raise Exception(f"Shape is not the same for variable '{var}'")
+
 
 def compare_values(ref: Dataset, actual: Dataset, var: str) -> None:
     np_ref, np_actual = extract_comparable_arrays(ref, actual, var)
@@ -223,28 +228,42 @@ def compare_values(ref: Dataset, actual: Dataset, var: str) -> None:
 
     if not numpy.allclose(np_ref, np_actual):
         need_value_compare = True
-        error_logger.append_raw(var, f"Variable '{var}' not close equal via numpy.allclose()")
+        error_logger.append_raw(
+            var, f"Variable '{var}' not close equal via numpy.allclose()"
+        )
 
     if (np_ref != np_actual).any():
         need_value_compare = True
-        error_logger.append_raw(var, f"Variable '{var}' not strict equal via numpy.any()")
+        error_logger.append_raw(
+            var, f"Variable '{var}' not strict equal via numpy.any()"
+        )
 
     return need_value_compare, error_logger
+
 
 def extract_comparable_arrays(ref: Dataset, actual: Dataset, var: str):
     shape_ref = ref.variables[var].shape
 
     # [1:-1, 1:-1] to check only interior domain
     if len(shape_ref) == 2:
-        return numpy.array(ref.variables[var])[1:-1, 1:-1], numpy.array(actual.variables[var])[1:-1, 1:-1]
+        return numpy.array(ref.variables[var])[1:-1, 1:-1], numpy.array(
+            actual.variables[var]
+        )[1:-1, 1:-1]
     elif len(shape_ref) == 3:
-        return numpy.array(ref.variables[var])[:, 1:-1, 1:-1], numpy.array(actual.variables[var])[:, 1:-1, 1:-1]
+        return numpy.array(ref.variables[var])[:, 1:-1, 1:-1], numpy.array(
+            actual.variables[var]
+        )[:, 1:-1, 1:-1]
     elif len(shape_ref) == 4:
-        return numpy.array(ref.variables[var])[:, :, 1:-1, 1:-1], numpy.array(actual.variables[var])[:, :, 1:-1, 1:-1]
+        return numpy.array(ref.variables[var])[:, :, 1:-1, 1:-1], numpy.array(
+            actual.variables[var]
+        )[:, :, 1:-1, 1:-1]
     else:
         return numpy.array(ref.variables[var]), numpy.array(actual.variables[var])
 
-def log_comparison_errors(ref: Dataset, actual: Dataset, var: str, error_logger: CompareErrorLogger) -> None:
+
+def log_comparison_errors(
+    ref: Dataset, actual: Dataset, var: str, error_logger: CompareErrorLogger
+) -> None:
     recurse_compare_current_dim(
         error_logger,
         var,

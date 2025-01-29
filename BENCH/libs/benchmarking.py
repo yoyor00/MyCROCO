@@ -99,66 +99,66 @@ class Benchmarking:
         return res
 
     def run(self):
-        # vars
-        cnt = len(self.instances)
-        variant_ref_name = self.config.variant_ref_name
+        self.build_instances()
+        self.process_instances()
+        self.plot_results()
+        self.generate_reports()
 
-        # build
+    def build_instances(self):
+        """Handles the build step."""
         if "build" in self.config.modes:
             for id, instance in enumerate(self.instances):
                 instance.build(
-                    extra_info=f" - [ {id + 1} / {cnt} ]",
+                    extra_info=f" - [ {id + 1} / {len(self.instances)} ]",
                     force_rebuild=self.config.rebuild,
                 )
 
-        # run
-        if (
-            "run" in self.config.modes
-            or "check" in self.config.modes
-            or "plotphy" in self.config.modes
-            or "mesh" in self.config.modes
-            or "anim" in self.config.modes
-        ):
-            instance: Croco
+    def process_instances(self):
+        """Handles running, checking, plotting, and mesh processing in one loop."""
+
+        list_modes = ["run", "check", "plotphy", "mesh", "anim"]
+        if any(mode in self.config.modes for mode in list_modes):
             for id, instance in enumerate(self.instances):
-                # run
+                instance: Croco  # Explicit annotation
+
                 if "run" in self.config.modes:
-                    instance.run(extra_info=f" - [ {id + 1} / {cnt} ]")
-                # check
+                    instance.run(extra_info=f" - [ {id + 1} / {len(self.instances)} ]")
+
                 if "check" in self.config.modes:
                     instance.check()
-                # physical plot
+
                 if "plotphy" in self.config.modes:
-                    #
                     instance.plotphy()
-                # render meshes
+
                 if "mesh" in self.config.modes:
                     instance.dump_mesh()
-                # render meshes
+
                 if "anim" in self.config.modes:
                     instance.dump_mesh(anim=True)
-                # if need to store the ref
-                if self.config.build_ref and instance.variant_name == variant_ref_name:
+
+                if (
+                    self.config.build_ref
+                    and instance.variant_name == self.config.variant_ref_name
+                ):
                     instance.make_ref()
 
-        # plot
+    def plot_results(self):
+        """Handles plotting if required."""
         if "plot" in self.config.modes:
             self.plot()
 
-        # report
+    def generate_reports(self):
+        """Handles reporting and HTML generation."""
         if self.config.report:
             self.config.report.save()
             self.config.report.print()
-
-        # html
         if self.config.html:
             generate_html(
                 self.config.results,
                 output_file=os.path.join(self.config.results, "treeview.html"),
             )
-
         if self.config.report.contains_false():
-            Messaging.step_error("Error : False detect in report")
+            Messaging.step_error("Error: False detected in report")
 
     def dump_bench_infos(self):
         # dump bench infos

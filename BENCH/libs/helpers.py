@@ -116,7 +116,6 @@ def run_shell_command_time(command, logfilename=None, verbose: bool = False):
             raise Exception(f"An error occurred while running the command: {e}") from e
 
 
-
 def replace_in_file(in_path: str, out_path: str, pattern: str, replace_by: str):
     """Patch a file by replacing some patterns inside."""
 
@@ -450,6 +449,7 @@ def copy_tree_with_absolute_symlinks(src, dest):
             elif os.path.isfile(src_path):
                 create_symlink(src_path, dest_path)
             # Directories are handled by os.makedirs above, so skip them
+
 
 def extract_patch_by_partial_filename(patches, partial_filename):
     filtered_patches = {
