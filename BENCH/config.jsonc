@@ -1,121 +1,102 @@
 {
-	///////////////////////////// IMPOTS ///////////////////////////////////////
-	"imports": {
-		"hosts": [ "config.d/hosts/*" ],
-		"cases": [ "config.d/cases/*" ],
-		"variants": [ "config.d/variants/*" ]
-	},
-	///////////////////////////// TUNING ///////////////////////////////////////
-	"hosts": {
-		"@default": {
-			"ressources": {
-				"cpu": 8,
-				"gpu": 1
-			},
-			"tuning": {
-				"gnu": {
-					"extra": "-march=native",
-					"standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy",
-					"debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
-					"mpi_options": ""
-				},
-				"intel": {
-					"extra": "",
-					"standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
-					"debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
-					"mpi_options": ""
-				},
-				"nvfortran": {
-					"extra": "-tp=native",
-					"standard": "-O2 -fast -g -r8 -i4 -mcmodel=medium",
-					"debug": "-O0 -fast -g -r8 -i4 -mcmodel=medium",
-					"mpi_options": ""
-				},
-				"environ":{
-					"OMP_PROC_BIND": "spread"
-				},
-				"hwloc_bind": {
-					"openmp": "",
-					"mpirun": ""
-				}
-			}
-		}
-	},
-	////////////////////////////// DEFAULT SELECTION ///////////////////////////
-	"default_selection": {
-		"cases": ["BASIN", "BASIN-LARGE"],
-		"variants" : ["@cpu"]
-	},
-	////////////////////////////// PRE-SELECTIONS //////////////////////////////
-	"meta_variants": {
-		"@debug": [
-			"sequential-debug",
-			"mpi-debug-4"
-		],
-		"@debug-ifort": [
-			"sequential-debug-ifort",
-			"mpi-debug-ifort-4"
-		],
-		"@functionnal": [
-			"sequential-debug",
-			"mpi-debug-4",
-			"sequential",
-			"mpi-4"
-		],
-		"@functionnal-ifort": [
-			"sequential-debug-ifort",
-			"mpi-debug-ifort-4",
-			"sequential-ifort",
-			"mpi-ifort-4"
-		],
-		"@wip-all": [
-			"sequential",
-			"openmp-2",
-			"openmp-4",
-			"openmp-8",
-			"mpi-2",
-			"mpi-4",
-			"mpi-8",
-			"openacc-native",
-			"openacc-psyclone"
-		],
-		"@cpu": [
-			"sequential",
-			"openmp-2",
-			"openmp-4",
-			"openmp-8",
-			"mpi-2",
-			"mpi-4",
-			"mpi-8"
-		],
-		"@gpu": [
-			"openacc-native",
-			"openacc-psyclone"
-		],
-		"@ci": [
-			"sequential"
-		],
-		"@nvhpc": [
-			"sequential",
-			"sequential-nvfortran",
-			"sequential-nvfortran-acc-multicore-2",
-			"sequential-nvfortran-acc-multicore-4",
-			"sequential-nvfortran-acc-multicore-8",
-			"openmp-8"
-		]
-	},
-	"meta_cases": {
-		"@debug": [
-			"BASIN",
-			"BENGUELA_VHR_TIDES_BULK"
-		],
-	},
-	////////////////////////////// VARIANTS ////////////////////////////////////
-	"variants": {
-		// Look inside condif.d/variants/* to see what is imported here from dir.
-	},
-	////////////////////////////// CASES ///////////////////////////////////////
-	"cases": {
-		// Look inside condif.d/cases/* to see what is imported here from dir.
-	}
+  ///////////////////////////// IMPOTS ///////////////////////////////////////
+  "imports": {
+    "hosts": ["config.d/hosts/*"],
+    "cases": ["config.d/cases/*"],
+    "variants": ["config.d/variants/*"],
+  },
+  ///////////////////////////// TUNING ///////////////////////////////////////
+  "hosts": {
+    "@default": {
+      "ressources": {
+        "cpu": 8,
+        "gpu": 1,
+      },
+      "tuning": {
+        "gnu": {
+          "extra": "-march=native",
+          "standard": "-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy",
+          "debug": "-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888",
+          "mpi_options": "",
+        },
+        "intel": {
+          "extra": "",
+          "standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
+          "debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
+          "mpi_options": "",
+        },
+        "nvfortran": {
+          "extra": "-tp=native",
+          "standard": "-O2 -fast -g -r8 -i4 -mcmodel=medium",
+          "debug": "-O0 -fast -g -r8 -i4 -mcmodel=medium",
+          "mpi_options": "",
+        },
+        "environ": {
+          "OMP_PROC_BIND": "spread",
+        },
+        "hwloc_bind": {
+          "openmp": "",
+          "mpirun": "",
+        },
+      },
+    },
+  },
+  ////////////////////////////// DEFAULT SELECTION ///////////////////////////
+  "default_selection": {
+    "cases": ["BASIN", "BASIN-LARGE"],
+    "variants": ["@cpu"],
+  },
+  ////////////////////////////// PRE-SELECTIONS //////////////////////////////
+  "meta_variants": {
+    "@debug": ["sequential-debug", "mpi-debug-4"],
+    "@debug-ifort": ["sequential-debug-ifort", "mpi-debug-ifort-4"],
+    "@functionnal": ["sequential-debug", "mpi-debug-4", "sequential", "mpi-4"],
+    "@functionnal-ifort": [
+      "sequential-debug-ifort",
+      "mpi-debug-ifort-4",
+      "sequential-ifort",
+      "mpi-ifort-4",
+    ],
+    "@wip-all": [
+      "sequential",
+      "openmp-2",
+      "openmp-4",
+      "openmp-8",
+      "mpi-2",
+      "mpi-4",
+      "mpi-8",
+      "openacc-native",
+      "openacc-psyclone",
+    ],
+    "@cpu": [
+      "sequential",
+      "openmp-2",
+      "openmp-4",
+      "openmp-8",
+      "mpi-2",
+      "mpi-4",
+      "mpi-8",
+    ],
+    "@gpu": ["openacc-native", "openacc-psyclone"],
+    "@ci": ["sequential"],
+    "@nvhpc": [
+      "sequential",
+      "sequential-nvfortran",
+      "sequential-nvfortran-acc-multicore-2",
+      "sequential-nvfortran-acc-multicore-4",
+      "sequential-nvfortran-acc-multicore-8",
+      "openmp-8",
+    ],
+  },
+  "meta_cases": {
+    "@debug": ["BASIN", "BENGUELA_VHR_TIDES_BULK"],
+  },
+  ////////////////////////////// VARIANTS ////////////////////////////////////
+  "variants": {
+    // Look inside condif.d/variants/* to see what is imported here from dir.
+  },
+  ////////////////////////////// CASES ///////////////////////////////////////
+  "cases": {
+    // Look inside condif.d/cases/* to see what is imported here from dir.
+  },
 }

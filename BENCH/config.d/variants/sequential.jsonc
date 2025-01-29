@@ -1,116 +1,108 @@
 // This is a JSONC file with configuration for various sequential setups
 // Each configuration defines attributes like 'configure', 'tuning_familly', etc.
 {
-	"sequential": {
-		"configure": "",
-		"tuning_familly": "gnu",
-		"tuning_fflags": "standard",
-		"environ": {},
-		"command_prefix": "",
-		"requires": {
-			"cpu": 1
-		},
-		"restart": 0
-	},
-	"sequential-debug": {
-		"configure": "",
-		"tuning_familly": "gnu",
-		"tuning_fflags": "debug",
-		"environ": {},
-		"command_prefix": "",
-		"requires": {
-			"cpu": 1
-		},
-		"restart": 0
-	},
-	"sequential-memcheck": {
-		"configure": "FFLAGS=-fsanitize=address CFLAGS=-fsanitize=address",
-		"tuning_familly": "gnu",
-		"tuning_fflags": "standard",
-		"environ": {},
-		"command_prefix": "",
-		"requires": {
-			"cpu": 1
-		},
-		"restart": 0
-	},
-	"sequential-nvfortran": {
-		"configure": "FC=nvfortran",
-		"tuning_familly": "nvfortran",
-		"tuning_fflags": "standard",
-		"environ": {},
-		"command_prefix": "",
-		"requires": {
-			"cpu": 1
-		},
-		"restart": 0
-	},
-	"sequential-ifort": {
-		"configure": "FC=ifort",
-		"tuning_familly": "intel",
-		"tuning_fflags": "standard",
-		"environ": {},
-		"command_prefix": "",
-		"requires": {
-			"cpu": 1
-		},
-		"restart": 0
-	},
-	"sequential-debug-ifort": {
-		"configure": "FC=ifort",
-		"tuning_familly": "intel",
-		"tuning_fflags": "debug",
-		"environ": {},
-		"command_prefix": "",
-		"requires": {
-			"cpu": 1
-		},
-		"restart": 0
-	},
-	"sequential-nvfortran-acc-multicore-{threads}": {
-		"configure": "FC=nvfortran FFLAGS=-acc=multicore -DOPENACC=yes",
-		"tuning_familly": "nvfortran",
-		"tuning_fflags": "standard",
-		"environ": {
-			"OMP_NUM_THREADS": "{threads}"
-		},
-		"command_prefix": "{tuning.hwloc_bind.openmp}",
-		"unpack": {
-			"threads": [
-				2,
-				4,
-				6,
-				8,
-				16,
-				32,
-				64
-			]
-		},
-		"requires": {
-			"cpu": "{threads}"
-		},
-		"restart": 0
-	},
-	"poseidon": {
-		"configure": "--with-optim=poseidon",
-		"tuning_familly": "gnu",
-		"tuning_fflags": "standard",
-		"environ": {},
-		"command_prefix": "",
-		"requires": {
-			"cpu": 1
-		},
-		"restart": 0
-	},
-	"sequential-rst": {
-		"configure": "",
-		"tuning_familly": "gnu",
-		"tuning_fflags": "standard",
-		"environ": {},
-		"command_prefix": "",
-		"requires": {
-			"cpu": 1
-		},
-		"restart": 1
-	}
+  "sequential": {
+    "configure": "",
+    "tuning_familly": "gnu",
+    "tuning_fflags": "standard",
+    "environ": {},
+    "command_prefix": "",
+    "requires": {
+      "cpu": 1,
+    },
+    "restart": 0,
+  },
+  "sequential-debug": {
+    "configure": "",
+    "tuning_familly": "gnu",
+    "tuning_fflags": "debug",
+    "environ": {},
+    "command_prefix": "",
+    "requires": {
+      "cpu": 1,
+    },
+    "restart": 0,
+  },
+  "sequential-memcheck": {
+    "configure": "FFLAGS=-fsanitize=address CFLAGS=-fsanitize=address",
+    "tuning_familly": "gnu",
+    "tuning_fflags": "standard",
+    "environ": {},
+    "command_prefix": "",
+    "requires": {
+      "cpu": 1,
+    },
+    "restart": 0,
+  },
+  "sequential-nvfortran": {
+    "configure": "FC=nvfortran",
+    "tuning_familly": "nvfortran",
+    "tuning_fflags": "standard",
+    "environ": {},
+    "command_prefix": "",
+    "requires": {
+      "cpu": 1,
+    },
+    "restart": 0,
+  },
+  "sequential-ifort": {
+    "configure": "FC=ifort",
+    "tuning_familly": "intel",
+    "tuning_fflags": "standard",
+    "environ": {},
+    "command_prefix": "",
+    "requires": {
+      "cpu": 1,
+    },
+    "restart": 0,
+  },
+  "sequential-debug-ifort": {
+    "configure": "FC=ifort",
+    "tuning_familly": "intel",
+    "tuning_fflags": "debug",
+    "environ": {},
+    "command_prefix": "",
+    "requires": {
+      "cpu": 1,
+    },
+    "restart": 0,
+  },
+  "sequential-nvfortran-acc-multicore-{threads}": {
+    "configure": "FC=nvfortran FFLAGS=-acc=multicore -DOPENACC=yes",
+    "tuning_familly": "nvfortran",
+    "tuning_fflags": "standard",
+    "environ": {
+      "OMP_NUM_THREADS": "{threads}",
+    },
+    "command_prefix": "{tuning.hwloc_bind.openmp}",
+    "unpack": {
+      "threads": [2, 4, 6, 8, 16, 32, 64],
+    },
+    "requires": {
+      "cpu": "{threads}",
+    },
+    "restart": 0,
+  },
+  "poseidon": {
+    "configure": "--with-optim=poseidon",
+    "tuning_familly": "gnu",
+    "tuning_fflags": "standard",
+    "environ": {},
+    "command_prefix": "",
+    "requires": {
+      "cpu": 1,
+    },
+    "restart": 0,
+  },
+  "sequential-rst": {
+    "configure": "",
+    "tuning_familly": "gnu",
+    "tuning_fflags": "standard",
+    "environ": {},
+    "command_prefix": "",
+    "requires": {
+      "cpu": 1,
+    },
+    "restart": 1,
+  },
 }
