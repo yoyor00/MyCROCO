@@ -399,6 +399,27 @@ def apply_vars_in_str(value: str, vars: {}) -> str:
     return value
 
 
+def create_symlink(src_path, dest_path):
+    """Helper function to create a symbolic link."""
+    try:
+        os.symlink(os.path.abspath(src_path), dest_path)
+    except FileExistsError:
+        print(f"The symbolic link {dest_path} already exists, link not created.")
+    except OSError as e:
+        print(f"Error creating symbolic link for {src_path}: {e}")
+
+
+def process_symlink(src_path, dest_path):
+    """Process and create a symlink for an existing symbolic link."""
+    link_target = os.readlink(src_path)
+    # Convert to absolute path if necessary
+    link_target = os.path.join(os.path.dirname(src_path), link_target)
+    link_target = os.path.abspath(link_target)
+
+    if os.path.isfile(link_target):
+        create_symlink(link_target, dest_path)
+
+
 def copy_tree_with_absolute_symlinks(src, dest):
     """
     Copies a directory tree, recreating folders and replacing files with
@@ -423,40 +444,12 @@ def copy_tree_with_absolute_symlinks(src, dest):
             src_path = os.path.join(root, name)
             dest_path = os.path.join(dest_dir, name)
 
-            # Check if the source is a symbolic link
+            # Handle symbolic links and regular files
             if os.path.islink(src_path):
-                # Get the target of the symbolic link
-                link_target = os.readlink(src_path)
-                # Convert to absolute path if necessary
-                link_target = os.path.join(os.path.dirname(src_path), link_target)
-                link_target = os.path.abspath(link_target)
-
-                # Check if the target is a file or directory
-                if os.path.isfile(link_target):
-                    # Create the symbolic link in the destination
-                    try:
-                        os.symlink(link_target, dest_path)
-                    except FileExistsError:
-                        print(
-                            f"The symbolic link {dest_path} already exists, link not created."
-                        )
-                    except OSError as e:
-                        print(f"Error creating symbolic link for {src_path}: {e}")
-
-                elif os.path.isdir(link_target):
-                    pass
+                process_symlink(src_path, dest_path)
             elif os.path.isfile(src_path):
-                # Create a symbolic link for a regular file
-                try:
-                    os.symlink(os.path.abspath(src_path), dest_path)
-                except FileExistsError:
-                    print(f"The file {dest_path} already exists, link not created.")
-                except OSError as e:
-                    print(f"Error creating link for {src_path}: {e}")
-            elif os.path.isdir(src_path):
-                # Skip folders as they are already handled by os.walk
-                pass
-
+                create_symlink(src_path, dest_path)
+            # Directories are handled by os.makedirs above, so skip them
 
 def extract_patch_by_partial_filename(patches, partial_filename):
     filtered_patches = {
