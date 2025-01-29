@@ -215,6 +215,26 @@
       ierr=nf_put_att_text (ncid, varid, 'coordinates', 11,
      &                      'x_rho y_rho')
 # endif
+# ifdef PENALIZATION
+!
+! Raw bathymetry.
+!
+      ierr=nf_def_var (ncid, 'hraw', nf_ftype, 2, r2dgrd, varid)
+      ierr=nf_put_att_text (ncid, varid, 'long_name',  24,
+     &     'raw bathymetry at RHO-points')
+      ierr=nf_put_att_text (ncid, varid, 'units', 5, 'meter')
+      ierr=nf_put_att_text (ncid, varid, 'field', 12,
+     &     'bath, scalar')
+      ierr=nf_put_att_text (ncid, varid, 'standard_name', 33,
+     &     'model_sea_floor_depth_below_geoid')
+#  ifdef SPHERICAL
+      ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
+     &     'lat_rho lon_rho')
+#  else
+      ierr=nf_put_att_text (ncid, varid, 'coordinates', 15,
+     &     'x_rho y_rho')
+#  endif
+# endif
 !
 ! Coriolis Parameter.
 !

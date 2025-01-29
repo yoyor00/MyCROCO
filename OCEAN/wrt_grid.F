@@ -140,6 +140,17 @@
         write(stdout,2) 'h', ncname(1:lstr)
         goto 99                                           !--> ERROR
       endif
+#ifdef PENALIZATION
+!
+! Raw bathymetry.
+!
+      ierr=nf_inq_varid(ncid,'hraw',varid)
+      ierr=nf_fwrite (h(START_2D_ARRAY), ncid, varid, 0, r2dvar)
+      if (ierr.ne.nf_noerr) then
+        write(stdout,2) 'hraw', ncname(1:lstr)
+        goto 99                                           !--> ERROR
+      endif
+#endif
 !
 ! Coriolis parameter.
 !
