@@ -381,11 +381,10 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         Parameters
         ----------
         minicroco_args: str
-            Arguments on the form noramly passed to the minicroco CMake + configure
+            Arguments on the form normally passed to the minicroco CMake + configure
             script which will be translated in what is needed for the old CROCO.
         """
 
-        # configure
         Messaging.step(f"jobcomp-configure {minicroco_args}")
 
         # get options
@@ -397,58 +396,60 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # set case
         self.croco_config.cppdef_h_select_case(options.with_case)
 
-        # extra vars to complete
+        # configure optimization and set flags
+        self.configure_optimisation(options)
+
+        # configure keys
+        self.configure_keys(options)
+
+        # handle extra variables
         extra_vars = {"FFLAGS": [], "LDFLAGS": []}
+        self.handle_variables(options.VARS, self.use_mpi, extra_vars)
 
-        # config
-        use_openmp = False
-        use_mpi = False
-        use_openacc = False
-        use_openacc_psyclone = False
+    def configure_optimisation(self, options):
+        """Handle the optimisation settings."""
+        self.use_openmp = False
+        self.use_mpi = False
+        self.use_openacc = False
+        self.use_openacc_psyclone = False
 
-        # apply variable
-        is_mpi = options.with_optim == "mpi"
-        self.handle_variables(options.VARS, is_mpi, extra_vars)
-
-        # apply optim mode
         if options.with_optim == "seq":
             pass
         elif options.with_optim == "openmp":
-            use_openmp = True
+            self.use_openmp = True
         elif options.with_optim == "mpi":
-            use_mpi = True
+            self.use_mpi = True
         elif options.with_optim == "openacc-native":
-            use_openacc = True
-            use_openacc_psyclone = False
+            self.use_openacc = True
+            self.use_openacc_psyclone = False
         elif options.with_optim == "openacc-psyclone":
-            use_openacc = True
-            use_openacc_psyclone = True
+            self.use_openacc = True
+            self.use_openacc_psyclone = True
         elif options.with_optim == "poseidon":
             raise Exception(f"Variant {options.with_optim} not yet supported")
         else:
             raise Exception(
-                "Invalid optimisation mode from commande line : {minicroco_args}"
+                f"Invalid optimisation mode from commande line : {options.with_optim}"
             )
 
-        # set config
-        self.cppdef_h_set_mpi(use_mpi)
-        self.cppdef_h_set_openmp(use_openmp)
-        self.cppdef_h_enable_openacc(use_openacc)
-        self.cppdef_h_enable_openacc_psyclone(use_openacc_psyclone)
+        self.cppdef_h_set_mpi(self.use_mpi)
+        self.cppdef_h_set_openmp(self.use_openmp)
+        self.cppdef_h_enable_openacc(self.use_openacc)
+        self.cppdef_h_enable_openacc_psyclone(self.use_openacc_psyclone)
+        if self.use_openmp:
+            self.croco_config.param_h_configure_openmp_split(options.with_threads)
+        if self.use_mpi:
+            self.croco_config.param_h_configure_mpi_split(options.with_splitting)
+
+    def configure_keys(self, options):
+        """Configure additional keys if provided."""
         if options.with_keys is not None:
             # Split the string into individual key-value representations
             keys_list = options.with_keys.split(",")
             for key in keys_list:
-                if key.startswith("+"):
-                    status = True
-                elif key.startswith("-"):
-                    status = False
-                # Apply key and status
-                self.croco_config.cppdef_h_set_key(key[1:], status)
-        if use_openmp:
-            self.croco_config.param_h_configure_openmp_split(options.with_threads)
-        if use_mpi:
-            self.croco_config.param_h_configure_mpi_split(options.with_splitting)
+                status = key.startswith("+")
+                if key.startswith("+") or key.startswith("-"):
+                    self.croco_config.cppdef_h_set_key(key[1:], status)
 
     def make(self, make_jobs: str):
         """
