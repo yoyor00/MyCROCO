@@ -13,6 +13,7 @@ variables:
   PERFRSTDIR: "$CI_PROJECT_DIR/.perfrstdir"
   #
   DATAREG: "/data/ForCI-INRIA/VHR_CROCO_FILES_BCK"
+  DATAROOTPATH: "/data"
   #
   # use in case of local gitlab-runner; put VHR_CROCO_FILES_BCK at same level than croco
   # e.g : 
@@ -156,7 +157,7 @@ test_bench_debug:
       --rebuild \
       --host host_ci \
       --compare-to sequential-debug \
-      --data-root-path $DATAREG \
+      --data-root-path $DATAROOTPATH  \
       --html \
       -N
     - |
@@ -166,7 +167,7 @@ test_bench_debug:
       --title debug_cmake \
       --rebuild --host host_ci \
       --compare-to sequential-debug \
-      --data-root-path $DATAREG \
+      --data-root-path $DATAROOTPATH  \
       --html \
       -N
   artifacts:
@@ -194,7 +195,7 @@ test_bench_debug_ifort:
       --host host_ci \
       --jobs 1 \
       --steps build,run  \
-      --data-root-path $DATAREG  \
+      --data-root-path $DATAROOTPATH   \
       --html -N
   artifacts:
     paths:
@@ -218,7 +219,7 @@ test_bench_regional:
       --jobcomp  \
       --rebuild \
       --host host_ci  \
-      --data-root-path $DATAREG  \
+      --data-root-path $DATAROOTPATH  \
       --html -N
   artifacts:
     paths:
