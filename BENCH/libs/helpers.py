@@ -162,8 +162,9 @@ def apply_rule(fname, lines, rule):
     Apply a single rule to a list of lines in memory.
 
     Parameters:
-    - lines: a list of strings (lines from the file)
-    - rule: a dictionary with keys:
+    - fname (str): The name of the file being patched.
+    - lines (list): A list of strings (lines from the file).
+    - rule (dict): A dictionary containing the rule to be applied. It can contain:
         - "what" (str, required): The line to match (after normalization) for certain operations.
         - "by" (str): Line used in 'replace' mode.
         - "insert" (str or list): Line(s) to insert in 'insert-before', 'insert-after', 'insert-after-before' modes.
@@ -171,11 +172,18 @@ def apply_rule(fname, lines, rule):
         - "descr" (str, optional): Description of the rule.
         - "before" (str, required for 'insert-after-before'): The line before which to insert.
         - "after" (str, required for 'insert-after-before'): The line after which to insert.
-    """
 
+    Returns:
+    - list: The modified list of lines after applying the rule.
+    """
     mode = rule.get("mode")
     what = normalize_line(rule.get("what", ""))
     descr = rule.get("descr", "No description provided")
+
+    # Basic validations
+    if not validate_rule(mode, what, rule, descr):
+        return lines
+
     Messaging.step(f"Patching {fname} [ {descr} ]")
 
     # Determine the new line(s) to use based on the mode
@@ -184,10 +192,29 @@ def apply_rule(fname, lines, rule):
     else:
         new_line = rule.get("insert")
 
-    # Basic validations
+    # Handle rule application based on the mode
+    if mode == "replace":
+        return apply_replace_rule(lines, what, new_line, descr)
+    elif mode == "insert-before":
+        return apply_insert_before_rule(lines, what, new_line, descr)
+    elif mode == "insert-after":
+        return apply_insert_after_rule(lines, what, new_line, descr)
+    elif mode == "insert-after-before":
+        return apply_insert_after_before_rule(lines, rule, new_line, descr)
+    elif mode == "insert-at-begin":
+        return apply_insert_at_begin(lines, new_line, descr)
+    elif mode == "insert-at-end":
+        return apply_insert_at_end(lines, new_line, descr)
+
+    print(f"Error: Unknown mode '{mode}' in rule '{descr}'. Skipping rule.")
+    return lines
+
+
+def validate_rule(mode, what, rule, descr):
+    """Validate rule parameters."""
     if not mode:
         print(f"Error: No mode specified for rule '{descr}'. Skipping rule.")
-        return lines
+        return False
     if mode not in [
         "replace",
         "insert-before",
@@ -197,126 +224,130 @@ def apply_rule(fname, lines, rule):
         "insert-at-end",
     ]:
         print(f"Error: Unknown mode '{mode}' in rule '{descr}'. Skipping rule.")
-        return lines
+        return False
     if not what and mode not in ["insert-at-begin", "insert-at-end"]:
         print(
             f"Error: 'what' is required for mode '{mode}' in rule '{descr}'. Skipping rule."
         )
-        return lines
-    if not new_line and mode != "replace":
+        return False
+    if not rule.get("insert") and mode != "replace":
         print(
             f"Error: 'insert' is required for mode '{mode}' in rule '{descr}'. Skipping rule."
         )
-        return lines
-
-    # Specific check for insert-after-before mode
+        return False
     if mode == "insert-after-before":
         line_before = normalize_line(rule.get("before", ""))
         line_after = normalize_line(rule.get("after", ""))
-        if not line_before or not line_after or not new_line:
+        if not line_before or not line_after or not rule.get("insert"):
             print(
                 f"Error: 'before', 'after', and 'insert' must be provided for 'insert-after-before' in rule '{descr}'. Skipping rule."
             )
-            return lines
+            return False
+    return True
 
+
+def apply_replace_rule(lines, what, new_line, descr):
+    """Apply 'replace' mode rule."""
     modified_lines = []
     inserted = False
-
-    if mode == "replace":
-        # Replace the line matching 'what' with 'by'
-        for line in lines:
-            if normalize_line(line) == what:
-                if isinstance(new_line, list):
-                    modified_lines.extend([nl + "\n" for nl in new_line])
-                else:
-                    modified_lines.append(new_line + "\n")
-                inserted = True
+    for line in lines:
+        if normalize_line(line) == what:
+            if isinstance(new_line, list):
+                modified_lines.extend([nl + "\n" for nl in new_line])
             else:
-                modified_lines.append(line)
-        if not inserted:
-            print(
-                f"Warning: No line matched '{what}' for replacement in rule '{descr}'."
-            )
-
-    elif mode == "insert-before":
-        # Insert a new line(s) before the line that matches 'what'
-        for line in lines:
-            if normalize_line(line) == what and not inserted:
-                if isinstance(new_line, list):
-                    modified_lines.extend([nl + "\n" for nl in new_line])
-                else:
-                    modified_lines.append(new_line + "\n")
-                modified_lines.append(line)
-                inserted = True
-            else:
-                modified_lines.append(line)
-        if not inserted:
-            print(
-                f"Warning: No line matched '{what}' to insert before in rule '{descr}'."
-            )
-
-    elif mode == "insert-after":
-        # Insert a new line(s) after the line that matches 'what'
-        for line in lines:
-            if normalize_line(line) == what and not inserted:
-                modified_lines.append(line)
-                if isinstance(new_line, list):
-                    modified_lines.extend([nl + "\n" for nl in new_line])
-                else:
-                    modified_lines.append(new_line + "\n")
-                inserted = True
-            else:
-                modified_lines.append(line)
-        if not inserted:
-            print(
-                f"Warning: No line matched '{what}' to insert after in rule '{descr}'."
-            )
-
-    elif mode == "insert-after-before":
-        # Insert a line(s) between two known lines: after 'after' and before 'before'
-        line_before = normalize_line(rule.get("before", ""))
-        line_after = normalize_line(rule.get("after", ""))
-
-        found_after = False
-        for i, line in enumerate(lines):
-            current_norm = normalize_line(line)
+                modified_lines.append(new_line + "\n")
+            inserted = True
+        else:
             modified_lines.append(line)
+    if not inserted:
+        print(f"Warning: No line matched '{what}' for replacement in rule '{descr}'.")
+    return modified_lines
 
-            if found_after and current_norm == line_before and not inserted:
-                if isinstance(new_line, list):
-                    modified_lines[-1:-1] = [nl + "\n" for nl in new_line]
-                else:
-                    modified_lines.insert(len(modified_lines) - 1, new_line + "\n")
-                inserted = True
 
-            if current_norm == line_after:
-                found_after = True
+def apply_insert_before_rule(lines, what, new_line, descr):
+    """Apply 'insert-before' mode rule."""
+    modified_lines = []
+    inserted = False
+    for line in lines:
+        if normalize_line(line) == what and not inserted:
+            if isinstance(new_line, list):
+                modified_lines.extend([nl + "\n" for nl in new_line])
+            else:
+                modified_lines.append(new_line + "\n")
+            modified_lines.append(line)
+            inserted = True
+        else:
+            modified_lines.append(line)
+    if not inserted:
+        print(f"Warning: No line matched '{what}' to insert before in rule '{descr}'.")
+    return modified_lines
 
-        if not inserted:
-            print(
-                f"Warning: Could not find the sequence 'after' then 'before' for rule '{descr}'. No insertion performed."
-            )
 
-    elif mode == "insert-at-begin":
-        # Insert a new line(s) at the beginning of the file
-        if not inserted:
+def apply_insert_after_rule(lines, what, new_line, descr):
+    """Apply 'insert-after' mode rule."""
+    modified_lines = []
+    inserted = False
+    for line in lines:
+        if normalize_line(line) == what and not inserted:
+            modified_lines.append(line)
             if isinstance(new_line, list):
                 modified_lines.extend([nl + "\n" for nl in new_line])
             else:
                 modified_lines.append(new_line + "\n")
             inserted = True
-        modified_lines.extend(lines)
+        else:
+            modified_lines.append(line)
+    if not inserted:
+        print(f"Warning: No line matched '{what}' to insert after in rule '{descr}'.")
+    return modified_lines
 
-    elif mode == "insert-at-end":
-        # Insert a new line(s) at the end of the file
-        modified_lines.extend(lines)
-        if not inserted:
+
+def apply_insert_after_before_rule(lines, rule, new_line, descr):
+    """Apply 'insert-after-before' mode rule."""
+    line_before = normalize_line(rule.get("before"))
+    line_after = normalize_line(rule.get("after"))
+    modified_lines = []
+    inserted = False
+    found_after = False
+    for i, line in enumerate(lines):
+        current_norm = normalize_line(line)
+        modified_lines.append(line)
+
+        if found_after and current_norm == line_before and not inserted:
             if isinstance(new_line, list):
-                modified_lines.extend([nl + "\n" for nl in new_line])
+                modified_lines[-1:-1] = [nl + "\n" for nl in new_line]
             else:
-                modified_lines.append(new_line + "\n")
+                modified_lines.insert(len(modified_lines) - 1, new_line + "\n")
             inserted = True
 
+        if current_norm == line_after:
+            found_after = True
+    if not inserted:
+        print(
+            f"Warning: Could not find the sequence 'after' then 'before' for rule '{descr}'. No insertion performed."
+        )
+    return modified_lines
+
+
+def apply_insert_at_begin(lines, new_line, descr):
+    """Apply 'insert-at-begin' mode rule."""
+    modified_lines = []
+    if isinstance(new_line, list):
+        modified_lines.extend([nl + "\n" for nl in new_line])
+    else:
+        modified_lines.append(new_line + "\n")
+    modified_lines.extend(lines)
+    return modified_lines
+
+
+def apply_insert_at_end(lines, new_line, descr):
+    """Apply 'insert-at-end' mode rule."""
+    modified_lines = []
+    modified_lines.extend(lines)
+    if isinstance(new_line, list):
+        modified_lines.extend([nl + "\n" for nl in new_line])
+    else:
+        modified_lines.append(new_line + "\n")
     return modified_lines
 
 
