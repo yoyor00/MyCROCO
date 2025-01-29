@@ -932,12 +932,12 @@ C$OMP BARRIER
 # if defined NBQ && defined AGRIF && defined NBQ_CHILD_ONLY
       if (Agrif_Root()) then
         do tile=my_first,my_last
-          call set_depth (tile)
+          call set_depth (tile, 1)
         enddo
       endif
 # elif !defined NBQ
       do tile=my_first,my_last
-        call set_depth (tile)
+        call set_depth (tile, 1)
 #  ifdef POROSITY
         call set_depth_porosity (tile)
 #  endif

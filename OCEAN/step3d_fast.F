@@ -872,7 +872,14 @@ C$OMP END MASTER
 !
 ! Update main grid parameters
 !
-        call set_depth_tile(Istr,Iend,Jstr,Jend)
+        call set_depth_tile(Istr,Iend,Jstr,Jend,1)
+#  ifdef POROSITY
+        call set_depth_porosity_tile(Istr,Iend,Jstr,Jend)
+#  endif
+
+#  ifdef PERMEABILITY
+        call set_depth_permeability_tile(Istr,Iend,Jstr,Jend)
+#  endif
 !
 ! Update derived grid variables
 !
@@ -3922,7 +3929,7 @@ C$OMP END MASTER
 !
 !  Diagnostic evaluation from zeta(m+1)
 !
-        call set_depth_tile(Istr,Iend,Jstr,Jend)
+        call set_depth_tile(Istr,Iend,Jstr,Jend,1)
 
 #  ifdef POROSITY
         call set_depth_porosity_tile(Istr,Iend,Jstr,Jend)
@@ -4096,7 +4103,7 @@ C$OMP END MASTER
      &               )*pm(i,j)*pn(i,j)
      &               *dt)
      &               /(z_w(i,j,N)+h(i,j))
-     &               *(z_w(i,j,k)-z_w(i,j,k-1))
+     &               *(Hzr(i,j,k))
 #  ifdef MASKING
      &               *rmask(i,j)
 #  endif

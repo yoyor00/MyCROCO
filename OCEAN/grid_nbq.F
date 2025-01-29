@@ -42,6 +42,9 @@
 
       integer i,j,k,it
       double precision val1, val2
+#if defined PENALIZATION
+#include "penalization.h"
+#endif
 
 # include "compute_auxiliary_bounds.h"
 !
@@ -95,6 +98,11 @@
         do j=jmin,jmax
           do i=imin,imax
             Hzw_half_nbq(i,j,k)=z_r(i,j,k+1)-z_r(i,j,k)
+#if defined PENALIZATION
+            if (pena_r(i,j,k)+pena_r(i,j,k+1)>0.) then
+              Hzw_half_nbq(i,j,k)=0.5*(Hzr(i,j,k)+Hzr(i,j,k+1))
+            endif
+#endif
           enddo
         enddo
       enddo
@@ -102,6 +110,11 @@
       do j=jmin,jmax
         do i=imin,imax
           Hzw_half_nbq(i,j,0)=z_r(i,j,1)-z_w(i,j,0)
+#if defined PENALIZATION
+          if (pena_r(i,j,1)>0.) then
+            Hzw_half_nbq(i,j,0)=0.5*Hzr(i,j,1)
+          endif
+#endif
           Hzw_half_nbq(i,j,N)=z_w(i,j,N)-z_r(i,j,N)
         enddo
       enddo

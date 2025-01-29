@@ -11,17 +11,18 @@
 #include "cppdefs.h"
 #if defined SOLVE3D || defined WET_DRY
 
-      subroutine set_depth (tile)
+      subroutine set_depth (tile, index)
       implicit none
 # include "param.h"
+      integer index
       integer tile, trd
 C$    integer omp_get_thread_num
 # include "compute_tile_bounds.h"
-      call set_depth_tile (Istr,Iend,Jstr,Jend)
+      call set_depth_tile (Istr,Iend,Jstr,Jend, index)
       return
       end
 
-      subroutine set_depth_tile (Istr,Iend,Jstr,Jend)
+      subroutine set_depth_tile (Istr,Iend,Jstr,Jend,index)
 !
 !----------------------------------------------------------------------
 ! Create S-coordinate system: based on model topography h(i,j),
@@ -33,6 +34,7 @@ C$    integer omp_get_thread_num
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
+      integer index
       real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp,htmp
 # include "param.h"
 # include "grid.h"
@@ -102,10 +104,17 @@ C$    integer omp_get_thread_num
 #  endif
             Zt_avg1(i,j)=zeta(i,j,knew)  ! knew=1 unless modified
                                          ! in ana_initial (JET)
-            hgrid(i,j)=h(i,j)  ! save in grid bathy for penalization
 # endif /* SOLVE3D */
           enddo
         enddo
+
+        if (index == 0) then
+          do j=J_RANGE
+            do i=I_RANGE
+              hgrid(i,j)=h(i,j) ! save in grid bathy for penalization
+            enddo
+          enddo
+        endif
 
 # ifdef NBQ_MASS
         do k=1,N
@@ -492,6 +501,11 @@ C$    integer omp_get_thread_num
           do k=1,N
             Hz(i,j,k)=FZ3(k)-FZ3(k-1)
             pororatio(i,j,k)=Hz(i,j,k)/(z_w(i,j,k)-z_w(i,j,k-1))
+#  ifdef NBQ_MASS
+            Hzr(i,j,k)=Hz(i,j,k)
+            Hz(i,j,k) =Hz(i,j,k)*(1.+rho_grd(i,j,k))
+     &                              +rho_nbq(i,j,k)
+#  endif
           enddo
         enddo
       enddo
