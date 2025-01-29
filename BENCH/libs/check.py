@@ -184,85 +184,85 @@ def recurse_compare_current_dim(
                 current_dims=current_dims + [str(i)],
             )
 
+def compare_netcdf_variables(ref: Dataset, actual: Dataset, skipped=["spherical","hc"]) -> None:
+    """
+    Compare variables between two NetCDF datasets, checking for shape consistency
+    and value equality. Logs detailed errors if discrepancies are found.
 
-##########################################################
-def compare_netcdf_variables(ref: Dataset, actual: Dataset, skiped=["hc"]) -> None:
-    # loop on vars to check
+    Args:
+        ref: Reference NetCDF dataset.
+        actual: Actual NetCDF dataset to compare with.
+        skipped: List of variable names to skip during comparison (default is ["spherical", "hc"]).
+    """
     for var in ref.variables.keys():
-        # print
-        # print(f"---------------- Checking {var} -------------------")
-
-        # skip
-        if var in skiped:
+        if var in skipped:
             continue
+        # Extract and check shapes
+        compare_shapes(ref, actual, var)
 
-        # extract shapes
-        shape_ref = ref.variables[var].shape
-        shape_actual = actual.variables[var].shape
+        # Compare values: interior domain or entire array
+        need_value_compare, error_logger = compare_values(ref, actual, var)
 
-        # check has same shape
-        if shape_ref != shape_actual:
-            Messaging.step_error(f"Shape is not the same for variable '{var}'")
-            raise Exception(f"Shape is not the same for variable '{var}'")
-
-        # skip strings
-        if var == "spherical":
-            continue
-
-        # error logger
-        error_logger = CompareErrorLogger(max_stored=10, max_total=50)
-
-        # faster way
-        # [1:-1, 1:-1] to check only interior domain
-        if len(shape_ref) == 2:
-            np_ref = numpy.array(ref.variables[var])[1:-1, 1:-1]
-            np_actual = numpy.array(actual.variables[var])[1:-1, 1:-1]
-        elif len(shape_ref) == 3:
-            np_ref = numpy.array(ref.variables[var])[:, 1:-1, 1:-1]
-            np_actual = numpy.array(actual.variables[var])[:, 1:-1, 1:-1]
-        elif len(shape_ref) == 4:
-            np_ref = numpy.array(ref.variables[var])[:, :, 1:-1, 1:-1]
-            np_actual = numpy.array(actual.variables[var])[:, :, 1:-1, 1:-1]
-        else:
-            np_ref = numpy.array(ref.variables[var])
-            np_actual = numpy.array(actual.variables[var])
-        need_value_compare = False
-        if not numpy.allclose(np_ref, np_actual):
-            need_value_compare = True
-            error_logger.append_raw(
-                var, f"Variable '{var}' not close equal via numpy.allclose()"
-            )
-        if (np_ref != np_actual).any():
-            need_value_compare = True
-            error_logger.append_raw(
-                var, f"Variable '{var}' not strict equal via numpy.any()"
-            )
-
-        # ------------ if needed for debug
-        # Note : kept if we want to see the exact failing value for debug
-        # Same but by hand recusion
         if need_value_compare:
-            # log all errors
-            recurse_compare_current_dim(
-                error_logger,
-                var,
-                shape_ref,
-                shape_actual,
-                ref.variables[var],
-                actual.variables[var],
-                0,
-            )
+            # Log detailed errors with recursion if needed
+            log_comparison_errors(ref, actual, var, error_logger)
 
-            # in case it is not compared the same way we should not let go
-            if not error_logger.has_error():
-                raise Exception(
-                    "Ref is different from actual because need_value_compare "
-                    + "has been set to true. Nevertheless, error_logger did "
-                    + "not catch the error(s). This is a bug."
-                )
+def compare_shapes(ref: Dataset, actual: Dataset, var: str) -> None:
+    shape_ref = ref.variables[var].shape
+    shape_actual = actual.variables[var].shape
+    if shape_ref != shape_actual:
+        Messaging.step_error(f"Shape is not the same for variable '{var}'")
+        raise Exception(f"Shape is not the same for variable '{var}'")
 
-            # log errors
-            raise Exception(f"Detect some errors : \n{error_logger}")
+def compare_values(ref: Dataset, actual: Dataset, var: str) -> None:
+    np_ref, np_actual = extract_comparable_arrays(ref, actual, var)
+
+    need_value_compare = False
+    # Error logger for differences
+    error_logger = CompareErrorLogger(max_stored=10, max_total=50)
+
+    if not numpy.allclose(np_ref, np_actual):
+        need_value_compare = True
+        error_logger.append_raw(var, f"Variable '{var}' not close equal via numpy.allclose()")
+
+    if (np_ref != np_actual).any():
+        need_value_compare = True
+        error_logger.append_raw(var, f"Variable '{var}' not strict equal via numpy.any()")
+
+    return need_value_compare, error_logger
+
+def extract_comparable_arrays(ref: Dataset, actual: Dataset, var: str):
+    shape_ref = ref.variables[var].shape
+
+    # [1:-1, 1:-1] to check only interior domain
+    if len(shape_ref) == 2:
+        return numpy.array(ref.variables[var])[1:-1, 1:-1], numpy.array(actual.variables[var])[1:-1, 1:-1]
+    elif len(shape_ref) == 3:
+        return numpy.array(ref.variables[var])[:, 1:-1, 1:-1], numpy.array(actual.variables[var])[:, 1:-1, 1:-1]
+    elif len(shape_ref) == 4:
+        return numpy.array(ref.variables[var])[:, :, 1:-1, 1:-1], numpy.array(actual.variables[var])[:, :, 1:-1, 1:-1]
+    else:
+        return numpy.array(ref.variables[var]), numpy.array(actual.variables[var])
+
+def log_comparison_errors(ref: Dataset, actual: Dataset, var: str, error_logger: CompareErrorLogger) -> None:
+    recurse_compare_current_dim(
+        error_logger,
+        var,
+        ref.variables[var].shape,
+        actual.variables[var].shape,
+        ref.variables[var],
+        actual.variables[var],
+        0,
+    )
+
+    if not error_logger.has_error():
+        raise Exception(
+            "Ref is different from actual because need_value_compare "
+            + "has been set to true. Nevertheless, error_logger did "
+            + "not catch the error(s). This is a bug."
+        )
+
+    raise Exception(f"Errors detected for variable '{var}': \n{error_logger}")
 
 
 ##########################################################
