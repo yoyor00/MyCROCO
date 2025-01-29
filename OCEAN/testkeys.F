@@ -33,4 +33,9 @@ OPENACCISDEFINED
 #ifdef NBQ2
 NBQ2ISDEFINED
 #endif
-
+#ifdef key_pisces_npzd
+P2ZISDEFINED
+#endif
+#ifdef key_pisces_quota
+P5ZISDEFINED
+#endif

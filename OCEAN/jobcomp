@@ -272,6 +272,19 @@ fi
 FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
 CFT1=${CROCO_CFT1-$CFT1}
 
+# PISCES Business
+if $($CPP1 testkeys.F | grep -i -q p2zisdefined) ; then
+        echo "Simple version of PISCES is defined : copy the appropriate namelist"
+        \cp -f $RUNDIR/namelist_pisces_cfg_p2z  $RUNDIR/namelist_pisces_cfg
+        \cp -f $RUNDIR/namelist_pisces_cfg_p2z  $RUNDIR/namelist_pisces_cfg.1
+fi
+if $($CPP1 testkeys.F | grep -i -q p5zisdefined) ; then
+        echo "Quota version of PISCES is defined : copy the appropriate namelist"
+        \cp -f $RUNDIR/namelist_pisces_cfg_p5z  $RUNDIR/namelist_pisces_cfg
+        \cp -f $RUNDIR/namelist_pisces_cfg_p5z  $RUNDIR/namelist_pisces_cfg.1
+fi
+
+
 # Netcdf for netcdf.mod in F90
 FFLAGS1="$FFLAGS1 $NETCDFINC"
 #

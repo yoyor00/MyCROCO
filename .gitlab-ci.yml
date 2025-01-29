@@ -12,7 +12,7 @@ variables:
   DATADIR: "$CI_PROJECT_DIR/.datadir"
   PERFRSTDIR: "$CI_PROJECT_DIR/.perfrstdir"
   #
-  DATAREG: "/data"
+  DATAREG: "/data/ForCI-INRIA/VHR_CROCO_FILES_BCK"
   #
   # use in case of local gitlab-runner; put VHR_CROCO_FILES_BCK at same level than croco
   # e.g : 
@@ -72,10 +72,15 @@ variables:
       export DATAREG=${DATAREG_LOCAL} ;
       echo "Use of local data " $DATAREG ;
     else  
-      mkdir -p $DATAREG ;
-      cd $DATAREG ;
+      cd /data;
       tar -xf ForCI-INRIA.tar.gz ;
-      mv ForCI-INRIA/VHR_CROCO_FILES_BCK/* . ;
+      # clean unneeded files and directories to have enough space left for tests
+      rm -Rf ForCI-INRIA.tar.gz;
+      rm -Rf ForCI-INRIA/COASTAL_VILAINE_BCK;
+      rm -Rf ForCI-INRIA/LR_CROCO_FILES_BCK;
+      rm -Rf ForCI-INRIA/VORTEX_FILES_BCK;
+      # check
+      echo "Data for reg run ready :" $DATAREG
     fi   
 
 .get_var_perfrst: &get_var_perfrst
