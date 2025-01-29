@@ -28,30 +28,39 @@ class ConfigFile:
     def _apply_vars(value: str, var_name: str, var_value: str) -> str:
         return value.replace("{" + var_name + "}", str(var_value))
 
+
     @staticmethod
     def _tranverse_and_apply_vars(element, var_name: str, var_value):
         if isinstance(element, list):
-            for key, entry in enumerate(element):
-                if isinstance(entry, int) or entry is None:
-                    pass
-                elif isinstance(entry, str):
-                    element[key] = ConfigFile._apply_vars(entry, var_name, var_value)
-                elif isinstance(element, (dict | list)):
-                    ConfigFile._tranverse_and_apply_vars(entry, var_name, var_value)
-                else:
-                    raise Exception(f"Unsupported type in tree : {type(entry)}")
+            ConfigFile._process_list(element, var_name, var_value)
         elif isinstance(element, dict):
-            for key, entry in element.items():
-                if isinstance(entry, int) or entry is None:
-                    pass
-                elif isinstance(entry, str):
-                    element[key] = ConfigFile._apply_vars(entry, var_name, var_value)
-                elif isinstance(element, (dict | list)):
-                    ConfigFile._tranverse_and_apply_vars(entry, var_name, var_value)
-                else:
-                    raise Exception(f"Unsupported type in tree : {type(entry)}")
+            ConfigFile._process_dict(element, var_name, var_value)
         else:
-            raise Exception(f"Unsupported type in tree : {type(element)}")
+            raise Exception(f"Unsupported type in tree: {type(element)}")
+
+    @staticmethod
+    def _process_list(element, var_name, var_value):
+        for key, entry in enumerate(element):
+            if isinstance(entry, int) or entry is None:
+                pass
+            elif isinstance(entry, str):
+                element[key] = ConfigFile._apply_vars(entry, var_name, var_value)
+            elif isinstance(entry, (dict | list)):
+                ConfigFile._tranverse_and_apply_vars(entry, var_name, var_value)
+            else:
+                raise Exception(f"Unsupported type in tree: {type(entry)}")
+
+    @staticmethod
+    def _process_dict(element, var_name, var_value):
+        for key, entry in element.items():
+            if isinstance(entry, int) or entry is None:
+                pass
+            elif isinstance(entry, str):
+                element[key] = ConfigFile._apply_vars(entry, var_name, var_value)
+            elif isinstance(entry, (dict | list)):
+                ConfigFile._tranverse_and_apply_vars(entry, var_name, var_value)
+            else:
+                raise Exception(f"Unsupported type in tree: {type(entry)}")
 
     def _unpack_variant_vars(self) -> None:
         """Unpack the vars {xxx} in variant names"""
