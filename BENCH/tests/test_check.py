@@ -25,9 +25,9 @@ def helper_create_netcdf_file(file: str) -> None:
     dataset = Dataset(file, "w", format="NETCDF4")
 
     # dimensions
-    time = dataset.createDimension("time", None)
-    lat = dataset.createDimension("lat", 10)
-    lon = dataset.createDimension("lon", 10)
+    dataset.createDimension("time", None)
+    dataset.createDimension("lat", 10)
+    dataset.createDimension("lon", 10)
 
     # create some vars
     lats = dataset.createVariable("lat", "f4", ("lat",))
@@ -60,9 +60,7 @@ def helper_create_netcdf_file(file: str) -> None:
 
 
 ##########################################################
-def help_patch_netcdf_file(
-    file: str, variable_name: str, make_close: bool
-) -> None:
+def help_patch_netcdf_file(file: str, variable_name: str, make_close: bool) -> None:
     # load & copy out the given variable
     dataset = Dataset(file, "r", format="NETCDF4")
     out = dataset.variables[variable_name][:]
@@ -86,9 +84,7 @@ def test_compare_ok(tmp_path):
     helper_create_netcdf_file(f"{tmp_path}/test_check.nc")
 
     # make some copies
-    shutil.copyfile(
-        f"{tmp_path}/test_check.nc", f"{tmp_path}/test_check_copy_ok.nc"
-    )
+    shutil.copyfile(f"{tmp_path}/test_check.nc", f"{tmp_path}/test_check_copy_ok.nc")
 
     # compare both files are same
     compare_netcdf_files(
@@ -105,14 +101,10 @@ def test_compare_not_ok(tmp_path):
     shutil.copyfile(
         f"{tmp_path}/test_check.nc", f"{tmp_path}/test_check_copy_not_ok.nc"
     )
-    help_patch_netcdf_file(
-        f"{tmp_path}/test_check_copy_not_ok.nc", "value", False
-    )
+    help_patch_netcdf_file(f"{tmp_path}/test_check_copy_not_ok.nc", "value", False)
 
     # compare
-    with pytest.raises(
-        Exception, match="Non close equality in variable 'value'"
-    ) as e_info:
+    with pytest.raises(Exception, match="Non strict equality in variable 'value'"):
         compare_netcdf_files(
             f"{tmp_path}/test_check.nc", f"{tmp_path}/test_check_copy_not_ok.nc"
         )
@@ -127,14 +119,10 @@ def test_compare_not_ok_close(tmp_path):
     shutil.copyfile(
         f"{tmp_path}/test_check.nc", f"{tmp_path}/test_check_copy_not_ok.nc"
     )
-    help_patch_netcdf_file(
-        f"{tmp_path}/test_check_copy_not_ok.nc", "value", True
-    )
+    help_patch_netcdf_file(f"{tmp_path}/test_check_copy_not_ok.nc", "value", True)
 
     # compare
-    with pytest.raises(
-        Exception, match="Non equality in variable 'value'"
-    ) as e_info:
+    with pytest.raises(Exception, match="Non strict equality in variable 'value'"):
         compare_netcdf_files(
             f"{tmp_path}/test_check.nc", f"{tmp_path}/test_check_copy_not_ok.nc"
         )

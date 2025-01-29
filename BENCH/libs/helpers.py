@@ -102,9 +102,19 @@ def run_shell_command_time(command, logfilename=None, verbose: bool = False):
                 setup="import subprocess",
                 number=1,
             )
-        except:
+        except subprocess.CalledProcessError as e:
+            # Handle subprocess-specific error
             display_run_error(command, log_fp)
-            raise Exception("Fail to run command !")
+            raise Exception(f"Command failed: {e}") from e
+        except OSError as e:
+            # Handle OS-related errors (e.g., command not found)
+            display_run_error(command, log_fp)
+            raise Exception(f"OS error occurred while running the command: {e}") from e
+        except Exception as e:
+            # Handle any other unforeseen exceptions
+            display_run_error(command, log_fp)
+            raise Exception(f"An error occurred while running the command: {e}") from e
+
 
 
 def replace_in_file(in_path: str, out_path: str, pattern: str, replace_by: str):

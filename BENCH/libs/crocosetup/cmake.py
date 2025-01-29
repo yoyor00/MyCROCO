@@ -11,7 +11,7 @@ import json
 import shutil
 
 # internal
-from ..helpers import Messaging, patch_lines, move_in_dir, run_shell_command
+from ..helpers import patch_lines, move_in_dir, run_shell_command
 from .setup import AbstractCrocoSetup
 from ..config import Config
 

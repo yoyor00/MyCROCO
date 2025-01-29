@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 from matplotlib.colors import Normalize
 import cartopy.crs as ccrs
-import cartopy.mpl.ticker as cticker
 
 # Add other utility functions here as needed.
 
@@ -187,14 +186,6 @@ def rho2v_3d(var):
     Convert 3D variable from rho-grid to v-grid.
     """
     return 0.5 * (var[:, :-1, :] + var[:, 1:, :])
-
-
-#################################################################
-def rho2u_3d(var):
-    """
-    Convert 3D variable from rho-grid to u-grid.
-    """
-    return 0.5 * (var[:, :, :-1] + var[:, :, 1:])
 
 
 ################################################################

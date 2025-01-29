@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import argparse
+import os
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(
@@ -67,7 +68,6 @@ plt.ylabel("Y [non-dimensional]")
 plt.grid()
 
 # Save outputs
-import os
 
 output_dir = args.output_dir
 os.makedirs(output_dir, exist_ok=True)  # Ensure output directory exists

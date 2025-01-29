@@ -35,13 +35,9 @@ class ConfigFile:
                 if isinstance(entry, int) or entry is None:
                     pass
                 elif isinstance(entry, str):
-                    element[key] = ConfigFile._apply_vars(
-                        entry, var_name, var_value
-                    )
+                    element[key] = ConfigFile._apply_vars(entry, var_name, var_value)
                 elif isinstance(element, (dict | list)):
-                    ConfigFile._tranverse_and_apply_vars(
-                        entry, var_name, var_value
-                    )
+                    ConfigFile._tranverse_and_apply_vars(entry, var_name, var_value)
                 else:
                     raise Exception(f"Unsupported type in tree : {type(entry)}")
         elif isinstance(element, dict):
@@ -49,13 +45,9 @@ class ConfigFile:
                 if isinstance(entry, int) or entry is None:
                     pass
                 elif isinstance(entry, str):
-                    element[key] = ConfigFile._apply_vars(
-                        entry, var_name, var_value
-                    )
+                    element[key] = ConfigFile._apply_vars(entry, var_name, var_value)
                 elif isinstance(element, (dict | list)):
-                    ConfigFile._tranverse_and_apply_vars(
-                        entry, var_name, var_value
-                    )
+                    ConfigFile._tranverse_and_apply_vars(entry, var_name, var_value)
                 else:
                     raise Exception(f"Unsupported type in tree : {type(entry)}")
         else:
@@ -87,9 +79,7 @@ class ConfigFile:
                         )
 
                         # calc new name
-                        name_copy = ConfigFile._apply_vars(
-                            name, var_name, var_value
-                        )
+                        name_copy = ConfigFile._apply_vars(name, var_name, var_value)
 
                         # inject
                         new_variants[name_copy] = variant_copy
@@ -137,7 +127,7 @@ class ConfigFile:
 
                     # merge in given target key
                     for key, value in data.items():
-                        if self.config[target] == None:
+                        if self.config[target] is None:
                             self.config[target] = {}
                         if key in self.config[target]:
                             raise Exception(

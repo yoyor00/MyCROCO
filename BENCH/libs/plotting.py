@@ -132,13 +132,13 @@ class Plotting:
         os.makedirs(target, exist_ok=True)
         for file in self.loaded_files:
             # only the non local ones
-            if not results in file:
+            if results not in file:
                 target_path = os.path.join(target, os.path.basename(file))
                 shutil.copyfile(file, target_path)
 
     def plot(self):
         # info
-        Messaging.section(f"Plotting")
+        Messaging.section("Plotting")
 
         # extract
         cases = self.config.config["cases"]

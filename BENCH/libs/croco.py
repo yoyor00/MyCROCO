@@ -19,7 +19,6 @@ import copy
 from .config import Config
 from .helpers import (
     move_in_dir,
-    run_shell_command,
     apply_vars_in_str,
     Messaging,
     patch_lines,
@@ -93,7 +92,6 @@ class Croco:
         tuning_flags = self.config.host["tuning"][tuning_familly][tuning_fflags]
         tuning_flags_extra = self.config.host["tuning"][tuning_familly]["extra"]
         croco_build = self.croco_build
-        restart = self.variant["restart"]
 
         # create dir
         os.makedirs(dirname, exist_ok=True)
@@ -215,7 +213,7 @@ class Croco:
         if force_rebuild:
             self.reset()
         elif not force_rebuild and os.path.exists(f"{self.dirname}/croco"):
-            Messaging.step(f"Already built...")
+            Messaging.step("Already built...")
             return
 
         # effectively built
@@ -224,7 +222,7 @@ class Croco:
         self.setup_variant()
 
         # some specific handling
-        Messaging.step(f"Special command line configs...")
+        Messaging.step("Special command line configs...")
         if self.config.rvtk:
             self.enable_rvtk_checking()
 
@@ -262,7 +260,6 @@ class Croco:
         environ = self.variant.get("environ", {}).copy()
         dirname = self.dirname
         runs = self.config.runs
-        results = self.config.results
         host_tuning = self.config.host["tuning"]
         rvtk = self.config.rvtk
         is_rvtk_ref = self.variant_name == self.config.variant_ref_name
@@ -391,7 +388,6 @@ class Croco:
             patches = self.case.get("patches_debug", {})
         else:
             patches = self.case.get("patches", {})
-        cppkeys = self.case.get("cppkeys", {})
 
         # all this part to me moves somewhere
         restart = self.variant["restart"]
@@ -481,7 +477,6 @@ class Croco:
         # apply the case paches
         variant_name = self.variant_name
         patches = self.variant.get("patches", {})
-        cppkeys = self.variant.get("cppkeys", {})
 
         # display
         Messaging.step(f"Apply variant config : {variant_name}")
@@ -536,7 +531,7 @@ class Croco:
                 % refdir
             )
             raise Exception(
-                f"Missing '%s', are you sure you ran case %s in reference directory %s ?"
+                "Missing '%s', are you sure you ran case %s in reference directory %s ?"
                 % (ref_file, case_name, refdir)
             )
 
@@ -616,7 +611,7 @@ class Croco:
                     self.case_name, self.variant_name, "plotphy", False, str(e)
                 )
         else:
-            Messaging.step(f"No Plotting script provided")
+            Messaging.step("No Plotting script provided")
 
     def dump_mesh(self, anim: bool = False):
         # vars

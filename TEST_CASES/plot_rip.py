@@ -101,8 +101,8 @@ for tindex in range(tstart, tend + 1):
         )
 
     plt.colorbar(cont, ax=ax)
-    I = ~(np.sqrt(ur**2 + vr**2) < 0.05)
-    ax.quiver(x[I], y[I], ur[I], vr[I])
+    var_I = ~(np.sqrt(ur**2 + vr**2) < 0.05)
+    ax.quiver(x[var_I], y[var_I], ur[var_I], vr[var_I])
     ax.set_xlim([100, 760])
     ax.set_ylim([10, 760])
     ax.set_title(f"Rip Test Case - time = {int(time * 24)} h", fontsize=14)

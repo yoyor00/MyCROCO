@@ -53,7 +53,7 @@ class CompareErrorLogger:
         self.count += 1
 
         # first seen for this var
-        if not varname in self.var_error_logs:
+        if varname not in self.var_error_logs:
             self.var_error_logs[varname] = []
             self.var_error_count[varname] = 0
 
@@ -87,7 +87,7 @@ class CompareErrorLogger:
                     var_messages.append(entry)
                 elif log_count == self.max_total:
                     var_messages.append(
-                        f".................... too many errors "
+                        ".................... too many errors "
                         + f"(>{self.max_total}), stop logging details ............."
                     )
 
@@ -256,7 +256,7 @@ def compare_netcdf_variables(ref: Dataset, actual: Dataset, skiped=["hc"]) -> No
             # in case it is not compared the same way we should not let go
             if not error_logger.has_error():
                 raise Exception(
-                    f"Ref is different from actual because need_value_compare "
+                    "Ref is different from actual because need_value_compare "
                     + "has been set to true. Nevertheless, error_logger did "
                     + "not catch the error(s). This is a bug."
                 )
@@ -276,7 +276,7 @@ def compare_netcdf_files(ref_file: str, actual_file: str) -> None:
         compare_netcdf_variables(ref, actual)
     except Exception as e:
         raise Exception(
-            f"Error while checking\n"
+            "Error while checking\n"
             + f" - refere : {ref_file}\n"
             + f" - actual : {actual_file}\n"
             + "-----------------------------------------------\n"

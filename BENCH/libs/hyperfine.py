@@ -15,7 +15,6 @@ systems.
 ##########################################################
 import numpy
 import json
-import shutil
 from tqdm import tqdm
 from tempfile import NamedTemporaryFile
 from .messaging import Messaging
@@ -75,9 +74,7 @@ def emulate_hyperfine(
 
 
 ##########################################################
-def native_hyperfine(
-    command: str, runs: int = 2, verbose: bool = False
-) -> dict:
+def native_hyperfine(command: str, runs: int = 2, verbose: bool = False) -> dict:
     with NamedTemporaryFile() as fp:
         hyper_command = (
             'hyperfine --export-json=%s --warmup 0 --output /tmp/croco.log --runs %s "%s"'
@@ -87,7 +84,7 @@ def native_hyperfine(
             run_shell_command(hyper_command, capture=not verbose)
             result = json.load(fp)
             return result
-        except Exception as e:
+        except Exception:
             with open("/tmp/croco.log", "r") as fp_log:
                 content = fp_log.read()
                 print(content)

@@ -274,7 +274,7 @@ class Config:
             raise Exception(
                 f"You gave --use-ref={self.use_ref}, but directory does not exist !"
             )
-        if self.build_ref and not self.variant_ref_name in self.variant_names:
+        if self.build_ref and self.variant_ref_name not in self.variant_names:
             raise Exception(
                 f"You gave --build-ref={self.use_ref}, but not using the required '{self.variant_ref_name}' variant !"
             )
@@ -400,7 +400,7 @@ class Config:
         hosts = self.config["hosts"]
 
         # fallback
-        if not selected_host in hosts:
+        if selected_host not in hosts:
             selected_host = "@default"
 
         # display

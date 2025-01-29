@@ -7,7 +7,6 @@
 ##########################################################
 import os
 import json
-import subprocess
 from typing import Union
 from .config import Config
 from .croco import Croco
@@ -91,7 +90,7 @@ class Benchmarking:
                 case_config = config.config["cases"][case_name]
 
                 # filter
-                if not variant_name in case_config.get("unsupported", []):
+                if variant_name not in case_config.get("unsupported", []):
                     res.append(Croco(config, case_name, variant_name))
                 else:
                     Messaging.step(f"Skip unsupported {case_name}/{variant_name}")

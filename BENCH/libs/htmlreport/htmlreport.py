@@ -33,10 +33,10 @@ def generate_status_html(data):
             <tr>
                <td>{case}</td>
                <td>{variant}</td>
-               {format_status(status['build']['status'])}
-               {format_status(status['run']['status'])}
-               {format_status(status['check']['status'])}
-               {format_status(status['plotphy']['status'])}
+               {format_status(status["build"]["status"])}
+               {format_status(status["run"]["status"])}
+               {format_status(status["check"]["status"])}
+               {format_status(status["plotphy"]["status"])}
             </tr>
             """
     html_table = f"""
@@ -83,8 +83,8 @@ def generate_treeview_json(root_path):
                         "text": generate_status_html(json.load(open(full_path, "r")))
                     }
 
-                elif (not "treeview.html" in url_path) and (
-                    not "styles.css" in url_path
+                elif ("treeview.html" not in url_path) and (
+                    "styles.css" not in url_path
                 ):
                     files.append(
                         {"text": f'<a href="{url_path}" target="main-frame">{name}</a>'}
@@ -116,12 +116,12 @@ def json_to_html(data):
             text = item.get("text", "")
             # Create a collapsible section using <details> and <summary>
             if "nodes" in item:
-                html_content += f"<details>\n"
+                html_content += "<details>\n"
                 html_content += f"  <summary>{text}</summary>\n"
-                html_content += f'  <div class="tree">\n'
+                html_content += '  <div class="tree">\n'
                 html_content += json_to_html(item["nodes"])  # Recursively process nodes
-                html_content += f"  </div>\n"
-                html_content += f"</details>\n"
+                html_content += "  </div>\n"
+                html_content += "</details>\n"
             else:
                 html_content += text + "\n"
     return html_content
@@ -181,7 +181,6 @@ def generate_html(
 
 # Function to create index html file for all results
 def generate_global_html(base_dir, style_file="libs/htmlreport/styles.css"):
-
     output_file = os.path.join(base_dir, "index.html")
 
     # Find all folders in base_dir
@@ -196,9 +195,12 @@ def generate_global_html(base_dir, style_file="libs/htmlreport/styles.css"):
     nav_in_folder = f"""  <nav>
       <h2><a href="../index.html">Results</a></h2>
       <ul>
-         {"".join(
-             f'<li><a href="../{folder}/treeview.html">View {folder}</a></li>' 
-             for folder in folders)}
+         {
+        "".join(
+            f'<li><a href="../{folder}/treeview.html">View {folder}</a></li>'
+            for folder in folders
+        )
+    }
       </ul>
       </nav>"""
 
@@ -225,9 +227,12 @@ def generate_global_html(base_dir, style_file="libs/htmlreport/styles.css"):
    <nav>
       <h2><a href="index.html">Results</a></h2>
       <ul>
-         {"".join(
-             f'<li><a href="{folder}/treeview.html">View {folder}</a></li>' 
-             for folder in folders)}
+         {
+        "".join(
+            f'<li><a href="{folder}/treeview.html">View {folder}</a></li>'
+            for folder in folders
+        )
+    }
       </ul>
    </nav>
    <main>

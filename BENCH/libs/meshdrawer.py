@@ -10,8 +10,6 @@ import os
 from typing import List
 
 # external libs
-import numpy as np
-import xarray as xr
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 from matplotlib.animation import ArtistAnimation
@@ -23,9 +21,7 @@ from .config import Config
 
 ##########################################################
 class MeshDrawer:
-    def __init__(
-        self, netcdf_file: str, config: Config, case_name: str
-    ) -> None:
+    def __init__(self, netcdf_file: str, config: Config, case_name: str) -> None:
         self.netcdf_file = netcdf_file
         self.config = config
         self.case_name = case_name
@@ -59,9 +55,7 @@ class MeshDrawer:
         # render
         return cs
 
-    def plot_variable(
-        self, variable: str, out_image: str, step: int = 0
-    ) -> None:
+    def plot_variable(self, variable: str, out_image: str, step: int = 0) -> None:
         # get variable
         variable_data = self.data.variables[variable]
         shape = variable_data.shape
@@ -87,15 +81,13 @@ class MeshDrawer:
         # render
         if cs:
             os.makedirs(os.path.dirname(out_image), exist_ok=True)
-            cbar = fig.colorbar(cs)
+            fig.colorbar(cs)
             plt.savefig(out_image, dpi=600)
 
         # close
         plt.close(fig)
 
-    def plot_variables(
-        self, variables: list, basename: str, step: int = 0
-    ) -> None:
+    def plot_variables(self, variables: list, basename: str, step: int = 0) -> None:
         # case
         case_name = self.case_name
 
@@ -114,9 +106,7 @@ class MeshDrawer:
             oname = f"{basename}/{vname}/{case_name}-{vname}-{step_name}"
             self.plot_variable(vname, oname, step)
 
-    def plot_all_variables(
-        self, basename: str, steps: List[int] = [0, -2, -1]
-    ) -> None:
+    def plot_all_variables(self, basename: str, steps: List[int] = [0, -2, -1]) -> None:
         for step in steps:
             self.plot_variables(self.data.variables.keys(), basename, step)
 
@@ -156,11 +146,9 @@ class MeshDrawer:
             )
             artists.append([container])
 
-        cbar = fig.colorbar(container, ax=ax)
+        fig.colorbar(container, ax=ax)
 
-        ani = ArtistAnimation(
-            fig=fig, artists=artists, interval=40, repeat=True
-        )
+        ani = ArtistAnimation(fig=fig, artists=artists, interval=40, repeat=True)
         ani.save(f"{basename}.gif", writer="pillow")
         ani.save(f"{basename}.mp4", writer="ffmpeg")
 

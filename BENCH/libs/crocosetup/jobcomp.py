@@ -408,7 +408,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
 
         # apply variable
         is_mpi = options.with_optim == "mpi"
-        vars = self.handle_variables(options.VARS, is_mpi, extra_vars)
+        self.handle_variables(options.VARS, is_mpi, extra_vars)
 
         # apply optim mode
         if options.with_optim == "seq":

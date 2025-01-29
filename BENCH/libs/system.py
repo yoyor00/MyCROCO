@@ -18,8 +18,13 @@ def run_and_get_first_line(command: str) -> str:
     """Run a shell command and return the first line of the output."""
     try:
         return subprocess.check_output(command, shell=True).split("\n")[0]
-    except:
+    except subprocess.CalledProcessError:
+        # Handle the case when the command fails
         return "UNAVAILABLE"
+    except Exception as e:
+        # Optionally, handle other exceptions (if needed)
+        print(f"An unexpected error occurred: {e}")
+        return "ERROR"
 
 
 ##########################################################

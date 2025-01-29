@@ -71,9 +71,7 @@ class AbstractCrocoSetup(ABC):
         raise Exception("Not provided by implementation !")
 
     @abstractmethod
-    def copy_config(
-        self, refdir_case: str, case_name: str, case_patches: dict
-    ) -> None:
+    def copy_config(self, refdir_case: str, case_name: str, case_patches: dict) -> None:
         """
         Copy the required config files to pass the case in the reference dir so
         we can possibly also reproduce by hand easily if needed one day

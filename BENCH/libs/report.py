@@ -29,7 +29,7 @@ class Report:
         log: str = "",
     ) -> None:
         full_name = f"{case}-{variant}"
-        if not full_name in self.report:
+        if full_name not in self.report:
             self.report[full_name] = {
                 "case": case,
                 "variant": variant,
