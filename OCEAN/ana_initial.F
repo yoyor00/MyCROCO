@@ -108,7 +108,33 @@
       real d(0:N)
 !$acc declare create(d)
 #endif
-#ifdef TS_HADV_TEST
+#ifdef CUVE
+      real drho,Sref,slope,slope_g,water_lev
+      real, allocatable :: x_dr(:),y_dr(:)
+      real              :: x_vect(1:4),y_vect(1:4)
+# ifdef MPI
+      real              :: start_val,end_val,step,adj,
+     &                     start_g,end_g,step_g,d_lck,
+     &                     x_gate(1:2),y_gate(1:2),Cx,
+     &                     z_gate(1:2),x_lck(1:3),Cy,
+     &                     y_lck(1:3),z_lck(1:3),incl
+      real, allocatable :: x_drg(:),y_drg(:)
+      integer           :: num_val,num_g,l
+      logical           :: grid_cntrd,HR_grid,brutal_LEx
+# else
+      integer              :: i_vect(1:4),j_vect(1:4),lth
+      integer, allocatable :: i_inter(:),j_inter(:),id(:)
+# endif
+# ifdef LEVEL_DIFF
+      real flag_BG(GLOBAL_2D_ARRAY)
+      common /BG_flag/flag_BG
+# else
+      real flag_BG(GLOBAL_2D_ARRAY)
+      common /BG_flag/flag_BG
+# endif
+#include "nbq.h"
+#endif
+#ifdef TS_HADV_TEST 
       real cff,cff1,cx,cy,cmax,xx,yy
 # if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
 #  include "work.h"
@@ -1262,6 +1288,9 @@ c c !$acc kernels if(compute_on_device) default(present)
             enddo
           enddo
         enddo
+
+#   elif defined CUVE
+#include "ana_initial_CUVE.h"
 
 #   elif defined SHELFRONT
         do k=1,N

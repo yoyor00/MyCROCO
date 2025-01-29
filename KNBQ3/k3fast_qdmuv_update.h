@@ -270,16 +270,6 @@
 ! !
 #  ifdef BSTRESS_FAST
               if (k.eq.1) dum_s=dum_s-bustr(i,j)
-     &         *(Hz(i-1,j,k)+Hz(i,j,k))
-     &      /((zeta(i  ,j,knew)+h(i  ,j))
-#   ifdef NBQ_MASS
-     &        *rhobar_nbq(i,j  ,knew)
-#   endif
-     &       +(zeta(i-1,j,knew)+h(i-1,j))
-#   ifdef NBQ_MASS
-     &        *rhobar_nbq(i-1,j,knew)
-#   endif
-     &       )
 #  endif
 ! !
 ! !................................
@@ -554,16 +544,6 @@
 ! !
 #  ifdef BSTRESS_FAST
               if (k.eq.1) dum_s=dum_s-bvstr(i,j)
-     &         *(Hz(i,j-1,k)+Hz(i,j,k))
-     &      /((zeta(i,j  ,knew)+h(i,j  ))
-#   ifdef NBQ_MASS
-     &        *rhobar_nbq(i,j  ,knew)
-#   endif
-     &       +(zeta(i,j-1,knew)+h(i,j-1))
-#   ifdef NBQ_MASS
-     &        *rhobar_nbq(i,j-1,knew)
-#   endif
-     &    )
 #  endif
 ! !
 ! !................................

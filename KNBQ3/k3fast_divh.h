@@ -701,11 +701,11 @@
 ! ! both with explicit and implicit schemes
 ! !********************************
 ! !
-#  ifdef NBQ_FREESLIP
        k = -N_sl
-            do j=Jstr,Jend  
-              do i=Istr,Iend    
-                qdmw_nbq(i,j,k)= 
+#  ifdef NBQ_FREESLIP
+          do j=Jstr,Jend  
+            do i=Istr,Iend    
+              qdmw_nbq(i,j,k)= 
                 
 #   if defined MVB && ! defined K3FAST_SEDLAYERS
      &       -0.5*(dh_mvb(i,j,kbak2)-dh_mvb(i,j,kstp2))/dtfast
@@ -717,17 +717,17 @@
 #   ifdef MASKING
      &                             *rmask(i,j)
 #   endif 
-              enddo
-            enddo 
+            enddo
+          enddo 
 #  else  
           do j=Jstr,Jend  
-          do i=Istr,Iend   
+            do i=Istr,Iend   
 #    ifdef MVB
-          qdmw_nbq(i,j,k) = 0.5*w_mvb(i,j,knew2)*Hz(i,j,k+1)   ! CAUTION HERE
+              qdmw_nbq(i,j,k) = 0.5*w_mvb(i,j,knew2)*Hz(i,j,k+1)   ! CAUTION HERE
 #    else
-          qdmw_nbq(i,j,k) = 0.
+              qdmw_nbq(i,j,k) = 0.
 #    endif
-          enddo 
+            enddo 
           enddo 
 #  endif
 ! !
