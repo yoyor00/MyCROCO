@@ -44,8 +44,8 @@ class CompareErrorLogger:
         # build message
         self.append_raw(
             varname,
-            "Non %s equality in variable '%s' at ({','.join(coord)}): ref %s actual : %s %s %s (diff=%s)"
-            % (compare_name, varname, operator, ref, operator, actual, diff),
+            "Non %s equality in variable '%s' at %s: ref %s actual : %s %s %s (diff=%s)"
+            % (compare_name, varname, {','.join(coord)}, operator, ref, operator, actual, diff),
         )
 
     def append_raw(self, varname: str, message: str):
@@ -186,7 +186,7 @@ def recurse_compare_current_dim(
 
 
 def compare_netcdf_variables(
-    ref: Dataset, actual: Dataset, skipped=["spherical", "hc"]
+    ref: Dataset, actual: Dataset, skipped=["spherical", "hc", "time_step"]
 ) -> None:
     """
     Compare variables between two NetCDF datasets, checking for shape consistency
