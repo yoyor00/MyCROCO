@@ -12,7 +12,6 @@ import json
 import shutil
 import platform
 import subprocess
-import copy
 
 
 # internal
@@ -26,7 +25,6 @@ from .helpers import (
     extract_elements_from_file,
     copy_and_replace,
     add_patch_with_list_support,
-    delete_section_from_patch,
     delete_lines_from_file,
 )
 from .hyperfine import run_hyperfine
@@ -415,108 +413,74 @@ class Croco:
                     patch_lines(file_filtered, [change])
 
     def apply_debug_patches(self):
-        return 0
+        case_capitalized = self.case["case"].capitalize()
+        filename = f"TEST_CASES/croco.in.{case_capitalized}"
+        self.change_card_time_stepping_ntimes(filename, 6)
+        self.change_card_history_nwrt(filename)
 
     def apply_restart_patches(self):
         case_capitalized = self.case["case"].capitalize()
         filename = f"TEST_CASES/croco.in.{case_capitalized}"
+
+        # for all case (write/read), put ldefhis to F
+        self.change_card_history_ldefhis(filename)
+
+        if self.restarted:
+            # prepare 2 files for the restarted run
+            full_filename = os.path.join(self.dirname, filename)
+            filename_rst = filename + "_rst"
+            full_filename_rst = os.path.join(self.dirname, filename_rst)
+            shutil.copy(full_filename, full_filename_rst)
+            file_nc_rst = "croco_rst.nc"
+
+            # first run with filename
+            self.change_card_time_stepping_ntimes(filename, 3)
+            self.change_card_restart(filename, 3, file_nc_rst)
+
+            # second run with filename_rst
+            self.change_card_time_stepping_ntimes(filename_rst, 3)
+            self.change_card_initial(filename_rst, file_nc_rst)
+
+    def change_card_restart(self, filename, nrst, file_nc_rst):
         full_filename = os.path.join(self.dirname, filename)
-        filename_rst = filename + "_rst"
-        full_filename_rst = os.path.join(self.dirname, filename_rst)
-        shutil.copy(full_filename, full_filename_rst)
-
-        # change_restart_inputfile(filename, step="writing_restart")
-        # change_restart_inputfile(filename_rst, step="reading_restart")
-
-        # change_card_restart(filename)
-        # change_card_history(filename)
-
-        # change_card_time_stepping(filename_rst)
-        # change_card_initial(filename_rst)
-        # change_card_history(filename_rst)
-
-        # reset patches
         patches = {}
-
-        # modifs for first croco.in
-        TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-        NTIMES = TIME_LINE[0]
-        NTIMES1 = int(NTIMES) // 2
-        NTIMES2 = int(NTIMES) - NTIMES1
-        NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, NTIMES1)
-
         newpatch = {
             "file": filename,
             "mode": "insert-after",
-            "what": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-            "insert": " ".join(map(str, NEW_TIME_LINE)),
-            "descr": "change duration for step 1",
+            "what": "restart:",
+            "insert": ["%i   0" % nrst, file_nc_rst],
+            "descr": "change restart NRST=3",
         }
         add_patch_with_list_support(patches, newpatch)
+        self.apply_patches(patches)
+        delete_lines_from_file(full_filename, "restart", line_offset=3, num_lines=2)
 
+    def change_card_initial(self, filename, file_nc_rst):
+        full_filename = os.path.join(self.dirname, filename)
+        patches = {}
         newpatch = {
             "file": filename,
-            "mode": "insert-after",
-            "what": "restart:          NRST, NRPFRST / filename",
-            "insert": [f"{str(NTIMES1)}   0", "  croco_rst.nc"],
-            "descr": "change restart ! wrtitng step",
-        }
-        add_patch_with_list_support(patches, newpatch)
-
-        # modifs for second croco.in
-        patches_rst = copy.deepcopy(patches)
-        patches_rst[filename_rst] = patches_rst.pop(filename)
-        delete_section_from_patch(patches_rst, "time_stepping")
-
-        NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, NTIMES2)
-
-        newpatch = {
-            "file": filename_rst,
-            "mode": "insert-after",
-            "what": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-            "insert": " ".join(map(str, NEW_TIME_LINE)),
-            "descr": "change duration for step 2",
-        }
-        add_patch_with_list_support(patches_rst, newpatch)
-
-        newpatch = {
-            "file": filename_rst,
             "mode": "insert-after",
             "what": "initial:",
-            "insert": ["     2", "croco_rst.nc"],
-            "descr": "change restart ! reading step",
+            "insert": ["     2", file_nc_rst],
+            "descr": "change restart for reading step to NRREC=2 and file=%s"
+            % file_nc_rst,
         }
-        add_patch_with_list_support(patches_rst, newpatch)
-
+        add_patch_with_list_support(patches, newpatch)
         self.apply_patches(patches)
-        self.apply_patches(patches_rst)
+        delete_lines_from_file(full_filename, "initial", line_offset=3, num_lines=2)
 
-        delete_lines_from_file(
-            full_filename, "time_stepping", line_offset=2, num_lines=1
-        )
-        delete_lines_from_file(full_filename, "restart:", line_offset=3, num_lines=2)
-        delete_lines_from_file(
-            full_filename_rst, "time_stepping", line_offset=2, num_lines=1
-        )
-        delete_lines_from_file(
-            full_filename_rst, "initial:", line_offset=3, num_lines=2
-        )
-        delete_lines_from_file(
-            full_filename_rst, "restart:", line_offset=3, num_lines=2
-        )
-
-    def change_card_time_stepping_ntimes(self, filename):
+    def change_card_time_stepping_ntimes(self, filename, ntimes):
         full_filename = os.path.join(self.dirname, filename)
         patches = {}
-        # modifs for first croco.in
         TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-        NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, 6)
+        NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, ntimes)
         newpatch = {
             "file": filename,
             "mode": "insert-after",
             "what": " time_stepping:",
             "insert": " ".join(map(str, NEW_TIME_LINE)),
-            "descr": "change duration to NTIMES=6",
+            "descr": "change duration to NTIMES=%i" % ntimes,
         }
         add_patch_with_list_support(patches, newpatch)
         self.apply_patches(patches)
@@ -527,7 +491,6 @@ class Croco:
     def change_card_history_nwrt(self, filename):
         full_filename = os.path.join(self.dirname, filename)
         patches = {}
-        # modifs for first croco.in
         HISTORY_LINE = extract_elements_from_file(full_filename, "history")
         NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
         newpatch = {
@@ -544,7 +507,6 @@ class Croco:
     def change_card_history_ldefhis(self, filename):
         full_filename = os.path.join(self.dirname, filename)
         patches = {}
-        # modifs for first croco.in
         HISTORY_LINE = extract_elements_from_file(full_filename, "history")
         NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 0, "F")
         newpatch = {
@@ -568,18 +530,11 @@ class Croco:
 
         if self.config.debug or self.config.restart:
             Messaging.step("Reduce number of time steps")
-            case_capitalized = self.case["case"].capitalize()
-            filename = f"TEST_CASES/croco.in.{case_capitalized}"
-            self.change_card_time_stepping_ntimes(filename)
-            self.change_card_history_nwrt(filename)
+            self.apply_debug_patches()
 
         if self.config.restart:
             Messaging.step("Prepare files for restarted run")
-            case_capitalized = self.case["case"].capitalize()
-            filename = f"TEST_CASES/croco.in.{case_capitalized}"
-            self.change_card_history_ldefhis(filename)
-            if self.restarted:
-                self.apply_restart_patches()
+            self.apply_restart_patches()
 
     def setup_variant(self):
         # apply the case paches
