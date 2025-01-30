@@ -197,10 +197,13 @@ class Croco:
         croco_build.cppdef_h_set_key("RVTK_DEBUG", True)
 
         # except for variant we enable RVTK_DEBUG_READ
-        if variant_name == rvtk_ref_variant_name:
+        if variant_name == rvtk_ref_variant_name and not self.restarted:
             croco_build.cppdef_h_set_key("RVTK_DEBUG_WRITE", True)
         else:
             croco_build.cppdef_h_set_key("RVTK_DEBUG_READ", True)
+
+        if self.config.restart:
+            croco_build.cppdef_h_set_key("RVTK_DEBUG_PERFRST", True)
 
     def build(self, extra_info: str = "", force_rebuild: bool = False):
         if self.config.continue_on_error:
@@ -281,7 +284,9 @@ class Croco:
         runs = self.config.runs
         host_tuning = self.config.host["tuning"]
         rvtk = self.config.rvtk
-        is_rvtk_ref = self.variant_name == self.config.variant_ref_name
+        is_rvtk_ref = (
+            self.variant_name == self.config.variant_ref_name and not self.restarted
+        )
         restart = self.restarted
 
         # load tuning env & override if needed
@@ -304,7 +309,11 @@ class Croco:
             % (env_line, command_prefix, self.case["case"].capitalize())
         )
         if restart:
-            command = f"{command.replace('../../../scripts/correct_end.sh', '').strip()} && {command}_rst"
+            # execute twice one without restart and one with
+            command = "%s && %s_rst" % (
+                command.replace("../../../scripts/correct_end.sh", "").strip(),
+                command,
+            )
 
         with move_in_dir(dirname):
             # link ref files
