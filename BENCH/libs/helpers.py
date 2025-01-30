@@ -269,7 +269,7 @@ def apply_insert_before_rule(lines, what, new_line, descr):
     modified_lines = []
     inserted = False
     for line in lines:
-        if normalize_line(line) == what and not inserted:
+        if what in normalize_line(line) and not inserted:
             if isinstance(new_line, list):
                 modified_lines.extend([nl + "\n" for nl in new_line])
             else:
@@ -288,7 +288,7 @@ def apply_insert_after_rule(lines, what, new_line, descr):
     modified_lines = []
     inserted = False
     for line in lines:
-        if normalize_line(line) == what and not inserted:
+        if what in normalize_line(line) and not inserted:
             modified_lines.append(line)
             if isinstance(new_line, list):
                 modified_lines.extend([nl + "\n" for nl in new_line])
@@ -313,14 +313,14 @@ def apply_insert_after_before_rule(lines, rule, new_line, descr):
         current_norm = normalize_line(line)
         modified_lines.append(line)
 
-        if found_after and current_norm == line_before and not inserted:
+        if found_after and line_before in current_norm and not inserted:
             if isinstance(new_line, list):
                 modified_lines[-1:-1] = [nl + "\n" for nl in new_line]
             else:
                 modified_lines.insert(len(modified_lines) - 1, new_line + "\n")
             inserted = True
 
-        if current_norm == line_after:
+        if line_after in current_norm:
             found_after = True
     if not inserted:
         print(
