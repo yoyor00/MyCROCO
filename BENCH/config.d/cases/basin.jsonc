@@ -16,25 +16,6 @@
       "64": { "splitting": "1x64" },
     },
     "patches": {},
-    "patches_debug": {
-      // CHange the dt
-      "TEST_CASES/croco.in.Basin": [
-        {
-          "mode": "replace",
-          "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-          "what": "                3240     9600     65      1",
-          "by": "                   6     9600     65      1",
-          "descr": "Set stepping (steps=6, dt=9600, fast=65)",
-        },
-        {
-          "mode": "replace",
-          "after": "history: LDEFHIS, NWRT, NRPFHIS / filename ",
-          "what": "            T     90       0 ",
-          "by": "            T      1       0 ",
-          "descr": "Set dtout every steps",
-        },
-      ],
-    },
     "check_outputs": ["basin_his.nc"],
   },
   // Default BASIN case

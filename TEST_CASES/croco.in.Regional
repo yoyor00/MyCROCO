@@ -30,7 +30,7 @@ climatology: filename
 boundary: filename
     CROCO_FILES/croco_bry.nc
 initial: NRREC / filename
-          1 
+          1
     CROCO_FILES/croco_ini.nc
 restart:          NRST, NRPFRST / filename
                    384    -1
@@ -39,6 +39,7 @@ restart:          NRST, NRPFRST / filename
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T      48     0
     CROCO_FILES/croco_his.nc
+
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      48     0
     CROCO_FILES/croco_avg.nc

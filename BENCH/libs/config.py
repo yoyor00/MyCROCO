@@ -192,6 +192,12 @@ class Config:
             action="store_true",
         )
         parser.add_argument(
+            "--debug", help="Run with debug options", action="store_true"
+        )
+        parser.add_argument(
+            "--restart", help="Check restartability", action="store_true"
+        )
+        parser.add_argument(
             "-V",
             "--verbose",
             help="Enable the full logging instead of printing just summaries.",
@@ -226,6 +232,8 @@ class Config:
         self.html = self.args.html
         self.globalhtml = self.args.globalhtml
         self.data_root_path = self.args.data_root_path
+        self.debug = self.args.debug
+        self.restart = self.args.restart
 
         # swithc
         if self.report:

@@ -3,7 +3,6 @@
   "openacc-native": {
     "configure": "--with-optim=openacc-native FC=nvfortran",
     "tuning_familly": "nvfortran",
-    "tuning_fflags": "standard",
     "environ": {},
     "command_prefix": "",
     "requires": {
@@ -13,7 +12,6 @@
   "openacc-psyclone-cpu": {
     "configure": "--with-optim=openacc-psyclone FC=nvfortran FFLAGS=-acc=host",
     "tuning_familly": "nvfortran",
-    "tuning_fflags": "standard",
     "environ": {},
     "command_prefix": "",
     "requires": {
@@ -23,7 +21,6 @@
   "openacc-psyclone": {
     "configure": "--with-optim=openacc-psyclone FC=nvfortran",
     "tuning_familly": "nvfortran",
-    "tuning_fflags": "standard",
     "environ": {},
     "command_prefix": "",
     "requires": {

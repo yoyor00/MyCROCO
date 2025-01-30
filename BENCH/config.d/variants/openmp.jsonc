@@ -3,7 +3,6 @@
   "openmp-{threads}": {
     "configure": "--with-optim=openmp --with-threads={threads}",
     "tuning_familly": "gnu",
-    "tuning_fflags": "standard",
     "environ": {
       "OMP_NUM_THREADS": "{threads}",
     },
@@ -14,6 +13,5 @@
     "requires": {
       "cpu": "{threads}",
     },
-    "restart": 0,
   },
 }

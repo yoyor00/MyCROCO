@@ -97,7 +97,6 @@
             "additionalProperties": {
                 "type": "object",
                 "properties": {
-                    "restart": {"type": "integer"},
                     "configure": {"type": "string"},
                     "tuning_familly": {"type": "string"},
                     "environ": {
@@ -139,17 +138,6 @@
                         }
                     },
                     "patches": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": ["array", "object"],
-                            "properties": {
-                                "what": {"type": "string"},
-                                "by": {"type": "string"}
-                            },
-                            "required": ["what", "by"]
-                        }
-                    },
-                    "patches_debug": {
                         "type": "object",
                         "additionalProperties": {
                             "type": ["array", "object"],

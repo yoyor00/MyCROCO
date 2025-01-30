@@ -91,7 +91,29 @@ class Benchmarking:
 
                 # filter
                 if variant_name not in case_config.get("unsupported", []):
-                    res.append(Croco(config, case_name, variant_name))
+                    if config.restart:
+                        if "restart" not in case_config.get("unsupported", []):
+                            if variant_name == self.config.variant_ref_name:
+                                restarted = False
+                                res.append(
+                                    Croco(config, case_name, variant_name, restarted)
+                                )
+                                restarted = True
+                                res.append(
+                                    Croco(config, case_name, variant_name, restarted)
+                                )
+                            else:
+                                restarted = True
+                                res.append(
+                                    Croco(config, case_name, variant_name, restarted)
+                                )
+                        else:
+                            Messaging.step(
+                                f"Skip unsupported restart option for {case_name}"
+                            )
+                    else:
+                        restarted = False
+                        res.append(Croco(config, case_name, variant_name, restarted))
                 else:
                     Messaging.step(f"Skip unsupported {case_name}/{variant_name}")
 

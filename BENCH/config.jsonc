@@ -48,15 +48,8 @@
   },
   ////////////////////////////// PRE-SELECTIONS //////////////////////////////
   "meta_variants": {
-    "@debug": ["sequential-debug", "mpi-debug-4"],
-    "@debug-ifort": ["sequential-debug-ifort", "mpi-debug-ifort-4"],
-    "@functionnal": ["sequential-debug", "mpi-debug-4", "sequential", "mpi-4"],
-    "@functionnal-ifort": [
-      "sequential-debug-ifort",
-      "mpi-debug-ifort-4",
-      "sequential-ifort",
-      "mpi-ifort-4",
-    ],
+    "@debug": ["sequential", "mpi-4"],
+    "@debug-ifort": ["sequential-ifort", "mpi-ifort-4"],
     "@wip-all": [
       "sequential",
       "openmp-2",

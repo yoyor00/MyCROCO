@@ -3,7 +3,6 @@
   "mpi-{tasks}": {
     "configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort",
     "tuning_familly": "gnu",
-    "tuning_fflags": "standard",
     "environ": {
       "OMP_NUM_THREADS": 1,
     },
@@ -14,25 +13,8 @@
     "requires": {
       "cpu": "{tasks}",
     },
-    "restart": 0,
   },
-  // mpi-debug
-  "mpi-debug-{tasks}": {
-    "configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort",
-    "tuning_familly": "gnu",
-    "tuning_fflags": "debug",
-    "environ": {
-      "OMP_NUM_THREADS": 1,
-    },
-    "command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.gnu.mpi_options}",
-    "unpack": {
-      "tasks": [2, 4, 6, 8, 16, 32, 64],
-    },
-    "requires": {
-      "cpu": "{tasks}",
-    },
-    "restart": 0,
-  },
+
   // mpi-ifort
   "mpi-ifort-{tasks}": {
     "configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort",
@@ -48,23 +30,5 @@
     "requires": {
       "cpu": "{tasks}",
     },
-    "restart": 0,
-  },
-  // mpi-debug-ifort
-  "mpi-debug-ifort-{tasks}": {
-    "configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort",
-    "tuning_familly": "intel",
-    "tuning_fflags": "debug",
-    "environ": {
-      "OMP_NUM_THREADS": 1,
-    },
-    "command_prefix": "{tuning.hwloc_bind.mpirun} mpirun -np {tasks} {tuning.intel.mpi_options}",
-    "unpack": {
-      "tasks": [2, 4, 6, 8, 16, 32, 64],
-    },
-    "requires": {
-      "cpu": "{tasks}",
-    },
-    "restart": 0,
   },
 }

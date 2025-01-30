@@ -23,7 +23,6 @@ from .helpers import (
     Messaging,
     patch_lines,
     copy_tree_with_absolute_symlinks,
-    extract_patch_by_partial_filename,
     extract_elements_from_file,
     copy_and_replace,
     add_patch_with_list_support,
@@ -39,17 +38,23 @@ from .meshdrawer import MeshDrawer
 
 ##########################################################
 class Croco:
-    def __init__(self, config: Config, case_name: str, variant_name: str):
+    def __init__(
+        self, config: Config, case_name: str, variant_name: str, restarted: bool
+    ):
         # keep track
         self.config = config
         self.case_name = case_name
         self.variant_name = variant_name
-        self.full_name = f"{case_name}-{variant_name}"
+        self.restarted = restarted
+        if self.restarted:
+            self.full_name = f"{case_name}-{variant_name}-rst"
+        else:
+            self.full_name = f"{case_name}-{variant_name}"
 
         # build directory name
-        self.dirname = self.calc_rundir(variant_name, case_name)
+        self.dirname = self.calc_rundir(variant_name, case_name, restarted)
         self.dirname = os.path.abspath(self.dirname)
-        self.dirname_result = self.calc_resdir(variant_name, case_name)
+        self.dirname_result = self.calc_resdir(variant_name, case_name, restarted)
         self.dirname_result = os.path.abspath(self.dirname_result)
 
         # extract infos
@@ -65,11 +70,17 @@ class Croco:
                 self.config, self.dirname, self.variant["tuning_familly"]
             )
 
-    def calc_rundir(self, variant_name, case_name):
-        return f"{self.config.workdir}/{case_name}/{variant_name}"
+    def calc_rundir(self, variant_name, case_name, restarted):
+        if restarted:
+            return f"{self.config.workdir}/{case_name}/{variant_name}-rst"
+        else:
+            return f"{self.config.workdir}/{case_name}/{variant_name}"
 
-    def calc_resdir(self, variant_name, case_name):
-        return f"{self.config.results}/{case_name}/{variant_name}"
+    def calc_resdir(self, variant_name, case_name, restarted):
+        if restarted:
+            return f"{self.config.results}/{case_name}/{variant_name}-rst"
+        else:
+            return f"{self.config.results}/{case_name}/{variant_name}"
 
     def reset(self):
         # display
@@ -78,22 +89,9 @@ class Croco:
         # rm the old one
         shutil.rmtree(self.dirname, ignore_errors=True)
 
-    def configure(self):
-        # Configure
-        Messaging.step("Configure")
-
-        # extract some needed vars
-        croco_source_dir = self.config.croco_source_dir
+    def manage_dir_and_paths(self):
         dirname = self.dirname
         dirname_result = self.dirname_result
-        case_cpp_key = self.case["case"]
-        tuning_familly = self.variant["tuning_familly"]
-        tuning_fflags = self.variant["tuning_fflags"]
-        tuning_flags = self.config.host["tuning"][tuning_familly][tuning_fflags]
-        tuning_flags_extra = self.config.host["tuning"][tuning_familly]["extra"]
-        croco_build = self.croco_build
-
-        # create dir
         os.makedirs(dirname, exist_ok=True)
         os.makedirs(dirname_result, exist_ok=True)
         # link data dir
@@ -114,9 +112,25 @@ class Croco:
                 raise Exception("Folder not found : %s" % self.input_dir)
             copy_tree_with_absolute_symlinks(self.input_dir, dirname)
 
+    def configure(self):
+        # Configure
+        Messaging.step("Configure")
+        # extract some needed vars
+        croco_source_dir = self.config.croco_source_dir
+
+        tuning_familly = self.variant["tuning_familly"]
+        if self.config.debug:
+            tuning_flags = self.config.host["tuning"][tuning_familly]["debug"]
+        else:
+            tuning_flags = self.config.host["tuning"][tuning_familly]["standard"]
+        tuning_flags_extra = self.config.host["tuning"][tuning_familly]["extra"]
+
+        # create dir
+        self.manage_dir_and_paths()
+
         # extract options
         configure_variant_options = self.variant["configure"]
-        configure_case_option = f"--with-case={case_cpp_key}"
+        configure_case_option = f"--with-case={self.case['case']}"
         configure_compiler_option = ""
         if tuning_flags != "":
             configure_compiler_option = f'FFLAGS="{tuning_flags} {tuning_flags_extra}"'
@@ -153,7 +167,7 @@ class Croco:
         )
 
         # jump in & configure
-        croco_build.configure(command)
+        self.croco_build.configure(command)
 
     def compile(self):
         # display
@@ -195,13 +209,18 @@ class Croco:
             except Exception as e:
                 Messaging.step_error("Fail to build !")
                 self.config.report.report_status(
-                    self.case_name, self.variant_name, "build", False, str(e)
+                    self.case_name,
+                    self.variant_name,
+                    self.restarted,
+                    "build",
+                    False,
+                    str(e),
                 )
                 return
         else:
             self.build_internal(extra_info, force_rebuild)
         self.config.report.report_status(
-            self.case_name, self.variant_name, "build", True
+            self.case_name, self.variant_name, self.restarted, "build", True
         )
 
     def build_internal(self, extra_info: str = "", force_rebuild: bool = False):
@@ -226,7 +245,7 @@ class Croco:
         if self.config.rvtk:
             self.enable_rvtk_checking()
 
-        if self.variant["restart"]:
+        if self.restarted:
             croco_build = self.croco_build
             croco_build.cppdef_h_set_key("EXACT_RESTART", True)
 
@@ -239,7 +258,7 @@ class Croco:
         rvtk_ref_variant_name = self.config.variant_ref_name
 
         # refdir
-        ref_rundir = self.calc_rundir(rvtk_ref_variant_name, case_name)
+        ref_rundir = self.calc_rundir(rvtk_ref_variant_name, case_name, False)
         refdir = os.path.join(ref_rundir, "check_file_*")
 
         # debug_infos
@@ -263,7 +282,7 @@ class Croco:
         host_tuning = self.config.host["tuning"]
         rvtk = self.config.rvtk
         is_rvtk_ref = self.variant_name == self.config.variant_ref_name
-        restart = self.variant["restart"]
+        restart = self.restarted
 
         # load tuning env & override if needed
         for key, value in host_tuning["environ"].items():
@@ -328,11 +347,16 @@ class Croco:
         # status
         if "error" in result:
             self.config.report.report_status(
-                self.case_name, self.variant_name, "run", False, result["error"]
+                self.case_name,
+                self.variant_name,
+                self.restarted,
+                "run",
+                False,
+                result["error"],
             )
         else:
             self.config.report.report_status(
-                self.case_name, self.variant_name, "run", True
+                self.case_name, self.variant_name, self.restarted, "run", True
             )
 
         # calc output
@@ -381,97 +405,172 @@ class Croco:
                 for change in changes:
                     patch_lines(file_filtered, [change])
 
+    def apply_debug_patches(self):
+        return 0
+
+    def apply_restart_patches(self):
+        case_capitalized = self.case["case"].capitalize()
+        filename = f"TEST_CASES/croco.in.{case_capitalized}"
+        full_filename = os.path.join(self.dirname, filename)
+        filename_rst = filename + "_rst"
+        full_filename_rst = os.path.join(self.dirname, filename_rst)
+        shutil.copy(full_filename, full_filename_rst)
+
+        # change_restart_inputfile(filename, step="writing_restart")
+        # change_restart_inputfile(filename_rst, step="reading_restart")
+
+        # change_card_restart(filename)
+        # change_card_history(filename)
+
+        # change_card_time_stepping(filename_rst)
+        # change_card_initial(filename_rst)
+        # change_card_history(filename_rst)
+
+        # reset patches
+        patches = {}
+
+        # modifs for first croco.in
+        TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
+        NTIMES = TIME_LINE[0]
+        NTIMES1 = int(NTIMES) // 2
+        NTIMES2 = int(NTIMES) - NTIMES1
+        NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, NTIMES1)
+
+        newpatch = {
+            "file": filename,
+            "mode": "insert-after",
+            "what": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+            "insert": " ".join(map(str, NEW_TIME_LINE)),
+            "descr": "change duration for step 1",
+        }
+        add_patch_with_list_support(patches, newpatch)
+
+        newpatch = {
+            "file": filename,
+            "mode": "insert-after",
+            "what": "restart:          NRST, NRPFRST / filename",
+            "insert": [f"{str(NTIMES1)}   0", "  croco_rst.nc"],
+            "descr": "change restart ! wrtitng step",
+        }
+        add_patch_with_list_support(patches, newpatch)
+
+        # modifs for second croco.in
+        patches_rst = copy.deepcopy(patches)
+        patches_rst[filename_rst] = patches_rst.pop(filename)
+        delete_section_from_patch(patches_rst, "time_stepping")
+
+        NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, NTIMES2)
+
+        newpatch = {
+            "file": filename_rst,
+            "mode": "insert-after",
+            "what": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
+            "insert": " ".join(map(str, NEW_TIME_LINE)),
+            "descr": "change duration for step 2",
+        }
+        add_patch_with_list_support(patches_rst, newpatch)
+
+        newpatch = {
+            "file": filename_rst,
+            "mode": "insert-after",
+            "what": "initial:",
+            "insert": ["     2", "croco_rst.nc"],
+            "descr": "change restart ! reading step",
+        }
+        add_patch_with_list_support(patches_rst, newpatch)
+
+        self.apply_patches(patches)
+        self.apply_patches(patches_rst)
+
+        delete_lines_from_file(
+            full_filename, "time_stepping", line_offset=2, num_lines=1
+        )
+        delete_lines_from_file(full_filename, "restart:", line_offset=3, num_lines=2)
+        delete_lines_from_file(
+            full_filename_rst, "time_stepping", line_offset=2, num_lines=1
+        )
+        delete_lines_from_file(
+            full_filename_rst, "initial:", line_offset=3, num_lines=2
+        )
+        delete_lines_from_file(
+            full_filename_rst, "restart:", line_offset=3, num_lines=2
+        )
+
+    def change_card_time_stepping_ntimes(self, filename):
+        full_filename = os.path.join(self.dirname, filename)
+        patches = {}
+        # modifs for first croco.in
+        TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
+        NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, 6)
+        newpatch = {
+            "file": filename,
+            "mode": "insert-after",
+            "what": " time_stepping:",
+            "insert": " ".join(map(str, NEW_TIME_LINE)),
+            "descr": "change duration to NTIMES=6",
+        }
+        add_patch_with_list_support(patches, newpatch)
+        self.apply_patches(patches)
+        delete_lines_from_file(
+            full_filename, "time_stepping", line_offset=2, num_lines=1
+        )
+
+    def change_card_history_nwrt(self, filename):
+        full_filename = os.path.join(self.dirname, filename)
+        patches = {}
+        # modifs for first croco.in
+        HISTORY_LINE = extract_elements_from_file(full_filename, "history")
+        NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
+        newpatch = {
+            "file": filename,
+            "mode": "insert-after",
+            "what": " history:",
+            "insert": " ".join(map(str, NEW_HISTORY_LINE)),
+            "descr": "change output to NWRT=1",
+        }
+        add_patch_with_list_support(patches, newpatch)
+        self.apply_patches(patches)
+        delete_lines_from_file(full_filename, "history:", line_offset=2, num_lines=1)
+
+    def change_card_history_ldefhis(self, filename):
+        full_filename = os.path.join(self.dirname, filename)
+        patches = {}
+        # modifs for first croco.in
+        HISTORY_LINE = extract_elements_from_file(full_filename, "history")
+        NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 0, "F")
+        newpatch = {
+            "file": filename,
+            "mode": "insert-after",
+            "what": " history:",
+            "insert": " ".join(map(str, NEW_HISTORY_LINE)),
+            "descr": "change output to LDEFHIS=F",
+        }
+        add_patch_with_list_support(patches, newpatch)
+        self.apply_patches(patches)
+        delete_lines_from_file(full_filename, "history:", line_offset=2, num_lines=1)
+
     def setup_case(self):
         # apply the case paches
         case_name = self.case_name
-        if self.variant["tuning_fflags"] == "debug":
-            patches = self.case.get("patches_debug", {})
-        else:
-            patches = self.case.get("patches", {})
 
-        # all this part to me moves somewhere
-        restart = self.variant["restart"]
-        if restart:
-            # saves initial patches and croco.in
-            patches_rst = extract_patch_by_partial_filename(patches, "croco.in")
-            case_capitalized = self.case_name.capitalize()
-            filename = f"TEST_CASES/croco.in.{case_capitalized}"
-            full_filename = os.path.join(self.dirname, filename)
-            filename_rst = filename + "_rst"
-            full_filename_rst = os.path.join(self.dirname, filename_rst)
-            shutil.copy(full_filename, full_filename_rst)
-
-            # modifs for first croco.in
-            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-            NTIMES = TIME_LINE[0]
-            NTIMES1 = int(NTIMES) // 2
-            NTIMES2 = int(NTIMES) - NTIMES1
-            NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, NTIMES1)
-
-            newpatch = {
-                "file": filename,
-                "mode": "insert-after",
-                "what": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-                "insert": " ".join(map(str, NEW_TIME_LINE)),
-                "descr": "change duration for step 1",
-            }
-            add_patch_with_list_support(patches, newpatch)
-
-            newpatch = {
-                "file": filename,
-                "mode": "insert-after",
-                "what": "restart:          NRST, NRPFRST / filename",
-                "insert": [f"{str(NTIMES1)}   0", "  basin_rst.nc"],
-                "descr": "change restart ! wrtitng step",
-            }
-            add_patch_with_list_support(patches, newpatch)
-
-            # modifs for second croco.in
-            patches_rst = copy.deepcopy(patches)
-            patches_rst[filename_rst] = patches_rst.pop(filename)
-            delete_section_from_patch(patches_rst, "time_stepping")
-
-            NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, NTIMES2)
-
-            newpatch = {
-                "file": filename_rst,
-                "mode": "insert-after",
-                "what": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-                "insert": " ".join(map(str, NEW_TIME_LINE)),
-                "descr": "change duration for step 2",
-            }
-            add_patch_with_list_support(patches_rst, newpatch)
-
-            newpatch = {
-                "file": filename_rst,
-                "mode": "insert-after",
-                "what": "initial: NRREC  filename ",
-                "insert": ["     2", "basin_rst.nc"],
-                "descr": "change restart ! reading step",
-            }
-            add_patch_with_list_support(patches_rst, newpatch)
-
-            self.apply_patches(patches_rst)
-
-        # display
         Messaging.step(f"Apply case config : {case_name}")
+        patches = self.case.get("patches", {})
         self.apply_patches(patches)
-        if restart:
-            delete_lines_from_file(
-                full_filename, "time_stepping", line_offset=2, num_lines=1
-            )
-            delete_lines_from_file(
-                full_filename, "restart:", line_offset=3, num_lines=2
-            )
-            delete_lines_from_file(
-                full_filename_rst, "time_stepping", line_offset=2, num_lines=1
-            )
-            delete_lines_from_file(
-                full_filename_rst, "initial:", line_offset=3, num_lines=2
-            )
-            delete_lines_from_file(
-                full_filename_rst, "restart:", line_offset=3, num_lines=2
-            )
+
+        if self.config.debug or self.config.restart:
+            Messaging.step("Reduce number of time steps")
+            case_capitalized = self.case["case"].capitalize()
+            filename = f"TEST_CASES/croco.in.{case_capitalized}"
+            self.change_card_time_stepping_ntimes(filename)
+            self.change_card_history_nwrt(filename)
+
+        if self.config.restart:
+            Messaging.step("Prepare files for restarted run")
+            case_capitalized = self.case["case"].capitalize()
+            filename = f"TEST_CASES/croco.in.{case_capitalized}"
+            self.change_card_history_ldefhis(filename)
+            if self.restarted:
+                self.apply_restart_patches()
 
     def setup_variant(self):
         # apply the case paches
@@ -489,7 +588,7 @@ class Croco:
         variant_ref_name = self.config.variant_ref_name
 
         # if ref variant skip
-        if self.variant_name == variant_ref_name:
+        if self.variant_name == variant_ref_name and not self.restarted:
             Messaging.step(
                 f"Checking {case_name} / {filename} skiped for '{variant_ref_name}'"
             )
@@ -498,7 +597,7 @@ class Croco:
             Messaging.step(f"Checking {case_name} / {filename}")
 
         # error
-        seq_dir = self.calc_rundir(variant_ref_name, case_name)
+        seq_dir = self.calc_rundir(variant_ref_name, case_name, False)
         seq_file = os.path.join(seq_dir, filename)
         if not os.path.exists(seq_file):
             Messaging.step_error(
@@ -547,7 +646,12 @@ class Croco:
             except Exception as e:
                 Messaging.step_error("Failed to compare !")
                 self.config.report.report_status(
-                    self.case_name, self.variant_name, "check", False, str(e)
+                    self.case_name,
+                    self.variant_name,
+                    self.restarted,
+                    "check",
+                    False,
+                    str(e),
                 )
                 return
         else:
@@ -555,7 +659,7 @@ class Croco:
 
         # report
         self.config.report.report_status(
-            self.case_name, self.variant_name, "check", True
+            self.case_name, self.variant_name, self.restarted, "check", True
         )
 
     def check_one_file_internal(self, filename: str):
@@ -601,14 +705,19 @@ class Croco:
                 )
                 # report
                 self.config.report.report_status(
-                    self.case_name, self.variant_name, "plotphy", True
+                    self.case_name, self.variant_name, self.restarted, "plotphy", True
                 )
             except subprocess.CalledProcessError as e:
                 Messaging.step_error(
                     f"Error during execution of {self.plot_diag_script}: {e}"
                 )
                 self.config.report.report_status(
-                    self.case_name, self.variant_name, "plotphy", False, str(e)
+                    self.case_name,
+                    self.variant_name,
+                    self.restarted,
+                    "plotphy",
+                    False,
+                    str(e),
                 )
         else:
             Messaging.step("No Plotting script provided")

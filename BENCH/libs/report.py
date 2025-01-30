@@ -23,12 +23,16 @@ class Report:
         self,
         case: str,
         variant: str,
+        restarted: bool,
         step: str,
         status: bool,
         message: str = "",
         log: str = "",
     ) -> None:
-        full_name = f"{case}-{variant}"
+        if restarted:
+            full_name = f"{case}-{variant}-rst"
+        else:
+            full_name = f"{case}-{variant}"
         if full_name not in self.report:
             self.report[full_name] = {
                 "case": case,

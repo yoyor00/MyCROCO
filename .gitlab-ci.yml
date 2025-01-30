@@ -153,6 +153,7 @@ test_bench_debug:
       --case @debug \
       --variants @debug \
       --title debug \
+      --debug \
       --jobcomp \
       --rebuild \
       --host host_ci \
@@ -165,6 +166,7 @@ test_bench_debug:
       --case @debug \
       --variants @debug \
       --title debug_cmake \
+      --debug \
       --rebuild --host host_ci \
       --compare-to sequential-debug \
       --data-root-path $DATAROOTPATH  \
@@ -190,6 +192,7 @@ test_bench_debug_ifort:
       --case @debug \
       --variants @debug-ifort \
       --title debug_ifort \
+      --debug \
       --jobcomp  \
       --rebuild \
       --host host_ci \
@@ -213,9 +216,10 @@ test_bench_regional:
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py \
-      --case BENGUELA_VHR_TIDES_BULK \
+      --case BENGUELA_LR_TIDES_BULK \
       --variants sequential,mpi-4  \
       --title regional \
+      --restart \
       --jobcomp  \
       --rebuild \
       --host host_ci  \

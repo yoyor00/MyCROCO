@@ -45,7 +45,16 @@ class CompareErrorLogger:
         self.append_raw(
             varname,
             "Non %s equality in variable '%s' at %s: ref %s actual : %s %s %s (diff=%s)"
-            % (compare_name, varname, {','.join(coord)}, operator, ref, operator, actual, diff),
+            % (
+                compare_name,
+                varname,
+                {",".join(coord)},
+                operator,
+                ref,
+                operator,
+                actual,
+                diff,
+            ),
         )
 
     def append_raw(self, varname: str, message: str):
