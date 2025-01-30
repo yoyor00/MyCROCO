@@ -157,7 +157,6 @@ test_bench_debug:
       --jobcomp \
       --rebuild \
       --host host_ci \
-      --compare-to sequential-debug \
       --data-root-path $DATAROOTPATH  \
       --html \
       -N
@@ -168,7 +167,6 @@ test_bench_debug:
       --title debug_cmake \
       --debug \
       --rebuild --host host_ci \
-      --compare-to sequential-debug \
       --data-root-path $DATAROOTPATH  \
       --html \
       -N
