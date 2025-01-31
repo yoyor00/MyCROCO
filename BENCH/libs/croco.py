@@ -481,119 +481,137 @@ class Croco:
 
     def change_card_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
-        TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-        OUTPUT_TIME_STEPS = extract_elements_from_file(
-            full_filename, "output_time_steps"
-        )
-        dt = float(TIME_LINE[1])
-        duration = math.ceil(max(dt * ntimes, min_dt))
-        dt_his_hours = max(dt / 3600.0, duration / (ntimes * 3600))
-        # in case of very small dt put put a minimum
-        NEW_OUTPUT_TIME_STEPS = copy_and_replace(OUTPUT_TIME_STEPS, 0, dt_his_hours)
-        patches = {
-            filename: {
-                "mode": "insert-after",
-                "what": " output_time_steps:",
-                "insert": " ".join(map(str, NEW_OUTPUT_TIME_STEPS)),
-                "descr": f"change output_time_steps to DT_HIS(H)={dt_his_hours}",
+        # Check end_date is a card in this case
+        if len(extract_elements_from_file(full_filename, "output_time_steps")) > 0:
+            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
+            OUTPUT_TIME_STEPS = extract_elements_from_file(
+                full_filename, "output_time_steps"
+            )
+            dt = float(TIME_LINE[1])
+            duration = math.ceil(max(dt * ntimes, min_dt))
+            dt_his_hours = max(dt / 3600.0, duration / (ntimes * 3600))
+            # in case of very small dt put put a minimum
+            NEW_OUTPUT_TIME_STEPS = copy_and_replace(OUTPUT_TIME_STEPS, 0, dt_his_hours)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " output_time_steps:",
+                    "insert": " ".join(map(str, NEW_OUTPUT_TIME_STEPS)),
+                    "descr": f"change output_time_steps to DT_HIS(H)={dt_his_hours}",
+                }
             }
-        }
-        self.apply_patches(patches)
-        delete_lines_from_file(
-            full_filename, "output_time_steps", line_offset=2, num_lines=1
-        )
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "output_time_steps", line_offset=2, num_lines=1
+            )
 
     def change_card_output_time_steps_dtrst(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
-        TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-        OUTPUT_TIME_STEPS = extract_elements_from_file(
-            full_filename, "output_time_steps"
-        )
-        dt = float(TIME_LINE[1])
-        duration = math.ceil(max(dt * ntimes, min_dt))
-        dt_rst_hours = duration / 3600.0
-        # in case of very small dt put put a minimum
-        NEW_OUTPUT_TIME_STEPS = copy_and_replace(OUTPUT_TIME_STEPS, 2, dt_rst_hours)
-        patches = {
-            filename: {
-                "mode": "insert-after",
-                "what": " output_time_steps:",
-                "insert": " ".join(map(str, NEW_OUTPUT_TIME_STEPS)),
-                "descr": f"change output_time_steps to DT_RST(H)={dt_rst_hours}",
+        # Check end_date is a card in this case
+        if len(extract_elements_from_file(full_filename, "output_time_steps")) > 0:
+            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
+            OUTPUT_TIME_STEPS = extract_elements_from_file(
+                full_filename, "output_time_steps"
+            )
+            dt = float(TIME_LINE[1])
+            duration = math.ceil(max(dt * ntimes, min_dt))
+            dt_rst_hours = duration / 3600.0
+            # in case of very small dt put put a minimum
+            NEW_OUTPUT_TIME_STEPS = copy_and_replace(OUTPUT_TIME_STEPS, 2, dt_rst_hours)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " output_time_steps:",
+                    "insert": " ".join(map(str, NEW_OUTPUT_TIME_STEPS)),
+                    "descr": f"change output_time_steps to DT_RST(H)={dt_rst_hours}",
+                }
             }
-        }
-        self.apply_patches(patches)
-        delete_lines_from_file(
-            full_filename, "output_time_steps", line_offset=2, num_lines=1
-        )
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "output_time_steps", line_offset=2, num_lines=1
+            )
 
     def change_card_end_date(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
-        TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-        START_DATE = extract_elements_from_file(full_filename, "start_date")
-        dt = float(TIME_LINE[1])
-        duration = math.ceil(max(dt * ntimes, min_dt))
-        # in case of very small dt put a minimum
-        datetime_start = parse_datetime(START_DATE[0] + " " + START_DATE[1])
-        datetime_end = datetime_start + timedelta(seconds=duration)
-        end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
-        patches = {
-            filename: {
-                "mode": "insert-after",
-                "what": " end_date:",
-                "insert": end_date,
-                "descr": f"change end_date to {end_date}",
+        # Check end_date is a card in this case
+        if len(extract_elements_from_file(full_filename, "end_date")) > 0:
+            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
+            START_DATE = extract_elements_from_file(full_filename, "start_date")
+            dt = float(TIME_LINE[1])
+            duration = math.ceil(max(dt * ntimes, min_dt))
+            # in case of very small dt put a minimum
+            datetime_start = parse_datetime(START_DATE[0] + " " + START_DATE[1])
+            datetime_end = datetime_start + timedelta(seconds=duration)
+            end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " end_date:",
+                    "insert": end_date,
+                    "descr": f"change end_date to {end_date}",
+                }
             }
-        }
-        self.apply_patches(patches)
-        delete_lines_from_file(full_filename, "end_date", line_offset=2, num_lines=1)
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "end_date", line_offset=2, num_lines=1
+            )
 
     def change_card_time_stepping_ntimes(self, filename, ntimes):
         full_filename = os.path.join(self.dirname, filename)
-        TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-        NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, ntimes)
-        patches = {
-            filename: {
-                "mode": "insert-after",
-                "what": " time_stepping:",
-                "insert": " ".join(map(str, NEW_TIME_LINE)),
-                "descr": "change duration to NTIMES=%i" % ntimes,
+        # Check time_stepping is a card in this case
+        if len(extract_elements_from_file(full_filename, "time_stepping")) > 0:
+            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
+            NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, ntimes)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " time_stepping:",
+                    "insert": " ".join(map(str, NEW_TIME_LINE)),
+                    "descr": "change duration to NTIMES=%i" % ntimes,
+                }
             }
-        }
-        self.apply_patches(patches)
-        delete_lines_from_file(
-            full_filename, "time_stepping", line_offset=2, num_lines=1
-        )
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "time_stepping", line_offset=2, num_lines=1
+            )
 
     def change_card_history_nwrt(self, filename):
         full_filename = os.path.join(self.dirname, filename)
-        HISTORY_LINE = extract_elements_from_file(full_filename, "history")
-        NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
-        patches = {
-            filename: {
-                "mode": "insert-after",
-                "what": " history:",
-                "insert": " ".join(map(str, NEW_HISTORY_LINE)),
-                "descr": "change output to NWRT=1",
+        # Check time_stepping is a card in this case
+        if len(extract_elements_from_file(full_filename, "history")) > 0:
+            HISTORY_LINE = extract_elements_from_file(full_filename, "history")
+            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " history:",
+                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
+                    "descr": "change output to NWRT=1",
+                }
             }
-        }
-        self.apply_patches(patches)
-        delete_lines_from_file(full_filename, "history:", line_offset=2, num_lines=1)
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "history:", line_offset=2, num_lines=1
+            )
 
     def change_card_history_ldefhis(self, filename):
         full_filename = os.path.join(self.dirname, filename)
-        HISTORY_LINE = extract_elements_from_file(full_filename, "history")
-        NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 0, "F")
-        patches = {
-            filename: {
-                "mode": "insert-after",
-                "what": " history:",
-                "insert": " ".join(map(str, NEW_HISTORY_LINE)),
-                "descr": "change output to LDEFHIS=F",
+        # Check time_stepping is a card in this case
+        if len(extract_elements_from_file(full_filename, "history")) > 0:
+            HISTORY_LINE = extract_elements_from_file(full_filename, "history")
+            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 0, "F")
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " history:",
+                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
+                    "descr": "change output to LDEFHIS=F",
+                }
             }
-        }
-        self.apply_patches(patches)
-        delete_lines_from_file(full_filename, "history:", line_offset=2, num_lines=1)
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "history:", line_offset=2, num_lines=1
+            )
 
     def setup_case(self):
         # apply the case paches

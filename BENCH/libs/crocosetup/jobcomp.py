@@ -344,6 +344,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         parser.add_argument(
             "--with-keys",
             required=False,
+            type=str,
             help="Change cppdefs definition",
             default=None,
         )
