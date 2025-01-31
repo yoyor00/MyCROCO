@@ -19,6 +19,7 @@ from termcolor import cprint
 from timeit import timeit
 from .messaging import Messaging
 from contextlib import contextmanager
+from datetime import datetime
 
 
 ##########################################################
@@ -638,3 +639,15 @@ def delete_section_from_patch(patch, keyword):
         ]
 
     print(f"Deleted sections containing keyword '{keyword}'.")
+
+
+def parse_datetime(date_str):
+    formats = ["%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S"]
+
+    for fmt in formats:
+        try:
+            return datetime.strptime(date_str, fmt)
+        except ValueError:
+            continue
+
+    raise ValueError(f"Invalid date format: {date_str}")
