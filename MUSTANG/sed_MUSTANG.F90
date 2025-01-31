@@ -326,16 +326,14 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! TEMERATURE in SEDIMENT                             !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   CALL sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast,  &
-                                                dt_true, dtinv)
+     CALL sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast,dt_true, dtinv)
 #endif
                            
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! BIO PROCESSES in SEDIMENT                                        !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    CALL bloom_reactions_in_sed(ifirst,ilast,jfirst,jlast,dt_true) 
-
+     CALL bloom_reactions_in_sed(ifirst,ilast,jfirst,jlast,dt_true)
 
 #if defined key_MARS && defined key_MPI_2D
     IF(p_txfiltbenthmax .NE. 0.0_rsh) THEN
@@ -2704,11 +2702,22 @@ MODULE sed_MUSTANG
           !    and the flux which results from the expulsion of interstitial water by consolidation:
           DO iv=nvp+1,nv_adv
             flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
+          ! Modif Martin : no water fluxes coded yet in CROCO ! => generates conservativity problems
+          !                for dissolved subs
+          !  => removal of all substances fluxes linked to erosion and consolidation,
+          !     we keep only diffusion
+            IF(htot(i,j) .GT. h0fond) THEN
+              flx_s2w(iv,i,j)=-fludif(iv,i,j)*dtinv
+            ELSE
+              flx_s2w(iv,i,j)=0.0_rsh
+            ENDIF
           ENDDO
 #endif
 
           DO iv=-1,0
             flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
+          ! Modif Martin : no water fluxes coded yet in CROCO ! => generates conservativity problems
+            flx_s2w(iv,i,j)=0.0_rsh
           ENDDO
 #endif
           ! updating ksma (as ksmax can be modified in the routine)
@@ -5028,6 +5037,10 @@ MODULE sed_MUSTANG
        !!!!!!!!!!!!   END OF DYNAMIC PROCESS IN SEDIMENT                !!
        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+       ! Modif Martin : temperature du sediment = temperature de la maille de fond
+        cv_sed(-1,:,i,j)=temp_bottom_MUSTANG(i,j)
+        fludif(-1,i,j)=0
+       ! ---------
       ENDDO
     ENDDO
    
