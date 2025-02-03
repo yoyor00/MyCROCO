@@ -986,7 +986,7 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
       error=0.D0
       do j=1,ny
         do i=1,nx
-          sXY(1,j)=0.5D0*(sXY(i,j)+sYX(i,j))
+          sXY(i,j)=0.5D0*(sXY(i,j)+sYX(i,j))
         enddo
       enddo
       END SUBROUTINE spln2d
