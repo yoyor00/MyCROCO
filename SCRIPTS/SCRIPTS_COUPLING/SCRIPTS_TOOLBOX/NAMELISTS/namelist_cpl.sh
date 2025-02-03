@@ -39,8 +39,8 @@ export weight_wav=""
 
 # Grid files for grid interpolations
 #-------------------------------------
-# Use pre-built grids file
+# Use pre-built grids file (0/1)
 # it should be placed in OASIS_FILES
-export GRIDS_FLAG="FALSE"
+export GRIDS_FLAG=0
 export grids_file=""
 
