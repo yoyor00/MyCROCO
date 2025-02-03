@@ -12,5 +12,7 @@ fi
 if [[ ${GRIDS_FLAG} == 1 ]]; then
     printf "GRIDS_FLAG is TRUE. Getting grid files for OASIS"
     ${io_getfile}  ${CPL_FILES_DIR}/${grids_file} grids.nc
+    ${io_getfile}  ${CPL_FILES_DIR}/${masks_file} masks.nc
+    ${io_getfile}  ${CPL_FILES_DIR}/${areas_file} areas.nc
 fi
 

@@ -43,4 +43,6 @@ export weight_wav=""
 # it should be placed in OASIS_FILES
 export GRIDS_FLAG=0
 export grids_file=""
+export masks_file=""
+export areas_file=""
 
