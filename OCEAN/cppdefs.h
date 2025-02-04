@@ -216,8 +216,8 @@
 #  define T_FRC_BRY
 # endif
                       /* Lateral Momentum Advection (default UP3) */
-# undef UV_HADV_UP3
-# define  UV_HADV_UP5
+# define UV_HADV_UP3
+# undef  UV_HADV_UP5
 # undef  UV_HADV_WENO5
 # undef  UV_HADV_TVD
                       /* Lateral Explicit Momentum Mixing */
@@ -245,7 +245,7 @@
                       /* Sponge layers for UV and TS */
 # define SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
-# define  VADV_ADAPT_IMP
+# undef  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
 # define LIMIT_BSTRESS
 # undef  BSTRESS_FAST
