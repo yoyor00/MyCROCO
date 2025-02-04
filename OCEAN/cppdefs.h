@@ -174,11 +174,12 @@
 #  define BULK_LW
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
-#  undef  ONLINE
+#  define  ONLINE
 #  ifdef ONLINE
 #   undef  AROME
 #   undef  ERA_ECMWF
-#   undef  FORMATTED
+#   define  FORMATTED
+#   define IRREG_INTERP
 #  endif
 #  undef READ_PATM
 #  ifdef READ_PATM
@@ -215,8 +216,8 @@
 #  define T_FRC_BRY
 # endif
                       /* Lateral Momentum Advection (default UP3) */
-# define UV_HADV_UP3
-# undef  UV_HADV_UP5
+# undef UV_HADV_UP3
+# define  UV_HADV_UP5
 # undef  UV_HADV_WENO5
 # undef  UV_HADV_TVD
                       /* Lateral Explicit Momentum Mixing */
@@ -244,7 +245,7 @@
                       /* Sponge layers for UV and TS */
 # define SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
-# undef  VADV_ADAPT_IMP
+# define  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
 # define LIMIT_BSTRESS
 # undef  BSTRESS_FAST
