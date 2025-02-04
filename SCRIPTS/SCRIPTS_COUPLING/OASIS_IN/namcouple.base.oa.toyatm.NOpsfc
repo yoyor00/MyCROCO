@@ -139,10 +139,10 @@
 # |               taut   |    WRF_d01_EXT_d01_TAUMOD             |
 # | cosa*taui - sina*tauj|    WRF_d01_EXT_d01_TAUE               |
 # | cosa*tauj - sina*taui|    WRF_d01_EXT_d01_TAUN               |
-# |               u_uo   |    WRF_d01_EXT_d01_WND_U_01           |
-# |               v_vo   |    WRF_d01_EXT_d01_WND_V_01           |
-# | cosa*u_uo - sina*v_vo|    WRF_d01_EXT_d01_WND_E_01           |
-# | cosa*v_vo - sina*u_uo|    WRF_d01_EXT_d01_WND_N_01           |
+# |               u_uo   |    WRF_d01_EXT_d01_WINDU_01           |
+# |               v_vo   |    WRF_d01_EXT_d01_WINDV_01           |
+# | cosa*u_uo - sina*v_vo|    WRF_d01_EXT_d01_WINDE_01           |
+# | cosa*v_vo - sina*u_uo|    WRF_d01_EXT_d01_WINDN_01           |
 # |               psfc   |    WRF_d01_EXT_d01_PSFC               |
 # |--------------------------------------------------------------|
 # | Possibly received fields by WRF:                WRF | OASIS  |
