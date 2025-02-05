@@ -140,7 +140,28 @@ reg_perfrst_intel:
     - .intel_base
     - .reg_perfrst_base
 
-test_bench_debug:
+test_bench_debug_base:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @base \
+      --variants @debug \
+      --title debug_base \
+      --debug \
+      --jobcomp \
+      --rebuild \
+      --host host_ci \
+      --data-root-path $DATAROOTPATH  \
+      --html \
+      -N
+
+test_bench_debug_base_cmake:
   stage: bench
   tags:
     - ci.inria.fr
@@ -152,7 +173,31 @@ test_bench_debug:
       ./bench-croco.py \
       --case @debug \
       --variants @debug \
-      --title debug \
+      --title debug_base_cmake \
+      --debug \
+      --rebuild --host host_ci \
+      --data-root-path $DATAROOTPATH  \
+      --html \
+      -N
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+
+test_bench_debug_realist:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @realist \
+      --variants @debug \
+      --title debug_realist \
       --debug \
       --jobcomp \
       --rebuild \
@@ -160,11 +205,155 @@ test_bench_debug:
       --data-root-path $DATAROOTPATH  \
       --html \
       -N
+
+test_bench_debug_realist_cmake:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py \
-      --case @debug \
+      --case @realist \
       --variants @debug \
-      --title debug_cmake \
+      --title debug_realist_cmake \
+      --debug \
+      --rebuild --host host_ci \
+      --data-root-path $DATAROOTPATH  \
+      --html \
+      -N
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+
+test_bench_debug_nbq:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @nbq \
+      --variants @debug \
+      --title debug_nbq \
+      --debug \
+      --jobcomp \
+      --rebuild \
+      --host host_ci \
+      --data-root-path $DATAROOTPATH  \
+      --html \
+      -N
+
+test_bench_debug_nbq_cmake:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @nbq \
+      --variants @debug \
+      --title debug_nbq_cmake \
+      --debug \
+      --rebuild --host host_ci \
+      --data-root-path $DATAROOTPATH  \
+      --html \
+      -N
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+
+test_bench_debug_sediment_mustang:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @sediment_mustang \
+      --variants @debug \
+      --title debug_sediment_mustang \
+      --debug \
+      --jobcomp \
+      --rebuild \
+      --host host_ci \
+      --data-root-path $DATAROOTPATH  \
+      --html \
+      -N
+
+test_bench_debug_sediment_mustang_cmake:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @sediment_mustang \
+      --variants @debug \
+      --title debug_sediment_mustang_cmake \
+      --debug \
+      --rebuild --host host_ci \
+      --data-root-path $DATAROOTPATH  \
+      --html \
+      -N
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+
+test_bench_debug_other:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @other \
+      --variants @debug \
+      --title debug_sediment_mustang \
+      --debug \
+      --jobcomp \
+      --rebuild \
+      --host host_ci \
+      --data-root-path $DATAROOTPATH  \
+      --html \
+      -N
+
+test_bench_debug_other_cmake:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @other \
+      --variants @debug \
+      --title debug_other_cmake \
       --debug \
       --rebuild --host host_ci \
       --data-root-path $DATAROOTPATH  \
@@ -203,6 +392,7 @@ test_bench_debug_ifort:
       - BENCH/results
     when: always
     expire_in: 1 week
+  when: manual
 
 test_bench_regional:
   stage: bench
@@ -228,6 +418,7 @@ test_bench_regional:
       - BENCH/results
     when: always
     expire_in: 1 week
+  when: manual
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
 

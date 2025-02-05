@@ -82,8 +82,50 @@
     ],
   },
   "meta_cases": {
-    "@debug": ["BASIN", "BENGUELA_VHR_TIDES_BULK"],
+    "@base": [
+      "BASIN",
+      "EQUATOR",
+      "GRAV_ADJ",
+      "IGW",
+      "ISOLITON",
+      "OVERFLOW",
+      "PSOURCE_MASS",
+      "RIVER",
+      "UPWELLING",
+    ],
+    "@realist": ["BENGUELA_LR_TIDES_BULK", "VILAINE"],
+    "@nbq": ["GRAV_ADJ_NBQ"], // "IGW_NBQ" is not operational
+    "@sediment_mustang": [
+      "DUNE_SEDIMENT",
+      "DUNE_MUSTANG",
+      "TIDAL_FLAT_MUSTANG",
+      "SANDBAR",
+      "RIP",
+    ],
+    "@other": ["KILPATRICK", "SEAGRASS", "SHOREFACE", "THACKER"],
+    "@complement": [
+      "CANYON",
+      "ESTUARY",
+      "INNERSHELF",
+      "INTERNAL",
+      "JET",
+      "KH_INST",
+      "SEAMOUNT",
+      "SHELFRONT",
+      "SWASH",
+      "TANK",
+      "TS_HADV_TEST",
+      // "SINGLE_COLUMN_DIURNAL_CYCLE", // missing croco.in file
+      // "MOVING_BATHY", // repro-mpi issue
+      "ACOUSTIC",
+      "SED_TOY",
+    ],
+    "@agrif": [
+      "VORTEX",
+      // "VORTEX_AGRIF", "VORTEX_AGRIF_2WAY"  TODO
+    ],
   },
+
   ////////////////////////////// VARIANTS ////////////////////////////////////
   "variants": {
     // Look inside condif.d/variants/* to see what is imported here from dir.

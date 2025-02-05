@@ -1,5 +1,5 @@
 {
-  // BENGUELA case
+  // BENGUELA cases
   "BENGUELA_LR_TIDES_BULK": {
     "title": "BENGUELA_LR_TIDES_BULK",
     "case": "REGIONAL",
@@ -9,12 +9,6 @@
       "1": { "splitting": "1x1" },
       "2": { "splitting": "1x2" },
       "4": { "splitting": "2x2" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-      "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
     },
     "cppkeys": {
       "TIDES": true,
@@ -35,25 +29,17 @@
       "6": { "splitting": "1x6" },
       "8": { "splitting": "2x4" },
       "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
+      "16": { "splitting": "2x8" },
+      "32": { "splitting": "4x8" },
+      "64": { "splitting": "8x8" },
     },
     "cppkeys": {
-      "TIDES": true,
-      "BENGUELA_LR": false,
       "BENGUELA_VHR": true,
+      "TIDES": true,
+      "BULK_FLUX": true,
+      "BENGUELA_LR": false,
     },
-    "patches": {
-      // Change the dt
-      "TEST_CASES/croco.in.Regional": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                3840      3600      60      1",
-        "by": "                 120       900      60      1",
-        "descr": "Set stepping (steps=120, dt=900, fast=60)",
-      },
-    },
+    "patches": {},
     "check_outputs": ["CROCO_FILES/croco_his.nc"],
   },
 }

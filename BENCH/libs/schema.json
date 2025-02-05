@@ -164,7 +164,8 @@
             "additionalProperties": {
               "type": "string"
             }
-          }
+          },
+          "input_file": { "type": "string" }
         },
         "required": ["title", "case", "mpi", "patches", "check_outputs"]
       }

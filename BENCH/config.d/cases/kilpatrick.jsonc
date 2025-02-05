@@ -1,0 +1,17 @@
+{
+  // Default KILPATRICK case
+  "KILPATRICK": {
+    "title": "KILPATRICK - (600 x 3 x 2 : 1800)",
+    "case": "KILPATRICK",
+    "plot_diag_script": "",
+    "mpi": {
+      "1": { "splitting": "1x1" },
+      "2": { "splitting": "2x1" },
+      "4": { "splitting": "4x1" },
+      "6": { "splitting": "6x1" },
+      "8": { "splitting": "8x1" },
+    },
+    "patches": {},
+    "check_outputs": ["croco_his.nc"],
+  },
+}

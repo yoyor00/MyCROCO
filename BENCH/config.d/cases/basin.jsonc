@@ -17,6 +17,7 @@
     },
     "patches": {},
     "check_outputs": ["basin_his.nc"],
+    "unsupported": ["restart"],
   },
   // Default BASIN case
   "BASIN-SMALL": {

@@ -1,0 +1,33 @@
+{
+  // DUNE
+  "DUNE_SEDIMENT": {
+    "title": "DUNE (50 x 1 x 20 : 1000)",
+    "case": "DUNE",
+    "mpi": {
+      "1": { "splitting": "1x1" },
+      "2": { "splitting": "2x1" },
+    },
+    "cppkeys": {
+      "SEDIMENT": true,
+      "MUSTANG": false,
+    },
+    "patches": {},
+    "check_outputs": ["dune_his.nc"],
+    "unsupported": ["restart"],
+  },
+  "DUNE_MUSTANG": {
+    "title": "DUNE (50 x 1 x 20 : 1000)",
+    "case": "DUNE",
+    "mpi": {
+      "1": { "splitting": "1x1" },
+      "2": { "splitting": "2x1" },
+    },
+    "cppkeys": {
+      "MUSTANG": true,
+      "SEDIMENT": false,
+    },
+    "patches": {},
+    "check_outputs": ["dune_his.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+}

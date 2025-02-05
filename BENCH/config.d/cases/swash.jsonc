@@ -1,0 +1,16 @@
+{
+  // SWASH
+  "SWASH": {
+    "title": "SWASH - (800 x 1 x 10 : 8000)",
+    "case": "SWASH",
+    "mpi": {
+      "1": { "splitting": "1x1" },
+      "2": { "splitting": "2x1" },
+      "4": { "splitting": "4x1" },
+      "6": { "splitting": "6x1" },
+      "8": { "splitting": "8x1" },
+    },
+    "patches": {},
+    "check_outputs": ["swash_his.nc"],
+  },
+}

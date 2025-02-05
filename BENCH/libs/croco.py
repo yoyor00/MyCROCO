@@ -61,6 +61,12 @@ class Croco:
         self.case = config.config["cases"][case_name]
         self.variant = config.config["variants"][variant_name]
 
+        # input file
+        self.croco_inputfile = "TEST_CASES/croco.in.%s" % self.case["case"].capitalize()
+        if "input_file" in self.case:
+            if len(self.case["input_file"]) > 0:
+                self.croco_inputfile = self.case["input_file"]
+
         # if use old croco
         # self.old_croco = None
         if config.has_cmake and not self.config.force_jobcomp:
@@ -304,9 +310,10 @@ class Croco:
             env_line += f'{var}="{value}" '
 
         # build command and run
-        command = (
-            "%s ../../../scripts/correct_end.sh %s ./croco TEST_CASES/croco.in.%s"
-            % (env_line, command_prefix, self.case["case"].capitalize())
+        command = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
+            env_line,
+            command_prefix,
+            self.croco_inputfile,
         )
         if restart:
             # execute twice one without restart and one with
@@ -415,8 +422,7 @@ class Croco:
                     patch_lines(file_filtered, [change])
 
     def apply_debug_patches(self):
-        case_capitalized = self.case["case"].capitalize()
-        filename = f"TEST_CASES/croco.in.{case_capitalized}"
+        filename = self.croco_inputfile
         self.change_card_time_stepping_ntimes(filename, 6)
         self.change_card_history_nwrt(filename)
         # and for USE_CALENDAR
@@ -424,8 +430,7 @@ class Croco:
         self.change_card_output_time_steps_dthis(filename, 6)
 
     def apply_restart_patches(self):
-        case_capitalized = self.case["case"].capitalize()
-        filename = f"TEST_CASES/croco.in.{case_capitalized}"
+        filename = self.croco_inputfile
 
         # for all case (write/read), put ldefhis to F
         self.change_card_history_ldefhis(filename)
@@ -841,8 +846,7 @@ class Croco:
         self.croco_build.copy_config(refdir_case, case_name, patches_and_keys)
 
         # add the case config files
-        case_capitalized = case_name.capitalize()
-        case_file = f"TEST_CASES/croco.in.{case_capitalized}"
+        case_file = self.croco_inputfile
         os.makedirs(f"{refdir}/{case_name}/TEST_CASES", exist_ok=True)
         shutil.copyfile(f"{dirname}/{case_file}", f"{refdir}/{case_name}/{case_file}")
 

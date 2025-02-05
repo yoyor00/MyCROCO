@@ -1,14 +1,14 @@
 {
-  // INNERSHELF
-  "INNERSHELF": {
-    "title": "INNERSHELF - (200 x 3 x 60 : 5760)",
-    "case": "INNERSHELF",
+  // SANDBAR
+  "SANDBAR": {
+    "title": "SANDBAR - (720 x 1 x 20 : 1440)",
+    "case": "SANDBAR",
     "mpi": {
       "1": { "splitting": "1x1" },
       "2": { "splitting": "2x1" },
       "4": { "splitting": "4x1" },
     },
     "patches": {},
-    "check_outputs": ["inner_his.nc"],
+    "check_outputs": ["sandbar_his.nc"],
   },
 }

@@ -1,268 +1,93 @@
 {
-  // BASIN a bit larger
+  // SINGLE_COLUMN
   "SINGLE_COLUMN_DIURNAL_CYCLE": {
     "title": "SINGLE_COLUMN - DIURNAL_CYCLE - (5 x 5 x 150 : 23040)",
     "case": "SINGLE_COLUMN",
     "cppkeys": {
+      "SINGLE_COLUMN": true,
       "KATO_PHILIPS": false,
       "DIURNAL_CYCLE": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-      "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
-    },
-    "patches": {
-      // Change the size of the mesh
-      "param_override.h": {
-        "mode": "replace",
-        "after": "# elif defined DIURNAL_CYCLE",
-        "what": "      parameter (LLm0=5 ,   MMm0=5,    N=150)",
-        "by": "      parameter (LLm0=5 ,   MMm0=5,    N=150)",
-        "descr": "Set mesh size to (5 x 5 x 150)",
-      },
-      // Change the dt
-      "TEST_CASES/croco.in.DIURNALCYCLE": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                23040      30      60      1",
-        "by": "                23040      30      60      1",
-        "descr": "Set stepping (steps=23040, dt=30, fast=60)",
-      },
-    },
+    "mpi": {},
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
+    "unsupported": ["openmp", "mpi"],
   },
   "SINGLE_COLUMN_FORCED_DBLEEK": {
     "title": "SINGLE_COLUMN - FORCED_DBLEEK - (5 x 5 x 25 : 2880)",
     "case": "SINGLE_COLUMN",
     "cppkeys": {
+      "SINGLE_COLUMN": true,
       "KATO_PHILIPS": false,
       "FORCED_DBLEEK": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-      "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
-    },
-    "patches": {
-      // Change the size of the mesh
-      "param_override.h": {
-        "mode": "replace",
-        "after": "# elif defined FORCED_DBLEEK",
-        "what": "      parameter (LLm0=5 ,   MMm0=5,    N=25)",
-        "by": "      parameter (LLm0=5 ,   MMm0=5,    N=25)",
-        "descr": "Set mesh size to (5 x 5 x 25)",
-      },
-      // Change the dt
-      "TEST_CASES/croco.in.FORCED_DBLEEK": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                2880      30      60      1",
-        "by": "                2880      30      60      1",
-        "descr": "Set stepping (steps=2880, dt=30, fast=60)",
-      },
-    },
+    "mpi": {},
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
+    "unsupported": ["openmp", "mpi"],
   },
   "SINGLE_COLUMN_FORCED_EKBBL": {
     "title": "SINGLE_COLUMN - FORCED_EKBBL - (5 x 5 x 40 : 23040)",
     "case": "SINGLE_COLUMN",
     "cppkeys": {
+      "SINGLE_COLUMN": true,
       "KATO_PHILIPS": false,
       "FORCED_EKBBL": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-      "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
-    },
-    "patches": {
-      // Change the size of the mesh
-      "param_override.h": {
-        "mode": "replace",
-        "after": "# elif defined FORCED_EKBBL",
-        "what": "      parameter (LLm0=5 ,   MMm0=5,    N=40)",
-        "by": "      parameter (LLm0=5 ,   MMm0=5,    N=40)",
-        "descr": "Set mesh size to (5 x 5 x 40)",
-      },
-      // Change the dt
-      "TEST_CASES/croco.in.FORCED_EKBBL": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                2880      30      60      1",
-        "by": "                2880      30      60      1",
-        "descr": "Set stepping (steps=2880, dt=30, fast=60)",
-      },
-    },
+    "mpi": {},
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
+    "unsupported": ["openmp", "mpi"],
   },
   "SINGLE_COLUMN_FORCED_NONROTBBL": {
     "title": "SINGLE_COLUMN - FORCED_NONROTBBL - (5 x 5 x 50 : 3600)",
     "case": "SINGLE_COLUMN",
     "cppkeys": {
+      "SINGLE_COLUMN": true,
       "KATO_PHILIPS": false,
       "FORCED_NONROTBBL": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-      "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
-    },
-    "patches": {
-      // Change the size of the mesh
-      "param_override.h": {
-        "mode": "replace",
-        "after": "# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL \\",
-        "what": "      parameter (LLm0=5 ,   MMm0=5,    N=50)",
-        "by": "      parameter (LLm0=5 ,   MMm0=5,    N=50)",
-        "descr": "Set mesh size to (5 x 5 x 50)",
-      },
-      // Change the dt
-      "TEST_CASES/croco.in.FORCED_NONROTBBL": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                3600      30      60      1",
-        "by": "                3600      30      60      1",
-        "descr": "Set stepping (steps=3600, dt=30, fast=60)",
-      },
-    },
+    "mpi": {},
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
+    "unsupported": ["openmp", "mpi"],
   },
   "SINGLE_COLUMN_FORCED_OSCNONROTBBL": {
     "title": "SINGLE_COLUMN - FORCED_OSCNONROTBBL - (5 x 5 x 50 : 7200)",
     "case": "SINGLE_COLUMN",
     "cppkeys": {
+      "SINGLE_COLUMN": true,
       "KATO_PHILIPS": false,
       "FORCED_OSCNONROTBBL": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-      "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
-    },
-    "patches": {
-      // Change the size of the mesh
-      "param_override.h": {
-        "mode": "replace",
-        "after": "# elif defined WILLIS_DEARDORFF || defined FORCED_OSCNONROTBBL \\",
-        "what": "      parameter (LLm0=5 ,   MMm0=5,    N=50)",
-        "by": "      parameter (LLm0=5 ,   MMm0=5,    N=50)",
-        "descr": "Set mesh size to (5 x 5 x 50)",
-      },
-      // Change the dt
-      "TEST_CASES/croco.in.FORCED_OSCNONROTBBL": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                7200      30      60      1",
-        "by": "                7200      30      60      1",
-        "descr": "Set stepping (steps=7200, dt=30, fast=60)",
-      },
-    },
+    "mpi": {},
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
+    "unsupported": ["openmp", "mpi"],
   },
   "SINGLE_COLUMN_KATO_PHILIPS": {
     "title": "SINGLE_COLUMN - KATO_PHILIPS - (5 x 5 x 100 : 3600)",
     "case": "SINGLE_COLUMN",
     "cppkeys": {
+      "SINGLE_COLUMN": true,
       "KATO_PHILIPS": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-      "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
-    },
-    "patches": {
-      // Change the size of the mesh
-      "param_override.h": {
-        "mode": "replace",
-        "after": "# ifdef KATO_PHILIPS",
-        "what": "      parameter (LLm0=5 ,   MMm0=5,    N=100)",
-        "by": "      parameter (LLm0=5 ,   MMm0=5,    N=100)",
-        "descr": "Set mesh size to (5 x 5 x 100)",
-      },
-      // Change the dt
-      "TEST_CASES/croco.in.KATO_PHILLIPS": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                3600      30      60      1",
-        "by": "                3600      30      60      1",
-        "descr": "Set stepping (steps=3600, dt=30, fast=60)",
-      },
-    },
+    "mpi": {},
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
+    "unsupported": ["openmp", "mpi"],
   },
   "SINGLE_COLUMN_WILLIS_DEARDORFF": {
     "title": "SINGLE_COLUMN - WILLIS_DEARDORFF - (5 x 5 x 50 : 8640)",
     "case": "SINGLE_COLUMN",
     "cppkeys": {
+      "SINGLE_COLUMN": true,
       "KATO_PHILIPS": false,
       "WILLIS_DEARDORFF": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-      "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
-    },
-    "patches": {
-      // Change the size of the mesh
-      "param_override.h": {
-        "mode": "replace",
-        "after": "# elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL \\",
-        "what": "      parameter (LLm0=5 ,   MMm0=5,    N=50)",
-        "by": "      parameter (LLm0=5 ,   MMm0=5,    N=50)",
-        "descr": "Set mesh size to (5 x 5 x 50)",
-      },
-      // Change the dt
-      "TEST_CASES/croco.in.WILLIS_DEARDORFF": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                8640      30      60      1",
-        "by": "                8640      30      60      1",
-        "descr": "Set stepping (steps=8640, dt=30, fast=60)",
-      },
-    },
+    "mpi": {},
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
+    "unsupported": ["openmp", "mpi"],
   },
 }

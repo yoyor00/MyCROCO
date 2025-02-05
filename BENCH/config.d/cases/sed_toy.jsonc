@@ -1,0 +1,12 @@
+{
+  // SED_TOY
+  "SED_TOY_ROUSE": {
+    "title": "SED_TOY_ROUSE- (5 x 5 x 100 : 2500)",
+    "case": "SED_TOY",
+    "mpi": {},
+    "patches": {},
+    "input_file": "TEST_CASES/croco.in.Sed_toy_rouse",
+    "check_outputs": ["sed_toy_rouse_his.nc"],
+    "unsupported": ["restart", "openmp", "mpi"],
+  },
+}

@@ -6,45 +6,17 @@
     "croco_files_path": "COASTAL_VILAINE_BCK",
     "mpi": {
       "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
+      "2": { "splitting": "2x1" },
       "4": { "splitting": "2x2" },
       "8": { "splitting": "2x4" },
     },
-    "cppkeys": {},
+    "cppkeys": {
+      "VILAINE": true,
+      "MUSTANG": false,
+      "SUBSTANCE": false,
+    },
     "patches": {},
     "check_outputs": ["croco_his.nc"],
-  },
-  // VILAINE case
-  "VILAINE_small": {
-    "title": "VILAINE small",
-    "case": "COASTAL",
-    "croco_files_path": "COASTAL_VILAINE_BCK",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "2x2" },
-      "8": { "splitting": "2x4" },
-    },
-    "cppkeys": {},
-    "patches": {
-      // Change the dt
-      "TEST_CASES/croco.in.Coastal": [
-        {
-          "mode": "replace",
-          "after": " end_date: ",
-          "what": "2015-01-02 00:00:00",
-          "by": "2015-01-01 00:06:00",
-          "descr": "Set end date (2015-01-01 01:00:00)",
-        },
-        {
-          "mode": "replace",
-          "after": "output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)",
-          "what": "                   1.0       24           24 ",
-          "by": "                   0.05       24           24 ",
-          "descr": "Set output dt = 3 min",
-        },
-      ],
-    },
-    "check_outputs": ["croco_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
 }

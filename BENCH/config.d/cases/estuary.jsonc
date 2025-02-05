@@ -1,0 +1,18 @@
+{
+  // Default ESTUARY case
+  "ESTUARY": {
+    "title": "ESTUARY",
+    "case": "ESTUARY",
+    "plot_diag_script": "",
+    "mpi": {
+      "1": { "splitting": "1x1" },
+      "2": { "splitting": "2x1" },
+      "4": { "splitting": "2x2" },
+      "6": { "splitting": "1x6" },
+      "8": { "splitting": "2x4" },
+    },
+    "patches": {},
+    "check_outputs": ["estuary_his.nc"],
+    "unsupported": ["restart", "openmp-2", "openmp-4", "openmp-6", "openmp-8"],
+  },
+}

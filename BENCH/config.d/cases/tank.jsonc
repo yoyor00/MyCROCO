@@ -1,0 +1,14 @@
+{
+  // TANK
+  "TANK": {
+    "title": "TANK - (50 x 1 x 50 : 2500)",
+    "case": "TANK",
+    "mpi": {
+      "1": { "splitting": "1x1" },
+      "2": { "splitting": "2x1" },
+    },
+    "patches": {},
+    "check_outputs": ["tank_his.nc"],
+    "unsupported": ["openmp"],
+  },
+}
