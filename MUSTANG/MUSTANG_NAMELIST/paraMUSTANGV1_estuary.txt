@@ -79,4 +79,5 @@
 /
 &namflocmod
 /  
-
+&namsedim_poro
+/
