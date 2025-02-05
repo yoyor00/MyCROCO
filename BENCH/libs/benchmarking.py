@@ -76,6 +76,22 @@ class Benchmarking:
             self.config.variant_names.remove(ref_name)
             self.config.variant_names.insert(0, ref_name)
 
+    def supported_variantname(self, variant_name, case_config):
+        res = True
+        if variant_name in case_config.get("unsupported", []):
+            res = False
+        elif variant_name.split("-")[0] in case_config.get("unsupported", []):
+            # test if openmp is supported
+            res = False
+        elif variant_name.split("-")[0] == "mpi":
+            # test if mpi with this number of cpu is supported
+            res_splitting = False
+            for key, value in case_config.get("mpi", []).items():
+                if str(key) == variant_name.split("-")[-1]:
+                    res_splitting = True
+            res = res_splitting
+        return res
+
     def create_croco_instances(self) -> Union[Croco]:
         # extract some
         config = self.config
@@ -90,7 +106,7 @@ class Benchmarking:
                 case_config = config.config["cases"][case_name]
 
                 # filter
-                if variant_name not in case_config.get("unsupported", []):
+                if self.supported_variantname(variant_name, case_config):
                     if config.restart:
                         if "restart" not in case_config.get("unsupported", []):
                             if variant_name == self.config.variant_ref_name:
