@@ -143,9 +143,9 @@ MODULE initMUSTANG
                             l_outsed_consolidation
 
 
-#ifdef key_MUSTANG_V2
     namelist /namsedim_poro/ poro_option, poro_min,                           &
                              Awooster, Bwooster, Bmax_wu 
+#ifdef key_MUSTANG_V2
 #ifdef key_MUSTANG_bedload
     namelist /namsedim_bedload/ l_peph_bedload, l_slope_effect_bedload,       &
                                 alphabs, alphabn, hmin_bedload, l_fsusp
