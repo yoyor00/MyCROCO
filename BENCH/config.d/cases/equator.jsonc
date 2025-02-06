@@ -3,11 +3,7 @@
   "EQUATOR": {
     "title": "EQUATOR - (40 x 32 x 32 : 3600)",
     "case": "EQUATOR",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "2x2" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
     "patches": {},
     "check_outputs": ["equator_his.nc"],
     "unsupported": ["restart"],

@@ -4,12 +4,7 @@
     "title": "VILAINE",
     "case": "COASTAL",
     "croco_files_path": "COASTAL_VILAINE_BCK",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-      "4": { "splitting": "2x2" },
-      "8": { "splitting": "2x4" },
-    },
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2", "8": "2x4" },
     "cppkeys": {
       "VILAINE": true,
       "MUSTANG": false,

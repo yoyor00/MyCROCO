@@ -3,12 +3,7 @@
   "OVERFLOW": {
     "title": "OVERFLOW - (4 x 128 x 10 : 2160)",
     "case": "OVERFLOW",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-      "6": { "splitting": "1x6" },
-    },
+    "splitting": { "1": "1x1", "2": "1x2", "4": "1x4" },
     "patches": {},
     "check_outputs": ["over_his.nc"],
   },

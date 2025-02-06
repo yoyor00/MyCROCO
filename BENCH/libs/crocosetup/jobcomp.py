@@ -116,10 +116,18 @@ class JobcompCrocoConfig:
         # apply
         patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
 
-    def param_h_configure_openmp_split(self, threads: int):
+    def param_h_configure_openmp_split(self, splitting: str):
         """
         Configure the OpenMP splitting in param.h
         """
+        # split
+        dims = splitting.split("x")
+        assert len(dims) == 2
+
+        # extrat
+        np_x = int(dims[0])
+        np_eta = int(dims[1])
+        threads = np_x * np_eta
 
         # build the patching rule
         rules = [
@@ -128,6 +136,19 @@ class JobcompCrocoConfig:
                 "what": "      parameter (NPP=4)\n",
                 "by": f"      parameter (NPP={threads})\n",
                 "descr": f"Set OPENMP threads = {threads}",
+            }
+        ]
+
+        # apply
+        patch_lines(os.path.join(self.builddir, "param.h"), rules)
+
+        # build the patching rule
+        rules = [
+            {
+                "mode": "replace",
+                "what": "      parameter (NSUB_X=1, NSUB_E=NPP)\n",
+                "by": f"      parameter (NSUB_X={np_x}, NSUB_E={np_eta})\n",
+                "descr": f"Set OPENMP splitting : {splitting} : ranks={threads}, np_xi={np_x}, np_eta={np_eta}"
             }
         ]
 
@@ -438,7 +459,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         self.cppdef_h_enable_openacc(self.use_openacc)
         self.cppdef_h_enable_openacc_psyclone(self.use_openacc_psyclone)
         if self.use_openmp:
-            self.croco_config.param_h_configure_openmp_split(options.with_threads)
+            self.croco_config.param_h_configure_openmp_split(options.with_splitting)
         if self.use_mpi:
             self.croco_config.param_h_configure_mpi_split(options.with_splitting)
 

@@ -3,10 +3,7 @@
   "SHOREFACE": {
     "title": "SHOREFACE - (59 x 1 x 20 : 7200)",
     "case": "SHOREFACE",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1" },
     "patches": {},
     "check_outputs": ["shoreface_his.nc"],
   },

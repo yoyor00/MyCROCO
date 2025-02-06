@@ -3,11 +3,7 @@
   "RIVER": {
     "title": "RIVER - (40 x 80 x 20 : 800)",
     "case": "RIVER",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "2x2" },
-    },
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "patches": {},
     "check_outputs": ["river_his.nc"],
     "unsupported": ["restart"],
@@ -16,11 +12,7 @@
   "PSOURCE_MASS": {
     "title": "PSOURCE_MASS - (40 x 80 x 20 : 800)",
     "case": "RIVER",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "2x2" },
-    },
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
       "PSOURCE_MASS": true,
     },

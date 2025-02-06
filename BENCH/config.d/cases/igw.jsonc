@@ -7,13 +7,7 @@
       "IGW": true,
       "NBQ": false,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-      "4": { "splitting": "4x1" },
-      "6": { "splitting": "6x1" },
-      "8": { "splitting": "8x1" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1", "6": "6x1", "8": "8x1" },
     "patches": {},
     "check_outputs": ["igw_his.nc"],
   },
@@ -23,11 +17,7 @@
     "cppkeys": {
       "NBQ": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-      "4": { "splitting": "4x1" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "patches": {},
     "input_file": "TEST_CASES/croco.in.Igw_nbq",
     "check_outputs": ["igw_his.nc", "igw_avg.nc"],

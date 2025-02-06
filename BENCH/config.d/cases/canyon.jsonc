@@ -3,11 +3,7 @@
   "CANYON": {
     "title": "CANYON - (65 x 48 x 16 : 240)",
     "case": "CANYON",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "2x2" },
-    },
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "patches": {},
     "check_outputs": ["canyon_his.nc"],
   },

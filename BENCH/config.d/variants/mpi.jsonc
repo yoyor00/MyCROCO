@@ -1,7 +1,7 @@
 {
   // mpi
   "mpi-{tasks}": {
-    "configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpifort",
+    "configure": "--with-optim=mpi --with-splitting={case.splitting.{tasks}} FC=mpifort",
     "tuning_familly": "gnu",
     "environ": {
       "OMP_NUM_THREADS": 1,
@@ -17,7 +17,7 @@
 
   // mpi-ifort
   "mpi-ifort-{tasks}": {
-    "configure": "--with-optim=mpi --with-splitting={case.mpi.{tasks}.splitting} FC=mpiifort",
+    "configure": "--with-optim=mpi --with-splitting={case.splitting.{tasks}} FC=mpiifort",
     "tuning_familly": "intel",
     "tuning_fflags": "standard",
     "environ": {

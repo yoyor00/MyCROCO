@@ -3,10 +3,7 @@
     "title": "SEAGRASS",
     "case": "SEAGRASS",
     "plot_diag_script": "",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1" },
     "cppkeys": {},
     "patches": {},
     "check_outputs": ["seagrass_his.nc"],

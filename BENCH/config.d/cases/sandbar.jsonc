@@ -3,11 +3,7 @@
   "SANDBAR": {
     "title": "SANDBAR - (720 x 1 x 20 : 1440)",
     "case": "SANDBAR",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-      "4": { "splitting": "4x1" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "patches": {},
     "check_outputs": ["sandbar_his.nc"],
     "unsupported": ["restart", "openmp"],

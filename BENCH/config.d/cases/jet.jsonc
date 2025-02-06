@@ -7,11 +7,7 @@
       "JET": true,
       "ANA_JET": false,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "2x2" },
-    },
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "patches": {},
     "check_outputs": ["jet_his.nc"],
     "unsupported": ["restart", "openmp"],
@@ -22,11 +18,7 @@
     "cppdeps": {
       "ANA_JET": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-    },
+    "splitting": { "1": "1x1", "2": "1x2", "4": "1x4" },
     "patches": {},
     "check_outputs": ["jet_his.nc"],
     "unsupported": ["restart", "openmp"],

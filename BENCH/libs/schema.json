@@ -132,15 +132,9 @@
         "properties": {
           "title": { "type": "string" },
           "case": { "type": "string" },
-          "mpi": {
+          "splitting": {
             "type": "object",
-            "additionalProperties": {
-              "type": "object",
-              "properties": {
-                "splitting": { "type": "string" }
-              },
-              "required": ["splitting"]
-            }
+            "additionalProperties": { "type": "string" }
           },
           "patches": {
             "type": "object",
@@ -167,7 +161,7 @@
           },
           "input_file": { "type": "string" }
         },
-        "required": ["title", "case", "mpi", "patches", "check_outputs"]
+        "required": ["title", "case", "splitting", "patches", "check_outputs"]
       }
     }
   },

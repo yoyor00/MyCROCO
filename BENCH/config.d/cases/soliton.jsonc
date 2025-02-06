@@ -3,11 +3,7 @@
   "SOLITON": {
     "title": "SOLITON (96 x 32 x 10 : 1200)",
     "case": "SOLITON",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-      "4": { "splitting": "2x2" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
     "patches": {},
     "check_outputs": ["soliton_his.nc", "soliton_avg.nc"],
     "unsupported": ["openacc-native", "openacc-psyclone"],
@@ -16,16 +12,16 @@
   "SOLITON-LARGE": {
     "title": "SOLITON (960 x 320 x 10 : 1200)",
     "case": "SOLITON",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "1x4" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-      "12": { "splitting": "2x6" },
-      "16": { "splitting": "1x16" },
-      "32": { "splitting": "1x32" },
-      "64": { "splitting": "1x64" },
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+      "4": "2x2",
+      "6": "1x6",
+      "8": "2x4",
+      "12": "2x6",
+      "16": "1x16",
+      "32": "1x32",
+      "64": "1x64",
     },
     "patches": {
       // Change the size of the mesh

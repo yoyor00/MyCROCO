@@ -1,7 +1,7 @@
 {
   // openmp
   "openmp-{threads}": {
-    "configure": "--with-optim=openmp --with-threads={threads}",
+    "configure": "--with-optim=openmp --with-splitting={case.splitting.{threads}} ",
     "tuning_familly": "gnu",
     "environ": {
       "OMP_NUM_THREADS": "{threads}",

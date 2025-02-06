@@ -83,10 +83,13 @@ class Benchmarking:
         elif variant_name.split("-")[0] in case_config.get("unsupported", []):
             # test if openmp is supported
             res = False
-        elif variant_name.split("-")[0] == "mpi":
+        elif (
+            variant_name.split("-")[0] == "mpi"
+            or variant_name.split("-")[0] == "openmp"
+        ):
             # test if mpi with this number of cpu is supported
             res_splitting = False
-            for key, value in case_config.get("mpi", []).items():
+            for key, value in case_config.get("splitting", []).items():
                 if str(key) == variant_name.split("-")[-1]:
                     res_splitting = True
             res = res_splitting

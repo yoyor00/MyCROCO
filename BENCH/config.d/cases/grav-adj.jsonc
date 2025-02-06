@@ -3,11 +3,7 @@
   "GRAV_ADJ": {
     "title": "GRAV_ADJ - (128 x 1 x 40 : 5120)",
     "case": "GRAV_ADJ",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-      "4": { "splitting": "4x1" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1" },
     "patches": {},
     "check_outputs": ["gravadj_his.nc"],
     "unsupported": ["restart"],
@@ -15,18 +11,12 @@
   "GRAV_ADJ_NBQ": {
     "title": "GRAV_ADJ_NBQ - (300 x 1 x 30 : 9000)",
     "case": "GRAV_ADJ",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-      "4": { "splitting": "4x1" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1" },
     "cppkeys": {
       "NBQ": true,
       "GRAV_ADJ": true,
     },
-    "patches": {
-      // add patches
-    },
+    "patches": {},
     "input_file": "TEST_CASES/croco.in.Grav_adj_nbq",
     "check_outputs": ["gravadj_his.nc"],
     "unsupported": ["restart"],

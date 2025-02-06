@@ -7,13 +7,7 @@
       "THACKER": true,
       "THACKER_2DV": false,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "1x2" },
-      "4": { "splitting": "2x2" },
-      "6": { "splitting": "1x6" },
-      "8": { "splitting": "2x4" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "2x2", "6": "1x6", "8": "2x4" },
     "patches": {
       // Change the size of the mesh
       "param_override.h": {
@@ -40,11 +34,7 @@
     "cppkeys": {
       "THACKER_2DV": true,
     },
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-      "4": { "splitting": "4x1" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "patches": {},
     "check_outputs": ["thacker_his.nc"],
   },

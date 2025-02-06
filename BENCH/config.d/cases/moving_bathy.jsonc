@@ -3,13 +3,7 @@
   "MOVING_BATHY": {
     "title": "MOVING_BATHY - (500 x 1 x 50 : 25000)",
     "case": "MOVING_BATHY",
-    "mpi": {
-      "1": { "splitting": "1x1" },
-      "2": { "splitting": "2x1" },
-      "4": { "splitting": "4x1" },
-      "6": { "splitting": "6x1" },
-      "8": { "splitting": "8x1" },
-    },
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1", "6": "6x1", "8": "8x1" },
     "patches": {},
     "input_file": "TEST_CASES/croco.in.MovBat",
     "check_outputs": ["movbat_his.nc"],
