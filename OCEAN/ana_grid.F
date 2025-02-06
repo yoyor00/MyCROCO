@@ -1150,19 +1150,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
             rmask(i,j)=0.            ! <-- strip of land
           enddo
         enddo
-        do j=JstrR,JendR
-#   ifdef MPI
-        cff  = (float(j + jminmpi - 1) )
-#   else
-        cff  = (float(j       ) )
-#   endif
-        if (cff.eq.40.)then
-          do i=IstrR+3,8
-            rmask(i,j)=1.
-          enddo
-        endif
-        enddo
-
         do is=1,Nsrc
 #   ifdef MPI
           i0=Isrc_mpi(is,mynode)
@@ -1179,6 +1166,10 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
               enddo
               do i=IstrR+3,8
                 rmask(i,j0+6)=1.
+              enddo
+            else
+              do i=IstrR+3,8
+                rmask(i,j0)=1.     ! <-- lower channel along xi
               enddo
             endif
           endif
