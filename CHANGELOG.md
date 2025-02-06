@@ -21,7 +21,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - ABL1D perfect restart
   - ECUME6/ABL1D
 - Issue #285 : fix NBQ+XIOS compilation
-- Issue #306 : fix MPI repro with PSOURCE when a source is 
+- Issue #305 : fix MPI repro with PSOURCE when a source is 
   in one MPI domain rejecting towards another MPI domain
 
 ### Changed
