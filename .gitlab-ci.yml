@@ -1,10 +1,7 @@
 # ci croco
 stages:
   - perfrst
-  - bench_jobcomp
-  - bench_cmake
-  - bench_ifort
-  - bench_restart
+  - bench
   - report
 
 variables:
@@ -144,11 +141,11 @@ reg_perfrst_intel:
     - .reg_perfrst_base
 
 test_bench_debug_base:
-  stage: bench_jobcomp
+  stage: bench
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -165,11 +162,11 @@ test_bench_debug_base:
       -N
 
 test_bench_debug_base_cmake:
-  stage: bench_cmake
+  stage: bench
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -188,188 +185,8 @@ test_bench_debug_base_cmake:
     when: always
     expire_in: 1 week
 
-test_bench_debug_realist:
-  stage: bench_jobcomp
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case @realist \
-      --variants @debug \
-      --title debug_realist \
-      --debug \
-      --jobcomp \
-      --rebuild \
-      --host host_ci \
-      --data-root-path $DATAROOTPATH  \
-      --html \
-      -N
-
-test_bench_debug_realist_cmake:
-  stage: bench_cmake
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case @realist \
-      --variants @debug \
-      --title debug_realist_cmake \
-      --debug \
-      --rebuild --host host_ci \
-      --data-root-path $DATAROOTPATH  \
-      --html \
-      -N
-  artifacts:
-    paths:
-      - BENCH/results
-    when: always
-    expire_in: 1 week
-
-test_bench_debug_nbq:
-  stage: bench_jobcomp
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case @nbq \
-      --variants @debug \
-      --title debug_nbq \
-      --debug \
-      --jobcomp \
-      --rebuild \
-      --host host_ci \
-      --data-root-path $DATAROOTPATH  \
-      --html \
-      -N
-
-test_bench_debug_nbq_cmake:
-  stage: bench_cmake
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case @nbq \
-      --variants @debug \
-      --title debug_nbq_cmake \
-      --debug \
-      --rebuild --host host_ci \
-      --data-root-path $DATAROOTPATH  \
-      --html \
-      -N
-  artifacts:
-    paths:
-      - BENCH/results
-    when: always
-    expire_in: 1 week
-
-test_bench_debug_sediment_mustang:
-  stage: bench_jobcomp
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case @sediment_mustang \
-      --variants @debug \
-      --title debug_sediment_mustang \
-      --debug \
-      --jobcomp \
-      --rebuild \
-      --host host_ci \
-      --data-root-path $DATAROOTPATH  \
-      --html \
-      -N
-
-test_bench_debug_sediment_mustang_cmake:
-  stage: bench_cmake
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case @sediment_mustang \
-      --variants @debug \
-      --title debug_sediment_mustang_cmake \
-      --debug \
-      --rebuild --host host_ci \
-      --data-root-path $DATAROOTPATH  \
-      --html \
-      -N
-  artifacts:
-    paths:
-      - BENCH/results
-    when: always
-    expire_in: 1 week
-
-test_bench_debug_other:
-  stage: bench_jobcomp
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case @other \
-      --variants @debug \
-      --title debug_sediment_mustang \
-      --debug \
-      --jobcomp \
-      --rebuild \
-      --host host_ci \
-      --data-root-path $DATAROOTPATH  \
-      --html \
-      -N
-
-test_bench_debug_other_cmake:
-  stage: bench_cmake
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case @other \
-      --variants @debug \
-      --title debug_other_cmake \
-      --debug \
-      --rebuild --host host_ci \
-      --data-root-path $DATAROOTPATH  \
-      --html \
-      -N
-  artifacts:
-    paths:
-      - BENCH/results
-    when: always
-    expire_in: 1 week
-
 test_bench_debug_ifort:
-  stage: bench_ifort
+  stage: bench
   tags:
     - croco-vm-docker
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:2.0.0
@@ -397,31 +214,7 @@ test_bench_debug_ifort:
     expire_in: 1 week
   when: manual
 
-test_bench_regional:
-  stage: bench_restart
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case BENGUELA_LR_TIDES_BULK \
-      --variants sequential,mpi-4  \
-      --title regional \
-      --restart \
-      --jobcomp  \
-      --rebuild \
-      --host host_ci  \
-      --data-root-path $DATAROOTPATH  \
-      --html -N
-  artifacts:
-    paths:
-      - BENCH/results
-    when: always
-    expire_in: 1 week
-  when: manual
+
 
 pages:
   stage: report

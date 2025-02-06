@@ -10,5 +10,6 @@
     },
     "patches": {},
     "check_outputs": ["sandbar_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
 }

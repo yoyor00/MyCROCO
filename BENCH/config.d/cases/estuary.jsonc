@@ -13,6 +13,6 @@
     },
     "patches": {},
     "check_outputs": ["estuary_his.nc"],
-    "unsupported": ["restart", "openmp-2", "openmp-4", "openmp-6", "openmp-8"],
+    "unsupported": ["restart", "openmp"],
   },
 }

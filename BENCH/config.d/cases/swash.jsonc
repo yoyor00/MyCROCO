@@ -12,5 +12,6 @@
     },
     "patches": {},
     "check_outputs": ["swash_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
 }

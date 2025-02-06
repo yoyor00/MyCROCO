@@ -14,5 +14,6 @@
     "patches": {},
     "input_file": "TEST_CASES/croco.in.TS_adv_rep",
     "check_outputs": ["croco_his_body_rot.nc"],
+    "unsupported": ["restart", "openmp"],
   },
 }

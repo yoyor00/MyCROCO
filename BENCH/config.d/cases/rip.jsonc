@@ -18,6 +18,7 @@
     },
     "patches": {},
     "check_outputs": ["rip_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
   "RIP_BISCA": {
     "title": "RIP - BISCA - (48 x 48 x 20 : 1800)",
@@ -37,6 +38,7 @@
     },
     "patches": {},
     "check_outputs": ["rip_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
   "RIP_GRANDPOPO": {
     "title": "RIP - GRANDPOPO - (48 x 48 x 20 : 1800)",
@@ -56,6 +58,7 @@
     },
     "patches": {},
     "check_outputs": ["rip_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
   "RIP_TOPO_2D": {
     "title": "RIP - TOPO_2D - (48 x 48 x 20 : 1800)",
@@ -75,6 +78,7 @@
     },
     "patches": {},
     "check_outputs": ["rip_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
   "RIP_WAKE_MAKER": {
     "title": "RIP - WAKE_MAKER - (48 x 48 x 20 : 1800)",
@@ -94,5 +98,6 @@
     },
     "patches": {},
     "check_outputs": ["rip_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
 }

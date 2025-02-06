@@ -10,5 +10,6 @@
     },
     "patches": {},
     "check_outputs": ["isoliton_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
 }

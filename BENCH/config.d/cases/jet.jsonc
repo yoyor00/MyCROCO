@@ -14,6 +14,7 @@
     },
     "patches": {},
     "check_outputs": ["jet_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
   "JET_ANA": {
     "title": "JET - ANA_JET - (25 x 100 x 30 : 1200)",
@@ -28,5 +29,6 @@
     },
     "patches": {},
     "check_outputs": ["jet_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
 }

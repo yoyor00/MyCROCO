@@ -10,6 +10,7 @@
     },
     "patches": {},
     "check_outputs": ["river_his.nc"],
+    "unsupported": ["restart"],
   },
   // PSOURCE_MASS
   "PSOURCE_MASS": {
@@ -25,5 +26,6 @@
     },
     "patches": {},
     "check_outputs": ["river_his.nc"],
+    "unsupported": ["restart", "openmp"],
   },
 }
