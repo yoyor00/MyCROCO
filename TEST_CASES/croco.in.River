@@ -60,7 +60,7 @@ lin_EOS_cff:  R0 [kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/PS
 psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
            2
                  3     54    1     200.           T T         5. 0.
-                 3     41    1     -100.           T T         5. 0.
+                 3     40    0     200.           T T         5. 0.
 
 
 
