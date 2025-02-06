@@ -35,7 +35,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/croco_macros_twin_checker.cmake)
 # Handle configuration
 set(WITH_OPTIM          OFF     CACHE STRING "Select parallelisation mode : OFF, openmp, openacc-native, openacc-psyclone")
 set(WITH_SPLITTING      "1x4"   CACHE STRING "Define the splitting for parallel=openmp : {NP_X}x{NP_Y}")
-set(WITH_THREADS        4       CACHE STRING "Number of threads to use with parallel=openmp")
 set(WITH_CASE           "BASIN" CACHE STRING "Select the case to run.")
 set(WITH_KEYS           ""      CACHE STRING "List of CPPKEYS, comma separated to enable or disable (+NBQ,-IBM,FLOATS). Lands in cppdefs_edit.h")
 set(WITH_TWIN_CHECKER   OFF     CACHE STRING "Enable usage of the twin checker and possibly say in which prefix to find it.")
@@ -62,7 +61,7 @@ set(AGRIF ${ENABLE_AGRIF})
 # Enable some vars for config_post.h.in
 if (WITH_OPTIM STREQUAL "openmp")
 	set(OPENMP ON)
-	set(PARALLELISM_SUMMARY "openmp / threads=${WITH_THREADS}")
+	set(PARALLELISM_SUMMARY "openmp / splitting=${WITH_SPLITTING}")
 endif()
 if (WITH_OPTIM STREQUAL "openacc-native" OR WITH_OPTIM STREQUAL "openacc-psyclone")
 	set(OPENACC ON)
@@ -74,7 +73,6 @@ if (WITH_OPTIM STREQUAL "mpi")
 endif ()
 
 # enable some static config
-set(NB_THREADS ${WITH_THREADS})
 # extract NP_x & NP_eta
 string(REPLACE "x" ";" WITH_SPLITTING ${WITH_SPLITTING})
 list(GET WITH_SPLITTING 0 SPLITTING_X)

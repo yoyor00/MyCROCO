@@ -148,7 +148,7 @@ class JobcompCrocoConfig:
                 "mode": "replace",
                 "what": "      parameter (NSUB_X=1, NSUB_E=NPP)\n",
                 "by": f"      parameter (NSUB_X={np_x}, NSUB_E={np_eta})\n",
-                "descr": f"Set OPENMP splitting : {splitting} : ranks={threads}, np_xi={np_x}, np_eta={np_eta}"
+                "descr": f"Set OPENMP splitting : {splitting} : ranks={threads}, np_xi={np_x}, np_eta={np_eta}",
             }
         ]
 

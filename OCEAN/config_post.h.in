@@ -42,12 +42,7 @@ Enable AGRIF
 #cmakedefine AGRIF
 
 /*
-Configure OpenMP threads allowed
-*/
-#cmakedefine WITH_THREADS @WITH_THREADS@
-
-/*
-Configure MPI splitting
+Configure MPI/OPENMP splitting
 */
 #cmakedefine SPLITTING_X @SPLITTING_X@
 #cmakedefine SPLITTING_ETA @SPLITTING_ETA@

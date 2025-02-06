@@ -282,18 +282,29 @@ Note: I don't like this way of making the trick (the one currently implemented).
       common/comm_my_device/my_acc_device,compute_on_device
 #endif
 #elif defined OPENMP
-#ifdef NB_THREADS
-      parameter (NPP=NB_THREADS)
+#if defined(SPLITTING_X) && defined(SPLITTING_ETA)
+      parameter (NPP=SPLITTING_X*SPLITTING_ETA)
+# ifdef AUTOTILING
+      common/distrib/NSUB_X, NSUB_E
+# else
+      parameter (NSUB_X=SPLITTING_X, NSUB_E=SPLITTING_ETA)
+# endif
 #elif HAVE_CMAKE_CONFIG
-      parameter (NPP=WITH_THREADS)
+      parameter (NPP=WITH_SPLITTING_X*WITH_SPLITTING_ETA)
+# ifdef AUTOTILING
+      common/distrib/NSUB_X, NSUB_E
+# else
+      parameter (NSUB_X=WITH_SPLITTING_X, NSUB_E=WITH_SPLITTING_ETA)
+# endif
 #else
       parameter (NPP=4)
-#endif
 # ifdef AUTOTILING
       common/distrib/NSUB_X, NSUB_E
 # else
       parameter (NSUB_X=1, NSUB_E=NPP)
 # endif
+#endif
+
 #else
       parameter (NPP=1)
 # ifdef AUTOTILING

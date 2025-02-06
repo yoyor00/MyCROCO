@@ -43,6 +43,8 @@ Deselect all in case there is alread one selected in cppdef.h
 #undef SED_TOY         /* 1DV sediment toy Example */
 #undef TIDAL_FLAT      /* 2DV tidal flat Example */
 #undef ESTUARY         /* 3D tidal estuary Example */
+#undef  KILPATRICK      /* 2D sst front*/
+#undef  SEAGRASS        /* 2DV over seagrass using OBSTRUCTION module*/
 
 /*
 Select case to run.
@@ -81,6 +83,8 @@ CAUTION : Should enable only one at a time !
 #cmakedefine SED_TOY         /* 1DV sediment toy Example */
 #cmakedefine TIDAL_FLAT      /* 2DV tidal flat Example */
 #cmakedefine ESTUARY         /* 3D tidal estuary Example */
+#cmakedefine KILPATRICK      /* 2D sst front*/
+#cmakedefine SEAGRASS        /* 2DV over seagrass using OBSTRUCTION module*/
 
 /*
 Check that one has be activated. It is triggered if the value of

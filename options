@@ -51,15 +51,10 @@ cfg_add_with_option   --name='psyclone' \
                       --var='PSYCLONE_PREFIX'\
                       --on='-DWITH_OPTIM=openacc-psyclone'
 
-#set mesh splitting for parallelism in MPI
+#set mesh splitting for parallelism in MPI/OPENMP
 cfg_add_with_option   --name='splitting' \
                       --doc='Define the splitting for optim=openmp : {NP_X}x{NP_Y}, (default : 1x4)' \
                       --var='WITH_SPLITTING'
-
-#set mesh splitting for parallelism in OpenMP
-cfg_add_with_option   --name='threads' \
-                      --doc='Define the number of threads for optim=openmp (default: 4)' \
-                      --var='WITH_THREADS'
 
 #select the case to run
 cfg_add_with_option   --name='case' \
