@@ -3,6 +3,7 @@
   "RIP": {
     "title": "RIP - (48 x 48 x 20 : 1800)",
     "case": "RIP",
+    "plot_diag_script": "./TEST_CASES/plot_rip.py",
     "cppdefs": {
       "RIP": true,
       "RIP_TOPO_2D": false,

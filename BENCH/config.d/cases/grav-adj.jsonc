@@ -3,6 +3,7 @@
   "GRAV_ADJ": {
     "title": "GRAV_ADJ - (128 x 1 x 40 : 5120)",
     "case": "GRAV_ADJ",
+    "plot_diag_script": "./TEST_CASES/plot_grav_adj.py",
     "splitting": { "1": "1x1", "2": "2x1" },
     "patches": {},
     "check_outputs": ["gravadj_his.nc"],
@@ -11,6 +12,7 @@
   "GRAV_ADJ_NBQ": {
     "title": "GRAV_ADJ_NBQ - (300 x 1 x 30 : 9000)",
     "case": "GRAV_ADJ",
+    "plot_diag_script": "./TEST_CASES/plot_grav_adj.py",
     "splitting": { "1": "1x1", "2": "2x1" },
     "cppkeys": {
       "NBQ": true,

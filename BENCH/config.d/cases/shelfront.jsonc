@@ -3,6 +3,7 @@
   "SHELFRONT": {
     "title": "SHELFRONT - (3 x 40 x 10 : 720)",
     "case": "SHELFRONT",
+    "plot_diag_script": "./TEST_CASES/plot_shelfront.py",
     "splitting": { "1": "1x1", "2": "1x2" },
     "patches": {},
     "check_outputs": ["shelfront_his.nc"],

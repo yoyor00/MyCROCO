@@ -3,6 +3,7 @@
   "IGW": {
     "title": "IGW - (878 x 3 x 40 : 1200)",
     "case": "IGW",
+    "plot_diag_script": "./TEST_CASES/plot_IGW.py",
     "cppdeps": {
       "IGW": true,
       "NBQ": false,
@@ -14,6 +15,7 @@
   "IGW_NBQ": {
     "title": "IGW - NBQ - (256 x 3 x 40 : 1200)",
     "case": "IGW",
+    "plot_diag_script": "./TEST_CASES/plot_IGW.py",
     "cppkeys": {
       "NBQ": true,
     },
