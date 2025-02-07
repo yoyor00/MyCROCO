@@ -246,6 +246,7 @@ test_bench_debug_ifort:
   when: manual
 
 test_bench_realist:
+  stage: bench
   tags:
     - ci.inria.fr
     - large
