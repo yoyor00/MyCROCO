@@ -204,7 +204,7 @@ test_bench_plotphy_base:
       --case @base \
       --variants mpi-2 \
       --title plotphy_base \
-      -s build,run,plotphy
+      -s build,run,plotphy \
       --jobcomp \
       --rebuild \
       --host host_ci \
@@ -236,7 +236,7 @@ test_bench_debug_ifort:
       --host host_ci \
       --jobs 1 \
       --steps build,run  \
-      --data-root-path $DATAROOTPATH   \
+      --data-root-path $DATAROOTPATH \
       --html -N
   artifacts:
     paths:
@@ -262,18 +262,18 @@ test_bench_realist:
       --jobcomp  \
       --rebuild \
       --host host_ci \
-      --data-root-path $DATAROOTPATH   \
+      --data-root-path $DATAROOTPATH \
       --html -N
     - |
       ./bench-croco.py \
       --case @realist \
       --variants mpi-4 \
       --title plotphy_realist \
-      -s build,run,plotphy
+      -s build,run,plotphy \
       --jobcomp  \
       --rebuild \
       --host host_ci \
-      --data-root-path $DATAROOTPATH   \
+      --data-root-path $DATAROOTPATH \
       --html -N
   artifacts:
     paths:
