@@ -413,11 +413,6 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
       else
          FFLAGS1="$FFLAGS1 -openmp"
       fi
-   elif [[ $OS == CYGWIN_NT-10.0 ]] ; then
-        FFLAGS1=="$FFLAGS1 -fopenmp"
-   elif [[ $OS == AIX ]] ; then
-      FFLAGS1="$FFLAGS1 -qsmp=omp"
-      CFT1="xlf95_r"
    fi
 fi
 

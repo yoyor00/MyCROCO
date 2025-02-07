@@ -5,11 +5,7 @@
     "case": "COASTAL",
     "croco_files_path": "COASTAL_VILAINE_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "1x4", "8": "2x4" },
-    "cppkeys": {
-      "VILAINE": true,
-      "MUSTANG": true,
-      "SUBSTANCE": true,
-    },
+    "cppkeys": {},
     "patches": {},
     "check_outputs": ["croco_his.nc"],
     "unsupported": ["restart", "openmp"],

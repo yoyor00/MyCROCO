@@ -161,6 +161,11 @@ test_bench_debug_base:
       --data-root-path $DATAROOTPATH  \
       --html \
       -N
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
 
 test_bench_debug_base_cmake:
   stage: bench
