@@ -733,10 +733,6 @@
 # endif
 # define WKB_ADD_DIFF
 # define WKB_ADD_DIFFRACTION
-# undef  WKB_NUDGING
-# ifndef WAVE_OFFLINE
-#  undef WKB_NUDGING
-# endif
 # if defined SHOREFACE || defined SANDBAR \
                        || (defined RIP && !defined BISCA)
 #  define ANA_BRY_WKB
@@ -749,6 +745,9 @@
 # if !defined WKB_WWAVE && !defined ANA_WWAVE && !defined OW_COUPLING
 #  define WAVE_OFFLINE
 #  undef  WAVE_ROLLER
+# endif
+# ifndef WAVE_ROLLER
+#  define wepb0 wepb
 # endif
 #endif
 

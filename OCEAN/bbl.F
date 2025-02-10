@@ -263,18 +263,12 @@
 !  (Roelvink & Reniers, 1995)
 !
 # if defined MRL_WCI && defined BBL_BREAKING_STIR
-#  if defined WKB_WWAVE && defined WAVE_ROLLER
-          cff=wepr(i,j)+(1-wkb_roller)*wepb(i,j)
-#  elif defined WAVE_ROLLER
-          cff=wepr(i,j)
-#  else
-          cff=wepb(i,j)
-#  endif
-!          Ut=cff/(exp(depth/whrm(i,j))-1)
-          Ut=cff/(exp(depth/max(whrm(i,j),1.e-3))-1)
+          Ut=sqrt((0.1*wepb(i,j))**(2./3.))         ! surf. turb. velocity
+          cff=3.                                    ! efficiency
+          Ut=(50/cff*Ut)**cff                       ! function
+          Ut=Ut/(exp(depth/max(whrm(i,j),eps))-1.)  ! depth attenuation
      &                              SWITCH rmask(i,j)
      &                              SWITCH_WET rmask_wet(i,j)
-          Ut=500.*Ut  ! * efficient factor
 # else
           Ut=0.
 # endif

@@ -1635,7 +1635,13 @@ C$    integer  trd, omp_get_thread_num
       cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
       ho=h(1,1)             ! offshore depth
 #  ifdef OBC_EAST
-      ho=h(LLm,1)
+#   ifdef MPI
+        ho=h(LLm/NP_XI,1)+zeta(LLm/NP_XI,1,knew)
+        call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
+     &                     NP_XI-1, MPI_COMM_WORLD, ierr)
+#   else
+        ho=h(LLm,1)+zeta(LLm,1,knew)
+#   endif
 #  endif
       khd = ho*cfrq*cfrq/g
       kh  = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
@@ -1661,7 +1667,7 @@ C$    integer  trd, omp_get_thread_num
             kr=sqrt(cos(wdir)/cos(wdir))   ! refraction coefficient
             cosw=cos(wdir)
             sinw=sin(wdir)
-            gamw=0.31
+            gamw=0.55
             cff1=gamw*dd
             cff2=2.0*wamp*ks*kr
             wh=min(cff1,cff2)
@@ -1670,7 +1676,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Fill global arrays
 !
-          whrm(i,j)=2.*wh  ! Hrms = 2A
+          whrm(i,j)=wh
           wfrq(i,j)=sqrt(g*kw*tanh(kw*dd))
           wdrx(i,j)=cosw
           wdre(i,j)=sinw
@@ -1706,6 +1712,10 @@ C$    integer  trd, omp_get_thread_num
           wfrq(i,j)=cfrq
           wdrx(i,j)=cos(wdir)
           wdre(i,j)=sin(wdir)
+!  limit Hrms in surfzone
+          gamw=0.55
+          dd=h(i,j)+z_w(i,j,N)
+          whrm(i,j)=min(whrm(i,j),gamw*dd)
 #   ifdef WET_DRY
           if (h(i,j)+z_w(i,j,N) .lt. Dcrit(i,j)+eps) then
             whrm(i,j)=0.
