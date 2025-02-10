@@ -518,8 +518,8 @@
 #  endif
 # endif
 
-        DOLOOP2D(Istr,Iend,Jstr,Jend)
 # ifdef TRACERS
+        DOLOOP2D(Istr,Iend,Jstr,Jend)
 #  ifndef VADV_ADAPT_IMP 
         do k=1,N
           do i=Istr,Iend
@@ -530,9 +530,7 @@
         do i=Istr,Iend
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
         enddo
-# endif /* TRACERS */
 
-# if defined TRACERS
         do itrc=1,NT
 !
 !----------------------------------------------------------------------
