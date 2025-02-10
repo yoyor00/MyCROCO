@@ -150,7 +150,9 @@ class RawDrawer:
 
         ani = ArtistAnimation(fig=fig, artists=artists, interval=40, repeat=True)
         ani.save(f"{basename}.gif", writer="pillow")
-        ani.save(f"{basename}.mp4", writer="ffmpeg")
+
+        # # ffmpeg has to be install, not listed in dependencies
+        # ani.save(f"{basename}.mp4", writer="ffmpeg")
 
         # close
         plt.close(fig)
