@@ -142,7 +142,7 @@ class Benchmarking:
     def run(self):
         self.build_instances()
         self.process_instances()
-        self.plot_results()
+        self.plotperf_results()
         self.generate_reports()
 
     def build_instances(self):
@@ -155,9 +155,9 @@ class Benchmarking:
                 )
 
     def process_instances(self):
-        """Handles running, checking, plotting, and mesh processing in one loop."""
+        """Handles running, checking, plotting, and plotraw processing in one loop."""
 
-        list_modes = ["run", "check", "plotphy", "mesh", "anim"]
+        list_modes = ["run", "check", "plotphy", "plotraw", "animraw"]
         if any(mode in self.config.modes for mode in list_modes):
             for id, instance in enumerate(self.instances):
                 instance: Croco  # Explicit annotation
@@ -171,11 +171,11 @@ class Benchmarking:
                 if "plotphy" in self.config.modes:
                     instance.plotphy()
 
-                if "mesh" in self.config.modes:
-                    instance.dump_mesh()
+                if "plotraw" in self.config.modes:
+                    instance.plotraw()
 
-                if "anim" in self.config.modes:
-                    instance.dump_mesh(anim=True)
+                if "animraw" in self.config.modes:
+                    instance.plotraw(anim=True)
 
                 if (
                     self.config.build_ref
@@ -183,10 +183,10 @@ class Benchmarking:
                 ):
                     instance.make_ref()
 
-    def plot_results(self):
+    def plotperf_results(self):
         """Handles plotting if required."""
-        if "plot" in self.config.modes:
-            self.plot()
+        if "plotperf" in self.config.modes:
+            self.plotperf()
 
     def generate_reports(self):
         """Handles reporting and HTML generation."""
@@ -227,6 +227,6 @@ class Benchmarking:
         run_shell_command(f"hwloc-ls --of console {results}/cpu.txt")
         run_shell_command(f"hwloc-ls --of svg {results}/cpu.svg")
 
-    def plot(self):
+    def plotperf(self):
         plot = Plotting(self.config)
         plot.plot()

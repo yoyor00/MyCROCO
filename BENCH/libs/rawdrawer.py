@@ -20,7 +20,7 @@ from .config import Config
 
 
 ##########################################################
-class MeshDrawer:
+class RawDrawer:
     def __init__(self, netcdf_file: str, config: Config, case_name: str) -> None:
         self.netcdf_file = netcdf_file
         self.config = config

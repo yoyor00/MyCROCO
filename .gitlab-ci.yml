@@ -250,7 +250,7 @@ test_bench_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -285,7 +285,7 @@ pages:
   stage: report
   tags:
     - ci.inria.fr
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:1.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
     - mkdir -p $CI_PROJECT_DIR/public/$CI_COMMIT_REF_NAME
     - cd $CI_PROJECT_DIR/BENCH

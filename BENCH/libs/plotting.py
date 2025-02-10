@@ -138,7 +138,7 @@ class Plotting:
 
     def plot(self):
         # info
-        Messaging.section("Plotting")
+        Messaging.section("Plotting performances")
 
         # extract
         cases = self.config.config["cases"]

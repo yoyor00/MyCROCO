@@ -71,13 +71,13 @@ class Config:
             "- check : perform comparison with a reference (see --compare-to option)\n"
             "  By default, comparison is made over netcdf results file. \n"
             "  A more precise option is available through --rvtk.\n"
-            "- plot : plot runtime of each variant\n"
+            "- plotperf : plot runtime of each variant\n"
             "- plotphy : physical plot using python script specified in case config in plot_diag_script.\n"
-            "- mesh : plot raw map of variables at start/middle/end of simulation.\n"
-            "- anim : same plot as mesh with an animation over the simulation.\n"
-            "(default=build,run,check,plot)",
+            "- plotraw : plot raw map of variables at start/middle/end of simulation.\n"
+            "- animraw : same plot as plotraw with an animation over the simulation.\n"
+            "(default=build,run,check,plotperf)",
             dest="modes",
-            default="build,run,check,plot",
+            default="build,run,check,plotperf",
         )
 
         parser.add_argument(
@@ -145,8 +145,7 @@ class Config:
             "--data-root-path",
             help="Input data path. Needed if cases to run needs external  \n"
             "data. In this case, specified path should contain cases specific directories \n"
-            "(croco_files_path in case config file) and these directories should contains \n"
-            "CROCO_FILES and DATA directories. (default='')",
+            "(croco_files_path in case config file) (default='')",
             type=str,
             default="",
         )

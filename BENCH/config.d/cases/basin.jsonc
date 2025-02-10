@@ -20,42 +20,6 @@
     "check_outputs": ["basin_his.nc"],
     "unsupported": ["restart"],
   },
-  // Default BASIN case
-  "BASIN-SMALL": {
-    "title": "BASIN-SMALL (60 x 50 x 10 : 140)",
-    "case": "BASIN",
-    "splitting": {
-      "1": "1x1",
-      "2": "1x2",
-      "4": "2x2",
-      "6": "1x6",
-      "8": "2x4",
-      "12": "2x6",
-      "16": "1x16",
-      "32": "1x32",
-      "64": "1x64",
-    },
-
-    "patches": {
-      // Change the size of the mesh
-      "param_override.h": {
-        "mode": "replace",
-        "after": "#if defined BASIN",
-        "what": "      parameter (LLm0=60,   MMm0=50,   N=10)",
-        "by": "      parameter (LLm0=60,   MMm0=50,   N=10)",
-        "descr": "Set mesh size to (60 x 50 x 10)",
-      },
-      // CHange the dt
-      "TEST_CASES/croco.in.Basin": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                3240     9600     65      1",
-        "by": "                 140     9600     65      1",
-        "descr": "Set stepping (steps=140, dt=9600, fast=65)",
-      },
-    },
-    "check_outputs": ["basin_his.nc"],
-  },
   // BASIN a bit larger
   "BASIN-LARGE": {
     "title": "BASIN - LARGE - (200 x 200 x 50 : 100)",

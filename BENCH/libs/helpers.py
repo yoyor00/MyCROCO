@@ -137,7 +137,7 @@ def replace_in_file(in_path: str, out_path: str, pattern: str, replace_by: str):
 
 
 def contains_one_of(seach_in: str, elements) -> bool:
-    """check is the string contains one of the given elements."""
+    """Check is the string contains one of the given elements."""
 
     # if search a simple string
     if isinstance(elements, str):
