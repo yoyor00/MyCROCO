@@ -1042,7 +1042,9 @@
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
-     &      , rstAblTke
+     &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
+     &      , rstAblAvm, rstAblAvt, rstAblMxld, rstAblMxlm
+     &      , rstAblAblh   
 #endif
 #ifdef SOLVE3D
      &                         , rstU,    rstV
@@ -1581,7 +1583,9 @@
      &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
-     &      , rstAblTke
+     &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
+     &      , rstAblAvm, rstAblAvt, rstAblMxld, rstAblMxlm
+     &      , rstAblAblh
 #endif
 #ifdef SOLVE3D
      &                         , rstU,    rstV
