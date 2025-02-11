@@ -484,12 +484,8 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # move in dir & call jobcomp
         with move_in_dir(self.builddir):
             run_shell_command(
-                "./jobcomp --fc %s --mpif90 %s --fflags '%s'"
-                % (
-                    self.fc,
-                    self.mpif90,
-                    self.fflags,
-                ),
+                "./jobcomp --fc %s --mpif90 %s --fflags '%s' --jobs %s"
+                % (self.fc, self.mpif90, self.fflags, self.config.make_jobs),
                 logfilename="jobcomp.log",
                 capture=self.config.capture,
             )
