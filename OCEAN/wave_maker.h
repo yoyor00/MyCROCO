@@ -55,9 +55,6 @@
         wd=-10.           ! incidence angle (deg)
         wds=30.           ! directional spread (deg)
                           !  -> crest length = wl/(2*sin(wds))
-# if defined WAVE_MAKER_DSPREAD && defined NS_PERIODIC
-#  define WAVE_MAKER_DSPREAD_PER  /* correct wave directions for periodicity */
-# endif
 #elif defined SWASH
 # ifdef SWASH_GLOBEX_B2
 #  define WAVE_MAKER_BICHROMATIC
@@ -132,6 +129,10 @@
 #if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 # define WAVE_MAKER_SPECTRUM
 #endif
+
+#if defined WAVE_MAKER_DSPREAD && defined NS_PERIODIC
+# define WAVE_MAKER_DSPREAD_PER  /* correct wave directions for periodicity */
+#endif
 !
 !--------------------------------------------------------------------
 !  Initialisation
@@ -202,13 +203,13 @@
 ! Single-sum wave-maker description in Treillou et al. (2024)
 !
           displacetheta=minloc(abs(wf_bry-wf))
-          cff2=MOD(displacetheta(1),float(Ndir))
+          cff2=MOD(displacetheta(1),Ndir)
           cff4=0.0
           do jw=1,Nfrq
             wd_bry(jw)=MOD(jw-cff2,float(Ndir))
             if (wd_bry(jw).le.0.0) wd_bry(jw)=wd_bry(jw)+float(Ndir)
             wd_bry(jw)=(-1.0)**float(jw)*(-pi*0.5 + 
-     &           pi*(floor(float(wd_bry(jw))/2.0 - 
+     &           pi*(floor(wd_bry(jw)/2.0 - 
      &           0.5))/(float(Ndir)-1.0))
             wd_bry(jw)=wd_bry(jw)+wd
             if (wd_bry(jw).ge.0.5*pi) wd_bry(jw)=0.5*pi
@@ -229,15 +230,14 @@
 !
 ! Forcing periodicitiy on all wave components such that
 ! k_i*sin(theta_i)=p*(2*pi/Ly) with p an integer
-! If the main wave direction is modified by more than 30%,
+! If the main wave direction is modified by more than 30 percent,
 ! correction is not applied
 !
           khd=h(IB0,0)*wf**2/g
           kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                       khd*(K5+K6*khd)))))))
-          if abs(1.0-wd/asin(2*pi*h/(kh*el)))<0.3
+          if (abs(1.0-wd/asin(2*pi*h(IB0,0)/(kh*el))).lt.0.3) then
             cff3=2*pi/el     ! domain wavenumber 
-            diff=0.0
             do jw=1,Nfrq
               cff1=wd_bry(jw)     ! angle before correction
               cff6=cff1
