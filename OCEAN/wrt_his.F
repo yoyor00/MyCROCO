@@ -471,8 +471,8 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
-!$acc update if(compute_on_device) host(wepb(:,:))
-        ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
+!$acc update if(compute_on_device) host(wepb0(:,:))
+        ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
