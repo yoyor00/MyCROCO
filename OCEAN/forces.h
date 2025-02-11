@@ -520,6 +520,10 @@
 # ifdef WAVE_ROLLER
       real wepr(GLOBAL_2D_ARRAY)
       common /forces_wepr/wepr
+#  ifdef WKB_WWAVE
+      real wepb0(GLOBAL_2D_ARRAY)
+      common /forces_wepb0/wepb0
+#  endif
 # endif
 !
 !--------------------------------------------------------------------

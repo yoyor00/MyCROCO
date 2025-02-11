@@ -568,10 +568,6 @@ C$OMP BARRIER
      &     my_Akt_bak=nuws,
      &     my_Aks_bak=nuwm  )
 # endif
-# if defined WET_DRY && defined LMD_VMIX_SWASH
-      real Kv_swash,Kv0_swash
-      parameter(Kv0_swash = 1.e-2) ! Maximum swash zone viscosity
-# endif
 # ifdef MASKING
 #  define SWITCH *
 # else
@@ -583,24 +579,6 @@ C$OMP BARRIER
       do k=1,N-1
         do j=jstr,jend
           do i=istr,iend
-!
-!------------------------------------------------
-!  First apply shallow condition effects
-!  (e.g., swash; used in SANDBAR test case)
-!------------------------------------------------
-!
-# if defined WET_DRY && defined LMD_VMIX_SWASH
-            Kv_swash=Kv0_swash
-     &               *.5*(1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*
-     &                                  (z_w(i,j,N)-z_w(i,j,0))))
-            Kv(i,j,k)=Kv(i,j,k) + Kv_swash
-!# ifdef TEMPERATURE
-!            Kt(i,j,k)=Kt(i,j,k) + 0.1*Kv_swash
-!# endif
-!# ifdef SALINITY
-!            Ks(i,j,k)=Ks(i,j,k) + 0.1*Kv_swash
-!# endif
-# endif /* WET_DRY && LMD_VMIX_SWASH */
 !
 !------------------------------------------------
 !  Copy into shared arrays

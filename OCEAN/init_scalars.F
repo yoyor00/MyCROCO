@@ -817,7 +817,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(6,indxNO3)='lat_rho lon_rho                           '
       vname(7,indxNO3)='                                          '
 
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       vname(1,indxCAL)='CACO3                                     '
       vname(2,indxCAL)='Calcite                                   '
       vname(3,indxCAL)='umol C L-1                                '
@@ -2704,53 +2704,53 @@ CR      write(stdout,'(1x,A,I3)') 'indxVWND =',indxVWND
       vname(7,indxVWND)='                                         '
 
 #  ifdef ABL1D
-      vname(1,indxUHPG)='uhpg                                     '
-      vname(2,indxUHPG)='large-scale u-pressure gradient          '
-      vname(3,indxUHPG)='meter second-1                           '
-      vname(4,indxUHPG)='u-pressure gradient, scalar, series      '
-      vname(5,indxUHPG)='x_hpg                                    '
-      vname(6,indxUHPG)='lat_rho lon_rho                          '
-      vname(7,indxUHPG)='                                         '
+      vname_abl1d(1,indxUHPG)='uhpg                                     '
+      vname_abl1d(2,indxUHPG)='large-scale u-pressure gradient          '
+      vname_abl1d(3,indxUHPG)='meter second-1                           '
+      vname_abl1d(4,indxUHPG)='u-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxUHPG)='x_hpg                                    '
+      vname_abl1d(6,indxUHPG)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxUHPG)='                                         '
 
-      vname(1,indxVHPG)='vhpg                                     '
-      vname(2,indxVHPG)='large-scale v-pressure gradient          '
-      vname(3,indxVHPG)='meter second-1                           '
-      vname(4,indxVHPG)='v-pressure gradient, scalar, series      '
-      vname(5,indxVHPG)='y_hpg                                    '
-      vname(6,indxVHPG)='lat_rho lon_rho                          '
-      vname(7,indxVHPG)='                                         '
+      vname_abl1d(1,indxVHPG)='vhpg                                     '
+      vname_abl1d(2,indxVHPG)='large-scale v-pressure gradient          '
+      vname_abl1d(3,indxVHPG)='meter second-1                           '
+      vname_abl1d(4,indxVHPG)='v-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxVHPG)='y_hpg                                    '
+      vname_abl1d(6,indxVHPG)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxVHPG)='                                         '
 
-      vname(1,indxZR)='zr                                       '
-      vname(2,indxZR)='large-scale u-pressure gradient          '
-      vname(3,indxZR)='meter second-1                           '
-      vname(4,indxZR)='u-pressure gradient, scalar, series      '
-      vname(5,indxZR)='x_hpg                                    '
-      vname(6,indxZR)='lat_rho lon_rho                          '
-      vname(7,indxZR)='                                         '
+      vname_abl1d(1,indxZR)='zr                                       '
+      vname_abl1d(2,indxZR)='large-scale u-pressure gradient          '
+      vname_abl1d(3,indxZR)='meter second-1                           '
+      vname_abl1d(4,indxZR)='u-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxZR)='x_hpg                                    '
+      vname_abl1d(6,indxZR)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxZR)='                                         '
 
-      vname(1,indxZW)='zw                                       '
-      vname(2,indxZW)='large-scale v-pressure gradient          '
-      vname(3,indxZW)='meter second-1                           '
-      vname(4,indxZW)='v-pressure gradient, scalar, series      '
-      vname(5,indxZW)='y_hpg                                    '
-      vname(6,indxZW)='lat_rho lon_rho                          '
-      vname(7,indxZW)='                                         '
+      vname_abl1d(1,indxZW)='zw                                       '
+      vname_abl1d(2,indxZW)='large-scale v-pressure gradient          '
+      vname_abl1d(3,indxZW)='meter second-1                           '
+      vname_abl1d(4,indxZW)='v-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxZW)='y_hpg                                    '
+      vname_abl1d(6,indxZW)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxZW)='                                         '
 
-      vname(1,indxHZR)='Hzr                                      '
-      vname(2,indxHZR)='large-scale u-pressure gradient          '
-      vname(3,indxHZR)='meter second-1                           '
-      vname(4,indxHZR)='u-pressure gradient, scalar, series      '
-      vname(5,indxHZR)='x_hpg                                    '
-      vname(6,indxHZR)='lat_rho lon_rho                          '
-      vname(7,indxHZR)='                                         '
+      vname_abl1d(1,indxHZR)='Hzr                                      '
+      vname_abl1d(2,indxHZR)='large-scale u-pressure gradient          '
+      vname_abl1d(3,indxHZR)='meter second-1                           '
+      vname_abl1d(4,indxHZR)='u-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxHZR)='x_hpg                                    '
+      vname_abl1d(6,indxHZR)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxHZR)='                                         '
 
-      vname(1,indxHZW)='Hzw                                      '
-      vname(2,indxHZW)='large-scale v-pressure gradient          '
-      vname(3,indxHZW)='meter second-1                           '
-      vname(4,indxHZW)='v-pressure gradient, scalar, series      '
-      vname(5,indxHZW)='y_hpg                                    '
-      vname(6,indxHZW)='lat_rho lon_rho                          '
-      vname(7,indxHZW)='                                         '
+      vname_abl1d(1,indxHZW)='Hzw                                      '
+      vname_abl1d(2,indxHZW)='large-scale v-pressure gradient          '
+      vname_abl1d(3,indxHZW)='meter second-1                           '
+      vname_abl1d(4,indxHZW)='v-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxHZW)='y_hpg                                    '
+      vname_abl1d(6,indxHZW)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxHZW)='                                         '
 #  endif
 
 # endif /* ONLINE */
@@ -4804,7 +4804,17 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molC/m3/s                                  '
         vname(4,indxbioFlux+Nironsed-1)=
      &     'Nironsed         , scalar, series          '
-#   if defined key_pisces_light
+
+        vname(1,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2                         '
+        vname(2,indxbioFlux+Npronewo2-1)=
+     &     'o2 production by the NP         '
+        vname(3,indxbioFlux+Npronewo2-1)=
+     &     'molC/m3/s                       '
+        vname(4,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2         , scalar, series'
+
+#   if defined key_pisces_npzd
         vname(1,indxbioFlux+Npronew-1)=
      &     'Thetanano                         '
         vname(2,indxbioFlux+Npronew-1)=
@@ -4868,15 +4878,6 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molFe/m3/s                      '
       vname(4,indxbioFlux+Nprofed-1)=
      &     'PFeD          , scalar, series  '
-
-        vname(1,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2                         '
-        vname(2,indxbioFlux+Npronewo2-1)=
-     &     'o2 production by the NP         '
-        vname(3,indxbioFlux+Npronewo2-1)=
-     &     'molC/m3/s                       '
-        vname(4,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2         , scalar, series'
 
         vname(1,indxbioFlux+Nprorego2-1)=
      &     'PPRego2                                    '
@@ -4985,7 +4986,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molN/m2/s                         '
       vname(4,indxbioVSink+Nnitrpot-1)=
      &     'Nfix            , scalar, series  '
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       vname(1,indxbioVSink+Nsinkfer-1)=
      &     'EPFE100                          '
       vname(2,indxbioVSink+Nsinkfer-1)=
