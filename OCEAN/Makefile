@@ -35,6 +35,7 @@ include Makedefs
 #======================================================================
 
  SRCS = main.F		step.F		read_inp.F\
+	trigolow.F \
 	timers_roms.F	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\

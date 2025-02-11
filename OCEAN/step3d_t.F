@@ -440,14 +440,14 @@
 #   define wrk1 FX
 #   define wrk2 FE
       do k=1,N-1
-!$acc parallel loop if(compute_on_device) default(present) async(1)
+!$acc parallel loop if(compute_on_device) default(present)
         do j=Jstr,Jend
           do i=Istr,Iend
             wrk1(i,j)=z_w(i,j,k)-z_w(i,j,N)
           enddo
         enddo
         call lmd_swfrac_tile (Istr,Iend,Jstr,Jend,1.,wrk1,wrk2)
-!$acc parallel loop if(compute_on_device) default(present) async(1)
+!$acc parallel loop if(compute_on_device) default(present)
         do j=Jstr,Jend
           do i=Istr,Iend
             swdk(i,j,k)=wrk2(i,j)

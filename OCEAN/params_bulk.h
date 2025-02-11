@@ -13,8 +13,8 @@
       REAL, PARAMETER ::  MvoMa     = mm_water/mm_dryair
       REAL, PARAMETER ::  eps       = 1.d-8
       REAL, PARAMETER ::  r3        = 1./3.
-      REAL, PARAMETER ::  pis2      = 2.*ATAN(1.)
-      REAL, PARAMETER ::  sqr3      = SQRT(3.)
+      REAL, PARAMETER ::  pis2      = 2.*DATAN(1.)
+      REAL, PARAMETER ::  sqr3      = DSQRT(3.)
       REAL, PARAMETER ::  pis2osqr3 = pis2/sqr3
       REAL, PARAMETER ::  LMOmin    = -200.
       REAL, PARAMETER ::  LMOmax    = 0.25
@@ -44,7 +44,7 @@
      &                              -2.41   , 4.30e-2 , 0.      , 0.      ,
      &                               0.     , 0.      , 0.      , 0.      /)
      &                                                      , shape(Bwasp)) )
-      REAL, PARAMETER :: CWage    = 9.80665 / (16.*ATAN(1.))  ! g / (4 Pi)
+      REAL, PARAMETER :: CWage    = 9.80665 / (16.*DATAN(1.))  ! g / (4 Pi)
       REAL, PARAMETER :: Charn0   = 0.018
       REAL, PARAMETER :: Charn1   = 0.1
       REAL, PARAMETER :: Charn2   = 0.002

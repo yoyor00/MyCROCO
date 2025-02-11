@@ -480,9 +480,6 @@
      &                       diff3v(i,j+1,k+1)*SLOPEYQ3,
      &                       diff3v(i,j+1,k  )*SLOPEYQ4)
 
-!       if (i.eq.15 .and. j.eq.15 .and. itrc.eq.1) then
-!        print *,'k Akz ',k,Akz(i,j,k)
-!       endif
 #endif /* TS_DIF2 && TS_MIX_IMP */
 
 !== at this point FC(i,j,k)=(drho/dz)^(-1)
@@ -505,7 +502,6 @@
         enddo
       enddo
 
-!$acc loop seq
       do k=1,N
 !========================================================
 ! Compute the horizontal components of the tensor
@@ -768,10 +764,6 @@
      &                diff3v(i,j+1,k  )*(pn(i,j+1)**2+SLOPEYQ4*cff**2))
      &                            )
 
-!       if (i.eq.15 .and. j.eq.15 .and. itrc.eq.1) then
-!        print *,'k Akz ',k,Akz(i,j,k)
-!       endif
-
 # endif /* TS_MIX_IMP */
 
 !
@@ -795,7 +787,6 @@
         enddo
       enddo
 
-!$acc loop seq
       do k=1,N
 !========================================================
 ! Compute the horizontal components of the tensor

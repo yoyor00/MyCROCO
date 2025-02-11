@@ -46,7 +46,10 @@
 !
 #define HBL_SMOOTH
 #define LIMIT_UNSTABLE_ONLY
-
+#if defined RVTK_DEBUG_ADVANCED
+      use debug
+      use my_functions 
+#endif
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -54,6 +57,7 @@
 #include "forces.h"
 #include "mixing.h"
 #include "scalars.h"
+#include "openacc_work.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, khbl
       integer imin,imax,jmin,jmax
       integer my_kbl(PRIVATE_1D_SCRATCH_ARRAY     )
@@ -231,15 +235,18 @@
 
 #define wrk1 wrk3
 #define wrk2 my_hbl
+
       do k=0,N-1
-!$acc parallel loop if(compute_on_device) default(present) async(1)
+!$acc parallel loop
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
             wrk1(i,j)=z_w(i,j,k)-z_w(i,j,N)
           enddo
         enddo
+
         call lmd_swfrac_ER_tile (Istr,Iend,Jstr,Jend,1.,wrk1,wrk2)
-!$acc parallel loop if(compute_on_device) default(present) async(1)
+
+!$acc parallel loop
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
             swr_frac(i,j,k)=wrk2(i,j)
@@ -248,22 +255,22 @@
       enddo
 #undef wrk1
 #undef wrk2
-!$acc wait
 
-!$acc kernels if(compute_on_device) default(present)
+!$acc parallel loop
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
           swr_frac(i,j,N)=1.
         enddo
       enddo
 
+!$acc kernels if(compute_on_device) default(present)
 
 !== END ugly piece of code
 !---------------------------------------------------------------
 
 !======================================================================
-!$acc loop private(FC,Cr,my_kbl,wrk1,wrk2)
-      do j=J_EXT_RANGE
+      !do j=J_EXT_RANGE
+       DOLOOP2D_R(I_EXT_RANGE,J_EXT_RANGE)
 !======================================================================
 
 
@@ -344,7 +351,8 @@
           endif
         enddo
 !======================================================================
-      enddo  !<-- terminate j-loop
+      !enddo  !<-- terminate j-loop
+      ENDDOLOOP2D
 !======================================================================
 
 !================================

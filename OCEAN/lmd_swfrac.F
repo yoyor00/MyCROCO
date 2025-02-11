@@ -33,6 +33,9 @@
 !  This routine was adapted from Bill Large 1995 code.
 !--------------------------------------------------------------------
 !
+#if defined RVTK_DEBUG
+      use my_functions
+#endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -53,7 +56,7 @@
                         !  Set Jerlov water type to assign
       lmd_Jwt=1         !  everywhere; an integer from 1 to 5.
 
-!$acc kernels if(compute_on_device) default(present) async(1)
+!$acc kernels if(compute_on_device) default(present)
 !
 !  On first call: initialize (for now) initialize index for Jerlov
 !  water type to 1 (type I). This variable is used in the computation
@@ -114,6 +117,9 @@
 !  This routine was adapted from Bill Large 1995 code.
 !--------------------------------------------------------------------
 !
+#if defined RVTK_DEBUG
+      use my_functions
+#endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -167,7 +173,7 @@
 #  define J_EXT_RANGE jmin,jmax
 # endif
 
-!$acc kernels if(compute_on_device) default(present) async(1)
+!$acc kernels if(compute_on_device) default(present)
 
 !
 !  On first call: initialize (for now) initialize index for Jerlov

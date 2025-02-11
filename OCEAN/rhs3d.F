@@ -696,17 +696,7 @@
 #    define IU_EXT_RANGE IstrU-1,Iend+1
 #   else
 #    ifdef MPI
-        if (WEST_INTER) then
-          imin=IstrU-1
-        else
-          imin=max(IstrU-1,2)
-        endif
-        if (EAST_INTER) then
-          imax=Iend+1
-        else
-          imax=min(Iend+1,Lmmpi)
-        endif
-#     define IU_EXT_RANGE imin,imax
+#     define IU_EXT_RANGE IstrUm1,IendUp1
 #    else
 #     define IU_EXT_RANGE max(IstrU-1,2),min(Iend+1,Lm)
 #    endif
@@ -783,17 +773,7 @@
 #    define JV_EXT_RANGE JstrV-1,Jend+1
 #   else
 #    ifdef MPI
-        if (SOUTH_INTER) then
-          jmin=JstrV-1
-        else
-          jmin=max(JstrV-1,2)
-        endif
-        if (NORTH_INTER) then
-          jmax=Jend+1
-        else
-          jmax=min(Jend+1,Mmmpi)
-        endif
-#     define JV_EXT_RANGE jmin,jmax
+#     define JV_EXT_RANGE JstrVm1,JendVp1
 #    else
 #     define JV_EXT_RANGE max(JstrV-1,2),min(Jend+1,Mm)
 #    endif
@@ -868,17 +848,7 @@
 #    define JU_EXT_RANGE Jstr-1,Jend+1
 #   else
 #    ifdef MPI
-        if (SOUTH_INTER) then
-          jmin=Jstr-1
-        else
-          jmin=max(Jstr-1,1)
-        endif
-        if (NORTH_INTER) then
-          jmax=Jend+1
-        else
-          jmax=min(Jend+1,Mmmpi)
-        endif
-#     define JU_EXT_RANGE jmin,jmax
+#     define JU_EXT_RANGE Jstrm1,Jendp1
 #    else
 #     define JU_EXT_RANGE max(Jstr-1,1),min(Jend+1,Mm)
 #    endif
@@ -952,17 +922,7 @@
 #    define IV_EXT_RANGE Istr-1,Iend+1
 #   else
 #    ifdef MPI
-        if (WEST_INTER) then
-          imin=Istr-1
-        else
-          imin=max(Istr-1,1)
-        endif
-        if (EAST_INTER) then
-          imax=Iend+1
-        else
-          imax=min(Iend+1,Lmmpi)
-        endif
-#     define IV_EXT_RANGE imin,imax
+#     define IV_EXT_RANGE Istrm1,Iendp1
 #    else
 #     define IV_EXT_RANGE max(Istr-1,1),min(Iend+1,Lm)
 #    endif

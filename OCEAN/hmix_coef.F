@@ -462,7 +462,9 @@
 !
 !==================================================================
 !
-
+#if defined RVTK_DEBUG
+      use my_functions
+#endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc
       real grd_scale(PRIVATE_2D_SCRATCH_ARRAY)
@@ -584,12 +586,12 @@
       do k=1,N
         do j=Jstr-1,Jend+1
           do i=IstrU-1,Iend+1
-            diff3d_u(i,j,k)=horcon*abs(u(i,j,k,nrhs))*om_u(i,j)**3
+            diff3d_u(i,j,k)=horcon*abs(u(i,j,k,nrhs))*POW(om_u(i,j),3.)
           enddo
         enddo
         do j=JstrV-1,Jend+1
           do i=Istr-1,Iend+1
-            diff3d_v(i,j,k)=horcon*abs(v(i,j,k,nrhs))*on_v(i,j)**3
+            diff3d_v(i,j,k)=horcon*abs(v(i,j,k,nrhs))*POW(on_v(i,j),3.)
           enddo
         enddo
       enddo

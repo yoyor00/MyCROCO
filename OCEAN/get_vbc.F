@@ -198,7 +198,10 @@
 !                                     the ETA-direction (m^2/s^2).
 !----------------------------------------------------------------
 !
+#if defined RVTK_DEBUG
       USE debug
+      USE my_functions
+#endif
 #ifdef AGRIF
       use Agrif_Util
 #endif

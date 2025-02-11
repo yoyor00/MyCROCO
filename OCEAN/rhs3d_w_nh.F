@@ -29,13 +29,13 @@
 !
 !   A3d(1,1,trd), A3d(1,2,trd) contain ru,rv 
 !   A3d(1,3,trd) contains rw 
-!   A3d(1,4,trd) is available at this point
+!   A3d(1,3,trd) and A3d(1,4,trd) is available at this point
 !
       CALL rhs3d_w_tile (Istr,Iend,Jstr,Jend,  A3d(1,3,trd),
      &             A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &             A2d(1,4,trd), A2d(1,5,trd),
      &             A3d(1,4,trd), A3d(1,5,trd),
-     &             A2d(1,4,trd), A2d(1,5,trd))
+     &             A3d(1,6,trd), A3d(1,7,trd))
       return
       END
       
@@ -60,10 +60,10 @@
       REAL     :: We_r   (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)
       REAL     :: lap    (PRIVATE_2D_SCRATCH_ARRAY      )
       REAL     :: Hzw    (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
+      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY,0:N  ) 
+      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HVom_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
-      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY      )
-      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY      )
       !!    
       REAL     :: gamma, epsil, cff, cff1, cff2, cff3, Omeg_r
       REAL     :: wz_bot,wz_sfc
@@ -591,15 +591,18 @@
           ENDDO
         ENDDO 
 #  endif /* W_HADV_C2 */
+      ENDDO  !<-- outer loop k
+
 !
 !-------------------------------------------------------
 ! Finalize horizontal advection: compute flux divergence
 !-------------------------------------------------------
 !
+      DO k=0,N
         DO j=Jstr,Jend
           DO i=Istr,Iend
-            rw(i,j,k)= rw(i,j,k) - WFx(i+1,j) + WFx(i,j)
-     &                           - WFe(i,j+1) + WFe(i,j)
+            rw(i,j,k)= rw(i,j,k) - WFx(i+1,j,k) + WFx(i,j,k)
+     &                           - WFe(i,j+1,k) + WFe(i,j,k)  
           ENDDO
         ENDDO
 

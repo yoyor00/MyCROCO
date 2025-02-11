@@ -106,7 +106,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
         do k=1,N
-!$acc loop vector
           do j=Jstr,Jend+1
             grad(Istr-1,j)=( t(Istr-1,j  ,k,nstp,itrc)
      &                      -t(Istr-1,j-1,k,nstp,itrc))
@@ -119,7 +118,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                   *vmask(Istr,j)
 #   endif
           enddo
-!$acc loop vector
           do j=Jstr,Jend
             dft=t(Istr,j,k,nstp,itrc)-t(Istr  ,j,k,indx,itrc)
             dfx=t(Istr,j,k,indx,itrc)-t(Istr+1,j,k,indx,itrc)
@@ -221,7 +219,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 !                                           Eastern edge radiation BC
 !                                           ======= ==== ========= ==
         do k=1,N
-!$acc loop vector
           do j=Jstr,Jend+1
            grad(Iend  ,j)=( t(Iend  ,j  ,k,nstp,itrc)
      &                     -t(Iend  ,j-1,k,nstp,itrc))
@@ -234,7 +231,6 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                *vmask(Iend+1,j)
 #   endif
           enddo
-!$acc loop vector
           do j=Jstr,Jend
             dft=t(Iend,j,k,nstp,itrc)-t(Iend  ,j,k,indx,itrc)
             dfx=t(Iend,j,k,indx,itrc)-t(Iend-1,j,k,indx,itrc)

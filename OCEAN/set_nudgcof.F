@@ -24,6 +24,9 @@
       end
 !
       subroutine set_nudgcof_tile (Istr,Iend,Jstr,Jend, wrk)
+#if defined RVTK_DEBUG
+      USE my_functions
+#endif
 !     implicit none
       integer ierr
 # if defined MPI

@@ -20,7 +20,8 @@
             zscale=zscale*rmask(i,j)
 #endif
             zetahat=vonKar*zscale*Bfsfc
-            ustar3=ustar(i,j)**3
+
+            ustar3=POW(ustar(i,j),3.)
 !
 ! Stable regime.
 !
@@ -34,14 +35,14 @@
 !
             else
               if (zetahat .gt. zeta_m*ustar3) then
-                wm=vonKar*( ustar(i,j)*(ustar3-16.*zetahat) )**r4
+                wm=vonKar*POW( ustar(i,j)*(ustar3-16.*zetahat),r4)
               else
-                wm=vonKar*(a_m*ustar3-c_m*zetahat)**r3
+                wm=vonKar*POW(a_m*ustar3-c_m*zetahat,r3)
               endif
               if (zetahat .gt. zeta_s*ustar3) then
-                ws=vonKar*( (ustar3-16.*zetahat)/ustar(i,j) )**r2
+                ws=vonKar*POW( (ustar3-16.*zetahat)/ustar(i,j),r2)
               else
-                ws=vonKar*(a_s*ustar3-c_s*zetahat)**r3
+                ws=vonKar*POW(a_s*ustar3-c_s*zetahat,r3)
               endif
             endif
 

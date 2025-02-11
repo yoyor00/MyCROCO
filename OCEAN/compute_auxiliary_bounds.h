@@ -42,6 +42,12 @@
 #else
       integer JstrV
 #endif
+#ifdef MPI
+      integer IstrUm1, IendUp1
+      integer JstrVm1, JendVp1
+      integer Istrm1, Iendp1
+      integer Jstrm1, Jendp1
+#endif
 
       if (WESTERN_EDGE) then
 #ifdef EW_PERIODIC
@@ -90,3 +96,35 @@
       else
         JendR=Jend
       endif
+
+#ifdef MPI
+      if (WEST_INTER) then
+        IstrUm1 = IstrU-1
+	Istrm1  = Istr-1
+      else
+        IstrUm1 = max(IstrU-1,2)
+	Istrm1  = max(Istr-1,1)
+      endif
+      if (EAST_INTER) then
+        IendUp1 = Iend+1
+	Iendp1  = Iend+1
+      else
+        IendUp1 = min(Iend+1,Lmmpi)
+	Iendp1  = min(Iend+1,Lmmpi)
+      endif
+
+      if (SOUTH_INTER) then
+        JstrVm1 = JstrV-1
+	Jstrm1  = Jstr-1
+      else
+        JstrVm1 = max(JstrV-1,2)
+	Jstrm1  = max(Jstr-1,1)
+      endif
+      if (NORTH_INTER) then
+        JendVp1 = Jend+1
+	Jendp1  = Jend+1
+      else
+        JendVp1 = min(Jend+1,Mmmpi)
+	Jendp1  = min(Jend+1,Mmmpi)
+      endif
+#endif

@@ -37,7 +37,8 @@
           zscale=zscale*rmask(i,j)
 #endif
           zetahat=vonKar*zscale*Bfsfc
-          ustar3=ustar(i,j)**3
+          ustar3=POW(ustar(i,j),3.)
+
 !
 ! Stable regime.
 !
@@ -50,13 +51,13 @@
 ! and bounded away from zero for this condition to be held.
 !
           elseif (zetahat .gt. zeta_s*ustar3) then
-            ws=vonKar*( (ustar3-16.*zetahat)/ustar(i,j) )**r2
+            ws=vonKar*POW( (ustar3-16.*zetahat)/ustar(i,j),r2)
 !
 ! Convective regime: note that unlike the two cases above, this
 ! results in non-zero "ws" even in the case when ustar==0.
 !
           else
-            ws=vonKar*(a_s*ustar3-c_s*zetahat)**r3
+            ws=vonKar*POW(a_s*ustar3-c_s*zetahat,r3)
           endif
                      !--> discard zetahat, ustar3
 #ifdef LMD_LANGMUIR

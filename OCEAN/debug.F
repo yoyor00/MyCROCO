@@ -19,6 +19,8 @@
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
 !$AGRIF_END_DO_NOT_TREAT
+          real,dimension(:,:,:),allocatable :: test_array ! For testing RU, RV RHS
+!$acc declare create(test_array)
 # if defined RVTK_DEBUG_PERFRST
 #  define DEBUG_MPI_MASTER_ONLY
 !
@@ -33,6 +35,7 @@
           logical, parameter :: non_strict = .false.
           real, parameter :: max_tolerance = 1.D-10
           real :: tolerance
+          character(len=80) :: rvtk_comment
           contains
 !
 !======================================================================
@@ -91,6 +94,9 @@
             tolerance = 0.
           endif
 
+          allocate(test_array(GLOBAL_2D_ARRAY,1:N))
+
+
           return
 
           end subroutine debug_ini
@@ -139,6 +145,13 @@
       integer imax,jmax
       character*200 :: comment_bug
           
+      logical :: tab_corrected
+
+! DEBUG need synchronization in OpenACC mode (step2d)
+!$acc wait
+
+      tab_corrected = .FALSE.
+          
 # if defined OPENMP && !defined MPI
       mynode=0
 # endif
@@ -179,7 +192,7 @@
 
 # else /* defined RVTK_DEBUG_WRITE   */
 #  ifdef OPENACC
-      ondevice_l = .false.
+      ondevice_l = .true.
       if (present(ondevice)) ondevice_l = ondevice
       if (ondevice_l) then
         temp_host=tab
@@ -242,7 +255,8 @@
                        exit DebugExit
                       else
                         comment_bug = TRIM(comment_bug) // '-- CORRECTED'
-                        write(*,'(A)')comment_bug
+                        !write(*,'(A)')comment_bug
+                        tab_corrected = .TRUE.
                         tab(i,j) = tabread(i0,j0)
                       endif
                      endif
@@ -283,6 +297,11 @@
      &                       ,' ON GRID ',Agrif_CFixed()
 #  endif
      &, 'AT POINT ',imax,jmax
+      elseif (tab_corrected) then
+      MPI_master_only print *,'CHECK ',comment,' PASSED WITH CORRECTION(S) '
+#  ifdef AGRIF
+     &                       ,' ON GRID ',Agrif_CFixed()
+#  endif
       else
       MPI_master_only print *,'CHECK ',comment,' PASSED'
 #  ifdef AGRIF
@@ -294,7 +313,10 @@
       endif
 #  endif
 #  ifdef OPENACC
-      if (ondevice_l) tab=temp_host
+      if (ondevice_l) then
+          call update_device(tab)
+          tab=temp_host
+      endif
 #  endif
 # endif /*  !defined RVTK_DEBUG_WRITE     */
 
@@ -322,7 +344,7 @@
       integer Lmseq,Mmseq
       integer lb(3),ub(3)
       real,dimension(:,:,:),allocatable :: tabread
-      character*(*) :: comment,typevar
+      character(len=*) :: comment,typevar
       logical, optional :: ondevice, correct
       integer i0,j0,k,i,j,i1,i2,j1,j2
 # if !defined RVTK_DEBUG_WRITE
@@ -344,9 +366,12 @@
       integer :: imax,jmax,kmax
       real :: diff
       logical :: correct_l
+      logical :: tab_corrected
+
+      tab_corrected = .FALSE.
 
 # ifdef OPENACC
-      ondevice_l = .false.
+      ondevice_l = .true.
       if (present(ondevice)) ondevice_l = ondevice
 # endif
 
@@ -462,11 +487,13 @@
                      endif
                      if (diff>tolerance)
      &                              then
+                      if (.not.correct_l) then
                        write(*,'(A,A,2x,6i4,3e20.12)')'BUGBIN = ',
      &                 comment,
      &                 mynode,i0,j0,i,j,k,
      &                 tabread(i0,j0,k),tab(i,j,k),
      &                 diff
+                      endif
 !                      print *,'iif = ',iif,iic
 #  ifdef AGRIF
                        print *,'GRID# ',Agrif_CFixed()
@@ -475,7 +502,8 @@
                         mystop=.true.
                        exit DebugExit
                       else
-                        print *,'CORRECTED'
+                        !print *,'CORRECTED'
+                        tab_corrected = .TRUE.
                         tab(i,j,k) = tabread(i0,j0,k)
                       endif
                       endif
@@ -522,6 +550,11 @@
      &                       ,' ON GRID ',Agrif_CFixed()
 #  endif
      &, 'AT POINT ',imax,jmax,kmax
+      elseif (tab_corrected) then
+        MPI_master_only print *,'CHECK ',comment,' PASSED WITH CORRECTION(S) '
+#  ifdef AGRIF
+     &                       ,' ON GRID ',Agrif_CFixed()
+#  endif
       else
         MPI_master_only print *,'CHECK ',comment,' PASSED'
 #  ifdef AGRIF
@@ -532,7 +565,10 @@
       endif
 #  endif
 #  ifdef OPENACC
-      if (ondevice_l) tab=temp_host
+      if (ondevice_l) then
+          call update_device(tab)
+          tab=temp_host
+      endif
 #  endif
 # endif /* !defined RVTK_DEBUG_WRITE  */
           return
