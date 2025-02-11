@@ -20,6 +20,9 @@
 # include "ncscrum.h"
 # include "netcdf.inc"
 # include "boundary.h"
+# ifdef SEDIMENT
+#  include "sediment.h"
+# endif
       real cff
       integer  lstr,lvar,lenstr, ierr, ierr_all
       integer  nf_read_bry_EW, nf_read_bry_NS
@@ -120,11 +123,14 @@
           if (ierr.eq.nf_noerr) then
 # ifdef USE_CALENDAR
             call tool_origindate(brywkb_id,brywkb_time_id,
-     &                         brywkb_origin_date_in_sec)
+     &                           brywkb_origin_date_in_sec)
             cff=cff+brywkb_origin_date_in_sec*sec2day
 # endif
             itbrywkb=min(3-itbrywkb,ntbrywkb)
             brywkb_time(itbrywkb)=cff*day2sec + brywkb_cycle*brywkb_ncycle
+# ifdef SEDIMENT
+            brywkb_time(itbrywkb)=brywkb_time(itbrywkb)/morph_fac
+# endif
             ierr_all=0
 # ifdef WKB_OBC_WEST
             ierr=nf_read_bry_EW (wacbry_west_dt(START_1D_ARRAYETA,itbrywkb
@@ -188,7 +194,7 @@
      &       'GET_BRY_WKB - Read wave boundary data',
      &                                  'for time =', cff
 # ifdef USE_CALENDAR
-     &  -brywkb_origin_date_in_sec*sec2day
+     &                 -brywkb_origin_date_in_sec*sec2day
 # endif
 # ifdef MPI
      &                                              , mynode
@@ -209,7 +215,7 @@
      &    '  but the last available  brywkb_time =',
      &                                   brywkb_time(itbrywkb)*sec2day
 # ifdef USE_CALENDAR
-     &  -brywkb_origin_date_in_sec*sec2day
+     &                              -brywkb_origin_date_in_sec*sec2day
 # endif
         endif
       enddo
@@ -307,11 +313,11 @@
      &   'SET_BRY_WKB_TILE - current model time is out of bounds of',
      &   '''brywkb_time''.',     'BRY_WKB_TSTART=', brywkb_time(it1)*sec2day
 # ifdef USE_CALENDAR
-     &  -brywkb_origin_date_in_sec*sec2day
+     &                                    -brywkb_origin_date_in_sec*sec2day
 # endif
-     &   ,'TDAYS=',  tdays,    'BRY_WKB_TEND=', brywkb_time(it2)*sec2day
+     &       ,'TDAYS=',  tdays,    'BRY_WKB_TEND=', brywkb_time(it2)*sec2day
 # ifdef USE_CALENDAR
-     &  -brywkb_origin_date_in_sec*sec2day
+     &                                    -brywkb_origin_date_in_sec*sec2day
 # endif
         may_day_flag=2
       endif

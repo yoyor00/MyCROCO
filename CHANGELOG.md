@@ -26,6 +26,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- Issue #306 : in MRL_WCI change limits of wave height in surfzone
+
 - Issue #281 : optimization of the PISCES code on
   - representation of the lability of the particle pool
   - several optimizations to the calculation of certain variables (performance).
