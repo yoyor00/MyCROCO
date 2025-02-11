@@ -1258,7 +1258,6 @@
 #   define WAVE_ROLLER
 #   define WAVE_FRICTION
 #   define WAVE_BREAK_TG86
-#   define WAVE_BREAK_SWASH
 #   define WAVE_STREAMING
 #   undef  WAVE_RAMP
 #  endif
@@ -1268,9 +1267,9 @@
 #  ifdef LMD_MIXING
 #   define LMD_SKPP
 #   define LMD_BKPP
-#   define LMD_VMIX_SWASH
 #  endif
 #  define BBL
+#  define BBL_BREAKING_STIR
 # else /* NBQ */
 #  define MPI
 #  define NBQ_PRECISE
@@ -1380,7 +1379,6 @@
 #  define WAVE_ROLLER
 #  define WAVE_FRICTION
 #  define WAVE_STREAMING
-#  define WAVE_BREAK_SWASH
 #  define MRL_CEW
 #  ifdef RIP_TOPO_2D
 #   define WAVE_RAMP
