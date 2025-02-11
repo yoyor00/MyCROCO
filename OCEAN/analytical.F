@@ -1636,11 +1636,11 @@ C$    integer  trd, omp_get_thread_num
       ho=h(1,1)             ! offshore depth
 #  ifdef OBC_EAST
 #   ifdef MPI
-        ho=h(LLm/NP_XI,1)+zeta(LLm/NP_XI,1,knew)
+        ho=h(LLm/NP_XI,1)
         call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
      &                     NP_XI-1, MPI_COMM_WORLD, ierr)
 #   else
-        ho=h(LLm,1)+zeta(LLm,1,knew)
+        ho=h(LLm,1)
 #   endif
 #  endif
       khd = ho*cfrq*cfrq/g

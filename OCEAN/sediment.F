@@ -1744,15 +1744,11 @@ C$OMP BARRIER
 #   include "diagnostics.h"
 #  endif
       integer Istr,Iend,Jstr,Jend
-      integer i,j,ised,ised0
+      integer i,j,ised
       integer indx
       integer imin,jmin,imax,jmax
       real cff,cff1,cff2,cff3,cff4,cff5,tau_water,Zr
       real tau_w(PRIVATE_2D_SCRATCH_ARRAY)
-#  ifdef BED_ARMOR
-!      integer ised0
-      real ph,pe
-#  endif
 !
 !-----------------------------------------------------------------------
 !  Compute bottom skin-friction stress due to combined maximum wave

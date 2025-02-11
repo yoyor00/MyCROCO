@@ -147,6 +147,10 @@
       parameter(p1=0.,p2=0.857,p3=-0.471,p4=0.297,p5=0.815,p6=0.672)
       real Ursell, cff3,cff4,cff5,cff6,cff7
 # endif
+# if defined MRL_WCI && defined BBL_BREAKING_STIR
+      real cff1_Ut,cff2_Ut
+      parameter(cff1_Ut=2./3., cff2_Ut=3.)
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -263,10 +267,9 @@
 !  (Roelvink & Reniers, 1995)
 !
 # if defined MRL_WCI && defined BBL_BREAKING_STIR
-          Ut=sqrt((0.1*wepb(i,j))**(2./3.))         ! surf. turb. velocity
-          cff=3.                                    ! efficiency
-          Ut=(50/cff*Ut)**cff                       ! function
-          Ut=Ut/(exp(depth/max(whrm(i,j),eps))-1.)  ! depth attenuation
+          Ut=sqrt((0.1*wepb(i,j))**cff1_Ut)          ! surf. turb. velocity
+          Ut=(Ut*50./cff2_Ut)**cff2_Ut               ! efficiency function
+          Ut=Ut/(exp(depth/max(whrm(i,j),1.e-3))-1.) ! depth attenuation
      &                              SWITCH rmask(i,j)
      &                              SWITCH_WET rmask_wet(i,j)
 # else

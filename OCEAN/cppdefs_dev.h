@@ -746,13 +746,14 @@
 #  define WAVE_OFFLINE
 #  undef  WAVE_ROLLER
 # endif
-# ifndef WAVE_ROLLER
-#  define wepb0 wepb
-# endif
+#endif
+
+#if !defined WAVE_ROLLER || !defined WKB_WWAVE
+# define wepb0 wepb
 #endif
 
 #if defined WKB_WWAVE || defined OW_COUPLING \
-		       || (defined WAVE_OFFLINE && defined MRL_WCI)
+		      || (defined WAVE_OFFLINE && defined MRL_WCI)
 # define WAVE_IO
 #endif
 
