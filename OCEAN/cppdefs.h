@@ -791,13 +791,20 @@ cppdef.h by hand for the common setups.
 !
 !                              Seven  sets up are encompassed :
 */
-# define KATO_PHILIPS        /* erosion of linear strat by constant wind stress */
-# undef  WILLIS_DEARDORFF    /* erosion of linear strat by constant surf buoyancy loss */
-# undef  DIURNAL_CYCLE       /* erosion of linear strat by constant surf buoyancy loss */
-# undef  FORCED_EKBBL        /* forced Ekman bottom boundary layer */
-# undef  FORCED_DBLEEK       /* forced Ekman bottom and surface boundary layers */
-# undef  FORCED_NONROTBBL    /* non rotating forced bottom boundary layer : Prandt layer */
-# undef  FORCED_OSCNONROTBBL /* non rotating oscillatory forced bottom boundary layer */
+/* erosion of linear strat by constant wind stress */
+# define KATO_PHILIPS
+/* erosion of linear strat by constant surf buoyancy loss */
+# undef  WILLIS_DEARDORFF
+/* erosion of linear strat by constant surf buoyancy loss */
+# undef  DIURNAL_CYCLE
+/* forced Ekman bottom boundary layer */
+# undef  FORCED_EKBBL
+/* forced Ekman bottom and surface boundary layers */
+# undef  FORCED_DBLEEK
+/* non rotating forced bottom boundary layer : Prandt layer */
+# undef  FORCED_NONROTBBL
+/* non rotating oscillatory forced bottom boundary layer */
+# undef  FORCED_OSCNONROTBBL
 # undef  OPENMP
 # undef  MPI
 # define UV_ADV
@@ -1240,8 +1247,10 @@ cppdef.h by hand for the common setups.
 !   Roelvink, J. A. and Reniers, A. (1995). Lip 11d delta flume experiments
 !   – data report. Technical report, Delft, The Netherlands, Delft Hydraulics
 */
-# define SANDBAR_OFFSHORE /* LIP-1B */
-# undef  SANDBAR_ONSHORE  /* LIP-1C */
+/* LIP-1B */
+# define SANDBAR_OFFSHORE
+/* LIP-1C */
+# undef  SANDBAR_ONSHORE
 # undef  OPENMP
 # undef  MPI
 # undef  NBQ
@@ -1259,7 +1268,8 @@ cppdef.h by hand for the common setups.
 # define OBC_WEST
 # define SPONGE
 # define WET_DRY
-# ifndef NBQ /* ! NBQ */
+/* ! NBQ */
+# ifndef NBQ 
 #  define MRL_WCI
 #  ifdef MRL_WCI
 #   define WKB_WWAVE
@@ -1281,7 +1291,8 @@ cppdef.h by hand for the common setups.
 #   define LMD_VMIX_SWASH
 #  endif
 #  define BBL
-# else /* NBQ */
+/* NBQ */
+# else 
 #  define MPI
 #  define NBQ_PRECISE
 #  define WAVE_MAKER
@@ -1300,7 +1311,8 @@ cppdef.h by hand for the common setups.
 #  define AVERAGES
 #  define AVERAGES_K
 #  define DIAGNOSTICS_EDDY
-# endif /* NBQ */
+/* NBQ */
+# endif 
 # define SEDIMENT
 # ifdef SEDIMENT
 #  define SUSPLOAD
@@ -1670,9 +1682,12 @@ cppdef.h by hand for the common setups.
 !                       ========== ====== ========= =======
 !
 */
-# undef  SOLID_BODY_ROT   /* Example with spatially varying velocity */
-# undef  DIAGONAL_ADV     /*    Constant advection in the diagonal   */
-# define SOLID_BODY_PER   /* Example with a space and time-varying velocity */
+/* Example with spatially varying velocity */
+# undef  SOLID_BODY_ROT
+/* Constant advection in the diagonal   */
+# undef  DIAGONAL_ADV
+/* Example with a space and time-varying velocity */
+# define SOLID_BODY_PER
 
 # undef  OPENMP
 # undef  MPI
@@ -1695,7 +1710,8 @@ cppdef.h by hand for the common setups.
 # define EW_PERIODIC
 # define NS_PERIODIC
 
-# define TS_HADV_UP3    /* Choose specific advection scheme */
+/* Choose specific advection scheme */
+# define TS_HADV_UP3
 # undef  TS_HADV_C4
 # undef  TS_HADV_UP5
 # undef  TS_HADV_WENO5
@@ -1708,8 +1724,10 @@ cppdef.h by hand for the common setups.
 !                       ==== ==== ==== =======
 !
 */
-# undef  ANA_DUNE     /* Analytical test case (Marieu) */
-# undef  DUNE3D       /* 3D Dune example */
+/* Analytical test case (Marieu) */
+# undef  ANA_DUNE
+/* 3D Dune example */
+# undef  DUNE3D
 
 # undef  OPENMP
 # undef  MPI
@@ -1760,12 +1778,18 @@ cppdef.h by hand for the common setups.
 !                       SED TOY (1D Single Column example)
 !                       === === === ====== ====== ========
 !
-*/                            /* Choose an experiment :               */
-# define SED_TOY_ROUSE        /*   Rouse                              */
-# undef  SED_TOY_CONSOLID     /*   Consolidation                      */
-# undef  SED_TOY_RESUSP       /*   Erosion and sediment resuspension  */
-# undef  SED_TOY_FLOC_0D      /*   Flocculation                       */
-# undef  SED_TOY_FLOC_1D      /*   Flocculation                       */
+*/ 
+/* Choose an experiment :               */
+/*   Rouse                              */
+# define SED_TOY_ROUSE
+/*   Consolidation                      */ 
+# undef  SED_TOY_CONSOLID
+/*   Erosion and sediment resuspension  */
+# undef  SED_TOY_RESUSP
+/*   Flocculation                       */
+# undef  SED_TOY_FLOC_0D
+/*   Flocculation                       */
+# undef  SED_TOY_FLOC_1D
 
 # undef  OPENMP
 # undef  MPI

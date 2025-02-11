@@ -115,10 +115,16 @@
       "SWASH",
       "TANK",
       "TS_HADV_TEST",
-      // "SINGLE_COLUMN_DIURNAL_CYCLE", // missing croco.in file
-      // "MOVING_BATHY", // repro-mpi issue
+      "SINGLE_COLUMN_DIURNAL_CYCLE",
+      "SINGLE_COLUMN_FORCED_DBLEEK",
+      "SINGLE_COLUMN_FORCED_EKBBL",
+      "SINGLE_COLUMN_FORCED_NONROTBBL",
+      "SINGLE_COLUMN_FORCED_OSCNONROTBBL",
+      "SINGLE_COLUMN_KATO_PHILIPS",
+      "SINGLE_COLUMN_WILLIS_DEARDORFF",
       "ACOUSTIC",
       "SED_TOY",
+      // "MOVING_BATHY", // repro-mpi issue
     ],
     "@agrif": [
       "VORTEX",
