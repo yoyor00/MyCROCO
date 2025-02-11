@@ -6,10 +6,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
-- Cmake build of CROCO (not yet implemented for AGRIF and XIOS), 
+- Issue #298 : Cmake build of CROCO (not yet implemented for AGRIF and XIOS), 
   see documentation or README.cmake.md for more details. 
   Jobcomp script is still available.
-- Benchmarking python tools to perform tests runs, see documentation or 
+
+- Issue #298 : Benchmarking python tools to perform tests runs, see documentation or 
   BENCH/README.md for more details
 
 ### Fixed
@@ -30,8 +31,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
-- Jobcomp script can now be executed with terminal options, see 
+- Issue #298 : Jobcomp script can now be executed with terminal options, see 
   ```./jobcomp -h``` for more details
+
+- Issue #306 : in MRL_WCI change limits of wave height in surfzone
+
 - Issue #281 : optimization of the PISCES code on
   - representation of the lability of the particle pool
   - several optimizations to the calculation of certain variables (performance).
