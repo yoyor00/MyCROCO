@@ -140,6 +140,8 @@
 !     parameter (LLm0= 96,  MMm0= 96,  N=20)   !  8 m resolution
       parameter (LLm0= 48,  MMm0= 48,  N=20)   ! 16 m resolution
 # endif
+#elif defined FLASH_RIP
+      parameter (LLm0=150,  MMm0=150,  N=10)   !  2 m resolution
 #elif defined THACKER
 # ifdef THACKER_2DV
       parameter (LLm0=200,  MMm0=1,    N=5 )   !  1 km resolution

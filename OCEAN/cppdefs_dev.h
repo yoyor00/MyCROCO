@@ -310,7 +310,7 @@
                   || defined THACKER  || defined TANK \
                   || defined KH_INST  || defined TS_HADV_TEST
 # define PGF_FLAT_BOTTOM
-#elif defined RIP
+#elif defined RIP || defined FLASH_RIP
 # define PGF_BASIC_JACOBIAN
 # define WJ_GRADP 0.125
 #elif defined PGF_BASIC_JACOBIAN

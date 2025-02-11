@@ -33,6 +33,7 @@
 #undef  JET             /* Baroclinic Jet Example */
 #undef  SHOREFACE       /* Shoreface Test Case on a Planar Beach */
 #undef  RIP             /* Rip Current Test Case */
+#undef  FLASH_RIP       /* Flash Rip Test Case */
 #undef  SANDBAR         /* Bar-generating Flume Example */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  TANK            /* Tank Example */
@@ -1422,6 +1423,97 @@
 #  define SUSPLOAD
 #  define BEDLOAD
 #  undef  MORPHODYN
+# endif
+# undef  DIAGNOSTICS_UV
+# undef  RVTK_DEBUG
+
+#elif defined FLASH_RIP
+/*
+!                       Flash Rip Example
+!                       ===== === =======
+!
+!   Semi-idealized case based on the IB09 experiment.
+!   Hally-Rosendahl, K., Feddersen, F.. (2016):
+!      Modeling surfzone to inner-shelf tracer exchange
+!      JGR Vol. 121
+!   Treillou, S. et al. (in review):
+!      Tracer dispersion by surfzone eddies: assessing 
+!      the impact of undertow vertical shear
+!
+*/
+# undef  OPENMP
+# define MPI
+!# define NC4PAR
+# define SOLVE3D
+# define AVERAGES
+# define AVERAGES_K
+# define NEW_S_COORD
+# define UV_ADV
+# define NO_TRACER
+# define NO_TEMPERATURE
+# define NBQ
+# ifdef NBQ
+#  define NBQ_PRECISE
+#  define LIMIT_BSTRESS
+#  define WAVE_MAKER
+#  define WAVE_MAKER_SPECTRUM
+#  define WAVE_MAKER_DSPREAD
+#  define WAVE_MAKER_OBLIQUE
+#  define UV_HADV_WENO5
+#  define UV_VADV_WENO5
+#  define UV_VADV_WENO5_INTC2
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
+#  ifdef PASSIVE_TRACER
+#   define TS_HADV_WENO5
+#   define TS_VADV_WENO5
+#  endif
+#  define GLS_MIXING_3D
+#  define GLS_KOMEGA
+#  undef  ANA_TIDES
+#  undef  MRL_WCI
+#  define OBC_SPECIFIED_WEST
+#  define FRC_BRY
+#  define ANA_BRY
+#  define Z_FRC_BRY
+#  define M2_FRC_BRY
+#  define M3_FRC_BRY
+#  define T_FRC_BRY
+# else
+#  define UV_VIS2
+#  define UV_VIS_SMAGO
+#  define LMD_MIXING
+#  define LMD_SKPP
+#  define LMD_BKPP
+#  define MRL_WCI
+# endif
+# define WET_DRY
+# ifdef MRL_WCI
+#  define WKB_WWAVE
+#  define WKB_OBC_WEST
+#  define WAVE_ROLLER
+#  define WAVE_FRICTION
+#  define WAVE_STREAMING
+#  define MRL_CEW
+# endif
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_SSFLUX
+# define ANA_SRFLUX
+# define ANA_SST
+# define ANA_BTFLUX
+# define NS_PERIODIC
+# define OBC_WEST
+# define SPONGE
+# undef SEDIMENT
+# ifdef SEDIMENT
+#  define ANA_SEDIMENT
+#  undef  ANA_SPFLUX
+#  undef  ANA_BPFLUX
+#  define TS_HADV_WENO5
+#  define TS_VADV_WENO5
 # endif
 # undef  DIAGNOSTICS_UV
 # undef  RVTK_DEBUG
