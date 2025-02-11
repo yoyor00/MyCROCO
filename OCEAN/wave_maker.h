@@ -202,8 +202,8 @@
 !
 ! Single-sum wave-maker description in Treillou et al. (2024)
 !
-          displacetheta=minloc(abs(wf_bry-wf))
-          cff2=MOD(displacetheta(1),Ndir)
+          displacetheta=minloc(abs(wf_bry-wf),DIM=1)
+          cff2=MOD(displacetheta,Ndir)
           cff4=0.0
           do jw=1,Nfrq
             wd_bry(jw)=MOD(jw-cff2,float(Ndir))

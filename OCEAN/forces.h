@@ -707,8 +707,9 @@
 #ifdef WAVE_MAKER
       integer Nfrq, Ndir
 # ifdef WAVE_MAKER_DSPREAD
-      parameter (Nfrq=1550, Ndir=31) ! Nfrq=Nfrq*Ndir
-      integer displacetheta(1)    
+      integer Nfrq0
+      parameter (Nfrq0=50, Ndir=31, Nfrq=Nfrq0*Ndir)
+      integer displacetheta   
       real wkx_bry(Nfrq)
       real wky_bry(Nfrq)
       common /wave_maker_k/ wkx_bry, wky_bry
