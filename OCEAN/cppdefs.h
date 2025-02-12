@@ -1446,6 +1446,7 @@
 # define UV_ADV
 # define NO_TRACER
 # define NO_TEMPERATURE
+# undef  ANA_TIDES
 # define NBQ
 # define NBQ_PRECISE
 # define LIMIT_BSTRESS
@@ -1459,8 +1460,8 @@
 # define W_VADV_WENO5
 # define GLS_MIXING_3D
 # define GLS_KOMEGA
-# undef  ANA_TIDES
 # define NS_PERIODIC
+# define OBC_WEST
 # define OBC_SPECIFIED_WEST
 # define SPONGE
 # define FRC_BRY
