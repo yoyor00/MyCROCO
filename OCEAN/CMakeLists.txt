@@ -281,6 +281,13 @@ list(APPEND CROCO_SRCS_F90 p2zlim.F90 p2zmicro.F90 p2zmort.F90
 )
 
 list(APPEND CROCO_SRCS_F90 module_parameter_oa.F90)
+list(APPEND CROCO_SRCS_F90 flocmod.F90 comsubstance.F90 substance.F90
+                           comMUSTANG.F90 coupler_MUSTANG.F90
+                           sed_MUSTANG_CROCO.F90 sed_MUSTANG.F90 initMUSTANG.F90
+                           plug_MUSTANG_CROCO.F90)
+
+
+
 
 ###########################################################
 # files for copy to device
