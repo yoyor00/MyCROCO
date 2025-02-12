@@ -314,6 +314,8 @@
       parameter (D_wetdry=0.01)
 # elif defined SANDBAR || defined TIDAL_FLAT || defined ESTUARY
       parameter (D_wetdry=0.1)
+# elif defined FLASH_RIP
+      parameter (D_wetdry=0.05)
 # else
       parameter (D_wetdry=0.2)
 # endif
