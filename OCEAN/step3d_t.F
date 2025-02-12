@@ -1146,11 +1146,21 @@
 !
 #  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_TS
-        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                          t(START_2D_ARRAY,1,nnew,itrc))
+        if (itrc .eq. itpas) then
+          call exchange_r3d_noper_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                                 t(START_2D_ARRAY,1,nnew,itrc))
+        else
+          call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                                 t(START_2D_ARRAY,1,nnew,itrc))
+        endif
 #   else
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                          t(START_2D_ARRAY,1,nnew,itrc))
+        if (itrc .eq. itpas) then
+          call exchange_r3d_noper_tile (Istr,Iend,Jstr,Jend,
+     &                            t(START_2D_ARRAY,1,nnew,itrc))
+        else
+          call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                            t(START_2D_ARRAY,1,nnew,itrc))
+        endif
 #   endif
 #  endif
       enddo
@@ -1158,6 +1168,7 @@
       return
       end
 # endif  /* TRACERS */
+
 !
 !======================================================================
 !
