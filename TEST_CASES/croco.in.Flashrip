@@ -10,7 +10,7 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
            0.         0.        1.e16
 
 wave_maker:  amp [m], prd [s], ang [deg], ang spread [deg], freq spread (gamma)
-             0.24     13.       0.         10.               3.3 
+             0.24     13.       0.         30.               3.3 
 
 grid:  filename
                           rip_grd.nc 
