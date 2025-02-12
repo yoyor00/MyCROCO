@@ -713,7 +713,6 @@
 # ifdef WAVE_MAKER_DSPREAD
       integer Nfrq0
       parameter (Nfrq0=50, Ndir=31, Nfrq=Nfrq0*Ndir)
-      integer displacetheta   
       real wkx_bry(Nfrq)
       real wky_bry(Nfrq)
       common /wave_maker_k/ wkx_bry, wky_bry
@@ -722,10 +721,8 @@
 # endif
       real wf_bry(Nfrq), wk_bry(Nfrq), wa_bry(Nfrq)
       real wd_bry(Nfrq), wa_bry_d(Nfrq)
-      real sumspec, cff6, mindiff
       common /wave_maker/ wf_bry, wk_bry, wa_bry
       common /wave_maker/ wd_bry, wa_bry_d
-      common /sumspec/ sumspec
       real wpha_bry(Nfrq)
       common /wave_maker_pha/ wpha_bry
       real wmaker_amp, wmaker_prd, wmaker_dir

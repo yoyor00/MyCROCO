@@ -614,6 +614,7 @@
 ======================================================================
 */
 #ifdef WAVE_MAKER
+# define UV_VADV_WENO5_INTC2
 # if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 #  define WAVE_MAKER_SPECTRUM
 # endif
@@ -623,6 +624,9 @@
 #  else
 #   define WAVE_MAKER_JONSWAP
 #  endif
+# endif
+# if defined WAVE_MAKER_DSPREAD && defined NS_PERIODIC
+#  define WAVE_MAKER_DSPREAD_PER /* correct wave dir. for periodicity */
 # endif
 # ifndef WAVE_MAKER_SPECTRUM
 #  define STOKES_WAVES

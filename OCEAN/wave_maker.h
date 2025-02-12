@@ -97,9 +97,9 @@
         wds=30.           ! directional spread (deg)
                           !  -> crest length = wl/(2*sin(wds))
 #else
+!
 !  get parameters from croco.in
 !
-# define WAVE_MAKER_JONSWAP
         wa=wmaker_amp     ! amplitude
         wp=wmaker_prd     ! period
         wd=wmaker_dir     ! incidence angle
@@ -128,10 +128,6 @@
 !
 #if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 # define WAVE_MAKER_SPECTRUM
-#endif
-
-#if defined WAVE_MAKER_DSPREAD && defined NS_PERIODIC
-# define WAVE_MAKER_DSPREAD_PER  /* correct wave directions for periodicity */
 #endif
 !
 !--------------------------------------------------------------------
@@ -175,7 +171,7 @@
             wk_bry(iw)=kh/h(IB0,0)
           enddo
 # ifdef WAVE_MAKER_JONSWAP
-          sumspec=0.0
+          sumspec=0.
           do iw=1,Nfrq
             sigma=0.5*( 0.09*(1.+sign(1.,wf_bry(iw)-wf))+
      &                  0.07*(1.-sign(1.,wf_bry(iw)-wf)) )
@@ -189,55 +185,47 @@
 # elif defined WAVE_MAKER_GAUSSIAN
           cff2=0.
           do iw=1,Nfrq
-            !cff1=exp(-((wf_bry(iw)-wf)/0.1)**2)
             cff1=exp(-((wf_bry(iw)-wf)/0.05)**2)
             wa_bry(iw)=cff1
-            cff2=cff2+cff1
-          enddo
-          do iw=1,Nfrq
-            wa_bry(iw)=wa*sqrt(wa_bry(iw)/cff2) ! normalize
+            sumspec=sumspec+cff1
           enddo
 # endif
 # ifdef WAVE_MAKER_DSPREAD
 !
-! Single-sum wave-maker description in Treillou et al. (2024)
+! Single-sum wave-maker (Treillou et al. 2025)
 !
-          displacetheta=minloc(abs(wf_bry-wf),DIM=1)
-          cff2=MOD(displacetheta,Ndir)
-          cff4=0.0
+          jwtt0=minloc(abs(wf_bry-wf),DIM=1)
+          jwtt=MOD(jwtt0,Ndir)
+          cff4=0.
           do jw=1,Nfrq
-            wd_bry(jw)=MOD(jw-cff2,float(Ndir))
-            if (wd_bry(jw).le.0.0) wd_bry(jw)=wd_bry(jw)+float(Ndir)
-            wd_bry(jw)=(-1.0)**float(jw)*(-pi*0.5 + 
-     &           pi*(floor(wd_bry(jw)/2.0 - 
-     &           0.5))/(float(Ndir)-1.0))
+            wd_bry(jw)=MOD(float(jw-jwtt),float(Ndir))
+            if (wd_bry(jw) .le. 0.) wd_bry(jw)=wd_bry(jw)+float(Ndir)
+            wd_bry(jw)=(-1.)**jw * 0.5*pi*( -1. + 
+     &                 (floor(wd_bry(jw)-1.))/(float(Ndir)-1.) )
             wd_bry(jw)=wd_bry(jw)+wd
-            if (wd_bry(jw).ge.0.5*pi) wd_bry(jw)=0.5*pi
-            if (wd_bry(jw).le.-0.5*pi) wd_bry(jw)=-0.5*pi
+            if (wd_bry(jw) .ge.  0.5*pi) wd_bry(jw)= 0.5*pi
+            if (wd_bry(jw) .le. -0.5*pi) wd_bry(jw)=-0.5*pi
             cff3=exp(-((wd_bry(jw)-wd)/max(1.5*wds,1.e-12))**2)
             wa_bry_d(jw)=cff3
             cff4=cff4+wa_bry_d(jw)*wa_bry(jw)
           enddo
-          
-!        Normalisation
-          cff1=sumspec/DOT_PRODUCT(wa_bry_d,wa_bry)
+          cff1=sumspec/DOT_PRODUCT(wa_bry_d,wa_bry)  !  Normalize
           do jw=1,Nfrq
             wa_bry_d(jw)=sqrt(wa_bry_d(jw)*cff1)
             wa_bry(jw)=wa*sqrt(wa_bry(jw)/sumspec)
           enddo
-          
 #  ifdef WAVE_MAKER_DSPREAD_PER
 !
-! Forcing periodicitiy on all wave components such that
+! Force periodicity on all wave components such that
 ! k_i*sin(theta_i)=p*(2*pi/Ly) with p an integer
 ! If the main wave direction is modified by more than 30 percent,
 ! correction is not applied
 !
           khd=h(IB0,0)*wf**2/g
           kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
-     &                                       khd*(K5+K6*khd)))))))
-          if (abs(1.0-wd/asin(2*pi*h(IB0,0)/(kh*el))).lt.0.3) then
-            cff3=2*pi/el     ! domain wavenumber 
+     &                                        khd*(K5+K6*khd)))))))
+          if (abs(1.-wd/asin(2.*pi*h(IB0,0)/(kh*el))) .lt. 0.3) then
+            cff3=2.*pi/el         ! domain wavenumber 
             do jw=1,Nfrq
               cff1=wd_bry(jw)     ! angle before correction
               cff6=cff1
@@ -246,13 +234,13 @@
      &         / cff3 -  nint((cff2 * sin(cff1)) / cff3))
               if (cff3.lt.cff2) then
                 iw=1
-                do while ((iw<10000) .AND. (mindiff.gt.1e-6))  
+                do while ((iw .lt. 10000) .and. (mindiff .gt. 1.e-6))  
                   cff4 = (cff2 * sin(cff1 + 1.e-4))/cff3
                   cff5 = (cff2 * sin(cff1 - 1.e-4))/cff3
-                  if (abs(cff4-nint(cff4)).lt.mindiff) then
+                  if (abs(cff4-nint(cff4)) .lt. mindiff) then
                     mindiff = abs(cff4-nint(cff4))
-                    cff1 = cff1 + 1e-4
-                  else if (abs(cff5-nint(cff5)).lt.mindiff) then         
+                    cff1 = cff1 + 1.e-4
+                  else if (abs(cff5-nint(cff5)) .lt. mindiff) then         
                     mindiff = abs(cff5-nint(cff5))
                     cff1 = cff1 - 1.e-4
                   endif
