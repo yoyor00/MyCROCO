@@ -244,11 +244,12 @@ list(APPEND CROCO_SRCS_F90 module_oa_space.F90
                            var_oa.F90
                            )
 # libs
-list(APPEND CROCO_SRC_F90 tooldatosec.F90
-                          toolsectodat.F90
-                          tooldecompdat.F90
-                          tooldatetosec.F90
-                          )
+list(APPEND CROCO_SRCS_F90 tooldatosec.F90
+                           toolsectodat.F90 
+                           tooldecompdat.F90 
+                           tooldatetosec.F90
+                           toolorigindate.F90
+                           )
 # Pisces files
 list(APPEND CROCO_SRCS_F90 p2zlim.F90 p2zmicro.F90 p2zmort.F90
                            p2zprod.F90 p4zagg.F90 p4zbc.F90

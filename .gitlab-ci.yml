@@ -140,7 +140,7 @@ reg_perfrst_intel:
     - .intel_base
     - .reg_perfrst_base
 
-test_bench_debug_base:
+test_bench_debug_jobcomp:
   stage: bench
   tags:
     - ci.inria.fr
@@ -151,9 +151,9 @@ test_bench_debug_base:
     - source /venv/bin/activate
     - |
       ./bench-croco.py \
-      --case @base \
+      --case @base,@nbq,@sediment_mustang,@other,@complement \
       --variants @debug \
-      --title debug_base \
+      --title debug_jobcomp \
       --debug \
       --jobcomp \
       --rebuild \
@@ -166,7 +166,7 @@ test_bench_debug_base:
     when: always
     expire_in: 1 week
 
-test_bench_debug_base_cmake:
+test_bench_debug_cmake:
   stage: bench
   tags:
     - ci.inria.fr
@@ -177,9 +177,9 @@ test_bench_debug_base_cmake:
     - source /venv/bin/activate
     - |
       ./bench-croco.py \
-      --case @base \
+      --case @base,@nbq,@sediment_mustang,@other,@complement \
       --variants @debug \
-      --title debug_base_cmake \
+      --title debug_cmake \
       --debug \
       --rebuild --host host_ci \
       --html \
@@ -190,7 +190,7 @@ test_bench_debug_base_cmake:
     when: always
     expire_in: 1 week
 
-test_bench_plotphy_base:
+test_bench_plotphy_jobcomp:
   stage: bench
   tags:
     - ci.inria.fr
@@ -201,9 +201,9 @@ test_bench_plotphy_base:
     - source /venv/bin/activate
     - |
       ./bench-croco.py \
-      --case @base \
+      --case @base,@nbq,@sediment_mustang,@other,@complement \
       --variants mpi-2 \
-      --title plotphy_base \
+      --title plotphy \
       -s build,run,plotphy \
       --jobcomp \
       --rebuild \
@@ -216,15 +216,14 @@ test_bench_plotphy_base:
     when: always
     expire_in: 1 week
 
-test_bench_debug_ifort:
+test_bench_debug_ifort_jobcomp:
   stage: bench
   tags:
     - croco-vm-docker
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    #note : --jobs 1 mandatory with intel compiler
-    #note : check not available because sequential is not done here
+    #note : check step not available because sequential is not done here
     - |
       ./bench-croco.py \
       --case @base,@realist \
@@ -234,7 +233,6 @@ test_bench_debug_ifort:
       --jobcomp  \
       --rebuild \
       --host host_ci \
-      --jobs 1 \
       --steps build,run  \
       --data-root-path $DATAROOTPATH \
       --html -N

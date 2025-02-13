@@ -101,9 +101,8 @@ class Config:
         parser.add_argument(
             "-j",
             "--jobs",
-            help="Make -j option value to build \n"
-            "Note that with ifort, only -j 1 can be used (default=8)",
-            default="8",
+            help="Make -j option value to build \n(default=4)",
+            default="4",
         )
         parser.add_argument(
             "-a",
