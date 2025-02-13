@@ -8,6 +8,7 @@
 # python
 import os
 import json
+import xml.etree.ElementTree as ET
 
 # termcolor
 from termcolor import cprint
@@ -114,3 +115,46 @@ class Report:
         print(
             "-----------------------------------------------------------------------------------"
         )
+
+    def save_to_junit(self):
+        junit_file = os.path.join(self.config.results, "junit_report.xml")
+
+        # Creation of JUnit XML structure
+        testsuites = ET.Element("testsuites")
+        testsuite = ET.SubElement(testsuites, "testsuite", name="CrocoTestSuite")
+
+        total_tests = 0
+        total_failures = 0
+        total_errors = 0
+
+        for test_name, test_data in self.report.items():
+            for step, result in test_data["status"].items():
+                print(step, result)
+                if result is None or not isinstance(result, dict):
+                    continue
+
+                total_tests += 1
+                testcase = ET.SubElement(
+                    testsuite, "testcase", name=f"{test_name}-{step}"
+                )
+
+                if result["status"] is False:  # if failed step
+                    total_failures += 1
+                    failure = ET.SubElement(
+                        testcase,
+                        "failure",
+                        message=result.get("message", "Test failed"),
+                    )
+                    failure.text = result.get("log", "")
+
+                    if "exception" in result.get("message", "").lower():
+                        total_errors += 1  # count critical errors
+
+        # Add stats
+        testsuite.set("tests", str(total_tests))
+        testsuite.set("failures", str(total_failures))
+        testsuite.set("errors", str(total_errors))
+
+        # Save XML file
+        tree = ET.ElementTree(testsuites)
+        tree.write(junit_file, encoding="utf-8", xml_declaration=True)

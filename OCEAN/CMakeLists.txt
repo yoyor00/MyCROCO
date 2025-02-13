@@ -223,6 +223,8 @@ list(APPEND CROCO_SRCS_F77 cpl_prism_define.F
 )
 list(APPEND CROCO_SRCS_F77 module_substance.F module_MUSTANG.F)
 
+list(APPEND CROCO_SRCS_F77 module_OBSTRUCTIONS.F)
+
 list(APPEND CROCO_SRCS_F77 online_spectral_diags.F
                            var3d_oa_out.F
                            var2d_oa_out.F
@@ -282,10 +284,18 @@ list(APPEND CROCO_SRCS_F90 p2zlim.F90 p2zmicro.F90 p2zmort.F90
 )
 
 list(APPEND CROCO_SRCS_F90 module_parameter_oa.F90)
+
 list(APPEND CROCO_SRCS_F90 flocmod.F90 comsubstance.F90 substance.F90
                            comMUSTANG.F90 coupler_MUSTANG.F90
                            sed_MUSTANG_CROCO.F90 sed_MUSTANG.F90 initMUSTANG.F90
                            plug_MUSTANG_CROCO.F90)
+
+list(APPEND CROCO_SRCS_F90 OBSTRUCTIONS1DV.F90 
+                           com_OBSTRUCTIONS.F90 
+                           init_OBSTRUCTIONS.F90
+                           OBSTRUCTIONS.F90 
+                           plug_OBSTRUCTIONS.F90)
+
 
 
 

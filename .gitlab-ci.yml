@@ -160,11 +160,16 @@ test_bench_debug_jobcomp:
       --host host_ci \
       --html \
       -N
+    - |
+      cp BENCH/results/debug_jobcomp*/junit_report.xml \
+      BENCH/results/debug_jobcomp_junit_report.xml
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
+    reports:
+      junit: BENCH/results/*.xml
 
 test_bench_debug_cmake:
   stage: bench
@@ -184,11 +189,16 @@ test_bench_debug_cmake:
       --rebuild --host host_ci \
       --html \
       -N
+    - |
+      cp BENCH/results/debug_cmake*/junit_report.xml \
+      BENCH/results/debug_cmake_junit_report.xml
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
+    reports:
+      junit: BENCH/results/*.xml
 
 test_bench_plotphy_jobcomp:
   stage: bench
@@ -210,11 +220,16 @@ test_bench_plotphy_jobcomp:
       --host host_ci \
       --html \
       -N
+    - |
+      cp BENCH/results/plotphy*/junit_report.xml \
+      BENCH/results/plotphy_junit_report.xml
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
+    reports:
+      junit: BENCH/results/*.xml
 
 test_bench_debug_ifort_jobcomp:
   stage: bench
@@ -236,11 +251,16 @@ test_bench_debug_ifort_jobcomp:
       --steps build,run  \
       --data-root-path $DATAROOTPATH \
       --html -N
+    - |
+      cp BENCH/results/debug_ifort*/junit_report.xml \
+      BENCH/results/debug_ifort_junit_report.xml
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
+    reports:
+      junit: BENCH/results/*.xml
   when: manual
 
 test_bench_realist:
@@ -263,6 +283,9 @@ test_bench_realist:
       --data-root-path $DATAROOTPATH \
       --html -N
     - |
+      cp BENCH/results/debug_realist*/junit_report.xml \
+      BENCH/results/debug_realist_junit_report.xml
+    - |
       ./bench-croco.py \
       --case @realist \
       --variants mpi-4 \
@@ -273,11 +296,16 @@ test_bench_realist:
       --host host_ci \
       --data-root-path $DATAROOTPATH \
       --html -N
+    - |
+      cp BENCH/results/plotphy_realist*/junit_report.xml \
+      BENCH/results/plotphy_realist_junit_report.xml
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
+    reports:
+      junit: BENCH/results/*.xml
 
 pages:
   stage: report
@@ -285,10 +313,10 @@ pages:
     - ci.inria.fr
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
-    - mkdir -p $CI_PROJECT_DIR/public/$CI_COMMIT_REF_NAME
+    - mkdir -p $CI_PROJECT_DIR/public/dev
     - cd $CI_PROJECT_DIR/BENCH
     - ./bench-croco.py --globalhtml
-    - cp -R $CI_PROJECT_DIR/BENCH/results $CI_PROJECT_DIR/public/$CI_COMMIT_REF_NAME
+    - cp -R $CI_PROJECT_DIR/BENCH/results $CI_PROJECT_DIR/public/dev
   artifacts:
     paths:
       - public

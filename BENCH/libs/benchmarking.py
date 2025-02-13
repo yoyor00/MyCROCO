@@ -6,6 +6,7 @@
 
 ##########################################################
 import os
+import sys
 import json
 from typing import Union
 from .config import Config
@@ -192,6 +193,7 @@ class Benchmarking:
         """Handles reporting and HTML generation."""
         if self.config.report:
             self.config.report.save()
+            self.config.report.save_to_junit()
             self.config.report.print()
         if self.config.html:
             generate_html(
@@ -200,6 +202,7 @@ class Benchmarking:
             )
         if self.config.report.contains_false():
             Messaging.step_error("Error: False detected in report")
+            sys.exit(1)
 
     def dump_bench_infos(self):
         # dump bench infos
