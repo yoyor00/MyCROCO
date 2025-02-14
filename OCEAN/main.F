@@ -33,7 +33,10 @@
 #ifdef STOGEN
           USE stomod         ! Stochastic module
           USE stoexternal    ! Provide parameters to stochastic modules
+# if defined STO_BULK_CD || defined STO_STRESS
           USE stobulk
+          USE stostress
+# endif
 #endif
 #ifdef ENSEMBLE
           USE ensmpi         ! Ensemble module

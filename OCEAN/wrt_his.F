@@ -701,7 +701,7 @@ CR      write(STDOUT,*) 'wrt_his:  wrtV  ' MYID
 !
 !     STOGEN stochastic modeling components 
 !
-!QJ: check how to writte 1D and 2D variables
+!QJ: check how to writte 1D variables
 #ifdef STO_XI1D
 !!- 1D stochastic field -- TBD -
 !      if (wrthis(indxXIsto1d)) then
@@ -724,7 +724,7 @@ CR      write(STDOUT,*) 'wrt_his:  wrtV  ' MYID
      &           MYID
           goto 99             !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_his:  UWstr' MYID
+CR      write(STDOUT,*) 'wrt_his:  wrtstoXI2d' MYID
       endif
 #endif /* STO_XI2D */
 !
@@ -734,7 +734,7 @@ CR      write(STDOUT,*) 'wrt_his:  UWstr' MYID
         workr=sto_xi3d
         call fillvalue3d(workr,ncidhis,hisXIsto3d,indxXIsto3d,
      &        record,r3dvar,type)
-CR      write(STDOUT,*) 'wrt_his:  wrtXIsto  ' MYID
+CR      write(STDOUT,*) 'wrt_his:    wrtstoXI3d' MYID
       endif
 #endif /* STO_XI3D */
 !

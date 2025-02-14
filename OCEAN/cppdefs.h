@@ -104,9 +104,7 @@
                       /* Stochastic and Ensemble */
 # undef STOGEN
 # ifdef STOGEN
-#  undef  STO_XI1D
-#  define STO_XI2D
-#  undef  STO_XI3D
+#  define STO_BULK_CD
 # endif
 # undef ENSEMBLE
 
@@ -673,7 +671,7 @@
 # undef  MPI
 # undef STOGEN
 # ifdef STOGEN
-#  define STO_XI2D
+#  define STO_STRESS
 # endif
 # define UV_ADV
 # define UV_COR
