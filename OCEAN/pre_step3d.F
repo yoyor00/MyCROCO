@@ -1063,7 +1063,7 @@
      &                             u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,nnew))
-#   ifdef NBQ    
+#   ifdef NBQ
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,nnew))
 #   endif
@@ -1072,9 +1072,9 @@
      &                        u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nnew))
-#   ifdef NBQ    
+#   ifdef NBQ
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-     &                        wz(START_2D_ARRAY,0,nnew))   
+     &                        wz(START_2D_ARRAY,0,nnew))
 #   endif
 #  endif
 # endif

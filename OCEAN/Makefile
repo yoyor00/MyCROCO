@@ -110,7 +110,7 @@ include Makedefs
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F MessPass3D_noper.F\
+	autotiling.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
