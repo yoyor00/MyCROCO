@@ -1043,9 +1043,10 @@
 # error "AGRIF + XIOS + OASIS coupling is not yet implemented"
 #endif
 
-#if defined AGRIF && defined USE_CALENDAR
-#error "AGRIF + USE_CALENDAR is not yet implemented"
+#if defined TIDES_MAS  && !defined USE_CALENDAR
+#error "TIDES requires USE_CALENDAR "
 #endif
+
 /*
 ======================================================================
                             Standard I/O

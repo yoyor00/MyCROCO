@@ -149,8 +149,8 @@
         do j=0,LOCALMM+1
           do i=0,LOCALLM+1
         if (l_presence(nu(itide))
-     &    .and. i+iminmpi-1 .eq. 1 .and. j+jminmpi-1 .eq. 149)
-     &         write(stdout,*),'SSH_TAMP',h(i,j),SSH_Tamp(i,j,itide)
+     &   .and. i+iminmpi-1 .eq. 1 .and. j+jminmpi-1 .eq. 149)
+     &     write(stdout,*)'SSH_TAMP',h(i,j),SSH_Tamp(i,j,itide)
           enddo
         enddo
 #  endif
