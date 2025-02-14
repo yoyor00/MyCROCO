@@ -55,7 +55,11 @@
 !
 # ifdef TIDES_MAS
       CHARACTER (len=19)    :: cdate,tool_sectodat
+#ifdef TIDES_MAS_DBG
+      logical :: flag=.true.
+#else
       logical :: flag=.false.
+#endif
       INTEGER               :: ian,imois,ijour,iheure,iminu,isec,jjulien
       integer :: nn,l,k,kk
       INTEGER, dimension(0:10) :: esp_corres=(/1,2,3,4,5,0,6,0,7,0,8/)
@@ -125,9 +129,9 @@
            k=esp_corres(int(nol/100000))
            num(k)=num(k)+1
            nn=num(k)
-#   ifdef TIDES_MAS_DBG
-           if(j+jminmpi-1.eq.149) then
-             write(stdout,*) 'ik=',nu(i),ide(nu(i)),i,k,nn
+# ifdef TIDES_MAS_DBG
+           if(j+jminmpi-1.eq.149) then 
+             write(stdout,*) 'ik=',i,nu(i),k,nn,ir0,ir1
            end if
 #   endif
            do l=1,2
@@ -231,7 +235,16 @@
            k=esp_corres(int(nol/100000))
            num(k)=num(k)+1
            nn=num(k)
-           do l=1,2
+# ifdef TIDES_MAS_DBG
+           if(i+iminmpi-1.eq.10) then 
+            write(stdout,*) 'iksouth1=',j,nu(j),k,nn,rr0(nu(j))
+            write(stdout,*) 'iksouth2=',ir0,ir1,ir2,rr0(16)
+            if (ir0==0) write(stdout,*)'rr0=',rr0
+            if (ir0==0) write(stdout,*)'rr1=',rr1
+            if (ir0==0) write(stdout,*)'rr2=',rr2
+           end if
+# endif
+           do l=1,2 
             rsud(nn,k,i,l)=SSH_Tamp(i,Jstr+l-2,j)*100.0
             gsud(nn,k,i,l)=SSH_Tphase(i,Jstr+l-2,j)
             if(ir0 < 0) gsud(nn,k,i,l)=gsud(nn,k,i,l)+180.0
