@@ -92,3 +92,5 @@
    f_fy = 1.0e-10   
    f_collfragparam = 0.01   / 
 
+&namsedim_poro
+/

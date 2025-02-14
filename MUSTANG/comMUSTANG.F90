@@ -199,7 +199,6 @@ public
         ! 3: min( case 0; toce(isand2) )
 
 
-#ifdef key_MUSTANG_V2
     ! namsedim_poro 
     INTEGER :: poro_option ! choice of porosity formulation
         ! 1: Wu and Li (2017) (incompatible with consolidation))
@@ -214,7 +213,6 @@ public
         ! participating in filling , ref value = 0.65
     REAL(KIND=rsh) :: poro_min ! minimum porosity below which consolidation 
         ! is stopped
-#endif
 
 
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload

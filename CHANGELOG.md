@@ -14,6 +14,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   advection in NBQ
 - Issue #259 : remove unused file OCEAN/spkitlocal_nh.F90 
 - Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING
+- Issue #267 : fix several bugs with MUSTANG output, initialisation, add a 
+  minimim porosity in deposit in V1 and fix transition with ero_option=3
 - Issue #272 : fix CPP key incompatible for ABL1D
 - Issue #279 : fix for :
   - sea surface currents in ABL1D
