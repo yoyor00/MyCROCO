@@ -1446,6 +1446,7 @@
 # define UV_ADV
 # define NO_TRACER
 # define NO_TEMPERATURE
+# undef  PASSIVE_TRACER
 # undef  ANA_TIDES
 # define NBQ
 # define NBQ_PRECISE
@@ -1481,6 +1482,7 @@
 # define ANA_BTFLUX
 # define AVERAGES
 # define AVERAGES_K
+# undef  DIAGNOSTICS_EDDY
 # undef  RVTK_DEBUG
 
 #elif defined SWASH

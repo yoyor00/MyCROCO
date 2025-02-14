@@ -2,9 +2,9 @@ title:
         Flash rip test case
         
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               12480     0.05      8      10
+               10400     0.05      5      10
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
-                     1         50          0.01 
+                     1          50          0.01 
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.         0.        1.e16
@@ -20,7 +20,7 @@ initial: NRREC  filename
                           rip_rst.nc
 
 restart:          NRST, NRPFRST / filename
-                  12480   -1
+                  10400   -1
                           rip_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename

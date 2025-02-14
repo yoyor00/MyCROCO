@@ -38,7 +38,7 @@ close all
 hisname     = 'rip_his.nc';
 avgname     = 'rip_avg.nc';
 
-makepng   = 0;             % make png file
+makepdf     = 0;  % make pdf file
 %
 %======================================================================
 
@@ -71,7 +71,7 @@ vort=psi2rho(vorticity(u,v,pm,pn));
 
 % Zeta
 zeta(h<Dcrit)=zeta(h<Dcrit)-Dcrit;
-
+mask=zeta./zeta;
 % ---------------------------------------------------------------------
 % --- plot ---
 % ---------------------------------------------------------------------
@@ -80,13 +80,13 @@ hf = figure('position',[500 500 800 500]);
 set(gca,'FontSize',15)
 
 subplot(1,2,1)
-cmin=-1; cmax=-cmin; cint=0.05;
-nbcol=(cmax-cmin)/cint;
+cmin=-0.7; cmax=-cmin; cint=0.07;
+nbcol=40; cint=(cmax-cmin)/nbcol;
 map=colormap(jet(nbcol));
 colormap(map);
 zeta=max(min(zeta,cmax),cmin);
 zeta(zeta==0.)=NaN;
-[C,hh]=contourf(x,y,zeta,[cmin:cint:cmax],'linestyle','none'); 
+contourf(x,y,zeta,[cmin:cint:cmax],'linestyle','none'); 
 colorbar;
 axis([-250 -10 0 300])
 caxis([cmin cmax])
@@ -94,10 +94,11 @@ title(['Sea Level'])
 set(gca,'FontSize',15)
 
 subplot(1,2,2)
-cmin=-0.05; cmax=-cmin; cint=0.005;
+cmin=-0.07; cmax=-cmin;
+nbcol=20; cint=(cmax-cmin)/nbcol;
 vort=max(min(vort,cmax),cmin);
-vort(abs(vort)<cint)=NaN;
-[C,hh]=contourf(x,y,vort,[cmin:cint:cmax],'linestyle','none'); 
+vort=vort.*mask;
+contourf(x,y,vort,[cmin:cint:cmax],'linestyle','none'); 
 colorbar;
 axis([-250 -10 0 300])
 caxis([cmin cmax])
@@ -106,9 +107,10 @@ set(gca,'FontSize',15)
 
 %----------------------------------
 
-if makepng, 
+if makepdf, 
     set(gcf,'PaperPositionMode','auto');
-    export_fig -transparent flashrip.png
+    set(gcf,'color','w');
+    export_fig flashrip.pdf
 end
 
 return

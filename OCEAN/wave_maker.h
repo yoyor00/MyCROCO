@@ -317,7 +317,7 @@
           do iw=1,Nfrq   ! frequency spread
 #  ifdef WAVE_MAKER_DSPREAD
             theta=(xr(IB0,j)-x0)*wkx_bry(iw)
-     &             +(yr(IB0,j)-y0)*wky_bry(iw)
+     &           +(yr(IB0,j)-y0)*wky_bry(iw)
      &               -(time-time0)*wf_bry(iw)-wpha_bry(iw)
             ZBRY(j)=ZBRY(j) +
      &                        ramp*wa_bry(iw)*wa_bry_d(iw)

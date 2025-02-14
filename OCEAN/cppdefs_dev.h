@@ -152,8 +152,10 @@
 # define TEMPERATURE
 #endif
 #if defined SALINITY       || defined TEMPERATURE || \
-    defined PASSIVE_TRACER || defined SUBSTANCE
+    defined PASSIVE_TRACER || defined SUBSTANCE   || \
+    defined SEDIMENTS      || defined BIOLOGY
 # define TRACERS
+# define TEMPERATURE
 #endif
 
 /*
@@ -752,13 +754,13 @@
 # endif
 #endif
 
-#if !defined WAVE_ROLLER || !defined WKB_WWAVE
-# define wepb0 wepb
-#endif
-
 #if defined WKB_WWAVE || defined OW_COUPLING \
-		      || (defined WAVE_OFFLINE && defined MRL_WCI)
+		      || defined WAVE_OFFLINE \
+                      || defined ANA_WWAVE
 # define WAVE_IO
+# if !defined WAVE_ROLLER || !defined WKB_WWAVE
+#  define wepb0 wepb
+# endif
 #endif
 
 /*
