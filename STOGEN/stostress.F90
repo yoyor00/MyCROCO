@@ -21,7 +21,7 @@ MODULE stostress
 
    ! Parameters of stochastic fields
    ! (default values are replaced by values read in namelist)
-   REAL(wp), SAVE :: std  = 0.01  ! standard deviation of the multiplicative noise
+   REAL(wp), SAVE :: std  = 0.1   ! standard deviation of the multiplicative noise
    REAL(wp), SAVE :: tcor = 0.0   ! time correlation (in days)
    INTEGER,  SAVE :: npasses = 20 ! number of passes of the horizontal Laplacian filter
    INTEGER,  SAVE :: arorder = 1  ! order of autoregressive process
@@ -40,9 +40,6 @@ CONTAINS
       !! to request stochastic field with appropriate features
       !!
       !!----------------------------------------------------------------------
-
-      ! Read namelist block corresponding to this stochastic scheme
-      CALL read_parameters
 
       ! Request index for a new stochastic array
       CALL sto_array_request_new(jstostress)
@@ -81,33 +78,6 @@ CONTAINS
       suvstr(:,:) = suvstr(:,:) * (1 + struct_fcn(:,:))
 
    END SUBROUTINE sto_stress
-
-   SUBROUTINE read_parameters
-      !!----------------------------------------------------------------------
-      !!                  ***  routine read_parameters  ***
-      !!
-      !! ** Purpose :   Read parameters for this stochastic module
-      !!
-      !!----------------------------------------------------------------------
-
-      ! Namelist with parameters for this stochastic module
-      NAMELIST/namsto_bulk/ tcor, std, npasses, arorder, nupdate
-      !!----------------------------------------------------------------------
-      INTEGER  ::   ios                            ! Local integer output status for namelist read
-
-      ! Read namsto_bulk namelist
-      REWIND( numnam_ref )
-      READ  ( numnam_ref, namsto_bulk, IOSTAT = ios, ERR = 901)
-901   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namsto_bulk in reference namelist', lwp )
-
-      REWIND( numnam_cfg )
-      READ  ( numnam_cfg, namsto_bulk, IOSTAT = ios, ERR = 902 )
-902   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namsto_bulk in configuration namelist', lwp )
-      IF(lwm) WRITE ( numond, namsto_bulk )
-
-   END SUBROUTINE read_parameters
-
-
 
    !!======================================================================
 
