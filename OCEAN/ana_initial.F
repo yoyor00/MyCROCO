@@ -11,6 +11,9 @@
 !
 #include "cppdefs.h"
 
+!----------------------------------------------------------------------
+
+
       subroutine ana_initial (tile)
       implicit none
 #include "param.h"
@@ -129,6 +132,11 @@
       integer kbl
 #endif
 #endif 
+
+#if defined RREXNUM_REST
+      real T_profile, S_profile
+#endif
+
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -1031,6 +1039,22 @@
               t(i,j,k,1,isalt)=S0  +  tanh((yr(i,j)-50000.0)/20000.0)
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #    endif
+            enddo
+          enddo
+        enddo
+
+#   elif defined RREXNUM_REST
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+#    ifdef TEMPERATURE
+              t(i,j,k,1,itemp)=T_profile(z_r(i,j,k))
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#    endif /* TEMPERATURE */
+#    ifdef SALINITY
+              t(i,j,k,1,isalt)=S_profile(z_r(i,j,k))
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#    endif /* SALINITY */
             enddo
           enddo
         enddo
@@ -2711,4 +2735,136 @@ C$OMP BARRIER
       return
       end
 #endif /* JET */
+
+
+#if defined RREXNUM_REST
+
+      function T_profile(z) result(T)
+      implicit none
+      real(8), intent(in) :: z               ! Input value(s), can be scalar or array
+      real(8) :: T, polyval                  ! Output value(s), same type as z
+# if defined RREXNUM_REST_LIN
+!      T = 5. + 5. * (z + 3600.)/3600.
+      T = 2.5 + 3. * (z + 3600.)/3600.
+# elif defined RREXNUM_RES_SF13
+      T = 5 * (1 - tanh( (-z - 120) / 20) )
+     &    + 10 * ((5500 + z)/5500)
+# elif defined RREXNUM_RES_W22
+      real, dimension(16) :: coeffs
+      ! Assign the coefficients to the array
+      coeffs(1) = 1.08380480E-47
+      coeffs(2) = 3.31888542E-43
+      coeffs(3) = 4.61681455E-39
+      coeffs(4) = 3.86025676E-35
+      coeffs(5) = 2.16322354E-31
+      coeffs(6) = 8.57591974E-28
+      coeffs(7) = 2.47436657E-24
+      coeffs(8) = 5.26420256E-21
+      coeffs(9) = 8.27554623E-18
+      coeffs(10) = 9.54284254E-15
+      coeffs(11) = 7.93815455E-12
+      coeffs(12) = 4.63382019E-09
+      coeffs(13) = 1.81652121E-06
+      coeffs(14) = 4.41795439E-04
+      coeffs(15) = 6.06014779E-02
+      coeffs(16) = 1.34777372E+01
+      T = polyval(coeffs, 16, z)
+# else
+      real, dimension(12) :: coeffs
+      ! Assign the coefficients to the array
+      coeffs(1)  = 1.48021437E-35
+      coeffs(2)  = 3.73310060E-31
+      coeffs(3)  = 4.10563051E-27
+      coeffs(4)  = 2.58726228E-23
+      coeffs(5)  = 1.03147225E-19
+      coeffs(6)  = 2.70769770E-16
+      coeffs(7)  = 4.71657950E-13
+      coeffs(8)  = 5.35447251E-10
+      coeffs(9)  = 3.78677998E-07
+      coeffs(10) = 1.55803033E-04
+      coeffs(11) = 3.81611708E-02
+      coeffs(12) = 1.19910654E+01
+      T = polyval(coeffs, 12, z)
+# endif
+      end function T_profile
+
+
+      function S_profile(z) result(S)
+      implicit none
+      real(8), intent(in) :: z               ! Input value(s), can be scalar or array
+      real(8) :: S, polyval                  ! Output value(s), same type as z
+# if defined RREXNUM_REST_LIN
+!      S = 34. - 0.1 * (z + 3600.)/3600.
+      S = 35.
+# elif defined RREXNUM_RES_SF13
+      S = 35.5
+# elif defined RREXNUM_RES_W22
+      real, dimension(16) :: coeffs
+      ! Assign the coefficients to the array
+      coeffs(1) = 2.33302244E-50
+      coeffs(2) = 1.50736418E-46
+      coeffs(3) = -5.58129777E-42
+      coeffs(4) = -1.10174350E-37
+      coeffs(5) = -9.74384574E-34
+      coeffs(6) = -5.30976611E-30
+      coeffs(7) = -1.96993677E-26
+      coeffs(8) = -5.20211232E-23
+      coeffs(9) = -9.97755904E-20
+      coeffs(10) = -1.39730080E-16
+      coeffs(11) = -1.41881339E-13
+      coeffs(12) = -1.02297501E-10
+      coeffs(13) = -5.02534755E-08
+      coeffs(14) = -1.55378766E-05
+      coeffs(15) = -2.55303657E-03
+      coeffs(16) = 3.51806626E+01
+      S = polyval(coeffs, 16, z)
+# else
+      real, dimension(11) :: coeffs
+      ! Assign the coefficients to the array
+      coeffs(1)  = -1.12753548E-37
+      coeffs(2)  = 2.24989138E-33
+      coeffs(3)  = 7.27487015E-29
+      coeffs(4)  = 7.18355448E-25
+      coeffs(5)  = 3.74822011E-21
+      coeffs(6)  = 1.17706876E-17
+      coeffs(7)  = 2.30917301E-14
+      coeffs(8)  = 2.78683514E-11
+      coeffs(9)  = 1.90840906E-08
+      coeffs(10) = 5.68993052E-06
+      coeffs(11) = -2.40707647E-04
+      coeffs(12) = 3.46988550E+01
+      S = polyval(coeffs, 12, z)
+# endif
+      end function S_profile
+
+
+      function polyval(coefficients, degree , z) result(T)
+      ! Evaluate a polynomial at given points.
+      !
+      ! Parameters:
+      ! coefficients: Array of polynomial coefficients (highest degree first).
+      ! x: Scalar or array of x values where the polynomial is evaluated.
+      !
+      ! Returns:
+      ! y: Evaluated polynomial values, same shape as x.
+
+      implicit none
+      integer, intent(in) :: degree               ! Degree of the polynomial
+      real(8), intent(in) :: coefficients(degree)  ! Polynomial coefficients
+      real(8), intent(in) :: z                     ! Input value(s), can be scalar or array
+      real(8) :: T                                 ! Output value(s), same type as x
+      integer :: i                                 ! Loop index
+
+      ! Initialize result to zero
+      T = 0.0d0
+
+      ! Horner's method for efficient polynomial evaluation
+      do i = 1, degree
+          T = T * z + coefficients(i)
+      end do
+      end function polyval
+
+#endif /* RREXNUM_REST */
+!----------------------------------------------------------------------
+
 
