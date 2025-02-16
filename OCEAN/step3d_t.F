@@ -1082,16 +1082,16 @@
      &                            Hvom(i,j+1,k)-Hvom(i,j,k))
 #   endif /* DIAGNOSTICS_TS_ADV */
 !
+#  if defined DIAGNOSTICS_TS_VOL
               cff=pm(i,j)*pn(i,j)/Hz(i,j,k)
-
               TXadv(i,j,k,itrc)=TXadv(i,j,k,itrc)*cff
               TYadv(i,j,k,itrc)=TYadv(i,j,k,itrc)*cff
               TVadv(i,j,k,itrc)=TVadv(i,j,k,itrc)*cff
-
               TForc(i,j,k,itrc)=TForc(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
               TVmix(i,j,k,itrc)=TVmix(i,j,k,itrc)*cff
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
+#   endif
 
 #   if defined DIAGNOSTICS_TSVAR && !defined SPONGE_DIF2 \
              && !defined TS_DIF2 && !defined TS_DIF4
@@ -1134,7 +1134,11 @@
 #   endif
 #  endif
             do k=N,kmld,-1
-              cff=Hz(i,j,k) !/(z_w(i,j,N)-z_w(i,j,kmld-1))
+# if defined DIAGNOSTICS_TS_VOL
+              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+# else
+              cff=1.
+# endif
               TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
      &                            TXadv(i,j,k,itrc)*cff
               TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
@@ -1145,6 +1149,9 @@
      &                            TVmix(i,j,k,itrc)*cff
               TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
      &                            TForc(i,j,k,itrc)*cff
+# if ! defined DIAGNOSTICS_TS_VOL
+              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+# endif
               T_mld_nnew(i,j)     =T_mld_nnew(i,j)+
      &                            t(i,j,k,nnew,itrc)*cff
             enddo
@@ -1172,7 +1179,7 @@
 #    endif
 #   endif
             do k=N,kmld,-1
-              cff=Hz_bak(i,j,k) !/(z_w(i,j,N)-z_w(i,j,kmld-1))
+              cff=Hz_bak(i,j,k)/(pm(i,j)*pn(i,j))
               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                        t(i,j,k,nstp,itrc)*cff
             enddo

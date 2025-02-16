@@ -291,7 +291,11 @@
 !
           do j=jstr,jend
             do i=istr,iend
-              cff1=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+# if defined DIAGNOSTICS_TS_VOL
+              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+# else
+              cff=1.
+# endif
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1
      &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
@@ -562,7 +566,12 @@
           do j=jstr,jend
             do i=istr,iend
               cff1=1./(pm(i,j)*pn(i,j))
-              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*Hz(i,j,k)*cff1
+# if defined DIAGNOSTICS_TS_VOL
+              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+# else
+              cff=1.
+# endif
+              THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
      &                         +FX(i+1,j)-FX(i,j)
      &                         +FE(i,j+1)-FE(i,j)
      &                         +(FC(i,j,k2)-FC(i,j,k1))*cff1
@@ -696,10 +705,14 @@
 !
 !  Add TVmix correction term to previous TVmix computation
 !
+# if defined DIAGNOSTICS_TS_VOL
+              cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+# else
+              cff=1.
+# endif
           do k=1,N
             do i=Istr,Iend
-              TVmix(i,j,k,itrc) = TVmix(i,j,k,itrc)*Hz(i,j,k)
-     &                                           /(pm(i,j)*pn(i,j))
+              TVmix(i,j,k,itrc) = TVmix(i,j,k,itrc)*cff
      &            -(Trate(i,j,k,itrc)-t(i,j,k,nnew,itrc)*Hz(i,j,k))
      &                                        /(dt*pm(i,j)*pn(i,j))
 #    ifdef MASKING
@@ -771,7 +784,11 @@
 ! of diag terms are: (unit of tracers)* s-1.
 !
 
-              cff=cff1/Hz(i,j,k)
+# if defined DIAGNOSTICS_TS_VOL
+              cff=Hz(i,j,k)/cff1
+# else
+              cff=1.
+# endif
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
 #  ifdef TS_SPONGE_IMP
@@ -818,13 +835,20 @@
 #   endif
 #  endif
            do k=N,kmld,-1
-             cff=Hz(i,j,k) !/(z_w(i,j,N)-z_w(i,j,kmld-1))
+# if defined DIAGNOSTICS_TS_VOL
+             cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+# else
+             cff=1.
+# endif
              THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itrc)*cff
 #  ifdef TS_MIX_IMP
              TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
      &                           TVmix(i,j,k,itrc)*cff
 #  endif
+# if ! defined DIAGNOSTICS_TS_VOL
+             cff=Hz(i,j,k)/(pm(i,j)*pn(i,j))
+# endif
              T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
            enddo
@@ -845,7 +869,7 @@
 #   endif
 #  endif
            do k=N,kmld,-1
-             cff=Hz_bak(i,j,k) !/(z_w(i,j,N)-z_w(i,j,kmld-1))
+             cff=Hz_bak(i,j,k)/(pm(i,j)*pn(i,j))
              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
