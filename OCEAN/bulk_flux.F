@@ -738,7 +738,7 @@
 !++  Compute specific humidity, Q (kg/kg).
       IF (RH.lt.2.0) then                             ! RH fraction
          cff=cff*RH                                   ! Vapor pres (mb)
-         spec_hum=MvoMa*(cff/(psfc*0.01-0.378*cff))  ! Spec hum (kg/kg)
+         spec_hum=MvoMa*(cff/(psfc*0.01-0.378*cff))   ! Spec hum (kg/kg)
       ELSE             !RH input was actually specific humidity in g/kg
          spec_hum=0.001*RH                            ! Spec Hum (kg/kg)
       ENDIF
