@@ -7,6 +7,7 @@
 ##########################################################
 import os
 import copy
+import shutil
 import fnmatch
 import argparse
 import platform
@@ -196,6 +197,12 @@ class Config:
             "--restart", help="Check restartability", action="store_true"
         )
         parser.add_argument(
+            "--no_date_in_result_dir",
+            help="Do not add date in result forlder name",
+            dest="no_date_in_result_dir",
+            action="store_true",
+        )
+        parser.add_argument(
             "-V",
             "--verbose",
             help="Enable the full logging instead of printing just summaries.",
@@ -239,15 +246,23 @@ class Config:
 
         # compute clean result subdir name
         use_host_config = self.use_host_config
-        run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        if self.title is not None:
-            folder_name = f"{self.title}-{use_host_config}-{run_date}"
+        if self.args.no_date_in_result_dir:
+            if self.title is not None:
+                folder_name = f"{self.title}-{use_host_config}"
+            else:
+                folder_name = f"{use_host_config}"
         else:
-            folder_name = f"{use_host_config}-{run_date}"
+            run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            if self.title is not None:
+                folder_name = f"{self.title}-{use_host_config}-{run_date}"
+            else:
+                folder_name = f"{use_host_config}-{run_date}"
         self.results = os.path.join(
             self.args.results,
             folder_name,
         )
+        # rm the old one if it exists
+        shutil.rmtree(self.results, ignore_errors=True)
 
         # pattern to search results files (to also take the previous runs if not re-run all)
         if self.no_previous:

@@ -159,17 +159,14 @@ test_bench_debug_jobcomp:
       --rebuild \
       --host host_ci \
       --html \
-      -N --report
-    - |
-      cp BENCH/results/debug_jobcomp*/junit_report.xml \
-      BENCH/results/debug_jobcomp_junit_report.xml
+      -N --report --no_date_in_result_dir
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
     reports:
-      junit: BENCH/results/*.xml
+      junit: BENCH/results/debug_jobcomp-host_ci/junit_report.xml
 
 test_bench_debug_cmake:
   stage: bench
@@ -188,17 +185,14 @@ test_bench_debug_cmake:
       --debug \
       --rebuild --host host_ci \
       --html \
-      -N --report
-    - |
-      cp BENCH/results/debug_cmake*/junit_report.xml \
-      BENCH/results/debug_cmake_junit_report.xml
+      -N --report --no_date_in_result_dir
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
     reports:
-      junit: BENCH/results/*.xml
+      junit: BENCH/results/debug_cmake-host_ci/junit_report.xml
 
 test_bench_plotphy_jobcomp:
   stage: bench
@@ -219,17 +213,14 @@ test_bench_plotphy_jobcomp:
       --rebuild \
       --host host_ci \
       --html \
-      -N --report
-    - |
-      cp BENCH/results/plotphy*/junit_report.xml \
-      BENCH/results/plotphy_junit_report.xml
+      -N --report --no_date_in_result_dir
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
     reports:
-      junit: BENCH/results/*.xml
+      junit: BENCH/results/plotphy-host_ci/junit_report.xml
 
 test_bench_debug_ifort_jobcomp:
   stage: bench
@@ -250,17 +241,14 @@ test_bench_debug_ifort_jobcomp:
       --host host_ci \
       --steps build,run  \
       --data-root-path $DATAROOTPATH \
-      --html -N --report
-    - |
-      cp BENCH/results/debug_ifort*/junit_report.xml \
-      BENCH/results/debug_ifort_junit_report.xml
+      --html -N --report --no_date_in_result_dir
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
     reports:
-      junit: BENCH/results/*.xml
+      junit: BENCH/results/debug_ifort-host_ci/junit_report.xml
   when: manual
 
 test_bench_realist:
@@ -281,10 +269,7 @@ test_bench_realist:
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
-      --html -N --report
-    - |
-      cp BENCH/results/debug_realist*/junit_report.xml \
-      BENCH/results/debug_realist_junit_report.xml
+      --html -N --report --no_date_in_result_dir
     - |
       ./bench-croco.py \
       --case @realist \
@@ -295,17 +280,16 @@ test_bench_realist:
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
-      --html -N --report
-    - |
-      cp BENCH/results/plotphy_realist*/junit_report.xml \
-      BENCH/results/plotphy_realist_junit_report.xml
+      --html -N --report --no_date_in_result_dir
   artifacts:
     paths:
       - BENCH/results
     when: always
     expire_in: 1 week
     reports:
-      junit: BENCH/results/*.xml
+      junit: 
+        - BENCH/results/debug_realist-host_ci/junit_report.xml
+        - BENCH/results/plotphy_realist-host_ci/junit_report.xml
 
 pages:
   stage: report
