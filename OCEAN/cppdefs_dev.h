@@ -616,7 +616,6 @@
 ======================================================================
 */
 #ifdef WAVE_MAKER
-# define UV_VADV_WENO5_INTC2
 # if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 #  define WAVE_MAKER_SPECTRUM
 # endif

@@ -332,15 +332,15 @@
 #  endif
           enddo
 
-# elif defined WAVE_MAKER_BICHROMATIC
+# elif defined WAVE_MAKER_BICHROMATIC /* eg GLOBEX B2/B3 */
           cff1=tanh(wk1*h0)
           cff2=tanh(wk2*h0)
           cff3=wa1*wa1*wk1*(3.-cff1**2)/(4.*cff1**3)
           cff4=wa2*wa2*wk2*(3.-cff2**2)/(4.*cff2**3)
-          ZBRY(j)=wa1*cos(wf1*time)   ! GLOBEX B2
-     &                  +wa2*cos(wf2*time)
-     &                 +cff3*cos(2*wf1*time)
-     &                 +cff4*cos(2*wf2*time)
+          ZBRY(j)=wa1*cos(wf1*time)
+     &           +wa2*cos(wf2*time)
+     &          +cff3*cos(2*wf1*time)
+     &          +cff4*cos(2*wf2*time)
 # else
 #  ifdef DUCK94
           ZBRY(j)=0.7
@@ -414,9 +414,9 @@
           do k=1,N
             Zu=Du+0.5*(z_r(IB0,j,k)+z_r(IB1,j,k))
             UBRY(j,k)=cff1*cosh(wk1*Zu)
-     &                   +cff2*cosh(wk2*Zu)
-     &                   +cff3*cosh(2*wk1*Zu)
-     &                   +cff4*cosh(2*wk2*Zu)
+     &               +cff2*cosh(wk2*Zu)
+     &               +cff3*cosh(2*wk1*Zu)
+     &               +cff4*cosh(2*wk2*Zu)
           enddo
 # else
           xu=0.5*(xr(IB0,j)+xr(IB1,j))-x0
@@ -566,9 +566,9 @@
           do k=0,N
             Zr=Dr+z_w(IB0,j,k)
             WBRY(j,k)=cff1*sinh(wk1*Zr)
-     &                    +cff2*sinh(wk2*Zr)
-     &                  +cff3*sinh(2*wk1*Zr)
-     &                  +cff4*sinh(2*wk2*Zr)
+     &               +cff2*sinh(wk2*Zr)
+     &               +cff3*sinh(2*wk1*Zr)
+     &               +cff4*sinh(2*wk2*Zr)
           enddo
 # else
           theta=(xr(IB0,j)-x0)*cos(wd)*cos(wds)*wk
@@ -578,7 +578,7 @@
           do k=1,N
             Zr=Dr+z_w(IB0,j,k)
             WBRY(j,k)=cff*sinh(wk*Zr)
-     &                 +cff2*sinh(2*wk*Zr)
+     &              +cff2*sinh(2*wk*Zr)
           enddo
 # endif /* WAVE_MAKER_SPECTRUM ... */
 

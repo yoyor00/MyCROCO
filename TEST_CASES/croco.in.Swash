@@ -1,9 +1,9 @@
 title:
 	Swash Example
 time_stepping: NTIMES   dt[sec]       NDTFAST  NINFO
-               106700   0.0019532775    22      200
+               106700   0.0019532775    5      200
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
-                    1          1500           0.
+                    1          50           0.
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
           0.0d0      0.0d0      1.e16

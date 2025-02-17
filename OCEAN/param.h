@@ -130,8 +130,8 @@
       parameter (LLm0=720,  MMm0=1,    N=20)   !  0.25 m Sandbar
 # endif
 #elif defined SWASH
-!     parameter (LLm0=100,  MMm0=1,    N=10)   !  1 m  Swash
       parameter (LLm0=800,  MMm0=1,    N=10)   ! 12 cm Swash (GLOBEX)
+!     parameter (LLm0=1600, MMm0=1,    N=10)   !  6 cm Swash (GLOBEX)
 #elif defined RIP
 # ifdef BISCA
       parameter (LLm0= 86,  MMm0=92,   N=20)   ! 10 m Bisca Rip

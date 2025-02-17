@@ -1318,18 +1318,18 @@
 !                       Rip Current Example
 !                       === ======= =======
 !
-!   Weir, B., Uchiyama, Y.. (2010):
+!   Weir, B., Uchiyama, Y. (2010):
 !      A vortex force analysis of the interaction of rip
 !      currents and surface gravity wave
 !      JGR Vol. 116
 !
-!  Default is idealized Duck Beach with 3D topography
+!  Default is an idealized Duck Beach wave-averaged simulation
+!  with 3D topography
+!
 !  RIP_TOPO_2D: Logshore uniform topography
 !  BISCA: realistic case with Input files
-!  GRANDPOPO: idealized Grand Popo Beach in Benin,
-!              longshore uniform
-!  WAVE_MAKER & NBQ : wave resolving simulation
-!                     rather than wave-averaged (#undef MRL_WCI)
+!  GRANDPOPO: idealized Grand Popo Beach in Benin
+!  WAVE_MAKER & NBQ : wave-resolving (#undef MRL_WCI)
 */
 # undef  BISCA
 # undef  RIP_TOPO_2D
@@ -1354,6 +1354,7 @@
 #  define W_HADV_WENO5
 #  define W_VADV_WENO5
 #  define GLS_MIXING_3D
+#  define GLS_KOMEGA
 #  undef  ANA_TIDES
 #  undef  MRL_WCI
 #  define OBC_SPECIFIED_WEST
@@ -1373,7 +1374,6 @@
 #  define LMD_BKPP
 #  define MRL_WCI
 # endif
-# define WET_DRY
 # ifdef MRL_WCI
 #  define WKB_WWAVE
 #  define WKB_OBC_WEST
@@ -1395,14 +1395,15 @@
 # define ANA_SRFLUX
 # define ANA_SST
 # define ANA_BTFLUX
+# define OBC_WEST
+# define SPONGE
+# define WET_DRY
 # if !defined BISCA && !defined ANA_TIDES
 #  define NS_PERIODIC
 # else
 #  define OBC_NORTH
 #  define OBC_SOUTH
 # endif
-# define OBC_WEST
-# define SPONGE
 # ifdef ANA_TIDES
 #  define ANA_SSH
 #  define ANA_M2CLIMA
@@ -1431,13 +1432,13 @@
 !                       ===== === =======
 !
 !   Semi-idealized case based on the IB09 experiment.
-!   Hally-Rosendahl, K., Feddersen, F.. (2016):
+!
+!   Hally-Rosendahl, K., Feddersen, F. (2016):
 !      Modeling surfzone to inner-shelf tracer exchange
 !      JGR Vol. 121
-!   Treillou, S. et al. (in review):
+!   Treillou, S. et al. (in review for JPO, 2025):
 !      Tracer dispersion by surfzone eddies: assessing 
 !      the impact of undertow vertical shear
-!
 */
 # define MPI
 # undef  NC4PAR
@@ -1490,8 +1491,12 @@
 !                       SWASH PLANAR BEACH Example
 !                       ===== ====== ===== =======
 !
+!  Simulation of GLOBEX experiments.
+!  Marchesiello et al. (Ocean Modelling 2021):
+!  
 */
-# define SWASH_GLOBEX_B2
+# define SWASH_GLOBEX_B3
+# undef  SWASH_GLOBEX_B2
 # undef  SWASH_GLOBEX_A3
 # undef  OPENMP
 # undef  MPI
@@ -1506,6 +1511,7 @@
 # define W_HADV_WENO5
 # define W_VADV_WENO5
 # define GLS_MIXING_3D
+# define GLS_KOMEGA
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
@@ -1516,7 +1522,7 @@
 # define ANA_SST
 # define ANA_BTFLUX
 # define OBC_WEST
-# define OBC_SPECIFIED_WEST
+# undef  OBC_SPECIFIED_WEST
 # define ANA_BRY
 # define Z_FRC_BRY
 # define M2_FRC_BRY
@@ -1537,10 +1543,7 @@
 */
 # undef  MPI
 # define NBQ
-# ifdef NBQ
-#  define NBQ_PRECISE
-# endif
-# define M2FILTER_NONE
+# define NBQ_PRECISE
 # define SOLVE3D
 # undef  UV_ADV
 # define NEW_S_COORD
@@ -1567,7 +1570,6 @@
 # define ANA_MORPHODYN
 # define NBQ
 # define NBQ_PRECISE
-# define M2FILTER_NONE
 # define SOLVE3D
 # define NEW_S_COORD
 # undef  PASSIVE_TRACER
