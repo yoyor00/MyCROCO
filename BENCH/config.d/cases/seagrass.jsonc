@@ -2,7 +2,6 @@
   "SEAGRASS": {
     "title": "SEAGRASS",
     "case": "SEAGRASS",
-    "plot_diag_script": "",
     "splitting": { "1": "1x1", "2": "2x1" },
     "cppkeys": {},
     "patches": {},

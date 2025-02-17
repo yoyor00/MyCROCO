@@ -58,12 +58,13 @@ class Report:
 
     # To detect if report contains False values
     def contains_false(self):
+        has_false = False
         for key_case, value_case in self.report.items():
             status_dict = value_case.get("status")
             for key, value in status_dict.items():
                 if isinstance(value, dict) and value.get("status") is False:
-                    return True
-            return False
+                    has_false = True
+        return has_false
 
     def get_color(self, status):
         if status is True:

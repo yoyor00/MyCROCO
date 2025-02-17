@@ -3,7 +3,6 @@
   "ESTUARY": {
     "title": "ESTUARY",
     "case": "ESTUARY",
-    "plot_diag_script": "",
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2", "6": "2x3", "8": "2x4" },
     "patches": {},
     "check_outputs": ["estuary_his.nc"],

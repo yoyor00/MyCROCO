@@ -5,6 +5,7 @@
     "case": "SHOREFACE",
     "splitting": { "1": "1x1", "2": "2x1" },
     "patches": {},
+    "input_file": "TEST_CASES/croco.in.ShoreFace",
     "check_outputs": ["shoreface_his.nc"],
   },
 }
