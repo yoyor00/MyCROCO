@@ -185,6 +185,10 @@
            if ((string(j:j).EQ.' ').or.(string(j:j).EQ.tab)) then
              j=j-1
              size=j-i+1
+             ! Check if no space between used module and character ','
+             if (string(i+size-1:i+size-1).EQ.',') then
+               size = size - 1
+             endif
              do k=1,size
 !       modname(k:k)=ctoupper(string(i+k-1:i+k-1))
                 modname(k:k)=string(i+k-1:i+k-1)

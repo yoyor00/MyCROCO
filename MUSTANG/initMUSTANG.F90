@@ -143,9 +143,9 @@ MODULE initMUSTANG
                             l_outsed_consolidation
 
 
-#ifdef key_MUSTANG_V2
     namelist /namsedim_poro/ poro_option, poro_min,                           &
                              Awooster, Bwooster, Bmax_wu 
+#ifdef key_MUSTANG_V2
 #ifdef key_MUSTANG_bedload
     namelist /namsedim_bedload/ l_peph_bedload, l_slope_effect_bedload,       &
                                 alphabs, alphabn, hmin_bedload, l_fsusp
@@ -431,7 +431,9 @@ CONTAINS
     READ(50, namsedim_erosion); rewind(50)
 #ifdef key_MUSTANG_V2
     READ(50, namsedim_poro); rewind(50)
+#ifdef key_MUSTANG_bedload
     READ(50, namsedim_bedload); rewind(50)
+#endif   
 #endif    
     READ(50, namsedim_lateral_erosion); rewind(50)
     READ(50, namsedim_consolidation); rewind(50)
@@ -448,7 +450,7 @@ CONTAINS
 #endif
 #ifdef key_MUSTANG_flocmod
     ! module FLOCULATION
-    READ(50,namflocmod); rewind(50)
+    READ(50, namflocmod); rewind(50)
 #endif
     CLOSE(50) 
    
@@ -1814,7 +1816,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_bedload .and. l_out_subs(isubs) .and. &
+            IF (l_outsed_fsusp .and. l_out_subs(isubs) .and. &
                 ((isubs .GE. ibedload1) .AND. (isubs .LE. ibedload2))) THEN
                 outMust(indx) = .TRUE.
             ENDIF
