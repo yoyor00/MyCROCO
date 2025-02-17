@@ -159,7 +159,7 @@ test_bench_debug_jobcomp:
       --rebuild \
       --host host_ci \
       --html \
-      -N
+      -N --report
     - |
       cp BENCH/results/debug_jobcomp*/junit_report.xml \
       BENCH/results/debug_jobcomp_junit_report.xml
@@ -188,7 +188,7 @@ test_bench_debug_cmake:
       --debug \
       --rebuild --host host_ci \
       --html \
-      -N
+      -N --report
     - |
       cp BENCH/results/debug_cmake*/junit_report.xml \
       BENCH/results/debug_cmake_junit_report.xml
@@ -219,7 +219,7 @@ test_bench_plotphy_jobcomp:
       --rebuild \
       --host host_ci \
       --html \
-      -N
+      -N --report
     - |
       cp BENCH/results/plotphy*/junit_report.xml \
       BENCH/results/plotphy_junit_report.xml
@@ -250,7 +250,7 @@ test_bench_debug_ifort_jobcomp:
       --host host_ci \
       --steps build,run  \
       --data-root-path $DATAROOTPATH \
-      --html -N
+      --html -N --report
     - |
       cp BENCH/results/debug_ifort*/junit_report.xml \
       BENCH/results/debug_ifort_junit_report.xml
@@ -281,7 +281,7 @@ test_bench_realist:
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
-      --html -N
+      --html -N --report
     - |
       cp BENCH/results/debug_realist*/junit_report.xml \
       BENCH/results/debug_realist_junit_report.xml
@@ -295,7 +295,7 @@ test_bench_realist:
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
-      --html -N
+      --html -N --report
     - |
       cp BENCH/results/plotphy_realist*/junit_report.xml \
       BENCH/results/plotphy_realist_junit_report.xml
