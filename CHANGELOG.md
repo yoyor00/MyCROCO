@@ -23,6 +23,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - ABL1D perfect restart
   - ECUME6/ABL1D
 - Issue #285 : fix NBQ+XIOS compilation
+- Issue #309 : fix parallel compilation (except for AGRIF)
 
 ### Changed
 
