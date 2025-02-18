@@ -148,19 +148,13 @@ class Croco:
                 reshape_str = ",".join(reshape)
                 configure_cppkeys_options = f"--with-keys={reshape_str}"
 
-        # debug
-        debug_option = ""
-        if self.config.twin_chercker:
-            debug_option += " --enable-twin-checker"
-
         # build command
-        command = "%s/configure %s %s %s %s %s" % (
+        command = "%s/configure %s %s %s %s" % (
             croco_source_dir,
             configure_compiler_option,
             configure_case_option,
             configure_cppkeys_options,
             configure_variant_options,
-            debug_option,
         )
         command = apply_vars_in_str(
             command, {"case": self.case, "tuning": self.config.host["tuning"]}

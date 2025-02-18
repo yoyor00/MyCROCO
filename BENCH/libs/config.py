@@ -163,11 +163,6 @@ class Config:
             default="rundir",
         )
         parser.add_argument(
-            "--twin-checker",
-            help="Enable the twin checker on build.",
-            action="store_true",
-        )
-        parser.add_argument(
             "--continue",
             help="Continue instead of stopping on first error.",
             dest="continue_on_error",
@@ -225,7 +220,6 @@ class Config:
         self.use_host_config = self.args.host
         self.variant_ref_name = self.args.compare_to
         self.rvtk = self.args.rvtk
-        self.twin_chercker = self.args.twin_checker
         self.continue_on_error = self.args.continue_on_error
         self.report = self.args.report
         self.html = self.args.html
