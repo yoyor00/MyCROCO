@@ -653,7 +653,19 @@
 
 /*
 ======================================================================
-    Bulk flux option
+    ABL1D option
+======================================================================
+! 
+! Using BULK_FLUX is mandatory whenever ABL1D is activated.
+!
+*/
+#ifdef ABL1D
+# define BULK_FLUX
+#endif
+
+/*
+======================================================================
+    BULF_FLUX option
 ======================================================================
 !
 ! Bulk algorithms (options)
@@ -725,10 +737,6 @@
 # endif
 # define WKB_ADD_DIFF
 # define WKB_ADD_DIFFRACTION
-# undef  WKB_NUDGING
-# ifndef WAVE_OFFLINE
-#  undef WKB_NUDGING
-# endif
 # if defined SHOREFACE || defined SANDBAR \
                        || (defined RIP && !defined BISCA)
 #  define ANA_BRY_WKB
@@ -744,8 +752,12 @@
 # endif
 #endif
 
+#if !defined WAVE_ROLLER || !defined WKB_WWAVE
+# define wepb0 wepb
+#endif
+
 #if defined WKB_WWAVE || defined OW_COUPLING \
-		       || (defined WAVE_OFFLINE && defined MRL_WCI)
+		      || (defined WAVE_OFFLINE && defined MRL_WCI)
 # define WAVE_IO
 #endif
 

@@ -73,12 +73,13 @@ CONTAINS
       INTEGER, INTENT(in) ::   kt, knt   ! ocean time step and ???
       INTEGER, INTENT(in)  ::  Kbb, Kmm, Krhs ! time level indices
       !
-      INTEGER  ::   ji, jj, jk, jn
+      INTEGER  ::   ji, jj, jk, jn, ik1
       REAL(wp) ::   zdispot, zfact, zcalcon, zdepexp, zdissol, zdens
       REAL(wp) ::   zomegaca, zexcess, zexcess0, zkd, zwsbio
       CHARACTER (len=25) ::   charout
       REAL(wp), DIMENSION(A2D(0),jpk) :: zhinit, zhi, zco3, zcaco3, ztra
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:)  :: zw3d, zcaldiss
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:) :: zw2d
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )  CALL timing_start('p2z_lys')
@@ -185,6 +186,7 @@ CONTAINS
       !
       IF( l_dia .AND. knt == nrdttrc ) THEN
          ALLOCATE( zw3d(GLOBAL_2D_ARRAY,1:jpk) )   ;   zw3d(:,:,:) = 0.
+         ALLOCATE( zw2d(GLOBAL_2D_ARRAY      ) )   ;   zw2d(:,:) = 0.
          zfact = 1.e+3 * rfact2r  !  conversion from mol/l/kt to  mol/m3/s
          !
          DO_3D( 0, 0, 0, 0, 1, jpk)
@@ -201,7 +203,12 @@ CONTAINS
             zw3d(ji,jj,jkR) = wsbio4(ji,jj,jk) * zcaco3(ji,jj,jk) &
               &       * 1.e+3 / rday  * tmask(ji,jj,jk)         
          END_3D
-         CALL iom_put( "EPCAL100",  zw3d(:,:,ik100) )  ! Export of calcite at 100m
+         DO_2D( 0, 0, 0, 0 )
+             ik1 = nlev100(ji,jj)
+             zw2d(ji,jj) = wsbio4(ji,jj,ik1) * zcaco3(ji,jj,ik1) &
+                   &       * 1.e+3 / rday  * tmask(ji,jj,ik1)
+         END_2D
+         CALL iom_put( "EPCAL100",  zw2d )  ! Export of calcite at 100m
          CALL iom_put( "EXPCAL"  ,  zw3d )             ! Export of calcite in the water column
          !
          DO_3D( 0, 0, 0, 0, 1, jpk)
@@ -223,7 +230,7 @@ CONTAINS
          END_3D
          CALL iom_put( "CO3sat", zw3d )  ! calcite saturation
          !
-         DEALLOCATE( zcaldiss, zw3d )
+         DEALLOCATE( zcaldiss, zw3d, zw2d )
       ENDIF
 # if defined key_trc_diaadd
       DO_3D( 0, 0, 0, 0, 1, jpk)

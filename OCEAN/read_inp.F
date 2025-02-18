@@ -2919,14 +2919,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !         MPI_master_only write(stdout,'(/6x,F6.0,2x,A)')
      &  , qbardir(is), 'Direction of point source flow'
 #  ifdef MPI
-        if (iminmpi.LE.Isrc(is) .AND. Isrc(is).LE.imaxmpi .AND.
-     &       jminmpi.LE.Jsrc(is) .AND. Jsrc(is).LE.jmaxmpi) then
           Isrc_mpi(is,mynode)=Isrc(is)-iminmpi+1
           Jsrc_mpi(is,mynode)=Jsrc(is)-jminmpi+1
-        else
-          Isrc_mpi(is,mynode)=-1
-          Jsrc_mpi(is,mynode)=-1
-        endif
 #  endif
 #  ifdef TRACERS
         do itrc=1,NT
@@ -2970,14 +2964,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  ifdef MPI
           MPI_master_only write(*,*)'Isrc(is)=',Isrc(is)
           MPI_master_only write(*,*)'Jsrc(is)=',Jsrc(is)
-          if (iminmpi.LE.Isrc(is) .AND. Isrc(is).LE.imaxmpi .AND.
-     &        jminmpi.LE.Jsrc(is) .AND. Jsrc(is).LE.jmaxmpi) then
            Isrc_mpi(is,mynode)=Isrc(is)-iminmpi+1
            Jsrc_mpi(is,mynode)=Jsrc(is)-jminmpi+1
-          else
-           Isrc_mpi(is,mynode)=-1
-           Jsrc_mpi(is,mynode)=-1
-          endif
 #  endif
 #  if defined SOLVE3D && defined TRACERS
           do itrc=1,NT
