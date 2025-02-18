@@ -130,8 +130,10 @@ class Report:
 
         for test_name, test_data in self.report.items():
             for step, result in test_data["status"].items():
-                print(step, result)
                 if result is None or not isinstance(result, dict):
+                    continue
+
+                if result["status"] is None:  # if skip step
                     continue
 
                 total_tests += 1
