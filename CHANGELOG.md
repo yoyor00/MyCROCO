@@ -13,6 +13,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
   advection in NBQ
 - Issue #259 : remove unused file OCEAN/spkitlocal_nh.F90 
+- Issue #260 : fix wrong array name for XIOS and WKB_WAVE
 - Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING
 - Issue #267 : fix several bugs with MUSTANG output, initialisation, add a 
   minimim porosity in deposit in V1 and fix transition with ero_option=3
@@ -23,6 +24,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - ABL1D perfect restart
   - ECUME6/ABL1D
 - Issue #285 : fix NBQ+XIOS compilation
+- Issue #305 : fix MPI repro with PSOURCE when a source is 
+  in one MPI domain rejecting towards another MPI domain
+- Issue #309 : fix parallel compilation (except for AGRIF)
 
 ### Changed
 
