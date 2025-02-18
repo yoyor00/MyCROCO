@@ -87,5 +87,6 @@ def gen_system_info() -> dict:
     soft["gcc"] = run_and_get_first_line("gcc --version")
     soft["gfortran"] = run_and_get_first_line("gfortran --version")
     soft["nvfortran"] = run_and_get_first_line("nvfortran --version")
+    soft["cmake"] = run_and_get_first_line("cmake --version")
 
     return infos

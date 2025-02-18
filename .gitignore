@@ -15,6 +15,11 @@ doc/build
 Run/*
 Run/amr.in
 
+# CMake build        #
+######################
+build*
+*.pyc
+
 # IDEs               #
 ######################
 .vscode

@@ -131,6 +131,11 @@ class Config:
             default=False,
         )
         parser.add_argument(
+            "--cmake",
+            help="Force using cmake instead of jobcomp.",
+            action="store_true",
+        )
+        parser.add_argument(
             "--host",
             help="Force host config to use.",
             type=str,
@@ -222,6 +227,7 @@ class Config:
         self.no_previous = self.args.no_previous
         self.build_ref = self.args.build_ref
         self.use_ref = self.args.use_ref
+        self.force_cmake = self.args.cmake
         self.use_host_config = self.args.host
         self.variant_ref_name = self.args.compare_to
         self.rvtk = self.args.rvtk
@@ -270,6 +276,10 @@ class Config:
         # extract some many time used paths
         self.croco_source_dir = os.path.abspath(f"{__file__}/../../../")
 
+        # detect old way or cmake way
+        self.has_cmake = os.path.exists(
+            os.path.join(self.croco_source_dir, "CMakeLists.txt")
+        )
         # global report
         self.report = Report(self)
 

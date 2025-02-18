@@ -18,6 +18,24 @@
 
 /*
 ======================================================================
+   PsyClone support
+======================================================================
+*/
+/* If apply psyclone GPU, need to skip the manual transformations. */
+#ifdef PSYCLONE_SKIP_OPENACC
+#undef OPENACC
+#undef OPENACC_PSYCLONE
+#endif /*PSYCLONE_SKIP_OPENACC*/
+
+/* If we want to set psyclone variant by default instead of the manual one */
+/*
+#if defined OPENACC
+#define OPENACC_PSYCLONE
+#endif
+*/
+
+/*
+======================================================================
    Set debugging options
 ======================================================================
 */

@@ -31,6 +31,7 @@ from .helpers import (
 )
 from .hyperfine import run_hyperfine
 from .check import compare_netcdf_files
+from .crocosetup.cmake import CMakeCrocoSetup
 from .crocosetup.jobcomp import JobcompCrocoSetup
 from .rawdrawer import RawDrawer
 
@@ -66,9 +67,14 @@ class Croco:
             if len(self.case["input_file"]) > 0:
                 self.croco_inputfile = self.case["input_file"]
 
-        self.croco_build = JobcompCrocoSetup(
-            self.config, self.dirname, self.variant["tuning_familly"]
-        )
+        # if use old croco
+        # self.old_croco = None
+        if config.has_cmake or self.config.force_cmake:
+            self.croco_build = CMakeCrocoSetup(self.config, self.dirname)
+        else:
+            self.croco_build = JobcompCrocoSetup(
+                self.config, self.dirname, self.variant["tuning_familly"]
+            )
 
     def calc_rundir(self, variant_name, case_name, restarted):
         if restarted:
@@ -398,6 +404,9 @@ class Croco:
                 )
 
     def apply_patches(self, patches):
+        # vars
+        croco_build = self.croco_build
+
         # loop
         with move_in_dir(self.dirname):
             for file, changes in patches.items():
@@ -405,9 +414,12 @@ class Croco:
                 if isinstance(changes, dict):
                     changes = [changes]
 
+                # change file name for old croco
+                file_filtered = croco_build.convert_patch_fnames(file)
+
                 # loop on all changes
                 for change in changes:
-                    patch_lines(file, [change])
+                    patch_lines(file_filtered, [change])
 
     def apply_debug_patches(self):
         filename = self.croco_inputfile

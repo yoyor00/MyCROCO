@@ -251,6 +251,9 @@ c**   enddo
      &                                       'iexample=0',  'is=1'
       do i=1,nswitches
         ln=size(i)
+        if (switch(i)(1:ln).eq."CPPDEFS_HEADER") then
+		continue
+	else
         write(iout,'(A,1x,A)') '#ifdef', switch(i)(1:ln)
         if (i.le.nexample) write(iout,'(6x,A)') 'iexample=iexample+1'
         write(iout,'(6x,A,1x,A1,A,A1)')
@@ -260,6 +263,7 @@ c**   enddo
      &       'ie=is +', ln-1, 'if (ie.ge.max_opt_size) goto 99',
      &       'Coptions(is:ie)=''', switch(i)(1:ln), '''',
      &       'Coptions(ie+1:ie+1)='' ''', 'is=ie+2', '#endif'
+        endif
       enddo
       write(iout,'(6x,A/6x,A/8x,A/5x,A1,1x,A/8x,A/6x,A)')
      &     'MPI_master_only write(stdout,''(/)'')',

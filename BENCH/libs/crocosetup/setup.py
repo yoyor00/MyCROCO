@@ -43,7 +43,8 @@ class AbstractCrocoSetup(ABC):
         Parameters
         ----------
         configure_args: str
-            The arguments as a string parsed and transformed for compatibility
+            The arguments as a string as they would have been given to the configure script wrapping cmake.
+            For the old corco variant it will automatically be parsed and transformed for compatibility
             translation.
         """
         raise Exception("Not provided by implementation !")
@@ -57,6 +58,15 @@ class AbstractCrocoSetup(ABC):
         ----------
         make_jobs: str
             To pass the `-j8` option if wanted.
+        """
+        raise Exception("Not provided by implementation !")
+
+    @abstractmethod
+    def convert_patch_fnames(self, filename: str) -> str:
+        """
+        Some files have been renamed between minicroco and the original one,
+        in order to keep the whole case definition in bench agnostic to this
+        we rename on the fly some files.
         """
         raise Exception("Not provided by implementation !")
 
@@ -81,7 +91,8 @@ class AbstractCrocoSetup(ABC):
     @abstractmethod
     def cppdef_h_set_key(self, key_name: str, status: bool):
         """
-        Enable or disable some CPP keys in cppdefs.h
+        Enable or disable some CPP keys either in cppdefs.h or cppdefs_override.h
+        depending on build system.
 
         Parameters
         ----------

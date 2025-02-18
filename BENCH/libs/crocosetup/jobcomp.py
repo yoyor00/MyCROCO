@@ -205,11 +205,11 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
     @staticmethod
     def convert_arg_for_argparse(arg_string: str) -> list:
         """
-        Splits the arguments to get them as a list of args to
+        Splits the arguments as passed to cmake to get them as a list of args to
         be passed to argparser.
 
-        Note: We need to reshape a bit, because the configure script
-              is using `--with-xxx=value`, where argparse want with space :
+        Note: We need to reshape a bit, because the configure script coming with
+              cmake is using `--with-xxx=value`, where argparse want with space :
               `--with-xxx value`.
         """
 
@@ -261,6 +261,17 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         Set any cpp key
         """
         self.croco_config.cppdef_h_set_key(key, status)
+
+    def convert_patch_fnames(self, filename: str) -> str:
+        """
+        Some files have been renamed between minicroco and the original one,
+        in order to keep the whole case definition in bench agnostic to this
+        we rename on the fly some files.
+        """
+        if filename == "param_override.h":
+            return "param.h"
+        else:
+            return filename
 
     def handle_variables(self, arg_vars: list, is_mpi: bool, extra_vars: dict) -> dict:
         """

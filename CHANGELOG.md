@@ -6,6 +6,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- Issue #314 : Cmake build of CROCO (not yet implemented for AGRIF and XIOS), 
+  see documentation or README.cmake.md for more details. 
+  Jobcomp script is still available.
+
 - Issue #298 : Benchmarking python tools to perform tests runs, see documentation or 
   BENCH/README.md for more details
 

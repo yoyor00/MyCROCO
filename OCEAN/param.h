@@ -8,6 +8,25 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+
+/*
+This is a trick currently for cmake (not changing jobcom & source oragnization)
+With cmake we read the BUILD_DIR/param_override.h.
+
+Remark: we can solve the inclusion issue in a cleaner we by renaming
+        OCEAN/param.h -> OCEAN/param_default.h so we can keep name param.h in
+        BUILD_DIR.
+        Compatibility is kept for jobcomp if we patch create_config.bash to
+        renamed the copied one as param.h so it does not change anything for the
+        users.
+        But I was not sure yet if people where happy of the rename in the sources.
+Note: I don't like this way of making the trick (the one currently implemented).
+*/
+#if defined(HAVE_CMAKE_CONFIG_OVERRIDE) && !defined(CMAKE_PARAM_OVERRIDE_NOT_RECURSE)
+#define CMAKE_PARAM_OVERRIDE_NOT_RECURSE
+#include "param_override.h"
+#undef CMAKE_PARAM_OVERRIDE_NOT_RECURSE
+#else /* HAVE_CMAKE_CONFIG_OVERRIDE */
 !----------------------------------------------------------------------
 ! Dimensions of Physical Grid and array dimensions
 !----------------------------------------------------------------------
@@ -252,6 +271,8 @@
       integer NP_XI, NP_ETA, NNODES
 #if defined(SPLITTING_X) && defined(SPLITTING_ETA)
       parameter (NP_XI=SPLITTING_X,  NP_ETA=SPLITTING_ETA,  NNODES=NP_XI*NP_ETA)
+#elif HAVE_CMAKE_CONFIG
+      parameter (NP_XI=WITH_SPLITTING_X,  NP_ETA=WITH_SPLITTING_ETA,  NNODES=NP_XI*NP_ETA)
 #else
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
 #endif
@@ -269,6 +290,13 @@
       common/distrib/NSUB_X, NSUB_E
 # else
       parameter (NSUB_X=SPLITTING_X, NSUB_E=SPLITTING_ETA)
+# endif
+#elif HAVE_CMAKE_CONFIG
+      parameter (NPP=WITH_SPLITTING_X*WITH_SPLITTING_ETA)
+# ifdef AUTOTILING
+      common/distrib/NSUB_X, NSUB_E
+# else
+      parameter (NSUB_X=WITH_SPLITTING_X, NSUB_E=WITH_SPLITTING_ETA)
 # endif
 #else
       parameter (NPP=4)
@@ -1089,3 +1117,5 @@
       integer inc_faststep_max
       parameter(inc_faststep_max = 10)
 #endif
+
+#endif /* HAVE_CMAKE_CONFIG_OVERRIDE */
