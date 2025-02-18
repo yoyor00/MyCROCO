@@ -754,7 +754,7 @@
 #endif
 
 #if defined WKB_WWAVE || defined OW_COUPLING \
-         || defined WAVE_OFFLINE && defined MRL_WCI \
+         || (defined WAVE_OFFLINE && defined MRL_WCI) \
          || defined ANA_WWAVE
 # define WAVE_IO
 # if !defined WAVE_ROLLER || !defined WKB_WWAVE
