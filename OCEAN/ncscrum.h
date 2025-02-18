@@ -216,6 +216,10 @@
 # endif
 # ifdef BIOLOGY
 #  ifdef PISCES
+      integer ncidpisrst, nrecpisrst
+#if defined key_sediment
+      integer ncidsedrst, nrecsedrst
+#endif	
       integer indxDIC, indxTAL, indxOXY, indxCAL, indxPO4,
      &        indxPOC, indxSIL, indxPHY, indxZOO, indxDOC,
      &        indxDIA, indxMES, indxDSI, indxFER, indxBFE,
