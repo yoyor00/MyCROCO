@@ -92,8 +92,8 @@
       "RIVER",
       "UPWELLING",
     ],
-    "@realist": ["BENGUELA_LR_TIDES_BULK", "VILAINE"],
-    "@nbq": ["GRAV_ADJ_NBQ"], // "IGW_NBQ" is not operational
+    "@realist": ["BENGUELA_LR_TIDES_BULK","VILAINE"], // MPI repro issues with VILAINE
+    "@nbq": ["GRAV_ADJ_NBQ", "IGW_NBQ"], // IGW_NBQ is not operational
     "@sediment_mustang": [
       "DUNE_SEDIMENT",
       "DUNE_MUSTANG",
@@ -123,8 +123,8 @@
       "SINGLE_COLUMN_WILLIS_DEARDORFF",
       "ACOUSTIC",
       "SED_TOY",
-      "FLASH_RIP",
-      // "MOVING_BATHY", // repro-mpi issue
+      "FLASH_RIP", // repro-mpi issue
+      "MOVING_BATHY", // repro-mpi issue
     ],
     "@agrif": [
       "VORTEX",

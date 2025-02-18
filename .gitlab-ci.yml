@@ -178,7 +178,7 @@ test_bench_plotphy:
     - source /venv/bin/activate
     - |
       ./bench-croco.py \
-      --case @base,@nbq,@sediment_mustang,@other,@complement \
+      --case @base,@nbq,@sediment_mustang,@other \
       --variants mpi-2 \
       --title plotphy \
       -s build,run,plotphy \
