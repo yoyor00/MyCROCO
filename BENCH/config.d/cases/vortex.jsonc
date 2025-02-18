@@ -4,25 +4,42 @@
     "title": "VORTEX - (60 x 60 x 10 : 600)",
     "case": "VORTEX",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "patches": {},
+    "check_outputs": ["vortex_his.nc"],
+  },
+  "VORTEX_AGRIF_1WAY": {
+    "title": "VORTEX - (60 x 60 x 10 : 600)",
+    "case": "VORTEX",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "patches": {
-      // Change the size of the mesh
-      "param.h": {
+      "AGRIF_FixedGrids.in": {
         "mode": "replace",
-        "after": "#if defined VORTEX",
-        "what": "      parameter (LLm0=60,   MMm0=60,   N=10)   ! 30 km resolution",
-        "by": "      parameter (LLm0=60,   MMm0=60,   N=10)   ! 30 km resolution",
-        "descr": "Set mesh size to (60 x 60 x 10)",
-      },
-      // Change the dt
-      "TEST_CASES/croco.in.Vortex": {
-        "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "               600      2880       50       1",
-        "by": "               600      2880       50       1",
-        "descr": "Set stepping (steps=600, dt=2880, fast=50)",
+        "what": "17    33     13    27   3  3  3  3",
+        "by": "21    40    21    40    3    3    3    3",
+        "descr": "Set AGRIF_FixedGrids.in",
       },
     },
-    "check_outputs": ["equator_his.nc"],
-    "TODO": ["GRID"],
+    "cppkeys": {
+      "AGRIF": true,
+    },
+    "check_outputs": ["vortex_his.nc"],
+  },
+  "VORTEX_AGRIF_2WAY": {
+    "title": "VORTEX - (60 x 60 x 10 : 600)",
+    "case": "VORTEX",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "patches": {
+      "AGRIF_FixedGrids.in": {
+        "mode": "replace",
+        "what": "17    33     13    27   3  3  3  3",
+        "by": "21    40    21    40    3    3    3    3",
+        "descr": "Set AGRIF_FixedGrids.in",
+      },
+    },
+    "cppkeys": {
+      "AGRIF": true,
+      "AGRIF_2W": true,
+    },
+    "check_outputs": ["vortex_his.nc"],
   },
 }

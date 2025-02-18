@@ -222,6 +222,32 @@ test_bench_debug_ifort:
       junit: BENCH/results/debug_ifort-host_ci/junit_report.xml
   when: manual
 
+test_bench_debug_vortex:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
+    - |
+      ./bench-croco.py \
+      --case @agrif \
+      --variants sequential,mpi-4 \
+      --title vortex \
+      --rebuild \
+      --host host_ci \
+      --html \
+      -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/vortex-host_ci/junit_report.xml
+
 
 test_bench_debug_realist:
   stage: bench

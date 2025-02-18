@@ -127,8 +127,7 @@
       "MOVING_BATHY", // repro-mpi issue
     ],
     "@agrif": [
-      "VORTEX",
-      // "VORTEX_AGRIF", "VORTEX_AGRIF_2WAY"  TODO
+      "VORTEX", "VORTEX_AGRIF", "VORTEX_AGRIF_2WAY" 
     ],
   },
 
