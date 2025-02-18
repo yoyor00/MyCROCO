@@ -8,36 +8,36 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 start_date:
 2015-01-01 00:00:00
 end_date: 
-2015-01-15 00:00:00
+2015-01-01 12:00:00
 origin_date:
 1900-01-01 00:00:00
 
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                    1.0       24           24 
 grid:  filename
-                 CROCO_FILES/croco_grd.nc
+                 croco_grd.nc
 forcing: filename
-                 CROCO_FILES/croco_frc_vilaine.nc
+                 croco_frc_vilaine.nc
 bulk_forcing: filename
-                 CROCO_FILES/bidon.nc
+                 bidon.nc
 climatology: filename
-                 CROCO_FILES/croco_clm.nc
+                 croco_clm.nc
 boundary: filename
-                CROCO_FILES/bry_vilaine_20150101.nc
+                bry_vilaine_201501.nc
 initial: NRREC  filename
           1
-                 CROCO_FILES/vilaine_ini.nc
+                 vilaine_ini.nc
 restart:          NRST, NRPFRST / filename
                  14400     -1
-                 CROCO_FILES/croco_rst.nc
+                 croco_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename 
            T      150       0
-                 croco_out.nc
+                 croco_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     1000000     0
                   croco_avg.nc
 wave_offline:   filename
-              CROCO_FILES/wave_vilaine_20150101.nc
+              wave_vilaine_201501.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T
@@ -82,11 +82,11 @@ nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
 
 surf:   ldefsurf, nwrtsurf, nrpfsurf /filename
                    T          4        0
-    CROCO_FILES/croco_surf.nc
+    croco_surf.nc
 
 surf_avg: ldefsurf_avg  ntssurf_avg  nwrtsurf_avg  nprfsurf_avg /filename
                T          1           4          0
-    CROCO_FILES/croco_surf_avg.nc
+    croco_surf_avg.nc
 
 surf_history_fields: surf
                             T
@@ -110,11 +110,11 @@ psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
                   91   99     0    -200.            T T      20. 0.
 
 psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
-               CROCO_FILES/croco_runoff_vilaine.nc
+               croco_runoff_vilaine.nc
 		2
                         167  56  0 -1   30*T   20.0  15.0   Loire
                         91  99  0 -1   30*T   20.0  15.0   Vilaine_arzal
 
 online:    byear  bmonth recordsperday byearend bmonthend / data path
            2014   12      24             2016     1
-   CROCO_FILES/met_vilaine_20150101.nc
+   met_vilaine_201501.nc

@@ -6,6 +6,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- Issue #298 : Benchmarking python tools to perform tests runs, see documentation or 
+  BENCH/README.md for more details
+
 ### Fixed
 
 - Issue #239 : back to previous default option in create_config
@@ -29,6 +32,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #309 : fix parallel compilation (except for AGRIF)
 
 ### Changed
+
+- Issue #298 : Jobcomp script can now be executed with terminal options, see 
+  ```./jobcomp -h``` for more details
 
 - Issue #306 : in MRL_WCI change limits of wave height in surfzone
 

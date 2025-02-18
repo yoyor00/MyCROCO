@@ -1,0 +1,11 @@
+{
+  // SEAMOUNT
+  "SEAMOUNT": {
+    "title": "SEAMOUNT - (64 x 64 x 20 : 360)",
+    "case": "SEAMOUNT",
+    "plot_diag_script": "./TEST_CASES/plot_seamount.py",
+    "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
+    "patches": {},
+    "check_outputs": ["seamount_his.nc"],
+  },
+}
