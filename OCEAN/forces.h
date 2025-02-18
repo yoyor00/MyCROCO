@@ -710,15 +710,23 @@
 
 #ifdef WAVE_MAKER
       integer Nfrq, Ndir
-      parameter (Nfrq=320, Ndir=50)
+# ifdef WAVE_MAKER_DSPREAD
+      integer Nfrq0
+      parameter (Nfrq0=50, Ndir=31, Nfrq=Nfrq0*Ndir)
+      real wkx_bry(Nfrq)
+      real wky_bry(Nfrq)
+      common /wave_maker_k/ wkx_bry, wky_bry
+# else
+      parameter (Nfrq=50, Ndir=31)
+# endif
       real wf_bry(Nfrq), wk_bry(Nfrq), wa_bry(Nfrq)
-      real wd_bry(Ndir), wa_bry_d(Ndir)
+      real wd_bry(Nfrq), wa_bry_d(Nfrq)
       common /wave_maker/ wf_bry, wk_bry, wa_bry
       common /wave_maker/ wd_bry, wa_bry_d
-# ifdef WAVE_MAKER_DSPREAD
-      real wpha_bry(Nfrq,Ndir)
-# else
       real wpha_bry(Nfrq)
-# endif
       common /wave_maker_pha/ wpha_bry
+      real wmaker_amp, wmaker_prd, wmaker_dir
+      real wmaker_dsp, wmaker_fsp
+      common /wave_maker_par/ wmaker_amp, wmaker_prd, wmaker_dir
+      common /wave_maker_par/ wmaker_dsp, wmaker_fsp 
 #endif

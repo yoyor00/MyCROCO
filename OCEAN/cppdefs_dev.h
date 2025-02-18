@@ -152,8 +152,10 @@
 # define TEMPERATURE
 #endif
 #if defined SALINITY       || defined TEMPERATURE || \
-    defined PASSIVE_TRACER || defined SUBSTANCE
+    defined PASSIVE_TRACER || defined SUBSTANCE   || \
+    defined SEDIMENTS      || defined BIOLOGY
 # define TRACERS
+# define TEMPERATURE
 #endif
 
 /*
@@ -310,7 +312,7 @@
                   || defined THACKER  || defined TANK \
                   || defined KH_INST  || defined TS_HADV_TEST
 # define PGF_FLAT_BOTTOM
-#elif defined RIP
+#elif defined RIP || defined FLASH_RIP
 # define PGF_BASIC_JACOBIAN
 # define WJ_GRADP 0.125
 #elif defined PGF_BASIC_JACOBIAN
@@ -624,6 +626,9 @@
 #   define WAVE_MAKER_JONSWAP
 #  endif
 # endif
+# if defined WAVE_MAKER_DSPREAD && defined NS_PERIODIC
+#  define WAVE_MAKER_DSPREAD_PER /* correct wave dir. for periodicity */
+# endif
 # ifndef WAVE_MAKER_SPECTRUM
 #  define STOKES_WAVES
 # endif
@@ -748,13 +753,13 @@
 # endif
 #endif
 
-#if !defined WAVE_ROLLER || !defined WKB_WWAVE
-# define wepb0 wepb
-#endif
-
 #if defined WKB_WWAVE || defined OW_COUPLING \
-		      || (defined WAVE_OFFLINE && defined MRL_WCI)
+		      || defined WAVE_OFFLINE \
+                      || defined ANA_WWAVE
 # define WAVE_IO
+# if !defined WAVE_ROLLER || !defined WKB_WWAVE
+#  define wepb0 wepb
+# endif
 #endif
 
 /*

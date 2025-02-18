@@ -453,6 +453,7 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+#  ifdef TEMPERATURE
 !
 ! Write out vertical diffusion coefficient for potential temperature.
 !
@@ -465,6 +466,7 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+#  endif /* TEMPERATURE  */
 #  ifdef SALINITY
 !
 ! Write out vertical diffusion coefficient for potential temperature.

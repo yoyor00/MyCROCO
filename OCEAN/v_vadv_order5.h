@@ -33,57 +33,77 @@
 !$acc loop independent
         do k=3,N-3
           do i=Istr,Iend
+#  ifndef UV_VADV_WENO5_INTC6
+            vel=0.5*(We(i,j-1,k)+We(i,j,k))
+#  else
             if ( j.ge.jmin .and. j.le.jmax ) then
-              FC(i,k)=flux6(We(i,j-3,k),We(i,j-2,k),We(i,j-1,k),
+              vel=flux6(We(i,j-3,k),We(i,j-2,k),We(i,j-1,k),
      &                  We(i,j  ,k),We(i,j+1,k),We(i,j+2,k),1.)
             else
-              FC(i,k)=0.5*(We(i,j-1,k)+We(i,j,k))
+              vel=0.5*(We(i,j-1,k)+We(i,j,k))
             endif
-            FC(i,k)=FC(i,k)*FLUX5(
+#  endif
+            FC(i,k)=vel*FLUX5(
      &           v(i,j,k-2,nrhs), v(i,j,k-1,nrhs), 
      &           v(i,j,k  ,nrhs), v(i,j,k+1,nrhs),
-     &           v(i,j,k+2,nrhs), v(i,j,k+3,nrhs), FC(i,k))
+     &           v(i,j,k+2,nrhs), v(i,j,k+3,nrhs), vel)
           enddo
         enddo
 
         do i=Istr,Iend
+#  ifndef UV_VADV_WENO5_INTC6
+          vel=0.5*(We(i,j-1,2)+We(i,j,2))
+#  else
           if ( j.ge.jmin .and. j.le.jmax ) then
-            FC(i,2)=flux6(We(i,j-3,2),We(i,j-2,2),We(i,j-1,2),
+            vel=flux6(We(i,j-3,2),We(i,j-2,2),We(i,j-1,2),
      &                We(i,j  ,2),We(i,j+1,2),We(i,j+2,2),1.)
           else
-            FC(i,2)=0.5*(We(i,j-1,2)+We(i,j,2))
+            vel=0.5*(We(i,j-1,2)+We(i,j,2))
           endif
-          FC(i,2)=FC(i,2)*FLUX3(
+#  endif
+          FC(i,2)=vel*FLUX3(
      &         v(i,j,1,nrhs), v(i,j,2,nrhs), 
      &         v(i,j,3,nrhs), v(i,j,4,nrhs), FC(i,2))
 
+#  ifndef UV_VADV_WENO5_INTC6
+          vel=0.5*(We(i,j-1,N-2)+We(i,j,N-2))
+#  else
           if ( j.ge.jmin .and. j.le.jmax ) then
-            FC(i,N-2)=flux6(We(i,j-3,N-2),We(i,j-2,N-2),We(i,j-1,N-2),
+            vel=flux6(We(i,j-3,N-2),We(i,j-2,N-2),We(i,j-1,N-2),
      &                We(i,j  ,N-2),We(i,j+1,N-2),We(i,j+2,N-2),1.)
           else   
-            FC(i,N-2)=0.5*(We(i,j-1,N-2)+We(i,j,N-2))
+            vel=0.5*(We(i,j-1,N-2)+We(i,j,N-2))
           endif
-          FC(i,N-2)=FC(i,N-2)*FLUX3(
+#  endif
+          FC(i,N-2)=vel*FLUX3(
      &         v(i,j,N-3,nrhs), v(i,j,N-2,nrhs), 
-     &         v(i,j,N-1,nrhs), v(i,j,N  ,nrhs), FC(i,N-2))
+     &         v(i,j,N-1,nrhs), v(i,j,N  ,nrhs), vel)
 
+#  ifndef UV_VADV_WENO5_INTC6
+          vel=0.5*(We(i,j-1,1)+We(i,j,1))
+#  else
           if ( j.ge.jmin .and. j.le.jmax ) then
-            FC(i,1)=flux6(We(i,j-3,1),We(i,j-2,1),We(i,j-1,1),
+            vel=flux6(We(i,j-3,1),We(i,j-2,1),We(i,j-1,1),
      &                We(i,j  ,1),We(i,j+1,1),We(i,j+2,1),1.)
           else
-            FC(i,1)=0.5*(We(i,j-1,1)+We(i,j,1))
+            vel=0.5*(We(i,j-1,1)+We(i,j,1))
           endif
-          FC(i,1)=FC(i,1)*FLUX2(
-     &         v(i,j,1,nrhs), v(i,j,2,nrhs), FC(i,1), cdif)
+#  endif
+          FC(i,1)=vel*FLUX2(
+     &         v(i,j,1,nrhs), v(i,j,2,nrhs), vel, cdif)
 
+#  ifndef UV_VADV_WENO5_INTC6
+            vel=0.5*(We(i,j-1,N-1)+We(i,j,N-1))
+#  else
           if ( j.ge.jmin .and. j.le.jmax ) then
-            FC(i,N-1)=flux6(We(i,j-3,N-1),We(i,j-2,N-1),We(i,j-1,N-1),
+            vel=flux6(We(i,j-3,N-1),We(i,j-2,N-1),We(i,j-1,N-1),
      &                We(i,j  ,N-1),We(i,j+1,N-1),We(i,j+2,N-1),1.)
           else
-            FC(i,N-1)=0.5*(We(i,j-1,N-1)+We(i,j,N-1))
+            vel=0.5*(We(i,j-1,N-1)+We(i,j,N-1))
           endif
-          FC(i,N-1)=FC(i,N-1)*FLUX2(
-     &         v(i,j,N-1,nrhs), v(i,j,N,nrhs), FC(i,N-1), cdif)
+#  endif
+          FC(i,N-1)=vel*FLUX2(
+     &         v(i,j,N-1,nrhs), v(i,j,N,nrhs), vel, cdif)
 	    
           FC(i,0)=0.
           FC(i,N)=0.
