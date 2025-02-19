@@ -82,5 +82,5 @@
 /  
 &namdredging
 /
-
-
+&namsedim_poro
+/

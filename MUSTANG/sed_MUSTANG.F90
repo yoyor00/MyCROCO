@@ -2835,7 +2835,7 @@ MODULE sed_MUSTANG
     frvolgrv = frvolgrv + cv_sed(iv,k,i,j) / ros(iv)
   ENDDO
   frvolsangrv = frvolgrv + frvolsan
-  frmudsup = sommud / (somgrav + sommud + somsan)
+  frmudsup = sommud / (somgrav + sommud + somsan + epsilon_MUSTANG)
   
    IF (isand2 > 0 .AND. somsan > 0.0_rsh) THEN
      diamsan = MAX(diamsan / (somsan + epsilon_MUSTANG), diam_sed(isand2))
@@ -2944,7 +2944,7 @@ MODULE sed_MUSTANG
         taucr = taucr_sand
         excespowr = n_eros_sand
       ELSE IF(frmudsup .LE. frmudcr2) THEN ! II) Intermediate sand / mud 
-        coef_tmp = xexp_ero * (frmudcr1 - frmudsup) / (frmudcr2 - frmudcr1) 
+        coef_tmp = xexp_ero * (frmudcr2 - frmudsup) / (frmudcr2 - frmudcr1) 
         ! correction of  F.Ganthy which allows to avoid the shift when one approaches frmudcr2, 
         !   and allows to have a linear relation when xexp_ero tends towards 0 (but must remain different from 0)
         rapexpcoef = (EXP(coef_tmp) - 1.0_rsh) / (EXP(xexp_ero) - 1.0_rsh)
@@ -4081,7 +4081,8 @@ MODULE sed_MUSTANG
                 !dvolsan=MIN(voldepsan,dzsa2*cvolmaxsort-dzsa*cvolinisan, &
                 !                      dzsa2*cvolmaxmel-dzsa*(cvolinigrv+cvolinisan)-ddzs2*cvolmaxsort)
                 ! ajout dvolgrv
-                dvolsan=MIN(voldepsan,dzsa2*cvolmaxsort-dzsa*cvolinisan, &
+                dvolsan=MIN(voldepsan,dzsa2*(poro(ksmax,i,j) - poro_min) - dvolgrv,&
+                                      dzsa2*cvolmaxsort-dzsa*cvolinisan, &
                                       dzsa2*cvolmaxmel-dzsa*(cvolinigrv+cvolinisan)-ddzs2*cvolmaxsort)
                 dvolsan=MAX(dvolsan,0.0_rsh)
                 ! une partie des sables dvolsab (avec repartition frdep) 
@@ -4145,7 +4146,9 @@ MODULE sed_MUSTANG
                   !!! Part de vase melangee avec le sediment present initialement dans la couche ksmax
                    !!! Part of mud mixed with the sediment initially present in the ksmax layer
                   IF((cvolinigrv+cvolinisan) .GT. 0.0_rsh) THEN
-                    dmasmud3 = MIN(masdepmud-dmasmud1-dmasmud2,dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan))
+                    dmasmud3 = MIN(masdepmud-dmasmud1-dmasmud2, &
+                          dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan), &
+                          (dzsa*(poro(ksmax,i,j)- poro_min) - dvolsan - dvolgrv)*ros(imud1))
                   END IF
                   dmasmud3 = MAX(0.0_rsh,dmasmud3)
                   dmasmud = dmasmud2 + dmasmud3
@@ -4175,9 +4178,13 @@ MODULE sed_MUSTANG
 
 
                 ELSE
-                  dmasmud2 = MIN(masdepmud,(dzsa3-dzsa)*cfreshmud*(1-cvolmaxsort))
+                  dmasmud2 = MIN(masdepmud,&
+                        (dzsa3-dzsa)*cfreshmud*(1-cvolmaxsort),&
+                        dzsa*(poro(ksmax,i,j)- poro_min)*ros(imud1))
                   IF((cvolinigrv+cvolinisan) .GT. 0.0_rsh) THEN
-                    dmasmud3 = MIN(masdepmud-dmasmud2,dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan))
+                    dmasmud3 = MIN(masdepmud-dmasmud2, &
+                          dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan), &
+                          (dzsa*(poro(ksmax,i,j)- poro_min))*ros(imud1))
                   END IF
                   dmasmud3 = MAX(0.0_rsh,dmasmud3)
                   dmasmud = dmasmud2 + dmasmud3

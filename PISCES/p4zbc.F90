@@ -571,7 +571,7 @@ CONTAINS
          IF (ierr .NE. nf_noerr .AND. lwp) THEN
             WRITE(numout,4) bioname
          ENDIF
-         ierr = nf_inq_dimid(ncid,"ndep_time",dimid)
+         ierr = nf_inq_dimid(ncid,"ndepo_time",dimid)
          ierr = nf_inq_dimlen(ncid,dimid,nrec_ndep)
          ALLOCATE( dustmp(GLOBAL_2D_ARRAY,nrec_ndep) )
 #if ! defined key_pisces_npzd

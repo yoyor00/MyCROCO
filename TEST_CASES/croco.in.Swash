@@ -1,9 +1,9 @@
 title:
 	Swash Example
 time_stepping: NTIMES   dt[sec]       NDTFAST  NINFO
-               106700   0.0019532775    22      200
+               106700   0.0019532775    5      200
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
-                    1          1500           0.
+                    1          50           0.
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
           0.0d0      0.0d0      1.e16
@@ -54,4 +54,7 @@ nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
               1.e-5    0.01      1.e-5    0.01
 tracer_diff2: TNU2(1:NT)           [m^2/sec for all]
               10*0.d0
+              
+wave_maker:  amp [m],   prd [s],  ang [deg], ang spread [deg], freq spread (gamma)
+             0.0442          2.0         0.          0.                  3.3
 

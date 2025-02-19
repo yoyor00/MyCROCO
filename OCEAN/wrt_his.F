@@ -471,8 +471,8 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
-!$acc update if(compute_on_device) host(wepb(:,:))
-        ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
+!$acc update if(compute_on_device) host(wepb0(:,:))
+        ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
@@ -2012,7 +2012,7 @@ CR      write(*,*) 'wrt_his var3Dksed_dtsdzs'   MYID
       endif
 #endif
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+       MPI_master_only write(stdout,'(6x,A,2(A,I5,1x),A,I5)')
      &       'WRT_HIS -- wrote ',
      &       'history fields into time record =', record, '/',
      &        nrechis  MYID

@@ -91,6 +91,9 @@
    f_cfcst = 0.2   
    f_fp = 0.1     
    f_fy = 1.0e-10   
-   f_collfragparam = 0.01   / 
+   f_collfragparam = 0.01   
+/
 &namdredging
+/
+&namsedim_poro
 /

@@ -8,13 +8,33 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
-
+- Issue #239 : back to previous default option in create_config
 - Issue #252 : fix PSOURCE_MASS capabilities broken by previous change
 - Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
   advection in NBQ
-- Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING 
+- Issue #259 : remove unused file OCEAN/spkitlocal_nh.F90 
+- Issue #260 : fix wrong array name for XIOS and WKB_WAVE
+- Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING
+- Issue #267 : fix several bugs with MUSTANG output, initialisation, add a 
+  minimim porosity in deposit in V1 and fix transition with ero_option=3
+- Issue #272 : fix CPP key incompatible for ABL1D
+- Issue #279 : fix for :
+  - sea surface currents in ABL1D
+  - wrong mixing length computation
+  - ABL1D perfect restart
+  - ECUME6/ABL1D
+- Issue #285 : fix NBQ+XIOS compilation
+- Issue #305 : fix MPI repro with PSOURCE when a source is 
+  in one MPI domain rejecting towards another MPI domain
+- Issue #309 : fix parallel compilation (except for AGRIF)
 
 ### Changed
+
+- Issue #306 : in MRL_WCI change limits of wave height in surfzone
+
+- Issue #281 : optimization of the PISCES code on
+  - representation of the lability of the particle pool
+  - several optimizations to the calculation of certain variables (performance).
 
 - Issue #163 : for MUSTANG output, 
   - avoid possibility of overlapping in vname by 
@@ -33,7 +53,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - Diagenetic module improvements: performance and diagenetic processes (e.g. increased number of POC classes, ...)
   - Added creation of an independent pisces restart file (managed in namelist_pisces_ref) to improve restartability
   - Rename the simplified version of PISCES, cpp key pisces_npzd
-  - Correction of some bug fixes
+  - Correction of some bugs
   
 ### Deprecated
 

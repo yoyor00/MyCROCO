@@ -79,7 +79,7 @@
       REAL            :: Cdn(2), Chn, Cen
 # endif
 # ifdef BULK_ECUMEV6
-      REAL            :: partn, parqn
+      REAL            :: Cdn(2), partn, parqn
 # endif
 # ifdef BULK_WASP
       INTEGER         :: idx
@@ -207,9 +207,13 @@
           Q        = spec_hum (RH,psurf,TairC)
 # else
           uwnd_r   = u_abl(i,j,2,nt_n)
-!     &                  - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
+#  ifndef KILPATRICK
+     &             - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
+#  endif
           vwnd_r   = v_abl(i,j,2,nt_n)
-!     &                  - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
+#  ifndef KILPATRICK
+     &             - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
+#  endif
           wspd0    = SQRT ( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
           TairK    = tq_abl ( i,j,2,nt_n,jp_ta )
           TairC    = TairK - CtoK
@@ -334,6 +338,7 @@
                 Wstar(m) = cdiru*(deltau10n(m)-utu) + ordou
               ENDIF
             ENDDO
+            Cdn(1:mb) = (Wstar(1:mb)/deltau10n(1:mb))**2.
 !++  Neutral parameter for temperature (ECUME_V6 formulation)
             IF (deltau10n(mb) <= utt) then
               partn = (coeft0+coeft1*deltau10n(mb))

@@ -107,6 +107,9 @@
 /   
 &namdredging
 /
+&namsedim_poro
+/
 
 
-   
+
+
