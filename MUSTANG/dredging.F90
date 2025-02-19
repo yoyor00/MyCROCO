@@ -31,10 +31,11 @@ MODULE dredging
    IMPLICIT NONE
    PRIVATE
 
-   PUBLIC dredging_init_param, dredging_init_hsed0 ! called by initMUSTANG
+   PUBLIC dredging_init_param ! called by initMUSTANG
    PUBLIC dredging_main ! called by MUSTANG_update
    PUBLIC l_dredging ! boolean , TRUE to activate dredging
    PUBLIC dump_gravel_flx
+   PUBLIC dredg_hsed_init
 
    ! Shared module variables
    LOGICAL :: l_dredging ! boolean , TRUE to activate dredging
@@ -462,22 +463,7 @@ CONTAINS
       dump_surface(:) = 0.0_rsh
 
    END SUBROUTINE dredging_alloc
-   !============================================================================
 
-   SUBROUTINE dredging_init_hsed0(hsed)
-      !!------------------------------------------------------------------------
-      !!       *** SUBROUTINE dredging_init_hsed0 ***
-      !!
-      !! ** Purpose : TODO
-      !!
-      !!------------------------------------------------------------------------
-
-      IMPLICIT NONE
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN) :: hsed
-
-      dredg_hsed_init(:, :) = hsed(:, :)
-
-   END SUBROUTINE dredging_init_hsed0
    !============================================================================
 
    SUBROUTINE dredging_main(imin, imax, jmin, jmax, watconc, z_w, hmod, hsed, &

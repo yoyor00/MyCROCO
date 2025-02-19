@@ -36,23 +36,15 @@
 :    date_start_dyninsed : string, starting date for dynamic processes in 
 :                          sediment
 :    date_start_morpho : string, starting date for morphodynamic processes 
-:    l_repsed : boolean, set to .true. if sedimentary variables are 
-:               initialized from a previous run
-:    filrepsed : string, file path from which the model is initialized for 
-:                the continuation of a previous run
-:                WARNING : filrepsed must be given if l_bathy_actu = .T. in 
-:                order to read new h0 even if l_repsed = .F.
-:    l_initsed_vardiss : boolean, set to .true. if initialization of 
-:                        dissolved variables, temperature and salinity in 
-:                        sediment (will be done with concentrations in water 
-:                        at bottom (k=1))
 :    l_unised : boolean, set to .true. for a uniform bottom initialization
-:    fileinised : string, file path for initialization (if l_unised is 
-:                 False)
+:               set to .false. to read initialisation from filerepsed file
+:    filrepsed : string, file path from which the model is initialized for 
+:                the continuation of a previous run or a non-uniform initialisation
+:                used if l_unised = .false.
 :    hseduni : real, initial uniform sediment thickness (m)
 :    cseduni : real, initial sediment concentration (kg/m3)
-:    l_init_hsed : boolean, set to .true. if we want to adjust the sediment 
-:                  thickness in order to be coherent with sediment 
+:    l_unised_adjust_hsed : boolean, set to .true. if we want to adjust the 
+:                  sediment thickness in order to be coherent with sediment 
 :                  parameters (calculation of a new hseduni based on 
 :                  cseduni, cvolmax values, and csed_ini of each sediment)
 :    csed_mud_ini : real, mud concentration into initial sediment (kg/m3)
@@ -65,24 +57,27 @@
 :               the sediment) (Celsius degree)
 :    poro_mud_ini : real, if key_MUSTANG_V2 only, initial porosity of mud 
 :                   fraction
+:    l_initsed_vardiss : boolean, set to .true. if initialization of 
+:                        dissolved variables, temperature and salinity in 
+:                        sediment (will be done with concentrations in water 
+:                        at bottom (k=1))
 :------------------------------------------------------------------------------
 &namsedim_init
    date_start_dyninsed = '0000/01/01 00:00:00'
    date_start_morpho = '0000/01/01 00:00:00' 
-   l_repsed = .false. 
+   l_unised = .true.    
    filrepsed = './' 
-   l_initsed_vardiss = .false. 
-   l_unised = .true.       
-   fileinised =  './'   
    hseduni = 1. 
    cseduni = 1500.0        
-   l_init_hsed = .FALSE.   
+   l_unised_adjust_hsed = .FALSE.   
    csed_mud_ini = 300.0      
    ksmiuni = 1 
    ksmauni = 1    
    sini_sed = 35.5 
    tini_sed = 10. 
-   poro_mud_ini = 0.  / 
+   poro_mud_ini = 0.  
+   l_initsed_vardiss = .false. 
+   / 
 :
 :------------------------------------------------------------------------------
 :  namsedim_layer : Namelist relative to sediment layers characterization and 
@@ -503,17 +498,12 @@
 :                 (MF_dhsed=MF; then MF will be = 0)
 :                 set to .false. if morphodynamic is applied with 
 :                 erosion/deposit fluxes amplification (MF_dhsed not used)
-:    l_bathy_actu : boolean, set to .true. if reading a new bathy issued a 
-:                   previous run and saved in filrepsed 
-:                   (given in namelist namsedim_init)
-:                   !!! NOT IMPLEMENTED YET !!!
 :------------------------------------------------------------------------------
 &namsedim_morpho
   l_morphocoupl=.false. 
   MF = 1.0 
   dt_morpho = 0.1      
-  l_MF_dhsed = .false. 
-  l_bathy_actu = .false. / 
+  l_MF_dhsed = .false. / 
 :
 :------------------------------------------------------------------------------
 :  namtempsed : Namelist relative to temperature estimation in sediment 

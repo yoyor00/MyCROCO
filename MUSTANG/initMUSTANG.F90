@@ -37,7 +37,6 @@ MODULE initMUSTANG
 #include "coupler_define_MUSTANG.h"
 
     USE comMUSTANG
-    USE sed_MUSTANG_HOST,  ONLY : sedinit_fromfile
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
     !USE sed_MUSTANG_HOST,  ONLY : sed_exchange_hxe_HOST
     USE comsubstance
@@ -56,11 +55,11 @@ MODULE initMUSTANG
 
     !! * Local declarations
     ! declaration of namelists, variables described in comMUSTANG
-    namelist /namsedim_init/ l_repsed, filrepsed, l_unised, fileinised,       &
+    namelist /namsedim_init/ filrepsed, l_unised,                   &
                              date_start_morpho, date_start_dyninsed,          &
                              hseduni, cseduni, ksmiuni, ksmauni,              &
                              sini_sed, tini_sed,                              &
-                             l_init_hsed, csed_mud_ini,                       &
+                             l_unised_adjust_hsed, csed_mud_ini,              &
                              l_initsed_vardiss, poro_mud_ini
 
     namelist /namsedim_layer/ l_dzsminuni, dzsminuni,                         &
@@ -113,9 +112,7 @@ MODULE initMUSTANG
                                 frmud_db_min, frmud_db_max,                   &
                                 dt_bioturb, subdt_bioturb
 
-    namelist /namsedim_morpho/ l_morphocoupl, MF,               &
-                               l_MF_dhsed, l_bathy_actu,                      &
-                               dt_morpho                                  
+    namelist /namsedim_morpho/ l_morphocoupl, MF, l_MF_dhsed, dt_morpho                                  
 
     namelist /namsedoutput/ choice_nivsed_out,                                &
                             nk_nivsed_out, ep_nivsed_out, epmax_nivsed_out,   &
@@ -193,7 +190,7 @@ CONTAINS
     !&E
     !&E------------------------------------------------------------------------
    !! * Modules used
-    USE dredging, ONLY : dredging_init_param, dredging_init_hsed0, l_dredging
+    USE dredging, ONLY : dredging_init_param
     USE coupler_MUSTANG,  ONLY : coupl_conv2MUSTANG
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
 #ifdef key_MUSTANG_splitlayersurf
@@ -280,16 +277,6 @@ CONTAINS
     CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,0,WATER_CONCENTRATION )
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ! Reading new bathy issued from a previous run with morphocoupl 
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !IF(l_bathy_actu) THEN
-    ! **TODO** has not been implemented in CROCO yet
-    ! this routine depends on hydrodynamic host model because reading save file 
-    ! from a revious run
-    ! CALL bathy_actu_fromfile(BATHY_H0) 
-    !ENDIF
-
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Evaluation of slope for bedload
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
@@ -303,10 +290,10 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Definition of initial conditions in sediment
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    IF (l_repsed) THEN
-        CALL sedinit_fromfile
-    ELSE
+    IF (l_unised) THEN
         CALL MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, BATHY_H0)
+    ELSE
+        CALL MUSTANG_init_fromfile
     END IF
       
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -380,10 +367,6 @@ CONTAINS
                                                 ,dhsed               &
 #endif
             )
-
-    IF (l_dredging) THEN
-        CALL dredging_init_hsed0(hsed)
-    ENDIF
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Evaluation of Z0_hydro if l_z0_coupl_init
@@ -971,6 +954,231 @@ CONTAINS
     hsed_new = dzsgrv +dzssan +dzsmud
 
     END SUBROUTINE MUSTANG_init_hsed
+
+!!=============================================================================
+  SUBROUTINE MUSTANG_init_fromfile
+ 
+    !&E-------------------------------------------------------------------------
+    !&E                 ***  ROUTINE MUSTANG_init_fromfile  ***
+    !&E
+    !&E ** Purpose : manages the fields to be re-initialized in case of the 
+    !&E              continuation of a previous run
+    !&E
+    !&E ** Description : open and read a netcdf file, written during a previous run 
+    !&E
+    !&E ** Called by :  MUSTANG_init 
+    !&E
+    !&E-------------------------------------------------------------------------
+    !! * Modules used
+     USE dredging, ONLY : l_dredging, dredg_hsed_init
+     
+     implicit none
+                       
+ 
+# include "netcdf.inc"
+     real time_scale
+     integer iv, k, itrc, indWrk
+     integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,       &
+     start(2), count(2), ibuff(6), nf_fread, checkdims
+     character units*180, nomcv*30
+     character inised_name*180
+     real tmp(GLOBAL_2D_ARRAY)
+     real tmp3d(GLOBAL_2D_ARRAY, ksdmin:ksdmax)
+ 
+     tmp(PROC_IN_ARRAY) = 0
+     tmp3d(PROC_IN_ARRAY,ksdmin:ksdmax) = 0
+     z0sed(PROC_IN_ARRAY) = z0seduni
+     dzsmax(PROC_IN_ARRAY) = dzsmaxuni
+     ksmi(PROC_IN_ARRAY) = ksmiuni
+     ksma(PROC_IN_ARRAY) = 0
+     hsed(PROC_IN_ARRAY) = 0.0_rsh
+     dzs(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
+     cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
+     c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
+ !
+ ! Open initial conditions netCDF file for reading. Check that all
+ ! spatial dimensions in that file are consistent with the model
+ ! arrays, determine how many time records are available in the file
+ ! and set record from which the dada will be read.
+ !
+ ! The record is set as follows: (1) if only one time record is
+ ! available in the file, then that record is used REGARDLESS of
+ ! value of nrrec supplied from the parameter file; (2) if the
+ ! file has multiple records and nrrec is positive, then nrrec is
+ ! used, provided that nrrec is within the available records; 
+ ! (3) if the file has multiple records and nrrec<0, then THE LAST 
+ ! available record is used.
+ 
+ !      if (may_day_flag.ne.0) return      !-->  EXIT
+       inised_name = filrepsed
+       lstr = lenstr(inised_name)
+       ierr = nf_open(inised_name(1:lstr), nf_nowrite, ncid)
+       if (ierr.eq.nf_noerr) then
+         ierr = checkdims(ncid, inised_name, lstr, indx)
+ 
+         if (ierr.ne.nf_noerr) then
+          goto 99
+         elseif (indx.eq.0) then
+           indx = 1
+         elseif (indx.gt.0 .and. nrrec.gt.0 .and. nrrec.le.indx) then
+           indx = nrrec
+         elseif (indx.gt.0 .and. nrrec.gt.indx) then
+           write(stdout,'(/1x,A,I4,A/16x,A,I4,A/16x,3A/)')   &
+                'MUSTANG_init_fromfile ERROR: requested restart time record', &
+                nrrec, ' exceeds',  'number of available records', &
+                indx,'in netCDF file', '''',inised_name(1:lstr),'''.'
+           goto 99                                        !--> ERROR
+         endif
+       else
+         write(stdout,'(/1x,2A/15x,3A)') &
+                'MUSTANG_init_fromfile ERROR: Cannot ', &
+                'open netCDF file', '''', inised_name(1:lstr) ,'''.'
+         goto 99                                           !--> ERROR
+       endif
+ 
+ 
+ ! ksmi, ksma
+       ierr=nf_inq_varid (ncid,'ksmi', varid)
+       if (ierr .eq. nf_noerr) then
+         ierr=nf_fread (tmp, ncid, varid, indx, 0)
+         ksmi(PROC_IN_ARRAY)=INT(tmp(PROC_IN_ARRAY))
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) 'ksmi', indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+       else
+         MPI_master_only  write(stdout,1) 'ksmi', inised_name(1:lstr)
+         goto 99                                           !--> ERROR
+       endif
+       
+        ierr=nf_inq_varid (ncid,'ksma', varid)
+       if (ierr .eq. nf_noerr) then
+         ierr=nf_fread (tmp, ncid, varid, indx, 0)
+         ksma(PROC_IN_ARRAY)=INT(tmp(PROC_IN_ARRAY))
+ 
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) 'ksma', indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+       else
+         MPI_master_only  write(stdout,1) 'ksma', inised_name(1:lstr)
+         goto 99                                           !--> ERROR
+       endif
+ 
+      WHERE (ksmi(PROC_IN_ARRAY) < ksdmin ) 
+         ksmi(PROC_IN_ARRAY) = 1
+         ksma(PROC_IN_ARRAY) = 0
+      END WHERE
+ !  DZS
+       ierr=nf_inq_varid (ncid,'DZS', varid)
+       if (ierr .eq. nf_noerr) then
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+          do k=ksdmin,ksdmax
+             dzs(k,:,:)=tmp3d(:,:,k)
+          enddo
+         
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) 'DZS', indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+       else
+         MPI_master_only  write(stdout,1) 'DZS', inised_name(1:lstr)
+         goto 99                                           !--> ERROR
+       endif
+ 
+ 
+ ! CVSED
+  
+       c_sedtot(:,:,:)=0.0_rsh
+       do iv=-1,nv_tot 
+ 
+        if (iv == -1) then
+           nomcv='temp_sed'
+        elseif (iv==0) then
+           nomcv='salt_sed'
+        else
+           nomcv=TRIM(name_var(iv))//'_sed'
+        endif
+ 
+        ierr=nf_inq_varid (ncid,nomcv, varid)
+        if (ierr .eq. nf_noerr) then
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+ 
+         do k=ksdmin,ksdmax
+             cv_sed(iv,k,:,:)=tmp3d(:,:,k)
+             c_sedtot(k,:,:)=c_sedtot(k,:,:)+cv_sed(iv,k,:,:)*typart(iv)  
+         enddo
+ 
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) nomcv, indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+        
+        else
+         if (iv > nvpc .and. iv < nvp+1 ) then
+          ! not constitutive particulate  variables (Initial in M/Msed converted to M/m3 sed)
+          IF (irkm_var_assoc(iv) >0) THEN
+            do k=ksdmin,ksdmax
+              cv_sed(iv,k,:,:)=cini_sed(iv)*cv_sed(irkm_var_assoc(iv),k,:,:)
+            enddo
+          ELSE
+            do k=ksdmin,ksdmax
+             cv_sed(iv,k,:,:)=cini_sed(iv)*c_sedtot(k,:,:)
+            enddo
+          END IF
+          MPI_master_only  write(stdout,3) nomcv, inised_name(1:lstr)
+         else if (iv > nvp) then
+           ! dissolved variables (M/m3 EI)
+           do k=ksdmin,ksdmax
+             cv_sed(iv,k,:,:)=cini_sed(iv)             
+           enddo
+          MPI_master_only  write(stdout,3) nomcv,name_var(iv), &
+                                           inised_name(1:lstr)
+         else
+          MPI_master_only  write(stdout,1) nomcv, inised_name(1:lstr)
+          goto 99                          !--> ERROR
+         endif
+        endif
+       enddo
+      
+      do k=ksdmin,ksdmax
+      WHERE (c_sedtot(k,PROC_IN_ARRAY) == -valmanq) c_sedtot(k,PROC_IN_ARRAY)=0.0_rsh
+      enddo
+ 
+ 
+ ! dredging
+      if (l_dredging) then
+         ierr=nf_inq_varid (ncid,'dredg_hsed_init', varid)
+         if (ierr .eq. nf_noerr) then
+           ierr=nf_fread (tmp, ncid, varid, indx, 0)
+           dredg_hsed_init(PROC_IN_ARRAY)=tmp(PROC_IN_ARRAY)
+           if (ierr .ne. nf_noerr) then
+             MPI_master_only write(stdout,2) 'dredg_hsed_init', indx, inised_name(1:lstr)
+             goto 99                                         !--> ERROR
+           endif
+         else
+           MPI_master_only  write(stdout,1) 'dredg_hsed_init', inised_name(1:lstr)
+           goto 99                                           !--> ERROR
+         endif
+      endif
+ 
+ ! Close input NetCDF file.
+ !
+       ierr=nf_close(ncid)
+ 
+   1   format(/1x,'MUSTANG_init_fromfile - unable to find variable:', 1x,A, &
+                                  /15x,'in input NetCDF file:',1x,A/)
+   2   format(/1x,'MUSTANG_init_fromfile - error while reading variable:',1x, A, &
+          2x,'at time record =',i4/15x,'in input NetCDF file:',1x,A/)
+   3   format(/1x,'MUSTANG_init_fromfile - unable to find variable:', 1x,A,/10x,A, &
+      &                            /15x,'in input NetCDF file:',1x,A,  &
+          1x,'-> analytical value (cini_sed)'/)
+       return
+   99  may_day_flag=2
+       return
+       
+   END SUBROUTINE MUSTANG_init_fromfile
+
 !!===========================================================================================
     
     SUBROUTINE MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, BATHY_H0)
@@ -981,9 +1189,12 @@ CONTAINS
     !&E
     !&E ** Description : 
     !&E
-    !&E ** Called by :  MUSTANG_init_sediment only if not.l_repsed
+    !&E ** Called by :  MUSTANG_init_sediment only if l_unised
     !&E
     !&E--------------------------------------------------------------------------
+    USE dredging, ONLY : l_dredging, dredg_hsed_init
+         
+    implicit none
 
     !! * Arguments
     INTEGER,INTENT(IN)                                        :: ifirst, ilast, jfirst, jlast
@@ -1006,8 +1217,7 @@ CONTAINS
     cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY)=-valmanq
     c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY)=-valmanq
 
-    IF (l_unised)THEN
-   
+
         ! uniform bed :
         WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) ksmi(PROC_IN_ARRAY)=ksmiuni
         WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) ksma(PROC_IN_ARRAY)=ksmauni
@@ -1065,7 +1275,7 @@ CONTAINS
       
         ! ajustement du hsed et cv_sed
         ! ==============================
-        IF(l_init_hsed .AND. hseduni > 0.0_rsh) THEN
+        IF(l_unised_adjust_hsed .AND. hseduni > 0.0_rsh) THEN
             ALLOCATE(cv_sedini(1:nvpc))
             !!! Concentration massique
             DO iv=1,nvpc
@@ -1136,20 +1346,7 @@ CONTAINS
         ENDDO
         ENDDO
 
-    ELSE
 
-        ! non uniform bed
-        MPI_master_only write(ierrorlog,*) 'NON UNIFORM BED COVERAGE'
-        MPI_master_only write(ierrorlog,*) 'you have to read a netcdf file describing for each grid cell (file_inised)'
-        MPI_master_only write(ierrorlog,*) 'the values for hsed(i,j),z0sed(i,j),ksmi(i,j),ksma(i,j)'
-        MPI_master_only write(ierrorlog,*) 'c_sedtot(i,j),cini_sed(iv,iv=1:nv_state)'
-        STOP
-      
-    ENDIF
-!
-!   END NON UNIFORM BED COVERAGE L_UNISED
-!   -------------------------------------------------
-!
 !   regular vertical mesh
 !   ---------------------
 
@@ -1161,17 +1358,22 @@ CONTAINS
                     dzs(k,i,j)=dzsf
                 ENDDO
             ELSE
-                dzs(:,i,j)=0.0_rsh
+                dzs(:,i,j) = 0.0_rsh
+                hsed(i,j) = 0.0_rsh
             ENDIF
         ENDDO
     ENDDO
 
+    IF (l_dredging) THEN
+        dredg_hsed_init(PROC_IN_ARRAY) = hsed(PROC_IN_ARRAY) 
+    ENDIF
+
 ! DZSmax non uniform
     IF(.NOT. l_dzsmaxuni) THEN
         IF(dzsmaxuni == 0.0_rsh) THEN
-            MPI_master_only write(ierrorlog,*)' ERROR in paraMUSTANG : dzsmaxuni =0. and l_repsed=.FALSE.'
-            MPI_master_only write(ierrorlog,*)' if dzsmaxuni =0. dzsmax must be read in an initial file (l_repsed=T)'
-            MPI_master_only write(ierrorlog,*)' if l_repsed=.FALSE. dzsmax must be evaluated from dzsmaxuni not null'
+            MPI_master_only write(ierrorlog,*)' ERROR in paraMUSTANG : dzsmaxuni =0. and l_unised=.TRUE.'
+            MPI_master_only write(ierrorlog,*)' if dzsmaxuni =0. dzsmax must be read in an initial file '
+            MPI_master_only write(ierrorlog,*)'  dzsmax must be evaluated from dzsmaxuni not null'
             STOP
         ENDIF
 
@@ -1183,7 +1385,7 @@ CONTAINS
        h0max_def=50.0_rsh
        MPI_master_only write(iscreenlog,*)
        MPI_master_only write(iscreenlog,*)'DZSMAX NON UNIFORM'
-       MPI_master_only write(iscreenlog,*)'by default linearly computed in MUSTANG_sedinit (sedim.F90)'
+       MPI_master_only write(iscreenlog,*)'by default linearly computed in MUSTANG_sedinit '
        MPI_master_only write(iscreenlog,*)'from dzsmaxuni (',dzsmaxuni,'m) to dzsmaxuni/100 (',dzsmaxmin,'m) depending on water depth'
        MPI_master_only write(iscreenlog,*)'dzsmax minimum for depth > ',h0max_def
        MPI_master_only write(iscreenlog,*)'PROGRAM your own initialization of dzsmax (or READ a file) in MUSTANG_sedinit'
@@ -1194,6 +1396,8 @@ CONTAINS
        ! or to be read in a data file (to be programmed) 
         
     ENDIF 
+
+
 
     END SUBROUTINE MUSTANG_sedinit
 
@@ -1457,15 +1661,23 @@ CONTAINS
       !! ** Purpose : initialize MUSTANG output vname and variables
       !!
       !!---------------------------------------------------------------------
+        USE dredging, ONLY : l_dredging
+
         IMPLICIT NONE
 
         INTEGER indx, isubs
 
-        ALLOCATE (rstMust(NT+3))
-        ALLOCATE (rstoutintegerMust(NT+3))
-        ALLOCATE (rstout2DMust(NT+3))
-        ALLOCATE (rstout3DsedMust(NT+3))
-        ALLOCATE (vname_rstMust(20, NT+3))
+        if (l_dredging) then
+            rstMust_nbvar = NT+4
+        else
+            rstMust_nbvar = NT+3
+        endif
+
+        ALLOCATE (rstMust(1:rstMust_nbvar))
+        ALLOCATE (rstoutintegerMust(1:rstMust_nbvar))
+        ALLOCATE (rstout2DMust(1:rstMust_nbvar))
+        ALLOCATE (rstout3DsedMust(1:rstMust_nbvar))
+        ALLOCATE (vname_rstMust(20, 1:rstMust_nbvar))
 
         vname_rstMust(:,:) = ""
         rstoutintegerMust(:) = .FALSE.
@@ -1568,6 +1780,21 @@ CONTAINS
             rstout2DMust(indx) = .FALSE.
             rstout3DsedMust(indx) = .TRUE.
         ENDDO
+
+        if (l_dredging) then
+            indx = indx + 1
+            vname_rstMust(1,indx) = 'dredg_hsed_init'
+            vname_rstMust(2,indx) = 'initial sediment height'
+            vname_rstMust(3,indx) = 'm'
+            vname_rstMust(4,indx) = ' '
+            vname_rstMust(5,indx) = ' '
+            vname_rstMust(6,indx) = ' '
+            vname_rstMust(7,indx) = ' '
+            rstoutintegerMust(indx) = .FALSE.
+            rstout2DMust(indx) = .TRUE.
+            rstout3DsedMust(indx) = .FALSE.
+        endif
+
         ! end for RESTART file
 
         ! HIS file
@@ -2404,11 +2631,8 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!
     IF(l_morphocoupl) THEN
     !! Warning : no hx, hy in other model than MARS 
-        ALLOCATE(hsed0(PROC_IN_ARRAY))
         ALLOCATE(hsed_previous(PROC_IN_ARRAY))
-        hsed0(PROC_IN_ARRAY) = 0.0_rsh
         hsed_previous(PROC_IN_ARRAY) = 0.0_rsh
-
     ENDIF
 
     !! declaration of the MUSTANG variables needed in the hydro model 
