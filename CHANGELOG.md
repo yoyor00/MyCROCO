@@ -33,8 +33,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   in one MPI domain rejecting towards another MPI domain
 - Issue #309 : fix parallel compilation (except for AGRIF)
 
-- Fixes issue with OBC_COM_M2CHARACT_XXX (modified by mistake into OBC_COM_M2ORLANSKI in u2bc and v2bc) : fixes [#186]((https://gitlab.inria.fr/croco-ocean/croco/-/issues/186)
-
 ### Changed
 
 - Issue #306 : in MRL_WCI change limits of wave height in surfzone
