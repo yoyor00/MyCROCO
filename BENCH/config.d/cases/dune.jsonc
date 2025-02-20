@@ -57,7 +57,7 @@
     },
     "patches": {},
     "input_file": "TEST_CASES/croco.in.Dune3d",
-    "check_outputs": ["dune_his.nc"],
+    "check_outputs": ["dune3d_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
 }
