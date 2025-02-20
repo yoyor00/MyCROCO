@@ -38,7 +38,7 @@ months=$MONTH_BEGIN_JOBp1
 days=$DAY_BEGIN_JOBp1
 years=$YEAR_BEGIN_JOBp1
 jobleft=$NBJOB
-while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
+while [ ${newedate} -lt ${DATE_END_EXP} ] || [ ${jobleft} -ge 2 ] ; do
     #
     mdy=$( valid_date $(( $months + $JOB_DUR_MTH )) $(( $days + $JOB_DUR_DAY - 1 )) $years )
     monthe=$( echo $mdy | cut -d " " -f 1 )
