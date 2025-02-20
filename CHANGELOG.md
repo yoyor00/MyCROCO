@@ -10,6 +10,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- Issue #235 : fix chained_jobs.sh when doing multiple chained run of one days
 - Issue #239 : back to previous default option in create_config
 - Issue #252 : fix PSOURCE_MASS capabilities broken by previous change
 - Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
