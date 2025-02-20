@@ -123,11 +123,6 @@
 #  undef  MPI_TIME
 # endif
 # undef  AUTOTILING
-                      /* Non-hydrostatic options */
-# ifdef NBQ
-#  define W_HADV_TVD
-#  define W_VADV_TVD
-# endif
                       /* Grid configuration */
 # define CURVGRID
 # define SPHERICAL
