@@ -2012,7 +2012,7 @@ CR      write(*,*) 'wrt_his var3Dksed_dtsdzs'   MYID
       endif
 #endif
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
+       MPI_master_only write(stdout,'(6x,A,2(A,I5,1x),A,I5)')
      &       'WRT_HIS -- wrote ',
      &       'history fields into time record =', record, '/',
      &        nrechis  MYID
