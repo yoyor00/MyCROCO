@@ -7,6 +7,8 @@
     "splitting": { "1": "1x1", "2": "1x2", "4": "1x4", "8": "2x4" },
     "cppkeys": {
       "VILAINE": true,
+      "MUSTANG": false,
+      "SUBSTANCE": false,
       "FILLVAL": false,
     },
     "patches": {},

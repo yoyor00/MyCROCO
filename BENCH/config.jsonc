@@ -88,12 +88,12 @@
       "IGW",
       "ISOLITON",
       "OVERFLOW",
-      "PSOURCE_MASS",
+      "RIVER_PSOURCE_MASS",
       "RIVER",
       "UPWELLING",
     ],
-    "@realist": ["BENGUELA_LR_TIDES_BULK", "VILAINE"], // MPI repro issues with VILAINE
-    "@nbq": ["GRAV_ADJ_NBQ", "IGW_NBQ"], // IGW_NBQ is not operational
+    "@realist": ["BENGUELA_LR_TIDES_BULK"], // "VILAINE"], // MPI repro issues with VILAINE
+    "@nbq": ["GRAV_ADJ_NBQ"], //"IGW_NBQ"], // IGW_NBQ is not operational
     "@sediment_mustang": [
       "DUNE_SEDIMENT",
       "DUNE_MUSTANG",
@@ -122,9 +122,19 @@
       "SINGLE_COLUMN_KATO_PHILIPS",
       "SINGLE_COLUMN_WILLIS_DEARDORFF",
       "ACOUSTIC",
-      "SED_TOY",
-      "FLASH_RIP", // repro-mpi issue
-      "MOVING_BATHY", // repro-mpi issue
+      "SED_TOY_ROUSE",
+      //"SED_TOY_CONSOLID", // debug issue
+      //"SED_TOY_RESUSP", // debug issue
+      "SED_TOY_FLOC0D",
+      "SED_TOY_FLOC1D",
+      "RIP_BISCA",
+      "RIP_GRANDPOPO",
+      "RIP_TOPO_2D",
+      "RIP_WAKE_MAKER",
+      "DUNE_ANA_DUNE",
+      "DUNE_DUNE3D",
+      //"FLASH_RIP", // repro-mpi issue
+      //"MOVING_BATHY", // repro-mpi issue
     ],
     "@agrif": ["VORTEX", "VORTEX_AGRIF_1WAY", "VORTEX_AGRIF_2WAY"],
   },

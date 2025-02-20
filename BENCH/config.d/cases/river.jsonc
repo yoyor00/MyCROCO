@@ -10,8 +10,8 @@
     "unsupported": ["restart"],
   },
   // PSOURCE_MASS
-  "PSOURCE_MASS": {
-    "title": "PSOURCE_MASS - (40 x 80 x 20 : 800)",
+  "RIVER_PSOURCE_MASS": {
+    "title": "RIVER_PSOURCE_MASS - (40 x 80 x 20 : 800)",
     "case": "RIVER",
     "plot_diag_script": "./TEST_CASES/plot_river.py",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
