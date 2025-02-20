@@ -8,6 +8,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Issue #298 : Benchmarking python tools to perform tests runs, see documentation or 
   BENCH/README.md for more details
+- Issue #291 : add new test case FLASH_RIP
 
 ### Fixed
 
@@ -27,6 +28,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - ABL1D perfect restart
   - ECUME6/ABL1D
 - Issue #285 : fix NBQ+XIOS compilation
+- Issue #299 : cleaning, comment in sta.h
 - Issue #305 : fix MPI repro with PSOURCE when a source is 
   in one MPI domain rejecting towards another MPI domain
 - Issue #309 : fix parallel compilation (except for AGRIF)
@@ -37,6 +39,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   ```./jobcomp -h``` for more details
 
 - Issue #306 : in MRL_WCI change limits of wave height in surfzone
+
+- Issue #291 : change wavemaker (periodic boundaries + single-sum)
 
 - Issue #281 : optimization of the PISCES code on
   - representation of the lability of the particle pool
