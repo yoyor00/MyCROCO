@@ -13,6 +13,27 @@
     "patches": {},
     "check_outputs": ["CROCO_FILES/croco_his.nc"],
   },
+  // BENGUELA NBQ
+  "BENGUELA_LR_NBQ": {
+    "title": "BENGUELA_LR_TIDES_BULK",
+    "case": "REGIONAL",
+    "plot_diag_script": "./TEST_CASES/plot_regional.py",
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "cppkeys": {
+      "NBQ": true,
+    },
+    "patches": {
+      // CHange the ndtfast
+      "TEST_CASES/croco.in.Regional": {
+        "mode": "replace",
+        "what": "                3840      3600      60      1",
+        "by": "                3840      3600      80      1",
+        "descr": "Set stepping ndtfast = 80",
+      },
+    },
+    "check_outputs": ["CROCO_FILES/croco_his.nc"],
+  },
   "BENGUELA_VHR_TIDES_BULK": {
     "title": "BENGUELA_VHR_TIDES_BULK",
     "case": "REGIONAL",
@@ -35,7 +56,15 @@
       "BULK_FLUX": true,
       "BENGUELA_LR": false,
     },
-    "patches": {},
+    "patches": {
+      // CHange the ndtfast
+      "TEST_CASES/croco.in.Basin": {
+        "mode": "replace",
+        "what": "                3840      3600      60      1",
+        "by": "                3840      900      60      1",
+        "descr": "Set stepping dt = 900",
+      },
+    },
     "check_outputs": ["CROCO_FILES/croco_his.nc"],
   },
 }
