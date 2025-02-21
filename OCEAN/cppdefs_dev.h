@@ -613,6 +613,9 @@
 #ifdef TIDES_MAS
 # define MASKING
 #endif
+#if defined TIDES_MAS  && !defined USE_CALENDAR
+#error "TIDES requires USE_CALENDAR "
+#endif
 
 /*
 ======================================================================
@@ -1043,9 +1046,6 @@
 # error "AGRIF + XIOS + OASIS coupling is not yet implemented"
 #endif
 
-#if defined TIDES_MAS  && !defined USE_CALENDAR
-#error "TIDES requires USE_CALENDAR "
-#endif
 
 /*
 ======================================================================
