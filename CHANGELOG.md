@@ -32,6 +32,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   in one MPI domain rejecting towards another MPI domain
 - Issue #309 : fix parallel compilation (except for AGRIF)
 - Issue #318 : fix typo in order 5 scheme
+- Issue #319 : fix MPI reproducibility using MUSTANG_CORFLUX
 
 ### Changed
 
