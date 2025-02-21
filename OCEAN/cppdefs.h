@@ -2027,6 +2027,7 @@
 # ifdef MUSTANG
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
+#  define MUSTANG_CORFLUX
 # endif
 # define PSOURCE
 # define ANA_PSOURCE

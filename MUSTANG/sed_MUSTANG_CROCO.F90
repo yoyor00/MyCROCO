@@ -1043,7 +1043,7 @@ END SUBROUTINE sed_gradvit
 #endif /* defined EW_PERIODIC || defined NS_PERIODIC || defined MPI */
 !!=============================================================================
    
-   SUBROUTINE sed_obc_corflu(ifirst, ilast, jfirst, jlast)
+   SUBROUTINE sed_obc_corflu(istr, iend, jstr, jend)
  
     !&E------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_obc_corflu ***
@@ -1051,104 +1051,62 @@ END SUBROUTINE sed_gradvit
     !&E ** Purpose : treatment of horizontal flow corrections for the transport 
     !&E              of sand in suspension
     !&E
-    !&E ** Description : extrapolation at borders
+    !&E ** Description : extrapolation at borders 
+    !&E   Use SOUTHERN_EDGE, WESTERN_EDGE, NORTHERN_EDGE, EASTERN_EDGE defined 
+    !&E   in OCEAN/set_global_definitions.h using 
+    !&E   variables istr, iend, jstr, jend
     !&E
     !&E ** Called by : MUSTANG_update
     !&E--------------------------------------------------------------------------
  
     !! * Arguments
-    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
+    INTEGER,INTENT(IN) :: istr, iend, jstr, jend
  
     !! * Local declarations
     INTEGER :: i, j, ivp
 
     do ivp = isand1, isand2
-
-    !! * Executable part
-#if defined MPI 
-    if (float(ifirst + ii * Lm) .EQ. IMIN_GRID) then
-#else
-    if (float(ifirst) .EQ. IMIN_GRID) then
-#endif
-        corflux(ivp, ifirst, :) = corflux(ivp, ifirst+1, :)
-        corfluy(ivp, ifirst, :) = corfluy(ivp, ifirst+1, :)
-        corflux(ivp, ifirst-1, :) = corflux(ivp, ifirst+1, :)
-        corfluy(ivp, ifirst-1, :) = corfluy(ivp, ifirst+1, :)
-    endif
-#if defined MPI 
-    if (float(ilast + ii * Lm) .EQ. IMAX_GRID) then
-#else
-    if (float(ilast) .EQ. IMAX_GRID) then
-#endif
-        corflux(ivp, ilast, :) = corflux(ivp, ilast-1, :)
-        corfluy(ivp, ilast, :) = corfluy(ivp, ilast-1, :)
-        corflux(ivp, ilast+1, :) = corflux(ivp, ilast-1, :)
-        corfluy(ivp, ilast+1, :) = corfluy(ivp, ilast-1, :)
-    endif
-
-#if defined MPI 
-    if (float(jfirst + jj * Mm) .EQ. JMIN_GRID) then
-#else
-    if (float(jfirst) .EQ. JMIN_GRID) then
-#endif
-        corflux(ivp, :, jfirst) = corflux(ivp, :, jfirst+1)
-        corfluy(ivp, :, jfirst) = corfluy(ivp, :, jfirst+1)
-        corflux(ivp, :, jfirst-1) = corflux(ivp, :, jfirst+1)
-        corfluy(ivp, :, jfirst-1) = corfluy(ivp, :, jfirst+1)
-    endif
-#if defined MPI 
-    if (float(jlast + jj * Mm) .EQ. JMAX_GRID) then
-#else
-    if (float(jlast) .EQ. JMAX_GRID) then
-#endif
-        corflux(ivp, :, jlast) = corflux(ivp, :, jlast-1)
-        corfluy(ivp, :, jlast) = corfluy(ivp, :, jlast-1)
-        corflux(ivp, :, jlast+1) = corflux(ivp, :, jlast-1)
-        corfluy(ivp, :, jlast+1) = corfluy(ivp, :, jlast-1)
-    endif
-
-! corners
-#if defined MPI 
-    if ((float(ifirst + ii * Lm) .EQ. IMIN_GRID) .and.  &
-        (float(jfirst + jj * Mm) .EQ. JMIN_GRID)) then
-#else
-    if ((float(ifirst) .EQ. IMIN_GRID) .and.  &
-        (float(jfirst) .EQ. JMIN_GRID)) then
-#endif
-        corflux(ivp, ifirst, jfirst) = corflux(ivp, ifirst+1, jfirst+1)
-        corfluy(ivp, ifirst, jfirst) = corfluy(ivp, ifirst+1, jfirst+1)
-    endif
-#if defined MPI 
-    if ((float(ifirst + ii * Lm) .EQ. IMIN_GRID) .and.  &
-        (float(jlast + jj * Mm) .EQ. JMAX_GRID)) then
-#else
-    if ((float(ifirst) .EQ. IMIN_GRID) .and.  &
-        (float(jlast) .EQ. JMAX_GRID)) then
-#endif
-        corflux(ivp, ifirst, jlast) = corflux(ivp, ifirst+1, jlast-1)
-        corfluy(ivp, ifirst, jlast) = corfluy(ivp, ifirst+1, jlast-1)
-    endif
-#if defined MPI 
-    if ((float(ilast + ii * Lm) .EQ. IMAX_GRID) .and.  &
-        (float(jlast + jj * Mm) .EQ. JMAX_GRID)) then
-#else
-    if ((float(ilast) .EQ. IMAX_GRID) .and.  &
-        (float(jlast) .EQ. JMAX_GRID)) then
-#endif
-        corflux(ivp, ilast, jlast) = corflux(ivp, ilast-1, jlast-1)
-        corfluy(ivp, ilast, jlast) = corfluy(ivp, ilast-1, jlast-1)
-    endif
-#if defined MPI 
-    if ((float(ilast + ii * Lm) .EQ. IMAX_GRID) .and.  &
-        (float(jfirst + jj * Mm) .EQ. JMIN_GRID)) then
-#else
-    if ((float(ilast) .EQ. IMAX_GRID) .and.  &
-        (float(jfirst) .EQ. JMIN_GRID)) then
-#endif
-        corflux(ivp, ilast, jfirst) = corflux(ivp, ilast-1, jfirst+1)
-        corfluy(ivp, ilast, jfirst) = corfluy(ivp, ilast-1, jfirst+1)
-    endif
-
+      if (WESTERN_EDGE) then
+          corflux(ivp, istr, :) = corflux(ivp, istr+1, :)
+          corfluy(ivp, istr, :) = corfluy(ivp, istr+1, :)
+          corflux(ivp, istr-1, :) = corflux(ivp, istr+1, :)
+          corfluy(ivp, istr-1, :) = corfluy(ivp, istr+1, :)
+      endif
+      if (EASTERN_EDGE) then
+          corflux(ivp, iend, :) = corflux(ivp, iend-1, :)
+          corfluy(ivp, iend, :) = corfluy(ivp, iend-1, :)
+          corflux(ivp, iend+1, :) = corflux(ivp, iend-1, :)
+          corfluy(ivp, iend+1, :) = corfluy(ivp, iend-1, :)
+      endif
+      if (SOUTHERN_EDGE) then
+          corflux(ivp, :, jstr) = corflux(ivp, :, jstr+1)
+          corfluy(ivp, :, jstr) = corfluy(ivp, :, jstr+1)
+          corflux(ivp, :, jstr-1) = corflux(ivp, :, jstr+1)
+          corfluy(ivp, :, jstr-1) = corfluy(ivp, :, jstr+1)
+      endif
+      if (NORTHERN_EDGE) then
+          corflux(ivp, :, jend) = corflux(ivp, :, jend-1)
+          corfluy(ivp, :, jend) = corfluy(ivp, :, jend-1)
+          corflux(ivp, :, jend+1) = corflux(ivp, :, jend-1)
+          corfluy(ivp, :, jend+1) = corfluy(ivp, :, jend-1)
+      endif
+! ! corners
+      if ((SOUTHERN_EDGE) .and. (WESTERN_EDGE))then
+          corflux(ivp, istr, jstr) = corflux(ivp, istr+1, jstr+1)
+          corfluy(ivp, istr, jstr) = corfluy(ivp, istr+1, jstr+1)
+      endif
+      if ((NORTHERN_EDGE) .and. (WESTERN_EDGE))then
+          corflux(ivp, istr, jend) = corflux(ivp, istr+1, jend-1)
+          corfluy(ivp, istr, jend) = corfluy(ivp, istr+1, jend-1)
+        endif
+      if ((NORTHERN_EDGE) .and. (EASTERN_EDGE))then
+          corflux(ivp, iend, jend) = corflux(ivp, iend-1, jend-1)
+          corfluy(ivp, iend, jend) = corfluy(ivp, iend-1, jend-1)
+        endif
+      if ((SOUTHERN_EDGE) .and. (EASTERN_EDGE))then
+          corflux(ivp, iend, jstr) = corflux(ivp, iend-1, jstr+1)
+          corfluy(ivp, iend, jstr) = corfluy(ivp, iend-1, jstr+1)
+      endif
     enddo ! ivp
 
     END SUBROUTINE sed_obc_corflu
