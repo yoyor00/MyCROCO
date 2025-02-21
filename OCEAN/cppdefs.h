@@ -488,7 +488,7 @@
 # define FILLVAL
                       /* Calendar */
 
-# undef USE_CALENDAR
+# define USE_CALENDAR
                       /* dedicated croco.log file */
 # undef  LOGFILE
 /*!
