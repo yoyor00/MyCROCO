@@ -2744,21 +2744,56 @@
                      !!!!!!!!!!!!!!!!!!
                      !cycle de l azote
                      !!!!!!!!!!!!!!!!!!
-                         
 !               F_oxyd_ODU = 0.0_rsh
 !               F_remin_aerN = 0.0_rsh
+!               F_remin_anaerN = 0.0_rsh
 !               F_reminR_aerN = 0.0_rsh
+!               F_reminR_anaerN = 0.0_rsh
 !               F_nitrif = 0.0_rsh
-!               F_precPFE_O2 = 0.0_rsh 
+!               F_remin_anaerN = 0.0_rsh
+!               F_remin_NO3 = 0.0_rsh
+!               F_transf_MO = 0.0_rsh
+!               F_burried = 0.0_rsh
+!               F_dnra = 0.0_rsh
+!               F_dnraR =0.0_rsh
+!               F_denit = 0.0_rsh
+!               F_denitR = 0.0_rsh
+
+                     !!!!!!!!!!!!!!!!!!!
+                     !cycle du Phosphore
+                     !!!!!!!!!!!!!!!!!!!
+!               F_adsorP = 0.0_rsh
+!               F_desorP = 0.0_rsh
+!               F_remin_aerP =0.0_rsh
+!               F_remin_anaerP = 0.0_rsh
+!               F_remin_NO3_P = 0.0_rsh
+!               F_reminR_aerP =0.0_rsh
+!               F_reminR_anaerP = 0.0_rsh
+!               F_reminR_NO3_P = 0.0_rsh
+!               F_precPFE_O2 = 0.0_rsh
+!               F_dissolPFE = 0.0_rsh
+!               F_precPFE_NO3 = 0.0_rsh
+
+                     !!!!!!!!!!!!!!!!!!!!
+                     !cycle de la silice
+                     !!!!!!!!!!!!!!!!!!!!
+!               F_precSi = 0.0_rsh
+!               F_remin_Si = 0.0_rsh
+
+                     !!!!!!!!!!!!!!!!!!!!!!!
+                     !processus liés a l'O2
+                     !!!!!!!!!!!!!!!!!!!!!!!
+!               F_oxyd_ODU = 0.0_rsh
+!               F_solid_ODU = 0.0_rsh
 
              ! Dissolved oxygen (mg/l) 
              ! -------------------------
-!             dcdt(iv_oxygen)= -F_oxyd_ODU *cs(iv_ODU)*porosite_inv                &
              dcdt(iv_oxygen)= (-F_oxyd_ODU * cs(iv_ODU)                                      &
                                -F_remin_aerN * cs(iv_detr_N) * porosite_inv * p_GO2_NOrg     &
                                -F_reminR_aerN * cs(iv_detrR_N) * porosite_inv * p_GO2_NOrgR  &
                                -F_nitrif * cs(iv_nutr_NH4) * p_GO2_NH4)                      &
                               * 0.032_rsh ! transformation en mg/L
+!             dcdt(iv_oxygen)= 0.0_rsh
 
 !            ................................................................... 
             
@@ -2803,6 +2838,7 @@
 !                  +(F_remin_aerN/10._rsh)*cs(iv_detr_N)*porosite_inv   &
 !#endif
                               -F_nitrif * cs(iv_nutr_NH4)
+!             dcdt(iv_nutr_NH4)= 0.0_rsh
 
              diag_3d_sed(id_nitrif,k,i,j)=diag_3d_sed(id_nitrif,k,i,j)  &
                                          +F_nitrif * cs(iv_nutr_NH4) * dzs(k,i,j)
@@ -2825,6 +2861,7 @@
              dcdt(iv_nutr_NO3)=F_nitrif * cs(iv_nutr_NH4)                 &
                               -(F_denit + F_dnra) * cs(iv_detr_N) * p_GNO3_Norg * porosite_inv        &
                               -(F_denitR + F_dnraR) * cs(iv_detrR_N) * p_GNO3_NorgR * porosite_inv          
+!             dcdt(iv_nutr_NO3)= 0.0_rsh
              diag_3d_sed(id_remin_denitN,k,i,j)=diag_3d_sed(id_remin_denitN,k,i,j)  &
                                                +F_denit * cs(iv_detr_N) * p_GNO3_Norg * porosite_inv * dzs(k,i,j)  &
                                                +F_denitR * cs(iv_detrR_N) * p_GNO3_NorgR * porosite_inv * dzs(k,i,j)
@@ -2835,6 +2872,7 @@
              dcdt(iv_ODU)= F_remin_anaerN * cs(iv_detr_N) * p_GODU_NOrg * porosite_inv     &
                          + F_reminR_anaerN * cs(iv_detrR_N) * p_GODU_NOrgR *porosite_inv  &
                          -(F_oxyd_ODU+F_solid_ODU)*cs(iv_ODU)
+!             dcdt(iv_ODU)= 0.0_rsh
  
              diag_3d_sed(id_oxyd_solid_ODU,k,i,j)=diag_3d_sed(id_oxyd_solid_ODU,k,i,j)  &
                                                  -(F_oxyd_ODU+F_solid_ODU)*cs(iv_ODU)*dzs(k,i,j)
@@ -2854,6 +2892,7 @@
 !                    +(F_remin_aerP/10._rsh)*cs(iv_detr_P)*porosite_inv*dtbiojour                &
 !#endif
                               -(F_adsorP + F_precPFE_O2 + F_precPFE_NO3)*cs(iv_nutr_PO4)
+!             dcdt(iv_nutr_PO4)= 0.0_rsh
 !            ...................................................................                       
                             
              ! Detrital P (micromol/l sed) 
@@ -2891,6 +2930,7 @@
              ! ---------------------------
              dcdt(iv_PFe)=(F_precPFE_O2 + F_precPFE_NO3) * cs(iv_nutr_PO4) * poro(k,i,j)  &
                          - (F_dissolPFE * cs(iv_PFe)) - (F_burried * cs(iv_PFe))
+!             dcdt(iv_PFe)= 0.0_rsh
                            
              diag_3d_sed(id_dissol_PFe,k,i,j)=diag_3d_sed(id_dissol_PFe,k,i,j)+  &
                                              + (F_dissolPFE * cs(iv_PFe) * dzs(k,i,j))
@@ -2912,6 +2952,7 @@
              ! -------------------------
              dcdt(iv_oxygen)= dcdt(iv_oxygen)                                          &
                             -F_precPFE_O2 * cs(iv_nutr_PO4) * p_GO2_PFe * 0.032_rsh  
+!             dcdt(iv_oxygen)= 0.0_rsh
 
 !            ...................................................................       
              
@@ -2919,6 +2960,7 @@
              ! -------------------------
              dcdt(iv_nutr_NO3)=dcdt(iv_nutr_NO3)                                       &
                               -F_precPFE_NO3 * cs(iv_nutr_PO4) * p_GNO3_PFe                                                                        
+!             dcdt(iv_nutr_NO3)= 0.0_rsh
 !            ...................................................................       
  
                        !!!!!!!!!!!!!!!!!!!
@@ -2947,6 +2989,7 @@
              !                  -F_precSi * cs(iv_nutr_SiOH)
              dcdt(iv_nutr_SiOH)= F_remin_Si * cs(iv_detr_Si) * porosite_inv             &
                                  - F_precSi
+!             dcdt(iv_nutr_SiOH)= 0.0_rsh
 
              !diag_3d_sed(id_precipit_Si,k,i,j)=diag_3d_sed(id_precipit_Si,k,i,j)  &
              !                                 +F_precSi * cs(iv_nutr_SiOH) * dzs(k,i,j)
