@@ -154,6 +154,8 @@ variables:
     RUN_MK_NAME: "reg"
     RUN_NAME_CONFIGURE: "CONFIGURE_REG"
     RUNNER_SCRIPT_TIMEOUT: 180m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 .reg_perfrst_base: &reg_perfrst_base
   extends: 
