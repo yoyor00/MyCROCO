@@ -10,7 +10,6 @@
 : namsedim_deposition      : relative to sediment deposition
 : namsedim_erosion         : relative to sediment erosion
 : namsedim_poro            : relative to porosity
-:                            (only if key_MUSTANG_V2)
 : namsedim_bedload         : relative to sediment bedload
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
