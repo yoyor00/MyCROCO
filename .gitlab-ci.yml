@@ -140,7 +140,7 @@ reg_perfrst_intel:
     - .intel_base
     - .reg_perfrst_base
 
-test_bench_debug:
+test_bench_debug_base:
   stage: bench
   tags:
     - ci.inria.fr
@@ -151,7 +151,7 @@ test_bench_debug:
     - source /venv/bin/activate
     - |
       ./bench-croco.py \
-      --case @base,@nbq,@sediment_mustang,@other,@complement \
+      --case @base,@nbq,@sediment_mustang,@other \
       --variants @debug \
       --title debug \
       --debug \
@@ -167,7 +167,7 @@ test_bench_debug:
     reports:
       junit: BENCH/results/debug-host_ci/junit_report.xml
 
-test_bench_plotphy:
+test_bench_plotphy_base:
   stage: bench
   tags:
     - ci.inria.fr
@@ -234,7 +234,7 @@ test_bench_debug_vortex:
     # with AGRIF compilation --jobs 1 mandatory
     - |
       ./bench-croco.py \
-      --case @agrif \
+      --case VORTEX* \
       --jobs 1 \
       --variants sequential,mpi-4 \
       --title vortex \
@@ -277,6 +277,32 @@ test_bench_debug_realist:
     reports:
       junit: BENCH/results/debug_realist-host_ci/junit_report.xml
 
+test_bench_restart_realist:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @realist \
+      --variants @debug \
+      --title restart_realist \
+      --restart \
+      --rebuild \
+      --host host_ci \
+      --data-root-path $DATAROOTPATH \
+      --html -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/restart_realist-host_ci/junit_report.xml
+
 test_bench_realist:
   stage: bench
   tags:
@@ -302,6 +328,61 @@ test_bench_realist:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy_realist-host_ci/junit_report.xml
+
+
+test_bench_debug_complement:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
+    - |
+      ./bench-croco.py \
+      --case @complement \
+      --variants @debug \
+      --title debug-complement \
+      --debug \
+      --rebuild \
+      --host host_ci \
+      --html \
+      -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/debug-complement-host_ci/junit_report.xml
+
+test_bench_plotphy_complement:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
+    - |
+      ./bench-croco.py \
+      --case @complement \
+      --variants mpi-2 \
+      --title plotphy-complement \
+      -s build,run,plotphy \
+      --rebuild \
+      --host host_ci \
+      --html \
+      -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/plotphy-complement-host_ci/junit_report.xml
 
 pages:
   stage: report

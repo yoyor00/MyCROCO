@@ -423,7 +423,7 @@ class Croco:
             filename_rst = filename + "_rst"
             full_filename_rst = os.path.join(self.dirname, filename_rst)
             shutil.copy(full_filename, full_filename_rst)
-            file_nc_rst = "croco_rst.nc"
+            file_nc_rst = "croco_restart.nc"
 
             # first run with filename
             self.change_card_time_stepping_ntimes(filename, 3)

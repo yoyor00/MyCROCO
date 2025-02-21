@@ -92,8 +92,8 @@
       "RIVER",
       "UPWELLING",
     ],
-    "@realist": ["BENGUELA_LR_TIDES_BULK"], // "VILAINE"], // MPI repro issues with VILAINE
-    "@nbq": ["GRAV_ADJ_NBQ"], //"IGW_NBQ"], // IGW_NBQ is not operational
+    "@realist": ["BENGUELA_LR_TIDES_BULK", "VILAINE"],
+    "@nbq": ["GRAV_ADJ_NBQ", "IGW_NBQ"],
     "@sediment_mustang": [
       "DUNE_SEDIMENT",
       "DUNE_MUSTANG",
