@@ -1,7 +1,7 @@
 title:
         IGW TEST MODEL
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                 5    50.    60     500 
+                 5    30.    60     500 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                     10          1500          1.
 S-coord: THETA_S,   THETA_B,    Hc (m)
