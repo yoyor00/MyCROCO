@@ -18,6 +18,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   advection in NBQ
 - Issue #259 : remove unused file OCEAN/spkitlocal_nh.F90 
 - Issue #260 : fix wrong array name for XIOS and WKB_WAVE
+- Issue #263 : cleaning unused variables in set_diags_ek.F and set_diags_pv.F
 - Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING
 - Issue #267 : fix several bugs with MUSTANG output, initialisation, add a 
   minimim porosity in deposit in V1 and fix transition with ero_option=3
@@ -32,6 +33,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #305 : fix MPI repro with PSOURCE when a source is 
   in one MPI domain rejecting towards another MPI domain
 - Issue #309 : fix parallel compilation (except for AGRIF)
+- Issue #318 : fix typo in order 5 scheme
+- Issue #319 : fix MPI reproducibility using MUSTANG_CORFLUX
 
 ### Changed
 
