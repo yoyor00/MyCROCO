@@ -31,6 +31,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #305 : fix MPI repro with PSOURCE when a source is 
   in one MPI domain rejecting towards another MPI domain
 - Issue #309 : fix parallel compilation (except for AGRIF)
+- Issue #318 : fix typo in order 5 scheme
 
 ### Changed
 
