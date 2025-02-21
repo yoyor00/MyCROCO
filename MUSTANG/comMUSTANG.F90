@@ -4,18 +4,18 @@ MODULE comMUSTANG
 
 #ifdef MUSTANG
 
-!!============================================================================
-!! ***  MODULE  comMUSTANG  ***
-!! Purpose : declare all common variables related to sediment dynamics
-!!============================================================================
+    !!============================================================================
+    !! ***  MODULE  comMUSTANG  ***
+    !! Purpose : declare all common variables related to sediment dynamics
+    !!============================================================================
 
-!! * Modules used
-USE comsubstance ! for lchain, rsh, rlg, riosh
+    !! * Modules used
+    USE comsubstance ! for lchain, rsh, rlg, riosh
 
-implicit none
+    implicit none
 
-! default
-public
+    ! default
+    public
 
 #include "coupler_define_MUSTANG.h"
   

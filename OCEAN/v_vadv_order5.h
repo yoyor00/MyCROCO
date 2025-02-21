@@ -63,7 +63,7 @@
 #  endif
           FC(i,2)=vel*FLUX3(
      &         v(i,j,1,nrhs), v(i,j,2,nrhs), 
-     &         v(i,j,3,nrhs), v(i,j,4,nrhs), FC(i,2))
+     &         v(i,j,3,nrhs), v(i,j,4,nrhs), vel)
 
 #  ifndef UV_VADV_WENO5_INTC6
           vel=0.5*(We(i,j-1,N-2)+We(i,j,N-2))
