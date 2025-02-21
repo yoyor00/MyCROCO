@@ -15,7 +15,6 @@
   "IGW_NBQ": {
     "title": "IGW - NBQ - (878 x 3 x 40 : 105360)",
     "case": "IGW",
-    "plot_diag_script": "./TEST_CASES/plot_IGW.py",
     "cppkeys": {
       "NBQ": true,
     },
@@ -23,6 +22,6 @@
     "patches": {},
     "input_file": "TEST_CASES/croco.in.Igw_nbq",
     "check_outputs": ["igw_his.nc"],
-    "unsupported": ["restart"],
+    "unsupported": ["restart", "openmp"],
   },
 }
