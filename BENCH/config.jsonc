@@ -130,10 +130,10 @@
       "RIP_BISCA",
       "RIP_GRANDPOPO",
       "RIP_TOPO_2D",
-      "RIP_WAKE_MAKER",
+      // "RIP_WAKE_MAKER", // missing NBQ params
       "DUNE_ANA_DUNE",
       "DUNE_DUNE3D",
-      //"FLASH_RIP", // repro-mpi issue
+      "FLASH_RIP",
       //"MOVING_BATHY", // repro-mpi issue
     ],
     "@agrif": ["VORTEX", "VORTEX_AGRIF_1WAY", "VORTEX_AGRIF_2WAY"],
