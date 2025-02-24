@@ -2626,7 +2626,7 @@ C$    integer  trd, omp_get_thread_num
      &           K3=0.1608465608, K4=0.0632098765,
      &           K5=0.0217540484, K6=0.0065407983)
       INTEGER nseed
-+     INTEGER, ALLOCATABLE :: seed(:)
+      INTEGER, ALLOCATABLE :: seed(:)
 # endif
 
 # include "param.h"
