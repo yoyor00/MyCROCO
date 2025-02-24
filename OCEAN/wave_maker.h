@@ -261,7 +261,10 @@
             enddo
           endif  
 #  endif /* WAVE_MAKER_DSPREAD_PER  */
-
+          CALL RANDOM_SEED(SIZE=nseed)
+          ALLOCATE(seed(nseed))
+          seed = 12345  ! Fix seed for reprocucibility
+          CALL RANDOM_SEED(PUT=seed)
           call RANDOM_NUMBER(wpha_bry)  ! random phase
           do iw=1,Nfrq
              wpha_bry(iw)=wpha_bry(iw)*2.*pi
@@ -270,6 +273,10 @@
           enddo
 
 # else
+          CALL RANDOM_SEED(SIZE=nseed)
+          ALLOCATE(seed(nseed))
+          seed = 12345  ! Fix seed for reprocucibility
+          CALL RANDOM_SEED(PUT=seed)
           call RANDOM_NUMBER(wpha_bry)  ! random phase
           do iw=1,Nfrq
             wa_bry(iw)=wa*sqrt(wa_bry(iw)/sumspec) ! normalize
