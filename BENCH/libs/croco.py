@@ -723,7 +723,10 @@ class Croco:
     def plotphy(self):
         dirname = self.dirname
         full_name = self.full_name
-        filename = self.case["check_outputs"][0]  # to check
+        filename = self.case["check_outputs"][0]  # to check 
+           # TODO, discuss, do we want to keep this ? or do we allow to 
+           # configure filename for plotphy differetly from check_output list ?
+           # example of case where it could be interesting : KILPATRICK
         actual_file = f"{dirname}/{filename}"
         result_dir = self.dirname_result
 
