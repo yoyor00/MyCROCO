@@ -1435,7 +1435,7 @@
 !      Tracer dispersion by surfzone eddies: assessing 
 !      the impact of undertow vertical shear
 */
-# define MPI
+# undef  MPI
 # undef  NC4PAR
 # define SOLVE3D
 # define NEW_S_COORD
@@ -1450,7 +1450,6 @@
 # define WAVE_MAKER
 # define WAVE_MAKER_SPECTRUM
 # define WAVE_MAKER_DSPREAD
-# define WAVE_MAKER_OBLIQUE
 # define UV_HADV_WENO5
 # define UV_VADV_WENO5
 # define W_HADV_WENO5
