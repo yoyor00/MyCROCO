@@ -116,9 +116,9 @@
 # else
             pt_dtag(i,j,:,iblkrec)=pt_dtag(i,j,:,iblkrec)-273.15
             tairg(i,j,iblkrec)=pt_dtag(i,j,1,iblkrec)-273.15
+# endif
           enddo
         enddo
-#endif
 
 # ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,

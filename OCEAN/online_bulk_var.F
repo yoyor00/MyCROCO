@@ -112,7 +112,7 @@
 
       ! Specific_humidity
       blk_vname(1,2)='rh                                       '
-      blk_vname(2,2)='Specific Humidity at surface             '
+      blk_vname(2,2)='Relative Humidity at surface             '
       blk_vname(3,2)='Kg/Kg                                    '
       blk_vname(4,2)='??????                                   '
 
@@ -278,13 +278,13 @@
       ! Temperature_height_above_ground
       blk_vname(1,1)='T2M                                      '
       blk_vname(2,1)='Temperature                              '
-      blk_vname(3,1)='Kelvin                                   '
+      blk_vname(3,1)='Celsius                                  '
       blk_vname(4,1)='??????                                   '
 
       ! Specific_humidity
       blk_vname(1,2)='R                                        '
-      blk_vname(2,2)='Specific Humidity at surface             '
-      blk_vname(3,2)='Percentage                               '
+      blk_vname(2,2)='Relative Humidity                        '
+      blk_vname(3,2)='Fraction                                 '
       blk_vname(4,2)='??????                                   '
 
       ! Precipitation_rate
@@ -331,7 +331,7 @@
 
 #   ifdef READ_PATM
       ! Atm pressure
-      blk_vname(1,10)='msl                                     '
+      blk_vname(1,10)='MSL                                     '
       blk_vname(2,10)='air_pressure_at_sea_level               '
       blk_vname(3,10)='Pa                                      '
       blk_vname(4,10)='??????                                  '
