@@ -4,7 +4,7 @@
     "title": "RIP - (48 x 48 x 20 : 1800)",
     "case": "RIP",
     "plot_diag_script": "./TEST_CASES/plot_rip.py",
-    "cppdefs": {
+    "cppkeys": {
       "RIP": true,
       "RIP_TOPO_2D": false,
       "BISCA": false,
@@ -20,7 +20,7 @@
   "RIP_BISCA": {
     "title": "RIP - BISCA - (48 x 48 x 20 : 1800)",
     "case": "RIP",
-    "cppdefs": {
+    "cppkeys": {
       "RIP": true,
       "RIP_TOPO_2D": false,
       "BISCA": true,
@@ -36,7 +36,7 @@
   "RIP_GRANDPOPO": {
     "title": "RIP - GRANDPOPO - (48 x 48 x 20 : 1800)",
     "case": "RIP",
-    "cppdefs": {
+    "cppkeys": {
       "RIP": true,
       "RIP_TOPO_2D": false,
       "BISCA": false,
@@ -52,7 +52,7 @@
   "RIP_TOPO_2D": {
     "title": "RIP - TOPO_2D - (48 x 48 x 20 : 1800)",
     "case": "RIP",
-    "cppdefs": {
+    "cppkeys": {
       "RIP": true,
       "RIP_TOPO_2D": true,
       "BISCA": false,
@@ -68,7 +68,7 @@
   "RIP_WAKE_MAKER": {
     "title": "RIP - WAKE_MAKER - (48 x 48 x 20 : 1800)",
     "case": "RIP",
-    "cppdefs": {
+    "cppkeys": {
       "RIP": true,
       "RIP_TOPO_2D": false,
       "BISCA": false,
