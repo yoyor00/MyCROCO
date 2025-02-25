@@ -127,10 +127,10 @@
       //"SED_TOY_RESUSP", // debug issue
       "SED_TOY_FLOC0D",
       "SED_TOY_FLOC1D",
-      "RIP_BISCA",
+      //"RIP_BISCA", // missing files
       "RIP_GRANDPOPO",
       "RIP_TOPO_2D",
-      // "RIP_WAKE_MAKER", // missing NBQ params
+      //"RIP_WAKE_MAKER", // missing NBQ params
       "DUNE_ANA_DUNE",
       "DUNE_DUNE3D",
       "FLASH_RIP",
