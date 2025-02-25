@@ -2619,12 +2619,14 @@ C$    integer  trd, omp_get_thread_num
      &        h0,khd,kh,wa,wk,wp,wf,wd,wds,ramp,
      &        sigma,theta,gamma,Hs,cff_spread, sumspec,
      &        cff,cff0,cff1,cff2,cff3,cff4,cff5,cff6,
-     &        fmin,fmax,df,dmin,dmax,dd, mindiff,
+     &        fmin,fmax,df,dmin,dmax,dd, mindiff,wkdom,
      &        wa1,wk1,wp1,wf1,wa2,wk2,wp2,wf2
       real    K1, K2, K3, K4, K5, K6
       parameter (K1=0.6666666666, K2=0.3555555555,
      &           K3=0.1608465608, K4=0.0632098765,
      &           K5=0.0217540484, K6=0.0065407983)
+      INTEGER nseed
+      INTEGER, ALLOCATABLE :: seed(:)
 # endif
 
 # include "param.h"
