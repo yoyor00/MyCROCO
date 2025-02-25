@@ -543,6 +543,7 @@ CONTAINS
          INTENT(INOUT) :: c_sedtot
 
       INTEGER :: i, j, iv, iz, k
+      REAL(KIND=rsh) :: dzs_dredged, tmp_depth
 
       dredg_mass_byclass_byloc(:, :) = 0.0_rsh
       DO j = jmin, jmax
@@ -553,19 +554,45 @@ CONTAINS
             END DO
             iz = dredg_flag(i, j)
             IF (iz > 0) THEN ! in dredging area
-               DO WHILE (((hmod(i, j) - (hsed(i, j) - dredg_hsed_init(i, j))) &
+#if defined MORPHODYN
+               ! retrieve initial depth, as hmod is updated during simulation
+               tmp_depth = hmod(i, j) + hsed(i, j) - dredg_hsed_init(i, j)
+#else
+               ! initial depth
+               tmp_depth = hmod(i, j)
+#endif
+               DO WHILE (((tmp_depth - (hsed(i, j) - dredg_hsed_init(i, j))) &
                           .LT. dredg_depth(iz)) .AND. ksma(i, j) > 0)
+
                   k = ksma(i, j)
-                  DO iv = 1, nvp
-                     dredg_mass_byclass_byloc(iz, iv) = &
-                        dredg_mass_byclass_byloc(iz, iv) + &
-                        dzs(k, i, j)*cv_sed(iv, k, i, j)*surf_cell(i, j)
-                     cv_sed(iv, k, i, j) = 0.0_rsh
-                  END DO
-                  hsed(i, j) = hsed(i, j) - dzs(k, i, j)
-                  dzs(k, i, j) = 0.0_rsh
-                  c_sedtot(k, i, j) = 0.0_rsh
-                  ksma(i, j) = ksma(i, j) - 1
+                  IF ((tmp_depth -  &
+                     (hsed(i, j) - dzs(k, i, j) - dredg_hsed_init(i, j))) &
+                     .LE. dredg_depth(iz)) THEN
+                     ! whole layer can be dredged
+                     dzs_dredged = dzs(k, i, j)
+                     DO iv = 1, nvp
+                        dredg_mass_byclass_byloc(iz, iv) = &
+                           dredg_mass_byclass_byloc(iz, iv) + &
+                           dzs_dredged*cv_sed(iv, k, i, j)*surf_cell(i, j)
+                        cv_sed(iv, k, i, j) = 0.0_rsh
+                     END DO
+                     hsed(i, j) = hsed(i, j) - dzs_dredged
+                     dzs(k, i, j) = 0.0_rsh
+                     c_sedtot(k, i, j) = 0.0_rsh
+                     ksma(i, j) = ksma(i, j) - 1
+                  ELSE
+                     ! dredged only partial layer
+                     dzs_dredged = min(dzs(k, i, j), &
+                        dredg_depth(iz) - &
+                        (tmp_depth - (hsed(i, j)  - dredg_hsed_init(i, j))))
+                     DO iv = 1, nvp
+                        dredg_mass_byclass_byloc(iz, iv) = &
+                           dredg_mass_byclass_byloc(iz, iv) + &
+                           dzs_dredged*cv_sed(iv, k, i, j)*surf_cell(i, j)
+                     END DO
+                     hsed(i, j) = hsed(i, j) - dzs_dredged
+                     dzs(k, i, j) = dzs(k, i, j) - dzs_dredged
+                  END IF
                END DO
             END IF
          END DO
