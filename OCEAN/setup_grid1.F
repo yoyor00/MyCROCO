@@ -260,7 +260,7 @@ C$    integer omp_get_thread_num
 
 !$acc end kernels
 
-#if defined BD_EXCHANGE
+#ifdef BD_EXCHANGE
 # ifndef BASIN      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   zob)
 # endif      
@@ -295,25 +295,21 @@ C$    integer omp_get_thread_num
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,      h)
 # endif
 
-
 # ifdef MASKING
-#  ifdef THREE_GHOST_POINTS_TS
+#  ifdef THREE_GHOST_POINTS
       call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend, rmask)
 #  else
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,  rmask)
+      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,      rmask)
 #  endif
 #  ifdef THREE_GHOST_POINTS_UV
       call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend, umask)
-#  else
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  umask)
-#  endif
-#  ifdef THREE_GHOST_POINTS_UV
       call exchange_v2d_3pts_tile (Istr,Iend,Jstr,Jend, vmask)
 #  else
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,  vmask)
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,      umask)
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,      vmask)
 #  endif
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,  pmask)
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,  pmask2)
+      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,      pmask)
+      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,     pmask2)
 # endif
 #endif
       return
