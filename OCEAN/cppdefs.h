@@ -136,6 +136,28 @@
                       /* Equation of State */
 # define SALINITY
 # define NONLIN_EOS
+                      /* Lateral Forcing */
+# undef CLIMATOLOGY
+# ifdef CLIMATOLOGY
+#  define ZCLIMATOLOGY
+#  define M2CLIMATOLOGY
+#  define M3CLIMATOLOGY
+#  define TCLIMATOLOGY
+
+#  define ZNUDGING
+#  define M2NUDGING
+#  define M3NUDGING
+#  define TNUDGING
+#  undef  ROBUST_DIAG
+# endif
+
+# define FRC_BRY
+# ifdef FRC_BRY
+#  define Z_FRC_BRY
+#  define M2_FRC_BRY
+#  define M3_FRC_BRY
+#  define T_FRC_BRY
+# endif
                       /* Surface Forcing */
 /*
 ! Bulk flux algorithms (options)
@@ -160,7 +182,9 @@
 #  undef  ABL_DYN_RESTORE_EQ
 #  undef  SFLUX_CFB
 # else
-#  define BULK_FLUX
+#  if !defined CLIMATOLOGY
+#     define BULK_FLUX
+#  endif
 # endif
 # ifdef BULK_FLUX
 #  undef  BULK_ECUMEV0
@@ -187,28 +211,6 @@
 # endif
 # undef  SFLUX_CFB
 # undef  SEA_ICE_NOFLUX
-                      /* Lateral Forcing */
-# undef CLIMATOLOGY
-# ifdef CLIMATOLOGY
-#  define ZCLIMATOLOGY
-#  define M2CLIMATOLOGY
-#  define M3CLIMATOLOGY
-#  define TCLIMATOLOGY
-
-#  define ZNUDGING
-#  define M2NUDGING
-#  define M3NUDGING
-#  define TNUDGING
-#  undef  ROBUST_DIAG
-# endif
-
-# define FRC_BRY
-# ifdef FRC_BRY
-#  define Z_FRC_BRY
-#  define M2_FRC_BRY
-#  define M3_FRC_BRY
-#  define T_FRC_BRY
-# endif
                       /* Lateral Momentum Advection (default UP3) */
 # define UV_HADV_UP3
 # undef  UV_HADV_UP5
