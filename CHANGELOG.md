@@ -22,12 +22,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING
 - Issue #267 : fix several bugs with MUSTANG output, initialisation, add a 
   minimim porosity in deposit in V1 and fix transition with ero_option=3
-- Issue #272 : fix CPP key incompatible for ABL1D
-- Issue #279 : fix for :
+- Issues #272, #279 and #321 : fix for ABL1D :
   - sea surface currents in ABL1D
   - wrong mixing length computation
   - ABL1D perfect restart
   - ECUME6/ABL1D
+  - fix cppdefs organisation and incompatibility with update of ABL1D
 - Issue #285 : fix NBQ+XIOS compilation
 - Issue #299 : cleaning, comment in sta.h
 - Issue #305 : fix MPI repro with PSOURCE when a source is 
