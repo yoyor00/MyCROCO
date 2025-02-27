@@ -170,22 +170,7 @@
 ! Note : gustiness effects can be added for all params
 !        by defining BULK_GUSTINESS
 */
-# undef  ABL1D
-# ifdef  ABL1D
-#  define BULK_FLUX
-#  undef  ANA_ABL_LSDATA
-#  undef  ANA_ABL_VGRID
-#  define STRESS_AT_RHO_POINTS
-#  define ABL_NUDGING
-#  define ABL_NUDGING_DYN
-#  define ABL_NUDGING_TRA
-#  undef  ABL_DYN_RESTORE_EQ
-#  undef  SFLUX_CFB
-# else
-#  if !defined CLIMATOLOGY
-#     define BULK_FLUX
-#  endif
-# endif
+# define BULK_FLUX
 # ifdef BULK_FLUX
 #  undef  BULK_ECUMEV0
 #  undef  BULK_ECUMEV6
@@ -202,6 +187,17 @@
 #  undef READ_PATM
 #  ifdef READ_PATM
 #   define OBC_PATM
+#  endif
+#  undef  ABL1D
+#  ifdef  ABL1D
+#   undef  ANA_ABL_LSDATA
+#   undef  ANA_ABL_VGRID
+#   define STRESS_AT_RHO_POINTS
+#   define ABL_NUDGING
+#   define ABL_NUDGING_DYN
+#   define ABL_NUDGING_TRA
+#   undef  ABL_DYN_RESTORE_EQ
+#   undef  SFLUX_CFB
 #  endif
 # else
 #  define QCORRECTION
