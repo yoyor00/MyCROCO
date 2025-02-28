@@ -112,19 +112,43 @@
         enddo
       enddo
 # else
+#  ifndef LES_ZONAL
       do k=1,N-1
         do j=Jstr,Jend
           do i=Istr,Iend
             Akv(i,j,k)=Akv_bak
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
             Akt(i,j,k,itemp)=Akt_bak(itemp)
-#  endif
-#  ifdef SALINITY
+#   endif
+#   ifdef SALINITY
             Akt(i,j,k,isalt)=Akt_bak(isalt)
-#  endif
+#   endif
           enddo
         enddo
       enddo
+#  else /* LES_ZONAL */
+      do k=0,N  
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            Akv(i,j,k)=max(
+     &        Akv(i,j,k)*(1.-tanh((h(i,j)-z_w(i,j,k)-5.e-3)/2.e-3))
+     &       ,Akv_bak)
+#   ifdef TEMPERATURE
+            Akt(i,j,k,itemp)=max(
+     &        Akt(i,j,k,itemp)
+     &                *(1.-tanh((h(i,j)-z_w(i,j,k)-5.e-3)/2.e-3))
+     &       ,Akt_bak(itemp))
+#   endif
+#   ifdef SALINITY
+            Akt(i,j,k,isalt)=max(
+     &        Akt(i,j,k,isalt)
+     &                *(1.-tanh((h(i,j)-z_w(i,j,k)-5.e-3)/2.e-3))
+     &       ,Akt_bak(isalt))
+#   endif
+          enddo
+        enddo
+      enddo
+#  endif /* LES_ZONAL */
 # endif /* CANYON_STRAT */
 !$acc end kernels
 # if defined BD_EXCHANGE

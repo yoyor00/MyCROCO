@@ -120,7 +120,7 @@
 #  include "param.h"
 
 
-#  ifdef NBQ_GRAV
+#  if defined NBQ_GRAV 
 #   include "nbq.h"
 #  endif
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -317,7 +317,7 @@
         enddo
 #  endif
 
-#  ifdef NBQ_GRAV
+#  if defined NBQ_GRAV 
         do i=IstrR,IendR
            FC3D(i,j,1)=rho1(i,j,1)-1000.+rho0
 !$acc loop seq           
@@ -362,7 +362,7 @@
 
 #  include "grid.h"
 #  include "ocean3d.h"
-#  ifdef NBQ_GRAV
+#  if defined NBQ_GRAV  
 #   include "nbq.h"
 #  endif
 #  include "coupling.h"
@@ -396,7 +396,7 @@
           enddo
         enddo
       enddo
-#  if defined CONVECT  && defined NBQ_GRAV
+#  if defined CONVECT  && defined NBQ_GRAV 
       if (iic==0) then
       do j=JstrR,JendR
         do k=1,N
@@ -428,7 +428,7 @@
 #  endif
 !$acc kernels if(compute_on_device) default(present)      
       do j=JstrR,JendR
-#  ifdef NBQ_GRAV
+#  if defined NBQ_GRAV 
         do i=IstrR,IendR
            FC3D(i,j,1)=rho1(i,j,1)
 !$acc loop seq           

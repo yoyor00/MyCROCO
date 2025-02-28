@@ -67,8 +67,12 @@
       common /time_NBQ2/ dtnbq 
       real csound_nbq
       common /nbq_csound/ csound_nbq  
-      real rcsound2_nbq
+#  ifdef NBQ_RCSOUND
+      real rcsound2read_nbq
+      common /nbq_rcsoundread/ rcsound2read_nbq
+      real rcsound2_nbq(GLOBAL_2D_ARRAY,1:N)
       common /nbq_rcsound/ rcsound2_nbq
+#  endif
 #  ifdef K3FAST_SACOUS
       real  period_exp  
       common/ACOUS1/period_exp
@@ -217,10 +221,6 @@
       common /avg2_rvnbq/ rv_nbq_avg2
       real Hzw_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /grid_Hzw_nbq/ Hzw_nbq
-!      real Hzu_nbq_inv(GLOBAL_2D_ARRAY,NSLN)
-!      common /grid_Hzu_nbq/ Hzu_nbq_inv
-!      real Hzv_nbq_inv(GLOBAL_2D_ARRAY,NSLN)
-!      common /grid_Hzv_nbq/ Hzv_nbq_inv
 !$acc declare create(  Hzw_nbq, Hzu_nbq_inv, Hzv_nbq_inv )      
       real rw_int_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_rwint/ rw_int_nbq   
@@ -375,4 +375,34 @@
 #    endif
 #   endif
 #  endif    
+#  ifdef K3FAST_NOBPG
+      real rho_bpg(GLOBAL_2D_ARRAY,1:N)
+      common /nbq_rhobpg/rho_bpg
+#  endif
 # endif /* K3FAST */
+# ifdef CENTRIFUGE
+      real ray(GLOBAL_2D_ARRAY)
+      real cosr(GLOBAL_2D_ARRAY)
+      real sinr(GLOBAL_2D_ARRAY)
+      common /grid_ray/ray,cosr,sinr
+# endif
+#ifdef CUVE_BATHY
+      real hd(GLOBAL_2D_ARRAY)
+      common /nbq_hd/hd 
+      real hd2(GLOBAL_2D_ARRAY)
+      common /nbq_hd2/hd2 
+      real hd3(GLOBAL_2D_ARRAY)
+      common /nbq_hd3/hd3 
+      real hd3u(GLOBAL_2D_ARRAY)
+      common /nbq_hd3u/hd3u 
+      real hd3v(GLOBAL_2D_ARRAY)
+      common /nbq_hd3v/hd3v 
+      real hd4(GLOBAL_2D_ARRAY)
+      common /nbq_hd4/hd4 
+#endif
+#ifdef BATHY_SLOPE
+      real myslope(GLOBAL_2D_ARRAY)
+      common /nbq_myslope/myslope
+      real myslope2(GLOBAL_2D_ARRAY)
+      common /nbq_myslope2/myslope2
+#endif

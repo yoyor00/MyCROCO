@@ -512,7 +512,11 @@
       DO k=1,N
         DO j=JstrV-1,Jend
           DO i=IstrU-1,Iend
+#  ifdef TEMPERATURE
             diff3d_r(i,j,k)=Akt(i,j,k,itemp)
+#  elif defined SALINITY
+            diff3d_r(i,j,k)=Akt(i,j,k,isalt)
+#  endif
           ENDDO
         ENDDO
       ENDDO

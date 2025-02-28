@@ -19,6 +19,7 @@
       implicit none
       character*1 char1
       integer ierr, ncid, varid, lstr, lenstr, checkdims, nf_fread
+      integer i,j,it
       real zob_temp
 # include "param.h"
 # include "scalars.h"
@@ -285,6 +286,9 @@
       ierr=nf_inq_varid (ncid, 'mask_rho', varid)
       if (ierr .eq. nf_noerr) then
         ierr=nf_fread(rmask(START_2D_ARRAY), ncid, varid, 0, r2dvar)
+#ifdef CUVE_BATHY
+# include "get_grid_CUVE.h"
+#endif
         if (ierr .ne. nf_noerr) then
           write(stdout,2) 'mask_rho', grdname(1:lstr)
           goto 99                                         !--> ERROR

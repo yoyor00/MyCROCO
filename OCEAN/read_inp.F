@@ -433,8 +433,8 @@
         read(input,*,err=95) ndtnbq, csound_nbq, visc2read_nbq
 #   else
         read(input,*,err=95) ndtnbq, csound_nbq, visc2read_nbq
-     &                      ,rcsound2_nbq
-        rcsound2_nbq=rcsound2_nbq**2
+     &                      ,rcsound2read_nbq
+        rcsound2_nbq=rcsound2read_nbq**2
 #   endif
         MPI_master_only write(stdout,
      &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A,/F10.2,2x,A/)')
@@ -442,8 +442,8 @@
      &                                                 '2D step.',
      &   csound_nbq,'csound_nbq  Sound wave celerity.',
      &   visc2read_nbq, 'visc2_nbq   Second viscosity coefficient for',
-     &                                      'compressible fluids.',
-     &   sqrt(rcsound2_nbq),' H/V soundspeed ratio.'
+     &                                      'compressible fluids.'
+  !  &   ,sqrt(rcsound2read_nbq),' H/V soundspeed ratio.'
         if (mynode==0) print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
 # ifndef KNHINT_3M
 #  ifdef NBQ

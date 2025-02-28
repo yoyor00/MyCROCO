@@ -441,7 +441,7 @@
      !&           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
              endif
 #endif
-! ! k3fast_divh.h
+! !
 ! !--------------------------------
 ! !  Update qdmw(N): fast and slow components
 ! !--------------------------------

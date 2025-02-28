@@ -28,14 +28,14 @@
        if (AGRIF_Root()) then
         call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &        A2d(1,1,trd), A2d(1,2,trd),A2d(1,3,trd), A2d(1,4,trd)
-#  ifdef NBQ
+#  if defined NBQ || defined KNBQ3
      &                       ,A3d(1,3,trd), A3d(1,4,trd)
 #  endif
      &                                                 )
        else
         call uv3dmix_child_tile (Istr,Iend,Jstr,Jend,
      &        A2d(1,1,trd), A2d(1,2,trd),A2d(1,3,trd), A2d(1,4,trd)
-#  ifdef NBQ
+#  if defined NBQ || defined KNBQ3
      &                       ,A3d(1,3,trd), A3d(1,4,trd)
 #  endif
      &                                                 )
@@ -45,7 +45,7 @@
 # else
       call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &      A2d(1,1,trd), A2d(1,2,trd),A2d(1,3,trd), A2d(1,4,trd)
-#  ifdef NBQ
+#  if defined NBQ || defined KNBQ3
      &                       ,A3d(1,3,trd), A3d(1,4,trd)
 #  endif
      &                                                 )
@@ -122,7 +122,8 @@
      &     UFx(PRIVATE_2D_SCRATCH_ARRAY),
      &     VFe(PRIVATE_2D_SCRATCH_ARRAY),
      &     VFx(PRIVATE_2D_SCRATCH_ARRAY)
-#ifdef NBQ
+
+#if defined NBQ || defined KNBQ3
       real UFz(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     VFz(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 #endif
@@ -159,7 +160,7 @@
 !  Compute flux-components of the Reynolds stress tensor (m4/s2)
 !-------------------------------------------------------------------------------
 !
-#ifdef NBQ
+#if defined NBQ || defined KNBQ3
       DO k = 0,N
         kp=MIN(k+1,N); km=MAX(k  ,1)
         DO j=JstrV-1,Jend+1
@@ -178,6 +179,9 @@
             UFz(i,j,k) = Akv_loc*Hz_loc*on_u(i,j)*(
      &            2.*wz(i  ,j,k,nstp)/(Hz(i  ,j,kp)+Hz(i  ,j,km))
      &         -  2.*wz(i-1,j,k,nstp)/(Hz(i-1,j,kp)+Hz(i-1,j,km)) )  ! m4/s2
+#ifdef MASKING
+     &                                            * umask(i,j)
+#endif
 
             Akv_loc = 0.25*( Akv(i,j  ,km) + Akv(i,j  ,kp)
      &                     + Akv(i,j-1,km) + Akv(i,j-1,kp) )  ! Akv at i,j-1/2,k+1/2 locations
@@ -193,6 +197,9 @@
             VFz(i,j,k) = Akv_loc*Hz_loc*om_v(i,j)*(
      &           2.*wz(i,j  ,k,nstp)/(Hz(i,j  ,kp)+Hz(i,j  ,km))
      &        -  2.*wz(i,j-1,k,nstp)/(Hz(i,j-1,kp)+Hz(i,j-1,km)) )  ! m4/s2
+#ifdef MASKING
+     &                                            * vmask(i,j)
+#endif
           ENDDO
         ENDDO
       ENDDO
@@ -237,6 +244,9 @@
      &  +pnom_p(i,j)*om_p(i,j)*(   pm_u(i,j  )*u(i,j  ,k,nstp)
      &                           - pm_u(i,j-1)*u(i,j-1,k,nstp) )
      &                                                           )  ! m4/s2
+#ifdef MASKING
+     &                                            * pmask(i,j)
+#endif
             !
             !-- VFx = s_yx = Akv Hz ( d_x(pn v)*(pm/pn^2) + d_y(pm u)/pm )
             !
@@ -246,13 +256,16 @@
      &  +            om_p(i,j)*(   pm_u(i,j  )*u(i,j  ,k,nstp)
      &                           - pm_u(i,j-1)*u(i,j-1,k,nstp) )
      &                                                           )  ! m4/s2
+#ifdef MASKING
+     &                                            * pmask(i,j)
+#endif
           ENDDO
         ENDDO
         !=======================================================================
         DO j=Jstr,Jend
           DO i=IstrU,Iend
             divX = UFx(i,j  )-UFx(i-1,j); divE = UFe(i,j+1)-UFe(i  ,j)
-#ifdef NBQ
+#if defined NBQ || defined KNBQ3
             divZ = UFz(i,j,k)-UFz(i,j,k-1)
 #else
             divZ = 0.
@@ -269,7 +282,8 @@
         DO j=JstrV,Jend
           DO i=Istr,Iend
             divX = VFx(i+1,j)-VFx(i,j  ); divE = VFe(i  ,j)-VFe(i,j-1)
-#ifdef NBQ
+
+#if defined NBQ || defined KNBQ3
             divZ = VFz(i,j,k)-VFz(i,j,k-1)
 #else
             divZ = 0.
@@ -285,7 +299,10 @@
         !=======================================================================
       ENDDO
       !--
-#ifdef NBQ
+    
+! ! w-momentum equation
+
+#if defined NBQ || defined KNBQ3
 #  define WFx UFx
 #  define WFe VFe
       DO k = 0,N
@@ -358,48 +375,84 @@
      &                            ( u(i,j+1,k,nstp) - u(i  ,j  ,k,nstp) )
      &             +  0.5*( pm_v(i,j+1)+pm_v(i-1,j+1) )*
      &                            ( v(i,j+1,k,nstp) - v(i-1,j+1,k,nstp) ) !-> (i-1/2,j+1/2,k)
+#ifdef MASKING
+     &                                            * pmask(i,j+1)
+#endif
             cff2    = 0.5*( pn_u(i+1,j+1)+pn_u(i+1,j  ) )*
      &                            ( u(i+1,j+1,k,nstp) - u(i+1,j  ,k,nstp) )
      &             +  0.5*( pm_v(i+1,j+1)+pm_v(i,j+1) )*
      &                            ( v(i+1,j+1,k,nstp) - v(i,j+1,k,nstp) ) !-> (i+1/2,j+1/2,k)
+#ifdef MASKING
+     &                                            * pmask(i+1,j+1)
+#endif
             cff3    = 0.5*( pn_u(i,j)+pn_u(i  ,j-1) )*
      &                            ( u(i,j,k,nstp) - u(i  ,j-1,k,nstp) )
      &             +  0.5*( pm_v(i,j)+pm_v(i-1,j) )*
      &                            ( v(i,j,k,nstp) - v(i-1,j,k,nstp) )     !-> (i-1/2,j-1/2,k)
+#ifdef MASKING
+     &                                            * pmask(i,j)
+#endif
             cff4    = 0.5*( pn_u(i+1,j)+pn_u(i+1,j-1) )*
      &                            ( u(i+1,j,k,nstp) - u(i+1,j-1,k,nstp) )
      &             +  0.5*( pm_v(i+1,j)+pm_v(i,j) )*
      &                            ( v(i+1,j,k,nstp) - v(i,j,k,nstp) )     !-> (i+1/2,j-1/2,k)
+#ifdef MASKING
+     &                                            * pmask(i+1,j)
+#endif
       !
             cff = cff + 0.25*Akv_loc*( cff1*cff1+cff2*cff2+cff3*cff3+cff4*cff4 )
             ! (dudz+dwdx) term
             Hz_loc = 0.25*(Hz(i,j,k)+Hz(i+1,j,k)+Hz(i,j,kp)+Hz(i+1,j,kp))
             cff1 = pm_u(i+1,j)*(wz(i+1,j,k  ,nstp) - wz(i  ,j,k  ,nstp))
      &                     +   ( u(i+1,j,kp,nstp) -  u(i+1,j,k  ,nstp))/Hz_loc  !-> (i+1/2,j,k+1/2)
+#ifdef MASKING
+     &                                            * umask(i+1,j)
+#endif
             Hz_loc = 0.25*(Hz(i-1,j,k)+Hz(i,j,k)+Hz(i-1,j,kp)+Hz(i,j,kp))
             cff2 = pm_u(i  ,j)*(wz(i  ,j,k  ,nstp) - wz(i-1,j,k  ,nstp))
      &                     +   ( u(i  ,j,kp,nstp) -  u(i  ,j,k  ,nstp))/Hz_loc  !-> (i-1/2,j,k+1/2)
+#ifdef MASKING
+     &                                            * umask(i,j)
+#endif
             Hz_loc = 0.25*(Hz(i,j,km)+Hz(i+1,j,km)+Hz(i,j,k)+Hz(i+1,j,k))
             cff3 = pm_u(i+1,j)*(wz(i+1,j,km,nstp) - wz(i  ,j,km,nstp))
      &                     +   ( u(i+1,j,k  ,nstp) -  u(i+1,j,km,nstp))/Hz_loc  !-> (i+1/2,j,k-1/2)
+#ifdef MASKING
+     &                                            * umask(i+1,j)
+#endif
             Hz_loc = 0.25*(Hz(i-1,j,km)+Hz(i,j,km)+Hz(i-1,j,k)+Hz(i,j,k))
             cff4 = pm_u(i  ,j)*(wz(i  ,j,km,nstp) - wz(i-1,j,km,nstp))
      &                     +   ( u(i  ,j,k  ,nstp) -  u(i  ,j,km,nstp))/Hz_loc  !-> (i-1/2,j,k-1/2)
+#ifdef MASKING
+     &                                            * umask(i,j)
+#endif
             !
             cff = cff + 0.25*( cff1*cff1+cff2*cff2+cff3*cff3+cff4*cff4 )
             ! (dvdz+dwdy) term
             Hz_loc = 0.25*(Hz(i,j,k)+Hz(i,j+1,k)+Hz(i,j,kp)+Hz(i,j+1,kp))
             cff1 = pn_v(i,j+1)*(wz(i,j+1,k  ,nstp) - wz(i  ,j,k  ,nstp))
      &                     +   ( v(i,j+1,kp,nstp) -  v(i,j+1,k  ,nstp))/Hz_loc  !-> (i,j+1/2,k+1/2)
+#ifdef MASKING
+     &                                            * vmask(i,j+1)
+#endif
             Hz_loc = 0.25*(Hz(i,j-1,k)+Hz(i,j,k)+Hz(i,j-1,kp)+Hz(i,j,kp))
             cff2 = pn_v(i  ,j)*(wz(i  ,j,k  ,nstp) - wz(i,j-1,k  ,nstp))
      &                     +   ( v(i  ,j,kp,nstp) -  v(i  ,j,k  ,nstp))/Hz_loc  !-> (i,j-1/2,k+1/2)
+#ifdef MASKING
+     &                                            * vmask(i,j)
+#endif
             Hz_loc = 0.25*(Hz(i,j,km)+Hz(i,j+1,km)+Hz(i,j,k)+Hz(i,j+1,k))
             cff3 = pn_v(i,j+1)*(wz(i,j+1,km,nstp) - wz(i  ,j,km,nstp))
      &                     +   ( v(i,j+1,k  ,nstp) -  v(i,j+1,km,nstp))/Hz_loc  !-> (i,j+1/2,k-1/2)
+#ifdef MASKING
+     &                                            * vmask(i,j+1)
+#endif
             Hz_loc = 0.25*(Hz(i,j-1,km)+Hz(i,j,km)+Hz(i,km,k)+Hz(i,j,k))
             cff4 = pn_v(i  ,j)*(wz(i  ,j,km,nstp) - wz(i,j-1,km,nstp))
      &                     +   ( v(i  ,j,k  ,nstp) -  v(i  ,j,km,nstp))/Hz_loc  !-> (i,j-1/2,k-1/2)
+#ifdef MASKING
+     &                                            * vmask(i,j)
+#endif
             !
             cff = cff + 0.25*( cff1*cff1+cff2*cff2+cff3*cff3+cff4*cff4 )
             !

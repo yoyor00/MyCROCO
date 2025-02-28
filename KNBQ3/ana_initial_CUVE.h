@@ -390,3 +390,37 @@
         deallocate( x_dr, y_dr, id )
 #     endif
 #    endif
+        
+#    ifdef BATHY_SLOPE       
+      myslope2=0.
+!$acc kernels if(compute_on_device) default(present)
+      do j=Jstr,Jend
+        do i=IstrU,Iend
+# ifdef MASKING
+          if (umask(i,j).gt.0.) then
+# endif
+             myslope2(i,j)=sqrt(( (zeta(i,j,1)-zeta(i-1,j,1))
+     &    *pm(i,j))**2)
+# ifdef MASKING
+          endif
+# endif
+        enddo
+      enddo
+
+      do j=JstrV,Jend
+        do i=Istr,Iend
+# ifdef MASKING
+          if (vmask(i,j).gt.0.) then
+# endif
+             myslope2(i,j)=sqrt(
+     &       myslope2(i,j)**2+( (zeta(i,j,1)-zeta(i,j-1,1))
+     &    *pn(i,j))**2)
+# ifdef MASKING
+          endif
+# endif
+        enddo
+      enddo
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                        myslope2(-2,-2))
+#      endif
+!$acc end kernels

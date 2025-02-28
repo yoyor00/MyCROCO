@@ -46,15 +46,20 @@ C$    integer omp_get_thread_num
 # include "scalars.h"
 # include "ocean3d.h"
 # include "mpi_cpl.h"
-# ifdef MASKING
+!# ifdef MASKING
 #  include "grid.h"
+!# endif
+# ifdef BATHY_SLOPE 
+#  include "nbq.h"
 # endif
 !
 # include "compute_auxiliary_bounds.h"
 !
       my_rx0=0.
       my_rx1=0.
-
+# ifdef BATHY_SLOPE
+      myslope=0.
+# endif
 !$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=IstrU,Iend
@@ -64,6 +69,21 @@ C$    integer omp_get_thread_num
             my_rx0=max(my_rx0, abs( (z_w(i,j,0)-z_w(i-1,j,0))
      &                                   /(z_w(i,j,0)+z_w(i-1,j,0))
      &                                                            ))
+# ifdef BATHY_SLOPE
+#  ifdef MASKING
+             myslope(i,j)=sqrt(
+     &    ( umask(i  ,j)*(h(i  ,j)-h(i-1,j))*pm_u(i  ,j)
+     &     +umask(i+1,j)*(h(i+1,j)-h(i  ,j))*pm_u(i+1,j))**2
+     &    /max(1.,umask(i,j)+umask(i+1,j))
+     &                        )
+#  else
+             myslope(i,j)=sqrt(
+     &    ( (h(i  ,j)-h(i-1,j))*pm_u(i  ,j)
+     &     +(h(i+1,j)-h(i  ,j))*pm_u(i+1,j))**2
+     &    /2.
+     &                        )
+#  endif
+# endif
             do k=1,N
               my_rx1=max(my_rx1, abs(
      &         (z_w(i,j,k)-z_w(i-1,j,k)+z_w(i,j,k-1)-z_w(i-1,j,k-1))
@@ -82,8 +102,23 @@ C$    integer omp_get_thread_num
           if (vmask(i,j).gt.0.) then
 # endif
             my_rx0=max(my_rx0, abs( (z_w(i,j,0)-z_w(i,j-1,0))
-     &                                   /(z_w(i,j,0)+z_w(i,j-1,0))
+     &                             /(z_w(i,j,0)+z_w(i,j-1,0))
      &                                                            ))
+# ifdef BATHY_SLOPE
+#  ifdef MASKING
+             myslope(i,j)=sqrt(myslope(i,j)**2
+     &   +( vmask(i,j  )*(h(i,j  )-h(i,j-1))*pn_v(i,j  )
+     &     +vmask(i,j+1)*(h(i,j+1)-h(i,j  ))*pn_v(i,j+1))**2
+     &     /max(1.,vmask(i,j)+vmask(i,j+1))
+     &                         )
+#  else
+             myslope(i,j)=sqrt(myslope(i,j)**2
+     &   +( (h(i,j  )-h(i,j  ))*pn_v(i,j  )
+     &     +(h(i,j+1)-h(i,j+1))*pn_v(i,j+1))**2
+     &     /2.
+     &                         )
+#  endif
+# endif
             do k=1,N
               my_rx1=max(my_rx1, abs(
      &         (z_w(i,j,k)-z_w(i,j-1,k)+z_w(i,j,k-1)-z_w(i,j-1,k-1))
@@ -97,6 +132,11 @@ C$    integer omp_get_thread_num
       enddo
 !$acc end kernels
 
+# if defined BATHY_SLOPE && defined MPI
+        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+     &                        myslope(-2,-2))
+# endif
+     
       if (SINGLE_TILE_MODE) then
         NSUB=1
       else

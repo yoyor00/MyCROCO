@@ -3184,6 +3184,18 @@ c !$acc wait
       if (xios_field_is_active("Lscale")) then
       call xios_send_field("Lscale",Lscale)
       endif
+#  elif defined TKE3D_MIXING
+      if (xios_field_is_active("tke")) then
+      work(:,:,0)=0.
+      work(:,:,1:N)=tke(:,:,1:N,nstp)
+      call xios_send_field("tke",work)
+      endif
+      if (xios_field_is_active("Lscale")) then
+      work(:,:,0)=0.
+      work(:,:,1:N)=Lscale(:,:,1:N)
+      call xios_send_field("Lscale",work)
+      endif
+
 #  endif
 
 #  ifdef TEMPERATURE

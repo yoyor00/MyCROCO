@@ -20,17 +20,23 @@
 !$acc kernels if(compute_on_device) default(present)
       if (FIRST_FAST_STEP) then
        if (FIRST_TIME_STEP) then
+         do j=JstrR,JendR
          do k=1,N
-           do j=JstrV-2,Jend+1
-             do i=IstrU-2,Iend+1
-               rho_grd(i,j,k)=rho(i,j,k) 
+           do i=IstrR,IendR
+               rho_grd(i,j,k)=rho(i,j,k) /rho0
+#  ifdef K3FAST_NOBPG
+               rho_bpg(i,j,k)=rho(i,j,k)/rho0
+#   ifdef NBQ_GRAV
+     &                       -rho_nh(i,j,k)/rho0
+#   endif
+#  endif
              enddo
             enddo
           enddo
 #  ifdef K3FAST_SEDLAYERS
          do k=-N_sl+1,0
-           do j=JstrV-2,Jend+1
-             do i=IstrU-2,Iend+1
+           do j=JstrR,JendR
+           do i=IstrR,IendR
                rho_grd(i,j,k) = rho_sdl
              enddo
             enddo
@@ -45,10 +51,25 @@
          do j=JstrR,JendR
            do k=1,N
              do i=IstrR,IendR
-               rho_grd(i,j,k)=(rho(i,j,k)*1.5-rho_grd(i,j,k)*0.5)/rho0
+               rho_grd(i,j,k)=rho(i,j,k)*1.5/rho0-rho_grd(i,j,k)*0.5
+#  ifdef K3FAST_NOBPG
+      rho_bpg(i,j,k)=1.5*rho(i,j,k)/rho0-rho_bpg(i,j,k)*0.5
+#   ifdef NBQ_GRAV
+     &               -rho_nh(i,j,k)*1.5/rho0
+#   endif
+#  endif
              enddo
            enddo
          enddo
+#  ifdef MPI
+             call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        rho_grd(-2,-2,1))
+#   ifdef K3FAST_NOBPG
+             call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        rho_bpg(-2,-2,1))
+#   endif
+#endif
+
       endif
 !$acc end kernels
 # endif

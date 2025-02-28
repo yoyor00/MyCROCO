@@ -25,17 +25,35 @@ C$    integer omp_get_thread_num
       subroutine setup_grid1_tile (Istr,Iend,Jstr,Jend)
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
-#ifdef WET_DRY
+!#ifdef WET_DRY
       real cff
-#endif
+!#endif
 #include "param.h"
 #include "scalars.h"
 #include "grid.h"
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
+#include "nbq.h"
+#ifdef CUVE_BATHY
+      real xv1(3),yv1(3)
+      common /nbq_xyv1/xv1,yv1
+      real xv2(3),yv2(3)
+      common /nbq_xyv2/xv2,yv2
+      real xv3(3),yv3(3)
+      common /nbq_xyv3/xv3,yv3
+      real xv4(3),yv4(3)
+      common /nbq_xyv4/xv4,yv4
+      real xv5(3),yv5(3)
+      common /nbq_xyv5/xv5,yv5
+      real xv6(3),yv6(3)
+      common /nbq_xyv6/xv6,yv6
+      integer :: ifl_bathy(10),it,it2
+      real    :: val_bathy(10)      
+#endif
 !
 #include "compute_extended_bounds.h"
+
 !$acc kernels if(compute_on_device) default(present)
 !
 !  Set f/mn,at horizontal RHO-points.
@@ -262,11 +280,6 @@ C$    integer omp_get_thread_num
 #endif
 
 
-#undef IR_RANGE
-#undef IU_RANGE
-#undef JR_RANGE
-#undef JV_RANGE
-
 !$acc end kernels
 
 #if defined BD_EXCHANGE
@@ -325,6 +338,14 @@ C$    integer omp_get_thread_num
       call exchange_p2d_tile (Istr,Iend,Jstr,Jend,  pmask2)
 # endif
 #endif
+#ifdef CUVE_BATHY
+# include "setup_grid1_CUVE.h"
+#endif
+#undef IR_RANGE
+#undef IU_RANGE
+#undef JR_RANGE
+#undef JV_RANGE
+
       return
       end
 

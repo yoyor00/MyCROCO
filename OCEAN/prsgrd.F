@@ -160,12 +160,29 @@ c********************************************************************
 !------------ ---- ----- --- --- --- ---------------
 !
 !$acc kernels if(compute_on_device) default(present)
-# ifdef NBQ_GRAV
-       rho=rho-rho_nh
-# endif
+# ifdef K3FAST_NOBPG
+        do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*g*(
+     &                                z_w(i-1,j,N)-z_w(i,j,N)   )
+            enddo
+          enddo
+        enddo
+        do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*on_v(i,j)*g*(
+     &                                z_w(i,j-1,N)-z_w(i,j,N)   )
+            enddo
+          enddo
+        enddo
+# else      
+#  if defined NBQ_GRAV 
+      rho=rho-rho_nh
+#  endif
       GRho=g/rho0
       HalfGRho=0.5*GRho
-
       !do j=JstrV-1,Jend
       DOLOOP2D(IstrU-1,Iend,JstrV-1,Jend)
         do k=1,N-1
@@ -524,6 +541,7 @@ c********************************************************************
           enddo
         enddo
       enddo   ! k loop
+# endif
 !
 !======================================================================
 !
@@ -640,7 +658,7 @@ c********************************************************************
 ! the number of operations relatively to any other form.
 !
 !$acc kernels if(compute_on_device) default(present)
-# ifdef NBQ_GRAV
+# if defined NBQ_GRAV 
        rho=rho-rho_nh
 # endif
 
@@ -969,12 +987,11 @@ c********************************************************************
         enddo
       enddo
 # endif
-
 !
 !--------------------------------------------------------------------
 !
-# ifdef NBQ_GRAV
-       rho=rho+rho_nh
+# if defined NBQ_GRAV && !defined K3FAST_NOBPG
+      rho=rho+rho_nh
 # endif
 !$acc end kernels
       return

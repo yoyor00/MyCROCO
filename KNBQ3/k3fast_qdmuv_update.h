@@ -175,12 +175,12 @@
 #   ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,1)=(z_r(i,j,k)-z_r(i-1,j,k))       
-     &                                   *dthetadiv_nbqdz_u(i,j,k) 
+     &                                   *2.*dthetadiv_nbqdz_u(i,j,k) 
                 endif
                 dum_s=dthetadiv_nbqdz(i,j,k,1)
 #   else
                 dum_s=(z_r(i,j,k)-z_r(i-1,j,k))                      
-     &                *dthetadiv_nbqdz_u(i,j,k)
+     &                *2.*dthetadiv_nbqdz_u(i,j,k)
 #   endif
               endif                     ! -------- elseif 1<k<N
 ! !
@@ -191,25 +191,19 @@
 #  if defined K3FAST_DUVNBQ2
               dum2_s=dum_s
 #  endif
-#   ifdef K3FAST_PG2
-#    ifdef EW_PERIODIC 
+#   if defined K3FAST_PG2 
+#    if !defined MASKING && defined EW_PERIODIC
               dum_s=dum_s
      &                -( gammau  *thetadiv_nbq(i  ,j,k)
      &                  +gammau_2*thetadiv_nbq(i+1,j,k)
      &                  -gammau  *thetadiv_nbq(i-1,j,k)
      &                  -gammau_2*thetadiv_nbq(i-2,j,k)) ! - d(delta p)dx
-#    else
+#    elif !defined MASKING
 #     if defined MPI
          if ((WEST_INTER.or.i.ne.IstrU).and.(EAST_INTER.or.i.ne.Iend)
-#      ifdef MASKING
-     &   .and.(umask(i-1,j)*umask(i+1,j)*umask(i-2,j)*umask(i,j) .ne. 0.)
-#      endif
      &      ) then
 #     else
          if (i.ne.IstrU.and.i.ne.Iend
-#      ifdef MASKING
-     &   .and.(umask(i-1,j)*umask(i+1,j)*umask(i-2,j)*umask(i,j) .ne. 0.)
-#      endif
      &      ) then
 #     endif
               dum_s=dum_s
@@ -222,7 +216,14 @@
      &                -( thetadiv_nbq(i  ,j,k)
      &                  -thetadiv_nbq(i-1,j,k))
 	     endif
-#    endif /* EW_PERIODIC	*/     
+#    else /* MASKING */
+              dum_s=dum_s
+     &   -( (gammau+(1.-rmask(i+1,j))*gammau_2)*thetadiv_nbq(i  ,j,k)
+     &     +gammau_2*rmask(i+1,j)              *thetadiv_nbq(i+1,j,k)
+     &     -(gammau+(1.-rmask(i-2,j))*gammau_2)*thetadiv_nbq(i-1,j,k)
+     &     -gammau_2*rmask(i-2,j)              *thetadiv_nbq(i-2,j,k)
+     &               ) ! - d(delta p)dx   
+#    endif /* MASKING */   
 #   else /* !K3FAST_PG2 */
               dum_s=dum_s
      &                -( thetadiv_nbq(i  ,j,k)
@@ -236,9 +237,6 @@
 #    endif  
 #   endif
               dum_s=dum_s*0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))*pm_u(i,j)
-#   ifdef NBQ_RCSOUND
-     &                   /rcsound2_nbq
-#   endif
 #   ifdef MASKING
      &                   *umask(i,j)
 #   endif  
@@ -270,6 +268,16 @@
 ! !
 #  ifdef BSTRESS_FAST
               if (k.eq.1) dum_s=dum_s-bustr(i,j)
+     &         *(Hz(i-1,j,k)+Hz(i,j,k))
+     &      /((zeta(i  ,j,knew)+h(i  ,j))
+#   ifdef NBQ_MASS
+     &        *rhobar_nbq(i,j  ,knew)
+#   endif
+     &       +(zeta(i-1,j,knew)+h(i-1,j))
+#   ifdef NBQ_MASS
+     &        *rhobar_nbq(i-1,j,knew)
+#   endif
+     &       )
 #  endif
 ! !
 ! !................................
@@ -448,12 +456,12 @@
 #   ifdef NBQ_GRID_SLOW
                 if (NSTEP_DS) then
                   dthetadiv_nbqdz(i,j,k,2)=(z_r(i,j,k)-z_r(i,j-1,k)) 
-     &                                  *dthetadiv_nbqdz_v(i,j,k) 
+     &                                *2.*dthetadiv_nbqdz_v(i,j,k) 
                 endif
                 dum_s=dthetadiv_nbqdz(i,j,k,2) 
 #   else
                 dum_s=(z_r(i,j,k)-z_r(i,j-1,k)) 
-     &                *dthetadiv_nbqdz_v(i,j,k) 
+     &               *2.*dthetadiv_nbqdz_v(i,j,k) 
 #   endif
               endif                     ! -------- elseif 1<k<N
 ! !
@@ -464,43 +472,44 @@
 #  if defined K3FAST_DUVNBQ2
               dum2_s=dum_s
 #  endif
-#   ifdef K3FAST_PG2
-#    ifdef NS_PERIODIC
+#   if defined K3FAST_PG2 && ! defined K3FAST_NOBPG
+
+#    ifndef MASKING
               dum_s=dum_s
      &             -(gammau  *thetadiv_nbq(i,j  ,k)+
      &               gammau_2*thetadiv_nbq(i,j+1,k)-
      &               gammau  *thetadiv_nbq(i,j-1,k)-
      &               gammau_2*thetadiv_nbq(i,j-2,k)) ! - d(delta p)dy
 #    else
-#     if defined MPI
-         if ((SOUTH_INTER.or.j.ne.JstrV).and.(NORTH_INTER.or.j.ne.Jend)
-#      ifdef MASKING
-     &      .and.(vmask(i,j-1)*vmask(i,j+1)*vmask(i,j-2)*vmask(i,j).ne.0.) 
-#      endif              
-     &      ) then
-#     else
-         if (j.ne.JstrV.and.j.ne.Jend
-#      ifdef MASKING
-     &      .and.(vmask(i,j-1)*vmask(i,j+1)*vmask(i,j-2)*vmask(i,j).ne.0.) 
-#      endif              
-     &      ) then
-#     endif
               dum_s=dum_s
-     &             -(gammau  *thetadiv_nbq(i,j  ,k)+
-     &               gammau_2*thetadiv_nbq(i,j+1,k)-
-     &               gammau  *thetadiv_nbq(i,j-1,k)-
-     &               gammau_2*thetadiv_nbq(i,j-2,k)) ! - d(delta p)dy
-         else
-              dum_s=dum_s
-     &             -( thetadiv_nbq(i,j  ,k)
-     &               -thetadiv_nbq(i,j-1,k)) 
-        endif
-#    endif /* NS_PERIODIC	*/     
+     &   -( (gammau+(1.-rmask(i,j+1))*gammau_2)*thetadiv_nbq(i,j  ,k)
+     &     +gammau_2*rmask(i,j+1)              *thetadiv_nbq(i,j+1,k)
+     &     -(gammau+(1.-rmask(i,j-2))*gammau_2)*thetadiv_nbq(i,j-1,k)
+     &     -gammau_2*rmask(i,j-2)              *thetadiv_nbq(i,j-2,k)
+     &               ) ! - d(delta p)dy   
+#    endif /* MASKING */     
+#   elif defined K3FAST_PG2 && defined K3FAST_NOBPG
+#    ifdef MASKING
+          dum_s=dum_s
+     &   -(( gammau+(1.-rmask(i,j+1))*gammau_2)*thetadiv_nbq(i,j  ,k)
+     &     + gammau_2*rmask(i,j+1)              *thetadiv_nbq(i,j+1,k)
+     &     -(gammau+(1.-rmask(i,j-2))*gammau_2)*thetadiv_nbq(i,j-1,k)
+     &     - gammau_2*rmask(i,j-2)              *thetadiv_nbq(i,j-2,k)
+     &               ) ! - d(delta p)dy   
+#    else
+          dum_s=dum_s
+     &   -( gammau  *thetadiv_nbq(i,j  ,k)
+     &     +gammau_2*thetadiv_nbq(i,j+1,k)
+     &     -gammau  *thetadiv_nbq(i,j-1,k)
+     &     -gammau_2*thetadiv_nbq(i,j-2,k)
+     &               ) ! - d(delta p)dy   
+#    endif
 #   else /* !K3FAST_PG2 */
               dum_s=dum_s
      &                -( thetadiv_nbq(i,j  ,k)
      &                  -thetadiv_nbq(i,j-1,k))
 #   endif /* K3FAST_PG2 */
+     
 #   if defined K3FAST_DUVNBQ2
               dum2_s=(dum_s-dum2_s)
      &           *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
@@ -509,9 +518,6 @@
 #    endif  
 #   endif
               dum_s=dum_s*0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)
-#   ifdef NBQ_RCSOUND
-     &                   /rcsound2_nbq
-#   endif
 #   ifdef MASKING
      &                   *vmask(i,j)
 #   endif  
@@ -544,6 +550,16 @@
 ! !
 #  ifdef BSTRESS_FAST
               if (k.eq.1) dum_s=dum_s-bvstr(i,j)
+     &         *(Hz(i,j-1,k)+Hz(i,j,k))
+     &      /((zeta(i,j  ,knew)+h(i,j  ))
+#   ifdef NBQ_MASS
+     &        *rhobar_nbq(i,j  ,knew)
+#   endif
+     &       +(zeta(i,j-1,knew)+h(i,j-1))
+#   ifdef NBQ_MASS
+     &        *rhobar_nbq(i,j-1,knew)
+#   endif
+     &    )
 #  endif
 ! !
 ! !................................

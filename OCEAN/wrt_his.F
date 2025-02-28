@@ -822,7 +822,7 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
 #   ifdef TEMPERATURE
      &                 diff2(i,j,itemp)
 #   endif
-#   ifdef TS_DIF_SMAGO
+#   if defined TS_DIF_SMAGO || defined TKE3D_MIXING
      &              +diff3d_r(i,j,k)
 #   endif
 #  elif defined TS_DIF4
