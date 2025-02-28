@@ -34,6 +34,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #316 : fix MPI reproducibility with NBQ
 - Issue #318 : fix typo in order 5 scheme
 - Issue #319 : fix MPI reproducibility using MUSTANG_CORFLUX
+- Issue #322 : fix SUBSTANCE_SUBMASSBALANCE feature on river fluxes
 
 ### Changed
 
