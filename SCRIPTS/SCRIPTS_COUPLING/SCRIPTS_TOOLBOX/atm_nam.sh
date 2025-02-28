@@ -63,7 +63,7 @@ sed -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"   -e "s/<yr2>/${YEAR_END_JOB}/g"  \
 ## ---------------------------
 ##    Deal with his outputs
 ## ---------------------------
-## modif: A. Zribbi and L. Maillard 21/01/2025
+## modif: A. Zribi and L. Maillard 21/01/2025
 
 nbdom=$((${num_mv_nest}+1))
 
