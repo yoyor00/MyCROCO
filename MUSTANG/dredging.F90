@@ -196,7 +196,8 @@ CONTAINS
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_read_settings_file  ***
       !!
-      !! ** Purpose : TODO
+      !! ** Purpose : Read text file containing dredged depths and
+      !!              correspondance between dredging zones and dumping zones
       !!
       !!------------------------------------------------------------------------
 
@@ -471,7 +472,13 @@ CONTAINS
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dredging_main ***
       !!
-      !! ** Purpose : TODO
+      !! ** Purpose : Main subroutine called by MUSTANG_update, main steps:
+      !!                    - Check time
+      !!                    - Compute dredged mass
+      !!                    - Compute dumping mass
+      !!                    - Transfer dredged mass to dumping area
+      !!                      (water and deposit)
+      !!                    - Output
       !!
       !!------------------------------------------------------------------------
 
@@ -560,14 +567,14 @@ CONTAINS
 #else
                ! initial depth
                tmp_depth = hmod(i, j)
-#endif
+#endif /* MORPHODYN */
                DO WHILE (((tmp_depth - (hsed(i, j) - dredg_hsed_init(i, j))) &
                           .LT. dredg_depth(iz)) .AND. ksma(i, j) > 0)
 
                   k = ksma(i, j)
-                  IF ((tmp_depth -  &
-                     (hsed(i, j) - dzs(k, i, j) - dredg_hsed_init(i, j))) &
-                     .LE. dredg_depth(iz)) THEN
+                  IF ((tmp_depth - &
+                       (hsed(i, j) - dzs(k, i, j) - dredg_hsed_init(i, j))) &
+                      .LE. dredg_depth(iz)) THEN
                      ! whole layer can be dredged
                      dzs_dredged = dzs(k, i, j)
                      DO iv = 1, nvp
@@ -583,8 +590,9 @@ CONTAINS
                   ELSE
                      ! dredged only partial layer
                      dzs_dredged = min(dzs(k, i, j), &
-                        dredg_depth(iz) - &
-                        (tmp_depth - (hsed(i, j)  - dredg_hsed_init(i, j))))
+                                       dredg_depth(iz) - &
+                                       (tmp_depth - &
+                                        (hsed(i, j) - dredg_hsed_init(i, j))))
                      DO iv = 1, nvp
                         dredg_mass_byclass_byloc(iz, iv) = &
                            dredg_mass_byclass_byloc(iz, iv) + &
@@ -605,7 +613,7 @@ CONTAINS
       !!------------------------------------------------------------------------
       !!       *** SUBROUTINE dumping_compute_mass ***
       !!
-      !! ** Purpose : computation of dumping masses
+      !! ** Purpose : Computation of dumping masses
       !!
       !!------------------------------------------------------------------------
 
@@ -683,7 +691,7 @@ CONTAINS
       integer status(MPI_STATUS_SIZE), blank, ierr
 #  ifdef XIOS
 #include "mpi_cpl.h"
-#  endif
+#  endif /* XIOS */
 
       INTEGER :: iz, ierror
       REAL(KIND=rsh) :: tmp
@@ -715,7 +723,7 @@ CONTAINS
       integer status(MPI_STATUS_SIZE), blank, ierr
 #  ifdef XIOS
 #include "mpi_cpl.h"
-#  endif
+#  endif /* XIOS */
 
       INTEGER :: iv, iz, ierror
       REAL(KIND=rsh) :: tmp
@@ -926,7 +934,7 @@ CONTAINS
       !!------------------------------------------------------------------------
       !!                 *** SUBROUTINE dredging_check  ***
       !!
-      !! ** Purpose : check netcdf function
+      !! ** Purpose : Check netcdf function
       !!------------------------------------------------------------------------
 
       USE netcdf
@@ -944,7 +952,7 @@ CONTAINS
       !!------------------------------------------------------------------------
       !!                 *** SUBROUTINE dredging_ncget2D  ***
       !!
-      !! ** Purpose : get var from netcdf
+      !! ** Purpose : Get var from netcdf
       !!              (from nf_fread.F translate in f90)
       !!------------------------------------------------------------------------
       USE netcdf
@@ -1001,7 +1009,7 @@ CONTAINS
 #else
 # define LOCALLM Lm
 # define LOCALMM Mm
-#endif
+#endif /* MPI */
 #if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI
    !!/* exchange needed */
       CALL exchange_r2d_tile(1, LOCALLM, 1, LOCALMM, tmp)
