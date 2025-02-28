@@ -6,7 +6,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
-- Issue #291 : add new test case FLASH_RIP
+- Issues #291, #323 : add new test case FLASH_RIP
 
 ### Fixed
 
@@ -40,7 +40,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Issue #306 : in MRL_WCI change limits of wave height in surfzone
 
-- Issue #291 : change wavemaker (periodic boundaries + single-sum)
+- Issues #291, #323: change wavemaker (periodic boundaries + single-sum), 
+  check of mean angle after the procedure and periodization is 
+  abandoned if the mean angle change is too high
 
 - Issue #281 : optimization of the PISCES code on
   - representation of the lability of the particle pool
