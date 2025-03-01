@@ -9,6 +9,7 @@
 ! ! ***********************************
 ! !
         ifl_bathy(:)=0
+	ifl_bathy(0)=1
         ifl_bathy(1)=0
         ifl_bathy(2)=1
         ifl_bathy(3)=0
@@ -105,6 +106,18 @@
 ! ! ***********************************
 ! !            
         do it=1,1000 ! Begins loop
+! !
+! ! -----------------------------------
+! ! Imposes min bathy 
+! ! -----------------------------------
+! !            
+        if (ifl_bathy(1).ne.0) then
+         do j=JstrR,JendR
+         do i=IstrR,IendR
+          h(i,j)=max(h(i,j),5.e-3)         ! Hmin
+         enddo
+         enddo
+        endif
 ! !
 ! ! -----------------------------------
 ! ! "Diffuses" bathy (coef=kappa*h)

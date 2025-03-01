@@ -48,7 +48,7 @@ C$    integer omp_get_thread_num
       common /nbq_xyv5/xv5,yv5
       real xv6(3),yv6(3)
       common /nbq_xyv6/xv6,yv6
-      integer :: ifl_bathy(10),it,it2
+      integer :: ifl_bathy(0:10),it,it2
       real    :: val_bathy(10)      
 #endif
 !
