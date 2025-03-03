@@ -131,6 +131,10 @@
       endif
 #endif
 !
+! Make sure nrechis is larger than 0 before creating file
+!
+      nrechis=max(1,nrechis) 
+!
 ! Create/open history file; write grid arrays, if so needed.
 !
       call def_his (ncidhis, nrechis, ierr)
@@ -139,7 +143,7 @@
 !                                          !!! WARNING: Once time
 ! Set record within the file.              !!! stepping has been
 !                                          !!! started, it is assumed
-      nrechis=max(1,nrechis)               !!! that global history
+                                           !!! that global history
       if (nrpfhis.eq.0) then               !!! record index is
         record=nrechis                     !!! advanced by main.
       else
