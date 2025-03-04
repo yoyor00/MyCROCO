@@ -1,5 +1,8 @@
 #include "cppdefs.h"
-
+!============================================================================================
+! Reference : Coastal Tides book by Simon (SHOM)
+! https://diffusion.shom.fr/coastal-tides-version-anglaise-de-la-maree-oceanique-cotiere.html
+!=============================================================================================
       MODULE MOD_TIDES_MAS
 #ifdef TIDES_MAS
 # include "param.h"
