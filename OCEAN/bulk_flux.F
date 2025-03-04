@@ -31,9 +31,9 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
-#ifdef STO_BULK_CD
+# ifdef STO_BULK_CD
       USE stobulk         ! Stochastic parameterization of bulk formulation
-#endif
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -697,12 +697,12 @@
 !  Compute kinematic, surface wind stress (m2/s2).
 !======================================================================
 !
-#  ifdef STO_BULK_CD
+#   ifdef STO_BULK_CD
 !     apply multiplicative noise to Cd
       sto_xi2d=1.0
       call sto_bulk_cd ( sto_xi2d )
       call sto_bulk_cd ( cer )
-#  endif
+#   endif
 
 !$acc loop seq
       do j=jmin,jmax
