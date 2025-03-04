@@ -2613,13 +2613,16 @@ C$    integer  trd, omp_get_thread_num
 # endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
+      real    eps
+      parameter (eps=1.e-10)
 # if defined WAVE_MAKER || defined WAVE_MAKER_INTERNAL
       integer iw,jw, jwtt0,jwtt
       real    Du,Dv,Zu,Zv,Zr,Dr,xu,yu,xv,yv,x0,y0,time0,
      &        h0,khd,kh,wa,wk,wp,wf,wd,wds,ramp,
      &        sigma,theta,gamma,Hs,cff_spread, sumspec,
-     &        cff,cff0,cff1,cff2,cff3,cff4,cff5,cff6,
-     &        fmin,fmax,df,dmin,dmax,dd, mindiff,wkdom,
+     &        cff,cff0,cff1,cff2,cff3,cff4,cff5,
+     &        fmin,fmax,df,dmin,dmax,dd, 
+     &        mindiff,wkdom,wky,
      &        wa1,wk1,wp1,wf1,wa2,wk2,wp2,wf2
       real    K1, K2, K3, K4, K5, K6
       parameter (K1=0.6666666666, K2=0.3555555555,
@@ -2638,6 +2641,9 @@ C$    integer  trd, omp_get_thread_num
 # include "coupling.h"
 # include "forces.h"
 # include "mixing.h"
+# ifdef WAVE_MAKER
+      real wd_bry_tmp(Nfrq)
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 
