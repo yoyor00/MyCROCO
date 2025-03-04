@@ -143,7 +143,7 @@
 !                                          !!! WARNING: Once time
 ! Set record within the file.              !!! stepping has been
 !                                          !!! started, it is assumed
-                                           !!! that global history
+      nrechis=max(1,nrechis)               !!! that global history
       if (nrpfhis.eq.0) then               !!! record index is
         record=nrechis                     !!! advanced by main.
       else
