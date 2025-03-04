@@ -33,6 +33,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #299 : cleaning, comment in sta.h
 - Issue #305 : fix MPI repro with PSOURCE when a source is 
   in one MPI domain rejecting towards another MPI domain
+- Issue #308 : fix and cleaning with AGRIF and TIDE_MAS
 - Issue #309 : fix parallel compilation (except for AGRIF)
 - Issue #311 and #328 : fix data instruction replace by a declaration 
   of array and initialisation of it
