@@ -464,9 +464,6 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         Perform the build with jobcomp.
         """
 
-        # to pass -j8 we need to go through env var
-        os.environ["MAKEFLAGS"] = make_jobs
-
         # move in dir & call jobcomp
         with move_in_dir(self.builddir):
             run_shell_command(
