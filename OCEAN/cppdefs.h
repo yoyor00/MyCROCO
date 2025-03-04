@@ -2051,6 +2051,7 @@
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
 #  define MUSTANG_CORFLUX
+#  define SUBSTANCE_SUBMASSBALANCE 
 # endif
 # define PSOURCE
 # define ANA_PSOURCE

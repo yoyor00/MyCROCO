@@ -133,7 +133,14 @@
         sinwd=sin(wd)
         coswds=cos(wds)
         sinwds=sin(wds)
+!
+!  Peak frequency and wavenumber
+!
         h0=h(IB0,1)
+        wf=2*pi/wp          ! peak frequency
+        khd=h0*wf*wf/g      ! peak wavenumber
+        wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
+     &                                   khd*(K5+K6*khd)))))) )/h0
 !
 #if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 # define WAVE_MAKER_SPECTRUM
@@ -220,47 +227,60 @@
           enddo
           cff2=sumspec/cff1
           do jw=1,Nfrq
-            wa_bry_d(jw)=sqrt(wa_bry_d(jw)*cff2)   ! Normalize wa_bry_d
-            wa_bry(jw)=wa*sqrt(wa_bry(jw)/sumspec) ! Normalize wa_bry
-     &                *wa_bry_d(jw)                ! and multiply wa_bry_d
-          enddo                                    ! for final wa_bry spectrum
+            wa_bry_d(jw)=wa_bry_d(jw)*cff2   ! Normalize dir spectrum
+            wa_bry_f(jw)=wa_bry(jw)/sumspec  ! Normalize frq spectrum
+            wa_bry(jw)=wa*sqrt(wa_bry_f(jw)  ! Finalize amplitude to
+     &                        *wa_bry_d(jw)) ! normalize wave energy
+          enddo
 #  ifdef WAVE_MAKER_DSPREAD_PER
 !
-! Force periodicity on all wave components such that:
-!   k_i*sin(theta_i)=p*(2*pi/Ly) with p an integer
-! The correction of mean wave direction cannot exceed 30%.
+! Force periodicity on all wave components such that
+! k_i*sin(theta_i)=p*(2*pi/Ly) with p an integer.
 !
-          khd=h0*wf*wf/g
-          kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
-     &                                        khd*(K5+K6*khd)))))))
-          wk=kh/h0              ! peak wavenumber
-          wkdom=2.*pi/el        ! domain wavenumber
-          cff=asin(min(1.,wkdom/wk))
-          if (abs(1.-wd/cff) .lt. 0.3) then
-            do jw=1,Nfrq
-              cff1=wd_bry(jw)   ! angle before correction
-              cff2=wk_bry(jw)   ! associated wavenumber
-              mindiff=abs((cff2*sin(cff1))/wkdom
-     &             - nint((cff2*sin(cff1))/wkdom))
-              if (wk_bry(jw). gt. wkdom) then
-                iw=1
-                do while ((iw .lt. 10000) .and. (mindiff .gt. 1.e-6))  
-                  cff4 = (cff2 * sin(cff1 + 1.e-4))/wkdom
-                  cff5 = (cff2 * sin(cff1 - 1.e-4))/wkdom
-                  if (abs(cff4-nint(cff4)) .lt. mindiff) then
-                    mindiff = abs(cff4-nint(cff4))
-                    cff1 = cff1 + 1.e-4
-                  else if (abs(cff5-nint(cff5)) .lt. mindiff) then         
-                    mindiff = abs(cff5-nint(cff5))
-                    cff1 = cff1 - 1.e-4
-                  endif
-                  iw=iw+1
-                enddo
-                wd_bry(jw)=cff1
-              endif 
-            enddo
-          endif  
+          wkdom=2.*pi/el       ! domain wavenumber
+          cff0=0.
+          do jw=1,Nfrq
+            cff0=cff0+wd_bry(jw)*wa_bry_d(jw)*wa_bry_f(jw)
+            wd_bry_tmp(jw)=wd_bry(jw)
+          enddo
+          do jw=1,Nfrq         ! Correct each angle of the spectrum
+            cff1=wd_bry(jw)    !   angle before correction
+            cff2=wk_bry(jw)    !   associated wavenumber
+            wky=cff2*sin(cff1)/wkdom
+            mindiff=abs(wky - nint(wky))
+            if (wk_bry(jw) .gt. wkdom) then
+              iw=1
+              do while ((iw .lt. 10000) .and. (mindiff .gt. 1.e-6))  
+                cff4 = (cff2 * sin(cff1 + 1.e-4))/wkdom
+                cff5 = (cff2 * sin(cff1 - 1.e-4))/wkdom
+                if (abs(cff4-nint(cff4)) .lt. mindiff) then
+                  mindiff = abs(cff4-nint(cff4))
+                  cff1 = cff1 + 1.e-4
+                else if (abs(cff5-nint(cff5)) .lt. mindiff) then         
+                  mindiff = abs(cff5-nint(cff5))
+                  cff1 = cff1 - 1.e-4
+                endif
+                iw=iw+1
+              enddo
+              wd_bry_tmp(jw)=cff1
+            endif 
+          enddo
+          cff1=0.              ! Test correction on mean angle
+          do jw=1,Nfrq
+            cff1=cff1+wd_bry_tmp(jw)*wa_bry_d(jw)*wa_bry_f(jw)
+          enddo
+          cff2=abs(cff0-cff1)*180/pi
+          cff3=abs(cff0-cff1)/max(eps,abs(cff0))
+          if (cff2 .lt. 0.5 .or. cff3 .lt. 0.3) then  
+            do jw=1,Nfrq                ! correction applied        
+              wd_bry(jw)=wd_bry_tmp(jw) ! only if change of mean
+            enddo                       ! angle <0.5deg or <30%
+          endif
+          MPI_master_only write(stdout,'(6x,A,3(f10.5,1x),f10.3/)')
+     &            'Mean wave angle correction (Bef. Aft. Diff %):',
+     &                        cff0*180/pi,cff1*180/pi,cff2,cff3*100
 #  endif /* WAVE_MAKER_DSPREAD_PER  */
+
           CALL RANDOM_SEED(SIZE=nseed)
           ALLOCATE(seed(nseed))
           seed = 12345  ! Fix seed for reprocucibility
@@ -313,10 +333,6 @@
 !
         ramp=tanh(dt/wp*float(iic-ntstart))
         wa=wa*ramp
-        wf=2*pi/wp
-        khd=h0*wf*wf/g      ! compute wavenumber
-        wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
-     &                                   khd*(K5+K6*khd)))))) )/h0
 #endif /* ROGUE_WAVE ... */
 !
 !--------------------------------------------------------------------
