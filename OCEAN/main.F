@@ -80,7 +80,6 @@
 #endif
 #ifdef USE_CALENDAR
        character*19 :: tool_sectodat
-!      real*8       :: tool_datosec
 #endif
 #ifdef AGRIF
       Type(Agrif_pgrid),pointer  :: parcours
