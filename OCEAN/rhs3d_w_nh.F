@@ -29,22 +29,23 @@
 !
 !   A3d(1,1,trd), A3d(1,2,trd) contain ru,rv
 !   A3d(1,3,trd) contains rw
-!   A3d(1,3,trd) and A3d(1,4,trd) is available at this point
+!   A3d(1,4,trd) and A3d(1,5,trd) is available at this point
 !
-      CALL rhs3d_w_tile (Istr,Iend,Jstr,Jend,  A3d(1,3,trd),
-     &             A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &             A2d(1,4,trd), A2d(1,5,trd),
-     &             A3d(1,4,trd), A3d(1,5,trd),
-     &             A2d(1,6,trd), A2d(1,7,trd))
+      CALL rhs3d_w_tile (Istr,Iend,Jstr,Jend,  A2d(1,1,trd), 
+     &             A2d(1,2,trd), A2d(1,3,trd), A2d(1,4,trd),
+     &             A2d(1,5,trd), A2d(1,6,trd), A2d(1,7,trd),
+     &             A3d(1,3,trd), A3d(1,4,trd), A3d(1,5,trd)
+     &             )
       return
       END
 
 !======================================================================
       
-      SUBROUTINE rhs3d_w_tile (istr, iend, jstr, jend, rw,
-     &                         CF, FC, We_r, lap, Hzw,
-     &                         HUon_w, HVom_w,
-     &                         WFx, WFe)
+      SUBROUTINE rhs3d_w_tile (istr, iend, jstr, jend, CF,
+     &                         FC, We_r, lap, 
+     &                         Hzw, WFx, WFe,
+     &                         rw, HUon_w, HVom_w
+     &                         )
       IMPLICIT NONE
       !!
       INTEGER  :: Istr,Iend,Jstr,Jend
@@ -54,7 +55,6 @@
       integer     kp2,kp1,km1
       !!
 # include "param.h"
-      REAL     :: rw     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: CF     (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
       REAL     :: FC     (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)
       REAL     :: We_r   (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)
@@ -62,6 +62,7 @@
       REAL     :: Hzw    (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
       REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY      )
       REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY      )
+      REAL     :: rw     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HVom_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       !!
