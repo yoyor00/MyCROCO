@@ -28,7 +28,7 @@
 #endif
 #ifdef PISCES
           USE pisces_ini     ! PISCES modules
-          USE trcini_pisces
+          USE trcnam_pisces
 #endif
 #ifdef STOGEN
           USE stomod         ! Stochastic module

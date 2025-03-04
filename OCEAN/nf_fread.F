@@ -33,21 +33,26 @@
 #if defined MUSTANG
       USE comMUSTANG, only: nk_nivsed_out
 #endif
+#if defined BIOLOGY && defined PISCES && defined key_sediment
+      USE par_sed, only: jpksed
+#endif
       implicit none
 #include "param.h"
 #if defined MUSTANG
       real A(GLOBAL_2D_ARRAY,max(N+1,nk_nivsed_out))
+      real buff((Lm+5)*(Mm+5)*max(N+1,nk_nivsed_out))
 #else
 # if defined ABL1D
       real A(GLOBAL_2D_ARRAY,max(N+1,N_abl+1))
 # else
       real A(GLOBAL_2D_ARRAY,N+1)
 # endif
+#include "buffer.h"
 #endif
       integer ncid,  type,   vert_type,  imin, imax,  start(4)
      &      , varid, record, horiz_type, jmin, jmax,  count(4)
      &      , i,j,k, shift,  ierr
-#include "buffer.h"
+
 #if defined MPI
 # include "scalars.h"
 #endif
@@ -161,6 +166,13 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
       elseif (vert_type.eq.4) then
         count(3)=N_abl
         count(4)=1                !--> 3D ABL-grid
+        start(3)=1
+        start(4)=record
+#endif
+#if defined BIOLOGY && defined PISCES && defined key_sediment
+      elseif (vert_type.eq.5) then
+        count(3)=jpksed
+        count(4)=1                !--> 3D DIAGENITIC-grid
         start(3)=1
         start(4)=record
 #endif
@@ -283,7 +295,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         call exchange_u3d_tile (1,LOCALLM,1,LOCALMM, A)
 #   endif
       elseif (horiz_type.eq.2 .and. vert_type.eq.1) then
-#   ifdef THREE_GHOST_3pts_POINTS_UV
+#   ifdef THREE_GHOST_POINTS_UV
         call exchange_v3d_3pts_tile (1,LOCALLM,1,LOCALMM, A)
 #   else
         call exchange_v3d_tile (1,LOCALLM,1,LOCALMM, A)

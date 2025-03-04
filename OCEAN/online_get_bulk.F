@@ -420,12 +420,12 @@
             !
             !  Read zr : height of t-level
             !
-            lvar=lenstr(vname(1,indxZR))
+            lvar=lenstr(vname_abl1d(1,indxZR))
             ierr=nf_inq_varid (ncidbulkO(blkvar_id),
-     &                         vname(1,indxZR)(1:lvar),
+     &                         vname_abl1d(1,indxZR)(1:lvar),
      &                         zr_id)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,3) vname(1,indxZR)(1:lvar),
+              write(STDOUT,3) vname_abl1d(1,indxZR)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -433,19 +433,19 @@
             ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),zr_id,1,N_abl,
      &                             zr_abl)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,6) vname(1,indxZR)(1:lvar),
+              write(STDOUT,6) vname_abl1d(1,indxZR)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
             !
             !  Read zw : height of w-level
             !
-            lvar=lenstr(vname(1,indxZW))
+            lvar=lenstr(vname_abl1d(1,indxZW))
             ierr=nf_inq_varid (ncidbulkO(blkvar_id),
-     &                         vname(1,indxZW)(1:lvar),
+     &                         vname_abl1d(1,indxZW)(1:lvar),
      &                         zw_id)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,3) vname(1,indxZW)(1:lvar),
+              write(STDOUT,3) vname_abl1d(1,indxZW)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -453,19 +453,19 @@
             ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),zw_id,1,N_abl,
      &                             zw_abl)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,6) vname(1,indxZW)(1:lvar),
+              write(STDOUT,6) vname_abl1d(1,indxZW)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
             !
             !  Read Hzr : thickness of t-level
             !
-            lvar=lenstr(vname(1,indxHZR))
+            lvar=lenstr(vname_abl1d(1,indxHZR))
             ierr=nf_inq_varid (ncidbulkO(blkvar_id),
-     &                         vname(1,indxHZR)(1:lvar),
+     &                         vname_abl1d(1,indxHZR)(1:lvar),
      &                         Hzr_id)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,3) vname(1,indxHZR)(1:lvar),
+              write(STDOUT,3) vname_abl1d(1,indxHZR)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -473,19 +473,19 @@
             ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),Hzr_id,1,N_abl,
      &                             Hzr_abl)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,6) vname(1,indxHZR)(1:lvar),
+              write(STDOUT,6) vname_abl1d(1,indxHZR)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
             !
             !  Read Hzw : height of w-level
             !
-            lvar=lenstr(vname(1,indxHZW))
+            lvar=lenstr(vname_abl1d(1,indxHZW))
             ierr=nf_inq_varid (ncidbulkO(blkvar_id),
-     &                         vname(1,indxHZW)(1:lvar),
+     &                         vname_abl1d(1,indxHZW)(1:lvar),
      &                         Hzw_id)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,3) vname(1,indxHZW)(1:lvar),
+              write(STDOUT,3) vname_abl1d(1,indxHZW)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -493,7 +493,7 @@
             ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),Hzw_id,1,N_abl,
      &                             Hzw_abl)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,6) vname(1,indxHZW)(1:lvar),
+              write(STDOUT,6) vname_abl1d(1,indxHZW)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif

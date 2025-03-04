@@ -244,28 +244,32 @@
       if( ana_ini_wkb ) then
 
 # ifdef WKB_OBC_WEST
-        ho=h(1,1)+zeta(1,1,knew)         !+wkb_tide       ! offshore depth
+        ho=h(1,1)+zeta(1,1,knew)                 ! offshore depth
 #  ifdef MPI
         call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
      &                     0, MPI_COMM_WORLD, ierr)
 #  endif
 # endif
 # ifdef WKB_OBC_EAST
-        ho=h(LLm,1)+zeta(LLm,1,knew)      !+wkb_tide       ! offshore depth
 #  ifdef MPI
+        ho=h(LLm/NP_XI,1)+zeta(LLm/NP_XI,1,knew)
         call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
      &                     NP_XI-1, MPI_COMM_WORLD, ierr)
+#  else
+        ho=h(LLm,1)+zeta(LLm,1,knew)
 #  endif
 # endif
 # ifdef WKB_OBC_NORTH
-        ho=h(LLm,MMm)+zeta(LLm,MMm,knew)  !+wkb_tide       ! offshore depth
 #  ifdef MPI
+        ho=h(LLm/NP_XI,MMm/NP_ETA)+zeta(LLm/NP_XI,MMm/NP_ETA,knew)
         call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
-     &                     NPP-1, MPI_COMM_WORLD, ierr)!faux
+     &                     NPP-1, MPI_COMM_WORLD, ierr)
+#  else
+        ho=h(LLm,MMm)+zeta(LLm,MMm,knew)
 #  endif
 # endif
 # ifdef WKB_OBC_SOUTH
-        ho=h(1,1)+zeta(1,1,knew)          !+wkb_tide       ! offshore depth
+        ho=h(1,1)+zeta(1,1,knew)
 #  ifdef MPI
         call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
      &                     0, MPI_COMM_WORLD, ierr)!faux
@@ -766,7 +770,7 @@ C$OMP BARRIER
           nw =0.5*(1.0+2.0*khn/max(sinh(2.0*khn),eps))
           frq(i,j,wnew) =sqrt(g*wvn(i,j,wnew)*tanh(khn))
           wcg(i,j,wnew) =frq(i,j,wnew)*(inv_k**2)*nw  ! cg/k
-          hrm(i,j,wnew) =sqrt(peg*max(wac(i,j,wnew),0.0)*frq(i,j,wnew))
+          hrm(i,j,wnew) =sqrt(peg*max(wac(i,j,wnew),0.)*frq(i,j,wnew))
 # ifdef WAVE_BREAK_TG86
           wsb(i,j,wnew) =sbc*((1.0/Dstp(i,j))**5)
      &                      *(hrm(i,j,wnew)**7)    ! ep_b/rho/sigma
@@ -784,26 +788,23 @@ C$OMP BARRIER
           wsb(i,j,wstp)=sbc/Dstp(i,j)*hrm(i,j,wnew)**3*cff1**4
      &                               *(1 -exp (-cff1**5 ) )
 # endif
-# if defined WET_DRY && defined WAVE_BREAK_SWASH
-!  Add dissipation near shoreline (e.g., SANDBAR case)
-          wsb(i,j,wnew)=wsb(i,j,wnew)*
-     &       max(1.,(0.5/max(Dstp(i,j)-Dcrit(i,j),eps)**0.2))
-# endif
 # ifdef WAVE_ROLLER
           wcr(i,j,wnew) = frq(i,j,wnew)*(inv_k**2)   ! c/k
           wsr(i,j,wnew) = c_roller*war(i,j,wnew)     ! ep_r/rho/sigma
      &                    *wvn(i,j,wnew)/max(frq(i,j,wnew)**2,eps)
 # endif
 # if (defined BBL || defined MRL_WCI) && !defined WAVE_OFFLINE
-          cosw = inv_k*wkx(i,j,wnew)         ! cos wave direction (xi)
-          sinw = inv_k*wke(i,j,wnew)         ! sin wave direction (eta)
+          hrm(i,j,wnew)=min(hrm(i,j,wnew),
+     &                           0.55*Dstp(i,j)) ! limit Hrms in surfzone
+          cosw = inv_k*wkx(i,j,wnew)             ! cos wave direction (xi)
+          sinw = inv_k*wke(i,j,wnew)             ! sin wave direction (eta)
 !          orbital   = 0.5*frq(i,j,wnew)         ! used in M.Blaas BBL
 !     &        *hrm(i,j,wnew)/max(sinh(khn),eps) ! orbital vel. magnitude
 !          uorb(i,j) = orbital*cosw              ! orbital velocity (xi)
 !          vorb(i,j) = orbital*sinw              ! orbital velocity (eta)
           inv_f= 1.0/max(frq(i,j,wnew),eps)
           Pwave(i,j)=2.*pi*inv_f
-          Awave(i,j)=hrm(i,j,wnew)/2.
+          Awave(i,j)=0.5*hrm(i,j,wnew)
           if (cosw.ne.0.0) then
             Dwave(i,j)=ATAN2(sinw,cosw)
           else

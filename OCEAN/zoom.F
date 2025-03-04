@@ -117,8 +117,7 @@
       use AGRIF_UTIL
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules
-      USE trcini_pisces
-      USE p4zsbc
+      USE trcnam_pisces
 # endif
       implicit none
       integer tile, ierr, trd, subs

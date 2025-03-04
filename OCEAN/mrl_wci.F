@@ -96,7 +96,7 @@
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
      &   dtinv,inv_zb,a_brk,a_kv,c1o3,c4o3,inv_k,dd,ust_ker,intfb,
      &   fbsrf,fn1,fn2,khmax,bz1,bz2,beta,abot,delta,ks,
-     &   a_frc,kfrc,Hrms,urms,fw, maxwar,
+     &   a_frc,kfrc,Hrms,urms,fw, maxwac, twopi,otwopi,sqrtpi,
      &             wh(PRIVATE_2D_SCRATCH_ARRAY),
      &             fr(PRIVATE_2D_SCRATCH_ARRAY),
      &             kw(PRIVATE_2D_SCRATCH_ARRAY),
@@ -148,7 +148,11 @@
 # endif /* !WKB_WWAVE */
 !
 # include "compute_auxiliary_bounds.h"
-
+!
+!-----------------------------------------------------------------------
+! Set parameters
+!-----------------------------------------------------------------------
+!
 # if (defined WAVE_FRICTION && !defined WKB_WWAVE) || defined WAVE_STREAMING
       if (Zobt.gt.0.) then                    ! default Zob for wave
         do j=jstr-1,jend+1                    ! dissipation or streaming
@@ -214,6 +218,10 @@
 # endif
       if (iic.eq.0) wave_ramp=1.
       wramp2= wave_ramp**2
+
+      twopi=2.*pi
+      otwopi=1./twopi
+      sqrtpi=sqrt(pi)
 !
 ! Evaluate 2DH wave-current interaction variables.
 ! ================================================
@@ -257,6 +265,7 @@
 !----------------------------------------------------------------------
 !
           fr(i,j)=frq(i,j,wnew)
+          inv_f(i,j)=1./max(fr(i,j),eps)
           wh(i,j)=wave_ramp*hrm(i,j,wnew)
           kw(i,j)=max(wvn(i,j,wnew),eps)
 #  ifndef WAVE_ROLLER
@@ -279,13 +288,11 @@
 #  ifndef WAVE_ROLLER
           act(i,j)=wramp2*max(wac(i,j,wnew),0.)  ! wave action density
 #  else
-          maxwar=0.125*g*(wkb_gam*Dstp(i,j))**2  ! limit roller action
-     &                        /max(fr(i,j),eps)  ! in shallow water 
           act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
-     &                +max(min(war(i,j,wnew),maxwar),0.))
-!         act(i,j)=wramp2*(max(wac(i,j,wnew),0.)
-!     &                   +max(war(i,j,wnew),0.))  ! U10
+     &                    +max(war(i,j,wnew),0.))
 #  endif
+          maxwac=inv_f(i,j)*0.125*g*(0.55*Dstp(i,j))**2 ! limit wac in
+          act(i,j)=min(wac(i,j,wnew),maxwac)            ! surfzone
 
 # else    /* ifndef WKB_WWAVE */
 !
@@ -299,14 +306,14 @@
           khd=Dstp(i,j)*(fr(i,j)**2)*inv_g
 #  ifdef BBL
 ! --- copy into arrays for BBL Soulsby parametrization
-          Pwave(i,j) = 2.0*pi*inv_f(i,j)
-          Awave(i,j) = wh(i,j)/2.0
+          Pwave(i,j) = twopi*inv_f(i,j)
+          Awave(i,j) = 0.5*wh(i,j)
           Dwave(i,j) = atan2(wdre(i,j),wdrx(i,j))
 #  endif
 
 #  ifdef OW_COUPLING_FULL
-          kw(i,j) =2.0*pi/max(wlm(i,j),0.1)
-          !kw(i,j) =2.0*pi/max(wlm(i,j),eps)
+          kw(i,j) =twopi/max(wlm(i,j),0.1)
+          !kw(i,j) =twopi/max(wlm(i,j),eps)
           kD(i,j) =kw(i,j)*Dstp(i,j)
 #  else
 
@@ -340,58 +347,58 @@
           ebrk(i,j)=wramp2*foc(i,j)/rho0
 #   else
 #    ifdef WAVE_BREAK_TG86
-           cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**4)/(2.*pi)
+           cff=0.1875.*sqrtpi*g*(wave_btg**3)/(wave_gam**4)*otwopi
            ebrk(i,j)=cff/(Dstp(i,j)**5)*(wh(i,j)**7) ! ep_b/rho/sigma (m3/s2)
 #    elif defined WAVE_BREAK_TG86A
-           cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(wave_gam**2)/(2.*pi)
+           cff=0.1875*sqrtpi*g*(wave_btg**3)/(wave_gam**2)*otwopi
            cff1=wh(i,j)/(wave_gam*Dstp(i,j))
            ebrk(i,j)=cff/(Dstp(i,j)**3)*(wh(i,j)**5)*
      &                           (1.-(1.+cff1**2)**(-2.5))
 #    elif defined WAVE_BREAK_CT93
-           cff=3./16.*sqrt(pi)*g*(wave_btg**3)/(2.*pi)
+           cff=0.1875*sqrtpi*g*(wave_btg**3)*otwopi
            cff1=wh(i,j)/(wave_gam*Dstp(i,j))
            ebrk(i,j)=cff/Dstp(i,j)*(wh(i,j)**3)
-     &              *( 1.+tanh(8.0*(cff1-1.)) )*
-     &               ( 1.-(1.0+cff1**2)**(-2.5) )
+     &              *( 1.+tanh(8.*(cff1-1.)) )*
+     &               ( 1.-(1.+cff1**2)**(-2.5) )
 #    elif defined WAVE_BREAK_R93
-           cff=0.25*g*(wave_btg**3)/(2.*pi)
+           cff=0.25*g*(wave_btg**3)*otwopi
            cff1=wh(i,j)/(wave_gam*Dstp(i,j))
            ebrk(i,j)=cff/Dstp(i,j)*wh(i,j)**3*cff1**4
-     &                          *(1-exp (-cff1**5 ))
+     &                           *(1-exp (-cff1**5 ))
 #    elif defined WAVE_BREAK_BJ78
            HmaxBJ=wave_gam/max(kw(i,j),eps)*tanh(kw(i,j)*Dstp(i,j))
            if (HmaxBJ.gt.eps) then
              cff1=wh(i,j)/HmaxBJ !=beta_BJ
            else
-             cff1=0.0
+             cff1=0.
            endif
            if (cff1.le.0.5) then
-             Q0 = 0.0
-           elseif(cff1.le.1.0) then
-             Q0 = (2.0*cff1-1.0)**2
+             Q0 = 0.
+           elseif(cff1.le.1.) then
+             Q0 = (2.*cff1-1.)**2
            endif
            if(cff1.le.0.2) then
-             Qb = 0.0
-           elseif(cff1.lt.1.0) then
-             cff = exp((Q0-1.0)/cff1**2)
+             Qb = 0.
+           elseif(cff1.lt.1.) then
+             cff = exp((Q0-1.)/cff1**2)
              Qb = Q0-cff1**2*(Q0-cff)/(cff1**2-cff)
              do k=1,3
-               Qb = exp((Qb-1.0)/cff1**2)
+               Qb = exp((Qb-1.)/cff1**2)
              enddo
            else
-             Qb = 1.0-eps
+             Qb = 1.-eps
            endif
            if( (cff1**2.gt.eps) .and. (abs(cff1**2-Qb).gt.eps) ) then
              if(cff1**2.lt.1.0) then
-               ebrk(i,j) = 0.25*wave_btg*g*Qb*HmaxBJ**2/(2.0*pi)
+               ebrk(i,j) = 0.25*wave_btg*g*Qb*(HmaxBJ**2)*otwopi
              else
-               ebrk(i,j) = 0.25*wave_btg*g*cff1**4*HmaxBJ**2/(2.0*pi)
+               ebrk(i,j) = 0.25*wave_btg*g*(cff1**4)*(HmaxBJ**2)*otwopi
              endif
            else
-             ebrk(i,j) = 0.0
+             ebrk(i,j) = 0.
            endif
 #    endif
-           ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)        ! ep_b/rho (m3/s3)
+           ebrk(i,j)=wramp2*ebrk(i,j)*fr(i,j)       ! ep_b/rho (m3/s3)
 #   endif
 #  endif
 !
@@ -411,7 +418,7 @@
           frc(i,j)=wramp2*wepd(i,j)*kw(i,j)
      &                             *inv_f(i,j)      ! 2DH friction term
 #  elif defined WAVE_FRICTION
-#   if defined OW_COUPLING_FULL
+#   ifdef OW_COUPLING_FULL
           urms=ubr(i,j)
           fw=1.39*(fr(i,j)*Zob(i,j)/max(urms,eps))**0.52
 #   else
@@ -419,7 +426,7 @@
           urms=fr(i,j)*abot
           fw=1.39*(Zob(i,j)/max(abot,eps))**0.52    ! Soulsby (1995)
 #   endif
-          cff=0.5/sqrt(pi)*fw*urms**3               ! ep_d/rho
+          cff=0.5/sqrtpi*fw*urms**3                 ! ep_d/rho
           frc(i,j)=wramp2*cff*kw(i,j)*inv_f(i,j)    ! 2DH friction term
 #  else
           frc(i,j)=0.
@@ -427,9 +434,10 @@
 !
 ! --- Wave action ---
 !
-          act(i,j)=inv_f(i,j)*(0.125*g*(wh(i,j)**2) ! wave action density
+          cff=min(wh(i,j),0.55*Dstp(i,j))           ! limit hrm in surfzone 
+          act(i,j)=inv_f(i,j)*(0.125*g*cff**2       ! wave action density
 #  ifdef WAVE_OFFLINE_ROLLER
-     &            +wramp2*0.03*g*Dstp(i,j)*wh(i,j)*wepr(i,j)
+     &            +wramp2*0.03*g*Dstp(i,j)*cff*wepr(i,j)
 #  endif
      &                         )
 
@@ -485,6 +493,10 @@
           wepb(i,j)=ebrk(i,j)         ! epsilon_b (m3/s3)
 # ifdef WAVE_ROLLER
           wepr(i,j)=erol(i,j)         ! epsilon_r (m3/s3)
+#  ifdef WKB_WWAVE
+          wepb0(i,j)=wepb(i,j)
+          wepb(i,j)=max(0.,wepr(i,j)+(1-wkb_roller)*wepb(i,j))
+#  endif
 # endif
 # ifdef WKB_WWAVE
           cff = wramp2*wfc(i,j,wnew)
@@ -608,8 +620,8 @@
       do j=JstrV-1,jendR
         do i=IstrU-1,iendR
 #   ifdef OW_COUPLING_FULL
-          inv_ex(i,j)=1.0/max(2.0*kw(i,j)*(1.0+exp(-4.0*kD(i,j))),eps)
-          ust_ker = ust_ext(i,j)*inv_ex(i,j)
+          inv_ex(i,j)=1./max(2.*kw(i,j)*(1.+exp(-4.*kD(i,j))),eps)
+          ust_ker=ust_ext(i,j)*inv_ex(i,j)
 #   else
           inv_ex(i,j)=1./max(1.-exp(-4.*kD(i,j)),eps)
           ust_ker=act(i,j)*kw(i,j)*inv_ex(i,j)

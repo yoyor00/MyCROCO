@@ -224,6 +224,10 @@
 # endif
 # ifdef BIOLOGY
 #  ifdef PISCES
+      integer ncidpisrst, nrecpisrst
+#if defined key_sediment
+      integer ncidsedrst, nrecsedrst
+#endif	
       integer indxDIC, indxTAL, indxOXY, indxCAL, indxPO4,
      &        indxPOC, indxSIL, indxPHY, indxZOO, indxDOC,
      &        indxDIA, indxMES, indxDSI, indxFER, indxBFE,
@@ -231,12 +235,12 @@
      &        indxNCH, indxDCH, indxNO3, indxNH4
       parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+ntrc_stogen+ntrc_pas+1,
      &           indxTAL =indxDIC+1, indxOXY=indxDIC+2)
-#   ifdef key_pisces_light
+#   ifdef key_pisces_npzd
       parameter (indxPOC=indxDIC+3, indxPHY =indxDIC+4,
      &           indxZOO=indxDIC+5, indxDOC =indxDIC+6,
      &           indxNO3=indxDIC+7, indxFER =indxDIC+8)
 #   endif
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       parameter (indxCAL=indxDIC+3, indxPO4=indxDIC+4,
      &           indxPOC=indxDIC+5, indxSIL=indxDIC+6,
      &           indxPHY =indxDIC+7, indxZOO=indxDIC+8,
@@ -1050,7 +1054,9 @@
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
-     &      , rstAblTke
+     &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
+     &      , rstAblAvm, rstAblAvt, rstAblMxld, rstAblMxlm
+     &      , rstAblAblh   
 #endif
 #ifdef SOLVE3D
      &                         , rstU,    rstV
@@ -1387,7 +1393,7 @@
      &        avgCALP, avgKAPS, avgWST
 #  endif
 # endif
-# if defined SOLVE3D && defined TRACERS
+# ifdef SOLVE3D
 #  if defined DIAGNOSTICS_TS && defined TRACERS
       integer nciddia_avg, nrecdia_avg, nrpfdia_avg
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
@@ -1592,7 +1598,9 @@
      &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
-     &      , rstAblTke
+     &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
+     &      , rstAblAvm, rstAblAvt, rstAblMxld, rstAblMxlm
+     &      , rstAblAblh
 #endif
 #ifdef SOLVE3D
      &                         , rstU,    rstV

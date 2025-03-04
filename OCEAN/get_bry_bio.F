@@ -145,7 +145,7 @@ c     goto 99                                     !--> ERROR
                 MPI_master_only write(STDOUT,3) 'no3_time', bry_file(1:lstr)
 c     goto 99                                     !--> ERROR
               endif
-#  if ! defined key_pisces_light
+#  if ! defined key_pisces_npzd
             elseif (itrc.eq.iCAL_) then
               got_tbry(itrc)=.true.
               ierr=nf_inq_varid (bry_id, 'cal_time', bry_tid(itrc))
