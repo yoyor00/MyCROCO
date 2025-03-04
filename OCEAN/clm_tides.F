@@ -56,7 +56,6 @@
 # ifdef TIDES_MAS
       CHARACTER (len=19)    :: cdate,tool_sectodat
       logical :: flag=.false.
-#endif
       INTEGER               :: ian,imois,ijour,iheure,iminu,isec,jjulien
       integer :: nn,l,k,kk
       INTEGER, dimension(0:10) :: esp_corres=(/1,2,3,4,5,0,6,0,7,0,8/)
@@ -212,7 +211,7 @@
            k=esp_corres(int(nol/100000))
            num(k)=num(k)+1
            nn=num(k)
-           do l=1,2 
+           do l=1,2
             rsud(nn,k,i,l)=SSH_Tamp(i,Jstr+l-2,j)*100.0
             gsud(nn,k,i,l)=SSH_Tphase(i,Jstr+l-2,j)
             if(ir0 < 0) gsud(nn,k,i,l)=gsud(nn,k,i,l)+180.0
