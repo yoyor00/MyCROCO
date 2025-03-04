@@ -614,7 +614,7 @@
 # define MASKING
 #endif
 #if defined TIDES_MAS  && !defined USE_CALENDAR
-#error "TIDES requires USE_CALENDAR "
+#error "TIDES with TIDES_MAS requires USE_CALENDAR "
 #endif
 
 /*
