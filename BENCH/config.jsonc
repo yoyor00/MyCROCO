@@ -92,7 +92,23 @@
       "RIVER",
       "UPWELLING",
     ],
-    "@realist": ["BENGUELA_LR_TIDES_BULK", "VILAINE"],
+    "@realist": [
+      "BENGUELA_LR_BRY",
+      "BENGUELA_LR_BRY_PISCES",
+      "BENGUELA_LR_TIDES_BULK",
+      "BENGUELA_LR_BULK",
+      "BENGUELA_LR_BULKONLINE",
+      "BENGUELA_LR_CLIM",
+      "BENGUELA_LR_GLS",
+      "BENGUELA_LR_CFB",
+      "BENGUELA_LR_CFBBULK",
+      "BENGUELA_LR_CFBBULKONLINE",
+      "BENGUELA_LR_CFBBULKONLINERUNOFF",
+      "BENGUELA_LR_BSTRESS_FASTGLS",
+      "BENGUELA_LR_BSTRESS_FASTKPP",
+      "BENGUELA_LR_NBQ",
+      "VILAINE",
+    ],
     "@nbq": ["GRAV_ADJ_NBQ", "IGW_NBQ"],
     "@sediment_mustang": [
       "DUNE_SEDIMENT",
@@ -137,7 +153,7 @@
       //"MOVING_BATHY", // repro-mpi issue
     ],
     "@vortex": ["VORTEX", "VORTEX_AGRIF_1WAY", "VORTEX_AGRIF_2WAY"],
-    "@agrif_realist": ["BENGUELA_LR_AGRIF_2WAY"],
+    "@agrif_realist": ["BENGUELA_LR_AGRIF_1WAY", "BENGUELA_LR_AGRIF_2WAY"],
   },
 
   ////////////////////////////// VARIANTS ////////////////////////////////////

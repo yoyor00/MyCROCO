@@ -3,6 +3,10 @@ stages:
   - bench
   - report
 
+variables:
+  DATAROOTPATH: "/data"
+
+
 debug_base:
   stage: bench
   tags:
@@ -174,7 +178,7 @@ plotphy_realist:
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py \
-      --case @realist \
+      --case BENGUELA_LR_TIDES_BULK \
       --variants mpi-4 \
       --title plotphy_realist \
       -s build,run,plotphy \
@@ -201,9 +205,9 @@ agrif_realist:
     - |
       ./bench-croco.py \
       --case @agrif_realist \
-      --variants mpi-4 \
+      --variants @debug \
       --title agrif_realist \
-      -s build,run,check \
+      --debug \
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
