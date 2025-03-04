@@ -208,6 +208,9 @@
      &                        -TCLM(i,j,k,itrc)+TCLM(i-1,j,k,itrc)
 # endif
      &                                       ) SWITCH umask(i,j)
+# if defined WET_DRY
+     &                   *umask_wet(i,j)
+# endif
           enddo
         enddo
         do j=jstr,jend+1
@@ -219,6 +222,9 @@
      &                       -TCLM(i,j,k,itrc)+TCLM(i,j-1,k,itrc)
 # endif
      &                                        ) SWITCH vmask(i,j)
+# if defined WET_DRY
+     &                   *vmask_wet(i,j)
+# endif
           enddo
         enddo
 !
@@ -402,6 +408,9 @@
 # ifdef MASKING
      &                                        * umask(i,j)
 # endif
+# ifdef WET_DRY
+     &                                        * umask_wet(i,j)
+# endif
           enddo
         enddo
         do j=jstr,jend+1
@@ -411,6 +420,9 @@
      &                                *(LapT(i,j)-LapT(i,j-1))
 # ifdef MASKING
      &                                         * vmask(i,j)
+# endif
+# ifdef WET_DRY
+     &                                         * vmask_wet(i,j)
 # endif
           enddo
         enddo

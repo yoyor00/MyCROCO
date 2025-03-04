@@ -36,6 +36,9 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
+#ifdef WAVE_MAKER
+# include "forces.h"
+#endif
 #ifdef ONLINE
 # include "online.h"
 #endif
@@ -115,6 +118,8 @@
       fname='TEST_CASES/croco.in.ShoreFace'
 #elif defined RIP
       fname='TEST_CASES/croco.in.Rip'
+#elif defined FLASH_RIP
+      fname='TEST_CASES/croco.in.Flashrip'
 #elif defined SANDBAR
       fname='TEST_CASES/croco.in.Sandbar'
 #elif defined THACKER
@@ -2876,6 +2881,23 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &   wkb_roller,'wkb_roller  breaking contrib to roller: [0,1]'
 # endif
 #endif /* WKB_WWAVE */
+
+#ifdef WAVE_MAKER
+!
+! Offshore wavemaker parameters for wave-resolving simulations
+!
+      elseif (keyword(1:kwlen).eq.'wave_maker') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wmaker_amp,wmaker_prd,wmaker_dir,
+     &                       wmaker_dsp,wmaker_fsp
+        MPI_master_only write(stdout,'(/1x,A,5(/3x,f10.4,2x,A))')
+     &    'Offshore wavemaker parameters for wave modeling',
+     &   wmaker_amp, 'wmaker_amp  RMS wave amplitude [m]',
+     &   wmaker_prd, 'wmaker_prd  peak wave period [s]',
+     &   wmaker_dir, 'wmaker_dir  mean wave angle [deg]',
+     &   wmaker_dsp, 'wmaker_dsp  directional spread [deg]',
+     &   wmaker_fsp, 'wmaker_fsp  freq. spread (gamma in JONSWAP)'
+#endif /* WAVE_MAKER */
 
 #ifdef ANA_PSOURCE
 !

@@ -6,6 +6,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- Issues #291, #323 : add new test case FLASH_RIP
+
 ### Fixed
 
 - Issue #239 : back to previous default option in create_config
@@ -15,6 +17,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #259 : remove unused file OCEAN/spkitlocal_nh.F90 
 - Issue #260 : fix wrong array name for XIOS and WKB_WAVE
 - Issue #261 : fix initialisation of non-declared arrays
+- Issue #263 : cleaning unused variables in set_diags_ek.F and set_diags_pv.F
 - Issue #264 : fix wrong hbl test on XIOS field activation with GLS_MIXING
 - Issue #267 : fix several bugs with MUSTANG output, initialisation, add a 
   minimim porosity in deposit in V1 and fix transition with ero_option=3
@@ -25,13 +28,24 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - ABL1D perfect restart
   - ECUME6/ABL1D
 - Issue #285 : fix NBQ+XIOS compilation
+- Issue #299 : cleaning, comment in sta.h
 - Issue #305 : fix MPI repro with PSOURCE when a source is 
   in one MPI domain rejecting towards another MPI domain
 - Issue #309 : fix parallel compilation (except for AGRIF)
+- Issue #316 : fix MPI reproducibility with NBQ
+- Issue #318 : fix typo in order 5 scheme
+- Issue #319 : fix MPI reproducibility using MUSTANG_CORFLUX
+- Issue #322 : fix SUBSTANCE_SUBMASSBALANCE feature on river fluxes
+- Issue #324 : fix FILLVAL, mask was misdone on variable value 
+  instead of mask value
 
 ### Changed
 
 - Issue #306 : in MRL_WCI change limits of wave height in surfzone
+
+- Issues #291, #323: change wavemaker (periodic boundaries + single-sum), 
+  check of mean angle after the procedure and periodization is 
+  abandoned if the mean angle change is too high
 
 - Issue #281 : optimization of the PISCES code on
   - representation of the lability of the particle pool

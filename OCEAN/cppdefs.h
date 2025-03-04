@@ -33,6 +33,7 @@
 #undef  JET             /* Baroclinic Jet Example */
 #undef  SHOREFACE       /* Shoreface Test Case on a Planar Beach */
 #undef  RIP             /* Rip Current Test Case */
+#undef  FLASH_RIP       /* Flash Rip Test Case */
 #undef  SANDBAR         /* Bar-generating Flume Example */
 #undef  SWASH           /* Swash Test Case on a Planar Beach */
 #undef  TANK            /* Tank Example */
@@ -122,11 +123,6 @@
 #  undef  MPI_TIME
 # endif
 # undef  AUTOTILING
-                      /* Non-hydrostatic options */
-# ifdef NBQ
-#  define W_HADV_TVD
-#  define W_VADV_TVD
-# endif
                       /* Grid configuration */
 # define CURVGRID
 # define SPHERICAL
@@ -1317,18 +1313,18 @@
 !                       Rip Current Example
 !                       === ======= =======
 !
-!   Weir, B., Uchiyama, Y.. (2010):
+!   Weir, B., Uchiyama, Y. (2010):
 !      A vortex force analysis of the interaction of rip
 !      currents and surface gravity wave
 !      JGR Vol. 116
 !
-!  Default is idealized Duck Beach with 3D topography
+!  Default is an idealized Duck Beach wave-averaged simulation
+!  with 3D topography
+!
 !  RIP_TOPO_2D: Logshore uniform topography
 !  BISCA: realistic case with Input files
-!  GRANDPOPO: idealized Grand Popo Beach in Benin,
-!              longshore uniform
-!  WAVE_MAKER & NBQ : wave resolving simulation
-!                     rather than wave-averaged (#undef MRL_WCI)
+!  GRANDPOPO: idealized Grand Popo Beach in Benin
+!  WAVE_MAKER & NBQ : wave-resolving (#undef MRL_WCI)
 */
 # undef  BISCA
 # undef  RIP_TOPO_2D
@@ -1353,6 +1349,7 @@
 #  define W_HADV_WENO5
 #  define W_VADV_WENO5
 #  define GLS_MIXING_3D
+#  define GLS_KOMEGA
 #  undef  ANA_TIDES
 #  undef  MRL_WCI
 #  define OBC_SPECIFIED_WEST
@@ -1372,7 +1369,6 @@
 #  define LMD_BKPP
 #  define MRL_WCI
 # endif
-# define WET_DRY
 # ifdef MRL_WCI
 #  define WKB_WWAVE
 #  define WKB_OBC_WEST
@@ -1394,14 +1390,15 @@
 # define ANA_SRFLUX
 # define ANA_SST
 # define ANA_BTFLUX
+# define OBC_WEST
+# define SPONGE
+# define WET_DRY
 # if !defined BISCA && !defined ANA_TIDES
 #  define NS_PERIODIC
 # else
 #  define OBC_NORTH
 #  define OBC_SOUTH
 # endif
-# define OBC_WEST
-# define SPONGE
 # ifdef ANA_TIDES
 #  define ANA_SSH
 #  define ANA_M2CLIMA
@@ -1424,13 +1421,76 @@
 # undef  DIAGNOSTICS_UV
 # undef  RVTK_DEBUG
 
+#elif defined FLASH_RIP
+/*
+!                       Flash Rip Example
+!                       ===== === =======
+!
+!   Semi-idealized case based on the IB09 experiment.
+!
+!   Hally-Rosendahl, K., Feddersen, F. (2016):
+!      Modeling surfzone to inner-shelf tracer exchange
+!      JGR Vol. 121
+!   Treillou, S. et al. (in review for JPO, 2025):
+!      Tracer dispersion by surfzone eddies: assessing 
+!      the impact of undertow vertical shear
+*/
+# undef  MPI
+# undef  NC4PAR
+# define SOLVE3D
+# define NEW_S_COORD
+# define UV_ADV
+# define NO_TRACER
+# define NO_TEMPERATURE
+# undef  PASSIVE_TRACER
+# undef  ANA_TIDES
+# define NBQ
+# define NBQ_PRECISE
+# define LIMIT_BSTRESS
+# define WAVE_MAKER
+# define WAVE_MAKER_SPECTRUM
+# define WAVE_MAKER_DSPREAD
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# define GLS_MIXING_3D
+# define GLS_KOMEGA
+# define NS_PERIODIC
+# define OBC_WEST
+# define OBC_SPECIFIED_WEST
+# define SPONGE
+# define FRC_BRY
+# define ANA_BRY
+# define Z_FRC_BRY
+# define M2_FRC_BRY
+# define M3_FRC_BRY
+# define T_FRC_BRY
+# define WET_DRY
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_SSFLUX
+# define ANA_SRFLUX
+# define ANA_SST
+# define ANA_BTFLUX
+# define AVERAGES
+# define AVERAGES_K
+# undef  DIAGNOSTICS_EDDY
+# undef  RVTK_DEBUG
+
 #elif defined SWASH
 /*
 !                       SWASH PLANAR BEACH Example
 !                       ===== ====== ===== =======
 !
+!  Simulation of GLOBEX experiments.
+!  Marchesiello et al. (Ocean Modelling 2021):
+!  
 */
-# define SWASH_GLOBEX_B2
+# define SWASH_GLOBEX_B3
+# undef  SWASH_GLOBEX_B2
 # undef  SWASH_GLOBEX_A3
 # undef  OPENMP
 # undef  MPI
@@ -1445,6 +1505,7 @@
 # define W_HADV_WENO5
 # define W_VADV_WENO5
 # define GLS_MIXING_3D
+# define GLS_KOMEGA
 # define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
@@ -1455,7 +1516,7 @@
 # define ANA_SST
 # define ANA_BTFLUX
 # define OBC_WEST
-# define OBC_SPECIFIED_WEST
+# undef  OBC_SPECIFIED_WEST
 # define ANA_BRY
 # define Z_FRC_BRY
 # define M2_FRC_BRY
@@ -1476,10 +1537,7 @@
 */
 # undef  MPI
 # define NBQ
-# ifdef NBQ
-#  define NBQ_PRECISE
-# endif
-# define M2FILTER_NONE
+# define NBQ_PRECISE
 # define SOLVE3D
 # undef  UV_ADV
 # define NEW_S_COORD
@@ -1506,7 +1564,6 @@
 # define ANA_MORPHODYN
 # define NBQ
 # define NBQ_PRECISE
-# define M2FILTER_NONE
 # define SOLVE3D
 # define NEW_S_COORD
 # undef  PASSIVE_TRACER
@@ -1969,6 +2026,8 @@
 # ifdef MUSTANG
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
+#  define MUSTANG_CORFLUX
+#  define SUBSTANCE_SUBMASSBALANCE 
 # endif
 # define PSOURCE
 # define ANA_PSOURCE
