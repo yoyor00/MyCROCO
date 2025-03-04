@@ -108,7 +108,6 @@
 #  define STO_BULK_CD
 # endif
 # undef ENSEMBLE
-
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
@@ -665,10 +664,6 @@
 */
 # undef  OPENMP
 # undef  MPI
-# undef STOGEN
-# ifdef STOGEN
-#  define STO_STRESS
-# endif
 # define UV_ADV
 # define UV_COR
 # define UV_VIS2
@@ -681,6 +676,10 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+# undef STOGEN
+# ifdef STOGEN
+#  define STO_STRESS
+# endif
 # undef  RVTK_DEBUG
 
 #elif defined CANYON
