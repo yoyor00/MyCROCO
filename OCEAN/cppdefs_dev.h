@@ -1046,7 +1046,6 @@
 # error "AGRIF + XIOS + OASIS coupling is not yet implemented"
 #endif
 
-
 /*
 ======================================================================
                             Standard I/O
