@@ -148,7 +148,7 @@
       mynode2=mynode
 # else
   !   ! read mask
-      nerr= nf_open('swiose_grid.nc', ! 'croco_grd.nc',
+      nerr= nf_open('croco_grd.nc',
      &   NF_NOWRITE, ncid)
       nerr= nf_inq_varid(ncid, 'mask_rho', varid)
       nerr= nf_get_var_double(ncid, varid, zmask)
