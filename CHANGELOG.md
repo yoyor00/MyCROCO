@@ -7,7 +7,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Added
 
 - Issue #250 : add dredging feature in MUSTANG
-- Issue #291 : add new test case FLASH_RIP
+- Issues #291, #323 : add new test case FLASH_RIP
 
 ### Fixed
 
@@ -35,12 +35,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #316 : fix MPI reproducibility with NBQ
 - Issue #318 : fix typo in order 5 scheme
 - Issue #319 : fix MPI reproducibility using MUSTANG_CORFLUX
+- Issue #322 : fix SUBSTANCE_SUBMASSBALANCE feature on river fluxes
 
 ### Changed
 
 - Issue #306 : in MRL_WCI change limits of wave height in surfzone
 
-- Issue #291 : change wavemaker (periodic boundaries + single-sum)
+- Issues #291, #323: change wavemaker (periodic boundaries + single-sum), 
+  check of mean angle after the procedure and periodization is 
+  abandoned if the mean angle change is too high
 
 - Issue #281 : optimization of the PISCES code on
   - representation of the lability of the particle pool
