@@ -12,6 +12,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- Issue #172 : fix error in wrt_his.F when nrechis=0 and nrpfhis=1
 - Issue #239 : back to previous default option in create_config
 - Issue #252 : fix PSOURCE_MASS capabilities broken by previous change
 - Issue #258 : fix misuse of temporary WFe,WFx arrays for horizontal w 
@@ -37,6 +38,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #318 : fix typo in order 5 scheme
 - Issue #319 : fix MPI reproducibility using MUSTANG_CORFLUX
 - Issue #322 : fix SUBSTANCE_SUBMASSBALANCE feature on river fluxes
+- Issue #324 : fix FILLVAL, mask was misdone on variable value 
+  instead of mask value
 
 ### Changed
 
