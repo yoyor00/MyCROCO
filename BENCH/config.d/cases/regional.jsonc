@@ -13,6 +13,19 @@
     "patches": {},
     "check_outputs": ["CROCO_FILES/croco_his.nc"],
   },
+  "BENGUELA_LR_AGRIF_2WAY": {
+    "title": "BENGUELA_LR_AGRIF_2WAY",
+    "case": "REGIONAL",
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "cppkeys": {
+      "FRC_BRY": true,
+      "AGRIF": true,
+      "AGRIF_2W": true,
+    },
+    "patches": {},
+    "check_outputs": ["CROCO_FILES/croco_his.nc","CROCO_FILES/croco_his.nc.1"],
+  },
   // BENGUELA NBQ
   "BENGUELA_LR_NBQ": {
     "title": "BENGUELA_LR_TIDES_BULK",

@@ -136,7 +136,8 @@
       "FLASH_RIP",
       //"MOVING_BATHY", // repro-mpi issue
     ],
-    "@agrif": ["VORTEX", "VORTEX_AGRIF_1WAY", "VORTEX_AGRIF_2WAY"],
+    "@vortex": ["VORTEX", "VORTEX_AGRIF_1WAY", "VORTEX_AGRIF_2WAY"],
+    "@agrif_realist": ["BENGUELA_LR_AGRIF_2WAY"],
   },
 
   ////////////////////////////// VARIANTS ////////////////////////////////////

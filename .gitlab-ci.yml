@@ -190,6 +190,32 @@ plotphy_realist:
     reports:
       junit: BENCH/results/plotphy_realist-host_ci/junit_report.xml
 
+agrif_realist:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @agrif_realist \
+      --variants mpi-4 \
+      --title agrif_realist \
+      -s build,run,check \
+      --rebuild \
+      --host host_ci \
+      --data-root-path $DATAROOTPATH \
+      --html -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/agrif_realist-host_ci/junit_report.xml
+
 
 debug_complement:
   stage: bench
