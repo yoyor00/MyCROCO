@@ -111,7 +111,7 @@
 !
 !======================================================================
 !
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
 #  ifdef MUSTANG
@@ -189,7 +189,7 @@
 !
       dr00=r00-rho0
 !
-#  ifdef RVTK_DEBUG_PERFRST
+#  ifdef CVTK_DEBUG_PERFRST
       call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
       call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
 #  endif

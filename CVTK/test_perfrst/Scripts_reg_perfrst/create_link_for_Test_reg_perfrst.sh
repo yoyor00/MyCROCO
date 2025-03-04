@@ -19,7 +19,7 @@ ln -sf $PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/croco.in.read .
 ln -sf $PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/croco.in.write .
 #ln -sf $dir_home/../TEST_CASES_CVTK/VHR/croco.in.1 .
 ln -sf $PERFRSTHOME/../common/TEST_CASES_CVTK/VHR/AGRIF_FixedGrids.in .
-ln -sf $PERFRSTHOME/../common/jobcomp_rvtk.bash .
+ln -sf $PERFRSTHOME/../common/jobcomp_cvtk.bash .
 
 # data for testrepro REG
 ln -sf $dir_datafile/CROCO_FILES .
@@ -29,7 +29,7 @@ ln -sf $dir_datafile/DATA .
 ln -sf $dir_home/../extract_results_croco_perfrst.bash .
 ln -sf $dir_home/../comp_run_mpi_perfrst.bash .
 ln -sf $dir_home/../test_croco_perfrst.sh .
-ln -sf $dir_home/../rvtk_fast_qsub_perfrst.bash .
+ln -sf $dir_home/../cvtk_fast_qsub_perfrst.bash .
 
 #echo 'Process namelist files'
-cp -Rf jobcomp_rvtk.bash jobcomp_rvtk.bash.BACK
+cp -Rf jobcomp_cvtk.bash jobcomp_cvtk.bash.BACK

@@ -12,16 +12,16 @@ numrev=`echo $numrev0 | tr -d [:blank:]`
 #echo
 #echo  "Testing CROCO Rev$numrev"
 
-# Define RVTK
+# Define CVTK
 #------------
 rm -f Recap_*
 touch Recap_${TEST_NAME}.git${numrev}
 rm -f mylog.txt
 touch mylog.txt
 
-SCRIPT_RVTK=rvtk_fast_qsub_perfrst.bash
+SCRIPT_CVTK=cvtk_fast_qsub_perfrst.bash
 echo -e "   - RUN EXACT RESTART TESTS" 
-./$SCRIPT_RVTK > Recap_${TEST_NAME}.git${numrev}
+./$SCRIPT_CVTK > Recap_${TEST_NAME}.git${numrev}
 
 # Cleaning : remove the binary check_file
 # at the end of the test

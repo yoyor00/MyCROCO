@@ -71,7 +71,7 @@ class Config:
             "- run : run simulation\n"
             "- check : perform comparison with a reference (see --compare-to option)\n"
             "  By default, comparison is made over netcdf results file. \n"
-            "  A more precise option is available through --rvtk.\n"
+            "  A more precise option is available through --cvtk.\n"
             "- plotperf : plot runtime of each variant\n"
             "- plotphy : physical plot using python script specified in case config in plot_diag_script.\n"
             "- plotraw : plot raw map of variables at start/middle/end of simulation.\n"
@@ -88,8 +88,8 @@ class Config:
             default="sequential",
         )
         parser.add_argument(
-            "--rvtk",
-            help="Enable usage of RVTK_DEBUG for comparison with a reference",
+            "--cvtk",
+            help="Enable usage of CVTK_DEBUG for comparison with a reference",
             action="store_true",
         )
         parser.add_argument(
@@ -219,7 +219,7 @@ class Config:
         self.use_ref = self.args.use_ref
         self.use_host_config = self.args.host
         self.variant_ref_name = self.args.compare_to
-        self.rvtk = self.args.rvtk
+        self.cvtk = self.args.cvtk
         self.continue_on_error = self.args.continue_on_error
         self.report = self.args.report
         self.html = self.args.html

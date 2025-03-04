@@ -19,7 +19,7 @@ par1='write'
 # 1.1 Compile
 msg1="- Compilation failure for ${TEST_NAME} : ${par1}..."
 msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
-./jobcomp_rvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log  2>&1 || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 1 ; }
+./jobcomp_cvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log  2>&1 || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 1 ; }
 /bin/mv croco croco_${par1}.exe
 
 # 1.2 Run
@@ -47,7 +47,7 @@ par1='read'
 # 2.1 Compile
 msg1="- Compilation failure for ${TEST_NAME} : ${par1}..."
 msg2="${FMT_REDBLD}${msg1}${FMT_ORD}"
-./jobcomp_rvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log  2>&1 || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 3 ; }
+./jobcomp_cvtk.bash Compile_$par1 > jobcomp_${par1}_${TEST_NAME}.log  2>&1 || { echo -e "   $msg2" | tee -a mylog.txt ; echo -e $msg1 ; exit 3 ; }
 /bin/mv croco croco_${par1}.exe
 
 # 2.2 Run

@@ -151,7 +151,7 @@ ln -sf $PERFRSTHOME/../common/gitinfo.sh $dir_test/
 ln -sf $PERFRSTHOME/../common/git_process.bash $dir_test/
 ln -sf $PERFRSTHOME/../common/mk_CLEANALL.bash $dir_test/
 ln -sf $PERFRSTHOME/../common/mk_CHECKALL.bash $dir_test/
-ln -sf $PERFRSTHOME/../common/jobcomp_rvtk.bash $dir_test/
+ln -sf $PERFRSTHOME/../common/jobcomp_cvtk.bash $dir_test/
 ln -sf $PERFRSTHOME/../common/print/* $dir_test/
 
 # test perfrst specific + reg (the only one) specific

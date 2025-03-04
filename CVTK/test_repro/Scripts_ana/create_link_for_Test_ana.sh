@@ -15,13 +15,13 @@ ln -sf ../CONFIGURE_ANA .
 # CI common scripts
 ln -sf $CVTKHOME/../common/TEST_CASES_CVTK TEST_CASES
 ln -sf $CVTKHOME/../common/TEST_CASES_CVTK/*.nc* .
-ln -sf $CVTKHOME/../common/jobcomp_rvtk.bash .
+ln -sf $CVTKHOME/../common/jobcomp_cvtk.bash .
 
 # test repro specific scripts
 ln -sf $dir_home/../extract_results_croco.bash .
 ln -sf $dir_home/../comp_run_*.bash .
 ln -sf $dir_home/../test_croco.sh .
-ln -sf $dir_home/../rvtk_fast_qsub.bash .
+ln -sf $dir_home/../cvtk_fast_qsub.bash .
 
 #echo 'Process namelist files'
-cp -Rf jobcomp_rvtk.bash jobcomp_rvtk.bash.BACK
+cp -Rf jobcomp_cvtk.bash jobcomp_cvtk.bash.BACK

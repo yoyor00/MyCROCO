@@ -65,7 +65,7 @@ ln -sf $CVTKHOME/../common/gitinfo.sh $dir_test/
 ln -sf $CVTKHOME/../common/git_process.bash $dir_test/
 ln -sf $CVTKHOME/../common/mk_CLEANALL.bash $dir_test/
 ln -sf $CVTKHOME/../common/mk_CHECKALL.bash $dir_test/
-ln -sf $CVTKHOME/../common/jobcomp_rvtk.bash $dir_test/
+ln -sf $CVTKHOME/../common/jobcomp_cvtk.bash $dir_test/
 ln -sf $CVTKHOME/../common/print/* $dir_test/
 
 # test repro specific + ana specific

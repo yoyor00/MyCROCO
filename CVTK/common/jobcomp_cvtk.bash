@@ -145,7 +145,7 @@ ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
 ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
 ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
 #
-# RVTK  files  DEBUG CPP KEYS
+# CVTK  files  DEBUG CPP KEYS
 #
 /bin/cp -f cppdefs.h.OK ${SCRDIR}/cppdefs.h
 /bin/cp -f param.h.OK ${SCRDIR}/param.h

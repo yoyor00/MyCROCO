@@ -181,23 +181,23 @@ class Croco:
                 os.path.join(self.dirname_result, "jobcomp.log"),
             )
 
-    def enable_rvtk_checking(self):
+    def enable_cvtk_checking(self):
         # vars
         croco_build = self.croco_build
         variant_name = self.variant_name
-        rvtk_ref_variant_name = self.config.variant_ref_name
+        cvtk_ref_variant_name = self.config.variant_ref_name
 
         # enable what we need
-        croco_build.cppdef_h_set_key("RVTK_DEBUG", True)
+        croco_build.cppdef_h_set_key("CVTK_DEBUG", True)
 
-        # except for variant we enable RVTK_DEBUG_READ
-        if variant_name == rvtk_ref_variant_name and not self.restarted:
-            croco_build.cppdef_h_set_key("RVTK_DEBUG_WRITE", True)
+        # except for variant we enable CVTK_DEBUG_READ
+        if variant_name == cvtk_ref_variant_name and not self.restarted:
+            croco_build.cppdef_h_set_key("CVTK_DEBUG_WRITE", True)
         else:
-            croco_build.cppdef_h_set_key("RVTK_DEBUG_READ", True)
+            croco_build.cppdef_h_set_key("CVTK_DEBUG_READ", True)
 
         if self.config.restart:
-            croco_build.cppdef_h_set_key("RVTK_DEBUG_PERFRST", True)
+            croco_build.cppdef_h_set_key("CVTK_DEBUG_PERFRST", True)
 
     def build(self, extra_info: str = "", force_rebuild: bool = False):
         if self.config.continue_on_error:
@@ -239,8 +239,8 @@ class Croco:
 
         # some specific handling
         Messaging.step("Special command line configs...")
-        if self.config.rvtk:
-            self.enable_rvtk_checking()
+        if self.config.cvtk:
+            self.enable_cvtk_checking()
 
         if self.restarted:
             croco_build = self.croco_build
@@ -249,13 +249,13 @@ class Croco:
         # compile
         self.compile()
 
-    def symlink_all_rvtk_ref_files(self):
+    def symlink_all_cvtk_ref_files(self):
         # vars
         case_name = self.case_name
-        rvtk_ref_variant_name = self.config.variant_ref_name
+        cvtk_ref_variant_name = self.config.variant_ref_name
 
         # refdir
-        ref_rundir = self.calc_rundir(rvtk_ref_variant_name, case_name, False)
+        ref_rundir = self.calc_rundir(cvtk_ref_variant_name, case_name, False)
         refdir = os.path.join(ref_rundir, "check_file_*")
 
         # debug_infos
@@ -277,8 +277,8 @@ class Croco:
         dirname = self.dirname
         runs = self.config.runs
         host_tuning = self.config.host["tuning"]
-        rvtk = self.config.rvtk
-        is_rvtk_ref = (
+        cvtk = self.config.cvtk
+        is_cvtk_ref = (
             self.variant_name == self.config.variant_ref_name and not self.restarted
         )
         restart = self.restarted
@@ -312,8 +312,8 @@ class Croco:
 
         with move_in_dir(dirname):
             # link ref files
-            if rvtk and not is_rvtk_ref:
-                self.symlink_all_rvtk_ref_files()
+            if cvtk and not is_cvtk_ref:
+                self.symlink_all_cvtk_ref_files()
 
             # run
             if self.config.continue_on_error:

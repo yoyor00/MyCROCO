@@ -311,20 +311,20 @@
                      /* Exact restart */
 # undef EXACT_RESTART
                       /* Parallel reproducibility or restartabilty test */
-# undef RVTK_DEBUG
-# undef RVTK_DEBUG_PERFRST
-# if defined RVTK_DEBUG && !defined RVTK_DEBUG_PERFRST
+# undef CVTK_DEBUG
+# undef CVTK_DEBUG_PERFRST
+# if defined CVTK_DEBUG && !defined CVTK_DEBUG_PERFRST
 !    Parallel reproducibility test
-#  undef RVTK_DEBUG_ADVANCED
-#  define XXXRVTK_DEBUG_READ
-# elif defined RVTK_DEBUG && defined RVTK_DEBUG_PERFRST
+#  undef CVTK_DEBUG_ADVANCED
+#  define XXXCVTK_DEBUG_READ
+# elif defined CVTK_DEBUG && defined CVTK_DEBUG_PERFRST
 !    Restartability test
 #  define EXACT_RESTART
-#  undef RVTK_DEBUG_ADVANCED
-#  define XXXRVTK_DEBUG_READ
+#  undef CVTK_DEBUG_ADVANCED
+#  define XXXCVTK_DEBUG_READ
 # endif
-!    RVTK test (Restartability or Parallel reproducibility)
-# if defined RVTK_DEBUG && defined BULK_FLUX && defined ONLINE
+!    CVTK test (Restartability or Parallel reproducibility)
+# if defined CVTK_DEBUG && defined BULK_FLUX && defined ONLINE
 #  define BULK_MONTH_1DIGIT
 # endif
 /*
@@ -670,7 +670,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined CANYON
 /*
@@ -690,7 +690,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined EQUATOR
 /*
@@ -720,7 +720,7 @@
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined INNERSHELF
 /*
@@ -768,7 +768,7 @@
 #  endif
 # endif
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined SINGLE_COLUMN
 /*
@@ -807,7 +807,7 @@
 # define ANA_BTFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined INTERNAL
 /*
@@ -850,7 +850,7 @@
 #  define TNUDGING
 # endif
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined IGW
 /*
@@ -901,7 +901,7 @@
 # define M3NUDGING
 # define TNUDGING
 # undef  ONLINE_ANALYSIS
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined RIVER
 /*
@@ -943,7 +943,7 @@
 #  endif
 # endif
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined SEAMOUNT
 /*
@@ -966,7 +966,7 @@
 # define ANA_BTFLUX
 # define ANA_BSFLUX
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined SHELFRONT
 /*
@@ -989,7 +989,7 @@
 # define ANA_BSFLUX
 # define EW_PERIODIC
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined SOLITON
 /*
@@ -1007,7 +1007,7 @@
 # define ANA_SMFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined THACKER
 /*
@@ -1033,7 +1033,7 @@
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined OVERFLOW
 /*
@@ -1054,7 +1054,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined UPWELLING
 /*
@@ -1084,7 +1084,7 @@
 # define LMD_CONVEC
 # define EW_PERIODIC
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined VORTEX
 /*
@@ -1118,7 +1118,7 @@
 # define M3NUDGING
 # define TNUDGING
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined JET
 /*
@@ -1170,7 +1170,7 @@
 #  define LMD_CONVEC
 # endif
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined SHOREFACE
 /*
@@ -1223,7 +1223,7 @@
 #  define TNUDGING
 #  define ANA_TCLIMA
 # endif
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined SANDBAR
 /*
@@ -1318,7 +1318,7 @@
 #  define DIAGNOSTICS_TS_ADV
 # endif
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined RIP
 /*
@@ -1431,7 +1431,7 @@
 #  undef  MORPHODYN
 # endif
 # undef  DIAGNOSTICS_UV
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined FLASH_RIP
 /*
@@ -1490,7 +1490,7 @@
 # define AVERAGES
 # define AVERAGES_K
 # undef  DIAGNOSTICS_EDDY
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined SWASH
 /*
@@ -1536,7 +1536,7 @@
 # define T_FRC_BRY
 # define WET_DRY
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined TANK
 /*
@@ -1560,7 +1560,7 @@
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined MOVING_BATHY
 /*
@@ -1594,7 +1594,7 @@
 # define ANA_SRFLUX
 # define ANA_STFLUX
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined ACOUSTIC
 /*
@@ -1616,7 +1616,7 @@
 # define ANA_SRFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined GRAV_ADJ
 /*
@@ -1646,7 +1646,7 @@
 # define ANA_BTFLUX
 # undef  PASSIVE_TRACER
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined ISOLITON
 /*
@@ -1680,7 +1680,7 @@
 # define ANA_BTFLUX
 # undef  PASSIVE_TRACER
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined KH_INST
 /*
@@ -1719,7 +1719,7 @@
 #  define NS_PERIODIC
 # endif
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined TS_HADV_TEST
 /*
@@ -1761,7 +1761,7 @@
 # undef  TS_HADV_UP5
 # undef  TS_HADV_WENO5
 # undef  TS_HADV_C6
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined DUNE
 /*
@@ -1816,7 +1816,7 @@
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined SED_TOY
 /*
@@ -1908,7 +1908,7 @@
 # endif
 # undef  MORPHODYN
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined KILPATRICK
 /*
@@ -1997,7 +1997,7 @@
 # endif
 # define NO_FRCFILE
 # undef  ZETA_DRY_IO
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined ESTUARY
 /*
@@ -2058,7 +2058,7 @@
 # define MASKING
 # define NO_FRCFILE
 # undef  ZETA_DRY_IO
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined SEAGRASS
 /*
@@ -2103,7 +2103,7 @@
 #  undef  M3_FRC_BRY
 #  define T_FRC_BRY
 # endif
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #endif /* END OF CONFIGURATION CHOICE */
 

@@ -764,7 +764,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         thwave=max(av_wac,av_wkn)
       enddo
 
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#  if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(wac(:,:,wnew),'wac initialisation #1','r')

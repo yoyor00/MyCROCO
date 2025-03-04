@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LIST_KEY0='BENGUELA_LR PSOURCE PSOURCE_NCFILE FRC_BRY CLIMATOLOGY TIDES AGRIF AGRIF_2WAY BULK_FLUX MPI OPENMP'
-# => Keys that will put to undef at the begining of the rvtk scripts
+# => Keys that will put to undef at the begining of the cvtk scripts
 
 TEST_NAME='AGRIF2W22'
 CONFIG_NAME='BENGUELA_VHR'
@@ -11,5 +11,5 @@ NBPROCS_X=2
 NBPROCS_Y=2
 NBPROCS=$(( $NBPROCS_X * $NBPROCS_Y ))
 LIST_KEY_NEST='AGRIF AGRIF_2WAY'
-KEY_DEBUG='RVTK_DEBUG'
+KEY_DEBUG='CVTK_DEBUG'
 CROCOIN='croco.in'

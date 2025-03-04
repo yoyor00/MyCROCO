@@ -67,14 +67,14 @@ for EXAMPLE in $LIST_KEY0 ; do
 done
 
 # 2- DEFINE THE TYPE OF DEBUG TEST
-#2.1 RVTK_DEBUG
+#2.1 CVTK_DEBUG
 sed '/'${KEY_DEBUG}[[:graph:]]'/! s/'undef\ \ \*$KEY_DEBUG'/'define\ $KEY_DEBUG'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
 \mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
 
 #2.2
-# RVTK_DEBUG_PERFRST key
+# CVTK_DEBUG_PERFRST key
 # => trigger #define EXACT_RESTART
-sed '/'RVTK_DEBUG_PERFRST[[:graph:]]'/! s/'undef\ \ \*RVTK_DEBUG_PERFRST'/'define\ RVTK_DEBUG_PERFRST'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
+sed '/'CVTK_DEBUG_PERFRST[[:graph:]]'/! s/'undef\ \ \*CVTK_DEBUG_PERFRST'/'define\ CVTK_DEBUG_PERFRST'/' < cppdefs.h.exactrestart > cppdefs.h.exactrestart.tmp
 mv cppdefs.h.exactrestart.tmp cppdefs.h.exactrestart
 
 #
@@ -107,7 +107,7 @@ done
 #
 mv cppdefs.h.exactrestart cppdefs.h.exactrestart.write
 cp cppdefs.h.exactrestart.write cppdefs.h.exactrestart.read
-sed '/'XXXRVTK_DEBUG_READ[[:graph:]]'/! s/'define\ \ \*XXXRVTK_DEBUG_READ'/'define\ RVTK_DEBUG_READ'/' < cppdefs.h.exactrestart.read > cppdefs.h.exactrestart.read.tmp
+sed '/'XXXCVTK_DEBUG_READ[[:graph:]]'/! s/'define\ \ \*XXXCVTK_DEBUG_READ'/'define\ CVTK_DEBUG_READ'/' < cppdefs.h.exactrestart.read > cppdefs.h.exactrestart.read.tmp
 mv cppdefs.h.exactrestart.read.tmp cppdefs.h.exactrestart.read
 
 #echo ' '

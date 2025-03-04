@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LIST_KEY0='REGIONAL MPI OPENMP'
-# => Keys that will put to undef at the begining of the rvtk scripts
+# => Keys that will put to undef at the begining of the cvtk scripts
 
 TEST_NAME='TANK'
 CONFIG_NAME='TANK'
@@ -11,5 +11,5 @@ NBPROCS_X=2
 NBPROCS_Y=1
 NBPROCS=$(( $NBPROCS_X * $NBPROCS_Y ))
 LIST_KEY_NEST=''
-KEY_DEBUG='RVTK_DEBUG'
+KEY_DEBUG='CVTK_DEBUG'
 CROCOIN=''
