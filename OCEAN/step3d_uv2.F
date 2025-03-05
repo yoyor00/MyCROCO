@@ -106,14 +106,14 @@
       real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
 # endif
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
-#if defined NHMG
+# ifdef NHMG
+! Not croco policy:
+! should be passed as A2d arrays in step3d_uv2_tile
       real Ubt(PRIVATE_2D_SCRATCH_ARRAY)
       real Vbt(PRIVATE_2D_SCRATCH_ARRAY)
       real Hu(PRIVATE_2D_SCRATCH_ARRAY)
       real Hv(PRIVATE_2D_SCRATCH_ARRAY)
-! is not the usual croco policy
-! grad should be passed as a A2d array in step3d_uv2_tile
-#endif
+# endif
       real dpth,aa,cc
 # ifdef TS_MIX_ISO
       real dRx,dRe, cfilt
@@ -340,13 +340,10 @@
      &                             /(CF(i,0)*on_u(i,j))
         enddo
 
-
-
-
 !###########################
         do k=1,N
           do i=IstrU,Iend
-# if defined NHMG
+# ifdef NHMG
              if (surface_neumann) then
                 u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
              else
@@ -669,7 +666,7 @@
 !###########################
           do k=1,N
             do i=Istr,Iend
-# if defined NHMG
+# ifdef NHMG
              if (surface_neumann) then
                 v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
              else
@@ -677,7 +674,7 @@
                 v(i,j,k,nnew)=DC(i,k) SWITCH vmask(i,j)
              endif
 
-#  else
+# else
               v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
 # endif
           enddo
@@ -817,17 +814,18 @@
 
 
 # ifdef NHMG
+!
+!====================================================================
+!== Turbulent vertical diffusion for wz
+!====================================================================
+!
       call tic(1,'croco_step3d_uv2_1')
       do j=Jstr,Jend
-
-!--------------------------------------------------------------------
-! Time step w equation
 !
-# ifdef DIAGNOSTICS_UV
-        write(*,*)"DIAGNOSTICS_UV and NHMG cpp keys are incompatible"
+#  ifdef DIAGNOSTICS_UV
+        write(*,*)"DIAGNOSTICS_UV is not fully implemented in NHMG"
         stop
-# endif
-# if defined NHMG2
+#  endif
         do k=1,N
           do i=Istr,Iend
             FC(i,k)=-0.5*dt*( Akv(i,j,k)+Akv(i,j,k-1) )
@@ -873,11 +871,11 @@
         do k=2,N-1
           do i=Istr,Iend
 #  ifdef VADV_ADAPT_IMP
-              aa = FC(i,k)-max(WC(i,k),0.)
-              cc = FC(i,k+1)+min(WC(i,k+1),0.)
+            aa = FC(i,k)-max(WC(i,k),0.)
+            cc = FC(i,k+1)+min(WC(i,k+1),0.)
 #  else
-              aa = FC(i,k)
-              cc = FC(i,k+1)
+            aa = FC(i,k)
+            cc = FC(i,k+1)
 #  endif
             cff=1./(BC(i,k)-aa*CF(i,k))
             CF(i,k+1)=cff*cc
@@ -886,9 +884,9 @@
         enddo
         do i=Istr,Iend
 #  ifdef VADV_ADAPT_IMP
-              aa = FC(i,N)-max(WC(i,N),0.)
+          aa = FC(i,N)-max(WC(i,N),0.)
 #  else
-              aa = FC(i,N)
+          aa = FC(i,N)
 #  endif
           wz(i,j,N,nnew)=(DC(i,N)-aa*DC(i,N-1))
      &                  /(BC(i,N)-aa*CF(i,N))
@@ -898,9 +896,8 @@
              wz(i,j,k,nnew)=DC(i,k)-CF(i,k+1)*wz(i,j,k+1,nnew)
           enddo
         enddo
-#endif
       enddo                     ! <-- j
-        call toc(1,'croco_step3d_uv2_1')
+      call toc(1,'croco_step3d_uv2_1')
 # endif  /* NHMG */
 
 !-------------------------------------------------------------------
@@ -1012,7 +1009,7 @@
 
       call tic(1,'croco_swap corrector')
 
-#  if defined NHMG_MASKING
+#  ifdef MASKING
          do k=1,N
             do j=Jstr,Jend
                do i=IstrU,Iend
@@ -1036,8 +1033,7 @@
          enddo
 #  endif
 
-!!
-!   Multiply u,v,w to go from velocity units to fluxes
+!  Multiply u,v,w to go from velocity units to fluxes
          hu = 0.
          hv = 0.
       do k=1,N
@@ -1066,19 +1062,21 @@
       enddo
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-     !! Todo: we should be able to avoid this. We only need u and v at the boundaries
-     !! Todo: computational ranges for u and v need to be extended to Iend+1, Jend+1
-#  ifdef THREE_GHOST_POINTS_UV
+     !! Todo: we should be able to avoid this. 
+     !! Todo: We only need u and v at the boundaries
+     !! Todo: computational ranges for u and v need to
+     !! Todo: be extended to Iend+1, Jend+1
+#   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nnew))
-#  else
+#   else
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nnew))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nnew))
-#  endif
+#   endif
 #  endif
 
          nh_ubar = 0.
@@ -1096,7 +1094,7 @@
             enddo
          enddo
       if (surface_neumann) then
-!! only do this for neumann nhmg conditions
+!! Do this only for neumann nhmg conditions
          do j=Jstr,Jend
             do i=Istr,Iend
                nh_wcor(i,j) = wz(i,j,N,nnew)
@@ -1115,9 +1113,9 @@
       endif
        call nhmg_solve(u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew))
 
-!    get non-hydrostatic pressure (Pnh) for later writing into netcdf files
-!         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,Pnh,dt,rho0)
-!     At this point u,v,w are fluxes with the dimension of m^3/s
+!  Get non-hydrostatic pressure (Pnh) for later writing into netcdf files
+!      call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,Pnh,dt,rho0)
+!  At this point u,v,w are fluxes with the dimension of m^3/s
 
       nh_ubar = 0
       nh_vbar = 0
@@ -1149,12 +1147,12 @@
          enddo
       enddo
 
-#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                   nh_ubar(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   nh_vbar(START_2D_ARRAY))
-#endif
+#  endif
 !     Now: u,v,w are fluxes with the dimension of m/s
 
       call u3dbc_tile (Istr,Iend,Jstr,Jend, grad)
@@ -1163,7 +1161,7 @@
 
       call toc(1,'croco_swap corrector')
 
-# endif    /* NHMG */
+# endif /* NHMG */
 
 !$acc kernels if(compute_on_device) default(present)
 !

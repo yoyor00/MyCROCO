@@ -126,21 +126,21 @@
 ! 
 !$acc kernels if(compute_on_device) default(present)
 
-  !    do j=Jstr,Jend
-  !      do i=Istr,Iend
-  !        CF(i,j)=om_r(i,j)*on_r(i,j)/dt
-  !      enddo
-  !    enddo
-  !RB loop below change the results
-  !    do k=1,N
-  !      do j=Jstr,Jend
-  !        do i=Istr,Iend
-  !          romega(i,j,k) = -Huon(i+1,j,k)+Huon(i,j,k)
-  !   &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
-  !   &                 -(Hz(i,j,k)-Hz_bak(i,j,k))*CF(i,j)
-  !        enddo
-  !      enddo
-  !    enddo
+!      do j=Jstr,Jend
+!        do i=Istr,Iend
+!          CF(i,j)=om_r(i,j)*on_r(i,j)/dt
+!        enddo
+!      enddo
+!RB loop below change the results
+!      do k=1,N
+!        do j=Jstr,Jend
+!          do i=Istr,Iend
+!            romega(i,j,k) = -Huon(i+1,j,k)+Huon(i,j,k)
+!     &                      -Hvom(i,j+1,k)+Hvom(i,j,k)
+!     &                 -(Hz(i,j,k)-Hz_bak(i,j,k))*CF(i,j)
+!          enddo
+!        enddo
+!      enddo
 
 !      do j=Jstr,Jend
        DOLOOP2D(Istr,Iend,Jstr,Jend)
@@ -162,8 +162,8 @@
           do i=Istr,Iend
             !FC(i,k)=FC(i,k-1) + romega(i,j,k)
             FC(i,k)=FC(i,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
-     &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
-# if ! defined NHMG
+     &                        -Hvom(i,j+1,k)+Hvom(i,j,k)
+# ifndef NHMG
      &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
      &                                  *om_r(i,j)*on_r(i,j)
             DC(i,k)=DC(i,k-1) + Hz(i,j,k)
@@ -217,7 +217,7 @@
 !  isosurfaces
 !---------------------------------------------------------
 !
-# if defined NHMG
+# ifdef NHMG
         do i=Istr,Iend
           DC(i,N)=FC(i,N)/(z_w(i,j,N)-z_w(i,j,0))
         enddo
@@ -226,7 +226,7 @@
             We(i,j,k)=FC(i,k)-DC(i,N)*(z_w(i,j,k)-z_w(i,j,0))
           enddo
         enddo
-#else
+# else
         do i=Istr,Iend
           DC(i,N)=FC(i,N)/DC(i,N)
         enddo
@@ -235,7 +235,7 @@
             We(i,j,k)=FC(i,k)-DC(i,N)*DC(i,k)
           enddo
         enddo
-#endif
+# endif
         do i=Istr,Iend
            We(i,j,N)=0.
 # ifdef VADV_ADAPT_IMP

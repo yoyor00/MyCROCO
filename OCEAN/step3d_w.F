@@ -183,7 +183,7 @@
             wz(i,j,k,nnew)=DC(i,k)
           ENDDO
         ENDDO
-#  if defined NBQ_FREESLIP
+#  ifdef NBQ_FREESLIP
         DO i=Istr,Iend
           wz(i,j,0,nnew)=2.*wz(i,j,0,nnew)/Hz(i,j,1)
         ENDDO

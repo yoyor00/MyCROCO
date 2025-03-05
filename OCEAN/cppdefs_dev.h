@@ -160,11 +160,12 @@
 
 /*
 ======================================================================
-   Activate NBQ choices for non-hydrostatic simulations
+   Activate NBQ or NHMG choices for non-hydrostatic simulations
 ======================================================================
 */
 #ifdef NBQ              /* General options */
 # define M3FAST
+# undef NHMG
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
 # undef  M2FILTER_POWER
@@ -194,6 +195,36 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
+/*
+   NBQ Open boundary conditions
+*/
+# if defined OBC_WEST  || defined OBC_EAST  || \
+     defined OBC_NORTH || defined OBC_SOUTH
+#  define OBC_NBQ
+# endif
+# ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
+#  define OBC_NBQORLANSKI    /*  NBQ Radiative conditions       */
+#  undef  OBC_NBQSPECIFIED   /*  NBQ Specified conditions       */
+#  define OBC_WORLANSKI      /*  W Radiative conditions         */
+#  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
+#  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
+#  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
+#  define W_FRC_BRY          /* wz bdy forcing/nudging          */
+# endif
+
+#else
+
+# define HZR Hz
+
+#endif  /* NBQ */
+
+#ifdef NHMG
+# undef NBQ
+# undef AGRIF
+#endif /* NHMG */
+
+#if defined NBQ || defined NHMG
 /*
    Options for wz HADV numerical schemes (default C4)
 */
@@ -226,60 +257,7 @@
 #  define W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
 #  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
 # endif
-/*
-   NBQ Open boundary conditions
-*/
-# if defined OBC_WEST  || defined OBC_EAST  || \
-     defined OBC_NORTH || defined OBC_SOUTH
-#  define OBC_NBQ
-# endif
-# ifdef OBC_NBQ          /* OBC options and nudging: default zero grad */
-#  define OBC_NBQORLANSKI    /*  NBQ Radiative conditions       */
-#  undef  OBC_NBQSPECIFIED   /*  NBQ Specified conditions       */
-#  define OBC_WORLANSKI      /*  W Radiative conditions         */
-#  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
-#  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
-#  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
-#  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
-#  define W_FRC_BRY          /* wz bdy forcing/nudging          */
-# endif
-
-# elif defined NHMG
-# define HZR Hz
-/*
-   Options for wz HADV numerical schemes (default C4)
-*/
-# ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
-# elif defined W_HADV_TVD
-# elif defined W_HADV_WENO5
-# elif defined W_HADV_C4
-# elif defined W_HADV_C2
-# else
-#  undef  W_HADV_SPLINES  /* Splines vertical advection             */
-#  undef  W_HADV_TVD      /* TVD vertical advection                 */
-#  define W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
-#  undef  W_HADV_C4       /* 2nd-order centered vertical advection  */
-#  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
-# endif
-/*
-   Options for wz VADV numerical schemes (default SPLINES)
-*/
-# ifdef W_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
-# elif defined W_VADV_TVD
-# elif defined W_VADV_WENO5
-# elif defined W_VADV_C2
-# else
-#  undef  W_VADV_SPLINES  /* Splines vertical advection             */
-#  undef  W_VADV_TVD      /* TVD vertical advection                 */
-#  define W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
-#  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
-# endif
-
-#else                /* Hydrostatic mode */
-
-# define HZR Hz
-
-#endif  /* NBQ */
+#endif  /* NBQ || NHMG */
 
 /*
 ======================================================================

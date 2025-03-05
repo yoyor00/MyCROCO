@@ -29,7 +29,7 @@
 !
 !   A3d(1,1,trd), A3d(1,2,trd) contain ru,rv
 !   A3d(1,3,trd) contains rw
-!   A3d(1,4,trd) and A3d(1,5,trd) is available at this point
+!   A3d(1,4,trd) and A3d(1,5,trd) are available at this point
 !
       CALL rhs3d_w_tile (Istr,Iend,Jstr,Jend,  A2d(1,1,trd), 
      &             A2d(1,2,trd), A2d(1,3,trd), A2d(1,4,trd), 

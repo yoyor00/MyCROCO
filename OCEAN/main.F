@@ -979,8 +979,8 @@ CR      write(*,*) '  0' MYID
       iic = ntstart
 
 
-#ifdef  NHMG
-      ! indexes for nhmg ab2 pressure corrections
+#ifdef NHMG
+! Indices for NHMG AB2 pressure corrections
       iprec1 = 1
       iprec2 = 2
 #endif
@@ -1071,8 +1071,7 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
  100  continue
 
 #ifdef NHMG
-      ! write nhmg statistics to fort.10
-      call nhmg_clean()
+      call nhmg_clean() ! write NHMG stats to fort.10
 #endif
 
 #ifdef MPI

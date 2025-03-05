@@ -202,10 +202,10 @@
         cff1=0.5+gamma
         cff2=0.5-gamma
       endif
-#if defined NHMG
+# ifdef NHMG
       do j=JstrV-1,Jend
-         do i=IstrU-1,Iend
-            zw(i,j,0) = 0.
+        do i=IstrU-1,Iend
+          zw(i,j,0) = 0.
         enddo
       enddo
 # endif
@@ -228,7 +228,7 @@
      &                                  +Wi(i,j,k)-Wi(i,j,k-1)
 # endif
      &                                                       )
-#if defined NHMG
+# ifdef NHMG
             zw(i,j,k) = zw(i,j,k-1) + Hz_half(i,j,k)
 # endif
           enddo
@@ -1144,7 +1144,9 @@
       cff = 1./cdt
 
 # ifdef NHMG_DOUBLE_PROJ
-      if (.false.) then !! this will never be true and we will always do a projection in pre_step ('double projection')
+      if (.false.) then !! this will never be true and we will 
+                        !! always do a projection in pre_step 
+                        !! ('double projection')
 # else
       if (iic.ge.(ntstart+2)) then
 # endif
@@ -1154,7 +1156,7 @@
                   u(i,j,k,nnew) = u(i,j,k,nnew)
      &                 + (1.5*nhdu(i,j,k,iprec2)-0.5*nhdu(i,j,k,iprec1))*cdt
      &                 /(0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k))) * pn_u(i,j)
-# if defined NHMG_MASKING
+# ifdef NHMG_MASKING
                   u(i,j,k,nnew) = u(i,j,k,nnew)*umask(i,j)
 # endif
                   rufrc(i,j) = rufrc(i,j)
@@ -1168,7 +1170,7 @@
                   v(i,j,k,nnew) = v(i,j,k,nnew)
      &                 + (1.5*nhdv(i,j,k,iprec2)-0.5*nhdv(i,j,k,iprec1))*cdt
      &                 /(0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k))) * pm_v(i,j)
-# if defined NHMG_MASKING
+# ifdef NHMG_MASKING
                   v(i,j,k,nnew) = v(i,j,k,nnew)*vmask(i,j)
 # endif
                   rvfrc(i,j) = rvfrc(i,j)
@@ -1182,14 +1184,15 @@
                   wz(i,j,k,nnew) = wz(i,j,k,nnew)
      &                 + (1.5*nhdw(i,j,k,iprec2)-0.5*nhdw(i,j,k,iprec1))*cdt
      &                 * (pm(i,j)*pn(i,j))
-# if defined NHMG_MASKING
+# ifdef NHMG_MASKING
                   wz(i,j,k,nnew) = wz(i,j,k,nnew)*rmask(i,j)
 # endif
                enddo
             enddo
          enddo
 
-      else  !! instead of using AB2 to extrapolate the nh pressure gradient from corrector steps, we project here
+      else  !! instead of using AB2 to extrapolate 
+            !! nh pressure gradient from corr steps, project here
 !
 !  Set lateral boundary conditions for Hz_half
 !
@@ -1225,17 +1228,6 @@
         enddo
       endif
 #  endif
-
-# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-!
-!     DO NOT EXCHANGE:
-!     1/ it's not needed
-!     2/ Hz_Half doesn't have the proper shape, it's (PRIVATE_2D_SCRATCH_ARRAY, N)
-!     not (GLOBAL_2D_ARRAY, N)
-!
-!     call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-!     &                        Hz_half(START_2D_ARRAY,1))
-# endif
 
 !     Multiply u,v,w to get back fluxes for use inside mg_solve
       hu = 0
