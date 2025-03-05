@@ -11,7 +11,7 @@
 #ifndef CHILD
 !
 # include "cppdefs.h"
-# ifdef NBQ
+# if defined NBQ || defined NHMG
       subroutine w3dbc_tile(Istr,Iend,Jstr,Jend,grad)
 #  ifdef AGRIF
       use Agrif_Util
@@ -33,9 +33,9 @@
 ! Set lateral boundary conditions for field wz(:,:,:,nnew)
 ! for the parent grid.
 !
-# endif /* NBQ */
+# endif /* NBQ  || NHMG */
 #else
-# ifdef NBQ
+# if  defined NBQ || defined NHMG
 !
 ! CHILD
 !
@@ -44,9 +44,9 @@
 ! Set lateral boundary conditions for field wz(:,:,:,nnew)
 ! for the child grid.
 !
-# endif /* NBQ */
+# endif /* NBQ  || NHMG */
 #endif /* CHILD */
-#ifdef NBQ
+#if defined NBQ || defined NHMG
 !
 ! Common Code
 !
@@ -576,4 +576,4 @@
 #else
       subroutine w3dbc_empty
       end
-#endif /* NBQ */
+#endif /* NBQ  || NHMG */

@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined SOLVE3D && defined NBQ
+#if defined SOLVE3D && (defined NBQ || defined NHMG)
 
 # define NBQ_WDIF
 
@@ -40,6 +40,9 @@
       SUBROUTINE step3d_w_tile (Istr,Iend,Jstr,Jend, rw, BC,CF,FC,DC)
 !----------------------------------------------------------------------
 !
+#ifdef NHMG
+      use nhmg
+#endif
       IMPLICIT NONE
 # include "param.h"
 # include "grid.h"
@@ -87,6 +90,7 @@
 !  Apply right-hand-side
 !----------------------------------------------------------------------
 !
+#if defined NBQ
       DO j=Jstr,Jend
         DO k=1,N
           DO i=Istr,Iend
@@ -101,6 +105,20 @@
           wz(i,j,0,nnew)=qdmw_nbq(i,j,0)    ! = w * 2./Hz(i,j,1)
         ENDDO
       ENDDO
+# endif /* NBQ */
+
+# if defined NHMG
+      DO j=Jstr,Jend
+         DO k=1,N
+            DO i=Istr,Iend
+               wz(i,j,k,nnew)=wz(i,j,k,nnew)
+     &              +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
+            ENDDO
+         ENDDO
+      ENDDO
+#   undef NBQ_WDIF
+# endif /* NHMG */
+
 
 # ifdef NBQ_WDIF
 !

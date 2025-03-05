@@ -489,7 +489,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef NBQ
+# if defined NBQ || defined NHMG
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -875,12 +875,15 @@ C$OMP END MASTER
 #ifdef AGRIF
       use Agrif_Util
 #endif
+#ifdef NHMG
+      use nhmg
+#endif
       use debug
       implicit none
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef M3FAST
+#if defined M3FAST || defined NHMG
 # include "nbq.h"
 #endif
 #ifdef FLOATS
@@ -940,6 +943,11 @@ C$OMP BARRIER
         call set_depth (tile)
       enddo
 # endif
+
+# ifdef NHMG
+      call nhmg_matrices(dzdxi,dzdeta,Hz,z_r)
+# endif
+
 C$OMP BARRIER
 
       do tile=my_first,my_last
@@ -960,7 +968,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef NBQ
+# if defined NBQ || defined NHMG
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -968,7 +976,7 @@ C$OMP BARRIER
 #  endif
 # endif
         call step3d_uv1 (tile)
-# ifdef NBQ
+# if defined NBQ || defined NHMG
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call step3d_w (tile)
 #  else
@@ -987,6 +995,10 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #endif /* SOLVE3D */
+#ifdef  NHMG
+      iprec1 = 1+mod(iprec1,2)
+      iprec2 = 1+mod(iprec2,2)
+#endif
 !
 #if defined AGRIF && defined AGRIF_2WAY
 !

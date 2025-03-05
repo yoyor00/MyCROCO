@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -238,7 +238,7 @@ C$    integer omp_get_thread_num
 #  undef J_RANGE
 
 #  if defined BD_EXCHANGE
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_r(START_2D_ARRAY,1))
@@ -367,7 +367,7 @@ C$    integer omp_get_thread_num
 #   undef J_RANGE
 
 #   if defined BD_EXCHANGE
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        z_r(START_2D_ARRAY,1))
@@ -379,6 +379,61 @@ C$    integer omp_get_thread_num
      &                        Hzr(START_2D_ARRAY,1))
 #    endif
 #   endif
+
+#ifdef NHMG
+!     Compute slopes
+      do k = 1, N
+         do j = 0,Mm+1
+            do i = 0,Lm+1
+               dzdxi (i,j,k)=0.5*(z_r(i+1,j,k)-z_r(i-1,j,k))*pn(i,j)
+               dzdeta(i,j,k)=0.5*(z_r(i,j+1,k)-z_r(i,j-1,k))*pm(i,j)
+            enddo
+         enddo
+      enddo
+      ! z_r is buffer filled in the interior halos but not in the outer halos
+      if (WESTERN_EDGE) then
+         do k = 1, N
+            do j = 0,Mm+1
+               dzdxi (0,j,k) = 0.
+               dzdxi (1,j,k) = 0.
+               dzdeta(0,j,k) = 0.
+               dzdeta(1,j,k) = 0.
+            enddo
+         enddo
+       endif
+      if (EASTERN_EDGE) then
+         do k = 1, N
+            do j = 0,Mm+1
+               dzdxi (Lm  ,j,k) = 0.
+               dzdxi (Lm+1,j,k) = 0.
+               dzdeta(Lm  ,j,k) = 0.
+               dzdeta(Lm+1,j,k) = 0.
+            enddo
+         enddo
+       endif
+      if (SOUTHERN_EDGE) then
+         do k = 1, N
+            do i = 0,Lm+1
+               dzdxi (i,0,k) = 0.
+               dzdxi (i,1,k) = 0.
+               dzdeta(i,0,k) = 0.
+               dzdeta(i,1,k) = 0.
+            enddo
+         enddo
+       endif
+      if (NORTHERN_EDGE) then
+         do k = 1, N
+            do i = 0,Lm+1
+               dzdxi (i,Mm  ,k) = 0.
+               dzdxi (i,Mm+1,k) = 0.
+               dzdeta(i,Mm  ,k) = 0.
+               dzdeta(i,Mm+1,k) = 0.
+            enddo
+         enddo
+       endif
+
+#endif /* NHMG */
+
       return
       end
 #  endif /* MORPHODYN */
@@ -406,7 +461,13 @@ C$    integer omp_get_thread_num
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
-!
+
+# if defined NHMG
+!     TODO: remove this allocation
+!     allocating a 2D array on the heap is against croco policy
+      real grad(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
+
 #  ifdef MRL_WCI
 #   include "forces.h"
 #  endif
@@ -496,6 +557,35 @@ C$    integer omp_get_thread_num
      &                        dz_v(START_2D_ARRAY,1))
 #   endif
 #  endif
+
+# ifdef NHMG
+!
+      if (iic.eq.0) then !! Only during initialization
+!     TODO: If you had better information, this will overwrite it
+!     TODO: We should be able to specify if we can do better in either ana_initial of reading netcdf files
+
+
+        ! We initialize using continuity in the interior
+        do j=Jstr,Jend
+          do k=1,N
+            do i=Istr,Iend
+               wz(i,j,k,1)=wz(i,j,k-1,1)
+     &        - pm(i,j)*pn(i,j)*( Huon(i+1,j,k)-Huon(i,j,k)
+     &                           +Hvom(i,j+1,k)-Hvom(i,j,k) )
+            enddo
+          enddo
+        enddo
+
+        call w3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+
+#   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+        call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                                 wz(START_2D_ARRAY,0,1))
+#   endif
+      endif
+# endif /* NHMG */
+
+
       return
       end
 !
@@ -625,6 +715,9 @@ C$    integer omp_get_thread_num
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
+# if defined NHMG
+      real grad(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
 #  ifdef MRL_WCI
 #   include "forces.h"
 #  endif
@@ -740,7 +833,7 @@ C$    integer omp_get_thread_num
 ! Exchange periodic boundaries, if so prescribed.
 !
 #  if defined BD_EXCHANGE
-#   ifdef THREE_GHOST_POINTS_UV  
+#   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             Huon(START_2D_ARRAY,1))
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -760,6 +853,34 @@ C$    integer omp_get_thread_num
      &                        v(START_2D_ARRAY,1,nrhs))
 #   endif
 #  endif
+
+# if defined NHMG && !defined NO_SPLIT
+
+!     Since we have corrected u and v in the 2D to 3D coupling, we now need to make wz consistent again
+      do j=Jstr,Jend
+        do k=1,N
+          do i=Istr,Iend
+            DC(i,0)=pm(i,j)*pn(i,j)
+            ! at this time, Huon and Hvom can used :
+            ! they are defined at n+1/2
+            wz(i,j,k,nrhs)=wz(i,j,k-1,nrhs)
+     &      - DC(i,0)*( Huon(i+1,j,k)-Huon(i,j,k)
+     &                 +Hvom(i,j+1,k)-Hvom(i,j,k) )
+          enddo
+        enddo
+      enddo
+
+      call w3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+
+
+! exchange
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+     &                                 wz(START_2D_ARRAY,0,nrhs))
+# endif
+
+# endif /* NHMG */
+
 # endif /* SOLVE3D */
       return
       end
@@ -768,4 +889,3 @@ C$    integer omp_get_thread_num
       return
       end
 #endif /* SOLVE3D || WET_DRY */
-

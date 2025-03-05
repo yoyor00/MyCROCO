@@ -33,12 +33,18 @@ c********************************************************************
       trd=omp_get_thread_num()
       call prsgrd_tile (Istr,Iend,Jstr,Jend,
      &                  A3d(1,1,trd), A3d(1,2,trd), A3d(1,3,trd),
+# ifdef NHMG
+     &                  A3d(1,4,trd),
+# endif
      &                  A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
      &                  A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd))
       return
       end
 !
       subroutine prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
+# ifdef NHMG
+     &                        rw,
+# endif
      &                                       dR,dZ, FC,dZx,rx,dRx)
 !
       implicit none
@@ -53,6 +59,9 @@ c********************************************************************
      &    dZx(PRIVATE_2D_SCRATCH_ARRAY),
      &     rx(PRIVATE_2D_SCRATCH_ARRAY),
      &    dRx(PRIVATE_2D_SCRATCH_ARRAY)
+# ifdef NHMG
+     &    ,rw(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# endif
 !
       parameter (OneFifth=0.2, OneTwelfth=1./12., epsil=0.) !1.E-10)
 !

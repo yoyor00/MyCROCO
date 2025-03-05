@@ -41,7 +41,7 @@
 #undef  ACOUSTIC        /* Acoustic wave Example */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
 #undef  ISOLITON        /* Internal Soliton Example */
-#undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
+#define  KH_INST         /* Kelvin-Helmholtz Instability Example */
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */
 #undef  DUNE            /* Dune migration Example */
 #undef  SED_TOY         /* 1DV sediment toy Example */
@@ -53,7 +53,7 @@
         ... OR REALISTIC CONFIGURATIONS
 */
 #undef  COASTAL         /* COASTAL Applications */
-#define REGIONAL        /* REGIONAL Applications */
+#undef REGIONAL        /* REGIONAL Applications */
 
 
 
@@ -1678,8 +1678,9 @@
 */
 # undef  KH_INSTY
 # undef  KH_INST3D
-# undef  MPI
-# define NBQ
+# define  MPI
+# undef NBQ
+# define NHMG
 # undef  NBQ_PRECISE
 # undef  XIOS
 # define SOLVE3D

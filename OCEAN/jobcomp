@@ -23,7 +23,7 @@
 #
 # set source, compilation and run directories
 #
-SOURCE=../croco/OCEAN
+SOURCE=../OCEAN
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..

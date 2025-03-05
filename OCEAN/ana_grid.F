@@ -151,7 +151,7 @@ C$    integer omp_get_thread_num
                      f0=0.
                      beta=0.
 # elif defined GRAV_ADJ
-#  ifdef NBQ
+#  ifdef NBQ || defined NHMG
                      depth=0.3
 #  else
                      depth=20.
@@ -312,7 +312,7 @@ C$    integer omp_get_thread_num
                      Length_XI =128.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined GRAV_ADJ
-#  ifdef NBQ
+#  ifdef NBQ || defined NHMG
                      Length_XI =3.0
 #  else
                      Length_XI =64.0e+3
@@ -677,7 +677,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 #  else
           h(i,j)=12.0-0.0125*Length_XI/float(LLm+1)*cff + 3.
 #  endif
-#  ifdef MASKING
+#  if defined MASKING || defined NHMG_MASKING
           rmask(i,j)=1.0
           if (h(i,j).lt.0.01) then
             h(i,j)=0.01
@@ -1161,7 +1161,7 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !  Set masking at RHO-points.
 !----------------------------------------------------------------------
 !
-# ifdef MASKING
+# if defined MASKING || defined NHMG_MASKING
       do j=JstrR,JendR             ! Set mask to all-water status
         do i=IstrR,IendR
           rmask(i,j)=1.

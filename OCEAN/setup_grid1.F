@@ -127,7 +127,7 @@ C$    integer omp_get_thread_num
 #endif
            pn_u(i,j)=0.5*(pn(i,j)+pn(i-1,j))
            pm_u(i,j)=0.5*(pm(i,j)+pm(i-1,j))
-#ifdef MASKING
+#if defined MASKING || defined NHMG_MASKING
            umask(i,j)=rmask(i,j)*rmask(i-1,j)
 #endif
         enddo
@@ -146,7 +146,7 @@ C$    integer omp_get_thread_num
 #endif
           pm_v(i,j)=0.5*(pm(i,j)+pm(i,j-1))
           pn_v(i,j)=0.5*(pn(i,j)+pn(i,j-1))
-#ifdef MASKING
+#if defined MASKING || defined NHMG_MASKING
           vmask(i,j)=rmask(i,j)*rmask(i,j-1)
 #endif
         enddo
@@ -163,7 +163,7 @@ C$    integer omp_get_thread_num
      &               /(pn(i,j)+pn(i,j-1)+pn(i-1,j)+pn(i-1,j-1))
           om_p(i,j)=4./(pm(i-1,j-1)+pm(i-1,j)+pm(i,j-1)+pm(i,j))
           on_p(i,j)=4./(pn(i-1,j-1)+pn(i-1,j)+pn(i,j-1)+pn(i,j))
-#ifdef MASKING
+#if defined MASKING || defined NHMG_MASKING
           pmask(i,j)=rmask(i,j)*rmask(i-1,j)*rmask(i,j-1)
      &                                      *rmask(i-1,j-1)
           pmask2(i,j)=pmask(i,j)
@@ -295,7 +295,7 @@ C$    integer omp_get_thread_num
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,      h)
 # endif
 
-# ifdef MASKING
+# if defined MASKING || defined NHMG_MASKING
 #  ifdef THREE_GHOST_POINTS
       call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend, rmask)
 #  else

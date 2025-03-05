@@ -51,6 +51,13 @@
 #ifdef OPENACC
       use openacc
 #endif
+#ifdef NHMG
+      USE nhmg, only : nhmg_init
+      USE nhmg, only : nhmg_matrices
+      USE nhmg, only : nhmg_clean
+      USE nhmg, only : iprec1, iprec2, halo
+      USE nhmg, only : ew_perio, ns_perio
+#endif
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -70,6 +77,9 @@
 # include "work.h"
 #endif
 #include "mpi_cpl.h"
+#ifdef NHMG
+# include "ocean3d.h"
+#endif
 #ifdef FLOATS
 # include "floats.h"
 # include "ncscrum_floats.h"
@@ -264,6 +274,24 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call copy_to_devices (tile)
       enddo
 #endif
+#ifdef NHMG
+# ifdef THREE_GHOST_POINTS
+      halo = 3
+# else
+      halo = 2
+# endif
+# if defined EW_PERIODIC
+      ew_perio = .true.
+# else
+      ew_perio = .false.
+# endif
+# if defined NS_PERIODIC
+      ns_perio = .true.
+# else
+      ns_perio = .false.
+# endif
+      call nhmg_init(Lm,Mm,N,NP_XI,NP_ETA,padd_X,padd_E)
+#endif
 !
 !----------------------------------------------------------------------
 !  Set horizontal grid, model bathymetry and Land/Sea mask
@@ -375,7 +403,7 @@ C$OMP BARRIER
         do tile=0,NSUB_X*NSUB_E-1
           call set_depth (tile)       !<-- needed to initialize Hz_bak
         enddo
-C$OMP BARRIER
+C$OMP BARRIER.
 # endif
 #endif
         call get_initial (nrrec, 1)   ! Set initial conditions
@@ -522,6 +550,17 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call set_depth (tile)
       enddo
 CR      write(*,*)  ' -5' MYID
+#endif
+!
+!----------------------------------------------------------------------
+!  Set NHMG horizontal and vertical grids
+!  then set matrices coefficients for the elliptic problem
+!----------------------------------------------------------------------
+!
+#ifdef NHMG
+      call nhmg_matrices(dzdxi,dzdeta,Hz,z_r,
+     &                   om_r(0:Lm+1,0:Mm+1),
+     &                   on_r(0:Lm+1,0:Mm+1))
 #endif
 !
 !----------------------------------------------------------------------
@@ -939,6 +978,13 @@ CR      write(*,*) '  0' MYID
 #endif
       iic = ntstart
 
+
+#ifdef  NHMG
+      ! indexes for nhmg ab2 pressure corrections
+      iprec1 = 1
+      iprec2 = 2
+#endif
+
 #ifdef AGRIF
       iind = -1
 # if defined OA_COUPLING || defined OW_COUPLING
@@ -1023,6 +1069,11 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 #endif
 
  100  continue
+
+#ifdef NHMG
+      ! write nhmg statistics to fort.10
+      call nhmg_clean()
+#endif
 
 #ifdef MPI
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)

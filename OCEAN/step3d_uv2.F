@@ -58,8 +58,16 @@
 ! using implicit backward time step.
 !--------------------------------------------------------------------
 !
+#ifdef NHMG
+      use nhmg
+      use mg_grids
+      use mg_tictoc, only : tic, toc
+#endif
       implicit none
 # include "param.h"
+#ifdef NHMG
+# include "nbq.h"
+#endif
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
@@ -98,6 +106,14 @@
       real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
 # endif
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
+#if defined NHMG
+      real Ubt(PRIVATE_2D_SCRATCH_ARRAY)
+      real Vbt(PRIVATE_2D_SCRATCH_ARRAY)
+      real Hu(PRIVATE_2D_SCRATCH_ARRAY)
+      real Hv(PRIVATE_2D_SCRATCH_ARRAY)
+! is not the usual croco policy
+! grad should be passed as a A2d array in step3d_uv2_tile
+#endif
       real dpth,aa,cc
 # ifdef TS_MIX_ISO
       real dRx,dRe, cfilt
@@ -330,7 +346,16 @@
 !###########################
         do k=1,N
           do i=IstrU,Iend
+# if defined NHMG
+             if (surface_neumann) then
+                u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
+             else
+! With Dirichlet BC the velocity is not corrected
+                u(i,j,k,nnew)=DC(i,k) SWITCH umask(i,j)
+             endif
+# else
             u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
+# endif
           enddo
         enddo        !--> discard DC,CF(:,0)
 !###########################
@@ -644,7 +669,17 @@
 !###########################
           do k=1,N
             do i=Istr,Iend
+# if defined NHMG
+             if (surface_neumann) then
+                v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
+             else
+! With Dirichlet BC the velocity is not corrected
+                v(i,j,k,nnew)=DC(i,k) SWITCH vmask(i,j)
+             endif
+
+#  else
               v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
+# endif
           enddo
         enddo        !--> discard DC,CF(:,0)
 !###########################
@@ -780,6 +815,94 @@
 # endif
        ENDDOLOOP2D      ! <-- j
 
+
+# ifdef NHMG
+      call tic(1,'croco_step3d_uv2_1')
+      do j=Jstr,Jend
+
+!--------------------------------------------------------------------
+! Time step w equation
+!
+# ifdef DIAGNOSTICS_UV
+        write(*,*)"DIAGNOSTICS_UV and NHMG cpp keys are incompatible"
+        stop
+# endif
+# if defined NHMG2
+        do k=1,N
+          do i=Istr,Iend
+            FC(i,k)=-0.5*dt*( Akv(i,j,k)+Akv(i,j,k-1) )
+     &                 /    ( z_w(i,j,k)-z_w(i,j,k-1) )
+#  ifdef VADV_ADAPT_IMP
+            DC(i,0)=pm(i,j)*pn(i,j)
+            WC(i,k)=dt*DC(i,0)*0.5*(Wi(i,j,k)+Wi(i,j,k-1))
+#  endif
+          enddo
+        enddo
+        do i=Istr,Iend
+          FC(i,0)=0.
+#  ifdef VADV_ADAPT_IMP
+          WC(i,0)=0.
+#  endif
+        enddo
+        do k=1,N-1
+          do i=Istr,Iend
+            DC(i,k)=wz(i,j,k,nnew)
+            BC(i,k)=0.5*(Hz(i,j,k)+Hz(i,j,k+1)) - FC(i,k) - FC(i,k+1)
+#  ifdef VADV_ADAPT_IMP
+     &              +max(WC(i,k+1),0.)-min(WC(i,k),0.)
+#  endif
+          enddo
+        enddo
+        do i=Istr,Iend
+          DC(i,N)=wz(i,j,N,nnew)
+          BC(i,N)=0.5*Hz(i,j,N) - FC(i,N)
+#  ifdef VADV_ADAPT_IMP
+     &              -min(WC(i,N),0.)
+#  endif
+        enddo
+
+        do i=Istr,Iend
+          cff=1./BC(i,1)
+          CF(i,2)=cff*(FC(i,2)
+#  ifdef VADV_ADAPT_IMP
+     &              +min(WC(i,2),0.)
+#  endif
+     &                                 )
+          DC(i,1)=cff*DC(i,1)
+        enddo
+        do k=2,N-1
+          do i=Istr,Iend
+#  ifdef VADV_ADAPT_IMP
+              aa = FC(i,k)-max(WC(i,k),0.)
+              cc = FC(i,k+1)+min(WC(i,k+1),0.)
+#  else
+              aa = FC(i,k)
+              cc = FC(i,k+1)
+#  endif
+            cff=1./(BC(i,k)-aa*CF(i,k))
+            CF(i,k+1)=cff*cc
+            DC(i,k)=cff*(DC(i,k)-aa*DC(i,k-1))
+          enddo
+        enddo
+        do i=Istr,Iend
+#  ifdef VADV_ADAPT_IMP
+              aa = FC(i,N)-max(WC(i,N),0.)
+#  else
+              aa = FC(i,N)
+#  endif
+          wz(i,j,N,nnew)=(DC(i,N)-aa*DC(i,N-1))
+     &                  /(BC(i,N)-aa*CF(i,N))
+        enddo
+        do k=N-1,1,-1
+          do i=Istr,Iend
+             wz(i,j,k,nnew)=DC(i,k)-CF(i,k+1)*wz(i,j,k+1,nnew)
+          enddo
+        enddo
+#endif
+      enddo                     ! <-- j
+        call toc(1,'croco_step3d_uv2_1')
+# endif  /* NHMG */
+
 !-------------------------------------------------------------------
 ! DIAGNOSTICS
 !-------------------------------------------------------------------
@@ -882,6 +1005,165 @@
 
       call v3dbc_tile (Istr,Iend,Jstr,Jend, grad)
       call u3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+# if defined NHMG
+      call w3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+# endif
+# ifdef NHMG
+
+      call tic(1,'croco_swap corrector')
+
+#  if defined NHMG_MASKING
+         do k=1,N
+            do j=Jstr,Jend
+               do i=IstrU,Iend
+                  u(i,j,k,nnew) = u(i,j,k,nnew)*umask(i,j)
+               enddo
+            enddo
+         enddo
+        do k=1,N
+            do j=JstrV,Jend
+               do i=Istr,Iend
+                  v(i,j,k,nnew) = v(i,j,k,nnew)*vmask(i,j)
+               enddo
+            enddo
+         enddo
+         do k=1,N
+            do j=Jstr,Jend
+               do i=Istr,Iend
+                  wz(i,j,k,nnew) = wz(i,j,k,nnew)*rmask(i,j)
+               enddo
+            enddo
+         enddo
+#  endif
+
+!!
+!   Multiply u,v,w to go from velocity units to fluxes
+         hu = 0.
+         hv = 0.
+      do k=1,N
+         do j=Jstr,Jend
+            do i=Istr,Iend+1
+               u(i,j,k,nnew) = u(i,j,k,nnew)
+     &              *(0.5*(Hz(i,j,k) + Hz(i-1,j,k))) / pn_u(i,j)
+               hu(i,j)=hu(i,j)+0.5*(Hz(i,j,k) + Hz(i-1,j,k))
+            enddo
+         enddo
+
+         do j=Jstr,Jend+1
+            do i=Istr,Iend
+               v(i,j,k,nnew) = v(i,j,k,nnew)
+     &              *(0.5*(Hz(i,j,k) + Hz(i,j-1,k))) / pm_v(i,j)
+               hv(i,j)=hv(i,j)+0.5*(Hz(i,j,k) + Hz(i,j-1,k))
+            enddo
+         enddo
+
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               wz(i,j,k,nnew) = wz(i,j,k,nnew)
+     &              / (pm(i,j)*pn(i,j))
+            enddo
+         enddo
+      enddo
+
+#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+     !! Todo: we should be able to avoid this. We only need u and v at the boundaries
+     !! Todo: computational ranges for u and v need to be extended to Iend+1, Jend+1
+#  ifdef THREE_GHOST_POINTS_UV
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                        u(START_2D_ARRAY,1,nnew))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                        v(START_2D_ARRAY,1,nnew))
+#  else
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        u(START_2D_ARRAY,1,nnew))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        v(START_2D_ARRAY,1,nnew))
+#  endif
+#  endif
+
+         nh_ubar = 0.
+         nh_vbar = 0.
+         do k=1,N
+            do j=Jstr,Jend
+               do i=Istr,Iend+1
+                  nh_ubar(i,j) = nh_ubar(i,j) + u(i,j,k,nnew)
+               enddo
+            enddo
+            do j=Jstr,Jend+1
+               do i=Istr,Iend
+                  nh_vbar(i,j) = nh_vbar(i,j) + v(i,j,k,nnew)
+               enddo
+            enddo
+         enddo
+      if (surface_neumann) then
+!! only do this for neumann nhmg conditions
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               nh_wcor(i,j) = wz(i,j,N,nnew)
+     &            +(nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
+            enddo
+         enddo
+         do k=1,N
+            do j=Jstr,Jend
+               do i=Istr,Iend
+                  wz(i,j,k,nnew) = wz(i,j,k,nnew) - nh_wcor(i,j)
+     &                 * (z_w(i,j,k)-z_w(i,j,0))
+     &                 / (z_w(i,j,N)-z_w(i,j,0))
+               enddo
+            enddo
+         enddo
+      endif
+       call nhmg_solve(u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew))
+
+!    get non-hydrostatic pressure (Pnh) for later writing into netcdf files
+!         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,Pnh,dt,rho0)
+!     At this point u,v,w are fluxes with the dimension of m^3/s
+
+      nh_ubar = 0
+      nh_vbar = 0
+      do k=1,N
+         do j=Jstr,Jend
+            do i=Istr,Iend+1
+               nhdu(i,j,k,iprec1) = grid(1)%du(k,j,i)/dt !stored as a trend
+               nh_ubar(i,j) = nh_ubar(i,j)+grid(1)%du(k,j,i)
+               u(i,j,k,nnew) = (u(i,j,k,nnew) + grid(1)%du(k,j,i) )
+     &              /(0.5*(Hz(i,j,k) + Hz(i-1,j,k))) * pn_u(i,j)
+            enddo
+         enddo
+
+         do j=Jstr,Jend+1
+            do i=Istr,Iend
+               nhdv(i,j,k,iprec1) = grid(1)%dv(k,j,i)/dt !stored as a trend
+               nh_vbar(i,j) = nh_vbar(i,j)+grid(1)%dv(k,j,i)
+               v(i,j,k,nnew) = (v(i,j,k,nnew) + grid(1)%dv(k,j,i) )
+     &              /(0.5*(Hz(i,j,k) + Hz(i,j-1,k))) * pm_v(i,j)
+            enddo
+         enddo
+
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               nhdw(i,j,k,iprec1) = grid(1)%dw(k+1,j,i)/dt !stored as a trend
+               wz(i,j,k,nnew) = (wz(i,j,k,nnew) + grid(1)%dw(k+1,j,i) )
+     &              * (pm(i,j)*pn(i,j))
+            enddo
+         enddo
+      enddo
+
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                   nh_ubar(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                   nh_vbar(START_2D_ARRAY))
+#endif
+!     Now: u,v,w are fluxes with the dimension of m/s
+
+      call u3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+      call v3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+      call w3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+
+      call toc(1,'croco_swap corrector')
+
+# endif    /* NHMG */
 
 !$acc kernels if(compute_on_device) default(present)
 !
@@ -934,6 +1216,10 @@
 #  define JU_RANGE JstrR,JendR
 #  define JV_RANGE Jstr,JendR
 # endif
+# if defined NHMG
+      nh_ubar = 0
+      nh_vbar = 0
+# endif
 !
 !--------------------------------------------------
 !  Couple XI-component of velocity
@@ -972,6 +1258,15 @@
         enddo
         do k=N,1,-1
           do i=IU_RANGE
+# if defined NHMG
+               if (surface_neumann) then
+                  u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
+#   ifdef MASKING
+     &                 *umask(i,j)
+#   endif
+                  nh_ubar(i,j) = nh_ubar(i,j)+CF(i,0)
+               endif ! if Dirichlet: no barotropic correction
+# else
             u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
 # ifdef MASKING
      &                                *umask(i,j)
@@ -979,6 +1274,7 @@
      &               +ust(i,j,k)*(umask(i,j)-1.0)
 #  endif
 # endif
+# endif /* NHMG */
 # ifdef WET_DRY
             u(i,j,k,nnew)=u(i,j,k,nnew)*umask_wet(i,j)
 #  ifdef MRL_WCI
@@ -1118,6 +1414,15 @@
           enddo
           do k=N,1,-1
             do i=IV_RANGE
+# if defined NHMG
+               if (surface_neumann) then
+                  v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0))
+#   ifdef MASKING
+     &                 *vmask(i,j)
+#   endif
+                  nh_vbar(i,j) = nh_vbar(i,j)+CF(i,0)
+               endif ! if Dirichlet: no barotropic correction
+# else
               v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0))
 # ifdef MASKING
      &                                  *vmask(i,j)
@@ -1125,6 +1430,7 @@
      &                 +vst(i,j,k)*(vmask(i,j)-1.0)
 #  endif
 # endif
+# endif /* NHMG */
 # ifdef WET_DRY
               v(i,j,k,nnew)=v(i,j,k,nnew)*vmask_wet(i,j)
 #  ifdef MRL_WCI
@@ -1223,6 +1529,22 @@
 !
       ENDDOLOOP2D !<-- j loop
 
+#if defined NHMG
+#if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+#  ifdef THREE_GHOST_POINTS_UV
+      call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                   nh_ubar(START_2D_ARRAY))
+      call exchange_v2d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                   nh_vbar(START_2D_ARRAY))
+#   else
+      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+     &                   nh_ubar(START_2D_ARRAY))
+      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+     &                   nh_vbar(START_2D_ARRAY))
+#   endif
+#  endif
+# endif /* NHMG */
+
 !
 !--------------------------------------------------------------------
 !
@@ -1298,6 +1620,10 @@
 ! coupling process (P. Marchesiello, 17 Jun 2004).
 !
 # ifdef PSOURCE
+# if defined NHMG
+        write(*,*)"PSOURCE and NHMG cpp keys are incompatible"
+        stop
+# endif
       do is=1,Nsrc
 #  ifdef MPI
            i=Isrc_mpi(is,mynode)
@@ -1336,6 +1662,10 @@
 !--------------------------------------------------------------------
 !
 # if defined M3NUDGING && defined M3CLIMATOLOGY
+# if defined NHMG
+        write(*,*)"M3NUDGING and NHMG cpp keys are incompatible"
+        stop
+# endif
 
 #  ifdef ZONAL_NUDGING
 !$acc end kernels
@@ -2330,6 +2660,57 @@
      &                                 Mfast(START_2D_ARRAY,1,2))
 #   endif
 #  endif
+
+# if defined NHMG
+!--------------------------------------------------------------------
+! Coupling wz
+!--------------------------------------------------------------------
+!
+      if (surface_neumann) then
+
+!     We now apply the barotropic correction to wz
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               wz(i,j,0,nnew)=0.
+               DC(i,0) = - (nh_ubar(i+1,j)-nh_ubar(i,j)
+     &                     +nh_vbar(i,j+1)-nh_vbar(i,j))
+               ! DC(i,0) is the wz barotropic correction at the surface
+               DC(i,0) = DC(i,0) * pm(i,j)*pn(i,j)
+               ! DC(i,0) is divided by the total depth
+               DC(i,0) = DC(i,0) / (z_w(i,j,N)-z_w(i,j,0))
+            enddo
+            do k=1,N
+               do i=Istr,Iend
+                  ! at this time, Huon and Hvom CANNOT used : they are
+                  ! defined at n+1/2 instead of n+1
+                  wz(i,j,k,nnew) = wz(i,j,k,nnew)
+     &                 - DC(i,0)*(z_w(i,j,k)-z_w(i,j,0))
+            enddo
+         enddo
+      enddo
+
+      else ! Dirichlet BC
+
+         ! We've modified u and v, wz needs to be made consistent
+         do j=Jstr,Jend
+            do k=1,N
+               do i=Istr,Iend
+                  DC(i,0)=pm(i,j)*pn(i,j)
+                  ! at this time, Huon and Hvom CANNOT used : they are
+                  ! defined at n+1/2 instead of n+1
+                  wz(i,j,k,nnew)=wz(i,j,k-1,nnew)
+     &                 - DC(i,0)*(
+     &       +0.5*(Hz(i,j,k)+Hz(i+1,j,k))*on_u(i+1,j)*u(i+1,j,k,nnew)
+     &       -0.5*(Hz(i-1,j,k)+Hz(i,j,k))*on_u(i,j)*u(i,j,k,nnew)
+     &       +0.5*(Hz(i,j,k)+Hz(i,j+1,k))*om_v(i,j+1)*v(i,j+1,k,nnew)
+     &       -0.5*(Hz(i,j-1,k)+Hz(i,j,k))*om_v(i,j)*v(i,j,k,nnew) )
+               enddo
+            enddo
+         enddo
+
+      endif
+!
+# endif /* NHMG */
 
 
 #  if defined DIAGNOSTICS_EK
