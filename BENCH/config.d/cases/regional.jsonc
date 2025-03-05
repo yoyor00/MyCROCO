@@ -101,7 +101,7 @@
       "PSOURCE_NCFILE": true,
     },
     "patches": {
-      // CHange the ndtfast
+      // Change runoff file
       "TEST_CASES/croco.in.Regional": {
         "mode": "replace",
         "what": "   CROCO_FILES/croco_runoff.nc",
@@ -221,7 +221,7 @@
       "NBQ": true,
     },
     "patches": {
-      // CHange the ndtfast
+      // Change the ndtfast
       "TEST_CASES/croco.in.Regional": {
         "mode": "replace",
         "what": "                3840      3600      60      1",

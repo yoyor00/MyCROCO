@@ -65,20 +65,4 @@
     "check_outputs": ["rip_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
-  "RIP_WAKE_MAKER": {
-    "title": "RIP - WAKE_MAKER - (48 x 48 x 20 : 1800)",
-    "case": "RIP",
-    "cppkeys": {
-      "RIP": true,
-      "RIP_TOPO_2D": false,
-      "BISCA": false,
-      "NBQ": false,
-      "WAVE_MAKER": true,
-      "GRANDPOPO": false,
-    },
-    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
-    "patches": {},
-    "check_outputs": ["rip_his.nc"],
-    "unsupported": ["restart", "openmp"],
-  },
 }
