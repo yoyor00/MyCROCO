@@ -131,6 +131,10 @@
       endif
 #endif
 !
+! Make sure nrechis is larger than 0 before creating file
+!
+      nrechis=max(1,nrechis) 
+!
 ! Create/open history file; write grid arrays, if so needed.
 !
       call def_his (ncidhis, nrechis, ierr)
