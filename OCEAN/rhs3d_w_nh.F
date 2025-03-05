@@ -32,11 +32,11 @@
 !   A3d(1,4,trd) and A3d(1,5,trd) is available at this point
 !
       CALL rhs3d_w_tile (Istr,Iend,Jstr,Jend,  A2d(1,1,trd), 
-     &             A2d(1,2,trd), A2d(1,3,trd), 
-     &             A2d(1,4,trd), A2d(1,5,trd),
-     &             A2d(1,6,trd), A2d(1,7,trd),
+     &             A2d(1,2,trd), A2d(1,3,trd), A2d(1,4,trd), 
+     &             A2d(1,5,trd), A2d(1,6,trd), A2d(1,7,trd),
 # ifdef NHMG
-     &             A2d(1,8,trd), A2d(1,9,trd),
+     &             A2d(1,8, trd), A2d(1,9, trd), 
+     &             A2d(1,10,trd), A2d(1,11,trd),
 # endif
      &             A3d(1,3,trd), A3d(1,4,trd), A3d(1,5,trd)
      &             )
@@ -46,13 +46,11 @@
 !======================================================================
       
       SUBROUTINE rhs3d_w_tile (istr, iend, jstr, jend, CF,
-     &                         FC, We_r, 
-     &                         lap, Hzw,
+     &                         FC, We_r, lap, 
+     &                         Hzw, WFx, WFe,
 # ifdef NHMG
-     &                         div_zx, div_zy,
+     &                         div_zx,  div_zy,
      &                         Udiv_zx, Vdiv_zy,
-# else
-     &                         WFx, WFe,
 # endif
      &                         rw, HUon_w, HVom_w
      &                         )
@@ -70,14 +68,13 @@
       REAL     :: We_r   (PRIVATE_1D_SCRATCH_ARRAY,0:N+1)
       REAL     :: lap    (PRIVATE_2D_SCRATCH_ARRAY      )
       REAL     :: Hzw    (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
+      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY      )
+      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY      )
 # ifdef NHMG
       REAL     :: div_zx (PRIVATE_1D_SCRATCH_ARRAY,1:N  )
       REAL     :: div_zy (PRIVATE_1D_SCRATCH_ARRAY,1:N  )
       REAL     :: Udiv_zx(PRIVATE_1D_SCRATCH_ARRAY,1:N  )
       REAL     :: Vdiv_zy(PRIVATE_1D_SCRATCH_ARRAY,1:N  )
-# else
-      REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY      )
-      REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY      )
 # endif
       REAL     :: rw     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )

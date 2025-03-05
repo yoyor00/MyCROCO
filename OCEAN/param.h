@@ -52,13 +52,20 @@
 # ifdef NBQ
 !     parameter (LLm0=600,  MMm0=1,    N=60)   !   5 mm resolution
       parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
+# elif defined NHMG
+!     parameter (LLm0=512,  MMm0=1,    N=64)   !   5 mm resolution
+      parameter (LLm0=256,  MMm0=1,    N=32)   !  10 mm resolution
 # else
 !     parameter (LLm0=32,   MMm0=1,    N=10)   !   2 km resolution
       parameter (LLm0=128,  MMm0=1,    N=40)   ! 500  m resolution
 !     parameter (LLm0=512,  MMm0=1,   N=160)   ! 125  m resolution
 # endif
 #elif defined ISOLITON
+# ifdef NHMG
+      parameter (LLm0=64,   MMm0=1,    N=64)   !  10 cm resolution
+# else
       parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
+# endif
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
 #elif defined INTERNAL
@@ -250,7 +257,7 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
-      parameter (NP_XI=1,  NP_ETA=1,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #ifdef OPENACC
@@ -402,10 +409,10 @@
       integer N2dabl,N3dabl
       integer se_abl,sse_abl, sz_abl,ssz_abl
 # endif
-# if !defined NBQ
-      parameter (NSA=28)
-# else
+# if defined NBQ || defined NHMG
       parameter (NSA=35)
+# else
+      parameter (NSA=28)
 # endif
 # ifdef ALLOW_SINGLE_BLOCK_MODE
       parameter (size_XI=6+Lm, size_ETA=6+Mm)
@@ -424,7 +431,7 @@
       parameter (N2dabl=size_XI*(se_abl*size_ETA+sz_abl*(N_abl+1)))
       parameter (N3dabl=size_XI*size_ETA*(N_abl+1))
 # endif
-#endif
+#endif /* AGRIF */
 
 !
 !----------------------------------------------------------------------

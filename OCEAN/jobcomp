@@ -41,10 +41,12 @@ FC=gfortran
 #
 # set MPI directories if needed
 #
-MPIF90="mpif90"
-MPILIB=""
-MPIINC=""
-
+#MPIF90="mpif90"
+#MPILIB=""
+#MPIINC=""
+MPIF90="/opt/local/libexec/openmpi-gcc49/mpif90"
+MPILIB="-L/opt/local/lib/openmpi-gcc49"
+MPIINC="-I/opt/local/include/openmpi-gcc49"
 #
 # set NETCDF directories
 #
@@ -94,6 +96,11 @@ mkdir $SCRDIR
 AGRIF_SRC=${ROOT_DIR}/AGRIF
 
 #
+# NHMG sources directory
+#
+NHMG_SRC=${ROOT_DIR}/NHMG
+
+#
 # copy SOURCE code
 #
 
@@ -112,6 +119,7 @@ ls ${ROOT_DIR}/PISCES/SED/*    > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/SED/*
 ls ${ROOT_DIR}/PISCES/kRGB61*  > /dev/null  2>&1 && \cp ${ROOT_DIR}/PISCES/kRGB61* $RUNDIR
 ls ${ROOT_DIR}/MUSTANG/*       > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/MUSTANG/* $SCRDIR
 ls ${ROOT_DIR}/OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/OBSTRUCTION/* $SCRDIR
+ls ${NHMG_SRC}                 > /dev/null  2>&1 && \cp -r ${NHMG_SRC} $SCRDIR
 
 if [[ -e "namelist_pisces_ref" ]] ; then
         echo "  file namelist_pisces exists in Run directory"
@@ -128,6 +136,13 @@ else
         mkdir -p $RUNDIR/MUSTANG_NAMELIST
         \cp -rf ${ROOT_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $RUNDIR/MUSTANG_NAMELIST/.
         echo "  file para*txt copied from source directory"
+fi
+
+if [[ -e "namelist_nhmg" ]] ; then
+        echo "  nhmg_namelist exists in Run directory"
+else
+        \cp -f ${ROOT_DIR}/NHMG/namelist_nhmg* $RUNDIR
+        echo "  nhmg_namelist copied from source directory"
 fi
 
 #
@@ -238,6 +253,75 @@ if $($CPP1 testkeys.F | grep -i -q mpiisdefined) ; then
 fi
 
 #
+# Determine if NHMG is required
+# and check if a configuration submission is needed.
+# To force a configuration submission, 
+# please remove the "config.log" file in $NHMG_WORK
+#
+echo ""
+echo "*****************************"
+echo "** Checking COMPILENHMG... **"
+echo "*****************************"
+NHMG_WORK=${SCRDIR%/*}/NHMG
+# Transform relative path to absolute path (if needed).
+# Because configure command accept only absolute path.
+if [[ $OS == Darwin ]] ; then
+ NHMG_WORK=`greadlink -f ${NHMG_WORK}`
+else
+ NHMG_WORK=`readlink -f ${NHMG_WORK}`
+fi
+#
+NHMGPATH=$NHMG_WORK
+# NHMG_LIB is where the dynamic library libnhmg.so will be stored.
+# The user needs to have its shell aware of this path before
+# execution. This is done by adding this path to the LD_LIBRARY_PATH
+# environement variable
+if [[ $OS == Darwin ]] ; then
+ NHMG_LIB=`greadlink -f ${SCRDIR%/*}`
+else
+ NHMG_LIB=`readlink -f ${NHMG_WORK}`
+fi
+#
+NHMG_SRCDIR=$NHMG_WORK/src
+echo "NHMG_SRCDIR is ${NHMG_SRCDIR}"
+echo "NHMG_LIB is ${NHMG_SRCDIR}"
+echo `pwd`
+cp ${NHMG_SRCDIR}/*.mod .
+cp ${NHMG_SRCDIR}/*.so* .
+cp ${NHMG_SRCDIR}/*.o .
+cp ${NHMG_SRCDIR}/*.a .
+
+if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
+    if [[ $COMPILEAGRIF ]] ; then
+        echo ""
+        echo "*******************************************"
+        echo "** You CAN'T use AGRIF and NHMG together **"
+        echo "*******************************************"
+        echo ""
+        exit
+    fi
+    if [[ ! $COMPILEMPI ]] ; then
+        echo ""
+        echo "******************************************"
+        echo "** You need to activate MPI to use NHMG **"
+        echo "******************************************"
+        echo ""
+        exit
+    fi
+    echo "=> NHMG key is activated in cppdefs.h file"
+    # The NHMG library will be installed in $NHMG_LIB
+    # Check if the dynamic library exists in CROCO's NHMG_LIB directory
+    if [[ -f ${NHMG_LIB}/libnhmg.so.0 ]] ; then
+        COMPILENHMG=FALSE
+    else
+        COMPILENHMG=TRUE
+    fi
+    echo 'Compile NHMG: '${COMPILENHMG}
+    LDFLAGS1="$LDFLAGS1 -L${NHMG_LIB} -lnhmg -L."
+    FFLAGS1="$FFLAGS1 -I${NHMG_SRCDIR}"
+fi
+
+#
 # Take environment variables for compiler and options
 #
 FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
@@ -321,6 +405,29 @@ if [[ $COMPILEAGRIF ]] ; then
 fi
 
 #
+# Compile NHMG library and install it in $NHMG_LIB
+#
+if [[ $COMPILENHMG == 'TRUE' ]] ; then
+    echo ""
+    echo "**********************"
+    echo "** NHMG compilation **"
+    echo "**********************"
+    wwa=`pwd`
+    cd NHMG/src
+    # make command checks timestamp source files and compile them only if it is necessary
+    $MAKE FC="$CFT1" LDFLAGS="$NETCDFLIB" FFLAGS="-c -O3 -fPIC -frecord-marker=4 $MPIINC $NETCDFINC"
+    cp libnhmg.* ${NHMG_LIB}
+    result=$?
+    if [ $result == 0 ] ; then
+        echo "NHMG has been correctly compiled and installed"
+    else
+        echo "Error compiling the NHMG library"
+        exit 1
+    fi
+    cd ${wwa}
+fi
+
+#
 # determine if OPENMP compilation is needed
 #
 unset COMPILEOMP
@@ -384,3 +491,15 @@ $MAKE        || exit 2
 [[ -f partit ]] && mv partit $RUNDIR
 [[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 #
+#
+#
+if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
+    echo ""
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    echo "** Please verify your LD_LIBRARY_PATH for NHMG library. "
+    echo "** You can update it using one of these two commands: "
+    echo "** (csh)  setenv LD_LIBRARY_PATH \$LD_LIBRARY_PATH:${NHMG_LIB}"
+    echo "** (bash) export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NHMG_LIB}"
+    echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+fi
+

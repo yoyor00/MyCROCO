@@ -271,8 +271,7 @@
 
 #endif /* M3FAST */
 
-
-#if defined NHMG
+#ifdef NHMG
       real nhdu(GLOBAL_2D_ARRAY,1:N,2)
       real nhdv(GLOBAL_2D_ARRAY,1:N,2)
       real nhdw(GLOBAL_2D_ARRAY,0:N,2)
