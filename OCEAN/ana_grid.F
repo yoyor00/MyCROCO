@@ -105,8 +105,6 @@ C$    integer omp_get_thread_num
 # endif
 !
 # include "compute_extended_bounds.h"
-
-
 !
 !----------------------------------------------------------------------
 ! Configuration parameters (h,f,beta)
@@ -461,8 +459,8 @@ C$    integer omp_get_thread_num
       y0=-9.E+3
 # endif
 
-CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
-CR     &                                'x0=',x0, 'y0=',y0, mynode
+CR      write(*,'(4(A3,1pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
+CR     &                                 'x0=',x0, 'y0=',y0, mynode
 !
 !----------------------------------------------------------------------
 ! Setup rectangular grid:  coordinates (XI,ETA) at PSI- and RHO-points.
@@ -477,8 +475,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
          yr(i,j) = y0 + dy*(float(j+jminmpi-1-1)+0.5)
         enddo
       enddo
-!$acc end kernels      
-!$acc update host( xr, yr )      
+!$acc end kernels
+!$acc update host( xr, yr )
 !
 !----------------------------------------------------------------------
 ! Compute coordinate transformation metrics at RHO-points "pm" and
@@ -662,7 +660,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
             h(i,j)=depth
             enddo
         enddo
-
 
 # elif defined SHOREFACE
       do j=JstrR,JendR
