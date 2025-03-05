@@ -35,28 +35,6 @@
 #endif
 
 /*
-   Activate the CVTK_DEBUG procedure that will test the reproducibility
-   of parallel computation by comparing binary files produced by serial
-   and parallel runs. For the umpteenth time, CVTK_DEBUG itself should
-   be defined from cppdefs.h, so not undefined here !!!!!
-*/
-#if !defined CVTK_DEBUG
-#undef CVTK_DEBUG_ADVANCED
-#endif
-
-#if defined CVTK_DEBUG && !defined MPI && !defined OPENMP && !defined CVTK_DEBUG_READ
-# define CVTK_DEBUG_WRITE
-#endif
-
-/*
-   Take care need to use a debug.F specific
-*/
-
-#if defined CVTK_DEBUG_PERFRST && !defined CVTK_DEBUG_READ
-# define CVTK_DEBUG_WRITE
-#endif
-
-/*
     Constant tracer option (for debugging)
 */
 #ifdef KILPATRICK
