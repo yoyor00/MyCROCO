@@ -29,6 +29,10 @@
 ! both EAST_WEST and NORTH_SOUTH boundaries) the code has been
 ! unified
 !
+#ifdef MUSTANG
+      USE comMUSTANG,   ONLY : nk_nivsed_out
+#endif
+
       implicit none
 #include "param.h"
 #ifdef EAST_WEST
