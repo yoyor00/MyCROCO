@@ -27,6 +27,7 @@
 :                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
+: namdredging              : parameters to activate dredging effect
 
 &namsedim_init
    l_unised = .true.
@@ -79,5 +80,13 @@
 /
 &namflocmod
 /  
+&namdredging
+   dredging_location_file = 'TEST_CASES/estuary_dredging_areas.nc'
+   dredging_settings_file = 'TEST_CASES/estuary_dredging_settings.txt'
+   dredging_out_file = 'dredging_out.nc'
+   dredging_dumping_layer = 1
+   dredging_dt = 3600.
+   dredging_dt_out = 3600.
+/
 &namsedim_poro
 /

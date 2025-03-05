@@ -14,7 +14,8 @@
                                                   ! file.
 #if defined MUSTANG
         USE comMUSTANG, ONLY : rstMust, vname_rstMust, 
-     &   rstoutintegerMust, rstout2DMust, rstout3DsedMust
+     &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
+     &   rstMust_nbvar
 #endif
 #if defined FLOATS && defined AGRIF
         USE Agrif_Util
@@ -1159,7 +1160,7 @@
 #endif /* SEDIMENT */
 
 #ifdef MUSTANG
-        do indx=1,NT+3
+        do indx=1,rstMust_nbvar
            if (rstout2DMust(indx)) then
                ierr=nf_def_var (ncid, vname_rstMust(1,indx),
      &                 NF_DOUBLE, 3, r2dgrd, rstMust(indx))  
@@ -1983,9 +1984,8 @@
 #endif /* SEDIMENT */
 
 #ifdef MUSTANG
-! ksmi, ksma
-        do itrc=1,2
-          indx=itrc
+       do indx=1,rstMust_nbvar
+
           lvar=lenstr(vname_rstMust(1,indx))
           ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
      &                                                 rstMust(indx))
@@ -1998,40 +1998,6 @@
           ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
 # endif
         enddo
-
-! dzs, tempsed, salsed
-       do itrc=1,3
-         indx=indx+1
-          lvar=lenstr(vname_rstMust(1,indx))
-          ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
-     &                                                 rstMust(indx))
-          if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname_rstMust(1,indx)(1:lvar),
-     &                                            rstMust(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-# ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
-# endif
-        enddo
-
-
-! cvsed
-       do itrc=1,ntrc_subs
-          indx = indx + 1        ! 3D: traceurSed
-          lvar=lenstr(vname_rstMust(1,indx))
-          ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
-     &                                                 rstMust(indx))
-          if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname_rstMust(1,indx)(1:lvar),
-     &                                            rstMust(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-# ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
-# endif
-        enddo
-
 #endif
 
 
