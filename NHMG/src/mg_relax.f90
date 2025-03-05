@@ -27,8 +27,7 @@ module mg_relax
   ! - compute_residual_xyz
   ! - compute_residual_xz
   !
-  ! 
-  
+  !
   
 contains
 
