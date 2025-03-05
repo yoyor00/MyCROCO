@@ -93,7 +93,7 @@
 
       ierr=nf_put_vara_int (ncidflt, fltTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,1) 'time_step', record, ierr, nf_strerror(ierr)
+        write(stdout,1) 'time_step', record, ierr, nf_strerror(ierr)
      &                   MYID
         goto 99                                           !--> ERROR
       endif
@@ -104,7 +104,7 @@
       ierr=nf_put_var1_FTYPE (ncidflt, fltTime, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr,
+        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -127,7 +127,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='grid level'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -154,7 +154,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Temp'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -175,7 +175,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Salt'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -196,7 +196,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Den'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -216,7 +216,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Age'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -231,7 +231,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Zoe'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -251,7 +251,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Vel'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -282,7 +282,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Lat'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -297,7 +297,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Lon'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -316,7 +316,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Xgrid'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -332,7 +332,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Ygrid'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -349,7 +349,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Zgrid'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -370,7 +370,7 @@
       if (ierr .ne. nf_noerr) then
         vinfo='Depth'
         lvar=lenstr(vinfo)
-        write(STDOUT,1) vinfo(1:lvar), record, ierr,
+        write(stdout,1) vinfo(1:lvar), record, ierr,
      &                  nf_strerror(ierr) MYID
         goto 99                                           !--> ERROR
       endif
@@ -395,18 +395,18 @@
 # else
       if (nrpfflt.gt.0 .and. record.ge.nrpfflt) then
         ierr=nf_close (ncidflt)
-!        write(STDOUT,*) 'FLOAT FILE IS CLOSED (XA) '
+!        write(*,*) 'FLOAT FILE IS CLOSED (XA) '
         ncidflt=-1
       else
         ierr=nf_sync(ncidflt)
       endif
 # endif
       if (ierr .eq. nf_noerr) then
-        write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)') 'WRT_FLT -- wrote ',
+        write(stdout,'(6x,A,2(A,I4,1x),A,I3)') 'WRT_FLT -- wrote ',
      &            'float history fields into time record =', record,
      &            '/' ,nrecflt  MYID
       else
-        write(STDOUT,'(/1x,2A/)') 'WRT_FLT ERROR: Cannot ',
+        write(stdout,'(/1x,2A/)') 'WRT_FLT ERROR: Cannot ',
      &             'synchronize/close float netCDF file.'
         may_day_flag=3
       endif

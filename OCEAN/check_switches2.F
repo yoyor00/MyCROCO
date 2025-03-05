@@ -30,12 +30,12 @@
       ieast=ieast+1
 #endif
       if (iwest.gt.1) then
-        write(STDOUT,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
+        write(stdout,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
      &        'one boundary condition is chosen on the WESTERN EGGE.'
         ierr=ierr+1
       endif
       if (ieast.gt.1) then
-        write(STDOUT,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
+        write(stdout,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
      &        'one boundary condition is chosen on the EASTERN EGGE.'
         ierr=ierr+1
       endif
@@ -53,12 +53,12 @@
       inorth=inorth+1
 #endif
       if (isouth.gt.1) then
-        write(STDOUT,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
+        write(stdout,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
      &       'one boundary condition is chosen on the SOUTHERN EGGE.'
         ierr=ierr+1
       endif
       if (inorth.gt.1) then
-        write(STDOUT,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
+        write(stdout,'(1x,A,1x,A)')'ERROR in "cppdefs.h": more tnan',
      &       'one boundary condition is chosen on the NORTHERN EGGE.'
         ierr=ierr+1
       endif
@@ -85,7 +85,7 @@
       iAk=iAk+1
 #endif
       if (iAk.gt.1) then
-        write(STDOUT,'(1x,A,1x,A)') 'ERROR in "cppdefs.h":',
+        write(stdout,'(1x,A,1x,A)') 'ERROR in "cppdefs.h":',
      &       'more than one vertical mixing scheme is chosen.'
         ierr=ierr+1
       endif
@@ -94,7 +94,7 @@
 !
 #ifndef SOLVE3D
       if (ndtfast.gt.1) then
-        write(STDOUT,'(1x,A,I3,1x,A/8x,A,6x,A)') 'ERROR: NDTFAST =',
+        write(stdout,'(1x,A,I3,1x,A/8x,A,6x,A)') 'ERROR: NDTFAST =',
      &         ndtfast, 'is greater than unity for a shallow water',
      &        'configuration.','Change it to unity in startup file.'
      &

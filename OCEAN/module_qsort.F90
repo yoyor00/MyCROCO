@@ -276,12 +276,12 @@ subroutine getblocks(nb,tabin,nbblock,blockdeb,blocklength)
      blockdeb(1) = 1
      !blocklength(0) = 0
      blocklength(1) = 1
-!     write(STDOUT000+par%rank,*) "     ",1,tabin(1)
+!     write(6000+par%rank,*) "     ",1,tabin(1)
      do bcl=2,nb
-!        write(STDOUT000+par%rank,*) "     ",bcl,tabin(bcl)
+!        write(6000+par%rank,*) "     ",bcl,tabin(bcl)
         if (tabin(bcl) /= tabin(bcl-1)+1) then 
 	  nbblock=nbblock+1
-!          write(STDOUT000+par%rank,*) "     ...",nbblock
+!          write(6000+par%rank,*) "     ...",nbblock
 	  blockdeb(nbblock)=bcl 
 	  blocklength(nbblock-1)=bcl-blockdeb(nbblock-1)-1
 	endif	

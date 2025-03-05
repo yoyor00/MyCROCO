@@ -73,9 +73,9 @@ c      real tmp(Lend-Lstr+1)
 !  ON THE FINER GRID IF IT EXISTS
 
 # ifdef AGRIF
-c      write(STDOUT,*) 'Agrif_nb_step = ',Agrif_nb_step()
-c      write(STDOUT,*) 'level = ', Agrif_Fixed()
-c      write(STDOUT,*) 'Agrif_Nb_Fine_Grids ',Agrif_Nb_Fine_Grids
+c      write(*,*) 'Agrif_nb_step = ',Agrif_nb_step()
+c      write(*,*) 'level = ', Agrif_Fixed()
+c      write(*,*) 'Agrif_Nb_Fine_Grids ',Agrif_Nb_Fine_Grids
       if (Agrif_nb_step() .eq. 0) then
 
 c        if (.not. Agrif_Root()) then  !initialization of rhot2root
@@ -87,7 +87,7 @@ c        endif
 
             if (NINT(Tinfo(igrd,iflt)) .eq. level) then
 
-c          write(STDOUT,*)'OLDTINFO',iflt,'  ',Tinfo(igrd,iflt),
+c          write(*,*)'OLDTINFO',iflt,'  ',Tinfo(igrd,iflt),
 c    &     Tinfo(ixgrd,iflt), Tinfo(iygrd,iflt)
 
               entier=nint(Tinfo(igrd,iflt))
@@ -96,7 +96,7 @@ c    &     Tinfo(ixgrd,iflt), Tinfo(iygrd,iflt)
               Tinfo(igrd,iflt)=float(entier)
             endif
 
-c          write(STDOUT,*)'NEWTINFO',iflt,'  ',Tinfo(igrd,iflt),
+c          write(*,*)'NEWTINFO',iflt,'  ',Tinfo(igrd,iflt),
 c    &     Tinfo(ixgrd,iflt), Tinfo(iygrd,iflt)
 
          enddo
@@ -186,7 +186,7 @@ c    &     Tinfo(ixgrd,iflt), Tinfo(iygrd,iflt)
 !---------------------------------------------------------------------
 !
       do id=1,nfltmax
-!        write(STDOUT,*) 'pos (XA) ', track(ixgrd,nf,iflt), '   ',
+!        write(*,*) 'pos (XA) ', track(ixgrd,nf,iflt), '   ',
 !     &     track(iygrd,nf,iflt), '  ', track(izgrd,nf,iflt)
         iflt=indx(id)
         track(ixgrd,nfp1,iflt)=track(ixgrd,nf,iflt)+
@@ -291,9 +291,9 @@ c        enddo
       cff2=time+0.5*dt
       do iflt=Lstr,Lend
 
-CDEBUG      write(STDOUT,*)'Tinfo(itstr)',Tinfo(itstr,iflt)
-CDEBUG      write(STDOUT,*)'Tinfo(igrd)',nint(Tinfo(igrd,iflt))
-CDEBUG      write(STDOUT,*)'level',level
+CDEBUG      write(*,*)'Tinfo(itstr)',Tinfo(itstr,iflt)
+CDEBUG      write(*,*)'Tinfo(igrd)',nint(Tinfo(igrd,iflt))
+CDEBUG      write(*,*)'level',level
 
         if (nint(Tinfo(igrd,iflt)).eq.level .and.
      &            Tinfo(itstr,iflt).gt.cff1 .and.
@@ -314,8 +314,8 @@ CDEBUG      write(STDOUT,*)'level',level
         track(iygrd,2,iflt)=Tinfo(iygrd,iflt)
         track(ixgrd,3,iflt)=Tinfo(ixgrd,iflt)
         track(iygrd,3,iflt)=Tinfo(iygrd,iflt)
-!       write(STDOUT,*) 'release of float ', iflt
-!       write(STDOUT,*) 'position is (XA) ', track(ixgrd,i,iflt),
+!       write(*,*) 'release of float ', iflt
+!       write(*,*) 'position is (XA) ', track(ixgrd,i,iflt),
 !     & '    ', track(iygrd,i,iflt)
        i=0
 
@@ -581,7 +581,7 @@ CDEBUG      write(STDOUT,*)'level',level
         iflt=indx(id)
         if(fltgrd(iflt).ne. -1) then
            ibmdata(ibmage,iflt)=ibmdata(ibmage,iflt)+dt*sec2day
-c          write(STDOUT,*), 'FLT = ', iflt, ' IBM AGE = ', ibmdata(ibmage,iflt)
+c          write(*,*), 'FLT = ', iflt, ' IBM AGE = ', ibmdata(ibmage,iflt)
 ! determination of zoel stage
            if(ibmdata(ibmage,iflt).lt.9.5) then
               ibmdata(ibmzoe,iflt) = 1.
@@ -595,7 +595,7 @@ c          write(STDOUT,*), 'FLT = ', iflt, ' IBM AGE = ', ibmdata(ibmage,iflt)
               ibmdata(ibmzoe,iflt) = 5.
            endif
         endif
-c          write(STDOUT,*), 'FLT = ', iflt, ' IBM AGE = ', ibmdata(ibmage,iflt)
+c          write(*,*), 'FLT = ', iflt, ' IBM AGE = ', ibmdata(ibmage,iflt)
 c    &       ,' IBM ZOE = ', ibmdata(ibmzoe,iflt)
       enddo
 # endif

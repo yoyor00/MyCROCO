@@ -103,13 +103,13 @@
         cmode = ior(nf_netcdf4,nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
-        MPI_master_only write(STDOUT,*)
+        MPI_master_only write(stdout,*)
      &       'CREATE BIO_DIAG/BIO_DIAG_AVG NC4 PARALLEL FILE'
         ierr=nf_create_par(ncname(1:lstr),cmode,
      &       MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 # endif
         if (ierr.ne.nf_noerr) then
-           MPI_master_only write(STDOUT,'(/3(1x,A)/)')
+           MPI_master_only write(stdout,'(/3(1x,A)/)')
      &           'ERROR in def_bio_diags:',
      &           'Cannot create netCDF file:', ncname(1:lstr)
           goto 99                                         !--> ERROR
@@ -120,7 +120,7 @@
 !
         call put_global_atts (ncid, ierr)
         if (ierr.ne.nf_noerr) then
-          write(STDOUT,11) ncname(1:lstr)
+          write(stdout,11) ncname(1:lstr)
           may_day_flag=3
           return                         !-->  EXIT
         endif
@@ -396,7 +396,7 @@
 ! ----- ---------- -----
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(STDOUT,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
 # ifdef AVRH
      &        'DEF_BIO_DIAG_AVG - Created ',
 # else
@@ -422,7 +422,7 @@
 # ifndef NC4PAR
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
 # else
-        MPI_master_only write(STDOUT,*) "Open file in parallel"
+        MPI_master_only write(stdout,*) "Open file in parallel"
         ierr=nf_open_par (ncname(1:lstr), IOR(nf_write, nf_mpiio),
      &     MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
 # endif
@@ -458,7 +458,7 @@
             create_new_file=.true.
             goto 10
           else
-          MPI_master_only  write(STDOUT,'(/1x,4A,2x,A,I4/)')
+          MPI_master_only  write(stdout,'(/1x,4A,2x,A,I4/)')
      &       'DEF_BIO_DIAGS_HIS/AVG ERROR :',
      &       'Cannot open file ''', ncname(1:lstr), '''.'
      &                   MYID
@@ -479,7 +479,7 @@
 
         ierr=nf_inq_varid (ncid, 'time_step', vidTstep)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) 'time_step', ncname(1:lstr)
+          write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -491,7 +491,7 @@
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_inq_varid (ncid,vname(1,indxTime)(1:lvar),vidTime)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -503,7 +503,7 @@
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -519,7 +519,7 @@
             ierr=nf_inq_varid (ncid, vname(1,indxbioFlux+iflux-1)(1:lvar),
      &           vidFlux(iflux))
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,1) vname(1,indxbioFlux+iflux-1)(1:lvar),
+              write(stdout,1) vname(1,indxbioFlux+iflux-1)(1:lvar),
      &             ncname(1:lstr)
               goto 99           !--> ERROR
             endif
@@ -537,7 +537,7 @@
             ierr=nf_inq_varid(ncid,vname(1,indxbioVSink+iflux-1)(1:lvar),
      &           vidVSink(iflux))
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,1) vname(1,indxbioVSink+iflux-1)(1:lvar),
+              write(stdout,1) vname(1,indxbioVSink+iflux-1)(1:lvar),
      &             ncname(1:lstr)
               goto 99           !--> ERROR
             endif
@@ -557,7 +557,7 @@
      &           vname(1,indxGasExcFlux+iflux-1)(1:lvar),
      &           vidGasExc(iflux))
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,1) vname(1,indxGasExcFlux+iflux-1)(1:lvar),
+              write(stdout,1) vname(1,indxGasExcFlux+iflux-1)(1:lvar),
      &             ncname(1:lstr)
               goto 99           !--> ERROR
             endif
@@ -569,7 +569,7 @@
 # endif
 !--------------------------------------------------------------------------------
 
-!     write(STDOUT,'(6x,2A,i4,1x,A,i4)') 'DEF_BIO_DIAG -- Opened ',
+!     write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_BIO_DIAG -- Opened ',
 !     &                     'existing file  from record =', rec
 !     &                      MYID
 
@@ -577,7 +577,7 @@
       else
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then
-         MPI_master_only write(STDOUT,'(/1x,4A,2x,A,I4/)')
+         MPI_master_only write(stdout,'(/1x,4A,2x,A,I4/)')
      &                'DEF_BIO_DIAG ERROR: ',
      &                'Cannot open file ''', ncname(1:lstr), '''.'
      &                 MYID
@@ -590,7 +590,7 @@
 
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,'(6x,2A,i4,1x,A,i4)') 'DEF_BIO_DIAG ERROR: Cannot ',
+        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_BIO_DIAG ERROR: Cannot ',
      &    'switch to ''nf_nofill'' more; netCDF error code =', ierr
       endif
    1  format(/1x,'DEF_DIAG ERROR: Cannot find variable ''',

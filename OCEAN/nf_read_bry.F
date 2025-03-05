@@ -86,7 +86,7 @@
 !...
 #endif
         else
-          write(STDOUT,'(/1x,2A,I5/1x,3A,I4/)') 'ERROR in nf_read_bry: ',
+          write(*,'(/1x,2A,I5/1x,3A,I4/)') 'ERROR in nf_read_bry: ',
      &                     'nf_get_vara netCDF error code =', ierr,
      &                     'Cause of error: ', nf_strerror(ierr)
      &                     MYID
@@ -94,9 +94,9 @@
 
       else
 #ifdef EAST_WEST
-        write(STDOUT,'(/1x,2A,I4/)') 'ERROR in nf_read_bry_EW: ',
+        write(*,'(/1x,2A,I4/)') 'ERROR in nf_read_bry_EW: ',
 #else
-        write(STDOUT,'(/1x,2A,I4/)') 'ERROR in nf_read_bry_NS: ',
+        write(*,'(/1x,2A,I4/)') 'ERROR in nf_read_bry_NS: ',
 #endif
      &                          'illegal grid type', type
       endif

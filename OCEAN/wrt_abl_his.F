@@ -73,7 +73,7 @@
 
 
 # undef CR
-CR      write(STDOUT,*) 'wrt_his: Entry  ' MYID
+CR      write(*,*) 'wrt_his: Entry  ' MYID
 !
 !     Write out evolving model variables:
 !     ----- --- -------- ----- ----------
@@ -105,19 +105,19 @@ CR      write(STDOUT,*) 'wrt_his: Entry  ' MYID
       ierr=nf_put_vara_int (ncidablhis, ablhisTstep, start,
      &                      count, ibuff)
       if (ierr .ne. nf_noerr) then
-         MPI_master_only write(STDOUT,1) 'time_step', record, ierr
+         MPI_master_only write(stdout,1) 'time_step', record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
 
-CR      write(STDOUT,*) 'wrt_his:  time  ' MYID
+CR      write(*,*) 'wrt_his:  time  ' MYID
 !-----------------------------------------------------------------------
 !     Time
 !-----------------------------------------------------------------------
       ierr=nf_put_var1_FTYPE (ncidablhis, ablhisTime, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        MPI_master_only write(STDOUT,1)
+        MPI_master_only write(stdout,1)
      &        vname(1,indxTime)(1:lvar), record, ierr
      &        MYID
         goto 99                !--> ERROR
@@ -129,7 +129,7 @@ CR      write(STDOUT,*) 'wrt_his:  time  ' MYID
       ierr=nf_put_var1_FTYPE (ncidablhis, ablhisTime2, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(STDOUT,1)
+        MPI_master_only write(stdout,1)
      &        vname(1,indxTime2)(1:lvar), record, ierr
      &        MYID
         goto 99                !--> ERROR
@@ -356,12 +356,12 @@ CR      write(STDOUT,*) 'wrt_his:  time  ' MYID
       endif
 # endif
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
+       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &       'WRT_ABL_HIS -- wrote ',
      &       'history fields into time record =', record, '/',
      &        nrecablhis  MYID
       else
-        MPI_master_only write(STDOUT,'(/1x,2A/)')
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &        'WRT_ABL_HIS ERROR: Cannot ',
      &        'synchronize/close history netCDF file.'
         may_day_flag=3

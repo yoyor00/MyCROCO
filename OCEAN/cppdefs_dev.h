@@ -77,9 +77,7 @@
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
 # define MPI_COMM_ALL MPI_COMM_WORLD
-# define STDOUT 85
-#else
-# define STDOUT 6
+# define LOGFILE
 #endif
 
 /*

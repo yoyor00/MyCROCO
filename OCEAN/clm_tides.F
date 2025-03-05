@@ -114,7 +114,7 @@
          do i=1,tide_nbharmcp
 #   ifdef TIDES_MAS_DBG
           if(j+jminmpi-1.eq.149) then
-             write(STDOUT,*) 'i=',nu(i),l_presence(nu(i))
+             write(stdout,*) 'i=',nu(i),l_presence(nu(i))
           end if
 #   endif
           if (l_presence(nu(i))) then
@@ -127,7 +127,7 @@
            nn=num(k)
 #   ifdef TIDES_MAS_DBG
            if(j+jminmpi-1.eq.149) then
-             write(STDOUT,*) 'ik=',nu(i),ide(nu(i)),i,k,nn
+             write(stdout,*) 'ik=',nu(i),ide(nu(i)),i,k,nn
            end if
 #   endif
            do l=1,2
@@ -144,9 +144,9 @@
 #   ifdef TIDES_MAS_DBG
         if(j+jminmpi-1.eq.149) then
             do k=1,8
-             write(STDOUT,*) 'k=',k,num(k)
+             write(stdout,*) 'k=',k,num(k)
                do kk=1,num(k)
-               write(STDOUT,*) 'kk=',kk,rouest(kk,k,j,1)
+               write(stdout,*) 'kk=',kk,rouest(kk,k,j,1)
                end do
             end do
         endif
@@ -381,7 +381,7 @@
         do j=JstrR,JendR
           do i=IstrR,IendR
             if (i+iminmpi-1 .eq. 1 .and. j+jminmpi-1 .eq. 149) then
-               write(STDOUT,*)'etide',Etide(i,j),
+               write(stdout,*)'etide',Etide(i,j),
      &            tempis,ian,ijour,imois,
      &           iheure,iminu,isec,time,cdate,jourmem
             endif

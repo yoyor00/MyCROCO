@@ -64,7 +64,7 @@
 
           if (ZEROTH_TILE) then
             timediags_vrt_avg=time
-      MPI_master_only write(STDOUT,*) 'started averaging vrt',iic,
+      MPI_master_only write(*,*) 'started averaging vrt',iic,
      &                    ntsdiags_vrt_avg,nwrtdiags_vrt_avg
           endif
 
@@ -256,7 +256,7 @@
           cff=1./float(nwrtdiags_vrt_avg)
           if (ZEROTH_TILE) then
                         timediags_vrt_avg=cff*(timediags_vrt_avg+time)
-      MPI_master_only write(STDOUT,*) 'finish aver. vrt',iic,
+      MPI_master_only write(*,*) 'finish aver. vrt',iic,
      &                       ntsdiags_vrt_avg,nwrtdiags_vrt_avg
           endif
 

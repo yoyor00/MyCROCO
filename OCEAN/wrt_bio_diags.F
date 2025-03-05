@@ -81,18 +81,18 @@
       count(2)=1
       ierr=nf_put_vara_int (nciddiabio,diaTstepbio,start,count,ibuff)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,1) 'time_step', record, ierr
+        write(stdout,1) 'time_step', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
 !
 ! Time
 !
-CDEBUG      write(STDOUT,*) 'Write Time'
+CDEBUG      write(*,*) 'Write Time'
       ierr=nf_put_var1_FTYPE (nciddiabio, diaTimebio, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -102,7 +102,7 @@ CDEBUG      write(STDOUT,*) 'Write Time'
       ierr=nf_put_var1_FTYPE (nciddiabio, diaTime2bio, record, time)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime2))
-         write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
+         write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
@@ -127,7 +127,7 @@ CDEBUG      write(STDOUT,*) 'Write Time'
 !     2-D terms (it is called Vsink but it means nothing) Christophe Menkes
        do iflux=1,NumVSinkTerms
          if (wrtdiabioVSink(iflux)) then
-!     if (iflux.eq.11)  write(STDOUT,*) 'ZMEU WRT',bioVSink(30,30,iflux)
+!     if (iflux.eq.11)  write(*,*) 'ZMEU WRT',bioVSink(30,30,iflux)
           work2d=bioVSink(:,:,iflux)
           call fillvalue2d(work2d, nciddiabio, diabioVsink(iflux),
      &        vname(1,indxbioVSink+iflux-1),record,r2dvar,type)
@@ -141,7 +141,7 @@ CDEBUG      write(STDOUT,*) 'Write Time'
 !     Flux terms
       do iflux = 1, NumFluxTerms
         if (wrtdiabioFlux(iflux)) then
-!     write(STDOUT,*)'write fluxes terms'
+!     write(*,*)'write fluxes terms'
           workr=bioFlux(:,:,:,iflux)
           call fillvalue3d(workr, nciddiabio, diabioFlux(iflux),
      &        vname(1,indxbioFlux+iflux-1),record,r3dvar,type)
@@ -150,7 +150,7 @@ CDEBUG      write(STDOUT,*) 'Write Time'
 !     vertical sinking fluxes
       do iflux = 1, NumVSinkTerms
         if (wrtdiabioVSink(iflux)) then
-!     write(STDOUT,*)'write vertical sinking fluxes'
+!     write(*,*)'write vertical sinking fluxes'
           work=bioVsink(:,:,:,iflux)
           call fillvalue3d(work, nciddiabio, diabioVsink(iflux),
      &        vname(1,indxbioVSink+iflux-1),record,w3dvar,type)
@@ -194,12 +194,12 @@ CDEBUG      write(STDOUT,*) 'Write Time'
 # endif
 
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
+       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &       'WRT_BIO_DIAG -- wrote ',
      &       'diag fields into time record =', record, '/',
      &       nrecdiabio  MYID
       else
-        MPI_master_only write(STDOUT,'(/1x,2A/)')
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &       'WRT_BIO_DIAG ERROR: Cannot ',
      &       'synchronize/close diag netCDF file.'
         may_day_flag=3

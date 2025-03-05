@@ -291,9 +291,9 @@ C$OMP CRITICAL (grd2_cr_rgn)          ! Global MIN/MAX operations
 # endif
 #endif
 
-c**       write(STDOUT,'(I4,F12.6,F13.6,2(1x,E12.7),2F12.8)')
+c**       write(*,'(I4,F12.6,F13.6,2(1x,E12.7),2F12.8)')
 c**  &         mynode, hmin,hmax, grdmin,grdmax, Cu_min,Cu_max
-c**       write(STDOUT,*) mynode, ' crss =',bc_crss, 'vol =',volume
+c**       write(*,*) mynode, ' crss =',bc_crss, 'vol =',volume
 
           MPI_master_only write( stdout,
      &        '(/1x,A,8x,A,9x,A,9x,A,9x,A,6x,A)')
@@ -309,7 +309,7 @@ c**       write(STDOUT,*) mynode, ' crss =',bc_crss, 'vol =',volume
      &        'volume=', volume, 'open_cross=', bc_crss
 
 #ifdef SPHERICAL
-          MPI_master_only write(STDOUT,
+          MPI_master_only write(stdout,
      &        '(5x,A,F6.2,A,F6.2,A,F6.2,A,F6.2/)')
      &        '  lonmin = ', lonmin, '  lonmax = ', lonmax,
      &        '  latmin = ', latmin, '  latmax = ', latmax

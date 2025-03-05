@@ -1852,17 +1852,17 @@ C$    integer  trd, omp_get_thread_num
 !          enddo
 # ifdef DEBUG
           if(j.eq.jck.and.i.eq.ick) then
-            write(STDOUT,*) '********** ANA_SEDIMENT ***********'
+            write(6,*) '********** ANA_SEDIMENT ***********'
             do ised=1,NST
-              write(STDOUT,*) 'Sd(ised)',Sd(ised)
+              write(6,*) 'Sd(ised)',Sd(ised)
               do ilay=1,NLAY
-                write(STDOUT,*) 'i,j,ilay,ised',i,j,ilay,ised
-                write(STDOUT,*) 'bed_frac',bed_frac(i,j,ilay,ised)
+                write(6,*) 'i,j,ilay,ised',i,j,ilay,ised
+                write(6,*) 'bed_frac',bed_frac(i,j,ilay,ised)
               enddo
             enddo
             do ilay=1,NLAY
-              write(STDOUT,*) 'bed_thick',bed_thick(i,j,ilay)
-              write(STDOUT,*) 'bed_por',bed_poros(i,j,ilay)
+              write(6,*) 'bed_thick',bed_thick(i,j,ilay)
+              write(6,*) 'bed_por',bed_poros(i,j,ilay)
             enddo
           endif
 # endif

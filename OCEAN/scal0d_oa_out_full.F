@@ -93,9 +93,9 @@
             ivc = ivc + 1
         end do
         oa_stop1 : if ( ivc /= nzvc_oa( tc_oa(ic) ) ) then
-           MPI_master_only write(STDOUT,fmt='(a)') '...OA-ERR-iv-ic'
+           MPI_master_only write(stdout,fmt='(a)') '...OA-ERR-iv-ic'
            stop
-           !MPI_master_only write(STDOUT,*) 'Expected total # of var nzvc_oa( tc_oa(ic) ) ',nzvc_oa( tc_oa(ic) )
+           !MPI_master_only write(stdout,*) 'Expected total # of var nzvc_oa( tc_oa(ic) ) ',nzvc_oa( tc_oa(ic) )
         end if oa_stop1
         ! <==
 
@@ -117,7 +117,7 @@
         oa_stop2 : if ( 
      &     tvar_oa( tc_oa(ic), tvc_oa(ic), ivc ) /= tupd_oa(iv) ) 
      &     then
-           MPI_master_only write(STDOUT,fmt='(a)') '...OA-ERR tupd_oa'
+           MPI_master_only write(stdout,fmt='(a)') '...OA-ERR tupd_oa'
            stop
         end if oa_stop2
         ! <==
@@ -147,9 +147,9 @@
 
         loop_per_re_im : do ip=1,nper_sclg(iv)
 #ifdef OA_TRACES_XIOS             
-            MPI_master_only write(STDOUT,fmt='(a,2(i3))') 
+            MPI_master_only write(stdout,fmt='(a,2(i3))') 
      &      '...OA-Scalogram Part/ImPart for period ',ip,iv
-            write(STDOUT,fmt='(a,4(i3))') 
+            write(*,fmt='(a,4(i3))') 
      &      '>><<OA-Scalogram node/ic/iv/ip '
      &      ,mynode,ic,iv,ip
 #endif
@@ -191,7 +191,7 @@
      &  pdg%per0d_cr( ip, tvar_oa( tc_oa(ic), tvc_oa(ic), ivc ))
 
 #ifdef OA_TRACES_XIOS             
-            MPI_master_only write(STDOUT,fmt='(a,i3,f16.2)') 
+            MPI_master_only write(stdout,fmt='(a,i3,f16.2)') 
      &      '...OA-Scalogram Period axis ',ip,per0d(ip,tupd_oa(iv))
 #endif
 
@@ -234,7 +234,7 @@
         implicit none
         integer, intent(in)    :: verbose
         if ( verbose >=6 ) then
-            MPI_master_only write(STDOUT,fmt='(a13,(3(i3.3,1x)))')     
+            MPI_master_only write(stdout,fmt='(a13,(3(i3.3,1x)))')     
      &     'Cfg-#var-Var ',ic,ivc,iv
         end if
         return
@@ -300,11 +300,11 @@
 
 #ifdef OA_TRACES       
         if (verbose >=16 ) then
-         MPI_master_only write(STDOUT,fmt='(a9)') 
+         MPI_master_only write(stdout,fmt='(a9)') 
      &   tmpvnam
-         MPI_master_only write(STDOUT,fmt='(i3.3)') 
+         MPI_master_only write(stdout,fmt='(i3.3)') 
      &   tvar_oa(tc_oa(ic),tvc_oa(ic),ivc)
-         MPI_master_only write(STDOUT,fmt='(3(i3.3,1x))') 
+         MPI_master_only write(stdout,fmt='(3(i3.3,1x))') 
      &   tc_oa(ic), tvc_oa(ic), ivc
         end if
 #endif
@@ -370,11 +370,11 @@
        
 #ifdef OA_TRACES
         if (verbose >=16 ) then
-         MPI_master_only write(STDOUT,fmt='(a22)') 
+         MPI_master_only write(stdout,fmt='(a22)') 
      &   tmpvnam
-         MPI_master_only write(STDOUT,fmt='(i3.3)') 
+         MPI_master_only write(stdout,fmt='(i3.3)') 
      &   tvar_oa(tc_oa(ic),tvc_oa(ic),ivc)
-         MPI_master_only write(STDOUT,fmt='(3(i3.3,1x))') 
+         MPI_master_only write(stdout,fmt='(3(i3.3,1x))') 
      &   tc_oa(ic), tvc_oa(ic), ivc
         end if
 #endif

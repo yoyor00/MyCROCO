@@ -664,7 +664,7 @@
             cff1=0.5*(Hz(i-1,j,k)+Hz(i,j,k))
             ust2d(i,j)=ust2d(i,j)+cff1*ust(i,j,k)
           enddo
-       !   write(STDOUT,*) i,j
+       !   write(*,*) i,j
           cff2=2./(Dstp(i-1,j)+Dstp(i,j))
           ust2d(i,j)=ust2d(i,j)*cff2
 #   ifdef MASKING

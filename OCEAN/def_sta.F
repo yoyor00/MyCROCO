@@ -76,7 +76,7 @@
         lstr=lenstr(staname)
         ierr=nf_create(staname(1:lstr),NF_CLOBBER,ncid)
         if (ierr.ne.nf_noerr) then
-          write(STDOUT,11) staname(1:lstr)
+          write(stdout,11) staname(1:lstr)
           may_day_flag=3
           return                         !-->  EXIT
         endif
@@ -87,7 +87,7 @@
 !
         call put_global_atts (ncid, ierr)
         if (ierr.ne.nf_noerr) then
-          write(STDOUT,11) staname(1:lstr)
+          write(stdout,11) staname(1:lstr)
           may_day_flag=3
           return                         !-->  EXIT
         endif
@@ -546,7 +546,7 @@
 !
         ierr=nf_enddef(ncid)
         res=.true. ! marker that a file has been created
-        write(STDOUT,'(6x,4A,1x,A,i3)') 'DEF_STA -- Created ',
+        write(stdout,'(6x,4A,1x,A,i3)') 'DEF_STA -- Created ',
      &                'new netCDF file ''', staname(1:lstr), '''.'
      &                 MYID
 
@@ -591,7 +591,7 @@
             create_new_file=.true.
             goto 10
           else
-            write(STDOUT,'(/1x,4A,2x,A,I4/)') 'DEF_HIS/AVG ERROR: ',
+            write(stdout,'(/1x,4A,2x,A,I4/)') 'DEF_HIS/AVG ERROR: ',
      &                  'Cannot open file ''', staname(1:lstr), '''.'
      &                   MYID
             goto 99                                       !--> ERROR
@@ -609,7 +609,7 @@
 !
         ierr=nf_inq_varid (ncid, 'time_step', staTstep)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) 'time_step', staname(1:lstr)
+          write(stdout,1) 'time_step', staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -618,7 +618,7 @@
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_inq_varid (ncid,vname(1,indxTime)(1:lvar),staTime)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTime)(1:lvar), staname(1:lstr)
+          write(stdout,1) vname(1,indxTime)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -630,7 +630,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staGlevel)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif /* AGRIF */
@@ -639,14 +639,14 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staLon)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
         vinfo(1)='lat'
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staLat)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif  /* SPHERICAL */
@@ -657,7 +657,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staXgrd)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -667,7 +667,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staYgrd)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef SOLVE3D
@@ -685,7 +685,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staZgrd)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 #  endif
@@ -701,7 +701,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staZeta)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef SOLVE3D
@@ -713,7 +713,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staTemp)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        endif
@@ -726,7 +726,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staSal)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        endif
@@ -737,7 +737,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staMUS(itrc))
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        enddo
@@ -750,7 +750,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staDen)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        endif
@@ -762,7 +762,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staV)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -770,7 +770,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staU)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        endif
@@ -783,7 +783,7 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staV)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -791,14 +791,14 @@
         lvar=lenstr(vinfo(1))
         ierr=nf_inq_varid(ncid,vinfo(1)(1:lvar),staU)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vinfo(1)(1:lvar), staname(1:lstr)
+          write(stdout,1) vinfo(1)(1:lvar), staname(1:lstr)
           goto 99                                         !--> ERROR
         endif
        endif
 # endif  /* SOLVE3D */
 
 
-      MPI_master_only write(STDOUT,'(6x,2A,i4,1x,A,i4)')
+      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_STA -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
@@ -809,7 +809,7 @@
       if (nstas.gt.0) then
         ierr=nf_open (staname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(STDOUT,'(/1x,4A,2x,A,I4/)')
+          MPI_master_only write(stdout,'(/1x,4A,2x,A,I4/)')
      &                'DEF_STA ERROR: ',
      &                'Cannot open file ''', staname(1:lstr), '''.'
      &                 MYID
@@ -821,7 +821,7 @@
 
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,'(6x,2A,i4,1x,A,i4)') 'DEF_STA ERROR: Cannot ',
+        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_STA ERROR: Cannot ',
      &    'switch to ''nf_nofill'' more; netCDF error code =', ierr
       endif
 

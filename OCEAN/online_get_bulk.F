@@ -118,7 +118,7 @@
 !
           lvar=lenstr(bulkfilename(blkvar_id))
           if (blkvar_id .eq. 1) then
-           MPI_master_only write(STDOUT,*) 'Open Meteo file :',
+           MPI_master_only write(stdout,*) 'Open Meteo file :',
      &              bulkfilename(blkvar_id)(1:lvar)
           endif
           ierr=nf_open(bulkfilename(blkvar_id)(1:lvar), nf_nowrite,
@@ -237,7 +237,7 @@
 ! Message for the opening of the CFSR file for the previous month
 !
             lvar=lenstr(blk_vname(1,blkvar_id))
-            MPI_master_only write(STDOUT,
+            MPI_master_only write(stdout,
      &      '(6x,A,1x,A,1x,I4,1x,A,1x,I2,1x,A,1x,A)') 'ONLINE_BULK --',
      &      'for temporal consistency open CFSR file of year',
      &      bulkyearnum(blkvar_id),
@@ -425,7 +425,7 @@
      &                         vname_abl1d(1,indxZR)(1:lvar),
      &                         zr_id)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,3) vname_abl1d(1,indxZR)(1:lvar),
+              write(stdout,3) vname_abl1d(1,indxZR)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -433,7 +433,7 @@
             ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),zr_id,1,N_abl,
      &                             zr_abl)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,6) vname_abl1d(1,indxZR)(1:lvar),
+              write(stdout,6) vname_abl1d(1,indxZR)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -445,7 +445,7 @@
      &                         vname_abl1d(1,indxZW)(1:lvar),
      &                         zw_id)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,3) vname_abl1d(1,indxZW)(1:lvar),
+              write(stdout,3) vname_abl1d(1,indxZW)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -453,7 +453,7 @@
             ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),zw_id,1,N_abl,
      &                             zw_abl)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,6) vname_abl1d(1,indxZW)(1:lvar),
+              write(stdout,6) vname_abl1d(1,indxZW)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -465,7 +465,7 @@
      &                         vname_abl1d(1,indxHZR)(1:lvar),
      &                         Hzr_id)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,3) vname_abl1d(1,indxHZR)(1:lvar),
+              write(stdout,3) vname_abl1d(1,indxHZR)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -473,7 +473,7 @@
             ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),Hzr_id,1,N_abl,
      &                             Hzr_abl)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,6) vname_abl1d(1,indxHZR)(1:lvar),
+              write(stdout,6) vname_abl1d(1,indxHZR)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -485,7 +485,7 @@
      &                         vname_abl1d(1,indxHZW)(1:lvar),
      &                         Hzw_id)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,3) vname_abl1d(1,indxHZW)(1:lvar),
+              write(stdout,3) vname_abl1d(1,indxHZW)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -493,7 +493,7 @@
             ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),Hzw_id,1,N_abl,
      &                             Hzw_abl)
             if (ierr .ne. nf_noerr) then
-              write(STDOUT,6) vname_abl1d(1,indxHZW)(1:lvar),
+              write(stdout,6) vname_abl1d(1,indxHZW)(1:lvar),
      &                        bulkfilename(blkvar_id)
               goto 99                                         !--> ERROR
             endif
@@ -635,7 +635,7 @@
 ! === ==== ======= === ==== == ======= ========
 !
           if (blkvar_id.eq.nblkvrs) then
-            MPI_master_only write(STDOUT,'(6x,A,1x,A,1x,g12.4,1x,I8)')
+            MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I8)')
      &              'ONLINE_BULK --',
      &              'Read CFSR for time =', daycfsr
 # ifdef USE_CALENDAR
@@ -658,7 +658,7 @@
   3   format(/,' ONLINE_GET_BULK - ERROR: unable to find forcing variable',
      &                   ': ',a,/,11x,'in forcing NetCDF file: ',a)
   4   lvar=lenstr(bulkfilename(blkvar_id))
-      write(STDOUT,5) bulkfilename(blkvar_id)(1:lvar)
+      write(stdout,5) bulkfilename(blkvar_id)(1:lvar)
   5   format(/,' ONLINE_GET_BULK - ',
      &         'ERROR: unable to open forcing NetCDF ',
      &                                                  'file: ',a)
@@ -667,7 +667,7 @@
      &         'ERROR while reading variable: ',a,2x,
      &                                      ' at TIME index = ',i4)
   7   lvar=lenstr(bulkfilename(blkvar_id))
-      write(STDOUT,8) bulk_recO(blkvar_id), ntbulkO(blkvar_id),
+      write(stdout,8) bulk_recO(blkvar_id), ntbulkO(blkvar_id),
      &                bulkfilename(blkvar_id)(1:lvar), tdays,
      &                bulk_timeO(itbulkO,blkvar_id)*sec2day
   8   format(/,' ONLINE_GET_BULK - ',
@@ -676,32 +676,32 @@
      &       1x,'in forcing NetCDF file: ', a, /,   11x,'TDAYS = ',
      &               g12.4,2x,'last available bulk_timeO = ',g12.4)
       goto 99
-  9   write(STDOUT,11) bulkyearnum(blkvar_id), bulkmonthnum(blkvar_id),
+  9   write(stdout,11) bulkyearnum(blkvar_id), bulkmonthnum(blkvar_id),
      &       blk_vname(1,blkvar_id)
   11  format(/,' ONLINE_GET_BULK - ',
      &         'ERROR: The dataset for the year ',I4,
      &       1x,'month ',I2,1x,'is missing: ',a)
       goto 99
   12  lvar=lenstr(bulkfilename(blkvar_id))
-      write(STDOUT,13) bulkfilename(blkvar_id)(1:lvar)
+      write(stdout,13) bulkfilename(blkvar_id)(1:lvar)
   13  format(/,' ONLINE_GET_BULK - ',
      &         'ERROR: Min longitude too small compared to forcing',
      &                                                                a)
       goto 99
   14  lvar=lenstr(bulkfilename(blkvar_id))
-      write(STDOUT,15) bulkfilename(blkvar_id)(1:lvar)
+      write(stdout,15) bulkfilename(blkvar_id)(1:lvar)
   15  format(/,' ONLINE_GET_BULK - ',
      &         'ERROR: Max longitude too large compared to forcing',
      &                                                                a)
       goto 99
   16  lvar=lenstr(bulkfilename(blkvar_id))
-      write(STDOUT,17) bulkfilename(blkvar_id)(1:lvar)
+      write(stdout,17) bulkfilename(blkvar_id)(1:lvar)
   17  format(/,' ONLINE_GET_BULK - ',
      &         'ERROR: Min latitude too small compared to forcing',
      &                                                                a)
       goto 99
   18  lvar=lenstr(bulkfilename(blkvar_id))
-      write(STDOUT,19) bulkfilename(blkvar_id)(1:lvar)
+      write(stdout,19) bulkfilename(blkvar_id)(1:lvar)
   19  format(/,' ONLINE_GET_BULK - ',
      &         'ERROR: Max latitude too large compared to forcing',
      &                                                                a)

@@ -95,7 +95,7 @@
       if (ncidsta.ne.-1) ierr=nf_close(ncidsta)
 #endif
 
-      MPI_master_only write(STDOUT,'(/1x,2A,I5,18(/8x,A,I5)/)')
+      MPI_master_only write(stdout,'(/1x,2A,I5,18(/8x,A,I5)/)')
      &   'MAIN - '
      &  ,'number of records written into history  file(s):', nrechis
      &  ,'number of records written into restart  file(s):', nrecrst
@@ -164,32 +164,32 @@
 #endif /* OUTPUTS_SURFACE */
 
       if (may_day_flag.eq.0) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &           'MAIN: DONE'
       elseif (may_day_flag.eq.1) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &           'MAIN: Abnormal termination: BLOWUP'
       elseif (may_day_flag.eq.2) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: Abnormal termination: netCDF INPUT'
       elseif (may_day_flag.eq.3) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: Abnormal termination: netCDF OUTPUT'
       elseif (may_day_flag.eq.4) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: Cannot open netCDF file'
       elseif (may_day_flag.eq.5) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: READ_INP: Error in input file'
       elseif (may_day_flag.eq.6) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: READ_INP: An input file is not available'
       elseif (may_day_flag.eq.7) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: KPP algoritm failure'
 #ifdef SUBSTANCE
       elseif (may_day_flag.eq.77) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: READ parasubstance.txt'
 #endif
       endif

@@ -128,13 +128,13 @@
         cmode = ior(nf_netcdf4, nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
-        MPI_master_only write(STDOUT,*)
+        MPI_master_only write(stdout,*)
      &       'CREATE SURF HIS/AVG NC4 PARALLEL FILE'
         ierr=nf_create_par(ncname(1:lstr), cmode,
      &        MPI_COMM_WORLD, MPI_INFO_NULL, ncid)
 # endif
         if (ierr.ne.nf_noerr) then
-          write(STDOUT,11) ncname(1:lstr)
+          write(stdout,11) ncname(1:lstr)
           may_day_flag=3
           return                         !-->  EXIT
         endif
@@ -144,7 +144,7 @@
 !
         call put_global_atts (ncid, ierr)
         if (ierr.ne.nf_noerr) then
-          write(STDOUT,11) ncname(1:lstr)
+          write(stdout,11) ncname(1:lstr)
           may_day_flag=3
           return                         !-->  EXIT
         endif
@@ -463,7 +463,7 @@
 ! ----- ---------- -----
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(STDOUT,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
 # ifdef AVRH
      &        'DEF_SURF_AVG - Created ',
 # else
@@ -522,7 +522,7 @@
             create_new_file=.true.
             goto 10
           else
-        write(STDOUT,'(/1x,4A,2x,A,I4/)') 'def_his/avg ERROR: ',
+        write(stdout,'(/1x,4A,2x,A,I4/)') 'def_his/avg ERROR: ',
      &         'Cannot open file ''', ncname(1:lstr), '''.'
      &                   MYID
             goto 99                                       !--> ERROR
@@ -540,7 +540,7 @@
 !
         ierr=nf_inq_varid (ncid, 'time_step', vidTstep)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) 'time_step', ncname(1:lstr)
+          write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -553,7 +553,7 @@
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_inq_varid (ncid,vname(1,indxTime)(1:lvar),vidTime)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -566,7 +566,7 @@
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -585,7 +585,7 @@
          ierr=nf_inq_varid (ncid, vname(1,indxsurft+itrc-1)(1:lvar),
      &                      vidsurft(itrc))
          if (ierr .ne. nf_noerr) then
-           write(STDOUT,1) vname(1,indxsurft+itrc-1)(1:lvar),
+           write(stdout,1) vname(1,indxsurft+itrc-1)(1:lvar),
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
@@ -601,7 +601,7 @@
          ierr=nf_inq_varid (ncid, vname(1,indxsurfs+itrc-1)(1:lvar),
      &                      vidsurfs(itrc))
          if (ierr .ne. nf_noerr) then
-           write(STDOUT,1) vname(1,indxsurfs+itrc-1)(1:lvar),
+           write(stdout,1) vname(1,indxsurfs+itrc-1)(1:lvar),
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
@@ -617,7 +617,7 @@
          ierr=nf_inq_varid (ncid, vname(1,indxsurfz+itrc-1)(1:lvar),
      &                      vidsurfz(itrc))
          if (ierr .ne. nf_noerr) then
-           write(STDOUT,1) vname(1,indxsurfz+itrc-1)(1:lvar),
+           write(stdout,1) vname(1,indxsurfz+itrc-1)(1:lvar),
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
@@ -632,7 +632,7 @@
          ierr=nf_inq_varid (ncid, vname(1,indxsurfu+itrc-1)(1:lvar),
      &                      vidsurfu(itrc))
          if (ierr .ne. nf_noerr) then
-           write(STDOUT,1) vname(1,indxsurfu+itrc-1)(1:lvar),
+           write(stdout,1) vname(1,indxsurfu+itrc-1)(1:lvar),
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
@@ -647,7 +647,7 @@
          ierr=nf_inq_varid (ncid, vname(1,indxsurfv+itrc-1)(1:lvar),
      &                      vidsurfv(itrc))
          if (ierr .ne. nf_noerr) then
-           write(STDOUT,1) vname(1,indxsurfv+itrc-1)(1:lvar),
+           write(stdout,1) vname(1,indxsurfv+itrc-1)(1:lvar),
      &                     ncname(1:lstr)
            goto 99                                       !--> ERROR
          endif
@@ -660,12 +660,12 @@
 !
 
 !
-        MPI_master_only write(STDOUT,'(6x,2A,i4,1x,A,i4)')
+        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'def_surf: -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
 !
-        MPI_master_only write(STDOUT,'(6x,2A,i4,1x,A,i4)')
+        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'def_surf: -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
@@ -674,7 +674,7 @@
       else
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(STDOUT,'(/1x,4A,2x,A,I4/)')
+          MPI_master_only write(stdout,'(/1x,4A,2x,A,I4/)')
      &                'def_surf: ERROR: ',
      &                'Cannot open file ''', ncname(1:lstr), '''.'
      &                 MYID
@@ -686,7 +686,7 @@
 !
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
-        MPI_master_only write(STDOUT,'(6x,2A,i4,1x,A,i4)')
+        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &     'def_surf ERROR: Cannot ',
      &    'switch to ''nf_nofill'' more; netCDF error code =', ierr
       endif

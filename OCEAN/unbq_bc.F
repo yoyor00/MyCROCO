@@ -91,7 +91,7 @@
 !                            WESTERN BC
 !====================================================================
       if (WESTERN_EDGE) then
-!         write(STDOUT,*) 'WEST'
+!         write(6,*) 'WEST'
 #  ifdef OBC_COM_WEST
 #   if defined OBC_COM_NBQSPECIFIED || defined OBC_COM_NBQSPECIFIED_WEST
 !                                            Western edge Specified BC

@@ -703,7 +703,6 @@
       call sto_bulk_cd ( sto_xi2d )
       call sto_bulk_cd ( cer )
 #   endif
-
 !$acc loop seq
       do j=jmin,jmax
 !$acc loop seq
@@ -745,6 +744,13 @@
 #   endif
         enddo
       enddo
+#  ifdef STOGEN
+!     apply multiplicative noise to wind stress
+      tmpout(:,:,N)=1.0
+      call sto_bulk_cd ( tmpout(:,:,N) )
+      call sto_bulk_cd ( sustr )
+      call sto_bulk_cd ( svstr )
+#  endif
 !$acc end kernels      
 #  endif /* !WAVE_SMFLUX */
 # endif /* !ABL1D */

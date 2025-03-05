@@ -781,7 +781,7 @@
      &       THmix_mld(i,j,itrc)-
      &       Tentr_mld(i,j,itrc)-
      &       TForc_mld(i,j,itrc)
-         MPI_master_only write(STDOUT,'(A,2x,1pe10.3)')
+         MPI_master_only write(stdout,'(A,2x,1pe10.3)')
      &     ' T3DMIX: T budget closure MLD     :', cff
 
 #   endif /* DIAGNOSTICS_TS_MLD */
@@ -792,7 +792,7 @@
      &       TVmix(i,j,N-5,itrc)-
      &       THmix(i,j,N-5,itrc)-
      &       TForc(i,j,N-5,itrc)
-         MPI_master_only write(STDOUT,'(A,2x,1pe10.3)')
+         MPI_master_only write(stdout,'(A,2x,1pe10.3)')
      &     ' T3DMIX: T budget closure at k=N-5:', cff
       endif
 #  endif /* DIAGNOSTICS_DEBUG */

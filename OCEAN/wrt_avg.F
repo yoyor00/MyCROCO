@@ -70,7 +70,7 @@
       endif
 
 !#define CR
-CR      write(STDOUT,*) 'wrt_avg: Entry  ' MYID
+CR      write(*,*) 'wrt_avg: Entry  ' MYID
 !
 ! Write out time-averaged variables:
 ! ----- --- ------------- ----------
@@ -90,10 +90,10 @@ CR      write(STDOUT,*) 'wrt_avg: Entry  ' MYID
       count(2)=1
       ierr=nf_put_vara_int (ncidavg, avgTstep, start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-         write(STDOUT,1) 'time_step', record,ierr MYID
+         write(stdout,1) 'time_step', record,ierr MYID
          goto 99                !--> ERROR
       endif
-CR      write(STDOUT,*) 'wrt_avg:  time  ' MYID
+CR      write(*,*) 'wrt_avg:  time  ' MYID
 !
 !     Averaged time
 !
@@ -104,7 +104,7 @@ CR      write(STDOUT,*) 'wrt_avg:  time  ' MYID
      &  )
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime))
-         write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
+         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
@@ -118,11 +118,11 @@ CR      write(STDOUT,*) 'wrt_avg:  time  ' MYID
      &  )
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(vname(1,indxTime2))
-         write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
+         write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
-CR      write(STDOUT,*) 'wrt_avg:  time  ' MYID
+CR      write(*,*) 'wrt_avg:  time  ' MYID
 
 !
 !     Barotropic mode variables: free-surface and 2D momentum
@@ -210,11 +210,11 @@ CR      write(STDOUT,*) 'wrt_avg:  time  ' MYID
          ierr=nf_fwrite(wstr_avg, ncidavg, avgWstr, record, r2dvar)
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxWstr))
-            write(STDOUT,1) vname(1,indxWstr)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxWstr)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
-CR      write(STDOUT,*) 'wrt_avg:  Wstr' MYID
+CR      write(*,*) 'wrt_avg:  Wstr' MYID
       endif
 !
 !     Write out kinematic U surface stress component (N/m2).
@@ -228,11 +228,11 @@ CR      write(STDOUT,*) 'wrt_avg:  Wstr' MYID
 # endif
         if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxUWstr))
-            write(STDOUT,1) vname(1,indxUWstr)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxUWstr)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
-CR      write(STDOUT,*) 'wrt_avg: UWstr' MYID
+CR      write(*,*) 'wrt_avg: UWstr' MYID
       endif
 !
 !     Write out kinematic V surface stress component (N/m2).
@@ -246,11 +246,11 @@ CR      write(STDOUT,*) 'wrt_avg: UWstr' MYID
 # endif
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxVWstr))
-            write(STDOUT,1) vname(1,indxVWstr)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxVWstr)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
-CR      write(STDOUT,*) 'wrt_avg: VWstr' MYID
+CR      write(*,*) 'wrt_avg: VWstr' MYID
       endif
 !
 !--
@@ -264,7 +264,7 @@ CR      write(STDOUT,*) 'wrt_avg: VWstr' MYID
          workr=u_avg
          call fillvalue3d(workr,ncidavg,avgU,
      &        vname(1,indxU),record,u3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtU' MYID
+CR      write(*,*) 'wrt_avg:  wrtU' MYID
       endif
 !
       if (wrtavg(indxV)) then
@@ -272,7 +272,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtU' MYID
          workr=v_avg
          call fillvalue3d(workr,ncidavg,avgV,
      &        vname(1,indxV),record,v3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtV' MYID
+CR      write(*,*) 'wrt_avg:  wrtV' MYID
       endif
 !
 !     Tracer variables.
@@ -284,7 +284,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtV' MYID
             workr=t_avg(:,:,:,itrc)
             call fillvalue3d(workr,ncidavg,avgT(itrc),
      &        vname(1,indxV+itrc), record,r3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtT  ' MYID
+CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          endif
       enddo
 #  endif
@@ -296,7 +296,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtT  ' MYID
          workr=rho_avg+rho0-1000.
          call fillvalue3d(workr,ncidavg,avgR,
      &        vname(1,indxR), record,r3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtRHO' MYID
+CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
@@ -309,7 +309,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtRHO' MYID
          work=bvf_avg
          call fillvalue3d_w(work,ncidavg,avgbvf,
      &        vname(1,indxbvf), record,w3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtbvf' MYID
+CR      write(*,*) 'wrt_avg:  wrtbvf' MYID
       endif
 #  endif
 !
@@ -320,7 +320,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtbvf' MYID
          work=omega_avg
          call fillvalue3d_w(work,ncidavg,avgO,
      &        vname(1,indxO), record,w3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtO  ' MYID
+CR      write(*,*) 'wrt_avg:  wrtO  ' MYID
       endif
 !
 !     Write out true vertical velocity (m/s).
@@ -336,7 +336,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtO  ' MYID
          call fillvalue3d(workr,ncidavg,avgW,
      &        vname(1,indxW), record,r3dvar,type)
 #  endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtW' MYID
+CR      write(*,*) 'wrt_avg:  wrtW' MYID
       endif
 !
 #  if defined SST_SKIN && defined TEMPERATURE
@@ -361,7 +361,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtW' MYID
          workr=visc3d_avg
          call fillvalue3d(workr,ncidavg,avgVisc,
      &        vname(1,indxVisc), record,r3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtVisc' MYID
+CR      write(*,*) 'wrt_avg:  wrtVisc' MYID
       endif
 #  endif
 #  ifdef DIF_COEF_3D
@@ -373,7 +373,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtVisc' MYID
          workr=diff3d_avg
          call fillvalue3d(workr,ncidavg,avgDiff,
      &        vname(1,indxDiff), record,r3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtDiff' MYID
+CR      write(*,*) 'wrt_avg:  wrtDiff' MYID
       endif
 #  endif
 #  ifdef AVERAGES_K
@@ -385,7 +385,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtDiff' MYID
          work=Akv_avg
          call fillvalue3d_w(work,ncidavg,avgAkv,
      &        vname(1,indxAkv), record,w3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtAkv' MYID
+CR      write(*,*) 'wrt_avg:  wrtAkv' MYID
       endif
 !
 !     Write out vertical diffusion coefficient for potential temperature.
@@ -396,7 +396,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtAkv' MYID
          work=Akt_avg(:,:,:,itemp)
          call fillvalue3d_w(work,ncidavg,avgAkt,
      &        vname(1,indxAkt), record,w3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtAkt' MYID
+CR      write(*,*) 'wrt_avg:  wrtAkt' MYID
       endif
 #   endif /* TEMPERATURE */
 #   ifdef SALINITY
@@ -408,7 +408,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtAkt' MYID
          work=Akt_avg(:,:,:,isalt)
          call fillvalue3d_w(work,ncidavg,avgAks,
      &        vname(1,indxAks), record,w3dvar,type)
-CR       write(STDOUT,*) 'wrt_avg:  wrtAks' MYID
+CR       write(*,*) 'wrt_avg:  wrtAks' MYID
       endif
 #   endif /* SALINITY */
 #  endif  /* AVERAGES_K */
@@ -422,7 +422,7 @@ CR       write(STDOUT,*) 'wrt_avg:  wrtAks' MYID
          work2d=hbl_avg
          call fillvalue2d(work2d,ncidavg,avgHbl,
      &        vname(1,indxHbl), record,r2dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtHBL' MYID
+CR      write(*,*) 'wrt_avg:  wrtHBL' MYID
       endif
 #  endif
 #  ifdef LMD_BKPP
@@ -435,7 +435,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtHBL' MYID
          call fillvalue2d(work2d,ncidavg,avgHbbl,
      &        vname(1,indxHbbl), record,r2dvar,type)
       endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtHbbl' MYID
+CR      write(*,*) 'wrt_avg:  wrtHbbl' MYID
 #  endif
 
 #  ifdef GLS_MIXING
@@ -447,7 +447,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtHbbl' MYID
          work=tke_avg
          call fillvalue3d_w(work,ncidavg,avgTke,
      &        vname(1,indxTke), record,w3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtTke' MYID
+CR      write(*,*) 'wrt_avg:  wrtTke' MYID
       endif
 !
 !     Write out generic length scale
@@ -457,7 +457,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtTke' MYID
          work=gls_avg
          call fillvalue3d_w(work,ncidavg,avgGls,
      &        vname(1,indxGls), record,w3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtGls' MYID
+CR      write(*,*) 'wrt_avg:  wrtGls' MYID
       endif
 !
 !     Write out vertical mixing length scale
@@ -467,7 +467,7 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtGls' MYID
          work=Lscale_avg
          call fillvalue3d_w(work,ncidavg,avgLsc,
      &        vname(1,indxLsc), record,w3dvar,type)
-CR      write(STDOUT,*) 'wrt_avg:  wrtLsc' MYID
+CR      write(*,*) 'wrt_avg:  wrtLsc' MYID
       endif
 #  endif
 
@@ -486,11 +486,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtLsc' MYID
          ierr=nf_fwrite(work2d, ncidavg, avgShflx, record, r2dvar)
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxShflx))
-            write(STDOUT,1) vname(1,indxShflx)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxShflx)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
-CR      write(STDOUT,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
+CR      write(*,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
        endif
 #  endif
 #  ifdef BHFLUX
@@ -508,11 +508,11 @@ CR      write(STDOUT,*) 'wrt_avg:  stflx(:,:,itemp)' MYID
         ierr=nf_fwrite(work2d, ncidavg, avgBhflx, record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxBhflx))
-          write(STDOUT,1) vname(1,indxBhflx)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxBhflx)(1:lvar), record, ierr
      &         MYID
           goto 99               !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  btflx(:,:,itemp)' MYID
+CR      write(*,*) 'wrt_avg:  btflx(:,:,itemp)' MYID
       endif
 #  endif
 #  ifdef SALINITY
@@ -531,11 +531,11 @@ CR      write(STDOUT,*) 'wrt_avg:  btflx(:,:,itemp)' MYID
          ierr=nf_fwrite(work2d, ncidavg, avgSwflx, record, r2dvar)
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxSwflx))
-            write(STDOUT,1) vname(1,indxSwflx)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxSwflx)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
-CR      write(STDOUT,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
+CR      write(*,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
        endif
 #   ifdef BWFLUX
 !
@@ -553,11 +553,11 @@ CR      write(STDOUT,*) 'wrt_avg:  stflx(:,:,isalt)' MYID
          ierr=nf_fwrite(work2d, ncidavg, avgBwflx, record, r2dvar)
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxBwflx))
-            write(STDOUT,1) vname(1,indxBwflx)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxBwflx)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
-CR      write(STDOUT,*) 'wrt_avg:  btflx(:,:,isalt)' MYID
+CR      write(*,*) 'wrt_avg:  btflx(:,:,isalt)' MYID
        endif
 #   endif
 #  endif
@@ -575,11 +575,11 @@ CR      write(STDOUT,*) 'wrt_avg:  btflx(:,:,isalt)' MYID
 #  endif
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxShflx_rsw))
-            write(STDOUT,1) vname(1,indxShflx_rsw)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxShflx_rsw)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
-CR      write(STDOUT,*) 'wrt_avg:  srflx' MYID
+CR      write(*,*) 'wrt_avg:  srflx' MYID
       endif
 #  ifdef BULK_FLUX
       if (wrtavg(indxShflx_rlw)) then
@@ -588,7 +588,7 @@ CR      write(STDOUT,*) 'wrt_avg:  srflx' MYID
      &        r2dvar)
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxShflx_rlw))
-            write(STDOUT,1) vname(1,indxShflx_rlw)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxShflx_rlw)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
@@ -600,7 +600,7 @@ CR      write(STDOUT,*) 'wrt_avg:  srflx' MYID
      &        r2dvar)
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxShflx_lat))
-            write(STDOUT,1) vname(1,indxShflx_lat)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxShflx_lat)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
@@ -612,7 +612,7 @@ CR      write(STDOUT,*) 'wrt_avg:  srflx' MYID
      &        r2dvar)
          if (ierr .ne. nf_noerr) then
             lvar=lenstr(vname(1,indxShflx_sen))
-            write(STDOUT,1) vname(1,indxShflx_sen)(1:lvar), record, ierr
+            write(stdout,1) vname(1,indxShflx_sen)(1:lvar), record, ierr
      &           MYID
             goto 99             !--> ERROR
          endif
@@ -766,11 +766,11 @@ CR      write(STDOUT,*) 'wrt_avg:  srflx' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxHRM))
-          write(STDOUT,1) vname(1,indxHRM)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxHRM)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtHrm' MYID
+CR      write(*,*) 'wrt_avg:  wrtHrm' MYID
       endif
       if (wrtavg(indxFRQ)) then
 !$acc update if(compute_on_device) host(wfrq_avg)
@@ -778,11 +778,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtHrm' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxFRQ))
-          write(STDOUT,1) vname(1,indxFRQ)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxFRQ)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtFrq' MYID
+CR      write(*,*) 'wrt_avg:  wrtFrq' MYID
       endif
 #  ifdef WKB_WWAVE
       if (wrtavg(indxWAC)) then
@@ -791,11 +791,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtFrq' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWAC))
-          write(STDOUT,1) vname(1,indxWAC)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxWAC)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtWac' MYID
+CR      write(*,*) 'wrt_avg:  wrtWac' MYID
       endif
 #  endif
       if (wrtavg(indxWKX)) then
@@ -804,11 +804,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtWac' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWKX))
-          write(STDOUT,1) vname(1,indxWKX)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxWKX)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtWkx' MYID
+CR      write(*,*) 'wrt_avg:  wrtWkx' MYID
       endif
       if (wrtavg(indxWKE)) then
 !$acc update if(compute_on_device) host(wke_avg)
@@ -816,11 +816,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtWkx' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWKE))
-          write(STDOUT,1) vname(1,indxWKE)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxWKE)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtWke' MYID
+CR      write(*,*) 'wrt_avg:  wrtWke' MYID
       endif
       if (wrtavg(indxEPB)) then
 !$acc update if(compute_on_device) host(wepb_avg)
@@ -828,11 +828,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtWke' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
-          write(STDOUT,1) vname(1,indxEPB)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxEPB)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtEpb' MYID
+CR      write(*,*) 'wrt_avg:  wrtEpb' MYID
       endif
       if (wrtavg(indxEPD)) then
 !$acc update if(compute_on_device) host(wepd_avg)
@@ -840,11 +840,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtEpb' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPD))
-          write(STDOUT,1) vname(1,indxEPD)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxEPD)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtEpd' MYID
+CR      write(*,*) 'wrt_avg:  wrtEpd' MYID
       endif
 #  ifdef WAVE_ROLLER
 #   ifdef WKB_WWAVE
@@ -854,11 +854,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtEpd' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWAR))
-          write(STDOUT,1) vname(1,indxWAR)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxWAR)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtWar' MYID
+CR      write(*,*) 'wrt_avg:  wrtWar' MYID
       endif
 #   endif
       if (wrtavg(indxEPR)) then
@@ -867,11 +867,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtWar' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPR))
-          write(STDOUT,1) vname(1,indxEPR)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxEPR)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtEpr' MYID
+CR      write(*,*) 'wrt_avg:  wrtEpr' MYID
       endif
 #  endif
 # endif
@@ -883,11 +883,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtEpr' MYID
      &                                            record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxSUP))
-          write(STDOUT,1) vname(1,indxSUP)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxSUP)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtSup' MYID
+CR      write(*,*) 'wrt_avg:  wrtSup' MYID
       endif
       if (wrtavg(indxUST2D)) then
 !$acc update if(compute_on_device) host(ust2d_avg)
@@ -895,11 +895,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtSup' MYID
      &                                                record, u2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxUST2D))
-          write(STDOUT,1) vname(1,indxUST2D)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxUST2D)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtUst2D' MYID
+CR      write(*,*) 'wrt_avg:  wrtUst2D' MYID
       endif
       if (wrtavg(indxVST2D)) then
 !$acc update if(compute_on_device) host(vst2d_avg)
@@ -907,11 +907,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtUst2D' MYID
      &                                                record, v2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxVST2D))
-          write(STDOUT,1) vname(1,indxVST2D)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxVST2D)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtVst2D' MYID
+CR      write(*,*) 'wrt_avg:  wrtVst2D' MYID
       endif
 #  ifdef SOLVE3D
       if (wrtavg(indxUST)) then
@@ -920,11 +920,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtVst2D' MYID
      &                                              record, u3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxUST))
-          write(STDOUT,1) vname(1,indxUST)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxUST)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtUst' MYID
+CR      write(*,*) 'wrt_avg:  wrtUst' MYID
       endif
       if (wrtavg(indxVST)) then
 !$acc update if(compute_on_device) host(vst_avg)
@@ -932,11 +932,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtUst' MYID
      &                                              record, v3dvar)
         if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxVST))
-          write(STDOUT,1) vname(1,indxVST)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxVST)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtVst' MYID
+CR      write(*,*) 'wrt_avg:  wrtVst' MYID
       endif
       if (wrtavg(indxWST)) then
 !$acc update if(compute_on_device) host(wst_avg)
@@ -944,11 +944,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtVst' MYID
      &                                              record, r3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxWST))
-          write(STDOUT,1) vname(1,indxWST)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxWST)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtWst' MYID
+CR      write(*,*) 'wrt_avg:  wrtWst' MYID
       endif
       if (wrtavg(indxAkb)) then
 !$acc update if(compute_on_device) host(akb_avg)
@@ -956,11 +956,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtWst' MYID
      &                                avgAkb, record, w3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxAkb))
-          write(STDOUT,1) vname(1,indxAkb)(1:lvar), record, ierr,
+          write(stdout,1) vname(1,indxAkb)(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtAkb' MYID
+CR      write(*,*) 'wrt_avg:  wrtAkb' MYID
       endif
       if (wrtavg(indxAkw)) then
 !$acc update if(compute_on_device) host(akw_avg)
@@ -968,11 +968,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtAkb' MYID
      &                                avgAkw, record, w3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxAkw))
-          write(STDOUT,1) vname(1,indxAkw)(1:lvar), record, ierr,
+          write(stdout,1) vname(1,indxAkw)(1:lvar), record, ierr,
      &                    nf_strerror(ierr) MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtAkw' MYID
+CR      write(*,*) 'wrt_avg:  wrtAkw' MYID
       endif
       if (wrtavg(indxKVF)) then
 !$acc update if(compute_on_device) host(kvf_avg)
@@ -980,11 +980,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtAkw' MYID
      &                                              record, r3dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxKVF))
-          write(STDOUT,1) vname(1,indxKVF)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxKVF)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtKvf' MYID
+CR      write(*,*) 'wrt_avg:  wrtKvf' MYID
       endif
       if (wrtavg(indxCALP)) then
 !$acc update if(compute_on_device) host(calp_avg)
@@ -992,11 +992,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtKvf' MYID
      &                                              record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxCALP))
-          write(STDOUT,1) vname(1,indxCALP)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxCALP)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtCalp' MYID
+CR      write(*,*) 'wrt_avg:  wrtCalp' MYID
       endif
       if (wrtavg(indxKAPS)) then
 !$acc update if(compute_on_device) host(kaps_avg)
@@ -1004,11 +1004,11 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtCalp' MYID
      &                                              record, r2dvar)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxKAPS))
-          write(STDOUT,1) vname(1,indxKAPS)(1:lvar), record, ierr
+          write(stdout,1) vname(1,indxKAPS)(1:lvar), record, ierr
      &                    MYID
           goto 99                                         !--> ERROR
         endif
-CR      write(STDOUT,*) 'wrt_avg:  wrtKaps' MYID
+CR      write(*,*) 'wrt_avg:  wrtKaps' MYID
       endif
 #  endif  /* SOLVE3D */
 # endif   /* MRL_WCI */
@@ -1036,12 +1036,12 @@ CR      write(STDOUT,*) 'wrt_avg:  wrtKaps' MYID
       endif
 # endif
       if (ierr .eq. nf_noerr) then
-      MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
+      MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &        'WRT_AVG -- wrote ',
      &        'averaged fields into time record =', record, '/',
      &        nrecavg  MYID
       else
-       MPI_master_only write(STDOUT,'(/1x,2A/)')
+       MPI_master_only write(stdout,'(/1x,2A/)')
      &        'WRT_AVG ERROR: Cannot ',
      &        'synchronize/close averages netCDF file.'
          may_day_flag=3

@@ -78,7 +78,7 @@ c--# define TEST_WEIGHTS
           shft=shft+weight(1,i)*float(i)
         enddo
         scale=scale * shft/(sum*float(ndtfast))
-c**     write(STDOUT,*) shft/sum, ndtfast
+c**     write(*,*) shft/sum, ndtfast
       enddo
 # elif defined M2FILTER_FLAT
       cff=1./float(ndtfast)               ! FLAT filter
@@ -135,7 +135,7 @@ c**     write(STDOUT,*) shft/sum, ndtfast
         shft=shft/sum
         cff=float(ndtfast)-shft
 # ifdef TEST_WEIGHTS
-        MPI_master_only write(STDOUT,'(A,2I4,2F22.18)')
+        MPI_master_only write(*,'(A,2I4,2F22.18)')
      &  'centering weights:', iter, ndtfast, shft, cff
 # endif
         if (cff .gt. 1.) then              ! Apply advection step
@@ -222,7 +222,7 @@ c**     write(STDOUT,*) shft/sum, ndtfast
 
 
 # ifdef TEST_WEIGHTS
-      MPI_master_only write(STDOUT,'(/1x,A,I3,4x,A,I3/4x,A,2(12x,A))')
+      MPI_master_only write(*,'(/1x,A,I3,4x,A,I3/4x,A,2(12x,A))')
      &               'Time Splitting weights: ndtfast =', ndtfast,
      &               'nfast =',  nfast,   'primary',  'secondary',
      &               'accumulated-to-current-step'
@@ -239,7 +239,7 @@ c**     write(STDOUT,*) shft/sum, ndtfast
         cff3=cff3 + weight(1,i)*float(i*i*i)
         sum=sum+weight(2,i)
         shft=shft + float(i)*weight(2,i)
-        MPI_master_only write(STDOUT,'(I3,4F19.16)')
+        MPI_master_only write(*,'(I3,4F19.16)')
      &    i, weight(1,i), weight(2,i), cff, sum
       enddo
       cff1=cff1/float(ndtfast)
@@ -247,7 +247,7 @@ c**     write(STDOUT,*) shft/sum, ndtfast
       cff3=cff3/float(ndtfast*ndtfast*ndtfast)
       shft=(shft-0.5)/float(ndtfast)
 
-      MPI_master_only write(STDOUT,'(3(/A,2F14.10),F14.10/A,2I4,F8.4)')
+      MPI_master_only write(*,'(3(/A,2F14.10),F14.10/A,2I4,F8.4)')
      &            '  Checking integrals (must be 1, 1)', cff,  sum,
      &            '        centroid  (must be 1, ~0.5)', cff1, shft,
      &            ' second and third moments (>~1, ~1)', cff2, cff3,
@@ -256,11 +256,11 @@ c**     write(STDOUT,*) shft/sum, ndtfast
      &                  ndtfast, nfast, float(nfast)/float(ndtfast)
 
       if (cff2 .lt. 1.001) then
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(*,'(/1x,A/)')
      &  'WARNING: unstable weights, reduce parameter "r".'
       endif
 
-      MPI_master_only write(STDOUT,'(/A/A,1x,A,15x,A,7x,A/)')
+      MPI_master_only write(*,'(/A/A,1x,A,15x,A,7x,A/)')
      &  'Checking consistency of primary and secondary weights...',
      &                     'step',  'zeta_avr1', 'dt*divVBAR_avr2',
      &                     'zeta_avr1-dt*divVBAR_avr2'
@@ -296,7 +296,7 @@ c**     write(STDOUT,*) shft/sum, ndtfast
           call step2d_imitator (zeta, DUon, Zt_avg1, DU_avg2)
 #  endif
         enddo
-        write(STDOUT,'(I4,2F24.18,F24.20)') j, Zt_avg1, dt*DU_avg2,
+        write(*,'(I4,2F24.18,F24.20)') j, Zt_avg1, dt*DU_avg2,
      &                                     Zt_avg1-dt*DU_avg2
       enddo
       stop
@@ -378,7 +378,7 @@ c**     write(STDOUT,*) shft/sum, ndtfast
       endif
 
 # else
-      MPI_master_only write(STDOUT,'(/1x,A,I3,4x,A,I3/)')
+      MPI_master_only write(stdout,'(/1x,A,I3,4x,A,I3/)')
      &   'Time splitting: ndtfast =', ndtfast, 'nfast =', nfast
 
 # endif   /* TEST_WEIGHTS */

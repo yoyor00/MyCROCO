@@ -47,14 +47,14 @@ c**        call opencdf (btfname,N)
         if (itrc.eq.itemp) then
           ierr=nf_inq_varid (ncidbtf, 'bhf_time', btf_tid(itrc))
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,3) 'bhf_time', btfname(1:lstr)
+            write(stdout,3) 'bhf_time', btfname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 # ifdef SALINITY
         elseif (itrc.eq.isalt) then
           ierr=nf_inq_varid (ncidbtf, 'bwf_time', btf_tid(itrc))
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,3) 'bwf_time', btfname(1:lstr)
+            write(stdout,3) 'bwf_time', btfname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 # endif
@@ -73,7 +73,7 @@ c**        call opencdf (btfname,N)
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxBhflx+itrc-1), btfname(1:lstr)
+          write(stdout,3) vname(1,indxBhflx+itrc-1), btfname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -127,7 +127,7 @@ c**        call opencdf (btfname,N)
         cff=cff+btf_origin_date_in_sec*sec2day
 # endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'btf_time', btf_rec(i)
+          write(stdout,6) 'btf_time', btf_rec(i)
           goto 99                                         !--> ERROR
         endif
         btf_time(i,itrc)=cff*day2sec+btf_cycle(itrc)*btf_ncycle(itrc)
@@ -142,11 +142,11 @@ c**        call opencdf (btfname,N)
      &                     btf_rec(itrc), btflxp(i,itrc))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'btflux', btf_rec
+          write(stdout,6) 'btflux', btf_rec
           goto 99                                         !--> ERROR
         endif
        itbtf(itrc)=i
-       MPI_master_only write(STDOUT,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
      &            'GET_BTFLUX -- Read surface flux of tracer', itrc,
      &                                             'for time =', cff
 # ifdef USE_CALENDAR
@@ -165,12 +165,12 @@ c**        call opencdf (btfname,N)
 !
   3   format(/,' GET_BTFLUX - ERROR: unable to find forcing ',
      &              'variable: ',a,/,14x,'in forcing file: ',a)
-  4   write(STDOUT,5) btfname(1:lstr)
+  4   write(stdout,5) btfname(1:lstr)
   5   format(/,' GET_BTFLUX - ERROR: unable to open file: ', a)
       goto 99
   6   format(/,' GET_BTFLUX - ERROR while reading variable: ',
      &                                a,' at TIME index = ',i4)
-  7   write(STDOUT,8) btf_rec(itrc),ntbtf(itrc),btfname(1:lstr),
+  7   write(stdout,8) btf_rec(itrc),ntbtf(itrc),btfname(1:lstr),
      &                tdays, btf_time(itbtf(itrc),itrc)*sec2day
 # ifdef USE_CALENDAR
      &  -btf_origin_date_in_sec*sec2day
@@ -199,7 +199,7 @@ c**        call opencdf (btfname,N)
 !
 # include "compute_extended_bounds.h"
 !
-!      write(STDOUT,*)'Enter set_btflux'
+!      write(*,*)'Enter set_btflux'
       it1=3-itbtf(itrc)
       it2=itbtf(itrc)
       cff=time+0.5*dt
@@ -217,8 +217,8 @@ c**        call opencdf (btfname,N)
               do i=IstrR,IendR
                 btflx(i,j,itrc)=cff*btflxg(i,j,itbtf(itrc),itrc)
 !                if ( i==10 .and. j==10) then
-!                  write(STDOUT,*)'I=',i,' J=',j
-!                  write(STDOUT,*)'btflx(10,10,1)=',btflx(10,10,1)
+!                  write(*,*)'I=',i,' J=',j
+!                  write(*,*)'btflx(10,10,1)=',btflx(10,10,1)
 !                endif
               enddo
             enddo
@@ -259,8 +259,8 @@ c**        call opencdf (btfname,N)
           enddo
         endif
         !if ( i==10 .and. j==10) then
-        !  write(STDOUT,*)'I=',i,' J=',j
-        !  write(STDOUT,*)'btflx(10,10,1)=',btflx(10,10,1)
+        !  write(*,*)'I=',i,' J=',j
+        !  write(*,*)'btflx(10,10,1)=',btflx(10,10,1)
         !endif
 !
 !     Unable to set-up surface tracer flux:
@@ -268,7 +268,7 @@ c**        call opencdf (btfname,N)
 !
       else
         if (ZEROTH_TILE) then
-          write(STDOUT,1) 'btf_time',tdays,btf_time(it2,itrc)*sec2day
+          write(stdout,1) 'btf_time',tdays,btf_time(it2,itrc)*sec2day
 # ifdef USE_CALENDAR
      &  -btf_origin_date_in_sec*sec2day
 # endif

@@ -184,13 +184,13 @@
         cmode = ior(nf_netcdf4,nf_classic_model)
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
-        MPI_master_only write(STDOUT,*)
+        MPI_master_only write(stdout,*)
      &       'CREATE HIS/AVG NC4 PARALLEL FILE'
         ierr=nf_create_par(ncname(1:lstr),cmode,
      &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 # endif
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(STDOUT,'(/3(1x,A)/)')
+          MPI_master_only write(stdout,'(/3(1x,A)/)')
      &           'ERROR in def_his/avg:',
      &           'Cannot create netCDF file:', ncname(1:lstr)
           goto 99                                         !--> ERROR
@@ -871,7 +871,7 @@
 !-----------------------------------------------------------------------
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(STDOUT,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
      &                'DEF_ABL_HIS/AVG - Created ',
      &                'new netCDF file ''', ncname(1:lstr), '''.'
      &                 MYID
@@ -927,7 +927,7 @@
             create_new_file=.true.
             goto 10
           else
-            MPI_master_only write(STDOUT,'(/1x,4A,2x,A,I4/)')
+            MPI_master_only write(stdout,'(/1x,4A,2x,A,I4/)')
      &                  'DEF_ABL_HIS/AVG ERROR: ',
      &                  'Cannot open file ''', ncname(1:lstr), '''.'
      &                   MYID
@@ -948,7 +948,7 @@
 !
         ierr=nf_inq_varid (ncid, 'time_step', vidTstep)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) 'time_step', ncname(1:lstr)
+          write(stdout,1) 'time_step', ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -959,7 +959,7 @@
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_inq_varid (ncid,vname(1,indxTime)(1:lvar),vidTime)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxTime)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -970,7 +970,7 @@
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
+          write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -983,7 +983,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_pu_dta)(1:lvar),vidabl_pu_dta)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_pu_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pu_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -998,7 +998,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_pv_dta)(1:lvar),vidabl_pv_dta)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_pv_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pv_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1013,7 +1013,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_pt_dta)(1:lvar),vidabl_pt_dta)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_pt_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pt_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1028,7 +1028,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_pq_dta)(1:lvar),vidabl_pq_dta)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_pq_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pq_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1043,7 +1043,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_pgu_dta)(1:lvar),vidabl_pgu_dta)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_pgu_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pgu_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1058,7 +1058,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_pgv_dta)(1:lvar),vidabl_pgv_dta)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_pgv_dta)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_pgv_dta)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1073,7 +1073,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_u_abl)(1:lvar),vidabl_u_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_u_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_u_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1088,7 +1088,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_v_abl)(1:lvar),vidabl_v_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_v_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_v_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1103,7 +1103,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_t_abl)(1:lvar),vidabl_t_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_t_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_t_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1118,7 +1118,7 @@
           ierr=nf_inq_varid (ncid, 
      &          vname_abl1d(1,indxabl_q_abl)(1:lvar),vidabl_q_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_q_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_q_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1133,7 +1133,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_tke_abl)(1:lvar),vidabl_tke_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1148,7 +1148,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_mxlm_abl)(1:lvar),vidabl_mxlm_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_mxlm_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_mxlm_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1163,7 +1163,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_mxld_abl)(1:lvar),vidabl_mxld_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_mxld_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_mxld_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1178,7 +1178,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_avm_abl)(1:lvar),vidabl_avm_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_avm_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_avm_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1193,7 +1193,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_avt_abl)(1:lvar),vidabl_avt_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_avt_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_avt_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1208,7 +1208,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_ablh_abl)(1:lvar),vidabl_ablh_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_ablh_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_ablh_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1223,7 +1223,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_zr_abl)(1:lvar),vidabl_zr_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_zr_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_zr_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1238,7 +1238,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_zw_abl)(1:lvar),vidabl_zw_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_zw_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_zw_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1253,7 +1253,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_Hzr_abl)(1:lvar),vidabl_Hzr_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_Hzr_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_Hzr_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1268,7 +1268,7 @@
           ierr=nf_inq_varid (ncid, 
      &         vname_abl1d(1,indxabl_Hzw_abl)(1:lvar),vidabl_Hzw_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,1) vname_abl1d(1,indxabl_Hzw_abl)(1:lvar),
+            write(stdout,1) vname_abl1d(1,indxabl_Hzw_abl)(1:lvar),
      &                                ncname(1:lstr)
             goto 99                                     !--> ERROR
           endif
@@ -1276,7 +1276,7 @@
 !
 !-----------------------------------------------------------------------
 !
-      MPI_master_only write(STDOUT,'(6x,2A,i4,1x,A,i4)')
+      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_ABL_HIS/AVG -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
@@ -1285,7 +1285,7 @@
       else
         ierr=nf_open (ncname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then
-          MPI_master_only write(STDOUT,'(/1x,4A,2x,A,I4/)')
+          MPI_master_only write(stdout,'(/1x,4A,2x,A,I4/)')
      &                'DEF_ABL_HIS/AVG ERROR: ',
      &                'Cannot open file ''', ncname(1:lstr), '''.'
      &                 MYID
@@ -1296,7 +1296,7 @@
 
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,'(6x,2A,i4,1x,A,i4)') 'DEF_ABL_HIS/AVG ERROR: Cannot ',
+        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_ABL_HIS/AVG ERROR: Cannot ',
      &    'switch to ''nf_nofill'' more; netCDF error code =', ierr
       endif
    1  format(/1x,'DEF_ABL_HIS/AVG ERROR: Cannot find variable ''',

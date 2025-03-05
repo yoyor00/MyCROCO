@@ -46,7 +46,7 @@
 
         ierr=nf_inq_varid (ncidfrc, 'srf_time', srf_tid)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'srf_time', frcname(1:lstr)
+          write(stdout,3) 'srf_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -66,7 +66,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxShflx_rsw)(1:lvar),frcname(1:lstr)
+          write(stdout,3) vname(1,indxShflx_rsw)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef DIURNAL_INPUT_SRFLX
@@ -87,7 +87,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxShflx_rswbio)(1:lvar),
+          write(stdout,3) vname(1,indxShflx_rswbio)(1:lvar),
      &                                               frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -127,7 +127,7 @@
 
         ierr=nf_get_var1_FTYPE(ncidfrc, srf_tid, srf_rec, cff)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'srf_time', srf_rec
+          write(stdout,6) 'srf_time', srf_rec
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
@@ -151,7 +151,7 @@
         endif
 
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'srflux', srf_rec
+          write(stdout,6) 'srflux', srf_rec
           goto 99                                         !--> ERROR
         endif
 
@@ -170,13 +170,13 @@
      &                            srf_rec ,srflxbiop(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'srflux_bio', srf_rec
+          write(stdout,6) 'srflux_bio', srf_rec
           goto 99                                         !--> ERROR
         endif
 # endif /* DIURNAL_INPUT_SRFLX */
 
        itsrf=i
-       MPI_master_only write(STDOUT,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &           'GET_SRFLUX --',
      &           'Read solar shortwave radiation for time =', cff
 # ifdef USE_CALENDAR
@@ -193,14 +193,14 @@
 !
   3   format(/,' GET_SRFLUX - unable to find forcing variable: ',a,
      &                          /,15x,'in forcing NetCDF file: ',a)
-  4   write(STDOUT,5) frcname(1:lstr)
+  4   write(stdout,5) frcname(1:lstr)
   5   format(/,' GET_SRFLUX - unable to open forcing NetCDF file:',
      &                                                        1x,a)
       goto 99
 
   6   format(/,' GET_SRFLUX - error while reading variable: ',a,2x,
      &                                      ' at TIME index = ',i4)
-  7   write(STDOUT,8) srf_rec, ntsrf, frcname(1:lstr), tdays,
+  7   write(stdout,8) srf_rec, ntsrf, frcname(1:lstr), tdays,
      &                                srf_time(itsrf)*sec2day
 # ifdef USE_CALENDAR
      &  -srf_origin_date_in_sec*sec2day
@@ -325,7 +325,7 @@
 !
       else
         if (ZEROTH_TILE) then
-          write(STDOUT,1) 'srf_time', tdays, srf_time(it2)*sec2day
+          write(stdout,1) 'srf_time', tdays, srf_time(it2)*sec2day
 # ifdef USE_CALENDAR
      &  -srf_origin_date_in_sec*sec2day
 # endif

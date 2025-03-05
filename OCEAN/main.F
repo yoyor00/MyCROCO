@@ -276,7 +276,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call start_timers()
         call init_arrays (tile)
       enddo
-CR      write(STDOUT,*) '-11' MYID
+CR      write(*,*) '-11' MYID
 !
 ! Copy to device(s)
 !
@@ -320,13 +320,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call setup_grid1 (tile)
       enddo
-CR      write(STDOUT,*) '-10' MYID
+CR      write(*,*) '-10' MYID
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call setup_grid2 (tile)
       enddo
-CR      write(STDOUT,*) ' -9' MYID
+CR      write(*,*) ' -9' MYID
 !
 !----------------------------------------------------------------------
 !  Setup vertical grid variables setup vertical S-coordinates
@@ -344,7 +344,7 @@ CR      write(STDOUT,*) ' -9' MYID
 !
 
       call set_weights
-CR      write(STDOUT,*) ' -8' MYID
+CR      write(*,*) ' -8' MYID
 !
 !  Create three-dimensional S-coordinate system,
 !  which may be needed by ana_initial
@@ -356,7 +356,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call set_depth (tile)
       enddo
 
-CR      write(STDOUT,*) ' -7' MYID
+CR      write(*,*) ' -7' MYID
 !
 !  Make grid diagnostics
 !
@@ -406,7 +406,7 @@ C$OMP BARRIER
 # if defined OA_COUPLING || defined OW_COUPLING
         call cpl_prism_define
         oasis_time = 0
-        MPI_master_only write(STDOUT,*)'CPL-CROCO: OASIS_TIME',oasis_time
+        MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
 # endif
       endif
 #endif
@@ -424,7 +424,7 @@ C$OMP BARRIER
 !# endif
       time_end=tool_datosec(end_date)
       ntimes=int((time_end-time)/dt)
-      MPI_master_only write(STDOUT,*)
+      MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
       ntimes=ntimes+ntstart
 #endif
@@ -447,7 +447,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call  pisces_ini_tile (tile)
       enddo
 #endif
-CR      write(STDOUT,*) ' -6' MYID
+CR      write(*,*) ' -6' MYID
       if (may_day_flag.ne.0) goto 99 !-->  EXIT
 !
 !----------------------------------------------------------------------
@@ -525,7 +525,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call MUSTANG_init_main (tile)
       enddo
-CR      write(STDOUT,*)  ' -5' MYID0
+CR      write(*,*)  ' -5' MYID0
 #endif
 !
 !----------------------------------------------------------------------
@@ -554,7 +554,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call set_depth (tile)
       enddo
-CR      write(STDOUT,*)  ' -5' MYID
+CR      write(*,*)  ' -5' MYID
 #endif
 !
 !----------------------------------------------------------------------
@@ -569,14 +569,14 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call reset_rho0 (tile)
 # endif
       enddo
-CR      write(STDOUT,*)  ' -4' MYID
+CR      write(*,*)  ' -4' MYID
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call omega (tile)
         call rho_eos (tile)
       enddo
-CR      write(STDOUT,*)  ' -3' MYID
+CR      write(*,*)  ' -3' MYID
 #endif
 !
 !----------------------------------------------------------------------
@@ -588,7 +588,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call mrl_wci (tile)
       enddo
-CR      write(STDOUT,*)  ' -2' MYID
+CR      write(*,*)  ' -2' MYID
 #endif
 !
 !----------------------------------------------------------------------
@@ -656,7 +656,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 #endif
 !
-CR      write(STDOUT,*) ' -2' MYID
+CR      write(*,*) ' -2' MYID
 !
 !----------------------------------------------------------------------
 !  Read surface forcing from NetCDF file
@@ -673,7 +673,7 @@ CR      write(STDOUT,*) ' -2' MYID
       call get_tides
 #endif
 !
-CR      write(STDOUT,*) ' -1' MYID
+CR      write(*,*) ' -1' MYID
 !
 !----------------------------------------------------------------------
 ! OA "Stand Alone" module : second initialization step (spatial domain)
@@ -777,7 +777,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #ifdef WKB_WWAVE
 C$OMP BARRIER
 C$OMP MASTER
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &     'WKB: started steady wave computation.'
 C$OMP END MASTER
       iic=0
@@ -846,7 +846,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 C$OMP BARRIER
 C$OMP MASTER
-        MPI_master_only write(STDOUT,'(/1x,A/)')
+        MPI_master_only write(stdout,'(/1x,A/)')
      &     'WKB: completed steady wave computation.'
 C$OMP END MASTER
 #endif /* WKB_WWAVE */
@@ -932,7 +932,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
 #endif
 
-CR      write(STDOUT,*) '  0' MYID
+CR      write(*,*) '  0' MYID
       if (may_day_flag.ne.0) goto 99     !-->  EXIT
 !
 !
@@ -950,7 +950,7 @@ CR      write(STDOUT,*) '  0' MYID
 !
 !
 #undef CR
-      MPI_master_only write(STDOUT,'(/1x,A27/)')
+      MPI_master_only write(stdout,'(/1x,A27/)')
      &                'MAIN: started time-stepping.'
       next_kstp=kstp
       time_start=time
@@ -994,7 +994,7 @@ CR      write(STDOUT,*) '  0' MYID
 
 #ifdef USE_CALENDAR
         if (mod(iicroot-1,ninfo) .eq. 0) then
-          MPI_master_only write(STDOUT,'(a)') tool_sectodat(time_mars)
+          MPI_master_only write(stdout,'(a)') tool_sectodat(time_mars)
         endif
         if (time .gt. time_end) goto 99
 #endif
@@ -1028,9 +1028,9 @@ CR      write(STDOUT,*) '  0' MYID
 #ifdef MPI_TIME
       start_time2=PMPI_Wtime()
       exe_time = start_time2 - start_time1
-      MPI_master_only write(STDOUT,*) '*******************************'
-      MPI_master_only write(STDOUT,*) 'time time-stepping : ',exe_time
-      MPI_master_only write(STDOUT,*) '*******************************'
+      MPI_master_only write(stdout,*) '*******************************'
+      MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
+      MPI_master_only write(stdout,*) '*******************************'
 #endif
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.

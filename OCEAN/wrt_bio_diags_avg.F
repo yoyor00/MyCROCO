@@ -86,31 +86,31 @@
       ierr=nf_put_vara_int (nciddiabio_avg, diaTstepbio_avg,
      &                                             start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,1) 'time_step_avg', record, ierr
+        write(stdout,1) 'time_step_avg', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
 !
 ! Averaged diag Time
 !
-C      write(STDOUT,*) 'Write Time'
+C      write(*,*) 'Write Time'
       ierr=nf_put_var1_FTYPE (nciddiabio_avg, diaTimebio_avg, record,
      &                                              timediabio_avg)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
 !
 ! Averaged diag Time2
 !
-C      write(STDOUT,*) 'Write Time'
+C      write(*,*) 'Write Time'
       ierr=nf_put_var1_FTYPE (nciddiabio_avg, diaTime2bio_avg, record,
      &                                              timediabio_avg)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -132,7 +132,7 @@ C      write(STDOUT,*) 'Write Time'
 !     2-D terms (it is called Vsink but it means nothing)
       do iflux=1,NumVSinkTerms
         if (wrtdiabioVSink_avg(iflux)) then
-!     if (iflux.eq.11)  write(STDOUT,*) 'ZMEU WRT_AVG',bioVSink_avg(30,30,iflux)
+!     if (iflux.eq.11)  write(*,*) 'ZMEU WRT_AVG',bioVSink_avg(30,30,iflux)
           work2d=bioVSink_avg(:,:,iflux)
           call fillvalue2d(work2d, nciddiabio_avg, diabioVsink_avg(iflux),
      &        vname(1,indxbioVSink+iflux-1),record,r2dvar,type)
@@ -195,12 +195,12 @@ C      write(STDOUT,*) 'Write Time'
       endif
 # endif
       if (ierr .eq. nf_noerr) then
-      MPI_master_only   write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
+      MPI_master_only   write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &       'WRT_BIO_DIAG_AVG -- wrote ',
      &       'diag_avg fields into time record =', record, '/',
      &       nrecdiabio_avg  MYID
       else
-        MPI_master_only write(STDOUT,'(/1x,2A/)')
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &       'WRT_BIO_DIAG_AVG ERROR: Cannot ',
      &       'synchronize/close diag_avg netCDF file.'
         may_day_flag=3

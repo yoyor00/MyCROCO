@@ -45,21 +45,21 @@
 
         ierr=nf_inq_varid (ncidclm, 'uclm_time', uclm_tid)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'uclm_time', clmname(1:lstr)
+          write(stdout,3) 'uclm_time', clmname(1:lstr)
           goto 99                                     !--> ERROR
         endif
 # ifdef M2CLIMATOLOGY
         lvar=lenstr(vname(1,indxUb))
         ierr=nf_inq_varid (ncidclm, vname(1,indxUb)(1:lvar), ubclm_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxUb)(1:lvar), clmname(1:lstr)
+          write(stdout,3) vname(1,indxUb)(1:lvar), clmname(1:lstr)
           goto 99                                       !--> ERROR
         endif
 
         lvar=lenstr(vname(1,indxVb))
         ierr=nf_inq_varid (ncidclm, vname(1,indxVb)(1:lvar), vbclm_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxVb)(1:lvar), clmname(1:lstr)
+          write(stdout,3) vname(1,indxVb)(1:lvar), clmname(1:lstr)
           goto 99                                       !--> ERROR
         endif
 # endif
@@ -67,14 +67,14 @@
         lvar=lenstr(vname(1,indxU))
         ierr=nf_inq_varid (ncidclm, vname(1,indxU)(1:lvar), uclm_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxU)(1:lvar), clmname(1:lstr)
+          write(stdout,3) vname(1,indxU)(1:lvar), clmname(1:lstr)
           goto 99                                       !--> ERROR
         endif
 
         lvar=lenstr(vname(1,indxV))
         ierr=nf_inq_varid (ncidclm, vname(1,indxV)(1:lvar), vclm_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxV)(1:lvar), clmname(1:lstr)
+          write(stdout,3) vname(1,indxV)(1:lvar), clmname(1:lstr)
           goto 99                                       !--> ERROR
         endif
 # endif
@@ -109,7 +109,7 @@
       ierr=advance_cycle (uclm_cycle,  ntuclm,
      &                    uclm_ncycle, uclm_rec)
       if (ierr.ne.0) then
-        write(STDOUT,7) uclm_rec, ntuclm,
+        write(stdout,7) uclm_rec, ntuclm,
      &                  clmname(1:lstr), tdays,
      &                  uclm_time(ituclm)*sec2day
         goto 99                                        !--> ERROR
@@ -118,7 +118,7 @@
       ierr=nf_get_var1_FTYPE(ncidclm, uclm_tid,
      &                             uclm_rec, cff)
       if (ierr.ne.NF_NOERR) then
-        write(STDOUT,6) 'Xclm_time', uclm_rec
+        write(stdout,6) 'Xclm_time', uclm_rec
         goto 99                                        !--> ERROR
       endif
 # ifdef USE_CALENDAR
@@ -140,7 +140,7 @@
 #  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxUb))
-        write(STDOUT,6) vname(1,indxUb)(1:lvar), uclm_rec
+        write(stdout,6) vname(1,indxUb)(1:lvar), uclm_rec
         goto 99                                       !--> ERROR
       endif
 !
@@ -152,7 +152,7 @@
 #  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxVb))
-        write(STDOUT,6) vname(1,indxVb)(1:lvar), uclm_rec
+        write(stdout,6) vname(1,indxVb)(1:lvar), uclm_rec
         goto 99                                       !--> ERROR
       endif
 # endif
@@ -165,7 +165,7 @@
 #  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxU))
-        write(STDOUT,6) vname(1,indxU)(1:lvar), uclm_rec
+        write(stdout,6) vname(1,indxU)(1:lvar), uclm_rec
         goto 99                                       !--> ERROR
       endif
 !
@@ -177,13 +177,13 @@
 #  endif
       if (ierr.ne.NF_NOERR) then
         lvar=lenstr(vname(1,indxV))
-        write(STDOUT,6) vname(1,indxV)(1:lvar), uclm_rec
+        write(stdout,6) vname(1,indxV)(1:lvar), uclm_rec
         goto 99                                       !--> ERROR
       endif
 # endif
 
       ituclm=i
-      MPI_master_only write(STDOUT,'(6x,A,1x,g12.4,1x,I4)')
+      MPI_master_only write(stdout,'(6x,A,1x,g12.4,1x,I4)')
      &'GET_UCLIMA -- Read momentum climatology      for time =', cff
 # ifdef USE_CALENDAR
      &  -uclm_origin_date_in_sec*sec2day
@@ -200,7 +200,7 @@
 !
   3   format(/,' GET_UCLIMA - unable to find climatology variable: ',
      &       a,/,15x,'in climatology NetCDF file: ',a)
-  4   write(STDOUT,5) clmname(1:lstr)
+  4   write(stdout,5) clmname(1:lstr)
   5   format(/,' GET_UCLIMA - unable to open climatology',
      &         1x,'NetCDF file: ',a)
       goto 99
@@ -310,7 +310,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
 # endif
       elseif (ZEROTH_TILE) then
-          write(STDOUT,'(/1x,2A/3(1x,A,F16.10)/)')
+          write(stdout,'(/1x,2A/3(1x,A,F16.10)/)')
      &            'SET_UCLIMA_TILE - current model time is outside ',
      &            'bounds of ''uclm_time''.', 'UCLM_TSTART=',
      &             uclm_time(it1)*sec2day,     'TDAYS=',  tdays,

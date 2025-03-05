@@ -93,7 +93,7 @@
       ierr=nf_fwrite(work2d_tmp, ncid, vid, record, typevar2d)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(varname)
-         write(STDOUT,1) TRIM(text), varname(1:lvar), record, ierr
+         write(stdout,1) TRIM(text), varname(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
@@ -200,7 +200,7 @@
       ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(varname)
-         write(STDOUT,1) TRIM(text), varname(1:lvar), record, ierr
+         write(stdout,1) TRIM(text), varname(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
@@ -305,7 +305,7 @@
       ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(varname)
-         write(STDOUT,1) TRIM(text), varname(1:lvar), record, ierr
+         write(stdout,1) TRIM(text), varname(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
@@ -402,7 +402,7 @@
       ierr=nf_fwrite(work3d_tmp, ncid, vid, record,typevar3d)
       if (ierr .ne. nf_noerr) then
          lvar=lenstr(varname)
-         write(STDOUT,1) TRIM(text), varname(1:lvar), record, ierr
+         write(stdout,1) TRIM(text), varname(1:lvar), record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif

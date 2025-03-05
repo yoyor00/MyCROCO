@@ -194,7 +194,7 @@
      &        'Failure in prism_def_var: '//ssnd_clname(ji)//trim(catm))
           ELSE
              IF ( ssnd_nid(ja,ji) /= -1 ) THEN
-                MPI_master_only write(STDOUT,*)
+                MPI_master_only write(*,*)
      & 'CPL-CROCO: sent ',trim(ssnd_clname(ji))//trim(catm),ssnd_nid(ja,ji)
              ENDIF
           ENDIF
@@ -212,7 +212,7 @@
      &        'Failure in prism_def_var: '//trim(srcv_clname(ji))//trim(catm))
           ELSE
              IF ( srcv_nid(ja,ji) /= -1 ) THEN
-                MPI_master_only write(STDOUT,*)
+                MPI_master_only write(*,*)
      & 'CPL-CROCO: received ',trim(srcv_clname(ji))//trim(catm),srcv_nid(ja,ji)
              ENDIF
           ENDIF
@@ -233,7 +233,7 @@
                CALL prism_abort_proto ( comp_id, 'cpl_prism_enddef',
      &              'Failure in prism_enddef')
             ELSE
-               MPI_master_only write(STDOUT,*)
+               MPI_master_only write(*,*)
      &              'CPL-CROCO: ENDDEF OK'
             ENDIF
 # ifdef AGRIF
@@ -250,14 +250,14 @@
 # endif
       ierr=nf_open(trim(fname), nf_nowrite, ncid)
       if (ierr == NF_NOERR) then
-          MPI_master_only write(STDOUT,*)
+          MPI_master_only write(*,*)
      &    'CPL-CROCO: open coupling_masks'//trim(clevel)//'.nc ok'
           DO ja = 1, nmaxatm
              WRITE(catm,'(a,i1.1)') "_atm", ja
              ierr=nf_inq_varid (ncid, 'cplmsk'//catm, varid)
              if (ierr == NF_NOERR) then
       ierr=nf_fread (cplmsk(START_2D_ARRAY,ja), ncid, varid, 0, r2dvar)
-                MPI_master_only write(STDOUT,*)
+                MPI_master_only write(*,*)
      &               'CPL-CROCO: read cplmsk'//catm//' ok',
      &               minval(cplmsk(1:Lmmpi,1:Mmmpi,ja)),
      &               maxval(cplmsk(1:Lmmpi,1:Mmmpi,ja))
@@ -265,7 +265,7 @@
           enddo
           ierr=nf_close(ncid)
       else
-          MPI_master_only write(STDOUT,*)
+          MPI_master_only write(*,*)
      &        'CPL-CROCO: coupling_masks'//trim(clevel)//'.nc not found'
       endif
       return

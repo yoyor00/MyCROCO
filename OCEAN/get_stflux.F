@@ -50,7 +50,7 @@ c**        call opencdf (frcname,N)
         if (itrc.eq.itemp) then
           ierr=nf_inq_varid (ncidfrc, 'shf_time', stf_tid(itrc))
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,3) 'shf_time', frcname(1:lstr)
+            write(stdout,3) 'shf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -59,7 +59,7 @@ c**        call opencdf (frcname,N)
         if (itrc.eq.isalt) then
           ierr=nf_inq_varid (ncidfrc, 'swf_time', stf_tid(itrc))
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,3) 'swf_time', frcname(1:lstr)
+            write(stdout,3) 'swf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
         endif
@@ -78,7 +78,7 @@ c**        call opencdf (frcname,N)
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxShflx+itrc-1), frcname(1:lstr)
+          write(stdout,3) vname(1,indxShflx+itrc-1), frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -128,7 +128,7 @@ c**        call opencdf (frcname,N)
         ierr=nf_get_var1_FTYPE(ncidfrc, stf_tid(itrc),
      &                             stf_rec(itrc), cff)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'stf_time', stf_rec(i)
+          write(stdout,6) 'stf_time', stf_rec(i)
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
@@ -151,11 +151,11 @@ c**        call opencdf (frcname,N)
      &                     stf_rec(itrc), stflxp(i,itrc))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'stflux', stf_rec
+          write(stdout,6) 'stflux', stf_rec
           goto 99                                         !--> ERROR
         endif
        itstf(itrc)=i
-       MPI_master_only write(STDOUT,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
      &            'GET_STFLUX -- Read surface flux of tracer', itrc,
      &                                             'for time =', cff
 # ifdef USE_CALENDAR
@@ -173,12 +173,12 @@ c**        call opencdf (frcname,N)
 !
   3   format(/,' GET_STFLUX - ERROR: unable to find forcing ',
      &              'variable: ',a,/,14x,'in forcing file: ',a)
-  4   write(STDOUT,5) frcname(1:lstr)
+  4   write(stdout,5) frcname(1:lstr)
   5   format(/,' GET_STFLUX - ERROR: unable to open file: ', a)
       goto 99
   6   format(/,' GET_STFLUX - ERROR while reading variable: ',
      &                                a,' at TIME index = ',i4)
-  7   write(STDOUT,8) stf_rec(itrc),ntstf(itrc),frcname(1:lstr),
+  7   write(stdout,8) stf_rec(itrc),ntstf(itrc),frcname(1:lstr),
      &                tdays, stf_time(itstf(itrc),itrc)*sec2day
 # ifdef USE_CALENDAR
      &  -stf_origin_date_in_sec*sec2day
@@ -271,7 +271,7 @@ c**        call opencdf (frcname,N)
 !
       else
         if (ZEROTH_TILE) then
-          write(STDOUT,1) 'stf_time',tdays,stf_time(it2,itrc)*sec2day
+          write(stdout,1) 'stf_time',tdays,stf_time(it2,itrc)*sec2day
 # ifdef USE_CALENDAR
      &  -stf_origin_date_in_sec*sec2day
 # endif

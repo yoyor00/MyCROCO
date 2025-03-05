@@ -133,13 +133,13 @@
         cmode = ior(cmode, nf_mpiio)
         csize=xi_rho*eta_rho/NNODES
         MPI_master_only
-     &       write(STDOUT,*)'CREATE RST NC4 PARALLEL FILE'
+     &       write(stdout,*)'CREATE RST NC4 PARALLEL FILE'
         ierr=nf_create_par(rstname(1:lstr),cmode,
      &        MPI_COMM_WORLD,MPI_INFO_NULL,ncid)
 #endif
 
         if (ierr.ne.nf_noerr) then
-          write(STDOUT,'(/3(1x,A)/)') 'ERROR in DEF_RST: Cannot',
+          write(stdout,'(/3(1x,A)/)') 'ERROR in DEF_RST: Cannot',
      &             'create restart NetCDF file:', rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1337,7 +1337,7 @@
 ! ----- ---------- -----                  dimension size to zero.
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(STDOUT,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(*,'(6x,4A,1x,A,i4)')
      &              'DEF_RST - Created new ',
      &              'netCDF file ''', rstname(1:lstr), '''.'
      &               MYID
@@ -1396,7 +1396,7 @@
             create_new_file=.true.
             goto 10
           else
-            write(STDOUT,'(/1x,4A, 1x,A,I4/)')     'DEF_RST ERROR: ',
+            write(stdout,'(/1x,4A, 1x,A,I4/)')     'DEF_RST ERROR: ',
      &     'Cannot open restart netCDF file ''',rstname(1:lstr),'''.'
      &               MYID
             goto 99                                     !--> ERROR
@@ -1414,7 +1414,7 @@
 !
         ierr=nf_inq_varid (ncid, 'time_step', rstTstep)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) 'time_step', rstname(1:lstr)
+          write(stdout,1) 'time_step', rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 #ifdef NC4PAR
@@ -1426,7 +1426,7 @@
         lvar=lenstr(vname(1,indxTime))
         ierr=nf_inq_varid (ncid, vname(1,indxTime)(1:lvar), rstTime)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTime)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxTime)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 #ifdef NC4PAR
@@ -1438,7 +1438,7 @@
         lvar=lenstr(vname(1,indxTime2))
         ierr=nf_inq_varid (ncid, vname(1,indxTime2)(1:lvar), rstTime2)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTime2)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxTime2)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 #ifdef NC4PAR
@@ -1450,7 +1450,7 @@
         lvar=lenstr(vname(1,indxZ))
         ierr=nf_inq_varid (ncid, vname(1,indxZ)(1:lvar), rstZ)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxZ)(1:lvar),  rstname(1:lstr)
+          write(stdout,1) vname(1,indxZ)(1:lvar),  rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 #ifdef NC4PAR
@@ -1462,7 +1462,7 @@
         lvar=lenstr(vname(1,indxUb))
         ierr=nf_inq_varid (ncid, vname(1,indxUb)(1:lvar), rstUb)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxUb)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxUb)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 #ifdef NC4PAR
@@ -1472,7 +1472,7 @@
         lvar=lenstr(vname(1,indxVb))
         ierr=nf_inq_varid (ncid, vname(1,indxVb)(1:lvar), rstVb)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxVb)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxVb)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 #ifdef NC4PAR
@@ -1535,7 +1535,7 @@
         ierr=nf_inq_varid (ncid, 
      &      vname_abl1d(1,indxabl_tke_abl)(1:lvar), rstAblTke)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar), 
+          write(stdout,1) vname_abl1d(1,indxabl_tke_abl)(1:lvar), 
      &      rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1612,7 +1612,7 @@
         lvar=lenstr(vname(1,indxU))
         ierr=nf_inq_varid (ncid, vname(1,indxU)(1:lvar), rstU)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxU)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxU)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -1622,7 +1622,7 @@
         lvar=lenstr(vname(1,indxV))
         ierr=nf_inq_varid (ncid, vname(1,indxV)(1:lvar), rstV)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxV)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxV)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -1638,7 +1638,7 @@
           ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                rstT(itrc))
           if (ierr. ne. nf_noerr) then
-            write(STDOUT,1) vname(1,indxV+itrc)(1:lvar),
+            write(stdout,1) vname(1,indxV+itrc)(1:lvar),
      &                                            rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
@@ -1656,7 +1656,7 @@
           lvar=lenstr(vname(1,indxHbl))
           ierr=nf_inq_varid (ncid,vname(1,indxHbl)(1:lvar), rstHbl)
           if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxHbl)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxHbl)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #   ifdef NC4PAR
@@ -1671,7 +1671,7 @@
           lvar=lenstr(vname(1,indxHbbl))
           ierr=nf_inq_varid (ncid,vname(1,indxHbbl)(1:lvar), rstHbbl)
           if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxHbbl)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxHbbl)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #   ifdef NC4PAR
@@ -1688,7 +1688,7 @@
           lvar=lenstr(vname(1,indxTke))
           ierr=nf_inq_varid (ncid,vname(1,indxTke)(1:lvar), rstTke)
           if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxTke)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxTke)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #  ifdef NC4PAR
@@ -1701,7 +1701,7 @@
           lvar=lenstr(vname(1,indxGls))
           ierr=nf_inq_varid (ncid,vname(1,indxGls)(1:lvar), rstGls)
           if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxGls)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxGls)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #  ifdef NC4PAR
@@ -1714,7 +1714,7 @@
           lvar=lenstr(vname(1,indxAkv))
           ierr=nf_inq_varid (ncid,vname(1,indxAkv)(1:lvar), rstAkv)
           if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxAkv)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxAkv)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #  ifdef NC4PAR
@@ -1729,7 +1729,7 @@
           lvar=lenstr(vname(1,indxAkt))
           ierr=nf_inq_varid (ncid,vname(1,indxAkt)(1:lvar), rstAkt)
           if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxAkt)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxAkt)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #   ifdef NC4PAR
@@ -1745,7 +1745,7 @@
           lvar=lenstr(vname(1,indxAks))
           ierr=nf_inq_varid (ncid,vname(1,indxAks)(1:lvar), rstAks)
           if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxAks)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxAks)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #   ifdef NC4PAR
@@ -1763,7 +1763,7 @@
           lvar=lenstr(vname(1,indxBustr))
           ierr=nf_inq_varid (ncid,vname(1,indxBustr)(1:lvar), rstBustr)
           if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxBustr)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxBustr)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #   ifdef NC4PAR
@@ -1776,7 +1776,7 @@
           lvar=lenstr(vname(1,indxBvstr))
           ierr=nf_inq_varid (ncid,vname(1,indxBvstr)(1:lvar), rstBvstr)
           if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxBvstr)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxBvstr)(1:lvar), rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
 #   ifdef NC4PAR
@@ -1792,7 +1792,7 @@
         lvar=lenstr(vname(1,indxrufrc))
         ierr=nf_inq_varid (ncid, vname(1,indxrufrc)(1:lvar), rstrufrc)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxrufrc)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxrufrc)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 #  ifdef NC4PAR
@@ -1805,7 +1805,7 @@
         lvar=lenstr(vname(1,indxrvfrc))
         ierr=nf_inq_varid (ncid, vname(1,indxrvfrc)(1:lvar), rstrvfrc)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxrvfrc)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxrvfrc)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 #  ifdef NC4PAR
@@ -1822,7 +1822,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxru_nbq)(1:lvar),
      &                                                 rstru_nbq)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxru_nbq)(1:lvar),
+          write(stdout,1) vname(1,indxru_nbq)(1:lvar),
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1834,7 +1834,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxrv_nbq)(1:lvar),
      &                                                 rstrv_nbq)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxrv_nbq)(1:lvar),
+          write(stdout,1) vname(1,indxrv_nbq)(1:lvar),
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1850,7 +1850,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxru_nbq_avg2)(1:lvar),
      &                                            rstru_nbq_avg2)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxru_nbq_avg2)(1:lvar),
+          write(stdout,1) vname(1,indxru_nbq_avg2)(1:lvar),
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1863,7 +1863,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxrv_nbq_avg2)(1:lvar),
      &                                            rstrv_nbq_avg2)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxrv_nbq_avg2)(1:lvar),
+          write(stdout,1) vname(1,indxrv_nbq_avg2)(1:lvar),
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1879,7 +1879,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxqdmu_nbq)(1:lvar),
      &                                            rstqdmu_nbq)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxqdmu_nbq)(1:lvar),
+          write(stdout,1) vname(1,indxqdmu_nbq)(1:lvar),
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1892,7 +1892,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxqdmv_nbq)(1:lvar),
      &                                            rstqdmv_nbq)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxqdmv_nbq)(1:lvar),
+          write(stdout,1) vname(1,indxqdmv_nbq)(1:lvar),
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1911,7 +1911,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxdRdx)(1:lvar),
      &                                            rstdRdx)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxdRdx)(1:lvar),
+          write(stdout,1) vname(1,indxdRdx)(1:lvar),
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1923,7 +1923,7 @@
         ierr=nf_inq_varid (ncid, vname(1,indxdRde)(1:lvar),
      &                                            rstdRde)
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxdRde)(1:lvar),
+          write(stdout,1) vname(1,indxdRde)(1:lvar),
      &                                                 rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -1943,7 +1943,7 @@
         lvar=lenstr(vname(1,indxBTHK))
         ierr=nf_inq_varid (ncid, vname(1,indxBTHK)(1:lvar), rstSed(1))
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxBTHK)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxBTHK)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -1956,7 +1956,7 @@
         lvar=lenstr(vname(1,indxBPOR))
         ierr=nf_inq_varid (ncid, vname(1,indxBPOR)(1:lvar), rstSed(2))
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxBPOR)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxBPOR)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -1972,7 +1972,7 @@
           ierr=nf_inq_varid (ncid, vname(1,indxWrk)(1:lvar),
      &                                                 rstSed(itrc+2))
           if (ierr. ne. nf_noerr) then
-            write(STDOUT,1) vname(1,indxWrk)(1:lvar),
+            write(stdout,1) vname(1,indxWrk)(1:lvar),
      &                                            rstname(1:lstr)
             goto 99                                       !--> ERROR
           endif
@@ -1990,7 +1990,7 @@
           ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
      &                                                 rstMust(indx))
           if (ierr. ne. nf_noerr) then
-            write(STDOUT,1) vname_rstMust(1,indx)(1:lvar),
+            write(stdout,1) vname_rstMust(1,indx)(1:lvar),
      &                                            rstMust(1:lstr)
             goto 99                                       !--> ERROR
           endif
@@ -2006,7 +2006,7 @@
           ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
      &                                                 rstMust(indx))
           if (ierr. ne. nf_noerr) then
-            write(STDOUT,1) vname_rstMust(1,indx)(1:lvar),
+            write(stdout,1) vname_rstMust(1,indx)(1:lvar),
      &                                            rstMust(1:lstr)
             goto 99                                       !--> ERROR
           endif
@@ -2023,7 +2023,7 @@
           ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
      &                                                 rstMust(indx))
           if (ierr. ne. nf_noerr) then
-            write(STDOUT,1) vname_rstMust(1,indx)(1:lvar),
+            write(stdout,1) vname_rstMust(1,indx)(1:lvar),
      &                                            rstMust(1:lstr)
             goto 99                                       !--> ERROR
           endif
@@ -2042,7 +2042,7 @@
         lvar=lenstr(vname(1,indxHm))
         ierr=nf_inq_varid (ncid, vname(1,indxHm)(1:lvar), rstHm)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxHm)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxHm)(1:lvar), rstname(1:lstr)
           goto 99                                       !--> ERROR
         endif
 # ifdef NC4PAR
@@ -2057,7 +2057,7 @@
         lvar=lenstr(vname(1,indxHrip))
         ierr=nf_inq_varid (ncid, vname(1,indxHrip)(1:lvar), rstBBL(1))
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxHrip)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxHrip)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -2069,7 +2069,7 @@
         lvar=lenstr(vname(1,indxLrip))
         ierr=nf_inq_varid (ncid, vname(1,indxLrip)(1:lvar), rstBBL(2))
         if (ierr. ne. nf_noerr) then
-          write(STDOUT,1) vname(1,indxLrip)(1:lvar), rstname(1:lstr)
+          write(stdout,1) vname(1,indxLrip)(1:lvar), rstname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
@@ -2077,7 +2077,7 @@
 # endif
 #endif /* BBL */
 !
-      MPI_master_only write(STDOUT,'(6x,2A,i4,1x,A,i4)')
+      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &             'DEF_RST -- Opened ',
      &             'existing restart file,  record =', rec
      &              MYID
@@ -2086,7 +2086,7 @@
       else
         ierr=nf_open (rstname(1:lstr), nf_write, ncid)
         if (ierr .ne. nf_noerr) then
-         MPI_master_only write(STDOUT,'(/1x,4A, 1x,A,I4/)')
+         MPI_master_only write(stdout,'(/1x,4A, 1x,A,I4/)')
      &          'DEF_RST ERROR: Cannot',
      &          'open restart netCDF file ''', rstname(1:lstr), '''.'
      &           MYID

@@ -95,7 +95,7 @@
       ierr=nf_put_vara_int (nciddiags_ek, diags_ekTstep,
      &                                            start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,1) 'time_step', record, ierr
+        write(stdout,1) 'time_step', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -105,7 +105,7 @@
       ierr=nf_put_var1_FTYPE (nciddiags_ek, diags_ekTime, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -115,7 +115,7 @@
       ierr=nf_put_var1_FTYPE (nciddiags_ek, diags_ekTime2, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -347,25 +347,25 @@
 # ifdef DEBUG
       i=5
       j=5
-      write(STDOUT,*) 'Write diag ek his at : i='
+      write(*,*) 'Write diag ek his at : i='
      &                      ,i,' j=',j
-      write(STDOUT,*) 'ekHadv(i,j)   ',ekHadv(i,j)
-      write(STDOUT,*) 'ekHdiff(i,j)   ',ekHdiff(i,j)
-      write(STDOUT,*) 'ekVadv(i,j)   ',ekVadv(i,j)
-      write(STDOUT,*) 'ekCor(i,j)    ',ekCor(i,j)
-      write(STDOUT,*) 'ekPrsgrd(i,j) ',ekPrsgrd(i,j)
-      write(STDOUT,*) 'ekHmix(i,j)   ',ekHmix(i,j)
-      write(STDOUT,*) 'ekVmix(i,j)   ',ekVmix(i,j)
-      write(STDOUT,*) 'ekvol(i,j)   ',ekvol(i,j)
+      write(*,*) 'ekHadv(i,j)   ',ekHadv(i,j)
+      write(*,*) 'ekHdiff(i,j)   ',ekHdiff(i,j)
+      write(*,*) 'ekVadv(i,j)   ',ekVadv(i,j)
+      write(*,*) 'ekCor(i,j)    ',ekCor(i,j)
+      write(*,*) 'ekPrsgrd(i,j) ',ekPrsgrd(i,j)
+      write(*,*) 'ekHmix(i,j)   ',ekHmix(i,j)
+      write(*,*) 'ekVmix(i,j)   ',ekVmix(i,j)
+      write(*,*) 'ekvol(i,j)   ',ekvol(i,j)
 
-      write(STDOUT,*) 'ekrate(i,j)   ',ekrate(i,j)
+      write(*,*) 'ekrate(i,j)   ',ekrate(i,j)
 #  if defined DIAGNOSTICS_BARO
-      write(STDOUT,*) 'ekBaro(i,j) ',ekBaro(i,j)
+      write(*,*) 'ekBaro(i,j) ',ekBaro(i,j)
 #  endif
 #  if defined M3FAST
-      write(STDOUT,*) 'ekfast(i,j) ',ekfast(i,j)
+      write(*,*) 'ekfast(i,j) ',ekfast(i,j)
 #  endif
-      write(STDOUT,*) 'SumUVhis(i,j) = ',ekHadv(i,j)
+      write(*,*) 'SumUVhis(i,j) = ',ekHadv(i,j)
      &                                  +  ekVadv(i,j)
      &                                  +  ekCor(i,j)
      &                                  +  ekPrsgrd(i,j)
@@ -376,7 +376,7 @@
      &                                  +  ekfast(i,j)
 #  endif
      &                                  -  ekrate(i,j)
-      write(STDOUT,*) '-----------------------------------------'
+      write(*,*) '-----------------------------------------'
 # endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_EK ERROR while writing variable ''', A,
@@ -406,12 +406,12 @@
 
 
       if (ierr .eq. nf_noerr) then
-        MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
+        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAGS_EK -- wrote',
      &            ' diag fields into time record =', record, '/',
      &             nrecdiags_ek  MYID
       else
-        MPI_master_only write(STDOUT,'(/1x,2A/)')
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &             'WRT_DIAGS_EK ERROR: Cannot ',
      &             'synchronize/close diag netCDF file.'
         may_day_flag=3

@@ -96,7 +96,7 @@
       ierr=nf_put_vara_int (nciddiags_vrt_avg, diags_vrtTstep_avg,
      &               start, count, ibuff)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,1) 'time_step_avg', record, ierr
+        write(stdout,1) 'time_step_avg', record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -107,7 +107,7 @@
      &                                    record, timediags_vrt_avg)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        write(STDOUT,1) vname(1,indxTime)(1:lvar), record, ierr
+        write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -118,7 +118,7 @@
      &                                         record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        write(STDOUT,1) vname(1,indxTime2)(1:lvar), record, ierr
+        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
      &                  MYID
         goto 99                                           !--> ERROR
       endif
@@ -255,23 +255,23 @@
 # ifdef DEBUG
       i=5
       j=5
-      write(STDOUT,*) 'Write diag vrt his at : i='
+      write(*,*) 'Write diag vrt his at : i='
      &                      ,i,' j=',j
-      write(STDOUT,*) 'vrtXadv_avg(i,j)   ',vrtXadv_avg(i,j)
-      write(STDOUT,*) 'vrtYadv_avg(i,j)   ',vrtYadv_avg(i,j)
-      write(STDOUT,*) 'vrtCor_avg(i,j)    ',vrtCor_avg(i,j)
-      write(STDOUT,*) 'vrtPrsgrd_avg(i,j) ',vrtPrsgrd_avg(i,j)
-      write(STDOUT,*) 'vrtHmix_avg(i,j)   ',vrtHmix_avg(i,j)
-      write(STDOUT,*) 'vrtVmix_avg(i,j)   ',vrtVmix_avg(i,j)
+      write(*,*) 'vrtXadv_avg(i,j)   ',vrtXadv_avg(i,j)
+      write(*,*) 'vrtYadv_avg(i,j)   ',vrtYadv_avg(i,j)
+      write(*,*) 'vrtCor_avg(i,j)    ',vrtCor_avg(i,j)
+      write(*,*) 'vrtPrsgrd_avg(i,j) ',vrtPrsgrd_avg(i,j)
+      write(*,*) 'vrtHmix_avg(i,j)   ',vrtHmix_avg(i,j)
+      write(*,*) 'vrtVmix_avg(i,j)   ',vrtVmix_avg(i,j)
 #  if defined DIAGNOSTICS_BARO
-      write(STDOUT,*) 'vrtBaro_avg(i,j) ',vrtBaro_avg(i,j)
+      write(*,*) 'vrtBaro_avg(i,j) ',vrtBaro_avg(i,j)
 #  endif
 #  if defined M3FAST
-      write(STDOUT,*) 'vrtfast_avg(i,j) ',vrtfast_avg(i,j)
+      write(*,*) 'vrtfast_avg(i,j) ',vrtfast_avg(i,j)
 #  endif
-      write(STDOUT,*) 'vrtrate_avg(i,j)   ',vrtrate_avg(i,j)
+      write(*,*) 'vrtrate_avg(i,j)   ',vrtrate_avg(i,j)
 
-      write(STDOUT,*) 'SumUVhis_avg(i,j) = ',vrtXadv_avg(i,j)
+      write(*,*) 'SumUVhis_avg(i,j) = ',vrtXadv_avg(i,j)
      &                                  +  vrtYadv_avg(i,j)
      &                                  +  vrtCor_avg(i,j)
      &                                  +  vrtPrsgrd_avg(i,j)
@@ -281,7 +281,7 @@
      &                                  +  vrtfast_avg(i,j)
 #  endif
      &                                  -  vrtrate_avg(i,j)
-      write(STDOUT,*) '-----------------------------------------'
+      write(*,*) '-----------------------------------------'
 # endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_VRT_AVG ERROR while writing variable ''',A,
@@ -313,12 +313,12 @@
 
 
       if (ierr .eq. nf_noerr) then
-        MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
+        MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &            'WRT_DIAGS_VRT_AVG -- wrote',
      &            ' diag fields into time record =', record, '/',
      &             nrecdiags_vrt_avg  MYID
       else
-        MPI_master_only write(STDOUT,'(/1x,2A/)')
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &             'WRT_DIAGS_VRT_AVG ERROR: Cannot ',
      &             'synchronize/close diag netCDF file.'
         may_day_flag=3

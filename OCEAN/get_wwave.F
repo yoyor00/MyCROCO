@@ -53,7 +53,7 @@
 
         ierr=nf_inq_varid (ncidwave, 'wwv_time', ww_tid)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'wwv_time', wave_file(1:lstr)
+          write(stdout,3) 'wwv_time', wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -76,7 +76,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxWWA)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWWA)(1:lvar),wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -95,7 +95,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxWWD)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWWD)(1:lvar),wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -115,7 +115,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxWWP)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWWP)(1:lvar),wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -135,7 +135,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxWWU)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWWU)(1:lvar),wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -157,7 +157,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxWEB)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWEB)(1:lvar),wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -178,7 +178,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxWED)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWED)(1:lvar),wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -199,7 +199,7 @@
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxWER)(1:lvar),wave_file(1:lstr)
+          write(stdout,3) vname(1,indxWER)(1:lvar),wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -252,7 +252,7 @@
 
       ierr=nf_get_var1_FTYPE(ncidwave, ww_tid, ww_rec, cff)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,6) 'wwv_time', ww_rec
+        write(stdout,6) 'wwv_time', ww_rec
         goto 99                                         !--> ERROR
       endif
 # ifdef USE_CALENDAR
@@ -276,7 +276,7 @@
       endif
 
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,6) 'wind-wave amplitude', ww_rec
+        write(stdout,6) 'wind-wave amplitude', ww_rec
         goto 99                                         !--> ERROR
       endif
 
@@ -293,7 +293,7 @@
       endif
 
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,6) 'wind-wave direction', ww_rec
+        write(stdout,6) 'wind-wave direction', ww_rec
         goto 99                                         !--> ERROR
       endif
 
@@ -310,7 +310,7 @@
       endif
 
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,6) 'wind-wave period', ww_rec
+        write(stdout,6) 'wind-wave period', ww_rec
         goto 99                                         !--> ERROR
       endif
 
@@ -328,7 +328,7 @@
       endif
 
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,6) 'wave orbital velocity', ww_rec
+        write(stdout,6) 'wave orbital velocity', ww_rec
         goto 99                                         !--> ERROR
       endif
 # endif
@@ -347,7 +347,7 @@
       endif
 
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,6) 'wave breaking dissipation', ww_rec
+        write(stdout,6) 'wave breaking dissipation', ww_rec
         goto 99                                         !--> ERROR
       endif
 # endif
@@ -366,7 +366,7 @@
       endif
 
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,6) 'wave frictional dissipation', ww_rec
+        write(stdout,6) 'wave frictional dissipation', ww_rec
         goto 99                                         !--> ERROR
       endif
 # endif
@@ -385,14 +385,14 @@
       endif
 
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,6) 'wave roller dissipation', ww_rec
+        write(stdout,6) 'wave roller dissipation', ww_rec
         goto 99                                         !--> ERROR
       endif
 # endif
 
 
       itww=i
-      MPI_master_only write(STDOUT,'(6x,A,1x,A,1x,F10.4,1x,I4)')
+      MPI_master_only write(stdout,'(6x,A,1x,A,1x,F10.4,1x,I4)')
      &  'GET_WWAVE --','Read wind wave input data for time =', cff
 # ifdef USE_CALENDAR
      &  -ww_origin_date_in_sec*sec2day
@@ -409,14 +409,14 @@
 !
   3   format(/,' GET_WWAVE - unable to find forcing variable: ',a,
      &                          /,15x,'in forcing NetCDF file: ',a)
-  4   write(STDOUT,5) wave_file(1:lstr)
+  4   write(stdout,5) wave_file(1:lstr)
   5   format(/,' GET_WWAVE - unable to open forcing NetCDF file:',
      &                                                        1x,a)
       goto 99
 
   6   format(/,' GET_WWAVE - error while reading variable: ',a,2x,
      &                                      ' at TIME index = ',i4)
-  7   write(STDOUT,8) ww_rec, ntww, wave_file(1:lstr), tdays,
+  7   write(stdout,8) ww_rec, ntww, wave_file(1:lstr), tdays,
      &                                wwv_time(itww)*sec2day
 # ifdef USE_CALENDAR
      &  -ww_origin_date_in_sec*sec2day
@@ -739,7 +739,7 @@
 !
       if ((ww_cycle.gt.0.) .and. (fac1.lt.0..or.fac2.lt.0.)) then
         if (ZEROTH_TILE) then
-          write(STDOUT,1) 'wwv_time', tdays, wwv_time(it2)*sec2day
+          write(stdout,1) 'wwv_time', tdays, wwv_time(it2)*sec2day
 # ifdef USE_CALENDAR
      &  -ww_origin_date_in_sec*sec2day
 # endif

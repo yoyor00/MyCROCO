@@ -70,7 +70,7 @@
 
 
 # undef CR
-CR      write(STDOUT,*) 'wrt_avg: Entry  ' MYID
+CR      write(*,*) 'wrt_avg: Entry  ' MYID
 !
 !     Write out evolving model variables:
 !     ----- --- -------- ----- ----------
@@ -94,19 +94,19 @@ CR      write(STDOUT,*) 'wrt_avg: Entry  ' MYID
       ierr=nf_put_vara_int (ncidablavg, ablavgTstep, start,
      &                      count, ibuff)
       if (ierr .ne. nf_noerr) then
-         MPI_master_only write(STDOUT,1) 'time_step', record, ierr
+         MPI_master_only write(stdout,1) 'time_step', record, ierr
      &        MYID
          goto 99                !--> ERROR
       endif
 
-CR      write(STDOUT,*) 'wrt_avg:  time  ' MYID
+CR      write(*,*) 'wrt_avg:  time  ' MYID
 !-----------------------------------------------------------------------
 !     Time
 !-----------------------------------------------------------------------
       ierr=nf_put_var1_FTYPE (ncidablavg, ablavgTime, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
-        MPI_master_only write(STDOUT,1)
+        MPI_master_only write(stdout,1)
      &        vname(1,indxTime)(1:lvar), record, ierr
      &        MYID
         goto 99                !--> ERROR
@@ -118,7 +118,7 @@ CR      write(STDOUT,*) 'wrt_avg:  time  ' MYID
       ierr=nf_put_var1_FTYPE (ncidablavg, ablavgTime2, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
-        MPI_master_only write(STDOUT,1)
+        MPI_master_only write(stdout,1)
      &        vname(1,indxTime2)(1:lvar), record, ierr
      &        MYID
         goto 99                !--> ERROR
@@ -345,12 +345,12 @@ CR      write(STDOUT,*) 'wrt_avg:  time  ' MYID
       endif
 # endif
       if (ierr .eq. nf_noerr) then
-       MPI_master_only write(STDOUT,'(6x,A,2(A,I4,1x),A,I3)')
+       MPI_master_only write(stdout,'(6x,A,2(A,I4,1x),A,I3)')
      &       'WRT_ABL_AVG -- wrote ',
      &       'averages fields into time record =', record, '/',
      &        nrecablavg  MYID
       else
-        MPI_master_only write(STDOUT,'(/1x,2A/)')
+        MPI_master_only write(stdout,'(/1x,2A/)')
      &        'WRT_ABL_avg ERROR: Cannot ',
      &        'synchronize/close avgtory netCDF file.'
         may_day_flag=3

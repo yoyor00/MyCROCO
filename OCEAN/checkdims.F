@@ -38,13 +38,13 @@
 
       ierr=nf_inq (ncid, ndims, nvars, ngatts, recdim)
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,'(/1x,4A/)') 'CHECKDIMS ERROR while inquiring ',
+        write(stdout,'(/1x,4A/)') 'CHECKDIMS ERROR while inquiring ',
      &                  'about netCDF file ''', ncname(1:lstr), '''.'
       else
         do i=1,ndims
           ierr=nf_inq_dim (ncid, i, dimname, dimsize)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,'(/1x,2A,I3/8x,3A/)') 'CHECKDIMS ERROR ',
+            write(stdout,'(/1x,2A,I3/8x,3A/)') 'CHECKDIMS ERROR ',
      &                  'while inquiring about dimension ID =', i,
      &                  'in netCDF file ''', ncname(1:lstr), '''.'
             goto 99                                       !--> ERROR
@@ -53,36 +53,36 @@
           if ((ldim.eq.6 .and. dimname(1:ldim).eq.'xi_rho') .or.
      &        (ldim.eq.4 .and. dimname(1:ldim).eq.'xi_v'  )) then
             if (dimsize.ne.xi_rho) then
-              write(STDOUT,1) dimname(1:ldim), dimsize, xi_rho
+              write(stdout,1) dimname(1:ldim), dimsize, xi_rho
               goto 99                                     !--> ERROR
             endif
           elseif ((ldim.eq.4 .and. dimname(1:ldim).eq.'xi_u'  ) .or.
      &            (ldim.eq.6 .and. dimname(1:ldim).eq.'xi_psi')) then
             if (dimsize.ne.xi_u) then
-              write(STDOUT,1) dimname(1:ldim), dimsize, xi_u
+              write(stdout,1) dimname(1:ldim), dimsize, xi_u
               goto 99                                     !--> ERROR
             endif
           elseif ((ldim.eq.7 .and. dimname(1:ldim).eq.'eta_rho') .or.
      &            (ldim.eq.5 .and. dimname(1:ldim).eq.'eta_u' )) then
             if (dimsize.ne.eta_rho) then
-              write(STDOUT,1) dimname(1:ldim), dimsize, eta_rho
+              write(stdout,1) dimname(1:ldim), dimsize, eta_rho
               goto 99                                     !--> ERROR
             endif
           elseif ((ldim.eq.7 .and. dimname(1:ldim).eq.'eta_v'  ) .or.
      &            (ldim.eq.5 .and. dimname(1:ldim).eq.'eta_psi'))then
             if (dimsize.ne.eta_v) then
-              write(STDOUT,1) dimname(1:ldim), dimsize, eta_v
+              write(stdout,1) dimname(1:ldim), dimsize, eta_v
               goto 99                                     !--> ERROR
             endif
 #ifdef SOLVE3D
           elseif (ldim.eq.5 .and. dimname(1:ldim).eq.'s_rho') then
             if (dimsize.ne.N) then
-              write(STDOUT,1) dimname(1:ldim), dimsize, N
+              write(stdout,1) dimname(1:ldim), dimsize, N
               goto 99                                     !--> ERROR
             endif
           elseif (ldim.eq.3 .and. dimname(1:ldim).eq.'s_w') then
             if (dimsize.ne.N+1) then
-              write(STDOUT,1) dimname(1:ldim), dimsize, N+1
+              write(stdout,1) dimname(1:ldim), dimsize, N+1
               goto 99                                     !--> ERROR
             endif
 #endif

@@ -50,7 +50,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 
         ierr=nf_inq_varid (ncidbulk, 'bulk_time', bulk_tid)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'bulk_time', bulkname(1:lstr)
+          write(stdout,3) 'bulk_time', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -61,17 +61,17 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 # if defined ABL1D && !defined ANA_ABL_VGRID
         ierr=nf_inq_dimid(ncidbulk, 'N_abl', nabl_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'N_abl not found in ', bulkname(1:lstr)
+          write(stdout,3) 'N_abl not found in ', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
         ierr=nf_inq_dimlen(ncidbulk, nabl_id, N_abl_nc)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'Problem to get N_abl value in ',
+          write(stdout,3) 'Problem to get N_abl value in ',
      &                     bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
         if (N_abl_nc .ne. N_abl) then
-          write(STDOUT,3) 'Inconsistency between N_abl in param.h',
+          write(stdout,3) 'Inconsistency between N_abl in param.h',
      &                     'and N_abl in', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -85,7 +85,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         ierr=nf_inq_varid (ncidbulk, vname_abl1d(1,indxZR)(1:lvar),
      &                     zr_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'zr not found in ', bulkname(1:lstr)
+          write(stdout,3) 'zr not found in ', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -93,7 +93,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         ierr=nf_inq_varid (ncidbulk, vname_abl1d(1,indxZW)(1:lvar),
      &                     zw_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'zw not found in ', bulkname(1:lstr)
+          write(stdout,3) 'zw not found in ', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -101,7 +101,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         ierr=nf_inq_varid (ncidbulk, vname_abl1d(1,indxHZR)(1:lvar),
      &                     Hzr_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'Hzr not found in ', bulkname(1:lstr)
+          write(stdout,3) 'Hzr not found in ', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -109,7 +109,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         ierr=nf_inq_varid (ncidbulk, vname_abl1d(1,indxHZW)(1:lvar),
      &                     Hzw_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'Hzw not found in ', bulkname(1:lstr)
+          write(stdout,3) 'Hzw not found in ', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -130,14 +130,14 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             endif
 #  else
             if(i.ne.4) then
-              write(STDOUT,3) vname(1,indxTAIR)(1:lvar),bulkname(1:lstr)
+              write(stdout,3) vname(1,indxTAIR)(1:lvar),bulkname(1:lstr)
               goto 99                                     !--> ERROR
             endif
 #  endif
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxTAIR)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname(1,indxTAIR)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -158,14 +158,14 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             endif
 #  else
             if(i.ne.4) then
-              write(STDOUT,3) vname(1,indxRHUM)(1:lvar),bulkname(1:lstr)
+              write(stdout,3) vname(1,indxRHUM)(1:lvar),bulkname(1:lstr)
               goto 99                                     !--> ERROR
             endif
 #  endif
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxRHUM)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname(1,indxRHUM)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -185,7 +185,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxRADLW)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname(1,indxRADLW)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -205,7 +205,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxShflx_rsw)(1:lvar),
+          write(stdout,3) vname(1,indxShflx_rsw)(1:lvar),
      &                                                bulkname(1:lstr)
           goto 99                                        !--> ERROR
         endif
@@ -224,7 +224,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxPATM)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname(1,indxPATM)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -243,7 +243,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxShflx_rswbio)(1:lvar),
+          write(stdout,3) vname(1,indxShflx_rswbio)(1:lvar),
      &                                              bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
@@ -263,7 +263,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxPRATE)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname(1,indxPRATE)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif /* SALINITY */
@@ -284,14 +284,14 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             endif
 #  else
             if(i.ne.4) then
-              write(STDOUT,3) vname(1,indxUWND)(1:lvar),bulkname(1:lstr)
+              write(stdout,3) vname(1,indxUWND)(1:lvar),bulkname(1:lstr)
               goto 99                                         !--> ERROR
             endif
 #  endif
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxUWND)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname(1,indxUWND)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -312,14 +312,14 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
             endif
 #  else
             if(i.ne.4) then
-              write(STDOUT,3) vname(1,indxVWND)(1:lvar),bulkname(1:lstr)
+              write(stdout,3) vname(1,indxVWND)(1:lvar),bulkname(1:lstr)
               goto 99                                         !--> ERROR
             endif
 #  endif
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxVWND)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname(1,indxVWND)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -335,14 +335,14 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ierr=nf_inq_varndims (ncidbulk, uhpg_id, i)
           if (ierr. eq. nf_noerr) then
             if(i.ne.4) then
-              write(STDOUT,3) vname_abl1d(1,indxUHPG)(1:lvar),
+              write(stdout,3) vname_abl1d(1,indxUHPG)(1:lvar),
      &            bulkname(1:lstr)
               goto 99                                         !--> ERROR
             endif
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname_abl1d(1,indxUHPG)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname_abl1d(1,indxUHPG)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -354,13 +354,13 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ierr=nf_inq_varndims (ncidbulk, vhpg_id, i)
           if (ierr. eq. nf_noerr) then
             if(i.ne.4) then
-              write(STDOUT,3) vname_abl1d(1,indxVHPG)(1:lvar),bulkname(1:lstr)
+              write(stdout,3) vname_abl1d(1,indxVHPG)(1:lvar),bulkname(1:lstr)
               goto 99                                         !--> ERROR
             endif
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname_abl1d(1,indxVHPG)(1:lvar),bulkname(1:lstr)
+          write(stdout,3) vname_abl1d(1,indxVHPG)(1:lvar),bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -403,7 +403,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 
         ierr=nf_get_var1_FTYPE (ncidbulk, bulk_tid, bulk_rec, cff)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'bulk_time', bulk_rec
+          write(stdout,6) 'bulk_time', bulk_rec
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
@@ -420,22 +420,22 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         if (iic.eq.0 .and. i.eq.1) then
           ierr=nf_get_vara_FTYPE(ncidbulk,zr_id,1,N_abl,zr_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,6) 'zr', bulk_rec
+            write(stdout,6) 'zr', bulk_rec
             goto 99                                         !--> ERROR
           endif
           ierr=nf_get_vara_FTYPE(ncidbulk,zw_id,1,N_abl,zw_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,6) 'zw', bulk_rec
+            write(stdout,6) 'zw', bulk_rec
             goto 99                                         !--> ERROR
           endif
           ierr=nf_get_vara_FTYPE(ncidbulk,Hzr_id,1,N_abl,Hzr_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,6) 'Hzr', bulk_rec
+            write(stdout,6) 'Hzr', bulk_rec
             goto 99                                         !--> ERROR
           endif
           ierr=nf_get_vara_FTYPE(ncidbulk,Hzw_id,1,N_abl,Hzw_abl)
           if (ierr .ne. nf_noerr) then
-            write(STDOUT,6) 'Hzw', bulk_rec
+            write(stdout,6) 'Hzw', bulk_rec
             goto 99                                         !--> ERROR
           endif
         endif
@@ -457,7 +457,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         !               tairg(:,:,i)=pt_dtag(:,:,1,i)
 #  endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'TAIR', bulk_rec
+          write(stdout,6) 'TAIR', bulk_rec
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -478,7 +478,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         !     rhumg(:,:,i)=pq_dtag(:,:,1,i)
 #  endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'RHUM', bulk_rec
+          write(stdout,6) 'RHUM', bulk_rec
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -493,7 +493,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ierr=nf_get_var1_FTYPE (ncidbulk,radlw_id,bulk_rec,radlwp(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'RADLW', bulk_rec
+          write(stdout,6) 'RADLW', bulk_rec
           goto 99                                         !--> ERROR
         endif
 # else
@@ -510,7 +510,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ierr=nf_get_var1_FTYPE (ncidbulk,radsw_id,bulk_rec,radswp(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'RADSW', bulk_rec
+          write(stdout,6) 'RADSW', bulk_rec
           goto 99                                         !--> ERROR
         endif
 # else
@@ -529,7 +529,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ierr=nf_get_var1_FTYPE (ncidbulk,patm_id,bulk_rec,patmp(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'PATM', bulk_rec
+          write(stdout,6) 'PATM', bulk_rec
           goto 99                                         !--> ERROR
         endif
 
@@ -543,7 +543,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
      &                        bulk_rec, radswbiop(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'RADSWBIO', bulk_rec
+          write(stdout,6) 'RADSWBIO', bulk_rec
           goto 99                                         !--> ERROR
         endif
 # endif /* DIURNAL_INPUT_SRFLX */
@@ -559,7 +559,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ierr=nf_get_var1_FTYPE (ncidbulk,prate_id,bulk_rec,pratep(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'PRATE', bulk_rec
+          write(stdout,6) 'PRATE', bulk_rec
           goto 99                                         !--> ERROR
         endif
 #  endif
@@ -581,7 +581,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ! uwndg(:,:,i)=pu_dtag(:,:,1,i)
 #  endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'uwnd', bulk_rec
+          write(stdout,6) 'uwnd', bulk_rec
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -602,7 +602,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ! vwndg(:,:,i)=pv_dtag(:,:,1,i)
 #  endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'vwnd', bulk_rec
+          write(stdout,6) 'vwnd', bulk_rec
           goto 99                                         !--> ERROR
         endif
 # endif
@@ -611,19 +611,19 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         ierr=nf_fread (pgu_dtag(START_2D_ARRAY,1,i),
      &                   ncidbulk, uhpg_id,bulk_rec, abl3dvar)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'uhpg', bulk_rec
+          write(stdout,6) 'uhpg', bulk_rec
           goto 99                                         !--> ERROR
         endif
 
         ierr=nf_fread (pgv_dtag(START_2D_ARRAY,1,i),
      &                   ncidbulk, vhpg_id,bulk_rec, abl3dvar)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'vhpg', bulk_rec
+          write(stdout,6) 'vhpg', bulk_rec
           goto 99                                         !--> ERROR
         endif
 # endif
        itbulk=i
-       MPI_master_only write(STDOUT,'(6x,A,1x,A,1x,F10.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,F10.4,1x,I4)')
      &              'GET_BULK   --',
      &              'Read fields for bulk formula   for time =', cff
 # ifdef USE_CALENDAR
@@ -640,13 +640,13 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
   3   format(/,' GET_BULK - ERROR: unable to find forcing variable',
      &                   ': ',a,/,11x,'in forcing NetCDF file: ',a)
-  4   write(STDOUT,5) bulkname(1:lstr)
+  4   write(stdout,5) bulkname(1:lstr)
   5   format(/,' GET_BULK - ERROR: unable to open forcing NetCDF ',
      &                                                  'file: ',a)
       goto 99
   6   format(/,' GET_BULK - ERROR while reading variable: ',a,2x,
      &                                      ' at TIME index = ',i4)
-  7   write(STDOUT,8) bulk_rec, ntbulk, bulkname(1:lstr), tdays,
+  7   write(stdout,8) bulk_rec, ntbulk, bulkname(1:lstr), tdays,
      &                                     bulk_time(itbulk)*sec2day
 # ifdef USE_CALENDAR
      &  -blk_origin_date_in_sec*sec2day
@@ -1201,7 +1201,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
       else
         if (ZEROTH_TILE) then
-          write(STDOUT,1) 'bulk_time',tdays,bulk_time(it2)*sec2day
+          write(stdout,1) 'bulk_time',tdays,bulk_time(it2)*sec2day
 # ifdef USE_CALENDAR
      &  -blk_origin_date_in_sec*sec2day
 # endif

@@ -451,11 +451,11 @@ C$    trd=omp_get_thread_num()
      &         tgvnam_oa(tv_oa(iv)),trim(vnamdp),ic,'_',iv,trim(vnams)
        
         if (verbose >=16 ) then
-         MPI_master_only write(STDOUT,fmt='(a22)') 
+         MPI_master_only write(stdout,fmt='(a22)') 
      &   tmpvnam
-         MPI_master_only write(STDOUT,fmt='(i3.3)') 
+         MPI_master_only write(stdout,fmt='(i3.3)') 
      &   tvar_oa(tc_oa(ic),tvc_oa(ic),ivc)
-         MPI_master_only write(STDOUT,fmt='(3(i3.3,1x))') 
+         MPI_master_only write(stdout,fmt='(3(i3.3,1x))') 
      &   tc_oa(ic), tvc_oa(ic), ivc
         end if
 

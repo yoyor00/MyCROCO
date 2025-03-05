@@ -170,7 +170,7 @@
 !
       write(iout,'(6x,A)') 'return'
       write(iout,'(2x,A/5x,A1,2x,A,1x,A/5x,A1,2x,A,1x,A)')
-     &   '99  MPI_master_only write(STDOUT,''(/1x,A,A/14x,A)'')',
+     &   '99  MPI_master_only write(stdout,''(/1x,A,A/14x,A)'')',
      &   '&', '''SETUP_KWDS ERROR: Unsufficient size of string',
      &     'Coptions'',', '&', '''in file "strings.h".'',',
      &                   '''Increase the size it and recompile.'''

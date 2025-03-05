@@ -148,7 +148,7 @@
       enddo
 
 c*      do i=Istr,Iend,4
-c*        write(STDOUT,15) i,alpha(i,10)*1.e7,beta(i,10)*1.e7
+c*        write(6,15) i,alpha(i,10)*1.e7,beta(i,10)*1.e7
 c*      enddo
 c*  15  format(1x,'i = ',i4,' alpha = ',f6.1,1x,'  beta = ',f6.1)
 

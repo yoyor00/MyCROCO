@@ -123,7 +123,7 @@
      &         (randz(i+1)*2.-1.) +dAktdz(ifix,jfix,zfix)
 
 ! In future interpolate Akt dAktdz to float position.
-c       write(STDOUT,*)iflt,randz(i+1),dAktdz(ifix,jfix,zfix),
+c       write(*,*)iflt,randz(i+1),dAktdz(ifix,jfix,zfix),
 c    &          Akt(ifix,jfix,zfix,1),deltaw
 
 # endif
@@ -150,9 +150,9 @@ c    &          Akt(ifix,jfix,zfix,1),deltaw
 
         znow=0.
 
-c       write(STDOUT,*) ' RANDOM WALK '
-c       write(STDOUT,*) 'track(izgrd)', track(izgrd,nfp1,iflt)
-c       write(STDOUT,*) 'Random displacement ', deltaw*dt
+c       write(*,*) ' RANDOM WALK '
+c       write(*,*) 'track(izgrd)', track(izgrd,nfp1,iflt)
+c       write(*,*) 'Random displacement ', deltaw*dt
 
         k1=int(track(izgrd,nfp1,iflt))
         r2=track(izgrd,nfp1,iflt) - float(k1)
@@ -175,9 +175,9 @@ c       write(STDOUT,*) 'Random displacement ', deltaw*dt
      &              +p1*q2*(r1*z_w(i1,j2,k1)+r2*z_w(i1,j2,k2))
      &              +p2*q2*(r1*z_w(i2,j2,k1)+r2*z_w(i2,j2,k2))
 
-c       write(STDOUT,*) 'ZNOW ', znow
+c       write(*,*) 'ZNOW ', znow
         znow=znow+deltaw*dt
-c       write(STDOUT,*) 'ZNOW upgraded', znow
+c       write(*,*) 'ZNOW upgraded', znow
 
 ! put some limits to znow to prevent having values above sea level
 ! and under bot.
@@ -217,7 +217,7 @@ c       write(STDOUT,*) 'ZNOW upgraded', znow
         endif
         track(izgrd,nfp1,iflt)=max(0.,min(float(N),
      &                     track(izgrd,nfp1,iflt)))
-c       write(STDOUT,*) 'new track ', track(izgrd,nfp1,iflt)
+c       write(*,*) 'new track ', track(izgrd,nfp1,iflt)
 
 # ifdef RANDOM_HORIZONTAL
 ! calculate the horizontal random walk and scale by grid cell size

@@ -4177,7 +4177,7 @@ C$OMP END MASTER
         imax=imax+iminmpi-1
         jmax=jmax+jminmpi-1
 # endif
-        write(STDOUT,'(9(A/))')
+        write(stdout,'(9(A/))')
      &     '                                         ',
      &     '                                         ',
      &     ' ======================================= ',
@@ -4189,19 +4189,19 @@ C$OMP END MASTER
      &     '                                         '
 
 # ifdef MPI
-        write(STDOUT,'(A,I4)') '      mynode =',mynode
+        write(stdout,'(A,I4)') '      mynode =',mynode
 # endif
 
         if (VMAX.eq.666.) then
-          write(STDOUT,'(A,F10.2)')
+          write(stdout,'(A,F10.2)')
      &                                            '  VMAX (M/S) =   NaN'
         else
-          write(STDOUT,'(A,F10.2)') 
+          write(stdout,'(A,F10.2)') 
      &                                            '  VMAX (M/S) =',VMAX
         endif
-        write(STDOUT,'(A,2I6)')  
+        write(stdout,'(A,2I6)')  
      &                                       '  IMAX JMAX   =',imax,jmax
-        write(STDOUT,'(A,2I6/)')
+        write(stdout,'(A,2I6/)')
      &                                       '  IINT IFAST  =',iic,iif
 
 !     GC quik fix Comment this because it blocks the correct mpi_abort

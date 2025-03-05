@@ -70,7 +70,7 @@
           cff1=0.0
           if (ZEROTH_TILE) then
             timediabio_avg=time
-!            MPI_master_only write(STDOUT,*) 'start avg',iic,ntsdiabio_avg,
+!            MPI_master_only write(*,*) 'start avg',iic,ntsdiabio_avg,
 !     &           nwrtdiabio_avg
           endif
         elseif (mod(ilc-ntsdiabio_avg,nwrtdiabio_avg).gt.1) then
@@ -84,7 +84,7 @@
           cff1=1.0
           if (ZEROTH_TILE) then
             timediabio_avg=cff*(timediabio_avg+time)
-!            MPI_master_only write(STDOUT,*) 'finish avg',iic,ntsdiabio_avg,
+!            MPI_master_only write(*,*) 'finish avg',iic,ntsdiabio_avg,
 !     &           nwrtdiabio_avg
           endif
         endif

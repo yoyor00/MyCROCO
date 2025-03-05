@@ -110,7 +110,7 @@
 # ifdef WET_DRY
       if (hmin .lt. D_wetdry) hmin=D_wetdry
 # endif
-      MPI_master_only write(STDOUT,'(/1x,A/,/1x,A,10x,A/)')
+      MPI_master_only write(stdout,'(/1x,A/,/1x,A,10x,A/)')
      &                       'Vertical S-coordinate System:',
      &                       'level   S-coord     Cs-curve',
      &                       'at_hmin  over_slope     at_hmax'
@@ -126,7 +126,7 @@
         cff2=sc_w(k)*hc+(0.5*(hmin+hmax)-hc)*Cs_w(k)
         cff3=sc_w(k)*hc+(hmax-hc)*Cs_w(k)
 # endif
-        MPI_master_only write(STDOUT,'(I6,2F12.7,4x,3F12.3)')
+        MPI_master_only write(stdout,'(I6,2F12.7,4x,3F12.3)')
      &                     k, sc_w(k),Cs_w(k), cff1,cff2,cff3
       enddo
 
@@ -150,7 +150,7 @@
       inc_faststep=MAX(1,MIN(inc_faststep_max,
      &                       INT(ndtfast*MIN(0.5, Hz0/(r_D*dt) ))))
 #  endif
-      MPI_master_only write(STDOUT,'(/1x,A,I3)')
+      MPI_master_only write(stdout,'(/1x,A,I3)')
      &         'Friction 3D Fast Timestep Increment: inc_faststep = ',
      &                                               inc_faststep
 # endif /* BSTRESS_FAST */

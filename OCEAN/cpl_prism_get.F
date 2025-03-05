@@ -75,10 +75,10 @@
 !
 !!$      if (level==0) then
 !!$         MPI_master_only
-!!$     & write(STDOUT,*) 'CPL-CROCO : Get for parent at time', rcvtime
+!!$     & write(*,*) 'CPL-CROCO : Get for parent at time', rcvtime
 !!$      else
 !!$         MPI_master_only
-!!$     & write(STDOUT,*) 'CPL-CROCO : Get for child:', level,
+!!$     & write(*,*) 'CPL-CROCO : Get for child:', level,
 !!$     &  'at time', rcvtime
 !!$      endif
 !
@@ -580,7 +580,7 @@
             smstr = sqrt(tab_u_tmp**2 + tab_v_tmp**2)
          endif
 #  else
-         write(STDOUT,*) 'OA_GRID_UV and grid rotation: case not coded...'
+         write(*,*) 'OA_GRID_UV and grid rotation: case not coded...'
          return  !-->  EXIT
 #  endif
       endif
@@ -624,7 +624,7 @@
          enddo
          enddo
 #  else
-         write(STDOUT,*) 'OA_GRID_UV and grid rotation: case not coded...'
+         write(*,*) 'OA_GRID_UV and grid rotation: case not coded...'
          return  !-->  EXIT
 #  endif
       endif
@@ -650,7 +650,7 @@
          enddo
          enddo
 #  else
-         write(STDOUT,*) 'OA_GRID_UV and grid rotation: case not coded...'
+         write(*,*) 'OA_GRID_UV and grid rotation: case not coded...'
          return  !-->  EXIT
 #  endif
       endif

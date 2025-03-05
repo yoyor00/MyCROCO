@@ -40,9 +40,9 @@
       if (may_day_flag.ne.0) return      !-->  EXIT
       lstr=lenstr(ininame)
       ierr=nf_open(ininame(1:lstr), nf_nowrite, ncid)
-      if (ierr .ne. nf_noerr) write(STDOUT,*) 'DAUBE'
+      if (ierr .ne. nf_noerr) write (stdout,*) 'DAUBE'
       ierr=checkdims (ncid, ininame, lstr, indx)
-      if (ierr .ne. nf_noerr) write(STDOUT,*) 'DAUBE2'
+      if (ierr .ne. nf_noerr) write (stdout,*) 'DAUBE2'
       if (indx.eq.0) then
           indx=1
       elseif (indx.gt.0 .and. nrrec.gt.0 .and. nrrec.le.indx) then
@@ -50,7 +50,7 @@
       endif
 
 c     if (ierr .ne. nf_noerr) then
-c       write(STDOUT,'(/1x,2A/15x,3A)') 'GET_INITIAL_FLOATS ERROR: ',
+c       write(stdout,'(/1x,2A/15x,3A)') 'GET_INITIAL_FLOATS ERROR: ',
 c        ' Cannot open netCDF file', '''', ininame(1:lstr) ,'''.'
 c       goto 99                                           !--> ERROR
 c     endif
@@ -61,7 +61,7 @@ c     endif
       ierr=nf_inq_varid (ncid, 'nfloats', varid)
       ierr=nf_get_var1_int (ncid, varid, indx, nfloats)
       if (ierr .ne. nf_noerr) then
-          write(STDOUT,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
+          write (stdout,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
      &            'ERROR: Cannot read nfloats in netCDF file ',
      &             ininame(1:lstr),'.'
               goto 99                                    !--> ERROR
@@ -81,7 +81,7 @@ c     endif
           ierr=nf_get_vara_FTYPE (ncid, varid, startTinfo,
      &                          countTinfo, Tinfo)
           if (ierr .ne. nf_noerr) then
-              write(STDOUT,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
+              write (stdout,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
      &            'ERROR: Cannot read Tinfo in netCDF file ',
      &             ininame(1:lstr),'.'
               goto 99                                    !--> ERROR
@@ -99,7 +99,7 @@ c     endif
           count(2)=1
           ierr=nf_get_vara_int (ncid, varid, start, count,fltgrd)
           if (ierr .ne. nf_noerr) then
-              write(STDOUT,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
+              write (stdout,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
      &            'ERROR: Cannot read grid_level in netCDF file ',
      &             ininame(1:lstr),'.'
               goto 99                                    !--> ERROR
@@ -141,7 +141,7 @@ c     endif
  10           continue
 
           else
-              write(STDOUT,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
+              write (stdout,'(/1x,2A/8x,2A/)') 'GET_INITIAL_FLOATS ',
      &         'ERROR: Cannot read track in netCDF file ',
      &             ininame(1:lstr),'.'
               goto 99                                    !--> ERROR

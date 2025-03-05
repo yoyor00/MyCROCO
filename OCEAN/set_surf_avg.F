@@ -66,7 +66,7 @@
 
           if (ZEROTH_TILE) then
             timesurf_avg=time
-!            MPI_master_only write(STDOUT,*) 'started averaging surf',iic,
+!            MPI_master_only write(*,*) 'started averaging surf',iic,
 !     &                                      ntssurf_avg,nwrtsurf_avg
           endif
 
@@ -142,7 +142,7 @@
           cff=1./float(nwrtsurf_avg)
           if (ZEROTH_TILE) then
             timesurf_avg=cff*(timesurf_avg+time)
-!            MPI_master_only write(STDOUT,*) 'finish aver. surf',iic,
+!            MPI_master_only write(*,*) 'finish aver. surf',iic,
 !     &                                 ntssurf_avg,nwrtsurf_avg
           endif
 

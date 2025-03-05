@@ -48,7 +48,7 @@
       call MPI_Comm_size (MPI_COMM_WORLD, nsize,  ierr)
       call MPI_Comm_rank (MPI_COMM_WORLD, mynode, ierr)
       if (nsize.ne.NNODES) then
-        MPI_master_only write(STDOUT,'(/1x,A,I5,1x,A,I5,A/)')
+        MPI_master_only write(stdout,'(/1x,A,I5,1x,A,I5,A/)')
      &     'ERROR in MPI_Setup: number of MPI-nodes should be',
      &                         NNODES, 'instead of', nsize, '.'
         ierr=99
@@ -153,7 +153,7 @@
       nerr= nf_inq_varid(ncid, 'mask_rho', varid)
       nerr= nf_get_var_double(ncid, varid, zmask)
       if(nerr /= nf_noerr ) then
-        write(STDOUT,*) 'Reading mask file failed'
+        write(*,*) 'Reading mask file failed'
         call mpi_abort(MPI_COMM_WORLD, ierr)
       endif
       nerr= nf_close(ncid)
@@ -332,7 +332,7 @@
       jminmpi=jstrmpi
       jmaxmpi=jendmpi
 
-     ! write(STDOUT,*) mynode,istrmpi,iendmpi,jstrmpi,jendmpi
+     ! write(*,*) mynode,istrmpi,iendmpi,jstrmpi,jendmpi
 
 
 !       if(mynode == 0) then
@@ -349,9 +349,9 @@
  !      if(mynode == 0) close(100)
 
  !       if(jj==4)then
- !      write(STDOUT,*) 'diags : ', mynode, CORNER_NE,CORNER_NW,
+ !      write(*,*) 'diags : ', mynode, CORNER_NE,CORNER_NW,
  !    & CORNER_SE,CORNER_SW
- !      write(STDOUT,*) 'bounds : ',mynode,istrmpi,iendmpi,jstrmpi,jendmpi
+ !      write(*,*) 'bounds : ',mynode,istrmpi,iendmpi,jstrmpi,jendmpi
 
  !      endif
  !      call MPI_Barrier (MPI_COMM_WORLD, ierr)
@@ -441,21 +441,21 @@ c          temp2D(i,j)=j+jj*Mm
       do i=mynode,NNODES
         call MPI_Barrier (MPI_COMM_WORLD, ierr)
       enddo
-      write(STDOUT,*)
-      write(STDOUT,*)
-      write(STDOUT,'(A5,I3,2I4)') 'node=',mynode, ii,jj
-      write(STDOUT,*)
+      write(*,*)
+      write(*,*)
+      write(*,'(A5,I3,2I4)') 'node=',mynode, ii,jj
+      write(*,*)
       do j=JendR,JstrR,-1
        write(string,'(I3,3x,20F4.1)') j, (temp2D(i,j), i=IstrR,IendR)
         do i=7,6+4*(IendR-IstrR+1)
          if (string(i-1).eq.'.' .and. string(i).eq.'0') string(i)=' '
         enddo
-       write(STDOUT,'(128A1)') (string(i), i=1,6+4*(IendR-IstrR+1))
+       write(*,'(128A1)') (string(i), i=1,6+4*(IendR-IstrR+1))
       enddo
-      write(STDOUT,*)
-        write(STDOUT,'(5x,20I4)') (i,i=IstrR,IendR)
-      write(STDOUT,*)
-      write(STDOUT,*)
+      write(*,*)
+        write(*,'(5x,20I4)') (i,i=IstrR,IendR)
+      write(*,*)
+      write(*,*)
       do i=0,mynode
         call MPI_Barrier (MPI_COMM_WORLD, ierr)
       enddo
@@ -481,25 +481,25 @@ c      return
       call MessPass3D_tile (Istr,Iend,Jstr,Jend, temp3D,N+1)
 
       do k=0,N
-        write(STDOUT,*) 'k=',k
+        write(*,*) 'k=',k
         do i=mynode,NNODES
           call MPI_Barrier (MPI_COMM_WORLD, ierr)
         enddo
-        write(STDOUT,*)
-        write(STDOUT,*)
-        write(STDOUT,'(A5,I3,2I4)') 'node=',mynode, ii,jj
-        write(STDOUT,*)
+        write(*,*)
+        write(*,*)
+        write(*,'(A5,I3,2I4)') 'node=',mynode, ii,jj
+        write(*,*)
         do j=JendR,JstrR,-1
         write(string,'(I3,3x,20F4.1)')j,(temp3D(i,j,k),i=IstrR,IendR)
          do i=7,6+4*(IendR-IstrR+1)
           if (string(i-1).eq.'.'.and.string(i).eq.'0') string(i)=' '
          enddo
-        write(STDOUT,'(128A1)') (string(i), i=1,6+4*(IendR-IstrR+1))
+        write(*,'(128A1)') (string(i), i=1,6+4*(IendR-IstrR+1))
         enddo
-        write(STDOUT,*)
-        write(STDOUT,'(5x,20I4)') (i,i=IstrR,IendR)
-        write(STDOUT,*)
-        write(STDOUT,*)
+        write(*,*)
+        write(*,'(5x,20I4)') (i,i=IstrR,IendR)
+        write(*,*)
+        write(*,*)
         do i=0,mynode
           call MPI_Barrier (MPI_COMM_WORLD, ierr)
         enddo

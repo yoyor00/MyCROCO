@@ -45,14 +45,14 @@
 
         ierr=nf_inq_varid (ncidclm, 'ssh_time', ssh_tid)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'ssh_time', clmname(1:lstr)
+          write(stdout,3) 'ssh_time', clmname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
         lvar=lenstr(vname(1,indxSSH))
         ierr=nf_inq_varid (ncidclm, vname(1,indxSSH)(1:lvar), ssh_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxSSH)(1:lvar), clmname(1:lstr)
+          write(stdout,3) vname(1,indxSSH)(1:lvar), clmname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -86,7 +86,7 @@
 
         ierr=nf_get_var1_FTYPE(ncidclm, ssh_tid, ssh_rec, cff)
         if (ierr.ne.NF_NOERR) then
-          write(STDOUT,6) 'ssh_time', ssh_rec
+          write(stdout,6) 'ssh_time', ssh_rec
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
@@ -104,11 +104,11 @@
         call update_device(sshg(:,:,i))
 # endif
         if (ierr.ne.NF_NOERR) then
-          write(STDOUT,6) 'SSH', ssh_rec
+          write(stdout,6) 'SSH', ssh_rec
           goto 99                                         !--> ERROR
         endif
-!!     MPI_master_only write(STDOUT,2) cff
-        MPI_master_only write(STDOUT,'(6x,A,1x,g12.4,1x,I4)')
+!!     MPI_master_only write(stdout,2) cff
+        MPI_master_only write(stdout,'(6x,A,1x,g12.4,1x,I4)')
      &       'GET_SSH -- Read SSH climatology      for time =', cff
 # ifdef USE_CALENDAR
      &  -ssh_origin_date_in_sec*sec2day
@@ -129,13 +129,13 @@
   3   format(/,' GET_SSH - unable to find forcing variable: ',a,
      &       /,15x,'in forcing NetCDF file: ',a)
 
-  4   write(STDOUT,5) clmname(1:lstr)
+  4   write(stdout,5) clmname(1:lstr)
   5   format(/,' GET_SSH - unable to open forcing NetCDF file: ',a)
       goto 99
 
   6   format(/,' GET_SSH - ERROR while reading variable: ',a,2x,
      &                                      ' at TIME index = ',i4)
-  7   write(STDOUT,8) ssh_rec, ntssh, frcname(1:lstr), tdays,
+  7   write(stdout,8) ssh_rec, ntssh, frcname(1:lstr), tdays,
      &                                      ssh_time(itssh)*sec2day
 # ifdef USE_CALENDAR
      &  -ssh_origin_date_in_sec*sec2day
@@ -216,7 +216,7 @@ C$    integer  trd, omp_get_thread_num
 !
       else
         if (ZEROTH_TILE) then
-          write(STDOUT,1) 'ssh_time', tdays, ssh_time(it2)*sec2day
+          write(stdout,1) 'ssh_time', tdays, ssh_time(it2)*sec2day
 # ifdef USE_CALENDAR
      &  -ssh_origin_date_in_sec*sec2day
 # endif

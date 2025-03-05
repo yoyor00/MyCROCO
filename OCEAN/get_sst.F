@@ -55,7 +55,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 
         ierr=nf_inq_varid (ncidfrc, 'sst_time', sst_tid)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) 'sst_time', frcname(1:lstr)
+          write(stdout,3) 'sst_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -72,7 +72,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           endif
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxSST)(1:lvar), frcname(1:lstr)
+          write(stdout,3) vname(1,indxSST)(1:lvar), frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 
@@ -80,7 +80,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         ierr=nf_inq_varid (ncidfrc, vname(1,indxdQdSST)(1:lvar),
      &                                                    dqdt_id)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,3) vname(1,indxdQdSST)(1:lvar),frcname(1:lstr)
+          write(stdout,3) vname(1,indxdQdSST)(1:lvar),frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
 !
@@ -117,7 +117,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 
         ierr=nf_get_var1_FTYPE (ncidfrc, sst_tid, sst_rec, cff)
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'sst_time', sst_rec
+          write(stdout,6) 'sst_time', sst_rec
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
@@ -139,7 +139,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ierr=nf_get_var1_FTYPE (ncidfrc, sst_id, sst_rec, sstp(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'SST', sst_rec
+          write(stdout,6) 'SST', sst_rec
           goto 99                                         !--> ERROR
         endif
 
@@ -153,11 +153,11 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           ierr=nf_get_var1_FTYPE (ncidfrc,dqdt_id,sst_rec,dqdtp(i))
         endif
         if (ierr .ne. nf_noerr) then
-          write(STDOUT,6) 'dQdSST', sst_rec
+          write(stdout,6) 'dQdSST', sst_rec
           goto 99                                         !--> ERROR
         endif
        itsst=i
-       MPI_master_only write(STDOUT,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
      &              'GET_SST    --',
      &              'Read SST and dQdSST fields     for time =', cff
 # ifdef USE_CALENDAR
@@ -174,13 +174,13 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
   3   format(/,' GET_SST - ERROR: unable to find forcing variable',
      &                   ': ',a,/,11x,'in forcing NetCDF file: ',a)
-  4   write(STDOUT,5) frcname(1:lstr)
+  4   write(stdout,5) frcname(1:lstr)
   5   format(/,' GET_SST - ERROR: unable to open forcing NetCDF ',
      &                                                  'file: ',a)
       goto 99
   6   format(/,' GET_SST - ERROR while reading variable: ',a,2x,
      &                                      ' at TIME index = ',i4)
-  7   write(STDOUT,8) sst_rec, ntsst, frcname(1:lstr), tdays,
+  7   write(stdout,8) sst_rec, ntsst, frcname(1:lstr), tdays,
      &                                      sst_time(itsst)*sec2day
 # ifdef USE_CALENDAR
      &  -sst_origin_date_in_sec*sec2day
@@ -279,7 +279,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
       else
         if (ZEROTH_TILE) then
-          write(STDOUT,1) 'sst_time', tdays, sst_time(it2)*sec2day
+          write(stdout,1) 'sst_time', tdays, sst_time(it2)*sec2day
 # ifdef USE_CALENDAR
      &  -sst_origin_date_in_sec*sec2day
 # endif

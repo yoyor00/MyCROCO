@@ -68,14 +68,14 @@
               if (ntime.eq.0) then
                 ntime=size
               else
-                write(STDOUT,'(/1x,4A/18x,A)') 'SET_CYCLE ERROR: ',
+                write (stdout,'(/1x,4A/18x,A)') 'SET_CYCLE ERROR: ',
      &                     'variable ''', varname(1:lvar), ''' has',
      &                     'more than one _time dimension.'
                 goto 99                                   !--> ERROR
               endif
             endif
           else
-            write(STDOUT,'(/1x,4A/)') 'SET_CYCLE ERROR while ',
+            write(stdout,'(/1x,4A/)') 'SET_CYCLE ERROR while ',
      &                  'inquiring dimensions for variable ''',
      &                                   varname(1:lvar), '''.'
             goto 99                                       !--> ERROR
@@ -93,13 +93,13 @@
                 if (ierr .eq. nf_noerr) then
                   cycle_length=cycle_length*day2sec
                 else
-                  write(STDOUT,'(/1x,4A/)') 'SET_CYCLE ERROR while ',
+                  write(stdout,'(/1x,4A/)') 'SET_CYCLE ERROR while ',
      &                 'reading attribute ''', attname(1:latt), '''.'
                   goto 99                                 !--> ERROR
                 endif
               endif
             else
-              write(STDOUT,'(/1x,4A/)') 'SET_CYCLE ERROR while ',
+              write(stdout,'(/1x,4A/)') 'SET_CYCLE ERROR while ',
      &                    'inquiring attributes for variable ''',
      &                                     varname(1:lvar), '''.'
               goto 99                                     !--> ERROR
@@ -109,7 +109,7 @@
           cycle_length=-1.
         endif
       else
-        write(STDOUT,'(/1x,2A,I4/18x,A,I4/)') 'SET_CYCLE ERROR: ',
+        write(stdout,'(/1x,2A,I4/18x,A,I4/)') 'SET_CYCLE ERROR: ',
      &           'Cannot inquire about variable with ID =', varid,
      &           'in input file; netCDF error code =', ierr
         goto 99                                           !--> ERROR
@@ -178,11 +178,11 @@
 ! Sort out reasons for error, if any.
 !
       if (cycle_length.gt.0.) then
-        write(STDOUT,2) varname(1:lvar)
+        write(stdout,2) varname(1:lvar)
   2     format(/1x, 'SET_CYCLE ERROR: Algorithm failure',
      &                ' while processing variable: ',A,'.'/)
       else
-        write(STDOUT,3) varname(1:lvar), tdays, tend*sec2day
+        write(stdout,3) varname(1:lvar), tdays, tend*sec2day
   3     format(/1x, 'SET_CYCLE ERROR: non-cycling regime,',
      &         ' but model time exceeds'  /18x,  'time of the',
      &         ' last available data record for variable: ',A/
@@ -190,7 +190,7 @@
 
       endif
       goto 99
-  10  write(STDOUT,'(1x,4A)') 'SET_CYCLE ERROR while reading ',
+  10  write(stdout,'(1x,4A)') 'SET_CYCLE ERROR while reading ',
      &                    'variable ''', varname(1:lvar), '''.'
   99  may_day_flag=2
       return                             !-->  EXIT

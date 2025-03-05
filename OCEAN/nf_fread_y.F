@@ -83,7 +83,7 @@
 #endif
       count=jmax-jmin+1
 
-!      write(STDOUT,'(1x,A,i4,1x,A,i2,1(3x,A,I2,2x,A,I3,2x,A,I3))')
+!      write(stdout,'(1x,A,i4,1x,A,i2,1(3x,A,I2,2x,A,I3,2x,A,I3))')
 !     &      'NF_READ/WRITE: mynode=',mynode,'horiz_grid',horiz_type,
 !     &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 
@@ -99,7 +99,7 @@
       ierr=nf_get_vara_FTYPE (ncid, varid, start, count, A(1))
       nf_fread_y=ierr
       if (ierr .ne. nf_noerr) then
-        write(STDOUT,'(/1x,2A,I5,1x,A,I4/)') 'NF_FREAD_Y ERROR: ',
+        write(*,'(/1x,2A,I5,1x,A,I4/)') 'NF_FREAD_Y ERROR: ',
      &             'nf_get_vara netCDF error code =', ierr
      &              MYID
         return
@@ -108,7 +108,7 @@
       ierr=nf_put_vara_FTYPE (ncid, varid, start, count, A(1))
       nf_fwrite_y=ierr
       if (ierr.ne.nf_noerr) then
-        write(STDOUT,'(/1x,2A,I5,1x,A,I4/)') 'NF_FWRITE_Y ERROR: ',
+        write(*,'(/1x,2A,I5,1x,A,I4/)') 'NF_FWRITE_Y ERROR: ',
      &              'nf_put_vara netCDF error code =', ierr
      &               MYID
       endif

@@ -90,7 +90,7 @@
           cff1=0.0
           if (ZEROTH_TILE) then
             timediags_eddy_avg=time
-!            MPI_master_only write(STDOUT,*) 'started averaging eddy',iic,
+!            MPI_master_only write(*,*) 'started averaging eddy',iic,
 !     &                  ntsdiags_eddy_avg,nwrtdiags_eddy_avg
           endif
         elseif (mod(ilc-ntsdiags_eddy_avg,nwrtdiags_eddy_avg).gt.1) then
@@ -104,7 +104,7 @@
           cff1=1.0
           if (ZEROTH_TILE) then
             timediags_eddy_avg=cff*(timediags_eddy_avg+time)
-!            MPI_master_only write(STDOUT,*) 'finished averaging eddy',
+!            MPI_master_only write(*,*) 'finished averaging eddy',
 !     &                  iic,ntsdiags_eddy_avg,nwrtdiags_eddy_avg
           endif
         endif

@@ -139,7 +139,7 @@
 
       ! BLXD 2020 kount0 set to nstart-1
       ! check to clean
-      ! write(STDOUT,*) ' IMPT nstart , icc = ', ntstart, iic
+      ! write(*,*) ' IMPT nstart , icc = ', ntstart, iic
 
        call init_oa(                                   & 
 
@@ -261,7 +261,7 @@
 !     pointer_approach=.true.  
 
       ! BLXD check to clean
-      ! write(STDOUT,*) ' IMPT nstart , icc = ', ntstart, iic
+      ! write(*,*) ' IMPT nstart , icc = ', ntstart, iic
 
       call main_oa(                                                  &
                             ichoix=0                                 &
