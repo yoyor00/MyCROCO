@@ -34,14 +34,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #305 : fix MPI repro with PSOURCE when a source is 
   in one MPI domain rejecting towards another MPI domain
 - Issue #309 : fix parallel compilation (except for AGRIF)
-- Issue #311 : fix data instruction replace by a declaration of array and 
-  initialisation of it
+- Issue #311 and #328 : fix data instruction replace by a declaration 
+  of array and initialisation of it
 - Issue #316 : fix MPI reproducibility with NBQ
 - Issue #318 : fix typo in order 5 scheme
 - Issue #319 : fix MPI reproducibility using MUSTANG_CORFLUX
 - Issue #322 : fix SUBSTANCE_SUBMASSBALANCE feature on river fluxes
 - Issue #324 : fix FILLVAL, mask was misdone on variable value 
   instead of mask value
+
 
 ### Changed
 
