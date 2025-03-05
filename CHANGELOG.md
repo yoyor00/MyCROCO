@@ -6,6 +6,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- Issue #250 : add dredging feature in MUSTANG
 - Issues #291, #323 : add new test case FLASH_RIP
 
 ### Fixed
@@ -56,6 +57,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #281 : optimization of the PISCES code on
   - representation of the lability of the particle pool
   - several optimizations to the calculation of certain variables (performance).
+
+- Issue #250 : for MUSTANG initialisation, review of namelist parameters
 
 - Issue #163 : for MUSTANG output, 
   - avoid possibility of overlapping in vname by 
