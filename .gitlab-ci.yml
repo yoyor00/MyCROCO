@@ -153,7 +153,8 @@ restart_realist:
     - |
       ./bench-croco.py \
       --case @realist \
-      --variants sequential,mpi-4 \
+      --variants mpi-4 \
+      --compare-to mpi-4 \
       --title restart_realist \
       --restart \
       --rebuild \
