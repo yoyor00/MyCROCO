@@ -105,13 +105,13 @@
      &                latr(GLOBAL_2D_ARRAY),
      &                tairg(GLOBAL_2D_ARRAY,iblkrec))
 
-#ifndef FORMATTED
+# ifndef FORMATTED
         do j=J_RANGE
           do i=I_RANGE
             tairg(i,j,iblkrec)=tairg(i,j,iblkrec)-273.15
           enddo
         enddo
-#endif
+# endif
 
 # ifdef MPI
         call exchange_r2d_tile(1,Lm,1,Mm,
@@ -131,7 +131,8 @@
      &                latr(GLOBAL_2D_ARRAY),
      &                rhumg(GLOBAL_2D_ARRAY,iblkrec))
 
-# ifdef ERA_ECMWF
+# ifndef FORMATTED
+#  ifndef AROME
         do j=J_RANGE
           do i=I_RANGE
             ew=6.1121*(1.0007+3.46e-6*Pref)*
@@ -141,6 +142,7 @@
             rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
           enddo
         enddo
+#  endif
 # endif
 
 # ifdef MPI
@@ -163,9 +165,9 @@
 
         do j=J_RANGE
           do i=I_RANGE
-#ifndef FORMATTED
+# ifndef FORMATTED
             prateg(i,j,iblkrec)=prateg(i,j,iblkrec)*8640.
-#endif
+# endif
             if (1.e-4.gt.abs(prateg(i,j,iblkrec))) then
               prateg(i,j,iblkrec)=0.
             endif
