@@ -152,8 +152,8 @@ restart_realist:
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py \
-      --case sequential,mpi-4 \
-      --variants @debug \
+      --case @realist \
+      --variants sequential,mpi-4 \
       --title restart_realist \
       --restart \
       --rebuild \
