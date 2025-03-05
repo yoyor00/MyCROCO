@@ -29,7 +29,13 @@
    RHO-,BED-   b3dvar   BED-type    (0:Lm+1,0:Mm+1, NLAY)
    ABL-        abl3dvar ABL-type    (0:Lm+1,0:Mm+1,N_abl)
 */
+#ifdef MUSTANG
+      real buff((Lm+5)*(Mm+5)*max(N+1,nk_nivsed_out))
+#elif defined SEDIMENT
+      real buff((Lm+5)*(Mm+5)*max(N+1,NLAY))
+#else
       real buff((Lm+5)*(Mm+5)*(N+1))
+#endif
       common /zzz/ buff
 
 #ifdef ABL1D
