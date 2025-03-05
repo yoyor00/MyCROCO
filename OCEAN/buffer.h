@@ -33,10 +33,11 @@
       real buff((Lm+5)*(Mm+5)*max(N+1,nk_nivsed_out))
 #elif defined SEDIMENT
       real buff((Lm+5)*(Mm+5)*max(N+1,NLAY))
+      common /zzz/ buff
 #else
       real buff((Lm+5)*(Mm+5)*(N+1))
-#endif
       common /zzz/ buff
+#endif
 
 #ifdef ABL1D
       real buff_abl((Lm+5)*(Mm+5)*(N_abl+1))
