@@ -127,7 +127,7 @@ debug_realist:
     - |
       ./bench-croco.py \
       --case @realist \
-      --variants @debug \
+      --variants sequential,mpi-4 \
       --title debug_realist \
       --debug \
       --rebuild \
@@ -152,7 +152,7 @@ restart_realist:
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py \
-      --case @realist \
+      --case sequential,mpi-4 \
       --variants @debug \
       --title restart_realist \
       --restart \
