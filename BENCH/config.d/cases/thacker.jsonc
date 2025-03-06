@@ -4,7 +4,6 @@
     "title": "THACKER - NO-2DV - (200 x 200 x 5 : 600)",
     "case": "THACKER",
     "cppkeys": {
-      "THACKER": true,
       "THACKER_2DV": false,
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2", "6": "1x6", "8": "2x4" },

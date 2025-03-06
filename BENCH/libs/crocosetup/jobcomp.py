@@ -225,7 +225,12 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         for entry in basic_list:
             # need to split --with-xxx=value => ['--with-xxx', 'value']
             if entry.startswith("--") and "=" in entry:
-                tmp_opts += entry.split("=", maxsplit=1)
+                # add a fix to avoid -key to be parse add a new argument rather than a value
+                if entry.split("=", maxsplit=1)[1][0] == "-":
+                    tmp_opts.append(entry.split("=", maxsplit=1)[0])
+                    tmp_opts.append("," + entry.split("=", maxsplit=1)[1])
+                else:
+                    tmp_opts += entry.split("=", maxsplit=1)
             else:
                 tmp_vars.append(entry)
 
@@ -322,7 +327,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
 
         # build parser
         parser = argparse.ArgumentParser(
-            prog="old_croco_configure",
+            prog="croco_configure",
             description="A wrapper to amulate the new build API onto the old croco.",
         )
 
