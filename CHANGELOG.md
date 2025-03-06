@@ -89,3 +89,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - remove cppkeys key_CROCO and MORPHODYN_MUSTANG_byHYDRO
 
 ### Other
+
+- Issue #271 : add information about the branch status (stable or not)
+  in the README file
