@@ -3,7 +3,10 @@
   "RIP": {
     "title": "RIP - (48 x 48 x 20 : 1800)",
     "case": "RIP",
-    "plot_diag_script": "./TEST_CASES/plot_rip.py",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_rip.py",
+      "plotphy_script_input": "rip_his.nc",
+    },
     "cppkeys": {
       "RIP": true,
       "RIP_TOPO_2D": false,

@@ -137,7 +137,13 @@
             "additionalProperties": { "type": "string" }
           },
           "croco_files_path": { "type": "string" },
-          "plot_diag_script": { "type": "string" },
+          "plotphy": {
+            "type": "object",
+            "properties": {
+              "plotphy_script": { "type": "string" },
+              "plotphy_script_input": { "type": "string" }
+            }
+          },
           "cppkeys": {
             "type": "object",
             "additionalProperties": { "type": "boolean" }

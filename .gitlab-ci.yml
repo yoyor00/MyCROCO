@@ -60,6 +60,8 @@ plotphy_base:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy-host_ci/junit_report.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 debug_ifort:
   stage: bench
@@ -87,7 +89,9 @@ debug_ifort:
     expire_in: 1 week
     reports:
       junit: BENCH/results/debug_ifort-host_ci/junit_report.xml
-  when: manual
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
 
 debug_vortex:
   stage: bench
@@ -166,7 +170,11 @@ debug_realist:
     expire_in: 1 week
     reports:
       junit: BENCH/results/debug_realist-host_ci/junit_report.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
+# space disk issue if we want to do restart on all realist cases
+# to split ?
 restart_realist:
   stage: bench
   tags:
@@ -193,6 +201,9 @@ restart_realist:
     expire_in: 1 week
     reports:
       junit: BENCH/results/restart_realist-host_ci/junit_report.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
 
 plotphy_realist:
   stage: bench
@@ -219,6 +230,10 @@ plotphy_realist:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy_realist-host_ci/junit_report.xml
+  rules:
+      - if: $CI_PIPELINE_SOURCE == "schedule"
+
+
 
 agrif_realist:
   stage: bench
@@ -273,11 +288,12 @@ debug_complement:
     expire_in: 1 week
     reports:
       junit: BENCH/results/debug-complement-host_ci/junit_report.xml
+  rules:
+      - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 # space disk issue if we want to do plotphy on all complement cases
 # to split ?
-
 # plotphy_complement:
 #   stage: bench
 #   tags:

@@ -723,51 +723,58 @@ class Croco:
     def plotphy(self):
         dirname = self.dirname
         full_name = self.full_name
-        filename = self.case["check_outputs"][0]  # to check
-        # TODO, discuss, do we want to keep this ? or do we allow to
-        # configure filename for plotphy differetly from check_output list ?
-        # example of case where it could be interesting : KILPATRICK
-        actual_file = f"{dirname}/{filename}"
         result_dir = self.dirname_result
 
-        if "plot_diag_script" in self.case:
-            self.plot_diag_script = os.path.join(dirname, self.case["plot_diag_script"])
-            Messaging.step(f"Plotting {full_name}")
+        if "plotphy" in self.case:
+            if "plotphy_script" in self.case["plotphy"]:
+                self.plot_diag_script = os.path.join(
+                    dirname, self.case["plotphy"]["plotphy_script"]
+                )
+                Messaging.step(f"Plotting {full_name}")
 
-            command = [
-                self.plot_diag_script,
-                "--no-show",
-                "--makepng",
-                "--file",
-                actual_file,
-                "--output-dir",
-                result_dir,
-            ]
+                filename = self.case["plotphy"]["plotphy_script_input"]
+                actual_file = f"{dirname}/{filename}"
 
-            try:
-                subprocess.run(command, check=True)  # Exécute la commande
-                Messaging.step(
-                    "Successfully executed %s with arguments --no-show --makepng"
-                    % self.plot_diag_script
-                )
-                # report
-                self.config.report.report_status(
-                    self.case_name, self.variant_name, self.restarted, "plotphy", True
-                )
-            except subprocess.CalledProcessError as e:
-                Messaging.step_error(
-                    f"Error during execution of {self.plot_diag_script}: {e}"
-                )
-                self.config.report.report_status(
-                    self.case_name,
-                    self.variant_name,
-                    self.restarted,
-                    "plotphy",
-                    False,
-                    str(e),
-                )
+                command = [
+                    self.plot_diag_script,
+                    "--no-show",
+                    "--makepng",
+                    "--file",
+                    actual_file,
+                    "--output-dir",
+                    result_dir,
+                ]
+
+                try:
+                    subprocess.run(command, check=True)  # Exécute la commande
+                    Messaging.step(
+                        "Successfully executed %s with arguments --no-show --makepng"
+                        % self.plot_diag_script
+                    )
+                    # report
+                    self.config.report.report_status(
+                        self.case_name,
+                        self.variant_name,
+                        self.restarted,
+                        "plotphy",
+                        True,
+                    )
+                except subprocess.CalledProcessError as e:
+                    Messaging.step_error(
+                        f"Error during execution of {self.plot_diag_script}: {e}"
+                    )
+                    self.config.report.report_status(
+                        self.case_name,
+                        self.variant_name,
+                        self.restarted,
+                        "plotphy",
+                        False,
+                        str(e),
+                    )
+            else:
+                Messaging.step("No Plotting script provided")
         else:
-            Messaging.step("No Plotting script provided")
+            Messaging.step("Plotphy not available for this case")
 
     def plotraw(self, anim: bool = False):
         # vars

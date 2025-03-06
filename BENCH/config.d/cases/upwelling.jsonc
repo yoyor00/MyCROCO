@@ -3,7 +3,10 @@
   "UPWELLING": {
     "title": "UPWELLING - (16 x 64 x 16 : 410)",
     "case": "UPWELLING",
-    "plot_diag_script": "./TEST_CASES/plot_upwelling.py",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_upwelling.py",
+      "plotphy_script_input": "upwelling_his.nc",
+    },
     "splitting": { "1": "1x1", "2": "1x2" },
     "patches": {},
     "check_outputs": ["upwelling_his.nc"],
