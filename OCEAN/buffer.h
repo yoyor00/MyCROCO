@@ -30,7 +30,7 @@
    ABL-        abl3dvar ABL-type    (0:Lm+1,0:Mm+1,N_abl)
 */
 #ifdef MUSTANG
-      real buff((Lm+5)*(Mm+5)*max(N+1,nk_nivsed_out))
+      real buff((Lm+5)*(Mm+5)*max(N+1,ksdmax))
 #elif defined SEDIMENT
       real buff((Lm+5)*(Mm+5)*max(N+1,NLAY))
       common /zzz/ buff
