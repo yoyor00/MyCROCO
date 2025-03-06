@@ -40,7 +40,7 @@
 #include "param.h"
 #include "buffer.h"
 #if defined MUSTANG
-      real A(GLOBAL_2D_ARRAY,max(N+1,nk_nivsed_out))
+      real A(GLOBAL_2D_ARRAY,max(N+1,ksdmax))
 #elif defined SEDIMENT
       real A(GLOBAL_2D_ARRAY,max(N+1,NLAY))
 #else
