@@ -235,7 +235,7 @@ plotphy_realist:
 
 
 
-agrif_realist:
+debug_agrif_realist:
   stage: bench
   tags:
     - ci.inria.fr
@@ -247,7 +247,7 @@ agrif_realist:
       ./bench-croco.py \
       --case @agrif_realist \
       --variants @debug \
-      --title agrif_realist \
+      --title debug_agrif_realist \
       --debug \
       --rebuild \
       --host host_ci \
@@ -259,7 +259,7 @@ agrif_realist:
     when: always
     expire_in: 1 week
     reports:
-      junit: BENCH/results/agrif_realist-host_ci/junit_report.xml
+      junit: BENCH/results/debug_agrif_realist-host_ci/junit_report.xml
 
 
 debug_complement:
@@ -325,7 +325,7 @@ pages:
   stage: report
   tags:
     - ci.inria.fr
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
   script:
     - mkdir -p $CI_PROJECT_DIR/public/dev
     - cd $CI_PROJECT_DIR/BENCH
