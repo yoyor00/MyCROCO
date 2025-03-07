@@ -167,7 +167,7 @@ WRF_d01_EXT_d01_TAUE CROCO_ETAU 1 <cpldt> 2 atm.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_atm>
+<mozaic_a2o>
 #
 #~~~~~~~~~~~
 # TAUN : meridional stress (N.m-2)
@@ -177,7 +177,7 @@ WRF_d01_EXT_d01_TAUN CROCO_NTAU 1 <cpldt> 2 atm.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_atm>
+<mozaic_a2o>
 #
 #~~~~~~~~~~~
 # TAUMOD : stress module (N.m-2)
@@ -187,7 +187,7 @@ WRF_d01_EXT_d01_TAUMOD CROCO_TAUM 1 <cpldt> 2 atm.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_atm>
+<mozaic_a2o>
 #
 #~~~~~~~~~~~
 # EVAP-PRECIP : E-P flux (kg.m-2.s-1)
@@ -197,7 +197,7 @@ WRF_d01_EXT_d01_EVAP-PRECIP CROCO_EVPR 1 <cpldt> 2 atm.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_atm>
+<mozaic_a2o>
 #
 #~~~~~~~~~~~
 # NET SOLAR FLUX (W.m-2)
@@ -207,7 +207,7 @@ WRF_d01_EXT_d01_SURF_NET_SOLAR CROCO_SRFL 1 <cpldt> 2 atm.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_atm>
+<mozaic_a2o>
 #
 #~~~~~~~~~~~
 # NET NON-SOLAR FLUX (W.m-2)
@@ -217,7 +217,7 @@ WRF_d01_EXT_d01_SURF_NET_NON-SOLAR CROCO_STFL 1 <cpldt> 2 atm.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_atm>
+<mozaic_a2o>
 #
 #~~~~~~~~~~~
 # INTERFACE ATMOSPHERIC PRESSURE  (Pa)
@@ -227,7 +227,7 @@ WRF_d01_EXT_d01_PSFC CROCO_PSFC 1 <cpldt> 2 atm.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_atm>
+<mozaic_a2o>
 #
 #                     ------------------------------------
 #                       CROCO (crocox) ==> WRF (wrfexe)

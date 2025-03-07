@@ -33,9 +33,12 @@ export WEIGHT_FLAG="FALSE"
 # If TRUE : filenames
 # They should be placed in OASIS_FILES
 # Note: for the moment only works with 1-atm and 1-oce domain, and with 1-atm and 1-wav
-export weight_oce=""
-export weight_atm=""
-export weight_wav=""
+export weight_o2a=""
+export weight_a2o=""
+export weight_o2w=""
+export weight_w2o=""
+export weight_w2a=""
+export weight_a2w=""
 
 # Grid files for grid interpolations
 #-------------------------------------
