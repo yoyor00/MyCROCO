@@ -81,6 +81,8 @@ if [ $model == wrf ] ; then
             ${gridlevels}_TAUMOD \
             ${gridlevels}_WINDE_01 \
             ${gridlevels}_WINDN_01 \
+            ${gridlevels}_WND_E_01 \
+            ${gridlevels}_WND_N_01 \
             ${gridlevels}_SURF_NET_SOLAR \
             ${gridlevels}_SURF_NET_NON-SOLAR \
             ${gridlevels}_EVAP-PRECIP\
