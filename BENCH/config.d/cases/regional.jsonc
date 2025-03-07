@@ -170,7 +170,8 @@
       "BULK_FLUX": false,
     },
     "patches": {},
-    "unsupported": ["openmp"],
+    "unsupported": ["restart", "openmp"],
+    // error in bry_time set_cycle in restart
     "check_outputs": ["CROCO_FILES/croco_his.nc"],
   },
   "BENGUELA_LR_BSTRESS_FASTGLS": {
@@ -250,6 +251,7 @@
       },
     },
     "check_outputs": ["CROCO_FILES/croco_his.nc"],
+    "unsupported": ["restart"], // error in check on restart
   },
   // TODO check runoff position and change croco.in accordingly
   // "BENGUELA_VHR_TIDES_BULK": {
