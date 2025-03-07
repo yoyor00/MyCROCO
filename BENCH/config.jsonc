@@ -147,14 +147,14 @@
       "SINGLE_COLUMN_WILLIS_DEARDORFF",
       "ACOUSTIC",
       "SED_TOY_ROUSE",
-      //"SED_TOY_CONSOLID", // debug issue
-      //"SED_TOY_RESUSP", // debug issue
+      "SED_TOY_CONSOLID",
+      "SED_TOY_RESUSP",
       "SED_TOY_FLOC0D",
       "SED_TOY_FLOC1D",
       //"RIP_BISCA", // missing files
       "RIP_GRANDPOPO",
       "RIP_TOPO_2D",
-      "DUNE_ANA_DUNE",
+      "DUNE_ANA_DUNE", // blow-up issue
       "DUNE_DUNE3D",
       "FLASH_RIP",
       //"MOVING_BATHY", // repro-mpi issue
