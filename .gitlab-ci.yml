@@ -70,6 +70,7 @@ debug_ifort:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
     #note : check step not available because sequential is not done here
     - |
       ./bench-croco.py \
@@ -127,6 +128,7 @@ debug_realist_base:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
     - |
       ./bench-croco.py \
       --case @realist_base \
@@ -153,6 +155,7 @@ debug_realist:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
     - |
       ./bench-croco.py \
       --case @realist \
@@ -183,6 +186,7 @@ restart_realist:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
     - |
       ./bench-croco.py \
       --case @realist \
@@ -213,6 +217,7 @@ plotphy_realist:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
     - |
       ./bench-croco.py \
       --case BENGUELA_LR_TIDES_BULK \
@@ -243,6 +248,7 @@ debug_agrif_realist:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
     - |
       ./bench-croco.py \
       --case @agrif_realist \
@@ -329,6 +335,7 @@ pages:
   script:
     - mkdir -p $CI_PROJECT_DIR/public/dev
     - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
     - ./bench-croco.py --globalhtml
     - cp -R $CI_PROJECT_DIR/BENCH/results $CI_PROJECT_DIR/public/dev
   artifacts:
