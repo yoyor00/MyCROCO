@@ -106,6 +106,10 @@ At this stage, we have introduced only one:
 - **_stobulk_** :
     Stochastic parameterization of the bulk formulation for the air-sea fluxes.
     At this stage, we have only introduced simple perturbations of the drag coefficient.
+- **_stostress_** :
+    Stochastic parameterization of the wind stress.
+- **_stoics_** :
+    Stochastic parameterization of initial conditions, following Germe et al (2017) -- Spatiotemporal Patterns of Chaos in the Atlantic Overturning Circulation -- although grid cell volume rescaling is not considered here.
 
 ### Modification in the CROCO code (in the OCEAN directory)
 

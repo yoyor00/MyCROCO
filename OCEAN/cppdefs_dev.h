@@ -94,7 +94,8 @@
 #ifdef STOGEN
 # if defined STO_BULK_CD || defined STO_STRESS
 #  define STO_XI2D
-# elif defined STO_ICS
+# endif
+# if defined STO_ICS
 #  define STO_XI3D
 # endif
 #endif

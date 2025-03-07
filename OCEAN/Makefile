@@ -138,7 +138,7 @@ include Makedefs
 	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	stowhite.F90\
 	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90\
 	stobulk.F90	stomarginal.F90	storst.F90	stopar.F90	stomod.F90\
-	ensmpi.F90	stostress.F90\
+	ensmpi.F90	stostress.F90	stoics.F90\
 	par_pisces.F90	oce_trc.F90	trc.F90		sms_pisces.F90\
 	in_out_manager.F90	iom.F90	lib_mpp.F90		prtctl.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\

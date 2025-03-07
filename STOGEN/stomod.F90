@@ -17,9 +17,10 @@ MODULE stomod
 
    USE stoarray
    USE stopar
+   USE storst
    USE stobulk
    USE stostress
-   USE storst
+   USE stoics
 
    IMPLICIT NONE
    PRIVATE
@@ -66,8 +67,13 @@ CONTAINS
       ! There must be one such routine for each stochastic scheme.
       ! Here we just include the stochastic parameterization
       ! of the bulk formulation for the air-sea fluxes
+#if defined STO_BULK_CD
       CALL sto_bulk_init
+#elif defined STO_STRESS
       CALL sto_stress_init
+#elif defined STO_ICS
+      CALL sto_ics_init
+#endif
 
       ! Initialize stochastic arrays
       CALL sto_array_init

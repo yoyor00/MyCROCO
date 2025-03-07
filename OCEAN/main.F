@@ -33,10 +33,9 @@
 #ifdef STOGEN
           USE stomod         ! Stochastic module
           USE stoexternal    ! Provide parameters to stochastic modules
-# if defined STO_BULK_CD || defined STO_STRESS
           USE stobulk
           USE stostress
-# endif
+          USE stoics
 #endif
 #ifdef ENSEMBLE
           USE ensmpi         ! Ensemble module
@@ -381,6 +380,17 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 !
 !----------------------------------------------------------------------
+!  STOGEN: initialization
+!----------------------------------------------------------------------
+!
+#ifdef STOGEN
+      do tile=0,NSUB_X*NSUB_E-1
+        call ocean_2_stogen (tile)    ! provide parameters to STOGEN module
+        call sto_mod_init             ! initialize STOGEN module
+      enddo
+#endif
+!
+!----------------------------------------------------------------------
 !  Set initial conditions for momentum and tracer variables
 !----------------------------------------------------------------------
 !
@@ -432,6 +442,9 @@ C$OMP BARRIER
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file
 !
+#ifdef STO_ICS
+      call sto_mod( ntstart ) ! update (?) stochastic fields
+#endif
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call ana_initial (tile)
@@ -503,17 +516,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 #ifdef SUBSTANCE
       call substance_surfcell
-#endif
-!
-!----------------------------------------------------------------------
-!  STOGEN: initialization
-!----------------------------------------------------------------------
-!
-#ifdef STOGEN
-      do tile=0,NSUB_X*NSUB_E-1
-        call ocean_2_stogen (tile)    ! provide parameters to STOGEN module
-        call sto_mod_init             ! initialize STOGEN module
-      enddo
 #endif
 !
 !----------------------------------------------------------------------

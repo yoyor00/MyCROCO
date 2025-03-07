@@ -32,6 +32,9 @@
 #ifdef SUBSTANCE
       USE comsubstance, ONLY: cini_wat
 #endif
+#ifdef STO_ICS
+      use stoics
+#endif
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -564,6 +567,9 @@
              enddo
           enddo
         enddo
+!#     ifdef STO_ICS
+!        call sto_ics( t(:,:,:,1,itemp), sto_xi3d(:,:,:) )
+!#     endif
 #    endif /* TEMPERATURE */
 #   elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
 #    ifdef TEMPERATURE
@@ -1229,6 +1235,12 @@ C$OMP BARRIER
             enddo
           enddo
         enddo
+#   endif
+!
+#   ifdef STO_ICS
+#    ifdef TEMPERATURE 
+        call sto_ics( t(:,:,:,1,itemp), sto_xi3d(:,:,:) )
+#    endif
 #   endif
 !
 #  endif /*TRACERS */
