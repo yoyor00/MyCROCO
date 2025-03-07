@@ -241,7 +241,7 @@ CROCO_SST WRF_d01_EXT_d01_SST 1 <cpldt> 2 oce.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_oce>
+<mozaic_o2a>
 #
 #~~~~~~~~~~~
 # EOCE : zonal current (m.s-1)
@@ -251,7 +251,7 @@ CROCO_EOCE WRF_d01_EXT_d01_EOCE 1 <cpldt> 2 oce.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_oce>
+<mozaic_o2a>
 #
 #~~~~~~~~~~~
 # NOCE : meridonal current (m.s-1)
@@ -261,7 +261,7 @@ CROCO_NOCE WRF_d01_EXT_d01_NOCE 1 <cpldt> 2 oce.nc EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_oce>
+<mozaic_o2a>
 #
 ###########################################################################
 $END

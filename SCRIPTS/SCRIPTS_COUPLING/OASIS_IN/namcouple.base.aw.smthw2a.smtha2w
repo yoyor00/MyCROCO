@@ -166,7 +166,7 @@ WRF_d01_EXT_d01_WINDE_01 WW3__U10 1 <cpldt>  2  atm.nc  EXPORTED
 R 0 R 0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_atm>
+<mozaic_a2w>
 #
 #~~~~~~~~~~~
 # V_01 : wind V component at first level (m/s)
@@ -176,7 +176,7 @@ WRF_d01_EXT_d01_WINDN_01 WW3__V10 1 <cpldt>  2  atm.nc  EXPORTED
 R 0 R 0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_atm>
+<mozaic_a2w>
 #
 #                     ------------------------------------
 #                        WW3 (wwatch) ==> WRF (wrfexe)
@@ -190,7 +190,7 @@ WW3_ACHA WRF_d01_EXT_d01_CHA_COEF 1 <cpldt>  2  wav.nc  EXPORTED
 R  0  R  0
 LOCTRANS MAPPING
 AVERAGE
-<mozaic_wav>
+<mozaic_w2a>
 #
 ###########################################################################
 $END
