@@ -1,5 +1,9 @@
 title:
         Southern Benguela Interannual Run
+
+logfile:
+        croco.log
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                NUMTIMES     TIMESTEP    NFAST     1
 S-coord: THETA_S,   THETA_B,    Hc (m)

@@ -2054,6 +2054,9 @@
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
+#ifdef LOGFILE
+     &         ,  logname
+#endif
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
@@ -2167,6 +2170,10 @@
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year
      &         ,   origin_hour, origin_minute, origin_second
+#ifdef LOGFILE
+     &         ,  logname
+#endif
+
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
