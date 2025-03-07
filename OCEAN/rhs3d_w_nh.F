@@ -649,48 +649,50 @@
       do j=jstr,jend
         do k=1,N
           do i=Istr,Iend
-            div_zx(i,k) = 0.5*Huon(i+1,j,k)*(dzdxi(i,j,k)+dzdxi(i+1,j,k))
-     &                   -0.5*Huon(i  ,j,k)*(dzdxi(i,j,k)+dzdxi(i-1,j,k))
-     &                   +0.5*Hvom(i,j+1,k)*(dzdxi(i,j,k)+dzdxi(i,j+1,k))
-     &                   -0.5*Hvom(i,j  ,k)*(dzdxi(i,j,k)+dzdxi(i,j-1,k))
-            div_zy(i,k) = 0.5*Huon(i+1,j,k)*(dzdeta(i,j,k)+dzdeta(i+1,j,k))
-     &                   -0.5*Huon(i  ,j,k)*(dzdeta(i,j,k)+dzdeta(i-1,j,k))
-     &                   +0.5*Hvom(i,j+1,k)*(dzdeta(i,j,k)+dzdeta(i,j+1,k))
-     &                   -0.5*Hvom(i,j  ,k)*(dzdeta(i,j,k)+dzdeta(i,j-1,k))
+            div_zx(i,k) = 
+     &               0.5*Huon(i+1,j,k)*( dzdxi(i,j,k)+ dzdxi(i+1,j,k))
+     &              -0.5*Huon(i  ,j,k)*( dzdxi(i,j,k)+ dzdxi(i-1,j,k))
+     &              +0.5*Hvom(i,j+1,k)*( dzdxi(i,j,k)+ dzdxi(i,j+1,k))
+     &              -0.5*Hvom(i,j  ,k)*( dzdxi(i,j,k)+ dzdxi(i,j-1,k))
+            div_zy(i,k) = 
+     &               0.5*Huon(i+1,j,k)*(dzdeta(i,j,k)+dzdeta(i+1,j,k))
+     &              -0.5*Huon(i  ,j,k)*(dzdeta(i,j,k)+dzdeta(i-1,j,k))
+     &              +0.5*Hvom(i,j+1,k)*(dzdeta(i,j,k)+dzdeta(i,j+1,k))
+     &              -0.5*Hvom(i,j  ,k)*(dzdeta(i,j,k)+dzdeta(i,j-1,k))
           enddo
         enddo
         k=1
-          do i=Istr,Iend
-            div_zx(i,k) = div_zx(i,k)
-     &                   +0.5*  We(i,j,k  )*(dzdxi(i,j,k)+dzdxi(i,j,k+1))
-            div_zy(i,k) = div_zy(i,k)
-     &                   +0.5*  We(i,j,k  )*(dzdeta(i,j,k)+dzdeta(i,j,k+1))
-          enddo
+        do i=Istr,Iend
+          div_zx(i,k) = div_zx(i,k)
+     &                 +0.5*We(i,j,k)*( dzdxi(i,j,k)+ dzdxi(i,j,k+1))
+          div_zy(i,k) = div_zy(i,k)
+     &                 +0.5*We(i,j,k)*(dzdeta(i,j,k)+dzdeta(i,j,k+1))
+        enddo
         do k=2,N-1
           do i=Istr,Iend
             div_zx(i,k) = div_zx(i,k)
-     &                 +0.5*  We(i,j,k  )*(dzdxi(i,j,k)+dzdxi(i,j,k+1))
-     &                 -0.5*  We(i,j,k-1)*(dzdxi(i,j,k)+dzdxi(i,j,k-1))
+     &               +0.5*We(i,j,k  )*( dzdxi(i,j,k)+ dzdxi(i,j,k+1))
+     &               -0.5*We(i,j,k-1)*( dzdxi(i,j,k)+ dzdxi(i,j,k-1))
             div_zy(i,k) = div_zy(i,k)
-     &               +0.5*  We(i,j,k  )*(dzdeta(i,j,k)+dzdeta(i,j,k+1))
-     &               -0.5*  We(i,j,k-1)*(dzdeta(i,j,k)+dzdeta(i,j,k-1))
+     &               +0.5*We(i,j,k  )*(dzdeta(i,j,k)+dzdeta(i,j,k+1))
+     &               -0.5*We(i,j,k-1)*(dzdeta(i,j,k)+dzdeta(i,j,k-1))
           enddo
         enddo
         k=N
-          do i=Istr,Iend
-            div_zx(i,k) = div_zx(i,k)
-     &                 -0.5*  We(i,j,k-1)*(dzdxi(i,j,k)+dzdxi(i,j,k-1))
-            div_zy(i,k) = div_zy(i,k)
-     &                 -0.5*  We(i,j,k-1)*(dzdeta(i,j,k)+dzdeta(i,j,k-1))
-          enddo
-
+        do i=Istr,Iend
+          div_zx(i,k) = div_zx(i,k)
+     &               -0.5*We(i,j,k-1)*( dzdxi(i,j,k)+ dzdxi(i,j,k-1))
+          div_zy(i,k) = div_zy(i,k)
+     &               -0.5*We(i,j,k-1)*(dzdeta(i,j,k)+dzdeta(i,j,k-1))
+        enddo
         do k=1,N
           do i=Istr,Iend
-            Udiv_zx(i,k) = 0.5*(u(i,j,k,nrhs) + u(i+1,j,k,nrhs))*div_zx(i,k)
-            Vdiv_zy(i,k) = 0.5*(v(i,j,k,nrhs) + v(i,j+1,k,nrhs))*div_zy(i,k)
+            Udiv_zx(i,k)=div_zx(i,k)
+     &                   *0.5*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+            Vdiv_zy(i,k)=div_zy(i,k)
+     &                   *0.5*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
           enddo
         enddo
-
         do k=1,N-1
           do i=Istr,Iend
             rw(i,j,k) = rw(i,j,k)
@@ -699,10 +701,10 @@
           enddo
         enddo
         k=N
-          do i=Istr,Iend
-            rw(i,j,k) = rw(i,j,k) - Udiv_zx(i,k) - Vdiv_zy(i,k)
-          enddo
-      enddo
+        do i=Istr,Iend
+          rw(i,j,k) = rw(i,j,k) - Udiv_zx(i,k) - Vdiv_zy(i,k)
+        enddo
+      enddo ! j loop
 # endif /* NHMG */
 
 # if defined UV_ADV && defined W_VADV

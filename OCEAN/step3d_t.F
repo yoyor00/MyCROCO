@@ -47,9 +47,9 @@
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand
 #   ifdef MUSTANG
-      USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
-      USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
-      USE comMUSTANG,  ONLY : corflux, corfluy
+      USE comMUSTANG,   ONLY : flx_s2w_CROCO, flx_w2s_CROCO
+      USE comMUSTANG,   ONLY : flx_w2s_sum_CROCO
+      USE comMUSTANG,   ONLY : corflux, corfluy
       USE comsubstance, ONLY : irkm_var_assoc, nvpc, nvp
 #    ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D
@@ -772,7 +772,6 @@
 !
       ENDDOLOOP2D ! <-- j
 
-
 !add submassbalance for river!! 
 !mustang and openacc not compatible         
 # if defined SUBSTANCE_SUBMASSBALANCE
@@ -799,8 +798,6 @@
 #  ifdef BIOLOGY
       call biology_tile (Istr,Iend,Jstr,Jend)
 #  endif
-
-
 !
 !======================================================================
 !  Compute inverse vertical Rho gradients for use in t3dmix

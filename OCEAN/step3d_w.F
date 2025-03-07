@@ -11,7 +11,7 @@
 #include "cppdefs.h"
 #if defined SOLVE3D && (defined NBQ || defined NHMG)
 
-# define NBQ_WDIF
+# define W_VDIF
 
       SUBROUTINE step3d_w (tile)
 
@@ -40,9 +40,9 @@
       SUBROUTINE step3d_w_tile (Istr,Iend,Jstr,Jend, rw, BC,CF,FC,DC)
 !----------------------------------------------------------------------
 !
-#ifdef NHMG
+# ifdef NHMG
       use nhmg
-#endif
+# endif
       IMPLICIT NONE
 # include "param.h"
 # include "grid.h"
@@ -90,16 +90,15 @@
 !  Apply right-hand-side
 !----------------------------------------------------------------------
 !
-#if defined NBQ
+#ifdef NBQ
       DO j=Jstr,Jend
         DO k=1,N
           DO i=Istr,Iend
             wz(i,j,k,nnew)=wz(i,j,k,nnew)
-     &                +dt*pn(i,j)*pm(i,j)*(rw(i,j,k)+rw_nbq_avg2(i,j,k))
+     &               +dt*pn(i,j)*pm(i,j)*(rw(i,j,k)+rw_nbq_avg2(i,j,k))
           ENDDO
         ENDDO
       ENDDO
-
       DO j=Jstr,Jend
         DO i=Istr,Iend
           wz(i,j,0,nnew)=qdmw_nbq(i,j,0)    ! = w * 2./Hz(i,j,1)
@@ -107,20 +106,18 @@
       ENDDO
 # endif /* NBQ */
 
-# if defined NHMG
+# ifdef NHMG
       DO j=Jstr,Jend
-         DO k=1,N
-            DO i=Istr,Iend
-               wz(i,j,k,nnew)=wz(i,j,k,nnew)
-     &              +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
-            ENDDO
-         ENDDO
+        DO k=1,N
+          DO i=Istr,Iend
+            wz(i,j,k,nnew)=wz(i,j,k,nnew)
+     &                     +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
+          ENDDO
+        ENDDO
       ENDDO
-#   undef NBQ_WDIF
 # endif /* NHMG */
 
-
-# ifdef NBQ_WDIF
+# ifdef W_VDIF
 !
 !====================================================================
 !== Turbulent vertical diffusion for wz
@@ -207,7 +204,7 @@
         ENDDO
       ENDDO
 
-# endif /* NBQ_WDIF */
+# endif /* W_VDIF */
 !$acc end kernels
 !
 !--------------------------------------------------------------------

@@ -674,7 +674,7 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
 #  else
           h(i,j)=12.0-0.0125*Length_XI/float(LLm+1)*cff + 3.
 #  endif
-#  if defined MASKING || defined NHMG_MASKING
+#  ifdef MASKING
           rmask(i,j)=1.0
           if (h(i,j).lt.0.01) then
             h(i,j)=0.01
@@ -1158,7 +1158,7 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
 !  Set masking at RHO-points.
 !----------------------------------------------------------------------
 !
-# if defined MASKING || defined NHMG_MASKING
+# ifdef MASKING
       do j=JstrR,JendR             ! Set mask to all-water status
         do i=IstrR,IendR
           rmask(i,j)=1.

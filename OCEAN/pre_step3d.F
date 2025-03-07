@@ -17,7 +17,7 @@
       subroutine pre_step3d (tile)
 !
       implicit none
-      integer tile,  trd,omp_get_thread_num
+      integer tile, trd, omp_get_thread_num
 # include "param.h"
 # include "private_scratch.h"
 # include "ocean3d.h"
@@ -67,19 +67,19 @@
 ! mode) computations.
 !--------------------------------------------------------------------
 !
-#ifdef NHMG
+# ifdef NHMG
       use nhmg
       use mg_grids
       use mg_tictoc, only : tic, toc
-#endif
-#ifdef RVTK_DEBUG
+# endif
+# ifdef RVTK_DEBUG
       use debug
-#endif              
+# endif              
       implicit none
 # include "param.h"
-#ifdef NHMG
-# include "nbq.h"
-#endif
+# ifdef NHMG
+#  include "nbq.h"
+# endif
       integer Istr,Iend,Jstr,Jend, itrc, i,j,k, indx
      &       ,imin,imax,jmin,jmax,nadv,iAkt
 # if defined PSOURCE || defined PSOURCE_MASS
@@ -101,13 +101,9 @@
      &     WORK2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 # endif
 # ifdef VADV_ADAPT_IMP      
-      real   WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
+      real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N) 
 # endif 
       real Hz_half(PRIVATE_2D_SCRATCH_ARRAY,N)
-#ifdef NHMG
-      real Hu(PRIVATE_2D_SCRATCH_ARRAY)
-      real Hv(PRIVATE_2D_SCRATCH_ARRAY)
-#endif
 # ifdef WET_DRY
       real cff3,cff4,cff5
 # endif
@@ -1029,37 +1025,38 @@
 # ifdef NHMG
 !----------------------------------------------------------
 !<-- at this point
-!<-- rw            contains internal 3D advection + Coriolis
+!<-- rw contains internal 3D advection + Coriolis
 !----------------------------------------------------------
+!
       call tic(1,'croco_pre_step3D_1')
+
       do j=Jstr,Jend
 
-      if (FIRST_TIME_STEP) then
+        if (FIRST_TIME_STEP) then
 
-        do k=1,N-1
-          do i=Istr,Iend
-             wz(i,j,k,nnew)=(wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
-     &                       +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
-     &                      )/(Hz_half(i,j,k)+Hz_half(i,j,k+1))
-             wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+Hz(i,j,k+1))
+          do k=1,N-1
+            do i=Istr,Iend
+              wz(i,j,k,nnew)=(wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
+     &                                 +dt*pn(i,j)*pm(i,j)*rw(i,j,k)
+     &                           )/(Hz_half(i,j,k)+Hz_half(i,j,k+1))
+              wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j,k+1))
+            enddo
           enddo
-        enddo
-        !surface special treatment
-        do i=Istr,Iend
-             wz(i,j,N,nnew)=(wz(i,j,N,nstp)*Hz(i,j,N)
+          do i=Istr,Iend  ! special treatment at surface
+            wz(i,j,N,nnew)=(wz(i,j,N,nstp)*Hz(i,j,N)
      &                       +dt*pn(i,j)*pm(i,j)*rw(i,j,N)
-     &                      )/Hz_half(i,j,N)
+     &                                    )/Hz_half(i,j,N)
             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)
             wz(i,j,0,nnew)=0.D0
             wz(i,j,0,indx)=0.D0
-        enddo
+          enddo
 
-      else  ! NOT FIRST_TIME_STEP
+        else  ! NOT FIRST_TIME_STEP
 
-        cff1=0.5+gamma
-        cff2=0.5-gamma
-        do k=1,N-1
-           do i=Istr,Iend
+          cff1=0.5+gamma
+          cff2=0.5-gamma
+          do k=1,N-1
+            do i=Istr,Iend
               wz(i,j,k,nnew)=(cff1*wz(i,j,k,nstp)*(Hz(i,j,k  )+
      &                                             Hz(i,j,k+1))
      &                       +cff2*wz(i,j,k,indx)*(Hz_bak(i,j,k  )+
@@ -1067,43 +1064,37 @@
      &                       +2.*cdt*pn(i,j)*pm(i,j)*rw(i,j,k)
      &                       )/(Hz_half(i,j,k)+Hz_half(i,j,k+1))
               wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+
-     &                                          Hz(i,j,k+1))
-           enddo
-        enddo
-        !surface special treatment
-        do i=Istr,Iend
-             wz(i,j,N,nnew)=( cff1*wz(i,j,N,nstp)*Hz(i,j,N)
-     &                       +cff2*wz(i,j,N,indx)*Hz_bak(i,j,N)
+     &                                         Hz(i,j,k+1))
+            enddo
+          enddo
+          do i=Istr,Iend  ! special treatment at surface
+            wz(i,j,N,nnew)=( cff1*wz(i,j,N,nstp)*Hz(i,j,N)
+     &                      +cff2*wz(i,j,N,indx)*Hz_bak(i,j,N)
      &                       +2.*cdt*pn(i,j)*pm(i,j)*rw(i,j,N)
-     &                      )/Hz_half(i,j,N)
-             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)
-             wz(i,j,0,nnew)=0.D0
-             wz(i,j,0,indx)=0.D0
-        enddo
+     &                        )/Hz_half(i,j,N)
+            wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)
+            wz(i,j,0,nnew)=0.D0
+            wz(i,j,0,indx)=0.D0
+          enddo
 
-      endif
-!
-!======================================================================
+        endif
 !
 !  Compute implicit vertical advection/viscosity
 !
 # ifdef VADV_ADAPT_IMP
-      do i=Istr,Iend
-         DC(i,0)=pm(i,j)*pn(i,j)
-      enddo
+        do i=Istr,Iend
+           DC(i,0)=pm(i,j)*pn(i,j)
+        enddo
 #  undef  TRIDIAG_TRA
 #  undef  TRIDIAG_U
 #  undef  TRIDIAG_V
 #  define TRIDIAG_W
 #   include "tridiag_pred.h"
 # endif
-!
-!======================================================================
-!
-      enddo
-!==
-      call toc(1,'croco_pre_step3D_1')
 
+      enddo ! j loop
+
+      call toc(1,'croco_pre_step3D_1')
 # endif /* NHMG */
 
 !$acc end kernels
@@ -1143,53 +1134,46 @@
       call tic(1,'croco_pre_step3d_2')
       cff = 1./cdt
 
-# ifdef NHMG_DOUBLE_PROJ
-      if (.false.) then !! this will never be true and we will 
-                        !! always do a projection in pre_step 
-                        !! ('double projection')
-# else
       if (iic.ge.(ntstart+2)) then
-# endif
-         do k=1,N
-            do j=Jstr,Jend
-               do i=IstrU,Iend
-                  u(i,j,k,nnew) = u(i,j,k,nnew)
-     &                 + (1.5*nhdu(i,j,k,iprec2)-0.5*nhdu(i,j,k,iprec1))*cdt
-     &                 /(0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k))) * pn_u(i,j)
-# ifdef NHMG_MASKING
-                  u(i,j,k,nnew) = u(i,j,k,nnew)*umask(i,j)
-# endif
-                  rufrc(i,j) = rufrc(i,j)
-     &                 + (1.5*nhdu(i,j,k,iprec2)-0.5*nhdu(i,j,k,iprec1))
-     &                 * om_u(i,j)
-               enddo
-            enddo
 
-            do j=JstrV,Jend
-               do i=Istr,Iend
-                  v(i,j,k,nnew) = v(i,j,k,nnew)
-     &                 + (1.5*nhdv(i,j,k,iprec2)-0.5*nhdv(i,j,k,iprec1))*cdt
-     &                 /(0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k))) * pm_v(i,j)
-# ifdef NHMG_MASKING
-                  v(i,j,k,nnew) = v(i,j,k,nnew)*vmask(i,j)
-# endif
-                  rvfrc(i,j) = rvfrc(i,j)
-     &                 + (1.5*nhdv(i,j,k,iprec2)-0.5*nhdv(i,j,k,iprec1))
-     &                 * on_v(i,j)
-               enddo
+        do k=1,N
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              u(i,j,k,nnew) = u(i,j,k,nnew)
+     &          + (1.5*nhdu(i,j,k,iprec2)-0.5*nhdu(i,j,k,iprec1))*cdt
+     &          /(0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k))) * pn_u(i,j)
+#  ifdef MASKING
+              u(i,j,k,nnew) = u(i,j,k,nnew)*umask(i,j)
+#  endif
+              rufrc(i,j) = rufrc(i,j)
+     &               + (1.5*nhdu(i,j,k,iprec2)-0.5*nhdu(i,j,k,iprec1))
+     &               * om_u(i,j)
             enddo
-
-            do j=Jstr,Jend
-               do i=Istr,Iend
-                  wz(i,j,k,nnew) = wz(i,j,k,nnew)
-     &                 + (1.5*nhdw(i,j,k,iprec2)-0.5*nhdw(i,j,k,iprec1))*cdt
-     &                 * (pm(i,j)*pn(i,j))
-# ifdef NHMG_MASKING
-                  wz(i,j,k,nnew) = wz(i,j,k,nnew)*rmask(i,j)
-# endif
-               enddo
+          enddo
+          do j=JstrV,Jend
+            do i=Istr,Iend
+              v(i,j,k,nnew) = v(i,j,k,nnew)
+     &           + (1.5*nhdv(i,j,k,iprec2)-0.5*nhdv(i,j,k,iprec1))*cdt
+     &          /(0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k))) * pm_v(i,j)
+#  ifdef MASKING
+              v(i,j,k,nnew) = v(i,j,k,nnew)*vmask(i,j)
+#  endif
+              rvfrc(i,j) = rvfrc(i,j)
+     &               + (1.5*nhdv(i,j,k,iprec2)-0.5*nhdv(i,j,k,iprec1))
+     &               * on_v(i,j)
             enddo
-         enddo
+          enddo
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              wz(i,j,k,nnew) = wz(i,j,k,nnew)
+     &          + (1.5*nhdw(i,j,k,iprec2)-0.5*nhdw(i,j,k,iprec1))*cdt
+     &          * (pm(i,j)*pn(i,j))
+#  ifdef MASKING
+              wz(i,j,k,nnew) = wz(i,j,k,nnew)*rmask(i,j)
+#  endif
+            enddo
+          enddo
+        enddo
 
       else  !! instead of using AB2 to extrapolate 
             !! nh pressure gradient from corr steps, project here
@@ -1197,153 +1181,138 @@
 !  Set lateral boundary conditions for Hz_half
 !
 #  ifndef EW_PERIODIC
-      if (WESTERN_EDGE) then
-        do k=1,N               !NG 18dec2017: replace 0 by 1
-          do j=Jstr,Jend
-            Hz_half(0,j,k)=Hz_half(1,j,k)
+        if (WESTERN_EDGE) then
+          do k=1,N               !NG 18dec2017: replace 0 by 1
+            do j=Jstr,Jend
+              Hz_half(0,j,k)=Hz_half(1,j,k)
+            enddo
           enddo
-        enddo
-      endif
-      if (EASTERN_EDGE) then
-        do k=1,N               !NG 18dec2017: replace 0 by 1
-          do j=Jstr,Jend
-            Hz_half(LOCALLM+1,j,k)=Hz_half(LOCALLM,j,k)
+        endif
+        if (EASTERN_EDGE) then
+          do k=1,N               !NG 18dec2017: replace 0 by 1
+            do j=Jstr,Jend
+              Hz_half(LOCALLM+1,j,k)=Hz_half(LOCALLM,j,k)
+            enddo
           enddo
-        enddo
-      endif
+        endif
 #  endif
 #  ifndef NS_PERIODIC
-      if (SOUTHERN_EDGE) then
-        do k=1,N               !NG 18dec2017: replace 0 by 1
-          do i=Istr,Iend
-            Hz_half(i,0,k)=Hz_half(i,1,k)
+        if (SOUTHERN_EDGE) then
+          do k=1,N               !NG 18dec2017: replace 0 by 1
+            do i=Istr,Iend
+              Hz_half(i,0,k)=Hz_half(i,1,k)
+            enddo
           enddo
-        enddo
-      endif
-      if (NORTHERN_EDGE) then
-        do k=1,N               !NG 18dec2017: replace 0 by 1
-          do i=Istr,Iend
-            Hz_half(i,LOCALMM+1,k)=Hz_half(i,LOCALMM,k)
+        endif
+        if (NORTHERN_EDGE) then
+          do k=1,N               !NG 18dec2017: replace 0 by 1
+            do i=Istr,Iend
+              Hz_half(i,LOCALMM+1,k)=Hz_half(i,LOCALMM,k)
+            enddo
           enddo
-        enddo
-      endif
+        endif
 #  endif
-
-!     Multiply u,v,w to get back fluxes for use inside mg_solve
-      hu = 0
-      hv = 0
+!
+!  Multiply u,v,w to get back fluxes for use inside mg_solve
+!
          do k=1,N
             do j=Jstr,Jend
                do i=Istr,Iend+1
                   u(i,j,k,nnew) = u(i,j,k,nnew)
      &                *(0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k)))/pn_u(i,j)
-                  hu(i,j) = hu(i,j)+0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k))
                enddo
             enddo
-
             do j=Jstr,Jend+1
                do i=Istr,Iend
                   v(i,j,k,nnew) = v(i,j,k,nnew)
      &                 *(0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k)))/pm_v(i,j)
-                  hv(i,j) = hv(i,j)+0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k))
                enddo
             enddo
-
             do j=Jstr,Jend
                do i=Istr,Iend
                   wz(i,j,k,nnew) = wz(i,j,k,nnew)/(pm(i,j)*pn(i,j))
                enddo
             enddo
          enddo
-
-
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #  ifdef THREE_GHOST_POINTS_UV
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,nnew))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,nnew))
+        call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                               u(START_2D_ARRAY,1,nnew))
+        call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                               v(START_2D_ARRAY,1,nnew))
 #  else
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+        call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                             u(START_2D_ARRAY,1,nnew))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+        call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,nnew))
 #  endif
 # endif
 
 !     Compute a 'barotropic' correction to wz such that it matches
 !     the current ubar,vbar divergence (see Molemaker et al., 2018)
-      if (surface_neumann) then
-         nh_ubar = 0.
-         nh_vbar = 0.
-         do k=1,N
+        if (surface_neumann) then
+          nh_ubar = 0.
+          nh_vbar = 0.
+          do k=1,N
             do j=Jstr,Jend
-               do i=Istr,Iend+1
-                  nh_ubar(i,j) = nh_ubar(i,j) + u(i,j,k,nnew)
-               enddo
+              do i=Istr,Iend+1
+                nh_ubar(i,j) = nh_ubar(i,j) + u(i,j,k,nnew)
+              enddo
             enddo
             do j=Jstr,Jend+1
-               do i=Istr,Iend
-                  nh_vbar(i,j) = nh_vbar(i,j) + v(i,j,k,nnew)
-               enddo
+              do i=Istr,Iend
+                nh_vbar(i,j) = nh_vbar(i,j) + v(i,j,k,nnew)
+              enddo
             enddo
-         enddo
-
-         do j=Jstr,Jend
+          enddo
+          do j=Jstr,Jend
             do i=Istr,Iend
-               nh_wcor(i,j) = wz(i,j,N,nnew)
-     &        +(nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
+              nh_wcor(i,j) = wz(i,j,N,nnew)
+     &      +(nh_ubar(i+1,j)-nh_ubar(i,j)+nh_vbar(i,j+1)-nh_vbar(i,j))
             enddo
-         enddo
-         do k=1,N
+          enddo
+          do k=1,N
             do j=Jstr,Jend
-               do i=Istr,Iend
-                  wz(i,j,k,nnew) = wz(i,j,k,nnew) - nh_wcor(i,j)
+              do i=Istr,Iend
+                wz(i,j,k,nnew) = wz(i,j,k,nnew) - nh_wcor(i,j)
      &                           * (zw(i,j,k)-zw(i,j,0))
      &                           / (zw(i,j,N)-zw(i,j,0))
-               enddo
+              enddo
             enddo
-         enddo
-      endif  ! surface_neumann !
+          enddo
+        endif  ! surface_neumann !
 
-      call nhmg_solve(u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew))
+        call nhmg_solve(u(:,:,:,nnew),v(:,:,:,nnew),wz(:,:,:,nnew))
 
-!NG june 2018: get non-hydrostatic pressure (Pnh)
-!         call get_Pnh(Lm,Mm,N,halo,padd_X,padd_E,
-!     &                Pnh,dt,rho0)
-!NG june 2018: get non-hydrostatic pressure (Pnh)
-
-         ! add the non-hydro correction (du, dv, dw are in flux form)
-         ! add the non-hydrostatic pressure gradient to rufrc, rvfrc
+!  Add NH correction (du, dv, dw are in flux form)
+!  Add NH pressure gradient to rufrc, rvfrc
 
          do k=1,N
-            do j=Jstr,Jend
-               do i=IstrU,Iend
-                  u(i,j,k,nnew) = (u(i,j,k,nnew) + grid(1)%du(k,j,i))
+           do j=Jstr,Jend
+             do i=IstrU,Iend
+               u(i,j,k,nnew) = (u(i,j,k,nnew) + grid(1)%du(k,j,i))
      &                 /(0.5*(Hz_half(i,j,k) + Hz_half(i-1,j,k)))
      &                 * pn_u(i,j)
-                  rufrc(i,j) = rufrc(i,j) + om_u(i,j)*grid(1)%du(k,j,i)*cff
-               enddo
-            enddo
-
-            do j=JstrV,Jend
-               do i=Istr,Iend
-                  v(i,j,k,nnew) = (v(i,j,k,nnew) + grid(1)%dv(k,j,i))
+               rufrc(i,j) = rufrc(i,j) + om_u(i,j)*grid(1)%du(k,j,i)*cff
+             enddo
+           enddo
+           do j=JstrV,Jend
+             do i=Istr,Iend
+               v(i,j,k,nnew) = (v(i,j,k,nnew) + grid(1)%dv(k,j,i))
      &                 /(0.5*(Hz_half(i,j,k) + Hz_half(i,j-1,k)))
      &                 * pm_v(i,j)
-                  rvfrc(i,j) = rvfrc(i,j) + on_v(i,j)*grid(1)%dv(k,j,i)*cff
-               enddo
-            enddo
-
-            do j=Jstr,Jend
-               do i=Istr,Iend
-                  wz(i,j,k,nnew) = (wz(i,j,k,nnew) + grid(1)%dw(k+1,j,i))
+               rvfrc(i,j) = rvfrc(i,j) + on_v(i,j)*grid(1)%dv(k,j,i)*cff
+             enddo
+           enddo
+           do j=Jstr,Jend
+             do i=Istr,Iend
+               wz(i,j,k,nnew) = (wz(i,j,k,nnew) + grid(1)%dw(k+1,j,i))
      &                 * (pm(i,j)*pn(i,j))
-               enddo
-            enddo
+             enddo
+           enddo
          enddo
 
-      endif
+      endif ! iic
 
       call u3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
       call v3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
@@ -1351,7 +1320,6 @@
 
       call toc(1,'croco_pre_step3d_2')
 # endif /* NHMG */
-
 !
 !======================================================================
 ! Coupling, include ghost points associated with PHYSICAL

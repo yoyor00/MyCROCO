@@ -46,7 +46,7 @@ C$    integer omp_get_thread_num
 # ifdef MRL_WCI
 #  include "forces.h"
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined NHMG
 #  include "nbq.h"
 # endif
       real eps
@@ -64,7 +64,13 @@ C$    integer omp_get_thread_num
 # else
 #  define J_RANGE JstrR,JendR
 # endif
-
+# ifdef MPI
+#  define LOCALLM Lmmpi
+#  define LOCALMM Mmmpi
+# else
+#  define LOCALLM Lm
+#  define LOCALMM Mm
+# endif
 !
 !----------------------------------------------------------------------
 !  Initialization of free surface zeta arrays and wet/dry mask
@@ -251,6 +257,61 @@ C$    integer omp_get_thread_num
      &                        Hzr(START_2D_ARRAY,1))
 #   endif
 #  endif
+
+#  ifdef NHMGXXX
+!
+!  Compute slopes
+!
+      do k=1,N
+        do j=0,LOCALMM+1
+          do i=0,LOCALLM+1
+            dzdxi (i,j,k)=0.5*(z_r(i+1,j,k)-z_r(i-1,j,k))*pn(i,j)
+            dzdeta(i,j,k)=0.5*(z_r(i,j+1,k)-z_r(i,j-1,k))*pm(i,j)
+          enddo
+        enddo
+      enddo
+      if (WESTERN_EDGE) then   ! cancel slopes at domain BCs
+        do k=1,N
+          do j=0,LOCALMM+1
+            dzdxi (0,j,k)=0.
+            dzdxi (1,j,k)=0.
+            dzdeta(0,j,k)=0.
+            dzdeta(1,j,k)=0.
+          enddo
+        enddo
+      endif
+      if (EASTERN_EDGE) then
+        do k=1,N
+          do j=0,LOCALMM+1
+            dzdxi (LOCALLM  ,j,k)=0.
+            dzdxi (LOCALLM+1,j,k)=0.
+            dzdeta(LOCALLM  ,j,k)=0.
+            dzdeta(LOCALLM+1,j,k)=0.
+          enddo
+        enddo
+      endif
+      if (SOUTHERN_EDGE) then
+        do k=1,N
+          do i=0,LOCALLM+1
+            dzdxi (i,0,k)=0.
+            dzdxi (i,1,k)=0.
+            dzdeta(i,0,k)=0.
+            dzdeta(i,1,k)=0.
+          enddo
+        enddo
+      endif
+      if (NORTHERN_EDGE) then
+        do k=1,N
+          do i=0,LOCALLM+1
+            dzdxi (i,LOCALMM  ,k)=0.
+            dzdxi (i,LOCALMM+1,k)=0.
+            dzdeta(i,LOCALMM  ,k)=0.
+            dzdeta(i,LOCALMM+1,k)=0.
+          enddo
+        enddo
+      endif
+#  endif /* NHMG */
+
       return
       end
 
@@ -289,7 +350,7 @@ C$    integer omp_get_thread_num
 #   ifdef MRL_WCI
 #    include "forces.h"
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined NHMG
 #    include "nbq.h"
 #   endif
       real eps
@@ -332,13 +393,13 @@ C$    integer omp_get_thread_num
 #   else
             zetatmp=Zt_avg1(i,j)
 #   endif
-#  ifdef NEW_S_COORD
+#   ifdef NEW_S_COORD
             htmp=abs(h(i,j))
             hinv(i,j)=1./(htmp+hc)
-#  else
+#   else
             htmp=h(i,j)
             hinv(i,j)=1./htmp
-#  endif
+#   endif
 #   if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #   endif
@@ -380,58 +441,59 @@ C$    integer omp_get_thread_num
 #    endif
 #   endif
 
-#ifdef NHMG
-!     Compute slopes
-      do k = 1, N
-         do j = 0,Mm+1
-            do i = 0,Lm+1
-               dzdxi (i,j,k)=0.5*(z_r(i+1,j,k)-z_r(i-1,j,k))*pn(i,j)
-               dzdeta(i,j,k)=0.5*(z_r(i,j+1,k)-z_r(i,j-1,k))*pm(i,j)
-            enddo
-         enddo
+#  ifdef NHMGXXX
+!
+!  Compute slopes
+!
+      do k=1,N
+        do j=0,LOCALMM+1
+          do i=0,LOCALLM+1
+            dzdxi (i,j,k)=0.5*(z_r(i+1,j,k)-z_r(i-1,j,k))*pn(i,j)
+            dzdeta(i,j,k)=0.5*(z_r(i,j+1,k)-z_r(i,j-1,k))*pm(i,j)
+          enddo
+        enddo
       enddo
-      ! z_r is buffer filled in inner halos but not in outer halos
-      if (WESTERN_EDGE) then
-         do k = 1, N
-            do j = 0,Mm+1
-               dzdxi (0,j,k) = 0.
-               dzdxi (1,j,k) = 0.
-               dzdeta(0,j,k) = 0.
-               dzdeta(1,j,k) = 0.
-            enddo
-         enddo
+      if (WESTERN_EDGE) then   ! cancel slopes at domain BCs
+        do k=1,N
+          do j=0,LOCALMM+1
+            dzdxi (0,j,k)=0.
+            dzdxi (1,j,k)=0.
+            dzdeta(0,j,k)=0.
+            dzdeta(1,j,k)=0.
+          enddo
+        enddo
       endif
       if (EASTERN_EDGE) then
-         do k = 1, N
-            do j = 0,Mm+1
-               dzdxi (Lm  ,j,k) = 0.
-               dzdxi (Lm+1,j,k) = 0.
-               dzdeta(Lm  ,j,k) = 0.
-               dzdeta(Lm+1,j,k) = 0.
-            enddo
-         enddo
+        do k=1,N
+          do j=0,LOCALMM+1
+            dzdxi (LOCALLM  ,j,k)=0.
+            dzdxi (LOCALLM+1,j,k)=0.
+            dzdeta(LOCALLM  ,j,k)=0.
+            dzdeta(LOCALLM+1,j,k)=0.
+          enddo
+        enddo
       endif
       if (SOUTHERN_EDGE) then
-         do k = 1, N
-            do i = 0,Lm+1
-               dzdxi (i,0,k) = 0.
-               dzdxi (i,1,k) = 0.
-               dzdeta(i,0,k) = 0.
-               dzdeta(i,1,k) = 0.
-            enddo
-         enddo
+        do k=1,N
+          do i=0,LOCALLM+1
+            dzdxi (i,0,k)=0.
+            dzdxi (i,1,k)=0.
+            dzdeta(i,0,k)=0.
+            dzdeta(i,1,k)=0.
+          enddo
+        enddo
       endif
       if (NORTHERN_EDGE) then
-         do k = 1, N
-            do i = 0,Lm+1
-               dzdxi (i,Mm  ,k) = 0.
-               dzdxi (i,Mm+1,k) = 0.
-               dzdeta(i,Mm  ,k) = 0.
-               dzdeta(i,Mm+1,k) = 0.
-            enddo
-         enddo
+        do k=1,N
+          do i=0,LOCALLM+1
+            dzdxi (i,LOCALMM  ,k)=0.
+            dzdxi (i,LOCALMM+1,k)=0.
+            dzdeta(i,LOCALMM  ,k)=0.
+            dzdeta(i,LOCALMM+1,k)=0.
+          enddo
+        enddo
       endif
-#endif /* NHMG */
+#  endif /* NHMG */
 
       return
       end
@@ -446,29 +508,34 @@ C$    integer omp_get_thread_num
       subroutine set_HUV (tile)
       implicit none
 #  include "param.h"
-      integer tile, trd
-C$    integer omp_get_thread_num
-#  include "compute_tile_bounds.h"
-      call set_HUV_tile (Istr,Iend,Jstr,Jend)
+      integer tile, trd, omp_get_thread_num
+# include "private_scratch.h"
+# include "compute_tile_bounds.h"
+      trd=omp_get_thread_num()
+      call set_HUV_tile (Istr,Iend,Jstr,Jend
+#  ifdef NHMG
+     &                   ,A2d(1,1,trd)
+#  endif
+     &                  )
       return
       end
 
-      subroutine set_HUV_tile (Istr,Iend,Jstr,Jend)
+      subroutine set_HUV_tile (Istr,Iend,Jstr,Jend
+#  ifdef NHMG
+     &                        ,WORK
+#  endif
+     &                        )
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
-
-# ifdef NHMG
-!     TODO: remove this allocation
-!     allocating a 2D array on the heap is against croco policy
-      real grad(PRIVATE_2D_SCRATCH_ARRAY)
-# endif
-
 #  ifdef MRL_WCI
 #   include "forces.h"
+#  endif
+#  ifdef NHMG
+      real WORK(PRIVATE_2D_SCRATCH_ARRAY)
 #  endif
 #  include "compute_auxiliary_bounds.h"
 !
@@ -557,12 +624,12 @@ C$    integer omp_get_thread_num
 #   endif
 #  endif
 
-# ifdef NHMG
-!  TODO: If you had better information, this will overwrite it
-!  TODO: We should be able to specify if we can do better in 
-!  TODO: either ana_initial of reading netcdf files
-      if (iic.eq.0) then !! Only during initialization
-        do j=Jstr,Jend ! initialize using continuity in the interior
+#  ifdef NHMG
+!
+!  Initialize wz using continuity
+!
+      if (FIRST_TIME_STEP) then  ! only at initialization
+        do j=Jstr,Jend
           do k=1,N
             do i=Istr,Iend
                wz(i,j,k,1)=wz(i,j,k-1,1)
@@ -571,14 +638,13 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         enddo
-        call w3dbc_tile (Istr,Iend,Jstr,Jend, grad)
+        call w3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
 #   if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
         call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-     &                                 wz(START_2D_ARRAY,0,1))
+     &                          wz(START_2D_ARRAY,0,1))
 #   endif
       endif
-# endif /* NHMG */
-
+#  endif /* NHMG */
 
       return
       end
@@ -709,9 +775,6 @@ C$    integer omp_get_thread_num
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
-#  ifdef NHMG
-      real grad(PRIVATE_2D_SCRATCH_ARRAY) ! watch out
-#  endif
 #  ifdef MRL_WCI
 #   include "forces.h"
 #  endif

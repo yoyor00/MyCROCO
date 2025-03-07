@@ -490,16 +490,4 @@ $MAKE        || exit 2
 [[ -f croco  ]] && mv croco $RUNDIR
 [[ -f partit ]] && mv partit $RUNDIR
 [[ -f ncjoin ]] && mv ncjoin  $RUNDIR
-#
-#
-#
-if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
-    echo ""
-    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-    echo "** Please verify your LD_LIBRARY_PATH for NHMG library. "
-    echo "** You can update it using one of these two commands: "
-    echo "** (csh)  setenv LD_LIBRARY_PATH \$LD_LIBRARY_PATH:${NHMG_LIB}"
-    echo "** (bash) export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${NHMG_LIB}"
-    echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
-fi
 

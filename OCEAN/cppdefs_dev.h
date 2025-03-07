@@ -391,6 +391,7 @@
 # define VIS_COEF_3D
 # undef  TS_DIF2
 # undef  DIF_COEF_3D
+# undef  TS_DIF_SMAGO
 #endif
 /*
    Set UP3 scheme in barotropic equations for 2DH applications

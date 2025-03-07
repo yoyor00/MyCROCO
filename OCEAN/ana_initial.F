@@ -438,10 +438,10 @@
             hintu = 0.
             do k=1,N
               u(i,j,k,1)  = -du*tanh((z_r(1,1,k)-zu0)/hu0)
-              u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *               ! add perturbation
-     &                       (-2.*tanh((z_r(1,1,k)-zu0)/hup0))*
-     &                       (1. -tanh((z_r(1,1,k)-zu0)/hup0)**2.)
-     &                                      *sin(2.*2.*pi/xl*xp(i,j))
+              u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *          ! add perturbation
+     &                            (-2.*tanh((z_r(1,1,k)-zu0)/hup0))*
+     &                         (1. -tanh((z_r(1,1,k)-zu0)/hup0)**2.)
+     &                                     *sin(2.*2.*pi/xl*xp(i,j))
      &                       *(1.+eps3D*(sin( 2.*4.*pi/el*yr(i,j))))
 
               u(i,j,k,2)  = u(i,j,k,1)
@@ -454,7 +454,8 @@
                 u(i,j,k,1) = u(i,j,k,1) - hintu
                 u(i,j,k,2) = u(i,j,k,1)
             enddo 
-            ubar(i,j,:) = 0.
+            ubar(i,j,1) = 0.
+            ubar(i,j,2) = 0.
           enddo
         enddo
 
@@ -469,10 +470,9 @@
               v(i,j,k,2)  = 0.
 #   if defined NBQ || defined NHMG
               wz(i,j,k,1) = -0.01*du*hup0*
-     &                              (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
-     &                                  *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
-     &                                  *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
-
+     &                         (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
+     &                       *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
+     &                     *(1.+eps3D*(sin( 2.*4.*pi/el*yp(i,j))))
               wz(i,j,k,2) = wz(i,j,k,1)
 #   endif
             enddo
@@ -481,7 +481,8 @@
 #   if defined NBQ || defined NHMG
         do j=JR_RANGE
           do i=IR_RANGE
-              wz(i,j,0,:)=0.
+              wz(i,j,0,1)=0.
+              wz(i,j,0,2)=0.
           enddo
         enddo
 #   endif
@@ -495,7 +496,8 @@
               u(i,j,k,2)=0.
               v(i,j,k,2)=0.
 #   if defined NBQ || defined NHMG
-              wz(i,j,k,:)=0.
+              wz(i,j,k,1)=0.
+              wz(i,j,k,2)=0.
 #   endif
             enddo
           enddo
