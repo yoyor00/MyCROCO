@@ -95,8 +95,22 @@ mytmp=$mydir/from_wrf_tmp.nc
 #      varin=V_01
       varin=V10
     elif [ $var == ${gridlevels}_WINDE_01 ] ; then
+#      varin=U_01,V_01,COSALPHA,SINALPHA
       varin=U10,V10,COSALPHA,SINALPHA
     elif [ $var == ${gridlevels}_WINDN_01 ] ; then
+#      varin=U_01,V_01,COSALPHA,SINALPHA
+      varin=U10,V10,COSALPHA,SINALPHA
+    elif [ $var == ${gridlevels}_WND_U_01 ] ; then
+#      varin=U_01
+      varin=U10
+    elif [ $var == ${gridlevels}_WND_V_01 ] ; then
+#      varin=V_01
+      varin=V10
+    elif [ $var == ${gridlevels}_WND_E_01 ] ; then
+#      varin=U_01,V_01,COSALPHA,SINALPHA
+      varin=U10,V10,COSALPHA,SINALPHA
+    elif [ $var == ${gridlevels}_WND_N_01 ] ; then
+#      varin=U_01,V_01,COSALPHA,SINALPHA
       varin=U10,V10,COSALPHA,SINALPHA
     elif [ $var == ${gridlevels}_SURF_NET_SOLAR ] ; then
       varin=SWDOWN
@@ -152,15 +166,31 @@ mytmp=$mydir/from_wrf_tmp.nc
 
     elif [ $var == ${gridlevels}_WINDE_01 ] ; then
       echo '---> Compute variable: '$var'...'
-      ncap2 -O -v -s "${gridlevels}_WE=U10*COSALPHA-V10*SINALPHA" $mytmp $mytmp
+#      ncap2 -O -v -s "${gridlevels}_WE=U10*COSALPHA-V10*SINALPHA" $mytmp $mytmp
+      ncap2 -O -v -s "${gridlevels}_WE=U_01*COSALPHA-V_01*SINALPHA" $mytmp $mytmp
       ncrename -v ${gridlevels}_WE,${gridlevels}_WINDE_01 $mytmp
       ncks -A -v ${gridlevels}_WINDE_01 $mytmp $fileout
 
     elif [ $var == ${gridlevels}_WINDN_01 ] ; then
       echo '---> Compute variable: '$var'...'
-      ncap2 -O -v -s "${gridlevels}_WN=V10*COSALPHA+U10*SINALPHA" $mytmp $mytmp
+#      ncap2 -O -v -s "${gridlevels}_WN=V10*COSALPHA+U10*SINALPHA" $mytmp $mytmp
+      ncap2 -O -v -s "${gridlevels}_WN=V_01*COSALPHA+U1_01*SINALPHA" $mytmp $mytmp
       ncrename -v ${gridlevels}_WN,${gridlevels}_WINDN_01 $mytmp
       ncks -A -v ${gridlevels}_WINDN_01 $mytmp $fileout
+
+    elif [ $var == ${gridlevels}_WND_E_01 ] ; then
+      echo '---> Compute variable: '$var'...'
+#      ncap2 -O -v -s "${gridlevels}_WE=U10*COSALPHA-V10*SINALPHA" $mytmp $mytmp
+      ncap2 -O -v -s "${gridlevels}_WE=U_01*COSALPHA-V_01*SINALPHA" $mytmp $mytmp
+      ncrename -v ${gridlevels}_WE,${gridlevels}_WND_E_01 $mytmp
+      ncks -A -v ${gridlevels}_WND_E_01 $mytmp $fileout
+
+    elif [ $var == ${gridlevels}_WND_N_01 ] ; then
+      echo '---> Compute variable: '$var'...'
+#      ncap2 -O -v -s "${gridlevels}_WN=V10*COSALPHA+U10*SINALPHA" $mytmp $mytmp
+      ncap2 -O -v -s "${gridlevels}_WN=V_01*COSALPHA+U1_01*SINALPHA" $mytmp $mytmp
+      ncrename -v ${gridlevels}_WN,${gridlevels}_WND_N_01 $mytmp
+      ncks -A -v ${gridlevels}_WND_N_01 $mytmp $fileout
 
     else
       echo '---> Rename variable: '$varin' to '$var
