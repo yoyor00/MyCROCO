@@ -211,35 +211,6 @@
         lstr=lenstr(fname)
       endif
 #endif
-#ifdef LOGFILE
-# ifndef AGRIF
-      MPI_master_only stdout=80
-# else
-      stdout=Agrif_Get_Unit()
-      if (.Not.Agrif_Root()) then
-        if(mynode.eq.0) then
-         open (stdout,file='croco.log.' / / Agrif_Cfixed(),
-     &   status='REPLACE',form='formatted',err=98)
-        else
-         stdout=6
-        endif
-      else
-# endif
-      if(mynode.eq.0) then
-# ifdef ENSEMBLE
-      open (stdout,file=cmember//'croco.log',
-# else
-      open (stdout,file='croco.log',
-# endif
-     & status='REPLACE',form='formatted',err=98)
-      else
-      stdout=6
-      endif
-# ifdef AGRIF
-      endif
-# endif
-#endif
-
 !
       wrthis(indxTime)=.false.
 #ifdef AVERAGES
@@ -343,10 +314,51 @@
 !
 ! Read input parameters according to the keyword:
 ! ==== ===== ========== ========= == === ========
+#ifdef LOGFILE
+!
+! LOGFILE file name. Check its availability and open it.
+!
+      if (keyword(1:kwlen).eq.'logfile') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+# if defined MPI && defined PARALLEL_FILES
+        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+# endif
+        logname=fname(1:lstr)
+# ifndef AGRIF
+      MPI_master_only stdout=80
+# else
+      stdout=Agrif_Get_Unit()
+      if (.Not.Agrif_Root()) then
+        if(mynode.eq.0) then
+         open (stdout,file=logname//'.'//Agrif_Cfixed(),
+     &   status='REPLACE',form='formatted',err=98)
+        else
+         stdout=6
+        endif
+      else
+# endif
+      if(mynode.eq.0) then
+# ifdef ENSEMBLE
+      open (stdout,file=cmember//logname,
+# else
+      open (stdout,file=logname,
+# endif
+     & status='REPLACE',form='formatted',err=98)
+      else
+      stdout=6
+      endif
+# ifdef AGRIF
+      endif
+# endif
 !
 ! Title
 !
+      elseif (keyword(1:kwlen).eq.'title') then
+#else
       if (keyword(1:kwlen).eq.'title') then
+#endif   /* LOGFILE */
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) title
         lstr=lenstr(title)
@@ -464,6 +476,7 @@
      &    Tcline,  'Tcline   S-coordinate surface/bottom layer',
      &  'width used in', 'vertical coordinate stretching, meters.'
 #endif
+
 !
 ! Initial conditions file name. Check its availability (in the case
 ! of analytical initial conditions and nrrec=0 initial conditions are

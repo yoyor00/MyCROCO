@@ -2068,6 +2068,9 @@
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
+#ifdef LOGFILE
+     &                                ,  logname
+#endif
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
