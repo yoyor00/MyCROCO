@@ -46,6 +46,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #322 : fix SUBSTANCE_SUBMASSBALANCE feature on river fluxes
 - Issue #324 : fix FILLVAL, mask was misdone on variable value 
   instead of mask value
+- Issue #329 : fix writing of sediment layers (SEDIMENT)
 
 
 ### Changed
@@ -94,3 +95,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - remove cppkeys key_CROCO and MORPHODYN_MUSTANG_byHYDRO
 
 ### Other
+
+- Issue #271 : add information about the branch status (stable or not)
+  in the README file
