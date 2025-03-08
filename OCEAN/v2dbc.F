@@ -875,7 +875,7 @@ C$    trd=omp_get_thread_num()
 
 #ifdef NBQ
 !=======================================================================
-!  Computes normal boundary values of DU_nbq for NBQ OBCs
+!  Computes normal boundary values of DV_nbq for NBQ OBCs
 !=======================================================================
 !
 # ifndef NS_COM_PERIODIC
@@ -904,8 +904,8 @@ C$    trd=omp_get_thread_num()
      &                   *0.5*(h(i,Jend+1)+zeta(i,Jend+1,knew)
      &                       + h(i,Jend  )+zeta(i,Jend  ,knew))
 #   ifdef NBQ_MASS
-     &                           *0.5*(rhobar_nbq(i,Jend+1,knew)
-     &                                +rhobar_nbq(i,Jend  ,knew))
+     &                         *0.5*(rhobar_nbq(i,Jend+1,knew)
+     &                              +rhobar_nbq(i,Jend  ,knew))
 #   endif
         enddo
 #  else
@@ -921,11 +921,11 @@ C$    trd=omp_get_thread_num()
 #  if defined OBC_COM_WEST || defined MRL_WCI
         do j=JstrV,Jend
           DV_nbq(Istr-1,j)=vbar(Istr-1,j,knew)
-     &                 *0.5*(h(Istr-1,j  )+zeta(Istr-1,j,knew)
-     &                      +h(Istr-1,j-1)+zeta(Istr-1,j,knew))
+     &               *0.5*(h(Istr-1,j  )+zeta(Istr-1,j  ,knew)
+     &                    +h(Istr-1,j-1)+zeta(Istr-1,j-1,knew))
 #   ifdef NBQ_MASS
-     &                         *0.5*(rhobar_nbq(Istr-1,j,knew)
-     &                              +rhobar_nbq(Istr-1,j,knew))
+     &                       *0.5*(rhobar_nbq(Istr-1,j  ,knew)
+     &                            +rhobar_nbq(Istr-1,j-1,knew))
 #   endif
 
         enddo
@@ -940,11 +940,11 @@ C$    trd=omp_get_thread_num()
 #  if defined OBC_COM_EAST  || defined MRL_WCI
         do j=JstrV,Jend
           DV_nbq(Iend+1,j)=vbar(Iend+1,j,knew)
-     &                 *0.5*(h(Iend+1,j  )+zeta(Iend+1,j,knew)
-     &                      +h(Iend+1,j-1)+zeta(Iend+1,j,knew))
+     &               *0.5*(h(Iend+1,j  )+zeta(Iend+1,j  ,knew)
+     &                    +h(Iend+1,j-1)+zeta(Iend+1,j-1,knew))
 #   ifdef NBQ_MASS
-     &                         *0.5*(rhobar_nbq(Iend+1,j,knew)
-     &                              +rhobar_nbq(Iend+1,j,knew))
+     &                       *0.5*(rhobar_nbq(Iend+1,j  ,knew)
+     &                            +rhobar_nbq(Iend+1,j-1,knew))
 #   endif
         enddo
 #  else

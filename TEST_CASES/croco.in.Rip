@@ -88,3 +88,7 @@ wkb_wwave:  amp [m], ang [deg], prd [s], tide [m], B_tg, gamma_tg
 wkb_roller:  roller_sinb  roller_fraction
                   0.1          0.5
 
+wave_maker:  amp [m],   prd [s],  ang [deg], ang spread [deg], freq spread (gamma)
+             0.4          11.0         -10.0          30.0                 3.3
+
+

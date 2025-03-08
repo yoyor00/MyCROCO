@@ -130,3 +130,11 @@
       ws_free_para_n(1,1)=0.0,  ws_free_para_n(2,1)=0.0, ws_free_para_n(3,1)=0.0, ws_free_para_n(4,1)=0.0
       ws_hind_opt_n(1)=0
       ws_hind_para_n(1,1)=0.0 ,  ws_hind_para_n(2,1)=0.0 /
+&nmlsubmassbalance
+    submassbalance_l = .TRUE.
+    submassbalance_nb_border = 1
+    submassbalance_input_file = ''
+    submassbalance_output_file = 'outsubmassbalance.nc'
+    submassbalance_dtout = 0.25
+    submassbalance_date_start ='1999/01/01 00:00:00' /
+  

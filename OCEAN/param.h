@@ -130,8 +130,8 @@
       parameter (LLm0=720,  MMm0=1,    N=20)   !  0.25 m Sandbar
 # endif
 #elif defined SWASH
-!     parameter (LLm0=100,  MMm0=1,    N=10)   !  1 m  Swash
       parameter (LLm0=800,  MMm0=1,    N=10)   ! 12 cm Swash (GLOBEX)
+!     parameter (LLm0=1600, MMm0=1,    N=10)   !  6 cm Swash (GLOBEX)
 #elif defined RIP
 # ifdef BISCA
       parameter (LLm0= 86,  MMm0=92,   N=20)   ! 10 m Bisca Rip
@@ -140,6 +140,8 @@
 !     parameter (LLm0= 96,  MMm0= 96,  N=20)   !  8 m resolution
       parameter (LLm0= 48,  MMm0= 48,  N=20)   ! 16 m resolution
 # endif
+#elif defined FLASH_RIP
+      parameter (LLm0=200,  MMm0=200,  N=8 )   !  1.5 m resolution
 #elif defined THACKER
 # ifdef THACKER_2DV
       parameter (LLm0=200,  MMm0=1,    N=5 )   !  1 km resolution
@@ -312,6 +314,8 @@
       parameter (D_wetdry=0.01)
 # elif defined SANDBAR || defined TIDAL_FLAT || defined ESTUARY
       parameter (D_wetdry=0.1)
+# elif defined FLASH_RIP
+      parameter (D_wetdry=0.05)
 # else
       parameter (D_wetdry=0.2)
 # endif

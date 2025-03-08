@@ -1,5 +1,8 @@
 #include "cppdefs.h"
-
+!============================================================================================
+! Reference : Coastal Tides book by Simon (SHOM)
+! https://diffusion.shom.fr/coastal-tides-version-anglaise-de-la-maree-oceanique-cotiere.html
+!=============================================================================================
       module parameters
 
       integer,parameter :: rsh=4,rlg=8

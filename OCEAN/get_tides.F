@@ -86,9 +86,6 @@
           STOP
         endif
         status=nf_get_var(ncidfrc,varid,Tperiod)
-#  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'TIDE PERIODS',Tperiod
-#  endif
         if (status.ne.NF_NOERR) then
           write(6,3) 'tide_per',frcname(1:lstr)
           STOP
@@ -103,11 +100,6 @@
           nu(itide)=l
           ind=itide
           l_presence(nu(itide))=.true.
-#  ifdef TIDES_MAS_DBG
-       MPI_master_only write(stdout,*)'tide ',itide,l,
-     &   Tperiod(itide),
-     &   trim(nommar(nu(itide))),l_presence(nu(itide))
-#  endif
           exit
        endif
       end do
@@ -145,16 +137,6 @@
           stop                           !-->  EXIT
         endif
 
-#  ifdef TIDES_MAS_DBG
-        do j=0,LOCALMM+1
-          do i=0,LOCALLM+1
-        if (l_presence(nu(itide))
-     &    .and. i+iminmpi-1 .eq. 1 .and. j+jminmpi-1 .eq. 149)
-     &         write(stdout,*),'SSH_TAMP',h(i,j),SSH_Tamp(i,j,itide)
-          enddo
-        enddo
-#  endif
-
         status=nf_inq_varid(ncidfrc,'tide_Ephase',varid)
         status=nf_fread(SSH_Tphase(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
@@ -185,9 +167,6 @@
 !
 !  Tidal currents angle, phase, major and minor ellipse axis.
 !
-#  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'write Cangle'
-#  endif
         status=nf_inq_varid(ncidfrc,'tide_Cangle',varid)
         status=nf_fread(UV_Tangle(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
@@ -196,9 +175,6 @@
           stop                           !-->  EXIT
         endif
 
-#  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'write Cphase'
-#  endif
         status=nf_inq_varid(ncidfrc,'tide_Cphase',varid)
         status=nf_fread(UV_Tphase(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
@@ -207,9 +183,6 @@
           stop                           !-->  EXIT
         endif
 
-#  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'write Cmax'
-#  endif
         status=nf_inq_varid(ncidfrc,'tide_Cmax',varid)
         status=nf_fread(UV_Tmajor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
@@ -221,9 +194,6 @@
           stop                           !-->  EXIT
         endif
 
-#  ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'write Cmin'
-#  endif
         status=nf_inq_varid(ncidfrc,'tide_Cmin',varid)
         status=nf_fread(UV_Tminor(START_2D_ARRAY,itide),
      &                              ncidfrc,varid,ind,r2dvar)
@@ -277,9 +247,6 @@
 # endif
 
       enddo !Ntides
-# ifdef TIDES_MAS_DBG
-        MPI_master_only write(stdout,*)'NU TIDE',nu(1:Ntides)
-# endif
 # ifdef TIDES_MAS
       Tperiod=Tperiod*3600.0
 # endif

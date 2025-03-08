@@ -755,7 +755,7 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxEPB)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb(i,j) )
+              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb0(i,j) )
             enddo
           enddo
         endif

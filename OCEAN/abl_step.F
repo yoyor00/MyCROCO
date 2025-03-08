@@ -100,16 +100,16 @@
 
          do k=3,N_abl-1
            do i=imin,imax
-             elem_a(i,k) = - dt * avt_abl(i,j,k-1) / Hzw_abl(k-1)
-             elem_c(i,k) = - dt * avt_abl(i,j,k  ) / Hzw_abl(k  )
+             elem_a(i,k) = - dt * avt_abl(i,j,k-1,nt_a) / Hzw_abl(k-1)
+             elem_c(i,k) = - dt * avt_abl(i,j,k  ,nt_a) / Hzw_abl(k  )
              elem_b(i,k) = Hzr_abl(k) - elem_a(i,k) - elem_c(i,k)
            enddo
          enddo
          ! boundary conditions
          do i=imin,imax
            elem_a(i,2    ) = 0.
-           elem_c(i,2    ) = -dt*avt_abl(i,j,    2)/Hzw_abl(2    )
-           elem_a(i,N_abl) = -dt*avt_abl(i,j,N_abl)/Hzw_abl(N_abl)
+           elem_c(i,2    ) = -dt*avt_abl(i,j,    2,nt_a)/Hzw_abl(2    )
+           elem_a(i,N_abl) = -dt*avt_abl(i,j,N_abl,nt_a)/Hzw_abl(N_abl)
            elem_b(i,N_abl) = Hzr_abl(N_abl) - elem_a(i,N_abl)
            elem_c(i,N_abl) = 0.
          enddo
@@ -206,25 +206,25 @@
         !
         do k=3,N_abl
           do i=imin,imax
-            elem_a(i,k) = -dt * Avm_abl(i,j,k-1) / Hzw_abl(k-1)  ! lower-diagonal
-            elem_c(i,k) = -dt * Avm_abl(i,j,k  ) / Hzw_abl(k  )  ! upper-diagonal
+            elem_a(i,k) = -dt * Avm_abl(i,j,k-1,nt_a) / Hzw_abl(k-1)  ! lower-diagonal
+            elem_c(i,k) = -dt * Avm_abl(i,j,k  ,nt_a) / Hzw_abl(k  )  ! upper-diagonal
             elem_b(i,k) = Hzr_abl(k) - elem_a(i,k) - elem_c(i,k) !       diagonal
           enddo
         enddo
         !
         do i=imin,imax    ! boundary conditions
           elem_a(i,2) = 0.
-          elem_c(i,2) = - dt * Avm_abl(i,j,2) / Hzw_abl(2)
+          elem_c(i,2) = - dt * Avm_abl(i,j,2,nt_a) / Hzw_abl(2)
            !
           cff1  = cd_du(i,j)
-          cff2  = 0. !cd_du(i,j) * ( ssu(ji-1, jj) + ssu(ji,jj) )
+# ifdef KILPATRICK
+          cff2  = 0.
+# else
+          cff2  = Cd_du(i,j) * 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
+# endif
           elem_b(i,2) = Hzr_abl( 2 ) - elem_c(i,2) + dt * cff1
           u_abl(i,j,2,nt_a) = u_abl(i,j,2,nt_a)    + dt * cff2
-           !++ Top Neumann B.C.
-              !elem_a(i,N_abl ) = - dt * Avm_abl(i,j,N_abl)/Hzw_abl(N_abl)
-              !elem_c(i,N_abl ) = 0.
-              !elem_b(i,N_abl ) = Hzr_abl(N_abl) - elem_a(i,N_abl)
-           !++ Top Dirichlet B.C.
+          !++ Top Dirichlet B.C.
           elem_a(i,     N_abl )       = 0.
           elem_c(i,     N_abl )       = 0.
           elem_b(i,     N_abl )       = Hzr_abl( N_abl )
@@ -262,8 +262,8 @@
         !
         do k=3,N_abl-1
           do i=imin,imax
-            elem_a(i,k) = -dt * Avm_abl(i,j,k-1) / Hzw_abl(k-1)   ! lower-diagonal
-            elem_c(i,k) = -dt * Avm_abl(i,j,k  ) / Hzw_abl(k  )   ! upper-diagonal
+            elem_a(i,k) = -dt * Avm_abl(i,j,k-1,nt_a) / Hzw_abl(k-1)   ! lower-diagonal
+            elem_c(i,k) = -dt * Avm_abl(i,j,k  ,nt_a) / Hzw_abl(k  )   ! upper-diagonal
             elem_b(i,k) = Hzr_abl(k) - elem_a(i,k) - elem_c(i,k)  !       diagonal
           enddo
         enddo
@@ -271,16 +271,16 @@
         do i=imin,imax
           !++ Surface boundary condition
           elem_a(i,2) = 0.
-          elem_c(i,2) = - dt * Avm_abl(i,j,2) / Hzw_abl(2)
+          elem_c(i,2) = - dt * Avm_abl(i,j,2,nt_a) / Hzw_abl(2)
           cff1        = cd_du(i,j)
-          cff2        = 0. !0.5_wp * pcd_du(ji, jj) * ( pssv(ji, jj) + pssv(ji, jj-1) ) * rn_vfac
+# ifdef KILPATRICK
+          cff2        = 0.
+# else
+          cff2        = Cd_du(i, j) * 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
+# endif
           elem_b(i,2) = Hzr_abl(2) - elem_c(i,2) + dt * cff1
           v_abl(i,j,2,nt_a) =  v_abl(i,j,2,nt_a) + dt * cff2
-                  !++ Top Neumann B.C.
-                  !elem_a(i,N_abl) = - dt * Avm_abl(i,j,N_abl) / Hzw_abl(N_abl)
-                  !elem_c(i,N_abl) = 0.
-                  !elem_b(i,N_abl) = Hzr_abl( N_abl ) - elem_a(i,N_abl)
-                   !++ Top Dirichlet B.C.
+          !++ Top Dirichlet B.C.
           elem_a(i,N_abl) = 0.
           elem_c(i,N_abl) = 0.
           elem_b(i,N_abl) = Hzr_abl( N_abl )
@@ -319,7 +319,7 @@
         do j=jmin,jmax   ! outer loop
           do i=imin,imax
 !-------------------------
-            cff = 1./MAX( pblh_min,  MIN(  pblh_max, ablh(i,j)  ) )
+            cff = 1./MAX( pblh_min,  MIN(  pblh_max, ablh(i,j,nt_a)  ) )
 #  ifdef MASKING
             msk = rmask(i,j)
 #  else
@@ -417,7 +417,13 @@
 !======================================================================
           cff        = rhoAir*rho0i
           uwnd_r     = u_abl(i,j,2,nt_a)
+# ifndef KILPATRICK
+     &               - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
+# endif
           vwnd_r     = v_abl(i,j,2,nt_a)
+# ifndef KILPATRICK
+     &               - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
+# endif
           sustr(i,j) = cff*Cd_du(i,j) * uwnd_r
           svstr(i,j) = cff*Cd_du(i,j) * vwnd_r
 # ifdef MASKING

@@ -25,7 +25,7 @@
 ! istatem    Index for station potential temperature.
 ! istasal    Index for station salinity.
 ! istaden    Index for station density anomaly.
-! istav      Index for station v-component velocity.
+! istau      Index for station u-component velocity.
 ! istav      Index for station v-component velocity.
 ! nstas      Number of stations.
 ! stagrd     Station/grid embedding correspondance array.

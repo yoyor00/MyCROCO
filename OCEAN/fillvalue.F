@@ -82,10 +82,9 @@
       endif
  !
 # ifdef FILLVAL
-! Fill with spval where rmask==0 .
-      mask = (work2d_tmp.eq.mask2)
-      WHERE (mask.eqv.mask_val)
-          work2d_tmp(:,:) = spval
+! Fill with spval where value should be masked
+      WHERE (mask2 == 0)
+          work2d_tmp = spval
       END WHERE
 # endif
 #endif
@@ -187,12 +186,11 @@
 
 !
 # ifdef FILLVAL
-      work2d_tmp = work3d_tmp(:,:,1)
-      mask = (work2d_tmp.eq.mask2)
-        do k=1,N
-          WHERE (mask.eqv.mask_val)
-            work3d_tmp(:,:,k) = spval
-          END WHERE
+      ! Fill with spval where value should be masked
+      do k=1,N
+         WHERE (mask2 == 0)
+         work3d_tmp(:,:,k) = spval
+         END WHERE
       enddo
 # endif
 #endif
@@ -244,6 +242,8 @@
          mask2=rmask_wet
       elseif (typevar3d.eq.w3dvar) then
          mask2=rmask_wet
+      elseif (typevar3d.eq.b3dvar) then
+            mask2=rmask ! sediment variable should not be mask in wet-dry area
       elseif (typevar3d.eq.u3dvar) then
          mask2=umask_wet
       elseif (typevar3d.eq.v3dvar) then
@@ -253,6 +253,8 @@
       if (typevar3d.eq.r3dvar) then
          mask2=rmask
       elseif (typevar3d.eq.w3dvar) then
+         mask2=rmask
+      elseif (typevar3d.eq.b3dvar) then
          mask2=rmask
       elseif (typevar3d.eq.u3dvar) then
          mask2=umask
@@ -293,12 +295,11 @@
       endif
 !
 #  ifdef FILLVAL
-      work2d_tmp = work3d_tmp(:,:,1)
-      mask = (work2d_tmp.eq.mask2)
-        do k=1,nk_nivsed_out
-          WHERE (mask.eqv.mask_val)
-            work3d_tmp(:,:,k) = spval
-          END WHERE
+      ! Fill with spval where value should be masked
+      do k=1,nk_nivsed_out
+         WHERE (mask2 == 0)
+         work3d_tmp(:,:,k) = spval
+         END WHERE
       enddo
 #  endif
 # endif
@@ -390,12 +391,11 @@
       endif
 !
 # ifdef FILLVAL
-      work2d_tmp = work3d_tmp(:,:,1)
-      mask = (work2d_tmp.eq.mask2)
+      ! Fill with spval where value should be masked
       do k=0,N
-         WHERE (mask.eqv.mask_val)
+         WHERE (mask2 == 0)
             work3d_tmp(:,:,k) = spval
-        END WHERE
+         END WHERE
       enddo
 # endif
 #endif

@@ -22,9 +22,7 @@
 # ifdef SOLVE3D
      &                       , itrc, k
 # endif
-      real cff,cff1,cff2,
-     &     dH(N), jstri(2), istri(2),
-     &     jendi(2), iendi(2)
+
 # include "scalars.h"
 # include "ncscrum.h"
 # include "grid.h"

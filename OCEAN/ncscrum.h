@@ -1046,7 +1046,9 @@
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
-     &      , rstAblTke
+     &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
+     &      , rstAblAvm, rstAblAvt, rstAblMxld, rstAblMxlm
+     &      , rstAblAblh   
 #endif
 #ifdef SOLVE3D
      &                         , rstU,    rstV
@@ -1380,7 +1382,7 @@
      &        avgCALP, avgKAPS, avgWST
 #  endif
 # endif
-# if defined SOLVE3D && defined TRACERS
+# ifdef SOLVE3D
 #  if defined DIAGNOSTICS_TS && defined TRACERS
       integer nciddia_avg, nrecdia_avg, nrpfdia_avg
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
@@ -1585,7 +1587,9 @@
      &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
-     &      , rstAblTke
+     &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
+     &      , rstAblAvm, rstAblAvt, rstAblMxld, rstAblMxlm
+     &      , rstAblAblh
 #endif
 #ifdef SOLVE3D
      &                         , rstU,    rstV

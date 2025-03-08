@@ -1252,7 +1252,7 @@ C$OMP BARRIER
           do i=IR_RANGE
             if (.not.got_tini(itpas)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
-              if (h(i,j).lt.300) then
+              if (h(i,j).lt.300.) then
 !             if (z_r(i,j,k).lt.-800 .and.
 !     &           z_r(i,j,k).gt.-1200 ) then
                 t(i,j,k,1,itpas)=1
@@ -1263,7 +1263,7 @@ C$OMP BARRIER
             if (h(i,j).lt.2) then
               t(i,j,k,1,itpas)=1.
             else
-              t(i,j,k,1,itpas)=0
+              t(i,j,k,1,itpas)=0.
             endif
             t(i,j,k,2,itpas)=t(i,j,k,1,itpas)
 #  elif defined KH_INST
@@ -1285,19 +1285,25 @@ C$OMP BARRIER
             if (k.gt.int(N/2)) then
               t(i,j,k,1,itpas)=1.
             else
-              t(i,j,k,1,itpas)=0
+              t(i,j,k,1,itpas)=0.
             endif
 #  elif defined TIDAL_FLAT || defined ESTUARY
             if (k.gt.int(N/2)) then
               t(i,j,k,1,itpas)=1.
             else
-              t(i,j,k,1,itpas)=0
+              t(i,j,k,1,itpas)=0.
             endif
-#  else
-            if (h(i,j).lt.300) then
+#  elif defined FLASH_RIP
+            if (h(i,j).lt.0.5) then
               t(i,j,k,1,itpas)=1.
             else
-              t(i,j,k,1,itpas)=0
+              t(i,j,k,1,itpas)=0.
+            endif
+#  else
+            if (h(i,j).lt.300.) then
+              t(i,j,k,1,itpas)=1.
+            else
+              t(i,j,k,1,itpas)=0.
             endif
 #  endif
             endif

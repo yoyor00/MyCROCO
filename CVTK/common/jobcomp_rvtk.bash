@@ -348,7 +348,13 @@ rm -f flags.tmp
 # compile croco
 #
 $MAKE depend
+if [[ $COMPILEAGRIF ]] ; then
+# parallel compilation not working with AGRIF
 $MAKE
+else
+$MAKE -j 4
+fi
+
   
 [[ -f croco  ]] && mv croco $RUNDIR
 #[[ -f partit ]] && mv partit $RUNDIR

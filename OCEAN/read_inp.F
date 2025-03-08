@@ -36,6 +36,9 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
+#ifdef WAVE_MAKER
+# include "forces.h"
+#endif
 #ifdef ONLINE
 # include "online.h"
 #endif
@@ -115,6 +118,8 @@
       fname='TEST_CASES/croco.in.ShoreFace'
 #elif defined RIP
       fname='TEST_CASES/croco.in.Rip'
+#elif defined FLASH_RIP
+      fname='TEST_CASES/croco.in.Flashrip'
 #elif defined SANDBAR
       fname='TEST_CASES/croco.in.Sandbar'
 #elif defined THACKER
@@ -2877,6 +2882,23 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 #endif /* WKB_WWAVE */
 
+#ifdef WAVE_MAKER
+!
+! Offshore wavemaker parameters for wave-resolving simulations
+!
+      elseif (keyword(1:kwlen).eq.'wave_maker') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wmaker_amp,wmaker_prd,wmaker_dir,
+     &                       wmaker_dsp,wmaker_fsp
+        MPI_master_only write(stdout,'(/1x,A,5(/3x,f10.4,2x,A))')
+     &    'Offshore wavemaker parameters for wave modeling',
+     &   wmaker_amp, 'wmaker_amp  RMS wave amplitude [m]',
+     &   wmaker_prd, 'wmaker_prd  peak wave period [s]',
+     &   wmaker_dir, 'wmaker_dir  mean wave angle [deg]',
+     &   wmaker_dsp, 'wmaker_dsp  directional spread [deg]',
+     &   wmaker_fsp, 'wmaker_fsp  freq. spread (gamma in JONSWAP)'
+#endif /* WAVE_MAKER */
+
 #ifdef ANA_PSOURCE
 !
 ! Set-up point Sources/Sink number (Nsrc), direction (Dsrc), I- and
@@ -2919,14 +2941,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !         MPI_master_only write(stdout,'(/6x,F6.0,2x,A)')
      &  , qbardir(is), 'Direction of point source flow'
 #  ifdef MPI
-        if (iminmpi.LE.Isrc(is) .AND. Isrc(is).LE.imaxmpi .AND.
-     &       jminmpi.LE.Jsrc(is) .AND. Jsrc(is).LE.jmaxmpi) then
           Isrc_mpi(is,mynode)=Isrc(is)-iminmpi+1
           Jsrc_mpi(is,mynode)=Jsrc(is)-jminmpi+1
-        else
-          Isrc_mpi(is,mynode)=-1
-          Jsrc_mpi(is,mynode)=-1
-        endif
 #  endif
 #  ifdef TRACERS
         do itrc=1,NT
@@ -2970,14 +2986,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  ifdef MPI
           MPI_master_only write(*,*)'Isrc(is)=',Isrc(is)
           MPI_master_only write(*,*)'Jsrc(is)=',Jsrc(is)
-          if (iminmpi.LE.Isrc(is) .AND. Isrc(is).LE.imaxmpi .AND.
-     &        jminmpi.LE.Jsrc(is) .AND. Jsrc(is).LE.jmaxmpi) then
            Isrc_mpi(is,mynode)=Isrc(is)-iminmpi+1
            Jsrc_mpi(is,mynode)=Jsrc(is)-jminmpi+1
-          else
-           Isrc_mpi(is,mynode)=-1
-           Jsrc_mpi(is,mynode)=-1
-          endif
 #  endif
 #  if defined SOLVE3D && defined TRACERS
           do itrc=1,NT
