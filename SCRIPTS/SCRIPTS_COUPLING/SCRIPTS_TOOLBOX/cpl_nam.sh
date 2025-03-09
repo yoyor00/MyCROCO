@@ -55,14 +55,14 @@ if [ ${USE_ATM} == 1 ]; then
         fi
     done
     if [[ ${WEIGHT_FLAG} == "TRUE" ]]; then
-        if [[ $RUNtype =~ .aw.* ]] ; then 
+        if [[ $RUNtype =~ .*aw.* ]] ; then 
             for file in ${weight_a2w}; do
                 sed -e "s|<mozaic_a2w>|${file}|g" \
                     ./namcouple>tmp$$
                 mv tmp$$ namcouple
             done
         fi
-        if [[ $RUNtype =~ .oa.* ]] ; then 
+        if [[ $RUNtype =~ .*oa.* ]] ; then 
             for file in ${weight_a2o}; do
                 sed -e "s|<mozaic_a2o>|${file}|g" \
                     ./namcouple>tmp$$
@@ -79,14 +79,14 @@ if [ ${USE_WAV} == 1 ]; then
     ./namcouple>tmp$$
     mv tmp$$ namcouple
     if [[ ${WEIGHT_FLAG} == "TRUE" ]]; then
-        if [[ $RUNtype =~ .aw.* ]] ; then 
+        if [[ $RUNtype =~ .*aw.* ]] ; then 
             for file in ${weight_w2a}; do
                 sed -e "s|<mozaic_w2a>|${file}|g" \
                     ./namcouple>tmp$$
                 mv tmp$$ namcouple
             done
         fi
-        if [[ $RUNtype =~ .ow.* ]] ; then 
+        if [[ $RUNtype =~ .*ow.* ]] ; then 
             for file in ${weight_w2o}; do
                 sed -e "s|<mozaic_w2o>|${file}|g" \
                     ./namcouple>tmp$$
@@ -119,14 +119,14 @@ if [ ${USE_OCE} == 1 ]; then
         mv tmp$$ namcouple    
     done
     if [[ ${WEIGHT_FLAG} == "TRUE" ]]; then
-        if [[ $RUNtype =~ .oa.* ]] ; then 
+        if [[ $RUNtype =~ .*oa.* ]] ; then 
             for file in ${weight_o2a}; do
                 sed -e "s|<mozaic_o2a>|${file}|g" \
                     ./namcouple>tmp$$
                 mv tmp$$ namcouple
             done
         fi
-        if [[ $RUNtype =~ .ow.* ]] ; then 
+        if [[ $RUNtype =~ .*ow.* ]] ; then 
             for file in ${weight_o2w}; do
                 sed -e "s|<mozaic_o2w>|${file}|g" \
                     ./namcouple>tmp$$
