@@ -106,7 +106,7 @@ debug_vortex:
       ./bench-croco.py \
       --case VORTEX* \
       --variants sequential,mpi-4 \
-      --debug
+      --debug \
       --title vortex \
       --rebuild \
       --host host_ci \
