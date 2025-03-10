@@ -1288,8 +1288,11 @@
    !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
           reminazdeteau=p_N_remin*effetchaleur
+#if defined key_BLOOM_insed
+          xnitrifeau=p_nitrif/10*effetchaleur*c(iv_oxygen)/(c(iv_oxygen)+1.0)  ! nitrification much slower in wat than in sed
+#else
           xnitrifeau=p_nitrif*effetchaleur
-
+#endif
           reminpdeteau=p_P_remin*effetchaleur
 
           dissolsiliceeau=p_BSi_dissEau*effetchaleur
@@ -2407,7 +2410,7 @@
             F_precPFE_O2,F_precPFE_NO3,F_dissolPFE,  &
 !            glim4_O2,F_remin_aerS,F_remin_anaerS,F_precSi, &
             glim_silica,F_remin_Si,F_precSi,     &
-            cvO2new,cvO2old,Ftot_conso2_remin,Ftot_conso2_reminR,reduc_aer, &
+!            cvO2new,cvO2old,Ftot_conso2_remin,Ftot_conso2_reminR,reduc_aer, &
             F_aeration,KO2_aeration,KzO2_aeration,o2sats,tempabs,gst
    REAL(KIND=rsh),DIMENSION(nv_state)  :: cs,cw_bott,dcdt,dcw_filtbent
 
@@ -2574,7 +2577,6 @@
              ! -------------------
              ! cycle de l azote
                ! fonctions limitantes
-               cvO2old=cs(iv_oxygen)
                IF(cs(iv_oxygen).gt.0.0_rsh) THEN
                  flim1_O2 = cs(iv_oxygen) / (cs(iv_oxygen) + p_kO2_reminO2)
                  flim2_O2 = cs(iv_oxygen) / (cs(iv_oxygen) + p_kO2_nit)
@@ -2744,7 +2746,6 @@
                      !!!!!!!!!!!!!!!!!!
                      !cycle de l azote
                      !!!!!!!!!!!!!!!!!!
-!               F_oxyd_ODU = 0.0_rsh
 !               F_remin_aerN = 0.0_rsh
 !               F_remin_anaerN = 0.0_rsh
 !               F_reminR_aerN = 0.0_rsh
@@ -2820,14 +2821,20 @@
                              +F_transf_MO * cs(iv_detr_N)
                       
              ! var diag : flux en M/m2 cumule dans le temps 
-             diag_3d_sed(id_remin_aerN,k,i,j)=diag_3d_sed(id_remin_aerN,k,i,j)          &
-                                             +(F_remin_aerN * cs(iv_detr_N) + F_reminR_aerN * cs(iv_detrR_N)) * dzs(k,i,j)
-             diag_3d_sed(id_remin_anaerN,k,i,j)=diag_3d_sed(id_remin_anaerN,k,i,j)      &
-                                               +(F_remin_anaerN * cs(iv_detr_N) + F_reminR_anaerN * cs(iv_detrR_N)) * dzs(k,i,j)
-             diag_3d_sed(id_remin_nitrateN,k,i,j)=diag_3d_sed(id_remin_nitrateN,k,i,j)  &
-                                                 +(F_remin_NO3 * cs(iv_detr_N) + F_reminR_NO3 * cs(iv_detrR_N)) * dzs(k,i,j)
-             diag_3d_sed(id_filtr_benth,k,i,j)=diag_3d_sed(id_filtr_benth,k,i,j)        &
-                                              + filtr_benth * dtbiojour * dzs(k,i,j)
+             !diag_3d_sed(id_remin_aerN,k,i,j)=diag_3d_sed(id_remin_aerN,k,i,j)          &
+             !                                +(F_remin_aerN * cs(iv_detr_N) + F_reminR_aerN * cs(iv_detrR_N)) * dzs(k,i,j)
+             !diag_3d_sed(id_remin_anaerN,k,i,j)=diag_3d_sed(id_remin_anaerN,k,i,j)      &
+             !                                  +(F_remin_anaerN * cs(iv_detr_N) + F_reminR_anaerN * cs(iv_detrR_N)) * dzs(k,i,j)
+             !diag_3d_sed(id_remin_nitrateN,k,i,j)=diag_3d_sed(id_remin_nitrateN,k,i,j)  &
+             !                                    +(F_remin_NO3 * cs(iv_detr_N) + F_reminR_NO3 * cs(iv_detrR_N)) * dzs(k,i,j)
+             !diag_3d_sed(id_filtr_benth,k,i,j)=diag_3d_sed(id_filtr_benth,k,i,j)        &
+             !                                 + filtr_benth * dtbiojour * dzs(k,i,j)
+
+             ! var diag : flux en M/m2 instantanés 
+             diag_3d_sed(id_remin_aerN,k,i,j)=(F_remin_aerN * cs(iv_detr_N) + F_reminR_aerN * cs(iv_detrR_N)) * dzs(k,i,j)
+             diag_3d_sed(id_remin_anaerN,k,i,j)=(F_remin_anaerN * cs(iv_detr_N) + F_reminR_anaerN * cs(iv_detrR_N)) * dzs(k,i,j)
+             diag_3d_sed(id_remin_nitrateN,k,i,j)=(F_remin_NO3 * cs(iv_detr_N) + F_reminR_NO3 * cs(iv_detrR_N)) * dzs(k,i,j)
+             diag_3d_sed(id_filtr_benth,k,i,j)=filtr_benth * dtbiojour * dzs(k,i,j)
 !            ................................................................... 
              
              ! Ammonium (micromol/l ei) 
@@ -2840,20 +2847,15 @@
                               -F_nitrif * cs(iv_nutr_NH4)
 !             dcdt(iv_nutr_NH4)= 0.0_rsh
 
-             diag_3d_sed(id_nitrif,k,i,j)=diag_3d_sed(id_nitrif,k,i,j)  &
-                                         +F_nitrif * cs(iv_nutr_NH4) * dzs(k,i,j)
-             diag_3d_sed(id_remin_dnraN,k,i,j)=diag_3d_sed(id_remin_dnraN,k,i,j)  &
-                                              +F_dnra * cs(iv_detr_N) * porosite_inv * dzs(k,i,j) &
+             !diag_3d_sed(id_nitrif,k,i,j)=diag_3d_sed(id_nitrif,k,i,j)  &
+             !                            +F_nitrif * cs(iv_nutr_NH4) * dzs(k,i,j)
+             !diag_3d_sed(id_remin_dnraN,k,i,j)=diag_3d_sed(id_remin_dnraN,k,i,j)  &
+             !                                 +F_dnra * cs(iv_detr_N) * porosite_inv * dzs(k,i,j) &
+             !                                 +F_dnraR * cs(iv_detrR_N) * porosite_inv * dzs(k,i,j)
+             diag_3d_sed(id_nitrif,k,i,j)=F_nitrif * cs(iv_nutr_NH4) * dzs(k,i,j)
+             diag_3d_sed(id_remin_dnraN,k,i,j)=F_dnra * cs(iv_detr_N) * porosite_inv * dzs(k,i,j) &
                                               +F_dnraR * cs(iv_detrR_N) * porosite_inv * dzs(k,i,j)
              
-             !IF(cs(iv_nutr_NH4)>60.0 .AND. k<40 .AND. k>30) THEN
-             !  print*,'!!!!!! k=',k,'NH4=',cs(iv_nutr_NH4)
-             !  print*,'F_remin_aerN=',F_remin_aerN,'F_reminR_aerN=',F_reminR_aerN
-             !  print*,'effetchaleur',effetchaleur,'flim1_O2=',flim1_O2
-             !  print*,'F_remin_anaerN=',F_remin_anaerN
-             !  print*,'glim1_O2=',glim1_O2,'glim1_NO3=',glim1_NO3
-             !  print*,'F_nitrif=',F_nitrif,'flim2_O2=',flim2_O2
-             !ENDIF
 !            ................................................................... 
 
              ! Nitrate (micromol/l ei) 
@@ -2862,8 +2864,10 @@
                               -(F_denit + F_dnra) * cs(iv_detr_N) * p_GNO3_Norg * porosite_inv        &
                               -(F_denitR + F_dnraR) * cs(iv_detrR_N) * p_GNO3_NorgR * porosite_inv          
 !             dcdt(iv_nutr_NO3)= 0.0_rsh
-             diag_3d_sed(id_remin_denitN,k,i,j)=diag_3d_sed(id_remin_denitN,k,i,j)  &
-                                               +F_denit * cs(iv_detr_N) * p_GNO3_Norg * porosite_inv * dzs(k,i,j)  &
+             !diag_3d_sed(id_remin_denitN,k,i,j)=diag_3d_sed(id_remin_denitN,k,i,j)  &
+             !                                  +F_denit * cs(iv_detr_N) * p_GNO3_Norg * porosite_inv * dzs(k,i,j)  &
+             !                                  +F_denitR * cs(iv_detrR_N) * p_GNO3_NorgR * porosite_inv * dzs(k,i,j)
+             diag_3d_sed(id_remin_denitN,k,i,j)=F_denit * cs(iv_detr_N) * p_GNO3_Norg * porosite_inv * dzs(k,i,j)  &
                                                +F_denitR * cs(iv_detrR_N) * p_GNO3_NorgR * porosite_inv * dzs(k,i,j)
 !            ................................................................... 
 
@@ -2874,8 +2878,9 @@
                          -(F_oxyd_ODU+F_solid_ODU)*cs(iv_ODU)
 !             dcdt(iv_ODU)= 0.0_rsh
  
-             diag_3d_sed(id_oxyd_solid_ODU,k,i,j)=diag_3d_sed(id_oxyd_solid_ODU,k,i,j)  &
-                                                 -(F_oxyd_ODU+F_solid_ODU)*cs(iv_ODU)*dzs(k,i,j)
+             !diag_3d_sed(id_oxyd_solid_ODU,k,i,j)=diag_3d_sed(id_oxyd_solid_ODU,k,i,j)  &
+             !                                    -(F_oxyd_ODU+F_solid_ODU)*cs(iv_ODU)*dzs(k,i,j)
+             diag_3d_sed(id_oxyd_solid_ODU,k,i,j)=(F_oxyd_ODU+F_solid_ODU)*cs(iv_ODU)*dzs(k,i,j)
 !            ...................................................................                          
 
                     !!!!!!!!!!!!!!!!!!!
@@ -2915,15 +2920,15 @@
  
              dcdt(iv_detrR_P)=(-F_reminR_aerP - F_reminR_anaerP - F_reminR_NO3_P - F_burried) * cs(iv_detrR_P)           &  
                               +F_transf_MO * cs(iv_detr_P)
-            
-             diag_3d_sed(id_remin_aerP,k,i,j)=diag_3d_sed(id_remin_aerP,k,i,j)  &
-                       +(F_remin_aerP * cs(iv_detr_P) + F_reminR_aerP * cs(iv_detrR_P)) * dzs(k,i,j)
-
-             diag_3d_sed(id_remin_anaerP,k,i,j)=diag_3d_sed(id_remin_anaerP,k,i,j)  &
-                       +(F_remin_anaerP * cs(iv_detr_P) + F_reminR_anaerP * cs(iv_detrR_P)) * dzs(k,i,j)
-
-             diag_3d_sed(id_remin_nitrateP,k,i,j)=diag_3d_sed(id_remin_nitrateP,k,i,j)  &
-                       +(F_remin_NO3_P * cs(iv_detr_P) + F_reminR_NO3_P * cs(iv_detrR_P)) * dzs(k,i,j)
+             !diag_3d_sed(id_remin_aerP,k,i,j)=diag_3d_sed(id_remin_aerP,k,i,j)  &
+             !          +(F_remin_aerP * cs(iv_detr_P) + F_reminR_aerP * cs(iv_detrR_P)) * dzs(k,i,j)
+             !diag_3d_sed(id_remin_anaerP,k,i,j)=diag_3d_sed(id_remin_anaerP,k,i,j)  &
+             !          +(F_remin_anaerP * cs(iv_detr_P) + F_reminR_anaerP * cs(iv_detrR_P)) * dzs(k,i,j)
+             !diag_3d_sed(id_remin_nitrateP,k,i,j)=diag_3d_sed(id_remin_nitrateP,k,i,j)  &
+             !          +(F_remin_NO3_P * cs(iv_detr_P) + F_reminR_NO3_P * cs(iv_detrR_P)) * dzs(k,i,j)
+             diag_3d_sed(id_remin_aerP,k,i,j)=(F_remin_aerP * cs(iv_detr_P) + F_reminR_aerP * cs(iv_detrR_P)) * dzs(k,i,j)
+             diag_3d_sed(id_remin_anaerP,k,i,j)=(F_remin_anaerP * cs(iv_detr_P) + F_reminR_anaerP * cs(iv_detrR_P)) * dzs(k,i,j)
+             diag_3d_sed(id_remin_nitrateP,k,i,j)=(F_remin_NO3_P * cs(iv_detr_P) + F_reminR_NO3_P * cs(iv_detrR_P)) * dzs(k,i,j)
 !            ...................................................................  
              
              ! Fe bound P (micromol/l sed) 
@@ -2932,11 +2937,12 @@
                          - (F_dissolPFE * cs(iv_PFe)) - (F_burried * cs(iv_PFe))
 !             dcdt(iv_PFe)= 0.0_rsh
                            
-             diag_3d_sed(id_dissol_PFe,k,i,j)=diag_3d_sed(id_dissol_PFe,k,i,j)+  &
-                                             + (F_dissolPFE * cs(iv_PFe) * dzs(k,i,j))
-
-             diag_3d_sed(id_precipit_P,k,i,j)=diag_3d_sed(id_precipit_P,k,i,j)+  &
-                                             +(F_precPFE_O2 + F_precPFE_NO3) * cs(iv_nutr_PO4) * poro(k,i,j) * dzs(k,i,j)
+             !diag_3d_sed(id_dissol_PFe,k,i,j)=diag_3d_sed(id_dissol_PFe,k,i,j)+  &
+             !                                + (F_dissolPFE * cs(iv_PFe) * dzs(k,i,j))
+             !diag_3d_sed(id_precipit_P,k,i,j)=diag_3d_sed(id_precipit_P,k,i,j)+  &
+             !                                +(F_precPFE_O2 + F_precPFE_NO3) * cs(iv_nutr_PO4) * poro(k,i,j) * dzs(k,i,j)
+             diag_3d_sed(id_dissol_PFe,k,i,j)=(F_dissolPFE * cs(iv_PFe) * dzs(k,i,j))
+             diag_3d_sed(id_precipit_P,k,i,j)=(F_precPFE_O2 + F_precPFE_NO3) * cs(iv_nutr_PO4) * poro(k,i,j) * dzs(k,i,j)
 !            ................................................................... 
 
              ! P adsorbe (micromol/lsed) 
@@ -2944,8 +2950,9 @@
              dcdt(iv_nutr_Pads)=F_adsorP * cs(iv_nutr_PO4) * poro(k,i,j)              &
                                -F_desorP * cs(iv_nutr_Pads) - F_burried * cs(iv_nutr_Pads)
 
-             diag_3d_sed(id_adsor_desorb_P,k,i,j)=diag_3d_sed(id_adsor_desorb_P,k,i,j)  &
-                                                 +dcdt(iv_nutr_Pads) * dzs(k,i,j)
+             !diag_3d_sed(id_adsor_desorb_P,k,i,j)=diag_3d_sed(id_adsor_desorb_P,k,i,j)  &
+             !                                    +dcdt(iv_nutr_Pads) * dzs(k,i,j)
+             diag_3d_sed(id_adsor_desorb_P,k,i,j)=dcdt(iv_nutr_Pads) * dzs(k,i,j)
 !            ...................................................................  
      
              ! Dissolved oxygen (mg/l) 
@@ -2978,9 +2985,10 @@
 #endif
                              +rapsiaz * txfiltbenth * cw_bott(iv_phyto_diat_N) * dtbiojour
 
-             diag_3d_sed(id_remin_aerSi,k,i,j)=diag_3d_sed(id_remin_aerSi,k,i,j)  &
+             !diag_3d_sed(id_remin_aerSi,k,i,j)=diag_3d_sed(id_remin_aerSi,k,i,j)  &
 !                                              +F_remin_aerS * cs(iv_detr_Si) * dzs(k,i,j)
-                                               +F_remin_Si * cs(iv_detr_Si) * dzs(k,i,j)
+             !                                  +F_remin_Si * cs(iv_detr_Si) * dzs(k,i,j)
+             diag_3d_sed(id_remin_aerSi,k,i,j)=F_remin_Si * cs(iv_detr_Si) * dzs(k,i,j)
 !            ...................................................................       
              
              ! Dissolved silicate (micromol/l) 
@@ -2992,9 +3000,8 @@
 !             dcdt(iv_nutr_SiOH)= 0.0_rsh
 
              !diag_3d_sed(id_precipit_Si,k,i,j)=diag_3d_sed(id_precipit_Si,k,i,j)  &
-             !                                 +F_precSi * cs(iv_nutr_SiOH) * dzs(k,i,j)
-             diag_3d_sed(id_precipit_Si,k,i,j)=diag_3d_sed(id_precipit_Si,k,i,j)  &
-                                              +F_precSi * dzs(k,i,j)
+             !                                 +F_precSi * dzs(k,i,j)
+             diag_3d_sed(id_precipit_Si,k,i,j)=F_precSi * dzs(k,i,j)
  !            ...................................................................       
            
                     !!!!!!!!!!!!!!!!!!!!!!
@@ -3003,8 +3010,9 @@
             
              dcdt(iv_phyto_diat_N)=-diatmortsed*cs(iv_phyto_diat_N)
 
-             diag_3d_sed(id_morta_phyto,k,i,j)=diag_3d_sed(id_morta_phyto,k,i,j)  &
-                                      +dcdt(iv_phyto_diat_N)*dzs(k,i,j)
+             !diag_3d_sed(id_morta_phyto,k,i,j)=diag_3d_sed(id_morta_phyto,k,i,j)  &
+             !                         +dcdt(iv_phyto_diat_N)*dzs(k,i,j)
+             diag_3d_sed(id_morta_phyto,k,i,j)=dcdt(iv_phyto_diat_N)*dzs(k,i,j)
  !            ...................................................................       
 
 
@@ -3026,6 +3034,10 @@
              cv_sed(1:nv_adv,k,i,j)=cv_sed(1:nv_adv,k,i,j)+  &
                dcdt(1:nv_adv)*unit_modif_mudbio_N2dw(irk_fil(1:nv_adv))
 
+             ! prevents dissolved_oxygen and nitrate from being negative
+             IF(cv_sed(iv_oxygen,k,i,j)<0.0_rsh) cv_sed(iv_oxygen,k,i,j)=0.0_rsh
+             IF(cv_sed(iv_nutr_NO3,k,i,j)<0.0_rsh) cv_sed(iv_nutr_NO3,k,i,j)=0.0_rsh
+
              ! introduction of rearation pour l oxygene 
              ! cycle de l oxygene
              ! si pas d eau ==> reaeration par l air en surface
@@ -3033,8 +3045,9 @@
             IF(htot(i,j) < RESIDUAL_THICKNESS_WAT) THEN
                F_aeration=KO2_aeration*exp(-KzO2_aeration*zmiddle)*(o2sats-cv_sed(iv_oxygen,k,i,j))*dtbiojour
                IF(id_fluxsed_aeration .ne. 0) THEN
-                  diag_3d_sed(id_fluxsed_aeration,k,i,j)=diag_3d_sed(id_fluxsed_aeration,k,i,j)&
-                     +(F_aeration*dzs(k,i,j))
+                  !diag_3d_sed(id_fluxsed_aeration,k,i,j)=diag_3d_sed(id_fluxsed_aeration,k,i,j)&
+                  !   +(F_aeration*dzs(k,i,j))
+                  diag_3d_sed(id_fluxsed_aeration,k,i,j)=F_aeration*dzs(k,i,j)
                ENDIF
                cv_sed(iv_oxygen,k,i,j)=cv_sed(iv_oxygen,k,i,j)+ F_aeration
                

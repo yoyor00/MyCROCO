@@ -1548,35 +1548,35 @@ ENDIF
        id_diffuflux_PO4 = id
      CASE('diffusive_flux_of_oxygen_through_water_sediment_interface')
        id_diffuflux_O2D = id
-     CASE('cum_flux_aerobic_miner_Norg')
+     CASE('flux_aerobic_miner_Norg')
        id_remin_aerN = id
-     CASE('cum_flux_aerobic_miner_Porg')
+     CASE('flux_aerobic_miner_Porg')
        id_remin_aerP = id
-     CASE('cum_flux_aerobic_miner_biogenic_Si')
+     CASE('flux_aerobic_miner_biogenic_Si')
        id_remin_aerSi = id
-     CASE('cum_flux_anaerobic_miner_Norg')
+     CASE('flux_anaerobic_miner_Norg')
        id_remin_anaerN = id
-     CASE('cum_flux_anaerobic_miner_Porg')
+     CASE('flux_anaerobic_miner_Porg')
        id_remin_anaerP = id
-     CASE('cum_flux_nitrate_miner_Norg')
+     CASE('flux_nitrate_miner_Norg')
        id_remin_nitrateN = id
-     CASE('cum_flux_dnra_miner_Norg')
+     CASE('flux_dnra_miner_Norg')
        id_remin_dnraN = id
-     CASE('cum_flux_denitrification_miner_Norg')
+     CASE('flux_denitrification_miner_Norg')
        id_remin_denitN = id
-     CASE('cum_flux_nitrate_miner_Porg')
+     CASE('flux_nitrate_miner_Porg')
        id_remin_nitrateP = id
-     CASE('cum_flux_nitrification')
+     CASE('flux_nitrification')
        id_nitrif = id
-     CASE('cum_flux_ODU_oxyd_solid')
+     CASE('flux_ODU_oxyd_solid')
        id_oxyd_solid_ODU = id
-     CASE('cum_flux_adsorb_desorb_P')
+     CASE('flux_adsorb_desorb_P')
        id_adsor_desorb_P = id
-     CASE('cum_flux_dissolution_PFe')
+     CASE('flux_dissolution_PFe')
        id_dissol_PFe = id
-     CASE('cum_flux_precipitation_P')
+     CASE('flux_precipitation_P')
        id_precipit_P = id
-     CASE('cum_flux_precipitation_Si')
+     CASE('flux_precipitation_Si')
        id_precipit_Si = id
      CASE('cum_flux_mortality_phyto_sed')
        id_morta_phyto = id
