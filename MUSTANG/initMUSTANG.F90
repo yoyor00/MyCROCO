@@ -1692,6 +1692,11 @@ CONTAINS
             vname_Must(1,indx) = TRIM(name_var(isubs))//'_sed'
             vname_Must(2,indx) = TRIM(long_name_var(isubs))//'_sed'
             vname_Must(3,indx) = unit_var(isubs)
+#           if defined BLOOM && defined key_BLOOM_insed
+             if(isubs .gt. nvpc .and. isubs .le. nvp) then
+               vname_Must(3,indx) = "mmol/kgSed"
+             endif
+#           endif
             vname_Must(4,indx) = TRIM(ADJUSTL(ADJUSTR(standard_name_var(isubs))))//', scalar, series'
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '

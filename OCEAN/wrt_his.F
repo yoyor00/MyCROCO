@@ -13,7 +13,7 @@
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
 #ifdef SUBSTANCE
-      USE comsubstance, ONLY : cvfix_wat, nvpc
+      USE comsubstance, ONLY : cvfix_wat, nvpc, nvp
 #endif
 
 #if defined BIOLink_PAR_eval
@@ -50,7 +50,8 @@
      &                         var3Dksed_loadograv, var3Dksed_permeab, 
      &                         var3Dksed_sed_rate, var3Dksed_sigmadjge, 
      &                         var3Dksed_sigmapsg, var3Dksed_hinder, 
-     &                         var3Dksed_stateconsol
+     &                         var3Dksed_stateconsol,
+     &                         c_sedtot
 # ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
       USE comMUSTANG,   ONLY : sum_tmp, rouse2D
@@ -1514,7 +1515,23 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
         indx = indx + 1
         if (outMust(indx)) then
           do k=1,nk_nivsed_out
-            workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+#           if defined BLOOM && defined key_BLOOM_insed
+              if (itrc .gt. nvpc .AND. itrc .le. nvp) then
+                do j=0,Mm+1
+                  do i=0,Lm+1
+                    if(c_sedtot(k,i,j) .gt. 0.0) then
+                      workrsed(i,j,k)=var3D_cvsed(k,i,j,itrc)/c_sedtot(k,i,j)
+                    else
+                      workrsed(i,j,k)=var3D_cvsed(k,i,j,itrc)
+                    endif
+                  enddo
+                enddo
+              else
+                workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+              endif
+#           else
+              workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+#           endif
           enddo
           workrsed1=workrsed(:,:,:)
           call fillvalue3d_must(workrsed1,ncidhis,hisMust(indx),
