@@ -51,7 +51,6 @@
 #ifdef OPENACC
       use openacc
 #endif
-      use buffer, only: init_buffer
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -172,8 +171,6 @@
 #endif
 !
 #define CR  !
-
-      call init_buffer
 !
 !----------------------------------------------------------------------
 !  Read in tunable model parameters in roms.in file
