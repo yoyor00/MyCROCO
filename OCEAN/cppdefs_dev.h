@@ -220,8 +220,9 @@
 #endif  /* NBQ */
 
 #ifdef NHMG
-# undef NBQ
-# undef AGRIF
+# define MPI
+# undef  NBQ
+# undef  AGRIF
 #endif /* NHMG */
 
 #if defined NBQ || defined NHMG

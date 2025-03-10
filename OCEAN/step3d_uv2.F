@@ -1468,10 +1468,6 @@
 ! coupling process (P. Marchesiello, 17 Jun 2004).
 !
 # ifdef PSOURCE
-#  ifdef NHMG
-        write(*,*)"PSOURCE and NHMG cpp keys are incompatible"
-        stop
-#  endif
       do is=1,Nsrc
 #  ifdef MPI
            i=Isrc_mpi(is,mynode)
@@ -1510,11 +1506,6 @@
 !--------------------------------------------------------------------
 !
 # if defined M3NUDGING && defined M3CLIMATOLOGY
-
-#  ifdef NHMG
-        write(*,*)"M3NUDGING and NHMG cpp keys are incompatible"
-        stop
-#  endif
 
 #  ifdef ZONAL_NUDGING
 !$acc end kernels

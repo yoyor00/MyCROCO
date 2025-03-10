@@ -11,7 +11,9 @@
 #include "cppdefs.h"
 #if defined SOLVE3D && (defined NBQ || defined NHMG)
 
-# define W_VDIF
+# ifdef NBQ
+#  define W_VDIF
+# endif
 
       SUBROUTINE step3d_w (tile)
 

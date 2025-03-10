@@ -643,7 +643,6 @@
 # if defined NHMG && defined UV_ADV
 !====================================================================
 !     Pseudo forces for the equation of vertical Flux
-!     (Molemaker et al., in progress, 2020)
 !====================================================================
 
       do j=jstr,jend
