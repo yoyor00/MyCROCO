@@ -77,7 +77,7 @@
 !  salinity [PSU] and passive tracer
 !----------------------------------------------------------------------
 !
-#   ifdef TEMPERATURE 
+#   if defined TEMPERATURE  && defined STO_ICS
         call sto_ics( t(:,:,:,1,itemp), sto_xi3d(:,:,:) )
 #   endif
 !
