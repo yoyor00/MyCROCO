@@ -187,6 +187,11 @@ CONTAINS
 
 
    SUBROUTINE ocean_2_stogen (tile)
+      !!----------------------------------------------------------------------
+      !!                  ***  ROUTINE ocean_2_stogen  ***
+      !!
+      !! ** Purpose :   provide CROCO parameters to STOGEN
+      !!----------------------------------------------------------------------
       implicit none
       integer tile
 #ifdef  ALLOW_SINGLE_BLOCK_MODE
@@ -199,11 +204,6 @@ C$    integer  trd, omp_get_thread_num
 
 
    SUBROUTINE ocean_2_stogen_tile (Istr,Iend,Jstr,Jend)
-      !!----------------------------------------------------------------------
-      !!                  ***  ROUTINE ocean_2_stogen  ***
-      !!
-      !! ** Purpose :   provide CROCO parameters to STOGEN
-      !!----------------------------------------------------------------------
       INTEGER :: ji1, jj1, jk1
       integer :: Istr,Iend,Jstr,Jend
 

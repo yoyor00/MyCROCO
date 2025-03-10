@@ -730,18 +730,18 @@ CR      write(stdout,*) 'wrt_his:  wrtstoXI2d' MYID
 !
 #ifdef STO_XI3D
 !- 3D stochastic field -
-# ifdef STO_ICS
-      if (iic.eq.0.or.iic.eq.ntstart) then
-# endif
+!# ifdef STO_ICS
+!      if (iic.eq.0.or.iic.eq.ntstart) then
+!# endif
       if (wrthis(indxXIsto3d)) then
         workr=sto_xi3d
         call fillvalue3d(workr,ncidhis,hisXIsto3d,indxXIsto3d,
      &        record,r3dvar,type)
 CR      write(stdout,*) 'wrt_his:    wrtstoXI3d' MYID
       endif
-# ifdef STO_ICS
-      endif
-# endif
+!# ifdef STO_ICS
+!      endif
+!# endif
 #endif /* STO_XI3D */
 !
 !     Tracer variables.

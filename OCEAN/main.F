@@ -442,13 +442,24 @@ C$OMP BARRIER
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file
 !
-#ifdef STO_ICS
-      call sto_mod( ntstart ) ! update (?) stochastic fields
-#endif
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call ana_initial (tile)
       enddo
+
+
+#ifdef STO_ICS
+!
+!  Add stochastic perturbations to initial conditions
+!
+      MPI_master_only write(stdout,*)
+     &     'Apply stochastic perturbations on (temperature) initial conditions'
+      call sto_mod( ntstart ) ! update (?) stochastic fields
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call sto_initial (tile)
+      enddo
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialize specific PISCES variables

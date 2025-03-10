@@ -38,6 +38,7 @@ include Makedefs
 	timers_roms.F	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
+	sto_initial.F\
 \
 	step2d.F 	u2dbc.F		v2dbc.F		zetabc.F\
 	obc_volcons.F\
