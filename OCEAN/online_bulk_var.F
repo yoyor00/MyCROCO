@@ -280,7 +280,7 @@
       blk_vname(3,1)='Celsius                                  '
       blk_vname(4,1)='??????                                   '
 
-      ! Specific_humidity
+      ! Relative_humidity
       blk_vname(1,2)='R                                        '
       blk_vname(2,2)='Relative Humidity                        '
       blk_vname(3,2)='Fraction                                 '
