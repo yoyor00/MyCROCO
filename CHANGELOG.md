@@ -44,6 +44,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #322 : fix SUBSTANCE_SUBMASSBALANCE feature on river fluxes
 - Issue #324 : fix FILLVAL, mask was misdone on variable value 
   instead of mask value
+- Issue #329 : fix writing of sediment layers (SEDIMENT)
 - Issue #331 : fix rstTime netcdf index mismatch between PISCES and CROCO
 
 
