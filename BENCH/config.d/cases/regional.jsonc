@@ -169,8 +169,16 @@
       "PISCES": true,
       "BULK_FLUX": false,
     },
-    "patches": {},
-    "unsupported": ["restart", "openmp"],
+    "patches": {
+      // Change restart file
+      "namelist_pisces_cfg": {
+        "mode": "insert-after",
+        "what": "&nampisrst",
+        "insert": "cn_pisrst_in  = 'croco_rst_pisces.nc'",
+        "descr": "Set pisces restart file (in case of restart option)",
+      },
+    },
+    "unsupported": ["openmp"],
     // error in bry_time set_cycle in restart
     "check_outputs": ["CROCO_FILES/croco_his.nc"],
   },

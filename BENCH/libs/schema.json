@@ -156,7 +156,7 @@
                 "what": { "type": "string" },
                 "by": { "type": "string" }
               },
-              "required": ["what", "by"]
+              "required": ["what"]
             }
           },
           "check_outputs": {
