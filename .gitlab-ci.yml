@@ -69,6 +69,7 @@ debug_ifort:
     - croco-vm-docker
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:2.0.0
   script:
+    - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
     #note : check step not available because sequential is not done here
     - |
