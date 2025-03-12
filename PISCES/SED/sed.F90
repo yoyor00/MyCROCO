@@ -158,7 +158,7 @@ MODULE sed
 
    INTEGER, DIMENSION(jptrased)   ::  rstsed
    INTEGER, DIMENSION(jpsol)      ::  rstsol
-   INTEGER                        ::  rstph, rstsedstep
+   INTEGER                        ::  rstph, rstsedstep, rstsedtime, rstsedtime2
    INTEGER                        ::  ncidwrised, nrecsedpis_avg
    INTEGER                        ::  nwrtsedpis_avg, ntssedpis_avg
    INTEGER                        ::  nrpfsedpis_avg, sedTsteppis_avg,sedTimepis_avg, sedTime2pis_avg
