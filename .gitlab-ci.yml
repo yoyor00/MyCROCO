@@ -71,16 +71,16 @@ debug_ifort:
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
-    #note : check step not available because sequential is not done here
+    #note : check step done on sequential-ifort
     - |
       ./bench-croco.py \
-      --case @base,@realist \
+      --case @base,@nbq,@sediment_mustang,@other,@realist \
       --variants @debug-ifort \
+      --compare-to sequential-ifort \
       --title debug_ifort \
       --debug \
       --rebuild \
       --host host_ci \
-      --steps build,run  \
       --data-root-path $DATAROOTPATH \
       --html -N --report --no_date_in_result_dir
   artifacts:
