@@ -7,7 +7,7 @@
       "plotphy_script": "./TEST_CASES/plot_IGW.py",
       "plotphy_script_input": "igw_his.nc",
     },
-    "cppdeps": {
+    "cppkeys": {
       "IGW": true,
       "NBQ": false,
     },

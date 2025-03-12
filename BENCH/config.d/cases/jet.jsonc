@@ -3,7 +3,7 @@
   "JET": {
     "title": "JET - (30 x 50 x 30 : 1200)",
     "case": "JET",
-    "cppdeps": {
+    "cppkeys": {
       "JET": true,
       "ANA_JET": false,
     },
@@ -15,7 +15,7 @@
   "JET_ANA": {
     "title": "JET - ANA_JET - (25 x 100 x 30 : 1200)",
     "case": "JET",
-    "cppdeps": {
+    "cppkeys": {
       "ANA_JET": true,
     },
     "splitting": { "1": "1x1", "2": "1x2", "4": "1x4" },
