@@ -253,8 +253,8 @@
       // Change the ndtfast
       "TEST_CASES/croco.in.Regional": {
         "mode": "replace",
-        "what": "                3840      3600      60      1",
-        "by": "                3840      3600      80      1",
+        "what": "                384      3600      60      1",
+        "by": "                384      3600      80      1",
         "descr": "Set stepping ndtfast = 80",
       },
     },
