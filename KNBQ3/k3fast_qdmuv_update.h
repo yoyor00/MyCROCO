@@ -202,20 +202,41 @@
 #     if defined MPI
          if ((WEST_INTER.or.i.ne.IstrU).and.(EAST_INTER.or.i.ne.Iend)
      &      ) then
-#     else
-         if (i.ne.IstrU.and.i.ne.Iend
-     &      ) then
-#     endif
               dum_s=dum_s
      &                -( gammau  *thetadiv_nbq(i  ,j,k)
      &                  +gammau_2*thetadiv_nbq(i+1,j,k)
      &                  -gammau  *thetadiv_nbq(i-1,j,k)
      &                  -gammau_2*thetadiv_nbq(i-2,j,k)) ! - d(delta p)dx
+         elseif (WEST_INTER.or.i.ne.IstrU) then
+              dum_s=dum_s
+     &                -( (gammau+gammau_2)*thetadiv_nbq(i  ,j,k)
+     &                  -gammau  *thetadiv_nbq(i-1,j,k)
+     &                  -gammau_2*thetadiv_nbq(i-2,j,k)) ! - d(delta p)dx
          else
               dum_s=dum_s
-     &                -( thetadiv_nbq(i  ,j,k)
-     &                  -thetadiv_nbq(i-1,j,k))
-	     endif
+     &                -( gammau  *thetadiv_nbq(i  ,j,k)
+     &                  +gammau_2*thetadiv_nbq(i+1,j,k)
+     &                  -(gammau+gammau_2)*thetadiv_nbq(i-1,j,k)) ! - d(delta p)dx 
+	     endif 
+#     else /* ! defined MPI */
+         if (i.ne.IstrU.and.i.ne.Iend) then
+              dum_s=dum_s
+     &                -( gammau  *thetadiv_nbq(i  ,j,k)
+     &                  +gammau_2*thetadiv_nbq(i+1,j,k)
+     &                  -gammau  *thetadiv_nbq(i-1,j,k)
+     &                  -gammau_2*thetadiv_nbq(i-2,j,k)) ! - d(delta p)dx
+         elseif (i.ne.IstrU) then
+              dum_s=dum_s
+     &                -( (gammau+gammau_2)*thetadiv_nbq(i  ,j,k)
+     &                  -gammau  *thetadiv_nbq(i-1,j,k)
+     &                  -gammau_2*thetadiv_nbq(i-2,j,k)) ! - d(delta p)dx
+         else
+              dum_s=dum_s
+     &                -( gammau  *thetadiv_nbq(i  ,j,k)
+     &                  +gammau_2*thetadiv_nbq(i+1,j,k)
+     &                  -(gammau+gammau_2)*thetadiv_nbq(i-1,j,k)) ! - d(delta p)dx 
+	     endif 
+#     endif
 #    else /* MASKING */
               dum_s=dum_s
      &   -( (gammau+(1.-rmask(i+1,j))*gammau_2)*thetadiv_nbq(i  ,j,k)
@@ -472,44 +493,65 @@
 #  if defined K3FAST_DUVNBQ2
               dum2_s=dum_s
 #  endif
-#   if defined K3FAST_PG2 && ! defined K3FAST_NOBPG
-
-#    ifndef MASKING
+#   if defined K3FAST_PG2 
+#    if !defined MASKING && defined NS_PERIODIC
               dum_s=dum_s
      &             -(gammau  *thetadiv_nbq(i,j  ,k)+
      &               gammau_2*thetadiv_nbq(i,j+1,k)-
      &               gammau  *thetadiv_nbq(i,j-1,k)-
      &               gammau_2*thetadiv_nbq(i,j-2,k)) ! - d(delta p)dy
-#    else
+#    elif !defined MASKING
+#     if defined MPI
+         if ((SOUTH_INTER.or.j.ne.JstrV).and.(NORTH_INTER.or.j.ne.Jend)
+     &      ) then
               dum_s=dum_s
-     &   -( (gammau+(1.-rmask(i,j+1))*gammau_2)*thetadiv_nbq(i,j  ,k)
-     &     +gammau_2*rmask(i,j+1)              *thetadiv_nbq(i,j+1,k)
-     &     -(gammau+(1.-rmask(i,j-2))*gammau_2)*thetadiv_nbq(i,j-1,k)
-     &     -gammau_2*rmask(i,j-2)              *thetadiv_nbq(i,j-2,k)
-     &               ) ! - d(delta p)dy   
-#    endif /* MASKING */     
-#   elif defined K3FAST_PG2 && defined K3FAST_NOBPG
-#    ifdef MASKING
+     &                -( gammau  *thetadiv_nbq(i,j  ,k)
+     &                  +gammau_2*thetadiv_nbq(i,j+1,k)
+     &                  -gammau  *thetadiv_nbq(i,j-1,k)
+     &                  -gammau_2*thetadiv_nbq(i,j-2,k)) ! - d(delta p)dy
+         elseif (SOUTH_INTER.or.j.ne.JstrV) then
+              dum_s=dum_s
+     &                -( (gammau+gammau_2)*thetadiv_nbq(i,j,k)
+     &                  -gammau  *thetadiv_nbq(i,j-1,k)
+     &                  -gammau_2*thetadiv_nbq(i,j-2,k)) ! - d(delta p)dy
+         else
+              dum_s=dum_s
+     &                -( gammau  *thetadiv_nbq(i,j  ,k)
+     &                  +gammau_2*thetadiv_nbq(i,j+1,k)
+     &                  -(gammau+gammau_2)*thetadiv_nbq(i,j-1,k)) ! - d(delta p)dy 
+	     endif 
+#     else /* ! defined MPI */
+         if (j.ne.JstrV.and.j.ne.Jend) then
+              dum_s=dum_s
+     &                -( gammau  *thetadiv_nbq(i,j  ,k)
+     &                  +gammau_2*thetadiv_nbq(i,j+1,k)
+     &                  -gammau  *thetadiv_nbq(i,j-1,k)
+     &                  -gammau_2*thetadiv_nbq(i,j-2,k)) ! - d(delta p)dy
+         elseif (j.ne.JstrV) then
+              dum_s=dum_s
+     &                -( (gammau+gammau_2)*thetadiv_nbq(i  ,j,k)
+     &                  -gammau  *thetadiv_nbq(i,j-1,k)
+     &                  -gammau_2*thetadiv_nbq(i,j-2,k)) ! - d(delta p)dy
+         else
+              dum_s=dum_s
+     &                -( gammau  *thetadiv_nbq(i,j  ,k)
+     &                  +gammau_2*thetadiv_nbq(i,j+1,k)
+     &                  -(gammau+gammau_2)*thetadiv_nbq(i,j-1,k)) ! - d(delta p)dy
+	     endif 
+#     endif
+#    else /* MASKING */
           dum_s=dum_s
      &   -(( gammau+(1.-rmask(i,j+1))*gammau_2)*thetadiv_nbq(i,j  ,k)
      &     + gammau_2*rmask(i,j+1)              *thetadiv_nbq(i,j+1,k)
      &     -(gammau+(1.-rmask(i,j-2))*gammau_2)*thetadiv_nbq(i,j-1,k)
      &     - gammau_2*rmask(i,j-2)              *thetadiv_nbq(i,j-2,k)
      &               ) ! - d(delta p)dy   
-#    else
-          dum_s=dum_s
-     &   -( gammau  *thetadiv_nbq(i,j  ,k)
-     &     +gammau_2*thetadiv_nbq(i,j+1,k)
-     &     -gammau  *thetadiv_nbq(i,j-1,k)
-     &     -gammau_2*thetadiv_nbq(i,j-2,k)
-     &               ) ! - d(delta p)dy   
-#    endif
+#    endif /* MASKING */  
 #   else /* !K3FAST_PG2 */
               dum_s=dum_s
      &                -( thetadiv_nbq(i,j  ,k)
      &                  -thetadiv_nbq(i,j-1,k))
 #   endif /* K3FAST_PG2 */
-     
 #   if defined K3FAST_DUVNBQ2
               dum2_s=(dum_s-dum2_s)
      &           *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))*pn_v(i,j)

@@ -193,8 +193,11 @@
 #  else           /* alternative to open */
         do k=1,N                                     ! Western edge closed
           do j=jstr,jend                             ! ======= ==== ======
-                                                     !  (no flux)
-            qdmw_nbq(Istr-1,j,k)=qdmw_nbq(Istr,j,k)
+                                                     
+            qdmw_nbq(Istr-1,j,k)=gamma2*qdmw_nbq(Istr,j,k)
+#    ifdef MASKING
+     &                            *rmask(Istr-1,j)
+#    endif
           enddo
         enddo
 
@@ -303,8 +306,11 @@
 #  else
         do k=1,N                                    ! Eastern edge closed
           do j=jstr,jend                            ! ======= ==== ======
-                                                    !  (no flux)
-             qdmw_nbq(Iend+1,j,k)=qdmw_nbq(Iend,j,k)
+                                                    
+             qdmw_nbq(Iend+1,j,k)=gamma2*qdmw_nbq(Iend,j,k)
+#   ifdef MASKING
+     &                                    *vmask(Iend+1,j)
+#   endif
           enddo
         enddo
 
@@ -417,8 +423,11 @@
 #  else
         do k=1,N                                     ! Southern edge closed
           do i=Istr,Iend                             ! ======== ==== ======
-                                                     !  (no flux)
-            qdmw_nbq(i,Jstr-1,k)=qdmw_nbq(i,Jstr,k)
+                                                     
+            qdmw_nbq(i,Jstr-1,k)=gamma2*qdmw_nbq(i,Jstr,k)
+#    ifdef MASKING
+     &                          *rmask(i,Jstr-1)
+#    endif
           enddo
         enddo
 
@@ -528,8 +537,11 @@
 #  else
         do k=1,N                                      ! Northern edge closed
           do i=Istr,Iend                              ! ======== ==== ======
-                                                      !   (no flux)
-            qdmw_nbq(i,Jend+1,k)=qdmw_nbq(i,Jend,k)
+                                            
+            qdmw_nbq(i,Jend+1,k)=gamma2*qdmw_nbq(i,Jend,k)
+#    ifdef MASKING
+     &                          *rmask(i,Jend+1)
+#    endif
           enddo
         enddo
 #  endif

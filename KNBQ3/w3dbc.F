@@ -181,7 +181,10 @@
 #  else           /* alternative to open */
         do k=0,N                               ! Western edge closed
           do j=jstr,jend                       ! ======= ==== ======
-            wz(Istr-1,j,k,nnew)= wz(Istr,j,k,nnew) !  (no-flux: default)
+            wz(Istr-1,j,k,nnew)= gamma2*wz(Istr,j,k,nnew) 
+#    ifdef MASKING
+     &                          *rmask(Istr-1,j)
+#    endif
           enddo
         enddo
 
@@ -286,7 +289,10 @@
 #  else           /* alternative to open */
         do k=0,N                                ! Eastern edge closed
           do j=jstr,jend                        ! ======= ==== ======
-            wz(Iend+1,j,k,nnew)=wz(Iend,j,k,nnew)  !  (no-flux: default)
+            wz(Iend+1,j,k,nnew)=gamma2*wz(Iend,j,k,nnew) 
+#    ifdef MASKING
+     &                          *rmask(Iend+1,j)
+#    endif
           enddo
         enddo
 #  endif       /* OBC_COM_EAST */
@@ -393,9 +399,9 @@
 #  else           /* alternative to open */
         do k=0,N                               ! Southern edge closed
           do i=Istr,Iend                       ! ======== ==== ======
-            wz(i,Jstr-1,k,nnew)=wz(i,Jstr,k,nnew)
+            wz(i,Jstr-1,k,nnew)=gamma2*wz(i,Jstr,k,nnew)
 #   ifdef MASKING
-     &                                   *rmask(i,Jstr-1)
+     &                          *rmask(i,Jstr-1)
 #   endif
           enddo
         enddo
@@ -502,9 +508,9 @@
 #  else           /* alternative to open */
         do k=0,N                               ! Northern edge closed
           do i=Istr,Iend                       ! ======== ==== ======
-            wz(i,Jend+1,k,nnew)=wz(i,Jend,k,nnew)
+            wz(i,Jend+1,k,nnew)=gamma2*wz(i,Jend,k,nnew)
 #   ifdef MASKING
-     &                           *rmask(i,Jend+1)
+     &                          *rmask(i,Jend+1)
 #   endif
           enddo
         enddo

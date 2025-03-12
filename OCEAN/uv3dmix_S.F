@@ -358,6 +358,10 @@
      &                      ,0.5*(visc3d_r(i,j,k )+visc3d_r(i-1,j,k )
      &                           +visc3d_r(i,j,kp)+visc3d_r(i-1,j,kp))
 # endif
+# ifdef W_VIS_SMAGO_3D
+     &                      ,0.5*(visc3dW_r(i,j,k )+visc3dW_r(i-1,j,k )
+     &                           +visc3dW_r(i,j,kp)+visc3dW_r(i-1,j,kp))
+# endif
 # ifdef TKE3D_MIXING
      &                      ,0.25*(Akv(i,j,k )+Akv(i-1,j,k )
      &                            +Akv(i,j,kp)+Akv(i-1,j,kp))
@@ -379,6 +383,10 @@
 # ifdef UV_VIS_SMAGO
      &                      ,0.5*(visc3d_r(i,j,k )+visc3d_r(i,j-1,k )
      &                           +visc3d_r(i,j,kp)+visc3d_r(i,j-1,kp))
+# endif
+# ifdef W_VIS_SMAGO_3D
+     &                      ,0.5*(visc3dW_r(i,j,k )+visc3dW_r(i,j-1,k )
+     &                           +visc3dW_r(i,j,kp)+visc3dW_r(i,j-1,kp))
 # endif
 # ifdef TKE3D_MIXING
      &                      ,0.25*(Akv(i,j,k )+Akv(i,j-1,k )

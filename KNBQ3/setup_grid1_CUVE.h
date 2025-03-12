@@ -111,7 +111,7 @@
 ! ! Imposes min bathy 
 ! ! -----------------------------------
 ! !            
-        if (ifl_bathy(1).ne.0) then
+        if (ifl_bathy(0).ne.0) then
          do j=JstrR,JendR
          do i=IstrR,IendR
           h(i,j)=max(h(i,j),5.e-3)         ! Hmin

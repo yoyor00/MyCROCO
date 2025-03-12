@@ -43,11 +43,22 @@
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc,
      &        imin,imax,jmin,jmax, kp
       real horcon, cff,cff0,cff1,cff2,cff3,cff4,cff5
-# ifdef UV_VIS_SMAGO_3D
+# ifdef W_VIS_SMAGO_3D
+      real horcon2,a_dis,c_dis
+      parameter (horcon2=2.  )
+#  ifdef UV_VIS_SMAGO_3D
+      real Ric, Pr
+      parameter (horcon=0.00, Ric=0.25, Pr=0.3)
+#  else
+      parameter (horcon=0.1)
+#  endif
+# else  /* ! W_VIS_SMAGO_3D */
+#  ifdef UV_VIS_SMAGO_3D
       real Ric, Pr
       parameter (horcon=0.01, Ric=0.25, Pr=0.3)
-# else
+#  else
       parameter (horcon=0.1)
+#  endif
 # endif
 # ifdef SWASH
       real dZdt,dZdt0,Bbr
@@ -205,6 +216,53 @@
         enddo
       enddo
 
+#   ifdef W_VIS_SMAGO_3D
+      do k=N-10,N  
+        do j=jmin,jmax
+          do i=imin,imax
+            defrateW(i,j,k)= 
+     &               +0.125*(  
+#   if defined NBQ || defined K3FAST
+     &                  +pm(i,j)*
+     &                  (wz(i+1,j,k,nrhs)+wz(i+1,j,min(N,k+1),nrhs)
+     &                  -wz(i-1,j,k,nrhs)-wz(i-1,j,min(N,k+1),nrhs))
+#   endif
+     &                      )**2
+     &               +0.125*(  
+#   if defined NBQ || defined K3FAST
+     &                +pn(i,j)*
+     &                  (wz(i,j+1,k,nrhs)+wz(i,j+1,min(N,k+1),nrhs)
+     &                  -wz(i,j-1,k,nrhs)-wz(i,j-1,min(N,k+1),nrhs))
+#   endif
+     &                      )**2
+            defrateW(i,j,k)= defrateW(i,j,k)
+     &                *exp(-(z_r(i,j,k)  -z_w(i,j,N))**2
+     &                     /(z_r(i,j,N-3)-z_w(i,j,N))**2)
+
+          enddo
+        enddo
+      enddo
+
+      a_dis=0.975
+      c_dis=(1.-a_dis**10)/(1.-a_dis)
+      do j=jmin,jmax
+        do i=imin,imax
+          cff=horcon2*om_r(i,j)*on_r(i,j)
+          do k=1,N
+            cff1=2.*defrateW(i,j,k)               ! D² & HORCONW!
+#   ifdef UV_VIS_SMAGO_3D
+!  Buoyancy correction (Lilly, 1962)
+            cff2=sqrt(max(0.,1.-(bvf(i,j,k)/max(cff1,1.e-12))/Ric))
+            visc3dW_r(i,j,k)=
+     &      (cff*sqrt(cff1)*cff2+visc3dW_r(i,j,k)*a_dis*c_dis)/c_dis
+#   else
+            visc3dW_r(i,j,k)=cff*sqrt(cff1)       ! Cs*dxdy*D²
+#   endif
+          enddo
+        enddo
+      enddo
+#  endif
+
 #  ifdef UV_VIS_SMAGO_3D
 !
 !  Compute vertical Smagorinsky viscosity at W points
@@ -243,6 +301,9 @@
         do k=1,N
           do j=JstrV-1,Jend
            visc3d_r(Istr-1,j,k)=visc3d_r(Istr,j,k)
+#   ifdef W_VIS_SMAGO_3D
+           visc3dW_r(Istr-1,j,k)=visc3dW_r(Istr,j,k)
+#   endif
           enddo
         enddo
       endif
@@ -250,6 +311,9 @@
         do k=1,N
           do j=JstrV-1,Jend
             visc3d_r(Iend+1,j,k)=visc3d_r(Iend,j,k)
+#   ifdef W_VIS_SMAGO_3D
+            visc3dW_r(Iend+1,j,k)=visc3dW_r(Iend,j,k)
+#   endif
           enddo
         enddo
       endif
@@ -259,6 +323,9 @@
         do k=1,N
           do i=IstrU-1,Iend
             visc3d_r(i,Jstr-1,k)=visc3d_r(i,Jstr,k)
+#   ifdef W_VIS_SMAGO_3D
+            visc3dW_r(i,Jstr-1,k)=visc3dW_r(i,Jstr,k)
+#   endif
           enddo
         enddo
       endif
@@ -266,6 +333,9 @@
         do k=1,N
           do i=IstrU-1,Iend
             visc3d_r(i,Jend+1,k)=visc3d_r(i,Jend,k)
+#   ifdef W_VIS_SMAGO_3D
+            visc3dW_r(i,Jend+1,k)=visc3dW_r(i,Jend,k)
+#   endif
           enddo
         enddo
       endif
@@ -280,6 +350,11 @@
           visc3d_r(Istr-1,Jstr-1,k)=0.5*
      &                          ( visc3d_r(Istr,Jstr-1,k)
      &                           +visc3d_r(Istr-1,Jstr,k))
+#   ifdef W_VIS_SMAGO_3D
+          visc3dW_r(Istr-1,Jstr-1,k)=0.5*
+     &                          ( visc3dW_r(Istr,Jstr-1,k)
+     &                           +visc3dW_r(Istr-1,Jstr,k))
+#   endif
         enddo
       endif
       if (SOUTHERN_EDGE .and. EASTERN_EDGE) then
@@ -287,6 +362,11 @@
           visc3d_r(Iend+1,Jstr-1,k)=0.5*
      &                          (visc3d_r(Iend,Jstr-1,k)
      &                          +visc3d_r(Iend+1,Jstr,k))
+#   ifdef W_VIS_SMAGO_3D
+          visc3dW_r(Iend+1,Jstr-1,k)=0.5*
+     &                          (visc3dW_r(Iend,Jstr-1,k)
+     &                          +visc3dW_r(Iend+1,Jstr,k))
+#   endif
         enddo
       endif
       if (NORTHERN_EDGE .and. WESTERN_EDGE) then
@@ -294,6 +374,11 @@
           visc3d_r(Istr-1,Jend+1,k)=0.5*
      &                          ( visc3d_r(Istr,Jend+1,k)
      &                           +visc3d_r(Istr-1,Jend,k))
+#   ifdef W_VIS_SMAGO_3D
+          visc3dW_r(Istr-1,Jend+1,k)=0.5*
+     &                          ( visc3dW_r(Istr,Jend+1,k)
+     &                           +visc3dW_r(Istr-1,Jend,k))
+#   endif
         enddo
       endif
       if (NORTHERN_EDGE .and. EASTERN_EDGE) then
@@ -301,6 +386,11 @@
           visc3d_r(Iend+1,Jend+1,k)=0.5*
      &                          ( visc3d_r(Iend,Jend+1,k)
      &                           +visc3d_r(Iend+1,Jend,k))
+#   ifdef W_VIS_SMAGO_3D
+          visc3dW_r(Iend+1,Jend+1,k)=0.5*
+     &                          ( visc3dW_r(Iend,Jend+1,k)
+     &                           +visc3dW_r(Iend+1,Jend,k))
+#   endif
         enddo
       endif
 #  endif /* !EW_PERIODIC && !NS_PERIODIC */
