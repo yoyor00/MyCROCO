@@ -247,7 +247,7 @@ debug_agrif_realist:
     - |
       ./bench-croco.py \
       --case @agrif_realist \
-      --variants @debug \
+      --variants sequential,mpi-4 \
       --title debug_agrif_realist \
       --debug \
       --rebuild \
