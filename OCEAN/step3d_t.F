@@ -18,7 +18,6 @@
 # ifdef TRACERS
       integer trd, omp_get_thread_num
 #  include "param.h"
-#  include "ncscrum.h"
 #  include "private_scratch.h"
 #  include "ocean3d.h"
 #  include "compute_tile_bounds.h"
