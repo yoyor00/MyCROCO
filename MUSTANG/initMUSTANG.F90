@@ -1443,15 +1443,15 @@ CONTAINS
             ENDIF
     
         ELSE IF(choice_nivsed_out == 4 ) THEN
-            IF(nk_nivsed_outlu > 5 ) THEN
+            IF(nk_nivsed_outlu > min(5,ksdmax-1) ) THEN
                 MPI_master_only WRITE(iscreenlog,*)'ERROR in namelist namsedoutput (paraMUSTANG.txt) '
-                MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out must be <=5'
+                MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out must be <=min(5,',ksdmax-1,')'
                 MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out is automatically set to 5 '
                 MPI_master_only WRITE(iscreenlog,*)'and an latter layer (6th) is added to integrate till the bottom sediment  '
-                nk_nivsed_outlu = 5
+                nk_nivsed_outlu = min(5,ksdmax-1)
             ELSE IF (nk_nivsed_outlu < 1 ) THEN
-                MPI_master_only WRITE(iscreenlog,*)'Wrong nk_nivsed_out value, should be between 1 and 5'
-                STOP
+                MPI_master_only WRITE(iscreenlog,*)'Wrong nk_nivsed_out value, should be between 1 and min(5,',ksdmax-1,')'
+                STOP 1
             ENDIF   
             err = 0
             DO k=1,nk_nivsed_outlu
@@ -1461,7 +1461,7 @@ CONTAINS
                 ENDIF
             ENDDO
             IF (err>0) THEN
-                STOP
+                STOP 1
             ENDIF     
             
             nk_nivsed_out =  nk_nivsed_outlu+1   
@@ -1471,7 +1471,7 @@ CONTAINS
     
             MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save on ',nk_nivsed_out-1, &
                 'integrated layers whom thickness are constant and given by user - first is  sediment surface'
-            MPI_master_only WRITE(iscreenlog,*)'the ',nk_nivsed_out,'the layer will be an integrated layer till the bottom' 
+            MPI_master_only WRITE(iscreenlog,*)'the ',nk_nivsed_out,'layer will be an integrated layer till the bottom' 
     
         ELSE
             MPI_master_only WRITE(iscreenlog,*)'Wrong choice_nivsed_out value, should be 1,2,3 or 4'
