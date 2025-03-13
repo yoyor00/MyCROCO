@@ -3,22 +3,7 @@
   "JET": {
     "title": "JET - (30 x 50 x 30 : 1200)",
     "case": "JET",
-    "cppkeys": {
-      "JET": true,
-      "ANA_JET": false,
-    },
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
-    "patches": {},
-    "check_outputs": ["jet_his.nc"],
-    "unsupported": ["restart", "openmp"],
-  },
-  "JET_ANA": {
-    "title": "JET - ANA_JET - (25 x 100 x 30 : 1200)",
-    "case": "JET",
-    "cppkeys": {
-      "ANA_JET": true,
-    },
-    "splitting": { "1": "1x1", "2": "1x2", "4": "1x4" },
     "patches": {},
     "check_outputs": ["jet_his.nc"],
     "unsupported": ["restart", "openmp"],
