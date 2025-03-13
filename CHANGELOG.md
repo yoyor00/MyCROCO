@@ -50,6 +50,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- Issue #330 : Change LOGFILE cppkey behavior by enabling to choose filename in
+  croco.in
+
 - Issue #306 : in MRL_WCI change limits of wave height in surfzone
 
 - Issues #291, #323: change wavemaker (periodic boundaries + single-sum), 
