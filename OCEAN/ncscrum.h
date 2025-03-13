@@ -327,21 +327,27 @@
 # endif /* BIOLOGY */
 # ifdef SEDIMENT
       integer, dimension(NGRAV) ::  indxGRAV
-     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio+1,
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_mld+
+     &                                ntrc_pas+ntrc_bio+1,
      &  indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio+NGRAV)/)
       integer, dimension(NSAND) :: indxSAND
-     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio+1+
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+
+     &    ntrc_mld+ntrc_pas+ntrc_bio+1+
      &	NGRAV,
-     &  indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio+NGRAV+NSAND)/)
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio+
+     &    NGRAV+NSAND)/)
       integer, dimension(NMUD)   :: indxMUD
-     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio+1+
+     & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_mld+
+     &  ntrc_pas+ntrc_bio+1+
      &  NGRAV+NSAND,
-     &  indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio+NGRAV+NSAND+NMUD)/)
+     &  indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio+
+     &  NGRAV+NSAND+NMUD)/)
 # endif
 
 # if (!defined ANA_BSEDIM  && !defined SEDIMENT)
       integer indxBSD, indxBSS
-      parameter (indxBSD=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio+1,
+      parameter (indxBSD=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+
+     &           ntrc_bio+1,
      &           indxBSS=101)
 # endif
 
@@ -418,8 +424,9 @@
       integer indxvrtXadv,indxvrtYadv,indxvrtHdiff,indxvrtCor,
      &        indxvrtPrsgrd,indxvrtHmix,indxvrtVmix,indxvrtrate,
      &        indxvrtVmix2,indxvrtWind,indxvrtDrag
-      parameter (indxvrtXadv=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+
-     &                         ntrc_bio+ntrc_sed
+      parameter (indxvrtXadv=indxV+ntrc_temp+ntrc_salt
+     &                        +ntrc_mld+ntrc_pas+
+     &                        +ntrc_bio+ntrc_sed
      &                        +ntrc_diats+ntrc_diauv+1,
      &           indxvrtYadv=indxvrtXadv+1,
      &           indxvrtHdiff=indxvrtYadv+1,
@@ -444,7 +451,8 @@
       integer indxekHadv,indxekHdiff,indxekVadv,indxekCor,
      &        indxekPrsgrd,indxekHmix,indxekVmix,indxekrate,
      &        indxekvol,indxekVmix2,indxekWind,indxekDrag
-      parameter (indxekHadv=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+
+      parameter (indxekHadv=indxV+ntrc_temp+ntrc_salt+
+     &           ntrc_mld+ntrc_pas+
      &           ntrc_bio+ntrc_sed+
      &           ntrc_diats+ntrc_diauv+ntrc_diavrt+1,
      &           indxekHdiff=indxekHadv+1,
@@ -491,9 +499,10 @@
 # endif
 # ifdef DIAGNOSTICS_PV
       integer indxpvMrhs,indxpvTrhs
-      parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+
-     &                ntrc_bio+ntrc_sed+
-     &                ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
+      parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt
+     &               +ntrc_mld+ntrc_pas
+     &               +ntrc_bio+ntrc_sed
+     &               +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
      &           indxpvMrhs=indxpvTrhs+2)
 #  ifdef DIAGNOSTICS_PV_FULL
       integer indxpvpv,indxpvpvd
@@ -531,9 +540,9 @@
       integer indxsurft,indxsurfs,indxsurfz,indxsurfu,
      &        indxsurfv
       parameter (indxsurft=indxV+ntrc_temp+ntrc_salt+ntrc_mld
-     &                           +ntrc_pas+ntrc_bio+ntrc_sed
-     &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
-     &                           +ntrc_diaek+ntrc_diapv+ntrc_diaeddy+400,
+     &                         +ntrc_pas+ntrc_bio+ntrc_sed
+     &                         +ntrc_diats+ntrc_diauv+ntrc_diavrt
+     &                         +ntrc_diaek+ntrc_diapv+ntrc_diaeddy+400,
      &           indxsurfs=indxsurft+1,
      &           indxsurfz=indxsurfs+1,
      &           indxsurfu=indxsurfz+1,
@@ -557,7 +566,8 @@
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
-      parameter (indxO=indxV+ntrc_temp+ntrc_salt+ntrc_mld+ntrc_pas+ntrc_bio
+      parameter (indxO=indxV+ntrc_temp+ntrc_salt
+     &                      +ntrc_mld+ntrc_pas+ntrc_bio
      &                      +ntrc_sed+ntrc_substot
      &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
@@ -764,9 +774,12 @@
       integer indxUHPG, indxVHPG,
      &        indxZR  , indxZW  ,
      &        indxHZR , indxHZW
-      parameter (indxUHPG = indxabl_pu_dta+20, indxVHPG = indxabl_pu_dta+21,
-     &           indxZR   = indxabl_pu_dta+22, indxZW   = indxabl_pu_dta+23,
-     &           indxHZR  = indxabl_pu_dta+24, indxHZW  = indxabl_pu_dta+25)
+      parameter (indxUHPG = indxabl_pu_dta+20, 
+     &           indxVHPG = indxabl_pu_dta+21,
+     &           indxZR   = indxabl_pu_dta+22, 
+     &           indxZW   = indxabl_pu_dta+23,
+     &           indxHZR  = indxabl_pu_dta+24, 
+     &           indxHZW  = indxabl_pu_dta+25)
 #  endif
 # endif
 #endif /* SOLVE3D */
@@ -1445,10 +1458,13 @@
 #  ifdef DIAGNOSTICS_VRT
        integer nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg
      &      , diags_vrtTime_avg, diags_vrtTime2_avg, diags_vrtTstep_avg
-     &      , diags_vrtXadv_avg(2), diags_vrtYadv_avg(2), diags_vrtHdiff_avg(2)
-     &      , diags_vrtCor_avg(2), diags_vrtPrsgrd_avg(2), diags_vrtHmix_avg(2)
+     &      , diags_vrtXadv_avg(2), diags_vrtYadv_avg(2)
+     &      , diags_vrtHdiff_avg(2)
+     &      , diags_vrtCor_avg(2), diags_vrtPrsgrd_avg(2)
+     &      , diags_vrtHmix_avg(2)
      &      , diags_vrtVmix_avg(2), diags_vrtrate_avg(2)
-     &      , diags_vrtVmix2_avg(2), diags_vrtWind_avg(2), diags_vrtDrag_avg(2)
+     &      , diags_vrtVmix2_avg(2), diags_vrtWind_avg(2)
+     &      , diags_vrtDrag_avg(2)
 #   ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg(2)
 #   endif
@@ -1459,10 +1475,14 @@
 #  ifdef DIAGNOSTICS_EK
        integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
-     &      , diags_ekHadv_avg(2), diags_ekHdiff_avg(2), diags_ekVadv_avg(2)
-     &      , diags_ekCor_avg(2), diags_ekPrsgrd_avg(2), diags_ekHmix_avg(2)
-     &      , diags_ekVmix_avg(2), diags_ekrate_avg(2), diags_ekvol_avg(2)
-     &      , diags_ekVmix2_avg(2), diags_ekWind_avg(2), diags_ekDrag_avg(2)
+     &      , diags_ekHadv_avg(2), diags_ekHdiff_avg(2)
+     &      , diags_ekVadv_avg(2)
+     &      , diags_ekCor_avg(2), diags_ekPrsgrd_avg(2)
+     &      , diags_ekHmix_avg(2)
+     &      , diags_ekVmix_avg(2), diags_ekrate_avg(2)
+     &      , diags_ekvol_avg(2)
+     &      , diags_ekVmix2_avg(2), diags_ekWind_avg(2)
+     &      , diags_ekDrag_avg(2)
 #   ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg(2)
 #   endif
@@ -1489,11 +1509,15 @@
      &      , diags_pvMrhs_avg(2), diags_pvTrhs_avg(2)
 #  endif
 #  if defined DIAGNOSTICS_EDDY && ! defined XIOS
-       integer nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg
-     &      , diags_eddyTime_avg, diags_eddyTime2_avg, diags_eddyTstep_avg
+       integer nciddiags_eddy_avg, nrecdiags_eddy_avg
+     &      , nrpfdiags_eddy_avg
+     &      , diags_eddyTime_avg, diags_eddyTime2_avg, 
+     &      , diags_eddyTstep_avg
      &      , diags_eddyzz_avg(2)
-     &      , diags_eddyuu_avg(2), diags_eddyvv_avg(2), diags_eddyuv_avg(2)
-     &      , diags_eddyub_avg(2), diags_eddyvb_avg(2), diags_eddywb_avg(2)
+     &      , diags_eddyuu_avg(2), diags_eddyvv_avg(2)
+     &      , diags_eddyuv_avg(2)
+     &      , diags_eddyub_avg(2), diags_eddyvb_avg(2)
+     &      , diags_eddywb_avg(2)
      &      , diags_eddyuw_avg(2), diags_eddyvw_avg(2)
      &      , diags_eddyubu_avg(2), diags_eddyvbv_avg(2)
      &      , diags_eddyusu_avg(2), diags_eddyvsv_avg(2)
@@ -1801,8 +1825,10 @@
 #ifdef DIAGNOSTICS_VRT
      &      , nciddiags_vrt, nrecdiags_vrt, nrpfdiags_vrt
      &      , diags_vrtTime, diags_vrtTime2, diags_vrtTstep
-     &      , diags_vrtXadv, diags_vrtYadv, diags_vrtHdiff, diags_vrtCor
-     &      , diags_vrtPrsgrd, diags_vrtHmix, diags_vrtVmix, diags_vrtrate
+     &      , diags_vrtXadv, diags_vrtYadv, diags_vrtHdiff
+     &      , diags_vrtCor
+     &      , diags_vrtPrsgrd, diags_vrtHmix, diags_vrtVmix
+     &      , diags_vrtrate
      &      , diags_vrtVmix2, diags_vrtWind, diags_vrtDrag
 # ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro
@@ -1898,8 +1924,10 @@
      &      , diags_eddyusu, diags_eddyvsv
      &      , diags_eddyugsu, diags_eddyvgsv
 # ifdef AVERAGES
-     &      , nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg
-     &      , diags_eddyTime_avg, diags_eddyTime2_avg, diags_eddyTstep_avg
+     &      , nciddiags_eddy_avg, nrecdiags_eddy_avg
+     &      , nrpfdiags_eddy_avg
+     &      , diags_eddyTime_avg, diags_eddyTime2_avg
+     &      , diags_eddyTstep_avg
      &      , diags_eddyzz_avg
      &      , diags_eddyuu_avg, diags_eddyvv_avg, diags_eddyuv_avg
      &      , diags_eddyub_avg, diags_eddyvb_avg, diags_eddywb_avg
