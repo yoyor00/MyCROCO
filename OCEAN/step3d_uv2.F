@@ -899,13 +899,13 @@
         do j=Jstr,Jend    !  from velocity to flux units
           do i=Istr,Iend+1
             u(i,j,k,nnew)=u(i,j,k,nnew)
-     &            *(0.5*(Hz(i,j,k)+Hz(i-1,j,k))) / pn_u(i,j)
+     &            *(0.5*(Hz(i,j,k)+Hz(i-1,j,k)))*on_u(i,j)
           enddo
         enddo
         do j=Jstr,Jend+1
           do i=Istr,Iend
             v(i,j,k,nnew)=v(i,j,k,nnew)
-     &           *(0.5*(Hz(i,j,k)+Hz(i,j-1,k))) / pm_v(i,j)
+     &           *(0.5*(Hz(i,j,k)+Hz(i,j-1,k)))*om_v(i,j)
           enddo
         enddo
         do j=Jstr,Jend
@@ -1107,22 +1107,17 @@
         do k=N,1,-1
           do i=IU_RANGE
 # ifdef NHMG
-               if (surface_neumann) then
-                  u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
-#  ifdef MASKING
-     &                                      *umask(i,j)
-#  endif
-                  nh_ubar(i,j) = nh_ubar(i,j)+CF(i,0)
-               endif ! Dirichlet BC : no barotropic correction
-# else
+            if (surface_neumann) then
+              nh_ubar(i,j)=nh_ubar(i,j)+CF(i,0)
+            endif ! Dirichlet BC : no barotropic correction
+# endif
             u(i,j,k,nnew)=(u(i,j,k,nnew)-CF(i,0))
-#  ifdef MASKING
+# ifdef MASKING
      &                                *umask(i,j)
-#   ifdef MRL_WCI
+#  ifdef MRL_WCI
      &               +ust(i,j,k)*(umask(i,j)-1.0)
-#   endif
 #  endif
-# endif /* NHMG */
+# endif
 # ifdef WET_DRY
             u(i,j,k,nnew)=u(i,j,k,nnew)*umask_wet(i,j)
 #  ifdef MRL_WCI
@@ -1132,25 +1127,21 @@
 
 !--# define TR
 # ifdef TR
-#  ifdef MRL_WCI
             FC(i,k)=DC(i,k)*(0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
-     &                                            +ust(i,j,k))
-#  else
-            FC(i,k)=0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))*DC(i,k)
+#  ifdef MRL_WCI
+     &                                             +ust(i,j,k)
 #  endif
+     &                                                       )
 # else
 #  define EPSIL 0.125
 #  define DELTA 0.75
-#  ifdef MRL_WCI
             FC(i,k)=DELTA*Huon(i,j,k) +
      &              EPSIL*DC(i,k)*(u(i,j,k,nstp)+u(i,j,k,nnew)
-     &                                        +2.0*ust(i,j,k))
-#  else
-            FC(i,k)=DELTA*Huon(i,j,k) +
-     &              EPSIL*DC(i,k)*(u(i,j,k,nstp)+u(i,j,k,nnew))
+#  ifdef MRL_WCI
+     &                                         +2.0*ust(i,j,k)
 #  endif
+     &                                                       )
 # endif /* TR */
-
             FC(i,0)=FC(i,0)+FC(i,k)
           enddo
         enddo
@@ -1263,22 +1254,17 @@
           do k=N,1,-1
             do i=IV_RANGE
 # ifdef NHMG
-               if (surface_neumann) then
-                  v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0))
-#  ifdef MASKING
-     &                 *vmask(i,j)
-#  endif
-                  nh_vbar(i,j) = nh_vbar(i,j)+CF(i,0)
-               endif ! Dirichlet BC: no barotropic correction
-# else
+              if (surface_neumann) then
+                nh_vbar(i,j) = nh_vbar(i,j)+CF(i,0)
+              endif ! Dirichlet BC: no barotropic correction
+# endif
               v(i,j,k,nnew)=(v(i,j,k,nnew)-CF(i,0))
-#  ifdef MASKING
+# ifdef MASKING
      &                                  *vmask(i,j)
-#   ifdef MRL_WCI
+#  ifdef MRL_WCI
      &                 +vst(i,j,k)*(vmask(i,j)-1.0)
-#   endif
 #  endif
-# endif /* NHMG */
+# endif
 # ifdef WET_DRY
               v(i,j,k,nnew)=v(i,j,k,nnew)*vmask_wet(i,j)
 #  ifdef MRL_WCI
