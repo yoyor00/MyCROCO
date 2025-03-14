@@ -7,7 +7,7 @@ from netCDF4 import Dataset
 import argparse
 import croco_utils as cr
 
-# Arguments de ligne de commande
+# Command args
 parser = argparse.ArgumentParser(
     description="Plot results from the SWASH test case.",
     formatter_class=argparse.RawTextHelpFormatter,
@@ -35,19 +35,19 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-# Assurez-vous que le répertoire de sortie existe
+# Be sure output directory exist
 os.makedirs(args.output_dir, exist_ok=True)
 
-# Ouvrir le fichier NetCDF
+# Open file NetCDF
 try:
     nc = Dataset(args.file, "r")
 except FileNotFoundError:
     print(f"Error: File '{args.file}' not found.")
     exit(1)
 
-# Paramètres de grille et lecture des données
-yindex = 1  # Indice Python (MATLAB yindex = 2)
-tindex_last = len(nc.variables["scrum_time"][:]) - 1  # Dernier enregistrement
+# Grid parameters
+yindex = 1  # Index Python (MATLAB yindex = 2)
+tindex_last = len(nc.variables["scrum_time"][:]) - 1  # Last record
 tstart = 0 if args.makemovie else tindex_last
 tend = tindex_last
 g = 9.81
@@ -64,10 +64,10 @@ theta_b = nc.theta_b
 hc = nc.hc
 Dcrit = np.squeeze(nc.variables["Dcrit"][:])
 
-# Préparer la figure
+# Prepare figure
 fig, ax = plt.subplots(figsize=(10, 6))
 
-# Boucle sur les temps
+# Time loop
 for tindex in range(tstart, tend + 1):
     print(f"Processing time index: {tindex}")
 
@@ -77,13 +77,13 @@ for tindex in range(tstart, tend + 1):
     zw = cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "w", 2)
 
     zru = 0.5 * (zr[:, :-1] + zr[:, 1:])
-    xr_u = 0.5 * (xr[:-1] + xr[1:])  # Grille décalée pour u
+    xr_u = 0.5 * (xr[:-1] + xr[1:])  # Grid shift for u
     xr_u_2d = np.tile(xr_u, (zru.shape[0], 1))
     D = hr + zeta
-    D_u = 0.5 * (D[:-1] + D[1:])  # Grille décalée pour D
+    D_u = 0.5 * (D[:-1] + D[1:])  # Grid shift for D
     D2d_u = np.tile(D_u, (zru.shape[0], 1))
 
-    # Lire les variables
+    # Read vars
     if args.varname == "u":
         u = np.squeeze(nc.variables["u"][tindex, :, yindex, :])
         var = u
@@ -93,7 +93,7 @@ for tindex in range(tstart, tend + 1):
         var = w
         cmin, cmax = -0.7, 0.7
 
-    var[D2d_u < Dcrit] = np.nan  # Masque
+    var[D2d_u < Dcrit] = np.nan  # Mask
 
     # Plots
     ax.clear()
@@ -123,7 +123,7 @@ for tindex in range(tstart, tend + 1):
     ax.legend()
     ax.grid()
 
-    # Sauvegarder les sorties
+    # Save outputs
     if args.makemovie:
         plt.savefig(os.path.join(args.output_dir, f"frame_{tindex:04d}.png"))
 
@@ -137,11 +137,11 @@ for tindex in range(tstart, tend + 1):
     if not args.no_show and not args.makemovie:
         plt.show()
 
-# Sauvegarder en PDF
+# Save in PDF
 if args.makepdf:
     pdf_path = os.path.join(args.output_dir, f"swash_{args.varname}.pdf")
     plt.savefig(pdf_path)
     print(f"PDF saved: {pdf_path}")
 
-# Fermer le fichier NetCDF
+# Close file NetCDF
 nc.close()

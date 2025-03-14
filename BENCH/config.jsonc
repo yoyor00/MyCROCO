@@ -154,10 +154,24 @@
       //"RIP_BISCA", // missing files
       "RIP_GRANDPOPO",
       "RIP_TOPO_2D",
-      "DUNE_ANA_DUNE", // blow-up issue
+      //"DUNE_ANA_DUNE", // blow-up issue
       "DUNE_DUNE3D",
       "FLASH_RIP",
       //"MOVING_BATHY", // repro-mpi issue
+    ],
+    "@complement_sequential_only": [
+      "SINGLE_COLUMN_DIURNAL_CYCLE",
+      "SINGLE_COLUMN_FORCED_DBLEEK",
+      "SINGLE_COLUMN_FORCED_EKBBL",
+      "SINGLE_COLUMN_FORCED_NONROTBBL",
+      "SINGLE_COLUMN_FORCED_OSCNONROTBBL",
+      "SINGLE_COLUMN_KATO_PHILIPS",
+      "SINGLE_COLUMN_WILLIS_DEARDORFF",
+      "SED_TOY_ROUSE",
+      "SED_TOY_CONSOLID",
+      "SED_TOY_RESUSP",
+      "SED_TOY_FLOC0D",
+      "SED_TOY_FLOC1D",
     ],
     "@vortex": ["VORTEX", "VORTEX_AGRIF_1WAY", "VORTEX_AGRIF_2WAY"],
     "@agrif_realist": ["BENGUELA_LR_AGRIF_1WAY", "BENGUELA_LR_AGRIF_2WAY"],

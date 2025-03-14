@@ -294,34 +294,61 @@ debug_complement:
       - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
-# space disk issue if we want to do plotphy on all complement cases
-# to split ?
-# plotphy_complement:
-#   stage: bench
-#   tags:
-#     - ci.inria.fr
-#     - large
-#   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
-#   script:
-#     - cd $CI_PROJECT_DIR/BENCH
-#     - source /venv/bin/activate
-#     - |
-#       ./bench-croco.py \
-#       --case @complement \
-#       --variants mpi-2 \
-#       --title plotphy-complement \
-#       -s build,run,plotphy \
-#       --rebuild \
-#       --host host_ci \
-#       --html \
-#       -N --report --no_date_in_result_dir
-#   artifacts:
-#     paths:
-#       - BENCH/results
-#     when: always
-#     expire_in: 1 week
-#     reports:
-#       junit: BENCH/results/plotphy-complement-host_ci/junit_report.xml
+plotphy_complement:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
+    - |
+      ./bench-croco.py \
+      --case @complement \
+      --variants mpi-2 \
+      --title plotphy-complement \
+      -s build,run,plotphy \
+      --rebuild \
+      --host host_ci \
+      --html \
+      -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/plotphy-complement-host_ci/junit_report.xml
+
+plotphy_complement_sequential:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
+    - |
+      ./bench-croco.py \
+      --case @complement_sequential_only \
+      --variants sequential \
+      --title plotphy-complement-sequential \
+      -s build,run,plotphy \
+      --rebuild \
+      --host host_ci \
+      --html \
+      -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/plotphy-complement-sequential-host_ci/junit_report.xml
+
+
 
 pages:
   stage: report
