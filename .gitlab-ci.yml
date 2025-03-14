@@ -320,6 +320,9 @@ plotphy_complement:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy-complement-host_ci/junit_report.xml
+  rules:
+      - if: $CI_PIPELINE_SOURCE == "schedule"
+
 
 plotphy_complement_sequential:
   stage: bench
@@ -347,7 +350,8 @@ plotphy_complement_sequential:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy-complement-sequential-host_ci/junit_report.xml
-
+  rules:
+      - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 pages:
