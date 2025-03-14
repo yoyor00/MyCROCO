@@ -108,6 +108,11 @@
 #ifdef JET
       integer istr1,iend1,jstr1,jend1
 #endif
+#ifdef LEEWAVE
+      real u0,v0, z, dz, htot
+      parameter (u0=1.0)
+      parameter (v0=1.0)
+#endif
 !
 #include "compute_auxiliary_bounds.h"
 !
@@ -186,6 +191,21 @@
             zeta(i,j,2)=0.
           enddo
         enddo
+# elif defined LEEWAVE
+#   if defined STEADYFLOW
+        zeta(:,:,:) = 0.0
+#   else
+        do j=JR_RANGE
+          do i=IR_RANGE
+            zeta(i,j,1)=-f(i,j)/g*((yr(i,j)-el/2.)*u0
+     &                            -(xr(i,j)-xl/2.)*v0)
+            zeta(i,j,2)=zeta(i,j,1)
+          enddo
+        enddo
+
+        ubar(:,:,:) = u0
+        vbar(:,:,:) = v0
+#   endif
 
 # elif defined THACKER
         ETA0=0.1
@@ -487,6 +507,51 @@
         enddo
 #   endif
 
+#  elif defined LEEWAVE
+        do j=JR_RANGE
+           do i=IU_RANGE
+              ubar(i,j,1) = 0.0
+              htot = 0.0
+              do k=1,N
+                 z = 0.5*(z_r(i,j,k)+z_r(i-1,j,k))
+                 dz = 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+# if defined STEADYFLOW
+                 u(i,j,k,1) = u0*max(0.0, (z+1000)/1000)
+# else
+                 u(i,j,k,1) = u0
+# endif
+                 u(i,j,k,2) = u(i,j,k,1)
+                 ubar(i,j,1) = ubar(i,j,1)+u(i,j,k,1)*dz
+                 htot = htot+dz
+              enddo
+              ubar(i,j,1) = ubar(i,j,1)/htot
+              ubar(i,j,2) = ubar(i,j,1)
+           enddo
+        enddo
+
+        do j=JV_RANGE
+           do i=IR_RANGE
+              vbar(i,j,1) = 0.0
+              htot = 0.0
+              do k=1,N
+                 z = 0.5*(z_r(i,j,k)+z_r(i,j-1,k))
+                 dz = 0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+# if defined STEADYFLOW
+                 v(i,j,k,1) = v0*max(0.0, (z+1000)/1000)
+# else
+                 v(i,j,k,1) = v0
+# endif
+                 v(i,j,k,2) = v(i,j,k,1)
+                 vbar(i,j,1) = vbar(i,j,1)+v(i,j,k,1)*dz
+                 htot = htot+dz
+              enddo
+              vbar(i,j,1) = vbar(i,j,1)/htot
+              vbar(i,j,2) = vbar(i,j,1)
+           enddo
+        enddo
+#   if defined NBQ || defined NHMG
+        wz(:,:,:,:) = 0
+#   endif
 #  else
         do k=1,N
           do j=JR_RANGE
@@ -1014,6 +1079,22 @@
               t(i,j,k,1,isalt)=35.
               t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
 #    endif
+            enddo
+          enddo
+        enddo
+
+#  elif defined LEEWAVE
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,k,1,itemp)=15. + 10./2000.*z_r(i,j,k)
+              t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+#   ifdef SALINITY
+              t(i,j,k,1,isalt)=34.54
+!              t(i,j,k,1,isalt)=34.54+3.5*exp(z_r(i,j,k)/250.)
+!     &         * sin(-z_r(i,j,k)/(1-z_r(i,j,k)/6000.)*2*3.14/1000.)
+              t(i,j,k,2,isalt)=t(i,j,k,1,isalt)
+#   endif
             enddo
           enddo
         enddo
@@ -1755,7 +1836,7 @@ C$OMP BARRIER
       call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             v(START_2D_ARRAY,1,3))
 #    endif
-#    ifdef NBQ
+#    if defined NBQ || defined NHMG
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,1))
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,

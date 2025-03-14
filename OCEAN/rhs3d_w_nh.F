@@ -35,8 +35,7 @@
      &             A2d(1,2,trd), A2d(1,3,trd), A2d(1,4,trd), 
      &             A2d(1,5,trd), A2d(1,6,trd), A2d(1,7,trd),
 # ifdef NHMG
-     &             A2d(1,8, trd), A2d(1,9, trd), 
-     &             A2d(1,10,trd), A2d(1,11,trd),
+     &             A2d(1,8, trd),
 # endif
      &             A3d(1,3,trd), A3d(1,4,trd), A3d(1,5,trd)
      &             )
@@ -49,8 +48,7 @@
      &                         FC, We_r, lap, 
      &                         Hzw, WFx, WFe,
 # ifdef NHMG
-     &                         div_zx,  div_zy,
-     &                         Udiv_zx, Vdiv_zy,
+     &                         uv_terms,
 # endif
      &                         rw, HUon_w, HVom_w
      &                         )
@@ -71,10 +69,7 @@
       REAL     :: WFx    (PRIVATE_2D_SCRATCH_ARRAY      )
       REAL     :: WFe    (PRIVATE_2D_SCRATCH_ARRAY      )
 # ifdef NHMG
-      REAL     :: div_zx (PRIVATE_1D_SCRATCH_ARRAY,1:N  )
-      REAL     :: div_zy (PRIVATE_1D_SCRATCH_ARRAY,1:N  )
-      REAL     :: Udiv_zx(PRIVATE_1D_SCRATCH_ARRAY,1:N  )
-      REAL     :: Vdiv_zy(PRIVATE_1D_SCRATCH_ARRAY,1:N  )
+      REAL     :: uv_terms (PRIVATE_1D_SCRATCH_ARRAY,1:N  )
 # endif
       REAL     :: rw     (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL     :: HUon_w (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
@@ -84,6 +79,7 @@
       REAL     :: wz_bot,wz_sfc
       PARAMETER (gamma=0.25  )
       PARAMETER (epsil=1.E-16)
+      real     :: u_r,v_r
       !!
 # include "grid.h"
 # include "ocean3d.h"
@@ -648,61 +644,36 @@
       do j=jstr,jend
         do k=1,N
           do i=Istr,Iend
-            div_zx(i,k) = 
-     &               0.5*Huon(i+1,j,k)*( dzdxi(i,j,k)+ dzdxi(i+1,j,k))
-     &              -0.5*Huon(i  ,j,k)*( dzdxi(i,j,k)+ dzdxi(i-1,j,k))
-     &              +0.5*Hvom(i,j+1,k)*( dzdxi(i,j,k)+ dzdxi(i,j+1,k))
-     &              -0.5*Hvom(i,j  ,k)*( dzdxi(i,j,k)+ dzdxi(i,j-1,k))
-            div_zy(i,k) = 
-     &               0.5*Huon(i+1,j,k)*(dzdeta(i,j,k)+dzdeta(i+1,j,k))
-     &              -0.5*Huon(i  ,j,k)*(dzdeta(i,j,k)+dzdeta(i-1,j,k))
-     &              +0.5*Hvom(i,j+1,k)*(dzdeta(i,j,k)+dzdeta(i,j+1,k))
-     &              -0.5*Hvom(i,j  ,k)*(dzdeta(i,j,k)+dzdeta(i,j-1,k))
+             u_r = 0.5*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+             v_r = 0.5*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
+! U^2 z_xx
+             uv_terms(i,k) =
+     &            u_r**2*om_r(i,j)*pn(i,j)
+     &            *(z_r(i+1,j,k)+z_r(i-1,j,k)-2*z_r(i,j,k))
+! 2 UV z_xy
+     &            +0.5*u_r*v_r
+     &            *(z_r(i+1,j+1,k)+z_r(i-1,j-1,k)
+     &            -z_r(i+1,j-1,k)-z_r(i-1,j+1,k))
+! V^2 z_yy
+     &            +v_r**2*on_r(i,j)*pm(i,j)
+     &            *(z_r(i,j+1,k)+z_r(i,j-1,k)-2*z_r(i,j,k))
+             uv_terms(i,k) = uv_terms(i,k)*Hz(i,j,k)
           enddo
-        enddo
-        k=1
-        do i=Istr,Iend
-          div_zx(i,k) = div_zx(i,k)
-     &                 +0.5*We(i,j,k)*( dzdxi(i,j,k)+ dzdxi(i,j,k+1))
-          div_zy(i,k) = div_zy(i,k)
-     &                 +0.5*We(i,j,k)*(dzdeta(i,j,k)+dzdeta(i,j,k+1))
-        enddo
-        do k=2,N-1
+       enddo
+       do k=1, N-1
           do i=Istr,Iend
-            div_zx(i,k) = div_zx(i,k)
-     &               +0.5*We(i,j,k  )*( dzdxi(i,j,k)+ dzdxi(i,j,k+1))
-     &               -0.5*We(i,j,k-1)*( dzdxi(i,j,k)+ dzdxi(i,j,k-1))
-            div_zy(i,k) = div_zy(i,k)
-     &               +0.5*We(i,j,k  )*(dzdeta(i,j,k)+dzdeta(i,j,k+1))
-     &               -0.5*We(i,j,k-1)*(dzdeta(i,j,k)+dzdeta(i,j,k-1))
+             rw(i,j,k) = rw(i,j,k) - 0.5*(uv_terms(i,k)+uv_terms(i,k+1))
           enddo
-        enddo
-        k=N
-        do i=Istr,Iend
-          div_zx(i,k) = div_zx(i,k)
-     &               -0.5*We(i,j,k-1)*( dzdxi(i,j,k)+ dzdxi(i,j,k-1))
-          div_zy(i,k) = div_zy(i,k)
-     &               -0.5*We(i,j,k-1)*(dzdeta(i,j,k)+dzdeta(i,j,k-1))
-        enddo
-        do k=1,N
+       enddo
+
+! -W^2 z_ss
+       do k=1, N-1
           do i=Istr,Iend
-            Udiv_zx(i,k)=div_zx(i,k)
-     &                   *0.5*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
-            Vdiv_zy(i,k)=div_zy(i,k)
-     &                   *0.5*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
+             rw(i,j,k) = rw(i,j,k)
+     &            + (Hz(i,j,k+1)-Hz(i,j,k))*We(i,j,k)**2
+     &       *pn(i,j)*pm(i,j)/(z_r(i,j,k+1)-z_r(i,j,k))
           enddo
-        enddo
-        do k=1,N-1
-          do i=Istr,Iend
-            rw(i,j,k) = rw(i,j,k)
-     &              - 0.5*(Udiv_zx(i,k) + Udiv_zx(i,k+1))
-     &              - 0.5*(Vdiv_zy(i,k) + Vdiv_zy(i,k+1))
-          enddo
-        enddo
-        k=N
-        do i=Istr,Iend
-          rw(i,j,k) = rw(i,j,k) - Udiv_zx(i,k) - Vdiv_zy(i,k)
-        enddo
+       enddo
       enddo ! j loop
 # endif /* NHMG */
 

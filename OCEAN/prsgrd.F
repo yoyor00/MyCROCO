@@ -61,6 +61,7 @@ c********************************************************************
      &    dRx(PRIVATE_2D_SCRATCH_ARRAY)
 #  ifdef NHMG
      &    ,rw(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+#  include "nbq.h"
 #  endif
 !
       parameter (OneFifth=0.2, OneTwelfth=1./12., epsil=0.) !1.E-10)
@@ -522,7 +523,42 @@ c********************************************************************
 !
 !======================================================================
 !
+# ifdef NHMG
+!
+!--------------------------------------------------------------------
+! hydrostatic pressure gradient for the vertical flux
+!       dpdz = -zx*dpdx - zy*dpdy (See Molemaker et al., 2018)
+!--------------------------------------------------------------------
+!
+!     We are re-using dR as a work arrayo
+
+      do j=Jstr,Jend
+         do k = 1,N
+            do i=Istr,Iend
+              dR(i,k) = dzdxi(i,j,k) *(
+     $              ru(i  ,j,k  )/(Hz(i,j,k)+Hz(i-1,j,k))
+     $            + ru(i+1,j,k  )/(Hz(i,j,k)+Hz(i+1,j,k)))
+     $            +     dzdeta(i,j,k) *(
+     $              rv(i,j  ,k  )/(Hz(i,j,k)+Hz(i,j-1,k))
+     $            + rv(i,j+1,k  )/(Hz(i,j,k)+Hz(i,j+1,k)))
+            enddo
+         enddo
+
+         do k = 1,N-1
+            do i=Istr,Iend
+              rw(i,j,k)=-0.25*(dR(i,k+1)+dR(i,k))*(Hz(i,j,k+1)+Hz(i,j,k))
+            enddo
+         enddo
+         do i=Istr,Iend
+            rw(i,j,N) = -0.5*dR(i,N)*Hz(i,j,N)
+         enddo
+      enddo
+
+# endif
+
 # else /* PGF_BASIC_JACOBIAN */
+
+
 !
 !======================================================================
 !
@@ -872,6 +908,8 @@ c********************************************************************
 !======================================================================
 !
 # endif /* PGF_BASIC_JACOBIAN */
+
+
 !
 !======================================================================
 !

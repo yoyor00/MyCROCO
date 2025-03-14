@@ -1328,6 +1328,9 @@
      &                - dzdxi(i,j,k)*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs)) )
             enddo
          enddo
+         do i=Istr,Iend
+            rw(i,j,0) = rw(i,j,0) + FC(i,1)
+         enddo
          do k = 1,N-1
             do i=Istr,Iend
               rw(i,j,k)= rw(i,j,k) + 0.5*(FC(i,k+1)+FC(i,k))

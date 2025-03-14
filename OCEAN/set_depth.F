@@ -258,7 +258,7 @@ C$    integer omp_get_thread_num
 #   endif
 #  endif
 
-#  ifdef NHMGXXX
+#  ifdef NHMG
 !
 !  Compute slopes
 !
@@ -441,7 +441,7 @@ C$    integer omp_get_thread_num
 #    endif
 #   endif
 
-#  ifdef NHMGXXX
+#  ifdef NHMG
 !
 !  Compute slopes
 !

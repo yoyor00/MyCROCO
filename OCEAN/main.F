@@ -290,6 +290,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # else
       ns_perio = .false.
 # endif
+
       call nhmg_init(Lm,Mm,N,NP_XI,NP_ETA,padd_X,padd_E)
 #endif
 !

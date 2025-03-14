@@ -186,6 +186,14 @@ C$    integer omp_get_thread_num
                      depth=4500.
                      beta=0.
                      f0=1.E-4
+# elif defined LEEWAVE
+                     depth=2000.
+#    if defined STEADYFLOW
+                     f0=0.0
+#    else
+                     f0=1.0e-4
+#    endif
+                     beta=0.
 # elif defined SHELFRONT
                      depth=1660.
                      f0=1.E-4
@@ -334,6 +342,9 @@ C$    integer omp_get_thread_num
 # elif defined SEAMOUNT
                      Length_XI =512.0e+3
                      Length_ETA=512.0e+3
+# elif defined LEEWAVE
+                     Length_XI =10e+3
+                     Length_ETA=10e+3
 # elif defined SHELFRONT
                      Length_ETA=200.0e+3
                      Length_XI =Length_XI_ISO_GRID
@@ -594,6 +605,27 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
         do i=IstrR,IendR
           h(i,j)=depth*(1-0.6*exp(-cff*((xr(i,j)-0.5*xl)**2+
      &                                  (yr(i,j)-0.5*el)**2)))
+        enddo
+      enddo
+
+# elif defined LEEWAVE
+      cff=(1./10.0e2)**2
+
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+#if defined NONTRAD_COR
+             feta(i,j) = f0*cos(pi/4.)
+             fxi(i,j)  = f0*sin(pi/4.)
+#endif
+
+          h(i,j)=depth*(1-0.25*exp(-cff*((xr(i,j)-0.5*xl)**2
+     &                                  +(yr(i,j)-0.5*el)**2)))
+#  if defined MASKING
+          rmask(i,j)=1.0
+          if (h(i,j).lt.0.5*depth) then
+            rmask(i,j)=0.0
+          endif
+#  endif
         enddo
       enddo
 

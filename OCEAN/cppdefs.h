@@ -23,6 +23,7 @@
 #undef  RIVER           /* River run-off Example */
 #undef  OVERFLOW        /* Gravitational/Overflow Example */
 #undef  SEAMOUNT        /* Seamount Example */
+#undef  LEEWAVE         /* Lee Wave Example */
 #undef  SHELFRONT       /* Shelf Front Example */
 #undef  SOLITON         /* Equatorial Rossby Wave Example */
 #undef  THACKER         /* Thacker wetting-drying Example */
@@ -958,6 +959,57 @@
 # define ANA_BSFLUX
 # define NO_FRCFILE
 # undef  RVTK_DEBUG
+
+#elif defined LEEWAVE
+/*
+!                       LEEWAVE Example
+!                       ======== ======
+
+
+*/
+# undef STEADYFLOW
+# undef  OPENMP
+# define  MPI
+# define  NHMG
+# undef  NBQ
+# define SOLVE3D
+# define UV_COR
+# define UV_ADV
+/* # define NS_PERIODIC */
+/* # define EW_PERIODIC */
+# define OBC_EAST
+# define OBC_WEST
+# define OBC_NORTH
+# define OBC_SOUTH
+# define ANA_BRY
+# define Z_FRC_BRY
+# define M2_FRC_BRY
+# define M3_FRC_BRY
+# define T_FRC_BRY
+#if defined NHMG || defined NBQ
+# define W_FRC_BRY
+#endif
+
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_BTFLUX
+# define NO_FRCFILE
+# undef SPONGE
+
+/* # define NONLIN_EOS */
+/* # define SPLIT_EOS */
+
+#undef W_HADV_WENO5
+#undef W_HADV_UP3
+#undef W_VADV_SPLINES
+
+
+#define W_VADV_WENO5
+#define W_HADV_WENO5
+#define UV_VADV_WENO5
+#define UV_HADV_WENO5
 
 #elif defined SHELFRONT
 /*

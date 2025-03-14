@@ -165,8 +165,8 @@
       parameter (LLm0=500,  MMm0=1,    N=50)   !  8 mm resolution
 !     parameter (LLm0=1000, MMm0=1,    N=100)  !  4 mm resolution
 !     parameter (LLm0=4000, MMm0=1,    N=400)  !  1 mm resolution
-#elif defined CALDEIRA
-      parameter (LLm0=100,  MMm0=100,  N=50)
+#elif defined LEEWAVE
+      parameter (LLm0=64,  MMm0=64,  N=32)
 #elif defined DUNE
 # ifdef ANA_DUNE
       parameter (LLm0=150,  MMm0=1,    N=20)   !  2 m resolution
@@ -431,7 +431,7 @@
       parameter (N2dabl=size_XI*(se_abl*size_ETA+sz_abl*(N_abl+1)))
       parameter (N3dabl=size_XI*size_ETA*(N_abl+1))
 # endif
-#endif /* AGRIF */
+#endif
 
 !
 !----------------------------------------------------------------------
