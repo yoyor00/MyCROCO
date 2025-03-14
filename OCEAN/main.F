@@ -51,6 +51,7 @@
 #ifdef OPENACC
       use openacc
 #endif
+      use buffer, only: init_buffer
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -78,6 +79,9 @@
 # include "sta.h"
 # include "nc_sta.h"
 #endif
+#ifdef USE_CALENDAR
+       character*19 :: tool_sectodat
+#endif
 #ifdef AGRIF
       Type(Agrif_pgrid),pointer  :: parcours
 #endif
@@ -97,10 +101,6 @@
 #endif
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
-#endif
-#ifdef USE_CALENDAR
-      character*19 :: tool_sectodat
-!      real*8       :: tool_datosec
 #endif
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -172,6 +172,8 @@
 #endif
 !
 #define CR  !
+
+      call init_buffer
 !
 !----------------------------------------------------------------------
 !  Read in tunable model parameters in roms.in file

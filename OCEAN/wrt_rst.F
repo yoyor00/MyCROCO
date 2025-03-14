@@ -18,6 +18,7 @@
 
 #if defined MUSTANG
       USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
+      USE dredging, ONLY : l_dredging, dredg_hsed_init
 #endif
 
 !     implicit none
@@ -453,6 +454,7 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+#  ifdef TEMPERATURE
 !
 ! Write out vertical diffusion coefficient for potential temperature.
 !
@@ -465,6 +467,7 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+#  endif /* TEMPERATURE  */
 #  ifdef SALINITY
 !
 ! Write out vertical diffusion coefficient for potential temperature.
@@ -774,6 +777,22 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
           goto 99                                         !--> ERROR
         endif
        enddo
+
+! dredging
+       if (l_dredging) then
+          work2d = dredg_hsed_init
+          indx = indx + 1
+          ierr = nf_fwrite(work2d, ncidrst, rstMust(indx),
+     &                                       record, r2dvar)
+          if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname_rstMust(1,indx))
+            write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+     &                  MYID
+            goto 99                                         !--> ERROR
+          endif
+       endif
+
+
 # endif /* MUSTANG */
 
 #endif /* SOLVE3D */
