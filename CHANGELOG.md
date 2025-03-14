@@ -46,6 +46,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   instead of mask value
 - Issue #329 : fix writing of sediment layers (SEDIMENT)
 - Issue #331 : fix rstTime netcdf index mismatch between PISCES and CROCO
+- Issue #332 : fix step3d_fast with wave but no wed and dry 
 
 
 ### Changed
