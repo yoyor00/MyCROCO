@@ -12,6 +12,10 @@
   "SED_TOY_CONSOLID": {
     "title": "SED_TOY_CONSOLID- (4 x 3 x 20 : 240)",
     "case": "SED_TOY",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_sed_toy_consolid.py",
+      "plotphy_script_input": "sed_toy_consolid_his.nc",
+    },
     "cppkeys": {
       "SED_TOY": true,
       "SED_TOY_CONSOLID": true,

@@ -3,6 +3,10 @@
   "DUNE_SEDIMENT": {
     "title": "DUNE (50 x 1 x 20 : 1000)",
     "case": "DUNE",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_dune.py",
+      "plotphy_script_input": "dune_his.nc",
+    },
     "splitting": { "1": "1x1", "2": "2x1" },
     "cppkeys": {
       "SEDIMENT": true,
@@ -15,6 +19,10 @@
   "DUNE_MUSTANG": {
     "title": "DUNE (50 x 1 x 20 : 1000)",
     "case": "DUNE",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_dune.py",
+      "plotphy_script_input": "dune_his.nc",
+    },
     "splitting": { "1": "1x1", "2": "2x1" },
     "cppkeys": {
       "MUSTANG": true,
