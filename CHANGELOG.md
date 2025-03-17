@@ -6,6 +6,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- Issue #195 : add RAIN_FLUX cppkey to take into account water and temp flux 
+  from rain
 - Issue #250 : add dredging feature in MUSTANG
 - Issues #291, #323 : add new test case FLASH_RIP
 
