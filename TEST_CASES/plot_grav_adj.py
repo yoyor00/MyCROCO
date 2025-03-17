@@ -7,7 +7,7 @@ from netCDF4 import Dataset
 import argparse
 import croco_utils as cr
 
-# Arguments de ligne de commande
+# Command-line arguments
 parser = argparse.ArgumentParser(
     description="Plot results from the GRAV_ADJ test case.",
     formatter_class=argparse.RawTextHelpFormatter,
@@ -36,55 +36,55 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-# Assurez-vous que le répertoire de sortie existe
+# Ensure output directory exists
 os.makedirs(args.output_dir, exist_ok=True)
 
-# Préparer la figure
+# Prepare figure
 nplot = len(args.tindex)
 fig, axs = plt.subplots(nplot, 1, figsize=(10, 3 * nplot), constrained_layout=True)
 if nplot == 1:
-    axs = [axs]  # Assure une liste, même pour un seul subplot
+    axs = [axs]  # List even for 1 subplot
 
-# Ouvrir le fichier NetCDF
+# Open NetCDF file
 try:
     nc = Dataset(args.file, "r")
 except FileNotFoundError:
     print(f"Error: File '{args.file}' not found.")
     exit(1)
 
-# Lecture des données de la grille
+# Read grid data
 h = nc.variables["h"][:]
 x = np.squeeze(nc.variables["x_rho"][1, :])
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
 
-# Boucle sur les indices temporels
+# Loop on time
 for i, tndx in enumerate(args.tindex):
     tndx = min(tndx, len(nc.variables["scrum_time"][:]) - 1)
     print(f"Processing time index: {tndx}")
 
-    # Lecture des données
+    # Read data
     zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
     temp = np.squeeze(nc.variables["temp"][tndx, :, 1, :])
     w = 1000 * np.squeeze(nc.variables["w"][tndx, :, 1, :])
     N, M = temp.shape
 
-    # Calcul des profondeurs
+    # Compute depth
     zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)
     zr = np.squeeze(zr[:, 1, :])
     xr = x if args.nbq else x / 1000 - 32
     xr_2d = np.tile(xr, (N, 1))
 
-    # Calcul de la fonction de courant (psi)
+    # Compute current function (psi)
     psi = np.zeros_like(w)
     for j in range(1, M):
         psi[:, j] = psi[:, j - 1] - w[:, j] * (xr_2d[:, j] - xr_2d[:, j - 1])
 
-    # Remplacer les zéros par NaN dans la température
+    # Replace 0 by Nan in temperature field
     temp[temp == 0] = np.nan
 
-    # Tracé
+    # Plot
     ax = axs[i]
     levels = np.arange(10, 41, 1)
     cont = ax.contourf(xr_2d, zr, temp, levels=levels, cmap="jet", extend="both")
@@ -97,13 +97,13 @@ for i, tndx in enumerate(args.tindex):
         ax.contour(xr_2d, zr, psi, colors="k", linewidths=0.5)
     fig.colorbar(cont, ax=ax)
 
-# Sauvegarde en PDF
+# Save in PDF
 if args.makepdf:
     pdf_path = os.path.join(args.output_dir, "gravadj_results.pdf")
     plt.savefig(pdf_path)
     print(f"PDF saved: {pdf_path}")
 
-# Sauvegarde en PNG
+# Save in PNG
 if args.makepng:
     for i, tndx in enumerate(args.tindex):
         png_path = os.path.join(args.output_dir, f"gravadj_t{tndx:04d}.png")
@@ -111,11 +111,11 @@ if args.makepng:
         fig.savefig(png_path, bbox_inches=extent)
         print(f"PNG saved: {png_path}")
 
-# Affichage ou suppression
+# Show or not
 if not args.no_show:
     plt.show()
 else:
     plt.close()
 
-# Fermer le fichier NetCDF
+# Close NetCDF file
 nc.close()
