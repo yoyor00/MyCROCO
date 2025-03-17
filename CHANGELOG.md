@@ -10,6 +10,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   from rain
 - Issue #250 : add dredging feature in MUSTANG
 - Issues #291, #323 : add new test case FLASH_RIP
+- scripts for running coupled runs:
+  - adding possibility to give a pre-built grid file to OASIS
+  - new to take into account the ideal WRF configurations
+  - possibility to have different WRF output frequencies between domains
 
 ### Fixed
 
@@ -83,7 +87,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - Added creation of an independent pisces restart file (managed in namelist_pisces_ref) to improve restartability
   - Rename the simplified version of PISCES, cpp key pisces_npzd
   - Correction of some bugs
-  
+
+- scripts for running coupled runs:
+  - improving possibility to add weight file for OASIS
+  - removing WRF rsl files because too heavy 
+  - modify atm_his_h in hours as atm_his in minutes
+  - update for suporting both WRFV4.2.1 and WRFV4.6 OASIS names
+
+- update create_config for including pytools
+
 ### Deprecated
 
 ### Removed
