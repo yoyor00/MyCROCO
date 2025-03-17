@@ -6,6 +6,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- Issue #195 : add RAIN_FLUX cppkey to take into account water and temp flux 
+  from rain
 - Issue #250 : add dredging feature in MUSTANG
 - Issues #291, #323 : add new test case FLASH_RIP
 - scripts for running coupled runs:
@@ -50,6 +52,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   instead of mask value
 - Issue #329 : fix writing of sediment layers (SEDIMENT)
 - Issue #331 : fix rstTime netcdf index mismatch between PISCES and CROCO
+- Issue #332 : fix step3d_fast with wave but no wet and dry 
 
 
 ### Changed
