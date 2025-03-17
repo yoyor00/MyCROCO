@@ -19,7 +19,7 @@ parser.add_argument(
 parser.add_argument(
     "--makepng", action="store_true", help="Generate a PNG of the plots"
 )
-parser.add_argument("--noshow", action="store_true", help="Do not display the plots")
+parser.add_argument("--no-show", action="store_true", help="Suppress plot display")
 parser.add_argument(
     "--output-dir",
     type=str,
@@ -106,8 +106,8 @@ if args.makepng:
     plt.savefig(png_path, dpi=300)
     print(f"PNG file '{png_path}' has been created.")
 
-# Show plot unless suppressed
-if not args.noshow:
+# Show or suppress plots
+if not args.no_show:
     plt.show()
 else:
-    print("Plot display suppressed (use --noshow to enable).")
+    plt.close()
