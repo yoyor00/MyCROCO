@@ -638,7 +638,10 @@ C$OMP END MASTER
           wsurf_nbq(i,j)=(We(i,j,N)*pm(i,j)*pn(i,j)
 #  endif
 #  ifdef MRL_WCI
-     &                     +wst(i,j,N)*rmask_wet(i,j)
+     &                     +wst(i,j,N)
+#   ifdef WET_DRY
+     &                       *rmask_wet(i,j)
+#   endif
 #  endif
      &                    )
 #  ifdef MASKING
