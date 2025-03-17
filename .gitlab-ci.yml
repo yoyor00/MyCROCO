@@ -121,6 +121,37 @@ debug_vortex:
     reports:
       junit: BENCH/results/vortex-host_ci/junit_report.xml
 
+
+plotphy_vortex:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - source /venv/bin/activate
+    - |
+      ./bench-croco.py \
+      --case VORTEX* \
+      --variants mpi-4 \
+      --title plotphy_vortex \
+      -s build,run,plotphy \
+      --rebuild \
+      --host host_ci \
+      --html \
+      -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/plotphy_vortex-host_ci/junit_report.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+
+
 debug_realist_base:
   stage: bench
   tags:
