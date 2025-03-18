@@ -17,3 +17,4 @@ termcolor
 # to treat dataset
 xarray
 cartopy
+scipy

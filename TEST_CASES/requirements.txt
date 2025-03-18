@@ -1,6 +1,0 @@
-# dependencies to run the plot scripts (in addition to the one required for
-# CROCO alone)
-
-numpy
-matplotlib
-netCDF4
