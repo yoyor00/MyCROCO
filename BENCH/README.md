@@ -28,7 +28,7 @@ Dependencies
 As it will build CROCO for you, you will need to have the basic dependencies
 available (see main README.md to know what is required).
 
-For bench script you will nedd a python envrionment with 
+For bench script you will need a python envrionment with 
 some required packages listed in requirements.txt.
 
 ```sh
