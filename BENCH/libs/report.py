@@ -38,6 +38,7 @@ class Report:
             self.report[full_name] = {
                 "case": case,
                 "variant": variant,
+                "restarted": restarted,
                 "status": {
                     "build": {"status": None},
                     "run": {"status": None},
