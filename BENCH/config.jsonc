@@ -173,8 +173,8 @@
       "SED_TOY_FLOC0D",
       "SED_TOY_FLOC1D",
     ],
-    "@vortex": ["VORTEX", "VORTEX_AGRIF_1WAY", "VORTEX_AGRIF_2WAY"],
-    "@agrif_realist": ["BENGUELA_LR_AGRIF_1WAY", "BENGUELA_LR_AGRIF_2WAY"],
+    "@vortex": ["VORTEX", "VORTEX_AGRIF_2WAY"],
+    "@agrif_realist": ["BENGUELA_LR_AGRIF_2WAY"],
   },
 
   ////////////////////////////// VARIANTS ////////////////////////////////////
