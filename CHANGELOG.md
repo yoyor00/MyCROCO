@@ -8,6 +8,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Issue #195 : add RAIN_FLUX cppkey to take into account water and temp flux 
   from rain
+- Issue #218 : add mixed layer diagnostics computation (criterion : 
+  density, temperature, bvf)
 - Issue #250 : add dredging feature in MUSTANG
 - Issues #291, #323 : add new test case FLASH_RIP
 - scripts for running coupled runs:
