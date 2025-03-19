@@ -131,3 +131,18 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Add information about the branch status (stable or not)
   in the README file (Issue #271)
+
+
+### CONTRIBUTORS
+
+CONTRIBUTORS ALREADY ON BOARD
+
+Rachid Benshila, Matthieu Caillaud, Gildas Cambon, 
+Nicolas Ducousso, Christian Ethé, Jonathan Gula, 
+Swen Jullien, Solène Le Gac, Florian Lemarié, 
+Patrick Marchesiello, Camille Mazoyer, 
+Cyril Nguyen, Renaud Person, Joris Pianezze
+
+NEW CONTRIBUTORS ON THIS RELEASE
+
+Anne-Lou Schaefer, Simon Treillou, Sebastien Valat
