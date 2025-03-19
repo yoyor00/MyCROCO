@@ -50,7 +50,7 @@ export onlinecplmask="TRUE" # Erase existing CPLMASK and build default mask (dep
 #------------
 export ATM_CASE="DEFAULT"  # no moving nest: DEFAULT or with: MOVING_NEST
 # if ATM_CASE=DEFAULT, the following is not used
-export num_mv_nest=1 # number of moving nests
+export num_mv_nest=0 # number of moving nests
 # if several nest, the following variables need to have the format "1st_nest 2nd_nest"
 export ref_coef="3" # refinement coef for nest
 export ew_size="283" # nest size in east-west dim ([multiple of ref_coef] + 1)
@@ -75,10 +75,10 @@ export nudge_end_h="144" # time (in hours) to stop nudging after start of foreca
 # Output settings
 #----------------
 #!!! WARNING: when XIOS is activated the following values (for the model) are not taken into account
-export atm_his_h=6                          # output interval (h)
-export atm_his_frames=1000 # $((31*24))     # nb of outputs per file
-export atm_diag_int_m=$((${atm_his_h}*60))  # diag output interval (m)
-export atm_diag_frames=1000                 # nb of diag outputs per file
+export atm_his="180 180 60"               # output interval (minutes) for each domain
+export atm_his_frames=1000 # $((31*24))   # nb of outputs per file
+export atm_diag_int_m=${atm_his}          # diag output interval (m)
+export atm_diag_frames=1000               # nb of diag outputs per file
 # file for specifying different than default output variables: OPTIONAL, leave empty if not used
 export atm_iofields='myoutfields.txt'
 
