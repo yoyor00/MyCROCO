@@ -584,6 +584,28 @@ def create_vertical_section_plots(
         "v": "coolwarm",  # Diverging colormap centered at 0
     }
 
+    # Try to import cmocean colormaps (better for oceanographic data)
+    try:
+        import cmocean.cm as cmo
+
+        colormaps.update(
+            {
+                "temp": cmo.thermal,
+                "salt": cmo.haline,
+                "u": cmo.delta,
+                "v": cmo.delta,
+            }
+        )
+    except ImportError:
+        logger.info("cmocean not available, using default colormaps")
+        # If cmocean fails, fall back to standard colormaps
+        colormaps = {
+            "temp": "RdYlBu_r",  # Red-Yellow-Blue reversed
+            "salt": "viridis",  # Default viridis
+            "u": "coolwarm",  # Diverging colormap centered at 0
+            "v": "coolwarm",  # Diverging colormap centered at 0
+        }
+
     # Plot each variable and direction
     for var, directions in section_data.items():
         for direction, section in directions.items():
