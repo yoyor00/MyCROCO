@@ -26,10 +26,9 @@ def format_status(value):
 def generate_status_html(data):
     html_rows = ""
     for key, entry in data.items():
-        
         case = entry["case"]
         if entry["restarted"]:
-            variant = entry["variant"]+"-rst"
+            variant = entry["variant"] + "-rst"
         else:
             variant = entry["variant"]
         status = entry["status"]
