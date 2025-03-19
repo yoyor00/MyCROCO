@@ -34,9 +34,6 @@
       CALL rhs3d_w_tile (Istr,Iend,Jstr,Jend,  A2d(1,1,trd), 
      &             A2d(1,2,trd), A2d(1,3,trd), A2d(1,4,trd), 
      &             A2d(1,5,trd), A2d(1,6,trd), A2d(1,7,trd),
-# ifdef NHMG
-     &             A2d(1,8, trd),
-# endif
      &             A3d(1,3,trd), A3d(1,4,trd), A3d(1,5,trd)
      &             )
       return
@@ -47,9 +44,6 @@
       SUBROUTINE rhs3d_w_tile (istr, iend, jstr, jend, CF,
      &                         FC, We_r, lap, 
      &                         Hzw, WFx, WFe,
-# ifdef NHMG
-     &                         uv_terms,
-# endif
      &                         rw, HUon_w, HVom_w
      &                         )
       IMPLICIT NONE
@@ -640,40 +634,37 @@
 !====================================================================
 !     Pseudo forces for the equation of vertical Flux
 !====================================================================
-
+!
       do j=jstr,jend
         do k=1,N
           do i=Istr,Iend
-             u_r = 0.5*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
-             v_r = 0.5*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
-! U^2 z_xx
-             uv_terms(i,k) =
-     &            u_r**2*om_r(i,j)*pn(i,j)
+            u_r = 0.5*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs))
+            v_r = 0.5*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs))
+            FC(i,k) =
+     &            u_r*u_r*om_r(i,j)*pn(i,j)   ! u^2 z_xx
      &            *(z_r(i+1,j,k)+z_r(i-1,j,k)-2*z_r(i,j,k))
-! 2 UV z_xy
-     &            +0.5*u_r*v_r
+     &            +0.5*u_r*v_r                 ! 2 uv z_xy
      &            *(z_r(i+1,j+1,k)+z_r(i-1,j-1,k)
-     &            -z_r(i+1,j-1,k)-z_r(i-1,j+1,k))
-! V^2 z_yy
-     &            +v_r**2*on_r(i,j)*pm(i,j)
+     &             -z_r(i+1,j-1,k)-z_r(i-1,j+1,k))
+     &            +v_r*v_r*on_r(i,j)*pm(i,j)  ! v^2 z_yy
      &            *(z_r(i,j+1,k)+z_r(i,j-1,k)-2*z_r(i,j,k))
-             uv_terms(i,k) = uv_terms(i,k)*Hz(i,j,k)
+            FC(i,k) = FC(i,k)*Hz(i,j,k)
           enddo
-       enddo
-       do k=1, N-1
+        enddo
+        do k=1, N-1
           do i=Istr,Iend
-             rw(i,j,k) = rw(i,j,k) - 0.5*(uv_terms(i,k)+uv_terms(i,k+1))
+            rw(i,j,k) = rw(i,j,k) - 0.5*(FC(i,k)+FC(i,k+1))
           enddo
-       enddo
+        enddo
 
-! -W^2 z_ss
-       do k=1, N-1
+        do k=1,N-1
           do i=Istr,Iend
-             rw(i,j,k) = rw(i,j,k)
-     &            + (Hz(i,j,k+1)-Hz(i,j,k))*We(i,j,k)**2
-     &       *pn(i,j)*pm(i,j)/(z_r(i,j,k+1)-z_r(i,j,k))
+           rw(i,j,k) = rw(i,j,k) + We(i,j,k)*We(i,j,k) ! - w^2 z_ss
+     &                        *(Hz(i,j,k+1)-Hz(i,j,k))
+     &                               *pn(i,j)*pm(i,j)/
+     &                       (z_r(i,j,k+1)-z_r(i,j,k))
           enddo
-       enddo
+        enddo
       enddo ! j loop
 # endif /* NHMG */
 

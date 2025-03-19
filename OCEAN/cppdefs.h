@@ -49,13 +49,12 @@
 #undef  TIDAL_FLAT      /* 2DV tidal flat Example */
 #undef  ESTUARY         /* 3D tidal estuary Example */
 #undef  KILPATRICK      /* 2D sst front*/
-#undef  SEAGRASS        /* 2DV over seagrass using OBSTRUCTION module*/
+#undef  SEAGRASS        /* 2DV over seagrass using OBSTRUCTION */
 /*
         ... OR REALISTIC CONFIGURATIONS
 */
 #undef  COASTAL         /* COASTAL Applications */
 #define REGIONAL        /* REGIONAL Applications */
-
 
 
 #if defined REGIONAL
@@ -964,19 +963,15 @@
 /*
 !                       LEEWAVE Example
 !                       ======== ======
-
-
 */
-# undef STEADYFLOW
+# undef  STEADYFLOW
 # undef  OPENMP
-# define  MPI
-# define  NHMG
+# define MPI
+# define NHMG
 # undef  NBQ
 # define SOLVE3D
 # define UV_COR
 # define UV_ADV
-/* # define NS_PERIODIC */
-/* # define EW_PERIODIC */
 # define OBC_EAST
 # define OBC_WEST
 # define OBC_NORTH
@@ -986,30 +981,21 @@
 # define M2_FRC_BRY
 # define M3_FRC_BRY
 # define T_FRC_BRY
-#if defined NHMG || defined NBQ
-# define W_FRC_BRY
-#endif
-
+# if defined NHMG || defined NBQ
+#  define W_FRC_BRY
+# endif
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
+# define SPONGE
+# define W_VADV_WENO5
+# define W_HADV_WENO5
+# define UV_VADV_WENO5
+# define UV_HADV_WENO5
 # define NO_FRCFILE
-# undef SPONGE
-
-/* # define NONLIN_EOS */
-/* # define SPLIT_EOS */
-
-#undef W_HADV_WENO5
-#undef W_HADV_UP3
-#undef W_VADV_SPLINES
-
-
-#define W_VADV_WENO5
-#define W_HADV_WENO5
-#define UV_VADV_WENO5
-#define UV_HADV_WENO5
+# undef  RVTK_DEBUG
 
 #elif defined SHELFRONT
 /*

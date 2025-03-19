@@ -2745,13 +2745,11 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
-        else
+
+        else ! after initialization
+
 #   ifdef Z_FRC_BRY
           do j=JstrR,JendR
-            zetabry_west(j)=0.0
-#    ifdef OBC_PATM
-            zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
-#    endif
 #    if defined TIDAL_FLAT || defined ESTUARY
             zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
 #     if defined ESTUARY_TIDE
@@ -2762,60 +2760,9 @@ C$    integer  trd, omp_get_thread_num
 #    endif
           enddo
 #   endif
-#   ifdef M2_FRC_BRY
-          do j=JstrR,JendR
-            ubarbry_west(j)=0.0
-            vbarbry_west(j)=0.0
-          enddo
-#   endif
-#   if defined SOLVE3D && \
-     (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
-          do k=1,N
-            do j=JstrR,JendR
-#    ifdef M3_FRC_BRY
-              ubry_west(j,k)=0.0
-              vbry_west(j,k)=0.0
-#    endif
-#    ifdef W_FRC_BRY
-              wbry_west(j,k)=wz(0,j,k,1)
-#    endif
-#    ifdef T_FRC_BRY
-#     ifdef SUBSTANCE
-#      if defined TIDAL_FLAT || defined ESTUARY
-             tbry_west(j,k,1)=10.
-             tbry_west(j,k,2)=35.5
-#      else
-             do itrc=1,itsubs1-1
-               tbry_west(j,k,itrc)=0.
-             enddo
-#      endif
-             do itrc=itsubs1,NT
-               tbry_west(j,k,itrc)=cobc_wat(itrc)
-             enddo
-#     else
-#      if defined TIDAL_FLAT
-             tbry_west(j,k,1)=10.
-             tbry_west(j,k,2)=35.
-             tbry_west(j,k,3)=0. ! tracer Coarse Sand
-             tbry_west(j,k,4)=0. ! tracer Fine Sand
-             tbry_west(j,k,5)=0.02 ! tracer Mud
-#      elif defined ESTUARY
-             tbry_west(j,k,1)=10.
-             tbry_west(j,k,2)=35.5
-             tbry_west(j,k,3)=0.0   ! tracer Fine Sand
-             tbry_west(j,k,4)=0.0   ! tracer Mud
-#      else
-             do itrc=1,NT
-               tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
-             enddo
-#      endif
-#     endif
-#    endif
-            enddo
-          enddo
-#   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
 
         endif
+
 #  endif /* WAVE_MAKER */
       endif
 # endif /* OBC_WEST */
@@ -2867,49 +2814,6 @@ C$    integer  trd, omp_get_thread_num
               wbry_east(j,k)=wz(Iend+1,j,k,1)
 #    endif
 #    if defined T_FRC_BRY && defined TRACERS
-#     ifdef SUBSTANCE
-              do itrc=1,itsubs1-1
-                tbry_east(j,k,itrc)=0.
-              enddo
-              do itrc=itsubs1,NT
-                tbry_east(j,k,itrc)=cobc_wat(itrc)
-              enddo
-#     else
-              do itrc=1,NT
-                tbry_east(j,k,itrc)=t(Iend+1,j,k,1,itrc)
-              enddo
-#     endif
-#    endif
-            enddo
-          enddo
-#   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
-        else
-#   ifdef Z_FRC_BRY
-          do j=JstrR,JendR
-            zetabry_east(j)=0.0
-#    ifdef OBC_PATM
-            zetabry_east(j)=-(patm2d(IendR,j)-paref)/(g*rho0)
-#    endif
-          enddo
-#   endif
-#   ifdef M2_FRC_BRY
-          do j=JstrR,JendR
-            ubarbry_east(j)=0.
-            vbarbry_east(j)=0.
-          enddo
-#   endif
-#   if defined SOLVE3D && \
-     (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
-          do k=1,N
-            do j=JstrR,JendR
-#    ifdef M3_FRC_BRY
-              ubry_east(j,k)=0.0
-              vbry_east(j,k)=0.0
-#    endif
-#    ifdef W_FRC_BRY
-              wbry_east(j,k)=wz(Iend+1,j,k,1)
-#    endif
-#    ifdef T_FRC_BRY
 #     ifdef SUBSTANCE
               do itrc=1,itsubs1-1
                 tbry_east(j,k,itrc)=0.
@@ -2979,21 +2883,6 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
-        else
-#  ifdef Z_FRC_BRY
-          do i=IstrR,IendR
-            zetabry_south(i)=0.0
-#   ifdef OBC_PATM
-            zetabry_south(i)=-(patm2d(i,JstrR)-paref)/(g*rho0)
-#   endif
-          enddo
-#  endif
-#  ifdef M2_FRC_BRY
-          do i=IstrR,IendR
-            ubarbry_south(i)=0.0
-            vbarbry_south(i)=0.0
-          enddo
-#  endif
         endif
       endif
 # endif /* OBC_SOUTH */
@@ -3046,21 +2935,6 @@ C$    integer  trd, omp_get_thread_num
             enddo
           enddo
 #  endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
-        else
-#  ifdef Z_FRC_BRY
-          do i=IstrR,IendR
-            zetabry_north(i)=0.0
-#   ifdef OBC_PATM
-            zetabry_north(i)=-(patm2d(i,JendR)-paref)/(g*rho0)
-#   endif
-          enddo
-#  endif
-#  ifdef M2_FRC_BRY
-          do i=IstrR,IendR
-            ubarbry_north(i)=0.0
-            vbarbry_north(i)=0.0
-          enddo
-#  endif
         endif
       endif
 # endif /* OBC_NORTH */

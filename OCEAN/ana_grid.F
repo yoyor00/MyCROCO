@@ -188,11 +188,11 @@ C$    integer omp_get_thread_num
                      f0=1.E-4
 # elif defined LEEWAVE
                      depth=2000.
-#    if defined STEADYFLOW
-                     f0=0.0
-#    else
-                     f0=1.0e-4
-#    endif
+#  ifdef STEADYFLOW
+                     f0=0.
+#  else
+                     f0=1.e-4
+#  endif
                      beta=0.
 # elif defined SHELFRONT
                      depth=1660.
