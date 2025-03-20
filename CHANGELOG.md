@@ -6,6 +6,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- NEW TEST FRAMEWORK : Benchmarking python tools has been made 
+  to perform tests runs, see documentation or BENCH/README.md for more details.
+  Note that cppkeys containing RVTK have been renamed with CVTK (Issue #298)
+
 - NEW TEST CASE : FLASH_RIP (Issues #291 and #323)
 
 - NEW DIAGNOSTIC : add mixed layer diagnostics computation (criterion : 
@@ -17,9 +21,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : add dredging feature (Issue #250)
 
 - COUPLED RUN SCRIPTS
+
   - adding possibility to give a pre-built grid file to OASIS
   - new to take into account the ideal WRF configurations
   - possibility to have different WRF output frequencies between domains
+
 
 ### Fixed
 
@@ -79,6 +85,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- COMPILATION
+  - Jobcomp script can now be executed with terminal options, see 
+  ```./jobcomp -h``` for more details (Issue #298)
+
 - WAVE
   - in MRL_WCI change limits of wave height in surfzone (Issue #306)
   - change wavemaker (periodic boundaries + single-sum), 
@@ -124,8 +134,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - key_MUSTANG_specif_outputs, key_MUSTANG_add_consol_outputs 
     (see Issue #163 MUSTANG outputs are now all specified by namelist)
   - key_CROCO, MORPHODYN_MUSTANG_byHYDRO
+  - RVTK, RVTK_DEBUG, RVTK_DEBUG_ADVANCED have been renamed (RVTK changed 
+    to CVTK)
 
 - Remove unused file OCEAN/spkitlocal_nh.F90 (Issue #259)
+
+- Remove CVTK previous test framework
 
 ### Other
 

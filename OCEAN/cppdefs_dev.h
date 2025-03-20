@@ -35,28 +35,6 @@
 #endif
 
 /*
-   Activate the RVTK_DEBUG procedure that will test the reproducibility
-   of parallel computation by comparing binary files produced by serial
-   and parallel runs. For the umpteenth time, RVTK_DEBUG itself should
-   be defined from cppdefs.h, so not undefined here !!!!!
-*/
-#if !defined RVTK_DEBUG
-#undef RVTK_DEBUG_ADVANCED
-#endif
-
-#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP && !defined RVTK_DEBUG_READ
-# define RVTK_DEBUG_WRITE
-#endif
-
-/*
-   Take care need to use a debug.F specific
-*/
-
-#if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ
-# define RVTK_DEBUG_WRITE
-#endif
-
-/*
     Constant tracer option (for debugging)
 */
 #ifdef KILPATRICK

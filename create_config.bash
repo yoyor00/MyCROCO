@@ -331,8 +331,8 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CROCO_DIR.
     
-    PAT=$(grep ^SOURCE ${CROCO_DIR}/OCEAN/jobcomp)
-    sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
+    PAT=$(grep ^SOURCE1 ${CROCO_DIR}/OCEAN/jobcomp)
+    sed -e "s!${PAT}!SOURCE1=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
     chmod +x $MY_CROCO_DIR/jobcomp
 
     if [[ ${options[@]} =~ "oce-prod" ]]; then
@@ -627,7 +627,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     # Edit jobcomp in CROCO_IN
     if [[ ${options[@]} =~ "oce-prod" ]]; then
         cd ${MY_CONFIG_HOME}/CROCO_IN
-	sed -e 's|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${OCE}|g' \
+	sed -e 's|SOURCE1=.*|source ../myenv_mypath.sh\nSOURCE1=${OCE}|g' \
 	    -e 's|FC=gfortran|FC=\${FC}|' \
 	    -e 's|MPIF90=.*|MPIF90=\${MPIF90}|' \
 	    jobcomp > jobcomp.tmp

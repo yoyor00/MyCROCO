@@ -31,7 +31,7 @@
 
 &namsedim_init
    l_unised = .true.
-   hseduni = 0.01   
+   hseduni = 1.
    cseduni= 978.3 
    csed_mud_ini = 300.0  
    ksmiuni = 1

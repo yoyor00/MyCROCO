@@ -36,7 +36,7 @@ auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL B
                              T   F    T   F    T    F   F      F       F   F    F    T     T      20*F
 
 gls_history_fields:   TKE  GLS  Lscale
-                      T     T    T
+                      F F F
 
 
 rho0:
