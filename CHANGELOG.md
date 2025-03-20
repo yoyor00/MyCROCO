@@ -6,9 +6,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
-- NEW TEST FRAMEWORK : Benchmarking python tools has been made 
+- NEW TEST FRAMEWORK : add benchmarking python tools
   to perform tests runs, see documentation or BENCH/README.md for more details.
-  Note that cppkeys containing RVTK have been renamed with CVTK (Issue #298)
+  Note that cppkeys containing RVTK have been renamed using CVTK (Issue #298)
 
 - NEW TEST CASE : FLASH_RIP (Issues #291 and #323)
 
@@ -22,65 +22,66 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - COUPLED RUN SCRIPTS
 
-  - adding possibility to give a pre-built grid file to OASIS
-  - new to take into account the ideal WRF configurations
-  - possibility to have different WRF output frequencies between domains
+  - Add possibility to give a pre-built grid file to OASIS
+  - Add new script to take into account the ideal WRF configurations
+  - Add possibility to have different WRF output frequencies between domains
 
 ### Fixed
 
 - IO
-  - fix error in wrt_his.F when nrechis=0 and nrpfhis=1 (Issue #172)
-  - fix wrong array name for XIOS and WKB_WAVE (Issue #260)
-  - fix wrong hbl test on XIOS field activation with GLS_MIXING (Issue #264)
-  - fix FILLVAL, mask was misdone on variable value 
+  - Fix error in wrt_his.F when nrechis=0 and nrpfhis=1 (Issue #172)
+  - Fix wrong array name for XIOS and WKB_WAVE (Issue #260)
+  - Fix wrong hbl test on XIOS field activation with GLS_MIXING (Issue #264)
+  - Fix FILLVAL, mask was misdone on variable value 
     instead of mask value (Issue #324)
-  - fix writing of sediment layers (SEDIMENT) (Issue #329)
-  - fix rstTime netcdf index mismatch between PISCES and CROCO (Issue #331)
+  - Fix writing of sediment layers (SEDIMENT) (Issue #329)
+  - Fix rstTime netcdf index mismatch between PISCES and CROCO (Issue #331)
 
 - COMPILATION
-  - fix compilation error with TVD and NBQ (Issue #191)
-  - fix NBQ+XIOS compilation (Issue #285)
-  - fix parallel compilation (except for AGRIF) (Issue #309)
+  - Fix compilation error with TVD and NBQ (Issue #191)
+  - Fix NBQ+XIOS compilation (Issue #285)
+  - Fix parallel compilation (except for AGRIF) (Issue #309)
 
 - COUPLED RUN SCRIPTS
-  - back to previous default option in create_config interactive q/a (Issue #239)
+  - Back to previous default option in create_config 
+    interactive q/a concerning matlab tools (Issue #239)
 
 - RIVER
-  - fix PSOURCE_MASS capabilities broken by previous change (Issue #252)
-  - fix MPI reproducibility with PSOURCE when a source is 
+  - Fix PSOURCE_MASS capabilities broken by previous change (Issue #252)
+  - Fix MPI reproducibility with PSOURCE when a source is 
     in one MPI domain rejecting towards another MPI domain (Issue #305)
 
 - NUMERIC
-  - fix misuse of temporary WFe,WFx arrays for horizontal w 
+  - Fix misuse of temporary WFe,WFx arrays for horizontal w 
     advection in NBQ (Issue #258)
-  - fix typo in order 5 scheme (Issue #318)
+  - Fix typo in order 5 scheme (Issue #318)
 
 - NBQ
-  - fix MPI reproducibility with NBQ (Issue #316)
+  - Fix MPI reproducibility with NBQ (Issue #316)
 
 - ABL1D (Issues #272, #279 and #321)
-  - sea surface currents in ABL1D
-  - wrong mixing length computation
-  - ABL1D perfect restart
-  - ECUME6/ABL1D
-  - fix cppdefs organisation and incompatibility with update of ABL1D
+  - Fix sea surface currents in ABL1D
+  - Fix wrong mixing length computation
+  - Fix ABL1D perfect restart
+  - Fix ECUME6/ABL1D
+  - Fix cppdefs organisation and incompatibility with update of ABL1D
 
 - MUSTANG
-  - fix several bugs with MUSTANG output, initialisation, add a 
-    minimim porosity in deposit in V1 and fix transition with 
-    ero_option=3 (Issue #267)
-  - fix MPI reproducibility using MUSTANG_CORFLUX (Issue #319)
-  - fix SUBSTANCE_SUBMASSBALANCE feature on river fluxes (Issue #322)
+  - Fix several bugs with MUSTANG output and initialisation (Issue #267)
+  - Add a minimim porosity in deposit in V1 (Issue #267)
+  - Fix transition with ero_option=3 (Issue #267)
+  - Fix MPI reproducibility using MUSTANG_CORFLUX (Issue #319)
+  - Fix SUBSTANCE_SUBMASSBALANCE feature on river fluxes (Issue #322)
 
 - OTHERS
-  - fix initialisation of non-declared arrays (Issue #261)
-  - cleaning unused variables in set_diags_ek.F and set_diags_pv.F (Issue #263)
-  - cleaning, comment in sta.h (Issue #299)
-  - fix and cleaning with AGRIF and TIDE_MAS (Issue #308)
-  - fix data instruction replace by a declaration 
+  - Fix initialisation of non-declared arrays (Issue #261)
+  - Clean unused variables in set_diags_ek.F and set_diags_pv.F (Issue #263)
+  - Clean comment in sta.h (Issue #299)
+  - Fix and clean compatibility AGRIF and TIDE_MAS (Issue #308)
+  - Fix data instruction replace by a declaration 
     of array and initialisation of it (Issue #311 and #328)
-  - fix step3d_fast with wave but no wet and dry (Issue #332)
-  - fix wrongly place mask in u2bc (Issue #338)
+  - Fix step3d_fast with wave but no wet and dry (Issue #332)
+  - Fix wrongly place mask in u2bc (Issue #338)
 
 ### Changed
 
@@ -89,49 +90,52 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   ```./jobcomp -h``` for more details (Issue #298)
 
 - WAVE
-  - in MRL_WCI change limits of wave height in surfzone (Issue #306)
-  - change wavemaker (periodic boundaries + single-sum), 
+  - In MRL_WCI change limits of wave height in surfzone (Issue #306)
+  - Change wavemaker (periodic boundaries + single-sum), 
     check of mean angle after the procedure and periodization is 
     abandoned if the mean angle change is too high (Issues #291 and #323)
 
-- MUSTANG 
-  - for MUSTANG output (Issue #163)
-    - avoid possibility of overlapping in vname by 
+- MUSTANG
+  - Change for MUSTANG output (Issue #163)
+    - Avoid possibility of overlapping in vname by 
       using a separate array vname_must
-    - use l_out_subs from substance namelist to allow the output of only wanted 
+    - Use l_out_subs from substance namelist to allow the output of only wanted 
       substance
-    - adding boolean in namelist for choosing which variables to output and 
+    - Add boolean in namelist for choosing which variables to output and 
       allocate only the needed arrays
-    - update paraMUSTANG_defaults.txt with new booleans availables
-    - update XIOS output to have the save available variables in all MUSTANG
+    - Update paraMUSTANG_defaults.txt with new booleans availables
+    - Update XIOS output to have the save available variables in all MUSTANG
       output options
-  - for MUSTANG initialisation, review of namelist parameters (Issue #250)
+  - Change for MUSTANG initialisation, review of namelist parameters (Issue #250)
 
-- PISCES improvements and changes (Issue #141 and Issue #281 )
-  - Phasing of the PISCES version with that used for the CMIP7 exercise (NEMO 4.2.*)
-  - Update on the PISCES interfacing module between NEMO and CROCO
-  - Diagenetic module improvements: performance and diagenetic processes (e.g. increased number of POC classes, ...)
-  - Added creation of an independent pisces restart file (managed in namelist_pisces_ref) to improve restartability
-  - Rename the simplified version of PISCES, cpp key pisces_npzd
-  - Correction of some bugs
-  - Optimization of the PISCES code on
-    - representation of the lability of the particle pool
-    - several optimizations to the calculation of certain variables (performance).
-  - Reformulate slightly the microzooplankton grazing as a functiun
+- PISCES 
+  - Improve and add changes (Issue #141 and Issue #281)
+    - Phase the PISCES version with the one used for the CMIP7 exercise (NEMO 4.2.*)
+    - Update on the PISCES interfacing module between NEMO and CROCO
+    - Improve Diagenetic module : performance and diagenetic processes (e.g. increased number of POC classes, ...)
+    - Add creation of an independent pisces restart file (managed in namelist_pisces_ref) to improve restartability
+    - Rename the simplified version of PISCES, cpp key pisces_npzd
+    - Fix some bugs
+    - Optimize PISCES code on
+      - representation of the lability of the particle pool
+      - several optimizations to the calculation of certain variables (performance).
+  - Reformulate slightly the microzooplankton grazing as a function
     of the prey size (Issue #340)
 
 - COUPLED RUN SCRIPTS
-  - improving possibility to add weight file for OASIS
-  - removing WRF rsl files because too heavy 
-  - modify atm_his_h in hours as atm_his in minutes
-  - update for suporting both WRFV4.2.1 and WRFV4.6 OASIS names
-  - update create_config for including pytools
+  - Improve possibility to add weight file for OASIS
+  - Remove WRF rsl files because too heavy 
+  - Modify atm_his_h in hours as atm_his in minutes
+  - Update for suporting both WRFV4.2.1 and WRFV4.6 OASIS names
+  - Update create_config for including pytools
 
 ### Deprecated
 
+/
+
 ### Removed
 
-- Removed CPPKEYS :
+- Remove CPPKEYS :
   - key_MUSTANG_specif_outputs, key_MUSTANG_add_consol_outputs 
     (see Issue #163 MUSTANG outputs are now all specified by namelist)
   - key_CROCO, MORPHODYN_MUSTANG_byHYDRO
