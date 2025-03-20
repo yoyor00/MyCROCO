@@ -117,6 +117,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - Optimization of the PISCES code on
     - representation of the lability of the particle pool
     - several optimizations to the calculation of certain variables (performance).
+  - Reformulate slightly the microzooplankton grazing as a functiun
+    of the prey size (Issue #340)
 
 - COUPLED RUN SCRIPTS
   - improving possibility to add weight file for OASIS
