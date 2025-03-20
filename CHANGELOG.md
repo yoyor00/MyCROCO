@@ -158,7 +158,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   Nicolas Ducousso, François Dufois, Christian Ethé, Jonathan Gula, 
   Swen Jullien, Solène Le Gac, Florian Lemarié, 
   Patrick Marchesiello, Camille Mazoyer, 
-  Cyril Nguyen, Renaud Person, Joris Pianezze
+  Cyril Nguyen, Renaud Person, Joris Pianezze, Maurice Brémond
 
 - New contributors : 
   Lisa Maillard, Anne-Lou Schaefer, Simon Treillou, Sebastien Valat
