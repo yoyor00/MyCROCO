@@ -321,11 +321,11 @@
    part       =  0.75     ! part of calcite not dissolved in microzoo guts
    grazrat    =  2.0      ! maximal zoo grazing rate
    resrat     =  0.02     ! Linear mortality rate of zooplankton
-   mzrat      =  0.005    ! zooplankton mortality rate
+   mzrat      =  0.01     ! zooplankton mortality rate
    xprefc     =  0.15     ! Microzoo preference for POM
    xprefn     =  1.0      ! Microzoo preference for Nanophyto
-   xprefd     =  1.0      ! Microzoo preference for Diatoms
-   xprefz     =  0.0      ! Microzoo preference for Microzoo
+   xprefd     =  0.9      ! Microzoo preference for Diatoms
+   xprefz     =  0.1      ! Microzoo preference for Microzoo
    xthreshdia =  1.E-8    ! Diatoms feeding threshold for microzooplankton 
    xthreshphy =  1.E-8    ! Nanophyto feeding threshold for microzooplankton 
    xthreshpoc =  1.E-8    ! POC feeding threshold for microzooplankton 

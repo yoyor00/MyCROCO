@@ -61,6 +61,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- Issue #340 : reformulate slightly the microzooplankton grazing as a functiun
+               of the prey size.
 - Issue #298 : Jobcomp script can now be executed with terminal options, see 
   ```./jobcomp -h``` for more details
 
