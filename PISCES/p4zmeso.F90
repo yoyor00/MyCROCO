@@ -138,12 +138,14 @@ CONTAINS
       ! ---------------------------------------------
       IF (ln_dvm_meso) CALL p4z_meso_depmig( Kbb, Kmm )
       !
+      ztmp1 = -0.1673 + 0.05958 * xsizerd * 6.0 - 7.405E-4 * (xsizerd * 6.0)**2
+      ztmp2 = -0.1481 + 0.1039 * xsizern * 1.67 + 1.144E-2 * (xsizern * 1.67)**2
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          IF ( tmask(ji,jj,jk) == 1 ) THEN
-            ztmp1 = 0.09544 - 0.0628 * EXP(-0.078 * 6.0 * xsizerd)
-            zproportd(ji,jj,jk) = (0.09544 - 0.0628 * EXP(-0.078 * sized(ji,jj,jk) * 6.0) ) / ztmp1
-            ztmp1 = -0.006622 + 0.008891 * xsizern * 1.67
-            zproportn(ji,jj,jk) = (-0.006622 + 0.008891 * sizen(ji,jj,jk) * 1.67) / ztmp1
+            zproportd(ji,jj,jk) = (-0.1673 + 0.05958 * sized(ji,jj,jk) &
+              &                   * 6.0 - 7.405E-4 * (sized(ji,jj,jk) * 6.0)**2) / ztmp1
+            zproportn(ji,jj,jk) = (-0.1481 + 0.1039 * sizen(ji,jj,jk) &
+              &                   * 1.67 + 1.144E-2 * (sizen(ji,jj,jk) * 1.67)**2) / ztmp2
          ELSE
             zproportd(ji,jj,jk) = 1.0
             zproportn(ji,jj,jk) = 1.0
@@ -290,7 +292,6 @@ CONTAINS
          zratio    = tr(ji,jj,jk,jpbfe,Kbb) / ( tr(ji,jj,jk,jpgoc,Kbb) + rtrn )
          zfracfe   = zfrac * zratio
 
-         ! Flux feeding is multiplied by the fractional biomass of flux feeders
          ! Flux feeding is multiplied by the fractional biomass of flux feeders
          zgrazffep = zproport * zgrazffep
          zgrazffeg = zproport * zgrazffeg
