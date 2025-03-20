@@ -26,7 +26,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - new to take into account the ideal WRF configurations
   - possibility to have different WRF output frequencies between domains
 
-
 ### Fixed
 
 - IO
@@ -146,17 +145,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Add information about the branch status (stable or not)
   in the README file (Issue #271)
 
+### Contributors on this release
 
-### CONTRIBUTORS
+- Contributors already on board : 
+  Rachid Benshila, Matthieu Caillaud, Gildas Cambon, 
+  Nicolas Ducousso, Christian Ethé, Jonathan Gula, 
+  Swen Jullien, Solène Le Gac, Florian Lemarié, 
+  Patrick Marchesiello, Camille Mazoyer, 
+  Cyril Nguyen, Renaud Person, Joris Pianezze
 
-CONTRIBUTORS ALREADY ON BOARD
-
-Rachid Benshila, Matthieu Caillaud, Gildas Cambon, 
-Nicolas Ducousso, Christian Ethé, Jonathan Gula, 
-Swen Jullien, Solène Le Gac, Florian Lemarié, 
-Patrick Marchesiello, Camille Mazoyer, 
-Cyril Nguyen, Renaud Person, Joris Pianezze
-
-NEW CONTRIBUTORS ON THIS RELEASE
-
-Anne-Lou Schaefer, Simon Treillou, Sebastien Valat
+- New contributors : 
+  Anne-Lou Schaefer, Simon Treillou, Sebastien Valat
