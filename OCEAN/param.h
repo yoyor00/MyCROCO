@@ -71,7 +71,7 @@
        parameter (LLm0=878, MMm0=3,    N=40)
 !      parameter (LLm0=878, MMm0=3,    N=20)
 # else
-       parameter (LLm0=256, MMm0=3,    N=40)
+       parameter (LLm0=878, MMm0=3,    N=40)
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
@@ -250,7 +250,11 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
+#if defined(SPLITTING_X) && defined(SPLITTING_ETA)
+      parameter (NP_XI=SPLITTING_X,  NP_ETA=SPLITTING_ETA,  NNODES=NP_XI*NP_ETA)
+#else
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+#endif
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #ifdef OPENACC
@@ -259,12 +263,22 @@
       common/comm_my_device/my_acc_device,compute_on_device
 #endif
 #elif defined OPENMP
+#if defined(SPLITTING_X) && defined(SPLITTING_ETA)
+      parameter (NPP=SPLITTING_X*SPLITTING_ETA)
+# ifdef AUTOTILING
+      common/distrib/NSUB_X, NSUB_E
+# else
+      parameter (NSUB_X=SPLITTING_X, NSUB_E=SPLITTING_ETA)
+# endif
+#else
       parameter (NPP=4)
 # ifdef AUTOTILING
       common/distrib/NSUB_X, NSUB_E
 # else
       parameter (NSUB_X=1, NSUB_E=NPP)
 # endif
+#endif
+
 #else
       parameter (NPP=1)
 # ifdef AUTOTILING

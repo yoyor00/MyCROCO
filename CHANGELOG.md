@@ -12,6 +12,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   density, temperature, bvf)
 - Issue #250 : add dredging feature in MUSTANG
 - Issues #291, #323 : add new test case FLASH_RIP
+- Issue #298 : Benchmarking python tools to perform tests runs, see documentation or 
+  BENCH/README.md for more details
 - scripts for running coupled runs:
   - adding possibility to give a pre-built grid file to OASIS
   - new to take into account the ideal WRF configurations
@@ -58,6 +60,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #338 : fix wrongly place mask in u2bc
 
 ### Changed
+
+- Issue #298 : Jobcomp script can now be executed with terminal options, see 
+  ```./jobcomp -h``` for more details
 
 - Issue #306 : in MRL_WCI change limits of wave height in surfzone
 

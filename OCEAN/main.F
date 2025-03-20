@@ -45,7 +45,7 @@
           USE module_interface_oa, only : init_parameter_oa
      &                                   ,if_oa, if_oa_fast_mode
 #endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
 #ifdef OPENACC
@@ -165,8 +165,8 @@
 !
 !  Initialize debug procedure
 !
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED || \
-    defined RVTK_DEBUG_PERFRST
+#if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED || \
+    defined CVTK_DEBUG_PERFRST
 
       call debug_ini
 #endif
@@ -279,7 +279,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call ana_grid (tile)
       enddo
-# if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+# if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(h(:,:),'h initialisation #1','r',
@@ -799,7 +799,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         iwave=iwave+1
         thwave=max(av_wac,av_wkn)
       enddo
-# if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+# if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(wac(:,:,wnew),'wac initialisation #1','r')

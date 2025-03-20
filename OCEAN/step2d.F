@@ -337,7 +337,7 @@ C$    trd=omp_get_thread_num()
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 # endif
 
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
 !$acc end kernels
@@ -534,7 +534,7 @@ C$OMP END MASTER
      &                   dv_avg3(START_2D_ARRAY,0))
 #  endif
 
-#  ifdef RVTK_DEBUG_ADVANCED
+#  ifdef CVTK_DEBUG_ADVANCED
        if (.not.agrif_Root()) then
 C$OMP BARRIER
 C$OMP MASTER
@@ -600,7 +600,7 @@ C$OMP BARRIER
 ! Debug zeta
 !-----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
 !$acc wait
@@ -1837,7 +1837,7 @@ C$OMP END MASTER
      &                        DV_avg3(START_2D_ARRAY,iif))
 #  endif
 
-#  ifdef RVTK_DEBUG_ADVANCED
+#  ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step2d','r',
@@ -1894,7 +1894,7 @@ C$OMP END MASTER
 !  Debugging ubar,vbar
 !-----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(ubar(:,:,knew),'ubar step2d #2','u',

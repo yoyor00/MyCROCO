@@ -24,7 +24,7 @@
 
       end module module_substance
 #else
-      module module_substance_empty
-      end module module_substance_empty
+      module module_substance
+      end module module_substance
       
 #endif /* SUBSTANCE */
