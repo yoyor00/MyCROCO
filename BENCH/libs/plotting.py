@@ -159,10 +159,6 @@ class Plotting:
             # start plot
             fig, ax = pyplot.subplots()
 
-            # fix some names
-            # TODO : remove
-            for key, value in enumerate(case_data["variants"]):
-                case_data["variants"][key] = value.replace("-wip", " progress")
 
             # build graph
             x_pos = numpy.arange(len(case_data["variants"]))
