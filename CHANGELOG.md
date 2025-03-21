@@ -154,11 +154,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  Rachid Benshila, Matthieu Caillaud, Gildas Cambon, 
+  Rachid Benshila, Maurice Brémond, Matthieu Caillaud, Gildas Cambon, 
   Nicolas Ducousso, François Dufois, Christian Ethé, Jonathan Gula, 
   Swen Jullien, Solène Le Gac, Florian Lemarié, 
   Patrick Marchesiello, Camille Mazoyer, 
-  Cyril Nguyen, Renaud Person, Joris Pianezze, Maurice Brémond
+  Cyril Nguyen, Renaud Person, Joris Pianezze
 
 - New contributors : 
   Lisa Maillard, Anne-Lou Schaefer, Simon Treillou, Sebastien Valat
