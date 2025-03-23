@@ -139,10 +139,26 @@
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifndef AVRH
-      create_new_file=ldefdia
+# ifdef DO_NOT_OVERWRITE
+      if (lvar.eq.total_rec-1) then
+#  ifndef AVRH
+         create_new_file=ldefdia
+#  else
+         create_new_file=ldefdia_avg
+#  endif
+      else
+#  ifndef AVRH
+        create_new_file=.false.
+#  else
+        create_new_file=.false.
+#  endif
+      endif
 # else
+#  ifndef AVRH
+      create_new_file=ldefdia
+#  else
       create_new_file=ldefdia_avg
+#  endif
 # endif
 !
       if (ncid.ne.-1) create_new_file=.false.
