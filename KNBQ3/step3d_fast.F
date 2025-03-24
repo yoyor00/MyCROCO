@@ -678,9 +678,21 @@ C$    trd=omp_get_thread_num()
       if (FIRST_TIME_STEP.and.FIRST_FAST_STEP_3M) then 
            do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1
-           cff=0.
-            do k=N,-N_sl+1,-1
-             cff=cff+g*rho_bpg(i,j,k)*hz(i,j,k)/2.
+            cff=g*rho_bpg(i,j,N)*hz(i,j,N)/2.
+            thetadiv_nbq(i,j,N)=cff +(
+     &                     +rho_nbq(i,j,N)
+#   ifndef K3FAST_CSVISC2K
+     &                           *soundspeed2_nbq
+#   else
+     &                           *soundspeed2_nbq(i,j,N)
+#   endif
+     &                          )*Hzr_nbq_inv(i,j,N)
+#   ifdef NBQ_RCSOUND
+     &                   /rcsound2_nbq(i,j,N)
+#   endif
+            do k=N-1,1-N_sl,-1
+             cff=cff+0.5*g*(rho_bpg(i,j,k)+rho_bpg(i,j,k+1))
+     &                    *Hzw_nbq(i,j,k)
              thetadiv_nbq(i,j,k)=cff +(
      &                     +rho_nbq(i,j,k)
 #   ifndef K3FAST_CSVISC2K
@@ -692,16 +704,28 @@ C$    trd=omp_get_thread_num()
 #   ifdef NBQ_RCSOUND
      &                   /rcsound2_nbq(i,j,k)
 #   endif
-             cff=cff+g*rho_bpg(i,j,k)*hz(i,j,k)/2.
            enddo
          enddo
        enddo
       else
          do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1
-           cff=0.
-            do k=N,-N_sl+1,-1
-             cff=cff+g*rho_bpg(i,j,k)*hz(i,j,k)/2.
+             cff=g*rho_bpg(i,j,N)*hz(i,j,N)/2.
+             thetadiv_nbq(i,j,N)=cff +(
+#  ifndef K3FAST_CSVISC2K 
+     &                  -visc2_nbq       *thetadiv_nbq   (i,j,N)
+     &                  +rho_nbq  (i,j,N)*soundspeed2_nbq
+#  else
+     &                  -visc2_nbq(i,j,N)*thetadiv_nbq   (i,j,N)
+     &                  +rho_nbq  (i,j,N)*soundspeed2_nbq(i,j,N)
+#  endif 
+     &                           )*Hzr_nbq_inv(i,j,N)
+#   ifdef NBQ_RCSOUND
+     &                   /rcsound2_nbq(i,j,N)
+#   endif
+            do k=N-1,1-N_sl,-1
+             cff=cff+0.5*g*(rho_bpg(i,j,k)+rho_bpg(i,j,k+1))
+     &                    *Hzw_nbq(i,j,k)
              thetadiv_nbq(i,j,k)=cff +(
 #  ifndef K3FAST_CSVISC2K 
      &                  -visc2_nbq       *thetadiv_nbq   (i,j,k)
@@ -714,7 +738,6 @@ C$    trd=omp_get_thread_num()
 #   ifdef NBQ_RCSOUND
      &                   /rcsound2_nbq(i,j,k)
 #   endif
-             cff=cff+g*rho_bpg(i,j,k)*hz(i,j,k)/2.
            enddo
          enddo
        enddo
