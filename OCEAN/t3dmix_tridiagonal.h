@@ -78,7 +78,7 @@
 #if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
-               TVmix(i,j,k,itrc)=t(i,j,k,nnew,itrc)
+               EC(i,k)=t(i,j,k,nnew,itrc)
             enddo
           enddo
 #endif /* DIAGNOSTICS_TS */
@@ -211,8 +211,8 @@
             FC(i,k)=  Akt(i,j,k,indx)
 # endif
 
-            cff1= (TVmix(i,j,k+1,itrc)/ Hz(i,j,k+1)
-     &           - TVmix(i,j,k  ,itrc)/ Hz(i,j,k  ) )
+            cff1= (EC(i,k+1)/ Hz(i,j,k+1)
+     &           - EC(i,k)/ Hz(i,j,k  ) )
      &            /( z_r(i,j,k+1) -z_r(i,j,k  ))
 
         BC(i,k)= 0.25 * (t(i,j,k+1,nstp,itrc) + t(i,j,k+1,nnew,itrc)
@@ -246,8 +246,8 @@
 #if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
-              TVmix(i,j,k,itrc) =
-     &            -(TVmix(i,j,k,itrc)-t(i,j,k,nnew,itrc)*Hz(i,j,k))
+              TVmix(i,j,k,itrc) = TVmix(i,j,k,itrc)
+     &            -(EC(i,k)-t(i,j,k,nnew,itrc)*Hz(i,j,k))
      &                                        /(dt*pm(i,j)*pn(i,j))
 # ifdef MASKING
      &                                                 * rmask(i,j)
@@ -255,17 +255,18 @@
             enddo
           enddo
 #  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
-#   if defined DIAGNOSTICS_DIAPYCNAL
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       if (itrc.le.NTA) then
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL */
             ! Convert TVmix to flux at w-point
             do i=Istr,Iend
               do k=1,N
-                TF_zVmix(i,j,k,itrc) = -TVmix(i,j,k,itrc) 
+                TF_zVmix(i,j,k,itrc) = TF_zVmix(i,j,k,itrc)
+     &                               - TVmix(i,j,k,itrc) 
      &                               + TF_zVmix(i,j,k-1,itrc)
               enddo
             enddo
-#    if defined DIAGNOSTICS_DIAPYCNAL
+#    if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       endif
 #    endif /* defined DIAGNOSTICS_DIAPYCNAL */
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/

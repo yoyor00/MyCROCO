@@ -344,7 +344,7 @@
 # if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
 
 #  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
-#   if defined DIAGNOSTICS_DIAPYCNAL
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       if (itrc.le.NTA) then
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL */
 
@@ -360,7 +360,7 @@
           enddo
         enddo
 
-#   if defined DIAGNOSTICS_DIAPYCNAL
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       endif
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL */
 #  endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
@@ -406,7 +406,7 @@
         enddo
 
 #  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
-#   if defined DIAGNOSTICS_DIAPYCNAL
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       if (itrc.le.NTA) then
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL */
         do j=Jstr,Jend
@@ -420,7 +420,7 @@
               TF_yHmix(i,j,k,itrc)= TF_yHmix(i,j,k,itrc) - FE(i,j)
           enddo
         enddo
-#    if defined DIAGNOSTICS_DIAPYCNAL
+#    if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       endif
 #    endif /* defined DIAGNOSTICS_DIAPYCNAL */
 #  endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
@@ -450,7 +450,7 @@
 
 
 #  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
-#   if defined DIAGNOSTICS_DIAPYCNAL
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       if (itrc.le.NTA) then
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL */
         do j=Jstr,Jend
@@ -464,7 +464,7 @@
               TF_yHmix(i,j,k,itrc)= 0
           enddo
         enddo
-#    if defined DIAGNOSTICS_DIAPYCNAL
+#    if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       endif
 #    endif /* defined DIAGNOSTICS_DIAPYCNAL */
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
@@ -486,7 +486,7 @@
 #  endif /* defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3*/
 
 #  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
-#   if defined DIAGNOSTICS_DIAPYCNAL
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       if (itrc.le.NTA) then
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL */
         do j=Jstr,Jend
@@ -494,7 +494,7 @@
               TF_zHmix(i,j,k,itrc)= 0.
           enddo
         enddo
-#    if defined DIAGNOSTICS_DIAPYCNAL
+#    if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       endif
 #    endif /* defined DIAGNOSTICS_DIAPYCNAL */
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
@@ -509,7 +509,11 @@
 
             if (k .ge. kbl_rho(i,j)) then
 
+#  if defined DIAGNOSTICS_TS_VOL
               cff=pm(i,j)*pn(i,j)
+#  else
+              cff=1.
+#  endif 
 
               if (kbl_rho(i+1,j).gt.kbl_rho(i,j)
      &            .and. k.lt.kbl_rho(i+1,j)) then
@@ -542,13 +546,8 @@
 #   endif
 
 
-
-
-
-
         enddo    !<-- k
-  
-        
+
       enddo    !<-- itrc
 !
 !----------------------------------------------------------
@@ -679,13 +678,95 @@
             enddo
 #  endif /* DIAGNOSTICS_TS */
 
-#  if defined DIAGNOSTICS_TRACER_ISO
+#  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
+      if (itrc.le.NTA) then
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
             do k=0,N
               do i=Istr,Iend
                 TF_Vadv(i,j,k,itrc) = FC(i,k)
               enddo
             enddo
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
+      endif
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
+#  endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
+
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_DIAPYCNAL\
+                             || defined DIAGNOSTICS_TRACER_ISO
+
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_DIAPYCNAL
+            do k=1,N
+              do i=Istr,Iend
+                TVmix(i,j,k,itrc) = 0
+              enddo
+            enddo
+#  endif /* DIAGNOSTICS_TS */
+
+#  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+            do k=0,N
+              do i=Istr,Iend
+                TF_zVmix(i,j,k,itrc) = 0
+              enddo
+            enddo
+#  endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
+
+
+#  if !defined  TS_VADV_SPLINES || defined BIO_VADV_WENO5
+
+#  if defined TS_VADV_SPLINES
+#   if defined TEMPERATURE && defined SALINITY
+        if (itrc .gt. 2) then
+#   elif defined TEMPERATURE || defined SALINITY
+        if (itrc .gt. 1) then
+#   endif
+#  endif
+
+!
+! Compute SPLINES scheme fluxes FC to separate
+! advection and diffusion parts
+!
+
+#  include "t3dvadv_splines.h"
+!#  include "t3dvadv_c2.h"
+
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_DIAPYCNAL
+            do k=1,N
+              do i=Istr,Iend
+                TVmix(i,j,k,itrc) = TVadv(i,j,k,itrc)
+     &                             +(FC(i,k)-FC(i,k-1))
+     &                                 SWITCH rmask(i,j)
+                TVadv(i,j,k,itrc) = -(FC(i,k)-FC(i,k-1))
+     &                                 SWITCH rmask(i,j)
+              enddo
+            enddo
+#  endif /* DIAGNOSTICS_TS */
+
+#  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
+      if (itrc.le.NTA) then
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
+            do k=0,N
+              do i=Istr,Iend
+                TF_zVmix(i,j,k,itrc) = TF_Vadv(i,j,k,itrc)
+     &                                  - FC(i,k)
+#  if defined DIAGNOSTICS_TRACER_ISO
+                TF_Vadv(i,j,k,itrc) = FC(i,k)
 #  endif /* defined DIAGNOSTICS_TRACER_ISO*/
+              enddo
+            enddo
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
+      endif
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
+#  endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
+
+#  if defined TS_VADV_SPLINES
+          endif !<-- if (itrc .gt. 2)
+#  endif
+
+#  endif /* if !defined  TS_VADV_SPLINES || defined BIO_VADV_WENO5 */
+
+#  endif /* DIAGNOSTICS_TS */
 
 #  if defined MUSTANG && defined key_sand2D
           endif

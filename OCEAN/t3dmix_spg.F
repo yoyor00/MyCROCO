@@ -721,18 +721,18 @@
             enddo
           enddo
 #  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
-#   if defined DIAGNOSTICS_DIAPYCNAL
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       if (itrc.le.NTA) then
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL */
-
             ! Convert TVmix to flux at w-point
             do i=Istr,Iend
               do k=1,N
-                TF_zVmix(i,j,k,itrc) = -TVmix(i,j,k,itrc) 
+                TF_zVmix(i,j,k,itrc) = TF_zVmix(i,j,k,itrc)
+     &                               - TVmix(i,j,k,itrc) 
      &                               + TF_zVmix(i,j,k-1,itrc)
               enddo
             enddo
-#    if defined DIAGNOSTICS_DIAPYCNAL
+#    if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
       endif
 #    endif /* defined DIAGNOSTICS_DIAPYCNAL */
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/

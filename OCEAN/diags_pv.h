@@ -115,11 +115,13 @@
       real TF_yHmix(GLOBAL_2D_ARRAY,N,NTA)
       real TF_zHmix(GLOBAL_2D_ARRAY,0:N,NTA)
       real TF_zVmix(GLOBAL_2D_ARRAY,0:N,NTA)
+      real TF_Vadv(GLOBAL_2D_ARRAY,0:N,NTA)
 
       common /diag_TF_xHmix/TF_xHmix
      &       /diag_TF_yHmix/TF_yHmix
      &       /diag_TF_zHmix/TF_zHmix
      &       /diag_TF_zVmix/TF_zVmix
+     &       /diag_TF_Vadv/TF_Vadv
 
 # endif
 

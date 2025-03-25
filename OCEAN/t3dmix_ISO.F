@@ -160,6 +160,10 @@
      &       BC (PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &       FFC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
 #endif
+#if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_DIAPYCNAL\
+                           || defined DIAGNOSTICS_TRACER_ISO
+     &       EC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
+#endif
      &       FX (PRIVATE_2D_SCRATCH_ARRAY),
      &       FE (PRIVATE_2D_SCRATCH_ARRAY),
      &       FC (PRIVATE_2D_SCRATCH_ARRAY,2),
