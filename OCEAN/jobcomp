@@ -225,12 +225,14 @@ ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
 ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
 ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
 ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
+useECO3M=true
 if [ "$useECO3M" = true ]; then                 
 /bin/cp -f ${ROOT_DIR}/ECO3M/SRC/src_eco3m/*.F90 $SCRDIR
 /bin/cp -rf ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/F_PROCESS $SCRDIR
 /bin/cp -rf ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/config.ini $SCRDIR
 /bin/cp -rf ${ROOT_DIR}/ECO3M/CONFIG_ECO3M/modele.def $SCRDIR
 /bin/cp -rf ${ROOT_DIR}/ECO3M/MAKE/*.inc $SCRDIR
+NPROCS=1
 fi
 
 # Change directory
