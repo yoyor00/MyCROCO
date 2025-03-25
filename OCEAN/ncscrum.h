@@ -359,13 +359,13 @@
      &           indxTrate_mld=indxTForc_mld+NT,
      &           indxTentr_mld=indxTrate_mld+NT,
      &           indxTXout_mld=indxTentr_mld+NT,
-     &           indxTYout_mld=indxTXout_mld+NT,
+     &           indxTYout_mld=indxTXout_mld+NT
 #  if defined DIAGNOSTICS_TRACER_ISO
-     &           indxTF=indxTYout_mld+NT
+     &          ,indxTF=indxTYout_mld+NT
 #  endif
 # else
 #  if defined DIAGNOSTICS_TRACER_ISO
-     &           indxTF=indxTrate+NT
+     &          ,indxTF=indxTrate+NT
 #  endif
 #  endif
      &                                         )
