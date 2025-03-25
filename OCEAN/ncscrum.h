@@ -583,7 +583,7 @@
       parameter (indxBLMdiag2d=indxBLMdiag1d+NumBLMdiag1d)
       parameter (indxBLMdiag3d=indxBLMdiag2d+NumBLMdiag2d)
 # endif
-      integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
+      integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv
       parameter (indxO=indxV+ntrc_temp+ntrc_salt
      &                      +ntrc_mld+ntrc_pas+ntrc_bio
      &                      +ntrc_sed+ntrc_substot

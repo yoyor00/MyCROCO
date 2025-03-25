@@ -363,13 +363,6 @@
 # define mynode 0
 #endif
 
-
-#ifdef MPI
-# define MPI_master_only if (mynode.eq.0)
-#else
-# define MPI_master_only
-#endif
-
 #ifdef MPI
 # define MPI_master_only_ifthen if (mynode.eq.0) then
 #else
