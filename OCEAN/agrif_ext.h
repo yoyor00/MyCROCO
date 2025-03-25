@@ -32,7 +32,7 @@
      &                   dv_avg3(START_2D_ARRAY,0))
 # endif
 
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
        if (.not.agrif_Root()) then
 C$OMP BARRIER
 C$OMP MASTER

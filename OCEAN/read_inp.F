@@ -38,6 +38,9 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
+#ifdef WAVE_MAKER
+# include "forces.h"
+#endif
 #ifdef ONLINE
 # include "online.h"
 #endif
@@ -120,6 +123,8 @@
       fname='TEST_CASES/croco.in.ShoreFace'
 #elif defined RIP
       fname='TEST_CASES/croco.in.Rip'
+#elif defined FLASH_RIP
+      fname='TEST_CASES/croco.in.Flashrip'
 #elif defined SANDBAR
       fname='TEST_CASES/croco.in.Sandbar'
 #elif defined THACKER
@@ -1223,10 +1228,21 @@ c        close(testunit)
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
 # ifdef TRACERS
         do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
+     &   .or. itrc.eq.iCRT4) then
+           MPI_master_only write(stdout, '(6x,A,2x,A,I2,A,I2,A)')
+     &                     'F', 'write T(', itrc,
+     &                              ')  Tracer of index', itrc,'.'
+         else
+# endif
           if (wrthis(indxV+itrc)) wrthis(indxTime)=.true.
           MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
      &                     wrthis(indxV+itrc), 'write T(', itrc,
      &                              ')  Tracer of index', itrc,'.'
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         endif
+# endif 
         enddo
 # endif
 #endif
@@ -2003,6 +2019,28 @@ c        close(testunit)
 # endif
 #endif /* FLOATS */
 
+
+#if defined DIAGNOSTICS_TS
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      elseif (keyword(1:kwlen).eq.'diag_mld_crit_threshold') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) mld_crit_D, mld_crit_T, mld_crit_T2
+        MPI_master_only write(stdout,'(/1x,A,3(/1x,1pe10.3,2x,A))')
+     &   'Tresholds for Mixed Layer calculation:', 
+     &    mld_crit_D, 'CRT1 : mld_crit_D     Density threshold [kg/m3]',
+     &   mld_crit_T, 'CRT2 : mld_crit_T     Temperature treshold [C]',
+     & mld_crit_T2, 'CRT3 : mld_crit_T2   Temperature threshold bis [C]'
+
+      elseif (keyword(1:kwlen).eq.'diag_mld_depth_ref') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) mld_depth_ref
+        MPI_master_only write(stdout,'(/1x,A,/1x,I6,2x,A,1x/)')
+     &   'Depth reference for Mixed Layer calculation:',
+     &        mld_depth_ref, 'mld_depth_ref     Depth reference [m]'
+# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
+# endif  /* DIAGNOSTICS_TS */
+
+
 #if defined DIAGNOSTICS_TS
 !
 ! Switches for fields to be saved into tracer diagnostics file.
@@ -2013,6 +2051,14 @@ c        close(testunit)
         read(input,*,err=95)  (wrtdia3D(itrc), itrc=1, NT)
         do itrc=1,NT
           if (wrtdia3D(itrc)) wrtdia3D(NT+1)=.true.
+
+# ifdef DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+          if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
+     &    .or. itrc.eq.iCRT4) then
+              wrtdia3D(itrc)=.false.
+          endif
+# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
+
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia3D(itrc),
      &        'write Tracer equation terms ',
@@ -2044,6 +2090,14 @@ c        close(testunit)
         read(input,*,err=95) (wrtdia3D_avg(itrc),itrc=1,NT)
         do itrc=1,NT
           if (wrtdia3D_avg(itrc)) wrtdia3D_avg(NT+1)=.true.
+
+# ifdef DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+          if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
+     &    .or. itrc.eq.iCRT4) then
+              wrtdia3D_avg(itrc)=.false.
+          endif
+# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
+
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia3D_avg(itrc),
      &        'write Avg Tracer equation terms ',
@@ -2919,6 +2973,23 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 # endif
 #endif /* WKB_WWAVE */
 
+#ifdef WAVE_MAKER
+!
+! Offshore wavemaker parameters for wave-resolving simulations
+!
+      elseif (keyword(1:kwlen).eq.'wave_maker') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wmaker_amp,wmaker_prd,wmaker_dir,
+     &                       wmaker_dsp,wmaker_fsp
+        MPI_master_only write(stdout,'(/1x,A,5(/3x,f10.4,2x,A))')
+     &    'Offshore wavemaker parameters for wave modeling',
+     &   wmaker_amp, 'wmaker_amp  RMS wave amplitude [m]',
+     &   wmaker_prd, 'wmaker_prd  peak wave period [s]',
+     &   wmaker_dir, 'wmaker_dir  mean wave angle [deg]',
+     &   wmaker_dsp, 'wmaker_dsp  directional spread [deg]',
+     &   wmaker_fsp, 'wmaker_fsp  freq. spread (gamma in JONSWAP)'
+#endif /* WAVE_MAKER */
+
 #ifdef ANA_PSOURCE
 !
 ! Set-up point Sources/Sink number (Nsrc), direction (Dsrc), I- and
@@ -2961,14 +3032,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !         MPI_master_only write(stdout,'(/6x,F6.0,2x,A)')
      &  , qbardir(is), 'Direction of point source flow'
 #  ifdef MPI
-        if (iminmpi.LE.Isrc(is) .AND. Isrc(is).LE.imaxmpi .AND.
-     &       jminmpi.LE.Jsrc(is) .AND. Jsrc(is).LE.jmaxmpi) then
           Isrc_mpi(is,mynode)=Isrc(is)-iminmpi+1
           Jsrc_mpi(is,mynode)=Jsrc(is)-jminmpi+1
-        else
-          Isrc_mpi(is,mynode)=-1
-          Jsrc_mpi(is,mynode)=-1
-        endif
 #  endif
 #  ifdef TRACERS
         do itrc=1,NT
@@ -3012,14 +3077,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  ifdef MPI
           MPI_master_only write(*,*)'Isrc(is)=',Isrc(is)
           MPI_master_only write(*,*)'Jsrc(is)=',Jsrc(is)
-          if (iminmpi.LE.Isrc(is) .AND. Isrc(is).LE.imaxmpi .AND.
-     &        jminmpi.LE.Jsrc(is) .AND. Jsrc(is).LE.jmaxmpi) then
            Isrc_mpi(is,mynode)=Isrc(is)-iminmpi+1
            Jsrc_mpi(is,mynode)=Jsrc(is)-jminmpi+1
-          else
-           Isrc_mpi(is,mynode)=-1
-           Jsrc_mpi(is,mynode)=-1
-          endif
 #  endif
 #  if defined SOLVE3D && defined TRACERS
           do itrc=1,NT

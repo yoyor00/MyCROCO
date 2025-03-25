@@ -1,7 +1,7 @@
 !
 !====================================================================
 !           Wave maker for wave-resolving simulations:
-!              monochromatic, bichromatic or JONSMAP
+!              monochromatic, bichromatic or JONSWAP
 !====================================================================
 !
 #ifdef WAVE_MAKER_EAST
@@ -36,15 +36,7 @@
 !  Configurations
 !--------------------------------------------------------------------
 !
-!  default parameters
-!
-        wp=11.            ! period
-        wa=0.4            ! amplitude
-        wd=0.             ! incidence angle
-        wds=0.            ! directional spread
-        gamma=3.3         ! JONSWAP peakedness parameter
-!
-!  Set configuration parameters
+!  Set configuration parameters or get from croco.in file
 !
 #ifdef ROGUE_WAVE
 # define WAVE_MAKER_SPECTRUM
@@ -57,7 +49,6 @@
 #  undef  WAVE_MAKER_BICHROMATIC
 #  undef  STOKES_WAVES
 # endif
-# define WAVE_MAKER_OBLIQUE
         wp=11.            ! period
         wa=0.4            ! amplitude
         wd=-10.           ! incidence angle (deg)
@@ -85,6 +76,8 @@
         wp=2.
         wa=0.0442
 # endif
+        wd=0.
+        wds=0.
 #elif defined SANDBAR && !defined MRL_WCI
 # define WAVE_MAKER_JONSWAP
 # ifdef SANDBAR_OFFSHORE
@@ -96,15 +89,25 @@
         wa=0.21           ! amplitude
         gamma=3.3         ! JONSWAP peakedness parameter
 # endif
+        wd=0.
+        wds=0.
 #elif defined DUCK3D
-!#     define WAVE_MAKER_JONSWAP
-# define WAVE_MAKER_GAUSSIAN
+# define WAVE_MAKER_JONSWAP
         wp=14.            ! period
         wa=0.5            ! amplitude
         gamma=3.3         ! JONSWAP peakedness parameter
         wd=-10.           ! incidence angle (deg)
         wds=30.           ! directional spread (deg)
                           !  -> crest length = wl/(2*sin(wds))
+#else
+!
+!  get parameters from croco.in
+!
+        wa=wmaker_amp     ! amplitude
+        wp=wmaker_prd     ! period
+        wd=wmaker_dir     ! incidence angle
+        wds=wmaker_dsp    ! directional spread
+        gamma=wmaker_fsp  ! JONSWAP peakedness parameter
 #endif
 !
         wf=2*pi/wp        ! frequency
@@ -126,6 +129,19 @@
         wd =wd *deg2rad  ! incidence angle
         wds=wds*deg2rad  ! directional spread
 !
+        coswd=cos(wd)
+        sinwd=sin(wd)
+        coswds=cos(wds)
+        sinwds=sin(wds)
+!
+!  Peak frequency and wavenumber
+!
+        h0=h(IB0,1)
+        wf=2*pi/wp          ! peak frequency
+        khd=h0*wf*wf/g      ! peak wavenumber
+        wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
+     &                                   khd*(K5+K6*khd)))))) )/h0
+!
 #if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 # define WAVE_MAKER_SPECTRUM
 #endif
@@ -145,10 +161,10 @@
             read(117,*) wa_bry(k), wf_bry(k), wpha_bry(k), wk_bry(k)
             wa_bry(k)=wa_bry(k)*0.154/0.05  ! correct amplitude
             ! wpha_bry(k)=wpha_bry(k) + 1.5*pi
-!            khd=h(1,1)*wf_bry(k)**2/g      ! recompute wavenumber
+!            khd=h0*wf_bry(k)**2/g      ! recompute wavenumber
 !            kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
 !     &                                       khd*(K5+K6*khd)))))) )
-!            wk_bry(k)=kh/h(1,1)
+!            wk_bry(k)=kh/h0
           enddo
         endif
         ramp=tanh(dt/2.*float(iic-ntstart))
@@ -165,12 +181,13 @@
           cff2=0.
           do iw=1,Nfrq
             wf_bry(iw)=fmin+float(iw)*df
-            khd=h(IB0,0)*wf_bry(iw)**2/g   ! wavenumber
+            khd=h0*wf_bry(iw)**2/g   ! wavenumber
             kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                       khd*(K5+K6*khd)))))) )
-            wk_bry(iw)=kh/h(IB0,0)
+            wk_bry(iw)=kh/h0
           enddo
 # ifdef WAVE_MAKER_JONSWAP
+          sumspec=0.
           do iw=1,Nfrq
             sigma=0.5*( 0.09*(1.+sign(1.,wf_bry(iw)-wf))+
      &                  0.07*(1.-sign(1.,wf_bry(iw)-wf)) )
@@ -179,47 +196,113 @@
      &                 *exp(-1.25*(wf/wf_bry(iw))**4)*gamma**cff0
             cff2=16.*cff1*df  ! integral must be 1
             wa_bry(iw)=cff2
-            cff3=cff3+cff2
-          enddo
-          do iw=1,Nfrq
-            wa_bry(iw)=wa*sqrt(wa_bry(iw)/cff3) ! normalize
+            sumspec=sumspec+cff2
           enddo
 # elif defined WAVE_MAKER_GAUSSIAN
           cff2=0.
           do iw=1,Nfrq
-            !cff1=exp(-((wf_bry(iw)-wf)/0.1)**2)
             cff1=exp(-((wf_bry(iw)-wf)/0.05)**2)
             wa_bry(iw)=cff1
-            cff2=cff2+cff1
-          enddo
-          do iw=1,Nfrq
-            wa_bry(iw)=wa*sqrt(wa_bry(iw)/cff2) ! normalize
+            sumspec=sumspec+cff1
           enddo
 # endif
 # ifdef WAVE_MAKER_DSPREAD
-          dmin=wd-30*deg2rad  ! directional spread
-          dmax=wd+30*deg2rad
-          dd=(dmax-dmin)/Ndir
-          cff4=0.
-          do jw=1,Ndir
-            wd_bry(jw)=dmin+float(jw)*dd
-            cff3=exp(-((wd_bry(jw)-wd)/max(wds,1.e-12))**2)
-            wa_bry_d(jw)=cff3
-            cff4=cff4+cff3
+!
+! Single-sum wavemaker (Treillou et al. 2024)
+!
+          jwtt0=minloc(abs(wf_bry-wf),DIM=1)
+          jwtt=MOD(jwtt0,Ndir)
+          cff1=0.
+          do jw=1,Nfrq
+            wd_bry(jw)=MOD(float(jw-jwtt),float(Ndir))
+            if (wd_bry(jw) .le. 0.) wd_bry(jw)=wd_bry(jw)+float(Ndir)
+            wd_bry(jw)=(-1.)**jw * 0.5*pi*( -1. + 
+     &                 (floor(wd_bry(jw)-1.))/(float(Ndir)-1.) )
+            wd_bry(jw)=wd_bry(jw)+wd
+            if (wd_bry(jw) .ge.  0.5*pi) wd_bry(jw)= 0.5*pi
+            if (wd_bry(jw) .le. -0.5*pi) wd_bry(jw)=-0.5*pi
+            wa_bry_d(jw)=exp(-((wd_bry(jw)-wd)/
+     &                          max(1.5*wds,1.e-12))**2)
+            cff1=cff1+wa_bry_d(jw)*wa_bry(jw)
           enddo
-          do jw=1,Ndir
-            wa_bry_d(jw)=sqrt(wa_bry_d(jw)/cff4) ! normalize
+          cff2=sumspec/cff1
+          do jw=1,Nfrq
+            wa_bry_d(jw)=wa_bry_d(jw)*cff2   ! Normalize dir spectrum
+            wa_bry_f(jw)=wa_bry(jw)/sumspec  ! Normalize frq spectrum
+            wa_bry(jw)=wa*sqrt(wa_bry_f(jw)  ! Finalize amplitude to
+     &                        *wa_bry_d(jw)) ! normalize wave energy
           enddo
+#  ifdef WAVE_MAKER_DSPREAD_PER
+!
+! Force periodicity on all wave components such that
+! k_i*sin(theta_i)=p*(2*pi/Ly) with p an integer.
+!
+          wkdom=2.*pi/el       ! domain wavenumber
+          cff0=0.
+          do jw=1,Nfrq
+            cff0=cff0+wd_bry(jw)*wa_bry_d(jw)*wa_bry_f(jw)
+            wd_bry_tmp(jw)=wd_bry(jw)
+          enddo
+          do jw=1,Nfrq         ! Correct each angle of the spectrum
+            cff1=wd_bry(jw)    !   angle before correction
+            cff2=wk_bry(jw)    !   associated wavenumber
+            wky=cff2*sin(cff1)/wkdom
+            mindiff=abs(wky - nint(wky))
+            if (wk_bry(jw) .gt. wkdom) then
+              iw=1
+              do while ((iw .lt. 10000) .and. (mindiff .gt. 1.e-6))  
+                cff4 = (cff2 * sin(cff1 + 1.e-4))/wkdom
+                cff5 = (cff2 * sin(cff1 - 1.e-4))/wkdom
+                if (abs(cff4-nint(cff4)) .lt. mindiff) then
+                  mindiff = abs(cff4-nint(cff4))
+                  cff1 = cff1 + 1.e-4
+                else if (abs(cff5-nint(cff5)) .lt. mindiff) then         
+                  mindiff = abs(cff5-nint(cff5))
+                  cff1 = cff1 - 1.e-4
+                endif
+                iw=iw+1
+              enddo
+              wd_bry_tmp(jw)=cff1
+            endif 
+          enddo
+          cff1=0.              ! Test correction on mean angle
+          do jw=1,Nfrq
+            cff1=cff1+wd_bry_tmp(jw)*wa_bry_d(jw)*wa_bry_f(jw)
+          enddo
+          cff2=abs(cff0-cff1)*180/pi
+          cff3=abs(cff0-cff1)/max(eps,abs(cff0))
+          if (cff2 .lt. 0.5 .or. cff3 .lt. 0.3) then  
+            do jw=1,Nfrq                ! correction applied        
+              wd_bry(jw)=wd_bry_tmp(jw) ! only if change of mean
+            enddo                       ! angle <0.5deg or <30%
+          endif
+          MPI_master_only write(stdout,'(6x,A,3(f10.5,1x),f10.3/)')
+     &            'Mean wave angle correction (Bef. Aft. Diff %):',
+     &                        cff0*180/pi,cff1*180/pi,cff2,cff3*100
+#  endif /* WAVE_MAKER_DSPREAD_PER  */
+
+          CALL RANDOM_SEED(SIZE=nseed)
+          ALLOCATE(seed(nseed))
+          seed = 12345  ! Fix seed for reprocucibility
+          CALL RANDOM_SEED(PUT=seed)
           call RANDOM_NUMBER(wpha_bry)  ! random phase
           do iw=1,Nfrq
-            do jw=1,Ndir
-              wpha_bry(iw,jw)=wpha_bry(iw,jw)*2.*pi
-            enddo
+             wpha_bry(iw)=wpha_bry(iw)*2.*pi
+             wkx_bry(iw)=wk_bry(iw)*cos(wd_bry(iw))
+             wky_bry(iw)=wk_bry(iw)*sin(wd_bry(iw))
           enddo
+
 # else
+          CALL RANDOM_SEED(SIZE=nseed)
+          ALLOCATE(seed(nseed))
+          seed = 12345  ! Fix seed for reprocucibility
+          CALL RANDOM_SEED(PUT=seed)
           call RANDOM_NUMBER(wpha_bry)  ! random phase
           do iw=1,Nfrq
+            wa_bry(iw)=wa*sqrt(wa_bry(iw)/sumspec) ! normalize
             wpha_bry(iw)=wpha_bry(iw)*2.*pi
+            wkx_bry(iw)=wk_bry(iw)*cos(wd)
+            wky_bry(iw)=wk_bry(iw)*sin(wd)
           enddo
 # endif /* WAVE_MAKER_DSPREAD */
 
@@ -231,14 +314,13 @@
 !
 !  Bichromatic waves
 !
-        h0=h(IB0,1)
         ramp=tanh(dt/2.*float(iic-ntstart))
         wa1=ramp*wa1
         wa2=ramp*wa2
-        khd=h0*wf1**2/g   ! compute wavenumber
+        khd=h0*wf1*wf1/g   ! compute wavenumber
         wk1=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                    khd*(K5+K6*khd)))))) )/h0
-        khd=h0*wf2**2/g
+        khd=h0*wf2*wf2/g
         wk2=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                    khd*(K5+K6*khd)))))) )/h0
         wk=0.5*(wk1+wk2);
@@ -251,10 +333,6 @@
 !
         ramp=tanh(dt/wp*float(iic-ntstart))
         wa=wa*ramp
-        wf=2*pi/wp
-        khd=h0*wf**2/g   ! compute wavenumber
-        wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
-     &                                   khd*(K5+K6*khd)))))) )/h0
 #endif /* ROGUE_WAVE ... */
 !
 !--------------------------------------------------------------------
@@ -264,42 +342,31 @@
 #ifdef Z_FRC_BRY
         do j=JstrR,JendR
           h0=h(IB0,j)
-# if defined WAVE_MAKER_SPECTRUM
+# ifdef WAVE_MAKER_SPECTRUM
 #  ifdef DUCK94
           ZBRY(j)=0.7  ! add tidal level
 #  else
           ZBRY(j)=0.
 #  endif
           do iw=1,Nfrq   ! frequency spread
-#  ifdef WAVE_MAKER_DSPREAD
-            do jw=1,Ndir ! directional spread
-              theta=(xr(IB0,j)-x0)*wk_bry(iw)*cos(wd_bry(jw))
-     &             +(yr(IB0,j)-y0)*wk_bry(iw)*sin(wd_bry(jw))
-     &               -(time-time0)*wf_bry(iw)
-     &                          -wpha_bry(iw,jw)
-              ZBRY(j)=ZBRY(j) +
-     &                        ramp*wa_bry(iw)*wa_bry_d(jw)
-     &                        *cos(theta)
-            enddo
-#  else
-            theta=(xr(IB0,j)-x0)*wk_bry(iw)*cos(wd)
-     &           +(yr(IB0,j)-y0)*wk_bry(iw)*sin(wd)
-     &             -(time-time0)*wf_bry(iw)
-     &                        -wpha_bry(iw)
-            ZBRY(j)=ZBRY(j) +
-     &                      ramp*wa_bry(iw)*cos(theta)
-#  endif
+            theta=(xr(IB0,j)-x0)*wkx_bry(iw)
+     &           +(yr(IB0,j)-y0)*wky_bry(iw)
+     &              -(time-time0)*wf_bry(iw)
+     &                         -wpha_bry(iw)
+            ZBRY(j)=ZBRY(j) + ramp*wa_bry(iw)
+     &                            *cos(theta)
           enddo
 
-# elif defined WAVE_MAKER_BICHROMATIC
+# elif defined WAVE_MAKER_BICHROMATIC /* eg GLOBEX B2/B3 */
           cff1=tanh(wk1*h0)
           cff2=tanh(wk2*h0)
           cff3=wa1*wa1*wk1*(3.-cff1**2)/(4.*cff1**3)
           cff4=wa2*wa2*wk2*(3.-cff2**2)/(4.*cff2**3)
-          ZBRY(j)=wa1*cos(wf1*time)   ! GLOBEX B2
-     &                  +wa2*cos(wf2*time)
-     &                 +cff3*cos(2*wf1*time)
-     &                 +cff4*cos(2*wf2*time)
+          ZBRY(j)=wa1*cos(wf1*time)
+     &           +wa2*cos(wf2*time)
+     &          +cff3*cos(2*wf1*time)
+     &          +cff4*cos(2*wf2*time)
+
 # else
 #  ifdef DUCK94
           ZBRY(j)=0.7
@@ -307,22 +374,21 @@
           ZBRY(j)=0.
 #  endif
           time0=0.
-          khd=h0*wf**2/g   ! compute wavenumber
+          khd=h0*wf*wf/g   ! compute wavenumber
           wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                     khd*(K5+K6*khd)))))) )/h0
           sigma=tanh(wk*h0)
-          theta=(xr(IB0,j)-x0)*wk*cos(wd)*cos(wds)
-     &         +(yr(IB0,j)-y0)*wk*sin(wd)*cos(wds)
+          theta=(xr(IB0,j)-x0)*wk*coswd*coswds
+     &         +(yr(IB0,j)-y0)*wk*sinwd*coswds
      &         -(time-time0)*wf
-          cff_spread=cos(-(xr(IB0,j)-x0)*sin(wd)*sin(wds)*wk
-     &                   +(yr(IB0,j)-y0)*cos(wd)*sin(wds)*wk)
-          ZBRY(j)=ZBRY(j)+
-     &                    ( wa*cos(theta)
+          cff_spread=cos(-(xr(IB0,j)-x0)*sinwd*sinwds*wk
+     &                   +(yr(IB0,j)-y0)*coswd*sinwds*wk)
+          ZBRY(j)=ZBRY(j) + ( wa*cos(theta)
 #  ifdef STOKES_WAVES
      &                      +wk*wa*wa*(3.-sigma**2)/
      &                   (4.*sigma**3)*cos(2.*theta)
 #  endif
-     &                    )*cff_spread
+     &                     )*cff_spread
 # endif /* ROGUE_WAVE ... */
         enddo  ! j loop
 #endif /* Z_FRC_BRY */
@@ -335,32 +401,28 @@
         do j=JstrR,JendR
           h0=0.5*(h(IB0,j)+h(IB1,j))
           Du=h0
-# if defined ROGUE_WAVE || \
-     (defined WAVE_MAKER_SPECTRUM && !defined WAVE_MAKER_OBLIQUE \
-                                  && !defined WAVE_MAKER_DSPREAD)
+# ifdef ROGUE_WAVE
           do k=1,N
             UBRY(j,k)=0.
             Zu=Du+0.5*(z_r(IB0,j,k)+z_r(IB1,j,k))
             do iw=1,Nfrq
-              UBRY(j,k)=UBRY(j,k)+
-     &                               ramp*wa_bry(iw)*wf_bry(iw)*
-     &                                          cosh(wk_bry(iw)*Zu)/
-     &                                          sinh(wk_bry(iw)*Du)
-     &           *cos((0.5*(xr(IB0,j)+xr(IB1,j))-x0)*wk_bry(iw)
-     &                                 -(time-time0)*wf_bry(iw)
-     &                                            -wpha_bry(iw))
+              UBRY(j,k)=UBRY(j,k) + ramp*wa_bry(iw)*wf_bry(iw)*
+     &                                         cosh(wk_bry(iw)*Zu)/
+     &                                         sinh(wk_bry(iw)*Du)
+     &          *cos((0.5*(xr(IB0,j)+xr(IB1,j))-x0)*wk_bry(iw)
+     &                                -(time-time0)*wf_bry(iw)
+     &                                           -wpha_bry(iw))
             enddo
           enddo
 
 # elif defined WAVE_MAKER_SPECTRUM
-          khd=h0*wf**2/g   ! compute mean wavenumber
+          khd=h0*wf*wf/g     ! compute mean wavenumber
           wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                     khd*(K5+K6*khd)))))) )/h0
           do k=1,N
             Zu=Du+0.5*(z_r(IB0,j,k)+z_r(IB1,j,k))
-            UBRY(j,k)=ZBRY(j)*wf*cos(wd)
-     &                                     *cosh(wk*Zu)
-     &                                     /sinh(wk*Du)
+            UBRY(j,k)=ZBRY(j)*wf*cos(wd)*cosh(wk*Zu)
+     &                                  /sinh(wk*Du)
           enddo
 
 # elif defined WAVE_MAKER_BICHROMATIC
@@ -373,27 +435,29 @@
           do k=1,N
             Zu=Du+0.5*(z_r(IB0,j,k)+z_r(IB1,j,k))
             UBRY(j,k)=cff1*cosh(wk1*Zu)
-     &                   +cff2*cosh(wk2*Zu)
-     &                   +cff3*cosh(2*wk1*Zu)
-     &                   +cff4*cosh(2*wk2*Zu)
+     &               +cff2*cosh(wk2*Zu)
+     &               +cff3*cosh(2*wk1*Zu)
+     &               +cff4*cosh(2*wk2*Zu)
           enddo
+
 # else
           xu=0.5*(xr(IB0,j)+xr(IB1,j))-x0
           yu=0.5*(yr(IB0,j)+yr(IB1,j))-y0
-          theta=xu*cos(wd)*cos(wds)*wk
-     &         +yu*sin(wd)*cos(wds)*wk
-     &         -(time-time0)*wf
-          cff_spread=cos(-xu*sin(wd)*sin(wds)*wk
-     &                   +yu*cos(wd)*sin(wds)*wk)
-          cff=wa*wf*cos(wd)/sinh(wk*Du)*cos(theta)*cff_spread
+          theta=xu*coswd*coswds*wk
+     &         +yu*sinwd*coswds*wk
+     &            -(time-time0)*wf
+          cff_spread=cos(-xu*sinwd*sinwds*wk
+     &                   +yu*coswd*sinwds*wk)
+          cff=wa*wf*coswd/sinh(wk*Du)*cos(theta)*cff_spread
 #  ifdef STOKES_WAVES
-          cff2=cff*cos(2*theta)/cos(theta)*0.75*wk*wa/(sinh(wk*Du))**3
+          cff2=cff*cos(2*theta)/cos(theta)
+     &            *0.75*wk*wa/(sinh(wk*Du))**3
 #  endif
           do k=1,N
             Zu=Du+0.5*(z_r(IB0,j,k)+z_r(IB1,j,k))
             UBRY(j,k)=cff*cosh(wk*Zu)
 #  ifdef STOKES_WAVES
-     &                  +cff2*cosh(2*wk*Zu)
+     &              +cff2*cosh(2*wk*Zu)
 #  endif
           enddo
 # endif /* ROGUE_WAVE */
@@ -415,8 +479,9 @@
           cff4=0.
           cff5=0.
           do k=1,N
-            cff4=cff4+UBRY(j,k)*(Hz(IB0,j,k)+Hz(IB1,j,k))
-            cff5=cff5+(Hz(IB0,j,k)+Hz(IB1,j,k))
+            cff3=Hz(IB0,j,k)+Hz(IB1,j,k)
+            cff4=cff4+UBRY(j,k)*cff3
+            cff5=cff5+cff3
           enddo
           UBARBRY(j)=cff4/cff5
         enddo
@@ -430,51 +495,46 @@
         do j=JstrV,JendR
           h0=0.5*(h(IB0,j)+h(IB0,j-1))
           Dv=h0
-# if defined WAVE_MAKER_SPECTRUM && defined WAVE_MAKER_OBLIQUE
-          khd=h0*wf**2/g   ! compute mean wavenumber
-          wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
-     &                                     khd*(K5+K6*khd)))))) )/h0
-          do k=1,N
-            Zv=Dv+0.5*(z_r(IB0,j,k)+z_r(IB0,j-1,k))
-            VBRY(j,k)=ZBRY(j)*wf*sin(wd)
-     &                                     *cosh(wk*Zv)
-     &                                     /sinh(wk*Dv)
-          enddo
-
-# elif defined WAVE_MAKER_BICHROMATIC && defined WAVE_MAKER_OBLIQUE
+# if defined ROGUE_WAVE || defined SWASH || defined SANDBAR
           do k=1,N
             VBRY(j,k)=0.
           enddo
 
-# elif defined WAVE_MAKER_OBLIQUE
+# elif defined WAVE_MAKER_SPECTRUM || defined WAVE_MAKER_BICHROMATIC
+          khd=h0*wf*wf/g   ! compute mean wavenumber
+          wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
+     &                                     khd*(K5+K6*khd)))))) )/h0
+          do k=1,N
+            Zv=Dv+0.5*(z_r(IB0,j,k)+z_r(IB0,j-1,k))
+            VBRY(j,k)=ZBRY(j)*wf*sin(wd)*cosh(wk*Zv)
+     &                                  /sinh(wk*Dv)
+          enddo
+
+# else
           xv=0.5*(xr(IB0,j)+xr(IB0,j-1))-x0
           yv=0.5*(yr(IB0,j)+yr(IB0,j-1))-y0
-          theta=xv*cos(wd)*cos(wds)*wk
-     &         +yv*sin(wd)*cos(wds)*wk
-     &         -(time-time0)*wf
-          cff_spread=cos(-xv*sin(wd)*sin(wds)*wk
-     &                   +yv*cos(wd)*sin(wds)*wk)
-          cff=wa*wf*sin(wd)/sinh(wk*Dv)*cos(theta)*cff_spread
+          theta=xv*coswd*coswds*wk
+     &         +yv*sinwd*coswds*wk
+     &            -(time-time0)*wf
+          cff_spread=cos(-xv*sinwd*sinwds*wk
+     &                   +yv*coswd*sinwds*wk)
+          cff=wa*wf*sinwd/sinh(wk*Dv)*cos(theta)*cff_spread
 #  ifdef STOKES_WAVES
-          cff2=cff*cos(2*theta)/cos(theta)*0.75*wk*wa/(sinh(wk*Dv))**3
+          cff2=cff*cos(2*theta)/cos(theta)
+     &            *0.75*wk*wa/(sinh(wk*Dv))**3
 #  endif
           do k=1,N
             Zv=Dv+0.5*(z_r(IB0,j,k)+z_r(IB0,j-1,k))
             VBRY(j,k)=cff*cosh(wk*Zv)
 #  ifdef STOKES_WAVES
-     &                  +cff2*cosh(2*wk*Zv)
+     &              +cff2*cosh(2*wk*Zv)
 #  endif
-          enddo
-# else
-          do k=1,N
-              VBRY(j,k)=0.
           enddo
 # endif /* WAVE_MAKER_SPECTRUM */
         enddo  ! j loop
 #endif /* M3_FRC_BRY */
 
 #ifdef M2_FRC_BRY
-# ifdef WAVE_MAKER_OBLIQUE
         do j=JstrV,JendR
           cff4=0.
           cff5=0.
@@ -484,11 +544,6 @@
           enddo
           VBARBRY(j)=cff4/cff5
         enddo
-# else
-        do j=JstrV,JendR
-          VBARBRY(j)=0.
-        enddo
-# endif
 #endif /* M2_FRC_BRY */
 !
 !--------------------------------------------------------------------
@@ -504,13 +559,13 @@
 #  ifndef WAVE_MAKER_DSPREAD
             Zr=Dr+z_w(IB0,j,k)
             do iw=1,Nfrq
-              WBRY(j,k)=WBRY(j,k)+
-     &                               ramp*wa_bry(iw)*wf_bry(iw)*
-     &                                          sinh(wk_bry(iw)*Zr)/
-     &                                          sinh(wk_bry(iw)*Dr)
-     &                           *sin((xr(IB0,j)-x0)*wk_bry(iw)
-     &                                 -(time-time0)*wf_bry(iw)
-     &                                            -wpha_bry(iw))
+              WBRY(j,k)=WBRY(j,k) + 
+     &                    ramp*wa_bry(iw)*wf_bry(iw)*
+     &                               sinh(wk_bry(iw)*Zr)/
+     &                               sinh(wk_bry(iw)*Dr)
+     &                *sin((xr(IB0,j)-x0)*wk_bry(iw)
+     &                      -(time-time0)*wf_bry(iw)
+     &                                 -wpha_bry(iw))
             enddo
 #  endif
           enddo
@@ -525,19 +580,20 @@
           do k=0,N
             Zr=Dr+z_w(IB0,j,k)
             WBRY(j,k)=cff1*sinh(wk1*Zr)
-     &                    +cff2*sinh(wk2*Zr)
-     &                  +cff3*sinh(2*wk1*Zr)
-     &                  +cff4*sinh(2*wk2*Zr)
+     &               +cff2*sinh(wk2*Zr)
+     &               +cff3*sinh(2*wk1*Zr)
+     &               +cff4*sinh(2*wk2*Zr)
           enddo
+
 # else
-          theta=(xr(IB0,j)-x0)*cos(wd)*cos(wds)*wk
-     &         +(yr(IB0,j)-y0)*sin(wd)*cos(wds)*wk - time*wf
+          theta=(xr(IB0,j)-x0)*coswd*coswds*wk
+     &         +(yr(IB0,j)-y0)*sinwd*coswds*wk - time*wf
           cff=wa*wf/sinh(wk*Dr)*cos(theta)
           cff2=0.75*cff*cos(2*theta)/cos(theta)*wk*wa/(sinh(wk*Dr))**3
           do k=1,N
             Zr=Dr+z_w(IB0,j,k)
             WBRY(j,k)=cff*sinh(wk*Zr)
-     &                 +cff2*sinh(2*wk*Zr)
+     &              +cff2*sinh(2*wk*Zr)
           enddo
 # endif /* WAVE_MAKER_SPECTRUM ... */
 

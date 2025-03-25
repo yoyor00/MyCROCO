@@ -10,9 +10,9 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 start_date:
 2019-01-01 00:00:00
 end_date:
-2019-01-03 00:00:00
+2019-01-02 00:00:00
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
-                     0.25           24         24
+                     1           24         24
 
 initial: NRREC  filename
           0 

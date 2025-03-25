@@ -86,6 +86,9 @@ C$    integer omp_get_thread_num
 # ifdef RIP
       real h0,per,xx,yy,xs,db,alpha,lambda,eps
 # endif
+# ifdef FLASH_RIP
+      real a1,a2,a3,b1,b2,b3,c1,c2,c3,h0,per,xx,yy,xs,db,alpha,lambda,eps
+# endif
 # ifdef SANDBAR
       real p1,p2,p3,p4,p5,p6,p7,xx
 # endif
@@ -102,8 +105,6 @@ C$    integer omp_get_thread_num
 # endif
 !
 # include "compute_extended_bounds.h"
-
-
 !
 !----------------------------------------------------------------------
 ! Configuration parameters (h,f,beta)
@@ -229,6 +230,10 @@ C$    integer omp_get_thread_num
                      beta=0.
 # elif defined RIP
                      depth=15.
+                     f0=0.
+                     beta=0.
+# elif defined FLASH_RIP
+                     depth=7.0
                      f0=0.
                      beta=0.
 # elif defined THACKER
@@ -365,6 +370,9 @@ C$    integer omp_get_thread_num
 # elif defined RIP
                      Length_XI =768.0
                      Length_ETA=768.0
+# elif defined FLASH_RIP
+                     Length_XI =300.0
+                     Length_ETA=300.0
 # elif defined THACKER
                      Length_XI =200.e+3
                      Length_ETA=Length_ETA_ISO_GRID
@@ -457,8 +465,8 @@ C$    integer omp_get_thread_num
       y0=-9.E+3
 # endif
 
-CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
-CR     &                                'x0=',x0, 'y0=',y0, mynode
+CR      write(*,'(4(A3,1pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
+CR     &                                 'x0=',x0, 'y0=',y0, mynode
 !
 !----------------------------------------------------------------------
 ! Setup rectangular grid:  coordinates (XI,ETA) at PSI- and RHO-points.
@@ -473,8 +481,8 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
          yr(i,j) = y0 + dy*(float(j+jminmpi-1-1)+0.5)
         enddo
       enddo
-!$acc end kernels      
-!$acc update host( xr, yr )      
+!$acc end kernels
+!$acc update host( xr, yr )
 !
 !----------------------------------------------------------------------
 ! Compute coordinate transformation metrics at RHO-points "pm" and
@@ -658,7 +666,6 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
             h(i,j)=depth
             enddo
         enddo
-
 
 # elif defined SHOREFACE
       do j=JstrR,JendR
@@ -875,6 +882,38 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 #  endif
+
+# elif defined FLASH_RIP
+!  Idealized Imperial Beach in California
+!  Longshore-averaged bathy
+      a1=9.509;
+      b1=0.002914;
+      c1=0.014;
+      a2=0.5618;
+      b2=0.02377;
+      c2=-2.684;
+      a3=0.1274;
+      b3=0.05868;
+      c3=1.32;
+      
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+#   ifdef OBC_EAST
+          xx=xr(i,j)
+#   else
+          xx=Length_XI-xr(i,j)
+#   endif
+          if (xx.ge.320) then
+                h(i,j)=depth-0.05
+          elseif (xx.le.50) then
+                h(i,j)=-(50-xx)*0.02
+          elseif ((xx.gt.50) .AND. (xx.lt.410)) then
+                h(i,j)=-(a1*sin(b1*(50-xx)+c1) +
+     &                   a2*sin(b2*(50-xx)+c2) +
+     &                   a3*sin(b3*(50-xx)+c3))
+          endif
+        enddo
+      enddo
 
 # elif defined THACKER
       cff=80.e3
