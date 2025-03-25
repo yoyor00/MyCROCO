@@ -33,21 +33,18 @@
 #if defined MUSTANG
       USE comMUSTANG, only: nk_nivsed_out
 #endif
+#if defined BIOLOGY && defined PISCES && defined key_sediment
+      USE par_sed, only: jpksed
+#endif
+      USE buffer, only: buff, max_buffer_N_size
       implicit none
 #include "param.h"
-#if defined MUSTANG
-      real A(GLOBAL_2D_ARRAY,max(N+1,nk_nivsed_out))
-#else
-# if defined ABL1D
-      real A(GLOBAL_2D_ARRAY,max(N+1,N_abl+1))
-# else
-      real A(GLOBAL_2D_ARRAY,N+1)
-# endif
-#endif
+      real A(GLOBAL_2D_ARRAY,max_buffer_N_size)
+
       integer ncid,  type,   vert_type,  imin, imax,  start(4)
      &      , varid, record, horiz_type, jmin, jmax,  count(4)
      &      , i,j,k, shift,  ierr
-#include "buffer.h"
+
 #if defined MPI
 # include "scalars.h"
 #endif
@@ -164,6 +161,13 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         start(3)=1
         start(4)=record
 #endif
+#if defined BIOLOGY && defined PISCES && defined key_sediment
+      elseif (vert_type.eq.5) then
+        count(3)=jpksed
+        count(4)=1                !--> 3D DIAGENITIC-grid
+        start(3)=1
+        start(4)=record
+#endif
       else
 #ifndef WRITER
         write(*,'(/1x,2A,I3/)') 'NF_FREAD ERROR: ',
@@ -184,7 +188,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #ifndef WRITER
 # ifdef ABL1D
       if (vert_type.eq.4) then
-        ierr=nf_get_vara_FTYPE (ncid, varid, start, count, buff_abl(1))
+        ierr=nf_get_vara_FTYPE (ncid, varid, start, count, buff(1))
       else
         ierr=nf_get_vara_FTYPE (ncid, varid, start, count, buff(1))
       endif
@@ -206,7 +210,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #ifdef WRITER
 # ifdef ABL1D
             if (vert_type.eq.4) then
-              buff_abl(i+shift)=A(i,j,k)
+              buff(i+shift)=A(i,j,k)
             else
               buff(i+shift)=A(i,j,k)
             endif
@@ -216,7 +220,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #else
 # ifdef ABL1D
             if (vert_type.eq.4) then
-              A(i,j,k)=buff_abl(i+shift)
+              A(i,j,k)=buff(i+shift)
             else
               A(i,j,k)=buff(i+shift)
             endif
@@ -234,7 +238,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #ifdef WRITER
 # ifdef ABL1D
       if (vert_type.eq.4) then
-        ierr=nf_put_vara_FTYPE (ncid, varid, start, count, buff_abl(1))
+        ierr=nf_put_vara_FTYPE (ncid, varid, start, count, buff(1))
       else
         ierr=nf_put_vara_FTYPE (ncid, varid, start, count, buff(1))
       endif
@@ -283,7 +287,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         call exchange_u3d_tile (1,LOCALLM,1,LOCALMM, A)
 #   endif
       elseif (horiz_type.eq.2 .and. vert_type.eq.1) then
-#   ifdef THREE_GHOST_3pts_POINTS_UV
+#   ifdef THREE_GHOST_POINTS_UV
         call exchange_v3d_3pts_tile (1,LOCALLM,1,LOCALMM, A)
 #   else
         call exchange_v3d_tile (1,LOCALLM,1,LOCALMM, A)

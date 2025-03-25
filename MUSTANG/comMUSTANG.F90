@@ -4,18 +4,18 @@ MODULE comMUSTANG
 
 #ifdef MUSTANG
 
-!!============================================================================
-!! ***  MODULE  comMUSTANG  ***
-!! Purpose : declare all common variables related to sediment dynamics
-!!============================================================================
+    !!============================================================================
+    !! ***  MODULE  comMUSTANG  ***
+    !! Purpose : declare all common variables related to sediment dynamics
+    !!============================================================================
 
-!! * Modules used
-USE comsubstance ! for lchain, rsh, rlg, riosh
+    !! * Modules used
+    USE comsubstance ! for lchain, rsh, rlg, riosh
 
-implicit none
+    implicit none
 
-! default
-public
+    ! default
+    public
 
 #include "coupler_define_MUSTANG.h"
   
@@ -34,20 +34,16 @@ public
         ! processes in sediment; format '01/01/0000 00:00:00'
     CHARACTER(len=19) :: date_start_morpho ! starting date for morphodynamic; 
         ! format '01/01/0000 00:00:00'
-    LOGICAL  :: l_repsed ! set to .true. if sedimentary variables are 
-        ! initialized from a previous run
     LOGICAL  :: l_initsed_vardiss !set to .true. if initialization of dissolved
         ! variables, temperature and salinity in sediment (will be done with 
         ! concentrations in water at bottom (k=1))
     LOGICAL  :: l_unised !set to .true. for a uniform bottom initialization
-    LOGICAL  :: l_init_hsed ! set to .true. if we want to adjust the sediment 
-        ! thickness in order to be coherent with sediment 
+    LOGICAL  :: l_unised_adjust_hsed ! set to .true. if we want to adjust the 
+        ! sediment thickness in order to be coherent with sediment 
         ! parameters (calculation of a new hseduni based on 
         ! cseduni, cvolmax values, and csed_ini of each sediment)
     CHARACTER(len=lchain) :: filrepsed ! file path from which the model is 
-        ! initialized for the continuation of a previous run
-    CHARACTER(len=lchain) :: fileinised ! file path for initialization (if 
-        ! l_unised is False)
+        ! initialized for the continuation of a previous run or non uniform init
     REAL(KIND=rsh) :: cseduni ! initial sediment concentration (kg/m3)
     REAL(KIND=rsh) :: hseduni ! initial uniform sediment thickness (m) 
     REAL(KIND=rsh) :: csed_mud_ini ! real, mud concentration into initial 
@@ -199,7 +195,6 @@ public
         ! 3: min( case 0; toce(isand2) )
 
 
-#ifdef key_MUSTANG_V2
     ! namsedim_poro 
     INTEGER :: poro_option ! choice of porosity formulation
         ! 1: Wu and Li (2017) (incompatible with consolidation))
@@ -214,7 +209,6 @@ public
         ! participating in filling , ref value = 0.65
     REAL(KIND=rsh) :: poro_min ! minimum porosity below which consolidation 
         ! is stopped
-#endif
 
 
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
@@ -320,9 +314,6 @@ public
         ! (MF_dhsed = MF; then MF will be = 0)
         ! set to .false. if morphodynamic is applied with 
         ! erosion/deposit fluxes amplification (MF_dhsed not used)
-    LOGICAL :: l_bathy_actu ! set to .true. if reading a new bathy issued a 
-        ! previous run and saved in filrepsed (given in namelist namsedim_init)  
-        !!! NOT IMPLEMENTED YET !!! **TODO**
     REAL(KIND=rsh) :: MF ! morphological factor : multiplication factor for 
         ! morphologicalevolutions, equivalent to a "time acceleration" 
         ! (morphological evolutions over a MF*T duration are assumed to be 
@@ -441,6 +432,12 @@ public
         !processes are not calculated
 #endif
 
+    CHARACTER(len=lchain) :: dredging_location_file ! TODO DREDGING
+    CHARACTER(len=lchain) :: dredging_settings_file ! TODO DREDGING
+    CHARACTER(len=lchain) :: dredging_out_file ! TODO DREDGING
+    INTEGER :: dredging_dumping_layer ! TODO DREDGING
+    REAL(KIND=rsh) :: dredging_dt ! TODO DREDGING
+    REAL(KIND=rsh) :: dredging_dt_out ! TODO DREDGING
 
 ! end namelist variables
 
@@ -485,7 +482,6 @@ public
 
     ! Sediment height
     REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed
-    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed0
     REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed_previous
 
     ! Bottom stress variables
@@ -541,7 +537,6 @@ public
     REAL(KIND=rlg) :: tstart_morpho   ! time beginning morphodynamic
     REAL(KIND=rlg) :: t_morpho        ! time of next morphodynamic step
     REAL(KIND=rsh) :: MF_dhsed
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: morpho0
 
 #ifdef key_MUSTANG_V2
     REAL(KIND=rsh) :: coeff_dzsmin
@@ -569,6 +564,7 @@ public
 #endif
 
     ! Sedim output
+    INTEGER                            :: rstMust_nbvar
     INTEGER, DIMENSION(:), ALLOCATABLE :: rstMust                    ! Output identifier
     INTEGER, DIMENSION(:), ALLOCATABLE :: hisMust                    ! Output identifier
     INTEGER, DIMENSION(:), ALLOCATABLE :: avgMust                    ! Output identifier

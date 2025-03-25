@@ -18,6 +18,7 @@
 
 #if defined MUSTANG
       USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
+      USE dredging, ONLY : l_dredging, dredg_hsed_init
 #endif
 
 !     implicit none
@@ -225,9 +226,53 @@
 
 #ifdef ABL1D
 !
+! 3D U ABL
+!
+      ierr=nf_fwrite(u_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblU,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_u_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D V ABL
+!
+      ierr=nf_fwrite(v_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblV,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_v_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_v_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D T ABL
+!
+      ierr=nf_fwrite(tq_abl(START_2D_ARRAY,1,nt_a,jp_ta), ncidrst, rstAblT,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_t_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_t_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D Q ABL
+!
+      ierr=nf_fwrite(tq_abl(START_2D_ARRAY,1,nt_a,jp_qa), ncidrst, rstAblQ,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_q_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_q_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif                  
+!
 ! 3D TKE ABL
 !
-      ierr=nf_fwrite(tke_abl(START_2D_ARRAY,1,nstp), ncidrst, rstAblTke,
+      ierr=nf_fwrite(tke_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblTke,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
@@ -235,6 +280,61 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
+!
+! 3D AVM ABL
+!
+      ierr=nf_fwrite(avm_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblAvm,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_avm_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_avm_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D AVT ABL
+!
+      ierr=nf_fwrite(avt_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblAvt,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_avt_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_avt_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif     
+!
+! 3D MXLD ABL
+!
+      ierr=nf_fwrite(mxld_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblMxld,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_mxld_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_mxld_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D MXLM ABL
+!
+      ierr=nf_fwrite(mxlm_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblMxlm,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_mxlm_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_mxlm_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif         
+!
+! 2D ABLH
+!
+      ierr=nf_fwrite(ablh(START_2D_ARRAY,nt_a), ncidrst, rstAblAblh,
+     &                                        record, r2dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_ablh_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_ablh_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif               
 #endif
 
 #ifdef SOLVE3D
@@ -268,6 +368,10 @@
 # ifdef TRACERS
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,:))
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &  .and. itrc.ne.iCRT4) then
+# endif
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)
         if (ierr .ne. nf_noerr) then
@@ -276,6 +380,9 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+       endif
+# endif
       enddo
 # endif
 
@@ -354,6 +461,7 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+#  ifdef TEMPERATURE
 !
 ! Write out vertical diffusion coefficient for potential temperature.
 !
@@ -366,6 +474,7 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+#  endif /* TEMPERATURE  */
 #  ifdef SALINITY
 !
 ! Write out vertical diffusion coefficient for potential temperature.
@@ -675,6 +784,22 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
           goto 99                                         !--> ERROR
         endif
        enddo
+
+! dredging
+       if (l_dredging) then
+          work2d = dredg_hsed_init
+          indx = indx + 1
+          ierr = nf_fwrite(work2d, ncidrst, rstMust(indx),
+     &                                       record, r2dvar)
+          if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname_rstMust(1,indx))
+            write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+     &                  MYID
+            goto 99                                         !--> ERROR
+          endif
+       endif
+
+
 # endif /* MUSTANG */
 
 #endif /* SOLVE3D */

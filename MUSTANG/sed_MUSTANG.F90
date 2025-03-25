@@ -99,6 +99,7 @@ MODULE sed_MUSTANG
    USE module_substance
 
    USE comMUSTANG 
+   USE module_MUSTANG, ONLY : z_w
    USE coupler_MUSTANG 
 
    IMPLICIT NONE
@@ -125,7 +126,6 @@ MODULE sed_MUSTANG
  
   SUBROUTINE MUSTANG_update(ifirst, ilast, jfirst, jlast,     &
                WATER_CONCENTRATION, z0hydro,                  &
-               WATER_ELEVATION,                               &
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
                BAROTROP_VELOCITY_U, BAROTROP_VELOCITY_V,             &
 #endif
@@ -142,7 +142,7 @@ MODULE sed_MUSTANG
    !&E         loops  :ifirst,ilast,jfirst,jlast
    !&E         parametres ref  :RHOREF, saliref_lin,temperef_lin
    !&E         time  :dt_true,t (DOUBLE PRECISION)
-   !&E         hydro  :WATER_ELEVATION,BAROTROP_VELOCITY_U,BAROTROP_VELOCITY_V
+   !&E         hydro  :BAROTROP_VELOCITY_U,BAROTROP_VELOCITY_V
    !&E         concentrations  : WATER_CONCENTRATION,SALINITY_MOD,TEMPERATURE_MOD
    !&E         [settling velocities (transmitted as argument or by USE as in MARS or in CROCO)]
    !&E
@@ -186,22 +186,19 @@ MODULE sed_MUSTANG
    USE OBSTRUCTIONS1DV, ONLY : o1dv_comp_z0sedim
    USE com_OBSTRUCTIONS, ONLY : obst_position, obst_height, obst_dens_inst, obst_width_inst, obst_nbvar
 #endif
+    USE dredging, ONLY : l_dredging, dredging_main
 
    !! * Arguments
    INTEGER, INTENT(IN)                                       :: ifirst, ilast, jfirst, jlast                           
    REAL(KIND=rsh),INTENT(IN)                                 :: saliref_lin, temperef_lin 
    REAL(KIND=rlg),INTENT(IN)                                 :: dt_true  ! !  (dt_true=halfdt in MARS)
-   REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)          :: z0hydro                         
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT)  :: WATER_ELEVATION                         
+   REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)          :: z0hydro                        
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload                        
    REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_U),INTENT(IN)          :: BAROTROP_VELOCITY_U                        
    REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_V),INTENT(IN)          :: BAROTROP_VELOCITY_V   
 #endif                      
-#if defined key_MUSTANG_flocmod || defined key_BLOOM_insed
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT) :: WATER_CONCENTRATION         
-#else
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION         
-#endif 
+
 
    !! * Local declarations
    INTEGER        ::  i,j,k,iv,ivp,ksmin,ksmax,iappel
@@ -223,7 +220,7 @@ MODULE sed_MUSTANG
     ! coupler for some calculations specific to each model ==> htot, alt_cw1, epn_bottom
     ! + computation of bottom concentrations..
     iappel=1
-    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,iappel,BATHY_H0,WATER_ELEVATION,   &
+    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,iappel,&
                        WATER_CONCENTRATION)
             
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -459,6 +456,11 @@ MODULE sed_MUSTANG
    ENDIF  ! end if coef_erolat
 #endif
 
+  IF (l_dredging) THEN
+    CALL dredging_main(ifirst, ilast, jfirst, jlast, t, z_w, h, hsed, &
+      dzs, ksmi, ksma, cv_sed, c_sedtot)
+  ENDIF
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!! save cumulated erosion Fluxes  of constitutive particulate variables !!
@@ -486,6 +488,8 @@ MODULE sed_MUSTANG
      END DO
    ENDIF
 
+   
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !   conversion of deposit flux for  hydro code                                                        !!!!!
@@ -511,7 +515,6 @@ MODULE sed_MUSTANG
   !!==============================================================================
   
   SUBROUTINE MUSTANG_deposition(ifirst, ilast, jfirst, jlast,  &
-                        WATER_ELEVATION,                       &
                         WATER_CONCENTRATION)
               
    !&E--------------------------------------------------------------------------
@@ -527,7 +530,6 @@ MODULE sed_MUSTANG
    !&E ** Description : 
    !&E  arguments IN : 
    !&E         loops  :ifirst,ilast,jfirst,jlast
-   !&E         hydro  :WATER_ELEVATION
    !&E         concentrations  : WATER_CONCENTRATION,SALINITY_MOD,TEMPERATURE_MOD
    !&E
    !&E  arguments OUT:
@@ -545,7 +547,6 @@ MODULE sed_MUSTANG
 #endif
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast 
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
 #if defined key_BLOOM_insed
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT)  :: WATER_CONCENTRATION   
 #else
@@ -572,7 +573,6 @@ MODULE sed_MUSTANG
 
     iappel=2
     CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,iappel,    &
-                            BATHY_H0,WATER_ELEVATION,            &
                             WATER_CONCENTRATION )        
         
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2878,7 +2878,7 @@ MODULE sed_MUSTANG
     frvolgrv = frvolgrv + cv_sed(iv,k,i,j) / ros(iv)
   ENDDO
   frvolsangrv = frvolgrv + frvolsan
-  frmudsup = sommud / (somgrav + sommud + somsan)
+  frmudsup = sommud / (somgrav + sommud + somsan + epsilon_MUSTANG)
   
    IF (isand2 > 0 .AND. somsan > 0.0_rsh) THEN
      diamsan = MAX(diamsan / (somsan + epsilon_MUSTANG), diam_sed(isand2))
@@ -2987,7 +2987,7 @@ MODULE sed_MUSTANG
         taucr = taucr_sand
         excespowr = n_eros_sand
       ELSE IF(frmudsup .LE. frmudcr2) THEN ! II) Intermediate sand / mud 
-        coef_tmp = xexp_ero * (frmudcr1 - frmudsup) / (frmudcr2 - frmudcr1) 
+        coef_tmp = xexp_ero * (frmudcr2 - frmudsup) / (frmudcr2 - frmudcr1) 
         ! correction of  F.Ganthy which allows to avoid the shift when one approaches frmudcr2, 
         !   and allows to have a linear relation when xexp_ero tends towards 0 (but must remain different from 0)
         rapexpcoef = (EXP(coef_tmp) - 1.0_rsh) / (EXP(xexp_ero) - 1.0_rsh)
@@ -3063,6 +3063,7 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
+   USE dredging, ONLY : l_dredging, dump_gravel_flx
 
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast
@@ -3194,6 +3195,15 @@ MODULE sed_MUSTANG
               END IF             
 #endif
             ENDDO
+
+            IF (l_dredging) THEN
+              DO iv=igrav1,igrav2
+                flx_w2s_loc(iv) = flx_w2s_loc(iv) + dump_gravel_flx(iv,i,j)
+                ! reset to zero after deposit
+                dump_gravel_flx(iv,i,j) = 0.
+              ENDDO
+            ENDIF
+
 
             fludep=0.0_rsh
             DO iv=1,nvpc
@@ -3795,7 +3805,7 @@ MODULE sed_MUSTANG
                      cv_sed(iv,ksmax,i,j)= flx_w2s_loc(iv)/(flx_w2s_loc(ivp_assoc)+epsi30_MUSTANG)*    &
                                         cv_sed(ivp_assoc,ksmax,i,j)
                    ELSE
-                     cv_sed(iv,ksmax,i,j)=flx_w2s_loc(iv)/dzs_dep
+                     cv_sed(iv,ksmax,i,j)=flx_w2s_loc(iv)*dzsi
                    END IF 
                  ENDDO
                ENDIF
@@ -3958,6 +3968,7 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
+   USE dredging, ONLY : l_dredging, dump_gravel_flx
 
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast
@@ -3986,6 +3997,7 @@ MODULE sed_MUSTANG
 
       DO j=jfirst,jlast
         DO i=ifirst,ilast
+
           IF(htot(i,j) > h0fond) THEN
 
             ksmax=ksma(i,j)
@@ -4007,6 +4019,14 @@ MODULE sed_MUSTANG
               IF (l_outsed_flx_s2w_w2s) var2D_flx_w2s(iv,i,j)=var2D_flx_w2s(iv,i,j)+flx_w2s_loc(iv)
 
             ENDDO
+
+            IF (l_dredging) THEN
+              DO iv=igrav1,igrav2
+                flx_w2s_loc(iv) = flx_w2s_loc(iv) + dump_gravel_flx(iv,i,j)
+                ! reset to zero after deposit
+                dump_gravel_flx(iv,i,j) = 0.
+              ENDDO
+            ENDIF
 
             fludep=0.0_rsh
             DO iv=1,nvpc
@@ -4104,7 +4124,8 @@ MODULE sed_MUSTANG
                 !dvolsan=MIN(voldepsan,dzsa2*cvolmaxsort-dzsa*cvolinisan, &
                 !                      dzsa2*cvolmaxmel-dzsa*(cvolinigrv+cvolinisan)-ddzs2*cvolmaxsort)
                 ! ajout dvolgrv
-                dvolsan=MIN(voldepsan,dzsa2*cvolmaxsort-dzsa*cvolinisan, &
+                dvolsan=MIN(voldepsan,dzsa2*(poro(ksmax,i,j) - poro_min) - dvolgrv,&
+                                      dzsa2*cvolmaxsort-dzsa*cvolinisan, &
                                       dzsa2*cvolmaxmel-dzsa*(cvolinigrv+cvolinisan)-ddzs2*cvolmaxsort)
                 dvolsan=MAX(dvolsan,0.0_rsh)
                 ! une partie des sables dvolsab (avec repartition frdep) 
@@ -4168,7 +4189,9 @@ MODULE sed_MUSTANG
                   !!! Part de vase melangee avec le sediment present initialement dans la couche ksmax
                    !!! Part of mud mixed with the sediment initially present in the ksmax layer
                   IF((cvolinigrv+cvolinisan) .GT. 0.0_rsh) THEN
-                    dmasmud3 = MIN(masdepmud-dmasmud1-dmasmud2,dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan))
+                    dmasmud3 = MIN(masdepmud-dmasmud1-dmasmud2, &
+                          dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan), &
+                          (dzsa*(poro(ksmax,i,j)- poro_min) - dvolsan - dvolgrv)*ros(imud1))
                   END IF
                   dmasmud3 = MAX(0.0_rsh,dmasmud3)
                   dmasmud = dmasmud2 + dmasmud3
@@ -4198,9 +4221,13 @@ MODULE sed_MUSTANG
 
 
                 ELSE
-                  dmasmud2 = MIN(masdepmud,(dzsa3-dzsa)*cfreshmud*(1-cvolmaxsort))
+                  dmasmud2 = MIN(masdepmud,&
+                        (dzsa3-dzsa)*cfreshmud*(1-cvolmaxsort),&
+                        dzsa*(poro(ksmax,i,j)- poro_min)*ros(imud1))
                   IF((cvolinigrv+cvolinisan) .GT. 0.0_rsh) THEN
-                    dmasmud3 = MIN(masdepmud-dmasmud2,dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan))
+                    dmasmud3 = MIN(masdepmud-dmasmud2, &
+                          dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan), &
+                          (dzsa*(poro(ksmax,i,j)- poro_min))*ros(imud1))
                   END IF
                   dmasmud3 = MAX(0.0_rsh,dmasmud3)
                   dmasmud = dmasmud2 + dmasmud3
@@ -4559,17 +4586,6 @@ MODULE sed_MUSTANG
                 ENDIF  !  porewater > porewatera
               ENDIF  ! dwsnew > dzsmin
  
-              ! control writing :            
-              !if(poro(k,i,j).ge.0.9999_rsh)then
-              !  write(*,*)'dans effdep, a',t,'  en kij:',k,i,j
-              !  write(*,555)k,dzs(k,i,j),c_sedtot(k,i,j),poro(k,i,j)
-              !  write(*,*)dzsa,dzsgrv,dzssan,dzsmud,voldepgrv,voldepsan, &
-              !            masdepmud,frdep,(cv_sed(iv,k,i,j),iv=1,4)
-              !  write(*,*)igrav1,igrav2,isand1,isand2,imud1,imud2
-              !  write(*,*)(fluevs(iv,i,j),iv=1,5)
-              !  write(*,*)cvasr,cvascr,ddzs,ddzs1,ddzs2,ddzs3,ddzs4,ddzs5
-              !  write(*,*)ddzsici,dvolgrv,dvolsan,cvolinigrv,cvolinisan,dzsaici
-              !endif
 
            ! pour eviter l augmentation de l epaisseur de la couche de surface 
               IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
@@ -4629,6 +4645,7 @@ MODULE sed_MUSTANG
             IF (l_outsed_dzs_ksmax) var2D_dzs_ksmax(i,j)=dzs(ksmax,i,j)  ! dzs at sediment surface
        
           END IF ! test on htot
+
         END DO  ! loop on i
     END DO    ! loop on j
 
@@ -8618,7 +8635,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
            !!==============================================================================
      ENDIF                                   
 
-     ! sedimask_h0plusxe : = 1 si BATHY_H0(i,j)+WATER_ELEVATION(i,j) .GT. 1    = 0 sinon
+     ! sedimask_h0plusxe : = 1 si h+ssh .GT. 1    = 0 sinon
      ! ==> Le flux charrie en X et Y est mis a 0 si la maille voisine est a terre
      !TODO : put this in subroutine in sed_MUSTANG_HOST because it is host dependant (raphbx&raphby)
 
