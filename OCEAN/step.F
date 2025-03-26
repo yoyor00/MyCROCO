@@ -112,7 +112,7 @@ C$OMP END PARALLEL
 #  include "zoom.h"
 # endif
 #endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
 #ifdef ONLINE_ANALYSIS
@@ -136,13 +136,13 @@ C$OMP END PARALLEL
 #endif
 #include "ocean2d.h"
 #include "ocean3d.h"
-#if defined RVTK_DEBUG && ( defined BULK_FLUX || defined MRL_WCI )
+#if defined CVTK_DEBUG && ( defined BULK_FLUX || defined MRL_WCI )
 # include "forces.h"
 #endif
-#if ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST )
+#if ( defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST )
 # include "mixing.h"
 #endif
-#if defined RVTK_DEBUG_ADVANCED
+#if defined CVTK_DEBUG_ADVANCED
 # include "coupling.h"
 #endif
 
@@ -249,7 +249,7 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
-#if defined RVTK_DEBUG_PERFRST
+#if defined CVTK_DEBUG_PERFRST
        call check_tab3d(Hz_bak(:,:,:),'Hz_bak beg prestep3d','r')
 #endif
 
@@ -345,7 +345,7 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
-# if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+# if defined CVTK_DEBUG && defined CVTK_DEBUG_ADVANCED && defined BULK_FLUX
 #  ifndef ABL1D
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_befbulk','u')
@@ -377,7 +377,7 @@ C$OMP END MASTER
 #  endif
       enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#  if defined CVTK_DEBUG && defined CVTK_DEBUG_ADVANCED && defined BULK_FLUX
 #   ifndef ABL1D
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_aftbulk','u')
@@ -400,7 +400,7 @@ C$OMP BARRIER
 # endif /* BULK_FLUX */
 
 C$OMP BARRIER
-# if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+# if defined CVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
 #  if defined STRESS_AT_RHO_POINTS
       call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','r')
@@ -454,7 +454,7 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
       enddo
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#  if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(wac(:,:,wnew),'wac in prestep ','r')
@@ -470,7 +470,7 @@ C$OMP END MASTER
         call  mrl_wci (tile)
       enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#  if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP MASTER
       call check_tab2d(ust2d(:,:),'ust2d in prestep ','u')
       call check_tab2d(vst2d(:,:),'vst2d in prestep ','v')
@@ -578,7 +578,7 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
 
-# if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
+# if defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST
       do itrc=1,NT
         write(cltra,"('( t prestep3d tracer nb ', i2')')")  itrc
         call check_tab3d(t(:,:,:,nnew,itrc),trim(cltra),'r',
@@ -589,7 +589,7 @@ C$OMP MASTER
       call check_tab3d(v(:,:,:,nnew),'v prestep3d','v',
      &  ondevice=.TRUE.)
 # endif
-# if defined RVTK_DEBUG_ADVANCED
+# if defined CVTK_DEBUG_ADVANCED
       call check_tab2d(rufrc,'rufrc prestep3d','uint',
      &  ondevice=.TRUE.)
       call check_tab2d(rvfrc,'rvfrc prestep3d','vint',
@@ -637,7 +637,7 @@ C$OMP BARRIER
 #ifdef AGRIF
       use Agrif_Util
 #endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
       implicit none
@@ -645,7 +645,7 @@ C$OMP BARRIER
 #include "scalars.h"
 #include "ncscrum.h"
 #include "ocean2d.h"
-!#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined MRL_WCI
+!#if ( defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST ) && defined MRL_WCI
 !# include "forces.h"
 !#endif
 #ifdef FLOATS
@@ -656,10 +656,10 @@ C$OMP BARRIER
 #endif
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
-#elif ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST ) && defined M3FAST
+#elif ( defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST ) && defined M3FAST
 # include "nbq.h"
 #endif
-#if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
+#if defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST
 # include "forces.h"
 #endif
       integer range
@@ -711,7 +711,7 @@ C$OMP BARRIER
           call mrl_wci (tile)
         enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#  if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP MASTER
       call check_tab2d(ust2d(:,:),'ust2d in prestep ','u')
       call check_tab2d(vst2d(:,:),'vst2d in prestep ','v')
@@ -844,7 +844,7 @@ C$OMP BARRIER
         endif
 #endif
 
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef M3FAST
@@ -854,7 +854,7 @@ C$OMP MASTER
      &    ondevice=.TRUE.)
        call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v',
      &    ondevice=.TRUE.)
-#  ifdef RVTK_DEBUG_ADVANCED
+#  ifdef CVTK_DEBUG_ADVANCED
         call check_tab2d(bustr,'bustr step3d_fast','u')
         call check_tab2d(bvstr,'bvstr step3d_fast','v')
         !!call check_tab3d(qdmu_nbq,'qdmu_nbq step3d_fast','u')
@@ -905,7 +905,7 @@ C$OMP END MASTER
 #endif
 #if defined LMD_MIXING
 # include "mixing.h"
-#elif defined RVTK_DEBUG_PERFRST && defined TS_MIX_ISO_FILT
+#elif defined CVTK_DEBUG_PERFRST && defined TS_MIX_ISO_FILT
 # include "mixing.h"
 #endif
        integer range
@@ -1020,7 +1020,7 @@ C$OMP END MASTER
 #ifdef AGRIF
       use Agrif_Util
 #endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
 #   ifdef SUBSTANCE_SUBMASSBALANCE
@@ -1033,14 +1033,14 @@ C$OMP END MASTER
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
       use comMUSTANG, only : l_morphocoupl, t_morpho
 # endif
-# if defined RVTK_DEBUG && defined SOLVE3D
+# if defined CVTK_DEBUG && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
       use comMUSTANG, only : dzs
 #  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
       use comMUSTANG , only : flx_bx, flx_by
       use comsubstance, only : ibedload1, ibedload2
 #  endif /* key_MUSTANG_bedload  key_MUSTANG_V2 */
-# endif /* RVTK_DEBUG_AVANCED  SOLVE3D */
+# endif /* CVTK_DEBUG_AVANCED  SOLVE3D */
 #endif /* MUSTANG */
       implicit none
 #include "param.h"
@@ -1060,7 +1060,7 @@ C$OMP END MASTER
 #ifdef AUTOTILING
 # include "autotiling.h"
 #endif
-#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST )
+#if ( defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST )
 # include "mixing.h"
 #endif
       integer range
@@ -1131,7 +1131,7 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
-# if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
+# if defined CVTK_DEBUG_ADVANCED && defined SOLVE3D
 C$OMP MASTER
       do itrc = 1, NT
         call check_tab3d(Akt(:,:,1:N,itrc),'Akt step3d_t','r')
@@ -1142,7 +1142,7 @@ C$OMP MASTER
 #  endif
 C$OMP END MASTER
 # endif
-# if defined RVTK_DEBUG && defined SOLVE3D
+# if defined CVTK_DEBUG && defined SOLVE3D
 C$OMP MASTER
 #  if defined MUSTANG
         do ilay = ksdmin, ksdmax
@@ -1230,7 +1230,7 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif /*AGRIF && AGRIF_2WAY*/
 
-#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
+#if ( defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST ) && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT

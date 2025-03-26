@@ -38,7 +38,7 @@ CONTAINS
       TEMPREF_LIN = 10.0 
       SALREF_LIN  = 35.0
       CALL MUSTANG_update (Istr, Iend, Jstr, Jend,  & 
-                   t, zob, zeta,                    &
+                   t, zob,                          &
 # if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
                    ubar, vbar,                      &
 # endif
@@ -52,7 +52,7 @@ CONTAINS
       integer :: tile
 # include "ocean2d.h"
 # include "compute_tile_bounds.h"
-      CALL MUSTANG_deposition (Istr, Iend, Jstr, Jend, zeta, t)
+      CALL MUSTANG_deposition (Istr, Iend, Jstr, Jend, t)
       end subroutine
 !
 !-----------------------------------------------------------------------
@@ -71,7 +71,6 @@ CONTAINS
 # endif
 
       CALL MUSTANG_init (Istr, Iend, Jstr, Jend,  &
-                    zeta,                         &
 # if defined MORPHODYN
                     dh,                           &
 # endif
@@ -96,7 +95,7 @@ CONTAINS
 
 #else
 
-      module plug_MUSTANG_CROCO_empty
-      end module plug_MUSTANG_CROCO_empty
+      module plug_MUSTANG_CROCO
+      end module plug_MUSTANG_CROCO
       
 #endif /* MUSTANG */

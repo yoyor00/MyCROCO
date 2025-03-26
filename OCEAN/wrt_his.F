@@ -131,6 +131,10 @@
       endif
 #endif
 !
+! Make sure nrechis is larger than 0 before creating file
+!
+      nrechis=max(1,nrechis) 
+!
 ! Create/open history file; write grid arrays, if so needed.
 !
       call def_his (ncidhis, nrechis, ierr)
@@ -742,6 +746,10 @@ CR      write(stdout,*) 'wrt_his:    wrtstoXI3d' MYID
 !
 # ifdef TRACERS
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &   .and. itrc.ne.iCRT4) then
+# endif
          if (wrthis(indxV+itrc)) then
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,itrc))
             workr=t(:,:,:,nstp,itrc)
@@ -763,6 +771,9 @@ CR      write(stdout,*) 'wrt_his:    wrtstoXI3d' MYID
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
       endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+      endif
+# endif
       enddo
 # endif /* TRACERS */
 !
@@ -1400,6 +1411,10 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Tracer variables.
 !
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &   .and. itrc.ne.iCRT4) then
+# endif
         if (wrthis(indxT+itrc-1)) then
           workr=t(:,:,:,nstp,itrc)
 # if defined MUSTANG & defined key_sand2D
@@ -1431,6 +1446,9 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
      &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
         endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         endif
+# endif
       enddo
 
 !
@@ -1452,36 +1470,36 @@ CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
       indx=1
       if (outMust(indx)) then
         work2d=ksma(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname_Must(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his ksma'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=var2D_hsed(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname_Must(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_hsed'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=tauskin(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his tauskin'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=tauskin_c(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his tauskin_c'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=tauskin_w(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his tauskin_w'  MYID
       endif
       indx=indx+1
@@ -1489,8 +1507,8 @@ CR      write(*,*) 'wrt_his tauskin_w'  MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_dzs(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,b3dvar,type)
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_dzs'   MYID
       endif
       indx=indx+1
@@ -1498,8 +1516,8 @@ CR      write(*,*) 'wrt_his var3D_dzs'   MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_poro(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,b3dvar,type)
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_poro'   MYID
       endif
       indx=indx+1
@@ -1507,8 +1525,8 @@ CR      write(*,*) 'wrt_his var3D_poro'   MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_TEMP(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,b3dvar,type)
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
       endif
       indx=indx+1
@@ -1516,8 +1534,8 @@ CR      write(*,*) 'wrt_his var3D_TEMP'  MYID
         do k=1,nk_nivsed_out
           workrsed(:,:,k)=var3D_SAL(k,:,:)
         enddo
-        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,b3dvar,type)
+        call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3D_SAL'  MYID
       endif
       do itrc=1,ntrc_subs
@@ -1546,59 +1564,59 @@ CR        write(*,*) 'wrt_his ws_part'  MYID
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_toce(itrc,:,:)
-            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_toce'  MYID
             endif
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_flx_s2w(itrc,:,:)
-            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_s2w'  MYID
             endif      
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_flx_w2s(itrc,:,:)
-            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_w2s'  MYID
             endif
 #ifdef  key_MUSTANG_V2
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_pephm_fcor(itrc,:,:)
-            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_pephm_fcor'  MYID
             endif
 #ifdef key_MUSTANG_bedload
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_flx_bx(itrc,:,:)
-            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_bx'  MYID
             endif
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_flx_by(itrc,:,:)
-            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_by'  MYID
             endif
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_bil_bedload(itrc,:,:)
-            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_bil_bedload'  MYID
             endif
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_fsusp(itrc,:,:)
-            call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+            call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_fsusp'  MYID
             endif
 # endif /* key_MUSTANG_bedload */
@@ -1608,122 +1626,122 @@ CR      write(*,*) 'wrt_his var2D_fsusp'  MYID
       indx=indx+1
       if (outMust(indx)) then
         work2d=var2D_frmudsup(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_frmudsup'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=var2D_dzs_ksmax(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_dzs_ksmax'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=z0sed(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his z0sed'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=zob(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his zob'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=var2D_flx_s2w_noncoh(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_s2w_noncoh'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=var2D_flx_w2s_noncoh(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_w2s_noncoh'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=var2D_flx_s2w_coh(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_s2w_ncoh'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
         work2d=var2D_flx_w2s_coh(:,:)
-        call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+        call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_w2s_coh'  MYID
       endif
 #ifdef  key_MUSTANG_V2
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_theoric_active_layer(:,:)
-      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_theoric_active_layer'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_tero_noncoh(:,:)
-      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_tero_noncoh'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_tero_coh(:,:)
-      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_tero_coh'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_pct_iter_noncoh(:,:)
-      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_pct_iter_noncoh'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_pct_iter_coh(:,:)
-      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_pct_iter_coh'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_niter_ero(:,:)
-      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_niter_ero'  MYID
       endif
 #ifdef key_MUSTANG_bedload
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_flx_bx_int(:,:)
-      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_bx_int'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_flx_by_int(:,:)
-      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_flx_by_int'  MYID
       endif
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_bil_bedload_int(:,:)
-      call fillvalue2d(work2d,ncidhis,hisMust(indx),vname(1,indx),
-     &                   record,r2dvar,type)
+      call fillvalue2d(work2d,ncidhis,hisMust(indx),
+     &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_bil_bedload_int'  MYID
       endif
 
@@ -1737,7 +1755,7 @@ CR      write(*,*) 'wrt_his var2D_bil_bedload_int'  MYID
             workrsed(:,:,k)=var3Dksed_loadograv(k,:,:)
             enddo
             call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
-     &                   vname(1,indx),record,b3dvar,type)
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3Dksed_loadograv'   MYID
             endif
             indx=indx+1
@@ -1746,7 +1764,7 @@ CR      write(*,*) 'wrt_his var3Dksed_loadograv'   MYID
             workrsed(:,:,k)=var3Dksed_sigmadjge(k,:,:)
             enddo
             call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
-     &                   vname(1,indx),record,b3dvar,type)
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3Dksed_sigmadjge'   MYID
             endif
             indx=indx+1
@@ -1755,7 +1773,7 @@ CR      write(*,*) 'wrt_his var3Dksed_sigmadjge'   MYID
             workrsed(:,:,k)=var3Dksed_sigmapsg(k,:,:)
             enddo
             call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
-     &                   vname(1,indx),record,b3dvar,type)
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3Dksed_sigmapsg'   MYID
             endif
             indx=indx+1
@@ -1764,7 +1782,7 @@ CR      write(*,*) 'wrt_his var3Dksed_sigmapsg'   MYID
             workrsed(:,:,k)=var3Dksed_stateconsol(k,:,:)
             enddo
             call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
-     &                   vname(1,indx),record,b3dvar,type)
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3Dksed_stateconsol'   MYID
             endif
             indx=indx+1
@@ -1773,7 +1791,7 @@ CR      write(*,*) 'wrt_his var3Dksed_stateconsol'   MYID
             workrsed(:,:,k)=var3Dksed_permeab(k,:,:)
             enddo
             call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
-     &                   vname(1,indx),record,b3dvar,type)
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3Dksed_permeab'   MYID
             endif
             indx=indx+1
@@ -1782,7 +1800,7 @@ CR      write(*,*) 'wrt_his var3Dksed_permeab'   MYID
             workrsed(:,:,k)=var3Dksed_hinder(k,:,:)
             enddo
             call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
-     &                   vname(1,indx),record,b3dvar,type)
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3Dksed_hinder'   MYID
             endif
             indx=indx+1
@@ -1791,7 +1809,7 @@ CR      write(*,*) 'wrt_his var3Dksed_hinder'   MYID
             workrsed(:,:,k)=var3Dksed_sed_rate(k,:,:)
             enddo
             call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
-     &                   vname(1,indx),record,b3dvar,type)
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3Dksed_sed_rate'   MYID
             endif
             indx=indx+1
@@ -1800,7 +1818,7 @@ CR      write(*,*) 'wrt_his var3Dksed_sed_rate'   MYID
             workrsed(:,:,k)=var3Dksed_dtsdzs(k,:,:)
             enddo
             call fillvalue3d_must(workrsed,ncidhis,hisMust(indx),
-     &                   vname(1,indx),record,b3dvar,type)
+     &                   vname_Must(1,indx),record,b3dvar,type)
 CR      write(*,*) 'wrt_his var3Dksed_dtsdzs'   MYID
             endif
       ENDIF ! l_dyn_insed

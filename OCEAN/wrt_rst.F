@@ -18,6 +18,7 @@
 
 #if defined MUSTANG
       USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
+      USE dredging, ONLY : l_dredging, dredg_hsed_init
 #endif
 
 !     implicit none
@@ -367,6 +368,10 @@
 # ifdef TRACERS
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,:))
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &  .and. itrc.ne.iCRT4) then
+# endif
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)
         if (ierr .ne. nf_noerr) then
@@ -375,6 +380,9 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+       endif
+# endif
       enddo
 # endif
 
@@ -776,6 +784,22 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
           goto 99                                         !--> ERROR
         endif
        enddo
+
+! dredging
+       if (l_dredging) then
+          work2d = dredg_hsed_init
+          indx = indx + 1
+          ierr = nf_fwrite(work2d, ncidrst, rstMust(indx),
+     &                                       record, r2dvar)
+          if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname_rstMust(1,indx))
+            write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+     &                  MYID
+            goto 99                                         !--> ERROR
+          endif
+       endif
+
+
 # endif /* MUSTANG */
 
 #endif /* SOLVE3D */

@@ -497,6 +497,10 @@ C$    integer omp_get_thread_num
             TForc_mld(i,j,itrc)=init
             Trate_mld(i,j,itrc)=init
             Tentr_mld(i,j,itrc)=init
+            Taver_mld(i,j,itrc)=init
+# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+            Tcrit_mld(i,j,itrc)=init
+# endif
 #   ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
             TYadv_mld_avg(i,j,itrc)=init
@@ -506,7 +510,10 @@ C$    integer omp_get_thread_num
             TForc_mld_avg(i,j,itrc)=init
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
-
+            Taver_mld_avg(i,j,itrc)=init
+# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+            Tcrit_mld_avg(i,j,itrc)=init
+# endif
 #   endif /* AVERAGES*/
           enddo
         enddo
@@ -643,9 +650,6 @@ C$    integer omp_get_thread_num
 #   if defined DIAGNOSTICS_BARO
           ekBaro_mld(i,j)=init
 #   endif
-#   if defined M3FAST
-          ekfast_mld(i,j)=init
-#   endif
 #   ifdef AVERAGES
           ekHadv_mld_avg(i,j)=init
           ekHdiff_mld_avg(i,j)=init
@@ -659,9 +663,6 @@ C$    integer omp_get_thread_num
           ekVmix2_mld_avg(i,j)=init
 #    ifdef DIAGNOSTICS_BARO
           ekBaro_mld_avg(i,j)=init
-#    endif
-#    if defined M3FAST
-          ekfast_mld_avg(i,j)=init
 #    endif
 #   endif /* AVERAGES */
 #  endif /* DIAGNOSTICS_EK_MLD */
