@@ -280,8 +280,7 @@ CONTAINS
 
       !! * Local declaration
       INTEGER          :: iv
-      REAL(KIND=rsh)   :: dz_acc, dz_bot, dz_up, vel_tmp, dherod
-      CHARACTER(LEN=lchain) :: CaseS
+      REAL(KIND=rsh)   :: dz_acc, dz_bot, dz_up, dherod
       TYPE(hbs1dv_param_type) :: var
 
       dz_root(:) = 0.0_rsh
@@ -319,7 +318,6 @@ CONTAINS
                   ! * CASE-1.1 : ROOT LEVEL ALREADY AT SEDIMENT SURFACE * !
                   ! ***************************************************** !
                   ! Update depth of root level related to bed erosion
-                  CaseS = '1.1'
                   zup_root(iv) = zup_root0(iv) ! No change, already = 0.0
                   IF (var%l_root_erosion) THEN
                      ! *************************** !
@@ -342,7 +340,6 @@ CONTAINS
                      ! * Thickness of eroded layer is lower than depth of   * !
                      ! * root level                                         * !
                      ! ****************************************************** !
-                     CaseS = '1.2a'
                      zup_root(iv) = zup_root0(iv) - dherod
                      thick_root(iv) = thick_root0(iv)! No change of thickness
                   ELSE
@@ -351,7 +348,6 @@ CONTAINS
                      ! * root level                                         * !
                      ! * All surficial layer is eroded + part of root level * !
                      ! ****************************************************** !
-                     CaseS = '1.2b'
                      dz_bot = dherod - zup_root0(iv) ! Thickness of roots which
                      ! will be eroded
                      zup_root(iv) = 0.0_rsh ! Roots reache sediment surface
@@ -380,7 +376,6 @@ CONTAINS
                         ! * THERE WILL HAVE BOTH UPWARD & DOWNWARD           * !
                         ! * ACCOMODATION                                     * !
                         ! **************************************************** !
-                        CaseS = '1.2.1.1'
                         zup_root(iv) = zup_root(iv) - dz_up
                         ! Root level moves upward (dz_up)
                         thick_root(iv) = MIN(thick_root(iv) + dz_acc, &
@@ -393,7 +388,6 @@ CONTAINS
                         ! * UPWARD ACCOMODATION                              * !
                         ! * THERE WILL HAVE ONLY UPWARD ACCOMODATION         * !
                         ! **************************************************** !
-                        CaseS = '1.2.1.2'
                         zup_root(iv) = zup_root(iv) - dz_acc
                         ! Root level moves upward (dz_up)
                         thick_root(iv) = MIN(thick_root(iv) + dz_acc, &
@@ -405,7 +399,6 @@ CONTAINS
                      ! * CASE-1.2.2 : ROOT LEVEL IS ABOVE OPTIMAL DEPTH * !
                      ! *              IT MAY ONLY ACCOMODATE DOWNWARD   * !
                      ! ************************************************** !
-                     CaseS = '1.2.2'
                      thick_root(iv) = MIN(thick_root(iv) + dz_acc, &
                                           var%c_opt_root_thick)
                   END IF ! * END TEST ON hbs_zup_root.GT.hbs_c_opt_root_depth
@@ -423,7 +416,6 @@ CONTAINS
                   ! * ROOT LEVEL IS ROOT LEVEL IS ABOVE OPTIMAL DEPTH        * !
                   ! * IT MAY ONLY ACCOMODATE DOWNWARD                        * !
                   ! ********************************************************** !
-                  CaseS = '2.1'
                   thick_root(iv) = MIN(thick_root0(iv) + dz_acc, &
                                        var%c_opt_root_thick)
                ELSE
@@ -440,7 +432,6 @@ CONTAINS
                      ! * UPWARD ACCOMODATION                                 * !
                      ! * THERE WILL HAVE BOTH UPWARD & DOWNWARD ACCOMODATION * !
                      ! ******************************************************* !
-                     CaseS = '2.2.1'
                      zup_root(iv) = zup_root(iv) - dz_up
                      ! Root level moves upward (dz_up)
                      thick_root(iv) = MIN(thick_root0(iv) + dz_acc, &
@@ -453,7 +444,6 @@ CONTAINS
                      ! * UPWARD ACCOMODATION                                 * !
                      ! * THERE WILL HAVE ONLY UPWARD ACCOMODATION            * !
                      ! ******************************************************* !
-                     CaseS = '2.2.2'
                      zup_root(iv) = zup_root(iv) - dz_acc
                      ! Root level moves upward (dz_up)
                      thick_root(iv) = MIN(thick_root0(iv) + dz_acc, &
