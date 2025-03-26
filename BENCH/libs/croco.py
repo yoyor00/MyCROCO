@@ -717,8 +717,16 @@ class Croco:
             self.check_one_file_from_seq_ref(filename)
 
     def check(self):
-        for filename in self.case["check_outputs"]:
-            self.check_one_file(filename)
+        if (
+            not self.config.use_ref
+            and self.variant_name == self.config.variant_ref_name
+            and not self.restarted
+        ):
+            Messaging.step(f"Checking skiped for '{self.config.variant_ref_name}'")
+            return
+        else:
+            for filename in self.case["check_outputs"]:
+                self.check_one_file(filename)
 
     def plotphy(self):
         dirname = self.dirname
