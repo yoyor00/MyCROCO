@@ -52,10 +52,6 @@
 # define ARRAY_WATER_CONC GLOBAL_2D_ARRAY,N,3,NT
 # define ARRAY_DHSED GLOBAL_2D_ARRAY 
 
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
-# define ARRAY_LATLON GLOBAL_2D_ARRAY
-#endif
-
 /* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
 !*/
 # define NUMBER_PI pi
