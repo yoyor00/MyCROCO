@@ -174,13 +174,6 @@ class Croco:
         # jump in & build
         croco_build.make(make_jobs)
 
-        # copy log file in result dir
-        if os.path.exists(os.path.join(self.dirname, "jobcomp.log")):
-            shutil.copyfile(
-                os.path.join(self.dirname, "jobcomp.log"),
-                os.path.join(self.dirname_result, "jobcomp.log"),
-            )
-
     def enable_cvtk_checking(self):
         # vars
         croco_build = self.croco_build
@@ -200,25 +193,38 @@ class Croco:
             croco_build.cppdef_h_set_key("CVTK_DEBUG_PERFRST", True)
 
     def build(self, extra_info: str = "", force_rebuild: bool = False):
+        build_error = False
+        build_error_details = None
         if self.config.continue_on_error:
             try:
                 self.build_internal(extra_info, force_rebuild)
             except Exception as e:
                 Messaging.step_error("Fail to build !")
-                self.config.report.report_status(
-                    self.case_name,
-                    self.variant_name,
-                    self.restarted,
-                    "build",
-                    False,
-                    str(e),
-                )
-                return
+                build_error = True
+                build_error_details = e
+
         else:
             self.build_internal(extra_info, force_rebuild)
-        self.config.report.report_status(
-            self.case_name, self.variant_name, self.restarted, "build", True
-        )
+
+        if build_error:
+            self.config.report.report_status(
+                self.case_name,
+                self.variant_name,
+                self.restarted,
+                "build",
+                False,
+                str(build_error_details),
+            )
+        else:
+            self.config.report.report_status(
+                self.case_name, self.variant_name, self.restarted, "build", True
+            )
+        # copy log file in result dir
+        if os.path.exists(os.path.join(self.dirname, "jobcomp.log")):
+            shutil.copyfile(
+                os.path.join(self.dirname, "jobcomp.log"),
+                os.path.join(self.dirname_result, "jobcomp.log"),
+            )
 
     def build_internal(self, extra_info: str = "", force_rebuild: bool = False):
         # display
