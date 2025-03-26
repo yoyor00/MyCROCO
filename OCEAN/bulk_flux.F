@@ -19,11 +19,11 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       call bulk_flux_tile (Istr,Iend,Jstr,Jend,
-     &                               A2d(1,1,trd),A2d(1,2,trd))
+     &                               A2d(1,1,trd))
       return
       end
 
-      subroutine bulk_flux_tile (Istr,Iend,Jstr,Jend, aer,cer)
+      subroutine bulk_flux_tile (Istr,Iend,Jstr,Jend,aer)
       !
       !======================================================================
       !                 ***  SUBROUTINE  bulk_flux  ***
@@ -38,9 +38,7 @@
 # include "param.h"
 # include "grid.h"
 # include "ocean3d.h"
-# ifdef STO_XI2D
-#  include "ocean2d.h"
-# endif
+# include "ocean2d.h"
 # include "forces.h"
 # include "scalars.h"
 # include "params_bulk.h"
@@ -122,7 +120,6 @@
 # endif
 !++ Local arrays
       REAL           ::  aer(PRIVATE_2D_SCRATCH_ARRAY)
-      REAL           ::  cer(PRIVATE_2D_SCRATCH_ARRAY)
 # ifdef CFB_STRESS
       REAL           ::  stau(PRIVATE_2D_SCRATCH_ARRAY)
 # endif

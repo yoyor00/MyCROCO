@@ -17,9 +17,11 @@
       real zeta(GLOBAL_2D_ARRAY,4)
       real ubar(GLOBAL_2D_ARRAY,4)
       real vbar(GLOBAL_2D_ARRAY,4)
+      real cer(GLOBAL_2D_ARRAY)
       common /ocean_zeta/zeta
       common /ocean_ubar/ubar
       common /ocean_vbar/vbar
+      common /ocean_cer/cer
 
 #if !defined SOLVE3D && defined M2_HADV_UP3
       real urhs(GLOBAL_2D_ARRAY)
