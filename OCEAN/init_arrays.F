@@ -726,7 +726,7 @@ C$    integer omp_get_thread_num
             enddo
             do iflux=1,NumVSinkTerms
               bioVSink(i,j,iflux)= init
-
+            enddo
 #   endif
 #  elif defined BLOOM
             do iflux=1,NumBLMdiag3d

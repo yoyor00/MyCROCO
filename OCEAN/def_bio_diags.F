@@ -176,10 +176,11 @@
         v2dgrd(1)=r2dgrd(1)         ! 2D VBAR-type
         v2dgrd(3)=timedim
 
+# if defined  BLOOM && defined MUSTANG && defined key_BLOOM_insed
         b3dgrd(1)=r2dgrd(1)         !
         b3dgrd(2)=r2dgrd(2)         ! 3D BED-type
         b3dgrd(4)=timedim           !
-
+# endif
 # ifdef SOLVE3D
         r3dgrd(1)=r2dgrd(1)         !
         r3dgrd(2)=r2dgrd(2)         ! 3D RHO-type
@@ -669,6 +670,8 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid,vidTime2,nf_collective)
 # endif
+
+#if defined BIOLink_PAR_eval && defined BLOOM
 !
 ! PAR
 !
@@ -678,6 +681,8 @@
           write(stdout,1) vname(1,indxPAR)(1:lvar), ncname(1:lstr)
           goto 99                                       !--> ERROR
         endif
+# endif
+
 !
 ! Tracer flux diagnostics variables.
 !
