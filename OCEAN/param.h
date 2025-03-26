@@ -481,6 +481,7 @@
       parameter (ntrc_stogen=3)
 # else
       parameter (ntrc_stogen=0)
+#endif
 #if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
       parameter (ntrc_mld=3)
 # else
