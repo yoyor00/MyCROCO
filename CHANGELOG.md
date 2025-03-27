@@ -35,4 +35,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 - New contributors : 
-  D.Gourves, Q. Jamet
+  D.Gourves, Q.Jamet, L.Weiss
