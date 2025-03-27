@@ -16,12 +16,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- SUBSTANCE : submassbalance feature is now activated only by namelist
 
 ### Deprecated
 
 
 ### Removed
 
+- SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
+  by boolean in namelist
 
 ### Other
 
@@ -29,7 +32,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, S. Le Gac
+  R. Benshila, M.Caillaud, S. Le Gac
 
 
 - New contributors : 
