@@ -6,6 +6,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- STOGEN : add stochastic parametrizations (Issue #301)
+
 
 ### Fixed
 
@@ -33,3 +35,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 - New contributors : 
+  D.Gourves, Q. Jamet
