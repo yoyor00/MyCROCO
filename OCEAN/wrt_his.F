@@ -1537,10 +1537,13 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
               if (itrc .gt. nvpc .AND. itrc .le. nvp) then
                 do j=0,Mm+1
                   do i=0,Lm+1
-                    if(c_sedtot(k,i,j) .gt. 0.0) then
-                      workrsed(i,j,k)=var3D_cvsed(k,i,j,itrc)/c_sedtot(k,i,j)
+                    if(rmask_wet(i,j).eq.1) then
+                      if(c_sedtot(k,i,j) .gt. 0.0) then
+!                     ... in the sediment, writes the particulate variables in mmole/kgSed
+                        workrsed(i,j,k)=var3D_cvsed(k,i,j,itrc)/c_sedtot(k,i,j)
+                      endif
                     else
-                      workrsed(i,j,k)=var3D_cvsed(k,i,j,itrc)
+                      workrsed(i,j,k)=0.0
                     endif
                   enddo
                 enddo
