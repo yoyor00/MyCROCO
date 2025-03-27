@@ -402,6 +402,9 @@
 # ifdef K3FAST_SACOUS
 #  undef NBQ_IMP
 # endif
+# ifdef K3FAST_SOFAR
+#  define K3FAST_CSVISC2K
+# endif
 #endif  /* NBQ || KNBQ || KNHINT || KHCOMP || KH3D */
 /*
 ======================================================================

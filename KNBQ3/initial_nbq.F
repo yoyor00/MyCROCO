@@ -73,6 +73,9 @@
       real zbar
 # endif
       integer i,j,k
+# if defined K3FAST_CSVISC2K && defined K3fAST_SOFAR
+      integer ks,dks
+# endif
 
 # include "compute_extended_bounds.h"
 
@@ -138,7 +141,22 @@
 
         visc2_nbq=visc2read_nbq
         visc2v_nbq=visc2read_nbq   
+#  if defined K3FAST_CSVISC2K && defined K3fAST_SOFAR
+        ks=10
+        dks=2
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+             soundspeed_nbq(i,j,k)=csound_nbq*(1.
+     &      +2.*(1.-tanh(-(z_r(i,j,k )    -z_r(i,j,N-ks))/
+     &                    (z_r(i,j,ks-dks)-z_r(i,j,ks+dks)))) )
+            enddo
+          enddo
+        enddo
+#  else
         soundspeed_nbq  =csound_nbq
+#  endif
+
         soundspeed2_nbq =csound_nbq**2
         
 #ifdef K3FAST_CSVISC2K        
