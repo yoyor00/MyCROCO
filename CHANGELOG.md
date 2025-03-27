@@ -13,6 +13,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Fixed
 
 - PISCES : Fixed error on diagnostic ligands and add Fe2+ oxydation rate (Issue #371)
+- BENCH : do not put report status to True for reference variant to avoid
+  to mark test passed even if not (Issue #342)
 - BENCH : put jobcomp.log in results directory even if build fail
 
 

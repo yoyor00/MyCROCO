@@ -636,17 +636,7 @@ class Croco:
         case_name = self.case_name
         dirname = self.dirname
         variant_ref_name = self.config.variant_ref_name
-
-        # if ref variant skip
-        if self.variant_name == variant_ref_name and not self.restarted:
-            Messaging.step(
-                f"Checking {case_name} / {filename} skiped for '{variant_ref_name}'"
-            )
-            return
-        else:
-            Messaging.step(f"Checking {case_name} / {filename}")
-
-        # error
+        Messaging.step(f"Checking {case_name} / {filename}")
         seq_dir = self.calc_rundir(variant_ref_name, case_name, False)
         seq_file = os.path.join(seq_dir, filename)
         if not os.path.exists(seq_file):
@@ -723,8 +713,16 @@ class Croco:
             self.check_one_file_from_seq_ref(filename)
 
     def check(self):
-        for filename in self.case["check_outputs"]:
-            self.check_one_file(filename)
+        if (
+            not self.config.use_ref
+            and self.variant_name == self.config.variant_ref_name
+            and not self.restarted
+        ):
+            Messaging.step(f"Checking skiped for '{self.config.variant_ref_name}'")
+            return
+        else:
+            for filename in self.case["check_outputs"]:
+                self.check_one_file(filename)
 
     def plotphy(self):
         dirname = self.dirname
