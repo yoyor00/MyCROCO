@@ -159,7 +159,6 @@ class Plotting:
             # start plot
             fig, ax = pyplot.subplots()
 
-
             # build graph
             x_pos = numpy.arange(len(case_data["variants"]))
             # ax.bar(x_pos, entry['median'], yerr=[entry['min'],entry['max']], align='center', alpha=0.5, ecolor='black', capsize=10)
