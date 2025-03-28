@@ -21,9 +21,6 @@
 # define ierrorlog stdout
 # define iwarnlog stdout
 
-/* Directory where are namelists files */
-# define REPFICNAMELIST 'MUSTANG_NAMELIST'
-
 /* Spatial Grid limits definition  of loops inside the domain - except meshes at open boundaries */
 # define IMIN_GRID 1
 # define IMAX_GRID Lm

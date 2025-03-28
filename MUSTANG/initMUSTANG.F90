@@ -235,7 +235,7 @@ CONTAINS
     ! Read default and then user namelist
     lstr = lenstr(sedname_must)
     filepc_user = sedname_must(1:lstr)
-    filepc = REPFICNAMELIST//'/paraMUSTANG_default.txt'
+    filepc = "MUSTANG_NAMELIST/paraMUSTANG_default.txt"
     CALL MUSTANG_readnml(filepc) ! read default namelist
     CALL MUSTANG_readnml(filepc_user) ! read user namelist (replace default param)
 
