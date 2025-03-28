@@ -40,7 +40,6 @@
 #ifdef BIOLink
           USE coupleur_BIOLink , ONLY : BIOLink_initialization
           USE coupleur_BIOLink , ONLY : BIOLink_init_main
-          integer :: icall = 0
 #endif
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_init_main
@@ -59,6 +58,9 @@
       use buffer, only: init_buffer
 !     implicit none
       integer tile, subs, trd, ierr
+#ifdef BIOLink
+      integer :: icall = 0
+#endif
 #include "param.h"
 #include "private_scratch.h"
 #include "nbq.h"
