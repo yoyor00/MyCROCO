@@ -12,6 +12,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BENCH : do not put report status to True for reference variant to avoid
   to mark test passed even if not (Issue #342)
 - BENCH : put jobcomp.log in results directory even if build fail
+- BENCH : remove openmp reproducibility check on SHOREFACE case (Incident #358)
 
 
 ### Changed
