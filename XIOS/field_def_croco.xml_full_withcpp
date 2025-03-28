@@ -613,6 +613,63 @@
        <field id="S_Vmix" long_name="S Vmix" unit="PSU second-1" grid_ref="rho_3D"/>
        <field id="S_Forc" long_name="S Forc" unit="PSU second-1" grid_ref="rho_3D"/>
 #  endif
+#  ifdef DIAGNOSTICS_TS_MLD
+#  if defined TEMPERATURE && defined DIAGNOSTICS_TS_MLD_CRIT
+       <field id="T_rate_mld" long_name="T rate mld (rho crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_adv_mld" long_name="T adv mld (rho crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Hmix_mld" long_name="T Hmix mld (rho crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Vmix_mld" long_name="T Vmix mld (rho crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Forc_mld" long_name="T Forc mld (rho crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_entr_mld" long_name="T entr mld (rho crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_aver_mld" long_name="T aver mld (rho crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_depth_mld" long_name="T depth mld (rho crit)" unit="Meter" grid_ref="rho_3D"/>
+#  elif defined TEMPERATURE
+       <field id="T_rate_mld" long_name="T rate mld" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_adv_mld" long_name="T adv mld" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Hmix_mld" long_name="T Hmix mld" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Vmix_mld" long_name="T Vmix mld" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Forc_mld" long_name="T Forc mld" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_entr_mld" long_name="T entr mld" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_aver_mld" long_name="T aver mld" unit="Celsius second-1" grid_ref="rho_3D"/>
+#  endif
+#  ifdef SALINITY
+       <field id="S_rate_mld" long_name="S rate mld" unit="PSU second-1" grid_ref="rho_3D"/>
+       <field id="S_adv_mld" long_name="S adv mld" unit="PSU second-1" grid_ref="rho_3D"/>
+       <field id="S_Hmix_mld" long_name="S Hmix mld" unit="PSU second-1" grid_ref="rho_3D"/>
+       <field id="S_Vmix_mld" long_name="S Vmix mld" unit="PSU second-1" grid_ref="rho_3D"/>
+       <field id="S_Forc_mld" long_name="S Forc mld" unit="PSU second-1" grid_ref="rho_3D"/>
+       <field id="S_entr_mld" long_name="S entr mld" unit="PSU second-1" grid_ref="rho_3D"/>
+       <field id="S_aver_mld" long_name="S aver mld" unit="PSU second-1" grid_ref="rho_3D"/>
+#  endif
+#  ifdef DIAGNOSTICS_TS_MLD_CRIT
+       <field id="T_rate_mld2" long_name="T rate mld (T crit1)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_adv_mld2" long_name="T adv mld (T crit1)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Hmix_mld2" long_name="T Hmix mld (T crit1)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Vmix_mld2" long_name="T Vmix mld (T crit1)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Forc_mld2" long_name="T Forc mld (T crit1)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_entr_mld2" long_name="T entr mld (T crit1)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_aver_mld2" long_name="T aver mld (T crit1)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_depth_mld2" long_name="T depth mld (T crit1)" unit="Meter" grid_ref="rho_3D"/>
+
+       <field id="T_rate_mld3" long_name="T rate mld (T crit2)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_adv_mld3" long_name="T adv mld (T crit2)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Hmix_mld3" long_name="T Hmix mld (T crit2)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Vmix_mld3" long_name="T Vmix mld (T crit2)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Forc_mld3" long_name="T Forc mld (T crit2)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_entr_mld3" long_name="T entr mld (T crit2)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_aver_mld3" long_name="T aver mld (T crit2)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_depth_mld3" long_name="T depth mld (T crit2)" unit="Meter" grid_ref="rho_3D"/>
+
+       <field id="T_rate_mld4" long_name="T rate mld (bvf crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_adv_mld4" long_name="T adv mld (bvf crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Hmix_mld4" long_name="T Hmix mld (bvf crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Vmix_mld4" long_name="T Vmix mld (bvf crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_Forc_mld4" long_name="T Forc mld (bvf crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_entr_mld4" long_name="T entr mld (bvf crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_aver_mld4" long_name="T aver mld (bvf crit)" unit="Celsius second-1" grid_ref="rho_3D"/>
+       <field id="T_depth_mld4" long_name="T depth mld (bvf crit)" unit="Meter" grid_ref="rho_3D"/>
+#  endif
+#  endif
     </field_group>
 #endif
 

@@ -3393,10 +3393,146 @@ c !$acc wait
           call xios_send_field("S_Forc",TForc(:,:,:,itrc))
       endif
 #  endif
+#  ifdef DIAGNOSTICS_TS_MLD
+        itrc = 1
+#  ifdef TEMPERATURE
+      if (xios_field_is_active("T_rate_mld")) then
+          call xios_send_field("T_rate_mld", Trate_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_adv_mld")) then
+          call xios_send_field("T_adv_mld", TXadv_mld(:,:,:,itrc)
+     &           + TYadv_mld(:,:,:,itrc) + TVadv_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Hmix_mld")) then
+          call xios_send_field("T_Hmix_mld",THmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Vmix_mld")) then
+          call xios_send_field("T_Vmix_mld",TVmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Forc_mld")) then
+          call xios_send_field("T_Forc_mld",TForc_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_entr_mld")) then
+          call xios_send_field("T_entr_mld",Tentr_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_aver_mld")) then
+          call xios_send_field("T_aver_mld",Taver_mld(:,:,:,itrc))
+      endif
+#  ifdef DIAGNOSTICS_TS_MLD_CRIT
+      if (xios_field_is_active("T_depth_mld")) then
+          call xios_send_field("T_depth_mld",Tdepth_mld(:,:,:,itrc))
+      endif
 #  endif
+        itrc = itrc + 1
+#  endif
+#  ifdef SALINITY
+      if (xios_field_is_active("S_rate_mld")) then
+          call xios_send_field("S_rate_mld", Trate_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_adv_mld")) then
+          call xios_send_field("S_adv_mld", TXadv_mld(:,:,:,itrc)
+     &           + TYadv_mld(:,:,:,itrc) + TVadv_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Hmix_mld")) then
+          call xios_send_field("S_Hmix_mld",THmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Vmix_mld")) then
+          call xios_send_field("S_Vmix_mld",TVmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Forc_mld")) then
+          call xios_send_field("S_Forc_mld",TForc_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_entr_mld")) then
+          call xios_send_field("S_entr_mld",Tentr_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("S_aver_mld")) then
+          call xios_send_field("S_aver_mld",Taver_mld(:,:,:,itrc))
+      endif
+        itrc = itrc + 1
+#  endif
+#  ifdef DIAGNOSTICS_TS_MLD_CRIT
+      if (xios_field_is_active("T_rate_mld2")) then
+          call xios_send_field("T_rate_mld2", Trate_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_adv_mld2")) then
+          call xios_send_field("T_adv_mld2", TXadv_mld(:,:,:,itrc)
+     &           + TYadv_mld(:,:,:,itrc) + TVadv_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Hmix_mld2")) then
+          call xios_send_field("T_Hmix_mld2",THmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Vmix_mld2")) then
+          call xios_send_field("T_Vmix_mld2",TVmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Forc_mld2")) then
+          call xios_send_field("T_Forc_mld2",TForc_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_entr_mld2")) then
+          call xios_send_field("T_entr_mld2",Tentr_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_aver_mld2")) then
+          call xios_send_field("T_aver_mld2",Taver_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_depth_mld2")) then
+          call xios_send_field("T_depth_mld2",Tdepth_mld(:,:,:,itrc))
+      endif
+        itrc = itrc + 1
 
+      if (xios_field_is_active("T_rate_mld3")) then
+          call xios_send_field("T_rate_mld3", Trate_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_adv_mld3")) then
+          call xios_send_field("T_adv_mld3", TXadv_mld(:,:,:,itrc)
+     &           + TYadv_mld(:,:,:,itrc) + TVadv_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Hmix_mld3")) then
+          call xios_send_field("T_Hmix_mld3",THmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Vmix_mld3")) then
+          call xios_send_field("T_Vmix_mld3",TVmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Forc_mld3")) then
+          call xios_send_field("T_Forc_mld3",TForc_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_entr_mld3")) then
+          call xios_send_field("T_entr_mld3",Tentr_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_aver_mld3")) then
+          call xios_send_field("T_aver_mld3",Taver_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_depth_mld3")) then
+          call xios_send_field("T_depth_mld3",Tdepth_mld(:,:,:,itrc))
+      endif
+        itrc = itrc + 1 
 
-
+      if (xios_field_is_active("T_rate_mld4")) then
+          call xios_send_field("T_rate_mld4", Trate_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_adv_mld4")) then
+          call xios_send_field("T_adv_mld4", TXadv_mld(:,:,:,itrc)
+     &           + TYadv_mld(:,:,:,itrc) + TVadv_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Hmix_mld4")) then
+          call xios_send_field("T_Hmix_mld4",THmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Vmix_mld4")) then
+          call xios_send_field("T_Vmix_mld4",TVmix_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Forc_mld4")) then
+          call xios_send_field("T_Forc_mld4",TForc_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_entr_mld4")) then
+          call xios_send_field("T_entr_mld4",Tentr_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_aver_mld4")) then
+          call xios_send_field("T_aver_mld4",Taver_mld(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("T_depth_mld4")) then
+          call xios_send_field("T_depth_mld4",Tdepth_mld(:,:,:,itrc))
+      endif
+#  endif
+#  endif
+#  endif
 
 #  ifdef DIAGNOSTICS_VRT
       if (xios_field_is_active("vrtrate")) then
