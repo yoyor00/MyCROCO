@@ -36,19 +36,11 @@
 #if defined BIOLOGY && defined PISCES && defined key_sediment
       USE par_sed, only: jpksed
 #endif
+      USE buffer, only: buff, max_buffer_N_size
       implicit none
 #include "param.h"
-#if defined MUSTANG
-      real A(GLOBAL_2D_ARRAY,max(N+1,nk_nivsed_out))
-      real buff((Lm+5)*(Mm+5)*max(N+1,nk_nivsed_out))
-#else
-# if defined ABL1D
-      real A(GLOBAL_2D_ARRAY,max(N+1,N_abl+1))
-# else
-      real A(GLOBAL_2D_ARRAY,N+1)
-# endif
-#include "buffer.h"
-#endif
+      real A(GLOBAL_2D_ARRAY,max_buffer_N_size)
+
       integer ncid,  type,   vert_type,  imin, imax,  start(4)
      &      , varid, record, horiz_type, jmin, jmax,  count(4)
      &      , i,j,k, shift,  ierr
@@ -196,7 +188,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #ifndef WRITER
 # ifdef ABL1D
       if (vert_type.eq.4) then
-        ierr=nf_get_vara_FTYPE (ncid, varid, start, count, buff_abl(1))
+        ierr=nf_get_vara_FTYPE (ncid, varid, start, count, buff(1))
       else
         ierr=nf_get_vara_FTYPE (ncid, varid, start, count, buff(1))
       endif
@@ -218,7 +210,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #ifdef WRITER
 # ifdef ABL1D
             if (vert_type.eq.4) then
-              buff_abl(i+shift)=A(i,j,k)
+              buff(i+shift)=A(i,j,k)
             else
               buff(i+shift)=A(i,j,k)
             endif
@@ -228,7 +220,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #else
 # ifdef ABL1D
             if (vert_type.eq.4) then
-              A(i,j,k)=buff_abl(i+shift)
+              A(i,j,k)=buff(i+shift)
             else
               A(i,j,k)=buff(i+shift)
             endif
@@ -246,7 +238,7 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
 #ifdef WRITER
 # ifdef ABL1D
       if (vert_type.eq.4) then
-        ierr=nf_put_vara_FTYPE (ncid, varid, start, count, buff_abl(1))
+        ierr=nf_put_vara_FTYPE (ncid, varid, start, count, buff(1))
       else
         ierr=nf_put_vara_FTYPE (ncid, varid, start, count, buff(1))
       endif

@@ -1250,6 +1250,30 @@ C$OMP BARRIER
 #endif /* ANA_INITIAL */
 
 #ifdef SOLVE3D
+
+!
+!--------------------------------------------------------------------
+!  Initial conditions for MLD CRIT2 & CRIT3
+!--------------------------------------------------------------------
+!
+#if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      do k=1,N
+        do j=JR_RANGE
+          do i=IR_RANGE
+
+              t(i,j,k,1,iCRT2)=20.
+              t(i,j,k,2,iCRT2)=20.
+              t(i,j,k,1,iCRT3)=20.
+              t(i,j,k,2,iCRT3)=20.
+              t(i,j,k,1,iCRT4)=20.
+              t(i,j,k,2,iCRT4)=20.
+            enddo
+          enddo
+        enddo
+
+# endif
+
+
 !
 !--------------------------------------------------------------------
 !  Initial conditions for passive tracer

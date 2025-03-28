@@ -14,7 +14,7 @@
 
       end module module_MUSTANG
 #else
-      module module_MUSTANG_empty
-      end module module_MUSTANG_empty
+      module module_MUSTANG
+      end module module_MUSTANG
       
 #endif /* MUSTANG */

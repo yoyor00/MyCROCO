@@ -635,9 +635,17 @@
 !++  Total surface heat flux
           stflx(i,j,itemp)=srflx(i,j)+hflw+hflat+hfsen
 #  ifdef SALINITY
-!++  Total surface salt flux
+          ! evap from latent heat flux
           evap=-cp*hflat/Hlv
+#   ifdef RAIN_FLUX
+          ! E-P bilan in m/s
+          EmP(i,j)=evap-prate(i,j) 
+          ! add temperature flux from rain
+          stflx(i,j,itemp)=stflx(i,j,itemp)+prate(i,j)*t(i,j,N,nrhs,itemp)
+#   else
+          !++  Total surface salt flux
           stflx(i,j,isalt)=(evap-prate(i,j))*t(i,j,N,nrhs,isalt)
+#   endif
 #  endif
 !
 #  ifdef MASKING

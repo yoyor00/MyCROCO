@@ -16,6 +16,7 @@ MODULE p4zmicro
    USE oce_trc         ! shared variables between ocean and passive tracers
    USE trc             ! passive tracers common variables 
    USE sms_pisces      ! PISCES Source Minus Sink variables
+   USE p4zlim          ! Co-limitations
    USE p4zprod         ! production
    USE iom             ! I/O manager
    USE prtctl          ! print control for debugging
@@ -89,6 +90,7 @@ CONTAINS
       REAL(wp) :: zgraznc, zgrazz, zgrazpoc, zgrazdc, zgrazpof, zgrazdf, zgraznf
       REAL(wp) :: zsigma, zsigma2, zdiffdn, zsizedn, ztmp1, ztmp2, ztmp3, ztmp4, ztmptot
       REAL(wp) :: zmaxsi, zpexpod, zrsize, zrsizen, zrsized, znano, zdiat
+      REAL(wp) :: zlogtemp1, zlogtemp2
       REAL(wp), DIMENSION(A2D(0),jpk) :: zproportn, zproportd, zprodlig
       REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: zgrazing, zfezoo, zzligprod, zw3d
       CHARACTER (len=25) :: charout
@@ -122,10 +124,16 @@ CONTAINS
       ! This is a fit to the actual relationship when a power law distribution is assumed 
       ! for diatoms.
       ! ------------------------------------------------------------------------------------
+      zlogtemp1 = 1. / (1.206 * EXP( -0.04617 * 6.0 ) - 0.0762)
+      zlogtemp2 = 1. / (-0.3845 * EXP(0.08982 * 1.67) + 1.448 )
+      !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          IF ( tmask(ji,jj,jk) == 1 ) THEN
-            zproportd(ji,jj,jk) = EXP( 0.067 - 0.033 * sized(ji,jj,jk) * 6.0) / ( EXP( 0.067 -0.033 * 6.0 ) )
-            zproportn(ji,jj,jk) = EXP( 0.05 - 0.036 * sizen(ji,jj,jk) * 1.67) / ( EXP( 0.05 -0.036 * 1.67 ) )
+            zproportd(ji,jj,jk) = (1.206 * EXP(-0.04617 * sized(ji,jj,jk) * 6.0 ) - 0.0762) &
+              &                   * zlogtemp1   &
+              &                   * MIN(1.0, EXP(-1.0 * MAX(0., ( sized(ji,jj,jk) - 2.0 )) ))
+            zproportn(ji,jj,jk) = (-0.3845 * EXP( 0.08982 * sizen(ji,jj,jk) * 1.67) + 1.448) &
+              &                   * zlogtemp2
          ELSE
             zproportn(ji,jj,jk) = 1.0
             zproportd(ji,jj,jk) = 1.0
@@ -171,6 +179,7 @@ CONTAINS
          !   --------------------------------------------------------
          zcompadi  = zproportd(ji,jj,jk) * MAX( ( tr(ji,jj,jk,jpdia,Kbb) - xthreshdia ), 0.e0 )
          zcompaph  = zproportn(ji,jj,jk) * MAX( ( tr(ji,jj,jk,jpphy,Kbb) - xthreshphy ), 0.e0 )
+         !
          zcompapoc = MAX( ( tr(ji,jj,jk,jppoc,Kbb) - xthreshpoc ), 0.e0 )
          zcompaz   = MAX( ( tr(ji,jj,jk,jpzoo,Kbb) - xthreshzoo ), 0.e0 )
  

@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 
           module debug
 # if defined OPENACC
@@ -19,7 +19,7 @@
           integer nbprocs_in
           integer,dimension(:),allocatable :: debug_procs_units
 !$AGRIF_END_DO_NOT_TREAT
-# if defined RVTK_DEBUG_PERFRST
+# if defined CVTK_DEBUG_PERFRST
 #  define DEBUG_MPI_MASTER_ONLY
 !
 !     define DEBUG_MPI_MASTER_ONLY : do the restartability test
@@ -48,7 +48,7 @@
           integer :: nb, new_unit
           
           filename="check_file"
-# if !defined RVTK_DEBUG_WRITE
+# if !defined CVTK_DEBUG_WRITE
           open(107,file="debug_infos",form="formatted",
      &  status='OLD')
             read(107,*)nbprocs_in
@@ -115,10 +115,10 @@
       character*(*) :: comment,typevar
       logical, optional :: ondevice, correct
       integer i0,j0,i,j,i1,j1,i2,j2
-# if !defined RVTK_DEBUG_WRITE
+# if !defined CVTK_DEBUG_WRITE
       integer i1_r,i2_r,j1_r,j2_r,nb
 # endif
-# if !defined RVTK_DEBUG_WRITE && defined OPENACC
+# if !defined CVTK_DEBUG_WRITE && defined OPENACC
       real,dimension(GLOBAL_2D_ARRAY) :: temp_host
       logical :: ondevice_l
 # else
@@ -144,17 +144,17 @@
 # endif
 
 !# if !defined MPI && !defined OPENMP
-# if defined RVTK_DEBUG_WRITE
+# if defined CVTK_DEBUG_WRITE
 #  include "debug_indices.h"
 
-#  if defined RVTK_DEBUG_PERFRST
+#  if defined CVTK_DEBUG_PERFRST
       if (iic.gt.start_debug
 #   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
      &    .and.mynode.eq.0
 #   endif
      &    ) then
       write(*,*)'iic.gt.start_debug check_tab2d write'
-#  endif /* RVTK_DEBUG_PERFRST */
+#  endif /* CVTK_DEBUG_PERFRST */
       
 #  if defined MPI
       i1 = i1 + iminmpi - 1
@@ -173,11 +173,11 @@
 #  endif
       write(107)tab
 
-#  if defined RVTK_DEBUG_PERFRST
+#  if defined CVTK_DEBUG_PERFRST
       endif
 #  endif
 
-# else /* defined RVTK_DEBUG_WRITE   */
+# else /* defined CVTK_DEBUG_WRITE   */
 #  ifdef OPENACC
       ondevice_l = .false.
       if (present(ondevice)) ondevice_l = ondevice
@@ -189,7 +189,7 @@
 
       correct_l = .false.
       if (present(correct)) correct_l = correct
-#  if defined RVTK_DEBUG_PERFRST      
+#  if defined CVTK_DEBUG_PERFRST      
       if (iic.gt.start_debug_read
 #   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
      &    .and.mynode.eq.0
@@ -197,7 +197,7 @@
      &    ) then
         !write(*,*)'iic=',iic
         write(*,*)'iic.gt.start_debug_read check_tab2d read'
-#  endif /* RVTK_DEBUG_PERFRST */
+#  endif /* CVTK_DEBUG_PERFRST */
         
       if (non_strict) max_abs=0.
 
@@ -263,17 +263,17 @@
             
       deallocate(tabread)
       enddo /* do nb = 0, nbprocs_in-1 */
-#  if defined RVTK_DEBUG_PERFRST      
+#  if defined CVTK_DEBUG_PERFRST      
       endif
 #  endif
-# endif /* !defined RVTK_DEBUG_WRITE */      
+# endif /* !defined CVTK_DEBUG_WRITE */      
 
 # ifdef MPI
       call MPI_Barrier(MPI_COMM_WORLD,ierr)
 # endif
 
-# if !defined RVTK_DEBUG_WRITE
-#  if defined RVTK_DEBUG_PERFRST      
+# if !defined CVTK_DEBUG_WRITE
+#  if defined CVTK_DEBUG_PERFRST      
       if (iic.gt.start_debug_read) then
 #  endif
       if (non_strict.AND.(max_abs > 0.)) then
@@ -290,13 +290,13 @@
 #  endif
       endif
 
-#  if defined RVTK_DEBUG_PERFRST      
+#  if defined CVTK_DEBUG_PERFRST      
       endif
 #  endif
 #  ifdef OPENACC
       if (ondevice_l) tab=temp_host
 #  endif
-# endif /*  !defined RVTK_DEBUG_WRITE     */
+# endif /*  !defined CVTK_DEBUG_WRITE     */
 
           return
           end subroutine check_tab2d
@@ -325,10 +325,10 @@
       character*(*) :: comment,typevar
       logical, optional :: ondevice, correct
       integer i0,j0,k,i,j,i1,i2,j1,j2
-# if !defined RVTK_DEBUG_WRITE
+# if !defined CVTK_DEBUG_WRITE
       integer i1_r,i2_r,j1_r,j2_r,nb
 # endif
-# if !defined RVTK_DEBUG_WRITE && defined OPENACC
+# if !defined CVTK_DEBUG_WRITE && defined OPENACC
       real,dimension(GLOBAL_2D_ARRAY,N) :: temp_host
       logical :: ondevice_l 
 # else
@@ -373,17 +373,17 @@
           mynode=0 
 # endif
 
-# if defined RVTK_DEBUG_WRITE
+# if defined CVTK_DEBUG_WRITE
 #  include "debug_indices.h"
           
-#  if defined RVTK_DEBUG_PERFRST      
+#  if defined CVTK_DEBUG_PERFRST      
           if (iic.gt.start_debug
 #   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
      &    .and.mynode.eq.0
 #   endif
      &         ) then         
             write(*,*)'iic.gt.start_debug check_tab3d write'
-#  endif /* defined RVTK_DEBUG_PERFRST   */
+#  endif /* defined CVTK_DEBUG_PERFRST   */
             
 #  if defined MPI
       i1 = i1 + iminmpi - 1
@@ -401,13 +401,13 @@
      &  + (/iminmpi-1,jminmpi-1,0/)
 #  endif
       write(107)tab
-#  if defined RVTK_DEBUG_PERFRST      
+#  if defined CVTK_DEBUG_PERFRST      
       endif
 #  endif
       
-# else /* defined RVTK_DEBUG_WRITE */
+# else /* defined CVTK_DEBUG_WRITE */
       
-#  if defined RVTK_DEBUG_PERFRST      
+#  if defined CVTK_DEBUG_PERFRST      
       if (iic.gt.start_debug_read
 #   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
      &    .and.mynode.eq.0
@@ -415,7 +415,7 @@
      &     ) then
         !write(*,*)'iic ',iic
         write(*,*)'iic.gt.start_debug_read check_tab3d read'
-#  endif /* defined RVTK_DEBUG_PERFRST  */
+#  endif /* defined CVTK_DEBUG_PERFRST  */
       
 #  ifdef OPENACC
       if (ondevice_l) then
@@ -498,17 +498,17 @@
            
       deallocate(tabread)
       enddo /* do nb = 0, nbprocs_in-1 */
-#  if defined RVTK_DEBUG_PERFRST      
+#  if defined CVTK_DEBUG_PERFRST      
       endif
 #  endif     
-# endif /* !defined RVTK_DEBUG_WRITE */
+# endif /* !defined CVTK_DEBUG_WRITE */
 
 # ifdef MPI
       call MPI_Barrier(MPI_COMM_WORLD,ierr)
 # endif
 
-# if !defined RVTK_DEBUG_WRITE
-#  if defined RVTK_DEBUG_PERFRST        
+# if !defined CVTK_DEBUG_WRITE
+#  if defined CVTK_DEBUG_PERFRST        
       if (iic.gt.start_debug_read
 #   if defined DEBUG_MPI_MASTER_ONLY && defined MPI
      &    .and.mynode.eq.0
@@ -528,19 +528,19 @@
      &                       ,' ON GRID ',Agrif_CFixed()
 #  endif
       endif
-#  if defined RVTK_DEBUG_PERFRST      
+#  if defined CVTK_DEBUG_PERFRST      
       endif
 #  endif
 #  ifdef OPENACC
       if (ondevice_l) tab=temp_host
 #  endif
-# endif /* !defined RVTK_DEBUG_WRITE  */
+# endif /* !defined CVTK_DEBUG_WRITE  */
           return
           end subroutine check_tab3d    
 
       end module debug
           
-#else /*  RVTK_DEBUG */
+#else /*  CVTK_DEBUG */
 
       module debug
       end module debug

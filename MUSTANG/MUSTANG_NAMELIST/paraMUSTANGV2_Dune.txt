@@ -27,6 +27,7 @@
 :                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
+: namdredging              : parameters to activate dredging effect
 
 &namsedim_init
    date_start_morpho='2019/01/01 00:00:00'  
@@ -39,9 +40,9 @@
 &namsedim_layer
    l_dzsminuni=.FALSE.
    dzsminuni=1.0e-3  
-   dzsmax_bottom=0.1   
+   dzsmax_bottom=0.3   
    l_dzsmaxuni=.TRUE. 
-   dzsmaxuni= 0.1
+   dzsmaxuni= 0.3
    nlayer_surf_sed=5  
 /
 &namsedim_bottomstress 
@@ -82,5 +83,6 @@
 /
 &namflocmod
 / 
-
+&namdredging
+/
 

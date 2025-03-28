@@ -910,6 +910,14 @@ c
             stflx(i,j,isalt)=0.
           enddo
         enddo
+#   ifdef RAIN_FLUX  
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            !set a value in cm/day , converson is done in m/s
+            EmP(i,j)=-0.1*0.01/86400.
+          enddo
+        enddo
+#   endif
       endif
 #  endif /* SALINITY */
 #  if defined SALINITY && defined TEMPERATURE

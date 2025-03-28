@@ -64,7 +64,7 @@ include Makedefs
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
-	param.F         ncscrum.F   scalars.F\
+	param.F    ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
 	get_date.F	lenstr.F	closecdf.F	insert_node.F\
@@ -140,6 +140,7 @@ include Makedefs
 	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90\
 	stobulk.F90	stomarginal.F90	storst.F90	stopar.F90	stomod.F90\
 	ensmpi.F90	stostress.F90	stoics.F90\
+	buffer.F90\
 	par_pisces.F90	oce_trc.F90	trc.F90		sms_pisces.F90\
 	in_out_manager.F90	iom.F90	lib_mpp.F90		prtctl.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
@@ -169,7 +170,7 @@ include Makedefs
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
-	comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+	comMUSTANG.F90 dredging.F90 coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 
 
