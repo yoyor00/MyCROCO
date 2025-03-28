@@ -2710,27 +2710,22 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 !
       elseif (keyword(1:kwlen).eq.'sediments_mustang') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) sedname_subst
         read(input,'(A)',err=95) sedname_must
-        lstr=lenstr(sedname_subst)
-        MPI_master_only write(stdout,'(7x,A,10x,A)')
-     &         'Sediment input file for Substance:' ,
-     &          sedname_subst(1:lstr)
         lstr=lenstr(sedname_must)
         MPI_master_only write(stdout,'(7x,A,2x,A/)')
-     &         'Sediment input file for Mustang (version):' ,
+     &         'Sediment input file for Mustang :' ,
      &          sedname_must(1:lstr)
 
 # endif /* SEDIMENT */
 #endif
-#if defined SUBSTANCE && !defined MUSTANG
+#if defined SUBSTANCE
       elseif (keyword(1:kwlen).eq.'substance') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) subsname
-        lstr=lenstr(subsname)
+        read(input,'(A)',err=95) subsfilename
+        lstr=lenstr(subsfilename)
         MPI_master_only write(stdout,'(7x,A,12x,A)')
      &         'Input file for Substance:' ,
-     &          subsname(1:lstr)
+     &          subsfilename(1:lstr)
 #endif
 #ifdef BBL
       elseif (keyword(1:kwlen).eq.'bbl_history_fields') then
