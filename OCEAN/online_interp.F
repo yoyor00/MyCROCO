@@ -582,9 +582,6 @@
 
       implicit none
 #include "param.h"
-!
-!  Imported variable declarations.
-!
       integer, intent(in) :: LBx, UBx, LBy, UBy
       integer, intent(in) :: Istr, Iend, Jstr, Jend
 !
@@ -601,44 +598,28 @@
       integer(kind=4), dimension(Istr:Iend,Jstr:Jend) :: ip,jp
       real(kind=8), dimension(LBx:UBx,LBy:UBy) :: srX,srY,sXY,sYX
 !
-!!!!!!!!!!!!
-! ORIGINAL !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!      call r2r_interp_init_thread( nx,ny,x,y, ncx,ncy, xc,yc,
-!     &                                                ip,jp, xi,eta)
-!
-!      call spln2d(nx,ny, src, srX,srY,sXY,sYX)
-!
-!      call spln2d_interp(nx,ny, src, srX, srY, sXY,
-!     &                           ncx,ncy, ip,jp, xi,eta, targ) 
-!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      call spln2d(UBx,UBy, Finp, srX,srY,sXY,sYX)
 
+
+      call spln2d(UBx,UBy, Finp, srX,srY,sXY,sYX)
 
       call r2r_interp_init_thread(UBx,UBy,Xinp,Yinp,Istr,Iend,
      &                             Jstr,Jend, Xout,Yout ,ip,jp, xi,eta)
 
-
-
       call spln2d_interp(UBx,UBy, Finp, srX, srY, sXY,
      &                      Istr, Iend, Jstr, Jend, ip,jp, xi,eta, Fout)
-
-            
 
       RETURN
       END SUBROUTINE irrinterp2d
 
-
-      SUBROUTINE r2r_interp_init_thread( nx,ny,x,y,Istr, ncx,Jstr,ncy,
+      SUBROUTINE r2r_interp_init_thread( nx,ny,x,y,Istr,Iend,Jstr,Jend,
      &                                            xc,yc, ip,jp, xi,eta)
 
 ! Initialize interpolation between two arbitrary oriented curvilinear
 ! grids: given arrays of coordinates [x(nx,ny),y(nx,ny)] for points of
-! a non-Cartesian "source" grid, and similar [xc(ncx,ncy),yc(ncx,ncy)]
+! a non-Cartesian "source" grid, and similar [xc(Iend,Jend),yc(Iend,Jend)]
 ! for the "target" grid (hereafter "c" stands for "child") find arrays
-! of indices [ip(ncx,ncy),jp(ncx,ncy)] and arrays fractional distances
-! [xi(ncx,ncy),eta(ncx,ncy)] such that each point of the target grid
+! of indices [ip(Iend,Jend),jp(Iend,Jend)] and arrays fractional distances
+! [xi(Iend,Jend),eta(Iend,Jend)] such that each point of the target grid
 ! (xc,yc) is surrounded by 4 points of the source,
 !
 !              [x,y](ip,jp+1) --__
@@ -667,36 +648,28 @@
 ! ip=-1 and jp=-1 are set as special values.
 
       implicit none
-      integer nx,ny, ncx,ncy,Istr,Jstr
+      integer nx,ny, Istr,Jstr, Iend,Jend
       real(kind=8), dimension(nx,ny) :: x,y
-      real(kind=8), dimension(ncx,ncy) :: xc,yc, xi,eta
-      integer(kind=4), dimension(ncx,ncy) :: ip,jp
-      integer icmin,icmax,jcmin,jcmax
-C$    integer numthreads, trd, chunk_size
-C$    integer omp_get_num_threads, omp_get_thread_num
-C$    numthreads=omp_get_num_threads() ; trd=omp_get_thread_num()
-C$    chunk_size=(ncy+numthreads-1)/numthreads
-      icmin=1 ; icmax=ncx ; jcmin=1 ; jcmax=ncy
-C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
+      real(kind=8), dimension(Istr:Iend,Jstr:Jend) :: xc,yc, xi,eta
+      integer(kind=4), dimension(Istr:Iend,Jstr:Jend) :: ip,jp !2
+      call search_indices_tile(Istr,Iend, Jstr,Jend, nx,ny, x,y,
+     &                                             xc,yc, ip,jp)
 
-      call search_indices_tile(icmin,icmax,jcmin,jcmax, nx,ny, x,y,
-     &                                       ncx,ncy, xc,yc, ip,jp)
-
-      call comp_offsets_tile(  icmin,icmax,jcmin,jcmax, nx,ny, x,y,
-     &                               ncx,ncy, xc,yc, ip,jp, xi,eta)
+      call comp_offsets_tile(Istr,Iend, Jstr,Jend, nx,ny, x,y,
+     &                                     xc,yc, ip,jp, xi,eta)
       END SUBROUTINE
 
 
-      SUBROUTINE search_indices_tile(icmin,icmax,jcmin,jcmax, nx,ny,
-     &                                  x,y, ncx,ncy, xc,yc, ip,jp)
+      SUBROUTINE search_indices_tile(Istr,Iend, Jstr,Jend, nx,ny,
+     &                                  x,y, xc,yc, ip,jp)
       implicit none
-      integer nx,ny, ncx,ncy, icmin,icmax,jcmin,jcmax
+      integer nx,ny, Istr,Iend, Jstr,Jend
       real(kind=8), dimension(nx,ny) :: x,y
-      real(kind=8), dimension(ncx,ncy) :: xc,yc         !   4 <---- 3
-      integer(kind=4), dimension(ncx,ncy) :: ip,jp      !   !       ^ 
-      integer i,j, ic,jc, inew,jnew, iinc               !   !       !
-      real(kind=8) dx4,dy4, dx3,dy3, r41,r34,           !   v       !
-     &             dx1,dy1, dx2,dy2, r12,r23            !   1 ----> 2
+      real(kind=8), dimension(Istr:Iend,Jstr:Jend) :: xc,yc    !   4 <---- 3
+      integer(kind=4), dimension(Istr:Iend,Jstr:Jend) :: ip,jp !   !       ^ 
+      integer i,j, ic,jc, inew,jnew, iinc                      !   !       !
+      real(kind=8) dx4,dy4, dx3,dy3, r41,r34,                  !   v       !
+     &             dx1,dy1, dx2,dy2, r12,r23                   !   1 ----> 2
 
 ! The search algorithm is organized as follows:
 !
@@ -751,7 +724,7 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
 !          spent inside while(r12...r41 >= 0) loop, hence its body is
 !          minimized at the expense of somewhat awkwardness of what is
 !          around it.
-      i=nx/2 ; j=ny/2 ; ic=icmin ; jc=jcmin ; iinc=+1
+      i=nx/2 ; j=ny/2 ; ic=Istr ; jc=Jstr ; iinc=+1
 
       dx1=x(i+1,j  )-xc(ic,jc) ; dy1=y(i+1,j  )-yc(ic,jc)   !  3 <-- 2
       dx2=x(i+1,j+1)-xc(ic,jc) ; dy2=y(i+1,j+1)-yc(ic,jc)   !  !     !
@@ -767,12 +740,12 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
 
           ip(ic,jc)=i ; jp(ic,jc)=j        !<-- record bounding indices
 
-          if (iinc > 0 .and. ic < icmax) then    !--> proceed to the
+          if (iinc > 0 .and. ic < Iend) then    !--> proceed to the
             ic=ic+1                              !    next target point
-          elseif (iinc < 0 .and. ic > icmin) then
+          elseif (iinc < 0 .and. ic > Istr) then
             ic=ic-1
           else
-            jc=jc+1 ; iinc=-iinc ; if (jc > jcmax) return
+            jc=jc+1 ; iinc=-iinc ; if (jc > Jend) return
           endif
 
           dx1=x(i+1,j  )-xc(ic,jc) ; dy1=y(i+1,j  )-yc(ic,jc)
@@ -791,12 +764,12 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
 
         if (inew == i .and. jnew == j) then
           ip(ic,jc)=-1 ; jp(ic,jc)=-1       !<-- cannot be bounded
-          if (iinc > 0 .and. ic < icmax) then  !--> proceed to the
+          if (iinc > 0 .and. ic < Iend) then  !--> proceed to the
             ic=ic+1                            !    next target point
-          elseif (iinc < 0 .and. ic > icmin) then
+          elseif (iinc < 0 .and. ic > Istr) then
             ic=ic-1
           else
-            jc=jc+1 ; iinc=-iinc ; if (jc > jcmax) return
+            jc=jc+1 ; iinc=-iinc ; if (jc > Jend) return
           endif
         else
           i=inew ; j=jnew       !<-- accept move of source location.
@@ -811,20 +784,20 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
         r34=dx3*dy4-dx4*dy3 ; r41=dx4*dy1-dx1*dy4
 
       enddo
+
       END SUBROUTINE
 
-
-      SUBROUTINE comp_offsets_tile(icmin,icmax,jcmin,jcmax, nx,ny,
-     &                         x,y, ncx,ncy, xc,yc, ip,jp, xi,eta)
+      SUBROUTINE comp_offsets_tile(Istr,Iend, Jstr,Jend, nx,ny,
+     &                         x,y, xc,yc, ip,jp, xi,eta)
       implicit none
-      integer nx,ny, ncx,ncy, icmin,icmax,jcmin,jcmax
+      integer nx,ny, Istr,Iend, Jstr,Jend
       real(kind=8), dimension(nx,ny) :: x,y
-      real(kind=8), dimension(ncx,ncy) :: xc,yc, xi,eta
-      integer(kind=4), dimension(ncx,ncy) :: ip,jp
+      real(kind=8), dimension(Istr:Iend,Jstr:Jend) :: xc,yc, xi,eta
+      integer(kind=4), dimension(Istr:Iend,Jstr:Jend) :: ip,jp 
       integer ic,jc, i,j, iter
       real(kind=8) a11,a12,a21,a22, det, dX,dY, p,p1,q,q1
-      do jc=jcmin,jcmax
-        do ic=icmin,icmax
+      do jc=Jstr,Jend
+        do ic=Istr,Iend
           i=ip(ic,jc) ; j=jp(ic,jc)
           if (i > 0 .and. j > 0) then
             a11=0.5D0*(x(i+1,j+1)-x(i,j+1) +x(i+1,j)-x(i,j))
@@ -843,7 +816,7 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
           endif
         enddo
         do iter=1,10
-          do ic=icmin,icmax
+          do ic=Istr,Iend
             i=ip(ic,jc) ; j=jp(ic,jc)
             if (i > 0 .and. j > 0) then
               p=xi(ic,jc)  ; p1=1.D0-p
@@ -863,18 +836,11 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
 
               xi(ic,jc) =p + det*(a22*dX-a12*dY)
               eta(ic,jc)=q + det*(a11*dY-a21*dX)
-!            else
-!            print *,'xi, eta = -1 pour ic,jc = ',ic,jc
             endif
           enddo
         enddo
       enddo
       END SUBROUTINE
-
-
-
-
-
 
       SUBROUTINE spln2d(nx,ny, src, srX,srY,sXY,sYX)
 ! The following routine takes a two-dimensional array "src" and
@@ -906,7 +872,6 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
 ! derivatives srX,srY,sXY,sYX are stored in double precision arrays
 ! regardless of type of "src".
 
-
       implicit none
       integer nx,ny, i,j
       real(kind=8), dimension(nx,ny) :: src
@@ -914,8 +879,7 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
       real(kind=8) cff, error
       real(kind=8), dimension(nx) :: CF
       real(kind=8), dimension(ny) :: FC
-!      allocate(CF(1:nx))
-!      allocate(FC(1:ny))
+
       CF(1)=0.5D0
       do j=1,ny
         srX(1,j)=1.5D0*(src(2,j)-src(1,j))
@@ -991,42 +955,39 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
       enddo
       END SUBROUTINE spln2d
 
-
-
       SUBROUTINE spln2d_interp(nx,ny, src, srX, srY, sXY,
-     &                          Istr, ncx,Jstr,ncy, ip,jp, xi,eta, targ)
+     &                        Istr,Iend, Jstr,Jend, ip,jp, xi,eta, targ)
       implicit none
-      integer nx,ny, ncx,ncy, Istr, Jstr
+      integer nx,ny, Istr,Iend, Jstr,Jend
       real(kind=8), dimension(nx,ny) :: src
       real(kind=8),    dimension(nx,ny) :: srX,srY,sXY
-      integer(kind=4), dimension(ncx,ncy) :: ip,jp
-      real(kind=8),    dimension(ncx,ncy) :: xi,eta
-      real(kind=8), dimension(ncx,ncy) :: targ
-      integer icmin,icmax,jcmin,jcmax, chunk_size
-      icmin=1 ; icmax=ncx ; jcmin=1 ; jcmax=ncy ; chunk_size=0
+      integer(kind=4), dimension(Istr:Iend,Jstr:Jend) :: ip,jp 
+      real(kind=8),    dimension(Istr:Iend,Jstr:Jend) :: xi,eta
+      real(kind=8), dimension(Istr:Iend,Jstr:Jend) :: targ
+      integer chunk_size
+      chunk_size=0
 
       call spln2d_interp_tile(nx,ny, src, srX, srY, sXY,
-     &                           ncx,ncy, ip,jp, xi,eta, targ,
-     &                               icmin,icmax,jcmin,jcmax)
+     &                               ip,jp, xi,eta, targ,
+     &                               Istr,Iend, Jstr,Jend)
       END SUBROUTINE spln2d_interp
 
       SUBROUTINE spln2d_interp_tile(nx,ny, src, srX, srY, sXY,
-     &                                 ncx,ncy, ip,jp, xi,eta, targ,
-     &                                     icmin,icmax,jcmin,jcmax)
+     &                                     ip,jp, xi,eta, targ,
+     &                                     Istr,Iend, Jstr,Jend)
       implicit none
-      integer nx,ny, ncx,ncy, icmin,icmax,jcmin,jcmax
+      integer nx,ny, Istr,Iend, Jstr,Jend
       real(kind=8), dimension(nx,ny) :: src
       real(kind=8),    dimension(nx,ny) :: srX,srY,sXY
-      integer(kind=4), dimension(ncx,ncy) :: ip,jp
-      real(kind=8),    dimension(ncx,ncy) :: xi,eta
-      real(kind=8), dimension(ncx,ncy) :: targ
-!-->  internal variables
+      integer(kind=4), dimension(Istr:Iend,Jstr:Jend) :: ip,jp 
+      real(kind=8),    dimension(Istr:Iend,Jstr:Jend) :: xi,eta
+      real(kind=8), dimension(Istr:Iend,Jstr:Jend) :: targ
       integer ic,jc, iL,iR, jL,jR
       real(kind=8) px,qx,pqx, HxR,HxL,GxR,GxL,
      &             py,qy,pqy, HyR,HyL,GyR,GyL
      
-      do jc=jcmin,jcmax
-        do ic=icmin,icmax
+      do jc=Jstr,Jend
+        do ic=Istr,Iend
           if (ip(ic,jc) > 0 .and. jp(ic,jc) > 0) then
             iL=ip(ic,jc)  ;  px=xi(ic,jc)
             iR=iL+1       ;  qx=1.D0-px ; pqx=px*qx
@@ -1056,4 +1017,5 @@ C$    jcmin=1+trd*chunk_size ; jcmax=min(jcmin+chunk_size-1,ncy)
       enddo
 
       END SUBROUTINE spln2d_interp_tile
+
 
