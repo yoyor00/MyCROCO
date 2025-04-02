@@ -3442,10 +3442,6 @@ c        close(testunit)
      &                            'critical stress of bed layer.'
 #  endif
 # elif defined MUSTANG
-!
-! Sediments input file name for Mustang.
-!
-      elseif (keyword(1:kwlen).eq.'sediments_mustang') then
         lstr=lenstr(sedname_must)
         MPI_master_only write(stdout,'(7x,A,2x,A/)')
      &         'Sediment input file for Mustang :' ,
