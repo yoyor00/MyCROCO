@@ -1511,7 +1511,7 @@
 #  if defined DIAGNOSTICS_EDDY && ! defined XIOS
        integer nciddiags_eddy_avg, nrecdiags_eddy_avg
      &      , nrpfdiags_eddy_avg
-     &      , diags_eddyTime_avg, diags_eddyTime2_avg, 
+     &      , diags_eddyTime_avg, diags_eddyTime2_avg
      &      , diags_eddyTstep_avg
      &      , diags_eddyzz_avg(2)
      &      , diags_eddyuu_avg(2), diags_eddyvv_avg(2)
@@ -2117,6 +2117,9 @@
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
+#ifdef LOGFILE
+     &         ,  logname
+#endif
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
@@ -2230,6 +2233,10 @@
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year
      &         ,   origin_hour, origin_minute, origin_second
+#ifdef LOGFILE
+     &         ,  logname
+#endif
+
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
