@@ -500,9 +500,9 @@
 # ifdef DIAGNOSTICS_PV
       integer indxpvMrhs,indxpvTrhs
       parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt
-     &               +ntrc_mld+ntrc_pas
-     &               +ntrc_bio+ntrc_sed
-     &               +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
+     &             +ntrc_mld+ntrc_pas+ntrc_bio+ntrc_sed
+     &             +ntrc_diats+ntrc_diauv+ntrc_diavrt
+    &              +ntrc_diaek+1,
      &           indxpvMrhs=indxpvTrhs+2)
 #  ifdef DIAGNOSTICS_PV_FULL
       integer indxpvpv,indxpvpvd
@@ -517,10 +517,11 @@
      &        indxeddyubu,indxeddyvbv,
      &        indxeddyusu,indxeddyvsv,
      &        indxeddyugsu,indxeddyvgsv
-      parameter (indxeddyzz=indxV+ntrc_temp+ntrc_salt+ntrc_mld
-     &                           +ntrc_pas+ntrc_bio+ntrc_sed
-     &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
-     &                           +ntrc_diaek+ntrc_diapv+400,
+      parameter (indxeddyzz=indxV
+     &             +ntrc_temp+ntrc_salt+ntrc_mld
+     &             +ntrc_pas+ntrc_bio+ntrc_sed
+     &             +ntrc_diats+ntrc_diauv+ntrc_diavrt
+     &             +ntrc_diaek+ntrc_diapv+400,
      &           indxeddyuu=indxeddyzz+1,
      &           indxeddyvv=indxeddyuu+1,
      &           indxeddyuv=indxeddyvv+1,
@@ -539,10 +540,11 @@
 # if defined OUTPUTS_SURFACE && ! defined XIOS
       integer indxsurft,indxsurfs,indxsurfz,indxsurfu,
      &        indxsurfv
-      parameter (indxsurft=indxV+ntrc_temp+ntrc_salt+ntrc_mld
-     &                         +ntrc_pas+ntrc_bio+ntrc_sed
-     &                         +ntrc_diats+ntrc_diauv+ntrc_diavrt
-     &                         +ntrc_diaek+ntrc_diapv+ntrc_diaeddy+400,
+      parameter (indxsurft=indxV
+     &             +ntrc_temp+ntrc_salt+ntrc_mld
+     &             +ntrc_pas+ntrc_bio+ntrc_sed
+     &             +ntrc_diats+ntrc_diauv+ntrc_diavrt
+     &             +ntrc_diaek+ntrc_diapv+ntrc_diaeddy+400,
      &           indxsurfs=indxsurft+1,
      &           indxsurfz=indxsurfs+1,
      &           indxsurfu=indxsurfz+1,
@@ -553,11 +555,12 @@
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
      &        , indxGasExcFlux
 #  endif
-      parameter (indxbioFlux=indxV+ntrc_temp+ntrc_salt+ntrc_mld
-     &                           +ntrc_pas+ntrc_bio+ntrc_sed
-     &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
-     &                           +ntrc_diaek+ntrc_diapv+ntrc_diaeddy
-     &                                               +ntrc_surf+400)
+      parameter (indxbioFlux=indxV
+     &             +ntrc_temp+ntrc_salt+ntrc_mld
+     &             +ntrc_pas+ntrc_bio+ntrc_sed
+     &             +ntrc_diats+ntrc_diauv+ntrc_diavrt
+     &             +ntrc_diaek+ntrc_diapv+ntrc_diaeddy
+     &             +ntrc_surf+400)
       parameter (indxbioVSink=indxbioFlux+NumFluxTerms)
 
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
@@ -567,12 +570,12 @@
 
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
       parameter (indxO=indxV+ntrc_temp+ntrc_salt
-     &                      +ntrc_mld+ntrc_pas+ntrc_bio
-     &                      +ntrc_sed+ntrc_substot
-     &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
-     &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
-     &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
-     &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
+     &             +ntrc_mld+ntrc_pas+ntrc_bio
+     &             +ntrc_sed+ntrc_substot
+     &             +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
+     &             +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
+     &             indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
+     &             indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
 # ifdef ABL1D
       integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
      &        indxabl_pq_dta  , indxabl_pgu_dta, indxabl_pgv_dta ,
@@ -1511,7 +1514,7 @@
 #  if defined DIAGNOSTICS_EDDY && ! defined XIOS
        integer nciddiags_eddy_avg, nrecdiags_eddy_avg
      &      , nrpfdiags_eddy_avg
-     &      , diags_eddyTime_avg, diags_eddyTime2_avg, 
+     &      , diags_eddyTime_avg, diags_eddyTime2_avg
      &      , diags_eddyTstep_avg
      &      , diags_eddyzz_avg(2)
      &      , diags_eddyuu_avg(2), diags_eddyvv_avg(2)
