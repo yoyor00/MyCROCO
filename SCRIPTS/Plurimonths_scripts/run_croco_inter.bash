@@ -362,7 +362,9 @@ while [ $NY != $NY_END ]; do
 	sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
 	    -e 's/\bNUMAVG\b/'$NUMAVG'/' -e 's/\bNUMHIS\b/'$NUMHIS'/' -e 's/\bNUMRST\b/'$NUMRST'/' \
 	    -e 's/NUMRECINI/'$NUMRECINI'/' \
-	    -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
+	    -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' \
+	    -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
+	    < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
 	
 	LEVEL=$((LEVEL + 1))
     done

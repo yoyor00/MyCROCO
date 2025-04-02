@@ -19,6 +19,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- Issue #330 : Change LOGFILE cppkey behavior by enabling to choose filename in
+  croco.in
 
 ### Deprecated
 
@@ -33,6 +35,5 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Contributors already on board : 
   R. Benshila, S. Le Gac, P. Marchesiello 
-
 
 - New contributors : 
