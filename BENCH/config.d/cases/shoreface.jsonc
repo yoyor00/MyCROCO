@@ -7,5 +7,6 @@
     "patches": {},
     "input_file": "TEST_CASES/croco.in.ShoreFace",
     "check_outputs": ["shoreface_his.nc"],
+    "unsupported": ["openmp"],
   },
 }
