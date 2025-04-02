@@ -3452,8 +3452,6 @@ c        close(testunit)
      &          sedname_must(1:lstr)
 
 # endif /* SEDIMENT */
-#endif
-
 #endif /* SOLVE3D */
 
 #if defined SUBSTANCE
