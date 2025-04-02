@@ -2310,9 +2310,11 @@ c        close(testunit)
       if (ierr.eq.0) then
       
           ! Write stdout in logfile or stdout
+          lstr=lenstr(title)
           MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 #ifdef LOGFILE
-          MPI_master_only write(stdout,'(/1x,A)') logname
+          lstr=lenstr(logname)
+          MPI_master_only write(stdout,'(/1x,A)') logname(1:lstr)
 #endif
 
 #ifdef USE_CALENDAR
