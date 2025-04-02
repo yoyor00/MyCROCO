@@ -192,6 +192,7 @@ NUMTIMES=$((NDAYS * 24 * 3600 / DT))
 
 sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
     -e 's/NUMAVG/'$NUMAVG'/' -e 's/NUMHIS/'$NUMHIS'/' -e 's/NUMRST/'$NUMRST'/' \
+    -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
         < $INPUTDIR/${MODEL}_forecast.in > $SCRATCHDIR/${MODEL}_forecast.in
 #
 #  Change directory
