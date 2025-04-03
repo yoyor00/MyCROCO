@@ -232,6 +232,7 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
 !----------------------------------------------------------------------
 !
 #  ifdef K3FAST_RHO
+        if (nrrec==0) then !! (get_inital effectué)
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -239,6 +240,7 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
             enddo
           enddo
         enddo
+        endif
 #  endif
 #  ifdef NBQ_MASS
         do k=1,N
@@ -248,12 +250,14 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
             enddo
           enddo
         enddo 
+        if (nrrec==0) then !! (get_inital effectué)
         do j=JR_RANGE
           do i=IR_RANGE
             work2d(i,j)      =0.
             rhobar_nbq(i,j,:)=0.
           enddo
         enddo
+        endif
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -277,6 +281,7 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
 !  NBQ Momentum initialization
 !----------------------------------------------------------------------
 !
+        if (nrrec==0) then
 !$acc kernels if(compute_on_device) default(present)
         do k=1,N
           do j=Jstr-1,Jend+1
@@ -342,6 +347,7 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
         enddo
 # endif
 !$acc end kernels
+        endif
 ! !
 ! ! Acoustic configurations
 ! !
@@ -597,12 +603,14 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
       rho_sdl = 500. / rho0 
 #  endif
 # endif
+        if (nrrec==0) then
           do j=JR_RANGE
             do i=IR_RANGE
                rufrc_bak(i,j,1) = 0 
                rufrc_bak(i,j,2) = 0 
             enddo
           enddo
+          endif
 
 !$acc end kernels      
 !
