@@ -73,6 +73,10 @@
       real zbar
 # endif
       integer i,j,k
+# if defined K3FAST_CSVISC2K && defined K3FAST_SOFAR
+      integer ks,dks
+      real    mks,mks2,cff
+# endif
 
 # include "compute_extended_bounds.h"
 
@@ -136,10 +140,35 @@
          write(stdout,*)
         endif
 
+#  if defined K3FAST_CSVISC2K && defined K3FAST_SOFAR
+        ks=5
+        dks=1
+        mks=5.
+        mks2=9.
+        do k=1,N
+          do j=JR_RANGE
+            do i=IR_RANGE
+             cff=1./mks*(1.
+     &      +0.5*(mks-1.)*(1.-tanh(-(z_r(i,j,k )    -z_r(i,j,N-ks))/
+     &                    (z_r(i,j,ks+dks)-z_r(i,j,ks-dks)))) )
+             soundspeed_nbq(i,j,k)=csound_nbq*cff
+             soundspeed2_nbq(i,j,k)=soundspeed_nbq(i,j,k)**2
+!            cff=1./mks2*(1.
+!    &      +0.5*(mks2-1.)*(1.+tanh(-(z_r(i,j,k )    -z_r(i,j,N-ks))/
+!    &                    (z_r(i,j,ks+dks)-z_r(i,j,ks-dks)))) )
+             cff=1.
+             visc2_nbq(i,j,k)=cff*visc2read_nbq
+             visc2v_nbq(i,j,k)=visc2_nbq(i,j,k)
+            enddo
+          enddo
+        enddo
+#  else
         visc2_nbq=visc2read_nbq
         visc2v_nbq=visc2read_nbq   
         soundspeed_nbq  =csound_nbq
         soundspeed2_nbq =csound_nbq**2
+#  endif
+
         
 #ifdef K3FAST_CSVISC2K        
 !$acc update device( visc2_nbq,  visc2v_nbq
