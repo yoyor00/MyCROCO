@@ -19,8 +19,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
-- Issue #330 : Change LOGFILE cppkey behavior by enabling to choose filename in
-  croco.in
+- MUSTANG, SUBSTANCE : separate reading of substance and mustang
+  namelist (Issue #354)
+- LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
+  croco.in (Issue #330)
 
 ### Deprecated
 
@@ -37,3 +39,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   R. Benshila, S. Le Gac, P. Marchesiello 
 
 - New contributors : 
+  M. Plus
