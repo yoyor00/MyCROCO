@@ -327,9 +327,9 @@ CONTAINS
       REAL(wp) :: a, b, tcor
       
       ! Allocate arrays with parameters
-      IF ( jpsto0d > 0 ) ALLOCATE ( sto2d_abc(jpsto0d,2) )
+      IF ( jpsto0d > 0 ) ALLOCATE ( sto0d_abc(jpsto0d,2) )
       IF ( jpsto2d > 0 ) ALLOCATE ( sto2d_abc(jpsto2d,2) )
-      IF ( jpsto3d > 0 ) ALLOCATE ( sto2d_abc(jpsto3d,2) )
+      IF ( jpsto3d > 0 ) ALLOCATE ( sto3d_abc(jpsto3d,2) )
 
       ! For every stochastic parameter:
       ! -------------------------------

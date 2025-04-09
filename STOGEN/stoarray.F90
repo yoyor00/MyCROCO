@@ -172,7 +172,6 @@ CONTAINS
       jpsto2d=0 ; jpsto3d=0 ; jpsto0d=0
 
       DO jsto=1, jpsto
-
          ! Set dimension of stochastic field
          IF (stofields(jsto)%type_xy == 'constant') THEN
             stofields(jsto)%dim = 0
@@ -253,7 +252,7 @@ CONTAINS
          ALLOCATE ( sto3d_typ(jpsto3d) )
          ALLOCATE ( sto3d_sgn(jpsto3d) )
          ALLOCATE ( sto3d_idx(jpsto3d) )
-         ALLOCATE ( sto3d_xy(jpsto2d) )
+         ALLOCATE ( sto3d_xy(jpsto3d) )
       ENDIF
 
       ! Allocate 0D stochastic arrays
