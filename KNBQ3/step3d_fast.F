@@ -765,6 +765,9 @@ C$    trd=omp_get_thread_num()
 ! !               for divergence, not theta)
 ! !--------------------------------------------------------------------
 ! !
+# ifdef K3FAST_NOBPG
+          thetadiv_nbq=0.
+# endif
 # ifdef NBQ_IMP
 #   include "k3fast_divh.h"
 # endif
