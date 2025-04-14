@@ -289,7 +289,7 @@
       ! Precipitation_rate
       blk_vname(1,3)='TP                                       '
       blk_vname(2,3)='Precipitation_rate                       '
-      blk_vname(3,3)='kg/m^2/s                                 '
+      blk_vname(3,3)='cm/day                                   '
       blk_vname(4,3)='??????                                   '
 
       ! Downward_Short-Wave_Rad_Flux_surface
