@@ -88,7 +88,7 @@
 ! Do not process #7 :  upward longwave is obsolete
 !
         if (blkvar_id.eq.7) goto 10
-# if defined ERA_ECMWF || defined AROME
+# if defined ERA_ECMWF || defined AROME || defined FORMATTED
 !
 ! In the case of ERA the net short wave is used
 ! Net Short wave - 5 downward short wave not used
@@ -363,8 +363,8 @@
 !
 ! lonmin<lon0<lonmax
 !
-          imin=99999
-          imax=-99999
+          imin=-99999
+          imax=99999
           do i=1,NX0(blkvar_id)
             if (lon0(i).lt.lonmin) imin=i
           enddo
@@ -376,16 +376,16 @@
 !
 ! latmin<lat0<latmax
 !
-          jmin=99999
-          jmax=-99999
+          jmin=-99999
+          jmax=99999
           do j=1,NY0(blkvar_id)
             if (lat0(j).lt.latmin) jmin=j
           enddo
           do j=NY0(blkvar_id),1,-1
             if (lat0(j).gt.latmax) jmax=j
           enddo
-          if (jmin.ge.NY0(blkvar_id)) goto 16       !--> ERROR
-          if (jmax.le.1) goto 18                    !--> ERROR
+          if (jmin.le.1) goto 16       !--> ERROR
+          if (jmax.ge.NY0(blkvar_id)) goto 18                    !--> ERROR
 !
 ! Extend the subgrid limit of 1 grid point
 !
