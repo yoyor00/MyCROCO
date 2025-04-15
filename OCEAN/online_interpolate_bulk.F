@@ -60,8 +60,8 @@
 # include "online.h"
       integer, intent(in) :: NXref, NYref, blkvar_id, iblkrec
 # if defined IRREG_INTERP
-      real(kind=8), intent(in) :: lonref(1:NYref,1:NXref), 
-     &                            latref(1:NYref,1:NXref)
+      real(kind=8), intent(in) :: lonref(1:NXref,1:NYref), 
+     &                            latref(1:NXref,1:NYref)
 # else
       real(kind=8), intent(in) :: lonref(1:NXref), latref(1:NYref)
 # endif
@@ -108,6 +108,8 @@
 ! 1 process Tair
 ! Temperature: Convert from Kelvin to Celsius
 !
+
+        print *,'NXref, NYref',NXref,NYref
 
         call MYINTERP(1, NXref, 1, NYref,
      &                lonref, latref, varref,

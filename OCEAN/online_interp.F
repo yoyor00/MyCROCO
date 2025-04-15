@@ -599,11 +599,13 @@
       real(kind=8), dimension(LBx:UBx,LBy:UBy) :: srX,srY,sXY,sYX
 !
 
-
       call spln2d(UBx,UBy, Finp, srX,srY,sXY,sYX)
 
       call r2r_interp_init_thread(UBx,UBy,Xinp,Yinp,Istr,Iend,
      &                             Jstr,Jend, Xout,Yout ,ip,jp, xi,eta)
+
+!      print *,"ip",ip(Istr:Iend,Jend)
+!      print *,"jp",jp(Istr:Iend,Jend)
 
       call spln2d_interp(UBx,UBy, Finp, srX, srY, sXY,
      &                      Istr, Iend, Jstr, Jend, ip,jp, xi,eta, Fout)
@@ -739,6 +741,9 @@
      &      .and. r34 >= 0.D0 .and. r41 >= 0.D0 )
 
           ip(ic,jc)=i ; jp(ic,jc)=j        !<-- record bounding indices
+
+          if (jc.eq.Jend) then
+          endif
 
           if (iinc > 0 .and. ic < Iend) then    !--> proceed to the
             ic=ic+1                              !    next target point

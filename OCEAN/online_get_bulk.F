@@ -137,6 +137,9 @@
           ierr=nf_inq_varid(ncidbulkO(blkvar_id),
      &                      blk_vname(1,blkvar_id)(1:lvar),
      &                      bulk_varid(blkvar_id))
+
+
+
 !
 ! Extract the number of records
 !
@@ -155,6 +158,8 @@
           if (ierr. ne. nf_noerr) goto 99           !--> ERROR
           ierr=nf_inq_dimlen(ncidbulkO(blkvar_id),blk_dimlonid,
      &                       NX0(blkvar_id))
+
+          print *,'NX0(blkvar_id)',NX0(blkvar_id)
 # else
 
 
@@ -178,6 +183,7 @@
           ierr=nf_inq_dimlen(ncidbulkO(blkvar_id),blk_dimlatid,
      &                       NY0(blkvar_id))
 
+          print *,'NY0(blkvar_id)',NY0(blkvar_id)
 
 # else
 
