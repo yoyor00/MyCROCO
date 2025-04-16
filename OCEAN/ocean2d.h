@@ -17,11 +17,9 @@
       real zeta(GLOBAL_2D_ARRAY,4)
       real ubar(GLOBAL_2D_ARRAY,4)
       real vbar(GLOBAL_2D_ARRAY,4)
-      real cer(GLOBAL_2D_ARRAY)
       common /ocean_zeta/zeta
       common /ocean_ubar/ubar
       common /ocean_vbar/vbar
-      common /ocean_cer/cer
 
 #if !defined SOLVE3D && defined M2_HADV_UP3
       real urhs(GLOBAL_2D_ARRAY)
@@ -29,9 +27,3 @@
       real Duon(GLOBAL_2D_ARRAY)
       real DVom(GLOBAL_2D_ARRAY)
 #endif
-
-# ifdef STO_XI2D
-      real sto_xi2d(GLOBAL_2D_ARRAY)
-      common /stogen2d/ sto_xi2d
-# endif
-

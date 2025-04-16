@@ -19,11 +19,11 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       call bulk_flux_tile (Istr,Iend,Jstr,Jend,
-     &                               A2d(1,1,trd))
+     &                               A2d(1,1,trd),A2d(1,2,trd))
       return
       end
 
-      subroutine bulk_flux_tile (Istr,Iend,Jstr,Jend,aer)
+      subroutine bulk_flux_tile (Istr,Iend,Jstr,Jend, aer,cer)
       !
       !======================================================================
       !                 ***  SUBROUTINE  bulk_flux  ***
@@ -31,8 +31,10 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
-# ifdef STO_BULK_CD
+# ifdef STOGEN
       USE stobulk         ! Stochastic parameterization of bulk formulation
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
 # endif
       implicit none
 # include "param.h"
@@ -120,6 +122,7 @@
 # endif
 !++ Local arrays
       REAL           ::  aer(PRIVATE_2D_SCRATCH_ARRAY)
+      REAL           ::  cer(PRIVATE_2D_SCRATCH_ARRAY)
 # ifdef CFB_STRESS
       REAL           ::  stau(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
@@ -702,11 +705,13 @@
 !  Compute kinematic, surface wind stress (m2/s2).
 !======================================================================
 !
-#   ifdef STO_BULK_CD
-!     apply multiplicative noise to Cd
-      sto_xi2d=1.0
-      call sto_bulk_cd ( sto_xi2d )
-      call sto_bulk_cd ( cer )
+#   ifdef STOGEN
+      if (ln_stogen .and. ln_stobulk) then
+!       apply multiplicative noise to Cd
+        sto_xi2d(:,:)=1.0
+        call sto_bulk_perturb ( sto_xi2d )
+        call sto_bulk_perturb ( cer, array_type='private' )
+      endif
 #   endif
 !$acc loop seq
       do j=jmin,jmax

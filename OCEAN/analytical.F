@@ -345,8 +345,9 @@ C$    integer  trd, omp_get_thread_num
 # ifdef AGRIF
       use Agrif_UTIL
 # endif
-#ifdef STO_STRESS
+#ifdef STOGEN
       USE stostress         ! Stochastic parameterization of bulk formulation
+      USE stoalloc          ! Stochastic working arrays
 #endif
       implicit none
 # include "param.h"
@@ -378,16 +379,18 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
         enddo
       enddo
-#  ifdef STO_STRESS
-!     apply additive noise to wind stress
-!     First construct a structure fonction for the noise ...
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sto_xi2d(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
+#  ifdef STOGEN
+      if (ln_stogen .and. ln_stostress) then
+!       apply additive noise to wind stress
+!       First construct a structure fonction for the noise ...
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sto_xi2d(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
+          enddo
         enddo
-      enddo
-!     ... then apply noise
-      call sto_stress( sustr, sto_xi2d )
+!       ... then apply noise
+        call sto_stress( sustr, sto_xi2d )
+      endif
 #  endif
 # elif defined SINGLE_COLUMN && defined KATO_PHILIPS
       do j=JstrR,JendR

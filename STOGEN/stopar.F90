@@ -89,102 +89,108 @@ CONTAINS
       ! Update 2D stochastic arrays
       !
       DO jsto = 1, jpsto2d
-        ! Number of time steps between update of AR processes
-        nupdate = stofields(sto2d_idx(jsto))%nar_update
-        ! Compute position in update interval
-        ktmod = MOD(kt,nupdate)
-        IF (nupdate>1) THEN ! AR process not forwarded at each time step
-           IF (ktmod==0) THEN
-              ! Shift array in time
-              DO jidx=1,jpidx2d-1
+        IF (stofields(jsto)%type_t /= 'constant') THEN
+          ! Number of time steps between update of AR processes
+          nupdate = stofields(sto2d_idx(jsto))%nar_update
+          ! Compute position in update interval
+          ktmod = MOD(kt,nupdate)
+          IF (nupdate>1) THEN ! AR process not forwarded at each time step
+            IF (ktmod==0) THEN
+               ! Shift array in time
+               DO jidx=1,jpidx2d-1
                  sto2d(:,:,jidx,jsto) = sto2d(:,:,jidx+1,jsto)
-              ENDDO
-              ! Forward stochastic array in time
-              jidx0 = jpidx2d-1 ; jidx1 = jpidx2d
-              CALL time_forward_2d( jsto, jidx0, jidx1)
-           ENDIF
-           ! Interpolate AR process in time
-           rr = REAL(ktmod,wp) / REAL(nupdate,wp)
-           jidx0 = jpidx2d-1 ; jidx1 = jpidx2d
-           CALL time_interp_2d( jsto, jidx0, jidx1, rr)
-        ELSE
-           ! Forward stochastic array in time
-           jidx0 = 1 ; jidx1 = 1
-           CALL time_forward_2d( jsto, jidx0, jidx1)
-           IF (jpidxsup2d>0) sto2d(:,:,jpidx2d+jpidxsup2d,jsto) = sto2d(:,:,jidx1,jsto)
-        ENDIF
-        ! Transform to requested marginal distributions
-        IF (jpidxsup2d>0) THEN
-           jstoidx = sto2d_idx(jsto)
-           CALL sto_marginal(jstoidx)
+               ENDDO
+               ! Forward stochastic array in time
+               jidx0 = jpidx2d-1 ; jidx1 = jpidx2d
+               CALL time_forward_2d( jsto, jidx0, jidx1)
+            ENDIF
+            ! Interpolate AR process in time
+            rr = REAL(ktmod,wp) / REAL(nupdate,wp)
+            jidx0 = jpidx2d-1 ; jidx1 = jpidx2d
+            CALL time_interp_2d( jsto, jidx0, jidx1, rr)
+          ELSE
+            ! Forward stochastic array in time
+            jidx0 = 1 ; jidx1 = 1
+            CALL time_forward_2d( jsto, jidx0, jidx1)
+            IF (jpidxsup2d>0) sto2d(:,:,jpidx2d+jpidxsup2d,jsto) = sto2d(:,:,jidx1,jsto)
+          ENDIF
+          ! Transform to requested marginal distributions
+          IF (jpidxsup2d>0) THEN
+            jstoidx = sto2d_idx(jsto)
+            CALL sto_marginal(jstoidx)
+          ENDIF
         ENDIF
       END DO
       !
       ! Update 3D stochastic arrays
       !
       DO jsto = 1, jpsto3d
-        ! Number of time steps between update of AR processes
-        nupdate = stofields(sto3d_idx(jsto))%nar_update
-        ! Compute position in update interval
-        ktmod = MOD(kt,nupdate)
-        IF (nupdate>1) THEN ! AR process not forwarded at each time step
-           IF (ktmod==0) THEN
+        IF (stofields(jsto)%type_t /= 'constant') THEN
+          ! Number of time steps between update of AR processes
+          nupdate = stofields(sto3d_idx(jsto))%nar_update
+          ! Compute position in update interval
+          ktmod = MOD(kt,nupdate)
+          IF (nupdate>1) THEN ! AR process not forwarded at each time step
+            IF (ktmod==0) THEN
               ! Shift array in time
               DO jidx=1,jpidx3d-1
-                 sto3d(:,:,:,jidx,jsto) = sto3d(:,:,:,jidx+1,jsto)
+                sto3d(:,:,:,jidx,jsto) = sto3d(:,:,:,jidx+1,jsto)
               ENDDO
               ! Forward stochastic array in time
               jidx0 = jpidx3d-1 ; jidx1 = jpidx3d
               CALL time_forward_3d( jsto, jidx0, jidx1)
-           ENDIF
-           ! Interpolate AR process in time
-           rr = REAL(ktmod,wp) / REAL(nupdate,wp)
-           jidx0 = jpidx3d-1 ; jidx1 = jpidx3d
-           CALL time_interp_3d( jsto, jidx0, jidx1, rr)
-        ELSE
-           ! Forward stochastic array in time
-           jidx0 = 1 ; jidx1 = 1
-           CALL time_forward_3d( jsto, jidx0, jidx1)
-           IF (jpidxsup3d>0) sto3d(:,:,:,jpidx3d+jpidxsup3d,jsto) = sto3d(:,:,:,jidx1,jsto)
-        ENDIF
-        ! Transform to requested marginal distributions
-        IF (jpidxsup3d>0) THEN
-           jstoidx = sto3d_idx(jsto)
-           CALL sto_marginal(jstoidx)
+            ENDIF
+            ! Interpolate AR process in time
+            rr = REAL(ktmod,wp) / REAL(nupdate,wp)
+            jidx0 = jpidx3d-1 ; jidx1 = jpidx3d
+            CALL time_interp_3d( jsto, jidx0, jidx1, rr)
+          ELSE
+            ! Forward stochastic array in time
+            jidx0 = 1 ; jidx1 = 1
+            CALL time_forward_3d( jsto, jidx0, jidx1)
+            IF (jpidxsup3d>0) sto3d(:,:,:,jpidx3d+jpidxsup3d,jsto) = sto3d(:,:,:,jidx1,jsto)
+          ENDIF
+          ! Transform to requested marginal distributions
+          IF (jpidxsup3d>0) THEN
+            jstoidx = sto3d_idx(jsto)
+            CALL sto_marginal(jstoidx)
+          ENDIF
         ENDIF
       END DO
       !
       ! Update 0D stochastic numbers
       !
       DO jsto = 1, jpsto0d
-        ! Number of time steps between update of AR processes
-        nupdate = stofields(sto0d_idx(jsto))%nar_update
-        ! Compute position in update interval
-        ktmod = MOD(kt,nupdate)
-        IF (nupdate>1) THEN ! AR process not forwarded at each time step
-           IF (ktmod==0) THEN
+        IF (stofields(jsto)%type_t /= 'constant') THEN
+          ! Number of time steps between update of AR processes
+          nupdate = stofields(sto0d_idx(jsto))%nar_update
+          ! Compute position in update interval
+          ktmod = MOD(kt,nupdate)
+          IF (nupdate>1) THEN ! AR process not forwarded at each time step
+            IF (ktmod==0) THEN
               ! Shift array in time
               DO jidx=1,jpidx0d-1
-                 sto0d(jidx,jsto) = sto0d(jidx+1,jsto)
+                sto0d(jidx,jsto) = sto0d(jidx+1,jsto)
               ENDDO
               ! Forward stochastic array in time
               jidx0 = jpidx0d-1 ; jidx1 = jpidx0d
               CALL time_forward_0d( jsto, jidx0, jidx1)
-           ENDIF
-           ! Interpolate AR process in time
-           rr = REAL(ktmod,wp) / REAL(nupdate,wp)
-           jidx0 = jpidx0d-1 ; jidx1 = jpidx0d
-           CALL time_interp_0d( jsto, jidx0, jidx1, rr)
-        ELSE
-           ! Forward stochastic array in time
-           jidx0 = 1 ; jidx1 = 1
-           CALL time_forward_0d( jsto, jidx0, jidx1)
-           IF (jpidxsup0d>0) sto0d(jpidx0d+jpidxsup0d,jsto) = sto0d(jidx1,jsto)
-        ENDIF
-        ! Transform to requested marginal distributions
-        IF (jpidxsup0d>0) THEN
-           jstoidx = sto0d_idx(jsto)
-           CALL sto_marginal(jstoidx)
+            ENDIF
+            ! Interpolate AR process in time
+            rr = REAL(ktmod,wp) / REAL(nupdate,wp)
+            jidx0 = jpidx0d-1 ; jidx1 = jpidx0d
+            CALL time_interp_0d( jsto, jidx0, jidx1, rr)
+          ELSE
+            ! Forward stochastic array in time
+            jidx0 = 1 ; jidx1 = 1
+            CALL time_forward_0d( jsto, jidx0, jidx1)
+            IF (jpidxsup0d>0) sto0d(jpidx0d+jpidxsup0d,jsto) = sto0d(jidx1,jsto)
+          ENDIF
+          ! Transform to requested marginal distributions
+          IF (jpidxsup0d>0) THEN
+            jstoidx = sto0d_idx(jsto)
+            CALL sto_marginal(jstoidx)
+          ENDIF
         ENDIF
       END DO
 
@@ -283,7 +289,7 @@ CONTAINS
       !!
       !! ** Purpose :   initialize random fields
       !!----------------------------------------------------------------------
-      INTEGER :: jsto, jk, jidx1
+      INTEGER :: jsto, jk, jidx1, jstoidx
 
       DO jsto = 1, jpsto2d
          ! Draw random numbers from N(0,1) --> w
@@ -292,6 +298,11 @@ CONTAINS
          DO jidx1 = 2, jpidx2d
             CALL time_forward_2d( jsto, jidx1-1, jidx1 )
          ENDDO
+         ! Transform to requested marginal distributions
+         IF (jpidxsup2d>0) THEN
+            jstoidx = sto2d_idx(jsto)
+            CALL sto_marginal(jstoidx)
+         ENDIF
       END DO
       !
       DO jsto = 1, jpsto3d
@@ -303,6 +314,11 @@ CONTAINS
          DO jidx1 = 2, jpidx3d
             CALL time_forward_3d( jsto, jidx1-1, jidx1 )
          ENDDO
+         ! Transform to requested marginal distributions
+         IF (jpidxsup3d>0) THEN
+            jstoidx = sto3d_idx(jsto)
+            CALL sto_marginal(jstoidx)
+         ENDIF
       END DO
       !
       DO jsto = 1, jpsto0d
@@ -312,6 +328,11 @@ CONTAINS
          DO jidx1 = 2, jpidx0d
             CALL time_forward_0d( jsto, jidx1-1, jidx1 )
          ENDDO
+         ! Transform to requested marginal distributions
+         IF (jpidxsup0d>0) THEN
+            jstoidx = sto0d_idx(jsto)
+            CALL sto_marginal(jstoidx)
+         ENDIF
       ENDDO
 
    END SUBROUTINE sto_fields_init

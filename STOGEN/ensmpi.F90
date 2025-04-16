@@ -12,8 +12,7 @@ MODULE ensmpi
    !!----------------------------------------------------------------------
    ! include parameters from CROCO
    USE scalars
-   USE stoexternal , only : lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam, &
-                          & filnam_ref, filnam_cfg
+   USE stoexternal , only : lwm, lwp, numnam_ref, numond, ctl_nam, filnam_ref
 
    IMPLICIT NONE
    PRIVATE
@@ -116,23 +115,15 @@ CONTAINS
       INTEGER  ::   ios                            ! Local integer output status for namelist read
 
       ! Open namelist files
-      numnam_ref = 10 ; numnam_cfg = 11 ; lwm = .FALSE.
+      numnam_ref = 10 ; lwm = .FALSE.
       OPEN(UNIT=numnam_ref,FILE=filnam_ref,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
-      OPEN(UNIT=numnam_cfg,FILE=filnam_cfg,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
-
 
       ! Read namens namelist : ensemble simulation
       REWIND( numnam_ref )
       READ  ( numnam_ref, namens, IOSTAT = ios, ERR = 901)
 901   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namens in reference namelist', lwp )
 
-      REWIND( numnam_cfg )
-      READ  ( numnam_cfg, namens, IOSTAT = ios, ERR = 902 )
-902   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namens in configuration namelist', lwp )
-      IF(lwm) WRITE ( numond, namens )
-
       CLOSE(numnam_ref)
-      CLOSE(numnam_cfg)
 
    END SUBROUTINE ens_param_read
 

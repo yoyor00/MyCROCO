@@ -13,6 +13,10 @@
       subroutine read_inp (ierr)        ! parameters  from  startup
                                         ! script file using keywords
                                         ! to recognize variables.
+# ifdef STOGEN
+      use stoalloc                      ! do we output stochastic fields
+# endif
+
 !     implicit none
 
 #include "param.h"
@@ -315,51 +319,7 @@
 !
 ! Read input parameters according to the keyword:
 ! ==== ===== ========== ========= == === ========
-#ifdef LOGFILE
-!
-! LOGFILE file name. Check its availability and open it.
-!
-      if (keyword(1:kwlen).eq.'logfile') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-        logname=fname(1:lstr)
-# ifndef AGRIF
-      MPI_master_only stdout=80
-# else
-      stdout=Agrif_Get_Unit()
-      if (.Not.Agrif_Root()) then
-        if(mynode.eq.0) then
-         open (stdout,file=logname//'.'//Agrif_Cfixed(),
-     &   status='REPLACE',form='formatted',err=98)
-        else
-         stdout=6
-        endif
-      else
-# endif
-      if(mynode.eq.0) then
-# ifdef ENSEMBLE
-      open (stdout,file=cmember//logname,
-# else
-      open (stdout,file=logname,
-# endif
-     & status='REPLACE',form='formatted',err=98)
-      else
-      stdout=6
-      endif
-# ifdef AGRIF
-      endif
-# endif
-!
-! Title
-!
-      elseif (keyword(1:kwlen).eq.'title') then
-#else
       if (keyword(1:kwlen).eq.'title') then
-#endif   /* LOGFILE */
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) title
 
@@ -367,7 +327,7 @@
 !
 ! LOGFILE file name. Check its availability and open it.
 !
-       elseif (keyword(1:kwlen).eq.'logfile') then
+      elseif (keyword(1:kwlen).eq.'logfile') then
          call cancel_kwd (keyword(1:kwlen), ierr)
          read(input,'(A)',err=95) fname
          lstr=lenstr(fname)
@@ -403,7 +363,6 @@
           endif
 # endif
 #endif /*LOGFILE*/
-        
 
 #ifdef USE_CALENDAR
 !
@@ -1165,15 +1124,6 @@ c        close(testunit)
      &                                       ,  wrthis(indxVb)
 #ifdef SOLVE3D
      &                    ,  wrthis(indxU),  wrthis(indxV)
-# ifdef STO_XI1D
-!     &                    ,  wrthis(indxXIsto1d)
-# endif
-# ifdef STO_XI2D
-     &                    ,  wrthis(indxXIsto2d)
-# endif
-# ifdef STO_XI3D
-     &                    ,  wrthis(indxXIsto3d)
-# endif
 # ifdef TRACERS
      &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT)
         do itrc=1,NT
@@ -1194,6 +1144,13 @@ c        close(testunit)
 #endif
      &     ) wrthis(indxTime)=.true.
 
+#ifdef STOGEN
+      elseif (keyword(1:kwlen).eq.'stochastic_history_fields') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wrthis(indxXIsto2d), wrthis(indxXIsto3d)
+        ln_hststo2d = wrthis(indxXIsto2d)
+        ln_hststo3d = wrthis(indxXIsto3d)
+#endif
 #if !defined SOLVE3D && defined RIP
       elseif (keyword(1:kwlen).eq.'auxiliary_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
@@ -2838,13 +2795,9 @@ c        close(testunit)
 #ifdef SOLVE3D
      &    , wrthis(indxU),  'write U    ', '3D U-momentum component.'
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
-# ifdef STO_XI1D
+# ifdef STOGEN
 !     &    , wrthis(indxXIsto1d),'write sto_xi1d', '1D stochastic field -- NOT AVAILABLE YET'
-# endif
-# ifdef STO_XI2D
      &    , wrthis(indxXIsto2d),'write sto_xi2d', '2D stochastic field.'
-# endif
-# ifdef STO_XI3D
      &    , wrthis(indxXIsto3d),'write sto_xi3d', '3D stochastic field.'
 # endif
 # ifdef TRACERS

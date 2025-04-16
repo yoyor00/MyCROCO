@@ -11,25 +11,34 @@ MODULE stoarray
    !!----------------------------------------------------------------------
 
    !!----------------------------------------------------------------------
+   !!   sto_param_init         : read main block of parameter namelist
    !!   sto_array_init         : initialize stochastic arrays
    !!   sto_array_request_size : request maximum number of stochastic fields
    !!   sto_array_request_new  : request new stochastic field
    !!----------------------------------------------------------------------
    USE stoexternal , only : wp, lc, jpi, jpj, jpk, numout, &
-   &                       lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam
+   &                        lwm, lwp, numnam_ref, numond, ctl_nam
 
    IMPLICIT NONE
    PRIVATE
 
+   PUBLIC   sto_param_init
    PUBLIC   sto_array_init
    PUBLIC   sto_array_request_size
    PUBLIC   sto_array_request_new
 
    ! General parameters of stochastic modules (read from namelist)
+   LOGICAL, PUBLIC           :: ln_stogen = .FALSE.    ! activate/deactivate STOGEN (global switch)
+   LOGICAL, PUBLIC           :: ln_stobulk = .FALSE.   ! stochastic bulk formulation for air-sea fluxes
+   LOGICAL, PUBLIC           :: ln_stostress = .FALSE. ! stochastic formulation of surface stress (non-bulk)
+   LOGICAL, PUBLIC           :: ln_stogls = .FALSE.    ! stochastic formulation of vertical mixing
+
    LOGICAL, PUBLIC           :: ln_rststo = .FALSE.  ! restart stochastic parameters from restart file
    LOGICAL, PUBLIC           :: ln_rstseed = .FALSE. ! read seed of RNG from restart file
    CHARACTER(len=lc), PUBLIC :: cn_storst_in = "restart_sto"     ! suffix of sto restart name (input)
    CHARACTER(len=lc), PUBLIC :: cn_storst_out = "restart_sto"    ! suffix of sto restart name (output)
+
+   ! Variables used for the management of restart files
    INTEGER                   :: numstor, numstow     ! logical unit for restart (read and write)
 
    ! General type with features of stochastic fields
@@ -124,7 +133,7 @@ MODULE stoarray
    !!----------------------------------------------------------------------
 CONTAINS
 
-   SUBROUTINE sto_array_init
+   SUBROUTINE sto_param_init
       !!----------------------------------------------------------------------
       !!                  ***  ROUTINE sto_array_init  ***
       !!
@@ -132,9 +141,43 @@ CONTAINS
       !!                initialize arrays with features of stochastic processes
       !!----------------------------------------------------------------------
       ! Namelist with general parameters for stochastic modules
-      NAMELIST/namsto/ ln_rststo, ln_rstseed, cn_storst_in, cn_storst_out
+      NAMELIST/namsto/ ln_stogen, ln_stobulk, ln_stostress, ln_stogls, &
+                     & ln_rststo, ln_rstseed, cn_storst_in, cn_storst_out
       !!----------------------------------------------------------------------
       INTEGER  ::   ios                            ! Local integer output status for namelist read
+
+      ! Read namsto namelist : stochastic parameterization
+      REWIND( numnam_ref )              ! Namelist namsto in reference namelist : stochastic parameterization
+      READ  ( numnam_ref, namsto, IOSTAT = ios, ERR = 901)
+901   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namsto ', lwp )
+
+      ! Parameter print
+      IF(lwp) THEN
+         WRITE(numout,*)
+         WRITE(numout,*) 'sto_param_init : stochastic parameterization'
+         WRITE(numout,*) '~~~~~~~~~~~~~~'
+         WRITE(numout,*) '   Namelist namsto : stochastic parameterization'
+         WRITE(numout,*) '      apply stochastic parameterization       ln_stogen     = ', ln_stogen
+         WRITE(numout,*) '            stochastic bulk fluxes            ln_stobulk    = ', ln_stobulk
+         WRITE(numout,*) '            stochastic wind stress (non-bulk) ln_stostress  = ', ln_stostress
+         WRITE(numout,*) '            stochastic vertical mixing        ln_stogls     = ', ln_stogls
+         WRITE(numout,*) '      restart stochastic parameters           ln_rststo     = ', ln_rststo
+         WRITE(numout,*) '      read seed of RNG from restart file      ln_rstseed    = ', ln_rstseed
+         WRITE(numout,*) '      suffix of sto restart name (input)      cn_storst_in  = ', trim(cn_storst_in)
+         WRITE(numout,*) '      suffix of sto restart name (output)     cn_storst_out = ', trim(cn_storst_out)
+         WRITE(numout,*) ' '
+      ENDIF
+
+   END SUBROUTINE sto_param_init
+
+
+   SUBROUTINE sto_array_init
+      !!----------------------------------------------------------------------
+      !!                  ***  ROUTINE sto_array_init  ***
+      !!
+      !! ** Purpose :   allocate stochastic arrays
+      !!                initialize arrays with features of stochastic processes
+      !!----------------------------------------------------------------------
       INTEGER  ::   jsto, jsto2d, jsto3d, jsto0d   ! Index of stochastic field
       INTEGER  ::   jord                           ! Order of stochastic field
       LOGICAL  ::   marginal                       ! do we make call to marginal transformation
@@ -142,29 +185,6 @@ CONTAINS
       ! Check that requests for stochatic fields have been made before
       IF (jpsto==0) THEN
          STOP 'Error in sto_array_init: sto_array_request_new has not been called'
-      ENDIF
-
-      ! Read namsto namelist : stochastic parameterization
-      REWIND( numnam_ref )              ! Namelist namsto in reference namelist : stochastic parameterization
-      READ  ( numnam_ref, namsto, IOSTAT = ios, ERR = 901)
-901   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namsto in reference namelist', lwp )
-
-      REWIND( numnam_cfg )              ! Namelist namsto in configuration namelist : stochastic parameterization
-      READ  ( numnam_cfg, namsto, IOSTAT = ios, ERR = 902 )
-902   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namsto in configuration namelist', lwp )
-      IF(lwm) WRITE ( numond, namsto )
-
-      ! Parameter print
-      IF(lwp) THEN
-         WRITE(numout,*)
-         WRITE(numout,*) 'sto_array_init : stochastic parameterization'
-         WRITE(numout,*) '~~~~~~~~~~~~~~'
-         WRITE(numout,*) '   Namelist namsto : stochastic parameterization'
-         WRITE(numout,*) '      restart stochastic parameters           ln_rststo     = ', ln_rststo
-         WRITE(numout,*) '      read seed of RNG from restart file      ln_rstseed    = ', ln_rstseed
-         WRITE(numout,*) '      suffix of sto restart name (input)      cn_storst_in  = ', trim(cn_storst_in)
-         WRITE(numout,*) '      suffix of sto restart name (output)     cn_storst_out = ', trim(cn_storst_out)
-         WRITE(numout,*) ' '
       ENDIF
 
       ! Loop on stochastic fields and set derived parameters
@@ -443,7 +463,7 @@ CONTAINS
       INTEGER, INTENT(in) :: kjsto
 
       SELECT CASE(stofields(kjsto)%type_t)
-      CASE('white','arn')
+      CASE('white','arn','constant')
       CASE DEFAULT
          STOP 'Bad type of time structure in stoarray'
       END SELECT
