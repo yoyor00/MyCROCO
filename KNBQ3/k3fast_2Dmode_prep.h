@@ -17,9 +17,9 @@
        endif
 #endif
 # if defined K3FAST_UV || defined K3FAST_W || defined K3FAST_RHO
-!$acc kernels if(compute_on_device) default(present)
       if (FIRST_FAST_STEP) then
        if (FIRST_TIME_STEP) then
+!$acc kernels if(compute_on_device) default(present)
          do j=JstrR,JendR
          do k=1,N
            do i=IstrR,IendR
@@ -42,12 +42,14 @@
             enddo
           enddo
 #  endif
+!$acc end kernels
        endif
 ! !      
 ! !********************************
 ! ! Extrapolation in time:
 ! !********************************
 ! !
+!$acc kernels if(compute_on_device) default(present)
          do j=JstrR,JendR
            do k=1,N
              do i=IstrR,IendR
@@ -61,6 +63,7 @@
              enddo
            enddo
          enddo
+!$acc end kernels
 #  ifdef MPI
              call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        rho_grd(-2,-2,1))
@@ -71,7 +74,6 @@
 #endif
 
       endif
-!$acc end kernels
 # endif
 ! !
 ! !********************************

@@ -324,7 +324,6 @@
       call zetabc_tile (Istr,Iend,Jstr,Jend)
 # if !defined NBQ_HZCORRECT
       if (LAST_FAST_STEP) then
-!$acc update host( zeta )        
       endif
 # endif      
 ! !
@@ -339,7 +338,6 @@
 # endif
 # if !defined NBQ_HZCORRECT
       if (LAST_FAST_STEP) then
-!$acc update host( zeta )        
       endif
 # endif   
 ! !

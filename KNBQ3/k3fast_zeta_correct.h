@@ -103,8 +103,6 @@
           enddo
         enddo
 !$acc end kernels
-! !$acc update host( Zt_avg1,zeta(:,:,knew)  )  !! iif=last
-!$acc update host( Zt_avg1,zeta  )  !! iif=last
       endif
 ! !
 ! !********************************
@@ -115,7 +113,6 @@
 ! !
 # ifdef NBQ_GRID_SLOW
       if (LAST_FAST_STEP) then
-!$acc update host( Hz )      
 # endif
 
 # ifdef NBQ_HZ_PROGNOSTIC

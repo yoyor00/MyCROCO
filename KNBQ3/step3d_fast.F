@@ -766,7 +766,9 @@ C$    trd=omp_get_thread_num()
 ! !--------------------------------------------------------------------
 ! !
 # ifdef K3FAST_NOBPG
+!$acc kernels if(compute_on_device) default(present)    
           thetadiv_nbq=0.
+!$acc end kernels  
 # endif
 # ifdef NBQ_IMP
 #   include "k3fast_divh.h"
@@ -849,9 +851,9 @@ C$    trd=omp_get_thread_num()
       call wnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 #  endif
 ! !
-      if (LAST_FAST_STEP) then
-!$acc update host( qdmw_nbq )   !! iif=last
-      endif 
+!      if (LAST_FAST_STEP) then
+!!$acc update host( qdmw_nbq )   !! iif=last
+!      endif 
 ! !
 ! !--------------------------------------------------------------------
 ! !  Exchange qdmw (if necessary)

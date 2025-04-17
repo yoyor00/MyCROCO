@@ -252,11 +252,13 @@ C$    integer  trd, omp_get_thread_num
       time_mvb=time + dtfast*float(iif)
 #  ifdef MOVING_BATHY
 #     include "mvb.h"      
+!$acc kernels if(compute_on_device) default(present)
        do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=h0_mvb(i,j)+dh_mvb(i,j,knew2)
         enddo
         enddo
+!$acc end kernels        
 #  endif    
       return
       end
@@ -1121,6 +1123,7 @@ C$    integer  trd, omp_get_thread_num
 #  elif defined IGW
       cff=((2.e-3)**2)/g
       rhom=1027.037885
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1149,7 +1152,9 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1162,6 +1167,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 #  endif /* JET */
 # endif
 

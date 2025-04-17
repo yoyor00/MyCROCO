@@ -51,7 +51,7 @@
       common /nbq_param1/ soundspeed_nbq         
       real soundspeed2_nbq(GLOBAL_2D_ARRAY,NSLP1N) 
       common /nbq_param2/ soundspeed2_nbq
-!$acc declare create( soundspeed_nbq, soundspeed2_nbq )      
+
 #  endif
       double precision time_nbq               
       common /nbq_param3/ time_nbq
@@ -106,7 +106,6 @@
       common /nbq_visc2/ visc2_nbq
       real visc2v_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /test_visc2v/ visc2v_nbq
-!$acc declare create( visc2_nbq , visc2v_nbq )      
 #  endif
 #  ifdef NBQ_SPONGE
       real visc2_nbq_sponge (GLOBAL_2D_ARRAY)
@@ -175,12 +174,10 @@
        common /nbq_qdmwold_nbq/ qdmwold_nbq
 #     endif
 #  ifdef K3FAST_UV
-!$acc declare create( dthetadiv_nbqdz )      
       real dZdxq_w(GLOBAL_2D_ARRAY,NSLN+1)
       common /nbq_nods5/ dZdxq_w
       real dZdyq_w(GLOBAL_2D_ARRAY,NSLN+1)
       common /nbq_nods7/ dZdyq_w
-!$acc declare create( dZdxq_w, dZdyq_w )
 #  endif 
       real thetadiv_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_thetadiv_nbq/ thetadiv_nbq
@@ -193,7 +190,6 @@
       common /nbq_ru2d/ru_int2d_nbq_bak
       real rv_int2d_nbq_bak(GLOBAL_2D_ARRAY,2)
       common /nbq_rv2d/rv_int2d_nbq_bak
-!$acc declare create( ru_int2d_nbq_bak, rv_int2d_nbq_bak)      
 #  endif
       real ru_int_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_ruint/ ru_int_nbq
@@ -210,7 +206,6 @@
       real rv_intt_nbq(GLOBAL_2D_ARRAY,N,2)
       common /nbq_rvintt/ rv_intt_nbq
 #  endif
-!$acc declare create( ru_int_nbq, rv_int_nbq )     
       real ru_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_ru/ ru_nbq
       real rv_nbq(GLOBAL_2D_ARRAY,N)
@@ -221,7 +216,6 @@
       common /avg2_rvnbq/ rv_nbq_avg2
       real Hzw_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /grid_Hzw_nbq/ Hzw_nbq
-!$acc declare create(  Hzw_nbq, Hzu_nbq_inv, Hzv_nbq_inv )      
       real rw_int_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_rwint/ rw_int_nbq   
 #  ifdef K3FAST_COUPLINGW_SCH1
@@ -233,7 +227,6 @@
 #  endif
       real rw_nbq(GLOBAL_2D_ARRAY,NSLN)
       common /nbq_rw/ rw_nbq
-!$acc declare create( rw_int_nbq )      
       real rw_nbq_avg2(GLOBAL_2D_ARRAY,0:N)
       common /avg2_rwnbq/ rw_nbq_avg2
       real rho_nbq(GLOBAL_2D_ARRAY,NSLP1N)
@@ -253,11 +246,9 @@
 #  ifdef NBQ_GRAV
       real rho_nh(GLOBAL_2D_ARRAY,N)
       common/nbq_rho_nh/rho_nh
-!$acc declare create( rho_nh )
 #   ifdef CONVECT
       real rhoi_nh(GLOBAL_2D_ARRAY,N)
       common/nbq_rhoi_nh/rhoi_nh
-!$acc declare create( rhoi_nh )      
 #   endif
 #  endif
       real rho_grd(GLOBAL_2D_ARRAY,NSLP1N)
@@ -275,7 +266,6 @@
 # ifdef NBQ_HZCORRECT
        real Hz_correct(GLOBAL_2D_ARRAY,NSLP1N)
        common /grid_Hz_correct/ Hz_correct
-!$acc declare create( Hz_correct )       
 #  ifdef NBQ_HZCORR_DEBUG
       real  Hz_corr(GLOBAL_2D_ARRAY,N) 
       common/corr_Hz/Hz_corr
@@ -295,7 +285,6 @@
       common /dum_DC3D/DC3D
       real CF3D(GLOBAL_2D_ARRAY,NSLN)
       common /dum_CF3D/CF3D
-!$acc declare create( FC3D, DC3D, CF3D )
 #  ifdef ANA_MVB
       real rhoi_nbq(GLOBAL_2D_ARRAY,N)
       common/nbq_rhoi/rhoi_nbq
@@ -323,13 +312,11 @@
       common /bry_unbq_west/ qdmu_nbq_west
       real qdmv_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_vnbq_west/ qdmv_nbq_west
-!$acc declare create( qdmu_nbq_west, qdmv_nbq_west )
 #    ifdef K3FAST_W
       real qdmw_nbq_west(GLOBAL_1D_ARRAYETA,0:N,2)
       common /bry_wnbq_west/ qdmw_nbq_west
       real  rho_nbq_west(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_rnbq_west/ rho_nbq_west
-!$acc declare create( qdmw_nbq_west, rho_nbq_west )
 #    endif
 #   endif
 #   ifdef OBC_COM_EAST
@@ -337,13 +324,11 @@
       common /bry_unbq_east/ qdmu_nbq_east
       real qdmv_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_vnbq_east/ qdmv_nbq_east
-!$acc declare create( qdmu_nbq_east, qdmv_nbq_east )
 #    ifdef K3FAST_W
       real qdmw_nbq_east(GLOBAL_1D_ARRAYETA,0:N,2)
       common /bry_wnbq_east/ qdmw_nbq_east
       real  rho_nbq_east(GLOBAL_1D_ARRAYETA,N,2)
       common /bry_rnbq_east/ rho_nbq_east
-!$acc declare create( qdmw_nbq_east, rho_nbq_east )
 #    endif
 #   endif
 #   ifdef OBC_COM_SOUTH
@@ -351,13 +336,11 @@
       common /bry_unbq_south/ qdmu_nbq_south
       real qdmv_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_vnbq_south/ qdmv_nbq_south
-!$acc declare create( qdmu_nbq_south, qdmv_nbq_south )
 #    ifdef K3FAST_W
       real qdmw_nbq_south(GLOBAL_1D_ARRAYXI,0:N,2)
       common /bry_wnbq_south/ qdmw_nbq_south
       real  rho_nbq_south(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_rnbq_south/ rho_nbq_south
-!$acc declare create( qdmw_nbq_south, rho_nbq_south )
 #    endif
 #   endif
 #   ifdef OBC_COM_NORTH
@@ -365,13 +348,11 @@
       common /bry_unbq_north/ qdmu_nbq_north
       real qdmv_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_vnbq_north/ qdmv_nbq_north
-!$acc declare create( qdmu_nbq_north, qdmv_nbq_north )
 #    ifdef K3FAST_W
       real qdmw_nbq_north(GLOBAL_1D_ARRAYXI,0:N,2)
       common /bry_wnbq_north/ qdmw_nbq_north
       real  rho_nbq_north(GLOBAL_1D_ARRAYXI,N,2)
       common /bry_rnbq_north/ rho_nbq_north
-!$acc declare create( qdmw_nbq_north, rho_nbq_north )
 #    endif
 #   endif
 #  endif    

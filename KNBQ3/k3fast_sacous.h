@@ -22,7 +22,8 @@ C$OMP END MASTER
           jvar1=JstrV-1
           jvar2=Jend
         endif
-        time_nbq = time_nbq + dtfast
+        !time_nbq = time_nbq + dtfast
+	time_nbq = dt*(iic-1)+dtfast*iif
         do j=jvar1,jvar2
         do i=IstrU-1,Iend
         do k=-N_sl+1,N

@@ -27,7 +27,6 @@
         enddo
 #   endif
 !$acc end kernels
-!$acc update host( rw_nbq )     !!iif=last
       endif
 ! !
 ! !********************************
@@ -96,6 +95,7 @@
 ! ! Inner layers (ocean)
 ! !********************************
 ! !
+!$acc loop independent 
         do k=1,N-1
           do i=Istr,Iend  
 ! !

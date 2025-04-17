@@ -57,7 +57,6 @@ C$OMP END MASTER
           enddo
         enddo
 !$acc end kernels 
-!$acc update host( rw_nbq )         !! iif=last
       endif
 # endif
 ! !
@@ -234,12 +233,6 @@ C$OMP END MASTER
 
 # ifdef K3FAST_UV 
       if (LAST_FAST_STEP) then
-!$acc update host( ru_int_nbq, ru_nbq_avg2      !! iif=last
-!$acc&            ,rv_int_nbq, rv_nbq_avg2 
-!$acc&            ,rw_nbq_avg2
-!$acc&           ) !async(sync_ruv_nbq_avg2)
-! ! ru_int_nbq => pre_step
-! ! ru_nbq_avg2 => step3d_uv1
       endif
 #endif
 ! !
@@ -549,6 +542,7 @@ C$OMP END MASTER
 ! !         & AGRIF
       call u2dbc_tile (Istr,Iend,Jstr,Jend, work) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, work)
+!$acc wait	
 # ifdef WET_DRY
 !$acc kernels if(compute_on_device) default(present)
 #  ifndef EW_COM_PERIODIC

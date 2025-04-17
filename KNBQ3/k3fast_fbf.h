@@ -7,8 +7,10 @@
 #  define VBOT VFe
       if (mod(iif-1,inc_faststep).eq.0) then
 !$acc kernels if(compute_on_device) default(present)
-
-        if (maxval(Zob).ne.0.) then
+        maxvalZob = maxval(Zob)
+!$acc end kernels        
+!$acc kernels if(compute_on_device) default(present)
+        if (maxvalZob.ne.0.) then
           do j=JstrV-1,Jend+1
             do i=IstrU-1,Iend+1
               UBOT(i,j)=2.*qdmu_nbq(i,j,1)/(Hz(i,j,1)+Hz(i-1,j,1))

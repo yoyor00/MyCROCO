@@ -206,6 +206,7 @@
        end
 
        subroutine copy_to_devices_2_tile(Istr,Iend,Jstr,Jend)
+# include "set_obc_definitions.h"
        implicit none
 # include "param.h"
        integer Istr,Iend,Jstr,Jend

@@ -20,6 +20,10 @@
       end
 !
       subroutine ana_initial_tile (Istr,Iend,Jstr,Jend)
+# ifdef RVTK_DEBUG               
+      use debug
+      use my_functions
+#  endif      
 !
 !----------------------------------------------------------------------
 !  Set initial conditions for momentum and tracer variables using
@@ -1580,6 +1584,7 @@ C$OMP BARRIER
 !--------------------------------------------------------------------
 !
 # ifdef PASSIVE_TRACER
+!$acc kernels if(compute_on_device) default(present)       
       do k=1,N
         do j=JR_RANGE
           do i=IR_RANGE
@@ -1637,6 +1642,8 @@ C$OMP BARRIER
           enddo
         enddo
       enddo
+!$acc end kernels     
+      
 # endif /* PASSIVE_TRACER */
 !
 !

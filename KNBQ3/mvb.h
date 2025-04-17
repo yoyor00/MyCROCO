@@ -15,6 +15,7 @@
 ! !                      Increment MVB time-step
 ! !====================================================================
 ! !
+!$acc kernels if(compute_on_device) default(present)
        i=kbak2
        kbak2=kstp2
        kstp2=knew2
@@ -40,6 +41,7 @@
 !!          y_mvb(i,j,kbak2)=0.
         enddo
        enddo
+!$acc end kernels       
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 !      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
 !     &                        x_mvb(START_2D_ARRAY,kbak2))
@@ -51,6 +53,7 @@
 ! !                      Time-dependant bottom topography
 ! !====================================================================
 ! !
+!$acc kernels if(compute_on_device) default(present)
       cff=1./(0.03686)**2
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -58,6 +61,7 @@
      &         0.394 - 0.1*exp(-cff*(xr(i,j)-x_mvb(i,j,kbak2))**2)
         enddo
       enddo
+!$acc end kernels      
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        dh_mvb(START_2D_ARRAY,kbak2))
@@ -65,8 +69,10 @@
 #  ifdef RVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
-        call check_tab2d(dh_mvb(:,:,knew2),'dh_mvb(knew2) mvb.h','r')
-        call check_tab2d(dh_mvb(:,:,kbak2),'dh_mvb(kbak2) mvb.h','r')
+        call check_tab2d(dh_mvb(:,:,knew2),'dh_mvb(knew2) mvb.h','r',
+     &  ondevice=.TRUE.)            
+        call check_tab2d(dh_mvb(:,:,kbak2),'dh_mvb(kbak2) mvb.h','r',
+     &  ondevice=.TRUE.)
 C$OMP END MASTER
 #  endif   
 ! ! 
@@ -74,6 +80,7 @@ C$OMP END MASTER
 ! !                           Horizontal velocity
 ! !====================================================================
 ! !
+!$acc kernels if(compute_on_device) default(present)
       do j=JR_RANGE
         do i=IU_RANGE
           ! u at m+1
@@ -94,6 +101,7 @@ C$OMP END MASTER
 !          v_mvb(i,j,knew2)=0.
 !        enddo
 !      enddo
+!$acc end kernels
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                        u_mvb(START_2D_ARRAY,knew2))
@@ -105,6 +113,7 @@ C$OMP END MASTER
 ! !                           Vertical velocity
 ! !====================================================================
 ! !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,Jend
         jm1=max(j-1,0)
         do i=IstrR,Iend
@@ -135,6 +144,7 @@ C$OMP END MASTER
 !!     &                    *(dh_mvb(i,j+1,knew2)-dh_mvb(i,j  ,knew2))
         enddo
       enddo
+!$acc end kernels      
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                        w_mvb(START_2D_ARRAY,knew2))

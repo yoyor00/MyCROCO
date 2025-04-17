@@ -1,6 +1,6 @@
 !$acc enter data if(compute_on_device) copyin(
 
-!../OCEAN/ocean2d.h
+!Compile/ocean2d.h
 !$acc& zeta
 !$acc&, ubar
 !$acc&, vbar
@@ -11,7 +11,7 @@
 !$acc&, DVom
 #endif
 
-!../OCEAN/scalars.h
+!Compile/scalars.h
 #ifdef SOLVE3D
 # if !defined M3FAST_SEDLAYERS && !defined K3FAST_SEDLAYERS
 !$acc&, sc_w, Cs_w, sc_r, Cs_r
@@ -121,7 +121,7 @@
 #else
 #endif
 
-!../OCEAN/ocean3d.h
+!Compile/ocean3d.h
 #ifdef SOLVE3D
 !$acc&, u
 !$acc&, v
@@ -178,7 +178,7 @@
 # endif /* OXYGEN */
 #endif  /* SOLVE3D */
 
-!../OCEAN/grid.h
+!Compile/grid.h
 !$acc&, h
 !$acc&, hinv
 !$acc&, f
@@ -272,7 +272,7 @@
 !$acc&, sina
 #endif
 
-!../OCEAN/coupling.h
+!Compile/coupling.h
 #ifdef SOLVE3D
 # ifdef VAR_RHO_2D
 !$acc&, rhoA
@@ -289,7 +289,7 @@
 !$acc&, DV_avg2
 #endif
 
-!../OCEAN/private_scratch.h
+!Compile/private_scratch.h
 #ifdef AUTOTILING
 !$acc&, A2d, A3d, A3dHz
 # if defined SEDIMENT || defined LMD_MIXING
@@ -311,7 +311,7 @@
 # endif
 #endif
 
-!../OCEAN/mixing.h
+!Compile/mixing.h
 #if defined UV_VIS2 || defined SPONGE_VIS2
 !$acc&, visc2_r
 !$acc&, visc2_p
@@ -419,7 +419,7 @@
 # define exchange_p3d_tile(a,b,c,d,visc3d_p) exchange_p2d_tile(a,b,c,d,visc2_p)
 #endif /* SOLVE3D */
 
-!../OCEAN/forces.h
+!Compile/forces.h
 !$acc&, sustr
 !$acc&, svstr
 #if defined OA_COUPLING || defined OW_COUPLING
@@ -669,7 +669,7 @@
 # endif
 #endif
 
-!../OCEAN/work.h
+!Compile/work.h
 #ifdef SOLVE3D
 !$acc&, work
 !$acc&, workr
@@ -680,7 +680,7 @@
 !$acc&, work2d
 !$acc&, work2d2
 
-!../OCEAN/ncscrum.h
+!Compile/ncscrum.h
 #ifdef SOLVE3D
 #  ifdef K3FAST_HIS
 #  else
@@ -762,7 +762,7 @@
   || defined GLS_MIXING || defined TKE3D_MIXING
 #endif
 #ifdef EXACT_RESTART
-# if defined M3FAST || defined K3FAST
+# if defined M3FAST || defined K3FAST 
 #  ifdef TS_MIX_ISO_FILT
 #  else
 #  endif
@@ -835,7 +835,7 @@
 # if defined TRACERS
 !$acc&, rstT
 # endif
-# if defined GLS_MIXING || defined TKE3D_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING || defined EXACT_RESTART
 # endif
 # if defined M3FAST || defined K3FAST
 # endif
@@ -1162,7 +1162,7 @@
 # endif
 #endif
 #ifdef SOLVE3D
-# if defined GLS_MIXING || defined TKE3D_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING || defined EXACT_RESTART
 # endif
 # if defined M3FAST || defined K3FAST
 # endif
@@ -1302,7 +1302,7 @@
 #elif defined MUSTANG
 #endif
 
-!../OCEAN/averages.h
+!Compile/averages.h
 #ifdef AVERAGES
 !$acc&, zeta_avg
 !$acc&, ubar_avg
@@ -1419,12 +1419,12 @@
 # endif
 #endif /* AVERAGES */
 
-!../OCEAN/lmd_kpp.h
+!Compile/lmd_kpp.h
 #if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING || defined TKE3D_MIXING
 !$acc&, Jwtype
 #endif
 
-!../OCEAN/climat.h
+!Compile/climat.h
 #if defined ZCLIMATOLOGY || defined AGRIF
 !$acc&, ssh
 #endif
@@ -1516,7 +1516,7 @@
 # endif
 #endif
 
-!./nbq.h
+!Compile/nbq.h
 # define NSLP1N -N_sl+1:N
 # define NSLN -N_sl:N
 # ifdef K3FAST
@@ -1524,6 +1524,9 @@
 #  else
 !$acc&, soundspeed_nbq
 !$acc&, soundspeed2_nbq
+#  endif
+#  ifdef NBQ_RCSOUND
+!$acc&, rcsound2_nbq
 #  endif
 #  ifndef K3FAST_CSVISC2K
 #  else
@@ -1588,8 +1591,6 @@
 !$acc&, ru_nbq_avg2
 !$acc&, rv_nbq_avg2
 !$acc&, Hzw_nbq
-!$acc&, Hzu_nbq_inv
-!$acc&, Hzv_nbq_inv
 !$acc&, rw_int_nbq
 #  ifdef K3FAST_COUPLINGW_SCH1
 !$acc&, rw_intt_nbq
@@ -1679,9 +1680,29 @@
 #    endif
 #   endif
 #  endif    
+#  ifdef K3FAST_NOBPG
+!$acc&, rho_bpg
+#  endif
 # endif /* K3FAST */
+# ifdef CENTRIFUGE
+!$acc&, ray
+!$acc&, cosr
+!$acc&, sinr
+# endif
+#ifdef CUVE_BATHY
+!$acc&, hd
+!$acc&, hd2
+!$acc&, hd3
+!$acc&, hd3u
+!$acc&, hd3v
+!$acc&, hd4
+#endif
+#ifdef BATHY_SLOPE
+!$acc&, myslope
+!$acc&, myslope2
+#endif
 
-!../OCEAN/sources.h
+!Compile/sources.h
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
 !$acc&, Qbar0
 !$acc&, Qbar
@@ -1718,7 +1739,7 @@
 # endif
 #endif
 
-!../OCEAN/wkb_wwave.h
+!Compile/wkb_wwave.h
 #ifdef WKB_WWAVE
 !$acc&, wkx
 !$acc&, wke
@@ -1747,7 +1768,7 @@
 # endif
 #endif /* WKB_WWAVE */
 
-!../OCEAN/boundary.h
+!Compile/boundary.h
 #ifdef T_FRC_BRY
 !$acc&, got_tbry
 #endif
@@ -1982,7 +2003,7 @@
 # endif
 #endif /* NBQ || defined K3FAST */
 
-!../OCEAN/tides.h
+!Compile/tides.h
 #if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 !$acc&, Tperiod
 #endif /* SSH_TIDES || UV_TIDES */
@@ -2002,7 +2023,7 @@
 !$acc&, PTide
 #endif
 
-!../OCEAN/bbl.h
+!Compile/bbl.h
 #if defined BBL || defined SEDIMENT
 !$acc&, Abed
 !$acc&, Hripple

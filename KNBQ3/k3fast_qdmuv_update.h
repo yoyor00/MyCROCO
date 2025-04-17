@@ -727,7 +727,6 @@
 !$acc end kernels
 ! !
       if (LAST_FAST_STEP) then
-!$acc update host( ru_nbq,rv_nbq )   ! iif=last
       endif
 # endif   /*   K3FAST_UV  */
 ! !

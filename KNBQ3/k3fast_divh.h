@@ -701,6 +701,7 @@
 ! ! both with explicit and implicit schemes
 ! !********************************
 ! !
+!$acc kernels if(compute_on_device) default(present)
        k = -N_sl
 #  ifdef NBQ_FREESLIP
           do j=Jstr,Jend  
@@ -730,9 +731,10 @@
             enddo 
           enddo 
 #  endif
+!$acc end kernels
+	  
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! K3FAST_divh.h (end)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
-     
