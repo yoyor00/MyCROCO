@@ -1691,14 +1691,19 @@
 
 #elif defined ISOLITON_DJL
 /*
-!                       DJL Soliton Example
-!                       === ======= =======
+!                       Gravitational Adjustment Example
+!                       ============= ========== =======
+!
+!  Internal soliton case ISOLITON (non-hydrostatic) is setup from:
+!  Stastna M. and K.G. Lamb, (2002).
+!  Large fully nonlinear internal solitary waves: 
+!  The effect of background current. Physics of fluids.
 !
 */
 # define MPI
 # define KNBQ3
 # define KNBQ
-# undef  XIOS
+# define XIOS
 # define NC4PAR
 # define SOLVE3D
 # define NEW_S_COORD
@@ -1712,20 +1717,20 @@
 # define UV_VADV_WENO5
 # define W_HADV_WENO5
 # define W_VADV_WENO5
-# undef  FRC_BRY
-# undef  ANA_BRY
-# undef  Z_FRC_BRY
-# undef  M2_FRC_BRY
-# undef  M3_FRC_BRY
-# undef  T_FRC_BRY
+# undef FRC_BRY
+# undef ANA_BRY
+# undef Z_FRC_BRY
+# undef M2_FRC_BRY
+# undef M3_FRC_BRY
+# undef T_FRC_BRY
 # define ANA_SSH
 # define ZCLIMATOLOGY
 # define ANA_M2CLIMA
 # define M2CLIMATOLOGY
 # define UV_VIS2
 # define TS_DIF2
-# undef  ANA_GRID
-# undef  ANA_INITIAL
+# undef ANA_GRID
+# undef ANA_INITIAL
 # define ANA_SMFLUX
 # define ANA_STFLUX
 # define ANA_BTFLUX
@@ -1734,6 +1739,9 @@
 # undef  RVTK_DEBUG
 # undef  SPONGE
 # define DIAG_CFL
+# define K3FAST_NOBPG
+# define NBQ_GRAV
+# define NBQ_RCSOUND
 
 #elif defined KH_INST
 /*

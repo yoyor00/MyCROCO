@@ -112,6 +112,16 @@
       real d(0:N)
 !$acc declare create(d)
 #endif
+#ifdef ISOLITON_DJL
+      real zint,depth,dz,dx,gam,del,Rd,prof,H1,drho,v_rhs,alpha,H2
+      real rho1_exp,rho2_exp,h1_exp,amp_exp,Lt,lambda,l,a,c
+      real d(0:N)
+      real,  allocatable :: xini(:),uini(:,:),wini(:,:),rhoini(:,:)
+      real :: kini
+      integer :: nbx,kount,eof,imem, kc, kf, f_shift
+      character(len=1000):: chain
+      real hint,hintu
+#endif
 #ifdef CUVE
       real drho,Sref,slope,slope_g,water_lev
       real, allocatable :: x_dr(:),y_dr(:)

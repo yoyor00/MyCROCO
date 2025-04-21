@@ -60,6 +60,9 @@
 # endif
 #elif defined ISOLITON
       parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
+#elif defined ISOLITON_DJL
+       parameter (LLm0=500,   MMm0=1,    N=200)  	! #define ANA_GRID, ANA_INITIAL, ANA_SSH
+!      parameter (LLm0=198,   MMm0=3,    N=50)  	! JBR original
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
 #elif defined INTERNAL
