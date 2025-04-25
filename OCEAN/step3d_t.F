@@ -704,11 +704,17 @@
 #  endif /* DIAGNOSTICS_TS */
 
 #  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
+      if (itrc.le.NTA) then
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
             do k=0,N
               do i=Istr,Iend
                 TF_zVmix(i,j,k,itrc) = 0
               enddo
             enddo
+#   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
+      endif
+#   endif /* defined DIAGNOSTICS_DIAPYCNAL */
 #  endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
 
 
