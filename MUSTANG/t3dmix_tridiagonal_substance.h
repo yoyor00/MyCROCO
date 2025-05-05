@@ -74,7 +74,7 @@
          if (.not.l_subs2D(itrc-itsubs1+1)) then
 #endif
 
-# ifdef GAMELAG_MESOCOSM
+# ifdef GAMELAG_EXACT
           indx=itrc
 #else
 #ifdef SALINITY

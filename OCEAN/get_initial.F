@@ -11,7 +11,9 @@
 #include "cppdefs.h"
                                                 ! Read initial conditions for the
       subroutine get_initial (req_rec, tindx)   ! primitive variables from NetCDF
-                                                ! initialization file.
+#if defined SUBSTANCE      
+      USE comsubstance, ONLY : cvfix_wat
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -690,6 +692,25 @@
           got_tini(itrc)=.false.
         endif
       enddo
+#ifdef SUBSTANCE
+      do itrc=1,ntfix
+        lvar=lenstr(vname(1,indxV+NT+itrc))
+        ierr=nf_inq_varid (ncid, vname(1,indxV+NT+itrc)(1:lvar),varid)
+        if (ierr .eq. nf_noerr) then
+          ierr=nf_fread (cvfix_wat(START_2D_ARRAY,1,itrc), ncid, varid,
+     &                                                record, r3dvar)
+          if (ierr .ne. nf_noerr) then
+            MPI_master_only write(stdout,2) vname(1,indxV+NT+itrc)(1:lvar)
+     &                                        , record, ininame(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        else
+          MPI_master_only write(stdout,3) vname(1,indxV+NT+itrc)(1:lvar),
+     &                                    ininame(1:lstr)
+        endif
+      enddo
+#endif
+
 # endif /* TRACERS */
 
 # ifdef SEDIMENT

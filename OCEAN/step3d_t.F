@@ -753,6 +753,8 @@
         enddo
 #  endif
 
+      ENDDOLOOP2D ! <-- j
+
 !add submassbalance for river!! 
 !mustang and openacc not compatible         
 # if defined SUBSTANCE_SUBMASSBALANCE
@@ -762,7 +764,6 @@
 #  endif
 # endif
 !
-      ENDDOLOOP2D ! <-- j
 
 !$acc end kernels
 !======================================================================

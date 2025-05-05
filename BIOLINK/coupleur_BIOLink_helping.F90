@@ -1089,7 +1089,7 @@ CONTAINS
 
            EXTINCTION_RAD(k,i,j) = EXTINCTION_RAD(k,i,j)         &
                                    + p_extincspim                & 
-                                   *(cmes_3dmgl(k,i,j)+epsilon_BIOLink)
+                                   *(cmes_3dmgl(k,i,j)+epsilon_BIOLink)                                   
 #  endif /* BLOOM || (METeOR && PEPTIC ) */
 
       !***************** Extinction due to chlorophyll *********************!
@@ -1129,6 +1129,23 @@ CONTAINS
            ENDIF ! k==1 and FIXCONCPOS
 
 #  endif /* BLOOM && key_zostera */
+
+#  if defined GAMELAG
+             EXTINCTION_RAD(k,i,j) = EXTINCTION_RAD(k,i,j)       &
+                                     + 0.0377* (WATCONCPOS(iv_detr_N,k,i,j)+WATCONCPOS(iv_detrR_N,k,i,j))*8.6*12/1000/0.35
+
+#  endif 
+#  if defined key_ulva_GAMELAG && defined key_gracilaria_GAMELAG
+
+           IF(k==1) THEN
+
+             EXTINCTION_RAD(k,i,j) = EXTINCTION_RAD(k,i,j)        &
+                                   + 0.02         &
+                                   * (FIXCONCPOS(iv_ulva-nv_adv,1,i,j)+FIXCONCPOS(iv_Graci-nv_adv,1,i,j))
+           ENDIF ! k==1 and FIXCONCPOS
+
+#  endif /* BLOOM && key_zostera */
+
        
        !************* Estimation of attenuation at each cell ***************! 
 

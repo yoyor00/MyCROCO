@@ -11,6 +11,9 @@
 #include "cppdefs.h"
 
       subroutine init_arrays (tile)
+#ifdef GAMELAG_EXACT
+      USE comBIOLink,  ONLY : iv_zoo_micr_N,iv_zoo_meso_N
+#endif
       implicit none
 #include "param.h"
       integer tile, trd
@@ -1433,6 +1436,13 @@ C$    integer omp_get_thread_num
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
+#ifdef GAMELAG_EXACT
+            do itrc=1,NT
+                  Akt(i,j,k,itrc)=Akt_bak(itemp)
+            enddo
+            Akt(i,j,k,2+6)=0.
+            Akt(i,j,k,2+7)=0.
+#endif
 # if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)

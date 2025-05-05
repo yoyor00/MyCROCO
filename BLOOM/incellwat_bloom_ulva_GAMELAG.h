@@ -16,7 +16,7 @@
               phiD = (1.-(phiP+phiPO))
 
               ! Ulva accesory functions
-              f_I_Ulva = 1.-exp(-(I_phyto/Iopt_Ulva)) ! Adim
+              f_I_Ulva = 1.-exp(-(PAR_top_layer(0,i,j)/Iopt_Ulva)) ! Adim
               f_Temp_Ulva = 1./(1.+exp(-zeta1_Ulva*(temper-Temp_Ulva))) ! Adim
         
               ! Ulva nutrient quota

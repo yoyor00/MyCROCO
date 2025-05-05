@@ -16,7 +16,7 @@
               thetaD = (1.-(thetaP+thetaPO))
 
               ! Gracilaria accesory functions
-              f_I_Graci = 1.-exp(-(I_phyto/Iopt_Graci)) ! Adim
+              f_I_Graci = 1.-exp(-(PAR_top_layer(0,i,j)/Iopt_Graci)) ! Adim
               f_Temp_Graci = 1./(1.+exp(-zeta1_Graci*(temper-Temp_Graci))) ! Adim
         
               ! Graci nutrient quota

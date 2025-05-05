@@ -2464,8 +2464,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
 #  endif /* TRACERS */
 
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIXING
+# if defined GAMELAG_EXACT
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !

@@ -83,7 +83,7 @@
                   XkP=XkP_SPAT
                endif
 
-             IF(c(iv_ndeb) .ne. 0.0) THEN
+             IF(c(iv_ndeb) .gt. 0.0001) THEN
 
               ! DEB model (adapted from S. Petton Fortran Script to match the GAMELAG DEB formulation)
               !!!!!!!!!!!!!!!!!!!!!!!!!!!

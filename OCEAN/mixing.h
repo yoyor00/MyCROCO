@@ -92,7 +92,11 @@
 
 #ifdef SOLVE3D
       real Akv(GLOBAL_2D_ARRAY,0:N)
+#ifdef GAMELAG_EXACT
+      real Akt(GLOBAL_2D_ARRAY,0:N,NT)
+#else
       real Akt(GLOBAL_2D_ARRAY,0:N,2)
+#endif
       common /mixing_Akv/Akv /mixing_Akt/Akt
 # ifdef GLS_MIXING
       real Akv_old(GLOBAL_2D_ARRAY,0:N)

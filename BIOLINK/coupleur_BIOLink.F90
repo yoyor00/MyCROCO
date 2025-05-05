@@ -972,6 +972,64 @@ END SUBROUTINE  BIOLink_alloc
      ENDDO
 #endif /* BLOOM && key_oyster_DEB */
 
+#if defined BLOOM && defined key_oyster_DEB_GAMELAG && defined THAU
+     k=5
+     DO j=jfirst,jlast
+      DO i=ifirst,ilast
+        IF (jjulien_BIOLINK.eq.32.and.(iheure_BIOLINK.eq.0)) THEN
+          IF ((BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb-nv_adv).ne.0.0_rsh)) THEN
+
+           IF ((i+iminmpi-1).gt.120) then 
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb-nv_adv)=120.5e6/290  ! 290 mailles conch  Bouzigues
+           ELSE
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb-nv_adv)=120.5e6/328  ! 328 mailles conch Meze-Marseillan
+           ENDIF
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb_E-nv_adv)=333.0956
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb_E_V-nv_adv)=67.211 ! =V*mu_V*d_V
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb_E_R-nv_adv)=17.53135
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb_E_GO-nv_adv)=0.
+          ENDIF           
+        ENDIF
+        IF (jjulien_BIOLINK.eq.330.and.(iheure_BIOLINK.eq.0)) THEN
+          IF ((BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb-nv_adv).ne.0.0_rsh)) THEN
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb-nv_adv)=0.0001
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb_E-nv_adv)=0.
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb_E_V-nv_adv)=0.
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb_E_R-nv_adv)=0.
+           BENTHIC_CONCENTRATION(i,j,k,iv_oysdeb_E_GO-nv_adv)=0.
+          ENDIF
+        ENDIF
+
+#if defined key_oysterspat_DEB_GAMELAG
+        IF (jjulien_BIOLINK.eq.181.and.(iheure_BIOLINK.eq.0)) THEN
+          IF ((BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb-nv_adv).ne.0.0_rsh)) THEN
+           IF ((i+iminmpi-1).gt.120) then
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb-nv_adv)=254.6416e6/290  ! 618 mailles conch
+           ELSE
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb-nv_adv)=254.6416e6/328  
+           ENDIF
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb_E-nv_adv)=39.61
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb_E_V-nv_adv)=6.42 
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb_E_R-nv_adv)=2.084775
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb_E_GO-nv_adv)=0.
+          ENDIF
+        ENDIF
+        IF (jjulien_BIOLINK.eq.32.and.(iheure_BIOLINK.eq.0)) THEN
+          IF ((BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb-nv_adv).ne.0.0_rsh)) THEN
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb-nv_adv)=0.0001
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb_E-nv_adv)=0.
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb_E_V-nv_adv)=0. 
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb_E_R-nv_adv)=0.
+           BENTHIC_CONCENTRATION(i,j,k,iv_spatdeb_E_GO-nv_adv)=0.
+          ENDIF
+        ENDIF
+#endif
+
+      ENDDO
+     ENDDO
+#endif /* BLOOM && key_oyster_DEB_GAMELAG */
+
+
       !*********************** Estimation of PAR ***************************!
 
 #if defined BIOLink_PAR_eval

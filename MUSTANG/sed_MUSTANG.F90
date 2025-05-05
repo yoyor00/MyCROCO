@@ -3220,6 +3220,7 @@ MODULE sed_MUSTANG
             ! In addition the algorithm was written to take into account a deposit of gravel
 
             DO iv=1,nv_use   ! nv_use=nvp (or nvpc if key_Pconstitonly_insed)
+
               flx_w2s_loc(iv)=MAX(0.0_rsh,flx_w2s_sum(iv,i,j)+flx_w2s_corin(iv,i,j)      &
                            +flx_w2s_corip1(iv,i-1,j)+flx_w2s_corim1(iv,i+1,j)         &
                            +flx_w2s_corjp1(iv,i,j-1)+flx_w2s_corjm1(iv,i,j+1))
@@ -4004,7 +4005,10 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-
+#ifdef GAMELAG_EXACT              
+    USE comBIOLink,  ONLY : iv_detr_N, iv_detr_P,iv_detrR_N,     &
+     iv_detrR_P,iv_phyto_diat_N,p_phyto_NPratio
+#endif
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst,ilast,jfirst,jlast
    INTEGER, INTENT(INOUT)  :: iexchge_MPI_cvwat
@@ -4037,9 +4041,22 @@ MODULE sed_MUSTANG
             ksmax=ksma(i,j)
             ksmin=ksmi(i,j)
 
+#ifdef GAMELAG_EXACT 
+              flx_w2s_sum(iv_detr_N,i,j)=flx_w2s_sum(iv_detr_N,i,j)+flx_w2s_sum(iv_detrR_N,i,j)  &
+                                         +flx_w2s_sum(iv_phyto_diat_N,i,j)
+              
+              flx_w2s_sum(iv_detr_P,i,j)=flx_w2s_sum(iv_detr_P,i,j)+flx_w2s_sum(iv_detrR_P,i,j)    &
+                                       +flx_w2s_sum(iv_phyto_diat_N,i,j)/p_phyto_NPratio
+
+              flx_w2s_sum(iv_detrR_N,i,j)=0.
+              flx_w2s_sum(iv_detrR_P,i,j)=0.
+              flx_w2s_sum(iv_phyto_diat_N,i,j)=0.
+
+#endif 
             ! updating effective deposition :  (flx_w2s) is implicit in the vertical advection scheme
             ! hence multiplied here by the newly computed concentration at each sub time step and cumulated
             DO iv=igrav2+1,nv_use   ! nv_use=nvp (or nvpc if key_Pconstitonly_insed)
+
               flx_w2s_loc(iv)=MAX(0.0_rsh,flx_w2s_sum(iv,i,j)+flx_w2s_corin(iv,i,j)      &
                            +flx_w2s_corip1(iv,i-1,j)+flx_w2s_corim1(iv,i+1,j)         &
                            +flx_w2s_corjp1(iv,i,j-1)+flx_w2s_corjm1(iv,i,j+1))
@@ -5124,7 +5141,10 @@ MODULE sed_MUSTANG
        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !!!!!!!!!!!!   END OF DYNAMIC PROCESS IN SEDIMENT                !!
        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+#ifdef GAMELAG_EXACT
+        cv_sed(-1,:,i,j)=1.1*temp_bottom_MUSTANG(i,j) 
+        fludif(-1,i,j)=0.
+#endif
       ENDDO
     ENDDO
    
@@ -5160,7 +5180,10 @@ MODULE sed_MUSTANG
    !&E--------------------------------------------------------------------------
    !! * Modules used
 
-
+#ifdef GAMELAG_EXACT              
+    USE comBIOLink,  ONLY : iv_ODU, iv_oxygen,iv_diss_detr_N,iv_diss_detrR_N, &
+                        iv_diss_detr_P,iv_diss_detrR_P,iv_nutr_NH4
+#endif
    !! * Arguments
    INTEGER, INTENT(IN)            :: ifirst, ilast, jfirst, jlast                           
    REAL(KIND=rsh),INTENT(IN)      :: saliref_lin, temperef_lin
@@ -5915,7 +5938,20 @@ MODULE sed_MUSTANG
 
               k=ksmax
               IF(choice_flxdiss_diffsed == 1) THEN
-                disvi(k,ivv)=2.0_rsh*xdifsi1/(dzs(k,i,j)+epn_bottom_MUSTANG(i,j))
+#ifdef GAMELAG_EXACT
+                disvi(k,ivv)=poro(k,i,j)*(1+(MAX(0.0,cv_sed(-1,k,i,j))-20.)/20.)   &
+              *2.0_rsh*xdifsi1/86400/(dzs(k,i,j)+epn_bottom_MUSTANG(i,j))
+               if (iv.eq.iv_oxygen) then
+                disvi(k,ivv)=poro(k,i,j)*(1+(MAX(0.0,cv_sed(-1,k,i,j))-20.)/20.)   &
+              *2.0_rsh*xdifs1/86400./(dzs(k,i,j)+epn_bottom_MUSTANG(i,j))
+               endif              
+               if ((iv.eq.iv_ODU) .or. (iv.eq.iv_diss_detr_N) .or. (iv.eq.iv_diss_detrR_N)   &          
+                                .or. (iv.eq.iv_diss_detr_P) .or.  (iv.eq.iv_diss_detrR_P)) then
+               disvi(k,ivv)=0.
+               endif
+#else
+                disvi(k,ivv)=2.0_rsh*xdifsi1/(dzs(k,i,j)+epn_bottom_MUSTANG(i,j))                               
+#endif               
               ELSE IF(choice_flxdiss_diffsed == 2) THEN
                 disvi(k,ivv)=xdifsi1/(dzs(k,i,j)*0.5_rsh+epdifi)
               ELSE 

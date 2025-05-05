@@ -851,6 +851,7 @@
           ! temperature & effetchaleur
           tempabs=TEMP_BIOLink(k,i,j)+273.15_rsh
           temper=max(0.0_rsh,TEMP_BIOLink(k,i,j))
+          tempabs=temper+273.15_rsh
 
    ! 
           IF (temper > 30.0_rsh) THEN
@@ -948,25 +949,15 @@ PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
 
 
 #ifdef GAMELAG
-            Chla =(c(iv_phyto_diat_N)+c(iv_phyto_dino_N)+c(iv_phyto_nano_N))*p_phyto_ChlNratio !! in mg Chla/m3
-            kI = 0.04 + 0.0377* (c(iv_detr_N)+c(iv_detrR_N))*8.6*12/1000/0.35 + 0.161*Chla**0.721 !! m-1   !l'equation vient de gohin et al.2005   ratio C:N MO: 8.6 Sterner et al. 2008, pour passer en gC et gdw 35% (Zaldivar et al. 2005)
-
-            
-            z_phyto=0.
-            do kk=NB_LAYER_WAT,k+1,-1
-            z_phyto=z_phyto+thicklayerW_C(kk,i,j)
-            enddo
-            z_phyto=z_phyto+0.5*thicklayerW_C(k,i,j)
-
-            I_phyto = PAR_top_layer(NB_LAYER_WAT,i,j)*exp(-kI*z_phyto) !! in W/m2
-
+        
+            I_phyto = PAR_top_layer(k,i,j)*exp(-EXTINCTION_RAD(k,i,j)*0.5*thicklayerW_C(k,i,j)) !! in W/m2
+        
             if (I_phyto<p_diat_iksmith) then 
                effetlumierediat =   (I_phyto/p_diat_iksmith)*exp(-(I_phyto/p_diat_iksmith))
             else
                effetlumierediat = 1.
             endif
-
-
+                    
             effetnitdiat = (c(iv_nutr_NO3)/(c(iv_nutr_NO3)+c(iv_nutr_NH4)+p_diat_kNO3)) !! Adim
             effetamdiat = (c(iv_nutr_NH4)/(c(iv_nutr_NO3)+c(iv_nutr_NH4)+p_diat_kNO3)) !! Adim
             effetazotediat=effetnitdiat+effetamdiat
@@ -1052,14 +1043,9 @@ PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
 
           ! Effetlumiere : Formulation de Smith integree sur la profondeur de la boite
           ! ............................................................
-#ifdef key_physadaptation
-          ! Cas ou Ik varie selon la turbidite  
-          dino_iksmith=p_dino_iksmith*max(0.5_rsh,(1.0_rsh-effetturbidite))
-#else
-          dino_iksmith=p_dino_iksmith
-#endif
-          fluxrelatifsurf=PAR_top_layer(k,i,j)/(dino_iksmith+0.0000000001_rsh)
-          fluxrelatiffond=PAR_top_layer(k-1,i,j)/(dino_iksmith+0.0000000001_rsh)
+
+          fluxrelatifsurf=PAR_top_layer(k,i,j)/(p_dino_iksmith+0.0000000001_rsh)
+          fluxrelatiffond=PAR_top_layer(k-1,i,j)/(p_dino_iksmith+0.0000000001_rsh)
           effetlumieredino=1.0_rsh/epn/EXTINCTION_RAD(k,i,j)*                     &
                   log((fluxrelatifsurf+sqrt(1.0_rsh+fluxrelatifsurf*                  &
           fluxrelatifsurf))/(fluxrelatiffond+                                 &
@@ -1092,22 +1078,11 @@ PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
 
 #ifdef GAMELAG      
 
-            Chla =(c(iv_phyto_diat_N)+c(iv_phyto_dino_N)+c(iv_phyto_nano_N))*p_phyto_ChlNratio !! in mg Chla/m3
-            kI = 0.04 + 0.0377* (c(iv_detr_N)+c(iv_detrR_N))*8.6*12/1000/0.35 + 0.161*Chla**0.721 !! m-1   !l'equation vient de gohin et al.2005   ratio C:N MO: 8.6 Sterner et al. 2008, pour passer en gC et gdw 35% (Zaldivar et al. 2005)
-            z_phyto=0.
-            do kk=NB_LAYER_WAT,k+1,-1
-            z_phyto=z_phyto+thicklayerW_C(kk,i,j)
-            enddo
-            z_phyto=z_phyto+0.5*thicklayerW_C(k,i,j)
-
-            I_phyto = PAR_top_layer(NB_LAYER_WAT,i,j)*exp(-kI*z_phyto) !! in W/m2
-
             if (I_phyto<p_nano_iksmith) then 
                effetlumierenano =   (I_phyto/p_nano_iksmith)*exp(-(I_phyto/p_nano_iksmith))
             else
                effetlumierenano = 1.
-            endif
-         
+            endif         
 
             effetnitnano = (c(iv_nutr_NO3)/(c(iv_nutr_NO3)+p_nano_kNO3)) *exp(-p_nano_phy_NH4*c(iv_nutr_NH4))
             effetamnano = (c(iv_nutr_NH4)/(c(iv_nutr_NH4)+p_nano_kNO3)) !! Adim

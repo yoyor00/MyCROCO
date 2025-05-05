@@ -3543,7 +3543,7 @@ ENDIF
 !   CALL_MPI ex_i_rsh(-1,2,NBVARADV_TOT*kmax,liminm1,limaxp2,ljminm1,ljmaxp2,cv_wat(:,:,liminm1:limaxp2,ljminm1:ljmaxp2))
 
 #endif 
-
+# ifdef key_GAMELAG_ana_initial
 #ifdef key_oyster_DEB_GAMELAG
 write(*,*)'debut init huitre deb'
   DO j=jfirst,jlast
@@ -3596,6 +3596,7 @@ DO j=jfirst,jlast
     BENTHIC_CONCENTRATION(i,j,1,iv_graci_P-nv_adv) = cini_wat_fix(19)
   ENDDO
 ENDDO 
+#endif
 #endif
 !#ifdef key_larve
 !		i_ponte=0
