@@ -347,6 +347,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 #ifdef STOGEN
       USE stostress         ! Stochastic parameterization of bulk formulation
+      USE stoarray        ! Stochastic arrays and options
       USE stoalloc          ! Stochastic working arrays
 #endif
       implicit none
