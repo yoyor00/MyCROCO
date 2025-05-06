@@ -8,7 +8,7 @@ MODULE stoics
    !!
    !! Purpose : Stochastic parameterization of initial conditions
    !!======================================================================
-   USE stoexternal , only : wp, lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam, &
+   USE stoexternal , only : wp, lwm, lwp, numnam_ref, numond, ctl_nam, &
                           & jpi, jpj, jpk
    USE stoarray
 

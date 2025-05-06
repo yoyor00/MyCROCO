@@ -598,7 +598,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxS = ',indxS
       vname(7,indxS)='                                            '
 # endif /* SALINITY */
 
-# ifdef STO_XI2D
+# ifdef STOGEN
 CR      write(stdout,'(1x,A,I3)') 'indxXIsto2d = ',indxXIsto2d
       vname(1,indxXIsto2d)='sto_xi_2d                                 '
       vname(2,indxXIsto2d)='2D Stochastic autoregressive process      '
@@ -611,9 +611,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxXIsto2d = ',indxXIsto2d
       vname(6,indxXIsto2d)='x_rho y_rho                               '
 #endif
       vname(7,indxXIsto2d)='                                          '
-# endif /* STO_XI2D */
 
-# ifdef STO_XI3D
 CR      write(stdout,'(1x,A,I3)') 'indxXIsto3d = ',indxXIsto3d
       vname(1,indxXIsto3d)='sto_xi_3d                                 '
       vname(2,indxXIsto3d)='3D Stochastic autoregressive process      '
@@ -626,7 +624,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxXIsto3d = ',indxXIsto3d
       vname(6,indxXIsto3d)='x_rho y_rho                               '
 #endif
       vname(7,indxXIsto3d)='                                          '
-# endif /* STO_XI3D */
+# endif /* STOGEN */
 
 # ifdef PASSIVE_TRACER
       do i=1,ntrc_pas

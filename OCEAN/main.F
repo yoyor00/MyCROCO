@@ -33,9 +33,7 @@
 #ifdef STOGEN
           USE stomod         ! Stochastic module
           USE stoexternal    ! Provide parameters to stochastic modules
-          USE stobulk
-          USE stostress
-          USE stoics
+          USE stoarray       ! Stochastic arrays and options
 #endif
 #ifdef ENSEMBLE
           USE ensmpi         ! Ensemble module
@@ -450,17 +448,19 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 
 
-#ifdef STO_ICS
+#ifdef STOGEN
+      if (ln_stogen .and. ln_stoics) then
 !
 !  Add stochastic perturbations to initial conditions
 !
-      MPI_master_only write(stdout,*)
+        MPI_master_only write(stdout,*)
      &     'Apply stochastic perturbations on (temperature) initial conditions'
-      call sto_mod( ntstart ) ! update (?) stochastic fields
+        call sto_mod( ntstart ) ! update (?) stochastic fields
 C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call sto_initial (tile)
-      enddo
+        do tile=0,NSUB_X*NSUB_E-1
+          call sto_initial (tile)
+        enddo
+      endif
 #endif
 !
 !----------------------------------------------------------------------

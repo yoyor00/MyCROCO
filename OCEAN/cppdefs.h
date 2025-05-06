@@ -104,9 +104,6 @@
 # undef  BBL
                       /* Stochastic and Ensemble */
 # undef STOGEN
-# ifdef STOGEN
-#  define STO_BULK_CD
-# endif
 # undef ENSEMBLE
                       /* I/O server */
 # undef  XIOS
@@ -663,9 +660,6 @@
 # define ANA_BTFLUX
 # define NO_FRCFILE
 # undef STOGEN
-# ifdef STOGEN
-#  define STO_STRESS
-# endif
 # undef  RVTK_DEBUG
 
 #elif defined CANYON

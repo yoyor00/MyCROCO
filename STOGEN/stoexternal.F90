@@ -47,6 +47,8 @@ MODULE stoexternal
    INTEGER, PUBLIC ::   jpjglo     !: size of global domain (dim 2)
    ! Starting indices of MPI tiles, EXCLUDING ghost cells
    INTEGER, PUBLIC ::   Istr2, Iend2, Jstr2, Jend2
+   ! Shift between initial indices of GLOBAL_2D_ARRAY and PRIVATE_2D_SCRATCH_ARRAY
+   INTEGER, PUBLIC ::   ishift_priv, jshift_priv
 
    ! Description of the grid
    REAL(wp), PUBLIC, SAVE, DIMENSION(:,:), POINTER :: glamt, gphit   ! longitude and latitude
@@ -76,14 +78,16 @@ MODULE stoexternal
 # endif
 
    ! I/O parameters
-   INTEGER, PUBLIC ::   numout      =    6      !: logical unit for output print; set to stdout; do not change
+# ifdef LOGFILE
+   INTEGER, PUBLIC ::   numout      = 80   !: logical unit for output print; set to stdout; do not change
+# else
+   INTEGER, PUBLIC ::   numout      = 6    !: logical unit for output print; set to stdout; do not change
+# endif
    LOGICAL, PUBLIC ::   lwm         = .TRUE.    !: true on the 1st processor only (always)
    LOGICAL, PUBLIC ::   lwp         = .TRUE.    !: true on the 1st processor only .OR. ln_ctl
    INTEGER, PUBLIC ::   numnam_ref  =   -1      !: logical unit for reference namelist
-   INTEGER, PUBLIC ::   numnam_cfg  =   -1      !: logical unit for configuration specific namelist
    INTEGER, PUBLIC ::   numond      =   -1      !: logical unit for Output Namelist Dynamics
-   CHARACTER(len=20), PUBLIC :: filnam_ref ='namelist_sto_ref' !: reference namelist filename
-   CHARACTER(len=20), PUBLIC :: filnam_cfg ='namelist_sto_cfg' !: configuration namelist filename
+   CHARACTER(len=20), PUBLIC :: filnam_ref ='namelist_sto' !: reference namelist filename
    CHARACTER(len=3), PUBLIC ::   cn_mem
 
    ! Ensemble parameters
@@ -173,12 +177,12 @@ CONTAINS
       !!----------------------------------------------------------------------
       WRITE (clios, '(I5.0)') kios
       IF( kios < 0 ) THEN
-         print *, 'W A R N I N G:  end of record or file while reading namelist ' &
- &           // TRIM(cdnam) // ' iostat = ' // TRIM(clios)
+         WRITE(numout,*) 'W A R N I N G:  end of record or file while reading namelist ' &
+  &           // TRIM(cdnam) // ' iostat = ' // TRIM(clios)
       ENDIF
 
       IF( kios > 0 ) THEN
-         print *, 'E R R O R :   misspelled variable in namelist ' &
+         WRITE(numout,*) 'E R R O R :   misspelled variable in namelist ' &
  &           // TRIM(cdnam) // ' iostat = ' // TRIM(clios) 
       ENDIF
       kios = 0
@@ -208,9 +212,8 @@ C$    integer  trd, omp_get_thread_num
       integer :: Istr,Iend,Jstr,Jend
 
       ! Open namelist files
-      numnam_ref = 10 ; numnam_cfg = 11 ; lwm = .FALSE.
+      numnam_ref = 10 ; lwm = .FALSE.
       OPEN(UNIT=numnam_ref,FILE=filnam_ref,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
-      OPEN(UNIT=numnam_cfg,FILE=filnam_cfg,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
 
 #ifdef ENSEMBLE
       ! Define ensemble member index
@@ -226,11 +229,11 @@ C$    integer  trd, omp_get_thread_num
       ! jpi = Lm+4+padd_X  !size_XI
       ! jpj = Mm+4+padd_E  !size_ETA
 # ifdef SPHERICAL
-      jpi = size(lonr,1)
-      jpj = size(lonr,2)
+      jpi = size(lonr,1) ; ishift_priv = Istr - lbound(lonr, 1) - 1
+      jpj = size(lonr,2) ; jshift_priv = Jstr - lbound(lonr, 2) - 1
 # else
-      jpi = size(xr,1)
-      jpj = size(xr,2)
+      jpi = size(xr,1)   ; ishift_priv = Istr - lbound(xr, 1) - 1
+      jpj = size(xr,2)   ; jshift_priv = Jstr - lbound(xr, 2) - 1
 # endif
       jpk = N
 

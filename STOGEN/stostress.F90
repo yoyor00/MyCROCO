@@ -9,7 +9,7 @@ MODULE stostress
    !! Purpose : Stochastic parameterization of the surface stress
    !!           (outside from bulk formulation, see stobulk instead)
    !!======================================================================
-   USE stoexternal , only : wp, lwm, lwp, numnam_ref, numnam_cfg, numond, ctl_nam, &
+   USE stoexternal , only : wp, lwm, lwp, numnam_ref, numond, ctl_nam, &
                           & jpi, jpj, stodt
    USE stoarray
 

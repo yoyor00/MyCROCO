@@ -67,6 +67,11 @@
      &     obst_tau, obst_fuz, obst_fvz
 #endif
 
+#ifdef STOGEN
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
+#endif
+
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff
@@ -706,19 +711,16 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !     STOGEN stochastic modeling components 
 !
 !QJ: check how to writte 1D variables
-#ifdef STO_XI1D
+#ifdef STOGEN
 !!- 1D stochastic field -- TBD -
-!      if (wrthis(indxXIsto1d)) then
+!      if (ln_stogen.AND.wrthis(indxXIsto1d)) then
 !        workr=sto_xi1d
 !        call fillvalue3d(workr,ncidhis,hisXIsto1d,indxXIsto1d,
 !     &        record,r3dvar,type)
 !CR      write(stdout,*) 'wrt_his:  wrtXIsto  ' MYID
 !      endif
-#endif /* STO_XI1D */
-!
-#ifdef STO_XI2D
 !- 2D stochastic field -
-      if (wrthis(indxXIsto2d)) then
+      if (ln_stogen.AND.wrthis(indxXIsto2d)) then
         work2d=sto_xi2d
         ierr=nf_fwrite(work2d, ncidhis, hisXIsto2d, record, r2dvar)
         if (ierr .ne. nf_noerr) then
@@ -730,23 +732,14 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
         endif
 CR      write(stdout,*) 'wrt_his:  wrtstoXI2d' MYID
       endif
-#endif /* STO_XI2D */
-!
-#ifdef STO_XI3D
 !- 3D stochastic field -
-!# ifdef STO_ICS
-!      if (iic.eq.0.or.iic.eq.ntstart) then
-!# endif
-      if (wrthis(indxXIsto3d)) then
+      if (ln_stogen.AND.wrthis(indxXIsto3d)) then
         workr=sto_xi3d
         call fillvalue3d(workr,ncidhis,hisXIsto3d,indxXIsto3d,
      &        record,r3dvar,type)
 CR      write(stdout,*) 'wrt_his:    wrtstoXI3d' MYID
       endif
-!# ifdef STO_ICS
-!      endif
-!# endif
-#endif /* STO_XI3D */
+#endif /* STOGEN */
 !
 !     Tracer variables.
 !

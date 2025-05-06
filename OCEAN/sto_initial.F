@@ -31,7 +31,9 @@
 #ifdef SUBSTANCE
       USE comsubstance, ONLY: cini_wat
 #endif
-      use stoics
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
+      USE stoics
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -77,7 +79,7 @@
 !  salinity [PSU] and passive tracer
 !----------------------------------------------------------------------
 !
-#   if defined TEMPERATURE  && defined STO_ICS
+#   if defined TEMPERATURE
         call sto_ics( t(:,:,:,1,itemp), sto_xi3d(:,:,:) )
 #   endif
 !

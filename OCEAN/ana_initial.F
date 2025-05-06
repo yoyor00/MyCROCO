@@ -32,9 +32,6 @@
 #ifdef SUBSTANCE
       USE comsubstance, ONLY: cini_wat
 #endif
-!#ifdef STO_ICS
-!      use stoics
-!#endif
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -1233,12 +1230,6 @@ C$OMP BARRIER
           enddo
         enddo
 #   endif
-!
-!#   ifdef STO_ICS
-!#    ifdef TEMPERATURE 
-!        call sto_ics( t(:,:,:,1,itemp), sto_xi3d(:,:,:) )
-!#    endif
-!#   endif
 !
 #  endif /*TRACERS */
       endif   !  nrrec.eq.0.

@@ -60,26 +60,6 @@
 
 /*
 ======================================================================
-   Set STOGEN options:
-   Set appropriate noise structure (1D, 2D or 3D)
-   depending on the selected noise applied.
-   Examples:
-	- STO_BULK_CD in realistic config needs 2D stochastic field
-	- STO_STRESS in BASIN test case   needs 2D stochastic field
-	- STO_ICS     in realistic config needs 3D stochastic field
-======================================================================
-*/
-#ifdef STOGEN
-# if defined STO_BULK_CD || defined STO_STRESS
-#  define STO_XI2D
-# endif
-# if defined STO_ICS
-#  define STO_XI3D
-# endif
-#endif
-
-/*
-======================================================================
    Set OA COUPLING options:
    Define MPI
    Change the generic name of MPI communicator MPI_COMM_WORLD

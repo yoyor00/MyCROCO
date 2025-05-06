@@ -43,7 +43,10 @@
       USE com_OBSTRUCTIONS, ONLY : hisObst, avgObst, 
      &     obst_nbvar, outObst, out2DObst, vname_obst
 #endif
-
+#ifdef STOGEN
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
+#endif
 
       implicit none
       logical create_new_file
@@ -717,8 +720,8 @@
 ! STOGEN stochastic variables.
 !---------------------------------------
 !
-# ifdef STO_XI1D
-        if (wrt(indxXIsto1d)) then
+# ifdef STOGEN
+        if (ln_stogen.AND.wrt(indxXIsto1d)) then
           lvar=lenstr(vname(1,indxXIsto1d))
 !QJ: not sure aout the def of ierr here ...
           ierr=nf_def_var (ncid, vname(1,indxXIsto1d)(1:lvar),
@@ -746,10 +749,8 @@
           call nf_add_attribute(ncid, vidXIsto1d, vname(:,indxXIsto1d),
      &         5, NF_FOUT, ierr)
         endif
-# endif /* STO_XI1D */
 !
-# ifdef STO_XI2D
-        if (wrt(indxXIsto2d)) then
+        if (ln_stogen.AND.wrt(indxXIsto2d)) then
           lvar=lenstr(vname(1,indxXIsto2d))
           ierr=nf_def_var (ncid, vname(1,indxXIsto2d)(1:lvar),
      &                             NF_FOUT, 3, r2dgrd, vidXIsto2d)
@@ -776,10 +777,8 @@
           call nf_add_attribute(ncid, vidXIsto2d, vname(:,indxXIsto2d),
      &         5, NF_FOUT, ierr)
         endif
-# endif /* STO_XI2D */
 !
-# ifdef STO_XI3D
-        if (wrt(indxXIsto3d)) then
+        if (ln_stogen.AND.wrt(indxXIsto3d)) then
           lvar=lenstr(vname(1,indxXIsto3d))
           ierr=nf_def_var (ncid, vname(1,indxXIsto3d)(1:lvar),
      &                             NF_FOUT, 4, r3dgrd, vidXIsto3d)
@@ -806,7 +805,7 @@
           call nf_add_attribute(ncid, vidXIsto3d, vname(:,indxXIsto3d),
      &         5, NF_FOUT, ierr)
         endif
-# endif /* STO_XI3D */
+# endif /* STOGEN */
 !
 !-----------------------------------------------------------------------
 ! Tracer variables.
@@ -3008,7 +3007,7 @@
 !
 ! STOGEN stochastic variables.
 !
-# ifdef STO_XI1D
+# ifdef STOGEN
         if (wrt(indxXIsto1d)) then
           lvar=lenstr(vname(1,indxXIsto1d))
           ierr=nf_inq_varid (ncid, vname(1,indxXIsto1d)(1:lvar), vidXIsto1d)
@@ -3020,9 +3019,7 @@
           ierr=nf_var_par_access(ncid,vidXIsto1d,nf_collective)
 # endif
         endif
-# endif /* STO_XI1D */
 !
-# ifdef STO_XI2D
         if (wrt(indxXIsto2d)) then
           lvar=lenstr(vname(1,indxXIsto2d))
           ierr=nf_inq_varid (ncid, vname(1,indxXIsto2d)(1:lvar), vidXIsto2d)
@@ -3034,9 +3031,7 @@
           ierr=nf_var_par_access(ncid,vidXIsto2d,nf_collective)
 # endif
         endif
-# endif /* STO_XI2D */
 !
-# ifdef STO_XI3D
         if (wrt(indxXIsto3d)) then
           lvar=lenstr(vname(1,indxXIsto3d))
           ierr=nf_inq_varid (ncid, vname(1,indxXIsto3d)(1:lvar), vidXIsto3d)
@@ -3048,7 +3043,7 @@
           ierr=nf_var_par_access(ncid,vidXIsto3d,nf_collective)
 # endif
         endif
-# endif /* STO_XI3D */
+# endif /* STOGEN */
 !
 ! Tracer variables.
 !
