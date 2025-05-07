@@ -14,10 +14,6 @@
    !&E
    !&E==========================================================================
 */
-/* CROCO */
-# define iscreenlog stdout
-# define ierrorlog stdout
-# define iwarnlog stdout
 
 /* Spatial Grid limits definition  of loops inside the domain - except meshes at open boundaries */
 # define IMIN_GRID 1

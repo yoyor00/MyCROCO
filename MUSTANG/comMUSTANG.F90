@@ -27,6 +27,9 @@ MODULE comMUSTANG
     REAL(kind=rsh), PARAMETER :: valmanq = 999.0
     REAL(kind=riosh), PARAMETER :: rg_valmanq_io = 999.0
 
+    ! logging IO
+    INTEGER :: ierrorlog, iwarnlog, iscreenlog ! logging IO
+
     ! namelists
 
     ! namsedim_init
