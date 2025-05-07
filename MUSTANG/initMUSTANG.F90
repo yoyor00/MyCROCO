@@ -38,7 +38,6 @@ MODULE initMUSTANG
 
     USE comMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
-    !USE sed_MUSTANG_HOST,  ONLY : sed_exchange_hxe_HOST
     USE comsubstance
     USE module_substance
 #ifdef key_MUSTANG_flocmod
@@ -199,7 +198,7 @@ CONTAINS
 #ifdef key_MUSTANG_V2
     USE sed_MUSTANG,  ONLY : MUSTANGV2_comp_poro_mixsed
 #ifdef key_MUSTANG_bedload
-    USE sed_MUSTANG_HOST,  ONLY : sed_bottom_slope
+    USE sed_MUSTANG_CROCO,  ONLY : sed_bottom_slope
 #endif
 #endif
 

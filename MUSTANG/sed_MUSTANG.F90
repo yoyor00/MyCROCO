@@ -155,24 +155,24 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-    USE sed_MUSTANG_HOST,    ONLY :  sed_MUSTANG_settlveloc
-    USE sed_MUSTANG_HOST,    ONLY :  sed_skinstress
-    USE sed_MUSTANG_HOST,    ONLY :  sed_gradvit
+    USE sed_MUSTANG_CROCO,    ONLY :  sed_MUSTANG_settlveloc
+    USE sed_MUSTANG_CROCO,    ONLY :  sed_skinstress
+    USE sed_MUSTANG_CROCO,    ONLY :  sed_gradvit
 #ifdef key_MUSTANG_bedload
-    USE sed_MUSTANG_HOST,    ONLY :  sed_bottom_slope
+    USE sed_MUSTANG_CROCO,    ONLY :  sed_bottom_slope
 #if defined MPI 
-      USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_flxbedload
-      USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_maskbedload
+      USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_flxbedload
+      USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_maskbedload
 #endif
 #endif
 #if defined MPI  && defined key_MUSTANG_lateralerosion
-    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_s2w
+    USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_s2w
 #endif
 #if defined MUSTANG_CORFLUX
-    USE sed_MUSTANG_HOST,    ONLY :  sed_obc_corflu
-    USE sed_MUSTANG_HOST,    ONLY :  sed_meshedges_corflu
+    USE sed_MUSTANG_CROCO,    ONLY :  sed_obc_corflu
+    USE sed_MUSTANG_CROCO,    ONLY :  sed_meshedges_corflu
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_corflu
+      USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_corflu
 #endif
 #endif
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
@@ -300,7 +300,7 @@ MODULE sed_MUSTANG
         CALL sed_exchange_corflu(ifirst, ilast, jfirst, jlast, 0)
 #endif
         ! corflux are interpolated on mesh edges (in u & v) 
-        ! depends on model mesh (ARAKAWA grid), coded in sed_MUSTANG_HOST
+        ! depends on model mesh (ARAKAWA grid), coded in sed_MUSTANG_CROCO
         CALL sed_meshedges_corflu(ifirst, ilast, jfirst, jlast)
         CALL sed_obc_corflu(ifirst, ilast, jfirst, jlast)
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
@@ -541,7 +541,7 @@ MODULE sed_MUSTANG
    !&E--------------------------------------------------------------------------
    !! * Modules used
 #if defined MPI  && defined key_MUSTANG_slipdeposit
-    USE sed_MUSTANG_HOST,    ONLY :  sed_exchange_w2s
+    USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_w2s
 #endif
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast 
@@ -8594,7 +8594,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
      ! sedimask_h0plusxe : = 1 si h+ssh .GT. 1    = 0 sinon
      ! ==> Le flux charrie en X et Y est mis a 0 si la maille voisine est a terre
-     !TODO : put this in subroutine in sed_MUSTANG_HOST because it is host dependant (raphbx&raphby)
+     !TODO : put this in subroutine in sed_MUSTANG_CROCO because it is host dependant (raphbx&raphby)
 
      flx_bxij(iv) = (flx_bxij(iv) + abs(flx_bxij(iv))) * 0.5_rsh * raphbx(i+1, j) * sedimask_h0plusxe(i+1, j)+ &
                     (flx_bxij(iv) - abs(flx_bxij(iv))) * 0.5_rsh * raphbx(  i, j) * sedimask_h0plusxe(i-1, j)

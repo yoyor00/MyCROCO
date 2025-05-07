@@ -14,8 +14,6 @@
    !&E
    !&E==========================================================================
 */
-# define sed_MUSTANG_HOST sed_MUSTANG_CROCO
-
 /* CROCO */
 # define iscreenlog stdout
 # define ierrorlog stdout
