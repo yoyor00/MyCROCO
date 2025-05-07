@@ -16,8 +16,6 @@ MODULE comMUSTANG
 
     ! default
     public
-
-#include "coupler_define_MUSTANG.h"
   
     !! * Shared or public variables for MUSTANG 
 
@@ -459,9 +457,9 @@ MODULE comMUSTANG
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_sum
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: EROS_FLUX_s2w
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUX_w2s
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUXSUM_w2s
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_CROCO
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_CROCO
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_sum_CROCO
 
     ! Sediment parameters
     REAL(KIND=rsh)            :: ros_sand_homogen 

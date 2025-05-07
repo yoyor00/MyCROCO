@@ -29,8 +29,6 @@
 !&E
 !&E==========================================================================
 
-#include "coupler_define_MUSTANG.h"
-
     !! * Modules used
     USE comMUSTANG
     USE comsubstance
@@ -86,9 +84,9 @@ SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
 !&E         ws_part : settling velocities for CROCO
 !&E         ws3_bottom_MUSTANG: settling velocities in  bottom cell
 !&E
-!&E  need to be know via coupler_define_MUSTANG.h:
-!&E         GRAVITY
-!&E         kmax=NB_LAYER_WAT
+!&E  need to be know 
+!&E         g : gravity
+!&E         kmax=N : number of layer in water
 !&E          
 !&E  need to be know by code treated substance 
 !&E  (if not ==> coupler_MUSTANG.F90)
@@ -119,7 +117,7 @@ DO j = jfirst, jlast
 DO i = ifirst, ilast
            
     IF (htot(i, j) > h0fond) THEN
-        DO k = 1, NB_LAYER_WAT
+        DO k = 1, N
             cmes = 0.0_rsh
             DO ivpc = imud1, nvpc
                 cmes = cmes + WATER_CONCENTRATION(i, j, k, nstp, itemp + ntrc_salt + ivpc)
@@ -151,7 +149,7 @@ DO i = ifirst, ilast
                         De = sqrt(nuw / gradvit(k, i, j)) 
                         ! in case of large C/low G limit floc size to kolmogorov microscale
                     ENDIF
-                    WSfree = (ros(iv) - RHOREF) * GRAVITY / (18._rsh * RHOREF * nuw)  &
+                    WSfree = (ros(iv) - rho0) * g / (18._rsh * rho0 * nuw)  &
                         * ws_free_para(1, iv)**(3._rsh - ws_free_para(4, iv))  &
                         * De**(ws_free_para(4, iv) - 1._rsh)
                 ELSEIF (ws_free_opt(iv) == 3) THEN ! Wolanski et al., 1989
@@ -223,7 +221,7 @@ SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 !&E
 !&E ** Description : G= sqrt(turbulence dissipation/viscosity)
 !&E                 to be programmed using hydrodynamic knowledge
-!&E           using htot, RHOREF, sig, epn, nz ..
+!&E           using htot, rho0, sig, epn, nz ..
 !&E
 !&E     output : gradvit (in comMUSTANG)
 !&E
@@ -350,7 +348,7 @@ END SUBROUTINE sed_gradvit
 #  ifdef BBL /*warning, d50 is constant (160microns) in the bustrw/bvstrw computation see bbl.F */
   do j = jfirst, jlast
     do i = ifirst, ilast
-      tauskin(i, j) = sqrt( bustrw(i, j)**2 + bvstrw(i, j)**2) * RHOREF
+      tauskin(i, j) = sqrt( bustrw(i, j)**2 + bvstrw(i, j)**2) * rho0
 #  ifdef WET_DRY AND MASKING
       tauskin(i, j) = tauskin(i, j) * rmask_wet(i, j)
 #  endif
@@ -576,7 +574,7 @@ END SUBROUTINE sed_gradvit
         if (tauskin(i, j) < 0.) then
           ustarbot(i, j) = 0.0_rsh
         else
-          ustarbot(i, j) = (tauskin(i, j) / RHOREF)**0.5_rsh
+          ustarbot(i, j) = (tauskin(i, j) / rho0)**0.5_rsh
         endif
       endif
     enddo
@@ -597,6 +595,8 @@ END SUBROUTINE sed_gradvit
    !&E    slope_dhdy from bathy of neigbour cells if they are not masked
    !&E
    !&E ** Called by :  MUSTANG_update, MUSTANG_morpho 
+   !&E      om_r = cell dx 
+   !&E      on_r = cell dy
    !&E
    !&E--------------------------------------------------------------------------
    !! * Arguments
@@ -611,12 +611,12 @@ END SUBROUTINE sed_gradvit
           IF (bathy(i+1, j).LE. -valmanq .OR. bathy(i-1, j).LE. -valmanq) then
              slope_dhdx(i, j) = 0.0_rsh
           ELSE
-             slope_dhdx(i, j) = -1.0_rsh*(-bathy(i+1, j)+bathy(i-1, j)) / (2.0_rsh * CELL_DX(i, j))
+             slope_dhdx(i, j) = -1.0_rsh*(-bathy(i+1, j)+bathy(i-1, j)) / (2.0_rsh * om_r(i, j))
           ENDIF
           IF (bathy(i, j+1).LE. -valmanq .OR. bathy(i, j-1).LE. -valmanq) then
              slope_dhdy(i, j) = 0.0_rsh
           ELSE
-             slope_dhdy(i, j) = -1.0_rsh*(-bathy(i, j+1)+bathy(i, j-1)) / (2.0_rsh * CELL_DY(i, j))
+             slope_dhdy(i, j) = -1.0_rsh*(-bathy(i, j+1)+bathy(i, j-1)) / (2.0_rsh * on_r(i, j))
           ENDIF
         ENDDO
       ENDDO

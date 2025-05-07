@@ -34,8 +34,6 @@ MODULE initMUSTANG
 !&E
 !&E============================================================================
     !! * Modules used
-#include "coupler_define_MUSTANG.h"
-
     USE comMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
     USE comsubstance
@@ -258,7 +256,7 @@ CONTAINS
         f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
         f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  &
         f_clim, diam_sed(imud1:nvpc), ros(imud1:nvpc),      &
-        RHOREF, l_0Dcase, ierrorlog)
+        rho0, l_0Dcase, ierrorlog)
 #endif
 
     CALL dredging_init_param(ifirst,ilast,jfirst,jlast)
@@ -282,7 +280,7 @@ CONTAINS
 #if defined MORPHODYN
     it_morphoYes=0
 #endif
-    CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, BATHY_H0)
+    CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, h)
 #endif
 
 
@@ -290,7 +288,7 @@ CONTAINS
     ! Definition of initial conditions in sediment
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (l_unised) THEN
-        CALL MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, BATHY_H0)
+        CALL MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, h)
     ELSE
         CALL MUSTANG_init_fromfile
     END IF
@@ -760,7 +758,7 @@ CONTAINS
     !&E       * rosmrowsros
     !&E    - ros_sand_homogen = ros(isand1) if there is sand (isand1 > 0)
     !&E
-    !&E ** Note : GRAVITY and RHOREF must be known 
+    !&E ** Note : g and rho0 must be known 
     !&E
     !&E ** Called by :  MUSTANG_init
     !&E
@@ -849,11 +847,11 @@ CONTAINS
 
     DO iv = 1, isand2
 
-      ! here, for simplification, water density = RHOREF 
+      ! here, for simplification, water density = rho0 
       ! here, for simplification, viscosity = 1.e-6 constant
       ! 10000 = (1/viscosite**2)**(1/3)
-      rosmrowsros(iv) = (ros(iv) - RHOREF) / ros(iv)
-      diamstar(iv) = diam_sed(iv) * 10000.0_rsh * (GRAVITY * (ros(iv) / RHOREF - 1.0_rsh))**0.33_rsh
+      rosmrowsros(iv) = (ros(iv) - rho0) / ros(iv)
+      diamstar(iv) = diam_sed(iv) * 10000.0_rsh * (g * (ros(iv) / rho0 - 1.0_rsh))**0.33_rsh
       ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
       ws_sand(iv)=.000001_rsh*((107.33_rsh+1.049_rsh*diamstar(iv)**3)**0.5_rsh-10.36_rsh)/diam_sed(iv)
 
@@ -861,9 +859,9 @@ CONTAINS
        ! Critical shear stress in erosion law (N/m2)
       IF (tau_cri_option == 0) THEN
         tetacri0(iv)=0.3_rsh/(1.0_rsh+1.2_rsh*diamstar(iv))+0.055_rsh*(1.0_rsh-EXP(-0.02_rsh*diamstar(iv)))
-        stresscri0(iv)=tetacri0(iv)*GRAVITY*(ros(iv)-RHOREF)*diam_sed(iv)
+        stresscri0(iv)=tetacri0(iv)*g*(ros(iv)-rho0)*diam_sed(iv)
       ELSE IF (tau_cri_option == 1) THEN ! Wu and Lin (2014)
-        stresscri0(iv)=GRAVITY*(ros(iv)-RHOREF)*diam_sed(iv)*shield_cri_wu
+        stresscri0(iv)=g*(ros(iv)-rho0)*diam_sed(iv)*shield_cri_wu
       END IF
 
 #ifdef key_MUSTANG_V2
@@ -875,7 +873,7 @@ CONTAINS
     ENDDO ! iv = 1, isand2
 
     DO iv=imud1,imud2
-      rosmrowsros(iv)=(ros(iv)-RHOREF)/ros(iv)
+      rosmrowsros(iv)=(ros(iv)-rho0)/ros(iv)
     ENDDO
 
     ! homogeneous sand density
@@ -1206,7 +1204,7 @@ CONTAINS
 
 !!===========================================================================================
     
-    SUBROUTINE MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, BATHY_H0)
+    SUBROUTINE MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, h)
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE MUSTANG_sedinit  ***
     !&E
@@ -1223,7 +1221,7 @@ CONTAINS
 
     !! * Arguments
     INTEGER,INTENT(IN)                                        :: ifirst, ilast, jfirst, jlast
-    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)       :: BATHY_H0      
+    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)       :: h      
 
     !! * Local declarations
     CHARACTER*50   :: filesand, filemud
@@ -1244,13 +1242,13 @@ CONTAINS
 
 
         ! uniform bed :
-        WHERE (BATHY_H0(GLOBAL_2D_ARRAY) /= -valmanq) ksmi(GLOBAL_2D_ARRAY)=ksmiuni
-        WHERE (BATHY_H0(GLOBAL_2D_ARRAY) /= -valmanq) ksma(GLOBAL_2D_ARRAY)=ksmauni
+        WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) ksmi(GLOBAL_2D_ARRAY)=ksmiuni
+        WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) ksma(GLOBAL_2D_ARRAY)=ksmauni
         DO k=ksdmin,ksdmax
-            WHERE (BATHY_H0(GLOBAL_2D_ARRAY) /= -valmanq) dzs(k,GLOBAL_2D_ARRAY)=0.0_rsh
-            WHERE (BATHY_H0(GLOBAL_2D_ARRAY) /= -valmanq) c_sedtot(k,GLOBAL_2D_ARRAY)=0.0_rsh
+            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) dzs(k,GLOBAL_2D_ARRAY)=0.0_rsh
+            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) c_sedtot(k,GLOBAL_2D_ARRAY)=0.0_rsh
             DO iv=-1,nv_tot
-                WHERE (BATHY_H0(GLOBAL_2D_ARRAY) /= -valmanq) cv_sed(iv,k,GLOBAL_2D_ARRAY)=0.0_rsh
+                WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) cv_sed(iv,k,GLOBAL_2D_ARRAY)=0.0_rsh
             ENDDO
         ENDDO
  
@@ -1312,15 +1310,15 @@ CONTAINS
             MPI_master_only WRITE(iscreenlog,*)'NEW TOTAL SEDIMENT THICKNESS AFTER ADJUSTEMENT = ',hsed_new
             cseduni=cseduni*hseduni/hsed_new         
             hseduni=hsed_new
-            WHERE (BATHY_H0(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
+            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
             DEALLOCATE(cv_sedini)
         ELSE
-            WHERE (BATHY_H0(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
+            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
         ENDIF
 
         DO j=jfirst,jlast
         DO i=ifirst,ilast
-            IF(BATHY_H0(i,j) /= -valmanq) THEN
+            IF(h(i,j) /= -valmanq) THEN
                 DO k=ksmi(i,j),ksma(i,j)
                     c_sedtot(k,i,j)=0.0_rsh
                     DO iv=1,nvpc
@@ -1418,7 +1416,7 @@ CONTAINS
        'dzsmax minimum for depth > ',h0max_def
        MPI_master_only write(iscreenlog,*) &
        'PROGRAM your own initialization of dzsmax (or READ a file) in MUSTANG_sedinit'
-       dzsmax(GLOBAL_2D_ARRAY)=(h0max_def-BATHY_H0(GLOBAL_2D_ARRAY))/h0max_def*dzsmaxuni+dzsmaxmin
+       dzsmax(GLOBAL_2D_ARRAY)=(h0max_def-h(GLOBAL_2D_ARRAY))/h0max_def*dzsmaxuni+dzsmaxmin
        WHERE (dzsmax(GLOBAL_2D_ARRAY) > dzsmaxuni ) dzsmax(GLOBAL_2D_ARRAY)=dzsmaxuni
        WHERE (dzsmax(GLOBAL_2D_ARRAY) < dzsmaxmin ) dzsmax(GLOBAL_2D_ARRAY)=dzsmaxmin
 
@@ -2511,7 +2509,6 @@ CONTAINS
  
  
     !  allocation of spatial variables  
-    !  dimensions defined dans coupler_define_MUSTANG.h
     ALLOCATE(ksmi(GLOBAL_2D_ARRAY))
     ALLOCATE(ksma(GLOBAL_2D_ARRAY))
     ALLOCATE(hsed(GLOBAL_2D_ARRAY))  
@@ -2577,7 +2574,7 @@ CONTAINS
     ALLOCATE(fluconsol(-1:nv_adv,GLOBAL_2D_ARRAY))
     ALLOCATE(fluconsol_drycell(-1:nv_adv,GLOBAL_2D_ARRAY))
     ALLOCATE(flu_dyninsed(-1:nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(gradvit(NB_LAYER_WAT,GLOBAL_2D_ARRAY))
+    ALLOCATE(gradvit(N,GLOBAL_2D_ARRAY))
 
     cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
     c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
@@ -2592,7 +2589,7 @@ CONTAINS
     fluconsol(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
     fluconsol_drycell(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
     flu_dyninsed(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-    gradvit(NB_LAYER_WAT,GLOBAL_2D_ARRAY) = 0.0_rsh
+    gradvit(N,GLOBAL_2D_ARRAY) = 0.0_rsh
 
 
 #ifdef key_MUSTANG_V2
@@ -2679,12 +2676,12 @@ CONTAINS
 
     !! declaration of the MUSTANG variables needed in the hydro model 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ALLOCATE(EROS_FLUX_s2w(GLOBAL_2D_ARRAY,1:NT))
-    ALLOCATE(SETTL_FLUX_w2s(GLOBAL_2D_ARRAY,1:NT))
-    ALLOCATE(SETTL_FLUXSUM_w2s(GLOBAL_2D_ARRAY,1:NT))
-    EROS_FLUX_s2w(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
-    SETTL_FLUX_w2s(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
-    SETTL_FLUXSUM_w2s(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
+    ALLOCATE(flx_s2w_CROCO(GLOBAL_2D_ARRAY,1:NT))
+    ALLOCATE(flx_w2s_CROCO(GLOBAL_2D_ARRAY,1:NT))
+    ALLOCATE(flx_w2s_sum_CROCO(GLOBAL_2D_ARRAY,1:NT))
+    flx_s2w_CROCO(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
+    flx_w2s_CROCO(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
+    flx_w2s_sum_CROCO(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
 #if ! defined key_nofluxwat_IWS && ! defined key_noTSdiss_insed
     ALLOCATE(WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N)) ! not operationnal, stil to code **TODO**
     WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N) = 0.0_rsh
