@@ -415,8 +415,9 @@ CONTAINS
 
     READ (500, nmlsubmassbalance, iostat=rc); REWIND (500)
     IF (rc /= 0) THEN
-       msg = "WARNING : nmlsubmassbalance, namelist not found, default values are used"
+       msg = "WARNING : nmlsubmassbalance, namelist not found, default values are used :"
        MPI_master_only  WRITE(stdout,*) msg
+       MPI_master_only  WRITE(stdout,nml=nmlsubmassbalance)
     END IF
 
     if (submassbalance_l) then
