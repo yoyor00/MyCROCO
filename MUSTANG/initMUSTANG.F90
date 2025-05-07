@@ -90,8 +90,9 @@ MODULE initMUSTANG
     namelist /namsedim_deposition/ cfreshmud, csedmin, cmudcr, aref_sand,     &
                                    cvolmaxsort, cvolmaxmel, slopefac
 
-    namelist /namsedim_lateral_erosion/ coef_erolat, coef_tauskin_lat,        &
-                                        l_erolat_wet_cell, htncrit_eros 
+    namelist /namsedim_lateral_erosion/ l_erolat, coef_erolat,&
+                                        coef_tauskin_lat, l_erolat_wet_cell, &
+                                        htncrit_eros 
 
     namelist /namsedim_consolidation/ l_consolid, xperm1, xperm2, xsigma1,    &
                                       xsigma2, csegreg, csandseg,             &

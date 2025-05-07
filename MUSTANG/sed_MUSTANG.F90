@@ -125,9 +125,7 @@ MODULE sed_MUSTANG
  
   SUBROUTINE MUSTANG_update(ifirst, ilast, jfirst, jlast,     &
                WATER_CONCENTRATION, z0hydro,                  &
-#if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
                ubar, vbar,             &
-#endif
                saliref_lin, temperef_lin, dt_true)
 
    !&E--------------------------------------------------------------------------
@@ -164,7 +162,7 @@ MODULE sed_MUSTANG
       USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_maskbedload
 #endif
 #endif
-#if defined MPI  && defined key_MUSTANG_lateralerosion
+#if defined MPI
     USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_s2w
 #endif
 #if defined MUSTANG_CORFLUX
@@ -191,11 +189,9 @@ MODULE sed_MUSTANG
    INTEGER, INTENT(IN)                                       :: ifirst, ilast, jfirst, jlast                           
    REAL(KIND=rsh),INTENT(IN)                                 :: saliref_lin, temperef_lin 
    REAL(KIND=rlg),INTENT(IN)                                 :: dt_true  ! !  (dt_true=halfdt in MARS)
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT)          :: z0hydro                        
-#if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload                        
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)          :: ubar                        
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)          :: vbar   
-#endif                      
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT) :: z0hydro                                             
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN) :: ubar                        
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN) :: vbar                  
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(INOUT) :: WATER_CONCENTRATION         
 
 
@@ -393,10 +389,7 @@ MODULE sed_MUSTANG
 #endif  /*end key_MUSTANG_bedload (version V2)*/
 
    CALL sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv,     &
-#if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-                           ubar, vbar,     &
-#endif
-                             dt_true)
+                           ubar, vbar, dt_true)
 
 #if defined MPI && defined key_MUSTANG_bedload
        if (float(ifirst+ii*Lm) .EQ. 1) then
@@ -1471,10 +1464,7 @@ MODULE sed_MUSTANG
       
 #ifdef key_MUSTANG_V2
   SUBROUTINE sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv, &
-#if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-                                    ubar, vbar, &
-#endif
-                                    dt_true) 
+                                    ubar, vbar, dt_true) 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_erosion version V2  ***
    !&E
@@ -1503,10 +1493,8 @@ MODULE sed_MUSTANG
    INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
    REAL(KIND=rsh),INTENT(IN)                  :: dtinv
    REAL(KIND=rlg),INTENT(IN)                  :: dt_true  ! =halfdt in MARS
-#if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: ubar
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: vbar 
-#endif
 
    !! * Local declarations
    INTEGER        ::  i,j,k,iv,ksmax,ksup,ksmaxa,isplit
@@ -1515,9 +1503,7 @@ MODULE sed_MUSTANG
                       cvolp,volerod,poroa,poroam1,dflusve,        &
                       xeros, sed_eros_flx,excespowr, &
                       heauw,heaue,heaun,heaus,heau_milieu,eroe,erow,eros,eron
-#if defined key_MUSTANG_lateralerosion
    REAL(KIND=rsh) ::  V_NEAR_E,V_NEAR_W,U_NEAR_N,U_NEAR_S
-#endif
    REAL(KIND=rsh) :: diamgravsan,somgravsan,frmudcr1,cv_sed_tot,dzs_activelayer_ij, &
                      dt_ero_max,dts2,mass_tot,cvolgrvsan,sommud,  &
                      niter_ero_noncoh,niter_ero_coh,isthere_erosion
@@ -2301,10 +2287,7 @@ MODULE sed_MUSTANG
 !  version V1
    !!==============================================================================
   SUBROUTINE sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv,  &
-#if defined key_MUSTANG_lateralerosion 
-                                 ubar, vbar, &
-#endif
-                                  dt_true) 
+                                 ubar, vbar, dt_true) 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_erosion  version V1 ***
    !&E
@@ -2332,10 +2315,8 @@ MODULE sed_MUSTANG
    INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
    REAL(KIND=rsh),INTENT(IN)                  :: dtinv
    REAL(KIND=rlg),INTENT(IN)                  :: dt_true  ! =halfdt in MARS
-#if defined key_MUSTANG_lateralerosion 
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: ubar
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: vbar 
-#endif
 
    !! * Local declarations
    INTEGER        ::  i,j,k,iv,ksmax,ksup,ksmaxa,isplit
@@ -2345,9 +2326,7 @@ MODULE sed_MUSTANG
                       cvolp,volerod,poroa,poroam1,dflusve,      &
                       xeros, sed_eros_flx,excespowr,dzpoi,      &
                       heauw,heaue,heaun,heaus,heau_milieu,eroe,erow,eros,eron
-#if defined key_MUSTANG_lateralerosion
    REAL(KIND=rsh) ::  V_NEAR_E,V_NEAR_W,U_NEAR_N,U_NEAR_S
-#endif
 ! because of lateral erosion, it is necessary to keep in memory the accumulated eroded fluxes
    REAL(KIND=rsh),DIMENSION(-1:nv_adv)  ::  flx_s2w_eroij
 

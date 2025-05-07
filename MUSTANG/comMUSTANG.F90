@@ -231,9 +231,9 @@ MODULE comMUSTANG
         ! h0+ssh <= hmin_bedload in neighbouring cells
 #endif
 
+    ! namsedim_lateral_erosion
 
-!**TODO** put under cpp key #ifdef key_MUSTANG_lateralerosion
-    ! namsedim_lateral_erosion 
+    LOGICAL        :: l_erolat ! set to .true to activate lateral erosion
     REAL(KIND=rsh) :: htncrit_eros ! critical water height so as to prevent 
         ! erosion under a given threshold (the threshold value is different for
         ! flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
@@ -243,8 +243,6 @@ MODULE comMUSTANG
         ! vertical
     LOGICAL        :: l_erolat_wet_cell ! set to .true in order to take 
         ! into account wet cells lateral erosion
-!**TODO** put under cpp key #key_MUSTANG_lateralerosion
-
 
     ! namsedim_consolidation 
     LOGICAL        :: l_consolid ! set to .true. if sediment consolidation is 
@@ -624,19 +622,15 @@ MODULE comMUSTANG
     REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_diagsed
 #endif
 
-!**TODO** put under cpp key #if defined key_MUSTANG_lateralerosion
-!  used in erosion only but exchange and dimensions could depend on grid model 
+!  used in lateral_erosion only 
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corim1
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corip1
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjm1
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjp1
-!**TODO** put under cpp key #if ! defined key_nofluxwat_IWS
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corim1
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corip1
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
-!**TODO** put under cpp key #endif
-!**TODO** put under cpp key #endif
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corim1
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corip1
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
 
 ! slipdeposit : **TODO** put under cpp key key_MUSTANG_slipdeposit
    !  used in accretion (settling) only bud exchange and dimensions could depend on grid model 

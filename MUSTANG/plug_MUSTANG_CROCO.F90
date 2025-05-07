@@ -39,9 +39,7 @@ CONTAINS
       SALREF_LIN  = 35.0
       CALL MUSTANG_update (Istr, Iend, Jstr, Jend,  & 
                    t, zob,                          &
-# if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
                    ubar, vbar,                      &
-# endif
                    SALREF_LIN, TEMPREF_LIN, dt)
       end subroutine
 !

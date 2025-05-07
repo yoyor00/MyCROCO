@@ -53,7 +53,7 @@
 #if defined MPI  && defined key_MUSTANG_slipdeposit
     PUBLIC sed_exchange_w2s
 #endif
-#if defined MPI  && defined key_MUSTANG_lateralerosion
+#if defined MPI
     PUBLIC sed_exchange_s2w
 #endif
 #if defined MUSTANG_CORFLUX
@@ -737,7 +737,7 @@ END SUBROUTINE sed_gradvit
 
 !!=============================================================================
 
-#if defined MPI && defined key_MUSTANG_lateralerosion
+#if defined MPI
     SUBROUTINE sed_exchange_s2w(ifirst, ilast, jfirst, jlast)
     !&E-------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_exchange_s2w ***
@@ -779,7 +779,7 @@ END SUBROUTINE sed_gradvit
     enddo
   
     END SUBROUTINE sed_exchange_s2w
-#endif /* defined MPI && defined key_MUSTANG_lateralerosion */
+#endif /* defined MPI  */
 
 !!=============================================================================
 
