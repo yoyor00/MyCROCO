@@ -192,12 +192,12 @@ MODULE sed_MUSTANG
    INTEGER, INTENT(IN)                                       :: ifirst, ilast, jfirst, jlast                           
    REAL(KIND=rsh),INTENT(IN)                                 :: saliref_lin, temperef_lin 
    REAL(KIND=rlg),INTENT(IN)                                 :: dt_true  ! !  (dt_true=halfdt in MARS)
-   REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)          :: z0hydro                        
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT)          :: z0hydro                        
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload                        
-   REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_U),INTENT(IN)          :: BAROTROP_VELOCITY_U                        
-   REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_V),INTENT(IN)          :: BAROTROP_VELOCITY_V   
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)          :: BAROTROP_VELOCITY_U                        
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)          :: BAROTROP_VELOCITY_V   
 #endif                      
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT) :: WATER_CONCENTRATION         
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(INOUT) :: WATER_CONCENTRATION         
 
 
    !! * Local declarations
@@ -266,7 +266,7 @@ MODULE sed_MUSTANG
             IF(htot(i,j) > h0fond) THEN
                 DO k=1,NB_LAYER_WAT
                     CALL flocmod_main( dt_true, &
-                        t(i,j,k,nstp,itsubs1-1+imud1:itsubs1-1+nvpc),  &
+                        WATER_CONCENTRATION(i,j,k,nstp,itsubs1-1+imud1:itsubs1-1+nvpc),  &
                         gradvit(k,i,j) )
                 ENDDO
             ENDIF
@@ -455,7 +455,7 @@ MODULE sed_MUSTANG
 #endif
 
   IF (l_dredging) THEN
-    CALL dredging_main(ifirst, ilast, jfirst, jlast, t, z_w, h, hsed, &
+    CALL dredging_main(ifirst, ilast, jfirst, jlast, WATER_CONCENTRATION, z_w, h, hsed, &
       dzs, ksmi, ksma, cv_sed, c_sedtot)
   ENDIF
 
@@ -546,9 +546,9 @@ MODULE sed_MUSTANG
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast 
 #if defined key_BLOOM_insed
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(INOUT)  :: WATER_CONCENTRATION   
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(INOUT)  :: WATER_CONCENTRATION   
 #else
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)  :: WATER_CONCENTRATION   
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN)  :: WATER_CONCENTRATION   
 #endif
 
 
@@ -617,7 +617,7 @@ MODULE sed_MUSTANG
 
     !! * Arguments
     INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
-    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT) :: dhsed                        
+    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT) :: dhsed                        
     !! * Local declarations
     INTEGER                  :: i,j,k
     !!--------------------------------------------------------------------------
@@ -683,8 +683,8 @@ MODULE sed_MUSTANG
    !! * Arguments
 
    INTEGER, INTENT(IN)                                     :: ifirst,ilast,jfirst,jlast,nv_out
-   REAL(KIND=riosh),DIMENSION(PROC_IN_ARRAY), INTENT(IN)   :: h0_out
-   LOGICAL, DIMENSION(PROC_IN_ARRAY)        :: mask_h0
+   REAL(KIND=riosh),DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN)   :: h0_out
+   LOGICAL, DIMENSION(GLOBAL_2D_ARRAY)        :: mask_h0
 
 
    !! * Local declarations
@@ -703,11 +703,11 @@ MODULE sed_MUSTANG
 
 
      ! preparation of hsed
-     IF (l_outsed_hsed) var2D_hsed(PROC_IN_ARRAY) = -rg_valmanq_io
+     IF (l_outsed_hsed) var2D_hsed(GLOBAL_2D_ARRAY) = -rg_valmanq_io
 
 #ifdef key_BLOOM_insed
      IF (l_out_subs_diag_sed) THEN
-       var2D_diagsed(PROC_IN_ARRAY,:) = -rg_valmanq_io
+       var2D_diagsed(GLOBAL_2D_ARRAY,:) = -rg_valmanq_io
      ENDIF
 #endif
 
@@ -830,7 +830,7 @@ MODULE sed_MUSTANG
 
    !! * Arguments
    INTEGER, INTENT(IN)                              :: ifirst,ilast,jfirst,jlast
-   LOGICAL,DIMENSION(PROC_IN_ARRAY), INTENT(IN)     :: mask_h0
+   LOGICAL,DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN)     :: mask_h0
 
 
    !! * Local declarations
@@ -973,9 +973,9 @@ MODULE sed_MUSTANG
 
    !! * Arguments
    INTEGER, INTENT(IN)                                                 :: ifirst,ilast,jfirst,jlast
-   LOGICAL,DIMENSION(PROC_IN_ARRAY), INTENT(IN)                        :: mask_h0
-   REAL(KIND=rsh),DIMENSION(ksdmin:ksdmax,PROC_IN_ARRAY), INTENT(IN)   ::  var3D   
-   REAL(KIND=riosh),DIMENSION(nk_nivsed_out,PROC_IN_ARRAY), INTENT(OUT)  ::  var3D_cvs  
+   LOGICAL,DIMENSION(GLOBAL_2D_ARRAY), INTENT(IN)                        :: mask_h0
+   REAL(KIND=rsh),DIMENSION(ksdmin:ksdmax,GLOBAL_2D_ARRAY), INTENT(IN)   ::  var3D   
+   REAL(KIND=riosh),DIMENSION(nk_nivsed_out,GLOBAL_2D_ARRAY), INTENT(OUT)  ::  var3D_cvs  
    REAL(KIND=rsh),INTENT(IN)                                           :: unitmudbinv
 
    !! * Local declarations
@@ -1118,7 +1118,7 @@ MODULE sed_MUSTANG
 
    !! * Arguments
    INTEGER, INTENT(IN)                                  :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)  :: BATHY_H0
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)  :: BATHY_H0
 
    !! * Local declarations
    INTEGER        :: i,j,ksmax
@@ -1176,7 +1176,7 @@ MODULE sed_MUSTANG
 
    !! * Arguments
    INTEGER, INTENT(IN)                                     :: ifirst,ilast,jfirst,jlast
-   REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)   :: z0hydro                         
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT)   :: z0hydro                         
 
    !! * Local declarations
    INTEGER        :: i,j,k,iv
@@ -1505,8 +1505,8 @@ MODULE sed_MUSTANG
    REAL(KIND=rsh),INTENT(IN)                  :: dtinv
    REAL(KIND=rlg),INTENT(IN)                  :: dt_true  ! =halfdt in MARS
 #if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
-   REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_U),INTENT(IN)   :: BAROTROP_VELOCITY_U
-   REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_V),INTENT(IN)   :: BAROTROP_VELOCITY_V 
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: BAROTROP_VELOCITY_U
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: BAROTROP_VELOCITY_V 
 #endif
 
    !! * Local declarations
@@ -2323,8 +2323,8 @@ MODULE sed_MUSTANG
    REAL(KIND=rsh),INTENT(IN)                  :: dtinv
    REAL(KIND=rlg),INTENT(IN)                  :: dt_true  ! =halfdt in MARS
 #if defined key_MUSTANG_lateralerosion 
-   REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_U),INTENT(IN)   :: BAROTROP_VELOCITY_U
-   REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_V),INTENT(IN)   :: BAROTROP_VELOCITY_V 
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: BAROTROP_VELOCITY_U
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: BAROTROP_VELOCITY_V 
 #endif
 
    !! * Local declarations
@@ -7073,10 +7073,10 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
 #ifdef key_MUSTANG_bedload
    REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(IN)              :: flx_bxij 
    REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(IN)              :: flx_byij
-   REAL(KIND=rsh),DIMENSION(ARRAY_CELL_DX),INTENT(IN)      :: CELL_DX
-   REAL(KIND=rsh),DIMENSION(ARRAY_CELL_DY),INTENT(IN)      :: CELL_DY
-   REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_U),INTENT(IN)   :: BAROTROP_VELOCITY_U                       
-   REAL(KIND=rsh),DIMENSION(ARRAY_VELOCITY_V),INTENT(IN)   :: BAROTROP_VELOCITY_V                         
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)      :: CELL_DX
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)      :: CELL_DY
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: BAROTROP_VELOCITY_U                       
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: BAROTROP_VELOCITY_V                         
 #endif
 
    !! * Local declaration

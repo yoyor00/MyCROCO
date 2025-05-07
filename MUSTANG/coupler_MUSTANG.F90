@@ -85,7 +85,7 @@ MODULE coupler_MUSTANG
 
    !! * Arguments 
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast, iappel       
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION   
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN) :: WATER_CONCENTRATION   
    !! * Local declarations
    INTEGER  :: iv, i, j
 

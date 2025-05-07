@@ -107,8 +107,7 @@ SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
 
 !! * Arguments
 INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
-REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION  
-!! CROCO : WATER_CONCENTRATION  is directly t 
+REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN) :: WATER_CONCENTRATION  
    
 !! * Local declarations
 INTEGER                    :: iv, k, ivpc, i, j
@@ -602,7 +601,7 @@ END SUBROUTINE sed_gradvit
    !&E--------------------------------------------------------------------------
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
-   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)  :: bathy  ! bathymetry (m)
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)  :: bathy  ! bathymetry (m)
 
    !! * Local declarations
    INTEGER :: i, j

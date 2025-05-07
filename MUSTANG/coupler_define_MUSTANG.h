@@ -1,19 +1,6 @@
 #include "cppdefs.h"
 
 #if defined MUSTANG
-/*
-   !&E==========================================================================
-   !&E                   ***  coupler_define_MUSTANG  ***
-   !&E
-   !&E
-   !&E ** Purpose : definitions of dimensions, variables and parameters 
-   !&E               for MUSTANG         
-   !&E 
-   !&E ** Description : must be completed by the user
-   !&E          when coupling with a hydrodynamic model
-   !&E
-   !&E==========================================================================
-*/
 
 /* Spatial Grid limits definition  of loops inside the domain - except meshes at open boundaries */
 # define IMIN_GRID 1
@@ -21,37 +8,10 @@
 # define JMIN_GRID 1
 # define JMAX_GRID Mm
 
-/* dimensions table definition */
-# define PROC_IN_ARRAY       GLOBAL_2D_ARRAY   
-# define PROC_IN_ARRAY_m1p2  GLOBAL_2D_ARRAY
-# define PROC_IN_ARRAY_m1p1  GLOBAL_2D_ARRAY
-# define PROC_IN_ARRAY_m2p2  GLOBAL_2D_ARRAY
-# define PROC_IN_ARRAY_0p1   GLOBAL_2D_ARRAY
-
-/* dimensions of variables in hydro modele */
-# define ARRAY_EROS_FLUX_s2w PROC_IN_ARRAY,1:NT
-# define ARRAY_SETTL_FLUX_w2s PROC_IN_ARRAY,1:NT
-# define ARRAY_SETTL_FLUXSUM_w2s PROC_IN_ARRAY,1:NT
-# define ARRAY_WATER_FLUX_INPUTS PROC_IN_ARRAY,1:NB_LAYER_WAT
-# define ARRAY_BATHY_H0 GLOBAL_2D_ARRAY
-# define ARRAY_VELOCITY_U GLOBAL_2D_ARRAY,1:4
-# define ARRAY_VELOCITY_V GLOBAL_2D_ARRAY,1:4
-# define ARRAY_CELL_SURF GLOBAL_2D_ARRAY
-# define ARRAY_CELL_DX GLOBAL_2D_ARRAY
-# define ARRAY_CELL_DY GLOBAL_2D_ARRAY
-/* dimensions of variables in hydro modele !*/
-# define ARRAY_WATER_CONC GLOBAL_2D_ARRAY,N,3,NT
-# define ARRAY_DHSED GLOBAL_2D_ARRAY 
-
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
-# define ARRAY_LATLON GLOBAL_2D_ARRAY
-#endif
-
 /* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
 !*/
 # define NUMBER_PI pi
 # define NB_LAYER_WAT N
-# define COORD_SIGMA sc_r
 # define BATHY_H0 h
 # define CELL_DX om_r
 # define CELL_DY on_r
@@ -63,7 +23,6 @@
 # define RHOREF rho0
 # define GRAVITY g
 # define BOTTOM_THICK_LAYER epn_bottom
-# define WATER_CONCENTRATION t  /* water concentration in hydro model (=cv_wat in MARS)*/
 # define DHSED dh  
 
 
