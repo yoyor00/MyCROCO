@@ -162,9 +162,7 @@ MODULE sed_MUSTANG
       USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_maskbedload
 #endif
 #endif
-#if defined MPI
-    USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_s2w
-#endif
+
 #if defined MUSTANG_CORFLUX
     USE sed_MUSTANG_CROCO,    ONLY :  sed_obc_corflu
     USE sed_MUSTANG_CROCO,    ONLY :  sed_meshedges_corflu
@@ -345,21 +343,7 @@ MODULE sed_MUSTANG
 !          EROSION             !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#if defined key_MUSTANG_lateralerosion
-! initialization LATERAL EROSION 
-   IF(coef_erolat .NE. 0.0_rsh) THEN
-      flx_s2w_corip1(:,:,:) = 0.0_rsh
-      flx_s2w_corim1(:,:,:) = 0.0_rsh
-      flx_s2w_corjp1(:,:,:) = 0.0_rsh
-      flx_s2w_corjm1(:,:,:) = 0.0_rsh
-#if ! defined key_nofluxwat_IWS
-      phieau_s2w_corip1(:,:) = 0.0_rsh
-      phieau_s2w_corim1(:,:) = 0.0_rsh
-      phieau_s2w_corjp1(:,:) = 0.0_rsh
-      phieau_s2w_corjm1(:,:) = 0.0_rsh
-#endif
-   ENDIF  ! end if coef_erolat
-#endif
+   IF (l_erolat) CALL sed_lateral_erosion_reset()
    
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
 ! initialization BEDLOAD fluxes and masks 
@@ -416,41 +400,12 @@ MODULE sed_MUSTANG
     call sed_exchange_flxbedload(ifirst, ilast, jfirst, jlast)
 #endif                             
                            
-
-#if defined key_MUSTANG_lateralerosion
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!! Fluxes correction if LATERAL EROSION !!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   IF(coef_erolat .NE. 0.0_rsh) THEN
-     ! lateral erosion of dry cell
-#if defined MPI
-    call sed_exchange_s2w(ifirst, ilast, jfirst, jlast)
-#endif
-
-      ! correction : neighboring cells of eroded laterally  dry cell receive one fraction of eroded sediment 
-      DO j=jfirst,jlast
-        DO i=ifirst,ilast
-      ! warning it may be different for complex grid
-             DO iv=-1,nv_adv
-               flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+ dtinv*(                            &
-                       +flx_s2w_corip1(iv,i-1,j)+flx_s2w_corim1(iv,i+1,j)   &
-                       +flx_s2w_corjp1(iv,i,j-1)+flx_s2w_corjm1(iv,i,j+1))
-             ENDDO
-#if ! defined key_nofluxwat_IWS
-             phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_s2w_corip1(i-1,j)+  &
-                    phieau_s2w_corim1(i+1,j)+phieau_s2w_corjp1(i,j-1)+phieau_s2w_corjm1(i,j+1)
-#endif
-        END DO
-      END DO
-                          
-   ENDIF  ! end if coef_erolat
-#endif
+  IF (l_erolat) CALL sed_lateral_erosion_apply(ifirst, ilast, jfirst, jlast, dtinv)
 
   IF (l_dredging) THEN
     CALL dredging_main(ifirst, ilast, jfirst, jlast, WATER_CONCENTRATION, z_w, h, hsed, &
       dzs, ksmi, ksma, cv_sed, c_sedtot)
   ENDIF
-
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!! save cumulated erosion Fluxes  of constitutive particulate variables !!
@@ -477,9 +432,6 @@ MODULE sed_MUSTANG
        END DO
      END DO
    ENDIF
-
-   
-
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !   conversion of deposit flux for  hydro code                                                        !!!!!
@@ -1502,8 +1454,7 @@ MODULE sed_MUSTANG
                       erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w,  &
                       cvolp,volerod,poroa,poroam1,dflusve,        &
                       xeros, sed_eros_flx,excespowr, &
-                      heauw,heaue,heaun,heaus,heau_milieu,eroe,erow,eros,eron
-   REAL(KIND=rsh) ::  V_NEAR_E,V_NEAR_W,U_NEAR_N,U_NEAR_S
+                      eroe,erow,eros,eron
    REAL(KIND=rsh) :: diamgravsan,somgravsan,frmudcr1,cv_sed_tot,dzs_activelayer_ij, &
                      dt_ero_max,dts2,mass_tot,cvolgrvsan,sommud,  &
                      niter_ero_noncoh,niter_ero_coh,isthere_erosion
@@ -1853,58 +1804,26 @@ MODULE sed_MUSTANG
                 IF(tauskin(i, j) .GT. toce)THEN
                   CALL sed_MUSTANG_comp_eros_flx(tauskin(i, j), toce, excespowr, xeros, sed_eros_flx)
                   ero = sed_eros_flx * fwet(i, j)    
-
-#if defined key_MUSTANG_lateralerosion
-                    ! lateral erosion :  wet cell (cellule mouillee)
-                    IF (coef_erolat .NE. 0.0_rsh .AND. l_erolat_wet_cell) THEN  
-                                                            
-                        heaue = htot(i+1,j) - htncrit_eros
-                        heauw = htot(i-1,j) - htncrit_eros
-                        heaus = htot(i,j-1) - htncrit_eros
-                        heaun = htot(i,j+1) - htncrit_eros
-                        heau_milieu = htot(i, j) - h0fond
-                        V_NEAR_E =(vbar(i+1,j,3) + vbar(i+1,j+1,3) )
-                        V_NEAR_W =(vbar(i-1,j,3) + vbar(i-1,j+1,3) )
-                        U_NEAR_N =(ubar(i,j+1,3) + ubar(i+1,j+1,3) )
-                        U_NEAR_S =(ubar(i,j-1,3) + ubar(i+1,j-1,3) )
-                        eroe = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_E**2 - toce) &
-                            * max(0.0_rsh, heaue - heau_milieu)
-                        erow = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_W**2 - toce) &
-                            * max(0.0_rsh, heauw - heau_milieu)
-                        eros = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_S**2 - toce) &
-                            * max(0.0_rsh, heaus - heau_milieu)
-                        eron = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_N**2 - toce) &
-                            * max(0.0_rsh, heaun - heau_milieu)
-                        ero = ero + coef_erolat * (eroe + erow + eros + eron)
-                                                                        
-                    ENDIF
-#endif
-                ENDIF
+                  IF (l_erolat) CALL sed_lateral_erosion_compute_wetcell( &
+                    eroe,erow,eros,eron,ero, &
+                    htot(i, j),htot(i+1,j),htot(i-1,j),htot(i,j-1),htot(i,j+1),&
+                    (vbar(i+1,j,nrhs) + vbar(i+1,j+1,nrhs))/2.0_rsh,&
+                    (vbar(i-1,j,nrhs) + vbar(i-1,j+1,nrhs))/2.0_rsh,&
+                    (ubar(i,j-1,nrhs) + ubar(i+1,j-1,nrhs))/2.0_rsh,&
+                    (ubar(i,j+1,nrhs) + ubar(i+1,j+1,nrhs))/2.0_rsh,&
+                    toce)
+                ENDIF ! tauskin(i, j) .GT. toce
               ELSE
-#if defined key_MUSTANG_lateralerosion
-                ! lateral erosion :  dry cell 
-                IF (coef_erolat .NE. 0.0_rsh) THEN
-
-                    heaue = max(0., htot(i+1,j) - htncrit_eros)
-                    heauw = max(0., htot(i-1,j) - htncrit_eros)
-                    heaus = max(0., htot(i,j-1) - htncrit_eros)
-                    heaun = max(0., htot(i,j+1) - htncrit_eros)
-                    V_NEAR_E =(vbar(i+1,j,3) + vbar(i+1,j+1,3) )
-                    V_NEAR_W =(vbar(i-1,j,3) + vbar(i-1,j+1,3) )
-                    U_NEAR_N =(ubar(i,j+1,3) + ubar(i+1,j+1,3) )
-                    U_NEAR_S =(ubar(i,j-1,3) + ubar(i+1,j-1,3) )
-                    eroe = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
-                        4.0_rsh * V_NEAR_E**2 - toce) * heaue
-                    erow = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
-                        4.0_rsh * V_NEAR_W**2 - toce) * heauw
-                    eros = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
-                        4.0_rsh * U_NEAR_S**2 - toce) * heaus
-                    eron = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
-                        4.0_rsh * U_NEAR_N**2 - toce) * heaun
-                    ero = eroe + erow + eros + eron
-
+                IF (l_erolat) THEN
+                  CALL sed_lateral_erosion_compute_drycell( &
+                    eroe,erow,eros,eron,ero, &
+                    htot(i+1,j),htot(i-1,j),htot(i,j-1),htot(i,j+1),&
+                    (vbar(i+1,j,nrhs) + vbar(i+1,j+1,nrhs))/2.0_rsh,&
+                    (vbar(i-1,j,nrhs) + vbar(i-1,j+1,nrhs))/2.0_rsh,&
+                    (ubar(i,j-1,nrhs) + ubar(i+1,j-1,nrhs))/2.0_rsh,&
+                    (ubar(i,j+1,nrhs) + ubar(i+1,j+1,nrhs))/2.0_rsh,&
+                    toce)
                 ENDIF
-#endif
               ENDIF
 
               erosi=MF*dt1*ero
@@ -2027,27 +1946,14 @@ MODULE sed_MUSTANG
 
                    END IF
 
-#if defined key_MUSTANG_lateralerosion
-                   ! memorisation of lateral erosion for dry cell
-                   IF(htot(i,j).LE.h0fond .AND. coef_erolat .NE. 0.0_rsh) THEN
-                     DO iv=-1,nv_adv
-                       flx_s2w_corip1(iv,i,j)=flx_s2w_corip1(iv,i,j)+  &
-                                              flx_s2w_eroij(iv)*eroe/ero*surf_cell(i,j)/surf_cell(i+1,j)
-                       flx_s2w_corim1(iv,i,j)=flx_s2w_corim1(iv,i,j)+  &
-                                              flx_s2w_eroij(iv)*erow/ero*surf_cell(i,j)/surf_cell(i-1,j)
-                       flx_s2w_corjm1(iv,i,j)=flx_s2w_corjm1(iv,i,j)+  &
-                                              flx_s2w_eroij(iv)*eros/ero*surf_cell(i,j)/surf_cell(i,j-1)
-                       flx_s2w_corjp1(iv,i,j)=flx_s2w_corjp1(iv,i,j)+  &
-                                              flx_s2w_eroij(iv)*eron/ero*surf_cell(i,j)/surf_cell(i,j+1)
-                     ENDDO
+
+                   IF (l_erolat) CALL sed_lateral_erosion_saveflx( i, j, &
+                      eroe, erow, eros, eron, ero, flx_s2w_eroij(:) &
 #if ! defined key_nofluxwat_IWS
-                     phieau_s2w_corip1(i,j)=phieau_s2w_corip1(i,j)+phieau_ero_ij*eroe/ero
-                     phieau_s2w_corim1(i,j)=phieau_s2w_corim1(i,j)+phieau_ero_ij*erow/ero
-                     phieau_s2w_corjm1(i,j)=phieau_s2w_corjm1(i,j)+phieau_ero_ij*eros/ero
-                     phieau_s2w_corjp1(i,j)=phieau_s2w_corjp1(i,j)+phieau_ero_ij*eron/ero
+                      ,phieau_ero_ij &
 #endif
-                   ENDIF
-#endif
+                      )
+
 
                    phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
                    flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
@@ -2172,27 +2078,12 @@ MODULE sed_MUSTANG
                        ENDIF
                    ENDIF  ! en loop on cvolgrv
               
-#if defined key_MUSTANG_lateralerosion
-                   ! memorisation of lateral erosion for dry cell
-                   IF(htot(i,j).LE.h0fond .AND. coef_erolat .NE. 0.0_rsh) THEN
-                      DO iv=-1,nv_adv
-                        flx_s2w_corip1(iv,i,j)=flx_s2w_corip1(iv,i,j)+   &
-                                               flx_s2w_eroij(iv)*eroe/ero*surf_cell(i,j)/surf_cell(i+1,j)
-                        flx_s2w_corim1(iv,i,j)=flx_s2w_corim1(iv,i,j)+   &
-                                               flx_s2w_eroij(iv)*erow/ero*surf_cell(i,j)/surf_cell(i-1,j)
-                        flx_s2w_corjm1(iv,i,j)=flx_s2w_corjm1(iv,i,j)+   &
-                                               flx_s2w_eroij(iv)*eros/ero*surf_cell(i,j)/surf_cell(i,j-1)
-                        flx_s2w_corjp1(iv,i,j)=flx_s2w_corjp1(iv,i,j)+   &
-                                               flx_s2w_eroij(iv)*eron/ero*surf_cell(i,j)/surf_cell(i,j+1)
-                      ENDDO
+                   IF (l_erolat) CALL sed_lateral_erosion_saveflx( i, j, &
+                     eroe, erow, eros, eron, ero, flx_s2w_eroij(:) &
 #if ! defined key_nofluxwat_IWS
-                      phieau_s2w_corip1(i,j)=phieau_s2w_corip1(i,j)+phieau_ero_ij*eroe/ero  ! *surf_cell(i+1,j)/surf_cell(i,j)
-                      phieau_s2w_corim1(i,j)=phieau_s2w_corim1(i,j)+phieau_ero_ij*erow/ero  !*surf_cell(i-1,j)/surf_cell(i,j)
-                      phieau_s2w_corjm1(i,j)=phieau_s2w_corjm1(i,j)+phieau_ero_ij*eros/ero  !*surf_cell(i,j-1)/surf_cell(i,j)
-                      phieau_s2w_corjp1(i,j)=phieau_s2w_corjp1(i,j)+phieau_ero_ij*eron/ero  !*surf_cell(i,j+1)/surf_cell(i,j)
+                     ,phieau_ero_ij &
 #endif
-                   ENDIF
-#endif                
+                     )    
 
                    IF (ksmax .GT. ksmi(i,j)) THEN
                     dt1=dt1*(1.0_rsh-erodab/erosi) !  erosi=MF*dt1*ero
@@ -2324,9 +2215,8 @@ MODULE sed_MUSTANG
    REAL(KIND=rsh) ::  dt1,toce,cvolgrv,csanmud,phieau_ero_ij,                  &
                       erodab,ero,erosi,ddzs,dzsa,dzsisu,dzsam1,dflx_s2w,       &
                       cvolp,volerod,poroa,poroam1,dflusve,      &
-                      xeros, sed_eros_flx,excespowr,dzpoi,      &
-                      heauw,heaue,heaun,heaus,heau_milieu,eroe,erow,eros,eron
-   REAL(KIND=rsh) ::  V_NEAR_E,V_NEAR_W,U_NEAR_N,U_NEAR_S
+                      xeros, sed_eros_flx,excespowr,dzpoi, &
+                      eroe,erow,eros,eron
 ! because of lateral erosion, it is necessary to keep in memory the accumulated eroded fluxes
    REAL(KIND=rsh),DIMENSION(-1:nv_adv)  ::  flx_s2w_eroij
 
@@ -2374,55 +2264,29 @@ MODULE sed_MUSTANG
                 CALL sed_MUSTANG_comp_eros_flx(tauskin(i,j), toce, excespowr, xeros, sed_eros_flx)
                 ero=sed_eros_flx*fwet(i,j)    
 
-#if defined key_MUSTANG_lateralerosion
-                ! lateral erosion :  wet cell (cellule mouillee)
-                IF (coef_erolat .NE. 0.0_rsh .AND. l_erolat_wet_cell) THEN                                                              
-                    heaue = htot(i+1,j) - htncrit_eros
-                    heauw = htot(i-1,j) - htncrit_eros
-                    heaus = htot(i,j-1) - htncrit_eros
-                    heaun = htot(i,j+1) - htncrit_eros
-                    heau_milieu = htot(i,j) - h0fond
-                    V_NEAR_E =(vbar(i+1,j,3) + vbar(i+1,j+1,3) )
-                    V_NEAR_W =(vbar(i-1,j,3) + vbar(i-1,j+1,3) )
-                    U_NEAR_N =(ubar(i,j+1,3) + ubar(i+1,j+1,3) )
-                    U_NEAR_S =(ubar(i,j-1,3) + ubar(i+1,j-1,3) )
-                    eroe = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_E**2 - toce) &
-                        * max(0.0_rsh, heaue - heau_milieu)
-                    erow = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * V_NEAR_W**2 - toce) &
-                        * max(0.0_rsh, heauw - heau_milieu)
-                    eros = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_S**2 - toce) &
-                        * max(0.0_rsh, heaus - heau_milieu)
-                    eron = max(0.0_rsh, coef_tauskin_lat / 4.0_rsh * U_NEAR_N**2 - toce) &
-                        * max(0.0_rsh, heaun - heau_milieu)
-                    ero = ero + coef_erolat * (eroe + erow + eros + eron)                                                                       
-                ENDIF
-#endif
-              ENDIF
+                IF (l_erolat) CALL sed_lateral_erosion_compute_wetcell( &
+                    eroe,erow,eros,eron,ero, &
+                    htot(i, j),htot(i+1,j),htot(i-1,j),htot(i,j-1),htot(i,j+1),&
+                    (vbar(i+1,j,nrhs) + vbar(i+1,j+1,nrhs))/2.0_rsh,&
+                    (vbar(i-1,j,nrhs) + vbar(i-1,j+1,nrhs))/2.0_rsh,&
+                    (ubar(i,j-1,nrhs) + ubar(i+1,j-1,nrhs))/2.0_rsh,&
+                    (ubar(i,j+1,nrhs) + ubar(i+1,j+1,nrhs))/2.0_rsh,&
+                    toce)
+              ENDIF ! tauskin(i, j) .GT. toce
             ELSE
-#if defined key_MUSTANG_lateralerosion
-              ! lateral erosion :  dry cell 
-                IF (coef_erolat .NE. 0.0_rsh) THEN
-                    !write(*,*)'l_erolat_dry_cell'
-                    heaue = max(0., htot(i+1,j) - htncrit_eros)
-                    heauw = max(0., htot(i-1,j) - htncrit_eros)
-                    heaus = max(0., htot(i,j-1) - htncrit_eros)
-                    heaun = max(0., htot(i,j+1) - htncrit_eros)
-                    V_NEAR_E =(vbar(i+1,j,3) + vbar(i+1,j+1,3) )
-                    V_NEAR_W =(vbar(i-1,j,3) + vbar(i-1,j+1,3) )
-                    U_NEAR_N =(ubar(i,j+1,3) + ubar(i+1,j+1,3) )
-                    U_NEAR_S =(ubar(i,j-1,3) + ubar(i+1,j-1,3) )
-                    eroe = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
-                        4.0_rsh * V_NEAR_E**2 - toce) * heaue
-                    erow = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
-                        4.0_rsh * V_NEAR_W**2 - toce) * heauw
-                    eros = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
-                        4.0_rsh * U_NEAR_S**2 - toce) * heaus
-                    eron = coef_erolat * max(0.0_rsh, coef_tauskin_lat / &
-                        4.0_rsh * U_NEAR_N**2 - toce) * heaun
-                    ero = eroe + erow + eros + eron
-                    !write(*,*)'l_erolat_dry_cell',ero
-                ENDIF
-#endif
+              IF (l_erolat) THEN
+                CALL sed_lateral_erosion_compute_drycell( &
+                  eroe,erow,eros,eron,ero, &
+                  htot(i+1,j),htot(i-1,j),htot(i,j-1),htot(i,j+1),&
+                  (vbar(i+1,j,nrhs) + vbar(i+1,j+1,nrhs))/2.0_rsh,&
+                  (vbar(i-1,j,nrhs) + vbar(i-1,j+1,nrhs))/2.0_rsh,&
+                  (ubar(i,j-1,nrhs) + ubar(i+1,j-1,nrhs))/2.0_rsh,&
+                  (ubar(i,j+1,nrhs) + ubar(i+1,j+1,nrhs))/2.0_rsh,&
+                  toce)
+
+                write(*,*) i,j,ero,eron,htot(i,j+1),toce
+                write(*,*) ubar(i,j+1,:), nrhs, (ubar(i,j+1,nrhs) + ubar(i+1,j+1,nrhs))/2.0_rsh
+              ENDIF
             ENDIF
 
             erosi = MF * dt1 * ero
@@ -2481,24 +2345,12 @@ MODULE sed_MUSTANG
 #endif
 
                 ! memorisation of lateral erosion for dry cell
-                IF(htot(i,j).LE.h0fond .AND. coef_erolat .NE. 0.0_rsh) THEN
-                   DO iv=-1,nv_adv
-                     flx_s2w_corip1(iv,i,j)=flx_s2w_corip1(iv,i,j)+    &
-                                            flx_s2w_eroij(iv)*eroe/ero*surf_cell(i,j)/surf_cell(i+1,j)
-                     flx_s2w_corim1(iv,i,j)=flx_s2w_corim1(iv,i,j)+    &
-                                            flx_s2w_eroij(iv)*erow/ero*surf_cell(i,j)/surf_cell(i-1,j)
-                     flx_s2w_corjm1(iv,i,j)=flx_s2w_corjm1(iv,i,j)+    &
-                                            flx_s2w_eroij(iv)*eros/ero*surf_cell(i,j)/surf_cell(i,j-1)
-                     flx_s2w_corjp1(iv,i,j)=flx_s2w_corjp1(iv,i,j)+    &
-                                            flx_s2w_eroij(iv)*eron/ero*surf_cell(i,j)/surf_cell(i,j+1)
-                   ENDDO
+                IF (l_erolat) CALL sed_lateral_erosion_saveflx( i, j, &
+                  eroe, erow, eros, eron, ero, flx_s2w_eroij(:) &
 #if ! defined key_nofluxwat_IWS
-                   phieau_s2w_corip1(i,j)=phieau_s2w_corip1(i,j)+phieau_ero_ij*eroe/ero
-                   phieau_s2w_corim1(i,j)=phieau_s2w_corim1(i,j)+phieau_ero_ij*erow/ero
-                   phieau_s2w_corjm1(i,j)=phieau_s2w_corjm1(i,j)+phieau_ero_ij*eros/ero
-                   phieau_s2w_corjp1(i,j)=phieau_s2w_corjp1(i,j)+phieau_ero_ij*eron/ero
+                  ,phieau_ero_ij &
 #endif
-                ENDIF
+                  )
                 phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
                 flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
 
@@ -2571,28 +2423,12 @@ MODULE sed_MUSTANG
 #endif                                 
                 ENDIF  ! end loop on cvolgrv
               
-#if defined key_MUSTANG_lateralerosion
-                ! memorisation of lateral erosion for dry cell
-                IF(htot(i,j).LE.h0fond .AND. coef_erolat .NE. 0.0_rsh) THEN
-                   DO iv=-1,nv_adv
-                     flx_s2w_corip1(iv,i,j)=flx_s2w_corip1(iv,i,j)+   &
-                                            flx_s2w_eroij(iv)*eroe/ero*surf_cell(i,j)/surf_cell(i+1,j)
-                     flx_s2w_corim1(iv,i,j)=flx_s2w_corim1(iv,i,j)+   &
-                                            flx_s2w_eroij(iv)*erow/ero*surf_cell(i,j)/surf_cell(i-1,j)
-                     flx_s2w_corjm1(iv,i,j)=flx_s2w_corjm1(iv,i,j)+   &
-                                            flx_s2w_eroij(iv)*eros/ero*surf_cell(i,j)/surf_cell(i,j-1)
-                     flx_s2w_corjp1(iv,i,j)=flx_s2w_corjp1(iv,i,j)+   &
-                                            flx_s2w_eroij(iv)*eron/ero*surf_cell(i,j)/surf_cell(i,j+1)
-                   ENDDO
+                IF (l_erolat) CALL sed_lateral_erosion_saveflx( i, j, &
+                  eroe, erow, eros, eron, ero, flx_s2w_eroij(:) &
 #if ! defined key_nofluxwat_IWS
-                   phieau_s2w_corip1(i,j)=phieau_s2w_corip1(i,j)+phieau_ero_ij*eroe/ero  ! *surf_cell(i+1,j)/surf_cell(i,j)
-                   phieau_s2w_corim1(i,j)=phieau_s2w_corim1(i,j)+phieau_ero_ij*erow/ero  !*surf_cell(i-1,j)/surf_cell(i,j)
-                   phieau_s2w_corjm1(i,j)=phieau_s2w_corjm1(i,j)+phieau_ero_ij*eros/ero  !*surf_cell(i,j-1)/surf_cell(i,j)
-                   phieau_s2w_corjp1(i,j)=phieau_s2w_corjp1(i,j)+phieau_ero_ij*eron/ero  !*surf_cell(i,j+1)/surf_cell(i,j)
+                  ,phieau_ero_ij &
 #endif
-                ENDIF
-#endif
-
+                  )
 
                 k=k-1
                 IF(k.GE.ksmi(i,j))THEN
@@ -8640,6 +8476,207 @@ END SUBROUTINE MUSTANGV2_eval_bedload
 !!==============================================================================
 
 
+SUBROUTINE sed_lateral_erosion_reset()
+!!------------------------------------------------------------------------------
+!!                ***  ROUTINE sed_lateral_erosion_reset ***
+!!
+!! ** Purpose : Reset LATERAL EROSION arrays to zero at begining of time step
+!! ** Called by : MUSTANG_update
+!!------------------------------------------------------------------------------
+  implicit none
+  IF(coef_erolat .NE. 0.0_rsh) THEN
+    flx_s2w_corip1(:,:,:) = 0.0_rsh
+    flx_s2w_corim1(:,:,:) = 0.0_rsh
+    flx_s2w_corjp1(:,:,:) = 0.0_rsh
+    flx_s2w_corjm1(:,:,:) = 0.0_rsh
+#if ! defined key_nofluxwat_IWS     
+      phieau_s2w_corip1(:,:) = 0.0_rsh
+      phieau_s2w_corim1(:,:) = 0.0_rsh
+      phieau_s2w_corjp1(:,:) = 0.0_rsh
+      phieau_s2w_corjm1(:,:) = 0.0_rsh
+#endif
+  ENDIF  ! end if coef_erolat
+END SUBROUTINE sed_lateral_erosion_reset
+
+REAL FUNCTION sed_lateral_erosion_value(height,current,toce)
+  !!------------------------------------------------------------------------------
+  !!                ***  FUNCTION sed_lateral_erosion_value ***
+  !!
+  !! ** Purpose : Compute fluxes correction if LATERAL EROSION 
+  !!------------------------------------------------------------------------------
+  IMPLICIT NONE
+  !! * Arguments
+  REAL(KIND=rsh),INTENT(IN) :: height
+  REAL(KIND=rsh),INTENT(IN) :: current
+  REAL(KIND=rsh),INTENT(IN) :: toce
+
+  sed_lateral_erosion_value = 0.0_rsh
+
+  IF (coef_erolat .NE. 0.0_rsh ) THEN                                                              
+    sed_lateral_erosion_value = coef_erolat &
+        * max(0.0_rsh, coef_tauskin_lat * current**2 - toce) &
+        * max(0.0_rsh, height)                                                          
+  ENDIF
+  
+END FUNCTION sed_lateral_erosion_value
+
+SUBROUTINE sed_lateral_erosion_compute_wetcell(eroe,erow,eros,eron,ero, &
+  htotij,htote,htotw,htots,htotn,V_NEAR_E,V_NEAR_W,U_NEAR_S,U_NEAR_N,toce)
+  !!------------------------------------------------------------------------------
+  !!                ***  ROUTINE sed_lateral_erosion_compute_wetcell ***
+  !!
+  !! ** Purpose : Compute fluxes correction if LATERAL EROSION in wet cell
+  !! ** Called by : MUSTANG_erosion
+  !!------------------------------------------------------------------------------
+  implicit none
+  !! * Arguments
+  REAL(KIND=rsh),INTENT(IN) :: htotij
+  REAL(KIND=rsh),INTENT(IN) :: htote, htotw, htots, htotn
+  REAL(KIND=rsh),INTENT(IN) :: V_NEAR_E, V_NEAR_W, U_NEAR_S, U_NEAR_N 
+  REAL(KIND=rsh),INTENT(IN) :: toce
+  REAL(KIND=rsh),INTENT(INOUT) :: eroe, erow, eros, eron, ero
+
+  REAL(KIND=rsh) :: hwat, hwate, hwatw, hwats, hwatn
+
+  eroe = 0.0_rsh
+  erow = 0.0_rsh
+  eros = 0.0_rsh
+  eron = 0.0_rsh
+  ! lateral erosion :  wet cell
+  IF (coef_erolat .NE. 0.0_rsh .AND. l_erolat_wet_cell) THEN                                                              
+    hwat = htotij - h0fond
+    eroe = sed_lateral_erosion_value((htote - htncrit_eros) - hwat, V_NEAR_E, toce)
+    erow = sed_lateral_erosion_value((htotw - htncrit_eros) - hwat, V_NEAR_W, toce)
+    eros = sed_lateral_erosion_value((htots - htncrit_eros) - hwat, U_NEAR_S, toce)
+    eron = sed_lateral_erosion_value((htotn - htncrit_eros) - hwat, U_NEAR_N, toce)
+    ero = ero + (eroe + erow + eros + eron)                                                                       
+  ENDIF
+  
+END SUBROUTINE sed_lateral_erosion_compute_wetcell
+
+SUBROUTINE sed_lateral_erosion_compute_drycell(eroe,erow,eros,eron,ero, &
+  htote,htotw,htots,htotn,V_NEAR_E,V_NEAR_W,U_NEAR_S,U_NEAR_N,toce)
+!!------------------------------------------------------------------------------
+!!                ***  ROUTINE sed_lateral_erosion_compute_drycell ***
+!!
+!! ** Purpose : Compute fluxes correction if LATERAL EROSION in dry cell
+!! ** Called by : MUSTANG_erosion
+!!------------------------------------------------------------------------------
+  implicit none
+  !! * Arguments
+  REAL(KIND=rsh),INTENT(IN) :: htote, htotw, htots, htotn
+  REAL(KIND=rsh),INTENT(IN) :: V_NEAR_E, V_NEAR_W, U_NEAR_S, U_NEAR_N
+  REAL(KIND=rsh),INTENT(IN) :: toce
+  REAL(KIND=rsh),INTENT(INOUT) :: eroe, erow, eros, eron, ero
+
+  eroe = 0.0_rsh
+  erow = 0.0_rsh
+  eros = 0.0_rsh
+  eron = 0.0_rsh
+  ero = 0.0_rsh
+  ! lateral erosion :  dry cell 
+  IF (coef_erolat .NE. 0.0_rsh) THEN
+    eroe = sed_lateral_erosion_value((htote - htncrit_eros), V_NEAR_E, toce)
+    erow = sed_lateral_erosion_value((htotw - htncrit_eros), V_NEAR_W, toce)
+    eros = sed_lateral_erosion_value((htots - htncrit_eros), U_NEAR_S, toce)
+    eron = sed_lateral_erosion_value((htotn - htncrit_eros), U_NEAR_N, toce)
+      ero = eroe + erow + eros + eron
+  ENDIF
+
+END SUBROUTINE sed_lateral_erosion_compute_drycell
+
+SUBROUTINE sed_lateral_erosion_saveflx(i, j, eroe, erow, eros, eron, ero, flx_s2w_eroij &
+#if ! defined key_nofluxwat_IWS
+  , phieau_ero_ij &
+#endif
+  )
+  !!------------------------------------------------------------------------------
+  !!                ***  ROUTINE sed_lateral_erosion_saveflx ***
+  !!
+  !! ** Purpose : memorisation of lateral erosion for dry cell
+  !! ** Called by : MUSTANG_erosion
+  !!------------------------------------------------------------------------------
+
+  implicit none
+
+  INTEGER,INTENT(IN) :: i, j
+  REAL(KIND=rsh),INTENT(IN) :: eroe,erow,eros,eron,ero
+  REAL(KIND=rsh),DIMENSION(-1:nv_adv), INTENT(INOUT)  ::  flx_s2w_eroij
+#if ! defined key_nofluxwat_IWS
+  REAL(KIND=rsh), INTENT(INOUT)  ::  phieau_ero_ij
+#endif
+
+  INTEGER :: iv
+
+  ! memorisation of lateral erosion for dry cell
+  IF((htot(i,j).LE.h0fond) .AND. (coef_erolat .NE. 0.0_rsh)) THEN
+     DO iv=-1,nv_adv
+       flx_s2w_corip1(iv,i,j)=flx_s2w_corip1(iv,i,j)+   &
+                              flx_s2w_eroij(iv)*eroe/ero*surf_cell(i,j)/surf_cell(i+1,j)
+       flx_s2w_corim1(iv,i,j)=flx_s2w_corim1(iv,i,j)+   &
+                              flx_s2w_eroij(iv)*erow/ero*surf_cell(i,j)/surf_cell(i-1,j)
+       flx_s2w_corjm1(iv,i,j)=flx_s2w_corjm1(iv,i,j)+   &
+                              flx_s2w_eroij(iv)*eros/ero*surf_cell(i,j)/surf_cell(i,j-1)
+       flx_s2w_corjp1(iv,i,j)=flx_s2w_corjp1(iv,i,j)+   &
+                              flx_s2w_eroij(iv)*eron/ero*surf_cell(i,j)/surf_cell(i,j+1)
+       flx_s2w_eroij(iv) = 0.0_rsh
+    ENDDO
+#if ! defined key_nofluxwat_IWS
+     phieau_s2w_corip1(i,j)=phieau_s2w_corip1(i,j)+phieau_ero_ij*eroe/ero  !*surf_cell(i+1,j)/surf_cell(i,j)
+     phieau_s2w_corim1(i,j)=phieau_s2w_corim1(i,j)+phieau_ero_ij*erow/ero  !*surf_cell(i-1,j)/surf_cell(i,j)
+     phieau_s2w_corjm1(i,j)=phieau_s2w_corjm1(i,j)+phieau_ero_ij*eros/ero  !*surf_cell(i,j-1)/surf_cell(i,j)
+     phieau_s2w_corjp1(i,j)=phieau_s2w_corjp1(i,j)+phieau_ero_ij*eron/ero  !*surf_cell(i,j+1)/surf_cell(i,j)
+     phieau_ero_ij = 0.0_rsh
+#endif
+  ENDIF
+
+END SUBROUTINE sed_lateral_erosion_saveflx
+
+SUBROUTINE sed_lateral_erosion_apply(ifirst, ilast, jfirst, jlast, dtinv)
+!!------------------------------------------------------------------------------
+!!                ***  ROUTINE sed_lateral_erosion_apply ***
+!!
+!! ** Purpose : Apply fluxes correction if LATERAL EROSION
+!! ** Called by : MUSTANG_update
+!!------------------------------------------------------------------------------
+#if defined MPI
+  USE sed_MUSTANG_CROCO, ONLY :  sed_exchange_s2w
+#endif  
+
+  implicit none
+  !! * Arguments
+  INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
+  REAL(KIND=rsh) :: dtinv
+
+  INTEGER :: iv, i, j
+
+  IF(coef_erolat .NE. 0.0_rsh) THEN
+#if defined MPI
+    call sed_exchange_s2w(ifirst, ilast, jfirst, jlast)
+#endif
+      ! correction : neighboring cells of eroded laterally dry cell receive 
+      ! one fraction of eroded sediment 
+      DO j=jfirst,jlast
+        DO i=ifirst,ilast
+             DO iv=-1,nv_adv
+               flx_s2w(iv,i,j) = flx_s2w(iv,i,j)+ &
+                       dtinv*( flx_s2w_corip1(iv,i-1,j) + &
+                               flx_s2w_corim1(iv,i+1,j) + &
+                               flx_s2w_corjp1(iv,i,j-1) + & 
+                               flx_s2w_corjm1(iv,i,j+1))
+             ENDDO
+#if ! defined key_nofluxwat_IWS
+             phieau_s2w(i,j)=phieau_s2w(i,j)+ &
+                    phieau_s2w_corip1(i-1,j)+ &
+                    phieau_s2w_corim1(i+1,j)+ &
+                    phieau_s2w_corjp1(i,j-1)+ &
+                    phieau_s2w_corjm1(i,j+1)
+#endif
+        END DO
+      END DO
+                          
+  ENDIF  ! end if coef_erolat
+END SUBROUTINE sed_lateral_erosion_apply
 
 !!===========================================================================
 real function MUSTANG_E0sand(diamsan, taucr, rossan, ws_sand)

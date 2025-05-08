@@ -18,11 +18,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - DIAGNOSTICS_EDDY & not XIOS : fix double comma in ncscrum.h (Issue #362)
 
+- MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
+  water concentration and last index of current was wrong (Issue #349)
 
 ### Changed
 
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
+- MUSTANG : review lateral erosion feature (Issue #349)
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
@@ -31,6 +34,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Removed
 
+- MUSTANG : remove key_MUSTANG_lateralerosion replace by a boolean in 
+  namelist (Issue #349)
 
 ### Other
 
@@ -38,7 +43,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, S. Le Gac, P. Marchesiello 
+  R. Benshila, M.Caillaud, S. Le Gac, P. Marchesiello 
 
 - New contributors : 
   M. Plus

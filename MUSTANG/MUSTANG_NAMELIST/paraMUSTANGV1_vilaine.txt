@@ -14,7 +14,6 @@
 : namsedim_bedload         : relative to sediment bedload
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
-:                            (only if key_MUSTANG_lateralerosion)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -72,10 +71,7 @@
    xexp_ero = 2.0     
  /  
 &namsedim_lateral_erosion
-   coef_erolat=0.000 
-   coef_tauskin_lat=5.0  
-   l_erolat_wet_cell=.FALSE. 
-   htncrit_eros=0.0 / 
+/
 &namsedim_consolidation
 /
 &namsedim_diffusion
