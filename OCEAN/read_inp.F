@@ -15,6 +15,9 @@
                                         ! to recognize variables.
 # ifdef STOGEN
       use stoalloc                      ! do we output stochastic fields
+# ifdef ENSEMBLE
+      use ensmpi, ONLY : ln_ens_rst_in
+# endif
 # endif
 
 !     implicit none
