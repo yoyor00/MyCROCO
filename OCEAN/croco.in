@@ -248,6 +248,9 @@ wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
 wci_average_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
                       20*F
 
+stochastic_history_fields:  sto2dfield   sto3dfield
+                                 T            F
+
 sediments: input file
            sediment.in
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
