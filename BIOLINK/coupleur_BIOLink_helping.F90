@@ -1135,7 +1135,7 @@ CONTAINS
                                      + 0.0377* (WATCONCPOS(iv_detr_N,k,i,j)+WATCONCPOS(iv_detrR_N,k,i,j))*8.6*12/1000/0.35
 
 #  endif 
-#  if defined key_ulva_GAMELAG && defined key_gracilaria_GAMELAG
+#  if defined key_ulva_GAMELAG && defined key_gracilaria_GAMELAG & defined key_macrophyte_lightattenuation
 
            IF(k==1) THEN
 

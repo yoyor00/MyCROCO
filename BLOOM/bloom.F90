@@ -953,7 +953,7 @@ PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
             I_phyto = PAR_top_layer(k,i,j)*exp(-EXTINCTION_RAD(k,i,j)*0.5*thicklayerW_C(k,i,j)) !! in W/m2
         
             if (I_phyto<p_diat_iksmith) then 
-               effetlumierediat =   (I_phyto/p_diat_iksmith)*exp(-(I_phyto/p_diat_iksmith))
+               effetlumierediat =   (I_phyto/p_diat_iksmith)*exp(1-I_phyto/p_diat_iksmith)
             else
                effetlumierediat = 1.
             endif
@@ -1079,7 +1079,7 @@ PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
 #ifdef GAMELAG      
 
             if (I_phyto<p_nano_iksmith) then 
-               effetlumierenano =   (I_phyto/p_nano_iksmith)*exp(-(I_phyto/p_nano_iksmith))
+               effetlumierenano =   (I_phyto/p_nano_iksmith)*exp(1-I_phyto/p_nano_iksmith)
             else
                effetlumierenano = 1.
             endif         
@@ -3029,11 +3029,7 @@ PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
                ! sub-oxique (NO3 comme oxydant)
                xtmp = effetchaleur * flim1_NO3 * glim2_O2 * dtbiojour
 
-#ifdef GAMELAG_EXACT 
-               F_remin_NO3_P = p_P_speedup_reminanaer * p_P_remin * xtmp * Sfliminv
-#else
                F_remin_NO3_P = p_P_remin * xtmp * Sfliminv
-#endif  
 
                !F_reminR_NO3_P = p_P_reminR * xtmp * SfliminvR
                F_reminR_NO3_P = p_P_reminR * flimz * xtmp * Sfliminv
