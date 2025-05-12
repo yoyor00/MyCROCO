@@ -457,6 +457,12 @@
 #endif
           read(input,'(A)',err=95) fname
           lstr=lenstr(fname)
+#if defined ENSEMBLE
+          if ( ln_ens_rst_in ) then
+                fname = cmember//fname
+                lstr  = lenstr(fname)
+          endif
+#endif
 #if defined MPI && defined PARALLEL_FILES
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #endif
