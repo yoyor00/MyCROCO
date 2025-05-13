@@ -3,27 +3,33 @@
 Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco/-/releases
 
 ## [x.x.x] - xxxx-xx-xx
+
 ### Added
+
 
 ### Fixed
 
-- Fixes issue with OBC_COM_M2CHARACT_XXX (modified by mistake into 
-  OBC_COM_M2ORLANSKI in u2bc and v2bc) : fixes [#186]
+- BENCH : do not put report status to True for reference variant to avoid
+  to mark test passed even if not (Issue #342)
+- BENCH : put jobcomp.log in results directory even if build fail
 
-- Fix the mismatch between PISCES code and input name variables for BSi, 
-  DSi and GSi : [#188]
-
-- The diffusion of wave numbers in coastal areas was resulting in instability 
-  and strong currents (several m/s). Resolved by modifications in WKB_ADD_DIFF :
-  fixes [#197] 
 
 ### Changed
 
-- Issue #184 : change roller contribution on Stokes Drift in very shallow water 
-  to avoid instabilities
 
 ### Deprecated
 
+
 ### Removed
 
+
 ### Other
+
+
+### Contributors on this release
+
+- Contributors already on board : 
+  R. Benshila, S. Le Gac
+
+
+- New contributors : 

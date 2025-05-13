@@ -1,5 +1,5 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! CROCO is a branch of ROMS developped at IRD, INRIA,
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
@@ -32,28 +32,6 @@
 #undef ALLOW_SINGLE_BLOCK_MODE
 #ifdef ALLOW_SINGLE_BLOCK_MODE
 # define SINGLE NSUB_X*NSUB_E,NSUB_X*NSUB_E !!!
-#endif
-
-/*
-   Activate the RVTK_DEBUG procedure that will test the reproducibility
-   of parallel computation by comparing binary files produced by serial
-   and parallel runs. For the umpteenth time, RVTK_DEBUG itself should
-   be defined from cppdefs.h, so not undefined here !!!!!
-*/
-#if !defined RVTK_DEBUG
-#undef RVTK_DEBUG_ADVANCED
-#endif
-
-#if defined RVTK_DEBUG && !defined MPI && !defined OPENMP && !defined RVTK_DEBUG_READ
-# define RVTK_DEBUG_WRITE
-#endif
-
-/*
-   Take care need to use a debug.F specific
-*/
-
-#if defined RVTK_DEBUG_PERFRST && !defined RVTK_DEBUG_READ
-# define RVTK_DEBUG_WRITE
 #endif
 
 /*
@@ -152,8 +130,10 @@
 # define TEMPERATURE
 #endif
 #if defined SALINITY       || defined TEMPERATURE || \
-    defined PASSIVE_TRACER || defined SUBSTANCE
+    defined PASSIVE_TRACER || defined SUBSTANCE   || \
+    defined SEDIMENTS      || defined BIOLOGY
 # define TRACERS
+# define TEMPERATURE
 #endif
 
 /*
@@ -195,17 +175,21 @@
 /*
    Options for wz HADV numerical schemes (default C4)
 */
-# ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
+# ifdef W_HADV_UP5  /* Check if options are defined in cppdefs.h */
 # elif defined W_HADV_TVD
 # elif defined W_HADV_WENO5
-# elif defined W_HADV_C4
+# elif defined W_HADV_UP3
 # elif defined W_HADV_C2
+# elif defined W_HADV_C4
+# elif defined W_HADV_C6
 # else
-#  undef  W_HADV_SPLINES  /* Splines vertical advection             */
-#  undef  W_HADV_TVD      /* TVD vertical advection                 */
-#  define W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
-#  undef  W_HADV_C4       /* 2nd-order centered vertical advection  */
-#  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
+#  undef  W_HADV_UP5      /* 5th-order upwind horizontal advection  */
+#  undef  W_HADV_TVD      /* TVD horizontal advection                 */
+#  define W_HADV_WENO5    /* 5th-order WENOZ horizontal advection     */
+#  undef  W_HADV_UP3      /* 3rd-order upwind horizontal advection  */
+#  undef  W_HADV_C2       /* 2nd-order centered horizontal advection  */
+#  undef  W_HADV_C4       /* 4th-order centered horizontal advection  */
+#  undef  W_HADV_C6       /* 6th-order centered horizontal advection  */
 # endif
 /*
    Options for wz VADV numerical schemes (default SPLINES)
@@ -310,7 +294,7 @@
                   || defined THACKER  || defined TANK \
                   || defined KH_INST  || defined TS_HADV_TEST
 # define PGF_FLAT_BOTTOM
-#elif defined RIP
+#elif defined RIP || defined FLASH_RIP
 # define PGF_BASIC_JACOBIAN
 # define WJ_GRADP 0.125
 #elif defined PGF_BASIC_JACOBIAN
@@ -607,6 +591,9 @@
 #ifdef TIDES_MAS
 # define MASKING
 #endif
+#if defined TIDES_MAS  && !defined USE_CALENDAR
+#error "TIDES with TIDES_MAS requires USE_CALENDAR "
+#endif
 
 /*
 ======================================================================
@@ -623,6 +610,9 @@
 #  else
 #   define WAVE_MAKER_JONSWAP
 #  endif
+# endif
+# if defined WAVE_MAKER_DSPREAD && defined NS_PERIODIC
+#  define WAVE_MAKER_DSPREAD_PER /* correct wave dir. for periodicity */
 # endif
 # ifndef WAVE_MAKER_SPECTRUM
 #  define STOKES_WAVES
@@ -649,7 +639,19 @@
 
 /*
 ======================================================================
-    Bulk flux option
+    ABL1D option
+======================================================================
+! 
+! Using BULK_FLUX is mandatory whenever ABL1D is activated.
+!
+*/
+#ifdef ABL1D
+# define BULK_FLUX
+#endif
+
+/*
+======================================================================
+    BULF_FLUX option
 ======================================================================
 !
 ! Bulk algorithms (options)
@@ -721,10 +723,6 @@
 # endif
 # define WKB_ADD_DIFF
 # define WKB_ADD_DIFFRACTION
-# undef  WKB_NUDGING
-# ifndef WAVE_OFFLINE
-#  undef WKB_NUDGING
-# endif
 # if defined SHOREFACE || defined SANDBAR \
                        || (defined RIP && !defined BISCA)
 #  define ANA_BRY_WKB
@@ -741,8 +739,12 @@
 #endif
 
 #if defined WKB_WWAVE || defined OW_COUPLING \
-		       || (defined WAVE_OFFLINE && defined MRL_WCI)
+         || (defined WAVE_OFFLINE && defined MRL_WCI) \
+         || defined ANA_WWAVE
 # define WAVE_IO
+# if !defined WAVE_ROLLER || !defined WKB_WWAVE
+#  define wepb0 wepb
+# endif
 #endif
 
 /*
@@ -901,9 +903,7 @@
 # define SALINITY
 # define key_nofluxwat_IWS
 #endif /* MUSTANG */
-#ifdef SUBSTANCE
-# define key_CROCO
-#endif
+
 
 /*
 ======================================================================
@@ -925,9 +925,6 @@
 #endif
 #if defined SEDIMENT || defined MUSTANG
 # undef ANA_MORPHODYN
-#endif
-#if defined MORPHODYN && defined MUSTANG
-# define MORPHODYN_MUSTANG_byHYDRO
 #endif
 #if defined MORPHODYN && defined NBQ
 # define NBQ_FREESLIP
@@ -1026,9 +1023,6 @@
 # error "AGRIF + XIOS + OASIS coupling is not yet implemented"
 #endif
 
-#if defined AGRIF && defined USE_CALENDAR
-#error "AGRIF + USE_CALENDAR is not yet implemented"
-#endif
 /*
 ======================================================================
                             Standard I/O

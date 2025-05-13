@@ -34,7 +34,7 @@ MODULE coupler_MUSTANG
     CONTAINS
     !!=======================================================================
     SUBROUTINE coupl_conv2MUSTANG(ifirst, ilast, jfirst, jlast, iappel,     &
-                                  BATHY_H0, ssh, WATER_CONCENTRATION)
+                                  WATER_CONCENTRATION)
     !&E----------------------------------------------------------------------
     !&E                 ***  ROUTINE coupl_conv2MUSTANG  ***
     !&E
@@ -42,7 +42,7 @@ MODULE coupler_MUSTANG
     !&E               only inside the domain, not at boundaries meshes
     !&E
     !&E ** Description :  
-    !&E  arguments IN : BATHY_H0, ssh, WATER_CONCENTRATION
+    !&E  arguments IN : WATER_CONCENTRATION
     !&E  arguments OUT: no (all variables  in comMUSTANG)
     !&E     
     !&E   variables OUT :   
@@ -84,9 +84,7 @@ MODULE coupler_MUSTANG
 #include "scalars_F90.h"
 
    !! * Arguments 
-   INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast, iappel
-   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)  :: BATHY_H0                         
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(IN):: ssh                         
+   INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast, iappel       
    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION   
    !! * Local declarations
    INTEGER  :: iv, i, j, niter
@@ -132,7 +130,7 @@ MODULE coupler_MUSTANG
 
    IF(iappel > 0 ) THEN
    ! WARNING : need to calculate htot at all meshes (imin+1:imax, jmin+1: jmax)
-   ! at interior meshes : for ljmin-1 and ljmax+1 , BATHY_H0 and ssh are known if MPI exchange was done after change
+   ! at interior meshes : for ljmin-1 and ljmax+1 
     DO j=jfirst-1,jlast+1
       DO i=ifirst-1,ilast+1
           !  htot : total water height

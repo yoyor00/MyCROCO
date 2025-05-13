@@ -168,7 +168,6 @@
      &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
      &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
      &                                  *om_r(i,j)*on_r(i,j)
-            We(i,j,k)=FC(i,k)
             DC(i,k)=DC(i,k-1) + Hz(i,j,k)
 !
 !---------------------------------------------------------
@@ -204,13 +203,11 @@
      &      JstrR.le.jjs .and. jjs.le.JendR .and.
      &      jjs.eq.j) then
           do k=1,N
-            We(iis,jjs,k)=We(iis,jjs,k-1)-                           
-     &                 (Huon(iis+1,jjs,k)-Huon(iis,jjs,k)+            
-     &                  Hvom(iis,jjs+1,k)-Hvom(iis,jjs,k))          
-     &                     -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
-     &                                *om_r(iis,jjs)*on_r(iis,jjs)
-     &                     + Qsrc(is,k)
-
+            FC(iis,k)=FC(iis,k-1) -Huon(iis+1,jjs,k)+Huon(iis,jjs,k)
+     &                            -Hvom(iis,jjs+1,k)+Hvom(iis,jjs,k)
+     &                            -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
+     &                            *om_r(iis,jjs)*on_r(iis,jjs) 
+     &                            + Qsrc(is,k)
           enddo 
         endif
       enddo
@@ -221,15 +218,12 @@
 !---------------------------------------------------------
 #ifdef RAIN_FLUX
       do i=Istr,Iend
-          We(i,j,N)=We(i,j,N-1)-                           
+          FC(i,N)=FC(i,N-1)-                           
      &              (Huon(i+1,j,N)-Huon(i,j,N)+            
      &              Hvom(i,j+1,N)-Hvom(i,j,N))          
      &              -((Hz(i,j,N)-Hz_bak(i,j,N))/dt)
      &                          *om_r(i,j)*on_r(i,j)
      &              - EmP(i,j)*om_r(i,j)*on_r(i,j)       
-      !if (i==3 .and. j==3) then
-      !  write(stdout,*)'We,EmP',We(i,j,N),EmP(i,j)
-      !endif
       enddo
 #endif
 
@@ -240,16 +234,11 @@
 !---------------------------------------------------------
 !
         do i=Istr,Iend
-          !DC(i,N)=FC(i,N)/DC(i,N)
-          DC(i,N)=We(i,j,N)/DC(i,N)
+          DC(i,N)=FC(i,N)/DC(i,N)
         enddo
         do k=1,N-1,+1
           do i=Istr,Iend
-            !We(i,j,k)=FC(i,k)-DC(i,N)*DC(i,k)
-            We(i,j,k)=We(i,j,k)-DC(i,N)*DC(i,k)
-            !if (i==3 .and. j==3) then
-            !  write(stdout,*)'DC,We N',DC(i,N),We(i,j,N)
-           ! endif
+            We(i,j,k)=FC(i,k)-DC(i,N)*DC(i,k)
           enddo
         enddo
         do i=Istr,Iend

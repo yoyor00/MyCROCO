@@ -117,9 +117,9 @@
       use AGRIF_UTIL
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules
-      USE trcini_pisces
-      USE p4zsbc
+      USE trcnam_pisces
 # endif
+      use buffer, only: init_buffer
       implicit none
       integer tile, ierr, trd, subs
 # ifdef WKB_WWAVE
@@ -211,6 +211,8 @@
       call MPI_Setup (ierr)
       if (ierr.ne.0) goto 100         !--> ERROR
 # endif
+
+      call init_buffer
 !
 !----------------------------------------------------------------------
 !  Read in tunable model parameters in roms.in file
@@ -765,7 +767,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         thwave=max(av_wac,av_wkn)
       enddo
 
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#  if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(wac(:,:,wnew),'wac initialisation #1','r')

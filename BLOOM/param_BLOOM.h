@@ -215,7 +215,7 @@
      &                                  nb_vara_tracerP*nb_sourceP+ 
      &                                  nb_vara_P_age_tracer*nb_sourceP+
      &                                  nb_var_zost
-      INTEGER, PARAMETER :: ntfix     = nb_fix_bio+
+      PARAMETER            (ntfix     = nb_fix_bio+
      &                                  nb_fix_psnz+
      &                                  nb_fix_karenia+
      &                                  nb_fix_phaeocystis+
@@ -228,5 +228,5 @@
      &                                  nb_fix_P_age_tracer*nb_sourceP+
      &                                  nb_fix_tracerN*nb_sourceN+
      &                                  nb_fix_N_age_tracer*nb_sourceN+
-     &                                  nb_fix_zost
+     &                                  nb_fix_zost)
 

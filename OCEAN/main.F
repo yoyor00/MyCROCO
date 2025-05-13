@@ -28,7 +28,7 @@
 #endif
 #ifdef PISCES
           USE pisces_ini     ! PISCES modules
-          USE trcini_pisces
+          USE trcnam_pisces
 #endif
 #ifdef SUBSTANCE
           USE substance, ONLY : substance_read_alloc
@@ -40,7 +40,6 @@
 #ifdef BIOLink
           USE coupleur_BIOLink , ONLY : BIOLink_initialization
           USE coupleur_BIOLink , ONLY : BIOLink_init_main
-          integer :: icall = 0
 #endif
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_init_main
@@ -50,14 +49,18 @@
           USE module_interface_oa, only : init_parameter_oa
      &                                   ,if_oa, if_oa_fast_mode
 #endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
 #ifdef OPENACC
       use openacc
 #endif
+      use buffer, only: init_buffer
 !     implicit none
       integer tile, subs, trd, ierr
+#ifdef BIOLink
+      integer :: icall = 0
+#endif
 #include "param.h"
 #include "private_scratch.h"
 #include "nbq.h"
@@ -85,6 +88,9 @@
 # include "sta.h"
 # include "nc_sta.h"
 #endif
+#ifdef USE_CALENDAR
+       character*19 :: tool_sectodat
+#endif
 #ifdef AGRIF
       Type(Agrif_pgrid),pointer  :: parcours
 #endif
@@ -104,10 +110,6 @@
 #endif
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
-#endif
-#ifdef USE_CALENDAR
-      character*19 :: tool_sectodat
-!      real*8       :: tool_datosec
 #endif
 #ifdef AUTOTILING
 ! Initial values of NSUB_X, NSUB_E
@@ -172,13 +174,15 @@
 !
 !  Initialize debug procedure
 !
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED || \
-    defined RVTK_DEBUG_PERFRST
+#if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED || \
+    defined CVTK_DEBUG_PERFRST
 
       call debug_ini
 #endif
 !
 #define CR  !
+
+      call init_buffer
 !
 !----------------------------------------------------------------------
 !  Read in tunable model parameters in roms.in file
@@ -296,7 +300,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call ana_grid (tile)
       enddo
-# if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+# if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(h(:,:),'h initialisation #1','r',
@@ -839,7 +843,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         iwave=iwave+1
         thwave=max(av_wac,av_wkn)
       enddo
-# if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+# if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(wac(:,:,wnew),'wac initialisation #1','r')

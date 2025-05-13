@@ -93,9 +93,8 @@
 
 
   INTEGER            :: iso,IERR_MPI
-#ifdef key_CROCO
-   INTEGER           :: lstr,lenstr
-#endif
+  INTEGER           :: lstr,lenstr
+
 #ifdef key_N_tracer
    CHARACTER(LEN=19) :: date_start_tracerN
    REAL(KIND=rlg)        :: tool_datosec
@@ -1679,41 +1678,41 @@ ENDIF
        id_diffuflux_PO4 = id
      CASE('diffusive_flux_of_oxygen_through_water_sediment_interface')
        id_diffuflux_O2D = id
-     CASE('Fluxcum_aerobic_miner_Norg')
+     CASE('flux_aerobic_miner_Norg')
        id_remin_aerN = id
-     CASE('Fluxcum_aerobic_miner_Porg')
+     CASE('flux_aerobic_miner_Porg')
        id_remin_aerP = id
-     CASE('Fluxcum_aerobic_miner_Si')
+     CASE('flux_aerobic_miner_biogenic_Si')
        id_remin_aerSi = id
-     CASE('Fluxcum_anaerobic_miner_Norg')
+     CASE('flux_anaerobic_miner_Norg')
        id_remin_anaerN = id
-     CASE('Fluxcum_anaerobic_miner_Porg')
+     CASE('flux_anaerobic_miner_Porg')
        id_remin_anaerP = id
-     CASE('Fluxcum_nitrate_miner_Norg')
+     CASE('flux_nitrate_miner_Norg')
        id_remin_nitrateN = id
-     CASE('Fluxcum_drna_miner_Norg')
-       id_remin_drnaN = id
-     CASE('Fluxcum_denit_miner_Norg')
+     CASE('flux_dnra_miner_Norg')
+       id_remin_dnraN = id
+     CASE('flux_denitrification_miner_Norg')
        id_remin_denitN = id
-     CASE('Fluxcum_nitrate_miner_Porg')
+     CASE('flux_nitrate_miner_Porg')
        id_remin_nitrateP = id
-     CASE('Fluxcum_nitrification')
+     CASE('flux_nitrification')
        id_nitrif = id
-     CASE('Fluxcum_ODU_oxyd_solid')
+     CASE('flux_ODU_oxyd_solid')
        id_oxyd_solid_ODU = id
-     CASE('Fluxcum_adsorb_desorb_P')
+     CASE('flux_adsorb_desorb_P')
        id_adsor_desorb_P = id
-     CASE('Fluxcum_dissolution_PFe')
+     CASE('flux_dissolution_PFe')
        id_dissol_PFe = id
-     CASE('Fluxcum_precipitation_P')
+     CASE('flux_precipitation_P')
        id_precipit_P = id
-     CASE('Fluxcum_precipitation_Si')
+     CASE('flux_precipitation_Si')
        id_precipit_Si = id
-     CASE('Fluxcum_mortality_phyto_sed')
+     CASE('cum_flux_mortality_phyto_sed')
        id_morta_phyto = id
-     CASE('Fluxcum_benthic_filtre_grazing')
+     CASE('cum_flux_benthic_filter_grazing')
        id_filtr_benth = id
-     CASE('Fluxcum_aeration_sediment')
+     CASE('cum_flux_aeration_sediment')
        id_fluxsed_aeration = id
      CASE('sediment_porosity')
         id_porosite_sed= id
@@ -1736,11 +1735,11 @@ ENDIF
        id_dino_limN = id
      CASE('phosphate_limitation_of_dinoflagellate_growth')
        id_dino_limP = id
-     CASE('light_limitation_of_nanoflagellate_growth')
+     CASE('light_limitation_of_nanopicoplankton_growth')
        id_nano_limlight = id
-     CASE('nitrogen_limitation_of_nanoflagellate_growth')
+     CASE('nitrogen_limitation_of_nanopicoplankton_growth')
        id_nano_limN = id
-     CASE('phosphate_limitation_of_nanoflagellate_growth')
+     CASE('phosphate_limitation_of_nanopicoplankton_growth')
        id_nano_limP = id
      CASE('light_extinction_in_sea_water')
        id_extinctioncoeff=id
@@ -2213,7 +2212,7 @@ ENDIF
     MPI_master_only WRITE(iscreenlog,*) 'id_remin_anaerN=',id_remin_anaerN
     MPI_master_only WRITE(iscreenlog,*) 'id_remin_anaerP=',id_remin_anaerP
     MPI_master_only WRITE(iscreenlog,*) 'id_remin_nitrateN=',id_remin_nitrateN
-    MPI_master_only WRITE(iscreenlog,*) 'id_remin_drnaN=',id_remin_drnaN
+    MPI_master_only WRITE(iscreenlog,*) 'id_remin_dnraN=',id_remin_dnraN
     MPI_master_only WRITE(iscreenlog,*) 'id_remin_denitN=',id_remin_denitN
     MPI_master_only WRITE(iscreenlog,*) 'id_remin_nitrateP=',id_remin_nitrateP
     MPI_master_only WRITE(iscreenlog,*) 'id_dissol_PFe=',id_dissol_PFe

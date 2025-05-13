@@ -1083,7 +1083,7 @@ REAL(KIND=rsh), PUBLIC       ::     &
                       id_remin_anaerN,       &
                       id_remin_anaerP,       &
                       id_remin_nitrateN,       &
-                      id_remin_drnaN,       &
+                      id_remin_dnraN,       &
                       id_remin_denitN,       &
                       id_remin_nitrateP,       &
                       id_nitrif,       &

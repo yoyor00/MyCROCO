@@ -92,6 +92,12 @@ diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1           72            0
     CROCO_FILES/croco_dia_avg.nc
 
+diag_mld_crit_threshold: CRT1 (Dens [kg/m3]), CRT2 (Temp [Celsius]), CRT3 (Temp [Celsius])
+                         3.d-2                2.d-1                  5.d-1
+
+diag_mld_depth_ref: [m]
+                10
+
 diag3D_history_fields:    diag_tracers3D(1:NT) 
                             50*T
 
@@ -262,8 +268,8 @@ station_fields:  Grdvar Temp Salt Rho Vel
 
 psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
             2
-                  3    54     1    200.            T T      20.   15.
-                  3    40     0    200.            T T      20.   15.
+                  24    35     1    -200.         T T      20.   15.
+                  35    13     0    -200.         T T      20.   15.
 
 psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
     CROCO_FILES/croco_runoff.nc

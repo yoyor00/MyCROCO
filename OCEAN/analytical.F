@@ -1007,6 +1007,14 @@ c
             stflx(i,j,isalt)=0.
           enddo
         enddo
+#   ifdef RAIN_FLUX  
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            !set a value in cm/day , converson is done in m/s
+            EmP(i,j)=-0.1*0.01/86400.
+          enddo
+        enddo
+#   endif
       endif
 #  endif /* SALINITY */
 #  if defined SALINITY && defined TEMPERATURE
@@ -1165,7 +1173,7 @@ C$    integer  trd, omp_get_thread_num
             tclm(i,j,k,iZOO_)=0.01
             tclm(i,j,k,iDOC_)=5.
             tclm(i,j,k,iFER_)=6.e-4
-#    if ! defined key_pisces_light
+#    if ! defined key_pisces_npzd
             tclm(i,j,k,iCAL_)=0.01
             tclm(i,j,k,iPO4_)=tclm(i,j,k,iNO3_)/16.
             tclm(i,j,k,iSIL_)=91.51
@@ -1257,7 +1265,7 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tclm(iZOO_)) tclm(i,j,k,iZOO_)=0.01
             if (.not.got_tclm(iDOC_)) tclm(i,j,k,iDOC_)=5.
             if (.not.got_tclm(iFER_)) tclm(i,j,k,iFER_)=6.e-4
-#    if ! defined key_pisces_light
+#    if ! defined key_pisces_npzd
             if (.not.got_tclm(iCAL_)) tclm(i,j,k,iCAL_)=0.01
             if (.not.got_tclm(iPO4_)) then
 #     ifdef TEMPERATURE
@@ -1744,10 +1752,15 @@ C$    integer  trd, omp_get_thread_num
       wdir = Dwave(i,j)
       wprd = Pwave(i,j)
       cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
-      cdir = wdir*deg2rad   ! wave direction (rad)
       ho=h(1,1)             ! offshore depth
 #  ifdef OBC_EAST
-      ho=h(LLm,1)
+#   ifdef MPI
+        ho=h(LLm/NP_XI,1)
+        call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
+     &                     NP_XI-1, MPI_COMM_WORLD, ierr)
+#   else
+        ho=h(LLm,1)
+#   endif
 #  endif
       khd = ho*cfrq*cfrq/g
       kh  = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
@@ -1773,7 +1786,7 @@ C$    integer  trd, omp_get_thread_num
             kr=sqrt(cos(wdir)/cos(wdir))   ! refraction coefficient
             cosw=cos(wdir)
             sinw=sin(wdir)
-            gamw=0.31
+            gamw=0.55
             cff1=gamw*dd
             cff2=2.0*wamp*ks*kr
             wh=min(cff1,cff2)
@@ -1782,7 +1795,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Fill global arrays
 !
-          whrm(i,j)=2.*wh  ! Hrms = 2A
+          whrm(i,j)=wh
           wfrq(i,j)=sqrt(g*kw*tanh(kw*dd))
           wdrx(i,j)=cosw
           wdre(i,j)=sinw
@@ -1816,8 +1829,12 @@ C$    integer  trd, omp_get_thread_num
         do i=istr-1,iend+1
           whrm(i,j)=Hrms
           wfrq(i,j)=cfrq
-          wdrx(i,j)=cos(cdir)
-          wdre(i,j)=sin(cdir)
+          wdrx(i,j)=cos(wdir)
+          wdre(i,j)=sin(wdir)
+!  limit Hrms in surfzone
+          gamw=0.55
+          dd=h(i,j)+z_w(i,j,N)
+          whrm(i,j)=min(whrm(i,j),gamw*dd)
 #   ifdef WET_DRY
           if (h(i,j)+z_w(i,j,N) .lt. Dcrit(i,j)+eps) then
             whrm(i,j)=0.
@@ -2103,7 +2120,7 @@ C$    integer  trd, omp_get_thread_num
 # include "grid.h"
 !
       integer is, k, Istr,Iend,Jstr,Jend, i,j,itrc,ised
-      real    cff, cff1, cff2, ramp, Hs
+      real    cff, cff1, cff2, ramp
       real    xno3,temp,SiO4,zsrc
 # include "compute_auxiliary_bounds.h"
 
@@ -2154,18 +2171,7 @@ C$    integer  trd, omp_get_thread_num
           if (IstrR.le.i .and. i.le.IendR .and.
      &       JstrR.le.j .and. j.le.JendR) then
 #   endif
-            Hs=h(i,j)                    ! Exponential vertical distribution
-            cff=5.                       ! Hs/z0  (z0 surface layer depth)
-            cff1=cff/(1-exp(-cff))
-            cff2=0.
-            do k=1,N
-              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-              cff2=cff2+Qshape(is,k)
-            enddo
-            do k=1,N
-              Qshape(is,k)=Qshape(is,k)/cff2
-            enddo
+             call get_qshape_exp(Qshape(is,:), h(i,j), hinv(i,j))
 #   ifdef MPI 
           endif
 #   endif            
@@ -2218,20 +2224,7 @@ C$    integer  trd, omp_get_thread_num
           if (IstrR.le.i .and. i.le.IendR .and.
      &       JstrR.le.j .and. j.le.JendR) then
 #   endif
-            Hs=h(i,j)                    ! Exponential vertical distribution
-            cff=5.                       ! Hs/z0  (z0 surface layer depth)
-            cff1=cff/(1-exp(-cff))
-            cff2=0.
-            do k=1,N
-              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &                  (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-              cff2=cff2+Qshape(is,k)
-            enddo
-            do k=1,N
-              if (cff2 .gt. 0.0) then
-                Qshape(is,k)=Qshape(is,k)/cff2
-              endif
-            enddo
+             call get_qshape_exp(Qshape(is,:), h(i,j), hinv(i,j))
 #   ifdef MPI
           endif
 #   endif 
@@ -2260,18 +2253,7 @@ C$    integer  trd, omp_get_thread_num
           if (IstrR.le.i .and. i.le.IendR .and.
      &        JstrR.le.j .and. j.le.JendR) then
 #   endif
-            Hs=h(i,j)                    ! Exponential vertical distribution
-            cff=5.                       ! Hs/z0  (z0 surface layer depth)
-            cff1=cff/(1-exp(-cff))
-            cff2=0.
-            do k=1,N
-              Qshape(is,k)=cff1*exp(z_r(i,j,k)*cff/Hs)*
-     &                        (z_w(i,j,k)-z_w(i,j,k-1))/Hs
-              cff2=cff2+Qshape(is,k)
-            enddo
-            do k=1,N
-              Qshape(is,k)=Qshape(is,k)/cff2
-            enddo
+            call get_qshape_exp(Qshape(is,:), h(i,j), hinv(i,j))
 #   ifdef MPI
           endif
 #   endif
@@ -2434,7 +2416,7 @@ C$    integer  trd, omp_get_thread_num
           if (.not.got_tsrc(iZOO_)) then
             Tsrc0(is,iZOO_)=0.01
           endif
-#     if ! defined key_pisces_light
+#     if ! defined key_pisces_npzd
           if (.not.got_tsrc(iCAL_)) then
             Tsrc0(is,iCAL_)=0.01
           endif
@@ -2528,7 +2510,7 @@ C$    integer  trd, omp_get_thread_num
           Tsrc(is,k,iPOC_)=Tsrc0(is,iPOC_)
           Tsrc(is,k,iPHY_)=Tsrc0(is,iPHY_)
           Tsrc(is,k,iZOO_)=Tsrc0(is,iZOO_)
-#    if ! defined key_pisces_light
+#    if ! defined key_pisces_npzd
           Tsrc(is,k,iCAL_)=Tsrc0(is,iCAL_)
           Tsrc(is,k,iDIA_)=Tsrc0(is,iDIA_)
           Tsrc(is,k,iDSI_)=Tsrc0(is,iDSI_)
@@ -2669,6 +2651,57 @@ C$    integer  trd, omp_get_thread_num
 !$acc end kernels 
       return
       end
+
+      subroutine get_qshape_exp(Qshapeij, hij, hinvij)
+        implicit none
+# include "param.h"
+# include "scalars.h"
+
+
+        real, dimension(N), intent(inout) :: Qshapeij
+        real, intent(in) :: hij, hinvij
+
+        real :: cff_w, cff_r, cff1_w, cff1_r, Hs, cff, cff1, cff2
+        real, dimension(0:N) :: z_w0
+        real, dimension(1:N) :: z_r0
+        integer :: k
+
+        !! Compute z_w0 and z_r0 for a zeta=0. case to initialize Qshape
+        !! without time dependancy
+        z_w0(0)=-hij
+        do k=1,N,+1
+#  ifdef NEW_S_COORD
+          cff_w =hc*sc_w(k)
+          cff_r =hc*sc_r(k)
+          cff1_w=Cs_w(k)
+          cff1_r=Cs_r(k)
+          z_w0(k)=(cff_w+cff1_w*abs(hij)) *hij*hinvij
+          z_r0(k)=(cff_r+cff1_r*abs(hij)) *hij*hinvij
+#  else
+          cff_w =hc*(sc_w(k)-Cs_w(k))
+          cff_r =hc*(sc_r(k)-Cs_r(k))
+          cff1_w=Cs_w(k)
+          cff1_r=Cs_r(k)
+          z_w0(k)=cff_w+cff1_w*hij
+          z_r0(k)=cff_r+cff1_r*hij
+#  endif
+        enddo
+
+        Hs=hij                    ! Exponential vertical distribution
+        cff=5.                    ! Hs/z0  (z0 surface layer depth)
+        cff1=cff/(1-exp(-cff))
+        cff2=0.
+        do k=1,N
+          Qshapeij(k)=cff1*exp(z_r0(k)*cff/Hs)*(z_w0(k)-z_w0(k-1))/Hs
+          cff2=cff2+Qshapeij(k)
+        enddo
+        do k=1,N
+          Qshapeij(k)=Qshapeij(k)/cff2
+        enddo
+
+      return
+      end
+
 #endif /* PSOURCE && ANA_PSOURCE */
 !
 !======================================================================
@@ -2699,18 +2732,23 @@ C$    integer  trd, omp_get_thread_num
 # endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
+      real    eps
+      parameter (eps=1.e-10)
 # if defined WAVE_MAKER || defined WAVE_MAKER_INTERNAL
-      integer iw,jw
+      integer iw,jw, jwtt0,jwtt
       real    Du,Dv,Zu,Zv,Zr,Dr,xu,yu,xv,yv,x0,y0,time0,
      &        h0,khd,kh,wa,wk,wp,wf,wd,wds,ramp,
-     &        sigma,theta,gamma,Hs,cff_spread,
+     &        sigma,theta,gamma,Hs,cff_spread, sumspec,
      &        cff,cff0,cff1,cff2,cff3,cff4,cff5,
-     &        fmin,fmax,df,dmin,dmax,dd,
+     &        fmin,fmax,df,dmin,dmax,dd, 
+     &        mindiff,wkdom,wky,
      &        wa1,wk1,wp1,wf1,wa2,wk2,wp2,wf2
       real    K1, K2, K3, K4, K5, K6
       parameter (K1=0.6666666666, K2=0.3555555555,
      &           K3=0.1608465608, K4=0.0632098765,
      &           K5=0.0217540484, K6=0.0065407983)
+      INTEGER nseed
+      INTEGER, ALLOCATABLE :: seed(:)
 # endif
 
 # include "param.h"
@@ -2722,6 +2760,9 @@ C$    integer  trd, omp_get_thread_num
 # include "coupling.h"
 # include "forces.h"
 # include "mixing.h"
+# ifdef WAVE_MAKER
+      real wd_bry_tmp(Nfrq)
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 
@@ -3342,12 +3383,20 @@ C$    integer  trd, omp_get_thread_num
      &           +0.0003099*SiO4**3
             if (.not.got_tbry(iNO3_)) tbry_west(j,k,iNO3_)=xno3
 #  ifdef PISCES
+            if (.not.got_tbry(iDIC_)) tbry_west(j,k,iDIC_)=2150.
+            if (.not.got_tbry(iTAL_)) tbry_west(j,k,iTAL_)=2350.
+            if (.not.got_tbry(iOXY_)) tbry_west(j,k,iOXY_)=200.
             if (.not.got_tbry(iPOC_)) tbry_west(j,k,iPOC_)=0.01
             if (.not.got_tbry(iPHY_)) tbry_west(j,k,iPHY_)=0.01
             if (.not.got_tbry(iZOO_)) tbry_west(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_light
+            if (.not.got_tbry(iDOC_)) tbry_west(j,k,iDOC_)=5.
+            if (.not.got_tbry(iFER_)) tbry_west(j,k,iFER_)=6.e-4
+#   if ! defined key_pisces_npzd
             if (.not.got_tbry(iCAL_)) tbry_west(j,k,iCAL_)=0.01
+            if (.not.got_tbry(iPO4_)) tbry_west(j,k,iPO4_)=xno3/16.
+            if (.not.got_tbry(iSIL_)) tbry_west(j,k,iSIL_)=91.51
             if (.not.got_tbry(iDIA_)) tbry_west(j,k,iDIA_)=0.01
+            if (.not.got_tbry(iMES_)) tbry_west(j,k,iMES_)=0.01
             if (.not.got_tbry(iDSI_)) tbry_west(j,k,iDSI_)=1.5e-3
             if (.not.got_tbry(iBFE_)) tbry_west(j,k,iBFE_)=1.e-2*5.e-6
             if (.not.got_tbry(iGOC_)) tbry_west(j,k,iGOC_)=0.01
@@ -3363,8 +3412,8 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iLGW_)) tbry_west(j,k,iLGW_)=1.e-3
 #   endif
 #   ifdef key_pisces_quota
-!            if (.not.got_tbry(iDON_)) tbry_west(j,k,iDON_)=5.
-!            if (.not.got_tbry(iDOP_)) tbry_west(j,k,iDOP_)=5.
+            if (.not.got_tbry(iDON_)) tbry_west(j,k,iDON_)=5.
+            if (.not.got_tbry(iDOP_)) tbry_west(j,k,iDOP_)=5.
             if (.not.got_tbry(iPON_)) tbry_west(j,k,iPON_)=1.e-2
             if (.not.got_tbry(iPOP_)) tbry_west(j,k,iPOP_)=1.e-2
             if (.not.got_tbry(iNPH_)) tbry_west(j,k,iNPH_)=1.e-2
@@ -3444,12 +3493,20 @@ C$    integer  trd, omp_get_thread_num
      &           +0.0003099*SiO4**3
             if (.not.got_tbry(iNO3_)) tbry_east(j,k,iNO3_)=xno3
 #  ifdef PISCES
+            if (.not.got_tbry(iDIC_)) tbry_east(j,k,iDIC_)=2150.
+            if (.not.got_tbry(iTAL_)) tbry_east(j,k,iTAL_)=2350.
+            if (.not.got_tbry(iOXY_)) tbry_east(j,k,iOXY_)=200.
             if (.not.got_tbry(iPOC_)) tbry_east(j,k,iPOC_)=0.01
             if (.not.got_tbry(iPHY_)) tbry_east(j,k,iPHY_)=0.01
             if (.not.got_tbry(iZOO_)) tbry_east(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_light
+            if (.not.got_tbry(iDOC_)) tbry_east(j,k,iDOC_)=5.
+            if (.not.got_tbry(iFER_)) tbry_east(j,k,iFER_)=6.e-4    
+#   if ! defined key_pisces_npzd
             if (.not.got_tbry(iCAL_)) tbry_east(j,k,iCAL_)=0.01
+            if (.not.got_tbry(iPO4_)) tbry_east(j,k,iPO4_)=xno3/16.
+            if (.not.got_tbry(iSIL_)) tbry_east(j,k,iSIL_)=91.51
             if (.not.got_tbry(iDIA_)) tbry_east(j,k,iDIA_)=0.01
+            if (.not.got_tbry(iMES_)) tbry_east(j,k,iMES_)=0.01
             if (.not.got_tbry(iDSI_)) tbry_east(j,k,iDSI_)=1.5e-3
             if (.not.got_tbry(iBFE_)) tbry_east(j,k,iBFE_)=1.e-2*5.e-6
             if (.not.got_tbry(iGOC_)) tbry_east(j,k,iGOC_)=0.01
@@ -3465,8 +3522,8 @@ C$    integer  trd, omp_get_thread_num
             if (.not.got_tbry(iLGW_)) tbry_east(j,k,iLGW_)=1.e-3
 #   endif
 #   ifdef key_pisces_quota
-!            if (.not.got_tbry(iDON_)) tbry_east(j,k,iDON_)=5.
-!            if (.not.got_tbry(iDOP_)) tbry_east(j,k,iDOP_)=5.
+            if (.not.got_tbry(iDON_)) tbry_east(j,k,iDON_)=5.
+            if (.not.got_tbry(iDOP_)) tbry_east(j,k,iDOP_)=5.
             if (.not.got_tbry(iPON_)) tbry_east(j,k,iPON_)=1.e-2
             if (.not.got_tbry(iPOP_)) tbry_east(j,k,iPOP_)=1.e-2
             if (.not.got_tbry(iNPH_)) tbry_east(j,k,iNPH_)=1.e-2
@@ -3546,29 +3603,37 @@ C$    integer  trd, omp_get_thread_num
      &            +0.0003099*SiO4**3
              if (.not.got_tbry(iNO3_)) tbry_north(j,k,iNO3_)=xno3
 #  ifdef PISCES
-             if (.not.got_tbry(iPOC_)) tbry_north(j,k,iPOC_)=0.01
-             if (.not.got_tbry(iPHY_)) tbry_north(j,k,iPHY_)=0.01
-             if (.not.got_tbry(iZOO_)) tbry_north(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_light
-             if (.not.got_tbry(iCAL_)) tbry_north(j,k,iCAL_)=0.01
-             if (.not.got_tbry(iDIA_)) tbry_north(j,k,iDIA_)=0.01
-             if (.not.got_tbry(iDSI_)) tbry_north(j,k,iDSI_)=1.5e-3
-             if (.not.got_tbry(iBFE_)) tbry_north(j,k,iBFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iGOC_)) tbry_north(j,k,iGOC_)=0.01
-             if (.not.got_tbry(iSFE_)) tbry_north(j,k,iSFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iDFE_)) tbry_north(j,k,iDFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iGSI_)) tbry_north(j,k,iGSI_)=1.e-2*0.15
-             if (.not.got_tbry(iNFE_)) tbry_north(j,k,iNFE_)=1.e-2*5e-6
-             if (.not.got_tbry(iNCH_)) tbry_north(j,k,iNCH_)=1.e-2*12./55.
-             if (.not.got_tbry(iDCH_)) tbry_north(j,k,iDCH_)=1.e-2*12./55.
-             if (.not.got_tbry(iNH4_)) tbry_north(j,k,iNH4_)=1.e-2
-#   endif
+            if (.not.got_tbry(iDIC_)) tbry_north(j,k,iDIC_)=2150.
+            if (.not.got_tbry(iTAL_)) tbry_north(j,k,iTAL_)=2350.
+            if (.not.got_tbry(iOXY_)) tbry_north(j,k,iOXY_)=200.
+            if (.not.got_tbry(iPOC_)) tbry_north(j,k,iPOC_)=0.01
+            if (.not.got_tbry(iPHY_)) tbry_north(j,k,iPHY_)=0.01
+            if (.not.got_tbry(iZOO_)) tbry_north(j,k,iZOO_)=0.01
+            if (.not.got_tbry(iDOC_)) tbry_north(j,k,iDOC_)=5.
+            if (.not.got_tbry(iFER_)) tbry_north(j,k,iFER_)=6.e-4
+#   if ! defined key_pisces_npzd
+            if (.not.got_tbry(iCAL_)) tbry_north(j,k,iCAL_)=0.01
+            if (.not.got_tbry(iPO4_)) tbry_north(j,k,iPO4_)=xno3/16.
+            if (.not.got_tbry(iSIL_)) tbry_north(j,k,iSIL_)=91.51
+            if (.not.got_tbry(iDIA_)) tbry_north(j,k,iDIA_)=0.01
+            if (.not.got_tbry(iMES_)) tbry_north(j,k,iMES_)=0.01
+            if (.not.got_tbry(iDSI_)) tbry_north(j,k,iDSI_)=1.5e-3
+            if (.not.got_tbry(iBFE_)) tbry_north(j,k,iBFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iGOC_)) tbry_north(j,k,iGOC_)=0.01
+            if (.not.got_tbry(iSFE_)) tbry_north(j,k,iSFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iDFE_)) tbry_north(j,k,iDFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iGSI_)) tbry_north(j,k,iGSI_)=1.e-2*0.15
+            if (.not.got_tbry(iNFE_)) tbry_north(j,k,iNFE_)=1.e-2*5e-6
+            if (.not.got_tbry(iNCH_)) tbry_north(j,k,iNCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iDCH_)) tbry_north(j,k,iDCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iNH4_)) tbry_north(j,k,iNH4_)=1.e-2
+#   endif             
 #   ifdef key_ligand
              if (.not.got_tbry(iLGW_)) tbry_north(j,k,iLGW_)=1.e-3
 #   endif
 #   ifdef key_pisces_quota
-!             if (.not.got_tbry(iDON_)) tbry_north(j,k,iDON_)=5.
-!             if (.not.got_tbry(iDOP_)) tbry_north(j,k,iDOP_)=5.
+             if (.not.got_tbry(iDON_)) tbry_north(j,k,iDON_)=5.
+             if (.not.got_tbry(iDOP_)) tbry_north(j,k,iDOP_)=5.
              if (.not.got_tbry(iPON_)) tbry_north(j,k,iPON_)=1.e-2
              if (.not.got_tbry(iPOP_)) tbry_north(j,k,iPOP_)=1.e-2
              if (.not.got_tbry(iNPH_)) tbry_north(j,k,iNPH_)=1.e-2
@@ -3648,29 +3713,37 @@ C$    integer  trd, omp_get_thread_num
      &            +0.0003099*SiO4**3
              if (.not.got_tbry(iNO3_)) tbry_south(j,k,iNO3_)=xno3
 #  ifdef PISCES
-             if (.not.got_tbry(iPOC_)) tbry_south(j,k,iPOC_)=0.01
-             if (.not.got_tbry(iPHY_)) tbry_south(j,k,iPHY_)=0.01
-             if (.not.got_tbry(iZOO_)) tbry_south(j,k,iZOO_)=0.01
-#   if ! defined key_pisces_light
-             if (.not.got_tbry(iCAL_)) tbry_south(j,k,iCAL_)=0.01
-             if (.not.got_tbry(iDIA_)) tbry_south(j,k,iDIA_)=0.01
-             if (.not.got_tbry(iDSI_)) tbry_south(j,k,iDSI_)=1.5e-3
-             if (.not.got_tbry(iBFE_)) tbry_south(j,k,iBFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iGOC_)) tbry_south(j,k,iGOC_)=0.01
-             if (.not.got_tbry(iSFE_)) tbry_south(j,k,iSFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iDFE_)) tbry_south(j,k,iDFE_)=1.e-2*5.e-6
-             if (.not.got_tbry(iGSI_)) tbry_south(j,k,iGSI_)=1.e-2*0.15
-             if (.not.got_tbry(iNFE_)) tbry_south(j,k,iNFE_)=1.e-2*5e-6
-             if (.not.got_tbry(iNCH_)) tbry_south(j,k,iNCH_)=
-     &                                                    1.e-2*12./55.
-             if (.not.got_tbry(iDCH_)) tbry_south(j,k,iDCH_)=
-     &                                                    1.e-2*12./55.
-             if (.not.got_tbry(iNH4_)) tbry_south(j,k,iNH4_)=1.e-2
+            if (.not.got_tbry(iDIC_)) tbry_south(j,k,iDIC_)=2150.
+            if (.not.got_tbry(iTAL_)) tbry_south(j,k,iTAL_)=2350.
+            if (.not.got_tbry(iOXY_)) tbry_south(j,k,iOXY_)=200.
+            if (.not.got_tbry(iPOC_)) tbry_south(j,k,iPOC_)=0.01
+            if (.not.got_tbry(iPHY_)) tbry_south(j,k,iPHY_)=0.01
+            if (.not.got_tbry(iZOO_)) tbry_south(j,k,iZOO_)=0.01
+            if (.not.got_tbry(iDOC_)) tbry_south(j,k,iDOC_)=5.
+            if (.not.got_tbry(iFER_)) tbry_south(j,k,iFER_)=6.e-4
+#   if ! defined key_pisces_npzd
+            if (.not.got_tbry(iCAL_)) tbry_south(j,k,iCAL_)=0.01
+            if (.not.got_tbry(iPO4_)) tbry_south(j,k,iPO4_)=xno3/16.
+            if (.not.got_tbry(iSIL_)) tbry_south(j,k,iSIL_)=91.51
+            if (.not.got_tbry(iDIA_)) tbry_south(j,k,iDIA_)=0.01
+            if (.not.got_tbry(iMES_)) tbry_south(j,k,iMES_)=0.01
+            if (.not.got_tbry(iDSI_)) tbry_south(j,k,iDSI_)=1.5e-3
+            if (.not.got_tbry(iBFE_)) tbry_south(j,k,iBFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iGOC_)) tbry_south(j,k,iGOC_)=0.01
+            if (.not.got_tbry(iSFE_)) tbry_south(j,k,iSFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iDFE_)) tbry_south(j,k,iDFE_)=1.e-2*5.e-6
+            if (.not.got_tbry(iGSI_)) tbry_south(j,k,iGSI_)=1.e-2*0.15
+            if (.not.got_tbry(iNFE_)) tbry_south(j,k,iNFE_)=1.e-2*5e-6
+            if (.not.got_tbry(iNCH_)) tbry_south(j,k,iNCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iDCH_)) tbry_south(j,k,iDCH_)=1.e-2*12./55.
+            if (.not.got_tbry(iNH4_)) tbry_south(j,k,iNH4_)=1.e-2
 #   endif
 #   ifdef key_ligand
              if (.not.got_tbry(iLGW_)) tbry_south(j,k,iLGW_)=1.e-3
 #   endif
 #   ifdef key_pisces_quota
+             if (.not.got_tbry(iDON_)) tbry_south(j,k,iDON_)=5.
+             if (.not.got_tbry(iDOP_)) tbry_south(j,k,iDOP_)=5.
              if (.not.got_tbry(iPON_)) tbry_south(j,k,iPON_)=1.e-2
              if (.not.got_tbry(iPOP_)) tbry_south(j,k,iPOP_)=1.e-2
              if (.not.got_tbry(iNPH_)) tbry_south(j,k,iNPH_)=1.e-2

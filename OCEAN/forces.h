@@ -513,13 +513,17 @@
       real wdrx(GLOBAL_2D_ARRAY)
       real wdre(GLOBAL_2D_ARRAY)
       common /forces_whrm/whrm /forces_wepb/wepb
-     &       /forces_wdrx/wdrx /forces_wdre/wdre
-     &       /forces_wepd/wepd
+      common /forces_wdrx/wdrx /forces_wdre/wdre
+      common /forces_wepd/wepd
       real wlm(GLOBAL_2D_ARRAY)
       common /forces_wlm/wlm
 # ifdef WAVE_ROLLER
       real wepr(GLOBAL_2D_ARRAY)
       common /forces_wepr/wepr
+#  ifdef WKB_WWAVE
+      real wepb0(GLOBAL_2D_ARRAY)
+      common /forces_wepb0/wepb0
+#  endif
 # endif
 !
 !--------------------------------------------------------------------
@@ -710,17 +714,28 @@
 
 #ifdef WAVE_MAKER
       integer Nfrq, Ndir
-      parameter (Nfrq=320, Ndir=50)
-      real wf_bry(Nfrq), wk_bry(Nfrq), wa_bry(Nfrq)
-      real wd_bry(Ndir), wa_bry_d(Ndir)
-      common /wave_maker/ wf_bry, wk_bry, wa_bry
-      common /wave_maker/ wd_bry, wa_bry_d
 # ifdef WAVE_MAKER_DSPREAD
-      real wpha_bry(Nfrq,Ndir)
+      integer Nfrq0
+      parameter (Nfrq0=50, Ndir=31, Nfrq=Nfrq0*Ndir)
 # else
-      real wpha_bry(Nfrq)
+      parameter (Nfrq=50, Ndir=31)
 # endif
+      real wf_bry(Nfrq), wk_bry(Nfrq), wa_bry(Nfrq)
+      real wd_bry(Nfrq), wa_bry_d(Nfrq), wa_bry_f(Nfrq)
+      real wkx_bry(Nfrq), wky_bry(Nfrq)
+      real wpha_bry(Nfrq)
+      common /wave_maker/ wf_bry, wk_bry, wa_bry
+      common /wave_maker_d/ wd_bry, wa_bry_d
+      common /wave_maker_f/ wa_bry_f
+      common /wave_maker_k/ wkx_bry, wky_bry
       common /wave_maker_pha/ wpha_bry
+
+      real wmaker_amp, wmaker_prd, wmaker_dir
+      real wmaker_dsp, wmaker_fsp
+      common /wave_maker_par/ wmaker_amp, wmaker_prd, wmaker_dir
+      common /wave_maker_par/ wmaker_dsp, wmaker_fsp 
+      real coswd,sinwd,coswds,sinwds
+      common /wave_maker_cos/ coswd,sinwd,coswds,sinwds
 #endif
 
 #if defined IN_REAL_WIND || defined IN_REAL_STFLUX
