@@ -1533,26 +1533,7 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
         indx = indx + 1
         if (outMust(indx)) then
           do k=1,nk_nivsed_out
-#           if defined BLOOM && defined key_BLOOM_insed
-              if (itrc .gt. nvpc .AND. itrc .le. nvp) then
-                do j=0,Mm+1
-                  do i=0,Lm+1
-                    if(rmask_wet(i,j).eq.1) then
-                      if(c_sedtot(k,i,j) .gt. 0.0) then
-!                     ... in the sediment, writes the particulate variables in mmole/kgSed
-                        workrsed(i,j,k)=var3D_cvsed(k,i,j,itrc)/c_sedtot(k,i,j)
-                      endif
-                    else
-                      workrsed(i,j,k)=0.0
-                    endif
-                  enddo
-                enddo
-              else
-                workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
-              endif
-#           else
-              workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
-#           endif
+            workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
           enddo
           workrsed1=workrsed(:,:,:)
           call fillvalue3d_must(workrsed1,ncidhis,hisMust(indx),

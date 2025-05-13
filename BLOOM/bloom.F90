@@ -2926,7 +2926,6 @@ PO2_sat = 100.*max(p_O2_Threshold,c(iv_oxygen))/O2_sat_deb
              ! -------------------
              ! cycle de l azote
                ! fonctions limitantes
-               cvO2old=cs(iv_oxygen)
 
 #ifdef GAMELAG
                IF(cs(iv_oxygen).ge.p_O2SED_Threshold) THEN
