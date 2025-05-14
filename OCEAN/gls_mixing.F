@@ -266,14 +266,6 @@
 
 #endif
 
-# ifdef STOGEN
-      if (ln_stogen .and. ln_stogls) then
-        sto_p2d=1.0
-        sto_b2d=1.0
-        call sto_gls_pb ( sto_p2d , sto_b2d )
-      endif
-# endif
-
 !
 !--------------------------------------------------------------------
 ! Compute extended bounds (necessary because of
@@ -659,8 +651,12 @@
 
 # if defined STOGEN
                   if (ln_stogen .and. ln_stogls) then
-                    Sprod = Sprod * sto_p2d(i,j)
-                    Bprod = Bprod * sto_b2d(i,j)
+                    IF (ln_Sprod) Sprod = Sprod * sto_gls_s2d(i,j)
+                    IF (ln_Bprod) Bprod = Bprod * sto_gls_b2d(i,j)
+                    IF (ln_zlevs) THEN
+                      Sprod = Sprod / ( sto_gls_z3d(i,j,k) * sto_gls_z3d(i,j,k) )
+                      Bprod = Bprod / sto_gls_z3d(i,j,k)
+                    ENDIF
                   endif
 # endif
                   ! Patankar trick to ensure non-negative solutions

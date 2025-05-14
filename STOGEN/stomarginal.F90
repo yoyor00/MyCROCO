@@ -53,11 +53,11 @@ CONTAINS
 
       ! Set index of field to update
       IF (kdim==2) THEN
-         jidx = jpidx2d + jpidxsup2d
+         jidx = jpidxlast2d
       ELSEIF (kdim==3) THEN
-         jidx = jpidx3d + jpidxsup3d
+         jidx = jpidxlast3d
       ELSEIF (kdim==0) THEN
-         jidx = jpidx0d + jpidxsup0d
+         jidx = jpidxlast0d
       ENDIF
 
       ! apply transformation according to requested distribution

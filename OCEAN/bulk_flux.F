@@ -32,7 +32,6 @@
       !=======================================================================
       !
 # ifdef STOGEN
-      USE stobulk         ! Stochastic parameterization of bulk formulation
       USE stoarray        ! Stochastic arrays and options
       USE stoalloc        ! Stochastic working arrays
 # endif
@@ -663,6 +662,11 @@
           aer(i,j)  = rhoAir*delW(1)
           Cd        = (Wstar(1)/ddelW(1))**2
           cer(i,j)  = Cd
+#  ifdef STOGEN
+          if (ln_stogen .and. ln_stobulk) then
+            cer(i,j)  = cer(i,j) * sto_bulk_cd(i,j)
+          endif
+#  endif
 #  ifdef CFB_STRESS
           stau(i,j) = cfb_slope * delW(1) + cfb_offset
 #  endif
@@ -705,14 +709,6 @@
 !  Compute kinematic, surface wind stress (m2/s2).
 !======================================================================
 !
-#   ifdef STOGEN
-      if (ln_stogen .and. ln_stobulk) then
-!       apply multiplicative noise to Cd
-        sto_xi2d(:,:)=1.0
-        call sto_bulk_perturb ( sto_xi2d )
-        call sto_bulk_perturb ( cer, array_type='private' )
-      endif
-#   endif
 !$acc loop seq
       do j=jmin,jmax
 !$acc loop seq

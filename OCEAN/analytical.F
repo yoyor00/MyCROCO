@@ -347,7 +347,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 #ifdef STOGEN
       USE stostress         ! Stochastic parameterization of bulk formulation
-      USE stoarray        ! Stochastic arrays and options
+      USE stoarray          ! Stochastic arrays and options
       USE stoalloc          ! Stochastic working arrays
 #endif
       implicit none
@@ -386,11 +386,11 @@ C$    integer  trd, omp_get_thread_num
 !       First construct a structure fonction for the noise ...
         do j=JstrR,JendR
           do i=IstrR,IendR
-            sto_xi2d(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
+            sto_stress_factor(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
           enddo
         enddo
 !       ... then apply noise
-        call sto_stress( sustr, sto_xi2d )
+        call sto_stress( sustr, sto_stress_factor )
       endif
 #  endif
 # elif defined SINGLE_COLUMN && defined KATO_PHILIPS

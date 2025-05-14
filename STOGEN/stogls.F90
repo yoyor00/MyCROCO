@@ -16,18 +16,22 @@ MODULE stogls
     PRIVATE
 
     ! Index of stochastic field used for the production/destruction terms
-    INTEGER, SAVE :: jstogls_p
-    INTEGER, SAVE :: jstogls_b
+    INTEGER, PUBLIC, SAVE :: jstogls_s
+    INTEGER, PUBLIC, SAVE :: jstogls_b
+    INTEGER, PUBLIC, SAVE :: jstogls_z
 
     ! Parameters of stochastic fields
     ! (default values are replaced by values read in namelist)
+    LOGICAL, PUBLIC, SAVE :: ln_Sprod =.TRUE.  ! perturb TKE production term
+    LOGICAL, PUBLIC, SAVE :: ln_Bprod =.TRUE.  ! perturb TKE destruction term
+    LOGICAL, PUBLIC, SAVE :: ln_zlevs =.FALSE. ! location uncertainty in Sprod and Bprod
     REAL(wp), SAVE :: std  = 0.1   ! standard deviation of the multiplicative noise
-    REAL(wp), SAVE :: tcor = 10.0   ! time correlation (in days)
+    REAL(wp), SAVE :: tcor = 10.0  ! time correlation (in days)
     INTEGER,  SAVE :: npasses = 50 ! number of passes of the horizontal Laplacian filter
     INTEGER,  SAVE :: arorder = 1  ! order of autoregressive process
     INTEGER,  SAVE :: nupdate = 1  ! update frequency of autoregressive process (in time steps)
 
-    PUBLIC sto_gls, sto_gls_init, sto_gls_pb
+    PUBLIC sto_gls, sto_gls_init
 
 CONTAINS
 
@@ -59,58 +63,73 @@ CONTAINS
         CALL read_parameters
 
         ! Request index for a new stochastic array
-        CALL sto_array_request_new(jstogls_p)
-        CALL sto_array_request_new(jstogls_b)
+        IF (ln_Sprod) CALL sto_array_request_new(jstogls_s)
+        IF (ln_Bprod) CALL sto_array_request_new(jstogls_b)
+        IF (ln_zlevs) CALL sto_array_request_new(jstogls_z)
 
         ! Convert tcor parameter from days to time steps
         tcor = tcor * 86400. / ( stodt * nupdate )
 
         ! Set features of the requested stochastic field from parameters
-        ! 1. time structure
-        stofields(jstogls_p)%type_t='arn'
-        stofields(jstogls_b)%type_t='arn'
-        stofields(jstogls_p)%corr_t=tcor
-        stofields(jstogls_b)%corr_t=tcor
-        stofields(jstogls_p)%nar_order=arorder
-        stofields(jstogls_b)%nar_order=arorder
-        stofields(jstogls_p)%nar_update=nupdate
-        stofields(jstogls_b)%nar_update=nupdate
-        ! 2. space structure (with diffusive operator)
-        stofields(jstogls_p)%type_xy='diffusive'
-        stofields(jstogls_b)%type_xy='diffusive'
-        stofields(jstogls_p)%diff_passes=npasses
-        stofields(jstogls_b)%diff_passes=npasses
-        stofields(jstogls_p)%diff_type=1
-        stofields(jstogls_b)%diff_type=1
-        ! An alternative would be to use the kernel approach
-        ! stofields(jstogls_pb)%type_xy='kernel'
-        ! stofields(jstogls_pb)%corr_xy=10.
-        ! 3. modified marginal distribution (here lognormal, with user-defined std)
-        stofields(jstogls_p)%type_variate='lognormal'
-        stofields(jstogls_b)%type_variate='lognormal'
-        stofields(jstogls_p)%ave=1.0
-        stofields(jstogls_b)%ave=1.0
-        stofields(jstogls_p)%std=std
-        stofields(jstogls_b)%std=std
+        IF (ln_Sprod) THEN
+          ! 1. time structure
+          stofields(jstogls_s)%type_t='arn'
+          stofields(jstogls_s)%corr_t=tcor
+          stofields(jstogls_s)%nar_order=arorder
+          stofields(jstogls_s)%nar_update=nupdate
+          ! 2. space structure (with diffusive operator)
+          stofields(jstogls_s)%type_xy='diffusive'
+          stofields(jstogls_s)%diff_passes=npasses
+          stofields(jstogls_s)%diff_type=1
+          ! An alternative would be to use the kernel approach
+          ! stofields(jstogls_s)%type_xy='kernel'
+          ! stofields(jstogls_s)%corr_xy=10.
+          ! 3. modified marginal distribution (here lognormal, with user-defined std)
+          stofields(jstogls_s)%type_variate='lognormal'
+          stofields(jstogls_s)%ave=1.0
+          stofields(jstogls_s)%std=std
+        ENDIF
+
+        IF (ln_Bprod) THEN
+          ! 1. time structure
+          stofields(jstogls_b)%type_t='arn'
+          stofields(jstogls_b)%corr_t=tcor
+          stofields(jstogls_b)%nar_order=arorder
+          stofields(jstogls_b)%nar_update=nupdate
+          ! 2. space structure (with diffusive operator)
+          stofields(jstogls_b)%type_xy='diffusive'
+          stofields(jstogls_b)%diff_passes=npasses
+          stofields(jstogls_b)%diff_type=1
+          ! An alternative would be to use the kernel approach
+          ! stofields(jstogls_b)%type_xy='kernel'
+          ! stofields(jstogls_b)%corr_xy=10.
+          ! 3. modified marginal distribution (here lognormal, with user-defined std)
+          stofields(jstogls_b)%type_variate='lognormal'
+          stofields(jstogls_b)%ave=1.0
+          stofields(jstogls_b)%std=std
+        ENDIF
+
+        IF (ln_zlevs) THEN
+          stofields(jstogls_z)%dim=3
+          ! 1. time structure
+          stofields(jstogls_z)%type_t='arn'
+          stofields(jstogls_z)%corr_t=tcor
+          stofields(jstogls_z)%nar_order=arorder
+          stofields(jstogls_z)%nar_update=nupdate
+          ! 2. space structure (with diffusive operator)
+          stofields(jstogls_z)%type_xy='diffusive'
+          stofields(jstogls_z)%diff_passes=npasses
+          stofields(jstogls_z)%diff_type=1
+          ! An alternative would be to use the kernel approach
+          ! stofields(jstogls_z)%type_xy='kernel'
+          ! stofields(jstogls_z)%corr_xy=10.
+          ! 3. modified marginal distribution (here lognormal, with user-defined std)
+          stofields(jstogls_z)%type_variate='lognormal'
+          stofields(jstogls_z)%ave=1.0
+          stofields(jstogls_z)%std=std
+        ENDIF
 
     END SUBROUTINE sto_gls_init
-
-
-    SUBROUTINE sto_gls_pb( Sprod , Bprod )
-        !!----------------------------------------------------------------------
-        !!
-        !!                     ***  ROUTINE sto_gls_PB  ***
-        !!
-        !! This routine implements perturbation of the production/destruction terms
-        !!
-        !!----------------------------------------------------------------------
-        REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: Sprod
-        REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: Bprod
-
-        Sprod(:,:) = Sprod(:,:) * stofields(jstogls_p)%sto2d(:,:)
-        Bprod(:,:) = Bprod(:,:) * stofields(jstogls_b)%sto2d(:,:)
-
-    END SUBROUTINE sto_gls_pb
 
 
     SUBROUTINE read_parameters
@@ -122,7 +141,7 @@ CONTAINS
         !!----------------------------------------------------------------------
 
         ! Namelist with parameters for this stochastic module
-        NAMELIST/namsto_gls/ tcor, std, npasses, arorder, nupdate
+        NAMELIST/namsto_gls/ ln_Sprod, ln_Bprod, ln_zlevs, tcor, std, npasses, arorder, nupdate
         !!----------------------------------------------------------------------
         INTEGER  ::   ios                            ! Local integer output status for namelist read
 
