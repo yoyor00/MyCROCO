@@ -89,7 +89,7 @@ CONTAINS
       ! Update 2D stochastic arrays
       !
       DO jsto = 1, jpsto2d
-        IF (stofields(jsto)%type_t /= 'constant') THEN
+        IF (stofields(sto2d_idx(jsto))%type_t /= 'constant') THEN
           ! Number of time steps between update of AR processes
           nupdate = stofields(sto2d_idx(jsto))%nar_update
           ! Compute position in update interval
@@ -112,7 +112,7 @@ CONTAINS
             ! Forward stochastic array in time
             jidx0 = 1 ; jidx1 = 1
             CALL time_forward_2d( jsto, jidx0, jidx1)
-            IF (jpidxsup2d>0) sto2d(:,:,jpidx2d+jpidxsup2d,jsto) = sto2d(:,:,jidx1,jsto)
+            IF (jpidxlast2d>1) sto2d(:,:,jpidxlast2d,jsto) = sto2d(:,:,jidx1,jsto)
           ENDIF
           ! Transform to requested marginal distributions
           IF (jpidxsup2d>0) THEN
@@ -125,7 +125,7 @@ CONTAINS
       ! Update 3D stochastic arrays
       !
       DO jsto = 1, jpsto3d
-        IF (stofields(jsto)%type_t /= 'constant') THEN
+        IF (stofields(sto3d_idx(jsto))%type_t(1:8) /= 'constant') THEN
           ! Number of time steps between update of AR processes
           nupdate = stofields(sto3d_idx(jsto))%nar_update
           ! Compute position in update interval
@@ -148,7 +148,7 @@ CONTAINS
             ! Forward stochastic array in time
             jidx0 = 1 ; jidx1 = 1
             CALL time_forward_3d( jsto, jidx0, jidx1)
-            IF (jpidxsup3d>0) sto3d(:,:,:,jpidx3d+jpidxsup3d,jsto) = sto3d(:,:,:,jidx1,jsto)
+            IF (jpidxlast3d>1) sto3d(:,:,:,jpidxlast3d,jsto) = sto3d(:,:,:,jidx1,jsto)
           ENDIF
           ! Transform to requested marginal distributions
           IF (jpidxsup3d>0) THEN
@@ -161,7 +161,7 @@ CONTAINS
       ! Update 0D stochastic numbers
       !
       DO jsto = 1, jpsto0d
-        IF (stofields(jsto)%type_t /= 'constant') THEN
+        IF (stofields(sto0d_idx(jsto))%type_t(1:8) /= 'constant') THEN
           ! Number of time steps between update of AR processes
           nupdate = stofields(sto0d_idx(jsto))%nar_update
           ! Compute position in update interval
@@ -184,7 +184,7 @@ CONTAINS
             ! Forward stochastic array in time
             jidx0 = 1 ; jidx1 = 1
             CALL time_forward_0d( jsto, jidx0, jidx1)
-            IF (jpidxsup0d>0) sto0d(jpidx0d+jpidxsup0d,jsto) = sto0d(jidx1,jsto)
+            IF (jpidxlast0d>1) sto0d(jpidxlast0d,jsto) = sto0d(jidx1,jsto)
           ENDIF
           ! Transform to requested marginal distributions
           IF (jpidxsup0d>0) THEN
@@ -300,6 +300,7 @@ CONTAINS
          ENDDO
          ! Transform to requested marginal distributions
          IF (jpidxsup2d>0) THEN
+            sto2d(:,:,jpidxlast2d,jsto) = sto2d(:,:,jpidx2d,jsto)
             jstoidx = sto2d_idx(jsto)
             CALL sto_marginal(jstoidx)
          ENDIF
@@ -316,6 +317,7 @@ CONTAINS
          ENDDO
          ! Transform to requested marginal distributions
          IF (jpidxsup3d>0) THEN
+            sto3d(:,:,:,jpidxlast3d,jsto) = sto3d(:,:,:,jpidx3d,jsto)
             jstoidx = sto3d_idx(jsto)
             CALL sto_marginal(jstoidx)
          ENDIF
@@ -330,6 +332,7 @@ CONTAINS
          ENDDO
          ! Transform to requested marginal distributions
          IF (jpidxsup0d>0) THEN
+            sto0d(jpidxlast0d,jsto) = sto0d(jpidx0d,jsto)
             jstoidx = sto0d_idx(jsto)
             CALL sto_marginal(jstoidx)
          ENDIF
@@ -561,7 +564,7 @@ CONTAINS
       INTEGER :: jidxset
       REAL(wp) :: a, b
 
-      jidxset = jpidx2d + jpidxsup2d
+      jidxset = jpidxlast2d
       a = rr ; b = 1._wp - rr
 
       sto2d(:,:,jidxset,jsto) = b * sto2d(:,:,jidx0,jsto) + a * sto2d(:,:,jidx1,jsto)
@@ -576,7 +579,7 @@ CONTAINS
       INTEGER :: jidxset
       REAL(wp) :: a, b
 
-      jidxset = jpidx3d + jpidxsup3d
+      jidxset = jpidxlast3d
       a = rr ; b = 1._wp - rr
 
       sto3d(:,:,:,jidxset,jsto) = b * sto3d(:,:,:,jidx0,jsto) + a * sto3d(:,:,:,jidx1,jsto)
@@ -591,7 +594,7 @@ CONTAINS
       INTEGER :: jidxset
       REAL(wp) :: a, b
 
-      jidxset = jpidx0d + jpidxsup0d
+      jidxset = jpidxlast0d
       a = rr ; b = 1._wp - rr
 
       sto0d(jidxset,jsto) = b * sto0d(jidx0,jsto) + a * sto0d(jidx1,jsto)
