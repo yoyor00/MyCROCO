@@ -1,4 +1,8 @@
 MODULE storng_testmpi
+
+#include "cppdefs.h"
+#if defined STOGEN
+
    !!======================================================================
    !!                       ***  MODULE  storng_test ***
    !! Random number generator, used only to test reproducibility
@@ -213,5 +217,6 @@ CONTAINS
 
    END FUNCTION kiss_normal_test
 
+#endif /* if defined STOGEN */
 
 END MODULE storng_testmpi
