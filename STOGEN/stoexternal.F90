@@ -294,7 +294,7 @@ C$    integer  trd, omp_get_thread_num
 # ifdef MPI 
         mjg(jj1) = jj1 + jj * Mm
 # else
-       mjg(jj1) = jj1
+        mjg(jj1) = jj1
 # endif
       ENDDO
 

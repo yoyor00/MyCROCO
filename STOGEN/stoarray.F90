@@ -18,6 +18,7 @@ MODULE stoarray
    !!----------------------------------------------------------------------
    USE stoexternal , only : wp, lc, jpi, jpj, jpk, numout, &
    &                        lwm, lwp, numnam_ref, numond, ctl_nam
+   USE stowhite , only : c_rngtype, c_normal_algo
 
    IMPLICIT NONE
    PRIVATE
@@ -37,8 +38,10 @@ MODULE stoarray
    LOGICAL, PUBLIC           :: ln_rstseed = .FALSE. ! read seed of RNG from restart file
    CHARACTER(len=lc), PUBLIC :: cn_storst_in = "restart_sto"     ! suffix of sto restart name (input)
    CHARACTER(len=lc), PUBLIC :: cn_storst_out = "restart_sto"    ! suffix of sto restart name (output)
-   CHARACTER(len=lc), PUBLIC :: cn_xi2d = "none"     ! field to save as xi2d in history file
-   CHARACTER(len=lc), PUBLIC :: cn_xi3d = "none"     ! field to save as xi2d in history file
+   CHARACTER(len=lc), PUBLIC :: cn_xi2d = 'none'     ! field to save as xi2d in history file
+   CHARACTER(len=lc), PUBLIC :: cn_xi3d = 'none'     ! field to save as xi2d in history file
+   CHARACTER(len=8),  PUBLIC :: cn_rngtype = 'default'     ! random number generator (kiss32, kiss64, shr3, testmpi)
+   CHARACTER(len=8),  PUBLIC :: cn_normal_algo = 'default' ! algorithm to obtain normal numbers (polar, ziggurat)
 
    ! Variables used for the management of restart files
    INTEGER                   :: numstor, numstow     ! logical unit for restart (read and write)
@@ -148,7 +151,7 @@ CONTAINS
       ! Namelist with general parameters for stochastic modules
       NAMELIST/namsto/ ln_stogen, ln_stobulk, ln_stostress, ln_stogls, &
                      & ln_rststo, ln_rstseed, cn_storst_in, cn_storst_out, &
-                     & cn_xi2d, cn_xi3d
+                     & cn_xi2d, cn_xi3d, cn_rngtype, cn_normal_algo
       !!----------------------------------------------------------------------
       INTEGER  ::   ios                            ! Local integer output status for namelist read
 
@@ -163,16 +166,33 @@ CONTAINS
          WRITE(numout,*) 'sto_param_init : stochastic parameterization'
          WRITE(numout,*) '~~~~~~~~~~~~~~'
          WRITE(numout,*) '   Namelist namsto : stochastic parameterization'
-         WRITE(numout,*) '      apply stochastic parameterization       ln_stogen     = ', ln_stogen
-         WRITE(numout,*) '            stochastic bulk fluxes            ln_stobulk    = ', ln_stobulk
-         WRITE(numout,*) '            stochastic wind stress (non-bulk) ln_stostress  = ', ln_stostress
-         WRITE(numout,*) '            stochastic vertical mixing        ln_stogls     = ', ln_stogls
-         WRITE(numout,*) '      restart stochastic parameters           ln_rststo     = ', ln_rststo
-         WRITE(numout,*) '      read seed of RNG from restart file      ln_rstseed    = ', ln_rstseed
-         WRITE(numout,*) '      suffix of sto restart name (input)      cn_storst_in  = ', trim(cn_storst_in)
-         WRITE(numout,*) '      suffix of sto restart name (output)     cn_storst_out = ', trim(cn_storst_out)
+         WRITE(numout,*) '      apply stochastic parameterization       ln_stogen      = ', ln_stogen
+         WRITE(numout,*) '            stochastic bulk fluxes            ln_stobulk     = ', ln_stobulk
+         WRITE(numout,*) '            stochastic wind stress (non-bulk) ln_stostress   = ', ln_stostress
+         WRITE(numout,*) '            stochastic vertical mixing        ln_stogls      = ', ln_stogls
+         WRITE(numout,*) '      restart stochastic parameters           ln_rststo      = ', ln_rststo
+         WRITE(numout,*) '      read seed of RNG from restart file      ln_rstseed     = ', ln_rstseed
+         WRITE(numout,*) '      suffix of sto restart name (input)      cn_storst_in   = ', trim(cn_storst_in)
+         WRITE(numout,*) '      suffix of sto restart name (output)     cn_storst_out  = ', trim(cn_storst_out)
+         WRITE(numout,*) '      name of field that is stored as xi2d    cn_xi2d        = ', trim(cn_xi2d)
+         WRITE(numout,*) '      name of field that is stored as xi3d    cn_xi3d        = ', trim(cn_xi3d)
+         WRITE(numout,*) '      name of random number generator used    cn_rngtype     = ', trim(cn_rngtype)
+         WRITE(numout,*) '      algorithm to compute normal numbers     cn_normal_algo = ', trim(cn_normal_algo)
          WRITE(numout,*) ' '
       ENDIF
+
+      ! Modify random number generator in stowhite according to namelist
+      IF (trim(cn_rngtype) /= 'default' ) THEN
+        c_rngtype = cn_rngtype
+      ENDIF
+
+      ! Modify algorithm to compute normal numbers in stowhite according to namelist
+      IF (trim(cn_normal_algo) /= 'default' ) THEN
+        c_normal_algo = cn_normal_algo
+      ENDIF
+
+      ! Force to 'polar' algorithm with 'testmpi'
+      IF (trim(cn_rngtype) == 'testmpi' ) c_normal_algo = 'polar'
 
    END SUBROUTINE sto_param_init
 

@@ -16,6 +16,9 @@
 # ifdef STOGEN
       use stoalloc                      ! do we output stochastic fields
 # endif
+# ifdef ENSEMBLE
+      use ensmpi , only : ln_ens_rst_in ! do we start from an ensemble of restart
+# endif
 
 !     implicit none
 
@@ -459,6 +462,13 @@
           lstr=lenstr(fname)
 #if defined MPI && defined PARALLEL_FILES
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+#endif
+#ifdef ENSEMBLE
+          if (ln_ens_rst_in.OR.(nrrec.lt.0)) then
+            nrrec = abs(nrrec)
+            fname=cmember//fname
+            lstr=lenstr(fname)
+          endif
 #endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)

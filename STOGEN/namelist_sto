@@ -22,6 +22,8 @@
    cn_storst_out = "restart_sto_out.nc" ! output restart file for stochastic parameters
    cn_xi2d = "bulk_cd"   ! name of field to save as xi2d in history file (if requested in croco.in)
    cn_xi3d = "gls_zlevs" ! name of field to save as xi3d in history file (if requested in croco.in)
+   cn_rngtype = 'testmpi'     ! name of random number generator to use (default, kiss32, kiss64, shr3, testmpi)
+   cn_normal_algo = 'default' ! algorithm to obtain normal numbers (default, polar, ziggurat)
 /
 !-----------------------------------------------------------------------
 &namsto_bulk   !   parameters for stochastic bulk formulation
