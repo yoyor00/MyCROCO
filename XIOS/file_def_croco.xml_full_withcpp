@@ -251,6 +251,7 @@
       <field field_ref="T_Vmix" name="T_vmix"  />
       <field field_ref="T_Forc" name="T_forc" />
 #  ifdef SALINITY
+
       <field field_ref="S_rate" name="S_rate"  />
       <field field_ref="S_adv" name="S_adv"  />
       <field field_ref="S_Hmix" name="S_hmix"  />
@@ -259,6 +260,7 @@
 #  endif
 #  ifdef DIAGNOSTICS_TS_MLD
 #  if defined TEMPERATURE
+
       <field field_ref="T_rate_mld" name="T_rate_mld"  />
       <field field_ref="T_adv_mld" name="T_adv_mld"  />
       <field field_ref="T_Hmix_mld" name="T_hmix_mld"  />
@@ -271,6 +273,7 @@
 #  endif
 #  endif
 #  ifdef SALINITY
+
       <field field_ref="S_rate_mld" name="S_rate_mld"  />
       <field field_ref="S_adv_mld" name="S_adv_mld"  />
       <field field_ref="S_Hmix_mld" name="S_hmix_mld"  />
@@ -280,6 +283,7 @@
       <field field_ref="S_aver_mld" name="S_aver_mld"  />
 #  endif
 #  ifdef DIAGNOSTICS_TS_MLD_CRIT
+
       <field field_ref="T_rate_mld2" name="T_rate_mld2"  />
       <field field_ref="T_adv_mld2" name="T_adv_mld2"  />
       <field field_ref="T_Hmix_mld2" name="T_hmix_mld2"  />
