@@ -1241,6 +1241,30 @@ C$OMP BARRIER
 #endif /* ANA_INITIAL */
 
 #ifdef SOLVE3D
+
+!
+!--------------------------------------------------------------------
+!  Initial conditions for MLD CRIT2 & CRIT3
+!--------------------------------------------------------------------
+!
+#if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      do k=1,N
+        do j=JR_RANGE
+          do i=IR_RANGE
+
+              t(i,j,k,1,iCRT2)=20.
+              t(i,j,k,2,iCRT2)=20.
+              t(i,j,k,1,iCRT3)=20.
+              t(i,j,k,2,iCRT3)=20.
+              t(i,j,k,1,iCRT4)=20.
+              t(i,j,k,2,iCRT4)=20.
+            enddo
+          enddo
+        enddo
+
+# endif
+
+
 !
 !--------------------------------------------------------------------
 !  Initial conditions for passive tracer
@@ -1252,7 +1276,7 @@ C$OMP BARRIER
           do i=IR_RANGE
             if (.not.got_tini(itpas)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
-              if (h(i,j).lt.300) then
+              if (h(i,j).lt.300.) then
 !             if (z_r(i,j,k).lt.-800 .and.
 !     &           z_r(i,j,k).gt.-1200 ) then
                 t(i,j,k,1,itpas)=1
@@ -1263,7 +1287,7 @@ C$OMP BARRIER
             if (h(i,j).lt.2) then
               t(i,j,k,1,itpas)=1.
             else
-              t(i,j,k,1,itpas)=0
+              t(i,j,k,1,itpas)=0.
             endif
             t(i,j,k,2,itpas)=t(i,j,k,1,itpas)
 #  elif defined KH_INST
@@ -1285,19 +1309,25 @@ C$OMP BARRIER
             if (k.gt.int(N/2)) then
               t(i,j,k,1,itpas)=1.
             else
-              t(i,j,k,1,itpas)=0
+              t(i,j,k,1,itpas)=0.
             endif
 #  elif defined TIDAL_FLAT || defined ESTUARY
             if (k.gt.int(N/2)) then
               t(i,j,k,1,itpas)=1.
             else
-              t(i,j,k,1,itpas)=0
+              t(i,j,k,1,itpas)=0.
             endif
-#  else
-            if (h(i,j).lt.300) then
+#  elif defined FLASH_RIP
+            if (h(i,j).lt.0.5) then
               t(i,j,k,1,itpas)=1.
             else
-              t(i,j,k,1,itpas)=0
+              t(i,j,k,1,itpas)=0.
+            endif
+#  else
+            if (h(i,j).lt.300.) then
+              t(i,j,k,1,itpas)=1.
+            else
+              t(i,j,k,1,itpas)=0.
             endif
 #  endif
             endif
@@ -1458,7 +1488,7 @@ C$OMP BARRIER
               t(i,j,k,1,iFER_)=6.e-4
               t(i,j,k,2,iFER_)=t(i,j,k,1,iFER_)
             endif
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
             if (.not.got_tini(iCAL_))  then
               t(i,j,k,1,iCAL_)=0.01
               t(i,j,k,2,iCAL_)=t(i,j,k,1,iCAL_)
@@ -1496,9 +1526,9 @@ C$OMP BARRIER
               t(i,j,k,1,iMES_)=0.01
               t(i,j,k,2,iMES_)=t(i,j,k,1,iMES_)
             endif
-            if (.not.got_tini(iBSI_))  then
-              t(i,j,k,1,iBSI_)=1.5e-3
-              t(i,j,k,2,iBSI_)=t(i,j,k,1,iBSI_)
+            if (.not.got_tini(iDSI_))  then
+              t(i,j,k,1,iDSI_)=1.5e-3
+              t(i,j,k,2,iDSI_)=t(i,j,k,1,iDSI_)
             endif
             if (.not.got_tini(iBFE_))  then
               t(i,j,k,1,iBFE_)=1.E-2*5E-6
@@ -1516,9 +1546,9 @@ C$OMP BARRIER
               t(i,j,k,1,iDFE_)=1.e-2*5.E-6
               t(i,j,k,2,iDFE_)=t(i,j,k,1,iDFE_)
             endif
-            if (.not.got_tini(iDSI_))  then
-              t(i,j,k,1,iDSI_)=1.e-2*0.15
-              t(i,j,k,2,iDSI_)=t(i,j,k,1,iDSI_)
+            if (.not.got_tini(iGSI_))  then
+              t(i,j,k,1,iGSI_)=1.e-2*0.15
+              t(i,j,k,2,iGSI_)=t(i,j,k,1,iGSI_)
             endif
             if (.not.got_tini(iNFE_))  then
               t(i,j,k,1,iNFE_)=1.e-2*5.E-6

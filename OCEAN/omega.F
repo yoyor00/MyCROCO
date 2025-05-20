@@ -99,6 +99,9 @@
 # ifdef PSOURCE_MASS
 #  include "sources.h"
 # endif
+# ifdef RAIN_FLUX
+#  include "forces.h"
+# endif
 # ifdef MPI
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
@@ -200,17 +203,30 @@
      &      JstrR.le.jjs .and. jjs.le.JendR .and.
      &      jjs.eq.j) then
           do k=1,N
-            We(iis,jjs,k)=We(iis,jjs,k-1)-                           
-     &                 (Huon(iis+1,jjs,k)-Huon(iis,jjs,k)+            
-     &                  Hvom(iis,jjs+1,k)-Hvom(iis,jjs,k))          
-     &                     -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
-     &                                *om_r(iis,jjs)*on_r(iis,jjs)
-     &                     + Qsrc(is,k)
-
+            FC(iis,k)=FC(iis,k-1) -Huon(iis+1,jjs,k)+Huon(iis,jjs,k)
+     &                            -Hvom(iis,jjs+1,k)+Hvom(iis,jjs,k)
+     &                            -((Hz(iis,jjs,k)-Hz_bak(iis,jjs,k))/dt)
+     &                            *om_r(iis,jjs)*on_r(iis,jjs) 
+     &                            + Qsrc(is,k)
           enddo 
         endif
       enddo
 # endif
+!
+!---------------------------------------------------------
+!  Apply rain water source
+!---------------------------------------------------------
+#ifdef RAIN_FLUX
+      do i=Istr,Iend
+          FC(i,N)=FC(i,N-1)-                           
+     &              (Huon(i+1,j,N)-Huon(i,j,N)+            
+     &              Hvom(i,j+1,N)-Hvom(i,j,N))          
+     &              -((Hz(i,j,N)-Hz_bak(i,j,N))/dt)
+     &                          *om_r(i,j)*on_r(i,j)
+     &              - EmP(i,j)*om_r(i,j)*on_r(i,j)       
+      enddo
+#endif
+
 !
 !---------------------------------------------------------
 !  Subtract vertical velocities of moving S-coordinate 
@@ -226,7 +242,7 @@
           enddo
         enddo
         do i=Istr,Iend
-           We(i,j,N)=0.
+          We(i,j,N)=0.
 # ifdef VADV_ADAPT_IMP
           Wi(i,j,N)=0.
 # endif

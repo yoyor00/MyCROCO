@@ -108,11 +108,6 @@
          fr1(:,:)=0.0
          fr2(:,:)=0.0
          do i=1,tide_nbharmcp
-#   ifdef TIDES_MAS_DBG
-          if(j+jminmpi-1.eq.149) then
-             write(stdout,*) 'i=',nu(i),l_presence(nu(i))
-          end if
-#   endif
           if (l_presence(nu(i))) then
            nol=ide(nu(i))
            ir0=rr0(nu(i))
@@ -121,11 +116,6 @@
            k=esp_corres(int(nol/100000))
            num(k)=num(k)+1
            nn=num(k)
-#   ifdef TIDES_MAS_DBG
-           if(j+jminmpi-1.eq.149) then
-             write(stdout,*) 'ik=',nu(i),ide(nu(i)),i,k,nn
-           end if
-#   endif
            do l=1,2
             rouest(nn,k,j,l)=SSH_Tamp(Istr+l-2,j,i)*100.0
             gouest(nn,k,j,l)=SSH_Tphase(Istr+l-2,j,i)
@@ -137,16 +127,6 @@
            end do
           endif
          end do
-#   ifdef TIDES_MAS_DBG
-        if(j+jminmpi-1.eq.149) then
-            do k=1,8
-             write(stdout,*) 'k=',k,num(k)
-               do kk=1,num(k)
-               write(stdout,*) 'kk=',kk,rouest(kk,k,j,1)
-               end do
-            end do
-        endif
-#   endif
         end do
        ENDIF
 !
@@ -364,28 +344,10 @@
         do j=JstrR,JendR
          do l=1,2
            if(rmask(Istr+l-2,j)/=0) then
-#   ifdef TIDES_MAS_DBG
-            if (j+jminmpi-1 .eq. 149 .and. l .eq. 2) then
-              flag=.true.
-            endif
-#   endif
             call ma7(flag,tempis,hnouest(1,j,l),Etide(Istr+l-2,j),k)
-              flag=.false.
            endif
          end do
         end do
-#   ifdef TIDES_MAS_DBG
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            if (i+iminmpi-1 .eq. 1 .and. j+jminmpi-1 .eq. 149) then
-               write(stdout,*)'etide',Etide(i,j),
-     &            tempis,ian,ijour,imois,
-     &           iheure,iminu,isec,time,cdate,jourmem
-            endif
-         enddo
-        enddo
-#   endif
-!
        end if
 
        if (EASTERN_EDGE) then
@@ -430,11 +392,6 @@
       if (WESTERN_EDGE) then
         do j=JstrV-1,Jend 
           zetabry_west(j)=zetabry_west(j)+Etide(Istr-1,j)
-#    ifdef TIDES_MAS_DBG
-         if (j+jminmpi-1 .eq. 149)
-     &     write(102,*)'Etide',tool_sectodat(time),
-     &     h(Istr-1,j),Etide(Istr-1,j),zetabry_west(j)
-#    endif
 #    ifdef WET_DRY
           if (zetabry_west(j) .lt. Dcrit(Istr-1,j)-h(Istr-1,j)) then
             zetabry_west(j)=Dcrit(Istr-1,j)-h(Istr-1,j)

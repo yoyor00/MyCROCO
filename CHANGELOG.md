@@ -3,18 +3,42 @@
 Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco/-/releases
 
 ## [x.x.x] - xxxx-xx-xx
+
 ### Added
+- Issue #361 : Integration of slight reformulation of zooplankton grazing 
+  according to prey size done in PISCES standard version (#340) into quota version
 
 ### Fixed
 
-- Fixes issue with OBC_COM_M2CHARACT_XXX (modified by mistake into OBC_COM_M2ORLANSKI in u2bc and v2bc) : fixes [#186]((https://gitlab.inria.fr/croco-ocean/croco/-/issues/186)
+- BENCH : do not put report status to True for reference variant to avoid
+  to mark test passed even if not (Issue #342)
+- BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
+- BENCH : remove openmp reproducibility check on SHOREFACE case (Incident #358)
+- BENCH : fix typo AGRIF_2W to AGRIF_2WAY in realist and vortex json files (Issue #368)
+
+- DIAGNOSTICS_EDDY & not XIOS : fix double comma in ncscrum.h (Issue #362)
+
 
 ### Changed
 
-- Issue #184 : change roller contribution on Stokes Drift in very shallow water to avoid instabilities
+- MUSTANG, SUBSTANCE : separate reading of substance and mustang
+  namelist (Issue #354)
+- LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
+  croco.in (Issue #330)
 
 ### Deprecated
 
+
 ### Removed
 
+
 ### Other
+
+
+### Contributors on this release
+
+- Contributors already on board : 
+  R. Benshila, S. Le Gac, P. Marchesiello 
+
+- New contributors : 
+  M. Plus

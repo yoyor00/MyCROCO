@@ -20,10 +20,6 @@
 # define iscreenlog stdout
 # define ierrorlog stdout
 # define iwarnlog stdout
-# define NAME_SUBS vname(1,indxT+ntrc_salt+isubs)
-
-/* Directory where are namelists files */
-# define REPFICNAMELIST 'MUSTANG_NAMELIST'
 
 /* Spatial Grid limits definition  of loops inside the domain - except meshes at open boundaries */
 # define IMIN_GRID 1
@@ -44,7 +40,6 @@
 # define ARRAY_SETTL_FLUXSUM_w2s PROC_IN_ARRAY,1:NT
 # define ARRAY_WATER_FLUX_INPUTS PROC_IN_ARRAY,1:NB_LAYER_WAT
 # define ARRAY_BATHY_H0 GLOBAL_2D_ARRAY
-# define ARRAY_WATER_ELEVATION GLOBAL_2D_ARRAY,1:4
 # define ARRAY_VELOCITY_U GLOBAL_2D_ARRAY,1:4
 # define ARRAY_VELOCITY_V GLOBAL_2D_ARRAY,1:4
 # define ARRAY_CELL_SURF GLOBAL_2D_ARRAY
@@ -53,14 +48,10 @@
 /* dimensions of variables in hydro modele !*/
 # define ARRAY_WATER_CONC GLOBAL_2D_ARRAY,N,3,NT
 # define ARRAY_DHSED GLOBAL_2D_ARRAY 
-# define ARRAY_FROFON GLOBAL_2D_ARRAY 
-# define ARRAY_Z0HYDRO PROC_IN_ARRAY 
 
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
 # define ARRAY_LATLON GLOBAL_2D_ARRAY
 #endif
-
-#define  ARRAY_morpho GLOBAL_2D_ARRAY
 
 /* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
 !*/
@@ -68,35 +59,21 @@
 # define NB_LAYER_WAT N
 # define COORD_SIGMA sc_r
 # define BATHY_H0 h
-# ifdef WET_DRY
-# define RESIDUAL_THICKNESS_WAT D_wetdry
-# else
-# define RESIDUAL_THICKNESS_WAT 0.
-# endif
-# define WATER_ELEVATION zeta
 # define CELL_DX om_r
 # define CELL_DY on_r
 # define CELL_SURF surf_cell
 # define BAROTROP_VELOCITY_U ubar
 # define BAROTROP_VELOCITY_V vbar
 # define TIME_STEP dt   /* in MARS :  time step declared in rlg and therefore also in MUSTANG */
-# define TRANSPORT_TIME_STEP dt /* in MARS : solving equations every half time step (in rlg)*/
 # define CURRENT_TIME time
 # define RHOREF rho0
-# define TEMPREF_LIN 10.0 
-# define SALREF_LIN 35.0
 # define GRAVITY g
 # define BOTTOM_THICK_LAYER epn_bottom
-# define Z0HYDRO zob
 # define WATER_CONCENTRATION t  /* water concentration in hydro model (=cv_wat in MARS)*/
 # define DHSED dh  
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
-# define LATITUDE latr
-# define LONGITUDE lonr
-#endif
+
 
 /* surface elevation (i,j) and current could have different dimensions*/
-# define SURF_ELEVATION_ij WATER_ELEVATION(i,j,3) 
 # define CURRENTU_ij BAROTROP_VELOCITY_U(i+1,j,3) 
 # define CURRENTV_ij BAROTROP_VELOCITY_V(i,j+1,3) 
 

@@ -10,13 +10,29 @@ MODULE par_pisces
    IMPLICIT NONE
    PUBLIC
 
+   !                                                                !!** Floating point **
+   INTEGER, PUBLIC, PARAMETER ::   sp = SELECTED_REAL_KIND( 6, 37)   !: single precision (real 4)
+   INTEGER, PUBLIC, PARAMETER ::   dp = SELECTED_REAL_KIND(12,307)   !: double precision (real 8)
+# if defined key_single
+   INTEGER, PUBLIC, PARAMETER ::   wp = sp                              !: working precision
+# else
+   INTEGER, PUBLIC, PARAMETER ::   wp = dp                              !: working precision
+# endif
+   !                                                                !!** Integer **
+   INTEGER, PUBLIC, PARAMETER ::   i4 = SELECTED_INT_KIND( 9)        !: single precision (integer 4)
+   INTEGER, PUBLIC, PARAMETER ::   i8 = SELECTED_INT_KIND(14)        !: double precision (integer 8)
+
+   !                                                                !!** Integer **
+   INTEGER, PUBLIC, PARAMETER ::   lc  = 256                          !: Lenght of Character strings
+   INTEGER, PUBLIC, PARAMETER ::   lca = 400                          !: Lenght of Character arrays
+
 #if defined key_pisces
    !!---------------------------------------------------------------------
    !!   'key_pisces'   :                         standard PISCES bio-model
    !!---------------------------------------------------------------------
    LOGICAL, PUBLIC, PARAMETER ::   lk_pisces     = .TRUE.  !: PISCES flag 
 
-#if defined key_pisces_light
+#if defined key_pisces_npzd
    INTEGER, PUBLIC, PARAMETER ::   jp_pisces     = 9      !: number of PISCES passive tracers
 #elif defined key_pisces_quota
 #   if defined key_ligand
@@ -37,7 +53,7 @@ MODULE par_pisces
    ! assign an index in trc arrays for each LOBSTER prognostic variables
    !    WARNING: be carefull about the order when reading the restart
         !   !!gm  this warning should be obsolet with IOM
-#if defined key_pisces_light
+#if defined key_pisces_npzd
    INTEGER, PUBLIC, PARAMETER ::   jpdic =  1    !: dissolved inoganic carbon concentration 
    INTEGER, PUBLIC, PARAMETER ::   jptal =  2    !: total alkalinity 
    INTEGER, PUBLIC, PARAMETER ::   jpoxy =  3    !: oxygen carbon concentration 
@@ -91,13 +107,13 @@ MODULE par_pisces
    INTEGER, PUBLIC, PARAMETER ::   jpdoc = 10    !: dissolved organic carbon concentration 
    INTEGER, PUBLIC, PARAMETER ::   jpdia = 11    !: Diatoms Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpmes = 12    !: Mesozooplankton Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpgsi = 13    !: (big) Silicate Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpdsi = 13    !: Diatoms Silicate Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpfer = 14    !: Iron Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpbfe = 15    !: Big iron particles Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpgoc = 16    !: big particulate organic phosphate concentration
    INTEGER, PUBLIC, PARAMETER ::   jpsfe = 17    !: Small iron particles Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpdfe = 18    !: Diatoms iron Concentration
-   INTEGER, PUBLIC, PARAMETER ::   jpdsi = 19    !: Diatoms Silicate Concentration
+   INTEGER, PUBLIC, PARAMETER ::   jpgsi = 19    !: Sinking Biogenic Silicate Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpnfe = 20    !: Nano iron Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpnch = 21    !: Nano Chlorophyll Concentration
    INTEGER, PUBLIC, PARAMETER ::   jpdch = 22    !: Diatoms Chlorophyll Concentration
@@ -145,6 +161,55 @@ MODULE par_pisces
 #endif
 #endif
 
+#else
+
+   LOGICAL, PUBLIC, PARAMETER ::   lk_pisces     = .FALSE.  !: PISCES flag 
+   INTEGER, PUBLIC, PARAMETER ::   jp_pisces     = 0      !: number of PISCES passive tracers
+   INTEGER, PUBLIC, PARAMETER ::   jp_pisces_2d  = 0      !: additional 2d output ('key_trc_diaadd')
+   INTEGER, PUBLIC, PARAMETER ::   jp_pisces_3d  = 0      !: additional 3d output ('key_trc_diaadd')
+   !
+   INTEGER, PUBLIC ::   jpdic     !: dissolved inoganic carbon concentration 
+   INTEGER, PUBLIC ::   jptal     !: total alkalinity 
+   INTEGER, PUBLIC ::   jpoxy     !: oxygen carbon concentration 
+   INTEGER, PUBLIC ::   jppoc     !: small particulate organic phosphate concentration
+   INTEGER, PUBLIC ::   jpphy     !: phytoplancton concentration 
+   INTEGER, PUBLIC ::   jpzoo     !: zooplancton concentration
+   INTEGER, PUBLIC ::   jpdoc    !: dissolved organic carbon concentration 
+   INTEGER, PUBLIC ::   jpno3    !: Nitrates Concentration
+   INTEGER, PUBLIC ::   jpfer    !: Iron Concentration
+   INTEGER, PUBLIC ::   jpcal     !: calcite  concentration 
+   INTEGER, PUBLIC ::   jppo4     !: phosphate concentration 
+   INTEGER, PUBLIC ::   jpsil     !: silicate concentration
+   INTEGER, PUBLIC ::   jpdia     !: Diatoms Concentration
+   INTEGER, PUBLIC ::   jpmes     !: Mesozooplankton Concentration
+   INTEGER, PUBLIC ::   jpgsi     !: (big) Silicate Concentration
+   INTEGER, PUBLIC ::   jpbfe     !: Big iron particles Concentration
+   INTEGER, PUBLIC ::   jpgoc     !: big particulate organic phosphate concentration
+   INTEGER, PUBLIC ::   jpsfe     !: Small iron particles Concentration
+   INTEGER, PUBLIC ::   jpdfe     !: Diatoms iron Concentration
+   INTEGER, PUBLIC ::   jpdsi     !: Diatoms Silicate Concentration
+   INTEGER, PUBLIC ::   jpnfe     !: Nano iron Concentration
+   INTEGER, PUBLIC ::   jpnch     !: Nano Chlorophyll Concentration
+   INTEGER, PUBLIC ::   jpdch     !: Diatoms Chlorophyll Concentration
+   INTEGER, PUBLIC ::   jpnh4     !: Ammonium Concentration
+   INTEGER, PUBLIC ::   jplgw    !: Ammonium Concentration
+   INTEGER, PUBLIC ::   jpdon    !: DON concentration 
+   INTEGER, PUBLIC ::   jpdop    !: DOP concentration 
+   INTEGER, PUBLIC ::   jppon    !: PON concentration
+   INTEGER, PUBLIC ::   jppop    !: POP concentration
+   INTEGER, PUBLIC ::   jpnph     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppph     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpndi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppdi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppic     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpnpi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpppi     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppfe     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jppch     !: small particulate organic phosphorus concentration
+   INTEGER, PUBLIC ::   jpgon    !: GON concentration
+   INTEGER, PUBLIC ::   jpgop    !: GOP concentration
+#endif
+
    INTEGER, PUBLIC ::   jp_flxco2  
    INTEGER, PUBLIC ::   jp_flxo2   
    INTEGER, PUBLIC ::   jp_kgco2   
@@ -182,20 +247,17 @@ MODULE par_pisces
    INTEGER, PUBLIC ::   jp_nfixo2  
    INTEGER, PUBLIC ::   jp_irondep  
    INTEGER, PUBLIC ::   jp_ironsed  
-#else
-   !!---------------------------------------------------------------------
-   !!   Default                                   No CFC geochemical model
-   !!---------------------------------------------------------------------
-   LOGICAL, PUBLIC, PARAMETER ::   lk_pisces     = .FALSE.  !: CFC flag 
-   INTEGER, PUBLIC, PARAMETER ::   jp_pisces     =  0       !: No CFC tracers
-   INTEGER, PUBLIC, PARAMETER ::   jp_pisces_2d  =  0       !: No CFC additional 2d output arrays 
-   INTEGER, PUBLIC, PARAMETER ::   jp_pisces_3d  =  0       !: No CFC additional 3d output arrays 
-#endif
 
    ! Starting/ending PISCES do-loop indices (N.B. no PISCES : jpl_pcs < jpf_pcs the do-loop are never done)
    INTEGER, PUBLIC, PARAMETER ::   jptra       = jp_pisces                  !: First index of PISCES tracers
    INTEGER, PUBLIC, PARAMETER ::   jp_pcs0     = 1                  !: First index of PISCES tracers
    INTEGER, PUBLIC, PARAMETER ::   jp_pcs1     = jp_pisces          !: Last  index of PISCES tracers
+
+   REAL(wp), PUBLIC ::  mMass_C  = 12.00      ! Molar mass of carbon
+   REAL(wp), PUBLIC ::  mMass_N  = 14.00      ! Molar mass of nitrogen
+   REAL(wp), PUBLIC ::  mMass_P  = 31.00      ! Molar mass of phosphorus
+   REAL(wp), PUBLIC ::  mMass_Fe = 55.85      ! Molar mass of iron
+   REAL(wp), PUBLIC ::  mMass_Si = 28.00      ! Molar mass of silver
 
    !!======================================================================
 END MODULE par_pisces

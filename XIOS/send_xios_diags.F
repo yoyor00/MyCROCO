@@ -882,6 +882,12 @@ C apar_file
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='Cs_rho'
      &     , value='have a look at variable Cs_rho in this file')
+      CALL iom_set_file_global_attr_char   (cdid
+     &     ,type='string',name='s_w'
+     &     , value='have a look at variable s_w in this file')
+      CALL iom_set_file_global_attr_char   (cdid
+     &     ,type='string',name='s_rho'
+     &     , value='have a look at variable s_rho in this file')     
 #endif
       CALL iom_set_file_global_attr_int   (cdid
      &     ,type='int',name='ntimes', value=ntimes)
@@ -1806,6 +1812,9 @@ C 				  endif
 # include "scalars.h"
 # include "ncscrum.h"
 # include "mpi_cpl.h"
+#ifdef ABL1D
+# include "abl1d.h"
+#endif
 
       !
       INTEGER :: Istr,Iend,Jstr,Jend
@@ -1917,16 +1926,20 @@ C 				  endif
       CALL iom_set_axis_attr( "s_rho", sc_r(1:N) )
       CALL iom_set_axis_attr( "s_w"  , sc_w(0:N) )
 # ifdef M3FAST_SEDLAYERS
-      CALL iom_set_axis_attr( "s_rho_full", sc_r )      
-      CALL iom_set_axis_attr( "s_w_full"  , sc_w )
+      CALL iom_set_axis_attr( "s_rho_total", sc_r(-N_sl+1:N) )      
+      CALL iom_set_axis_attr( "s_w_total"  , sc_w(-N_sl:N) )
 # endif      
 # ifdef SEDIMENT
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,NLAY) /))
 # elif defined MUSTANG
-       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,nk_nivsed_out) /))
+      CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,nk_nivsed_out) /))
 # else
       ! fake axis to avoid changing xml file 
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,1) /))
+# endif
+
+# ifdef ABL1D
+      CALL iom_set_axis_attr( "N_abl", zr_abl)
 # endif
 
 #ifdef ONLINE_ANALYSIS
@@ -2223,24 +2236,40 @@ C 				  endif
           USE trcwri_pisces
 #endif
 
-#if defined SUBSTANCE
-      USE comsubstance, ONLY : cvfix_wat,nv_adv
-#endif
 #if defined MUSTANG
-      USE comsubstance, ONLY : nv_adv,nvpc,nvp
+      USE comsubstance, ONLY : name_var, nvpc, ws_part, imud1, imud2
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
-      USE comMUSTANG, only: nk_nivsed_out,var3D_cvsed,var3D_dzs,
-     &   var3D_TEMP,var3D_SAL
-# ifdef WAVE_OFFLINE
-     &  ,tauskin_c, tauskin_w   
-# endif
-#if defined key_MUSTANG_specif_outputs
-     &   ,nv_out3Dnv_specif, nv_out2D_specif
-     &   ,varspecif3Dnv_save,varspecif2D_save
-#endif
+      USE comMUSTANG, only: nk_nivsed_out, l_outsed_hsed , 
+     &    l_outsed_poro, l_outsed_dzs, l_outsed_temp_sed, l_outsed_salt_sed, 
+     &    l_outsed_cv_sed, l_outsed_toce, l_outsed_flx_s2w_w2s,
+     &    l_outsed_pephm_fcor, l_outsed_bedload, 
+     &    l_outsed_fsusp, l_outsed_frmudsup, l_outsed_dzs_ksmax, 
+     &    l_outsed_theoric_active_layer, l_outsed_ero_details,
+     &    l_outsed_consolidation, l_outsed_ws,
+     &    var3D_cvsed, var3D_dzs,
+     &    var3D_TEMP, var3D_SAL, var3D_poro,
+     &    var2D_hsed, ksma, tauskin, tauskin_c, tauskin_w,
+     &    var2D_toce, var2D_flx_s2w, var2D_flx_w2s,
+     &    var2D_pephm_fcor, var2D_flx_bx, var2D_flx_by, 
+     &    var2D_bil_bedload, var2D_fsusp, 
+     &    var2D_frmudsup, var2D_dzs_ksmax, 
+     &    var2D_theoric_active_layer, 
+     &    var2D_tero_noncoh, var2D_tero_coh, 
+     &    var2D_pct_iter_noncoh, var2D_pct_iter_coh, 
+     &    var2D_niter_ero, 
+     &    var2D_flx_s2w_coh, var2D_flx_s2w_noncoh, 
+     &    var2D_flx_w2s_coh, var2D_flx_w2s_noncoh, 
+     &    var2D_flx_bx_int, var2D_flx_by_int, 
+     &    var2D_bil_bedload_int, z0sed,
+     &    l_dyn_insed, var3Dksed_dtsdzs, 
+     &    var3Dksed_loadograv, var3Dksed_permeab, 
+     &    var3Dksed_sed_rate, var3Dksed_sigmadjge, 
+     &    var3Dksed_sigmapsg, var3Dksed_hinder, 
+     &    var3Dksed_stateconsol
+
 #ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
-      USE comMUSTANG,   ONLY : sum_tmp, rouse2d
+      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
 #endif
 #endif
 
@@ -2266,10 +2295,6 @@ C 				  endif
      &   obst_tau, obst_fuz, obst_fvz, obst_nbvar
 #endif
           IMPLICIT NONE
-
-#if defined MUSTANG
-#     include "coupler_define_MUSTANG.h"
-#endif
 
 # include "param.h"
 # include "ncscrum.h"
@@ -2311,8 +2336,9 @@ C 				  endif
 # include "scalars.h"
 # include "work.h"
 # include "private_scratch.h"
-
-
+# ifdef ABL1D
+# include "abl1d.h"
+# endif
 
 !
 #ifdef DIAGNOSTICS_EDDY
@@ -2349,17 +2375,8 @@ C 				  endif
       parameter(stf_cff=86400/0.01)
 !
 #if defined MUSTANG
-      integer  nv_out,indx2
-      logical  maskout_sed(GLOBAL_2D_ARRAY)
-      real var2D_ksma(GLOBAL_2D_ARRAY),
-     &     var2D_eptot(GLOBAL_2D_ARRAY),
-     &     var2D_tauskin(GLOBAL_2D_ARRAY)
       real workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
      &     workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
-#if defined key_MUSTANG_specif_outputs
-      real workrsed_nv(GLOBAL_2D_ARRAY),
-     &     workrsed1_nv(GLOBAL_2D_ARRAY)
-#endif
 
 #endif
 
@@ -2410,7 +2427,7 @@ C 				  endif
 !
 ! done automatically
 !
-! S-coordinate independent variables "sc_w", "sc_r" and stretching
+! S-coordinate independent variables "sc_w", "sc_rho" and stretching
 ! curves "Cs_w", "Cs_rho" at W- and RHO-points.
 !
       if (xios_field_is_active("Cs_rho")) then
@@ -2423,18 +2440,6 @@ C 				  endif
       call xios_send_field("Cs_w",Cs_w(0:N))
 # ifdef M3FAST_SEDLAYERS   
       call xios_send_field("Cs_w_total",Cs_w(-N_sl:N))
-# endif      
-      endif
-      if (xios_field_is_active("sc_r")) then
-      call xios_send_field("sc_r",sc_r(1:N))
-# ifdef M3FAST_SEDLAYERS   
-      call xios_send_field("sc_r_total",sc_r(-N_sl+1:N))
-# endif      
-      endif
-      if (xios_field_is_active("sc_w")) then
-      call xios_send_field("sc_w",sc_w(0:N))
-# ifdef M3FAST_SEDLAYERS   
-      call xios_send_field("sc_w_total",sc_w(-N_sl:N))
 # endif      
       endif
       if (xios_field_is_active("hc")) then
@@ -2618,7 +2623,83 @@ c !$acc wait
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
       endif
-# ifdef BULK_SM_UPDATE
+      if (xios_field_is_active("prate")) then
+      call xios_send_field("prate",prate)
+      endif
+
+# ifdef ABL1D
+      if (xios_field_is_active("zr_abl")) then
+      call xios_send_field("zr_abl",zr_abl)
+      endif
+      if (xios_field_is_active("zw_abl")) then
+      call xios_send_field("zw_abl",zw_abl)
+      endif
+      if (xios_field_is_active("Hzr_abl")) then
+      call xios_send_field("Hzr_abl",Hzr_abl)
+      endif
+      if (xios_field_is_active("Hzw_abl")) then
+      call xios_send_field("Hzw_abl",Hzw_abl)
+      endif
+      if (xios_field_is_active("pu_dta")) then
+      call xios_send_field("pu_dta",pu_dta)
+      endif
+      if (xios_field_is_active("pv_dta")) then
+      call xios_send_field("pv_dta",pv_dta)
+      endif
+      if (xios_field_is_active("pt_dta")) then
+      call xios_send_field("pt_dta",pt_dta)
+      endif
+      if (xios_field_is_active("pq_dta")) then
+      call xios_send_field("pq_dta",pq_dta)
+      endif
+      if (xios_field_is_active("pgu_dta")) then
+      call xios_send_field("pgu_dta",pgu_dta)
+      endif
+      if (xios_field_is_active("pgv_dta")) then
+      call xios_send_field("pgv_dta",pgv_dta)
+      endif
+      if (xios_field_is_active("u_abl")) then
+      call xios_send_field("u_abl",u_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("v_abl")) then
+      call xios_send_field("v_abl",v_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("t_abl")) then
+      call xios_send_field("t_abl",tq_abl(:,:,:,nstp,1))
+      endif
+      if (xios_field_is_active("q_abl")) then
+      call xios_send_field("q_abl",tq_abl(:,:,:,nstp,2))
+      endif
+      if (xios_field_is_active("tke_abl")) then
+      call xios_send_field("tke_abl",tke_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("mxlm_abl")) then
+      call xios_send_field("mxlm_abl",mxlm_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("mxld_abl")) then
+      call xios_send_field("mxld_abl",mxld_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("avm_abl")) then
+      call xios_send_field("avm_abl",avm_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("avt_abl")) then
+      call xios_send_field("avt_abl",avt_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("ablh")) then
+      call xios_send_field("ablh",ablh(:,:,nstp))
+      endif
+# endif
+
+# ifdef BULK_FLUX
+      if (xios_field_is_active("tair")) then
+      call xios_send_field("tair",tair)
+      endif
+      if (xios_field_is_active("rhum")) then
+      call xios_send_field("rhum",rhum)
+      endif
+# endif
+
+# if defined BULK_SM_UPDATE || defined BULK_FLUX 
       if (xios_field_is_active("uwnd")) then
       call xios_send_field("uwnd",uwnd)
       endif
@@ -2643,17 +2724,17 @@ c !$acc wait
       call xios_send_field("wke",wke(:,:,wstp))
       endif
       if (xios_field_is_active("epb")) then
-      call xios_send_field("epb",wdsp)
+      call xios_send_field("epb",wepb)
       endif
       if (xios_field_is_active("epd")) then
-      call xios_send_field("epd",wdrg)
+      call xios_send_field("epd",wepd)
       endif
 #  ifdef WAVE_ROLLER
       if (xios_field_is_active("war")) then
       call xios_send_field("war",war(:,:,wstp))
       endif
       if (xios_field_is_active("epr")) then
-      call xios_send_field("epr",rdsp)
+      call xios_send_field("epr",wepr)
       endif
 
 #  endif
@@ -2754,6 +2835,9 @@ c !$acc wait
 
       if (xios_field_is_active("rho")) then
       call xios_send_field("rho",rho)
+      endif
+      if (xios_field_is_active("rho_surf")) then
+      call xios_send_field("rho_surf",rho(:,:,N))
       endif
 
 # if defined ANA_VMIX || defined BVF_MIXING \
@@ -3065,11 +3149,6 @@ c !$acc wait
 #   endif
       call xios_send_field("hbl",work2d)
       endif
-#  elif defined GLS_MIXING
-!      work2d=hbl
-      if (xios_field_is_active("hbl")) then
-!      call xios_send_field("hbl",work2d)
-      endif
 #  endif
 #  ifdef LMD_BKPP
       if (xios_field_is_active("hbbl")) then
@@ -3214,8 +3293,8 @@ c !$acc wait
       endif
       if (xios_field_is_active("v_adv")) then
           call xios_send_field("v_adv", MXadv(:,:,:,itrc)
+     &            + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc))
       endif
-     &         + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc))
       if (xios_field_is_active("v_Cor")) then
           call xios_send_field("v_Cor",MCor(:,:,:,itrc))
       endif
@@ -3622,7 +3701,7 @@ c !$acc wait
 
 # ifdef MUSTANG
       do itrc=3,NT
-         write(nametrc,'(A,I1)') 'cv_wat_',itrc-2
+         write(nametrc,'(a)') TRIM(name_var(itrc-2))
 #if defined key_sand2D
            if (itrc>=itsubs1+nv_grav .AND.
      &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
@@ -3654,53 +3733,272 @@ c !$acc wait
             workr=t(:,:,:,nstp,itrc)
 #endif
 
-
       if (xios_field_is_active(TRIM(nametrc))) then
-         call xios_send_field(TRIM(nametrc),
-     &    workr)
+         call xios_send_field(TRIM(nametrc),workr)
       endif
       enddo
 
-      nv_out=ntrc_subs
-      CALL sed_MUSTANG_outres(Istr,Iend,Jstr,Jend,
-     &       nv_out,h,
-     &       maskout_sed,var2D_ksma,var2D_tauskin,var2D_eptot
-     &      )
+      CALL sed_MUSTANG_outres(Istr,Iend,Jstr,Jend,ntrc_subs,h)
       if (xios_field_is_active("tauskin")) then
-        call xios_send_field("tauskin",var2D_tauskin)
+        call xios_send_field("tauskin",tauskin)
       endif
-# ifdef WAVE_OFFLINE
       if (xios_field_is_active("tauskin_c")) then
         call xios_send_field("tauskin_c",tauskin_c)
       endif
       if (xios_field_is_active("tauskin_w")) then
         call xios_send_field("tauskin_w",tauskin_w)
       endif
-# endif
 
       if (xios_field_is_active("ksma")) then
-        call xios_send_field("ksma",var2D_ksma)
+        call xios_send_field("ksma",REAL(ksma))
       endif
-      if (xios_field_is_active("eptot")) then
-        call xios_send_field("eptot",var2D_eptot)
-      endif
-        do itrc=1,nv_out
+      IF (l_outsed_hsed) then
+            if (xios_field_is_active("hsed")) then
+            call xios_send_field("hsed",var2D_hsed)
+            endif
+      ENDIF
+
+      IF (l_outsed_cv_sed) THEN
+        do itrc=1,ntrc_subs
          do k=1,nk_nivsed_out
            workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
          enddo
-        write(nametrc,'(A,I1)') 'cv_sed_',itrc
-      if (xios_field_is_active(TRIM(nametrc))) then
-        call xios_send_field(TRIM(nametrc),workrsed)
-      endif
+            write (nametrc, '(a,"_sed")') TRIM(name_var(itrc))
+            if (xios_field_is_active(TRIM(nametrc))) then
+            call xios_send_field(TRIM(nametrc),workrsed)
+            endif
         enddo
+      ENDIF
 
-      if (xios_field_is_active('dzs')) then
-        do k=1,nk_nivsed_out
-           workrsed(:,:,k)=var3D_dzs(k,:,:)
-        enddo
-        call xios_send_field('dzs',workrsed)
+      do itrc=1,ntrc_subs
+            IF (l_outsed_ws .and. ((itrc .GE. imud1) .AND. (itrc .LE. imud2))) THEN
+                  write(nametrc,'(a,"_ws")') TRIM(name_var(itrc))
+                  workr=ws_part(:,:,:,itemp+ntrc_salt+itrc)
+                  if (xios_field_is_active(TRIM(nametrc))) then
+                        call xios_send_field(TRIM(nametrc),workr)
+                  endif
+            endif
+      enddo
+      
+      IF (l_outsed_dzs) then
+            if (xios_field_is_active('dzs')) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3D_dzs(k,:,:)
+            enddo
+            call xios_send_field('dzs',workrsed)
+            endif
+      ENDIF
+
+      IF (l_outsed_poro) then
+            if (xios_field_is_active('poro')) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3D_poro(k,:,:)
+            enddo
+            call xios_send_field('poro',workrsed)
+            endif
+      ENDIF
+
+      IF (l_outsed_temp_sed) then
+            if (xios_field_is_active('temp_sed')) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3D_TEMP(k,:,:)
+            enddo
+            call xios_send_field('temp_sed',workrsed)
+            endif
+      ENDIF
+
+      IF (l_outsed_salt_sed) then
+            if (xios_field_is_active('salt_sed')) then
+            do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3D_SAL(k,:,:)
+            enddo
+            call xios_send_field('salt_sed',workrsed)
+            endif
+      ENDIF
+
+      DO itrc = 1,nvpc
+         IF (l_outsed_toce) then
+            write (nametrc, '(a,"_toce")') TRIM(name_var(itrc))
+            if (xios_field_is_active(TRIM(nametrc))) then
+              call xios_send_field(TRIM(nametrc),var2D_toce(itrc,:,:))
+            endif
+         ENDIF
+         IF (l_outsed_flx_s2w_w2s) then
+            write (nametrc, '(a,"_flx_s2w")') TRIM(name_var(itrc))
+            if (xios_field_is_active(TRIM(nametrc))) then
+              call xios_send_field(TRIM(nametrc),var2D_flx_s2w(itrc,:,:))
+            endif
+            write (nametrc, '(a,"_flx_w2s")') TRIM(name_var(itrc))
+            if (xios_field_is_active(TRIM(nametrc))) then
+              call xios_send_field(TRIM(nametrc),var2D_flx_w2s(itrc,:,:))
+            endif
+         ENDIF
+#ifdef  key_MUSTANG_V2
+         IF (l_outsed_pephm_fcor) then
+            write (nametrc, '(a,"_pephm_fcor")') TRIM(name_var(itrc))
+            if (xios_field_is_active(TRIM(nametrc))) then
+              call xios_send_field(TRIM(nametrc),
+     &                             var2D_pephm_fcor(itrc,:,:))
+            endif
+         ENDIF
+#ifdef key_MUSTANG_bedload
+         IF (l_outsed_bedload) then
+            write (nametrc, '(a,"_flx_bx")') TRIM(name_var(itrc))
+            if (xios_field_is_active(TRIM(nametrc))) then
+              call xios_send_field(TRIM(nametrc),
+     &                             var2D_flx_bx(itrc,:,:))
+            endif
+            write (nametrc, '(a,"_flx_by")') TRIM(name_var(itrc))
+            if (xios_field_is_active(TRIM(nametrc))) then
+              call xios_send_field(TRIM(nametrc),
+     &                             var2D_flx_by(itrc,:,:))
+            endif
+            write (nametrc, '(a,"_bil_bedload")') TRIM(name_var(itrc))
+            if (xios_field_is_active(TRIM(nametrc))) then
+              call xios_send_field(TRIM(nametrc),
+     &                             var2D_bil_bedload(itrc,:,:))
+            endif
+         ENDIF
+         IF (l_outsed_fsusp) then
+            write (nametrc, '(a,"_fsusp")') TRIM(name_var(itrc))
+            if (xios_field_is_active(TRIM(nametrc))) then
+              call xios_send_field(TRIM(nametrc),
+     &                             var2D_fsusp(itrc,:,:))
+            endif
+         ENDIF
+#endif /* key_MUSTANG_bedload */
+#endif /* key_MUSTANG_V2 */
+      ENDDO
+
+      IF (l_outsed_frmudsup) then
+            if (xios_field_is_active("frmudsup")) then
+            call xios_send_field("frmudsup",var2D_frmudsup)
+            endif
+      ENDIF
+      IF (l_outsed_dzs_ksmax) then
+            if (xios_field_is_active("dzs_ksmax")) then
+            call xios_send_field("dzs_ksmax",var2D_dzs_ksmax)
+            endif
+      ENDIF
+      if (xios_field_is_active("z0sed")) then
+            call xios_send_field("z0sed",z0sed)
       endif
+      if (xios_field_is_active("z0hydro")) then
+            call xios_send_field("z0hydro",zob)
+      endif
+      IF (l_outsed_flx_s2w_w2s) then
+            if (xios_field_is_active("flx_s2w_noncoh")) then
+            call xios_send_field("flx_s2w_noncoh",var2D_flx_s2w_noncoh)
+            endif
+            if (xios_field_is_active("flx_s2w_coh")) then
+            call xios_send_field("flx_s2w_coh",var2D_flx_s2w_coh)
+            endif
+            if (xios_field_is_active("flx_w2s_noncoh")) then
+            call xios_send_field("flx_w2s_noncoh",var2D_flx_w2s_noncoh)
+            endif
+            if (xios_field_is_active("flx_w2s_coh")) then
+            call xios_send_field("flx_w2s_coh",var2D_flx_w2s_coh)
+            endif
+      ENDIF
+#ifdef  key_MUSTANG_V2
+      IF (l_outsed_theoric_active_layer) then
+            if (xios_field_is_active("theoric_active_layer")) then
+            call xios_send_field("theoric_active_layer",
+     &                        var2D_theoric_active_layer)
+            endif
+      ENDIF
+      IF (l_outsed_ero_details) then
+            if (xios_field_is_active("tero_noncoh")) then
+            call xios_send_field("tero_noncoh",
+     &                        var2D_tero_noncoh)
+            endif
+            if (xios_field_is_active("tero_coh")) then
+            call xios_send_field("tero_coh",
+     &                        var2D_tero_coh)
+            endif
+            if (xios_field_is_active("pct_iter_noncoh")) then
+            call xios_send_field("pct_iter_noncoh",
+     &                        var2D_pct_iter_noncoh)
+            endif
+            if (xios_field_is_active("pct_iter_coh")) then
+                  call xios_send_field("pct_iter_coh",
+     &                        var2D_pct_iter_coh)
+            endif
+            if (xios_field_is_active("niter_ero")) then
+                  call xios_send_field("niter_ero",
+     &                        var2D_niter_ero)
+            endif
+      ENDIF
+#ifdef key_MUSTANG_bedload
+      IF (l_outsed_bedload) then
+            if (xios_field_is_active("flx_bx_int")) then
+            call xios_send_field("flx_bx_int",
+     &                        var2D_flx_bx_int)
+            endif
+            if (xios_field_is_active("flx_by_int")) then
+                  call xios_send_field("flx_by_int",
+     &                        var2D_flx_by_int)
+            endif
+            if (xios_field_is_active("bil_bedload_int")) then
+            call xios_send_field("bil_bedload_int",
+     &                        var2D_bil_bedload_int)
+            endif
+      ENDIF
+#endif /* key_MUSTANG_bedload */
+#endif /* key_MUSTANG_V2 */
 
+      IF (l_dyn_insed) THEN
+            IF (l_outsed_consolidation) then
+                  if (xios_field_is_active('dtsdzs')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_dtsdzs(k,:,:)
+                        enddo
+                        call xios_send_field('dtsdzs',workrsed)
+                  endif
+                  if (xios_field_is_active('loadograv')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_loadograv(k,:,:)
+                        enddo
+                        call xios_send_field('loadograv',workrsed)
+                  endif
+                  if (xios_field_is_active('permeab')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_permeab(k,:,:)
+                        enddo
+                        call xios_send_field('permeab',workrsed)
+                  endif
+                  if (xios_field_is_active('sed_rate')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_sed_rate(k,:,:)
+                        enddo
+                        call xios_send_field('sed_rate',workrsed)
+                  endif
+                  if (xios_field_is_active('sigmadjge')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_sigmadjge(k,:,:)
+                        enddo
+                        call xios_send_field('sigmadjge',workrsed)
+                  endif
+                  if (xios_field_is_active('sigmapsg')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_sigmapsg(k,:,:)
+                        enddo
+                        call xios_send_field('sigmapsg',workrsed)
+                  endif
+                  if (xios_field_is_active('hinder')) then
+                        do k=1,nk_nivsed_out
+                              workrsed(:,:,k)=var3Dksed_hinder(k,:,:)
+                        enddo
+                        call xios_send_field('hinder',workrsed)
+                  endif
+                  if (xios_field_is_active('stateconsol')) then
+                        do k=1,nk_nivsed_out
+                        workrsed(:,:,k)=var3Dksed_stateconsol(k,:,:)
+                        enddo
+                        call xios_send_field('stateconsol',workrsed)
+                  endif
+            ENDIF
+      ENDIF
 # endif /* MUSTANG */     
 
 #  ifdef BBL

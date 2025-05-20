@@ -540,6 +540,47 @@ CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(6,indxT)='x_rho y_rho                                 '
 #  endif
       vname(7,indxT)='                                            '
+
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+CR      write(stdout,'(1x,A,I3)') 'indxCRT2 = ',indxCRT2
+      vname(1,indxCRT2)='temp_CRT2                                  '
+      vname(2,indxCRT2)='potential temperature                       '
+      vname(3,indxCRT2)='Celsius                                     '
+      vname(4,indxCRT2)='temperature, scalar, series                 '
+      vname(5,indxCRT2)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxCRT2)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxCRT2)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxCRT2)='                                            '
+
+CR      write(stdout,'(1x,A,I3)') 'indxCRT3 = ',indxCRT3
+      vname(1,indxCRT3)='temp_CRT3                                '
+      vname(2,indxCRT3)='potential temperature                       '
+      vname(3,indxCRT3)='Celsius                                     '
+      vname(4,indxCRT3)='temperature, scalar, series                 '
+      vname(5,indxCRT3)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxCRT3)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxCRT3)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxCRT3)='                                            '
+
+CR      write(stdout,'(1x,A,I3)') 'indxCRT4 = ',indxCRT4
+      vname(1,indxCRT4)='temp_CRT4                                '
+      vname(2,indxCRT4)='potential temperature                       '
+      vname(3,indxCRT4)='Celsius                                     '
+      vname(4,indxCRT4)='temperature, scalar, series                 '
+      vname(5,indxCRT4)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxCRT4)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxCRT4)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxCRT4)='                                            '
+# endif /* DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_CRIT */
 # endif /* TEMPERATURE */
 
 # ifdef SALINITY
@@ -580,6 +621,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
 # endif /* PASSIVE_TRACER */
 
 # ifdef ABL1D
+      vname_abl1d(:,:) = '  '
       vname_abl1d(1,indxabl_pu_dta)='pu_dta                               '
       vname_abl1d(2,indxabl_pu_dta)='u-wind                               '
       vname_abl1d(3,indxabl_pu_dta)='m/s                                  '
@@ -816,7 +858,7 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(6,indxNO3)='lat_rho lon_rho                           '
       vname(7,indxNO3)='                                          '
 
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       vname(1,indxCAL)='CACO3                                     '
       vname(2,indxCAL)='Calcite                                   '
       vname(3,indxCAL)='umol C L-1                                '
@@ -857,13 +899,13 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(6,indxMES)='lat_rho lon_rho                           '
       vname(7,indxMES)='                                          '
 
-      vname(1,indxBSI)='BSI                                       '
-      vname(2,indxBSI)='Diatoms silicon                           '
-      vname(3,indxBSI)='umol Si L-1                               '
-      vname(4,indxBSI)='BSi, scalar, series                       '
-      vname(5,indxBSI)='                                          '
-      vname(6,indxBSI)='lat_rho lon_rho                           '
-      vname(7,indxBSI)='                                          '
+      vname(1,indxDSI)='DSI                                       '
+      vname(2,indxDSI)='Diatoms silicon                           '
+      vname(3,indxDSI)='umol Si L-1                               '
+      vname(4,indxDSI)='DSi, scalar, series                       '
+      vname(5,indxDSI)='                                          '
+      vname(6,indxDSI)='lat_rho lon_rho                           '
+      vname(7,indxDSI)='                                          '
 
       vname(1,indxBFE)='BFE                                       '
       vname(2,indxBFE)='Iron in big particles                     '
@@ -897,13 +939,13 @@ CR      write(stdout,'(1x,A,I3,1x,I3)') 'indTPAS Nb',i, indxTPAS(i)
       vname(6,indxDFE)='lat_rho lon_rho                           '
       vname(7,indxDFE)='                                          '
 
-      vname(1,indxDSI)='DSI                                       '
-      vname(2,indxDSI)='Biogenic silica                           '
-      vname(3,indxDSI)='umol Si L-1                               '
-      vname(4,indxDSI)='DSI, scalar, series                       '
-      vname(5,indxDSI)='                                          '
-      vname(6,indxDSI)='lat_rho lon_rho                           '
-      vname(7,indxDSI)='                                          '
+      vname(1,indxGSI)='GSI                                       '
+      vname(2,indxGSI)='Biogenic silica                           '
+      vname(3,indxGSI)='umol Si L-1                               '
+      vname(4,indxGSI)='GSI, scalar, series                       '
+      vname(5,indxGSI)='                                          '
+      vname(6,indxGSI)='lat_rho lon_rho                           '
+      vname(7,indxGSI)='                                          '
 
       vname(1,indxNFE)='NFE                                       '
       vname(2,indxNFE)='Iron in small particles                   '
@@ -2714,53 +2756,53 @@ CR      write(stdout,'(1x,A,I3)') 'indxVWND =',indxVWND
       vname(7,indxVWND)='                                         '
 
 #  ifdef ABL1D
-      vname(1,indxUHPG)='uhpg                                     '
-      vname(2,indxUHPG)='large-scale u-pressure gradient          '
-      vname(3,indxUHPG)='meter second-1                           '
-      vname(4,indxUHPG)='u-pressure gradient, scalar, series      '
-      vname(5,indxUHPG)='x_hpg                                    '
-      vname(6,indxUHPG)='lat_rho lon_rho                          '
-      vname(7,indxUHPG)='                                         '
+      vname_abl1d(1,indxUHPG)='uhpg                                     '
+      vname_abl1d(2,indxUHPG)='large-scale u-pressure gradient          '
+      vname_abl1d(3,indxUHPG)='meter second-1                           '
+      vname_abl1d(4,indxUHPG)='u-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxUHPG)='x_hpg                                    '
+      vname_abl1d(6,indxUHPG)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxUHPG)='                                         '
 
-      vname(1,indxVHPG)='vhpg                                     '
-      vname(2,indxVHPG)='large-scale v-pressure gradient          '
-      vname(3,indxVHPG)='meter second-1                           '
-      vname(4,indxVHPG)='v-pressure gradient, scalar, series      '
-      vname(5,indxVHPG)='y_hpg                                    '
-      vname(6,indxVHPG)='lat_rho lon_rho                          '
-      vname(7,indxVHPG)='                                         '
+      vname_abl1d(1,indxVHPG)='vhpg                                     '
+      vname_abl1d(2,indxVHPG)='large-scale v-pressure gradient          '
+      vname_abl1d(3,indxVHPG)='meter second-1                           '
+      vname_abl1d(4,indxVHPG)='v-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxVHPG)='y_hpg                                    '
+      vname_abl1d(6,indxVHPG)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxVHPG)='                                         '
 
-      vname(1,indxZR)='zr                                       '
-      vname(2,indxZR)='large-scale u-pressure gradient          '
-      vname(3,indxZR)='meter second-1                           '
-      vname(4,indxZR)='u-pressure gradient, scalar, series      '
-      vname(5,indxZR)='x_hpg                                    '
-      vname(6,indxZR)='lat_rho lon_rho                          '
-      vname(7,indxZR)='                                         '
+      vname_abl1d(1,indxZR)='zr                                       '
+      vname_abl1d(2,indxZR)='large-scale u-pressure gradient          '
+      vname_abl1d(3,indxZR)='meter second-1                           '
+      vname_abl1d(4,indxZR)='u-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxZR)='x_hpg                                    '
+      vname_abl1d(6,indxZR)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxZR)='                                         '
 
-      vname(1,indxZW)='zw                                       '
-      vname(2,indxZW)='large-scale v-pressure gradient          '
-      vname(3,indxZW)='meter second-1                           '
-      vname(4,indxZW)='v-pressure gradient, scalar, series      '
-      vname(5,indxZW)='y_hpg                                    '
-      vname(6,indxZW)='lat_rho lon_rho                          '
-      vname(7,indxZW)='                                         '
+      vname_abl1d(1,indxZW)='zw                                       '
+      vname_abl1d(2,indxZW)='large-scale v-pressure gradient          '
+      vname_abl1d(3,indxZW)='meter second-1                           '
+      vname_abl1d(4,indxZW)='v-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxZW)='y_hpg                                    '
+      vname_abl1d(6,indxZW)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxZW)='                                         '
 
-      vname(1,indxHZR)='Hzr                                      '
-      vname(2,indxHZR)='large-scale u-pressure gradient          '
-      vname(3,indxHZR)='meter second-1                           '
-      vname(4,indxHZR)='u-pressure gradient, scalar, series      '
-      vname(5,indxHZR)='x_hpg                                    '
-      vname(6,indxHZR)='lat_rho lon_rho                          '
-      vname(7,indxHZR)='                                         '
+      vname_abl1d(1,indxHZR)='Hzr                                      '
+      vname_abl1d(2,indxHZR)='large-scale u-pressure gradient          '
+      vname_abl1d(3,indxHZR)='meter second-1                           '
+      vname_abl1d(4,indxHZR)='u-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxHZR)='x_hpg                                    '
+      vname_abl1d(6,indxHZR)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxHZR)='                                         '
 
-      vname(1,indxHZW)='Hzw                                      '
-      vname(2,indxHZW)='large-scale v-pressure gradient          '
-      vname(3,indxHZW)='meter second-1                           '
-      vname(4,indxHZW)='v-pressure gradient, scalar, series      '
-      vname(5,indxHZW)='y_hpg                                    '
-      vname(6,indxHZW)='lat_rho lon_rho                          '
-      vname(7,indxHZW)='                                         '
+      vname_abl1d(1,indxHZW)='Hzw                                      '
+      vname_abl1d(2,indxHZW)='large-scale v-pressure gradient          '
+      vname_abl1d(3,indxHZW)='meter second-1                           '
+      vname_abl1d(4,indxHZW)='v-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxHZW)='y_hpg                                    '
+      vname_abl1d(6,indxHZW)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxHZW)='                                         '
 #  endif
 
 # endif /* ONLINE */
@@ -2889,6 +2931,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxTrate+itrc-1)
 ! Tracer diagnostics variables averaged over the MLD
 !
 # ifdef DIAGNOSTICS_TS_MLD
+
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+       vname(1,indxT)='temp_CRT1                                  '
+# endif
+
 CR       write(stdout,'(1x,A,I3)') 'indxTXadv_mld = ',indxTXadv_mld+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))
        nametrc=vname(1,indxT+itrc-1)(1:lvar)
@@ -3002,6 +3049,60 @@ CR       write(stdout,'(20x,A)') vname(1,indxTentr_mld+itrc-1)
        vname(5,indxTentr_mld+itrc-1)='                            '
        vname(6,indxTentr_mld+itrc-1)='                            '
        vname(7,indxTentr_mld+itrc-1)='                            '
+
+CR       write(stdout,'(1x,A,I3)') 'indxTaver_mld = ',indxTaver_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       unitt=vname(3,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_aver_mld                   '
+       vname(1,indxTaver_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
+       vname(2,indxTaver_mld+itrc-1)='MLD averaged                 '
+       write(vname3,*) trim(unitt)
+       vname(3,indxTaver_mld+itrc-1)=vname3
+       vname(4,indxTaver_mld+itrc-1)='                            '
+       vname(5,indxTaver_mld+itrc-1)='                            '
+       vname(6,indxTaver_mld+itrc-1)='                            '
+       vname(7,indxTaver_mld+itrc-1)='                            '
+
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_depth_mld                  '
+       vname(1,indxTcrit_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
+       vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
+       vname(3,indxTcrit_mld+itrc-1)=' meters                     '
+       if (itrc.eq.iCRT2) then
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : T_ref - ',
+     &   mld_crit_T,' °C'
+       elseif (itrc.eq.iCRT3) then
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : T_ref - ',
+     &   mld_crit_T2,' °C'
+       elseif (itrc.eq.iCRT4) then
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : BVF with rho_ref = '
+     &   ,mld_crit_D,' kg/m3'
+       else
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : rho_ref + ',
+     &   mld_crit_D,' kg/m3'
+       endif
+       vname(4,indxTcrit_mld+itrc-1)=vname3
+       if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
+         write(vname3,'(A,I4,A)') 'Reference depth of T_ref = ',
+     &   mld_depth_ref,' m'
+       elseif (itrc.eq.iCRT4) then
+         write(vname3,'(A,I4,A)') '            '
+       else
+         write(vname3,'(A,I4,A)') 'Reference depth of rho_ref = ',
+     &   mld_depth_ref,' m'
+       endif
+       vname(5,indxTcrit_mld+itrc-1)=vname3
+       vname(6,indxTcrit_mld+itrc-1)='                            '
+       vname(7,indxTcrit_mld+itrc-1)='                            '
+
+       vname(1,indxT)='temp                                        '
+
+# endif /* DIAGNOSTICS_TS_MLD_CRIT */
+
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc
@@ -4814,7 +4915,17 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molC/m3/s                                  '
         vname(4,indxbioFlux+Nironsed-1)=
      &     'Nironsed         , scalar, series          '
-#   if defined key_pisces_light
+
+        vname(1,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2                         '
+        vname(2,indxbioFlux+Npronewo2-1)=
+     &     'o2 production by the NP         '
+        vname(3,indxbioFlux+Npronewo2-1)=
+     &     'molC/m3/s                       '
+        vname(4,indxbioFlux+Npronewo2-1)=
+     &     'PPNEWo2         , scalar, series'
+
+#   if defined key_pisces_npzd
         vname(1,indxbioFlux+Npronew-1)=
      &     'Thetanano                         '
         vname(2,indxbioFlux+Npronew-1)=
@@ -4878,15 +4989,6 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molFe/m3/s                      '
       vname(4,indxbioFlux+Nprofed-1)=
      &     'PFeD          , scalar, series  '
-
-        vname(1,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2                         '
-        vname(2,indxbioFlux+Npronewo2-1)=
-     &     'o2 production by the NP         '
-        vname(3,indxbioFlux+Npronewo2-1)=
-     &     'molC/m3/s                       '
-        vname(4,indxbioFlux+Npronewo2-1)=
-     &     'PPNEWo2         , scalar, series'
 
         vname(1,indxbioFlux+Nprorego2-1)=
      &     'PPRego2                                    '
@@ -4995,7 +5097,7 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
      &     'molN/m2/s                         '
       vname(4,indxbioVSink+Nnitrpot-1)=
      &     'Nfix            , scalar, series  '
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       vname(1,indxbioVSink+Nsinkfer-1)=
      &     'EPFE100                          '
       vname(2,indxbioVSink+Nsinkfer-1)=

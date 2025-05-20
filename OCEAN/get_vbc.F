@@ -810,7 +810,7 @@
       call set_psource_ts_tile(Istr,Iend,Jstr,Jend)
 # endif
 #endif
-#if defined PSOURCE && defined ANA_PSOURCE
+#if (defined PSOURCE || defined PSOURCE_MASS) && defined ANA_PSOURCE
 C$OMP BARRIER
 C$OMP MASTER
       call ana_psource_tile (Istr,Iend,Jstr,Jend)
@@ -823,7 +823,7 @@ C$OMP END MASTER
 # endif
 #endif
 
-#if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
+#if defined CVTK_DEBUG_ADVANCED && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u',
@@ -842,7 +842,7 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif
 C$OMP BARRIER
-#if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#if defined CVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 set_vbc','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 set_vbc','u')

@@ -119,5 +119,8 @@ stations: LDEFSTA, NSTA, NRPFSTA / inpname, hisname
      stations.nc
 station_fields:  Grdvar Temp Salt Rho Vel
                    T     T    F    F   T
+                   
+wave_maker:  amp [m],   prd [s],  ang [deg], ang spread [deg], freq spread (gamma)
+             0.21          8.0         0.          0.                  3.3
 
 

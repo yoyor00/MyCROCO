@@ -791,9 +791,9 @@
      &                (.5*(1-tanh(1.-2.*kw**.9*Dstp/hrms**0.2)))**2
 #  else
 !
-! Simulate surf-zone dissipation due to depth-induced wave breaking
+! Assume surfzone dissipation due to depth-induced wave breaking
 !
-          Awave(i,j)=min(0.2*Dstp, Awave(i,j))
+          Awave(i,j)=min(0.275*Dstp, Awave(i,j))
 #  endif
         enddo
       enddo

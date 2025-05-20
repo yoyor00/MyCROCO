@@ -148,7 +148,8 @@ CFLAGS_LOCAL    =       -w -O3 -c  # -DRSL0_ONLY
 LDFLAGS_LOCAL   =       
 CPLUSPLUSLIB    =       
 ESMF_LDFLAG     =       $(CPLUSPLUSLIB)
-FCOPTIM         =       -O3
+#FCOPTIM         =       -O3
+FCOPTIM         =       -O2
 FCREDUCEDOPT	=       $(FCOPTIM)
 FCNOOPT		=       -O0
 FCDEBUG         =       # -g $(FCNOOPT) # -ggdb -fbacktrace -fcheck=bounds,do,mem,pointer -ffpe-trap=invalid,zero,overflow
@@ -156,7 +157,7 @@ FORMAT_FIXED    =       -ffixed-form
 FORMAT_FREE     =       -ffree-form -ffree-line-length-none
 FCSUFFIX        =
 BYTESWAPIO      =       -fconvert=big-endian -frecord-marker=4
-FCBASEOPTS_NO_G =       -w $(FORMAT_FREE) $(BYTESWAPIO)
+FCBASEOPTS_NO_G =       -w $(FORMAT_FREE) $(BYTESWAPIO) -fallow-argument-mismatch -fallow-invalid-boz
 FCBASEOPTS      =       $(FCBASEOPTS_NO_G) $(FCDEBUG)
 MODULE_SRCH_FLAG =     
 TRADFLAG        =      -traditional-cpp

@@ -50,6 +50,8 @@
       integer Istr,Iend,Jstr,Jend, i,j, itrc, iflux, k, ilc
       integer trd, omp_get_thread_num
       real    GRho, cff, cff1, cffu, cffv, cffb, cffug, cffvg
+      real    eps
+      parameter (eps=1.D-20)
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -143,14 +145,14 @@
               endif
 
               if (k.eq.N) then
-                  cffug = -g/f(i,j)*(
+                  cffug = -g/max(eps,f(i,j))*(
 # ifdef MASKING
      &                    vmask(i,j+1)*
 # endif
      &               (zeta(i,j+1,fast_indx_out)-zeta(i,j,fast_indx_out))
      &                   *0.5*(pm(i,j+1)+pm(i,j))
      &                    )
-                  cffvg = g/f(i,j)*(
+                  cffvg = g/max(eps,f(i,j))*(
 # ifdef MASKING
      &                    umask(i+1,j)*
 # endif

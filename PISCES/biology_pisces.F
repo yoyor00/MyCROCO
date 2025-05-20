@@ -24,72 +24,79 @@
 !----------------------------------------------------------------
        USE sms_pisces
        USE trcsms_pisces
+       USE oce_trc
+       USE trc
 
-C       implicit none
-       INTEGER Istr,Iend,Jstr,Jend
-       INTEGER i, j, jk, k, jn, ilc
+# include "ocean2pisces.h90"
 
-#include "ocean2pisces.h90"
+       implicit none
+       INTEGER, intent(in)  :: Istr,Iend,Jstr,Jend
+       INTEGER :: i, j, k, jn
+       INTEGER :: Kbb, Kmm
+!----------------------------------------------------------------
+!----------------------------------------------------------------
 
-      CALL ocean_2_pisces( Istr,Iend,Jstr,Jend) 
+
+      Kbb = nnew     ;      Kmm = nnew     ;       Krhs = nrhs
+
+      CALL ocean_2_pisces( iic, Istr,Iend,Jstr,Jend) 
 
       DO jn = 1, jptra
-         DO jk = KRANGE
-            DO j = JRANGE
-               DO i = IRANGE          ! masked grid volume
-                  trb(i,j,K,jn) 
-     &           = MAX( 0., trb(i,j,K,jn) * 1.e-6 )
-               ENDDO
-            ENDDO
-         ENDDO
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+           tr(i,j,k,jn,Kbb) 
+     &  = MAX( 0., tr(i,j,k,jn,Kbb) * 1.e-6 )
+         END DO   ;   END DO   ;   END DO         
       END DO
-      DO jk = KRANGE
-         DO j = JRANGE
-            DO i = IRANGE          ! masked grid volume
-                trb(i,j,K,jpno3) 
-     &        = trb(i,j,K,jpno3) / rno3
-# if ! defined key_pisces_light
-                trb(i,j,K,jpnh4) 
-     &        = trb(i,j,K,jpnh4) / rno3
-                trb(i,j,K,jppo4) 
-     &        = trb(i,j,K,jppo4) / po4r
+
+      DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+         tr(i,j,k,jpno3,Kbb) 
+     &   = tr(i,j,k,jpno3,Kbb) / rno3
+# if ! defined key_pisces_npzd
+         tr(i,j,k,jpnh4,Kbb) 
+     &   = tr(i,j,k,jpnh4,Kbb) / rno3
+         tr(i,j,k,jppo4,Kbb)
+     &   = tr(i,j,k,jppo4,Kbb) / po4r
 #endif
-            ENDDO
-         ENDDO
+      END DO   ;   END DO   ;   END DO         
+
+      DO jn = 1, jptra
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+             tra(i,j,k,jn)
+     &       = tr(i,j,k,jn,Krhs)
+         END DO   ;   END DO   ;   END DO         
+         !
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+            tr(i,j,k,jn,Krhs) = 0.
+         END DO   ;   END DO   ;   END DO         
        ENDDO
 
-!       ilc=1+iic-ntstart   ! number of time step since restart
-!       ! To be conform with clasic (no xios) croco file first
-!       ! time step must be writen
-!       if (ilc == 0) ilc=1
-!       CALL iom_setkt( ilc )
-       CALL trc_sms_pisces( iic )
+      CALL trc_sms_pisces( iic, Kbb, Kmm, Krhs )
+
 
       DO jn = 1, jptra
-         DO jk = KRANGE
-            DO j = JRANGE
-               DO i = IRANGE          ! masked grid volume
-                  trb(i,j,K,jn) 
-     &          = trb(i,j,K,jn) * 1.e6
-               ENDDO
-            ENDDO
-         ENDDO
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+           tr(i,j,k,jn,Kbb) 
+     &   = tr(i,j,k,jn,Kbb) * 1.e6 
+         END DO   ;   END DO   ;   END DO         
       END DO
-      DO jk = KRANGE
-         DO j = JRANGE
-            DO i = IRANGE          ! masked grid volume
-               trb(i,j,K,jpno3)
-     &       = trb(i,j,K,jpno3) * rno3
-# if ! defined key_pisces_light
-               trb(i,j,K,jpnh4) 
-     &       = trb(i,j,K,jpnh4) * rno3
-               trb(i,j,K,jppo4) 
-     &       = trb(i,j,K,jppo4) * po4r
-# endif
-            ENDDO
-         ENDDO
-      ENDDO
 
+      DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+         tr(i,j,k,jpno3,Kbb)
+     &   = tr(i,j,k,jpno3,Kbb) * rno3
+# if ! defined key_pisces_npzd
+         tr(i,j,k,jpnh4,Kbb) 
+     &  = tr(i,j,k,jpnh4,Kbb) * rno3
+         tr(i,j,k,jppo4,Kbb) 
+     &  = tr(i,j,k,jppo4,Kbb) * po4r
+#endif
+      END DO   ;   END DO   ;   END DO         
+      !
+      DO jn = 1, jptra
+         DO k= 1, jpk ; DO j=Jstrp,Jendp ; DO i=Istrp,Iendp
+            tr(i,j,k,jn,Krhs)
+     &    = tra(i,j,k,jn)
+         END DO   ;   END DO   ;   END DO         
+      ENDDO
 
       RETURN       
       END
