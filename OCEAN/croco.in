@@ -1,5 +1,9 @@
 title:
         BENGUELA TEST MODEL
+
+logfile:
+        croco.log
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                 720      3600      60      1
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
@@ -91,6 +95,12 @@ diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
 diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1           72            0
     CROCO_FILES/croco_dia_avg.nc
+
+diag_mld_crit_threshold: CRT1 (Dens [kg/m3]), CRT2 (Temp [Celsius]), CRT3 (Temp [Celsius])
+                         3.d-2                2.d-1                  5.d-1
+
+diag_mld_depth_ref: [m]
+                10
 
 diag3D_history_fields:    diag_tracers3D(1:NT) 
                             50*T
@@ -242,6 +252,13 @@ sediments: input file
            sediment.in
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                             20*F 
+
+substance: input file (substance module)
+               parasubstance.txt
+
+sediments_mustang: input file ( Mustang sediment model)
+               paraMUSTANG.txt
+
 
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T

@@ -15,4 +15,8 @@ doc/build
 Run/*
 Run/amr.in
 
+# IDEs               #
+######################
+.vscode
+
 OCEAN.bak/cpl_prism_getlistvals.F

@@ -303,7 +303,9 @@ while [[ $NY != $NY_END ]]; do
 	    echo "set NUMRECINI = $NUMRECINI"
 	fi
 	#
-	sed -e 's/NUMRECINI/'$NUMRECINI'/' < ${MODEL}_inter.in${ENDF}.tmp1 > ${MODEL}.in${ENDF}
+	sed -e 's/NUMRECINI/'$NUMRECINI'/' \
+	    -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
+		< ${MODEL}_inter.in${ENDF}.tmp1 > ${MODEL}.in${ENDF}
 	#
 	    LEVEL=$((LEVEL + 1))
 	done

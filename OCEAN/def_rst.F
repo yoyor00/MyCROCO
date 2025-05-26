@@ -634,6 +634,10 @@
 !
 # if defined TRACERS
         do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &   .and. itrc.ne.iCRT4) then
+# endif
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
@@ -652,6 +656,9 @@
 
           call nf_add_attribute(ncid, rstT(itrc), 
      &         vname(:,indxV+itrc), 5, NF_DOUBLE,ierr)
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        endif
+# endif
         enddo
 # endif
 
@@ -1338,7 +1345,7 @@
 ! ----- ---------- -----                  dimension size to zero.
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(*,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
      &              'DEF_RST - Created new ',
      &              'netCDF file ''', rstname(1:lstr), '''.'
      &               MYID
@@ -1635,6 +1642,10 @@
 !
 # if defined TRACERS
         do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &   .and. itrc.ne.iCRT4) then
+# endif
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                rstT(itrc))
@@ -1646,6 +1657,9 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
 #  endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        endif
+# endif
         enddo
 # endif
 
@@ -2043,7 +2057,7 @@
 # endif
 #endif /* BBL */
 !
-      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
+      MPI_master_only write(stdout,'(6x,2A,i4,1x,A,i4)')
      &             'DEF_RST -- Opened ',
      &             'existing restart file,  record =', rec
      &              MYID

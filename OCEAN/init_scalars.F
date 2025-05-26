@@ -540,6 +540,47 @@ CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(6,indxT)='x_rho y_rho                                 '
 #  endif
       vname(7,indxT)='                                            '
+
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+CR      write(stdout,'(1x,A,I3)') 'indxCRT2 = ',indxCRT2
+      vname(1,indxCRT2)='temp_CRT2                                  '
+      vname(2,indxCRT2)='potential temperature                       '
+      vname(3,indxCRT2)='Celsius                                     '
+      vname(4,indxCRT2)='temperature, scalar, series                 '
+      vname(5,indxCRT2)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxCRT2)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxCRT2)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxCRT2)='                                            '
+
+CR      write(stdout,'(1x,A,I3)') 'indxCRT3 = ',indxCRT3
+      vname(1,indxCRT3)='temp_CRT3                                '
+      vname(2,indxCRT3)='potential temperature                       '
+      vname(3,indxCRT3)='Celsius                                     '
+      vname(4,indxCRT3)='temperature, scalar, series                 '
+      vname(5,indxCRT3)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxCRT3)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxCRT3)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxCRT3)='                                            '
+
+CR      write(stdout,'(1x,A,I3)') 'indxCRT4 = ',indxCRT4
+      vname(1,indxCRT4)='temp_CRT4                                '
+      vname(2,indxCRT4)='potential temperature                       '
+      vname(3,indxCRT4)='Celsius                                     '
+      vname(4,indxCRT4)='temperature, scalar, series                 '
+      vname(5,indxCRT4)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxCRT4)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxCRT4)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxCRT4)='                                            '
+# endif /* DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_CRIT */
 # endif /* TEMPERATURE */
 
 # ifdef SALINITY
@@ -2879,6 +2920,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxTrate+itrc-1)
 ! Tracer diagnostics variables averaged over the MLD
 !
 # ifdef DIAGNOSTICS_TS_MLD
+
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+       vname(1,indxT)='temp_CRT1                                  '
+# endif
+
 CR       write(stdout,'(1x,A,I3)') 'indxTXadv_mld = ',indxTXadv_mld+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))
        nametrc=vname(1,indxT+itrc-1)(1:lvar)
@@ -2992,6 +3038,60 @@ CR       write(stdout,'(20x,A)') vname(1,indxTentr_mld+itrc-1)
        vname(5,indxTentr_mld+itrc-1)='                            '
        vname(6,indxTentr_mld+itrc-1)='                            '
        vname(7,indxTentr_mld+itrc-1)='                            '
+
+CR       write(stdout,'(1x,A,I3)') 'indxTaver_mld = ',indxTaver_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       unitt=vname(3,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_aver_mld                   '
+       vname(1,indxTaver_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
+       vname(2,indxTaver_mld+itrc-1)='MLD averaged                 '
+       write(vname3,*) trim(unitt)
+       vname(3,indxTaver_mld+itrc-1)=vname3
+       vname(4,indxTaver_mld+itrc-1)='                            '
+       vname(5,indxTaver_mld+itrc-1)='                            '
+       vname(6,indxTaver_mld+itrc-1)='                            '
+       vname(7,indxTaver_mld+itrc-1)='                            '
+
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_depth_mld                  '
+       vname(1,indxTcrit_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
+       vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
+       vname(3,indxTcrit_mld+itrc-1)=' meters                     '
+       if (itrc.eq.iCRT2) then
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : T_ref - ',
+     &   mld_crit_T,' °C'
+       elseif (itrc.eq.iCRT3) then
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : T_ref - ',
+     &   mld_crit_T2,' °C'
+       elseif (itrc.eq.iCRT4) then
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : BVF with rho_ref = '
+     &   ,mld_crit_D,' kg/m3'
+       else
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : rho_ref + ',
+     &   mld_crit_D,' kg/m3'
+       endif
+       vname(4,indxTcrit_mld+itrc-1)=vname3
+       if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
+         write(vname3,'(A,I4,A)') 'Reference depth of T_ref = ',
+     &   mld_depth_ref,' m'
+       elseif (itrc.eq.iCRT4) then
+         write(vname3,'(A,I4,A)') '            '
+       else
+         write(vname3,'(A,I4,A)') 'Reference depth of rho_ref = ',
+     &   mld_depth_ref,' m'
+       endif
+       vname(5,indxTcrit_mld+itrc-1)=vname3
+       vname(6,indxTcrit_mld+itrc-1)='                            '
+       vname(7,indxTcrit_mld+itrc-1)='                            '
+
+       vname(1,indxT)='temp                                        '
+
+# endif /* DIAGNOSTICS_TS_MLD_CRIT */
+
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc
