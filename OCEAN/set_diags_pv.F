@@ -238,7 +238,14 @@
                   !bflux(i,j,k)     =  gradbuoy(i,j,k)
                   !diffusivity(i,j,k)    =  TF_zVmix(i,j,k,1)
 
-
+# if defined PASSIVE_TRACER
+        do itrc=1,ntrc_pas
+                  ! r.h.s. for passive tracers
+                  Trhs(i,j,k,4+itrc)= TVmix(i,j,k,NTA+itrc)
+     &                              + TForc(i,j,k,NTA+itrc)
+     &                              + THmix(i,j,k,NTA+itrc)
+          enddo
+# endif
 
               enddo
           enddo

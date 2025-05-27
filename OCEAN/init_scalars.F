@@ -3783,25 +3783,8 @@ CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
 # endif /* DIAGNOSTICS_EK_MLD */
 #endif /* DIAGNOSTICS_EK */
 
-#ifdef DIAGNOSTICS_PV
+# ifdef DIAGNOSTICS_PV
 # if defined  DIAGNOSTICS_DIAPYCNAL
-
-# if defined  DIAGNOSTICS_DIAPYCNAL_DEBUG
-
-CR       write(stdout,'(1x,A,I3)') 'indxpvbflux = ',indxpvbflux
-       nametrc='gradbuoy'
-       unitt=' '
-       write(vname1,*) trim(nametrc)
-       vname(1,indxpvbflux)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxpvbflux)
-       vname(2,indxpvbflux)='                                '
-       write(vname3,*) trim(unitt)
-       vname(3,indxpvbflux)=vname3
-       vname(4,indxpvbflux)='                                        '
-       vname(5,indxpvbflux)='                                        '
-       vname(7,indxpvbflux)='                                        '
-
-#else
 
 CR       write(stdout,'(1x,A,I3)') 'indxpvbflux = ',indxpvbflux
        nametrc='flux_b_dia'
@@ -3815,8 +3798,6 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvbflux)
        vname(4,indxpvbflux)='                                        '
        vname(5,indxpvbflux)='                                        '
        vname(7,indxpvbflux)='                                        '
-
-# endif
 
 CR       write(stdout,'(1x,A,I3)') 'indxpvdiffusivity = ',indxpvdiffusivity
        nametrc='diffusivity'
@@ -3833,32 +3814,22 @@ CR       write(stdout,'(20x,A)') vname(1,indxpvdiffusivity)
 
 # endif
 
-      do itrc=1,4
+#if defined DIAGNOSTICS_DIAPYCNAL
+# if defined PASSIVE_TRACER
+        do itrc=1,4+ntrc_pas
+# else
+        do itrc=1,4
+# endif
+#else
+        do itrc=1,NTA
+#endif
 
 CR       write(stdout,'(1x,A,I3)') 'indxpvTrhs = ',indxpvTrhs+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))
        nametrc=vname(1,indxT+itrc-1)(1:lvar)
        lvar=lenstr(nametrc)
        unitt=vname(3,indxT+itrc-1)
-# if defined  DIAGNOSTICS_DIAPYCNAL_DEBUG
-       if (itrc.eq.1) then
-         write(vname1,*) 'temp_xHmix                              '
-       elseif (itrc.eq.2) then
-         write(vname1,*) 'temp_yHmix                              '
-       elseif (itrc.eq.3) then
-         write(vname1,*) 'temp_zHmix                              '
-       elseif (itrc.eq.4) then
-         write(vname1,*) 'temp_zVmix                              '
-       elseif (itrc.eq.5) then
-         write(vname1,*) 'salt_xHmix                              '
-       elseif (itrc.eq.6) then
-         write(vname1,*) 'salt_yHmix                              '
-       elseif (itrc.eq.7) then
-         write(vname1,*) 'salt_zHmix                              '
-       elseif (itrc.eq.8) then
-         write(vname1,*) 'salt_zVmix                              '
-       endif
-# elif defined  DIAGNOSTICS_DIAPYCNAL
+# if defined  DIAGNOSTICS_DIAPYCNAL
        if (itrc.eq.1) then
          write(vname1,*) 'b_rhs                                   '
        elseif (itrc.eq.2) then
@@ -3867,6 +3838,13 @@ CR       write(stdout,'(1x,A,I3)') 'indxpvTrhs = ',indxpvTrhs+itrc-1
          write(vname1,*) 'b_rate                                  '
        elseif (itrc.eq.4) then
          write(vname1,*) 'b_adv                                   '
+       elseif (itrc.gt.4) then
+        if( itrc-4.lt.10) then
+           write(nametrc,'(A,I1)') 'tpas0',itrc-4
+        else
+           write(nametrc,'(A,I2)') 'tpas',itrc-4
+        endif
+        write(vname1,*) trim(nametrc),'_rhs                        '
        endif
 #else
        write(vname1,*) trim(nametrc),'_rhs                        '

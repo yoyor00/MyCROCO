@@ -478,7 +478,7 @@
      &                ntrc_bio+ntrc_sed+
      &                ntrc_diats+ntrc_diats_iso+
      &                ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
-     &           indxpvMrhs=indxpvTrhs+8)
+     &           indxpvMrhs=indxpvTrhs+4+ntrc_pas)
 #  ifdef DIAGNOSTICS_DIAPYCNAL
       integer indxpvbflux,indxpvdiffusivity
       parameter (indxpvbflux=indxpvMrhs+2,
@@ -1298,7 +1298,7 @@
 #  ifdef DIAGNOSTICS_DIAPYCNAL
      &      , diags_pvbflux(2), diags_pvdiff(2)
 #  endif
-     &      , diags_pvMrhs(2), diags_pvTrhs(8)
+     &      , diags_pvMrhs(2), diags_pvTrhs(4+ntrc_pas)
 # endif
 
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
@@ -1505,7 +1505,7 @@
 #   ifdef DIAGNOSTICS_DIAPYCNAL
      &      , diags_pvbflux_avg(2), diags_pvdiff_avg(2)
 #   endif
-     &      , diags_pvMrhs_avg(2), diags_pvTrhs_avg(8)
+     &      , diags_pvMrhs_avg(2), diags_pvTrhs_avg(4+ntrc_pas)
 #  endif
 #  if defined DIAGNOSTICS_EDDY && ! defined XIOS
        integer nciddiags_eddy_avg, nrecdiags_eddy_avg, nrpfdiags_eddy_avg

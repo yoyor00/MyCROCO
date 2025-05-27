@@ -170,7 +170,11 @@
 
 !---------------------------------------------------------------
 
+# if defined PASSIVE_TRACER
+        do itrc=1,4+ntrc_pas
+# else
         do itrc=1,4
+# endif
           if (wrtdiags_pv(1)) then
 
 !

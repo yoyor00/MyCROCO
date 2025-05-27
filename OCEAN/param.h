@@ -1022,7 +1022,7 @@
       parameter (ntrc_diaek=0)
 # endif
 # ifdef DIAGNOSTICS_PV
-      parameter (ntrc_diapv=12)
+      parameter (ntrc_diapv=12+ntrc_pas)
 # else
       parameter (ntrc_diapv=0)
 # endif

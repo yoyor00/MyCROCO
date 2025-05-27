@@ -102,7 +102,11 @@
           enddo
         enddo
 
+# if defined PASSIVE_TRACER
+        do itrc=1,4+ntrc_pas
+# else
         do itrc=1,4
+# endif
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR

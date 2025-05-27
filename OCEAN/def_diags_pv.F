@@ -305,7 +305,11 @@
 
 
 
-        do itrc=1,4 !NTA
+# if defined PASSIVE_TRACER
+        do itrc=1,4+ntrc_pas
+# else
+        do itrc=1,4
+# endif
 
           if (wrt(1)) then
 
@@ -645,7 +649,11 @@
 
 ! ---------------------------------
 
-      do itrc=1,4 !NTA
+# if defined PASSIVE_TRACER
+        do itrc=1,4+ntrc_pas
+# else
+        do itrc=1,4
+# endif
         if (wrt(1)) then
 !
 !
