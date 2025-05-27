@@ -341,7 +341,12 @@
         enddo
 
 !
-# if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
+# if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5\
+                           || defined TS_HADV_UP5\
+                           || defined TS_HADV_UP3
+
+! not ideal because if we use BIO_HADV_WENO5 and RSUP3/RSUP5
+! T/S centered advection is recomputed for nothing.
 
 #  if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
 #   if defined DIAGNOSTICS_DIAPYCNAL && !defined DIAGNOSTICS_TRACER_ISO
@@ -365,7 +370,9 @@
 #   endif /* defined DIAGNOSTICS_DIAPYCNAL */
 #  endif /* defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO*/
 
-
+#  ifdef BIO_HADV_WENO5
+      if (itrc.le.NTA) then
+#  endif
 !
 ! Compute centered scheme fluxes FX and FE to separate
 ! advection and diffusion parts of the transport term
@@ -394,6 +401,19 @@
 #     define TS_HADV_UP3
 
 #    endif
+
+#  ifdef BIO_HADV_WENO5
+          else  !<-- if (itrc .gt. NTA)
+
+#     define TS_HADV_C6
+#     undef  TS_HADV_WENO5
+#     include "compute_horiz_tracer_fluxes.h"
+#     undef  TS_HADV_C6
+#     define TS_HADV_WENO5
+
+          endif
+#  endif
+
 
         do j=Jstr,Jend
           do i=Istr,Iend
