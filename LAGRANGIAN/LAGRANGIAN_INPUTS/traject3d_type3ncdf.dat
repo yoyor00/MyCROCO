@@ -1,0 +1,45 @@
+FICHIER LIE A FICHIER NETCDF (itypetraj=3)
+FILE DEFINING RECTANGULAR PATCHES
+
+name of patch
+date of initialization of patch (trajectory s beginning)
+date of trajectory s end
+frequency of outputs
+name of input netcdf file with locations of particles
+Number of particles set at each initial location
+itypevert: type of vertical moving at beginning of simulation (may be updated next)
+           =0 if constant depth (no vertical moving)
+           <0 if only vertical advection
+           >0 if vertical diffusion with random walk (vertical turbulence)
+name of output file
+
+FIN DESCRIPTIF FICHIER
+
+**************************************************************
+patch1                          ,| 
+2009/01/01 00:00:00             ,| tbegtraj
+2011/12/31 23:59:59             ,| tendtraj
+24.d0                           ,| dtsave_traj
+../../inputs/trajectoire/T2.nc  ,| filetrajin
+./PlT2.nc                       ,| filetrajout
+1                               ,| nb_part_intro
+1                               ,| itypevert
+**************************************************************
+patch2                          ,| 
+2009/01/01 00:00:00             ,| tbegtraj
+2011/12/31 23:59:59             ,| tendtraj
+24.d0                           ,| dtsave_traj
+../../inputs/trajectoire/T3.nc  ,| filetrajin
+./PlT3.nc                       ,| filetrajout
+1                               ,| nb_part_intro
+1                               ,| itypevert
+**************************************************************
+patch3                          ,| 
+2009/01/01 00:00:00             ,| tbegtraj
+2011/12/31 23:59:59             ,| tendtraj
+24.d0                           ,| dtsave_traj
+../../inputs/trajectoire/T5.nc  ,| filetrajin
+./PlT5.nc                       ,| filetrajout
+1                               ,| nb_part_intro
+1                               ,| itypevert
+**************************************************************

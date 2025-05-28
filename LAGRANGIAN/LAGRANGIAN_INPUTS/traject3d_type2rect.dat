@@ -1,0 +1,62 @@
+FICHIER DEFINISSANT DES TACHES RECTANGULAIRES (itypetraj=2)
+FILE DEFINING RECTANGULAR PATCHES
+
+name of patch
+date of initialization of patch (trajectory s beginning)
+date of trajectory s end
+time step for outputs
+location with indexes : imin,imax,jmin,jmax (.true.) 
+         or with longitudes and latitudes lonmin,lonmax,latmin,latmax (.false.)
+western,eastern,southern,northern boundary of the initial patch
+step in i and j between particles within the the patch boundaries
+depth of the initial patch (min and max), as immersion
+step in z(m) for the initial patch starting at ktachemin 
+Number of particles set at each initial location
+itypevert: type of vertical moving at beginning of simulation (may be updated next)
+           =0 if constant depth (no vertical moving)
+           <0 if only vertical advection
+           >0 if vertical diffusion with random walk (vertical turbulence)
+name of output file
+
+FIN DESCRIPTIF FICHIER
+
+**************************************************************
+patch1                      ,| 
+2009/01/01 00:00:00         ,| tbegtraj
+2011/12/31 23:59:59         ,| tendtraj
+24.d0                       ,| dtsave_traj
+.true.                      ,| location in indexes
+80 100 80 100               ,| itachemin,itachemax,jtachemin,jtachemax
+1 1                         ,| istep_patch,jstep_patch
+1 10                        ,| ktachemin,ktachemax
+1                           ,| kstep_patch
+1                           ,| nb_part_intro
+-1                          ,| itypevert
+./rectvert.nc               ,| filetrajout
+**********
+patch2                      ,| 
+2009/01/01 00:00:00         ,| tbegtraj
+2011/12/31 23:59:59         ,| tendtraj
+24.d0                       ,| dtsave_traj
+.true.                      ,| location in indexes
+80 100 80 100               ,| itachemin,itachemax,jtachemin,jtachemax
+1 1                         ,| istep_patch,jstep_patch
+1 10                        ,| ktachemin,ktachemax
+1                           ,| kstep_patch
+1                           ,| nb_part_intro
+1                           ,| itypevert
+./rectrw.nc                 ,| filetrajout
+**********
+patch3                      ,| 
+2009/01/01 00:00:00         ,| tbegtraj
+2011/12/31 23:59:59         ,| tendtraj
+24.d0                       ,| dtsave_traj
+.true.                      ,| location in indexes
+80 100 80 100               ,| itachemin,itachemax,jtachemin,jtachemax
+1 1                         ,| istep_patch,jstep_patch
+1 10                        ,| ktachemin,ktachemax
+1                           ,| kstep_patch
+1                           ,| nb_part_intro
+0                           ,| itypevert
+./rectfix.nc                ,| filetrajout
+**********

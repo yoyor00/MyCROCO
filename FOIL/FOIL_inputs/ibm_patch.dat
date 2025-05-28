@@ -1,0 +1,51 @@
+FICHIER LIE A FICHIER NETCDF (itypetraj=3)
+FILE DEFINING NETCDF PATCHES
+
+name of patch
+date of initialization of patch (trajectory s beginning)
+date of trajectory s end
+frequency of outputs
+name of input netcdf file with locations of particles
+name of output file
+Number of particles set at each initial location
+itypevert: type of vertical moving at beginning of simulation (may be updated next)
+           =0 if constant depth (no vertical moving)
+           <0 if only vertical advection
+           >0 if vertical diffusion with random walk (vertical turbulence)
+name of species (anchovy or sardine)
+number of particles in input file
+development stage of individuals
+size of individuals
+number of particles in each super-individuals
+density of individuals
+age of individuals
+ageClass of individuals
+Maturity energy
+Reserve energy 
+Energy for reproduction (first feeding)(Nisbet 2012)
+Number of gametes inside individuals
+
+FIN DESCRIPTIF FICHIER%
+
+**************************************************************
+patch1                  ,| name of patch    
+1900/01/01 00:00:00     ,| tbegtraj
+2030/07/01 00:00:00     ,| tendtraj
+24.d0                   ,| dtsave_traj
+init_pos.nc             ,| filetrajin
+./anchois.nc            ,| filetrajout
+1			            ,| nb_part_intro
+1                       ,| itypevert
+anchovy                 ,| species	
+10                      ,| number of particles 
+6                       ,| stage
+12.13                   ,| size (in cm)
+437124985               ,| Number per particle (for Super Individuals) 
+1025.0                  ,| density
+305                     ,| age
+1                       ,| age class (age at adult stage, 1 to 4 for anc)
+12026.0	                ,| H (J)
+20625.0	                ,| E (J)
+7548.4		            ,| R (J)
+0.0			            ,| Gam (J)
+**************************************************************

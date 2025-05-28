@@ -1,0 +1,52 @@
+FICHIER DEFINISSANT DES TACHES CIRCULAIRES (itypetraj=1)
+FILE DEFINING CIRCULAR PATCHES
+
+name of patch
+date of initialization of patch (trajectory s beginning)
+date of trajectory s end
+time step for outputs
+location with indexes : imin,imax (.true.) 
+         or with longitudes and latitudes (.false.)
+location of initial patch
+ray of initial patch
+number of particle per layer of a patch (about)
+depth of the initial patch (min and max), as immersion
+step in z(m) for the initial patch starting at ktachemin 
+Number of particles set at each initial location
+itypevert: type of vertical moving at beginning of simulation (may be updated next)
+           =0 if constant depth (no vertical moving)
+           <0 if only vertical advection
+           >0 if vertical diffusion with random walk (vertical turbulence)
+name of output file
+
+FIN DESCRIPTIF FICHIER
+
+**************************************************************
+patch1                      ,| 
+2009/01/01 00:00:00         ,| tbegtraj
+2011/12/31 23:59:59         ,| tendtraj
+24.d0                       ,| dtsave_traj
+.true.                      ,| location in indexes
+90 90                       ,| center location
+20000                       ,| patch ray
+300                         ,| number of particle per level
+5 25                        ,| ktachemin,ktachemax
+1                           ,| kstep_patch
+3                           ,| nb_part_intro
+0                           ,| itypevert
+./circle1.nc                ,| filetrajout
+**************************************************************
+patch2                      ,| 
+2009/01/01 00:00:00         ,| tbegtraj
+2011/12/31 23:59:59         ,| tendtraj
+24.d0                       ,| dtsave_traj
+.false.                     ,| location in indexes
+7 38                        ,| center location
+20000                       ,| patch ray
+300                         ,| number of particle per level
+5 25                        ,| ktachemin,ktachemax
+1                           ,| kstep_patch
+3                           ,| nb_part_intro
+0                           ,| itypevert
+./circle2.nc                ,| filetrajout
+************************************************************

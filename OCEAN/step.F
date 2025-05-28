@@ -1019,6 +1019,12 @@ C$OMP END MASTER
 #   ifdef SUBSTANCE_SUBMASSBALANCE
       USE submassbalance, ONLY :  submassbalance_main
 #   endif
+#ifdef LAGRANGIAN
+      use plug_lagrangian, only: LAGRANGIAN_update_main
+#endif
+#ifdef DEB_IBM
+      USE plug_ibm,        ONLY : ibm_update_main
+#endif
 #ifdef MUSTANG
       use plug_MUSTANG_CROCO, only: mustang_update_main
       use plug_MUSTANG_CROCO, only: mustang_deposition_main
@@ -1182,7 +1188,20 @@ C$OMP BARRIER
 
 # endif
 
+#ifdef LAGRANGIAN
+      do tile=my_first,my_last
+       call LAGRANGIAN_update_main(tile)
+      end do
+#endif
+
+#ifdef DEB_IBM
+      do tile=my_first,my_last
+            call ibm_update_main(tile)
+      enddo
+#endif
+
 #endif /* SOLVE3D */
+
 
 #ifdef FLOATS
       chunk_size_flt=32

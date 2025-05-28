@@ -1,0 +1,88 @@
+:===============================================================================
+: Namelist
+: Inventory of all sardine DEB parameters
+:===============================================================================
+:
+:------------------------------------------------------------------------------
+: deb_para   
+:------------------------------------------------------------------------------
+:
+:       pAm     : J/d.cm2, spec max assim rate {J_EAm} 
+:       pMi     : J/cm3/d, volume-spec maintenance costs
+:       EG      : J/cm3, volume-spec costs of structure
+:       vc      : cm/j, energy conductance 
+:       kap     : -, Fraction to growth + maintenance   
+:       Kx      : Assimilation efficiency  
+:       Hp      : J, maturity at puberty (Nisbet 2012)
+:       TA      : K, Arrhenius temperature ;  eggs devlpt -> 9800 = after Regner 1996; larval growth rate : 7500   
+:       K       : mgC.m3, half saturation constant            
+:       shapeb  : -, shape coefficient at birth (early larvae after correction for shrinking)
+:       lfactor : acceleration factor for larval growth
+:       E0      : J, Energy for one egg, after Valdes, 1993 (23800 J/DW pour 27.7 microg DW/egg)
+:       Rfbatch : eggs.cm-3, Relative batch fecundity (egg/g, Ganas Book)
+:       SF      : 1/(batch interval) = batch interval one batch every, 2.5  = min batch interval (at 20°C = T1)
+:--------------------------------------------------------------------------------
+:
+ &deb_para
+    pAm     = 987.0
+    pMi     = 103.0
+    EG      = 2803.0
+    vc      = 0.420
+    kap     = 0.53
+    Kx      = 0.80 
+    Hp      = 49912.0
+    TA      = 12989.0
+    K       = 9.99
+    shapeb  = 0.070
+    lfactor = 0.180
+    E0      = 1.110
+    Rfbatch = 400.0
+    SF      = 0.0840/
+:
+:------------------------------------------------------------------------------
+: deb_fixed_para   
+:------------------------------------------------------------------------------
+:       kj      : 1/d, maturity maintenance rate coeff
+:       Hb      : J, maturity at birth (first feeding)(Nisbet 2012)
+:       Hj      : J, maturity at metamorphosis        
+:       T1      : K, Reference temperature
+:       TAL     : K, Arrhenius temperature at low temp {Kooy2000} 
+:       TL      : K, lower boundary temp range
+:       shape   : -, shape coefficient                
+:       d_V     : g/cm^3, specific density of structure (Dw)
+:       rho_V   : J/g, = mu_V / w_V; Energy density of structure (DW)
+:       rho_E   : J/g, = mu_E / w_E; Energy density of reserve (DW)
+:       rho_R   : J/g, = mu_E / w_E; Energy density of Repro buffer (DW)
+:       rho_Gam : J/g, = mu_E / w_E; Energy density of Gametes (DW)
+:       Kr      : Fraction of the Gamete buffer fixed into eggs
+:       Sizeb   : -cm, Length at first feeding (birth in DEB)
+:       Lj      : 
+:       TR      : K, temperature at start spawning
+:       Eb      : J/cm3, specific batch energy (Pethybridge), 0.15(E0)*550 (egg/cm3)
+:       E_i     : (Pethybridge 2011)
+:       R_i     : 
+:--------------------------------------------------------------------------------
+:    
+ &deb_fixed_param
+    kj      = 0.048
+    Hb      = 0.09
+    Hj      = 30.0
+    T1      = 293.0
+    TAL     = 30000.0
+    TL      = 281.0
+    shape   = 0.2
+    d_V     = 0.106
+    rho_V   = 20100.0
+    rho_E   = 31332.0
+    rho_R   = 24937.0
+    rho_Gam = 23880.0
+    Kr      = 0.95
+    Sizeb   = 0.40
+    Lj      = 4.0
+    TR      = 286.0
+    Eb      = 82.5
+    E_i     = 0.110
+    R_i     = 0.0/
+:
+:===============================================================================
+:===============================================================================
