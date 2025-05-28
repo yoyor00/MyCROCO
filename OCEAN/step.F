@@ -672,6 +672,9 @@ C$OMP BARRIER
       common /sta_step/ sta_str
 #endif
       integer omp_get_num_threads, omp_get_thread_num
+#if defined AGRIF && defined KXX
+       integer level
+#endif
 
       ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
@@ -679,6 +682,16 @@ C$OMP BARRIER
       range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
       my_first=trd*range
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
+
+#if defined AGRIF && defined KXX
+       !! Lecture de AGRIF_FixedGrids.in kernels/niveaux
+       if ((FIRST_TIME_STEP).and.(FIRST_FAST_STEP)
+     &				.and.(kxxnb==0)) then
+            call getlistekernels('./AGRIF_FixedGrids.in',
+     &      tabkernel,kxxnb) 
+       endif
+#endif
+
 
 !
 ! Solve the 2D primitive equations for the barotropic mode.
@@ -818,7 +831,32 @@ C$OMP BARRIER
               call   step3d_fast (tile)
             endif
 # else
+#  if defined AGRIF && defined KXX   
+            level=Agrif_Fixed()
+!            print *,"grille numero :",Agrif_Fixed()
+!     &             ," AGRIF_Root=",AGRIF_Root(),level
+!            print *,"tabkernel(level+1)="
+!     &             ,tabkernel(level+1)
+!     &             ,":",tabkernel(1:kxxnb)
+            
+            select case (tabkernel(level+1))
+                case ("KNBQ")
+                  call   step3d_fast_KNBQ (tile)
+                case ("KNHINT")
+                  call   step3d_fast_KNHINT (tile)
+                case ("KH3D")
+                   call   step3d_fast_KH3D (tile)
+                case ("KCOMP")
+                   call   step3d_fast_KHCOMP (tile)            
+                case default
+                   print *,"kernel:",tabkernel(level+1)
+     &  ," not recognize"
+                    stop
+            end select
+            
+#  else
             call   step3d_fast (tile)
+# endif
 # endif
 #else
             call     step2d (tile)
@@ -834,7 +872,28 @@ C$OMP BARRIER
               call   step3d_fast (tile)
             endif
 # else
+#  if defined AGRIF && defined KXX   
+            level=Agrif_Fixed()
+            
+            select case (tabkernel(level+1))
+                case ("KNBQ")
+                  call   step3d_fast_KNBQ (tile)
+                case ("KNHINT")
+                  call   step3d_fast_KNHINT (tile)
+                case ("KH3D")
+                   call   step3d_fast_KH3D (tile)
+                case ("KCOMP")
+                   call   step3d_fast_KHCOMP (tile)            
+                case default
+                   print *,"kernel:",tabkernel(level+1)
+     &  ," not recognize"
+                    stop
+                
+            end select
+                            
+#  else
             call   step3d_fast (tile)
+#  endif
 # endif
 #else
             call     step2d (tile)

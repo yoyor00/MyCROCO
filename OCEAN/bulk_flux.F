@@ -134,21 +134,28 @@
       INTEGER            :: itt
       INTERFACE
 !=======================================================================
-      ELEMENTAL FUNCTION spec_hum (RH,psfc,TairC)
+!!      !!      !!      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+     
+     
+     
+      FUNCTION spec_hum (RH,psfc,TairC)
 !$acc routine(spec_hum) seq
             IMPLICIT NONE
             REAL,INTENT(in) ::  RH , TairC , psfc
       REAL       :: spec_hum
       END FUNCTION spec_hum
 
-      ELEMENTAL FUNCTION qsat (TairK, patm, coeff)
+      !!      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+     
+      FUNCTION qsat (TairK, patm, coeff)
 !$acc routine(qsat) seq
       IMPLICIT NONE
       REAL                 ::  qsat
       REAL,INTENT(in)      ::  TairK, patm, coeff
       END FUNCTION qsat
 
-      ELEMENTAL SUBROUTINE exner_patm_from_tairabs(iexn,pair,q,
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      SUBROUTINE exner_patm_from_tairabs(iexn,pair,q,
      &  tairabs,z,psfc)
 !$acc routine(exner_patm_from_tairabs) seq
       IMPLICIT NONE
@@ -156,31 +163,36 @@
       REAL,INTENT(in   )   :: q, tairabs, z, psfc
       END SUBROUTINE exner_patm_from_tairabs
       
-      ELEMENTAL FUNCTION bulk_psiu_ecume (ZoL)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION bulk_psiu_ecume (ZoL)
 !$acc routine(bulk_psiu_ecume) seq
       REAL                 ::  bulk_psiu_ecume
       REAL,INTENT(in)      ::  ZoL      
       END FUNCTION bulk_psiu_ecume   
       
-      ELEMENTAL FUNCTION bulk_psit_ecume (ZoL)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION bulk_psit_ecume (ZoL)
 !$acc routine(bulk_psit_ecume) seq
       REAL                 ::  bulk_psit_ecume
       REAL,INTENT(in)      ::  ZoL      
       END FUNCTION bulk_psit_ecume
       
-      ELEMENTAL FUNCTION air_visc(TairC)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION air_visc(TairC)
 !$acc routine(air_visc) seq
       REAL,INTENT(in)      :: TairC
       REAL                 :: air_visc
       END FUNCTION air_visc
       
-      ELEMENTAL FUNCTION bulk_psiu_coare (ZoL)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION bulk_psiu_coare (ZoL)
 !$acc routine(bulk_psiu_coare) seq
       REAL                 ::  bulk_psiu_coare
       REAL,INTENT(in)      ::  ZoL
       END FUNCTION bulk_psiu_coare
  
-      ELEMENTAL FUNCTION bulk_psit_coare (ZoL)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION bulk_psit_coare (ZoL)
 !$acc routine(bulk_psit_coare) seq
       REAL                 ::  bulk_psit_coare
       REAL,INTENT(in)      ::  ZoL
@@ -825,7 +837,8 @@ c              !   cff=blk_beta*(Bf*blk_Zabl)**r3
 !=======================================================================
 !   Compute specific humidity from relative humidity
 !=======================================================================
-      ELEMENTAL FUNCTION spec_hum (RH,psfc,TairC)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION spec_hum (RH,psfc,TairC)
 !$acc routine(spec_hum) seq
 # ifdef RVTK_DEBUG
 	use debug
@@ -850,7 +863,8 @@ c              !   cff=blk_beta*(Bf*blk_Zabl)**r3
 !=======================================================================
 !    Compute Exner function from absolute air temperature
 !=======================================================================
-      ELEMENTAL SUBROUTINE exner_patm_from_tairabs(iexn,pair,q,
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      SUBROUTINE exner_patm_from_tairabs(iexn,pair,q,
      &  tairabs,z,psfc)
 !$acc routine(exner_patm_from_tairabs) seq
 # ifdef RVTK_DEBUG
@@ -868,7 +882,8 @@ c              !   cff=blk_beta*(Bf*blk_Zabl)**r3
       INTEGER, PARAMETER   :: Niter = 3
 
       INTERFACE
-      ELEMENTAL FUNCTION qsat (TairK, patm, coeff)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION qsat (TairK, patm, coeff)
 !$acc routine(qsat) seq
       IMPLICIT NONE
       REAL                 ::  qsat
@@ -893,7 +908,8 @@ c              !   cff=blk_beta*(Bf*blk_Zabl)**r3
 !=======================================================================
 !    Compute Saturation humidity
 !=======================================================================
-      ELEMENTAL FUNCTION qsat (TairK, patm, coeff)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION qsat (TairK, patm, coeff)
 !$acc routine(qsat) seq
 # ifdef RVTK_DEBUG
 	use debug
@@ -934,7 +950,8 @@ c              !   cff=blk_beta*(Bf*blk_Zabl)**r3
 !=======================================================================
 !    Ecume stability function for velocity
 !=======================================================================
-      ELEMENTAL FUNCTION bulk_psiu_ecume (ZoL)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION bulk_psiu_ecume (ZoL)
 !$acc routine(bulk_psiu_ecume) seq
 # ifdef RVTK_DEBUG
 	use debug
@@ -967,7 +984,8 @@ c              !   cff=blk_beta*(Bf*blk_Zabl)**r3
 !=======================================================================
 !    Ecume stability function for tracers
 !=======================================================================
-      ELEMENTAL FUNCTION bulk_psit_ecume (ZoL)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION bulk_psit_ecume (ZoL)
 !$acc routine(bulk_psit_ecume) seq
 # ifdef RVTK_DEBUG
 	use debug
@@ -999,7 +1017,8 @@ c              !   cff=blk_beta*(Bf*blk_Zabl)**r3
 !=======================================================================
 !    Compute molecular viscosity as a function of air temperature
 !=======================================================================
-      ELEMENTAL FUNCTION air_visc(TairC)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION air_visc(TairC)
 !$acc routine(air_visc) seq
       REAL,INTENT(in)      :: TairC
       REAL                 :: air_visc
@@ -1015,7 +1034,8 @@ c              !   cff=blk_beta*(Bf*blk_Zabl)**r3
 !=======================================================================
 !    Coare stability function for velocity
 !=======================================================================
-      ELEMENTAL FUNCTION bulk_psiu_coare (ZoL)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION bulk_psiu_coare (ZoL)
 !$acc routine(bulk_psiu_coare) seq
 # ifdef RVTK_DEBUG
 	use debug
@@ -1049,7 +1069,8 @@ c #endif
 !=======================================================================
 !    Coare stability function for tracers
 !=======================================================================
-      ELEMENTAL FUNCTION bulk_psit_coare (ZoL)
+      !!      ELEMENTAL -> Agrif do not recocnize ELEMENTAL ?
+      FUNCTION bulk_psit_coare (ZoL)
 !$acc routine(bulk_psit_coare) seq
 # ifdef RVTK_DEBUG
 	use debug

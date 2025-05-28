@@ -109,9 +109,9 @@ ls ${SOURCE}/*.py              > /dev/null  2>&1 && \cp ${SOURCE}/*.py   $SCRDIR
 ls ${SOURCE}/Make*             > /dev/null  2>&1 && \cp ${SOURCE}/Make* $SCRDIR
 ls ${SOURCE}/jobcomp           > /dev/null  2>&1 && \cp ${SOURCE}/jobcomp $SCRDIR
 ls ${SOURCE}/amr.in            > /dev/null  2>&1 && \cp ${SOURCE}/amr.in $SCRDIR
-ls ${SOURCE}/KNBQ2/*           > /dev/null  2>&1 && \cp ${SOURCE}/KNBQ2/* $SCRDIR
+ls ${ROOT_DIR}/KNBQ2/*         > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/KNBQ2 $SCRDIR
 ls ${ROOT_DIR}/KNBQ3/*         > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/KNBQ3 $SCRDIR
-ls ${ROOT_DIR}/ONLINE_ANALYSIS/* > /dev/null  2>&1 && \cp ${ROOT_DIR}/ONLINE_ANALYSIS/* $SCRDIR
+ls ${ROOT_DIR}/ONLINE_ANALYSIS/* > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/ONLINE_ANALYSIS $SCRDIR
 ls ${AGRIF_SRC}                > /dev/null  2>&1 && \cp -r ${AGRIF_SRC} $SCRDIR
 ls ${ROOT_DIR}/XIOS/*.F        > /dev/null  2>&1 && \cp ${ROOT_DIR}/XIOS/*.F $SCRDIR
 ls ${ROOT_DIR}/PISCES/*        > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/PISCES/* $SCRDIR
@@ -140,6 +140,7 @@ fi
 
 ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
 ls *.F     > /dev/null  2>&1 && \cp -f *.F $SCRDIR
+ls *.py     > /dev/null  2>&1 && \cp -f *.py $SCRDIR
 ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
 ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
 ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
@@ -162,7 +163,7 @@ if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX =====
 		CFT1=ifort
 #		FFLAGS1="-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise"
                 FFLAGS1="-O0 -g -i4 -r8 -traceback -check all -check bounds \
-#                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
+                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
 		LDFLAGS1="$LDFLAGS1"
 	elif [[ $FC == gfortran ]] ; then
 		CPP1="cpp -traditional -DLinux"
@@ -213,6 +214,18 @@ if $($CPP1 testkeys.F | grep -i -q knbq3isdefined) ; then
 	ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
 	ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
 	ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
+else
+        echo " => KNBQ2 activated"
+        cp KNBQ2/*  .
+	#
+	# overwrite with local files
+	#
+	ls ../*.F90   > /dev/null  2>&1 && \cp -f ../*.F90 .
+	ls ../*.F     > /dev/null  2>&1 && \cp -f ../*.F .
+	ls ../*.h     > /dev/null  2>&1 && \cp -f ../*.h .
+	ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
+	ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
+	ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
 fi
 #
 # determine if AGRIF compilation is required
@@ -226,6 +239,12 @@ if $($CPP1 testkeys.F | grep -i -q agrifisdefined) ; then
 	LDFLAGS1="-LAGRIF -lagrif $LDFLAGS1"
 # we use the AGRIF Makedefs.generic definition
 	cp -f Makedefs.generic.AGRIF Makedefs.generic
+# prepro Generic NBQ (depends on ../AGRIF_FixedGrids.in)
+### if $($CPP1 testkeys.F | grep -i -q kxxxisdefined) ; then
+    if $($CPP1 testkeys.F | grep -i -q kxxisdefined) ; then
+        echo " => AGRIF + KXX_kernels activated"
+        python prepro_KXX.py
+    fi 
 fi
 
 #

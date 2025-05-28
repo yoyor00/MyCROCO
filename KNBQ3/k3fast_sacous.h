@@ -87,11 +87,11 @@ C$OMP END MASTER
               if (time_nbq.le.1.) then
                if (dist_d.le.2.) then
               rho_nbq(i,j,k)=rho_nbq(i,j,k)+amp_exp*
-     &                         (-9.81*.14429**2/(70*3.14)**2*0.02595**2*
-     &                         *cos(0.02595*z_w(i,j,k))+1/0.02595*
-     &                         sin(0.02595*z_w(i,j,k)))
-     &                         *sin(2*acos(-1.)*time_nbq/period_exp)
-     &                         *exp(-dist_d**2/2.**2)
+     &                        (-9.81*.14429**2/(70*3.14)**2*0.02595**2)
+     &                        *cos(0.02595*z_w(i,j,k))+1/0.02595
+     &                        *sin(0.02595*z_w(i,j,k)))
+     &                        *sin(2*acos(-1.)*time_nbq/period_exp)
+     &                        *exp(-dist_d**2/2.**2)
                endif
               endif
             enddo
