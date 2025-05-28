@@ -646,6 +646,14 @@
 #   endif  /* DIAGNOSTICS_TS */
           endif
 #  endif  /* defined SALINITY || TEMPERATURE  */
+
+# ifdef SUBSTANCE
+          if (itrc.gt.isalt) then
+            do i=Istr,Iend
+                t(i,j,N,nnew,itrc)=t(i,j,N,nnew,itrc)+FC(i,N)
+            enddo
+          endif
+# endif
 !
 !
 !======================================================================

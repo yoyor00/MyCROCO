@@ -31,6 +31,10 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
+
+# ifdef SUBSTANCE
+      USE comsubstance, ONLY: cv_rain
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -42,7 +46,7 @@
 #  include "abl1d.h"
 # endif
 !++ Local integers
-      INTEGER              :: i, j, m, iter
+      INTEGER              :: i, j, m, iter, itrc
       INTEGER              :: Istr, Iend, Jstr, Jend
       INTEGER              :: imin, imax, jmin, jmax
       INTEGER, PARAMETER   :: IterFl = 3
@@ -636,9 +640,15 @@
           evap=-cp*hflat/Hlv
 #   ifdef RAIN_FLUX
           ! E-P bilan in m/s
+          prate(i,j)=1.
           EmP(i,j)=evap-prate(i,j) 
           ! add temperature flux from rain
           stflx(i,j,itemp)=stflx(i,j,itemp)+prate(i,j)*t(i,j,N,nrhs,itemp)
+# ifdef SUBSTANCE          
+          do itrc=itsubs1,NT
+             stflx(i,j,itrc)=prate(i,j)*cv_rain(itrc)
+          enddo
+# endif
 #   else
           !++  Total surface salt flux
           stflx(i,j,isalt)=(evap-prate(i,j))*t(i,j,N,nrhs,isalt)
