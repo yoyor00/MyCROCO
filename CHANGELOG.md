@@ -21,6 +21,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- Compilation : update on jobcomp (support for ifx and different version of gfortran, 
+  cleaning exit status, see !172 and Issue#176)
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
@@ -41,4 +43,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   R. Benshila, S. Le Gac, P. Marchesiello 
 
 - New contributors : 
-  M. Plus
+  M. Plus, M. Schreiber 
