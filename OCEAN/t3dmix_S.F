@@ -147,14 +147,14 @@
             diff3u(i,j)= 
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i-1,j,itrc))
-# if defined DIF_COEF_3D && defined TS_DIF_SMAGO
+# if defined DIF_COEF_3D && (defined TS_DIF_SMAGO || defined GLS_MIXING_3D)
      &                     +0.5*(diff3d_r(i,j,k)+diff3d_r(i-1,j,k))
 # endif
 #elif defined TS_DIF4
      &                     +sqrt(
      &                      0.5*(diff4(i,j,itrc)+diff4(i-1,j,itrc))
 # ifdef DIF_COEF_3D
-#  ifdef TS_DIF_SMAGO
+#  if defined TS_DIF_SMAGO || defined GLS_MIXING_3D
      &                     +0.5*(diff3d_r(i,j,k)+diff3d_r(i-1,j,k))
      &                                         *om_u(i,j)*on_u(i,j)
 #  endif
@@ -171,14 +171,14 @@
             diff3v(i,j)= 
 #ifdef TS_DIF2
      &                      0.5*(diff2(i,j,itrc)+diff2(i,j-1,itrc))
-# if defined DIF_COEF_3D && defined TS_DIF_SMAGO
+# if defined DIF_COEF_3D && (defined TS_DIF_SMAGO || defined GLS_MIXING_3D)
      &                     +0.5*(diff3d_r(i,j,k)+diff3d_r(i,j-1,k))
 # endif
 #elif defined TS_DIF4
      &                     +sqrt(
      &                      0.5*(diff4(i,j,itrc)+diff4(i,j-1,itrc))
 # ifdef DIF_COEF_3D
-#  ifdef TS_DIF_SMAGO
+#  if defined TS_DIF_SMAGO || defined GLS_MIXING_3D
      &                     +0.5*(diff3d_r(i,j,k)+diff3d_r(i,j-1,k))
      &                                         *om_v(i,j)*on_v(i,j)
 #  endif
