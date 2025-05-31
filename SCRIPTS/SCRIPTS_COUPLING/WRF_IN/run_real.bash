@@ -61,18 +61,18 @@ source $CONFIGURE_NAMELIST
 #============= Define OPTIONS for running the script =================
 #
 # I/O parameters
-#  his_interval_h  : history data interval time  [hours]
-his_interval_h=3
+#  his_interval  : history data interval time  [minutes]
+his_interval="180 180 60"
 #  his_frames      : nb of history records per file
 his_frames=240
 #  diag_int_m      : diagnoses interval output [min]
-diag_int_m=180
+diag_int_m="180 180 180"
 #  diag_frames     : nb of diagnoses records per file
 diag_frames=240
 #  restart_flag    : .true. or .false.
 rst="false"
-#  rst_interval_h  : restart data interval       [hours]
-rst_interval_h=24
+#  rst_interval  : restart data interval       [minutes]
+rst_interval=1440
 #
 # SWITCH fdda # 1 : grid nudging ; 2 : spectral nudging ; 0 : no nudging
 switch_fdda=0
@@ -234,7 +234,6 @@ fi
   # Rescale parameters from configure.namelist
   #----------------------------------------------
   export interval_s=`expr $obc_freq_h \* 3600`
-  export rst_interval_m=`expr $rst_interval_h \* 60` # refresh interval in minutes
 
   for metfile in `ls $O_DATAROOT/met_em.*`
   do
@@ -298,11 +297,32 @@ else
     mv namelist.tmp namelist.input.tmp
     chmod 755 namelist.input.tmp
 fi  
+
+nbdom=$( echo "${his_interval}" | wc -w)
+
+echo "Filling his section of the namelist"
+[[ ${nbdom} >  $( echo "${his_interval}" | wc -w) ]] && { echo "Missing values in atm_his for nest, we stop..."; exit 1 ;}
+[[ ${nbdom} >  $( echo "${diag_int_m}" | wc -w) ]] && { echo "Missing values in atm_diag_int_m for nest, we stop..."; exit 1 ;}
+
+for lvl in `seq 1 ${nbdom}`; do
+    dom=$(printf "d%02d" ${lvl})
+    sed -e "s/<his_int_${dom}>/$( echo "${his_interval}" | cut -d " " -f $(( ${lvl})) )/g" \
+        -e "s/<xtrm_int_m_${dom}>/$( echo "${diag_int_m}" | cut -d " " -f $(( ${lvl})) )/g" \
+         namelist.input.tmp > namelist.tmp
+    mv namelist.tmp namelist.input.tmp
+done
+
+
+sed -e "s/<his_int_d.*>/0/g" \
+    -e "s/<xtrm_int_m_d.*>/0/g" \
+    namelist.input.tmp > namelist.tmp
+mv namelist.tmp namelist.input.tmp
+chmod 755 namelist.input.tmp
  
-    echo " "
-    echo "   Then create namelist.input adding run, time and output settings     "
-    echo " "
-    lmonth=( 1 3 5 7 8 10 12 )
+echo " "
+echo "   Then create namelist.input adding run, time and output settings     "
+echo " "
+lmonth=( 1 3 5 7 8 10 12 )
 
 # Remove heading 0 
 while [ `echo ${start_m} | cut -b 1` -eq 0 ]; do
@@ -341,9 +361,8 @@ for yy in `seq $start_y $end_y`; do
             -e "s/<mo1>/$mm/g"   -e "s/<mo2>/$emth/g"  \
             -e "s/<dy1>/$sday/g"   -e "s/<dy2>/$eday/g"  \
             -e "s/<hr1>/$shour/g"   -e "s/<hr2>/$ehour/g"  \
-            -e "s/<rst>/$rst/g"                    -e "s/<rst_int_h>/$rst_interval_h/g"   \
-            -e "s/<his_int_h>/${his_interval_h}/g" -e "s/<his_nb_out>/${his_frames}/g"    \
-            -e " s/<xtrm_int_m>/${diag_int_m}/g"    -e "s/<xtrm_nb_out>/${diag_frames}/g"  \
+            -e "s/<rst>/$rst/g"                    -e "s/<rst_int>/$rst_interval/g"   \
+            -e "s/<his_nb_out>/${his_frames}/g"    -e "s/<xtrm_nb_out>/${diag_frames}/g"  \
             -e "s/<nproc_x>/$nprocX/g"             -e "s/<nproc_y>/$nprocY/g"             \
             -e "s/<niotaskpg>/$niowrf/g"           -e "s/<niogp>/$niogp/g"                \
             -e "s/<dt>/${dt}/g"  \

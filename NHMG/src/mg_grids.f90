@@ -162,7 +162,7 @@ contains
 
     integer(kind=ip) :: lev ! loop's variable on levels
 
-    if (myrank==0) write(*,*)'  - define grids:'
+    if (myrank==0) write(*,'(/1x,A/)') 'NHMG : GRIDS'
     if (myrank==0) write(*,*)'    - define grid levels'
 
     ! Calculate the number of levels of the multigrid solver method

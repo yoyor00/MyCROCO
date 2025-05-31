@@ -14,7 +14,8 @@
                                                   ! file.
 #if defined MUSTANG
         USE comMUSTANG, ONLY : rstMust, vname_rstMust, 
-     &   rstoutintegerMust, rstout2DMust, rstout3DsedMust
+     &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
+     &   rstMust_nbvar
 #endif
 #if defined FLOATS && defined AGRIF
         USE Agrif_Util
@@ -633,6 +634,10 @@
 !
 # if defined TRACERS
         do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &   .and. itrc.ne.iCRT4) then
+# endif
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
@@ -651,6 +656,9 @@
 
           call nf_add_attribute(ncid, rstT(itrc), 
      &         vname(:,indxV+itrc), 5, NF_DOUBLE,ierr)
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        endif
+# endif
         enddo
 # endif
 
@@ -1159,7 +1167,7 @@
 #endif /* SEDIMENT */
 
 #ifdef MUSTANG
-        do indx=1,NT+3
+        do indx=1,rstMust_nbvar
            if (rstout2DMust(indx)) then
                ierr=nf_def_var (ncid, vname_rstMust(1,indx),
      &                 NF_DOUBLE, 3, r2dgrd, rstMust(indx))  
@@ -1337,7 +1345,7 @@
 ! ----- ---------- -----                  dimension size to zero.
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(*,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
      &              'DEF_RST - Created new ',
      &              'netCDF file ''', rstname(1:lstr), '''.'
      &               MYID
@@ -1634,6 +1642,10 @@
 !
 # if defined TRACERS
         do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &   .and. itrc.ne.iCRT4) then
+# endif
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                rstT(itrc))
@@ -1645,6 +1657,9 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
 #  endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        endif
+# endif
         enddo
 # endif
 
@@ -1983,9 +1998,8 @@
 #endif /* SEDIMENT */
 
 #ifdef MUSTANG
-! ksmi, ksma
-        do itrc=1,2
-          indx=itrc
+       do indx=1,rstMust_nbvar
+
           lvar=lenstr(vname_rstMust(1,indx))
           ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
      &                                                 rstMust(indx))
@@ -1998,40 +2012,6 @@
           ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
 # endif
         enddo
-
-! dzs, tempsed, salsed
-       do itrc=1,3
-         indx=indx+1
-          lvar=lenstr(vname_rstMust(1,indx))
-          ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
-     &                                                 rstMust(indx))
-          if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname_rstMust(1,indx)(1:lvar),
-     &                                            rstMust(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-# ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
-# endif
-        enddo
-
-
-! cvsed
-       do itrc=1,ntrc_subs
-          indx = indx + 1        ! 3D: traceurSed
-          lvar=lenstr(vname_rstMust(1,indx))
-          ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
-     &                                                 rstMust(indx))
-          if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname_rstMust(1,indx)(1:lvar),
-     &                                            rstMust(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-# ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
-# endif
-        enddo
-
 #endif
 
 
@@ -2077,7 +2057,7 @@
 # endif
 #endif /* BBL */
 !
-      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
+      MPI_master_only write(stdout,'(6x,2A,i4,1x,A,i4)')
      &             'DEF_RST -- Opened ',
      &             'existing restart file,  record =', rec
      &              MYID

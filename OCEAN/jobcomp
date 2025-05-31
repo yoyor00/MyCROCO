@@ -31,8 +31,7 @@
 #
 # set source
 #
-#SOURCE=../croco/OCEAN
-SOURCE=$HOME/GIT/croco/OCEAN
+SOURCE=../croco/OCEAN
 
 #
 # determine operating system
@@ -55,10 +54,8 @@ MPIINC=""
 #
 # set NETCDF directories
 #
-#NETCDFLIB=$(nf-config --flibs)
-#NETCDFINC=-I$(nf-config --includedir)
-NETCDFLIB="$(nf-config --flibs) -L/usr/local/Cellar/netcdf/4.9.3/lib"
-NETCDFINC="-I$(nf-config --includedir) -I/usr/local/Cellar/netcdf/4.9.3/include"
+NETCDFLIB=$(nf-config --flibs)
+NETCDFINC=-I$(nf-config --includedir)
 
 #
 # set OASIS-MCT (or OASIS3) directories if needed
@@ -334,10 +331,7 @@ fi
 #
 # Determine if NHMG compilation is required
 # 
-echo ""
-echo "*****************************"
-echo "** Checking COMPILENHMG... **"
-echo "*****************************"
+echo "Checking COMPILENHMG... "
 NHMG_WORK=${SCRDIR%/*}/NHMG
 # Transform relative path to absolute path (if needed)
 # because configure command accept only absolute path.
@@ -357,13 +351,13 @@ else
 fi
 #
 NHMG_SRCDIR=$NHMG_WORK/src
-echo "NHMG_SRCDIR is ${NHMG_SRCDIR}"
-echo "NHMG_LIB is ${NHMG_SRCDIR}"
-echo `pwd`
-cp ${NHMG_SRCDIR}/*.mod .
-cp ${NHMG_SRCDIR}/*.so* .
-cp ${NHMG_SRCDIR}/*.o .
-cp ${NHMG_SRCDIR}/*.a .
+#echo "NHMG_SRCDIR is ${NHMG_SRCDIR}"
+#echo "NHMG_LIB is ${NHMG_SRCDIR}"
+#echo `pwd`
+#cp ${NHMG_SRCDIR}/*.mod .
+#cp ${NHMG_SRCDIR}/*.so* .
+#cp ${NHMG_SRCDIR}/*.o .
+#cp ${NHMG_SRCDIR}/*.a .
 
 if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
     if [[ $COMPILEAGRIF ]] ; then
@@ -382,7 +376,7 @@ if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
         echo ""
         exit
     fi
-    echo "=> NHMG key is activated in cppdefs.h file"
+    echo "=> NHMG activated"
     # The NHMG library will be installed in $NHMG_LIB
     # Check if the dynamic library exists in CROCO's NHMG_LIB directory
     if [[ -f ${NHMG_LIB}/libnhmg.so.0 ]] ; then
@@ -390,7 +384,7 @@ if $($CPP1 testkeys.F | grep -i -q nhmgisdefined) ; then
     else
         COMPILENHMG=TRUE
     fi
-    echo 'Compile NHMG: '${COMPILENHMG}
+    #echo 'Compile NHMG: '${COMPILENHMG}
     LDFLAGS1="$LDFLAGS1 -L${NHMG_LIB} -lnhmg -L."
     FFLAGS1="$FFLAGS1 -I${NHMG_SRCDIR}"
 fi

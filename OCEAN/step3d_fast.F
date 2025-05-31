@@ -117,7 +117,7 @@ C$    trd=omp_get_thread_num()
 !
 !***********************************************************************
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       USE debug
 # endif
       implicit none
@@ -422,7 +422,7 @@ C$    trd=omp_get_thread_num()
         cff3= mybeta
       endif
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #0','r',
@@ -494,7 +494,7 @@ C$OMP END MASTER
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 # endif
 
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r',
@@ -538,7 +538,7 @@ C$OMP END MASTER
      &                        DV_avg3(START_2D_ARRAY,0))
 #  endif
 
-#  ifdef RVTK_DEBUG_ADVANCED
+#  ifdef CVTK_DEBUG_ADVANCED
       if (.not.agrif_Root()) then
 C$OMP BARRIER
 C$OMP MASTER
@@ -1378,7 +1378,7 @@ C$OMP END MASTER
 # endif
 # undef rv_ext_nbq 
 
-# if defined RVTK_DEBUG_ADVANCED && defined NBQ
+# if defined CVTK_DEBUG_ADVANCED && defined NBQ
 !$acc end kernels
 C$OMP BARRIER
 C$OMP MASTER
@@ -2252,7 +2252,7 @@ C$OMP END MASTER
       enddo
 # endif
 
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
 !$acc end kernels
 C$OMP BARRIER
 C$OMP MASTER
@@ -2311,7 +2311,7 @@ C$OMP END MASTER
 !      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
 !     &                        DV_nbq(START_2D_ARRAY))
 # endif
-!$$$# ifdef RVTK_DEBUG_ADVANCED
+!$$$# ifdef CVTK_DEBUG_ADVANCED
 !$$$C$OMP BARRIER
 !$$$C$OMP MASTER
 !$$$      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
@@ -3149,7 +3149,7 @@ C$OMP END MASTER
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
      &                           rhobar_nbq(START_2D_ARRAY,knew))
 #   endif
-#   ifdef RVTK_DEBUG_ADVANCED
+#   ifdef CVTK_DEBUG_ADVANCED
 !      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq','r')
 #   endif    
 #  endif /* NBQ_MASS */
@@ -3178,7 +3178,7 @@ C$OMP END MASTER
         enddo
       enddo
             
-# if defined RVTK_DEBUG_ADVANCED && defined NBQ
+# if defined CVTK_DEBUG_ADVANCED && defined NBQ
 !$acc end kernels
 C$OMP BARRIER
 C$OMP MASTER
@@ -3206,7 +3206,7 @@ C$OMP END MASTER
         enddo
       endif
 
-!# if defined RVTK_DEBUG && defined NBQ
+!# if defined CVTK_DEBUG && defined NBQ
 !      call check_tab3d(rw_nbq,'rw_nbq','rint')
 !#  endif  
 # endif
@@ -4000,7 +4000,7 @@ C$OMP END MASTER
      &                          DV_avg3(START_2D_ARRAY,iif))
 #  endif
 
-#  ifdef RVTK_DEBUG_ADVANCED
+#  ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
         call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step3d_fast','r')
@@ -4148,7 +4148,7 @@ C$OMP END MASTER
       enddo
 !$acc end kernels
 
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(DU_avg1(:,:,nnew),'DU_avg1','u',

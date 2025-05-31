@@ -23,7 +23,7 @@ history: LDEFHIS, NWRT, NRPFHIS / filename
                           isoliton_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
-                         T   T    T     T   T   F F 
+                         T   T    T     T   T   T F 
 
 auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
                              T   T    T   F    F    F   F      F       F   F    F     F      F   20*F

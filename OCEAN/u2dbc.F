@@ -421,9 +421,6 @@ C$    trd=omp_get_thread_num()
      &                      bry_cor+
      &                      bry_str)
 #   endif
-#   ifdef MASKING
-          ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
-#   endif
           ubar(Iend+1,j,knew)= 0.5*( (1.-cx)*ubar(Iend+1,j,kstp)
      &                                   +cx*ubar(Iend  ,j,kstp)
 #   ifdef M2_FRC_BRY
@@ -442,6 +439,10 @@ C$    trd=omp_get_thread_num()
      &                                         -ssh(Iend,j)
 #   endif
      &                             ))
+#   ifdef MASKING
+          ubar(Iend+1,j,knew)=ubar(Iend+1,j,knew)*umask(Iend+1,j)
+#   endif
+
         enddo
 #  elif defined OBC_COM_M2SPECIFIED
 !                                            Eastern edge Specified BC

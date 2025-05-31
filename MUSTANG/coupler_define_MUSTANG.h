@@ -21,9 +21,6 @@
 # define ierrorlog stdout
 # define iwarnlog stdout
 
-/* Directory where are namelists files */
-# define REPFICNAMELIST 'MUSTANG_NAMELIST'
-
 /* Spatial Grid limits definition  of loops inside the domain - except meshes at open boundaries */
 # define IMIN_GRID 1
 # define IMAX_GRID Lm
@@ -43,7 +40,6 @@
 # define ARRAY_SETTL_FLUXSUM_w2s PROC_IN_ARRAY,1:NT
 # define ARRAY_WATER_FLUX_INPUTS PROC_IN_ARRAY,1:NB_LAYER_WAT
 # define ARRAY_BATHY_H0 GLOBAL_2D_ARRAY
-# define ARRAY_WATER_ELEVATION GLOBAL_2D_ARRAY,1:4
 # define ARRAY_VELOCITY_U GLOBAL_2D_ARRAY,1:4
 # define ARRAY_VELOCITY_V GLOBAL_2D_ARRAY,1:4
 # define ARRAY_CELL_SURF GLOBAL_2D_ARRAY
@@ -57,15 +53,12 @@
 # define ARRAY_LATLON GLOBAL_2D_ARRAY
 #endif
 
-#define  ARRAY_morpho GLOBAL_2D_ARRAY
-
 /* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
 !*/
 # define NUMBER_PI pi
 # define NB_LAYER_WAT N
 # define COORD_SIGMA sc_r
 # define BATHY_H0 h
-# define WATER_ELEVATION zeta
 # define CELL_DX om_r
 # define CELL_DY on_r
 # define CELL_SURF surf_cell
@@ -81,7 +74,6 @@
 
 
 /* surface elevation (i,j) and current could have different dimensions*/
-# define SURF_ELEVATION_ij WATER_ELEVATION(i,j,3) 
 # define CURRENTU_ij BAROTROP_VELOCITY_U(i+1,j,3) 
 # define CURRENTV_ij BAROTROP_VELOCITY_V(i,j+1,3) 
 

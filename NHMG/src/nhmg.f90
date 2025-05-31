@@ -48,7 +48,7 @@ contains
 
     call mg_mpi_init()
 
-    if (myrank==0) write(*,*)' nhmg_init:'
+    if (myrank==0) write(*,'(/1x,A/)') 'NHMG : INIT'
 
     ! check grid dimensions are in the form 2**p or 3*2**p
     nx_ok = check_value(nx, 3)

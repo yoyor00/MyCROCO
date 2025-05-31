@@ -159,19 +159,16 @@ CONTAINS
    MPI_master_only   WRITE(stdout,*) ' '
 
 
-#ifdef MUSTANG
-   lstr=lenstr(sedname_subst)
-   OPEN(500,file=sedname_subst(1:lstr),status='old',form='formatted',access='sequential')
-! only substance
-#else 
-   lstr=lenstr(subsname)
-   MPI_master_only  WRITE(stdout,*),'SUBS:',subsname(1:lstr)
-   OPEN(500,file=subsname(1:lstr),status='old',form='formatted',access='sequential')
+   lstr=lenstr(subsfilename)
+   MPI_master_only  WRITE(stdout,*),'SUBS:',subsfilename(1:lstr)
+   OPEN(500,file=subsfilename(1:lstr),status='old',form='formatted',access='sequential')
+   READ(500,nmlnbvar)
+#if !defined MUSTANG
    nv_grav=0
    nv_sand=0
    nv_mud=0
 #endif
-   READ(500,nmlnbvar)
+
 
 ! check coherence between parasubstance and param.h dimensions
 #ifdef MUSTANG
