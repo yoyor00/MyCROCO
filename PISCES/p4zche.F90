@@ -439,7 +439,8 @@ CONTAINS
           fekeq (ji,jj,jk)  = EXP( LOG(10.) * ( 17.27 - 1565.7 / ztkel ) )
 
           ! Oxidation kinetic of FeII
-          akfe2ox(ji,jj,jk) = EXP( LOG(10.) * (21.56 - 1545.0 / ztkel - 3.23 * zisqrt + 1.52 * zis) ) / total2free / 60.0
+          akfe2ox(ji,jj,jk) = EXP( LOG(10.) * (21.56 - 1545.0 / ztkel - 3.23 * zisqrt + 1.52 * zis) )  &
+             &                / total2free / 60.0
 
           ! Liu and Millero (1999) only valid 5 - 50 degC
           ztkel1 = MAX( 5. , tempis(ji,jj,jk) ) + 273.16

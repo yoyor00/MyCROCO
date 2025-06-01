@@ -122,9 +122,12 @@ CONTAINS
            &               * tr(ji,jj,jk,jpoxy,Kbb)
          zoxyrat         = 4.77E-7 * etot(ji,jj,jk) * 0.5 / ( consfe3(ji,jj,jk) + zoxy + rtrn )
          ! Fe' is the root of a 2nd order polynom
-         za1             =  1. + (1.0 + zoxyrat) * (zfesatur * zkeq + zconsfe) + zklight - zkeq * tr(ji,jj,jk,jpfer,Kbb)
-         zFe3 (ji,jj,jk) = ( -1 * za1 + SQRT( ( za1 * za1 ) + 4. * ztfe * zkeq) ) / ( 2. * zkeq + rtrn )
-         zFeL1(ji,jj,jk) = (zkeq * zfesatur + zconsfe) / ( 1.0 + zklight + zkeq * zFe3 (ji,jj,jk) ) * zFe3 (ji,jj,jk)
+         za1             =  1. + (1.0 + zoxyrat) * (zfesatur * zkeq + zconsfe)  &
+           &                + zklight - zkeq * tr(ji,jj,jk,jpfer,Kbb)
+         zFe3 (ji,jj,jk) = ( -1 * za1 + SQRT( ( za1 * za1 )  &
+           &               + 4. * ztfe * zkeq) ) / ( 2. * zkeq + rtrn )
+         zFeL1(ji,jj,jk) = (zkeq * zfesatur + zconsfe)  &
+           &               / ( 1.0 + zklight + zkeq * zFe3 (ji,jj,jk) ) * zFe3 (ji,jj,jk)
       END_3D
       !
       zdust = 0.         ! if no dust available
