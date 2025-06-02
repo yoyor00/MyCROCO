@@ -213,8 +213,8 @@
 !  Intialize boundary layer depth "hbl" and index "kbl" of first grid
 !  level below "hbl" to maximum (bottomed out) values.
 !
-        do j=J_EXT_RANGE
-          do i=I_EXT_RANGE
+      do j=J_EXT_RANGE
+        do i=I_EXT_RANGE
           my_hbl(i,j)=z_w(i,j,N)-z_r(i,j,1)
           my_kbl(i,j)=1
           Rib(i,j,ka)=0.

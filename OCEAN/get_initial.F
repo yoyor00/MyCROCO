@@ -1131,7 +1131,7 @@
           goto 99                                        !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxrufrc)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxrufrc)(1:lvar)
      &                                , ininame(1:lstr)
       endif
 !
@@ -1148,7 +1148,7 @@
            goto 99                                        !--> ERROR
          endif
        else
-         MPI_master_only write(stdout,5)  vname(1,indxrvfrc)(1:lvar)
+         MPI_master_only write(stdout,4)  vname(1,indxrvfrc)(1:lvar)
      &                                  , ininame(1:lstr)
         endif
 
@@ -1169,7 +1169,7 @@
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxru_nbq)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxru_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1188,7 +1188,7 @@
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxrv_nbq)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxrv_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1207,7 +1207,7 @@
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxru_nbq_avg2)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxru_nbq_avg2)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1226,7 +1226,7 @@
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxrv_nbq_avg2)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxrv_nbq_avg2)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1245,7 +1245,7 @@
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxqdmu_nbq)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxqdmu_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1264,7 +1264,7 @@
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxqdmv_nbq)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxqdmv_nbq)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 
@@ -1287,7 +1287,7 @@
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxdRdx)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxdRdx)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 !
@@ -1304,7 +1304,7 @@
           goto 99                                         !--> ERROR
         endif
       else
-        MPI_master_only write(stdout,5) vname(1,indxdRde)(1:lvar)
+        MPI_master_only write(stdout,4) vname(1,indxdRde)(1:lvar)
      &                                 ,ininame(1:lstr)
       endif
 #  endif /* TS_MIX_ISO_FILT */
@@ -1338,27 +1338,22 @@
   3   format(/1x,'GET_INITIAL - unable to find variable:',    1x,A,
      &                            /15x,'in input NetCDF file:',1x,A,
      &    1x,'-> analytical value'/)
+#ifndef EXACT_RESTART
+  4   format(/1x,'GET_INITIAL -  unable to find variable:',1x,A,
+     &       /15x' in input NetCDF file:',1x,A,
+     &        1x,' ==> Initialized to zero values.')
+#else
   4   format(/1x,'GET_INITIAL -  unable to find variable:',1x,A,
      &    /15x' in input NetCDF file:',1x,A,
-     &     1x,' ==> Initialized to zero state.',
-     &    /18x' >> CAUTION in case of #define EXACT_RESTART << ',
-     &    /21x ' If it is the case ',
+     &     1x,' ==> Initialized to zero values.',
+     &    /18x' >> CAUTION for EXACT_RESTART << ',
      &    /21x'    - OK if it is a ''cold start''',
      &        ' i.e coming from a 3rd-party initial file',
      &    /21x'    - otherwise if it is a ''hot start'' ',
      &         'i.e from a restart file produced by this code: ',
-     &    /21x'      => problem: run is not restartable',
+     &    /21x'      => restart is not exact',
      &    /21x'      => check your initial file')
-  5   format(/1x,'GET_INITIAL -  unable to find variable:',1x,A,
-     &    /15x' in input NetCDF file:',1x,A,
-     &     1x,' ==> Initialized to zero state.',
-     &    /18x' >> EXACT_RESTART is defined <<',
-     &    /21x'    - OK if it is a ''cold start'' ',
-     &         'i.e from a 3rd-party initial file',
-     &    /21x'    - otherwise, if it a ''hot start'' ',
-     &         'i.e from a restart file produced by this code ',
-     &    /21x'      => problem: run is not restartable ',
-     &    /21x'      => check your initial file')
+#endif
  6    format(/6x,'GET_INITIAL: Exact restart from day =',F12.4,
      &     '  rec =',I4,'(',I8,',',I4,','I4,').')
  7    format(/6x,'GET_INITIAL: Restarted from day =',F12.4,
