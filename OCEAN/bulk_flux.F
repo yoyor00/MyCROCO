@@ -1,4 +1,4 @@
-!======================================================================
+!====================================================================#==
 ! CROCO is a branch of ROMS developped at IRD, INRIA, 
 ! Ifremer, CNRS and Univ. Toulouse III  in France
 ! The two other branches from UCLA (Shchepetkin et al)
@@ -640,7 +640,6 @@
           evap=-cp*hflat/Hlv
 #   ifdef RAIN_FLUX
           ! E-P bilan in m/s
-          prate(i,j)=1.
           EmP(i,j)=evap-prate(i,j) 
           ! add temperature flux from rain
           stflx(i,j,itemp)=stflx(i,j,itemp)+prate(i,j)*t(i,j,N,nrhs,itemp)
