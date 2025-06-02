@@ -1,0 +1,11 @@
+{
+  // LEEWAVE
+  "LEEWAVE": {
+    "title": "LEEWAVE",
+    "case": "LEEWAVE",
+    "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
+    "patches": {},
+    "check_outputs": ["leewave_his.nc"],
+    "unsupported": ["sequential", "openmp"],
+  },
+}
