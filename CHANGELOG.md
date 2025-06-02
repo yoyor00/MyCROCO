@@ -9,6 +9,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - PISCES  : Integration of slight reformulation of zooplankton grazing 
   according to prey size done in PISCES standard version (#340) into quota version 
   (Issue #361)
+- PISCES : Fixed error on diagnostic ligands and add Fe2+ oxydation rate (Issue #371)
 
 ### Fixed
 

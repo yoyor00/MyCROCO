@@ -34,8 +34,9 @@ MODULE p4zche
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: sio3eq   ! chemistry of Si
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: fekeq    ! chemistry of Fe
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: chemc    ! Solubilities of O2 and CO2
-   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: chemo2    ! Solubilities of O2 and CO2
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:)   :: chemo2   ! Solubilities of O2 and CO2
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:,:) :: fesol    ! solubility of Fe
+   REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   akfe2ox  ! Oxydation rate of FEII
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   salinprac  ! Practical salinity
    REAL(wp), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:,:,:) ::   tempis   ! In situ temperature
 
@@ -190,20 +191,20 @@ CONTAINS
       ! ---------------------------------------------------------------------
       DO_3D( 0, 0, 0, 0, 1, jpk )
          zpres = gdept(ji,jj,jk,Kmm) / 1000.
-         za1 = 0.04 * ( 1.0 + 0.185 * ts(ji,jj,jk,jp_tem,Kmm) + 0.035 * (salinprac(ji,jj,jk) - 35.0) )
-         za2 = 0.0075 * ( 1.0 - ts(ji,jj,jk,jp_tem,Kmm) / 30.0 )
-         tempis(ji,jj,jk) = ts(ji,jj,jk,jp_tem,Kmm) - za1 * zpres + za2 * zpres**2
+         za1   = 0.04 * ( 1.0 + 0.185 * ts(ji,jj,jk,jp_tem,Kmm) + 0.035 * (salinprac(ji,jj,jk) - 35.0) )
+         za2   = 0.0075 * ( 1.0 - ts(ji,jj,jk,jp_tem,Kmm) / 30.0 )
+         tempis(ji,jj,jk) = ts(ji,jj,jk,jp_tem,Kmm) - zpres * ( za1 - za2 * zpres )
       END_3D
       !
       ! CHEMICAL CONSTANTS - SURFACE LAYER
       ! ----------------------------------
       DO_2D( 0, 0, 0, 0 )
          !                             ! SET ABSOLUTE TEMPERATURE
-         ztkel = tempis(ji,jj,1) + 273.15
+         ztkel  = tempis(ji,jj,1) + 273.15
          ztkel2 = ztkel * ztkel
          ztkel3 = ztkel2 * ztkel 
-         zt    = ztkel * 0.01
-         zsal  = salinprac(ji,jj,1) + ( 1.- tmask(ji,jj,1) ) * 35.
+         zt     = ztkel * 0.01
+         zsal   = salinprac(ji,jj,1) + ( 1.- tmask(ji,jj,1) ) * 35.
          !                             ! LN(K0) OF SOLUBILITY OF CO2 (EQ. 12, WEISS, 1980)
          !                             !     AND FOR THE ATMOSPHERE FOR NON IDEAL GAS
          ! J. ORR: The previous code has been modified. It computed CO2 solubility in mol/(kg*atm), then converted that to mol/(L*atm).
@@ -215,7 +216,7 @@ CONTAINS
          !&       + 0.0047036e-4*ztkel**2)
          ! NEW - Coefficients for CO2 soulbility in mol/(L*atm) (Weiss, 1974, Table 1, column 1)
          zcek1 = 9050.69/ztkel - 58.0931 + 22.2940 * LOG(zt) + zsal*(0.027766 - 0.00025888*ztkel    &
-                 &       + 0.0050578e-4*ztkel2)
+           &     + 0.0050578e-4*ztkel2)
          !
          ! OLD:  chemc(ji,jj,1) = EXP( zcek1 ) * 1E-6 * rhop(ji,jj,1) / 1000. ! mol/(L atm)
          ! The units indicated in the above line are wrong. They are actually "mol/(L*uatm)"
@@ -237,10 +238,10 @@ CONTAINS
          ztgg4 = ztgg3 * ztgg
          ztgg5 = ztgg4 * ztgg
 
-         zoxy  = 2.00856 + 3.22400 * ztgg + 3.99063 * ztgg2 + 4.80299 * ztgg3    &
-         &       + 9.78188e-1 * ztgg4 + 1.71069 * ztgg5 + zsal * ( -6.24097e-3   &
-         &       - 6.93498e-3 * ztgg - 6.90358e-3 * ztgg2 - 4.29155e-3 * ztgg3 )   &
-         &       - 3.11680e-7 * zsal2
+         zoxy  = 2.00856 + 3.22400 * ztgg + 3.99063 * ztgg2 + 4.80299 * ztgg3      &
+           &     + 9.78188e-1 * ztgg4 + 1.71069 * ztgg5 + zsal * ( -6.24097e-3     &
+           &     - 6.93498e-3 * ztgg - 6.90358e-3 * ztgg2 - 4.29155e-3 * ztgg3 )   &
+           &     - 3.11680e-7 * zsal2
          chemo2(ji,jj,jk) = ( EXP( zoxy ) * o2atm ) * oxyco * atcox     ! mol/(L atm)
       END_3D
 
@@ -249,21 +250,21 @@ CONTAINS
       DO_3D( 0, 0, 0, 0, 1, jpk )
           ! SET PRESSION ACCORDING TO SAUNDER (1980)
           zplat   = SIN ( ABS(gphit(ji,jj)*3.141592654/180.) )
-          zc1 = 5.92E-3 + zplat**2 * 5.25E-3
-          zpres = ((1-zc1)-SQRT(((1-zc1)**2)-(8.84E-6*gdept(ji,jj,jk,Kmm)))) / 4.42E-6
-          zpres = zpres / 10.0
+          zc1     = 5.92E-3 + zplat*zplat * 5.25E-3
+          zpres   = ((1-zc1)-SQRT(((1-zc1)**2)-(8.84E-6*gdept(ji,jj,jk,Kmm)))) / 4.42E-6
+          zpres   = zpres / 10.0
 
           ! SET ABSOLUTE TEMPERATURE
           ztkel   = tempis(ji,jj,jk) + 273.15
           zsal    = salinprac(ji,jj,jk) + ( 1.-tmask(ji,jj,jk) ) * 35.
           zsal2   = zsal * zsal
-          zsqrt  = SQRT( zsal )
+          zsqrt   = SQRT( zsal )
           zsal15  = zsqrt * zsal
-          zlogt  = LOG( ztkel )
-          ztr    = 1. / ztkel
-          zis    = 19.924 * zsal / ( 1000.- 1.005 * zsal )
-          zis2   = zis * zis
-          zisqrt = SQRT( zis )
+          zlogt   = LOG( ztkel )
+          ztr     = 1. / ztkel
+          zis     = 19.924 * zsal / ( 1000.- 1.005 * zsal )
+          zis2    = zis * zis
+          zisqrt  = SQRT( zis )
           ztc     = tempis(ji,jj,jk) + ( 1.- tmask(ji,jj,jk) ) * 20.
           zlogsal = LOG(1.0 - 0.001005 * zsal)
 
@@ -271,66 +272,65 @@ CONTAINS
           zcl     = zsal / 1.80655
 
           ! TOTAL SULFATE CONCENTR. [MOLES/kg soln]
-          zst     = 0.14 * zcl /96.062
+          zst     = 0.14 * zcl / 96.062
 
           ! TOTAL FLUORIDE CONCENTR. [MOLES/kg soln]
           zft     = 0.000067 * zcl /18.9984
 
           ! DISSOCIATION CONSTANT FOR SULFATES on free H scale (Dickson 1990)
           zcks    = EXP(-4276.1 * ztr + 141.328 - 23.093 * zlogt         &
-          &         + (-13856. * ztr + 324.57 - 47.986 * zlogt) * zisqrt &
-          &         + (35474. * ztr - 771.54 + 114.723 * zlogt) * zis    &
-          &         - 2698. * ztr * zis**1.5 + 1776.* ztr * zis2         &
-          &         + zlogsal)
+            &       + (-13856. * ztr + 324.57 - 47.986 * zlogt) * zisqrt &
+            &       + (35474. * ztr - 771.54 + 114.723 * zlogt) * zis    &
+            &       - 2698. * ztr * zis**1.5 + 1776.* ztr * zis2         &
+            &       + zlogsal)
 
           ! DISSOCIATION CONSTANT FOR FLUORIDES on free H scale (Dickson and Riley 79)
-          zckf    = EXP( 1590.2*ztr - 12.641 + 1.525*zisqrt   &
-          &         + LOG(1.0d0 - 0.001005d0*zsal)            &
-          &         + LOG(1.0d0 + zst/zcks))
+          zckf    = EXP( 1590.2*ztr - 12.641 + 1.525*zisqrt        &
+            &       + zlogsal + LOG(1.0d0 + zst/zcks))
 
           ! DISSOCIATION CONSTANT FOR CARBONATE AND BORATE
-          zckb=  (-8966.90 - 2890.53*zsqrt - 77.942*zsal        &
-          &      + 1.728*zsal15 - 0.0996*zsal2)*ztr         &
-          &      + (148.0248 + 137.1942*zsqrt + 1.62142*zsal)   &
-          &      + (-24.4344 - 25.085*zsqrt - 0.2474*zsal)      & 
-          &      * zlogt + 0.053105*zsqrt*ztkel
+          zckb    = (-8966.90 - 2890.53*zsqrt - 77.942*zsal        &
+            &       + 1.728*zsal15 - 0.0996*zsal2)*ztr             &
+            &       + (148.0248 + 137.1942*zsqrt + 1.62142*zsal)   &
+            &       + (-24.4344 - 25.085*zsqrt - 0.2474*zsal)      & 
+            &       * zlogt + 0.053105*zsqrt*ztkel
 
           ! DISSOCIATION COEFFICIENT FOR CARBONATE ACCORDING TO 
           ! MEHRBACH (1973) REFIT BY MILLERO (1995), seawater scale
-          zck1    = -1.0*(3633.86*ztr - 61.2172 + 9.6777*zlogt  &
-             - 0.011555*zsal + 0.0001152*zsal2)
-          zck2    = -1.0*(471.78*ztr + 25.9290 - 3.16967*zlogt      &
-             - 0.01781*zsal + 0.0001122*zsal2)
+          zck1    = -1.0*(3633.86*ztr - 61.2172 + 9.6777*zlogt     &
+            &       - 0.011555*zsal + 0.0001152*zsal2)
+          zck2    = -1.0*(471.78*ztr + 25.9290 - 3.16967*zlogt     &
+            &       - 0.01781*zsal + 0.0001122*zsal2)
 
           ! PKW (H2O) (MILLERO, 1995) from composite data
           zckw    = -13847.26 * ztr + 148.9652 - 23.6521 * zlogt + ( 118.67 * ztr    &
-                    - 5.977 + 1.0495 * zlogt ) * zsqrt - 0.01615 * zsal
+            &       - 5.977 + 1.0495 * zlogt ) * zsqrt - 0.01615 * zsal
 
           ! CONSTANTS FOR PHOSPHATE (MILLERO, 1995)
-         zck1p    = -4576.752*ztr + 115.540 - 18.453*zlogt   &
-         &          + (-106.736*ztr + 0.69171) * zsqrt       &
-         &          + (-0.65643*ztr - 0.01844) * zsal
+          zck1p   = -4576.752*ztr + 115.540 - 18.453*zlogt   &
+            &       + (-106.736*ztr + 0.69171) * zsqrt       &
+            &       + (-0.65643*ztr - 0.01844) * zsal
 
-         zck2p    = -8814.715*ztr + 172.1033 - 27.927*zlogt  &
-         &          + (-160.340*ztr + 1.3566)*zsqrt          &
-         &          + (0.37335*ztr - 0.05778)*zsal
+          zck2p   = -8814.715*ztr + 172.1033 - 27.927*zlogt  &
+            &       + (-160.340*ztr + 1.3566)*zsqrt          &
+            &       + (0.37335*ztr - 0.05778)*zsal
 
-         zck3p    = -3070.75*ztr - 18.126                    &
-         &          + (17.27039*ztr + 2.81197) * zsqrt       &
-         &          + (-44.99486*ztr - 0.09984) * zsal 
+          zck3p   = -3070.75*ztr - 18.126                    &
+            &       + (17.27039*ztr + 2.81197) * zsqrt       &
+            &       + (-44.99486*ztr - 0.09984) * zsal 
 
-         ! CONSTANT FOR SILICATE, MILLERO (1995)
-         zcksi    = -8904.2*ztr  + 117.400 - 19.334*zlogt   &
-         &          + (-458.79*ztr + 3.5913) * zisqrt       &
-         &          + (188.74*ztr - 1.5998) * zis           &
-         &          + (-12.1652*ztr + 0.07871) * zis2       &
-         &          + zlogsal
+          ! CONSTANT FOR SILICATE, MILLERO (1995)
+          zcksi   = -8904.2*ztr  + 117.400 - 19.334*zlogt    &
+            &       + (-458.79*ztr + 3.5913) * zisqrt        &
+            &       + (188.74*ztr - 1.5998) * zis            &
+            &       + (-12.1652*ztr + 0.07871) * zis2        &
+            &       + zlogsal
 
           ! APPARENT SOLUBILITY PRODUCT K'SP OF CALCITE IN SEAWATER
           !       (S=27-43, T=2-25 DEG C) at pres =0 (atmos. pressure) (MUCCI 1983)
           zaksp0  = -171.9065 -0.077993*ztkel + 2839.319*ztr + 71.595*LOG10( ztkel )   &
-             &      + (-0.77712 + 0.00284263*ztkel + 178.34*ztr) * zsqrt  &
-             &      - 0.07711*zsal + 0.0041249*zsal15
+            &       + (-0.77712 + 0.00284263*ztkel + 178.34*ztr) * zsqrt               &
+            &       - 0.07711*zsal + 0.0041249*zsal15
 
           ! CONVERT FROM DIFFERENT PH SCALES
           total2free  = 1.0/(1.0 + zst/zcks)
@@ -339,15 +339,15 @@ CONTAINS
           SWS2total   = 1.0 / total2SWS
 
           ! K1, K2 OF CARBONIC ACID, KB OF BORIC ACID, KW (H2O) (LIT.?)
-          zak1    = 10**(zck1) * total2SWS
-          zak2    = 10**(zck2) * total2SWS
+          zak1    = 10**(zck1)  * total2SWS
+          zak2    = 10**(zck2)  * total2SWS
           zakb    = EXP( zckb ) * total2SWS
           zakw    = EXP( zckw )
           zaksp1  = 10**(zaksp0)
-          zak1p   = exp( zck1p )
-          zak2p   = exp( zck2p )
-          zak3p   = exp( zck3p )
-          zaksi   = exp( zcksi )
+          zak1p   = EXP( zck1p )
+          zak2p   = EXP( zck2p )
+          zak3p   = EXP( zck3p )
+          zaksi   = EXP( zcksi )
           zckf    = zckf * total2SWS
 
           ! FORMULA FOR CPEXP AFTER EDMOND & GIESKES (1970)
@@ -408,8 +408,8 @@ CONTAINS
           aksi3(ji,jj,jk) = zaksi * EXP( zbuf1 * zcpexp + zbuf2 * zcpexp2 )
 
           ! CONVERT FROM DIFFERENT PH SCALES
-          total2free  = 1.0/(1.0 + zst/aks3(ji,jj,jk))
-          free2SWS    = 1. + zst/aks3(ji,jj,jk) + zft/akf3(ji,jj,jk)
+          total2free  = 1.0 / (1.0 + zst/aks3(ji,jj,jk))
+          free2SWS    = 1. + zst / aks3(ji,jj,jk) + zft / akf3(ji,jj,jk)
           total2SWS   = total2free * free2SWS
           SWS2total   = 1.0 / total2SWS
 
@@ -432,26 +432,30 @@ CONTAINS
           aksp(ji,jj,jk) = zaksp1 * EXP( zbuf1 * zcpexp + zbuf2 * zcpexp2 )
 
           ! TOTAL F, S, and BORATE CONCENTR. [MOLES/L]
-          borat(ji,jj,jk) = 0.0002414 * zcl / 10.811
-          sulfat(ji,jj,jk) = zst
+          borat(ji,jj,jk)   = 0.0002414 * zcl / 10.811
+          sulfat(ji,jj,jk)  = zst
           fluorid(ji,jj,jk) = zft 
 
-          fekeq (ji,jj,jk) = 10**( 17.27 - 1565.7 / ztkel ) 
+          fekeq (ji,jj,jk)  = EXP( LOG(10.) * ( 17.27 - 1565.7 / ztkel ) )
+
+          ! Oxidation kinetic of FeII
+          akfe2ox(ji,jj,jk) = EXP( LOG(10.) * (21.56 - 1545.0 / ztkel - 3.23 * zisqrt + 1.52 * zis) ) / total2free / 60.0
 
           ! Liu and Millero (1999) only valid 5 - 50 degC
           ztkel1 = MAX( 5. , tempis(ji,jj,jk) ) + 273.16
-          fesol(ji,jj,jk,1) = 10**(-13.486 - 0.1856* zis**0.5 + 0.3073*zis + 5254.0/ztkel1)
-          fesol(ji,jj,jk,2) = 10**(2.517 - 0.8885*zis**0.5 + 0.2139 * zis - 1320.0/ztkel1 )
-          fesol(ji,jj,jk,3) = 10**(0.4511 - 0.3305*zis**0.5 - 1996.0/ztkel1 )
-          fesol(ji,jj,jk,4) = 10**(-0.2965 - 0.7881*zis**0.5 - 4086.0/ztkel1 )
-          fesol(ji,jj,jk,5) = 10**(4.4466 - 0.8505*zis**0.5 - 7980.0/ztkel1 )
+          ztr = 1. / ztkel1
+          fesol(ji,jj,jk,1) = 10**(-13.486 - 0.1856* zisqrt + 0.3073*zis + 5254.0*ztr)
+          fesol(ji,jj,jk,2) = 10**(2.517 - 0.8885*zisqrt + 0.2139 * zis - 1320.0*ztr )
+          fesol(ji,jj,jk,3) = 10**(0.4511 - 0.3305*zisqrt - 1996.0*ztr )
+          fesol(ji,jj,jk,4) = 10**(-0.2965 - 0.7881*zisqrt - 4086.0*ztr )
+          fesol(ji,jj,jk,5) = 10**(4.4466 - 0.8505*zisqrt - 7980.0*ztr )
       END_3D
       ! Iron and SIO3 saturation concentration from ...
       IF( .NOT. ln_p2z) THEN
          DO_3D( 0, 0, 0, 0, 1, jpk )
              ! SET ABSOLUTE TEMPERATURE
              ztkel   = tempis(ji,jj,jk) + 273.15
-             sio3eq(ji,jj,jk) = EXP(  LOG( 10.) * ( 6.44 - 968. / ztkel )  ) * 1.e-6
+             sio3eq(ji,jj,jk) = EXP( LOG(10.) * ( 6.44 - 968. / ztkel )  ) * 1.e-6
             !
          END_3D
       ENDIF
@@ -551,8 +555,8 @@ CONTAINS
       DO_3D( 0, 0, 0, 0, 1, jpk )
          zdens = rhop(ji,jj,jk) / 1000.
          p_alknw_inf(ji,jj,jk) =  -tr(ji,jj,jk,jppo4,Kbb) &
-                 &             / ( zdens + rtrn ) * po4r - sulfat(ji,jj,jk) &
-                 &              - fluorid(ji,jj,jk)
+                 &               / ( zdens + rtrn ) * po4r - sulfat(ji,jj,jk) &
+                 &               - fluorid(ji,jj,jk)
          p_alknw_sup(ji,jj,jk) =   (2. * tr(ji,jj,jk,jpdic,Kbb) &
                  &               + 2. * tr(ji,jj,jk,jppo4,Kbb) * po4r    &
                  &               + tr(ji,jj,jk,jpsil,Kbb) ) &
@@ -599,7 +603,6 @@ CONTAINS
 
    rmask(A2D(0),1:jpk) = tmask(A2D(0),1:jpk)
    zhi(:,:,:)   = 0.
-   !
 
    ! TOTAL H+ scale: conversion factor for Htot = aphscale * Hfree
    DO_3D( 0, 0, 0, 0, 1, jpk )
@@ -820,6 +823,7 @@ CONTAINS
    END_3D
    END DO
    !
+
       IF( ln_timing )   CALL timing_stop('solve_at_general')
       !
    END SUBROUTINE solve_at_general
@@ -834,8 +838,8 @@ CONTAINS
 
       ierr(:) = 0
 
-      ALLOCATE( fekeq(A2D(0),jpk), chemc(A2D(0),3), &
-         &      chemo2(A2D(0),jpk), STAT=ierr(1) )
+      ALLOCATE( fekeq(A2D(0),jpk)  , chemc(A2D(0),3), chemo2(A2D(0),jpk), &
+         &      akfe2ox(A2D(0),jpk),                   STAT=ierr(1) )
 
       ALLOCATE( akb3(A2D(0),jpk)     , tempis(A2D(0),jpk),       &
          &      akw3(A2D(0),jpk)     , borat (A2D(0),jpk)  ,       &
