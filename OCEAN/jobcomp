@@ -31,7 +31,7 @@
 #
 # set source
 #
-SOURCE=../croco/OCEAN
+SOURCE1=../croco/OCEAN
 
 #
 # determine operating system
@@ -152,7 +152,7 @@ done
 
 
 NPROCS=${NPROCS:-1}
-SOURCE=${CROCO_SRC-$SOURCE}
+SOURCE=${CROCO_SRC-$SOURCE1}
 SCRDIR=./Compile
 RUNDIR=`pwd`
 ROOT_DIR=$SOURCE/..
@@ -433,28 +433,28 @@ fi
 #
 if [[ $COMPILEAGRIF ]] ; then
     NPROCS=1   # compile on one process only !
-    # Find the default C compiler
+# Find the default C compiler
     CC1=$(echo -e 'dummy_target:\n\t@echo $(CC)' | $MAKE -f - dummy_target)
     CFLAGS1=$(echo -e 'dummy_target:\n\t@echo $(CFLAGS)' | $MAKE -f - dummy_target)
-    # Test if the C compiler is the GNU Compiler
-    # if True add '-fcommon' to CFLAGS
+# Test if the C compiler is the GNU Compiler
+# if True add '-fcommon' to CFLAGS
     if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
      echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
      CFLAGS1="$CFLAGS1 -fcommon"
     fi
-    #
-    # compile the AGRIF librairy
-    #
+#
+# compile the AGRIF librairy
+#
    if [[ $COMPILEMPI ]] ; then
       $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
    else
       $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
    fi
    if [[ $OS == Darwin ]] ; then          # DARWIN
-   # run RANLIB on Darwin system
+# run RANLIB on Darwin system
       ranlib AGRIF/libagrif.a
    fi
-   #
+#
    mkdir CROCOFILES
    mkdir -p CROCOFILES/AGRIF_MODELFILES
    mkdir -p CROCOFILES/AGRIF_INC
@@ -550,7 +550,7 @@ $MAKE -j ${NPROCS} || exit 1
 [[ -f partit ]] && mv partit $RUNDIR
 [[ -f ncjoin ]] && mv ncjoin  $RUNDIR
 
-#cat $ROOT_DIR/OCEAN/croco_ascii.txt
+cat $ROOT_DIR/OCEAN/croco_ascii.txt
 echo CROCO is OK
 
 #
