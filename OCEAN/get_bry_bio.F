@@ -9,8 +9,9 @@
 !======================================================================
 !
 #include "cppdefs.h"
+! If TCLM_BIO defined, do not call get_bry_bio as boundary conditions for biological tracers in CLM file
 #if defined SOLVE3D && defined T_FRC_BRY && defined BIOLOGY \
-                    && !defined ANA_BRY
+                    && !defined ANA_BRY && !defined TCLM_BIO
 
       subroutine get_bry_bio    ! Read side boundary forcing
       implicit none             ! fields from boundary file
@@ -63,7 +64,8 @@
                 MPI_master_only write(stdout,3) 'bry_time', bry_file(1:lstr)
 C     goto 99      !--> ERROR
               endif
-# ifdef PISCES
+! if TCLM_BIO : remove BRY conditions for biological tracers 
+# if defined PISCES && !defined TCLM_BIO
             elseif (itrc.eq.iDIC_) then
               got_tbry(itrc)=.true.
               ierr=nf_inq_varid (bry_id, 'dic_time', bry_tid(itrc))
