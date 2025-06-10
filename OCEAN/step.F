@@ -230,7 +230,7 @@ C$OMP MASTER
 #endif
 #if defined FRC_BRY && !defined ANA_BRY
             call get_bry
-# ifdef BIOLOGY
+# if defined BIOLOGY && !defined TCLM_BIO
             call get_bry_bio
 # endif
 #endif
@@ -284,7 +284,7 @@ C$OMP BARRIER
 #  else
           call set_bry (tile)
 #  endif
-#  ifdef BIOLOGY
+#  if defined BIOLOGY && !defined TCLM_BIO
           call ana_bry_bio (tile)  ! analytical values are given
 #   ifndef ANA_BRY
           call set_bry_bio (tile)  ! if data are missing from bry files
