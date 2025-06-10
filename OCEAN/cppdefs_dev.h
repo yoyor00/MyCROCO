@@ -782,6 +782,12 @@
 #  undef CARBON                /* Under Development */
 #  undef HYDROGEN_SULFIDE      /* Under Development */
 # endif
+# if defined T_FRC_BRY && defined TCLIMATOLOGY
+#  define TCLM_BIO             /* Compute lateral boundary conditions
+                                  from CLM file for biological tracers
+                                  and from BRY one for T & S
+                                  (tested only for PISCES) */
+# endif
 #endif
 /*
 ======================================================================
