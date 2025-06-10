@@ -919,17 +919,20 @@
 !======================================================================
 !
 #  if defined TNUDGING && defined TCLIMATOLOGY
-        do k=1,N
-          do j=Jstr,Jend
-            do i=Istr,Iend
-              t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)
+! Remove nudging for T and S if TCLM_BIO defined
+#   ifdef TCLM_BIO
+        if( itrc > 2) then 
+           do k=1,N
+             do j=Jstr,Jend
+               do i=Istr,Iend
+                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)
      &                                   +dt*Tnudgcof(i,j,k,itrc)*
-#   ifdef ZONAL_NUDGING
+#    ifdef ZONAL_NUDGING
      &                          (tclmzon(j,k,itrc)-tzon(j,k,itrc))
-#   else
+#    else
      &                       (tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
-#   endif /* ZONAL_NUDGING */
-#   if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#    endif /* ZONAL_NUDGING */
+#    if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
               TForc(i,j,k,itrc)=(TForc(i,j,k,itrc)
      &                                       +Tnudgcof(i,j,k,itrc)
      &                                          *(tclm(i,j,k,itrc)
@@ -940,10 +943,37 @@
 #    endif /* ZONAL_NUDGING */
      &                             *(Hz(i,j,k)/(pm(i,j)*pn(i,j))))
      &                                           SWITCH rmask(i,j)
-#   endif  /* DIAGNOSTICS_TS */
+#    endif  /* DIAGNOSTICS_TS */
             enddo
           enddo
         enddo
+#   else /* TCLM_BIO */
+        do k=1,N
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)
+     &                                   +dt*Tnudgcof(i,j,k,itrc)*
+#    ifdef ZONAL_NUDGING
+     &                          (tclmzon(j,k,itrc)-tzon(j,k,itrc))
+#    else
+     &                       (tclm(i,j,k,itrc)-t(i,j,k,nnew,itrc))
+#    endif /* ZONAL_NUDGING */
+#    if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+              TForc(i,j,k,itrc)=(TForc(i,j,k,itrc)
+     &                                       +Tnudgcof(i,j,k,itrc)
+     &                                          *(tclm(i,j,k,itrc)
+#    ifdef ZONAL_NUDGING
+     &                                            -tzon(j,k,itrc))
+#    else
+     &                                        -t(i,j,k,nnew,itrc))
+#    endif /* ZONAL_NUDGING */
+     &                             *(Hz(i,j,k)/(pm(i,j)*pn(i,j))))
+     &                                           SWITCH rmask(i,j)
+#    endif  /* DIAGNOSTICS_TS */
+            enddo
+          enddo
+        enddo
+#   endif /* TCLM_BIO */
 #  endif /* TNUDGING && TCLIMATOLOGY */
 !
 !======================================================================
