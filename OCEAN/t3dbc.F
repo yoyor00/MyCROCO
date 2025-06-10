@@ -90,18 +90,38 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
                                defined OBC_COM_TSPECIFIED_WEST)
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
+! TCLM_BIO : t = tbry for T & S but t = tclm for biological tracers
+#   ifdef TCLM_BIO
         do k=1,N
           do j=Jstr,Jend
-#   ifdef T_FRC_BRY
-              t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)
-#   else
-              t(Istr-1,j,k,indx,itrc)=tclm(Istr-1,j,k,itrc)
-#   endif
-#   ifdef MASKING
+     ! We make sure that if def T_FRC & TCLIM itrc < 3 --> t = tbry 
+     ! & if itrc > 2 --> t = tclm (FB)
+             if( itrc < 3 ) then
+                t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)
+             else
+                t(Istr-1,j,k,indx,itrc)=tclm(Istr-1,j,k,itrc)
+             endif
+#    ifdef MASKING
      &                                       *rmask(Istr-1,j)
-#   endif
+#    endif
+          enddo
+        enddo
+
+#   else /* TCLM_BIO */
+        do k=1,N
+          do j=Jstr,Jend
+#    ifdef T_FRC_BRY
+             t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)
+#    else
+             t(Istr-1,j,k,indx,itrc)=tclm(Istr-1,j,k,itrc)
+#    endif
+#    ifdef MASKING
+     &                                       *rmask(Istr-1,j)
+#    endif
          enddo
         enddo
+#   endif /* TCLM_BIO */
+
 #  elif defined OBC_COM_WEST && defined OBC_COM_TORLANSKI
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
@@ -145,14 +165,27 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                -max(cy,0.)*grad(Istr-1,j  )
      &                                -min(cy,0.)*grad(Istr-1,j+1)
      &                                                  )/(cff+cx)
-#   if defined T_FRC_BRY || defined TCLIMATOLOGY
-            t(Istr-1,j,k,indx,itrc)=(1.-tau)*t(Istr-1,j,k,indx,itrc)
-#    ifdef T_FRC_BRY
+
+! TCLM_BIO : t = tbry for T & S but t = tclm for biological tracers
+#   ifdef TCLM_BIO  
+            if( itrc < 3 ) then
+               t(Istr-1,j,k,indx,itrc)=(1.-tau)*t(Istr-1,j,k,indx,itrc)
      &                                    +tau*tbry_west(j,k,itrc)
-#    else
+            else
+               t(Istr-1,j,k,indx,itrc)=(1.-tau)*t(Istr-1,j,k,indx,itrc)
      &                                    +tau*tclm(Istr-1,j,k,itrc)
+            endif
+#   else /* TCLM_BIO */
+#    if defined T_FRC_BRY || defined TCLIMATOLOGY
+            t(Istr-1,j,k,indx,itrc)=(1.-tau)*t(Istr-1,j,k,indx,itrc)
+#     ifdef T_FRC_BRY
+     &                                    +tau*tbry_west(j,k,itrc)
+#     else
+     &                                    +tau*tclm(Istr-1,j,k,itrc)
+#     endif
 #    endif
-#   endif
+#   endif /* TCLM_BIO */
+
 #   ifdef MASKING
             t(Istr-1,j,k,indx,itrc)=t(Istr-1,j,k,indx,itrc)
      &                                      *rmask(Istr-1,j)
@@ -170,11 +203,19 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
               t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)
 #   endif
             else
-#   ifdef T_FRC_BRY
-              t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)
-#   else
-              t(Istr-1,j,k,indx,itrc)=tclm(Istr-1,j,k,itrc)
-#   endif
+#   ifdef TCLM_BIO
+               if( itrc < 3 ) then
+                 t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)
+               else
+                 t(Istr-1,j,k,indx,itrc)=tclm(Istr-1,j,k,itrc)
+               endif
+#   else /* TCLM_BIO */
+#    ifdef T_FRC_BRY
+               t(Istr-1,j,k,indx,itrc)=tbry_west(j,k,itrc)
+#    else
+               t(Istr-1,j,k,indx,itrc)=tclm(Istr-1,j,k,itrc)
+#    endif
+#   endif /* TCLM_BIO */
            endif
 #   ifdef MASKING
               t(Istr-1,j,k,indx,itrc)=t(Istr-1,j,k,indx,itrc)
@@ -205,18 +246,35 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
                                defined OBC_COM_TSPECIFIED_EAST)
 !                                            Eastern edge Specified BC
 !                                            ======= ==== ========= ==
+! TCLM_BIO : t = tbry for T & S but t = tclm for biological tracers
+#   ifdef TCLM_BIO
         do k=1,N
           do j=Jstr,Jend
-#   ifdef T_FRC_BRY
-            t(Iend+1,j,k,indx,itrc)=tbry_east(j,k,itrc)
-#   else
-            t(Iend+1,j,k,indx,itrc)=tclm(Iend+1,j,k,itrc)
-#   endif
-#   ifdef MASKING
+            if( itrc < 3 ) then
+              t(Iend+1,j,k,indx,itrc)=tbry_east(j,k,itrc)
+            else
+              t(Iend+1,j,k,indx,itrc)=tclm(Iend+1,j,k,itrc)
+            endif
+#    ifdef MASKING
      &                                   *rmask(Iend+1,j)
-#   endif
+#    endif
           enddo
         enddo
+
+#   else /* TCLM_BIO */                               
+        do k=1,N
+          do j=Jstr,Jend
+#    ifdef T_FRC_BRY
+            t(Iend+1,j,k,indx,itrc)=tbry_east(j,k,itrc)
+#    else
+            t(Iend+1,j,k,indx,itrc)=tclm(Iend+1,j,k,itrc)
+#    endif
+#    ifdef MASKING
+     &                                   *rmask(Iend+1,j)
+#    endif
+          enddo
+        enddo
+#   endif /* TCLM_BIO */
 #  elif defined OBC_COM_EAST && defined OBC_COM_TORLANSKI
 !                                           Eastern edge radiation BC
 !                                           ======= ==== ========= ==
@@ -259,14 +317,26 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                -max(cy,0.)*grad(Iend+1,j  )
      &                                -min(cy,0.)*grad(Iend+1,j+1)
      &                                                  )/(cff+cx)
-#   if defined T_FRC_BRY || defined TCLIMATOLOGY
-            t(Iend+1,j,k,indx,itrc)=(1.-tau)*t(Iend+1,j,k,indx,itrc)
-#    ifdef T_FRC_BRY
+! TCLM_BIO : t = tbry for T & S but t = tclm for biological tracers
+#   ifdef TCLM_BIO  
+            if( itrc < 3) then
+              t(Iend+1,j,k,indx,itrc)=(1.-tau)*t(Iend+1,j,k,indx,itrc)
      &                                      +tau*tbry_east(j,k,itrc)
-#    else
+            else
+              t(Iend+1,j,k,indx,itrc)=(1.-tau)*t(Iend+1,j,k,indx,itrc)
      &                                    +tau*tclm(Iend+1,j,k,itrc)
+            endif
+#   else /* TCLM_BIO */            
+#    if defined T_FRC_BRY || defined TCLIMATOLOGY
+            t(Iend+1,j,k,indx,itrc)=(1.-tau)*t(Iend+1,j,k,indx,itrc)
+#     ifdef T_FRC_BRY
+     &                                      +tau*tbry_east(j,k,itrc)
+#     else
+     &                                    +tau*tclm(Iend+1,j,k,itrc)
+#     endif
 #    endif
-#   endif
+#   endif /* TCLM_BIO */
+
 #   ifdef MASKING
             t(Iend+1,j,k,indx,itrc)=t(Iend+1,j,k,indx,itrc)
      &                                     *rmask(Iend+1,j)
@@ -281,11 +351,19 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
             if (u(Iend-1,j,k,nstp).gt.0.) then
               t(Iend+1,j,k,indx,itrc)=t(Iend,j,k,indx,itrc)
             else
-#   ifdef T_FRC_BRY
+#   ifdef TCLM_BIO             
+              if( itrc < 3 ) then
+                t(Iend+1,j,k,indx,itrc)=tbry_east(j,k,itrc)
+              else
+                t(Iend+1,j,k,indx,itrc)=tclm(Iend+1,j,k,itrc)
+              endif            
+#   else /* TCLM_BIO */
+#    ifdef T_FRC_BRY
               t(Iend+1,j,k,indx,itrc)=tbry_east(j,k,itrc)
-#   else
+#    else
               t(Iend+1,j,k,indx,itrc)=tclm(Iend+1,j,k,itrc)
-#   endif
+#    endif
+#   endif /* TCLM_BIO */
             endif
 #   ifdef MASKING
               t(Iend+1,j,k,indx,itrc)=t(Iend+1,j,k,indx,itrc)
@@ -319,18 +397,35 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
                                 defined OBC_COM_TSPECIFIED_SOUTH)
 !                                           Southern edge Specified BC
 !                                           ======== ==== ========= ==
+! TCLM_BIO : t = tbry for T & S but t = tclm for biological tracers
+#   ifdef TCLM_BIO                                
         do k=1,N
           do i=Istr,Iend
-#   ifdef T_FRC_BRY
-            t(i,Jstr-1,k,indx,itrc)=tbry_south(i,k,itrc)
-#   else
-            t(i,Jstr-1,k,indx,itrc)=tclm(i,Jstr-1,k,itrc)
-#   endif
-#   ifdef MASKING
+             if( itrc < 3 ) then
+               t(i,Jstr-1,k,indx,itrc)=tbry_south(i,k,itrc)
+             else
+               t(i,Jstr-1,k,indx,itrc)=tclm(i,Jstr-1,k,itrc)
+             endif
+#    ifdef MASKING
      &                                   *rmask(i,Jstr-1)
-#   endif
+#    endif
           enddo
         enddo
+#   else /* TCLM_BIO */
+        do k=1,N
+          do i=Istr,Iend
+#    ifdef T_FRC_BRY
+             t(i,Jstr-1,k,indx,itrc)=tbry_south(i,k,itrc)
+#    else
+             t(i,Jstr-1,k,indx,itrc)=tclm(i,Jstr-1,k,itrc)
+#    endif
+#    ifdef MASKING
+     &                                   *rmask(i,Jstr-1)
+#    endif
+          enddo
+        enddo
+#   endif /* TCLM_BIO */
+
 #  elif defined OBC_COM_SOUTH && defined OBC_COM_TORLANSKI
 !                                          Southern edge radiation BC
 !                                          ======== ==== ========= ==
@@ -371,14 +466,27 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                -max(cy,0.)*grad(i  ,Jstr-1)
      &                                -min(cy,0.)*grad(i+1,Jstr-1)
      &                                                  )/(cff+cx)
-#   if defined T_FRC_BRY || defined TCLIMATOLOGY
-            t(i,Jstr-1,k,indx,itrc)=(1.-tau)*t(i,Jstr-1,k,indx,itrc)
-#    ifdef T_FRC_BRY
+
+! TCLM_BIO : t = tbry for T & S but t = tclm for biological tracers
+#   ifdef TCLM_BIO  
+            if( itrc < 3 ) then            
+              t(i,Jstr-1,k,indx,itrc)=(1.-tau)*t(i,Jstr-1,k,indx,itrc)
      &                                     +tau*tbry_south(i,k,itrc)
-#    else
+            else
+              t(i,Jstr-1,k,indx,itrc)=(1.-tau)*t(i,Jstr-1,k,indx,itrc)
      &                                    +tau*tclm(i,Jstr-1,k,itrc)
+            endif
+#   else /* TCLM_BIO */
+#    if defined T_FRC_BRY || defined TCLIMATOLOGY
+            t(i,Jstr-1,k,indx,itrc)=(1.-tau)*t(i,Jstr-1,k,indx,itrc)
+#     ifdef T_FRC_BRY
+     &                                     +tau*tbry_south(i,k,itrc)
+#     else
+     &                                    +tau*tclm(i,Jstr-1,k,itrc)
+#     endif
 #    endif
-#   endif
+#   endif /* TCLM_BIO */
+
 #   ifdef MASKING
             t(i,Jstr-1,k,indx,itrc)=t(i,Jstr-1,k,indx,itrc)
      &                                     *rmask(i,Jstr-1)
@@ -393,11 +501,19 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
             if (v(i,Jstr+1,k,nstp).lt.0.) then
               t(i,Jstr-1,k,indx,itrc)=t(i,Jstr,k,indx,itrc)
             else
-#   ifdef T_FRC_BRY
-              t(i,Jstr-1,k,indx,itrc)=tbry_south(i,k,itrc)
-#   else
-              t(i,Jstr-1,k,indx,itrc)=tclm(i,Jstr-1,k,itrc)
-#   endif
+#   ifdef TCLM_BIO
+               if( itrc < 3 ) then
+                 t(i,Jstr-1,k,indx,itrc)=tbry_south(i,k,itrc)
+               else
+                 t(i,Jstr-1,k,indx,itrc)=tclm(i,Jstr-1,k,itrc)
+               endif
+#   else /* TCLM_BIO */
+#    ifdef T_FRC_BRY
+               t(i,Jstr-1,k,indx,itrc)=tbry_south(i,k,itrc)
+#    else
+               t(i,Jstr-1,k,indx,itrc)=tclm(i,Jstr-1,k,itrc)
+#    endif
+#   endif /* TCLM_BIO */
             endif
 #   ifdef MASKING
               t(i,Jstr-1,k,indx,itrc)=t(i,Jstr-1,k,indx,itrc)
@@ -428,18 +544,34 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
                                 defined OBC_COM_TSPECIFIED_NORTH)
 !                                           Northern edge Specified BC
 !                                           ======== ==== ========= ==
+! TCLM_BIO : t = tbry for T & S but t = tclm for biological tracers
+#   ifdef TCLM_BIO                                
         do k=1,N
           do i=Istr,Iend
-#   ifdef T_FRC_BRY
-            t(i,Jend+1,k,indx,itrc)=tbry_north(i,k,itrc)
-#   else
-            t(i,Jend+1,k,indx,itrc)=tclm(i,Jend+1,k,itrc)
-#   endif
-#   ifdef MASKING
+             if( itrc < 3 ) then
+               t(i,Jend+1,k,indx,itrc)=tbry_north(i,k,itrc)
+             else
+               t(i,Jend+1,k,indx,itrc)=tclm(i,Jend+1,k,itrc)
+             endif
+#    ifdef MASKING
      &                                   *rmask(i,Jend+1)
-#   endif
+#    endif
           enddo
         enddo
+#   else /* TCLM_BIO */
+        do k=1,N
+          do i=Istr,Iend
+#    ifdef T_FRC_BRY
+            t(i,Jend+1,k,indx,itrc)=tbry_north(i,k,itrc)
+#    else
+            t(i,Jend+1,k,indx,itrc)=tclm(i,Jend+1,k,itrc)
+#    endif
+#    ifdef MASKING
+     &                                   *rmask(i,Jend+1)
+#    endif
+          enddo
+        enddo
+#   endif /* TCLM_BIO */
 
 #  elif defined OBC_COM_NORTH && defined OBC_COM_TORLANSKI
 !                                          Northern edge radiation BC
@@ -481,14 +613,25 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
      &                                -max(cy,0.)*grad(i  ,Jend+1)
      &                                -min(cy,0.)*grad(i+1,Jend+1)
      &                                                 )/(cff+cx)
-#   if defined T_FRC_BRY || defined TCLIMATOLOGY
-            t(i,Jend+1,k,indx,itrc)=(1.-tau)*t(i,Jend+1,k,indx,itrc)
-#    ifdef T_FRC_BRY
+! TCLM_BIO : t = tbry for T & S but t = tclm for biological tracers
+#   ifdef TCLM_BIO  
+            if( itrc < 3 ) then
+              t(i,Jend+1,k,indx,itrc)=(1.-tau)*t(i,Jend+1,k,indx,itrc)
      &                                     +tau*tbry_north(i,k,itrc)
-#    else
+            else
+              t(i,Jend+1,k,indx,itrc)=(1.-tau)*t(i,Jend+1,k,indx,itrc)
      &                                    +tau*tclm(i,Jend+1,k,itrc)
-#    endif
-#   endif
+            endif
+#   else /* TCLM_BIO */
+#    if defined T_FRC_BRY || defined TCLIMATOLOGY
+            t(i,Jend+1,k,indx,itrc)=(1.-tau)*t(i,Jend+1,k,indx,itrc)
+#     ifdef T_FRC_BRY
+     &                                     +tau*tbry_north(i,k,itrc)
+#     else
+     &                                    +tau*tclm(i,Jend+1,k,itrc)
+#     endif
+#    endif            
+#   endif /* TCLM_BIO */
 #   ifdef MASKING
             t(i,Jend+1,k,indx,itrc)=t(i,Jend+1,k,indx,itrc)
      &                                     *rmask(i,Jend+1)
@@ -503,11 +646,19 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
             if (v(i,Jend-1,k,nstp).gt.0.) then
               t(i,Jend+1,k,indx,itrc)=t(i,Jend,k,indx,itrc)
             else
-#   ifdef T_FRC_BRY
-              t(i,Jend+1,k,indx,itrc)=tbry_north(i,k,itrc)
-#   else
-              t(i,Jend+1,k,indx,itrc)=tclm(i,Jend+1,k,itrc)
-#   endif
+#   ifdef TCLM_BIO
+               if( itrc < 3 ) then
+                 t(i,Jend+1,k,indx,itrc)=tbry_north(i,k,itrc)
+               else
+                 t(i,Jend+1,k,indx,itrc)=tclm(i,Jend+1,k,itrc)
+               endif             
+#   else /* TCLM_BIO */
+#    ifdef T_FRC_BRY
+               t(i,Jend+1,k,indx,itrc)=tbry_north(i,k,itrc)
+#    else
+               t(i,Jend+1,k,indx,itrc)=tclm(i,Jend+1,k,itrc)
+#    endif
+#   endif /* TCLM_BIO */
             endif
 #   ifdef MASKING
               t(i,Jend+1,k,indx,itrc)=t(i,Jend+1,k,indx,itrc)
