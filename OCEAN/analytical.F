@@ -3213,7 +3213,7 @@ C$    integer  trd, omp_get_thread_num
 !                   subroutine ana_bry_bio
 !======================================================================
 !
-#if defined BIOLOGY && defined T_FRC_BRY
+#if defined BIOLOGY && defined T_FRC_BRY && !defined TCLM_BIO
 !
 !----------------------------------------------------------------------
 !  Set analytical boundary forcing for biological tracers
