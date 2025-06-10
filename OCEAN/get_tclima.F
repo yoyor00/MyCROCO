@@ -43,8 +43,13 @@
           if (ierr .ne. nf_noerr) goto 4                !--> ERROR
         endif
 
+! TCLM_BIO : not computing boundary conditions from CLM file for  T (tracer no. 1) & S (tracer no. 2)
+! tracers as they have BRY conditions
+# ifdef TCLM_BIO
+        do itrc=3,NT
+# else
         do itrc=1,NT
-
+# endif
           got_tclm(itrc)=.false.
 
 # ifdef TEMPERATURE
@@ -656,7 +661,13 @@ c              goto 99                                     !--> ERROR
 ! coordinate and tracer climatology field. Check and read again,
 ! until model time is between the two time bounds.
 !
+! TCLM_BIO : not computing boundary conditions from CLM file for  T (tracer no. 1) & S (tracer no. 2)
+! tracers as they have BRY conditions
+# ifdef TCLM_BIO
+      do itrc=3,NT
+# else
       do itrc=1,NT
+# endif
        if (got_tclm(itrc)) then
  10     i=3-ittclm(itrc)
          cff=time+0.5*dt
@@ -773,7 +784,13 @@ C$    integer  trd, omp_get_thread_num
 ! or complain about error and signal to quit, if interpolation is
 ! needed, but not possible.
 !
+! TCLM_BIO : not computing boundary conditions from CLM file for  T (tracer no. 1) & S (tracer no. 2)
+! tracers as they have BRY conditions
+# ifdef TCLM_BIO
+      do itrc=3,NT
+# else
       do itrc=1,NT
+# endif
        if (got_tclm(itrc)) then
         it1=3-ittclm(itrc)
         it2=ittclm(itrc)
