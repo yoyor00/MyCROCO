@@ -592,7 +592,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 #if defined FRC_BRY && !defined ANA_BRY
       call get_bry
-# ifdef BIOLOGY
+# if defined BIOLOGY && !defined TCLM_BIO
       call get_bry_bio
 # endif
 #endif
