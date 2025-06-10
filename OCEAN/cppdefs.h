@@ -399,6 +399,11 @@
 #   define key_trc_diaadd
 #  endif
 # endif
+
+                      /*   Biology boundary conditions    */
+#  if defined T_FRC_BRY && defined TCLIMATOLOGY && defined BIOLOGY
+#   define TCLM_BIO
+#  endif
                       /*   Lagrangian floats model    */
 # ifdef FLOATS
 #  undef  FLOATS_GLOBAL_ATTRIBUTES
