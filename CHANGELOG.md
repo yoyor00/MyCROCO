@@ -39,6 +39,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
+- MUSTANG : remove key_MUSTANG_debug cppkey (Issue #346)
 
 ### Other
 
@@ -46,7 +47,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M.Caillaud, S. Le Gac, P. Marchesiello 
+  R. Benshila, M. Caillaud, S. Le Gac, P. Marchesiello 
 
 - New contributors : 
   M. Plus, M. Schreiber 
