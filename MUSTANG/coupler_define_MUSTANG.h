@@ -21,9 +21,6 @@
 # define ierrorlog stdout
 # define iwarnlog stdout
 
-/* Directory where are namelists files */
-# define REPFICNAMELIST 'MUSTANG_NAMELIST'
-
 /* Spatial Grid limits definition  of loops inside the domain - except meshes at open boundaries */
 # define IMIN_GRID 1
 # define IMAX_GRID Lm
@@ -51,10 +48,6 @@
 /* dimensions of variables in hydro modele !*/
 # define ARRAY_WATER_CONC GLOBAL_2D_ARRAY,N,3,NT
 # define ARRAY_DHSED GLOBAL_2D_ARRAY 
-
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
-# define ARRAY_LATLON GLOBAL_2D_ARRAY
-#endif
 
 /* general variable hydro , bathy, time ... defined in hydro model but using by MUSTANG
 !*/

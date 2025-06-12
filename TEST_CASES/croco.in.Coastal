@@ -100,12 +100,12 @@ stations: LDEFSTA, NSTA, NRPFSTA / inpname, hisname
 station_fields:  Grdvar Temp Salt Rho Vel
                    T     T    T    T   T
 
-
-substance: input file
+substance: input file (substance module)
                MUSTANG_NAMELIST/parasubstance_MUSTANG_vilaine.txt
 
-sediments_mustang: input file (Dhysed Channel / Mustang sediment model)
+sediments_mustang: input file ( Mustang sediment model)
                MUSTANG_NAMELIST/paraMUSTANGV1_vilaine.txt
+
 
 psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
             2

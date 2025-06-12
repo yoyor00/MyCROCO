@@ -180,7 +180,6 @@ CONTAINS
    MPI_master_only   WRITE(stdout,*) ' '
 
 
- 
    lstr=lenstr(subsfilename)
    MPI_master_only  WRITE(stdout,*),'SUBS:',subsfilename(1:lstr)
    OPEN(500,file=subsfilename(1:lstr),status='old',form='formatted',access='sequential')

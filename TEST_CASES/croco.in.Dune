@@ -37,11 +37,10 @@ sediments: input file  (USGS Sediment model)
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20*T
 
-
-substance: input file
+substance: input file (substance module)
                MUSTANG_NAMELIST/parasubstance_MUSTANG_Dune.txt
 
-sediments_mustang: input file
+sediments_mustang: input file ( Mustang sediment model)
                MUSTANG_NAMELIST/paraMUSTANGV2_Dune.txt
 
 

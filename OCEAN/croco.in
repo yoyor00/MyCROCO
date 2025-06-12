@@ -1,5 +1,9 @@
 title:
         BENGUELA TEST MODEL
+
+logfile:
+        croco.log
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                 720      3600      60      1
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
@@ -248,6 +252,13 @@ sediments: input file
            sediment.in
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                             20*F 
+
+substance: input file (substance module)
+               parasubstance.txt
+
+sediments_mustang: input file ( Mustang sediment model)
+               paraMUSTANG.txt
+
 
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T

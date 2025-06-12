@@ -1,5 +1,9 @@
 title:
         Southern Benguela Interannual Run Zoom level #1
+
+logfile:
+        croco.log
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                1     TIMESTEP    NFAST     1
 S-coord: THETA_S,   THETA_B,    Hc (m)
@@ -243,6 +247,12 @@ sediments: input file
            sediment.in
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                             20*F 
+
+substance: input file (substance module)
+               parasubstance.txt
+
+sediments_mustang: input file ( Mustang sediment model)
+               paraMUSTANG.txt
 
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T

@@ -199,25 +199,25 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
- TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
+TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
 
 
- RCS = $(SRCS:.F=.f)
+RCS = $(SRCS:.F=.f)
 
- RCS90 = $(SRCS90:.F90=.f90)
- RCECO3M1 = $(SRCECO3M1:.F90=.f90)
- RCECO3M2 = $(SRCECO3M2:.F90=.f90)
+RCS90 = $(SRCS90:.F90=.f90)
+RCECO3M1 = $(SRCECO3M1:.F90=.f90)
+RCECO3M2 = $(SRCECO3M2:.F90=.f90)
 
- OBJS = $(RCS:.f=.o)
- OBJS90 = $(RCS90:.f90=.o)
- OBJSECO3M1 = $(RCECO3M1:.f90=.o)
- OBJSECO3M2 = $(RCECO3M2:.f90=.o)
+OBJS = $(RCS:.f=.o)
+OBJS90 = $(RCS90:.f90=.o)
+OBJSECO3M1 = $(RCECO3M1:.f90=.o)
+OBJSECO3M2 = $(RCECO3M2:.f90=.o)
 
- SBIN = croco
+SBIN = croco
 
- AMRRCS=$(AMRSRCS:.F=.f)
+AMRRCS=$(AMRSRCS:.F=.f)
 
- AMROBJS=$(AMRRCS:.f=.o)
+AMROBJS=$(AMRRCS:.f=.o)
 
 
 %.mod : %.o

@@ -1567,17 +1567,7 @@ MODULE sed_MUSTANG
         IF (l_outsed_fsusp) var2D_fsusp(:,i,j) = 0.0_rsh
 
         ksmax=ksma(i,j)
-#ifdef key_MUSTANG_debug
-               IF (l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                 print *,'  > deb erosion',i,j
-                 print *,'  t=',CURRENT_TIME, ' ksmax=',ksmax
-                 print *,'  dzs(ksmax-3:ksmax,i,j)=',dzs(ksmax-3:ksmax,i,j)
-                 print *,'  cv_sed(:,ksmax-3,i,j)=',cv_sed(:,ksmax-3,i,j)
-                 print *,'  cv_sed(:,ksmax-2,i,j)=',cv_sed(:,ksmax-2,i,j)
-                 print *,'  cv_sed(:,ksmax-1,i,j)=',cv_sed(:,ksmax-1,i,j)
-                 print *,'  cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-               END IF
-#endif 
+        
         ero=0.0_rsh
         ! niter put in real beacause of ratio to estimate statistics 
         niter_ero_noncoh=0.0_rsh
@@ -1612,20 +1602,7 @@ MODULE sed_MUSTANG
             
           END IF
           l_isitcohesive(i,j)=isitcohesive(cv_sed(:,ksmax,i,j),frmudcr1)
-!
-#ifdef key_MUSTANG_debug
-          IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-              print *,''
-              print *,' ************************'
-              print *,' ENTER sed_erosion_V2    '
-              print *,' ************************'
-              print *,''
-              print *,'    diamgravsan / frmudcr1 / l_isitcohesive(i,j) = ',diamgravsan,frmudcr1,l_isitcohesive(i,j)              
-              print *,'    dt1=',dt1
-              print *,'    ksmax et dzs=',ksmax,dzs(ksmax,i,j)
-              print *,''
-           END IF
-#endif
+
            IF  (.NOT. l_isitcohesive(i,j)) THEN
 
               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1641,19 +1618,6 @@ MODULE sed_MUSTANG
 
               IF(tauskin(i, j) .GT. toce)THEN
 
-              
-#ifdef key_MUSTANG_debug
-               IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                 print *,'    TAUSKIN =',tauskin(i,j),' > TOCE=',TOCE
-                 print *,'    Carac of ksmax layer before managing active layer : '
-                 print *,'      ksmax=',ksmax
-                 print *,'      dzs(ksmax,i,j)=',dzs(ksmax,i,j)
-                 print *,'      cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-                 print *,'      c_sedtot(ksmax,i,j)=',c_sedtot(ksmax,i,j)
-                 print *,'      poro(ksmax,i,j)=',poro(ksmax,i,j),'poro_mud(ksmax,i,j)=',poro_mud(ksmax,i,j) 
-                 print *,'      crel_mud(ksmax,i,j)=',crel_mud(ksmax,i,j)
-               END IF
-#endif
                ! IN : i,j,ksmax / OUT : active layer: updates of ksmax, dzs, cv_sed, c_sedtot, poro
                CALL MUSTANGV2_manage_active_layer(i,j,ksmax  &
 #if ! defined key_noTSdiss_insed 
@@ -1666,18 +1630,6 @@ MODULE sed_MUSTANG
 
               END IF  
 
-
-#ifdef key_MUSTANG_debug
-              IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                 print *,'    Carac of ksmax layer after managing active layer : '
-                 print *,'      ksmax=',ksmax
-                 print *,'      dzs(ksmax,i,j)=',dzs(ksmax,i,j)
-                 print *,'      cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-                 print *,'      c_sedtot(ksmax,i,j)=',c_sedtot(ksmax,i,j)
-                 print *,'      poro(ksmax,i,j)=',poro(ksmax,i,j),'poro_mud(ksmax,i,j)=',poro_mud(ksmax,i,j) 
-                 print *,'      crel_mud(ksmax,i,j)=',crel_mud(ksmax,i,j)
-               END IF
-#endif
               ksmaxa=ksmax ! needs to be memorised
               poro_ini=poro(ksmax,i,j)
               dzs_ini=dzs(ksmax,i,j)
@@ -1710,11 +1662,6 @@ MODULE sed_MUSTANG
               ! OUT : dt_ero
               !       update dzs, cv_sed, c_sedtot, and poro in the ksmax (potentially changed) layer after erosion
 
-#ifdef key_MUSTANG_debug
-                 IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                    print *,'    SED BORNE AND APPLY EROSION TOT'
-                 END IF
-#endif
 
               ! on ne fait rien si aucune variable particulaire constitutive ne bouge
               !  mais probleme pour les variables particulaires non constitutives non associees 
@@ -1732,12 +1679,6 @@ MODULE sed_MUSTANG
 
                 !!  ==> erosion of one layer or elimination of the entire layer
 
-#ifdef key_MUSTANG_debug
-                IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                  print *,'    INTEGRATION of FLX_BX/Y et FLX_S2W'
-                END IF
-#endif
-
                 DO iv=1,nvp
 
                   flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+(sed_eros_flx_class_by_class(iv)/CELL_SURF(i,j))/MF 
@@ -1751,16 +1692,6 @@ MODULE sed_MUSTANG
                   ENDIF
 #endif
 
-#ifdef key_MUSTANG_debug
-                 IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                    print *,'    iv=',iv
-                    print *,'    flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+(sed_eros_flx_class_by_class(iv)/CELL_SURF(i,j))=',flx_s2w(iv,i,j)
-#ifdef key_MUSTANG_bedload
-                    print *,'    flx_bx(iv,i,j)=flx_bx(iv,i,j)+flx_bxij(iv)=',flx_bx(iv,i,j)
-                    print *,'    flx_by(iv,i,j)=flx_by(iv,i,j)+flx_byij(iv)=',flx_by(iv,i,j)
-#endif
-                  END IF
-#endif
 
                 END DO
 
@@ -1772,24 +1703,11 @@ MODULE sed_MUSTANG
 
                 dt1=dt1-dt_ero_max
 
-#ifdef key_MUSTANG_debug
-                IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                  print *,'    TEMPS RESTANT ?'
-                  print *,'      > dt_ero_max=',dt_ero_max
-                  print *,'      > new dt1=',dt1
-                END IF
-#endif
+
 
                 IF (dt1 .GT. 0.0_rsh .AND. dt_ero_max .GT. 0.0_rsh .AND. ksmax .GT. ksmi(i,j)) THEN
                   !print *,' '
                   !print *,' !!!!!! =======> Time is not consumed dt1=',dt1,' ==> CONTINUE EROSION'
-
-#ifdef key_MUSTANG_debug
-                  IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                    print *,'    ==> CONTINUE EROSION !'
-                    print *,''
-                  END IF
-#endif
 
                   GOTO 2
                 END IF
@@ -1819,12 +1737,6 @@ MODULE sed_MUSTANG
                 ! to avoid increasing the thickness of the surface layer 
                 IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
                     IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
-#ifdef key_MUSTANG_debug
-                       IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                         print *,'    SPLIT SURFACE LAYER BECAUSE dzs > dzsmax '
-                         print *,ksmax,'  layers become', ksmax+1, 'layers'
-                       END IF
-#endif
                        dzs(ksmax+1,i,j)=MIN(dzs(ksmax,i,j)-dzsmax(i,j),dzsmax(i,j))
                        dzs(ksmax,i,j)=dzs(ksmax,i,j)-dzs(ksmax+1,i,j)
                        poro(ksmax+1,i,j)=poro(ksmax,i,j)
@@ -2216,12 +2128,6 @@ MODULE sed_MUSTANG
               ! in order to avoid increasing thickness of the surface layer
               ! if after manage_small dzs(ksmax) > dzsmax+2*dzsmin ==> split surface layer
               IF(ksmax .LT. ksdmax .AND. dzs(ksmax,i,j) > dzsmax(i,j) + 2* dzsmin) THEN
-#ifdef key_MUSTANG_debug
-                  IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                    print *,'    SPLIT SURFACE LAYER BECAUSE dzs > dzsmax '
-                    print *,ksmax,'  layers become', ksmax+1, 'layers'
-                  END IF
-#endif
                 dzs(ksmax+1,i,j)=MIN(dzs(ksmax,i,j)-dzsmax(i,j),dzsmax(i,j))   
                 dzs(ksmax,i,j)=dzs(ksmax,i,j)-dzs(ksmax+1,i,j)
                 poro(ksmax+1,i,j)=poro(ksmax,i,j)
@@ -2271,18 +2177,6 @@ MODULE sed_MUSTANG
             var2D_pct_iter_noncoh(i,j)=niter_ero_noncoh/(var2D_niter_ero(i,j)+epsilon_MUSTANG) ! pct_iter_noncoh
             var2D_pct_iter_coh(i,j)=niter_ero_coh/(var2D_niter_ero(i,j)+epsilon_MUSTANG)    !pct_iter_coh
         ENDIF
-
-#ifdef key_MUSTANG_debug
-               IF (l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                 print *,'  > fin erosion'
-                 print *,'  t=',CURRENT_TIME,' ksmax=',ksmax
-                 print *,'  dzs(ksmax-3:ksmax,i,j)=',dzs(ksmax-3:ksmax,i,j)
-                 print *,'  cv_sed(:,ksmax-3,i,j)=',cv_sed(:,ksmax-3,i,j)
-                 print *,'  cv_sed(:,ksmax-2,i,j)=',cv_sed(:,ksmax-2,i,j)
-                 print *,'  cv_sed(:,ksmax-1,i,j)=',cv_sed(:,ksmax-1,i,j)
-                 print *,'  cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-               END IF
-#endif 
 
      END DO
    END DO
@@ -3065,14 +2959,6 @@ MODULE sed_MUSTANG
 #endif
    !!----------------------------------------------------------------------
    !! * Executable part
-#if defined key_MUSTANG_debug
-   IF (l_debug_effdep .AND. CURRENT_TIME> t_start_debug .AND. htot(i_MUSTANG_debug,j_MUSTANG_debug) > h0fond ) THEN
-     print *,''
-     print *,' ************************'
-     print *,' ENTER sed_effdep_mixsed'
-     print *,' ************************'
-   ENDIF        
-#endif
 
    ddzsici=-1000.0_rsh
    iexchge_MPI_cvwat=0       
@@ -3088,18 +2974,6 @@ MODULE sed_MUSTANG
             flx_w2s_loca(:)=0.0_rsh
             frdep(:)=0.0_rsh
             frac_sed_depa(:)=0.0_rsh
-
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                 print *,'  > deb effdep',i,j
-                 print *,'  t=',CURRENT_TIME, 'ksmax=',ksmax
-                 print *,'  dzs(ksmax-3:ksmax,i,j)=',dzs(ksmax-3:ksmax,i,j)
-                 print *,'  cv_sed(:,ksmax-3,i,j)=',cv_sed(:,ksmax-3,i,j)
-                 print *,'  cv_sed(:,ksmax-2,i,j)=',cv_sed(:,ksmax-2,i,j)
-                 print *,'  cv_sed(:,ksmax-1,i,j)=',cv_sed(:,ksmax-1,i,j)
-                 print *,'  cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-               END IF
-#endif 
 
 #ifdef key_MUSTANG_bedload
             flx_bedload_in(:)=0.0_rsh
@@ -3160,12 +3034,6 @@ MODULE sed_MUSTANG
               ! MF /= 1 only if l_morphocoupl
               flx_w2s_loc(iv) = MF * flx_w2s_loc(iv)
               
-#if defined key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. &
-                       ( CURRENT_TIME> t_start_debug)) THEN
-                 print *,'flx_w2s_loc(',iv,')=',flx_w2s_loc(iv)
-              END IF             
-#endif
             ENDDO
 
             IF (l_dredging) THEN
@@ -3215,14 +3083,6 @@ MODULE sed_MUSTANG
             IF(fludep.GT.0.0_rsh)THEN
                l_increase_dep=.FALSE.
 
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                 print *,'fludep=',fludep,' > 0 --> there is deposition'
-                 print *,''
-                 print *,'  > Charac depsition'
-              END IF
-#endif
               ! case 1:  there is deposition
               ! ****************************
 
@@ -3276,18 +3136,6 @@ MODULE sed_MUSTANG
 #endif
 
 
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                print *,'  poro_mud_dep=',poro_mud_dep
-                print *,'  poro_dep=',poro_dep
-                print *,'  frac_sed_dep=',frac_sed_dep
-                print *,'  mass_tot_dep=',mass_tot_dep
-                print *,'  dzs_dep=',dzs_dep
-                print *,'  dzsmin_dep=',dzsmin_dep
-              END IF
-#endif
-
               !test  (sediment exist)
               IF(ksmax.GE.ksmi(i,j))THEN
           
@@ -3313,15 +3161,6 @@ MODULE sed_MUSTANG
                poroa=poro(ksmax,i,j)
                dzsa=dzs(ksmax,i,j)
 
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                 print *,''
-                 print *,'ksmax=',ksmax,' >= ',ksmi(i,j)
-                 print *,''
-                 print *,'  > Charac existing sed in ksmax'
-               END IF
-#endif 
                frac_seda(:)=0.0_rsh
                DO iv=1,nvpc
                  frac_seda(iv)=cv_sed(iv,ksmax,i,j)/c_sedtot(ksmax,i,j)
@@ -3330,23 +3169,7 @@ MODULE sed_MUSTANG
                 !                coeff_dzsmin*SUM( frac_seda(1:nvpc)*diam_sed(1:nvpc) )
                dzsmina=dzsminvar(frac_seda)
 
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                 print *,'   sommud=',sommud
-                 print *,'   cvolinigrv=',cvolinigrv
-                 print *,'   cvolinisan=',cvolinisan
-                 print *,'   cmudr (crel_mud)=',cmudr
-                 print *,'   poro_muda=',poro_muda
-                 print *,'   poroa=',poroa
-                 print *,'   dzsa=',dzsa
-                   print *,'   frac_seda=',frac_seda
-                 print *,'   dzsmina=',dzsmina
-                 print *,''
-                 print *,'MIXING OR NOT ?'
-                 print *,''
-               END IF
-#endif                          
+                     
                !test  (mixing layer)
                IF (cmudr .LE. cmudcr) THEN
                ! The surface sediment in ksmax is not consolidated, 
@@ -3445,22 +3268,7 @@ MODULE sed_MUSTANG
                  !!!!!!!!!!!!!!!!!!!!!!!
                  !!!!!! MIXING !!!!!!!!!
                  !!!!!!!!!!!!!!!!!!!!!!!
-           
-           
-                 !print *,' ==> l_createnewlayer=',l_createnewlayer
 
-#ifdef key_MUSTANG_debug
-                 IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                    print *,'  > MIXING of deposits with sed in ksmax, because :'
-                    IF ((cmudr .LE. cmudcr) .AND. (dzsa .LT. dzsmax(i,j))) &
-                      print *,cmudr,' (cmudr) <= ',cmudcr,' (cmudcr) AND ',dzsa,' (dzsa) < ',dzsmax(i,j),' (dzsmax(i,j))'
-                    IF ((dzs_dep .LT. dzsmin_dep) .AND. (dzsa .LT. 2.0_rsh*dzsmina)) &
-                       print *,dzs_dep,' (dzs_dep) < ',dzsmin_dep,' (dzsmin_dep) AND ',dzsa, &
-                                 ' (dzsa) < ',2.0_rsh*dzsmina,' (2*dzsmina)'
-                    print *,'  l_createnewlayer=',l_createnewlayer, '*******MIXING********'
-                  END IF
-#endif            
 
                   ! mixing deposits with upper layer with no restriction
                   ! if surficial sediment is not consolidated and if the upper
@@ -3487,30 +3295,9 @@ MODULE sed_MUSTANG
                     frac_sed(iv)=mass_sed(iv)/mass_tot
                   END DO
 
-#ifdef key_MUSTANG_debug
-                 IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                    print *,'  > MIXING of deposits with sed in ksmax, : avant comp_poro_mixsed'
-                    print *,'frac_sed = ',frac_sed
-                    print *,'poro_mud_new = ',poro_mud_new
-                    print *,'crel_mud_new = ',crel_mud_new
-                    print *,'poro = ',poro(ksmax,i,j)
-                  END IF
-#endif            
-
                   CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud_new,   &
                                 crel_mud_new, poro(ksmax,i,j))
 
-#ifdef key_MUSTANG_debug
-                 IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                    print *,'  > MIXING of deposits with sed in ksmax, : apres comp_poro_mixsed'
-                    print *,'frac_sed = ',frac_sed
-                    print *,'poro_mud_new = ',poro_mud_new
-                    print *,'crel_mud_new = ',crel_mud_new
-                    print *,'poro = ',poro(ksmax,i,j)
-                  END IF
-#endif            
                   dzs(ksmax,i,j)=mass_tot/((1.0_rsh-poro(ksmax,i,j))*ros(1))
                   dzsi=1.0_rsh/dzs(ksmax,i,j)
 
@@ -3567,27 +3354,6 @@ MODULE sed_MUSTANG
                   !print *,'cv_sed(:,ksmax,i,j)=',cv_sed(:,k,i,j)
                   !print *,''              
 
-#ifdef key_MUSTANG_debug
-                 IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                    IF (masdepmud+sommud*dzsa .GT. 0.0_rsh) THEN
-                      print *,'  poro_mud(ksmax,i,j)=',(masdepmud/(masdepmud+sommud*dzsa)),' * ',&
-                                poro_mud_dep,' + ',((sommud*dzsa)/(masdepmud+sommud*dzsa)),' * ',&
-                                poro_muda,'=',poro_mud(k,i,j)
-                    ELSE
-                      print *,'  poro_mud(ksmax,i,j)=',poro_mud(k,i,j)
-                    END IF
-                    print *,'  mass_sed (cv_sed(iv,ksmax,i,j)*dzsa + flx_w2s_loc(iv)) = ',mass_sed
-                    print *,'  mass_tot=',mass_tot
-                    print *,'  frac_sed=',frac_sed
-                    print *,'  poro(ksmax,i,j)=',poro(k,i,j)
-                    print *,'  dzs(ksmax,i,j)=',dzs(k,i,j)
-                    print *,'  verif dimi1 cv_sed iv,nvpc+1,nvp =',iv,nvpc+1,nvp
-                    print *,'  verif dimi2 cv_sed ksmax,ksdmin,ksdmax =',ksmax,ksdmin,ksdmax
-                    print *,'  cv_sed(:,ksmax,i,j)=',cv_sed(:,k,i,j)
-                    !print *,'  cv_sed(iv,ksmax,i,j)=',cv_sed(iv,k,i,j)
-                  END IF
-#endif
 
 #if ! defined key_noTSdiss_insed || ! defined key_nofluxwat_IWS
                  ! dissolved variable in pore waters and water fluxes at the interface
@@ -3610,16 +3376,6 @@ MODULE sed_MUSTANG
                 !!!!!! NEW LAYER !!!!!!
                 !!!!!!!!!!!!!!!!!!!!!!!
  
-#ifdef key_MUSTANG_debug
-                 IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                   print *,'  > A part of ksmax layer is added to small deposits to become suficient'
-                   print *,'cmudr=',cmudr,' / cmudcr=',cmudcr
-                   print *,'dzsa=',dzsa,' / dzsmax(i,j) = ',dzsmax(i,j)
-                   !print *,'l_isitcohesive_dep=',l_isitcohesive_dep,' frmud_dep = ',frmud_dep,' frmudcr_dep', frmudcr_dep
-                   print *,'  l_createnewlayer=',l_createnewlayer,  '***** NEW LAYER ***'
-                 END IF
-#endif
 
                  !!! Modif of deposits charac
                  IF (masdepmud+sommud*dzsmina .GT. 0.0_rsh) THEN
@@ -3667,24 +3423,6 @@ MODULE sed_MUSTANG
                    print *,'  dzsa=',dzsa,' dzsmina=',dzsmina,' new dzs(ksmax,i,j)=',dzs(ksmax,i,j)
                  END IF
 
-#ifdef key_MUSTANG_debug
-                 IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                   IF (masdepmud+sommud*dzsa .GT. 0.0_rsh) THEN
-                     print *,'  poro_mud_dep=',(masdepmud/(masdepmud+sommud*dzsmina)),' * ',  &
-                             (1.0_rsh-(cfreshmud/ros(1))),' + ',((sommud*dzsmina)/(masdepmud+sommud*dzsmina)), &
-                              ' * ',poro_muda,'=',poro_mud_dep
-                   ELSE
-                     print *,'  poro_mud_dep=',poro_mud_dep
-                   END IF
-                   print *,'  flx_w2s_loc(iv)=flx_w2s_loc(iv)+cv_sed(iv,ksmax,i,j)*dzsmina = ',flx_w2s_loc(:)
-                   print *,'  mass_tot_dep=',mass_tot_dep
-                   print *,'  frac_sed_dep=',frac_sed_dep
-                   print *,'  poro_dep=',poro_dep
-                   print *,'  dzs_dep=',dzs_dep
-                   print *,'  dzs(ksmax,i,j)=dzsa-dzsmina=',dzs(ksmax,i,j)
-                 END IF
-#endif
                END IF ! test on l_increase_dep
               ENDIF !  (sedment exist) test on ksmax < or > than ksmi(i,j)
   
@@ -3698,47 +3436,12 @@ MODULE sed_MUSTANG
               ! test  (new layer)
               IF (l_createnewlayer) THEN 
 
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                 print *,''
-                 print *,'  > Creation of a new layer, l_createnewlayer=',l_createnewlayer, ' because : '
-                 IF (cmudr .GT. cmudcr) print *,cmudr,' (cmudr) > ',cmudcr,' (cmudcr)'
-                 IF (dzsa .GE. dzsmax(i,j)) print *,dzsa,' (dzsa) >= ',dzsmax(i,j),' (dzsmax(i,j))'
-                 IF (dzs_dep .GE. dzsmin) print *,dzs_dep,' (dzs_dep) >= ',dzsmin,' (dzsmin)'
-               END IF
-#endif
 
                ! actual constitution of the new layer:
                ! -------------------------------------
 
                IF(ksmax.EQ.ksdmax) THEN
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                 print *,''
-                 print *,'  > fusion because ksmaxx ==ksdmax and l_createnewlayer=',l_createnewlayer
-                 print *,'dzs before fusion  ',dzs(ksmi(i,j):ksmax,i,j)
-                 porewater=0._rsh
-                 do k=ksmi(i,j),ksmax
-                    porewater=porewater+dzs(k,i,j)*poro(k,i,j)
-                 enddo
-                 print *,'water vol tot before fusion',porewater
-               END IF
-#endif
                  CALL sed_MUSTANG_fusion(i,j,ksmax)
-                 !print *,'CALL sed_MUSTANG_fusion(i,j,ksmax) at ',i,j
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                 print *,'dzs after fusion ',dzs(ksmi(i,j):ksmax,i,j)
-                 porewater=0._rsh
-                 do k=ksmi(i,j),ksmax
-                    porewater=porewater+dzs(k,i,j)*poro(k,i,j)
-                 enddo
-                 print *,'water vol tot after fusion',porewater
-               END IF
-#endif
 
                END IF
 
@@ -3794,18 +3497,6 @@ MODULE sed_MUSTANG
                poro(k,i,j)=poro_dep
                poro_mud(k,i,j)=poro_mud_dep
 
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND.   &
-                       (CURRENT_TIME> t_start_debug)) THEN
-                 print *,'  > Charac of the new sediment layer'
-                 print *,'  ksmax=',ksmax
-                 print *,'  poro(ksmax,i,j)=',poro(k,i,j)
-                 print *,'  poro_mud(ksmax,i,j)=',poro_mud(k,i,j)
-                 print *,'  dzs(ksmax,i,j)=',dzs(k,i,j)
-                 print *,'  cv_sed(:,ksmax,i,j)=',cv_sed(:,k,i,j)
-                 print *,'  c_sedtot(ksmax,i,j)=',c_sedtot(k,i,j)
-               END IF
-#endif 
 
 #if ! defined key_noTSdiss_insed || ! defined key_nofluxwat_IWS
                  ! dissolved variable in pore waters and water fluxes at the interface
@@ -3830,12 +3521,6 @@ MODULE sed_MUSTANG
                 ! to avoid increasing the thickness of the surface layer 
                 IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
                     IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
-#ifdef key_MUSTANG_debug
-                       IF ( l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                         print *,'    SPLIT SURFACE LAYER BECAUSE dzs > dzsmax '
-                         print *,ksmax,'  layers become', ksmax+1, 'layers'
-                       END IF
-#endif
                      dzs(ksmax+1,i,j)=MIN(dzs(ksmax,i,j)-dzsmax(i,j),dzsmax(i,j))
                      dzs(ksmax,i,j)=dzs(ksmax,i,j)-dzs(ksmax+1,i,j)
                      poro(ksmax+1,i,j)=poro(ksmax,i,j)
@@ -3897,17 +3582,6 @@ MODULE sed_MUSTANG
             poro(ksma(i,j)+1:ksdmax,i,j)=0.0_rsh
 
             IF (l_outsed_dzs_ksmax) var2D_dzs_ksmax(i,j)=dzs(ksmax,i,j)  ! dzs at sediment surface
-#ifdef key_MUSTANG_debug
-               IF (l_debug_effdep .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-                 print *,'  > fin effdep',i,j
-                 print *,'  t=',CURRENT_TIME, 'ksmax=',ksmax
-                 print *,'  dzs(ksmax-3:ksmax,i,j)=',dzs(ksmax-3:ksmax,i,j)
-                 print *,'  cv_sed(:,ksmax-3,i,j)=',cv_sed(:,ksmax-3,i,j)
-                 print *,'  cv_sed(:,ksmax-2,i,j)=',cv_sed(:,ksmax-2,i,j)
-                 print *,'  cv_sed(:,ksmax-1,i,j)=',cv_sed(:,ksmax-1,i,j)
-                 print *,'  cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-               END IF
-#endif 
         
           END IF ! test on htot
         END DO  ! loop on i
@@ -7135,31 +6809,12 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
    DO iv=igrav1,imud2
      frac_sed(iv)=cv_sed(iv,ksmax,i,j)/c_sedtot(ksmax,i,j)
    END DO
- 
-#ifdef key_MUSTANG_debug
-    IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-     print *,'    SED COMP EROS FLX INDEP'
-     print *,''
-     print *,'      > Ini sed_eros_flx_class_by_class(:)=', sed_eros_flx_class_by_class(:)
-     print *,'      > E0_sand_loc(:)=', E0_sand_loc(:)
-     print *,'      > frac_sed(:)=', frac_sed(:)
-     print *,'      > tauskin(i,j)=', tauskin(i,j)
-     print *,''
-     print *,'      ** NON COHESIVE SEDIMENTS **'
-     print *,''
-   END IF
-#endif
   
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!! SANDY SEDIMENTS        !!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
    DO iv=isand1,isand2
-#ifdef key_MUSTANG_debug
-     IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-       print *,'      iv=',iv
-     END IF
-#endif
 
      !!! Critical shear stress toce in N/m2
      IF (l_peph_suspension) THEN
@@ -7208,14 +6863,6 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
        sed_eros_flx_class_by_class(iv)=MF*fwet(i,j)*frac_sed(iv)*E0_sand_loc(iv) &
                        *((tauskin(i,j)/toce_loc(iv))-1.0_rsh)**n_eros_sand
 
-#ifdef key_MUSTANG_debug
-       IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-         print *,'       EROSION of iv !'
-         IF (l_peph_suspension) print *,'       - pe/ph=',pe,' / ',ph
-         print *,'       - toce(iv)=',toce_loc(iv)
-         print *,'       - sed_eros_flx_class_by_class(iv)=',sed_eros_flx_class_by_class(iv)
-       END IF
-#endif
 
      END IF
 
@@ -7226,13 +6873,6 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
    !!!!!!!!! MUDDY SEDIMENTS    !!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#ifdef key_MUSTANG_debug
-   IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-     print *,''
-     print *,'      ** COHESIVE SEDIMENTS **'
-     print *,''
-   END IF
-#endif
 
    IF( .NOT. l_eroindep_mud) THEN
      !! mud erosion is proportional to total sand erosion
@@ -7331,13 +6971,6 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
      
           IF (l_outsed_toce) var2D_toce(iv,i,j) = tauc_mud  ! toce_save
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug  &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-             print *,'       - tauc_mud=',tauc_mud
-             print *,'       - sed_eros_flx_class_by_class(iv)=',sed_eros_flx_class_by_class(iv)
-         END IF
-#endif
         END DO
 
     ENDIF
@@ -7424,34 +7057,11 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 
      massinactivlayer_ini(:)=massinactivlayer(:)
 
-#ifdef key_MUSTANG_debug
-     IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-       print *,'    Carac of ksmax layer before borning/applying erosion : '
-       print *,'      ksmax=',ksmax
-       print *,'      dzs(ksmax,i,j)=',dzs(ksmax,i,j)
-       print *,'      cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-       print *,'      c_sedtot(ksmax,i,j)=',c_sedtot(ksmax,i,j)
-       print *,'      poro(ksmax,i,j)=',poro(ksmax,i,j),'poro_mud(ksmax,i,j)=',poro_mud(ksmax,i,j)
-       print *,'      massinactivlayer_ini(:)=',massinactivlayer_ini(:)
-       print *,'      crel_mud(ksmax,i,j)=',crel_mud(ksmax,i,j)
-      ! print *,'        > CELL_SURF(i,j)=',CELL_SURF(i,j)
-      ! print *,'        > CELL_DX(i,j)=',CELL_DX(i,j)
-      ! print *,'        > CELL_DY(i,j)=',CELL_DY(i,j)
-     END IF
-#endif
-
      l_empty(:)=.FALSE.
      ero_tot(:)=0.0_rsh ! needs to be initialised
 
      DO iv=1,nvpc
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-         print *,'      iv=',iv
-       END IF
-#endif
 
        IF (cv_sed(iv,ksmax,i,j) .LT. 10e-3) THEN ! Bof ?
 
@@ -7462,12 +7072,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
          dt_ero(iv)=0.0_rsh
          !dt_ero(iv)=dt1 
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-           print *,'        > cv_sed(iv,ksmax,i,j) .LT. 10e-3 ==> flx_bx(:), flx_by(:), sed_eros(:)= 0. pour tt iv / dt_ero(:)=dt1'
-         END IF
-#endif
 
        ELSE
  
@@ -7484,17 +7088,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
            dt_ero(iv)=dt1
          END IF
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-           print *,'        > flx_tot=',flx_tot,' mass_avail=',mass_avail(iv)
-           print *,'        > l_empty(iv)=',l_empty(iv),' / dt_ero(iv)=',dt_ero(iv),' (dt1=',dt1,')'
-           print *,'        Initial fluxes : '
-           print *,'        > flx_bxij(iv)=',flx_bxij(iv)
-           print *,'        > flx_byij(iv)=',flx_byij(iv)
-           print *,'        > sed_eros_flx_class_by_class(iv)=',sed_eros_flx_class_by_class(iv)
-         END IF
-#endif
 
          ! Updating erosion/bedload fluxes according to available sediment masses in active layer !!
          ! Unit changes (kg/m2/s or kg/m/s --> kg)
@@ -7506,17 +7099,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
          flx_byij(iv)=dt_ero(iv)*flx_byij(iv)*CELL_DX(i,j) ! in kg
 #endif
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-           print *,'        > flx_tot=',flx_tot,' mass_avail=',mass_avail(iv)
-           print *,'        > l_empty(iv)=',l_empty(iv),' / dt_ero(iv)=',dt_ero(iv),' (dt1=',dt1,')'
-           print *,'        Updates of fluxes in kg (*dx, dy, or surf and *dt_ero(iv): '
-           print *,'        > flx_bxij(iv)=',flx_bxij(iv)
-           print *,'        > flx_byij(iv)=',flx_byij(iv)
-           print *,'        > sed_eros_flx_class_by_class(iv)=',sed_eros_flx_class_by_class(iv)
-         END IF
-#endif
 
          ! Updating masses in active layer according to divergence of actual (limited or not) erosion/bedload fluxes 
 
@@ -7529,14 +7111,7 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
          ELSE
            massinactivlayer(iv)=0.0_rsh
          END IF
-
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-           print *,'        Updating masses in active layer according to divergence of actual (limited or not) erosion/bedload fluxes'
-           print *,'        > massinactivlayer(iv)=',massinactivlayer(iv),' (l_empty(iv)=',l_empty(iv),')'
-         END IF
-#endif        
+      
        ENDIF
 
      END DO
@@ -7580,16 +7155,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
        mass_tot=mass_tot+massinactivlayer(iv)
      END DO
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-       print *,'    Update of the characteristics of the new ksmax layer after erosion : '
-       print *,'      > massinactivlayer(:)=',massinactivlayer(:)
-       print *,'      > mass_tot=',mass_tot
-     END IF
-#endif
-     !print *,'massinactivlayer(:)=',massinactivlayer(:)
-
 
      IF (mass_tot .GT. 0.0_rsh) THEN
        !print *,'Remaining masses, update of the ksmax layer composition and thickness'
@@ -7601,13 +7166,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
        CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud(ksmax,i,j),  &
                                 crel_mud(ksmax,i,j), poro(ksmax,i,j))
 
-       !IF (crel_mud(ksmax,i,j) .GT. 1500.0_rsh) THEN
-       !  print *,'in sed_erosion_mixsed 2'
-       !  print *,' > crel_mud(ksmax,i,j) = ',crel_mud(ksmax,i,j)
-       !  print *,' > massinactivlayer(iv) = ',massinactivlayer(:)
-       !  print *,' > frac_sed(iv) = ',frac_sed(:)
-       !END IF
-
 
        dzs(ksmax,i,j)=mass_tot/((1.0_rsh-poro(ksmax,i,j))*ros(1))
 
@@ -7616,19 +7174,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
        !dzsmin=(1.0_rsh-coeff_dzsmin)*dzsminuni + coeff_dzsmin*SUM( frac_sed(1:nvpc)*diam_sed(1:nvpc) )
        dzsmin=dzsminvar(frac_sed)
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-         print *,'    mass_tot > 0'
-         print *,'      > CALL MUSTANGV2_comp_poro_mixsed(frac_sed, poro_mud(ksmax,i,j), poro(ksmax,i,j))'
-         print *,'           - frac_sed(:)=',frac_sed(:)
-         print *,'           - poro_mud(ksmax,i,j)=',poro_mud(ksmax,i,j)
-         print *,'           - OUT ==> poro(ksmax,i,j)=',poro(ksmax,i,j)
-         print *,'           - OUT ==> crel_mud(ksmax,i,j)=',crel_mud(ksmax,i,j)
-         print *,'      > dzs(ksmax,i,j)=',dzs(ksmax,i,j)
-         print *,'      > dzsmin=',dzsmin
-       END IF
-#endif
 
 #if ! defined key_noTSdiss_insed || ! defined key_nofluxwat_IWS
          ! dissolved variable in pore waters and water fluxes at the interface
@@ -7657,13 +7202,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 
        ELSE
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-           print *,'      > CALL MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,massinactivlayer)'
-         END IF
-#endif
-
          CALL MUSTANGV2_manage_small_mass_in_ksmax(i,j,ksmax,   &
 #if ! defined key_noTSdiss_insed || ! defined key_nofluxwat_IWS
                                 phieau_ero_ij,flx_s2w_eroij,   &
@@ -7677,12 +7215,7 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
        !print *,'Total erosion of the ksmax layer'
        ! et que deviennent les particulaires non constitutives ?
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-         print *,'    mass_tot = 0 ==> total erosion of the layer'
-       END IF
-#endif
+
 #if ! defined key_noTSdiss_insed || ! defined key_nofluxwat_IWS
          ! dissolved variable in pore waters and water fluxes at the interface
          ! --------------------------------------------------------------------
@@ -7707,18 +7240,6 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 
      END IF
 
-#ifdef key_MUSTANG_debug
-         IF ( l_debug_erosion .AND. CURRENT_TIME> t_start_debug   &
-               .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-       print *,'    Carac of ksmax layer after borning/applying erosion : '
-       print *,'      ksmax=',ksmax
-       print *,'      dzs(ksmax,i,j)=',dzs(ksmax,i,j)
-       print *,'      cv_sed(:,ksmax,i,j)=',cv_sed(:,ksmax,i,j)
-       print *,'      c_sedtot(ksmax,i,j)=',c_sedtot(ksmax,i,j)
-       print *,'      poro(ksmax,i,j)=',poro(ksmax,i,j),'poro_mud(ksmax,i,j)=',poro_mud(ksmax,i,j)
-       print *,'      crel_mud(ksmax,i,j)=',crel_mud(ksmax,i,j)
-     END IF
-#endif
 
 ! To see later
 !     DO iv=imud2+1,nvp
@@ -8513,16 +8034,6 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
     ! Critical shear stress for each class based on masking / exposure processes   
     toce_loc(:) = 0.0_rsh
 
-#ifdef key_MUSTANG_debug
-    IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-        print *,'    EVAL BEDLOAD'
-        print *,''
-        print *,'      > Ini flx_bxij(:)=',flx_bxij(:)
-        print *,'            flx_byij(:)=',flx_byij(:)
-        print *,'            toce(:)=',toce_loc(:)
-        print *,''
-      END IF
-#endif
 
    DO iv=ibedload1,ibedload2
 
@@ -8570,20 +8081,6 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
      flx_bxij(iv) = qb * tauskin_x(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)
      flx_byij(iv) = qb * tauskin_y(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)
-
-
-#ifdef key_MUSTANG_debug
-    IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-          print *,'      iv=',iv
-          IF (l_peph_bedload) print *,'        - pe/ph = ',pe,' / ',ph
-          print *,'        - toce(iv)=',toce_loc(iv)
-          print *,'        - phi_bed=',phi_bed
-          print *,'        - qb=',qb
-          print *,'        - flx_bxij(iv)=',flx_bxij(iv),' in kg/m/s'
-          print *,'        - flx_byij(iv)=',flx_byij(iv)
-        END IF
-#endif
-
 
      IF (l_slope_effect_bedload) THEN
             
@@ -8641,13 +8138,6 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
         var2D_flx_by_int(i,j)=var2D_flx_by_int(i,j)+flx_byij(iv) !pour ecriture en sortie
       ENDIF
 
-#ifdef key_MUSTANG_debug
-        IF ( l_debug_erosion .AND. i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug .AND. CURRENT_TIME> t_start_debug) THEN
-          print *,'      apres application des masques'
-          print *,'        - flx_bxij(iv)=',flx_bxij(iv),' in kg/m/s'
-          print *,'        - flx_byij(iv)=',flx_byij(iv)
-        END IF
-#endif
      ! So we have at the output the bedload fluxes coming out of the mesh i,j en kg/m/s
 
 
