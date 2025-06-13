@@ -442,7 +442,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file
 !
-!#if defined BIOLink
 #if defined BIOLink && defined ECO3M && defined DYFAMED
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1

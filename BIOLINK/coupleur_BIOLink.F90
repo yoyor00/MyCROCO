@@ -1706,6 +1706,9 @@ END SUBROUTINE  BIOLink2hydro
 
       !***************** We test if the tracer concentration ***************!
       !************************* becomes negative **************************!
+
+      ! ECO3M takes care itself of the negative concentrations, no need to do
+      ! this here        
 #if ! defined ECO3M
          xnegtr(:,:,:,:) = 1.e+0 ! 
 

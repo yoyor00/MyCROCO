@@ -604,10 +604,17 @@
         open(18,file='../AnalyticalProfiles/dyfamed_ts_init.dat')
         do k=1,N
           Read(18,*) t(1,1,N-k+1,1,itemp)
+#      ifdef SALINITY
+     &             , t(1,1,N-k+1,1,isalt)
+#      endif
           do j=JR_RANGE
             do i=IR_RANGE
               t(i,j,N-k+1,1,itemp)= t(1,1,N-k+1,1,itemp)  
               t(i,j,N-k+1,2,itemp)=t(i,j,N-k+1,1,itemp)
+#      ifdef SALINITY
+              t(i,j,N-k+1,1,isalt)= t(1,1,N-k+1,1,isalt)
+              t(i,j,N-k+1,2,isalt)=t(i,j,N-k+1,1,isalt)
+#      endif
              enddo
           enddo
         enddo
