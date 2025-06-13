@@ -170,16 +170,12 @@ include Makedefs
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
 	comMUSTANG.F90 dredging.F90 coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
-	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
-
-SRCECO3M1 = \
-	eco3m_string.F90\
+	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
+        eco3m_string.F90\
 	eco3m_vartypes.F90\
 	eco3m_files.F90\
 	eco3m.F90\
 	eco3m_mod.F90\
-
-SRCECO3M2 = \
 	eco3m_id.F90\
 	eco3m_chl.F90\
 	eco3m_user.F90\
@@ -192,7 +188,7 @@ SRCECO3M2 = \
 	eco3m_flux.F90\
 	eco3m_init.F90\
 	eco3m_rgb.F90\
-	eco3m_run.F90\
+	eco3m_run.F90
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
@@ -205,13 +201,9 @@ TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
 RCS = $(SRCS:.F=.f)
 
 RCS90 = $(SRCS90:.F90=.f90)
-RCECO3M1 = $(SRCECO3M1:.F90=.f90)
-RCECO3M2 = $(SRCECO3M2:.F90=.f90)
 
 OBJS = $(RCS:.f=.o)
 OBJS90 = $(RCS90:.f90=.o)
-OBJSECO3M1 = $(RCECO3M1:.f90=.o)
-OBJSECO3M2 = $(RCECO3M2:.f90=.o)
 
 SBIN = croco
 
@@ -233,8 +225,8 @@ all: tools depend $(SBIN)
 # Executable file.
 # ========= =====
 #
-$(SBIN):   $(OBJSECO3M1) $(OBJS90) $(OBJSECO3M2) $(OBJS) 
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJSECO3M1) $(OBJS90) $(OBJSECO3M2) $(OBJS) $(LCDF) $(LMPI) 
+$(SBIN):   $(OBJS90) $(OBJS) 
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
 	mv a.out $(SBIN)
 
 #

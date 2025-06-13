@@ -39,3 +39,6 @@ P2ZISDEFINED
 #ifdef key_pisces_quota
 P5ZISDEFINED
 #endif
+#ifdef ECO3M
+ECO3MISDEFINED
+#endif
