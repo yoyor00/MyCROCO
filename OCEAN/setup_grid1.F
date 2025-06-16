@@ -32,9 +32,6 @@ C$    integer omp_get_thread_num
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
-#ifdef MPI
-# include "mpif.h"
-#endif
 
 #ifdef MPI_LAT_HID_2D
       integer :: Istr_orig, Iend_orig, Jstr_orig, Jend_orig
