@@ -21,4 +21,8 @@
 #  error "MPI_LAT_HID_2D_COMM_N_TIMES not defined, but MPI_LAT_HID_2D activated"
 # endif
 
+#else
+
+# define MPI_LAT_HID_2D_ADD_LAYERS 0
+
 #endif
