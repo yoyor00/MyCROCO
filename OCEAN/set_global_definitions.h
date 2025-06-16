@@ -17,6 +17,8 @@
 ======================================================================
 */
 
+#include "latency_hiding_2d.h"
+
 /*
   Define standard dimensions for the model arrays (vertical
  dimensions are inserted explicitly in the code, when needed). The
@@ -42,26 +44,31 @@
 # define THREE_GHOST_POINTS_UV
 #endif
 
+#include "latency_hiding_2d.h"
+
+! Abbreviation for MPI_LAT_HID_2D_ADD_LAYERS
+#define ADDLAYERS MPI_LAT_HID_2D_ADD_LAYERS
+
 #ifdef THREE_GHOST_POINTS
 # ifdef MPI
-#  define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,-2:Mm+3+padd_E
-#  define GLOBAL_1D_ARRAYXI -2:Lm+3+padd_X
-#  define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
-#  define START_2D_ARRAY -2,-2
-#  define START_1D_ARRAYXI -2
-#  define START_1D_ARRAYETA -2
+#  define GLOBAL_2D_ARRAY -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS,-2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
+#  define GLOBAL_1D_ARRAYXI -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS
+#  define GLOBAL_1D_ARRAYETA -2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
+#  define START_2D_ARRAY -2-ADDLAYERS,-2-ADDLAYERS
+#  define START_1D_ARRAYXI -2-ADDLAYERS
+#  define START_1D_ARRAYETA -2-ADDLAYERS
 # else
 #  ifdef EW_PERIODIC
-#   define GLOBAL_1D_ARRAYXI -2:Lm+3+padd_X
-#   define START_1D_ARRAYXI -2
+#   define GLOBAL_1D_ARRAYXI -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS
+#   define START_1D_ARRAYXI -2-ADDLAYERS
 #   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,-2:Mm+3+padd_E
-#    define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
-#    define START_2D_ARRAY -2,-2
-#    define START_1D_ARRAYETA -2
+#    define GLOBAL_2D_ARRAY -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS,-2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
+#    define GLOBAL_1D_ARRAYETA -2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
+#    define START_2D_ARRAY -2-ADDLAYERS,-2+ADDLAYERS
+#    define START_1D_ARRAYETA -2-ADDLAYERS
 #   else
-#    define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,0:Mm+1+padd_E
-#    define START_2D_ARRAY -2,0
+#    define GLOBAL_2D_ARRAY -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS,0:Mm+1+padd_E
+#    define START_2D_ARRAY -2-ADDLAYERS,0
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
 #    define START_1D_ARRAYETA 0
 #   endif
@@ -69,10 +76,10 @@
 #   define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
 #   define START_1D_ARRAYXI 0
 #   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-2:Mm+3+padd_E
-#    define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
-#    define START_2D_ARRAY 0,-2
-#    define START_1D_ARRAYETA -2
+#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
+#    define GLOBAL_1D_ARRAYETA -2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
+#    define START_2D_ARRAY 0,-2-ADDLAYERS
+#    define START_1D_ARRAYETA -2-ADDLAYERS
 #   else
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
@@ -83,35 +90,35 @@
 # endif
 #else
 # ifdef MPI
-#  define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#  define GLOBAL_1D_ARRAYXI -1:Lm+2+padd_X
-#  define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
-#  define START_2D_ARRAY -1,-1
-#  define START_1D_ARRAYXI -1
-#  define START_1D_ARRAYETA -1
+#  define GLOBAL_2D_ARRAY -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS,-1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
+#  define GLOBAL_1D_ARRAYXI -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS
+#  define GLOBAL_1D_ARRAYETA -1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
+#  define START_2D_ARRAY -1-ADDLAYERS,-1-ADDLAYERS
+#  define START_1D_ARRAYXI -1-ADDLAYERS
+#  define START_1D_ARRAYETA -1-ADDLAYERS
 # else
 #  ifdef EW_PERIODIC
-#   define GLOBAL_1D_ARRAYXI -1:Lm+2+padd_X
-#   define START_1D_ARRAYXI -1
+#   define GLOBAL_1D_ARRAYXI -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS
+#   define START_1D_ARRAYXI -1-ADDLAYERS
 #   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
-#    define START_2D_ARRAY -1,-1
-#    define START_1D_ARRAYETA -1
+#    define GLOBAL_2D_ARRAY -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS,-1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
+#    define GLOBAL_1D_ARRAYETA -1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
+#    define START_2D_ARRAY -1-ADDLAYERS,-1-ADDLAYERS
+#    define START_1D_ARRAYETA -1-ADDLAYERS
 #   else
-#    define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,0:Mm+1+padd_E
+#    define GLOBAL_2D_ARRAY -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS,0:Mm+1+padd_E
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
-#    define START_2D_ARRAY -1,0
+#    define START_2D_ARRAY -1-ADDLAYERS,0
 #    define START_1D_ARRAYETA 0
 #   endif
 #  else
-#   define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
+#   define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X+ADDLAYERS
 #   define START_1D_ARRAYXI 0
 #   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-1:Mm+2+padd_E
-#    define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
-#    define START_2D_ARRAY 0,-1
-#    define START_1D_ARRAYETA -1
+#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
+#    define GLOBAL_1D_ARRAYETA -1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
+#    define START_2D_ARRAY 0,-1-ADDLAYERS
+#    define START_1D_ARRAYETA -1-ADDLAYERS
 #   else
 #    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
 #    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
@@ -122,10 +129,10 @@
 # endif
 #endif
 
-#define PRIVATE_1D_SCRATCH_ARRAY Istr-2:Iend+2
-#define PRIVATE_2D_SCRATCH_ARRAY Istr-2:Iend+2,Jstr-2:Jend+2
-#define PRIVATE_1DXI_SCRATCH_ARRAY Istr-2:Iend+2
-#define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-2:Jend+2
+#define PRIVATE_1D_SCRATCH_ARRAY Istr-2-ADDLAYERS:Iend+2+ADDLAYERS
+#define PRIVATE_2D_SCRATCH_ARRAY Istr-2-ADDLAYERS:Iend+2+ADDLAYERS,Jstr-2-ADDLAYERS:Jend+2+ADDLAYERS
+#define PRIVATE_1DXI_SCRATCH_ARRAY Istr-2-ADDLAYERS:Iend+2+ADDLAYERS
+#define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-2-ADDLAYERS:Jend+2+ADDLAYERS
 
 /*
   The following definitions contain fortran logical expressions
@@ -147,10 +154,10 @@
 # define SOUTHERN_EDGE (jstr.eq.1.and. .not.SOUTH_INTER)
 # define NORTHERN_EDGE (jend.eq.Mmmpi .and. .not.NORTH_INTER)
 #else
-# define WESTERN_EDGE istr.eq.1
-# define EASTERN_EDGE iend.eq.Lm
-# define SOUTHERN_EDGE jstr.eq.1
-# define NORTHERN_EDGE jend.eq.Mm
+# define WESTERN_EDGE (istr.eq.1)
+# define EASTERN_EDGE (iend.eq.Lm)
+# define SOUTHERN_EDGE (jstr.eq.1)
+# define NORTHERN_EDGE (jend.eq.Mm)
 #endif
 
 /*
@@ -195,9 +202,9 @@
 */
 #ifdef MPI
 # undef AUTOTILING
-# define SINGLE_TILE_MODE  Iend-Istr+Jend-Jstr.eq.Lmmpi+Mmmpi-2
+# define SINGLE_TILE_MODE  (Iend-Istr+Jend-Jstr.eq.Lmmpi+Mmmpi-2)
 #else
-# define SINGLE_TILE_MODE  Iend-Istr+Jend-Jstr.eq.Lm+Mm-2
+# define SINGLE_TILE_MODE  (Iend-Istr+Jend-Jstr.eq.Lm+Mm-2)
 #endif
 
 

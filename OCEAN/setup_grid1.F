@@ -32,8 +32,36 @@ C$    integer omp_get_thread_num
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
+#ifdef MPI
+# include "mpif.h"
+#endif
+
+#ifdef MPI_LAT_HID_2D
+      integer :: Istr_orig, Iend_orig, Jstr_orig, Jend_orig
+#endif
+
 !
 #include "compute_extended_bounds.h"
+
+
+#ifdef MPI_LAT_HID_2D
+      Istr_orig = Istr
+      Iend_orig = Iend
+      Jstr_orig = Jstr
+      Jend_orig = Jend
+#else
+#  define Istr_orig Istr
+#  define Iend_orig Iend
+#  define Jstr_orig Jstr
+#  define Jend_orig Jend
+#endif
+
+#define IJ_ORIG Istr_orig,Iend_orig,Jstr_orig,Jend_orig
+
+#ifdef MPI_LAT_HID_2D
+#  include "latency_hiding_2d_extended_bounds_update.h"
+#endif
+
 !$acc kernels if(compute_on_device) default(present)
 !
 !  Set f/mn,at horizontal RHO-points.
@@ -260,58 +288,89 @@ C$    integer omp_get_thread_num
 
 !$acc end kernels
 
+#ifdef MPI_LAT_HID_2D
+!
+! TODO:
+! It might be better to "relink" this permanently to
+! the latency hiding ("lh") subroutines.
+!
+# define exchange_r2d_tile exchange_r2d_lh_tile
+# define exchange_u2d_tile exchange_u2d_lh_tile
+# define exchange_v2d_tile exchange_v2d_lh_tile
+# define exchange_p2d_tile exchange_p2d_lh_tile
+
+# define exchange_r2d_3pts_tile exchange_r2d_lh_tile
+# define exchange_u2d_3pts_tile exchange_u2d_lh_tile
+# define exchange_v2d_3pts_tile exchange_v2d_lh_tile
+# define exchange_p2d_3pts_tile exchange_p2d_lh_tile
+#endif /* MPI_LAT_HID_2D */
+
 #ifdef BD_EXCHANGE
 # ifndef BASIN      
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   zob)
+      call exchange_r2d_tile (IJ_ORIG,   zob)
 # endif      
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   om_r)
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   on_r)
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, pnom_r)
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend, pmon_r)
+      call exchange_r2d_tile (IJ_ORIG,   om_r)
+      call exchange_r2d_tile (IJ_ORIG,   on_r)
+      call exchange_r2d_tile (IJ_ORIG, pnom_r)
+      call exchange_r2d_tile (IJ_ORIG, pmon_r)
 # if defined CURVGRID && defined UV_ADV
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   dndx)
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   dmde)
+      call exchange_r2d_tile (IJ_ORIG,   dndx)
+      call exchange_r2d_tile (IJ_ORIG,   dmde)
 # endif
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend, pmon_u)
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,   om_u)
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,   on_u)
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,   pn_u)
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,   pm_u)
+      call exchange_u2d_tile (IJ_ORIG, pmon_u)
+      call exchange_u2d_tile (IJ_ORIG,   om_u)
+      call exchange_u2d_tile (IJ_ORIG,   on_u)
+      call exchange_u2d_tile (IJ_ORIG,   pn_u)
+      call exchange_u2d_tile (IJ_ORIG,   pm_u)
 
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend, pnom_v)
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,   om_v)
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,   on_v)
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,   pm_v)
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,   pn_v)
+      call exchange_v2d_tile (IJ_ORIG, pnom_v)
+      call exchange_v2d_tile (IJ_ORIG,   om_v)
+      call exchange_v2d_tile (IJ_ORIG,   on_v)
+      call exchange_v2d_tile (IJ_ORIG,   pm_v)
+      call exchange_v2d_tile (IJ_ORIG,   pn_v)
 
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend, pnom_p)
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend, pmon_p)
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,   om_p)
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,   on_p)
+      call exchange_p2d_tile (IJ_ORIG, pnom_p)
+      call exchange_p2d_tile (IJ_ORIG, pmon_p)
+      call exchange_p2d_tile (IJ_ORIG,   om_p)
+      call exchange_p2d_tile (IJ_ORIG,   on_p)
 # ifdef WET_DRY
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,  Dcrit)
+      call exchange_r2d_tile (IJ_ORIG,  Dcrit)
 # endif
 # ifdef WKB_WWAVE
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,      h)
+      call exchange_r2d_tile (IJ_ORIG,      h)
 # endif
 
 # ifdef MASKING
 #  ifdef THREE_GHOST_POINTS
-      call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend, rmask)
+      call exchange_r2d_3pts_tile (IJ_ORIG, rmask)
 #  else
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,      rmask)
+      call exchange_r2d_tile (IJ_ORIG,      rmask)
 #  endif
 #  ifdef THREE_GHOST_POINTS_UV
-      call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend, umask)
-      call exchange_v2d_3pts_tile (Istr,Iend,Jstr,Jend, vmask)
+      call exchange_u2d_3pts_tile (IJ_ORIG, umask)
+      call exchange_v2d_3pts_tile (IJ_ORIG, vmask)
 #  else
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,      umask)
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,      vmask)
+      call exchange_u2d_tile (IJ_ORIG,      umask)
+      call exchange_v2d_tile (IJ_ORIG,      vmask)
 #  endif
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,      pmask)
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,     pmask2)
+      call exchange_p2d_tile (IJ_ORIG,      pmask)
+      call exchange_p2d_tile (IJ_ORIG,     pmask2)
 # endif
 #endif
+
+#ifdef MPI_LAT_HID_2D
+
+# undef exchange_r2d_tile
+# undef exchange_u2d_tile
+# undef exchange_v2d_tile
+# undef exchange_p2d_tile
+
+# undef exchange_r2d_3pts_tile
+# undef exchange_u2d_3pts_tile
+# undef exchange_v2d_3pts_tile
+# undef exchange_p2d_3pts_tile
+
+#endif
+
       return
       end
-

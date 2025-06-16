@@ -4,8 +4,12 @@
 #ifdef M3FAST_SEDLAYERS
 # undef  NP1
 # define NP1 N+N_sl+1
-#endif 
-#define MAXNPTS 3
+#endif
+#ifdef MPI_LAT_HID_2D
+#  define MAXNPTS (3+MPI_LAT_HID_2D_ADD_LAYERS)
+#else
+#  define MAXNPTS 3
+#endif
       integer sub_X,size_X, sub_E,size_E   
 # ifndef AGRIF
       parameter (sub_X=Lm,  size_X=MAXNPTS*(sub_X+2*MAXNPTS)-1,

@@ -110,6 +110,7 @@
 #endif
 !
 #include "compute_auxiliary_bounds.h"
+
 !
 #if defined EW_PERIODIC && !defined MPI
 # define IR_RANGE Istr,Iend
@@ -1745,6 +1746,23 @@ C$OMP BARRIER
 !--------------------------------------------------------------------
 !
 
+#ifdef MPI_LAT_HID_2D
+!
+! TODO:
+! It might be better to "relink" this permanently to
+! the latency hiding ("lh") subroutines.
+!
+# define exchange_r2d_tile exchange_r2d_lh_tile
+# define exchange_u2d_tile exchange_u2d_lh_tile
+# define exchange_v2d_tile exchange_v2d_lh_tile
+# define exchange_p2d_tile exchange_p2d_lh_tile
+
+# define exchange_r2d_3pts_tile exchange_r2d_lh_tile
+# define exchange_u2d_3pts_tile exchange_u2d_lh_tile
+# define exchange_v2d_3pts_tile exchange_v2d_lh_tile
+# define exchange_p2d_3pts_tile exchange_p2d_lh_tile
+#endif /* MPI_LAT_HID_2D */
+
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 # ifdef ANA_INITIAL
 #  ifndef BASIN      
@@ -1833,6 +1851,21 @@ C$OMP BARRIER
 #undef IU_RANGE
 #undef JR_RANGE
 #undef JV_RANGE
+
+
+#ifdef MPI_LAT_HID_2D
+
+# undef exchange_r2d_tile
+# undef exchange_u2d_tile
+# undef exchange_v2d_tile
+# undef exchange_p2d_tile
+
+# undef exchange_r2d_3pts_tile
+# undef exchange_u2d_3pts_tile
+# undef exchange_v2d_3pts_tile
+# undef exchange_p2d_3pts_tile
+
+#endif
 
       return
       end

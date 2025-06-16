@@ -4127,6 +4127,9 @@ C$OMP END MASTER
 
 # endif  /* NBQ_HZCORRECT */
 
+
+#ifndef HPC_BENCH_SKIP_VALIDATION
+
 !
 !-----------------------------------------------------------------------
 !  TEST FOR CFL VIOLATION. IF SO, PRINT AND STOP
@@ -4218,6 +4221,8 @@ C$OMP END MASTER
         stop                            !-->  EXIT
 # endif
       ENDIF
+
+#endif
 
 # undef zwrk 
 # undef rzeta  

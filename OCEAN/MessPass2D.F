@@ -1,13 +1,21 @@
 #include "cppdefs.h"
+#include "latency_hiding_2d.h"
+
 #ifdef MPI
 
-# if (!defined MP_3PTS) && (!defined MP_1PTS)
-      subroutine MessPass2D_tile (Istr,Iend,Jstr,Jend, A)
-# elif defined MP_1PTS
-      subroutine MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend, A)
-# else
-      subroutine MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend, A)
-# endif
+#if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_LH_PTS)
+      ! Create standard message passing per default
+      subroutine MessPass2D_tile(Istr,Iend,Jstr,Jend, A)
+#elif defined MP_1PTS
+      subroutine MessPass2D_1pts_tile(Istr,Iend,Jstr,Jend, A)
+#elif defined MP_3PTS
+      subroutine MessPass2D_3pts_tile(Istr,Iend,Jstr,Jend, A)
+#elif defined MP_LH_PTS
+      subroutine MessPass2D_lh_tile(Istr,Iend,Jstr,Jend, A)
+#else
+#  error "Internal error"
+#endif
+
 !
 !======================================================================
 !
@@ -24,19 +32,25 @@
 # include "mpi_cpl.h"
       include 'mpif.h'
       integer Npts
-# if (!defined MP_3PTS) && (!defined MP_1PTS)
+#if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_LH_PTS)
+      ! 2 points wide message passing per default
       parameter (Npts=2)
-# elif defined MP_1PTS
+#elif defined MP_1PTS
       parameter (Npts=1)
-# else
+#elif defined MP_3PTS
       parameter (Npts=3)
-# endif
+#elif defined MP_LH_PTS
+      parameter (Npts=2+MPI_LAT_HID_2D_ADD_LAYERS)
+#else
+      #error "Internal error"
+#endif
+
       logical, parameter :: use_host_device = .TRUE.
 # include "mpi_buffers.h"
 !
 ! Nb of boundary points involved in communication
 !
-      integer ipts,jpts 
+      integer ipts, jpts
       real A(GLOBAL_2D_ARRAY)
 CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       integer Istr,Iend,Jstr,Jend, i,j, isize,jsize,ksize,  iter,
@@ -54,7 +68,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
          sub_E=Mm
          size_E=Npts*(sub_E+2*Npts)-1  !7+Npts*sub_E
          if (.not. allocated(ibuf_sndN)) then
-         Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
+           Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
      &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
      &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
      &     jbuf_revW(0:size_E), jbuf_revE(0:size_E))
@@ -509,18 +523,27 @@ c      write(*,*) 'MessPass2D:    ', mynode,' exit'
       return
       end
 
-# if (!defined MP_3PTS) && (!defined MP_1PTS)
+#if (!defined MP_3PTS) && (!defined MP_1PTS) && (!defined MP_LH_PTS)
+
 #  define MP_3PTS
 #  include "MessPass2D.F"
 #  undef MP_3PTS
-#  ifndef MP_1PTS
-#   define MP_1PTS
-#   include "MessPass2D.F"
-#   undef MP_1PTS
+
+#  define MP_1PTS
+#  include "MessPass2D.F"
+#  undef MP_1PTS
+
+#  ifdef MPI_LAT_HID_2D
+#    define MP_LH_PTS
+#    include "MessPass2D.F"
+#    undef MP_LH_PTS
 #  endif
-# endif
+
+#endif
+
 #else
+
       subroutine MessPass2D_empty
       return
       end
-#endif
+#endif /* MPI */ 

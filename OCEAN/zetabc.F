@@ -65,6 +65,7 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_auxiliary_bounds.h"
+#include "latency_hiding_2d.h"
 !
 !  If child grid, interpolate zeta from parent
 !
@@ -94,7 +95,7 @@ C$    trd=omp_get_thread_num()
                               defined OBC_COM_ZSPECIFIED_WEST)
 !                                           Western edge Specified BC
 !                                           ======= ==== ========= ==
-        do j=JstrV-1,Jend
+        do j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS
 #  ifdef Z_FRC_BRY
           zeta(0,j,knew)=zetabry_west(j)
 #  else
@@ -107,7 +108,7 @@ C$    trd=omp_get_thread_num()
 # elif defined OBC_COM_WEST && defined OBC_COM_ZORLANSKI
 !                                           Eastern edge Radiation BC
 !                                           ======= ==== ========= ==
-        do j=JstrV-1,Jend
+        do j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS
           dft=zeta(1,j,kstp)-zeta(1,j,knew)
           dfx=zeta(1,j,knew)-zeta(2,j,knew)
           if (dfx*dft .lt. 0.) dft=0.     ! <--  SUPPRESS INFLOW
@@ -122,7 +123,7 @@ C$    trd=omp_get_thread_num()
 # elif defined OBC_COM_WEST && defined OBC_COM_ZCHAPMAN
 !                                           Western edge Chapman BC
 !                                           ======= ==== ======= ==
-        do j=JstrV-1,Jend
+        do j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS
           cx=dtfast*pm(1,j)*sqrt(g*max(0.,h(1,j)+zeta(1,j,kstp)))
           zeta(0,j,knew)=(zeta(0,j,kstp)+cx*zeta(1,j,knew))/(1.+cx)
 #  ifdef MASKING
@@ -130,7 +131,7 @@ C$    trd=omp_get_thread_num()
 #  endif
         enddo
 # else
-        do j=JstrV-1,Jend                     ! Western edge gradient BC
+        do j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS       ! Western edge gradient BC
           zeta(0,j,knew)=zeta(1,j,knew)    ! ======= ==== ======== ==
 #  ifdef MASKING
      &                      *rmask(0,j)
@@ -147,7 +148,7 @@ C$    trd=omp_get_thread_num()
                               defined OBC_COM_ZSPECIFIED_EAST)
 !                                           Eastern edge Specified BC
 !                                           ======= ==== ========= ==
-        do j=JstrV-1,Jend
+        do j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS
 #  ifdef Z_FRC_BRY
           zeta(Iend+1,j,knew)=zetabry_east(j)
 #  else
@@ -160,7 +161,7 @@ C$    trd=omp_get_thread_num()
 # elif defined OBC_COM_EAST && defined OBC_COM_ZORLANSKI
 !                                           Eastern edge Radiation BC
 !                                           ======= ==== ========= ==
-        do j=JstrV-1,Jend
+        do j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS
           dft=zeta(Iend,j,kstp)-zeta(Iend,j,knew)
           dfx=zeta(Iend,j,knew)-zeta(Iend-1,j,knew)
           if (dfx*dft .lt. 0.) dft=0.     ! <--  SUPPRESS INFLOW
@@ -175,7 +176,7 @@ C$    trd=omp_get_thread_num()
 # elif defined OBC_COM_EAST && defined OBC_COM_ZCHAPMAN
 !                                           Eastern edge Chapman BC
 !                                           ======= ==== ======= ==
-        do j=JstrV-1,Jend
+        do j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS
           cx=dtfast*pm(Iend,j)*
      &                      sqrt(g*max(0.,h(Iend,j)+zeta(Iend,j,kstp)))
           zeta(Iend+1,j,knew)=(zeta(Iend+1,j,kstp)
@@ -185,7 +186,7 @@ C$    trd=omp_get_thread_num()
 #  endif
         enddo
 # else
-        do j=JstrV-1,Jend                         ! Eastern edge gradient BC
+        do j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS  ! Eastern edge gradient BC
           zeta(Iend+1,j,knew)=zeta(Iend,j,knew)   ! ======= ==== ======== ==
 #  ifdef MASKING
      &                      *rmask(Iend+1,j)
@@ -205,7 +206,7 @@ C$    trd=omp_get_thread_num()
                                defined OBC_COM_ZSPECIFIED_SOUTH)
 !                                           Southern edge Specified BC
 !                                           ======== ==== ========= ==
-        do i=IstrU-1,Iend
+        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
 #  ifdef Z_FRC_BRY
           zeta(i,0,knew)=zetabry_south(i)
 #  else
@@ -218,7 +219,7 @@ C$    trd=omp_get_thread_num()
 # elif defined OBC_COM_SOUTH && defined OBC_COM_ZORLANSKI
 !                                           Southern edge Radiation BC
 !                                           ======= ==== ========= ==
-        do i=IstrU-1,Iend
+        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
           dft=zeta(i,1,kstp)-zeta(i,1,knew)
           dfx=zeta(i,1,knew)-zeta(i,2,knew)
           if (dfx*dft .lt. 0.) dft=0.     ! <--  SUPPRESS INFLOW
@@ -233,7 +234,7 @@ C$    trd=omp_get_thread_num()
 # elif defined OBC_COM_SOUTH && defined OBC_COM_ZCHAPMAN
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
-        do i=IstrU-1,Iend
+        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
           cx=dtfast*pn(i,1)*sqrt(g*max(0.,h(i,1)+zeta(i,1,kstp)))
           zeta(i,0,knew)=(zeta(i,0,kstp)
      &                              +cx*zeta(i,1,knew))/(1.+cx)
@@ -242,7 +243,7 @@ C$    trd=omp_get_thread_num()
 #  endif
         enddo
 # else
-        do i=IstrU-1,Iend                    ! Southern edge gradient BC
+        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS ! Southern edge gradient BC
           zeta(i,0,knew)=zeta(i,1,knew)   ! ======== ==== ======== ==
 #  ifdef MASKING
      &                      *rmask(i,0)
@@ -259,7 +260,7 @@ C$    trd=omp_get_thread_num()
                                defined OBC_COM_ZSPECIFIED_NORTH)
 !                                           Northern edge Specified BC
 !                                           ======== ==== ========= ==
-        do i=IstrU-1,Iend
+        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
 #  ifdef Z_FRC_BRY
           zeta(i,Jend+1,knew)=zetabry_north(i)
 #  else
@@ -272,7 +273,7 @@ C$    trd=omp_get_thread_num()
 # elif defined OBC_COM_NORTH && defined OBC_COM_ZORLANSKI
 !                                           Northern edge Radiation BC
 !                                           ======= ==== ========= ==
-        do i=IstrU-1,Iend
+        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
           dft=zeta(i,Jend,kstp)-zeta(i,Jend,knew)
           dfx=zeta(i,Jend,knew)-zeta(i,Jend-1,knew)
           if (dfx*dft .lt. 0.) dft=0.     ! <--  SUPPRESS INFLOW
@@ -287,7 +288,7 @@ C$    trd=omp_get_thread_num()
 # elif defined OBC_COM_NORTH && defined OBC_COM_ZCHAPMAN
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
-        do i=IstrU-1,Iend
+        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
           cx=dtfast*pn(i,Jend)*
      &                      sqrt(g*max(0.,h(i,Jend)+zeta(i,Jend,kstp)))
           zeta(i,Jend+1,knew)=(zeta(i,Jend+1,kstp)
@@ -299,7 +300,7 @@ C$    trd=omp_get_thread_num()
 # else
 !                                            Northern edge gradient BC
 !                                            ======== ==== ======== ==
-        do i=IstrU-1,Iend
+        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
           zeta(i,Jend+1,knew)=zeta(i,Jend,knew)
 #  ifdef MASKING
      &                       *rmask(i,Jend+1)
@@ -354,7 +355,7 @@ C$    trd=omp_get_thread_num()
 !
 # ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
-        DO j=JstrV-1,Jend
+        DO j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS
           IF (zeta(Istr-1,j,knew).le.
      &        (Dcrit(Istr-1,j)-h(Istr-1,j))) THEN
             zeta(Istr-1,j,knew)=Dcrit(Istr-1,j)-h(Istr-1,j)-eps
@@ -362,7 +363,7 @@ C$    trd=omp_get_thread_num()
         END DO
       END IF
       if (EASTERN_EDGE) then
-        DO j=JstrV-1,Jend
+        DO j=JstrV-1-MPI_LAT_HID_2D_ADD_LAYERS,Jend+MPI_LAT_HID_2D_ADD_LAYERS
           IF (zeta(Iend+1,j,knew).le.
      &        (Dcrit(Iend+1,j)-h(Iend+1,j))) THEN
             zeta(Iend+1,j,knew)=Dcrit(Iend+1,j)-h(Iend+1,j)-eps
@@ -372,7 +373,7 @@ C$    trd=omp_get_thread_num()
 # endif
 # ifndef NS_COM_PERIODIC
       if (SOUTHERN_EDGE) then
-        DO i=IstrU-1,Iend
+        DO i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
           IF (zeta(i,Jstr-1,knew).le.
      &       (Dcrit(i,Jstr-1)-h(i,Jstr-1))) THEN
                zeta(i,Jstr-1,knew)=Dcrit(i,Jstr-1)-h(i,Jstr-1)-eps
@@ -380,7 +381,7 @@ C$    trd=omp_get_thread_num()
         END DO
       END IF
       if (NORTHERN_EDGE) then
-        DO i=IstrU-1,Iend
+        DO i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
           IF (zeta(i,Jend+1,knew).le.
      &       (Dcrit(i,Jend+1)-h(i,Jend+1))) THEN
                zeta(i,Jend+1,knew)=Dcrit(i,Jend+1)-h(i,Jend+1)-eps
@@ -432,5 +433,3 @@ C$    trd=omp_get_thread_num()
 # endif
 # undef CHILD
 #endif  /* !CHILD */
-
-

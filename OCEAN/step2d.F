@@ -166,6 +166,12 @@ C$    trd=omp_get_thread_num()
 # else
 #  define SWITCH !
 # endif
+
+# ifdef MPI_LAT_HID_2D
+      integer :: Istr_orig, Iend_orig, Jstr_orig, Jend_orig
+      integer :: lat_hid_2d_subtimestep
+# endif
+
 !
 # ifdef MPI
 #  include "mpi_cpl.h"
@@ -176,7 +182,23 @@ C$    trd=omp_get_thread_num()
 #  define LOCALLM Lm
 #  define LOCALMM Mm
 # endif
+# include "latency_hiding_2d.h"
 # include "compute_auxiliary_bounds.h"
+
+#ifdef MPI_LAT_HID_2D
+      Istr_orig = Istr
+      Iend_orig = Iend
+      Jstr_orig = Jstr
+      Jend_orig = Jend
+#else
+#  define Istr_orig Istr
+#  define Iend_orig Iend
+#  define Jstr_orig Jstr
+#  define Jend_orig Jend
+#endif
+
+#define IJ_ORIG Istr_orig,Iend_orig,Jstr_orig,Jend_orig
+
 !
 !======================================================================
 ! AB3 Forward Step: Computes zeta(n+1) and zetarhs
@@ -231,6 +253,7 @@ C$    trd=omp_get_thread_num()
         cff3= 0.281105
 # endif
       endif
+
 !
 # if defined EW_PERIODIC || defined MPI || !defined M2_HADV_UP3
       imin=IstrU-2
@@ -250,6 +273,30 @@ C$    trd=omp_get_thread_num()
       jmax=min(Jend+2,Mm+1)
 #  define JU_EXT_RANGE max(Jstr-2,0),min(Jend+2,Mm+1)
 # endif
+
+
+#ifdef MPI_LAT_HID_2D
+
+      ! Compute number of subtime step in block of time steps for latency hiding
+      lat_hid_2d_subtimestep = MOD(iic-1, MPI_LAT_HID_2D_COMM_N_TIMES)
+
+! If MPI_LAT_HID_2D_TS_HALO_REDUCTION is set, we reduce the number of
+! extended halo layers for each subtime step in the latency hiding block
+! by this number.
+# ifdef MPI_LAT_HID_2D_TS_HALO_REDUCTION
+#  define MPI_LAT_HID_2D_ADD_LAYERS_AUX (MPI_LAT_HID_2D_ADD_LAYERS-MPI_LAT_HID_2D_TS_HALO_REDUCTION*lat_hid_2d_subtimestep)
+# endif
+
+# include "latency_hiding_2d_auxiliary_bounds_update.h"
+
+      if (lat_hid_2d_subtimestep .eq. 0) then
+        call exchange_r2d_lh_tile (IJ_ORIG, zeta(START_2D_ARRAY,kstp))
+        call exchange_u2d_lh_tile (IJ_ORIG, ubar(START_2D_ARRAY,kstp))
+        call exchange_v2d_lh_tile (IJ_ORIG, vbar(START_2D_ARRAY,kstp))
+      endif
+
+#endif
+
 !
 !$acc kernels if(compute_on_device) default(present) async(1)
 
@@ -322,19 +369,20 @@ C$    trd=omp_get_thread_num()
 
 # ifdef M2_HADV_UP3
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                   urhs(START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                   vrhs(START_2D_ARRAY))
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-     &                   Duon (START_2D_ARRAY))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-     &                   Dvom(START_2D_ARRAY))
+
+#    ifdef MPI_LAT_HID_2D
+#      error "TODO: Also merge with latency hiding precompiler statement below"
+#    endif
+
+      call exchange_u2d_tile (IJ_ORIG, urhs(START_2D_ARRAY))
+      call exchange_v2d_tile (IJ_ORIG, vrhs(START_2D_ARRAY))
+      call exchange_u2d_tile (IJ_ORIG, Duon (START_2D_ARRAY))
+      call exchange_v2d_tile (IJ_ORIG, Dvom(START_2D_ARRAY))
 #  endif
 # endif
 
 # ifdef OBC_VOLCONS
-      call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
+      call set_DUV_bc_tile (IJ_ORIG, Drhs, DUon,DVom)
 # endif
 
 # ifdef CVTK_DEBUG_ADVANCED
@@ -431,13 +479,13 @@ C$OMP END MASTER
 !$acc end kernels
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         if (FIRST_2D_STEP) then
-          call zonavg_2d(Istr,Iend,Jstr,Jend,
+          call zonavg_2d(IJ_ORIG,
      &                   zeta(START_2D_ARRAY,knew),zetazon)
         endif
       endif
       if (iic.eq.ntstart) then
         if (FIRST_2D_STEP) then
-          call zonavg_2d(Istr,Iend,Jstr,Jend,
+          call zonavg_2d(IJ_ORIG,
      &                   ssh(START_2D_ARRAY),sshzon)
         endif
       endif
@@ -526,11 +574,14 @@ C$OMP END MASTER
       endif
 
 #  if defined BD_EXCHANGE
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+#    ifdef MPI_LAT_HID_2D
+#      error "TODO"
+#    endif
+      call exchange_r2d_tile (IJ_ORIG,
      &                   Zt_avg3(START_2D_ARRAY,0))
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_u2d_tile (IJ_ORIG,
      &                   du_avg3(START_2D_ARRAY,0))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_v2d_tile (IJ_ORIG,
      &                   dv_avg3(START_2D_ARRAY,0))
 #  endif
 
@@ -557,7 +608,7 @@ C$OMP END MASTER
 !$acc end kernels
 
 # ifdef WET_DRY
-      call wetdry_tile (Istr,Iend,Jstr,Jend)
+      call wetdry_tile (IJ_ORIG)
 !RB this barrier seems to have a benefic effect
 ! in some cases with wetdry but not sure it is
 ! the proper fix
@@ -614,7 +665,7 @@ C$OMP END MASTER
 ! Set boundary conditions for the free-surface
 !-----------------------------------------------------------------------
 !
-      call zetabc_tile (Istr,Iend,Jstr,Jend)
+      call zetabc_tile (IJ_ORIG)
 !
 !----------------------------------------------------------------------
 ! Compute time averaged fields over all short timesteps.
@@ -1499,17 +1550,17 @@ C$OMP END MASTER
 !$acc end kernels
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         if (FIRST_2D_STEP) then
-          call zonavg_2d(Istr,Iend,Jstr,Jend,
+          call zonavg_2d(IJ_ORIG,
      &                   ubar(START_2D_ARRAY,knew),ubzon)
-          call zonavg_2d(Istr,Iend,Jstr,Jend,
+          call zonavg_2d(IJ_ORIG,
      &                   vbar(START_2D_ARRAY,knew),vbzon)
         endif
       endif
       if (iic.eq.ntstart) then
         if (FIRST_2D_STEP) then
-          call zonavg_2d(Istr,Iend,Jstr,Jend,
+          call zonavg_2d(IJ_ORIG,
      &                   ubclm(START_2D_ARRAY),ubclmzon)
-          call zonavg_2d(Istr,Iend,Jstr,Jend,
+          call zonavg_2d(IJ_ORIG,
      &                   vbclm(START_2D_ARRAY),vbclmzon)
         endif
       endif
@@ -1608,11 +1659,11 @@ C$OMP END MASTER
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
 !
-      call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
-      call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
+      call u2dbc_tile (IJ_ORIG, UFx)
+      call v2dbc_tile (IJ_ORIG, UFx)
 
 # ifdef OBC_VOLCONS
-      call obc_flux_tile (Istr,Iend,Jstr,Jend)
+      call obc_flux_tile (IJ_ORIG)
 # endif
 !
 !-----------------------------------------------------------------------
@@ -1775,14 +1826,21 @@ C$OMP END MASTER
 !
 !$acc end kernels
 # ifndef SOLVE3D
-      call diag_tile (Istr,Iend,Jstr,Jend, UFx,UFe)
+#   ifndef HPC_BENCH_SKIP_VALIDATION
+      call diag_tile (IJ_ORIG, UFx,UFe)
+#   endif
 # endif
 !
 !-----------------------------------------------------------------------
 !  Exchange boundary information.
 !-----------------------------------------------------------------------
 !
-# if defined BD_EXCHANGE
+#if defined BD_EXCHANGE
+
+#  ifdef MPI_LAT_HID_2D
+      ! Nothing to do here
+#  else /* MPI_LAT_HID_2D */
+
 !# ifdef BASIN      
 !      call exchange_r2d_1pts_tile (Istr,Iend,Jstr,Jend,
 !     &                   zeta(START_2D_ARRAY,knew))
@@ -1799,8 +1857,12 @@ C$OMP END MASTER
      &                   ust2d(START_2D_ARRAY))
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                   vst2d(START_2D_ARRAY))
-#  endif
-# endif
+
+#    endif
+#  endif /* ifdef MPI_LAT_HID_2D */
+#endif /* ifdef BD_EXCHANGE */
+
+
 !
 !
 !-----------------------------------------------------------------------
@@ -1829,11 +1891,14 @@ C$OMP END MASTER
         enddo
 
 #  if defined BD_EXCHANGE
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
+#    ifdef MPI_LAT_HID_2D
+#      error "TODO"
+#    endif
+      call exchange_r2d_tile (IJ_ORIG,
      &                        Zt_avg3(START_2D_ARRAY,iif))
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_u2d_tile (IJ_ORIG,
      &                        DU_avg3(START_2D_ARRAY,iif))
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
+      call exchange_v2d_tile (IJ_ORIG,
      &                        DV_avg3(START_2D_ARRAY,iif))
 #  endif
 
@@ -1871,6 +1936,10 @@ C$OMP END MASTER
        endif
 #  endif
 # endif /* AGRIF */
+
+
+#ifndef HPC_BENCH_SKIP_VALIDATION
+
 !
 !-----------------------------------------------------------------------
 !  TEST FOR CFL VIOLATION. IF SO, PRINT AND STOP
@@ -1878,13 +1947,13 @@ C$OMP END MASTER
 !
       VMAXL=100.
       VMAX=0.
-      do j=Jstr,Jend
-        do i=Istr,Iend
+      do j=Jstr_orig,Jend_orig
+        do i=Istr_orig,Iend_orig
           VMAX=max(VMAX,abs(ubar(i,j,knew)))
         enddo
       enddo
-      do j=Jstr,Jend
-        do i=Istr,Iend
+      do j=Jstr_orig,Jend_orig
+        do i=Istr_orig,Iend_orig
           VMAX=max(VMAX,abs(vbar(i,j,knew)))
         enddo
       enddo
@@ -1905,14 +1974,21 @@ C$OMP END MASTER
 # endif
 
       IF (VMAX.GT.VMAXL) THEN
+#ifdef MPI_LAT_HID_2D
+!$acc update if(compute_on_device) 
+!$acc& host(ubar(Istr_orig:Iend_orig,Jstr_orig:Jend_orig,knew))
+!$acc update if(compute_on_device)
+!$acc& host(vbar(Istr_orig:Iend_orig,Jstr_orig:Jend_orig,knew))
+#else
 !$acc update if(compute_on_device) host(ubar(Istr:Iend,Jstr:Jend,knew))
 !$acc update if(compute_on_device) host(vbar(Istr:Iend,Jstr:Jend,knew))
-        cff1=maxval(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
-        cff2=maxval(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
+#endif
+        cff1=maxval(abs(ubar(Istr_orig:Iend_orig,Jstr_orig:Jend_orig,knew)))
+        cff2=maxval(abs(vbar(Istr_orig:Iend_orig,Jstr_orig:Jend_orig,knew)))
         IF (cff1>cff2) THEN
-          ijmax= maxloc(abs(ubar(Istr:Iend,Jstr:Jend,knew)))
+          ijmax= maxloc(abs(ubar(Istr_orig:Iend_orig,Jstr_orig:Jend_orig,knew)))
         ELSE
-          ijmax= maxloc(abs(vbar(Istr:Iend,Jstr:Jend,knew)))
+          ijmax= maxloc(abs(vbar(Istr_orig:Iend_orig,Jstr_orig:Jend_orig,knew)))
         ENDIF
         imax=ijmax(1)
         jmax=ijmax(2)
@@ -1959,11 +2035,13 @@ C$OMP END MASTER
 # endif
       ENDIF
 
+#endif
+
 # ifdef SOLVE3D
       if (LAST_FAST_STEP) then
 !$acc wait
       endif
-# endif       
+# endif
       return
       end
 #else
