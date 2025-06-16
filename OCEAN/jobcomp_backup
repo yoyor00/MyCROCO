@@ -70,6 +70,18 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 #-----------------------------------------------------------
 XIOS_ROOT_DIR="$HOME/xios"
 
+#
+# [EXPERIMENTAL]
+# Perform (partial) rebuild.
+#
+# This will skip (pre-)compiling source files which didn't change.
+# In case no `Makedefs` is found, a build from scratch is made.
+# 
+# WARNING: Changes in a header file are not triggering compiling again
+# files including this header file.
+#
+REBUILD=false
+
 ####################################################
 # END OF USER'S MODIFICATIONS
 ####################################################
@@ -97,6 +109,9 @@ function show_help() {
    echo "  --netcdf-lib <path>         Specify the NetCDF library directory. (default: nf-config --flibs)"
    echo "  --xios-dir <path>           Specify the XIOS root directory. (default: $HOME/xios)"
    echo "  --prism-dir <path>          Specify the OASIS-MCT root directory. (default: ../../../oasis3-mct/compile_oa3-mct)"
+   echo "  --rebuild                   Use this if code should be recompiled (true)."
+   echo "                              Then, existing partial builds of .o files are going to be reused."
+   echo "                              WARNING: This is experimental and might change in the future."
 }
 
 # Parse command-line arguments
@@ -142,6 +157,10 @@ while [[ $# -gt 0 ]]; do
             NPROCS="$2"
             shift 2
             ;;
+        --rebuild)
+            REBUILD=true
+            shift 1
+            ;;
         *)
             echo "Unknown option: $1"
             show_help
@@ -168,8 +187,18 @@ which $MAKE > /dev/null 2>&1 || MAKE=make
 #
 # clean scratch area
 #
-rm -rf "$SCRDIR"
-mkdir "$SCRDIR"
+
+if [[ "$REBUILD" = "true" ]]; then
+   if [[ ! -e "${SCRDIR}/Makedefs" ]]; then
+      REBUILD="false"
+      echo "Disabling rebuild because `${SCRDIR}/Makedefs` doesn't exist, yet"
+   fi
+fi
+
+if [[ "$REBUILD" = "false" ]]; then
+   rm -rf "$SCRDIR"
+   mkdir "$SCRDIR"
+fi
 
 #
 # AGRIF sources directory
@@ -180,27 +209,31 @@ AGRIF_SRC="${ROOT_DIR}/AGRIF"
 # copy SOURCE code
 #
 
-ls "${SOURCE}/"*.F               > /dev/null  2>&1 && \cp "${SOURCE}/"*.F   "$SCRDIR"
-ls "${SOURCE}/"*.F90             > /dev/null  2>&1 && \cp "${SOURCE}/"*.F90 "$SCRDIR"
-ls "${SOURCE}/"*.h               > /dev/null  2>&1 && \cp "${SOURCE}/"*.h   "$SCRDIR"
-ls "${SOURCE}/"*.py              > /dev/null  2>&1 && \cp "${SOURCE}/"*.py   "$SCRDIR"
-ls "${SOURCE}/"Make*             > /dev/null  2>&1 && \cp "${SOURCE}/"Make* "$SCRDIR"
-ls "${SOURCE}/"amr.in            > /dev/null  2>&1 && \cp "${SOURCE}/"amr.in "$SCRDIR"
-ls "${AGRIF_SRC}"                > /dev/null  2>&1 && \cp -r "${AGRIF_SRC}" "$SCRDIR"
-ls "${ROOT_DIR}/"XIOS/*.F        > /dev/null  2>&1 && \cp "${ROOT_DIR}/"XIOS/*.F "$SCRDIR"
-ls "${ROOT_DIR}/"PISCES/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/* "$SCRDIR"
-ls "${ROOT_DIR}/"PISCES/LIB/*    > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/LIB/* "$SCRDIR"
-ls "${ROOT_DIR}/"PISCES/SED/*    > /dev/null  2>&1 && \cp "${ROOT_DIR}/"PISCES/SED/* "$SCRDIR"
-ls "${ROOT_DIR}/"PISCES/kRGB61*  > /dev/null  2>&1 && \cp "${ROOT_DIR}/"PISCES/kRGB61* $RUNDIR
-ls "${ROOT_DIR}/"MUSTANG/*       > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"MUSTANG/* "$SCRDIR"
-ls "${ROOT_DIR}/"OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"OBSTRUCTION/* "$SCRDIR"
+if [[ "$REBUILD" = "true" ]]; then
+   CP_PARAMS="--preserve=timestamps"
+fi
+
+ls "${SOURCE}/"*.F               > /dev/null  2>&1 && \cp $CP_PARAMS "${SOURCE}/"*.F   "$SCRDIR"
+ls "${SOURCE}/"*.F90             > /dev/null  2>&1 && \cp $CP_PARAMS "${SOURCE}/"*.F90 "$SCRDIR"
+ls "${SOURCE}/"*.h               > /dev/null  2>&1 && \cp $CP_PARAMS "${SOURCE}/"*.h   "$SCRDIR"
+ls "${SOURCE}/"*.py              > /dev/null  2>&1 && \cp $CP_PARAMS "${SOURCE}/"*.py   "$SCRDIR"
+ls "${SOURCE}/"Make*             > /dev/null  2>&1 && \cp $CP_PARAMS "${SOURCE}/"Make* "$SCRDIR"
+ls "${SOURCE}/"amr.in            > /dev/null  2>&1 && \cp $CP_PARAMS "${SOURCE}/"amr.in "$SCRDIR"
+ls "${AGRIF_SRC}"                > /dev/null  2>&1 && \cp -r $CP_PARAMS "${AGRIF_SRC}" "$SCRDIR"
+ls "${ROOT_DIR}/"XIOS/*.F        > /dev/null  2>&1 && \cp $CP_PARAMS "${ROOT_DIR}/"XIOS/*.F "$SCRDIR"
+ls "${ROOT_DIR}/"PISCES/*        > /dev/null  2>&1 && \cp -r $CP_PARAMS "${ROOT_DIR}/"PISCES/* "$SCRDIR"
+ls "${ROOT_DIR}/"PISCES/LIB/*    > /dev/null  2>&1 && \cp -r $CP_PARAMS "${ROOT_DIR}/"PISCES/LIB/* "$SCRDIR"
+ls "${ROOT_DIR}/"PISCES/SED/*    > /dev/null  2>&1 && \cp $CP_PARAMS "${ROOT_DIR}/"PISCES/SED/* "$SCRDIR"
+ls "${ROOT_DIR}/"PISCES/kRGB61*  > /dev/null  2>&1 && \cp $CP_PARAMS "${ROOT_DIR}/"PISCES/kRGB61* $RUNDIR
+ls "${ROOT_DIR}/"MUSTANG/*       > /dev/null  2>&1 && \cp -r $CP_PARAMS "${ROOT_DIR}/"MUSTANG/* "$SCRDIR"
+ls "${ROOT_DIR}/"OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r $CP_PARAMS "${ROOT_DIR}/"OBSTRUCTION/* "$SCRDIR"
 
 if [[ -e "namelist_pisces_ref" ]] ; then
    echo "  file namelist_pisces exists in Run directory"
 else
-   \cp -f "${ROOT_DIR}/"PISCES/namelist_pisces* "$RUNDIR"
+   \cp -f $CP_PARAMS "${ROOT_DIR}/"PISCES/namelist_pisces* "$RUNDIR"
    echo "  file namelist_pisces copied from source directory"
-   \cp -f "${ROOT_DIR}/"PISCES/SED/namelist_sediment* "$RUNDIR"
+   \cp -f $CP_PARAMS "${ROOT_DIR}/"PISCES/SED/namelist_sediment* "$RUNDIR"
    echo "  file namelist_sediment copied from source directory"
 fi
 
@@ -216,11 +249,11 @@ fi
 # overwrite with local files
 #
 
-ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 "$SCRDIR"
-ls *.F     > /dev/null  2>&1 && \cp -f *.F "$SCRDIR"
-ls *.h     > /dev/null  2>&1 && \cp -f *.h "$SCRDIR"
-ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 "$SCRDIR"
-ls Make*   > /dev/null  2>&1 && \cp -f Make* "$SCRDIR"
+ls *.F90   > /dev/null  2>&1 && \cp $CP_PARAMS -f *.F90 "$SCRDIR"
+ls *.F     > /dev/null  2>&1 && \cp $CP_PARAMS -f *.F "$SCRDIR"
+ls *.h     > /dev/null  2>&1 && \cp $CP_PARAMS -f *.h "$SCRDIR"
+ls *.h90   > /dev/null  2>&1 && \cp $CP_PARAMS -f *.h90 "$SCRDIR"
+ls Make*   > /dev/null  2>&1 && \cp $CP_PARAMS -f Make* "$SCRDIR"
 
 # Change directory
 #
@@ -286,13 +319,13 @@ CFT1="${CROCO_CFT1-$CFT1}"
 # PISCES Business
 if $($CPP1 testkeys.F | grep -i -q p2zisdefined) ; then
         echo "Simple version of PISCES is defined: copy the appropriate namelist"
-        \cp -f "$RUNDIR/namelist_pisces_cfg_p2z"  "$RUNDIR/namelist_pisces_cfg"
-        \cp -f "$RUNDIR/namelist_pisces_cfg_p2z"  "$RUNDIR/namelist_pisces_cfg.1"
+        \cp -f $CP_PARAMS "$RUNDIR/namelist_pisces_cfg_p2z"  "$RUNDIR/namelist_pisces_cfg"
+        \cp -f $CP_PARAMS "$RUNDIR/namelist_pisces_cfg_p2z"  "$RUNDIR/namelist_pisces_cfg.1"
 fi
 if $($CPP1 testkeys.F | grep -i -q p5zisdefined) ; then
         echo "Quota version of PISCES is defined: copy the appropriate namelist"
-        \cp -f "$RUNDIR/namelist_pisces_cfg_p5z"  "$RUNDIR/namelist_pisces_cfg"
-        \cp -f "$RUNDIR/namelist_pisces_cfg_p5z"  "$RUNDIR/namelist_pisces_cfg.1"
+        \cp -f $CP_PARAMS "$RUNDIR/namelist_pisces_cfg_p5z"  "$RUNDIR/namelist_pisces_cfg"
+        \cp -f $CP_PARAMS "$RUNDIR/namelist_pisces_cfg_p5z"  "$RUNDIR/namelist_pisces_cfg.1"
 fi
 
 
@@ -309,7 +342,9 @@ if $($CPP1 testkeys.F | grep -i -q agrifisdefined) ; then
    FFLAGS1="$FFLAGS1 -IAGRIF"
    LDFLAGS1="-LAGRIF -lagrif $LDFLAGS1"
 # we use the AGRIF Makedefs.generic definition
-   cp -f Makedefs.generic.AGRIF Makedefs.generic
+   if [[ "$REBUILD" != "true" ]]; then
+      cp -f $CP_PARAMS Makedefs.generic.AGRIF Makedefs.generic
+   fi
 fi
 
 #
@@ -447,19 +482,23 @@ fi
 # rewrite Makedefs according to previous flags
 # with openmp flags if needed
 #
-rm -f Makedefs
-echo 's?$(FFLAGS1)?'$FFLAGS1'?g' > flags.tmp
-echo 's?$(LDFLAGS1)?'$LDFLAGS1'?g' >> flags.tmp
-echo 's?$(CPP1)?'$CPP1'?g' >> flags.tmp
-echo 's?$(CFT1)?'$CFT1'?g' >> flags.tmp
-echo 's?$(CPPFLAGS1)?'$CPPFLAGS1'?g' >> flags.tmp
-sed -f flags.tmp Makedefs.generic > Makedefs
-rm -f flags.tmp
+if [[ "$REBUILD" != "true" ]]; then
+   rm -f Makedefs
+   echo 's?$(FFLAGS1)?'$FFLAGS1'?g' > flags.tmp
+   echo 's?$(LDFLAGS1)?'$LDFLAGS1'?g' >> flags.tmp
+   echo 's?$(CPP1)?'$CPP1'?g' >> flags.tmp
+   echo 's?$(CFT1)?'$CFT1'?g' >> flags.tmp
+   echo 's?$(CPPFLAGS1)?'$CPPFLAGS1'?g' >> flags.tmp
+   sed -f flags.tmp Makedefs.generic > Makedefs
+   rm -f flags.tmp
+fi
 
 #
 # compile croco
 #
-$MAKE depend
+if [[ "$REBUILD" != "true" ]]; then
+   $MAKE depend
+fi
 $MAKE -j ${NPROCS} || exit 1
 
 
