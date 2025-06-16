@@ -44,96 +44,184 @@
 # define THREE_GHOST_POINTS_UV
 #endif
 
-#include "latency_hiding_2d.h"
 
-! Abbreviation for MPI_LAT_HID_2D_ADD_LAYERS
-#define ADDLAYERS MPI_LAT_HID_2D_ADD_LAYERS
+#ifdef MPI_LAT_HID_2D
 
-#ifdef THREE_GHOST_POINTS
-# ifdef MPI
-#  define GLOBAL_2D_ARRAY -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS,-2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
-#  define GLOBAL_1D_ARRAYXI -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS
-#  define GLOBAL_1D_ARRAYETA -2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
-#  define START_2D_ARRAY -2-ADDLAYERS,-2-ADDLAYERS
-#  define START_1D_ARRAYXI -2-ADDLAYERS
-#  define START_1D_ARRAYETA -2-ADDLAYERS
-# else
-#  ifdef EW_PERIODIC
-#   define GLOBAL_1D_ARRAYXI -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS
-#   define START_1D_ARRAYXI -2-ADDLAYERS
-#   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS,-2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
-#    define GLOBAL_1D_ARRAYETA -2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
-#    define START_2D_ARRAY -2-ADDLAYERS,-2+ADDLAYERS
-#    define START_1D_ARRAYETA -2-ADDLAYERS
-#   else
-#    define GLOBAL_2D_ARRAY -2-ADDLAYERS:Lm+3+padd_X+ADDLAYERS,0:Mm+1+padd_E
-#    define START_2D_ARRAY -2-ADDLAYERS,0
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
-#    define START_1D_ARRAYETA 0
-#   endif
+# include "latency_hiding_2d.h"
+
+# ifdef THREE_GHOST_POINTS
+#  ifdef MPI
+#   define GLOBAL_2D_ARRAY -2-MPI_LAT_HID_2D_ADD_LAYERS:Lm+3+padd_X+MPI_LAT_HID_2D_ADD_LAYERS,-2-MPI_LAT_HID_2D_ADD_LAYERS:Mm+3+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#   define GLOBAL_1D_ARRAYXI -2-MPI_LAT_HID_2D_ADD_LAYERS:Lm+3+padd_X+MPI_LAT_HID_2D_ADD_LAYERS
+#   define GLOBAL_1D_ARRAYETA -2-MPI_LAT_HID_2D_ADD_LAYERS:Mm+3+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#   define START_2D_ARRAY -2-MPI_LAT_HID_2D_ADD_LAYERS,-2-MPI_LAT_HID_2D_ADD_LAYERS
+#   define START_1D_ARRAYXI -2-MPI_LAT_HID_2D_ADD_LAYERS
+#   define START_1D_ARRAYETA -2-MPI_LAT_HID_2D_ADD_LAYERS
 #  else
-#   define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
-#   define START_1D_ARRAYXI 0
-#   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
-#    define GLOBAL_1D_ARRAYETA -2-ADDLAYERS:Mm+3+padd_E+ADDLAYERS
-#    define START_2D_ARRAY 0,-2-ADDLAYERS
-#    define START_1D_ARRAYETA -2-ADDLAYERS
+#   ifdef EW_PERIODIC
+#    define GLOBAL_1D_ARRAYXI -2-MPI_LAT_HID_2D_ADD_LAYERS:Lm+3+padd_X+MPI_LAT_HID_2D_ADD_LAYERS
+#    define START_1D_ARRAYXI -2-MPI_LAT_HID_2D_ADD_LAYERS
+#    ifdef NS_PERIODIC
+#     define GLOBAL_2D_ARRAY -2-MPI_LAT_HID_2D_ADD_LAYERS:Lm+3+padd_X+MPI_LAT_HID_2D_ADD_LAYERS,-2-MPI_LAT_HID_2D_ADD_LAYERS:Mm+3+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#     define GLOBAL_1D_ARRAYETA -2-MPI_LAT_HID_2D_ADD_LAYERS:Mm+3+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#     define START_2D_ARRAY -2-MPI_LAT_HID_2D_ADD_LAYERS,-2+MPI_LAT_HID_2D_ADD_LAYERS
+#     define START_1D_ARRAYETA -2-MPI_LAT_HID_2D_ADD_LAYERS
+#    else
+#     define GLOBAL_2D_ARRAY -2-MPI_LAT_HID_2D_ADD_LAYERS:Lm+3+padd_X+MPI_LAT_HID_2D_ADD_LAYERS,0:Mm+1+padd_E
+#     define START_2D_ARRAY -2-MPI_LAT_HID_2D_ADD_LAYERS,0
+#     define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#     define START_1D_ARRAYETA 0
+#    endif
 #   else
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
-#    define START_2D_ARRAY 0,0
-#    define START_1D_ARRAYETA 0
+#    define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
+#    define START_1D_ARRAYXI 0
+#    ifdef NS_PERIODIC
+#     define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-2-MPI_LAT_HID_2D_ADD_LAYERS:Mm+3+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#     define GLOBAL_1D_ARRAYETA -2-MPI_LAT_HID_2D_ADD_LAYERS:Mm+3+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#     define START_2D_ARRAY 0,-2-MPI_LAT_HID_2D_ADD_LAYERS
+#     define START_1D_ARRAYETA -2-MPI_LAT_HID_2D_ADD_LAYERS
+#    else
+#     define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
+#     define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#     define START_2D_ARRAY 0,0
+#     define START_1D_ARRAYETA 0
+#    endif
+#   endif
+#  endif
+# else
+#  ifdef MPI
+#   define GLOBAL_2D_ARRAY -1-MPI_LAT_HID_2D_ADD_LAYERS:Lm+2+padd_X+MPI_LAT_HID_2D_ADD_LAYERS,-1-MPI_LAT_HID_2D_ADD_LAYERS:Mm+2+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#   define GLOBAL_1D_ARRAYXI -1-MPI_LAT_HID_2D_ADD_LAYERS:Lm+2+padd_X+MPI_LAT_HID_2D_ADD_LAYERS
+#   define GLOBAL_1D_ARRAYETA -1-MPI_LAT_HID_2D_ADD_LAYERS:Mm+2+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#   define START_2D_ARRAY -1-MPI_LAT_HID_2D_ADD_LAYERS,-1-MPI_LAT_HID_2D_ADD_LAYERS
+#   define START_1D_ARRAYXI -1-MPI_LAT_HID_2D_ADD_LAYERS
+#   define START_1D_ARRAYETA -1-MPI_LAT_HID_2D_ADD_LAYERS
+#  else
+#   ifdef EW_PERIODIC
+#    define GLOBAL_1D_ARRAYXI -1-MPI_LAT_HID_2D_ADD_LAYERS:Lm+2+padd_X+MPI_LAT_HID_2D_ADD_LAYERS
+#    define START_1D_ARRAYXI -1-MPI_LAT_HID_2D_ADD_LAYERS
+#    ifdef NS_PERIODIC
+#     define GLOBAL_2D_ARRAY -1-MPI_LAT_HID_2D_ADD_LAYERS:Lm+2+padd_X+MPI_LAT_HID_2D_ADD_LAYERS,-1-MPI_LAT_HID_2D_ADD_LAYERS:Mm+2+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#     define GLOBAL_1D_ARRAYETA -1-MPI_LAT_HID_2D_ADD_LAYERS:Mm+2+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#     define START_2D_ARRAY -1-MPI_LAT_HID_2D_ADD_LAYERS,-1-MPI_LAT_HID_2D_ADD_LAYERS
+#     define START_1D_ARRAYETA -1-MPI_LAT_HID_2D_ADD_LAYERS
+#    else
+#     define GLOBAL_2D_ARRAY -1-MPI_LAT_HID_2D_ADD_LAYERS:Lm+2+padd_X+MPI_LAT_HID_2D_ADD_LAYERS,0:Mm+1+padd_E
+#     define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#     define START_2D_ARRAY -1-MPI_LAT_HID_2D_ADD_LAYERS,0
+#     define START_1D_ARRAYETA 0
+#    endif
+#   else
+#    define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X+MPI_LAT_HID_2D_ADD_LAYERS
+#    define START_1D_ARRAYXI 0
+#    ifdef NS_PERIODIC
+#     define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-1-MPI_LAT_HID_2D_ADD_LAYERS:Mm+2+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#     define GLOBAL_1D_ARRAYETA -1-MPI_LAT_HID_2D_ADD_LAYERS:Mm+2+padd_E+MPI_LAT_HID_2D_ADD_LAYERS
+#     define START_2D_ARRAY 0,-1-MPI_LAT_HID_2D_ADD_LAYERS
+#     define START_1D_ARRAYETA -1-MPI_LAT_HID_2D_ADD_LAYERS
+#    else
+#     define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
+#     define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#     define START_2D_ARRAY 0,0
+#     define START_1D_ARRAYETA 0
+#    endif
 #   endif
 #  endif
 # endif
-#else
-# ifdef MPI
-#  define GLOBAL_2D_ARRAY -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS,-1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
-#  define GLOBAL_1D_ARRAYXI -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS
-#  define GLOBAL_1D_ARRAYETA -1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
-#  define START_2D_ARRAY -1-ADDLAYERS,-1-ADDLAYERS
-#  define START_1D_ARRAYXI -1-ADDLAYERS
-#  define START_1D_ARRAYETA -1-ADDLAYERS
-# else
-#  ifdef EW_PERIODIC
-#   define GLOBAL_1D_ARRAYXI -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS
-#   define START_1D_ARRAYXI -1-ADDLAYERS
-#   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS,-1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
-#    define GLOBAL_1D_ARRAYETA -1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
-#    define START_2D_ARRAY -1-ADDLAYERS,-1-ADDLAYERS
-#    define START_1D_ARRAYETA -1-ADDLAYERS
-#   else
-#    define GLOBAL_2D_ARRAY -1-ADDLAYERS:Lm+2+padd_X+ADDLAYERS,0:Mm+1+padd_E
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
-#    define START_2D_ARRAY -1-ADDLAYERS,0
-#    define START_1D_ARRAYETA 0
-#   endif
+
+# define PRIVATE_1D_SCRATCH_ARRAY Istr-2-MPI_LAT_HID_2D_ADD_LAYERS:Iend+2+MPI_LAT_HID_2D_ADD_LAYERS
+# define PRIVATE_2D_SCRATCH_ARRAY Istr-2-MPI_LAT_HID_2D_ADD_LAYERS:Iend+2+MPI_LAT_HID_2D_ADD_LAYERS,Jstr-2-MPI_LAT_HID_2D_ADD_LAYERS:Jend+2+MPI_LAT_HID_2D_ADD_LAYERS
+# define PRIVATE_1DXI_SCRATCH_ARRAY Istr-2-MPI_LAT_HID_2D_ADD_LAYERS:Iend+2+MPI_LAT_HID_2D_ADD_LAYERS
+# define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-2-MPI_LAT_HID_2D_ADD_LAYERS:Jend+2+MPI_LAT_HID_2D_ADD_LAYERS
+
+#else /* MPI_LAT_HID_2D */
+
+# ifdef THREE_GHOST_POINTS
+#  ifdef MPI
+#   define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,-2:Mm+3+padd_E
+#   define GLOBAL_1D_ARRAYXI -2:Lm+3+padd_X
+#   define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
+#   define START_2D_ARRAY -2,-2
+#   define START_1D_ARRAYXI -2
+#   define START_1D_ARRAYETA -2
 #  else
-#   define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X+ADDLAYERS
-#   define START_1D_ARRAYXI 0
-#   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
-#    define GLOBAL_1D_ARRAYETA -1-ADDLAYERS:Mm+2+padd_E+ADDLAYERS
-#    define START_2D_ARRAY 0,-1-ADDLAYERS
-#    define START_1D_ARRAYETA -1-ADDLAYERS
+#   ifdef EW_PERIODIC
+#    define GLOBAL_1D_ARRAYXI -2:Lm+3+padd_X
+#    define START_1D_ARRAYXI -2
+#    ifdef NS_PERIODIC
+#     define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,-2:Mm+3+padd_E
+#     define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
+#     define START_2D_ARRAY -2,-2
+#     define START_1D_ARRAYETA -2
+#    else
+#     define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,0:Mm+1+padd_E
+#     define START_2D_ARRAY -2,0
+#     define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#     define START_1D_ARRAYETA 0
+#    endif
 #   else
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
-#    define START_2D_ARRAY 0,0
-#    define START_1D_ARRAYETA 0
+#    define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
+#    define START_1D_ARRAYXI 0
+#    ifdef NS_PERIODIC
+#     define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-2:Mm+3+padd_E
+#     define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
+#     define START_2D_ARRAY 0,-2
+#     define START_1D_ARRAYETA -2
+#    else
+#     define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
+#     define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#     define START_2D_ARRAY 0,0
+#     define START_1D_ARRAYETA 0
+#    endif
+#   endif
+#  endif
+# else
+#  ifdef MPI
+#   define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,-1:Mm+2+padd_E
+#   define GLOBAL_1D_ARRAYXI -1:Lm+2+padd_X
+#   define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
+#   define START_2D_ARRAY -1,-1
+#   define START_1D_ARRAYXI -1
+#   define START_1D_ARRAYETA -1
+#  else
+#   ifdef EW_PERIODIC
+#    define GLOBAL_1D_ARRAYXI -1:Lm+2+padd_X
+#    define START_1D_ARRAYXI -1
+#    ifdef NS_PERIODIC
+#     define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,-1:Mm+2+padd_E
+#     define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
+#     define START_2D_ARRAY -1,-1
+#     define START_1D_ARRAYETA -1
+#    else
+#     define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,0:Mm+1+padd_E
+#     define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#     define START_2D_ARRAY -1,0
+#     define START_1D_ARRAYETA 0
+#    endif
+#   else
+#    define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
+#    define START_1D_ARRAYXI 0
+#    ifdef NS_PERIODIC
+#     define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-1:Mm+2+padd_E
+#     define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
+#     define START_2D_ARRAY 0,-1
+#     define START_1D_ARRAYETA -1
+#    else
+#     define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
+#     define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#     define START_2D_ARRAY 0,0
+#     define START_1D_ARRAYETA 0
+#    endif
 #   endif
 #  endif
 # endif
-#endif
 
-#define PRIVATE_1D_SCRATCH_ARRAY Istr-2-ADDLAYERS:Iend+2+ADDLAYERS
-#define PRIVATE_2D_SCRATCH_ARRAY Istr-2-ADDLAYERS:Iend+2+ADDLAYERS,Jstr-2-ADDLAYERS:Jend+2+ADDLAYERS
-#define PRIVATE_1DXI_SCRATCH_ARRAY Istr-2-ADDLAYERS:Iend+2+ADDLAYERS
-#define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-2-ADDLAYERS:Jend+2+ADDLAYERS
+# define PRIVATE_1D_SCRATCH_ARRAY Istr-2:Iend+2
+# define PRIVATE_2D_SCRATCH_ARRAY Istr-2:Iend+2,Jstr-2:Jend+2
+# define PRIVATE_1DXI_SCRATCH_ARRAY Istr-2:Iend+2
+# define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-2:Jend+2
 
+#endif /* MPI_LAT_HID_2D */
 /*
   The following definitions contain fortran logical expressions
  equivalent to the question: ''Am I the thread working on subdomain
