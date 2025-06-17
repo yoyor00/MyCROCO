@@ -393,7 +393,6 @@ track_perf:
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
   script:
     - cd $CI_PROJECT_DIR/BENCH
-    - source /venv/bin/activate
     - |
       mkdir -p previous
       cd $CI_PROJECT_DIR/BENCH/previous
