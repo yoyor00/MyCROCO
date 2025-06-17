@@ -1,5 +1,6 @@
 # dependencies to run the bench script (in addition to the one required for
 # CROCO alone)
+# Python version requirement >= "3.10"
 # to plot
 numpy
 matplotlib
