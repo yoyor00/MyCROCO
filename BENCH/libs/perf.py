@@ -10,13 +10,15 @@ import shutil
 import glob
 import json
 import numpy
+import pandas
 from matplotlib import pyplot
+import matplotlib.dates as mdates
 from .config import Config
 from .messaging import Messaging
 
 
 ##########################################################
-class Plotting:
+class Performance:
     def __init__(self, config: Config):
         self.config = config
         self.loaded_files = []
@@ -72,7 +74,7 @@ class Plotting:
             # merge
             if case_variant_data is not None:
                 data["variants"].append(variant_name)
-                data["means"].append(case_variant_data["results"][0]["mean"])
+                data["mean"].append(case_variant_data["results"][0]["mean"])
                 data["median"].append(case_variant_data["results"][0]["median"])
                 data["stddev"].append(case_variant_data["results"][0]["stddev"])
                 data["min"].append(case_variant_data["results"][0]["min"])
@@ -100,7 +102,7 @@ class Plotting:
             # build
             case_data = {
                 "variants": [],
-                "means": [],
+                "mean": [],
                 "median": [],
                 "min": [],
                 "max": [],
@@ -187,3 +189,101 @@ class Plotting:
             # keep track of the previous run used results
             if not self.config.no_previous:
                 self.keep_info_of_previous_runs()
+
+    def track(self):
+        # info
+        Messaging.section("Keep track of performances")
+
+        # Append to existing summary if it exists
+        df_updated = self.load_perf_data()
+        # Save summary file
+        output_summary_file = os.path.join(self.config.results, "perf_summary.csv")
+        Messaging.step(f"Write summary {output_summary_file}")
+        df_updated.to_csv(output_summary_file, index=False)
+
+        # Step 4: Plot a specific case
+        Messaging.step("Plot summary")
+        self.plot_perf_summary(df_updated)
+
+    def load_perf_data(self):
+        """
+        Load new result files and append to existing summary if provided.
+        Returns a combined DataFrame.
+        """
+        previous_summary_path = self.config.load_perf
+        existing_df = pandas.DataFrame()
+
+        if os.path.exists(previous_summary_path):
+            Messaging.step(f"Loading previous summary {previous_summary_path}")
+            existing_df = pandas.read_csv(previous_summary_path, parse_dates=["date"])
+
+        new_data = []
+        # get data
+        data = self.build_data()
+        # plot
+        for case_name, case_data in data.items():
+            for ivariant in range(
+                len(
+                    case_data["variants"],
+                )
+            ):
+                new_data.append(
+                    {
+                        "date": self.config.run_date,
+                        "case": case_name,
+                        "variant": case_data["variants"][ivariant],
+                        "mean": case_data["mean"][ivariant],
+                    }
+                )
+
+        new_df = pandas.DataFrame(new_data)
+        combined_df = pandas.concat([existing_df, new_df], ignore_index=True)
+
+        return combined_df
+
+    def plot_perf_summary(self, df):
+        """Plot the evolution of mean runtime per variant for a given case."""
+        results = self.config.results
+
+        df["date"] = pandas.to_datetime(df["date"], format="%Y-%m-%d_%H-%M-%S")
+
+        for case in df["case"].unique():
+            df_case = df[df["case"] == case]
+
+            if df_case.empty:
+                print(f"No data found for case: {case}")
+                return
+
+            fig, ax = pyplot.subplots(figsize=(10, 6))
+
+            for variant, group in df_case.groupby("variant"):
+                sorted_group = group.sort_values("date")
+                ax.plot(
+                    sorted_group["date"],
+                    sorted_group["mean"],
+                    label=variant,
+                    marker="o",
+                )
+
+            ax.set_title(f"Mean Runtime Evolution for Case: {case}")
+            ax.set_xlabel("Date")
+            ax.set_ylabel("Mean Runtime (s)")
+            ax.legend()
+            ax.grid(True)
+
+            # Gestion automatique des ticks et formats de dates
+            ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+            ax.xaxis.set_major_formatter(
+                mdates.ConciseDateFormatter(ax.xaxis.get_major_locator())
+            )
+
+            fig.autofmt_xdate()  # Rotation automatique des labels
+            pyplot.tight_layout()
+
+            output_dir = os.path.join(results)
+            os.makedirs(output_dir, exist_ok=True)
+            base_path = os.path.join(output_dir, f"trackperf-{case}")
+            Messaging.step(f"Save plot for case : {case}, {base_path}.png/.svg")
+            pyplot.savefig(f"{base_path}.png")
+            pyplot.savefig(f"{base_path}.svg")
+            pyplot.close()

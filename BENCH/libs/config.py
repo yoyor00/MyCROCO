@@ -73,6 +73,7 @@ class Config:
             "  By default, comparison is made over netcdf results file. \n"
             "  A more precise option is available through --cvtk.\n"
             "- plotperf : plot runtime of each variant\n"
+            "- trackperf : track runtime of each case and variant in one file\n"
             "- plotphy : physical plot using python script specified in case config in plot_diag_script.\n"
             "- plotraw : plot raw map of variables at start/middle/end of simulation.\n"
             "- animraw : same plot as plotraw with an animation over the simulation.\n"
@@ -98,6 +99,13 @@ class Config:
             help="Number or runs to perform. \n"
             "Several runs could be used to make performance tests. (default=1)",
             default="1",
+        )
+        parser.add_argument(
+            "-l",
+            "--load-perf",
+            help="Load previous runtime tracking",
+            type=str,
+            default="",
         )
         parser.add_argument(
             "-j",
@@ -211,6 +219,7 @@ class Config:
         self.workdir = os.path.abspath(self.args.workdir)
         self.rebuild = self.args.rebuild
         self.runs = int(self.args.runs)
+        self.load_perf = self.args.load_perf
         self.make_jobs = int(self.args.jobs)
         self.title = self.args.title
         self.auto_skip = self.args.auto_skip
@@ -239,11 +248,11 @@ class Config:
         else:
             folder_name_base = f"{use_host_config}"
 
+        self.run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         if self.args.no_date_in_result_dir:
             folder_name = f"{folder_name_base}"
         else:
-            run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            folder_name = f"{folder_name_base}-{run_date}"
+            folder_name = f"{folder_name_base}-{self.run_date}"
         self.results = os.path.join(
             self.args.results,
             folder_name,

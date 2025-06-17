@@ -18,3 +18,4 @@ termcolor
 xarray
 cartopy
 scipy
+pandas
