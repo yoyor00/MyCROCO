@@ -418,7 +418,7 @@ track_perf:
       --variants sequential,mpi-4 \
       --title track-perf \
       -s build,run,plotperf,trackperf \
-      -l $CI_PROJECT_DIR/BENCH/previous/BENCH/results/track-perf-host_ci/perf_summary.csv \
+      -l $CI_PROJECT_DIR/BENCH/previous/BENCH/results/track-perf-host_ci/trackperf_summary.csv \
       --rebuild \
       --host host_ci \
       --html \

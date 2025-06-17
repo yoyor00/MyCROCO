@@ -215,7 +215,7 @@ class Performance:
         # Append to existing summary if it exists
         df_updated = self.load_perf_data()
         # Save summary file
-        output_summary_file = os.path.join(self.config.results, "perf_summary.csv")
+        output_summary_file = os.path.join(self.config.results, "trackperf_summary.csv")
         Messaging.step(f"Write summary {output_summary_file}")
         df_updated.to_csv(output_summary_file, index=False)
 
