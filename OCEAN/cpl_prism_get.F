@@ -314,7 +314,7 @@
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                do jo = jmin_halo, jmax_halo
                   do io = imin_halo, imax_halo
-                     wfrq(io,jo) = 0.
+                     wfrq(io,jo) = 0.0
                      if (tab_t_tmp(io, jo) == tab_t_tmp(io, jo) .and. ! Not NaN
      &                  tab_t_tmp(io, jo) >= 0.0 ) then               ! Non-negative
                             wfrq(io,jo) = rmask(io,jo) * (2*pi) / 
