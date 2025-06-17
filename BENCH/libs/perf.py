@@ -24,6 +24,9 @@ class Performance:
         self.loaded_files = []
 
     def get_file_path(self, case_name: str, variant_name: str) -> str:
+        """
+        Get results file path for a specific case and variant
+        """
         # name
         name = f"{case_name}-{variant_name}"
         results_pattern = self.config.results_pattern
@@ -44,6 +47,9 @@ class Performance:
         return fpath
 
     def load_case_variant_data(self, case_name: str, variant_name: str) -> dict:
+        """
+        Load results for one variant of a case
+        """
         # get path
         fpath = self.get_file_path(case_name, variant_name)
 
@@ -63,6 +69,9 @@ class Performance:
             return json.load(fp)
 
     def load_variants(self, data: dict, case_name: str) -> bool:
+        """
+        Load results for all variants of a case
+        """
         # extract vars
         variant_names = self.config.config["variants"].keys()
 
@@ -90,13 +99,14 @@ class Performance:
         return True
 
     def build_data(self):
+        """
+        Build runtime data for all cases and variants in this run
+        """
         # extract vars
-        # case_names = self.config.case_names
         case_names = self.config.config["cases"].keys()
 
         # to fill
         data = {}
-
         # loop
         for name in case_names:
             # build
@@ -122,6 +132,9 @@ class Performance:
         return data
 
     def keep_info_of_previous_runs(self):
+        """
+        Save information about loaded cases from previous runs
+        """
         # vars
         results = self.config.results
 
@@ -139,7 +152,9 @@ class Performance:
                 shutil.copyfile(file, target_path)
 
     def plot(self):
-        # info
+        """
+        Load result files plots of runtimes per case.
+        """
         Messaging.section("Plotting performances")
 
         # extract
@@ -191,7 +206,10 @@ class Performance:
                 self.keep_info_of_previous_runs()
 
     def track(self):
-        # info
+        """
+        Load result files and append them to existing summary if provided.
+        Returns an updated summary and plots of evolution of runtime.
+        """
         Messaging.section("Keep track of performances")
 
         # Append to existing summary if it exists
@@ -201,7 +219,7 @@ class Performance:
         Messaging.step(f"Write summary {output_summary_file}")
         df_updated.to_csv(output_summary_file, index=False)
 
-        # Step 4: Plot a specific case
+        # Plot all cases
         Messaging.step("Plot summary")
         self.plot_perf_summary(df_updated)
 
@@ -218,9 +236,9 @@ class Performance:
             existing_df = pandas.read_csv(previous_summary_path, parse_dates=["date"])
 
         new_data = []
-        # get data
+        # Get data
         data = self.build_data()
-        # plot
+        # Plot
         for case_name, case_data in data.items():
             for ivariant in range(
                 len(
@@ -242,7 +260,7 @@ class Performance:
         return combined_df
 
     def plot_perf_summary(self, df):
-        """Plot the evolution of mean runtime per variant for a given case."""
+        """Plot the evolution of mean runtime"""
         results = self.config.results
 
         df["date"] = pandas.to_datetime(df["date"], format="%Y-%m-%d_%H-%M-%S")
@@ -271,13 +289,13 @@ class Performance:
             ax.legend()
             ax.grid(True)
 
-            # Gestion automatique des ticks et formats de dates
+            # Ticks and date format
             ax.xaxis.set_major_locator(mdates.AutoDateLocator())
             ax.xaxis.set_major_formatter(
                 mdates.ConciseDateFormatter(ax.xaxis.get_major_locator())
             )
 
-            fig.autofmt_xdate()  # Rotation automatique des labels
+            fig.autofmt_xdate()  # Rotate labels
             pyplot.tight_layout()
 
             output_dir = os.path.join(results)
