@@ -397,10 +397,20 @@ track_perf:
     - |
       mkdir -p previous
       cd $CI_PROJECT_DIR/BENCH/previous
-      echo "Trying to download previous artifacts..."
-      curl --fail --location --output artifacts.zip --header "JOB-TOKEN:$CI_JOB_TOKEN" \
-       "https://gitlab.inria.fr/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_REF_NAME/download?job=track_perf" || echo "No artifact available. Continuing without previous data."
-      test -f artifacts.zip && unzip artifacts.zip || echo "No artifacts.zip to unzip."
+      echo "Project ID: $CI_PROJECT_ID"
+      echo "Commit Ref: $CI_COMMIT_REF_NAME"
+      echo "Downloading artifacts for job: track_perf"
+
+      curl --fail --location --output artifacts.zip \
+          --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+          "https://gitlab.inria.fr/api/v4/projects/${CI_PROJECT_ID}/jobs/artifacts/${CI_COMMIT_REF_NAME}/download?job=track_perf" \
+          || echo "No artifact available. Continuing without previous data."
+
+      if [ -f artifacts.zip ]; then
+          unzip artifacts.zip
+      else
+          echo "No artifacts.zip to unzip."
+      fi
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py \
