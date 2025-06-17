@@ -234,6 +234,8 @@ class Performance:
         if os.path.exists(previous_summary_path):
             Messaging.step(f"Loading previous summary {previous_summary_path}")
             existing_df = pandas.read_csv(previous_summary_path, parse_dates=["date"])
+        else:
+            Messaging.step(f"No previous summary")
 
         new_data = []
         # Get data
