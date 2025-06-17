@@ -173,15 +173,16 @@
 !        Module of wind stress - smstr
          if (trim(srcv_clname(i)) == 'CROCO_TAUM' // trim(rclevel)) then
             call cpl_prism_getvar(srcv_nid(:, i), cplmsk, nmaxatm,
-     &             tab_t_tmp, rcvtime, iok_taum)
+     &   tab_t_tmp, rcvtime, iok_taum)
             if (iok_taum /= 0) then
-               call exchange_r2d_tile(1, lmmpi, 1, mmmpi, tab_t_tmp(START_2D_ARRAY))
+               call exchange_r2d_tile(1, Lmmpi, 1, Mmmpi, tab_t_tmp(START_2D_ARRAY))
 !              avoid slight negative values (after interpolation for example)...
                do jo = jmin_halo, jmax_halo
                   do io = imin_halo, imax_halo
+                     smstr(io,jo) = 0.0
                      if (tab_t_tmp(io, jo) == tab_t_tmp(io, jo) .and. ! Not NaN
      &                   tab_t_tmp(io, jo) >= 0.0 ) then              ! Non-negative
-                      smstr(io, jo) = tab_t_tmp(io, jo) / rho0
+                        smstr(io, jo) = tab_t_tmp(io, jo) / rho0
                      endif
                   enddo
                enddo             
@@ -232,7 +233,7 @@
             if (iok_vtau /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!              Interpolate grid T --> U
+!              Interpolate grid T --> V
                do jo=jmin_halo,jmax_halo+1
                do io=imin_halo-1,imax_halo+1
                   tab_v_tmp(io,jo)=0.5*(tab_t_tmp(io,jo-1)+tab_t_tmp(io,jo))
@@ -312,12 +313,13 @@
             if (iok_wt0m1 /= 0)  then
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                do jo = jmin_halo, jmax_halo
-                 do io = imin_halo, imax_halo
-                   if (tab_t_tmp(io, jo) == tab_t_tmp(io, jo) .and. ! Not NaN
-     &                  tab_t_tmp(io, jo) >= 0.0 ) then             ! Non-negative
-                     wfrq(io,jo) = rmask(io,jo) * (2*pi) / 
+                  do io = imin_halo, imax_halo
+                     wfrq(io,jo) = 0.
+                     if (tab_t_tmp(io, jo) == tab_t_tmp(io, jo) .and. ! Not NaN
+     &                  tab_t_tmp(io, jo) >= 0.0 ) then               ! Non-negative
+                            wfrq(io,jo) = rmask(io,jo) * (2*pi) / 
      &                                       max(tab_t_tmp(io,jo), eps)
-                   endif
+                     endif
                  enddo
                enddo     
 
@@ -439,7 +441,7 @@
             if (iok_vtwo /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!              Interpolate grid T --> U
+!              Interpolate grid T --> V
                do jo=jmin_halo,jmax_halo+1
                do io=imin_halo-1,imax_halo+1
                   twoy(io,jo)=0.5*(tab_t_tmp(io,jo-1)+tab_t_tmp(io,jo))
@@ -509,7 +511,7 @@
             if (iok_vtaw /= 0) then
 #  if (!defined OA_GRID_UV)
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
-!              Interpolate grid T --> U
+!              Interpolate grid T --> V
                do jo=jmin_halo,jmax_halo+1
                do io=imin_halo-1,imax_halo+1
                   tawy(io,jo)=0.5*(tab_t_tmp(io,jo-1)+tab_t_tmp(io,jo))
@@ -671,8 +673,8 @@
          svstr = twoy
          do jo=jmin_halo-1,jmax_halo
            do io=imin_halo-1,imax_halo
-             smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
-     &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2) 
+              smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
+     &                          0.25*(svstr(io,jo)+svstr(io,jo+1))**2) 
            enddo
          enddo
 #  else
@@ -680,8 +682,8 @@
          svstr = svstr - tawy + twoy
          do jo=jmin_halo-1,jmax_halo
            do io=imin_halo-1,imax_halo
-             smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
-     &                         0.25*(svstr(io,jo)+svstr(io,jo+1))**2) 
+              smstr(io,jo)=sqrt(0.25*(sustr(io,jo)+sustr(io+1,jo))**2+
+     &                          0.25*(svstr(io,jo)+svstr(io,jo+1))**2) 
           enddo
          enddo
 #  endif
