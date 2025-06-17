@@ -6,6 +6,7 @@
 
 ##########################################################
 import os
+import shutil
 import sys
 import json
 from typing import Union
@@ -231,5 +232,8 @@ class Benchmarking:
         Messaging.step(f"Processor : {processor_name}")
 
         # dump the CPU infos
-        run_shell_command(f"hwloc-ls --of console {results}/cpu.txt")
-        run_shell_command(f"hwloc-ls --of svg {results}/cpu.svg")
+        if shutil.which("hwloc-ls"):
+            run_shell_command(f"hwloc-ls --of console {results}/cpu.txt")
+            run_shell_command(f"hwloc-ls --of svg {results}/cpu.svg")
+        else:
+            print("Warning: 'hwloc-ls' not found. Skipping hardware topology capture.")
