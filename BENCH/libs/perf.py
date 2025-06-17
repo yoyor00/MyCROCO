@@ -82,7 +82,10 @@ class Performance:
 
             # merge
             if case_variant_data is not None:
-                data["variants"].append(variant_name)
+                data["variant"].append(variant_name)
+                data["variant_cpu"].append(
+                    int(case_variant_data["run_config"]["variant"]["requires"]["cpu"])
+                )
                 data["mean"].append(case_variant_data["results"][0]["mean"])
                 data["median"].append(case_variant_data["results"][0]["median"])
                 data["stddev"].append(case_variant_data["results"][0]["stddev"])
@@ -111,7 +114,8 @@ class Performance:
         for name in case_names:
             # build
             case_data = {
-                "variants": [],
+                "variant": [],
+                "variant_cpu": [],
                 "mean": [],
                 "median": [],
                 "min": [],
@@ -125,7 +129,7 @@ class Performance:
             self.load_variants(case_data, name)
 
             # attach
-            if len(case_data["variants"]) != 0:
+            if len(case_data["variant"]) != 0:
                 data[name] = case_data
 
         # return
@@ -177,7 +181,7 @@ class Performance:
             fig, ax = pyplot.subplots()
 
             # build graph
-            x_pos = numpy.arange(len(case_data["variants"]))
+            x_pos = numpy.arange(len(case_data["variant"]))
             # ax.bar(x_pos, entry['median'], yerr=[entry['min'],entry['max']], align='center', alpha=0.5, ecolor='black', capsize=10)
             ax.bar(
                 x_pos,
@@ -190,7 +194,7 @@ class Performance:
             )
             ax.set_ylabel("Average runtime (seconds)")
             ax.set_xticks(x_pos)
-            ax.set_xticklabels(case_data["variants"], rotation=45, ha="right")
+            ax.set_xticklabels(case_data["variant"], rotation=45, ha="right")
             ax.set_title(f"CROCO - {title}")
             ax.yaxis.grid(True)
 
@@ -235,7 +239,7 @@ class Performance:
             Messaging.step(f"Loading previous summary {previous_summary_path}")
             existing_df = pandas.read_csv(previous_summary_path, parse_dates=["date"])
         else:
-            Messaging.step(f"No previous summary")
+            Messaging.step("No previous summary")
 
         new_data = []
         # Get data
@@ -244,15 +248,17 @@ class Performance:
         for case_name, case_data in data.items():
             for ivariant in range(
                 len(
-                    case_data["variants"],
+                    case_data["variant"],
                 )
             ):
+                ncpu = case_data["variant_cpu"][ivariant]
                 new_data.append(
                     {
                         "date": self.config.run_date,
                         "case": case_name,
-                        "variant": case_data["variants"][ivariant],
-                        "mean": case_data["mean"][ivariant],
+                        "variant": f"{case_data['variant'][ivariant]} x {ncpu}",
+                        # mean runtime * ncpu
+                        "mean": case_data["mean"][ivariant] * ncpu,
                     }
                 )
 
