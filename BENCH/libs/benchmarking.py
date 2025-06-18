@@ -236,4 +236,5 @@ class Benchmarking:
             run_shell_command(f"hwloc-ls --of console {results}/cpu.txt")
             run_shell_command(f"hwloc-ls --of svg {results}/cpu.svg")
         else:
-            print("Warning: 'hwloc-ls' not found. Skipping hardware topology capture.")
+            Messaging.step("Warning: 'hwloc-ls' not found.)")
+            Messaging.step(" Skipping hardware topology capture.")
