@@ -7,7 +7,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Added
 - Issue #361 : Integration of slight reformulation of zooplankton grazing 
   according to prey size done in PISCES standard version (#340) into quota version
-- BENCH : Add performance tracking
+
+- BENCH : Add performance tracking (Issue #378)
 
 ### Fixed
 
