@@ -95,4 +95,28 @@
     },
     "check_outputs": ["basin_his.nc"],
   },
+  "BASIN_XIOS": {
+    "title": "BASIN (60 x 50 x 10 : 3240)",
+    "case": "BASIN",
+    "plotphy": {},
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+    },
+    "cppkeys": {
+      "XIOS": true,
+    },
+    "patches": {},
+    "check_outputs": ["basin_his.nc"],
+    "unsupported": ["restart", "sequential"], // XIOS not compatible in sequential
+    "xios": {
+      "ncore": 1,
+      "xml_files": [
+        "TEST_CASES/iodef.xml",
+        "TEST_CASES/context_croco.xml",
+        "TEST_CASES/file_def_croco.xml",
+        "TEST_CASES/field_def_croco.xml",
+      ],
+    },
+  },
 }

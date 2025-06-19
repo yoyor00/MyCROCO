@@ -7,6 +7,15 @@ time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
 S-coord: THETA_S,   THETA_B,    Hc (m)
           1.0d0      0.0d0        10.d0
 
+start_date:
+2000-01-01 00:00:00
+
+end_date: 
+2000-02-01 00:00:00
+
+xios_origin_date:
+2014-01-04 00:00:00
+
 initial: NRREC  filename
           0 
                           basin_rst.nc

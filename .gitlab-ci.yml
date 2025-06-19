@@ -385,6 +385,35 @@ plotphy_complement_sequential:
       - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
+
+xios:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case BENGUELA_LR_TIDES_BULK_XIOS,BASIN_XIOS \
+      --variants mpi-2 \
+      --title xios \
+      -s build,run \
+      --rebuild \
+      --host host_ci \
+      --data-root-path $DATAROOTPATH \
+      --html -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/xios-host_ci/junit_report.xml
+
+
+
 pages:
   stage: report
   tags:

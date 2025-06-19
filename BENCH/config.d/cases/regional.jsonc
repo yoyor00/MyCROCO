@@ -263,6 +263,30 @@
     "check_outputs": ["CROCO_FILES/croco_his.nc"],
     "unsupported": ["restart"], // error in check on restart
   },
+  "BENGUELA_LR_TIDES_BULK_XIOS": {
+    "title": "BENGUELA_LR_TIDES_BULK_XIOS",
+    "case": "REGIONAL",
+    "plotphy": {},
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+    "splitting": { "1": "1x1", "2": "1x2" },
+    "cppkeys": {
+      "TIDES": true,
+      "BULK_FLUX": true,
+      "XIOS": true,
+    },
+    "patches": {},
+    "check_outputs": ["croco_his.nc"],
+    "xios": {
+      "ncore": 1,
+      "xml_files": [
+        "TEST_CASES/iodef.xml",
+        "TEST_CASES/context_croco.xml",
+        "TEST_CASES/file_def_croco.xml",
+        "TEST_CASES/field_def_croco.xml",
+      ],
+    },
+    "unsupported": ["sequential"], // XIOS not compatible in sequential
+  },
   // TODO check runoff position and change croco.in accordingly
   // "BENGUELA_VHR_TIDES_BULK": {
   //   "title": "BENGUELA_VHR_TIDES_BULK",

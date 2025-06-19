@@ -201,6 +201,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         self.fflags = ""
         self.fc = "gfortran"
         self.mpif90 = "mpifort"
+        self.xios_option = ""
 
     @staticmethod
     def convert_arg_for_argparse(arg_string: str) -> list:
@@ -225,7 +226,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         for entry in basic_list:
             # need to split --with-xxx=value => ['--with-xxx', 'value']
             if entry.startswith("--") and "=" in entry:
-                # add a fix to avoid -key to be parse add a new argument rather than a value
+                # add a fix to avoid -key to be parse as a new argument rather than a value
                 if entry.split("=", maxsplit=1)[1][0] == "-":
                     tmp_opts.append(entry.split("=", maxsplit=1)[0])
                     tmp_opts.append("," + entry.split("=", maxsplit=1)[1])
@@ -328,7 +329,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # build parser
         parser = argparse.ArgumentParser(
             prog="croco_configure",
-            description="A wrapper to amulate the new build API onto the old croco.",
+            description="A wrapper to emulate the new build API onto the old croco.",
         )
 
         # add options
@@ -415,6 +416,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # configure keys
         self.configure_keys(options)
 
+        # configure xios
+        self.configure_xios(options)
+
         # handle extra variables
         extra_vars = {"FFLAGS": [], "LDFLAGS": []}
         self.handle_variables(options.VARS, self.use_mpi, extra_vars)
@@ -464,16 +468,42 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
                 if key.startswith("+") or key.startswith("-"):
                     self.croco_config.cppdef_h_set_key(key[1:], status)
 
-    def make(self, make_jobs: str):
+    def configure_xios(self, options):
+        """Configure xios dir if key XIOS is provided."""
+        self.use_xios = False
+
+        if options.with_keys is not None:
+            # Split the string into individual key-value representations
+            keys_list = options.with_keys.split(",")
+            for key in keys_list:
+                if key.startswith("+") and key[1:] == "XIOS":
+                    self.use_xios = True
+                    xios_dir = self.config.host["tuning"][self.tuning_familly][
+                        "xios_dir"
+                    ]
+                    if os.path.exists(xios_dir):
+                        self.xios_option = f"--xios-dir {xios_dir}"
+                    else:
+                        raise Exception(
+                            f"XIOS defined but xios_dir does not exit : {xios_dir}"
+                        )
+
+    def make(self):
         """
         Perform the build with jobcomp.
         """
 
         # move in dir & call jobcomp
         with move_in_dir(self.builddir):
+            cmd = (
+                f"./jobcomp --fc {self.fc} "
+                f"--mpif90 {self.mpif90} "
+                f"--fflags '{self.fflags}' "
+                f"--jobs {self.config.make_jobs} "
+                f"{self.xios_option}"
+            )
             run_shell_command(
-                "./jobcomp --fc %s --mpif90 %s --fflags '%s' --jobs %s"
-                % (self.fc, self.mpif90, self.fflags, self.config.make_jobs),
+                cmd,
                 logfilename="jobcomp.log",
                 capture=self.config.capture,
             )

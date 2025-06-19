@@ -26,27 +26,30 @@
             "properties": {
               "gnu": {
                 "mpi_options": { "type": "string" },
-                "fc": { "type": "string" },
-                "mpifc": { "type": "string" },
                 "extra": { "type": "string" },
                 "standard": { "type": "string" },
-                "debug": { "type": "string" }
+                "debug": { "type": "string" },
+                "xios_dir": { "type": "string" },
+                "xios_oasis_dir": { "type": "string" },
+                "oasis_dir": { "type": "string" }
               },
               "intel": {
                 "mpi_options": { "type": "string" },
-                "fc": { "type": "string" },
-                "mpifc": { "type": "string" },
                 "extra": { "type": "string" },
                 "standard": { "type": "string" },
-                "debug": { "type": "string" }
+                "debug": { "type": "string" },
+                "xios_dir": { "type": "string" },
+                "xios_oasis_dir": { "type": "string" },
+                "oasis_dir": { "type": "string" }
               },
               "nvfortran": {
                 "mpi_options": { "type": "string" },
-                "fc": { "type": "string" },
-                "mpifc": { "type": "string" },
                 "extra": { "type": "string" },
                 "standard": { "type": "string" },
-                "debug": { "type": "string" }
+                "debug": { "type": "string" },
+                "xios_dir": { "type": "string" },
+                "xios_oasis_dir": { "type": "string" },
+                "oasis_dir": { "type": "string" }
               },
               "environ": { "type": "object" },
               "hwloc_bind": {
@@ -171,7 +174,16 @@
               "type": "string"
             }
           },
-          "input_file": { "type": "string" }
+          "input_file": { "type": "string" },
+          "xios": {
+            "ncore": { "type": "integer" },
+            "xml_files": {
+              "type": "array",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
         },
         "required": ["title", "case", "splitting", "patches", "check_outputs"]
       }

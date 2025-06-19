@@ -112,6 +112,28 @@ class Croco:
                 raise Exception("Folder not found : %s" % self.input_dir)
             copy_tree_with_absolute_symlinks(self.input_dir, dirname)
 
+    def manage_xios_xml(self):
+        # link xios xml files
+        if "xios" in self.case:
+            Messaging.step("Copy XIOS xml files")
+            xml_files = self.case["xios"].get("xml_files", [])
+            if not xml_files:
+                return
+            for filexml in xml_files:
+                target = os.path.join(self.dirname, filexml)
+                if os.path.exists(target):
+                    # Build destination path using only the filename
+                    dest = os.path.join(self.dirname, os.path.basename(filexml))
+                    try:
+                        shutil.copy2(target, dest)  # copy2 preserves metadata
+                        Messaging.step(f"Copied {target!r} to {dest!r}")
+                    except IOError as e:
+                        Messaging.step_error(f"Failed to copy {target!r}: {e}")
+                        raise Exception(f"Error on copy : {target!r}")
+                else:
+                    Messaging.step_error(f"XML file not found: {target!r}")
+                    raise Exception(f"XML file not found: {target!r}")
+
     def configure(self):
         # Configure
         Messaging.step("Configure")
@@ -163,16 +185,17 @@ class Croco:
         # jump in & configure
         self.croco_build.configure(command)
 
+        self.manage_xios_xml()
+
     def compile(self):
         # display
         Messaging.step("Compile")
 
         # extract some needed vars
         croco_build = self.croco_build
-        make_jobs = f"-j{self.config.make_jobs}"
 
         # jump in & build
-        croco_build.make(make_jobs)
+        croco_build.make()
 
     def enable_cvtk_checking(self):
         # vars
@@ -241,7 +264,6 @@ class Croco:
         # effectively built
         self.configure()
         self.setup_case()
-        self.setup_variant()
 
         # some specific handling
         Messaging.step("Special command line configs...")
@@ -298,16 +320,22 @@ class Croco:
             command_prefix, {"case": self.case, "tuning": host_tuning}
         )
 
+        command_xios = ""
+        if self.croco_build.use_xios:
+            ncore_xios = self.case["xios"]["ncore"]
+            command_xios = f": -n {ncore_xios} xios_server.exe"
+
         # build end
         env_line = ""
         for var, value in environ.items():
             env_line += f'{var}="{value}" '
 
         # build command and run
-        command = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
+        command = "%s ../../../scripts/correct_end.sh %s ./croco %s %s" % (
             env_line,
             command_prefix,
             self.croco_inputfile,
+            command_xios,
         )
         if restart:
             # execute twice one without restart and one with
@@ -622,15 +650,6 @@ class Croco:
             Messaging.step("Prepare files for restarted run")
             self.apply_restart_patches()
 
-    def setup_variant(self):
-        # apply the case paches
-        variant_name = self.variant_name
-        patches = self.variant.get("patches", {})
-
-        # display
-        Messaging.step(f"Apply variant config : {variant_name}")
-        self.apply_patches(patches)
-
     def check_one_file_from_seq_ref(self, filename: str) -> None:
         # extract vars
         case_name = self.case_name
@@ -810,10 +829,6 @@ class Croco:
             "case": {
                 "patches": self.case.get("patches", {}),
                 "keys": self.case.get("keys", {}),
-            },
-            "variant": {
-                "patches": self.variant.get("patches", {}),
-                "keys": self.variant.get("keys", {}),
             },
         }
 
