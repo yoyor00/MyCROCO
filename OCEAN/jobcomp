@@ -219,7 +219,7 @@ else
    echo "  file para*txt copied from source directory"
 fi
 
-if [[ -e "namelist_nhmg" ]] ; then
+if [[ -e "nhmg_namelist" ]] ; then
         echo "  nhmg_namelist exists in Run directory"
 else
         \cp -f ${ROOT_DIR}/NHMG/namelist_nhmg* $RUNDIR

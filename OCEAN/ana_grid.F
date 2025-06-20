@@ -603,27 +603,26 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
       cff=(1./50.e3)**2
       do j=JstrR,JendR
         do i=IstrR,IendR
-          h(i,j)=depth*(1-0.6*exp(-cff*((xr(i,j)-0.5*xl)**2+
-     &                                  (yr(i,j)-0.5*el)**2)))
+          h(i,j)=depth*(1.-0.6*exp(-cff*((xr(i,j)-0.5*xl)**2+
+     &                                   (yr(i,j)-0.5*el)**2)))
         enddo
       enddo
 
 # elif defined LEEWAVE
-      cff=(1./10.0e2)**2
-
+      cff=(1./1.e3)**2
       do j=JstrR,JendR
         do i=IstrR,IendR
-#if defined NONTRAD_COR
-             feta(i,j) = f0*cos(pi/4.)
-             fxi(i,j)  = f0*sin(pi/4.)
-#endif
-
-          h(i,j)=depth*(1-0.25*exp(-cff*((xr(i,j)-0.5*xl)**2
-     &                                  +(yr(i,j)-0.5*el)**2)))
-#  if defined MASKING
-          rmask(i,j)=1.0
+#  ifdef NONTRAD_COR
+          feta(i,j) = f0*cos(pi/4.)
+          fxi(i,j)  = f0*sin(pi/4.)
+#  endif
+          h(i,j)=depth*(1.-0.25*exp(-cff*((xr(i,j)-0.5*xl)**2
+     &                                   +(yr(i,j)-0.5*el)**2)))
+#  ifdef MASKING
           if (h(i,j).lt.0.5*depth) then
-            rmask(i,j)=0.0
+            rmask(i,j)=0.
+          else
+            rmask(i,j)=1.
           endif
 #  endif
         enddo
