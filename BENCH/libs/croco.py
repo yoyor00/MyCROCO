@@ -112,13 +112,38 @@ class Croco:
                 raise Exception("Folder not found : %s" % self.input_dir)
             copy_tree_with_absolute_symlinks(self.input_dir, dirname)
 
+    def command_xios(self):
+        command_xios = ""
+        if self.use_xios():
+            ncore_xios = self.case["xios"].get("ncore", [])
+            if not isinstance(ncore_xios, int):
+                Messaging.step_error(
+                    "XIOS needed but number of CPU missing or not an integer in case file"
+                )
+                raise Exception(
+                    "XIOS needed but number of CPU missing or not an integer in case file"
+                )
+            command_xios = f": -np {ncore_xios} xios_server.exe"
+        return command_xios
+
+    def use_xios(self):
+        return self.case.get("cppkeys", {}).get("XIOS", False)
+
     def manage_xios_xml(self):
         # link xios xml files
-        if "xios" in self.case:
+        if self.use_xios():
             Messaging.step("Copy XIOS xml files")
+
+            xios_config = self.case.get("xios")
+            if not xios_config:
+                Messaging.step_error("XIOS needed but no xios parameters in case file")
+                raise Exception("XIOS needed but no xios parameters in case file")
+
             xml_files = self.case["xios"].get("xml_files", [])
             if not xml_files:
-                return
+                Messaging.step_error("XIOS needed but no xml files in case file")
+                raise Exception("XIOS needed but no xml files in case file")
+
             for filexml in xml_files:
                 target = os.path.join(self.dirname, filexml)
                 if os.path.exists(target):
@@ -185,8 +210,6 @@ class Croco:
         # jump in & configure
         self.croco_build.configure(command)
 
-        self.manage_xios_xml()
-
     def compile(self):
         # display
         Messaging.step("Compile")
@@ -244,6 +267,7 @@ class Croco:
             )
         # copy log file in result dir
         if os.path.exists(os.path.join(self.dirname, "jobcomp.log")):
+            os.makedirs(self.dirname_result, exist_ok=True)
             shutil.copyfile(
                 os.path.join(self.dirname, "jobcomp.log"),
                 os.path.join(self.dirname_result, "jobcomp.log"),
@@ -320,10 +344,7 @@ class Croco:
             command_prefix, {"case": self.case, "tuning": host_tuning}
         )
 
-        command_xios = ""
-        if self.croco_build.use_xios:
-            ncore_xios = self.case["xios"]["ncore"]
-            command_xios = f": -n {ncore_xios} xios_server.exe"
+        command_xios = self.command_xios()
 
         # build end
         env_line = ""
@@ -649,6 +670,8 @@ class Croco:
         if self.config.restart:
             Messaging.step("Prepare files for restarted run")
             self.apply_restart_patches()
+
+        self.manage_xios_xml()
 
     def check_one_file_from_seq_ref(self, filename: str) -> None:
         # extract vars

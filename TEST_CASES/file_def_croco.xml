@@ -1,0 +1,148 @@
+<file_definition type="one_file" name="@expname@_@freq@" sync_freq="2d" min_digits="4">
+
+  <file_group id="24h" output_freq="24h" output_level="10" enabled=".true.">
+    <file id="file1" name="croco_his">
+
+      <field_group id="inst_grid" operation="once">
+
+        <field field_ref="h"         />
+        <field field_ref="f"         />
+        <field field_ref="pm"        />
+        <field field_ref="pn"        />
+#ifdef SPHERICAL
+        <field field_ref="lon_rho"   />
+        <field field_ref="lat_rho"   />
+        <field field_ref="lon_u"     />
+        <field field_ref="lat_u"     />
+        <field field_ref="lon_v"     />
+        <field field_ref="lat_v"     />
+#else
+        <field field_ref="x_rho"     grid_ref= "rho_2D"/>
+        <field field_ref="y_rho"     grid_ref= "rho_2D"/>
+#endif
+#ifdef CURVGRID
+        <field field_ref="angle"     />
+#endif
+#ifdef MASKING
+        <field field_ref="mask_rho"  />
+#endif
+#ifdef SOLVE3D
+        <field field_ref="hc"        />
+        <field field_ref="theta_s"   />
+        <field field_ref="theta_b"   />
+        <field field_ref="Tcline"    />
+        <field field_ref="Vtransform"/>
+        <field field_ref="Cs_rho"    />
+        <field field_ref="Cs_w"      />
+# ifdef M3FAST_SEDLAYERS
+        <field field_ref="Cs_rho_total" />
+        <field field_ref="Cs_w_total"   />
+# endif
+#endif
+      </field_group>
+
+      <field_group id="inst_fields1" operation="instant">
+        <field field_ref="zeta" name="zeta" grid_ref= "rho_2D"  />
+        <field field_ref="ubar" name="ubar" grid_ref= "u_2D"  />
+        <field field_ref="vbar" name="vbar" grid_ref= "v_2D"  />
+        <field field_ref="sustr" name="sustr" />
+        <field field_ref="svstr" name="svstr" />
+        <field field_ref="u" name="u" />
+        <field field_ref="v" name="v" />
+#  ifdef TEMPERATURE
+      <field field_ref="temp" name="temp"  />
+      <field field_ref="AKt" name="AKt" />
+#  endif
+#  ifdef SALINITY
+      <field field_ref="salt" name="salt"  />
+#  endif
+        <field field_ref="AKv" name="AKv" />
+  
+        
+      </field_group>
+    </file>
+  </file_group>
+
+
+<file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE.">
+  <file id="file4" name="croco_ave">
+
+    <field_group id="ave_grid" operation="once">
+
+        <field field_ref="h"         />
+        <field field_ref="f"         />
+        <field field_ref="pm"        />
+        <field field_ref="pn"        />
+#ifdef SPHERICAL
+        <field field_ref="lon_rho"   />
+        <field field_ref="lat_rho"   />
+        <field field_ref="lon_u"     />
+        <field field_ref="lat_u"     />
+        <field field_ref="lon_v"     />
+        <field field_ref="lat_v"     />
+#else
+        <field field_ref="x_rho"     grid_ref= "rho_2D"/>
+        <field field_ref="y_rho"     grid_ref= "rho_2D"/>
+#endif
+#ifdef CURVGRID
+        <field field_ref="angle"     />
+#endif
+#ifdef MASKING
+        <field field_ref="mask_rho"  />
+#endif
+#ifdef SOLVE3D
+        <field field_ref="hc"        />
+        <field field_ref="theta_s"   />
+        <field field_ref="theta_b"   />
+        <field field_ref="Tcline"    />
+        <field field_ref="Vtransform"/>
+        <field field_ref="Cs_rho"    />
+        <field field_ref="Cs_w"      />
+# ifdef M3FAST_SEDLAYERS
+        <field field_ref="Cs_rho_total" />
+        <field field_ref="Cs_w_total"   />
+# endif
+#endif
+    </field_group>
+        
+    <field_group id="ave_fields" operation="average">
+        <field field_ref="zeta" name="zeta" grid_ref= "rho_2D"  />
+        <field field_ref="ubar" name="ubar" grid_ref= "u_2D"  />
+        <field field_ref="vbar" name="vbar" grid_ref= "v_2D"  />
+      <field field_ref="bustr" name="bustr"  />
+      <field field_ref="bvstr" name="bvstr"  />
+      <field field_ref="sustr" name="sustr"  />
+      <field field_ref="svstr" name="svstr"  />
+# ifdef DEBUG_BULK
+      <field field_ref="uwnd" name="uwnd"  />
+      <field field_ref="vwnd" name="vwnd"  />
+      <field field_ref="shflx" name="shflx"  />
+      <field field_ref="swflx" name="swflx"  />
+# endif
+      <field field_ref="u" name="u" />
+      <field field_ref="v" name="v"  />
+      <field field_ref="w" name="w" />
+#  ifdef TEMPERATURE
+      <field field_ref="temp" name="temp"  />
+      <field field_ref="AKv" name="AKv" />
+#  endif
+#  ifdef SALINITY
+      <field field_ref="salt" name="salt"  />
+#  endif
+      <field field_ref="rho" name="rho"  />
+      <field field_ref="bvf" name="bvf" />
+      <field field_ref="AKt" name="AKt" />
+# ifdef GLS_MIXING
+      <field field_ref="tke" name="tke" />
+      <field field_ref="gls" name="gls" />
+# endif
+# ifdef DIF_COEF_3D
+      <field field_ref="diff3d" name="diff3d" />
+# endif
+    </field_group>
+  </file>
+</file_group>
+
+
+</file_definition>
+<!-- ====================================================================== -->
