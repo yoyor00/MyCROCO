@@ -26,6 +26,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- SUBSTANCE : submassbalance feature is now activated only by namelist
+  (Issue #347)
 - Compilation : update on jobcomp (support for ifx and different version of gfortran, 
   cleaning exit status, see !172 and Issue#176)
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
@@ -39,9 +41,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Removed
 
-- MUSTANG : remove key_MUSTANG_lateralerosion replace by a boolean in 
-  namelist (Issue #349)
-- MUSTANG : remove key_MUSTANG_debug cppkey (Issue #346)
+
+- SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
+  by boolean in namelist (Issue #347)
+- MUSTANG : 
+  - remove key_MUSTANG_lateralerosion replace by a boolean in 
+    namelist (Issue #349)
+  - remove key_MUSTANG_debug cppkey (Issue #346)
+  - remove file scalars_F90.h, not used (Issue #382)
 
 ### Other
 
@@ -49,7 +56,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, S. Le Gac, P. Marchesiello 
+  R. Benshila, M. Caillaud, G.Cambon, S. Le Gac, P. Marchesiello 
 
 - New contributors : 
   M. Plus, M. Schreiber 
