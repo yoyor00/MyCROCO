@@ -20,21 +20,33 @@
         call get_environment_variable(name="SLURM_PROCID", 
      &      value=local_rank_env, status=local_rank_env_status)
  
-        if (local_rank_env_status == 0) then
-            read(local_rank_env, *) local_rank
-                ngpus=acc_get_num_devices( acc_device_nvidia )
-                !choose device to use by this rank
-                devicenum = MOD( local_rank, ngpus )
-            ! Defining the GPU to be used via OpenACC
-            call acc_set_device_num( devicenum, acc_get_device_type())
-            my_acc_device=devicenum
-            compute_on_device=.TRUE.
-!            write(100+local_rank,*) devicenum,ngpus
-        else
-            print *,    
-     &   "Error: unable to determine local process rank"
-            stop 1
+        if (local_rank_env_status .ne. 0) then
+          print *, "Error: unable to determine local process id"
+          call flush(stdout)
+          stop 1
         end if
+
+        read(local_rank_env, *) local_rank
+        ngpus = acc_get_num_devices(acc_device_nvidia)
+
+        if (ngpus .eq. 0) then
+          print *, "No GPUs found, please check with, e.g., `nvaccelinfo`"
+          print *, "whether GPUs are available on this sytem"
+          call flush(stdout)
+          stop 1
+        end if
+
+        !choose device to use by this rank
+        devicenum = MOD(local_rank, ngpus)
+
+        ! Defining the GPU to be used via OpenACC
+        call acc_set_device_num(devicenum, acc_get_device_type())
+
+        my_acc_device = devicenum
+        compute_on_device = .TRUE.
+
+        ! Debug output
+        ! write(100+local_rank,*) devicenum,ngpus
 # endif
-#endif        
+#endif
         end subroutine initialisation_openacc

@@ -1951,6 +1951,9 @@ C$OMP END MASTER
 # else
         write(stdout,'(A,I6/)')    '  IIC        =',iic
 # endif
+        ! Flush stdout since it might not be printed due to buffering
+        call flush(stdout)
+
         may_day_flag=1
 # ifdef MPI
         call mpi_abort (MPI_COMM_WORLD, err)
