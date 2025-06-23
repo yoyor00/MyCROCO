@@ -169,6 +169,12 @@ MODULE initMUSTANG
                           epsedmax_tempsed
 #endif
 
+    ! logging IO
+    INTEGER :: ierrorlog, iwarnlog, iscreenlog
+    ierrorlog = stdout
+    iwarnlog = stdout
+    iscreenlog = stdout
+
 CONTAINS
   
 !!=============================================================================
