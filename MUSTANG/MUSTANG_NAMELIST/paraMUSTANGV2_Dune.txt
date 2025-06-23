@@ -22,8 +22,6 @@
 :                            (only if !defined key_noTSdiss_insed)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
-: namsedim_debug           : output for debug
-:                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
 : namdredging              : parameters to activate dredging effect
@@ -77,8 +75,6 @@
 &namtempsed
 /
 &namsedoutput
-/
-&namsedim_debug
 /
 &namflocmod
 / 

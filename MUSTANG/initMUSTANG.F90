@@ -148,12 +148,6 @@ MODULE initMUSTANG
     namelist /namsedim_bedload/ l_peph_bedload, l_slope_effect_bedload,       &
                                 alphabs, alphabn, hmin_bedload, l_fsusp
 #endif
-#ifdef key_MUSTANG_debug
-    namelist /namsedim_debug/ lon_debug, lat_debug,                           &
-                              i_MUSTANG_debug, j_MUSTANG_debug,               &
-                              l_debug_erosion, l_debug_effdep,                &
-                              date_start_debug
-#endif
 #endif
 
 #ifdef key_MUSTANG_flocmod
@@ -440,10 +434,6 @@ CONTAINS
     READ(50, namtempsed); rewind(50)
 #endif
     READ(50, namsedoutput); rewind(50)
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
-    READ(50, namsedim_debug); rewind(50)
-    t_start_debug = tool_datosec(date_start_debug)
-#endif
 #ifdef key_MUSTANG_flocmod
     ! module FLOCULATION
     READ(50, namflocmod); rewind(50)
@@ -487,9 +477,6 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namsedim_diffusion)
     MPI_master_only WRITE(iscreenlog, namsedim_bioturb)
     MPI_master_only WRITE(iscreenlog, namsedim_morpho)
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
-    MPI_master_only WRITE(iscreenlog, namsedim_debug)
-#endif
 #if !defined key_noTSdiss_insed
     MPI_master_only WRITE(iscreenlog, namtempsed)
 #endif
@@ -713,34 +700,6 @@ CONTAINS
         MPI_master_only WRITE(iwarnlog, *)
         poro_option = 2
     ENDIF
-#endif
-
-#ifdef key_MUSTANG_debug
-#if defined SPHERICAL
-    ! initialization of position of point where we want informations for debug  
-    IF(lat_debug .NE. 0._rlg .OR. lon_debug .NE. 0._rlg) THEN
-        ! locating i,j from latitude, longitude 
-        i_MUSTANG_debug = 0
-        j_MUSTANG_debug = 0            
-        DO j = jfirst, jlast
-            DO i = ifirst, ilast
-                IF(latr(i,j) == lat_debug .AND. lonr(i,j) == lon_debug) THEN
-                    i_MUSTANG_debug = i
-                    j_MUSTANG_debug = j             
-                ENDIF
-            ENDDO
-        ENDDO
-        IF(i_MUSTANG_debug == 0) THEN
-            MPI_master_only write(ierrorlog, *) 'CAUTION : the point for debug is not well known  '
-            MPI_master_only write(ierrorlog, *) '*****************************************************'
-            MPI_master_only write(ierrorlog, *) 'lat_debug and lon_debug do not correspond to one point in the grid'
-            MPI_master_only write(ierrorlog, *) 'choose i_MUSTANG_debug et j_MUSTANG_debug directly in paraMUSTANGV2.txt'
-            MPI_master_only write(ierrorlog, *) 'or change lat_debug and lon_debug'
-            MPI_master_only write(ierrorlog, *) 'simulation stopped'
-            stop    
-        ENDIF
-    ENDIF
-#endif
 #endif
    
     END SUBROUTINE MUSTANG_compatibility

@@ -10,11 +10,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
 - BENCH : do not put report status to True for reference variant to avoid
   to mark test passed even if not (Issue #342)
 - BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
 - BENCH : remove openmp reproducibility check on SHOREFACE case (Incident #358)
 - BENCH : fix typo AGRIF_2W to AGRIF_2WAY in realist and vortex json files (Issue #368)
+
+- PISCES : Fixed error on diagnostic ligands and add Fe2+ oxydation rate (Issue #371)
 
 - DIAGNOSTICS_EDDY & not XIOS : fix double comma in ncscrum.h (Issue #362)
 
@@ -23,6 +26,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- Compilation : update on jobcomp (support for ifx and different version of gfortran, 
+  cleaning exit status, see !172 and Issue#176)
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
 - MUSTANG : review lateral erosion feature (Issue #349)
@@ -36,6 +41,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : remove key_MUSTANG_lateralerosion replace by a boolean in 
   namelist (Issue #349)
+- MUSTANG : remove key_MUSTANG_debug cppkey (Issue #346)
 
 ### Other
 
@@ -43,7 +49,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M.Caillaud, S. Le Gac, P. Marchesiello 
+  R. Benshila, M. Caillaud, S. Le Gac, P. Marchesiello 
 
 - New contributors : 
-  M. Plus
+  M. Plus, M. Schreiber 

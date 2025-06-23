@@ -372,23 +372,6 @@ MODULE comMUSTANG
         ! an addition layer is an integrative layer till bottom
 
 
-#if defined key_MUSTANG_debug && defined key_MUSTANG_V2
-    ! namsedim_debug 
-    LOGICAL        :: l_debug_effdep ! set to .true. if print some 
-        ! informations for debugging MUSTANG deposition
-    LOGICAL        :: l_debug_erosion ! set to .true. if  print 
-        ! informations for debugging  in erosion routines
-    REAL(kind=rlg)   :: lon_debug, lat_debug ! define mesh location 
-        ! where we print these informations
-    INTEGER          :: i_MUSTANG_debug, j_MUSTANG_debug ! indexes 
-        ! of the mesh where we print these informations 
-        ! (only if lon_debug and lat_debug = 0.)
-    CHARACTER(len=19):: date_start_debug ! starting date for write 
-        ! debugging informations 
-#endif
-
-
-
 #ifdef key_MUSTANG_flocmod
     ! namflocmod  
     LOGICAL :: l_ASH ! set to .true. if aggregation by shear
@@ -553,9 +536,6 @@ MODULE comMUSTANG
 #if defined MORPHODYN
             INTEGER :: it_morphoYes
 #endif
-#endif
-#ifdef key_MUSTANG_debug
-        REAL(KIND=rlg)   :: t_start_debug
 #endif
 #endif
 
