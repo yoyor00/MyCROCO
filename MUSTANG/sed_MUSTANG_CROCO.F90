@@ -18,7 +18,6 @@
 !&E     subroutine sed_skinstress         ! computes the skin stress
 !&E     subroutine sed_bottom_slope
 !&E     subroutine sed_exchange_w2s ! MPI treatment of slip deposit fluxes
-!&E     subroutine sed_exchange_s2w ! MPI treatment of lateral erosion 
 !&E     subroutine sed_exchange_flxbedload ! MPI treatment of bedload fluxes
 !&E     subroutine sed_exchange_maskbedload ! MPI exchange of mask for 
 !&E                                           bedload
@@ -53,9 +52,7 @@
 #if defined MPI  && defined key_MUSTANG_slipdeposit
     PUBLIC sed_exchange_w2s
 #endif
-#if defined MPI
-    PUBLIC sed_exchange_s2w
-#endif
+
 #if defined MUSTANG_CORFLUX
     PUBLIC sed_obc_corflu
     PUBLIC sed_meshedges_corflu
@@ -734,56 +731,7 @@ END SUBROUTINE sed_gradvit
   
     END SUBROUTINE sed_exchange_w2s
 #endif /* defined MPI && defined key_MUSTANG_slipdeposit */
-
 !!=============================================================================
-
-#if defined MPI
-    SUBROUTINE sed_exchange_s2w(ifirst, ilast, jfirst, jlast)
-    !&E-------------------------------------------------------------------------
-    !&E                 ***  ROUTINE sed_exchange_s2w ***
-    !&E
-    !&E ** Purpose : MPI exchange of lateral erosion flux between processors
-    !&E
-    !&E ** Description : MPI exchange between processors
-    !&E      used only if scoef_erolat .NE. 0 
-    !&E
-    !&E ** Called by : MUSTANG_update
-    !&E-------------------------------------------------------------------------
-
-    !! * Arguments
-    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
-
-    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
-    INTEGER :: iv
-      
-    do iv=-1,nv_adv
-        workexch(:,:) = flx_s2w_corip1(iv,:,:)
-        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-                &          workexch(START_2D_ARRAY))
-        flx_s2w_corip1(iv,:,:) = workexch(:,:)
-
-        workexch(:,:) = flx_s2w_corim1(iv,:,:)
-        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-                &          workexch(START_2D_ARRAY))
-        flx_s2w_corim1(iv,:,:) = workexch(:,:)
-
-        workexch(:,:) = flx_s2w_corjp1(iv,:,:)
-        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-                &          workexch(START_2D_ARRAY))
-        flx_s2w_corjp1(iv,:,:) = workexch(:,:)
-
-        workexch(:,:) = flx_s2w_corjm1(iv,:,:)
-        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-                &          workexch(START_2D_ARRAY))
-        flx_s2w_corjm1(iv,:,:) = workexch(:,:)
-    enddo
-  
-    END SUBROUTINE sed_exchange_s2w
-#endif /* defined MPI  */
-
-!!=============================================================================
-
-
 
 #if defined MUSTANG_CORFLUX
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI

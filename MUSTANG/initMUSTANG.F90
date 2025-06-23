@@ -165,9 +165,7 @@ MODULE initMUSTANG
 
     ! logging IO
     INTEGER :: ierrorlog, iwarnlog, iscreenlog
-    ierrorlog = stdout
-    iwarnlog = stdout
-    iscreenlog = stdout
+
 
 CONTAINS
   
@@ -227,6 +225,9 @@ CONTAINS
     LOGICAL :: l_0Dcase
 #endif
 
+    ierrorlog = stdout
+    iwarnlog = stdout
+    iscreenlog = stdout
     !! * Executable part
     h0fond = h0fondin
 
