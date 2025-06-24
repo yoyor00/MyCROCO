@@ -66,6 +66,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       isize=Npts*ishft                  ! sizes for side messages
       jsize=Npts*jshft                  ! in XI and ETA directions
 
+! We need to sync first before sending / receiving data with other kernels
+! TODO: Make all kernels to use async(1)
+!$acc wait(1)
+
 # define write !
 c*      write(*,'(2(6x,A3,I2,2x,A5,I3,2x,A5,I3))')
 c*     &        'ii=',ii,'imin=',imin,'imax=',imax,
