@@ -1,10 +1,11 @@
         subroutine initialisation_openacc
 #include "cppdefs.h"
 #ifdef OPENACC
-# ifdef JEANZAY
+# ifdef MPI
+#  ifdef JEANZAY
         USE openacc
         implicit none
-#  include "param.h"
+#   include "param.h"
  
         character(len=6) :: local_rank_env
         integer          :: local_rank_env_status
@@ -36,8 +37,11 @@
           stop 1
         end if
 
-        !choose device to use by this rank
+        ! Choose device to use by this rank
         devicenum = MOD(local_rank, ngpus)
+
+        print *, "Local ID", local_rank, "will use device", devicenum, "out of", ngpus, "devices in total"
+        call flush(stdout)
 
         ! Defining the GPU to be used via OpenACC
         call acc_set_device_num(devicenum, acc_get_device_type())
@@ -47,6 +51,7 @@
 
         ! Debug output
         ! write(100+local_rank,*) devicenum,ngpus
+#  endif
 # endif
 #endif
         end subroutine initialisation_openacc
