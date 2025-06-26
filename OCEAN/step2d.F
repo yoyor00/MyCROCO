@@ -1869,8 +1869,8 @@ C$OMP END MASTER
 !  Apply conservation requirements for nesting
 !-----------------------------------------------------------------------
 !
-!$acc kernels if(compute_on_device) default(present) async(1)
 # ifdef AGRIF
+!$acc kernels if(compute_on_device) default(present) async(1)
       if (.NOT.Agrif_Root()) THEN
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
@@ -1935,10 +1935,20 @@ C$OMP END MASTER
        endif
        endif
 #  endif
+
+# ifdef HPC_BENCH_SKIP_VALIDATION
+! Close the add kernel scipe here if we skip the next part
+!$acc end kernels
+# endif
+
 # endif /* AGRIF */
 
 
 #ifndef HPC_BENCH_SKIP_VALIDATION
+# ifndef AGRIF
+! If AGRIF wasn't used before, we need to open the kernel section here
+!$acc kernels if(compute_on_device) default(present) async(1)
+# endif
 
 !
 !-----------------------------------------------------------------------
