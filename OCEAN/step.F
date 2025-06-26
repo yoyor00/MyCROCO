@@ -922,15 +922,15 @@ C$OMP BARRIER
 
         call omega (tile)
 
-# if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
-        call compute_buoyancy_gradient (tile)
-# endif
-
         call rho_eos (tile)
         
 #  if defined MLD_RHO
         call mld_rho (tile)
 #  endif
+
+# if defined DIAGNOSTICS_DIAPYCNAL || defined DIAGNOSTICS_TRACER_ISO
+        call compute_buoyancy_gradient (tile)
+# endif
 
       enddo
 
