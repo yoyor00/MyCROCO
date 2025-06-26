@@ -2155,11 +2155,6 @@ MODULE sed_MUSTANG
             dt1=REAL(dt_true,rsh)
             k=ksmax
 
-            htotij, htote, htotw, htots, htotn, surf_ij, &
-            surf_e, surf_w, surf_s, surf_n, &
-            V_NEAR_E, V_NEAR_W, U_NEAR_S, U_NEAR_N, &
-            erolat_res
-
             IF (l_erolat) THEN
               ! compute needed variables for erolat outside the 2 continue loop
               CALL lateral_erosion_get( htot(i, j), &
