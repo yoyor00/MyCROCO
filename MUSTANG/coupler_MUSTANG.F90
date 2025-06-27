@@ -80,8 +80,6 @@ MODULE coupler_MUSTANG
     !&E                 sed_MUSTANG_deposition (iappel=2)
     !&E
     !&E----------------------------------------------------------------------
-   !! * Modules used
-#include "scalars_F90.h"
 
    !! * Arguments 
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast, iappel       
