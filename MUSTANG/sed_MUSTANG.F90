@@ -98,7 +98,6 @@ MODULE sed_MUSTANG
    USE module_substance
 
    USE comMUSTANG 
-   USE module_MUSTANG, ONLY : z_w
    USE coupler_MUSTANG 
 
    IMPLICIT NONE
@@ -1182,7 +1181,7 @@ MODULE sed_MUSTANG
    !&E         flx_w2s : deposit trends (m/s) ranged in comMUSTANG
    !&E         
    !&E  need to be know by hydrodynamic code:
-   !&E         kmax=N  (known from module_MUSTANG.h)
+   !&E         kmax=N  (known from module_substance)
    !&E
    !&E  need to be know by code treated substance 
    !&E         igrav2,isand2, nvpc, nvp, nv_adv : 
@@ -1268,7 +1267,7 @@ MODULE sed_MUSTANG
    !&E     
    !&E     
    !&E  need to be know by hydrodynamic code:
-   !&E         kmax=N (known from module_MUSTANG.h)
+   !&E         kmax=N (known from module_substance)
    !&E         alt_cw1 , htot: evaluated in coupleur_conv2MUSTANG
    !&E         
    !&E  need to be know by code treated substance:
@@ -6031,9 +6030,7 @@ MODULE sed_MUSTANG
    !&E
    !&E ** Description :
    !&E
-   !&E ** Note : g must be known as a parameters transmtted by coupleur 
-   !&E           in MARS : coupleur_dimhydro.h (USE ..)
-   !&E           in CROCO : module_MUSTANG.F (include..)
+   !&E ** Note : g must be known 
    !&E
    !&E ** Called by :  sed_MUSTANG_consol_diff_bioturb
    !&E
@@ -7315,9 +7312,7 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
    !&E                  variables IN : frac_sed,psi_sed,Awooster,Bwooster,Bmax_wu      
    !&E                                  poro_option,diam_sed,poro_mud,crel_mud,
    !&E
-   !&E ** Note : pi must be known as a parameters transmtted by coupleur 
-   !&E           in MARS : coupleur_dimhydro.h (USE ..)
-   !&E           in CROCO : module_MUSTANG.F (include..)
+   !&E ** Note : pi must be known 
    !&E
    !&E
    !&E ** Called by :  fusion_with_poro, manage_small_mass__in_ksmax
@@ -7841,9 +7836,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
    !&E                              l_peph_bedload,l_slope_effect_bedload
    !&E                variables OUT : flx_bx,flx_by
    !&E
-   !&E ** Note : pi and g must be known as a parameters transmtted by coupleur 
-   !&E           in MARS : coupleur_dimhydro.h (USE ..)
-   !&E           in CROCO : module_MUSTANG.F (include..)
+   !&E ** Note : pi and g must be known 
    !&E
    !&E ** Called by :  sed_erosion
    !&E

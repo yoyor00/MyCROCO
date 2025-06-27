@@ -31,7 +31,6 @@
     !! * Modules used
     USE comMUSTANG
     USE comsubstance
-    USE module_MUSTANG
     USE module_substance
 # if defined key_MUSTANG_flocmod
     USE flocmod, ONLY : f_ws

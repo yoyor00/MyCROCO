@@ -15,10 +15,8 @@
 #include "grid.h"
 #include "sources.h"
 #include "ocean2d.h"
-#  if !defined MUSTANG
 #include "ocean3d.h"  
       ! ocean3d needed for Hz
-#  endif
 
       end module module_substance
 #else

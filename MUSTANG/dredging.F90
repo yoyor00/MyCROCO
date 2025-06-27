@@ -9,7 +9,7 @@ MODULE dredging
    !! This is done by removing sediments in areas where a given sediment height
    !! is exceeded and optionnaly dumping them in other areas of the domain.
    !!
-   !! This module is linked to modules : module_substance, module_MUSTANG,
+   !! This module is linked to modules : module_substance, 
    !! comsubstance, comMUSTANG
    !! This module also use netcdf
    !!

@@ -19,7 +19,6 @@ MODULE coupler_MUSTANG
 
     USE comMUSTANG
     USE comsubstance
-    USE module_MUSTANG
     USE module_substance
 
     IMPLICIT NONE
