@@ -25,7 +25,6 @@ MA  02111-1307  USA
 Copyright (c) 2007 by Pierrick Penven
 e-mail:Pierrick.Penven@ird.fr
 
-Translated from Matlab by Claude (2025)
 """
 
 import numpy as np

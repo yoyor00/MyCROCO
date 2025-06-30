@@ -13,7 +13,6 @@ References:
 - Marchesiello P., and P. Estrade, 2010: Upwelling limitation by
   geostrophic onshore flow. Journal of Marine Research, 68, 37-62.
 
-Translated from Matlab by Claude (2025)
 """
 
 import numpy as np
