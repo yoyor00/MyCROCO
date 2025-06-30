@@ -110,8 +110,13 @@
 
         do j=J_RANGE
           do i=I_RANGE
+# ifdef FORMATTED
+            pt_dtag(i,j,:,iblkrec)=pt_dtag(i,j,:,iblkrec)
+            tairg(i,j,iblkrec)=pt_dtag(i,j,1,iblkrec)
+# else
             pt_dtag(i,j,:,iblkrec)=pt_dtag(i,j,:,iblkrec)-273.15
             tairg(i,j,iblkrec)=pt_dtag(i,j,1,iblkrec)-273.15
+# endif
           enddo
         enddo
 
@@ -145,6 +150,7 @@
           enddo
         enddo
 
+# ifndef FORMATTED
 # ifndef AROME
         do j=J_RANGE
           do i=I_RANGE
@@ -155,6 +161,7 @@
             rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
           enddo
         enddo
+# endif
 # endif
 
 # ifdef MPI
