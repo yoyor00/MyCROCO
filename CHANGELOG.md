@@ -11,6 +11,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Fixed
 
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
+- COUPLING : patm2D was declared twice in case of OW_COUPLING and READ_PATM (Issue #383)
 - BENCH : do not put report status to True for reference variant to avoid
   to mark test passed even if not (Issue #342)
 - BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
@@ -50,7 +51,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Le Gac, P. Marchesiello 
+  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, P. Marchesiello 
 
 - New contributors : 
   M. Plus, M. Schreiber 
