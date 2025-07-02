@@ -1477,13 +1477,8 @@ MODULE sed_MUSTANG
     DO j=jfirst,jlast
       DO i=ifirst,ilast
 
-        flx_s2w(-1,i,j)=0.0_rsh
-        flx_s2w( 0,i,j)=0.0_rsh
-        DO iv=1,nv_adv
-          flx_s2w(iv,i,j)=0.0_rsh
-        ENDDO
-        phieau_ero_ij=0.0_rsh
-        flx_s2w_eroij(:)=0.0_rsh
+        flx_s2w(-1:nv_adv,i,j)=0.0_rsh
+        
  
         DO k=ksmi(i,j),ksma(i,j)
           sommud=0.0_rsh
@@ -1506,7 +1501,6 @@ MODULE sed_MUSTANG
 
         ksmax=ksma(i,j)
         
-        ero=0.0_rsh
         ! niter put in real beacause of ratio to estimate statistics 
         niter_ero_noncoh=0.0_rsh
         niter_ero_coh=0.0_rsh
@@ -1534,15 +1528,13 @@ MODULE sed_MUSTANG
                        
       2     CONTINUE
 
-          IF (.NOT. l_eroindep_noncoh) THEN 
+          phieau_ero_ij=0.0_rsh
+          flx_s2w_eroij(:)=0.0_rsh
 
-            ! sediment always eroded as a mixture
+          IF (.NOT. l_eroindep_noncoh) THEN 
             frmudcr1=0.0_rsh ! sediment always eroded as a mixture
             diamgravsan=0.0_rsh
-
           ELSE
-            !!! Test if sediment et ksmax is cohesif or not
-            !!! ===========================================
             diamgravsan=0.0_rsh
             somgravsan=0.0_rsh
             DO iv=igrav1,isand2
@@ -1553,19 +1545,18 @@ MODULE sed_MUSTANG
               diamgravsan=MAX(diamgravsan/(somgravsan+epsi30_MUSTANG),diam_sed(isand2))
             END IF
             frmudcr1=MIN(coef_frmudcr1*diamgravsan,frmudcr2)
-            
           END IF
+
+          !!! Test if sediment ksmax is cohesif or not
+          !!! ===========================================
           l_isitcohesive(i,j)=isitcohesive(cv_sed(:,ksmax,i,j),frmudcr1)
-           IF  (.NOT. l_isitcohesive(i,j)) THEN
+
+          IF  (.NOT. l_isitcohesive(i,j)) THEN
 
               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
               !!! CASE 1: NON COHESIVE SEDIMENT --> EROSION CLASS BY CLASS (+ BEDLOAD, not operational) !!!
               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!           
-
-                 !print *,''
-                 !print *,'CASE 1: NON COHESIVE SEDIMENT --> EROSION CLASS BY CLASS'
-
-               niter_ero_noncoh=niter_ero_noncoh+1.0_rsh
+              niter_ero_noncoh=niter_ero_noncoh+1.0_rsh
 
               CALL sed_MUSTANG_comp_tocr_mixsed(ksmax, i, j, xeros, excespowr, toce)
 
@@ -1590,7 +1581,6 @@ MODULE sed_MUSTANG
 
 #ifdef key_MUSTANG_bedload 
               ! IN : i,j,ksmax / OUT : flx_bxij,flx_byij (bedload Flux in kg/m/s)
-
               CALL MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)  
 #else
               flx_bxij(:) = 0.0_rsh
@@ -1607,7 +1597,15 @@ MODULE sed_MUSTANG
 #endif
                                         sed_eros_flx_class_by_class)
 
-
+              IF (l_erolat) THEN
+                CALL lateral_erosion_compute(toce, erolat_res)
+                DO iv=1,nvp
+                  sed_eros_flx_class_by_class(iv) = &
+                  sed_eros_flx_class_by_class(iv) + &
+                  erolat_res%ero* cv_sed(iv,ksmax,i,j)/c_sedtot(ksmax,i,j) * MF 
+                ENDDO
+              ENDIF
+                                        
               ! IN : i,j,dt1
               ! INOUT : ksmax,flx_bxij,flx_byij,sed_eros_flx_class_by_class 
                         !!! Attention [flx_bxij,flx_byij] IN : kg/m/s --> OUT : kg
@@ -1633,20 +1631,46 @@ MODULE sed_MUSTANG
                 !!  ==> erosion of one layer or elimination of the entire layer
 
                 DO iv=1,nvp
+                  flx_s2w_eroij(iv)=(sed_eros_flx_class_by_class(iv)/surf_cell(i,j))/MF 
+                  !! warning, unit of sed_eros_flx_class_by_class change in MUSTANGV2_borne_and_apply_erosion_tot !!!
+                ENDDO
 
-                  flx_s2w(iv,i,j)=flx_s2w(iv,i,j)+(sed_eros_flx_class_by_class(iv)/surf_cell(i,j))/MF 
-                        ! in kg.m-2 (will be multiplied by dtinv at the end of halfdt)
+                ! memorisation of lateral erosion for dry cell
+                IF (l_erolat) THEN
+                  CALL lateral_erosion_saveflx( erolat_res, flx_s2w_eroij(:) &
+                        , flx_s2w_corip1(:,i,j), flx_s2w_corim1(:,i,j) &
+                        , flx_s2w_corjm1(:,i,j), flx_s2w_corjp1(:,i,j) &
+#if ! defined key_nofluxwat_IWS
+                        , phieau_ero_ij &
+                        , phieau_s2w_corip1(i,j) &
+                        , phieau_s2w_corim1(i,j) &
+                        , phieau_s2w_corjm1(i,j) &
+                        , phieau_s2w_corjp1(i,j) &
+#endif
+                        )
+                ENDIF
+
+                flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
+#if ! defined key_nofluxwat_IWS
+                phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
+#endif
+#if ! defined key_noTSdiss_insed 
+                flx_s2w(-1:0,i,j)=flx_s2w(-1:0,i,j)+flx_s2w_eroij(-1:0)
+                flx_s2w(nvp+1:nv_adv,i,j)=flx_s2w(nvp+1:nv_adv,i,j)+flx_s2w_eroij(nvp+1:nv_adv)
+#endif
+
+
 #ifdef key_MUSTANG_bedload
+                DO iv=1,nvp
                   flx_bx(iv,i,j) = flx_bx(iv,i,j) + flx_bxij(iv)/MF ! in kg
                   flx_by(iv,i,j) = flx_by(iv,i,j) + flx_byij(iv)/MF
                   IF (l_outsed_bedload) THEN
                     var2D_flx_bx(iv,i,j) = flx_bx(iv,i,j) 
                     var2D_flx_by(iv,i,j) = flx_by(iv,i,j)
                   ENDIF
+                END DO
 #endif
 
-
-                END DO
 
                 dt_ero_max=maxval(dt_ero)
 
@@ -1656,21 +1680,12 @@ MODULE sed_MUSTANG
 
                 dt1=dt1-dt_ero_max
 
-
                 IF (dt1 .GT. 0.0_rsh .AND. dt_ero_max .GT. 0.0_rsh .AND. ksmax .GT. ksmi(i,j)) THEN
-                  !print *,' '
-                  !print *,' !!!!!! =======> Time is not consumed dt1=',dt1,' ==> CONTINUE EROSION'
-
+                  ! Time is not consumed CONTINUE EROSION
                   GOTO 2
                 END IF
 
-#if ! defined key_nofluxwat_IWS
-                phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
-#endif
-#if ! defined key_noTSdiss_insed 
-                flx_s2w(-1:0,i,j)=flx_s2w(-1:0,i,j)+flx_s2w_eroij(-1:0)
-                flx_s2w(nvp+1:nv_adv,i,j)=flx_s2w(nvp+1:nv_adv,i,j)+flx_s2w_eroij(nvp+1:nv_adv)
-#endif
+
                 !END IF ! IF(tauskin(i,j).GT.toce)
 
 #ifdef key_MUSTANG_splitlayersurf
@@ -1873,7 +1888,7 @@ MODULE sed_MUSTANG
                       , phieau_s2w_corjp1(i,j) &
 #endif
                       )
-                      ENDIF
+                   ENDIF
 
 
                    phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
@@ -2011,16 +2026,15 @@ MODULE sed_MUSTANG
                       , phieau_s2w_corjp1(i,j) &
 #endif
                       )
-                    ENDIF   
+                   ENDIF
+                   phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
+                   flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
 
                    IF (ksmax .GT. ksmi(i,j)) THEN
                     dt1=dt1*(1.0_rsh-erodab/erosi) !  erosi=MF*dt1*ero
-                    !print *,' !!!!!! =======> Il reste du temps dt1=dt1-erodab/ero=',dt1,' ==> CONTINUE EROSION'
+                    ! Time is not consumed CONTINUE EROSION
                     GOTO 2
                   ENDIF 
-                  phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
-                  flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
-
 
               ENDIF   ! fin test erosi > erodab
           
@@ -2138,16 +2152,9 @@ MODULE sed_MUSTANG
       DO j=jfirst,jlast
         DO i=ifirst,ilast
 
-          flx_s2w(-1,i,j)=0.0_rsh
-          flx_s2w( 0,i,j)=0.0_rsh
-          DO iv=1,nv_adv
-            flx_s2w(iv,i,j)=0.0_rsh
-          ENDDO
-          phieau_ero_ij=0.0_rsh
-          flx_s2w_eroij(:)=0.0_rsh
-        
+          flx_s2w(-1:nv_adv,i,j)=0.0_rsh
+
           ksmax=ksma(i,j)
-          ero=0.0_rsh
 
           IF(ksmax.GE.ksmi(i,j))THEN
 
@@ -2170,6 +2177,9 @@ MODULE sed_MUSTANG
             ENDIF
                        
         2   CONTINUE
+
+            phieau_ero_ij=0.0_rsh
+            flx_s2w_eroij(:)=0.0_rsh
 
             CALL sed_MUSTANG_comp_tocr_mixsed(k, i, j, xeros, excespowr, toce)
             
@@ -2354,13 +2364,15 @@ MODULE sed_MUSTANG
                 )
                 ENDIF
 
+                phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
+                flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
+
                 k=k-1
                 IF(k.GE.ksmi(i,j))THEN
                   dt1=dt1-erodab/(MF*ero)
+                  ! Time is not consumed CONTINUE EROSION
                   GOTO 2
                 ENDIF
-                phieau_s2w(i,j)=phieau_s2w(i,j)+phieau_ero_ij
-                flx_s2w(:,i,j)=flx_s2w(:,i,j)+flx_s2w_eroij(:)
 
               ENDIF   ! end test erosi > erodab
             ENDIF    ! end test erosi=0
