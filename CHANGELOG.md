@@ -46,6 +46,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Other
 
+- remove file sdynparam_f77.h, not used (Issue #386)
+
 
 ### Contributors on this release
 
