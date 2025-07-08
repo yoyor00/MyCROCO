@@ -19,6 +19,9 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -49,7 +52,7 @@
         Cs_r(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(k))
      &             +theta_b*(cff2*tanh(theta_s*(sc_r(k)+0.5))-0.5)
       enddo
-#  ifdef M3FAST_SEDLAYERS
+#  ifdef K3FAST_SEDLAYERS
       if (N_sl.gt.0) then
         sc_r(0)=cff*(float(0-N)-0.5)
         Cs_r(0)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(0))
@@ -84,7 +87,7 @@
       sc_w(N) =  0.
       Cs_w(0) = -1.0
       Cs_w(N) =  0.
-#  ifdef M3FAST_SEDLAYERS
+#  ifdef K3FAST_SEDLAYERS
       do k=-N_sl+1,0
         sc     = ds*(float(k-N)-0.5)
         Cs_r(k)=CSF(sc, theta_s,theta_b)
@@ -96,7 +99,7 @@
         Cs_w(k)=CSF(sc, theta_s,theta_b)
         sc_w(k)=sc
       enddo
-#  ifdef M3FAST_SEDLAYERS
+#  ifdef K3FAST_SEDLAYERS
       do k=-N_sl,-1,+1
         sc     = ds*float(k-N)
         Cs_w(k)=CSF(sc, theta_s,theta_b)
