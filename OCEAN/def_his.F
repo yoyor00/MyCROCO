@@ -230,14 +230,19 @@
 # define vidObst avgObst
 #endif
 
-# ifdef M3FAST_HIS
+# ifdef K3FAST_HIS
 #  define vidRnbq hisRnbq
 #  define vidUnbq hisUnbq
 #  define vidVnbq hisVnbq
 #  define vidWnbq hisWnbq
 #  define vidCnbq hisCnbq
+
+#ifdef XIOS
+        return
+#endif
+
 !
-! M3FAST-kernel related variables:
+! K3FAST-kernel related variables:
 !
 !****** Init parameters ******
 !
@@ -245,7 +250,11 @@
         wrt(indxUnbq)=.true.
         wrt(indxVnbq)=.true.
         wrt(indxWnbq)=.true.
+#   ifdef K3FAST_CSVISC2K 
         wrt(indxCnbq)=.true.
+#   else
+        wrt(indxCnbq)=.false.
+#   endif  
         
         vname(1,indxRnbq)="Rnbq"
         vname(2,indxRnbq)=vname(2,indxR)
@@ -915,7 +924,7 @@
 !
         if (wrt(indxW)) then
           lvar=lenstr(vname(1,indxW))
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
           ierr=nf_def_var (ncid, vname(1,indxW)(1:lvar),
      &                               NF_FOUT, 4, w3dgrd, vidW)
 # else
@@ -946,7 +955,7 @@
      &        5, NF_FOUT, ierr)
         endif
         
-#ifdef M3FAST_HIS
+#ifdef K3FAST_HIS
 
 !****** Rho *****
 !
@@ -2828,9 +2837,9 @@
 !
 ! 3D momenta in XI- and ETA-directions.
 !
-#ifdef M3FAST_HIS
+#ifdef K3FAST_HIS
 !
-! M3FAST-kernel related variables:
+! K3FAST-kernel related variables:
 !
         if (wrt(indxRnbq)) then
           lvar=lenstr(vname(1,indxRnbq))
@@ -3131,7 +3140,7 @@
         endif
 # endif
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 ! Turbulent Kinetic Energy.
 !

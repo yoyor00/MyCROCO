@@ -94,6 +94,12 @@ c********************************************************************
 #  ifdef POT_TIDES
 #   include "tides.h"
 #  endif
+#  ifdef NBQ_GRAV
+#   include "nbq.h"
+#  endif
+# ifdef POT_CUVE
+#  include "tides.h"
+# endif
 #  ifdef SED_TOY
 #   include "forces.h"
 #  endif
@@ -152,10 +158,30 @@ c********************************************************************
 ! Preliminary step (same for XI- and ETA-components:
 !------------ ---- ----- --- --- --- ---------------
 !
+!$acc kernels if(compute_on_device) default(present)
+# ifdef K3FAST_NOBPG
+        do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*g*(
+     &                                z_w(i-1,j,N)-z_w(i,j,N)   )
+            enddo
+          enddo
+        enddo
+        do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*on_v(i,j)*g*(
+     &                                z_w(i,j-1,N)-z_w(i,j,N)   )
+            enddo
+          enddo
+        enddo
+# else      
+#  if defined NBQ_GRAV 
+      rho=rho-rho_nh
+#  endif
       GRho=g/rho0
       HalfGRho=0.5*GRho
-
-!$acc kernels if(compute_on_device) default(present)
       !do j=JstrV-1,Jend
       DOLOOP2D(IstrU-1,Iend,JstrV-1,Jend)
         do k=1,N-1
@@ -202,8 +228,11 @@ c********************************************************************
      &              /(z_r(i,j,N)-z_r(i,j,N-1)) )*(z_w(i,j,N)-z_r(i,j,N))
 #  ifdef POT_TIDES
           P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
-#  endif
-#  ifdef READ_PATM
+# endif
+# ifdef POT_CUVE
+          P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
+# endif
+#  ifdef READ_PATM 
          P(i,j,N) = P(i,j,N) + patm2d(i,j)/rho0
 #  endif
         enddo
@@ -222,9 +251,10 @@ c********************************************************************
         ENDDOLOOP2D   !<-- j
 
 
-        do k=N-1,1,-1
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
+!$acc loop seq
+            do k=N-1,1,-1
               P(i,j,k)=P(i,j,k)+P(i,j,k+1)
             enddo
           enddo
@@ -510,6 +540,7 @@ c********************************************************************
           enddo
         enddo
       enddo   ! k loop
+# endif
 !
 !======================================================================
 !
@@ -586,6 +617,10 @@ c********************************************************************
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
+#  ifdef NBQ_GRAV
+#   include "nbq.h"
+#  endif
+
 #  ifdef DIAGNOSTICS_UV
 #   include "diagnostics.h"
 #  else
@@ -622,6 +657,10 @@ c********************************************************************
 ! the number of operations relatively to any other form.
 !
 !$acc kernels if(compute_on_device) default(present)
+# if defined NBQ_GRAV 
+       rho=rho-rho_nh
+# endif
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           rsurf(i,j)=rho(i,j,N) + (rho(i,j,N)-rho(i,j,N-1))
@@ -640,6 +679,9 @@ c********************************************************************
      &                                                              )
 
 #  ifdef POT_TIDES
+     &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
+#  endif
+#  ifdef POT_CUVE
      &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
 #  endif
 #  ifdef READ_PATM
@@ -755,6 +797,9 @@ c********************************************************************
      &                                                              )
 
 #  ifdef POT_TIDES
+     &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
+#  endif
+#  ifdef POT_CUVE
      &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
 #  endif
 #  ifdef READ_PATM
@@ -941,11 +986,13 @@ c********************************************************************
         enddo
       enddo
 # endif
-!$acc end kernels
-
 !
 !--------------------------------------------------------------------
 !
+# if defined NBQ_GRAV && !defined K3FAST_NOBPG
+      rho=rho+rho_nh
+# endif
+!$acc end kernels
       return
       end
 #else
