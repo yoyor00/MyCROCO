@@ -335,7 +335,7 @@
      &                            cffM )
 #  endif
 
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
             cffM = ( Mfast(i+1,j,k,iflux)-Mfast(i,j,k,iflux) )
      &             * 0.5 * (pm_u(i+1,j) + pm_u(i,j)) * cffux
      & + (0.25 *(Mfast(i,j+1,k,iflux)-Mfast(i,j,k,iflux))
@@ -548,7 +548,7 @@
      &                            cffM )
 #  endif
 
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
         cffM = (Mfast(i,j+1,k,iflux) - Mfast(i,j,k,iflux))
      &            * 0.5 * (pn_v(i,j+1) + pn_v(i,j)) * cffvy
      &  +(0.25*(Mfast(i+1,j,k,iflux)-Mfast(i,j,k,iflux))
@@ -604,7 +604,7 @@
      &                     ( cff1*MBaro_avg(i,j,k,iflux) +
      &                            MBaro(i,j,k,iflux) )
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
                 Mfast_avg(i,j,k,iflux) = cff *
      &                     ( cff1*Mfast_avg(i,j,k,iflux) +
      &                            Mfast(i,j,k,iflux) )

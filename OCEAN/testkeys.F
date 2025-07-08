@@ -24,18 +24,30 @@ OACPLISDEFINED
 #ifdef XIOS
 XIOSISDEFINED
 #endif
-#ifdef NBQ
-NBQISDEFINED
+#ifdef KNBQ
+KNBQISDEFINED
+#endif
+#ifdef KNHINT
+KNHINTISDEFINED
+#endif
+#ifdef KHCOMP
+KHCOMPISDEFINED
+#endif
+#ifdef KH3D
+KH3DISDEFINED
 #endif
 #ifdef OPENACC
 OPENACCISDEFINED
 #endif
-#ifdef NBQ2
-NBQ2ISDEFINED
+#ifdef KNBQ3 
+KNBQ3ISDEFINED
 #endif
 #ifdef key_pisces_npzd
 P2ZISDEFINED
 #endif
 #ifdef key_pisces_quota
 P5ZISDEFINED
+#endif
+#ifdef KXX 
+KXXISDEFINED
 #endif
