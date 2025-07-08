@@ -1,0 +1,2 @@
+python ../OCEAN/common2device.py ../OCEAN/ocean2d.h ../OCEAN/scalars.h ../OCEAN/ocean3d.h  ../OCEAN/grid.h ../OCEAN/coupling.h ../OCEAN/private_scratch.h ../OCEAN/mixing.h ../OCEAN/forces.h ../OCEAN/work.h ../OCEAN/ncscrum.h ../OCEAN/averages.h ../OCEAN/lmd_kpp.h ../OCEAN/climat.h ./nbq.h ../OCEAN/sources.h ../OCEAN/wkb_wwave.h ../OCEAN/boundary.h ../OCEAN/tides.h ../OCEAN/bbl.h
+

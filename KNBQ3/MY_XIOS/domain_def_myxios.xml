@@ -1,0 +1,36 @@
+<domain_definition>
+<!-- ========================================================================== -->
+<!-- ========================================================================== -->
+
+     <domain id="rho" long_name="grid Rho"/>
+     <domain id="u" long_name="grid U"/>
+     <domain id="v" long_name="grid V"/>
+     <domain id="w" long_name="grid W"/>
+     <domain id="psi" long_name="grid psi"/>
+     
+<!-- ========================================================================== -->
+<!-- ========================================================================== -->
+     
+     <domain id="b" long_name="grid sed"/>
+
+<!-- ========================================================================== -->
+<!-- ====================== Zoom with XIOS3 =================================== -->
+<!-- ========================================================================== -->
+     
+     <domain id="Z1rho" domain_ref="rho"> <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>  
+     <domain id="Z1u" domain_ref="u">     <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>    
+     <domain id="Z1v" domain_ref="v">     <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>   
+     <domain id="Z1w" domain_ref="w">     <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>  
+     <domain id="Z1psi" domain_ref="psi"> <extract_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain> 
+
+<!-- ========================================================================== -->
+<!-- ====================== Zoom with XIOS2* ================================== -->
+<!-- ========================================================================== -->
+
+<!-- <domain id="Z1rho" domain_ref="rho"> <zoom_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>
+     <domain id="Z1u" domain_ref="u">     <zoom_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>
+     <domain id="Z1v" domain_ref="v">     <zoom_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>
+     <domain id="Z1w" domain_ref="w">     <zoom_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>
+     <domain id="Z1psi" domain_ref="psi"> <zoom_domain ni="100" ibegin="150" nj="100" jbegin="150" /></domain>  -->
+
+</domain_definition>
