@@ -138,7 +138,7 @@
 # if defined DIAGNOSTICS_BARO
       real MBaro(GLOBAL_2D_ARRAY,N,2)
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
       real Mfast(GLOBAL_2D_ARRAY,N,2)
 # endif
 # ifdef MRL_WCI
@@ -166,7 +166,7 @@
 #  if defined DIAGNOSTICS_BARO
       real MBaro_avg(GLOBAL_2D_ARRAY,N,2)
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
       real Mfast_avg(GLOBAL_2D_ARRAY,N,2)
 #  endif
 #  ifdef MRL_WCI
@@ -194,7 +194,7 @@
 # if defined DIAGNOSTICS_BARO
       common /diag_MBaro/MBaro
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
       common /diag_Mfast/Mfast
 # endif
 # ifdef MRL_WCI
@@ -222,7 +222,7 @@
 #  if defined DIAGNOSTICS_BARO
       common /diag_MBaro_avg/MBaro_avg
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
       common /diag_Mfast_avg/Mfast_avg
 #  endif
 #  ifdef MRL_WCI

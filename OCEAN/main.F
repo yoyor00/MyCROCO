@@ -56,7 +56,9 @@
       integer tile, subs, trd, ierr
 #include "param.h"
 #include "private_scratch.h"
-#include "nbq.h"
+#if defined M3FAST || defined K3FAST 
+# include "nbq.h"
+#endif
 #include "scalars.h"
 #include "ncscrum.h"
 #include "grid.h"
@@ -96,6 +98,8 @@
 #ifdef AGRIF
       integer size_XI,size_ETA,se,sse, sz,ssz
       external :: step
+      integer iic_nbq
+      real csound0_nbq
 # include "zoom.h"
 # include "dynparam.h"
 #endif
@@ -825,7 +829,7 @@ C$OMP END MASTER
 !  Set initial non-Boussinesq (or fast 3D) parameters and variables
 !----------------------------------------------------------------------
 !
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # ifdef NBQ_MASS
 !
 ! Re-evaluate Hz and Huon,Hvom using
@@ -844,10 +848,17 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 ! Set initial NBQ param. & var.
 !
+      iic_nbq=iic
+      iic=ninfo+1
+      csound0_nbq=csound_nbq
+      csound_nbq=1.
+      soundspeed_nbq=1.
+      csound_nbq=csound0_nbq
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile)
       enddo
+      iic=iic_nbq
 #endif
 !
 !----------------------------------------------------------------------
@@ -973,6 +984,8 @@ CR      write(*,*) '  0' MYID
         do iifroot = 0,nfast+2
 # else
         nbtimes = 0
+        nbmaxprttime = ntimes+1
+        nbprttime = iicroot
         do while (nbtimes.LE.nbmaxtimes)
 # endif
 #endif
