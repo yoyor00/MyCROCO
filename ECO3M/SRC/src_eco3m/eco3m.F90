@@ -44,6 +44,7 @@
 
     use mod_eco3m_vartypes  ! Module for variable types
 
+implicit none
 !
     ! ==================== Chl related variables  ==================== 
 !    real(8), allocatable :: Chl_tot(:,:,:) !< Total Chlorophyl concentration
@@ -134,6 +135,8 @@
     REAL(8), parameter :: pi=3.14159265  !< Pi value
     logical :: dosave  !< Boolean that defines whether outputs are to be written
 
+CONTAINS
+
 End Module mod_eco3m
 !--------------------------------------------------------------------------------
                      Module mod_eco3m_irrad
@@ -141,7 +144,8 @@ End Module mod_eco3m
 ! Module specfic to light irradiance and extinction
 !--------------------------------------------------------------------------------
     use mod_eco3m_vartypes  ! Module for variable types
- 
+
+implicit none
     real(8) :: dt_irrad  !< Time-step for the irradiance reading/calculation 
     real(8) :: irr2par   !< Conversion factor from irradiance to par (set to 1 if PAR is used instead of irradiance) 
     real(8) :: irr_param  !<  Parameter used to convert PAR(0+) into PAR(0-)
@@ -154,6 +158,8 @@ End Module mod_eco3m
     REAL(8), pointer :: irrad(:,:)  !< 2D irradiance
     real(8) :: albedo  !< Albedo
 
+CONTAINS
+
 End Module mod_eco3m_irrad
 !--------------------------------------------------------------------------------
                    Module mod_eco3m_outputs
@@ -161,6 +167,7 @@ End Module mod_eco3m_irrad
 ! Module specific to Eco3M outputs
 !--------------------------------------------------------------------------------
     
+implicit none
 
     character(124) :: output_dir  !< Output directory (namelist)
     integer :: num_outphy  !< Number of Physical variables that will be saved (namelist)
@@ -180,4 +187,7 @@ End Module mod_eco3m_irrad
     type(outphy_type), allocatable :: outphy(:)   !< Array of physical variables to save
 
     integer :: filecount !< File counter (iterated after each writing in a file)
+
+CONTAINS
+
 end Module mod_eco3m_outputs

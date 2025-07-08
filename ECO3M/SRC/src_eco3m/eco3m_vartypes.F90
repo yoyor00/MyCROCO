@@ -40,8 +40,10 @@
 !> Module that contains all the derived types used in Eco3M
 !! \author Melika Baklouti
 !---------------------------------------------------------------------------
- use eco3m_string
 
+use eco3m_string
+
+implicit none
  TYPE PROC !< Type for the biogeochemical processes included in the model configuration (modele.def file)
     Integer :: idproc  !< Identifier of process 
     Character(len=14) :: nomproc  !< Name of the process in the config.ini file
@@ -82,6 +84,8 @@
     Integer :: idorg  !< ID 
     Real(8), dimension(:,:,:),pointer :: val => NULL() !< Variable concentration
  END TYPE VAR_GLOB_USER
+
+CONTAINS
 
 end module mod_eco3m_vartypes
 
