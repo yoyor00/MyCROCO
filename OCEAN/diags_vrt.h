@@ -34,7 +34,7 @@
       real vrtBaro(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE vrtBaro(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
       real vrtfast(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE vrtfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
@@ -66,7 +66,7 @@
       real vrtBaro_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE vrtBaro_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
       real vrtfast_avg(GLOBAL_2D_ARRAY)
 !CSDISTRIBUTE_RESHAPE vrtfast_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 #  endif
@@ -90,7 +90,7 @@
 # if defined DIAGNOSTICS_BARO
      &       /diag_vrtBaro/vrtBaro
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
      &       /diag_vrtfast/vrtfast
 # endif
 
@@ -110,7 +110,7 @@
 #  if defined DIAGNOSTICS_BARO
      &       /diag_vrtBaro_avg/vrtBaro_avg
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
      &       /diag_vrtfast_avg/vrtfast_avg
 #  endif
 # endif
@@ -139,7 +139,7 @@
       real wrkBaro(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE wrkBaro(BLOCK_PATTERN,*) BLOCK_CLAUSE
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
       real wrkfast(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE wrkfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
 #  endif
@@ -155,7 +155,7 @@
 #  if defined DIAGNOSTICS_BARO
      &       /diag_wrkBaro/wrkBaro
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
      &       /diag_wrkfast/wrkfast
 #  endif
 # endif /*ifndef DIAGNOSTICS_UV */

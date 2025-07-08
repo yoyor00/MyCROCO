@@ -142,6 +142,7 @@
 ======================================================================
 */
 #ifdef NBQ              /* General options */
+# define KNBQ2
 # define M3FAST
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
@@ -172,6 +173,153 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
+
+#elif !defined KNBQ && !defined KNHINT && !defined KHCOMP   /* Hydrostatic mode */
+
+# define HZR Hz
+
+#endif /* NBQ */
+
+/*
+======================================================================
+   Activate NBQ choices for non-hydrostatic simulations (KNBQ3)
+======================================================================
+*/   
+#if defined KNBQ || defined KH3D || defined KNHINT || defined KHCOMP
+# define KNBQ3
+# undef  K3FAST        
+# undef  K3FAST_UV
+# undef  K3SLOW_W
+# undef  K3FAST_W
+# undef  K3FAST_RHO
+# undef  K3FAST_ZETAW
+# undef  K3FAST_DUVNBQ
+# undef  K3FAST_C3D_UVSF
+# undef  K3FAST_C3D_UVFS
+# undef  K3FAST_C3D_WSF
+# undef  K3FAST_C3D_WFS
+# undef  NBQ_GRID_SLOW
+# undef  NBQ_HZCORRECT
+# undef  K3FAST_AM4 
+# undef  K3FAST_COUPLING2D
+# undef  K3FAST_COUPLING3D
+# undef  K3FAST_BOTH
+# undef  K3FAST_COUPLING_SCH0
+# undef  K3FAST_COUPLING_SCH1
+# undef  K3FAST_COUPLING_SCH2
+# undef  K3FAST_COUPLINGW_SCH0
+# undef  K3FAST_COUPLINGW_SCH1
+# undef  K3FAST_COUPLINGW_SCH2
+# undef  KNHINT_3M
+# undef  K3FAST_AVG_CLASSIC
+# undef  K3FAST_PG2
+# ifdef KNBQ    
+#   define K3FAST        
+#   define K3FAST_UV
+#   define K3SLOW_W
+#   define K3FAST_W
+#   define K3FAST_RHO
+#   define K3FAST_ZETAW
+#   define K3FAST_DUVNBQ
+#   define K3FAST_C3D_UVSF
+#   define K3FAST_C3D_UVFS
+#   define K3FAST_C3D_WSF
+#   define K3FAST_C3D_WFS
+#   define NBQ_HZCORRECT
+#   define NBQ_HZCORRECT_ZETA
+#   define K3FAST_AM4 
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_PG2
+# elif defined KH3D
+#   define K3FAST   
+#   define K3FAST_AM4
+#   define NBQ_GRID_SLOW
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_AVG_CLASSIC
+# elif defined KHCOMP
+#   define K3FAST        
+#   define K3FAST_UV
+#   define K3FAST_W
+#   define K3FAST_RHO
+#   define K3FAST_C3D_UVSF
+#   define K3FAST_AM4
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_AVG_CLASSIC
+# elif defined KNHINT
+#   define K3FAST        
+#   define K3FAST_BOTH
+#   define K3FAST_UV
+#   define K3SLOW_W
+#   define K3FAST_W
+#   define K3FAST_RHO
+#   define K3FAST_C3D_UVSF
+#   define K3FAST_C3D_UVFS
+#   define K3FAST_C3D_WSF
+#   define K3FAST_C3D_WFS
+#   define K3FAST_AM4
+#   define  KNHINT_WH
+#   undef  KNHINT_ZETAW
+#   undef  K3FAST_DUVNBQ2
+#   ifdef KNHINT_ZETAW
+#    define NBQ_HZCORRECT
+#    define NBQ_HZCORRECT_ZETA
+#   endif
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLINGW_SCH0
+#   define KNHINT_3M
+#   define KNHINT_CORR
+#   define K3FAST_AVG_CLASSIC
+#   define K3FAST_PG2
+# endif
+/*
+   General options (all kernels)
+*/
+# define K3FAST_HIS
+# if defined KH3D
+#  define M2FILTER_NONE  /* no filter with NBQ */
+#  undef  M2FILTER_POWER
+# endif
+/*
+   All keys but KH3D 
+*/
+# if defined KNBQ || defined KHCOMP  || defined KNHINT   
+#  define SOLVE3D
+#  define M2FILTER_NONE  /* no filter with KNBQ */
+#  undef  M2FILTER_POWER
+#  define NBQ_IMP
+#  undef  NBQ_THETAIMP
+#  ifdef SPONGE
+#   define  NBQ_SPONGE
+#  endif
+#  undef  NBQ_FREESLIP
+#  undef  NBQ_HZ_PROGNOSTIC
+#  undef  K3FAST_REINIT
+#  undef  TRACETXT
+#  define HZR Hzr
+/*
+    KNBQ Precise or Performance options (default: NBQ_PERF) 
+*/
+#  ifndef NBQ_PRECISE
+#   define NBQ_PERF
+#  endif
+#  ifdef NBQ_PERF
+#   undef  NBQ_MASS
+#   define NBQ_GRID_SLOW
+#  else
+#   define NBQ_MASS
+#   undef  NBQ_GRID_SLOW
+#  endif
+# endif  /* KNBQ || KNHINT || KHCOMP */
+#endif  /* KNBQ || KNHINT || KHCOMP || KH3D */
+
+#if defined NBQ || defined KNBQ || defined KHCOMP  || defined KNHINT || defined KH3D
 /*
    Options for wz HADV numerical schemes (default C4)
 */
@@ -217,25 +365,38 @@
 #  define OBC_WORLANSKI      /*  W Radiative conditions         */
 #  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
 #  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  define NBQ_NUDGING_W      /* interior/bdy forcing/nudging (W)*/
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
 # endif
 
-#else                /* Hydrostatic mode */
-
-# define HZR Hz
-
-#endif  /* NBQ */
-
+/* 
+   TANK
+*/
+# if defined TANK && defined KNBQ
+#  undef K3FAST_AM4
+# endif 
+/* 
+   SACOUS 
+*/
+# ifdef K3FAST_SACOUS
+#  undef NBQ_IMP
+# endif
+# ifdef K3FAST_SOFAR
+#  define K3FAST_CSVISC2K
+# endif
+#endif  /* NBQ || KNBQ || KNHINT || KHCOMP || KH3D */
 /*
 ======================================================================
    Activate FAST timestep 3D dynamics for hydrostatic simulations
    -- Fast friction BSTRESS_FAST --
 ======================================================================
 */
-#ifdef BSTRESS_FAST
+#if defined BSTRESS_FAST && defined KNBQ2
 # define M3FAST
+#elif defined BSTRESS_FAST && defined KNBQ3
+# define K3FAST
 #endif
 #if !defined NBQ && defined M3FAST       /* General options */
 # define SOLVE3D
@@ -292,7 +453,8 @@
                   || defined SOLITON  || defined JET \
                   || defined ACOUSTIC || defined VORTEX \
                   || defined THACKER  || defined TANK \
-                  || defined KH_INST  || defined TS_HADV_TEST
+                  || defined KH_INST  || defined TS_HADV_TEST \
+                  || defined AgAc
 # define PGF_FLAT_BOTTOM
 #elif defined RIP || defined FLASH_RIP
 # define PGF_BASIC_JACOBIAN
@@ -1008,7 +1170,7 @@
 #  define AGRIF_OBC_M3ORLANSKI
 #  define AGRIF_OBC_TORLANSKI
 # endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  define AGRIF_OBC_WSPECIFIED
 #  define AGRIF_OBC_NBQSPECIFIED
 # endif
