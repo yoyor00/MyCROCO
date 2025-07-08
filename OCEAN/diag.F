@@ -32,7 +32,7 @@
 #endif
 #include "scalars.h"
 #include "mpi_cpl.h"
-#if defined NBQ && defined DIAG_CFL
+#if (defined NBQ || defined K3FAST) && defined DIAG_CFL
 # include "nbq.h"
 #endif
       integer Istr,Iend,Jstr,Jend,    i,j,k, NSUB,
@@ -50,7 +50,7 @@
 
 #ifdef DIAG_CFL
       real my_Cu_Adv, my_Cu_W, ciV, cx, cw
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
       real my_Cu_Nbq_X, my_Cu_Nbq_Y, my_Cu_Nbq_Z
       real cx_nbq,cy_nbq,cz_nbq, alphax,alphay
       real my_Cu_Nbq
@@ -67,7 +67,7 @@
 !
 #ifdef DIAG_CFL
       my_Cu_Adv=0.  ;  my_Cu_W=0.
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
       my_Cu_Nbq_X=0.; my_Cu_Nbq_Y=0.; my_Cu_Nbq_Z=0.
       my_Cu_Nbq =0.
 # endif
@@ -99,20 +99,27 @@
                 my_Cu_Adv=cx ; my_Cu_W=cw
               endif
 
-# ifdef NBQ
-              cz_nbq=(soundspeed_nbq(i,j)*dtnbq/max(1.D-30,Hzr(i,j,k)))
+# if defined NBQ || defined K3FAST
+#  ifdef NBQ
+              cff = soundspeed_nbq(i,j)
+#  elif !defined K3FAST_CSVISC2K
+              cff = soundspeed_nbq
+#  else
+              cff = soundspeed_nbq(i,j,k)
+#  endif
+              cz_nbq=(cff*dtnbq/max(1.D-30,Hzr(i,j,k)))
 #  ifdef MASKING
      &                *rmask(i,j)
 #  endif
               my_Cu_Nbq_Z=max(my_Cu_Nbq_Z,cz_nbq)
 
-              cx_nbq=soundspeed_nbq(i,j)*dtnbq*pm_u(i,j)
+              cx_nbq=cff*dtnbq*pm_u(i,j)
 #  ifdef MASKING
      &                *umask(i,j)
 #  endif
               my_Cu_Nbq_X=max(my_Cu_Nbq_X,cx_nbq)
 
-              cy_nbq=soundspeed_nbq(i,j)*dtnbq*pn_v(i,j)
+              cy_nbq=cff*dtnbq*pn_v(i,j)
 #  ifdef MASKING
      &                *vmask(i,j)
 #  endif
@@ -134,7 +141,7 @@
               my_Cu_Nbq=max(my_Cu_Nbq,
      &                (alphax*cz_nbq-cx_nbq)**2+(alphay*cz_nbq-cy_nbq)**2)
               if (Hzr_half_nbq(i,j,k).lt.1.D-10) my_Cu_Nbq_Z=0.D0
-# endif /* NBQ */
+# endif /* NBQ || K3FAST */
             enddo
           enddo
         enddo
@@ -249,7 +256,7 @@ C$OMP CRITICAL (diag_cr_rgn)
           if (tile_count.eq.0) then
              Cu_Adv3d=my_Cu_Adv
              Cu_W=my_Cu_W
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
              Cu_Nbq_X=my_Cu_Nbq_X
              Cu_Nbq_Y=my_Cu_Nbq_Y
              Cu_Nbq_Z=my_Cu_Nbq_Z
@@ -260,7 +267,7 @@ C$OMP CRITICAL (diag_cr_rgn)
                Cu_Adv3d=my_Cu_Adv
                Cu_W=my_Cu_W
             endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
             if(my_Cu_Nbq_X.gt.Cu_Nbq_X)  Cu_Nbq_X = my_Cu_Nbq_X
             if(my_Cu_Nbq_Y.gt.Cu_Nbq_Y)  Cu_Nbq_X = my_Cu_Nbq_Y
             if(my_Cu_Nbq_Z.gt.Cu_Nbq_Z)  Cu_Nbq_X = my_Cu_Nbq_Z
@@ -283,7 +290,7 @@ C$OMP CRITICAL (diag_cr_rgn)
 #  ifdef DIAG_CFL
                   buff(4)=Cu_Adv3d
                   buff(5)=Cu_W
-#   ifdef NBQ
+#   if defined NBQ || defined K3FAST
                   buff(6)=Cu_Nbq_X
                   buff(7)=Cu_Nbq_Y
                   buff(8)=Cu_Nbq_Z
@@ -305,7 +312,7 @@ C$OMP CRITICAL (diag_cr_rgn)
                      Cu_Adv3d=buff(4)
                      Cu_W=buff(5)
                   endif
-#   ifdef NBQ
+#   if defined NBQ || defined K3FAST
                   if(buff(6).gt.Cu_Nbq_X)  Cu_Nbq_X = buff(6)
                   if(buff(7).gt.Cu_Nbq_Y)  Cu_Nbq_Y = buff(7)
                   if(buff(8).gt.Cu_Nbq_Z)  Cu_Nbq_Z = buff(8)
@@ -342,7 +349,7 @@ C$OMP CRITICAL (diag_cr_rgn)
      &                             '   EXT_GWAVES = ',Cu_max
               endif
    4          format(10x,A,F6.2,A,F6.2)
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
               if (mod(iic-1,ninfo).eq.0) then
               write(stdout,5) '        NBQ_HADV   = ',
      &                                 sqrt(Cu_Nbq_X**2+Cu_Nbq_Y**2),
@@ -379,6 +386,9 @@ C$OMP CRITICAL (diag_cr_rgn)
 
 #if defined MPI && defined DEBUG && !defined AGRIF
       call flush
+#endif
+#if defined K3FAST && defined DIAG_CFL
+              CFL_nbq=Sqrt(Cu_Nbq)
 #endif
 
 C$OMP END CRITICAL (diag_cr_rgn)

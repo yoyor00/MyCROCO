@@ -125,7 +125,8 @@
 !---------------------------------------------------------------
 !
 #  ifndef BULK_FLUX
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
 #    if !defined ANA_SRFLUX && defined TEMPERATURE
        call get_srflux
 #    endif
@@ -202,6 +203,10 @@
 #ifdef AGRIF
       use Agrif_Util
 #endif
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -279,7 +284,8 @@
 ! Kinematic surface solar shortwave radiation flux [degC m/s].
 !---------------------------------------------------------------
 !
-#    if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#    if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
 #     ifdef ANA_SRFLUX
       call ana_srflux_tile (Istr,Iend,Jstr,Jend)
 #     else
@@ -294,11 +300,13 @@
 !---------------------------------------------------------------
 !
 #  ifdef SEA_ICE_NOFLUX
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
               if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
                    srflx(i,j)=0.
 #   endif
               endif
@@ -384,7 +392,8 @@
 !---------------------------------------------------------------
 !
 #  ifdef TEMPERATURE
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
 #    ifdef ANA_DIURNAL_SW
       call ana_diurnal_sw_tile (Istr,Iend,Jstr,Jend)
 #    endif
@@ -423,11 +432,13 @@
 !---------------------------------------------------------------
 !      
 #  if defined OA_COUPLING && defined SEA_ICE_NOFLUX
+!$acc parallel loop if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           if ( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
-#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#   if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING \
+     || defined TKE3D_MIXING
                    srflx(i,j)=0.
 #   endif
           endif
@@ -558,6 +569,7 @@
           enddo
         enddo
       endif
+!$acc end kernels
 
 #   ifdef LIMIT_BSTRESS
 !
@@ -566,6 +578,7 @@
 !  to not change the direction of momentum. It only should slow down
 !  to zero. The value of 0.75 is arbitrary limitation assigment.
 !
+!$acc kernels if(compute_on_device) default(present)
       cff=0.75/dt
       do j=Jstr,Jend
         do i=IstrU,Iend
@@ -583,6 +596,7 @@
      &                   ABS(v(i,j,1,nrhs))*cff1)
         enddo
       enddo
+!$acc end kernels      
 #   endif
 #  endif /* BSTRESS_FAST */
 
@@ -591,6 +605,7 @@
 !  Compute skin stress components at rho points
 !  (for the sediment model)
 !
+!$acc parallel loop if(compute_on_device) default(present)
         do j=Jstr,Jend
           do i=Istr,Iend
 #   ifdef DUNE
@@ -617,6 +632,7 @@
 !
 ! Set boundary conditions
 !
+!$acc kernels if(compute_on_device) default(present)
 #  ifndef EW_PERIODIC
       IF (EASTERN_EDGE) THEN
         DO j=Jstr,Jend
@@ -677,7 +693,9 @@
 #   endif
       END IF
 #  endif
+!$acc end kernels      
 #  if !defined EW_PERIODIC && !defined NS_PERIODIC
+!$acc kernels if(compute_on_device) default(present)
       ISTRm=Istr-1
       ISTRp=Istr+1
       IENDp=Iend+1
@@ -716,8 +734,8 @@
         bvstrw(IENDp,JENDp)=0.5*(bvstrw(IENDp,Jend)+bvstrw(Iend,JENDp))
 #   endif
       ENDIF
-#  endif
 !$acc end kernels
+#  endif
 #  if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend, bustr)
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend, bvstr)
@@ -762,6 +780,7 @@
 #endif
 #ifdef PSOURCE_NCFILE
       call set_psource_tile(Istr,Iend,Jstr,Jend)
+!$acc parallel loop if(compute_on_device) default(present)
       do is=1,Nsrc
         Qbar(is)=qbardir(is)*Qbar(is)
       enddo
