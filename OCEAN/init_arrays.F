@@ -50,7 +50,10 @@ C$    integer omp_get_thread_num
 #include "diagnostics.h"
 #include "boundary.h"
 #include "sources.h"
-#include "nbq.h"
+# if defined NBQ || defined M3FAST\
+  || defined K3FAST_MASS || defined K3FAST_UV || defined K3FAST_C3D_UVFS || defined K3FAST_C3D_UVSF
+#  include "nbq.h"
+# endif
 #ifdef ABL1D
 # include "abl1d.h"
 #endif
@@ -141,12 +144,14 @@ C$    integer omp_get_thread_num
           pmask_wavewet(i,j)=1
 #endif
 #ifdef SOLVE3D
+# if !defined M3FAST_ZETAW && !defined K3FAST_ZETAW
           rufrc(i,j)=init
           rufrc(i,j)=init
           rufrc_bak(i,j,1)=init
           rvfrc_bak(i,j,1)=init
           rufrc_bak(i,j,2)=init
           rvfrc_bak(i,j,2)=init
+# endif          
 !
           Zt_avg1(i,j)=0. !init
           DU_avg1(i,j,1)=0. !init
@@ -185,7 +190,7 @@ C$    integer omp_get_thread_num
             rho_avg(i,j,k)=init
             u_avg(i,j,k)=init
             v_avg(i,j,k)=init
-#  ifndef NBQ
+#  if !defined NBQ && !defined K3FAST
             w_avg(i,j,k)=init
 #  endif
 # endif
@@ -211,7 +216,7 @@ C$    integer omp_get_thread_num
             MBaro(i,j,k,1)=init
             MBaro(i,j,k,2)=init
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
             Mfast(i,j,k,1)=init
             Mfast(i,j,k,2)=init
 #  endif
@@ -273,7 +278,7 @@ C$    integer omp_get_thread_num
             MBaro_avg(i,j,k,1)=init
             MBaro_avg(i,j,k,2)=init
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
             Mfast_avg(i,j,k,1)=init
             Mfast_avg(i,j,k,2)=init
 #   endif
@@ -319,12 +324,12 @@ C$    integer omp_get_thread_num
 # endif
 # ifdef AVERAGES
             omega_avg(i,j,k)=init
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
             w_avg(i,j,k)=init
 #  endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
             bvf_avg(i,j,k)=init
 #  endif
 # endif
@@ -561,7 +566,7 @@ C$    integer omp_get_thread_num
 #  if defined DIAGNOSTICS_BARO
           vrtBaro(i,j)=init
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
           vrtfast(i,j)=init
 #  endif
 #  ifdef AVERAGES
@@ -579,7 +584,7 @@ C$    integer omp_get_thread_num
 #   if defined DIAGNOSTICS_BARO
           vrtBaro_avg(i,j)=init
 #   endif
-#   if defined M3FAST
+#   if defined M3FAST || defined K3FAST
           vrtfast_avg(i,j)=init
 #   endif
 #  endif /* AVERAGES */
@@ -605,7 +610,7 @@ C$    integer omp_get_thread_num
 #  if defined DIAGNOSTICS_BARO
           ekBaro(i,j)=init
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
           ekfast(i,j)=init
 #  endif
 #  ifdef AVERAGES
@@ -624,7 +629,7 @@ C$    integer omp_get_thread_num
 #   ifdef DIAGNOSTICS_BARO
           ekBaro_avg(i,j)=init
 #   endif
-#   if defined M3FAST
+#   if defined M3FAST || defined K3FAST
           ekfast_avg(i,j)=init
 #   endif
 #  endif /* AVERAGES */
@@ -643,6 +648,9 @@ C$    integer omp_get_thread_num
 #   if defined DIAGNOSTICS_BARO
           ekBaro_mld(i,j)=init
 #   endif
+#   if defined M3FAST || defined K3FAST
+          ekfast_mld(i,j)=init
+#   endif
 #   ifdef AVERAGES
           ekHadv_mld_avg(i,j)=init
           ekHdiff_mld_avg(i,j)=init
@@ -656,6 +664,9 @@ C$    integer omp_get_thread_num
           ekVmix2_mld_avg(i,j)=init
 #    ifdef DIAGNOSTICS_BARO
           ekBaro_mld_avg(i,j)=init
+#    endif
+#    if defined M3FAST || defined K3FAST
+          ekfast_mld_avg(i,j)=init
 #    endif
 #   endif /* AVERAGES */
 #  endif /* DIAGNOSTICS_EK_MLD */
@@ -917,7 +928,7 @@ C$    integer omp_get_thread_num
 #  endif
             btflx(i,j,itrc)=init
 
-#  if BHFLUX || defined BWFLUX
+#  if defined BHFLUX || defined BWFLUX
             btflxg(i,j,1,itrc)=init
             btflxg(i,j,2,itrc)=init
 #  endif
@@ -1401,21 +1412,21 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING && !defined TKE3D_MIXING
             Akv(i,j,k)=Akv_bak
 # else
             Akv(i,j,k)=init
 # endif
 # if defined BVF_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIXING
+      || defined GLS_MIXING || defined TKE3D_MIXING
             bvf(i,j,k)=init
 # endif
           enddo
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING && !defined TKE3D_MIXING
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  endif
@@ -1516,6 +1527,21 @@ C$    integer omp_get_thread_num
       enddo
 # endif
 
+# ifdef TKE3D_MIXING
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            tke(i,j,k,nstp) = 1.e-12
+            Sprod3d(i,j,k)  = 1.e-12
+            Lscale(i,j,k)=init
+          enddo
+        enddo
+      enddo
+# endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! KNBQ2
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # ifdef M3FAST
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -1570,6 +1596,93 @@ C$    integer omp_get_thread_num
       enddo
 #  endif/* NBQ */
 # endif /* M3FAST */
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ! KNBQ3
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ifdef K3FAST
+#  ifdef NBQ_MASS
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          rhobar_nbq(i,j,:)   =1.
+          rhobar_nbq_avg1(i,j)=1.
+        enddo
+      enddo
+#  endif
+#  if defined NBQ_MASS || defined K3FAST_UV || defined K3FAST_C3D_UVFS || defined K3FAST_C3D_UVSF
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+#  ifdef NBQ_MASS
+            rho_nbq(i,j,k)     =1.
+            rho_nbq_avg1(i,j,k)=1.
+!            rho_nbq_avg2(i,j,k)=1.
+#  endif
+
+#  ifdef K3FAST_UV
+            ru_nbq(i,j,k)     =init
+            rv_nbq(i,j,k)     =init
+#   ifdef K3FAST_C3D_UVFS
+!            ru_nbq_avg1(i,j,k)=init
+!            rv_nbq_avg1(i,j,k)=init
+            ru_nbq_avg2(i,j,k)=init
+            rv_nbq_avg2(i,j,k)=init
+#   endif
+#   ifdef K3FAST_C3D_UVSF
+            ru_int_nbq(i,j,k)  =init
+            rv_int_nbq(i,j,k)  =init
+#    ifdef K3FAST_COUPLING_SCH1            
+            ru_intt_nbq(i,j,k) =init
+            rv_intt_nbq(i,j,k) =init
+#    elif defined K3FAST_COUPLING_SCH2
+            ru_intt_nbq(i,j,k,:) =init
+            rv_intt_nbq(i,j,k,:) =init
+#    endif
+#   endif
+#  endif  /* K3FAST_UV */
+          enddo
+        enddo
+      enddo
+# endif  
+# ifdef K3SLOW_W
+      do k=0,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            wz(i,j,k,1)  =init
+            wz(i,j,k,2)  =init
+            rw_nbq(i,j,k)=init
+#  ifdef K3FAST_C3D_WFS
+!           rw_nbq_avg1(i,j,k)=init
+            rw_nbq_avg2(i,j,k)=init
+#  endif
+#  ifdef K3FAST_C3D_WSF
+            rw_int_nbq(i,j,k)  =init
+#    ifdef K3FAST_COUPLINGW_SCH1
+            rw_intt_nbq(i,j,k) =init
+#    elif defined K3FAST_COUPLINGW_SCH2
+            rw_intt_nbq(i,j,k,:) =init
+#    endif
+#  endif
+          enddo
+        enddo
+      enddo
+!#  else
+!      do j=JstrR,JendR
+!        do i=IstrR,IendR
+!          rubar_nbq(i,j)=init
+!          rvbar_nbq(i,j)=init
+!        enddo
+!      enddo
+#  endif/* K3SLOW_W */
+# ifdef W_VIS_SMAGO_3D
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+               visc3dW_r(i,j,k) = 0.d0
+            enddo
+          enddo
+        enddo
+# endif
+# endif /* K3FAST */
 
 #endif /* SOLVE3D */
 

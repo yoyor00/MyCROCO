@@ -713,13 +713,18 @@
 #  endif /*  LMD_BKPP  */
 # endif /* LMD_MIXING */
 
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 ! Turbulent kinetic energy.
 !
           lvar=lenstr(vname(1,indxTke))
+#  ifdef GLS_MIXING          
           ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
      &         NF_DOUBLE, 4, w3dgrd, rstTke)
+#  else 
+          ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
+     &         NF_DOUBLE, 4, r3dgrd, rstTke)
+#  endif
 #  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstTke,nf_collective)
 #  endif
@@ -833,7 +838,7 @@
 # endif /* GLS_MIXING */
 
 # if defined LMD_MIXING
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !
 !  Bottom stress u component
 !
@@ -876,7 +881,7 @@
 
         call nf_add_attribute(ncid, rstBvstr, vname(:,indxBvstr), 5,
      &       NF_DOUBLE,ierr)
-#  endif /* M3FAST */
+#  endif /* M3FAST || K3FAST */
 # endif /* LMD_MIXING */
 
 # ifdef EXACT_RESTART
@@ -921,9 +926,9 @@
       call nf_add_attribute(ncid, rstrvfrc,
      &                      vname(:,indxrvfrc), 5, NF_DOUBLE, ierr)
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !
-! 3D rhs for M3FAST in XI- and ETA-directions.
+! 3D rhs for M3FAST || K3FAST in XI- and ETA-directions.
 !
         lvar=lenstr(vname(1,indxru_nbq))
         ierr=nf_def_var (ncid, vname(1,indxru_nbq)(1:lvar),
@@ -964,7 +969,7 @@
      &                                   5, NF_DOUBLE, ierr)
 
 !
-! 3D rhs for M3FAST in XI- and ETA-directions.
+! 3D rhs for M3FAST || K3FAST in XI- and ETA-directions.
 !
         lvar=lenstr(vname(1,indxru_nbq_avg2))
         ierr=nf_def_var (ncid, vname(1,indxru_nbq_avg2)(1:lvar),
@@ -1005,7 +1010,7 @@
      &       vname(:,indxrv_nbq_avg2), 5, NF_DOUBLE, ierr)
 
 !
-! 3D rhs for M3FAST in XI- and ETA-directions.
+! 3D rhs for M3FAST || K3FAST in XI- and ETA-directions.
 !
         lvar=lenstr(vname(1,indxqdmu_nbq))
         ierr=nf_def_var (ncid, vname(1,indxqdmu_nbq)(1:lvar),
@@ -1044,7 +1049,7 @@
 
         call nf_add_attribute(ncid, rstqdmv_nbq, 
      &       vname(:,indxqdmv_nbq), 5, NF_DOUBLE, ierr)
-#  endif  /* M3FAST */
+#  endif  /* M3FAST || K3FAST */
 
 #  ifdef TRACERS
 #   ifdef TS_MIX_ISO_FILT
@@ -1696,7 +1701,7 @@
 #  endif /*  LMD_BKPP  */
 # endif /* LMD_MIXING */
 
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 ! Turbulent kinetic energy.
 !
@@ -1770,7 +1775,7 @@
 # endif /* GLS_MIXING */
 
 
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  if defined LMD_MIXING
 !
 ! Bottom stress u component
@@ -1827,10 +1832,10 @@
         ierr=nf_var_par_access(ncid,rstrvfrc,nf_collective)
 #  endif
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 
 !
-! 3D rhs for M3FAST in XI- and ETA-directions.
+! 3D rhs for M3FAST || K3FAST in XI- and ETA-directions.
 !
 
         lvar=lenstr(vname(1,indxru_nbq))
@@ -1858,7 +1863,7 @@
 #   endif
 
 !
-! 3D rhs for M3FAST in XI- and ETA-directions.
+! 3D rhs for M3FAST || K3FAST in XI- and ETA-directions.
 !
 
         lvar=lenstr(vname(1,indxru_nbq_avg2))
@@ -1887,7 +1892,7 @@
 #   endif
 
 !
-! 3D rhs for M3FAST in XI- and ETA-directions.
+! 3D rhs for M3FAST || K3FAST in XI- and ETA-directions.
 !
 
         lvar=lenstr(vname(1,indxqdmu_nbq))
@@ -1914,7 +1919,7 @@
 #   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstqdmv_nbq,nf_collective)
 #   endif
-#  endif  /* M3FAST */
+#  endif  /* M3FAST || K3FAST */
 
 #  ifdef TRACERS
 #   ifdef TS_MIX_ISO_FILT
