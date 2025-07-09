@@ -16,13 +16,17 @@ import shutil  # To check if 'lscpu' exists
 ##########################################################
 def run_and_get_first_line(command: str) -> str:
     """Run a shell command and return the first line of the output."""
+    executable = command.split()[0]
+
+    if shutil.which(executable) is None:
+        return "NOT FOUND"
+
     try:
-        return subprocess.check_output(command, shell=True).split("\n")[0]
+        output = subprocess.check_output(command, shell=True, text=True)
+        return output.splitlines()[0] if output else "NO OUTPUT"
     except subprocess.CalledProcessError:
-        # Handle the case when the command fails
         return "UNAVAILABLE"
     except Exception as e:
-        # Optionally, handle other exceptions (if needed)
         print(f"An unexpected error occurred: {e}")
         return "ERROR"
 

@@ -221,6 +221,7 @@ class Croco:
             )
         # copy log file in result dir
         if os.path.exists(os.path.join(self.dirname, "jobcomp.log")):
+            os.makedirs(self.dirname_result, exist_ok=True)
             shutil.copyfile(
                 os.path.join(self.dirname, "jobcomp.log"),
                 os.path.join(self.dirname_result, "jobcomp.log"),
