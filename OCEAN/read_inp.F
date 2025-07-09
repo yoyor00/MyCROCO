@@ -45,7 +45,7 @@
 #ifdef MPI
       include 'mpif.h'
 #endif
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
 # include "nbq.h"
 #endif
 #include "mpi_cpl.h"
@@ -88,7 +88,7 @@
 #elif defined EQUATOR
       fname='TEST_CASES/croco.in.Equator'
 #elif defined GRAV_ADJ
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
       fname='TEST_CASES/croco.in.Grav_adj_nbq'
 # else
       fname='TEST_CASES/croco.in.Grav_adj'
@@ -149,8 +149,10 @@
       fname='TEST_CASES/croco.in.Swash'
 #elif defined KH_INST
       fname='TEST_CASES/croco.in.KH_INST'
+#elif defined CANON2D 
+      fname='TEST_CASES/croco.in.Canon2d'
 #elif defined IGW
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
       fname='TEST_CASES/croco.in.IGW_nbq'
 # else
       fname='TEST_CASES/croco.in.IGW'
@@ -212,6 +214,31 @@
         lstr=lenstr(fname)
       endif
 #endif
+#ifdef LOGFILE
+# ifndef AGRIF
+      MPI_master_only stdout=80
+# else
+      stdout=Agrif_Get_Unit()
+      if (.Not.Agrif_Root()) then
+        if(mynode.eq.0) then
+         open (stdout,file='croco.log.' / / Agrif_Cfixed(),
+     &   status='REPLACE',form='formatted',err=98)
+        else
+         stdout=6
+        endif
+      else
+# endif
+      if(mynode.eq.0) then
+      open (stdout,file='croco.log',
+     & status='REPLACE',form='formatted',err=98)
+      else
+      stdout=6
+      endif
+# ifdef AGRIF
+      endif
+# endif
+#endif
+
 !
       wrthis(indxTime)=.false.
 #ifdef AVERAGES
@@ -321,6 +348,8 @@
       if (keyword(1:kwlen).eq.'title') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) title
+        lstr=lenstr(title)
+        MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 
 #ifdef LOGFILE
 !
@@ -371,6 +400,9 @@
       elseif (keyword(1:kwlen).eq.'start_date') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) start_date
+        lstr=lenstr(start_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &   'Run start date:', start_date(1:lstr)
 # ifdef ANA_INITIAL
         if (nrrec.eq.0) then
           origin_date=start_date
@@ -389,11 +421,19 @@
       elseif (keyword(1:kwlen).eq.'end_date') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) end_date
+        lstr=lenstr(end_date)
+        MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &   'Run end date:', end_date(1:lstr)
 ! output time steps
       elseif (keyword(1:kwlen).eq.'output_time_steps') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) dt_his,dt_avg,dt_rst
-#endif /*USE_CALENDAR*/
+        MPI_master_only  write(stdout,
+     &  '(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
+     &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
+     &  'DT RST=',dt_rst,'H'
+        MPI_master_only write(stdout,*)
+#endif
 
 #ifdef XIOS
 !
@@ -411,6 +451,15 @@
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) ntimes,dt,ndtfast, ninfo
 
+        MPI_master_only write(stdout,
+     & '(I10,2x,A,1x,A /F10.2,2x,A,2(/I10,2x,A,1x,A)/F10.4,2x,A)')
+     &    ntimes,  'ntimes   Total number of timesteps for',
+     &                                            '3D equations.',
+     &    dt,      'dt       Timestep [sec] for 3D equations',
+     &    ndtfast, 'ndtfast  Number of 2D timesteps within each',
+     &                                                 '3D step.',
+     &    ninfo,   'ninfo    Number of timesteps between',
+     &                                     'runtime diagnostics.'
         dtfast=dt/float(ndtfast)     ! set barotropic time step.
 
         if (NWEIGHT.lt.(2*ndtfast-1)) then
@@ -422,16 +471,48 @@
           goto 95
         endif
 
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
 !
 ! NBQ Time-stepping parameters
 !
       elseif (keyword(1:kwlen).eq.'time_stepping_nbq') then
+        MPI_master_only print *,"time_stepping_nbq...."
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ndtnbq, csound_nbq, visc2_nbq
-
-        dtnbq=dtfast
-        ndtnbq=1
+#   ifndef NBQ_RCSOUND
+        read(input,*,err=95) ndtnbq, csound_nbq, visc2read_nbq
+#   else
+        read(input,*,err=95) ndtnbq, csound_nbq, visc2read_nbq
+     &                      ,rcsound2read_nbq
+        rcsound2_nbq=rcsound2read_nbq**2
+#   endif
+        MPI_master_only write(stdout,
+     &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A,/F10.2,2x,A/)')
+     &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
+     &                                                 '2D step.',
+     &   csound_nbq,'csound_nbq  Sound wave celerity.',
+     &   visc2read_nbq, 'visc2_nbq   Second viscosity coefficient for',
+     &                                      'compressible fluids.'
+  !  &   ,sqrt(rcsound2read_nbq),' H/V soundspeed ratio.'
+        if (mynode==0) print *,"ndtnbq=",ndtnbq," ndtfast=",ndtfast
+# ifndef KNHINT_3M
+#  ifdef NBQ
+        visc2_nbq = visc2read_nbq
+        ndtnbq    = 1   
+#  else
+        ndtnbq    = ndtfast
+#  endif
+        nsdtnbq = 1
+        dtnbq   = dtfast
+# else
+        if (int(ndtfast/ndtnbq).ne.ndtfast/ndtnbq) then
+          MPI_master_only write(stdout,*)
+     &         'CAUTION: bad choice for ndtnbq!'
+          ndtnbq=ndtfast
+        endif
+        nsdtnbq = ndtfast/ndtnbq
+        if (mynode==0) print *,"nsdtnbq=",nsdtnbq
+        dtnbq   = dt/float(ndtnbq)
+# endif
 #endif
 
 #ifdef SOLVE3D
@@ -441,7 +522,14 @@
       elseif (keyword(1:kwlen).eq.'S-coord') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) theta_s, theta_b, Tcline
-
+        MPI_master_only write(stdout,
+     &                        '(3(1pe10.3,2x,A,1x,A/),32x,A)')
+     &    theta_s, 'theta_s  S-coordinate surface control',
+     &                                               'parameter.',
+     &    theta_b, 'theta_b  S-coordinate bottom control',
+     &                                               'parameter.',
+     &    Tcline,  'Tcline   S-coordinate surface/bottom layer',
+     &  'width used in', 'vertical coordinate stretching, meters.'
 #endif
 !
 ! Initial conditions file name. Check its availability (in the case
@@ -462,7 +550,8 @@
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           ininame=fname(1:lstr)
-
+          MPI_master_only write(stdout,'(1x,A,2x,A,4x,A,I3)')
+     &     'Initial State File:', ininame(1:lstr), 'Record:',nrrec
 #ifdef ANA_INITIAL
         endif
 #endif
@@ -480,7 +569,8 @@
         open(testunit,file=fname(1:lstr), status='old', err=97)
         close(testunit)
         grdname=fname(1:lstr)
-
+        MPI_master_only write(stdout,'(10x,A,2x,A)')
+     &                   'Grid File:', grdname(1:lstr)
 #endif
 
 
@@ -525,7 +615,8 @@
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         frcname=fname(1:lstr)
-
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &             'Forcing Data File:', frcname(1:lstr)
 #endif  /* !defined NO_FRCFILE */
 
 !
@@ -543,7 +634,8 @@
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         wave_file=fname(1:lstr)
-
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &             'Wave Data File:', wave_file(1:lstr)
 #endif  /* !defined WAVE_OFFLINE */
 
 !
@@ -560,7 +652,8 @@
 c        open (testunit, file=fname(1:lstr), status='old', err=97)
 c        close(testunit)
         bioname=fname(1:lstr)
-
+        MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &             'Biology Forcing Data File:', bioname(1:lstr)
 #endif
 !
 ! Bulk file name. Check its availability.
@@ -577,7 +670,8 @@ c        close(testunit)
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
           bulkname=fname(1:lstr)
-
+          MPI_master_only write(stdout,'(2x,A,2x,A)')
+     &               '   Bulk Data File:', bulkname(1:lstr)
 # endif  /* ONLINE FORCING */
 #endif
 
@@ -602,7 +696,8 @@ c        close(testunit)
         open (testunit, file=fname(1:lstr), status='old', err=97)
         close(testunit)
         clmname=fname(1:lstr)
-
+        MPI_master_only write(stdout,'(3x,A,2x,A)')
+     &            'Climatology File:', clmname(1:lstr)
 # ifdef AGRIF
        endif
 # endif
@@ -1109,7 +1204,7 @@ c        close(testunit)
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &                                          ,  wrthis(indxbvf)
 # else
      &                                          ,  dumboolean
@@ -1206,7 +1301,7 @@ c        close(testunit)
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &                                        .or. wrthis(indxbvf)
 # endif
 # ifdef VIS_COEF_3D
@@ -1275,6 +1370,23 @@ c        close(testunit)
      &     ) wrthis(indxTime)=.true.
 
 # endif
+
+# ifdef TKE3D_MIXING
+      elseif (keyword(1:kwlen).eq.'tke3d_history_fields') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wrthis(indxTke),  wrthis(indxGls)
+     &                    ,  wrthis(indxLsc)
+        if (wrthis(indxTke) .or. wrthis(indxGls) .or. wrthis(indxLsc)
+     &     ) wrthis(indxTime)=.true.
+
+        MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
+     &    'Fields to be saved in history file: (T/F)'
+     &   , wrthis(indxTke), 'write TKE ', 'turbulent kinetic energy.  '
+     &   , wrthis(indxGls), 'write Sprod3d ','tke shear production term'
+     &   , wrthis(indxLsc), 'write Lscale ',
+     &                                  'mixing length scale.'
+# endif
+
 #endif /* SOLVE3D */
 
 #ifdef AVERAGES
@@ -1320,7 +1432,7 @@ c        close(testunit)
 #  endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &                                          ,  wrtavg(indxbvf)
 #  else
      &                                          ,  dumboolean
@@ -1415,7 +1527,7 @@ c        close(testunit)
 #  endif
 #  if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &                                        .or. wrtavg(indxbvf)
 #  endif
 #  ifdef VIS_COEF_3D
@@ -1881,6 +1993,9 @@ c        close(testunit)
       elseif (keyword(1:kwlen).eq.'rho0') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) rho0
+        MPI_master_only write(stdout,'(F10.4,2x,A,1x,A)')
+     &        rho0, 'rho0     Boussinesq approximation',
+     &                           'mean density, kg/m3.'
 #if defined UV_VIS2 || defined UV_VIS4 || defined SPONGE_VIS2
 !
 ! Horizontal viscosity coefficients.
@@ -1896,6 +2011,13 @@ c        close(testunit)
       elseif (keyword(1:kwlen).eq.'bottom_drag') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) rdrg, rdrg2, Zobt, Cdb_min, Cdb_max
+        MPI_master_only write(stdout,'(5(1pe10.3,2x,A/))')
+     &     rdrg, 'rdrg     Linear bottom drag coefficient (m/si).',
+     &    rdrg2, 'rdrg2    Quadratic bottom drag coefficient.',
+     &     Zobt, 'Zobt     Bottom roughness for logarithmic law (m).',
+     &  Cdb_min, 'Cdb_min  Minimum bottom drag coefficient.',
+     &  Cdb_max, 'Cdb_max  Maximum bottom drag coefficient.'
+!
 ! Lateral boundary slipperness.
 !
       elseif (keyword(1:kwlen).eq.'gamma2') then
@@ -1924,7 +2046,7 @@ c        close(testunit)
 
 # endif
 # if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIXING
+     !defined GLS_MIXING && !defined TKE3D_MIXING
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !
