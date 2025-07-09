@@ -30,12 +30,12 @@
 #include "forces.h"
 #include "netcdf.inc"
 #include "mpi_cpl.h"
-#if defined GLS_MIXING || defined LMD_MIXING
+#if defined GLS_MIXING || defined LMD_MIXING || defined TKE3D_MIXING
 # include "mixing.h"
 #endif
 #if defined EXACT_RESTART
 # include "coupling.h"
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 #  include "nbq.h"
 # endif
 #endif
@@ -425,13 +425,19 @@
 #  endif /* LMD_BKPP  */
 # endif /* LMD_MIXING */
 
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 ! Turbulent kinetic energy.
 !
-!$acc update if(compute_on_device) host(trb(:,:,nstp,:))
+#  ifdef GLS_MIXING
+!$acc update if(compute_on_device) host(trb(:,:,:,nstp,:))
         ierr=nf_fwrite(trb(START_2D_ARRAY,0,nstp,itke), ncidrst,
      &                             rstTke, record, w3dvar)
+#  else
+!$acc update if(compute_on_device) host(tke(:,:,:,nstp))
+        ierr=nf_fwrite(tke(START_2D_ARRAY,1,nstp), ncidrst,
+     &                             rstTke, record, r3dvar)
+#  endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxTke))
           write(stdout,1) vname(1,indxTke)(1:lvar), record,
@@ -492,7 +498,7 @@
 # endif  /* GLS_MIXING  */
 
 # if defined LMD_MIXING
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
 !
 ! Write out bottom stress u component
 !
@@ -546,9 +552,9 @@
             goto 99                                         !--> ERROR
           endif
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !
-! 3D rhs for M3FAST in XI-direction.
+! 3D rhs for M3FAST || K3FAST in XI-direction.
 !
       ierr=nf_fwrite(ru_nbq(START_2D_ARRAY,1),
      &                               ncidrst, rstru_nbq,
@@ -561,7 +567,7 @@
         goto 99                                           !--> ERROR
       endif
 !
-! 3D rhs for M3FAST in ETA-direction.
+! 3D rhs for M3FAST || K3FAST in ETA-direction.
 !
        ierr=nf_fwrite(rv_nbq(START_2D_ARRAY,1),
      &                               ncidrst, rstrv_nbq,
@@ -575,7 +581,7 @@
        endif
 
 !
-! 3D rhs for M3FAST in XI-direction.
+! 3D rhs for M3FAST || K3FAST in XI-direction.
 !
       ierr=nf_fwrite(ru_nbq_avg2(START_2D_ARRAY,1),
      &                               ncidrst, rstru_nbq_avg2,
@@ -588,7 +594,7 @@
         goto 99                                           !--> ERROR
       endif
 !
-! 3D rhs for M3FAST in ETA-direction.
+! 3D rhs for M3FAST || K3FAST in ETA-direction.
 !
        ierr=nf_fwrite(rv_nbq_avg2(START_2D_ARRAY,1),
      &                               ncidrst, rstrv_nbq_avg2,
@@ -602,7 +608,7 @@
        endif
 
 !
-! 3D rhs for M3FAST in XI-direction.
+! 3D rhs for M3FAST || K3FAST in XI-direction.
 !
       ierr=nf_fwrite(qdmu_nbq(START_2D_ARRAY,1),
      &                               ncidrst, rstqdmu_nbq,
@@ -615,7 +621,7 @@
         goto 99                                           !--> ERROR
       endif
 !
-! 3D rhs for M3FAST in ETA-direction.
+! 3D rhs for M3FAST || K3FAST in ETA-direction.
 !
        ierr=nf_fwrite(qdmv_nbq(START_2D_ARRAY,1),
      &                               ncidrst, rstqdmv_nbq,
@@ -628,7 +634,7 @@
          goto 99                                           !--> ERROR
        endif
 
-#  endif  /* M3FAST */
+#  endif  /* M3FAST || K3FAST */
 
 #  ifdef TS_MIX_ISO_FILT
 !

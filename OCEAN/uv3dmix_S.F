@@ -29,7 +29,7 @@
         call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
      &                       ,A3d(1,3,trd), A3d(1,4,trd)
 #  endif
      &                                                 )
@@ -37,7 +37,7 @@
         call uv3dmix_child_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
      &                       ,A3d(1,3,trd), A3d(1,4,trd)
 #  endif
      &                                                 )
@@ -48,7 +48,7 @@
       call uv3dmix_tile (Istr,Iend,Jstr,Jend,
      &                        A2d(1,1,trd), A2d(1,2,trd),
      &                        A2d(1,3,trd), A2d(1,4,trd)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
      &                       ,A3d(1,3,trd), A3d(1,4,trd)
 #  endif
      &                                                 )
@@ -64,7 +64,7 @@
 ! 
       subroutine uv3dmix_tile (Istr,Iend,Jstr,Jend, 
      &                                       UFx,UFe,VFx,VFe
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
      &                                      ,FX,FE
 # endif
      &                                                 )
@@ -76,7 +76,7 @@
 !
       subroutine uv3dmix_child_tile (Istr,Iend,Jstr,Jend, 
      &                                         UFx,UFe,VFx,VFe
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
      &                                        ,FX,FE
 # endif
      &                                                 )
@@ -125,7 +125,7 @@
      &     UFx(PRIVATE_2D_SCRATCH_ARRAY), cff,
      &     VFe(PRIVATE_2D_SCRATCH_ARRAY), cff1,
      &     VFx(PRIVATE_2D_SCRATCH_ARRAY)
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
       real FX(PRIVATE_2D_SCRATCH_ARRAY,1:N),
      &     FE(PRIVATE_2D_SCRATCH_ARRAY,1:N)
 #endif
@@ -153,8 +153,11 @@
 #ifdef AGRIF
 # include "zoom.h"
 #endif
-#ifdef NBQ
-      integer kp
+#ifdef TKE3D_MIXING
+      real Akv_loc,cff2,cff3,cff4,divE,divX,divZ,Hz_loc
+#endif
+#if defined NBQ || defined K3FAST
+      integer kp,km
 #endif
 !
 #include "compute_auxiliary_bounds.h"
@@ -174,6 +177,8 @@
 !  tensor (m5/s2) in XI- and ETA-directions.
 !
       do k=1,N
+!$acc loop collapse(2)
+!$acc&  private( cff, cff1 )
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             cff=Hz(i,j,k)*max(0.,visc2_r(i,j)
@@ -182,6 +187,9 @@
 #endif
 #ifdef UV_VIS_SMAGO
      &                          ,visc3d_r(i,j,k)
+#endif
+#ifdef TKE3D_MIXING
+     &                          ,Akv(i,j,k)
 #endif
      &                       )*
 #if defined CLIMAT_UV_MIXH || defined CLIMAT_UV_MIXH_FINE
@@ -201,6 +209,8 @@
             VFe(i,j)=om_r(i,j)*om_r(i,j)*cff
           enddo
         enddo
+!$acc loop collapse(2)
+!$acc&  private( cff, cff1 )
         do j=Jstr,Jend+1
           do i=Istr,Iend+1
             cff=0.25*max(0.,visc2_p(i,j)
@@ -209,6 +219,10 @@
 #endif
 #ifdef UV_VIS_SMAGO
      &                     ,visc3d_p(i,j,k)
+#endif
+#ifdef TKE3D_MIXING
+     &                     ,0.25*( Akv(i  ,j-1,k)
+     &          + Akv(i  ,j  ,k) + Akv(i-1,j  ,k) + Akv(i-1,j-1,k) )
 #endif
      &                    )*
      &             (Hz(i-1,j,k)+Hz(i,j,k)+Hz(i-1,j-1,k)+Hz(i,j-1,k))*
@@ -243,6 +257,8 @@
 ! integral of viscous terms and add it into coupling terms for the
 ! barotropic mode
 !
+!$acc loop collapse(2)
+!$acc&  private( cff, cff1 )
         do j=Jstr,Jend
           do i=IstrU,Iend
             cff=pn_u(i,j)*(UFx(i,j)-UFx(i-1,j))
@@ -281,6 +297,8 @@
 #endif
           enddo
         enddo
+!$acc loop collapse(2)
+!$acc&  private( cff, cff1 )
         do j=JstrV,Jend
           do i=Istr,Iend
             cff=pn_v(i,j)*(VFx(i+1,j)-VFx(i,j))
@@ -322,7 +340,7 @@
         enddo
       enddo
 
-#ifdef NBQ
+#if defined NBQ || defined K3SLOW_W 
 !
 !  Compute XI- and ETA-components of diffusive wz flux.
 !
@@ -338,6 +356,14 @@
 # ifdef UV_VIS_SMAGO
      &                      ,0.5*(visc3d_r(i,j,k )+visc3d_r(i-1,j,k )
      &                           +visc3d_r(i,j,kp)+visc3d_r(i-1,j,kp))
+# endif
+# ifdef W_VIS_SMAGO_3D
+     &                      ,0.5*(visc3dW_r(i,j,k )+visc3dW_r(i-1,j,k )
+     &                           +visc3dW_r(i,j,kp)+visc3dW_r(i-1,j,kp))
+# endif
+# ifdef TKE3D_MIXING
+     &                      ,0.25*(Akv(i,j,k )+Akv(i-1,j,k )
+     &                            +Akv(i,j,kp)+Akv(i-1,j,kp))
 # endif
      &                       )
      &                   *pmon_u(i,j)*(Hz(i,j,k )+Hz(i-1,j,k )+
@@ -357,6 +383,14 @@
      &                      ,0.5*(visc3d_r(i,j,k )+visc3d_r(i,j-1,k )
      &                           +visc3d_r(i,j,kp)+visc3d_r(i,j-1,kp))
 # endif
+# ifdef W_VIS_SMAGO_3D
+     &                      ,0.5*(visc3dW_r(i,j,k )+visc3dW_r(i,j-1,k )
+     &                           +visc3dW_r(i,j,kp)+visc3dW_r(i,j-1,kp))
+# endif
+# ifdef TKE3D_MIXING
+     &                      ,0.25*(Akv(i,j,k )+Akv(i,j-1,k )
+     &                            +Akv(i,j,kp)+Akv(i,j-1,kp))
+# endif
      &                       )
      &                   *pnom_v(i,j)*(Hz(i,j,k )+Hz(i,j-1,k )+
      &                                 Hz(i,j,kp)+Hz(i,j-1,kp))
@@ -375,6 +409,87 @@
           enddo
         enddo
       enddo ! <-- k
+#endif
+#ifdef TKE3D_MIXING
+      DO k=1,N
+        ! Compute Sprod3d (naive way for the moment)
+        kp = k+1; IF( k==N ) kp = k
+        km = k-1; IF( k==1 ) km = k
+        DO j=jstr,jend
+          DO i=istr,iend
+            !
+            divX    = pm(i,j)*(u(i+1,j,k,nstp)-u(i,j,k,nstp))
+            divE    = pn(i,j)*(v(i,j+1,k,nstp)-v(i,j,k,nstp))
+            divZ    = (wz(i,j,k,nstp)-wz(i,j,k-1,nstp)) / Hz(i,j,k)
+            !
+            cff     = 2.*( divX*divX+divE*divE+divZ*divZ ) ! diagonal terms
+            ! (dudy+dvdx) term
+            cff1    = 0.5*( pn_u(i,j+1)+pn_u(i  ,j  ) )*
+     &                            ( u(i,j+1,k,nstp) - u(i  ,j  ,k,nstp) )
+     &             +  0.5*( pm_v(i,j+1)+pm_v(i-1,j+1) )*
+     &                            ( v(i,j+1,k,nstp) - v(i-1,j+1,k,nstp) )
+            cff2    = 0.5*( pn_u(i+1,j+1)+pn_u(i+1,j  ) )*
+     &                            ( u(i+1,j+1,k,nstp) - u(i+1,j  ,k,nstp) )
+     &             +  0.5*( pm_v(i+1,j+1)+pm_v(i,j+1) )*
+     &                            ( v(i+1,j+1,k,nstp) - v(i,j+1,k,nstp) )
+            cff3    = 0.5*( pn_u(i,j)+pn_u(i  ,j-1) )*
+     &                            ( u(i,j,k,nstp) - u(i  ,j-1,k,nstp) )
+     &             +  0.5*( pm_v(i,j)+pm_v(i-1,j) )*
+     &                            ( v(i,j,k,nstp) - v(i-1,j,k,nstp) )
+            cff4    = 0.5*( pn_u(i+1,j)+pn_u(i+1,j-1) )*
+     &                            ( u(i+1,j,k,nstp) - u(i+1,j-1,k,nstp) )
+     &             +  0.5*( pm_v(i+1,j)+pm_v(i,j) )*
+     &                            ( v(i+1,j,k,nstp) - v(i,j,k,nstp) )
+      !
+            cff = cff + 0.25*Akv_loc*( cff1*cff1+cff2*cff2+cff3*cff3+cff4*cff4 )
+            ! (dudz+dwdx) term
+            !kp = k+1; IF( k==N ) kp = k
+            Hz_loc = 0.25*(Hz(i,j,k)+Hz(i+1,j,k)+Hz(i,j,kp)+Hz(i+1,j,kp))
+            cff1 = pm_u(i+1,j)*(wz(i+1,j,k  ,nstp) - wz(i  ,j,k  ,nstp))
+     &                     +   ( u(i+1,j,kp,nstp) -  u(i+1,j,k  ,nstp))/Hz_loc
+            Hz_loc = 0.25*(Hz(i-1,j,k)+Hz(i,j,k)+Hz(i-1,j,kp)+Hz(i,j,kp))
+            cff2 = pm_u(i  ,j)*(wz(i  ,j,k  ,nstp) - wz(i-1,j,k  ,nstp))
+     &                     +   ( u(i  ,j,kp,nstp) -  u(i  ,j,k  ,nstp))/Hz_loc
+            !
+            !km = k-1; IF( k==1 ) km = k
+            Hz_loc = 0.25*(Hz(i,j,k-1)+Hz(i+1,j,km)+Hz(i,j,k)+Hz(i+1,j,k))
+            cff3 = pm_u(i+1,j)*(wz(i+1,j,km,nstp) - wz(i  ,j,km,nstp))
+     &                     +   ( u(i+1,j,k  ,nstp) -  u(i+1,j,km,nstp))/Hz_loc
+            Hz_loc = 0.25*(Hz(i-1,j,k-1)+Hz(i,j,k-1)+Hz(i-1,j,k)+Hz(i,j,k))
+            cff4 = pm_u(i  ,j)*(wz(i  ,j,km,nstp) - wz(i-1,j,km,nstp))
+     &                     +   ( u(i  ,j,k  ,nstp) -  u(i  ,j,km,nstp))/Hz_loc
+            !
+            cff = cff + 0.25*( cff1*cff1+cff2*cff2+cff3*cff3+cff4*cff4 )
+            ! (dvdz+dwdy) term
+            !kp = k+1; IF( k==N ) kp = k
+            Hz_loc = 0.25*(Hz(i,j,k)+Hz(i,j+1,k)+Hz(i,j,kp)+Hz(i,j+1,kp))
+            cff1 = pn_v(i,j+1)*(wz(i,j+1,k  ,nstp) - wz(i  ,j,k  ,nstp))
+     &                     +   ( v(i,j+1,kp,nstp) -  v(i,j+1,k  ,nstp))/Hz_loc
+            Hz_loc = 0.25*(Hz(i,j-1,k)+Hz(i,j,k)+Hz(i,j-1,kp)+Hz(i,j,kp))
+            cff2 = pn_v(i  ,j)*(wz(i  ,j,k  ,nstp) - wz(i,j-1,k  ,nstp))
+     &                     +   ( v(i  ,j,kp,nstp) -  v(i  ,j,k  ,nstp))/Hz_loc
+            km = k-1; IF( k==1 ) km = k
+            Hz_loc = 0.25*(Hz(i,j,km)+Hz(i,j+1,km)+Hz(i,j,k)+Hz(i,j+1,k))
+            cff3 = pn_v(i,j+1)*(wz(i,j+1,km,nstp) - wz(i  ,j,km,nstp))
+     &                     +   ( v(i,j+1,k  ,nstp) -  v(i,j+1,km,nstp))/Hz_loc
+            Hz_loc = 0.25*(Hz(i,j-1,k-1)+Hz(i,j,k-1)+Hz(i,km,k)+Hz(i,j,k))
+            cff4 = pn_v(i  ,j)*(wz(i  ,j,km,nstp) - wz(i,j-1,km,nstp))
+     &                     +   ( v(i  ,j,k  ,nstp) -  v(i  ,j,km,nstp))/Hz_loc
+            !
+            cff = cff + 0.25*( cff1*cff1+cff2*cff2+cff3*cff3+cff4*cff4 )
+            !
+            Sprod3d(i,j,k) = Akv(i,j,k)*cff
+            !
+          ENDDO
+        ENDDO
+      ENDDO
+      !
+      ! Exchange computational margines and/or periodic boundaries:
+      !--------- ------------- -------- ------ -------- -----------
+      !
+# if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      CALL exchange_r3d_tile (Istr,Iend,Jstr,Jend,Sprod3d)
+# endif      
 #endif
 !$acc end kernels
 !

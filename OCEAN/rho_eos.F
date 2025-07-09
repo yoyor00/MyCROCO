@@ -120,6 +120,11 @@
       implicit none
 
 #  include "param.h"
+
+
+#  if defined NBQ_GRAV 
+#   include "nbq.h"
+#  endif
       integer Istr,Iend,Jstr,Jend, i,j,k
       real K_up(PRIVATE_1D_SCRATCH_ARRAY,0:N), K0,
      &     K_dw(PRIVATE_1D_SCRATCH_ARRAY,0:N), K1,K2,
@@ -162,7 +167,8 @@
 #  include "coupling.h"
 #  include "scalars.h"
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+     || defined TKE3D_MIXING
 #   include "mixing.h"
 #  endif
 #  ifdef SEDIMENT
@@ -261,7 +267,8 @@
 !-----------------------------------------------------------------------
 !
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+     || defined TKE3D_MIXING
 #   ifndef SPLIT_EOS
             dpth=z_w(i,j,N)-z_w(i,j,k)
             K_up(i,k)=K0+dpth*(K1+K2*dpth)
@@ -304,11 +311,33 @@
           enddo
         enddo
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+      || defined TKE3D_MIXING
         do i=istrR,iendR
           bvf(i,j,N)=bvf(i,j,N-1)
           bvf(i,j,0)=bvf(i,j,  1)
         enddo
+#  endif
+
+#  if defined NBQ_GRAV 
+        do i=IstrR,IendR
+           FC3D(i,j,1)=rho1(i,j,1)-1000.+rho0
+!$acc loop seq           
+           do k=2,N
+            FC3D(i,j,k)=
+     &	min(FC3D(i,j,k-1),rho1(i,j,k)-1000.+rho0)
+           enddo
+           DC3D(i,j,N)=rho1(i,j,N)-1000.+rho0
+           rho_nh(i,j,N)=rho1(i,j,N)-1000.+rho0
+     &           -0.5*(FC3D(i,j,N)+DC3D(i,j,N))
+!$acc loop seq           
+           do k=N-1,1,-1
+             DC3D(i,j,k)=
+     &		max(DC3D(i,j,k+1),rho1(i,j,k)-1000.+rho0)
+             rho_nh(i,j,k)=rho1(i,j,k)-1000.+rho0
+     &          -0.5*(FC3D(i,j,k)+DC3D(i,j,k))
+           enddo
+         enddo
 #  endif
 
 # else /* ! NONLIN_EOS */
@@ -338,7 +367,7 @@
 
 #  include "grid.h"
 #  include "ocean3d.h"
-#  ifdef NBQ_GRAV
+#  if defined NBQ_GRAV  
 #   include "nbq.h"
 #  endif
 #  include "coupling.h"
@@ -372,29 +401,56 @@
           enddo
         enddo
       enddo
+#  if defined CONVECT  && defined NBQ_GRAV 
+      if (iic==0) then
+      do j=JstrR,JendR
+        do k=1,N
+          do i=IstrR,IendR
+            rhoi_nh(i,j,k)=R0 
+     &                     -Tcoef*(rhoi_nh(i,j,k)-T0)
+     &                     +1000-rho0
+#  ifdef MASKING
+            rhoi_nh(i,j,k)=rhoi_nh(i,j,k)*rmask(i,j)
+#  endif
+          enddo
+        enddo
+      enddo
+      endif
+#  endif   
 !$acc end kernels      
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 #   ifdef THREE_GHOST_POINTS_TS
       call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             rho1(START_2D_ARRAY,1))
+#   if defined K3FAST
+      call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             rho(START_2D_ARRAY,1))
+#   endif
 #   else
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        rho1(START_2D_ARRAY,1))
+#   if defined K3FAST
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        rho(START_2D_ARRAY,1))
+#   endif
 #   endif
 #  endif
 !$acc kernels if(compute_on_device) default(present)      
       do j=JstrR,JendR
-#  ifdef NBQ_GRAV
+#  if defined NBQ_GRAV 
         do i=IstrR,IendR
-           rho_nh1(1)=rho1(i,j,1)
+           FC3D(i,j,1)=rho1(i,j,1)
+!$acc loop seq           
            do k=2,N
-            rho_nh1(k)=min(rho_nh1(k-1),rho1(i,j,k))
+            FC3D(i,j,k)=min(FC3D(i,j,k-1),rho1(i,j,k))
            enddo
-           rho_nh2(N)=rho1(i,j,N)
-           rho_nh(i,j,N)=rho1(i,j,N)-0.5*(rho_nh1(N)+rho_nh2(N))
+           DC3D(i,j,N)=rho1(i,j,N)
+           rho_nh(i,j,N)=
+     &		rho1(i,j,N)-0.5*(FC3D(i,j,N)+DC3D(i,j,N))
+!$acc loop seq           
            do k=N-1,1,-1
-             rho_nh2(k)=max(rho_nh2(k+1),rho1(i,j,k))
-             rho_nh(i,j,k)=rho1(i,j,k)-0.5*(rho_nh1(k)+rho_nh2(k))
+             DC3D(i,j,k)=max(DC3D(i,j,k+1),rho1(i,j,k))
+             rho_nh(i,j,k)=rho1(i,j,k)-0.5*(FC3D(i,j,k)+DC3D(i,j,k))
            enddo
          enddo
 #  endif
@@ -404,7 +460,8 @@
 !-----------------------------------------------------------------------
 !
 #  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+      || defined TKE3D_MIXING
         cff=g/rho0
         do k=1,N-1
           do i=IstrR,IendR
@@ -414,6 +471,10 @@
      &                                   *rmask(i,j)
 #   endif
           enddo
+        enddo
+        do i=IstrR,IendR
+          bvf(i,j,N) = bvf(i,j,N-1)
+          bvf(i,j,0) = bvf(i,j,  1)
         enddo
 #  endif
 # endif /* NONLIN_EOS */
@@ -570,9 +631,6 @@
 # endif /* VAR_RHO_2D */
 
       enddo    ! <-- j
-# ifdef NBQ_GRAV
-!$acc update device( rho_nh )
-# endif
 
 c #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
 c #   ifdef THREE_GHOST_POINTS_TS
