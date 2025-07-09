@@ -71,6 +71,9 @@
 ! "bustr" and "bvstr" [m^2/s^2] using an analytical expression.
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -110,6 +113,9 @@
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -186,6 +192,77 @@
       end
 # endif /* ANA_BTFLUX */
 #endif /* SOLVE3D && TRACERS */
+!======================================================================
+!                   subroutine ana_moving_bathy (MVB)
+!======================================================================
+!
+#ifdef ANA_MVB
+      subroutine ana_mvb (tile)
+      implicit none
+# include "param.h"
+      integer tile
+#ifdef  ALLOW_SINGLE_BLOCK_MODE
+C$    integer  trd, omp_get_thread_num
+#endif
+# include "compute_tile_bounds.h"
+      call ana_mvb_tile (Istr,Iend,Jstr,Jend)
+      return
+      end
+
+      subroutine ana_mvb_tile (Istr,Iend,Jstr,Jend)
+!
+!----------------------------------------------------------------------
+!  This routine sets bathymetry increment
+!  dh using an analytical expression:
+!  example for SEAMOUNT test case
+!----------------------------------------------------------------------
+!
+# ifdef RVTK_DEBUG
+      use debug
+      use my_functions
+# endif
+      implicit none
+# include "param.h"
+# include "grid.h"
+# include "forces.h"
+# include "scalars.h"
+      integer Istr,Iend,Jstr,Jend, i,j
+# ifdef mvb
+    integer it
+# endif
+      real cff,cff1
+      integer im1,jm1
+!
+# include "compute_extended_bounds.h"
+!
+#if defined EW_PERIODIC && !defined MPI
+# define IR_RANGE Istr,Iend
+# define IU_RANGE Istr,Iend
+#else
+# define IR_RANGE IstrR,IendR
+# define IU_RANGE Istr,IendR
+#endif
+#if defined NS_PERIODIC && !defined MPI
+# define JR_RANGE Jstr,Jend
+# define JV_RANGE Jstr,Jend
+#else
+# define JR_RANGE JstrR,JendR
+# define JV_RANGE Jstr,JendR
+#endif
+      time_mvb=time + dtfast*float(iif)
+#  ifdef MOVING_BATHY
+#     include "mvb.h"      
+!$acc kernels if(compute_on_device) default(present)
+       do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=h0_mvb(i,j)+dh_mvb(i,j,knew2)
+        enddo
+        enddo
+!$acc end kernels        
+#  endif    
+      return
+      end
+#endif /* ANA_MVB */ 
 !
 !======================================================================
 !                   subroutine ana_moving_bathy
@@ -193,6 +270,9 @@
 !
 #ifdef ANA_MORPHODYN
       subroutine ana_morphodyn (tile)
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
       integer tile
@@ -212,6 +292,9 @@ C$    integer  trd, omp_get_thread_num
 !  example for SEAMOUNT test case
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -259,6 +342,10 @@ C$    integer  trd, omp_get_thread_num
 !
 #if defined ANA_BSEDIM && defined BBL
       subroutine ana_bsedim (tile)
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
       integer tile
@@ -276,6 +363,10 @@ C$    integer  trd, omp_get_thread_num
 !  and density used in the bottom boundary formulation [kg/m^3].
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "bbl.h"
@@ -344,6 +435,10 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef AGRIF
       use Agrif_UTIL
+# endif
+
+# ifdef RVTK_DEBUG
+        use my_functions
 # endif
       implicit none
 # include "param.h"
@@ -517,6 +612,10 @@ C$    integer  trd, omp_get_thread_num
 !  flux "srflx" (degC m/s) using an analytical expression.
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -567,6 +666,11 @@ C$    integer  trd, omp_get_thread_num
 !
 #if defined ANA_SSH && defined ZCLIMATOLOGY
       subroutine ana_ssh (tile)
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
       integer tile
@@ -584,6 +688,11 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical sea surface height climatology [m].
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -620,6 +729,7 @@ C$    integer  trd, omp_get_thread_num
 !
 ! Remove mean sea level (mssh)
 !
+!$acc kernels if(compute_on_device) default(present)
       mssh=QuadZero
       area=QuadZero
       do j=Jstr,Jend
@@ -630,7 +740,9 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
       mssh=mssh/area
+!$acc end kernels
 #  ifdef MPI
+    OPENACC see zonavg
       call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
      &                allmssh,1,MPI_DOUBLE_PRECISION,
      &                          MPI_COMM_WORLD,ierr)
@@ -645,6 +757,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
       mssh=mssh/area
 #  endif
+!$acc kernels if(compute_on_device) default(present)
       mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
       omega1=2.*pi/(14.*86400.)
       omega2=2.*pi/(12.*3600. )
@@ -660,8 +773,10 @@ C$    integer  trd, omp_get_thread_num
      &                    +time*surelev/31536000.
         enddo
       enddo
+!$acc end kernels
 
 # elif (defined TIDAL_FLAT  || defined ESTUARY ) && defined ANA_TIDES
+!$acc kernels if(compute_on_device) default(present)
       omega=2.*pi/(12.0*3600)
       ETA0=2.0
       do j=JstrR,JendR
@@ -669,7 +784,9 @@ C$    integer  trd, omp_get_thread_num
           ssh(i,j)=ETA0*sin(omega*time)
         enddo
       enddo
+!$acc end kernels
 #  if defined ESTUARY_TIDE
+!$acc kernels if(compute_on_device) default(present)
       ! adding another wave to modulate tide
       omega=2.*pi/((24.0+50./60.)/2.*3600)
       ETA0=2.0
@@ -678,9 +795,11 @@ C$    integer  trd, omp_get_thread_num
           ssh(i,j) = ssh(i,j) + ETA0*sin(omega*time)
         enddo
       enddo
+!$acc end kernels
 #  endif
 
 # elif defined INTERNAL || defined ANA_TIDES
+!$acc kernels if(compute_on_device) default(present)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -690,25 +809,31 @@ C$    integer  trd, omp_get_thread_num
           ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
         enddo
       enddo
+!$acc end kernels
 
 # elif defined DUNE
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
         enddo
       enddo
+!$acc end kernels
 # else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           ssh(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 # endif
 
 # ifdef WET_DRY
 !
 !  Check that min depth > Dcrit
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           if (ssh(i,j) .lt. Dcrit(i,j)-h(i,j)) then
@@ -716,6 +841,7 @@ C$    integer  trd, omp_get_thread_num
           endif
         enddo
       enddo
+!$acc end kernels
 # endif
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
@@ -743,6 +869,10 @@ C$    integer  trd, omp_get_thread_num
 !       Q_model ~ Q + dQdSST * (T_model - SST)
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -821,6 +951,10 @@ C$    integer  trd, omp_get_thread_num
 !
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -830,11 +964,13 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
-          sss(i,j)=???
+          sss(i,j)=35.
         enddo
       enddo
+!$acc end kernels      
       return
       end
 #endif /* SALINITY && SFLX_CORR && ANA_SSS */
@@ -854,6 +990,10 @@ C$    integer  trd, omp_get_thread_num
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -877,6 +1017,8 @@ c
             stflx(i,j,itemp)= - 100./(rho0*Cp)
 #   elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
             stflx(i,j,itemp)= srflx(i,j) - 75./(rho0*Cp)
+#   elif defined FC500
+            stflx(i,j,itemp)= - 500./(rho0*Cp)
 #   else
             stflx(i,j,itemp)=0.
 #   endif
@@ -958,6 +1100,11 @@ C$    integer  trd, omp_get_thread_num
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
 # endif
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -984,6 +1131,7 @@ C$    integer  trd, omp_get_thread_num
 #  elif defined IGW
       cff=((2.e-3)**2)/g
       rhom=1027.037885
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1012,7 +1160,9 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1025,6 +1175,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels      
 #  endif /* JET */
 # endif
 
@@ -1367,6 +1518,11 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical momentum climatology fields.
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1375,7 +1531,7 @@ C$    integer  trd, omp_get_thread_num
 # include "climat.h"
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
-# if defined INTERNAL || defined ANA_TIDES
+# if defined INTERNAL || defined ANA_TIDES || defined ISOLITON_DJL
       real U0,omega,kwave,V0
 # endif
       real ramp
@@ -1400,6 +1556,7 @@ C$    integer  trd, omp_get_thread_num
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
 #  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT && !defined ESTUARY)
+!$acc kernels if(compute_on_device) default(present)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -1414,11 +1571,37 @@ C$    integer  trd, omp_get_thread_num
           vbclm(i,j)=V0*cos(omega*time-kwave*0.5*(xr(i,j)+xr(i,j-1)))
         enddo
       enddo
+!$acc end kernels
+#  elif defined ISOLITON_DJL
+!$acc kernels if(compute_on_device) default(present)
+      U0=-0.4
+      omega=2.*pi/(12.4*3600)
+      kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
+      V0=f(1,1)*U0/omega
+      do j=JU_RANGE
+        do i=IU_RANGE
+          !if (12.4*3600 < time .and. time < 2*12.4*3600) then
+          if (.false.) then   
+          ubclm(i,j)=min(U0*
+     &    sin(omega*time-kwave*0.5*(xr(i,j)+xr(i-1,j))),0.0)
+             MPI_master_only print*, 'tide'
+          else
+             ubclm(i,j)=0.0
+          endif 
+        enddo
+      enddo
+      do j=JV_RANGE
+        do i=IV_RANGE
+          vbclm(i,j)=0.0
+        enddo
+      enddo
+!$acc end kernels
 #  elif defined JET
 !
 !       --> climatology computed in ana_initial
 !
 #  elif defined DUNE
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
 #   ifdef ANA_DUNE
@@ -1429,13 +1612,16 @@ C$    integer  trd, omp_get_thread_num
           vbclm(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           ubclm(i,j)=0.
           vbclm(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 #  endif
 #  if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  ubclm)
@@ -1449,6 +1635,7 @@ C$    integer  trd, omp_get_thread_num
 !       --> climatology computed in ana_initial
 !
 #  else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -1457,6 +1644,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
       enddo
+!$acc end kernels
 #  endif
 #  if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  uclm)
@@ -1494,6 +1682,10 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical NBQ climatology fields.
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1521,10 +1713,12 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 
-# if defined NBQ && (defined NBQCLIMATOLOGY || \
+# if (defined NBQ || defined K3FAST) \
+                 && (defined NBQCLIMATOLOGY || \
                     (defined AGRIF && !defined NBQ_FRC_BRY)) \
                  && (defined M3CLIMATOLOGY || \
                     (defined AGRIF && !defined M3_FRC_BRY))
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -1536,7 +1730,7 @@ C$    integer  trd, omp_get_thread_num
             vnbqclm(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nrhs)
           enddo
         enddo
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
         do j=JstrR,JendR
           do i=IstrR,IendR
             wnbqclm(i,j,k)=0.
@@ -1546,6 +1740,7 @@ C$    integer  trd, omp_get_thread_num
 #  endif
       enddo
 # else
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -1557,7 +1752,7 @@ C$    integer  trd, omp_get_thread_num
             vnbqclm(i,j,k)=0.
           enddo
         enddo
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
         do j=JstrR,JendR
           do i=IstrR,IendR
             wnbqclm(i,j,k)=0.
@@ -1567,11 +1762,12 @@ C$    integer  trd, omp_get_thread_num
 #  endif
       enddo
 # endif
+!$acc end kernels
 
 # if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  unbqclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vnbqclm)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  wnbqclm)
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  rnbqclm)
 #  endif
@@ -1608,6 +1804,10 @@ C$    integer  trd, omp_get_thread_num
 !  and period used in the bottom boundary layer formulation.
 !----------------------------------------------------------------------
 !
+
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
       real wamp,wdir,wprd,
      &     ho,khd,kh,kw,kr,ks,wday,ramp,cff,co,gamw,
@@ -1641,6 +1841,7 @@ C$    integer  trd, omp_get_thread_num
       wdir = Dwave(i,j)
       wprd = Pwave(i,j)
       cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
+      cdir = wdir*deg2rad   ! wave direction (rad)
       ho=h(1,1)             ! offshore depth
 #  ifdef OBC_EAST
 #   ifdef MPI
@@ -1771,6 +1972,10 @@ C$    integer  trd, omp_get_thread_num
 !
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
+  
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -2001,6 +2206,9 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       subroutine ana_psource_tile (Istr,Iend,Jstr,Jend)
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -2009,7 +2217,7 @@ C$    integer  trd, omp_get_thread_num
 # include "grid.h"
 !
       integer is, k, Istr,Iend,Jstr,Jend, i,j,itrc,ised
-      real    cff, cff1, cff2, ramp
+      real    cff, cff1, cff2, ramp, Hs
       real    xno3,temp,SiO4,zsrc
 # include "compute_auxiliary_bounds.h"
 
@@ -2619,6 +2827,9 @@ C$    integer  trd, omp_get_thread_num
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
 # endif
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    eps
@@ -3100,6 +3311,9 @@ C$    integer  trd, omp_get_thread_num
 !  Set analytical boundary forcing
 !----------------------------------------------------------------------
 !
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
 # include "param.h"
@@ -3127,6 +3341,7 @@ C$    integer  trd, omp_get_thread_num
 #  define JV_RANGE Jstr,JendR
 # endif
 
+!$acc kernels if(compute_on_device) default(present)
 # ifdef OBC_WEST
       if (WESTERN_EDGE) then
         do k=1,N
@@ -3138,7 +3353,7 @@ C$    integer  trd, omp_get_thread_num
             vnbqbry_west(j,k)=0.5*(Hz(0,j,k)+Hz(0,j-1,k))
      &                                   *v(0,j,k,nrhs)
           enddo
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
           do j=IstrR,IendR
             wnbqbry_west(j,k)=0.
             rnbqbry_west(j,k)=0.
@@ -3154,7 +3369,7 @@ C$    integer  trd, omp_get_thread_num
           do j=JU_RANGE
             unbqbry_east(j,k)=0.5*(Hz(IendR,j,k)+Hz(IendR-1,j,k))
      &                                         *u(IendR,j,k,nrhs)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
             wnbqbry_east(j,k)=0.
             rnbqbry_east(j,k)=0.
 #  endif
@@ -3173,7 +3388,7 @@ C$    integer  trd, omp_get_thread_num
           do i=IV_RANGE
             vnbqbry_south(i,k)=0.5*(Hz(i,0,k)+Hz(i,1,k))
      &                                    *v(i,1,k,nrhs)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
             wnbqbry_south(i,k)=0.
             rnbqbry_south(i,k)=0.
 #  endif
@@ -3192,7 +3407,7 @@ C$    integer  trd, omp_get_thread_num
           do i=IV_RANGE
             vnbqbry_north(i,k)=0.5*(Hz(i,JendR,k)+Hz(i,JendR-1,k))
      &                                          *v(i,JendR,k,nrhs)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
             wnbqbry_north(i,k)=0.
             rnbqbry_north(i,k)=0.
 #  endif
@@ -3204,7 +3419,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       endif
 # endif /* OBC_NORTH */
-
+!$acc end kernels
       return
       end
 #endif /* defined NBQ_FRC_BRY */
@@ -3232,6 +3447,9 @@ C$    integer  trd, omp_get_thread_num
       end
 !
       subroutine ana_bry_bio_tile (Istr,Iend,Jstr,Jend)
+# ifdef RVTK_DEBUG
+        use my_functions
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    xno3,temp,SiO4,zbry
