@@ -6,7 +6,6 @@ module submassbalance
     USE module_substance
     USE comsubstance
 #ifdef MUSTANG
-    USE module_MUSTANG
     USE comMUSTANG
 #endif
 !======================================================================
