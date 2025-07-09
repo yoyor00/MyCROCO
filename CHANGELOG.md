@@ -8,6 +8,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #361 : Integration of slight reformulation of zooplankton grazing 
   according to prey size done in PISCES standard version (#340) into quota version
 
+- BENCH : Add performance tracking (Issue #378)
+
 ### Fixed
 
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
@@ -52,11 +54,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Other
 
+- remove files parameter.passivetrc.pisces.h, not used (Issue #387)
+
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Le Gac, P. Marchesiello 
+  R. Benshila, M. Caillaud, G.Cambon, S. Le Gac, P. Marchesiello, R. Person
 
 - New contributors : 
   M. Plus, M. Schreiber 
