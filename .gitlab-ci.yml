@@ -427,7 +427,7 @@ track_perf:
     paths:
       - BENCH/results
     when: always
-    expire_in: 1 week
+    expire_in: 1 month
     reports:
       junit: BENCH/results/track-perf-host_ci/junit_report.xml
   rules:
