@@ -51,6 +51,9 @@ C$    integer omp_get_thread_num
 # ifdef AGRIF
       use Agrif_Util
 # endif
+# ifdef RVTK_DEBUG
+      use my_functions
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
 # include "param.h"
@@ -82,6 +85,9 @@ C$    integer omp_get_thread_num
 # endif
 # ifdef INTERNAL
       real cff1, ridge_width, ridge_height
+# endif
+# ifdef WEDGE3D
+      real rloc,thetaloc
 # endif
 # ifdef RIP
       real h0,per,xx,yy,xs,db,alpha,lambda,eps
@@ -148,9 +154,14 @@ C$    integer omp_get_thread_num
                      depth=256.
                      f0=0.
                      beta=0.
+# elif defined CANON2D
+                     depth=2.
+                     f0=0.
+                     beta=0.
 # elif defined GRAV_ADJ
-#  ifdef NBQ
-                     depth=0.3
+#  if defined NBQ || defined K3FAST
+!                    depth=0.3
+                     depth=24.
 #  else
                      depth=20.
 #  endif
@@ -159,6 +170,10 @@ C$    integer omp_get_thread_num
 # elif defined ISOLITON
                      depth=0.29 ! Horn et al. (2001)
                      f0=0.
+                     beta=0.
+# elif defined ISOLITON_DJL
+                     depth=600.
+                     f0=1.e-4
                      beta=0.
 # elif defined ACOUSTIC
                      depth=128.
@@ -242,6 +257,28 @@ C$    integer omp_get_thread_num
                      depth=10.
                      f0=0.
                      beta=0.
+# elif defined PEKERIS
+#  if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
+                     depth=100.
+                     f0=0.
+                     beta=0.
+#  elif defined PEKERIS_ACOUS3
+                     depth=5000.
+                     f0=0.
+                     beta=0.
+#  endif   
+# elif defined WEDGE3D
+                     depth=200.
+                     f0=0.
+                     beta=0.
+# elif defined AgAc
+                     depth=80.
+                     f0=0.
+                     beta=0.
+# elif defined CONVECT
+                     depth=32.
+                     f0=0.
+                     beta=0.0
 # elif defined MOVING_BATHY
                      depth=0.394
                      f0=0.
@@ -306,18 +343,33 @@ C$    integer omp_get_thread_num
 # elif defined KH_INST
                      Length_XI =256.0
                      Length_ETA=Length_ETA_ISO_GRID
+# elif defined CANON2D_KHI
+                     Length_XI =2.
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined CANON2D_HWI
+                     Length_XI =2.*pi/(4./3.)
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined CANON2D_TCI
+                     Length_XI =2.*pi/0.8
+                     Length_ETA=Length_ETA_ISO_GRID
 # elif defined ACOUSTIC
                      Length_XI =128.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined GRAV_ADJ
-#  ifdef NBQ
-                     Length_XI =3.0
+#  if defined NBQ || defined K3FAST
+!                    Length_XI =3.0
+                     Length_XI =300.
+!                    Length_ETA=Length_ETA_ISO_GRID
+                     Length_ETA=10. 
 #  else
                      Length_XI =64.0e+3
 #  endif
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined ISOLITON
                      Length_XI =6.0
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined ISOLITON_DJL
+                     Length_XI =25.e+3
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined INNERSHELF
                      Length_XI =200.0e+3
@@ -378,8 +430,22 @@ C$    integer omp_get_thread_num
                      Length_ETA=10.0
                      Length_XI =Length_XI_ISO_GRID
 #  endif
+# elif defined PEKERIS
+#  if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
+                     Length_XI =1000.0
+                     Length_ETA=Length_ETA_ISO_GRID
+#  elif defined PEKERIS_ACOUS3
+                     Length_XI =100000.0
+                     Length_ETA=Length_ETA_ISO_GRID
+#  endif
+# elif defined WEDGE3D
+                     Length_XI =6000.0
+                     Length_ETA=27000.0
+# elif defined AgAc
+                     Length_XI =80.0
+                     Length_ETA=80.0
 # elif defined MOVING_BATHY
-                     Length_XI =4.0
+                     Length_XI =0.4
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined DUNE
 #  ifdef ANA_DUNE
@@ -409,6 +475,9 @@ C$    integer omp_get_thread_num
 # elif defined KILPATRICK
                      Length_ETA= 18.E+3
                      Length_XI = 3600.E+3
+# elif defined CONVECT
+                     Length_XI =32.0
+                     Length_ETA=Length_ETA_ISO_GRID
 # else
                      Length_XI =???
                      Length_ETA=???
@@ -534,13 +603,15 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
                    || defined SOLITON || defined ISOLITON \
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
-                   || defined JET
+                   || defined JET      || defined CONVECT \
+                   || defined CANON2D
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
         enddo
       enddo
+!$acc end kernels
 
 # elif defined CANYON
       do j=JstrR,JendR
@@ -550,6 +621,22 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 
+# elif defined ISOLITON_DJL
+      cff=(1./5.e3) !(1./5.e3)**2
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=depth
+          !h(i,j)=depth*(1-0.4*exp(-cff*((xr(i,j)-0.2*xl)**2)))
+          !h(i,j)=depth*(1-0.7*exp(-cff*((xr(i,j)-0.2*xl)**2)))
+          !h(i,j)=depth/3 + 2*depth/3*(1-tanh(cff*(xr(i,j) - 0.75*xl)))!shelf
+          !if (xr(i,j) < 0.75*xl) then 
+          !   h(i,j) = depth
+          !else 
+          !   h(i,j) = depth/6 
+          !endif 
+        enddo
+      enddo
+      
 # elif defined INNERSHELF
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -848,6 +935,7 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
         enddo
       enddo
 #  else
+!$acc kernels if(compute_on_device) default(present)
 !
 ! Weir et al. 2011 after Lippmann et al. 1999 (idealization of Duck beach)
 !
@@ -875,6 +963,7 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
           h(i,j)=(1+per)*h0!-0.8;
         enddo
       enddo
+!$acc end kernels
 #  endif
 
 # elif defined FLASH_RIP
@@ -910,6 +999,7 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
       enddo
 
 # elif defined THACKER
+!$acc kernels if(compute_on_device) default(present)
       cff=80.e3
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -921,20 +1011,47 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
 #  endif
         enddo
       enddo
+!$acc end kernels
 
-# elif defined TANK
+# elif defined TANK || defined PEKERIS
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
         enddo
       enddo
+!$acc end kernels
+
+# elif defined WEDGE3D
+!$acc kernels if(compute_on_device) default(present)
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          !h(i,j)=depth
+          rloc = sqrt((xr(i,j)-1000)**2+(yr(i,j)-1000)**2)
+          thetaloc = ATAN2(xr(i,j)-1000,yr(i,j)-1000)-3.14/2
+          h(i,j)=max(200*(1-rloc*cos(thetaloc)/4000),40.)
+        enddo
+      enddo
+!$acc end kernels
+
+# elif defined AgAc 
+!$acc kernels if(compute_on_device) default(present)
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          h(i,j)=depth
+        enddo
+      enddo
+!$acc end kernels
+
 # elif defined MOVING_BATHY
+!$acc kernels if(compute_on_device) default(present)
       cff=1./(0.03686)**2
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth-0.1*exp(-cff*xr(i,j)**2)
         enddo
       enddo
+!$acc end kernels
 
 # elif defined DUNE
 #  ifdef ANA_DUNE
@@ -1131,11 +1248,13 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
 !----------------------------------------------------------------------
 ! initialisation of z0b in case of analytical cases
 !----------------------------------------------------------------------
+!$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           zob(i,j)=zobt
         end do
       end do
+!$acc end kernels
 
 # ifdef SEAGRASS
       do j=JstrR,JendR
@@ -1236,7 +1355,7 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
 #  endif /* SEAGRASS */
 
 # endif /* MASKING */
-!$acc end kernels
+!!$acc end kernels
 !
 #else
       subroutine ana_grid_empty
