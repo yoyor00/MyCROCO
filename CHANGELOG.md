@@ -48,11 +48,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Other
 
+- remove files parameter.passivetrc.pisces.h, not used (Issue #387)
+
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Le Gac, P. Marchesiello 
+  R. Benshila, M. Caillaud, G.Cambon, S. Le Gac, P. Marchesiello, R. Person
 
 - New contributors : 
   M. Plus, M. Schreiber 
