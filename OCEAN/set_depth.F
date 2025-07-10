@@ -49,10 +49,6 @@ C$    integer omp_get_thread_num
 # ifdef M3FAST
 #  include "nbq.h"
 # endif
-# ifdef PENALIZATION
-# else
-#  include "penalisation.h"
-# endif
       real eps
       parameter (eps=1.e-14)
 !

@@ -93,6 +93,8 @@
 # define OBC_WEST
 # define OBC_NORTH
 # define OBC_SOUTH
+                      /* Bathy penalization */
+# undef  PENALIZATION
                       /* Applications */
 # undef  BIOLOGY
 # undef  FLOATS
