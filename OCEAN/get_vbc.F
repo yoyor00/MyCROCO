@@ -214,6 +214,12 @@
 #include "mpi_cpl.h"
 #include "sediment.h"
 #include "bbl.h"
+#if defined PENALIZATION
+# include "penalization.h"
+# define KBOTTOM last_index(i,j)+1
+#else
+# define KBOTTOM 1
+#endif
       integer i,j,is, Istr,Iend,Jstr,Jend
       integer ISTRm,ISTRp,IENDp,JSTRm,JSTRp,JENDp
       real cff,cff1, Umag,Ucur,Vcur,Utur,znots
@@ -508,7 +514,12 @@
       if (maxzob.ne.0.) then
         do j=JstrV-1,Jend     !! for currents
           do i=IstrU-1,Iend
+#   ifdef PENALIZATION
+            cff=vonKar /
+     &          LOG((z_r(i,j,KBOTTOM)+h_pena_target(i,j))/Zob(i,j))
+#   else
             cff=vonKar/LOG((z_r(i,j,1)+h(i,j))/Zob(i,j))
+#   endif
             CDRAG(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
           enddo
         enddo

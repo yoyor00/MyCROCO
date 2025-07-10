@@ -101,6 +101,12 @@
 # include "param.h"
 # include "mixing.h"
 # include "scalars.h"
+# if defined PENALIZATION
+#  include "penalization.h"
+#  define KBOTTOM last_index(i,j)
+# else
+#  define KBOTTOM 0
+# endif
 
       ! Local integers
       INTEGER         ::   Istr, Iend, Jstr, Jend
@@ -685,7 +691,7 @@
                   RHI1 = RHI1 + dt*flux_bot
                   RHINM1 = RHINM1 + dt*flux_top
                   tke_new(i,j,N) = trb_sfc
-                  tke_new(i,j,0) = trb_bot
+                  tke_new(i,j,KBOTTOM) = trb_bot
                ENDDO
             ELSE
                DO i=imin,imax
@@ -716,10 +722,11 @@
 # else
                   z0_b = MAX( Zob(i,j) , Zobmin )
 # endif
-                  cff = 0.5*(tke_new(i,j,1)+tke_new(i,j,0))
+                  cff = 0.5*(tke_new(i,j,KBOTTOM+1)
+     &                      +tke_new(i,j,KBOTTOM))
                   lgthsc = vonKar*(0.5*Hz(i,j,1)+z0_b)
                   trb_bot = MAX(gls_min,(cm0**rp)*(lgthsc**rn)
-     &                                   *(tke_new(i,j,0)**rm))
+     &                                   *(tke_new(i,j,KBOTTOM)**rm))
                   flux_bot =-rn*cm0**(rp+1.)
      &                          *vonKar*OneOverSig(igls)
      &                          *(cff**(rm+0.5))*(lgthsc**rn)
@@ -727,7 +734,7 @@
                   RHI1 = RHI1 + dt*flux_bot
                   RHINM1 = RHINM1 + dt*flux_top
                   gls_new(i,j,N) = trb_sfc
-                  gls_new(i,j,0) = trb_bot
+                  gls_new(i,j,KBOTTOM) = trb_bot
                ENDDO
             ENDIF
 
@@ -824,6 +831,11 @@
       !--------------------------------------------------
          DO k=1,N-1
             DO i=istr,iend
+# ifdef PENALIZATION
+               cff1=1.-0.5*(pena_r(i,j,k)+pena_r(i,j,k+1))
+               trb(i,j,k,nnew,itke)=trb(i,j,k,nnew,itke)*cff1
+               trb(i,j,k,nnew,igls)=trb(i,j,k,nnew,itke)*cff1
+# endif
                !
                ! Galperin limitation : l <= l_lim
                L_lim = galp * sqrt( 2.* trb(i,j,k,nnew,itke)) /
@@ -871,13 +883,22 @@
                ! Finalize the computation of Akv and Akt
                cff = trb( i,j,k,nnew,itke )**2 / epsilon
                Akv(i,j,k) = MAX( cff*c_mu , nuwm ) SWITCH rmask(i,j)
+# ifdef PENALIZATION
+     &                                                         *cff1
+# endif
 # ifdef TEMPERATURE
                Akt(i,j,k,itemp)= MAX( cff*c_mu_prim , nuws )
      &                                             SWITCH rmask(i,j)
 # endif
+# ifdef PENALIZATION
+     &                                                         *cff1
+# endif
 # ifdef SALINITY
                Akt(i,j,k,isalt)= MAX( cff*c_mu_prim , nuws )
      &                                             SWITCH rmask(i,j)
+# endif
+# ifdef PENALIZATION
+     &                                                         *cff1
 # endif
                !
                ! Computate and store Lscale and epsilon

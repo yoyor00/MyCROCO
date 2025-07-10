@@ -872,7 +872,7 @@ C$OMP END MASTER
 !
 ! Update main grid parameters
 !
-        call set_depth_tile(Istr,Iend,Jstr,Jend,1)
+        call set_depth_tile(Istr,Iend,Jstr,Jend)
 #  ifdef POROSITY
         call set_depth_porosity_tile(Istr,Iend,Jstr,Jend)
 #  endif
@@ -3929,7 +3929,7 @@ C$OMP END MASTER
 !
 !  Diagnostic evaluation from zeta(m+1)
 !
-        call set_depth_tile(Istr,Iend,Jstr,Jend,1)
+        call set_depth_tile(Istr,Iend,Jstr,Jend)
 
 #  ifdef POROSITY
         call set_depth_porosity_tile(Istr,Iend,Jstr,Jend)

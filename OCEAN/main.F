@@ -331,7 +331,7 @@ CR      write(*,*) ' -8' MYID
 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile,0)
+        call set_depth (tile)
       enddo
 
 CR      write(*,*) ' -7' MYID
@@ -373,7 +373,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 C$OMP BARRIER
 # ifdef SOLVE3D
         do tile=0,NSUB_X*NSUB_E-1
-          call set_depth (tile,1)       !<-- needed to initialize Hz_bak
+          call set_depth (tile)       !<-- needed to initialize Hz_bak
         enddo
 C$OMP BARRIER
 # endif
@@ -519,7 +519,7 @@ CR      write(*,*)  ' -5' MYID0
 #if defined SOLVE3D || defined WET_DRY
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile,1)
+        call set_depth (tile)
 #  ifdef POROSITY
         call set_depth_porosity (tile)
 #  endif
@@ -837,7 +837,7 @@ C$OMP END MASTER
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_depth (tile,1)
+        call set_depth (tile)
 #  ifdef POROSITY
         call set_depth_porosity (tile)
 #  endif

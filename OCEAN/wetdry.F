@@ -37,6 +37,13 @@
 # else
 #  define SWITCH !
 # endif
+# ifdef PENALIZATION
+#  define HTRUE h
+# else
+#  include "penalisation.h"
+!#  define HTRUE h_pena_target
+#  define HTRUE hgrid
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -58,7 +65,7 @@
 # ifdef MASKING
             wetdry(i,j)=wetdry(i,j)*rmask(i,j)
 # endif
-            IF ((zeta(i,j,knew)+h(i,j)).le.Dcrit(i,j)+eps) THEN
+            IF ((zeta(i,j,knew)+HTRUE(i,j)).le.Dcrit(i,j)+eps) THEN
               wetdry(i,j)=0.
             END IF
 # if defined AGRIF && defined AGRIF_2WAY
@@ -372,7 +379,7 @@ C$OMP BARRIER
           do j=j1,j2
           do i=i1,i2
             if (wetdry(i,j) == 1) then
-            zeta(i,j,knew) = max(zeta(i,j,knew),Dcrit(i,j)+eps-h(i,j))
+            zeta(i,j,knew) = max(zeta(i,j,knew),Dcrit(i,j)+eps-HTRUE(i,j))
             endif
           enddo
           enddo
@@ -421,5 +428,6 @@ C$OMP BARRIER
       end
 # endif
 
+# undef HTRUE
 #endif
 

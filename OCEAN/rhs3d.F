@@ -1915,6 +1915,15 @@
           enddo
         enddo
         if (j.ge.JstrV) then
+# if defined PERMEABILITY
+          if (nnew == 3) then
+            do k=1,N
+              do i=Istr,Iend
+                rv(i,j,k)=rv(i,j,k)*(1.-pena_v(i,j,k))
+              enddo
+            enddo
+          endif
+# endif
           do i=Istr,Iend
             rvfrc(i,j)=rv(i,j,1)
 # ifndef BODYFORCE

@@ -483,6 +483,9 @@
 # include "mixing.h"
 # include "ocean3d.h"
 # include "scalars.h"
+# if defined PENALIZATION
+#  include "penalization.h"
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -585,11 +588,17 @@
         do j=Jstr-1,Jend+1
           do i=IstrU-1,Iend+1
             diff3d_u(i,j,k)=horcon*abs(u(i,j,k,nrhs))*om_u(i,j)**3
+#  ifdef PENALIZATION
+     &                                          *(1-pena_u(i,j,k)) 
+#  endif
           enddo
         enddo
         do j=JstrV-1,Jend+1
           do i=Istr-1,Iend+1
             diff3d_v(i,j,k)=horcon*abs(v(i,j,k,nrhs))*on_v(i,j)**3
+#  ifdef PENALIZATION
+     &                                          *(1-pena_v(i,j,k))
+#  endif
           enddo
         enddo
       enddo
