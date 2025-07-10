@@ -38,11 +38,9 @@
 #  define SWITCH !
 # endif
 # ifdef PENALIZATION
-#  define HTRUE h
-# else
-#  include "penalisation.h"
-!#  define HTRUE h_pena_target
 #  define HTRUE hgrid
+# else
+#  define HTRUE h
 # endif
 !
 # include "compute_auxiliary_bounds.h"
