@@ -54,6 +54,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Other
 
+- remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
 - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
 
 
