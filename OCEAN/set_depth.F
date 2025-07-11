@@ -64,7 +64,12 @@ C$    integer omp_get_thread_num
 # else
 #  define J_RANGE JstrR,JendR
 # endif
-
+!
+# ifdef PENALIZATION
+#  define HGRID hgrid
+# else
+#  define HGRID h
+# endif
 !
 !----------------------------------------------------------------------
 !  Initialization of free surface zeta arrays and wet/dry mask
@@ -102,7 +107,9 @@ C$    integer omp_get_thread_num
 #  endif
             Zt_avg1(i,j)=zeta(i,j,knew)  ! knew=1 unless modified
                                          ! in ana_initial (JET)
+#  ifdef PENALIZATION
             hgrid(i,j)=h(i,j)            ! save for penalization
+#  endif
 # endif /* SOLVE3D */
           enddo
         enddo
@@ -119,7 +126,9 @@ C$    integer omp_get_thread_num
 !$acc end kernels
 # if defined BD_EXCHANGE
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hinv)
+#  ifdef PENALIZATION
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, hgrid)
+#  endif
 #  ifdef WET_DRY
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, h)
         call exchange_r2d_tile (Istr,Iend,Jstr,Jend, wetdry)
@@ -153,7 +162,7 @@ C$    integer omp_get_thread_num
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent
         do i=I_RANGE            !!!          with omega.F
-          z_w(i,j,0)=-hgrid(i,j)
+          z_w(i,j,0)=-HGRID(i,j)
         enddo
 
         do k=1,N,+1
@@ -178,17 +187,17 @@ C$    integer omp_get_thread_num
             zetatmp=zetatmp*rmask(i,j)
 #  endif
 #  ifdef NEW_S_COORD
-            htmp=abs(hgrid(i,j))
+            htmp=abs(HGRID(i,j))
 #  else
-            htmp=hgrid(i,j)
+            htmp=HGRID(i,j)
 #  endif
             z_w0=cff_w+cff1_w*htmp
             z_r0=cff_r+cff1_r*htmp
 #  ifdef NEW_S_COORD
-            z_w(i,j,k)=z_w0*hgrid(i,j)*hinv(i,j)+zetatmp
-     &                                       *(1.+z_w0*hinv(i,j))
-            z_r(i,j,k)=z_r0*hgrid(i,j)*hinv(i,j)+zetatmp
-     &                                       *(1.+z_r0*hinv(i,j))
+            z_w(i,j,k)=z_w0*HGRID(i,j)*hinv(i,j)+zetatmp
+     &                              *(1.+z_w0*hinv(i,j))
+            z_r(i,j,k)=z_r0*HGRID(i,j)*hinv(i,j)+zetatmp
+     &                              *(1.+z_r0*hinv(i,j))
 #  else
             z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
@@ -255,6 +264,7 @@ C$    integer omp_get_thread_num
 #  endif
       return
       end
+#  undef HGRID
 
 #  ifdef MORPHODYN
 !======================================================================

@@ -1142,12 +1142,11 @@ C$OMP BARRIER
 #  endif
 
 #  ifdef BEDLOAD_SHALLOW_LIMIT
-            cff=cff/max(1.,(0.5/(z_w(i,j,N)+h(i,j,0)
+            cff=cff/max(1.,(0.5/(z_w(i,j,N)+h(i,j)
 #   ifdef WET_DRY
-     &                           -Dcrit(i,j)+eps
+     &                             -Dcrit(i,j)+eps
 #   endif
-     &            )**2))
-     &
+     &                                      )**2))
 #  endif
 
             bed_mass(i,j,1,nnew,ised)=MAX(bed_mass(i,j,1,nstp,ised)-
