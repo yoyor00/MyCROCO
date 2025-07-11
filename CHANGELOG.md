@@ -8,6 +8,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #361 : Integration of slight reformulation of zooplankton grazing 
   according to prey size done in PISCES standard version (#340) into quota version
 
+- BENCH : Add performance tracking (Issue #378)
+
 ### Fixed
 
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
@@ -21,6 +23,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - DIAGNOSTICS_EDDY & not XIOS : fix double comma in ncscrum.h (Issue #362)
 
+- MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
+  water concentration and last index of current was wrong (Issue #349)
 
 ### Changed
 
@@ -30,6 +34,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   cleaning exit status, see !172 and Issue#176)
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
+- MUSTANG : review lateral erosion feature (Issue #349)
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
@@ -38,21 +43,25 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Removed
 
+
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
 - MUSTANG : 
+  - remove key_MUSTANG_lateralerosion replace by a boolean in 
+    namelist (Issue #349)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
 
 ### Other
 
 - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
+- remove files parameter.passivetrc.pisces.h, not used (Issue #387)
 
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Le Gac, P. Marchesiello 
+  R. Benshila, M. Caillaud, G.Cambon, S. Le Gac, P. Marchesiello, R. Person
 
 - New contributors : 
   M. Plus, M. Schreiber 

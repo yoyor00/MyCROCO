@@ -6,6 +6,7 @@
 
 ##########################################################
 import os
+import shutil
 import sys
 import json
 from typing import Union
@@ -13,7 +14,7 @@ from .config import Config
 from .croco import Croco
 from .messaging import Messaging
 from .system import gen_system_info
-from .plotting import Plotting
+from .perf import Performance
 from .helpers import run_shell_command
 from .htmlreport.htmlreport import generate_html
 
@@ -143,7 +144,7 @@ class Benchmarking:
     def run(self):
         self.build_instances()
         self.process_instances()
-        self.plotperf_results()
+        self.perf_results()
         self.generate_reports()
 
     def build_instances(self):
@@ -184,10 +185,14 @@ class Benchmarking:
                 ):
                     instance.make_ref()
 
-    def plotperf_results(self):
-        """Handles plotting if required."""
-        if "plotperf" in self.config.modes:
-            self.plotperf()
+    def perf_results(self):
+        """Handles perf plotting and tracking if required."""
+        if "plotperf" in self.config.modes or "trackperf" in self.config.modes:
+            perf = Performance(self.config)
+            if "plotperf" in self.config.modes:
+                perf.plot()
+            if "trackperf" in self.config.modes:
+                perf.track()
 
     def generate_reports(self):
         """Handles reporting and HTML generation."""
@@ -227,9 +232,9 @@ class Benchmarking:
         Messaging.step(f"Processor : {processor_name}")
 
         # dump the CPU infos
-        run_shell_command(f"hwloc-ls --of console {results}/cpu.txt")
-        run_shell_command(f"hwloc-ls --of svg {results}/cpu.svg")
-
-    def plotperf(self):
-        plot = Plotting(self.config)
-        plot.plot()
+        if shutil.which("hwloc-ls"):
+            run_shell_command(f"hwloc-ls --of console {results}/cpu.txt")
+            run_shell_command(f"hwloc-ls --of svg {results}/cpu.svg")
+        else:
+            Messaging.step("Warning: 'hwloc-ls' not found.")
+            Messaging.step("Skipping hardware topology capture.")
