@@ -35,15 +35,15 @@
 !knowledge of the CeCILL license and that you accept its terms.
 !***************************************************************************
 !***************************************************************************
-  module mod_eco3m_vartypes
+   module mod_eco3m_vartypes
 !
 !> Module that contains all the derived types used in Eco3M
 !! \author Melika Baklouti
 !---------------------------------------------------------------------------
 
-use eco3m_string
+   use eco3m_string
 
-implicit none
+ implicit none
  TYPE PROC !< Type for the biogeochemical processes included in the model configuration (modele.def file)
     Integer :: idproc  !< Identifier of process 
     Character(len=14) :: nomproc  !< Name of the process in the config.ini file
