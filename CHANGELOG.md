@@ -27,6 +27,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
 
+- Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
