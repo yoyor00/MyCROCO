@@ -138,33 +138,3 @@ implicit none
 CONTAINS
 
 End Module mod_eco3m
-!--------------------------------------------------------------------------------
-                   Module mod_eco3m_outputs
-
-! Module specific to Eco3M outputs
-!--------------------------------------------------------------------------------
-    
-implicit none
-
-    character(124) :: output_dir  !< Output directory (namelist)
-    integer :: num_outphy  !< Number of Physical variables that will be saved (namelist)
-    integer :: num_outflux !< Number of points at which biogeochemical fluxes will be saved (namelist)
-    
-    type outflux_type  !< Type associated with the saving of fluxes (namelist)
-        integer :: indi  !< i-index 
-        integer :: indj  !< j-index
-        integer :: indk  !< k-index
-    end type
-    
-    type outphy_type  !< Type associated with the saving of physical variables (namelist)
-        character(124) :: outvarname    !< Name of the variable to output 
-    end type
-
-    type(outflux_type), allocatable :: outflux(:) !< Array of coordinates where to save fluxes
-    type(outphy_type), allocatable :: outphy(:)   !< Array of physical variables to save
-
-    integer :: filecount !< File counter (iterated after each writing in a file)
-
-CONTAINS
-
-end Module mod_eco3m_outputs
