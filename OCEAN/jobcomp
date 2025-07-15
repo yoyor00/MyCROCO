@@ -187,6 +187,8 @@ ls "${SOURCE}/"*.py              > /dev/null  2>&1 && \cp "${SOURCE}/"*.py   "$S
 ls "${SOURCE}/"Make*             > /dev/null  2>&1 && \cp "${SOURCE}/"Make* "$SCRDIR"
 ls "${SOURCE}/"amr.in            > /dev/null  2>&1 && \cp "${SOURCE}/"amr.in "$SCRDIR"
 ls "${AGRIF_SRC}"                > /dev/null  2>&1 && \cp -r "${AGRIF_SRC}" "$SCRDIR"
+ls "${ROOT_DIR}/"KNBQ2/*         > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"KNBQ2  "$SCRDIR"
+ls "${ROOT_DIR}/"KNBQ3/*         > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"KNBQ3 "$SCRDIR"
 ls "${ROOT_DIR}/"XIOS/*.F        > /dev/null  2>&1 && \cp "${ROOT_DIR}/"XIOS/*.F "$SCRDIR"
 ls "${ROOT_DIR}/"PISCES/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/* "$SCRDIR"
 ls "${ROOT_DIR}/"PISCES/LIB/*    > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/LIB/* "$SCRDIR"
@@ -235,7 +237,7 @@ CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
 # Set compilation options
 #
 if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX / MAC =====
-   if [[ $FC == ifort || $FC == ifc ]] ; then
+   if [[ $FC == ifort || $FC == ifc || $FC == ifx ]] ; then
       # Intel's classic Fortran compiler
       CPP1="cpp -traditional -DLinux -DIfort"
       CFT1="ifort"
@@ -280,6 +282,32 @@ fi
 #
 # Take environment variables for compiler and options
 #
+echo "Checking KNBQ3..."
+if $($CPP1 testkeys.F | grep -i -q knbq3isdefined) ; then
+        echo " => KNBQ3 activated"
+        cp KNBQ3/*  .
+        #
+        # overwrite with local files
+        #
+        ls ../*.F90   > /dev/null  2>&1 && \cp -f ../*.F90 .
+        ls ../*.F     > /dev/null  2>&1 && \cp -f ../*.F .
+        ls ../*.h     > /dev/null  2>&1 && \cp -f ../*.h .
+        ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
+        ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
+        ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
+else
+        echo " => KNBQ2 activated"
+        cp KNBQ2/*  .
+	#
+	# overwrite with local files
+	#
+	ls ../*.F90   > /dev/null  2>&1 && \cp -f ../*.F90 .
+	ls ../*.F     > /dev/null  2>&1 && \cp -f ../*.F .
+	ls ../*.h     > /dev/null  2>&1 && \cp -f ../*.h .
+	ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
+	ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
+	ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
+fi
 FFLAGS1="${CROCO_FFLAGS1-$FFLAGS1}"
 CFT1="${CROCO_CFT1-$CFT1}"
 
