@@ -1,5 +1,4 @@
 #include "cppdefs.h"
-#include "latency_hiding_2d.h"
 
 #ifdef MPI
 # define LOCALLM Lmmpi

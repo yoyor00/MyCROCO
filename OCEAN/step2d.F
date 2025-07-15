@@ -167,11 +167,6 @@ C$    trd=omp_get_thread_num()
 #  define SWITCH !
 # endif
 
-# ifdef MPI_LAT_HID_2D
-      integer :: Istr_orig, Iend_orig, Jstr_orig, Jend_orig
-      integer :: lat_hid_2d_subtimestep
-# endif
-
 !
 # ifdef MPI
 #  include "mpi_cpl.h"
@@ -185,19 +180,6 @@ C$    trd=omp_get_thread_num()
 # include "latency_hiding_2d.h"
 # include "compute_auxiliary_bounds.h"
 
-#ifdef MPI_LAT_HID_2D
-      Istr_orig = Istr
-      Iend_orig = Iend
-      Jstr_orig = Jstr
-      Jend_orig = Jend
-#else
-#  define Istr_orig Istr
-#  define Iend_orig Iend
-#  define Jstr_orig Jstr
-#  define Jend_orig Jend
-#endif
-
-#define IJ_ORIG Istr_orig,Iend_orig,Jstr_orig,Jend_orig
 
 !
 !======================================================================
