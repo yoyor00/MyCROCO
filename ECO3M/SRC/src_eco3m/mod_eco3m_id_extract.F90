@@ -40,7 +40,8 @@
 !----------------------------------------------------------------------------------
     MODULE mod_eco3m_id_extract
 !----------------------------------------------------------------------------------
-    use mod_eco3m , only: VAR, PROC_MOD  ! Module containing the VAR matrix
+    use mod_eco3m_vartypes
+    use mod_eco3m !, only: VAR, PROC_MOD  ! Module containing the VAR matrix
     use eco3m_string, only: l_chain, l_var  ! Module for string manipulation
 
     Implicit None

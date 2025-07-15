@@ -596,7 +596,7 @@
     !! \author Melika Baklouti
     !! \author Nicolas Barrier
 !-------------------------------------------------------------------------------
-        use mod_eco3m, only : VAR,nbvar
+        use mod_eco3m !, only : VAR,nbvar
         use mod_eco3m_outputs
         use mod_eco3m_files, only:file_budget_id
 

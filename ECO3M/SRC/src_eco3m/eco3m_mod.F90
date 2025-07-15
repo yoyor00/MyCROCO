@@ -133,7 +133,8 @@
 
             itemp = PROC_MOD(i)%nbpar
             ! Allocation of the array of parameter names
-            if (associated (PROC_MOD(i)%nompar)) NULLIFY(PROC_MOD(i)%nompar)
+            ! >> TODO pb with AGRIF and NULLIFY, syntax error ??? use deallocate instead
+            if (associated (PROC_MOD(i)%nompar)) DEALLOCATE(PROC_MOD(i)%nompar)
             Allocate(PROC_MOD(i)%nompar(itemp),STAT=istat)
             if (istat /= 0) then
                 write(*,*) "Allocation problem: PROC_MOD(", i, ")%nompar array"
@@ -159,10 +160,10 @@
         do i=1,size(PROC_MOD)
             write(file_CR_id,'(I3,$)') PROC_MOD(i)%idproc
             ! write(file_CR_id,*)' : ',trim(adjustl(PROC_MOD(i)%nomproc)),' : ',&
-            write(file_CR_id,*)' : ',trim(adjustl(PROC_MOD(i)%nomproc)),' : ',&
-                trim(adjustl(PROC_MOD(i)%nomsub)),       &
-                PROC_MOD(i)%nbpar,' : ',                 &
-                (trim(adjustl(PROC_MOD(i)%nompar(k))),'|', k=1,size(PROC_MOD(i)%nompar))
+            write(file_CR_id,*) ' : ', trim(adjustl(PROC_MOD(i)%nomproc)), ' : ', &
+                trim(adjustl(PROC_MOD(i)%nomsub)), ' : ', &
+                PROC_MOD(i)%nbpar, ' : ', &
+                (trim(adjustl(PROC_MOD(i)%nompar(k))) // '|', k=1, size(PROC_MOD(i)%nompar))
         enddo 
         write(file_CR_id,*)
 #endif
