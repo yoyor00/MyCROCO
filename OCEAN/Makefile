@@ -172,16 +172,17 @@ include Makedefs
 	comMUSTANG.F90 dredging.F90 coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
         eco3m_string.F90\
-	eco3m_vartypes.F90\
-	eco3m_files.F90\
-	eco3m_irrad.F90\
-	eco3m.F90\
+	mod_eco3m_vartypes.F90\
+	mod_eco3m_files.F90\
+	mod_eco3m_irrad.F90\
+	mod_eco3m.F90\
 	eco3m_mod.F90\
-	eco3m_id.F90\
+	mod_eco3m_id_extract.F90\
 	eco3m_chl.F90\
-	eco3m_user.F90\
-	eco3m_fprocess.F90\
+	mod_eco3m_user.F90\
+	mod_eco3m_fprocess.F90\
 	eco3m_co2.F90\
+	mod_eco3m_outputs.F90\
 	eco3m_outputs.F90\
 	eco3m_sms.F90\
 	eco3m_var.F90\
