@@ -35,11 +35,6 @@
 ! indxSSS         sea surface salinity
 ! indxSwflx       surface fresh water flux
 !
-! indxAi          fraction of cell covered by ice
-! indxUi,indxVi   U,V-components of sea ice velocity
-! indxHi,indxHS   depth of ice cover and depth of snow cover
-! indxTIsrf       temperature of ice surface
-!
 ! indxBSD,indxBSS bottom sediment grain Density and Size
 !                 to be read from file if(!defined ANA_BSEDIM,
 !                 && !defined SEDIMENT)

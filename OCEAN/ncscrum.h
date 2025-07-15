@@ -55,11 +55,6 @@
 ! indxBhflx       bottom hydrothermal heat flux
 ! indxBwflx       bottom hydrothermal freshwater flux
 !
-! indxAi          fraction of cell covered by ice
-! indxUi,indxVi   U,V-components of sea ice velocity
-! indxHi,indxHS   depth of ice cover and depth of snow cover
-! indxTIsrf       temperature of ice surface
-!
 ! ** SEDIMENT (USGS model) **
 ! indxBSD,indxBSS bottom sediment grain Density and Size
 !                 to be read from file if(!defined ANA_BSEDIM,
@@ -938,15 +933,6 @@
       integer indxBwflx
       parameter (indxBwflx=indxSUSTR+132)
 #endif
-
-#ifdef ICE
-      integer indxAi
-      parameter (indxAi=????)
-      integer indxUi, indxVi, indxHi, indxHS, indxTIsrf
-      parameter (indxUi=indxAi+1, indxVi=indxAi+2, indxHi=indxAi+3,
-     &                         indxHS=indxAi+4, indxTIsrf=indxAi+5)
-#endif
-!
 !
 !===================================================================
 !

@@ -52,6 +52,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
 
+- Obsolete, unused or undocumented CPP keys : 
+  - ICE (#416)
+
 ### Other
 
 - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
