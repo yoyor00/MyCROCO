@@ -139,29 +139,6 @@ CONTAINS
 
 End Module mod_eco3m
 !--------------------------------------------------------------------------------
-                     Module mod_eco3m_irrad
-
-! Module specfic to light irradiance and extinction
-!--------------------------------------------------------------------------------
-    use mod_eco3m_vartypes  ! Module for variable types
-
-implicit none
-    real(8) :: dt_irrad  !< Time-step for the irradiance reading/calculation 
-    real(8) :: irr2par   !< Conversion factor from irradiance to par (set to 1 if PAR is used instead of irradiance) 
-    real(8) :: irr_param  !<  Parameter used to convert PAR(0+) into PAR(0-)
-    Character(15) :: fichirrad  !< Definition of irradiance calculation.
-    !! ( among IRR_FONCTION, IRR_filename, IRR_CODEPHYS or PAR_CODEPHYS)
-    Character(40) :: fichirrad_long  !< Name of the irradiance file (if
-    !! irradiance is read from a file)
-    REAL(8) :: irrad_MAX  !< Maximum irradience (used if fichirrad=IRR_FONCTION)
-    TYPE(PARAM) :: IRR_PAR  !< Parameters of the irradiance function
-    REAL(8), pointer :: irrad(:,:)  !< 2D irradiance
-    real(8) :: albedo  !< Albedo
-
-CONTAINS
-
-End Module mod_eco3m_irrad
-!--------------------------------------------------------------------------------
                    Module mod_eco3m_outputs
 
 ! Module specific to Eco3M outputs

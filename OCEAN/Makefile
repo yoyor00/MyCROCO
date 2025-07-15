@@ -174,6 +174,7 @@ include Makedefs
         eco3m_string.F90\
 	eco3m_vartypes.F90\
 	eco3m_files.F90\
+	eco3m_irrad.F90\
 	eco3m.F90\
 	eco3m_mod.F90\
 	eco3m_id.F90\
