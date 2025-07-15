@@ -19,7 +19,13 @@
  IstrR, IendR,JstrR,JendR are equivalent to that computed
  by "compute_auxiliary_bounds.h".
 */
-      integer IstrR,IendR,JstrR,JendR
+
+      integer :: IstrR,IendR,JstrR,JendR
+
+#ifdef MPI_LAT_HID_2D
+      integer :: Istr_orig, Iend_orig, Jstr_orig, Jend_orig
+#endif
+
       if (Istr.eq.1) then
 #ifdef EW_PERIODIC
         IstrR=Istr-2
@@ -100,3 +106,63 @@
         JendR=Jend
       endif
 
+
+#ifdef MPI_LAT_HID_2D
+      Istr_orig = Istr
+      Iend_orig = Iend
+      Jstr_orig = Jstr
+      Jend_orig = Jend
+
+# ifdef EW_PERIODIC
+
+      IstrR = IstrR - MPI_LAT_HID_2D_ADD_LAYERS
+      IendR = IendR + MPI_LAT_HID_2D_ADD_LAYERS
+
+      Istr = Istr - MPI_LAT_HID_2D_ADD_LAYERS
+      Iend = Iend + MPI_LAT_HID_2D_ADD_LAYERS
+
+# else
+
+      if (.not. (WESTERN_EDGE)) then
+        IstrR = IstrR - MPI_LAT_HID_2D_ADD_LAYERS
+        Istr = Istr - MPI_LAT_HID_2D_ADD_LAYERS
+      endif
+
+      if (.not. (EASTERN_EDGE)) then
+        IendR = IendR + MPI_LAT_HID_2D_ADD_LAYERS
+        Iend = Iend + MPI_LAT_HID_2D_ADD_LAYERS
+      endif
+
+# endif
+
+
+# ifdef NS_PERIODIC
+
+      JstrR = JstrR - MPI_LAT_HID_2D_ADD_LAYERS
+      JendR = JendR + MPI_LAT_HID_2D_ADD_LAYERS
+
+      Jstr = Jstr - MPI_LAT_HID_2D_ADD_LAYERS
+      Jend = Jend + MPI_LAT_HID_2D_ADD_LAYERS
+
+# else
+
+      if (.not. (SOUTHERN_EDGE)) then
+        JstrR = JstrR - MPI_LAT_HID_2D_ADD_LAYERS
+        Jstr = Jstr - MPI_LAT_HID_2D_ADD_LAYERS
+      endif
+
+      if (.not. (NORTHERN_EDGE)) then
+        JendR = JendR + MPI_LAT_HID_2D_ADD_LAYERS
+        Jend = Jend + MPI_LAT_HID_2D_ADD_LAYERS
+      endif
+
+# endif
+#else
+#  define Istr_orig Istr
+#  define Iend_orig Iend
+#  define Jstr_orig Jstr
+#  define Jend_orig Jend
+#endif
+
+
+#define IJ_ORIG Istr_orig,Iend_orig,Jstr_orig,Jend_orig

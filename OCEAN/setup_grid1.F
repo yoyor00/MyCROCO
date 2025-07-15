@@ -33,31 +33,8 @@ C$    integer omp_get_thread_num
 # include "wkb_wwave.h"
 #endif
 
-#ifdef MPI_LAT_HID_2D
-      integer :: Istr_orig, Iend_orig, Jstr_orig, Jend_orig
-#endif
-
-!
 #include "compute_extended_bounds.h"
 
-
-#ifdef MPI_LAT_HID_2D
-      Istr_orig = Istr
-      Iend_orig = Iend
-      Jstr_orig = Jstr
-      Jend_orig = Jend
-#else
-#  define Istr_orig Istr
-#  define Iend_orig Iend
-#  define Jstr_orig Jstr
-#  define Jend_orig Jend
-#endif
-
-#define IJ_ORIG Istr_orig,Iend_orig,Jstr_orig,Jend_orig
-
-#ifdef MPI_LAT_HID_2D
-#  include "latency_hiding_2d_extended_bounds_update.h"
-#endif
 
 !$acc kernels if(compute_on_device) default(present)
 !

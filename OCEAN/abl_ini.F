@@ -66,9 +66,6 @@
 # endif
 !
 # include "compute_extended_bounds.h"
-#ifdef MPI_LAT_HID_2D
-#  include "latency_hiding_2d_extended_bounds_update.h"
-#endif
 
       ierr = 0
 !
