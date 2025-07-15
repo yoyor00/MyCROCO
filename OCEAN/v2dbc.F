@@ -79,12 +79,6 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_auxiliary_bounds.h"
-!#include "latency_hiding_2d.h"
-
-!#ifdef MPI_LAT_HID_2D
-!# include "latency_hiding_2d_auxiliary_bounds_update.h"
-!#endif
-
 !
 !  If child grid, interpolate vbar from parent
 !  AGRIF does not work yet with #undef SOLVE3D
@@ -154,7 +148,7 @@ C$    trd=omp_get_thread_num()
 #  ifdef OBC_COM_M2ORLANSKI
 !                                          Southern edge radiation BC
 !                                          ======== ==== ========= ==
-        do i=Istr, Iend+1
+        do i=Istr,Iend+1
           grad(i,Jstr  )=(vbar(i,Jstr  ,kstp)-vbar(i-1,Jstr  ,kstp))
 #   ifdef MASKING
      &                                                *pmask(i,Jstr)
@@ -164,7 +158,7 @@ C$    trd=omp_get_thread_num()
      &                                              *pmask(i,Jstr+1)
 #   endif
         enddo
-        do i=Istr, Iend
+        do i=Istr,Iend
           dft=vbar(i,Jstr+1,kstp)-vbar(i,Jstr+1,knew)
           dfx=vbar(i,Jstr+1,knew)-vbar(i,Jstr+2,knew)
 
@@ -214,7 +208,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT
 !                                            Southern edge Characteristic BC
 !                                            ======= ==== ======= ==
-        do i=Istr, Iend
+        do i=Istr,Iend
           cff=0.5*(h(i,Jstr-1)+zeta(i,Jstr-1,kstp)+
      &             h(i,Jstr  )+zeta(i,Jstr  ,kstp))
           hx=sqrt(g/cff)
@@ -278,7 +272,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2SPECIFIED
 !                                           Southern edge Specified BC
 !                                           ======== ==== ========= ==
-        do i=Istr, Iend
+        do i=Istr,Iend
 #   ifdef M2_FRC_BRY
           vbar(i,Jstr,knew)=vbarbry_south(i)
 #   else
@@ -291,7 +285,7 @@ C$    trd=omp_get_thread_num()
 #  else
 !                                           Southern edge gradient BC
 !                                           ======== ==== ======== ==
-        do i=Istr, Iend
+        do i=Istr,Iend
           vbar(i,Jstr,knew)=vbar(i,Jstr+1,knew)
 #   ifdef MASKING
      &                      *vmask(i,Jstr)
@@ -301,7 +295,7 @@ C$    trd=omp_get_thread_num()
 #  endif /* OBC_COM_ORLANSKI */
 # else
                                               ! Southern edge closed
-        do i=Istr, Iend                        ! ======== ==== ======
+        do i=Istr,Iend                        ! ======== ==== ======
 #  ifdef MRL_WCI
           vbar(i,Jstr,knew)=-vst2d(i,Jstr)    ! no Lagrangian flux
 #   ifdef MASKING
@@ -323,7 +317,7 @@ C$    trd=omp_get_thread_num()
 #  ifdef OBC_COM_M2ORLANSKI
 !                                          Northern edge radiation BC
 !                                          ======== ==== ========= ==
-        do i=Istr, Iend+1
+        do i=Istr,Iend+1
           grad(i,Jend  )=(vbar(i,Jend  ,kstp)-vbar(i-1,Jend  ,kstp))
 #   ifdef MASKING
      &                                                *pmask(i,Jend)
@@ -333,7 +327,7 @@ C$    trd=omp_get_thread_num()
      &                                              *pmask(i,Jend+1)
 #   endif
         enddo
-        do i=Istr, Iend
+        do i=Istr,Iend
           dft=vbar(i,Jend,kstp)-vbar(i,Jend  ,knew)
           dfx=vbar(i,Jend,knew)-vbar(i,Jend-1,knew)
 
@@ -383,7 +377,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT
 !                                            Northern edge Characteristic BC
 !                                            ======= ==== ======= ==
-        do i=Istr, Iend
+        do i=Istr,Iend
           cff=0.5*(h(i,Jend  )+zeta(i,Jend  ,kstp)+
      &             h(i,Jend+1)+zeta(i,Jend+1,kstp))
           hx=sqrt(g/cff)
@@ -447,7 +441,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2SPECIFIED
 !                                           Northern edge Specified BC
 !                                           ======== ==== ========= ==
-        do i=Istr, Iend
+        do i=Istr,Iend
 #   ifdef M2_FRC_BRY
           vbar(i,Jend+1,knew)=vbarbry_north(i)
 #   else
@@ -460,7 +454,7 @@ C$    trd=omp_get_thread_num()
 #  else
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
-        do i=Istr, Iend
+        do i=Istr,Iend
           vbar(i,Jend+1,knew)=vbar(i,Jend,knew)
 #   ifdef MASKING
      &                        *vmask(i,Jend+1)
@@ -470,7 +464,7 @@ C$    trd=omp_get_thread_num()
 #  endif /* OBC_COM_ORLANSKI */
 # else
                                               ! Northern edge closed
-        do i=Istr, Iend ! ======== ==== ======
+        do i=Istr,Iend                        ! ======== ==== ======
 #  ifdef MRL_WCI
           vbar(i,Jend+1,knew)=-vst2d(i,Jend+1)  ! no Lagrangian flux
 #   ifdef MASKING
@@ -498,7 +492,7 @@ C$    trd=omp_get_thread_num()
 #  if defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_WEST
 !                                           Western edge Specified BC
 !                                           ======= ==== ========= ==
-       do j=JstrV, Jend
+       do j=JstrV,Jend
 #   ifdef M2_FRC_BRY
           vbar(Istr-1,j,knew)=vbarbry_west(j)
 #   else
@@ -511,11 +505,11 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2ORLANSKI
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
-        do j=JstrV-1, Jend
+        do j=JstrV-1,Jend
           grad(Istr-1,j)=vbar(Istr-1,j+1,kstp)-vbar(Istr-1,j,kstp)
           grad(Istr  ,j)=vbar(Istr  ,j+1,kstp)-vbar(Istr  ,j,kstp)
         enddo
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           dft=vbar(Istr,j,kstp)-vbar(Istr  ,j,knew)
           dfx=vbar(Istr,j,knew)-vbar(Istr+1,j,knew)
 
@@ -565,7 +559,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT
 !                                             Western edge Chapman BC
 !                                             ======= ==== ======= ==
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           cff=sqrt(0.5*g*(h(Istr-1,j-1)+zeta(Istr-1,j-1,kstp)+
      &                    h(Istr-1,j  )+zeta(Istr-1,j  ,kstp)))
           cx=dtfast*cff*0.5*(pm(Istr-1,j-1)+pm(Istr-1,j))
@@ -578,7 +572,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT0
 !                                      Western edge Characteristic BC
 !                                      ======= ==== ============== ==
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           if (ubar(Istr+1,j,knew).lt.0.) then
             vbar(Istr-1,j,knew)=vbar(Istr,j,knew)
           else
@@ -595,7 +589,7 @@ C$    trd=omp_get_thread_num()
 #  else
 !                                           Western edge gradient BC
 !                                           ======= ==== ======== ==
-       do j=JstrV, Jend
+       do j=JstrV,Jend
           vbar(Istr-1,j,knew)=vbar(Istr,j,knew)
 #   ifdef MASKING
      &                        *vmask(Istr-1,j)
@@ -627,7 +621,7 @@ C$    trd=omp_get_thread_num()
 #  if defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_EAST
 !                                           Eastern edge Specified BC
 !                                           ======= ==== ========= ==
-        do j=JstrV, Jend
+        do j=JstrV,Jend
 #   ifdef M2_FRC_BRY
           vbar(Iend+1,j,knew)=vbarbry_east(j)
 #   else
@@ -640,11 +634,11 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2ORLANSKI
 !                                           Eastern edge radiation BC
 !                                           ======= ==== ========= ==
-        do j=JstrV-1, Jend
+        do j=JstrV-1,Jend
           grad(Iend  ,j)=vbar(Iend  ,j+1,kstp)-vbar(Iend  ,j,kstp)
           grad(Iend+1,j)=vbar(Iend+1,j+1,kstp)-vbar(Iend+1,j,kstp)
         enddo
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           dft=vbar(Iend,j,kstp)-vbar(Iend  ,j,knew)
           dfx=vbar(Iend,j,knew)-vbar(Iend-1,j,knew)
 
@@ -694,7 +688,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_EAST
 !                                           Eastern edge Chapman BC
 !                                           ======= ==== ======= ==
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           cff=sqrt(0.5*g*(h(Iend+1,j-1)+zeta(Iend+1,j-1,kstp)+
      &                    h(Iend+1,j  )+zeta(Iend+1,j  ,kstp)))
           cx=dtfast*cff*0.5*(pm(Iend+1,j-1)+pm(Iend+1,j))
@@ -707,7 +701,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT0
 !                                      Eastern edge Characteristic BC
 !                                      ======= ==== ============== ==
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           if (ubar(Iend-1,j,knew).gt.0.) then
             vbar(Iend+1,j,knew)=vbar(Iend,j,knew)
           else
@@ -724,7 +718,7 @@ C$    trd=omp_get_thread_num()
 #  else
 !                                            Eastern edge gradient BC
 !                                            ======= ==== ======== ==
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           vbar(Iend+1,j,knew)=vbar(Iend,j,knew)
 #   ifdef MASKING
      &                        *vmask(Iend+1,j)
@@ -803,7 +797,7 @@ C$    trd=omp_get_thread_num()
 !
 # ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
-        do j=JstrV, Jend
+        DO j=JstrV,Jend
           cff1=ABS(ABS(vmask_wet(Istr-1,j))-1.)
           cff2=0.5+SIGN(0.5,vbar(Istr-1,j,knew))*vmask_wet(Istr-1,j)
           vmask_wet(Istr-1,j)=0.5*vmask_wet(Istr-1,j)*cff1
@@ -812,7 +806,7 @@ C$    trd=omp_get_thread_num()
         END DO
       END IF
       if (EASTERN_EDGE) then
-        do j=JstrV, Jend
+        DO j=JstrV,Jend
           cff1=ABS(ABS(vmask_wet(Iend+1,j))-1.)
           cff2=0.5+SIGN(0.5,vbar(Iend+1,j,knew))*vmask_wet(Iend+1,j)
           vmask_wet(Iend+1,j)=0.5*vmask_wet(Iend+1,j)*cff1
@@ -823,7 +817,7 @@ C$    trd=omp_get_thread_num()
 # endif
 # ifndef NS_COM_PERIODIC
       if (SOUTHERN_EDGE) then
-        do i=Istr, Iend
+        DO i=Istr,Iend
           cff1=ABS(ABS(vmask_wet(i,Jstr))-1.)
           cff2=0.5+SIGN(0.5,vbar(i,Jstr,knew))*vmask_wet(i,Jstr)
           vmask_wet(i,Jstr)=0.5*vmask_wet(i,Jstr)*cff1
@@ -832,7 +826,7 @@ C$    trd=omp_get_thread_num()
         END DO
       END IF
       if (NORTHERN_EDGE) then
-        do i=Istr, Iend
+        DO i=Istr,Iend
           cff1=ABS(ABS(vmask_wet(i,Jend+1))-1.)
           cff2=0.5+SIGN(0.5,vbar(i,Jend+1,knew))*vmask_wet(i,Jend+1)
           vmask_wet(i,Jend+1)=0.5*vmask_wet(i,Jend+1)*cff1
@@ -887,7 +881,7 @@ C$    trd=omp_get_thread_num()
 # ifndef NS_COM_PERIODIC
       if (SOUTHERN_EDGE) then
 #  if defined OBC_COM_SOUTH || defined MRL_WCI
-        do i=Istr, Iend
+        do i=Istr,Iend
           DV_nbq(i,Jstr)=vbar(i,Jstr,knew)
      &                   *0.5*(h(i,Jstr  )+zeta(i,Jstr  ,knew)
      &                       + h(i,Jstr-1)+zeta(i,Jstr-1,knew))
@@ -897,7 +891,7 @@ C$    trd=omp_get_thread_num()
 #   endif
         enddo
 #  else
-        do i=Istr, Iend
+        do i=Istr,Iend
           DV_nbq(i,Jstr)=0.  ! closed boundary
         enddo
 #  endif
@@ -905,7 +899,7 @@ C$    trd=omp_get_thread_num()
 !
       if (NORTHERN_EDGE) then
 #  if defined OBC_COM_NORTH || defined MRL_WCI
-        do i=Istr, Iend
+        do i=Istr,Iend
           DV_nbq(i,Jend+1)=vbar(i,Jend+1,knew)
      &                   *0.5*(h(i,Jend+1)+zeta(i,Jend+1,knew)
      &                       + h(i,Jend  )+zeta(i,Jend  ,knew))
@@ -915,7 +909,7 @@ C$    trd=omp_get_thread_num()
 #   endif
         enddo
 #  else
-        do i=Istr, Iend
+        do i=Istr,Iend
           DV_nbq(i,Jend+1)=0.
         enddo
 #  endif
@@ -925,7 +919,7 @@ C$    trd=omp_get_thread_num()
 # ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
 #  if defined OBC_COM_WEST || defined MRL_WCI
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           DV_nbq(Istr-1,j)=vbar(Istr-1,j,knew)
      &               *0.5*(h(Istr-1,j  )+zeta(Istr-1,j  ,knew)
      &                    +h(Istr-1,j-1)+zeta(Istr-1,j-1,knew))
@@ -936,7 +930,7 @@ C$    trd=omp_get_thread_num()
 
         enddo
 #  else
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           DV_nbq(Istr-1,j)=gamma2*DV_nbq(Istr,j)  ! slip/noslip boundary
         enddo
 #  endif
@@ -944,7 +938,7 @@ C$    trd=omp_get_thread_num()
 !
       if (EASTERN_EDGE) then
 #  if defined OBC_COM_EAST  || defined MRL_WCI
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           DV_nbq(Iend+1,j)=vbar(Iend+1,j,knew)
      &               *0.5*(h(Iend+1,j  )+zeta(Iend+1,j  ,knew)
      &                    +h(Iend+1,j-1)+zeta(Iend+1,j-1,knew))
@@ -954,7 +948,7 @@ C$    trd=omp_get_thread_num()
 #   endif
         enddo
 #  else
-        do j=JstrV, Jend
+        do j=JstrV,Jend
           DV_nbq(Iend+1,j)=gamma2*DV_nbq(Iend,j)  ! slip/noslip boundary
         enddo
 #  endif

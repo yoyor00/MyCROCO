@@ -166,7 +166,6 @@ C$    trd=omp_get_thread_num()
 # else
 #  define SWITCH !
 # endif
-
 !
 # ifdef MPI
 #  include "mpi_cpl.h"
@@ -177,12 +176,14 @@ C$    trd=omp_get_thread_num()
 #  define LOCALLM Lm
 #  define LOCALMM Mm
 # endif
-# include "latency_hiding_2d.h"
+
+! We define `MPI_LAT_HID_2D_EXTEND_IJ` to have the bounds extended for
+! latency hiding reasons
+! Note that Istr, Iend, Jstr, Jend are handed over by reference.
+! Therefore, we only need to modify it once for latency hiding.
+#define MPI_LAT_HID_2D_EXTEND_IJ
 # include "compute_auxiliary_bounds.h"
 
-#ifdef MPI_LAT_HID_2D
-# include "latency_hiding_2d_auxiliary_bounds_update.h"
-#endif
 
 
 !
@@ -358,7 +359,7 @@ C$    trd=omp_get_thread_num()
 # endif
 
 # ifdef OBC_VOLCONS
-      call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
+      call set_DUV_bc_tile (IJ_ORIG, Drhs, DUon,DVom)
 # endif
 
 # ifdef CVTK_DEBUG_ADVANCED
@@ -1639,7 +1640,7 @@ C$OMP END MASTER
       call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
 
 # ifdef OBC_VOLCONS
-      call obc_flux_tile (Istr,Iend,Jstr,Jend)
+      call obc_flux_tile (IJ_ORIG)
 # endif
 !
 !-----------------------------------------------------------------------
@@ -1803,7 +1804,7 @@ C$OMP END MASTER
 !$acc end kernels
 # ifndef SOLVE3D
 #   ifndef HPC_BENCH_SKIP_VALIDATION
-      call diag_tile (Istr,Iend,Jstr,Jend, UFx,UFe)
+      call diag_tile (IJ_ORIG, UFx,UFe)
 #   endif
 # endif
 !

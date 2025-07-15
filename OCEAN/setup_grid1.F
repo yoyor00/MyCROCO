@@ -32,10 +32,7 @@ C$    integer omp_get_thread_num
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
-
 #include "compute_extended_bounds.h"
-
-
 !$acc kernels if(compute_on_device) default(present)
 !
 !  Set f/mn,at horizontal RHO-points.

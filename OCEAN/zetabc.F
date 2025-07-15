@@ -48,7 +48,7 @@ c        call zetabc_interp_tile(Istr,Iend,Jstr,Jend)
 #include "set_obc_definitions.h"
 !
       implicit none
-      integer :: Istr,Iend,Jstr,Jend, i,j
+      integer Istr,Iend,Jstr,Jend, i,j
       real cff,cx,dft,dfx, eps
       parameter (eps=1.D-20)
 #include "param.h"
@@ -65,12 +65,6 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_auxiliary_bounds.h"
-!#include "latency_hiding_2d.h"
-
-!#ifdef MPI_LAT_HID_2D
-!# include "latency_hiding_2d_auxiliary_bounds_update.h"
-!#endif
-
 !
 !  If child grid, interpolate zeta from parent
 !
@@ -136,7 +130,7 @@ C$    trd=omp_get_thread_num()
 #  endif
         enddo
 # else
-        do j=JstrV-1,Jend       ! Western edge gradient BC
+        do j=JstrV-1,Jend                     ! Western edge gradient BC
           zeta(0,j,knew)=zeta(1,j,knew)    ! ======= ==== ======== ==
 #  ifdef MASKING
      &                      *rmask(0,j)
@@ -191,7 +185,7 @@ C$    trd=omp_get_thread_num()
 #  endif
         enddo
 # else
-        do j=JstrV-1,Jend  ! Eastern edge gradient BC
+        do j=JstrV-1,Jend                         ! Eastern edge gradient BC
           zeta(Iend+1,j,knew)=zeta(Iend,j,knew)   ! ======= ==== ======== ==
 #  ifdef MASKING
      &                      *rmask(Iend+1,j)
@@ -248,7 +242,7 @@ C$    trd=omp_get_thread_num()
 #  endif
         enddo
 # else
-        do i=IstrU-1,Iend ! Southern edge gradient BC
+        do i=IstrU-1,Iend                    ! Southern edge gradient BC
           zeta(i,0,knew)=zeta(i,1,knew)   ! ======== ==== ======== ==
 #  ifdef MASKING
      &                      *rmask(i,0)
@@ -438,3 +432,5 @@ C$    trd=omp_get_thread_num()
 # endif
 # undef CHILD
 #endif  /* !CHILD */
+
+

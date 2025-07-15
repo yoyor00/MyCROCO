@@ -32,12 +32,8 @@
  inside a subroutine, but before the first executable statement.
 */
 
-      integer :: IstrR,IendR,JstrR,JendR
 
-#ifdef MPI_LAT_HID_2D
-      integer :: Istr_orig, Iend_orig, Jstr_orig, Jend_orig
-      integer :: lat_hid_2d_subtimestep
-#endif
+      integer :: IstrR,IendR,JstrR,JendR
 
 #ifdef EW_PERIODIC
 # define IstrU Istr
@@ -49,6 +45,71 @@
 #else
       integer JstrV
 #endif
+
+
+#ifdef MPI_LAT_HID_2D
+# include "latency_hiding_2d.h"
+      integer :: Istr_orig, Iend_orig, Jstr_orig, Jend_orig
+      integer :: lat_hid_2d_subtimestep
+
+      Istr_orig = Istr
+      Iend_orig = Iend
+      Jstr_orig = Jstr
+      Jend_orig = Jend
+
+      ! Compute number of subtime step in block of time steps for latency hiding
+      lat_hid_2d_subtimestep = MOD(iic-1, MPI_LAT_HID_2D_COMM_N_TIMES)
+
+      ! If MPI_LAT_HID_2D_TS_HALO_REDUCTION is set, we reduce the number of
+      ! extended halo layers for each subtime step in the latency hiding block
+      ! by this number.
+# ifdef MPI_LAT_HID_2D_TS_HALO_REDUCTION
+#  define MPI_LAT_HID_2D_ADD_LAYERS_AUX (MPI_LAT_HID_2D_ADD_LAYERS-MPI_LAT_HID_2D_TS_HALO_REDUCTION*lat_hid_2d_subtimestep)
+# else
+#  define MPI_LAT_HID_2D_ADD_LAYERS_AUX MPI_LAT_HID_2D_ADD_LAYERS
+# endif
+
+
+# ifdef MPI_LAT_HID_2D_EXTEND_IJ
+
+#  ifdef EW_PERIODIC
+      Istr = Istr - MPI_LAT_HID_2D_ADD_LAYERS_AUX
+      Iend = Iend + MPI_LAT_HID_2D_ADD_LAYERS_AUX
+#  else
+      if (.not. (WESTERN_EDGE)) then
+        Istr = Istr - MPI_LAT_HID_2D_ADD_LAYERS_AUX
+      endif
+      if (.not. (EASTERN_EDGE)) then
+        Iend = Iend + MPI_LAT_HID_2D_ADD_LAYERS_AUX
+      endif
+#  endif
+
+
+#  ifdef NS_PERIODIC
+      Jstr = Jstr - MPI_LAT_HID_2D_ADD_LAYERS_AUX
+      Jend = Jend + MPI_LAT_HID_2D_ADD_LAYERS_AUX
+#  else
+      if (.not. (SOUTHERN_EDGE)) then
+        Jstr = Jstr - MPI_LAT_HID_2D_ADD_LAYERS_AUX
+      endif
+
+      if (.not. (NORTHERN_EDGE)) then
+        Jend = Jend + MPI_LAT_HID_2D_ADD_LAYERS_AUX
+      endif
+#  endif
+# endif
+
+#else
+
+#  define Istr_orig Istr
+#  define Iend_orig Iend
+#  define Jstr_orig Jstr
+#  define Jend_orig Jend
+
+#endif
+
+#define IJ_ORIG Istr_orig,Iend_orig,Jstr_orig,Jend_orig
+
 
       if (WESTERN_EDGE) then
 #ifdef EW_PERIODIC
@@ -98,36 +159,3 @@
         JendR=Jend
       endif
 
-
-#include "latency_hiding_2d.h"
-
-#ifdef MPI_LAT_HID_2D
-
-      Istr_orig = Istr
-      Iend_orig = Iend
-      Jstr_orig = Jstr
-      Jend_orig = Jend
-
-      ! Compute number of subtime step in block of time steps for latency hiding
-      lat_hid_2d_subtimestep = MOD(iic-1, MPI_LAT_HID_2D_COMM_N_TIMES)
-
-! If MPI_LAT_HID_2D_TS_HALO_REDUCTION is set, we reduce the number of
-! extended halo layers for each subtime step in the latency hiding block
-! by this number.
-# ifdef MPI_LAT_HID_2D_TS_HALO_REDUCTION
-#  define MPI_LAT_HID_2D_ADD_LAYERS_AUX (MPI_LAT_HID_2D_ADD_LAYERS-MPI_LAT_HID_2D_TS_HALO_REDUCTION*lat_hid_2d_subtimestep)
-# else
-#  define MPI_LAT_HID_2D_ADD_LAYERS_AUX MPI_LAT_HID_2D_ADD_LAYERS
-# endif
-
-#else
-
-#  define Istr_orig Istr
-#  define Iend_orig Iend
-#  define Jstr_orig Jstr
-#  define Jend_orig Jend
-
-#endif
-
-
-#define IJ_ORIG Istr_orig,Iend_orig,Jstr_orig,Jend_orig
