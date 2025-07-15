@@ -2,6 +2,8 @@
 ! Helper header for latency hiding.
 !
 ! It extends the iteration ranges set up by `compute_auxiliary_bounds.h`
+! to include also halo layers used for latency hiding / communication avoiding /
+! overlapping Schwarz.
 !
 
 #ifdef EW_PERIODIC

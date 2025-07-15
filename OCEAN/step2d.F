@@ -180,6 +180,10 @@ C$    trd=omp_get_thread_num()
 # include "latency_hiding_2d.h"
 # include "compute_auxiliary_bounds.h"
 
+#ifdef MPI_LAT_HID_2D
+# include "latency_hiding_2d_auxiliary_bounds_update.h"
+#endif
+
 
 !
 !======================================================================
@@ -236,10 +240,6 @@ C$    trd=omp_get_thread_num()
 # endif
       endif
 
-#ifdef MPI_LAT_HID_2D
-!# include "latency_hiding_2d_auxiliary_bounds_update.h"
-#endif
-
 !
 # if defined EW_PERIODIC || defined MPI || !defined M2_HADV_UP3
       imin=IstrU-2
@@ -263,7 +263,7 @@ C$    trd=omp_get_thread_num()
 
 #ifdef MPI_LAT_HID_2D
 
-# include "latency_hiding_2d_auxiliary_bounds_update.h"
+!# include "latency_hiding_2d_auxiliary_bounds_update.h"
 
       if (lat_hid_2d_subtimestep .eq. 0) then
         call exchange_r2d_lh_tile (IJ_ORIG, zeta(START_2D_ARRAY,kstp))
