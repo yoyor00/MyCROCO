@@ -29,7 +29,7 @@
         <field field_ref="x_rho"     />
 	<field field_ref="y_rho"     />
         <field field_ref="mask_rho"  />
-        <field field_ref="Cs_r"      />
+        <field field_ref="Cs_rho"      />
         <field field_ref="sc_r"      />
         <field field_ref="Cs_w"      />
         <field field_ref="sc_w"      />

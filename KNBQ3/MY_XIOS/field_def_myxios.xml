@@ -4,7 +4,7 @@
   <field id="time" long_name="time (in s) since beginning"  unit="second" grid_ref="scalar_grid"/>
 
   <field_group id="Vertical_dimension_rho" grid_ref="rho_vertical_dimension" >
-    <field id="Cs_r" long_name="ocean s roms coordinate at rho point"  />
+    <field id="Cs_rho" long_name="ocean s roms coordinate at rho point"  />
     <field id="sc_r" long_name="S-coordinate stretching curves at RHO-points"  />
   </field_group>
   <field_group id="Vertical_dimension_rho_OSed" grid_ref="rho_vertical_dimension_OSed" >
