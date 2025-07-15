@@ -114,6 +114,20 @@
 #define IJ_ORIG Istr_orig,Iend_orig,Jstr_orig,Jend_orig
 
 
+      ! Compute number of subtime step in block of time steps for latency hiding
+      lat_hid_2d_subtimestep = MOD(iic-1, MPI_LAT_HID_2D_COMM_N_TIMES)
+
+! If MPI_LAT_HID_2D_TS_HALO_REDUCTION is set, we reduce the number of
+! extended halo layers for each subtime step in the latency hiding block
+! by this number.
+# ifdef MPI_LAT_HID_2D_TS_HALO_REDUCTION
+#  define MPI_LAT_HID_2D_ADD_LAYERS_AUX (MPI_LAT_HID_2D_ADD_LAYERS-MPI_LAT_HID_2D_TS_HALO_REDUCTION*lat_hid_2d_subtimestep)
+#else
+# define MPI_LAT_HID_2D_ADD_LAYERS_AUX MPI_LAT_HID_2D_ADD_LAYERS
+#endif
+
+
+
 #ifdef MPI_LAT_HID_2D_disabled
 
 # ifdef EW_PERIODIC

@@ -4,10 +4,6 @@
 ! It extends the iteration ranges set up by `compute_auxiliary_bounds.h`
 !
 
-#ifndef MPI_LAT_HID_2D_ADD_LAYERS_AUX
-# define MPI_LAT_HID_2D_ADD_LAYERS_AUX MPI_LAT_HID_2D_ADD_LAYERS
-#endif
-
 #ifdef EW_PERIODIC
 
       imin = imin - MPI_LAT_HID_2D_ADD_LAYERS_AUX

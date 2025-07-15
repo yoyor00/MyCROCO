@@ -236,6 +236,10 @@ C$    trd=omp_get_thread_num()
 # endif
       endif
 
+#ifdef MPI_LAT_HID_2D
+!# include "latency_hiding_2d_auxiliary_bounds_update.h"
+#endif
+
 !
 # if defined EW_PERIODIC || defined MPI || !defined M2_HADV_UP3
       imin=IstrU-2
@@ -258,16 +262,6 @@ C$    trd=omp_get_thread_num()
 
 
 #ifdef MPI_LAT_HID_2D
-
-      ! Compute number of subtime step in block of time steps for latency hiding
-      lat_hid_2d_subtimestep = MOD(iic-1, MPI_LAT_HID_2D_COMM_N_TIMES)
-
-! If MPI_LAT_HID_2D_TS_HALO_REDUCTION is set, we reduce the number of
-! extended halo layers for each subtime step in the latency hiding block
-! by this number.
-# ifdef MPI_LAT_HID_2D_TS_HALO_REDUCTION
-#  define MPI_LAT_HID_2D_ADD_LAYERS_AUX (MPI_LAT_HID_2D_ADD_LAYERS-MPI_LAT_HID_2D_TS_HALO_REDUCTION*lat_hid_2d_subtimestep)
-# endif
 
 # include "latency_hiding_2d_auxiliary_bounds_update.h"
 
