@@ -80,8 +80,13 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_auxiliary_bounds.h"
-#include "latency_hiding_2d.h"
-!
+!#include "latency_hiding_2d.h"
+
+!#ifdef MPI_LAT_HID_2D
+!# include "latency_hiding_2d_auxiliary_bounds_update.h"
+!#endif
+
+
 !  If child grid, interpolate ubar from parent
 !  AGRIF does not work yet with #undef SOLVE3D
 !
@@ -150,7 +155,7 @@ C$    trd=omp_get_thread_num()
 #  ifdef OBC_COM_M2ORLANSKI
 !                                           Western edge radiation BC
 !                                           ======= ==== ========= ==
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+1+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend+1
           grad(Istr  ,j)=(ubar(Istr  ,j,kstp)-ubar(Istr  ,j-1,kstp))
 #   ifdef MASKING
      &                                                *pmask(Istr,j)
@@ -160,7 +165,7 @@ C$    trd=omp_get_thread_num()
      &                                              *pmask(Istr+1,j)
 #   endif
         enddo
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           dft=ubar(Istr+1,j,kstp)-ubar(Istr+1,j,knew)
           dfx=ubar(Istr+1,j,knew)-ubar(Istr+2,j,knew)
 
@@ -210,7 +215,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT
 !                                            Western edge Characteristic BC
 !                                            ======= ==== ======= ==
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           cff=0.5*(h(Istr-1,j)+zeta(Istr-1,j,kstp)+
      &             h(Istr  ,j)+zeta(Istr  ,j,kstp))
           hx=sqrt(g/cff)
@@ -276,7 +281,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_WEST
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
 #   ifdef M2_FRC_BRY
           ubar(Istr,j,knew)=ubarbry_west(j)
 #   else
@@ -289,7 +294,7 @@ C$    trd=omp_get_thread_num()
 #  else
 !                                            Western edge gradient BC
 !                                            ======= ==== ======== ==
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           ubar(Istr,j,knew)=ubar(Istr+1,j,knew)
 #   ifdef MASKING
      &                      *umask(Istr,j)
@@ -300,7 +305,7 @@ C$    trd=omp_get_thread_num()
 !
 # else
                                                 ! Western edge closed
-        do j=jstr-MPI_LAT_HID_2D_ADD_LAYERS, jend+MPI_LAT_HID_2D_ADD_LAYERS ! ======= ==== ======
+        do j=jstr, jend ! ======= ==== ======
 #  ifdef MRL_WCI
           ubar(istr,j,knew)=-ust2d(Istr,j)      ! no Lagrangian flux
 #   ifdef MASKING
@@ -323,7 +328,7 @@ C$    trd=omp_get_thread_num()
 #  ifdef OBC_COM_M2ORLANSKI
 !                                           Eastern edge radiation BC
 !                                           ======= ==== ========= ==
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+1+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend+1
           grad(Iend  ,j)=(ubar(Iend  ,j,kstp)-ubar(Iend  ,j-1,kstp))
 #   ifdef MASKING
      &                                                *pmask(Iend,j)
@@ -333,7 +338,7 @@ C$    trd=omp_get_thread_num()
      &                                              *pmask(Iend+1,j)
 #   endif
         enddo
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           dft=ubar(Iend,j,kstp)-ubar(Iend  ,j,knew)
           dfx=ubar(Iend,j,knew)-ubar(Iend-1,j,knew)
 
@@ -383,7 +388,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_EAST
 !                                            Eastern edge Characteristic BC
 !                                            ======= ==== ======= ==
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           cff=0.5*(h(Iend  ,j)+zeta(Iend  ,j,kstp)+
      &             h(Iend+1,j)+zeta(Iend+1,j,kstp))
           hx=sqrt(g/cff)
@@ -448,7 +453,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2SPECIFIED
 !                                            Eastern edge Specified BC
 !                                            ======= ==== ========= ==
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
 #   ifdef M2_FRC_BRY
           ubar(Iend+1,j,knew)=ubarbry_east(j)
 #   else
@@ -461,7 +466,7 @@ C$    trd=omp_get_thread_num()
 #  else
 !                                            Eastern edge gradient BC
 !                                            ======= ==== ======== ==
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           ubar(Iend+1,j,knew)=ubar(Iend,j,knew)
 #   ifdef MASKING
      &                        *umask(Iend+1,j)
@@ -472,7 +477,7 @@ C$    trd=omp_get_thread_num()
 !
 # else
                                              ! Eastern edge closed BC
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS! ======= ==== ====== ==
+        do j=Jstr, Jend! ======= ==== ====== ==
 #  ifdef MRL_WCI
           ubar(Iend+1,j,knew)=-ust2d(Iend+1,j)     ! no Lagrangian flux
 #   ifdef MASKING
@@ -500,7 +505,7 @@ C$    trd=omp_get_thread_num()
 #  if defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_SOUTH
 !                                           Southern edge Specified BC
 !                                           ======== ==== ========= ==
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
 #   ifdef M2_FRC_BRY
           ubar(i,Jstr-1,knew)=ubarbry_south(i)
 #   else
@@ -513,11 +518,11 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2ORLANSKI
 !                                          Southern edge radiation BC
 !                                          ======== ==== ========= ==
-        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU-1, Iend
           grad(i,Jstr-1)=ubar(i+1,Jstr-1,kstp)-ubar(i,Jstr-1,kstp)
           grad(i,Jstr  )=ubar(i+1,Jstr  ,kstp)-ubar(i,Jstr  ,kstp)
         enddo
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           dft=ubar(i,Jstr,kstp)-ubar(i,Jstr  ,knew)
           dfx=ubar(i,Jstr,knew)-ubar(i,Jstr+1,knew)
 
@@ -567,7 +572,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT
 !                                           Southern edge Chapman BC
 !                                           ======== ==== ======= ==
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           cff=sqrt(0.5*g*(h(i-1,Jstr-1)+zeta(i-1,Jstr-1,kstp)+
      &                    h(i  ,Jstr-1)+zeta(i  ,Jstr-1,kstp)))
           cx=dtfast*0.5*cff*(pn(i-1,Jstr-1)+pn(i,Jstr-1))
@@ -580,7 +585,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT0
 !                                      Southern edge Characteristic BC
 !                                      ======== ==== ============== ==
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           if (vbar(i,Jstr+1,knew).lt.0.) then
             ubar(i,Jstr-1,knew)=ubar(i,Jstr,knew)
           else
@@ -597,7 +602,7 @@ C$    trd=omp_get_thread_num()
 #  else
 !                                           Southern edge gradient BC
 !                                           ======== ==== ======== ==
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           ubar(i,Jstr-1,knew)=ubar(i,Jstr,knew)
 #   ifdef MASKING
      &                         *umask(i,Jstr-1)
@@ -606,9 +611,9 @@ C$    trd=omp_get_thread_num()
 #  endif
 # else
 #  ifdef EW_COM_PERIODIC
-#   define I_RANGE IstrU-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
+#   define I_RANGE IstrU,Iend
 #  else
-#   define I_RANGE Istr-MPI_LAT_HID_2D_ADD_LAYERS,IendR-MPI_LAT_HID_2D_ADD_LAYERS
+#   define I_RANGE Istr,IendR
 #  endif
                                         ! Wall: free-slip (gamma2=+1)
         do i=I_RANGE                    ! ====    no-slip (gamma2=-1)
@@ -629,7 +634,7 @@ C$    trd=omp_get_thread_num()
 #  if defined OBC_COM_M2SPECIFIED || defined OBC_COM_M2SPECIFIED_NORTH
 !                                           Northern edge Specified BC
 !                                           ======== ==== ========= ==
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
 #   ifdef M2_FRC_BRY
           ubar(i,Jend+1,knew)=ubarbry_north(i)
 #   else
@@ -642,11 +647,11 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2ORLANSKI
 !                                          Northern edge radiation BC
 !                                          ======== ==== ========= ==
-        do i=IstrU-1-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU-1, Iend
           grad(i,Jend  )=ubar(i+1,Jend  ,kstp)-ubar(i,Jend,kstp  )
           grad(i,Jend+1)=ubar(i+1,Jend+1,kstp)-ubar(i,Jend+1,kstp)
         enddo
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           dft=ubar(i,Jend,kstp)-ubar(i,Jend  ,knew)
           dfx=ubar(i,Jend,knew)-ubar(i,Jend-1,knew)
 
@@ -696,7 +701,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT
 !                                           Northern edge Chapman BC
 !                                           ======== ==== ======= ==
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           cff=sqrt(0.5*g*(h(i-1,Jend+1)+zeta(i-1,Jend+1,kstp)+
      &                    h(i  ,Jend+1)+zeta(i  ,Jend+1,kstp)))
           cx=dtfast*0.5*cff*(pn(i-1,Jend+1)+pn(i,Jend+1))
@@ -709,7 +714,7 @@ C$    trd=omp_get_thread_num()
 #  elif defined OBC_COM_M2CHARACT0
 !                                    Northern edge Characteristic BC
 !                                    ======== ==== ============== ==
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           if (vbar(i,Jend-1,knew).gt.0.) then
             ubar(i,Jend+1,knew)=ubar(i,Jend,knew)
           else
@@ -726,7 +731,7 @@ C$    trd=omp_get_thread_num()
 #  else
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           ubar(i,Jend+1,knew)=ubar(i,Jend,knew)
 #   ifdef MASKING
      &                        *umask(i,Jend+1)
@@ -736,9 +741,9 @@ C$    trd=omp_get_thread_num()
 #  endif
 # else
 #  ifdef EW_COM_PERIODIC
-#   define I_RANGE IstrU-MPI_LAT_HID_2D_ADD_LAYERS,Iend+MPI_LAT_HID_2D_ADD_LAYERS
+#   define I_RANGE IstrU,Iend
 #  else
-#   define I_RANGE Istr-MPI_LAT_HID_2D_ADD_LAYERS,IendR-MPI_LAT_HID_2D_ADD_LAYERS
+#   define I_RANGE Istr,IendR
 #  endif
                                        !  Wall: free-slip (gamma2=+1)
         do i=I_RANGE                   !  =====   no-slip (gamma2=-1)
@@ -806,7 +811,7 @@ C$    trd=omp_get_thread_num()
 !
 # ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           cff1=ABS(ABS(umask_wet(Istr,j))-1.)
           cff2=0.5+SIGN(0.5,ubar(Istr,j,knew))*umask_wet(Istr,j)
           umask_wet(Istr,j)=0.5*umask_wet(Istr,j)*cff1
@@ -815,7 +820,7 @@ C$    trd=omp_get_thread_num()
         END DO
       END IF
       if (EASTERN_EDGE) then
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           cff1=ABS(ABS(umask_wet(Iend+1,j))-1.)
           cff2=0.5+SIGN(0.5,ubar(Iend+1,j,knew))*umask_wet(Iend+1,j)
           umask_wet(Iend+1,j)=0.5*umask_wet(Iend+1,j)*cff1
@@ -826,7 +831,7 @@ C$    trd=omp_get_thread_num()
 # endif
 # ifndef NS_COM_PERIODIC
       if (SOUTHERN_EDGE) then
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           cff1=ABS(ABS(umask_wet(i,Jstr-1))-1.)
           cff2=0.5+SIGN(0.5,ubar(i,Jstr-1,knew))*umask_wet(i,Jstr-1)
           umask_wet(i,Jstr-1)=0.5*umask_wet(i,Jstr-1)*cff1
@@ -835,7 +840,7 @@ C$    trd=omp_get_thread_num()
         END DO
       END IF
       if (NORTHERN_EDGE) then
-        do i=Istr-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=Istr, Iend
           cff1=ABS(ABS(umask_wet(i,Jend+1))-1.)
           cff2=0.5+SIGN(0.5,ubar(i,Jend+1,knew))*umask_wet(i,Jend+1)
           umask_wet(i,Jend+1)=0.5*umask_wet(i,Jend+1)*cff1
@@ -891,7 +896,7 @@ C$    trd=omp_get_thread_num()
 # ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
 #  if defined OBC_COM_WEST || defined MRL_WCI
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           DU_nbq(Istr,j)=ubar(Istr,j,knew)
      &                     *0.5*(h(Istr  ,j)+zeta(Istr  ,j,knew)
      &                         + h(Istr-1,j)+zeta(Istr-1,j,knew))
@@ -901,7 +906,7 @@ C$    trd=omp_get_thread_num()
 #   endif
         enddo
 #  else
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           DU_nbq(Istr,j)=0.  ! closed boundary
         enddo
 #  endif
@@ -909,7 +914,7 @@ C$    trd=omp_get_thread_num()
 !
       if (EASTERN_EDGE) then
 #  if defined OBC_COM_EAST || defined MRL_WCI
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           DU_nbq(Iend+1,j)=ubar(Iend+1,j,knew)
      &                     *0.5*(h(Iend+1,j)+zeta(Iend+1,j,knew)
      &                          +h(Iend  ,j)+zeta(Iend  ,j,knew))
@@ -919,7 +924,7 @@ C$    trd=omp_get_thread_num()
 #   endif
         enddo
 #  else
-        do j=Jstr-MPI_LAT_HID_2D_ADD_LAYERS, Jend+MPI_LAT_HID_2D_ADD_LAYERS
+        do j=Jstr, Jend
           DU_nbq(Iend+1,j)=0.  ! closed boundary
         enddo
 #  endif
@@ -929,7 +934,7 @@ C$    trd=omp_get_thread_num()
 # ifndef NS_COM_PERIODIC
       if (SOUTHERN_EDGE) then
 #  if defined OBC_COM_SOUTH || defined MRL_WCI
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           DU_nbq(i,Jstr-1)=ubar(i,Jstr-1,knew)
      &                 *0.5*(h(i  ,Jstr-1)+zeta(i  ,Jstr-1,knew)
      &                      +h(i-1,Jstr-1)+zeta(i-1,Jstr-1,knew))
@@ -939,7 +944,7 @@ C$    trd=omp_get_thread_num()
 #   endif
         enddo
 #  else
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           DU_nbq(i,Jstr-1)=gamma2*DU_nbq(i,Jstr)  ! slip/noslip boundary
         enddo
 #  endif
@@ -947,7 +952,7 @@ C$    trd=omp_get_thread_num()
 !
       if (NORTHERN_EDGE) then
 #  if defined OBC_COM_NORTH  || defined MRL_WCI
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           DU_nbq(i,Jend+1)=ubar(i,Jend+1,knew)
      &                 *0.5*(h(i  ,Jend+1)+zeta(i  ,Jend+1,knew)
      &                      +h(i-1,Jend+1)+zeta(i-1,Jend+1,knew))
@@ -957,7 +962,7 @@ C$    trd=omp_get_thread_num()
 #   endif
         enddo
 #  else
-        do i=IstrU-MPI_LAT_HID_2D_ADD_LAYERS, Iend+MPI_LAT_HID_2D_ADD_LAYERS
+        do i=IstrU, Iend
           DU_nbq(i,Jend+1)=gamma2*DU_nbq(i,Jend)
         enddo
 #  endif

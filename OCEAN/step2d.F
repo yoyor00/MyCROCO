@@ -358,7 +358,7 @@ C$    trd=omp_get_thread_num()
 # endif
 
 # ifdef OBC_VOLCONS
-      call set_DUV_bc_tile (IJ_ORIG, Drhs, DUon,DVom)
+      call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 # endif
 
 # ifdef CVTK_DEBUG_ADVANCED
@@ -455,13 +455,13 @@ C$OMP END MASTER
 !$acc end kernels
       if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
         if (FIRST_2D_STEP) then
-          call zonavg_2d(IJ_ORIG,
+          call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   zeta(START_2D_ARRAY,knew),zetazon)
         endif
       endif
       if (iic.eq.ntstart) then
         if (FIRST_2D_STEP) then
-          call zonavg_2d(IJ_ORIG,
+          call zonavg_2d(Istr,Iend,Jstr,Jend,
      &                   ssh(START_2D_ARRAY),sshzon)
         endif
       endif
@@ -641,7 +641,7 @@ C$OMP END MASTER
 ! Set boundary conditions for the free-surface
 !-----------------------------------------------------------------------
 !
-      call zetabc_tile (IJ_ORIG)
+      call zetabc_tile (Istr,Iend,Jstr,Jend)
 !
 !----------------------------------------------------------------------
 ! Compute time averaged fields over all short timesteps.
@@ -1635,11 +1635,11 @@ C$OMP END MASTER
 ! all open boundaries, if any.
 !-----------------------------------------------------------------------
 !
-      call u2dbc_tile (IJ_ORIG, UFx)
-      call v2dbc_tile (IJ_ORIG, UFx)
+      call u2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
+      call v2dbc_tile (Istr,Iend,Jstr,Jend, UFx)
 
 # ifdef OBC_VOLCONS
-      call obc_flux_tile (IJ_ORIG)
+      call obc_flux_tile (Istr,Iend,Jstr,Jend)
 # endif
 !
 !-----------------------------------------------------------------------
@@ -1803,7 +1803,7 @@ C$OMP END MASTER
 !$acc end kernels
 # ifndef SOLVE3D
 #   ifndef HPC_BENCH_SKIP_VALIDATION
-      call diag_tile (IJ_ORIG, UFx,UFe)
+      call diag_tile (Istr,Iend,Jstr,Jend, UFx,UFe)
 #   endif
 # endif
 !
