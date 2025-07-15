@@ -511,8 +511,6 @@
 # undef  TS_VADV_C2        /* 2nd-order centered vertical advection */
 #endif
 
-#undef  TS_VADV_FCT        /* Flux correction of vertical advection */
-
 #ifdef VADV_ADAPT_IMP
 # define TS_VADV_SPLINES
 # undef   TS_VADV_AKIMA
