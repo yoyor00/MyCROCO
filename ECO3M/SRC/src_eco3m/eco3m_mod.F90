@@ -135,8 +135,9 @@
             ! Allocation of the array of parameter names
             if (associated (PROC_MOD(i)%nompar)) NULLIFY(PROC_MOD(i)%nompar)
             Allocate(PROC_MOD(i)%nompar(itemp),STAT=istat)
-            if (istat /= 0) write(*,*) "Problem with the allocation of the",&
-                &" PROC_MOD(",i,")%nompar array"
+            if (istat /= 0) then
+                write(*,*) "Allocation problem: PROC_MOD(", i, ")%nompar array"
+            endif
 
             ! Now we fill the values of the PROC_MOD(',i,')%nompar array
             do j=1,PROC_MOD(i)%nbpar
