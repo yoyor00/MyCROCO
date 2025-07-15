@@ -112,12 +112,13 @@
      &        tau_w, tau_ws, tau_c, tau_cs, tau_cw, tau_cws,
      &        thetw, twopi, Ucur, Vcur, Ubc, visk,
      &        znots, znot, znota, znot_bl, znot_rip,
-     &        eps, zomin, zomax, depth, Ut
+     &        eps, zomin, zomax, depth, Ut, sinh_maxarg
       parameter
      &       (Ubc   = 1.e-2,  ! minimum orbital velocity for waves
      &        eps   = 1.e-10, ! small number to avoid zero division
      &        zomin = 1.e-5,  ! minimum roughness
-     &        zomax = 3.e-2)  ! maximum roughness
+     &        zomax = 3.e-2,   ! maximum roughness
+     &        sinh_maxarg = 700) ! SINH maximum arg value
 # ifdef Z0_RIP
       real    rhgt, rlen, rhmax, rhmin, rlmin, psi,
      &        rhbio, rlbio, rhbiomax, rhfac
@@ -238,7 +239,7 @@
 !
 !  Compute bed wave orbital velocity and excursion amplitude.
 !
-          Ab=Awave(i,j)/SINH(Kbh) + eps
+          Ab=Awave(i,j)/(max(SINH(min(Kbh,sinh_maxarg)),eps)) + eps
 # ifdef OW_COUPLING_FULL
           Ub(i,j) = ubr(i,j) SWITCH rmask(i,j)
      &                       SWITCH_WET rmask_wet(i,j)

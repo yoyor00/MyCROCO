@@ -12,9 +12,7 @@ MODULE substance
 
    USE module_substance
    USE comsubstance
-#ifdef SUBSTANCE_SUBMASSBALANCE 
    USE submassbalance, ONLY :  submassbalance_readdomain
-#endif
 
    IMPLICIT NONE
    PRIVATE
@@ -58,6 +56,8 @@ CONTAINS
    INTEGER                                   :: ivpc, ivp, iv, iv0, indx, ivTS
    INTEGER                                   :: isubs, nballoc, ivr, it, ntypvar
    INTEGER                                   :: lstr, lenstr
+   INTEGER :: rc
+   CHARACTER(LEN=lchain) :: msg
 
 !! tables (_n) sized to read in namelist by number of substances of such and such a type
 !! tables (_r) intermediates sized to the number of substances, will then be copied into the final 
@@ -88,9 +88,7 @@ CONTAINS
 #endif
 #endif
 
-#ifdef SUBSTANCE_SUBMASSBALANCE 
    REAL(KIND=rlg)        :: tool_datosec
-#endif
                                     
    !! *  define namelists reading in parasubstance.txt
 #ifdef MUSTANG
@@ -141,11 +139,9 @@ CONTAINS
    NAMELIST/nmlvarbent/name_var_bent, long_name_var_bent, standard_name_var_bent, unit_var_bent, &
                        cini_bent, l_out_subs_bent
 #endif 
-#ifdef SUBSTANCE_SUBMASSBALANCE 
    NAMELIST/nmlsubmassbalance/submassbalance_l, submassbalance_nb_border, &
                     submassbalance_input_file, submassbalance_output_file, &
                     submassbalance_dtout, submassbalance_date_start
-#endif 
 
    !!----------------------------------------------------------------------
    !! * Executable part
@@ -417,15 +413,17 @@ CONTAINS
    nv_state=nv_adv+nv_fix
    nv_tot=nv_state ! ntrc_substot
 
-#ifdef SUBSTANCE_SUBMASSBALANCE 
-    READ(500, nmlsubmassbalance)
+    READ (500, nmlsubmassbalance, iostat=rc); REWIND (500)
+    IF (rc /= 0) THEN
+       msg = "WARNING : nmlsubmassbalance, namelist not found, default values are used :"
+       MPI_master_only  WRITE(stdout,*) msg
+       MPI_master_only  WRITE(stdout,nml=nmlsubmassbalance)
+    END IF
+
     if (submassbalance_l) then
         submassbalance_tdeb = tool_datosec(submassbalance_date_start)
         CALL submassbalance_readdomain()
     endif
-#endif 
-
-
 
     !******************************************
     !    create new variables 

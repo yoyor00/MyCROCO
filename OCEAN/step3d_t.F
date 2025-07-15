@@ -55,12 +55,10 @@
       USE comsubstance, ONLY : l_subs2D
 #    endif
 #   endif
-#   ifdef SUBSTANCE_SUBMASSBALANCE
       USE submassbalance, ONLY :  submassbalance_flxcum_kiv
       USE submassbalance, ONLY :  submassbalance_psource
       USE submassbalance, ONLY :  submassbalance_flxcum_ws
-#   endif
-#  endif
+#  endif /* SUBSTANCE */
       implicit none
 #  include "param.h"
 #  include "ncscrum.h"
@@ -366,12 +364,12 @@
 !add submassbalance !! in loop k
 ! this has to be checked with OPENACC
 ! as well as OPENACC and MUSTANG in general          
-#  if defined SUBSTANCE_SUBMASSBALANCE
+#  if defined SUBSTANCE
         if (itrc .ge. itsubs1) then
             call submassbalance_flxcum_kiv(Istr, Iend, Jstr, Jend, 
      &        FX, FE, itrc-itsubs1+1)
         endif
-#  endif
+#  endif /* SUBSTANCE */
 #  if defined OPENACC
             ENDDOEXTEND
 # endif  
@@ -785,7 +783,7 @@
 
 !add submassbalance for river!! 
 !mustang and openacc not compatible         
-# if defined SUBSTANCE_SUBMASSBALANCE
+# if defined SUBSTANCE
       call submassbalance_psource(Istr, Iend, Jstr, Jend)
 #  ifdef MUSTANG
       call submassbalance_flxcum_ws(Istr, Iend, Jstr, Jend)
