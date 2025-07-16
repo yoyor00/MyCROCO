@@ -19,12 +19,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BENCH : remove openmp reproducibility check on SHOREFACE case (Incident #358)
 - BENCH : fix typo AGRIF_2W to AGRIF_2WAY in realist and vortex json files (Issue #368)
 
+- PISCES : Fix dummy line (kt variable) at end in p4zche.F90  (Issue #420)
 - PISCES : Fixed error on diagnostic ligands and add Fe2+ oxydation rate (Issue #371)
 
 - DIAGNOSTICS_EDDY & not XIOS : fix double comma in ncscrum.h (Issue #362)
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+
+- Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 
 ### Changed
 
@@ -54,6 +57,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Obsolete, unused or undocumented CPP keys : 
   - ICE (#416)
+  - TS_VADV_FCT was always undef, never used (#390)
 
 ### Other
 
