@@ -3,11 +3,9 @@
 module submassbalance
 
 #if defined SUBSTANCE
-#if defined SUBSTANCE_SUBMASSBALANCE
     USE module_substance
     USE comsubstance
 #ifdef MUSTANG
-    USE module_MUSTANG
     USE comMUSTANG
 #endif
 !======================================================================
@@ -1331,7 +1329,6 @@ subroutine submassbalance_wrt_outnc()
 end subroutine submassbalance_wrt_outnc
 
 !==========================================================================
-#endif /* ifdef SUBSTANCE_SUBMASSBALANCE */
 #endif /* ifdef SUBSTANCE */
 !!======================================================================
 end module submassbalance

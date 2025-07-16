@@ -1016,7 +1016,7 @@ C$OMP END MASTER
 #ifdef CVTK_DEBUG
       use debug
 #endif
-#   ifdef SUBSTANCE_SUBMASSBALANCE
+#   ifdef SUBSTANCE
       USE submassbalance, ONLY :  submassbalance_main
 #   endif
 #ifdef MUSTANG
@@ -1103,7 +1103,7 @@ C$OMP BARRIER
         call mustang_deposition_main (tile)
 # endif
 
-# ifdef SUBSTANCE_SUBMASSBALANCE
+# ifdef SUBSTANCE
        call submassbalance_main(tile)
 #endif
 

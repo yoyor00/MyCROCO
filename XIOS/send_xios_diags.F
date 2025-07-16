@@ -2644,9 +2644,6 @@ c !$acc wait
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
       endif
-      if (xios_field_is_active("prate")) then
-      call xios_send_field("prate",prate)
-      endif
 
 # ifdef ABL1D
       if (xios_field_is_active("zr_abl")) then
@@ -2717,6 +2714,9 @@ c !$acc wait
       endif
       if (xios_field_is_active("rhum")) then
       call xios_send_field("rhum",rhum)
+      endif
+      if (xios_field_is_active("prate")) then
+      call xios_send_field("prate",prate)
       endif
 # endif
 
