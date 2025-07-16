@@ -2535,55 +2535,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxKAPS =',indxKAPS
 # endif
 #endif /* MRL_WCI */
 
-#ifdef ICE
-      vname(1,indxAi)='aice                                       '
-      vname(2,indxAi)='fraction of cell covered by ice            '
-      vname(3,indxAi)='nondimensional                             '
-      vname(4,indxAi)='aice, scalar, series                       '
-      vname(5,indxAi)='                                           '
-      vname(6,indxAi)='lat_rho lon_rho                            '
-      vname(7,indxAi)='                                           '
-      vname(1,indxUi)='uice                                       '
-      vname(2,indxUi)='u-component of ice velocity                '
-      vname(3,indxUi)='meter sec-1                                '
-      vname(4,indxUi)='uice, scalar, series                       '
-      vname(5,indxUi)='                                           '
-      vname(6,indxUi)='lat_u lon_u                                '
-      vname(7,indxUi)='                                           '
-
-      vname(1,indxVi)='vice                                       '
-      vname(2,indxVi)='v-component of ice velocity                '
-      vname(3,indxVi)='meter sec-1                                '
-      vname(4,indxVi)='vice, scalar, series                       '
-      vname(5,indxVi)='                                           '
-      vname(6,indxVi)='lat_v lon_v                                '
-      vname(7,indxVi)='                                           '
-
-      vname(1,indxHi)='hice                                       '
-      vname(2,indxHi)='depth of ice cover                         '
-      vname(3,indxHi)='meter                                      '
-      vname(4,indxHi)='hice, scalar, series                       '
-      vname(5,indxHi)='                                           '
-      vname(6,indxHi)='lat_rho lon_rho                            '
-      vname(7,indxHi)='                                           '
-
-      vname(1,indxHS)='snow_thick                                 '
-      vname(2,indxHS)='depth of snow cover                        '
-      vname(3,indxHS)='meter                                      '
-      vname(4,indxHS)='snow_thick, scalar, series                 '
-      vname(5,indxHS)='                                           '
-      vname(6,indxHS)='lat_rho lon_rho                            '
-      vname(7,indxHS)='                                           '
-
-      vname(1,indxTIsrf)='tisrf                                   '
-      vname(2,indxTIsrf)='temperature of ice surface              '
-      vname(3,indxTIsrf)='Kelvin                                  '
-      vname(4,indxTIsrf)='tsrf, scalar, series                    '
-      vname(5,indxTIsrf)='                                        '
-      vname(6,indxTIsrf)='lat_rho lon_rho                         '
-      vname(7,indxTIsrf)='                                        '
-#endif
-
 #ifdef BULK_FLUX
 # ifdef ONLINE /* JG ONLINE */
       do blkvar_id=1,nblkvrs
