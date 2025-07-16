@@ -122,7 +122,7 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-	module_substance.F  module_MUSTANG.F module_OBSTRUCTIONS.F\
+	module_substance.F  module_OBSTRUCTIONS.F\
 	abl_step.F  abl_ini.F  abl_tke.F\
 	wrt_abl_his.F  def_abl_his.F\
 	wrt_abl_avg.F set_abl_avg.F\
@@ -165,7 +165,8 @@ include Makedefs
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
-	comMUSTANG.F90 dredging.F90 coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
+	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 	
 

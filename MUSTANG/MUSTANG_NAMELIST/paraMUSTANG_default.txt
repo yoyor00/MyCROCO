@@ -13,7 +13,6 @@
 : namsedim_bedload         : relative to sediment bedload
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
-:                            (only if key_MUSTANG_lateralerosion)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -346,19 +345,20 @@
 :
 :------------------------------------------------------------------------------
 :  namsedim_lateral_erosion : Namelist relative to lateral sediment erosion
-:  (key_MUSTANG_lateralerosion only)
 :------------------------------------------------------------------------------
+:    l_erolat : boolean, set to .true in order to activate lateral erosion
 :    coef_erolat : real, slope effect multiplicative factor 
 :    coef_tauskin_lat : real, parameter to evaluate the lateral stress as a 
 :                       function of the average tangential velocity on the 
 :                       vertical
 :    l_erolat_wet_cell : boolean, set to .true in order to take into account 
-:                        wet cells lateral erosion
+:                        wet cells in lateral erosion
 :    htncrit_eros : real, critical water height so as to prevent erosion under 
 :                   a given threshold (the threshold value is different for 
 :                   flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
 :------------------------------------------------------------------------------
 &namsedim_lateral_erosion
+   l_erolat = .FALSE.
    coef_erolat = 0.002 
    coef_tauskin_lat = 5.0  
    l_erolat_wet_cell = .FALSE.

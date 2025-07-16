@@ -4,7 +4,7 @@
 
       module plug_MUSTANG_CROCO
 
-      USE module_MUSTANG
+      USE module_substance
       USE initMUSTANG, ONLY : MUSTANG_init
       USE sed_MUSTANG, ONLY : MUSTANG_update
       USE sed_MUSTANG, ONLY : MUSTANG_deposition
@@ -32,16 +32,13 @@ CONTAINS
       REAL    :: TEMPREF_LIN
       REAL    :: SALREF_LIN
       INTEGER :: tile
-# include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
       TEMPREF_LIN = 10.0 
       SALREF_LIN  = 35.0
       CALL MUSTANG_update (Istr, Iend, Jstr, Jend,  & 
                    t, zob,                          &
-# if defined key_MUSTANG_lateralerosion || defined key_MUSTANG_bedload
                    ubar, vbar,                      &
-# endif
                    SALREF_LIN, TEMPREF_LIN, dt)
       end subroutine
 !
@@ -50,7 +47,6 @@ CONTAINS
       subroutine mustang_deposition_main (tile)
 
       integer :: tile
-# include "ocean2d.h"
 # include "compute_tile_bounds.h"
       CALL MUSTANG_deposition (Istr, Iend, Jstr, Jend, t)
       end subroutine
@@ -61,7 +57,6 @@ CONTAINS
 
       REAL :: h0fond
       integer :: tile
-# include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
 # ifdef WET_DRY
@@ -82,7 +77,6 @@ CONTAINS
       subroutine mustang_morpho_main (tile)
 
       integer :: tile
-# include "ocean2d.h"
 # include "compute_tile_bounds.h"
 
       CALL MUSTANG_morpho (Istr, Iend, Jstr, Jend, dh)
