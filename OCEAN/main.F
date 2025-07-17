@@ -1000,7 +1000,6 @@ CR      write(*,*) '  0' MYID
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
 #endif
-C$OMP PARALLEL DO PRIVATE(tile) 
       ! close netCDF files.
       call closecdf
 #ifdef XIOS
