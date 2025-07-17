@@ -112,8 +112,6 @@
 #if defined BIOLOGY && defined TRACERS
 !$acc&, global_sum
 #endif
-!$acc&, CPU_time
-!$acc&, proc
 #ifdef SOLITON
 #else
 #endif

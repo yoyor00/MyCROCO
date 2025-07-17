@@ -164,9 +164,6 @@
 !      ierr=nf_put_att_text(ncid, nf_global, 'origin_date',lvar,
 !     &                                     origin_date(1:lvar))
 !# endif
-      lvar=lenstr(date_str)
-      ierr=nf_put_att_text(ncid, nf_global, 'date',    lvar,
-     &                                      date_str(1:lvar))
       lvar=lenstr(rstname)
       ierr=nf_put_att_text(ncid, nf_global, 'rst_file',lvar,
      &                                       rstname(1:lvar))

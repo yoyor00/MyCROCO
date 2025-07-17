@@ -258,36 +258,6 @@
 #endif
 
 /*
-  The following definitions are machine dependent macros, compiler
- directives, etc. A proper set of definitions is activated by a
- proper choice C-preprocessor flag, i.e. -DSGI for an SGI computer
- or -DCRAY for a Cray shared memory architecture (Y-MP, C-90, J-90).
- Definitions for other shared memory platforms may be appended here.
-*/
-#if defined sgi || defined SGI
-# define CVECTOR CDIR$ IVDEP
-# define CSDOACROSS C$DOACROSS
-# define CAND C$&
-# define ENTER_CRITICAL_REGION SPACE call mp_setlock()
-# define EXIT_CRITICAL_REGION  SPACE call mp_unsetlock()
-# define CSDISTRIBUTE_RESHAPE !! c$distribute
-/* # define CSDISTRIBUTE_RESHAPE !! c$distribute_reshape */
-# define BLOCK_PATTERN block,block
-# define BLOCK_CLAUSE !! onto(2,*)
-#elif defined cray || defined CRAY
-# ifdef  DBLEPREC
-#  undef  DBLEPREC
-# endif
-# define CVECTOR CDIR$ IVDEP
-# define CSDOACROSS CMIC$ DO ALL
-# define SHARE SHARED
-# define LOCAL PRIVATE
-# define CAND CMIC$&
-# define ENTER_CRITICAL_REGION CMIC$ GUARD
-# define EXIT_CRITICAL_REGION CMIC$ END GUARD
-#endif
-
-/*
    Put grid variables in output files
 */
 #define PUT_GRID_INTO_RESTART

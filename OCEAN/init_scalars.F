@@ -118,16 +118,7 @@ C$OMP END PARALLEL
       synchro_flag=.true.
       first_time=0
       may_day_flag=0
-!
-! Reset process ID and CPU_time clocks (needed by timers).
-!
-      do j=0,NPP
-        do i=0,31
-          proc(i,j)=0
-          CPU_time(i,j)=0.E0
-        enddo
-      enddo
-      trd_count=0
+
 !
 ! Reset record counters for averages/history output.
 !
@@ -286,7 +277,6 @@ C$OMP END PARALLEL
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
        brywkb_id=-1
 #endif
-      call get_date (date_str)
 
 #ifdef SOLVE3D
 # ifdef TS_MIX_ISO_FILT
