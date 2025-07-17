@@ -13,6 +13,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Fixed
 
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
+- COUPLING : patm2D was declared twice in case of OW_COUPLING and READ_PATM (Issue #383)
 - BENCH : do not put report status to True for reference variant to avoid
   to mark test passed even if not (Issue #342)
 - BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
@@ -56,9 +57,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove file scalars_F90.h, not used (Issue #382)
 
 - Obsolete, unused or undocumented CPP keys : 
-  - CRAY, VAX, SGI, AIX (#413)
-  - DECALPHA (#414)
+  - START_DATE (#417)
   - ICE (#416)
+  - DECALPHA (#414)
+  - CRAY, VAX, SGI, AIX (#413)
   - TS_VADV_FCT was always undef, never used (#390)
 
 ### Other
@@ -70,7 +72,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Le Gac, P. Marchesiello, R. Person
+  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, P. Marchesiello, R. Person
 
 - New contributors : 
   M. Plus, M. Schreiber 
