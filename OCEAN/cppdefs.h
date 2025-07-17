@@ -122,7 +122,6 @@
 #  undef  MPI_NOLAND
 #  undef  MPI_TIME
 # endif
-# undef  AUTOTILING
                       /* Grid configuration */
 # define CURVGRID
 # define SPHERICAL
@@ -484,7 +483,6 @@
 #  undef  MPI_NOLAND
 #  undef  MPI_TIME
 # endif
-# undef  AUTOTILING
                       /* Non-hydrostatic options */
 # ifdef NBQ
 #  define W_HADV_WENO5

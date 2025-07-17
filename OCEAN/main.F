@@ -102,11 +102,6 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
-#ifdef AUTOTILING
-! Initial values of NSUB_X, NSUB_E
-      NSUB_X = 1
-      NSUB_E = NPP
-#endif
 !
 #include "dynderivparam.h"
 
@@ -147,12 +142,6 @@
 #ifdef AGRIF
       call Agrif_Init_Grids()
       call declare_zoom_variables()
-#endif
-!
-!  Initialize automatic tiling
-!
-#ifdef AUTOTILING
-      call init_auto_tiling
 #endif
 !
 !  Setup MPI domain decomposition
