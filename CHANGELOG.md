@@ -56,6 +56,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove file scalars_F90.h, not used (Issue #382)
 
 - Obsolete, unused or undocumented CPP keys : 
+  - CRAY, VAX, SGI, AIX (#413)
   - DECALPHA (#414)
   - ICE (#416)
   - TS_VADV_FCT was always undef, never used (#390)
