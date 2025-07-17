@@ -581,18 +581,6 @@
      &        , avg_vol, avg_rho
 #endif
 
-!
-!  The following common block contains process counters and model
-! timers. These are used to measure CPU time consumed by different
-! parallel threads during the whole run, as well as in various
-! parallel regions, if so is needed. These variables are used purely
-! for diagnostic/performance measurements purposes and do not affect
-! the model results.
-!
-      real*4 CPU_time(0:31,0:NPP)
-      integer proc(0:31,0:NPP),trd_count
-      common /timers_roms/CPU_time,proc,trd_count
-
 #ifdef MPI
 !
 ! MPI related variables

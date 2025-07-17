@@ -258,7 +258,6 @@
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-!        call start_timers()
         call init_arrays (tile)
       enddo
 CR      write(*,*) '-11' MYID

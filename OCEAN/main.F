@@ -246,14 +246,13 @@
 !
 !
 !----------------------------------------------------------------------
-!  Create parallel threads; start timers for each thread;
+!  Create parallel threads; 
 !  initialize (FIRST-TOUCH) model global arrays (most of them
 !  are just set to to zero).
 !----------------------------------------------------------------------
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call start_timers()
         call init_arrays (tile)
       enddo
 CR      write(*,*) '-11' MYID
@@ -1001,10 +1000,8 @@ CR      write(*,*) '  0' MYID
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
 #endif
-C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
-      do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
-        call stop_timers()
-      enddo
+C$OMP PARALLEL DO PRIVATE(tile) 
+      ! close netCDF files.
       call closecdf
 #ifdef XIOS
       call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF

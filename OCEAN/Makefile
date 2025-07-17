@@ -35,7 +35,7 @@ include Makedefs
 #======================================================================
 
  SRCS = main.F		step.F		read_inp.F\
-	timers_roms.F	init_scalars.F	init_arrays.F	set_weights.F\
+	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
 \
@@ -66,7 +66,7 @@ include Makedefs
 	param.F    ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
-	get_date.F	lenstr.F	closecdf.F	insert_node.F\
+	lenstr.F	closecdf.F	insert_node.F\
 	fillvalue.F	nf_add_attribute.F		set_cycle.F\
 	def_grid_2d.F   def_grid_3d.F   def_his.F       def_rst.F\
 	def_diags.F	def_diagsM.F	def_bio_diags.F\
