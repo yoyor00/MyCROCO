@@ -96,7 +96,6 @@
 # define OBC_SOUTH
                       /* Applications */
 # undef  BIOLOGY
-# undef  FLOATS
 # undef  STATIONS
 # undef  PASSIVE_TRACER
 # undef  SEDIMENT
@@ -361,7 +360,7 @@
 /*
 !           Applications:
 !---------------------------------
-! Biology, floats, Stations,
+! Biology, Stations,
 ! Passive tracer, Sediments, BBL
 !---------------------------------
 !
@@ -397,17 +396,6 @@
 #  define DIAGNOSTICS_BIO
 #  if defined DIAGNOSTICS_BIO && defined PISCES
 #   define key_trc_diaadd
-#  endif
-# endif
-                      /*   Lagrangian floats model    */
-# ifdef FLOATS
-#  undef  FLOATS_GLOBAL_ATTRIBUTES
-#  undef  IBM
-#  undef  RANDOM_WALK
-#  ifdef RANDOM_WALK
-#   define DIEL_MIGRATION
-#   define RANDOM_VERTICAL
-#   define RANDOM_HORIZONTAL
 #  endif
 # endif
                       /*   Stations recording    */
@@ -455,7 +443,6 @@
 # define OBC_SOUTH
                       /* Applications */
 # undef  BIOLOGY
-# undef  FLOATS
 # undef  STATIONS
 # undef  PASSIVE_TRACER
 # undef  SEDIMENT
@@ -602,7 +589,7 @@
 /*
 !           Applications:
 !---------------------------------
-! Biology, floats, Stations,
+! Biology, Stations,
 ! Passive tracer, Sediments, BBL
 !---------------------------------
 !
@@ -911,15 +898,6 @@
 # undef  PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
-# undef  FLOATS
-# ifdef FLOATS
-#  define RANDOM_WALK
-#  ifdef RANDOM_WALK
-#   define DIEL_MIGRATION
-#   define RANDOM_VERTICAL
-#   define RANDOM_HORIZONTAL
-#  endif
-# endif
 # define NO_FRCFILE
 
 #elif defined SEAMOUNT
@@ -2040,7 +2018,6 @@
 # undef  PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
-# undef  FLOATS
 # define NO_FRCFILE
 # define USE_CALENDAR
 # define NEW_S_COORD

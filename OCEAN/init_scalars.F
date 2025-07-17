@@ -101,13 +101,6 @@ C$OMP END PARALLEL
 #endif
       nfast=1
 
-#ifdef FLOATS
-      nfp1=0     ! set time step indices for
-      nf=3       ! 5th order AB4AM4 corrected
-      nfm1=2     ! scheme
-      nfm2=1
-      nfm3=0
-#endif
 #ifdef WKB_WWAVE
       wstp=1
       wnew=1
