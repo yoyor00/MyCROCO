@@ -108,9 +108,6 @@
 #  endif
       real cff1,cff2,gama,dRz,hbltmp,sig,dXmax,dEmax,
      &     dpth,smax,amax,amaxx
-#  ifdef TS_VADV_FCT
-      real tmax,tmin,Ppos,Qpos,Pneg,Qneg,lmdmax
-#  endif
 #  include "openacc_work.h"
       parameter (epsil=1.E-16)
 !
@@ -522,13 +519,6 @@
         enddo
 #  endif
 
-!----------------------------------------------------------
-! Apply flux correction for monotonicity
-!----------------------------------------------------------
-!
-#  ifdef TS_VADV_FCT
-#   include "FCT.h"
-#  endif
 !
 !----------------------------------------------------------
 ! Apply vertical advective flux divergence

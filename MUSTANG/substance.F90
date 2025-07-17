@@ -761,11 +761,13 @@ CONTAINS
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in air           : ',cini_air_r(isubs)
     END DO
 
-    DO isubs=1,nv_fix
-     MPI_master_only WRITE(stdout,*)' '
-     MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(name_var_fix(isubs))
-     MPI_master_only WRITE(stdout,*)'uniform initial conc. in water column  : ',cini_wat_fix(isubs)
-    END DO
+    IF (nv_fix > 0) THEN
+      DO isubs=1,nv_fix
+      MPI_master_only WRITE(stdout,*)' '
+      MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(name_var_fix(isubs))
+      MPI_master_only WRITE(stdout,*)'uniform initial conc. in water column  : ',cini_wat_fix(isubs)
+      END DO
+    END IF
 #ifdef key_benthic
     DO isubs=1,nv_bent
      MPI_master_only WRITE(stdout,*)' '
@@ -831,20 +833,22 @@ CONTAINS
          wrthis(indx) = .FALSE. !! no output in water for gravel
      ENDIF
    ENDDO
-   DO isubs=1,nv_fix
-     indx=indxT+ntrc_salt+ntrc_subs+isubs
-   !  write(*,*)'fix, indice vname',indx
-     vname(1,indx)=name_var_fix(isubs)
-     MPI_master_only write(*,*)'vname(1,',indx,')=', vname(1,indx)
-     vname(2,indx)=long_name_var_fix(isubs)
-     vname(3,indx)=unit_var_fix(isubs)
-     vname(4,indx)=TRIM(ADJUSTL(ADJUSTR(standard_name_var_fix(isubs))))//', scalar, series'
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     wrthis(indx)=l_out_subs_fix(isubs) 
-    ! MPI_master_only write(*,*)'fix, indice wrthis fixed variables',indx,wrthis(indx),name_var_fix(isubs)
-   ENDDO
+   IF (nv_fix>0) THEN
+      DO isubs=1,nv_fix
+      indx=indxT+ntrc_salt+ntrc_subs+isubs
+      !  write(*,*)'fix, indice vname',indx
+      vname(1,indx)=name_var_fix(isubs)
+      MPI_master_only write(*,*)'vname(1,',indx,')=', vname(1,indx)
+      vname(2,indx)=long_name_var_fix(isubs)
+      vname(3,indx)=unit_var_fix(isubs)
+      vname(4,indx)=TRIM(ADJUSTL(ADJUSTR(standard_name_var_fix(isubs))))//', scalar, series'
+      vname(5,indx)=' '
+      vname(6,indx)=' '
+      vname(7,indx)=' '
+      wrthis(indx)=l_out_subs_fix(isubs) 
+      ! MPI_master_only write(*,*)'fix, indice wrthis fixed variables',indx,wrthis(indx),name_var_fix(isubs)
+      ENDDO
+   END IF
      
 
 #ifdef PSOURCE_NCFILE_TS
