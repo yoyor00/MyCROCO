@@ -30,7 +30,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
-
+- Cleaning : remove WET_DRY0 key never used                (#393)
 
 ### Changed
 

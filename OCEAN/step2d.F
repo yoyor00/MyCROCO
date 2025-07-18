@@ -762,9 +762,6 @@ C$OMP END MASTER
 #   ifdef MASKING
      &                                 *pmask(i+1,j)
 #   endif
-#   ifdef WET_DRY0
-     &                                 *pmask_wet(i+1,j)
-#   endif
         enddo
       enddo
       do j=Jstr-1,Jend
@@ -776,9 +773,6 @@ C$OMP END MASTER
      &                   *(urhs(i,j+1)+urhs(i,j))
 #   ifdef MASKING
      &                                 *pmask(i,j+1)
-#   endif
-#   ifdef WET_DRY0
-     &                                 *pmask_wet(i,j+1)
 #   endif
         enddo
       enddo
