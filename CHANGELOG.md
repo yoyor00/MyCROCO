@@ -62,6 +62,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - DECALPHA (#414)
   - CRAY, VAX, SGI, AIX (#413)
   - TS_VADV_FCT was always undef, never used (#390)
+  - AUTOTILING (#411)
 
 ### Other
 

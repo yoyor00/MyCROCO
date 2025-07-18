@@ -268,24 +268,13 @@
 #endif
 
 !private_scratch.h
-#ifdef AUTOTILING
 !$acc&, A2d, A3d
-# if defined SEDIMENT || defined LMD_MIXING
+#if defined SEDIMENT || defined LMD_MIXING
 !$acc&, B2d
-# endif
-# if defined ABL1D
-!$acc&, T1d
-!$acc&, T2d,T3d
-# endif
-#else
-!$acc&, A2d, A3d
-# if defined SEDIMENT || defined LMD_MIXING
-!$acc&, B2d
-# endif
-# if defined ABL1D
+#endif
+#if defined ABL1D
 !$acc&, T1d
 !$acc&, T2d, T3d
-# endif
 #endif
 
 !mixing.h

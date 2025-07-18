@@ -174,9 +174,6 @@ C$OMP BARRIER
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
 C$OMP MASTER
-#ifdef AUTOTILING
-      call begin_timing
-#endif
       time=time_start+dt*float(iic-ntstart)
       tdays=time*sec2day
 #ifdef USE_CALENDAR
@@ -893,9 +890,6 @@ C$OMP END MASTER
 #include "ocean3d.h"
 #include "ocean2d.h"
 #include "coupling.h"
-#ifdef AUTOTILING
-# include "autotiling.h"
-#endif
 #if defined LMD_MIXING
 # include "mixing.h"
 #elif defined CVTK_DEBUG_PERFRST && defined TS_MIX_ISO_FILT
@@ -1050,9 +1044,6 @@ C$OMP END MASTER
 #include "ocean2d.h"
 #include "coupling.h"
 #include "grid.h"
-#ifdef AUTOTILING
-# include "autotiling.h"
-#endif
 #if ( defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST )
 # include "mixing.h"
 #endif
@@ -1240,10 +1231,6 @@ C$OMP END MASTER
 #endif
 
 C$OMP MASTER
-#ifdef AUTOTILING
-      call end_timing
-      if (iic-lastiic == nbsampling) call auto_tiling
-#endif
 
       iic=iic + 1
 
