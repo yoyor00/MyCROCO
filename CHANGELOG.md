@@ -29,6 +29,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   water concentration and last index of current was wrong (Issue #349)
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
+- Cleaning : remove module_qsort.F90 never used            (#394)
+
 
 ### Changed
 
@@ -74,7 +76,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, P. Marchesiello, R. Person
+  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
+  P. Marchesiello, C. Nguyen, R. Person
 
 - New contributors : 
   M. Plus, M. Schreiber 
