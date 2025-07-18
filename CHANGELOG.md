@@ -30,7 +30,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
-- Cleaning : remove WET_DRY0 key never used                (#393)
 
 ### Changed
 
@@ -61,6 +60,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
+  - WET_DRY0 (#393)
   - START_DATE (#417)
   - ICE (#416)
   - DECALPHA (#414)
