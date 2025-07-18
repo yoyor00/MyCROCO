@@ -47,9 +47,6 @@
 #  endif
 # endif
 
-#ifdef FLOATS
-     &      , nfp1, nf, nfm1, nfm2, nfm3
-#endif
 #ifdef WKB_WWAVE
      &      , wstp, wnew
 #endif
@@ -66,9 +63,6 @@
 #  endif
 # endif
 
-#ifdef FLOATS
-     &                       nfp1, nf, nfm1, nfm2, nfm3,
-#endif
 #ifdef WKB_WWAVE
      &                       wstp, wnew,
 #endif
@@ -205,9 +199,6 @@
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
 #endif
-#ifdef FLOATS
-      integer nflt, nrpfflt
-#endif
 #ifdef ABL1D
       logical ldefablhis
       integer nwrtablhis, nrpfablhis
@@ -277,9 +268,6 @@
 #endif
 #ifdef BBL
       logical got_inibed(2)
-#endif
-#ifdef FLOATS
-      logical ldefflt
 #endif
 #if defined DIAGNOSTICS_TS
       logical ldefdia
@@ -385,9 +373,6 @@
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
 #endif
-#ifdef FLOATS
-     &                      , nflt, nrpfflt
-#endif
 #ifdef STATIONS
      &                      , nsta, nrpfsta
 #endif
@@ -399,9 +384,6 @@
 #endif
 #ifdef BBL
      &                      , got_inibed
-#endif
-#ifdef FLOATS
-     &                      , ldefflt
 #endif
 #if defined DIAGNOSTICS_TS
      &                      , ldefdia, nwrtdia

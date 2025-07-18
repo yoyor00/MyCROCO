@@ -352,10 +352,6 @@
       parameter (Msrc=30)        ! ====== == ===== =======
 # endif
 #endif
-#ifdef FLOATS
-       integer Mfloats           ! Maximum number of floats
-       parameter (Mfloats=32000) ! ======= ====== == ======
-#endif
 #ifdef STATIONS
        integer NS                ! Number of output stations
        parameter (NS=5)          ! ====== == ====== ========

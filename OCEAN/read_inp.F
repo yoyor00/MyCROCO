@@ -24,9 +24,6 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
-#ifdef FLOATS
-# include "ncscrum_floats.h"
-#endif
 #ifdef STATIONS
 # include "nc_sta.h"
 #endif
@@ -981,32 +978,6 @@ c        close(testunit)
 # endif
 #endif /* DIAGNOSTICS_BIO */
 
-#ifdef FLOATS
-!
-! Floats file name.
-!
-      elseif (keyword(1:kwlen).eq.'floats') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef AGRIF
-        if (Agrif_Root()) then
-# endif
-          read(input,*,err=95) ldefflt, nflt, nrpfflt
-          read(input,'(A)',err=95) fposnam
-          read(input,'(A)',err=95) fname
-          lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-          call insert_node (fposnam, lstr, mynode2, NNODES2, ierr)
-# endif
-          fltname=fname(1:lstr)
-# ifdef AGRIF
-        else
-          ldefflt=Agrif_Parent(ldefflt)
-          nflt=Agrif_Parent(nflt)
-          nrpfflt=Agrif_Parent(nrpfflt)
-        endif
-# endif
-#endif /* FLOATS */
-
 #ifdef STATIONS
 !
 ! Stations file name.
@@ -1548,23 +1519,6 @@ c        close(testunit)
 !
 # endif
 #endif /* ABL1D && ! defined XIOS */
-
-#ifdef FLOATS
-!
-! Switches for fields to be saved into floats output file.
-!
-      elseif (keyword(1:kwlen).eq.'float_fields') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef AGRIF
-        if (Agrif_Root()) then
-# endif
-          read(input,*,err=95) wrtflt(indxfltGrd),
-     &       wrtflt(indxfltTemp), wrtflt(indxfltSalt),
-     &       wrtflt(indxfltRho), wrtflt(indxfltVel)
-# ifdef AGRIF
-        endif
-# endif
-#endif /* FLOATS */
 
 #if defined DIAGNOSTICS_TS
 # if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
@@ -2676,20 +2630,6 @@ c        close(testunit)
 # endif
 #endif /* DIAGNOSTICS_BIO */
 
-#ifdef FLOATS
-# ifdef AGRIF
-          if (Agrif_Root()) then
-# endif
-          lstr=lenstr(fltname)
-          MPI_master_only write(stdout,
-     &              '(9x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
-     &        'Float File:',fltname(1:lstr),  'Create new:',
-     &        ldefflt, 'nflt =', nflt, 'rec/file =', nrpfflt
-# ifdef AGRIF
-          endif
-# endif
-#endif /* FLOATS */
-
 #ifdef STATIONS
 # ifdef AGRIF
         if (Agrif_Root()) then
@@ -3008,23 +2948,6 @@ c        close(testunit)
      &     , wrtabl_avg(indxabl_Hzw_abl) , 'write Hzw ABL'
 # endif
 #endif /* ABL1D && ! defined XIOS */
-
-#ifdef FLOATS
-# ifdef AGRIF
-          if (Agrif_Root()) then
-# endif
-          MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A))')
-     &      'Fields to be saved in floats output file: (T/F)'
-     &     , wrtflt(indxfltGrd),   'write Grid location variables'
-     &     , wrtflt(indxfltTemp),  'write temperature.'
-     &     , wrtflt(indxfltSalt),  'write salinity.'
-     &     , wrtflt(indxfltRho),   'write density.'
-     &     , wrtflt(indxfltVel),   'write mean float velocity'
-# ifdef AGRIF
-          endif
-# endif
-#endif /* FLOATS */
-
 
 #if defined DIAGNOSTICS_TS
 # if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT

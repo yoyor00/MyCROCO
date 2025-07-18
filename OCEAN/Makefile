@@ -100,10 +100,6 @@ include Makedefs
 	online_interp.F			online_interpolate_bulk.F\
 	online_set_bulk.F		online_interpolate_3d_bulk.F\
 \
-	init_floats.F	wrt_floats.F	step_floats.F	rhs_floats.F\
-	interp_rho.F	def_floats.F	init_arrays_floats.F\
-	random_walk.F	get_initial_floats.F\
-\
 	init_sta.F	wrt_sta.F	step_sta.F	interp_sta.F\
 	def_sta.F	init_arrays_sta.F\
 \

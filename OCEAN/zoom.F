@@ -2415,7 +2415,7 @@ CR      write(*,*) '  0' MYID
 !                   subroutine Agrif_transfer_floatsp2c
 !====================================================================
 !
-# if defined FLOATS || defined STATIONS
+# if defined STATIONS
         subroutine Agrif_transfer_floatsp2c(rank,xfloat,yfloat,delta)
         use Agrif_Util
 !----------------------------------------------------------------------
@@ -2486,7 +2486,7 @@ CR      write(*,*) '  0' MYID
         return
         end subroutine
 
-# endif /* FLOATS || STATIONS */
+# endif /* STATIONS */
 !
 !====================================================================
 !                   subroutine Agrif_Invloc

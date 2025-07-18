@@ -206,7 +206,7 @@
       return
       end
 
-#if defined STATIONS && !defined FLOATS
+#if defined STATIONS
       subroutine hindices (Ipos,Jpos,Xpos,Ypos,Npos,Xgrd,Ygrd)
 !
 !================================================ Hernan G. Arango ===
