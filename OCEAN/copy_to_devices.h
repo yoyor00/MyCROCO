@@ -331,9 +331,6 @@
 !$acc&, Akv_old
 !$acc&, Akt_old
 # endif
-# ifdef RANDOM_WALK
-!$acc&, dAktdz
-# endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING || defined UV_VIS_SMAGO_3D

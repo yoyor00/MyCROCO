@@ -99,10 +99,6 @@
       real Akt_old(GLOBAL_2D_ARRAY,0:N)
       common /mixing_Akvold/Akv_old /mixing_Aktold/Akt_old
 # endif
-# ifdef RANDOM_WALK
-      real dAktdz(GLOBAL_2D_ARRAY,0:N)
-      common /mixing_dAktdz/dAktdz
-# endif
 
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
