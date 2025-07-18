@@ -194,7 +194,6 @@
  or a tile. This switch is the same for MPI/nonMPI code.
 */
 #ifdef MPI
-# undef AUTOTILING
 # define SINGLE_TILE_MODE  Iend-Istr+Jend-Jstr.eq.Lmmpi+Mmmpi-2
 #else
 # define SINGLE_TILE_MODE  Iend-Istr+Jend-Jstr.eq.Lm+Mm-2
