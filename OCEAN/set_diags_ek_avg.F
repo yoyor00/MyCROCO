@@ -57,10 +57,9 @@
 ! calculation of averaged fluxes will only be performed if ntsdiags_ek_avg
 ! is a positive number
 !
-
-
       if (ilc.gt.ntsdiags_ek_avg) then
-        if (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.1) then
+        if (mod(ilc-ntsdiags_ek_avg,nwrtdiags_ek_avg).eq.1
+     &                    .OR. nwrtdiags_ek_avg.eq.1) then
 
           if (ZEROTH_TILE) then
             timediags_ek_avg=time

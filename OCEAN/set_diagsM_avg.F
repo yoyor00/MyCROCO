@@ -50,9 +50,9 @@
 ! The same applies to the density field.
 !
 ! The algorithm consists of three logical blocks: (1) initialization
-! of the averages arrays: when mod(ilc-1,navg).eq.1 the target arrays
+! of the averages arrays: when mod(ilc-1,nwrtdiaM_avg).eq.1 the target arrays
 ! are set to the first contribution; (2) accumulation of averaged
-! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
+! data, when mod(ilc-1,nwrtdiaM_avg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
       implicit none
@@ -78,9 +78,10 @@
 ! calculation of averaged fluxes will only be performed if ntsdiaM_avg
 ! is a positive number
 !
+
       if (ilc.gt.ntsdiaM_avg) then
 
-        if (mod(ilc-ntsdiaM_avg,navg).eq.1) then
+        if (mod(ilc-ntsdiaM_avg,nwrtdiaM_avg).eq.1 .OR. nwrtdiaM_avg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then
@@ -88,13 +89,13 @@
 !            MPI_master_only write(*,*) 'started averaging M',
 !     &                          iic,ntsdiaM_avg,nwrtdiaM_avg
           endif
-        elseif (mod(ilc-ntsdiaM_avg,navg).gt.1) then
+        elseif (mod(ilc-ntsdiaM_avg,nwrtdiaM_avg).gt.1) then
           cff =1.0
           cff1=1.0
           if (ZEROTH_TILE) then
            timediaM_avg=timediaM_avg+time
           endif
-        elseif (mod(ilc-ntsdiaM_avg,navg).eq.0) then
+        elseif (mod(ilc-ntsdiaM_avg,nwrtdiaM_avg).eq.0) then
           cff =1.0/float(nwrtdiaM_avg)
           cff1=1.0
           if (ZEROTH_TILE) then

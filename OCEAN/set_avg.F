@@ -129,7 +129,7 @@ C$    integer omp_get_thread_num
 
       if (ilc.gt.ntsavg) then
 
-        if (mod(ilc-ntsavg,navg).eq.1) then
+        if (mod(ilc-ntsavg,navg).eq.1 .OR. navg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then
