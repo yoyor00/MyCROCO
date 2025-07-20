@@ -1582,7 +1582,7 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
 # ifdef TRACERS
         read(input,*,err=95)  (wrtdia3D(itrc), itrc=1, NT)
-# ifdef DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
         if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
      &      .or. itrc.eq.iCRT4) then
           wrtdia3D(itrc)=.false.
@@ -1612,7 +1612,7 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
 #  ifdef TRACERS
         read(input,*,err=95) (wrtdia3D_avg(itrc),itrc=1,NT)
-# ifdef DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
         if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
      &     .or. itrc.eq.iCRT4) then
             wrtdia3D_avg(itrc)=.false.

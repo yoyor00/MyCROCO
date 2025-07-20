@@ -425,7 +425,7 @@
      &        indxvrtPrsgrd,indxvrtHmix,indxvrtVmix,indxvrtrate,
      &        indxvrtVmix2,indxvrtWind,indxvrtDrag
       parameter (indxvrtXadv=indxV+ntrc_temp+ntrc_salt
-     &                        +ntrc_mld+ntrc_pas+
+     &                        +ntrc_mld+ntrc_pas
      &                        +ntrc_bio+ntrc_sed
      &                        +ntrc_diats+ntrc_diauv+1,
      &           indxvrtYadv=indxvrtXadv+1,
