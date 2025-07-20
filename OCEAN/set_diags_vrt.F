@@ -91,97 +91,90 @@
 
 
             if (itrc.eq.1) then
-              do k=1,N
-               dH(k) = (Hz(i,j,k)+Hz(i-1,j,k))
-     &                 /(pm(i,j)+pm(i-1,j))
-              enddo
+              cff = om_u(i,j)
             else
-              do k=1,N
-               dH(k) = (Hz(i,j,k)+Hz(i,j-1,k))
-     &                 /(pn(i,j)+pn(i,j-1))
-
-              enddo
+              cff = on_v(i,j)
             endif
 
            ! ------- ------------- ------ ------ - -----
-           wrkXadv(i,j,itrc)= MXadv(i,j,1,itrc)*dH(1)
+           wrkXadv(i,j,itrc)= MXadv(i,j,1,itrc)*cff
 
            do k=2,N
              wrkXadv(i,j,itrc)= wrkXadv(i,j,itrc)
-     &         +MXadv(i,j,k,itrc)*dH(k)
+     &         +MXadv(i,j,k,itrc)*cff
            enddo
            ! ------- ------------- ------ ------ - -----
-           wrkYadv(i,j,itrc)= MYadv(i,j,1,itrc)*dH(1)
+           wrkYadv(i,j,itrc)= MYadv(i,j,1,itrc)*cff
 
            do k=2,N
              wrkYadv(i,j,itrc)= wrkYadv(i,j,itrc)
-     &         +MYadv(i,j,k,itrc)*dH(k)
+     &         +MYadv(i,j,k,itrc)*cff
            enddo
            ! ------- ------------- ------ ------ - -----
-           wrkHdiff(i,j,itrc)= MHdiff(i,j,1,itrc)*dH(1)
+           wrkHdiff(i,j,itrc)= MHdiff(i,j,1,itrc)*cff
 
            do k=2,N
              wrkHdiff(i,j,itrc)= wrkHdiff(i,j,itrc)
-     &         +MHdiff(i,j,k,itrc)*dH(k)
+     &         +MHdiff(i,j,k,itrc)*cff
            enddo
            ! ------- ------------- ------ ------ - -----
-           wrkCor(i,j,itrc)= MCor(i,j,1,itrc)*dH(1)
+           wrkCor(i,j,itrc)= MCor(i,j,1,itrc)*cff
 
            do k=2,N
              wrkCor(i,j,itrc)= wrkCor(i,j,itrc)
-     &         +MCor(i,j,k,itrc)*dH(k)
+     &         +MCor(i,j,k,itrc)*cff
            enddo
            ! ------- ------------- ------ ------ - -----
-           wrkPrsgrd(i,j,itrc)= MPrsgrd(i,j,1,itrc)*dH(1)
+           wrkPrsgrd(i,j,itrc)= MPrsgrd(i,j,1,itrc)*cff
 
            do k=2,N
              wrkPrsgrd(i,j,itrc)= wrkPrsgrd(i,j,itrc)
-     &         + MPrsgrd(i,j,k,itrc)*dH(k)
+     &         + MPrsgrd(i,j,k,itrc)*cff
            enddo
            ! ------- ------------- ------ ------ - -----
-           wrkHmix(i,j,itrc)= MHmix(i,j,1,itrc,nstp)*dH(1)
+           wrkHmix(i,j,itrc)= MHmix(i,j,1,itrc,nstp)*cff
 
            do k=2,N
              wrkHmix(i,j,itrc)= wrkHmix(i,j,itrc)
-     &         +MHmix(i,j,k,itrc,nstp)*dH(k)
+     &         +MHmix(i,j,k,itrc,nstp)*cff
            enddo
            ! ------- ------------- ------ ------ - -----
-           wrkVmix(i,j,itrc)= MVmix(i,j,1,itrc)*dH(1)
+           wrkVmix(i,j,itrc)= MVmix(i,j,1,itrc)*cff
 
            do k=2,N
              wrkVmix(i,j,itrc)= wrkVmix(i,j,itrc)
-     &         +MVmix(i,j,k,itrc)*dH(k)
+     &         +MVmix(i,j,k,itrc)*cff
            enddo
            ! ------- ------------- ------ ------ - -----
-           wrkVmix2(i,j,itrc)= MVmix2(i,j,1,itrc)*dH(1)
+           wrkVmix2(i,j,itrc)= MVmix2(i,j,1,itrc)*cff
 
            do k=2,N
              wrkVmix2(i,j,itrc)= wrkVmix2(i,j,itrc)
-     &         +MVmix2(i,j,k,itrc)*dH(k)
+     &         +MVmix2(i,j,k,itrc)*cff
            enddo
            ! ------- ------------- ------ ------ - -----
-           wrkrate(i,j,itrc)= Mrate(i,j,1,itrc)*dH(1)
+           wrkrate(i,j,itrc)= Mrate(i,j,1,itrc)*cff
 
            do k=2,N
              wrkrate(i,j,itrc)= wrkrate(i,j,itrc)
-     &         +Mrate(i,j,k,itrc)*dH(k)
+     &         +Mrate(i,j,k,itrc)*cff
            enddo
            ! ------- ------------- ------ ------ - -----
 #  if defined DIAGNOSTICS_BARO
-           wrkBaro(i,j,itrc)= MBaro(i,j,1,itrc)*dH(1)
+           wrkBaro(i,j,itrc)= MBaro(i,j,1,itrc)*cff
 
            do k=2,N
              wrkBaro(i,j,itrc)= wrkBaro(i,j,itrc)
-     &         + MBaro(i,j,k,itrc)*dH(k)
+     &         + MBaro(i,j,k,itrc)*cff
            enddo
 #  endif
            ! ------- ------------- ------ ------ - -----
 #  if defined M3FAST
-           wrkfast(i,j,itrc)= Mfast(i,j,1,itrc)*dH(1)
+           wrkfast(i,j,itrc)= Mfast(i,j,1,itrc)*cff
 
            do k=2,N
              wrkfast(i,j,itrc)= wrkfast(i,j,itrc)
-     &         + Mfast(i,j,k,itrc)*dH(k)
+     &         + Mfast(i,j,k,itrc)*cff
            enddo
 #  endif
           enddo

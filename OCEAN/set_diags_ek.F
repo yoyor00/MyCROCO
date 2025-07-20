@@ -61,8 +61,7 @@
         do i=IstrR,IendR+1
           do k=1,N
 
-            workr(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-     &           * om_u(i,j)* on_u(i,j)
+            workr(i,j,k)=om_u(i,j)* on_u(i,j)
      &           * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
 
 
@@ -74,8 +73,7 @@
         do i=IstrR,IendR+1
           do k=1,N
 
-            work(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-     &           * om_v(i,j)*on_v(i,j)
+            work(i,j,k)=om_v(i,j)*on_v(i,j)
      &           * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
 
 

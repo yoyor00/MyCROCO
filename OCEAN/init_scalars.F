@@ -3108,7 +3108,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMXadv = ',indxMXadv+itrc-1
        vname(1,indxMXadv+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMxadv+itrc-1)
        vname(2,indxMXadv+itrc-1)='Horizontal (xi) advection term  '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMXadv+itrc-1)=vname3
        vname(4,indxMXadv+itrc-1)='                                '
        write(vname3,*) 'horizontal_Xi_advection_term_',trim(nametrc)
@@ -3124,7 +3124,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMYadv = ',indxMYadv+itrc-1
        vname(1,indxMYadv+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMYadv+itrc-1)
        vname(2,indxMYadv+itrc-1)='Horizontal (eta) advection term '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMYadv+itrc-1)=vname3
        vname(4,indxMYadv+itrc-1)='                                '
        write(vname3,*) 'horizontal_eta_advection_term_',trim(nametrc)
@@ -3140,7 +3140,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMVadv = ',indxMVadv+itrc-1
        vname(1,indxMVadv+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMVadv+itrc-1)
        vname(2,indxMVadv+itrc-1)='Vertical advection term         '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMVadv+itrc-1)=vname3
        vname(4,indxMVadv+itrc-1)='                                '
        write(vname3,*) 'vertical_advection_term_',trim(nametrc)
@@ -3156,7 +3156,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMCor = ',indxMCor+itrc-1
        vname(1,indxMCor+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMcor+itrc-1)
        vname(2,indxMCor+itrc-1)='Coriolis term                    '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMCor+itrc-1)=vname3
        vname(4,indxMCor+itrc-1)='                                 '
        write(vname3,*) 'coriolis_term_in_momentum_',trim(nametrc)
@@ -3172,7 +3172,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxMPrsgrd = ',indxMPrsgrd+itrc-1
        vname(1,indxMPrsgrd+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMPrsgrd+itrc-1)
        vname(2,indxMPrsgrd+itrc-1)='Pressure gradient term        '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMPrsgrd+itrc-1)=vname3
        vname(4,indxMPrsgrd+itrc-1)='                              '
        write(vname3,*) 'pressure_gradient_term_',trim(nametrc)
@@ -3188,7 +3188,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMHmix = ',indxMHmix+itrc-1
        vname(1,indxMHmix+itrc-1)=vname1
 C     R       write(stdout,'(20x,A)') vname(1,indxMHmix+itrc-1)
        vname(2,indxMHmix+itrc-1)='Horizontal mixing term          '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMHmix+itrc-1)=vname3
        vname(4,indxMHmix+itrc-1)='                                '
        write(vname3,*) 'horizontal_mixing_term_',trim(nametrc)
@@ -3204,7 +3204,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMHdiff = ',indxMHdiff+itrc-1
        vname(1,indxMHdiff+itrc-1)=vname1
 C     R       write(stdout,'(20x,A)') vname(1,indxMHdiff+itrc-1)
        vname(2,indxMHdiff+itrc-1)='Horizontal diffusion term      '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMHdiff+itrc-1)=vname3
        vname(4,indxMHdiff+itrc-1)='                               '
        write(vname3,*) 'horizontal_diffusion_term_',trim(nametrc)
@@ -3220,7 +3220,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMVmix = ',indxMVmix+itrc-1
        vname(1,indxMVmix+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMVmix+itrc-1)
        vname(2,indxMVmix+itrc-1)='Vertical mixing term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMVmix+itrc-1)=vname3
        vname(4,indxMVmix+itrc-1)='                                '
        write(vname3,*) 'vertical_mixing_term_',trim(nametrc)
@@ -3236,7 +3236,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMVmix2 = ',indxMVmix2+itrc-1
        vname(1,indxMVmix2+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMVmix2+itrc-1)
        vname(2,indxMVmix2+itrc-1)='Momentum nudging term          '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMVmix2+itrc-1)=vname3
        vname(4,indxMVmix2+itrc-1)='                               '
        write(vname3,*) 'momentum_nudging_term_',trim(nametrc)
@@ -3253,7 +3253,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxMBaro = ',indxMBaro+itrc-1
        vname(1,indxMBaro+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMBaro+itrc-1)
        vname(2,indxMBaro+itrc-1)='Barotropic coupling term        '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMBaro+itrc-1)=vname3
        vname(4,indxMBaro+itrc-1)='                                '
        write(vname3,*) 'barotropic_coupling_term_',trim(nametrc)
@@ -3271,7 +3271,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxMfast = ',indxMfast+itrc-1
        vname(1,indxMfast+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMfast+itrc-1)
        vname(2,indxMfast+itrc-1)='fast term                       '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMfast+itrc-1)=vname3
        vname(4,indxMfast+itrc-1)='                                '
        write(vname3,*) 'fast_term_',trim(nametrc)
@@ -3289,7 +3289,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMvf = ',indxMvf+itrc-1
        vname(1,indxMvf+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMvf+itrc-1)
        vname(2,indxMvf+itrc-1)='Vortex body force term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMvf+itrc-1)=vname3
        vname(4,indxMvf+itrc-1)='                                  '
        vname(5,indxMvf+itrc-1)=vname1
@@ -3303,7 +3303,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMbrk = ',indxMbrk+itrc-1
        vname(1,indxMbrk+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMbrk+itrc-1)
        vname(2,indxMbrk+itrc-1)='Breaking body force term         '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMbrk+itrc-1)=vname3
        vname(4,indxMbrk+itrc-1)='                                 '
        vname(5,indxMbrk+itrc-1)=vname1
@@ -3317,7 +3317,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMStCo = ',indxMStCo+itrc-1
        vname(1,indxMStCo+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMStCo+itrc-1)
        vname(2,indxMStCo+itrc-1)='Stokes-Coriolis term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMStCo+itrc-1)=vname3
        vname(4,indxMStCo+itrc-1)='                                '
        vname(5,indxMStCo+itrc-1)=vname1
@@ -3331,7 +3331,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMVvf = ',indxMVvf+itrc-1
        vname(1,indxMVvf+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMVvf+itrc-1)
        vname(2,indxMVvf+itrc-1)='Vertical vortex force term       '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMVvf+itrc-1)=vname3
        vname(4,indxMVvf+itrc-1)='                                 '
        vname(5,indxMVvf+itrc-1)=vname1
@@ -3345,7 +3345,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMPrscrt = ',indxMPrscrt+itrc-1
        vname(1,indxMPrscrt+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMPrscrt+itrc-1)
        vname(2,indxMPrscrt+itrc-1)='Pressure correction term      '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMPrscrt+itrc-1)=vname3
        vname(4,indxMPrscrt+itrc-1)='                              '
        vname(5,indxMPrscrt+itrc-1)=vname1
@@ -3359,7 +3359,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMsbk = ',indxMsbk+itrc-1
        vname(1,indxMsbk+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMsbk+itrc-1)
        vname(2,indxMsbk+itrc-1)='Surface breaking term            '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMsbk+itrc-1)=vname3
        vname(4,indxMsbk+itrc-1)='                                 '
        vname(5,indxMsbk+itrc-1)=vname1
@@ -3373,7 +3373,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMbwf = ',indxMbwf+itrc-1
        vname(1,indxMbwf+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMbwf+itrc-1)
        vname(2,indxMbwf+itrc-1)='Bed wave friction term           '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMbwf+itrc-1)=vname3
        vname(4,indxMbwf+itrc-1)='                                 '
        vname(5,indxMbwf+itrc-1)=vname1
@@ -3387,7 +3387,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMfrc = ',indxMfrc+itrc-1
        vname(1,indxMfrc+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMfrc+itrc-1)
        vname(2,indxMfrc+itrc-1)='Wave streaming                   '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMfrc+itrc-1)=vname3
        vname(4,indxMfrc+itrc-1)='                                 '
        vname(5,indxMfrc+itrc-1)=vname1
@@ -3402,7 +3402,7 @@ CR       write(stdout,'(1x,A,I3)') 'indxMrate = ',indxMrate+itrc-1
        vname(1,indxMrate+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxMrate+itrc-1)
        vname(2,indxMrate+itrc-1)='Time rate of change             '
-       write(vname3,*) trim(unitt),' second-1                     '
+       write(vname3,*) trim(unitt),' m second-1                   '
        vname(3,indxMrate+itrc-1)=vname3
        vname(4,indxMrate+itrc-1)='                                '
        write(vname3,*) 'time_rate_of_change_term_',trim(nametrc)
