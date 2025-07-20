@@ -74,17 +74,8 @@
 ! Diagnostics
 !------------
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
             Mfast(i,j,k,1) = ru_nbq_avg2(i,j,k) SWITCH umask(i,j)
-#  elif defined DIAGNOSTICS_EK
-            if (k.eq.1) then
-              ekwrkfast(i,j,1) = ru_nbq_avg2(i,j,k)
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-            else
-              ekwrkfast(i,j,1) = ekwrkfast(i,j,1)
-     &                         + ru_nbq_avg2(i,j,k)
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-            endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (k.eq.1) then
@@ -119,17 +110,8 @@
 ! Diagnostics
 !------------
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
             Mfast(i,j,k,2) = rv_nbq_avg2(i,j,k) SWITCH vmask(i,j)
-#  elif defined DIAGNOSTICS_EK
-            if (k.eq.1) then
-              ekwrkfast(i,j,2) = rv_nbq_avg2(i,j,k)
-     &                         * v(i,j,k,nrhs) SWITCH vmask(i,j)
-            else
-              ekwrkfast(i,j,2) = ekwrkfast(i,j,2)
-     &                         + rv_nbq_avg2(i,j,k)
-     &                         * v(i,j,k,nrhs) SWITCH vmask(i,j)
-            endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             if (k.eq.1) then

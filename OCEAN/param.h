@@ -1058,7 +1058,7 @@
       parameter (ntrc_diats=0)
 # endif
 # ifdef DIAGNOSTICS_UV
-      parameter (ntrc_diauv=24)
+      parameter (ntrc_diauv=26)
 # else
       parameter (ntrc_diauv=0)
 # endif
@@ -1068,11 +1068,7 @@
       parameter (ntrc_diavrt=0)
 # endif
 # ifdef DIAGNOSTICS_EK
-#  ifdef DIAGNOSTICS_EK_MLD
-      parameter (ntrc_diaek=28)
-#  else
-      parameter (ntrc_diaek=16)
-#  endif
+      parameter (ntrc_diaek=18)
 # else
       parameter (ntrc_diaek=0)
 # endif

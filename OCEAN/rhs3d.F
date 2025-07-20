@@ -51,9 +51,6 @@
 # endif
 # ifdef DIAGNOSTICS_EK
 #  include "diags_ek.h"
-#  ifdef DIAGNOSTICS_EK_MLD
-#   include "mixing.h"
-#  endif
 # endif
 # ifdef DIAGNOSTICS_PV
 #  include "diags_pv.h"
@@ -226,7 +223,7 @@
         enddo
       enddo             !--> discard wrk
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
       if (nnew.ne.3) then
         do k=1,N
           do j=Jstr,Jend
@@ -258,17 +255,14 @@
         enddo
       enddo
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
-                             || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
       if (nnew.ne.3) then
         do k=levsfrc,N
           do j=Jstr,Jend
             do i=IstrU,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
               Mbody(i,j,k,1) = Uwrk(i,j)*(Hz(i,j,k)+
      &                                    Hz(i-1,j,k))
      &                         SWITCH umask(i,j)
-#   endif
 #   ifdef DIAGNOSTICS_EK
             if (k.eq.levsfrc) then
               ekwrkWind(i,j,1)= 0.
@@ -282,11 +276,9 @@
           enddo
           do j=JstrV,Jend
             do i=Istr,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
               Mbody(i,j,k,2) = Vwrk(i,j)*(Hz(i,j,k)+
      &                                    Hz(i,j-1,k))
      &                         SWITCH vmask(i,j)
-#   endif
 #   ifdef DIAGNOSTICS_EK
               if (k.eq.levsfrc) then
                 ekwrkWind(i,j,2)= 0.
@@ -353,18 +345,15 @@
         enddo
       enddo
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
-                             || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
       if (nnew.ne.3) then
         do k=1,levbfrc
           do j=Jstr,Jend
             do i=IstrU,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
               Mbody(i,j,k,1) = Mbody(i,j,k,1)
      &                         - Uwrk(i,j)*(Hz(i,j,k)+
      &                                      Hz(i-1,j,k))
      &                         SWITCH umask(i,j)
-#   endif
 #   ifdef DIAGNOSTICS_EK
               if (k.eq.1) then
                 ekwrkDrag(i,j,1)= 0.
@@ -378,7 +367,7 @@
           enddo
           do j=JstrV,Jend
             do i=Istr,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
               Mbody(i,j,k,2) = Mbody(i,j,k,2)
      &                         - Vwrk(i,j)*(Hz(i,j,k)+
      &                                      Hz(i,j-1,k))
@@ -516,35 +505,13 @@
      &                         +0.5*(UFe(i,j)+UFe(i-1,j))
 #  endif
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
-                             || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               MCor(i,j,k,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
      &                        SWITCH umask(i,j)
 #   ifdef MRL_WCI
               MStCo(i,j,k,1) = 0.5*(UFe(i,j)+UFe(i-1,j))
      &                        SWITCH umask(i,j)
-#   endif
-            endif
-#  elif defined DIAGNOSTICS_EK
-            if (nnew.ne.3) then
-              if (k.eq.1) then
-                ekwrkCor(i,j,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
-     &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
-              else
-                ekwrkCor(i,j,1)=ekwrkCor(i,j,1)
-     &                         +0.5*(UFx(i,j)+UFx(i-1,j))
-     &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
-              endif
-#   ifdef DIAGNOSTICS_EK_MLD
-              if (k.eq.kbl(i,j)) then
-                ekwrkCor_mld(i,j,1)=0.5*(UFx(i,j)+UFx(i-1,j))
-     &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
-              elseif (k.gt.kbl(i,j)) then
-                ekwrkCor_mld(i,j,1)=ekwrkCor_mld(i,j,1)
-     &                         +0.5*(UFx(i,j)+UFx(i-1,j))
-     &                    * u(i,j,k,nrhs) SWITCH umask(i,j)
-              endif
 #   endif
             endif
 #  endif
@@ -571,35 +538,13 @@
      &                         -0.5*(VFx(i,j)+VFx(i,j-1))
 #  endif
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
             if (nnew.ne.3) then
               MCor(i,j,k,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
      &                        SWITCH vmask(i,j)
 #   ifdef MRL_WCI
               MStCo(i,j,k,2) = -0.5*(VFx(i,j)+VFx(i,j-1))
      &                        SWITCH vmask(i,j)
-#   endif
-            endif
-#  elif defined DIAGNOSTICS_EK
-            if (nnew.ne.3) then
-              if (k.eq.1) then
-              ekwrkCor(i,j,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
-     &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              else
-              ekwrkCor(i,j,2)=ekwrkCor(i,j,2)
-     &                     -0.5*(VFe(i,j)+VFe(i,j-1))
-     &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              endif
-#   ifdef DIAGNOSTICS_EK_MLD
-              if (k.eq.kbl(i,j)) then
-              ekwrkCor_mld(i,j,2)=
-     &                     -0.5*(VFe(i,j)+VFe(i,j-1))
-     &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              elseif (k.gt.kbl(i,j)) then
-              ekwrkCor_mld(i,j,2)=ekwrkCor_mld(i,j,2)
-     &                     -0.5*(VFe(i,j)+VFe(i,j-1))
-     &                     * v(i,j,k,nrhs) SWITCH vmask(i,j)
-              endif
 #   endif
             endif
 #  endif
@@ -1093,14 +1038,13 @@
 ! Store Diagnostics
 !----------------------------------------------------------
 !
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
-                             || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
                              || defined DIAGNOSTICS_PV \
                              || defined DIAGNOSTICS_VRT
         if (nnew.ne.3) then
           do j=Jstr,Jend
             do i=IstrU,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
                               || defined DIAGNOSTICS_PV
               MXadv(i,j,k,1) = (-UFx(i,j)+UFx(i-1,j))
      &                         SWITCH umask(i,j)
@@ -1111,48 +1055,6 @@
      &                         + UFe4(i  ,j)-UFe4(i,j+1))
      &                         SWITCH umask(i,j)
 #    endif
-#   elif defined DIAGNOSTICS_EK
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
-              if (k.eq.1) then
-                ekwrkHdiff(i,j,1) = 0
-                ekwrkHadv(i,j,1) = 0
-              endif
-#    endif
-              ekwrkHadv(i,j,1)=ekwrkHadv(i,j,1)
-     &                         +(UFx(i-1,j)-UFx(i,j)
-     &                         + UFe(i  ,j)-UFe(i,j+1))
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
-              ekwrkHdiff(i,j,1) = ekwrkHdiff(i,j,1)
-     &                         +(UFx4(i-1,j)-UFx4(i,j)
-     &                         + UFe4(i  ,j)-UFe4(i,j+1))
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-#    endif
-#    ifdef DIAGNOSTICS_EK_MLD
-              if (k.eq.kbl(i,j)) then
-                ekwrkHadv_mld(i,j,1)=
-     &                         +(UFx(i-1,j)-UFx(i,j  )
-     &                         + UFe(i  ,j)-UFe(i,j+1))
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-#     if defined UV_HADV_UP3 || defined UV_HADV_UP5
-                ekwrkHdiff_mld(i,j,1) =
-     &                         + (UFx4(i-1,j)-UFx4(i,j)
-     &                         +  UFe4(i  ,j)-UFe4(i,j+1))
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-#     endif
-              elseif (k.gt.kbl(i,j)) then
-                ekwrkHadv_mld(i,j,1)=ekwrkHadv_mld(i,j,1)
-     &                         +(UFx(i-1,j)-UFx(i,j)
-     &                         + UFe(i  ,j)-UFe(i,j+1))
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-#     if defined UV_HADV_UP3 || defined UV_HADV_UP5
-                ekwrkHdiff_mld(i,j,1) = ekwrkHdiff_mld(i,j,1)
-     &                         + (UFx4(i-1,j)-UFx4(i,j)
-     &                         +  UFe4(i  ,j)-UFe4(i,j+1))
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-#     endif
-              endif
-#    endif /* DIAGNOSTICS_EK_MLD */
 #   endif /* DIAGNOSTICS_EK */
 #   if defined DIAGNOSTICS_VRT && !defined DIAGNOSTICS_UV
               if (k.eq.1) then
@@ -1185,7 +1087,7 @@
 !
           do j=JstrV,Jend
             do i=Istr,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
                               || defined DIAGNOSTICS_PV
               MXadv(i,j,k,2) = (-VFx(i+1,j)+VFx(i,j))
      &                        SWITCH vmask(i,j)
@@ -1196,48 +1098,6 @@
      &                        +  VFe4(i,j-1)-VFe4(i,j))
      &                         SWITCH vmask(i,j)
 #    endif
-#   elif defined DIAGNOSTICS_EK
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
-              if (k.eq.1) then
-               ekwrkHdiff(i,j,2) = 0
-               ekwrkHadv(i,j,2) = 0
-              endif
-#    endif
-              ekwrkHadv(i,j,2) = ekwrkHadv(i,j,2)
-     &                           +(VFx(i,j  )-VFx(i+1,j)
-     &                           + VFe(i,j-1)-VFe(i  ,j))
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
-              ekwrkHdiff(i,j,2) = ekwrkHdiff(i,j,2) +
-     &                            (VFx4(i,j  )-VFx4(i+1,j)
-     &                           + VFe4(i,j-1)-VFe4(i  ,j))
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-#    endif
-#    ifdef DIAGNOSTICS_EK_MLD
-              if (k.eq.kbl(i,j)) then
-                ekwrkHadv_mld(i,j,2) =
-     &                           +(VFx(i,j  )-VFx(i+1,j)
-     &                           + VFe(i,j-1)-VFe(i  ,j))
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-#     if defined UV_HADV_UP3 || defined UV_HADV_UP5
-                ekwrkHdiff_mld(i,j,2) =
-     &                            (VFx4(i,j  )-VFx4(i+1,j)
-     &                           + VFe4(i,j-1)-VFe4(i  ,j))
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-#     endif
-              elseif (k.gt.kbl(i,j)) then
-                ekwrkHadv_mld(i,j,2) = ekwrkHadv_mld(i,j,2)
-     &                           +(VFx(i,j  )-VFx(i+1,j)
-     &                           + VFe(i,j-1)-VFe(i  ,j))
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-#     if defined UV_HADV_UP3 || defined UV_HADV_UP5
-                ekwrkHdiff_mld(i,j,2) = ekwrkHdiff_mld(i,j,2) +
-     &                            (VFx4(i,j  )-VFx4(i+1,j)
-     &                           + VFe4(i,j-1)-VFe4(i  ,j))
-     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-#     endif
-              endif
-#    endif /* DIAGNOSTICS_EK_MLD */
 #   endif /* DIAGNOSTICS_EK */
 #   if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
               if (k.eq.1) then
@@ -1499,33 +1359,9 @@
 !
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
         if (nnew.ne.3) then
-#   if defined DIAGNOSTICS_EK && !defined DIAGNOSTICS_EK_FULL \
-                              && !defined DIAGNOSTICS_UV
-          do i=istrU,iend
-            ekwrkVadv(i,j,1) = 0
-#    ifdef DIAGNOSTICS_EK_MLD
-            ekwrkVadv_mld(i,j,1) = 0
-#    endif
-          enddo         
-#   endif
           do k=1,N
             do i=IstrU,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
               MVadv(i,j,k,1) = (-FC(i,k)+FC(i,k-1)) SWITCH umask(i,j)
-#   else
-#    ifdef DIAGNOSTICS_EK
-              ekwrkVadv(i,j,1) = ekwrkVadv(i,j,1)
-     &                         + (-FC(i,k)+FC(i,k-1))
-     &                         * u(i,j,k,nrhs)  SWITCH umask(i,j)
-#     ifdef DIAGNOSTICS_EK_MLD
-              if (k.ge.kbl(i,j)) then
-                ekwrkVadv_mld(i,j,1) = ekwrkVadv_mld(i,j,1)
-     &                                 + (-FC(i,k)+FC(i,k-1))
-     &                         * u(i,j,k,nrhs)  SWITCH umask(i,j)
-              endif
-#     endif
-#    endif
-#   endif
             enddo
           enddo
         endif                 !--> discard FC
@@ -1744,35 +1580,9 @@
 !
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
           if (nnew.ne.3) then
-#   if defined DIAGNOSTICS_EK && !defined DIAGNOSTICS_EK_FULL  \
-                              && !defined DIAGNOSTICS_UV
-            do i=Istr,Iend
-              ekwrkVadv(i,j,2) = 0
-#    ifdef DIAGNOSTICS_EK_MLD
-              ekwrkVadv_mld(i,j,2) = 0
-#    endif
-            enddo         
-#   endif
             do k=1,N
               do i=Istr,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
                 MVadv(i,j,k,2) = (-FC(i,k)+FC(i,k-1)) SWITCH vmask(i,j)
-#   else
-#    ifdef DIAGNOSTICS_EK
-                ekwrkVadv(i,j,2) = ekwrkVadv(i,j,2)
-     &                         + (-FC(i,k)+FC(i,k-1))
-     &                         * v(i,j,k,nrhs)
-     &                           SWITCH vmask(i,j)
-#     ifdef DIAGNOSTICS_EK_MLD
-                if (k.ge.kbl(i,j)) then
-                  ekwrkVadv_mld(i,j,2) = ekwrkVadv_mld(i,j,2)
-     &                         + (-FC(i,k)+FC(i,k-1))
-     &                         * v(i,j,k,nrhs)
-     &                           SWITCH vmask(i,j)
-                endif
-#     endif
-#    endif
-#   endif
               enddo
             enddo
           endif

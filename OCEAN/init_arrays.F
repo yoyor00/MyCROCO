@@ -200,7 +200,7 @@ C$    integer omp_get_thread_num
 #  endif
 # endif
 !
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
             MVadv(i,j,k,1)=init
             MVadv(i,j,k,2)=init
             MCor(i,j,k,1)=init
@@ -216,7 +216,7 @@ C$    integer omp_get_thread_num
             Mfast(i,j,k,2)=init
 #  endif
 # endif
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK || defined DIAGNOSTICS_PV
             MXadv(i,j,k,1)=init ! indice 1 for u_momentum
             MXadv(i,j,k,2)=init ! indice 2 for v_momentum
             MYadv(i,j,k,1)=init ! ...
@@ -590,75 +590,54 @@ C$    integer omp_get_thread_num
 # ifdef DIAGNOSTICS_EK
       do j=jstrR,jendR             ! 3-D primitive
         do i=istrR,iendR           ! variables.
-          ekHadv(i,j)=init
-          ekHdiff(i,j)=init
-          ekVadv(i,j)=init
-          ekCor(i,j)=init
-          ekPrsgrd(i,j)=init
-          ekHmix(i,j)=init
-          ekVmix(i,j)=init
-          ekrate(i,j)=init
-          ekvol(i,j)=init
-          ekVmix2(i,j)=init
           ekWind(i,j)=init
           ekDrag(i,j)=init
+#  ifdef AVERAGES
+            ekWind_avg(i,j)=init
+            ekDrag_avg(i,j)=init
+#  endif /* AVERAGES */
+          enddo
+        enddo
+
+
+      do k=1,N
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+            ekHadv(i,j,k)=init
+            ekHdiff(i,j,k)=init
+            ekVadv(i,j,k)=init
+            ekCor(i,j,k)=init
+            ekPrsgrd(i,j,k)=init
+            ekHmix(i,j,k)=init
+            ekVmix(i,j,k)=init
+            ekrate(i,j,k)=init
+            ekvol(i,j,k)=init
+            ekVmix2(i,j,k)=init
 #  if defined DIAGNOSTICS_BARO
-          ekBaro(i,j)=init
+            ekBaro(i,j,k)=init
 #  endif
 #  if defined M3FAST
-          ekfast(i,j)=init
+            ekfast(i,j,k)=init
 #  endif
 #  ifdef AVERAGES
-          ekHadv_avg(i,j)=init
-          ekHdiff_avg(i,j)=init
-          ekVadv_avg(i,j)=init
-          ekCor_avg(i,j)=init
-          ekPrsgrd_avg(i,j)=init
-          ekHmix_avg(i,j)=init
-          ekVmix_avg(i,j)=init
-          ekrate_avg(i,j)=init
-          ekvol_avg(i,j)=init
-          ekVmix2_avg(i,j)=init
-          ekWind_avg(i,j)=init
-          ekDrag_avg(i,j)=init
+            ekHadv_avg(i,j,k)=init
+            ekHdiff_avg(i,j,k)=init
+            ekVadv_avg(i,j,k)=init
+            ekCor_avg(i,j,k)=init
+            ekPrsgrd_avg(i,j,k)=init
+            ekHmix_avg(i,j,k)=init
+            ekVmix_avg(i,j,k)=init
+            ekrate_avg(i,j,k)=init
+            ekvol_avg(i,j,k)=init
+            ekVmix2_avg(i,j,k)=init
 #   ifdef DIAGNOSTICS_BARO
-          ekBaro_avg(i,j)=init
+            ekBaro_avg(i,j,k)=init
 #   endif
 #   if defined M3FAST
-          ekfast_avg(i,j)=init
+            ekfast_avg(i,j,k)=init
 #   endif
 #  endif /* AVERAGES */
-
-#  ifdef DIAGNOSTICS_EK_MLD
-          ekHadv_mld(i,j)=init
-          ekHdiff_mld(i,j)=init
-          ekVadv_mld(i,j)=init
-          ekCor_mld(i,j)=init
-          ekPrsgrd_mld(i,j)=init
-          ekHmix_mld(i,j)=init
-          ekVmix_mld(i,j)=init
-          ekrate_mld(i,j)=init
-          ekvol_mld(i,j)=init
-          ekVmix2_mld(i,j)=init
-#   if defined DIAGNOSTICS_BARO
-          ekBaro_mld(i,j)=init
-#   endif
-#   ifdef AVERAGES
-          ekHadv_mld_avg(i,j)=init
-          ekHdiff_mld_avg(i,j)=init
-          ekVadv_mld_avg(i,j)=init
-          ekCor_mld_avg(i,j)=init
-          ekPrsgrd_mld_avg(i,j)=init
-          ekHmix_mld_avg(i,j)=init
-          ekVmix_mld_avg(i,j)=init
-          ekrate_mld_avg(i,j)=init
-          ekvol_mld_avg(i,j)=init
-          ekVmix2_mld_avg(i,j)=init
-#    ifdef DIAGNOSTICS_BARO
-          ekBaro_mld_avg(i,j)=init
-#    endif
-#   endif /* AVERAGES */
-#  endif /* DIAGNOSTICS_EK_MLD */
+          enddo
         enddo
       enddo
 # endif /* DIAGNOSTICS_EK */

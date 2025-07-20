@@ -123,100 +123,99 @@
       endif
 
 !---------------------------------------------------------------
-! Momentum diagnostic variables.
+! Energy diagnostic variables.
 !---------------------------------------------------------------
 !
 !
         itrc = 1
-          if (wrtdiags_ek_avg(itrc)) then
 
-            ivar=r2dvar
+          if (wrtdiags_ek_avg(itrc)) then
 
 !
 ! indxekHadv
 !
-           work2d=ekHadv_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekHadv_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekHadv_avg(itrc),
-     &                      vname(1,indxekHadv+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekHadv),
+     &                      record,r3dvar,type)
 !
 ! indxekHdiff
 !
-           work2d=ekHdiff_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekHdiff_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekHdiff_avg(itrc),
-     &                      vname(1,indxekHdiff+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekHdiff),
+     &                      record,r3dvar,type)
 !
 ! indxekVadv
 !
-           work2d=ekVadv_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekVadv_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekVadv_avg(itrc),
-     &                      vname(1,indxekVadv+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekVadv),
+     &                      record,r3dvar,type)
 !
 ! indxekCor
 !
-           work2d=ekCor_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekCor_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekCor_avg(itrc),
-     &                      vname(1,indxekCor+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekCor),
+     &                      record,r3dvar,type)
 !
 ! indxekPrsgrd
 !
-           work2d=ekPrsgrd_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekPrsgrd_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekPrsgrd_avg(itrc),
-     &                      vname(1,indxekPrsgrd+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekPrsgrd),
+     &                      record,r3dvar,type)
 !
 ! indxekHmix
 !
-           work2d=ekHmix_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekHmix_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekHmix_avg(itrc),
-     &                      vname(1,indxekHmix+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekHmix),
+     &                      record,r3dvar,type)
 !
 ! indxekVmix
 !
-           work2d=ekVmix_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekVmix_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekVmix_avg(itrc),
-     &                      vname(1,indxekVmix+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekVmix),
+     &                      record,r3dvar,type)
 
 !
 ! indxekrate
 !
-           work2d=ekrate_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekrate_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekrate_avg(itrc),
-     &                      vname(1,indxekrate+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekrate),
+     &                      record,r3dvar,type)
 !
 
 !
 ! indxekvol
 !
-           work2d=ekvol_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekvol_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekvol_avg(itrc),
-     &                      vname(1,indxekvol+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekvol),
+     &                      record,r3dvar,type)
 !
 
 !
 ! indxekVmix2
 !
-           work2d=ekVmix2_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekVmix2_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekVmix2_avg(itrc),
-     &                      vname(1,indxekVmix2+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekVmix2),
+     &                      record,r3dvar,type)
 
 !
 ! indxekWind
@@ -224,8 +223,8 @@
            work2d=ekWind_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekWind_avg(itrc),
-     &                      vname(1,indxekWind+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekWind),
+     &                      record,r2dvar,type)
 
 
 !
@@ -234,167 +233,34 @@
            work2d=ekDrag_avg(:,:)
            call fillvalue2d(work2d,nciddiags_ek_avg,
      &                      diags_ekDrag_avg(itrc),
-     &                      vname(1,indxekDrag+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekDrag),
+     &                      record,r2dvar,type)
 
 # if defined DIAGNOSTICS_BARO
 !
 ! indxekBaro
 !
-           work2d=ekBaro_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekBaro_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekBaro_avg(itrc),
-     &                      vname(1,indxekBaro+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekBaro),
+     &                      record,r3dvar,type)
 # endif
 
 # if defined M3FAST
 !
 ! indxekfast
 !
-           work2d=ekfast_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
+           workr=ekfast_avg(:,:,:)
+           call fillvalue3d(workr,nciddiags_ek_avg,
      &                      diags_ekfast_avg(itrc),
-     &                      vname(1,indxekfast+itrc-1),
-     &                      record,ivar,type)
+     &                      vname(1,indxekfast),
+     &                      record,r3dvar,type)
 # endif
 
-
-# if defined DIAGNOSTICS_EK_MLD
-
-
-
-!
-! indxekHadv
-!
-           work2d=ekHadv_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekHadv_mld_avg(itrc),
-     &                      vname(1,indxekHadv_mld+itrc-1),
-     &                      record,ivar,type)
-!
-! indxekHdiff
-!
-           work2d=ekHdiff_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekHdiff_mld_avg(itrc),
-     &                      vname(1,indxekHdiff_mld+itrc-1),
-     &                      record,ivar,type)
-!
-! indxekVadv
-!
-           work2d=ekVadv_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekVadv_mld_avg(itrc),
-     &                      vname(1,indxekVadv_mld+itrc-1),
-     &                      record,ivar,type)
-!
-! indxekCor
-!
-           work2d=ekCor_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekCor_mld_avg(itrc),
-     &                      vname(1,indxekCor_mld+itrc-1),
-     &                      record,ivar,type)
-!
-! indxekPrsgrd
-!
-           work2d=ekPrsgrd_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekPrsgrd_mld_avg(itrc),
-     &                      vname(1,indxekPrsgrd_mld+itrc-1),
-     &                      record,ivar,type)
-!
-! indxekHmix
-!
-           work2d=ekHmix_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekHmix_mld_avg(itrc),
-     &                      vname(1,indxekHmix_mld+itrc-1),
-     &                      record,ivar,type)
-!
-! indxekVmix
-!
-           work2d=ekVmix_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekVmix_mld_avg(itrc),
-     &                      vname(1,indxekVmix_mld+itrc-1),
-     &                      record,ivar,type)
-
-!
-! indxekrate
-!
-           work2d=ekrate_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekrate_mld_avg(itrc),
-     &                      vname(1,indxekrate_mld+itrc-1),
-     &                      record,ivar,type)
-!
-
-!
-! indxekvol
-!
-           work2d=ekvol_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekvol_mld_avg(itrc),
-     &                      vname(1,indxekvol_mld+itrc-1),
-     &                      record,ivar,type)
-!
-
-!
-! indxekVmix2
-!
-           work2d=ekVmix2_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekVmix2_mld_avg(itrc),
-     &                      vname(1,indxekVmix2_mld+itrc-1),
-     &                      record,ivar,type)
-#  if defined DIAGNOSTICS_BARO
-!
-! indxekBaro
-!
-           work2d=ekBaro_mld_avg(:,:)
-           call fillvalue2d(work2d,nciddiags_ek_avg,
-     &                      diags_ekBaro_mld_avg(itrc),
-     &                      vname(1,indxekBaro_mld+itrc-1),
-     &                      record,ivar,type)
-#  endif
-
-# endif
 
         endif
 !
-# ifdef DEBUG
-      i=5
-      j=5
-      write(*,*) 'Write diag ek his at : i='
-     &                      ,i,' j=',j
-      write(*,*) 'ekHadv_avg(i,j)   ',ekHadv_avg(i,j)
-      write(*,*) 'ekHdiff_avg(i,j)   ',ekHdiff_avg(i,j)
-      write(*,*) 'ekVadv_avg(i,j)   ',ekVadv_avg(i,j)
-      write(*,*) 'ekCor_avg(i,j)    ',ekCor_avg(i,j)
-      write(*,*) 'ekPrsgrd_avg(i,j) ',ekPrsgrd_avg(i,j)
-      write(*,*) 'ekHmix_avg(i,j)   ',ekHmix_avg(i,j)
-      write(*,*) 'ekVmix_avg(i,j)   ',ekVmix_avg(i,j)
-      write(*,*) 'ekvol_avg(i,j)   ',ekvol_avg(i,j)
-#  if defined DIAGNOSTICS_BARO
-      write(*,*) 'ekBaro_avg(i,j) ',ekBaro_avg(i,j)
-#  endif
-#  if defined M3FAST
-      write(*,*) 'ekfast_avg(i,j) ',ekfast_avg(i,j)
-#  endif
-      write(*,*) 'ekrate_avg(i,j)   ',ekrate_avg(i,j)
-
-      write(*,*) 'SumUVhis_avg(i,j) = ',ekHadv_avg(i,j)
-     &                                  +  ekVadv_avg(i,j)
-     &                                  +  ekCor_avg(i,j)
-     &                                  +  ekPrsgrd_avg(i,j)
-     &                                  +  ekHmix_avg(i,j)
-     &                                  +  ekVmix_avg(i,j)
-     &                                  +  ekvol_avg(i,j)
-     &                                  -  ekrate_avg(i,j)
-      write(*,*) '-----------------------------------------'
-# endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_EK_AVG ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',

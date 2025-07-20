@@ -22,70 +22,174 @@
 # ifdef SOLVE3D
      &                       , itrc, k
 # endif
-
+      real cff,cff1,cff2,
+     &     dH(N), jstri(2), istri(2),
+     &     jendi(2), iendi(2)
 # include "scalars.h"
 # include "ncscrum.h"
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
-
-
+# include "work.h"
+# include "diagnostics.h"
 # include "diags_ek.h"
 # include "compute_auxiliary_bounds.h"
 
 
 
+!--------------------------------------------------
 
-! ------- ------------- ------ ------ - -----
+# ifdef EW_PERIODIC
+#  define IU_RANGE Istr,Iend
+#  define IV_RANGE Istr,Iend
+# else
+#  define IU_RANGE IstrR,IendR+1
+#  define IV_RANGE IstrR,IendR+1
+# endif
+!
+# ifdef NS_PERIODIC
+#  define JU_RANGE Jstr,Jend
+#  define JV_RANGE Jstr,Jend
+# else
+#  define JU_RANGE JstrR,JendR+1
+#  define JV_RANGE JstrR,JendR+1
+# endif
+
+!--------------------------------------------------
+
+      do j=JstrR,JendR+1
+        do i=IstrR,IendR+1
+          do k=1,N
+
+            workr(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+     &           * om_u(i,j)* on_u(i,j)
+     &           * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+
+
+          enddo
+        enddo
+      enddo
+
+      do j=JstrR,JendR+1
+        do i=IstrR,IendR+1
+          do k=1,N
+
+            work(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+     &           * om_v(i,j)*on_v(i,j)
+     &           * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+
+
+          enddo
+        enddo
+      enddo
 
         do j=JstrR,JendR
           do i=IstrR,IendR
+          do k=1,N
+
+            ekHadv(i,j,k) = 0.5 * (
+     &       (MXadv(i  ,j  ,k,1)+ MYadv(i  ,j  ,k,1))*workr(i  ,j  ,k)
+     &      +(MXadv(i+1,j  ,k,1)+ MYadv(i+1,j  ,k,1))*workr(i+1,j  ,k)
+     &      +(MXadv(i  ,j  ,k,2)+ MYadv(i  ,j  ,k,2))*work(i  ,j  ,k)
+     &      +(MXadv(i  ,j+1,k,2)+ MYadv(i  ,j+1,k,2))*work(i  ,j+1,k)
+     &                      )
+
+            ekHdiff(i,j,k) = 0.5 * (
+     &                         MHdiff(i  ,j  ,k,1) * workr(i  ,j  ,k)
+     &                       + MHdiff(i+1,j  ,k,1) * workr(i+1,j  ,k)
+     &                       + MHdiff(i  ,j  ,k,2) * work(i  ,j  ,k)
+     &                       + MHdiff(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                      )
 
 
-          ekHadv(i,j) = 0.5 * (ekwrkHadv(i,j,1) + ekwrkHadv(i+1,j,1))
-     &                + 0.5 * (ekwrkHadv(i,j,2) + ekwrkHadv(i,j+1,2))
+            ekVadv(i,j,k) = 0.5 * (
+     &                         MVadv(i  ,j  ,k,1) * workr(i  ,j  ,k)
+     &                       + MVadv(i+1,j  ,k,1) * workr(i+1,j  ,k)
+     &                       + MVadv(i  ,j  ,k,2) * work(i  ,j  ,k)
+     &                       + MVadv(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                      )
 
+            ekCor(i,j,k) = 0.5 * (
+     &                         MCor(i  ,j  ,k,1) * workr(i  ,j  ,k)
+     &                       + MCor(i+1,j  ,k,1) * workr(i+1,j  ,k)
+     &                       + MCor(i  ,j  ,k,2) * work(i  ,j  ,k)
+     &                       + MCor(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                      )
 
-          ekHdiff(i,j) = 0.5*(ekwrkHdiff(i,j,1)+ekwrkHdiff(i+1,j,1))
-     &                + 0.5*(ekwrkHdiff(i,j,2) + ekwrkHdiff(i,j+1,2))
+            ekPrsgrd(i,j,k) = 0.5 * (
+     &                        MPrsgrd(i  ,j  ,k,1) * workr(i  ,j  ,k)
+     &                      + MPrsgrd(i+1,j  ,k,1) * workr(i+1,j  ,k)
+     &                      + MPrsgrd(i  ,j  ,k,2) * work(i  ,j  ,k)
+     &                      + MPrsgrd(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                      )
 
+            ekHmix(i,j,k) = 0.5 * (
+     &                    MHmix(i  ,j  ,k,1,3-nstp) * workr(i  ,j  ,k)
+     &                  + MHmix(i+1,j  ,k,1,3-nstp) * workr(i+1,j  ,k)
+     &                  + MHmix(i  ,j  ,k,2,3-nstp) * work(i  ,j  ,k)
+     &                  + MHmix(i  ,j+1,k,2,3-nstp) * work(i  ,j+1,k)
+     &                      )
 
-# if !defined DIAGNOSTICS_UV && !defined DIAGNOSTICS_PV && (defined UV_HADV_UP3 || defined UV_HADV_UP5)
-          ekHdiff(i,j) = ekHadv(i,j) - ekHdiff(i,j)
+            ekVmix(i,j,k) = 0.5 * (
+     &                         MVmix(i  ,j  ,k,1) * workr(i  ,j  ,k)
+     &                       + MVmix(i+1,j  ,k,1) * workr(i+1,j  ,k)
+     &                       + MVmix(i  ,j  ,k,2) * work(i  ,j  ,k)
+     &                       + MVmix(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                      )
+
+!            ekrate(i,j,k) = 0.5 * (
+!     &                         Mrate(i  ,j  ,k,1) * workr(i  ,j  ,k)
+!     &                       + Mrate(i+1,j  ,k,1) * workr(i+1,j  ,k)
+!     &                       + Mrate(i  ,j  ,k,2) * work(i  ,j  ,k)
+!     &                       + Mrate(i  ,j+1,k,2) * work(i  ,j+1,k)
+!     &                      )
+
+            ekrate(i,j,k) = 0.5 * (
+     &                         ekwrkrate(i  ,j  ,k,1)
+     &                       + ekwrkrate(i+1,j  ,k,1)
+     &                       + ekwrkrate(i  ,j  ,k,2)
+     &                       + ekwrkrate(i  ,j+1,k,2)
+     &                      )
+
+            ekvol(i,j,k) = 0.5 * (
+     &                         ekwrkvol(i  ,j  ,k,1)
+     &                       + ekwrkvol(i+1,j  ,k,1)
+     &                       + ekwrkvol(i  ,j  ,k,2)
+     &                       + ekwrkvol(i  ,j+1,k,2)
+     &                      )
+
+            ekVmix2(i,j,k) = 0.5 * (
+     &                         MVmix2(i  ,j  ,k,1) * workr(i  ,j  ,k)
+     &                       + MVmix2(i+1,j  ,k,1) * workr(i+1,j  ,k)
+     &                       + MVmix2(i  ,j  ,k,2) * work(i  ,j  ,k)
+     &                       + MVmix2(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                      )
+
+# if defined DIAGNOSTICS_BARO
+            ekBaro(i,j,k) = 0.5 * (
+     &                         MBaro(i  ,j  ,k,1) * workr(i  ,j  ,k)
+     &                       + MBaro(i+1,j  ,k,1) * workr(i+1,j  ,k)
+     &                       + MBaro(i  ,j  ,k,2) * work(i  ,j  ,k)
+     &                       + MBaro(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                      )
+# endif
+# if defined M3FAST
+            ekfast(i,j,k) = 0.5 * (
+     &                         Mfast(i  ,j  ,k,1) * workr(i  ,j  ,k)
+     &                       + Mfast(i+1,j  ,k,1) * workr(i+1,j  ,k)
+     &                       + Mfast(i  ,j  ,k,2) * work(i  ,j  ,k)
+     &                       + Mfast(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                      )
 # endif
 
-          ekVadv(i,j) = 0.5 * (ekwrkVadv(i,j,1) + ekwrkVadv(i+1,j,1))
-     &                + 0.5 * (ekwrkVadv(i,j,2) + ekwrkVadv(i,j+1,2))
+          enddo
+        enddo
+      enddo
 
+! ------- ------------- ------ ------ - -----
 
-          ekCor(i,j) = 0.5 * (ekwrkCor(i,j,1) + ekwrkCor(i+1,j,1))
-     &                + 0.5 * (ekwrkCor(i,j,2) + ekwrkCor(i,j+1,2))
-
-
-          ekPrsgrd(i,j)=0.5*(ekwrkPrsgrd(i,j,1)+ekwrkPrsgrd(i+1,j,1))
-     &              + 0.5*(ekwrkPrsgrd(i,j,2) + ekwrkPrsgrd(i,j+1,2))
-
-
-          ekHmix(i,j) =
-     &         0.5 * (ekwrkHmix(i,j,1,nstp) + ekwrkHmix(i+1,j,1,nstp))
-     &       + 0.5 * (ekwrkHmix(i,j,2,nstp) + ekwrkHmix(i,j+1,2,nstp))
-
-
-          ekVmix(i,j) = 0.5 * (ekwrkVmix(i,j,1) + ekwrkVmix(i+1,j,1))
-     &                + 0.5 * (ekwrkVmix(i,j,2) + ekwrkVmix(i,j+1,2))
-
-
-          ekrate(i,j) = 0.5 * (ekwrkrate(i,j,1) + ekwrkrate(i+1,j,1))
-     &                + 0.5 * (ekwrkrate(i,j,2) + ekwrkrate(i,j+1,2))
-
-
-          ekvol(i,j) = 0.5 * (ekwrkvol(i,j,1) + ekwrkvol(i+1,j,1))
-     &                + 0.5 * (ekwrkvol(i,j,2) + ekwrkvol(i,j+1,2))
-
-
-          ekVmix2(i,j)=0.5*(ekwrkVmix2(i,j,1) + ekwrkVmix2(i+1,j,1))
-     &                +0.5*(ekwrkVmix2(i,j,2) + ekwrkVmix2(i,j+1,2))
-
+        do j=Jstr,JendR
+          do i=Istr,IendR
 
           ekWind(i,j) = 0.5 * (ekwrkWind(i,j,1) + ekwrkWind(i+1,j,1))
      &                + 0.5 * (ekwrkWind(i,j,2) + ekwrkWind(i,j+1,2))
@@ -93,78 +197,12 @@
 
           ekDrag(i,j) = 0.5 * (ekwrkDrag(i,j,1) + ekwrkDrag(i+1,j,1))
      &                + 0.5 * (ekwrkDrag(i,j,2) + ekwrkDrag(i,j+1,2))
-# if defined DIAGNOSTICS_BARO
-          ekBaro(i,j)=0.5*(ekwrkBaro(i,j,1)+ekwrkBaro(i+1,j,1))
-     &              + 0.5*(ekwrkBaro(i,j,2) + ekwrkBaro(i,j+1,2))
-# endif
-# if defined M3FAST
-          ekfast(i,j)=0.5*(ekwrkfast(i,j,1)+ekwrkfast(i+1,j,1))
-     &              + 0.5*(ekwrkfast(i,j,2) + ekwrkfast(i,j+1,2))
-# endif
 
-# if defined DIAGNOSTICS_EK_MLD
-
-
-          ekHadv_mld(i,j) = 0.5 * (ekwrkHadv_mld(i,j,1) + ekwrkHadv(i+1,j,1))
-     &                + 0.5 * (ekwrkHadv_mld(i,j,2) + ekwrkHadv_mld(i,j+1,2))
-
-
-          ekHdiff_mld(i,j) = 0.5*(ekwrkHdiff_mld(i,j,1)+ekwrkHdiff(i+1,j,1))
-     &                + 0.5*(ekwrkHdiff_mld(i,j,2) + ekwrkHdiff_mld(i,j+1,2))
-
-
-#  if !defined DIAGNOSTICS_UV && !defined DIAGNOSTICS_PV && (defined UV_HADV_UP3 || defined UV_HADV_UP5)
-          ekHdiff_mld(i,j) = ekHadv_mld(i,j) - ekHdiff_mld(i,j)
-#  endif
-
-          ekVadv_mld(i,j) =
-     &         0.5 * (ekwrkVadv_mld(i,j,1) + ekwrkVadv(i+1,j,1))
-     &       + 0.5 * (ekwrkVadv_mld(i,j,2) + ekwrkVadv_mld(i,j+1,2))
-
-
-          ekCor_mld(i,j) =
-     &         0.5 * (ekwrkCor_mld(i,j,1) + ekwrkCor(i+1,j,1))
-     &       + 0.5 * (ekwrkCor_mld(i,j,2) + ekwrkCor_mld(i,j+1,2))
-
-
-          ekPrsgrd_mld(i,j)=
-     &         0.5*(ekwrkPrsgrd_mld(i,j,1)+ekwrkPrsgrd(i+1,j,1))
-     &       + 0.5*(ekwrkPrsgrd_mld(i,j,2) + ekwrkPrsgrd_mld(i,j+1,2))
-
-
-          ekHmix_mld(i,j) =
-     &         0.5 * (ekwrkHmix_mld(i,j,1,nstp) + ekwrkHmix(i+1,j,1,nstp))
-     &       + 0.5 * (ekwrkHmix_mld(i,j,2,nstp) + ekwrkHmix_mld(i,j+1,2,nstp))
-
-
-          ekVmix_mld(i,j) =
-     &         0.5 * (ekwrkVmix_mld(i,j,1) + ekwrkVmix(i+1,j,1))
-     &       + 0.5 * (ekwrkVmix_mld(i,j,2) + ekwrkVmix_mld(i,j+1,2))
-
-
-          ekrate_mld(i,j) =
-     &         0.5 * (ekwrkrate_mld(i,j,1) + ekwrkrate(i+1,j,1))
-     &       + 0.5 * (ekwrkrate_mld(i,j,2) + ekwrkrate_mld(i,j+1,2))
-
-
-          ekvol_mld(i,j) =
-     &         0.5 * (ekwrkvol_mld(i,j,1) + ekwrkvol(i+1,j,1))
-     &       + 0.5 * (ekwrkvol_mld(i,j,2) + ekwrkvol_mld(i,j+1,2))
-
-
-          ekVmix2_mld(i,j)=
-     &         0.5*(ekwrkVmix2_mld(i,j,1) + ekwrkVmix2(i+1,j,1))
-     &        +0.5*(ekwrkVmix2_mld(i,j,2) + ekwrkVmix2_mld(i,j+1,2))
-
-#  if defined DIAGNOSTICS_BARO
-          ekBaro_mld(i,j)=
-     &         0.5*(ekwrkBaro_mld(i,j,1)+ekwrkBaro(i+1,j,1))
-     &       + 0.5*(ekwrkBaro_mld(i,j,2) + ekwrkBaro_mld(i,j+1,2))
-#  endif
-# endif
 
           enddo
          enddo
+
+
 
 ! ------- ------------- ------ ------ - -----
       return

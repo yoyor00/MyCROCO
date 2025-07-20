@@ -274,41 +274,17 @@
             rufrc(i,j)=rufrc(i,j) + cff
             u(i,j,k,indx)=u(i,j,k,indx) + dt*cff1
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_EK
-!            cff = 2./(Hz(i-1,j,k)+Hz(i,j,k))
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT\
+                             || defined DIAGNOSTICS_EK
             cff = om_u(i,j)*on_u(i,j)
 #  endif
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+                             || defined DIAGNOSTICS_PV
             MHmix(i,j,k,1,indx) = cff1 * cff
      &                       SWITCH umask(i,j)
 #   ifdef UV_VIS4
      &                     + MHmix(i,j,k,1,indx)
-#   endif
-#  elif defined DIAGNOSTICS_EK
-              if (k.eq.1) then
-            ekwrkHmix(i,j,1,indx) = cff1 * cff
-     &                           * u(i,j,k,nnew) SWITCH umask(i,j)
-#   ifdef UV_VIS4
-     &                           + ekwrkHmix(i,j,1,indx)
-#   endif
-              else
-            ekwrkHmix(i,j,1,indx) = ekwrkHmix(i,j,1,indx)
-     &                           + cff1 * cff
-     &                           * u(i,j,k,nnew) SWITCH umask(i,j)
-              endif
-#   if defined DIAGNOSTICS_EK_MLD
-              if (k.eq.kbl(i,j)) then
-            ekwrkHmix_mld(i,j,1,indx) = cff1 * cff
-     &                           * u(i,j,k,nnew) SWITCH umask(i,j)
-#    ifdef UV_VIS4
-     &                           + ekwrkHmix_mld(i,j,1,indx)
-#    endif
-              elseif (k.gt.kbl(i,j)) then
-            ekwrkHmix_mld(i,j,1,indx) = ekwrkHmix_mld(i,j,1,indx)
-     &                           + cff1 * cff
-     &                           * u(i,j,k,nnew) SWITCH umask(i,j)
-              endif
 #   endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
@@ -326,7 +302,6 @@
 #  endif
           enddo
         enddo
-
         do j=JstrV,Jend
           do i=Istr,Iend
             cff=pn_v(i,j)*(VFx(i+1,j)-VFx(i,j))
@@ -334,40 +309,16 @@
             cff1=pm_v(i,j)*pn_v(i,j)*cff
             rvfrc(i,j)=rvfrc(i,j) + cff
             v(i,j,k,indx)=v(i,j,k,indx) + dt*cff1
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_EK
-!            cff = 2./(Hz(i,j,k)+Hz(i,j-1,k))
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT\
+                             || defined DIAGNOSTICS_EK
             cff = om_v(i,j)*on_v(i,j)
 #  endif
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+                             || defined DIAGNOSTICS_PV
             MHmix(i,j,k,2,indx) = cff1 * cff
      &                       SWITCH vmask(i,j)
 #   ifdef UV_VIS4
      &                     + MHmix(i,j,k,2,indx)
-#   endif
-#  elif defined DIAGNOSTICS_EK
-              if (k.eq.1) then
-            ekwrkHmix(i,j,2,indx) = cff1 * cff
-     &                          * v(i,j,k,nnew) SWITCH vmask(i,j)
-#   ifdef UV_VIS4
-     &                     + ekwrkHmix(i,j,2,indx)
-#   endif
-              else
-                ekwrkHmix(i,j,2,indx) = ekwrkHmix(i,j,2,indx)
-     &                           + cff1 * cff
-     &                          * v(i,j,k,nnew) SWITCH vmask(i,j)
-              endif
-#   if defined DIAGNOSTICS_EK_MLD
-              if (k.eq.kbl(i,j)) then
-                ekwrkHmix_mld(i,j,2,indx) = cff1 * cff
-     &                          * v(i,j,k,nnew) SWITCH vmask(i,j)
-#    ifdef UV_VIS4
-     &                          + ekwrkHmix_mld(i,j,2,indx)
-#    endif
-              elseif (k.gt.kbl(i,j)) then
-                ekwrkHmix_mld(i,j,2,indx) = ekwrkHmix_mld(i,j,2,indx)
-     &                           + cff1 * cff
-     &                          * v(i,j,k,nnew) SWITCH vmask(i,j)
-              endif
 #   endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
@@ -703,45 +654,18 @@
               rufrc(i,j)=rufrc(i,j) + cff
               u(i,j,k,indx)=u(i,j,k,indx) + dt*(cff1+UFs(i,j,k2)
      &                                              -UFs(i,j,k1))
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT\
+                             || defined DIAGNOSTICS_EK
 !            cff = 2./(Hz(i-1,j,k)+Hz(i,j,k))
             cff = om_u(i,j)*on_u(i,j)
 #  endif
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+                             || defined DIAGNOSTICS_PV
               MHmix(i,j,k,1,indx) = (cff1+UFs(i,j,k2)-UFs(i,j,k1))
      &                         * cff
      &                          SWITCH umask(i,j)
 #   ifdef UV_VIS4
      &                        + MHmix(i,j,k,1,indx)
-#   endif
-#  elif defined DIAGNOSTICS_EK
-              if (k.eq.1) then
-                ekwrkHmix(i,j,1,indx) = (cff1+UFs(i,j,k2)-UFs(i,j,k1))
-     &                           * cff
-     &                           * u(i,j,k,nnew) SWITCH umask(i,j)
-#   ifdef UV_VIS4
-     &                           + ekwrkHmix(i,j,1,indx)
-#   endif
-              else
-                ekwrkHmix(i,j,1,indx) = ekwrkHmix(i,j,1,indx)
-     &                           + (cff1+UFs(i,j,k2)-UFs(i,j,k1))
-     &                           * cff
-     &                           * u(i,j,k,nnew) SWITCH umask(i,j)
-              endif
-#   if defined DIAGNOSTICS_EK_MLD
-              if (k.eq.kbl(i,j)) then
-                ekwrkHmix_mld(i,j,1,indx) = (cff1+UFs(i,j,k2)-UFs(i,j,k1))
-     &                           * cff
-     &                           * u(i,j,k,nnew) SWITCH umask(i,j)
-#    ifdef UV_VIS4
-     &                           + ekwrkHmix_mld(i,j,1,indx)
-#    endif
-              elseif (k.gt.kbl(i,j)) then
-                ekwrkHmix_mld(i,j,1,indx) = ekwrkHmix_mld(i,j,1,indx)
-     &                           + (cff1+UFs(i,j,k2)-UFs(i,j,k1))
-     &                           * cff
-     &                           * u(i,j,k,nnew) SWITCH umask(i,j)
-              endif
 #   endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
@@ -769,45 +693,18 @@
               rvfrc(i,j)=rvfrc(i,j) + cff
               v(i,j,k,indx)=v(i,j,k,indx) + dt*(cff1+VFs(i,j,k2)
      &                                              -VFs(i,j,k1))
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT\
+                             || defined DIAGNOSTICS_EK
 !            cff = 2./(Hz(i,j,k)+Hz(i,j-1,k))
             cff = om_v(i,j)*on_v(i,j)
 #  endif
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+                             || defined DIAGNOSTICS_PV
               MHmix(i,j,k,2,indx) = (cff1+VFs(i,j,k2)-VFs(i,j,k1))
      &                          * cff
      &                          SWITCH vmask(i,j)
 #   ifdef UV_VIS4
      &                        + MHmix(i,j,k,2,indx)
-#   endif
-#  elif defined DIAGNOSTICS_EK
-              if (k.eq.1) then
-                ekwrkHmix(i,j,2,indx) = (cff1+VFs(i,j,k2)-VFs(i,j,k1))
-     &                          * cff
-     &                          * v(i,j,k,nnew) SWITCH vmask(i,j)
-#   ifdef UV_VIS4
-     &                          + ekwrkHmix(i,j,2,indx)
-#   endif
-              else
-                ekwrkHmix(i,j,2,indx) = ekwrkHmix(i,j,2,indx)
-     &                             + (cff1+VFs(i,j,k2)-VFs(i,j,k1))
-     &                             * cff
-     &                          * v(i,j,k,nnew) SWITCH vmask(i,j)
-              endif
-#   if defined DIAGNOSTICS_EK_MLD
-              if (k.eq.kbl(i,j)) then
-                ekwrkHmix_mld(i,j,2,indx) =  (cff1+VFs(i,j,k2)-VFs(i,j,k1))
-     &                          * cff
-     &                          * v(i,j,k,nnew) SWITCH vmask(i,j)
-#    ifdef UV_VIS4
-     &                          + ekwrkHmix_mld(i,j,2,indx)
-#    endif
-              elseif (k.gt.kbl(i,j)) then
-                ekwrkHmix_mld(i,j,2,indx) = ekwrkHmix_mld(i,j,2,indx)
-     &                             + (cff1+VFs(i,j,k2)-VFs(i,j,k1))
-     &                             * cff
-     &                          * v(i,j,k,nnew) SWITCH vmask(i,j)
-              endif
 #   endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV

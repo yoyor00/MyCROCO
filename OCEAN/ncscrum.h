@@ -474,28 +474,6 @@
       integer indxekfast
       parameter (indxekfast=indxekDrag+2)
 #  endif
-#  ifdef DIAGNOSTICS_EK_MLD
-      integer indxekHadv_mld,indxekHdiff_mld,indxekVadv_mld,
-     &        indxekCor_mld,indxekPrsgrd_mld,indxekHmix_mld,
-     &        indxekVmix_mld,indxekrate_mld,indxekvol_mld,
-     &        indxekVmix2_mld,indxekWind_mld,indxekDrag_mld
-      parameter (indxekHadv_mld=indxekDrag+2,
-     &           indxekHdiff_mld=indxekHadv_mld+1,
-     &           indxekVadv_mld=indxekHdiff_mld+1,
-     &           indxekCor_mld=indxekVadv_mld+1,
-     &           indxekPrsgrd_mld=indxekCor_mld+1,
-     &           indxekHmix_mld=indxekPrsgrd_mld+1,
-     &           indxekVmix_mld=indxekHmix_mld+1,
-     &           indxekrate_mld=indxekVmix_mld+1,
-     &           indxekvol_mld=indxekrate_mld+1,
-     &           indxekVmix2_mld=indxekvol_mld+1,
-     &           indxekWind_mld=indxekVmix2_mld+1,
-     &           indxekDrag_mld=indxekWind_mld+1)
-#   ifdef DIAGNOSTICS_BARO
-      integer indxekBaro_mld
-      parameter (indxekBaro_mld=indxekDrag_mld+1)
-#   endif
-#  endif
 # endif
 # ifdef DIAGNOSTICS_PV
       integer indxpvMrhs,indxpvTrhs
@@ -1489,16 +1467,6 @@
 #   ifdef M3FAST
      &      , diags_ekfast_avg(2)
 #   endif
-#   ifdef DIAGNOSTICS_EK_MLD
-       integer diags_ekHadv_mld_avg(2), diags_ekHdiff_mld_avg(2)
-     &      , diags_ekVadv_mld_avg(2), diags_ekCor_mld_avg(2)
-     &      , diags_ekPrsgrd_mld_avg(2), diags_ekHmix_mld_avg(2)
-     &      , diags_ekVmix_mld_avg(2), diags_ekrate_mld_avg(2)
-     &      , diags_ekvol_mld_avg(2), diags_ekVmix2_mld_avg(2)
-#   endif
-#   ifdef DIAGNOSTICS_BARO
-     &      , diags_ekBaro_mld_avg(2)
-#   endif
 #  endif
 #  ifdef DIAGNOSTICS_PV
        integer nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
@@ -1876,25 +1844,6 @@
 #  endif
 #  ifdef M3FAST
      &      , diags_ekfast_avg
-#  endif
-# endif
-# ifdef DIAGNOSTICS_EK_MLD
-     &      , diags_ekHadv_mld, diags_ekHdiff_mld,  diags_ekVadv_mld
-     &      , diags_ekCor_mld, diags_ekPrsgrd_mld, diags_ekHmix_mld
-     &      , diags_ekVmix_mld, diags_ekrate_mld, diags_ekvol_mld
-     &      , diags_ekVmix2_mld
-#  ifdef DIAGNOSTICS_BARO
-     &      , diags_ekBaro_mld
-#  endif
-#  ifdef AVERAGES
-     &      , diags_ekHadv_mld_avg, diags_ekHdiff_mld_avg
-     &      , diags_ekVadv_mld_avg, diags_ekCor_mld_avg
-     &      , diags_ekPrsgrd_mld_avg, diags_ekHmix_mld_avg
-     &      , diags_ekVmix_mld_avg, diags_ekrate_mld_avg
-     &      , diags_ekvol_mld_avg, diags_ekVmix2_mld_avg
-#   ifdef DIAGNOSTICS_BARO
-     &      , diags_ekBaro_mld_avg
-#   endif
 #  endif
 # endif
 #endif

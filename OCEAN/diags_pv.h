@@ -48,26 +48,34 @@
 # endif
 
 
-# if defined DIAGNOSTICS_PV && ! defined DIAGNOSTICS_UV && ! defined DIAGNOSTICS_EK_FULL
+# if defined DIAGNOSTICS_PV && ! defined DIAGNOSTICS_UV && ! defined DIAGNOSTICS_EK
       real MXadv(GLOBAL_2D_ARRAY,N,2)
       real MYadv(GLOBAL_2D_ARRAY,N,2)
       real MHdiff(GLOBAL_2D_ARRAY,N,2)
       real MHmix(GLOBAL_2D_ARRAY,N,2,2)
       real MVmix(GLOBAL_2D_ARRAY,N,2)
-
+      real MVmix2(GLOBAL_2D_ARRAY,N,2)
+      real Mrate(GLOBAL_2D_ARRAY,N,2)
+# if defined DIAGNOSTICS_BARO
+      real MBaro(GLOBAL_2D_ARRAY,N,2)
+# endif
+# if defined M3FAST
+      real Mfast(GLOBAL_2D_ARRAY,N,2)
+# endif
       common /diag_MXadv/MXadv
      &       /diag_MYadv/MYadv
      &       /diag_MHdiff/MHdiff
      &       /diag_MHmix/MHmix
      &       /diag_MVmix/MVmix
-
+     &       /diag_MVmix2/MVmix2
+     &       /diag_Mrate/Mrate
+# if defined DIAGNOSTICS_BARO
+      common /diag_MBaro/MBaro
+# endif
+# if defined M3FAST
+      common /diag_Mfast/Mfast
 # endif
 
-# if defined DIAGNOSTICS_PV && ! defined DIAGNOSTICS_UV
-      real MVmix2(GLOBAL_2D_ARRAY,N,2)
-      real Mrate(GLOBAL_2D_ARRAY,N,2)
-      common /diag_MVmix2/MVmix2
-     &       /diag_Mrate/Mrate
 # endif
 
 # if defined DIAGNOSTICS_PV && ! defined DIAGNOSTICS_TS
