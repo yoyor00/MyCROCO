@@ -955,6 +955,22 @@ CR      write(*,*) '  0' MYID
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
 #endif
+
+#ifdef HPC_WRT_HIS_AFTER_TIMESTEPPING
+      ! To extract the computational performance of the dyncore,
+      ! we need to avoid any I/O during the time measurements, but we still
+      ! like to test whether the computations have been done correctly by   
+      ! comparing them with others.
+      ! Enabling `HPC_WRT_HIS_AFTER_TIMESTEPPING` allows to write out the
+      ! history file after the time stepping & all timings are finished.
+      ! Hint: Use -DOUT_DOUBLE to obtain double precision output
+      ! of history files (default only for restart files)
+
+      MPI_master_only write(stdout, *)
+     &                'HPC_WRT_HIS_AFTER_TIMESTEPPING: writing history file'
+      call wrt_his
+#endif
+
       ! close netCDF files.
       call closecdf
 #ifdef XIOS
