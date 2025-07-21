@@ -24,6 +24,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - DIAGNOSTICS_EDDY & not XIOS : fix double comma in ncscrum.h (Issue #362)
 
+- Compilation : fix cat "croco_ascii.txt" command in case of relative path (Issue #424)
+
 
 ### Changed
 
