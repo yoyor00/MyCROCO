@@ -337,11 +337,11 @@
 #  define DIAGNOSTICS_TS_ADV
 # endif
 
-
 # undef DIAGNOSTICS_UV
 # undef DIAGNOSTICS_VRT
 # undef DIAGNOSTICS_EK
 # undef DIAGNOSTICS_BARO
+
 # undef DIAGNOSTICS_PV
 # undef DIAGNOSTICS_DISS
 # ifdef DIAGNOSTICS_DISS
@@ -350,10 +350,6 @@
 
 # undef DIAGNOSTICS_EDDY
 
-# undef TENDENCY
-# ifdef TENDENCY
-#  define DIAGNOSTICS_UV
-# endif
 /*
 !           Applications:
 !---------------------------------

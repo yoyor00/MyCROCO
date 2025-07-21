@@ -322,14 +322,11 @@
 !
 ! indxMXadv
 !
-# ifndef TENDENCY
           if (itrc.eq.1) then
             r3dgrd=u3dgrd
           else
             r3dgrd=v3dgrd
           endif
-# endif
-
 !
           lvar=lenstr(vname(1,indxMXadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMXadv+itrc-1)(1:lvar),

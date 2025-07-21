@@ -1435,8 +1435,7 @@
 
 
 ! Need to exchange momentum terms for computation of vorticity/KE terms
-#  if defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_EK\
-                              || defined TENDENCY
+#  if defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_EK
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MXadv(START_2D_ARRAY,1,1))
       call exchange_u3d_tile (istr,iend,jstr,jend,
@@ -1524,63 +1523,6 @@
      &                                 ekwrkvol(START_2D_ARRAY,1,2))
 #   endif
 #  endif
-
-
-#  if defined TENDENCY && ! defined DIAGNOSTICS_VRT
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 MXadv(START_2D_ARRAY,1,1))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 MYadv(START_2D_ARRAY,1,1))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 MVadv(START_2D_ARRAY,1,1))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 MPrsgrd(START_2D_ARRAY,1,1))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 MCor(START_2D_ARRAY,1,1))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                            MHmix(START_2D_ARRAY,1,1,3-nstp))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 MHdiff(START_2D_ARRAY,1,1))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 MVmix(START_2D_ARRAY,1,1))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 Mrate(START_2D_ARRAY,1,1))
-#   if defined DIAGNOSTICS_BARO
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 MBaro(START_2D_ARRAY,1,1))
-#   endif
-#   if defined M3FAST
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 Mfast(START_2D_ARRAY,1,1))
-#   endif
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 MXadv(START_2D_ARRAY,1,2))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 MYadv(START_2D_ARRAY,1,2))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 MVadv(START_2D_ARRAY,1,2))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 MPrsgrd(START_2D_ARRAY,1,2))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 MCor(START_2D_ARRAY,1,2))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                            MHmix(START_2D_ARRAY,1,2,3-nstp))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 MHdiff(START_2D_ARRAY,1,2))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 MVmix(START_2D_ARRAY,1,2))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 Mrate(START_2D_ARRAY,1,2))
-#   if defined DIAGNOSTICS_BARO
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 MBaro(START_2D_ARRAY,1,2))
-#   endif
-#   if defined M3FAST
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 Mfast(START_2D_ARRAY,1,2))
-#   endif
-#  endif
-
 
 
 # endif
