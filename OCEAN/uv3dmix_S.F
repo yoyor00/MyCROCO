@@ -137,9 +137,10 @@
 #ifdef CLIMAT_UV_MIXH
 # include "climat.h"
 #endif
-#ifdef DIAGNOSTICS_UV
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+                            || defined DIAGNOSTICS_VRT
 # include "diagnostics.h"
-#else
+#endif
 # if defined DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
@@ -149,7 +150,6 @@
 # if defined DIAGNOSTICS_PV
 #  include "diags_pv.h"
 # endif
-#endif
 #ifdef AGRIF
 # include "zoom.h"
 #endif
@@ -251,22 +251,11 @@
             rufrc(i,j)=rufrc(i,j) + cff
             u(i,j,k,indx)=u(i,j,k,indx) + dt*cff1
 #if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
-                           || defined DIAGNOSTICS_PV
+                           || defined DIAGNOSTICS_PV \
+                           || defined DIAGNOSTICS_VRT
 !            if (nnew.ne.3) then
             MHmix(i,j,k,1,indx) = cff1 * om_u(i,j)*on_u(i,j)
      &                       SWITCH umask(i,j)
-!            endif
-#endif
-#if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-!            if (nnew.ne.3) then
-              if (k.eq.1) then
-                wrkHmix(i,j,1,indx) = cff1 * om_u(i,j)*on_u(i,j)
-     &                                    SWITCH umask(i,j)
-              else
-                wrkHmix(i,j,1,indx) = wrkHmix(i,j,1,indx)
-     &                          +cff1 * om_u(i,j)*on_u(i,j)
-     &                                    SWITCH umask(i,j)
-              endif
 !            endif
 #endif
           enddo
@@ -279,22 +268,11 @@
             rvfrc(i,j)=rvfrc(i,j) + cff
             v(i,j,k,indx)=v(i,j,k,indx) + dt*cff1
 #if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
-                           || defined DIAGNOSTICS_PV
+                           || defined DIAGNOSTICS_PV \
+                           || defined DIAGNOSTICS_VRT
 !            if (nnew.ne.3) then
             MHmix(i,j,k,2,indx) =  cff1 * om_v(i,j)*on_v(i,j)
      &                       SWITCH vmask(i,j)
-!            endif
-#endif
-#if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-!            if (nnew.ne.3) then
-              if (k.eq.1) then
-                wrkHmix(i,j,2,indx) = cff1 * om_v(i,j)*on_v(i,j)
-     &                                    SWITCH vmask(i,j)
-              else
-                wrkHmix(i,j,2,indx) = wrkHmix(i,j,2,indx)
-     &                           + cff1 * om_v(i,j)*on_v(i,j)
-     &                                    SWITCH vmask(i,j)
-              endif
 !            endif
 #endif
 

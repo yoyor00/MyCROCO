@@ -22,7 +22,6 @@
      &                       , itrc, k
 # endif
       real cff,cff1,cff2,
-# ifdef DIAGNOSTICS_UV
      &     wrkXadv(PRIVATE_2D_SCRATCH_ARRAY,2),
      &     wrkYadv(PRIVATE_2D_SCRATCH_ARRAY,2),
      &     wrkHdiff(PRIVATE_2D_SCRATCH_ARRAY,2),
@@ -38,7 +37,6 @@
 #  if defined M3FAST
      &     wrkfast(PRIVATE_2D_SCRATCH_ARRAY,2),
 #  endif
-# endif
      &     dH(N), jstri(2), istri(2),
      &     jendi(2), iendi(2)
 # include "scalars.h"
@@ -47,10 +45,7 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 
-# if defined DIAGNOSTICS_UV
-#  include "diagnostics.h"
-# endif
-
+# include "diagnostics.h"
 # include "diags_vrt.h"
 
 # include "compute_auxiliary_bounds.h"
@@ -70,25 +65,10 @@
         iendi(1) = iend
         iendi(2) = iend
 
-        !jstri(1) = jstrR
-        !jstri(2) = jstrR
-
-        !istri(1) = istrR
-        !istri(2) = istrR
-
-        !jendi(1) = jendR
-        !jendi(2) = jendR
-
-        !iendi(1) = iendR
-        !iendi(2) = iendR
-
-
-# ifdef DIAGNOSTICS_UV
 
         do itrc=1,2
          do j=jstri(itrc),jendi(itrc)
           do i=istri(itrc),iendi(itrc)
-
 
             if (itrc.eq.1) then
               cff = om_u(i,j)
@@ -183,9 +163,6 @@
 
 
 
-# endif
-
-
       if (WESTERN_EDGE) then     ! Restrict extended ranges one
         imin=istr+1              ! point inward near the physical
       else                       ! boundary. Note that this version
@@ -212,70 +189,65 @@
 
 
           cff = 0.25*(pm(i,j) + pm(i-1,j) + pm(i,j-1) + pm(i-1,j-1))
-     &         * 0.25*(pn(i,j) + pn(i-1,j) + pn(i,j-1) + pn(i-1,j-1))
+     &        * 0.25*(pn(i,j) + pn(i-1,j) + pn(i,j-1) + pn(i-1,j-1))
 
-          cff1 = cff
-          cff2 = cff
+          vrtXadv(i,j) = ( wrkXadv(i,j,2) - wrkXadv(i-1,j,2)
+     &                   - wrkXadv(i,j,1) + wrkXadv(i,j-1,1)
+     &                   ) * cff
 
+          vrtYadv(i,j) = ( wrkYadv(i,j,2) - wrkYadv(i-1,j,2)
+     &                   - wrkYadv(i,j,1) + wrkYadv(i,j-1,1)
+     &                   ) * cff
 
-          vrtXadv(i,j) = (wrkXadv(i,j,2) - wrkXadv(i-1,j,2)) * cff1
-     &           - (wrkXadv(i,j,1) - wrkXadv(i,j-1,1)) * cff2
+          vrtHdiff(i,j) = ( wrkHdiff(i,j,2) - wrkHdiff(i-1,j,2)
+     &                    - wrkHdiff(i,j,1) + wrkHdiff(i,j-1,1)
+     &                    ) * cff
 
-
-          vrtYadv(i,j) = (wrkYadv(i,j,2) - wrkYadv(i-1,j,2)) * cff1
-     &           - (wrkYadv(i,j,1) - wrkYadv(i,j-1,1)) * cff2
-
-
-          vrtHdiff(i,j) = (wrkHdiff(i,j,2)-wrkHdiff(i-1,j,2))* cff1
-     &           - (wrkHdiff(i,j,1) - wrkHdiff(i,j-1,1)) * cff2
-
-
-# if !defined DIAGNOSTICS_UV && (defined UV_HADV_UP3 || defined UV_HADV_UP5)
-          vrtHdiff(i,j) = vrtXadv(i,j) + vrtYadv(i,j) - vrtHdiff(i,j)
-# endif
-
-          vrtCor(i,j) = (wrkCor(i,j,2) - wrkCor(i-1,j,2)) * cff1
-     &           - (wrkCor(i,j,1) - wrkCor(i,j-1,1)) * cff2
+          vrtCor(i,j) = ( wrkCor(i,j,2) - wrkCor(i-1,j,2)
+     &                  - wrkCor(i,j,1) + wrkCor(i,j-1,1)
+     &                  ) * cff
 
 
-          vrtPrsgrd(i,j)=(wrkPrsgrd(i,j,2)-wrkPrsgrd(i-1,j,2))*cff1
-     &           - (wrkPrsgrd(i,j,1) - wrkPrsgrd(i,j-1,1)) * cff2
-
-# ifdef DIAGNOSTICS_UV
-          vrtHmix(i,j) =
-     &           (wrkHmix(i,j,2) - wrkHmix(i-1,j,2)) * cff1
-     &         - (wrkHmix(i,j,1) - wrkHmix(i,j-1,1)) * cff2
-# else
-          vrtHmix(i,j) =
-     &           (wrkHmix(i,j,2,nstp) - wrkHmix(i-1,j,2,nstp)) * cff1
-     &         - (wrkHmix(i,j,1,nstp) - wrkHmix(i,j-1,1,nstp)) * cff2
-# endif
-
-          vrtVmix(i,j) = (wrkVmix(i,j,2) - wrkVmix(i-1,j,2)) * cff1
-     &           - (wrkVmix(i,j,1) - wrkVmix(i,j-1,1)) * cff2
+          vrtPrsgrd(i,j)= ( wrkPrsgrd(i,j,2) - wrkPrsgrd(i-1,j,2)
+     &                    - wrkPrsgrd(i,j,1) + wrkPrsgrd(i,j-1,1)
+     &                    ) * cff
 
 
-          vrtVmix2(i,j) = (wrkVmix2(i,j,2)-wrkVmix2(i-1,j,2))*cff1
-     &           - (wrkVmix2(i,j,1) - wrkVmix2(i,j-1,1)) * cff2
+          vrtHmix(i,j) = (
+     &             wrkHmix(i,j,2) - wrkHmix(i-1,j,2)
+     &           - wrkHmix(i,j,1) + wrkHmix(i,j-1,1)
+     &                   ) * cff
 
+          vrtVmix(i,j) = ( wrkVmix(i,j,2) - wrkVmix(i-1,j,2)
+     &                   - wrkVmix(i,j,1) + wrkVmix(i,j-1,1)
+     &                   ) * cff
 
-          vrtrate(i,j) = (wrkrate(i,j,2) - wrkrate(i-1,j,2)) * cff1
-     &           - (wrkrate(i,j,1) - wrkrate(i,j-1,1)) * cff2
+          vrtVmix2(i,j) = ( wrkVmix2(i,j,2) - wrkVmix2(i-1,j,2)
+     &                    - wrkVmix2(i,j,1) + wrkVmix2(i,j-1,1)
+     &                    ) * cff
 
-          vrtWind(i,j) = (wrkWind(i,j,2) - wrkWind(i-1,j,2)) * cff1
-     &           - (wrkWind(i,j,1) - wrkWind(i,j-1,1)) * cff2
+          vrtrate(i,j) = ( wrkrate(i,j,2) - wrkrate(i-1,j,2)
+     &                   - wrkrate(i,j,1) + wrkrate(i,j-1,1)
+     &                   ) * cff
 
-          vrtDrag(i,j) = (wrkDrag(i,j,2) - wrkDrag(i-1,j,2)) * cff1
-     &           - (wrkDrag(i,j,1) - wrkDrag(i,j-1,1)) * cff2
+          vrtWind(i,j) = ( wrkWind(i,j,2) - wrkWind(i-1,j,2)
+     &                   - wrkWind(i,j,1) + wrkWind(i,j-1,1)
+     &                   ) * cff
+
+          vrtDrag(i,j) = ( wrkDrag(i,j,2) - wrkDrag(i-1,j,2)
+     &                   - wrkDrag(i,j,1) + wrkDrag(i,j-1,1)
+     &                   ) * cff
 
 # if defined DIAGNOSTICS_BARO
-          vrtBaro(i,j)=(wrkBaro(i,j,2)-wrkBaro(i-1,j,2))*cff1
-     &           - (wrkBaro(i,j,1) - wrkBaro(i,j-1,1)) * cff2
+          vrtBaro(i,j) = ( wrkBaro(i,j,2) - wrkBaro(i-1,j,2)
+     &                   - wrkBaro(i,j,1) + wrkBaro(i,j-1,1)
+     &                   ) * cff
 # endif
 
 # if defined M3FAST
-          vrtfast(i,j)=(wrkfast(i,j,2)-wrkfast(i-1,j,2))*cff1
-     &           - (wrkfast(i,j,1) - wrkfast(i,j-1,1)) * cff2
+          vrtfast(i,j) = ( wrkfast(i,j,2) - wrkfast(i-1,j,2)
+     &                   - wrkfast(i,j,1) + wrkfast(i,j-1,1)
+     &                   ) * cff
 # endif
           enddo
          enddo

@@ -125,51 +125,6 @@
 # endif  /* AVERAGES */
 
 
-
-
-
-
-
-
-# if ! defined DIAGNOSTICS_UV
-      real MXadv(GLOBAL_2D_ARRAY,N,2)
-      real MYadv(GLOBAL_2D_ARRAY,N,2)
-      real MHdiff(GLOBAL_2D_ARRAY,N,2)
-      real MVadv(GLOBAL_2D_ARRAY,N,2)
-      real MCor(GLOBAL_2D_ARRAY,N,2)
-      real MPrsgrd(GLOBAL_2D_ARRAY,N,2)
-      real MHmix(GLOBAL_2D_ARRAY,N,2,2)
-      real MVmix(GLOBAL_2D_ARRAY,N,2)
-      real MVmix2(GLOBAL_2D_ARRAY,N,2)
-      real Mrate(GLOBAL_2D_ARRAY,N,2)
-      real Mbody(GLOBAL_2D_ARRAY,N,2)
-#  if defined DIAGNOSTICS_BARO
-      real MBaro(GLOBAL_2D_ARRAY,N,2)
-#  endif
-#  if defined M3FAST
-      real Mfast(GLOBAL_2D_ARRAY,N,2)
-#  endif
-
-      common /diag_MXadv/MXadv
-     &       /diag_MYadv/MYadv
-     &       /diag_MHdiff/MHdiff
-     &       /diag_MVadv/MVadv
-     &       /diag_MCor/MCor
-     &       /diag_MPrsgrd/MPrsgrd
-     &       /diag_MHmix/MHmix
-     &       /diag_MVmix/MVmix
-     &       /diag_MVmix2/MVmix2
-     &       /diag_Mrate/Mrate
-     &       /diag_Mbody/Mbody
-#  if defined DIAGNOSTICS_BARO
-     &       /diag_MBaro/MBaro
-#  endif
-#  if defined M3FAST
-     &       /diag_Mfast/Mfast
-#  endif
-# endif /* ! defined DIAGNOSTICS_UV */
-
-
 #endif /* DIAGNOSTICS_EK */
 
 

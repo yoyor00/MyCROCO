@@ -38,9 +38,6 @@
 # include "coupling.h"
 # include "mixing.h"
 # include "zoom.h"
-# ifdef DIAGNOSTICS_UV
-#  include "diagnostics.h"
-# endif
 !
 # ifdef MPI
 #  define LOCALLM Lmmpi

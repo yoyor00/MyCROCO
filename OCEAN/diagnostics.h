@@ -123,7 +123,9 @@
 # endif
 #endif /* DIAGNOSTICS_TS */
 !
-#ifdef DIAGNOSTICS_UV
+
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+                            || defined DIAGNOSTICS_VRT
       real MXadv(GLOBAL_2D_ARRAY,N,2)
       real MYadv(GLOBAL_2D_ARRAY,N,2)
       real MVadv(GLOBAL_2D_ARRAY,N,2)
@@ -141,6 +143,27 @@
 # if defined M3FAST
       real Mfast(GLOBAL_2D_ARRAY,N,2)
 # endif
+      common /diag_MXadv/MXadv
+      common /diag_MYadv/MYadv
+      common /diag_MHdiff/MHdiff
+      common /diag_MVadv/MVadv
+      common /diag_MCor/MCor
+      common /diag_MPrsgrd/MPrsgrd
+      common /diag_MHmix/MHmix
+      common /diag_MVmix/MVmix
+      common /diag_MVmix2/MVmix2
+      common /diag_Mrate/Mrate
+      common /diag_Mbody/Mbody
+# if defined DIAGNOSTICS_BARO
+      common /diag_MBaro/MBaro
+# endif
+# if defined M3FAST
+      common /diag_Mfast/Mfast
+# endif
+# endif /* defined DIAGNOSTICS_UV || VRT || EK */
+
+
+#ifdef DIAGNOSTICS_UV
 # ifdef MRL_WCI
       real Mvf(GLOBAL_2D_ARRAY,N,2)
       real Mbrk(GLOBAL_2D_ARRAY,N,2)
@@ -179,23 +202,6 @@
       real Mbwf_avg(GLOBAL_2D_ARRAY,N,2)
       real Mfrc_avg(GLOBAL_2D_ARRAY,N,2)
 #  endif
-# endif
-      common /diag_MXadv/MXadv
-      common /diag_MYadv/MYadv
-      common /diag_MHdiff/MHdiff
-      common /diag_MVadv/MVadv
-      common /diag_MCor/MCor
-      common /diag_MPrsgrd/MPrsgrd
-      common /diag_MHmix/MHmix
-      common /diag_MVmix/MVmix
-      common /diag_MVmix2/MVmix2
-      common /diag_Mrate/Mrate
-      common /diag_Mbody/Mbody
-# if defined DIAGNOSTICS_BARO
-      common /diag_MBaro/MBaro
-# endif
-# if defined M3FAST
-      common /diag_Mfast/Mfast
 # endif
 # ifdef MRL_WCI
       common /diag_Mvf/Mvf

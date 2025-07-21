@@ -38,7 +38,8 @@
 # ifdef M3FAST
 #  include "nbq.h"
 # endif
-# ifdef DIAGNOSTICS_UV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+                            || defined DIAGNOSTICS_VRT
 #  include "diagnostics.h"
 # endif
 # if defined DIAGNOSTICS_VRT
@@ -74,18 +75,10 @@
 ! Diagnostics
 !------------
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+                             || defined DIAGNOSTICS_VRT
             Mfast(i,j,k,1) = ru_nbq_avg2(i,j,k) SWITCH umask(i,j)
 #  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (k.eq.1) then
-              wrkfast(i,j,1) = ru_nbq_avg2(i,j,k) SWITCH umask(i,j)
-            else
-              wrkfast(i,j,1) = wrkfast(i,j,1) + ru_nbq_avg2(i,j,k)
-     &                     SWITCH umask(i,j)
-            endif
-#  endif
-
 # else
             u(i,j,k,nnew)=u(i,j,k,nnew)+DC(i,0)*ru(i,j,k)
 # endif
@@ -110,18 +103,10 @@
 ! Diagnostics
 !------------
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+                             || defined DIAGNOSTICS_VRT
             Mfast(i,j,k,2) = rv_nbq_avg2(i,j,k) SWITCH vmask(i,j)
 #  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (k.eq.1) then
-              wrkfast(i,j,2) = rv_nbq_avg2(i,j,k) SWITCH vmask(i,j)
-            else
-              wrkfast(i,j,2) = wrkfast(i,j,2) + rv_nbq_avg2(i,j,k)
-     &                     SWITCH vmask(i,j)
-            endif
-#  endif
-
 # else
               v(i,j,k,nnew)=v(i,j,k,nnew)+DC(i,0)*rv(i,j,k)
 # endif
