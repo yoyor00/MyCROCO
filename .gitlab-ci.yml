@@ -430,8 +430,6 @@ track_perf:
     expire_in: 1 month
     reports:
       junit: BENCH/results/track-perf-host_ci/junit_report.xml
-  rules:
-      - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 pages:
