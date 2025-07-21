@@ -31,6 +31,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 
+- Compilation : fix cat "croco_ascii.txt" command in case of relative path
+
 
 ### Changed
 
