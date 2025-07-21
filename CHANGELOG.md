@@ -69,6 +69,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - DECALPHA (#414)
   - CRAY, VAX, SGI, AIX (#413)
   - AUTOTILING (#411)
+  - XCOMM_FORMAT (#419)
 
 ### Other
 
