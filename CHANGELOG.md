@@ -1,4 +1,4 @@
-# Changelog
+	# Changelog
 
 Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco/-/releases
 
@@ -8,7 +8,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Issue #361 : Integration of slight reformulation of zooplankton grazing 
   according to prey size done in PISCES standard version (#340) into quota version
 
-- BENCH : Add performance tracking (Issue #378)
+- BENCH : Add performance tracking (Issue #378 and #423)
 
 ### Fixed
 
@@ -29,6 +29,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   water concentration and last index of current was wrong (Issue #349)
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
+- Cleaning : remove module_qsort.F90 never used            (#394)
+
+- Compilation : fix cat "croco_ascii.txt" command in case of relative path
+
 
 ### Changed
 
@@ -59,23 +63,28 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
+  - ROBUST_DIURNAL_SRFLUX (#405)
   - START_DATE (#417)
   - ICE (#416)
   - DECALPHA (#414)
   - CRAY, VAX, SGI, AIX (#413)
   - AUTOTILING (#411)
   - PP_MIXING, MY2_MIXING, MY25_MIXING (#418)
+  - XCOMM_FORMAT (#419)
 
 ### Other
 
-- remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
-- remove files parameter.passivetrc.pisces.h, not used (Issue #387)
+- Cleaning :
+  - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
+  - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
+  - comments refering to BASIN in step2D.F (#409)
 
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, P. Marchesiello, R. Person
+  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
+  P. Marchesiello, C. Nguyen, R. Person
 
 - New contributors : 
   M. Plus, M. Schreiber 
