@@ -15,6 +15,7 @@
 !
 #include "cppdefs.h"
       subroutine step()
+!$pragma perf_regions include
       implicit none
 #include "param.h"
 #include "scalars.h"
