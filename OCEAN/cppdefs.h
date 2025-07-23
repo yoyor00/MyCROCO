@@ -209,7 +209,6 @@
 # define UV_HADV_UP3
 # undef  UV_HADV_UP5
 # undef  UV_HADV_WENO5
-# undef  UV_HADV_TVD
                       /* Lateral Explicit Momentum Mixing */
 # undef  UV_VIS2
 # ifdef UV_VIS2
@@ -218,7 +217,6 @@
                       /* Vertical Momentum Advection */
 # define UV_VADV_SPLINES
 # undef  UV_VADV_WENO5
-# undef  UV_VADV_TVD
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
 # define TS_HADV_RSUP3
