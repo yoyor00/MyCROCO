@@ -20,6 +20,7 @@
 !
 !======================================================================
 !
+!$a pragma perf_regions include
 #if defined OA_COUPLING || defined OW_COUPLING
           USE mod_prism
 #endif
@@ -131,6 +132,9 @@
 # elif defined AGRIF
       call Agrif_MPI_Init(MPI_COMM_WORLD)
 # endif
+!$a      CALL pr_timing_init_mpi(MPI_COMM_WORLD)
+#else 
+!$a      CALL pr_timing_init()
 #endif /* MPI */
 !
 !  Initialize AGRIF nesting
@@ -931,11 +935,13 @@ CR      write(*,*) '  0' MYID
 # endif
 #endif
 
+!$a call pr_timing_start('step')
 #ifdef AGRIF
           call Agrif_Step(step)
 #else
           call step()
 #endif
+!$a call pr_timing_stop('step')
 
 #ifdef SOLVE3D
         enddo
@@ -976,7 +982,7 @@ CR      write(*,*) '  0' MYID
 #endif
 
  100  continue
-
+!$a call pr_timing_finalize()
 #ifdef MPI
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
