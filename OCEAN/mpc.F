@@ -194,8 +194,10 @@
           if (symbol(2).eq.'$' .or. symbol(3).eq.'$' .or.
      &        symbol(4).eq.'$' .or. symbol(5).eq.'$') then
             if ((symbol(2).eq.'$').and.
-     &        ((symbol(3).eq.'A').or.(symbol(3).eq.'a'))) then
-           directive = .false.  ! this is the special !$AGRIF or C$AGRIF directive
+     &        (((symbol(3).eq.'A').or.(symbol(3).eq.'a')) .or. !$AGRIF or C$AGRIF directive
+     &        (((symbol(3).eq.'P').or.(symbol(3).eq.'p')) .and. 
+     &          ((symbol(4).eq.'R').or.(symbol(4).eq.'r'))))) then !$pr or !$pr for perf_regions
+           directive = .false.  ! this is a special directive
            do i=1,max_length
             if (symbol(i).ne.' ') length = i
            enddo

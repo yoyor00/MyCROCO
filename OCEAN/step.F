@@ -56,13 +56,13 @@ C$OMP END PARALLEL
       IF ((iif.GT.0).AND.(iif.LT.(nfast+1))) THEN
 #endif
 
-!$a call pr_timing_start('step2d')
+!$pr_timing_start('step2d')
 
 C$OMP PARALLEL
         call step2d_thread()
 C$OMP END PARALLEL
 
-!$a call pr_timing_stop('step2d')
+!$pr_timing_stop('step2d')
 
 #ifdef SOLVE3D
       ENDIF
