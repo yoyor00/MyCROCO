@@ -65,6 +65,21 @@
 # endif  /* K3SLOW_W */
 ! !
 ! !********************************
+! !  Implicit part: system setup
+! !********************************
+! !    
+# if defined K3SLOW_W && defined K3FAST_ZETAW
+!$acc kernels if(compute_on_device) default(present)
+      do j=Jstr,Jend
+        do i=Istr,Iend
+          DU_nbq(i,j)=0.
+          DV_nbq(i,j)=0.
+        enddo
+      enddo
+!$acc end kernels
+# endif /* K3SLOW_W */
+! !
+! !********************************
 ! ! Update ubar and vbar
 ! !     and their BC (AGRIF)
 ! ! BC for DU(V)_nbq treated here
@@ -86,10 +101,9 @@
                            ! and boundaries for DU(V)_nbq
       call u2dbc_tile   (Istr,Iend,Jstr,Jend, work)
       call v2dbc_tile   (Istr,Iend,Jstr,Jend, work)
-!$acc wait	
 ! !
 ! !********************************
-! !  Implicit part: system setup
+! !  Dummy variables
 ! !********************************
 ! !    
 # ifdef K3SLOW_W
@@ -97,16 +111,6 @@
       do j=Jstr,Jend
         do i=Istr,Iend
           work(i,j)=pm(i,j)*pn(i,j)
-#  if defined K3FAST_DUVNBQ || defined K3FAST_DUVNBQ2
-#   ifdef KNHINT_3M	
-       if ((iic==1.and.iif==1).or.mod(iif,nsdtnbq).eq.0) then
-#   endif
-            DU_nbq(i,j)=0.
-            DV_nbq(i,j)=0.
-#   ifdef KNHINT_3M	
-       endif
-#   endif
-#  endif
         enddo
       enddo
 !$acc end kernels

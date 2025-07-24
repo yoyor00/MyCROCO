@@ -42,7 +42,7 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 # compiler options
 #
-FC=gfortran
+FC=ifort
 
 #
 # set MPI directories if needed

@@ -692,7 +692,6 @@
         enddo
       enddo
 #  endif
-!$acc loop seq
 #  ifndef WAVE_SMFLUX
 !
 !======================================================================

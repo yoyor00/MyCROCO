@@ -37,7 +37,7 @@
 # ifdef MPI
 #  include "mpi_buffers.h"
 # endif
-# if defined NBQ
+# if defined NBQ || defined K3FAST
 #  include "nbq.h"
 # endif
 
@@ -85,9 +85,11 @@
 !$acc&     jbuf_revW_3D, jbuf_revE_3D
 #  endif
 # endif
-# if defined NBQ
+# if defined NBQ || defined K3FAST
 !$acc&  , rho_nbq, rho_grd
+#  if defined NBQ || defined K3SLOW_W
 !$acc&  , wz
+#  endif
 #  if defined NBQ_MASS
 !$acc&  , Hzr
 #  endif
@@ -204,6 +206,7 @@
        end
 
        subroutine copy_to_devices_2_tile(Istr,Iend,Jstr,Jend)
+# include "set_obc_definitions.h"
        implicit none
 # include "param.h"
        integer Istr,Iend,Jstr,Jend
@@ -231,7 +234,7 @@
 # if defined BBL
 #  include "bbl.h"
 # endif
-# if defined NBQ
+# if defined NBQ || defined K3FAST
 #  include "nbq.h"
 # endif
 

@@ -4,7 +4,7 @@
       contains     
       elemental function mylog(x)
 !$acc routine(mylog) seq
-      real,intent(in) :: x
+      real,intent(in), VALUE :: x
       real :: mylog
       mylog = real(log(X),kind=4)
       end function mylog
@@ -18,7 +18,7 @@
 
       elemental function myexp(x)
 !$acc routine(myexp) seq
-      real,intent(in) :: x
+      real,intent(in), VALUE :: x
       real :: myexp
       myexp = real(exp(X),kind=4)
       end function myexp
@@ -32,28 +32,28 @@
 
       elemental function mysin(x)
 !$acc routine(mysin) seq
-      real,intent(in) :: x
+      real,intent(in), VALUE :: x
       real :: mysin
       mysin = real(sin(X),kind=4)
       end function mysin
 
       elemental function mycosh(x)
 !$acc routine(mycosh) seq
-      real,intent(in) :: x
+      real,intent(in), VALUE :: x
       real :: mycosh
       mycosh = real(cosh(X),kind=4)
       end function mycosh
 
       elemental function mysinh(x)
 !$acc routine(mysinh) seq
-      real,intent(in) :: x
+      real,intent(in), VALUE :: x
       real :: mysinh
       mysinh = real(sinh(X),kind=4)
       end function mysinh
 
       elemental function myatan(x)
 !$acc routine(myatan) seq
-      real,intent(in) :: x
+      real,intent(in), VALUE :: x
       real :: myatan
       myatan = real(atan(X),kind=4)
       end function myatan
@@ -64,7 +64,6 @@
       real :: mysqrt
       mysqrt = real(sqrt(X),kind=4)
       end function mysqrt
-
 
       end module my_functions_1 
 
