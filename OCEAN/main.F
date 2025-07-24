@@ -132,6 +132,7 @@
 # elif defined AGRIF
       call Agrif_MPI_Init(MPI_COMM_WORLD)
 # endif
+! initialize perf_regions (version with or without MPI) to use it for time measurements
 !$pr_timing_init_mpi(MPI_COMM_WORLD)
 #else 
 !$pr_timing_init()
@@ -914,6 +915,8 @@ CR      write(*,*) '  0' MYID
       start_time1=PMPI_Wtime()
 #endif
 
+! marker used measure duration of the time step loop using perf_regions
+!$pr_timing_start('timestep_loop')
       do iicroot=ntstart,ntimes+1
 #ifdef MPI_TIME
         start_time1_1=PMPI_Wtime()
@@ -935,12 +938,14 @@ CR      write(*,*) '  0' MYID
 # endif
 #endif
 
+! marker used measure duration of each time step using perf_regions
 !$pr_timing_start('step')
 #ifdef AGRIF
           call Agrif_Step(step)
 #else
           call step()
 #endif
+! perf_regions region end marker
 !$pr_timing_stop('step')
 
 #ifdef SOLVE3D
@@ -952,7 +957,9 @@ CR      write(*,*) '  0' MYID
           if (mynode.eq.0) write(97,*) exe_time_1
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
-      enddo                                !-->  end of time step
+      enddo   
+! perf_regions region end marker                            !-->  end of time step
+!$pr_timing_stop('timestep_loop')      
   99  continue                             ! SHUTDOWN:
 #ifdef MPI_TIME
       start_time2=PMPI_Wtime()
@@ -982,6 +989,7 @@ CR      write(*,*) '  0' MYID
 #endif
 
  100  continue
+! output measurement results of from perf_regions and shut it down
 !$pr_timing_finalize()
 #ifdef MPI
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
