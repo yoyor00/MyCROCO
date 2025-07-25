@@ -1183,10 +1183,7 @@
      &                                           *om_u(i,j)*on_u(i,j)/dt
      &                                           - Mrate(i,j,k,1)
             Mrate(i,j,k,1)= MVmix2(i,j,k,1) + Mrate(i,j,k,1)
-#  if defined UV_HADV_UP3  || defined UV_HADV_UP5
-            MHdiff(i,j,k,1)= MXadv(i,j,k,1) + MYadv(i,j,k,1)
-     &                       - MHdiff(i,j,k,1)
-#  endif
+
 !
 ! Divide all diagnostic terms by the cell surface 1/(pm*pn).
 ! There after the unit of diag terms are :
@@ -1235,10 +1232,7 @@
      &                                           *om_v(i,j)*on_v(i,j)/dt
      &                                           - Mrate(i,j,k,2)
             Mrate(i,j,k,2)= MVmix2(i,j,k,2) + Mrate(i,j,k,2)
-#  if defined UV_HADV_UP3 || defined UV_HADV_UP5
-            MHdiff(i,j,k,2)= MXadv(i,j,k,2) + MYadv(i,j,k,2)
-     &                       - MHdiff(i,j,k,2)
-#  endif
+
 !
 ! Divide all diagnostic terms by the cell surface 1/(pm*pn).
 ! There after the unit of diag terms are :
