@@ -3445,36 +3445,36 @@ c !$acc wait
 #  ifdef DIAGNOSTICS_EK
 
       if (xios_field_is_active("ekrate")) then
-          call xios_send_field("ekrate", ekrate(:,:))
+          call xios_send_field("ekrate", ekrate(:,:,:))
       endif
       if (xios_field_is_active("ekadv")) then
-          call xios_send_field("ekadv", ekHadv(:,:) + ekVadv(:,:))
+          call xios_send_field("ekadv", ekHadv(:,:,:) + ekVadv(:,:,:))
       endif
       if (xios_field_is_active("ekCor")) then
-          call xios_send_field("ekCor",ekCor(:,:))
+          call xios_send_field("ekCor",ekCor(:,:,:))
       endif
       if (xios_field_is_active("ekPrsgrd")) then
-          call xios_send_field("ekPrsgrd",ekPrsgrd(:,:))
+          call xios_send_field("ekPrsgrd",ekPrsgrd(:,:,:))
       endif
       if (xios_field_is_active("ekHmix")) then
-          call xios_send_field("ekHmix",ekHmix(:,:))
+          call xios_send_field("ekHmix",ekHmix(:,:,:))
       endif
       if (xios_field_is_active("ekHdiff")) then
-          call xios_send_field("ekHdiff",ekHdiff(:,:))
+          call xios_send_field("ekHdiff",ekHdiff(:,:,:))
       endif
       if (xios_field_is_active("ekVmix")) then
-          call xios_send_field("ekVmix",ekVmix(:,:))
+          call xios_send_field("ekVmix",ekVmix(:,:,:))
       endif
       if (xios_field_is_active("ekVmix2")) then
-          call xios_send_field("ekVmix2",ekVmix2(:,:))
+          call xios_send_field("ekVmix2",ekVmix2(:,:,:))
       endif
 #  ifdef DIAGNOSTICS_BARO
       if (xios_field_is_active("ekBaro")) then
-          call xios_send_field("ekBaro",ekBaro(:,:))
+          call xios_send_field("ekBaro",ekBaro(:,:,:))
       endif
 #  endif
       if (xios_field_is_active("ekvol")) then
-          call xios_send_field("ekvol",ekvol(:,:))
+          call xios_send_field("ekvol",ekvol(:,:,:))
       endif
       if (xios_field_is_active("ekDrag")) then
           call xios_send_field("ekDrag",ekDrag(:,:))
@@ -3484,7 +3484,7 @@ c !$acc wait
       endif
 #  ifdef M3FAST
       if (xios_field_is_active("ekfast")) then
-          call xios_send_field("ekfast",ekfast(:,:))
+          call xios_send_field("ekfast",ekfast(:,:,:))
       endif
 #  endif
 #  endif
