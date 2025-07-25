@@ -51,6 +51,9 @@
 #ifdef OPENACC
       use openacc
 #endif
+#ifdef ONLINE_EXTRACT
+      use online_extract_bdy, only : do_extract_bdy, dealloc_closecdf
+#endif
       use buffer, only: init_buffer
 !     implicit none
       integer tile, subs, trd, ierr
@@ -845,6 +848,10 @@ C$OMP PARALLEL DO PRIVATE(tile)
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
 #endif
 
+#ifdef ONLINE_EXTRACT
+      call do_extract_bdy
+#endif
+
 #ifdef ABL1D
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
@@ -957,6 +964,9 @@ CR      write(*,*) '  0' MYID
 #endif
       ! close netCDF files.
       call closecdf
+#ifdef ONLINE_EXTRACT
+      call dealloc_closecdf
+#endif
 #ifdef XIOS
       call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF
 #endif

@@ -125,7 +125,9 @@ include Makedefs
 	online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
 	scal0d_oa_out_loc.F scal0d_oa_out_full.F\
 	output_oa.F\
-	copy_to_devices.F exchange_device_host.F init_acc.F
+	copy_to_devices.F exchange_device_host.F init_acc.F\
+\
+	module_extract.F
 
 
 
@@ -162,7 +164,8 @@ include Makedefs
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
 	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
 	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
-	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
+	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
+	online_extract_bdy.F90
 	
 
 

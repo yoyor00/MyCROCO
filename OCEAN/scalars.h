@@ -196,6 +196,9 @@
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
 #endif
+#ifdef ONLINE_EXTRACT
+     &                                 , nextr
+#endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
 #endif
@@ -369,6 +372,9 @@
 #endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
+#endif
+#ifdef ONLINE_EXTRACT
+     &                                 , nextr
 #endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc

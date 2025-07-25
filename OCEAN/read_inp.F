@@ -390,6 +390,9 @@
       elseif (keyword(1:kwlen).eq.'output_time_steps') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) dt_his,dt_avg,dt_rst
+# ifdef ONLINE_EXTRACT
+     &                      ,dt_extr
+# endif
 #endif /*USE_CALENDAR*/
 
 #ifdef XIOS
@@ -701,6 +704,23 @@ c        close(testunit)
 
 #endif
 
+#ifdef ONLINE_EXTRACT
+!
+! Boundary extract file name
+!
+      elseif (keyword(1:kwlen).eq.'online_extract') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+        inp_extrname=fname(1:lstr)
+        read(input,*,err=95) nextr
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+# ifdef USE_CALENDAR
+        nextr=ceiling((dt_extr*3600.)/dt)
+# endif
+        out_extrname=fname(1:lstr)
+#endif 
 #if defined ABL1D && ! defined XIOS
 !
 ! ABL file name.
@@ -2281,6 +2301,10 @@ c        close(testunit)
      &  '(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
      &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
      &  'DT RST=',dt_rst,'H'
+# ifdef ONLINE_EXTRACT
+          MPI_master_only  write(stdout,'(2x,A,f6.2,A)')
+     &  'DT_EXTR =',dt_extr,'H'
+# endif
           MPI_master_only write(stdout,*)
 #endif
 
@@ -2456,6 +2480,17 @@ c        close(testunit)
      &     'Averages File:', avgname(1:lstr),
      &     'rec/file =', nrpfavg
 #endif
+
+# ifdef ONLINE_EXTRACT
+          lstr=lenstr(inp_extrname)
+          MPI_master_only write(stdout,'(7x,A,2x,A)')
+     &       'Input online extraction file:', inp_extrname(1:lstr)
+          lstr=lenstr(out_extrname)
+          MPI_master_only write(stdout,
+     &               '(7x,A,2x,A,2x,A,2x,I4)')
+     &        'Output extraction File:', out_extrname(1:lstr),
+     &        'nextr =', nextr
+# endif
 
 #if defined ABL1D && ! defined XIOS
           lstr=lenstr(ablname)
