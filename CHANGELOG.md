@@ -63,6 +63,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
+  - UV_HADV_TVD, UV_VADV_TVD, W_HADV_TVD, W_VADV_TVD (#391)
   - ROBUST_DIURNAL_SRFLUX (#405)
   - START_DATE (#417)
   - ICE (#416)
