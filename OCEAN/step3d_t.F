@@ -55,12 +55,10 @@
       USE comsubstance, ONLY : l_subs2D
 #    endif
 #   endif
-#   ifdef SUBSTANCE_SUBMASSBALANCE
       USE submassbalance, ONLY :  submassbalance_flxcum_kiv
       USE submassbalance, ONLY :  submassbalance_psource
       USE submassbalance, ONLY :  submassbalance_flxcum_ws
-#   endif
-#  endif
+#  endif /* SUBSTANCE */
       implicit none
 #  include "param.h"
 #  include "ncscrum.h"
@@ -110,9 +108,6 @@
 #  endif
       real cff1,cff2,gama,dRz,hbltmp,sig,dXmax,dEmax,
      &     dpth,smax,amax,amaxx
-#  ifdef TS_VADV_FCT
-      real tmax,tmin,Ppos,Qpos,Pneg,Qneg,lmdmax
-#  endif
 #  include "openacc_work.h"
       parameter (epsil=1.E-16)
 !
@@ -366,12 +361,12 @@
 !add submassbalance !! in loop k
 ! this has to be checked with OPENACC
 ! as well as OPENACC and MUSTANG in general          
-#  if defined SUBSTANCE_SUBMASSBALANCE
+#  if defined SUBSTANCE
         if (itrc .ge. itsubs1) then
             call submassbalance_flxcum_kiv(Istr, Iend, Jstr, Jend, 
      &        FX, FE, itrc-itsubs1+1)
         endif
-#  endif
+#  endif /* SUBSTANCE */
 #  if defined OPENACC
             ENDDOEXTEND
 # endif  
@@ -524,13 +519,6 @@
         enddo
 #  endif
 
-!----------------------------------------------------------
-! Apply flux correction for monotonicity
-!----------------------------------------------------------
-!
-#  ifdef TS_VADV_FCT
-#   include "FCT.h"
-#  endif
 !
 !----------------------------------------------------------
 ! Apply vertical advective flux divergence
@@ -764,28 +752,13 @@
 
 
         enddo      ! <-- itrc
-
-!
-!----------------------------------------------------------
-! Compute vertical gradient in vertical T-diffusion
-! coefficient for floats random walk.
-!----------------------------------------------------------
-!
-#  if defined FLOATS && defined RANDOM_WALK
-        do k=1,N
-          do i=Istr,Iend
-            dAktdz(i,j,k)=(Akt(i,j,k,1)-Akt(i,j,k-1,1))/Hz(i,j,k)
-          enddo
-        enddo
-#  endif
-
 !
       ENDDOLOOP2D ! <-- j
 
 
 !add submassbalance for river!! 
 !mustang and openacc not compatible         
-# if defined SUBSTANCE_SUBMASSBALANCE
+# if defined SUBSTANCE
       call submassbalance_psource(Istr, Iend, Jstr, Jend)
 #  ifdef MUSTANG
       call submassbalance_flxcum_ws(Istr, Iend, Jstr, Jend)

@@ -810,9 +810,6 @@
       char_value=trim(title)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='title', value=char_value)
-C       char_value=trim(date_str)
-C        CALL iom_set_file_global_attr   (cdid
-C       &          ,type='string',name='date', value=char_value)
       char_value=trim(rstname)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='rst_file', value=char_value)
@@ -2623,9 +2620,6 @@ c !$acc wait
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
       endif
-      if (xios_field_is_active("prate")) then
-      call xios_send_field("prate",prate)
-      endif
 
 # ifdef ABL1D
       if (xios_field_is_active("zr_abl")) then
@@ -2696,6 +2690,9 @@ c !$acc wait
       endif
       if (xios_field_is_active("rhum")) then
       call xios_send_field("rhum",rhum)
+      endif
+      if (xios_field_is_active("prate")) then
+      call xios_send_field("prate",prate)
       endif
 # endif
 

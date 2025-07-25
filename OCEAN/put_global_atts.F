@@ -27,12 +27,6 @@
       character(32) namatt
       integer i,j
 #endif /* SEDIMENT */
-#ifdef FLOATS
-# include "init_floats.h"
-# include "ncscrum_floats.h"
-      real tempreal(i_floats)
-      integer tempint(i_floats),i
-#endif /* FLOATS */
 #ifdef STATIONS
 # include "sta.h"
 # include "nc_sta.h"
@@ -125,11 +119,6 @@
         ierr=nf_put_att_text(ncid,  nf_global, 'type', 19,
      &                                'CROCO stations file')
 #endif
-#ifdef FLOATS
-      elseif (ncid.eq.ncidflt) then
-        ierr=nf_put_att_text(ncid,  nf_global, 'type', 25,
-     &                          'CROCO floats history file')
-#endif
 #if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_ADV)
       elseif (ncid.eq.nciddia) then
         ierr=nf_put_att_text(ncid,  nf_global, 'type', 52,
@@ -158,19 +147,12 @@
       lvar=lenstr(title)
       ierr=nf_put_att_text(ncid, nf_global, 'title',   lvar,
      &                                         title(1:lvar))
-!#ifdef START_DATE
-!      lvar=lenstr(start_date)
-!      ierr=nf_put_att_text(ncid, nf_global, 'start_date',lvar,
-!     &                                     start_date(1:lvar))
-!#endif
+
 !# ifdef USE_CALENDAR || XIOS
 !      lvar=lenstr(origin_date)
 !      ierr=nf_put_att_text(ncid, nf_global, 'origin_date',lvar,
 !     &                                     origin_date(1:lvar))
 !# endif
-      lvar=lenstr(date_str)
-      ierr=nf_put_att_text(ncid, nf_global, 'date',    lvar,
-     &                                      date_str(1:lvar))
       lvar=lenstr(rstname)
       ierr=nf_put_att_text(ncid, nf_global, 'rst_file',lvar,
      &                                       rstname(1:lvar))
@@ -190,80 +172,6 @@
       ierr=nf_put_att_text(ncid, nf_global, 'spos_file',lvar,
      &                                    staposname(1:lvar))
 #endif
-
-#ifdef FLOATS
-      lvar=lenstr(fltname)
-      ierr=nf_put_att_text(ncid, nf_global, 'flt_file',lvar,
-     &                                       fltname(1:lvar))
-      lvar=lenstr(fposnam)
-      ierr=nf_put_att_text(ncid, nf_global, 'fpos_file',lvar,
-     &                                       fposnam(1:lvar))
-
-      if (ncid.eq.ncidflt) then
-# ifdef FLOATS_GLOBAL_ATTRIBUTES
-      do i=1,i_floats
-      tempreal(i)=Ft0(i)
-      enddo
-      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Ft0',nf_ftype,
-     &                         i_floats, tempreal)
-      do i=1,i_floats
-      tempreal(i)=Fx0(i)
-      enddo
-      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Fx0',nf_ftype,
-     &                         i_floats, tempreal)
-      do i=1,i_floats
-      tempreal(i)=Fy0(i)
-      enddo
-      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Fy0',nf_ftype,
-     &                         i_floats, tempreal)
-      do i=1,i_floats
-      tempreal(i)=Fz0(i)
-      enddo
-      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Fz0',nf_ftype,
-     &                         i_floats, tempreal)
-      do i=1,i_floats
-      tempint(i)=Fgrd(i)
-      enddo
-      ierr=nf_put_att_int(ncid, nf_global, 'Fgrd',nf_int,
-     &                         i_floats, tempint)
-      do i=1,i_floats
-      tempint(i)=Fcoor(i)
-      enddo
-      ierr=nf_put_att_int(ncid, nf_global, 'Fcoor',nf_int,
-     &                         i_floats, tempint)
-      do i=1,i_floats
-      tempint(i)=Ftype(i)
-      enddo
-      ierr=nf_put_att_int(ncid, nf_global, 'Ftype',nf_int,
-     &                         i_floats, tempint)
-      do i=1,i_floats
-      tempint(i)=Fcount(i)
-      enddo
-      ierr=nf_put_att_int(ncid, nf_global, 'Fcount',nf_int,
-     &                         i_floats, tempint)
-      do i=1,i_floats
-      tempreal(i)=Fdt(i)
-      enddo
-      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Fdt',nf_ftype,
-     &                         i_floats, tempreal)
-      do i=1,i_floats
-      tempreal(i)=Fdx(i)
-      enddo
-      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Fdx',nf_ftype,
-     &                         i_floats, tempreal)
-      do i=1,i_floats
-      tempreal(i)=Fdy(i)
-      enddo
-      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Fdy',nf_ftype,
-     &                         i_floats, tempreal)
-      do i=1,i_floats
-      tempreal(i)=Fdz(i)
-      enddo
-      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Fdz',nf_ftype,
-     &                         i_floats, tempreal)
-# endif
-      endif
-#endif /* FLOATS */
 
 #ifndef ANA_GRID
       lvar=lenstr(grdname)

@@ -75,15 +75,6 @@
 #ifdef LMD_MIXING
       iAk=iAk+1
 #endif
-#ifdef MY2_MIXING
-      iAk=iAk+1
-#endif
-#ifdef MY25_MIXING
-      iAk=iAk+1
-#endif
-#ifdef PP_MIXING
-      iAk=iAk+1
-#endif
       if (iAk.gt.1) then
         write(stdout,'(1x,A,1x,A)') 'ERROR in "cppdefs.h":',
      &       'more than one vertical mixing scheme is chosen.'
