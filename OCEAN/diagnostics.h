@@ -136,7 +136,9 @@
       real MVmix(GLOBAL_2D_ARRAY,N,2)
       real MVmix2(GLOBAL_2D_ARRAY,N,2)
       real Mrate(GLOBAL_2D_ARRAY,N,2)
+# if defined BODYFORCE
       real Mbody(GLOBAL_2D_ARRAY,N,2)
+# endif
 # if defined DIAGNOSTICS_BARO
       real MBaro(GLOBAL_2D_ARRAY,N,2)
 # endif
@@ -153,7 +155,9 @@
       common /diag_MVmix/MVmix
       common /diag_MVmix2/MVmix2
       common /diag_Mrate/Mrate
+# if defined BODYFORCE
       common /diag_Mbody/Mbody
+# endif
 # if defined DIAGNOSTICS_BARO
       common /diag_MBaro/MBaro
 # endif
