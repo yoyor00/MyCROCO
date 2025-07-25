@@ -2866,7 +2866,7 @@ c !$acc wait
       call xios_send_field("omega",work)
       endif
 
-#  ifdef M3FAST
+#  ifdef NBQ
       if (xios_field_is_active("u_nbq")) then
         worknbq=0.
           do k=-N_sl+1,N-1
@@ -2956,7 +2956,7 @@ c !$acc wait
 #  endif
 
       if (xios_field_is_active("w")) then
-# ifndef M3FAST
+# ifndef NBQ
       call Wvlcty (tile, workr) 
       call xios_send_field("w",workr)
 # else        
