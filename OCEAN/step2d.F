@@ -1824,7 +1824,6 @@ C$OMP END MASTER
 !# else
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                   zeta(START_2D_ARRAY,knew))
-!#endif      
       call exchange_u2d_1pts_tile (Istr,Iend,Jstr,Jend,
      &                   ubar(START_2D_ARRAY,knew))
       call exchange_v2d_1pts_tile (Istr,Iend,Jstr,Jend,

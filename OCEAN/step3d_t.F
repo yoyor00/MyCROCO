@@ -752,21 +752,6 @@
 
 
         enddo      ! <-- itrc
-
-!
-!----------------------------------------------------------
-! Compute vertical gradient in vertical T-diffusion
-! coefficient for floats random walk.
-!----------------------------------------------------------
-!
-#  if defined FLOATS && defined RANDOM_WALK
-        do k=1,N
-          do i=Istr,Iend
-            dAktdz(i,j,k)=(Akt(i,j,k,1)-Akt(i,j,k-1,1))/Hz(i,j,k)
-          enddo
-        enddo
-#  endif
-
 !
       ENDDOLOOP2D ! <-- j
 

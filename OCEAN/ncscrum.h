@@ -2090,7 +2090,7 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-      character*80 date_str, title
+      character*80 title
       character*80 origin_date, start_date_run, xios_origin_date
       integer      start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
@@ -2207,7 +2207,7 @@
 ! 26 abl1d var + 1 var Time
 #endif
 
-      common /cncscrum/   date_str,   title
+      common /cncscrum/   title
      &         ,   origin_date, start_date_run
      &         ,   xios_origin_date
      &         ,   ininame,  grdname, hisname

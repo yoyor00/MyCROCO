@@ -112,8 +112,6 @@
 #if defined BIOLOGY && defined TRACERS
 !$acc&, global_sum
 #endif
-!$acc&, CPU_time
-!$acc&, proc
 #ifdef SOLITON
 #else
 #endif
@@ -270,24 +268,13 @@
 #endif
 
 !private_scratch.h
-#ifdef AUTOTILING
 !$acc&, A2d, A3d
-# if defined SEDIMENT || defined LMD_MIXING
+#if defined SEDIMENT || defined LMD_MIXING
 !$acc&, B2d
-# endif
-# if defined ABL1D
-!$acc&, T1d
-!$acc&, T2d,T3d
-# endif
-#else
-!$acc&, A2d, A3d
-# if defined SEDIMENT || defined LMD_MIXING
-!$acc&, B2d
-# endif
-# if defined ABL1D
+#endif
+#if defined ABL1D
 !$acc&, T1d
 !$acc&, T2d, T3d
-# endif
 #endif
 
 !mixing.h
@@ -343,9 +330,6 @@
 # ifdef GLS_MIXING
 !$acc&, Akv_old
 !$acc&, Akt_old
-# endif
-# ifdef RANDOM_WALK
-!$acc&, dAktdz
 # endif
 # if defined ANA_VMIX || defined BVF_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \

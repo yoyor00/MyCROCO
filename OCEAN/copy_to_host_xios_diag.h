@@ -28,8 +28,6 @@
 # else
 # endif
 #endif  /* ONLINE_ANALYSIS */
-#ifdef START_DATE
-#endif
 #ifndef ANA_GRID
 #endif
 #ifndef ANA_INITIAL
@@ -90,9 +88,7 @@
 # ifdef MPI
 # else
 # endif
-# ifdef START_DATE
-# elif defined USE_CALENDAR
-# else
+# ifdef USE_CALENDAR
 # endif
 #if defined MUSTANG
 # endif
@@ -121,9 +117,7 @@
 # if defined MPI
 # else
 # endif
-# ifdef START_DATE
-# elif defined USE_CALENDAR
-# else
+# ifdef USE_CALENDAR
 # endif
 # ifdef SPHERICAL
 # else
