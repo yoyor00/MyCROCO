@@ -248,7 +248,7 @@
 # endif
                              )
           endif                   
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
         else
             allocate(obj(i)%vari(np,N))
 # endif
@@ -453,7 +453,7 @@
         allocate(obj%jpos(obj%np))
         obj%ipos = gobj_i(start_idx:end_idx)
         obj%jpos = gobj_j(start_idx:end_idx)
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
       else
         obj%start_idx = 1
 # endif
@@ -595,7 +595,7 @@
         !call def_extract
       endif
 
-# if defined MPI & !defined NC4PAR
+# if defined MPI & !defined NC4PAR_OE
       if (mynode.gt.0) then
         call MPI_Recv (blank, 1, MPI_INTEGER, mynode-1, 1, MPI_COMM_WORLD, status, ierr)
       endif
@@ -632,7 +632,7 @@
 !
           if(trim(obj(i)%set) == trim(unique_set(ifile))) then
 
-# ifndef NC4PAR
+# ifndef NC4PAR_OE
             if (obj(i)%np>0) then
 # endif
               start1D = (/obj(i)%start_idx,record/)
@@ -665,7 +665,7 @@
               call check(ierr,'problem in writing the variable: time')
 
               if (obj(i)%zeta) then
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                 if (obj(i)%np>0) then
 # endif
 # ifdef ETCH_INTO_LAND
@@ -676,7 +676,7 @@
                 call interpolate(zeta(:,:,fast_indx_out), obj(i)%vari(:,1), coef, ip, jp)
 # endif
                 where(sum(coef,2)==0.) obj(i)%vari(:,1)=NF90_FILL_DOUBLE
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                 endif                
 # endif
                 select case(trim(obj(i)%bnd))
@@ -697,7 +697,7 @@
               endif
 !
               if (obj(i)%ubar) then
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                 if (obj(i)%np>0) then
 # endif
 # ifdef ETCH_INTO_LAND
@@ -714,7 +714,7 @@
                 obj(i)%vari(:,1) = obj(i)%cosa*ui(:,1) &
                                  - obj(i)%sina*vi(:,1)
                 where(sum(coef,2)==0.) obj(i)%vari(:,1)=NF90_FILL_DOUBLE
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                 endif                
 # endif
                 select case(trim(obj(i)%bnd))
@@ -734,7 +734,7 @@
               endif
 !
               if (obj(i)%vbar) then
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                 if (obj(i)%np>0) then
 # endif
 # ifdef ETCH_INTO_LAND
@@ -751,7 +751,7 @@
                 obj(i)%vari(:,1) = obj(i)%sina*ui(:,1) &
                                  + obj(i)%cosa*vi(:,1)
                 where(sum(coef,2)==0.) obj(i)%vari(:,1)=NF90_FILL_DOUBLE
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                 endif                
 # endif
                 select case(trim(obj(i)%bnd))
@@ -772,7 +772,7 @@
 !
 # ifdef SOLVE3D              
               if (obj(i)%temp) then
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                 if (obj(i)%np>0) then
 #  endif
 #  ifdef ETCH_INTO_LAND
@@ -787,7 +787,7 @@
                 do k=1,N
                   where(sum(coef,2)==0.) obj(i)%vari(:,k)=NF90_FILL_DOUBLE
                 enddo
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                 endif                
 #  endif
                 select case(trim(obj(i)%bnd))
@@ -808,7 +808,7 @@
 !              
 #  ifdef SALINITY
               if (obj(i)%salt) then
-#   ifdef NC4PAR
+#   ifdef NC4PAR_OE
                 if (obj(i)%np>0) then
 #   endif
 #   ifdef ETCH_INTO_LAND
@@ -823,7 +823,7 @@
                 do k=1,N
                   where(sum(coef,2)==0.) obj(i)%vari(:,k)=NF90_FILL_DOUBLE
                 enddo
-#   ifdef NC4PAR
+#   ifdef NC4PAR_OE
                 endif                
 #   endif
                 select case(trim(obj(i)%bnd))
@@ -843,7 +843,7 @@
               endif
 #  endif
               if (obj(i)%u) then
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                 if (obj(i)%np>0) then
 #  endif
 #  ifdef ETCH_INTO_LAND
@@ -867,7 +867,7 @@
                                    - obj(i)%sina*vi(:,k)
                   where(sum(coef,2)==0.) obj(i)%vari(:,k)=NF90_FILL_DOUBLE               
                 enddo
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                 endif                
 #  endif
                 select case(trim(obj(i)%bnd))
@@ -887,7 +887,7 @@
               endif
 !              
               if (obj(i)%v) then
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                 if (obj(i)%np>0) then
 #  endif
 #  ifdef ETCH_INTO_LAND
@@ -911,7 +911,7 @@
                                    + obj(i)%cosa*vi(:,k)
                   where(sum(coef,2)==0.) obj(i)%vari(:,k)=NF90_FILL_DOUBLE
                 enddo
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                 endif                
 #  endif
                 select case(trim(obj(i)%bnd))
@@ -931,14 +931,14 @@
               endif
 # endif
 !
-# ifndef NC4PAR
+# ifndef NC4PAR_OE
             endif !obj(i)%np>0
 # endif
 !            
           endif
         enddo
 
-# if defined MPI & !defined NC4PAR
+# if defined MPI & !defined NC4PAR_OE
         ierr = nf90_close(ncidextr(ifile))
 # else
         ierr = nf90_sync(ncidextr(ifile))
@@ -951,7 +951,7 @@
                            'boundary fields into time record =', &
                             record, '/', nrecextr  MYID
 !      
-# if defined MPI & !defined NC4PAR
+# if defined MPI & !defined NC4PAR_OE
       if (mynode .lt. NNODES-1) then
         call MPI_Send (blank, 1, MPI_INTEGER, mynode+1, 1, MPI_COMM_WORLD, ierr)
       endif
@@ -978,7 +978,7 @@
                               u3dx, u3dy, &
                               v3dx, v3dy 
 # endif
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
       integer :: cmode
 # endif
 !
@@ -1014,14 +1014,14 @@
         endif
         lstr=lenstr(fname)
         if (ncidextr(ifile).ne.-1) create_new_file=.false.
-# if defined MPI & !defined NC4PAR
+# if defined MPI & !defined NC4PAR_OE
         if (mynode.gt.0) create_new_file = .false.
 # endif
 !
 ! Create output file 
 ! -----------------------------------------------------------------------
         if (create_new_file) then
-# ifndef NC4PAR         
+# ifndef NC4PAR_OE         
           ierr=nf90_create(fname(1:lstr),NF90_CLOBBER, ncidextr(ifile))
 # else
           cmode = ior(nf90_netcdf4, nf90_mpiio)
@@ -1118,7 +1118,7 @@
 ! Define variables
 !------------------------------------------------------------------------
           ierr=nf90_def_var(ncidextr(ifile), 'bry_time', NF90_DOUBLE, timedim, extrTime(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
           ierr=nf90_var_par_access(ncidextr(ifile),extrTime(ifile),nf90_collective)
           !ierr=nf90_var_par_access(ncidextr(ifile),extrTime(ifile),nf90_independent)
 # endif         
@@ -1282,7 +1282,7 @@
 !
         elseif(ncidextr(ifile)==-1) then
 !
-# ifndef NC4PAR            
+# ifndef NC4PAR_OE            
           ierr = nf90_open(fname(1:lstr),NF90_WRITE, ncidextr(ifile))
 # else
           ierr = nf90_open(fname(1:lstr),IOR(nf90_write, nf90_mpiio), ncidextr(ifile), comm = MPI_COMM_WORLD, info = MPI_INFO_NULL)
@@ -1296,14 +1296,14 @@
 !                  
                 if(obj(iobj)%zeta) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'zeta_north',extrZ_N(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrZ_N(ifile),nf90_collective)
 # endif
                 endif  
 !                
                 if(obj(iobj)%ubar) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'ubar_north',extrUb_N(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrUb_N(ifile),nf90_collective)
 # endif
                  
@@ -1311,35 +1311,35 @@
 !                
                 if(obj(iobj)%vbar) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'vbar_north',extrVb_N(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrVb_N(ifile),nf90_collective)
 # endif
                 endif  
 # ifdef SOLVE3D
                 if(obj(iobj)%u) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'u_north',extrU_N(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrU_N(ifile),nf90_collective)
 #  endif
                 endif
 !                
                 if(obj(iobj)%v) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'v_north',extrV_N(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrV_N(ifile),nf90_collective)
 #  endif
                 endif
 !                
                 if(obj(iobj)%temp) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'temp_north',extrT_N(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrT_N(ifile),nf90_collective)
 #  endif
                 endif
 #  ifdef SALINITY                
                 if(obj(iobj)%salt) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'salt_north',extrS_N(ifile))
-#   ifdef NC4PAR
+#   ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrS_N(ifile),nf90_collective)
 #   endif
                 endif 
@@ -1350,49 +1350,49 @@
 !                  
                 if(obj(iobj)%zeta) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'zeta_south',extrZ_S(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrZ_S(ifile),nf90_collective)
 # endif
                 endif  
 !                
                 if(obj(iobj)%ubar) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'ubar_south',extrUb_S(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrUb_S(ifile),nf90_collective)
 # endif
                 endif  
 !                
                 if(obj(iobj)%vbar) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'vbar_south',extrVb_S(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrVb_S(ifile),nf90_collective)
 # endif
                 endif  
 # ifdef SOLVE3D
                 if(obj(iobj)%u) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'u_south',extrU_S(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrU_S(ifile),nf90_collective)
 #  endif
                 endif
 !                
                 if(obj(iobj)%v) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'v_south',extrV_S(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrV_S(ifile),nf90_collective)
 #  endif
                 endif
 !                
                 if(obj(iobj)%temp) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'temp_south',extrT_S(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrT_S(ifile),nf90_collective)
 #  endif
                 endif
 #  ifdef SALINITY                
                 if(obj(iobj)%salt) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'salt_south',extrS_S(ifile))
-#   ifdef NC4PAR
+#   ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrS_S(ifile),nf90_collective)
 #   endif
                 endif 
@@ -1402,49 +1402,49 @@
 !                  
                 if(obj(iobj)%zeta) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'zeta_west',extrZ_W(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrZ_W(ifile),nf90_collective)
 # endif
                 endif  
 !                
                 if(obj(iobj)%ubar) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'ubar_west',extrUb_W(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrUb_W(ifile),nf90_collective)
 # endif
                 endif  
 !                
                 if(obj(iobj)%vbar) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'vbar_west',extrVb_W(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrVb_W(ifile),nf90_collective)
 # endif
                 endif  
 # ifdef SOLVE3D
                 if(obj(iobj)%u) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'u_west',extrU_W(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrU_W(ifile),nf90_collective)
 #  endif
                 endif
 !                
                 if(obj(iobj)%v) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'v_west',extrV_W(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrV_W(ifile),nf90_collective)
 #  endif
                 endif
 !                
                 if(obj(iobj)%temp) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'temp_west',extrT_W(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrT_W(ifile),nf90_collective)
 #  endif
                 endif
 #  ifdef SALINITY                
                 if(obj(iobj)%salt) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'salt_west',extrS_W(ifile))
-#   ifdef NC4PAR
+#   ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrS_W(ifile),nf90_collective)
 #   endif
                 endif 
@@ -1454,42 +1454,42 @@
 !                  
                 if(obj(iobj)%zeta) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'zeta_east',extrZ_E(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrZ_E(ifile),nf90_collective)
 # endif
                 endif  
 !                
                 if(obj(iobj)%ubar) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'ubar_east',extrUb_E(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrUb_E(ifile),nf90_collective)
 # endif
                 endif  
 !                
                 if(obj(iobj)%vbar) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'vbar_east',extrVb_E(ifile))
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrVb_E(ifile),nf90_collective)
 # endif
                 endif  
 # ifdef SOLVE3D
                 if(obj(iobj)%u) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'u_east',extrU_E(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrU_E(ifile),nf90_collective)
 #  endif
                 endif
 !                
                 if(obj(iobj)%v) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'v_east',extrV_E(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrV_E(ifile),nf90_collective)
 #  endif
                 endif
 !                
                 if(obj(iobj)%temp) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'temp_east',extrT_E(ifile))
-#  ifdef NC4PAR
+#  ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrT_E(ifile),nf90_collective)
 #  endif
                 endif
@@ -1497,7 +1497,7 @@
 #  ifdef SALINITY                
                 if(obj(iobj)%salt) then
                   ierr = nf90_inq_varid(ncidextr(ifile),'salt_east',extrS_E(ifile))
-#   ifdef NC4PAR
+#   ifdef NC4PAR_OE
                   ierr = nf90_var_par_access(ncidextr(ifile),extrS_E(ifile),nf90_collective)
 #   endif
                 endif 
@@ -1509,7 +1509,7 @@
             endif
           enddo
 
-# if defined MPI & !defined NC4PAR
+# if defined MPI & !defined NC4PAR_OE
         else
           ierr = nf90_open(fname(1:lstr),NF90_WRITE, ncidextr(ifile))
           if (ierr .ne. nf90_noerr) then
@@ -1544,7 +1544,7 @@
 
         ierr=nf90_def_var(ncid,varname,NF90_OUT,dims,varid)
         call check(ierr,'unable to create variable: '//varname)
-# ifdef NC4PAR
+# ifdef NC4PAR_OE
         ierr=nf90_var_par_access(ncid,varid,nf90_collective)
         !ierr=nf90_var_par_access(ncid,varid,nf90_independent)
         call check(ierr,'unable to create variable: '//varname)
