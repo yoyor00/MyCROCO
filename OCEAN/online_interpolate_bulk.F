@@ -129,14 +129,19 @@
      &                latr(GLOBAL_2D_ARRAY),
      &                rhumg(GLOBAL_2D_ARRAY,iblkrec))
 
-# ifndef AROME
+! Now, using ERA5, Relative humidity is directly provided in the DATA
+# if ! defined  AROME
         do j=J_RANGE
           do i=I_RANGE
+# if defined ERA_ECMWF
+          rhumg(i,j,iblkrec)=0.01*rhumg(i,j,iblkrec)
+# else
             ew=6.1121*(1.0007+3.46e-6*Pref)*
      &         exp((17.502*tairg(i,j,iblkrec))/
      &             (240.97+tairg(i,j,iblkrec)))
             Qsat=0.62197*(ew/(Pref-0.378*ew))
             rhumg(i,j,iblkrec)=rhumg(i,j,iblkrec)/Qsat
+# endif
           enddo
         enddo
 # endif

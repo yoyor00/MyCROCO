@@ -188,10 +188,17 @@
       blk_vname(3,1)='Kelvin                                   '
       blk_vname(4,1)='??????                                   '
 
-      ! Specific_humidity
-      blk_vname(1,2)='Q                                        '
-      blk_vname(2,2)='Specific Humidity at surface             '
-      blk_vname(3,2)='Kg/Kg                                    '
+! Now, using ERA5, Relative humidity is directly provided in the DATA
+!      ! Specific_humidity
+!      blk_vname(1,2)='Q                                        '
+!      blk_vname(2,2)='Specific Humidity at surface             '
+!      blk_vname(3,2)='Kg/Kg                                    '
+!      blk_vname(4,2)='??????                                   '
+
+! Relative_humidity
+      blk_vname(1,2)='R                                        '
+      blk_vname(2,2)='Relative Humidity at surface             '
+      blk_vname(3,2)='%                                        '
       blk_vname(4,2)='??????                                   '
 #   endif
 
