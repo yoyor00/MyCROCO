@@ -591,7 +591,7 @@
 #   undef FLUX2
 #   undef UP5_MASKING
 !
-#   ifdef UV_HADV_UP5
+#   if defined UV_HADV_UP5 || defined UV_HADV_WENO5
 #    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
 #     define FLUX5 flux6
@@ -1026,9 +1026,11 @@
      &                         SWITCH umask(i,j)
               MYadv(i,j,k,1) = (-UFe(i,j+1)+UFe(i,j))
      &                         SWITCH umask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
-              MHdiff(i,j,k,1) = (UFx4(i-1,j)-UFx4(i,j)
-     &                         + UFe4(i  ,j)-UFe4(i,j+1))
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 \
+                            || defined UV_HADV_WENO5
+              MHdiff(i,j,k,1) = MXadv(i,j,k,1) + MYadv(i,j,k,1)
+     &                        - ( UFx4(i-1,j) - UFx4(i,j)
+     &                          + UFe4(i  ,j) - UFe4(i,j+1) )
      &                         SWITCH umask(i,j)
 #    endif
             enddo
@@ -1043,9 +1045,11 @@
      &                        SWITCH vmask(i,j)
               MYadv(i,j,k,2) = (-VFe(i,j)+VFe(i,j-1))
      &                         SWITCH vmask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
-              MHdiff(i,j,k,2) = (VFx4(i,j  )-VFx4(i+1,j)
-     &                        +  VFe4(i,j-1)-VFe4(i,j))
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 \
+                            || defined UV_HADV_WENO5
+              MHdiff(i,j,k,2) = MXadv(i,j,k,2) + MYadv(i,j,k,2)
+     &                        - ( VFx4(i,j  ) - VFx4(i+1,j)
+     &                          + VFe4(i,j-1) - VFe4(i,j) )
      &                         SWITCH vmask(i,j)
 #    endif
 #   endif /* DIAGNOSTICS_EK */
