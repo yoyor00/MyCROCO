@@ -198,6 +198,14 @@
        parameter (LLm0=575, MMm0=315,  N=40)
 #  elif defined GIBRALTAR_VHR5
        parameter (LLm0=348, MMm0=198,  N=40)
+#  elif defined  GIGATL6
+      parameter (LLm0=1500, MMm0=2000,  N=50) ! <-- GIGATL6
+#  elif defined  GIGATL3
+      parameter (LLm0=3000, MMm0=4000,  N=100) ! <-- GIGATL3
+#  elif defined  GIGATL1
+      parameter (LLm0=10500, MMm0=14000,  N=100) ! <-- GIGATL1
+#  elif defined SPNA
+       parameter (LLm0=3166, MMm0=2000,  N=100)  ! SPNA
 # else
       parameter (LLm0=xx,   MMm0=xx,   N=xx)   ! YOUR REGIONAL CONFIG
 # endif
@@ -253,7 +261,7 @@
 #if defined(SPLITTING_X) && defined(SPLITTING_ETA)
       parameter (NP_XI=SPLITTING_X,  NP_ETA=SPLITTING_ETA,  NNODES=NP_XI*NP_ETA)
 #else
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+      parameter (NP_XI=79,  NP_ETA=63,  NNODES=3459)
 #endif
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)

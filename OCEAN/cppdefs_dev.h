@@ -434,8 +434,8 @@
 # define TS_HADV_C6    /*    6th-order centered advection      */
 # undef  TS_DIF2       /*               +                      */
 # define TS_DIF4       /*         Hyperdiffusion  with         */
-# define TS_MIX_GEO    /*        Geopotential rotation         */
-# undef  TS_MIX_ISO    /*     or Isopycnal    rotation         */
+# undef TS_MIX_GEO    /*        Geopotential rotation         */
+# define  TS_MIX_ISO    /*     or Isopycnal    rotation         */
 #endif
 #if defined TS_HADV_C4 && !defined TS_HADV_RSUP3
                        /* 4th-order centered advection with:   */

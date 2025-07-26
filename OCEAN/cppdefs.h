@@ -69,10 +69,11 @@
 !
 */
                       /* Configuration Name */
-# define BENGUELA_LR
+# define SPNA
                       /* Parallelization */
 # undef  OPENMP
-# undef  MPI
+# define  MPI
+# undef  DIAG_CFL
                       /* Non-hydrostatic option */
 # undef  NBQ
 # undef  CROCO_QH
@@ -91,7 +92,7 @@
                       /* Open Boundary Conditions */
 # undef  TIDES
 # define OBC_EAST
-# define OBC_WEST
+# undef OBC_WEST
 # define OBC_NORTH
 # define OBC_SOUTH
                       /* Applications */
@@ -103,7 +104,12 @@
 # undef  MUSTANG
 # undef  BBL
                       /* I/O server */
-# undef  XIOS
+# define  XIOS
+# define ONLINE_EXTRACT
+# ifdef ONLINE_EXTRACT
+#  undef ETCH_INTO_LAND
+# endif
+
                       /* Calendar */
 # undef  USE_CALENDAR
                       /* dedicated croco.log file */
@@ -118,9 +124,9 @@
                       /* Parallelization */
 # ifdef MPI
 #  undef  PARALLEL_FILES
-#  undef  NC4PAR
-#  undef  MPI_NOLAND
-#  undef  MPI_TIME
+#  define  NC4PAR
+#  define  MPI_NOLAND
+#  define  MPI_TIME
 # endif
 # undef  AUTOTILING
                       /* Grid configuration */
@@ -179,10 +185,10 @@
 #  define BULK_LW
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW
-#  undef  ONLINE
+#  define  ONLINE
 #  ifdef ONLINE
 #   undef  AROME
-#   undef  ERA_ECMWF
+#   define  ERA_ECMWF
 #  endif
 #  undef READ_PATM
 #  ifdef READ_PATM
@@ -205,11 +211,11 @@
 #  undef  SFLX_CORR_COEF
 #  define ANA_DIURNAL_SW
 # endif
-# undef  SFLUX_CFB
-# undef  SEA_ICE_NOFLUX
+# define  SFLUX_CFB
+# define  SEA_ICE_NOFLUX
                       /* Lateral Momentum Advection (default UP3) */
-# define UV_HADV_UP3
-# undef  UV_HADV_UP5
+# undef UV_HADV_UP3
+# define  UV_HADV_UP5
 # undef  UV_HADV_WENO5
 # undef  UV_HADV_TVD
                       /* Lateral Explicit Momentum Mixing */
@@ -223,7 +229,7 @@
 # undef  UV_VADV_TVD
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
-# define TS_HADV_RSUP3
+# define TS_HADV_RSUP5
 # undef  TS_HADV_UP5
 # undef  TS_HADV_WENO5
                       /* Lateral Explicit Tracer Mixing */
@@ -237,10 +243,10 @@
                       /* Sponge layers for UV and TS */
 # define SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
-# undef  VADV_ADAPT_IMP
+# define  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
-# define LIMIT_BSTRESS
-# undef  BSTRESS_FAST
+# define  BSTRESS_FAST
+# undef LIMIT_BSTRESS
                       /* Vertical Mixing */
 # undef  BODYFORCE
 # undef  BVF_MIXING
@@ -282,9 +288,9 @@
 # define ANA_BTFLUX
                       /* Point Sources - Rivers */
 # undef PSOURCE
-# undef PSOURCE_NCFILE
+# define PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE
-#  undef PSOURCE_NCFILE_TS
+#  define PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
@@ -302,12 +308,12 @@
 # undef  OBC_M3SPECIFIED
 # undef  OBC_TSPECIFIED
                       /* Input/Output */
-# define AVERAGES
-# define AVERAGES_K
+# undef AVERAGES
+# undef AVERAGES_K
 # undef  OUTPUTS_SURFACE
 # undef  HOURLY_VELOCITIES
                      /* Exact restart */
-# undef EXACT_RESTART
+# define EXACT_RESTART
 /*
 !                        Diagnostics
 !--------------------------------------------
@@ -318,8 +324,8 @@
 !--------------------------------------------
 !
 */
-# undef DO_NOT_OVERWRITE
-# undef RESTART_DIAGS
+# define DO_NOT_OVERWRITE
+# define RESTART_DIAGS
 
 # undef DIAGNOSTICS_TS
 
@@ -337,10 +343,10 @@
 #  define DIAGNOSTICS_TS_ADV
 # endif
 
-# undef DIAGNOSTICS_UV
-# undef DIAGNOSTICS_VRT
-# undef DIAGNOSTICS_EK
-# undef DIAGNOSTICS_BARO
+# define DIAGNOSTICS_UV
+# define DIAGNOSTICS_VRT
+# define DIAGNOSTICS_EK
+# define DIAGNOSTICS_BARO
 
 # undef DIAGNOSTICS_PV
 # undef DIAGNOSTICS_DISS
@@ -348,7 +354,7 @@
 #  define DIAGNOSTICS_PV
 # endif
 
-# undef DIAGNOSTICS_EDDY
+# define DIAGNOSTICS_EDDY
 
 /*
 !           Applications:
@@ -460,7 +466,7 @@
 # define FILLVAL
                       /* Calendar */
 
-# define USE_CALENDAR
+# undef USE_CALENDAR
                       /* dedicated croco.log file */
 # undef  LOGFILE
 /*!
@@ -521,8 +527,8 @@
                       /* Semi-implicit Vertical Tracer/Mom Advection */
 # undef  VADV_ADAPT_IMP
                       /* Bottom friction in fast 3D step */
-# define LIMIT_BSTRESS
-# undef  BSTRESS_FAST
+# undef LIMIT_BSTRESS
+# define  BSTRESS_FAST
                       /* Vertical Mixing */
 # define GLS_MIXING
                       /* Surface Forcing */
