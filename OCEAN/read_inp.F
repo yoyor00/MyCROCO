@@ -703,7 +703,32 @@ c        close(testunit)
         avgname=fname(1:lstr)
 
 #endif
-
+#ifdef ONLINE_EXTRACT
+!
+! Boundary extract file name
+!
+      elseif (keyword(1:kwlen).eq.'online_extract') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+        inp_extrname=fname(1:lstr)
+        MPI_master_only write(stdout,'(7x,A,2x,A)')
+     &        'Input extraction File:', inp_extrname(1:lstr)
+        read(input,*,err=95) nextr
+        read(input,'(A)',err=95) fname
+        lstr=lenstr(fname)
+!!!# if defined MPI && defined PARALLEL_FILES
+!!!        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+!!!# endif
+# ifdef USE_CALENDAR
+        nextr=ceiling((dt_extr*3600.)/dt)
+# endif
+        out_extrname=fname(1:lstr)
+        MPI_master_only write(stdout,
+     &             '(7x,A,2x,A,2x,A,2x,I4)')
+     &       'Output extraction File:', out_extrname(1:lstr),
+     &       'nextr =', nextr
+#endif        
 #if defined ABL1D && ! defined XIOS
 !
 ! ABL file name.

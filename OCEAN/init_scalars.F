@@ -133,6 +133,9 @@ C$OMP END PARALLEL
 !
       nrecrst=0
       nrechis=0
+#ifdef ONLINE_EXTRACT
+      nrecextr=0
+#endif
 #ifdef AVERAGES
       nrecavg=0
 #endif

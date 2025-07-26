@@ -1124,6 +1124,9 @@
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
      &      , hisShflx, hisSwflx, hisShflx_rsw, hisBhflx, hisBwflx
+#ifdef ONLINE_EXTRACT
+     &      , nrecextr
+#endif
 #ifdef ABL1D
      &      , ncidablhis     , nrecablhis
      &      , ablhisTime     , ablhisTime2    , ablhisTstep
@@ -1662,6 +1665,9 @@
      &      , hisBustr, hisBvstr
      &      , hisShflx, hisSwflx, hisShflx_rsw
      &      , hisBhflx, hisBwflx
+#ifdef ONLINE_EXTRACT
+     &      , nrecextr
+#endif
 #ifdef ABL1D
      &      , ncidablhis     , nrecablhis
      &      , ablhisTime     , ablhisTime2    , ablhisTstep
@@ -2072,6 +2078,9 @@
 #ifdef AVERAGES
      &                                ,  avgname
 #endif
+#ifdef ONLINE_EXTRACT
+     &                                ,  inp_extrname, out_extrname
+#endif
 #ifdef ABL1D
      &                                 , ablname
 # ifdef AVERAGES
@@ -2188,6 +2197,9 @@
 
 #ifdef AVERAGES
      &                                ,  avgname
+#endif
+#ifdef ONLINE_EXTRACT
+     &                                ,  inp_extrname, out_extrname
 #endif
 #ifdef ABL1D
      &                                ,  ablname

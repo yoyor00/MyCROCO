@@ -126,6 +126,7 @@
 ! nrst     Number of timesteps between storage of restart fields.
 ! nwrt     Number of timesteps between writing of fields into
 !                                                     history file.
+! nextr    Number of timesteps between writing of boundary fields
 ! ninfo    Number of timesteps between print of single line
 !                                   information to standard output.
 ! nsta     Number of timesteps between storage of station data.
@@ -201,6 +202,9 @@
 #endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
+#endif
+#ifdef ONLINE_EXTRACT
+     &                                 , nextr
 #endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
@@ -381,6 +385,9 @@
 #endif
 #ifdef AVERAGES
      &                                 , ntsavg,  navg
+#endif
+#ifdef ONLINE_EXTRACT
+     &                                 , nextr
 #endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc

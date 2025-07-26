@@ -130,9 +130,9 @@ include Makedefs
 	online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
 	scal0d_oa_out_loc.F scal0d_oa_out_full.F\
 	output_oa.F\
-	copy_to_devices.F exchange_device_host.F init_acc.F
-
-
+	copy_to_devices.F exchange_device_host.F init_acc.F\
+\
+        module_extract.F
 
  SRCS90 = \
 	buffer.F90\
@@ -165,9 +165,9 @@ include Makedefs
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
-	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
-	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
-	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
+	comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
+	online_extract_bdy.F90 
 	
 
 

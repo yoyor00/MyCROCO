@@ -21,6 +21,9 @@
 #ifdef AGRIF
       use Agrif_Util
 #endif
+#ifdef ONLINE_EXTRACT
+      use online_extract_bdy, only : do_extract_bdy
+#endif
       implicit none
       integer ilc
 #include "param.h"
@@ -63,6 +66,9 @@
       if ( iic.gt.ntstart .and. ( mod(ilc-1,nrst).eq.0
 #ifdef EXACT_RESTART
      &                    .or.      mod(ilc,nrst).eq.0
+#endif
+#ifdef ONLINE_EXTRACT
+     &     .or. mod(ilc-1,nextr).eq.0
 #endif
      &     .or. (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime))
 #ifdef AVERAGES
@@ -172,6 +178,9 @@
 #endif
      &                      )     nrecrst=nrecrst+1
         if (mod(ilc-1,nwrt).eq.0) nrechis=nrechis+1
+#ifdef ONLINE_EXTRACT
+        if (mod(ilc-1,nextr).eq.0) nrecextr=nrecextr+1
+#endif
 #ifdef AVERAGES
         if (mod(ilc-ntsavg,navg).eq.0) nrecavg=nrecavg+1
 #endif
@@ -273,6 +282,9 @@
      &       .or. mod(ilc,nrst).eq.0
 #endif
      &       ) call wrt_rst
+#ifdef ONLINE_EXTRACT
+        if (mod(ilc-1,nextr).eq.0) call do_extract_bdy
+#endif
 #ifndef XIOS
         if (mod(ilc-1,nwrt).eq.0 .and. wrthis(indxTime)) call wrt_his
 # ifdef AVERAGES
