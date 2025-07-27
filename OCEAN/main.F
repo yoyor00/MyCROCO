@@ -914,14 +914,15 @@ CR      write(*,*) '  0' MYID
 ! Start Chrono
       start_time1=PMPI_Wtime()
 #endif
-
 ! marker used measure duration of the time step loop using perf_regions
 !$pr_timing_start('timestep_loop')
+
       do iicroot=ntstart,ntimes+1
 #ifdef MPI_TIME
         start_time1_1=PMPI_Wtime()
 #endif
-
+! marker used measure duration of each time step using perf_regions
+!$pr_timing_start('step')
 #ifdef USE_CALENDAR
         if (mod(iicroot-1,ninfo) .eq. 0) then
           MPI_master_only write(stdout,'(a)') tool_sectodat(time_mars)
@@ -938,15 +939,11 @@ CR      write(*,*) '  0' MYID
 # endif
 #endif
 
-! marker used measure duration of each time step using perf_regions
-!$pr_timing_start('step')
 #ifdef AGRIF
           call Agrif_Step(step)
 #else
           call step()
 #endif
-! perf_regions region end marker
-!$pr_timing_stop('step')
 
 #ifdef SOLVE3D
         enddo
@@ -956,10 +953,10 @@ CR      write(*,*) '  0' MYID
         exe_time_1 = start_time1_2 - start_time1_1
           if (mynode.eq.0) write(97,*) exe_time_1
 #endif
+! perf_regions region end marker
+!$pr_timing_stop('step')
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
-      enddo   
-! perf_regions region end marker                            !-->  end of time step
-!$pr_timing_stop('timestep_loop')      
+      enddo                                !-->  end of time step  
   99  continue                             ! SHUTDOWN:
 #ifdef MPI_TIME
       start_time2=PMPI_Wtime()
@@ -968,6 +965,8 @@ CR      write(*,*) '  0' MYID
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
 #endif
+! perf_regions region end marker                           
+!$pr_timing_stop('timestep_loop')    
       ! close netCDF files.
       call closecdf
 #ifdef XIOS
