@@ -921,6 +921,7 @@ CR      write(*,*) '  0' MYID
 #ifdef MPI_TIME
         start_time1_1=PMPI_Wtime()
 #endif
+
 ! marker used measure duration of each time step using perf_regions
 !$pr_timing_start('step')
 #ifdef USE_CALENDAR
@@ -956,7 +957,7 @@ CR      write(*,*) '  0' MYID
 ! perf_regions region end marker
 !$pr_timing_stop('step')
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
-      enddo                                !-->  end of time step  
+      enddo                                !-->  end of time step
   99  continue                             ! SHUTDOWN:
 #ifdef MPI_TIME
       start_time2=PMPI_Wtime()
@@ -988,6 +989,7 @@ CR      write(*,*) '  0' MYID
 #endif
 
  100  continue
+
 ! output measurement results of from perf_regions and shut it down
 !$pr_timing_finalize()
 #ifdef MPI
