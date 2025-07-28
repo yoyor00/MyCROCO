@@ -1504,9 +1504,6 @@
 # endif
 # ifdef NBQ_HZCORRECT
 !$acc&, Hz_correct
-#  ifdef NBQ_HZCORR_DEBUG
-!$acc&, Hz_corr
-#  endif
 # endif
 # ifdef NBQ_HZ_PROGNOSTIC
 !$acc&, Hz_bak2
