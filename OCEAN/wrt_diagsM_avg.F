@@ -332,7 +332,6 @@
      &                        1, MPI_COMM_WORLD,  ierr)
       endif
 # endif
-# undef DEBUG
       return
       end
 
