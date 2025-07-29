@@ -1094,7 +1094,6 @@
 # undef M3_FRC_BRY
 # undef T_FRC_BRY
 # undef BODYFORCE
-# undef BVF_MIXING
 # undef LMD_MIXING
 # undef LMD_BKPP
 # undef LMD_SKPP

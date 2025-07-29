@@ -158,7 +158,7 @@
 #  include "ocean3d.h"
 #  include "coupling.h"
 #  include "scalars.h"
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 #   include "mixing.h"
 #  endif
@@ -253,7 +253,7 @@
 !  and vertical W-points!
 !-----------------------------------------------------------------------
 !
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 #   ifndef SPLIT_EOS
             dpth=z_w(i,j,N)-z_w(i,j,k)
@@ -296,7 +296,7 @@
 #  endif /* ANA_VMIX ... */
           enddo
         enddo
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         do i=istrR,iendR
           bvf(i,j,N)=bvf(i,j,N-1)
@@ -396,7 +396,7 @@
 !  and vertical W-points.
 !-----------------------------------------------------------------------
 !
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         cff=g/rho0
         do k=1,N-1

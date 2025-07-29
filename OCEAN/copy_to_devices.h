@@ -331,8 +331,8 @@
 !$acc&, Akv_old
 !$acc&, Akt_old
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX   || defined LMD_MIXING \
+  || defined LMD_SKPP   || defined LMD_BKPP \
   || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
 !$acc&, bvf
 # endif
@@ -705,8 +705,8 @@
 # else
 # endif
 #endif /* SOLVE3D */
-#if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#if defined ANA_VMIX  || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 #endif
 #ifdef EXACT_RESTART
@@ -808,8 +808,8 @@
 !$acc&, hisBBL
 #endif
 #ifdef SOLVE3D
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 # endif
 # ifdef BIOLOGY
@@ -917,9 +917,9 @@
 #endif /* SOLVE3D */
 #ifdef AVERAGES
 # ifdef SOLVE3D
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+   || defined LMD_SKPP || defined LMD_BKPP \
+   || defined GLS_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -1114,8 +1114,8 @@
 # endif
 #endif
 #ifdef SOLVE3D
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 # endif
 # ifdef BIOLOGY
@@ -1156,9 +1156,9 @@
 #endif
 #ifdef AVERAGES
 # ifdef SOLVE3D
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP  || defined LMD_BKPP \
+  || defined GLS_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -1266,9 +1266,9 @@
 !$acc&, v_avg
 !$acc&, t_avg
 !$acc&, rho_avg
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+   || defined LMD_SKPP || defined LMD_BKPP \
+   || defined GLS_MIXING
 !$acc&, bvf_avg
 #  endif
 !$acc&, omega_avg
@@ -1277,9 +1277,9 @@
 #  else
 !$acc&, w_avg
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+   || defined LMD_SKPP || defined LMD_BKPP \
+   || defined GLS_MIXING
 #  endif
 !$acc&, stflx_avg
 !$acc&, btflx_avg

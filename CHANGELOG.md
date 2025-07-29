@@ -64,6 +64,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
   - UV_HADV_TVD, UV_VADV_TVD, W_HADV_TVD, W_VADV_TVD (#391)
+  - BVF_MIXING (#398)
   - ROBUST_DIURNAL_SRFLUX (#405)
   - DUKO_2001 was always def (#407)
   - START_DATE (#417)
