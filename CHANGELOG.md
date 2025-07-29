@@ -83,6 +83,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
+  - remove routine set_HUV1, not used (#410)
 
 
 ### Contributors on this release
