@@ -67,6 +67,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - BVF_MIXING (#398)
   - ROBUST_DIURNAL_SRFLUX (#405)
   - DUKO_2001 was always def (#407)
+  - PRED_COUPLED_MODE was always def (#408) 
   - START_DATE (#417)
   - ICE (#416)
   - DECALPHA (#414)
