@@ -1883,8 +1883,8 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
       vname(5,indxR)='sea_water_sigma_t                           '
       vname(7,indxR)='                                            '
 
-# if defined ANA_VMIX || defined BVF_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+      || defined LMD_SKPP || defined LMD_BKPP \
       || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                       '
