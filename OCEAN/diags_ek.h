@@ -39,10 +39,13 @@
 !CSDISTRIBUTE_RESHAPE ekwrkrate(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekwrkvol(GLOBAL_2D_ARRAY,N,2)
 !CSDISTRIBUTE_RESHAPE ekwrkvol(BLOCK_PATTERN,*) BLOCK_CLAUSE
+
+# ifdef BODYFORCE
       real ekwrkwind(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE ekwrkwind(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekwrkdrag(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE ekwrkdrag(BLOCK_PATTERN,*) BLOCK_CLAUSE
+# endif
 
 # ifdef AVERAGES
       real timediags_ek_avg
@@ -100,8 +103,10 @@
 # endif
      &       /diag_ekwrkrate/ekwrkrate
      &       /diag_ekwrkvol/ekwrkvol
+# ifdef BODYFORCE
      &       /diag_ekwrkwind/ekwrkwind
      &       /diag_ekwrkdrag/ekwrkdrag
+# endif
 # ifdef AVERAGES
       common /diag_timediags_ek_avg/timediags_ek_avg
       common /diag_ekHadv_avg/ekHadv_avg

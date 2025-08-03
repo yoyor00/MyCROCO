@@ -296,11 +296,11 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
       enddo
 #  endif
 !
-!     Density anomaly.
+!     Potential Density anomaly.
 !
       if (wrtavg(indxR)) then
 !$acc update if(compute_on_device) host(rho_avg)
-         workr=rho_avg+rho0-1000.
+         workr=rho_avg
          call fillvalue3d(workr,ncidavg,avgR,
      &        vname(1,indxR), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID

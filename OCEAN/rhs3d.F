@@ -261,9 +261,11 @@
         do k=levsfrc,N
           do j=Jstr,Jend
             do i=IstrU,Iend
+#   if defined DIAGNOSTICS_UV
               Mbody(i,j,k,1) = Uwrk(i,j)*(Hz(i,j,k)+
      &                                    Hz(i-1,j,k))
      &                         SWITCH umask(i,j)
+#   endif
 #   ifdef DIAGNOSTICS_EK
             if (k.eq.levsfrc) then
               ekwrkWind(i,j,1)= 0.
@@ -277,9 +279,11 @@
           enddo
           do j=JstrV,Jend
             do i=Istr,Iend
+#   if defined DIAGNOSTICS_UV
               Mbody(i,j,k,2) = Vwrk(i,j)*(Hz(i,j,k)+
      &                                    Hz(i,j-1,k))
      &                         SWITCH vmask(i,j)
+#   endif
 #   ifdef DIAGNOSTICS_EK
               if (k.eq.levsfrc) then
                 ekwrkWind(i,j,2)= 0.
@@ -351,10 +355,12 @@
         do k=1,levbfrc
           do j=Jstr,Jend
             do i=IstrU,Iend
+#   if defined DIAGNOSTICS_UV
               Mbody(i,j,k,1) = Mbody(i,j,k,1)
      &                         - Uwrk(i,j)*(Hz(i,j,k)+
      &                                      Hz(i-1,j,k))
      &                         SWITCH umask(i,j)
+#   endif
 #   ifdef DIAGNOSTICS_EK
               if (k.eq.1) then
                 ekwrkDrag(i,j,1)= 0.
@@ -368,7 +374,7 @@
           enddo
           do j=JstrV,Jend
             do i=Istr,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+#   if defined DIAGNOSTICS_UV
               Mbody(i,j,k,2) = Mbody(i,j,k,2)
      &                         - Vwrk(i,j)*(Hz(i,j,k)+
      &                                      Hz(i,j-1,k))

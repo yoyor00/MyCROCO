@@ -284,7 +284,7 @@ C$    integer omp_get_thread_num
           do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
-                rho_avg(i,j,k)=cff*(cff1*rho_avg(i,j,k)+rho(i,j,k))
+                rho_avg(i,j,k)=cff*(cff1*rho_avg(i,j,k)+rho1(i,j,k))
               enddo
             enddo
           enddo

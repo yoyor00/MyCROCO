@@ -2836,6 +2836,9 @@ c !$acc wait
       if (xios_field_is_active("rho")) then
       call xios_send_field("rho",rho)
       endif
+      if (xios_field_is_active("rho1")) then
+      call xios_send_field("rho1",rho1)
+      endif
       if (xios_field_is_active("rho_surf")) then
       call xios_send_field("rho_surf",rho(:,:,N))
       endif
@@ -2979,6 +2982,10 @@ c !$acc wait
 
 #  ifdef DIAGNOSTICS_EDDY
 
+         if ( .not. xios_field_is_active("w")) then
+           call Wvlcty (tile, workr) 
+         endif
+
          GRho=-1*g/rho0
 
           do k=1,N
@@ -2989,7 +2996,7 @@ c !$acc wait
 
                   workru(i,j,k) = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
                   workrv(i,j,k) = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
-                if (k.eq.N) then
+                    if (k.eq.N) then
                   workrsu(i,j) = 0.5*(sustr(i+1,j)+sustr(i,j))
                   workrsv(i,j) = 0.5*(svstr(i,j+1)+svstr(i,j))
                   workrbu(i,j) = 0.5*(bustr(i+1,j)+bustr(i,j))
@@ -3014,7 +3021,7 @@ c !$acc wait
      &                   *0.5*(pn(i+1,j)+pn(i,j)) )
      &                    )
 
-                endif
+                    endif
 
                 enddo
               enddo
@@ -3030,13 +3037,13 @@ c !$acc wait
           call xios_send_field("vv", workrv**2)
       endif
       if (xios_field_is_active("ub")) then
-          call xios_send_field("ub", workru*GRho*rho)
+          call xios_send_field("ub", workru*GRho*rho1)
       endif
       if (xios_field_is_active("vb")) then
-          call xios_send_field("vb", workrv*GRho*rho)
+          call xios_send_field("vb", workrv*GRho*rho1)
       endif
       if (xios_field_is_active("wb")) then
-          call xios_send_field("wb", workr *GRho*rho)
+          call xios_send_field("wb", workr *GRho*rho1)
       endif
       if (xios_field_is_active("uw")) then
           call xios_send_field("uw", workru*workr)
@@ -3044,24 +3051,24 @@ c !$acc wait
       if (xios_field_is_active("vw")) then
           call xios_send_field("vw", workrv*workr)
       endif
-      if (xios_field_is_active("usustr")) then
-          call xios_send_field("usustr", workru(:,:,N)*workrsu)
-      endif
-      if (xios_field_is_active("vsvstr")) then
-          call xios_send_field("vsvstr", workrv(:,:,N)*workrsv)
-      endif
-      if (xios_field_is_active("ugsustr")) then
-          call xios_send_field("ugsustr", workrug*workrsu)
-      endif
-      if (xios_field_is_active("vgsvstr")) then
-          call xios_send_field("vgsvstr", workrvg*workrsv)
-      endif
-      if (xios_field_is_active("ubustr")) then
-          call xios_send_field("ubustr", workru(:,:,1)*workrbu)
-      endif
-      if (xios_field_is_active("vbvstr")) then
-          call xios_send_field("vbvstr", workrv(:,:,1)*workrbv)
-      endif
+!      if (xios_field_is_active("usustr")) then
+!          call xios_send_field("usustr", workru(:,:,N)*workrsu)
+!      endif
+!      if (xios_field_is_active("vsvstr")) then
+!          call xios_send_field("vsvstr", workrv(:,:,N)*workrsv)
+!      endif
+!      if (xios_field_is_active("ugsustr")) then
+!          call xios_send_field("ugsustr", workrug*workrsu)
+!      endif
+!      if (xios_field_is_active("vgsvstr")) then
+!          call xios_send_field("vgsvstr", workrvg*workrsv)
+!      endif
+!      if (xios_field_is_active("ubustr")) then
+!          call xios_send_field("ubustr", workru(:,:,1)*workrbu)
+!      endif
+!      if (xios_field_is_active("vbvstr")) then
+!          call xios_send_field("vbvstr", workrv(:,:,1)*workrbv)
+!      endif
       if (xios_field_is_active("uT")) then
           call xios_send_field("uT", workru*t(:,:,:,nstp,itemp))
       endif
@@ -3232,27 +3239,45 @@ c !$acc wait
           call xios_send_field("u_adv", MXadv(:,:,:,itrc)
      &           + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc))
       endif
+      if (xios_field_is_active("u_xadv")) then
+          call xios_send_field("u_xadv", MXadv(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_yadv")) then
+          call xios_send_field("u_yadv", MYadv(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_vadv")) then
+          call xios_send_field("u_vadv", MVadv(:,:,:,itrc))
+      endif
       if (xios_field_is_active("u_Cor")) then
           call xios_send_field("u_Cor",MCor(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("u_Hmix")) then
+          call xios_send_field("u_Hmix",MHmix(:,:,:,itrc,nstp)
+     &                                 +MHdiff(:,:,:,itrc))
+      endif
+!      if (xios_field_is_active("u_Hdiff")) then
+!          call xios_send_field("u_Hdiff",MHdiff(:,:,:,itrc))
+!      endif
+!      if (xios_field_is_active("u_Vmix2")) then
+!          call xios_send_field("u_Vmix2",MVmix2(:,:,:,itrc))
+!      endif
+#  ifndef DIAGNOSTICS_BARO
+      if (xios_field_is_active("u_Vmix")) then
+          call xios_send_field("u_Vmix",MVmix(:,:,:,itrc)
+     &                                 +MVmix2(:,:,:,itrc))
       endif
       if (xios_field_is_active("u_Prsgrd")) then
           call xios_send_field("u_Prsgrd",MPrsgrd(:,:,:,itrc))
       endif
-      if (xios_field_is_active("u_Hmix")) then
-          call xios_send_field("u_Hmix",MHmix(:,:,:,itrc,nstp))
-      endif
-      if (xios_field_is_active("u_Hdiff")) then
-          call xios_send_field("u_Hdiff",MHdiff(:,:,:,itrc))
-      endif
+#  else
       if (xios_field_is_active("u_Vmix")) then
-          call xios_send_field("u_Vmix",MVmix(:,:,:,itrc))
+          call xios_send_field("u_Vmix",MVmix(:,:,:,itrc)
+     &                                 +MVmix2(:,:,:,itrc)
+     &                                 -MBaro(:,:,:,itrc))
       endif
-      if (xios_field_is_active("u_Vmix2")) then
-          call xios_send_field("u_Vmix2",MVmix2(:,:,:,itrc))
-      endif
-#  ifdef DIAGNOSTICS_BARO
-      if (xios_field_is_active("u_Baro")) then
-          call xios_send_field("u_Baro",MBaro(:,:,:,itrc))
+      if (xios_field_is_active("u_Prsgrd")) then
+          call xios_send_field("u_Prsgrd",MPrsgrd(:,:,:,itrc)
+     &                                   +MBaro(:,:,:,itrc))
       endif
 #  endif
 #  ifdef M3FAST
@@ -3295,27 +3320,45 @@ c !$acc wait
           call xios_send_field("v_adv", MXadv(:,:,:,itrc)
      &            + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc))
       endif
+      if (xios_field_is_active("v_xadv")) then
+          call xios_send_field("v_xadv", MXadv(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_yadv")) then
+          call xios_send_field("v_yadv", MYadv(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_vadv")) then
+          call xios_send_field("v_vadv", MVadv(:,:,:,itrc))
+      endif
       if (xios_field_is_active("v_Cor")) then
           call xios_send_field("v_Cor",MCor(:,:,:,itrc))
+      endif
+      if (xios_field_is_active("v_Hmix")) then
+          call xios_send_field("v_Hmix",MHmix(:,:,:,itrc,nstp)
+     &                                 +MHdiff(:,:,:,itrc))
+      endif
+!      if (xios_field_is_active("v_Hdiff")) then
+!          call xios_send_field("v_Hdiff",MHdiff(:,:,:,itrc))
+!      endif
+!     if (xios_field_is_active("v_Vmix2")) then
+!          call xios_send_field("v_Vmix2",MVmix2(:,:,:,itrc))
+!      endif
+#  ifndef DIAGNOSTICS_BARO
+      if (xios_field_is_active("v_Vmix")) then
+          call xios_send_field("v_Vmix",MVmix(:,:,:,itrc)
+     &                                 +MVmix2(:,:,:,itrc))
       endif
       if (xios_field_is_active("v_Prsgrd")) then
           call xios_send_field("v_Prsgrd",MPrsgrd(:,:,:,itrc))
       endif
-      if (xios_field_is_active("v_Hmix")) then
-          call xios_send_field("v_Hmix",MHmix(:,:,:,itrc,nstp))
-      endif
-      if (xios_field_is_active("v_Hdiff")) then
-          call xios_send_field("v_Hdiff",MHdiff(:,:,:,itrc))
-      endif
+#  else
       if (xios_field_is_active("v_Vmix")) then
-          call xios_send_field("v_Vmix",MVmix(:,:,:,itrc))
+          call xios_send_field("v_Vmix",MVmix(:,:,:,itrc)
+     &                                 +MVmix2(:,:,:,itrc)
+     &                                 -MBaro(:,:,:,itrc))
       endif
-      if (xios_field_is_active("v_Vmix2")) then
-          call xios_send_field("v_Vmix2",MVmix2(:,:,:,itrc))
-      endif
-#  ifdef DIAGNOSTICS_BARO
-      if (xios_field_is_active("v_Baro")) then
-          call xios_send_field("v_Baro",MBaro(:,:,:,itrc))
+      if (xios_field_is_active("v_Prsgrd")) then
+          call xios_send_field("v_Prsgrd",MPrsgrd(:,:,:,itrc)
+     &                                   +MBaro(:,:,:,itrc))
       endif
 #  endif
 #  ifdef M3FAST
@@ -3418,7 +3461,7 @@ c !$acc wait
           call xios_send_field("vrtHdiff",vrtHdiff(:,:))
       endif
       if (xios_field_is_active("vrtVmix")) then
-!          call xios_send_field("vrtVmix",vrtVmix(:,:))
+          call xios_send_field("vrtVmix",vrtVmix(:,:))
       endif
       if (xios_field_is_active("vrtVmix2")) then
           call xios_send_field("vrtVmix2",vrtVmix2(:,:))
@@ -3448,31 +3491,36 @@ c !$acc wait
           call xios_send_field("ekrate", ekrate(:,:,:))
       endif
       if (xios_field_is_active("ekadv")) then
-          call xios_send_field("ekadv", ekHadv(:,:,:) + ekVadv(:,:,:))
+          call xios_send_field("ekadv", ekHadv(:,:,:)+ekVadv(:,:,:))
+      endif
+      if (xios_field_is_active("ekhadv")) then
+          call xios_send_field("ekhadv", ekHadv(:,:,:))
+      endif
+      if (xios_field_is_active("ekvadv")) then
+          call xios_send_field("ekvadv", ekVadv(:,:,:))
       endif
       if (xios_field_is_active("ekCor")) then
           call xios_send_field("ekCor",ekCor(:,:,:))
       endif
+      if (xios_field_is_active("ekHmix")) then
+          call xios_send_field("ekHmix",ekHmix(:,:,:)+ekHdiff(:,:,:))
+      endif
+# ifndef DIAGNOSTICS_BARO
+      if (xios_field_is_active("ekVmix")) then
+          call xios_send_field("ekVmix",ekVmix(:,:,:)+ekVmix2(:,:,:))
+      endif
       if (xios_field_is_active("ekPrsgrd")) then
           call xios_send_field("ekPrsgrd",ekPrsgrd(:,:,:))
       endif
-      if (xios_field_is_active("ekHmix")) then
-          call xios_send_field("ekHmix",ekHmix(:,:,:))
-      endif
-      if (xios_field_is_active("ekHdiff")) then
-          call xios_send_field("ekHdiff",ekHdiff(:,:,:))
-      endif
+# else
       if (xios_field_is_active("ekVmix")) then
-          call xios_send_field("ekVmix",ekVmix(:,:,:))
+          call xios_send_field("ekVmix",ekVmix(:,:,:)+ekVmix2(:,:,:)
+     &                                 -ekBaro(:,:,:) )
       endif
-      if (xios_field_is_active("ekVmix2")) then
-          call xios_send_field("ekVmix2",ekVmix2(:,:,:))
+      if (xios_field_is_active("ekPrsgrd")) then
+          call xios_send_field("ekPrsgrd",ekPrsgrd(:,:,:)+ekBaro(:,:,:))
       endif
-#  ifdef DIAGNOSTICS_BARO
-      if (xios_field_is_active("ekBaro")) then
-          call xios_send_field("ekBaro",ekBaro(:,:,:))
-      endif
-#  endif
+# endif
       if (xios_field_is_active("ekvol")) then
           call xios_send_field("ekvol",ekvol(:,:,:))
       endif

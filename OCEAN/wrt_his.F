@@ -738,11 +738,11 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
       enddo
 # endif /* TRACERS */
 !
-!     Density anomaly.
+!     Potential Density anomaly.
 !
       if (wrthis(indxR)) then
 !$acc update if(compute_on_device) host(rho(:,:,:))
-        workr=rho+rho0-1000.
+        workr=rho1
         call fillvalue3d(workr,ncidhis,hisR,vname(1,indxR),
      &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtRHO' MYID

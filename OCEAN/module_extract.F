@@ -13,9 +13,7 @@
 # ifdef SOLVE3D
 #  include "ocean3d.h"
 # endif
-# ifdef NC4PAR_OE
 # include "mpi_cpl.h"
-# endif
       end module module_extract
 #else
       module module_extract_empty

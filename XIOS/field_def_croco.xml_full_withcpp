@@ -97,6 +97,7 @@
     <!-- END MOVING_BATHY -->
 #endif
     <field id="rho" long_name="density anomaly" unit="kilogram meter-3" grid_ref="rho_3D"/>
+    <field id="rho1" long_name="potential density anomaly" unit="kilogram meter-3" grid_ref="rho_3D"/>
     <field id="bvf" long_name="Brunt Vaisala frequency" unit="second-2" grid_ref="w_3D"/>
 #ifdef VIS_COEF_3D
 <!-- VIS_COEF_3D -->
@@ -570,6 +571,9 @@
     <field_group id="u_diaM" grid_ref="u_3D">
       <field id="u_rate" long_name="u rate" unit="meter second-2" grid_ref="u_3D"/>
       <field id="u_adv" long_name="u adv" unit="meter second-2" grid_ref="u_3D"/>
+      <field id="u_xadv" long_name="u xadv" unit="meter second-2" grid_ref="u_3D"/>
+      <field id="u_yadv" long_name="u yadv" unit="meter second-2" grid_ref="u_3D"/>
+      <field id="u_vadv" long_name="u vadv" unit="meter second-2" grid_ref="u_3D"/>
       <field id="u_Cor" long_name="u cor" unit="meter second-2" grid_ref="u_3D"/>
       <field id="u_Prsgrd" long_name="u Prsgrd" unit="meter second-2" grid_ref="u_3D"/>
       <field id="u_Hmix" long_name="u Hmix" unit="meter second-2" grid_ref="u_3D"/>
@@ -584,6 +588,9 @@
     <field_group id="v_diaM" grid_ref="v_3D">
       <field id="v_rate" long_name="v rate" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_adv" long_name="v adv" unit="meter second-2" grid_ref="v_3D"/>
+      <field id="v_xadv" long_name="v xadv" unit="meter second-2" grid_ref="v_3D"/>
+      <field id="v_yadv" long_name="v yadv" unit="meter second-2" grid_ref="v_3D"/>
+      <field id="v_vadv" long_name="v vadv" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_Cor" long_name="v Cor" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_Prsgrd" long_name="v Prsgrd" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_Hmix" long_name="v Hmix" unit="meter second-2" grid_ref="v_3D"/>
@@ -617,9 +624,11 @@
 #endif
 
 #ifdef DIAGNOSTICS_EK
-    <field_group id="ek" grid_ref="rho_2D">
+    <field_group id="ek" grid_ref="rho_3D">
       <field id="ekrate" long_name="ek rate" unit="meter2 second-3"/>
       <field id="ekadv" long_name="ek adv" unit="meter2 second-3"/>
+      <field id="ekhadv" long_name="ek hadv" unit="meter2 second-3"/>
+      <field id="ekvadv" long_name="ek vadv" unit="meter2 second-3"/>
       <field id="ekCor" long_name="ek Cor" unit="meter2 second-3"/>
       <field id="ekPrsgrd" long_name="ek Prsgrd" unit="meter2 second-3"/>
       <field id="ekHmix" long_name="ek Hmix" unit="meter2 second-3"/>
@@ -628,11 +637,13 @@
       <field id="ekVmix2" long_name="ek Vmix2" unit="meter2 second-3"/>
       <field id="ekBaro" long_name="ek Baro" unit="meter2 second-3"/>
       <field id="ekvol" long_name="ek vol" unit="meter2 second-3"/>
-      <field id="ekDrag" long_name="ek Drag" unit="meter2 second-3"/>
-      <field id="ekWind" long_name="ek Wind" unit="meter2 second-3"/>
 #  ifdef M3FAST
       <field id="ekfast" long_name="ek fast" unit="meter2 second-3"/>
 #  endif
+    </field_group>
+    <field_group id="ek_2d" grid_ref="rho_2D">
+      <field id="ekDrag" long_name="ek Drag" unit="meter2 second-3"/>
+      <field id="ekWind" long_name="ek Wind" unit="meter2 second-3"/>
     </field_group>
 #endif
 
@@ -644,6 +655,7 @@
       <field id="vrtPrsgrd" long_name="vrt Prsgrd" unit="meter second-2"/>
       <field id="vrtHmix" long_name="vrt Hmix" unit="meter second-2"/>
       <field id="vrtHdiff" long_name="vrt Hdiff" unit="meter second-2"/>
+      <field id="vrtVmix" long_name="vrt Vmix" unit="meter second-2"/>
       <field id="vrtVmix2" long_name="vrt Vmix2" unit="meter second-2"/>
       <field id="vrtBaro" long_name="vrt Baro" unit="meter second-2"/>
 #  ifdef M3FAST
@@ -656,12 +668,11 @@
 
 #ifdef DIAGNOSTICS_EDDY
     <field_group id="eddy" grid_ref="rho_3D">
-      <field id="workru" long_name="workru" unit="meter second-1"/>
-      <field id="workrv" long_name="workrv" unit="meter second-1"/>
-      <field id="buoy" long_name="buoyancy" unit="meter second-2"/>
       <field id="uu" long_name="uu" unit="meter2 second-2"/>
       <field id="uv" long_name="uv" unit="meter2 second-2"/>
       <field id="vv" long_name="vv" unit="meter2 second-2"/>
+      <field id="uw" long_name="uw" unit="meter2 second-2"/>
+      <field id="vw" long_name="vw" unit="meter2 second-2"/>
       <field id="ub" long_name="ub" unit="meter2 second-3"/>
       <field id="vb" long_name="vb" unit="meter2 second-3"/>
       <field id="wb" long_name="wb" unit="meter2 second-3"/>

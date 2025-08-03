@@ -1896,8 +1896,8 @@ CR      write(stdout,'(1x,A,I3)') 'indxW =',indxW
       vname(6,indxW)='lat_rho lon_rho                             '
 
 CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
-      vname(1,indxR)='rho                                         '
-      vname(2,indxR)='density anomaly                             '
+      vname(1,indxR)='rho1                                        '
+      vname(2,indxR)='potential density anomaly                   '
       vname(3,indxR)='kilogram meter-3                            '
       vname(4,indxR)='density, scalar, series                     '
       vname(5,indxR)='sea_water_sigma_t                           '

@@ -238,12 +238,6 @@
             wrkWind(i,j,1)= u_str*om_u(i,j)
      &                    SWITCH umask(i,j)
 #  endif /* DIAGNOSTICS_VRT */
-#  ifdef DIAGNOSTICS_EK
-          ekwrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)*on_u(i,j)
-     &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
-          ekwrkWind(i,j,1)= u_str*om_u(i,j)*on_u(i,j)
-     &                    * u(i,j,N,nrhs) SWITCH umask(i,j)
-#  endif /* DIAGNOSTICS_EK */
         enddo
 # endif /* BODYFORCE */
         do i=IstrU,Iend
@@ -464,12 +458,6 @@
             wrkWind(i,j,2)= v_str*on_v(i,j)
      &                    SWITCH vmask(i,j)
 #  endif /* DIAGNOSTICS_VRT */
-#  ifdef DIAGNOSTICS_EK
-          ekwrkDrag(i,j,2)= -bvstr(i,j)*om_v(i,j)*on_v(i,j)
-     &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
-          ekwrkWind(i,j,2)= v_str*om_v(i,j)*on_v(i,j)
-     &                    * v(i,j,N,nrhs) SWITCH vmask(i,j)
-#  endif /* DIAGNOSTICS_EK */
           enddo
 # endif /* BODYFORCE */
 !
@@ -1464,10 +1452,12 @@
      &                                 wrkDrag(START_2D_ARRAY,1))
 #   endif
 #  if defined DIAGNOSTICS_EK
+# ifdef BODYFORCE
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkDrag(START_2D_ARRAY,1))
+# endif
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 ekwrkrate(START_2D_ARRAY,1,1))
       call exchange_u3d_tile (istr,iend,jstr,jend,
@@ -1507,10 +1497,12 @@
      &                                 wrkDrag(START_2D_ARRAY,2))
 #   endif
 #  if defined DIAGNOSTICS_EK
+# ifdef BODYFORCE
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkWind(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkDrag(START_2D_ARRAY,2))
+# endif
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 ekwrkrate(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (istr,iend,jstr,jend,

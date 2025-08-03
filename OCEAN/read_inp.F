@@ -62,7 +62,7 @@
 #endif
       logical dumboolean
 #ifdef USE_CALENDAR
-      real  dt_his,dt_avg,dt_rst
+      real  dt_his,dt_avg,dt_rst,dt_extr
 #endif
 #ifdef XIOS
       REAL*8        :: tool_datosec
