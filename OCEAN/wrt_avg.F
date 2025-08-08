@@ -305,9 +305,8 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
      &        vname(1,indxR), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !
 !     Brunt vaisala frequency.
 !

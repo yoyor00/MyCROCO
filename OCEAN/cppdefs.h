@@ -96,7 +96,6 @@
 # define OBC_SOUTH
                       /* Applications */
 # undef  BIOLOGY
-# undef  FLOATS
 # undef  STATIONS
 # undef  PASSIVE_TRACER
 # undef  SEDIMENT
@@ -122,7 +121,6 @@
 #  undef  MPI_NOLAND
 #  undef  MPI_TIME
 # endif
-# undef  AUTOTILING
                       /* Grid configuration */
 # define CURVGRID
 # define SPHERICAL
@@ -212,7 +210,6 @@
 # define UV_HADV_UP3
 # undef  UV_HADV_UP5
 # undef  UV_HADV_WENO5
-# undef  UV_HADV_TVD
                       /* Lateral Explicit Momentum Mixing */
 # undef  UV_VIS2
 # ifdef UV_VIS2
@@ -221,7 +218,6 @@
                       /* Vertical Momentum Advection */
 # define UV_VADV_SPLINES
 # undef  UV_VADV_WENO5
-# undef  UV_VADV_TVD
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
 # define TS_HADV_RSUP3
@@ -244,7 +240,6 @@
 # undef  BSTRESS_FAST
                       /* Vertical Mixing */
 # undef  BODYFORCE
-# undef  BVF_MIXING
 # define LMD_MIXING
 # undef  GLS_MIXING
 # ifdef LMD_MIXING
@@ -362,7 +357,7 @@
 /*
 !           Applications:
 !---------------------------------
-! Biology, floats, Stations,
+! Biology, Stations,
 ! Passive tracer, Sediments, BBL
 !---------------------------------
 !
@@ -398,17 +393,6 @@
 #  define DIAGNOSTICS_BIO
 #  if defined DIAGNOSTICS_BIO && defined PISCES
 #   define key_trc_diaadd
-#  endif
-# endif
-                      /*   Lagrangian floats model    */
-# ifdef FLOATS
-#  undef  FLOATS_GLOBAL_ATTRIBUTES
-#  undef  IBM
-#  undef  RANDOM_WALK
-#  ifdef RANDOM_WALK
-#   define DIEL_MIGRATION
-#   define RANDOM_VERTICAL
-#   define RANDOM_HORIZONTAL
 #  endif
 # endif
                       /*   Stations recording    */
@@ -456,7 +440,6 @@
 # define OBC_SOUTH
                       /* Applications */
 # undef  BIOLOGY
-# undef  FLOATS
 # undef  STATIONS
 # undef  PASSIVE_TRACER
 # undef  SEDIMENT
@@ -485,7 +468,6 @@
 #  undef  MPI_NOLAND
 #  undef  MPI_TIME
 # endif
-# undef  AUTOTILING
                       /* Non-hydrostatic options */
 # ifdef NBQ
 #  define W_HADV_WENO5
@@ -603,7 +585,7 @@
 /*
 !           Applications:
 !---------------------------------
-! Biology, floats, Stations,
+! Biology, Stations,
 ! Passive tracer, Sediments, BBL
 !---------------------------------
 !
@@ -912,15 +894,6 @@
 # undef  PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
-# undef  FLOATS
-# ifdef FLOATS
-#  define RANDOM_WALK
-#  ifdef RANDOM_WALK
-#   define DIEL_MIGRATION
-#   define RANDOM_VERTICAL
-#   define RANDOM_HORIZONTAL
-#  endif
-# endif
 # define NO_FRCFILE
 
 #elif defined SEAMOUNT
@@ -2006,7 +1979,6 @@
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
 #  define MUSTANG_CORFLUX
-#  define SUBSTANCE_SUBMASSBALANCE 
 # endif
 # define PSOURCE
 # define ANA_PSOURCE
@@ -2042,7 +2014,6 @@
 # undef  PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
-# undef  FLOATS
 # define NO_FRCFILE
 # define USE_CALENDAR
 # define NEW_S_COORD
