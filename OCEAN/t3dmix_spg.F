@@ -820,13 +820,16 @@
      &                           THmix(i,j,k,itemp)*cff
                T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itemp)*cff
-             
+               Trate_mld(i,j,itrc)=Trate_mld(i,j,itrc)+
+     &                           Trate(i,j,k,itemp)*cff
              else
 # endif
                THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itrc)*cff
                T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
+               Trate_mld(i,j,itrc)=Trate_mld(i,j,itrc)+
+     &                           Trate(i,j,k,itrc)*cff
 #   ifdef DIAGNOSTICS_TS_MLD_CRIT
              endif
 # endif
@@ -867,7 +870,7 @@
        enddo
        do j=Jstr,Jend
          do i=Istr,Iend
-            Trate_mld(i,j,itrc)=(T_mld_nnew(i,j)-T_mld_nstp(i,j))/dt
+!            Trate_mld(i,j,itrc)=(T_mld_nnew(i,j)-T_mld_nstp(i,j))/dt
             Tentr_mld(i,j,itrc)=Trate_mld(i,j,itrc)-
      &                          TXadv_mld(i,j,itrc)-
      &                          TYadv_mld(i,j,itrc)-

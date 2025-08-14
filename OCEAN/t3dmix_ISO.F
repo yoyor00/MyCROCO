@@ -1018,6 +1018,7 @@
               enddo
             endif
 
+
 ! CALCULATE MIXED LAYER DEPTH            
             Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbl(i,j))
 #     ifdef MASKING
@@ -1058,7 +1059,8 @@
 #  endif
                T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itemp)*cff
-
+               Trate_mld(i,j,itrc)=Trate_mld(i,j,itrc)+
+     &                           Trate(i,j,k,itemp)*cff
              else
 # endif /*  DIAGNOSTICS_TS_MLD_CRIT    */
                THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
@@ -1069,6 +1071,8 @@
 #  endif
                T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
+               Trate_mld(i,j,itrc)=Trate_mld(i,j,itrc)+
+     &                           Trate(i,j,k,itrc)*cff
 #   ifdef DIAGNOSTICS_TS_MLD_CRIT
              endif
 #  endif/*  DIAGNOSTICS_TS_MLD_CRIT    */
@@ -1105,7 +1109,7 @@
        enddo
        do j=Jstr,Jend
          do i=Istr,Iend
-            Trate_mld(i,j,itrc)=(T_mld_nnew(i,j)-T_mld_nstp(i,j))/dt
+!            Trate_mld(i,j,itrc)=(T_mld_nnew(i,j)-T_mld_nstp(i,j))/dt
             Tentr_mld(i,j,itrc)=Trate_mld(i,j,itrc)-
      &                          TXadv_mld(i,j,itrc)-
      &                          TYadv_mld(i,j,itrc)-
