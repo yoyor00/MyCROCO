@@ -82,11 +82,11 @@
      &    VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
      &    VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),    gamma
       real wrk1(PRIVATE_2D_SCRATCH_ARRAY),
-     &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),
-     &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
-     &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
-     &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
-     &    VFe(PRIVATE_2D_SCRATCH_ARRAY)
+     &     wrk2(PRIVATE_2D_SCRATCH_ARRAY),
+     &     UFx(PRIVATE_2D_SCRATCH_ARRAY),
+     &     UFe(PRIVATE_2D_SCRATCH_ARRAY),
+     &     VFx(PRIVATE_2D_SCRATCH_ARRAY), 
+     &     VFe(PRIVATE_2D_SCRATCH_ARRAY)
 
 
       parameter (gamma = -0.25)
@@ -96,6 +96,9 @@
 # include "forces.h"
 # include "scalars.h"
 # include "weno_interfaces.h"
+# if defined DIAGNOSTICS_UV_VADV
+# include "work.h"
+# endif
 # ifdef NBQ
 #  include "nbq.h"
 # endif
@@ -1097,6 +1100,36 @@
           enddo
         enddo
        enddo
+
+#  if defined DIAGNOSTICS_UV_VADV
+
+      call Wvlcty_tile (Istr,Iend,Jstr,Jend, work,
+     &                                       FC,wrk1,wrk2)
+
+# if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI
+      call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             work(START_2D_ARRAY,0))   
+# endif
+
+      do k=1,N
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            wrk1_3D(i,j,k)=work(i,j,k)*om_r(i,j)*on_r(i,j)
+          enddo
+        enddo
+       enddo
+
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            wrk2_3D(i,j,k)=( 0.5625*(wrk1_3D(i  ,j,k)+wrk1_3D(i-1,j,k))
+     &                    -0.0625*(wrk1_3D(i+1,j,k)+wrk1_3D(i-2,j,k) ))
+          enddo
+        enddo
+       enddo
+
+#  endif 
+
 #  endif       
 
 !$acc parallel loop if(compute_on_device) default(present) async(1)
@@ -1298,6 +1331,26 @@
               MVadv(i,j,k,1) = (-FC(i,k)+FC(i,k-1)) SWITCH umask(i,j)
             enddo
           enddo
+
+#  if defined DIAGNOSTICS_UV_VADV
+        do k=1,N-1
+          do i=IstrU,Iend
+            FC(i,k)= u(i,j,k,nrhs)+DC(i,k)*(
+     &                              0.33333333333333*CF(i,k  )
+     &                             +0.16666666666667*CF(i,k-1)
+     &                                                       )
+          enddo
+        enddo               !--> discard CF,DC
+
+        do k=1,N
+          do i=IstrU,Iend
+              MVadvz(i,j,k,1) = wrk2_3D(i,j,k) * (-FC(i,k)+FC(i,k-1))
+     &                          SWITCH umask(i,j)
+          enddo
+        enddo
+
+# endif 
+
         endif                 !--> discard FC
 #  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
 !
@@ -1336,6 +1389,19 @@
           enddo
         enddo
        enddo
+
+#  if defined DIAGNOSTICS_UV_VADV
+
+      do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            wrk2_3D(i,j,k)=( 0.5625*(wrk1_3D(i  ,j,k)+wrk1_3D(i,j-1,k))
+     &                      -0.0625*(wrk1_3D(i,j+1,k)+wrk1_3D(i,j-2,k)))
+          enddo
+        enddo
+      enddo
+
+#  endif 
 
 !$acc parallel loop if(compute_on_device) default(present) async(2)
       DOLOOP2D(Istr,Iend,JstrV,Jend)
@@ -1519,7 +1585,27 @@
                 MVadv(i,j,k,2) = (-FC(i,k)+FC(i,k-1)) SWITCH vmask(i,j)
               enddo
             enddo
+
+#  if defined DIAGNOSTICS_UV_VADV
+        do k=1,N
+          do i=Istr,Iend
+            FC(i,k)= v(i,j,k,nrhs)+DC(i,k)*(
+     &                                0.33333333333333*CF(i,k  )
+     &                               +0.16666666666667*CF(i,k-1)
+     &                                                         )
+          enddo
+        enddo               !--> discard CF,DC
+
+        do k=1,N
+           do i=Istr,Iend
+              MVadvz(i,j,k,2) = wrk2_3D(i,j,k) * (-FC(i,k)+FC(i,k-1))
+     &                          SWITCH vmask(i,j)
+          enddo
+        enddo
+
+# endif 
           endif
+
 #  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
 
         ENDDOLOOP2D

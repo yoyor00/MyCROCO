@@ -2996,7 +2996,9 @@ c !$acc wait
 
                   workru(i,j,k) = 0.5*(u(i+1,j,k,nstp)+u(i,j,k,nstp))
                   workrv(i,j,k) = 0.5*(v(i,j+1,k,nstp)+v(i,j,k,nstp))
-                    if (k.eq.N) then
+
+                  if (k.eq.N) then
+
                   workrsu(i,j) = 0.5*(sustr(i+1,j)+sustr(i,j))
                   workrsv(i,j) = 0.5*(svstr(i,j+1)+svstr(i,j))
                   workrbu(i,j) = 0.5*(bustr(i+1,j)+bustr(i,j))
@@ -3051,6 +3053,7 @@ c !$acc wait
       if (xios_field_is_active("vw")) then
           call xios_send_field("vw", workrv*workr)
       endif
+
 !      if (xios_field_is_active("usustr")) then
 !          call xios_send_field("usustr", workru(:,:,N)*workrsu)
 !      endif
@@ -3089,7 +3092,6 @@ c !$acc wait
       endif
 
 #  endif
-
 
         
 #  ifdef VIS_COEF_3D
@@ -3248,6 +3250,11 @@ c !$acc wait
       if (xios_field_is_active("u_vadv")) then
           call xios_send_field("u_vadv", MVadv(:,:,:,itrc))
       endif
+#  if defined DIAGNOSTICS_UV_VADV
+      if (xios_field_is_active("u_vadvz")) then
+          call xios_send_field("u_vadvz", MVadvz(:,:,:,itrc))
+      endif
+#  endif
       if (xios_field_is_active("u_Cor")) then
           call xios_send_field("u_Cor",MCor(:,:,:,itrc))
       endif
@@ -3329,6 +3336,11 @@ c !$acc wait
       if (xios_field_is_active("v_vadv")) then
           call xios_send_field("v_vadv", MVadv(:,:,:,itrc))
       endif
+#  if defined DIAGNOSTICS_UV_VADV
+      if (xios_field_is_active("v_vadvz")) then
+          call xios_send_field("v_vadvz", MVadvz(:,:,:,itrc))
+      endif
+#  endif
       if (xios_field_is_active("v_Cor")) then
           call xios_send_field("v_Cor",MCor(:,:,:,itrc))
       endif
@@ -3499,6 +3511,11 @@ c !$acc wait
       if (xios_field_is_active("ekvadv")) then
           call xios_send_field("ekvadv", ekVadv(:,:,:))
       endif
+#  if defined DIAGNOSTICS_UV_VADV
+      if (xios_field_is_active("ekvadvz")) then
+          call xios_send_field("ekvadvz", ekVadvz(:,:,:))
+      endif
+#  endif
       if (xios_field_is_active("ekCor")) then
           call xios_send_field("ekCor",ekCor(:,:,:))
       endif

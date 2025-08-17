@@ -115,6 +115,11 @@
                 MVadv_avg(i,j,k,iflux) = cff *
      &                     ( cff1*MVadv_avg(i,j,k,iflux) +
      &                            MVadv(i,j,k,iflux) )
+#  if defined DIAGNOSTICS_UV_VADV
+                MVadvz_avg(i,j,k,iflux) = cff *
+     &                     ( cff1*MVadvz_avg(i,j,k,iflux) +
+     &                            MVadvz(i,j,k,iflux) )
+#  endif
                 MCor_avg(i,j,k,iflux) = cff *
      &                     ( cff1*MCor_avg(i,j,k,iflux) +
      &                            MCor(i,j,k,iflux) )

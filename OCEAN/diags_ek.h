@@ -9,6 +9,10 @@
 !CSDISTRIBUTE_RESHAPE ekHdiff(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekVadv(GLOBAL_2D_ARRAY,N)
 !CSDISTRIBUTE_RESHAPE ekVadv(BLOCK_PATTERN,*) BLOCK_CLAUSE
+#  if defined DIAGNOSTICS_UV_VADV
+      real ekVadvz(GLOBAL_2D_ARRAY,N)
+!CSDISTRIBUTE_RESHAPE ekVadv(BLOCK_PATTERN,*) BLOCK_CLAUSE
+#  endif
       real ekCor(GLOBAL_2D_ARRAY,N)
 !CSDISTRIBUTE_RESHAPE ekCor(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekPrsgrd(GLOBAL_2D_ARRAY,N)
@@ -86,6 +90,9 @@
       common /diag_ekHadv/ekHadv
      &       /diag_ekHdiff/ekHdiff
      &       /diag_ekVadv/ekVadv
+#  if defined DIAGNOSTICS_UV_VADV
+     &       /diag_ekVadvz/ekVadvz
+#  endif
      &       /diag_ekCor/ekCor
      &       /diag_ekPrsgrd/ekPrsgrd
      &       /diag_ekHmix/ekHmix

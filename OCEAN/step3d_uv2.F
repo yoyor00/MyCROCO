@@ -1185,6 +1185,9 @@
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
                              || defined DIAGNOSTICS_VRT
             MVadv(i,j,k,1)   = MVadv(i,j,k,1)*cff
+#  if defined DIAGNOSTICS_UV_VADV
+            MVadvz(i,j,k,1)   = MVadvz(i,j,k,1)*cff
+#  endif
             MCor(i,j,k,1)    = MCor(i,j,k,1)*cff
             MPrsgrd(i,j,k,1) = MPrsgrd(i,j,k,1)*cff
 #   if defined DIAGNOSTICS_BARO
@@ -1234,6 +1237,9 @@
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
                              || defined DIAGNOSTICS_VRT
             MVadv(i,j,k,2)   = MVadv(i,j,k,2)*cff
+#  if defined DIAGNOSTICS_UV_VADV
+            MVadvz(i,j,k,2)   = MVadvz(i,j,k,2)*cff
+#   endif
             MCor(i,j,k,2)    = MCor(i,j,k,2)*cff
             MPrsgrd(i,j,k,2) = MPrsgrd(i,j,k,2)*cff
 #   if defined DIAGNOSTICS_BARO
@@ -1424,6 +1430,10 @@
      &                                 MYadv(START_2D_ARRAY,1,1))
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MVadv(START_2D_ARRAY,1,1))
+#  if defined DIAGNOSTICS_UV_VADV
+      call exchange_u3d_tile (istr,iend,jstr,jend,
+     &                                 MVadvz(START_2D_ARRAY,1,1))
+#   endif
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MPrsgrd(START_2D_ARRAY,1,1))
       call exchange_u3d_tile (istr,iend,jstr,jend,
@@ -1470,6 +1480,10 @@
      &                                 MYadv(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MVadv(START_2D_ARRAY,1,2))
+#  if defined DIAGNOSTICS_UV_VADV
+      call exchange_v3d_tile (istr,iend,jstr,jend,
+     &                                 MVadvz(START_2D_ARRAY,1,2))
+#   endif
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MPrsgrd(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (istr,iend,jstr,jend,

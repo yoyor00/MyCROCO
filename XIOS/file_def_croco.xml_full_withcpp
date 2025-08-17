@@ -160,6 +160,9 @@
     <field_group id="M_fields" operation="average">
       <field field_ref="u_rate" name="u_rate"  />
       <field field_ref="u_adv" name="u_adv"  />
+#  if defined DIAGNOSTICS_UV_VADV
+      <field field_ref="u_advz" name="u_advz"  />
+#  endif
       <field field_ref="u_Cor" name="u_cor"  />
       <field field_ref="u_Prsgrd" name="u_prsgrd"  />
       <field field_ref="u_Hmix" name="u_hmix"  />
@@ -172,6 +175,9 @@
 #  endif
       <field field_ref="v_rate" name="v_rate"  />
       <field field_ref="v_adv" name="v_adv"  />
+#  if defined DIAGNOSTICS_UV_VADV
+      <field field_ref="v_advz" name="v_advz"  />
+#  endif
       <field field_ref="v_Cor" name="v_cor"  />
       <field field_ref="v_Prsgrd" name="v_prsgrd"  />
       <field field_ref="v_Hmix" name="v_hmix"  />
@@ -215,6 +221,9 @@
     <field_group id="KE_fields" operation="average">
       <field field_ref="ekrate" name="ke_rate"  />
       <field field_ref="ekadv" name="ke_adv"  />
+#  if defined DIAGNOSTICS_UV_VADV
+      <field field_ref="ekadvz" name="ke_advz"  />
+#  endif
       <field field_ref="ekCor" name="ke_cor"  />
       <field field_ref="ekPrsgrd" name="ke_prsgrd"  />
       <field field_ref="ekHmix" name="ke_hmix"  />

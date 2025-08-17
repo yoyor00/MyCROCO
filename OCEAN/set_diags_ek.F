@@ -96,6 +96,14 @@
      &                       + MVadv(i  ,j+1,k,2) * work2d2(i  ,j+1)
      &                      )
 
+#  if defined DIAGNOSTICS_UV_VADV
+            ekVadvz(i,j,k) = 0.5 * (
+     &                         MVadvz(i  ,j  ,k,1) * work2d(i  ,j  )
+     &                       + MVadvz(i+1,j  ,k,1) * work2d(i+1,j  )
+     &                       + MVadvz(i  ,j  ,k,2) * work2d2(i  ,j  )
+     &                       + MVadvz(i  ,j+1,k,2) * work2d2(i  ,j+1)
+     &                      )
+#   endif
             ekCor(i,j,k) = 0.5 * (
      &                         MCor(i  ,j  ,k,1) * work2d(i  ,j  )
      &                       + MCor(i+1,j  ,k,1) * work2d(i+1,j  )

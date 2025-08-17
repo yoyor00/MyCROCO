@@ -152,6 +152,15 @@
            call fillvalue3d(workr,nciddiaM,diaMVadv(itrc),
      &                      vname(1,indxMVadv+itrc-1),
      &                      record,ivar,type)
+#  if defined DIAGNOSTICS_UV_VADV
+!
+! indxMVadvz
+!
+           workr=MVadvz(:,:,:,itrc)
+           call fillvalue3d(workr,nciddiaM,diaMVadvz(itrc),
+     &                      vname(1,indxMVadvz+itrc-1),
+     &                      record,ivar,type)
+#  endif
 !
 ! indxMCor
 !

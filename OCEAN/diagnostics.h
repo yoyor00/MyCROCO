@@ -129,6 +129,9 @@
       real MXadv(GLOBAL_2D_ARRAY,N,2)
       real MYadv(GLOBAL_2D_ARRAY,N,2)
       real MVadv(GLOBAL_2D_ARRAY,N,2)
+#  if defined DIAGNOSTICS_UV_VADV
+      real MVadvz(GLOBAL_2D_ARRAY,N,2)
+# endif
       real MCor(GLOBAL_2D_ARRAY,N,2)
       real MPrsgrd(GLOBAL_2D_ARRAY,N,2)
       real MHmix(GLOBAL_2D_ARRAY,N,2,2)
@@ -149,6 +152,9 @@
       common /diag_MYadv/MYadv
       common /diag_MHdiff/MHdiff
       common /diag_MVadv/MVadv
+#  if defined DIAGNOSTICS_UV_VADV
+      common /diag_MVadvz/MVadvz
+# endif
       common /diag_MCor/MCor
       common /diag_MPrsgrd/MPrsgrd
       common /diag_MHmix/MHmix
@@ -183,6 +189,9 @@
       real MXadv_avg(GLOBAL_2D_ARRAY,N,2)
       real MYadv_avg(GLOBAL_2D_ARRAY,N,2)
       real MVadv_avg(GLOBAL_2D_ARRAY,N,2)
+#  if defined DIAGNOSTICS_UV_VADV
+      real MVadvz_avg(GLOBAL_2D_ARRAY,N,2)
+# endif
       real MCor_avg(GLOBAL_2D_ARRAY,N,2)
       real MPrsgrd_avg(GLOBAL_2D_ARRAY,N,2)
       real MHmix_avg(GLOBAL_2D_ARRAY,N,2)
@@ -222,6 +231,9 @@
       common /diag_MXadv_avg/MXadv_avg
       common /diag_MYadv_avg/MYadv_avg
       common /diag_MVadv_avg/MVadv_avg
+#  if defined DIAGNOSTICS_UV_VADV
+      common /diag_MVadvz_avg/MVadvz_avg
+# endif
       common /diag_MCor_avg/MCor_avg
       common /diag_MPrsgrd_avg/MPrsgrd_avg
       common /diag_MHmix_avg/MHmix_avg

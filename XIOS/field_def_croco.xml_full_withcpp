@@ -574,6 +574,9 @@
       <field id="u_xadv" long_name="u xadv" unit="meter second-2" grid_ref="u_3D"/>
       <field id="u_yadv" long_name="u yadv" unit="meter second-2" grid_ref="u_3D"/>
       <field id="u_vadv" long_name="u vadv" unit="meter second-2" grid_ref="u_3D"/>
+#  if defined DIAGNOSTICS_UV_VADV
+      <field id="u_vadvz" long_name="u vadvz" unit="meter second-2" grid_ref="u_3D"/>
+#  endif
       <field id="u_Cor" long_name="u cor" unit="meter second-2" grid_ref="u_3D"/>
       <field id="u_Prsgrd" long_name="u Prsgrd" unit="meter second-2" grid_ref="u_3D"/>
       <field id="u_Hmix" long_name="u Hmix" unit="meter second-2" grid_ref="u_3D"/>
@@ -591,6 +594,9 @@
       <field id="v_xadv" long_name="v xadv" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_yadv" long_name="v yadv" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_vadv" long_name="v vadv" unit="meter second-2" grid_ref="v_3D"/>
+#  if defined DIAGNOSTICS_UV_VADV
+      <field id="v_vadvz" long_name="v vadvz" unit="meter second-2" grid_ref="u_3D"/>
+#  endif
       <field id="v_Cor" long_name="v Cor" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_Prsgrd" long_name="v Prsgrd" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_Hmix" long_name="v Hmix" unit="meter second-2" grid_ref="v_3D"/>
@@ -629,6 +635,9 @@
       <field id="ekadv" long_name="ek adv" unit="meter2 second-3"/>
       <field id="ekhadv" long_name="ek hadv" unit="meter2 second-3"/>
       <field id="ekvadv" long_name="ek vadv" unit="meter2 second-3"/>
+#  if defined DIAGNOSTICS_UV_VADV
+      <field id="ekvadvz" long_name="ek vadvz" unit="meter2 second-3"/>
+#  endif
       <field id="ekCor" long_name="ek Cor" unit="meter2 second-3"/>
       <field id="ekPrsgrd" long_name="ek Prsgrd" unit="meter2 second-3"/>
       <field id="ekHmix" long_name="ek Hmix" unit="meter2 second-3"/>

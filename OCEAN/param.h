@@ -1066,7 +1066,7 @@
       parameter (ntrc_diats=0)
 # endif
 # ifdef DIAGNOSTICS_UV
-      parameter (ntrc_diauv=26)
+      parameter (ntrc_diauv=28)
 # else
       parameter (ntrc_diauv=0)
 # endif

@@ -165,8 +165,8 @@
           do i=Istr,Iend
             !FC(i,k)=FC(i,k-1) + romega(i,j,k)
             FC(i,k)=FC(i,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
-     &                            -Hvom(i,j+1,k)+Hvom(i,j,k)
-     &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
+     &                        -Hvom(i,j+1,k)+Hvom(i,j,k)
+     &                        -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
      &                                  *om_r(i,j)*on_r(i,j)
             DC(i,k)=DC(i,k-1) + Hz(i,j,k)
 !

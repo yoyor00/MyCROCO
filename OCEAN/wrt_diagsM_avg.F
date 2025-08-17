@@ -155,6 +155,15 @@
            call fillvalue3d(workr,nciddiaM_avg,diaMVadv_avg(itrc),
      &                      vname(1,indxMVadv+itrc-1),
      &                      record,ivar,type)
+#  if defined DIAGNOSTICS_UV_VADV
+!
+! indxMVadvz
+!
+           workr=MVadvz_avg(:,:,:,itrc)
+           call fillvalue3d(workr,nciddiaM_avg,diaMVadvz_avg(itrc),
+     &                      vname(1,indxMVadvz+itrc-1),
+     &                      record,ivar,type)
+#  endif
 !
 ! indxMCor
 !

@@ -3152,6 +3152,24 @@ CR       write(stdout,'(20x,A)') vname(1,indxMVadv+itrc-1)
        vname(6,indxMVadv+itrc-1)='                                '
        vname(7,indxMVadv+itrc-1)='                                '
 
+#  if defined DIAGNOSTICS_UV_VADV
+CR       write(stdout,'(1x,A,I3)') 'indxMVadvz = ',indxMVadvz+itrc-1
+                    nametrc=vname(1,indxU+itrc-1)
+       unitt=vname(3,indxU+itrc-1)
+       write(vname1,*) trim(nametrc),'_vadvz                       '
+       vname(1,indxMVadvz+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxMVadvz+itrc-1)
+       vname(2,indxMVadvz+itrc-1)='Vertical advection term         '
+       write(vname3,*) trim(unitt),' m second-1                   '
+       vname(3,indxMVadvz+itrc-1)=vname3
+       vname(4,indxMVadvz+itrc-1)='                                '
+       write(vname3,*) 'vertical_advection_term_',trim(nametrc)
+     &               //'_component'
+       vname(5,indxMVadvz+itrc-1)=vname3
+       vname(6,indxMVadvz+itrc-1)='                                '
+       vname(7,indxMVadvz+itrc-1)='                                '
+#  endif
+
 CR       write(stdout,'(1x,A,I3)') 'indxMCor = ',indxMCor+itrc-1
        nametrc=vname(1,indxU+itrc-1)
        unitt=vname(3,indxU+itrc-1)

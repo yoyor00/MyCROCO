@@ -203,6 +203,10 @@ C$    integer omp_get_thread_num
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
             MVadv(i,j,k,1)=init
             MVadv(i,j,k,2)=init
+#  if defined DIAGNOSTICS_UV_VADV
+            MVadvz(i,j,k,1)=init
+            MVadvz(i,j,k,2)=init
+#   endif
             MCor(i,j,k,1)=init
             MCor(i,j,k,2)=init
             MPrsgrd(i,j,k,1)=init
@@ -265,6 +269,10 @@ C$    integer omp_get_thread_num
             MYadv_avg(i,j,k,2)=init
             MVadv_avg(i,j,k,1)=init
             MVadv_avg(i,j,k,2)=init
+#  if defined DIAGNOSTICS_UV_VADV
+            MVadvz_avg(i,j,k,1)=init
+            MVadvz_avg(i,j,k,2)=init
+#   endif
             MCor_avg(i,j,k,1)=init
             MCor_avg(i,j,k,2)=init
             MPrsgrd_avg(i,j,k,1)=init
@@ -606,6 +614,9 @@ C$    integer omp_get_thread_num
             ekHadv(i,j,k)=init
             ekHdiff(i,j,k)=init
             ekVadv(i,j,k)=init
+#  if defined DIAGNOSTICS_UV_VADV
+            ekVadvz(i,j,k)=init
+#  endif
             ekCor(i,j,k)=init
             ekPrsgrd(i,j,k)=init
             ekHmix(i,j,k)=init

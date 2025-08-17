@@ -411,13 +411,17 @@
      &           indxMVmix2=indxMVmix+2,
      &           indxMHdiff=indxMVmix2+2,
      &           indxMrate=indxMHdiff+2)
+#  if defined DIAGNOSTICS_UV_VADV
+      integer indxMVadvz
+      parameter (indxMVadvz=indxMrate+2)
+#  endif
 #  ifdef DIAGNOSTICS_BARO
       integer indxMBaro
-      parameter (indxMBaro=indxMrate+2)
+      parameter (indxMBaro=indxMrate+4)
 #  endif
 #  ifdef M3FAST
       integer indxMfast
-      parameter (indxMfast=indxMrate+4)
+      parameter (indxMfast=indxMrate+6)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_VRT
@@ -1220,6 +1224,9 @@
      &      , diaMCor(2), diaMPrsgrd(2), diaMHmix(2)
      &      , diaMHdiff(2)
      &      , diaMVmix(2), diaMVmix2(2), diaMrate(2)
+#  if defined DIAGNOSTICS_UV_VADV
+     &      , diaMVadvz(2)
+#  endif
 #  ifdef DIAGNOSTICS_BARO
      &      , diaMBaro(2)
 #  endif
@@ -1429,6 +1436,9 @@
      &      , diaMCor_avg(2), diaMPrsgrd_avg(2), diaMHmix_avg(2)
      &      , diaMHdiff_avg(2)
      &      , diaMVmix_avg(2), diaMVmix2_avg(2), diaMrate_avg(2)
+#  if defined DIAGNOSTICS_UV_VADV
+     &      , diaMVadvz_avg(2)
+#  endif
 #   ifdef DIAGNOSTICS_BARO
      &      , diaMBaro_avg(2)
 #   endif
@@ -1765,6 +1775,9 @@
      &      , diaMXadv, diaMYadv, diaMVadv, diaMCor
      &      , diaMPrsgrd, diaMHmix, diaMVmix, diaMVmix2, diaMrate
      &      , diaMHdiff
+# ifdef DIAGNOSTICS_UV_VADV
+     &      , diaMVadvz
+# endif
 # ifdef DIAGNOSTICS_BARO
      &      , diaMBaro
 # endif
@@ -1783,6 +1796,9 @@
      &      , diaMCor_avg, diaMPrsgrd_avg, diaMHmix_avg
      &      , diaMHdiff_avg
      &      , diaMVmix_avg, diaMVmix2_avg, diaMrate_avg
+# ifdef DIAGNOSTICS_UV_VADV
+     &      , diaMVadvz_avg
+# endif
 #  ifdef DIAGNOSTICS_BARO
      &      , diaMBaro_avg
 #  endif
