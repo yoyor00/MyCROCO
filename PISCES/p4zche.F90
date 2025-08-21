@@ -866,7 +866,7 @@ CONTAINS
    !!======================================================================
 CONTAINS
    SUBROUTINE p4z_che                   ! Empty routine
-      WRITE(*,*) 'p4z_che: You should not have seen this print! error?', kt
+      WRITE(*,*) 'p4z_che: You should not have seen this print! error?'
    END SUBROUTINE p4z_che
 #endif
 

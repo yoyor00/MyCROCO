@@ -269,27 +269,15 @@
 #elif defined OPENMP
 #if defined(SPLITTING_X) && defined(SPLITTING_ETA)
       parameter (NPP=SPLITTING_X*SPLITTING_ETA)
-# ifdef AUTOTILING
-      common/distrib/NSUB_X, NSUB_E
-# else
       parameter (NSUB_X=SPLITTING_X, NSUB_E=SPLITTING_ETA)
-# endif
 #else
       parameter (NPP=4)
-# ifdef AUTOTILING
-      common/distrib/NSUB_X, NSUB_E
-# else
       parameter (NSUB_X=1, NSUB_E=NPP)
-# endif
 #endif
 
 #else
       parameter (NPP=1)
-# ifdef AUTOTILING
-      common/distrib/NSUB_X, NSUB_E
-# else
       parameter (NSUB_X=1, NSUB_E=NPP)
-# endif
 #ifdef OPENACC
       integer,parameter :: my_acc_device = 0
       logical,parameter :: compute_on_device = .true.
@@ -368,10 +356,6 @@
       parameter (Msrc=30)        ! ====== == ===== =======
 # endif
 #endif
-#ifdef FLOATS
-       integer Mfloats           ! Maximum number of floats
-       parameter (Mfloats=32000) ! ======= ====== == ======
-#endif
 #ifdef STATIONS
        integer NS                ! Number of output stations
        parameter (NS=5)          ! ====== == ====== ========
@@ -405,7 +389,7 @@
       parameter (padd_E=(Mm+2)/2-(Mm+1)/2)
 #endif
 
-#if defined AGRIF || defined AUTOTILING
+#if defined AGRIF
       integer NSA, N2d,N3d,N3dHz,N1dXI,N1dETA
 # if !defined NBQ
       parameter (NSA=28)

@@ -325,9 +325,8 @@ C$    integer omp_get_thread_num
 #  ifdef NBQ
             w_avg(i,j,k)=init
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
             bvf_avg(i,j,k)=init
 #  endif
 # endif
@@ -1425,21 +1424,20 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
             Akv(i,j,k)=Akv_bak
 # else
             Akv(i,j,k)=init
 # endif
-# if defined BVF_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIXING
+# if defined GLS_MIXING \
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
             bvf(i,j,k)=init
 # endif
           enddo
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  endif

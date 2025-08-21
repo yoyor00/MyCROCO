@@ -101,7 +101,6 @@
 !
 ! Time
 !
-CDEBUG      write(*,*) 'Write Time'
       ierr=nf_put_var1_FTYPE (nciddiabio, diaTimebio, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))

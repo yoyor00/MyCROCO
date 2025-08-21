@@ -26,9 +26,6 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
-#ifdef FLOATS
-# include "ncscrum_floats.h"
-#endif
 #ifdef STATIONS
 # include "nc_sta.h"
 #endif
@@ -995,32 +992,6 @@ c        close(testunit)
 # endif
 #endif /* DIAGNOSTICS_BIO */
 
-#ifdef FLOATS
-!
-! Floats file name.
-!
-      elseif (keyword(1:kwlen).eq.'floats') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef AGRIF
-        if (Agrif_Root()) then
-# endif
-          read(input,*,err=95) ldefflt, nflt, nrpfflt
-          read(input,'(A)',err=95) fposnam
-          read(input,'(A)',err=95) fname
-          lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-          call insert_node (fposnam, lstr, mynode2, NNODES2, ierr)
-# endif
-          fltname=fname(1:lstr)
-# ifdef AGRIF
-        else
-          ldefflt=Agrif_Parent(ldefflt)
-          nflt=Agrif_Parent(nflt)
-          nrpfflt=Agrif_Parent(nrpfflt)
-        endif
-# endif
-#endif /* FLOATS */
-
 #ifdef STATIONS
 !
 ! Stations file name.
@@ -1121,8 +1092,8 @@ c        close(testunit)
 # else
      &                                          ,  dumboolean
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                          ,  wrthis(indxbvf)
 # else
@@ -1220,8 +1191,8 @@ c        close(testunit)
 # ifdef SALINITY
      &                                        .or. wrthis(indxAks)
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                        .or. wrthis(indxbvf)
 # endif
@@ -1354,8 +1325,8 @@ c        close(testunit)
 #  else
      &                                          ,  dumboolean
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#  if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                          ,  wrtavg(indxbvf)
 #  else
@@ -1449,8 +1420,8 @@ c        close(testunit)
 #  ifdef SALINITY
      &                                        .or. wrtavg(indxAks)
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#  if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                        .or. wrtavg(indxbvf)
 #  endif
@@ -1584,23 +1555,6 @@ c        close(testunit)
 !
 # endif
 #endif /* ABL1D && ! defined XIOS */
-
-#ifdef FLOATS
-!
-! Switches for fields to be saved into floats output file.
-!
-      elseif (keyword(1:kwlen).eq.'float_fields') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef AGRIF
-        if (Agrif_Root()) then
-# endif
-          read(input,*,err=95) wrtflt(indxfltGrd),
-     &       wrtflt(indxfltTemp), wrtflt(indxfltSalt),
-     &       wrtflt(indxfltRho), wrtflt(indxfltVel)
-# ifdef AGRIF
-        endif
-# endif
-#endif /* FLOATS */
 
 #if defined DIAGNOSTICS_TS
 # if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
@@ -1959,8 +1913,7 @@ c        close(testunit)
 #  endif /* TRACERS */
 
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !
@@ -2717,20 +2670,6 @@ c        close(testunit)
 # endif
 #endif /* DIAGNOSTICS_BIO */
 
-#ifdef FLOATS
-# ifdef AGRIF
-          if (Agrif_Root()) then
-# endif
-          lstr=lenstr(fltname)
-          MPI_master_only write(stdout,
-     &              '(9x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
-     &        'Float File:',fltname(1:lstr),  'Create new:',
-     &        ldefflt, 'nflt =', nflt, 'rec/file =', nrpfflt
-# ifdef AGRIF
-          endif
-# endif
-#endif /* FLOATS */
-
 #ifdef STATIONS
 # ifdef AGRIF
         if (Agrif_Root()) then
@@ -2785,8 +2724,8 @@ c        close(testunit)
      &  , wrthis(indxAks),  'write Aks  ',
      &                      'Vertical diffusivity for salinity.'
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+     || defined LMD_SKPP || defined LMD_BKPP \
      || defined GLS_MIXING
      &  , wrthis(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
@@ -2908,8 +2847,8 @@ c        close(testunit)
      &  , wrtavg(indxAks),  'write Aks  ',
      &                         'Vertical diffusivity for salinity.'
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#  if defined ANA_VMIX || defined LMD_MIXING \
+     || defined LMD_SKPP || defined LMD_BKPP \
      || defined GLS_MIXING
      &  , wrtavg(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
@@ -3049,23 +2988,6 @@ c        close(testunit)
      &     , wrtabl_avg(indxabl_Hzw_abl) , 'write Hzw ABL'
 # endif
 #endif /* ABL1D && ! defined XIOS */
-
-#ifdef FLOATS
-# ifdef AGRIF
-          if (Agrif_Root()) then
-# endif
-          MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A))')
-     &      'Fields to be saved in floats output file: (T/F)'
-     &     , wrtflt(indxfltGrd),   'write Grid location variables'
-     &     , wrtflt(indxfltTemp),  'write temperature.'
-     &     , wrtflt(indxfltSalt),  'write salinity.'
-     &     , wrtflt(indxfltRho),   'write density.'
-     &     , wrtflt(indxfltVel),   'write mean float velocity'
-# ifdef AGRIF
-          endif
-# endif
-#endif /* FLOATS */
-
 
 #if defined DIAGNOSTICS_TS
 # if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
@@ -3348,8 +3270,7 @@ c        close(testunit)
           enddo
 #  endif /* TRACERS */
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
           MPI_master_only write(stdout,'(1pe10.3,2x,A,1x,A)')
      &      Akv_bak, 'Akv_bak    Background vertical viscosity',
      &                                     'coefficient, m2/s.'

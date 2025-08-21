@@ -28,8 +28,6 @@
 # else
 # endif
 #endif  /* ONLINE_ANALYSIS */
-#ifdef START_DATE
-#endif
 #ifndef ANA_GRID
 #endif
 #ifndef ANA_INITIAL
@@ -55,7 +53,7 @@
 # endif
 # ifdef TS_DIF4
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING
+# if !defined LMD_MIXING
 # endif
 #endif
 #ifdef SOLVE3D
@@ -90,9 +88,7 @@
 # ifdef MPI
 # else
 # endif
-# ifdef START_DATE
-# elif defined USE_CALENDAR
-# else
+# ifdef USE_CALENDAR
 # endif
 #if defined MUSTANG
 # endif
@@ -121,9 +117,7 @@
 # if defined MPI
 # else
 # endif
-# ifdef START_DATE
-# elif defined USE_CALENDAR
-# else
+# ifdef USE_CALENDAR
 # endif
 # ifdef SPHERICAL
 # else
@@ -470,7 +464,7 @@ c       endif
       if (xios_field_is_active("rho")) then
 !$acc update host( rho ) 
       endif
-# if defined ANA_VMIX || defined BVF_MIXING 
+# if defined ANA_VMIX
       if (xios_field_is_active("bvf")) then
 !$acc update host( bvf ) 
       endif

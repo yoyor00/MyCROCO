@@ -101,13 +101,6 @@ C$OMP END PARALLEL
 #endif
       nfast=1
 
-#ifdef FLOATS
-      nfp1=0     ! set time step indices for
-      nf=3       ! 5th order AB4AM4 corrected
-      nfm1=2     ! scheme
-      nfm2=1
-      nfm3=0
-#endif
 #ifdef WKB_WWAVE
       wstp=1
       wnew=1
@@ -118,16 +111,7 @@ C$OMP END PARALLEL
       synchro_flag=.true.
       first_time=0
       may_day_flag=0
-!
-! Reset process ID and CPU_time clocks (needed by timers).
-!
-      do j=0,NPP
-        do i=0,31
-          proc(i,j)=0
-          CPU_time(i,j)=0.E0
-        enddo
-      enddo
-      trd_count=0
+
 !
 ! Reset record counters for averages/history output.
 !
@@ -286,7 +270,6 @@ C$OMP END PARALLEL
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
        brywkb_id=-1
 #endif
-      call get_date (date_str)
 
 #ifdef SOLVE3D
 # ifdef TS_MIX_ISO_FILT
@@ -1900,8 +1883,8 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
       vname(5,indxR)='sea_water_sigma_t                           '
       vname(7,indxR)='                                            '
 
-# if defined ANA_VMIX || defined BVF_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+      || defined LMD_SKPP || defined LMD_BKPP \
       || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                       '
@@ -2534,55 +2517,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxKAPS =',indxKAPS
       vname(3,indxKAPS) ='meter2 second-2                         '
 # endif
 #endif /* MRL_WCI */
-
-#ifdef ICE
-      vname(1,indxAi)='aice                                       '
-      vname(2,indxAi)='fraction of cell covered by ice            '
-      vname(3,indxAi)='nondimensional                             '
-      vname(4,indxAi)='aice, scalar, series                       '
-      vname(5,indxAi)='                                           '
-      vname(6,indxAi)='lat_rho lon_rho                            '
-      vname(7,indxAi)='                                           '
-      vname(1,indxUi)='uice                                       '
-      vname(2,indxUi)='u-component of ice velocity                '
-      vname(3,indxUi)='meter sec-1                                '
-      vname(4,indxUi)='uice, scalar, series                       '
-      vname(5,indxUi)='                                           '
-      vname(6,indxUi)='lat_u lon_u                                '
-      vname(7,indxUi)='                                           '
-
-      vname(1,indxVi)='vice                                       '
-      vname(2,indxVi)='v-component of ice velocity                '
-      vname(3,indxVi)='meter sec-1                                '
-      vname(4,indxVi)='vice, scalar, series                       '
-      vname(5,indxVi)='                                           '
-      vname(6,indxVi)='lat_v lon_v                                '
-      vname(7,indxVi)='                                           '
-
-      vname(1,indxHi)='hice                                       '
-      vname(2,indxHi)='depth of ice cover                         '
-      vname(3,indxHi)='meter                                      '
-      vname(4,indxHi)='hice, scalar, series                       '
-      vname(5,indxHi)='                                           '
-      vname(6,indxHi)='lat_rho lon_rho                            '
-      vname(7,indxHi)='                                           '
-
-      vname(1,indxHS)='snow_thick                                 '
-      vname(2,indxHS)='depth of snow cover                        '
-      vname(3,indxHS)='meter                                      '
-      vname(4,indxHS)='snow_thick, scalar, series                 '
-      vname(5,indxHS)='                                           '
-      vname(6,indxHS)='lat_rho lon_rho                            '
-      vname(7,indxHS)='                                           '
-
-      vname(1,indxTIsrf)='tisrf                                   '
-      vname(2,indxTIsrf)='temperature of ice surface              '
-      vname(3,indxTIsrf)='Kelvin                                  '
-      vname(4,indxTIsrf)='tsrf, scalar, series                    '
-      vname(5,indxTIsrf)='                                        '
-      vname(6,indxTIsrf)='lat_rho lon_rho                         '
-      vname(7,indxTIsrf)='                                        '
-#endif
 
 #ifdef BULK_FLUX
 # ifdef ONLINE /* JG ONLINE */

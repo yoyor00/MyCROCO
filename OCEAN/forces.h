@@ -22,6 +22,8 @@
 #if defined OA_COUPLING || defined OW_COUPLING
       real smstr(GLOBAL_2D_ARRAY)
       common /forces_smstr/smstr
+#endif
+#if defined OA_COUPLING
 # ifdef READ_PATM
       real patm2d(GLOBAL_2D_ARRAY)
       common /forces_patm/ patm2d

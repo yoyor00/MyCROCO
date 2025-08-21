@@ -196,10 +196,10 @@ ls "${ROOT_DIR}/"BLOOM/*         > /dev/null 2>1 && \cp -r "${ROOT_DIR}/"BLOOM/*
 ls "${ROOT_DIR}/"BIOLINK/*         > /dev/null 2>1 && \cp -r "${ROOT_DIR}/"BIOLINK/* "$SCRDIR"
 ls "${ROOT_DIR}/"MUSTANG/*       > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"MUSTANG/* "$SCRDIR"
 ls "${ROOT_DIR}/"OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"OBSTRUCTION/* "$SCRDIR"
-ls "${ROOT_DIR}/"OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"OBSTRUCTION/* $SCRDIR
 ls "${ROOT_DIR}/"ECO3M/MAKE/*.inc > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"ECO3M/MAKE/*.inc $SCRDIR
 ls "${ROOT_DIR}/"ECO3M/SRC/src_eco3m/*.F90 > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"ECO3M/SRC/src_eco3m/*.F90 $SCRDIR
 ls "${ROOT_DIR}/"ECO3M/CONFIG_ECO3M/F_PROCESS > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"ECO3M/CONFIG_ECO3M/F_PROCESS $SCRDIR
+ls "${SOURCE}/"croco_ascii.txt   > /dev/null  2>&1 && \cp "${SOURCE}/"croco_ascii.txt "$SCRDIR"
 
 if [[ -e "namelist_pisces_ref" ]] ; then
    echo "  file namelist_pisces exists in Run directory"
@@ -486,7 +486,7 @@ $MAKE -j ${NPROCS} || exit 1
 [[ -f partit ]] && mv partit "$RUNDIR"
 [[ -f ncjoin ]] && mv ncjoin  "$RUNDIR"
 
-cat "$ROOT_DIR/OCEAN/croco_ascii.txt"
+cat "croco_ascii.txt"
 echo "CROCO is OK"
 
 #
