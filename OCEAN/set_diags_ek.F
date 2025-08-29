@@ -56,6 +56,58 @@
 # endif
 
 !--------------------------------------------------
+! Add supplementary terms ekwrkrate and ekwrkvol (not present in momentum budget)
+!--------------------------------------------------
+
+        do j=JU_RANGE
+          do i=IU_RANGE
+            do k=1,N
+
+            ekwrkrate(i,j,k,1) = 0.5 * (
+     &           0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
+     &          -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
+     &                                        *om_u(i,j)*on_u(i,j)/dt
+#  ifdef MASKING
+     &                     *umask(i,j)
+#  endif
+            ekwrkvol(i,j,k,1) = 0.5* (
+     &                  (  0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
+     &                   - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))        )
+     &                  * u(i,j,k,nstp) * u(i,j,k,nnew)
+     &                                     )  *om_u(i,j)*on_u(i,j)/dt
+#  ifdef MASKING
+     &                     *umask(i,j)
+#  endif
+            enddo
+          enddo
+        enddo
+
+        do j=JV_RANGE
+          do i=IV_RANGE
+            do k=1,N
+
+            ekwrkrate(i,j,k,2) = 0.5 * (
+     &           0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
+     &          -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
+     &                                        *om_v(i,j)*on_v(i,j)/dt
+#  ifdef MASKING
+     &                     *vmask(i,j)
+#  endif
+            ekwrkvol(i,j,k,2) = 0.5* (
+     &                  (  0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))
+     &                   - 0.5*(Hz(i,j,k)+Hz(i,j-1,k))        )
+     &                  * v(i,j,k,nstp) * v(i,j,k,nnew)
+     &                                     )  *om_v(i,j)*on_v(i,j)/dt
+#  ifdef MASKING
+     &                     *vmask(i,j)
+#  endif
+            enddo
+          enddo
+            enddo
+
+!--------------------------------------------------
+! Compute other terms from the momentum budget)
+!--------------------------------------------------
 
       do j=JstrR,JendR+1
         do i=IstrR,IendR+1
@@ -135,13 +187,6 @@
      &                       + MVmix(i  ,j+1,k,2) * work(i  ,j+1,k)
      &                      )
 
-!            ekrate(i,j,k) = 0.5 * (
-!     &                         Mrate(i  ,j  ,k,1) * workr(i  ,j  ,k)
-!     &                       + Mrate(i+1,j  ,k,1) * workr(i+1,j  ,k)
-!     &                       + Mrate(i  ,j  ,k,2) * work(i  ,j  ,k)
-!     &                       + Mrate(i  ,j+1,k,2) * work(i  ,j+1,k)
-!     &                      )
-
             ekrate(i,j,k) = 0.5 * (
      &                         ekwrkrate(i  ,j  ,k,1)
      &                       + ekwrkrate(i+1,j  ,k,1)
@@ -179,6 +224,9 @@
      &                       + Mfast(i  ,j+1,k,2) * work(i  ,j+1,k)
      &                      )
 # endif
+
+
+
 
           enddo
         enddo

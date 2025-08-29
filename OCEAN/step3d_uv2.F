@@ -1179,7 +1179,7 @@
         do j=JU_RANGE
           do i=IU_RANGE
             MVmix2(i,j,k,1)=( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
-     &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp) )
+     &               -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp) )
      &                                           *om_u(i,j)*on_u(i,j)/dt
      &                                           - Mrate(i,j,k,1)
             Mrate(i,j,k,1)= MVmix2(i,j,k,1) + Mrate(i,j,k,1)
@@ -1228,7 +1228,7 @@
         do j=JV_RANGE
           do i=IV_RANGE
             MVmix2(i,j,k,2)=( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
-     &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp) )
+     &               -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp) )
      &                                           *om_v(i,j)*on_v(i,j)/dt
      &                                           - Mrate(i,j,k,2)
             Mrate(i,j,k,2)= MVmix2(i,j,k,2) + Mrate(i,j,k,2)
@@ -1277,56 +1277,6 @@
 
 # endif
 
-# if defined DIAGNOSTICS_EK
-! Add supplementary terms ekwrkrate and ekwrkvol (not present in momentum budget)
-
-        do j=JU_RANGE
-          do i=IU_RANGE
-            do k=1,N
-
-            ekwrkrate(i,j,k,1) = 0.5 * (
-     &           0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
-     &          -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
-     &                                        *om_u(i,j)*on_u(i,j)/dt
-#  ifdef MASKING
-     &                     *umask(i,j)
-#  endif
-            ekwrkvol(i,j,k,1) = 0.5* (
-     &                  (  0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
-     &                   - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))        )
-     &                  * u(i,j,k,nstp) * u(i,j,k,nnew)
-     &                                     )  *om_u(i,j)*on_u(i,j)/dt
-#  ifdef MASKING
-     &                     *umask(i,j)
-#  endif
-            enddo
-          enddo
-        enddo
-
-        do j=JV_RANGE
-          do i=IV_RANGE
-            do k=1,N
-
-            ekwrkrate(i,j,k,2) = 0.5 * (
-     &           0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
-     &          -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
-     &                                        *om_v(i,j)*on_v(i,j)/dt
-#  ifdef MASKING
-     &                     *vmask(i,j)
-#  endif
-            ekwrkvol(i,j,k,2) = 0.5* (
-     &                  (  0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))
-     &                   - 0.5*(Hz(i,j,k)+Hz(i,j-1,k))        )
-     &                  * v(i,j,k,nstp) * v(i,j,k,nnew)
-     &                                     )  *om_v(i,j)*on_v(i,j)/dt
-#  ifdef MASKING
-     &                     *vmask(i,j)
-#  endif
-            enddo
-          enddo
-            enddo
-
-# endif /* DIAGNOSTICS_EK */
 
 
 # if defined DIAGNOSTICS_PV
@@ -1447,6 +1397,8 @@
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MVmix(START_2D_ARRAY,1,1))
       call exchange_u3d_tile (istr,iend,jstr,jend,
+     &                                 MVmix2(START_2D_ARRAY,1,1))
+      call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 Mrate(START_2D_ARRAY,1,1))
 #   if defined DIAGNOSTICS_BARO
       call exchange_u3d_tile (istr,iend,jstr,jend,
@@ -1468,10 +1420,6 @@
      &                                 ekwrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkDrag(START_2D_ARRAY,1))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 ekwrkrate(START_2D_ARRAY,1,1))
-      call exchange_u3d_tile (istr,iend,jstr,jend,
-     &                                 ekwrkvol(START_2D_ARRAY,1,1))
 #   endif
 
       call exchange_v3d_tile (istr,iend,jstr,jend,
@@ -1490,6 +1438,8 @@
      &                                 MHdiff(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MVmix(START_2D_ARRAY,1,2))
+      call exchange_v3d_tile (istr,iend,jstr,jend,
+     &                                 MVmix2(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 Mrate(START_2D_ARRAY,1,2))
 #   if defined DIAGNOSTICS_BARO
@@ -1511,10 +1461,6 @@
      &                                 ekwrkWind(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkDrag(START_2D_ARRAY,2))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 ekwrkrate(START_2D_ARRAY,1,2))
-      call exchange_v3d_tile (istr,iend,jstr,jend,
-     &                                 ekwrkvol(START_2D_ARRAY,1,2))
 #   endif
 #  endif
 
