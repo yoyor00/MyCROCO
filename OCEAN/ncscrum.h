@@ -686,9 +686,8 @@
 # endif
 #endif /* SOLVE3D */
 
-#if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
       integer indxbvf
       parameter (indxbvf=indxSSH+1)
 #endif
@@ -1157,9 +1156,8 @@
      &      , hisU,   hisV,   hisR,    hisHbl, hisHbbl
      &      , hisO,   hisW,   hisVisc, hisDiff
      &      , hisAkv, hisAkt, hisAks
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , hisbvf
 # endif
 # ifdef GLS_MIXING
@@ -1344,9 +1342,8 @@
      &      , avgU,   avgV,   avgR,    avgHbl, avgHbbl
      &      , avgO,   avgW,   avgVisc, avgDiff
      &      , avgAkv, avgAkt, avgAks
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , avgbvf
 #  endif
 #  ifdef GLS_MIXING
@@ -1703,9 +1700,8 @@
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks
      &      , hisHbl,  hisHbbl
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , hisbvf
 # endif
 # ifdef GLS_MIXING
@@ -1982,9 +1978,8 @@
      &      , avgO,    avgW,     avgVisc,  avgDiff
      &      , avgAkv,  avgAkt,   avgAks
      &      , avgHbl,  avgHbbl
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , avgbvf
 #  endif
 #  ifdef GLS_MIXING

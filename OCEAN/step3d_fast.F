@@ -2306,18 +2306,7 @@ C$OMP END MASTER
 #  ifndef NBQ
       endif
 #  endif
-!      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-!     &                        DU_nbq(START_2D_ARRAY))
-!      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-!     &                        DV_nbq(START_2D_ARRAY))
 # endif
-!$$$# ifdef CVTK_DEBUG_ADVANCED
-!$$$C$OMP BARRIER
-!$$$C$OMP MASTER
-!$$$      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
-!$$$      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
-!$$$C$OMP END MASTER
-!$$$# endif  
 
 !$acc kernels if(compute_on_device) default(present)
 # ifdef NBQ
@@ -4094,18 +4083,6 @@ C$OMP END MASTER
 #  ifdef MASKING
      &               *rmask(i,j)
 #  endif
-
-#  ifdef NBQ_HZCORR_DEBUG
-              Hz_corr(i,j,k)=Hz(i,j,k)-Hz_correct(i,j,k)
-#  endif
-
-!# ifdef NBQ_MASS
-!              Hzr(i,j,k)=(Hz(i,j,k)-rho_nbq(i,j,k)) ! adjust Zw,Zr?
-!     &                        /(1.+rho(i,j,k)/rho0)
-!# endif
-!              z_w(i,j,k)=z_w(i,j,k-1)+Hzr(i,j,k)
-!              z_r(i,j,k)=0.5*(z_w(i,j,k)+z_w(i,j,k-1))
-
             enddo
           enddo
         enddo

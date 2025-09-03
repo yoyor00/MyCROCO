@@ -53,7 +53,7 @@
 # endif
 # ifdef TS_DIF4
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING
+# if !defined LMD_MIXING
 # endif
 #endif
 #ifdef SOLVE3D
@@ -464,7 +464,7 @@ c       endif
       if (xios_field_is_active("rho")) then
 !$acc update host( rho ) 
       endif
-# if defined ANA_VMIX || defined BVF_MIXING 
+# if defined ANA_VMIX
       if (xios_field_is_active("bvf")) then
 !$acc update host( bvf ) 
       endif

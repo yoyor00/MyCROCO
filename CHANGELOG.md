@@ -64,12 +64,17 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
   - UV_HADV_TVD, UV_VADV_TVD, W_HADV_TVD, W_VADV_TVD (#391)
+  - BVF_MIXING (#398)
+  - LMD_NUW_GARGETT, obsolete (#402)
   - ROBUST_DIURNAL_SRFLUX (#405)
+  - DUKO_2001 was always def (#407)
+  - PRED_COUPLED_MODE was always def (#408) 
   - START_DATE (#417)
   - ICE (#416)
   - DECALPHA (#414)
   - CRAY, VAX, SGI, AIX (#413)
   - AUTOTILING (#411)
+  - DEBUG_ARMOR, DEBUG, DIAGNOSTICS_DEBUG, NBQ_HZCORR_DEBUG (#415)
   - PP_MIXING, MY2_MIXING, MY25_MIXING (#418)
   - XCOMM_FORMAT (#419)
 
@@ -79,6 +84,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
+  - remove routine set_HUV1, not used (#410)
 
 
 ### Contributors on this release

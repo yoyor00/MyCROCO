@@ -239,7 +239,6 @@
 # undef  BSTRESS_FAST
                       /* Vertical Mixing */
 # undef  BODYFORCE
-# undef  BVF_MIXING
 # define LMD_MIXING
 # undef  GLS_MIXING
 # ifdef LMD_MIXING

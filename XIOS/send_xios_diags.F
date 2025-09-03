@@ -912,7 +912,7 @@ C      &     ,type='float',name='tnu4', value=tnu4)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='units', value='meter4 second-1')
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING
+# if !defined LMD_MIXING
 !
 ! Background vertical viscosity and tracer mixing coefficients.
 !
@@ -2837,8 +2837,8 @@ c !$acc wait
       call xios_send_field("rho_surf",rho(:,:,N))
       endif
 
-# if defined ANA_VMIX || defined BVF_MIXING \
-|| defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+|| defined LMD_SKPP   || defined LMD_BKPP \
 || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       if (xios_field_is_active("bvf")) then
       call xios_send_field("bvf",bvf)

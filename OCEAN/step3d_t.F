@@ -1114,8 +1114,7 @@
           enddo
         enddo
 
-#    if (!defined TS_DIF2 && !defined TS_DIF4 && !defined SPONGE_DIF2) \
-       || defined DIAGNOSTICS_DEBUG
+#    if (!defined TS_DIF2 && !defined TS_DIF4 && !defined SPONGE_DIF2)
 !
 ! Compute entrainement/detrainement term.
 ! If diffusion terms are computed in t3dmix routines, entrainement
@@ -1163,40 +1162,6 @@
 #    undef T_mld_nnew
 #    undef T_mld_nstp
 #   endif /* DIAGNOSTICS_TS_MLD */
-
-#   ifdef DIAGNOSTICS_DEBUG
-        if (istr.eq.1 .and. jstr.eq.1
-#    ifdef TEMPERATURE
-     &       .and. itrc.eq.itemp
-#    endif /* TEMPERATURE */
-     &       ) then
-          i=5
-          j=5
-#    if defined DIAGNOSTICS_TS_MLD
-          cff=Trate_mld(i,j,itrc)-
-     &        TXadv_mld(i,j,itrc)-
-     &        TYadv_mld(i,j,itrc)-
-     &        TVadv_mld(i,j,itrc)-
-     &        TVmix_mld(i,j,itrc)-
-     &        THmix_mld(i,j,itrc)-
-     &        Tentr_mld(i,j,itrc)-
-     &        TForc_mld(i,j,itrc)
-             MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &       ' STEP3D_T: T budget closure MLD     :', cff
-!
-#    endif /* DIAGNOSTICS_TS_MLD */
-          cff=Trate(i,j,N-5,itrc)-
-     &        TXadv(i,j,N-5,itrc)-
-     &        TYadv(i,j,N-5,itrc)-
-     &        TVadv(i,j,N-5,itrc)-
-     &        TVmix(i,j,N-5,itrc)-
-     &        THmix(i,j,N-5,itrc)-
-     &        TForc(i,j,N-5,itrc)
-            MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &      ' STEP3D_T: T budget closure at k=N-5:', cff
-        endif
-#   endif /* DIAGNOSTICS_DEBUG */
-
 
 #  endif /* DIAGNOSTICS_TS */
 !

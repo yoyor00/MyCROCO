@@ -747,9 +747,8 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
      &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !
 !     Brunt vaisala frequency.
 !
