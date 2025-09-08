@@ -297,7 +297,11 @@ C$OMP END MASTER
      &         +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
      &                                *( rubar(i,j)
      &                                  +rufrc(i,j)
-     &                                 ))
+     &                                 )
+#  ifdef K3FAST_DUVNBQ2
+     &        +dtfast*DU_nbq(i,j)*2. 
+#  endif
+     &          )
 #  ifdef MASKING
      &                                     *umask(i,j)
 #  endif
@@ -305,9 +309,6 @@ C$OMP END MASTER
      &                                     *umask_wet(i,j)
 # endif
           DUnew2=DUnew
-#  ifdef K3FAST_DUVNBQ2
-     &        +dtfast*DU_nbq(i,j)*2. 
-#  endif
 #  if defined WET_DRY && defined K3FAST_ZETAW
      &        *umask_wet(i,j)
 #  endif
@@ -359,7 +360,11 @@ C$OMP END MASTER
      &     +cff*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
      &                                *( rvbar(i,j)
      &                                  +rvfrc(i,j)
-     &                                 ))
+     &                                 )
+#  ifdef K3FAST_DUVNBQ2
+     &        +dtfast*DV_nbq(i,j)*2. 
+#  endif
+     &          )
 #  ifdef MASKING
      &                                     *vmask(i,j)
 #  endif
@@ -367,9 +372,6 @@ C$OMP END MASTER
      &                                     *vmask_wet(i,j)
 #  endif
           DVnew2=DVnew
-#  ifdef K3FAST_DUVNBQ2
-     &        +dtfast*DV_nbq(i,j)*2. 
-#  endif
 #  if defined WET_DRY && defined K3FAST_ZETAW
      &        *vmask_wet(i,j)
 #  endif

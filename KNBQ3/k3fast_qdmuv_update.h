@@ -112,7 +112,29 @@
       enddo   !<-- k=0,   
 !$acc end kernels
 !$acc kernels if(compute_on_device) default(present)
-
+#  ifdef K3FAST_AB3
+#    ifdef  K3FAST_2DCONT
+      if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
+#    else
+      if (FIRST_FAST_STEP) then
+#    endif
+        cff1 = 1.0
+        cff2 = 0.0
+        cff3 = 0.0
+#    ifdef  K3FAST_2DCONT
+      elseif (FIRST_FAST_STEP+1.and.FIRST_TIME_STEP) then
+#    else
+      elseif (FIRST_FAST_STEP+1) then
+#    endif
+        cff1 = 1.5
+        cff2 =-0.5
+        cff3 = 0.0
+      else                             ! AB3
+        cff1 = 1.5+mybeta
+        cff2 =-2.0*mybeta-0.5
+        cff3 = mybeta
+      endif
+#  endif
 ! !
       do k=-N_sl+1,N    ! Loop is on w-levels
 ! !
@@ -365,6 +387,18 @@
      !&           *(Hz(i,j,k)+Hz(i-1,j,k))/2.
               endif
 #endif
+! !
+! !................................
+! !  AB3 scheme
+! !................................
+! !
+#  ifdef K3FAST_AB3
+              rhsu_bak(i,j,k,knew)=dum_s
+              dum_s=
+     &     +cff1*rhsu_bak(i,j,k,knew)
+     &     +cff2*rhsu_bak(i,j,k,kstp)
+     &     +cff3*rhsu_bak(i,j,k,kbak)
+#  endif
 ! !
 ! !................................
 ! !  Compute qdmu_nbq
@@ -668,6 +702,18 @@
      !&           *(Hz(i,j,k)+Hz(i,j-1,k))/2.
               endif
 #endif
+! !
+! !................................
+! !  AB3 scheme
+! !................................
+! !
+#  ifdef K3FAST_AB3
+              rhsv_bak(i,j,k,knew)=dum_s
+              dum_s=
+     &     +cff1*rhsv_bak(i,j,k,knew)
+     &     +cff2*rhsv_bak(i,j,k,kstp)
+     &     +cff3*rhsv_bak(i,j,k,kbak)
+#  endif
 ! !
 ! !................................
 ! !  Compute qdmv_nbq

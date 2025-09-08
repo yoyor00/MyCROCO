@@ -9,15 +9,66 @@
 ! !********************************
 ! !
 !$acc kernels if(compute_on_device) default(present)
+#  ifdef K3FAST_AM4c
+#   ifdef K3FAST_2DCONT
+      if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
+#   else
+      if (FIRST_FAST_STEP) then
+#   endif
+        cff0=0.D0
+        cff1=1.D0
+        cff2=0.D0
+        cff3=0.D0
+#   ifdef K3FAST_2DCONT
+      elseif (FIRST_FAST_STEP+1.and.FIRST_TIME_STEP) then
+#   else
+      elseif (FIRST_FAST_STEP+1) then
+#   endif
+        cff0= 1.0833333333333D0
+        cff1=-0.1666666666666D0
+        cff2= 0.0833333333333D0
+        cff3= 0.D0
+      else
+        cff0=0.5D0+2.D0*myepsilon+mygamma+2.D0*myalpha
+        cff1=1.D0-cff0-mygamma-myepsilon
+        cff2=mygamma
+        cff3=myepsilon
+      endif
+#  endif      
         do j=Jstr-1,Jend+1
           do i=Istr-1,Iend+1
+#  ifdef K3FAST_AM4c
+            Dnew(i,j)=h(i,j)
+     &     +cff0*zeta(i,j,knew)
+     &     +cff1*zeta(i,j,kstp)
+     &     +cff2*zeta(i,j,kbak)
+     &     +cff3*zeta(i,j,kold)
+#  else
             Dnew(i,j)=(zeta(i,j,knew)+h(i,j))
+#  endif
 #  ifdef NBQ_MASS
      &                                          *rhobar_nbq(i,j,knew)
 #  endif
           enddo
         enddo
-
+#  ifdef K3FAST_AM4c
+        do j=Jstr,Jend
+          do i=Istr,Iend+1
+             ubar_bak(i,j)=cff0*ubar(i,j,knew)
+     &     +cff1*ubar(i,j,kstp)
+     &     +cff2*ubar(i,j,kbak)
+     &     +cff3*ubar(i,j,kold)
+          enddo
+        enddo
+        do j=Jstr,Jend+1
+          do i=Istr,Iend
+             vbar_bak(i,j)=cff0*vbar(i,j,knew)
+     &     +cff1*vbar(i,j,kstp)
+     &     +cff2*vbar(i,j,kbak)
+     &     +cff3*vbar(i,j,kold)
+          enddo
+        enddo
+#  endif
         do j=Jstr,Jend
           do i=Istr,Iend
             zeta(i,j,knew)=( 
@@ -30,22 +81,38 @@
      &                                          *rhobar_nbq(i,j,kstp)
 #  endif
      &                                + (dtfast*pm(i,j)*pn(i,j)*0.5*(
+#  ifdef K3FAST_AM4c
+     &      (Dnew(i  ,j)+Dnew(i-1,j))*(ubar_bak(i  ,j)
+#  else
      &      (Dnew(i  ,j)+Dnew(i-1,j))*(ubar(i  ,j,knew)
+#  endif
 #  ifdef MRL_WCI
      &                               +ust2d(i  ,j)
 #  endif  
      &                                                 )*on_u(i  ,j)
+#  ifdef K3FAST_AM4c
+     &     -(Dnew(i+1,j)+Dnew(i  ,j))*(ubar_bak(i+1,j)
+#  else
      &     -(Dnew(i+1,j)+Dnew(i  ,j))*(ubar(i+1,j,knew)
+#  endif
 #  ifdef MRL_WCI
      &                               +ust2d(i+1,j)
 #  endif 
      &                                                 )*on_u(i+1,j)
+#  ifdef K3FAST_AM4c
+     &     +(Dnew(i,j  )+Dnew(i,j-1))*(vbar_bak(i,j)
+#  else
      &     +(Dnew(i,j  )+Dnew(i,j-1))*(vbar(i,j  ,knew)
+#  endif
 #  ifdef MRL_WCI
      &                               +vst2d(i,j  )
 #  endif
      &                                                 )*om_v(i,j  )
+#  ifdef K3FAST_AM4c
+     &     -(Dnew(i,j+1)+Dnew(i,j  ))*(vbar_bak(i,j+1)
+#  else
      &     -(Dnew(i,j+1)+Dnew(i,j  ))*(vbar(i,j+1,knew)
+#  endif
 #  ifdef MRL_WCI
      &                               +vst2d(i,j+1)
 #  endif

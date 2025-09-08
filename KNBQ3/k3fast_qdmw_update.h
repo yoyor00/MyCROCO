@@ -213,6 +213,14 @@
      !&           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
               endif
 #endif
+#  ifdef K3FAST_AB3
+              rhsw_bak(i,j,k,knew)=dum_s
+              dum_s=
+     &     +cff1*rhsw_bak(i,j,k,knew)
+     &     +cff2*rhsw_bak(i,j,k,kstp)
+     &     +cff3*rhsw_bak(i,j,k,kbak)
+#  endif
+
 ! ! 
 ! !--------------------------------
 ! !  Update qdmw_nh 
@@ -250,6 +258,13 @@
 #   else
             dum_s = FC3D(i,j,k) - FC3D(i,j,k+1)
 #   endif
+#  ifdef K3FAST_AB3
+              rhsw_bak(i,j,k,knew)=dum_s
+              dum_s=
+     &     +cff1*rhsw_bak(i,j,k,knew)
+     &     +cff2*rhsw_bak(i,j,k,kstp)
+     &     +cff3*rhsw_bak(i,j,k,kbak)
+#  endif
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) + dtfast * dum_s 
           enddo
         enddo
@@ -281,6 +296,13 @@
 !     &      -(cff-abs(cff))*rho_nbq(i,j,k+1)*Hzr_nbq_inv(i,j,k+1)
 !     &                                  )
 #   endif
+#  ifdef K3FAST_AB3
+              rhsw_bak(i,j,k,knew)=dum_s
+              dum_s=
+     &     +cff1*rhsw_bak(i,j,k,knew)
+     &     +cff2*rhsw_bak(i,j,k,kstp)
+     &     +cff3*rhsw_bak(i,j,k,kbak)
+#  endif
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)   
      &                      + dtfast * ( dum_s 
 #   ifdef K3FAST_C3D_WSF
@@ -441,6 +463,13 @@
      !&           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
              endif
 #endif
+#  ifdef K3FAST_AB3
+              rhsw_bak(i,j,N,knew)=dum_s
+              dum_s=
+     &     +cff1*rhsw_bak(i,j,N,knew)
+     &     +cff2*rhsw_bak(i,j,N,kstp)
+     &     +cff3*rhsw_bak(i,j,N,kbak)
+#  endif
 ! !
 ! !--------------------------------
 ! !  Update qdmw(N): fast and slow components

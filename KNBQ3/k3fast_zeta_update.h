@@ -10,11 +10,38 @@
 ! !********************************
 ! ! 
 !$acc kernels if(compute_on_device) default(present)
+#   ifdef K3FAST_AB3
+#    ifdef  K3FAST_2DCONT
+      if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
+#    else
+      if (FIRST_FAST_STEP) then
+#    endif
+        cff1 = 1.0
+        cff2 = 0.0
+        cff3 = 0.0
+#    ifdef  K3FAST_2DCONT
+      elseif (FIRST_FAST_STEP+1.and.FIRST_TIME_STEP) then
+#    else
+      elseif (FIRST_FAST_STEP+1) then
+#    endif
+        cff1 = 1.5
+        cff2 =-0.5
+        cff3 = 0.0
+      else                             ! AB3
+        cff1 = 1.5+mybeta
+        cff2 =-2.0*mybeta-0.5
+        cff3 = mybeta
+      endif
+#   endif
 #   ifndef K3FAST_SPDUP
       if (IstrU.le.Iend) then
         do j=Jstr,Jend
           do i=IstrU-1,Iend+1     
+#   ifdef K3FAST_AB3
+            cff=(qdmu_nbq(i,j,N)
+#   else
             usurf_nbq(i,j)=(qdmu_nbq(i,j,N)
+#   endif
      &                     *2./(Hz(i,j,N)+Hz(i-1,j,N))
 
 #   ifdef MRL_WCI
@@ -27,6 +54,12 @@
 #   ifdef MASKING
      &                     *umask(i,j) 
 #   endif
+#   ifdef K3FAST_AB3
+         usurf_nbq(i,j)=cff1*cff
+     &     +cff2*usurf_nbq_bak(i,j,kstp)
+     &     +cff3*usurf_nbq_bak(i,j,kbak)
+         usurf_nbq_bak(i,j,knew)=cff        
+#   endif
           enddo 
         enddo 
       endif
@@ -34,7 +67,11 @@
       if (JstrV.le.Jend) then
         do j=JstrV-1,Jend+1
           do i=Istr,Iend     
+#   ifdef K3FAST_AB3
+            cff=(qdmv_nbq(i,j,N)
+#   else
             vsurf_nbq(i,j)=(qdmv_nbq(i,j,N)
+#   endif
      &                     *2./(Hz(i,j,N)+Hz(i,j-1,N))
 #   ifdef MRL_WCI
      &                     +vst(i,j,N)
@@ -46,6 +83,12 @@
 #   ifdef MASKING
      &                     *vmask(i,j) 
 #   endif
+#   ifdef K3FAST_AB3
+         vsurf_nbq(i,j)=cff1*cff
+     &     +cff2*vsurf_nbq_bak(i,j,kstp)
+     &     +cff3*vsurf_nbq_bak(i,j,kbak)
+        vsurf_nbq_bak(i,j,knew)=cff  
+#   endif
           enddo
         enddo 
       endif
@@ -53,19 +96,29 @@
 
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
-          wsurf_nbq(i,j)=(qdmw_nbq(i,j,N)         
+#   ifdef K3FAST_AB3
+          cff=(qdmw_nbq(i,j,N)       
+#   else  
+          wsurf_nbq(i,j)=(qdmw_nbq(i,j,N)     
+#   endif
 #   ifdef NBQ_MASS     
      &                       /(1.+rho_grd(i,j,N))
 #   endif
      &                       *Hzw_nbq_inv(i,j,N)
 !         wsurf_nbq(i,j)=(We(i,j,N)*pm(i,j)*pn(i,j)   ! CAUTION
-#  ifdef MRL_WCI
+#   ifdef MRL_WCI
      &                     +wst(i,j,N)*rmask_wet(i,j)
-#  endif
+#   endif
      &                    )
-#  ifdef MASKING
+#   ifdef MASKING
      &                       *rmask(i,j) 
-#  endif
+#   endif
+#   ifdef K3FAST_AB3
+         wsurf_nbq(i,j)=cff1*cff
+     &     +cff2*wsurf_nbq_bak(i,j,kstp)
+     &     +cff3*wsurf_nbq_bak(i,j,kbak)
+         wsurf_nbq_bak(i,j,knew)=cff  
+#   endif      
         enddo
       enddo 
 !$acc end kernels   
@@ -154,7 +207,7 @@
       enddo
 #   endif /* !K3FAST_SPDUP */
 #   ifdef KNHINT_ZETAW
-      if (iic==1.and.iif==1) dzeta_nbq=0.
+      if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) dzeta_nbq=0.
 #   endif
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
@@ -188,6 +241,7 @@
 #    endif
         enddo
       enddo
+#   undef zab3
 !$acc end kernels
 # endif /* ! K3FAST_ZETAW && ! KNHINT_ZETAW*/
 
@@ -225,7 +279,7 @@
 #  endif
 !$acc kernels if(compute_on_device) default(present)
 #  ifdef KNHINT_ZETAW
-!     if (iic==1.and.iif==1) zeta=0.
+!     if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) zeta=0.
 #  endif
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend

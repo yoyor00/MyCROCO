@@ -1876,6 +1876,9 @@
 !
 !======================================================================
 !
+# ifdef K3FAST_COUPLING_SCH1
+      if (iif.ne.0) then
+# endif
        do j=Jstr,Jend
         do i=IstrU,Iend
           rufrc(i,j)=ru(i,j,1)
@@ -1917,6 +1920,9 @@
         endif
 
       enddo      !<-- j loop
+# ifdef K3FAST_COUPLING_SCH1
+      endif
+# endif
 
 !$acc end kernels
 

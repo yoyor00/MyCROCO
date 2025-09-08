@@ -156,16 +156,22 @@ C$    integer omp_get_thread_num
           z_w(i,j,0)=-h(i,j)    ! ATTENTION calcul ici! FRANCIS
 #  else
         ! z_w(i,j,-N_sl)=-h(i,j)*(1.+float(N_sl)/float(N))
-#  ifdef M3FAST
-            zetatmp=zeta(i,j,knew)
+#  if defined M3FAST || defined K3FAST 
+            zetatmp=zeta(i,j,knew)*0.
 #  else
             zetatmp=Zt_avg1(i,j)
+#  endif
+#  ifdef NEW_S_COORD
+            htmp=abs(h(i,j))
+#  else
+            htmp=h(i,j)
 #  endif
 #  ifdef NEW_S_COORD            
             cff_w =hc*sc_w(-N_sl)
             cff1_w=Cs_w(-N_sl)
-            z_w0=cff_w+cff1_w*h(i,j)
-            z_w(i,j,-N_sl)=z_w0*h(i,j)*hinv(i,j)+zetatmp            
+            z_w0=cff_w+cff1_w*htmp
+            z_w(i,j,-N_sl)=z_w0*h(i,j)*hinv(i,j)+zetatmp         
+     &                                       *(1.+z_w0*hinv(i,j))    
 #  else  
             cff_w =hc*(sc_w(-N_sl)-Cs_w(-N_sl))
             cff1_w=Cs_w(-N_sl)
@@ -173,7 +179,6 @@ C$    integer omp_get_thread_num
 #  endif            
             z_w0=cff_w+cff1_w*h(i,j) 
             z_w(i,j,-N_sl)=z_w0*h(i,j)*hinv(i,j)+zetatmp
-     &                                       *(1.+z_w0*hinv(i,j)) 
 #  endif
         enddo
         do k=-N_sl+1,N,+1
@@ -261,6 +266,7 @@ C$    integer omp_get_thread_num
 #  undef J_RANGE
 
 #  if defined BD_EXCHANGE
+#   ifndef K3FAST_SEDLAYERS
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -269,11 +275,26 @@ C$    integer omp_get_thread_num
      &                        Hz(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_bak(START_2D_ARRAY,1))
-#   ifdef NBQ_MASS
+#    ifdef NBQ_MASS
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
+#    endif
+#   else 
+      call exchange_w3d_sedlay_tile (Istr,Iend,Jstr,Jend, 
+     &                        z_w(START_2D_ARRAY,-N_sl))
+      call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
+     &                        z_r(START_2D_ARRAY,-N_sl+1))
+      call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz(START_2D_ARRAY,-N_sl+1))
+      call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz_bak(START_2D_ARRAY,-N_sl+1))
+#    ifdef NBQ_MASS
+      call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
+     &                        Hzr(START_2D_ARRAY,-N_sl+1))
+#    endif
 #   endif
 #  endif
+
       return
       end
 

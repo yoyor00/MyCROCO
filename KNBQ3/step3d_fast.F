@@ -172,7 +172,7 @@ C$    trd=omp_get_thread_num()
 ! ! PART A.2: Local variables
 ! !*********************************************************************
 ! ! 
-      integer Istr,Iend,Jstr,Jend, i,j,k, kbak,kold,
+      integer Istr,Iend,Jstr,Jend, i,j,k,
      &        imin,imax,jmin,jmax,
      &        kp1
 # ifdef MPI
@@ -391,6 +391,19 @@ C$    trd=omp_get_thread_num()
 #  else
 #   define NSTEP_GRID .or. .true. 
 #  endif
+! !
+! !---------------------------------------------------------------------
+! ! AB3 and AM4 parameters
+! !---------------------------------------------------------------------
+! !
+# if defined TANK || defined AgAc
+         myalpha   = 0.01
+# else
+         myalpha   = 0.1
+# endif
+         myepsilon = 0.00976186 - 0.13451357*myalpha
+         mygamma   = 0.08344500 - 0.51358400*myalpha
+         mybeta    = 0.281105 
 ! !
 ! !*********************************************************************
 ! !*********************************************************************
@@ -742,6 +755,44 @@ C$    trd=omp_get_thread_num()
          enddo
        enddo
       endif
+#   ifdef K3FAST_AM4b
+#    ifdef K3FAST_2DCONT
+      if (FIRST_FAST_STEP .and. FIRST_TIME_STEP) then
+#    else
+      if (FIRST_FAST_STEP) then        
+#    endif
+        cff0=0.D0
+        cff1=1.D0
+        cff2=0.D0
+        cff3=0.D0
+#    ifdef K3FAST_2DCONT
+      elseif (FIRST_FAST_STEP+1 .and. FIRST_TIME_STEP) then
+#    else
+      elseif (FIRST_FAST_STEP+1) then        
+#    endif
+        cff0= 1.0833333333333D0
+        cff1=-0.1666666666666D0
+        cff2= 0.0833333333333D0
+        cff3= 0.D0
+      else
+        cff0=0.5D0+2.D0*myepsilon+mygamma+2.D0*myalpha
+        cff1=1.D0-cff0-mygamma-myepsilon
+        cff2=mygamma
+        cff3=myepsilon
+      endif
+        do k=1-N_sl,N
+         do j=JstrV-2,Jend+1
+           do i=IstrU-2,Iend+1            
+            thetadiv_nbq_bak(i,j,k,knew)=thetadiv_nbq(i,j,k)
+            thetadiv_nbq(i,j,k)=
+     &          cff0*thetadiv_nbq(i,j,k)
+     &         +cff1*thetadiv_nbq_bak(i,j,k,kstp)
+     &         +cff2*thetadiv_nbq_bak(i,j,k,kbak)
+     &         +cff3*thetadiv_nbq_bak(i,j,k,kold)    
+           enddo
+         enddo
+       enddo
+#   endif
 #  endif
 !$acc end kernels  
 # endif
@@ -765,7 +816,7 @@ C$    trd=omp_get_thread_num()
 ! !               for divergence, not theta)
 ! !--------------------------------------------------------------------
 ! !
-# ifdef K3FAST_NOBPG
+# if defined K3FAST_NOBPG && defined NBQ_IMP
 !$acc kernels if(compute_on_device) default(present)    
           thetadiv_nbq=0.
 !$acc end kernels  

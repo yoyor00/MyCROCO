@@ -28,12 +28,23 @@
           cff1=1.                        ! predictor sub-step: here
         elseif (FIRST_TIME_STEP+1) then  ! forcing term "rufrc" is
           cff3= 0.                       ! computed as instantaneous
+# ifdef K3FAST_COUPLING_SCH1
+          cff2=-1.                       ! value at 3D time step
+          cff1= 2.                       ! "nstp" first, and then
+# else
           cff2=-0.5                      ! value at 3D time step
           cff1= 1.5                      ! "nstp" first, and then
+# endif
         else                             ! extrapolated half-step
+# ifdef K3FAST_COUPLING_SCH1
+          cff3= 0.                       ! forward using  AM3-like
+          cff2=-1.                       ! weights optimized for
+          cff1=2.                        ! maximum stability (with
+# else
           cff3= 0.281105                 ! forward using  AM3-like
           cff2=-0.5-2.*cff3              ! weights optimized for
           cff1= 1.5+cff3                 ! maximum stability (with
+# endif
         endif                            ! special care for startup)
 !$acc kernels if(compute_on_device) default(present)
 # if defined K3FAST_COUPLING2D  || defined KNHINT
@@ -41,7 +52,9 @@
          do i=IstrU,Iend
            cff=rufrc(i,j)-rubar(i,j)
            rufrc(i,j)=cff1*cff + cff2*rufrc_bak(i,j,3-nstp)
+#  ifndef K3FAST_COUPLING_SCH1
      &                         + cff3*rufrc_bak(i,j,nstp)
+#  endif
            rufrc_bak(i,j,nstp)=cff
          enddo
         enddo
@@ -58,7 +71,9 @@
 !#  endif
 # endif
            ru_int2d_nbq(i,j)=cff1*cff+cff2*ru_int2d_nbq_bak(i,j,3-nstp)
+#  ifndef K3FAST_COUPLING_SCH1
      &                               +cff3*ru_int2d_nbq_bak(i,j,nstp)
+#  endif
            ru_int2d_nbq_bak(i,j,nstp)=cff
          enddo
         enddo
@@ -68,7 +83,9 @@
          do i=Istr,Iend
            cff=rvfrc(i,j)-rvbar(i,j)
            rvfrc(i,j)=cff1*cff + cff2*rvfrc_bak(i,j,3-nstp)
+#  ifndef K3FAST_COUPLING_SCH1
      &                         + cff3*rvfrc_bak(i,j,nstp)
+#  endif
            rvfrc_bak(i,j,nstp)=cff
          enddo
         enddo
@@ -85,7 +102,9 @@
 !#  endif
 # endif
            rv_int2d_nbq(i,j)=cff1*cff+cff2*rv_int2d_nbq_bak(i,j,3-nstp)
+#  ifndef K3FAST_COUPLING_SCH1
      &                               +cff3*rv_int2d_nbq_bak(i,j,nstp)
+#  endif
            rv_int2d_nbq_bak(i,j,nstp)=cff
          enddo
         enddo

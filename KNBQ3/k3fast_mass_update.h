@@ -11,11 +11,52 @@
 ! !
 # ifdef K3FAST_RHO
 !$acc kernels if(compute_on_device) default(present)
+#  ifdef K3FAST_AM4             
+#   ifdef K3FAST_2DCONT
+      if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
+#   else
+      if (FIRST_FAST_STEP) then
+#   endif
+        cff0=0.D0
+        cff1=1.D0
+        cff2=0.D0
+        cff3=0.D0
+#   ifdef K3FAST_2DCONT
+      elseif (FIRST_FAST_STEP+1.and.FIRST_TIME_STEP) then
+#   else
+      elseif (FIRST_FAST_STEP+1) then
+#   endif
+        cff0= 1.0833333333333D0
+        cff1=-0.1666666666666D0
+        cff2= 0.0833333333333D0
+        cff3= 0.D0
+      else
+        cff0=0.5D0+2.D0*myepsilon+mygamma+2.D0*myalpha
+        cff1=1.D0-cff0-mygamma-myepsilon
+        cff2=mygamma
+        cff3=myepsilon
+      endif
+#  endif
       do k=-N_sl+1,N
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
+#  ifdef K3FAST_AM4             
+             thetadiv_nbq_bak2(i,j,k,knew)=thetadiv_nbq(i,j,k)
+             thetadiv_nbq(i,j,k)=
+     &          cff0*thetadiv_nbq(i,j,k)
+     &         +cff1*thetadiv_nbq_bak2(i,j,k,kstp)
+     &         +cff2*thetadiv_nbq_bak2(i,j,k,kbak)
+     &         +cff3*thetadiv_nbq_bak2(i,j,k,kold)
+#  endif     
             rho_nbq(i,j,k) = rho_nbq(i,j,k)  
      &                       - dtfast*thetadiv_nbq(i,j,k)
+#  ifdef KNHINT_CORR 
+	               cff=alphaw_nbq*0.5
+     &                *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
+     &                     /(z_r(i,j,N-10)-z_r(i,j,N))**2)
+               rho_nbq(i,j,k)=rho_nbq(i,j,k)
+     &                        -rho_nbq(i,j,k)*cff
+#  endif
           enddo
         enddo
       enddo

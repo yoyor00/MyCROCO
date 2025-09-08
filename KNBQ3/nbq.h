@@ -143,6 +143,14 @@
       common /nbq_usurf/ usurf_nbq
       real vsurf_nbq(GLOBAL_2D_ARRAY)
       common /nbq_vsurf/ vsurf_nbq 
+#   ifdef K3FAST_AB3
+      real usurf_nbq_bak(GLOBAL_2D_ARRAY,4)
+      common /nbq_usurf_bak/ usurf_nbq_bak
+      real vsurf_nbq_bak(GLOBAL_2D_ARRAY,4)
+      common /nbq_vsurf_bak/ vsurf_nbq_bak
+      real wsurf_nbq_bak(GLOBAL_2D_ARRAY,4)
+      common /nbq_wsurf_bak/ wsurf_nbq_bak
+#    endif
 #  endif
 #  ifdef NBQ_NUDGING
       real NBQnudgcof(GLOBAL_2D_ARRAY)
@@ -181,6 +189,14 @@
 #  endif 
       real thetadiv_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_thetadiv_nbq/ thetadiv_nbq
+#  ifdef K3FAST_AM4b
+      real thetadiv_nbq_bak(GLOBAL_2D_ARRAY,NSLP1N,4)
+      common /nbq_thetadiv_nbq_bak/ thetadiv_nbq_bak
+#  endif
+#  ifdef K3FAST_AM4
+      real thetadiv_nbq_bak2(GLOBAL_2D_ARRAY,NSLP1N,4)
+      common /nbq_thetadiv_nbq_bak2/ thetadiv_nbq_bak2
+#  endif
 #  if defined NBQ_HZ_PROGNOSTIC 
       real thetadiv2_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_thetadiv2_nbq/ thetadiv2_nbq
@@ -386,4 +402,21 @@
       common /nbq_myslope/myslope
       real myslope2(GLOBAL_2D_ARRAY)
       common /nbq_myslope2/myslope2
+#endif
+#ifdef K3FAST_AM4c
+      real ubar_bak(GLOBAL_2D_ARRAY)
+      common /ocean_ubar_bak/ubar_bak
+      real vbar_bak(GLOBAL_2D_ARRAY)
+      common /ocean_vbar_bak/vbar_bak
+#endif     
+      integer kbak,kold
+      common /nbq_stp1/kbak
+      common /nbq_stp2/kold
+#ifdef K3FAST_AB3
+      real rhsu_bak(GLOBAL_2D_ARRAY,NSLP1N,4)
+      common /rhsu_bak/ rhsu_bak
+      real rhsv_bak(GLOBAL_2D_ARRAY,NSLP1N,4)
+      common /rhsv_bak/ rhsv_bak
+      real rhsw_bak(GLOBAL_2D_ARRAY,NSLN,4)
+      common /rhsw_bak/ rhsw_bak
 #endif

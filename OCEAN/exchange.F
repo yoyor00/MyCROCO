@@ -158,7 +158,9 @@
 #   undef JSTART
 #   undef exchange_3d_tile
 #   undef exchange_3d_3pts_tile
+#  undef KSTART
 
+#   define KSTART (-N_sl)
 #   define exchange_3d_tile exchange_w3d_sedlay_tile
 #   define exchange_3d_3pts_tile exchange_w3d_sedlay_3pts_tile
 #   define JSTART JstrR

@@ -14,20 +14,21 @@
 ! ! computation of barotropic 
 ! ! pressure-gradient
 ! !
-# if defined TANK || defined AgAc
-         myalpha   = 0.01
-# else
-         myalpha   = 0.1 
-# endif
-      myepsilon = 0.00976186 - 0.13451357*myalpha
-      mygamma   = 0.08344500 - 0.51358400*myalpha
 !
+# ifdef K3FAST_2DCONT
+      if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
+# else
       if (FIRST_FAST_STEP) then
+# endif
         cff0=0.                  !---> Compute pressure-gradient
         cff1=1.                  !     terms using just zeta(:,:,kstp)
         cff2=0.
         cff3=0.
+# ifdef K3FAST_2DCONT
+      elseif (FIRST_FAST_STEP+1.and.FIRST_TIME_STEP) then
+# else
       elseif (FIRST_FAST_STEP+1) then
+# endif
         cff0= 1.0833333333333    ! AM3 backward scheme
         cff1=-0.1666666666666    ! with coefficients chosen for
         cff2= 0.0833333333333    ! maximum stability, while maintaining
@@ -37,10 +38,6 @@
         cff1=1.-cff0-mygamma-myepsilon            ! with implicit diffusion
         cff2=mygamma                              ! given by myalpha
         cff3=myepsilon
-    !cff0=0.614
-	!cff1=0.285
-	!cff2=0.088
-	!cff3=0.013
       endif
 # endif  /* K3FAST_AM4 */
 !
