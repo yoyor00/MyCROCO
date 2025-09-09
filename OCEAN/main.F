@@ -37,9 +37,21 @@
 #ifdef MUSTANG
           USE plug_MUSTANG_CROCO, ONLY : mustang_init_main
 #endif
+#ifdef LAGRANGIAN
+          USE plug_LAGRANGIAN, ONLY : lagrangian_init_main
+#ifdef MPI
+          USE plug_LAGRANGIAN, ONLY : LAGRANGIAN_MPI_SETUP_main
+#endif 
+#endif 
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_init_main
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
+#endif
+#ifdef DEB_IBM
+            USE plug_ibm,        ONLY : ibm_init_main
+#ifdef MPI
+            USE plug_LAGRANGIAN, ONLY : LAGRANGIAN_MPI_SETUP_main
+#endif
 #endif
 #ifdef ONLINE_ANALYSIS
           USE module_interface_oa, only : init_parameter_oa
@@ -482,6 +494,36 @@ CR      write(*,*)  ' -5' MYID0
 #endif
 !
 !----------------------------------------------------------------------
+!  LAGRANGIAN : initialization
+!----------------------------------------------------------------------
+!
+#ifdef LAGRANGIAN 
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+#ifdef MPI
+        call LAGRANGIAN_MPI_SETUP_main(tile)
+#endif
+        call LAGRANGIAN_init_main (tile)
+      enddo
+CR      write(*,*)  ' -5' MYID0
+#endif
+!
+
+!----------------------------------------------------------------------
+!  DEB_IBM : initialization
+!----------------------------------------------------------------------
+!
+#ifdef DEB_IBM 
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+#ifdef MPI
+        call LAGRANGIAN_MPI_SETUP_MAIN(tile)
+#endif
+        call ibm_init_main (tile)
+      enddo
+CR      write(*,*)  ' -5' MYID0
+#endif
+
 ! OBSTRUCTION : initialization
 !----------------------------------------------------------------------
 !

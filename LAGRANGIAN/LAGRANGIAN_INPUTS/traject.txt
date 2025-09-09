@@ -1,0 +1,36 @@
+nom de la tache
+latitude longitude de la tache en degre dixieme
+rayon de la tache en metre
+nombre de particule emise sur (un disque)
+coefficient de dispersion horizontal de ces particules en m2/s
+**************************************************************
+bouee1
+47.20 -3.35
+100
+1
+0
+**********
+bouee2
+45.00 -4.00
+100
+1
+0
+**********
+bouee3
+44.20 -7.00
+100
+1
+0
+**********
+bouee4
+43.00 -5.60
+100
+1
+0
+**********
+bouee5
+44.50 -5.60
+100
+1
+0
+**********

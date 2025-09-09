@@ -2040,6 +2040,18 @@ c        close(testunit)
         lstr=lenstr(obstname)
 #endif /* OBSTRUCTION */
 
+#if defined LAGRANGIAN
+      elseif (keyword(1:kwlen).eq.'lagrangian') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) lagname
+#endif /* LAGRANGIAN */
+
+#if defined DEB_IBM
+      elseif (keyword(1:kwlen).eq.'deb_ibm') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) debibmname
+#endif /* DEB_IBM */
+
 #ifdef MRL_WCI
 !
 ! MRL wave-current interaction variables history fields
@@ -3399,7 +3411,21 @@ c        close(testunit)
      &         'Input file for Obstruction module:' ,
      &          obstname
 #endif /* OBSTRUCTION */
-    
+
+#if defined LAGRANGIAN
+          lstr=lenstr(lagname)
+          MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for Lagrangian :' ,
+     &          lagname(1:lstr)
+#endif /* LAGRANGIAN */
+
+#if defined DEB_IBM
+          lstr=lenstr(debibmname)
+          MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for DEB_IBM :' ,
+     &          debibmname(1:lstr)
+#endif /* DEB_IBM */
+
 #ifdef MRL_WCI
           MPI_master_only write(stdout,'(/1x,A,3(/6x,l1,2x,A))')
      &    'Fields to be saved in MRL-WCI 2D history  (T/F)',

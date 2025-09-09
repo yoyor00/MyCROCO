@@ -1,0 +1,122 @@
+:=============================================================================
+:         ENREGISTREMENT DES PARAMETRES REGISSANT L IBM SOUS FORME DE NAMELIST
+:         INPUT PARAMETERS NAMELIST FOR IBM EQUATIONS
+:=============================================================================
+:
+:-----------------------------------------------------------------------------
+: namibmin	        INPUT   
+:-----------------------------------------------------------------------------
+:
+: file_trajec : name of file with characteristics for each patch
+: itypetraj   : type of definition of patch initial position: 
+:  	      1: circle, 2: rectangle, 3:netcdf
+:	      choose depending on the file file_trajec you use in inputs directory
+: ndtz        : number of time-step within the hydrodynamic model time step
+:        See (Ross and Sharples, 2004, Limnol.Oceanogr.) for sensitivity analysis
+:        To choose depending on the model time resolution, dt/ndtz should be of the order of few seconds
+:-----------------------------------------------------------------------------
+ &namibmin
+	file_trajec = 'ibm_patch.dat'
+	itypetraj =   3 
+	ndtz  = 50 /
+:
+:-----------------------------------------------------------------------------
+: namibmrestart	SAVE-RESTART CONDITIONS (Not ready yet)
+:-----------------------------------------------------------------------------
+:
+: ibm_restart     : patch is read from restart file
+: ibm_time        : use time of restart file
+:
+:-----------------------------------------------------------------------------
+:
+ &namibmrestart
+	ibm_restart = .false.
+	ibm_l_time  = .false. /
+:
+:-----------------------------------------------------------------------------
+: namibmbio	BIO PARAMETERS FOR THE IBM 
+:-----------------------------------------------------------------------------
+:
+: w_max   : maximum vertical velocity (m.s-1)
+: alpha_w : factor of convergence for the Hyperbolic tangent fonction used to 
+:  	    weight velocity to a target depth for migration
+:-----------------------------------------------------------------------------
+:
+ &namibmbio
+	w_max = 0.0
+	alpha_w  = 0.8 /
+:
+:-----------------------------------------------------------------------------
+: namibmout	OUTPUT PARAMETERS FOR THE IBM
+:-----------------------------------------------------------------------------
+:
+: repro             : activate or deactivate reproduction of species
+: dt_spawn          : spawning interval (hours)
+: dt_save           : saving interval for new particles
+: max_part          : maximum number of particles in NetCDF output file
+: duration_ibm_sp   : number of max days each species can live,
+: fish_mort         : applying fishing mortality (true ou false)
+: fishing_strategy  : fishing strategy: 'historical' for historical time series; 'HCR' for harvest control rule; 'catch' for total allowable catch; or F_eval for ... ?
+: density_dependent : Logical (mortality on larval stage as Somarakis)
+: multiplier_tac    : multiplicative factor to regulate catches, between 0 and 1
+: month_sp_season   : month at which new spawning season starts, on which new patch creation depends
+:-----------------------------------------------------------------------------
+ &namibmout
+    repro             = .true.
+	dt_spawn          = 72
+    dt_save           = 24
+	max_part          = 25000
+    duration_ibm_anc  = 1460
+    duration_ibm_sar  = 2250
+	fish_mort         = .true.
+	fishing_strategy  = 'historical'
+	multiplier_tac    = 0.8
+	density_dependent = .true./
+:
+:-----------------------------------------------------------------------------
+: namibmdeb	DEB PARAMETERS FOR THE IBM (not ready yet)
+:-----------------------------------------------------------------------------
+:
+:	! Configuration parameters for the DEB
+:	debuse     : logical, if false - only larvae drifting, if true - whole life cycle
+:	F_Fix      : logical, if false then read food from a provided file
+:	f_fix      : f (f=X/X+K) for DEB if F_Fix = True
+:	file_NBSS  : file with slope and intercept for NBSS (from MARS, not linked with CROCO)
+:	file_food  : file with offline zooplankton food 
+:   frac_death : Logical. Fraction of individuals dying within a super individual (.true.) or all (.false.) 
+:
+:-----------------------------------------------------------------------------
+:
+ &namibmdeb
+	debuse    =.true.
+	F_Fix     =.false.
+	ffix      = 0.8
+	file_NBSS ='../inputs/NBSS_manga.nc'
+	file_food ='ibm_zooc.nc' 
+	frac_deb_death = .true./
+:
+:-----------------------------------------------------------------------------
+: namibmparam	DEB PARAMETERS FOR THE IBM
+:-----------------------------------------------------------------------------
+:
+:	! Set file parameters for the DEB
+:   fileanchois      : file with DEB parameters for anchovy
+:   filesardine      : file with DEB parameters for sardine
+:   catch_anc_bob    : file with monthly anchovy catches in Bay of Biscaye 
+:   catch_sar_bob    : file with monthly sardine catches in Bay of Biscaye 
+:   fileprobadistrib : file with distribution probability of adults fish
+:   nbSizeClass      : number of fish size class in fileprobadistrib
+:   sizemin          : Minimal size of fish in fileprobadistrib
+:-----------------------------------------------------------------------------
+:
+ &namibmfrc
+	fileanchovy          = '../croco-mustang/FOIL_inputs/deb_parameters_anc.txt'
+	filesardine          = '../croco-mustang/FOIL_inputs/deb_parameters_sar.txt'
+	catch_anc_bob        = '../inputs/catch_anc_bob.txt'
+	catch_sar_bob        = '../inputs/catch_sar_bob.txt'
+	fileprobadistrib_anc = '../inputs/probadistrib_1_2.nc'
+	nbSizeClass_anc      = 36
+	sizemin_anc          = 3.5
+	fileprobadistrib_sar = '../inputs/probadistrib_1_2.nc'
+    nbSizeClass_sar      = 36
+    sizemin_sar          = 3.5/
