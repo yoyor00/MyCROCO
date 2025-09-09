@@ -279,15 +279,15 @@
 ! !
 # ifdef NBQ_MASS
 !$acc kernels if(compute_on_device) default(present)
-      if (LAST_FAST_STEP) then
-        do k=1,N
-          do j=JstrV-2,Jend+1
-            do i=IstrU-2,Iend+1
-              rho_grd(i,j,k)=rho(i,j,k)
-            enddo
-           enddo
-         enddo
-      endif
+!     if (LAST_FAST_STEP) then
+!       do k=1,N
+!         do j=JstrV-2,Jend+1
+!           do i=IstrU-2,Iend+1
+!             rho_grd(i,j,k)=rho(i,j,k)
+!           enddo
+!          enddo
+!        enddo
+!     endif
 !$acc end kernels
 # endif
 ! !
