@@ -14,22 +14,16 @@
 #ifndef CHILD_SPG
       subroutine t3dmix (tile)
 
-# ifdef MUSTANG
-      USE comsubstance, ONLY : nv_grav,nvp
-# endif
       implicit none
       integer tile, itrc, trd, omp_get_thread_num
+
+
 # include "param.h"
 # include "ncscrum.h"
 # include "private_scratch.h"
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       do itrc=1,NTRA_T3DMIX
-
-# ifdef MUSTANG
-!  With MUSTANG, mixing of sediments is done in step3d_t
-       if (itrc.lt.itsubs1+nv_grav .or. itrc.gt.itsubs1+nvp) then
-# endif
 
 # ifdef AGRIF
         if (AGRIF_Root()) then
@@ -74,10 +68,6 @@
      &          ,A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd),A3d(1,8,trd)
      &                    )
 # endif   /* AGRIF */
-
-# ifdef MUSTANG
-       endif
-# endif
 
       enddo
       return
@@ -145,6 +135,10 @@
 !
 !========================================================================
 !
+#  ifdef MUSTANG
+      USE comMUSTANG,  ONLY : flx_s2w_CROCO
+#   endif
+
       implicit none
 #include "param.h"
 #include "ncscrum.h"
@@ -167,6 +161,9 @@
      &       BC (PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &       FFC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
 #endif
+#ifdef MUSTANG
+     &       GC (PRIVATE_1D_SCRATCH_ARRAY,0:N),
+#endif
      &       FX (PRIVATE_2D_SCRATCH_ARRAY),
      &       FE (PRIVATE_2D_SCRATCH_ARRAY),
      &       FC (PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -179,6 +176,12 @@
      &      SLOPEYQ1,SLOPEYQ2,SLOPEYQ3,SLOPEYQ4
        real, dimension(0:4), parameter :: wgt
      &   =(/0.,1.,0.5,0.33333333333,0.25/)
+
+#  ifdef MUSTANG
+      integer isubstep,nbsubstep
+      real cflm,cfl_loc,dz_cflm,ws_cflm
+#  endif
+
 #include "grid.h"
 #include "ocean3d.h"
 #include "mixing.h"
@@ -892,8 +895,12 @@
         enddo
 # endif
 # define FC FFC
+# ifdef MUSTANG
+# include "t3dmix_tridiagonal_substance.h"
+# else
 # include "t3dmix_tridiagonal.h"
-# undef FC   
+# endif
+# undef FC 
       ENDDOLOOP2D
 #endif
 

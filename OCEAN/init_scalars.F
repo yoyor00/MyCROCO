@@ -5081,6 +5081,33 @@ CR     &                          ,indxbioFlux+NFlux_lightlimitP1-1
 # endif /* PISCES */
 #endif /* DIAGNOSTICS_BIO */
 
+#if defined BIOLink_PAR_eval
+
+CR      write(stdout,'(1x,A,I3)') 'indxO2sat =',indxO2sat
+      vname(1,indxPAR)='PAR                                   '
+      vname(2,indxPAR)='Photosynthetic available radiation    '
+      vname(3,indxPAR)='W.m-2.s-1                  '
+      vname(4,indxPAR)='PAR, scalar, series                   '
+      vname(5,indxPAR)='                                        '
+      vname(6,indxPAR)='lat_rho lon_rho                         '
+      vname(7,indxPAR)='                                        '
+
+#endif /* BIOLink_PAR_EVAL */
+
+#if defined BLOOM
+
+      do i=1,4
+CR      write(stdout,'(1x,A,I3)') 'indxO2sat =',indxO2sat
+        vname(1,indxBLMdiag2d+i)='diag_2d                              '
+        vname(2,indxBLMdiag2d+i)='2d diagnostic ( but which one ?)    '
+        vname(3,indxBLMdiag2d+i)='Some mysteries are to remain unsolved'
+        vname(4,indxBLMdiag2d+i)='diag_2d, scalar, series              '
+        vname(5,indxBLMdiag2d+i)='                                     '
+        vname(6,indxBLMdiag2d+i)='lat_rho lon_rho                      '
+        vname(7,indxBLMdiag2d+i)='                                     '
+      end do
+#endif /* BLOOM */
+
 #if defined TCLIMATOLOGY && !defined ANA_TCLIMA && defined TRACERS
 !
 !     flag to read in climatology for tracer type variables.

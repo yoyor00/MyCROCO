@@ -1,0 +1,30 @@
+ ===================== Eco3M configuration used: 
+ Name of the configuration of the biogeochemical model: Eco3M_3:3:6         
+  
+ ================ Eco3M: Initialisation of the model configuration ================
+ Configuration file: /home/mazoyer/CROCO/SRC/croco/croco_git_dev_2022_BIOLink_ok/ECO3M/CONFIG_ECO3M/modele.def
+
+ Number of model processes:           20
+ Description of the PROC_MOD array
+ Id : Name : Function name : Number of par. : Par.
+  1  : gpp : f_ppb_han      6  : a_chl|phi_max_C|tau|sig_ps2|k_d|k_r|
+  2  : uGcm : f_fQPP_capmey      3  : indX|Qmin|K_Q|
+  3  : uGd : f_fQPP_droop      3  : indX|Qmin|valmin|
+  4  : uGg : f_fQPP_geid      3  : indX|Qmin|Qmax|
+  5  : respPBB : f_respB_vichi07      3  : rbact|bge|QTEN|
+  6  : pchl : f_pchl_bak06     14  : thetaN_max|alpha_star|inut1|Vm1|K1|iXorC1|inut2|Vm2|K2|iXorC2|inut3|Vm3|K3|iXorC3|
+  7  : gbp : f_gbp_monod      3  : inut|k_demi|mu_bact_NR|
+  8  : upt : f_upt_monod_Qmax      4  : inut|k_demi|Qmax|mu_max|
+  9  : uQ : f_fQupt_geid      5  : indX|Qmin|Qmax|n|valmin|
+ 10  : inhib : f_inhib_harrison      2  : ki|im|
+ 11  : f_ChlC : f_ChlC_cloern_95      2  : inut|KN|
+ 12  : tfuncP : f_tfunc_Lacroix02      3  : beta|t_opt|t_let|
+ 13  : tfuncB : f_tfunc_Q10      1  : QTEN|
+ 14  : rem : f_rem      1  : tx_rem|
+ 15  : nit : f_nitrif_vichi07diaz      2  : tx_nit|QTEN|
+ 16  : mort : f_mort_linear      1  : kmort|
+ 17  : pred : f_mort_quadratique      1  : kmort|
+ 18  : graz : f_graz_C_Fasham90     22  : ipred|iprey|Gmax|kzoo|cminprey|nbprey|ind1|Pref1|ind2|Pref2|ind3|Pref3|ind4|Pref4|ind5|Pref5|ind6|Pref6|ind7|Pref7|ind8|Pref8|
+ 19  : grazC2X : f_graz_C2X      2  : ipred|iprey|
+ 20  : f_extinc : f_extinc_morel93      2  : aa0|kk0|
+

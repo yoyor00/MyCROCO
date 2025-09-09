@@ -153,6 +153,13 @@
 !
 ! ** DIAGNOSTICS_EDDY **
 !
+! ** LIGHT FROM BIOLINK**
+!  indxPAR                       : PAR at the top layer
+!
+! ** DIAGNOSTICS FROM BLOOM **
+!  indxBLMdiag1d                 : 1D diagnostics from BLOOM
+!  indxBLMdiag2d                 : 2D diagnostics from BLOOM
+!  indxBLMdiag3d                 : 3D diagnostics from BLOOM
 !=======================================================================
 ! Output file codes
       integer filetype_his, filetype_avg
@@ -176,6 +183,7 @@
      &           filetype_diabio=15,filetype_diabio_avg=16,
      &           filetype_abl=18, filetype_abl_avg=19)
 !
+! For the loop 
       integer iloop, indextemp
       integer indxTime, indxZ, indxUb, indxVb
       parameter (indxTime=1, indxZ=2, indxUb=3, indxVb=4)
@@ -560,14 +568,29 @@
 #  endif
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 
-      integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
+# if defined BLOOM && defined DIAGNOSTICS_BIO
+      integer indxBLMdiag3d, indxBLMdiag2d, indxBLMdiag1d
+      parameter (indxBLMdiag1d=indxV+ntrc_temp+ntrc_salt
+     &                       +ntrc_pas+ntrc_bio+ntrc_sed
+     &                       +ntrc_diats+ntrc_diauv+ntrc_diavrt
+     &                       +ntrc_diaek+ntrc_diapv+ntrc_diaeddy
+     &                       +ntrc_surf+600)
+      parameter (indxBLMdiag2d=indxBLMdiag1d+NumBLMdiag1d)
+      parameter (indxBLMdiag3d=indxBLMdiag2d+NumBLMdiag2d)
+# endif
+      integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv
       parameter (indxO=indxV+ntrc_temp+ntrc_salt
      &                      +ntrc_mld+ntrc_pas+ntrc_bio
      &                      +ntrc_sed+ntrc_substot
      &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,
      &           indxW=indxO+1, indxR=indxO+2, indxVisc=indxO+3,
-     &           indxDiff=indxO+4,indxAkv=indxO+5, indxAkt=indxO+6)
+     &           indxDiff=indxO+4,indxAkv=indxO+5)
+# ifdef TEMPERATURE
+      integer indxAkt
+      parameter (indxAkt=indxO+6)
+# endif
+
 # ifdef ABL1D
       integer indxabl_pu_dta  , indxabl_pv_dta , indxabl_pt_dta  ,
      &        indxabl_pq_dta  , indxabl_pgu_dta, indxabl_pgv_dta ,
@@ -924,7 +947,7 @@
       integer indxShflx_rswbio
       parameter (indxShflx_rswbio=indxSUSTR+124)
 #endif
-#if defined BHFLUX
+#if defined BHFLUX && defined TEMPERATURE
       integer indxBhflx
       parameter (indxBhflx=indxSUSTR+131)
 #endif
@@ -932,6 +955,22 @@
       integer indxBwflx
       parameter (indxBwflx=indxSUSTR+132)
 #endif
+
+#if defined BIOLink_PAR_eval
+
+      integer indxPAR
+      parameter (indxPAR=indxSUSTR+154)
+
+#endif /* BIOLink_PAR_EVAL */
+
+#if defined BLOOM
+!      integer indxBLMdiag1d
+!      parameter (indxBLMdiag1d=indxSUSTR+155)
+!      integer indxBLMdiag2d
+!      parameter (indxBLMdiag2d=indxSUSTR+175)
+!      integer indxBLMdiag3d
+!      parameter (indxBLMdiag3d=indxSUSTR+205)
+#endif /* BLOOM */
 !
 !===================================================================
 !
@@ -1057,8 +1096,8 @@
 #endif
 
 #if defined SOLVE3D && defined TRACERS
-      integer nttclm(NT), ntstf(NT), nttsrc(NT)
-     &       , ntbtf(NT)
+      integer nttclm(NTot), ntstf(NTot), nttsrc(NTot)
+     &       , ntbtf(NTot)
 #endif
       integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
@@ -1070,7 +1109,7 @@
 #ifdef SOLVE3D
      &                         , rstU,    rstV
 # if defined TRACERS
-      integer rstT(NT)
+      integer rstT(NTot)
 # endif
 # if defined LMD_SKPP
       integer rstHbl
@@ -1083,7 +1122,7 @@
 #  if defined SALINITY
       integer rstAks
 #  endif
-      integer rstTke,rstGls
+      integer rstTke,rstGls,rstLsc
 # endif
 # ifdef M3FAST
 #  if defined LMD_MIXING || defined GLS_MIXING
@@ -1181,7 +1220,7 @@
       integer hisAOU, hisWIND10
 #  endif
 # endif  /* BIOLOGY */
-      integer hisT(NT)
+      integer hisT(NTot)
 # ifdef SEDIMENT
       integer hisSed(1+NST+2
 #  ifdef SUSPLOAD
@@ -1195,6 +1234,12 @@
 #  endif
      & )
 # endif /* SEDIMENT */
+
+
+# ifdef BIOLink_PAR_eval
+      integer hisPAR
+# endif /* BIOLink_PAR_EVAL */
+
 
 # if defined DIAGNOSTICS_TS
       integer nciddia, nrecdia, nrpfdia
@@ -1301,11 +1346,19 @@
      &      , surf_surfu(2), surf_surfv(2)
 # endif
 # ifdef DIAGNOSTICS_BIO
+# ifdef BLOOM
+      integer nciddiabio, nrecdiabio, nrpfdiabio
+     &      , diaTimebio, diaTime2bio, diaTstepbio
+     &      , hisBLMdiag1d(NumBLMdiag1d)
+     &      , hisBLMdiag2d(NumBLMdiag2d)
+     &      , hisBLMdiag3d(NumBLMdiag3d)
+# else 
       integer nciddiabio, nrecdiabio, nrpfdiabio
      &      , diaTimebio, diaTime2bio, diaTstepbio
      &      , diabioFlux(NumFluxTerms)
      &      , diabioVSink(NumVSinkTerms)
      &      , diabioGasExc(NumGasExcTerms)
+# endif
 # endif
 
 #elif defined DIAGNOSTICS_UV && defined MRL_WCI
@@ -1360,11 +1413,11 @@
 #   elif defined BIO_BioEBUS
       integer avgAOU, avgWIND10
 
-#   endif
-#  endif  /* BIOLOGY */
-#  if defined TRACERS
-      integer avgT(NT)
 #  endif
+# endif  /* BIOLOGY */
+# if defined TRACERS
+      integer avgT(NTot)
+# endif
 #  ifdef BULK_FLUX
       integer avgShflx_rlw
      &      , avgShflx_lat,   avgShflx_sen
@@ -1589,9 +1642,15 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
+#ifdef BLOOM
+     &      , wrtdiabio3d(NumBLMdiag3d+1)
+     &      , wrtdiabio2d(NumBLMdiag2d+1)
+     &      , wrtdiabio1d(NumBLMdiag1d+1)
+#else
      &      , wrtdiabioFlux(NumFluxTerms+1)
      &      , wrtdiabioVSink(NumVSinkTerms+1)
      &      , wrtdiabioGasExc(NumGasExcTerms+1)
+#endif
 # ifdef AVERAGES
      &      , wrtdiabioFlux_avg(NumFluxTerms+1)
      &      , wrtdiabioVSink_avg(NumVSinkTerms+1)
@@ -1642,7 +1701,7 @@
 #  if defined SALINITY
      &      , rstAks
 #  endif
-     &      , rstTke,rstGls
+     &      , rstTke,rstGls,rstLsc
 # endif
 # ifdef M3FAST
 #  if defined GLS_MIXING || defined LMD_MIXING
@@ -1729,6 +1788,12 @@
      &      , hisSed
 # endif
 #endif
+
+#ifdef BIOLink_PAR_eval
+     &      , hisPAR
+#endif /* BIOLink_PAR_EVAL */
+
+
 #ifdef BBL
      &      , hisBBL
 #endif
@@ -1932,10 +1997,16 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
+#ifdef BLOOM
+     &      , nciddiabio, nrecdiabio, nrpfdiabio
+     &      , diaTimebio, diaTime2bio, diaTstepbio
+     &      , hisBLMdiag1d, hisBLMdiag2d, hisBLMdiag3d
+#else
      &      , nciddiabio, nrecdiabio, nrpfdiabio
      &      , diaTimebio, diaTime2bio, diaTstepbio, diabioFlux
      &      , diabioVSink
      &      , diabioGasExc
+#endif
 # ifdef AVERAGES
      &      , nciddiabio_avg, nrecdiabio_avg, nrpfdiabio_avg
      &      , diaTimebio_avg, diaTime2bio_avg, diaTstepbio_avg
@@ -2076,9 +2147,15 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
+#ifdef BLOOM
+     &      , wrtdiabio3d
+     &      , wrtdiabio2d
+     &      , wrtdiabio1d
+#else
      &      , wrtdiabioFlux
      &      , wrtdiabioVSink
      &      , wrtdiabioGasExc
+#endif
 # ifdef AVERAGES
      &      , wrtdiabioFlux_avg
      &      , wrtdiabioVSink_avg
@@ -2184,8 +2261,11 @@
 #elif defined MUSTANG
      &               ,   sedname_must
 #endif
-#if defined SUBSTANCE
+#if defined SUBSTANCE 
      &               ,    subsfilename
+#endif
+#if defined SUBSTANCE && defined BLOOM
+     &               ,    parafilename
 #endif
 #if defined OBSTRUCTION
      &               ,    obstname
@@ -2302,10 +2382,13 @@
 #ifdef SEDIMENT
      &                                ,   sedname
 #elif defined MUSTANG
-     &               ,   sedname_must
+     &               ,    sedname_must
 #endif
 #if defined SUBSTANCE
      &               ,    subsfilename
+#endif
+#if defined SUBSTANCE && defined BLOOM
+     &               ,    parafilename
 #endif
 #if defined OBSTRUCTION
      &               ,    obstname

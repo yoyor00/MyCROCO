@@ -1,0 +1,200 @@
+# Default configuration for the Eco3M modelling platform 
+# Last modification: Juil 2019
+#
+#------------------------------------------------------------------------
+#         MODEL Plankton Functional Types and other compartments
+#------------------------------------------------------------------------
+#  - bacteria  (in C,N)
+#  - small phytoplankton (expressed in C, Chl, N), 
+#  - large  phytoplankton  (expressed in C, Chl, N)
+#  - one zooplankton (in C,N)
+#  - two nutrients (NO3,NH4), 
+#  - Dissolved Organic Matter DOM (in C,N), 
+#  - Detrital matter DET (C,N)
+#-------------------------------------------------------------------------
+#
+# IMPORTANT INSTRUCTIONS: 
+# --------------------------------
+# 1/ Always begin an empty line or a comment line by a "#"  on the first column 
+# 2/ Don't write anything after the required information on a given line
+# 3/ On a given line, variables must be separated by a ":" without any space left
+# 4/ Compartments name must be the following unless additional compartments are created :
+#    zoo / phy / bac / det / mod / mid / mip
+#    (zoo = zooplantkon; phy = phytoplankton; bac = bacteria; det = detritus; mod = dissolved organic matter
+#    mid = dissolved inorganic matter; mip = particulate inorganic matter)
+# 5/ If additional compartments are created, their name must not include space or special character
+#    and must not exceed 10 characters
+# 6/ All the variables name must be in lower case, except chemical elements such
+#    as: C,N,P,Si,Fe,Chl,NO3,NH4,O2,Zn...
+# 7/ if the number of characters in a line of the flux matrix exceeds the L_CHAIN value, the latter must be
+#    increased in the src_eco3m/eco3m_string.F90 file
+#
+#### NAME OF THE CONFIGURATION OF THE BIOGECHEMICAL MODEL HANDLED BY ECO3M
+# The configuration name will be: Eco3M_config. Just the config part is required here:
+Default
+######## COMPARTMENTS / SUB-COMPARTMENTS / STATE VARIABLES OF THE BIOGEOCHEMICAL MODEL
+#        
+# nb of compartments:nb of sub-compartments:nb of state variables
+6:8:16
+# name of the first compartment:number of sub-compartments in this compartment
+zoo:1
+# name of the first sub-compartment:firt chemical elmt:2nd chemical elemt 
+COP:C:N
+#
+# name of the second compartment:number of sub-compartments in this compartment
+phy:2
+# name of the first sub-compartment:firt chemical elmt:2nd chemical elemt 
+PHYS:C:N:Chl
+# name of the second sub-compartment:firt chemical elmt:2nd chemical elemt 
+PHYL:C:N:Chl
+#
+bac:1
+BAC:C:N
+#
+det:1
+DETS:C:N
+#
+mod:1
+MOD:C:N
+#
+mid:2
+NO3:N
+NH4:N
+#-----------------------------------------------------------------
+##########################
+# FLOW MATRIX:
+# This matrix contains all the fluxes between state variables
+#
+#-----------------------------------------------------------------
+# important instructions:
+# ---------------------
+# 1/ since this matrix is symmetric, only the upper half must be filled :
+#    line 1 : FLUX from var(1) to var(2) ... var(nbvar)
+#    line 2 : FLUX from var(2) to var(3) ... var(nbvar)
+#    etc...
+# 2/ a given flux between var(ili) and var (jcol) must be introduced as follows:
+#    ili;jcol:signe;proc(list of parameters separed by  ">")
+# 4/ if a given flux includes several processes or functions, they must be separated by  ":"
+# 5/ only the non-empty elements of the flux matrix must be reported
+# 6/ fluxes betweeen a model state variable and a variable not reprsented in the model 
+#    (e.g. photosynthesis if CO2 is not explicitly represented) must be introduced on the diagonal 
+#    of the flux matrix
+# 7/ The flux matrix must end by the line "finflux"
+#-----------------------------------------------------------------
+#
+# Total number of functions involved in the different element of the flow matrix:
+108
+# Beginning of the flow matrix:
+#---------------------------------------------------------------
+#--------------- ZOOPLANCTON Z ---------------
+#---------------------------------------------------------------
+# Grazing of MZOO on PHYS
+1;3:-;graz(1>3>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150)
+#
+2;4:-;grazC2X(2>4)
+# Grazing of MZOO on PHYL
+1;6:-;graz(1>6>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150)
+#
+2;7:-;grazC2X(2>7)
+# Grazing of MZOO on BAC
+1;9:-;graz(1>9>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150)
+#
+2;10:-;grazC2X(2>10)
+# Egestion of fecal pelots  + closure terms on MZOO 
+1;11:+0.20;graz(1>3>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150):+0.500;graz(1>6>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150):+0.10;graz(1>9>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150):+;pred(4.63d-7)
+#
+2;12:+0.20;grazC2X(2>4):+0.500;grazC2X(2>7):+0.10;grazC2X(2>10):+;pred(4.63d-7)
+#  DOC excretion  (in param.txt, C_EFF_G_X = 1- EFF_G_X)
+1;13:+0.800;graz(1>3>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150):-0.800;graz(1>3>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150):x;uGd(2>0.12):+0.5000;graz(1>6>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150):-0.5000;graz(1>6>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150):x;uGd(2>0.12):+0.90;graz(1>9>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150):-0.90;graz(1>9>4.5d-5>14.0>0.0>3.>3>0.2500>6>0.60>9>0.150):x;uGd(2>0.12)
+# Ammonium excretion
+2;16:+0.800;grazC2X(2>4):-0.800;grazC2X(2>4):x;uQ(2>0.12>0.250>0.051):+0.5000;grazC2X(2>7):-0.5000;grazC2X(2>7):x;uQ(2>0.12>0.250>0.051):+0.90;grazC2X(2>10):-0.90;grazC2X(2>10):x;uQ(2>0.12>0.250>0.051)
+#
+#---------------------------------------------------------------
+#--------------- PHYS  --------------
+#---------------------------------------------------------------
+# PHYS-C --> DOC (DOC exsudation)
+3;13:+0.900;gpp(0.0500>1.64d-4>1.0d-3>12.0>2.6d-8>2.0d-4):x;tfuncP(0.50>17.0>11.0):-0.900;gpp(0.0500>1.64d-4>1.0d-3>12.0>2.6d-8>2.0d-4):x;tfuncP(0.50>17.0>11.0):x;uGd(4>0.1145)
+#
+#-----------------------------
+# PHYS-N --> DON (Exsudation de DON)
+#PHYS_N;MOD_N:+;upt(NIT>K_PHYS_NIT>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;inhib(K_INHIB_PHYS_AMMO>I_INHIB_PHYS_AMMO):-;upt(NIT>K_PHYS_NIT>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;inhib(K_INHIB_PHYS_AMMO>I_INHIB_PHYS_AMMO):x;uQ(PHYS_N>Q_MIN_PHYS_NC>Q_MAX_PHYS_NC>N_GEIDER_PHY):+;upt(AMMO>K_PHYS_AMMO>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):-;upt(AMMO>K_PHYS_AMMO>Q_MAX_PHYS_NC):x;tfuncP(BETA_PHYS>T_OPT_PHYS>T_LET_PHYS):x;uQ(PHYS_N>Q_MIN_PHYS_NC>Q_MAX_PHYS_NC>N_GEIDER_PHY)
+#
+# uptake de nitrate
+4;15:-;upt(15>0.50>0.229):x;tfuncP(0.50>17.0>11.0):x;inhib(0.578>0.82):x;uQ(4>0.1145>0.229>0.05)
+#
+# uptake d'ammonium
+4;16:-;upt(16>0.080>0.229):x;tfuncP(0.50>17.0>11.0):x;uQ(4>0.1145>0.229>0.05)
+#---------------------------------------------------------------
+#--------------- PHYL -----------
+#---------------------------------------------------------------
+# Mortalite de PHYL-C
+6;11:+;mort(1.0d-8):-;mort(1.0d-8):x;tfuncP(0.80>14.>9.0)
+#
+7;12:+;mort(1.0d-8):-;mort(1.0d-8):x;tfuncP(0.80>14.>9.0)
+# PHYL-C --> COD (Exsudation de DOC)
+6;13:+0.8000;gpp(0.015>2.25d-4>2.0d-3>8.5>2.6d-8>2.0d-4):x;tfuncP(0.80>14.>9.0):-0.8000;gpp(0.015>2.25d-4>2.0d-3>8.5>2.6d-8>2.0d-4):x;tfuncP(0.80>14.>9.0):x;uGd(7>0.05)
+#
+#---------------------------------------------------------------
+#
+# microphyto-N --> NOD (Exsudation de DON)
+#PHYL_N;MOD_N:+;upt(NIT>K_DIAT_NIT>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):-;upt(NIT>K_DIAT_NIT>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):x;uQ(PHYL_N>Q_MIN_DIAT_NC>Q_MAX_DIAT_NC>N_GEIDER_PHY):+;upt(AMMO>K_DIAT_AMMO>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):-;upt(AMMO>K_DIAT_AMMO>Q_MAX_DIAT_NC):x;tfuncP(BETA_DIAT>T_OPT_DIAT>T_LET_DIAT):x;uQ(PHYL_N>Q_MIN_DIAT_NC>Q_MAX_DIAT_NC>N_GEIDER_PHY)
+#
+# uptake de nitrate
+7;15:-;upt(15>2.50>0.170):x;tfuncP(0.80>14.>9.0):x;uQ(7>0.05>0.170>0.05)
+#
+# uptake d'ammonium
+7;16:-;upt(16>0.18>0.170):x;tfuncP(0.80>14.>9.0):x;uQ(7>0.05>0.170>0.05)
+#---------------------------------------------------------------
+#--------------- BACTERIOPLANCTON ------------------------------
+#---------------------------------------------------------------
+# production bacterienne et mortalite
+9;13:-;gbp(13>20.0>1.39d-5):x;tfuncB(2.3):x;uGd(10>0.168>0.):+;mort(0.57d-6):x;tfuncB(2.3)
+# Respiration bacterienne
+#---------------------------------------------------------------
+# uptake de DON et mortalite
+10;14:-;upt(14>1.5>0.264>1.39d-5):+;mort(0.57d-6):x;tfuncB(2.3)
+#
+# uptake de NH4 et remineralisation
+10;16:-;upt(16>0.15>0.264>1.39d-5):x;tfuncB(2.3):x;uQ(10>0.168>0.264>0.051>0.):+;upt(14>1.5>0.264>1.39d-5):-;upt(14>1.5>0.264>1.39d-5):x;uQ(10>0.168>0.264>0.051)
+#--------------------------------------------------------------
+#----------------Mineralisation de la MOP  -----------------------------
+#--------------------------------------------------------------
+11;13:+;rem(3.40d-7)
+#--------------------------------------------------------------
+12;14:+;rem(0.58d-6)
+#--------------------------------------------------------------
+#---------------- NITRIFICATION -------------------------------------
+15;16:-;nit(5.91d-7>2.37)
+#
+#------------------------------------------------------------------
+#--------------- PHYS -------------------------------------
+# Photosynthese et respiration
+3:+0.900;gpp(0.0500>1.64d-4>1.0d-3>12.0>2.6d-8>2.0d-4):x;tfuncP(0.50>17.0>11.0):-0.198;upt(16>0.080>0.229):x;tfuncP(0.50>17.0>11.0):-0.397;upt(15>0.50>0.229):x;tfuncP(0.50>17.0>11.0):x;inhib(0.578>0.82)
+# synthese de chl et destruction par grazing
+5:+;pchl(2.2>8.2d-6>15>0.229>0.50>0.>16>0.229>0.080>0.):x;uGd(4>0.1145>0.):x;tfuncP(0.50>17.0>11.0):-;grazC2X(1>5)
+#---------------------------------------------------------------
+#--------------- PHYL --------------------------------
+# synthese de chl et destruction par grazing et mortalite naturelle
+# Photosynthese et respiration
+6:+0.8000;gpp(0.015>2.25d-4>2.0d-3>8.5>2.6d-8>2.d-4):x;tfuncP(0.80>14.>9.0):-0.198;upt(16>0.18>0.170):x;tfuncP(0.80>14.>9.0):-0.397;upt(15>2.50>0.170):x;tfuncP(0.80>14.>9.0)
+#
+8:-;mort(1.0d-8):+;mort(1.0d-8):x;tfuncP(0.80>14.>9.0):+;pchl(3.0>3.37d-6>15>0.170>2.50>0.>16>0.170>0.18>0.):x;uGd(7>0.05>0.):x;tfuncP(0.80>14.>9.0):-;grazC2X(1>8)
+#---------------------------------------------------------------
+#-----------------BACTERIES-------------------------------------
+# respiration bacterienne
+#BAC_C:-;respPBB(R_BACT>EFF_GROWTH_BACT>Q_TEN_BACT):x;uGd(BAC_N>Q_MIN_BACT_NC>VAL_POS):x;tfuncB(Q_TEN_BACT)
+9:-;gbp(13>20.0>1.39d-5):x;tfuncB(2.3):x;uGd(10>0.168>0.):+0.83;gbp(13>20.0>1.39d-5):x;tfuncB(2.3):x;uGd(10>0.168>0.)
+#
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+#########################
+finflux
+# Rapport  Chlorophylle/Carbone  en (g chl)/(mol C) 
+#(0 = rapport constant et donne apres les ':'
+# et 1 = rapport variable. Si ce rapport est caclule par une fonction analytique (Chl n'est pas une
+#        variable d'etat), il faut ajouter la fonction et ses parametres et definir cette fonction dans 
+#        le fichier modele.def
+#0:0.25
+1
+#  fonction permettant de calculer le coefficient d'extinction lumineuse:
+f_extinc(0.0384>0.029)

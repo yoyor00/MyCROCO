@@ -39,6 +39,11 @@
       USE comMUSTANG, ONLY : hisMust, avgMust, outMust, outMust_nbvar,
      &     out2DMust, out3DsedMust, vname_Must, nk_nivsed_out
 #endif
+
+#if defined BLOOM
+      USE comBIOLINK, ONLY :ndiag_1d,ndiag_2d,ndiag_3d_wat,ndiag_3d_sed
+#endif
+
 #if defined OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : hisObst, avgObst, 
      &     obst_nbvar, outObst, out2DObst, vname_obst
@@ -50,6 +55,7 @@
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
      &      , r2dgrd(3),  u2dgrd(3), v2dgrd(3), auxil(2), checkdims
      &      , b3dgrd(4)
+      integer i
 #ifdef NC4PAR
      &      , csize,cmode
 #endif
@@ -149,6 +155,15 @@
 # ifdef SST_SKIN
 #  define vidSST_skin hisSST_skin
 # endif
+# ifdef BIOLink_PAR_eval
+#   define vidPAR hisPAR
+# endif /* BIOLink_PAR_eval */
+# ifdef BLOOM
+#   define vidBLMdiag1d hisBLMdiag1d
+#   define vidBLMdiag2d hisBLMdiag2d
+#   define vidBLMdiag3d hisBLMdiag3d
+# endif /* BLOOM */
+
 # define vidMust hisMust
 # define vidObst hisObst
 
@@ -225,6 +240,14 @@
 # ifdef SST_SKIN
 #  define vidSST_skin avgSST_skin
 # endif
+# ifdef BIOLink_PAR_eval
+#   define vidPAR hisPAR
+# endif /* BIOLink_PAR_eval */
+# ifdef BLOOM
+#   define vidBLMdiag1d hisBLMdiag1d
+#   define vidBLMdiag2d hisBLMdiag2d
+#   define vidBLMdiag3d hisBLMdiag3d
+# endif /* BLOOM */
 
 # define vidMust avgMust
 # define vidObst avgObst
@@ -708,7 +731,7 @@
 !-----------------------------------------------------------------------
 !
 # ifdef TRACERS
-        do itrc=1,NT
+        do itrc=1,NTot
 # ifdef DIAGNOSTICS_TS_MLD_CRIT
          if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
      &   .and. itrc.ne.iCRT4) then
@@ -2561,6 +2584,129 @@
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
 
+#if defined BIOLink_PAR_eval
+!
+! PAR_top_layer : PAR reaching the top layer from the BIOLink functions
+!
+        if (wrt(indxPAR)) then
+          lvar=lenstr(vname(1,indxPAR))
+          ierr=nf_def_var (ncid, vname(1,indxPAR)(1:lvar), NF_FOUT,
+     &                                           4, r3dgrd, vidPAR)
+          MPI_master_only PRINT*,'ierr of PAR is',ierr
+#ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidPAR,nf_collective)
+#endif
+#  ifndef AVRH
+          lvar=lenstr(vname(2,indxPAR))
+          ierr=nf_put_att_text (ncid, vidPAR, 'long_name', lvar,
+     &                                  vname(2,indxPAR)(1:lvar))
+#  else
+          text='averaged '/ /vname(2,indxPAR)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidPAR, 'long_name', lvar,
+     &                                              text(1:lvar))
+#  endif
+          lvar=lenstr(vname(3,indxPAR))
+          ierr=nf_put_att_text (ncid, vidPAR, 'units',     lvar,
+     &                                 vname(3,indxPAR)(1:lvar))
+        endif
+#endif /* BIOLink_PAR_EVAL */
+
+#if defined BLOOM
+!
+! 1D Diagnostic of BLOOM model
+!
+!        do i=1,ndiag_1d
+!          if (wrt(indxBLMdiag1d+i)) then
+!            lvar=lenstr(vname(1,indxBLMdiag1d+i))
+!            ierr=nf_def_var (ncid, vname(1,indxBLMdiag1d+i)(1:lvar),
+!     &                            NF_DOUBLE, 1, timedim, vidBLMdiag1d(i))
+!
+!#ifdef NC4PAR
+!            ierr=nf_var_par_access(ncid,vidBLMdiag1d(i),nf_collective)
+!#endif
+!#ifndef AVRH
+!            lvar=lenstr(vname(2,indxBLMdiag1d+i))
+!            ierr=nf_put_att_text (ncid, vidBLMdiag1d(i), 'long_name', lvar,
+!     &                                vname(2,indxBLMdiag1d+i)(1:lvar))
+!#else
+!            text='averaged '/ /vname(2,indxBLMdiag1d+i)
+!            lvar=lenstr(text)
+!            ierr=nf_put_att_text (ncid, vidBLMdiag1d(i), 'long_name', lvar,
+!     &                                             text(1:lvar))
+!#endif
+!            lvar=lenstr(vname(3,indxBLMdiag1d+i))
+!            ierr=nf_put_att_text (ncid, vidTime, 'units',  lvar,
+!     &                                vname(3,indxBLMdiag1d+i)(1:lvar))
+!            lvar=lenstr(vname(4,indxBLMdiag1d+i))
+!            ierr=nf_put_att_text (ncid, vidBLMdiag1d(i), 'field',  lvar,
+!     &                                vname(4,indxBLMdiag1d+i)(1:lvar))
+!
+!            call nf_add_attribute(ncid, vidBLMdiag1d(i), 
+!     &       vname(:,indxBLMdiag1d+i), 5,NF_FOUT, ierr)
+!
+!
+!         endif
+!        end do
+!
+!
+!
+! 2D Diagnostic of BLOOM model
+!
+!        do i=1,ndiag_2d
+!          if (wrt(indxBLMdiag2d+i)) then
+!            lvar=lenstr(vname(1,indxBLMdiag2d+i))
+!            ierr=nf_def_var (ncid, vname(1,indxBLMdiag2d+i)(1:lvar),NF_FOUT,
+!     &                                        3, r2dgrd, vidBLMdiag2d(i))
+!#ifdef NC4PAR
+!            ierr=nf_var_par_access(ncid,vidBLMdiag2d(i),nf_collective)
+!#endif
+!#  ifndef AVRH
+!            lvar=lenstr(vname(2,indxBLMdiag2d+i))
+!            ierr=nf_put_att_text (ncid, vidBLMdiag2d+i, 'long_name', lvar,
+!     &                                  vname(2,indxBLMdiag2d+i)(1:lvar))
+!#  else
+!            text='averaged '/ /vname(2,indxBLMdiag2d+i)
+!            lvar=lenstr(text)
+!            ierr=nf_put_att_text (ncid, vidBLMdiag2d(i), 'long_name', lvar,
+!     &                                              text(1:lvar))
+!#  endif
+!            lvar=lenstr(vname(3,indxBLMdiag2d+i))
+!            ierr=nf_put_att_text (ncid, vidBLMdiag2d(i), 'units',     lvar,
+!     &                                 vname(3,indxBLMdiag2d+i)(1:lvar))
+!          endif
+!        end do
+!
+!
+! 3D Diagnostic of BLOOM model
+!
+!        do i=1,ndiag_3d
+!          if (wrt(indxBLMdiag3d+i)) then
+!            lvar=lenstr(vname(1,indxBLMdiag3d+i))
+!            ierr=nf_def_var (ncid, vname(1,indxBLMdiag3d+i)(1:lvar),NF_FOUT,
+!     &                                        4, r3dgrd, vidBLMdiag3d(i))
+!#ifdef NC4PAR
+!            ierr=nf_var_par_access(ncid,vidBLMdiag3d(i),nf_collective)
+!#endif
+!#  ifndef AVRH
+!            lvar=lenstr(vname(2,indxBLMdiag3d+i))
+!            ierr=nf_put_att_text (ncid, vidBLMdiag3d+i, 'long_name', lvar,
+!     &                                  vname(2,indxBLMdiag3d+i)(1:lvar))
+!#  else
+!            text='averaged '/ /vname(2,indxBLMdiag3d+i)
+!            lvar=lenstr(text)
+!            ierr=nf_put_att_text (ncid, vidBLMdiag3d(i), 'long_name', lvar,
+!     &                                              text(1:lvar))
+!#  endif
+!            lvar=lenstr(vname(3,indxBLMdiag3d+i))
+!            ierr=nf_put_att_text (ncid, vidBLMdiag3d(i), 'units',     lvar,
+!     &                                 vname(3,indxBLMdiag3d+i)(1:lvar))
+!          endif
+!        end do
+!
+#endif /* BLOOM */
+
+
 !
 ! Leave definition mode.
 !
@@ -2903,7 +3049,7 @@
 ! Tracer variables.
 !
 # ifdef TRACERS
-        do itrc=1,NT
+        do itrc=1,NTot
 # ifdef DIAGNOSTICS_TS_MLD_CRIT
          if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
      &   .and. itrc.ne.iCRT4) then
@@ -2926,6 +3072,87 @@
 # endif
         enddo
 # endif
+
+!
+! Photosynthetic Available Radiation from BIOLink
+!
+
+#if defined BIOLink_PAR_eval
+
+        if (wrt(indxPAR)) then
+          lvar=lenstr(vname(1,indxPAR))
+          ierr=nf_inq_varid (ncid, vname(1,indxPAR)(1:lvar), vidPAR)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxPAR)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+        endif
+#endif /* BIOLink_PAR_eval */
+
+
+!#if defined BLOOM && defined DIAGNOSTICS_BIO
+!
+! 1D Diagnostics from BLOOM
+!
+!        do i=1,ndiag_1d
+!          if (wrtdiabio1d(i)) then
+!            lvar=lenstr(vname(1,indxBLMdiag1d+i-1))
+!            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag1d+i-1)(1:lvar) 
+!     &                          ,vidBLMdiag1d(i))
+!            if (ierr .ne. nf_noerr) then
+!              write(stdout,1) vname(1,indxBLMdiag1d+i-1)(1:lvar),
+!     &                        ncname(1:lstr)
+!              goto 99                                       !--> ERROR
+!            endif
+!          endif
+!        end do
+!
+! 2D Diagnostics from BLOOM
+!
+!        do i=1,ndiag_2d
+!          if (wrtdiabio2d(i)) then
+!            lvar=lenstr(vname(1,indxBLMdiag2d+i-1))
+!            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag2d+i-1)(1:lvar) 
+!     &                          ,vidBLMdiag2d(i))
+!            if (ierr .ne. nf_noerr) then
+!              write(stdout,1) vname(1,indxBLMdiag2d+i-1)(1:lvar), 
+!     &                        ncname(1:lstr)
+!              goto 99                                       !--> ERROR
+!            endif
+!          endif
+!        end do
+!
+! 3D Diagnostics from BLOOM
+!
+!        do i=1,ndiag_3d_wat
+!          if (wrtdiabio3d(i)) then
+!            lvar=lenstr(vname(1,indxBLMdiag3d+i-1))
+!            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag3d+i-1)(1:lvar) 
+!     &                          ,vidBLMdiag3d(i))
+!            if (ierr .ne. nf_noerr) then
+!              write(stdout,1) vname(1,indxBLMdiag3d+i-1)(1:lvar), 
+!     &                        ncname(1:lstr)
+!              goto 99                                       !--> ERROR
+!            endif
+!          endif
+!        end do
+!#  ifdef key_BLOOM_insed
+!        do i=1,ndiag_3d_sed
+!          if (wrtdiabio3d(ndiag_3d_wat+i)) then
+!            lvar=lenstr(vname(1,indxBLMdiag3d+ndiag_3d_wat+i-1))
+!            ierr=nf_inq_varid (ncid, vname(1,indxBLMdiag3d+
+!     &                                     ndiag_3d_wat+i-1)(1:lvar)
+!     &                          ,vidBLMdiag3d(ndiag_3d_wat+i))
+!            if (ierr .ne. nf_noerr) then
+!              write(stdout,1) vname(1,indxBLMdiag3d+ndiag_3d_wat+i-1)
+!     &                             (1:lvar), ncname(1:lstr)
+!              goto 99                                       !--> ERROR
+!            endif
+!          endif
+!        end do
+!#  endif
+!#endif /* BLOOM */
+
 !
 ! Density anomaly.
 !
@@ -3665,6 +3892,7 @@
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
 
+#
       MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_HIS/AVG -- Opened ',
      &                     'existing file  from record =', rec
@@ -3772,6 +4000,16 @@
 #undef vidCALP
 #undef vidKAPS
 #undef vidHm
+
+#if defined BIOLink_PAR_eval
+#  undef vidPAR
+#endif /* BIOLink_PAR_eval */
+#if defined BLOOM
+#  undef vidBLMdiag1d
+#  undef vidBLMdiag2d
+#  undef vidBLMdiag3d
+#endif /* BLOOM */
+
 #undef vidMust
 #undef vidObst
 

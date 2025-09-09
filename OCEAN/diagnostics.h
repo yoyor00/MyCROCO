@@ -243,6 +243,13 @@
       real bioFlux(GLOBAL_2D_ARRAY,N,NumFluxTerms)
       real bioVSink(GLOBAL_2D_ARRAY,NumVSinkTerms)
 #  endif
+# elif defined BLOOM
+      real biodiag3d_wat(GLOBAL_2D_ARRAY,N,NumBLMdiag3d)
+      real biodiag2d(GLOBAL_2D_ARRAY,NumBLMdiag2d)
+  /*    real biodiag1d_wat(GLOBAL_2D_ARRAY,NumBLMdiag1d) */
+#  ifdef key_BLOOM_insed
+      real biodiag3d_sed(GLOBAL_2D_ARRAY,N,NumBLMdiag3d)
+#  endif
 # else
       real bioFlux(GLOBAL_2D_ARRAY,N,NumFluxTerms)
       real bioVSink(GLOBAL_2D_ARRAY,0:N,NumVSinkTerms)
@@ -270,7 +277,13 @@
       common /diag_bioFlux/bioFlux
       common /diag_bioVSink/bioVSink
 #  endif
-# else
+# elif defined BLOOM
+      common /diag_biodiag3d_wat/biodiag3d_wat
+#  ifdef key_BLOOM_insed
+      common /diag_biodiag3d_sed/biodiag3d_sed
+#  endif
+      common /diag_biodiag2d/biodiag2d
+# else 
       common /diag_bioFlux/bioFlux
       common /diag_bioVSink/bioVSink
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS

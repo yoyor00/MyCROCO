@@ -587,14 +587,34 @@
           enddo
         enddo
 #    endif /* TEMPERATURE */
-#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS
-#    ifdef TEMPERATURE
+#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS && !defined DYFAMED
+#    ifdef TEMPERATURE        
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
               t(i,j,k,1,itemp)=16.0+(0.01)**2/(g*Tcoef/rho0)
      &             * (z_r(i,j,k))
               t(i,j,k,2,itemp)=t(i,j,k,1,itemp)
+             enddo
+          enddo
+        enddo
+#    endif /* TEMPERATURE */
+#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS && defined DYFAMED
+#    ifdef TEMPERATURE        
+        open(18,file='../AnalyticalProfiles/dyfamed_ts_init.dat')
+        do k=1,N
+          Read(18,*) t(1,1,N-k+1,1,itemp)
+#      ifdef SALINITY
+     &             , t(1,1,N-k+1,1,isalt)
+#      endif
+          do j=JR_RANGE
+            do i=IR_RANGE
+              t(i,j,N-k+1,1,itemp)= t(1,1,N-k+1,1,itemp)  
+              t(i,j,N-k+1,2,itemp)=t(i,j,N-k+1,1,itemp)
+#      ifdef SALINITY
+              t(i,j,N-k+1,1,isalt)= t(1,1,N-k+1,1,isalt)
+              t(i,j,N-k+1,2,isalt)=t(i,j,N-k+1,1,isalt)
+#      endif
              enddo
           enddo
         enddo
@@ -1349,6 +1369,8 @@ C$OMP BARRIER
               if (.not.got_tini(iv)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
                 t(i,j,k,1,iv)=cini_wat(iv)
+#  elif defined SINGLE_COLUMN 
+                t(i,j,k,1,iv)=cini_wat(iv)
 #  elif defined TIDAL_FLAT || defined ESTUARY
                 if (h(i,j).gt.0) then
                   t(i,j,k,1,iv)=cini_wat(iv)
@@ -1358,6 +1380,8 @@ C$OMP BARRIER
 #  elif defined DUNE && defined MUSTANG
                 t(i,j,k,1,iv)=cini_wat(iv)
 #  elif defined SED_TOY
+                t(i,j,k,1,iv)=cini_wat(iv)
+#  elif defined COASTAL
                 t(i,j,k,1,iv)=cini_wat(iv)
 #  else
                 if (h(i,j).lt.300) then

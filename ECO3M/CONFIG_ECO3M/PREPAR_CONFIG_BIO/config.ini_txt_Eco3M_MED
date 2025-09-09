@@ -1,0 +1,366 @@
+# Default configuration for the Eco3M modelling platform 
+# Last modification: Juil 2019
+#
+#------------------------------------------------------------------------
+#         MODEL Plankton Functional Types and other compartments
+#------------------------------------------------------------------------
+#  - bacteria  (in C,N)
+#  - small phytoplankton (expressed in C, Chl, N), 
+#  - large  phytoplankton  (expressed in C, Chl, N)
+#  - one zooplankton (in C,N)
+#  - two nutrients (NO3,NH4), 
+#  - Dissolved Organic Matter DOM (in C,N), 
+#  - Detrital matter DET (C,N)
+#-------------------------------------------------------------------------
+# ** IMPORTANT INSTRUCTIONS  **
+# --------------------------------
+# 1/ Always begin an empty line or a comment line by a "#"  on the first column 
+# 2/ Don't write anything after the required information on a given line
+# 3/ On a given line, variables must be separated by a ":" without any space left
+# 4/ Compartments name must be the following unless additional compartments are created :
+#    zoo / phy / bac / det / mod / mid / mip
+#    (zoo = zooplantkon; phy = phytoplankton; bac = bacteria; det = detritus; mod = dissolved organic matter
+#    mid = dissolved inorganic matter; mip = particulate inorganic matter)
+# 5/ If additional compartments are created, their name must not include space or special character
+#    and must not exceed 10 characters
+# 6/ All the variables name must be in lower case, except chemical elements such
+#    as: C,N,P,Si,Fe,Chl,NO3,NH4,O2,Zn...
+# 7/ if the number of characters in a line of the flux matrix exceeds the L_CHAIN value, the latter must be
+#    increased in the src_eco3m/eco3m_string.F90 file
+#
+#### NAME OF THE CONFIGURATION OF THE BIOGECHEMICAL MODEL HANDLED BY ECO3M
+# The configuration name will be: Eco3M_config. Just the config part is required here:
+Eco3M_MED
+######## COMPARTMENTS / SUB-COMPARTMENTS / STATE VARIABLES OF THE BIOGEOCHEMICAL MODEL
+# --------------------------------
+# nb of compartments:nb of sub-compartments:nb of state variables
+7:16:38
+#Compartiments Zooplanctonique
+zoo:3
+COP:cell:C
+CIL:cell:C:N:P
+HNF:cell:C:N:P
+#Compartiments Phytoplanctoniques
+phy:2		
+PHYS:cell:C:N:P:Chl
+PHYL:cell:C:N:P:Chl
+#Compartiments des Bacteries Heterotrophes
+bac:1
+BAC:cell:C:N:P
+#Compartment for detrital organic matter
+mop:2
+MOPS:C:N:P
+MOPL:C:N:P
+#Compartment for dissolved organic matter
+mod:4
+MODLC:C
+MODLN:N
+MODLP:P
+MODSL:C
+#Compartment for nutrients
+mid:3
+NO3:N
+NH4:N
+PO4:P
+# 
+misc:1
+OXY:O
+################################################################################
+# FLOW MATRIX:
+# This matrix contains all the fluxes between state variables
+# 
+#-----------------------------------------------------------------
+# important instructions:
+# ---------------------
+# 1/ since this matrix is symmetric, only the upper half must be filled 
+#     by non-null fluxes between variables var(ili) and var(jcol)
+#     NOTE THAT ili MUST ALWAYS BE < jcol
+# 2/ a given flux between var(ili) and var (jcol) must be introduced as follows:
+#    ili;jcol:signe;proc(list of parameters separed by  ">")
+# 4/ if a given flux includes several processes or functions, they must be separated by  ":"
+# 5/ only the non-empty elements of the flux matrix must be reported
+# 6/ fluxes betweeen a model state variable and a variable not reprsented in the model 
+#    (e.g. photosynthesis if CO2 is not explicitly represented) must be introduced on the diagonal 
+#    of the flux matrix
+# 7/ The flux matrix must end by the line "finflux"
+#-----------------------------------------------------------------
+#
+# Total number of functions involved in the different element of the flow matrix:
+291
+# Beginning of the flow matrix:
+#---------------------------------------------------------------
+#--------------- ZOOPLANCTON Z ---------------
+#---------------------------------------------------------------
+# Grazing of MZOO on CIL
+MZOO_C;CIL_C:-;f_graz_mz(MZOO_cell>N1_PREY_CELL_MZOO>N1_PREY_C_MZOO>N_PREY_MZOO>betaKTW>N1_PREY_CELL_MZOO>N1_PREY_C_MZOO>I1_PREY_MZOO>F1_PREY_MZOO>PHI1_PREY_MZOO>N2_PREY_CELL_MZOO>N2_PREY_C_MZOO>I2_PREY_MZOO>F2_PREY_MZOO>PHI2_PREY_MZOO>N3_PREY_CELL_MZOO>N3_PREY_C_MZOO>I3_PREY_MZOO>F3_PREY_MZOO>PHI3_PREY_MZOO):-JUV_MZOO_CIL;f_growth_conv(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C>CIL_C>CIL_C)
+#--------------------------------------------------------------------------------
+#Grazing du mesozoo sur les HNF + repartition de la predation implicite des copepodes dans leurs stades juveniles
+#--------------------------------------------------------------------------------
+MZOO_C;HNF_C:-;f_graz_mz(MZOO_cell>N2_PREY_CELL_MZOO>N2_PREY_C_MZOO>N_PREY_MZOO>betaKTW>N1_PREY_CELL_MZOO>N1_PREY_C_MZOO>I1_PREY_MZOO>F1_PREY_MZOO>PHI1_PREY_MZOO>N2_PREY_CELL_MZOO>N2_PREY_C_MZOO>I2_PREY_MZOO>F2_PREY_MZOO>PHI2_PREY_MZOO>N3_PREY_CELL_MZOO>N3_PREY_C_MZOO>I3_PREY_MZOO>F3_PREY_MZOO>PHI3_PREY_MZOO):-JUV_MZOO_HNF;f_growth_conv(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C>HNF_C>HNF_C)
+#--------------------------------------------------------------------------------
+#Grazing du mesozoo sur le microphyto 
+#--------------------------------------------------------------------------------
+MZOO_C;PHYL_C:-;f_graz_mz(MZOO_cell>N3_PREY_CELL_MZOO>N3_PREY_C_MZOO>N_PREY_MZOO>betaKTW>N1_PREY_CELL_MZOO>N1_PREY_C_MZOO>I1_PREY_MZOO>F1_PREY_MZOO>PHI1_PREY_MZOO>N2_PREY_CELL_MZOO>N2_PREY_C_MZOO>I2_PREY_MZOO>F2_PREY_MZOO>PHI2_PREY_MZOO>N3_PREY_CELL_MZOO>N3_PREY_C_MZOO>I3_PREY_MZOO>F3_PREY_MZOO>PHI3_PREY_MZOO)
+#---------------------------------------------------------------------------------
+CIL_C;HNF_C:-;f_graz_cil(CIL_cell>N1_PREY_CELL_CIL>N1_PREY_C_CIL>N_PREY_CIL>betaKTW>N1_PREY_CELL_CIL>N1_PREY_C_CIL>I1_PREY_CIL>F1_PREY_CIL>PHI1_PREY_CIL>N2_PREY_CELL_CIL>N2_PREY_C_CIL>I2_PREY_CIL>F2_PREY_CIL>PHI2_PREY_CIL>N3_PREY_CELL_CIL>N3_PREY_C_CIL>I3_PREY_CIL>F3_PREY_CIL>PHI3_PREY_CIL)
+CIL_N;HNF_N:-;f_graz_X(CIL_N>HNF_N)
+CIL_P;HNF_P:-;f_graz_X(CIL_P>HNF_P)
+#---------------------------------------------------------------------------------
+#Grazing des cilies sur le picophytoplancton
+#---------------------------------------------------------------------------------
+CIL_C;PHYS_C:-;f_graz_cil(CIL_cell>N2_PREY_CELL_CIL>N2_PREY_C_CIL>N_PREY_CIL>betaKTW>N1_PREY_CELL_CIL>N1_PREY_C_CIL>I1_PREY_CIL>F1_PREY_CIL>PHI1_PREY_CIL>N2_PREY_CELL_CIL>N2_PREY_C_CIL>I2_PREY_CIL>F2_PREY_CIL>PHI2_PREY_CIL>N3_PREY_CELL_CIL>N3_PREY_C_CIL>I3_PREY_CIL>F3_PREY_CIL>PHI3_PREY_CIL)
+CIL_N;PHYS_N:-;f_graz_X(CIL_N>PHYS_N)
+CIL_P;PHYS_P:-;f_graz_X(CIL_P>PHYS_P)
+#---------------------------------------------------------------------------------
+#Grazing des cilies sur les bacteries
+#---------------------------------------------------------------------------------
+CIL_C;BAC_C:-;f_graz_cil(CIL_cell>N3_PREY_CELL_CIL>N3_PREY_C_CIL>N_PREY_CIL>betaKTW>N1_PREY_CELL_CIL>N1_PREY_C_CIL>I1_PREY_CIL>F1_PREY_CIL>PHI1_PREY_CIL>N2_PREY_CELL_CIL>N2_PREY_C_CIL>I2_PREY_CIL>F2_PREY_CIL>PHI2_PREY_CIL>N3_PREY_CELL_CIL>N3_PREY_C_CIL>I3_PREY_CIL>F3_PREY_CIL>PHI3_PREY_CIL)
+CIL_N;BAC_N:-;f_graz_X(CIL_N>BAC_N)
+CIL_P;BAC_P:-;f_graz_X(CIL_P>BAC_P)
+#---------------------------------------------------------------------------------
+#Grazing des nanoflagelles heterotrophes sur le picophytoplancton
+#---------------------------------------------------------------------------------
+HNF_C;PHYS_C:-;f_graz_hnf(HNF_cell>N1_PREY_CELL_HNF>N1_PREY_C_HNF>N_PREY_HNF>betaKTW>N1_PREY_CELL_HNF>N1_PREY_C_HNF>I1_PREY_HNF>F1_PREY_HNF>PHI1_PREY_HNF>N2_PREY_CELL_HNF>N2_PREY_C_HNF>I2_PREY_HNF>F2_PREY_HNF>PHI2_PREY_HNF)
+HNF_N;PHYS_N:-;f_graz_X(HNF_N>PHYS_N)
+HNF_P;PHYS_P:-;f_graz_X(HNF_P>PHYS_P)
+#---------------------------------------------------------------------------------
+#Grazing des nanoflagelles heterotrophes sur les bacteries
+#---------------------------------------------------------------------------------
+HNF_C;BAC_C:-;f_graz_hnf(HNF_cell>N2_PREY_CELL_HNF>N2_PREY_C_HNF>N_PREY_HNF>betaKTW>N1_PREY_CELL_HNF>N1_PREY_C_HNF>I1_PREY_HNF>F1_PREY_HNF>PHI1_PREY_HNF>N2_PREY_CELL_HNF>N2_PREY_C_HNF>I2_PREY_HNF>F2_PREY_HNF>PHI2_PREY_HNF)
+HNF_N;BAC_N:-;f_graz_X(HNF_N>BAC_N)
+HNF_P;BAC_P:-;f_graz_X(HNF_P>BAC_P)
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+##################################################################################
+# UPTAKE DE NUTRIMENTS PAR LES OSMOTROPHES
+##################################################################################
+#---------------------------------------------------------------------------------
+#Uptake des Diatomees
+#---------------------------------------------------------------------------------
+# Uptake de NO3
+PHYL_N;NIT:-;f_upt(PHYL_N>NIT>K_PHYL_NIT>V_PHYL_NIT):x;f_inhib(AMMO>PHYL_INHIB_NIT):+P_RELEA_PHY;f_upt(PHYL_N>NIT>K_PHYL_NIT>V_PHYL_NIT):x;f_inhib(AMMO>PHYL_INHIB_NIT):x;f_fQPPX(PHYL_N>Q_MIN_PHYL_N>Q_MAX_PHYL_N>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP)
+# Uptake de NH4 et production de NH4 par copepode du au grazing sur PHYL
+PHYL_N;AMMO:-;f_upt(PHYL_N>AMMO>K_PHYL_AMMO>V_PHYL_AMMO):+P_RELEA_PHY;f_upt(PHYL_N>AMMO>K_PHYL_AMMO>V_PHYL_AMMO):x;f_fQPPX(PHYL_N>Q_MIN_PHYL_N>Q_MAX_PHYL_N>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP):+P_CONVERT_MZOO_NUT;f_graz_X(MZOO_cell>PHYL_N)
+# Uptake de PO4 et production de PO4 par copepode du au grazing sur PHYL
+PHYL_P;PHOS:-;f_upt(PHYL_P>PHOS>K_PHYL_PHOS>V_PHYL_PHOS):+P_RELEA_PHY;f_upt(PHYL_P>PHOS>K_PHYL_PHOS>V_PHYL_PHOS):x;f_fQPPX(PHYL_P>Q_MIN_PHYL_P>Q_MAX_PHYL_P>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP):+P_CONVERT_MZOO_NUT;f_graz_X(MZOO_cell>PHYL_P)
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#Uptake by Picophytoplankton
+#---------------------------------------------------------------------------------
+# Uptake of NO3
+PHYS_N;NIT:-;f_upt(PHYS_N>NIT>K_PHYS_NIT>V_PHYS_NIT):x;f_inhib(AMMO>PHYS_INHIB_NIT):+P_RELEA_PHY;f_upt(PHYS_N>NIT>K_PHYS_NIT>V_PHYS_NIT):x;f_inhib(AMMO>PHYS_INHIB_NIT):x;f_fQPPX(PHYS_N>Q_MIN_PHYS_N>Q_MAX_PHYS_N>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP)
+# Uptake of NH4
+PHYS_N;AMMO:-;f_upt(PHYS_N>AMMO>K_PHYS_AMMO>V_PHYS_AMMO):+P_RELEA_PHY;f_upt(PHYS_N>AMMO>K_PHYS_AMMO>V_PHYS_AMMO):x;f_fQPPX(PHYS_N>Q_MIN_PHYS_N>Q_MAX_PHYS_N>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP)
+# Uptake of PO4
+PHYS_P;PHOS:-;f_upt(PHYS_P>PHOS>K_PHYS_PHOS>V_PHYS_PHOS):+P_RELEA_PHY;f_upt(PHYS_P>PHOS>K_PHYS_PHOS>V_PHYS_PHOS):x;f_fQPPX(PHYS_P>Q_MIN_PHYS_P>Q_MAX_PHYS_P>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP)
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+#Uptake by free bacteria 
+#----------------------------------------------------------------------------------
+# Uptake of NO3
+BAC_N;NIT:-;f_upt(BAC_N>NIT>K_BAC_NIT>V_BAC_NIT):x;f_inhib(AMMO>BAC_INHIB_NIT):+1.0;f_upt(BAC_N>NIT>K_BAC_NIT>V_BAC_NIT):x;f_inhib(AMMO>BAC_INHIB_NIT):x;f_fQPPX(BAC_N>Q_MIN_BAC_N>Q_MAX_BAC_N>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP)
+# Uptake of NH4
+BAC_N;AMMO:-;f_upt(BAC_N>AMMO>K_BAC_AMMO>V_BAC_AMMO):+1.0;f_upt(BAC_N>AMMO>K_BAC_AMMO>V_BAC_AMMO):x;f_fQPPX(BAC_N>Q_MIN_BAC_N>Q_MAX_BAC_N>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP):+1.0;f_upt(BAC_N>MODL_N>K_BAC_LDON>V_BAC_LDON):x;f_inhib(AMMO>BAC_INHIB_DON):x;f_fQPPX_split(BAC_N>Q_MIN_BAC_N>Q_MAX_BAC_N>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_C>Q_MAX_BAC_C)
+# Uptake of PO4
+BAC_P;PHOS:-;f_upt(BAC_P>PHOS>K_BAC_PHOS>V_BAC_PHOS):+1.0;f_upt(BAC_P>PHOS>K_BAC_PHOS>V_BAC_PHOS):x;f_fQPPX(BAC_P>Q_MIN_BAC_P>Q_MAX_BAC_P>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP):+1.0;f_upt(BAC_P>MODL_P>K_BAC_LDOP>V_BAC_LDOP):x;f_inhib(PHOS>BAC_INHIB_DOP):x;f_fQPPX_split(BAC_P>Q_MIN_BAC_P>Q_MAX_BAC_P>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_C>Q_MAX_BAC_C)
+#
+##################################################################################
+# UPTAKE AND TRANSFORMATION OF DOM BY HETEROTROPHIC BACTERIA
+##################################################################################
+#---------------------------------------------------------------------------------
+#UPTAKE BY HETEROTROPHIC BACTERIA
+#---------------------------------------------------------------------------------
+# Uptake et production (lyse) de DOC hydrolysable
+BAC_C;MODL_C:-;f_upt(BAC_C>MODL_C>K_BAC_LDOC>V_BAC_LDOC):+1.0;f_mort_l(MORTL_BAC):+;f_fQPPC(BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_CN>Q_MAX_BAC_CN):x;f_upt(BAC_C>MODL_C>K_BAC_LDOC>V_BAC_LDOC)
+# Uptake et production de DOC semilabile (respirable)
+BAC_C;MODSL_C:-;f_upt(BAC_C>MODSL_C>K_BAC_SLDOC>V_BAC_SLDOC):+;f_fQPPC(BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_CN>Q_MAX_BAC_CN):x;f_upt(BAC_C>MODSL_C>K_BAC_SLDOC>V_BAC_SLDOC)
+# Uptake et production (lyse) DON hydrolysable
+BAC_N;MODL_N:-;f_upt(BAC_N>MODL_N>K_BAC_LDON>V_BAC_LDON):x;f_inhib(AMMO>BAC_INHIB_DON):+1.0;f_upt(BAC_N>MODL_N>K_BAC_LDON>V_BAC_LDON):x;f_inhib(AMMO>BAC_INHIB_DON):x;f_fQPPX_split(BAC_N>Q_MIN_BAC_N>Q_MAX_BAC_N>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_C>Q_MAX_BAC_C):+1.0;f_mort_l(MORTL_BAC)
+# Uptake et production (lyse) DOP hydrolysable
+BAC_P;MODL_P:-;f_upt(BAC_P>MODL_P>K_BAC_LDOP>V_BAC_LDOP):x;f_inhib(PHOS>BAC_INHIB_DOP):+1.0;f_upt(BAC_P>MODL_P>K_BAC_LDOP>V_BAC_LDOP):x;f_inhib(PHOS>BAC_INHIB_DOP):x;f_fQPPX_split(BAC_P>Q_MIN_BAC_P>Q_MAX_BAC_P>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_C>Q_MAX_BAC_C):+1.0;f_mort_l(MORTL_BAC)
+#
+#----------------------------------------------------------------------------------
+# Uptake by diatoms
+#----------------------------------------------------------------------------------
+# Production  de DOC hydrolysable (lyse)
+# PHYL_C;MODL_C:+0.0;f_mort_l(MORTL_PHYL)
+# Production de DOC semilabile (exudation et lyse)
+PHYL_C;MODL_C:+;f_photo(ASTAR_PHYL>PHI_MAX_PHYL>TAU_PHYL>SIG_PS2_PHYL>K_D_PHYL>K_R_PHYL):x;f_fQPPC(PHYL_C>Q_MIN_PHYL_C>Q_MAX_PHYL_C>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN)
+# Uptake et production (lyse) de DOP hydrolysable
+PHYL_P;MODL_P:-;f_upt(PHYL_P>MODL_P>K_PHYL_LDOP>V_PHYL_LDOP):x;f_inhib(PHOS>PHYL_INHIB_DOP):+1.0;f_upt(PHYL_P>MODL_P>K_PHYL_LDOP>V_PHYL_LDOP):x;f_inhib(PHOS>PHYL_INHIB_DOP):x;f_fQPPX(PHYL_P>Q_MIN_PHYL_P>Q_MAX_PHYL_P>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP)
+#----------------------------------------------------------------------------------
+# Uptake du Picophytoplankton
+#----------------------------------------------------------------------------------
+# Production  de DOC hydrolysable (lyse)
+PHYS_C;MODL_C:+1.0;f_mort_l(MORTL_PHYS):+;f_photo(ASTAR_PHYS>PHI_MAX_PHYS>TAU_PHYS>SIG_PS2_PHYS>K_D_PHYS>K_R_PHYS):x;f_fQPPC(PHYS_C>Q_MIN_PHYS_C>Q_MAX_PHYS_C>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN)
+# Uptake et production (lyse) de DOP hydrolysable
+PHYS_P;MODL_P:+1.0;f_mort_l(MORTL_PHYS):-;f_upt(PHYS_P>MODL_P>K_PHYS_LDOP>V_PHYS_LDOP):x;f_inhib(PHOS>PHYS_INHIB_DOP):+;f_upt(PHYS_P>MODL_P>K_PHYS_LDOP>V_PHYS_LDOP):x;f_inhib(PHOS>PHYS_INHIB_DOP):x;f_fQPPX(PHYS_P>Q_MIN_PHYS_P>Q_MAX_PHYS_P>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP)
+# Uptake et production (lyse) de DON hydrolysable
+PHYS_N;MODL_N:+1.0;f_mort_l(MORTL_PHYS):-;f_upt(PHYS_N>MODL_N>K_PHYS_LDON>V_PHYS_LDON):x;f_inhib(AMMO>PHYS_INHIB_DON):+;f_upt(PHYS_N>MODL_N>K_PHYS_LDON>V_PHYS_LDON):x;f_inhib(AMMO>PHYS_INHIB_DON):x;f_fQPPX(PHYS_N>Q_MIN_PHYS_N>Q_MAX_PHYS_N>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN)
+##################################################################################
+#PRODUCTION DE MATIERE ORGANIQUE DISSOUTE ET REMINERALISATION
+##################################################################################
+#---------------------------------------------------------------------------------
+#Production par le MZOO
+#---------------------------------------------------------------------------------
+# Production de DOC semilabile (excretion)
+MZOO_C;MODL_C:+P_EXCRE_MZOO;f_graz_X(MZOO_C>CIL_C):x;f_fQPPC(MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C):+P_EXCRE_MZOO;f_graz_X(MZOO_C>HNF_C):x;f_fQPPC(MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C):+P_EXCRE_MZOO;f_graz_X(MZOO_C>PHYL_C):x;f_fQPPC(MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C)
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#Production par les HNF
+#---------------------------------------------------------------------------------
+# Production  de DOC hydrolysable (lyse)
+HNF_C;MODL_C:+1.0;f_mort_l(MORTL_HNF):+;f_graz_X(HNF_C>PHYS_C):x;f_fQPPC(HNF_C>Q_MIN_HNF_C>Q_MAX_HNF_C>Q_MIN_HNF_CP>Q_MAX_HNF_CP>Q_MIN_HNF_CN>Q_MAX_HNF_CN):+;f_graz_X(HNF_C>BAC_C):x;f_fQPPC(HNF_C>Q_MIN_HNF_C>Q_MAX_HNF_C>Q_MIN_HNF_CP>Q_MAX_HNF_CP>Q_MIN_HNF_CN>Q_MAX_HNF_CN)
+# Production (lyse) de DOP hydrolysable
+HNF_P;MODL_P:+1.0;f_mort_l(MORTL_HNF)
+# Production (lyse) de DON hydrolysable
+HNF_N;MODL_N:+1.0;f_mort_l(MORTL_HNF)
+# Production de AMMO (excretion des HNF + excretion des copepodes du au grazing implicite des HNF_N)
+HNF_N;AMMO:+P_EXCRE_ZOO;f_graz_X(HNF_N>PHYS_N):x;f_fQPPX(HNF_N>Q_MIN_HNF_N>Q_MAX_HNF_N>Q_MIN_HNF_CN>Q_MAX_HNF_CN>Q_MIN_HNF_CP>Q_MAX_HNF_CP):+P_EXCRE_ZOO;f_graz_X(HNF_N>BAC_N):x;f_fQPPX(HNF_N>Q_MIN_HNF_N>Q_MAX_HNF_N>Q_MIN_HNF_CN>Q_MAX_HNF_CN>Q_MIN_HNF_CP>Q_MAX_HNF_CP):+P_CONVERT_MZOO_NUT;f_graz_X(MZOO_cell>HNF_N)
+# Production de PHOS (excretion + excretion des copepodes du au grazing implicite des HNF_P)
+HNF_P;PHOS:+P_EXCRE_ZOO;f_graz_X(HNF_P>PHYS_P):x;f_fQPPX(HNF_P>Q_MIN_HNF_P>Q_MAX_HNF_P>Q_MIN_HNF_CN>Q_MAX_HNF_CN>Q_MIN_HNF_CP>Q_MAX_HNF_CP):+P_EXCRE_ZOO;f_graz_X(HNF_P>BAC_P):x;f_fQPPX(HNF_P>Q_MIN_HNF_P>Q_MAX_HNF_P>Q_MIN_HNF_CN>Q_MAX_HNF_CN>Q_MIN_HNF_CP>Q_MAX_HNF_CP):+P_CONVERT_MZOO_NUT;f_graz_X(MZOO_cell>HNF_P)
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#Production par les Cilies
+#---------------------------------------------------------------------------------
+# Production of DOC semilabile (excretion)
+CIL_C;MODL_C:+;f_graz_X(CIL_C>PHYS_C):x;f_fQPPC(CIL_C>Q_MIN_CIL_C>Q_MAX_CIL_C>Q_MIN_CIL_CP>Q_MAX_CIL_CP>Q_MIN_CIL_CN>Q_MAX_CIL_CN):+;f_graz_X(CIL_C>HNF_C):x;f_fQPPC(CIL_C>Q_MIN_CIL_C>Q_MAX_CIL_C>Q_MIN_CIL_CP>Q_MAX_CIL_CP>Q_MIN_CIL_CN>Q_MAX_CIL_CN):+;f_graz_X(CIL_C>BAC_C):x;f_fQPPC(CIL_C>Q_MIN_CIL_C>Q_MAX_CIL_C>Q_MIN_CIL_CP>Q_MAX_CIL_CP>Q_MIN_CIL_CN>Q_MAX_CIL_CN)
+# Production de AMMO (excretion + excretion des copepodes du au grazing implicite des CIL_N)
+CIL_N;AMMO:+P_EXCRE_ZOO;f_graz_X(CIL_N>PHYS_N):x;f_fQPPX(CIL_N>Q_MIN_CIL_N>Q_MAX_CIL_N>Q_MIN_CIL_CN>Q_MAX_CIL_CN>Q_MIN_CIL_CP>Q_MAX_CIL_CP):+P_EXCRE_ZOO;f_graz_X(CIL_N>HNF_N):x;f_fQPPX(CIL_N>Q_MIN_CIL_N>Q_MAX_CIL_N>Q_MIN_CIL_CN>Q_MAX_CIL_CN>Q_MIN_CIL_CP>Q_MAX_CIL_CP):+P_EXCRE_ZOO;f_graz_X(CIL_N>BAC_N):x;f_fQPPX(CIL_N>Q_MIN_CIL_N>Q_MAX_CIL_N>Q_MIN_CIL_CN>Q_MAX_CIL_CN>Q_MIN_CIL_CP>Q_MAX_CIL_CP):+P_CONVERT_MZOO_NUT;f_graz_X(MZOO_cell>CIL_N)
+#
+# Production de PHOS (excretion + excretion des copepodes du au grazing implicite des CIL_P)
+CIL_P;PHOS:+P_EXCRE_ZOO;f_graz_X(CIL_P>PHYS_P):x;f_fQPPX(CIL_P>Q_MIN_CIL_P>Q_MAX_CIL_P>Q_MIN_CIL_CN>Q_MAX_CIL_CN>Q_MIN_CIL_CP>Q_MAX_CIL_CP):+P_EXCRE_ZOO;f_graz_X(CIL_P>HNF_P):x;f_fQPPX(CIL_P>Q_MIN_CIL_P>Q_MAX_CIL_P>Q_MIN_CIL_CN>Q_MAX_CIL_CN>Q_MIN_CIL_CP>Q_MAX_CIL_CP):+P_EXCRE_ZOO;f_graz_X(CIL_P>BAC_P):x;f_fQPPX(CIL_P>Q_MIN_CIL_P>Q_MAX_CIL_P>Q_MIN_CIL_CN>Q_MAX_CIL_CN>Q_MIN_CIL_CP>Q_MAX_CIL_CP):+P_CONVERT_MZOO_NUT;f_graz_X(MZOO_cell>CIL_P)
+##################################################################################
+#PRODUCTION DE MATIERE ORGANIQUE PARTICULAIRE
+##################################################################################
+#---------------------------------------------------------------------------------
+#Production du mesoZOO (mortalite + egestion de pelotes fecales) + repartition de la predation implicite des copepodes dans leurs stades juveniles
+#---------------------------------------------------------------------------------
+MZOO_C;MOPL_C:+;f_mort_q(MZOO_C>MZOO_cell>MORTQ_MZOO):+1.0;f_mort_l(MORTL_MZOO):+P_PELOT_MZOO;f_graz_X(MZOO_C>CIL_C):x;f_fQPPC(MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C):+P_PELOT_MZOO;f_graz_X(MZOO_C>HNF_C):x;f_fQPPC(MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C):+P_PELOT_MZOO;f_graz_X(MZOO_C>PHYL_C):x;f_fQPPC(MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C):+0.1;f_graz_X(MZOO_C>CIL_C):+0.1;f_graz_X(MZOO_C>HNF_C):+0.1;f_graz_X(MZOO_C>PHYL_C)
+MZOO_C;MOPS_C:-JUV_MZOO_MOP;f_growth_conv(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C>MOPS_C>MOPS_C)
+#---------------------------------------------------------------------------------
+#Production des Cilies
+#---------------------------------------------------------------------------------
+CIL_C;MOPS_C:+1.0;f_mort_l(MORTL_CIL)
+CIL_N;MOPS_N:+1.0;f_mort_l(MORTL_CIL):+P_CONVERT_MZOO_MO;f_graz_X(MZOO_cell>CIL_N):+JUV_MZOO_CIL;f_growth_conv(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C>CIL_C>CIL_N)
+CIL_P;MOPS_P:+1.0;f_mort_l(MORTL_CIL):+P_CONVERT_MZOO_MO;f_graz_X(MZOO_cell>CIL_P):+JUV_MZOO_CIL;f_growth_conv(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C>CIL_C>CIL_P)
+#---------------------------------------------------------------------------------
+#Production des Diatomes
+#---------------------------------------------------------------------------------
+PHYL_C;MOPL_C:+;f_mort_q(PHYL_C>PHYL_cell>MORTQ_PHYL)
+PHYL_N;MOPL_N:+;f_mort_q(PHYL_N>PHYL_cell>MORTQ_PHYL):+P_CONVERT_MZOO_MO;f_graz_X(MZOO_cell>PHYL_N)
+PHYL_P;MOPL_P:+;f_mort_q(PHYL_P>PHYL_cell>MORTQ_PHYL):+P_CONVERT_MZOO_MO;f_graz_X(MZOO_cell>PHYL_P)
+#
+PHYL_C;MOPS_C:+1.0;f_mort_l(MORTL_PHYL)
+PHYL_N;MOPS_N:+1.0;f_mort_l(MORTL_PHYL)
+PHYL_P;MOPS_P:+1.0;f_mort_l(MORTL_PHYL)
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#  Production du au grazing des HNF par les copepodes + repartition de la predation implicite des copepodes dans leurs stades juveniles
+# -------------------------------------------------------------------------------
+HNF_N;MOPS_N:+P_CONVERT_MZOO_MO;f_graz_X(MZOO_cell>HNF_N):+JUV_MZOO_HNF;f_growth_conv(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C>HNF_C>HNF_N)
+HNF_P;MOPS_P:+P_CONVERT_MZOO_MO;f_graz_X(MZOO_cell>HNF_P):+JUV_MZOO_HNF;f_growth_conv(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C>HNF_C>HNF_P)
+#
+##################################################################################
+#REMINERALISATION DE LA MATIERE ORGANIQUE PARTICULAIRE
+##################################################################################
+#---------------------------------------------------------------------------------
+#REMINERALISATION DE LA MOP
+#---------------------------------------------------------------------------------
+MOPS_C;MODL_C:+;f_hydrol(MOPS_C>TT_MOP_C>BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C)
+MOPS_N;MODL_N:+;f_hydrol(MOPS_N>TT_MOP_N>BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C)
+MOPS_P;MODL_P:+;f_hydrol(MOPS_P>TT_MOP_P>BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C)
+#
+MOPS_C;MOPL_C:-;f_hydrol(MOPL_C>TT_MOPL_C>BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C)
+MOPS_N;MOPL_N:-;f_hydrol(MOPL_N>TT_MOPL_N>BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C)
+MOPS_P;MOPL_P:-;f_hydrol(MOPL_P>TT_MOPL_P>BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C)
+##################################################################################
+#NITRIFICATION
+##################################################################################
+NIT;AMMO:-;f_nitrif(AMMO>TAUX_NITRIF)
+###################################################################################
+#----------------------------------------------------------------------------------
+#respiration du mesoZOO
+#----------------------------------------------------------------------------------
+MZOO_C:-3.0d-7;f_growth(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C)
+#----------------------------------------------------------------------------------
+#respiration des cilies
+#----------------------------------------------------------------------------------
+CIL_C:-1.3d-11;f_growth(GROWTH_CIL>CIL_cell>CIL_C>Q_MIN_CIL_C>Q_MAX_CIL_C>CIL_N>Q_MIN_CIL_N>Q_MAX_CIL_N>CIL_P>Q_MIN_CIL_P>Q_MAX_CIL_P)
+#----------------------------------------------------------------------------------
+#respiration des HNF
+#----------------------------------------------------------------------------------
+HNF_C:-1.2d-14;f_growth(GROWTH_HNF>HNF_cell>HNF_C>Q_MIN_HNF_C>Q_MAX_HNF_C>HNF_N>Q_MIN_HNF_N>Q_MAX_HNF_N>HNF_P>Q_MIN_HNF_P>Q_MAX_HNF_P)
+#----------------------------------------------------------------------------------
+#respiration des bacteries heterotrophes
+#----------------------------------------------------------------------------------
+BAC_C:-COST_uLDOC;f_upt(BAC_C>MODL_C>K_BAC_LDOC>V_BAC_LDOC):x;f_fQRESP_C(BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_CN>Q_MAX_BAC_CN):-COST_uSLDOC;f_upt(BAC_C>MODSL_C>K_BAC_SLDOC>V_BAC_SLDOC):x;f_fQRESP_C(BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_CN>Q_MAX_BAC_CN):-COST_uLDON;f_upt(BAC_N>MODL_N>K_BAC_LDON>V_BAC_LDON):x;f_fQRESP_X(BAC_N>Q_MIN_BAC_N>Q_MAX_BAC_N>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP):x;f_inhib(AMMO>BAC_INHIB_DON):-COST_uNIT;f_upt(BAC_N>NIT>K_BAC_NIT>V_BAC_NIT):x;f_inhib(AMMO>BAC_INHIB_NIT):x;f_fQRESP_X(BAC_N>Q_MIN_BAC_N>Q_MAX_BAC_N>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP):-COST_uAMMO;f_upt(BAC_N>AMMO>K_BAC_AMMO>V_BAC_AMMO):x;f_fQRESP_X(BAC_N>Q_MIN_BAC_N>Q_MAX_BAC_N>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP):-COST_uPHOS;f_upt(BAC_P>PHOS>K_BAC_PHOS>V_BAC_PHOS):x;f_fQRESP_X(BAC_P>Q_MIN_BAC_P>Q_MAX_BAC_P>Q_MIN_BAC_CN>Q_MAX_BAC_CN>Q_MIN_BAC_CP>Q_MAX_BAC_CP)
+#
+##################################################################################
+#RESPIRATION/PHOTOSYNTHESE DES ORGANISMES PHOTOSYNTHETIQUES
+###################################################################################
+#----------------------------------------------------------------------------------
+#respiration/photosynthese des diatomes
+#----------------------------------------------------------------------------------
+PHYL_C:+;f_photo(ASTAR_PHYL>PHI_MAX_PHYL>TAU_PHYL>SIG_PS2_PHYL>K_D_PHYL>K_R_PHYL):-COSTG_PHYL;f_photo(ASTAR_PHYL>PHI_MAX_PHYL>TAU_PHYL>SIG_PS2_PHYL>K_D_PHYL>K_R_PHYL):-COST_uNIT;f_upt(PHYL_N>NIT>K_PHYL_NIT>V_PHYL_NIT):x;f_inhib(AMMO>PHYL_INHIB_NIT):x;f_fQRESP_X(PHYL_N>Q_MIN_PHYL_N>Q_MAX_PHYL_N>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP):-COST_uAMMO;f_upt(PHYL_N>AMMO>K_PHYL_AMMO>V_PHYL_AMMO):x;f_fQRESP_X(PHYL_N>Q_MIN_PHYL_N>Q_MAX_PHYL_N>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP):-COST_uPHOS;f_upt(PHYL_P>PHOS>K_PHYL_PHOS>V_PHYL_PHOS):x;f_fQRESP_X(PHYL_P>Q_MIN_PHYL_P>Q_MAX_PHYL_P>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP)
+#----------------------------------------------------------------------------------
+#respiration/photosynthese des picophytoplancton
+#----------------------------------------------------------------------------------
+PHYS_C:+;f_photo(ASTAR_PHYS>PHI_MAX_PHYS>TAU_PHYS>SIG_PS2_PHYS>K_D_PHYS>K_R_PHYS):-COSTG_PHYS;f_photo(ASTAR_PHYS>PHI_MAX_PHYS>TAU_PHYS>SIG_PS2_PHYS>K_D_PHYS>K_R_PHYS):-COST_uNIT;f_upt(PHYS_N>NIT>K_PHYS_NIT>V_PHYS_NIT):x;f_inhib(AMMO>PHYS_INHIB_NIT):x;f_fQRESP_X(PHYS_N>Q_MIN_PHYS_N>Q_MAX_PHYS_N>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP):-COST_uAMMO;f_upt(PHYS_N>AMMO>K_PHYS_AMMO>V_PHYS_AMMO):x;f_fQRESP_X(PHYS_N>Q_MIN_PHYS_N>Q_MAX_PHYS_N>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP):-COST_uPHOS;f_upt(PHYS_P>PHOS>K_PHYS_PHOS>V_PHYS_PHOS):x;f_fQRESP_X(PHYS_P>Q_MIN_PHYS_P>Q_MAX_PHYS_P>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP)
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+##################################################################################
+#RESPIRATION DES ORGANISMES--> OXYGENE (RP)
+###################################################################################
+OXY_O:-RQMZ2;f_growth(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C):-RQGCIL;f_growth(GROWTH_CIL>CIL_cell>CIL_C>Q_MIN_CIL_C>Q_MAX_CIL_C>CIL_N>Q_MIN_CIL_N>Q_MAX_CIL_N>CIL_P>Q_MIN_CIL_P>Q_MAX_CIL_P):-RQGHNF;f_growth(GROWTH_HNF>HNF_cell>HNF_C>Q_MIN_HNF_C>Q_MAX_HNF_C>HNF_N>Q_MIN_HNF_N>Q_MAX_HNF_N>HNF_P>Q_MIN_HNF_P>Q_MAX_HNF_P):-RQBAC*COST_uLDOC;f_upt(BAC_C>MODL_C>K_BAC_LDOC>V_BAC_LDOC):x;f_fQRESP_C(BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_CN>Q_MAX_BAC_CN):-RQBAC*COST_uSLDOC;f_upt(BAC_C>MODSL_C>K_BAC_SLDOC>V_BAC_SLDOC):x;f_fQRESP_C(BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C>Q_MIN_BAC_CP>Q_MAX_BAC_CP>Q_MIN_BAC_CN>Q_MAX_BAC_CN):-NQ;f_nitrif(AMMO>TAUX_NITRIF):+PQPHYL;f_photo(ASTAR_PHYL>PHI_MAX_PHYL>TAU_PHYL>SIG_PS2_PHYL>K_D_PHYL>K_R_PHYL>PHYL_C):-RQPHY*COSTG_PHYL;f_photo(ASTAR_PHYL>PHI_MAX_PHYL>TAU_PHYL>SIG_PS2_PHYL>K_D_PHYL>K_R_PHYL>PHYL_C):x;f_fQRESP_C(PHYL_C>Q_MIN_PHYL_C>Q_MAX_PHYL_C>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN):-RQPHY*COST_uNIT;f_upt(PHYL_N>NIT>K_PHYL_NIT>V_PHYL_NIT):x;f_inhib(AMMO>PHYL_INHIB_NIT):x;f_fQRESP_X(PHYL_N>Q_MIN_PHYL_N>Q_MAX_PHYL_N>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP):-RQPHY*COST_uAMMO;f_upt(PHYL_N>AMMO>K_PHYL_AMMO>V_PHYL_AMMO):x;f_fQRESP_X(PHYL_N>Q_MIN_PHYL_N>Q_MAX_PHYL_N>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP):-RQPHY*COST_uPHOS;f_upt(PHYL_P>PHOS>K_PHYL_PHOS>V_PHYL_PHOS):x;f_fQRESP_X(PHYL_P>Q_MIN_PHYL_P>Q_MAX_PHYL_P>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN>Q_MIN_PHYL_CP>Q_MAX_PHYL_CP):+PQPHYS;f_photo(ASTAR_PHYS>PHI_MAX_PHYS>TAU_PHYS>SIG_PS2_PHYS>K_D_PHYS>K_R_PHYS>PHYS_C):-RQPHY*COSTG_PHYS;f_photo(ASTAR_PHYS>PHI_MAX_PHYS>TAU_PHYS>SIG_PS2_PHYS>K_D_PHYS>K_R_PHYS>PHYS_C):x;f_fQRESP_C(PHYS_C>Q_MIN_PHYS_C>Q_MAX_PHYS_C>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN):-RQPHY*COST_uNIT;f_upt(PHYS_N>NIT>K_PHYS_NIT>V_PHYS_NIT):x;f_inhib(AMMO>PHYS_INHIB_NIT):x;f_fQRESP_X(PHYS_N>Q_MIN_PHYS_N>Q_MAX_PHYS_N>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP):-RQPHY*COST_uAMMO;f_upt(PHYS_N>AMMO>K_PHYS_AMMO>V_PHYS_AMMO):x;f_fQRESP_X(PHYS_N>Q_MIN_PHYS_N>Q_MAX_PHYS_N>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP):-RQPHY*COST_uPHOS;f_upt(PHYS_P>PHOS>K_PHYS_PHOS>V_PHYS_PHOS):x;f_fQRESP_X(PHYS_P>Q_MIN_PHYS_P>Q_MAX_PHYS_P>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN>Q_MIN_PHYS_CP>Q_MAX_PHYS_CP)
+#---------------------------------------------------------------------------------
+###################################################################################
+#PRODUCTION DE CHLOROPHYLLE PAR LES ORGANISMES PHOTOSYNTHETIQUES
+###################################################################################
+#----------------------------------------------------------------------------------
+#Production de chlorophylle par les diatomes
+#----------------------------------------------------------------------------------
+PHYL_Chl:+;f_lchl(THETA_N_MAX_PHYL>ASTAR_PHYL>PHI_MAX_PHYL>Q_MIN_PHYL_C>Q_MAX_PHYL_C):x;f_fQChl(PHYL_C>Q_MIN_PHYL_C>Q_MAX_PHYL_C>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN):x;f_upt(PHYL_N>NIT>K_PHYL_NIT>V_PHYL_NIT):+;f_lchl(THETA_N_MAX_PHYL>ASTAR_PHYL>PHI_MAX_PHYL>Q_MIN_PHYL_C>Q_MAX_PHYL_C):x;f_fQChl(PHYL_C>Q_MIN_PHYL_C>Q_MAX_PHYL_C>Q_MIN_PHYL_CN>Q_MAX_PHYL_CN):x;f_upt(PHYL_N>AMMO>K_PHYL_AMMO>V_PHYL_AMMO):-;f_mort_l(MORTL_PHYL):-;f_mort_q(PHYL_Chl>PHYL_cell>MORTQ_PHYL):-;f_graz_X(MZOO_cell>PHYL_Chl)
+#----------------------------------------------------------------------------------
+#Production de chlorophylle par les picophytoplankton +  repartition de la predation implicite des copepodes dans leurs stades juveniles
+#----------------------------------------------------------------------------------
+PHYS_Chl:+;f_lchl(THETA_N_MAX_PHYS>ASTAR_PHYS>PHI_MAX_PHYS>Q_MIN_PHYS_C>Q_MAX_PHYS_C):x;f_fQChl(PHYS_C>Q_MIN_PHYS_C>Q_MAX_PHYS_C>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN):x;f_upt(PHYS_N>NIT>K_PHYS_NIT>V_PHYS_NIT):+;f_lchl(THETA_N_MAX_PHYS>ASTAR_PHYS>PHI_MAX_PHYS>Q_MIN_PHYS_C>Q_MAX_PHYS_C):x;f_fQChl(PHYS_C>Q_MIN_PHYS_C>Q_MAX_PHYS_C>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN):x;f_upt(PHYS_N>AMMO>K_PHYS_AMMO>V_PHYS_AMMO):+;f_lchl(THETA_N_MAX_PHYS>ASTAR_PHYS>PHI_MAX_PHYS>Q_MIN_PHYS_C>Q_MAX_PHYS_C):x;f_fQChl(PHYS_C>Q_MIN_PHYS_C>Q_MAX_PHYS_C>Q_MIN_PHYS_CN>Q_MAX_PHYS_CN):x;f_upt(PHYS_N>MODL_N>K_PHYS_LDON>V_PHYS_LDON):-;f_mort_l(MORTL_PHYS):-;f_graz_X(HNF_cell>PHYS_Chl):-;f_graz_X(CIL_cell>PHYS_Chl)
+#
+#################################################################################
+#CROISSANCES DES ORGANISMES EN CELLULES
+#################################################################################
+#--------------------------------------------------------------------------------
+#croissance du mesoZoo
+#--------------------------------------------------------------------------------
+MZOO_cell:+;f_growth(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C):-;f_mort_l(MORTL_MZOO):-;f_mort_q(MZOO_cell>MZOO_cell>MORTQ_MZOO)
+#--------------------------------------------------------------------------------
+#croissance des cilies
+#--------------------------------------------------------------------------------
+CIL_cell:+;f_growth(GROWTH_CIL>CIL_cell>CIL_C>Q_MIN_CIL_C>Q_MAX_CIL_C>CIL_N>Q_MIN_CIL_N>Q_MAX_CIL_N>CIL_P>Q_MIN_CIL_P>Q_MAX_CIL_P):-;f_mort_l(MORTL_CIL):-;f_graz_mz(MZOO_cell>N1_PREY_CELL_MZOO>N1_PREY_CELL_MZOO>N_PREY_MZOO>betaKTW>N1_PREY_CELL_MZOO>N1_PREY_C_MZOO>I1_PREY_MZOO>F1_PREY_MZOO>PHI1_PREY_MZOO>N2_PREY_CELL_MZOO>N2_PREY_C_MZOO>I2_PREY_MZOO>F2_PREY_MZOO>PHI2_PREY_MZOO>N3_PREY_CELL_MZOO>N3_PREY_C_MZOO>I3_PREY_MZOO>F3_PREY_MZOO>PHI3_PREY_MZOO):-JUV_MZOO_CIL;f_growth_conv(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C>CIL_C>CIL_cell)
+#--------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------
+HNF_cell:+;f_growth(GROWTH_HNF>HNF_cell>HNF_C>Q_MIN_HNF_C>Q_MAX_HNF_C>HNF_N>Q_MIN_HNF_N>Q_MAX_HNF_N>HNF_P>Q_MIN_HNF_P>Q_MAX_HNF_P):-;f_graz_cil(CIL_cell>N1_PREY_CELL_CIL>N1_PREY_CELL_CIL>N_PREY_CIL>betaKTW>N1_PREY_CELL_CIL>N1_PREY_C_CIL>I1_PREY_CIL>F1_PREY_CIL>PHI1_PREY_CIL>N2_PREY_CELL_CIL>N2_PREY_C_CIL>I2_PREY_CIL>F2_PREY_CIL>PHI2_PREY_CIL>N3_PREY_CELL_CIL>N3_PREY_C_CIL>I3_PREY_CIL>F3_PREY_CIL>PHI3_PREY_CIL):-;f_graz_mz(MZOO_cell>N2_PREY_CELL_MZOO>N2_PREY_CELL_MZOO>N_PREY_MZOO>betaKTW>N1_PREY_CELL_MZOO>N1_PREY_C_MZOO>I1_PREY_MZOO>F1_PREY_MZOO>PHI1_PREY_MZOO>N2_PREY_CELL_MZOO>N2_PREY_C_MZOO>I2_PREY_MZOO>F2_PREY_MZOO>PHI2_PREY_MZOO>N3_PREY_CELL_MZOO>N3_PREY_C_MZOO>I3_PREY_MZOO>F3_PREY_MZOO>PHI3_PREY_MZOO):-;f_mort_l(MORTL_HNF):-JUV_MZOO_HNF;f_growth_conv(GROWTH_MZOO>MZOO_cell>MZOO_C>Q_MIN_MZOO_C>Q_MAX_MZOO_C>HNF_C>HNF_cell)
+#--------------------------------------------------------------------------------
+#croissance des diatomees
+#--------------------------------------------------------------------------------
+PHYL_cell:+;f_growth(GROWTH_PHYL>PHYL_cell>PHYL_C>Q_MIN_PHYL_C>Q_MAX_PHYL_C>PHYL_N>Q_MIN_PHYL_N>Q_MAX_PHYL_N>PHYL_P>Q_MIN_PHYL_P>Q_MAX_PHYL_P):-;f_mort_l(MORTL_PHYL):-;f_graz_mz(MZOO_cell>N3_PREY_CELL_MZOO>N3_PREY_CELL_MZOO>N_PREY_MZOO>betaKTW>N1_PREY_CELL_MZOO>N1_PREY_C_MZOO>I1_PREY_MZOO>F1_PREY_MZOO>PHI1_PREY_MZOO>N2_PREY_CELL_MZOO>N2_PREY_C_MZOO>I2_PREY_MZOO>F2_PREY_MZOO>PHI2_PREY_MZOO>N3_PREY_CELL_MZOO>N3_PREY_C_MZOO>I3_PREY_MZOO>F3_PREY_MZOO>PHI3_PREY_MZOO):-;f_mort_q(PHYL_cell>PHYL_cell>MORTQ_PHYL)
+#--------------------------------------------------------------------------------
+#croissance du picophytoplancton +  repartition de la predation implicite des copepodes dans leurs stades juveniles
+#--------------------------------------------------------------------------------
+PHYS_cell:+;f_growth(GROWTH_PHYS>PHYS_cell>PHYS_C>Q_MIN_PHYS_C>Q_MAX_PHYS_C>PHYS_N>Q_MIN_PHYS_N>Q_MAX_PHYS_N>PHYS_P>Q_MIN_PHYS_P>Q_MAX_PHYS_P):-;f_graz_hnf(HNF_cell>N1_PREY_CELL_HNF>N1_PREY_CELL_HNF>N_PREY_HNF>betaKTW>N1_PREY_CELL_HNF>N1_PREY_C_HNF>I1_PREY_HNF>F1_PREY_HNF>PHI1_PREY_HNF>N2_PREY_CELL_HNF>N2_PREY_C_HNF>I2_PREY_HNF>F2_PREY_HNF>PHI2_PREY_HNF):-;f_graz_cil(CIL_cell>N2_PREY_CELL_CIL>N2_PREY_CELL_CIL>N_PREY_CIL>betaKTW>N1_PREY_CELL_CIL>N1_PREY_C_CIL>I1_PREY_CIL>F1_PREY_CIL>PHI1_PREY_CIL>N2_PREY_CELL_CIL>N2_PREY_C_CIL>I2_PREY_CIL>F2_PREY_CIL>PHI2_PREY_CIL>N3_PREY_CELL_CIL>N3_PREY_C_CIL>I3_PREY_CIL>F3_PREY_CIL>PHI3_PREY_CIL):-;f_mort_l(MORTL_PHYS)
+#--------------------------------------------------------------------------------
+#croissance des bacteries heterotrophes  +  repartition de la predation implicite des copepodes dans leurs stades juveniles
+#--------------------------------------------------------------------------------
+BAC_cell:+;f_growth(GROWTH_BAC>BAC_cell>BAC_C>Q_MIN_BAC_C>Q_MAX_BAC_C>BAC_N>Q_MIN_BAC_N>Q_MAX_BAC_N>BAC_P>Q_MIN_BAC_P>Q_MAX_BAC_P):-;f_graz_hnf(HNF_cell>N2_PREY_CELL_HNF>N2_PREY_CELL_HNF>N_PREY_HNF>betaKTW>N1_PREY_CELL_HNF>N1_PREY_C_HNF>I1_PREY_HNF>F1_PREY_HNF>PHI1_PREY_HNF>N2_PREY_CELL_HNF>N2_PREY_C_HNF>I2_PREY_HNF>F2_PREY_HNF>PHI2_PREY_HNF):-;f_mort_l(MORTL_BAC):-;f_graz_cil(CIL_cell>N3_PREY_CELL_CIL>N3_PREY_CELL_CIL>N_PREY_CIL>betaKTW>N1_PREY_CELL_CIL>N1_PREY_C_CIL>I1_PREY_CIL>F1_PREY_CIL>PHI1_PREY_CIL>N2_PREY_CELL_CIL>N2_PREY_C_CIL>I2_PREY_CIL>F2_PREY_CIL>PHI2_PREY_CIL>N3_PREY_CELL_CIL>N3_PREY_C_CIL>I3_PREY_CIL>F3_PREY_CIL>PHI3_PREY_CIL)
+#---------------------------------------------------------------------------------
+finflux
+#################################################################################
+# Rapport  Chlorophylle/Carbone  en (g chl)/(mol C) 
+#(0 = rapport constant et donne apres les ':'
+# et 1 = rapport variable calcule par le prog. mais a initialiser) :
+1:
+#################################################################################
+#  function for light extinction (not used by the RGB extonction model !!!! VERIF !!!!!) 
+f_extinc(0.0384>0.029)
+##################################################################################

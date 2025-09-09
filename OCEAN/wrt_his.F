@@ -13,8 +13,20 @@
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
 #ifdef SUBSTANCE
-      USE comsubstance, ONLY : cvfix_wat, nvpc
+      USE comsubstance, ONLY : cvfix_wat, nvpc, nvp
 #endif
+
+#if defined BIOLink_PAR_eval
+      USE comBIOLink_helping, ONLY : PAR
+#endif /* BIOLink_PAR_eval */ 
+
+!#if defined BLOOM
+!      USE comBIOLINK, ONLY: diag_1d,ndiag_1d,
+!     &                      diag_2d,ndiag_2d,
+!     &                      diag_3d_CROCO,ndiag_3d
+!     &                      diag_3d_wat,ndiag_3d
+!#endif
+
 #ifdef MUSTANG
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
       USE comsubstance, ONLY : ws_part
@@ -38,7 +50,8 @@
      &                         var3Dksed_loadograv, var3Dksed_permeab, 
      &                         var3Dksed_sed_rate, var3Dksed_sigmadjge, 
      &                         var3Dksed_sigmapsg, var3Dksed_hinder, 
-     &                         var3Dksed_stateconsol
+     &                         var3Dksed_stateconsol,
+     &                         c_sedtot
 # ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
       USE comMUSTANG,   ONLY : sum_tmp, rouse2D
@@ -1402,6 +1415,15 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
             endif
           endif
 # endif
+          do k=1,N
+            workr(:,:,k)=workr(:,:,k) 
+#  ifdef WET_DRY
+     &                SWITCH rmask_wet(:,:)
+#  else
+     &                SWITCH rmask(:,:)
+#  endif
+          enddo
+
           call fillvalue3d(workr,ncidhis,hisT(itrc),
      &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
@@ -1418,6 +1440,14 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
       do itrc=1,ntfix
         if (wrthis(indxT+NT+itrc-1)) then
           workr=cvfix_wat(:,:,:,itrc)
+          do k=1,N
+            workr(:,:,k)=workr(:,:,k) 
+#  ifdef WET_DRY
+     &                SWITCH rmask_wet(:,:)
+#  else
+     &                SWITCH rmask(:,:)
+#  endif
+          enddo
           call fillvalue3d(workr,ncidhis,hisT(NT+itrc),
      &                     vname(1,indxT+NT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his: cvfix_wat   ' MYID
@@ -1502,7 +1532,26 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
         indx = indx + 1
         if (outMust(indx)) then
           do k=1,nk_nivsed_out
-            workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+#           if defined BLOOM && defined key_BLOOM_insed
+              if (itrc .gt. nvpc .AND. itrc .le. nvp) then
+                do j=0,Mm+1
+                  do i=0,Lm+1
+                    if(rmask_wet(i,j).eq.1) then
+                      if(c_sedtot(k,i,j) .gt. 0.0) then
+!                     ... in the sediment, writes the particulate variables in mmole/kgSed
+                        workrsed(i,j,k)=var3D_cvsed(k,i,j,itrc)/c_sedtot(k,i,j)
+                      endif
+                    else
+                      workrsed(i,j,k)=0.0
+                    endif
+                  enddo
+                enddo
+              else
+                workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+              endif
+#           else
+              workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+#           endif
           enddo
           workrsed1=workrsed(:,:,:)
           call fillvalue3d_must(workrsed1,ncidhis,hisMust(indx),
@@ -1785,6 +1834,70 @@ CR      write(*,*) 'wrt_his var3Dksed_dtsdzs'   MYID
 
 # endif /* MUSTANG */
 
+!
+!  PAR evaluation from BIOLink
+!
+
+# if defined BIOLink_PAR_eval
+
+      if (wrthis(indxPAR)) then
+        call fillvalue3d(PAR,ncidhis,hisPAR,vname(1,indxPAR),
+     &        record,r3dvar,type)
+CR        write(*,*) 'wrt_his:  PAR_top_layer' MYID
+      endif
+# endif /* BIOLink_PAR_eval */
+
+!# if defined BLOOM && !defined DIAGNOSTICS_BIO
+!
+!  BLOOM 1D diagnostics
+!
+!      do i=1,ndiag_1d
+!        if (wrthis(indxBLMdiag1d+i)) then
+!
+!          ierr=nf_put_var1_FTYPE (ncidhis, hisBLMdiag1d(i),
+!     &                            record, diag_1d(i))
+!          if (ierr .ne. nf_noerr) then
+!            lvar=lenstr(vname(1,indxBLMdiag1d+i))
+!            MPI_master_only write(stdout,1)
+!     &        vname(1,indxBLMdiag1d+i)(1:lvar), record, ierr
+!     &        MYID
+!            goto 99                !--> ERROR
+!          endif
+!
+!        endif
+!      end do
+!
+!  BLOOM 2D diagnostics
+!
+!
+!      do i=1,ndiag_2d
+!        if (wrthis(indxBLMdiag2d+i)) then
+!          call fillvalue2d(diag_2d(i,:,:),ncidhis,hisBLMdiag2d(i),
+!     &         vname(1,indxBLMdiag2d+i),record,r2dvar,type)
+!        endif
+!      end do
+!
+!  BLOOM 3D diagnostics
+!
+!
+!      do i=1,ndiag_3d
+!        if (wrthis(indxBLMdiag3d+i)) then
+!         workr = diag_3d_CROCO(i,:,:,:)
+!          do k=1,N
+!            workr(:,:,k)=workr(:,:,k)
+!#  ifdef WET_DRY
+!     &                SWITCH rmask_wet(:,:)
+!#  else
+!     &                SWITCH rmask(:,:)
+!#  endif
+!          enddo
+!
+!          call fillvalue3d(workr,ncidhis,
+!     &         hisBLMdiag3d(i),vname(1,indxBLMdiag3d+i),record,r3dvar,type)
+!        endif
+!      end do
+
+!# endif /* BLOOM && ! DIAGNOSTICS_BIO*/
 # ifdef OBSTRUCTION
         do itrc=1,obst_nbvar
             if (l_obstout_pos) then

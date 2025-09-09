@@ -77,7 +77,7 @@
       endif
 #ifdef FILLVAL
       text=vnameindx(i+3)
-      if (TRIM(text) /= '.NO.') then
+      if (TRIM(text) /= '.NO.' .and. LEN_TRIM(text).gt.0) then
        if (nf_type == NF_REAL) then
         ierr= nf_put_att_real (ncid, vid,'_FillValue', nf_type,
      &     1, spval)

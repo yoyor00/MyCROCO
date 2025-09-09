@@ -2233,6 +2233,9 @@ C 				  endif
           USE trcwri_pisces
 #endif
 
+#if defined SUBSTANCE
+      USE comsubstance, ONLY : cvfix_wat,nv_adv,name_var
+#endif
 #if defined MUSTANG
       USE comsubstance, ONLY : name_var, nvpc, ws_part, imud1, imud2
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
@@ -2268,7 +2271,13 @@ C 				  endif
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
       USE comMUSTANG,   ONLY : sum_tmp, rouse2D
 #endif
+# if defined ECO3M
+      USE mod_eco3m, only : E_PARZ, VAR, nbvar
 #endif
+#endif
+# if defined BLOOM && defined DIAGNOSTICS_BIO
+      USE comBIOLINK, ONLY : ndiag_2d, ndiag_3d_wat, ndiag_3d_sed
+# endif
 
 #if defined OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : l_obstout_pos, l_obstout_height_f,
@@ -2333,6 +2342,10 @@ C 				  endif
 # include "scalars.h"
 # include "work.h"
 # include "private_scratch.h"
+
+# if defined BLOOM && defined DIAGNOSTICS_BIO
+#     include "diagnostics.h"
+# endif
 # ifdef ABL1D
 # include "abl1d.h"
 # endif
@@ -2364,7 +2377,7 @@ C 				  endif
       integer Istr,Iend,Jstr,Jend
       integer i,j,k
       integer ilc, itrc
-      character*20 nametrc
+      character*40 nametrc
       real eps
       parameter (eps=1.D-20)
       real stf_cff
@@ -2376,7 +2389,15 @@ C 				  endif
      &     workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
 
 #endif
-
+# if defined BLOOM && defined DIAGNOSTICS_BIO
+      integer idiag
+      character*40 namediag
+# endif
+# if defined ECO3M
+      real var_eco3m_3D(GLOBAL_2D_ARRAY, N)
+      character(len=2500) name_XIOS_ECO3M
+      integer ivar 
+#  endif
 #if defined OBSTRUCTION
       integer iv
 #endif
@@ -2826,6 +2847,23 @@ c !$acc wait
       call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
       endif
 # endif /* SALINITY */
+# if defined ECO3M
+      write(*,*) 'cmzy: send xios e_parz, shape=', shape(e_parz),
+     &                     ' ,var_eco3m_3D shape=', shape(var_eco3m_3D),
+     &                      istr,iend, jstr, jend, padd_X, padd_E
+      var_eco3m_3D(istr:iend,jstr:jend,:)=e_parz(:,:,:)
+      call xios_send_field("e_parz",var_eco3m_3D)
+
+      do ivar=1,nbvar
+         var_eco3m_3D(istr:iend,jstr:jend,:)=VAR(ivar)%conc(:,:,:)
+         name_XIOS_ECO3M=TRIM(ADJUSTL(VAR(ivar)%comp))//'_'
+     &                 //TRIM(ADJUSTL(VAR(ivar)%scomp))//'_'
+     &                 //TRIM(ADJUSTL(VAR(ivar)%elmt))
+         write(*,*) 'cmzy, write XIOS ', TRIM(ADJUSTL(name_XIOS_ECO3M))
+         call xios_send_field(TRIM(ADJUSTL(name_XIOS_ECO3M)),var_eco3m_3D)
+      end do
+
+#endif /* ECO3M */
 ! WARNING here passive tracers are missing
 ! we could easily add them in using all the vname stuff
 ! but I found it quiet ugly
@@ -3694,35 +3732,33 @@ c !$acc wait
 #   endif
 #  endif /* SEDIMENT */
 
-
-
 # ifdef MUSTANG
-      do itrc=3,NT
-         write(nametrc,'(a)') TRIM(name_var(itrc-2))
+      do itrc=itsubs1,itsubs1+ntrc_sedim-1
+           write(nametrc,'(a)') TRIM(name_var(itrc-2))
 #if defined key_sand2D
            if (itrc>=itsubs1+nv_grav .AND.
      &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
-           if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
-     &         .AND.l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
-            workr=t(:,:,:,nstp,itrc)
-            do j=Jstr,Jend
-              do i=Istr,Iend
+            if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
+     &          .AND.l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
+              workr=t(:,:,:,nstp,itrc)
+              do j=Jstr,Jend
+               do i=Istr,Iend
                 DO k=1,N
-           IF( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) > 0.0_rsh) THEN
-           workr(i,j,k) =t(i,j,1,nstp,itrc)*(z_w(i,j,1)-z_w(i,j,0))*
-     &       (  (z_w(i,j,N)-z_r(i,j,k))
-     &          /(z_r(i,j,k)-z_w(i,j,0))
-     &       ) **rouse2D(itrc-itsubs1-nv_grav+1,i,j)
-           workr(i,j,k)=workr(i,j,k)/sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
-           ELSE
-           workr(i,j,k)=0.
-          ENDIF
-          ENDDO
-          enddo
-          enddo
-           else
-            workr=t(:,:,:,nstp,itrc)
-           endif
+                 IF( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) > 0.0_rsh) THEN
+                  workr(i,j,k) =t(i,j,1,nstp,itrc)*(z_w(i,j,1)-z_w(i,j,0))*
+     &            (  (z_w(i,j,N)-z_r(i,j,k))
+     &            /(z_r(i,j,k)-z_w(i,j,0))
+     &            ) **rouse2D(itrc-itsubs1-nv_grav+1,i,j)
+                  workr(i,j,k)=workr(i,j,k)/sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
+                 ELSE
+                  workr(i,j,k)=0.
+                 ENDIF
+                ENDDO
+               enddo
+              enddo
+            else
+             workr=t(:,:,:,nstp,itrc)
+            endif
            else
             workr=t(:,:,:,nstp,itrc)
            endif
@@ -3997,6 +4033,67 @@ c !$acc wait
             ENDIF
       ENDIF
 # endif /* MUSTANG */     
+# if defined BLOOM 
+      do itrc=itsubs1+ntrc_sedim,NT
+        write(nametrc,'(a)') TRIM(name_var(itrc-2))
+        workr=t(:,:,:,nstp,itrc)
+        if (xios_field_is_active(TRIM(nametrc))) then
+          call xios_send_field(TRIM(nametrc),workr)
+        endif
+      enddo
+#   ifdef key_BLOOM_insed
+       do k=1,nk_nivsed_out
+         workrsed(:,:,k)=var3D_TEMP(k,:,:)
+       enddo
+       if (xios_field_is_active("temp_sed")) then
+         call xios_send_field("temp_sed",workrsed)
+       endif
+
+      do itrc=ntrc_sedim+1,ntrc_subs
+        write(nametrc,'(a,"_sed")') TRIM(name_var(itrc))
+        do k=1,nk_nivsed_out
+            workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
+        end do
+        if (xios_field_is_active(TRIM(nametrc))) then
+          call xios_send_field(TRIM(nametrc),workrsed)
+        endif
+      end do
+#   endif
+#   ifdef DIAGNOSTICS_BIO
+!    diagnostics 2D
+      do idiag=1,NumBLMdiag2d
+        write(namediag,'(a)') TRIM(vname(1,indxBLMdiag2d+idiag-1))
+        do j=0,Mm
+          do i=0,Lm
+            work2d(i,j)=biodiag2d(i,j,idiag)
+          enddo
+        enddo
+        if (xios_field_is_active(TRIM(namediag))) then
+          call xios_send_field(TRIM(namediag),work2d)
+        endif
+      enddo
+!    diagnostics 3D
+      do idiag=1,ndiag_3d_wat
+        write(namediag,'(a)') TRIM(vname(1,indxBLMdiag3d+idiag-1))
+        workr=biodiag3d_wat(:,:,:,idiag)
+        if (xios_field_is_active(TRIM(namediag))) then
+          call xios_send_field(TRIM(namediag),workr)
+        endif
+      enddo
+#    ifdef key_BLOOM_insed
+      do idiag = 1,ndiag_3d_sed
+        write(namediag,'(a)') TRIM(vname(1,indxBLMdiag3d+ndiag_3d_wat+
+     &                                   idiag-1))
+        do k=1,nk_nivsed_out
+            workrsed(:,:,k)=biodiag3d_sed(:,:,k,idiag)
+        end do
+        if (xios_field_is_active(TRIM(namediag))) then
+          call xios_send_field(TRIM(namediag),workrsed)
+        endif
+      end do
+#    endif
+#   endif
+# endif
 
 #  ifdef BBL
       if (xios_field_is_active("Abed")) then

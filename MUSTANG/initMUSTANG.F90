@@ -442,7 +442,6 @@ CONTAINS
     READ(50, namdredging); rewind(50)
 
     CLOSE(50) 
-   
     END SUBROUTINE MUSTANG_readnml
 !!===========================================================================
 
@@ -1496,13 +1495,12 @@ CONTAINS
     !&E ** Purpose : prepare needed output arrays
     !&E--------------------------------------------------------------------------
 
-#if defined key_BLOOM_insed
-        USE bioloinit,  ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
 
-        ALLOCATE(var2D_diagsed(GLOBAL_2D_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
-        ALLOCATE(var3D_diagsed(nk_nivsed_out,GLOBAL_2D_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
+#if defined BLOOM && defined key_BLOOM_insed
+    USE comBIOLink , ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
+    ALLOCATE(var2D_diagsed(GLOBAL_2D_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
+    ALLOCATE(var3D_diagsed(nk_nivsed_out,GLOBAL_2D_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
 #endif
-
         IF (l_outsed_hsed) THEN
             ALLOCATE(var2D_hsed(GLOBAL_2D_ARRAY))
             var2D_hsed(GLOBAL_2D_ARRAY) = 0.0_rsh
@@ -1637,6 +1635,17 @@ CONTAINS
     !&E
     !&E ** Purpose : check parameters and prepare needed arrays
     !&E--------------------------------------------------------------------------
+    !! * Modules used
+#if defined BLOOM && defined key_BLOOM_insed
+    USE comBIOLink , ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
+#endif
+
+    !! * Local declarations
+    INTEGER        :: k, nk_nivsed_outlu, nv_out
+    REAL(KIND=rsh) :: dzs_estim
+                        
+    !!--------------------------------------------------------------------------
+    !! * Executable part
 
     MPI_master_only WRITE(iscreenlog, *)
     MPI_master_only WRITE(iscreenlog, *) '***************************************************************'
@@ -1932,6 +1941,11 @@ CONTAINS
             vname_Must(1,indx) = TRIM(name_var(isubs))//'_sed'
             vname_Must(2,indx) = TRIM(long_name_var(isubs))//'_sed'
             vname_Must(3,indx) = unit_var(isubs)
+#           if defined BLOOM && defined key_BLOOM_insed
+             if(isubs .gt. nvpc .and. isubs .le. nvp) then
+               vname_Must(3,indx) = "mmol/kgSed"
+             endif
+#           endif
             vname_Must(4,indx) = TRIM(ADJUSTL(ADJUSTR(standard_name_var(isubs))))//', scalar, series'
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
@@ -2630,6 +2644,14 @@ CONTAINS
     DO iv = 1, nv_adv-nvp
         ivdiss(iv) = iv + nvp
     ENDDO  
+#endif
+#if defined key_noTSdiss_insed
+    ALLOCATE(D0_funcT_opt(nv_state))
+    D0_funcT_opt(:)=1
+    ALLOCATE(D0_m0(nv_state))
+    D0_m0(:)=1.0_rsh
+    ALLOCATE(D0_m1(nv_state))
+    D0_m1(:)=0.0_rsh
 #endif
 #endif
 

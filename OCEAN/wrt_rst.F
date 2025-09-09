@@ -12,7 +12,9 @@
                               ! Write model prognostic
       subroutine wrt_rst      ! variables into restart
                               ! netCDF file.
-
+#if defined SUBSTANCE
+        USE comsubstance, only:cvfix_wat
+#endif
 #if defined MUSTANG
       USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
       USE dredging, ONLY : l_dredging, dredg_hsed_init
@@ -81,7 +83,7 @@
 !
 ! Create/open restart file; write grid arrays, if so needed.
 !
-      call def_rst (ncidrst, nrecrst, ierr)
+      call def_rst (ncidrst, nrecrst, ierr) 
       if (ierr .ne. nf_noerr) goto 99
       lstr=lenstr(rstname)
 !                                            !!! WARNING: Here it is
@@ -368,7 +370,23 @@
       enddo
 # endif
 
-# if defined LMD_MIXING
+!
+! Fixed variables
+!
+#  ifdef SUBSTANCE
+      do itrc=1,ntfix
+        ierr=nf_fwrite(cvfix_wat(START_2D_ARRAY,nstp,itrc), ncidrst,
+     &                             rstT(NT+itrc), record, r3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxV+NT+itrc))
+          write(stdout,1) vname(1,indxV+NT+itrc)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+      enddo
+# endif
+
+# if defined LMD_MIXING 
 !
 !     Write out depth of planetary boundary layer (m).
 !
@@ -431,6 +449,18 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+!
+! Length scale
+!      
+        ierr=nf_fwrite(Lscale(START_2D_ARRAY,0), ncidrst,
+     &                             rstLsc, record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxLsc))
+          write(stdout,1) vname(1,indxLsc)(1:lvar), record,
+     &                    ierr MYID
+          goto 99                                         !--> ERROR
+        endif
+
 !
 ! Vertical viscosity coefficient.
 !

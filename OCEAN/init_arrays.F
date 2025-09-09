@@ -78,6 +78,9 @@ C$    integer omp_get_thread_num
      &       ,k,itrc
 # ifdef DIAGNOSTICS_BIO
      &       ,iflux
+#  if defined BLOOM && defined key_BLOOM_insed
+     &       ,ks
+#  endif
 # endif
 #endif
 #ifdef SEDIMENT
@@ -724,6 +727,13 @@ C$    integer omp_get_thread_num
               bioVSink(i,j,iflux)= init
             enddo
 #   endif
+#  elif defined BLOOM
+            do iflux=1,NumBLMdiag3d
+              biodiag3d_wat(i,j,k,iflux) = init
+            enddo
+            do iflux=1,NumBLMdiag2d
+              biodiag2d(i,j,iflux)= init
+            enddo
 #  else
             do iflux=1,NumFluxTerms
               bioFlux(i,j,k,iflux) = init
@@ -735,6 +745,20 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
+
+#  if defined BLOOM && defined key_BLOOM_insed
+      do ks=1,ksdmax
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            do iflux=1,NumBLMdiag3d
+              biodiag3d_sed(i,j,ks,iflux) = init
+!              biodiag3d_sed(:,:,:,:) = init
+            enddo
+          enddo
+        enddo
+      enddo
+#  endif
+
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
         do j=JstrR,JendR
           do i=IstrR,IendR

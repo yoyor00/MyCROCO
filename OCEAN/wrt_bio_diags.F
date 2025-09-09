@@ -13,6 +13,15 @@
                                    ! Writes requested model
       subroutine wrt_bio_diags     ! fields at requested levels
                                    ! into diagnostics netCDF file.
+
+# if defined BIOLink && defined BLOOM && defined BIOLink_PAR_eval
+      USE comBIOLink_helping, ONLY : PAR
+      USE comBIOLINK, ONLY : ndiag_3d_wat, ndiag_3d_sed
+#  if defined MUSTANG && defined key_BLOOM_insed
+      USE comMUSTANG, ONLY : nk_nivsed_out
+#  endif
+# endif
+
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), ibuff(4), nf_fwrite
@@ -36,6 +45,10 @@
 # endif
 
 # include "netcdf.inc"
+
+#if defined BLOOM && defined MUSTANG && defined key_BLOOM_insed
+      real workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out)
+#endif
 
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
       if (mynode.gt.0) then
@@ -134,9 +147,47 @@
       end do
 
 #  endif
+      
+# elif defined BLOOM
 
+!     vars 2D
+
+      do iflux = 1, NumBLMdiag2d
+        if (wrtdiabio2d(iflux)) then
+          work2d=biodiag2d(:,:,iflux)
+          call fillvalue2d(work2d, nciddiabio, hisBLMdiag2d(iflux),
+     &         vname(1,indxBLMdiag2d+iflux-1),record,r2dvar,type)
+        endif
+      end do
+
+!     vars diag 3D 
+
+      do iflux = 1, ndiag_3d_wat
+        if (wrtdiabio3d(iflux)) then
+          workr=biodiag3d_wat(:,:,:,iflux)
+          call fillvalue3d(workr, nciddiabio, hisBLMdiag3d(iflux),
+     &         vname(1,indxBLMdiag3d+iflux-1),record,r3dvar,type)
+        endif
+      end do
+#  ifdef key_BLOOM_insed
+      do iflux = 1, ndiag_3d_sed
+        if (wrtdiabio3d(ndiag_3d_wat+iflux)) then
+          do k=1,nk_nivsed_out
+            workrsed(:,:,k)=biodiag3d_sed(:,:,k,iflux)
+          end do
+          call fillvalue3d_must(workrsed, nciddiabio, 
+     &         hisBLMdiag3d(ndiag_3d_wat+iflux),
+     &         vname(1,indxBLMdiag3d+ndiag_3d_wat+iflux-1),record,
+     &         b3dvar,type)
+        endif
+      end do
+#  endif
+#  if defined BIOLink_PAR_eval
+        call fillvalue3d(PAR,nciddiabio,hisPAR,vname(1,indxPAR),
+     &        record,r3dvar,type)
+#  endif
 # else
-
+      
 !     Flux terms
       do iflux = 1, NumFluxTerms
         if (wrtdiabioFlux(iflux)) then

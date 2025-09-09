@@ -45,7 +45,7 @@
      &  )
 
 #  ifdef SUBSTANCE
-      USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand
+      USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
 #   ifdef MUSTANG
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
@@ -58,6 +58,9 @@
       USE submassbalance, ONLY :  submassbalance_flxcum_kiv
       USE submassbalance, ONLY :  submassbalance_psource
       USE submassbalance, ONLY :  submassbalance_flxcum_ws
+#   ifdef BIOLink
+       USE coupleur_BIOLink, ONLY : BIOLink_update
+#   endif
 #  endif /* SUBSTANCE */
       implicit none
 #  include "param.h"
@@ -192,6 +195,8 @@
         if (itrc .le. 2) then
 #   elif defined TEMPERATURE || defined SALINITY
         if (itrc .eq. 1) then
+#   else 
+          if (itrc.le.0) then
 #   endif
 #  endif
 !
@@ -662,30 +667,17 @@
             enddo
           else                                   ! passive tracers
 !                                                 (sed. and others)
-#   ifdef MUSTANG
+#   ifdef SUBSTANCE
 !
-            if (itrc.ge.itsubs1+nv_grav .and.
-     &          itrc.le.itsubs1+nvp) then        ! sediment tracers
-#    ifdef key_sand2D
-              if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    endif
 #    undef TS_MIX_IMP
 #    define CD EC
 #    define NBSUBSTEP GC
-#    include "t3dmix_tridiagonal_settling.h"
+#    include "t3dmix_tridiagonal_substance.h"
 #    undef NBSUBSTEP
 #    undef CD
 #    define TS_MIX_IMP
-#    ifdef key_sand2D
-              endif
-#    endif
-            else                                 ! other tracers
-#    undef TS_MIX_IMP
-#    include "t3dmix_tridiagonal.h"
-#    define TS_MIX_IMP
-            endif
 !
-#   else  /* MUSTANG */
+#   else  /* SUBSTANCE */
 !                                                ! passive tracers
 #    ifdef BIO_HADV_WENO5
 #     undef TS_MIX_IMP
@@ -698,34 +690,25 @@
               enddo
             enddo
 #    endif /* BIO_HADV_WENO5 */
-#   endif  /* MUSTANG */
+#   endif  /* SUBSTANCE */
 !
           endif ! itrc <= 2
 !
 #  else /* TS_MIX_IMP */
 
-#   ifndef MUSTANG
+#   ifndef SUBSTANCE
 !                                                ! all tracers
 #    include "t3dmix_tridiagonal.h"
 !
 #   else
-          if (itrc.ge.itsubs1+nv_grav .and.
-     &        itrc.le.itsubs1+nvp) then          ! sediment tracers
-#    ifdef key_sand2D
-            if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    endif
+
 #    define CD EC
 #    define NBSUBSTEP GC
-#    include "t3dmix_tridiagonal_settling.h"
+#    include "t3dmix_tridiagonal_substance.h"
 #    undef NBSUBSTEP
 #    undef CD
-#    ifdef key_sand2D
-            endif
-#    endif
-          else                                   ! all other tracers
-#    include "t3dmix_tridiagonal.h"
-          endif
-#   endif /* MUSTANG */
+
+#   endif /* SUBSTANCE */
 
 #  endif /* TS_MIX_IMP */
 
@@ -783,7 +766,9 @@
       call biology_tile (Istr,Iend,Jstr,Jend)
 #  endif
 
-
+#  ifdef BIOLink
+      call BIOLink_update(Istr,Iend,Jstr,Jend)
+#  endif
 !
 !======================================================================
 !  Compute inverse vertical Rho gradients for use in t3dmix

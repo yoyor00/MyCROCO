@@ -115,10 +115,16 @@ C$    integer omp_get_thread_num
                      f0=1.E-4
                      beta=2.E-11
 # elif defined SINGLE_COLUMN
-#  if defined KATO_PHILIPS || defined WILLIS_DEARDORFF
+#  if defined KATO_PHILIPS || defined WILLIS_DEARDORFF 
+#  if defined DYFAMED
+                     depth=2376.
+                     f0=4.*3.1415/86140.0*sin((43.+25.0*60./100.)*3.1415/180.0)
+                     beta=0.
+#else
                      depth=50.
                      f0=0.
                      beta=0.
+#endif
 #  elif defined DIURNAL_CYCLE
                      depth=150.
                      f0=0.

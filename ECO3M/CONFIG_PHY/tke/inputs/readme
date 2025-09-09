@@ -1,0 +1,7 @@
+Pour changer le fichier de forçages physiques:
+- changer le nom du fichier dans dynparam.i
+- eventuellement changer le nb de jours de forçage a lire
+
+Pour changer ma duree de simu:
+- dans runparam.i
+- dans comrunmod  changer jptemps qui risque d'etre insuffisant si on augment la duree

@@ -1,0 +1,125 @@
+ ===================== Eco3M configuration used: 
+ Name of the configuration of the biogeochemical model: Eco3M_Default_0D    
+  
+ ================ Eco3M: Initialisation of the model configuration ================
+ Configuration file: /home/mazoyer/CROCO/SRC/croco/croco_git_dev_2022_BIOLink_ok/ECO3M/CONFIG_ECO3M/modele.def
+
+ Number of model processes:           20
+ Description of the PROC_MOD array
+ Id : Name : Function name : Number of par. : Par.
+  1  : gpp : f_ppb_han      6  : a_chl|phi_max_C|tau|sig_ps2|k_d|k_r|
+  2  : uGcm : f_fQPP_capmey      3  : indX|Qmin|K_Q|
+  3  : uGd : f_fQPP_droop      3  : indX|Qmin|valmin|
+  4  : uGg : f_fQPP_geid      3  : indX|Qmin|Qmax|
+  5  : respPBB : f_respB_vichi07      3  : rbact|bge|QTEN|
+  6  : pchl : f_pchl_bak06     14  : thetaN_max|alpha_star|inut1|Vm1|K1|iXorC1|inut2|Vm2|K2|iXorC2|inut3|Vm3|K3|iXorC3|
+  7  : gbp : f_gbp_monod      3  : inut|k_demi|mu_bact_NR|
+  8  : upt : f_upt_monod_Qmax      4  : inut|k_demi|Qmax|mu_max|
+  9  : uQ : f_fQupt_geid      5  : indX|Qmin|Qmax|n|valmin|
+ 10  : inhib : f_inhib_harrison      2  : ki|im|
+ 11  : f_ChlC : f_ChlC_cloern_95      2  : inut|KN|
+ 12  : tfuncP : f_tfunc_Lacroix02      3  : beta|t_opt|t_let|
+ 13  : tfuncB : f_tfunc_Q10      1  : QTEN|
+ 14  : rem : f_rem      1  : tx_rem|
+ 15  : nit : f_nitrif_vichi07diaz      2  : tx_nit|QTEN|
+ 16  : mort : f_mort_linear      1  : kmort|
+ 17  : pred : f_mort_quadratique      1  : kmort|
+ 18  : graz : f_graz_C_Fasham90     22  : ipred|iprey|Gmax|kzoo|cminprey|nbprey|ind1|Pref1|ind2|Pref2|ind3|Pref3|ind4|Pref4|ind5|Pref5|ind6|Pref6|ind7|Pref7|ind8|Pref8|
+ 19  : grazC2X : f_graz_C2X      2  : ipred|iprey|
+ 20  : f_extinc : f_extinc_morel93      2  : aa0|kk0|
+
+ ==================== Eco3M: Initialisation of state variables
+ Number of compartments:            3
+ Number of sub-compartments:            3
+ Number of state variables:            6
+
+ Variable descriptions: 
+  ID | Compartment | Sub-compartment | Element 
+  1 - phy - PHYL - C
+  2 - phy - PHYL - N
+  3 - phy - PHYL - Chl
+  4 - det - DETS - C
+  5 - det - DETS - N
+  6 - mid - NO3 - N
+
+ Number of phyto sub-comp:            1
+ Index of phyto sub-comp.:            1
+
+ Number of zoo sub-comp:            0
+
+ Number of bac. sub-comp:            0
+
+ Number of diaz. sub-comp:            0
+
+ Number of dissolved organic matter:            0
+
+ Number of cell variables:            0
+
+  ===================================== Eco3M Flux calculation 
+           1 ;           1 :           1 /          12 /           8 /          12 /
+           1 ;           4 :          16 /
+           2 ;           5 :          16 /
+           2 ;           6 :           8 /          12 /
+           3 ;           3 :          16 /          16 /          12 /           6 /           3 /          12 /
+
+ Flux parameters
+================   2  6 upt        : 
+inut   =  6.00    ;
+k_demi =  2.50    ;
+Qmax   = 0.170    ;
+================   2  6 tfuncP     : 
+beta   = 0.800    ;
+t_opt  =  14.0    ;
+t_let  =  9.00    ;
+================   1  4 mort       : 
+kmort  = 0.100E-07;
+================   2  5 mort       : 
+kmort  = 0.100E-07;
+================   1  1 gpp        : 
+a_chl  = 0.150E-01;
+phi_max= 0.225E-03;
+tau    = 0.200E-02;
+sig_ps2=  8.50    ;
+k_d    = 0.260E-07;
+k_r    = 0.200E-03;
+================   1  1 tfuncP     : 
+beta   = 0.800    ;
+t_opt  =  14.0    ;
+t_let  =  9.00    ;
+================   1  1 upt        : 
+inut   =  6.00    ;
+k_demi =  2.50    ;
+Qmax   = 0.170    ;
+================   1  1 tfuncP     : 
+beta   = 0.800    ;
+t_opt  =  14.0    ;
+t_let  =  9.00    ;
+================   3  3 mort       : 
+kmort  = 0.100E-07;
+================   3  3 mort       : 
+kmort  = 0.100E-07;
+================   3  3 tfuncP     : 
+beta   = 0.800    ;
+t_opt  =  14.0    ;
+t_let  =  9.00    ;
+================   3  3 pchl       : 
+thetaN_=  3.00    ;
+alpha_s= 0.337E-05;
+inut1  =  6.00    ;
+Vm1    = 0.170    ;
+K1     =  2.50    ;
+iXorC1 =  0.00    ;
+================   3  3 uGd        : 
+indX   =  2.00    ;
+Qmin   = 0.500E-01;
+valmin =  0.00    ;
+================   3  3 tfuncP     : 
+beta   = 0.800    ;
+t_opt  =  14.0    ;
+t_let  =  9.00    ;
+
+ ================= Eco3M: Chl initialisation =======================
+ Variable Chl:C ratio:  T
+ Index of phyto Chl variables: 
+           3
+

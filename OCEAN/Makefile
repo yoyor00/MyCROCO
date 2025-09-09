@@ -117,7 +117,8 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-	module_lagrangian.F module_substance.F  module_OBSTRUCTIONS.F\
+	module_lagrangian.F module_substance.F  module_BIOLink.F\
+	module_OBSTRUCTIONS.F\
 	module_ibm.F\
 	abl_step.F  abl_ini.F  abl_tke.F\
 	wrt_abl_his.F  def_abl_his.F\
@@ -159,6 +160,9 @@ include Makedefs
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
 	toolorigindate.F90 \
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
+	bloom_initdefine.F90 bloom.F90\
+	tooljulien.F90 comBIOLink.F90 comBIOLink_physics.F90 comBIOLink_helping.F90\
+	coupleur_BIOLink_physics.F90 coupleur_BIOLink_helping.F90 coupleur_BIOLink.F90 \
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
 	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
@@ -167,6 +171,27 @@ include Makedefs
 	comionc4.F90 ionc4.F90 comtraj.F90 trajectools.F90 toolmpi.F90 \
 	trajinitsave.F90 traject3d.F90 plug_lagrangian.F90\
 	ibmtools.F90 ibmmove.F90 debmodel.F90 ibm.F90 plug_ibm.F90
+	eco3m_string.F90\
+	mod_eco3m_vartypes.F90\
+	mod_eco3m_files.F90\
+	mod_eco3m_irrad.F90\
+	mod_eco3m.F90\
+	eco3m_mod.F90\
+	mod_eco3m_id_extract.F90\
+	eco3m_chl.F90\
+	mod_eco3m_user.F90\
+	mod_eco3m_fprocess.F90\
+	eco3m_co2.F90\
+	mod_eco3m_outputs.F90\
+	eco3m_outputs.F90\
+	eco3m_sms.F90\
+	eco3m_var.F90\
+	eco3m_extinc.F90\
+	eco3m_flux.F90\
+	eco3m_init.F90\
+	eco3m_rgb.F90\
+	eco3m_run.F90
+	
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
@@ -203,9 +228,9 @@ all: tools depend $(SBIN)
 # Executable file.
 # ========= =====
 #
-$(SBIN):   $(OBJS90) $(OBJS)
-	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI)
-	 mv a.out $(SBIN)
+$(SBIN):   $(OBJS90) $(OBJS) 
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
+	mv a.out $(SBIN)
 
 #
 # Auxiliary utility programs and List of Dependecies:

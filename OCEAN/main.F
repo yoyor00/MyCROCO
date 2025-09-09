@@ -43,6 +43,10 @@
           USE plug_LAGRANGIAN, ONLY : LAGRANGIAN_MPI_SETUP_main
 #endif 
 #endif 
+#ifdef BIOLink
+          USE coupleur_BIOLink , ONLY : BIOLink_initialization
+          USE coupleur_BIOLink , ONLY : BIOLink_init_main
+#endif
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_init_main
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
@@ -66,6 +70,9 @@
       use buffer, only: init_buffer
 !     implicit none
       integer tile, subs, trd, ierr
+#ifdef BIOLink
+      integer :: icall = 0
+#endif
 #include "param.h"
 #include "private_scratch.h"
 #include "nbq.h"
@@ -73,8 +80,10 @@
 #include "ncscrum.h"
 #include "grid.h"
 #include "ocean2d.h"
+#if (defined BIOLink && defined ECO3M) || defined OPENACC
+#include "ocean3d.h"
+#endif
 #if defined OPENACC
-# include "ocean3d.h"
 # include "coupling.h"
 # include "forces.h"
 # include "mixing.h"
@@ -208,6 +217,12 @@
 # endif
 #endif
 
+#ifdef BIOLink
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+           CALL BIOLink_initialization(icall,tile)
+      enddo
+#endif
 #ifdef SUBSTANCE
 !
 !  Substance var need for MUSTANG and BIOLink
@@ -215,6 +230,12 @@
       call substance_read_alloc(may_day_flag,indxT,indxTsrc)
 #endif
 
+#ifdef BIOLink
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+           CALL BIOLink_initialization(1,tile)
+      enddo
+#endif
 !
 ! Online spectral analysis module
 !
@@ -412,6 +433,17 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call ana_initial (tile)
       enddo
+
+!  -- only for biogeochemical tracers--
+!  Set initial conditions analytically for ideal cases
+!  or for tracer variables not present in NetCDF file
+!
+#if defined BIOLink && defined ECO3M && defined DYFAMED
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+           CALL BIOLink_initialization(2,tile)
+      enddo
+#endif
 !
 !----------------------------------------------------------------------
 !  Initialize specific PISCES variables
@@ -473,25 +505,36 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
 #endif
 
-
 !----------------------------------------------------------------------
 !  SUBSTANCE : computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
-#ifdef SUBSTANCE
+#ifdef SUBSTANCE 
       call substance_surfcell
 #endif
+!
+!----------------------------------------------------------------------
+!  BIOLink : initialization
+!----------------------------------------------------------------------
+!
+
+#ifdef BIOLink
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+      CALL BIOLink_init_main(tile)
+      enddo
+#endif 
 !
 !----------------------------------------------------------------------
 !  MUSTANG : initialization
 !----------------------------------------------------------------------
 !
-#ifdef MUSTANG
+#ifdef MUSTANG 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call MUSTANG_init_main (tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
-#endif
+#endif 
 !
 !----------------------------------------------------------------------
 !  LAGRANGIAN : initialization
@@ -885,6 +928,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
       endif
 #else
       if (ldefhis .and. wrthis(indxTime)) call wrt_his
+#ifdef DIAGNOSTICS_BIO
+      if (ldefdiabio) call wrt_bio_diags
+#endif
 #endif
 
 #ifdef ABL1D

@@ -14,7 +14,9 @@
                                         ! script file using keywords
                                         ! to recognize variables.
 !     implicit none
-
+# if defined BLOOM && defined DIAGNOSTICS_BIO
+      USE comBIOLINK, ONLY :filevardiag
+# endif
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
@@ -60,6 +62,9 @@
       logical dumboolean
 #ifdef USE_CALENDAR
       real  dt_his,dt_avg,dt_rst
+#endif
+#ifdef BLOOM
+      integer i
 #endif
 #ifdef XIOS
       REAL*8        :: tool_datosec
@@ -272,13 +277,19 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
+# ifdef BLOOM
+      wrtdiabio3d(NumBLMdiag3d+1)=.false.
+      wrtdiabio2d(NumBLMdiag2d+1)=.false.
+      wrtdiabio1d(NumBLMdiag1d+1)=.false.
+# else
       wrtdiabioFlux(NumFluxTerms+1)=.false.
       wrtdiabioVSink(NumVSinkTerms+1)=.false.
       wrtdiabioGasExc(NumGasExcTerms+1)=.false.
-# ifdef AVERAGES
-      wrtdiabioFlux_avg(NumFluxTerms+1)=.false.
-      wrtdiabioVSink_avg(NumVSinkTerms+1)=.false.
-      wrtdiabioGasExc_avg(NumGasExcTerms+1)=.false.
+#  ifdef AVERAGES
+       wrtdiabioFlux_avg(NumFluxTerms+1)=.false.
+       wrtdiabioVSink_avg(NumVSinkTerms+1)=.false.
+       wrtdiabioGasExc_avg(NumGasExcTerms+1)=.false.
+#  endif
 # endif
 #endif
 !
@@ -957,6 +968,9 @@ c        close(testunit)
       elseif (keyword(1:kwlen).eq.'diagnostics_bio') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) ldefdiabio, nwrtdiabio, nrpfdiabio
+#ifdef BLOOM
+        read(input,'(A)',err=95) filevardiag
+#endif
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
 # if defined MPI && defined PARALLEL_FILES
@@ -1150,6 +1164,8 @@ c        close(testunit)
 # else
      &                                          ,  dumboolean
 # endif
+
+
 # if defined BIOLOGY && !defined PISCES
      &                                          ,  wrthis(indxHel)
 #  ifdef BIO_NChlPZD
@@ -1246,7 +1262,27 @@ c        close(testunit)
      &     ) wrthis(indxTime)=.true.
 
 # endif
+
 #endif /* SOLVE3D */
+
+#if defined BIOLink && (defined BLOOM || defined BIOLink_PAR_eval)
+#if !defined DIAGNOSTICS_BIO
+      elseif (keyword(1:kwlen).eq.'auxiliary_history_BIOLink') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95)
+# if defined BLOOM
+     &                     (wrthis(indxBLMdiag1d+i), i=1,20)
+     &                    ,(wrthis(indxBLMdiag2d+i), i=1,30)
+     &                    ,(wrthis(indxBLMdiag3d+i), i=1,30)
+# endif /* BLOOM */
+
+# if defined BIOLink_PAR_eval && !defined BLOOM
+     &                                             wrthis(indxPAR)
+# elif defined BIOLink_PAR_eval && defined BLOOM
+     &                                            ,wrthis(indxPAR)
+# endif /* BIOLink_PAR_EVAL */
+#endif /* ! DIAGNOSTICS BIO */
+#endif /* BIOLink */
 
 #ifdef AVERAGES
 !
@@ -1742,7 +1778,7 @@ c        close(testunit)
 
 #endif /*OUTPUTS_SURFACE*/
 
-#ifdef DIAGNOSTICS_BIO
+#if defined DIAGNOSTICS_BIO && !defined BLOOM
 !
 ! Switches for fields to be saved into biology diagnostics file.
 !
@@ -1810,7 +1846,7 @@ c        close(testunit)
         enddo
 #  endif
 # endif  /* AVERAGES */
-#endif /* DIAGNOSTICS_BIO */
+#endif /* DIAGNOSTICS_BIO && not BLOOM*/
 
 #ifdef STATIONS
 !
@@ -2024,6 +2060,11 @@ c        close(testunit)
       elseif (keyword(1:kwlen).eq.'substance') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) subsfilename
+#endif
+#if defined SUBSTANCE && defined BLOOM
+      elseif (keyword(1:kwlen).eq.'bloom') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,'(A)',err=95) parafilename
 #endif
 #ifdef BBL
       elseif (keyword(1:kwlen).eq.'bbl_history_fields') then
@@ -3131,7 +3172,7 @@ c        close(testunit)
 
 #endif /*OUTPUTS_SURFACE*/
 
-#ifdef DIAGNOSTICS_BIO
+#if defined DIAGNOSTICS_BIO && !defined BLOOM
           do iflux=1,NumFluxTerms
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiabioFlux(iflux),
@@ -3179,8 +3220,8 @@ c        close(testunit)
           enddo
 #  endif
 # endif  /* AVERAGES */
-#endif /* DIAGNOSTICS_BIO */
-    
+#endif /* DIAGNOSTICS_BIO && not BLOOM*/
+
 #ifdef STATIONS
 # ifdef AGRIF
           if (Agrif_Root()) then
@@ -3389,6 +3430,12 @@ c        close(testunit)
      &         'Input file for Substance:' ,
      &          subsfilename(1:lstr)
 #endif /* SUBSTANCE */
+#if defined SUBSTANCE && defined BLOOM
+          lstr=lenstr(parafilename)
+           MPI_master_only write(stdout,'(7x,A,12x,A)')
+     &         'Input file for BLOOM parameters :' ,
+     &          parafilename(1:lstr)
+#endif
 #ifdef BBL
           MPI_master_only write(stdout,'(6(/6x,L1,2x,A,1x,A))')
      &    wrthis(indxAbed), 'write Abed ',
