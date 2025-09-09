@@ -167,7 +167,7 @@ include Makedefs
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
 	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
 	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
-	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
+	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
 	comionc4.F90 ionc4.F90 comtraj.F90 trajectools.F90 toolmpi.F90 \
 	trajinitsave.F90 traject3d.F90 plug_lagrangian.F90\
 	ibmtools.F90 ibmmove.F90 debmodel.F90 ibm.F90 plug_ibm.F90\
