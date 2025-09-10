@@ -870,7 +870,7 @@ C$    trd=omp_get_thread_num()
      &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))
      &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N)))
 #  endif
-               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-0*cff)           
+               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff)           
 #  ifdef MASKING
      &                         *rmask(i,j)  
 #  endif       

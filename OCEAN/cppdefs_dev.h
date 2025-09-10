@@ -271,8 +271,8 @@
 #   define K3FAST_C3D_UVSF
 #   define K3FAST_AM4
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH0
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLING_SCH1
+#   define K3FAST_COUPLINGW_SCH1
 #   define K3FAST_AVG_CLASSIC
 # elif defined KNHINT
 #   define K3FAST        
