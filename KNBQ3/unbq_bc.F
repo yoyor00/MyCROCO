@@ -52,6 +52,9 @@
 !
 # include "set_obc_definitions.h"
 !
+#ifdef CVTK_DEBUG
+      use my_functions
+#endif      
       implicit none
 # include "param.h"
 # include "grid.h"

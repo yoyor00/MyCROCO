@@ -2830,9 +2830,6 @@ c !$acc wait
       endif
       if (xios_field_is_active("salt_surf")) then
       call xios_send_field("salt_surf",t(:,:,N,nstp,isalt))
-      if (xios_field_is_active("rho_surf")) then
-      call xios_send_field("rho_surf",rho(:,:,N))
-      endif
       endif
 # endif /* SALINITY */
 ! WARNING here passive tracers are missing
@@ -2841,6 +2838,9 @@ c !$acc wait
 
       if (xios_field_is_active("rho")) then
       call xios_send_field("rho",rho)
+      endif
+      if (xios_field_is_active("rho_surf")) then
+      call xios_send_field("rho_surf",rho(:,:,N))
       endif
 
 # if defined ANA_VMIX || defined BVF_MIXING \

@@ -20,7 +20,7 @@
       end
 !
       subroutine ana_initial_tile (Istr,Iend,Jstr,Jend)
-# ifdef RVTK_DEBUG               
+# ifdef CVTK_DEBUG               
       use debug
       use my_functions
 #  endif      
@@ -36,7 +36,7 @@
 #ifdef SUBSTANCE
       USE comsubstance, ONLY: cini_wat
 #endif
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use debug
       use my_functions
 # endif      
@@ -599,7 +599,7 @@ c c !$acc kernels if(compute_on_device) default(present)
      &          -0.1*log(cosh(30.*(z_r(1,1,k)-zu0-1./8.
      &                   +depth/10.*sin(2.*pi/xl*xr(i,j))
      &                   ))/cosh(105./4.)))
-#    ifdef RVTK_DEBUG
+#    ifdef CVTK_DEBUG
                 u(i,j,k,1)  = real( u(i,j,k,1), kind=4 )
 #    endif
 !              u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *               ! add perturbation
@@ -1008,7 +1008,7 @@ c c !$acc kernels if(compute_on_device) default(present)
 #    endif
 
               t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
-#     ifdef RVTK_DEBUG
+#     ifdef CVTK_DEBUG
               t(i,j,k,1,itemp) = real( t(i,j,k,1,itemp),kind=4 )
               t(i,j,k,2,itemp) = real( t(i,j,k,2,itemp),kind=4 )
 #     endif
@@ -1017,7 +1017,7 @@ c c !$acc kernels if(compute_on_device) default(present)
               t(i,j,k,1,isalt) = 35. +0.05*drho* ( 1. -
      &                             (tanh((z_r(1,1,k)-zr0)/hsalt0))**2 )
               t(i,j,k,2,isalt) = t(i,j,k,1,isalt)
-#     ifdef RVTK_DEBUG
+#     ifdef CVTK_DEBUG
               t(i,j,k,1,isalt) = real( t(i,j,k,1,isalt),kind=4 )
               t(i,j,k,2,isalt) = real( t(i,j,k,2,isalt),kind=4 )
 #     endif              
@@ -1214,6 +1214,7 @@ c c !$acc kernels if(compute_on_device) default(present)
 #    endif /* TEMPERATURE */
 
 #   elif defined IGW
+!$acc kernels if(compute_on_device) default(present)        
         cff=((2.e-3)**2)/g
         rhom=1027.037885
         do k=1,N
@@ -1253,7 +1254,7 @@ c c !$acc kernels if(compute_on_device) default(present)
             enddo
           enddo
         enddo
-
+!$acc end kernels
 #   elif defined OVERFLOW
 #    ifdef TEMPERATURE
         do k=1,N
@@ -2214,7 +2215,7 @@ C$OMP BARRIER
 # ifdef AGRIF
       use Agrif_Util
 # endif
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       !!use my_functions
 # endif
       implicit none

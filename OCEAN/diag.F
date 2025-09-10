@@ -40,6 +40,7 @@
       real ke2d(PRIVATE_2D_SCRATCH_ARRAY),
      &     pe2d(PRIVATE_2D_SCRATCH_ARRAY)
       real*QUAD cff, my_avgke, my_avgpe, my_volume
+!$acc declare create( my_avgke, my_avgpe, my_volume )      
       character echar*8
 #ifdef MPI
       include 'mpif.h'
@@ -161,6 +162,7 @@
 !
       if (mod(iic-1,ninfo).eq.0) then
 !$acc kernels if(compute_on_device) default(present)
+c !$acc&  copyout( my_volume, my_avgpe, my_avgke )
         do j=Jstr,Jend
 #ifdef SOLVE3D
           do i=Istr,Iend
@@ -230,6 +232,8 @@
           my_avgke =my_avgke +ke2d(i,Jstr-1)
         enddo
 !$acc end kernels
+!$acc update host( my_volume, my_avgpe, my_avgke )
+
         if (SINGLE_TILE_MODE) then
           NSUB=1
         else

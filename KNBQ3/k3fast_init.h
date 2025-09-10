@@ -101,6 +101,7 @@
                            ! and boundaries for DU(V)_nbq
       call u2dbc_tile   (Istr,Iend,Jstr,Jend, work)
       call v2dbc_tile   (Istr,Iend,Jstr,Jend, work)
+!$acc wait	
 ! !
 ! !********************************
 ! !  Dummy variables

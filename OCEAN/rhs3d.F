@@ -37,7 +37,7 @@
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_fuz, obst_fvz
 #endif
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use debug
         use my_functions
 # endif

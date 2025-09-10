@@ -62,6 +62,9 @@
 # endif
 #elif defined ISOLITON
       parameter (LLm0=60,   MMm0=1,    N=74)   !  10 cm resolution
+#elif defined ISOLITON_DJL
+       parameter (LLm0=500,   MMm0=1,    N=200)  	! #define ANA_GRID, ANA_INITIAL, ANA_SSH
+!      parameter (LLm0=198,   MMm0=3,    N=50)  	! JBR original
 #elif defined INNERSHELF
       parameter (LLm0=200,  MMm0=3,    N=60)
 #elif defined INTERNAL
@@ -213,6 +216,8 @@
 # else
       parameter (LLm0=94,   MMm0=81,   N=40)   ! YOUR COASTAL CONFIG
 # endif
+#elif defined CONVECT
+      parameter (LLm0=128,  MMm0=1,  N=128)
 #else
       parameter (LLm0=xxx,  MMm0=xxx,  N=xxx)
 #endif

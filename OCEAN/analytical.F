@@ -71,7 +71,7 @@
 ! "bustr" and "bvstr" [m^2/s^2] using an analytical expression.
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -113,7 +113,7 @@
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -217,7 +217,7 @@ C$    integer  trd, omp_get_thread_num
 !  example for SEAMOUNT test case
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use debug
       use my_functions
 # endif
@@ -270,7 +270,7 @@ C$    integer  trd, omp_get_thread_num
 !
 #ifdef ANA_MORPHODYN
       subroutine ana_morphodyn (tile)
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -292,7 +292,7 @@ C$    integer  trd, omp_get_thread_num
 !  example for SEAMOUNT test case
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -342,7 +342,7 @@ C$    integer  trd, omp_get_thread_num
 !
 #if defined ANA_BSEDIM && defined BBL
       subroutine ana_bsedim (tile)
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
 
@@ -363,7 +363,7 @@ C$    integer  trd, omp_get_thread_num
 !  and density used in the bottom boundary formulation [kg/m^3].
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use my_functions
 # endif
 
@@ -437,7 +437,7 @@ C$    integer  trd, omp_get_thread_num
       use Agrif_UTIL
 # endif
 
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -613,7 +613,7 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
 
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -667,7 +667,7 @@ C$    integer  trd, omp_get_thread_num
 #if defined ANA_SSH && defined ZCLIMATOLOGY
       subroutine ana_ssh (tile)
 
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
 
@@ -689,7 +689,7 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
 
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use my_functions
 # endif
 
@@ -869,7 +869,7 @@ C$    integer  trd, omp_get_thread_num
 !       Q_model ~ Q + dQdSST * (T_model - SST)
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
 
@@ -951,7 +951,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use my_functions
 # endif
 
@@ -990,7 +990,7 @@ C$    integer  trd, omp_get_thread_num
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use my_functions
 # endif
 
@@ -1101,7 +1101,7 @@ C$    integer  trd, omp_get_thread_num
       USE comsubstance, ONLY: cobc_wat
 # endif
 
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
 
@@ -1519,7 +1519,7 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
 
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
 
@@ -1683,7 +1683,7 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
 
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -1805,7 +1805,7 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
 
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -1972,7 +1972,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
   
@@ -2206,7 +2206,7 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       subroutine ana_psource_tile (Istr,Iend,Jstr,Jend)
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -2827,7 +2827,7 @@ C$    integer  trd, omp_get_thread_num
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
 # endif
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use my_functions
 # endif
       implicit none
@@ -3311,7 +3311,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set analytical boundary forcing
 !----------------------------------------------------------------------
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none
@@ -3447,7 +3447,7 @@ C$    integer  trd, omp_get_thread_num
       end
 !
       subroutine ana_bry_bio_tile (Istr,Iend,Jstr,Jend)
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
         use my_functions
 # endif
       implicit none

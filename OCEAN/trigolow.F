@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#if defined RVTK_DEBUG             
+#if defined CVTK_DEBUG             
       module my_functions_1
       contains     
       elemental function mylog(x)

@@ -1385,6 +1385,9 @@
 #  ifdef WET_DRY
      &                                       *umask_wet(i,j)
 #  endif
+#   if defined CVTK_DEBUG && defined IGW
+            u(i,j,k,nnew) = real( u(i,j,k,nnew), kind=4 )
+#   endif          
           enddo
         enddo
       enddo
@@ -1402,6 +1405,9 @@
 #  endif
 #  ifdef WET_DRY
      &                                        *vmask_wet(i,j)
+#  endif
+#   if defined CVTK_DEBUG && defined IGW
+            v(i,j,k,nnew) = real( v(i,j,k,nnew), kind=4 )
 #  endif
           enddo
         enddo

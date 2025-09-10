@@ -24,7 +24,10 @@
       end
 !
       subroutine set_nudgcof_tile (Istr,Iend,Jstr,Jend, wrk)
-!     implicit none
+#ifdef CVTK_DEBUG
+      use my_functions
+#endif      
+      implicit none
       integer ierr
 # if defined MPI
       include 'mpif.h'

@@ -19,7 +19,7 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use my_functions
 # endif
       implicit none

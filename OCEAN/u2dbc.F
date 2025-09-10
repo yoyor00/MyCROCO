@@ -14,9 +14,6 @@
       subroutine u2dbc_tile(Istr,Iend,Jstr,Jend,grad)
 # ifdef AGRIF
       use AGRIF_Util
-# ifdef RVTK_DEBUG
-      use my_functions
-# endif      
       integer Istr,Iend,Jstr,Jend
       real grad(PRIVATE_2D_SCRATCH_ARRAY)
 
@@ -53,6 +50,9 @@
 !
 #include "set_obc_definitions.h"
 !
+#ifdef CVTK_DEBUG
+      use my_functions
+#endif      
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
       real    grad(PRIVATE_2D_SCRATCH_ARRAY)

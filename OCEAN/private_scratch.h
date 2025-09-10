@@ -30,6 +30,8 @@
 #endif
 
       common/private_scratch/ A2d,A3d,A3dHz
+!$acc declare create( A2d,A3d,A3dHz )
+!bug fix create copie needed fo first pass en rhs3d, go to see copi
 #if defined SEDIMENT || defined LMD_MIXING
       common/private_scratch_bis/ B2d
 #endif

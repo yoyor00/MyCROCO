@@ -203,7 +203,7 @@
 #ifdef AGRIF
       use Agrif_Util
 #endif
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use my_functions
 # endif
 

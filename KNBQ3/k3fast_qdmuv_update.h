@@ -114,7 +114,9 @@
 !$acc kernels if(compute_on_device) default(present)
 
 ! !
-      do k=-N_sl+1,N    ! Loop is on w-levels
+!!!!!$acc loop independent private ( DU_nbq, DV_nbq )
+!!!$acc loop seq	
+!!      do k=-N_sl+1,N    ! Loop is on w-levels
 ! !
 ! !********************************
 ! !  Fast-mode U-momentum: qdmu_nbq
@@ -122,7 +124,9 @@
 ! !
           do j=Jstr,Jend
             do i=IstrU,Iend
-! !
+	      do k=-N_sl+1,N    ! Loop is on w-levels
+
+	    ! !
 ! !................................
 ! !  Comp. pressure gradient & 2nd visc.
 ! !         U-component: \Sigma  k
@@ -403,6 +407,7 @@
 #  ifdef K3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
+!$acc atomic update	      
 #  ifdef K3FAST_DUVNBQ 
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
 #  elif defined K3FAST_DUVNBQ2 
@@ -415,7 +420,7 @@
 #  ifdef K3FAST_SEDLAYERS 
               endif
 #  endif
-
+		enddo
             enddo 
           enddo
 ! !
@@ -425,6 +430,7 @@
 ! !
           do j=JstrV,Jend
             do i=Istr,Iend
+              do k=-N_sl+1,N    ! Loop is on w-levels
 ! !
 ! !................................
 ! !  Comp. pressure gradient & 2nd visc.
@@ -707,6 +713,7 @@
 #  ifdef K3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
+!$acc atomic update      
 #  ifdef K3FAST_DUVNBQ
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
 #  elif defined K3FAST_DUVNBQ2 
@@ -719,10 +726,11 @@
 #  ifdef K3FAST_SEDLAYERS 
               endif
 #  endif
+	      enddo
             enddo
           enddo
 !        endif  !<-- k>0
-      enddo   !<-- k=0,N   
+!      enddo   !<-- k=0,N   
   
 !$acc end kernels
 ! !

@@ -51,7 +51,7 @@ C$    integer omp_get_thread_num
 # ifdef AGRIF
       use Agrif_Util
 # endif
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       use my_functions
 # endif
       implicit none
