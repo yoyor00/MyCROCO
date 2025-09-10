@@ -105,8 +105,6 @@ C$    integer omp_get_thread_num
 # endif
 !
 # include "compute_extended_bounds.h"
-
-
 !
 !----------------------------------------------------------------------
 ! Configuration parameters (h,f,beta)

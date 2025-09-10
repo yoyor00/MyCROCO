@@ -40,7 +40,7 @@
 #elif defined MP_3PTS
       parameter (Npts=3)
 #elif defined MP_LH_PTS
-      parameter (Npts=2+MPI_LAT_HID_2D_ADD_LAYERS)
+      parameter (Npts=2+MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS)
 #else
       #error "Internal error"
 #endif
@@ -537,7 +537,7 @@ c      write(*,*) 'MessPass2D:    ', mynode,' exit'
 #  include "MessPass2D.F"
 #  undef MP_1PTS
 
-#  ifdef MPI_LAT_HID_2D
+#  ifdef MPI_OVERLAPPING_SCHWARZ_2D
 #    define MP_LH_PTS
 #    include "MessPass2D.F"
 #    undef MP_LH_PTS

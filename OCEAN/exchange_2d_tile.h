@@ -52,7 +52,7 @@
 #elif defined MP_LH_PTS
       ! For latency hiding we communicate more layers than necessary
       ! We do at least 2 layers
-      parameter (Npts=2+MPI_LAT_HID_2D_ADD_LAYERS)
+      parameter (Npts=2+MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS)
 #else
 #  error "Internal error"
 #endif
@@ -212,7 +212,7 @@ C$OMP BARRIER
 #  include "exchange_2d_tile.h"
 #  undef MP_1PTS
 
-#  ifdef MPI_LAT_HID_2D
+#  ifdef MPI_OVERLAPPING_SCHWARZ_2D
 #    define MP_LH_PTS
 #    include "exchange_2d_tile.h"
 #    undef MP_LH_PTS

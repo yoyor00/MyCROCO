@@ -409,10 +409,10 @@
 #include "latency_hiding_2d.h"
 
 # ifdef ALLOW_SINGLE_BLOCK_MODE
-      parameter (size_XI=6+2*MPI_LAT_HID_2D_ADD_LAYERS+Lm, size_ETA=6+2*MPI_LAT_HID_2D_ADD_LAYERS+Mm)
+      parameter (size_XI=6+2*MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS+Lm, size_ETA=6+2*MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS+Mm)
 # else
-      parameter (size_XI=7+2*MPI_LAT_HID_2D_ADD_LAYERS+(Lm+NSUB_X-1)/NSUB_X)
-      parameter (size_ETA=7+2*MPI_LAT_HID_2D_ADD_LAYERS+(Mm+NSUB_E-1)/NSUB_E)
+      parameter (size_XI=7+2*MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS+(Lm+NSUB_X-1)/NSUB_X)
+      parameter (size_ETA=7+2*MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS+(Mm+NSUB_E-1)/NSUB_E)
 # endif
       parameter (sse=size_ETA/Np, ssz=Np/size_ETA)
       parameter (se=sse/(sse+ssz), sz=1-se)

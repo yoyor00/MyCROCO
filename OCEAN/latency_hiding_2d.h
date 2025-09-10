@@ -1,7 +1,7 @@
 !
 ! Control of latency hiding for distributed memory communication.
 !
-! Defining `MPI_LAT_HID_2D` will result in:
+! Defining `MPI_OVERLAPPING_SCHWARZ_2D` will result in:
 !
 ! - exchanging more layers than necessary for a single time step.
 !
@@ -10,19 +10,20 @@
 ! - doing computations also in halo layers to compensate for not communicated data.
 !
 
-#ifdef MPI_LAT_HID_2D
+#ifdef MPI_OVERLAPPING_SCHWARZ_2D
 
-# ifndef MPI_LAT_HID_2D_ADD_LAYERS
-#  error "MPI_LAT_HID_2D_ADD_LAYERS not defined, but MPI_LAT_HID_2D activated"
+# ifndef MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS
+#  error "MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS not defined, but MPI_OVERLAPPING_SCHWARZ_2D activated"
 # endif
 
-# ifndef MPI_LAT_HID_2D_COMM_N_TIMES
-#  define MPI_LAT_HID_2D_COMM_N_TIMES (MPI_LAT_HID_2D_ADD_LAYERS)
-#  error "MPI_LAT_HID_2D_COMM_N_TIMES not defined, but MPI_LAT_HID_2D activated"
+# ifndef MPI_OVERLAPPING_SCHWARZ_2D_COMM_N_TIMES
+#  define MPI_OVERLAPPING_SCHWARZ_2D_COMM_N_TIMES (MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS)
+#  error "MPI_OVERLAPPING_SCHWARZ_2D_COMM_N_TIMES not defined, but MPI_OVERLAPPING_SCHWARZ_2D activated"
 # endif
 
 #else
 
-# define MPI_LAT_HID_2D_ADD_LAYERS 0
+# define MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS 0
 
 #endif
+

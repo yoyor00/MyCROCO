@@ -259,7 +259,7 @@ C$    integer omp_get_thread_num
 
 !$acc end kernels
 
-#ifdef MPI_LAT_HID_2D
+#ifdef MPI_OVERLAPPING_SCHWARZ_2D
 !
 ! TODO:
 ! It might be better to "relink" this permanently to
@@ -274,7 +274,7 @@ C$    integer omp_get_thread_num
 # define exchange_u2d_3pts_tile exchange_u2d_lh_tile
 # define exchange_v2d_3pts_tile exchange_v2d_lh_tile
 # define exchange_p2d_3pts_tile exchange_p2d_lh_tile
-#endif /* MPI_LAT_HID_2D */
+#endif /* MPI_OVERLAPPING_SCHWARZ_2D */
 
 #ifdef BD_EXCHANGE
 # ifndef BASIN      
@@ -329,7 +329,7 @@ C$    integer omp_get_thread_num
 # endif
 #endif
 
-#ifdef MPI_LAT_HID_2D
+#ifdef MPI_OVERLAPPING_SCHWARZ_2D
 
 # undef exchange_r2d_tile
 # undef exchange_u2d_tile

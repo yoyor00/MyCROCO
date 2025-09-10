@@ -110,7 +110,6 @@
 #endif
 !
 #include "compute_auxiliary_bounds.h"
-
 !
 #if defined EW_PERIODIC && !defined MPI
 # define IR_RANGE Istr,Iend
@@ -179,6 +178,33 @@
      &                                    *exp(-0.5*y*y)
           enddo
         enddo
+
+# if defined ANA_INITIAL_TEST_PATTERN
+        do j=JR_RANGE
+          do i=IR_RANGE
+            zeta(i,j,1)=0.0001*i + 0.001*j
+            if (mod(i+j, 2) == 0) then
+              zeta(i,j,1) = zeta(i,j,1)+0.1
+            end if
+          enddo
+        enddo
+        do j=JR_RANGE
+          do i=IU_RANGE
+            ubar(i,j,1) = 0.0001*i + 0.001*j
+            if (mod(i+j, 2) == 0) then
+              ubar(i,j,1) = ubar(i,j,1)+0.1
+            end if
+          enddo
+        enddo
+        do j=JV_RANGE
+          do i=IR_RANGE
+            vbar(i,j,1) = 0.0001*i + 0.001*j
+            if (mod(i+j, 2) == 0) then
+              vbar(i,j,1) = vbar(i,j,1)+0.1
+            end if
+          enddo
+        enddo
+# endif
 
 # elif defined KH_INST
         do j=JR_RANGE
@@ -1746,7 +1772,7 @@ C$OMP BARRIER
 !--------------------------------------------------------------------
 !
 
-#ifdef MPI_LAT_HID_2D
+#ifdef MPI_OVERLAPPING_SCHWARZ_2D
 !
 ! TODO:
 ! It might be better to "relink" this permanently to
@@ -1761,7 +1787,7 @@ C$OMP BARRIER
 # define exchange_u2d_3pts_tile exchange_u2d_lh_tile
 # define exchange_v2d_3pts_tile exchange_v2d_lh_tile
 # define exchange_p2d_3pts_tile exchange_p2d_lh_tile
-#endif /* MPI_LAT_HID_2D */
+#endif /* MPI_OVERLAPPING_SCHWARZ_2D */
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 # ifdef ANA_INITIAL
@@ -1853,7 +1879,7 @@ C$OMP BARRIER
 #undef JV_RANGE
 
 
-#ifdef MPI_LAT_HID_2D
+#ifdef MPI_OVERLAPPING_SCHWARZ_2D
 
 # undef exchange_r2d_tile
 # undef exchange_u2d_tile

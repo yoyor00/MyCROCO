@@ -5,8 +5,8 @@
 # undef  NP1
 # define NP1 N+N_sl+1
 #endif
-#ifdef MPI_LAT_HID_2D
-#  define MAXNPTS (3+MPI_LAT_HID_2D_ADD_LAYERS)
+#ifdef MPI_OVERLAPPING_SCHWARZ_2D
+#  define MAXNPTS (3+MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS)
 #else
 #  define MAXNPTS 3
 #endif

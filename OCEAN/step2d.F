@@ -175,11 +175,11 @@ C$    trd=omp_get_thread_num()
 #  define LOCALMM Mm
 # endif
 
-! We define `MPI_LAT_HID_2D_EXTEND_IJ` to have the bounds extended for
+! We define `MPI_OVERLAPPING_SCHWARZ_2D_EXTEND_IJ` to have the bounds extended for
 ! latency hiding reasons
 ! Note that Istr, Iend, Jstr, Jend are handed over by reference.
 ! Therefore, we only need to modify it once for latency hiding.
-#define MPI_LAT_HID_2D_EXTEND_IJ
+#define MPI_OVERLAPPING_SCHWARZ_2D_EXTEND_IJ
 # include "compute_auxiliary_bounds.h"
 
 
@@ -260,14 +260,22 @@ C$    trd=omp_get_thread_num()
 # endif
 
 
-#ifdef MPI_LAT_HID_2D
-
-!# include "latency_hiding_2d_auxiliary_bounds_update.h"
+#ifdef MPI_OVERLAPPING_SCHWARZ_2D
 
       if (lat_hid_2d_subtimestep .eq. 0) then
         call exchange_r2d_lh_tile (IJ_ORIG, zeta(START_2D_ARRAY,kstp))
         call exchange_u2d_lh_tile (IJ_ORIG, ubar(START_2D_ARRAY,kstp))
         call exchange_v2d_lh_tile (IJ_ORIG, vbar(START_2D_ARRAY,kstp))
+
+        ! TODO: Could be treated with pipelining, but required
+        ! more advanced async communication scheme.
+        call exchange_r2d_lh_tile (IJ_ORIG, zeta(START_2D_ARRAY,kbak))
+        call exchange_u2d_lh_tile (IJ_ORIG, ubar(START_2D_ARRAY,kbak))
+        call exchange_v2d_lh_tile (IJ_ORIG, vbar(START_2D_ARRAY,kbak))
+
+        call exchange_r2d_lh_tile (IJ_ORIG, zeta(START_2D_ARRAY,kold))
+        call exchange_u2d_lh_tile (IJ_ORIG, ubar(START_2D_ARRAY,kold))
+        call exchange_v2d_lh_tile (IJ_ORIG, vbar(START_2D_ARRAY,kold))
       endif
 
 #endif
@@ -345,7 +353,7 @@ C$    trd=omp_get_thread_num()
 # ifdef M2_HADV_UP3
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
 
-#    ifdef MPI_LAT_HID_2D
+#    ifdef MPI_OVERLAPPING_SCHWARZ_2D
 #      error "TODO: Also merge with latency hiding precompiler statement below"
 #    endif
 
@@ -549,7 +557,7 @@ C$OMP END MASTER
       endif
 
 #  if defined BD_EXCHANGE
-#    ifdef MPI_LAT_HID_2D
+#    ifdef MPI_OVERLAPPING_SCHWARZ_2D
 #      error "TODO"
 #    endif
       call exchange_r2d_tile (IJ_ORIG,
@@ -1802,9 +1810,9 @@ C$OMP END MASTER
 !
 #if defined BD_EXCHANGE
 
-#  ifdef MPI_LAT_HID_2D
+#  ifdef MPI_OVERLAPPING_SCHWARZ_2D
       ! Nothing to do here
-#  else /* MPI_LAT_HID_2D */
+#  else /* MPI_OVERLAPPING_SCHWARZ_2D */
 
 !# ifdef BASIN      
 !      call exchange_r2d_1pts_tile (Istr,Iend,Jstr,Jend,
@@ -1823,7 +1831,7 @@ C$OMP END MASTER
      &                   vst2d(START_2D_ARRAY))
 
 #    endif
-#  endif /* ifdef MPI_LAT_HID_2D */
+#  endif /* ifdef MPI_OVERLAPPING_SCHWARZ_2D */
 #endif /* ifdef BD_EXCHANGE */
 
 
@@ -1855,7 +1863,7 @@ C$OMP END MASTER
         enddo
 
 #  if defined BD_EXCHANGE
-#    ifdef MPI_LAT_HID_2D
+#    ifdef MPI_OVERLAPPING_SCHWARZ_2D
 #      error "TODO"
 #    endif
       call exchange_r2d_tile (IJ_ORIG,
@@ -1948,7 +1956,7 @@ C$OMP END MASTER
 # endif
 
       IF (VMAX.GT.VMAXL) THEN
-#ifdef MPI_LAT_HID_2D
+#ifdef MPI_OVERLAPPING_SCHWARZ_2D
 !$acc update if(compute_on_device) 
 !$acc& host(ubar(Istr_orig:Iend_orig,Jstr_orig:Jend_orig,knew))
 !$acc update if(compute_on_device)
