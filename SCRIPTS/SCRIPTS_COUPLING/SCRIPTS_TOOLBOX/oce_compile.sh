@@ -12,6 +12,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
 #-------------------------------------------------------------------------------
     cd ${JOBDIR_ROOT}
     cpfile ${OCE_EXE_DIR}/jobcomp .
+    cpfile ${OCE_EXE_DIR}/cppdefs_dev.h .
     cpfile ${OCE_EXE_DIR}/param.h.base .
     cpfile ${OCE_EXE_DIR}/cppdefs.h.base .
 
@@ -177,6 +178,8 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
 
     if [ ${tide_flag} == "TRUE" ]; then
 	sed -e "s/#  *undef  *TIDES/# define TIDES/g" cppdefs.h > tmp$$
+        mv tmp$$ cppdefs.h
+        sed -e "s/#  *define  *TIDES_MAS/# undef TIDES_MAS/g" cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h
         printf "           Tides are taken into account\n"
     else
