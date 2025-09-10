@@ -14,6 +14,9 @@
       SUBROUTINE cpl_prism_define
 
       USE mod_prism             ! OASIS3 prism module
+# ifdef XIOS
+          USE xios           ! XIOS module
+# endif
       IMPLICIT NONE
 
 # include "param.h"
@@ -227,6 +230,9 @@
 # ifdef AGRIF
       if (.not.Agrif_Root()) then
          if (Agrif_fixed() == Agrif_Nb_Fine_Grids()) then
+# endif
+# ifdef XIOS
+            CALL xios_oasis_enddef()
 # endif
             CALL prism_enddef_proto( comp_ierror )
             IF ( comp_ierror /= PRISM_Ok ) THEN

@@ -134,12 +134,12 @@
     <field id="Zbnot" long_name="Physical hydraulic bottom roughness" unit="m" />
     <field id="Zbapp" long_name="Apparent hydraulic bottom roughness" unit="m" />
     <field id="bostrw" long_name="Wave-induced kinematic bottom stress" unit="N/m2" />
-    <!-- <field id="bustrc" long_name="Courant only bottom stress in xi direction" unit="N" /> -->
+    <field id="bustrc" long_name="Courant only bottom stress in xi direction" unit="N" />
     <field id="bustrw" long_name="Wave only bottom stress in xi direction" unit="N" />
-    <!-- <field id="bustrcwmax" long_name="Critical bottom stress in xi direction" unit="N" /> -->
-    <!-- <field id="bvstrc" long_name="Courant only bottom stress in eta direction" unit="N" /> -->
+    <field id="bustrcwmax" long_name="Critical bottom stress in xi direction" unit="N" />
+    <field id="bvstrc" long_name="Courant only bottom stress in eta direction" unit="N" />
     <field id="bvstrw" long_name="Wave only bottom stress in eta direction" unit="N" />
-    <!-- <field id="bvstrcwmax" long_name="Critical bottom stress in eta direction" unit="N" /> -->
+    <field id="bvstrcwmax" long_name="Critical bottom stress in eta direction" unit="N" />
  <!-- END BBL -->
 #endif
 #ifdef MRL_WCI         

@@ -123,11 +123,12 @@
 !  (XIOS with OASIS is not done yet)
 !
 # if (defined XIOS && !defined AGRIF)
-      call xios_initialize( "crocox",return_comm=MPI_COMM_WORLD )
-# elif (defined OA_COUPLING && !defined AGRIF)
+#  if (defined OA_COUPLING || defined OW_COUPLING)
       call cpl_prism_init  ! If AGRIF --> call cpl_prism_init in zoom.F
-# elif (defined OW_COUPLING && !defined AGRIF)
-      call cpl_prism_init  ! In AGRIF case, cpl_prism_init is in zoom.F
+      call xios_initialize( "crocox",local_comm=MPI_COMM_WORLD, return_comm=MPI_COMM_WORLD )
+#  else
+      call xios_initialize( "crocox", return_comm=MPI_COMM_WORLD )
+#  endif
 # elif defined AGRIF
       call Agrif_MPI_Init(MPI_COMM_WORLD)
 # endif
