@@ -33,6 +33,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Compilation : fix cat "croco_ascii.txt" command in case of relative path
 
+- Wavemaker : Fix boundary forcing in case of eastern boundary (Issue #432)
 
 ### Changed
 
@@ -91,7 +92,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
-  P. Marchesiello, C. Nguyen, R. Person
+  P. Marchesiello, C. Nguyen, R. Person, S. Treillou
 
 - New contributors : 
   M. Plus, M. Schreiber 
