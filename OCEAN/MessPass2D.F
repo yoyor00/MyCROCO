@@ -40,7 +40,7 @@
 #elif defined MP_3PTS
       parameter (Npts=3)
 #elif defined MP_LH_PTS
-      parameter (Npts=2+MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS)
+      parameter (Npts=2+MPI_OVERLAPPING_SCHWARZ_2D_ADD_LAYERS)
 #else
       #error "Internal error"
 #endif

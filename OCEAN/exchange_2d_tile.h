@@ -52,7 +52,7 @@
 #elif defined MP_LH_PTS
       ! For latency hiding we communicate more layers than necessary
       ! We do at least 2 layers
-      parameter (Npts=2+MPI_OVERLAPPING_SCHWARZ_2D_NUM_LAYERS)
+      parameter (Npts=2+MPI_OVERLAPPING_SCHWARZ_2D_ADD_LAYERS)
 #else
 #  error "Internal error"
 #endif
