@@ -412,6 +412,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	mv $MY_PREPRO_DIR/croco_tools/crocotools_param.m.tmp $MY_PREPRO_DIR/croco_tools/crocotools_param.m
     fi
     if [[ ${options[@]} =~ "pytools" && ${copy_pytools} == 1 ]] ; then
+        mkdir -p $MY_PREPRO_DIR
         cp -Rf $PYTOOLS_DIR $MY_PREPRO_DIR.
     fi
     # SCRIPTS FOR RUNNING
