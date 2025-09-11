@@ -108,7 +108,8 @@ LIST_OPTIONS=$(cat << EOF
  pytools    : for getting python scripts for CROCO preprocessing
  inter      : for running interannual runs           ( cpl can not be defined) 
  forc       : for using forecast scripts
- test_cases : for running test cases 
+ test_cases : for running test cases
+ inter-cpl  : scripts for running interannual runs compatible with coupling
  cpl        : scripts for coupling with OASIS        ( oce-prod needed )
  toy        : scripts for coupling with a toy model  ( oce-prod needed )
  atm        : scripts for coupling with WRF          ( oce-prod needed )
@@ -117,7 +118,7 @@ LIST_OPTIONS=$(cat << EOF
  # -- All options :
  # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
  # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
- # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
+ # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif inter-cpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
 
 EOF
 	    )
@@ -318,6 +319,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
 	mkdir -p $MY_CONFIG_WORK/DATA
 	MY_CROCO_DIR=$MY_CONFIG_HOME/CROCO_IN/
+        MY_PREPRO_DIR=$MY_CONFIG_HOME/PREPRO/CROCO/
 	MY_XIOS_DIR=$MY_CONFIG_HOME/XIOS_IN/
 	
     elif [[ ${options[@]} =~ "oce-dev" ]] ; then
@@ -326,6 +328,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
 	mkdir -p $MY_CONFIG_WORK/DATA
 	MY_CROCO_DIR=$MY_CONFIG_HOME/
+        MY_PREPRO_DIR=$MY_CONFIG_HOME/
 	MY_XIOS_DIR=$MY_CONFIG_HOME/
     fi
     cp -f ${CROCO_DIR}/OCEAN/cppdefs.h $MY_CROCO_DIR.
@@ -385,30 +388,31 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     fi
     # PREPROCESSING
     if [[ ${options[@]} =~ "mattools" && ${copy_tools} == 1 ]] ; then
-	cp -Rf $TOOLS_DIR/start.m $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/Oforc_OGCM/download_glorys_data.sh $MY_CROCO_DIR.
+        mkdir -p $MY_PREPRO_DIR/croco_tools
+	cp -Rf $TOOLS_DIR/start.m $MY_PREPRO_DIR/croco_tools/.
+	cp -Rf $TOOLS_DIR/oct_start.m $MY_PREPRO_DIR/croco_tools/.
+	cp -Rf $TOOLS_DIR/crocotools_param.m $MY_PREPRO_DIR/croco_tools/.
+	cp -Rf $TOOLS_DIR/Town/town.dat $MY_PREPRO_DIR/croco_tools/.
+	cp -Rf $TOOLS_DIR/Oforc_OGCM/download_glorys_data.sh $MY_PREPRO_DIR/croco_tools/.
 	# Edit start.m
 	sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
             -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
-            ${MY_CROCO_DIR}/start.m > ${MY_CROCO_DIR}/start.m.tmp
-	mv ${MY_CROCO_DIR}/start.m.tmp ${MY_CROCO_DIR}/start.m
+            $MY_PREPRO_DIR/croco_tools/start.m > $MY_PREPRO_DIR/croco_tools/start.m.tmp
+	mv $MY_PREPRO_DIR/croco_tools/start.m.tmp $MY_PREPRO_DIR/croco_tools/start.m
 	# Edit oct_start.m
 	sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
             -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
-            ${MY_CROCO_DIR}/oct_start.m > ${MY_CROCO_DIR}/oct_start.m.tmp
-	mv ${MY_CROCO_DIR}/oct_start.m.tmp ${MY_CROCO_DIR}/oct_start.m
+            $MY_PREPRO_DIR/croco_tools/oct_start.m > $MY_PREPRO_DIR/croco_tools/oct_start.m.tmp
+	mv $MY_PREPRO_DIR/croco_tools/oct_start.m.tmp $MY_PREPRO_DIR/croco_tools/oct_start.m
 	# Edit crocotools_param.h
 	sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
             -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_WORK}/\';|g" \
             -e "s|DATADIR=.*|DATADIR=\'${TOOLS_DIR}/DATASETS_CROCOTOOLS/\';|g" \
-            ${MY_CROCO_DIR}/crocotools_param.m > ${MY_CROCO_DIR}/crocotools_param.m.tmp
-	mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
+            $MY_PREPRO_DIR/croco_tools/crocotools_param.m > $MY_PREPRO_DIR/croco_tools/crocotools_param.m.tmp
+	mv $MY_PREPRO_DIR/croco_tools/crocotools_param.m.tmp $MY_PREPRO_DIR/croco_tools/crocotools_param.m
     fi
     if [[ ${options[@]} =~ "pytools" && ${copy_pytools} == 1 ]] ; then
-        cp -Rf $PYTOOLS_DIR $MY_CROCO_DIR.
+        cp -Rf $PYTOOLS_DIR $MY_PREPRO_DIR.
     fi
     # SCRIPTS FOR RUNNING
     if [[ ${options[@]} =~ "inter" ]] ; then
@@ -418,33 +422,9 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 fi
 
 ### Preprocessing scripts
-if [[ ${options[@]} =~ "mattools" && ${options[@]} =~ "oce-prod" ]] ; then
-    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools
+if [[ ${options[@]} =~ "mattools" && ${options[@]} =~ "cpl" ]] ; then
     if [[ ${copy_tools} == 1 ]] ; then
         cp -r $TOOLS_DIR/Coupling_tools/CROCO/* $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
-        mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
-        mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
-        mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
-        mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
-        mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
-    else
-        echo " WARNING : proceed without MATLAB tools but mattools flag is activated"
-        echo " PREPRO/CROCO/croco_tools will be empty"
-        echo " You need to proceed with MATLAB tools"
-        echo ' Exiting ...'
-        exit
-    fi
-fi
-if [[ ${options[@]} =~ "pytools" && ${options[@]} =~ "oce-prod" ]] ; then
-    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO/croco_pytools
-    if [[ ${copy_pytools} == 1 ]] ; then
-        cp -r $PYTOOLS_DIR/* $MY_CONFIG_HOME/PREPRO/CROCO/croco_pytools/.
-    else
-        echo " WARNING : proceed without PYTHON tools but pytools flag is activated"
-        echo " PREPRO/CROCO/croco_pytools will be empty"
-        echo " You need to proceed with PYTHON tools"
-        echo ' Exiting ...'
-        exit
     fi
 fi
 
@@ -520,7 +500,7 @@ fi
 # Using the SCRIPT_TOOLBOX scripts (cpl-like architecture)
 # Copy and edit the relevant scripts
 #if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[@]} =~ "atm" ]] || [[ ${options[@]} =~ "toy" ]] ; then
-if [[ ${options[@]} =~ "oce-prod" ]] ; then
+if [[ ${options[@]} =~ "inter-cpl" ]] ; then
     echo 'Copy scripts production runs'
     echo '-----------------------------'
     cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/*.sh $MY_CONFIG_HOME/
