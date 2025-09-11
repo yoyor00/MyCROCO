@@ -339,7 +339,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     sed -e "s!${PAT}!SOURCE1=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
     chmod +x $MY_CROCO_DIR/jobcomp
 
-    if [[ ${options[@]} =~ "oce-prod" ]]; then
+    if [[ ${options[@]} =~ "inter-cpl" ]]; then
         cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.        
     else
         cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
@@ -350,7 +350,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CROCO_DIR.
     fi
     # AGRIF
-    if [[ ${options[@]} =~ "agrif" && ${options[@]} =~ "oce-dev" ]] ; then
+    if [[ ${options[@]} =~ "agrif" ]] ; then
 	cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
 	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
     fi
