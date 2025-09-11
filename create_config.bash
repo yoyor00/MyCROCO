@@ -88,8 +88,8 @@ options=( all-dev )
 #options=( all-prod-cpl )
 
 ## examples for specified options:
-#options=( oce-prod prepro inter )
-#options=( oce-prod xios test_cases agrif prepro pytools cpl wav atm toy )
+#options=( oce-prod pytools inter )
+#options=( oce-prod xios test_cases agrif mattools pytools cpl wav atm toy )
 
 # List of known options: 
 LIST_OPTIONS=$(cat << EOF
@@ -104,7 +104,7 @@ LIST_OPTIONS=$(cat << EOF
  xios       : xios server and xml files
 
  # -- CROCO built-in scripts and toolboxes -- # 
- prepro     : for getting matlab scripts for CROCO preprocessing
+ mattools   : for getting matlab scripts for CROCO preprocessing
  pytools    : for getting python scripts for CROCO preprocessing
  inter      : for running interannual runs           ( cpl can not be defined) 
  forc       : for using forecast scripts
@@ -115,9 +115,9 @@ LIST_OPTIONS=$(cat << EOF
  wav        : scripts for coupling with WW3          ( oce-prod needed )
 
  # -- All options :
- # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro)
- # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro)
- # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif pisces sediment mustang oanalysis prepro pytools cpl wav atm toy)
+ # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
+ # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
+ # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
 
 EOF
 	    )
@@ -125,9 +125,9 @@ EOF
 # END USER MODIFICATIONS
 #==========================================================================================
 
-allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
-allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
-allmodels_cpl=( oce-prod xios test_cases agrif pisces sediment mustang oanalysis prepro pytools cpl wav atm toy )
+allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
+allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
+allmodels_cpl=( oce-prod xios test_cases agrif pisces sediment mustang oanalysis mattools pytools cpl wav atm toy )
 
 x_f=0
 
@@ -383,7 +383,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	#     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_CROCO_DIR.
     fi
     # PREPROCESSING
-    if [[ ${options[@]} =~ "prepro" && ${copy_tools} == 1 ]] ; then
+    if [[ ${options[@]} =~ "mattools" && ${copy_tools} == 1 ]] ; then
 	cp -Rf $TOOLS_DIR/start.m $MY_CROCO_DIR.
 	cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
 	cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
@@ -417,30 +417,30 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 fi
 
 ### Preprocessing scripts
-if [[ ${options[@]} =~ "prepro" && ${options[@]} =~ "oce-prod" ]] ; then
-    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO
+if [[ ${options[@]} =~ "mattools" && ${options[@]} =~ "oce-prod" ]] ; then
+    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools
     if [[ ${copy_tools} == 1 ]] ; then
-        cp -r $TOOLS_DIR/Coupling_tools/CROCO/* $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/.
+        cp -r $TOOLS_DIR/Coupling_tools/CROCO/* $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
+        mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
+        mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
+        mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
+        mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
+        mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
     else
-        echo " WARNING : proceed without MATLAB tools but prepro flag is activated"
-        echo " PREPRO/CROCO/ will be empty"
+        echo " WARNING : proceed without MATLAB tools but mattools flag is activated"
+        echo " PREPRO/CROCO/croco_tools will be empty"
         echo " You need to proceed with MATLAB tools"
         echo ' Exiting ...'
         exit
     fi
 fi
 if [[ ${options[@]} =~ "pytools" && ${options[@]} =~ "oce-prod" ]] ; then
-    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO
+    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO/croco_pytools
     if [[ ${copy_pytools} == 1 ]] ; then
-        cp -r $PYTOOLS_DIR $MY_CONFIG_HOME/PREPRO/CROCO/.
+        cp -r $PYTOOLS_DIR/* $MY_CONFIG_HOME/PREPRO/CROCO/croco_pytools/.
     else
         echo " WARNING : proceed without PYTHON tools but pytools flag is activated"
-        echo " PREPRO/CROCO/ will be empty"
+        echo " PREPRO/CROCO/croco_pytools will be empty"
         echo " You need to proceed with PYTHON tools"
         echo ' Exiting ...'
         exit
@@ -463,7 +463,7 @@ if [[ ${options[@]} =~ "wav" ]] ; then
     mkdir -p $MY_CONFIG_HOME/WW3_IN
     mkdir -p $MY_CONFIG_WORK/WW3_FILES
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/WW3_IN/* $MY_CONFIG_HOME/WW3_IN/.
-    if [[ ${options[@]} =~ "prepro" ]] ; then
+    if [[ ${options[@]} =~ "mattools" ]] ; then
         cp -r $TOOLS_DIR/Coupling_tools/WW3 $MY_CONFIG_HOME/PREPRO/.
     fi
 fi
@@ -475,7 +475,7 @@ if [[ ${options[@]} =~ "atm" ]] ; then
     mkdir -p $MY_CONFIG_HOME/WRF_IN
     mkdir -p $MY_CONFIG_WORK/WRF_FILES
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/WRF_IN/* $MY_CONFIG_HOME/WRF_IN/.
-    if [[ ${options[@]} =~ "prepro" ]] ; then
+    if [[ ${options[@]} =~ "mattools" ]] ; then
         cp -r $TOOLS_DIR/Coupling_tools/WRF_WPS $MY_CONFIG_HOME/PREPRO/.
     fi
 fi
