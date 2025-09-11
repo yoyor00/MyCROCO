@@ -267,15 +267,21 @@ C$    trd=omp_get_thread_num()
         call exchange_u2d_lh_tile (IJ_ORIG, ubar(START_2D_ARRAY,kstp))
         call exchange_v2d_lh_tile (IJ_ORIG, vbar(START_2D_ARRAY,kstp))
 
-        ! TODO: Could be treated with pipelining, but required
-        ! more advanced async communication scheme.
-        call exchange_r2d_lh_tile (IJ_ORIG, zeta(START_2D_ARRAY,kbak))
-        call exchange_u2d_lh_tile (IJ_ORIG, ubar(START_2D_ARRAY,kbak))
-        call exchange_v2d_lh_tile (IJ_ORIG, vbar(START_2D_ARRAY,kbak))
+        if (iic /= 1) then
+          ! In case we already did some time integration with multi-stepping,
+          ! we need to synchronize also the extended halo layers for the previous
+          ! multi-steps
 
-        call exchange_r2d_lh_tile (IJ_ORIG, zeta(START_2D_ARRAY,kold))
-        call exchange_u2d_lh_tile (IJ_ORIG, ubar(START_2D_ARRAY,kold))
-        call exchange_v2d_lh_tile (IJ_ORIG, vbar(START_2D_ARRAY,kold))
+          ! TODO: Could be treated with pipelining, but required
+          ! more advanced async communication scheme.
+          call exchange_r2d_lh_tile (IJ_ORIG, zeta(START_2D_ARRAY,kbak))
+          call exchange_u2d_lh_tile (IJ_ORIG, ubar(START_2D_ARRAY,kbak))
+          call exchange_v2d_lh_tile (IJ_ORIG, vbar(START_2D_ARRAY,kbak))
+
+          call exchange_r2d_lh_tile (IJ_ORIG, zeta(START_2D_ARRAY,kold))
+          call exchange_u2d_lh_tile (IJ_ORIG, ubar(START_2D_ARRAY,kold))
+          call exchange_v2d_lh_tile (IJ_ORIG, vbar(START_2D_ARRAY,kold))
+        end if
       endif
 
 #endif
