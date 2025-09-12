@@ -11,11 +11,11 @@
 !
 !  This is the "online_interpolate_3d_bulk.F" script
 !------------------------------------------------------------------------------
-!  This file contains the subfunctions enabling the online extraction of the
-!  forcing from a NCEP/CFSR dataset. A spatial and time interpolation are applied
-!  to the extracted data in order to adapt these to the considered simulation
-!  domain as well as the associated MPI/OPENMP discretisation (if defined MPI/
-!  OPENMP).
+!  This file contains the subfunctions enabling the ONLINE extraction of the
+!  forcing from an atmospheric dataset. A spatial and time interpolation are 
+!  applied to the extracted data in order to adapt these to the considered 
+!  simulation domain as well as the associated MPI/OPENMP discretisation (if 
+!  defined MPI/OPENMP).
 !------------------------------------------------------------------------------
 #include "cppdefs.h"
 
