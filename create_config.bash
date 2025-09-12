@@ -88,8 +88,9 @@ options=( all-dev )
 #options=( all-prod-cpl )
 
 ## examples for specified options:
-#options=( oce-prod pytools inter )
-#options=( oce-prod xios test_cases agrif mattools pytools cpl wav atm toy )
+#options=( oce-prod agrif pytools inter )
+#options=( oce-prod test_cases )
+#options=( oce-prod agrif mattools pytools cpl wav atm toy )
 
 # List of known options: 
 LIST_OPTIONS=$(cat << EOF
