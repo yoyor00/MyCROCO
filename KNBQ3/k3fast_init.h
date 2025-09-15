@@ -65,21 +65,6 @@
 # endif  /* K3SLOW_W */
 ! !
 ! !********************************
-! !  Implicit part: system setup
-! !********************************
-! !    
-# if defined K3SLOW_W && defined K3FAST_ZETAW
-!$acc kernels if(compute_on_device) default(present)
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          DU_nbq(i,j)=0.
-          DV_nbq(i,j)=0.
-        enddo
-      enddo
-!$acc end kernels
-# endif /* K3SLOW_W */
-! !
-! !********************************
 ! ! Update ubar and vbar
 ! !     and their BC (AGRIF)
 ! ! BC for DU(V)_nbq treated here

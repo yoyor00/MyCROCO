@@ -102,7 +102,7 @@
 # include "forces.h"
 # include "scalars.h"
 # include "weno_interfaces.h"
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  include "nbq.h"
 # endif
 # ifdef MRL_WCI
@@ -484,7 +484,7 @@
 !    RV = +e W sin(a) * dV
 !  with e = 2 Omega cos(Phi) horizontal Coriolis parameter
 !       a = angle between North and meridional grid axis
-!  If NBQ --> done in fast mode
+!  If NBQ || K3FAST --> done in fast mode
 !--------------------------------------------------------------------
 !
 ! Add to We contributions due to (quasi-)horizontal motions
@@ -1892,6 +1892,9 @@
 !
 !======================================================================
 !
+# ifdef K3FAST_COUPLING_SCH1
+      if (iif.ne.0) then
+# endif
        do j=Jstr,Jend
         do i=IstrU,Iend
           rufrc(i,j)=ru(i,j,1)
@@ -1933,6 +1936,9 @@
         endif
 
       enddo      !<-- j loop
+# ifdef K3FAST_COUPLING_SCH1
+      endif
+# endif
 
 !$acc end kernels
 

@@ -264,7 +264,11 @@
             cff=pn_u(i,j)*(UFx(i,j)-UFx(i-1,j))
      &         +pm_u(i,j)*(UFe(i,j+1)-UFe(i,j))
             cff1=pm_u(i,j)*pn_u(i,j)*cff
+#ifdef K3FAST_COUPLING_SCH1
+            if (iif.ne.0) rufrc(i,j)=rufrc(i,j) + cff
+#else
             rufrc(i,j)=rufrc(i,j) + cff
+#endif
             u(i,j,k,indx)=u(i,j,k,indx) + dt*cff1
 #if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
 !            if (nnew.ne.3) then
@@ -304,7 +308,11 @@
             cff=pn_v(i,j)*(VFx(i+1,j)-VFx(i,j))
      &         -pm_v(i,j)*(VFe(i,j)-VFe(i,j-1))
             cff1=pm_v(i,j)*pn_v(i,j)*cff
+#ifdef K3FAST_COUPLING_SCH1
+            if (iif.ne.0) rvfrc(i,j)=rvfrc(i,j) + cff
+#else
             rvfrc(i,j)=rvfrc(i,j) + cff
+#endif
             v(i,j,k,indx)=v(i,j,k,indx) + dt*cff1
 #if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
 !            if (nnew.ne.3) then
