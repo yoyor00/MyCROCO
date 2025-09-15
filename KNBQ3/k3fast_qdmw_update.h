@@ -204,21 +204,18 @@
 !               endif
                cff=vonKar/LOG(cff1/Zob(i,j)/1000.)
                cff=MIN(Cdb_max,MAX(Cdb_min,cff**2))
-               !if (mynode==0) write(6,*) i,j,k,cff
                dum_s=dum_s
      &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
      &           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
-               !if (mynode==0) write(6,*) ,k,cff,
-     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
-     !&           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
               endif
 #endif
 #  ifdef K3FAST_AB3
-              rhsw_bak(i,j,k,knew)=dum_s
+	      cff=dum_s
               dum_s=
-     &     +cff1*rhsw_bak(i,j,k,knew)
-     &     +cff2*rhsw_bak(i,j,k,kstp)
-     &     +cff3*rhsw_bak(i,j,k,kbak)
+     &     +cff1*cff
+     &     +cff2*rhsw_bak(i,j,k,kab3_2)
+     &     +cff3*rhsw_bak(i,j,k,kab3_1)
+              rhsw_bak(i,j,k,kab3_1)=cff
 #  endif
 
 ! ! 
@@ -259,11 +256,12 @@
             dum_s = FC3D(i,j,k) - FC3D(i,j,k+1)
 #   endif
 #  ifdef K3FAST_AB3
-              rhsw_bak(i,j,k,knew)=dum_s
+	      cff=dum_s
               dum_s=
-     &     +cff1*rhsw_bak(i,j,k,knew)
-     &     +cff2*rhsw_bak(i,j,k,kstp)
-     &     +cff3*rhsw_bak(i,j,k,kbak)
+     &     +cff1*cff
+     &     +cff2*rhsw_bak(i,j,k,kab3_2)
+     &     +cff3*rhsw_bak(i,j,k,kab3_1)
+              rhsw_bak(i,j,k,kab3_1)=cff
 #  endif
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) + dtfast * dum_s 
           enddo
@@ -297,11 +295,12 @@
 !     &                                  )
 #   endif
 #  ifdef K3FAST_AB3
-              rhsw_bak(i,j,k,knew)=dum_s
+              cff=dum_s
               dum_s=
-     &     +cff1*rhsw_bak(i,j,k,knew)
-     &     +cff2*rhsw_bak(i,j,k,kstp)
-     &     +cff3*rhsw_bak(i,j,k,kbak)
+     &     +cff1*cff
+     &     +cff2*rhsw_bak(i,j,k,kab3_2)
+     &     +cff3*rhsw_bak(i,j,k,kab3_1)
+              rhsw_bak(i,j,k,kab3_1)=cff
 #  endif
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)   
      &                      + dtfast * ( dum_s 
@@ -458,17 +457,15 @@
                dum_s=dum_s
      &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
      &           *Hz(i,j,k)/2.
-               !if (mynode==0) write(6,*) 'N',i,j,k,cff,
-     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
-     !&           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
              endif
 #endif
 #  ifdef K3FAST_AB3
-              rhsw_bak(i,j,N,knew)=dum_s
+	      cff=dum_s
               dum_s=
-     &     +cff1*rhsw_bak(i,j,N,knew)
-     &     +cff2*rhsw_bak(i,j,N,kstp)
-     &     +cff3*rhsw_bak(i,j,N,kbak)
+     &     +cff1*cff
+     &     +cff2*rhsw_bak(i,j,N,kab3_2)
+     &     +cff3*rhsw_bak(i,j,N,kab3_1)
+              rhsw_bak(i,j,N,kab3_1)=cff
 #  endif
 ! !
 ! !--------------------------------

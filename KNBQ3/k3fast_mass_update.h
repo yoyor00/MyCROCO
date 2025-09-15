@@ -41,15 +41,18 @@
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
 #  ifdef K3FAST_AM4             
-             thetadiv_nbq_bak2(i,j,k,knew)=thetadiv_nbq(i,j,k)
-             thetadiv_nbq(i,j,k)=
+             cff=
      &          cff0*thetadiv_nbq(i,j,k)
-     &         +cff1*thetadiv_nbq_bak2(i,j,k,kstp)
-     &         +cff2*thetadiv_nbq_bak2(i,j,k,kbak)
-     &         +cff3*thetadiv_nbq_bak2(i,j,k,kold)
-#  endif     
+     &         +cff1*thetadiv_nbq_bak2(i,j,k,kam4_2)
+     &         +cff2*thetadiv_nbq_bak2(i,j,k,kam4_3)
+     &         +cff3*thetadiv_nbq_bak2(i,j,k,kam4_1)
+             thetadiv_nbq_bak2(i,j,k,kam4_1)=thetadiv_nbq(i,j,k)
+            rho_nbq(i,j,k) = rho_nbq(i,j,k)  
+     &                       - dtfast*cff
+#  else
             rho_nbq(i,j,k) = rho_nbq(i,j,k)  
      &                       - dtfast*thetadiv_nbq(i,j,k)
+#  endif     
 #  ifdef KNHINT_CORR 
 	               cff=alphaw_nbq*0.5
      &                *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2

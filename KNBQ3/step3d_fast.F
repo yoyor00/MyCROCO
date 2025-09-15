@@ -783,12 +783,13 @@ C$    trd=omp_get_thread_num()
         do k=1-N_sl,N
          do j=JstrV-2,Jend+1
            do i=IstrU-2,Iend+1            
-            thetadiv_nbq_bak(i,j,k,knew)=thetadiv_nbq(i,j,k)
+            cff=thetadiv_nbq(i,j,k)
             thetadiv_nbq(i,j,k)=
      &          cff0*thetadiv_nbq(i,j,k)
-     &         +cff1*thetadiv_nbq_bak(i,j,k,kstp)
-     &         +cff2*thetadiv_nbq_bak(i,j,k,kbak)
-     &         +cff3*thetadiv_nbq_bak(i,j,k,kold)    
+     &         +cff1*thetadiv_nbq_bak(i,j,k,kam4_2)
+     &         +cff2*thetadiv_nbq_bak(i,j,k,kam4_3)
+     &         +cff3*thetadiv_nbq_bak(i,j,k,kam4_1)    
+            thetadiv_nbq_bak(i,j,k,kam4_1)=cff
            enddo
          enddo
        enddo

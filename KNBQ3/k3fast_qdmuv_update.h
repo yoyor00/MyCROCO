@@ -337,7 +337,7 @@
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
 #  endif
-#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORRUV
+#  if defined NBQ_NUDGING  || defined KNHINT_CORRUV
               dum_s=dum_s-qdmu_nbq(i,j,k)*cff
      &                   +u(i,j,k,nrhs)
      &                    *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))
@@ -382,9 +382,6 @@
                dum_s=dum_s
      &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
      &           *(Hz(i,j,k)+Hz(i-1,j,k))/2.
-            !If (mynode==0) write(6,*) 'u',i,j,k,cff,
-     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
-     !&           *(Hz(i,j,k)+Hz(i-1,j,k))/2.
               endif
 #endif
 ! !
@@ -393,11 +390,12 @@
 ! !................................
 ! !
 #  ifdef K3FAST_AB3
-              rhsu_bak(i,j,k,knew)=dum_s
+              cff=dum_s
               dum_s=
-     &     +cff1*rhsu_bak(i,j,k,knew)
-     &     +cff2*rhsu_bak(i,j,k,kstp)
-     &     +cff3*rhsu_bak(i,j,k,kbak)
+     &     +cff1*cff
+     &     +cff2*rhsu_bak(i,j,k,kab3_2)
+     &     +cff3*rhsu_bak(i,j,k,kab3_1)
+              rhsu_bak(i,j,k,kab3_1)=cff
 #  endif
 ! !
 ! !................................
@@ -652,7 +650,7 @@
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
 #  endif
-#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORRUV
+#  if defined NBQ_NUDGING || defined KNHINT_CORRUV
               dum_s=dum_s-qdmv_nbq(i,j,k)*cff
      &                   +v(i,j,k,nrhs)*cff
      &                    *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))
@@ -673,7 +671,6 @@
      &       .eq.0
 !     &       h(i,j) .le. 1.D-1 
      &           )  then
-         !  write(6,*) mynode,i,j,k
                cff2=2.*qdmv_nbq(i,j,k)/(Hz(i,j,k)+Hz(i,j-1,k))
                cff3=0.5*(
      &          qdmu_nbq(i  ,j  ,k)/(Hz(i  ,j  ,k)+Hz(i-1,j  ,k))
@@ -697,9 +694,6 @@
                dum_s=dum_s
      &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
      &           *(Hz(i,j,k)+Hz(i,j-1,k))/2.
-               !if (mynode==0) write(6,*) 'v',i,j,k,cff,
-     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
-     !&           *(Hz(i,j,k)+Hz(i,j-1,k))/2.
               endif
 #endif
 ! !
@@ -708,11 +702,12 @@
 ! !................................
 ! !
 #  ifdef K3FAST_AB3
-              rhsv_bak(i,j,k,knew)=dum_s
+              cff=dum_s
               dum_s=
-     &     +cff1*rhsv_bak(i,j,k,knew)
-     &     +cff2*rhsv_bak(i,j,k,kstp)
-     &     +cff3*rhsv_bak(i,j,k,kbak)
+     &     +cff1*cff
+     &     +cff2*rhsv_bak(i,j,k,kab3_2)
+     &     +cff3*rhsv_bak(i,j,k,kab3_1)
+              rhsv_bak(i,j,k,kab3_1)=cff
 #  endif
 ! !
 ! !................................

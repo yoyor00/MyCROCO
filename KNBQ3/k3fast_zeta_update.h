@@ -56,9 +56,9 @@
 #   endif
 #   ifdef K3FAST_AB3
          usurf_nbq(i,j)=cff1*cff
-     &     +cff2*usurf_nbq_bak(i,j,kstp)
-     &     +cff3*usurf_nbq_bak(i,j,kbak)
-         usurf_nbq_bak(i,j,knew)=cff        
+     &     +cff2*usurf_nbq_bak(i,j,kab3_2)
+     &     +cff3*usurf_nbq_bak(i,j,kab3_1)
+         usurf_nbq_bak(i,j,kab3_1)=cff        
 #   endif
           enddo 
         enddo 
@@ -85,9 +85,9 @@
 #   endif
 #   ifdef K3FAST_AB3
          vsurf_nbq(i,j)=cff1*cff
-     &     +cff2*vsurf_nbq_bak(i,j,kstp)
-     &     +cff3*vsurf_nbq_bak(i,j,kbak)
-        vsurf_nbq_bak(i,j,knew)=cff  
+     &     +cff2*vsurf_nbq_bak(i,j,kab3_2)
+     &     +cff3*vsurf_nbq_bak(i,j,kab3_1)
+        vsurf_nbq_bak(i,j,kab3_1)=cff  
 #   endif
           enddo
         enddo 
@@ -115,9 +115,9 @@
 #   endif
 #   ifdef K3FAST_AB3
          wsurf_nbq(i,j)=cff1*cff
-     &     +cff2*wsurf_nbq_bak(i,j,kstp)
-     &     +cff3*wsurf_nbq_bak(i,j,kbak)
-         wsurf_nbq_bak(i,j,knew)=cff  
+     &     +cff2*wsurf_nbq_bak(i,j,kab3_2)
+     &     +cff3*wsurf_nbq_bak(i,j,kab3_1)
+         wsurf_nbq_bak(i,j,kab3_1)=cff  
 #   endif      
         enddo
       enddo 

@@ -54,7 +54,7 @@
 #  ifdef K3FAST_AM4c
         do j=Jstr,Jend
           do i=Istr,Iend+1
-             ubar_bak(i,j)=cff0*ubar(i,j,knew)
+             urhs(i,j)=cff0*ubar(i,j,knew)
      &     +cff1*ubar(i,j,kstp)
      &     +cff2*ubar(i,j,kbak)
      &     +cff3*ubar(i,j,kold)
@@ -62,7 +62,7 @@
         enddo
         do j=Jstr,Jend+1
           do i=Istr,Iend
-             vbar_bak(i,j)=cff0*vbar(i,j,knew)
+             vrhs(i,j)=cff0*vbar(i,j,knew)
      &     +cff1*vbar(i,j,kstp)
      &     +cff2*vbar(i,j,kbak)
      &     +cff3*vbar(i,j,kold)
@@ -82,7 +82,7 @@
 #  endif
      &                                + (dtfast*pm(i,j)*pn(i,j)*0.5*(
 #  ifdef K3FAST_AM4c
-     &      (Dnew(i  ,j)+Dnew(i-1,j))*(ubar_bak(i  ,j)
+     &      (Dnew(i  ,j)+Dnew(i-1,j))*(urhs(i  ,j)
 #  else
      &      (Dnew(i  ,j)+Dnew(i-1,j))*(ubar(i  ,j,knew)
 #  endif
@@ -91,7 +91,7 @@
 #  endif  
      &                                                 )*on_u(i  ,j)
 #  ifdef K3FAST_AM4c
-     &     -(Dnew(i+1,j)+Dnew(i  ,j))*(ubar_bak(i+1,j)
+     &     -(Dnew(i+1,j)+Dnew(i  ,j))*(urhs(i+1,j)
 #  else
      &     -(Dnew(i+1,j)+Dnew(i  ,j))*(ubar(i+1,j,knew)
 #  endif
@@ -100,7 +100,7 @@
 #  endif 
      &                                                 )*on_u(i+1,j)
 #  ifdef K3FAST_AM4c
-     &     +(Dnew(i,j  )+Dnew(i,j-1))*(vbar_bak(i,j)
+     &     +(Dnew(i,j  )+Dnew(i,j-1))*(vrhs(i,j)
 #  else
      &     +(Dnew(i,j  )+Dnew(i,j-1))*(vbar(i,j  ,knew)
 #  endif
@@ -109,7 +109,7 @@
 #  endif
      &                                                 )*om_v(i,j  )
 #  ifdef K3FAST_AM4c
-     &     -(Dnew(i,j+1)+Dnew(i,j  ))*(vbar_bak(i,j+1)
+     &     -(Dnew(i,j+1)+Dnew(i,j  ))*(vrhs(i,j+1)
 #  else
      &     -(Dnew(i,j+1)+Dnew(i,j  ))*(vbar(i,j+1,knew)
 #  endif

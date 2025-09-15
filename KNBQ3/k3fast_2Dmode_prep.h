@@ -119,6 +119,33 @@
         cff2=-2.0*mybeta-0.5
         cff3= mybeta
       endif
+      if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
+# ifdef K3FAST_AB3
+       kab3_1=2
+       kab3_2=1
+# endif
+# if defined K3FAST_AM4 || defined K3FAST_AM4b || defined K3FAST_AM4c
+       kam4_1=3
+       kam4_2=2
+       kam4_3=1
+# endif
+      else
+# ifdef K3FAST_AB3
+       kab3_1=kab3_1+1
+       if (kab3_1.ge.3) kab3_1=1
+       kab3_2=kab3_2+1
+       if (kab3_2.ge.3) kab3_2=1
+# endif
+# if defined K3FAST_AM4 || defined K3FAST_AM4b || defined K3FAST_AM4c
+       kam4_1=kam4_1+1
+       if (kam4_1.ge.4) kam4_1=1
+       kam4_2=kam4_2+1
+       if (kam4_2.ge.4) kam4_2=1
+       kam4_3=kam4_3+1
+       if (kam4_3.ge.4) kam4_3=1
+# endif
+      endif
+
 ! !
 ! !--------------------------------
 ! ! Extrapolate (D,ubar,vbar) at m+1/2
