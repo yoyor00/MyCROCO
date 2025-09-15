@@ -406,7 +406,6 @@
             enddo
 !	   endif 
           enddo ! k=1,N-1
-      
 ! !
 ! ! Ocean layer (surface)
 ! !
@@ -559,7 +558,40 @@
             enddo
           enddo
         endif  
-
+! !
+! ! Lateral boundary conditions:
+! !
+        if (xhi_divlat_nbq==1) then
+# ifdef OBC_COM_WEST
+	 if (WESTERN_EDGE) then
+          do j=Jstr,Jend
+           thetadiv_nbq(istr,j,k)=0.
+          enddo
+         endif
+# endif
+# ifdef OBC_COM_EAST
+	 if (EASTERN_EDGE) then
+          do j=Jstr,Jend
+           thetadiv_nbq(iend,j,k)=0.
+          enddo
+         endif
+# endif
+# ifdef OBC_COM_SOUTH
+	 if (SOUTHERN_EDGE) then
+          do i=Istr,Iend
+           thetadiv_nbq(i,jstr,k)=0.
+          enddo
+         endif
+# endif
+# ifdef OBC_COM_NORTH
+	 if (NORTHERN_EDGE) then
+          do i=Istr,Iend
+           thetadiv_nbq(i,jend,k)=0.
+          enddo
+         endif
+# endif
+        endif 
+        
       enddo ! <-- k=1,N
 !$acc end kernels
 ! ! 

@@ -85,7 +85,25 @@
      &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),  gamma,
      &       FX(PRIVATE_2D_SCRATCH_ARRAY),      epsil,
      &       FE(PRIVATE_2D_SCRATCH_ARRAY),        cdt,
+<<<<<<< HEAD
      &     WORK(PRIVATE_2D_SCRATCH_ARRAY)
+=======
+     &       WORK(PRIVATE_2D_SCRATCH_ARRAY)
+!$acc declare create( WORK )      
+      real   cff0,cff14,cff15 
+# ifdef K3FAST 
+      real   cff13
+      real   cff6,cff7,cff8,cff10,cff11
+#  ifdef K3FAST_DISSCOUPLING
+      real   alpha_uv,alpha_w
+#  endif
+#  if defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF
+      real   ru_int_nbq_2d(PRIVATE_2D_SCRATCH_ARRAY),
+     &       rv_int_nbq_2d(PRIVATE_2D_SCRATCH_ARRAY)
+!$acc declare create( ru_int_nbq_2d, rv_int_nbq_2d )     
+#  endif
+# endif
+>>>>>>> 131325c9... Coupling.
 # ifdef OPENACC
       real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -518,6 +536,55 @@
 #  endif
 # endif
 
+<<<<<<< HEAD
+=======
+! !===================================================================
+! ! Predictor final computations
+! !===================================================================
+
+        cff14=0.5+gamma
+        cff15=0.5-gamma
+# ifdef K3FAST
+        if (FIRST_TIME_STEP) then
+        cff13=0.                        ! ! This version is designed
+        cff2=0.                        ! ! for coupling during 3D
+        cff1=1.                        ! ! predictor sub-step: here
+#  if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
+        cff6=1.
+        cff7=0.
+        cff8=0.
+#  endif
+        elseif (FIRST_TIME_STEP+1) then  ! ! forcing term "rufrc" is
+        cff13= 0.                       ! ! computed as instantaneous
+        cff2=-0.5                      ! ! value at 3D time step
+        cff1= 1.5                      ! ! "nstp" first, and then
+#  if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
+        cff6=2.
+        cff7=-1.
+        cff8=0.
+#  endif
+        else                             ! ! extrapolated half-step
+        cff13=0.281105                 ! ! forward using  AB3-like
+        cff2=-0.5-2.*cff13              ! ! weights optimized for
+        cff1=1.5+cff13                 ! ! maximum stability (with
+#  if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
+        cff6=2.+0.25
+        cff7=-1.-2.*0.25
+        cff8=0.25
+#  endif
+        endif      
+                      ! ! special care for startup)
+# endif
+ 
+! !! !
+! !--------------------------------------------------------------------
+! ! Main j-loop 
+! !--------------------------------------------------------------------
+! !
+!$acc kernels if(compute_on_device) default(present)
+!$acc loop private( DC, FC, CF)
+        DOLOOP2D(Istr,Iend,Jstr,Jend)
+>>>>>>> 131325c9... Coupling.
 # ifdef TRACERS
         DOLOOP2D(Istr,Iend,Jstr,Jend)
 #  ifndef VADV_ADAPT_IMP 
@@ -613,6 +680,25 @@
               cff = 1.
 # else
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
+<<<<<<< HEAD
+=======
+# endif           
+              cff0=WORK(i,j)*ru(i,j,k)
+              u(i,j,k,nnew)=( u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+     &                       +cdt*cff0 )*cff
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+# if defined M3FAST || (defined K3FAST_COUPLING_SCH0 && defined K3FAST_C3D_UVSF )
+              ru_int_nbq(i,j,k) =cff0
+# elif defined K3FAST_C3D_UVSF 
+              ru_int_nbq(i,j,k) =cff0
+#  ifndef K3FAST_COUPLING_SCH2
+              ru_intt_nbq(i,j,k,nstp)=cff0
+#  else
+              ru_intt_nbq(i,j,k,nstp)=cff0
+#  endif
+>>>>>>> 131325c9... Coupling.
 # endif
               u(i,j,k,nnew)=(u(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i-1,j,k))
      &                                    +cdt*WORK(i,j)*ru(i,j,k)
@@ -650,6 +736,67 @@
               cff = 1.
 # else
               cff = 2./(Hz_half(i,j,k)+Hz_half(i-1,j,k))
+<<<<<<< HEAD
+=======
+# endif 
+              qdm_nstp = u(i,j,k,nstp)*0.5*( Hz(i  ,j,k)
+     &                                      +Hz(i-1,j,k))
+              qdm_indx = u(i,j,k,indx)*0.5*( Hz_bak(i  ,j,k)
+     &                                      +Hz_bak(i-1,j,k))
+              u(i,j,k,nnew)=( cff14*qdm_nstp
+     &                       +cff15*qdm_indx
+     &                       +cdt*WORK(i,j)*(ru(i,j,k)
+# if defined M3FAST || defined K3FAST_C3D_UVFS
+     &                                     +ru_nbq_avg1(i,j,k)
+# endif     
+     &                                      ))*cff 
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+# if defined M3FAST  || defined K3FAST_COUPLING_SCH0
+              ru_int_nbq(i,j,k)=((qdm_nstp-qdm_indx) /dt
+     &               -WORK(i,j)*ru_nbq_avg2(i,j,k))
+#  ifdef MASKING
+     &                          *umask(i,j)
+#  endif   
+# elif defined K3FAST_C3D_UVSF
+#  ifndef K3FAST_COUPLING_SCH2
+              cff0=((qdm_nstp-qdm_indx) /dt
+     &               -WORK(i,j)*ru_nbq_avg2(i,j,k))
+              ru_int_nbq(i,j,k)=(cff6*cff0
+     &                          +cff7*ru_intt_nbq(i,j,k,3-nstp)
+     &                          +cff8*ru_intt_nbq(i,j,k,nstp))
+#   ifdef MASKING
+     &                          *umask(i,j)
+#   endif        
+              ru_intt_nbq(i,j,k,nstp)=cff0
+#  else
+           cff0=WORK(i,j)*ru(i,j,k)! ! *(1.-gamma)   
+           ru_int_nbq(i,j,k)=(cff1 *cff0
+     &                      + cff2 *ru_intt_nbq(i,j,k,3-nstp)
+     &                      + cff13*ru_intt_nbq(i,j,k,nstp))  
+#   ifdef MASKING
+     &                         *umask(i,j)
+#   endif        
+           ru_intt_nbq(i,j,k,nstp)=cff0
+#  endif /* ! !K3FAST_COUPLING_SCH2 */
+! !
+! !******** Test dissipation *****************      
+! !                  
+#  ifdef K3FAST_DISSCOUPLING
+              cff10=((qdm_nstp-qdm_indx) /dt
+     &              -WORK(i,j)*ru_nbq_avg2(i,j,k))
+              ru_int_nbq(i,j,k) = (1.-alpha_uv) * ru_int_nbq(i,j,k) ! !ICI
+     &                            +alpha_uv * cff10
+#  endif     
+# endif /* M3FAST || K3FAST_C3D_UVSF */
+! !
+! !******** Depth-average ********************      
+! !
+# if defined M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
+              ru_int_nbq_2d(i,j)= ru_int_nbq_2d(i,j) 
+     &                           +ru_int_nbq(i,j,k) 
+>>>>>>> 131325c9... Coupling.
 # endif
 
 # ifdef M3FAST
@@ -711,6 +858,25 @@
                 cff = 1.
 # else
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
+<<<<<<< HEAD
+=======
+# endif 
+                cff0=WORK(i,j)*rv(i,j,k)
+                v(i,j,k,nnew)=( v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+     &                         +cdt*cff0)*cff
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+# if defined M3FAST || (defined K3FAST_COUPLING_SCH0 && defined K3FAST_C3D_UVSF)
+                rv_int_nbq(i,j,k) =cff0
+# elif defined K3FAST_C3D_UVSF
+                rv_int_nbq(i,j,k) =cff0
+#  ifndef K3FAST_COUPLING_SCH2
+                rv_intt_nbq(i,j,k,nstp)=cff0
+#  else
+                rv_intt_nbq(i,j,k,nstp)=cff0
+#  endif
+>>>>>>> 131325c9... Coupling.
 # endif
                 v(i,j,k,nnew)=(v(i,j,k,nstp)*0.5*(Hz(i,j,k)+Hz(i,j-1,k))
      &                                    +cdt*WORK(i,j)*rv(i,j,k)
@@ -748,6 +914,67 @@
                 cff = 1.
 # else
                 cff = 2./(Hz_half(i,j,k)+Hz_half(i,j-1,k))
+<<<<<<< HEAD
+=======
+# endif              
+                qdm_nstp = v(i,j,k,nstp)*0.5*( Hz(i,j  ,k)
+     &                                        +Hz(i,j-1,k))
+                qdm_indx = v(i,j,k,indx)*0.5*( Hz_bak(i  ,j,k)
+     &                                        +Hz_bak(i,j-1,k))
+                v(i,j,k,nnew)=( cff14*qdm_nstp
+     &                         +cff15*qdm_indx
+     &                         +cdt*WORK(i,j)*(rv(i,j,k)
+# if defined M3FAST || defined K3FAST_C3D_UVFS
+     &                                  +rv_nbq_avg1(i,j,k)
+# endif     
+     &                                  ))*cff
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+# if defined M3FAST || defined K3FAST_COUPLING_SCH0
+                rv_int_nbq(i,j,k)=((qdm_nstp-qdm_indx) /dt
+     &               -WORK(i,j)*rv_nbq_avg2(i,j,k))
+#   ifdef MASKING
+     &                           *vmask(i,j)   
+#   endif   
+# elif defined K3FAST_C3D_UVSF
+#  ifndef K3FAST_COUPLING_SCH2
+                cff0=((qdm_nstp-qdm_indx) /dt
+     &               -WORK(i,j)*rv_nbq_avg2(i,j,k))
+                rv_int_nbq(i,j,k)=(cff6*cff0
+     &                            +cff7*rv_intt_nbq(i,j,k,3-nstp)
+     &                            +cff8*rv_intt_nbq(i,j,k,nstp))
+#   ifdef MASKING
+     &                            *vmask(i,j)   
+#   endif     
+                rv_intt_nbq(i,j,k,nstp)=cff0
+#  else
+                cff0=WORK(i,j)*rv(i,j,k)
+                rv_int_nbq(i,j,k)= (cff1*cff0
+     &                            + cff2 *rv_intt_nbq(i,j,k,3-nstp)
+     &                            + cff13*rv_intt_nbq(i,j,k,nstp))
+#   ifdef MASKING
+     &                           *vmask(i,j)   
+#   endif     
+                rv_intt_nbq(i,j,k,nstp)=cff0
+#  endif /* ! !K3FAST_COUPLING_SCH2 */
+! !
+! !******** Test dissipation *****************      
+! !    
+#  ifdef K3FAST_DISSCOUPLING
+                cff10=((qdm_nstp-qdm_indx) /dt
+     &                -WORK(i,j)*rv_nbq_avg2(i,j,k))
+                rv_int_nbq(i,j,k) = (1.-alpha_uv) * rv_int_nbq(i,j,k)  
+     &                             +alpha_uv * cff10
+#  endif   
+# endif /* M3FAST || K3FAST_C3D_UVSF */ 
+! !
+! !******** Depth-average ********************      
+! !  
+# if defined M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
+              rv_int_nbq_2d(i,j)= rv_int_nbq_2d(i,j)
+     &                           +rv_int_nbq(i,j,k) 
+>>>>>>> 131325c9... Coupling.
 # endif
 
 # ifdef M3FAST
@@ -852,17 +1079,42 @@
         do k=1,N-1
           do i=Istr,Iend
             wz(i,j,k,nnew)=( wz(i,j,k,nstp)*(Hz(i,j,k)+Hz(i,j,k+1))
+<<<<<<< HEAD
      &                                          +dt*pn(i,j)*pm(i,j)
      &                              *(rw(i,j,k)+rw_nbq_avg1(i,j,k))
      &                     )   /  (Hz_half(i,j,k)+Hz_half(i,j,k+1))
 
             rw_int_nbq(i,j,k)= 0.
+=======
+     &                              +2.*dt*cff0) 
+     &                     /  (Hz_half(i,j,k)+Hz_half(i,j,k+1)) 
+#  ifdef MASKING
+     &                           *rmask(i,j)
+#  endif    
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+#  if defined NBQ || (defined K3FAST_COUPLINGW_SCH0 && defined K3FAST_C3D_WSF)
+            rw_int_nbq(i,j,k) =cff0
+#  elif defined K3FAST_C3D_WSF
+            rw_int_nbq(i,j,k) =cff0
+#   ifndef K3FAST_COUPLINGW_SCH2            
+            rw_intt_nbq(i,j,k,nstp)=cff0
+#   else
+            rw_intt_nbq(i,j,k,nstp)=cff0
+#   endif
+#  endif
+! !
+! !******** w(t) x dz ************************      
+! !
+>>>>>>> 131325c9... Coupling.
             wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+
      &                                         Hz(i,j,k+1))
           enddo
         enddo
 !==
         do i=Istr,Iend
+<<<<<<< HEAD
 !== Special treatment for k=N because the control volume at the top is Hz(N)/2
             wz(i,j,N,nnew)=( wz(i,j,N,nstp)*Hz(i,j,N)
      &                            +dt*pn(i,j)*pm(i,j)
@@ -872,6 +1124,41 @@
             wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N) !<-- wz(indx) has units kg.m-1.s-1
 
 !== Special treatment for k=0 because the control volume at the top is Hz(1)/2
+=======
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
+            cff0=WORK(i,j)*rw(i,j,N)
+            wz(i,j,N,nnew)=(wz(i,j,N,nstp)*Hz(i,j,N)+2.*dt*cff0)
+     &                     /Hz_half(i,j,N) ! !<-- wz has units m.s-1
+#  ifdef MASKING
+     &                     *rmask(i,j)
+#  endif     
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+#  if defined NBQ || (defined K3FAST_COUPLINGW_SCH0 && defined K3FAST_C3D_WSF)
+            rw_int_nbq(i,j,N) =cff0
+#  elif defined K3FAST_C3D_WSF
+            rw_int_nbq(i,j,N) =cff0
+#   ifndef K3FAST_COUPLINGW_SCH2            
+            rw_intt_nbq(i,j,N,nstp)=cff0
+#   else
+            rw_intt_nbq(i,j,N,nstp)=cff0
+#   endif
+#  endif     
+! !
+! !******** v(t) x dz ************************      
+! !       
+            wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N) ! !<-- wz(indx) has units kg.m-1.s-1
+! !
+! !== Special treatment for k=0 because the control 
+! !== volume at the top is Hz(1)/2
+! !
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
+>>>>>>> 131325c9... Coupling.
 #  ifdef NBQ_FREESLIP
 !           wz(i,j,0,nnew)=( wz(i,j,0,nstp)*Hz(i,j,1)
 !     &                            +dt*pn(i,j)*pm(i,j)
@@ -904,6 +1191,7 @@
      &                                             Hz(i,j,k+1))
             qdm_indx = wz(i,j,k,indx)*(Hz_bak(i,j,k  )+
      &                                             Hz_bak(i,j,k+1))
+<<<<<<< HEAD
             wz(i,j,k,nnew)=( cff1*qdm_nstp         !
      &                      +cff2*qdm_indx         !
      &                      +2.*cdt*pn(i,j)*pm(i,j)                 ! n - 1/2
@@ -912,12 +1200,66 @@
 
             rw_int_nbq(i,j,k)=(qdm_nstp-qdm_indx)*0.5/dt
      &                       - pn(i,j)*pm(i,j)*rw_nbq_avg2(i,j,k)
+=======
+            wz(i,j,k,nnew)=( (cff14*qdm_nstp
+     &                       +cff15*qdm_indx)  
+     &                      +2.*cdt*WORK(i,j)       
+     &                             *(rw(i,j,k)
+#  if defined NBQ || defined K3FAST_C3D_WFS
+     &                               +rw_nbq_avg1(i,j,k)  
+#  endif     
+     &                     )) / (Hz_half(i,j,k)+Hz_half(i,j,k+1))  ! !<-- wz has units m.s-1
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+#  if defined NBQ || defined K3FAST_COUPLINGW_SCH0
+           rw_int_nbq(i,j,k)=((qdm_nstp-qdm_indx)*0.5/dt
+     &                 - WORK(i,j)*rw_nbq_avg2(i,j,k))
+#    ifdef MASKING
+     &                              *rmask(i,j)
+#    endif     
+#  elif defined K3FAST_C3D_WSF
+#   ifndef K3FAST_COUPLINGW_SCH2  
+           cff0 = ((qdm_nstp-qdm_indx)*0.5/dt
+     &                 - WORK(i,j)*rw_nbq_avg2(i,j,k))
+           rw_int_nbq(i,j,k)=(cff6*cff0
+     &                       +cff7*rw_intt_nbq(i,j,k,3-nstp)
+     &                       +cff8*rw_intt_nbq(i,j,k,nstp))
+#    ifdef MASKING
+     &                              *rmask(i,j)
+#    endif     
+           rw_intt_nbq(i,j,k,nstp)=cff0
+#   else
+            cff0=WORK(i,j)*rw(i,j,k) ! ! wzdiff here if necessary
+            rw_int_nbq(i,j,k)= (cff1*cff0
+     &                        + cff2*rw_intt_nbq(i,j,k,3-nstp)
+     &                        + cff13*rw_intt_nbq(i,j,k,nstp))
+#    ifdef MASKING
+     &                              *rmask(i,j)
+#    endif     
+           rw_intt_nbq(i,j,k,nstp)=cff0
+#   endif /* K3FAST_COUPLINGW_SCH2 */
+! !
+! !******** Test dissipation *****************      
+! !    
+#   ifdef K3FAST_DISSCOUPLING
+           cff10 = ((qdm_nstp-qdm_indx)*0.5/dt
+     &                 - WORK(i,j)*rw_nbq_avg2(i,j,k))
+           rw_int_nbq(i,j,k)=(1.-alpha_w)*rw_int_nbq(i,j,k)   
+     &                      +alpha_w * cff10
+#   endif
+#  endif /* NBQ ||K3FAST_C3D_WSF */
+! !
+! !******** w(t) x dz ************************      
+! !
+>>>>>>> 131325c9... Coupling.
             wz(i,j,k,indx)=wz(i,j,k,nstp)*0.5*(Hz(i,j,k  )+
      &                                          Hz(i,j,k+1)) !<-- wz(indx) has units kg.m-1.s-1
           enddo
         enddo
 
         do i=Istr,Iend
+<<<<<<< HEAD
 
 !== Special treatment for k=N because the control volume at the top is Hz(N)/2
           qdm_nstp = wz(i,j,N,nstp)*Hz    (i,j,N)
@@ -934,6 +1276,73 @@
 
 !== Special treatment for k=0 because the control volume at the bottom
 !    is Hz(1)/2
+=======
+! !
+! !== Special treatment for k=N because 
+! !== the control volume at the top is Hz(N)/2  
+! !
+! !
+! !******** Predictor @ t+dt/2 ***************      
+! !
+           qdm_nstp = wz(i,j,N,nstp)*Hz    (i,j,N)
+           qdm_indx = wz(i,j,N,indx)*Hz_bak(i,j,N)
+           wz(i,j,N,nnew)=((cff14*qdm_nstp
+     &                     +cff15*qdm_indx)  
+     &                     +2.*cdt*WORK(i,j)
+     &                        *(rw(i,j,N)
+#  if defined NBQ || defined K3FAST_C3D_WFS
+     &                         +rw_nbq_avg1(i,j,N)
+#  endif     
+     &                   ))/ Hz_half(i,j,N)          ! !<-- wz has units m.s-1   
+! !
+! !******** RHS Slow to Fast *****************      
+! !
+#  if defined NBQ || defined K3FAST_COUPLINGW_SCH0
+           rw_int_nbq(i,j,N)= ((qdm_nstp-qdm_indx)*0.5/dt
+     &                      - WORK(i,j)*rw_nbq_avg2(i,j,N))
+#    ifdef MASKING
+     &                           *rmask(i,j)
+#    endif     
+#  elif defined K3FAST_C3D_WSF
+#   ifndef K3FAST_COUPLINGW_SCH2  
+           cff0 = ((qdm_nstp-qdm_indx)*0.5/dt
+     &                      - WORK(i,j)*rw_nbq_avg2(i,j,N))
+           rw_int_nbq(i,j,N)=(cff6*cff0
+     &                       +cff7*rw_intt_nbq(i,j,N,3-nstp)
+     &                       +cff8*rw_intt_nbq(i,j,N,nstp))
+#    ifdef MASKING
+     &                           *rmask(i,j)
+#    endif     
+           rw_intt_nbq(i,j,N,nstp)=cff0
+#   else
+           cff0=WORK(i,j)*rw(i,j,N) 
+           rw_int_nbq(i,j,N)= (cff1*cff0
+     &                        +cff2 *rw_intt_nbq(i,j,N,3-nstp)
+     &                        +cff13*rw_intt_nbq(i,j,N,nstp))
+#    ifdef MASKING
+     &                           *rmask(i,j)
+#    endif     
+           rw_intt_nbq(i,j,N,nstp)=cff0
+#   endif /* K3FAST_COUPLINGW_SCH2 */
+! !
+! !******** Test dissipation *****************      
+! !    
+#   ifdef K3FAST_DISSCOUPLING
+           cff10 = ((qdm_nstp-qdm_indx)*0.5/dt
+     &                      - WORK(i,j)*rw_nbq_avg2(i,j,N))
+           rw_int_nbq(i,j,N)=  (1.-alpha_w)*rw_int_nbq(i,j,N)     ! ! ICI
+     &                         +alpha_w*cff10
+#   endif
+#  endif /* NBQ || K3FAST_C3D_WSF */
+! !
+! !******** w(t) x dz ************************      
+! !
+           wz(i,j,N,indx)=wz(i,j,N,nstp)*0.5*Hz(i,j,N)   ! !<-- wz(indx) has units kg.m-1.s-1
+! !
+! !== Special treatment for k=0 because 
+! ! the control volume at the bottom is Hz(1)/2  
+! !
+>>>>>>> 131325c9... Coupling.
 #  ifdef NBQ_FREESLIP
 !         wz(i,j,0,nnew)=( cff1*wz(i,j,0,nstp)*Hz    (i,j,1)
 !     &                   +cff2*wz(i,j,0,indx)*Hz_bak(i,j,1)

@@ -1631,8 +1631,8 @@ C$    integer omp_get_thread_num
             ru_int_nbq(i,j,k)  =init
             rv_int_nbq(i,j,k)  =init
 #    ifdef K3FAST_COUPLING_SCH1            
-            ru_intt_nbq(i,j,k) =init
-            rv_intt_nbq(i,j,k) =init
+            ru_intt_nbq(i,j,k,:) =init
+            rv_intt_nbq(i,j,k,:) =init
 #    elif defined K3FAST_COUPLING_SCH2
             ru_intt_nbq(i,j,k,:) =init
             rv_intt_nbq(i,j,k,:) =init
@@ -1657,7 +1657,7 @@ C$    integer omp_get_thread_num
 #  ifdef K3FAST_C3D_WSF
             rw_int_nbq(i,j,k)  =init
 #    ifdef K3FAST_COUPLINGW_SCH1
-            rw_intt_nbq(i,j,k) =init
+            rw_intt_nbq(i,j,k,:) =init
 #    elif defined K3FAST_COUPLINGW_SCH2
             rw_intt_nbq(i,j,k,:) =init
 #    endif

@@ -254,6 +254,10 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
 #  else
         dtgrid_nbq = dtfast
 #  endif
+! !
+! ! Boundary conditions: 
+! !     
+        xhi_divlat_nbq=1.
 !
 !----------------------------------------------------------------------
 !   Compressible density initializations

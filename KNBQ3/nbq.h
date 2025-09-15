@@ -142,6 +142,14 @@
       common /nbq_usurf/ usurf_nbq
       real vsurf_nbq(GLOBAL_2D_ARRAY)
       common /nbq_vsurf/ vsurf_nbq 
+#   ifdef K3FAST_AB3
+      real usurf_nbq_bak(GLOBAL_2D_ARRAY,2)
+      common /nbq_usurf_bak/ usurf_nbq_bak
+      real vsurf_nbq_bak(GLOBAL_2D_ARRAY,2)
+      common /nbq_vsurf_bak/ vsurf_nbq_bak
+      real wsurf_nbq_bak(GLOBAL_2D_ARRAY,2)
+      common /nbq_wsurf_bak/ wsurf_nbq_bak
+#    endif
 #  endif
 #  ifdef NBQ_NUDGING
       real NBQnudgcof(GLOBAL_2D_ARRAY)
@@ -180,6 +188,14 @@
 #  endif 
       real thetadiv_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_thetadiv_nbq/ thetadiv_nbq
+#  ifdef K3FAST_AM4b
+      real thetadiv_nbq_bak(GLOBAL_2D_ARRAY,NSLP1N,3)
+      common /nbq_thetadiv_nbq_bak/ thetadiv_nbq_bak
+#  endif
+#  ifdef K3FAST_AM4
+      real thetadiv_nbq_bak2(GLOBAL_2D_ARRAY,NSLP1N,3)
+      common /nbq_thetadiv_nbq_bak2/ thetadiv_nbq_bak2
+#  endif
 #  if defined NBQ_HZ_PROGNOSTIC 
       real thetadiv2_nbq(GLOBAL_2D_ARRAY,NSLP1N)
       common /nbq_thetadiv2_nbq/ thetadiv2_nbq
@@ -195,9 +211,9 @@
       real rv_int_nbq(GLOBAL_2D_ARRAY,N)
       common /nbq_rvint/ rv_int_nbq
 #  ifdef K3FAST_COUPLING_SCH1
-      real ru_intt_nbq(GLOBAL_2D_ARRAY,N)
+      real ru_intt_nbq(GLOBAL_2D_ARRAY,N,2)
       common /nbq_ruintt/ ru_intt_nbq
-      real rv_intt_nbq(GLOBAL_2D_ARRAY,N)
+      real rv_intt_nbq(GLOBAL_2D_ARRAY,N,2)
       common /nbq_rvintt/ rv_intt_nbq
 #  elif defined K3FAST_COUPLING_SCH2
       real ru_intt_nbq(GLOBAL_2D_ARRAY,N,2)
@@ -218,7 +234,7 @@
       real rw_int_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_rwint/ rw_int_nbq   
 #  ifdef K3FAST_COUPLINGW_SCH1
-      real rw_intt_nbq(GLOBAL_2D_ARRAY,0:N)
+      real rw_intt_nbq(GLOBAL_2D_ARRAY,0:N,2)
       common /nbq_rwintt/ rw_intt_nbq   
 #  elif defined K3FAST_COUPLINGW_SCH2
       real rw_intt_nbq(GLOBAL_2D_ARRAY,0:N,2)
@@ -385,4 +401,25 @@
       common /nbq_myslope/myslope
       real myslope2(GLOBAL_2D_ARRAY)
       common /nbq_myslope2/myslope2
+#endif
+      integer kbak,kold
+      common /nbq_stp1/kbak
+      common /nbq_stp2/kold
+#ifdef K3FAST_AB3
+      real rhsu_bak(GLOBAL_2D_ARRAY,NSLP1N,2)
+      common /rhsu_bak/ rhsu_bak
+      real rhsv_bak(GLOBAL_2D_ARRAY,NSLP1N,2)
+      common /rhsv_bak/ rhsv_bak
+      real rhsw_bak(GLOBAL_2D_ARRAY,NSLN,2)
+      common /rhsw_bak/ rhsw_bak
+#endif
+      integer xhi_divlat_nbq
+      common /nbq_xhi_divlat/xhi_divlat_nbq
+#ifdef K3FAST_AB3
+      integer kab3_1,kab3_2
+      common /nbq_ab3/kab3_1,kab3_2
+#endif
+#ifdef K3FAST_AM4
+      integer kam4_1,kam4_2,kam4_3
+      common /nbq_am4/kam4_1,kam4_2,kam4_3
 #endif

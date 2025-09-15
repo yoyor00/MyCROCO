@@ -370,13 +370,6 @@
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
 # endif
-
-/* 
-   TANK
-*/
-# if defined TANK && defined KNBQ
-#  undef K3FAST_AM4
-# endif 
 /* 
    SACOUS 
 */

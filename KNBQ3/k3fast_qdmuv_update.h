@@ -112,7 +112,29 @@
       enddo   !<-- k=0,   
 !$acc end kernels
 !$acc kernels if(compute_on_device) default(present)
-
+#  ifdef K3FAST_AB3
+#    ifdef  K3FAST_2DCONT
+      if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
+#    else
+      if (FIRST_FAST_STEP) then
+#    endif
+        cff1 = 1.0
+        cff2 = 0.0
+        cff3 = 0.0
+#    ifdef  K3FAST_2DCONT
+      elseif (FIRST_FAST_STEP+1.and.FIRST_TIME_STEP) then
+#    else
+      elseif (FIRST_FAST_STEP+1) then
+#    endif
+        cff1 = 1.5
+        cff2 =-0.5
+        cff3 = 0.0
+      else                             ! AB3
+        cff1 = 1.5+mybeta
+        cff2 =-2.0*mybeta-0.5
+        cff3 = mybeta
+      endif
+#  endif
 ! !
 !!!!!$acc loop independent private ( DU_nbq, DV_nbq )
 !!!$acc loop seq	
@@ -319,7 +341,7 @@
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
 #  endif
-#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORRUV
+#  if defined NBQ_NUDGING  || defined KNHINT_CORRUV
               dum_s=dum_s-qdmu_nbq(i,j,k)*cff
      &                   +u(i,j,k,nrhs)
      &                    *0.5*(Hzr(i-1,j,k)+Hzr(i,j,k))
@@ -364,11 +386,21 @@
                dum_s=dum_s
      &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
      &           *(Hz(i,j,k)+Hz(i-1,j,k))/2.
-            !If (mynode==0) write(6,*) 'u',i,j,k,cff,
-     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
-     !&           *(Hz(i,j,k)+Hz(i-1,j,k))/2.
               endif
 #endif
+! !
+! !................................
+! !  AB3 scheme
+! !................................
+! !
+#  ifdef K3FAST_AB3
+              cff=dum_s
+              dum_s=
+     &     +cff1*cff
+     &     +cff2*rhsu_bak(i,j,k,kab3_2)
+     &     +cff3*rhsu_bak(i,j,k,kab3_1)
+              rhsu_bak(i,j,k,kab3_1)=cff
+#  endif
 ! !
 ! !................................
 ! !  Compute qdmu_nbq
@@ -407,7 +439,6 @@
 #  ifdef K3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
-!$acc atomic update	      
 #  ifdef K3FAST_DUVNBQ 
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
 #  elif defined K3FAST_DUVNBQ2 
@@ -624,7 +655,7 @@
      &             *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
      &                  /(z_r(i,j,N-alphaNw_nbq)-z_r(i,j,N))**2)
 #  endif
-#  if (defined NBQ_NUDGING && defined NBQCLIMATOLOGY) || defined KNHINT_CORRUV
+#  if defined NBQ_NUDGING || defined KNHINT_CORRUV
               dum_s=dum_s-qdmv_nbq(i,j,k)*cff
      &                   +v(i,j,k,nrhs)*cff
      &                    *0.5*(Hzr(i,j-1,k)+Hzr(i,j,k))
@@ -645,7 +676,6 @@
      &       .eq.0
 !     &       h(i,j) .le. 1.D-1 
      &           )  then
-         !  write(6,*) mynode,i,j,k
                cff2=2.*qdmv_nbq(i,j,k)/(Hz(i,j,k)+Hz(i,j-1,k))
                cff3=0.5*(
      &          qdmu_nbq(i  ,j  ,k)/(Hz(i  ,j  ,k)+Hz(i-1,j  ,k))
@@ -669,11 +699,21 @@
                dum_s=dum_s
      &          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
      &           *(Hz(i,j,k)+Hz(i,j-1,k))/2.
-               !if (mynode==0) write(6,*) 'v',i,j,k,cff,
-     !&          -cff*cff2*sqrt(cff2**2+cff3**2+cff4**2)   
-     !&           *(Hz(i,j,k)+Hz(i,j-1,k))/2.
               endif
 #endif
+! !
+! !................................
+! !  AB3 scheme
+! !................................
+! !
+#  ifdef K3FAST_AB3
+              cff=dum_s
+              dum_s=
+     &     +cff1*cff
+     &     +cff2*rhsv_bak(i,j,k,kab3_2)
+     &     +cff3*rhsv_bak(i,j,k,kab3_1)
+              rhsv_bak(i,j,k,kab3_1)=cff
+#  endif
 ! !
 ! !................................
 ! !  Compute qdmv_nbq
@@ -713,7 +753,6 @@
 #  ifdef K3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
-!$acc atomic update      
 #  ifdef K3FAST_DUVNBQ
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
 #  elif defined K3FAST_DUVNBQ2 
