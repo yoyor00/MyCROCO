@@ -57,17 +57,17 @@ ONLINE_FILES=0
 ONLINEFREQ=4
 ONLINEPATH="DATA/CFSR_Benguela_LR"
 
-# Define the suffixes of your input files
-# Atmospheric bulk file suffix (croco_blk_ATMOS_BULK_Y????M??.nc)
+# Define the suffix of your input files
+# Atmospheric bulk file suffix (croco_blk_ATMOS_BULK_Y????M??.nc) - NOT USED IF ONLINE
 ATMOS_BULK=ERA5
-# Atmospheric forcing file suffix (croco_frc_ATMOS_FRC_Y????M??.nc)
+# Atmospheric forcing file suffix (croco_frc_ATMOS_FRC_Y????M??.nc) - NOT USED IF BULK or ONLINE
 ATMOS_FRC=QSCAT
 # Oceanic boundary and initial files suffix (croco_ini_OGCM_Y????M??.nc and croco_bry_OGCM_Y????M??.nc)
 OGCM=SODA
 # Runoff file sufix (croco_runoff_RUNOFF_Y????M??.nc)
 RUNOFF=DAI
 # Tide file suffix (croco_frc_TIDE_FRC.nc)
-TIDE_FRC=tpxo7
+TIDE_FRC=tpxo7_croco
 
 # Model time step [seconds]
 DT=3600
@@ -97,9 +97,9 @@ NY_SPIN=0
 # Output frequency [days]
 #   average
 ND_AVG=3
-#   history (if = -1 set equal to NUMTIMES)
+#   history (if = -1 set equal to NUMTIMES, the end of each month/year)
 ND_HIS=-1
-#   restart (if = -1 set equal to NUMTIMES)
+#   restart (if = -1 set equal to NUMTIMES, the end of each month/year)
 ND_RST=-1
 
 #  Restart file - RSTFLAG=0 --> No Restart
