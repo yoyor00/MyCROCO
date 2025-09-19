@@ -81,9 +81,6 @@ bottom_drag:     RDRG [m/s],  RDRG2,  Zob [m],  Cdb_min, Cdb_max
 gamma2:
                  1.d0
 
-sponge:          X_SPONGE [m]
-                    XXX
-
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
                 1.      360.      3.      360.
 
@@ -274,7 +271,7 @@ psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
                   3    40     0    200.            T T      20.   15.
 
 psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
-    CROCO_FILES/croco_runoff.nc
+    CROCO_FILES/croco_runoff.nc.1
                  2
                          24  35  0  -1   T T   20.0  15.0
                          35  13  1  -1   T T   20.0  15.0
