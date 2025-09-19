@@ -10,6 +10,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   according to prey size done in PISCES standard version (#340) into quota version 
   (Issue #361)
 
+- SCRIPTS: in run_croco_inter add TIDE_FILES and ONLINE (Freq, path) missing information 
+
 ### Fixed
 
 - PISCES : Fix dummy line (kt variable) at end in p4zche.F90  (Issue #420)
