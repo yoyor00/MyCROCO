@@ -107,10 +107,10 @@ LIST_OPTIONS=$(cat << EOF
  # -- CROCO built-in scripts and toolboxes -- # 
  mattools   : for getting matlab scripts for CROCO preprocessing
  pytools    : for getting python scripts for CROCO preprocessing
- inter      : for running interannual runs           ( cpl can not be defined) 
+ inter      : for running interannual runs           ( cpl cannot be defined) 
  forc       : for using forecast scripts
  test_cases : for running test cases
- inter-cpl  : scripts for running interannual runs compatible with coupling
+ runcpl     : scripts for running interannual runs compatible with coupling
  cpl        : scripts for coupling with OASIS        ( oce-prod needed )
  toy        : scripts for coupling with a toy model  ( oce-prod needed )
  atm        : scripts for coupling with WRF          ( oce-prod needed )
@@ -119,7 +119,7 @@ LIST_OPTIONS=$(cat << EOF
  # -- All options :
  # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
  # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
- # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif inter-cpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
+ # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
 
 EOF
 	    )
@@ -129,7 +129,7 @@ EOF
 
 allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
 allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
-allmodels_cpl=( oce-prod xios test_cases agrif pisces sediment mustang oanalysis mattools pytools cpl wav atm toy )
+allmodels_cpl=( oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy )
 
 x_f=0
 
@@ -340,7 +340,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     sed -e "s!${PAT}!SOURCE1=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
     chmod +x $MY_CROCO_DIR/jobcomp
 
-    if [[ ${options[@]} =~ "inter-cpl" ]]; then
+    if [[ ${options[@]} =~ "runcpl" ]]; then
         cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.        
     else
         cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
@@ -502,7 +502,7 @@ fi
 # Using the SCRIPT_TOOLBOX scripts (cpl-like architecture)
 # Copy and edit the relevant scripts
 #if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[@]} =~ "atm" ]] || [[ ${options[@]} =~ "toy" ]] ; then
-if [[ ${options[@]} =~ "inter-cpl" ]] ; then
+if [[ ${options[@]} =~ "runcpl" ]] ; then
     echo 'Copy scripts production runs'
     echo '-----------------------------'
     cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/*.sh $MY_CONFIG_HOME/
