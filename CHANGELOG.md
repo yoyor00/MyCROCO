@@ -10,6 +10,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BENCH : Add performance tracking (Issue #378 and #423)
 
+- SCRIPTS: in run_croco_inter add TIDE_FILES and ONLINE (Freq, path) missing information 
+
 ### Fixed
 
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
