@@ -10,6 +10,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BENCH : Add performance tracking (Issue #378 and #423)
 
+- SCRIPTS: in run_croco_inter add TIDE_FILES and ONLINE (Freq, path) missing information 
+
 ### Fixed
 
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
@@ -40,6 +42,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Compilation : fix cat "croco_ascii.txt" command in case of relative path
 
+- Wavemaker : Fix boundary forcing in case of eastern boundary (Issue #432)
+
+- AGRIF : incompatibility of AGRIF with cppkeys
+  BULK_ECUMEV0 or BULK_ECUMEV6 (Issue #422)
 
 ### Changed
 
@@ -52,6 +58,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : review lateral erosion feature (Issue #349)
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
+- SCRIPTS : create_config now allows to deal with 2 new options for preprocessing scripts: 
+            pytools and mattools (instead of prepro) - solve issue #295 
+            and 2 distinct options for run scripts (either inter for Plurimonth_scripts type: 
+            run_croco_inter, or runcpl for SCRIPTS_COUPLING type: submitjob, mynamelist...)
 
 ### Deprecated
 
@@ -98,7 +108,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
-  P. Marchesiello, C. Nguyen, R. Person
+  P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
-  M. Plus, M. Schreiber 
+  M. Plus, M. Schreiber, A. Zribi  
