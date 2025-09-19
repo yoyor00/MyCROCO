@@ -35,6 +35,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- SCRIPTS : create_config now allows to deal with 2 new options for preprocessing scripts: 
+            pytools and mattools (instead of prepro) - solve issue #295 
+            and 2 distinct options for run scripts (either inter for Plurimonth_scripts type: 
+            run_croco_inter, or runcpl for SCRIPTS_COUPLING type: submitjob, mynamelist...)
 
 ### Deprecated
 
