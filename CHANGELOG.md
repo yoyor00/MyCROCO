@@ -14,6 +14,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
 - COUPLING : patm2D was declared twice in case of OW_COUPLING and READ_PATM (Issue #383)
+- COUPLING : undef TIDES_MAS in oce_compile.sh, as it does not work without USE_CALENDAR 
+             (link with #233)
+- COUPLING : update croco.in.base accordingly to original croco.in (solve #366)
+- COUPLING : path to local myenv_mypath in job dir (solve #421)
+- COUPLING : add "if" conditions for cpl restart file path definitions to avoid issues when
+             one of the model was not requested in create_config (solve issue #428)
+- COUPLING and XIOS : correct path and  requested copy of cppdefs_dev (solve #364)
 - BENCH : do not put report status to True for reference variant to avoid
   to mark test passed even if not (Issue #342)
 - BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
