@@ -33,6 +33,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - AGRIF : incompatibility of AGRIF with cppkeys
   BULK_ECUMEV0 or BULK_ECUMEV6 (Issue #422)
 
+- OUTPUT : incompatibility when activating 
+  PISCES + PSOURCE_NCFILE_TS + DIURNAL_INPUT_SRFLX (Issue #435)
+
 ### Changed
 
 - SCRIPTS : create_config now allows to deal with 2 new options for preprocessing scripts: 
