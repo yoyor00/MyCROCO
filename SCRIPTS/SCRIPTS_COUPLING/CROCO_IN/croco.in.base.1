@@ -34,10 +34,10 @@ climatology: filename
 boundary: filename
                           XXXXXXXXX
 initial: NRREC  filename
-          1 
+          <idx_ini> 
                           ./croco_ini.nc.1
 restart:          NRST, NRPFRST / filename
-               <oce_nrst>    -1
+               <oce_nrst>    <idx_ini>
                           ./croco_rst.nc.1
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T  <oce_nhis>   0

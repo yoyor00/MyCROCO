@@ -75,6 +75,11 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
       mv tmp$$ cppdefs.h
     fi
 
+    if [[ ${EXACT_RESTART} == "TRUE" ]]; then
+      sed -e "s/# *undef *EXACT_RESTART/# define EXACT_RESTART/g" cppdefs.h > tmp$$
+      mv tmp$$ cppdefs.h
+    fi
+
     sed -e "s/# undef  LOGFILE/# define  LOGFILE/g" cppdefs.h > tmp$$
     mv tmp$$ cppdefs.h
 
