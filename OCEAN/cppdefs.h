@@ -81,6 +81,11 @@
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
+# ifdef OA_COUPLING
+#  define READ_PATM
+#  define OBC_PATM
+#  undef  OA_GRID_UV
+# endif
 # undef  OW_COUPLING
 # ifdef OW_COUPLING
 #  undef OW_COUPLING_FULL
