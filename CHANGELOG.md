@@ -40,6 +40,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
+- Cleaning : useless sponge option in croco.in.1 (#436)
 
 - Compilation : fix cat "croco_ascii.txt" command in case of relative path
 
@@ -47,6 +48,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - AGRIF : incompatibility of AGRIF with cppkeys
   BULK_ECUMEV0 or BULK_ECUMEV6 (Issue #422)
+- AGRIF and psource_ncfile : in croco.in.1 file should be croco_runoff.nc.1 (solve #436)
 
 - OUTPUT : incompatibility when activating 
   PISCES + PSOURCE_NCFILE_TS + DIURNAL_INPUT_SRFLX (Issue #435)
