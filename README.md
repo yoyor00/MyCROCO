@@ -1,4 +1,4 @@
-# CROCO - RELEASE 2.1.0
+# CROCO - RELEASE 2.1.1
 
 CROCO is an oceanic modeling system built upon ROMS_AGRIF and maintained 
 by IRD, INRIA, CNRS, IFREMER and SHOM, French institutes working on 

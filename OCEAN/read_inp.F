@@ -3077,7 +3077,7 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &       'Bottom forcing file:', fname(1:lstr)
 #endif  /* BHFLUX || (SALINITY && BWFLUX )  */
 !
-! Online forcing with CFSR
+! Online forcing
 !
 #ifdef ONLINE   /* JG Online */
       elseif (keyword(1:kwlen).eq.'online') then

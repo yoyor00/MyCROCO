@@ -157,7 +157,7 @@ debug_realist_base:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0_tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -183,7 +183,7 @@ debug_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0_tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -213,7 +213,7 @@ restart_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0_tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -243,7 +243,7 @@ plotphy_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0_tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -273,7 +273,7 @@ debug_agrif_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0_tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -383,6 +383,7 @@ plotphy_complement_sequential:
       junit: BENCH/results/plotphy-complement-sequential-host_ci/junit_report.xml
   rules:
       - if: $CI_PIPELINE_SOURCE == "schedule"
+
 
 
 pages:

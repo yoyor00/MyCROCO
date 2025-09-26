@@ -12,7 +12,7 @@
 !  This is the "online_bulk_var.F" script
 !------------------------------------------------------------------------------
 !  This file contains the subfunctions enabling the specificatin of the files
-!  names and variables names for the online NCEP/CFSR tool:
+!  names and variables names for the ONLINE tool:
 !------------------------------------------------------------------------------
 #include "cppdefs.h"
 #if defined BULK_FLUX
@@ -22,7 +22,7 @@
       subroutine get_bulknetcdf_names(bvar)
 !------------------------------------------------------------------------------
 !  This subfunction specify the path and netcdf file name of the forcing field
-!  used to ensure the online bulk forcing in the online NCEP/CFSR tool. This
+!  used to ensure the online bulk forcing in the ONLINE tool. This
 !  name depends on the considered variable as well as the year (Y) and the month
 !  (M) of the ongoing computation
 !------------------------------------------------------------------------------
@@ -88,7 +88,7 @@
 !------------------------------------------------------------------------------
 !  This subfunction specify the variables names and caracteristics associated
 !  with the various forcing fields used to generate online bulk forcing in the
-!  online NCEP/CFSR tool:
+!  ONLINE tool:
 !------------------------------------------------------------------------------
 !  For each variable:
 !  - blk_vname(1,X)=netcdf variable name

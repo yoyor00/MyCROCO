@@ -917,6 +917,11 @@
      &           indxWAR=indxHRM+7, indxEPR=indxHRM+8 )
 #endif  /* MRL_WCI */
 
+#ifdef DIURNAL_INPUT_SRFLX
+      integer indxShflx_rswbio
+      parameter (indxShflx_rswbio=indxSUSTR+120)
+#endif
+
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
       parameter (indxQBAR=indxSUSTR+122)
@@ -926,10 +931,6 @@
 # endif
 #endif /* PSOURCE_NCFILE */
 
-#ifdef DIURNAL_INPUT_SRFLX
-      integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+124)
-#endif
 #if defined BHFLUX
       integer indxBhflx
       parameter (indxBhflx=indxSUSTR+131)
@@ -1511,7 +1512,7 @@
 #  if defined DIAGNOSTICS_EDDY && ! defined XIOS
        integer nciddiags_eddy_avg, nrecdiags_eddy_avg
      &      , nrpfdiags_eddy_avg
-     &      , diags_eddyTime_avg, diags_eddyTime2_avg, 
+     &      , diags_eddyTime_avg, diags_eddyTime2_avg
      &      , diags_eddyTstep_avg
      &      , diags_eddyzz_avg(2)
      &      , diags_eddyuu_avg(2), diags_eddyvv_avg(2)

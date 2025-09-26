@@ -11,7 +11,7 @@ elif [ ${MACHINE} == "IRENE" ]; then
     echo "$( ccc_mstat -f -u $USER )" >tmp.text
     cnt=$(( $(wc -l tmp.text | awk '{ print $1 }') + 1 )) # check if there are already jobs running
     \rm -f tmp.text  
-elif [ ${MACHINE} == "JEANZAY" ]; then
+elif [ ${MACHINE} == "JEANZAY" ] || [ ${MACHINE} == "NEA" ]; then
     ${QSUB} -H ${jobname}
     sub_ext=".sh"
     prejobname=${ROOT_NAME_1}
@@ -89,7 +89,7 @@ while [ ${newedate} -lt ${DATE_END_EXP} ] ; do
         prejobname="${newjobname}"
         cd ${SCRIPTDIR}/
 #
-    elif [ ${MACHINE} == "JEANZAY" ] ; then
+    elif [ ${MACHINE} == "JEANZAY" ]  || [ ${MACHINE} == "NEA" ] ; then
 	newjobname="${CEXPER}_${newsdate}_${newedate}${MODE_TEST}"
 	sed -e "s/#SBATCH --job-name=.*/#SBATCH --job-name=${newjobname}/" \
 	    -e "s/#SBATCH --output=.*/#SBATCH --output=${newjobname}.out/" \
@@ -125,4 +125,4 @@ done
 cd ${JOBDIR_ROOT}
 
 [ ${MACHINE} == "DATARMOR" ] && { jobid=$( echo $( qselect -N ${ROOT_NAME_1}) | cut -d "." -f 1 ) ; qrls ${jobid} ; }
-[ ${MACHINE} == "JEANZAY" ] && { scontrol release ${firstjobid} ; }
+[ ${MACHINE} == "JEANZAY" ]  || [ ${MACHINE} == "NEA" ] && { scontrol release ${firstjobid} ; }
