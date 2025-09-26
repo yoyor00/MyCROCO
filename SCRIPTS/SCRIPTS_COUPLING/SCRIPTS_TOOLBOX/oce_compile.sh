@@ -81,8 +81,21 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
     if [ $USE_CPL -ge 1 ]; then
         if [ $USE_ATM -eq 1 ] || [ $USE_TOYATM -eq 1 ]; then 
             sed -e "s/#  *undef  *OA_COUPLING/# define OA_COUPLING/g" cppdefs.h > tmp$$
-            printf "           Coupling with ATM \n"
 	    mv tmp$$ cppdefs.h
+            printf "           Coupling with ATM \n"
+	    if [ ${CPL_PATM} == "TRUE" ]; then
+	        printf "             Coupling PATM is defined \n"
+                sed -e "s/# *undef *READ_PATM/#  define READ_PATM/g" \
+                    -e "s/# *undef *OBC_PATM/#  define OBC_PATM/g" \
+                    cppdefs.h > tmp$$
+	    else
+		printf "             Coupling PATM is NOT defined \n"
+		printf "cppdefs.h is : "
+                sed -e "s/# *define *READ_PATM/#  undef  READ_PATM/g" \
+                    -e "s/# *define *OBC_PATM/#  undef  OBC_PATM/g" \
+                    cppdefs.h > tmp$$
+   	    fi
+            mv tmp$$ cppdefs.h
 	else
             sed -e "s/#  *define  *OA_COUPLING/# undef OA_COUPLING/g" cppdefs.h > tmp$$
 	    mv tmp$$ cppdefs.h

@@ -45,6 +45,14 @@ else
     export AGRIF_2WAY="FALSE"
 fi
 
+# Atm coupling
+#--------------
+if [[ $RUNtype =~ .*NOpsfc.* ]] ; then
+    export CPL_PATM="FALSE"
+else
+    export CPL_PATM="TRUE"
+fi
+
 # Wave coupling
 #--------------
 # OW_COUPLING_FULL
