@@ -2,7 +2,7 @@
 
 Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco/-/releases
 
-## [2.1.1] - xxxx-xx-xx
+## [2.1.1] - 2025-09-26
 
 ### Added
 
