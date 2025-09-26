@@ -385,52 +385,6 @@ plotphy_complement_sequential:
       - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
-track_perf:
-  stage: bench
-  tags:
-    - ci.inria.fr
-    - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:2.0.0_tmp
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      mkdir -p previous
-      cd $CI_PROJECT_DIR/BENCH/previous
-      echo "Project ID: $CI_PROJECT_ID"
-      echo "Commit Ref: $CI_COMMIT_REF_NAME"
-      echo "Downloading artifacts for job: track_perf"
-
-      curl --fail --location --output artifacts.zip \
-          --header "JOB-TOKEN: $CI_JOB_TOKEN" \
-          "https://gitlab.inria.fr/api/v4/projects/${CI_PROJECT_ID}/jobs/artifacts/${CI_COMMIT_REF_NAME}/download?job=track_perf" \
-          || echo "No artifact available. Continuing without previous data."
-
-      if [ -f artifacts.zip ]; then
-          unzip artifacts.zip
-      else
-          echo "No artifacts.zip to unzip."
-      fi
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py \
-      --case BASIN,BENGUELA_LR_TIDES_BULK \
-      --variants sequential,mpi-4 \
-      --title track-perf \
-      -s build,run,plotperf,trackperf \
-      -l $CI_PROJECT_DIR/BENCH/previous/BENCH/results/track-perf-host_ci/trackperf_summary.csv \
-      --rebuild \
-      --data-root-path $DATAROOTPATH \
-      --host host_ci \
-      --html \
-      -N --report --no_date_in_result_dir
-  artifacts:
-    paths:
-      - BENCH/results
-    when: always
-    expire_in: 1 month
-    reports:
-      junit: BENCH/results/track-perf-host_ci/junit_report.xml
-
 
 pages:
   stage: report
