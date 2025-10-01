@@ -234,7 +234,7 @@
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
       "FRC_BRY": true,
-      "BULK_FLUX": false,
+      "BULK_FLUX": true,
       "AGRIF": true,
       "ONLINE": true,
       "BULK_MONTH_1DIGIT": true,
