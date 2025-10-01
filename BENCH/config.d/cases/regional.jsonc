@@ -236,6 +236,8 @@
       "FRC_BRY": true,
       "BULK_FLUX": false,
       "AGRIF": true,
+      "ONLINE": true,
+      "BULK_MONTH_1DIGIT": true,
       "AGRIF_2WAY": true,
       "DIAGNOSTICS_TS": true,
     },
