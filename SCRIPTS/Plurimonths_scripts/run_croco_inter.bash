@@ -173,8 +173,8 @@ echo "Getting $CODFILE from $INPUTDIR"
 $CP -f $INPUTDIR/$CODFILE $SCRATCHDIR
 chmod u+x $CODFILE
 if [[ $NLEVEL > 1 ]]; then
-  echo "Getting $AGRIF_FILE from $INPUTDIR"
-  $CP -f $INPUTDIR/$AGRIF_FILE $SCRATCHDIR
+  echo "Getting $AGRIF_FILE from $MSSDIR"
+  $CP -f $MSSDIR/$AGRIF_FILE $SCRATCHDIR
 fi
 #
 # Get the netcdf files
