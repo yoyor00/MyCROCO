@@ -49,6 +49,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - AGRIF : incompatibility of AGRIF with cppkeys
   BULK_ECUMEV0 or BULK_ECUMEV6 (Issue #422)
 - AGRIF and psource_ncfile : in croco.in.1 file should be croco_runoff.nc.1 (solve #436)
+- AGRIF: sponge keyword missing: put it back (even if theoretically useless, 
+  it creates a read_inp error), path for online corrected in croco_inter.in,
+  AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
+
 
 - OUTPUT : incompatibility when activating 
   PISCES + PSOURCE_NCFILE_TS + DIURNAL_INPUT_SRFLX (Issue #435)
