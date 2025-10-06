@@ -73,9 +73,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
             and 2 distinct options for run scripts (either inter for Plurimonth_scripts type: 
             run_croco_inter, or runcpl for SCRIPTS_COUPLING type: submitjob, mynamelist...)
 
-### Fixed
-
-
 ### Deprecated
 
 
@@ -120,7 +117,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  S. Jullien, S. Le Gac
+  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
+  P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
+
 
 - New contributors : 
   M. Plus, M. Schreiber, A. Zribi  
