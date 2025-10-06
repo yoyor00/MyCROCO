@@ -173,8 +173,8 @@ echo "Getting $CODFILE from $INPUTDIR"
 $CP -f $INPUTDIR/$CODFILE $SCRATCHDIR
 chmod u+x $CODFILE
 if [[ $NLEVEL > 1 ]]; then
-  echo "Getting $AGRIF_FILE from $INPUTDIR"
-  $CP -f $INPUTDIR/$AGRIF_FILE $SCRATCHDIR
+  echo "Getting $AGRIF_FILE from $MSSDIR"
+  $CP -f $MSSDIR/$AGRIF_FILE $SCRATCHDIR
 fi
 #
 # Get the netcdf files
@@ -254,7 +254,11 @@ while [ $NY != $NY_END ]; do
         echo "Getting ${RNFFILE}.nc${ENDF} from $MSSDIR"
         $LN -sf $MSSDIR/${RNFFILE}.nc${ENDF} ${RNFFILE}.nc${ENDF}
       fi
-      
+      if [[ ${TIDE_FILES} == 1 ]]; then
+        echo "Getting ${TIDEFILE}_${TIDE_FRC}.nc${ENDF} from $MSSDIR"
+        $LN -sf $MSSDIR/${TIDEFILE}_${TIDE_FRC}.nc${ENDF} ${TIDEFILE}.nc${ENDF}
+      fi
+
       LEVEL=$((LEVEL + 1))
     done
 #
@@ -267,10 +271,6 @@ while [ $NY != $NY_END ]; do
     if [[ ${BOUNDARY_FILES} == 1 ]]; then
       echo "Getting ${BRYFILE}_${OGCM}_${TIME}.nc from $MSSDIR"
       $LN -sf $MSSDIR/${BRYFILE}_${OGCM}_${TIME}.nc ${BRYFILE}.nc
-    fi
-    if [[ ${TIDE_FILES} == 1 ]]; then
-      echo "Getting ${TIDEFILE}_${TIDE_FRC}.nc from $MSSDIR"
-      $LN -sf $MSSDIR/${TIDEFILE}_${TIDE_FRC}.nc ${TIDEFILE}.nc
     fi
 #
 # Set the number of time steps for each month 
