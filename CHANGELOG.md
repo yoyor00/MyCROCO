@@ -120,6 +120,5 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
   P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
-
 - New contributors : 
   M. Plus, M. Schreiber, A. Zribi  
