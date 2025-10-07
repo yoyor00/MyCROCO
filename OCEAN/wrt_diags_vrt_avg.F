@@ -57,9 +57,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
-!
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
       call def_diags_vrt_avg (nciddiags_vrt_avg, nrecdiags_vrt_avg,
@@ -250,39 +247,6 @@
 # endif
 
         endif
-
-!
-# ifdef DEBUG
-      i=5
-      j=5
-      write(*,*) 'Write diag vrt his at : i='
-     &                      ,i,' j=',j
-      write(*,*) 'vrtXadv_avg(i,j)   ',vrtXadv_avg(i,j)
-      write(*,*) 'vrtYadv_avg(i,j)   ',vrtYadv_avg(i,j)
-      write(*,*) 'vrtCor_avg(i,j)    ',vrtCor_avg(i,j)
-      write(*,*) 'vrtPrsgrd_avg(i,j) ',vrtPrsgrd_avg(i,j)
-      write(*,*) 'vrtHmix_avg(i,j)   ',vrtHmix_avg(i,j)
-      write(*,*) 'vrtVmix_avg(i,j)   ',vrtVmix_avg(i,j)
-#  if defined DIAGNOSTICS_BARO
-      write(*,*) 'vrtBaro_avg(i,j) ',vrtBaro_avg(i,j)
-#  endif
-#  if defined M3FAST
-      write(*,*) 'vrtfast_avg(i,j) ',vrtfast_avg(i,j)
-#  endif
-      write(*,*) 'vrtrate_avg(i,j)   ',vrtrate_avg(i,j)
-
-      write(*,*) 'SumUVhis_avg(i,j) = ',vrtXadv_avg(i,j)
-     &                                  +  vrtYadv_avg(i,j)
-     &                                  +  vrtCor_avg(i,j)
-     &                                  +  vrtPrsgrd_avg(i,j)
-     &                                  +  vrtHmix_avg(i,j)
-     &                                  +  vrtVmix_avg(i,j)
-#  if defined M3FAST
-     &                                  +  vrtfast_avg(i,j)
-#  endif
-     &                                  -  vrtrate_avg(i,j)
-      write(*,*) '-----------------------------------------'
-# endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_VRT_AVG ERROR while writing variable ''',A,
      &          ''' into diag file.', /11x, 'Time record:',

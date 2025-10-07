@@ -49,9 +49,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
-!
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
       call def_surf_avg (ncidsurf_avg, nrecsurf_avg, ierr)

@@ -57,9 +57,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
-!
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
       call def_diags_vrt (nciddiags_vrt, nrecdiags_vrt, ierr)
@@ -233,32 +230,6 @@
 # endif
 
         endif
-!
-# ifdef DEBUG
-      i=5
-      j=5
-      write(*,*) 'Write diag vrt his at : i='
-     &                      ,i,' j=',j
-      write(*,*) 'vrtXadv(i,j)   ',vrtXadv(i,j)
-      write(*,*) 'vrtYadv(i,j)   ',vrtYadv(i,j)
-      write(*,*) 'vrtCor(i,j)    ',vrtCor(i,j)
-      write(*,*) 'vrtPrsgrd(i,j) ',vrtPrsgrd(i,j)
-      write(*,*) 'vrtHmix(i,j)   ',vrtHmix(i,j)
-      write(*,*) 'vrtVmix(i,j)   ',vrtVmix(i,j)
-#  if defined DIAGNOSTICS_BARO
-      write(*,*) 'vrtPrsgrd(i,j) ',vrtPrsgrd(i,j)
-#  endif
-      write(*,*) 'vrtrate(i,j)   ',vrtrate(i,j)
-
-      write(*,*) 'SumUVhis(i,j) = ',vrtXadv(i,j)
-     &                                  +  vrtYadv(i,j)
-     &                                  +  vrtCor(i,j)
-     &                                  +  vrtPrsgrd(i,j)
-     &                                  +  vrtHmix(i,j)
-     &                                  +  vrtVmix(i,j)
-     &                                  -  vrtrate(i,j)
-      write(*,*) '-----------------------------------------'
-# endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_VRT ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',

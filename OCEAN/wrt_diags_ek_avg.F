@@ -57,9 +57,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
-!
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
       call def_diags_ek_avg (nciddiags_ek_avg, nrecdiags_ek_avg, ierr)

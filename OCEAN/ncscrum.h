@@ -55,11 +55,6 @@
 ! indxBhflx       bottom hydrothermal heat flux
 ! indxBwflx       bottom hydrothermal freshwater flux
 !
-! indxAi          fraction of cell covered by ice
-! indxUi,indxVi   U,V-components of sea ice velocity
-! indxHi,indxHS   depth of ice cover and depth of snow cover
-! indxTIsrf       temperature of ice surface
-!
 ! ** SEDIMENT (USGS model) **
 ! indxBSD,indxBSS bottom sediment grain Density and Size
 !                 to be read from file if(!defined ANA_BSEDIM,
@@ -669,9 +664,8 @@
 # endif
 #endif /* SOLVE3D */
 
-#if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
       integer indxbvf
       parameter (indxbvf=indxSSH+1)
 #endif
@@ -895,6 +889,11 @@
      &           indxWAR=indxHRM+7, indxEPR=indxHRM+8 )
 #endif  /* MRL_WCI */
 
+#ifdef DIURNAL_INPUT_SRFLX
+      integer indxShflx_rswbio
+      parameter (indxShflx_rswbio=indxSUSTR+120)
+#endif
+
 #ifdef PSOURCE_NCFILE
       integer indxQBAR
       parameter (indxQBAR=indxSUSTR+122)
@@ -904,27 +903,14 @@
 # endif
 #endif /* PSOURCE_NCFILE */
 
-#ifdef DIURNAL_INPUT_SRFLX
-      integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+124)
-#endif
 #if defined BHFLUX
       integer indxBhflx
       parameter (indxBhflx=indxSUSTR+131)
 #endif
-#if defined BWFLUX  && defined SALINTY
+#if defined BWFLUX  && defined SALINITY
       integer indxBwflx
       parameter (indxBwflx=indxSUSTR+132)
 #endif
-
-#ifdef ICE
-      integer indxAi
-      parameter (indxAi=????)
-      integer indxUi, indxVi, indxHi, indxHS, indxTIsrf
-      parameter (indxUi=indxAi+1, indxVi=indxAi+2, indxHi=indxAi+3,
-     &                         indxHS=indxAi+4, indxTIsrf=indxAi+5)
-#endif
-!
 !
 !===================================================================
 !
@@ -1149,9 +1135,8 @@
      &      , hisU,   hisV,   hisR,    hisHbl, hisHbbl
      &      , hisO,   hisW,   hisVisc, hisDiff
      &      , hisAkv, hisAkt, hisAks
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , hisbvf
 # endif
 # ifdef GLS_MIXING
@@ -1336,9 +1321,8 @@
      &      , avgU,   avgV,   avgR,    avgHbl, avgHbbl
      &      , avgO,   avgW,   avgVisc, avgDiff
      &      , avgAkv, avgAkt, avgAks
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , avgbvf
 #  endif
 #  ifdef GLS_MIXING
@@ -1685,9 +1669,8 @@
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks
      &      , hisHbl,  hisHbbl
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , hisbvf
 # endif
 # ifdef GLS_MIXING
@@ -1945,9 +1928,8 @@
      &      , avgO,    avgW,     avgVisc,  avgDiff
      &      , avgAkv,  avgAkt,   avgAks
      &      , avgHbl,  avgHbbl
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
      &      , avgbvf
 #  endif
 #  ifdef GLS_MIXING
@@ -2053,7 +2035,7 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-      character*80 date_str, title
+      character*80 title
       character*80 origin_date, start_date_run, xios_origin_date
       integer      start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
@@ -2170,7 +2152,7 @@
 ! 26 abl1d var + 1 var Time
 #endif
 
-      common /cncscrum/   date_str,   title
+      common /cncscrum/   title
      &         ,   origin_date, start_date_run
      &         ,   xios_origin_date
      &         ,   ininame,  grdname, hisname

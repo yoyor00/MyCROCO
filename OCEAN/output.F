@@ -26,10 +26,6 @@
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef FLOATS
-# include "floats.h"
-# include "ncscrum_floats.h"
-#endif
 #ifdef STATIONS
 # include "sta.h"
 # include "nc_sta.h"
@@ -146,14 +142,6 @@
      &      .or. wrtdiabioGasExc_avg(NumGasExcTerms+1) ))
 # endif
 #endif /*DIAGNOSTICS_BIO*/
-#ifdef FLOATS
-# ifdef AGRIF
-     &    .or. (Agrif_Root() .and. mod(ilc-1,nflt).eq.0
-# else
-     &    .or. (mod(ilc-1,nflt).eq.0
-# endif
-     &                             .and. nfloats.gt.0)
-#endif
 #ifdef STATIONS
 # ifdef AGRIF
      &    .or. (Agrif_Root() .and. mod(ilc-1,nsta).eq.0
@@ -241,14 +229,6 @@
      &                          nrecdiabio_avg=nrecdiabio_avg+1
 # endif
 #endif /*DIAGNOSTICS_BIO*/
-#ifdef FLOATS
-# ifdef AGRIF
-        if (Agrif_Root() .and. mod(ilc-1,nflt).eq.0)
-# else
-        if (mod(ilc-1,nflt).eq.0)
-# endif
-     &     nrecflt=nrecflt+1
-#endif
 #ifdef STATIONS
 # ifdef AGRIF
         if (Agrif_Root() .and. mod(ilc-1,nsta).eq.0)
@@ -397,18 +377,6 @@
 
 #endif
 
-
-#ifdef FLOATS
-# ifdef AGRIF
-        if (Agrif_Root()) then
-# endif
-          if (mod(ilc-1,nflt).eq.0
-     &                .and.nfloats.gt.0) call wrt_floats
-          diagfloats=.false.
-# ifdef AGRIF
-        endif
-# endif
-#endif
 #ifdef STATIONS
 # ifdef AGRIF
         if (Agrif_Root()) then
@@ -423,18 +391,6 @@
 !
       endif      ! conditions for writing output
 !
-#ifdef FLOATS
-!
-! Flag for diagnostic computation (writing at next time step)
-!
-# ifdef AGRIF
-      if (Agrif_Root() .and. mod(ilc,nflt).eq.0) then
-# else
-      if (mod(ilc,nflt).eq.0) then
-# endif
-        diagfloats=.true.
-      endif
-#endif
 #ifdef STATIONS
 # ifdef AGRIF
       if (Agrif_Root() .and. mod(ilc,nsta).eq.0) then
