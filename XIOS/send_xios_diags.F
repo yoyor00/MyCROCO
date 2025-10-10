@@ -3239,7 +3239,8 @@ c !$acc wait
       endif
       if (xios_field_is_active("u_adv")) then
           call xios_send_field("u_adv", MXadv(:,:,:,itrc)
-     &           + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc))
+     &           + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc)
+     &           - MHdiff(:,:,:,itrc)  )
       endif
       if (xios_field_is_active("u_xadv")) then
           call xios_send_field("u_xadv", MXadv(:,:,:,itrc))
@@ -3325,7 +3326,8 @@ c !$acc wait
       endif
       if (xios_field_is_active("v_adv")) then
           call xios_send_field("v_adv", MXadv(:,:,:,itrc)
-     &            + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc))
+     &            + MYadv(:,:,:,itrc) + MVadv(:,:,:,itrc)
+     &           - MHdiff(:,:,:,itrc)  )
       endif
       if (xios_field_is_active("v_xadv")) then
           call xios_send_field("v_xadv", MXadv(:,:,:,itrc))
@@ -3503,7 +3505,8 @@ c !$acc wait
           call xios_send_field("ekrate", ekrate(:,:,:))
       endif
       if (xios_field_is_active("ekadv")) then
-          call xios_send_field("ekadv", ekHadv(:,:,:)+ekVadv(:,:,:))
+          call xios_send_field("ekadv", ekHadv(:,:,:)+ekVadv(:,:,:)
+     &           - ekHdiff(:,:,:)  )
       endif
       if (xios_field_is_active("ekhadv")) then
           call xios_send_field("ekhadv", ekHadv(:,:,:))

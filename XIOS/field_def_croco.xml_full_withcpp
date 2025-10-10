@@ -595,7 +595,7 @@
       <field id="v_yadv" long_name="v yadv" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_vadv" long_name="v vadv" unit="meter second-2" grid_ref="v_3D"/>
 #  if defined DIAGNOSTICS_UV_VADV
-      <field id="v_vadvz" long_name="v vadvz" unit="meter second-2" grid_ref="u_3D"/>
+      <field id="v_vadvz" long_name="v vadvz" unit="meter second-2" grid_ref="v_3D"/>
 #  endif
       <field id="v_Cor" long_name="v Cor" unit="meter second-2" grid_ref="v_3D"/>
       <field id="v_Prsgrd" long_name="v Prsgrd" unit="meter second-2" grid_ref="v_3D"/>

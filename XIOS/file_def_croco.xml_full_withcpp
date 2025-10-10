@@ -54,7 +54,6 @@
         <field field_ref="temp" name="temp" />
         <field field_ref="salt" name="salt" />
         <field field_ref="AKv" name="AKv" />
-!        <field field_ref="AKt" name="AKt" />
       </field_group>
     </file>
   </file_group>
@@ -145,7 +144,6 @@
       <field field_ref="rho1" name="rho1"  />
       <field field_ref="bvf" name="bvf" />
       <field field_ref="AKv" name="AKv" />
-!      <field field_ref="AKt" name="AKt" />
 # ifdef GLS_MIXING
 !      <field field_ref="tke" name="tke" />
 !      <field field_ref="gls" name="gls" />
@@ -161,30 +159,24 @@
       <field field_ref="u_rate" name="u_rate"  />
       <field field_ref="u_adv" name="u_adv"  />
 #  if defined DIAGNOSTICS_UV_VADV
-      <field field_ref="u_advz" name="u_advz"  />
+      <field field_ref="u_vadvz" name="u_vadvz"  />
 #  endif
       <field field_ref="u_Cor" name="u_cor"  />
       <field field_ref="u_Prsgrd" name="u_prsgrd"  />
       <field field_ref="u_Hmix" name="u_hmix"  />
-!      <field field_ref="u_Hdiff" name="u_hdiff" />
       <field field_ref="u_Vmix" name="u_vmix"  />
-!      <field field_ref="u_Vmix2" name="u_nudg" />
-!      <field field_ref="u_Baro" name="u_baro" />
 #  ifdef M3FAST
       <field field_ref="u_fast" name="u_fast" />
 #  endif
       <field field_ref="v_rate" name="v_rate"  />
       <field field_ref="v_adv" name="v_adv"  />
 #  if defined DIAGNOSTICS_UV_VADV
-      <field field_ref="v_advz" name="v_advz"  />
+      <field field_ref="v_vadvz" name="v_vadvz"  />
 #  endif
       <field field_ref="v_Cor" name="v_cor"  />
       <field field_ref="v_Prsgrd" name="v_prsgrd"  />
       <field field_ref="v_Hmix" name="v_hmix"  />
-!      <field field_ref="v_Hdiff" name="v_hdiff" />
       <field field_ref="v_Vmix" name="v_vmix"  />
-!      <field field_ref="v_Vmix2" name="v_nudg" />
-!      <field field_ref="v_Baro" name="v_baro" />
 #  ifdef M3FAST
       <field field_ref="v_fast" name="v_fast" />
 #  endif
@@ -222,16 +214,13 @@
       <field field_ref="ekrate" name="ke_rate"  />
       <field field_ref="ekadv" name="ke_adv"  />
 #  if defined DIAGNOSTICS_UV_VADV
-      <field field_ref="ekadvz" name="ke_advz"  />
+      <field field_ref="ekvadvz" name="ke_vadvz"  />
 #  endif
       <field field_ref="ekCor" name="ke_cor"  />
       <field field_ref="ekPrsgrd" name="ke_prsgrd"  />
       <field field_ref="ekHmix" name="ke_hmix"  />
-!      <field field_ref="ekHdiff" name="ke_hdiff" />
       <field field_ref="ekVmix" name="ke_vmix"  />
-!      <field field_ref="ekVmix2" name="ke_nudg" />
       <field field_ref="ekvol" name="ke_vol" />
-!      <field field_ref="ekBaro" name="ke_baro" />
       <field field_ref="ekDrag" name="ke_drag" />
       <field field_ref="ekWind" name="ke_wind" />
 #  ifdef M3FAST
