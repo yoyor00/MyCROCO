@@ -169,7 +169,7 @@
       endif
 #  define Zob Zob_my
 # endif
-
+     ! write(*,*) Zob
 # ifdef MASKING
 #  define SWITCH *
 # else
@@ -193,8 +193,8 @@
 
 ! vertical distribution function F_Kv(z) for eddy viscosity
 
-# undef  FKV_FUNC1
-# define FKV_FUNC2
+# define  FKV_FUNC1
+# undef FKV_FUNC2
 # undef  FKV_FUNC3
 
 ! vertical distribution function F_B(z) for breaking accerelation
@@ -846,6 +846,7 @@
 ! =======================================================================
 !
 #  ifdef LMD_MIXING
+#   undef  WAVE_NONBRK_VMIX_U2010
 #   define WAVE_NONBRK_VMIX_QIAO
 !
 #   ifdef WAVE_NONBRK_VMIX_U2010 /* weak and unstable in SHOREFACE case */

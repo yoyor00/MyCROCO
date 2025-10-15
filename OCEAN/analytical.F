@@ -457,7 +457,12 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=cff1
         enddo
       enddo
-
+# elif defined DUCK94_HYDRO
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          sustr(i,j)=-0.2532/rho0
+        enddo
+      enddo
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -486,13 +491,13 @@ C$    integer  trd, omp_get_thread_num
           svstr(i,j)=cff1*wsin*windamp
         enddo
       enddo
-#  else
+#  endif
+# elif defined DUCK94_HYDRO
       do j=JstrR,JendR
         do i=IstrR,IendR
-          svstr(i,j)=0.
+          svstr(i,j)= -0.1456/rho0
         enddo
       enddo
-#  endif
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -592,7 +597,7 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
 # include "coupling.h"
       integer Istr,Iend,Jstr,Jend, i,j
-# if defined INTERNAL || defined ANA_TIDES
+# if defined INTERNAL && defined ANA_TIDES
       real U0,omega,kwave,ETA0
 # endif
 # if defined RIP && defined ANA_TIDES
@@ -606,6 +611,11 @@ C$    integer  trd, omp_get_thread_num
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 #  endif
 # endif
+# if defined SEDIMENT 
+#   include "sediment.h"
+# else
+      real :: morph_fac = 1.0
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -615,7 +625,6 @@ C$    integer  trd, omp_get_thread_num
 !
 !    --> climatology computed in ana_initial
 !
-
 # elif defined RIP && defined ANA_TIDES
 !
 ! Remove mean sea level (mssh)
@@ -680,7 +689,7 @@ C$    integer  trd, omp_get_thread_num
       enddo
 #  endif
 
-# elif defined INTERNAL || defined ANA_TIDES
+# elif defined INTERNAL && defined ANA_TIDES
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -696,7 +705,7 @@ C$    integer  trd, omp_get_thread_num
         do i=IstrR,IendR
           ssh(i,j)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
         enddo
-      enddo
+      enddo     
 # else
       do j=JstrR,JendR
         do i=IstrR,IendR
@@ -704,7 +713,6 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif
-
 # ifdef WET_DRY
 !
 !  Check that min depth > Dcrit
@@ -717,7 +725,6 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 # endif
-
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
       call exchange_r2d_tile (istr,iend,jstr,jend, ssh(START_2D_ARRAY))
 # endif
@@ -1399,7 +1406,7 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT && !defined ESTUARY)
+#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT && !defined ESTUARY && !defined DUCK94_MORPHO && !defined DUCK94_HYDRO)
       U0=0.02
       omega=2.*pi/(12.4*3600)
       kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
@@ -1643,13 +1650,7 @@ C$    integer  trd, omp_get_thread_num
       cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
       ho=h(1,1)             ! offshore depth
 #  ifdef OBC_EAST
-#   ifdef MPI
-        ho=h(LLm/NP_XI,1)
-        call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
-     &                     NP_XI-1, MPI_COMM_WORLD, ierr)
-#   else
-        ho=h(LLm,1)
-#   endif
+      ho=h(LLm,1)
 #  endif
       khd = ho*cfrq*cfrq/g
       kh  = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
@@ -1675,7 +1676,7 @@ C$    integer  trd, omp_get_thread_num
             kr=sqrt(cos(wdir)/cos(wdir))   ! refraction coefficient
             cosw=cos(wdir)
             sinw=sin(wdir)
-            gamw=0.55
+            gamw=0.31
             cff1=gamw*dd
             cff2=2.0*wamp*ks*kr
             wh=min(cff1,cff2)
@@ -1684,7 +1685,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Fill global arrays
 !
-          whrm(i,j)=wh
+          whrm(i,j)=2.*wh  ! Hrms = 2A
           wfrq(i,j)=sqrt(g*kw*tanh(kw*dd))
           wdrx(i,j)=cosw
           wdre(i,j)=sinw
@@ -1720,10 +1721,6 @@ C$    integer  trd, omp_get_thread_num
           wfrq(i,j)=cfrq
           wdrx(i,j)=cos(wdir)
           wdre(i,j)=sin(wdir)
-!  limit Hrms in surfzone
-          gamw=0.55
-          dd=h(i,j)+z_w(i,j,N)
-          whrm(i,j)=min(whrm(i,j),gamw*dd)
 #   ifdef WET_DRY
           if (h(i,j)+z_w(i,j,N) .lt. Dcrit(i,j)+eps) then
             whrm(i,j)=0.
@@ -1804,7 +1801,34 @@ C$    integer  trd, omp_get_thread_num
             if(.not.got_inised(2)) bed_poros(i,j,ilay)=Bpor(ilay)
             if(.not.got_inised(3)) then
               do ised=1,NST
+# ifdef SED_DISTRIB
                 bed_frac(i,j,ilay,ised)=Bfr(ilay,ised)
+                if (xr(i,j).lt.500) then
+                  bed_frac(i,j,ilay,ised)=-1.668e-8*(xr(i,j)**3.) 
+     &                                    +2.190e-5*(xr(i,j)**2.)
+     &                                    -9.905e-3*xr(i,j) + 1.689
+                else
+                  bed_frac(i,j,ilay,ised)=-1.668e-8*(500.**3.) 
+     &                                    +2.190e-5*(500.**2.)
+     &                                    -9.905e-3*500. + 1.689                
+                endif
+                if (ised.eq.2) then
+                  bed_frac(i,j,ilay,ised)= 1-bed_frac(i,j,ilay,ised)
+                endif
+# endif
+# ifdef SED_DISTRIB_2
+                bed_frac(i,j,ilay,ised)=Bfr(ilay,ised)
+                if (xr(i,j).gt.150) then
+                  bed_frac(i,j,ilay,ised)=1
+                else
+                  bed_frac(i,j,ilay,ised)=0               
+                endif
+                if (ised.eq.2) then
+                  bed_frac(i,j,ilay,ised)= 1-bed_frac(i,j,ilay,ised)
+                endif
+# else
+                bed_frac(i,j,ilay,ised)=Bfr(ilay,ised)
+# endif
               enddo
             endif
             bed_age(i,j,ilay)=time

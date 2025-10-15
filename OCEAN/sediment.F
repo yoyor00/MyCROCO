@@ -47,7 +47,8 @@
 #   undef  BEDLOAD_VANDERA_SURFACE_WAVE
 #   undef  BEDLOAD_VANDERA_WAVE_AVG_STRESS
 #   define BEDLOAD_SLUMP
-#   define BEDLOAD_SHALLOW_LIMIT
+#   undef BEDLOAD_SHALLOW_LIMIT
+#   undef SUSPEND_SHALLOW_LIMIT
 #  endif
 # endif
 !
@@ -436,6 +437,19 @@ C$OMP BARRIER
         enddo
       enddo
 !
+!
+! Compute median grain diameter of the mixture
+!
+      do j=J_EXT_RANGE
+        do i=I_EXT_RANGE
+          cff=1
+          do ised=1,NST
+            cff=cff*Sd(ised)**bed_frac(i,j,1,ised)
+          enddo
+          d50_mix=cff
+        enddo
+      enddo
+!
       do ised=1,NST   ! <============== sed loop
 !
 !-----------------------------------------------------------------------
@@ -475,18 +489,12 @@ C$OMP BARRIER
 !
 ! Wave & sediment parameters
 !
-            depth=z_w(i,j,N)+h(i,j)             ! (m)
+            depth=max(z_w(i,j,N)+h(i,j),eps)    ! (m)
             Hs=2.*Awave(i,j)                    ! (m)
             Td=MAX(Pwave(i,j),1.)               ! (s)
             phi_curwave=phicw(i,j)              ! angle cw
             k_wn=kh_calc(Td,depth)/depth        ! Wave number
             c_w=twopi/(k_wn*Td)                 ! Wave speed
-
-            if (NST>1) then
-              d50_mix=Sdens(i,j)
-            else
-             d50_mix=d50
-            endif
 !
 ! Compute bed wave orbital velocity (m/s) & excursion amplitude
 !
@@ -1037,9 +1045,15 @@ C$OMP BARRIER
             cff1=(0.5+SIGN(0.5,cff))
             cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
             cff2=cff*slopefac_local*SIGN(1.,dzdx)
-            FX(i,j)=FX(i,j)+cff2
-          end do
-        end do
+            FX(i,j)=FX(i,j)+cff2*bed_frac(i,j,1,ised)
+#  ifdef MASKING
+            FX(i,j)=FX(i,j)*umask(i,j)
+#  endif
+#  ifdef WET_DRY
+            FX(i,j)=FX(i,j)*umask_wet(i,j)
+#  endif
+          enddo
+        enddo
 !
 !  V-direction slumping
 !
@@ -1054,9 +1068,15 @@ C$OMP BARRIER
             cff1=(0.5+SIGN(0.5,cff))
             cff=0.5*cff*cff1/(pm(i,j)*pn(i,j))
             cff2=cff*slopefac_local*SIGN(1.,dzdy)
-            FE(i,j)=FE(i,j)+cff2
-          end do
-        end do
+            FE(i,j)=FE(i,j)+cff2*bed_frac(i,j,1,ised)
+#  ifdef MASKING
+            FE(i,j)=FE(i,j)*vmask(i,j)
+#  endif
+#  ifdef WET_DRY
+            FE(i,j)=FE(i,j)*vmask_wet(i,j)
+#  endif
+          enddo
+        enddo
 #  endif /* BEDLOAD_SLUMP */
 !
 !-----------------------------------------------------------------------
@@ -1149,6 +1169,7 @@ C$OMP BARRIER
 #  endif
             bed_mass(i,j,1,nnew,ised)=MAX(bed_mass(i,j,1,nstp,ised)-
      &                                    cff,0.)
+          
 #  if !defined SUSPLOAD
             if (NLAY.gt.1) then
               do k=2,NLAY
@@ -1169,12 +1190,28 @@ C$OMP BARRIER
         cff=1./dt
         do j=Jstr,Jend
           do i=Istr,Iend
-            bedldu(i,j,ised)=(FX(i,j)-FX(i+1,j))*pm(i,j)*pn(i,j)*cff
+            bedldu(i,j,ised)=(FX(i,j)-FX(i+1,j))*pm(i,j)*pn(i,j)*cff     
+#  ifdef BEDLOAD_SHALLOW_LIMIT
+            bedldu(i,j,ised)=bedldu(i,j,ised)
+     &             *min(1.,((z_w(i,j,N)-z_w(i,j,0)
+#   ifdef WET_DRY
+     &                             -Dcrit(i,j)+eps
+#   endif
+     &                                  )/0.7)**2)
+#  endif
           enddo
         enddo
         do j=Jstr,Jend
           do i=Istr,Iend
-            bedldv(i,j,ised)=(FE(i,j)-FE(i,j+1))*pm(i,j)*pn(i,j)*cff
+            bedldv(i,j,ised)=(FE(i,j)-FE(i,j+1))*pm(i,j)*pn(i,j)*cff     
+#  ifdef BEDLOAD_SHALLOW_LIMIT
+            bedldv(i,j,ised)=bedldv(i,j,ised)
+     &             *min(1.,((z_w(i,j,N)-z_w(i,j,0)
+#   ifdef WET_DRY
+     &                             -Dcrit(i,j)+eps
+#   endif
+     &                                  )/0.7)**2)
+#  endif
           enddo
         enddo
 !
@@ -1473,7 +1510,11 @@ C$OMP BARRIER
       real tau_w(PRIVATE_2D_SCRATCH_ARRAY)
       integer  ksource(PRIVATE_1D_SCRATCH_ARRAY,N),
      &         ised,indx,i,j,k,ks
-      real dltR, dltL,cff,cffR,cffL,cu
+      real dltR,dltL,cff0,cff,cffR,cffL,cu
+# ifdef WET_DRY
+      real eps
+      parameter (eps=1.e-20)
+# endif  
 !
 !-----------------------------------------------------------------------
 !  Compute bottom skin-friction stress due to combined maximum wave
@@ -1619,14 +1660,13 @@ C$OMP BARRIER
 ! integration bounds for semi-Lagrangian advective flux to use as
 ! many grid boxes in upstream direction as necessary.
 !
-          cff=dt*abs(Wsed(ised))          ! In the two code segments
+          cff0=dt*abs(Wsed(ised))         ! In the two code segments
+     !     cff=dt*abs(Wsed(ised))         ! In the two code segments
           do k=1,N                        ! WL is z-coordinate of the
             do i=Istr,Iend                ! departure point for grid
+              cff=min(cff0,0.9*Hz(i,j,N)) !--> Lipschitz condition
               FC(i,k-1)=0.                ! box interface z_w with
               WL(i,k)=z_w(i,j,k-1)+cff    ! the same indices;
-#  ifdef WET_DRY
-     &                *rmask_wet(i,j)
-#  endif
               WR(i,k)=Hz(i,j,k)*qc(i,k)   ! FC is finite volume flux;
               ksource(i,k)=k              ! ksource(:,k) is index of
             enddo                         ! vertical grid box which
@@ -1660,16 +1700,39 @@ C$OMP BARRIER
 #  ifdef SPONGE_SED
      &                                       *sed_sponge(i,j)
 #  endif
+#  ifdef WET_DRY
+     &                                       *rmask_wet(i,j)
+#  endif
             enddo
             settling_flux(i,j,ised)=FC(i,0)
+     !       settling_flux(i,j,ised)=max(0.,FC(i,0))
 #  ifdef SPONGE_SED
      &                                       *sed_sponge(i,j)
 #  endif
+#  ifdef WET_DRY
+     &                                       *rmask_wet(i,j)
+#  endif
+#  ifdef SUSPEND_SHALLOW_LIMIT
+     &      *min(1.,((z_w(i,j,N)-z_w(i,j,0)
+#   ifdef WET_DRY
+     &                             -Dcrit(i,j)+eps
+#   endif
+     &                                  )/0.7)**2)
+#  endif       
+
+    ! DEBUG: Check if settling is negative
+    !      if (settling_flux(i,j,ised).lt.0) then
+    !       write(*,'(A,E10.3,A,E10.3)')
+    ! &        "xr=",xr(i,j),
+    ! &        " settling_flux=",settling_flux(i,j,ised)
+    !      endif
+
           enddo
 !
 !  Diagnostics for settling: use TForc array
 !
 #  ifdef DIAGNOSTICS_TS
+    ! Warning: SUSPEND_SHALLOW_LIMIT cannot be applied
           do k=1,N
             do i=Istr,Iend
               TForc(i,j,k,indx)=(FC(i,k)-FC(i,k-1))/dt
@@ -1744,11 +1807,19 @@ C$OMP BARRIER
 #   include "diagnostics.h"
 #  endif
       integer Istr,Iend,Jstr,Jend
-      integer i,j,ised
+      integer i,j,ised,ised0
       integer indx
       integer imin,jmin,imax,jmax
       real cff,cff1,cff2,cff3,cff4,cff5,tau_water,Zr
       real tau_w(PRIVATE_2D_SCRATCH_ARRAY)
+#  ifdef BED_ARMOR
+     ! integer ised0
+      real ph,pe
+#  endif
+# ifdef WET_DRY
+      real eps
+      parameter (eps=1.e-20)
+# endif
 !
 !-----------------------------------------------------------------------
 !  Compute bottom skin-friction stress due to combined maximum wave
@@ -1807,14 +1878,28 @@ C$OMP BARRIER
                 cff5=(1.0-tau_w(i,j)/tau_cd(ised))*cff5
              endif
 #  endif
-            ero_flux(i,j,ised)=
-     &            MIN(MAX(0.,cff2*(cff*tau_w(i,j)-1.)),
-     &                MIN(cff3*bot_thick(i,j) MORPH_FAC ,cff4)+
-     &                cff5)
+          
+    ! This should be already managed in sed_bed_tile
+    !        ero_flux(i,j,ised)=
+    ! &            MIN(MAX(0.,cff2*(cff*tau_w(i,j)-1.)),
+    ! &                MIN(cff3*bot_thick(i,j),cff4)+
+    ! &                cff5)
+    
+            ero_flux(i,j,ised)=max(0.,cff2*(cff*tau_w(i,j)-1.))
+    
             ero_flux(i,j,ised)=ero_flux(i,j,ised)
 #  ifdef SPONGE_SED
      &                             *sed_sponge(i,j)
 #  endif
+#  ifdef SUSPEND_SHALLOW_LIMIT
+     &      *min(1.,((z_w(i,j,N)-z_w(i,j,0)
+#   ifdef WET_DRY
+     &                             -Dcrit(i,j)+eps
+#   endif
+     &                                  )/0.7)**2)
+#  endif
+          
+          
 !
 !  Update global tracer variables (m Tunits for nnew indx, Tuints for 3)
 !  for erosive flux.
@@ -1832,6 +1917,7 @@ C$OMP BARRIER
 !
 #  ifdef DIAGNOSTICS_TS
           do i=Istr,Iend
+    ! Warning: SUSPEND_SHALLOW_LIMIT cannot be applied
             TForc(i,j,1,indx) = TForc(i,j,1,indx) +
      &                          ero_flux(i,j,ised)/dt
 #   ifdef MASKING
@@ -1911,7 +1997,7 @@ C$OMP BARRIER
       real dep_mass(PRIVATE_1D_SCRATCH_ARRAY,NST)
       real Awrk1(PRIVATE_2D_SCRATCH_ARRAY)
       real Awrk2(PRIVATE_2D_SCRATCH_ARRAY)
-      real eps,cff,cff1,cff2,cff3
+      real eps,cff,cff1,cff2,cff3,cffd,cffd_1,cffd_2,cffd_3
       real thck_avail,thck_to_add,newlayer_thick
       integer imin,imax,jmin,jmax
       parameter ( eps=1.D-20, newlayer_thick=0.001 )
@@ -1959,8 +2045,16 @@ C$OMP BARRIER
 !  is conserved. Restrict "ero_flux" so that "bed" cannot go negative
 !  after both fluxes are applied.
 !
-            ero_flux(i,j,ised)=ero_flux(i,j,ised) MORPH_FAC
+
+            ! Consider a cell of 1m x 1m for mass computations
             settling_flux(i,j,ised)=settling_flux(i,j,ised) MORPH_FAC
+            ero_flux(i,j,ised)=ero_flux(i,j,ised) MORPH_FAC
+            
+          if (((((xr(i,j).eq.120).and.(yr(i,j).eq.2))))) then
+     !       write(*,'(A,F5.2)') "L-2054 MORPH_FAC = ", morph_fac
+     !       write(*,'(A, E10.3, A)') "L-2055 settling_mass = ", settling_flux(i,j,ised), " kg"
+     !       write(*,'(A, E10.3, A)') "L-2056 ero_mass = ", ero_flux(i,j,ised), " kg"
+          endif 
 #  endif
 !
 ! Net deposited sediment, including bedload
@@ -1972,7 +2066,14 @@ C$OMP BARRIER
 #  ifdef BEDLOAD
      &          +bed_mass(i,j,1,nnew,ised)-bed_mass(i,j,1,nstp,ised)
 #  endif
-
+          if (((((xr(i,j).eq.120).and.(yr(i,j).eq.2))))) then
+     !       write(*,'(A,E10.3,A)') "L-2070 Net deposited suspended = ",
+     !&         settling_flux(i,j,ised)-ero_flux(i,j,ised), " kg"
+     !       write(*,'(A,E10.3,A)') "L-2072 Net deposited bedload = ",
+     !&           bed_mass(i,j,1,nnew,ised)-bed_mass(i,j,1,nstp,ised),
+     !&           " kg"
+     !       write(*,'(A,E10.3,A)') "L-2075 Net deposited sediment = ", cff, " kg"
+          endif
             if ( cff .gt. 0. ) then
 !
 !  If first time step of deposit, then store deposit material in
@@ -2063,9 +2164,21 @@ C$OMP BARRIER
             bed_thick(i,j,k)=0.
             do ised=1,NST
               bed_frac(i,j,k,ised)=bed_mass(i,j,k,nnew,ised)/cff3
+          if (((((xr(i,j).eq.120).and.(yr(i,j).eq.2))))) then
+     !       write(*,'(A,F5.2)') "L-2252 Bed_frac  = ", bed_frac(i,j,k,ised)
+          endif            
               bed_thick(i,j,k)=MAX(bed_thick(i,j,k)+
      &                         bed_mass(i,j,k,nnew,ised)/
-     &                         (Srho(ised)*(1.-bed_poros(i,j,k))),0.)
+     &                         (Srho(ised)*(1.-bed_poros(i,j,k)))   
+     &                         ,0.)
+          if (((((xr(i,j).eq.120).and.(yr(i,j).eq.2))))) then
+     !     cffd_3 = (bed_mass(i,j,k,nnew,ised)-
+     !&            bed_mass(i,j,k,nstp,ised))/
+     !&                   (Srho(ised)*(1.-bed_poros(i,j,k))*
+     !&                   (1*1))  
+     !       write(*,'(A,E10.3, A)') "L-2265 Bed_thick added  = ", cffd_3, " m"
+          endif            
+
             enddo  ! ised loop
           enddo    ! k loop
         enddo      ! i loop
@@ -2162,6 +2275,8 @@ C$OMP BARRIER
               enddo     ! k loop
             endif       ! NLAY > 1
           endif         ! increase top bed layer
+          
+          
         enddo           ! i loop
       enddo             ! j loop
 !
@@ -2403,6 +2518,20 @@ C$OMP BARRIER
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
           dh(i,j)=bed_thick_tot(i,j,nstp)-bed_thick_tot(i,j,nnew)
+          
+          if (((((xr(i,j).eq.120).and.(yr(i,j).eq.2))))) then
+     !       cffd_1 = bed_thick_tot(i,j,nstp)-5.0
+     !       cffd_2 = bed_thick_tot(i,j,nnew)-5.0
+           ! write(*,'(A,A,E10.3,A)') "L-2537 Delta Total",
+    ! &       " Bed thickness old = ",cffd_1, " m"
+           ! write(*,'(A,A,E10.3,A)') "L-2538 Delta Total",
+    ! &       " Bed thickness new = ",cffd_2, " m"
+     !       write(*,'(A,E10.3,A,F6.3,A)') 
+    ! &       "L-2623 Bed evolution dh = ",
+     !&       dh(i,j)," m  (h = ",h(i,j)," m)"
+     !       write(*,*) " "
+          endif  
+          
         enddo
       enddo
 !
@@ -4098,10 +4227,13 @@ C$OMP BARRIER
       cff1=1./MAX(2.*(T_i-T_iu)*w_sc, eps)
       P=alpha_fac*delta*cff*cff1
 !
-! Hiding/exposure correction factor
+! Hiding/exposure correction factor (VA2013 Eq 37)
 !
-!      eps_eff=(d50/d50_mix)**0.25
+# ifdef BL_HIDEXP
+      eps_eff=(d50/d50_mix)**0.25
+# else
       eps_eff=1.
+# endif
 !
 ! CRS for multiple sed types
 !

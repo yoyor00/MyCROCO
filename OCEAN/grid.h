@@ -13,6 +13,7 @@
 !
 ! h       Model topography (bottom depth [m] at RHO-points.)
 ! dh      Topograhy increment in case of moving bathymetry
+! hdelay  Delayed topography in case of breaker delay use
 ! f       Coriolis parameter [1/s].
 ! fomn    Compound term, f/[pm*pn] at RHO points.
 !
@@ -62,10 +63,16 @@
       real hinv(GLOBAL_2D_ARRAY)
       real f(GLOBAL_2D_ARRAY)
       real fomn(GLOBAL_2D_ARRAY)
+#ifdef BREAKER_DELAY      
+      real hdelay(GLOBAL_2D_ARRAY)
+#endif
 #ifdef MORPHODYN
       real dh(GLOBAL_2D_ARRAY)
 #endif
       common /grid_h/h /grid_hinv/hinv /grid_f/f /grid_fomn/fomn
+#ifdef BREAKER_DELAY      
+      common /grid_hdelay/hdelay
+#endif
 #ifdef MORPHODYN
       common /grid_dh/dh
 #endif

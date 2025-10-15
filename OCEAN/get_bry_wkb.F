@@ -190,7 +190,7 @@
 # endif
             ierr=ierr_all
             if (ierr.eq.0) then
-              write(stdout,'(6x,A,9x,A,1x,G12.4,1x,I4)')
+              MPI_master_only write(stdout,'(6x,A,9x,A,1x,G12.4,1x,I4)')
      &       'GET_BRY_WKB - Read wave boundary data',
      &                                  'for time =', cff
 # ifdef USE_CALENDAR

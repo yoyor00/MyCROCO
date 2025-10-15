@@ -102,6 +102,11 @@
 #  undef  BBL_WAVE_SKEWNESS
 #  define BBL_BREAKING_STIR
 # endif
+# ifdef DUCK94_HYDRO
+#  define Z0_RIP
+#  define Z0_BL
+# endif
+
       logical SAND, SILT
       integer Iend, Istr, Jend, Jstr, i, ised, j, k
       integer ISTRm,ISTRp,IENDp,JSTRm,JSTRp,JENDp
@@ -268,9 +273,20 @@
 !  (Roelvink & Reniers, 1995)
 !
 # if defined MRL_WCI && defined BBL_BREAKING_STIR
-          Ut=sqrt((0.1*wepb(i,j))**cff1_Ut)          ! surf. turb. velocity
-          Ut=(Ut*50./cff2_Ut)**cff2_Ut               ! efficiency function
-          Ut=Ut/(exp(depth/max(whrm(i,j),1.e-3))-1.) ! depth attenuation
+
+#  if defined BBL_BREAKER_DELAY
+          cff=hdelay(i,j)+zeta(i,j,kstp)
+    !      cff1=sqrt((8.0/9.81)*(wac(i,j,wnew)+war(i,j,wnew))*frq(i,j,wnew))
+#  else
+          cff=depth
+#  endif
+          Ut=(wepr(i,j))**(1/3)          ! surf. turb. velocity
+          Ut=Ut*30               ! efficiency function
+!          Ut=Ut/(exp(cff/max(cff1,1.e-3))-1.) ! depth attenuation
+!          Ut=sqrt((0.1*wepr(i,j))**cff1_Ut)          ! surf. turb. velocity
+!          Ut=(Ut*30./cff2_Ut)**cff2_Ut               ! efficiency function
+          Ut=Ut/(exp(cff/max(whrm(i,j),1.e-3))-1.) ! depth attenuation
+!          Ut=Ut/(exp(cff/max(cff1,1.e-3))-1.) ! depth attenuation
      &                              SWITCH rmask(i,j)
      &                              SWITCH_WET rmask_wet(i,j)
 # else
@@ -308,7 +324,7 @@
           tau_cb = taucb(i,j)          ! [m^2/s^2]
           rhosed = Sdens(i,j)/rhow     ! [ ] relative density
 # else
-          d50 = 0.16e-3       ! default values: fine sand
+          d50 = 0.20e-3       ! default values: fine sand
           tau_cb = 0.17/rhow
           rhosed = 2650./rhow
 # endif /* ANA_BSEDIM || SEDIMENT */
@@ -355,6 +371,7 @@
 !
 ! Pure wave skin stress
             tau_ws = scf1*((znots*Fwave)**scf2)*(Ub(i,j)+Ut)**scf3
+     !       tau_ws = scf1*((Ub(i,j)/(znots*Fwave))**(-0.52))*(Ub(i,j)+Ut)**2
 
 ! current-only skin stress
             cff1 = vonKar/LOG(Zr(i,j)/znots)

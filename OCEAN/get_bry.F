@@ -23,6 +23,9 @@
 # include "ncscrum.h"
 # include "netcdf.inc"
 # include "boundary.h"
+# ifdef SEDIMENT
+#  include "sediment.h"
+# endif
       real cff
       character*180 units
       integer  lstr,lvar,lenstr, latt, lorig, ierr, ierr_all, itrc
@@ -235,6 +238,9 @@
 # endif
             itbry=min(3-itbry,ntbry)
             bry_time(itbry)=cff*day2sec + bry_cycle*bry_ncycle
+# ifdef SEDIMENT
+            bry_time(itbry)=bry_time(itbry)/morph_fac
+# endif
             ierr_all=0
 # ifdef OBC_WEST
 #  ifdef Z_FRC_BRY

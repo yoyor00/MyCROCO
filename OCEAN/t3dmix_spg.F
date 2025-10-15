@@ -689,7 +689,7 @@
 ! of diag terms are: (unit of tracers)* s-1.
 !
 
-              cff=cff1/Hz(i,j,k)
+              cff=cff1 !/Hz(i,j,k)
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff
 #  ifdef TS_SPONGE_IMP

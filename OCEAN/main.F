@@ -376,6 +376,8 @@ C$OMP BARRIER
 #endif
                                 ! Set initial model clock: at this
       time=start_time           ! moment "start_time" (global scalar)
+     ! time=21600 !morph_fac=12  ! moment "start_time" (global scalar)
+      !time=10800 !morph_fac=24  ! moment "start_time" (global scalar)
       tdays=time*sec2day        ! is set by get_initial or analytically
                                 ! --> copy it into threadprivate "time"
 
@@ -710,7 +712,13 @@ C$OMP END MASTER
 # ifndef ANA_BRY_WKB
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call set_bry_wkb (tile)   ! set boundary forcing
+        call set_bry_wkb (tile)   ! set wave forcing
+      enddo
+# endif
+# ifndef ANA_BRY
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call set_bry (tile)   ! set boundary forcing
       enddo
 # endif
 # ifdef MRL_CEW
