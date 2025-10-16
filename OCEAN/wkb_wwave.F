@@ -74,6 +74,9 @@
      &        imin,imax,jmin,jmax, prc
       real, dimension(PRIVATE_2D_SCRATCH_ARRAY) :: cgx,cge,acx,ace,
      &                                             Dstp,rkx,rke,rwac
+# ifdef BREAKER_DELAY
+      real Dstp_delay(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
 # ifdef WAVE_FRICTION
       real Zob_my(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
@@ -96,13 +99,12 @@
       integer status(MPI_STATUS_SIZE)
       integer ierr, flag, source, req(3), rank, target_rank
 # endif
-#  if defined BREAKER_DELAY
+# if defined BREAKER_DELAY
       real delay_eff
-      parameter(delay_eff=1.5)
       real cff3,cff4
-      real hval(Lm)
+      real hmpi(Lm)
       integer eta
-#  endif
+# endif
 # include "grid.h"
 # include "ocean2d.h"
 # include "ocean3d.h"
@@ -589,7 +591,7 @@ C$OMP BARRIER
       call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
       if (rank.lt.NP_XI-1) then  ! get h from mynode + 1
         target_rank = rank+1
-        call MPI_Recv(hval, Lm, 
+        call MPI_Recv(hmpi, Lm, 
      &                MPI_DOUBLE_PRECISION, target_rank, 200, 
      &                MPI_COMM_WORLD, status, ierr)
       endif
@@ -611,34 +613,37 @@ C$OMP BARRIER
           Dstp(i,j)=max(h(i,j)+zwave(i,j,wmod),eps)
 #   endif
 #  else
+          Dstp(i,j)=max(h(i,j)+zeta(i,j,knew),eps)
 #   ifdef BREAKER_DELAY
          !
          ! Breaker delay
          ! --> works for east oriented beaches (OBC_EAST)
          !
-          cff1 = (max(hrm(i,j,1)*sqrt(2.),0.2)
-     &           *max(min(frq(i,j,1),1.4),0.2)**2.)/(twopi*9.81)
-          cff1 = max(cff1*max(hrm(i,j,1)*sqrt(2.),0.2)*1500.,5.)
-          cff2=min(i+floor(cff1*pm(i,j)),LLm+1) ! Delay distance
-          cff3=cff1*h(i,j)
-          cff4=cff1
+         ! Hs^2/L0 
+          cff1=(hrm(i,j,1)*sqrt(2.)*frq(i,j,1)**2.)
+     &          /(twopi*9.81)
+          cff1=cff1*hrm(i,j,1)*sqrt(2.)*1500.
+         ! Hs^2/h
+    !      cff1=(hrm(i,j,1)*sqrt(2.))**2./Dstp(i,j)
+    !      cff1=40.*delay_eff
+          cff2=min(i+floor(cff1*pm(i,j)),LLm+1) ! Delay position
+          cff3=1*h(i,j)
+          cff4=1
           do eta=i,cff2
             if (eta.le.iend) then
-              cff3 = cff3 + (cff1+((i-eta)/pm(i,j)))*h(eta,j)
-              cff4 = cff4 + (cff1+((i-eta)/pm(i,j)))   
-            endif 
+              cff3=cff3+(cff1+((i-eta)/pm(i,j)))*h(eta,j)
+              cff4=cff4+(cff1+((i-eta)/pm(i,j)))
+            endif
 #    ifdef MPI
-            ! get h from mynode + 1
+            ! if MPI get h from next MPI node
             if (eta.gt.iend .and. rank.lt.NP_XI-1) then 
-              cff3 = cff3 + (cff1+((i-eta)/pm(i,j)))*hval(eta-iend)
-              cff4 = cff4 + (cff1+((i-eta)/pm(i,j)))
+              cff3=cff3+(cff1+((i-eta)/pm(i,j)))*hmpi(eta-iend)
+              cff4=cff4+(cff1+((i-eta)/pm(i,j)))
             endif
 #    endif
           enddo
           hdelay(i,j)=cff3/cff4
-          Dstp(i,j)=max(hdelay(i,j)+zeta(i,j,knew),eps)
-#   else
-          Dstp(i,j)=max(h(i,j)+zeta(i,j,knew),eps)
+          Dstp_delay(i,j)=max(hdelay(i,j)+zeta(i,j,knew),eps)
 #   endif
 #  endif
 # else
@@ -855,23 +860,29 @@ C$OMP BARRIER
           frq(i,j,wnew) =sqrt(g*wvn(i,j,wnew)*tanh(khn))
           wcg(i,j,wnew) =frq(i,j,wnew)*(inv_k**2)*nw  ! cg/k
           hrm(i,j,wnew) =sqrt(peg*max(wac(i,j,wnew),0.)*frq(i,j,wnew))
+# ifdef BREAKER_DELAY
+#  define DSTP Dstp_delay(i,j)
+# else
+#  define DSTP Dstp(i,j)
+# endif
 # ifdef WAVE_BREAK_TG86
-          wsb(i,j,wnew) =sbc*((1.0/Dstp(i,j))**5)
+          wsb(i,j,wnew) =sbc*((1.0/DSTP)**5)
      &                      *(hrm(i,j,wnew)**7)    ! ep_b/rho/sigma
 # elif defined WAVE_BREAK_TG86A
-          cff1=hrm(i,j,wnew)/(wkb_gam*Dstp(i,j))
-          wsb(i,j,wnew)=sbc/(Dstp(i,j)**3)*(hrm(i,j,wnew)**5)
+          cff1=hrm(i,j,wnew)/(wkb_gam*DSTP)
+          wsb(i,j,wnew)=sbc/(DSTP**3)*(hrm(i,j,wnew)**5)
      &                                    *(1.0-(1.0+peg**2)**(-2.5))
 # elif defined WAVE_BREAK_CT93
-          cff1=hrm(i,j,wnew)/(wkb_gam*Dstp(i,j))
-          wsb(i,j,wnew) =sbc/Dstp(i,j)*(hrm(i,j,wnew)**3)
+          cff1=hrm(i,j,wnew)/(wkb_gam*DSTP)
+          wsb(i,j,wnew) =sbc/DSTP*(hrm(i,j,wnew)**3)
      &                                *( 1.0+tanh(8.0*(cff1-1.0)) )
      &                                *( 1.0-(1.0+cff1**2)**(-2.5) )
 # elif defined WAVE_BREAK_R93
-          cff1=hrm(i,j,wnew)/(wkb_gam*Dstp(i,j))
-          wsb(i,j,wstp)=sbc/Dstp(i,j)*hrm(i,j,wnew)**3*cff1**4
+          cff1=hrm(i,j,wnew)/(wkb_gam*DSTP)
+          wsb(i,j,wstp)=sbc/DSTP*hrm(i,j,wnew)**3*cff1**4
      &                               *(1 -exp (-cff1**5 ) )
 # endif
+# undef DSTP
 # ifdef WAVE_ROLLER
           wcr(i,j,wnew) = frq(i,j,wnew)*(inv_k**2)   ! c/k
           wsr(i,j,wnew) = c_roller*war(i,j,wnew)     ! ep_r/rho/sigma
