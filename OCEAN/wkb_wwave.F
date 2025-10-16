@@ -242,17 +242,10 @@
 !----------------------------------------------------------------------
 !
       if (iwave.eq.1) then
-!$acc kernels if(compute_on_device) default(present)
-# if defined ANA_TIDES
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          zeta(i,j,knew)= SSH(i,j) ! Assign zeta 
-        enddo
-      enddo
-#  endif
-        !
-# define ANA_INI_WKB
 
+!$acc kernels if(compute_on_device) default(present)
+
+# define ANA_INI_WKB
 # ifdef ANA_INI_WKB
 #  ifndef AGRIF
 #   define ana_ini_wkb .true.
@@ -263,7 +256,7 @@
 #  define ana_ini_wkb .false.
 # endif
 
-      if( ana_ini_wkb ) then
+      if ( ana_ini_wkb ) then
 
 # ifdef WKB_OBC_WEST
         ho=h(1,1)+zeta(1,1,knew)                 ! offshore depth
@@ -275,9 +268,6 @@
 # ifdef WKB_OBC_EAST
 #  ifdef MPI
         ho=h(LLm/NP_XI,1)+zeta(LLm/NP_XI,1,knew)
-     !   ho=h(LLm/NP_XI,1)+zetabry_east(1)
-   !     write(*,*) ho, h(LLm/NP_XI,1), 
-   !  &   zetabry_east(1), zeta(LLm/NP_XI,1,knew)
         call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
      &                     NP_XI-1, MPI_COMM_WORLD, ierr)
 #  else
@@ -306,24 +296,24 @@
         cdir = wkb_ang*deg2rad       ! wave direction rad
 # else
 #  ifdef WKB_OBC_WEST
-         wkb_bry(1)=wacbry_west(1)
-         wkb_bry(2)=wkxbry_west(1)
-         wkb_bry(3)=wkebry_west(1)
+        wkb_bry(1)=wacbry_west(1)
+        wkb_bry(2)=wkxbry_west(1)
+        wkb_bry(3)=wkebry_west(1)
 #   ifdef MPI
-         prc = 0
+        prc = 0
 #   endif
 #  endif
 #  ifdef WKB_OBC_EAST
-         wkb_bry(1)=wacbry_east(1)
-         wkb_bry(2)=wkxbry_east(1)
-         wkb_bry(3)=wkebry_east(1)
+        wkb_bry(1)=wacbry_east(1)
+        wkb_bry(2)=wkxbry_east(1)
+        wkb_bry(3)=wkebry_east(1)
 #   ifdef MPI
-         prc = NP_XI-1
+        prc = NP_XI-1
 #   endif
 #  endif
 #  ifdef MPI
         call MPI_Bcast(wkb_bry, 3, MPI_DOUBLE_PRECISION,
-     &                     prc, MPI_COMM_WORLD, ierr)
+     &                        prc, MPI_COMM_WORLD, ierr)
 #  endif
         cff1=sqrt(wkb_bry(2)**2+wkb_bry(3)**2)
         inv_k =1.0/cff1
@@ -334,9 +324,6 @@
         cdir=ATAN2(sinw,cosw)
         wamp=sqrt(2*wkb_bry(1)/g*cfrq)
 # endif /* ANA_BRY_WKB */
-      MPI_master_only write(stdout,'(3x,3(2x,A,F8.3,1x,A))')
-     & 'Hs=',wamp*2.82,'m','Tp=',6.3/cfrq,'s',
-     & 'Dir=',cdir*rad2deg,'deg'
         Btg  = wkb_btg               ! B parameter
         gamw = wkb_gam               ! gamma paramemer (Hrms/h ratio)
 
@@ -591,31 +578,29 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
-# if (defined MPI && defined BREAKER_DELAY)
+!
+! Compute total depth Dstp = h + zeta
+!
+# if defined MPI && defined BREAKER_DELAY
+!
+!  First, in case of breaker delay, communicate h between 
+!  surrounding MPI nodes
+!
       call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
-
-      if (rank.lt.NP_XI-1) then ! if MPI get h from next MPI cell
+      if (rank.lt.NP_XI-1) then  ! get h from mynode + 1
         target_rank = rank+1
-      
         call MPI_Recv(hval, Lm, 
-     &   MPI_DOUBLE_PRECISION, target_rank, 200, 
-     &   MPI_COMM_WORLD, status, ierr)
+     &                MPI_DOUBLE_PRECISION, target_rank, 200, 
+     &                MPI_COMM_WORLD, status, ierr)
       endif
-
-      if (rank.gt.0) then ! if MPI get h from next MPI ce
+      if (rank.gt.0) then        ! send h to mynode - 1
         source = rank-1
-
         call MPI_Send(h(1:Lm,1), Lm,
-     &   MPI_DOUBLE_PRECISION, source, 200, 
-     &   MPI_COMM_WORLD, ierr)
-
-!      write(*,'(I2,F8.4,F8.4,F8.4,F8.4)') 
-!     & rank, h(istr,1), h(iend,1), hval(istr), hval(1)
+     &                MPI_DOUBLE_PRECISION, source, 200, 
+     &                MPI_COMM_WORLD, ierr)
       endif
-      
 # endif
-      
-      
+!
       do j=jstr-1,jend+1
         do i=istr-1,iend+1
 # ifdef MRL_CEW
@@ -626,53 +611,31 @@ C$OMP BARRIER
           Dstp(i,j)=max(h(i,j)+zwave(i,j,wmod),eps)
 #   endif
 #  else
-#   if defined BREAKER_DELAY
-      ! This breaker delay works for east oriented beaches (OBC_EAST)
-    !  delay_eff = min(20.*(max(hrm(i,j,1),0.2)
-    ! &     /(twopi*max(h(i,j)+zeta(i,j,knew),Dcrit(i,j)))),
-    ! &       2.5)
-
-
-      cff1 = (max(hrm(i,j,1)*sqrt(2.),0.2)
-     &        *max(min(frq(i,j,1),1.4),0.2)**2.)
-     &        /(twopi*9.81)
-     ! cff1 = max(cff1*max(hrm(i,j,1)*sqrt(2.),0.2)*1300.,4.)
-      cff1 = max(cff1*max(hrm(i,j,1)*sqrt(2.),0.2)*1500.,5.)
-      
-      if (1.eq.0) then
-     !     if (xr(i,j).eq.230) then
-     !       write(*,*) "xr ", xr(i,j), " = ", cff1
-     !     endif
-          if (xr(i,j).eq.400) then
-            write(*,*) "xr 120 = ", cff1, frq(i,j,1)
-          endif
-      endif
-    !  cff1=delay_eff*abs(twopi/
-    ! &       SQRT(wkx(i,j,1)**2+wke(i,j,1)**2))
-     ! wkx(i,j,1)) ! XI-dir efficient L
-      cff2=min(i+floor(cff1*pm(i,j)),LLm+1) ! Delay distance
-      
-      cff3=cff1*h(i,j)
-      cff4=cff1
-      do eta=i,cff2
-      
-        if (eta.le.iend) then
-          cff3 = cff3 + (cff1+((i-eta)/pm(i,j)))*h(eta,j)
-          cff4 = cff4 + (cff1+((i-eta)/pm(i,j)))   
-        endif 
-
-# ifdef MPI
-        ! if MPI get h from next MPI cell
-        if (eta.gt.iend .and. rank.lt.NP_XI-1) then 
-          cff3 = cff3 + (cff1+((i-eta)/pm(i,j)))*hval(eta-iend)
-          cff4 = cff4 + (cff1+((i-eta)/pm(i,j)))
-        endif
-# endif
-          
-      enddo
-
+#   ifdef BREAKER_DELAY
+         !
+         ! Breaker delay
+         ! --> works for east oriented beaches (OBC_EAST)
+         !
+          cff1 = (max(hrm(i,j,1)*sqrt(2.),0.2)
+     &           *max(min(frq(i,j,1),1.4),0.2)**2.)/(twopi*9.81)
+          cff1 = max(cff1*max(hrm(i,j,1)*sqrt(2.),0.2)*1500.,5.)
+          cff2=min(i+floor(cff1*pm(i,j)),LLm+1) ! Delay distance
+          cff3=cff1*h(i,j)
+          cff4=cff1
+          do eta=i,cff2
+            if (eta.le.iend) then
+              cff3 = cff3 + (cff1+((i-eta)/pm(i,j)))*h(eta,j)
+              cff4 = cff4 + (cff1+((i-eta)/pm(i,j)))   
+            endif 
+#    ifdef MPI
+            ! get h from mynode + 1
+            if (eta.gt.iend .and. rank.lt.NP_XI-1) then 
+              cff3 = cff3 + (cff1+((i-eta)/pm(i,j)))*hval(eta-iend)
+              cff4 = cff4 + (cff1+((i-eta)/pm(i,j)))
+            endif
+#    endif
+          enddo
           hdelay(i,j)=cff3/cff4
-      
           Dstp(i,j)=max(hdelay(i,j)+zeta(i,j,knew),eps)
 #   else
           Dstp(i,j)=max(h(i,j)+zeta(i,j,knew),eps)

@@ -715,12 +715,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call set_bry_wkb (tile)   ! set wave forcing
       enddo
 # endif
-# ifndef ANA_BRY
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_bry (tile)   ! set boundary forcing
-      enddo
-# endif
 # ifdef MRL_CEW
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
