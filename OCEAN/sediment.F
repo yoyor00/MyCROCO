@@ -450,6 +450,7 @@ C$OMP BARRIER
 !
 ! Compute median grain diameter of the mixture
 !
+#  ifdef BEDLOAD_VANDERA
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
           cff=1
@@ -459,6 +460,7 @@ C$OMP BARRIER
           d50_mix=cff
         enddo
       enddo
+#  endif
 !
       do ised=1,NST   ! <============== sed loop
 !
