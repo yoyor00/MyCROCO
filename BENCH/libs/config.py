@@ -234,17 +234,16 @@ class Config:
 
         # compute clean result subdir name
         use_host_config = self.use_host_config
+        if self.title is not None:
+            folder_name_base = f"{self.title}-{use_host_config}"
+        else:
+            folder_name_base = f"{use_host_config}"
+
         if self.args.no_date_in_result_dir:
-            if self.title is not None:
-                folder_name = f"{self.title}-{use_host_config}"
-            else:
-                folder_name = f"{use_host_config}"
+            folder_name = f"{folder_name_base}"
         else:
             run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            if self.title is not None:
-                folder_name = f"{self.title}-{use_host_config}-{run_date}"
-            else:
-                folder_name = f"{use_host_config}-{run_date}"
+            folder_name = f"{folder_name_base}-{run_date}"
         self.results = os.path.join(
             self.args.results,
             folder_name,
@@ -258,7 +257,7 @@ class Config:
         else:
             self.results_pattern = os.path.join(
                 self.args.results,
-                f"{self.title}-{use_host_config}-*",
+                f"{folder_name_base}-*",
             )
 
         # extract some many time used paths
