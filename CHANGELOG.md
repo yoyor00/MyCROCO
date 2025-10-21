@@ -14,6 +14,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- BOTTOM STRESS : Incorrect definition of loop indices for calculating 
+  the bottom stress components in the case rdrg2>0 (Issue #441)
+
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
 - COUPLING : patm2D was declared twice in case of OW_COUPLING and READ_PATM (Issue #383)
 - COUPLING : undef TIDES_MAS in oce_compile.sh, as it does not work without USE_CALENDAR 
