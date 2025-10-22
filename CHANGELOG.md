@@ -11,6 +11,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BOTTOM STRESS : Incorrect definition of loop indices for calculating
   the bottom stress components in the case rdrg2>0 (Issue #441)
 
+- COUPLING : exchange of some v-grid variables in cpl_prism_get when defined OA_GRID_UV (#450) 
+
 - MUSTANG : error in case of SAND only type and key_MUSTANG_V2 
   not defined (Issue #451)
 
