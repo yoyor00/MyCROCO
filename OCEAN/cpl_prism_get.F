@@ -272,7 +272,7 @@
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntau = tab_t_tmp / rho0
 #  else
-               call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntau  = tab_t_tmp / rho0
 #  endif
             endif
@@ -478,7 +478,7 @@
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntwo = tab_t_tmp
 #  else
-               call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntwo  = tab_t_tmp
 #  endif
             endif
@@ -548,7 +548,7 @@
                call exchange_r2d_tile(1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntaw = tab_t_tmp
 #  else
-               call exchange_u2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
+               call exchange_v2d_tile (1,Lmmpi,1,Mmmpi,tab_t_tmp(START_2D_ARRAY))
                ntaw  = tab_t_tmp
 #  endif
             endif
