@@ -8,12 +8,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
-- BENCH: fix result_pattern used to retrive performance data for performance plot, fix
-  results directory for copying jobcomp.log in case of failed compilation (solve #446)
+- BOTTOM STRESS : Incorrect definition of loop indices for calculating
+  the bottom stress components in the case rdrg2>0 (Issue #441)
 
 - AGRIF: sponge keyword missing: put it back (even if theoretically useless, it creates a read_inp error), path for online corrected in croco_inter.in,
   AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
 
+- BENCH : fix hwloc-ls not mandatory (solve #442)
+- BENCH: fix result_pattern used to retrive performance data for performance plot, fix
+  results directory for copying jobcomp.log in case of failed compilation (solve #446)
 
 ### Changed
 
@@ -30,6 +33,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  S. Jullien, S. Le Gac
+  N. Ducousso, S. Jullien, S. Le Gac, P. Marchesiello
 
 - New contributors : 
