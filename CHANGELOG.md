@@ -15,7 +15,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
 
 - BENCH : fix hwloc-ls not mandatory (solve #442)
-
+- BENCH: fix result_pattern used to retrive performance data for performance plot, fix
+  results directory for copying jobcomp.log in case of failed compilation (solve #446)
 
 ### Changed
 
