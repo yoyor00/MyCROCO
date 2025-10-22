@@ -40,6 +40,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : error in case of SAND only type and key_MUSTANG_V2 
+  not defined (Issue #451)
 
 - SUBSTANCE: submassbalance error if no closed border (Issue #449)
 
