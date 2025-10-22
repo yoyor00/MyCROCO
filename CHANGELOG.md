@@ -27,6 +27,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
              one of the model was not requested in create_config (solve issue #428)
 - COUPLING and XIOS : correct path and  requested copy of cppdefs_dev (solve #364)
 - COUPLING and EXACT RESTART : manage EXACT_RESTART option in coupling scripts (solve #92)
+- COUPLING : exchange of some v-grid variables in cpl_prism_get when defined OA_GRID_UV (#450) 
 - BENCH : do not put report status to True for reference variant to avoid
   to mark test passed even if not (Issue #342)
 - BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
