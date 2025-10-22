@@ -11,6 +11,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BOTTOM STRESS : Incorrect definition of loop indices for calculating
   the bottom stress components in the case rdrg2>0 (Issue #441)
 
+- MUSTANG : error in case of SAND only type and key_MUSTANG_V2 
+  not defined (Issue #451)
+
 - SUBSTANCE: submassbalance error if no closed border (Issue #449)
 
 - AGRIF: sponge keyword missing: put it back (even if theoretically useless, 
