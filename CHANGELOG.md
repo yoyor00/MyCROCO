@@ -14,8 +14,19 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- BOTTOM STRESS : Incorrect definition of loop indices for calculating 
+  the bottom stress components in the case rdrg2>0 (Issue #441)
+
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
 - COUPLING : patm2D was declared twice in case of OW_COUPLING and READ_PATM (Issue #383)
+- COUPLING : undef TIDES_MAS in oce_compile.sh, as it does not work without USE_CALENDAR 
+             (link with #233)
+- COUPLING : update croco.in.base accordingly to original croco.in (solve #366)
+- COUPLING : path to local myenv_mypath in job dir (solve #421)
+- COUPLING : add "if" conditions for cpl restart file path definitions to avoid issues when
+             one of the model was not requested in create_config (solve issue #428)
+- COUPLING and XIOS : correct path and  requested copy of cppdefs_dev (solve #364)
+- COUPLING and EXACT RESTART : manage EXACT_RESTART option in coupling scripts (solve #92)
 - BENCH : do not put report status to True for reference variant to avoid
   to mark test passed even if not (Issue #342)
 - BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
@@ -29,9 +40,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : error in case of SAND only type and key_MUSTANG_V2 
+  not defined (Issue #451)
+
+- SUBSTANCE: submassbalance error if no closed border (Issue #449)
+
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
+- Cleaning : useless sponge option in croco.in.1 (#436)
 
 - Compilation : fix cat "croco_ascii.txt" command in case of relative path
 
@@ -39,6 +56,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - AGRIF : incompatibility of AGRIF with cppkeys
   BULK_ECUMEV0 or BULK_ECUMEV6 (Issue #422)
+- AGRIF and psource_ncfile : in croco.in.1 file should be croco_runoff.nc.1 (solve #436)
+- AGRIF: sponge keyword missing: put it back (even if theoretically useless, 
+  it creates a read_inp error), path for online corrected in croco_inter.in,
+  AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
+
 
 - OUTPUT : incompatibility when activating 
   PISCES + PSOURCE_NCFILE_TS + DIURNAL_INPUT_SRFLX (Issue #435)
