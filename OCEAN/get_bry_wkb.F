@@ -51,7 +51,10 @@
           ierr=nf_inq_varid (brywkb_id, 'brywkb_time',  brywkb_time_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'brywkb_time'
           ierr_all=ierr_all+ierr
-
+# ifdef USE_CALENDAR
+          call tool_origindate(brywkb_id,brywkb_time_id,
+     &                           brywkb_origin_date_in_sec)
+# endif
 # ifdef WKB_OBC_WEST
           ierr=nf_inq_varid (brywkb_id, 'wac_west', wacbry_west_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'wac_west'
@@ -122,8 +125,6 @@
           ierr=nf_get_var1_FTYPE (brywkb_id, brywkb_time_id, brywkb_rec, cff)
           if (ierr.eq.nf_noerr) then
 # ifdef USE_CALENDAR
-            call tool_origindate(brywkb_id,brywkb_time_id,
-     &                           brywkb_origin_date_in_sec)
             cff=cff+brywkb_origin_date_in_sec*sec2day
 # endif
             itbrywkb=min(3-itbrywkb,ntbrywkb)

@@ -878,7 +878,6 @@ CR      write(*,*) '  0' MYID
       next_kstp=kstp
       time_start=time
 #ifdef USE_CALENDAR
-      time_mars=time
       time_end=tool_datosec(end_date)
 #endif
 
@@ -916,9 +915,6 @@ CR      write(*,*) '  0' MYID
 #endif
 
 #ifdef USE_CALENDAR
-        if (mod(iicroot-1,ninfo) .eq. 0) then
-          MPI_master_only write(stdout,'(a)') tool_sectodat(time_mars)
-        endif
         if (time .gt. time_end) goto 99
 #endif
 

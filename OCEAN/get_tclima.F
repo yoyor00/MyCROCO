@@ -620,6 +620,10 @@ c              goto 99                                     !--> ERROR
 
 #  endif
 # endif /* BIOLOGY */
+# ifdef USE_CALENDAR
+          call tool_origindate(ncidclm,tclm_tid(itrc),
+     &                       tclm_origin_date_in_sec(itrc))
+# endif
 
           if (got_tclm(itrc)) then
             lvar=lenstr(vname(1,indxV+itrc))
@@ -678,9 +682,7 @@ c              goto 99                                     !--> ERROR
            goto 99                                        !--> ERROR
          endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidclm,tclm_tid(itrc),
-     &                       tclm_origin_date_in_sec)
-        cff=cff+tclm_origin_date_in_sec*sec2day
+        cff=cff+tclm_origin_date_in_sec(itrc)*sec2day
 # endif
          tclm_time(i,itrc)=cff*day2sec+tclm_cycle(itrc)
      &                                *tclm_ncycle(itrc)
@@ -704,7 +706,7 @@ c              goto 99                                     !--> ERROR
      &             'GET_TCLIMA -- Read climatology of tracer', itrc,
      &                                             'for time =', cff
 # ifdef USE_CALENDAR
-     &  -tclm_origin_date_in_sec*sec2day
+     &  -tclm_origin_date_in_sec(itrc)*sec2day
 # endif
 # ifdef MPI
      &                                                      , mynode
@@ -813,7 +815,7 @@ C$    integer  trd, omp_get_thread_num
      &             tclm_time(it1,itrc)*sec2day,     'TDAYS=',  tdays,
      &            'TCLM_TEND=',   tclm_time(it2,itrc)*sec2day
 # ifdef USE_CALENDAR
-     &  -tclm_origin_date_in_sec*sec2day
+     &  -tclm_origin_date_in_sec(itrc)*sec2day
 # endif
           may_day_flag=2
         endif

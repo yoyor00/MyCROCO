@@ -56,6 +56,10 @@
           write(stdout,3) 'wwv_time', wave_file(1:lstr)
           goto 99                                         !--> ERROR
         endif
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidwave,ww_tid,
+     &                       ww_origin_date_in_sec)
+# endif
 
 # ifndef MUSTANG
         ncidfrc=ncidwave
@@ -256,8 +260,6 @@
         goto 99                                         !--> ERROR
       endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidwave,ww_tid,
-     &                       ww_origin_date_in_sec)
         cff=cff+ww_origin_date_in_sec*sec2day
 # endif
       wwv_time(i)=cff*day2sec+ww_cycle*ww_ncycle

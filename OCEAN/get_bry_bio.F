@@ -623,6 +623,16 @@ c     goto 99                                     !--> ERROR
 #  endif
 # endif     /* PISCES or (BIO_NChlPZD || BIO_N2ChlPZ2) or BIO_BioEBUS */
             endif   !condition on itrc value
+# ifdef USE_CALENDAR
+          if (itrc.eq.itemp .or. itrc.eq.isalt) then
+            call tool_origindate(bry_id,bry_time_id,
+     &                           bryt_origin_date_in_sec(itrc))
+          else
+            call tool_origindate(bry_id,bry_tid(itrc),
+     &                           bryt_origin_date_in_sec(itrc))
+          endif
+# endif
+
           enddo   ! loop on itrc
 !
 ! Initialisation ierr_all
@@ -743,9 +753,7 @@ c                goto 99         !--> ERROR
      &          (bry_id, bry_tid(itrc), bry_rec1(itrc), cff)
               if (ierr.eq.nf_noerr) then
 # ifdef USE_CALENDAR
-                call tool_origindate(bry_id,bry_tid(itrc),
-     &                         bry_origin_date_in_sec)
-                cff=cff+bry_origin_date_in_sec*sec2day
+                cff=cff+bryt_origin_date_in_sec(itrc)*sec2day
 # endif
                 itbry1(itrc)=min(3-itbry1(itrc),ntbry1(itrc))
                 bry_time1(itbry1(itrc),itrc)=cff*day2sec +
@@ -791,7 +799,7 @@ c                goto 99         !--> ERROR
      &              'GET_BRY_BIO    -- Read all boundary data',
      &              'for time =', cff
 # ifdef USE_CALENDAR
-     &               -bry_origin_date_in_sec*sec2day
+     &               -bryt_origin_date_in_sec(itrc)*sec2day
 # endif
 # ifdef MPI
      &              , mynode
@@ -815,7 +823,7 @@ c                goto 99         !--> ERROR
      $          tdays,'  but the last available  bry_time ='
      $          ,bry_time(itbry1(itrc))*sec2day
 # ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
+     &  -bryt_origin_date_in_sec(itrc)*sec2day
 # endif
              endif
 
@@ -932,11 +940,11 @@ c                goto 99         !--> ERROR
      &      'SET_BRY_ALL_TILE - current model time is out of bounds of',
      &      '''bry_time''.',     'BRY_TSTART=',   bry_time(it1)*sec2day
 # ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
+     &  -bryt_origin_date_in_sec(itrc)*sec2day
 # endif
      &      ,'TDAYS=',  tdays,    'BRY_TEND=',     bry_time(it2)*sec2day
 # ifdef USE_CALENDAR
-     &  -bry_origin_date_in_sec*sec2day
+     &  -bryt_origin_date_in_sec(itrc)*sec2day
 # endif
             may_day_flag=2
           endif

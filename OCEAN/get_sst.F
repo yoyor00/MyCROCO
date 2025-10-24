@@ -58,6 +58,10 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,3) 'sst_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidfrc,sst_tid,
+     &                       sst_origin_date_in_sec)
+# endif
 
         lvar=lenstr(vname(1,indxSST))
         ierr=nf_inq_varid (ncidfrc, vname(1,indxSST)(1:lvar), sst_id)
@@ -121,8 +125,6 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidfrc,sst_tid,
-     &                       sst_origin_date_in_sec)
         cff=cff+sst_origin_date_in_sec*sec2day
 # endif
 

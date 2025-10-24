@@ -55,6 +55,11 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,3) 'qbar_time', qbarname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidqbar,qbar_tid,
+     &                       qbar_origin_date_in_sec)
+# endif
+
 !
 ! River flow
 !
@@ -106,8 +111,6 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         goto 99                 !--> ERROR
       endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidqbar,qbar_tid,
-     &                       qbar_origin_date_in_sec)
         cff=cff+qbar_origin_date_in_sec*sec2day
 # endif
       qbar_time(i)=cff*day2sec+qbar_cycle*qbar_ncycle

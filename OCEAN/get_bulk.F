@@ -53,7 +53,10 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,3) 'bulk_time', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidbulk,bulk_tid,
+     &                       blk_origin_date_in_sec)
+# endif
 !
 ! Check N_abl value and possible inconstitency between N_abl in param.h
 ! and N_abl in netcdf.
@@ -407,8 +410,6 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidbulk,bulk_tid,
-     &                       blk_origin_date_in_sec)
         cff=cff+blk_origin_date_in_sec*sec2day
 # endif
 

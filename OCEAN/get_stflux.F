@@ -53,6 +53,10 @@ c**        call opencdf (frcname,N)
             write(stdout,3) 'shf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#  ifdef USE_CALENDAR
+          call tool_origindate(ncidfrc,stf_tid,
+     &                         stf_origin_date_in_sec(itrc))
+#  endif
         endif
 # endif
 # ifdef SALINITY
@@ -62,6 +66,10 @@ c**        call opencdf (frcname,N)
             write(stdout,3) 'swf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
+#  ifdef USE_CALENDAR
+          call tool_origindate(ncidfrc,stf_tid,
+     &                         stf_origin_date_in_sec(itrc))
+#  endif
         endif
 # endif
         lvar=lenstr(vname(1,indxShflx+itrc-1))
@@ -132,9 +140,7 @@ c**        call opencdf (frcname,N)
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidfrc,stf_tid(itrc),
-     &                       stf_origin_date_in_sec)
-        cff=cff+stf_origin_date_in_sec*sec2day
+        cff=cff+stf_origin_date_in_sec(itrc)*sec2day
 # endif
         stf_time(i,itrc)=cff*day2sec+stf_cycle(itrc)*stf_ncycle(itrc)
         if (stf_time(itstf(itrc),itrc).eq.-1.E+20)
@@ -159,7 +165,7 @@ c**        call opencdf (frcname,N)
      &            'GET_STFLUX -- Read surface flux of tracer', itrc,
      &                                             'for time =', cff
 # ifdef USE_CALENDAR
-     &  -stf_origin_date_in_sec*sec2day
+     &  -stf_origin_date_in_sec(itrc)*sec2day
 # endif
 # ifdef MPI
      &                                                      , mynode
@@ -181,7 +187,7 @@ c**        call opencdf (frcname,N)
   7   write(stdout,8) stf_rec(itrc),ntstf(itrc),frcname(1:lstr),
      &                tdays, stf_time(itstf(itrc),itrc)*sec2day
 # ifdef USE_CALENDAR
-     &  -stf_origin_date_in_sec*sec2day
+     &  -stf_origin_date_in_sec(itrc)*sec2day
 # endif
   8   format(/,' GET_STFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
@@ -273,7 +279,7 @@ c**        call opencdf (frcname,N)
         if (ZEROTH_TILE) then
           write(stdout,1) 'stf_time',tdays,stf_time(it2,itrc)*sec2day
 # ifdef USE_CALENDAR
-     &  -stf_origin_date_in_sec*sec2day
+     &  -stf_origin_date_in_sec(itrc)*sec2day
 # endif
   1       format(/,' SET_STFLUX_TILE - current model time exceeds',
      &          1x,'ending value for variable: ',A8,/,14x,'TDAYS = ',

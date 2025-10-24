@@ -709,7 +709,10 @@ c     goto 99           !--> ERROR
 # endif /* SUBSTANCE  */
 
           endif
-
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidqbar,tsrc_tid(itrc),
+     &                       tsrc_origin_date_in_sec(itrc))
+# endif
 !     Read in Netcdf file the concentration
 C     R          write(*,*)'==============='
 C     R          write(*,*)'ITRC=',itrc
@@ -782,9 +785,7 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
           ierr=nf_get_var1_FTYPE (ncidqbar, tsrc_tid(itrc),
      &         tsrc_rec(itrc),  cff)
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidqbar,tsrc_tid(itrc),
-     &                       tsrc_origin_date_in_sec)
-        cff=cff+tsrc_origin_date_in_sec*sec2day
+        cff=cff+tsrc_origin_date_in_sec(itrc)*sec2day
 # endif
 
           if (ierr .ne. nf_noerr) then
@@ -808,7 +809,7 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
      &         'GET_PSOURCE_TS -- Read conc fields of tracer ',itrc,
      &         'for time =', cff
 # ifdef USE_CALENDAR
-     &  -tsrc_origin_date_in_sec*sec2day
+     &  -tsrc_origin_date_in_sec(itrc)*sec2day
 # endif
 # ifdef MPI
      &         , mynode
@@ -894,7 +895,7 @@ C     R    &                  'Tsrc0(i,itrc)=',Tsrc0(i,itrc)
           elseif (ZEROTH_TILE) then
             write(stdout,1) 'qbar_time', tdays, qbar_time(it2)*sec2day
 # ifdef USE_CALENDAR
-     &  -tsrc_origin_date_in_sec*sec2day
+     &  -tsrc_origin_date_in_sec(itrc)*sec2day
 # endif
  1          format(/,' SET_PSOURCE_TS -- ',
      &           ' current model time exceeds ending',

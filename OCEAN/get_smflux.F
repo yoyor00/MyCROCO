@@ -48,7 +48,10 @@ c**        call opencdf (frcname,N)
           write(stdout,3) 'sms_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidfrc,sms_tid,
+     &                       sms_origin_date_in_sec)
+# endif
         lvar=lenstr(vname(1,indxSUSTR))
         ierr=nf_inq_varid (ncidfrc,vname(1,indxSUSTR)(1:lvar),susid)
         if (ierr .eq. nf_noerr) then
@@ -119,8 +122,6 @@ c**        call opencdf (frcname,N)
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidfrc,sms_tid,
-     &                       sms_origin_date_in_sec)
         cff=cff+sms_origin_date_in_sec*sec2day
 # endif
         sms_time(i)=cff*day2sec+sms_cycle*sms_ncycle

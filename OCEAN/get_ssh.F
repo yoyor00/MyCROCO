@@ -48,6 +48,10 @@
           write(stdout,3) 'ssh_time', clmname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidclm,ssh_tid,
+     &                       ssh_origin_date_in_sec)
+# endif
 
         lvar=lenstr(vname(1,indxSSH))
         ierr=nf_inq_varid (ncidclm, vname(1,indxSSH)(1:lvar), ssh_id)
@@ -90,8 +94,6 @@
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidclm,ssh_tid,
-     &                       ssh_origin_date_in_sec)
         cff=cff+ssh_origin_date_in_sec*sec2day
 # endif
 

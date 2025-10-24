@@ -85,7 +85,7 @@
       real    tsrc_cycle(NT)
       integer ittsrc(NT), tsrc_ncycle(NT), tsrc_rec(NT),  tsrc_tid(NT),
      &        tsrc_id(NT)
-      REAL(kind=8) :: tsrc_origin_date_in_sec
+      real    tsrc_origin_date_in_sec(NT)
       common /tsrcdat1/ tsrc_time, tsrc_origin_date_in_sec
       common /tsrcdat2/ tsrc_cycle
       common /tsrcdat3/ ittsrc, tsrc_ncycle, tsrc_rec, tsrc_tid, tsrc_id

@@ -48,6 +48,11 @@
           write(stdout,3) 'uclm_time', clmname(1:lstr)
           goto 99                                     !--> ERROR
         endif
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidclm,uclm_tid,
+     &                       uclm_origin_date_in_sec)
+# endif
+
 # ifdef M2CLIMATOLOGY
         lvar=lenstr(vname(1,indxUb))
         ierr=nf_inq_varid (ncidclm, vname(1,indxUb)(1:lvar), ubclm_id)
@@ -122,8 +127,6 @@
         goto 99                                        !--> ERROR
       endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidclm,uclm_tid,
-     &                       uclm_origin_date_in_sec)
         cff=cff+uclm_origin_date_in_sec*sec2day
 # endif
 

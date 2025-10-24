@@ -69,6 +69,9 @@
       real(kind=8), dimension(:,:,:), allocatable :: var3d
 # endif
       character*16 dimname
+# ifdef USE_CALENDAR
+      character*19 :: tool_sectodat
+# endif
 !
 ! Time of the current model step
 !
@@ -635,11 +638,15 @@
 ! === ==== ======= === ==== == ======= ========
 !
           if (blkvar_id.eq.nblkvrs) then
+# ifdef USE_CALENDAR
+            MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I8)')
+     &              'ONLINE_BULK --',
+     &              'Read file for time =', tool_sectodat(daycfsr*day2sec)
+
+# else
             MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I8)')
      &              'ONLINE_BULK --',
      &              'Read file for time =', daycfsr
-# ifdef USE_CALENDAR
-     &  -blkO_origin_date_in_sec*sec2day
 # endif
           endif
 !

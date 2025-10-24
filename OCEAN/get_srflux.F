@@ -49,6 +49,11 @@
           write(stdout,3) 'srf_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
+# ifdef USE_CALENDAR
+        call tool_origindate(ncidfrc,srf_tid,
+     &                       srf_origin_date_in_sec)
+# endif
+
 !
 ! srflx
 !
@@ -131,8 +136,6 @@
           goto 99                                         !--> ERROR
         endif
 # ifdef USE_CALENDAR
-        call tool_origindate(ncidfrc,srf_tid,
-     &                       srf_origin_date_in_sec)
         cff=cff+srf_origin_date_in_sec*sec2day
 # endif
         srf_time(i)=cff*day2sec+srf_cycle*srf_ncycle
