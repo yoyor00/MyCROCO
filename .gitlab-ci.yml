@@ -67,7 +67,7 @@ debug_ifort:
   stage: bench
   tags:
     - ci.inria.fr
-    - largelarge_more_disk
+    - large_more_disk
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:test
   script:
     - ulimit -s unlimited
