@@ -66,8 +66,9 @@ plotphy_base:
 debug_ifort:
   stage: bench
   tags:
-    - croco-vm-docker
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:2.0.0
+    - ci.inria.fr
+    - largelarge_more_disk
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:test
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
