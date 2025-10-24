@@ -121,6 +121,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - comments refering to BASIN in step2D.F (#409)
   - remove routine set_HUV1, not used (#410)
 
+- CI :
+  - change container managment for CI test (#437)
 
 ### Contributors on this release
 
