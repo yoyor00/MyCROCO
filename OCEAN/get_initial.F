@@ -321,7 +321,9 @@
      &                                , nf_strerror(ierr)
         goto 99                                           !--> ERROR
       endif
-
+#ifdef USE_CALENDAR
+      start_time = start_time + origin_date_in_sec
+#endif
 #ifdef XIOS
       start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
@@ -420,12 +422,22 @@
 
             if (forw_start.eq.1) then
               MPI_master_only write(stdout,6)
-     &             start_time*sec2day, record,
+# ifdef USE_CALENDAR
+     &            tool_sectodat(start_time),
+# else
+     &             start_time*sec2day,
+# endif
+     &             record,
      &             ntstart, nrecrst, nrechis
             else
 #endif
               MPI_master_only  write(stdout,7)
-     &             start_time*sec2day, record,
+#ifdef USE_CALENDAR
+     &            tool_sectodat(start_time),
+#else
+     &             start_time*sec2day,
+#endif
+     &             record,
      &             ntstart, nrecrst, nrechis
 #ifdef EXACT_RESTART
             endif
@@ -465,10 +477,17 @@
 #ifdef AVERAGES
         nrecavg=0
 #endif
+#ifdef USE_CALENDAR
+        MPI_master_only write(stdout,'(/1x,2A,A19,1x,A,I4)')
+     &          'GET_INITIAL -- ',
+     &       'Processing data for time =', tool_sectodat(start_time),
+     &                                      'record =', record
+#else
         MPI_master_only write(stdout,'(/1x,2A,G12.4,1x,A,I4)')
      &          'GET_INITIAL -- ',
      &       'Processing data for time =', start_time*sec2day,
      &                                      'record =', record
+#endif
       endif
 #ifdef EXACT_RESTART
       if (tindx.eq.1 .and. forw_start.eq.0) forw_start=ntstart
@@ -1359,11 +1378,17 @@
      &         'i.e from a restart file produced by this code ',
      &    /21x'      => problem: run is not restartable ',
      &    /21x'      => check your initial file')
- 6    format(/6x,'GET_INITIAL: Exact restart from day =',F12.4,
+#ifdef USE_CALENDAR
+  6   format(/6x,'GET_INITIAL: Exact restart from day =',A19,
      &     '  rec =',I4,'(',I8,',',I4,','I4,').')
- 7    format(/6x,'GET_INITIAL: Restarted from day =',F12.4,
+  7   format(/6x,'GET_INITIAL: Restarted from day =',A19,
      &     ' rec=',I4,'(',I8,',',I4,','I4').')
-
+#else
+  6   format(/6x,'GET_INITIAL: Exact restart from day =',F12.4,
+     &     '  rec =',I4,'(',I8,',',I4,','I4,').')
+  7   format(/6x,'GET_INITIAL: Restarted from day =',F12.4,
+     &     ' rec=',I4,'(',I8,',',I4,','I4').')
+#endif
       return
   99  may_day_flag=2
       return
