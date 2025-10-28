@@ -35,6 +35,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Other
 
+- CI :
+  - change container managment for CI test (#437)
 
 ### Contributors on this release
 
