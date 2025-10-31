@@ -32,22 +32,32 @@
       PARAMETER (psurf=100000.0)
 #endif
 #ifdef BULK_WASP
-      REAL            ::  Awasp(0:3,4)
-      REAL            ::  Bwasp(0:3,4)
-      PARAMETER( Awasp = reshape((/  0.7    , 0.      , 0.      , 0.        ,
-     &                              -9.202  , 2.265   ,-0.134   , 2.35e-3   ,
-     &                               2.27   ,-6.67e-2 , 0.      , 0.        ,
-     &                               0.0981 ,-4.13e-3 , 4.34e-5 , 1.16e-8  /)
-     &                                                      , shape(Awasp)) )
-      PARAMETER( Bwasp = reshape((/ -2.52   , 0.      , 0.      , 0.      ,
-     &                              -0.4124 ,-0.2225  , 0.01178 ,-1.616e-4,
-     &                              -2.41   , 4.30e-2 , 0.      , 0.      ,
-     &                               0.     , 0.      , 0.      , 0.      /)
-     &                                                      , shape(Bwasp)) )
-      REAL, PARAMETER :: CWage    = 9.80665 / (16.*ATAN(1.))  ! g / (4 Pi)
-      REAL, PARAMETER :: Charn0   = 0.018
-      REAL, PARAMETER :: Charn1   = 0.1
-      REAL, PARAMETER :: Charn2   = 0.002
+      REAL            ::  coefu_wasp (1:2)
+      REAL            ::  coefa2_wasp(1:2)
+      REAL            ::  coefb2_wasp(1:2)
+      PARAMETER(coefu_wasp  = (/  0.70,     -2.52 /))
+      PARAMETER(coefa2_wasp = (/  2.27, -6.67e-02 /))
+      PARAMETER(coefb2_wasp = (/ -2.41,  4.30e-02 /))
+      REAL            ::  polyu_wasp(1:4)
+      REAL            ::  coefa_wasp(1:4)
+      REAL            ::  coefb_wasp(1:4)
+      PARAMETER(polyu_wasp = (/  0.0981, -4.13e-03, 4.34e-5,  1.16e-08 /))
+      PARAMETER(coefa_wasp = (/  -9.202,     2.265,  -0.134,   2.35e-3 /))
+      PARAMETER(coefb_wasp = (/ -0.4124,   -0.2225, 0.01178, -1.616e-4 /))
+      REAL            ::  polyu2_wasp(1:3)
+      PARAMETER(polyu2_wasp = (/ 5.062E-3, -1.28E-04, 9.08E-7 /))
+      REAL, PARAMETER :: cwage_wasp    = 9.80665 / (16.*ATAN(1.))  ! g / (4 Pi)
+      REAL, PARAMETER :: limcharn_wasp  = 0.018
+      REAL, PARAMETER :: limcharn1_wasp = 0.1
+      REAL, PARAMETER :: limcharn2_wasp = 0.002
+      REAL, PARAMETER :: thr1_wasp = 7.0
+      REAL, PARAMETER :: thr2_wasp = 23.0
+      REAL, PARAMETER :: thr3_wasp = 25.0
+      REAL, PARAMETER :: thr4_wasp = 46.0
+      REAL, PARAMETER :: lon1_wasp = 0.5
+      REAL, PARAMETER :: lon2_wasp = 1.0
+      REAL, PARAMETER :: lon3_wasp = 1.0
+      REAL, PARAMETER :: lon4_wasp = 1.0
 #endif
 #ifdef BULK_ECUMEV0
       real utu1,utu2,utt,utq1,utq2
