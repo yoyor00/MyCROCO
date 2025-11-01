@@ -387,6 +387,9 @@
 # undef  TS_DIF2
 # undef  DIF_COEF_3D
 #endif
+#ifdef BACKSCATTER
+# define VIS_COEF_3D
+#endif
 /*
    Set UP3 scheme in barotropic equations for 2DH applications
 */

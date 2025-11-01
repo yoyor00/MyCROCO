@@ -420,8 +420,7 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !
       implicit none
-      integer Istr,Iend,Jstr,Jend, i,j,k
-      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+      integer Istr,Iend,Jstr,Jend, i,j,k, k2
 #  include "param.h"
 #  include "grid.h"
 #  ifdef AGRIF
@@ -432,15 +431,7 @@ C$    integer omp_get_thread_num
 #  include "coupling.h"
 #  include "scalars.h"
 #  include "penalization.h"
-      real :: z_decal
-      real z_u,z_bot,z_top,z_v,z_h,z_right,z_r1
-      real z_lastindex(GLOBAL_2D_ARRAY)
-      real FZ3(0:N)
-      real mindz(N_poro_discrete)
-      integer :: k2
-      real cff4,cff5,cff6,cff7,cff8
-      integer :: i1,j1,k1
-      real eps
+      real FZ3(0:N), eps
       parameter (eps=1.e-14)
 !
 #  include "compute_auxiliary_bounds.h"
@@ -458,6 +449,7 @@ C$    integer omp_get_thread_num
 !
 !----------------------------------------------------------------------
 !  Compute new Hz accounting for porosity
+!  --> Eq. 10 in Debreu et al. (2022)
 !----------------------------------------------------------------------
 !
 !  First compute time-independent structure function poro_discrete
@@ -482,7 +474,7 @@ C$    integer omp_get_thread_num
         do i=I_RANGE
           FZ3(0)=0.
           do k=1,N
-            if (z_w(i,j,k)<0.)  then
+            if (z_w(i,j,k) .lt. 0.)  then
               k2=int(N_poro_discrete*(1.+z_w(i,j,k)/hgrid(i,j)))
               FZ3(k)=z_int_poro(i,j,k2)
      &               +(z_w(i,j,k)-z_poro_discrete(i,j,k2))
@@ -512,7 +504,6 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       endif
-
 !
 !  Compute index arrays of penalization region
 !
@@ -525,7 +516,7 @@ C$    integer omp_get_thread_num
       do j=J_RANGE 
         do i=I_RANGE
           do k=N,1,-1
-            if (z_r(i,j,k)>=-h_pena_target(i,j)) then
+            if (z_r(i,j,k) .ge. -h_pena_target(i,j)) then
               last_index(i,j) = k
             else
               exit
@@ -537,7 +528,7 @@ C$    integer omp_get_thread_num
       do j=J_RANGE 
         do i=I_RANGE
           do k=N,1,-1
-            if (z_w(i,j,k)>=-h_pena_target(i,j)) then
+            if (z_w(i,j,k) .ge. -h_pena_target(i,j)) then
               last_index_w(i,j) = k
             else
               exit
@@ -547,15 +538,13 @@ C$    integer omp_get_thread_num
       enddo
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend, Hzf(START_2D_ARRAY,1))
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,  Hz(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        Hzf(START_2D_ARRAY,1))
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        Hz(START_2D_ARRAY,1))
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        pororatio(START_2D_ARRAY,1))
+     &                                       pororatio(START_2D_ARRAY,1))
       if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        Hz_bak(START_2D_ARRAY,1))
+     &                                          Hz_bak(START_2D_ARRAY,1))
       endif
       z_lastindex = last_index
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, z_lastindex)
@@ -594,8 +583,10 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !
       implicit none
-      integer Istr,Iend,Jstr,Jend, i,j,k
-      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+      integer Istr,Iend,Jstr,Jend, i,j,k, k2
+      real    cff_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+      real    z_decal,z_w1,z_h,z_right, eps
+      parameter (eps=1.e-14)
 #  include "param.h"
 #  include "grid.h"
 #  ifdef AGRIF
@@ -606,20 +597,12 @@ C$    integer omp_get_thread_num
 #  include "coupling.h"
 #  include "scalars.h"
 #  include "penalization.h"
+!
       real,parameter :: alpha_poro = 0.1
       real,parameter :: smooth_crit = 2.77259
       real,parameter :: dzpena_min=0.25
-      real z_decal, pena_ref
-      real z_u,z_bot,z_top,z_v,z_h,z_right,z_r1
-      real z_lastindex(GLOBAL_2D_ARRAY)
-      real z_w_tmp(GLOBAL_2D_ARRAY,0:N)
-      real FZ3(0:N)
-      real mindz(N_poro_discrete)
-      integer :: k2
-      real cff4,cff5,cff6,cff7,cff8
-      integer :: i1,j1,k1
-      real eps
-      parameter (eps=1.e-14)
+!
+      real FZ3(0:N), mindz(N_poro_discrete)
 !
 #  include "compute_auxiliary_bounds.h"
 !
@@ -635,7 +618,7 @@ C$    integer omp_get_thread_num
 #  endif
 !
 !----------------------------------------------------------------------
-! COMPUTE VERTICAL GRID WITH ZETA = 0 to get H_PORO
+! Compute porous vertical grid Hz with zeta = 0.
 !----------------------------------------------------------------------
 !
       z_decal = 2.19722/smooth_crit
@@ -661,8 +644,8 @@ C$    integer omp_get_thread_num
 #  endif
             z_w0=cff_w+cff1_w*hgrid(i,j)        
 #  ifdef NEW_S_COORD
-            z_w_tmp(i,j,k)=z_w0*hgrid(i,j)*hinv(i,j)+zetatmp
-     &                                     *(1.+z_w0*hinv(i,j))
+            z_w_tmp(i,j,k)=z_w0*hgrid(i,j)*hinv(i,j)+
+     &                         +zetatmp*(1.+z_w0*hinv(i,j))
 #  else
             z_w_tmp(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
 #  endif
@@ -675,20 +658,21 @@ C$    integer omp_get_thread_num
           z_poro_discrete(i,j,0) = -hgrid(i,j)
           z_poro_discrete(i,j,N_poro_discrete) = 0.
           do k=1,N_poro_discrete-1
-            z_poro_discrete(i,j,k)=-hgrid(i,j) + k * hgrid(i,j)/N_poro_discrete
+            z_poro_discrete(i,j,k)=-hgrid(i,j) 
+     &                            + k*hgrid(i,j)/N_poro_discrete
           enddo
           mindz(:) = huge(1.)
           do k=1,N_poro_discrete
             do k2=1,N
-              if ((z_w_tmp(i,j,k2  ) >= z_poro_discrete(i,j,k-1)).AND.
-     &            (z_w_tmp(i,j,k2-1) <= z_poro_discrete(i,j,k))) then
+              if ((z_w_tmp(i,j,k2  ) .ge. z_poro_discrete(i,j,k-1)).AND.
+     &            (z_w_tmp(i,j,k2-1) .le. z_poro_discrete(i,j,k))) then
                 mindz(k)=min(mindz(k),z_w_tmp(i,j,k2)-z_w_tmp(i,j,k2-1))
               endif
             enddo
           enddo
-          do k=1,N_poro_discrete
-            z_u = 0.5*(z_poro_discrete(i,j,k-1)+z_poro_discrete(i,j,k))
-            z_right=(-h_pena_target(i,j)-z_u)/mindz(k)
+          do k=1,N_poro_discrete-1
+            z_w1=0.5*(z_poro_discrete(i,j,k-1)+z_poro_discrete(i,j,k))
+            z_right=(-h_pena_target(i,j)-z_w1)/mindz(k)
             z_h=-hgrid(i,j)
             poro_discrete(i,j,k)=1.-0.5*(1.+tanh(smooth_crit*0.5*
      &                                        (z_right-z_decal)))
@@ -696,11 +680,10 @@ C$    integer omp_get_thread_num
             poro_discrete(i,j,k)=max(poro_discrete(i,j,k),
      &                                     dzpena_min/(0.9*mindz(k)))
             poro_discrete(i,j,k)=min(poro_discrete(i,j,k),1.)
-            if (abs(z_h+h_pena_target(i,j))<=0.1) then
+            if (abs(z_h+h_pena_target(i,j)) .le. 0.1) then
               poro_discrete(i,j,k)=1.
             endif
           enddo
-
           poro_discrete(i,j,N_poro_discrete) = 1.
 
           z_int_poro(i,j,0) = 0.
@@ -712,7 +695,7 @@ C$    integer omp_get_thread_num
 
           FZ3(0)=0.         
           do k=1,N
-            if (z_w_tmp(i,j,k)<0.)  then
+            if (z_w_tmp(i,j,k) .lt. 0.)  then
               k2=int(N_poro_discrete*(1.+z_w_tmp(i,j,k)/hgrid(i,j)))
               FZ3(k)=z_int_poro(i,j,k2)+
      &                 (z_w_tmp(i,j,k)-z_poro_discrete(i,j,k2))
@@ -764,7 +747,8 @@ C$    integer omp_get_thread_num
 !
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
-      real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp
+      real    z_decal,z_hp,z_h,z_right,z_r1, pena_ref
+      real    cff4,cff5,cff6,cff7, eps
 #  include "param.h"
 #  include "grid.h"
 #  ifdef AGRIF
@@ -775,14 +759,11 @@ C$    integer omp_get_thread_num
 #  include "coupling.h"
 #  include "scalars.h"
 #  include "penalization.h"
+!
       real,parameter :: alpha_poro = 0.1
       real,parameter :: smooth_crit = 2.77259
       real,parameter :: dzpena_min=0.25
-      real z_decal,pena_ref
-      real z_u,z_bot,z_top,z_v,z_h,z_right,z_r1
-      real cff4,cff5,cff6,cff7,cff8
-      integer :: i1,j1,k1
-      real eps
+!
       parameter (eps=1.e-14)
 !
 #  include "compute_auxiliary_bounds.h"
@@ -799,16 +780,15 @@ C$    integer omp_get_thread_num
 #  endif
 !
 !----------------------------------------------------------------------
-!  Initialization of free surface zeta arrays and wet/dry mask
-!
-!  During initialization and/or restart: copy initial free surface 
-!  field into array for holding fast-time averaged free surface.
+!  Compute penalization arrays as a function of the given bottom 
+!  roughness Zob, so that the drag associated with permeability equals
+!  the drag estimated from a log law above the penalized floor
+!  --> Eq. 18 in Debreu et al. (2022)
 !----------------------------------------------------------------------
 !
-
       z_decal = 2.19722/smooth_crit
 
-      do k=N,1,-1
+      do k=1,N
         do j=JstrR,JendR
           do i=IstrR,IendR
             pena_r(i,j,k)=0.
@@ -818,49 +798,36 @@ C$    integer omp_get_thread_num
 
       do j=JstrR,JendR
         do i=IstrR,IendR
-          z_u=-h_pena_target(i,j)
+          z_hp=-h_pena_target(i,j)
           z_h=-hgrid(i,j)
-          if (abs(z_h-z_u)<=-0.1) then
-            pena_r(i,j,:)=0.
-          else
+          if (abs(z_h-z_hp) .gt. -0.1) then
             cff5=-HUGE(1.)
-            do k=N,1,-1 ! compute velocity above floor
-              cff7=(z_r(i,j,k)-z_u)/Zob(i,j)
-              if (cff7>=1.) then
-                cff4=0.5*(v(i  ,j,k,nrhs)+v(i  ,j+1,k,nrhs))
-                cff6=0.5*(u(i  ,j,k,nrhs)+u(i+1,j ,k,nrhs))
+            do k=N,1,-1
+              cff7=(z_r(i,j,k)-z_hp)/Zob(i,j)
+              if (cff7 .ge. 1.) then
+                cff4=0.5*(v(i,j,k,nrhs)+v(i,j+1,k,nrhs)) ! velocities
+                cff6=0.5*(u(i,j,k,nrhs)+u(i+1,j,k,nrhs)) ! above floor
                 cff5=SQRT(cff6*cff6+cff4*cff4)
-                k1 = k  ! Vertical index of last level
                 cff4=min(Cdb_max,max((vonKar/LOG(cff7))**2,Cdb_min))
                 pena_ref=dt*cff4*cff5/(0.5*(Hz(i-1,j,k)+Hz(i,j,k)))
                 pena_ref=max(min(pena_ref,1.-1.D-4),1.D-4)
-                z_bot=z_w(i,j,k-1)
-                z_top=z_w(i,j,k)
-                z_r1=(z_u-(z_r(i,j,k)))/(z_top-z_bot)
+                z_r1=(z_hp-z_r(i,j,k))/(z_w(i,j,k)-z_w(i,j,k-1))
               else 
                 exit
               endif
             enddo
             do k=N,1,-1
-              z_bot=z_w(i,j,k-1)
-              z_top=z_w(i,j,k)
-              z_right=(z_u-(z_r(i,j,k)))/(z_top-z_bot)
-              if (z_right<1.0001*z_r1) then
+              z_right=(z_hp-z_r(i,j,k))/(z_w(i,j,k)-z_w(i,j,k-1))
+              if (z_right .lt. 1.0001*z_r1) then
                 pena_r(i,j,k)=0.
               else
                 pena_r(i,j,k)=pena_ref+((1.-alpha_poro)-pena_ref)*
-     &                       (tanh(smooth_crit*0.5*(z_right-z_r1)))
+     &                      (tanh(smooth_crit*0.5*(z_right-z_r1)))
               endif
             enddo
           endif
         enddo
       enddo
-       
-#  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                        pena_r(START_2D_ARRAY,1))
-#  endif
-
       do k=1,N
         do j=JstrR,JendR
           do i=Istr,Iend+1
@@ -877,6 +844,8 @@ C$    integer omp_get_thread_num
       enddo
 
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+     &                        pena_r(START_2D_ARRAY,1))
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        pena_u(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,

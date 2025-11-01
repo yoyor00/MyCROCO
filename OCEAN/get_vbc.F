@@ -216,9 +216,11 @@
 #include "bbl.h"
 #if defined PENALIZATION
 # include "penalization.h"
-# define KBOTTOM last_index(i,j)+1
+# define KBOT last_index(i,j)+1
+# define HTRUE h_pena_target
 #else
-# define KBOTTOM 1
+# define KBOT 1
+# define HTRUE h
 #endif
       integer i,j,is, Istr,Iend,Jstr,Jend
       integer ISTRm,ISTRp,IENDp,JSTRm,JSTRp,JENDp
@@ -514,58 +516,55 @@
       if (maxzob.ne.0.) then
         do j=JstrV-1,Jend     !! for currents
           do i=IstrU-1,Iend
-#   ifdef PENALIZATION
-            cff=vonKar /
-     &          LOG((z_r(i,j,KBOTTOM)+h_pena_target(i,j))/Zob(i,j))
-#   else
-            cff=vonKar/LOG((z_r(i,j,1)+h(i,j))/Zob(i,j))
-#   endif
+            cff=vonKar/LOG((z_r(i,j,KBOT)+HTRUE(i,j))/Zob(i,j))
             CDRAG(i,j)=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
           enddo
         enddo
         do j=Jstr,Jend
           do i=IstrU,Iend
-            cff=0.25*(v(i  ,j,1,nrhs)+v(i  ,j+1,1,nrhs)+
-     &                v(i-1,j,1,nrhs)+v(i-1,j+1,1,nrhs))
-            Umag=SQRT(cff*cff+u(i,j,1,nrhs)*u(i,j,1,nrhs))
-            bustr(i,j)=0.5*(CDRAG(i-1,j)+CDRAG(i,j))*Umag*u(i,j,1,nrhs)
+            cff=0.25*(v(i  ,j,KBOT,nrhs)+v(i  ,j+1,KBOT,nrhs)+
+     &                v(i-1,j,KBOT,nrhs)+v(i-1,j+1,KBOT,nrhs))
+            Umag=SQRT(cff*cff+u(i,j,KBOT,nrhs)*u(i,j,KBOT,nrhs))
+            bustr(i,j)=0.5*(CDRAG(i-1,j)+CDRAG(i,j))
+     &                        *Umag*u(i,j,KBOT,nrhs)
           enddo
         enddo
         do j=JstrV,Jend
           do i=Istr,Iend
-            cff=0.25*(u(i,j  ,1,nrhs)+u(i+1,j  ,1,nrhs)+
-     &                u(i,j-1,1,nrhs)+u(i+1,j-1,1,nrhs))
-            Umag=SQRT(cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs))
-            bvstr(i,j)=0.5*(CDRAG(i,j-1)+CDRAG(i,j))*Umag*v(i,j,1,nrhs)
+            cff=0.25*(u(i,j  ,KBOT,nrhs)+u(i+1,j  ,KBOT,nrhs)+
+     &                u(i,j-1,KBOT,nrhs)+u(i+1,j-1,KBOT,nrhs))
+            Umag=SQRT(cff*cff+v(i,j,KBOT,nrhs)*v(i,j,KBOT,nrhs))
+            bvstr(i,j)=0.5*(CDRAG(i,j-1)+CDRAG(i,j))
+     &                        *Umag*v(i,j,KBOT,nrhs)
           enddo
         enddo
 #   undef CDRAG
       elseif (rdrg2.gt.0.) then
         do j=JstrV,Jend
           do i=Istr,Iend
-            cff=0.25*(v(i  ,j,1,nrhs)+v(i  ,j+1,1,nrhs)+
-     &                v(i-1,j,1,nrhs)+v(i-1,j+1,1,nrhs))
-            Umag=SQRT(cff*cff+u(i,j,1,nrhs)*u(i,j,1,nrhs))
-            bustr(i,j)=rdrg2*Umag*u(i,j,1,nrhs)
+            cff=0.25*(v(i  ,j,KBOT,nrhs)+v(i  ,j+1,KBOT,nrhs)+
+     &                v(i-1,j,KBOT,nrhs)+v(i-1,j+1,KBOT,nrhs))
+            Umag=SQRT(cff*cff+u(i,j,KBOT,nrhs)*u(i,j,KBOT,nrhs))
+            bustr(i,j)=rdrg2*Umag*u(i,j,KBOT,nrhs)
           enddo
         enddo
         do j=Jstr,Jend
           do i=IstrU,Iend
-            cff=0.25*(u(i,j  ,1,nrhs)+u(i+1,j  ,1,nrhs)+
-     &                u(i,j-1,1,nrhs)+u(i+1,j-1,1,nrhs))
-            Umag=SQRT(cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs))
-            bvstr(i,j)=rdrg2*Umag*v(i,j,1,nrhs)
+            cff=0.25*(u(i,j  ,KBOT,nrhs)+u(i+1,j  ,KBOT,nrhs)+
+     &                u(i,j-1,KBOT,nrhs)+u(i+1,j-1,KBOT,nrhs))
+            Umag=SQRT(cff*cff+v(i,j,KBOT,nrhs)*v(i,j,KBOT,nrhs))
+            bvstr(i,j)=rdrg2*Umag*v(i,j,KBOT,nrhs)
           enddo
         enddo
       else
         do j=Jstr,Jend
           do i=Istr,Iend
-            bustr(i,j)=rdrg*u(i,j,1,nrhs)
+            bustr(i,j)=rdrg*u(i,j,KBOT,nrhs)
           enddo
         enddo
         do j=Jstr,Jend
           do i=Istr,Iend
-            bvstr(i,j)=rdrg*v(i,j,1,nrhs)
+            bvstr(i,j)=rdrg*v(i,j,KBOT,nrhs)
           enddo
         enddo
       endif
@@ -596,6 +595,9 @@
       enddo
 #   endif
 #  endif /* BSTRESS_FAST */
+
+#  undef KBOT
+#  undef HTRUE
 
 #  ifdef SEDIMENT
 !

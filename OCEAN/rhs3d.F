@@ -20,20 +20,22 @@
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
       call rhs3d_tile (Istr,Iend,Jstr,Jend,
-     &                                    A3d(1,1,trd), A3d(1,2,trd),
-     &                      A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
-     &                      A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
-     &                      A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
-     &                      A3d(1,3,trd), A3d(1,4,trd), A3d(1,5,trd),
-     &                      A3d(1,6,trd), A3d(1,7,trd), A3d(1,8,trd))
+     &                                  A3d(1, 1,trd), A3d(1, 2,trd),
+     &                   A2d(1, 1,trd), A2d(1, 2,trd), A2d(1, 3,trd),
+     &                   A2d(1, 4,trd), A2d(1, 5,trd), A2d(1, 6,trd),
+     &                   A2d(1, 7,trd), A2d(1, 8,trd), A2d(1, 9,trd),
+     &                   A2d(1,10,trd), A2d(1,11,trd), A2d(1,12,trd),
+     &                                                 A2d(1,13,trd),
+     &                   A3d(1, 3,trd), A3d(1, 4,trd), A3d(1, 5,trd),
+     &                   A3d(1, 6,trd), A3d(1, 7,trd), A3d(1, 8,trd))
       return
       end
 
       subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
-     &                                 wrk1,wrk2, UFx,UFe,
-     &                                 VFx,VFe,
-     &                                 wrk1_3D,wrk2_3D, UFx_3D,UFe_3D,
-     &                                 VFx_3D,VFe_3D)
+     &                              wrk1,wrk2,    UFx,UFe,VFx,VFe,
+     &                                        UFx4,UFe4,VFx4,VFe4,
+     &                             wrk1_3D,wrk2_3D, UFx_3D,UFe_3D,
+     &                                              VFx_3D,VFe_3D)
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_fuz, obst_fvz
 #endif
@@ -49,7 +51,7 @@
 # ifdef DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# if defined DIAGNOSTICS_EK || defined BACKSCATTER
 #  include "diags_ek.h"
 #  ifdef DIAGNOSTICS_EK_MLD
 #   include "mixing.h"
@@ -59,37 +61,27 @@
 #  include "diags_pv.h"
 # endif
 
-# if (defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
-      defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV) && \
-      !defined UV_HADV_C4
+      real   ru(PRIVATE_2D_SCRATCH_ARRAY,N),
+     &       rv(PRIVATE_2D_SCRATCH_ARRAY,N),
+     &       CF(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,cff1,cff2,
+     &       FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffX,
+     &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffE,
+     &  wrk1_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), curvX,
+     &  wrk2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), curvE,
+     &   UFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &   UFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &   VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
+     &   VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), gamma
+      real wrk1(PRIVATE_2D_SCRATCH_ARRAY),
+     &     wrk2(PRIVATE_2D_SCRATCH_ARRAY),
+     &      UFx(PRIVATE_2D_SCRATCH_ARRAY),
+     &      UFe(PRIVATE_2D_SCRATCH_ARRAY),
+     &      VFx(PRIVATE_2D_SCRATCH_ARRAY), 
+     &      VFe(PRIVATE_2D_SCRATCH_ARRAY)
       real  UFx4(PRIVATE_2D_SCRATCH_ARRAY),
      &      UFe4(PRIVATE_2D_SCRATCH_ARRAY),
      &      VFx4(PRIVATE_2D_SCRATCH_ARRAY),
      &      VFe4(PRIVATE_2D_SCRATCH_ARRAY)
-# endif
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT ||\
-     defined DIAGNOSTICS_EK || defined DIAGNOSTICS_PV
-      real  UFxCor(PRIVATE_2D_SCRATCH_ARRAY),
-     &      VFeCor(PRIVATE_2D_SCRATCH_ARRAY)
-# endif
-      real ru(PRIVATE_2D_SCRATCH_ARRAY,N),
-     &     rv(PRIVATE_2D_SCRATCH_ARRAY,N),
-     &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,cff1,cff2,
-     &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffX,
-     &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffE,
-     &   wrk1_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),     curvX,
-     &   wrk2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),     curvE,
-     &    UFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &    UFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &    VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
-     &    VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),    gamma
-      real wrk1(PRIVATE_2D_SCRATCH_ARRAY),
-     &   wrk2(PRIVATE_2D_SCRATCH_ARRAY),
-     &    UFx(PRIVATE_2D_SCRATCH_ARRAY),
-     &    UFe(PRIVATE_2D_SCRATCH_ARRAY),
-     &    VFx(PRIVATE_2D_SCRATCH_ARRAY), 
-     &    VFe(PRIVATE_2D_SCRATCH_ARRAY)
-
 
       parameter (gamma = -0.25)
 # include "grid.h"
@@ -674,7 +666,8 @@
 !
 #   ifdef UV_HADV_UP5
 #    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
-        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV  || \
+        defined BACKSCATTER
 #     define FLUX5 flux6
 #     define FLUX3 flux4
 #     define FLUX2 flux2
@@ -758,13 +751,12 @@
 
 #   else
 #    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
-         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
-            if (nnew.ne.3) then
-            UFx4(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
-     &                       -0.125*(uxx(i,j)+uxx(i+1,j)))
-     &                         *(Huon(i,j,k)+Huon(i+1,j,k)
-     &                     -0.125*(Huxx(i,j)+Huxx(i+1,j)))
-            endif
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV || \
+        defined BACKSCATTER
+              UFx4(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
+     &                         -0.125*(uxx(i,j)+uxx(i+1,j)))
+     &                           *(Huon(i,j,k)+Huon(i+1,j,k)
+     &                       -0.125*(Huxx(i,j)+Huxx(i+1,j)))
 #    endif
             cffX=u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
             if (cffX.gt.0.) then
@@ -843,13 +835,12 @@
 
 #   else
 #    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
-         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
-            if (nnew.ne.3) then
-            VFe4(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
-     &                       -0.125*(vee(i,j)+vee(i,j+1)))
-     &                         *(Hvom(i,j,k)+Hvom(i,j+1,k)
-     &                     -0.125*(Hvee(i,j)+Hvee(i,j+1)))
-            endif
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV || \
+        defined BACKSCATTER
+              VFe4(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
+     &                         -0.125*(vee(i,j)+vee(i,j+1)))
+     &                           *(Hvom(i,j,k)+Hvom(i,j+1,k)
+     &                       -0.125*(Hvee(i,j)+Hvee(i,j+1)))
 #    endif
             cffE=v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
             if (cffE.gt.0.) then
@@ -926,14 +917,13 @@
      &                        *(Hvom(i,j,k)+Hvom(i-1,j,k)
      &                    -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
 #   else
-#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
-         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
-            if (nnew.ne.3) then
-            UFe4(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
-     &                       -0.125*(uee(i,j)+uee(i,j-1)))
-     &                         *(Hvom(i,j,k)+Hvom(i-1,j,k)
-     &                     -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
-            endif
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV || \
+        defined BACKSCATTER
+              UFe4(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
+     &                         -0.125*(uee(i,j)+uee(i,j-1)))
+     &                           *(Hvom(i,j,k)+Hvom(i-1,j,k)
+     &                       -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
 #    endif
             cffX=u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
             cffE=Hvom(i,j,k)+Hvom(i-1,j,k)
@@ -1013,14 +1003,13 @@
      &                    -0.125*(Huee(i,j)+Huee(i,j-1)))
 
 #   else
-#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
-         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
-            if (nnew.ne.3) then
-            VFx4(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
-     &                       -0.125*(vxx(i,j)+vxx(i-1,j)))
-     &                         *(Huon(i,j,k)+Huon(i,j-1,k)
-     &                     -0.125*(Huee(i,j)+Huee(i,j-1)))
-            endif
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV || \
+        defined BACKSCATTER
+              VFx4(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
+     &                         -0.125*(vxx(i,j)+vxx(i-1,j)))
+     &                           *(Huon(i,j,k)+Huon(i,j-1,k)
+     &                       -0.125*(Huee(i,j)+Huee(i,j-1)))
 #    endif
             cffE=v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
             cffX=Huon(i,j,k)+Huon(i,j-1,k)
@@ -1092,6 +1081,50 @@
      &                         -VFe(i  ,j)+VFe(i,j-1)
           enddo
         enddo
+!
+!----------------------------------------------------------
+! Compute dissipation term of advection scheme 
+! at predictor step.
+!
+! This term will be used in the unresolved kinetic energy
+! equation (backscatter routine), and part of it will be 
+! re-introduced as KE backscatter in uv3dmix_BS (pred step)
+!----------------------------------------------------------
+!
+#  ifdef BACKSCATTER
+        if (nnew.ne.3) then  ! Corrector step
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              KE_Hdiss_U(i,j,k) = 
+     &                          ( (UFx(i-1,j) -UFx(i,j)
+     &                           + UFe(i  ,j) -UFe(i,j+1))
+     &                          - (UFx4(i-1,j)-UFx4(i,j)
+     &                           + UFe4(i  ,j)-UFe4(i,j+1)) )
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
+#   ifdef PERMEABILITY
+     &                                         *(1.-pena_u(i,j,k))
+#   endif
+            enddo
+          enddo
+          do j=JstrV,Jend
+            do i=Istr,Iend
+              KE_Hdiss_V(i,j,k) =
+     &                          ( (VFx(i,j  ) -VFx(i+1,j)
+     &                           + VFe(i,j-1) -VFe(i  ,j))
+     &                          - (VFx4(i,j  )-VFx4(i+1,j)
+     &                           + VFe4(i,j-1)-VFe4(i  ,j)) )
+     &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
+#   ifdef PERMEABILITY
+     &                                         *(1.-pena_v(i,j,k))
+#   endif
+            enddo
+          enddo
+        endif
+#   if defined BD_EXCHANGE
+      call exchange_u3d_tile (istr,iend,jstr,jend,KE_Hdiss_U)
+      call exchange_v3d_tile (istr,iend,jstr,jend,KE_Hdiss_V)
+#   endif
+#  endif /* BACKSCATTER */
 !
 !----------------------------------------------------------
 ! Store Diagnostics

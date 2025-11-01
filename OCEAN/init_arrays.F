@@ -1510,6 +1510,18 @@ C$    integer omp_get_thread_num
       enddo
 # endif
 
+# ifdef BACKSCATTER
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            uke(i,j,k)=init
+            visc3d_BS_r(i,j,k)=init
+            visc3d_BS_p(i,j,k)=init
+          enddo
+        enddo
+      enddo
+# endif
+
 # ifdef M3FAST
       do j=JstrR,JendR
         do i=IstrR,IendR

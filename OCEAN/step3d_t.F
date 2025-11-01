@@ -70,6 +70,9 @@
 #  include "scalars.h"
 #  include "sources.h"
 #  include "forces.h"
+#  if defined PENALIZATION
+#   include "penalization.h"
+#  endif
 #  ifdef DIAGNOSTICS_TS
 #   include "diagnostics.h"
 #  endif
@@ -852,6 +855,9 @@
             gama = 1.                                      ! mixing becomes
             sig = (z_w(i,j,N)-z_w(i,j,k))/max(hbltmp,10.)  ! isosigma within
             if (sig .lt. 1.) gama = sig*sig*(3.-2.*sig)    ! PBL depth (>10m)
+#    ifdef PENALIZATION
+            gama = gama * (1.-0.5*(pena_r(i,j,k)+pena_r(i,j,k+1)))
+#    endif
             dXmax = max(abs(dRdx(i,j,k  )),abs(dRdx(i+1,j,k  )),
      &                  abs(dRdx(i,j,k+1)),abs(dRdx(i+1,j,k+1)),1E-14)
             dEmax = max(abs(dRde(i,j,k  )),abs(dRde(i,j+1,k  )),

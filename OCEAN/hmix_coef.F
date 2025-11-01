@@ -466,7 +466,7 @@
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc
       real grd_scale(PRIVATE_2D_SCRATCH_ARRAY)
-      real cff, surf, defrate, horcon
+      real cff, surf, defrate, horcon, umag,vmag
 # if defined TS_DIF_SMAGO && (defined UV_VIS_SMAGO_3D ||\
                               defined GLS_MIXING_3D)
       real Pr
@@ -587,18 +587,20 @@
       do k=1,N
         do j=Jstr-1,Jend+1
           do i=IstrU-1,Iend+1
-            diff3d_u(i,j,k)=horcon*abs(u(i,j,k,nrhs))*om_u(i,j)**3
+            umag=abs(u(i,j,k,nrhs))
 #  ifdef PENALIZATION
-     &                                          *(1-pena_u(i,j,k)) 
+            umag=max(umag, 1.e-3*pena_u(i,j,k)**2)
 #  endif
+            diff3d_u(i,j,k)=horcon*umag*om_u(i,j)**3
           enddo
         enddo
         do j=JstrV-1,Jend+1
           do i=Istr-1,Iend+1
-            diff3d_v(i,j,k)=horcon*abs(v(i,j,k,nrhs))*on_v(i,j)**3
+            vmag=abs(v(i,j,k,nrhs))
 #  ifdef PENALIZATION
-     &                                          *(1-pena_v(i,j,k))
+            vmag=max(vmag, 1.e-3*pena_v(i,j,k)**2)
 #  endif
+            diff3d_v(i,j,k)=horcon*abs(v(i,j,k,nrhs))*on_v(i,j)**3
           enddo
         enddo
       enddo

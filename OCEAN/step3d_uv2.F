@@ -20,22 +20,21 @@
       trd=omp_get_thread_num()
 
       call step3d_uv2_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd),
-     &                                  A2d(1,2,trd), A2d(1,3,trd),
-     &                                  A2d(1,4,trd), A2d(1,4,trd)
+     &                             A2d(1,2,trd), A2d(1,3,trd),
+     &                             A2d(1,4,trd), A2d(1,4,trd)
 # ifdef VADV_ADAPT_IMP
-     &                                               ,A2d(1,6,trd)
+     &                                          ,A2d(1,6,trd)
 # endif
-     &                                                            )
+     &                                                      )
       return
       end
 
       subroutine step3d_uv2_tile (Istr,Iend,Jstr,Jend,BC,
-     &                            CF,FC,
-     &                             DC, grad
+     &                            CF,FC,DC, grad
 # ifdef VADV_ADAPT_IMP
-     &                                                         ,WC
+     &                                               ,WC
 # endif
-     &                                                            )
+     &                                                  )
 !
 !--------------------------------------------------------------------
 !  This routine  performs the timestep for the horizontal momentum
@@ -90,11 +89,9 @@
 # endif
       real BC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
-     &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,
-     &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), u_str,v_str
-# ifdef DIAGNOSTICS_PV
-      real cff1 , cff2
-# endif
+     &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
+     &     DC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
+     &     cff,cff1,cff2,cff3, u_str,v_str
 # ifdef VADV_ADAPT_IMP
       real WC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
 # endif
@@ -103,14 +100,16 @@
 # ifdef TS_MIX_ISO
       real dRx,dRe, cfilt
 # endif
-#ifdef PERMEABILITY
-# include "penalization.h"
-       real :: cff2, cff3,cff7
-       real FT(PRIVATE_2D_SCRATCH_ARRAY,3)
-       real FT_cor(PRIVATE_2D_SCRATCH_ARRAY,N)
-       real FT_V(PRIVATE_2D_SCRATCH_ARRAY,3)
+# ifdef PERMEABILITY
+#  include "penalization.h"
+#  define KBOT last_index(i,j)+1
+       real       FT(PRIVATE_2D_SCRATCH_ARRAY,3)
+       real   FT_cor(PRIVATE_2D_SCRATCH_ARRAY,N)
+       real     FT_V(PRIVATE_2D_SCRATCH_ARRAY,3)
        real FT_cor_V(PRIVATE_2D_SCRATCH_ARRAY,N)
-#endif
+# else
+#  define KBOT 1
+# endif
 # include "openacc_work.h"
 !
 # include "compute_auxiliary_bounds.h"
@@ -142,6 +141,13 @@
 #   define IU_RANGE Istr,IendR
 #   define IV_RANGE IstrR,IendR
 #  endif
+!
+! Compute weights to be used in barotropic corrections
+! This step is done to avoid introducing nonzero velocities 
+! in the fully penalized region, when correcting the 3D field
+! with the barotropic mode.
+! --> Eq. 21 of Debreu et al. (2022)
+!
       FT=0.
       do j=JU_RANGE 
         do k=1,N
@@ -234,7 +240,8 @@
 ! like the other terms due to the semi-implicit backward Euler scheme.
 ! We store first u(i,j,k,nnew) ...
 !
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                            || defined DIAGNOSTICS_PV
         do k=1,N
           do i=IstrU,Iend
              MVmix(i,j,k,1)=u(i,j,k,nnew)
@@ -242,33 +249,25 @@
         enddo
 # elif defined DIAGNOSTICS_EK
         do i=IstrU,Iend
-          k=1
-             ekwrkVmix(i,j,1) =
-     &           - u(i,j,k,nnew)
-     &           *u(i,j,k,nrhs)
+           ekwrkVmix(i,j,1) = - u(i,j,1,nnew)*u(i,j,1,nrhs)
           do k=2,N
-             ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1) -
-     &           u(i,j,k,nnew)
-     &           *u(i,j,k,nrhs)
+            ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1) -
+     &                          u(i,j,k,nnew)*u(i,j,k,nrhs)
           enddo
 #  if defined DIAGNOSTICS_EK_MLD
-             ekwrkVmix_mld(i,j,1) = 0.
+          ekwrkVmix_mld(i,j,1) = 0.
           do k=kbl(i,j),N
-             ekwrkVmix_mld(i,j,1) = ekwrkVmix_mld(i,j,1) -
-     &           u(i,j,k,nnew)
-     &           *u(i,j,k,nrhs)
+            ekwrkVmix_mld(i,j,1) = ekwrkVmix_mld(i,j,1) -
+     &                          u(i,j,k,nnew)*u(i,j,k,nrhs)
           enddo
 #  endif
         enddo
 # endif
 # if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
         do i=IstrU,Iend
-          k=1
-             wrkVmix(i,j,1) =
-     &           - u(i,j,k,nnew)
+          wrkVmix(i,j,1) = - u(i,j,1,nnew)
           do k=2,N
-             wrkVmix(i,j,1) = wrkVmix(i,j,1) -
-     &           u(i,j,k,nnew)
+            wrkVmix(i,j,1) = wrkVmix(i,j,1) - u(i,j,k,nnew)
           enddo
         enddo
 # endif
@@ -299,18 +298,16 @@
           WC(i,N)=0.
 # endif
         enddo
-
         do k=1,N-1
           do i=IstrU,Iend
             FC(i,k)=-dt*(Akv(i,j,k)+Akv(i-1,j,k))
-     &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
-     &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
+     &                      /(z_r(i,j,k+1)+z_r(i-1,j,k+1)
+     &                       -z_r(i,j,k  )-z_r(i-1,j,k  ))
 # ifdef VADV_ADAPT_IMP
             WC(i,k)=DC(i,0)*0.5*(Wi(i,j,k)+Wi(i-1,j,k))
 # endif
           enddo
         enddo
-
         do k=1,N
           do i=IstrU,Iend
             DC(i,k)=u(i,j,k,nnew)
@@ -333,26 +330,24 @@
           DC(i,N)=DC(i,N)+dt*u_str
 #  ifndef BSTRESS_FAST
 #   ifndef PERMEABILITY
-          DC(i,1)=DC(i,1)-dt*bustr(i,j)
+          DC(i,1)=DC(i,1)-dt*bustr(i,j) ! done later with penalization
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
-            wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)
-     &                    SWITCH umask(i,j)
-            wrkWind(i,j,1)= u_str*om_u(i,j)
-     &                    SWITCH umask(i,j)
+          wrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j) SWITCH umask(i,j)
+          wrkWind(i,j,1)= u_str*om_u(i,j) SWITCH umask(i,j)
 #  endif /* DIAGNOSTICS_VRT */
 #  ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)*on_u(i,j)
-     &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
+     &                      *u(i,j,KBOT,nrhs) SWITCH umask(i,j)
           ekwrkWind(i,j,1)= u_str*om_u(i,j)*on_u(i,j)
-     &                    * u(i,j,N,nrhs) SWITCH umask(i,j)
+     &                      *u(i,j,N,nrhs) SWITCH umask(i,j)
 #  endif /* DIAGNOSTICS_EK */
         enddo
 # endif /* BODYFORCE */
         do i=IstrU,Iend
           cff=1./BC(i,1)
-          CF(i,1)=cff*( FC(i,1)                  !<-- q(1) = c(1)/b(1)
+          CF(i,1)=cff*( FC(i,1)              !<-- q(1) = c(1)/b(1)
 # ifdef VADV_ADAPT_IMP
      &                +min( WC(i,1),0.)
 # endif
@@ -362,22 +357,22 @@
         do k=2,N-1
           do i=IstrU,Iend
 # ifdef VADV_ADAPT_IMP
-              aa = FC(i,k-1)-max(WC(i,k-1),0.)   !<-- a = sub   (lower) diagonal
-              cc = FC(i,k  )+min(WC(i,k  ),0.)   !<-- c = super (upper) diagonal
+            aa = FC(i,k-1)-max(WC(i,k-1),0.) !<-- a = sub   (lower) diagonal
+            cc = FC(i,k  )+min(WC(i,k  ),0.) !<-- c = super (upper) diagonal
 # else
-              aa = FC(i,k-1)
-              cc = FC(i,k  )
+            aa = FC(i,k-1)
+            cc = FC(i,k  )
 # endif
-            cff=1./(BC(i,k)-aa*CF(i,k-1))        !<-- p    = 1/(b(k)-a(k)*q(k))
+            cff=1./(BC(i,k)-aa*CF(i,k-1))      !<-- p = 1/(b(k)-a(k)*q(k))
             CF(i,k)=cff*cc
             DC(i,k)=cff*(DC(i,k)-aa*DC(i,k-1))
           enddo
         enddo
         do i=IstrU,Iend
 # ifdef VADV_ADAPT_IMP
-              aa = FC(i,N-1)-max(WC(i,N-1),0.)   !<-- a = sub   (lower) diagonal
+          aa = FC(i,N-1)-max(WC(i,N-1),0.) !<-- a = sub   (lower) diagonal
 # else
-              aa = FC(i,N-1)
+          aa = FC(i,N-1)
 # endif
           DC(i,N)=(DC(i,N)-aa*DC(i,N-1))
      &           /(BC(i,N)-aa*CF(i,N-1))
@@ -397,9 +392,9 @@
 
 # if defined PERMEABILITY
         do i=IstrU,Iend
-          DC(i,N)=DC(i,N)*(1.-pena_u(i,j,N))
-          CF(i,0)=0.5*(Hz(i,j,N)+Hz(i-1,j,N))
-          DC(i,0)=CF(i,0)*DC(i,N)
+          DC(i,N)=DC(i,N)*(1.-pena_u(i,j,N))  ! add resolution of
+          CF(i,0)=0.5*(Hz(i,j,N)+Hz(i-1,j,N)) ! penalized term
+          DC(i,0)=CF(i,0)*DC(i,N)             ! --> Eq.14 (Debreu etal., 2022) 
         enddo
         do k=N-1,1,-1
           do i=IstrU,Iend
@@ -414,31 +409,27 @@
           DC(i,0)=(DC(i,0)*on_u(i,j)-DU_avg1(i,j,nnew))
      &                             /(CF(i,0)*on_u(i,j))
         enddo
-
-
-
-
-!###########################
+!
+!  Store result in new u field and correct barotropic mode
+!
         do k=1,N
           do i=IstrU,Iend
 # ifdef PERMEABILITY
+            ! with weights for penalized regions
             u(i,j,k,nnew)=(DC(i,k)-FT_cor(i,j,k)*DC(i,0)) SWITCH umask(i,j)
 # else
             u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
 # endif
           enddo
         enddo        !--> discard DC,CF(:,0)
-!###########################
 
 !###########################
 # if defined DIAGNOSTICS_DISS
 ! Compute the transport part of ke_vmix : d/dz[ Akv u du/dz]
-! ------- ------------- ------ ------ - -----
-      do k=1,N-1
-        do i=IstrU,Iend
-
+!
+        do k=1,N-1
+          do i=IstrU,Iend
             FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i-1,j,k))
-
             cff1= 2.* (2.*MVmix(i,j,k+1,1) / (Hz(i,j,k+1)+Hz(i-1,j,k+1))
      &               - 2.*MVmix(i,j,k,1) / (Hz(i,j,k  )+Hz(i-1,j,k  )) )
      &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
@@ -446,85 +437,78 @@
 
             BC(i,k)= 0.25 * (u(i,j,k+1,nrhs) + u(i,j,k+1,nnew)
      &                     + u(i,j,k  ,nrhs) + u(i,j,k  ,nnew)) * cff1
-
-         enddo
-       enddo
-
-      do i=IstrU,Iend
+          enddo
+        enddo
+        do i=IstrU,Iend
           FC(i,0)= 0.
           BC(i,0)= 0.
           FC(i,N)= 1.
           BC(i,N)= 0.
-!          BC(i,N)= 0.5 * (u(i,j,k,nrhs)+u(i,j,k,nnew)) * sustr(i,j)
-      enddo
-
-      do k=1,N
-        do i=IstrU,Iend
+        enddo
+        do k=1,N
+          do i=IstrU,Iend
             Mrhs(i,j,k,1) =  ( FC(i,k  ) * BC(i,k  )
      &                       - FC(i,k-1) * BC(i,k-1) )
      &                *  om_u(i,j)*on_u(i,j) SWITCH umask(i,j)
-         enddo
-       enddo
-! ------- ------------- ------ ------ - -----
-
+          enddo
+        enddo
 # endif
-
-
-
 !###########################
+
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                            || defined DIAGNOSTICS_PV \
+                            || defined DIAGNOSTICS_VRT \
+                            || defined DIAGNOSTICS_EK
         do k=1,N
           do i=IstrU,Iend
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
-            MVmix(i,j,k,1)=-( MVmix(i,j,k,1) - u(i,j,k,nnew)*
-     &                           0.5*(Hz(i,j,k)+Hz(i-1,j,k)) )
-     &                    *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-#  ifdef BODYFORCE
+            cff1=0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+            cff2=om_u(i,j)*on_u(i,j)/dt
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                             || defined DIAGNOSTICS_PV
+            MVmix(i,j,k,1)=-cff2*(MVmix(i,j,k,1) - cff1*u(i,j,k,nnew))
+     &                                               SWITCH umask(i,j)
+#   ifdef BODYFORCE
             MVmix(i,j,k,1)= MVmix(i,j,k,1) + Mbody(i,j,k,1)
-#  endif
-# elif defined DIAGNOSTICS_EK
-             ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1) +
-     &           0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
-     &           * u(i,j,k,nrhs)
-#  if defined DIAGNOSTICS_EK_MLD
+#   endif
+#  elif defined DIAGNOSTICS_EK
+            ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1) +
+     &                         cff1*u(i,j,k,nnew)*u(i,j,k,nrhs)
+#   if defined DIAGNOSTICS_EK_MLD
             if (k.ge.kbl(i,j)) then
-             ekwrkVmix_mld(i,j,1) = ekwrkVmix_mld(i,j,1) +
-     &           0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
-     &           * u(i,j,k,nrhs)
+              ekwrkVmix_mld(i,j,1) = ekwrkVmix_mld(i,j,1) +
+     &                         cff1*u(i,j,k,nnew)*u(i,j,k,nrhs)
             endif
+#   endif
 #  endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            wrkVmix(i,j,1) = wrkVmix(i,j,1) +
-     &           0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
-# endif
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+            wrkVmix(i,j,1) = wrkVmix(i,j,1)+cff1*u(i,j,k,nnew)
+#  endif
           enddo
         enddo        !--> discard DC,CF(:,0)
-
-
-# if defined DIAGNOSTICS_VRT && !defined DIAGNOSTICS_UV
+#  if defined DIAGNOSTICS_VRT && !defined DIAGNOSTICS_UV
         do i=IstrU,Iend
+          cff2=om_u(i,j)*on_u(i,j)/dt
+          wrkVmix(i,j,1) = wrkVmix(i,j,1)*cff2 SWITCH umask(i,j)
+#   ifdef BODYFORCE
           wrkVmix(i,j,1) = wrkVmix(i,j,1)
-     &               *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-#  ifdef BODYFORCE
-          wrkVmix(i,j,1) = wrkVmix(i,j,1)
-     &               + (wrkDrag(i,j,1) + wrkWind(i,j,1))
-     &               * on_u(i,j)
-#  endif
+     &                  +(wrkDrag(i,j,1) + wrkWind(i,j,1))*on_u(i,j)
+#   endif
         enddo
-# endif
-# if defined DIAGNOSTICS_EK && ! defined DIAGNOSTICS_EK_FULL
+#  endif
+#  if defined DIAGNOSTICS_EK && ! defined DIAGNOSTICS_EK_FULL
         do i=IstrU,Iend
-             ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
-     &               *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-#  ifdef BODYFORCE
-             ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
-     &               + ekwrkDrag(i,j,1) +ekwrkWind(i,j,1)
-#  endif
-#  if defined DIAGNOSTICS_EK_MLD
-             ekwrkVmix_mld(i,j,1) = ekwrkVmix_mld(i,j,1)
-     &               *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
-#  endif
+          cff2=om_u(i,j)*on_u(i,j)/dt
+          ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)*cff2 SWITCH umask(i,j)
+#   ifdef BODYFORCE
+          ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
+     &                     + ekwrkDrag(i,j,1) +ekwrkWind(i,j,1)
+#   endif
+#   if defined DIAGNOSTICS_EK_MLD
+          ekwrkVmix_mld(i,j,1) = ekwrkVmix_mld(i,j,1)
+     &                           *cff2 SWITCH umask(i,j)
+#   endif
         enddo
+#  endif
 # endif
 !###########################
 
@@ -534,37 +518,29 @@
 !
         do k=1,N
           do i=IstrU,Iend
-!            u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
-            MBaro(i,j,k,1)= -DC(i,0)
-     &              *0.5*(Hz(i,j,k)+Hz(i-1,j,k))
-     &              *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
+            cff1=0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+            cff2=om_u(i,j)*on_u(i,j)/dt
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                             || defined DIAGNOSTICS_PV
+            MBaro(i,j,k,1)= -DC(i,0)*cff1*cff2 SWITCH umask(i,j)
 #  elif defined DIAGNOSTICS_EK
-             ekwrkBaro(i,j,1) = ekwrkBaro(i,j,1) -
-     &           0.5*(Hz(i,j,k)+Hz(i-1,j,k))*DC(i,0)
-     &           * u(i,j,k,nrhs)
-     &           * om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
+            ekwrkBaro(i,j,1) = ekwrkBaro(i,j,1) -
+     &           cff1*cff2*DC(i,0)*u(i,j,k,nrhs) SWITCH umask(i,j)
 #   if defined DIAGNOSTICS_EK_MLD
             if (k.ge.kbl(i,j)) then
-             ekwrkBaro_mld(i,j,1) = ekwrkBaro_mld(i,j,1)
-     &           - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*DC(i,0)
-     &           * u(i,j,k,nrhs)
-     &           *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
+              ekwrkBaro_mld(i,j,1) = ekwrkBaro_mld(i,j,1)
+     &         - cff1*cff2*DC(i,0)*u(i,j,k,nrhs) SWITCH umask(i,j)
             endif
 #   endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             wrkBaro(i,j,1) = wrkBaro(i,j,1)
-     &           - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*DC(i,0)
-     &              *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
+     &                       - cff1*cff2*DC(i,0) SWITCH umask(i,j)
 #  endif
           enddo
         enddo        !--> discard DC,CF(:,0)
 # endif
         ENDDOLOOP2D ! <- end j
-
-
-
 !
 !--------------------------------------------------------------------
 ! Time step momentum equation in the ETA-direction.
@@ -583,7 +559,8 @@
 ! like the other terms due to the semi-implicit backward Euler scheme.
 ! We store first v(i,j,k,nnew) ...
 !
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                            || defined DIAGNOSTICS_PV
         do k=1,N
           do i=Istr,Iend
              MVmix(i,j,k,2)=v(i,j,k,nnew)
@@ -591,275 +568,251 @@
         enddo
 # elif defined DIAGNOSTICS_EK
         do i=Istr,Iend
-          k=1
-             ekwrkVmix(i,j,2) =
-     &           - v(i,j,k,nnew)
-     &           *v(i,j,k,nrhs)
+          ekwrkVmix(i,j,2) = - v(i,j,1,nnew)*v(i,j,1,nrhs)
           do k=2,N
-             ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2) -
-     &           v(i,j,k,nnew)
-     &           *v(i,j,k,nrhs)
+             ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
+     &                       - v(i,j,k,nnew)*v(i,j,k,nrhs)
           enddo
 #  if defined DIAGNOSTICS_EK_MLD
-             ekwrkVmix_mld(i,j,2) = 0.
+          ekwrkVmix_mld(i,j,2) = 0.
           do k=kbl(i,j),N
-             ekwrkVmix_mld(i,j,2) = ekwrkVmix_mld(i,j,2) -
-     &           v(i,j,k,nnew)
-     &           *v(i,j,k,nrhs)
+            ekwrkVmix_mld(i,j,2) = ekwrkVmix_mld(i,j,2)
+     &                       - v(i,j,k,nnew)*v(i,j,k,nrhs)
           enddo
 #  endif
         enddo
 # endif
 # if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
         do i=Istr,Iend
-          k=1
-             wrkVmix(i,j,2) =
-     &           - v(i,j,k,nnew)
+          wrkVmix(i,j,2) = - v(i,j,1,nnew)
           do k=2,N
-             wrkVmix(i,j,2) = wrkVmix(i,j,2) -
-     &           v(i,j,k,nnew)
+             wrkVmix(i,j,2) = wrkVmix(i,j,2) - v(i,j,k,nnew)
           enddo
         enddo
 # endif
+        do i=Istr,Iend
+          FC(i,0)=0.
+          FC(i,N)=0.
+# ifdef VADV_ADAPT_IMP
+          DC(i,0)=0.25*dt*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
+          WC(i,0)=0.
+          WC(i,N)=0.
+# endif
+        enddo
+        do k=1,N-1
           do i=Istr,Iend
-            FC(i,0)=0.
-            FC(i,N)=0.
+            FC(i,k)=-dt*(Akv(i,j,k)+Akv(i,j-1,k))
+     &                          /(z_r(i,j,k+1)+z_r(i,j-1,k+1)
+     &                           -z_r(i,j,k  )-z_r(i,j-1,k  ))
 # ifdef VADV_ADAPT_IMP
-            DC(i,0)=0.25*dt*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
-            WC(i,0)=0.
-            WC(i,N)=0.
+            WC(i,k)=DC(i,0)*0.5*(Wi(i,j,k)+Wi(i,j-1,k))
 # endif
           enddo
-
-          do k=1,N-1
-            do i=Istr,Iend
-              FC(i,k)=-dt*(Akv(i,j,k)+Akv(i,j-1,k))
-     &                   /( z_r(i,j,k+1)+z_r(i,j-1,k+1)
-     &                     -z_r(i,j,k  )-z_r(i,j-1,k  ))
+        enddo
+        do k=1,N
+          do i=Istr,Iend
+            DC(i,k)=v(i,j,k,nnew)
+            BC(i,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))-FC(i,k)-FC(i,k-1)
 # ifdef VADV_ADAPT_IMP
-              WC(i,k)=DC(i,0)*0.5*(Wi(i,j,k)+Wi(i,j-1,k))
+     &                       +max(WC(i,k  ),0.)-min(WC(i,k-1),0.)
 # endif
-            enddo
           enddo
-
-          do k=1,N
-            do i=Istr,Iend
-              DC(i,k)=v(i,j,k,nnew)
-              BC(i,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))-FC(i,k)-FC(i,k-1)
-# ifdef VADV_ADAPT_IMP
-     &              +max(WC(i,k  ),0.)-min(WC(i,k-1),0.)
-# endif
-            enddo
-          enddo
+        enddo
 !
 ! Apply wind forcing
 !
 # ifndef BODYFORCE
-          do i=Istr,Iend
+        do i=Istr,Iend
 #  ifdef STRESS_AT_RHO_POINTS
-            v_str = 0.5*(svstr(i,j)+svstr(i,j-1))
+          v_str = 0.5*(svstr(i,j)+svstr(i,j-1))
 #  else
-            v_str = svstr(i,j)
+          v_str = svstr(i,j)
 #  endif
-            DC(i,N)=DC(i,N)+dt*v_str
+          DC(i,N)=DC(i,N)+dt*v_str
 #  ifndef BSTRESS_FAST
 #   ifndef PERMEABILITY
-            DC(i,1)=DC(i,1)-dt*bvstr(i,j)
+          DC(i,1)=DC(i,1)-dt*bvstr(i,j) ! done later with penalization
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
-            wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j)
-     &                    SWITCH vmask(i,j)
-            wrkWind(i,j,2)= v_str*on_v(i,j)
-     &                    SWITCH vmask(i,j)
+          wrkDrag(i,j,2)= -bvstr(i,j)*on_v(i,j) SWITCH vmask(i,j)
+          wrkWind(i,j,2)= v_str*on_v(i,j) SWITCH vmask(i,j)
 #  endif /* DIAGNOSTICS_VRT */
 #  ifdef DIAGNOSTICS_EK
           ekwrkDrag(i,j,2)= -bvstr(i,j)*om_v(i,j)*on_v(i,j)
-     &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
+     &                      * v(i,j,KBOT,nrhs) SWITCH vmask(i,j)
           ekwrkWind(i,j,2)= v_str*om_v(i,j)*on_v(i,j)
-     &                    * v(i,j,N,nrhs) SWITCH vmask(i,j)
+     &                      * v(i,j,N,nrhs) SWITCH vmask(i,j)
 #  endif /* DIAGNOSTICS_EK */
-          enddo
+        enddo
 # endif /* BODYFORCE */
 !
 ! Resolve the tri-diagonal system. Also perform coupling between the
 ! barotropic and baroclinic modes (similarly to the XI-component, see
 ! comment above).
 !
-          do i=Istr,Iend
-            cff=1./BC(i,1)
-            CF(i,1)=cff*( FC(i,1)                  !<-- q(1) = c(1)/b(1)
+        do i=Istr,Iend
+          cff=1./BC(i,1)
+          CF(i,1)=cff*( FC(i,1)              !<-- q(1) = c(1)/b(1)
 # ifdef VADV_ADAPT_IMP
      &                +min( WC(i,1),0.)
 # endif
-     &                                 )
-            DC(i,1)=cff*DC(i,1)
-          enddo
-          do k=2,N-1
-            do i=Istr,Iend
-# ifdef VADV_ADAPT_IMP
-              aa = FC(i,k-1)-max(WC(i,k-1),0.)     !<-- a = sub   (lower) diagonal
-              cc = FC(i,k  )+min(WC(i,k  ),0.)     !<-- c = super (upper) diagonal
-# else
-              aa = FC(i,k-1)
-              cc = FC(i,k  )
-# endif
-              cff=1./(BC(i,k)-aa*CF(i,k-1))
-              CF(i,k)=cff*cc
-              DC(i,k)=cff*(DC(i,k)-aa*DC(i,k-1))
-            enddo
-          enddo
+     &                                )
+          DC(i,1)=cff*DC(i,1)
+        enddo
+        do k=2,N-1
           do i=Istr,Iend
 # ifdef VADV_ADAPT_IMP
-              aa = FC(i,N-1)-max(WC(i,N-1),0.)     !<-- a = sub   (lower) diagonal
+            aa = FC(i,k-1)-max(WC(i,k-1),0.) !<-- a = sub   (lower) diagonal
+            cc = FC(i,k  )+min(WC(i,k  ),0.) !<-- c = super (upper) diagonal
 # else
-              aa = FC(i,N-1)
+            aa = FC(i,k-1)
+            cc = FC(i,k  )
 # endif
-            DC(i,N)=(DC(i,N)-aa*DC(i,N-1))
-     &             /(BC(i,N)-aa*CF(i,N-1))
-
-            CF(i,0)=0.5*(Hz(i,j,N)+Hz(i,j-1,N))
-            DC(i,0)=CF(i,0)*DC(i,N)
+            cff=1./(BC(i,k)-aa*CF(i,k-1))
+            CF(i,k)=cff*cc
+            DC(i,k)=cff*(DC(i,k)-aa*DC(i,k-1))
           enddo
-          do k=N-1,1,-1
-            do i=Istr,Iend
-              DC(i,k)=DC(i,k)-CF(i,k)*DC(i,k+1)
+        enddo
+        do i=Istr,Iend
+# ifdef VADV_ADAPT_IMP
+          aa = FC(i,N-1)-max(WC(i,N-1),0.) !<-- a = sub   (lower) diagonal
+# else
+          aa = FC(i,N-1)
+# endif
+          DC(i,N)=(DC(i,N)-aa*DC(i,N-1))
+     &           /(BC(i,N)-aa*CF(i,N-1))
 
-              cff=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-              CF(i,0)=CF(i,0)+cff
-              DC(i,0)=DC(i,0)+cff*DC(i,k)
-            enddo
-          enddo      !--> discard FC,BC; keep DC,CF(:,0)
+          CF(i,0)=0.5*(Hz(i,j,N)+Hz(i,j-1,N))
+          DC(i,0)=CF(i,0)*DC(i,N)
+        enddo
+        do k=N-1,1,-1
+          do i=Istr,Iend
+            DC(i,k)=DC(i,k)-CF(i,k)*DC(i,k+1)
+            cff=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+            CF(i,0)=CF(i,0)+cff
+            DC(i,0)=DC(i,0)+cff*DC(i,k)
+          enddo
+        enddo      !--> discard FC,BC; keep DC,CF(:,0)
 
 #if defined PERMEABILITY
+        do i=Istr,Iend
+          DC(i,N)=DC(i,N)*(1.-pena_v(i,j,N))
+          CF(i,0)=0.5*(Hz(i,j,N)+Hz(i,j-1,N))
+          DC(i,0)=CF(i,0)*DC(i,N)           
+        enddo
+        do k=N-1,1,-1
           do i=Istr,Iend
-            DC(i,N)=DC(i,N)*(1.-pena_v(i,j,N))
-            CF(i,0)=0.5*(Hz(i,j,N)+Hz(i,j-1,N))
-            DC(i,0)=CF(i,0)*DC(i,N)           
-          enddo
-          do k=N-1,1,-1
-            do i=Istr,Iend
-              DC(i,k)=DC(i,k)*(1.-pena_v(i,j,k))
-              cff=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-              CF(i,0)=CF(i,0)+cff
-              DC(i,0)=DC(i,0)+cff*DC(i,k)
-            enddo          
-          enddo
+            DC(i,k)=DC(i,k)*(1.-pena_v(i,j,k))
+            cff=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+            CF(i,0)=CF(i,0)+cff
+            DC(i,0)=DC(i,0)+cff*DC(i,k)
+          enddo          
+        enddo
 #endif
-
+        do i=Istr,Iend
+          DC(i,0)=(DC(i,0)*om_v(i,j)-DV_avg1(i,j,nnew))
+     &                             /(CF(i,0)*om_v(i,j))
+        enddo
+!
+!  Store result in new v field and correct barotropic mode
+!
+        do k=1,N
           do i=Istr,Iend
-            DC(i,0)=(DC(i,0)*om_v(i,j)-DV_avg1(i,j,nnew))
-     &                               /(CF(i,0)*om_v(i,j))
-          enddo
-
-
-
-!###########################
-          do k=1,N
-            do i=Istr,Iend
 # if defined PERMEABILITY
-              v(i,j,k,nnew)=(DC(i,k)-FT_cor_V(i,j,k)*DC(i,0)) SWITCH vmask(i,j)
+            ! with weights for penalized regions
+            v(i,j,k,nnew)=(DC(i,k)-FT_cor_V(i,j,k)*DC(i,0)) SWITCH vmask(i,j)
 # else
-              v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
+            v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
 # endif
           enddo
         enddo        !--> discard DC,CF(:,0)
-!###########################
 
 !###########################
 # if defined DIAGNOSTICS_DISS
 ! Compute the transport part of ke_vmix : d/dz[ Akv v dv/dz]
-
-! ------- ------------- ------ ------ - -----
+!
       do k=1,N-1
         do i=Istr,Iend
-
-            FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i,j-1,k))
-
-            cff1= 2.* (2.*MVmix(i,j,k+1,2)/(Hz(i,j,k+1)+Hz(i,j-1,k+1))
-     &               - 2.*MVmix(i,j,k  ,2)/(Hz(i,j,k  )+Hz(i,j-1,k  )) )
-     &                 /( z_r(i,j,k+1)+z_r(i,j-1,k+1)
-     &                   -z_r(i,j,k  )-z_r(i,j-1,k  ))
-
-            BC(i,k)= 0.25 * (v(i,j,k+1,nrhs) + v(i,j,k+1,nnew)
-     &                     + v(i,j,k  ,nrhs) + v(i,j,k  ,nnew)) * cff1
-
-         enddo
-       enddo
-
-      do i=Istr,Iend
-          FC(i,0)= 0.
-          BC(i,0)= 0.
-          FC(i,N)= 1.
-          BC(i,N)= 0.
-!          BC(i,N)= 0.5 * (v(i,j,k,nrhs)+v(i,j,k,nnew)) * svstr(i,j)
+          FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i,j-1,k))
+          cff1= 2.* (2.*MVmix(i,j,k+1,2)/(Hz(i,j,k+1)+Hz(i,j-1,k+1))
+     &             - 2.*MVmix(i,j,k  ,2)/(Hz(i,j,k  )+Hz(i,j-1,k  )) )
+     &               /( z_r(i,j,k+1)+z_r(i,j-1,k+1)
+     &                 -z_r(i,j,k  )-z_r(i,j-1,k  ))
+          BC(i,k)= 0.25 * (v(i,j,k+1,nrhs) + v(i,j,k+1,nnew)
+     &                   + v(i,j,k  ,nrhs) + v(i,j,k  ,nnew)) * cff1
+        enddo
       enddo
-
+      do i=Istr,Iend
+        FC(i,0)= 0.
+        BC(i,0)= 0.
+        FC(i,N)= 1.
+        BC(i,N)= 0.
+      enddo
       do k=1,N
         do i=Istr,Iend
-            Mrhs(i,j,k,2) =  ( FC(i,k  ) * BC(i,k  )
-     &                       - FC(i,k-1) * BC(i,k-1) )
+          Mrhs(i,j,k,2) =  ( FC(i,k  ) * BC(i,k  )
+     &                     - FC(i,k-1) * BC(i,k-1) )
      &                *  om_v(i,j)*on_v(i,j) SWITCH vmask(i,j)
-         enddo
-       enddo
-! ------- ------------- ------ ------ - -----
-
+        enddo
+      enddo
 # endif
-
-
-
 !###########################
+
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                            || defined DIAGNOSTICS_PV \
+                            || defined DIAGNOSTICS_VRT \
+                            || defined DIAGNOSTICS_EK
           do k=1,N
             do i=Istr,Iend
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
-            MVmix(i,j,k,2)=-( MVmix(i,j,k,2) - v(i,j,k,nnew)*
-     &                           0.5*(Hz(i,j,k)+Hz(i,j-1,k)) )
-     &                    *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
-#  ifdef BODYFORCE
-            MVmix(i,j,k,2)= MVmix(i,j,k,2) + Mbody(i,j,k,2)
+              cff1=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+              cff2=om_v(i,j)*on_v(i,j)/dt
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                            || defined DIAGNOSTICS_PV
+              MVmix(i,j,k,2)=-cff2*(MVmix(i,j,k,2)-cff1*v(i,j,k,nnew))
+     &                                              SWITCH vmask(i,j)
+#   ifdef BODYFORCE
+              MVmix(i,j,k,2)= MVmix(i,j,k,2) + Mbody(i,j,k,2)
+#   endif
+#  elif defined DIAGNOSTICS_EK
+              ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2) +
+     &                           cff1*v(i,j,k,nnew)*v(i,j,k,nrhs)
+#   if defined DIAGNOSTICS_EK_MLD
+              if (k.ge.kbl(i,j)) then
+                ekwrkVmix_mld(i,j,2) = ekwrkVmix_mld(i,j,2) +
+     &                           cff1*v(i,j,k,nnew)*v(i,j,k,nrhs)
+              endif
+#   endif
 #  endif
-# elif defined DIAGNOSTICS_EK
-             ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2) +
-     &           0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
-     &           * v(i,j,k,nrhs)
-#  if defined DIAGNOSTICS_EK_MLD
-            if (k.ge.kbl(i,j)) then
-             ekwrkVmix_mld(i,j,2) = ekwrkVmix_mld(i,j,2) +
-     &           0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
-     &           * v(i,j,k,nrhs)
-            endif
+#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+              wrkVmix(i,j,2) = wrkVmix(i,j,2)+cff1*v(i,j,k,nnew)
 #  endif
-# endif
-# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            wrkVmix(i,j,2) = wrkVmix(i,j,2) +
-     &           0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
-# endif
           enddo
         enddo        !--> discard DC,CF(:,0)
-# if (defined DIAGNOSTICS_VRT && !defined DIAGNOSTICS_UV)
+#  if (defined DIAGNOSTICS_VRT && !defined DIAGNOSTICS_UV)
         do i=Istr,Iend
+          cff2=om_v(i,j)*on_v(i,j)/dt
+          wrkVmix(i,j,2) = cff2*wrkVmix(i,j,2)  SWITCH vmask(i,j)
+#   ifdef BODYFORCE
           wrkVmix(i,j,2) = wrkVmix(i,j,2)
-     &               * om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
-#  ifdef BODYFORCE
-          wrkVmix(i,j,2) = wrkVmix(i,j,2)
-     &               + (wrkDrag(i,j,2) +wrkWind(i,j,2))
-     &               * om_v(i,j)
-#  endif
+     &                     +(wrkDrag(i,j,2)+wrkWind(i,j,2))*om_v(i,j)
+#   endif
         enddo
-# endif
-# if defined DIAGNOSTICS_EK && ! defined DIAGNOSTICS_EK_FULL
+#  endif
+#  if defined DIAGNOSTICS_EK && ! defined DIAGNOSTICS_EK_FULL
         do i=Istr,Iend
-             ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
-     &               *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
-#  ifdef BODYFORCE
-             ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
-     &               + ekwrkDrag(i,j,2) +ekwrkWind(i,j,2)
-#  endif
-#  if defined DIAGNOSTICS_EK_MLD
-             ekwrkVmix_mld(i,j,2) = ekwrkVmix_mld(i,j,2)
-     &               *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
-#  endif
+          cff2=om_v(i,j)*on_v(i,j)/dt
+          ekwrkVmix(i,j,2) = cff2*ekwrkVmix(i,j,2) SWITCH vmask(i,j)
+#   ifdef BODYFORCE
+          ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
+     &                     + ekwrkDrag(i,j,2) + ekwrkWind(i,j,2)
+#   endif
+#   if defined DIAGNOSTICS_EK_MLD
+          ekwrkVmix_mld(i,j,2) = cff2*ekwrkVmix_mld(i,j,2)
+     &                                             SWITCH vmask(i,j)
+#   endif
         enddo
+#  endif
 # endif
 !###########################
 # if defined DIAGNOSTICS_BARO
@@ -868,38 +821,32 @@
 !
           do k=1,N
             do i=Istr,Iend
-!              v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
-            MBaro(i,j,k,2)= -DC(i,0)*
-     &                           0.5*(Hz(i,j,k)+Hz(i,j-1,k))
-     &                    *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
+              cff1=0.5*(Hz(i,j,k)+Hz(i,j-1,k))
+              cff2=om_v(i,j)*on_v(i,j)/dt
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                             || defined DIAGNOSTICS_PV
+              MBaro(i,j,k,2)= -DC(i,0)*cff1*cff2 SWITCH vmask(i,j)
 #  elif defined DIAGNOSTICS_EK
-             ekwrkBaro(i,j,2) = ekwrkBaro(i,j,2) -
-     &           0.5*(Hz(i,j,k)+Hz(i,j-1,k))*DC(i,0)
-     &           * v(i,j,k,nrhs)
-     &           *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
+              ekwrkBaro(i,j,2) = ekwrkBaro(i,j,2) -
+     &          cff1*cff2**DC(i,0)*v(i,j,k,nrhs) SWITCH vmask(i,j)
 #   if defined DIAGNOSTICS_EK_MLD
-            if (k.ge.kbl(i,j)) then
-             ekwrkBaro_mld(i,j,2) = ekwrkBaro_mld(i,j,2)
-     &           - 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*DC(i,0)
-     &           * v(i,j,k,nrhs)
-     &           *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
+              if (k.ge.kbl(i,j)) then
+                ekwrkBaro_mld(i,j,2) = ekwrkBaro_mld(i,j,2)
+     &         - cff1*cff2*DC(i,0)*v(i,j,k,nrhs) SWITCH vmask(i,j)
             endif
 #   endif
 #  endif
 #  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
             wrkBaro(i,j,2) = wrkBaro(i,j,2)
-     &           - 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*DC(i,0)
-     &           *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
+     &                       - cff1*cff2*DC(i,0) SWITCH vmask(i,j)
 #  endif
           enddo
         enddo        !--> discard DC,CF(:,0)
 # endif
+!###########################
+
        ENDDOLOOP2D      ! <-- j
 
-!-------------------------------------------------------------------
-! DIAGNOSTICS
-!-------------------------------------------------------------------
 # if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_PV
       do k=1,N
         do j=Jstr,Jend
@@ -910,7 +857,6 @@
 
           enddo
         enddo
-
         do j=JstrV,Jend
           do i=Istr,Iend
             Mrate(i,j,k,2)=( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
@@ -920,10 +866,10 @@
         enddo
       enddo
 # endif
-# if defined DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_EK
         do j=JstrR,JendR
           do i=IstrR,IendR
-            ekwrkVmix2(i,j,1)=0
+            ekwrkVmix2(i,j,1)=0        !<-- prepare Nudging terms
             ekwrkVmix2(i,j,2)=0
 #  if defined DIAGNOSTICS_EK_MLD
             ekwrkVmix2_mld(i,j,1)=0
@@ -935,22 +881,16 @@
           do i=IstrU,Iend
             do k=1,N
                 ekwrkVmix2(i,j,1) = ekwrkVmix2(i,j,1) + 0.5*
-     &            ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
+     &                ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
-     &                                        *om_u(i,j)*on_u(i,j)/dt
-#  ifdef MASKING
-     &                     *umask(i,j)
-#  endif
+     &                      *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
             enddo
-#  if defined DIAGNOSTICS_EK_MLD
+#  ifdef DIAGNOSTICS_EK_MLD
             do k=kbl(i,j),N
                 ekwrkVmix2_mld(i,j,1) = ekwrkVmix2_mld(i,j,1) + 0.5*
-     &            ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
+     &                ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
-     &                                        *om_u(i,j)*on_u(i,j)/dt
-#   ifdef MASKING
-     &                     *umask(i,j)
-#   endif
+     &                      *om_u(i,j)*on_u(i,j)/dt SWITCH umask(i,j)
             enddo
 #  endif
           enddo
@@ -959,22 +899,16 @@
           do i=Istr,Iend
             do k=1,N
               ekwrkVmix2(i,j,2) = ekwrkVmix2(i,j,2) + 0.5*
-     &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
+     &                ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
-     &                                        *om_v(i,j)*on_v(i,j)/dt
-#  ifdef MASKING
-     &                     *vmask(i,j)
-#  endif
+     &                      *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
             enddo
-#  if defined DIAGNOSTICS_EK_MLD
+#  ifdef DIAGNOSTICS_EK_MLD
             do k=kbl(i,j),N
               ekwrkVmix2_mld(i,j,2) = ekwrkVmix2_mld(i,j,2) + 0.5*
-     &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
+     &                ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
-     &                                        *om_v(i,j)*on_v(i,j)/dt
-#   ifdef MASKING
-     &                     *vmask(i,j)
-#   endif
+     &                      *om_v(i,j)*on_v(i,j)/dt SWITCH vmask(i,j)
             enddo
 #  endif
           enddo
@@ -1534,13 +1468,13 @@
         do j=JU_RANGE
           do i=IU_RANGE
             MVmix2(i,j,k,1)=( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
-     &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp) )
+     &               -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp) )
      &                                           *om_u(i,j)*on_u(i,j)/dt
-     &                                           - Mrate(i,j,k,1)
+     &                                                  - Mrate(i,j,k,1)
             Mrate(i,j,k,1)= MVmix2(i,j,k,1) + Mrate(i,j,k,1)
 #  if defined UV_HADV_UP3  || defined UV_HADV_UP5
             MHdiff(i,j,k,1)= MXadv(i,j,k,1) + MYadv(i,j,k,1)
-     &                       - MHdiff(i,j,k,1)
+     &                                     - MHdiff(i,j,k,1)
 #  endif
 !
 ! Divide all diagnostic terms by the cell volume Hz/(pm*pn).
@@ -1585,13 +1519,13 @@
         do j=JV_RANGE
           do i=IV_RANGE
             MVmix2(i,j,k,2)=( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
-     &              -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp) )
+     &               -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp) )
      &                                           *om_v(i,j)*on_v(i,j)/dt
      &                                           - Mrate(i,j,k,2)
             Mrate(i,j,k,2)= MVmix2(i,j,k,2) + Mrate(i,j,k,2)
 #  if defined UV_HADV_UP3 || defined UV_HADV_UP5
             MHdiff(i,j,k,2)= MXadv(i,j,k,2) + MYadv(i,j,k,2)
-     &                       - MHdiff(i,j,k,2)
+     &                                     - MHdiff(i,j,k,2)
 #  endif
 !
 ! Divide all diagnostic terms by the cell volume Hz/(pm*pn).
@@ -1967,8 +1901,7 @@
         enddo
 # endif /* DIAGNOSTICS_EK */
 
-# if defined DIAGNOSTICS_EK
-
+# ifdef DIAGNOSTICS_EK
         do j=JU_RANGE
           do i=IU_RANGE
 
@@ -1977,18 +1910,16 @@
 
             do k=1,N
 
-                ekwrkrate(i,j,1) = ekwrkrate(i,j,1) + 0.5*
-     &            ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
+              ekwrkrate(i,j,1) = ekwrkrate(i,j,1) + 0.5*
+     &                ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
      &                                        *om_u(i,j)*on_u(i,j)/dt
-#  ifdef MASKING
-     &                     *umask(i,j)
-#  endif
-            ekwrkvol(i,j,1) = ekwrkvol(i,j,1)
+     &                                              SWITCH umask(i,j)
+              ekwrkvol(i,j,1) = ekwrkvol(i,j,1)
      &                  + (0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
-     &                  - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))      )
-     &                  * ((Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
-     &                  / (Hz(i,j,k)+Hz(i-1,j,k))
+     &                   - 0.5*(Hz(i,j,k)+Hz(i-1,j,k)))
+     &                  * ( (Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
+     &                    / (Hz(i,j,k)+Hz(i-1,j,k))
      &                  * 0.5 * u(i,j,k,nstp)**2
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
      &                  + u(i,j,k,nstp) * (
@@ -2003,23 +1934,20 @@
      &                  + Mfast(i,j,k,1)
 #   endif
 #   if defined DIAGNOSTICS_UV
-     &                  + MVmix2(i,j,k,1))
+     &                  + MVmix2(i,j,k,1) )
 #   else
-     &                  ) / (Hz(i,j,k)+Hz(i-1,j,k))
-     &                    * (2.*pm_u(i,j)*pn_u(i,j))
+     &                                    ) 
+     &                     / (Hz(i,j,k)+Hz(i-1,j,k))
+     &                     * (2.*pm_u(i,j)*pn_u(i,j))
 #   endif
 #  endif
-     &                                     )  *om_u(i,j)*on_u(i,j)/dt
-#  ifdef MASKING
-     &                     *umask(i,j)
-#  endif
+     &                     )  *om_u(i,j)*on_u(i,j)/dt
+     &                              SWITCH umask(i,j)
             enddo
 
             ekwrkVmix2(i,j,1) = ekwrkrate(i,j,1) - ekwrkVmix2(i,j,1)
 
-
 #  if defined DIAGNOSTICS_EK_MLD
-
             ekwrkrate_mld(i,j,1) = 0.
             ekwrkvol_mld(i,j,1) = 0.
 
@@ -2117,12 +2045,9 @@
             ekwrkVmix2(i,j,2) = ekwrkrate(i,j,2) - ekwrkVmix2(i,j,2)
 
 #  if defined DIAGNOSTICS_EK_MLD
-
             ekwrkrate_mld(i,j,2)= 0.
             ekwrkvol_mld(i,j,2) = 0.
-
             do k=kbl(i,j),N
-
               ekwrkrate_mld(i,j,2) = ekwrkrate_mld(i,j,2) + 0.5*
      &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
      &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
@@ -2164,9 +2089,6 @@
           enddo
         enddo
 # endif /* DIAGNOSTICS_EK */
-
-
-
 
 # if defined DIAGNOSTICS_PV
 ! Add non conservative terms to rhs.
@@ -2264,8 +2186,6 @@
       call exchange_u3d_tile (istr,iend,jstr,jend, dRdx  )
       call exchange_v3d_tile (istr,iend,jstr,jend, dRde  )
 #  endif
-
-
 
 ! Need to exchange momentum terms for computation of vorticity terms
 #  if defined DIAGNOSTICS_UV && defined DIAGNOSTICS_VRT

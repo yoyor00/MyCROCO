@@ -40,8 +40,8 @@
 
 ! ------- ------------- ------ ------ - -----
 
-        do j=JstrR,JendR
-          do i=IstrR,IendR
+        do j=Jstr,Jend
+          do i=Istr,Iend
 
 
           ekHadv(i,j) = 0.5 * (ekwrkHadv(i,j,1) + ekwrkHadv(i+1,j,1))

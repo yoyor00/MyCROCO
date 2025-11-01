@@ -250,25 +250,21 @@
             cff1=pm_u(i,j)*pn_u(i,j)*cff
             rufrc(i,j)=rufrc(i,j) + cff
             u(i,j,k,indx)=u(i,j,k,indx) + dt*cff1
-#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
-!            if (nnew.ne.3) then
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                           || defined DIAGNOSTICS_PV
             MHmix(i,j,k,1,indx) = cff1 * om_u(i,j)*on_u(i,j)
-     &                       SWITCH umask(i,j)
-!            endif
+     &                                     SWITCH umask(i,j)
 #elif defined DIAGNOSTICS_EK
-!            if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkHmix(i,j,1,indx) = cff1 * om_u(i,j)*on_u(i,j)
      &                           * u(i,j,1,nrhs) SWITCH umask(i,j)
               else
                 ekwrkHmix(i,j,1,indx) = ekwrkHmix(i,j,1,indx)
      &                           + cff1 * om_u(i,j)*on_u(i,j)
-     &                           * u(i,j,1,nrhs) SWITCH umask(i,j)
+     &                           * u(i,j,k,nrhs) SWITCH umask(i,j)
               endif
-!            endif
 #endif
 #if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-!            if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkHmix(i,j,1,indx) = cff1 * om_u(i,j)*on_u(i,j)
      &                                    SWITCH umask(i,j)
@@ -277,7 +273,6 @@
      &                          +cff1 * om_u(i,j)*on_u(i,j)
      &                                    SWITCH umask(i,j)
               endif
-!            endif
 #endif
           enddo
         enddo
@@ -288,25 +283,21 @@
             cff1=pm_v(i,j)*pn_v(i,j)*cff
             rvfrc(i,j)=rvfrc(i,j) + cff
             v(i,j,k,indx)=v(i,j,k,indx) + dt*cff1
-#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
-!            if (nnew.ne.3) then
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL \
+                           || defined DIAGNOSTICS_PV
             MHmix(i,j,k,2,indx) =  cff1 * om_v(i,j)*on_v(i,j)
-     &                       SWITCH vmask(i,j)
-!            endif
+     &                                      SWITCH vmask(i,j)
 #elif defined DIAGNOSTICS_EK
-!            if (nnew.ne.3) then
               if (k.eq.1) then
                 ekwrkHmix(i,j,2,indx) = cff1 * om_v(i,j)*on_v(i,j)
      &                          * v(i,j,1,nrhs) SWITCH vmask(i,j)
               else
                 ekwrkHmix(i,j,2,indx) = ekwrkHmix(i,j,2,indx)
      &                           +cff1 * om_v(i,j)*on_v(i,j)
-     &                          * v(i,j,1,nrhs) SWITCH vmask(i,j)
+     &                          * v(i,j,k,nrhs) SWITCH vmask(i,j)
               endif
-!            endif
 #endif
 #if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-!            if (nnew.ne.3) then
               if (k.eq.1) then
                 wrkHmix(i,j,2,indx) = cff1 * om_v(i,j)*on_v(i,j)
      &                                    SWITCH vmask(i,j)
@@ -315,7 +306,6 @@
      &                           + cff1 * om_v(i,j)*on_v(i,j)
      &                                    SWITCH vmask(i,j)
               endif
-!            endif
 #endif
 
           enddo

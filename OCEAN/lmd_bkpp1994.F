@@ -9,11 +9,13 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined LMD_BKPP
+#ifdef LMD_BKPP
 # define HBBL_SMOOTH
+
       subroutine lmd_bkpp_tile (Istr,Iend,Jstr,Jend, Kv,Kt,Ks,
      &                     Gm1,dGm1dS, Gt1,dGt1dS, Gs1,dGs1dS,
      &                        wm,ws, my_hbbl,my_kbbl,wrk, Rib)
+
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -21,7 +23,14 @@
 # include "forces.h"
 # include "mixing.h"
 # include "scalars.h"
-      integer Istr,Iend,Jstr,Jend, i,j,k, ka,ku,ksave,
+# if defined PENALIZATION
+#  include "penalization.h"
+#  define KBOTW last_index_w(i,j)
+#  define KBOT last_index(i,j)+1
+# else
+#  define KBOT 1
+# endif
+      integer Istr,Iend,Jstr,Jend, i,j,k,
      &        imin,imax,jmin,jmax
       real    Kv(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &        Kt(PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -36,8 +45,8 @@
      &            ws(PRIVATE_2D_SCRATCH_ARRAY),
      &       my_hbbl(PRIVATE_2D_SCRATCH_ARRAY),
      &       my_kbbl(PRIVATE_2D_SCRATCH_ARRAY),
-     &           wrk(PRIVATE_2D_SCRATCH_ARRAY),
-     &         Rib(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+     &           wrk(PRIVATE_2D_SCRATCH_ARRAY)
+      real       Rib(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 # define tind nstp
       real Vtc,    hekman,  dVsq,   Vtsq,
      &     sig,    Kv_bl,   Kt_bl,  Ks_bl,
@@ -116,7 +125,7 @@
 !
       Vtc=lmd_Cv*sqrt(-lmd_betaT)/( sqrt(lmd_cs*lmd_epsilon)
      &                                        *Ric*vonKar*vonKar )
-
+!
 !$acc kernels if(compute_on_device) default(present)
 !
 !  Compute turbulent friction velocity [m/s] "ustar" from bottom stress
@@ -143,11 +152,6 @@
 !  oceanic planetary boundary layer "hbbl", such that Rib(hbbl)=Ric.
 !----------------------------------------------------------------
 !
-!  Set indices for array "Rib", the bulk Richardson number.
-!
-      ka=1
-      ku=2
-!
 !  Intialize boundary layer depth "hbbl" and index "kbbl" of first grid
 !  level above "hbbl" to maximum values.
 !
@@ -155,7 +159,7 @@
         do i=I_EXT_RANGE
           my_hbbl(i,j)=z_r(i,j,N)+h(i,j)
           my_kbbl(i,j)=N
-          Rib(i,j,1)=0.
+          Rib(i,j,KBOT)=0.
         enddo
       enddo
 !
@@ -179,33 +183,43 @@
         cff=g/rho0
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
-            Ritop=-cff*(rho1(i,j,k)-rho1(i,j,1))
-     &                           *(z_r(i,j,k)-z_r(i,j,1))
+# ifdef PENALIZATION
+            if (k .ge. KBOT+1) then
+# endif
+              Ritop=-cff*(rho1(i,j,k)-rho1(i,j,KBOT))
+     &                    *(z_r(i,j,k)-z_r(i,j,KBOT))
 
-            dVsq=0.25*( (u(i  ,j,k,tind)-u(i  ,j,1,tind)+
-     &                   u(i+1,j,k,tind)-u(i+1,j,1,tind))**2
-     &                 +(v(i,j  ,k,tind)-v(i,j  ,1,tind)+
-     &                   v(i,j+1,k,tind)-v(i,j+1,1,tind))**2)
+              dVsq=0.25*( (u(i  ,j,k,tind)-u(i  ,j,KBOT,tind)+
+     &                     u(i+1,j,k,tind)-u(i+1,j,KBOT,tind))**2
+     &                   +(v(i,j  ,k,tind)-v(i,j  ,KBOT,tind)+
+     &                     v(i,j+1,k,tind)-v(i,j+1,KBOT,tind))**2)
 
-            Vtsq=Vtc*(z_r(i,j,k)-z_r(i,j,1))*ws(i,j)
-     &          *sqrt(max(0.,0.5*(bvf(i,j,k)+bvf(i,j,k-1))))
+              Vtsq=Vtc*(z_r(i,j,k)-z_r(i,j,KBOT))*ws(i,j)
+     &            *sqrt(max(0.,0.5*(bvf(i,j,k)+bvf(i,j,k-1))))
 
-            Rib(i,j,k)=Ritop/(dVsq+Vtsq+eps)
+              Rib(i,j,k)=Ritop/(dVsq+Vtsq+eps)
+# ifdef PENALIZATION
+            endif
+# endif
           enddo
         enddo   !--> discard ws
-      enddo
 !
 !  Linearly interpolate to find "hbbl" where Rib=Ric.
 !
-      do k=2,N
         do j=J_EXT_RANGE
           do i=I_EXT_RANGE
-            if (my_kbbl(i,j).eq.N .and. Rib(i,j,k).gt.Ric) then
-              zbl=z_r(i,j,k)-(z_r(i,j,k)-z_r(i,j,k-1))*
-     &           (Ric-Rib(i,j,k))/(Rib(i,j,k-1)-Rib(i,j,k))
-              my_hbbl(i,j)=zbl+h(i,j)
-              my_kbbl(i,j)=k
+# ifdef PENALIZATION
+            if (k .ge. KBOT+1) then
+#endif
+              if (my_kbbl(i,j).eq.N .and. Rib(i,j,k).gt.Ric) then
+                zbl=z_r(i,j,k)-(z_r(i,j,k)-z_r(i,j,k-1))*
+     &             (Ric-Rib(i,j,k))/(Rib(i,j,k-1)-Rib(i,j,k))
+                my_hbbl(i,j)=zbl+h(i,j)
+                my_kbbl(i,j)=k
+              endif
+# ifdef PENALIZATION
             endif
+# endif
           enddo
         enddo
       enddo    !<-- k    !--> discard Rr,Zr,Ur,Vr,Rib
@@ -233,7 +247,7 @@
         do i=Istr,Iend
           hbbl(i,j)=min(my_hbbl(i,j),z_w(i,j,N)+h(i,j))
 # ifdef MASKING
-     &                                          *rmask(i,j)
+     &                                      *rmask(i,j)
 # endif
           kbbl(i,j)=N
         enddo
@@ -327,7 +341,8 @@
 
 # ifdef LMD_SKPP
 !
-! If BBL reaches into SBL, take the sum (or max) of surface and bottom values
+! If BBL reaches into SBL, take the sum (or max) of surface 
+! and bottom values 
 !
 #  ifdef LMD_SKPP2005
               zsbl=z_w(i,j,N)-hbls(i,j,3-nstp)
@@ -343,6 +358,15 @@
               endif
 # endif /* LMD_SKPP */
 
+# ifdef PENALIZATION
+              if (k .le. KBOTW-1) then
+                Kv0=1.D-5
+                Kt0=1.D-5
+#  ifdef SALINITY
+                Ks0=1.D-5
+#  endif
+              endif
+# endif
               Kv(i,j,k)=Kv0
               Kt(i,j,k)=Kt0
 # ifdef SALINITY
@@ -358,12 +382,12 @@
               if (bvf(i,j,k).lt.0.) then
 #  ifdef LMD_SKPP
 
-#   ifdef LMD_SKPP2005
+#   ifdef LMD_SKPP2005                
              zsbl=z_w(i,j,N)-hbls(i,j,3-nstp)
 #   else
              zsbl=z_w(i,j,N)-hbl(i,j)
-#   endif
-
+#   endif                
+                
                 if (z_w(i,j,k).lt.zsbl) then
 #  endif
                   Kv(i,j,k)=Kv(i,j,k)+lmd_nu0c
@@ -383,6 +407,35 @@
 # undef wm
       enddo ! <-- k
 
+# ifdef PENALIZATION
+      do k=1,N
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            if (k .le. KBOTW-1) then
+               Kv(i,j,k)=Kv(i,j,KBOTW)
+               Kt(i,j,k)=Kt(i,j,KBOTW)
+#  ifdef SALINITY
+               Ks(i,j,k)=Ks(i,j,KBOTW)
+#  endif
+            endif
+          enddo
+        enddo
+      enddo
+      do k=1,N-1
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            Kv(i,j,k)=Kv(i,j,k)*0.5*(pororatio(i,j,k)+pororatio(i,j,k+1))
+            Kt(i,j,k)=Kt(i,j,k)*0.5*(pororatio(i,j,k)+pororatio(i,j,k+1))
+            Kv(i,j,k)=max(Kv(i,j,k),1.e-6)
+            Kt(i,j,k)=max(Kt(i,j,k),1.e-6)
+#  ifdef SALINITY
+            Ks(i,j,k)=Ks(i,j,k)*0.5*(pororatio(i,j,k)+pororatio(i,j,k+1))
+            Ks(i,j,k)=max(Ks(i,j,k),1.e-6)
+#  endif
+          enddo
+        enddo
+      enddo
+# endif /* PENALIZATION */
 !
 !----------------------------------------------------------------------
 !  Extend Boundary values

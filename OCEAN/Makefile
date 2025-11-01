@@ -48,6 +48,8 @@ include Makedefs
 	hmix_coef.F	wetdry.F	wavedry.F\
 	u3dbc.F		v3dbc.F		t3dbc.F\
 \
+        backscatter.F	uv3dmix_BS.F\
+\
 	step3d_fast.F\
 	step3d_w.F	rhs3d_w_nh.F	initial_nbq.F	grid_nbq.F\
 	unbq_bc.F	vnbq_bc.F	wnbq_bc.F	rnbq_bc.F\

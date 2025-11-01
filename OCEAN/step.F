@@ -512,6 +512,9 @@ C$OMP BARRIER
 # if defined SPONGE_VIS2 && !defined UV_VIS2
         call uv3dmix_spg (tile)
 # endif
+# ifdef BACKSCATTER
+        call uv3dmix_BS (tile)
+# endif
 # ifdef SST_SKIN
         call sstskin (tile)
 # endif
@@ -1098,6 +1101,9 @@ C$OMP BARRIER
 
 # ifdef GLS_MIXING
         call gls_mixing (tile)
+# endif
+# ifdef BACKSCATTER
+        call backscatter (tile)
 # endif
 
 # ifdef MUSTANG

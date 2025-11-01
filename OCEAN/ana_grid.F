@@ -528,16 +528,16 @@ CR     &                                'x0=',x0, 'y0=',y0, mynode
 !  Set bathymetry [meters; positive] at RHO-points.
 !----------------------------------------------------------------------
 !
-# if defined BASIN || defined EQUATOR || defined GRAV_ADJ \
-                   || defined SOLITON || defined ISOLITON \
-                   || defined KH_INST || defined TS_HADV_TEST \
+# if defined BASIN || defined EQUATOR  || defined GRAV_ADJ \
+                   || defined SOLITON  || defined ISOLITON \
+                   || defined KH_INST  || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
                    || defined JET
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR
           h(i,j)=depth
-#  if defined POROSITY || defined PERMEABILITY
+#  if defined BASIN && defined PENALIZATION
           cff=320000.-160000.*(sin(pi*(yr(i,j)+500000.0)/Length_ETA))**24
           cff2=320000.-160000.*(sin(pi*(yr(i,j)-500000.0)/Length_ETA))**24
           h_pena_target(i,j)=200.+0.0625*(depth-200.)*

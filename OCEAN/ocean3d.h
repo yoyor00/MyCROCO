@@ -92,5 +92,22 @@
       common /gasexc_O2_O2satu/ O2satu
 # endif /* OXYGEN */
 
+# ifdef BACKSCATTER
+      real uke(GLOBAL_2D_ARRAY,N)
+      real visc3d_BS_r(GLOBAL_2D_ARRAY,N)
+      real visc3d_BS_p(GLOBAL_2D_ARRAY,N)
+      real KE_Hdiss_U(GLOBAL_2D_ARRAY,N)
+      real KE_Hdiss_V(GLOBAL_2D_ARRAY,N)
+      real KE_Hback_U(GLOBAL_2D_ARRAY,N)
+      real KE_Hback_V(GLOBAL_2D_ARRAY,N)
+      common /ocean_uke/ uke
+      common /ocean_visBSr/ visc3d_BS_r
+      common /ocean_visBSp/ visc3d_BS_p
+      common /ocean_KEdiss_U/ KE_Hdiss_U
+      common /ocean_KEdiss_V/ KE_Hdiss_V
+      common /ocean_KEback_U/ KE_Hback_U
+      common /ocean_KEback_V/ KE_Hback_V
+# endif
+
 #endif  /* SOLVE3D */
 

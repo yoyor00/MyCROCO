@@ -491,7 +491,12 @@ C$    integer omp_get_thread_num
             do j=JstrR,JendR
               do i=IstrR,IendR
                 visc3d_avg(i,j,k)=cff*(cff1*visc3d_avg(i,j,k)
-     &                                     +visc3d_r(i,j,k))
+#  ifdef BACKSCATTER
+     &                                    +visc3d_BS_r(i,j,k)
+#  else
+     &                                       +visc3d_r(i,j,k)
+#  endif
+     &                                 )
               enddo
             enddo
           enddo

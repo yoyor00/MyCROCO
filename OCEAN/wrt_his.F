@@ -804,15 +804,19 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 CR      write(*,*) 'wrt_his:  wrtW  ' MYID
       endif
 !
-# ifdef VIS_COEF_3D
+# if defined VIS_COEF_3D
 !
 !     Write out Horizontal viscosity coefficient.
 !
       if (wrthis(indxVisc)) then
 !$acc update if(compute_on_device) host(visc3d_r(:,:,:))
+#  ifdef BACKSCATTER
+        workr=visc3d_BS_r
+#  else
         workr=visc3d_r
+#  endif
         call fillvalue3d(workr,ncidhis,hisVisc,vname(1,indxVisc),
-     &        record,r3dvar,type)
+     &                   record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtVisc' MYID
       endif
 # endif

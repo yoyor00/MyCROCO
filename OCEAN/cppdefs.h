@@ -78,7 +78,7 @@
                       /* Nesting */
 # undef  AGRIF
 # undef  AGRIF_2WAY
-                      /* OA and OW Coupling via OASIS (MPI) */
+                      /* OA & OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
 # undef  OW_COUPLING
 # ifdef OW_COUPLING
@@ -95,6 +95,8 @@
 # define OBC_SOUTH
                       /* Bathy penalization */
 # undef  PENALIZATION
+                      /* Energy Backscatter */
+# undef  BACKSCATTER
                       /* Applications */
 # undef  BIOLOGY
 # undef  FLOATS
