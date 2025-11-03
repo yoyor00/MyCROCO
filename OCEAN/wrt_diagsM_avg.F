@@ -57,8 +57,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
 !
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
@@ -289,66 +287,6 @@
 
         endif
       enddo
-!
-!--#define DEBUG
-# ifdef DEBUG
-      i=20
-      j=20
-      k=10
-      itrc=1
-      write(*,*) 'Write diag UV avg at : i='
-     &                   ,i,' j=',j,' k=',k,' iUV=',itrc
-      write(*,*) 'MXadv_avg(i,j,k,itrc)   ',MXadv_avg(i,j,k,itrc)
-      write(*,*) 'MYadv_avg(i,j,k,itrc)   ',MYadv_avg(i,j,k,itrc)
-      write(*,*) 'MVadv_avg(i,j,k,itrc)   ',MVadv_avg(i,j,k,itrc)
-      write(*,*) 'MCor_avg(i,j,k,itrc)    ',MCor_avg(i,j,k,itrc)
-      write(*,*) 'MPrsgrd_avg(i,j,k,itrc) ',MPrsgrd_avg(i,j,k,itrc)
-      write(*,*) 'MHmix_avg(i,j,k,itrc)   ',MHmix_avg(i,j,k,itrc)
-      write(*,*) 'MVmix_avg(i,j,k,itrc)   ',MVmix_avg(i,j,k,itrc)
-      write(*,*) 'MVmix2_avg(i,j,k,itrc)  ',MVmix2_avg(i,j,k,itrc)
-#  if defined DIAGNOSTICS_BARO
-      write(*,*) 'MBaro_avg(i,j,k,itrc) ',MBaro_avg(i,j,k,itrc)
-#  endif
-#  if defined M3FAST
-      write(*,*) 'Mfast_avg(i,j,k,itrc) ',Mfast_avg(i,j,k,itrc)
-#  endif
-#  ifdef MRL_WCI
-      write(*,*) 'Mvf_avg(i,j,k,itrc)     ',Mvf_avg(i,j,k,itrc)
-      write(*,*) 'Mbrk_avg(i,j,k,itrc)    ',Mbrk_avg(i,j,k,itrc)
-      write(*,*) 'MStCo_avg(i,j,k,itrc)   ',MStCo_avg(i,j,k,itrc)
-      write(*,*) 'MVvf_avg(i,j,k,itrc)    ',MVvf_avg(i,j,k,itrc)
-      write(*,*) 'MPrscrt_avg(i,j,k,itrc) ',MPrscrt_avg(i,j,k,itrc)
-      write(*,*) 'Msbk_avg(i,j,k,itrc)    ',Msbk_avg(i,j,k,itrc)
-      write(*,*) 'Mbwf_avg(i,j,k,itrc)    ',Mbwf_avg(i,j,k,itrc)
-      write(*,*) 'Mfrc_avg(i,j,k,itrc)    ',Mfrc_avg(i,j,k,itrc)
-#  endif
-      write(*,*) 'Mrate_avg(i,j,k,itrc)   ',Mrate_avg(i,j,k,itrc)
-
-      write(*,*) 'SumUVavg(i,j,k,itrc) = ',MXadv_avg(i,j,k,itrc)
-     &                                  +  MYadv_avg(i,j,k,itrc)
-     &                                  +  MVadv_avg(i,j,k,itrc)
-     &                                  +  MCor_avg(i,j,k,itrc)
-     &                                  +  MPrsgrd_avg(i,j,k,itrc)
-     &                                  +  MHmix_avg(i,j,k,itrc)
-     &                                  +  MVmix_avg(i,j,k,itrc)
-     &                                  +  MVmix2_avg(i,j,k,itrc)
-#  if defined M3FAST
-     &                                  +  Mfast_avg(i,j,k,itrc)
-#  endif
-#  ifdef MRL_WCI
-     &                                  +  Mvf_avg(i,j,k,itrc)
-     &                                  +  Mbrk_avg(i,j,k,itrc)
-     &                                  +  MStCo_avg(i,j,k,itrc)
-     &                                  +  MVvf_avg(i,j,k,itrc)
-     &                                  +  MPrscrt_avg(i,j,k,itrc)
-     &                                  +  Msbk_avg(i,j,k,itrc)
-     &                                  +  Mbwf_avg(i,j,k,itrc)
-     &                                  +  Mfrc_avg(i,j,k,itrc)
-#  endif
-     &                                  -  Mrate_avg(i,j,k,itrc)
-              write(*,*) '----------------------------------'
-# endif /* DEBUG */
-!--# undef DEBUG
 
   1   format(/1x,'WRT_DIAG_AVG ERROR while writing variable ''', A,
      &          ''' into diag_avg file.', /11x, 'Time record:',
@@ -394,7 +332,6 @@
      &                        1, MPI_COMM_WORLD,  ierr)
       endif
 # endif
-# undef DEBUG
       return
       end
 

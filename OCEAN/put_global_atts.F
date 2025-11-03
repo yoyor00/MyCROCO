@@ -317,7 +317,7 @@
      &                                             'meter4 second-1')
 #  endif
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING
+# if !defined LMD_MIXING
 !
 ! Background vertical viscosity and tracer mixing coefficients.
 !

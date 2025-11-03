@@ -10,10 +10,24 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BENCH : Add performance tracking (Issue #378 and #423)
 
+- SCRIPTS: in run_croco_inter add TIDE_FILES and ONLINE (Freq, path) missing information 
+
 ### Fixed
+
+- BOTTOM STRESS : Incorrect definition of loop indices for calculating 
+  the bottom stress components in the case rdrg2>0 (Issue #441)
 
 - COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
 - COUPLING : patm2D was declared twice in case of OW_COUPLING and READ_PATM (Issue #383)
+- COUPLING : undef TIDES_MAS in oce_compile.sh, as it does not work without USE_CALENDAR 
+             (link with #233)
+- COUPLING : update croco.in.base accordingly to original croco.in (solve #366)
+- COUPLING : path to local myenv_mypath in job dir (solve #421)
+- COUPLING : add "if" conditions for cpl restart file path definitions to avoid issues when
+             one of the model was not requested in create_config (solve issue #428)
+- COUPLING and XIOS : correct path and  requested copy of cppdefs_dev (solve #364)
+- COUPLING and EXACT RESTART : manage EXACT_RESTART option in coupling scripts (solve #92)
+- COUPLING : exchange of some v-grid variables in cpl_prism_get when defined OA_GRID_UV (#450) 
 - BENCH : do not put report status to True for reference variant to avoid
   to mark test passed even if not (Issue #342)
 - BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
@@ -27,12 +41,30 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : error in case of SAND only type and key_MUSTANG_V2 
+  not defined (Issue #451)
+
+- SUBSTANCE: submassbalance error if no closed border (Issue #449)
+
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
+- Cleaning : useless sponge option in croco.in.1 (#436)
 
 - Compilation : fix cat "croco_ascii.txt" command in case of relative path
 
+- Wavemaker : Fix boundary forcing in case of eastern boundary (Issue #432)
+
+- AGRIF : incompatibility of AGRIF with cppkeys
+  BULK_ECUMEV0 or BULK_ECUMEV6 (Issue #422)
+- AGRIF and psource_ncfile : in croco.in.1 file should be croco_runoff.nc.1 (solve #436)
+- AGRIF: sponge keyword missing: put it back (even if theoretically useless, 
+  it creates a read_inp error), path for online corrected in croco_inter.in,
+  AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
+
+
+- OUTPUT : incompatibility when activating 
+  PISCES + PSOURCE_NCFILE_TS + DIURNAL_INPUT_SRFLX (Issue #435)
 
 ### Changed
 
@@ -45,6 +77,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : review lateral erosion feature (Issue #349)
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
+- SCRIPTS : create_config now allows to deal with 2 new options for preprocessing scripts: 
+            pytools and mattools (instead of prepro) - solve issue #295 
+            and 2 distinct options for run scripts (either inter for Plurimonth_scripts type: 
+            run_croco_inter, or runcpl for SCRIPTS_COUPLING type: submitjob, mynamelist...)
 
 ### Deprecated
 
@@ -64,12 +100,17 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
   - UV_HADV_TVD, UV_VADV_TVD, W_HADV_TVD, W_VADV_TVD (#391)
+  - BVF_MIXING (#398)
+  - LMD_NUW_GARGETT, obsolete (#402)
   - ROBUST_DIURNAL_SRFLUX (#405)
+  - DUKO_2001 was always def (#407)
+  - PRED_COUPLED_MODE was always def (#408) 
   - START_DATE (#417)
   - ICE (#416)
   - DECALPHA (#414)
   - CRAY, VAX, SGI, AIX (#413)
   - AUTOTILING (#411)
+  - DEBUG_ARMOR, DEBUG, DIAGNOSTICS_DEBUG, NBQ_HZCORR_DEBUG (#415)
   - PP_MIXING, MY2_MIXING, MY25_MIXING (#418)
   - XCOMM_FORMAT (#419)
 
@@ -79,13 +120,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
+  - remove routine set_HUV1, not used (#410)
 
+- CI :
+  - change container managment for CI test (#437)
 
 ### Contributors on this release
 
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
-  P. Marchesiello, C. Nguyen, R. Person
+  P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
-  M. Plus, M. Schreiber 
+  M. Plus, M. Schreiber, A. Zribi  

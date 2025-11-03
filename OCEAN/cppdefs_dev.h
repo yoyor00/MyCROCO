@@ -55,9 +55,6 @@
 # undef  OPENMP
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
-# define READ_PATM
-# define OBC_PATM
-# undef  OA_GRID_UV
 # undef  BULK_FLUX
 # undef  QCORRECTION
 # undef  SFLX_CORR
@@ -1094,7 +1091,6 @@
 # undef M3_FRC_BRY
 # undef T_FRC_BRY
 # undef BODYFORCE
-# undef BVF_MIXING
 # undef LMD_MIXING
 # undef LMD_BKPP
 # undef LMD_SKPP

@@ -1078,8 +1078,8 @@ c        close(testunit)
 # else
      &                                          ,  dumboolean
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                          ,  wrthis(indxbvf)
 # else
@@ -1175,8 +1175,8 @@ c        close(testunit)
 # ifdef SALINITY
      &                                        .or. wrthis(indxAks)
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                        .or. wrthis(indxbvf)
 # endif
@@ -1289,8 +1289,8 @@ c        close(testunit)
 #  else
      &                                          ,  dumboolean
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#  if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                          ,  wrtavg(indxbvf)
 #  else
@@ -1384,8 +1384,8 @@ c        close(testunit)
 #  ifdef SALINITY
      &                                        .or. wrtavg(indxAks)
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#  if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                        .or. wrtavg(indxbvf)
 #  endif
@@ -1877,8 +1877,7 @@ c        close(testunit)
 #  endif /* TRACERS */
 
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !
@@ -2195,7 +2194,7 @@ c        close(testunit)
         btfname=fname(1:lstr)
 #endif  /* BHFLUX || (SALINITY && BWFLUX )  */
 !
-! Online forcing with CFSR
+! Online forcing
 !
 #ifdef ONLINE   /* JG Online */
       elseif (keyword(1:kwlen).eq.'online') then
@@ -2684,8 +2683,8 @@ c        close(testunit)
      &  , wrthis(indxAks),  'write Aks  ',
      &                      'Vertical diffusivity for salinity.'
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+     || defined LMD_SKPP || defined LMD_BKPP \
      || defined GLS_MIXING
      &  , wrthis(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
@@ -2807,8 +2806,8 @@ c        close(testunit)
      &  , wrtavg(indxAks),  'write Aks  ',
      &                         'Vertical diffusivity for salinity.'
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#  if defined ANA_VMIX || defined LMD_MIXING \
+     || defined LMD_SKPP || defined LMD_BKPP \
      || defined GLS_MIXING
      &  , wrtavg(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
@@ -3230,8 +3229,7 @@ c        close(testunit)
           enddo
 #  endif /* TRACERS */
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
           MPI_master_only write(stdout,'(1pe10.3,2x,A,1x,A)')
      &      Akv_bak, 'Akv_bak    Background vertical viscosity',
      &                                     'coefficient, m2/s.'

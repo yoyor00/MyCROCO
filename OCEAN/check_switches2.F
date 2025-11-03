@@ -69,9 +69,6 @@
 #ifdef ANA_VMIX
       iAk=iAk+1
 #endif
-#ifdef BVF_MIXING
-      iAk=iAk+1
-#endif
 #ifdef LMD_MIXING
       iAk=iAk+1
 #endif

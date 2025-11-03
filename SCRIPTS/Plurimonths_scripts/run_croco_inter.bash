@@ -35,6 +35,7 @@ RUNCMD='./'
 #RUNCMD="mpirun -np $NBPROCS "
 #RUNCMD="$MPI_LAUNCH "
 #RUNCMD='srun '
+#RUNCMD="mpiexec -np ${NBPROCS} ./"
 
 #  Define environment variables for OPENMP
 OMP_SCHEDULE=static
@@ -51,15 +52,22 @@ FORCING_FILES=0
 CLIMATOLOGY_FILES=0
 BOUNDARY_FILES=1
 RUNOFF_FILES=0
+TIDE_FILES=0
+ONLINE_FILES=0
+ONLINEFREQ=4
+ONLINEPATH="DATA/CFSR_Benguela_LR"
 
-# Atmospheric surface forcing dataset used for the bulk formula (NCEP)
+# Define the suffix of your input files
+# Atmospheric bulk file suffix (croco_blk_ATMOS_BULK_Y????M??.nc) - NOT USED IF ONLINE
 ATMOS_BULK=ERA5
-# Atmospheric surface forcing dataset used for the wind stress (NCEP, QSCAT)
+# Atmospheric forcing file suffix (croco_frc_ATMOS_FRC_Y????M??.nc) - NOT USED IF BULK or ONLINE
 ATMOS_FRC=QSCAT
-# Oceanic boundary and initial dataset (SODA, ECCO,...)
+# Oceanic boundary and initial files suffix (croco_ini_OGCM_Y????M??.nc and croco_bry_OGCM_Y????M??.nc)
 OGCM=SODA
-# Runoff dataset (Daie and Trenberth,...)
-RUNOFF_DAT=DAI
+# Runoff file sufix (croco_runoff_RUNOFF_Y????M??.nc)
+RUNOFF=DAI
+# Tide file suffix (croco_frc_TIDE_FRC.nc)
+TIDE_FRC=tpxo7_croco
 
 # Model time step [seconds]
 DT=3600
@@ -89,9 +97,9 @@ NY_SPIN=0
 # Output frequency [days]
 #   average
 ND_AVG=3
-#   history (if = -1 set equal to NUMTIMES)
+#   history (if = -1 set equal to NUMTIMES, the end of each month/year)
 ND_HIS=-1
-#   restart (if = -1 set equal to NUMTIMES)
+#   restart (if = -1 set equal to NUMTIMES, the end of each month/year)
 ND_RST=-1
 
 #  Restart file - RSTFLAG=0 --> No Restart
@@ -126,6 +134,7 @@ INIFILE=${MODEL}_ini
 CLMFILE=${MODEL}_clm
 BRYFILE=${MODEL}_bry
 RNFFILE=${MODEL}_runoff
+TIDEFILE=${MODEL}_frc
 #
 if [ ! -e $MSSOUT ] ; then
  mkdir $MSSOUT
@@ -163,8 +172,10 @@ cd $SCRATCHDIR
 echo "Getting $CODFILE from $INPUTDIR"
 $CP -f $INPUTDIR/$CODFILE $SCRATCHDIR
 chmod u+x $CODFILE
-echo "Getting $AGRIF_FILE from $INPUTDIR"
-$CP -f $INPUTDIR/$AGRIF_FILE $SCRATCHDIR
+if [[ $NLEVEL > 1 ]]; then
+  echo "Getting $AGRIF_FILE from $MSSDIR"
+  $CP -f $MSSDIR/$AGRIF_FILE $SCRATCHDIR
+fi
 #
 # Get the netcdf files
 #
@@ -243,7 +254,11 @@ while [ $NY != $NY_END ]; do
         echo "Getting ${RNFFILE}.nc${ENDF} from $MSSDIR"
         $LN -sf $MSSDIR/${RNFFILE}.nc${ENDF} ${RNFFILE}.nc${ENDF}
       fi
-      
+      if [[ ${TIDE_FILES} == 1 ]]; then
+        echo "Getting ${TIDEFILE}_${TIDE_FRC}.nc${ENDF} from $MSSDIR"
+        $LN -sf $MSSDIR/${TIDEFILE}_${TIDE_FRC}.nc${ENDF} ${TIDEFILE}.nc${ENDF}
+      fi
+
       LEVEL=$((LEVEL + 1))
     done
 #
@@ -352,6 +367,12 @@ while [ $NY != $NY_END ]; do
 	echo "USING NUMHIS   = $NUMHIS"
 	echo "USING NUMRST   = $NUMRST"
 	echo "USING NUMRECINI = $NUMRECINI"
+	echo "USING NYONLINE = $NY"
+	echo "USING NMONLINE = $NM"
+	echo "USING ENDYONLINE = $NY_END"
+	echo "USING ENDMONLINE = $NM_END"
+	echo "USING ONLINEFREQ = $ONLINEFREQ"
+	echo "USING ONLINEPATH = $ONLINEPATH"
 	
 	if [ ! -f ${MODEL}_inter.in${ENDF} ]; then
 	    echo "=="
@@ -359,13 +380,23 @@ while [ $NY != $NY_END ]; do
 	  echo "=="
 	  exit 1
 	fi
-	sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
-	    -e 's/\bNUMAVG\b/'$NUMAVG'/' -e 's/\bNUMHIS\b/'$NUMHIS'/' -e 's/\bNUMRST\b/'$NUMRST'/' \
-	    -e 's/NUMRECINI/'$NUMRECINI'/' \
-	    -e 's/NYONLINE/'$NY'/' -e 's/NMONLINE/'$NM'/' \
-	    -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
-	    < ${MODEL}_inter.in${ENDF} > ${MODEL}_${TIME}_inter.in${ENDF}
-	
+        sed \
+          -e "s/NUMTIMES/${NUMTIMES}/" \
+          -e "s/TIMESTEP/${DT}/" \
+          -e "s/NFAST/${NFAST}/" \
+          -e "s/\bNUMAVG\b/${NUMAVG}/" \
+          -e "s/\bNUMHIS\b/${NUMHIS}/" \
+          -e "s/\bNUMRST\b/${NUMRST}/" \
+          -e "s/NUMRECINI/${NUMRECINI}/" \
+          -e "s/NYONLINE/${NY}/" \
+          -e "s/NMONLINE/${NM}/" \
+          -e "s/ENDYONLINE/${NY_END}/" \
+          -e "s/ENDMONLINE/${NM_END}/" \
+          -e "s/ONLINEFREQ/${ONLINEFREQ}/" \
+          -e "s|ONLINEPATH|${ONLINEPATH}|" \
+          -e "s|<logfilename>|${MODEL}_${TIME}.out|" \
+          < "${MODEL}_inter.in${ENDF}" > "${MODEL}_${TIME}_inter.in${ENDF}"
+
 	LEVEL=$((LEVEL + 1))
     done
     DT=$DT0

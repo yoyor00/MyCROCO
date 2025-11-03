@@ -181,14 +181,8 @@
       <field field_ref="bvstr" name="bvstr"  />
       <field field_ref="sustr" name="sustr"  />
       <field field_ref="svstr" name="svstr"  />
-# ifdef DEBUG_BULK
-      <field field_ref="uwnd" name="uwnd"  />
-      <field field_ref="vwnd" name="vwnd"  />
-      <field field_ref="shflx" name="shflx"  />
-      <field field_ref="swflx" name="swflx"  />
-#  ifdef READ_PATM
+# ifdef READ_PATM
       <field field_ref="patm" name="patm"  />
-#  endif
 # endif
       <field field_ref="u" name="u" />
       <field field_ref="v" name="v"  />
