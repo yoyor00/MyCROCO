@@ -183,7 +183,7 @@
       real btf_cycle(NT), btf_scale(NT)
       integer itbtf(NT), btf_ncycle(NT), btf_rec(NT)
       integer lbtfgrd(NT), btf_tid(NT), btf_id(NT)
-      real btf_origin_date_in_sec(NT)
+      REAL(kind=8) :: tclm_origin_date_in_sec(NT)
       common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale,
      &                 btf_origin_date_in_sec
       common /btfdat2/ itbtf, btf_ncycle, btf_rec, lbtfgrd

@@ -1,24 +1,18 @@
 # include "cppdefs.h"
   SUBROUTINE tool_origindate(netcdfid,varid,date_in_sec) 
-
+#ifdef MPI
+    use scalars, ONLY : mynode
+#endif
     IMPLICIT NONE
 # include "netcdf.inc"
+
 
     INTEGER       :: netcdfid,varid
     CHARACTER*180 :: units
     CHARACTER*19  :: date_str
     INTEGER       :: lenstr, luni, indst, ierr
     REAL*8        :: tool_datosec,date_in_sec
-    INTEGER       :: mynode
 
-    include 'mpif.h'
-    call MPI_Comm_rank (MPI_COMM_WORLD, mynode, ierr)
-
-# ifdef MPI
-#  define MPI_master_only if (mynode.eq.0)
-# else
-#  define MPI_master_only
-# endif
     ierr=nf_get_att_text(netcdfid, varid, 'units', units)
     if (ierr .eq. nf_noerr) then
       luni = lenstr(units)

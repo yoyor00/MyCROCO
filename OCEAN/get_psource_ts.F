@@ -709,16 +709,16 @@ c     goto 99           !--> ERROR
 # endif /* SUBSTANCE  */
 
           endif
-# ifdef USE_CALENDAR
-        call tool_origindate(ncidqbar,tsrc_tid(itrc),
-     &                       tsrc_origin_date_in_sec(itrc))
-# endif
 !     Read in Netcdf file the concentration
 C     R          write(*,*)'==============='
 C     R          write(*,*)'ITRC=',itrc
 C     R          write(*,*)'indxTsrc+itrc-1=',indxTsrc+itrc-1
 C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
           if (got_tsrc(itrc)) then
+# ifdef USE_CALENDAR
+            call tool_origindate(ncidqbar,tsrc_tid(itrc),
+     &                       tsrc_origin_date_in_sec(itrc))
+# endif
             lvar=lenstr(vname(1,indxTsrc+itrc-1))
             ierr=nf_inq_varid (ncidqbar,vname(1,indxTsrc+itrc-1)
      &           (1:lvar),tsrc_id(itrc))

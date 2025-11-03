@@ -74,7 +74,7 @@
       integer ittclm(NT), tclm_ncycle(NT), tclm_rec(NT),
      &        tclm_tid(NT), tclm_id(NT)
       logical got_tclm(NT)
-      real tclm_origin_date_in_sec(NT)
+      REAL(kind=8) :: tclm_origin_date_in_sec(NT)
       common /climat_tdat/  tclm_time,       tclm_cycle,
      &        ittclm,       tclm_ncycle,     tclm_rec,
      &                      tclm_tid,        tclm_id,
