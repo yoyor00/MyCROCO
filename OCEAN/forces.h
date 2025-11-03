@@ -154,7 +154,7 @@
       real stf_cycle(NT), stf_scale(NT)
       integer itstf(NT), stf_ncycle(NT), stf_rec(NT)
       integer lstfgrd(NT), stf_tid(NT), stf_id(NT)
-      real stf_origin_date_in_sec(NT)
+      REAL(kind=8) :: stf_origin_date_in_sec(NT)
       common /stfdat1/ stflxp,  stf_time, stf_cycle, stf_scale
       common /stfdat2/ stf_origin_date_in_sec
       common /stfdat3/ itstf, stf_ncycle, stf_rec, lstfgrd
@@ -183,7 +183,7 @@
       real btf_cycle(NT), btf_scale(NT)
       integer itbtf(NT), btf_ncycle(NT), btf_rec(NT)
       integer lbtfgrd(NT), btf_tid(NT), btf_id(NT)
-      REAL(kind=8) :: tclm_origin_date_in_sec(NT)
+      REAL(kind=8) :: btf_origin_date_in_sec(NT)
       common /btfdat1/ btflxp,  btf_time, btf_cycle, btf_scale,
      &                 btf_origin_date_in_sec
       common /btfdat2/ itbtf, btf_ncycle, btf_rec, lbtfgrd
