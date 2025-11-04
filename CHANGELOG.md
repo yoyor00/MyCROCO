@@ -26,6 +26,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BENCH: fix result_pattern used to retrive performance data for performance plot, fix
   results directory for copying jobcomp.log in case of failed compilation (solve #446)
 
+- OUTPUT : fix output with XIOS and using ABL1D (Issue #425)
+
+
 ### Changed
 
 
