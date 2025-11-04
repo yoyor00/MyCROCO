@@ -66,6 +66,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - OUTPUT : incompatibility when activating 
   PISCES + PSOURCE_NCFILE_TS + DIURNAL_INPUT_SRFLX (Issue #435)
 
+- OUTPUT : fix output with XIOS and using ABL1D (Issue #425)
+
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
