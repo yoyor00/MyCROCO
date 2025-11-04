@@ -2689,22 +2689,43 @@ c !$acc wait
 
 # ifdef BULK_FLUX
       if (xios_field_is_active("tair")) then
+#   ifdef ABL1D
+      call xios_send_field("tair",tq_abl(:,:,2,nstp,1))
+#   else
       call xios_send_field("tair",tair)
+#   endif
       endif
       if (xios_field_is_active("rhum")) then
+#   ifdef ABL1D
+      call xios_send_field("rhum",tq_abl(:,:,2,nstp,2))
+#   else
       call xios_send_field("rhum",rhum)
+#   endif
       endif
       if (xios_field_is_active("prate")) then
       call xios_send_field("prate",prate)
       endif
+#   ifdef READ_PATM
+      if (xios_field_is_active("patm")) then
+      call xios_send_field("patm",patm2d)
+      endif
+#   endif
 # endif
 
 # if defined BULK_SM_UPDATE || defined BULK_FLUX 
       if (xios_field_is_active("uwnd")) then
+#   ifdef ABL1D
+      call xios_send_field("uwnd",u_abl(:,:,2,nstp))
+#   else
       call xios_send_field("uwnd",uwnd)
+#   endif
       endif
       if (xios_field_is_active("vwnd")) then
+#   ifdef ABL1D
+      call xios_send_field("vwnd",v_abl(:,:,2,nstp))
+#   else
       call xios_send_field("vwnd",vwnd)
+#   endif
       endif
 # endif
 # ifdef WKB_WWAVE

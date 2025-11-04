@@ -207,6 +207,26 @@
   </file>
 </file_group>
 
+# ifdef BULK_FLUX
+<file_group id="BULK_FLUX" output_freq="5d" output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+  <file id="file5" name_suffix="_BULK_FLUX" split_freq="5d" split_freq_format="%y-%mo-%d">
+    <field_group id="BULK_FLUX_fields" operation="average">
+      <field field_ref="uwnd" name="uwnd"  />
+      <field field_ref="vwnd" name="vwnd"  />
+      <field field_ref="tair" name="tair"  />
+      <field field_ref="rhum" name="rhum"  />
+      <field field_ref="radsw" name="radsw"  />
+      <field field_ref="shflx_rlw" name="shflx_rlw"  />
+      <field field_ref="shflx_lat" name="shflx_lat"  />
+      <field field_ref="shflx_sen" name="shflx_sen"  />
+#  ifdef READ_PATM
+      <field field_ref="patm" name="patm"  />
+#  endif
+    </field_group>
+  </file>
+</file_group>
+# endif
+
 # ifdef DIAGNOSTICS_UV
 <file_group id="M" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
   <file id="file5" name_suffix="_M" split_freq="5d" split_freq_format="%y-%mo-%d">
