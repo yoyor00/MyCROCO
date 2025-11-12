@@ -53,6 +53,7 @@
 #  include "abl1d.h"
 #  include "ncscrum.h"
 # endif
+      USE tools_string, ONLY : to_uppercase
       integer blkvar_id, imin, imax, jmin, jmax, strt3(3), cnt3(3)
 # ifdef ABL1D
       integer strt4(4), cnt4(4), k
@@ -131,6 +132,14 @@
           ierr=nf_inq_varid(ncidbulkO(blkvar_id),
      &                      blk_vname(1,blkvar_id)(1:lvar),
      &                      bulk_varid(blkvar_id))
+
+          if (ierr /= NF_NOERR) then
+               ierr = nf_inq_varid(ncid, 
+     &               trim(to_uppercase(blk_vname(1,blkvar_id)(1:lvar))), 
+     &               varid)
+          end if
+     
+
 !
 ! Extract the number of records
 !
