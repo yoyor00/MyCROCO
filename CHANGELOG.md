@@ -18,6 +18,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - SUBSTANCE: submassbalance error if no closed border (Issue #449)
 
+- Cleaning : remove printing variable time_mars (#374)
+
 - AGRIF: sponge keyword missing: put it back (even if theoretically useless, 
   it creates a read_inp error), path for online corrected in croco_inter.in,
   AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
