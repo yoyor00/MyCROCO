@@ -10,31 +10,31 @@
 !
 
 module tools_string
-    ! set of utils to manage string in Fortran
+   ! set of utils to manage string in Fortran
 
-    implicit none
+   implicit none
 
-    ! default
-    private
-    public to_uppercase
+   ! default
+   private
+   public to_uppercase
 
 contains
 
-    function to_uppercase(str) result(upper_str)
-        ! Return uppercase of a string
-        implicit none
-        character(len=*), intent(in) :: str
-        character(len=len(str)) :: upper_str
-        integer :: i, ich
+   function to_uppercase(str) result(upper_str)
+      ! Return uppercase of a string
+      implicit none
+      character(len=*), intent(in) :: str
+      character(len=len(str)) :: upper_str
+      integer :: i, ich
 
-        do i = 1, len(str)
-            ich = iachar(str(i:i))
-            if (ich >= iachar('a') .and. ich <= iachar('z')) then
-                upper_str(i:i) = achar(ich - 32)
-            else
-                upper_str(i:i) = str(i:i)
-            end if
-        end do
-    end function to_uppercase
+      do i = 1, len(str)
+         ich = iachar(str(i:i))
+         if (ich >= iachar('a') .and. ich <= iachar('z')) then
+            upper_str(i:i) = achar(ich - 32)
+         else
+            upper_str(i:i) = str(i:i)
+         end if
+      end do
+   end function to_uppercase
 
 end module tools_string

@@ -37,10 +37,10 @@
 !  OUTPUT
 !  bulkfilename(bvar) (path and file name of the considered variable)
       implicit none
+      USE tools_string, ONLY : to_uppercase
 #  include "param.h"
 #  include "online.h"
 #  include "ncscrum.h"
-      USE tools_string, ONLY : to_uppercase
       integer, intent(in) :: bvar
       character bulkyear*4, bulkmonth1*1, bulkmonth2*2
       integer lenstr

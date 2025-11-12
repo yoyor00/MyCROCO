@@ -43,6 +43,7 @@
 !  the simulation.
 !
       implicit none
+      USE tools_string, ONLY : to_uppercase
 # include "param.h"
 # include "forces.h"
 # include "scalars.h"
@@ -53,7 +54,6 @@
 #  include "abl1d.h"
 #  include "ncscrum.h"
 # endif
-      USE tools_string, ONLY : to_uppercase
       integer blkvar_id, imin, imax, jmin, jmax, strt3(3), cnt3(3)
 # ifdef ABL1D
       integer strt4(4), cnt4(4), k
@@ -134,9 +134,9 @@
      &                      bulk_varid(blkvar_id))
 
           if (ierr /= NF_NOERR) then
-               ierr = nf_inq_varid(ncid, 
+               ierr = nf_inq_varid(ncidbulkO(blkvar_id), 
      &               trim(to_uppercase(blk_vname(1,blkvar_id)(1:lvar))), 
-     &               varid)
+     &               bulk_varid(blkvar_id))
           end if
      
 
