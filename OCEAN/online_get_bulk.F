@@ -42,8 +42,8 @@
 !  bulkfilename(X) and are repeated when necessary during the time evolution of
 !  the simulation.
 !
-      implicit none
       USE tools_string, ONLY : to_uppercase
+      implicit none
 # include "param.h"
 # include "forces.h"
 # include "scalars.h"

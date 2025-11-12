@@ -36,8 +36,8 @@
 !  bvar (index of the considered variable)
 !  OUTPUT
 !  bulkfilename(bvar) (path and file name of the considered variable)
-      implicit none
       USE tools_string, ONLY : to_uppercase
+      implicit none
 #  include "param.h"
 #  include "online.h"
 #  include "ncscrum.h"
