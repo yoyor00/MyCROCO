@@ -178,10 +178,10 @@ C$OMP MASTER
       call begin_timing
 #endif
       time=time_start+dt*float(iic-ntstart)
-      tdays=time*sec2day
 #ifdef USE_CALENDAR
-      time_mars=time_mars+dt
-      tdays=(time_mars-time_start)*sec2day
+      tdays=(time-time_start)*sec2day
+#else
+      tdays=time*sec2day
 #endif
 
 #ifdef SOLVE3D

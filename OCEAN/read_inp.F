@@ -369,6 +369,7 @@
           READ(origin_date(12:13),fmt='(i2)') origin_hour
           READ(origin_date(15:16),fmt='(i2)') origin_minute
           READ(origin_date(18:19),fmt='(i2)') origin_second
+          start_time = origin_date_in_sec
         endif
 # endif
 ! END date
