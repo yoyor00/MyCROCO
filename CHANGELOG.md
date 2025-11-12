@@ -50,6 +50,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
+- Cleaning : remove printing variable time_mars (#374)
 
 - Compilation : fix cat "croco_ascii.txt" command in case of relative path
 

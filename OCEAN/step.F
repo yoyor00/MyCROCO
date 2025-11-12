@@ -168,10 +168,10 @@ C$OMP BARRIER
 
 C$OMP MASTER
       time=time_start+dt*float(iic-ntstart)
-      tdays=time*sec2day
 #ifdef USE_CALENDAR
-      time_mars=time_mars+dt
       tdays=(time-time_start)*sec2day
+#else
+      tdays=time*sec2day
 #endif
 
 #ifdef SOLVE3D
