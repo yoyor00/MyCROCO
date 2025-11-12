@@ -61,6 +61,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - AGRIF: sponge keyword missing: put it back (even if theoretically useless, 
   it creates a read_inp error), path for online corrected in croco_inter.in,
   AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
+- AGRIF : make it usable with USE_CALENDAR (Issue #339)
 
 
 - OUTPUT : incompatibility when activating 

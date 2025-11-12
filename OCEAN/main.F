@@ -380,12 +380,6 @@ C$OMP BARRIER
                                 ! --> copy it into threadprivate "time"
 
 #ifdef USE_CALENDAR
-      ! compute start time and ntimes
-      time=start_time +origin_date_in_sec
-!# ifdef ANA_INITIAL
-!      ! if no initial file set start_date from croco.in
-!      if (nrrec.eq.0) time=tool_datosec(start_date)
-!# endif
       time_end=tool_datosec(end_date)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
