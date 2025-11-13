@@ -55,7 +55,7 @@ RUNOFF_FILES=0
 TIDE_FILES=0
 ONLINE_FILES=0
 ONLINEFREQ=4
-ONLINEPATH="DATA/CFSR_Benguela_LR"
+ONLINEPATH="../DATA/CFSR_Benguela_LR" # we recommend using an absolute path
 
 # Define the suffix of your input files
 # Atmospheric bulk file suffix (croco_blk_ATMOS_BULK_Y????M??.nc) - NOT USED IF ONLINE
