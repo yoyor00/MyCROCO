@@ -6,6 +6,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- SCRIPTS: in run_croco_inter add TIDE_FILES and ONLINE (Freq, path) missing information 
+- SCRIPTS : update run_croco_inter.bash to handle "USE_CALENDAR" outputs logic (Issue #455)
+
 ### Fixed
 
 - BOTTOM STRESS : Incorrect definition of loop indices for calculating
