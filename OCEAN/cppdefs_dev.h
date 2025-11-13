@@ -800,11 +800,9 @@
     NOW replaced by BSTRESS_FAST option
 ======================================================================
 */
-/*
 #ifndef BSTRESS_FAST
 # define  LIMIT_BSTRESS
 #endif
-*/
 #ifdef INNERSHELF
 # undef  LIMIT_BSTRESS
 #endif
