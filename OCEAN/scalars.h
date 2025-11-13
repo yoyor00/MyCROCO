@@ -34,7 +34,7 @@
 !
       real dt, dtfast, time, time2, time_start, tdays, start_time
 #ifdef USE_CALENDAR
-      real time_mars, time_end
+      real time_end
       character*19 date, end_date, start_date
 #endif
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
@@ -74,7 +74,7 @@
 #endif
      &                       PREDICTOR_2D_STEP
 #ifdef USE_CALENDAR
-      common /time_indices2/ time_mars, time_end,
+      common /time_indices2/ time_end,
      &                       date, end_date, start_date
 #endif
 
