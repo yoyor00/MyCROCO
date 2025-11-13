@@ -73,6 +73,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- LIMIT_BSTRESS : restore the key definition by default (if not BSTRESS_FAST)
 - SUBSTANCE : submassbalance feature is now activated only by namelist
   (Issue #347)
 - Compilation : update on jobcomp (support for ifx and different version of gfortran, 
