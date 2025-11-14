@@ -5,6 +5,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ## [2.1.X] - xxxx-xx-xx
 
 ### Added
+ 
+- SCRIPTS : update run_croco_inter.bash to handle "USE_CALENDAR" outputs logic (Issue #455)
 
 ### Fixed
 
