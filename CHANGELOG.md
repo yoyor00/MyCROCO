@@ -11,6 +11,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BENCH : Add performance tracking (Issue #378 and #423)
 
 - SCRIPTS: in run_croco_inter add TIDE_FILES and ONLINE (Freq, path) missing information 
+- SCRIPTS : update run_croco_inter.bash to handle "USE_CALENDAR" outputs logic (Issue #455)
 
 ### Fixed
 
@@ -50,6 +51,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
+- Cleaning : remove printing variable time_mars (#374)
 
 - Compilation : fix cat "croco_ascii.txt" command in case of relative path
 
@@ -61,6 +63,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - AGRIF: sponge keyword missing: put it back (even if theoretically useless, 
   it creates a read_inp error), path for online corrected in croco_inter.in,
   AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
+- AGRIF : make it usable with USE_CALENDAR (Issue #339)
 
 
 - OUTPUT : incompatibility when activating 
