@@ -36,6 +36,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- BULK : change input reading to search for uppercase variable 
+  before exiting in error (#454)
 
 ### Deprecated
 
