@@ -36,6 +36,7 @@
 !  bvar (index of the considered variable)
 !  OUTPUT
 !  bulkfilename(bvar) (path and file name of the considered variable)
+      USE tools_string, ONLY : to_uppercase
       implicit none
 #  include "param.h"
 #  include "online.h"
@@ -43,6 +44,7 @@
       integer, intent(in) :: bvar
       character bulkyear*4, bulkmonth1*1, bulkmonth2*2
       integer lenstr
+      logical :: file_exists
       ! If first iteration, Y and M from roms.in file
       if(itbulkO(bvar).eq.0) then
 #  if defined XIOS
@@ -69,13 +71,35 @@
      &  '_Y'//bulkyear//'M0'//bulkmonth1//'.nc'
 #  endif
       else
-        ! Variable to add the mont in the name (month>10)
+        ! Variable to add the month in the name (month>10)
         write(unit=bulkmonth2,fmt='(I2)') bulkmonthnum(bvar)
         ! Filename
         bulkfilename(bvar)=pathbulk(1:lenstr(pathbulk))//
      &  blk_vname(1,bvar)(1:lenstr(blk_vname(1,bvar)))//
      &  '_Y'//bulkyear//'M'//bulkmonth2//'.nc'
       endif
+
+      ! Check existence of file
+      inquire(file=bulkfilename(bvar), exist=file_exists)
+      ! Try uppercase of variable name if file does not exists
+      if (.not. file_exists) then
+        if(bulkmonthnum(bvar).lt.10) then
+          bulkfilename(bvar)=pathbulk(1:lenstr(pathbulk))//
+     &    to_uppercase(blk_vname(1,bvar)(1:lenstr(blk_vname(1,bvar))))//
+#  if defined BULK_MONTH_1DIGIT
+     &    '_Y'//bulkyear//'M'//bulkmonth1//'.nc'
+#  else
+     &    '_Y'//bulkyear//'M0'//bulkmonth1//'.nc'
+#  endif
+        else
+          bulkfilename(bvar)=pathbulk(1:lenstr(pathbulk))//
+     &    to_uppercase(blk_vname(1,bvar)(1:lenstr(blk_vname(1,bvar))))//
+     &    '_Y'//bulkyear//'M'//bulkmonth2//'.nc'
+        endif
+        inquire(file=bulkfilename(bvar), exist=file_exists)
+      endif
+      ! NB : error raise at the opening of file in online_get_bulk.F
+
 #  ifdef AROME
         bulkfilename(bvar)=pathbulk(1:lenstr(pathbulk))
 #  endif

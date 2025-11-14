@@ -87,6 +87,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
             pytools and mattools (instead of prepro) - solve issue #295 
             and 2 distinct options for run scripts (either inter for Plurimonth_scripts type: 
             run_croco_inter, or runcpl for SCRIPTS_COUPLING type: submitjob, mynamelist...)
+- BULK : change input reading to search for uppercase variable 
+  before exiting in error (#454)
 
 ### Deprecated
 
