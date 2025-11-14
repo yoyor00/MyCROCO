@@ -42,6 +42,7 @@
 !  bulkfilename(X) and are repeated when necessary during the time evolution of
 !  the simulation.
 !
+      USE tools_string, ONLY : to_uppercase
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -131,6 +132,14 @@
           ierr=nf_inq_varid(ncidbulkO(blkvar_id),
      &                      blk_vname(1,blkvar_id)(1:lvar),
      &                      bulk_varid(blkvar_id))
+
+          if (ierr /= NF_NOERR) then
+               ierr = nf_inq_varid(ncidbulkO(blkvar_id), 
+     &               trim(to_uppercase(blk_vname(1,blkvar_id)(1:lvar))), 
+     &               bulk_varid(blkvar_id))
+          end if
+     
+
 !
 ! Extract the number of records
 !
