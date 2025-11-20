@@ -276,19 +276,22 @@
 
 #  if defined BBL_BREAKER_DELAY
           cff=hdelay(i,j)+zeta(i,j,kstp)
-    !      cff1=sqrt((8.0/9.81)*(wac(i,j,wnew)+war(i,j,wnew))*frq(i,j,wnew))
 #  else
           cff=depth
 #  endif
-          Ut=(wepr(i,j))**(1/3)          ! surf. turb. velocity
-          Ut=Ut*30               ! efficiency function
-!          Ut=Ut/(exp(cff/max(cff1,1.e-3))-1.) ! depth attenuation
-!          Ut=sqrt((0.1*wepr(i,j))**cff1_Ut)          ! surf. turb. velocity
-!          Ut=(Ut*30./cff2_Ut)**cff2_Ut               ! efficiency function
-          Ut=Ut/(exp(cff/max(whrm(i,j),1.e-3))-1.) ! depth attenuation
-!          Ut=Ut/(exp(cff/max(cff1,1.e-3))-1.) ! depth attenuation
+#  if defined BSTIR_RS89
+          Ut=(wepb(i,j))**(2./3.)                   ! surf. breaking turb.
+          Ut=Ut/(exp(cff/max(whrm(i,j),1.e-3))-1.)  ! depth attenuation
      &                              SWITCH rmask(i,j)
      &                              SWITCH_WET rmask_wet(i,j)
+          Ut=30.*sqrt(Ut)                           ! stirring velocity     
+#  else
+          Ut=sqrt((0.1*wepb(i,j))**cff1_Ut)          ! surf. turb. velocity
+          Ut=(Ut*50./cff2_Ut)**cff2_Ut               ! efficiency function
+          Ut=Ut/(exp(cff/max(whrm(i,j),1.e-3))-1.)   ! depth attenuation
+     &                              SWITCH rmask(i,j)
+     &                              SWITCH_WET rmask_wet(i,j)
+#  endif   
 # else
           Ut=0.
 # endif
@@ -370,8 +373,12 @@
 !---------------------------------------------------------------------
 !
 ! Pure wave skin stress
-            tau_ws = scf1*((znots*Fwave)**scf2)*(Ub(i,j)+Ut)**scf3
-     !       tau_ws = scf1*((Ub(i,j)/(znots*Fwave))**(-0.52))*(Ub(i,j)+Ut)**2
+#  if defined BSTIR_RS89
+            cff=sqrt((Ub(i,j)**2.)+(Ut**2.))
+#  else
+            cff=Ut+Ub(i,j)
+#  endif
+            tau_ws = scf1*((znots*Fwave)**scf2)*(cff)**scf3
 
 ! current-only skin stress
             cff1 = vonKar/LOG(Zr(i,j)/znots)
