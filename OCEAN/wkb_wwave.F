@@ -589,6 +589,20 @@ C$OMP BARRIER
 !  surrounding MPI nodes
 !
       call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
+#  ifdef OBC_WEST
+      if (rank.gt.0) then       ! get h from mynode - 1
+        target_rank = rank-1
+        call MPI_Recv(hmpi, Lm, 
+     &                MPI_DOUBLE_PRECISION, target_rank, 200, 
+     &                MPI_COMM_WORLD, status, ierr)
+      endif
+      if (rank.lt.NP_XI-1) then  ! send h to mynode + 1
+        source = rank+1
+        call MPI_Send(h(1:Lm,1), Lm,
+     &                MPI_DOUBLE_PRECISION, source, 200, 
+     &                MPI_COMM_WORLD, ierr)
+      endif
+#  elif defined OBC_EAST
       if (rank.lt.NP_XI-1) then  ! get h from mynode + 1
         target_rank = rank+1
         call MPI_Recv(hmpi, Lm, 
@@ -601,6 +615,7 @@ C$OMP BARRIER
      &                MPI_DOUBLE_PRECISION, source, 200, 
      &                MPI_COMM_WORLD, ierr)
       endif
+#  endif
 # endif
 !
       do j=jstr-1,jend+1
@@ -615,33 +630,47 @@ C$OMP BARRIER
 #  else
           Dstp(i,j)=max(h(i,j)+zeta(i,j,knew),eps)
 #   ifdef BREAKER_DELAY
-         !
-         ! Breaker delay
-         ! --> works for east oriented beaches (OBC_EAST)
-         !
-         ! Hs^2/L0 
-          cff1=(hrm(i,j,1)*sqrt(2.)*frq(i,j,1)**2.)
-     &          /(twopi*9.81)
-          cff1=cff1*hrm(i,j,1)*sqrt(2.)*1500.
-         ! Hs^2/h
-    !      cff1=(hrm(i,j,1)*sqrt(2.))**2./Dstp(i,j)
-    !      cff1=40.*delay_eff
-          cff2=min(i+floor(cff1*pm(i,j)),LLm+1) ! Delay position
-          cff3=1*h(i,j)
-          cff4=1
+! 
+! Breaker delay
+! 
+         ! Hs^2/L0
+          cff1=frq(i,j,1)**2./(twopi*9.81)
+          cff1=1300.*cff1*(hrm(i,j,1)*sqrt(2.))**2.
+         ! Hs^2*sqrt(L)
+   !       cff1=twopi/((wkx(i,j,1)**2.)+(wke(i,j,1)**2.))**(1./2.)
+   !       cff1=5.*(cff1**(1./2.))*(hrm(i,j,1)*SQRT(2.))**2.
+          cff3=1.*h(i,j)
+          cff4=1.
+#    ifdef OBC_WEST
+#     define DELAY_SIGN -
+          cff2=max(i-floor(cff1*pm(i,j)),-Lm)  ! Delay position
+          do eta=cff2,i
+#    elif defined OBC_EAST
+#     define DELAY_SIGN +
+          cff2=min(i+floor(cff1*pm(i,j)),2*Lm) ! Delay position
           do eta=i,cff2
-            if (eta.le.iend) then
-              cff3=cff3+(cff1+((i-eta)/pm(i,j)))*h(eta,j)
-              cff4=cff4+(cff1+((i-eta)/pm(i,j)))
+#    endif
+            if (eta.le.iend .and. eta.ge.istr-1) then
+              cff3=cff3+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
+     &                                            *h(eta,j)
+              cff4=cff4+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
             endif
 #    ifdef MPI
             ! if MPI get h from next MPI node
-            if (eta.gt.iend .and. rank.lt.NP_XI-1) then 
-              cff3=cff3+(cff1+((i-eta)/pm(i,j)))*hmpi(eta-iend)
-              cff4=cff4+(cff1+((i-eta)/pm(i,j)))
+#     ifdef OBC_WEST
+            if (eta.lt.istr-1 .and. rank.gt.0) then
+              cff3=cff3+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
+     &                                        *hmpi(Lm+eta)
+#     elif defined OBC_EAST
+            if (eta.gt.iend .and. rank.lt.NP_XI-1) then
+              cff3=cff3+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
+     &                                      *hmpi(eta-iend)
+#     endif
+              cff4=cff4+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
             endif
 #    endif
           enddo
+#    undef DELAY_SIGN
           hdelay(i,j)=cff3/cff4
           Dstp_delay(i,j)=max(hdelay(i,j)+zeta(i,j,knew),eps)
 #   endif
