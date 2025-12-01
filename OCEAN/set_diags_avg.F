@@ -133,35 +133,35 @@
           do j=JstrR,JendR
             do i=IstrR,IendR
               TXadv_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TXadv_mld(i,j,itrc) +
-     &                           TXadv_mld_avg(i,j,itrc) )
+     &                    ( cff1*TXadv_mld_avg(i,j,itrc) +
+     &                           TXadv_mld(i,j,itrc) )
               TYadv_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TYadv_mld(i,j,itrc) +
-     &                           TYadv_mld_avg(i,j,itrc) )
+     &                    ( cff1*TYadv_mld_avg(i,j,itrc) +
+     &                           TYadv_mld(i,j,itrc) )
               TVadv_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TVadv_mld(i,j,itrc) +
-     &                           TVadv_mld_avg(i,j,itrc) )
+     &                    ( cff1*TVadv_mld_avg(i,j,itrc) +
+     &                           TVadv_mld(i,j,itrc) )
               THmix_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*THmix_mld(i,j,itrc) +
-     &                           THmix_mld_avg(i,j,itrc) )
+     &                    ( cff1*THmix_mld_avg(i,j,itrc) +
+     &                           THmix_mld(i,j,itrc) )
               TVmix_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TVmix_mld(i,j,itrc) +
-     &                           TVmix_mld_avg(i,j,itrc) )
+     &                    ( cff1*TVmix_mld_avg(i,j,itrc) +
+     &                           TVmix_mld(i,j,itrc) )
               TForc_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TForc_mld(i,j,itrc) +
-     &                           TForc_mld_avg(i,j,itrc) )
+     &                    ( cff1*TForc_mld_avg(i,j,itrc) +
+     &                           TForc_mld(i,j,itrc) )
               Trate_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*Trate_mld(i,j,itrc) +
-     &                           Trate_mld_avg(i,j,itrc) )
+     &                    ( cff1*Trate_mld_avg(i,j,itrc) +
+     &                           Trate_mld(i,j,itrc) )
               Tentr_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*Tentr_mld(i,j,itrc) +
-     &                           Tentr_mld_avg(i,j,itrc) )
+     &                    ( cff1*Tentr_mld_avg(i,j,itrc) +
+     &                           Tentr_mld(i,j,itrc) )
               TXout_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TXout_mld(i,j,itrc) +
-     &                           TXout_mld_avg(i,j,itrc) )
+     &                    ( cff1*TXout_mld_avg(i,j,itrc) +
+     &                           TXout_mld(i,j,itrc) )
               TYout_mld_avg(i,j,itrc) = cff *
-     &                    ( cff1*TYout_mld(i,j,itrc) +
-     &                           TYout_mld_avg(i,j,itrc) )
+     &                    ( cff1*TYout_mld_avg(i,j,itrc) +
+     &                           TYout_mld(i,j,itrc) )
             enddo
           enddo
         enddo
