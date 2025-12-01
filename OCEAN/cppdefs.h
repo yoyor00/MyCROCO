@@ -374,10 +374,10 @@
 # endif
                       /*   Choice of Biology models   */
 # ifdef BIOLOGY
-#  undef  PISCES
+#  define PISCES
 #  undef  BIO_NChlPZD
 #  undef  BIO_N2ChlPZD2
-#  define BIO_BioEBUS
+#  undef  BIO_BioEBUS
                       /*   Biology options    */
 #  ifdef PISCES
 #   undef  DIURNAL_INPUT_SRFLX
