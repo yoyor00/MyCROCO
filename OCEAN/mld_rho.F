@@ -57,7 +57,7 @@
             endif
           enddo   ! <-- k
             
-          hbl_rho(i,j) = ( z_w(i,j,N) - z_r(i,j,kbl_rho(i,j)) )
+          hbl_rho(i,j) = ( z_w(i,j,N) - z_w(i,j,kbl_rho(i,j)-1) )
 
 #  ifdef MASKING
      &                                                *rmask(i,j)
