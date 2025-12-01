@@ -41,6 +41,9 @@
      &     pe2d(PRIVATE_2D_SCRATCH_ARRAY)
       real*QUAD cff, my_avgke, my_avgpe, my_volume
       character echar*8
+#ifdef USE_CALENDAR
+       character*19 :: tool_sectodat
+#endif
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
