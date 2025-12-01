@@ -75,6 +75,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
   - remove routine set_HUV1, not used (#410)
+  - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
 
 
 ### Contributors on this release
