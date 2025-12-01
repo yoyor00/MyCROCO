@@ -33,6 +33,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
+- BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
+
 
 ### Deprecated
 
