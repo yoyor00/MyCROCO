@@ -452,7 +452,6 @@
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
-# define ZETA_DRY_IO
 # define FILLVAL
                       /* Calendar */
 
@@ -1929,7 +1928,6 @@
 #  undef  key_MUSTANG_V2
 # endif
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined ESTUARY
 /*
@@ -1988,7 +1986,6 @@
 # define ANA_PSOURCE
 # define MASKING
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined SEAGRASS
 /*
