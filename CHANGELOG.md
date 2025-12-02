@@ -17,6 +17,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
+- PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
