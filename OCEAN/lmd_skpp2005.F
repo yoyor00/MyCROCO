@@ -45,7 +45,6 @@
 !==================================================================================
 !
 #define HBL_SMOOTH
-#define LIMIT_UNSTABLE_ONLY
 
       implicit none
 #include "param.h"
@@ -395,11 +394,8 @@
 
 #include "lmd_wscale_wm_and_ws.h"
 
-#ifdef LIMIT_UNSTABLE_ONLY
+
           f1=5.0 * max(0., Bfsfc) * vonKar/(ustar(i,j)**4+eps)
-#else
-          f1=0.
-#endif
           cff=1./(z_w(i,j,k)-z_w(i,j,k-1))
           cff_up=cff*(z_bl -z_w(i,j,k-1))
           cff_dn=cff*(z_w(i,j,k)   -z_bl)
