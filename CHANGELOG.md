@@ -76,6 +76,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - comments refering to BASIN in step2D.F (#409)
   - remove routine set_HUV1, not used (#410)
   - remove ZETA_DRY_IO cpp key and avoid modifying zeta with bathymetry in output (#406 and #384)
+  - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
 
 
 ### Contributors on this release
