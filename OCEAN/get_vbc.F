@@ -530,16 +530,16 @@
         enddo
 #   undef CDRAG
       elseif (rdrg2.gt.0.) then
-        do j=JstrV,Jend
-          do i=Istr,Iend
+        do j=Jstr,Jend
+          do i=IstrU,Iend
             cff=0.25*(v(i  ,j,1,nrhs)+v(i  ,j+1,1,nrhs)+
      &                v(i-1,j,1,nrhs)+v(i-1,j+1,1,nrhs))
             Umag=SQRT(cff*cff+u(i,j,1,nrhs)*u(i,j,1,nrhs))
             bustr(i,j)=rdrg2*Umag*u(i,j,1,nrhs)
           enddo
         enddo
-        do j=Jstr,Jend
-          do i=IstrU,Iend
+        do j=JstrV,Jend
+          do i=Istr,Iend
             cff=0.25*(u(i,j  ,1,nrhs)+u(i+1,j  ,1,nrhs)+
      &                u(i,j-1,1,nrhs)+u(i+1,j-1,1,nrhs))
             Umag=SQRT(cff*cff+v(i,j,1,nrhs)*v(i,j,1,nrhs))
@@ -548,11 +548,11 @@
         enddo
       else
         do j=Jstr,Jend
-          do i=Istr,Iend
+          do i=IstrU,Iend
             bustr(i,j)=rdrg*u(i,j,1,nrhs)
           enddo
         enddo
-        do j=Jstr,Jend
+        do j=JstrV,Jend
           do i=Istr,Iend
             bvstr(i,j)=rdrg*v(i,j,1,nrhs)
           enddo

@@ -4,7 +4,7 @@
 ####################################################
 #
 # This script assumes default compilation options, to
-# change those options : 
+# change those options: 
 # it can either 
 # 1. be  edited to add your own options
 # 2. take environment variables
@@ -54,8 +54,8 @@ MPIINC=""
 #
 # set NETCDF directories
 #
-NETCDFLIB=$(nf-config --flibs)
-NETCDFINC=-I$(nf-config --includedir)
+NETCDFLIB="$(nf-config --flibs)"
+NETCDFINC="-I$(nf-config --includedir)"
 
 #
 # set OASIS-MCT (or OASIS3) directories if needed
@@ -65,10 +65,10 @@ PRISM_ROOT_DIR=../../../oasis3-mct/compile_oa3-mct
 #
 # set XIOS directory if needed
 #
-# if coupling with OASIS3-MCT is activated :
+# if coupling with OASIS3-MCT is activated:
 # => you need to use XIOS compiled with the "--use_oasis oasis3_mct" flag
 #-----------------------------------------------------------
-XIOS_ROOT_DIR=$HOME/xios
+XIOS_ROOT_DIR="$HOME/xios"
 
 ####################################################
 # END OF USER'S MODIFICATIONS
@@ -89,9 +89,9 @@ function show_help() {
    echo "                              Available = gfortran, ifort, ifc, nvfortran, pgfortran"
    echo "  --mpif90 <compiler>         Specify the MPI Fortran compiler (default: mpif90)."
    echo "  --fflags <flags>            Specify the compilation flags "
-   echo "                              (default: if fc=ifort or ifx : '-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise' )."
-   echo "                              (default: if fc=gfortran : '-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy' )."
-   echo "                              (default: if fc=nvfortran or pgfortran : '-g -fast -r8 -i4 -mcmodel=medium -Mbackslash' )."
+   echo "                              (default: if fc=ifort or ifx: '-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise' )."
+   echo "                              (default: if fc=gfortran: '-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy' )."
+   echo "                              (default: if fc=nvfortran or pgfortran: '-g -fast -r8 -i4 -mcmodel=medium -Mbackslash' )."
    echo "  --jobs <flags>              Number of processes for compilation (default: 1)"
    echo "  --netcdf-inc <path>         Specify the NetCDF include directory. (default: nf-config --includedir)"
    echo "  --netcdf-lib <path>         Specify the NetCDF library directory. (default: nf-config --flibs)"
@@ -151,13 +151,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 
-NPROCS=${NPROCS:-1}
-SOURCE=${CROCO_SRC-$SOURCE1}
-SCRDIR=./Compile
-RUNDIR=`pwd`
-ROOT_DIR=$SOURCE/..
+NPROCS="${NPROCS:-1}"
+SOURCE="${CROCO_SRC-$SOURCE1}"
+SCRDIR="./Compile"
+RUNDIR="`pwd`"
+ROOT_DIR="$SOURCE/.."
 
-MPIF90=${CROCO_MPIF90-$MPIF90}
+MPIF90="${CROCO_MPIF90-$MPIF90}"
 
 #
 # Use GNU Make command, else make
@@ -168,13 +168,13 @@ which $MAKE > /dev/null 2>&1 || MAKE=make
 #
 # clean scratch area
 #
-rm -rf $SCRDIR
-mkdir $SCRDIR
+rm -rf "$SCRDIR"
+mkdir "$SCRDIR"
 
 #
 # AGRIF sources directory
 #
-AGRIF_SRC=${ROOT_DIR}/AGRIF
+AGRIF_SRC="${ROOT_DIR}/AGRIF"
 
 #
 # copy SOURCE code
@@ -201,17 +201,17 @@ ls ${ROOT_DIR}/FOIL/*          > /dev/null  2>&1 && \cp -r ${ROOT_DIR}/FOIL/* $S
 if [[ -e "namelist_pisces_ref" ]] ; then
    echo "  file namelist_pisces exists in Run directory"
 else
-   \cp -f ${ROOT_DIR}/PISCES/namelist_pisces* $RUNDIR
+   \cp -f "${ROOT_DIR}/"PISCES/namelist_pisces* "$RUNDIR"
    echo "  file namelist_pisces copied from source directory"
-   \cp -f ${ROOT_DIR}/PISCES/SED/namelist_sediment* $RUNDIR
+   \cp -f "${ROOT_DIR}/"PISCES/SED/namelist_sediment* "$RUNDIR"
    echo "  file namelist_sediment copied from source directory"
 fi
 
 if [[ -d MUSTANG_NAMELIST ]]; then
    echo "  Mustang namelist directory MUSTANG_NAMELIST exists"
 else
-   mkdir -p $RUNDIR/MUSTANG_NAMELIST
-   \cp -rf ${ROOT_DIR}/MUSTANG/MUSTANG_NAMELIST/*txt $RUNDIR/MUSTANG_NAMELIST/.
+   mkdir -p "$RUNDIR/MUSTANG_NAMELIST"
+   \cp -rf "${ROOT_DIR}/"MUSTANG/MUSTANG_NAMELIST/*txt "$RUNDIR/MUSTANG_NAMELIST/."
    echo "  file para*txt copied from source directory"
 fi
 
@@ -219,71 +219,83 @@ fi
 # overwrite with local files
 #
 
-ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 $SCRDIR
-ls *.F     > /dev/null  2>&1 && \cp -f *.F $SCRDIR
-ls *.h     > /dev/null  2>&1 && \cp -f *.h $SCRDIR
-ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 $SCRDIR
-ls Make*   > /dev/null  2>&1 && \cp -f Make* $SCRDIR
-ls jobcomp > /dev/null  2>&1 && \cp -f jobcomp $SCRDIR
+ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 "$SCRDIR"
+ls *.F     > /dev/null  2>&1 && \cp -f *.F "$SCRDIR"
+ls *.h     > /dev/null  2>&1 && \cp -f *.h "$SCRDIR"
+ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 "$SCRDIR"
+ls Make*   > /dev/null  2>&1 && \cp -f Make* "$SCRDIR"
 
 # Change directory
 #
-cd $SCRDIR
+cd "$SCRDIR"
 #
 # generates LDFLAGS1 according to users notifications
 #
 LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
 CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
+
 #
 # Set compilation options
 #
 if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX / MAC =====
    if [[ $FC == ifort || $FC == ifc ]] ; then
+      # Intel's classic Fortran compiler
       CPP1="cpp -traditional -DLinux -DIfort"
-      CFT1=ifort
+      CFT1="ifort"
       FFLAGS1="-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise"
 #                FFLAGS1="-O0 -g -i4 -r8 -traceback -check bounds \
 #                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
       LDFLAGS1="$LDFLAGS1"
-   elif [[ $FC == gfortran ]] ; then
+   elif [[ $FC == ifx ]] ; then
+      # New Intel's LLVM-based compiler
+      CPP1="cpp -traditional -DLinux -DIfort"
+      CFT1="$FC"
+      FFLAGS1="-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise"
+#                FFLAGS1="-O0 -g -i4 -r8 -traceback -check bounds \
+#                       -check uninit -CA -CB -CS -ftrapuv -fpe1"
+      LDFLAGS1="$LDFLAGS1"
+   elif [[ $FC == gfortran || $FC == gfortran-* ]] ; then
       CPP1="cpp -traditional -DLinux"
-      CFT1=gfortran
+      CFT1="$FC"
       FFLAGS1="-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy"
 #           FFLAGS1="-O0 -g -fdefault-real-8 -fdefault-double-8 -std=legacy -fbacktrace \
 #                   -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=8888"
       LDFLAGS1="$LDFLAGS1"
    elif [[ $FC == pgfortran || $FC == nvfortran ]] ; then
        CPP1="cpp  -traditional -DLinux -DXLF"
-       CFT1=$FC
+       CFT1="$FC"
        FFLAGS1="-g -fast -r8 -i4 -mcmodel=medium -Mbackslash"
    #FFLAGS1="-g -O0 -C -Kieee -r8 -i4 -traceback"
-   if [[ $HOSTNAME == "jean-zay"* ]]; then
-      CPP1=$CPP1" -DJEANZAY"
-   fi
+      if [[ $HOSTNAME == "jean-zay"* ]]; then
+         CPP1="$CPP1 -DJEANZAY"
+      fi
    else
-      echo "Unknown Fortran Compiler"
-      exit
+      echo "Unknown Fortran compiler, please add it to jobcomp"
+      if [[ -z $CROCO_CFT1 ]]; then
+         exit 1
+      fi
+      echo "(Ignoring unknown Fortran compiler)"
    fi
 else
-   echo "Unknown Operating System"
-   exit
+   echo "Unknown Operating System, please add it to jobcomp"
+   exit 1
 fi
 #
 # Take environment variables for compiler and options
 #
-FFLAGS1=${CROCO_FFLAGS1-$FFLAGS1}
-CFT1=${CROCO_CFT1-$CFT1}
+FFLAGS1="${CROCO_FFLAGS1-$FFLAGS1}"
+CFT1="${CROCO_CFT1-$CFT1}"
 
 # PISCES Business
 if $($CPP1 testkeys.F | grep -i -q p2zisdefined) ; then
-        echo "Simple version of PISCES is defined : copy the appropriate namelist"
-        \cp -f $RUNDIR/namelist_pisces_cfg_p2z  $RUNDIR/namelist_pisces_cfg
-        \cp -f $RUNDIR/namelist_pisces_cfg_p2z  $RUNDIR/namelist_pisces_cfg.1
+        echo "Simple version of PISCES is defined: copy the appropriate namelist"
+        \cp -f "$RUNDIR/namelist_pisces_cfg_p2z"  "$RUNDIR/namelist_pisces_cfg"
+        \cp -f "$RUNDIR/namelist_pisces_cfg_p2z"  "$RUNDIR/namelist_pisces_cfg.1"
 fi
 if $($CPP1 testkeys.F | grep -i -q p5zisdefined) ; then
-        echo "Quota version of PISCES is defined : copy the appropriate namelist"
-        \cp -f $RUNDIR/namelist_pisces_cfg_p5z  $RUNDIR/namelist_pisces_cfg
-        \cp -f $RUNDIR/namelist_pisces_cfg_p5z  $RUNDIR/namelist_pisces_cfg.1
+        echo "Quota version of PISCES is defined: copy the appropriate namelist"
+        \cp -f "$RUNDIR/namelist_pisces_cfg_p5z"  "$RUNDIR/namelist_pisces_cfg"
+        \cp -f "$RUNDIR/namelist_pisces_cfg_p5z"  "$RUNDIR/namelist_pisces_cfg.1"
 fi
 
 
@@ -318,13 +330,13 @@ if $($CPP1 testkeys.F | grep -i -q mpiisdefined) ; then
 fi
 #
 # - Determine if XIOS librairies is required 
-# - if it is the case :
+# - if it is the case:
 #     => if XIOS compiled with oasis, add the OASIS inc. files and librairies
 #     => pre-processing (using cpp) of the xml files required by XIOS 
 #
 unset COMPILEXIOS
 echo "Checking COMPILEXIOS..."
-XIOS_ROOT_DIR=${CROCO_XIOS_ROOT_DIR-$XIOS_ROOT_DIR}
+XIOS_ROOT_DIR="${CROCO_XIOS_ROOT_DIR-$XIOS_ROOT_DIR}"
 if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
       echo " => XIOS activated"
       COMPILEXIOS=TRUE
@@ -332,7 +344,7 @@ if $($CPP1 testkeys.F | grep -i -q xiosisdefined) ; then
       CPPFLAGS1="$CPPFLAGS1 -I$XIOS_ROOT_DIR/inc"
       FFLAGS1="$FFLAGS1 -I$XIOS_ROOT_DIR/inc"
 
-      ln -fs $XIOS_ROOT_DIR/bin/xios_server.exe $RUNDIR/.
+      ln -fs "$XIOS_ROOT_DIR/bin/xios_server.exe" "$RUNDIR/."
 fi
 
 #
@@ -340,7 +352,7 @@ fi
 #
 unset COMPILEOASIS
 echo "Checking COMPILEOASIS..."
-PRISM_ROOT_DIR=${CROCO_PRISM_ROOT_DIR-$PRISM_ROOT_DIR}
+PRISM_ROOT_DIR="${CROCO_PRISM_ROOT_DIR-$PRISM_ROOT_DIR}"
 if $($CPP1 testkeys.F | grep -i -q oacplisdefined) ; then
    echo " => OASIS activated"
    CHAN=MPI1
@@ -361,8 +373,8 @@ fi
 if [[ $COMPILEAGRIF ]] ; then
     NPROCS=1   #compile on whar process only !
 # Find the default C compiler
-    CC1=$(echo -e 'dummy_target:\n\t@echo $(CC)' | $MAKE -f - dummy_target)
-    CFLAGS1=$(echo -e 'dummy_target:\n\t@echo $(CFLAGS)' | $MAKE -f - dummy_target)
+    CC1="$(echo -e 'dummy_target:\n\t@echo $(CC)' | $MAKE -f - dummy_target)"
+    CFLAGS1="$(echo -e 'dummy_target:\n\t@echo $(CFLAGS)' | $MAKE -f - dummy_target)"
 # Test if the C compiler is the GNU Compiler
 # if True add '-fcommon' to CFLAGS
     if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
@@ -388,8 +400,8 @@ if [[ $COMPILEAGRIF ]] ; then
    $CPP1 amr.in | grep -v -e ! -e '#' -e % -e '*' > CROCOFILES/amr.scrum
    mv AGRIF/conv CROCOFILES/.
    for i in *.h *.h90 ; do
-      echo $i
-      cat cppdefs.h $i | cpp -P | grep -v -e ! -e '#' -e % -e '*' > CROCOFILES/$i
+      echo "$i"
+      cat cppdefs.h "$i" | cpp -P | grep -v -e ! -e '#' -e % -e '*' > "CROCOFILES/$i"
    done
    mv -f CROCOFILES/private_scratch_AMR.h CROCOFILES/private_scratch.h
 fi
@@ -402,7 +414,7 @@ echo "Checking COMPILEOMP..."
 if $($CPP1 testkeys.F | grep -i -q openmp) ; then
    COMPILEOMP=TRUE
    if [[ $OS == Linux || $OS == Darwin ]] ; then 
-      if [[ $FC == gfortran ]] ; then
+      if [[ $FC == gfortran || $FC == gfortran-* ]] ; then
          FFLAGS1="$FFLAGS1 -fopenmp"
       elif [[ $FC == ifort || $FC == ifc ]] ; then
          INTEL_VERSION=$(ifort --version 2>&1 | grep -oP "(\d+)" | head -n1)
@@ -412,7 +424,11 @@ if $($CPP1 testkeys.F | grep -i -q openmp) ; then
          else
             FFLAGS1="$FFLAGS1 -openmp"
          fi
+      elif [[ $FC == ifx ]] ; then
+         # Intel's new LLVM-based compiler
+         FFLAGS1="$FFLAGS1 -qopenmp"
       else
+         # Default fallback option
          FFLAGS1="$FFLAGS1 -openmp"
       fi
    fi
@@ -450,11 +466,11 @@ $MAKE depend
 $MAKE -j ${NPROCS} || exit 1
 
 
-[[ -f croco  ]] && mv croco $RUNDIR
-[[ -f partit ]] && mv partit $RUNDIR
-[[ -f ncjoin ]] && mv ncjoin  $RUNDIR
+[[ -f croco  ]] && mv croco "$RUNDIR"
+[[ -f partit ]] && mv partit "$RUNDIR"
+[[ -f ncjoin ]] && mv ncjoin  "$RUNDIR"
 
-cat $ROOT_DIR/OCEAN/croco_ascii.txt
-echo CROCO is OK
+cat "croco_ascii.txt"
+echo "CROCO is OK"
 
 #

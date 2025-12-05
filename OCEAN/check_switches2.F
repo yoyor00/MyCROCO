@@ -69,19 +69,7 @@
 #ifdef ANA_VMIX
       iAk=iAk+1
 #endif
-#ifdef BVF_MIXING
-      iAk=iAk+1
-#endif
 #ifdef LMD_MIXING
-      iAk=iAk+1
-#endif
-#ifdef MY2_MIXING
-      iAk=iAk+1
-#endif
-#ifdef MY25_MIXING
-      iAk=iAk+1
-#endif
-#ifdef PP_MIXING
       iAk=iAk+1
 #endif
       if (iAk.gt.1) then

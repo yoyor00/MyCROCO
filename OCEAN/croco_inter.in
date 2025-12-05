@@ -10,13 +10,13 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0     2.0d0      200.0d0
 
 start_date:
-xxxx-xx-xx xx:xx:xx
+Ystart-Mstart-01 00:00:00
 
 end_date: 
-xxxx-xx-xx xx:xx:xx
+Yend-Mend-01 00:00:00
 
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
-                   XX       XX       XX
+                   NHHIS       NHAVG       NHRST
 
 grid:  filename
                           croco_grd.nc
@@ -256,13 +256,6 @@ sediments_mustang: input file ( Mustang sediment model)
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T
 
-floats: LDEFFLT, NFLT, NRPFFLT / inpname, hisname
-           T      6      0
-                                   floats.in
-                                   floats.nc
-float_fields:  Grdvar Temp Salt Rho Vel
-                T     T    T    T   T
-
 stations: LDEFSTA, NSTA, NRPFSTA / inpname, hisname
              T      400      0
                                     stations.in
@@ -282,5 +275,5 @@ psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
                          35  13  1  -1   T T   20.0  15.0
 
 online:    byear  bmonth recordsperday byearend bmonthend / data path
-           NYONLINE   NMONLINE      4             2011     3
-          DATA/CFSR_Benguela_LR/
+           NYONLINE   NMONLINE    ONLINEFREQ      ENDYONLINE     ENDMONLINE
+           ONLINEPATH/

@@ -16,9 +16,6 @@
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef FLOATS
-# include "ncscrum_floats.h"
-#endif
 #ifdef STATIONS
 # include "nc_sta.h"
 #endif
@@ -28,9 +25,6 @@
       if (ncidhis.ne.-1) ierr=nf_close(ncidhis)
 #ifdef AVERAGES
       if (ncidavg.ne.-1) ierr=nf_close(ncidavg)
-#endif
-#ifdef FLOATS
-      if (ncidflt.ne.-1) ierr=nf_close(ncidflt)
 #endif
 #if defined ABL1D && ! defined XIOS
       if (ncidablhis.ne.-1) ierr=nf_close(ncidablhis)
@@ -105,9 +99,6 @@
 #ifdef STATIONS
      &  ,'number of records written into station  file(s):', nrecsta
 #endif /* STATIONS */
-#ifdef FLOATS
-     &  ,'number of records written into floats   file(s):', nrecflt
-#endif /* FLOATS */
 #if defined ABL1D && ! defined XIOS
      &  ,'number of records written into abl history file(s):',
      &                                                    nrecablhis

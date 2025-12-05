@@ -35,7 +35,7 @@ include Makedefs
 #======================================================================
 
  SRCS = main.F		step.F		read_inp.F\
-	timers_roms.F	init_scalars.F	init_arrays.F	set_weights.F\
+	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
 \
@@ -55,7 +55,7 @@ include Makedefs
 \
 	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
-	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
+	ana_vmix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
@@ -66,7 +66,7 @@ include Makedefs
 	param.F    ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
-	get_date.F	lenstr.F	closecdf.F	insert_node.F\
+	lenstr.F	closecdf.F	insert_node.F\
 	fillvalue.F	nf_add_attribute.F		set_cycle.F\
 	def_grid_2d.F   def_grid_3d.F   def_his.F       def_rst.F\
 	def_diags.F	def_diagsM.F	def_bio_diags.F\
@@ -100,17 +100,12 @@ include Makedefs
 	online_interp.F			online_interpolate_bulk.F\
 	online_set_bulk.F		online_interpolate_3d_bulk.F\
 \
-	init_floats.F	wrt_floats.F	step_floats.F	rhs_floats.F\
-	interp_rho.F	def_floats.F	init_arrays_floats.F\
-	random_walk.F	get_initial_floats.F\
-\
 	init_sta.F	wrt_sta.F	step_sta.F	interp_sta.F\
 	def_sta.F	init_arrays_sta.F\
 \
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
@@ -162,6 +157,7 @@ include Makedefs
 	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
 	module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
+	tools_string.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
 	toolorigindate.F90 \
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
@@ -178,21 +174,21 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
- TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
+TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
 
 
- RCS = $(SRCS:.F=.f)
+RCS = $(SRCS:.F=.f)
 
- RCS90 = $(SRCS90:.F90=.f90)
+RCS90 = $(SRCS90:.F90=.f90)
 
- OBJS = $(RCS:.f=.o)
- OBJS90 = $(RCS90:.f90=.o)
+OBJS = $(RCS:.f=.o)
+OBJS90 = $(RCS90:.f90=.o)
 
- SBIN = croco
+SBIN = croco
 
- AMRRCS=$(AMRSRCS:.F=.f)
+AMRRCS=$(AMRSRCS:.F=.f)
 
- AMROBJS=$(AMRRCS:.f=.o)
+AMROBJS=$(AMRRCS:.f=.o)
 
 
 %.mod : %.o

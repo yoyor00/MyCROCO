@@ -3609,19 +3609,6 @@ C$OMP BARRIER
       enddo
 # endif
 
-# undef DEBUG_ARMOR
-# ifdef DEBUG_ARMOR
-      do ised=1,NST
-        MPI_master_only write(*,*) '================================'
-        MPI_master_only write(*,*) ' ised      :',ised
-        MPI_master_only write(*,*) ' Sd        :',1.e3*Sd(ised)
-        MPI_master_only write(*,*) ' bed_frac  :',bed_frac(25,1,1,ised)
-        MPI_master_only write(*,*) ' tau_ce_2d :',rho0
-     &                                            *tau_ce_2d(25,1,ised)
-        MPI_master_only write(*,*) '================================'
-      enddo
-# endif
-!
 !-----------------------------------------------------------------------
 !  Update mean surface properties.
 !  Sd50 must be positive definite, due to BBL routines.
