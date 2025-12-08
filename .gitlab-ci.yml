@@ -68,18 +68,19 @@ debug_ifort_base:
   tags:
     - ci.inria.fr
     - large_more_disk
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:tmp
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
-    #note : check step done on sequential-ifort
+    #note : check step done on sequential-ifx
     - |
       ./bench-croco.py \
       --case @base,@nbq,@sediment_mustang,@other \
-      --variants @debug-ifort \
-      --compare-to sequential-ifort \
-      --title debug_ifort \
+      --variants @debug-ifx \
+      --compare-to sequential-ifx \
+      --title debug_ifx \
       --debug \
+      --jobs 1 \
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
@@ -90,7 +91,7 @@ debug_ifort_base:
     when: always
     expire_in: 1 week
     reports:
-      junit: BENCH/results/debug_ifort-host_ci/junit_report.xml
+      junit: BENCH/results/debug_ifx-host_ci/junit_report.xml
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
@@ -99,7 +100,7 @@ debug_ifort_realist:
   tags:
     - ci.inria.fr
     - large_more_disk
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:2.0.0
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:tmp
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
@@ -107,10 +108,11 @@ debug_ifort_realist:
     - |
       ./bench-croco.py \
       --case @realist \
-      --variants @debug-ifort \
-      --compare-to sequential-ifort \
-      --title debug_ifort \
+      --variants @debug-ifx \
+      --compare-to sequential-ifx \
+      --title debug_ifx \
       --debug \
+      --jobs 1 \
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
@@ -121,7 +123,7 @@ debug_ifort_realist:
     when: always
     expire_in: 1 week
     reports:
-      junit: BENCH/results/debug_ifort-host_ci/junit_report.xml
+      junit: BENCH/results/debug_ifx-host_ci/junit_report.xml
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
@@ -188,7 +190,7 @@ debug_realist_base:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -214,7 +216,7 @@ debug_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -244,7 +246,7 @@ restart_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -274,7 +276,7 @@ plotphy_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -304,7 +306,7 @@ debug_agrif_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -421,7 +423,7 @@ track_perf:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
