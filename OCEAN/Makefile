@@ -117,7 +117,7 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-	module_lagrangian.F module_substance.F  module_MUSTANG.F module_OBSTRUCTIONS.F\
+	module_lagrangian.F module_substance.F  module_OBSTRUCTIONS.F\
 	module_ibm.F\
 \
         abl_step.F  abl_ini.F  abl_tke.F\
