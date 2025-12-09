@@ -288,7 +288,7 @@ MODULE trajinitsave
     jmax       = MMm
     kmax       = N
     
-    time_start = start_time + origin_date_in_sec
+    time_start = start_time 
 
 ! start by exchange lonwest and latsouth for all procs
 #ifdef MPI
