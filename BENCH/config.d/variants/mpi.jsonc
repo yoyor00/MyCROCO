@@ -33,7 +33,7 @@
   },
 
   // mpi-ifx
-  "mpi-ifort-{tasks}": {
+  "mpi-ifx-{tasks}": {
     "configure": "--with-optim=mpi --with-splitting={case.splitting.{tasks}} FC=mpiifx",
     "tuning_familly": "intel",
     "tuning_fflags": "standard",
