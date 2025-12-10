@@ -80,7 +80,6 @@ debug_ifort_base:
       --compare-to sequential-ifx \
       --title debug_ifx \
       --debug \
-      --jobs 1 \
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
@@ -112,7 +111,6 @@ debug_ifort_realist:
       --compare-to sequential-ifx \
       --title debug_ifx \
       --debug \
-      --jobs 1 \
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
