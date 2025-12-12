@@ -466,7 +466,7 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
-# ifdef WKB_WWAVE
+# if defined WAVE_ROLLER || defined WKB_WWAVE 
 !$acc update if(compute_on_device) host(wepb0(:,:))
         ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
