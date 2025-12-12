@@ -13,9 +13,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
 
-- WKB_WWAVE : wrong variable name wepb0 when WKB is not used in output 
-  subroutine wrt_his.F (#465)
-
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
@@ -38,6 +35,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
+- WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
+  and not in cppdefs_dev.h (#465)
 
 ### Deprecated
 
