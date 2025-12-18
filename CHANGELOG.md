@@ -68,6 +68,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - PP_MIXING, MY2_MIXING, MY25_MIXING (#418)
   - XCOMM_FORMAT (#419)
   - LMD_SKPP_MONOB never define (#400)
+  - LIMIT_UNSTABLE_ONLY is always define (#401)
 
 ### Other
 
@@ -76,6 +77,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
   - remove routine set_HUV1, not used (#410)
+  - remove ZETA_DRY_IO cpp key and avoid modifying zeta with bathymetry in output (#406 and #384)
   - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
 
 
