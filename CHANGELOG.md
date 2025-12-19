@@ -76,6 +76,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - DEBUG_ARMOR, DEBUG, DIAGNOSTICS_DEBUG, NBQ_HZCORR_DEBUG (#415)
   - PP_MIXING, MY2_MIXING, MY25_MIXING (#418)
   - XCOMM_FORMAT (#419)
+  - TR (#395)
   - LMD_SKPP_MONOB never define (#400)
   - LIMIT_UNSTABLE_ONLY is always define (#401)
   - MLCONVEC (#399)
