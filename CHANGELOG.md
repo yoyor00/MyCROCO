@@ -69,6 +69,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - XCOMM_FORMAT (#419)
   - LMD_SKPP_MONOB never define (#400)
   - LIMIT_UNSTABLE_ONLY is always define (#401)
+  - MLCONVEC (#399)
 
 ### Other
 

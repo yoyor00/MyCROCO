@@ -487,20 +487,6 @@
               ghats(i,j,k)=0.
             endif
 #endif
-#if defined MLCONVEC
-!
-!  Add convective adjustment in the ML for unresolved convective cells
-!
-            if (bvf(i,j,k).lt.0.) then
-              Kv(i,j,k)=Kv(i,j,k) + nu0c
-# ifdef TEMPERATURE
-              Kt(i,j,k)=Kt(i,j,k) + nu0c
-# endif
-# ifdef SALINITY
-              Ks(i,j,k)=Ks(i,j,k) + nu0c
-# endif
-            endif
-#endif
           enddo
 
           do k=khbl-1,1,-1                    !-- below mixed layer
