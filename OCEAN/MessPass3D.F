@@ -69,6 +69,22 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       sub_E=(Mm+NSUB_E-1)/NSUB_E
       size_E=(NP1)*Npts*(sub_E+2*Npts)
 
+      ! If allocated, Check if size needs to be updated (if so deallocate)
+      if (allocated(buf_snd4_3D)) then
+          if (size_X .ne. size_X_3D_prev .or. size_E .ne. size_E_3D_prev) then
+              DeAllocate(buf_snd4_3D,  ibuf_sndN_3D,  
+     &         buf_snd2_3D,
+     &         buf_rev4_3D,  ibuf_revN_3D,  
+     &         buf_rev2_3D,
+     &        jbuf_sndW_3D,  jbuf_sndE_3D,
+     &        jbuf_revW_3D,  jbuf_revE_3D,
+     &         buf_snd1_3D,  ibuf_sndS_3D,  
+     &         buf_snd3_3D,
+     &         buf_rev1_3D,  ibuf_revS_3D,  
+     &         buf_rev3_3D)
+          endif
+      endif
+
       if(.not. allocated(buf_snd4_3D)) then
       Allocate(buf_snd4_3D(size_Z),  ibuf_sndN_3D(size_X),  
      &         buf_snd2_3D(size_Z),
@@ -80,6 +96,10 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
      &         buf_snd3_3D(size_Z),
      &         buf_rev1_3D(size_Z),  ibuf_revS_3D(size_X),  
      &         buf_rev3_3D(size_Z))
+          
+          ! Save sizes for later changes in size tests
+          size_X_3D_prev = size_X
+          size_E_3D_prev = size_E
       endif
 # endif
 

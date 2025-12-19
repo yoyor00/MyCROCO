@@ -53,12 +53,28 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
          size_X=Npts*(sub_X+2*Npts)-1  !7+Npts*sub_X
          sub_E=Mm
          size_E=Npts*(sub_E+2*Npts)-1  !7+Npts*sub_E
-         if (.not. allocated(ibuf_sndN)) then
-         Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
-     &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
-     &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
-     &     jbuf_revW(0:size_E), jbuf_revE(0:size_E))
 
+         ! If allocated, check if size needs to be updated (if so deallocate)
+         if (allocated(ibuf_sndN)) then
+             if (size_X .ne. size_X_prev .or. size_E .ne. size_E_prev) then
+                 ! Size changed (Npts switched from 2 to 3 or conversely)
+                 ! Deallocate to reallocate properly just afterwards
+                 Deallocate(ibuf_sndN, ibuf_revN, 
+     &             ibuf_sndS, ibuf_revS,
+     &             jbuf_sndW, jbuf_sndE,
+     &             jbuf_revW, jbuf_revE)
+             endif
+         endif
+
+         if (.not. allocated(ibuf_sndN)) then
+             Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
+     &         ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
+     &         jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
+     &         jbuf_revW(0:size_E), jbuf_revE(0:size_E))
+             
+             ! Save sizes for later size change tests
+             size_X_prev = size_X
+             size_E_prev = size_E
          endif
 # endif
 !
