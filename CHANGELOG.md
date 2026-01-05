@@ -30,6 +30,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : review lateral erosion feature (Issue #349)
 
+- MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
+
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
@@ -47,6 +49,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : 
   - remove key_MUSTANG_lateralerosion replace by a boolean in 
     namelist (Issue #349)
+  - remove MUSTANG_CORFLUX replace by a boolean in 
+    namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
 
