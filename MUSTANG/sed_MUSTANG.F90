@@ -162,13 +162,12 @@ MODULE sed_MUSTANG
 #endif
 #endif
 
-#if defined MUSTANG_CORFLUX
     USE sed_MUSTANG_CROCO,    ONLY :  sed_obc_corflu
     USE sed_MUSTANG_CROCO,    ONLY :  sed_meshedges_corflu
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
       USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_corflu
 #endif
-#endif
+
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
    USE reactionsinsed,  ONLY : reactions_in_sed
    USE bioloinit,     ONLY : p_txfiltbenthmax
@@ -286,8 +285,7 @@ MODULE sed_MUSTANG
 !!!!!! interpolation of corflux,corfluy at mesh edges  and                               !!
 !!!!!! treatment of corflux,corfluy at grid corners and exchange between MPI processors  !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if defined MUSTANG_CORFLUX
-    IF (isand2.GE.1) THEN
+    IF (l_corflux .and. (isand2.GE.1)) THEN
         CALL sed_obc_corflu(ifirst, ilast, jfirst, jlast)
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
         CALL sed_exchange_corflu(ifirst, ilast, jfirst, jlast, 0)
@@ -307,7 +305,6 @@ MODULE sed_MUSTANG
             ENDIF
          ENDDO             
     ENDIF
-#endif
 
    dtinv=1.0_rsh/REAL(dt_true,rsh)
   

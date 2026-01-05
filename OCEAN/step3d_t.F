@@ -49,7 +49,7 @@
 #   ifdef MUSTANG
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
-      USE comMUSTANG,  ONLY : corflux, corfluy
+      USE comMUSTANG,  ONLY : l_corflux, corflux, corfluy
       USE comsubstance, ONLY : irkm_var_assoc, nvpc, nvp
 #    ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D
@@ -227,8 +227,8 @@
           endif
 #  endif
 !
-#  if defined MUSTANG && defined MUSTANG_CORFLUX
-          if (k.eq.1 .and.
+#  if defined MUSTANG
+          if (l_corflux .and. k.eq.1 .and.
      &        (itrc.ge.itsubs1+nv_grav .and.
      &        itrc.le.itsubs1+nv_grav+nv_sand-1) ! isand1, isand2
      &        .or.

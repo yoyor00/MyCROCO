@@ -414,7 +414,6 @@
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
 #  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
 # endif
@@ -610,7 +609,6 @@
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
 #  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  define WAVE_OFFLINE
 # endif
@@ -1979,7 +1977,6 @@
 # ifdef MUSTANG
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
-#  define MUSTANG_CORFLUX
 # endif
 # define PSOURCE
 # define ANA_PSOURCE
