@@ -68,7 +68,7 @@ debug_ifort_base:
   tags:
     - ci.inria.fr
     - large_more_disk
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:tmp
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
@@ -99,7 +99,7 @@ debug_ifort_realist:
   tags:
     - ci.inria.fr
     - large_more_disk
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:tmp
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
@@ -188,7 +188,7 @@ debug_realist_base:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -214,7 +214,7 @@ debug_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -244,7 +244,7 @@ restart_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -274,7 +274,7 @@ plotphy_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -304,7 +304,7 @@ debug_agrif_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -421,7 +421,7 @@ track_perf:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:tmp
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
