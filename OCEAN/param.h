@@ -46,15 +46,20 @@
 # else
       parameter (LLm0=1,    MMm0=256, N=256)
 # endif
+#elif defined CANON2D
+# ifdef CANON2D_KHI
+      parameter (LLm0=128,  MMm0=1,   N=128)   
+# elif defined CANON2D_HWI
+      parameter (LLm0=302,  MMm0=1,   N=128)   
+# elif defined CANON2D_TCI
+      parameter (LLm0=503,  MMm0=1,   N=128)  
+# endif
 #elif defined ACOUSTIC
       parameter (LLm0=64,   MMm0=1,    N=64)
 #elif defined GRAV_ADJ
 # if defined NBQ || defined K3FAST
-      parameter (LLm0=750,  MMm0=25,    N=60) !   4 mm resolution
-!      parameter (LLm0=1500,  MMm0=50,    N=120) !   2 mm resolution
-!     parameter (LLm0=3000,  MMm0=20,    N=240) !   1 mm resolution
-!     parameter (LLm0=600,  MMm0=1,    N=48)   !   5 mm resolution
-!     parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
+!     parameter (LLm0=600,  MMm0=1,    N=60)   !   5 mm resolution
+      parameter (LLm0=300,  MMm0=1,    N=30)   !  10 mm resolution
 # else
 !     parameter (LLm0=32,   MMm0=1,    N=10)   !   2 km resolution
       parameter (LLm0=128,  MMm0=1,    N=40)   ! 500  m resolution
@@ -77,7 +82,7 @@
        parameter (LLm0=878, MMm0=3,    N=40)
 !      parameter (LLm0=878, MMm0=3,    N=20)
 # else
-       parameter (LLm0=878, MMm0=3,    N=40)
+       parameter (LLm0=256, MMm0=3,    N=40)
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
@@ -218,8 +223,16 @@
 # endif
 #elif defined CONVECT
       parameter (LLm0=128,  MMm0=1,  N=128)
+#elif defined PEKERIS
+# if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
+      parameter (LLm0=500,   MMm0=1,    N=50) 
+# elif defined PEKERIS_ACOUS3
+      parameter (LLm0=50000,   MMm0=1,    N=2500) 
+# endif  
+#elif defined WEDGE3D   
+      parameter (LLm0=1200,   MMm0=5400,    N=40)    
 #else
-      parameter (LLm0=xxx,  MMm0=xxx,  N=xxx)
+      parameter (LLm0=50,  MMm0=50,  N=100)
 #endif
 
 #ifdef AGRIF

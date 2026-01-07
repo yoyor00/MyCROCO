@@ -41,8 +41,9 @@
 #undef  ACOUSTIC        /* Acoustic wave Example */
 #undef  GRAV_ADJ        /* Graviational Adjustment Example */
 #undef  ISOLITON        /* Internal Soliton Example */
-#define ISOLITON_DJL    /* Internal DJL Soliton */
+#undef  ISOLITON_DJL    /* Internal DJL Soliton */
 #undef  KH_INST         /* Kelvin-Helmholtz Instability Example */
+#undef  CANON2D         /* Canonical Shear Instabilities Example */
 #undef  TS_HADV_TEST    /* Horizontal tracer advection Example */
 #undef  DUNE            /* Dune migration Example */
 #undef  SED_TOY         /* 1DV sediment toy Example */
@@ -431,6 +432,80 @@
 #  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
 # endif
+
+#elif defined LES
+/*
+!====================================================================
+!               LES (academic) Configurations
+!====================================================================
+!
+!----------------------
+! BASIC OPTIONS
+!----------------------
+!
+*/
+# define FC500
+
+# define EXPLICIT_LES
+# define MPI
+# define KNBQ
+# define K3FAST_AM4
+# define K3FAST_AB3
+# define K3FAST_2DCONT
+
+# ifdef IMPLICIT_LES
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
+#  define UV_HADV_WENO5
+#  define UV_VADV_WENO5
+#  define TS_HADV_WENO5
+#  define TS_VADV_WENO5
+#  undef TKE3D_MIXING
+#  undef GLS_MIXING_3D
+# endif
+
+# ifdef EXPLICIT_LES
+#  define W_HADV_UP5
+#  undef  W_HADV_UP3
+#  define W_VADV_WENO5
+#  undef  W_VADV_SPLINES
+#  define UV_HADV_UP5
+#  undef  UV_HADV_UP3
+#  define UV_VADV_WENO5
+#  undef  UV_VADV_SPLINES
+#  define TS_HADV_UP5
+#  undef  TS_HADV_UP3
+#  define TS_VADV_WENO5
+#  undef TS_VADV_SPLINES
+#  define TKE3D_MIXING
+# endif
+
+# undef RESET_RHO0
+# define NEW_S_COORD
+# undef VADV_ADAPT_IMP
+# undef SPONGE
+                      /* Model dynamics */
+# define SOLVE3D
+# undef  UV_COR
+# define UV_ADV
+                      /* Equation of State */
+# define TRACERS
+# define TEMPERATURE
+# define SALINITY
+# undef  NONLIN_EOS
+                     /* Analytical forcings */
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# define ANA_SRFLUX
+# define ANA_BTFLUX
+# define ANA_SSFLUX
+# define ANA_BSFLUX
+# define NO_FRCFILE
+	             /* Periodic BC */
+# define EW_PERIODIC
+# define NS_PERIODIC
 
 #elif defined COASTAL
 /*
@@ -1512,9 +1587,19 @@
 ! free-surface flows.
 ! Int. J. Numer. Methods Fluids 42, 929â~@~S952.
 */
+# define K3FAST_AM4
+# define K3FAST_AB3
+# define K3FAST_2DCONT
 # undef  MPI
-# define NBQ
+# undef XIOS
+# undef  NBQ
+# define KNBQ3
+# define KNBQ
+# define DIAG_CFL
+# if defined NBQ || defined KNBQ
 # define NBQ_PRECISE
+# endif
+# define M2FILTER_NONE
 # define SOLVE3D
 # undef  UV_ADV
 # define NEW_S_COORD
@@ -1620,8 +1705,15 @@
 !  J. Fluid Mech., 434:181-207.
 !
 */
-# undef  MPI
-# define NBQ
+# define MPI
+# define K3FAST_NOBPG
+# define K3FAST_SOFAR
+# define NBQ_GRAV
+# undef  NBQ
+# define KNBQ3
+# define KNBQ 
+# undef  NBQ_RCSOUND
+# define DIAG_CFL
 # undef  XIOS
 # define SOLVE3D
 # define NEW_S_COORD
@@ -1703,12 +1795,72 @@
 !                       ================ =========== =======
 !
 */
+# define DIAG_CFL
+
+# define K3FAST_2DCONT
+# define K3FAST_AM4
+# define K3FAST_AB3
+
+#  undef  K3FAST_SEDLAYERS
+#  define K3FAST_CSVISC2K
+
+# define  K3FAST_HIS
+# define   K3FAST_SOFAR 
+# define   K3FAST_NOBPG
+# define  NBQ_GRAV
 # undef  KH_INSTY
 # undef  KH_INST3D
 # undef  MPI
-# define NBQ
+# undef  NBQ
+# define KNBQ3
+# define KNBQ 
 # undef  NBQ_PRECISE
 # undef  XIOS
+# define SOLVE3D
+# define NEW_S_COORD
+# define UV_ADV
+# define UV_VIS2
+# define TS_HADV_WENO5
+# define TS_VADV_WENO5
+# define UV_HADV_WENO5
+# define UV_VADV_WENO5
+# define W_HADV_WENO5
+# define W_VADV_WENO5
+# undef  SALINITY
+# undef  PASSIVE_TRACER
+# define ANA_GRID
+# define ANA_INITIAL
+# define ANA_SMFLUX
+# define ANA_STFLUX
+# undef  ANA_SRFLUX
+# define ANA_BTFLUX
+# define ANA_SSFLUX
+# define ANA_BSFLUX
+# ifndef KH_INSTY
+#  define EW_PERIODIC
+# else
+#  define NS_PERIODIC
+# endif
+# define NO_FRCFILE
+# undef  CVTK_DEBUG
+
+#elif defined CANON2D
+/*
+!                       Canonical 2D Instabilities Example
+!                       ========= == ============= =======
+!
+*/
+# define CANON2D_KHI
+# undef  KH_INSTY
+# undef  KH_INST3D
+# define MPI
+# undef  NBQ
+# define KNBQ3
+# define KNBQ 
+# define NBQ_GRAV
+# define DIAG_CFL
+# undef  NBQ_PRECISE
+# undef XIOS
 # define SOLVE3D
 # define NEW_S_COORD
 # define UV_ADV
@@ -1734,6 +1886,7 @@
 #  define NS_PERIODIC
 # endif
 # define NO_FRCFILE
+# undef  RVTK_DEBUG
 
 #elif defined TS_HADV_TEST
 /*

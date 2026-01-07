@@ -138,7 +138,7 @@
 
 /*
 ======================================================================
-   Activate NBQ choices for non-hydrostatic simulations
+   Activate NBQ choices for non-hydrostatic simulations (KNBQ2)
 ======================================================================
 */
 #ifdef NBQ              /* General options */
@@ -157,7 +157,7 @@
 # endif
 # undef  TRACETXT
 # undef  DIAG_CFL
-# define HZR Hzr
+# define HZR Hzr  /* KH3D: HZR -> Hz as all hydrostatic cases treated above. */
 /*
    NBQ Precise or Performance options (default: NBQ_PERF)
 */
@@ -213,6 +213,7 @@
 # undef  KNHINT_3M
 # undef  K3FAST_AVG_CLASSIC
 # undef  K3FAST_PG2
+# define UV_VADV_WENO5_INTC6    
 # ifdef KNBQ    
 #   define K3FAST        
 #   define K3FAST_UV
@@ -229,8 +230,8 @@
 #   define NBQ_HZCORRECT_ZETA
 #   define K3FAST_AM4 
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH0
-#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_COUPLING_SCH1
+#   define K3FAST_COUPLINGW_SCH1
 #   define K3FAST_PG2
 # elif defined KH3D
 #   define K3FAST   
@@ -265,7 +266,7 @@
 #   define K3FAST_AM4
 #   define  KNHINT_WH
 #   undef  KNHINT_ZETAW
-#   undef  K3FAST_DUVNBQ2
+#   define  K3FAST_DUVNBQ2
 #   ifdef KNHINT_ZETAW
 #    define NBQ_HZCORRECT
 #    define NBQ_HZCORRECT_ZETA
@@ -323,21 +324,17 @@
 /*
    Options for wz HADV numerical schemes (default C4)
 */
-# ifdef W_HADV_UP5  /* Check if options are defined in cppdefs.h */
+# ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
 # elif defined W_HADV_TVD
 # elif defined W_HADV_WENO5
-# elif defined W_HADV_UP3
-# elif defined W_HADV_C2
 # elif defined W_HADV_C4
-# elif defined W_HADV_C6
+#  elif defined W_HADV_C2
 # else
-#  undef  W_HADV_UP5      /* 5th-order upwind horizontal advection  */
-#  undef  W_HADV_TVD      /* TVD horizontal advection                 */
-#  define W_HADV_WENO5    /* 5th-order WENOZ horizontal advection     */
-#  undef  W_HADV_UP3      /* 3rd-order upwind horizontal advection  */
-#  undef  W_HADV_C2       /* 2nd-order centered horizontal advection  */
-#  undef  W_HADV_C4       /* 4th-order centered horizontal advection  */
-#  undef  W_HADV_C6       /* 6th-order centered horizontal advection  */
+#  undef  W_HADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_HADV_TVD      /* TVD vertical advection                 */
+#  define W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
+#  undef  W_HADV_C4       /* 2nd-order centered vertical advection  */
+#  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
    Options for wz VADV numerical schemes (default SPLINES)
@@ -353,7 +350,7 @@
 #  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
-   NBQ Open boundary conditions
+   NBQ Open boundary conditions (Recall "all but H3D")
 */
 # if defined OBC_WEST  || defined OBC_EAST  || \
      defined OBC_NORTH || defined OBC_SOUTH
