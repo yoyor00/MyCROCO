@@ -20,8 +20,6 @@
      &     ibuf_sndS, ibuf_revS,
      &     jbuf_sndW, jbuf_sndE,
      &     jbuf_revW, jbuf_revE
-      integer size_X_prev, size_E_prev
-
 # endif     
 
       real buf_snd4(MAXNPTS*MAXNPTS),     buf_snd2(MAXNPTS*MAXNPTS),
@@ -34,8 +32,7 @@
      &     ibuf_sndN, ibuf_revN,
      &     ibuf_sndS, ibuf_revS,
      &     jbuf_sndW, jbuf_sndE,
-     &     jbuf_revW, jbuf_revE,
-     &     size_X_prev, size_E_prev
+     &     jbuf_revW, jbuf_revE
 
 
 # if defined SOLVE3D
@@ -65,7 +62,6 @@
      &     buf_rev4_3D, buf_rev2_3D,
      &     buf_snd1_3D, buf_snd3_3D, 
      &     buf_rev1_3D, buf_rev3_3D
-      integer size_X_3D_prev, size_E_3D_prev
 #  endif     
 
       common/buf_mpi_3D/buf_snd4_3D, buf_snd2_3D,
@@ -75,8 +71,7 @@
      &     ibuf_sndN_3D, ibuf_revN_3D,
      &     ibuf_sndS_3D, ibuf_revS_3D,
      &     jbuf_sndW_3D, jbuf_sndE_3D,
-     &     jbuf_revW_3D, jbuf_revE_3D,
-     &     size_X_3D_prev, size_E_3D_prev
+     &     jbuf_revW_3D, jbuf_revE_3D
 # endif
 #undef NP1
 #endif
