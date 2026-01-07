@@ -53,12 +53,16 @@
      <field id="temp_surf" long_name="surface temperature" unit="Celsius" />
      <field id="salt" long_name="salinity" unit="spu" grid_ref="rho_3D" />
      <field id="salt_surf" long_name="surface salinity" unit="spu" />
+     <field id="rho_surf" long_name="surface density" unit="kg/m3" />
      <field id="swflx" long_name="surface freshwater flux (E-P)" unit="centimeter day-1"  />
+     <field id="prate" long_name="precipitation" unit="centimeter day-1"  />
 
     <field id="radsw" long_name="Short-wave surface radiation" unit="Watts meter-2" />
     <field id="shflx_rlw" long_name="Long-wave surface radiation" unit="Watts meter-2" />
     <field id="shflx_lat" long_name="Latent surface heat flux" unit="Watts meter-2" />
     <field id="shflx_sen" long_name="Sensible surface heat flux" unit="Watts meter-2" />
+    <field id="tair" long_name="Air temperature" unit="C" />
+    <field id="rhum" long_name="Air specific humidity" unit="kg.kg-1" />
 
 
      <field id="hbl" long_name="depth of planetary boundary layer" unit="meter" />
@@ -80,6 +84,16 @@
     <field id="visc3d" long_name="horizontal viscosity coefficient" unit="meter2 second-1" grid_ref="rho_3D"/>
     <field id="diff3d" long_name="horizontal diffusivity coefficient" unit="meter2 second-1" grid_ref="rho_3D"/>
     <field id="rmask_wet" long_name="" unit=""  />
+
+    <field id="Usup" long_name="vertically integrated h-momentum component sup layer" unit="meter second-1"/>
+    <field id="Uinf" long_name="vertically integrated h-momentum component inf layer" unit="meter second-1"/>
+    <field id="Fsup" long_name="vertically integrated density sup layer" unit="kilogram meter-3"/>
+    <field id="Finf" long_name="vertically integrated density inf layer" unit="kilogram meter-3"/>
+    <field id="Hint" long_name="depth of interface" unit="meter"/>
+    <field id="temp_surf" long_name="surface temperature" unit="Celsius" />
+    <field id="salt_surf" long_name="surface salinity" unit="PSU" />
+    <field id="bostr" long_name="Kinematic bottom stress" unit="N/m2" />
+    <field id="wstr" long_name="Kinematic wind stress" unit="N/m2" />
 
 </field_group>
         
