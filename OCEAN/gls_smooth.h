@@ -1,3 +1,5 @@
+
+! ! gls_smooth.h begin
 #ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=J_EXT_RANGE
@@ -39,7 +41,11 @@
 
          DO j=jstr-1,jend+1
             DO i=istr,iend+1
-               FX (i,j  )=( TRB_NEW(i  ,j,k)
+#ifndef OPENACC      
+               FX(i,j  )=( TRB_NEW(i  ,j,k)
+#else
+               FX(i,j,k)=( TRB_NEW(i  ,j,k)
+#endif               
      &                   -  TRB_NEW(i-1,j,k) )
 #ifdef MASKING
      &                             *umask(i,j)
@@ -48,31 +54,53 @@
          ENDDO
          DO j=jstr,jend+1
             DO i=istr-1,iend+1
+#ifndef OPENACC      
                FE1(i,j,0)=( TRB_NEW(i,j  ,k)
+#else
+               FE1(i,j,k)=( TRB_NEW(i,j  ,k)
+#endif
      &                    - TRB_NEW(i,j-1,k) )
 #ifdef MASKING
      &                             *vmask(i,j)
 #endif
             ENDDO
             DO i=istr,iend
+#ifndef OPENACC      
               FE(i,j)=FE1(i,j,0)
      &                + smth_a*( FX(i+1,j)+FX(i  ,j-1)
      &                          -FX(i  ,j)-FX(i+1,j-1))
+#else
+              FE(i,j,k)=FE1(i,j,k)
+     &                + smth_a*( FX(i+1,j,k)+FX(i  ,j-1,k)
+     &                          -FX(i  ,j,k)-FX(i+1,j-1,k))
+#endif              
             ENDDO
          ENDDO
 
          DO j=jstr,jend
             DO i=istr,iend+1
+#ifndef OPENACC      
               FX(i,j)=FX(i,j  )
      &                + smth_a*( FE1(i,j+1,0)+FE1(i-1,j  ,0)
      &                          -FE1(i,j  ,0)-FE1(i-1,j+1,0))
+#else
+              FX(i,j,k)=FX(i,j,k)
+     &                + smth_a*( FE1(i,j+1,k)+FE1(i-1,j  ,k)
+     &                          -FE1(i,j  ,k)-FE1(i-1,j+1,k))
+#endif              
             ENDDO
             DO i=istr,iend
                trb(i,j,k,nnew,ig)=TRB_NEW(i,j,k)
+#ifndef OPENACC      
      &                        + smth_b*( FX(i+1,j)-FX(i,j)
      &                                  +FE(i,j+1)-FE(i,j) )
+#else
+     &                        + smth_b*( FX(i+1,j,k)-FX(i,j,k)
+     &                                  +FE(i,j+1,k)-FE(i,j,k) )
+#endif              
 #ifdef MASKING
      &                                               *rmask(i,j)
 #endif
             ENDDO
          ENDDO              !--> discard FX,FE,FE1
+! ! gls_smooth.h end
