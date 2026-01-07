@@ -634,11 +634,12 @@ C$OMP BARRIER
 ! Breaker delay
 ! 
          ! Hs^2/L0
-          cff1=frq(i,j,1)**2./(twopi*9.81)
-          cff1=1300.*cff1*(hrm(i,j,1)*sqrt(2.))**2.
+   !       cff1=frq(i,j,1)**2./(twopi*9.81)
+   !       cff1=1300.*cff1*(hrm(i,j,1)*sqrt(2.))**2.
          ! Hs^2*sqrt(L)
    !       cff1=twopi/((wkx(i,j,1)**2.)+(wke(i,j,1)**2.))**(1./2.)
-   !       cff1=5.*(cff1**(1./2.))*(hrm(i,j,1)*SQRT(2.))**2.
+          cff1=twopi/wkx(i,j,1)**2.
+          cff1=5.*(cff1**(1./2.))*(hrm(i,j,1)*SQRT(2.))**2.
           cff3=1.*h(i,j)
           cff4=1.
 #    ifdef OBC_WEST
