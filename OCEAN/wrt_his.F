@@ -792,7 +792,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !
       if (wrthis(indxW)) then
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc update if(compute_on_device) host(wz(:,:,:))
         do k=0,N
           do j=0,Mm+1
@@ -962,20 +962,34 @@ CR      write(*,*) 'wrt_his:  wrtTke' MYID
 !     Write out generic length scale
 !
       if (wrthis(indxGls)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(trb(:,:,:,nstp,igls))
         work=trb(:,:,:,nstp,igls)
         call fillvalue3d_w(work,ncidhis,hisGls,vname(1,indxGls),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(Sprod3d(:,:,:))
+        workr=Sprod3d
+        call fillvalue3d(workr,ncidhis,hisGls,vname(1,indxGls),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtGls' MYID
       endif
 !
 !     Write out vertical mixing length scale
 !
       if (wrthis(indxLsc)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(Lscale(:,:,:))
         work=Lscale
         call fillvalue3d_w(work,ncidhis,hisLsc,vname(1,indxLsc),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(Lscale(:,:,:))
+        workr=Lscale
+        call fillvalue3d(workr,ncidhis,hisLsc,vname(1,indxLsc),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtLsc' MYID
       endif
 # endif

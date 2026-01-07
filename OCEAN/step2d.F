@@ -615,6 +615,9 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
       call zetabc_tile (Istr,Iend,Jstr,Jend)
+# ifdef OPENACC
+!$acc wait     
+# endif 
 !
 !----------------------------------------------------------------------
 ! Compute time averaged fields over all short timesteps.

@@ -45,6 +45,14 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 # ifdef  BAND_DEBUG         
       real,dimension(Npts)        :: checksum
 # endif
+!!!$acc declare present(ibuf_sndN_3D, ibuf_revN_3D,
+!!!$acc&          ibuf_sndS_3D, ibuf_revS_3D)
+!!!$acc declare present(jbuf_sndW_3D, jbuf_revW_3D,
+!!!$acc&          jbuf_sndE_3D, jbuf_revE_3D)
+!!!$acc declare present(buf_snd1_3D, buf_rev1_3D,
+!!!$acc&          buf_snd2_3D, buf_rev2_3D)
+!!!$acc declare present(buf_snd3_3D, buf_rev3_3D,
+!!!$acc&          buf_snd4_3D, buf_rev4_3D)
 !
 # include "compute_message_bounds.h"
 
@@ -66,6 +74,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
       isize=Npts*ishft                  ! sizes for side messages
       jsize=Npts*jshft                  ! in XI and ETA directions
 
+!$acc wait      
 # define write !
 c*      write(*,'(2(6x,A3,I2,2x,A5,I3,2x,A5,I3))')
 c*     &        'ii=',ii,'imin=',imin,'imax=',imax,

@@ -1,6 +1,7 @@
+! $Id: set_nudgcof.F 1458 2014-02-03 15:01:25Z gcambon $
+!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -24,10 +25,7 @@
       end
 !
       subroutine set_nudgcof_tile (Istr,Iend,Jstr,Jend, wrk)
-#ifdef CVTK_DEBUG
-      use my_functions
-#endif      
-      implicit none
+!     implicit none
       integer ierr
 # if defined MPI
       include 'mpif.h'
@@ -113,15 +111,9 @@
             wrk(i,j)=0.
           else
             wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
-#ifdef OPENACCNUMERIC 
-          wrk(i,j)=real(wrk(i,j), kind=4)
-#endif
           endif
 # else
           wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
-#ifdef OPENACCNUMERIC 
-          wrk(i,j)=real(wrk(i,j), kind=4)
-#endif
 !         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
 # endif
 
@@ -224,7 +216,7 @@
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-          visc2_sponge_r(i,j)=(0.01 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
+          visc2_sponge_r(i,j)=(0.001 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
 #   ifdef UV_VIS4
           visc4_sponge_r(i,j)=visc2_sponge_r(i,j)/(pm(i,j)*pn(i,j))
 #   endif
@@ -235,7 +227,7 @@
 !
       do j=Jstr,JendR
         do i=Istr,IendR
-          visc2_sponge_p(i,j)=0.25*(0.01 /(pm(i,j)*pn(i,j)*dt))*
+          visc2_sponge_p(i,j)=0.025*(0.01 /(pm(i,j)*pn(i,j)*dt))*
      &                              ( wrk(i,j  )+wrk(i-1,j  )
      &                               +wrk(i,j-1)+wrk(i-1,j-1) )
 #   ifdef UV_VIS4
@@ -252,7 +244,7 @@
        do itrc=1,NT
         do j=JstrR,JendR
           do i=IstrR,IendR
-            diff2_sponge(i,j)=(0.01 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
+            diff2_sponge(i,j)=(0.001 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
 #   ifdef TS_DIF4
             diff4_sponge(i,j)=diff2_sponge(i,j)/(pm(i,j)*pn(i,j))
 #   endif
@@ -270,7 +262,7 @@
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-          visc2_nbq_sponge(i,j)=10.*wrk(i,j)
+          visc2_nbq_sponge(i,j)=1.*wrk(i,j)
         enddo
       enddo
 # endif /* NBQ_SPONGE */

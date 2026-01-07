@@ -9,7 +9,7 @@
 ! ! Computes surface velocities
 ! !********************************
 ! ! 
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 #   ifdef K3FAST_AB3
 #    ifdef  K3FAST_2DCONT
       if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
@@ -147,7 +147,7 @@
 ! !********************************
 ! !
 #  ifdef PSOURCE
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do is=1,Nsrc 
 #   ifdef MPI
         i=Isrc_mpi(is,mynode)
@@ -181,7 +181,7 @@
 ! !  kinematic condition
 ! !********************************
 ! ! 
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 #   ifndef K3FAST_SPDUP
 #    define zab3 UFx
       if (FIRST_FAST_STEP) then
@@ -277,7 +277,7 @@
         endif
       enddo
 #  endif
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 #  ifdef KNHINT_ZETAW
 !     if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) zeta=0.
 #  endif
@@ -353,7 +353,7 @@
 !        is > Dcrit in masked cells.
 !
 # if defined WET_DRY && defined MASKING
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           cff=0.5+SIGN(0.5,Dcrit(i,j)-h(i,j))
@@ -409,7 +409,7 @@
 # ifdef SOLVE3D
       cff1=weight(1,iif)
       cff2=weight(2,iif)
-!$acc kernels if(compute_on_device) default(present) async(1)
+!$acc kernels if(compute_on_device) default(present) async(1) 
       if (FIRST_2D_STEP) then
         do j=JstrR,JendR
           do i=IstrR,IendR
@@ -431,7 +431,7 @@
       endif
 !$acc end kernels      
 # else      
-!$acc kernels if(compute_on_device) default(present) async(1)
+!$acc kernels if(compute_on_device) default(present) async(1) 
 # endif
 # endif /* K3FAST_AVG_CLASSIC */
 

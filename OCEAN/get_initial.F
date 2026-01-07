@@ -1,6 +1,7 @@
+! $Id: get_initial.F 1458 2014-02-03 15:01:25Z gcambon $
+!
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
 ! The two other branches from UCLA (Shchepetkin et al)
 ! and Rutgers University (Arango et al) are under MIT/X style license.
 ! CROCO specific routines (nesting) are under CeCILL-C license.
@@ -24,9 +25,6 @@
 #endif
 #ifdef BBL
 # include "bbl.h"
-#endif
-#ifdef ABL1D
-# include "abl1d.h"
 #endif
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
@@ -1355,7 +1353,7 @@
         call cpl_prism_define
         oasis_time = 0
         MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
-#  if defined EXACT_RESTART   
+# if defined EXACT_RESTART   
       endif
 # endif
 #endif

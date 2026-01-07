@@ -150,7 +150,7 @@ C$    trd=omp_get_thread_num()
 ! !*********************************************************************
 ! !*********************************************************************
 ! !
-# ifdef RVTK_DEBUG               
+# ifdef CVTK_DEBUG               
       use debug
       use my_functions
 #  endif      
@@ -457,7 +457,7 @@ C$    trd=omp_get_thread_num()
 ! !--------------------------------------------------------------------
 ! !
 # ifdef NBQ_HZCORRECT
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       if (iic.gt.ntstart .and. FIRST_FAST_STEP) then
         do k=-N_sl+1,N
           do j=JstrV-2,Jend+1
@@ -646,7 +646,7 @@ C$    trd=omp_get_thread_num()
 # ifdef K3FAST_RHO 
 !      if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) then
 ! !
-!$acc kernels default( present )    
+!$acc kernels if(compute_on_device) default(present) async(1)
 #  ifndef K3FAST_NOBPG       
       if (FIRST_TIME_STEP.and.FIRST_FAST_STEP_3M) then 
        do k=-N_sl+1,N
@@ -817,7 +817,7 @@ C$    trd=omp_get_thread_num()
 ! !--------------------------------------------------------------------
 ! !
 # if defined K3FAST_NOBPG && defined NBQ_IMP
-!$acc kernels if(compute_on_device) default(present)    
+!$acc kernels if(compute_on_device) default(present) async(1)    
           thetadiv_nbq=0.
 !$acc end kernels  
 # endif
@@ -852,7 +852,7 @@ C$    trd=omp_get_thread_num()
 ! !................................
 ! !   
 #  if (defined NBQ_NUDGING_W && defined NBQCLIMATOLOGY) || defined KNHINT_CORR
-!$acc kernels if(compute_on_device) default(present)    
+!$acc kernels if(compute_on_device) default(present) async(1)    
         do j=Jstr,Jend
           do i=Istr,Iend
 #  ifndef K3FAST_SEDLAYERS        
@@ -1048,6 +1048,12 @@ C$    trd=omp_get_thread_num()
 ! !********************************************************************
 ! !********************************************************************
 ! !
+#ifdef OPENACC
+      if (LAST_FAST_STEP) then
+!$acc wait
+      endif
+#endif      
+
       VMAXL=100.
       VMAX=0.
 !$acc parallel loop if(compute_on_device) independent
@@ -1086,6 +1092,7 @@ C$    trd=omp_get_thread_num()
         vmax = cff
 #endif
       IF (VMAX.GT.VMAXL) THEN
+!$acc wait               
         write(stdout,'(9(A/))')
      &     '                                         ',
      &     '                                         ',

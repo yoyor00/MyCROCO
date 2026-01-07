@@ -8,7 +8,7 @@
 ! !    volume Dnew 
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           Dnew(i,j)=(zeta(i,j,knew)+h(i,j))
@@ -18,7 +18,7 @@
         enddo
       enddo
 !$acc end kernels 
-# if defined RVTK_DEBUG && defined KNBQ
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
 C$OMP BARRIER
 C$OMP MASTER
 c       call check_tab3d(thetadiv_nbq,'step3d_fastthetadiv_nbq','rint')
@@ -39,7 +39,7 @@ C$OMP END MASTER
 ! !
 # ifdef K3FAST_W
       if (LAST_FAST_STEP) then
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do k=0,N 
           do j=Jstr,Jend              
             do i=Istr,Iend
@@ -74,7 +74,7 @@ C$OMP END MASTER
 ! !********************************
 ! !     
 # ifdef NBQ_MASS
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
             rhobar_nbq_avg1(i,j)=rhobar_nbq(i,j,knew)
@@ -97,7 +97,7 @@ C$OMP END MASTER
 ! !  Note: here ru_nbq_avg2, ru_nbq_2d_old ... are working arrays
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 # ifdef K3FAST_UV 
        do k=1,N
           do j=Jstr,Jend
@@ -241,7 +241,7 @@ C$OMP END MASTER
 ! !  forcing from fast mode
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 #  define Dstp DUon
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
@@ -268,7 +268,7 @@ C$OMP END MASTER
 ! ! computation  MPI computational margins.
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
 ! ! FA: TBT
 
@@ -297,7 +297,11 @@ C$OMP END MASTER
      &         +cff*(pm(i,j)+pm(i-1,j))*(pn(i,j)+pn(i-1,j))
      &                                *( rubar(i,j)
      &                                  +rufrc(i,j)
-     &                                 ))
+     &                                 )
+#  ifdef K3FAST_DUVNBQ2
+     &        +dtfast*DU_nbq(i,j)*2. 
+#  endif
+     &          )
 #  ifdef MASKING
      &                                     *umask(i,j)
 #  endif
@@ -305,9 +309,6 @@ C$OMP END MASTER
      &                                     *umask_wet(i,j)
 # endif
           DUnew2=DUnew
-#  ifdef K3FAST_DUVNBQ2
-     &        +dtfast*DU_nbq(i,j)*2. 
-#  endif
 #  if defined WET_DRY && defined K3FAST_ZETAW
      &        *umask_wet(i,j)
 #  endif
@@ -359,7 +360,11 @@ C$OMP END MASTER
      &     +cff*(pm(i,j)+pm(i,j-1))*(pn(i,j)+pn(i,j-1))
      &                                *( rvbar(i,j)
      &                                  +rvfrc(i,j)
-     &                                 ))
+     &                                 )
+#  ifdef K3FAST_DUVNBQ2
+     &        +dtfast*DV_nbq(i,j)*2. 
+#  endif
+     &          )
 #  ifdef MASKING
      &                                     *vmask(i,j)
 #  endif
@@ -367,9 +372,6 @@ C$OMP END MASTER
      &                                     *vmask_wet(i,j)
 #  endif
           DVnew2=DVnew
-#  ifdef K3FAST_DUVNBQ2
-     &        +dtfast*DV_nbq(i,j)*2. 
-#  endif
 #  if defined WET_DRY && defined K3FAST_ZETAW
      &        *vmask_wet(i,j)
 #  endif
@@ -417,7 +419,7 @@ C$OMP END MASTER
 ! !********************************
 ! !
 # if defined PSOURCE && !defined K3FAST 
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do is=1,Nsrc 
 #  ifdef MPI
         i=Isrc_mpi(is,mynode)
@@ -466,7 +468,7 @@ C$OMP END MASTER
         endif
       endif
 #  endif /* ZONAL_NUDGING */
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do j=Jstr,Jend
         do i=IstrU,Iend
 #  ifdef ZONAL_NUDGING        
@@ -537,14 +539,21 @@ C$OMP END MASTER
 ! ! all open boundaries, if any.
 ! !********************************
 ! !
+# ifdef CVTK_DEBUG_ADV1
+!$acc wait
+       call check_tab2d(ubar(:,:,knew),'ubar knew (G)','r',
+     &      ondevice=.TRUE.)
+       call check_tab2d(vbar(:,:,knew),'vbar knew (G)','r',
+     &      ondevice=.TRUE.)       
+# endif
       M2bc_nbq_flag=.false.  
 ! !           skip wet/dry conditions
 ! !         & AGRIF
       call u2dbc_tile (Istr,Iend,Jstr,Jend, work) 
       call v2dbc_tile (Istr,Iend,Jstr,Jend, work)
-!$acc wait	
+!!!!!$acc wait	
 # ifdef WET_DRY
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 #  ifndef EW_COM_PERIODIC
       if (WESTERN_EDGE) then
         DO j=Jstr,Jend
@@ -616,7 +625,7 @@ C$OMP END MASTER
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        vbar(START_2D_ARRAY,knew))
 # endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG_ADV1
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u'
@@ -636,7 +645,7 @@ C$OMP MASTER
 ! !********************************
 ! !
 
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do j=Jstr-1,JendR
@@ -679,10 +688,14 @@ C$OMP MASTER
       cff1=0.5*weight(1,iif)
       cff2=0.5*weight(2,iif)
 
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1) 
+!      cff1=0.5*weight(1,iif)
+!      cff2=0.5*weight(2,iif)
+	
 # ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
-        do j=JstrR,JendR
+!$acc loop independent  private(cff)
+	do j=JstrR,JendR
           cff=(Dnew(IstrU-1,j)+Dnew(IstrU-2,j))*(ubar(IstrU-1,j,knew)
 # ifdef MRL_WCI
      &                                              +ust2d(IstrU-1,j)
@@ -693,6 +706,7 @@ C$OMP MASTER
           DU_avg2(IstrU-1,j)=DU_avg2(IstrU-1,j)+cff2*cff
 # endif /*   K3FAST_AVG_CLASSIC */      
         enddo
+!$acc loop independent  private(cff)
         do j=JstrV,Jend
           cff=(Dnew(Istr-1,j)+Dnew(Istr-1,j-1) )*(vbar(Istr-1,j,knew)
 # ifdef MRL_WCI
@@ -706,6 +720,7 @@ C$OMP MASTER
         enddo
       endif
       if (EASTERN_EDGE) then
+!$acc loop independent  private(cff)
         do j=JstrR,JendR
           cff=(Dnew(Iend+1,j)+Dnew(Iend,j))*(ubar(Iend+1,j,knew)
 # ifdef MRL_WCI
@@ -717,6 +732,7 @@ C$OMP MASTER
           DU_avg2(Iend+1,j)=DU_avg2(Iend+1,j)+cff2*cff
 # endif /*   K3FAST_AVG_CLASSIC */
         enddo
+!$acc loop independent  private(cff)
         do j=JstrV,Jend
           cff=(Dnew(Iend+1,j)+Dnew(Iend+1,j-1))*(vbar(Iend+1,j,knew)
 # ifdef MRL_WCI
@@ -732,6 +748,7 @@ C$OMP MASTER
 # endif /* !EW_PERIODIC */
 # ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
+!$acc loop independent  private(cff)
         do i=IstrU,Iend
           cff=(Dnew(i,Jstr-1)+Dnew(i-1,Jstr-1))*(ubar(i,Jstr-1,knew)
 #  ifdef MRL_WCI
@@ -743,6 +760,7 @@ C$OMP MASTER
           DU_avg2(i,Jstr-1)=DU_avg2(i,Jstr-1)+cff2*cff
 # endif /*   K3FAST_AVG_CLASSIC */       
         enddo
+!$acc loop independent  private(cff)
         do i=IstrR,IendR
           cff=(Dnew(i,JstrV-1)+Dnew(i,JstrV-2))*(vbar(i,JstrV-1,knew)
 #  ifdef MRL_WCI
@@ -756,6 +774,7 @@ C$OMP MASTER
         enddo
       endif
       if (NORTHERN_EDGE) then
+!$acc loop independent  private(cff)
         do i=IstrU,Iend
           cff=(Dnew(i,Jend+1)+Dnew(i-1,Jend+1))*(ubar(i,Jend+1,knew)
 #  ifdef MRL_WCI
@@ -767,6 +786,7 @@ C$OMP MASTER
           DU_avg2(i,Jend+1)=DU_avg2(i,Jend+1)+cff2*cff
 # endif /*   K3FAST_AVG_CLASSIC */       
         enddo
+!$acc loop independent  private(cff)
         do i=IstrR,IendR
           cff=(Dnew(i,Jend+1)+Dnew(i,Jend))*(vbar(i,Jend+1,knew)
 #  ifdef MRL_WCI
@@ -781,6 +801,7 @@ C$OMP MASTER
       endif
 # endif /* !NS_PERIODIC */
 !$acc end kernels
+	cff = 0.
 ! !
 ! !********************************
 ! ! Update Free-slip

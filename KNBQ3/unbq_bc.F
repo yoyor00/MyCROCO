@@ -86,8 +86,7 @@
       tau_out=dtfast*tauM_out
 # endif
 
-!$acc kernels if(compute_on_device) default(present)
-
+!!!$acc kernels if(compute_on_device) default(present)
 # ifndef EW_COM_PERIODIC
 !
 !====================================================================
@@ -98,6 +97,7 @@
 #   if defined OBC_COM_NBQSPECIFIED || defined OBC_COM_NBQSPECIFIED_WEST
 !                                            Western edge Specified BC
 !                                            ======= ==== ========= ==
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
           do j=Jstr,Jend
 #    ifdef NBQ_FRC_BRY
@@ -113,9 +113,12 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 
 #   elif defined OBC_COM_NBQORLANSKI
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N                             ! Western edge radiation
+!$acc loop vector        
           do j=Jstr,Jend+1                   ! ======= ==== =========
             grad(Istr  ,j)=(qdmu_nbq_west(j  ,k,1)
      &                     -qdmu_nbq_west(j-1,k,1))
@@ -128,6 +131,7 @@
      &                             *pmask(Istr+1,j)
 #    endif
           enddo
+!$acc loop vector
           do j=Jstr,Jend
             dft=qdmu_nbq_west(j,k,2)-qdmu_nbq(Istr+1,j,k)
             dfx=qdmu_nbq(Istr+1,j,k)-qdmu_nbq(Istr+2,j,k)
@@ -168,11 +172,14 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 !
 #   else
 !                                            Western edge gradient BC
 !                                            ======= ==== ======== ==
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
+!$acc loop vector        
           do j=Jstr,Jend
               qdmu_nbq(Istr,j,k)=qdmu_nbq(Istr+1,j,k)
 #    ifdef MASKING
@@ -183,18 +190,32 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 #   endif /* OBC_NBQORLANSKI */
 !
 !  Replace external mode
 !
 #   ifdef K3FAST_ZETAW
 #    define usum grad
+# ifdef OPENACC
+!$acc parallel loop vector default(present) async(1)
+        do j=Jstr,Jend
+        usum(Istr,j)=0
+# else
         usum=0.
         do k=1,N
+# endif
+# ifdef OPENACC
+          do k=1,N
+# else
           do j=Jstr,Jend
+# endif
             usum(Istr,j)=usum(Istr,j)+qdmu_nbq(Istr,j,k)
           enddo
         enddo
+!$acc end parallel loop
+!$acc parallel loop gang vector collapse(2) private(cff1, cff2)
+!$acc&    default(present) async(1)
         do k=1,N
           do j=Jstr,Jend
             cff1=0.5*(Hz(Istr,j,k)+Hz(Istr-1,j,k))
@@ -211,10 +232,12 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 #    undef usum
 #   endif /* K3FAST_ZETAW */
 !
 #  else           /* alternative to open */
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N                                      ! Western edge closed
           do j=jstr,jend                              ! ======= ==== ======
 #   ifdef MRL_WCI
@@ -229,6 +252,7 @@
 #   endif
           enddo
         enddo
+!$acc end parallel loop
 
 #  endif              /* OBC_COM_WEST */
 !
@@ -242,6 +266,7 @@
 #   if defined OBC_COM_NBQSPECIFIED || defined OBC_COM_NBQSPECIFIED_EAST
 !                                            Eastern edge Specified BC
 !                                            ======= ==== ========= ==
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
           do j=Jstr,Jend
 #    ifdef NBQ_FRC_BRY
@@ -257,9 +282,12 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 !
 #   elif defined OBC_COM_NBQORLANSKI
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N                             ! Eastern edge radiation
+!$acc loop vector        
           do j=Jstr,Jend+1                   ! ======= ==== =========
             grad(Iend  ,j)=(qdmu_nbq_east(j  ,k,2)
      &                     -qdmu_nbq_east(j-1,k,2))
@@ -272,6 +300,7 @@
      &                             *pmask(Iend+1,j)
 #    endif
           enddo
+!$acc loop vector          
           do j=Jstr,Jend
             dft=qdmu_nbq_east(j,k,2)-qdmu_nbq(Iend  ,j,k)
             dfx=qdmu_nbq(Iend  ,j,k)-qdmu_nbq(Iend-1,j,k)
@@ -312,11 +341,14 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 !
 #   else
 !                                            Eastern edge gradient BC
 !                                            ======= ==== ======== ==
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
+!$acc loop vector        
           do j=Jstr,Jend
             qdmu_nbq(Iend+1,j,k) = qdmu_nbq(Iend,j,k)
 #    ifdef MASKING
@@ -327,18 +359,32 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 #   endif /* OBC_COM_NBQORLANSKI */
 !
 !  Replace external mode
 !
 #   ifdef K3FAST_ZETAW
 #    define usum grad
+# ifdef OPENACC
+!$acc parallel loop vector default(present) async(1)
+        do j=Jstr,Jend
+        usum(Iend+1,j)=0
+# else
         usum=0.
         do k=1,N
+# endif
+# ifdef OPENACC
+          do k=1,N
+# else
           do j=Jstr,Jend
+# endif
             usum(Iend+1,j)=usum(Iend+1,j)+qdmu_nbq(Iend+1,j,k)
           enddo
         enddo
+!$acc end parallel loop
+!$acc parallel loop gang vector collapse(2) private(cff1, cff2)
+!$acc&    default(present) async(1)
         do k=1,N
           do j=Jstr,Jend
             cff1=0.5*(Hz(Iend+1,j,k)+Hz(Iend,j,k))
@@ -355,10 +401,12 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 #    undef vsum
 #   endif /* K3FAST_ZETAW */
 !
 #  else
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N                                     ! Eastern edge closed
           do j=jstr,jend                             ! ======= ==== ======
 #   ifdef MRL_WCI
@@ -373,6 +421,7 @@
 #   endif
           enddo
         enddo
+!$acc end parallel loop
 
 #  endif            /* OBC_COM_EAST */
 
@@ -390,6 +439,7 @@
 #   if defined OBC_COM_NBQSPECIFIED || defined OBC_COM_NBQSPECIFIED_SOUTH
 !                                           Southern edge Specified BC
 !                                           ======== ==== ========= ==
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
           do i=IstrU,Iend
 #    ifdef NBQ_FRC_BRY
@@ -405,8 +455,11 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 !
 #   elif defined OBC_COM_NBQORLANSKI
+!$acc parallel loop gang vector collapse(2)
+!$acc&    private(grad) default(present) async(1)
         do k=1,N                            ! Southern edge radiation
           do i=IstrU-1,Iend                 ! ======== ==== =========
             grad(i,Jstr-1)=qdmu_nbq_south(i+1,k,1)
@@ -454,11 +507,14 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 !
 #   else
 !                                           Southern edge gradient BC
 !                                           ======== ==== ======== ==
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
+!$acc loop vector
           do i=IstrU,Iend
             qdmu_nbq(i,Jstr-1,k)=qdmu_nbq(i,Jstr,k)
 #    ifdef MASKING
@@ -469,6 +525,7 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 
 #   endif  /* OBC_COM_NBQORLANSKI */
 
@@ -477,12 +534,25 @@
 !
 #   if defined K3FAST_ZETAW && defined QDM_OBC_TANG_CORRECT
 #    define usum grad
+# ifdef OPENACC
+!$acc parallel loop vector default(present) async(1)
+        do i=IstrU,Iend
+        usum(i,Jstr-1)=0
+# else
         usum=0.
         do k=1,N
+# endif
+# ifdef OPENACC
+          do k=1,N
+# else
           do i=IstrU,Iend
+# endif
             usum(i,Jstr-1)=usum(i,Jstr-1)+qdmu_nbq(i,Jstr-1,k)
           enddo
         enddo
+!$acc end parallel loop
+!$acc parallel loop gang vector collapse(2) private(cff1, cff2)
+!$acc&    default(present) async(1)
         do k=1,N
           do i=IstrU,Iend
             cff1=0.5*(Hz(i,Jstr-1,k)+Hz(i-1,Jstr-1,k))
@@ -499,6 +569,7 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 #    undef usum
 #   endif  /* M3FAST_ZETAW */
 
@@ -508,6 +579,7 @@
 #   else
 #    define I_RANGE Istr,IendR
 #   endif
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N                        ! Wall: free-slip (gamma2=+1)
           do i=I_RANGE                  ! =====   no-slip (gamma2=-1)
             qdmu_nbq(i,Jstr-1,k)=gamma2*qdmu_nbq(i,Jstr,k)
@@ -516,6 +588,7 @@
 #   endif
           enddo
         enddo
+!$acc end parallel loop
 #   undef I_RANGE
 
 #  endif /* OBC_COM_SOUTH */
@@ -530,6 +603,7 @@
 #   if defined OBC_COM_NBQSPECIFIED || defined OBC_COM_NBQSPECIFIED_NORTH
 !                                           Northern edge Specified BC
 !                                           ======== ==== ========= ==
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
           do i=IstrU,Iend
 #    ifdef NBQ_FRC_BRY
@@ -545,8 +619,11 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 !
 #   elif defined OBC_COM_NBQORLANSKI
+!$acc parallel loop gang vector collapse(2)
+!$acc&    private(grad) default(present) async(1)
         do k=1,N                            ! Northern edge radiation
           do i=IstrU-1,Iend                 ! ======== ==== =========
             grad(i,Jend+1)=qdmu_nbq_north(i+1,k,2)
@@ -594,10 +671,12 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 !
 #   else
 !                                           Northern edge gradient BC
 !                                           ======== ==== ======== ==
+!$acc parallel loop gang default(present) async(1)
         do k=1,N
           do i=IstrU,Iend
             qdmu_nbq(i,Jend+1,k)=qdmu_nbq(i,Jend,k)
@@ -609,6 +688,7 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 
 #   endif /* OBC_COM_NBQORLANSKI */
 
@@ -617,12 +697,25 @@
 !
 #   if defined K3FAST_ZETAW && defined QDM_OBC_TANG_CORRECT
 #    define usum grad
+# ifdef OPENACC
+!$acc parallel loop vector default(present) async(1)
+        do i=IstrU,Iend
+        usum(i,Jend+1)=0
+# else
         usum=0.
         do k=1,N
+# endif
+# ifdef OPENACC
+          do k=1,N
+# else
           do i=IstrU,Iend
+# endif
             usum(i,Jend+1)=usum(i,Jend+1)+qdmu_nbq(i,Jend+1,k)
           enddo
         enddo
+!$acc end parallel loop
+!$acc parallel loop gang vector collapse(2) private(cff1, cff2)
+!$acc&    default(present) async(1)
         do k=1,N
           do i=IstrU,Iend
             cff1=0.5*(Hz(i,Jend+1,k)+Hz(i-1,Jend+1,k))
@@ -639,6 +732,7 @@
 #    endif
           enddo
         enddo
+!$acc end parallel loop
 #    undef usum
 #   endif /* M3FAST_ZETAW */
 
@@ -648,6 +742,7 @@
 #   else
 #    define I_RANGE Istr,IendR
 #   endif
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N                        ! Wall: free-slip (gamma2=+1)
           do i=I_RANGE                  ! =====   no-slip (gamma2=-1)
             qdmu_nbq(i,Jend+1,k)=gamma2*qdmu_nbq(i,Jend,k)
@@ -656,6 +751,7 @@
 #   endif
           enddo
         enddo
+!$acc end parallel loop
 #   undef I_RANGE
 
 #  endif  /* OBC_COM_NORTH */
@@ -670,6 +766,7 @@
 
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
           qdmu_nbq(Istr,Jstr-1,k)=0.5*(qdmu_nbq(Istr,Jstr,k)
      &                                +qdmu_nbq(Istr+1,Jstr-1,k))
@@ -677,10 +774,12 @@
      &                                  *umask(Istr,Jstr-1)
 #  endif
         enddo
+!$acc end parallel loop
       endif
 # endif
 # if defined OBC_COM_SOUTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
           qdmu_nbq(Iend+1,Jstr-1,k)=0.5*(qdmu_nbq(Iend+1,Jstr,k)
      &                                  +qdmu_nbq(Iend,Jstr-1,k))
@@ -688,10 +787,12 @@
      &                                  *umask(Iend+1,Jstr-1)
 #  endif
         enddo
+!$acc end parallel loop
       endif
 # endif
 # if defined OBC_COM_NORTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
           qdmu_nbq(Istr,Jend+1,k)=0.5*(qdmu_nbq(Istr+1,Jend+1,k)
      &                                  +qdmu_nbq(Istr,Jend,k))
@@ -699,10 +800,12 @@
      &                                  *umask(Istr,Jend+1)
 #  endif
         enddo
+!$acc end parallel loop
       endif
 # endif
 # if defined OBC_COM_NORTH && defined OBC_COM_EAST
       if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+!$acc parallel loop gang private(grad) default(present) async(1)
         do k=1,N
           qdmu_nbq(Iend+1,Jend+1,k)=0.5*(qdmu_nbq(Iend,Jend+1,k)
      &                                  +qdmu_nbq(Iend+1,Jend,k))
@@ -710,9 +813,12 @@
      &                                  *umask(Iend+1,Jend+1)
 #  endif
         enddo
+!$acc end parallel loop
       endif
 # endif
-!$acc end kernels
+!!!!$acc wait
+!!!!$acc end kernels
+      
       return
       end
 #else

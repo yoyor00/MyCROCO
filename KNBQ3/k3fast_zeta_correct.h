@@ -8,7 +8,7 @@
 ! !  Update zeta(m+1)
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 #  ifdef K3FAST_AM4c
 #   ifdef K3FAST_2DCONT
       if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
@@ -124,7 +124,7 @@
           enddo
         enddo
 !$acc end kernels
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 ! !
 ! !********************************
 ! !  Set masking for zeta, 
@@ -163,7 +163,7 @@
 ! !********************************
 ! !
       if (LAST_FAST_STEP) then
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do j=JstrR,JendR
           do i=IstrR,IendR
             Zt_avg1(i,j)=zeta(i,j,knew)
@@ -186,7 +186,7 @@
 !
 !  Prognostic evaluation using momentum divergence
 !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do k=1,N
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
@@ -278,7 +278,7 @@
 ! !********************************
 ! !
 # ifdef NBQ_MASS
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 !     if (LAST_FAST_STEP) then
 !       do k=1,N
 !         do j=JstrV-2,Jend+1

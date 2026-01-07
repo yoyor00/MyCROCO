@@ -16,7 +16,7 @@
 ! ! Initializations
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
       if (IstrU.gt.Iend) then
         do j=Jstr,Jend
@@ -48,7 +48,7 @@
 ! !      horizontal divergence at m+1
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
 #   ifdef NBQ_GRID_SLOW
       if (NSTEP_DS) then
@@ -266,6 +266,10 @@
 #   endif /* NBQ_FREESLIP */
 #  endif   /* K3FAST_SEDLAYERS */
 !$acc end kernels
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+      call check_tab3d(thetadiv_nbq,'3d_fast (3) divh thetadiv_nbq',
+     &  'r',ondevice=.TRUE.)
+# endif    
 ! !
 ! !********************************
 ! !  Y-component dZdyq_v*qdmv 
@@ -280,7 +284,7 @@
 ! !      divergence at m+1
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
 #   ifdef NBQ_GRID_SLOW
       if (NSTEP_DS) then
@@ -496,13 +500,21 @@
 #   endif /* NBQ_FREESLIP */
 #  endif   /* K3FAST_SEDLAYERS */
 !$acc end kernels
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+      call check_tab3d(thetadiv_nbq,'3d_fast (2) divh thetadiv_nbq',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(qdmu_nbq,'3d_fast (2) divh qdmu_nbq',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(qdmv_nbq,'3d_fast (2) divh qdmv_nbq',
+     &  'r',ondevice=.TRUE.)
+# endif    
 ! !
 ! !********************************
 ! !  Horizontal Divergence (qdmH(m+1)): 
 ! !      add d/dx and D/dy terms
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
 #  ifndef K3FAST_SEDLAYERS
         do k=1,N!<-- k loop
@@ -594,13 +606,17 @@
         
       enddo ! <-- k=1,N
 !$acc end kernels
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+      call check_tab3d(thetadiv_nbq,'3d_fast (1) divh thetadiv_nbq',
+     &  'r',ondevice=.TRUE.)
+# endif    
 ! ! 
 ! !********************************
 ! !  thetadiv2_nbq: complet time-corrective term  (dh/dt included) 
 ! !  thetadiv_nbq: reduced time-corrective term  (no dh/dt)
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
 #  ifndef KHCOMP 
 #   ifdef NBQ_GRID_SLOW
@@ -733,7 +749,7 @@
 ! ! both with explicit and implicit schemes
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
        k = -N_sl
 #  ifdef NBQ_FREESLIP
           do j=Jstr,Jend  
@@ -764,6 +780,10 @@
           enddo 
 #  endif
 !$acc end kernels
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+      call check_tab3d(thetadiv_nbq,'3d_fast aft divh thetadiv_nbq',
+     &  'r',ondevice=.TRUE.)
+# endif    
 	  
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

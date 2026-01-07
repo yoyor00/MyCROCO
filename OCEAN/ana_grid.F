@@ -154,6 +154,8 @@ C$    integer omp_get_thread_num
                      depth=256.
                      f0=0.
                      beta=0.
+# elif defined FC500
+                     depth=1000.
 # elif defined CANON2D
                      depth=2.
                      f0=0.
@@ -342,6 +344,9 @@ C$    integer omp_get_thread_num
                      Length_XI =4000.0e+3
 # elif defined KH_INST
                      Length_XI =256.0
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined FC500
+                     Length_XI =750.0
                      Length_ETA=Length_ETA_ISO_GRID
 # elif defined CANON2D_KHI
                      Length_XI =2.
@@ -604,7 +609,7 @@ CR     &                                 'x0=',x0, 'y0=',y0, mynode
                    || defined KH_INST || defined TS_HADV_TEST \
                    || defined ACOUSTIC || defined SINGLE_COLUMN \
                    || defined JET      || defined CONVECT \
-                   || defined CANON2D
+                   || defined CANON2D  || defined FC500
 !$acc kernels if(compute_on_device) default(present)
       do j=JstrR,JendR
         do i=IstrR,IendR

@@ -48,7 +48,7 @@
           cff1= 1.5+cff3                 ! maximum stability (with
 # endif
         endif                            ! special care for startup)
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 # if defined K3FAST_COUPLING2D  || defined KNHINT
         do j=Jstr,Jend
          do i=IstrU,Iend
@@ -112,7 +112,7 @@
         enddo
 # endif        
 !$acc end kernels
-#ifdef RVTK_DEBUG_ADVANCED
+#ifdef CVTK_DEBUG_ADV1_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
         call check_tab2d(rufrc_bak(:,:,nstp),'rufrc_bak_st_fast_d','u')
@@ -135,7 +135,7 @@ C$OMP MASTER
 #  define rzeta  UFe
 #  define rzeta2  VFe
 #  define rzetaSA VFx
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
             zwrk(i,j)=zeta(i,j,knew)-zeta(i,j,kstp)
@@ -198,7 +198,7 @@ C$OMP MASTER
 ! !
 # ifdef K3FAST_C3D_UVSF
        if (FIRST_FAST_STEP) then
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=IstrU,Iend
             ru_ext_nbq_sum(i,j)=0.
@@ -241,7 +241,7 @@ C$OMP MASTER
 ! !       if ( FIRST_FAST_STEP) then
 ! ! !$acc update device( ru_int_nbq, rv_int_nbq )
 ! !       endif
-#  if defined RVTK_DEBUG 
+#  if defined CVTK_DEBUG_ADV1 
 C$OMP BARRIER
 C$OMP MASTER
 !        call Check_tab3d(ru_int_nbq,'ru_int_nbq (A0)','uint')
@@ -250,7 +250,7 @@ C$OMP MASTER
 !       call check_tab3d(rv_int_nbq,'rv_int_nbq (A1)','vint')
 C$OMP END MASTER     
 #  endif  
-# if defined RVTK_DEBUG && defined KNBQ
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
 C$OMP BARRIER
 C$OMP MASTER
 !       call check_tab3d_sedlay(Hz,'Hz','r',N_sl+1,N)
@@ -259,7 +259,7 @@ C$OMP MASTER
 C$OMP END MASTER     
 #  endif  
   
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 #ifdef K3FAST_C3D_UVSF
       do j=Jstr,Jend
         do i=IstrU,Iend
@@ -339,7 +339,7 @@ C$OMP END MASTER
 # endif
 !
 !$acc end kernels
-# if defined RVTK_DEBUG && defined KNBQ
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab3d(ru_int_nbq,'ru_int_nbq (A2)','uint'
@@ -358,12 +358,12 @@ C$OMP END MASTER
 #   endif 
 #  endif 
 
-# if defined RVTK_DEBUG && defined KNBQ
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
 C$OMP BARRIER
 C$OMP MASTER
-       call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','uint'
+       call check_tab3d(ru_int_nbq,'ru_int_nbq (A)','u'
      &    ,ondevice=.TRUE.)
-       call check_tab3d(rv_int_nbq,'rv_int_nbq (A)','vint'
+       call check_tab3d(rv_int_nbq,'rv_int_nbq (A)','v'
      &    ,ondevice=.TRUE.)
 C$OMP END MASTER     
 #  endif  

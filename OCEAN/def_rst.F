@@ -745,8 +745,13 @@
 ! Generic length scale.
 !
           lvar=lenstr(vname(1,indxGls))
+#  ifdef GLS_MIXING
           ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
      &         NF_DOUBLE, 4, w3dgrd, rstGls)
+#  else           
+          ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
+     &         NF_DOUBLE, 4, r3dgrd, rstGls)
+#  endif
 #  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstGls,nf_collective)
 #  endif

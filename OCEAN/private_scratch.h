@@ -18,7 +18,7 @@
       real,dimension(:,:,:) , pointer :: T2d,T3d
 # endif
 #else
-      real A2d(N2d,NSA,0:NPP-1), A3d(N3d,9,0:NPP-1)
+      real A2d(N2d,NSA,0:NPP-1), A3d(N3d,11,0:NPP-1)
      &    ,A3dHz(N3dHz,4,0:NPP-1)
 # if defined SEDIMENT || defined LMD_MIXING
       integer B2d(N2d,0:NPP-1)
@@ -30,7 +30,7 @@
 #endif
 
       common/private_scratch/ A2d,A3d,A3dHz
-!$acc declare create( A2d,A3d,A3dHz )
+c c !$acc declare create( A2d,A3d,A3dHz )
 !bug fix create copie needed fo first pass en rhs3d, go to see copi
 #if defined SEDIMENT || defined LMD_MIXING
       common/private_scratch_bis/ B2d

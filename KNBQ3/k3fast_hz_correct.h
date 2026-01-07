@@ -9,7 +9,7 @@
 ! ! Store HZ before correction
 ! !--------------------------------
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
        do k=-N_sl+1,N
         do j=JstrV-2,Jend+1
          do i=IstrU-2,Iend+1
@@ -35,7 +35,7 @@
 ! ! Adjust depth average
 ! !--------------------------------
 ! ! 
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
             dum_s=0.

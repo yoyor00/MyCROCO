@@ -10,7 +10,21 @@
 ! !********************************
 ! !
 # ifdef K3FAST_RHO
-!$acc kernels if(compute_on_device) default(present)
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+C$OMP BARRIER
+C$OMP MASTER
+# ifdef K3FAST_SEDLAYERS
+!      call check_tab3d_sedlay(rho_nbq,'step3d_fastrho_nbq_2',
+!     &  'r',N_sl+1,N,ondevice=.TRUE.)
+# else
+      call check_tab3d(rho_nbq,'step3d_fastrho_nbq_2',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(thetadiv_nbq,'step3d_fast_teta_2',
+     &  'r',ondevice=.TRUE.)
+# endif      
+C$OMP END MASTER
+# endif    
+!$acc kernels if(compute_on_device) default(present) async(1)
 #  ifdef K3FAST_AM4             
 #   ifdef K3FAST_2DCONT
       if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
@@ -91,7 +105,7 @@
 ! Compute rhobar_nbq(m+1) used in zeta diagnostic from 
 ! depth-integrated continuity equation
 !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do j=Jstr-1,Jend+1
         do i=Istr-1,Iend+1
           rhobar_nbq(i,j,knew)=0.
@@ -123,7 +137,7 @@
      &                           rhobar_nbq(START_2D_ARRAY,knew))
 #   endif
 
-#   ifdef RVTK_DEBUG
+#   ifdef CVTK_DEBUG_ADV1
 !       call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq','r')
 #   endif    
 #  endif /* NBQ_MASS */
@@ -134,7 +148,7 @@
 ! ! Diag. Acoustic: pressure field
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
             do k=-N_sl+1,N
@@ -153,7 +167,7 @@
 ! !********************************
 ! !
 # ifdef  NBQ_DIAGMASS
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       masstot =0.
       masstot2=0.
       do j=Jstr,Jend

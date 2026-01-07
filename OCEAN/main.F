@@ -853,6 +853,9 @@ C$OMP PARALLEL DO PRIVATE(tile)
       csound0_nbq=csound_nbq
       csound_nbq=1.
       soundspeed_nbq=1.
+      do tile=0,NSUB_X*NSUB_E-1
+        call diag(tile)
+      enddo
       csound_nbq=csound0_nbq
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
@@ -1002,7 +1005,7 @@ CR      write(*,*) '  0' MYID
 #ifdef MPI_TIME
         start_time1_2=PMPI_Wtime()
         exe_time_1 = start_time1_2 - start_time1_1
-          if (mynode.eq.0) write(97,*) exe_time_1
+        !  if (mynode.eq.0) write(97,*) exe_time_1
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
@@ -1014,6 +1017,7 @@ CR      write(*,*) '  0' MYID
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
 #endif
+!$acc update host(zeta)
 C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
       do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
         call stop_timers()

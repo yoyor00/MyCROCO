@@ -18,7 +18,7 @@ C$OMP BARRIER
       ! Name OA variable
       !print *,"DIAG SACOUS Var name =",tgvnam_oa(tv_oa(ic))
      
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         if (JstrV.le.Jend) then
           jvar1=JstrV-2
           jvar2=Jend+1

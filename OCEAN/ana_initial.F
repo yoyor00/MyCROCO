@@ -116,9 +116,8 @@
 !$acc declare create(d)
 #endif
 #ifdef ISOLITON_DJL
-      real zint,depth,dz,dx,gam,del,Rd,prof,H1,drho,v_rhs,alpha,H2
-      real rho1_exp,rho2_exp,h1_exp,amp_exp,Lt,lambda,l,a,c
-      real d(0:N)
+      real dx,Rd,prof,H1,drho,v_rhs,alpha,H2
+      real lambda,l,a,c
       real,  allocatable :: xini(:),uini(:,:),wini(:,:),rhoini(:,:)
       real :: kini
       integer :: nbx,kount,eof,imem, kc, kf, f_shift

@@ -74,7 +74,7 @@ C$    integer omp_get_thread_num
 !----------------------------------------------------------------------
 !
       if (iic.eq.0) then
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
         do j=J_RANGE
           do i=I_RANGE
 # ifdef WET_DRY
@@ -147,7 +147,7 @@ C$    integer omp_get_thread_num
 #  if defined BD_EXCHANGE
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, Zt_avg1)
 #  endif
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent
         do i=I_RANGE            !!!          with omega.F
@@ -449,7 +449,7 @@ C$    integer omp_get_thread_num
 #   define JU_RANGE JstrR,JendR
 #   define JV_RANGE Jstr,JendR
 #  endif
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do k=1,N
         do j=JU_RANGE
           do i=IU_RANGE
@@ -673,7 +673,7 @@ C$    integer omp_get_thread_num
 #   define JV_RANGE Jstr,JendR
 #  endif
 
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
  !     do j=JU_RANGE
         DOLOOP2D_R(IU_RANGE,JU_RANGE)

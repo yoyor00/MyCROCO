@@ -205,7 +205,7 @@ c       if (xios_field_is_active("time")) then
 c !$acc update host( time ) 
 c       endif
 # ifdef SOLVE3D
-      if (xios_field_is_active("Cs_r")) then
+      if (xios_field_is_active("Cs_rho")) then
 !$acc update host( Cs_r ) 
       endif
       if (xios_field_is_active("Cs_w")) then

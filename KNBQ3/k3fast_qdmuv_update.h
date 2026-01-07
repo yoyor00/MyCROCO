@@ -27,7 +27,7 @@
 #endif 
 ! !
 # ifdef K3FAST_UV
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
        do k=-N_sl,N    ! Loop is on w-levels
 #  ifdef K3FAST_RHO
@@ -111,7 +111,17 @@
 #  endif /* K3FAST_RHO */
       enddo   !<-- k=0,   
 !$acc end kernels
-!$acc kernels if(compute_on_device) default(present)
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+      call check_tab3d(qdmu_nbq,'3d_fast (2) uvupd qdmu_nbq',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(qdmv_nbq,'3d_fast (2) uvupd qdmv_nbq',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(ru_int_nbq,'3d_fast (2) uvupd ru_int_nbq',
+     &  'u',ondevice=.TRUE.)
+      call check_tab3d(rv_int_nbq,'3d_fast (2) uvupd rv_int_nbq',
+     &  'v',ondevice=.TRUE.)
+# endif    
+!$acc kernels if(compute_on_device) default(present) async(1)
 #  ifdef K3FAST_AB3
 #    ifdef  K3FAST_2DCONT
       if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
@@ -439,6 +449,7 @@
 #  ifdef K3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
+!! !$acc atomic update	      !Atomiv a vérifier
 #  ifdef K3FAST_DUVNBQ 
               DU_nbq(i,j)=DU_nbq(i,j)+qdmu_nbq(i,j,k)
 #  elif defined K3FAST_DUVNBQ2 
@@ -753,6 +764,7 @@
 #  ifdef K3FAST_SEDLAYERS 
               if (k.gt.0) then
 #  endif
+!!!!$acc atomic update  #a verifier   
 #  ifdef K3FAST_DUVNBQ
               DV_nbq(i,j)=DV_nbq(i,j)+qdmv_nbq(i,j,k)
 #  elif defined K3FAST_DUVNBQ2 
@@ -783,7 +795,7 @@
 ! !********************************
 ! !
 # ifdef PSOURCE
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do is=1,Nsrc 
 #  ifdef MPI
         i=Isrc_mpi(is,mynode)
@@ -822,7 +834,7 @@
 ! !********************************
 ! !
 # if defined WET_DRY && defined K3FAST_ZETAW
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
  	do j=Jstr,Jend
         do i=IstrU,Iend
           cff1_WD=ABS(ABS(umask_wet(i,j))-1.)
@@ -856,7 +868,7 @@
 !$acc end kernels      
 # endif
 
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG_ADV1
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef K3FAST_SEDLAYER      
@@ -879,8 +891,20 @@ c C$OMP END MASTER
 ! !   boundary conditions
 ! !********************************
 ! !
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+      call check_tab3d(qdmu_nbq,'3d_fast (1) uvupd qdmu_nbq',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(qdmv_nbq,'3d_fast (1) uvupd qdmv_nbq',
+     &  'r',ondevice=.TRUE.)
+# endif    
       call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
       call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+      call check_tab3d(qdmu_nbq,'3d_fast (2) uvupd qdmu_nbq',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(qdmv_nbq,'3d_fast (2) uvupd qdmv_nbq',
+     &  'r',ondevice=.TRUE.)
+# endif    
 ! !
 ! !********************************
 ! ! Exchange periodic boundaries 
@@ -909,7 +933,7 @@ c C$OMP END MASTER
 ! ! Debug
 ! !********************************
 ! !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG_ADV1
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef K3FAST_SEDLAYER      

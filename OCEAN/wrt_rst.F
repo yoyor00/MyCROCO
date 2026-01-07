@@ -447,8 +447,14 @@
 !
 ! Generic length scale.
 !
+#  ifdef GLS_MIXING
         ierr=nf_fwrite(trb(START_2D_ARRAY,0,nstp,igls), ncidrst,
      &                             rstGls, record, w3dvar)
+#  else
+!$acc update if(compute_on_device) host(Sprod3d(:,:,:))
+        ierr=nf_fwrite(Sprod3d(START_2D_ARRAY,1), ncidrst,
+     &                             rstGls, record, r3dvar)
+#  endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxGls))
           write(stdout,1) vname(1,indxGls)(1:lvar), record,

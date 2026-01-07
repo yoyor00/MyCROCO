@@ -1,6 +1,6 @@
 !$acc enter data if(compute_on_device) copyin(
 
-!../OCEAN/ocean2d.h
+!ocean2d.h
 !$acc& zeta
 !$acc&, ubar
 !$acc&, vbar
@@ -11,7 +11,7 @@
 !$acc&, DVom
 #endif
 
-!../OCEAN/scalars.h
+!scalars.h
 # if defined OA_COUPLING || defined OW_COUPLING
 # endif
 # if defined OA_COUPLING || defined OW_COUPLING
@@ -131,7 +131,7 @@
 #else
 #endif
 
-!../OCEAN/ocean3d.h
+!ocean3d.h
 #ifdef SOLVE3D
 !$acc&, u
 !$acc&, v
@@ -188,7 +188,7 @@
 # endif /* OXYGEN */
 #endif  /* SOLVE3D */
 
-!../OCEAN/grid.h
+!grid.h
 !$acc&, h
 !$acc&, hinv
 !$acc&, f
@@ -282,7 +282,7 @@
 !$acc&, sina
 #endif
 
-!../OCEAN/coupling.h
+!coupling.h
 #ifdef SOLVE3D
 # ifdef VAR_RHO_2D
 !$acc&, rhoA
@@ -299,7 +299,7 @@
 !$acc&, DV_avg2
 #endif
 
-!../OCEAN/private_scratch.h
+!private_scratch.h
 #ifdef AUTOTILING
 !$acc&, A2d, A3d, A3dHz
 # if defined SEDIMENT || defined LMD_MIXING
@@ -321,7 +321,7 @@
 # endif
 #endif
 
-!../OCEAN/mixing.h
+!mixing.h
 #if defined UV_VIS2 || defined SPONGE_VIS2
 !$acc&, visc2_r
 !$acc&, visc2_p
@@ -429,7 +429,7 @@
 # define exchange_p3d_tile(a,b,c,d,visc3d_p) exchange_p2d_tile(a,b,c,d,visc2_p)
 #endif /* SOLVE3D */
 
-!../OCEAN/forces.h
+!forces.h
 !$acc&, sustr
 !$acc&, svstr
 #if defined OA_COUPLING || defined OW_COUPLING
@@ -685,7 +685,7 @@
 !$acc&, wpha_bry
 #endif
 
-!../OCEAN/work.h
+!work.h
 #ifdef SOLVE3D
 !$acc&, work
 !$acc&, workr
@@ -696,7 +696,7 @@
 !$acc&, work2d
 !$acc&, work2d2
 
-!../OCEAN/ncscrum.h
+!ncscrum.h
 #ifdef SOLVE3D
 #  ifdef K3FAST_HIS
 #  else
@@ -1182,7 +1182,7 @@
 # endif
 #endif
 #ifdef SOLVE3D
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 # endif
 # if defined M3FAST || defined K3FAST
 # endif
@@ -1326,7 +1326,7 @@
 #elif defined MUSTANG
 #endif
 
-!../OCEAN/averages.h
+!averages.h
 #ifdef AVERAGES
 !$acc&, zeta_avg
 !$acc&, ubar_avg
@@ -1443,12 +1443,12 @@
 # endif
 #endif /* AVERAGES */
 
-!../OCEAN/lmd_kpp.h
+!lmd_kpp.h
 #if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING || defined TKE3D_MIXING
 !$acc&, Jwtype
 #endif
 
-!../OCEAN/climat.h
+!climat.h
 #if defined ZCLIMATOLOGY || defined AGRIF
 !$acc&, ssh
 #endif
@@ -1542,122 +1542,209 @@
 # endif
 #endif
 
-!./nbq.h
-#ifdef M3FAST
+!nbq.h
+# define NSLP1N -N_sl+1:N
+# define NSLN -N_sl:N
+# ifdef K3FAST
+#  ifndef K3FAST_CSVISC2K
+#  else
 !$acc&, soundspeed_nbq
 !$acc&, soundspeed2_nbq
+#  endif
+#  ifdef NBQ_RCSOUND
+!$acc&, rcsound2_nbq
+#  endif
+#  ifndef K3FAST_CSVISC2K
+#  else
+!$acc&, visc2_nbq
+!$acc&, visc2v_nbq
+#  endif
+#  ifdef NBQ_SPONGE
+!$acc&, visc2_nbq_sponge
+#  endif
+#  if defined NBQ_FREESLIP && ! defined K3FAST_SEDLAYERS
+!$acc&, qdmw0_nbq
+#  endif
+#  if defined K3FAST_DUVNBQ || defined K3FAST_DUVNBQ2 || defined PSOURCE || defined WET_DRY
+!$acc&, DU_nbq
+!$acc&, DV_nbq
+#  endif
+#  if defined K3FAST_ZETAW || defined PSOURCE || defined WET_DRY || defined KNHINT_ZETAW
+!$acc&, dzeta_nbq
+!$acc&, wsurf_nbq
+!$acc&, usurf_nbq
+!$acc&, vsurf_nbq
+#   ifdef K3FAST_AB3
+!$acc&, usurf_nbq_bak
+!$acc&, vsurf_nbq_bak
+!$acc&, wsurf_nbq_bak
+#    endif
+#  endif
+#  ifdef NBQ_NUDGING
+!$acc&, NBQnudgcof
+#  endif
+#  ifdef K3FAST_UV
+#   ifdef NBQ_GRID_SLOW
+!$acc&, dthetadiv_nbqdz
+#   else
+!$acc&, dthetadiv_nbqdz
+#   endif /* NBQ_GRID_SLOW */
+#  endif
 !$acc&, qdmu_nbq
 !$acc&, qdmv_nbq
-# ifdef NBQ
 !$acc&, qdmw_nbq
-#  ifdef XIOS
-!$acc&, worknbq
-#  endif     
-# endif
-# ifdef NBQ
+#     ifdef NBQ_THETAIMP
+!$acc&, qdmwold_nbq
+#     endif
+#  ifdef K3FAST_UV
+!$acc&, dZdxq_w
+!$acc&, dZdyq_w
+#  endif 
 !$acc&, thetadiv_nbq
+#  ifdef K3FAST_AM4b
+!$acc&, thetadiv_nbq_bak
+#  endif
+#  ifdef K3FAST_AM4
+!$acc&, thetadiv_nbq_bak2
+#  endif
+#  if defined NBQ_HZ_PROGNOSTIC 
 !$acc&, thetadiv2_nbq
-!$acc&, thetadiv3_nbq
-# endif
+#  endif  
+#  if defined K3FAST_C3D_UVSF &&  defined K3FAST_COUPLING3D
+!$acc&, ru_int2d_nbq_bak
+!$acc&, rv_int2d_nbq_bak
+#  endif
 !$acc&, ru_int_nbq
 !$acc&, rv_int_nbq
+#  ifdef K3FAST_COUPLING_SCH1
+!$acc&, ru_intt_nbq
+!$acc&, rv_intt_nbq
+#  elif defined K3FAST_COUPLING_SCH2
+!$acc&, ru_intt_nbq
+!$acc&, rv_intt_nbq
+#  endif
 !$acc&, ru_nbq
 !$acc&, rv_nbq
 !$acc&, ru_nbq_avg2
 !$acc&, rv_nbq_avg2
-# ifdef NBQ
+!$acc&, Hzw_nbq
 !$acc&, rw_int_nbq
+#  ifdef K3FAST_COUPLINGW_SCH1
+!$acc&, rw_intt_nbq
+#  elif defined K3FAST_COUPLINGW_SCH2
+!$acc&, rw_intt_nbq
+#  endif
 !$acc&, rw_nbq
 !$acc&, rw_nbq_avg2
 !$acc&, rho_nbq
-# endif
-!$acc&, DU_nbq
-!$acc&, DV_nbq
-!$acc&, ru_int_nbq_2d
-!$acc&, rv_int_nbq_2d
-# ifdef NBQ
+#  ifdef K3FAST_DIAGACOUS
+!$acc&, p_nbq
+!$acc&, p_nbq_max
+#  endif
+#  ifdef ONLINE_ANALYSIS
+!$acc&, mvoa1
+!$acc&, mvoa2
+#  endif
+#  ifdef NBQ_GRAV
+!$acc&, rho_nh
+#   ifdef CONVECT
+!$acc&, rhoi_nh
+#   endif
+#  endif
 !$acc&, rho_grd
-!$acc&, rho_bak
 #  ifdef NBQ_MASS
 !$acc&, rho_nbq_avg1
 !$acc&, rhobar_nbq
 !$acc&, rhobar_nbq_avg1
 #  endif
-# else
-!$acc&, rubar_nbq
-!$acc&, rvbar_nbq
-!$acc&, rubar_sum
-!$acc&, rvbar_sum
-# endif
-!$acc&, Hzw_half_nbq
-# ifdef NBQ
 !$acc&, zw_nbq
-# endif
 # ifdef NBQ_HZCORRECT
 !$acc&, Hz_correct
 #  ifdef NBQ_HZCORR_DEBUG
 !$acc&, Hz_corr
 #  endif
 # endif
-# ifdef NBQ_HZ_PROGNOSTIC
+#  ifdef NBQ_HZ_PROGNOSTIC
+#   ifndef K3FAST_SEDLAYERS
 !$acc&, Hz_bak2
+#   else
+!$acc&, Hz_bak2
+#   endif
+#  endif
+!$acc&, FC3D
+!$acc&, DC3D
+!$acc&, CF3D
+#  ifdef ANA_MVB
+!$acc&, rhoi_nbq
+#  endif
+#  ifdef KNHINT_WH
+!$acc&, wzh_nbq
+#  endif
+# ifdef XIOS
+!$acc&, worknbq
 # endif
-# ifdef NBQ
-#  ifdef NBQ_GRID_SLOW
-!$acc&, dthetadiv_nbqdz
-!$acc&, dZdxq_w
-!$acc&, dZdyq_w
-#  else
-!$acc&, dthetadiv_nbqdz
-!$acc&, dZdxq_w
-!$acc&, dZdyq_w
-#  endif /* NBQ_GRID_SLOW */
-# endif
-# ifdef NBQ
-!$acc&, wsurf_nbq
-!$acc&, usurf_nbq
-!$acc&, vsurf_nbq
-# endif
-# if defined OBC_NBQ && defined OBC_NBQORLANSKI
-#  ifdef OBC_COM_WEST
+#  if defined OBC_NBQ 
+#   ifdef OBC_COM_WEST
 !$acc&, qdmu_nbq_west
 !$acc&, qdmv_nbq_west
-#   ifdef NBQ
+#    ifdef K3FAST_W
 !$acc&, qdmw_nbq_west
 !$acc&, rho_nbq_west
+#    endif
 #   endif
-#  endif
-#  ifdef OBC_COM_EAST
+#   ifdef OBC_COM_EAST
 !$acc&, qdmu_nbq_east
 !$acc&, qdmv_nbq_east
-#   ifdef NBQ
+#    ifdef K3FAST_W
 !$acc&, qdmw_nbq_east
 !$acc&, rho_nbq_east
+#    endif
 #   endif
-#  endif
-#  ifdef OBC_COM_SOUTH
+#   ifdef OBC_COM_SOUTH
 !$acc&, qdmu_nbq_south
 !$acc&, qdmv_nbq_south
-#   ifdef NBQ
+#    ifdef K3FAST_W
 !$acc&, qdmw_nbq_south
 !$acc&, rho_nbq_south
+#    endif
 #   endif
-#  endif
-#  ifdef OBC_COM_NORTH
+#   ifdef OBC_COM_NORTH
 !$acc&, qdmu_nbq_north
 !$acc&, qdmv_nbq_north
-#   ifdef NBQ
+#    ifdef K3FAST_W
 !$acc&, qdmw_nbq_north
 !$acc&, rho_nbq_north
+#    endif
 #   endif
+#  endif    
+#  ifdef K3FAST_NOBPG
+!$acc&, rho_bpg
 #  endif
+# endif /* K3FAST */
+# ifdef CENTRIFUGE
+!$acc&, ray
+!$acc&, cosr
+!$acc&, sinr
 # endif
-# ifdef NBQ_NUDGING
-!$acc&, NBQnudgcof
-# endif
-#endif /* M3FAST */
+#ifdef CUVE_BATHY
+!$acc&, hd
+!$acc&, hd2
+!$acc&, hd3
+!$acc&, hd3u
+!$acc&, hd3v
+!$acc&, hd4
+#endif
+#ifdef BATHY_SLOPE
+!$acc&, myslope
+!$acc&, myslope2
+#endif
+#ifdef K3FAST_AB3
+!$acc&, rhsu_bak
+!$acc&, rhsv_bak
+!$acc&, rhsw_bak
+#endif
 
-!../OCEAN/sources.h
+!sources.h
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
 !$acc&, Qbar0
 !$acc&, Qbar
@@ -1694,7 +1781,7 @@
 # endif
 #endif
 
-!../OCEAN/wkb_wwave.h
+!wkb_wwave.h
 #ifdef WKB_WWAVE
 !$acc&, wkx
 !$acc&, wke
@@ -1723,7 +1810,7 @@
 # endif
 #endif /* WKB_WWAVE */
 
-!../OCEAN/boundary.h
+!boundary.h
 #ifdef T_FRC_BRY
 !$acc&, got_tbry
 #endif
@@ -1958,7 +2045,7 @@
 # endif
 #endif /* NBQ || defined K3FAST */
 
-!../OCEAN/tides.h
+!tides.h
 #if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
 !$acc&, Tperiod
 #endif /* SSH_TIDES || UV_TIDES */
@@ -1978,7 +2065,7 @@
 !$acc&, PTide
 #endif
 
-!../OCEAN/bbl.h
+!bbl.h
 #if defined BBL || defined SEDIMENT
 !$acc&, Abed
 !$acc&, Hripple

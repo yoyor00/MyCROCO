@@ -1574,8 +1574,8 @@ C$    integer omp_get_thread_num
       enddo
 #  ifdef NBQ
       do k=0,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
+        do j=JstrR,JendR+1
+          do i=IstrR,IendR+1
             wz(i,j,k,1)  =init
             wz(i,j,k,2)  =init
             rw_nbq(i,j,k)=init

@@ -9,7 +9,7 @@
 ! !********************************
 ! !
       if (LAST_FAST_STEP) then
-!$acc kernels if(compute_on_device) default(present)     
+!$acc kernels if(compute_on_device) default(present) async(1)     
         do k=0,N 
           do j=Jstr,Jend             
             do i=Istr,Iend
@@ -28,13 +28,19 @@
 #   endif
 !$acc end kernels
       endif
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+      call check_tab3d(qdmw_nbq,'3d_fast bef upd qdmw_nbq',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(rw_int_nbq,'3d_fast bef upd rw_int_nbq',
+     &  'r',ondevice=.TRUE.)
+# endif    
 ! !
 ! !********************************
 ! ! Vertical fluxes
 ! !********************************
 ! !
 #  ifdef NBQ_IMP
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do j=Jstr,Jend
         do i=Istr,Iend
             FC3D(i,j,N+1)=0
@@ -83,7 +89,7 @@
       enddo 
 !$acc end kernels
 #  endif /* NBQ_IMP */
-!$acc kernels if(compute_on_device) default(present)      
+!$acc kernels if(compute_on_device) default(present) async(1)      
 ! !
 ! !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! ! j-loop starts here!
@@ -512,7 +518,7 @@
 !#      endif
 !#    endif
 !#   endif
-#   ifdef RVTK_DEBUG
+#   ifdef CVTK_DEBUG_ADV1
 C$OMP BARRIER
 C$OMP MASTER
 #    ifdef K3FAST_SEDLAYER      

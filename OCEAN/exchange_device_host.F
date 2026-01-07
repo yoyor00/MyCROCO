@@ -43,6 +43,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # else
 !$acc set device_num(tile)
 # endif
+!$acc wait
 !$acc update if(compute_on_device) device(tab)
       enddo
           end subroutine update_device_1D
@@ -60,6 +61,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # else
 !$acc set device_num(tile)
 # endif
+!$acc wait
 !$acc update if(compute_on_device) device(tab)
       enddo
           end subroutine update_device_2D
@@ -77,6 +79,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # else
 !$acc set device_num(tile)
 # endif
+!$acc wait
 !$acc update if(compute_on_device) device(tab)
       enddo
           end subroutine update_device_3D
@@ -121,6 +124,7 @@ C$    integer omp_get_thread_num
           real,dimension(GLOBAL_2D_ARRAY) :: tab
 # include "compute_auxiliary_bounds.h"
 
+!$acc wait
 !$acc update if(compute_on_device) host(tab(IstrR:IendR,JstrR:JendR))
 
           return
@@ -161,6 +165,7 @@ C$    integer omp_get_thread_num
           real,dimension(GLOBAL_2D_ARRAY,N) :: tab
 # include "compute_auxiliary_bounds.h"
 
+!$acc wait
 !$acc update if(compute_on_device)
 !$acc&       host(tab(IstrR:IendR,JstrR:JendR,1:N))
 

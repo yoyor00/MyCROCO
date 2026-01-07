@@ -19,7 +19,7 @@
 # if defined K3FAST_UV || defined K3FAST_W || defined K3FAST_RHO
       if (FIRST_FAST_STEP) then
        if (FIRST_TIME_STEP) then
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
          do j=JstrR,JendR
          do k=1,N
            do i=IstrR,IendR
@@ -49,7 +49,7 @@
 ! ! Extrapolation in time:
 ! !********************************
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
          do j=JstrR,JendR
            do k=1,N
              do i=IstrR,IendR
@@ -88,26 +88,27 @@
 ! !  (D,ubar,vbar) at m+1/2 (AB3)
 ! !--------------------------------
 ! !
-      mybeta=0.281105 ! parameter for AB3 extrapolation
-
+# ifdef K3FAST_2DCONT
+       if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then   
+# else
        if (FIRST_FAST_STEP) then     
+# endif
                                       ! Meaning of temporal indices
         kbak=kstp                     ! ------- -- -------- -------
         kold=kstp                     ! m-2     m-1      m      m+1
         cff1= 1.0                     ! kold    kbak     kstp   knew
         cff2= 0.0
         cff3= 0.0
+# ifdef K3FAST_2DCONT
+       elseif (FIRST_FAST_STEP+1.and.FIRST_TIME_STEP) then  
+# else
        elseif (FIRST_FAST_STEP+1) then  
+# endif
         kbak=kstp-1                   ! AB2 forward scheme
         if (kbak.lt.1) kbak=4
         kold=kbak
-# ifdef K3FAST_ZETAW
         cff1= 1.5
         cff2=-0.5
-# else
-        cff1= 1.5  ! Just to agree with step2d
-        cff2=-0.5 
-# endif  
         cff3= 0.0
       else                             ! AB3 forward scheme
         kbak=kstp-1 
@@ -158,7 +159,7 @@
 !!$acc update device( h, zeta, ubar, vbar ) !iif=1
 !      endif
 ! !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
       do j=JstrV-2,Jend+1
        do i=IstrU-2,Iend+1
 # ifdef NBQ_MASS

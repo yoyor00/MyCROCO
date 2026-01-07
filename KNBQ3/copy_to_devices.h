@@ -1574,6 +1574,11 @@
 !$acc&, wsurf_nbq
 !$acc&, usurf_nbq
 !$acc&, vsurf_nbq
+#   ifdef K3FAST_AB3
+!$acc&, usurf_nbq_bak
+!$acc&, vsurf_nbq_bak
+!$acc&, wsurf_nbq_bak
+#    endif
 #  endif
 #  ifdef NBQ_NUDGING
 !$acc&, NBQnudgcof
@@ -1596,6 +1601,12 @@
 !$acc&, dZdyq_w
 #  endif 
 !$acc&, thetadiv_nbq
+#  ifdef K3FAST_AM4b
+!$acc&, thetadiv_nbq_bak
+#  endif
+#  ifdef K3FAST_AM4
+!$acc&, thetadiv_nbq_bak2
+#  endif
 #  if defined NBQ_HZ_PROGNOSTIC 
 !$acc&, thetadiv2_nbq
 #  endif  
@@ -1726,6 +1737,15 @@
 #ifdef BATHY_SLOPE
 !$acc&, myslope
 !$acc&, myslope2
+#endif
+#ifdef K3FAST_AM4c
+!$acc&, ubar_bak
+!$acc&, vbar_bak
+#endif     
+#ifdef K3FAST_AB3
+!$acc&, rhsu_bak
+!$acc&, rhsv_bak
+!$acc&, rhsw_bak
 #endif
 
 !../OCEAN/sources.h

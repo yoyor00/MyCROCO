@@ -70,7 +70,7 @@
 !
 # include "compute_auxiliary_bounds.h"
 !
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 # ifdef OBC_COM_WEST
       if (WESTERN_EDGE) then
         do k=1,N

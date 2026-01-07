@@ -99,7 +99,7 @@ c !$acc&  ,Hzr
 c # endif
 c !$acc&  )
       endif
-!$acc kernels if(compute_on_device) default(present)
+!$acc kernels if(compute_on_device) default(present) async(1)
 
       do k=-N_sl+1,N-1
         do j=jmin,jmax

@@ -3,7 +3,16 @@
 ! ! K3FAST_divv.h (begin)
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! !
-!$acc kernels if(compute_on_device) default(present)    
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+!$acc wait
+      call check_tab3d(thetadiv_nbq,'3d_fast bef divv thetadiv_nbq',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(Hzw_nbq_inv,'3d_fast bef divv Hzw_nbq_inv',
+     &  'r',ondevice=.TRUE.)
+      call check_tab3d(qdmw_nbq,'3d_fast bef divv qdmw_nbq',
+     &  'r',ondevice=.TRUE.)
+# endif    
+!$acc kernels if(compute_on_device) default(present) async(1)    
 ! ! 
       do j=Jstr,Jend  !<-- j loop
 ! ! *******************************
@@ -48,6 +57,11 @@
         enddo
       enddo  !<-- j loop
 !$acc end kernels
+# if defined CVTK_DEBUG_ADV1 && defined KNBQ
+!$acc wait
+      call check_tab3d(thetadiv_nbq,'3d_fast aft divv thetadiv_nbq',
+     &  'r',ondevice=.TRUE.)
+# endif    
 ! !
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ! K3FAST_divv.h (end)

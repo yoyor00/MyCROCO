@@ -581,7 +581,7 @@ C$OMP MASTER
 # if defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST
       do itrc=1,NT
         write(cltra,"('( t prestep3d tracer nb ', i2')')")  itrc
-        call check_tab3d(t(:,:,:,nnew,itrc),trim(cltra),'r',
+        call check_tab3d(t(:,:,:,nnew,itrc),trim(cltra),'rint',
      &  ondevice=.TRUE.)
       enddo
       call check_tab3d(u(:,:,:,nnew),'u prestep3d','u',

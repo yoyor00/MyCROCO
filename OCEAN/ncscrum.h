@@ -628,7 +628,7 @@
       integer indxHbbl
       parameter (indxHbbl=indxAkv+ntrc_temp+6)
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
       integer indxTke
       parameter (indxTke=indxAkv+ntrc_temp+7)
       integer indxGls
@@ -1654,7 +1654,7 @@
 # ifdef LMD_BKPP
      &      , rstHbbl
 # endif
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
      &      , rstAkv,rstAkt
 #  if defined SALINITY
      &      , rstAks
