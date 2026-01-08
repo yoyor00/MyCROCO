@@ -2978,8 +2978,8 @@ CR        write(*,*)'NumGasExcTerms=',NumGasExcTerms
      &                                    (Lsrc(is,itrc), itrc=1,NT)
 #  else
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
-     &                                     (Lsrc(is,itrc), itrc=1,NT),
 #   ifdef TRACERS
+     &                                     (Lsrc(is,itrc), itrc=1,NT),
      &                                     (Tsrc0(is,itrc), itrc=1,NT)
 #   endif /* TRACERS */
 #  endif /* PSOURCE_NCFILE_TS  */

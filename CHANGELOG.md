@@ -14,6 +14,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - COUPLING : missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
 
+- PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
 
 ### Changed
 
