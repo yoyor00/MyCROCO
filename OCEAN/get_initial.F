@@ -26,6 +26,9 @@
 #ifdef BBL
 # include "bbl.h"
 #endif
+#ifdef ABL1D
+# include "abl1d.h"
+#endif
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
 #endif

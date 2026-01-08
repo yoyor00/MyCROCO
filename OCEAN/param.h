@@ -82,7 +82,7 @@
        parameter (LLm0=878, MMm0=3,    N=40)
 !      parameter (LLm0=878, MMm0=3,    N=20)
 # else
-       parameter (LLm0=256, MMm0=3,    N=40)
+       parameter (LLm0=878, MMm0=3,    N=40)
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
