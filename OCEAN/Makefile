@@ -35,7 +35,7 @@ include Makedefs
 #======================================================================
 
  SRCS = main.F		step.F		read_inp.F\
-	timers_roms.F	init_scalars.F	init_arrays.F	set_weights.F\
+	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
 \
@@ -55,7 +55,7 @@ include Makedefs
 \
 	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
-	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
+	ana_vmix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
@@ -66,7 +66,7 @@ include Makedefs
 	param.F    ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
-	get_date.F	lenstr.F	closecdf.F	insert_node.F\
+	lenstr.F	closecdf.F	insert_node.F\
 	fillvalue.F	nf_add_attribute.F		set_cycle.F\
 	def_grid_2d.F   def_grid_3d.F   def_his.F       def_rst.F\
 	def_diags.F	def_diagsM.F	def_bio_diags.F\
@@ -100,17 +100,12 @@ include Makedefs
 	online_interp.F			online_interpolate_bulk.F\
 	online_set_bulk.F		online_interpolate_3d_bulk.F\
 \
-	init_floats.F	wrt_floats.F	step_floats.F	rhs_floats.F\
-	interp_rho.F	def_floats.F	init_arrays_floats.F\
-	random_walk.F	get_initial_floats.F\
-\
 	init_sta.F	wrt_sta.F	step_sta.F	interp_sta.F\
 	def_sta.F	init_arrays_sta.F\
 \
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
@@ -122,7 +117,7 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-	module_substance.F  module_MUSTANG.F module_OBSTRUCTIONS.F\
+	module_substance.F  module_OBSTRUCTIONS.F\
 	abl_step.F  abl_ini.F  abl_tke.F\
 	wrt_abl_his.F  def_abl_his.F\
 	wrt_abl_avg.F set_abl_avg.F\
@@ -160,12 +155,14 @@ include Makedefs
 	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
 	module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
+	tools_string.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
 	toolorigindate.F90 \
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
-	comMUSTANG.F90 dredging.F90 coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
+	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 	
 

@@ -660,31 +660,6 @@
 #  undef T_mld_nstp
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
-# ifdef DIAGNOSTICS_DEBUG
-       if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
-         i=5
-         j=5
-#  if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
-         cff=Trate_mld(i,j,itrc)-
-     &       TXadv_mld(i,j,itrc)-
-     &       TYadv_mld(i,j,itrc)-
-     &       TVadv_mld(i,j,itrc)-
-     &       TVmix_mld(i,j,itrc)-
-     &       THmix_mld(i,j,itrc)-
-     &       Tentr_mld(i,j,itrc)-
-     &       TForc_mld(i,j,itrc)
-       print *,'T3DMIX_S  : T budget closure MLD   : ',cff
-#  endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
-          cff=Trate(i,j,N-5,itrc)-
-     &        TXadv(i,j,N-5,itrc)-
-     &        TYadv(i,j,N-5,itrc)-
-     &        TVadv(i,j,N-5,itrc)-
-     &        TVmix(i,j,N-5,itrc)-
-     &        THmix(i,j,N-5,itrc)-
-     &        TForc(i,j,N-5,itrc)
-       print *,'T3DMIX_S  : T budget closure k=N-5 : ',cff
-      endif
-# endif /* DIAGNOSTICS_DEBUG */
 #endif /* DIAGNOSTICS_TS */
 
 !$acc end kernels

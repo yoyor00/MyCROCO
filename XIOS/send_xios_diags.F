@@ -810,9 +810,6 @@
       char_value=trim(title)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='title', value=char_value)
-C       char_value=trim(date_str)
-C        CALL iom_set_file_global_attr   (cdid
-C       &          ,type='string',name='date', value=char_value)
       char_value=trim(rstname)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='rst_file', value=char_value)
@@ -915,7 +912,7 @@ C      &     ,type='float',name='tnu4', value=tnu4)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='units', value='meter4 second-1')
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING
+# if !defined LMD_MIXING
 !
 ! Background vertical viscosity and tracer mixing coefficients.
 !
@@ -2689,22 +2686,43 @@ c !$acc wait
 
 # ifdef BULK_FLUX
       if (xios_field_is_active("tair")) then
+#   ifdef ABL1D
+      call xios_send_field("tair",tq_abl(:,:,2,nstp,1))
+#   else
       call xios_send_field("tair",tair)
+#   endif
       endif
       if (xios_field_is_active("rhum")) then
+#   ifdef ABL1D
+      call xios_send_field("rhum",tq_abl(:,:,2,nstp,2))
+#   else
       call xios_send_field("rhum",rhum)
+#   endif
       endif
       if (xios_field_is_active("prate")) then
       call xios_send_field("prate",prate)
       endif
+#   ifdef READ_PATM
+      if (xios_field_is_active("patm")) then
+      call xios_send_field("patm",patm2d)
+      endif
+#   endif
 # endif
 
 # if defined BULK_SM_UPDATE || defined BULK_FLUX 
       if (xios_field_is_active("uwnd")) then
+#   ifdef ABL1D
+      call xios_send_field("uwnd",u_abl(:,:,2,nstp))
+#   else
       call xios_send_field("uwnd",uwnd)
+#   endif
       endif
       if (xios_field_is_active("vwnd")) then
+#   ifdef ABL1D
+      call xios_send_field("vwnd",v_abl(:,:,2,nstp))
+#   else
       call xios_send_field("vwnd",vwnd)
+#   endif
       endif
 # endif
 # ifdef WKB_WWAVE
@@ -2840,8 +2858,8 @@ c !$acc wait
       call xios_send_field("rho_surf",rho(:,:,N))
       endif
 
-# if defined ANA_VMIX || defined BVF_MIXING \
-|| defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+|| defined LMD_SKPP   || defined LMD_BKPP \
 || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       if (xios_field_is_active("bvf")) then
       call xios_send_field("bvf",bvf)

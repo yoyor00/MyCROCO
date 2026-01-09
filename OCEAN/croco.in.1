@@ -82,7 +82,7 @@ gamma2:
                  1.d0
 
 sponge:          X_SPONGE [m]
-                    XXX
+                   XXX
 
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
                 1.      360.      3.      360.
@@ -261,13 +261,6 @@ sediments_mustang: input file ( Mustang sediment model)
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T
 
-floats: LDEFFLT, NFLT, NRPFFLT / inpname, hisname
-           T      6      0
-                                   floats.in
-    CROCO_FILES/floats.nc
-float_fields:  Grdvar Temp Salt Rho Vel
-                T     T    T    T   T
-
 stations: LDEFSTA, NSTA, NRPFSTA / inpname, hisname
              T      400      0
                                     stations.in
@@ -281,7 +274,7 @@ psource:   Nsrc  Isrc  Jsrc  Dsrc  Qbar [m3/s]    Lsrc        Tsrc
                   3    40     0    200.            T T      20.   15.
 
 psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
-    CROCO_FILES/croco_runoff.nc
+    CROCO_FILES/croco_runoff.nc.1
                  2
                          24  35  0  -1   T T   20.0  15.0
                          35  13  1  -1   T T   20.0  15.0
