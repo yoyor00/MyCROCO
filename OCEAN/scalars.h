@@ -34,7 +34,7 @@
 !
       real dt, dtfast, time, time2, time_start, tdays, start_time
 #ifdef USE_CALENDAR
-      real time_mars, time_end
+      real time_end
       character*19 date, end_date, start_date
 #endif
       integer ndtfast, iic, kstp, krhs, knew, next_kstp
@@ -47,9 +47,6 @@
 #  endif
 # endif
 
-#ifdef FLOATS
-     &      , nfp1, nf, nfm1, nfm2, nfm3
-#endif
 #ifdef WKB_WWAVE
      &      , wstp, wnew
 #endif
@@ -66,15 +63,12 @@
 #  endif
 # endif
 
-#ifdef FLOATS
-     &                       nfp1, nf, nfm1, nfm2, nfm3,
-#endif
 #ifdef WKB_WWAVE
      &                       wstp, wnew,
 #endif
      &                       PREDICTOR_2D_STEP
 #ifdef USE_CALENDAR
-      common /time_indices2/ time_mars, time_end,
+      common /time_indices2/ time_end,
      &                       date, end_date, start_date
 #endif
 
@@ -205,9 +199,6 @@
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
 #endif
-#ifdef FLOATS
-      integer nflt, nrpfflt
-#endif
 #ifdef ABL1D
       logical ldefablhis
       integer nwrtablhis, nrpfablhis
@@ -277,9 +268,6 @@
 #endif
 #ifdef BBL
       logical got_inibed(2)
-#endif
-#ifdef FLOATS
-      logical ldefflt
 #endif
 #if defined DIAGNOSTICS_TS
       logical ldefdia
@@ -385,9 +373,6 @@
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
 #endif
-#ifdef FLOATS
-     &                      , nflt, nrpfflt
-#endif
 #ifdef STATIONS
      &                      , nsta, nrpfsta
 #endif
@@ -399,9 +384,6 @@
 #endif
 #ifdef BBL
      &                      , got_inibed
-#endif
-#ifdef FLOATS
-     &                      , ldefflt
 #endif
 #if defined DIAGNOSTICS_TS
      &                      , ldefdia, nwrtdia
@@ -580,18 +562,6 @@
 #ifdef RESET_RHO0
      &        , avg_vol, avg_rho
 #endif
-
-!
-!  The following common block contains process counters and model
-! timers. These are used to measure CPU time consumed by different
-! parallel threads during the whole run, as well as in various
-! parallel regions, if so is needed. These variables are used purely
-! for diagnostic/performance measurements purposes and do not affect
-! the model results.
-!
-      real*4 CPU_time(0:31,0:NPP)
-      integer proc(0:31,0:NPP),trd_count
-      common /timers_roms/CPU_time,proc,trd_count
 
 #ifdef MPI
 !

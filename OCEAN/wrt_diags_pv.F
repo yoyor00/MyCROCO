@@ -58,9 +58,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
-!
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
       call def_diags_pv (nciddiags_pv, nrecdiags_pv, ierr)
