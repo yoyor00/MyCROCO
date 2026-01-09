@@ -1062,7 +1062,7 @@ CONTAINS
  !  DZS
        ierr=nf_inq_varid (ncid,'DZS', varid)
        if (ierr .eq. nf_noerr) then
-         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
           do k=ksdmin,ksdmax
              dzs(k,:,:)=tmp3d(:,:,k)
           enddo
@@ -1092,7 +1092,7 @@ CONTAINS
  
         ierr=nf_inq_varid (ncid,nomcv, varid)
         if (ierr .eq. nf_noerr) then
-         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
  
          do k=ksdmin,ksdmax
              cv_sed(iv,k,:,:)=tmp3d(:,:,k)
