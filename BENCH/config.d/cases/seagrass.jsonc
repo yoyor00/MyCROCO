@@ -2,6 +2,10 @@
   "SEAGRASS": {
     "title": "SEAGRASS",
     "case": "SEAGRASS",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_seagrass.py",
+      "plotphy_script_input": "seagrass_his.nc",
+    },
     "splitting": { "1": "1x1", "2": "2x1" },
     "cppkeys": {},
     "patches": {},
