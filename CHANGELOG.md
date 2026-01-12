@@ -12,6 +12,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
+  restart inconsistencies with MORPHODYN (#470)
 
 - COUPLING : missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
 
