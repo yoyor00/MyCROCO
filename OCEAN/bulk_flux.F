@@ -610,7 +610,11 @@
           hflat = - Hlv*rhoAir*Wstar(mb)*Qstar
 !++ Longwave Radiation.
 #  ifndef BULK_LW
+#    ifdef FORMATTED
           hflw   = radlw(i,j) ! positive downward, i.e., warming the ocean
+#    else
+          hflw   = -radlw(i,j) ! positive downward, i.e., warming the ocean
+#    endif
 #  else
 !++  Treat input longwave data as downwelling radiation only and add
 !++  outgoing IR from model sea surface temperature.
