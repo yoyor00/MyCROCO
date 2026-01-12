@@ -610,7 +610,7 @@
           hflat = - Hlv*rhoAir*Wstar(mb)*Qstar
 !++ Longwave Radiation.
 #  ifndef BULK_LW
-#    ifdef FORMATTED
+#    if defined ONLINE && defined FORMATTED
           hflw   = radlw(i,j) ! positive downward, i.e., warming the ocean
 #    else
           hflw   = -radlw(i,j) ! positive downward, i.e., warming the ocean
