@@ -119,6 +119,9 @@
     <field id="shflx_sen" long_name="Sensible surface heat flux" unit="Watts meter-2" />
     <field id="tair" long_name="Air temperature" unit="C" />
     <field id="rhum" long_name="Air specific humidity" unit="kg.kg-1" />
+# ifdef READ_PATM
+    <field id="patm" long_name="Mean sea level pressure" unit="Pa" />
+# endif
 <!-- END BULK_FLUX -->  
 #endif
 #ifdef SST_SKIN

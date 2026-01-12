@@ -245,15 +245,6 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
       if (wrthis(indxZ)) then
 !$acc update if(compute_on_device) host(zeta(:,:,fast_indx_out))
         work2d=zeta(:,:,fast_indx_out)
-#if defined WET_DRY && ! defined ZETA_DRY_IO
-        do j=0,Mm
-          do i=0,Lm
-            if (h(i,j) .le. Dcrit(i,j)) then
-              work2d(i,j)=work2d(i,j)+h(i,j)
-            endif
-          enddo
-        enddo
-#endif
         call fillvalue2d(work2d,ncidhis,hisZ,vname(1,indxZ),
      &        record,r2dvar,type)
       endif

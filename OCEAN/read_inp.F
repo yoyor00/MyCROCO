@@ -378,6 +378,7 @@
           READ(origin_date(12:13),fmt='(i2)') origin_hour
           READ(origin_date(15:16),fmt='(i2)') origin_minute
           READ(origin_date(18:19),fmt='(i2)') origin_second
+          start_time = origin_date_in_sec
         endif
 # endif
 !
@@ -2141,10 +2142,10 @@ c        close(testunit)
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
      &                                    (Lsrc(is,itrc), itrc=1,NT)
 #  else
-          read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
-     &                                     (Lsrc(is,itrc), itrc=1,NT),
+          read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is)
 #   ifdef TRACERS
-     &                                     (Tsrc0(is,itrc), itrc=1,NT)
+     &                                     ,(Lsrc(is,itrc), itrc=1,NT)
+     &                                     ,(Tsrc0(is,itrc), itrc=1,NT)
 #   endif /* TRACERS */
 #  endif /* PSOURCE_NCFILE_TS  */
 
@@ -2194,7 +2195,7 @@ c        close(testunit)
         btfname=fname(1:lstr)
 #endif  /* BHFLUX || (SALINITY && BWFLUX )  */
 !
-! Online forcing with CFSR
+! Online forcing
 !
 #ifdef ONLINE   /* JG Online */
       elseif (keyword(1:kwlen).eq.'online') then

@@ -81,6 +81,11 @@
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
+# ifdef OA_COUPLING
+#  define READ_PATM
+#  define OBC_PATM
+#  undef  OA_GRID_UV
+# endif
 # undef  OW_COUPLING
 # ifdef OW_COUPLING
 #  undef OW_COUPLING_FULL
@@ -370,10 +375,10 @@
 # endif
                       /*   Choice of Biology models   */
 # ifdef BIOLOGY
-#  undef  PISCES
+#  define PISCES
 #  undef  BIO_NChlPZD
 #  undef  BIO_N2ChlPZD2
-#  define BIO_BioEBUS
+#  undef  BIO_BioEBUS
                       /*   Biology options    */
 #  ifdef PISCES
 #   undef  DIURNAL_INPUT_SRFLX
@@ -448,7 +453,6 @@
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
-# define ZETA_DRY_IO
 # define FILLVAL
                       /* Calendar */
 
@@ -1925,7 +1929,6 @@
 #  undef  key_MUSTANG_V2
 # endif
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined ESTUARY
 /*
@@ -1984,7 +1987,6 @@
 # define ANA_PSOURCE
 # define MASKING
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined SEAGRASS
 /*

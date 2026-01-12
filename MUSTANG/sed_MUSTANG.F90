@@ -3697,7 +3697,7 @@ MODULE sed_MUSTANG
                   dmasmud2 = MIN(masdepmud-dmasmud1,(dzsa3-dzsa)*cfreshmud*(1-cvolmaxsort))
                   !!! Part de vase melangee avec le sediment present initialement dans la couche ksmax
                    !!! Part of mud mixed with the sediment initially present in the ksmax layer
-                  IF((cvolinigrv+cvolinisan) .GT. 0.0_rsh) THEN
+                  IF(((cvolinigrv+cvolinisan) .GT. 0.0_rsh) .and. (nv_mud > 0) ) THEN
                     dmasmud3 = MIN(masdepmud-dmasmud1-dmasmud2, &
                           dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan), &
                           (dzsa*(poro(ksmax,i,j)- poro_min) - dvolsan - dvolgrv)*ros(imud1))
@@ -3730,14 +3730,16 @@ MODULE sed_MUSTANG
 
 
                 ELSE
-                  dmasmud2 = MIN(masdepmud,&
-                        (dzsa3-dzsa)*cfreshmud*(1-cvolmaxsort),&
-                        dzsa*(poro(ksmax,i,j)- poro_min)*ros(imud1))
-                  IF((cvolinigrv+cvolinisan) .GT. 0.0_rsh) THEN
-                    dmasmud3 = MIN(masdepmud-dmasmud2, &
-                          dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan), &
-                          (dzsa*(poro(ksmax,i,j)- poro_min))*ros(imud1))
-                  END IF
+                  IF (nv_mud > 0) THEN
+                    dmasmud2 = MIN(masdepmud,&
+                          (dzsa3-dzsa)*cfreshmud*(1-cvolmaxsort),&
+                          dzsa*(poro(ksmax,i,j)- poro_min)*ros(imud1))
+                    IF((cvolinigrv+cvolinisan) .GT. 0.0_rsh) THEN
+                      dmasmud3 = MIN(masdepmud-dmasmud2, &
+                            dzsa*(cfreshmud-cmudr)*(1-cvolinigrv-cvolinisan), &
+                            (dzsa*(poro(ksmax,i,j)- poro_min))*ros(imud1))
+                    END IF
+                  ENDIF
                   dmasmud3 = MAX(0.0_rsh,dmasmud3)
                   dmasmud = dmasmud2 + dmasmud3
 
