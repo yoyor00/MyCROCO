@@ -256,7 +256,7 @@
 </file_group>
 # endif
 
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 <file_group id="KE" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
   <file id="file7" name_suffix="_KE" split_freq="5d" split_freq_format="%y-%mo-%d">
     

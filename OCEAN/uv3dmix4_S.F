@@ -119,14 +119,14 @@
 #ifdef CLIMAT_UV_MIXH
 # include "climat.h"
 #endif
-#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                            || defined DIAGNOSTICS_VRT
 # include "diagnostics.h"
 #endif
 # if defined DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# if defined DIAGNOSTICS_EK
+# if defined DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 # if defined DIAGNOSTICS_PV
@@ -462,7 +462,7 @@
             cff1=pm_u(i,j)*pn_u(i,j)*cff
             rufrc(i,j)=rufrc(i,j) - cff
             u(i,j,k,indx)=u(i,j,k,indx) - dt*cff1
-#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                            || defined DIAGNOSTICS_PV \
                            || defined DIAGNOSTICS_VRT
 !            if (nnew.ne.3) then
@@ -479,7 +479,7 @@
             cff1=pm_v(i,j)*pn_v(i,j)*cff
             rvfrc(i,j)=rvfrc(i,j) - cff
             v(i,j,k,indx)=v(i,j,k,indx) - dt*cff1
-#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                            || defined DIAGNOSTICS_PV \
                            || defined DIAGNOSTICS_VRT
 !            if (nnew.ne.3) then

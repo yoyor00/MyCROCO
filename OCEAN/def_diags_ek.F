@@ -11,7 +11,7 @@
 #ifndef AVRH
 # include "cppdefs.h"
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 
 # ifndef AVRH
       subroutine def_diags_ek (ncid, total_rec, ierr)
@@ -1173,8 +1173,8 @@
 #  endif
 # endif /* AVERAGES */
 !
-#else /*DIAGNOSTICS_EK */
+#else /*DIAGNOSTICS_KE */
       subroutine def_diags_ek_empty()
       return
       end
-#endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_KE */

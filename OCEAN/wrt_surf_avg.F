@@ -231,4 +231,4 @@
 #else
       subroutine wrt_surf_avg_empty
       end
-#endif /* (DIAGNOSTICS_EK) */
+#endif /* (DIAGNOSTICS_KE) */

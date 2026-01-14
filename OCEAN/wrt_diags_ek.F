@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 !
 !---------------------------------------------------------------
 ! Write diagnostics fields at requested levels into diagnostics
@@ -296,4 +296,4 @@
 #else
       subroutine wrt_diags_ek_empty
       end
-#endif /* (DIAGNOSTICS_EK) */
+#endif /* (DIAGNOSTICS_KE) */

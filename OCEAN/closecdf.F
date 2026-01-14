@@ -52,7 +52,7 @@
 # endif
 #endif
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
       if (nciddiags_ek.ne.-1) ierr=nf_close(nciddiags_ek)
 # ifdef AVERAGES
       if (nciddiags_ek_avg.ne.-1) ierr=nf_close(nciddiags_ek_avg)
@@ -129,14 +129,14 @@
      &                                                 nrecdiags_vrt_avg
 # endif
 #endif /* DIAGNOSTICS_VRT */
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
      &  ,'number of records written into diags_ek  file(s):',
      &                                                     nrecdiags_ek
 # ifdef AVERAGES
      &  ,'number of records written into avg diags_ek file(s):',
      &                                                 nrecdiags_ek_avg
 # endif
-#endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_KE */
 #if defined DIAGNOSTICS_PV
      &  ,'number of records written into diags_pv  file(s):',
      &                                                     nrecdiags_pv

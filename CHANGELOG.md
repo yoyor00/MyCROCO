@@ -74,7 +74,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
             run_croco_inter, or runcpl for SCRIPTS_COUPLING type: submitjob,
             mynamelist...)
 - DIAGNOSTICS : cleaning, simplifications and updates of various diagnostics
-  (DIAGNOSTICS_EK, DIAGNOSTICS_VRT, ... )(Issue #388)
+  (DIAGNOSTICS_KE, DIAGNOSTICS_VRT, ... )(Issue #388)
 
 ### Deprecated
 

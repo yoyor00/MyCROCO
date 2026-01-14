@@ -124,7 +124,7 @@
 #endif /* DIAGNOSTICS_TS */
 !
 
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_VRT
       real MXadv(GLOBAL_2D_ARRAY,N,2)
       real MYadv(GLOBAL_2D_ARRAY,N,2)

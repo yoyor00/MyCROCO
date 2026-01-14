@@ -34,7 +34,7 @@
 #ifdef DIAGNOSTICS_VRT
 # include "diags_vrt.h"
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 # include "diags_ek.h"
 #endif
 #ifdef DIAGNOSTICS_PV
@@ -226,7 +226,7 @@ C$OMP END PARALLEL
       nrecdiags_vrt_avg=0
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       nciddiags_ek=-1
       nrecdiags_ek=0
 # ifdef AVERAGES
@@ -3484,7 +3484,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtfast)
 #endif /* DIAGNOSTICS_VRT */
 
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 
        nametrc='ke'
 
@@ -3619,7 +3619,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxekfast)
 # endif
 
 
-#endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_KE */
 
 #ifdef DIAGNOSTICS_PV
 # ifdef DIAGNOSTICS_PV_FULL

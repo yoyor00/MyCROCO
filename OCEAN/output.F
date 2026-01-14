@@ -99,7 +99,7 @@
      &    .and. wrtdiags_vrt_avg(indxTime))
 # endif
 #endif
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
      &    .or. (mod(iic-ntstart,nwrtdiags_ek).eq.0
      &    .and. wrtdiags_ek(indxTime))
 # ifdef AVERAGES
@@ -192,7 +192,7 @@
      &                          nrecdiags_vrt_avg=nrecdiags_vrt_avg+1
 # endif
 #endif
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
         if (mod(iic-ntstart,nwrtdiags_ek) .eq.0)
      &                                    nrecdiags_ek=nrecdiags_ek+1
 # ifdef AVERAGES
@@ -306,7 +306,7 @@
 #  endif
 # endif
 
-# if defined DIAGNOSTICS_EK
+# if defined DIAGNOSTICS_KE
         if (mod(iic-ntstart,nwrtdiags_ek).eq.0
      &      .and. ldefdiags_ek
      &      .and. wrtdiags_ek(indxTime))

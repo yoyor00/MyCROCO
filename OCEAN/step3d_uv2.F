@@ -71,14 +71,14 @@
 # if defined M3NUDGING && defined M3CLIMATOLOGY
 #  include "climat.h"
 # endif
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_VRT
 #  include "diagnostics.h"
 # endif
 # if defined DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 # ifdef DIAGNOSTICS_PV
@@ -161,7 +161,7 @@
 ! like the other terms due to the semi-implicit backward Euler scheme.
 ! We store first u(i,j,k,nnew) ...
 !
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_PV \
                             || defined DIAGNOSTICS_VRT
         do k=1,N
@@ -238,12 +238,12 @@
             wrkWind(i,j,1)= u_str*om_u(i,j)
      &                    SWITCH umask(i,j)
 #  endif /* DIAGNOSTICS_VRT */
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
           ekwrkDrag(i,j,1)= -bustr(i,j)*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,1,nrhs) SWITCH umask(i,j)
           ekwrkWind(i,j,1)= u_str*om_u(i,j)*on_u(i,j)
      &                    * u(i,j,N,nrhs) SWITCH umask(i,j)
-#  endif /* DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_KE */
         enddo
 # endif /* BODYFORCE */
         do i=IstrU,Iend
@@ -351,7 +351,7 @@
 !###########################
         do k=1,N
           do i=IstrU,Iend
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_PV \
                             || defined DIAGNOSTICS_VRT
             MVmix(i,j,k,1)=-( MVmix(i,j,k,1) - u(i,j,k,nnew)*
@@ -373,7 +373,7 @@
         do k=1,N
           do i=IstrU,Iend
 !            u(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH umask(i,j)
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_PV \
                              || defined DIAGNOSTICS_VRT
             MBaro(i,j,k,1)= -DC(i,0)
@@ -405,7 +405,7 @@
 ! like the other terms due to the semi-implicit backward Euler scheme.
 ! We store first v(i,j,k,nnew) ...
 !
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_PV \
                             || defined DIAGNOSTICS_VRT
         do k=1,N
@@ -464,12 +464,12 @@
             wrkWind(i,j,2)= v_str*on_v(i,j)
      &                    SWITCH vmask(i,j)
 #  endif /* DIAGNOSTICS_VRT */
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
           ekwrkDrag(i,j,2)= -bvstr(i,j)*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,1,nrhs) SWITCH vmask(i,j)
           ekwrkWind(i,j,2)= v_str*om_v(i,j)*on_v(i,j)
      &                    * v(i,j,N,nrhs) SWITCH vmask(i,j)
-#  endif /* DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_KE */
           enddo
 # endif /* BODYFORCE */
 !
@@ -582,7 +582,7 @@
 !###########################
           do k=1,N
             do i=Istr,Iend
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_PV \
                             || defined DIAGNOSTICS_VRT
             MVmix(i,j,k,2)=-( MVmix(i,j,k,2) - v(i,j,k,nnew)*
@@ -602,7 +602,7 @@
           do k=1,N
             do i=Istr,Iend
 !              v(i,j,k,nnew)=(DC(i,k)-DC(i,0)) SWITCH vmask(i,j)
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_PV \
                              || defined DIAGNOSTICS_VRT
             MBaro(i,j,k,2)= -DC(i,0)*
@@ -617,7 +617,7 @@
 !-------------------------------------------------------------------
 ! DIAGNOSTICS
 !-------------------------------------------------------------------
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_PV \
                             || defined DIAGNOSTICS_VRT
       do k=1,N
@@ -1172,7 +1172,7 @@
 !  Compute UV & PV diagnostics
 !--------------------------------------------------------------------
 !
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_PV \
                             || defined DIAGNOSTICS_VRT
       do k=1,N
@@ -1194,7 +1194,7 @@
 
             MXadv(i,j,k,1)   = MXadv(i,j,k,1)*cff
             MYadv(i,j,k,1)   = MYadv(i,j,k,1)*cff
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE\
                              || defined DIAGNOSTICS_VRT
             MVadv(i,j,k,1)   = MVadv(i,j,k,1)*cff
             MCor(i,j,k,1)    = MCor(i,j,k,1)*cff
@@ -1243,7 +1243,7 @@
 
             MXadv(i,j,k,2)   = MXadv(i,j,k,2)*cff
             MYadv(i,j,k,2)   = MYadv(i,j,k,2)*cff
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE\
                              || defined DIAGNOSTICS_VRT
             MVadv(i,j,k,2)   = MVadv(i,j,k,2)*cff
             MCor(i,j,k,2)    = MCor(i,j,k,2)*cff
@@ -1379,7 +1379,7 @@
 
 
 ! Need to exchange momentum terms for computation of vorticity/KE terms
-#  if defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_KE
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MXadv(START_2D_ARRAY,1,1))
       call exchange_u3d_tile (istr,iend,jstr,jend,
@@ -1415,7 +1415,7 @@
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkDrag(START_2D_ARRAY,1))
 #   endif
-#  if defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_KE
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
@@ -1456,7 +1456,7 @@
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkDrag(START_2D_ARRAY,2))
 #   endif
-#  if defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_KE
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkWind(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,

@@ -192,7 +192,7 @@
 
       return
       end
-#else /* DIAGNOSTICS_EK && AVERAGES */
+#else /* DIAGNOSTICS_KE && AVERAGES */
       subroutine set_surf_avg_empty
       end
-#endif /* DIAGNOSTICS_EK && AVERAGES */
+#endif /* DIAGNOSTICS_KE && AVERAGES */

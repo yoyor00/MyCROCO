@@ -2316,7 +2316,7 @@ C 				  endif
 # if defined DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 # ifdef DIAGNOSTICS_PV
@@ -3439,7 +3439,7 @@ c !$acc wait
 #  endif
 
 
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
 
       if (xios_field_is_active("ekrate")) then
           call xios_send_field("ekrate", ekrate(:,:,:))

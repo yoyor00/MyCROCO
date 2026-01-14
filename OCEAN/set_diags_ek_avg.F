@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#if (defined DIAGNOSTICS_EK && defined AVERAGES)
+#if (defined DIAGNOSTICS_KE && defined AVERAGES)
 
       subroutine set_diags_ek_avg (tile)
       implicit none
@@ -224,7 +224,7 @@
 
       return
       end
-#else /* DIAGNOSTICS_EK && AVERAGES */
+#else /* DIAGNOSTICS_KE && AVERAGES */
       subroutine set_diags_ek_avg_empty
       end
-#endif /* DIAGNOSTICS_EK && AVERAGES */
+#endif /* DIAGNOSTICS_KE && AVERAGES */

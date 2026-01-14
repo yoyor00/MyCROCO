@@ -359,7 +359,7 @@
           nrecdiags_vrt_avg=ibuff(4)
 #  endif
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
           nrecdiags_ek=ibuff(3)
 #  ifdef AVERAGES
           nrecdiags_ek_avg=ibuff(4)
@@ -492,7 +492,7 @@
 # ifdef DIAGNOSTICS_VRT
           ntsdiags_vrt_avg = ntsavg
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
           ntsdiags_ek_avg = ntsavg
 # endif
 # ifdef DIAGNOSTICS_TS

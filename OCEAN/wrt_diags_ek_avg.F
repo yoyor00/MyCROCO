@@ -9,7 +9,7 @@
 !======================================================================
 !
 #include "cppdefs.h"
-#if defined DIAGNOSTICS_EK && defined AVERAGES
+#if defined DIAGNOSTICS_KE && defined AVERAGES
 !
 !---------------------------------------------------------------
 ! Write diagnostics fields at requested levels into diagnostics
@@ -310,4 +310,4 @@
 #else
       subroutine wrt_diags_ek_avg_empty
       end
-#endif /* (DIAGNOSTICS_EK) */
+#endif /* (DIAGNOSTICS_KE) */

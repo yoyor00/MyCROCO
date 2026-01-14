@@ -58,7 +58,7 @@ C$    integer omp_get_thread_num
 # include "diags_vrt.h"
 #endif
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 # include "diags_ek.h"
 #endif
 
@@ -200,7 +200,7 @@ C$    integer omp_get_thread_num
 #  endif
 # endif
 !
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE
             MVadv(i,j,k,1)=init
             MVadv(i,j,k,2)=init
             MCor(i,j,k,1)=init
@@ -216,7 +216,7 @@ C$    integer omp_get_thread_num
             Mfast(i,j,k,2)=init
 #  endif
 # endif
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE || defined DIAGNOSTICS_PV
             MXadv(i,j,k,1)=init ! indice 1 for u_momentum
             MXadv(i,j,k,2)=init ! indice 2 for v_momentum
             MYadv(i,j,k,1)=init ! ...
@@ -586,7 +586,7 @@ C$    integer omp_get_thread_num
       enddo
 # endif /* DIAGNOSTICS_VRT */
 
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
       do j=jstrR,jendR             ! 3-D primitive
         do i=istrR,iendR           ! variables.
           ekWind(i,j)=init
@@ -639,7 +639,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-# endif /* DIAGNOSTICS_EK */
+# endif /* DIAGNOSTICS_KE */
 
 # ifdef DIAGNOSTICS_PV
 #  if defined DIAGNOSTICS_PV_FULL

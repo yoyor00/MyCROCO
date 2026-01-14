@@ -75,13 +75,13 @@ c********************************************************************
        parameter (gdzetady=2.e-6*9.81)
        parameter (omega=2.*pi/(12.4*3600.))
 #  endif
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
 #   include "diagnostics.h"
 #   if defined DIAGNOSTICS_VRT
 #    include "diags_vrt.h"
 #   endif
-#   if defined DIAGNOSTICS_EK
+#   if defined DIAGNOSTICS_KE
 #    include "diags_ek.h"
 #   endif
 #  endif
@@ -346,7 +346,7 @@ c********************************************************************
 #  endif
      &    )
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
@@ -441,7 +441,7 @@ c********************************************************************
      &                                                             ))
 #  endif
      &                                                               )
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,2) = rv(i,j,k) SWITCH vmask(i,j)
@@ -533,7 +533,7 @@ c********************************************************************
 #   if defined DIAGNOSTICS_VRT
 #    include "diags_vrt.h"
 #   endif
-#   if defined DIAGNOSTICS_EK
+#   if defined DIAGNOSTICS_KE
 #    include "diags_ek.h"
 #   endif
 #  endif
@@ -586,7 +586,7 @@ c********************************************************************
 
             ru(i,j,N)=0.5*(HZR(i,j,N)+HZR(i-1,j,N))*on_u(i,j)*pgrd(i)
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,N,1) = ru(i,j,N) SWITCH umask(i,j)
@@ -628,7 +628,7 @@ c********************************************************************
 
               ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*pgrd(i)
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,1) = ru(i,j,k) SWITCH umask(i,j)
@@ -661,7 +661,7 @@ c********************************************************************
 
             rv(i,j,N)=0.5*(HZR(i,j,N)+HZR(i,j-1,N))*om_v(i,j)*pgrd(i)
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,N,2) = rv(i,j,N) SWITCH vmask(i,j)
@@ -703,7 +703,7 @@ c********************************************************************
 
               rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*pgrd(i)
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MPrsgrd(i,j,k,2) = rv(i,j,k) SWITCH vmask(i,j)

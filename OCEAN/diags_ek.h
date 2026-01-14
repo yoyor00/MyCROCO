@@ -2,7 +2,7 @@
 !  ==== == ======= ==== ==========
 !
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       real ekHadv(GLOBAL_2D_ARRAY,N)
 !CSDISTRIBUTE_RESHAPE ekHadv(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekHdiff(GLOBAL_2D_ARRAY,N)
@@ -125,7 +125,7 @@
 # endif  /* AVERAGES */
 
 
-#endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_KE */
 
 
 

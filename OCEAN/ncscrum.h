@@ -131,7 +131,7 @@
 !  indxvrtBaro                   : Barotropic coupling term
 !  indxvrtfast                   : Fast term
 !
-! ** DIAGNOSTICS_EK **
+! ** DIAGNOSTICS_KE **
 !  indxekHadv,indxekHdiff        : Horizontal advection and diffusion terms
 !  indxekVadv                    : Vertical advection terms
 !  indxekCor                     : Coriolis term,
@@ -442,7 +442,7 @@
       parameter (indxvrtfast=indxvrtDrag+2)
 #  endif
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
       integer indxekHadv,indxekHdiff,indxekVadv,indxekCor,
      &        indxekPrsgrd,indxekHmix,indxekVmix,indxekrate,
      &        indxekvol,indxekVmix2,indxekWind,indxekDrag
@@ -1228,7 +1228,7 @@
      &      , diags_vrtfast(2)
 #  endif
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
       integer nciddiags_ek, nrecdiags_ek, nrpfdiags_ek
      &      , diags_ekTime, diags_ekTime2, diags_ekTstep
      &      , diags_ekHadv(2), diags_ekHdiff(2),  diags_ekVadv(2)
@@ -1241,7 +1241,7 @@
 #  ifdef M3FAST
      &      , diags_ekfast(2)
 #  endif
-#  ifdef DIAGNOSTICS_EK_MLD
+#  ifdef DIAGNOSTICS_KE_MLD
       integer diags_ekHadv_mld(2), diags_ekHdiff_mld(2)
      &      ,  diags_ekVadv_mld(2), diags_ekCor_mld(2)
      &      , diags_ekPrsgrd_mld(2), diags_ekHmix_mld(2)
@@ -1434,7 +1434,7 @@
      &      , diags_vrtfast_avg(2)
 #   endif
 #  endif
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
        integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
      &      , diags_ekHadv_avg(2), diags_ekHdiff_avg(2)
@@ -1533,7 +1533,7 @@
      &      , wrtdiags_vrt_avg(3)
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
      &      , wrtdiags_ek(3)
 # ifdef AVERAGES
      &      , wrtdiags_ek_avg(3)
@@ -1802,7 +1802,7 @@
 #  endif
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
      &      , nciddiags_ek, nrecdiags_ek, nrpfdiags_ek
      &      , diags_ekTime, diags_ekTime2, diags_ekTstep
      &      , diags_ekHadv, diags_ekHdiff,  diags_ekVadv
@@ -2001,7 +2001,7 @@
      &      , wrtdiags_vrt_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
      &      , wrtdiags_ek
 # ifdef AVERAGES
      &      , wrtdiags_ek_avg
@@ -2078,7 +2078,7 @@
      &                                ,  diags_vrtname_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
      &                                ,  diags_ekname
 # ifdef AVERAGES
      &                                ,  diags_ekname_avg
@@ -2195,7 +2195,7 @@
      &                                ,  diags_vrtname_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
      &                                ,  diags_ekname
 # ifdef AVERAGES
      &                                ,  diags_ekname_avg

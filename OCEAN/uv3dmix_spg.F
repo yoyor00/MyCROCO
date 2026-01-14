@@ -166,14 +166,14 @@
 # ifdef  CLIMAT_UV_SPONGE
 #  include "climat.h"
 # endif
-#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_VRT
 # include "diagnostics.h"
 #endif
 #  if defined DIAGNOSTICS_VRT
 #   include "diags_vrt.h"
 #  endif
-#  if defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_KE
 #   include "diags_ek.h"
 #  endif
 #  if defined DIAGNOSTICS_PV
@@ -273,7 +273,7 @@
             cff1=pm_u(i,j)*pn_u(i,j)*cff
             rufrc(i,j)=rufrc(i,j) + cff
             u(i,j,k,indx)=u(i,j,k,indx) + dt*cff1
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE\
                              || defined DIAGNOSTICS_VRT\
                              || defined DIAGNOSTICS_PV
             cff = om_u(i,j)*on_u(i,j)
@@ -292,7 +292,7 @@
             cff1=pm_v(i,j)*pn_v(i,j)*cff
             rvfrc(i,j)=rvfrc(i,j) + cff
             v(i,j,k,indx)=v(i,j,k,indx) + dt*cff1
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE\
                              || defined DIAGNOSTICS_VRT\
                              || defined DIAGNOSTICS_PV
             cff = om_v(i,j)*on_v(i,j)
@@ -622,7 +622,7 @@
               rufrc(i,j)=rufrc(i,j) + cff
               u(i,j,k,indx)=u(i,j,k,indx) + dt*(cff1+UFs(i,j,k2)
      &                                              -UFs(i,j,k1))
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE\
                              || defined DIAGNOSTICS_VRT\
                              || defined DIAGNOSTICS_PV
 !             cff = 2./(Hz(i-1,j,k)+Hz(i,j,k))
@@ -644,7 +644,7 @@
               rvfrc(i,j)=rvfrc(i,j) + cff
               v(i,j,k,indx)=v(i,j,k,indx) + dt*(cff1+VFs(i,j,k2)
      &                                              -VFs(i,j,k1))
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK\
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE\
                              || defined DIAGNOSTICS_VRT\
                              || defined DIAGNOSTICS_PV
 !             cff = 2./(Hz(i,j,k)+Hz(i,j-1,k))

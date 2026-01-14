@@ -48,7 +48,7 @@
 # endif
 
 
-# if defined DIAGNOSTICS_PV && ! defined DIAGNOSTICS_UV && ! defined DIAGNOSTICS_EK
+# if defined DIAGNOSTICS_PV && ! defined DIAGNOSTICS_UV && ! defined DIAGNOSTICS_KE
       real MXadv(GLOBAL_2D_ARRAY,N,2)
       real MYadv(GLOBAL_2D_ARRAY,N,2)
       real MHdiff(GLOBAL_2D_ARRAY,N,2)

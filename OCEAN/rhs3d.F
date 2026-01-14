@@ -43,21 +43,21 @@
       real cu,rr,rrm,rrp,limiter,Cr,cdt
       integer kp2,kp1,km1
 # include "param.h"
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_VRT
 #  include "diagnostics.h"
 # endif
 # ifdef DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 # ifdef DIAGNOSTICS_PV
 #  include "diags_pv.h"
 # endif
 
-# if (defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+# if (defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_KE  || \
       defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV) && \
       !defined UV_HADV_C4
       real  UFx4(PRIVATE_2D_SCRATCH_ARRAY),
@@ -66,7 +66,7 @@
      &      VFe4(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_VRT ||\
-     defined DIAGNOSTICS_EK || defined DIAGNOSTICS_PV
+     defined DIAGNOSTICS_KE || defined DIAGNOSTICS_PV
       real  UFxCor(PRIVATE_2D_SCRATCH_ARRAY),
      &      VFeCor(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
@@ -215,7 +215,7 @@
         enddo
       enddo             !--> discard wrk
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE
       if (nnew.ne.3) then
         do k=1,N
           do j=Jstr,Jend
@@ -247,7 +247,7 @@
         enddo
       enddo
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE
       if (nnew.ne.3) then
         do k=levsfrc,N
           do j=Jstr,Jend
@@ -255,7 +255,7 @@
               Mbody(i,j,k,1) = Uwrk(i,j)*(Hz(i,j,k)+
      &                                    Hz(i-1,j,k))
      &                         SWITCH umask(i,j)
-#   ifdef DIAGNOSTICS_EK
+#   ifdef DIAGNOSTICS_KE
             if (k.eq.levsfrc) then
               ekwrkWind(i,j,1)= 0.
             endif
@@ -271,7 +271,7 @@
               Mbody(i,j,k,2) = Vwrk(i,j)*(Hz(i,j,k)+
      &                                    Hz(i,j-1,k))
      &                         SWITCH vmask(i,j)
-#   ifdef DIAGNOSTICS_EK
+#   ifdef DIAGNOSTICS_KE
               if (k.eq.levsfrc) then
                 ekwrkWind(i,j,2)= 0.
               endif
@@ -284,7 +284,7 @@
           enddo
         enddo
       endif          !--> discard Uwrk,Vwrk
-#  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_KE */
 !
 !  Apply bottom stress as a bodyforce: determine the thickness [m]
 !  of the bottom layer; then add in bottom stress as a bodyfoce.
@@ -337,7 +337,7 @@
         enddo
       enddo
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE
       if (nnew.ne.3) then
         do k=1,levbfrc
           do j=Jstr,Jend
@@ -346,7 +346,7 @@
      &                         - Uwrk(i,j)*(Hz(i,j,k)+
      &                                      Hz(i-1,j,k))
      &                         SWITCH umask(i,j)
-#   ifdef DIAGNOSTICS_EK
+#   ifdef DIAGNOSTICS_KE
               if (k.eq.1) then
                 ekwrkDrag(i,j,1)= 0.
               endif
@@ -359,13 +359,13 @@
           enddo
           do j=JstrV,Jend
             do i=Istr,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE
               Mbody(i,j,k,2) = Mbody(i,j,k,2)
      &                         - Vwrk(i,j)*(Hz(i,j,k)+
      &                                      Hz(i,j-1,k))
      &                         SWITCH vmask(i,j)
 #   endif
-#   ifdef DIAGNOSTICS_EK
+#   ifdef DIAGNOSTICS_KE
               if (k.eq.1) then
                 ekwrkDrag(i,j,2)= 0.
               endif
@@ -378,7 +378,7 @@
           enddo
         enddo
       endif         !--> discard Uwrk,Vwrk
-#  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_KE */
 
 #  undef wrk
 #  undef Vwrk
@@ -497,7 +497,7 @@
      &                         +0.5*(UFe(i,j)+UFe(i-1,j))
 #  endif
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MCor(i,j,k,1) = 0.5*(UFx(i,j)+UFx(i-1,j))
@@ -518,7 +518,7 @@
      &                         -0.5*(VFx(i,j)+VFx(i,j-1))
 #  endif
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             if (nnew.ne.3) then
               MCor(i,j,k,2) = -0.5*(VFe(i,j)+VFe(i,j-1))
@@ -583,7 +583,7 @@
 #   undef UP5_MASKING
 !
 #   if defined UV_HADV_UP5 || defined UV_HADV_WENO5
-#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_KE  || \
         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
 #     define FLUX5 flux6
 #     define FLUX3 flux4
@@ -667,7 +667,7 @@
      &                    -0.125*(Huxx(i,j)+Huxx(i+1,j)))
 
 #   else
-#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_KE || \
         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFx4(i,j)=0.25*( u(i,j,k,nrhs)+u(i+1,j,k,nrhs)
@@ -752,7 +752,7 @@
      &                    -0.125*(Hvee(i,j)+Hvee(i,j+1)))
 
 #   else
-#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_KE || \
         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFe4(i,j)=0.25*( v(i,j,k,nrhs)+v(i,j+1,k,nrhs)
@@ -836,7 +836,7 @@
      &                        *(Hvom(i,j,k)+Hvom(i-1,j,k)
      &                    -0.125*(Hvxx(i,j)+Hvxx(i-1,j)))
 #   else
-#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_KE  || \
         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             UFe4(i,j)=0.25*( u(i,j,k,nrhs)+u(i,j-1,k,nrhs)
@@ -923,7 +923,7 @@
      &                    -0.125*(Huee(i,j)+Huee(i,j-1)))
 
 #   else
-#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_KE  || \
         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV
             if (nnew.ne.3) then
             VFx4(i,j)=0.25*( v(i,j,k,nrhs)+v(i-1,j,k,nrhs)
@@ -1001,7 +1001,7 @@
 ! Store Diagnostics
 !----------------------------------------------------------
 !
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_PV \
                              || defined DIAGNOSTICS_VRT
         if (nnew.ne.3) then
@@ -1023,7 +1023,7 @@
 !
           do j=JstrV,Jend
             do i=Istr,Iend
-#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                               || defined DIAGNOSTICS_PV \
                               || defined DIAGNOSTICS_VRT
               MXadv(i,j,k,2) = (-VFx(i+1,j)+VFx(i,j))
@@ -1037,7 +1037,7 @@
      &                          + VFe4(i,j-1) - VFe4(i,j) )
      &                         SWITCH vmask(i,j)
 #    endif
-#   endif /* DIAGNOSTICS_EK */
+#   endif /* DIAGNOSTICS_KE */
             enddo
           enddo
         endif !<-- nnew.ne.3
@@ -1247,7 +1247,7 @@
 ! Store diagnostics for U vertical advection
 !----------------------------------------------------------
 !
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE
         if (nnew.ne.3) then
           do k=1,N
             do i=IstrU,Iend
@@ -1255,7 +1255,7 @@
             enddo
           enddo
         endif                 !--> discard FC
-#  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_KE */
 !
 !----------------------------------------------------------
 !  V-component VERTICAL ADVECTION:
@@ -1445,7 +1445,7 @@
 ! Store diagnostics for V vertical advection
 !----------------------------------------------------------
 !
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE
           if (nnew.ne.3) then
             do k=1,N
               do i=Istr,Iend
@@ -1453,7 +1453,7 @@
               enddo
             enddo
           endif
-#  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_EK */
+#  endif /* DIAGNOSTICS_UV || DIAGNOSTICS_KE */
 
         ENDDOLOOP2D
 

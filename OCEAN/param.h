@@ -1051,7 +1051,7 @@
 # else
       parameter (ntrc_diavrt=0)
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
       parameter (ntrc_diaek=18)
 # else
       parameter (ntrc_diaek=0)

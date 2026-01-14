@@ -38,14 +38,14 @@
 # ifdef M3FAST
 #  include "nbq.h"
 # endif
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                             || defined DIAGNOSTICS_VRT
 #  include "diagnostics.h"
 # endif
 # if defined DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 !
@@ -75,7 +75,7 @@
 ! Diagnostics
 !------------
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             Mfast(i,j,k,1) = ru_nbq_avg2(i,j,k) SWITCH umask(i,j)
 #  endif
@@ -103,7 +103,7 @@
 ! Diagnostics
 !------------
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK \
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
             Mfast(i,j,k,2) = rv_nbq_avg2(i,j,k) SWITCH vmask(i,j)
 #  endif

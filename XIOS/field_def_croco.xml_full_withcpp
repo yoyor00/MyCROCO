@@ -616,7 +616,7 @@
     </field_group>
 #endif
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
     <field_group id="ek" grid_ref="rho_2D">
       <field id="ekrate" long_name="ek rate" unit="meter2 second-3"/>
       <field id="ekadv" long_name="ek adv" unit="meter2 second-3"/>

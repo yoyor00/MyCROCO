@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
 
 
       subroutine set_diags_ek (tile)
@@ -253,10 +253,10 @@
 ! ------- ------------- ------ ------ - -----
       return
       end
-#else /* DIAGNOSTICS_EK*/
+#else /* DIAGNOSTICS_KE*/
       subroutine set_diags_ek_empty
       end
-#endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_KE */
 
 
 

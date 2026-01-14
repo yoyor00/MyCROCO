@@ -247,7 +247,7 @@
       wrtdiags_vrt_avg(3)=.false.
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       wrtdiags_ek(3)=.false.
 # ifdef AVERAGES
       wrtdiags_ek_avg(3)=.false.
@@ -825,7 +825,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_VRT */
 
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
 !
 ! Diagnostics ek file name.
 !
@@ -854,7 +854,7 @@ c        close(testunit)
         diags_ekname_avg=fname(1:lstr)
 
 # endif
-#endif /*DIAGNOSTICS_EK */
+#endif /*DIAGNOSTICS_KE */
 
 #if defined DIAGNOSTICS_PV
 !
@@ -1642,7 +1642,7 @@ c        close(testunit)
 
 #endif /*DIAGNOSTICS_VRT */
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
 !
 ! Switches for fields to be saved into kinetic energy diagnostics file.
 !
@@ -1663,7 +1663,7 @@ c        close(testunit)
           if (wrtdiags_ek_avg(itrc)) wrtdiags_ek_avg(3)=.true.
        enddo
 # endif /* AVERAGES  */
-#endif /*DIAGNOSTICS_EK */
+#endif /*DIAGNOSTICS_KE */
 
 
 #if defined DIAGNOSTICS_PV
@@ -2531,7 +2531,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_VRT */
 
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
           lstr=lenstr(diags_ekname)
           MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
@@ -2549,7 +2549,7 @@ c        close(testunit)
      &    'Starting timestep = ',ntsdiags_ek_avg
 
 # endif
-#endif /*DIAGNOSTICS_EK */
+#endif /*DIAGNOSTICS_KE */
 
 #if defined DIAGNOSTICS_PV
           lstr=lenstr(diags_pvname)
@@ -3043,7 +3043,7 @@ c        close(testunit)
 
 #endif /*DIAGNOSTICS_VRT */
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
           do itrc=1,1
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiags_ek(itrc),
@@ -3059,7 +3059,7 @@ c        close(testunit)
      &        ' Momentum of index', itrc
           enddo
 # endif /* AVERAGES  */
-#endif /*DIAGNOSTICS_EK */
+#endif /*DIAGNOSTICS_KE */
 
 
 #if defined DIAGNOSTICS_PV

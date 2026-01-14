@@ -502,7 +502,7 @@ C$OMP BARRIER
 # endif
 ! Move diagnostics to the end of step3d_uv
 ! because we need u(:::,nstp)
-!# if defined DIAGNOSTICS_EK
+!# if defined DIAGNOSTICS_KE
 !        call set_diags_ek (tile)
 !# endif
 # if defined DIAGNOSTICS_PV
@@ -528,7 +528,7 @@ C$OMP BARRIER
         if (ldefdiags_vrt_avg .and. wrtdiags_vrt_avg(indxTime))
      &      call set_diags_vrt_avg (tile)
 #  endif
-#  if defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_KE
         if (ldefdiags_ek_avg .and. wrtdiags_ek_avg(indxTime))
      &      call set_diags_ek_avg (tile)
 #  endif
@@ -952,7 +952,7 @@ C$OMP BARRIER
 C$OMP BARRIER
 
       do tile=my_first,my_last
-# if defined DIAGNOSTICS_EK
+# if defined DIAGNOSTICS_KE
         call set_diags_ek (tile)
 # endif
       enddo
