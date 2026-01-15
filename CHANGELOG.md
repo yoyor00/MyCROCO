@@ -12,11 +12,19 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
+  restart inconsistencies with MORPHODYN (#470)
+
 - AGRIF : Fix allocation of  message passing arrays (ibuf...) when 3 ghost points
   needed (UP5, WENO)    (Issues #310 #458)
+
+- COUPLING : missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
+
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
+
+- PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
 
 ### Changed
 
@@ -70,6 +78,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - XCOMM_FORMAT (#419)
   - LMD_SKPP_MONOB never define (#400)
   - LIMIT_UNSTABLE_ONLY is always define (#401)
+  - MLCONVEC (#399)
 
 ### Other
 
