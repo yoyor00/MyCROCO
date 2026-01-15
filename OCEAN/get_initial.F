@@ -25,6 +25,9 @@
 #ifdef BBL
 # include "bbl.h"
 #endif
+#ifdef ABL1D
+# include "abl1d.h"
+#endif
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
 #endif
@@ -318,7 +321,9 @@
      &                                , nf_strerror(ierr)
         goto 99                                           !--> ERROR
       endif
-
+#ifdef USE_CALENDAR
+      start_time = start_time + origin_date_in_sec
+#endif
 #ifdef XIOS
       start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
@@ -630,6 +635,179 @@
         got_inibed(2)=.false.
       endif
 #endif /* BBL */
+
+#ifdef ABL1D
+!
+! ABL U
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_u_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (u_abl(START_2D_ARRAY,1,tindx), ncid, varid,
+     &                                             record, abl3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_u_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_u_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif
+!
+! ABL V
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_v_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_v_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (v_abl(START_2D_ARRAY,1,tindx), ncid, varid,
+     &                                             record, abl3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_v_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_v_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif
+!
+! ABL T
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_t_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_t_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (tq_abl(START_2D_ARRAY,1,tindx,jp_ta), ncid, varid,
+     &                                             record, abl3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_t_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_t_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif
+!
+! ABL Q
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_q_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_q_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (tq_abl(START_2D_ARRAY,1,tindx,jp_qa), ncid, varid,
+     &                                             record, abl3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_q_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_q_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif                  
+!
+! ABL TKE
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_tke_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (tke_abl(START_2D_ARRAY,1,tindx), ncid, varid,
+     &                                             record, abl3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_tke_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_tke_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif
+!
+! ABL AVM
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_avm_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_avm_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (avm_abl(START_2D_ARRAY,1,tindx), ncid, varid,
+     &                                             record, abl3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_avm_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_avm_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif
+!
+! ABL AVT
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_avt_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_avt_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (avt_abl(START_2D_ARRAY,1,tindx), ncid, varid,
+     &                                             record, abl3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_avt_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_avt_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif           
+!
+! ABL MXLD
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_mxld_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_mxld_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (mxld_abl(START_2D_ARRAY,1,tindx), ncid, varid,
+     &                                             record, abl3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_mxld_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_mxld_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif
+!
+! ABL MXLM
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_mxlm_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_mxlm_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (mxlm_abl(START_2D_ARRAY,1,tindx), ncid, varid,
+     &                                             record, abl3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_mxlm_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_mxlm_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif      
+!
+! ABL ABLH
+!
+      lvar=lenstr(vname_abl1d(1,indxabl_ablh_abl))
+      ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_ablh_abl)(1:lvar), varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (ablh(START_2D_ARRAY,tindx), ncid, varid,
+     &                                             record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) vname_abl1d(1,indxabl_ablh_abl)(1:lvar)
+     &                                    , record, ininame(1:lstr)
+          goto 99                                        !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,4) vname_abl1d(1,indxabl_ablh_abl)(1:lvar)
+     &                                , ininame(1:lstr)
+      endif                             
+#endif /* ABL1D */
 
 #ifdef SOLVE3D
 !

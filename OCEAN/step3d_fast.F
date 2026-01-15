@@ -117,7 +117,7 @@ C$    trd=omp_get_thread_num()
 !
 !***********************************************************************
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
       USE debug
 # endif
       implicit none
@@ -422,7 +422,7 @@ C$    trd=omp_get_thread_num()
         cff3= mybeta
       endif
 !
-# ifdef RVTK_DEBUG
+# ifdef CVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #0','r',
@@ -494,7 +494,7 @@ C$OMP END MASTER
       call set_DUV_bc_tile (Istr,Iend,Jstr,Jend, Drhs, DUon,DVom)
 # endif
 
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(zeta(:,:,kstp),'zeta step3d_fast #1','r',
@@ -538,7 +538,7 @@ C$OMP END MASTER
      &                        DV_avg3(START_2D_ARRAY,0))
 #  endif
 
-#  ifdef RVTK_DEBUG_ADVANCED
+#  ifdef CVTK_DEBUG_ADVANCED
       if (.not.agrif_Root()) then
 C$OMP BARRIER
 C$OMP MASTER
@@ -638,7 +638,10 @@ C$OMP END MASTER
           wsurf_nbq(i,j)=(We(i,j,N)*pm(i,j)*pn(i,j)
 #  endif
 #  ifdef MRL_WCI
-     &                     +wst(i,j,N)*rmask_wet(i,j)
+     &                     +wst(i,j,N)
+#   ifdef WET_DRY
+     &                       *rmask_wet(i,j)
+#   endif
 #  endif
      &                    )
 #  ifdef MASKING
@@ -1382,7 +1385,7 @@ C$OMP END MASTER
 # endif
 # undef rv_ext_nbq 
 
-# if defined RVTK_DEBUG_ADVANCED && defined NBQ
+# if defined CVTK_DEBUG_ADVANCED && defined NBQ
 !$acc end kernels
 C$OMP BARRIER
 C$OMP MASTER
@@ -2256,7 +2259,7 @@ C$OMP END MASTER
       enddo
 # endif
 
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
 !$acc end kernels
 C$OMP BARRIER
 C$OMP MASTER
@@ -2310,18 +2313,7 @@ C$OMP END MASTER
 #  ifndef NBQ
       endif
 #  endif
-!      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-!     &                        DU_nbq(START_2D_ARRAY))
-!      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-!     &                        DV_nbq(START_2D_ARRAY))
 # endif
-!$$$# ifdef RVTK_DEBUG_ADVANCED
-!$$$C$OMP BARRIER
-!$$$C$OMP MASTER
-!$$$      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
-!$$$      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
-!$$$C$OMP END MASTER
-!$$$# endif  
 
 !$acc kernels if(compute_on_device) default(present)
 # ifdef NBQ
@@ -3153,7 +3145,7 @@ C$OMP END MASTER
          call exchange_r2d_tile (Istr,Iend,Jstr,Jend, 
      &                           rhobar_nbq(START_2D_ARRAY,knew))
 #   endif
-#   ifdef RVTK_DEBUG_ADVANCED
+#   ifdef CVTK_DEBUG_ADVANCED
 !      call check_tab2d(rhobar_nbq(:,:,knew),'rhobar_nbq','r')
 #   endif    
 #  endif /* NBQ_MASS */
@@ -3182,7 +3174,7 @@ C$OMP END MASTER
         enddo
       enddo
             
-# if defined RVTK_DEBUG_ADVANCED && defined NBQ
+# if defined CVTK_DEBUG_ADVANCED && defined NBQ
 !$acc end kernels
 C$OMP BARRIER
 C$OMP MASTER
@@ -3210,7 +3202,7 @@ C$OMP END MASTER
         enddo
       endif
 
-!# if defined RVTK_DEBUG && defined NBQ
+!# if defined CVTK_DEBUG && defined NBQ
 !      call check_tab3d(rw_nbq,'rw_nbq','rint')
 !#  endif  
 # endif
@@ -4013,7 +4005,7 @@ C$OMP END MASTER
      &                          DV_avg3(START_2D_ARRAY,iif))
 #  endif
 
-#  ifdef RVTK_DEBUG_ADVANCED
+#  ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
         call check_tab2d(Zt_avg3(:,:,iif),'Zt_avg3 step3d_fast','r')
@@ -4107,18 +4099,6 @@ C$OMP END MASTER
 #  ifdef MASKING
      &               *rmask(i,j)
 #  endif
-
-#  ifdef NBQ_HZCORR_DEBUG
-              Hz_corr(i,j,k)=Hz(i,j,k)-Hz_correct(i,j,k)
-#  endif
-
-!# ifdef NBQ_MASS
-!              Hzr(i,j,k)=(Hz(i,j,k)-rho_nbq(i,j,k)) ! adjust Zw,Zr?
-!     &                        /(1.+rho(i,j,k)/rho0)
-!# endif
-!              z_w(i,j,k)=z_w(i,j,k-1)+Hzr(i,j,k)
-!              z_r(i,j,k)=0.5*(z_w(i,j,k)+z_w(i,j,k-1))
-
             enddo
           enddo
         enddo
@@ -4161,7 +4141,7 @@ C$OMP END MASTER
       enddo
 !$acc end kernels
 
-# ifdef RVTK_DEBUG_ADVANCED
+# ifdef CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(DU_avg1(:,:,nnew),'DU_avg1','u',

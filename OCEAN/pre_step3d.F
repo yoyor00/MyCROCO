@@ -67,7 +67,7 @@
 ! mode) computations.
 !--------------------------------------------------------------------
 !
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif              
       implicit none
@@ -191,7 +191,7 @@
         cff2=0.5-gamma
       endif
 
-# if defined RVTK_DEBUG_PERFRST
+# if defined CVTK_DEBUG_PERFRST
        call check_tab3d(Hz(:,:,:),'Hz in prestep3d','r')
        call check_tab3d(Hz_bak(:,:,:),'Hz_bak in prestep3d','r')
        call check_tab3d(Huon(:,:,:),'Huon in prestep3d','r')
@@ -518,8 +518,8 @@
 #  endif
 # endif
 
-        DOLOOP2D(Istr,Iend,Jstr,Jend)
 # ifdef TRACERS
+        DOLOOP2D(Istr,Iend,Jstr,Jend)
 #  ifndef VADV_ADAPT_IMP 
         do k=1,N
           do i=Istr,Iend
@@ -530,9 +530,7 @@
         do i=Istr,Iend
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
         enddo
-# endif /* TRACERS */
 
-# if defined TRACERS
         do itrc=1,NT
 !
 !----------------------------------------------------------------------

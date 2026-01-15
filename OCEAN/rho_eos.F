@@ -11,7 +11,6 @@
 #include "cppdefs.h"
 #ifdef SOLVE3D
 # ifdef NONLIN_EOS
-#  define DUKO_2001
 !
       subroutine rho_eos (tile)
 !
@@ -111,7 +110,7 @@
 !
 !======================================================================
 !
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
 #  ifdef MUSTANG
@@ -154,14 +153,12 @@
 
      &          E00=+1.045941e-5, E01=-5.782165e-10,E02=+1.296821e-7,
      &          E10=-2.595994e-7, E11=-1.248266e-9, E12=-3.508914e-9)
-#  ifdef DUKO_2001
       real K0_Duk
-#  endif
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "coupling.h"
 #  include "scalars.h"
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 #   include "mixing.h"
 #  endif
@@ -175,21 +172,20 @@
 !
 #  include "compute_extended_bounds.h"
 !
-#  ifdef DUKO_2001
+      ! DUKO2001
       Tt=3.8D0
       Ts=34.5D0
       sqrtTs=sqrt(Ts)
       K0_Duk= Tt*( K01+Tt*( K02+Tt*( K03+Tt*K04 )))
      &       +Ts*( K10+Tt*( K11+Tt*( K12+Tt*K13 ))
      &            +sqrtTs*( KS0+Tt*( KS1+Tt*KS2 )))
-#  endif
 
 !
 !  compute rho as a perturbation to rho0 (at the surface)
 !
       dr00=r00-rho0
 !
-#  ifdef RVTK_DEBUG_PERFRST
+#  ifdef CVTK_DEBUG_PERFRST
       call check_tab3d(t(:,:,:,nrhs,itemp),'T rho_eos','r')
       call check_tab3d(t(:,:,:,nrhs,isalt),'S rho_eos','r')
 #  endif
@@ -225,12 +221,9 @@
      &              +sqrtTs*( KS0+Tt*( KS1+Tt*KS2 )))
 
 #  ifdef SPLIT_EOS
-#   ifdef DUKO_2001
+            ! DUKO_2001
             qp1(i,j,k)=0.1*(rho0+rho1(i,j,k))*(K0_Duk-K0)
      &                               /((K00+K0)*(K00+K0_Duk))
-#   else
-            qp1(i,j,k)=0.1*(K00*rho1(i,j,k)-rho0*K0)/(K00*(K00+K0))
-#   endif
 #   ifdef MASKING
      &                                                  *rmask(i,j)
 #   endif
@@ -260,7 +253,7 @@
 !  and vertical W-points!
 !-----------------------------------------------------------------------
 !
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 #   ifndef SPLIT_EOS
             dpth=z_w(i,j,N)-z_w(i,j,k)
@@ -303,7 +296,7 @@
 #  endif /* ANA_VMIX ... */
           enddo
         enddo
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         do i=istrR,iendR
           bvf(i,j,N)=bvf(i,j,N-1)
@@ -403,7 +396,7 @@
 !  and vertical W-points.
 !-----------------------------------------------------------------------
 !
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         cff=g/rho0
         do k=1,N-1

@@ -112,7 +112,7 @@ C$OMP END PARALLEL
 #  include "zoom.h"
 # endif
 #endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
 #ifdef ONLINE_ANALYSIS
@@ -128,18 +128,15 @@ C$OMP END PARALLEL
 #ifdef M3FAST
 # include "nbq.h"
 #endif
-#ifdef FLOATS
-# include "floats.h"
-#endif
 #include "ocean2d.h"
 #include "ocean3d.h"
-#if defined RVTK_DEBUG && ( defined BULK_FLUX || defined MRL_WCI )
+#if defined CVTK_DEBUG && ( defined BULK_FLUX || defined MRL_WCI )
 # include "forces.h"
 #endif
-#if ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST )
+#if ( defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST )
 # include "mixing.h"
 #endif
-#if defined RVTK_DEBUG_ADVANCED
+#if defined CVTK_DEBUG_ADVANCED
 # include "coupling.h"
 #endif
 
@@ -156,10 +153,6 @@ C$OMP END PARALLEL
       integer itrc
       character(len=30) cltra
 
-#ifdef FLOATS
-      integer chunk_size_flt, Lstr,Lend, flt_str
-      common /floats_step/ flt_str
-#endif
 #ifdef STATIONS
       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
       common /sta_step/ sta_str
@@ -174,14 +167,11 @@ C$OMP BARRIER
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
 C$OMP MASTER
-#ifdef AUTOTILING
-      call begin_timing
-#endif
       time=time_start+dt*float(iic-ntstart)
-      tdays=time*sec2day
 #ifdef USE_CALENDAR
-      time_mars=time_mars+dt
-      tdays=(time_mars-time_start)*sec2day
+      tdays=(time-time_start)*sec2day
+#else
+      tdays=time*sec2day
 #endif
 
 #ifdef SOLVE3D
@@ -198,14 +188,6 @@ C$OMP MASTER
 # endif
 #endif
 
-#ifdef FLOATS
-      nfp1=MOD(nfp1+1,NFT+1)  ! Shift time indices
-      nf  =MOD(nf  +1,NFT+1)  ! for floats
-      nfm1=MOD(nfm1+1,NFT+1)
-      nfm2=MOD(nfm2+1,NFT+1)
-      nfm3=MOD(nfm3+1,NFT+1)
-      flt_str=0
-#endif
 #ifdef STATIONS
       sta_str=0
 #endif
@@ -246,7 +228,7 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP BARRIER
 
-#if defined RVTK_DEBUG_PERFRST
+#if defined CVTK_DEBUG_PERFRST
        call check_tab3d(Hz_bak(:,:,:),'Hz_bak beg prestep3d','r')
 #endif
 
@@ -342,7 +324,7 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
-# if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+# if defined CVTK_DEBUG && defined CVTK_DEBUG_ADVANCED && defined BULK_FLUX
 #  ifndef ABL1D
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_befbulk','u')
@@ -370,7 +352,7 @@ C$OMP END MASTER
 #  endif
       enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG && defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#  if defined CVTK_DEBUG && defined CVTK_DEBUG_ADVANCED && defined BULK_FLUX
 #   ifndef ABL1D
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 prestep3d_aftbulk','u')
@@ -393,7 +375,7 @@ C$OMP BARRIER
 # endif /* BULK_FLUX */
 
 C$OMP BARRIER
-# if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+# if defined CVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
 #  if defined STRESS_AT_RHO_POINTS
       call check_tab2d(sustr(:,:),'sustr prestep3d_aftbulk','r')
@@ -447,7 +429,7 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
       enddo
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#  if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(wac(:,:,wnew),'wac in prestep ','r')
@@ -463,7 +445,7 @@ C$OMP END MASTER
         call  mrl_wci (tile)
       enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#  if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP MASTER
       call check_tab2d(ust2d(:,:),'ust2d in prestep ','u')
       call check_tab2d(vst2d(:,:),'vst2d in prestep ','v')
@@ -476,8 +458,6 @@ C$OMP END MASTER
         call ana_vmix (tile)
 # elif defined LMD_MIXING
         call lmd_vmix (tile)
-# elif defined BVF_MIXING
-        call bvf_mix (tile)
 # endif
         call omega (tile)
 # ifdef VIS_COEF_3D
@@ -574,7 +554,7 @@ C$OMP BARRIER
 C$OMP BARRIER
 C$OMP MASTER
 
-# if defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST
+# if defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST
       do itrc=1,NT
         write(cltra,"('( t prestep3d tracer nb ', i2')')")  itrc
         call check_tab3d(t(:,:,:,nnew,itrc),trim(cltra),'r',
@@ -585,7 +565,7 @@ C$OMP MASTER
       call check_tab3d(v(:,:,:,nnew),'v prestep3d','v',
      &  ondevice=.TRUE.)
 # endif
-# if defined RVTK_DEBUG_ADVANCED
+# if defined CVTK_DEBUG_ADVANCED
       call check_tab2d(rufrc,'rufrc prestep3d','uint',
      &  ondevice=.TRUE.)
       call check_tab2d(rvfrc,'rvfrc prestep3d','vint',
@@ -633,7 +613,7 @@ C$OMP BARRIER
 #ifdef AGRIF
       use Agrif_Util
 #endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
       implicit none
@@ -641,31 +621,24 @@ C$OMP BARRIER
 #include "scalars.h"
 #include "ncscrum.h"
 #include "ocean2d.h"
-!#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined MRL_WCI
+!#if ( defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST ) && defined MRL_WCI
 !# include "forces.h"
 !#endif
-#ifdef FLOATS
-# include "floats.h"
-#endif
 #ifdef STATIONS
 # include "sta.h"
 #endif
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
-#elif ( defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST ) && defined M3FAST
+#elif ( defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST ) && defined M3FAST
 # include "nbq.h"
 #endif
-#if defined RVTK_DEBUG || defined  RVTK_DEBUG_PERFRST
+#if defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST
 # include "forces.h"
 #endif
       integer range
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
 
-#ifdef FLOATS
-      integer chunk_size_flt, Lstr,Lend, flt_str
-      common /floats_step/ flt_str
-#endif
 #ifdef STATIONS
       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
       common /sta_step/ sta_str
@@ -707,7 +680,7 @@ C$OMP BARRIER
           call mrl_wci (tile)
         enddo
 C$OMP BARRIER
-#  if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+#  if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP MASTER
       call check_tab2d(ust2d(:,:),'ust2d in prestep ','u')
       call check_tab2d(vst2d(:,:),'vst2d in prestep ','v')
@@ -840,7 +813,7 @@ C$OMP BARRIER
         endif
 #endif
 
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
 # ifdef M3FAST
@@ -850,7 +823,7 @@ C$OMP MASTER
      &    ondevice=.TRUE.)
        call check_tab2d(vbar(:,:,knew),'vbar step3d_fast','v',
      &    ondevice=.TRUE.)
-#  ifdef RVTK_DEBUG_ADVANCED
+#  ifdef CVTK_DEBUG_ADVANCED
         call check_tab2d(bustr,'bustr step3d_fast','u')
         call check_tab2d(bvstr,'bvstr step3d_fast','v')
         !!call check_tab3d(qdmu_nbq,'qdmu_nbq step3d_fast','u')
@@ -886,9 +859,6 @@ C$OMP END MASTER
 #ifdef M3FAST
 # include "nbq.h"
 #endif
-#ifdef FLOATS
-# include "floats.h"
-#endif
 #ifdef STATIONS
 # include "sta.h"
 #endif
@@ -896,12 +866,9 @@ C$OMP END MASTER
 #include "ocean3d.h"
 #include "ocean2d.h"
 #include "coupling.h"
-#ifdef AUTOTILING
-# include "autotiling.h"
-#endif
 #if defined LMD_MIXING
 # include "mixing.h"
-#elif defined RVTK_DEBUG_PERFRST && defined TS_MIX_ISO_FILT
+#elif defined CVTK_DEBUG_PERFRST && defined TS_MIX_ISO_FILT
 # include "mixing.h"
 #endif
        integer range
@@ -909,10 +876,6 @@ C$OMP END MASTER
      &        my_first,my_last, tile, my_iif
       integer i,j,k
 
-#ifdef FLOATS
-      integer chunk_size_flt, Lstr,Lend, flt_str
-      common /floats_step/ flt_str
-#endif
 #ifdef STATIONS
       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
       common /sta_step/ sta_str
@@ -1022,10 +985,10 @@ C$OMP END MASTER
 #ifdef AGRIF
       use Agrif_Util
 #endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
-#   ifdef SUBSTANCE_SUBMASSBALANCE
+#   ifdef SUBSTANCE
       USE submassbalance, ONLY :  submassbalance_main
 #   endif
 #ifdef MUSTANG
@@ -1035,22 +998,19 @@ C$OMP END MASTER
       use plug_MUSTANG_CROCO, only: mustang_morpho_main
       use comMUSTANG, only : l_morphocoupl, t_morpho
 # endif
-# if defined RVTK_DEBUG && defined SOLVE3D
+# if defined CVTK_DEBUG && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
       use comMUSTANG, only : dzs
 #  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
       use comMUSTANG , only : flx_bx, flx_by
       use comsubstance, only : ibedload1, ibedload2
 #  endif /* key_MUSTANG_bedload  key_MUSTANG_V2 */
-# endif /* RVTK_DEBUG_AVANCED  SOLVE3D */
+# endif /* CVTK_DEBUG_AVANCED  SOLVE3D */
 #endif /* MUSTANG */
       implicit none
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef FLOATS
-# include "floats.h"
-#endif
 #ifdef STATIONS
 # include "sta.h"
 #endif
@@ -1059,10 +1019,7 @@ C$OMP END MASTER
 #include "ocean2d.h"
 #include "coupling.h"
 #include "grid.h"
-#ifdef AUTOTILING
-# include "autotiling.h"
-#endif
-#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST )
+#if ( defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST )
 # include "mixing.h"
 #endif
       integer range
@@ -1070,10 +1027,6 @@ C$OMP END MASTER
      &        my_first,my_last, tile, my_iif
       integer i,j,k
 
-#ifdef FLOATS
-      integer chunk_size_flt, Lstr,Lend, flt_str
-      common /floats_step/ flt_str
-#endif
 #ifdef STATIONS
       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
       common /sta_step/ sta_str
@@ -1115,7 +1068,7 @@ C$OMP BARRIER
         call mustang_deposition_main (tile)
 # endif
 
-# ifdef SUBSTANCE_SUBMASSBALANCE
+# ifdef SUBSTANCE
        call submassbalance_main(tile)
 #endif
 
@@ -1136,7 +1089,7 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
-# if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
+# if defined CVTK_DEBUG_ADVANCED && defined SOLVE3D
 C$OMP MASTER
       do itrc = 1, NT
         call check_tab3d(Akt(:,:,1:N,itrc),'Akt step3d_t','r')
@@ -1147,7 +1100,7 @@ C$OMP MASTER
 #  endif
 C$OMP END MASTER
 # endif
-# if defined RVTK_DEBUG && defined SOLVE3D
+# if defined CVTK_DEBUG && defined SOLVE3D
 C$OMP MASTER
 #  if defined MUSTANG
         do ilay = ksdmin, ksdmax
@@ -1196,19 +1149,6 @@ C$OMP BARRIER
 
 #endif /* SOLVE3D */
 
-#ifdef FLOATS
-      chunk_size_flt=32
-      do while (flt_str.lt.nfloats)
-C$OMP CRITICAL
-        Lstr=flt_str+1
-        flt_str=Lstr+chunk_size_flt-1
-C$OMP END CRITICAL
-        Lend=min(Lstr+chunk_size_flt-1,nfloats)
-        call step_floats (Lstr,Lend)
-      enddo
-c        call step_floats (1,nfloats) ! serial version for debugging
-#endif /*FLOATS*/
-
 #ifdef STATIONS
       chunk_size_sta=32
       do while (sta_str.lt.nstas)
@@ -1235,7 +1175,7 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif /*AGRIF && AGRIF_2WAY*/
 
-#if ( defined RVTK_DEBUG || defined RVTK_DEBUG_PERFRST ) && defined SOLVE3D
+#if ( defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST ) && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
       do itrc=1,NT
@@ -1252,10 +1192,6 @@ C$OMP END MASTER
 #endif
 
 C$OMP MASTER
-#ifdef AUTOTILING
-      call end_timing
-      if (iic-lastiic == nbsampling) call auto_tiling
-#endif
 
       iic=iic + 1
 

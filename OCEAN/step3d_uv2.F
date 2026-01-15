@@ -21,20 +21,20 @@
 
       call step3d_uv2_tile (Istr,Iend,Jstr,Jend, A2d(1,1,trd),
      &                             A2d(1,2,trd), A2d(1,3,trd),
-     &                             A2d(1,4,trd), A2d(1,4,trd)
+     &                             A2d(1,4,trd), A2d(1,5,trd)
 # ifdef VADV_ADAPT_IMP
      &                                          ,A2d(1,6,trd)
 # endif
-     &                                                      )
+     &                                                       )
       return
       end
 
-      subroutine step3d_uv2_tile (Istr,Iend,Jstr,Jend,BC,
-     &                            CF,FC,DC, grad
+      subroutine step3d_uv2_tile (Istr,Iend,Jstr,Jend, BC,
+     &                                     CF,FC,DC, grad
 # ifdef VADV_ADAPT_IMP
-     &                                               ,WC
+     &                                                ,WC
 # endif
-     &                                                  )
+     &                                                    )
 !
 !--------------------------------------------------------------------
 !  This routine  performs the timestep for the horizontal momentum

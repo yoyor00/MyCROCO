@@ -17,11 +17,7 @@
 !&E     subroutine sed_gradvit            ! calcul gradient de vitesse, u*
 !&E     subroutine sed_skinstress         ! computes the skin stress
 !&E     subroutine sed_bottom_slope
-!&E     subroutine sedinit_fromfile  ! reads filrepsed where all results of 
-!&E                                    sediment dyn. are stored (depends on 
-!&E                                    hydro model)
 !&E     subroutine sed_exchange_w2s ! MPI treatment of slip deposit fluxes
-!&E     subroutine sed_exchange_s2w ! MPI treatment of lateral erosion 
 !&E     subroutine sed_exchange_flxbedload ! MPI treatment of bedload fluxes
 !&E     subroutine sed_exchange_maskbedload ! MPI exchange of mask for 
 !&E                                           bedload
@@ -32,12 +28,9 @@
 !&E
 !&E==========================================================================
 
-#include "coupler_define_MUSTANG.h"
-
     !! * Modules used
     USE comMUSTANG
     USE comsubstance
-    USE module_MUSTANG
     USE module_substance
 # if defined key_MUSTANG_flocmod
     USE flocmod, ONLY : f_ws
@@ -45,7 +38,6 @@
     IMPLICIT NONE
 
     !! * Accessibility 
-    PUBLIC sedinit_fromfile
     PUBLIC sed_skinstress
     PUBLIC sed_gradvit
     PUBLIC sed_MUSTANG_settlveloc
@@ -59,9 +51,7 @@
 #if defined MPI  && defined key_MUSTANG_slipdeposit
     PUBLIC sed_exchange_w2s
 #endif
-#if defined MPI  && defined key_MUSTANG_lateralerosion
-    PUBLIC sed_exchange_s2w
-#endif
+
 #if defined MUSTANG_CORFLUX
     PUBLIC sed_obc_corflu
     PUBLIC sed_meshedges_corflu
@@ -90,9 +80,9 @@ SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
 !&E         ws_part : settling velocities for CROCO
 !&E         ws3_bottom_MUSTANG: settling velocities in  bottom cell
 !&E
-!&E  need to be know via coupler_define_MUSTANG.h:
-!&E         GRAVITY
-!&E         kmax=NB_LAYER_WAT
+!&E  need to be know 
+!&E         g : gravity
+!&E         kmax=N : number of layer in water
 !&E          
 !&E  need to be know by code treated substance 
 !&E  (if not ==> coupler_MUSTANG.F90)
@@ -111,8 +101,7 @@ SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
 
 !! * Arguments
 INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
-REAL(KIND=rsh), DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION  
-!! CROCO : WATER_CONCENTRATION  is directly t 
+REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN) :: WATER_CONCENTRATION  
    
 !! * Local declarations
 INTEGER                    :: iv, k, ivpc, i, j
@@ -124,7 +113,7 @@ DO j = jfirst, jlast
 DO i = ifirst, ilast
            
     IF (htot(i, j) > h0fond) THEN
-        DO k = 1, NB_LAYER_WAT
+        DO k = 1, N
             cmes = 0.0_rsh
             DO ivpc = imud1, nvpc
                 cmes = cmes + WATER_CONCENTRATION(i, j, k, nstp, itemp + ntrc_salt + ivpc)
@@ -156,7 +145,7 @@ DO i = ifirst, ilast
                         De = sqrt(nuw / gradvit(k, i, j)) 
                         ! in case of large C/low G limit floc size to kolmogorov microscale
                     ENDIF
-                    WSfree = (ros(iv) - RHOREF) * GRAVITY / (18._rsh * RHOREF * nuw)  &
+                    WSfree = (ros(iv) - rho0) * g / (18._rsh * rho0 * nuw)  &
                         * ws_free_para(1, iv)**(3._rsh - ws_free_para(4, iv))  &
                         * De**(ws_free_para(4, iv) - 1._rsh)
                 ELSEIF (ws_free_opt(iv) == 3) THEN ! Wolanski et al., 1989
@@ -228,7 +217,7 @@ SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 !&E
 !&E ** Description : G= sqrt(turbulence dissipation/viscosity)
 !&E                 to be programmed using hydrodynamic knowledge
-!&E           using htot, RHOREF, sig, epn, nz ..
+!&E           using htot, rho0, sig, epn, nz ..
 !&E
 !&E     output : gradvit (in comMUSTANG)
 !&E
@@ -355,7 +344,7 @@ END SUBROUTINE sed_gradvit
 #  ifdef BBL /*warning, d50 is constant (160microns) in the bustrw/bvstrw computation see bbl.F */
   do j = jfirst, jlast
     do i = ifirst, ilast
-      tauskin(i, j) = sqrt( bustrw(i, j)**2 + bvstrw(i, j)**2) * RHOREF
+      tauskin(i, j) = sqrt( bustrw(i, j)**2 + bvstrw(i, j)**2) * rho0
 #  ifdef WET_DRY AND MASKING
       tauskin(i, j) = tauskin(i, j) * rmask_wet(i, j)
 #  endif
@@ -581,7 +570,7 @@ END SUBROUTINE sed_gradvit
         if (tauskin(i, j) < 0.) then
           ustarbot(i, j) = 0.0_rsh
         else
-          ustarbot(i, j) = (tauskin(i, j) / RHOREF)**0.5_rsh
+          ustarbot(i, j) = (tauskin(i, j) / rho0)**0.5_rsh
         endif
       endif
     enddo
@@ -602,11 +591,13 @@ END SUBROUTINE sed_gradvit
    !&E    slope_dhdy from bathy of neigbour cells if they are not masked
    !&E
    !&E ** Called by :  MUSTANG_update, MUSTANG_morpho 
+   !&E      om_r = cell dx 
+   !&E      on_r = cell dy
    !&E
    !&E--------------------------------------------------------------------------
    !! * Arguments
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
-   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)  :: bathy  ! bathymetry (m)
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)  :: bathy  ! bathymetry (m)
 
    !! * Local declarations
    INTEGER :: i, j
@@ -616,12 +607,12 @@ END SUBROUTINE sed_gradvit
           IF (bathy(i+1, j).LE. -valmanq .OR. bathy(i-1, j).LE. -valmanq) then
              slope_dhdx(i, j) = 0.0_rsh
           ELSE
-             slope_dhdx(i, j) = -1.0_rsh*(-bathy(i+1, j)+bathy(i-1, j)) / (2.0_rsh * CELL_DX(i, j))
+             slope_dhdx(i, j) = -1.0_rsh*(-bathy(i+1, j)+bathy(i-1, j)) / (2.0_rsh * om_r(i, j))
           ENDIF
           IF (bathy(i, j+1).LE. -valmanq .OR. bathy(i, j-1).LE. -valmanq) then
              slope_dhdy(i, j) = 0.0_rsh
           ELSE
-             slope_dhdy(i, j) = -1.0_rsh*(-bathy(i, j+1)+bathy(i, j-1)) / (2.0_rsh * CELL_DY(i, j))
+             slope_dhdy(i, j) = -1.0_rsh*(-bathy(i, j+1)+bathy(i, j-1)) / (2.0_rsh * on_r(i, j))
           ENDIF
         ENDDO
       ENDDO
@@ -663,209 +654,6 @@ END SUBROUTINE sed_gradvit
 #endif /* MPI */
 #endif /* key_MUSTANG_bedload */
 
-!!=============================================================================
-  SUBROUTINE sedinit_fromfile
- 
-   !&E-------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sedinit_fromfile  ***
-   !&E
-   !&E ** Purpose : manages the fields to be re-initialized in case of the 
-   !&E              continuation of a previous run
-   !&E
-   !&E ** Description : open and read a netcdf file, written during a previous run 
-   !&E
-   !&E ** Called by :  MUSTANG_init 
-   !&E
-   !&E-------------------------------------------------------------------------
-   !! * Modules used
-    implicit none
-                      
-
-# include "netcdf.inc"
-    real time_scale
-    integer iv, k, itrc, indWrk
-    integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,       &
-    start(2), count(2), ibuff(6), nf_fread, checkdims
-    character units*180, nomcv*30
-    character inised_name*180
-    real tmp(GLOBAL_2D_ARRAY)
-    real tmp3d(GLOBAL_2D_ARRAY, ksdmin:ksdmax)
-
-    tmp(PROC_IN_ARRAY) = 0
-    tmp3d(PROC_IN_ARRAY,ksdmin:ksdmax) = 0
-    z0sed(PROC_IN_ARRAY) = z0seduni
-    dzsmax(PROC_IN_ARRAY) = dzsmaxuni
-    ksmi(PROC_IN_ARRAY) = ksmiuni
-    ksma(PROC_IN_ARRAY) = 0
-    hsed(PROC_IN_ARRAY) = 0.0_rsh
-    dzs(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-    cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-    c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-!
-! Open initial conditions netCDF file for reading. Check that all
-! spatial dimensions in that file are consistent with the model
-! arrays, determine how many time records are available in the file
-! and set record from which the dada will be read.
-!
-! The record is set as follows: (1) if only one time record is
-! available in the file, then that record is used REGARDLESS of
-! value of nrrec supplied from the parameter file; (2) if the
-! file has multiple records and nrrec is positive, then nrrec is
-! used, provided that nrrec is within the available records; 
-! (3) if the file has multiple records and nrrec<0, then THE LAST 
-! available record is used.
-
-!      if (may_day_flag.ne.0) return      !-->  EXIT
-      inised_name = filrepsed
-      lstr = lenstr(inised_name)
-      ierr = nf_open(inised_name(1:lstr), nf_nowrite, ncid)
-      if (ierr.eq.nf_noerr) then
-        ierr = checkdims(ncid, inised_name, lstr, indx)
-
-        if (ierr.ne.nf_noerr) then
-         goto 99
-        elseif (indx.eq.0) then
-          indx = 1
-        elseif (indx.gt.0 .and. nrrec.gt.0 .and. nrrec.le.indx) then
-          indx = nrrec
-        elseif (indx.gt.0 .and. nrrec.gt.indx) then
-          write(stdout,'(/1x,A,I4,A/16x,A,I4,A/16x,3A/)')   &
-                 'SEDINIT_FROMFILE ERROR: requested restart time record', &
-                  nrrec, ' exceeds',  'number of available records', &
-                  indx,'in netCDF file', '''',ininame(1:lstr),'''.'
-          goto 99                                        !--> ERROR
-        endif
-      else
-        write(stdout,'(/1x,2A/15x,3A)') 'SEDINIT_FROMFILE ERROR: Cannot ', &
-                    'open netCDF file', '''', ininame(1:lstr) ,'''.'
-        goto 99                                           !--> ERROR
-      endif
-
-
-! ksmi, ksma
-      ierr=nf_inq_varid (ncid,'ksmi', varid)
-      if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (tmp, ncid, varid, indx, 0)
-        ksmi(PROC_IN_ARRAY)=INT(tmp(PROC_IN_ARRAY))
-        if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) 'ksmi', indx, inised_name(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-      else
-        MPI_master_only  write(stdout,1) 'ksmi', inised_name(1:lstr)
-        goto 99                                           !--> ERROR
-      endif
-      
-       ierr=nf_inq_varid (ncid,'ksma', varid)
-      if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (tmp, ncid, varid, indx, 0)
-        ksma(PROC_IN_ARRAY)=INT(tmp(PROC_IN_ARRAY))
-
-        if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) 'ksma', indx, inised_name(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-      else
-        MPI_master_only  write(stdout,1) 'ksma', inised_name(1:lstr)
-        goto 99                                           !--> ERROR
-      endif
-
-     WHERE (ksmi(PROC_IN_ARRAY) < ksdmin ) 
-        ksmi(PROC_IN_ARRAY) = 1
-        ksma(PROC_IN_ARRAY) = 0
-     END WHERE
-!  DZS
-      ierr=nf_inq_varid (ncid,'DZS', varid)
-      if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
-         do k=ksdmin,ksdmax
-            dzs(k,:,:)=tmp3d(:,:,k)
-         enddo
-        
-        if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) 'DZS', indx, inised_name(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-      else
-        MPI_master_only  write(stdout,1) 'DZS', inised_name(1:lstr)
-        goto 99                                           !--> ERROR
-      endif
-
-
-! CVSED
- 
-      c_sedtot(:,:,:)=0.0_rsh
-      do iv=-1,nv_tot 
-
-       if (iv == -1) then
-          nomcv='temp_sed'
-       elseif (iv==0) then
-          nomcv='salt_sed'
-       else
-          nomcv=TRIM(name_var(iv))//'_sed'
-       endif
-
-       ierr=nf_inq_varid (ncid,nomcv, varid)
-       if (ierr .eq. nf_noerr) then
-        ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
-
-        do k=ksdmin,ksdmax
-            cv_sed(iv,k,:,:)=tmp3d(:,:,k)
-            c_sedtot(k,:,:)=c_sedtot(k,:,:)+cv_sed(iv,k,:,:)*typart(iv)  
-        enddo
-
-        if (ierr .ne. nf_noerr) then
-          MPI_master_only write(stdout,2) nomcv, indx, inised_name(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-       
-       else
-        if (iv > nvpc .and. iv < nvp+1 ) then
-         ! not constitutive particulate  variables (Initial in M/Msed converted to M/m3 sed)
-         IF (irkm_var_assoc(iv) >0) THEN
-           do k=ksdmin,ksdmax
-             cv_sed(iv,k,:,:)=cini_sed(iv)*cv_sed(irkm_var_assoc(iv),k,:,:)
-           enddo
-         ELSE
-           do k=ksdmin,ksdmax
-            cv_sed(iv,k,:,:)=cini_sed(iv)*c_sedtot(k,:,:)
-           enddo
-         END IF
-         MPI_master_only  write(stdout,3) nomcv, inised_name(1:lstr)
-        else if (iv > nvp) then
-          ! dissolved variables (M/m3 EI)
-          do k=ksdmin,ksdmax
-            cv_sed(iv,k,:,:)=cini_sed(iv)             
-          enddo
-         MPI_master_only  write(stdout,3) nomcv,name_var(iv), &
-                                          inised_name(1:lstr)
-        else
-         MPI_master_only  write(stdout,1) nomcv, inised_name(1:lstr)
-         goto 99                          !--> ERROR
-        endif
-       endif
-      enddo
-     
-     do k=ksdmin,ksdmax
-     WHERE (c_sedtot(k,PROC_IN_ARRAY) == -valmanq) c_sedtot(k,PROC_IN_ARRAY)=0.0_rsh
-     enddo
-
-! Close input NetCDF file.
-!
-      ierr=nf_close(ncid)
-
-  1   format(/1x,'SEDINIT_FROMFILE - unable to find variable:',    1x,A,  &
-                                 /15x,'in input NetCDF file:',1x,A/)
-  2   format(/1x,'SEDINIT_FROMFILE - error while reading variable:',1x, A, &
-         2x,'at time record =',i4/15x,'in input NetCDF file:',1x,A/)
-  3   format(/1x,'SEDINIT_FROMFILE - unable to find variable:',    1x,A,/10x,A, &
-     &                            /15x,'in input NetCDF file:',1x,A,  &
-         1x,'-> analytical value (cini_sed)'/)
-      return
-  99  may_day_flag=2
-      return
-      
-  END SUBROUTINE sedinit_fromfile
 !!=============================================================================
 
 #if defined MPI && defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
@@ -942,56 +730,7 @@ END SUBROUTINE sed_gradvit
   
     END SUBROUTINE sed_exchange_w2s
 #endif /* defined MPI && defined key_MUSTANG_slipdeposit */
-
 !!=============================================================================
-
-#if defined MPI && defined key_MUSTANG_lateralerosion
-    SUBROUTINE sed_exchange_s2w(ifirst, ilast, jfirst, jlast)
-    !&E-------------------------------------------------------------------------
-    !&E                 ***  ROUTINE sed_exchange_s2w ***
-    !&E
-    !&E ** Purpose : MPI exchange of lateral erosion flux between processors
-    !&E
-    !&E ** Description : MPI exchange between processors
-    !&E      used only if scoef_erolat .NE. 0 
-    !&E
-    !&E ** Called by : MUSTANG_update
-    !&E-------------------------------------------------------------------------
-
-    !! * Arguments
-    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
-
-    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY) :: workexch
-    INTEGER :: iv
-      
-    do iv=-1,nv_adv
-        workexch(:,:) = flx_s2w_corip1(iv,:,:)
-        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-                &          workexch(START_2D_ARRAY))
-        flx_s2w_corip1(iv,:,:) = workexch(:,:)
-
-        workexch(:,:) = flx_s2w_corim1(iv,:,:)
-        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-                &          workexch(START_2D_ARRAY))
-        flx_s2w_corim1(iv,:,:) = workexch(:,:)
-
-        workexch(:,:) = flx_s2w_corjp1(iv,:,:)
-        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-                &          workexch(START_2D_ARRAY))
-        flx_s2w_corjp1(iv,:,:) = workexch(:,:)
-
-        workexch(:,:) = flx_s2w_corjm1(iv,:,:)
-        call exchange_r2d_tile (ifirst,ilast,jfirst,jlast,  &
-                &          workexch(START_2D_ARRAY))
-        flx_s2w_corjm1(iv,:,:) = workexch(:,:)
-    enddo
-  
-    END SUBROUTINE sed_exchange_s2w
-#endif /* defined MPI && defined key_MUSTANG_lateralerosion */
-
-!!=============================================================================
-
-
 
 #if defined MUSTANG_CORFLUX
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
@@ -1043,7 +782,7 @@ END SUBROUTINE sed_gradvit
 #endif /* defined EW_PERIODIC || defined NS_PERIODIC || defined MPI */
 !!=============================================================================
    
-   SUBROUTINE sed_obc_corflu(ifirst, ilast, jfirst, jlast)
+   SUBROUTINE sed_obc_corflu(istr, iend, jstr, jend)
  
     !&E------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_obc_corflu ***
@@ -1051,104 +790,62 @@ END SUBROUTINE sed_gradvit
     !&E ** Purpose : treatment of horizontal flow corrections for the transport 
     !&E              of sand in suspension
     !&E
-    !&E ** Description : extrapolation at borders
+    !&E ** Description : extrapolation at borders 
+    !&E   Use SOUTHERN_EDGE, WESTERN_EDGE, NORTHERN_EDGE, EASTERN_EDGE defined 
+    !&E   in OCEAN/set_global_definitions.h using 
+    !&E   variables istr, iend, jstr, jend
     !&E
     !&E ** Called by : MUSTANG_update
     !&E--------------------------------------------------------------------------
  
     !! * Arguments
-    INTEGER,INTENT(IN) :: ifirst, ilast, jfirst, jlast
+    INTEGER,INTENT(IN) :: istr, iend, jstr, jend
  
     !! * Local declarations
     INTEGER :: i, j, ivp
 
     do ivp = isand1, isand2
-
-    !! * Executable part
-#if defined MPI 
-    if (float(ifirst + ii * Lm) .EQ. IMIN_GRID) then
-#else
-    if (float(ifirst) .EQ. IMIN_GRID) then
-#endif
-        corflux(ivp, ifirst, :) = corflux(ivp, ifirst+1, :)
-        corfluy(ivp, ifirst, :) = corfluy(ivp, ifirst+1, :)
-        corflux(ivp, ifirst-1, :) = corflux(ivp, ifirst+1, :)
-        corfluy(ivp, ifirst-1, :) = corfluy(ivp, ifirst+1, :)
-    endif
-#if defined MPI 
-    if (float(ilast + ii * Lm) .EQ. IMAX_GRID) then
-#else
-    if (float(ilast) .EQ. IMAX_GRID) then
-#endif
-        corflux(ivp, ilast, :) = corflux(ivp, ilast-1, :)
-        corfluy(ivp, ilast, :) = corfluy(ivp, ilast-1, :)
-        corflux(ivp, ilast+1, :) = corflux(ivp, ilast-1, :)
-        corfluy(ivp, ilast+1, :) = corfluy(ivp, ilast-1, :)
-    endif
-
-#if defined MPI 
-    if (float(jfirst + jj * Mm) .EQ. JMIN_GRID) then
-#else
-    if (float(jfirst) .EQ. JMIN_GRID) then
-#endif
-        corflux(ivp, :, jfirst) = corflux(ivp, :, jfirst+1)
-        corfluy(ivp, :, jfirst) = corfluy(ivp, :, jfirst+1)
-        corflux(ivp, :, jfirst-1) = corflux(ivp, :, jfirst+1)
-        corfluy(ivp, :, jfirst-1) = corfluy(ivp, :, jfirst+1)
-    endif
-#if defined MPI 
-    if (float(jlast + jj * Mm) .EQ. JMAX_GRID) then
-#else
-    if (float(jlast) .EQ. JMAX_GRID) then
-#endif
-        corflux(ivp, :, jlast) = corflux(ivp, :, jlast-1)
-        corfluy(ivp, :, jlast) = corfluy(ivp, :, jlast-1)
-        corflux(ivp, :, jlast+1) = corflux(ivp, :, jlast-1)
-        corfluy(ivp, :, jlast+1) = corfluy(ivp, :, jlast-1)
-    endif
-
-! corners
-#if defined MPI 
-    if ((float(ifirst + ii * Lm) .EQ. IMIN_GRID) .and.  &
-        (float(jfirst + jj * Mm) .EQ. JMIN_GRID)) then
-#else
-    if ((float(ifirst) .EQ. IMIN_GRID) .and.  &
-        (float(jfirst) .EQ. JMIN_GRID)) then
-#endif
-        corflux(ivp, ifirst, jfirst) = corflux(ivp, ifirst+1, jfirst+1)
-        corfluy(ivp, ifirst, jfirst) = corfluy(ivp, ifirst+1, jfirst+1)
-    endif
-#if defined MPI 
-    if ((float(ifirst + ii * Lm) .EQ. IMIN_GRID) .and.  &
-        (float(jlast + jj * Mm) .EQ. JMAX_GRID)) then
-#else
-    if ((float(ifirst) .EQ. IMIN_GRID) .and.  &
-        (float(jlast) .EQ. JMAX_GRID)) then
-#endif
-        corflux(ivp, ifirst, jlast) = corflux(ivp, ifirst+1, jlast-1)
-        corfluy(ivp, ifirst, jlast) = corfluy(ivp, ifirst+1, jlast-1)
-    endif
-#if defined MPI 
-    if ((float(ilast + ii * Lm) .EQ. IMAX_GRID) .and.  &
-        (float(jlast + jj * Mm) .EQ. JMAX_GRID)) then
-#else
-    if ((float(ilast) .EQ. IMAX_GRID) .and.  &
-        (float(jlast) .EQ. JMAX_GRID)) then
-#endif
-        corflux(ivp, ilast, jlast) = corflux(ivp, ilast-1, jlast-1)
-        corfluy(ivp, ilast, jlast) = corfluy(ivp, ilast-1, jlast-1)
-    endif
-#if defined MPI 
-    if ((float(ilast + ii * Lm) .EQ. IMAX_GRID) .and.  &
-        (float(jfirst + jj * Mm) .EQ. JMIN_GRID)) then
-#else
-    if ((float(ilast) .EQ. IMAX_GRID) .and.  &
-        (float(jfirst) .EQ. JMIN_GRID)) then
-#endif
-        corflux(ivp, ilast, jfirst) = corflux(ivp, ilast-1, jfirst+1)
-        corfluy(ivp, ilast, jfirst) = corfluy(ivp, ilast-1, jfirst+1)
-    endif
-
+      if (WESTERN_EDGE) then
+          corflux(ivp, istr, :) = corflux(ivp, istr+1, :)
+          corfluy(ivp, istr, :) = corfluy(ivp, istr+1, :)
+          corflux(ivp, istr-1, :) = corflux(ivp, istr+1, :)
+          corfluy(ivp, istr-1, :) = corfluy(ivp, istr+1, :)
+      endif
+      if (EASTERN_EDGE) then
+          corflux(ivp, iend, :) = corflux(ivp, iend-1, :)
+          corfluy(ivp, iend, :) = corfluy(ivp, iend-1, :)
+          corflux(ivp, iend+1, :) = corflux(ivp, iend-1, :)
+          corfluy(ivp, iend+1, :) = corfluy(ivp, iend-1, :)
+      endif
+      if (SOUTHERN_EDGE) then
+          corflux(ivp, :, jstr) = corflux(ivp, :, jstr+1)
+          corfluy(ivp, :, jstr) = corfluy(ivp, :, jstr+1)
+          corflux(ivp, :, jstr-1) = corflux(ivp, :, jstr+1)
+          corfluy(ivp, :, jstr-1) = corfluy(ivp, :, jstr+1)
+      endif
+      if (NORTHERN_EDGE) then
+          corflux(ivp, :, jend) = corflux(ivp, :, jend-1)
+          corfluy(ivp, :, jend) = corfluy(ivp, :, jend-1)
+          corflux(ivp, :, jend+1) = corflux(ivp, :, jend-1)
+          corfluy(ivp, :, jend+1) = corfluy(ivp, :, jend-1)
+      endif
+! ! corners
+      if ((SOUTHERN_EDGE) .and. (WESTERN_EDGE))then
+          corflux(ivp, istr, jstr) = corflux(ivp, istr+1, jstr+1)
+          corfluy(ivp, istr, jstr) = corfluy(ivp, istr+1, jstr+1)
+      endif
+      if ((NORTHERN_EDGE) .and. (WESTERN_EDGE))then
+          corflux(ivp, istr, jend) = corflux(ivp, istr+1, jend-1)
+          corfluy(ivp, istr, jend) = corfluy(ivp, istr+1, jend-1)
+        endif
+      if ((NORTHERN_EDGE) .and. (EASTERN_EDGE))then
+          corflux(ivp, iend, jend) = corflux(ivp, iend-1, jend-1)
+          corfluy(ivp, iend, jend) = corfluy(ivp, iend-1, jend-1)
+        endif
+      if ((SOUTHERN_EDGE) .and. (EASTERN_EDGE))then
+          corflux(ivp, iend, jstr) = corflux(ivp, iend-1, jstr+1)
+          corfluy(ivp, iend, jstr) = corfluy(ivp, iend-1, jstr+1)
+      endif
     enddo ! ivp
 
     END SUBROUTINE sed_obc_corflu

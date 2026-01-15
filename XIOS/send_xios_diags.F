@@ -810,9 +810,6 @@
       char_value=trim(title)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='title', value=char_value)
-C       char_value=trim(date_str)
-C        CALL iom_set_file_global_attr   (cdid
-C       &          ,type='string',name='date', value=char_value)
       char_value=trim(rstname)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='rst_file', value=char_value)
@@ -915,7 +912,7 @@ C      &     ,type='float',name='tnu4', value=tnu4)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='units', value='meter4 second-1')
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING
+# if !defined LMD_MIXING
 !
 ! Background vertical viscosity and tracer mixing coefficients.
 !
@@ -1812,6 +1809,9 @@ C 				  endif
 # include "scalars.h"
 # include "ncscrum.h"
 # include "mpi_cpl.h"
+#ifdef ABL1D
+# include "abl1d.h"
+#endif
 
       !
       INTEGER :: Istr,Iend,Jstr,Jend
@@ -1933,6 +1933,10 @@ C 				  endif
 # else
       ! fake axis to avoid changing xml file 
       CALL iom_set_axis_attr( "s_b",(/ (REAL(ji), ji=1,1) /))
+# endif
+
+# ifdef ABL1D
+      CALL iom_set_axis_attr( "N_abl", zr_abl)
 # endif
 
 #ifdef ONLINE_ANALYSIS
@@ -2329,8 +2333,9 @@ C 				  endif
 # include "scalars.h"
 # include "work.h"
 # include "private_scratch.h"
-
-
+# ifdef ABL1D
+# include "abl1d.h"
+# endif
 
 !
 #ifdef DIAGNOSTICS_EDDY
@@ -2615,12 +2620,109 @@ c !$acc wait
       work2d=svstr*rho0 
       call xios_send_field("svstr",work2d)
       endif
-# ifdef BULK_SM_UPDATE
+
+# ifdef ABL1D
+      if (xios_field_is_active("zr_abl")) then
+      call xios_send_field("zr_abl",zr_abl)
+      endif
+      if (xios_field_is_active("zw_abl")) then
+      call xios_send_field("zw_abl",zw_abl)
+      endif
+      if (xios_field_is_active("Hzr_abl")) then
+      call xios_send_field("Hzr_abl",Hzr_abl)
+      endif
+      if (xios_field_is_active("Hzw_abl")) then
+      call xios_send_field("Hzw_abl",Hzw_abl)
+      endif
+      if (xios_field_is_active("pu_dta")) then
+      call xios_send_field("pu_dta",pu_dta)
+      endif
+      if (xios_field_is_active("pv_dta")) then
+      call xios_send_field("pv_dta",pv_dta)
+      endif
+      if (xios_field_is_active("pt_dta")) then
+      call xios_send_field("pt_dta",pt_dta)
+      endif
+      if (xios_field_is_active("pq_dta")) then
+      call xios_send_field("pq_dta",pq_dta)
+      endif
+      if (xios_field_is_active("pgu_dta")) then
+      call xios_send_field("pgu_dta",pgu_dta)
+      endif
+      if (xios_field_is_active("pgv_dta")) then
+      call xios_send_field("pgv_dta",pgv_dta)
+      endif
+      if (xios_field_is_active("u_abl")) then
+      call xios_send_field("u_abl",u_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("v_abl")) then
+      call xios_send_field("v_abl",v_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("t_abl")) then
+      call xios_send_field("t_abl",tq_abl(:,:,:,nstp,1))
+      endif
+      if (xios_field_is_active("q_abl")) then
+      call xios_send_field("q_abl",tq_abl(:,:,:,nstp,2))
+      endif
+      if (xios_field_is_active("tke_abl")) then
+      call xios_send_field("tke_abl",tke_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("mxlm_abl")) then
+      call xios_send_field("mxlm_abl",mxlm_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("mxld_abl")) then
+      call xios_send_field("mxld_abl",mxld_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("avm_abl")) then
+      call xios_send_field("avm_abl",avm_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("avt_abl")) then
+      call xios_send_field("avt_abl",avt_abl(:,:,:,nstp))
+      endif
+      if (xios_field_is_active("ablh")) then
+      call xios_send_field("ablh",ablh(:,:,nstp))
+      endif
+# endif
+
+# ifdef BULK_FLUX
+      if (xios_field_is_active("tair")) then
+#   ifdef ABL1D
+      call xios_send_field("tair",tq_abl(:,:,2,nstp,1))
+#   else
+      call xios_send_field("tair",tair)
+#   endif
+      endif
+      if (xios_field_is_active("rhum")) then
+#   ifdef ABL1D
+      call xios_send_field("rhum",tq_abl(:,:,2,nstp,2))
+#   else
+      call xios_send_field("rhum",rhum)
+#   endif
+      endif
+      if (xios_field_is_active("prate")) then
+      call xios_send_field("prate",prate)
+      endif
+#   ifdef READ_PATM
+      if (xios_field_is_active("patm")) then
+      call xios_send_field("patm",patm2d)
+      endif
+#   endif
+# endif
+
+# if defined BULK_SM_UPDATE || defined BULK_FLUX 
       if (xios_field_is_active("uwnd")) then
+#   ifdef ABL1D
+      call xios_send_field("uwnd",u_abl(:,:,2,nstp))
+#   else
       call xios_send_field("uwnd",uwnd)
+#   endif
       endif
       if (xios_field_is_active("vwnd")) then
+#   ifdef ABL1D
+      call xios_send_field("vwnd",v_abl(:,:,2,nstp))
+#   else
       call xios_send_field("vwnd",vwnd)
+#   endif
       endif
 # endif
 # ifdef WKB_WWAVE
@@ -2640,17 +2742,17 @@ c !$acc wait
       call xios_send_field("wke",wke(:,:,wstp))
       endif
       if (xios_field_is_active("epb")) then
-      call xios_send_field("epb",wdsp)
+      call xios_send_field("epb",wepb)
       endif
       if (xios_field_is_active("epd")) then
-      call xios_send_field("epd",wdrg)
+      call xios_send_field("epd",wepd)
       endif
 #  ifdef WAVE_ROLLER
       if (xios_field_is_active("war")) then
       call xios_send_field("war",war(:,:,wstp))
       endif
       if (xios_field_is_active("epr")) then
-      call xios_send_field("epr",rdsp)
+      call xios_send_field("epr",wepr)
       endif
 
 #  endif
@@ -2752,9 +2854,12 @@ c !$acc wait
       if (xios_field_is_active("rho")) then
       call xios_send_field("rho",rho)
       endif
+      if (xios_field_is_active("rho_surf")) then
+      call xios_send_field("rho_surf",rho(:,:,N))
+      endif
 
-# if defined ANA_VMIX || defined BVF_MIXING \
-|| defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+|| defined LMD_SKPP   || defined LMD_BKPP \
 || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       if (xios_field_is_active("bvf")) then
       call xios_send_field("bvf",bvf)

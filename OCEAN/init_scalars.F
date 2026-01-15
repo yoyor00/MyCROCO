@@ -101,13 +101,6 @@ C$OMP END PARALLEL
 #endif
       nfast=1
 
-#ifdef FLOATS
-      nfp1=0     ! set time step indices for
-      nf=3       ! 5th order AB4AM4 corrected
-      nfm1=2     ! scheme
-      nfm2=1
-      nfm3=0
-#endif
 #ifdef WKB_WWAVE
       wstp=1
       wnew=1
@@ -118,16 +111,7 @@ C$OMP END PARALLEL
       synchro_flag=.true.
       first_time=0
       may_day_flag=0
-!
-! Reset process ID and CPU_time clocks (needed by timers).
-!
-      do j=0,NPP
-        do i=0,31
-          proc(i,j)=0
-          CPU_time(i,j)=0.E0
-        enddo
-      enddo
-      trd_count=0
+
 !
 ! Reset record counters for averages/history output.
 !
@@ -286,7 +270,6 @@ C$OMP END PARALLEL
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
        brywkb_id=-1
 #endif
-      call get_date (date_str)
 
 #ifdef SOLVE3D
 # ifdef TS_MIX_ISO_FILT
@@ -540,6 +523,47 @@ CR      write(stdout,'(1x,A,I3)') 'indxT = ',indxT
       vname(6,indxT)='x_rho y_rho                                 '
 #  endif
       vname(7,indxT)='                                            '
+
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+CR      write(stdout,'(1x,A,I3)') 'indxCRT2 = ',indxCRT2
+      vname(1,indxCRT2)='temp_CRT2                                  '
+      vname(2,indxCRT2)='potential temperature                       '
+      vname(3,indxCRT2)='Celsius                                     '
+      vname(4,indxCRT2)='temperature, scalar, series                 '
+      vname(5,indxCRT2)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxCRT2)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxCRT2)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxCRT2)='                                            '
+
+CR      write(stdout,'(1x,A,I3)') 'indxCRT3 = ',indxCRT3
+      vname(1,indxCRT3)='temp_CRT3                                '
+      vname(2,indxCRT3)='potential temperature                       '
+      vname(3,indxCRT3)='Celsius                                     '
+      vname(4,indxCRT3)='temperature, scalar, series                 '
+      vname(5,indxCRT3)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxCRT3)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxCRT3)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxCRT3)='                                            '
+
+CR      write(stdout,'(1x,A,I3)') 'indxCRT4 = ',indxCRT4
+      vname(1,indxCRT4)='temp_CRT4                                '
+      vname(2,indxCRT4)='potential temperature                       '
+      vname(3,indxCRT4)='Celsius                                     '
+      vname(4,indxCRT4)='temperature, scalar, series                 '
+      vname(5,indxCRT4)='sea_water_potential_temperature             '
+#  ifdef SPHERICAL
+      vname(6,indxCRT4)='lat_rho lon_rho                             '
+#  else
+      vname(6,indxCRT4)='x_rho y_rho                                 '
+#  endif
+      vname(7,indxCRT4)='                                            '
+# endif /* DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_CRIT */
 # endif /* TEMPERATURE */
 
 # ifdef SALINITY
@@ -1859,8 +1883,8 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
       vname(5,indxR)='sea_water_sigma_t                           '
       vname(7,indxR)='                                            '
 
-# if defined ANA_VMIX || defined BVF_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+      || defined LMD_SKPP || defined LMD_BKPP \
       || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                       '
@@ -2494,55 +2518,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxKAPS =',indxKAPS
 # endif
 #endif /* MRL_WCI */
 
-#ifdef ICE
-      vname(1,indxAi)='aice                                       '
-      vname(2,indxAi)='fraction of cell covered by ice            '
-      vname(3,indxAi)='nondimensional                             '
-      vname(4,indxAi)='aice, scalar, series                       '
-      vname(5,indxAi)='                                           '
-      vname(6,indxAi)='lat_rho lon_rho                            '
-      vname(7,indxAi)='                                           '
-      vname(1,indxUi)='uice                                       '
-      vname(2,indxUi)='u-component of ice velocity                '
-      vname(3,indxUi)='meter sec-1                                '
-      vname(4,indxUi)='uice, scalar, series                       '
-      vname(5,indxUi)='                                           '
-      vname(6,indxUi)='lat_u lon_u                                '
-      vname(7,indxUi)='                                           '
-
-      vname(1,indxVi)='vice                                       '
-      vname(2,indxVi)='v-component of ice velocity                '
-      vname(3,indxVi)='meter sec-1                                '
-      vname(4,indxVi)='vice, scalar, series                       '
-      vname(5,indxVi)='                                           '
-      vname(6,indxVi)='lat_v lon_v                                '
-      vname(7,indxVi)='                                           '
-
-      vname(1,indxHi)='hice                                       '
-      vname(2,indxHi)='depth of ice cover                         '
-      vname(3,indxHi)='meter                                      '
-      vname(4,indxHi)='hice, scalar, series                       '
-      vname(5,indxHi)='                                           '
-      vname(6,indxHi)='lat_rho lon_rho                            '
-      vname(7,indxHi)='                                           '
-
-      vname(1,indxHS)='snow_thick                                 '
-      vname(2,indxHS)='depth of snow cover                        '
-      vname(3,indxHS)='meter                                      '
-      vname(4,indxHS)='snow_thick, scalar, series                 '
-      vname(5,indxHS)='                                           '
-      vname(6,indxHS)='lat_rho lon_rho                            '
-      vname(7,indxHS)='                                           '
-
-      vname(1,indxTIsrf)='tisrf                                   '
-      vname(2,indxTIsrf)='temperature of ice surface              '
-      vname(3,indxTIsrf)='Kelvin                                  '
-      vname(4,indxTIsrf)='tsrf, scalar, series                    '
-      vname(5,indxTIsrf)='                                        '
-      vname(6,indxTIsrf)='lat_rho lon_rho                         '
-      vname(7,indxTIsrf)='                                        '
-#endif
-
 #ifdef BULK_FLUX
 # ifdef ONLINE /* JG ONLINE */
       do blkvar_id=1,nblkvrs
@@ -2704,53 +2679,53 @@ CR      write(stdout,'(1x,A,I3)') 'indxVWND =',indxVWND
       vname(7,indxVWND)='                                         '
 
 #  ifdef ABL1D
-      vname(1,indxUHPG)='uhpg                                     '
-      vname(2,indxUHPG)='large-scale u-pressure gradient          '
-      vname(3,indxUHPG)='meter second-1                           '
-      vname(4,indxUHPG)='u-pressure gradient, scalar, series      '
-      vname(5,indxUHPG)='x_hpg                                    '
-      vname(6,indxUHPG)='lat_rho lon_rho                          '
-      vname(7,indxUHPG)='                                         '
+      vname_abl1d(1,indxUHPG)='uhpg                                     '
+      vname_abl1d(2,indxUHPG)='large-scale u-pressure gradient          '
+      vname_abl1d(3,indxUHPG)='meter second-1                           '
+      vname_abl1d(4,indxUHPG)='u-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxUHPG)='x_hpg                                    '
+      vname_abl1d(6,indxUHPG)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxUHPG)='                                         '
 
-      vname(1,indxVHPG)='vhpg                                     '
-      vname(2,indxVHPG)='large-scale v-pressure gradient          '
-      vname(3,indxVHPG)='meter second-1                           '
-      vname(4,indxVHPG)='v-pressure gradient, scalar, series      '
-      vname(5,indxVHPG)='y_hpg                                    '
-      vname(6,indxVHPG)='lat_rho lon_rho                          '
-      vname(7,indxVHPG)='                                         '
+      vname_abl1d(1,indxVHPG)='vhpg                                     '
+      vname_abl1d(2,indxVHPG)='large-scale v-pressure gradient          '
+      vname_abl1d(3,indxVHPG)='meter second-1                           '
+      vname_abl1d(4,indxVHPG)='v-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxVHPG)='y_hpg                                    '
+      vname_abl1d(6,indxVHPG)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxVHPG)='                                         '
 
-      vname(1,indxZR)='zr                                       '
-      vname(2,indxZR)='large-scale u-pressure gradient          '
-      vname(3,indxZR)='meter second-1                           '
-      vname(4,indxZR)='u-pressure gradient, scalar, series      '
-      vname(5,indxZR)='x_hpg                                    '
-      vname(6,indxZR)='lat_rho lon_rho                          '
-      vname(7,indxZR)='                                         '
+      vname_abl1d(1,indxZR)='zr                                       '
+      vname_abl1d(2,indxZR)='large-scale u-pressure gradient          '
+      vname_abl1d(3,indxZR)='meter second-1                           '
+      vname_abl1d(4,indxZR)='u-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxZR)='x_hpg                                    '
+      vname_abl1d(6,indxZR)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxZR)='                                         '
 
-      vname(1,indxZW)='zw                                       '
-      vname(2,indxZW)='large-scale v-pressure gradient          '
-      vname(3,indxZW)='meter second-1                           '
-      vname(4,indxZW)='v-pressure gradient, scalar, series      '
-      vname(5,indxZW)='y_hpg                                    '
-      vname(6,indxZW)='lat_rho lon_rho                          '
-      vname(7,indxZW)='                                         '
+      vname_abl1d(1,indxZW)='zw                                       '
+      vname_abl1d(2,indxZW)='large-scale v-pressure gradient          '
+      vname_abl1d(3,indxZW)='meter second-1                           '
+      vname_abl1d(4,indxZW)='v-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxZW)='y_hpg                                    '
+      vname_abl1d(6,indxZW)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxZW)='                                         '
 
-      vname(1,indxHZR)='Hzr                                      '
-      vname(2,indxHZR)='large-scale u-pressure gradient          '
-      vname(3,indxHZR)='meter second-1                           '
-      vname(4,indxHZR)='u-pressure gradient, scalar, series      '
-      vname(5,indxHZR)='x_hpg                                    '
-      vname(6,indxHZR)='lat_rho lon_rho                          '
-      vname(7,indxHZR)='                                         '
+      vname_abl1d(1,indxHZR)='Hzr                                      '
+      vname_abl1d(2,indxHZR)='large-scale u-pressure gradient          '
+      vname_abl1d(3,indxHZR)='meter second-1                           '
+      vname_abl1d(4,indxHZR)='u-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxHZR)='x_hpg                                    '
+      vname_abl1d(6,indxHZR)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxHZR)='                                         '
 
-      vname(1,indxHZW)='Hzw                                      '
-      vname(2,indxHZW)='large-scale v-pressure gradient          '
-      vname(3,indxHZW)='meter second-1                           '
-      vname(4,indxHZW)='v-pressure gradient, scalar, series      '
-      vname(5,indxHZW)='y_hpg                                    '
-      vname(6,indxHZW)='lat_rho lon_rho                          '
-      vname(7,indxHZW)='                                         '
+      vname_abl1d(1,indxHZW)='Hzw                                      '
+      vname_abl1d(2,indxHZW)='large-scale v-pressure gradient          '
+      vname_abl1d(3,indxHZW)='meter second-1                           '
+      vname_abl1d(4,indxHZW)='v-pressure gradient, scalar, series      '
+      vname_abl1d(5,indxHZW)='y_hpg                                    '
+      vname_abl1d(6,indxHZW)='lat_rho lon_rho                          '
+      vname_abl1d(7,indxHZW)='                                         '
 #  endif
 
 # endif /* ONLINE */
@@ -2879,6 +2854,11 @@ CR       write(stdout,'(20x,A)') vname(1,indxTrate+itrc-1)
 ! Tracer diagnostics variables averaged over the MLD
 !
 # ifdef DIAGNOSTICS_TS_MLD
+
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+       vname(1,indxT)='temp_CRT1                                  '
+# endif
+
 CR       write(stdout,'(1x,A,I3)') 'indxTXadv_mld = ',indxTXadv_mld+itrc-1
        lvar=lenstr(vname(1,indxT+itrc-1))
        nametrc=vname(1,indxT+itrc-1)(1:lvar)
@@ -2992,6 +2972,60 @@ CR       write(stdout,'(20x,A)') vname(1,indxTentr_mld+itrc-1)
        vname(5,indxTentr_mld+itrc-1)='                            '
        vname(6,indxTentr_mld+itrc-1)='                            '
        vname(7,indxTentr_mld+itrc-1)='                            '
+
+CR       write(stdout,'(1x,A,I3)') 'indxTaver_mld = ',indxTaver_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       unitt=vname(3,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_aver_mld                   '
+       vname(1,indxTaver_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
+       vname(2,indxTaver_mld+itrc-1)='MLD averaged                 '
+       write(vname3,*) trim(unitt)
+       vname(3,indxTaver_mld+itrc-1)=vname3
+       vname(4,indxTaver_mld+itrc-1)='                            '
+       vname(5,indxTaver_mld+itrc-1)='                            '
+       vname(6,indxTaver_mld+itrc-1)='                            '
+       vname(7,indxTaver_mld+itrc-1)='                            '
+
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_depth_mld                  '
+       vname(1,indxTcrit_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
+       vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
+       vname(3,indxTcrit_mld+itrc-1)=' meters                     '
+       if (itrc.eq.iCRT2) then
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : T_ref - ',
+     &   mld_crit_T,' °C'
+       elseif (itrc.eq.iCRT3) then
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : T_ref - ',
+     &   mld_crit_T2,' °C'
+       elseif (itrc.eq.iCRT4) then
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : BVF with rho_ref = '
+     &   ,mld_crit_D,' kg/m3'
+       else
+         write(vname3,'(A,1pe10.3,A)') 'Criterion : rho_ref + ',
+     &   mld_crit_D,' kg/m3'
+       endif
+       vname(4,indxTcrit_mld+itrc-1)=vname3
+       if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3) then
+         write(vname3,'(A,I4,A)') 'Reference depth of T_ref = ',
+     &   mld_depth_ref,' m'
+       elseif (itrc.eq.iCRT4) then
+         write(vname3,'(A,I4,A)') '            '
+       else
+         write(vname3,'(A,I4,A)') 'Reference depth of rho_ref = ',
+     &   mld_depth_ref,' m'
+       endif
+       vname(5,indxTcrit_mld+itrc-1)=vname3
+       vname(6,indxTcrit_mld+itrc-1)='                            '
+       vname(7,indxTcrit_mld+itrc-1)='                            '
+
+       vname(1,indxT)='temp                                        '
+
+# endif /* DIAGNOSTICS_TS_MLD_CRIT */
+
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc

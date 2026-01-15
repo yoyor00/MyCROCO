@@ -896,6 +896,14 @@ c
             stflx(i,j,isalt)=0.
           enddo
         enddo
+#   ifdef RAIN_FLUX  
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            !set a value in cm/day , converson is done in m/s
+            EmP(i,j)=-0.1*0.01/86400.
+          enddo
+        enddo
+#   endif
       endif
 #  endif /* SALINITY */
 #  if defined SALINITY && defined TEMPERATURE
@@ -1635,7 +1643,13 @@ C$    integer  trd, omp_get_thread_num
       cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
       ho=h(1,1)             ! offshore depth
 #  ifdef OBC_EAST
-      ho=h(LLm,1)
+#   ifdef MPI
+        ho=h(LLm/NP_XI,1)
+        call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
+     &                     NP_XI-1, MPI_COMM_WORLD, ierr)
+#   else
+        ho=h(LLm,1)
+#   endif
 #  endif
       khd = ho*cfrq*cfrq/g
       kh  = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
@@ -1661,7 +1675,7 @@ C$    integer  trd, omp_get_thread_num
             kr=sqrt(cos(wdir)/cos(wdir))   ! refraction coefficient
             cosw=cos(wdir)
             sinw=sin(wdir)
-            gamw=0.31
+            gamw=0.55
             cff1=gamw*dd
             cff2=2.0*wamp*ks*kr
             wh=min(cff1,cff2)
@@ -1670,7 +1684,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Fill global arrays
 !
-          whrm(i,j)=2.*wh  ! Hrms = 2A
+          whrm(i,j)=wh
           wfrq(i,j)=sqrt(g*kw*tanh(kw*dd))
           wdrx(i,j)=cosw
           wdre(i,j)=sinw
@@ -1706,6 +1720,10 @@ C$    integer  trd, omp_get_thread_num
           wfrq(i,j)=cfrq
           wdrx(i,j)=cos(wdir)
           wdre(i,j)=sin(wdir)
+!  limit Hrms in surfzone
+          gamw=0.55
+          dd=h(i,j)+z_w(i,j,N)
+          whrm(i,j)=min(whrm(i,j),gamw*dd)
 #   ifdef WET_DRY
           if (h(i,j)+z_w(i,j,N) .lt. Dcrit(i,j)+eps) then
             whrm(i,j)=0.
@@ -2603,18 +2621,23 @@ C$    integer  trd, omp_get_thread_num
 # endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
+      real    eps
+      parameter (eps=1.e-10)
 # if defined WAVE_MAKER || defined WAVE_MAKER_INTERNAL
-      integer iw,jw
+      integer iw,jw, jwtt0,jwtt
       real    Du,Dv,Zu,Zv,Zr,Dr,xu,yu,xv,yv,x0,y0,time0,
      &        h0,khd,kh,wa,wk,wp,wf,wd,wds,ramp,
-     &        sigma,theta,gamma,Hs,cff_spread,
+     &        sigma,theta,gamma,Hs,cff_spread, sumspec,
      &        cff,cff0,cff1,cff2,cff3,cff4,cff5,
-     &        fmin,fmax,df,dmin,dmax,dd,
+     &        fmin,fmax,df,dmin,dmax,dd, 
+     &        mindiff,wkdom,wky,
      &        wa1,wk1,wp1,wf1,wa2,wk2,wp2,wf2
       real    K1, K2, K3, K4, K5, K6
       parameter (K1=0.6666666666, K2=0.3555555555,
      &           K3=0.1608465608, K4=0.0632098765,
      &           K5=0.0217540484, K6=0.0065407983)
+      INTEGER nseed
+      INTEGER, ALLOCATABLE :: seed(:)
 # endif
 
 # include "param.h"
@@ -2626,6 +2649,9 @@ C$    integer  trd, omp_get_thread_num
 # include "coupling.h"
 # include "forces.h"
 # include "mixing.h"
+# ifdef WAVE_MAKER
+      real wd_bry_tmp(Nfrq)
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 

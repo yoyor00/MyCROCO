@@ -29,6 +29,7 @@
 # endif
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"  
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else

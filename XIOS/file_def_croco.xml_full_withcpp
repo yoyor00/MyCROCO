@@ -181,12 +181,6 @@
       <field field_ref="bvstr" name="bvstr"  />
       <field field_ref="sustr" name="sustr"  />
       <field field_ref="svstr" name="svstr"  />
-# ifdef DEBUG_BULK
-      <field field_ref="uwnd" name="uwnd"  />
-      <field field_ref="vwnd" name="vwnd"  />
-      <field field_ref="shflx" name="shflx"  />
-      <field field_ref="swflx" name="swflx"  />
-# endif
       <field field_ref="u" name="u" />
       <field field_ref="v" name="v"  />
       <field field_ref="w" name="w" />
@@ -206,6 +200,26 @@
     </field_group>
   </file>
 </file_group>
+
+# ifdef BULK_FLUX
+<file_group id="BULK_FLUX" output_freq="5d" output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+  <file id="file5" name_suffix="_BULK_FLUX" split_freq="5d" split_freq_format="%y-%mo-%d">
+    <field_group id="BULK_FLUX_fields" operation="average">
+      <field field_ref="uwnd" name="uwnd"  />
+      <field field_ref="vwnd" name="vwnd"  />
+      <field field_ref="tair" name="tair"  />
+      <field field_ref="rhum" name="rhum"  />
+      <field field_ref="radsw" name="radsw"  />
+      <field field_ref="shflx_rlw" name="shflx_rlw"  />
+      <field field_ref="shflx_lat" name="shflx_lat"  />
+      <field field_ref="shflx_sen" name="shflx_sen"  />
+#  ifdef READ_PATM
+      <field field_ref="patm" name="patm"  />
+#  endif
+    </field_group>
+  </file>
+</file_group>
+# endif
 
 # ifdef DIAGNOSTICS_UV
 <file_group id="M" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
@@ -351,6 +365,54 @@
   </file>
 </file_group>
 # endif
+
+#ifdef ABL1D
+<file_group id="ABL1D" output_freq="5d"  output_level="10" enabled=".TRUE."> <!-- 1 time step files -->
+  <file id="file11" name_suffix="_ABL1D" split_freq="5d" split_freq_format="%y-%mo-%d">
+
+    <field_group id="ABL1D_grid" operation="once">
+      <field field_ref="hc"        />
+      <field field_ref="theta_s"   />
+      <field field_ref="theta_b"   />
+      <field field_ref="Tcline"    />
+      <field field_ref="Vtransform"/>
+      <field field_ref="h"         />
+      <field field_ref="f"         />
+      <field field_ref="pm"        />
+      <field field_ref="pn"        />
+      <field field_ref="lon_rho"   />
+      <field field_ref="lat_rho"   />
+      <field field_ref="angle"     />
+      <field field_ref="mask_rho"  />
+      <field field_ref="Cs_rho"    />
+      <field field_ref="zr_abl"  name="zr_abl"  />
+      <field field_ref="zw_abl"  name="zw_abl"  />
+      <field field_ref="Hzr_abl" name="Hzr_abl" />
+      <field field_ref="Hzw_abl" name="Hzw_abl" />
+    </field_group>
+
+    <field_group id="ABL1D_fields" operation="average">
+      <field field_ref="pu_dta"   name="pu_dta"   />
+      <field field_ref="pv_dta"   name="pv_dta"   />
+      <field field_ref="pt_dta"   name="pt_dta"   />
+      <field field_ref="pq_dta"   name="pq_dta"   />
+      <field field_ref="pgu_dta"  name="pgu_dta"  />
+      <field field_ref="pgv_dta"  name="pgv_dta"  />
+      <field field_ref="u_abl"    name="u_abl"    />
+      <field field_ref="v_abl"    name="v_abl"    />
+      <field field_ref="t_abl"    name="t_abl"    />
+      <field field_ref="q_abl"    name="q_abl"    />
+      <field field_ref="tke_abl"  name="tke_abl"  />
+      <field field_ref="mxlm_abl" name="mxlm_abl" />
+      <field field_ref="mxld_abl" name="mxld_abl" />
+      <field field_ref="avm_abl"  name="avm_abl"  />
+      <field field_ref="avt_abl"  name="avt_abl"  />
+      <field field_ref="ablh"     name="ablh"     />
+    </field_group>
+
+  </file>
+</file_group>
+#endif
 
 #ifdef PISCES
     <file_group id="PISCES" output_freq="5d"  output_level="10" enabled=".true.">

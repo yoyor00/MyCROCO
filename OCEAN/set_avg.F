@@ -289,9 +289,8 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         if (wrtavg(indxbvf)) then
           do k=0,N
             do j=JstrR,JendR
@@ -760,7 +759,7 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxEPB)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb(i,j) )
+              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb0(i,j) )
             enddo
           enddo
         endif

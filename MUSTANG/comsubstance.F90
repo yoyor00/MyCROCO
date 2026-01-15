@@ -123,15 +123,13 @@ MODULE comsubstance
     ! -------------------------------------------------------------------------
     REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE  :: surf_cell ! surface cells
 
-#if defined SUBSTANCE_SUBMASSBALANCE
-    LOGICAL                 :: submassbalance_l
-    INTEGER                 :: submassbalance_nb_border
-    CHARACTER(LEN = lchain) :: submassbalance_input_file
-    CHARACTER(LEN = lchain) :: submassbalance_output_file
-    REAL(KIND=rlg)          :: submassbalance_dtout
+    LOGICAL                 :: submassbalance_l = .false.
+    INTEGER                 :: submassbalance_nb_border = 0
+    CHARACTER(LEN = lchain) :: submassbalance_input_file = ""
+    CHARACTER(LEN = lchain) :: submassbalance_output_file = "outsubmassbalance.nc"
+    REAL(KIND=rlg)          :: submassbalance_dtout = 1.
+    CHARACTER(LEN=19)       :: submassbalance_date_start = "1999/01/01 00:00:00"
     REAL(KIND=rlg)          :: submassbalance_tdeb
-    CHARACTER(LEN=19)       :: submassbalance_date_start
-#endif /* ifdef SUBSTANCE_SUBMASSBALANCE */
 
 #endif /* ifdef SUBSTANCE */
 

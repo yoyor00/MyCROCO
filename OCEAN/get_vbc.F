@@ -540,16 +540,16 @@
         enddo
 #   undef CDRAG
       elseif (rdrg2.gt.0.) then
-        do j=JstrV,Jend
-          do i=Istr,Iend
+        do j=Jstr,Jend
+          do i=IstrU,Iend
             cff=0.25*(v(i  ,j,KBOT,nrhs)+v(i  ,j+1,KBOT,nrhs)+
      &                v(i-1,j,KBOT,nrhs)+v(i-1,j+1,KBOT,nrhs))
             Umag=SQRT(cff*cff+u(i,j,KBOT,nrhs)*u(i,j,KBOT,nrhs))
             bustr(i,j)=rdrg2*Umag*u(i,j,KBOT,nrhs)
           enddo
         enddo
-        do j=Jstr,Jend
-          do i=IstrU,Iend
+        do j=JstrV,Jend
+          do i=Istr,Iend
             cff=0.25*(u(i,j  ,KBOT,nrhs)+u(i+1,j  ,KBOT,nrhs)+
      &                u(i,j-1,KBOT,nrhs)+u(i+1,j-1,KBOT,nrhs))
             Umag=SQRT(cff*cff+v(i,j,KBOT,nrhs)*v(i,j,KBOT,nrhs))
@@ -558,11 +558,11 @@
         enddo
       else
         do j=Jstr,Jend
-          do i=Istr,Iend
+          do i=IstrU,Iend
             bustr(i,j)=rdrg*u(i,j,KBOT,nrhs)
           enddo
         enddo
-        do j=Jstr,Jend
+        do j=JstrV,Jend
           do i=Istr,Iend
             bvstr(i,j)=rdrg*v(i,j,KBOT,nrhs)
           enddo
@@ -794,7 +794,7 @@ C$OMP END MASTER
 # endif
 #endif
 
-#if defined RVTK_DEBUG_ADVANCED && defined SOLVE3D
+#if defined CVTK_DEBUG_ADVANCED && defined SOLVE3D
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab3d(u(:,:,:,nrhs),'#end u in set_vbc','u',
@@ -813,7 +813,7 @@ C$OMP MASTER
 C$OMP END MASTER
 #endif
 C$OMP BARRIER
-#if defined RVTK_DEBUG_ADVANCED && defined BULK_FLUX
+#if defined CVTK_DEBUG_ADVANCED && defined BULK_FLUX
 C$OMP MASTER
       call check_tab2d(uwndg(:,:,1),'uwndg1 set_vbc','u')
       call check_tab2d(uwndg(:,:,2),'uwndg2 set_vbc','u')

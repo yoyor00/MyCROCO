@@ -34,12 +34,8 @@ MODULE initMUSTANG
 !&E
 !&E============================================================================
     !! * Modules used
-#include "coupler_define_MUSTANG.h"
-
     USE comMUSTANG
-    USE sed_MUSTANG_HOST,  ONLY : sedinit_fromfile
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
-    !USE sed_MUSTANG_HOST,  ONLY : sed_exchange_hxe_HOST
     USE comsubstance
     USE module_substance
 #ifdef key_MUSTANG_flocmod
@@ -56,11 +52,11 @@ MODULE initMUSTANG
 
     !! * Local declarations
     ! declaration of namelists, variables described in comMUSTANG
-    namelist /namsedim_init/ l_repsed, filrepsed, l_unised, fileinised,       &
+    namelist /namsedim_init/ filrepsed, l_unised,                   &
                              date_start_morpho, date_start_dyninsed,          &
                              hseduni, cseduni, ksmiuni, ksmauni,              &
                              sini_sed, tini_sed,                              &
-                             l_init_hsed, csed_mud_ini,                       &
+                             l_unised_adjust_hsed, csed_mud_ini,              &
                              l_initsed_vardiss, poro_mud_ini
 
     namelist /namsedim_layer/ l_dzsminuni, dzsminuni,                         &
@@ -94,8 +90,9 @@ MODULE initMUSTANG
     namelist /namsedim_deposition/ cfreshmud, csedmin, cmudcr, aref_sand,     &
                                    cvolmaxsort, cvolmaxmel, slopefac
 
-    namelist /namsedim_lateral_erosion/ coef_erolat, coef_tauskin_lat,        &
-                                        l_erolat_wet_cell, htncrit_eros 
+    namelist /namsedim_lateral_erosion/ l_erolat, coef_erolat,&
+                                        coef_tauskin_lat, l_erolat_wet_cell, &
+                                        htncrit_eros 
 
     namelist /namsedim_consolidation/ l_consolid, xperm1, xperm2, xsigma1,    &
                                       xsigma2, csegreg, csandseg,             &
@@ -113,9 +110,7 @@ MODULE initMUSTANG
                                 frmud_db_min, frmud_db_max,                   &
                                 dt_bioturb, subdt_bioturb
 
-    namelist /namsedim_morpho/ l_morphocoupl, MF,               &
-                               l_MF_dhsed, l_bathy_actu,                      &
-                               dt_morpho                                  
+    namelist /namsedim_morpho/ l_morphocoupl, MF, l_MF_dhsed, dt_morpho                                  
 
     namelist /namsedoutput/ choice_nivsed_out,                                &
                             nk_nivsed_out, ep_nivsed_out, epmax_nivsed_out,   &
@@ -142,19 +137,16 @@ MODULE initMUSTANG
                             l_outsed_z0hydro, &
                             l_outsed_consolidation
 
+    namelist /namdredging/ dredging_location_file, dredging_settings_file,    &
+            dredging_out_file, dredging_dumping_layer, &
+            dredging_dt, dredging_dt_out
 
-#ifdef key_MUSTANG_V2
     namelist /namsedim_poro/ poro_option, poro_min,                           &
                              Awooster, Bwooster, Bmax_wu 
+#ifdef key_MUSTANG_V2
 #ifdef key_MUSTANG_bedload
     namelist /namsedim_bedload/ l_peph_bedload, l_slope_effect_bedload,       &
                                 alphabs, alphabn, hmin_bedload, l_fsusp
-#endif
-#ifdef key_MUSTANG_debug
-    namelist /namsedim_debug/ lon_debug, lat_debug,                           &
-                              i_MUSTANG_debug, j_MUSTANG_debug,               &
-                              l_debug_erosion, l_debug_effdep,                &
-                              date_start_debug
 #endif
 #endif
 
@@ -171,11 +163,14 @@ MODULE initMUSTANG
                           epsedmax_tempsed
 #endif
 
+    ! logging IO
+    INTEGER :: ierrorlog, iwarnlog, iscreenlog
+
+
 CONTAINS
   
 !!=============================================================================
     SUBROUTINE MUSTANG_init(ifirst, ilast, jfirst, jlast,                     &
-            WATER_ELEVATION,                                                  &
 #if defined MORPHODYN  
             dhsed,                                                            &
 #endif
@@ -191,6 +186,7 @@ CONTAINS
     !&E
     !&E------------------------------------------------------------------------
    !! * Modules used
+    USE dredging, ONLY : dredging_init_param
     USE coupler_MUSTANG,  ONLY : coupl_conv2MUSTANG
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
 #ifdef key_MUSTANG_splitlayersurf
@@ -199,18 +195,17 @@ CONTAINS
 #ifdef key_MUSTANG_V2
     USE sed_MUSTANG,  ONLY : MUSTANGV2_comp_poro_mixsed
 #ifdef key_MUSTANG_bedload
-    USE sed_MUSTANG_HOST,  ONLY : sed_bottom_slope
+    USE sed_MUSTANG_CROCO,  ONLY : sed_bottom_slope
 #endif
 #endif
 
     !! * Arguments
     INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
     REAL(KIND=rsh),INTENT(IN)              :: h0fondin
-    REAL(KIND=rsh),DIMENSION(PROC_IN_ARRAY),INTENT(INOUT)        :: z0hydro                         
-    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT):: WATER_ELEVATION                         
-    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN)       :: WATER_CONCENTRATION  
+    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT) :: z0hydro                      
+    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN) :: WATER_CONCENTRATION  
 #if defined MORPHODYN 
-    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)          :: dhsed                       
+    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT)          :: dhsed                       
 #endif
 
    !! * Local declarations
@@ -230,13 +225,16 @@ CONTAINS
     LOGICAL :: l_0Dcase
 #endif
 
+    ierrorlog = stdout
+    iwarnlog = stdout
+    iscreenlog = stdout
     !! * Executable part
     h0fond = h0fondin
 
     ! Read default and then user namelist
     lstr = lenstr(sedname_must)
     filepc_user = sedname_must(1:lstr)
-    filepc = REPFICNAMELIST//'/paraMUSTANG_default.txt'
+    filepc = "MUSTANG_NAMELIST/paraMUSTANG_default.txt"
     CALL MUSTANG_readnml(filepc) ! read default namelist
     CALL MUSTANG_readnml(filepc_user) ! read user namelist (replace default param)
 
@@ -260,8 +258,11 @@ CONTAINS
         f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
         f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  &
         f_clim, diam_sed(imud1:nvpc), ros(imud1:nvpc),      &
-        RHOREF, l_0Dcase, ierrorlog)
+        rho0, l_0Dcase, ierrorlog)
 #endif
+
+    CALL dredging_init_param(ifirst,ilast,jfirst,jlast)
+
 
     ! Information on screen
     CALL MUSTANG_param_log()  
@@ -272,18 +273,7 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! here iappel = 0 
     ! only WATER_CONCENTRATION, SALINITY_MOD, TEMPERATURE_MOD are used     
-    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,0,BATHY_H0,             &
-                            WATER_ELEVATION, WATER_CONCENTRATION )
-
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ! Reading new bathy issued from a previous run with morphocoupl 
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !IF(l_bathy_actu) THEN
-    ! **TODO** has not been implemented in CROCO yet
-    ! this routine depends on hydrodynamic host model because reading save file 
-    ! from a revious run
-    ! CALL bathy_actu_fromfile(BATHY_H0) 
-    !ENDIF
+    CALL coupl_conv2MUSTANG(ifirst,ilast,jfirst,jlast,0,WATER_CONCENTRATION )
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Evaluation of slope for bedload
@@ -292,17 +282,17 @@ CONTAINS
 #if defined MORPHODYN
     it_morphoYes=0
 #endif
-    CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, BATHY_H0)
+    CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, h)
 #endif
 
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Definition of initial conditions in sediment
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    IF (l_repsed) THEN
-        CALL sedinit_fromfile
+    IF (l_unised) THEN
+        CALL MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, h)
     ELSE
-        CALL MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, BATHY_H0)
+        CALL MUSTANG_init_fromfile
     END IF
       
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -371,7 +361,7 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
     ! call even if no morpho, initialization of hsed in all cases, 
     ! even if initfromfile
-    CALL MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION   &
+    CALL MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast   &
 #if defined MORPHODYN  
                                                 ,dhsed               &
 #endif
@@ -383,6 +373,7 @@ CONTAINS
     IF(l_z0hydro_coupl_init) THEN
         CALL sed_MUSTANG_comp_z0hydro(ifirst, ilast, jfirst, jlast, z0hydro)
     ENDIF
+
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Initialization of output tables
@@ -429,10 +420,12 @@ CONTAINS
     READ(50, namsedim_bottomstress); rewind(50)
     READ(50, namsedim_deposition); rewind(50)
     READ(50, namsedim_erosion); rewind(50)
-#ifdef key_MUSTANG_V2
     READ(50, namsedim_poro); rewind(50)
+#ifdef key_MUSTANG_V2
+#ifdef key_MUSTANG_bedload
     READ(50, namsedim_bedload); rewind(50)
-#endif    
+#endif
+#endif
     READ(50, namsedim_lateral_erosion); rewind(50)
     READ(50, namsedim_consolidation); rewind(50)
     READ(50, namsedim_diffusion); rewind(50)
@@ -442,14 +435,12 @@ CONTAINS
     READ(50, namtempsed); rewind(50)
 #endif
     READ(50, namsedoutput); rewind(50)
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
-    READ(50, namsedim_debug); rewind(50)
-    t_start_debug = tool_datosec(date_start_debug)
-#endif
 #ifdef key_MUSTANG_flocmod
     ! module FLOCULATION
-    READ(50,namflocmod); rewind(50)
+    READ(50, namflocmod); rewind(50)
 #endif
+    READ(50, namdredging); rewind(50)
+
     CLOSE(50) 
    
     END SUBROUTINE MUSTANG_readnml
@@ -473,9 +464,11 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namsedim_layer)
     MPI_master_only WRITE(iscreenlog, namsedim_bottomstress)
     MPI_master_only WRITE(iscreenlog, namsedim_deposition)
-#ifdef key_MUSTANG_V2
     MPI_master_only WRITE(iscreenlog, namsedim_poro)
+#ifdef key_MUSTANG_V2
+#ifdef key_MUSTANG_bedload
     MPI_master_only WRITE(iscreenlog, namsedim_bedload)
+#endif  
 #else
     MPI_master_only WRITE(iscreenlog, namsedim_erosion)
 #endif
@@ -485,9 +478,6 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namsedim_diffusion)
     MPI_master_only WRITE(iscreenlog, namsedim_bioturb)
     MPI_master_only WRITE(iscreenlog, namsedim_morpho)
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_debug
-    MPI_master_only WRITE(iscreenlog, namsedim_debug)
-#endif
 #if !defined key_noTSdiss_insed
     MPI_master_only WRITE(iscreenlog, namtempsed)
 #endif
@@ -503,21 +493,36 @@ CONTAINS
     ENDDO
     MPI_master_only WRITE(iscreenlog, *) ' '
     MPI_master_only WRITE(iscreenlog, *) ' *** PARAMETERS ***'
-    MPI_master_only WRITE(iscreenlog, *) 'Primary particle size (f_dp0)                                : ', f_dp0
-    MPI_master_only WRITE(iscreenlog, *) 'Fractal dimension (f_nf)                                     : ', f_nf
-    MPI_master_only WRITE(iscreenlog, *) 'Flocculation efficiency (f_alpha)                            : ', f_alpha
-    MPI_master_only WRITE(iscreenlog, *) 'Floc break up parameter (f_beta)                             : ', f_beta
-    MPI_master_only WRITE(iscreenlog, *) 'Nb of fragments (f_nb_frag)                                  : ', f_nb_frag
-    MPI_master_only WRITE(iscreenlog, *) 'Ternary fragmentation (f_ater)                               : ', f_ater
-    MPI_master_only WRITE(iscreenlog, *) 'Floc erosion (% of mass) (f_ero_frac)                        : ', f_ero_frac
-    MPI_master_only WRITE(iscreenlog, *) 'Nb of fragments by erosion (f_ero_nbfrag)                    : ', f_ero_nbfrag
-    MPI_master_only WRITE(iscreenlog, *) 'fragment class (f_ero_iv)                                    : ', f_ero_iv
-    MPI_master_only WRITE(iscreenlog, *) 'negative mass tolerated before redistribution (f_mneg_param) : ', f_mneg_param
-    MPI_master_only WRITE(iscreenlog, *) 'Boolean for differential settling aggregation (L_ADS)        : ', l_ADS
-    MPI_master_only WRITE(iscreenlog, *) 'Boolean for shear aggregation (L_ASH)                        : ', l_ASH
-    MPI_master_only WRITE(iscreenlog, *) 'Boolean for collision fragmenation (L_COLLFRAG)              : ', l_COLLFRAG
-    MPI_master_only WRITE(iscreenlog, *) 'Collision fragmentation parameter (f_collfragparam)          : ', f_collfragparam
-    MPI_master_only WRITE(iscreenlog, *) 'Min concentration below which flocculation is not calculated : ', f_clim
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Primary particle size (f_dp0)                                : ', f_dp0
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Fractal dimension (f_nf)                                     : ', f_nf
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Flocculation efficiency (f_alpha)                            : ', f_alpha
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Floc break up parameter (f_beta)                             : ', f_beta
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Nb of fragments (f_nb_frag)                                  : ', f_nb_frag
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Ternary fragmentation (f_ater)                               : ', f_ater
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Floc erosion (% of mass) (f_ero_frac)                        : ', f_ero_frac
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Nb of fragments by erosion (f_ero_nbfrag)                    : ', f_ero_nbfrag
+    MPI_master_only WRITE(iscreenlog, *) &
+        'fragment class (f_ero_iv)                                    : ', f_ero_iv
+    MPI_master_only WRITE(iscreenlog, *) &
+        'negative mass tolerated before redistribution (f_mneg_param) : ', f_mneg_param
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Boolean for differential settling aggregation (L_ADS)        : ', l_ADS
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Boolean for shear aggregation (L_ASH)                        : ', l_ASH
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Boolean for collision fragmenation (L_COLLFRAG)              : ', l_COLLFRAG
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Collision fragmentation parameter (f_collfragparam)          : ', f_collfragparam
+    MPI_master_only WRITE(iscreenlog, *) &
+        'Min concentration below which flocculation is not calculated : ', f_clim
     MPI_master_only WRITE(iscreenlog, *) ' '
     MPI_master_only WRITE(iscreenlog, *) '*** END FLOCMOD INIT *** '    
 #endif
@@ -551,13 +556,20 @@ CONTAINS
     MPI_master_only WRITE(iwarnlog, *) '****************************'
     MPI_master_only WRITE(iwarnlog, *) '        WARNING           ' 
     MPI_master_only WRITE(iwarnlog, *) '****************************'
-    MPI_master_only WRITE(iwarnlog, *) ' You are using CPP key : key_nofluxwat_IWS ' 
-    MPI_master_only WRITE(iwarnlog, *) ' So you are not taking into account water fluxes threw water/sediment interface ' 
-    MPI_master_only WRITE(iwarnlog, *) ' which are generated by erosion/ settling/ consolidation..'
-    MPI_master_only WRITE(iwarnlog, *) ' AND you are NOT using CPP key : key_noTSdiss_insed ' 
-    MPI_master_only WRITE(iwarnlog, *) ' so you want to simulate dissolved variables in sediment'
-    MPI_master_only WRITE(iwarnlog, *) ' You will have probably conservativity problems '
-    MPI_master_only WRITE(iwarnlog, *) ' If you simulate dissolved variables in water AND in sediment, don t use key_nofluxwat_IWS '
+    MPI_master_only WRITE(iwarnlog, *) &
+        ' You are using CPP key : key_nofluxwat_IWS ' 
+    MPI_master_only WRITE(iwarnlog, *) &
+        ' So you are not taking into account water fluxes threw water/sediment interface ' 
+    MPI_master_only WRITE(iwarnlog, *) &
+        ' which are generated by erosion/ settling/ consolidation..'
+    MPI_master_only WRITE(iwarnlog, *) &
+        ' AND you are NOT using CPP key : key_noTSdiss_insed ' 
+    MPI_master_only WRITE(iwarnlog, *) &
+        ' so you want to simulate dissolved variables in sediment'
+    MPI_master_only WRITE(iwarnlog, *) &
+        ' You will have probably conservativity problems '
+    MPI_master_only WRITE(iwarnlog, *) &
+        ' If you simulate dissolved variables in water AND in sediment, don t use key_nofluxwat_IWS '
 #endif
 
 #ifdef key_MUSTANG_flocmod
@@ -573,16 +585,20 @@ CONTAINS
 
     ! test compatibility tocd /consolidation
     IF (l_consolid) THEN
-       MPI_master_only WRITE(iwarnlog, *)
-       MPI_master_only WRITE(iwarnlog, *) '****************************'
-       MPI_master_only WRITE(iwarnlog, *) ' You are taking into account CONSOLIDATION PROCESS'
-       MPI_master_only WRITE(iwarnlog, *) ' and fresh deposit concentration (cfreshmud) = ', cfreshmud
-       MPI_master_only WRITE(iwarnlog, *) ' and critical stress of deposition (tocd) of each sand and mud variable are equal to :'
-       DO isubs = imud1, imud2
-         MPI_master_only WRITE(iwarnlog, *) ' variable', name_var(isubs),'  tocd=', tocd(isubs)
-       ENDDO
-       MPI_master_only WRITE(iwarnlog, *) ' If cfreshmud is big (> 100), you have to choose a tocd between 1 and 10'
-       MPI_master_only WRITE(iwarnlog, *) ' otherwise you have to choose a tocd > 10 or 20'
+        MPI_master_only WRITE(iwarnlog, *)
+        MPI_master_only WRITE(iwarnlog, *) '****************************'
+        MPI_master_only WRITE(iwarnlog, *) ' You are taking into account CONSOLIDATION PROCESS'
+        MPI_master_only WRITE(iwarnlog, *) ' and fresh deposit concentration (cfreshmud) = ', cfreshmud
+        MPI_master_only WRITE(iwarnlog, *) &
+            ' and critical stress of deposition (tocd) of each sand and mud variable are equal to :'
+        DO isubs = imud1, imud2
+            MPI_master_only WRITE(iwarnlog, *) &
+                ' variable', name_var(isubs),'  tocd=', tocd(isubs)
+        ENDDO
+        MPI_master_only WRITE(iwarnlog, *) &
+            ' If cfreshmud is big (> 100), you have to choose a tocd between 1 and 10'
+        MPI_master_only WRITE(iwarnlog, *) &
+            ' otherwise you have to choose a tocd > 10 or 20'
        
     ELSE
        DO isubs = isand2+1, nvp
@@ -686,34 +702,6 @@ CONTAINS
         poro_option = 2
     ENDIF
 #endif
-
-#ifdef key_MUSTANG_debug
-#if defined SPHERICAL
-    ! initialization of position of point where we want informations for debug  
-    IF(lat_debug .NE. 0._rlg .OR. lon_debug .NE. 0._rlg) THEN
-        ! locating i,j from latitude, longitude 
-        i_MUSTANG_debug = 0
-        j_MUSTANG_debug = 0            
-        DO j = jfirst, jlast
-            DO i = ifirst, ilast
-                IF(latr(i,j) == lat_debug .AND. lonr(i,j) == lon_debug) THEN
-                    i_MUSTANG_debug = i
-                    j_MUSTANG_debug = j             
-                ENDIF
-            ENDDO
-        ENDDO
-        IF(i_MUSTANG_debug == 0) THEN
-            MPI_master_only write(ierrorlog, *) 'CAUTION : the point for debug is not well known  '
-            MPI_master_only write(ierrorlog, *) '*****************************************************'
-            MPI_master_only write(ierrorlog, *) 'lat_debug and lon_debug do not correspond to one point in the grid'
-            MPI_master_only write(ierrorlog, *) 'choose i_MUSTANG_debug et j_MUSTANG_debug directly in paraMUSTANGV2.txt'
-            MPI_master_only write(ierrorlog, *) 'or change lat_debug and lon_debug'
-            MPI_master_only write(ierrorlog, *) 'simulation stopped'
-            stop    
-        ENDIF
-    ENDIF
-#endif
-#endif
    
     END SUBROUTINE MUSTANG_compatibility
 !!===========================================================================
@@ -737,7 +725,7 @@ CONTAINS
     !&E       * rosmrowsros
     !&E    - ros_sand_homogen = ros(isand1) if there is sand (isand1 > 0)
     !&E
-    !&E ** Note : GRAVITY and RHOREF must be known 
+    !&E ** Note : g and rho0 must be known 
     !&E
     !&E ** Called by :  MUSTANG_init
     !&E
@@ -826,11 +814,11 @@ CONTAINS
 
     DO iv = 1, isand2
 
-      ! here, for simplification, water density = RHOREF 
+      ! here, for simplification, water density = rho0 
       ! here, for simplification, viscosity = 1.e-6 constant
       ! 10000 = (1/viscosite**2)**(1/3)
-      rosmrowsros(iv) = (ros(iv) - RHOREF) / ros(iv)
-      diamstar(iv) = diam_sed(iv) * 10000.0_rsh * (GRAVITY * (ros(iv) / RHOREF - 1.0_rsh))**0.33_rsh
+      rosmrowsros(iv) = (ros(iv) - rho0) / ros(iv)
+      diamstar(iv) = diam_sed(iv) * 10000.0_rsh * (g * (ros(iv) / rho0 - 1.0_rsh))**0.33_rsh
       ! according to Soulsby, 1997, and if viscosity = 10-6 m/s :
       ws_sand(iv)=.000001_rsh*((107.33_rsh+1.049_rsh*diamstar(iv)**3)**0.5_rsh-10.36_rsh)/diam_sed(iv)
 
@@ -838,9 +826,9 @@ CONTAINS
        ! Critical shear stress in erosion law (N/m2)
       IF (tau_cri_option == 0) THEN
         tetacri0(iv)=0.3_rsh/(1.0_rsh+1.2_rsh*diamstar(iv))+0.055_rsh*(1.0_rsh-EXP(-0.02_rsh*diamstar(iv)))
-        stresscri0(iv)=tetacri0(iv)*GRAVITY*(ros(iv)-RHOREF)*diam_sed(iv)
+        stresscri0(iv)=tetacri0(iv)*g*(ros(iv)-rho0)*diam_sed(iv)
       ELSE IF (tau_cri_option == 1) THEN ! Wu and Lin (2014)
-        stresscri0(iv)=GRAVITY*(ros(iv)-RHOREF)*diam_sed(iv)*shield_cri_wu
+        stresscri0(iv)=g*(ros(iv)-rho0)*diam_sed(iv)*shield_cri_wu
       END IF
 
 #ifdef key_MUSTANG_V2
@@ -852,7 +840,7 @@ CONTAINS
     ENDDO ! iv = 1, isand2
 
     DO iv=imud1,imud2
-      rosmrowsros(iv)=(ros(iv)-RHOREF)/ros(iv)
+      rosmrowsros(iv)=(ros(iv)-rho0)/ros(iv)
     ENDDO
 
     ! homogeneous sand density
@@ -956,9 +944,234 @@ CONTAINS
     hsed_new = dzsgrv +dzssan +dzsmud
 
     END SUBROUTINE MUSTANG_init_hsed
+
+!!=============================================================================
+  SUBROUTINE MUSTANG_init_fromfile
+ 
+    !&E-------------------------------------------------------------------------
+    !&E                 ***  ROUTINE MUSTANG_init_fromfile  ***
+    !&E
+    !&E ** Purpose : manages the fields to be re-initialized in case of the 
+    !&E              continuation of a previous run
+    !&E
+    !&E ** Description : open and read a netcdf file, written during a previous run 
+    !&E
+    !&E ** Called by :  MUSTANG_init 
+    !&E
+    !&E-------------------------------------------------------------------------
+    !! * Modules used
+     USE dredging, ONLY : l_dredging, dredg_hsed_init
+     
+     implicit none
+                       
+ 
+# include "netcdf.inc"
+     real time_scale
+     integer iv, k, itrc, indWrk
+     integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,       &
+     start(2), count(2), ibuff(6), nf_fread, checkdims
+     character units*180, nomcv*30
+     character inised_name*180
+     real tmp(GLOBAL_2D_ARRAY)
+     real tmp3d(GLOBAL_2D_ARRAY, ksdmin:ksdmax)
+ 
+     tmp(GLOBAL_2D_ARRAY) = 0
+     tmp3d(GLOBAL_2D_ARRAY,ksdmin:ksdmax) = 0
+     z0sed(GLOBAL_2D_ARRAY) = z0seduni
+     dzsmax(GLOBAL_2D_ARRAY) = dzsmaxuni
+     ksmi(GLOBAL_2D_ARRAY) = ksmiuni
+     ksma(GLOBAL_2D_ARRAY) = 0
+     hsed(GLOBAL_2D_ARRAY) = 0.0_rsh
+     dzs(ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
+     cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
+     c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
+ !
+ ! Open initial conditions netCDF file for reading. Check that all
+ ! spatial dimensions in that file are consistent with the model
+ ! arrays, determine how many time records are available in the file
+ ! and set record from which the dada will be read.
+ !
+ ! The record is set as follows: (1) if only one time record is
+ ! available in the file, then that record is used REGARDLESS of
+ ! value of nrrec supplied from the parameter file; (2) if the
+ ! file has multiple records and nrrec is positive, then nrrec is
+ ! used, provided that nrrec is within the available records; 
+ ! (3) if the file has multiple records and nrrec<0, then THE LAST 
+ ! available record is used.
+ 
+ !      if (may_day_flag.ne.0) return      !-->  EXIT
+       inised_name = filrepsed
+       lstr = lenstr(inised_name)
+       ierr = nf_open(inised_name(1:lstr), nf_nowrite, ncid)
+       if (ierr.eq.nf_noerr) then
+         ierr = checkdims(ncid, inised_name, lstr, indx)
+ 
+         if (ierr.ne.nf_noerr) then
+          goto 99
+         elseif (indx.eq.0) then
+           indx = 1
+         elseif (indx.gt.0 .and. nrrec.gt.0 .and. nrrec.le.indx) then
+           indx = nrrec
+         elseif (indx.gt.0 .and. nrrec.gt.indx) then
+           write(stdout,'(/1x,A,I4,A/16x,A,I4,A/16x,3A/)')   &
+                'MUSTANG_init_fromfile ERROR: requested restart time record', &
+                nrrec, ' exceeds',  'number of available records', &
+                indx,'in netCDF file', '''',inised_name(1:lstr),'''.'
+           goto 99                                        !--> ERROR
+         endif
+       else
+         write(stdout,'(/1x,2A/15x,3A)') &
+                'MUSTANG_init_fromfile ERROR: Cannot ', &
+                'open netCDF file', '''', inised_name(1:lstr) ,'''.'
+         goto 99                                           !--> ERROR
+       endif
+ 
+ 
+ ! ksmi, ksma
+       ierr=nf_inq_varid (ncid,'ksmi', varid)
+       if (ierr .eq. nf_noerr) then
+         ierr=nf_fread (tmp, ncid, varid, indx, 0)
+         ksmi(GLOBAL_2D_ARRAY)=INT(tmp(GLOBAL_2D_ARRAY))
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) 'ksmi', indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+       else
+         MPI_master_only  write(stdout,1) 'ksmi', inised_name(1:lstr)
+         goto 99                                           !--> ERROR
+       endif
+       
+        ierr=nf_inq_varid (ncid,'ksma', varid)
+       if (ierr .eq. nf_noerr) then
+         ierr=nf_fread (tmp, ncid, varid, indx, 0)
+         ksma(GLOBAL_2D_ARRAY)=INT(tmp(GLOBAL_2D_ARRAY))
+ 
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) 'ksma', indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+       else
+         MPI_master_only  write(stdout,1) 'ksma', inised_name(1:lstr)
+         goto 99                                           !--> ERROR
+       endif
+ 
+      WHERE (ksmi(GLOBAL_2D_ARRAY) < ksdmin ) 
+         ksmi(GLOBAL_2D_ARRAY) = 1
+         ksma(GLOBAL_2D_ARRAY) = 0
+      END WHERE
+ !  DZS
+       ierr=nf_inq_varid (ncid,'DZS', varid)
+       if (ierr .eq. nf_noerr) then
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+          do k=ksdmin,ksdmax
+             dzs(k,:,:)=tmp3d(:,:,k)
+          enddo
+         
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) 'DZS', indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+       else
+         MPI_master_only  write(stdout,1) 'DZS', inised_name(1:lstr)
+         goto 99                                           !--> ERROR
+       endif
+ 
+ 
+ ! CVSED
+  
+       c_sedtot(:,:,:)=0.0_rsh
+       do iv=-1,nv_tot 
+ 
+        if (iv == -1) then
+           nomcv='temp_sed'
+        elseif (iv==0) then
+           nomcv='salt_sed'
+        else
+           nomcv=TRIM(name_var(iv))//'_sed'
+        endif
+ 
+        ierr=nf_inq_varid (ncid,nomcv, varid)
+        if (ierr .eq. nf_noerr) then
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+ 
+         do k=ksdmin,ksdmax
+             cv_sed(iv,k,:,:)=tmp3d(:,:,k)
+             c_sedtot(k,:,:)=c_sedtot(k,:,:)+cv_sed(iv,k,:,:)*typart(iv)  
+         enddo
+ 
+         if (ierr .ne. nf_noerr) then
+           MPI_master_only write(stdout,2) nomcv, indx, inised_name(1:lstr)
+           goto 99                                         !--> ERROR
+         endif
+        
+        else
+         if (iv > nvpc .and. iv < nvp+1 ) then
+          ! not constitutive particulate  variables (Initial in M/Msed converted to M/m3 sed)
+          IF (irkm_var_assoc(iv) >0) THEN
+            do k=ksdmin,ksdmax
+              cv_sed(iv,k,:,:)=cini_sed(iv)*cv_sed(irkm_var_assoc(iv),k,:,:)
+            enddo
+          ELSE
+            do k=ksdmin,ksdmax
+             cv_sed(iv,k,:,:)=cini_sed(iv)*c_sedtot(k,:,:)
+            enddo
+          END IF
+          MPI_master_only  write(stdout,3) nomcv, inised_name(1:lstr)
+         else if (iv > nvp) then
+           ! dissolved variables (M/m3 EI)
+           do k=ksdmin,ksdmax
+             cv_sed(iv,k,:,:)=cini_sed(iv)             
+           enddo
+          MPI_master_only  write(stdout,3) nomcv,name_var(iv), &
+                                           inised_name(1:lstr)
+         else
+          MPI_master_only  write(stdout,1) nomcv, inised_name(1:lstr)
+          goto 99                          !--> ERROR
+         endif
+        endif
+       enddo
+      
+      do k=ksdmin,ksdmax
+      WHERE (c_sedtot(k,GLOBAL_2D_ARRAY) == -valmanq) c_sedtot(k,GLOBAL_2D_ARRAY)=0.0_rsh
+      enddo
+ 
+ 
+ ! dredging
+      if (l_dredging) then
+         ierr=nf_inq_varid (ncid,'dredg_hsed_init', varid)
+         if (ierr .eq. nf_noerr) then
+           ierr=nf_fread (tmp, ncid, varid, indx, 0)
+           dredg_hsed_init(GLOBAL_2D_ARRAY)=tmp(GLOBAL_2D_ARRAY)
+           if (ierr .ne. nf_noerr) then
+             MPI_master_only write(stdout,2) 'dredg_hsed_init', indx, inised_name(1:lstr)
+             goto 99                                         !--> ERROR
+           endif
+         else
+           MPI_master_only  write(stdout,1) 'dredg_hsed_init', inised_name(1:lstr)
+           goto 99                                           !--> ERROR
+         endif
+      endif
+ 
+ ! Close input NetCDF file.
+ !
+       ierr=nf_close(ncid)
+ 
+   1   format(/1x,'MUSTANG_init_fromfile - unable to find variable:', 1x,A, &
+                                  /15x,'in input NetCDF file:',1x,A/)
+   2   format(/1x,'MUSTANG_init_fromfile - error while reading variable:',1x, A, &
+          2x,'at time record =',i4/15x,'in input NetCDF file:',1x,A/)
+   3   format(/1x,'MUSTANG_init_fromfile - unable to find variable:', 1x,A,/10x,A, &
+      &                            /15x,'in input NetCDF file:',1x,A,  &
+          1x,'-> analytical value (cini_sed)'/)
+       return
+   99  may_day_flag=2
+       return
+       
+   END SUBROUTINE MUSTANG_init_fromfile
+
 !!===========================================================================================
     
-    SUBROUTINE MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, BATHY_H0)
+    SUBROUTINE MUSTANG_sedinit(ifirst, ilast, jfirst, jlast, h)
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE MUSTANG_sedinit  ***
     !&E
@@ -966,13 +1179,16 @@ CONTAINS
     !&E
     !&E ** Description : 
     !&E
-    !&E ** Called by :  MUSTANG_init_sediment only if not.l_repsed
+    !&E ** Called by :  MUSTANG_init_sediment only if l_unised
     !&E
     !&E--------------------------------------------------------------------------
+    USE dredging, ONLY : l_dredging, dredg_hsed_init
+         
+    implicit none
 
     !! * Arguments
     INTEGER,INTENT(IN)                                        :: ifirst, ilast, jfirst, jlast
-    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)       :: BATHY_H0      
+    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)       :: h      
 
     !! * Local declarations
     CHARACTER*50   :: filesand, filemud
@@ -982,25 +1198,24 @@ CONTAINS
 
     !! * Executable part
 
-    dzsmax(PROC_IN_ARRAY)=dzsmaxuni
-    z0sed(PROC_IN_ARRAY)=z0seduni
-    ksmi(PROC_IN_ARRAY)=ksmiuni
-    ksma(PROC_IN_ARRAY)=0
-    hsed(PROC_IN_ARRAY)=-valmanq
-    dzs(ksdmin:ksdmax,PROC_IN_ARRAY)=-valmanq
-    cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY)=-valmanq
-    c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY)=-valmanq
+    dzsmax(GLOBAL_2D_ARRAY)=dzsmaxuni
+    z0sed(GLOBAL_2D_ARRAY)=z0seduni
+    ksmi(GLOBAL_2D_ARRAY)=ksmiuni
+    ksma(GLOBAL_2D_ARRAY)=0
+    hsed(GLOBAL_2D_ARRAY)=-valmanq
+    dzs(ksdmin:ksdmax,GLOBAL_2D_ARRAY)=-valmanq
+    cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY)=-valmanq
+    c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY)=-valmanq
 
-    IF (l_unised)THEN
-   
+
         ! uniform bed :
-        WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) ksmi(PROC_IN_ARRAY)=ksmiuni
-        WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) ksma(PROC_IN_ARRAY)=ksmauni
+        WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) ksmi(GLOBAL_2D_ARRAY)=ksmiuni
+        WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) ksma(GLOBAL_2D_ARRAY)=ksmauni
         DO k=ksdmin,ksdmax
-            WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) dzs(k,PROC_IN_ARRAY)=0.0_rsh
-            WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) c_sedtot(k,PROC_IN_ARRAY)=0.0_rsh
+            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) dzs(k,GLOBAL_2D_ARRAY)=0.0_rsh
+            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) c_sedtot(k,GLOBAL_2D_ARRAY)=0.0_rsh
             DO iv=-1,nv_tot
-                WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) cv_sed(iv,k,PROC_IN_ARRAY)=0.0_rsh
+                WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) cv_sed(iv,k,GLOBAL_2D_ARRAY)=0.0_rsh
             ENDDO
         ENDDO
  
@@ -1050,7 +1265,7 @@ CONTAINS
       
         ! ajustement du hsed et cv_sed
         ! ==============================
-        IF(l_init_hsed .AND. hseduni > 0.0_rsh) THEN
+        IF(l_unised_adjust_hsed .AND. hseduni > 0.0_rsh) THEN
             ALLOCATE(cv_sedini(1:nvpc))
             !!! Concentration massique
             DO iv=1,nvpc
@@ -1062,15 +1277,15 @@ CONTAINS
             MPI_master_only WRITE(iscreenlog,*)'NEW TOTAL SEDIMENT THICKNESS AFTER ADJUSTEMENT = ',hsed_new
             cseduni=cseduni*hseduni/hsed_new         
             hseduni=hsed_new
-            WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) hsed(PROC_IN_ARRAY)=hseduni
+            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
             DEALLOCATE(cv_sedini)
         ELSE
-            WHERE (BATHY_H0(PROC_IN_ARRAY) /= -valmanq) hsed(PROC_IN_ARRAY)=hseduni
+            WHERE (h(GLOBAL_2D_ARRAY) /= -valmanq) hsed(GLOBAL_2D_ARRAY)=hseduni
         ENDIF
 
         DO j=jfirst,jlast
         DO i=ifirst,ilast
-            IF(BATHY_H0(i,j) /= -valmanq) THEN
+            IF(h(i,j) /= -valmanq) THEN
                 DO k=ksmi(i,j),ksma(i,j)
                     c_sedtot(k,i,j)=0.0_rsh
                     DO iv=1,nvpc
@@ -1121,20 +1336,7 @@ CONTAINS
         ENDDO
         ENDDO
 
-    ELSE
 
-        ! non uniform bed
-        MPI_master_only write(ierrorlog,*) 'NON UNIFORM BED COVERAGE'
-        MPI_master_only write(ierrorlog,*) 'you have to read a netcdf file describing for each grid cell (file_inised)'
-        MPI_master_only write(ierrorlog,*) 'the values for hsed(i,j),z0sed(i,j),ksmi(i,j),ksma(i,j)'
-        MPI_master_only write(ierrorlog,*) 'c_sedtot(i,j),cini_sed(iv,iv=1:nv_state)'
-        STOP
-      
-    ENDIF
-!
-!   END NON UNIFORM BED COVERAGE L_UNISED
-!   -------------------------------------------------
-!
 !   regular vertical mesh
 !   ---------------------
 
@@ -1146,17 +1348,22 @@ CONTAINS
                     dzs(k,i,j)=dzsf
                 ENDDO
             ELSE
-                dzs(:,i,j)=0.0_rsh
+                dzs(:,i,j) = 0.0_rsh
+                hsed(i,j) = 0.0_rsh
             ENDIF
         ENDDO
     ENDDO
 
+    IF (l_dredging) THEN
+        dredg_hsed_init(GLOBAL_2D_ARRAY) = hsed(GLOBAL_2D_ARRAY) 
+    ENDIF
+
 ! DZSmax non uniform
     IF(.NOT. l_dzsmaxuni) THEN
         IF(dzsmaxuni == 0.0_rsh) THEN
-            MPI_master_only write(ierrorlog,*)' ERROR in paraMUSTANG : dzsmaxuni =0. and l_repsed=.FALSE.'
-            MPI_master_only write(ierrorlog,*)' if dzsmaxuni =0. dzsmax must be read in an initial file (l_repsed=T)'
-            MPI_master_only write(ierrorlog,*)' if l_repsed=.FALSE. dzsmax must be evaluated from dzsmaxuni not null'
+            MPI_master_only write(ierrorlog,*)' ERROR in paraMUSTANG : dzsmaxuni =0. and l_unised=.TRUE.'
+            MPI_master_only write(ierrorlog,*)' if dzsmaxuni =0. dzsmax must be read in an initial file '
+            MPI_master_only write(ierrorlog,*)'  dzsmax must be evaluated from dzsmaxuni not null'
             STOP
         ENDIF
 
@@ -1168,17 +1375,23 @@ CONTAINS
        h0max_def=50.0_rsh
        MPI_master_only write(iscreenlog,*)
        MPI_master_only write(iscreenlog,*)'DZSMAX NON UNIFORM'
-       MPI_master_only write(iscreenlog,*)'by default linearly computed in MUSTANG_sedinit (sedim.F90)'
-       MPI_master_only write(iscreenlog,*)'from dzsmaxuni (',dzsmaxuni,'m) to dzsmaxuni/100 (',dzsmaxmin,'m) depending on water depth'
-       MPI_master_only write(iscreenlog,*)'dzsmax minimum for depth > ',h0max_def
-       MPI_master_only write(iscreenlog,*)'PROGRAM your own initialization of dzsmax (or READ a file) in MUSTANG_sedinit'
-       dzsmax(PROC_IN_ARRAY)=(h0max_def-BATHY_H0(PROC_IN_ARRAY))/h0max_def*dzsmaxuni+dzsmaxmin
-       WHERE (dzsmax(PROC_IN_ARRAY) > dzsmaxuni ) dzsmax(PROC_IN_ARRAY)=dzsmaxuni
-       WHERE (dzsmax(PROC_IN_ARRAY) < dzsmaxmin ) dzsmax(PROC_IN_ARRAY)=dzsmaxmin
+       MPI_master_only write(iscreenlog,*) &
+       'by default linearly computed in MUSTANG_sedinit '
+       MPI_master_only write(iscreenlog,*) &
+       'from dzsmaxuni (',dzsmaxuni,'m) to dzsmaxuni/100 (',dzsmaxmin,'m) depending on water depth'
+       MPI_master_only write(iscreenlog,*) &
+       'dzsmax minimum for depth > ',h0max_def
+       MPI_master_only write(iscreenlog,*) &
+       'PROGRAM your own initialization of dzsmax (or READ a file) in MUSTANG_sedinit'
+       dzsmax(GLOBAL_2D_ARRAY)=(h0max_def-h(GLOBAL_2D_ARRAY))/h0max_def*dzsmaxuni+dzsmaxmin
+       WHERE (dzsmax(GLOBAL_2D_ARRAY) > dzsmaxuni ) dzsmax(GLOBAL_2D_ARRAY)=dzsmaxuni
+       WHERE (dzsmax(GLOBAL_2D_ARRAY) < dzsmaxmin ) dzsmax(GLOBAL_2D_ARRAY)=dzsmaxmin
 
        ! or to be read in a data file (to be programmed) 
         
     ENDIF 
+
+
 
     END SUBROUTINE MUSTANG_sedinit
 
@@ -1202,47 +1415,57 @@ CONTAINS
             IF(nk_nivsed_outlu > ksdmax) THEN
                 nk_nivsed_out = ksdmax
             ELSE IF (nk_nivsed_outlu < 1 ) THEN
-                MPI_master_only WRITE(iscreenlog,*)'Wrong nk_nivsed_out value, should be between 1 and',ksdmax
+                MPI_master_only WRITE(iscreenlog,*) &
+        'Wrong nk_nivsed_out value, should be between 1 and',ksdmax
                 STOP
             ENDIF 
-            MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save only for the first ', nk_nivsed_out, &
+            MPI_master_only WRITE(iscreenlog,*) &
+        'results in sediment will be save only for the first ', nk_nivsed_out, &
                                     ' layers from sediment surface, one average for the last'
         ELSE IF(choice_nivsed_out == 3 ) THEN
             dzs_estim=MIN(dzsmaxuni,hseduni/ksmauni)
             nk_nivsed_out = MIN(ksdmax, INT(epmax_nivsed_out / dzs_estim) +3) 
-            MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save from sediment surface till ',  &
+            MPI_master_only WRITE(iscreenlog,*) &
+        'results in sediment will be save from sediment surface till ',  &
                                 epmax_nivsed_out*1000,'mmeters (integration below)'
-            MPI_master_only WRITE(iscreenlog,*)'the last layer saved in the sediment output file will be that  ',  &
+            MPI_master_only WRITE(iscreenlog,*) &
+        'the last layer saved in the sediment output file will be that  ',  &
                                 'the bottom of which exceeds the desired maximum thickness '          
             IF (.NOT. l_dzsmaxuni) THEN
                 MPI_master_only WRITE(iscreenlog,*)
-                MPI_master_only WRITE(iscreenlog,*)'            if dzsmax is not uniform, it could be smaller than dzsmaxuni and  &
+                MPI_master_only WRITE(iscreenlog,*) &
+        '            if dzsmax is not uniform, it could be smaller than dzsmaxuni and  &
                             then there may be points where '
-                MPI_master_only WRITE(iscreenlog,*)'             this number is not sufficient to describe the maximum thickness'
+                MPI_master_only WRITE(iscreenlog,*) &
+        '             this number is not sufficient to describe the maximum thickness'
                 MPI_master_only WRITE(iscreenlog,*)
-                MPI_master_only WRITE(iscreenlog,*)'This option is not recommended with l_dzsmaxuni=.False.'
+                MPI_master_only WRITE(iscreenlog,*) &
+        'This option is not recommended with l_dzsmaxuni=.False.'
             ENDIF
     
         ELSE IF(choice_nivsed_out == 4 ) THEN
-            IF(nk_nivsed_outlu > 5 ) THEN
+            IF(nk_nivsed_outlu > min(5,ksdmax-1) ) THEN
                 MPI_master_only WRITE(iscreenlog,*)'ERROR in namelist namsedoutput (paraMUSTANG.txt) '
-                MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out must be <=5'
+                MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out must be <=min(5,',ksdmax-1,')'
                 MPI_master_only WRITE(iscreenlog,*)'nk_nivsed_out is automatically set to 5 '
-                MPI_master_only WRITE(iscreenlog,*)'and an latter layer (6th) is added to integrate till the bottom sediment  '
-                nk_nivsed_outlu = 5
+                MPI_master_only WRITE(iscreenlog,*) &
+        'and an latter layer (6th) is added to integrate till the bottom sediment  '
+                nk_nivsed_outlu = min(5,ksdmax-1)
             ELSE IF (nk_nivsed_outlu < 1 ) THEN
-                MPI_master_only WRITE(iscreenlog,*)'Wrong nk_nivsed_out value, should be between 1 and 5'
-                STOP
+                MPI_master_only WRITE(iscreenlog,*) &
+        'Wrong nk_nivsed_out value, should be between 1 and min(5,',ksdmax-1,')'
+                STOP 1
             ENDIF   
             err = 0
             DO k=1,nk_nivsed_outlu
                 IF (ep_nivsed_out(k) == 0.) THEN
-                    MPI_master_only WRITE(iscreenlog,*)'Wrong ep_nivsed_out(', k ,') value, should not be zero'
+                    MPI_master_only WRITE(iscreenlog,*) &
+        'Wrong ep_nivsed_out(', k ,') value, should not be zero'
                     err = err +1 
                 ENDIF
             ENDDO
             IF (err>0) THEN
-                STOP
+                STOP 1
             ENDIF     
             
             nk_nivsed_out =  nk_nivsed_outlu+1   
@@ -1250,12 +1473,15 @@ CONTAINS
             ep_nivsed_outp1(1:nk_nivsed_outlu)=ep_nivsed_out(1:nk_nivsed_outlu)
             ep_nivsed_outp1(nk_nivsed_out)=10.0_rsh  
     
-            MPI_master_only WRITE(iscreenlog,*)'results in sediment will be save on ',nk_nivsed_out-1, &
+            MPI_master_only WRITE(iscreenlog,*) &
+        'results in sediment will be save on ',nk_nivsed_out-1, &
                 'integrated layers whom thickness are constant and given by user - first is  sediment surface'
-            MPI_master_only WRITE(iscreenlog,*)'the ',nk_nivsed_out,'the layer will be an integrated layer till the bottom' 
+            MPI_master_only WRITE(iscreenlog,*) &
+        'the ',nk_nivsed_out,'layer will be an integrated layer till the bottom' 
     
         ELSE
-            MPI_master_only WRITE(iscreenlog,*)'Wrong choice_nivsed_out value, should be 1,2,3 or 4'
+            MPI_master_only WRITE(iscreenlog,*) &
+        'Wrong choice_nivsed_out value, should be 1,2,3 or 4'
             STOP
         ENDIF !choice_nivsed_out
 
@@ -1273,127 +1499,127 @@ CONTAINS
 #if defined key_BLOOM_insed
         USE bioloinit,  ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
 
-        ALLOCATE(var2D_diagsed(PROC_IN_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
-        ALLOCATE(var3D_diagsed(nk_nivsed_out,PROC_IN_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
+        ALLOCATE(var2D_diagsed(GLOBAL_2D_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
+        ALLOCATE(var3D_diagsed(nk_nivsed_out,GLOBAL_2D_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
 #endif
 
         IF (l_outsed_hsed) THEN
-            ALLOCATE(var2D_hsed(PROC_IN_ARRAY))
-            var2D_hsed(PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_hsed(GLOBAL_2D_ARRAY))
+            var2D_hsed(GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_dzs) THEN
-            ALLOCATE(var3D_dzs(nk_nivsed_out,PROC_IN_ARRAY))
-            var3D_dzs(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var3D_dzs(nk_nivsed_out,GLOBAL_2D_ARRAY))
+            var3D_dzs(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_poro) THEN
-            ALLOCATE(var3D_poro(nk_nivsed_out,PROC_IN_ARRAY))
-            var3D_poro(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var3D_poro(nk_nivsed_out,GLOBAL_2D_ARRAY))
+            var3D_poro(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_temp_sed) THEN
-            ALLOCATE(var3D_TEMP(nk_nivsed_out,PROC_IN_ARRAY))
-            var3D_TEMP(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var3D_TEMP(nk_nivsed_out,GLOBAL_2D_ARRAY))
+            var3D_TEMP(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_salt_sed) THEN
-            ALLOCATE(var3D_SAL(nk_nivsed_out,PROC_IN_ARRAY))
-            var3D_SAL(:,PROC_IN_ARRAY)= 0.0_rsh
+            ALLOCATE(var3D_SAL(nk_nivsed_out,GLOBAL_2D_ARRAY))
+            var3D_SAL(:,GLOBAL_2D_ARRAY)= 0.0_rsh
         ENDIF
         IF (l_outsed_cv_sed) THEN
-            ALLOCATE(var3D_cvsed(nk_nivsed_out,PROC_IN_ARRAY,ntrc_subs))
-            var3D_cvsed(:,PROC_IN_ARRAY,ntrc_subs) = 0.0_rsh
+            ALLOCATE(var3D_cvsed(nk_nivsed_out,GLOBAL_2D_ARRAY,ntrc_subs))
+            var3D_cvsed(:,GLOBAL_2D_ARRAY,ntrc_subs) = 0.0_rsh
         ENDIF
         IF (l_outsed_toce) THEN
-            ALLOCATE(var2D_toce(nvpc,PROC_IN_ARRAY))
-            var2D_toce(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_toce(nvpc,GLOBAL_2D_ARRAY))
+            var2D_toce(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_flx_s2w_w2s) THEN
-            ALLOCATE(var2D_flx_s2w(nvpc,PROC_IN_ARRAY))
-            var2D_flx_s2w(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_s2w(nvpc,GLOBAL_2D_ARRAY))
+            var2D_flx_s2w(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_flx_s2w_w2s) THEN
-            ALLOCATE(var2D_flx_w2s(nvpc,PROC_IN_ARRAY))
-            var2D_flx_w2s(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_w2s(nvpc,GLOBAL_2D_ARRAY))
+            var2D_flx_w2s(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
 
         IF (l_outsed_frmudsup) THEN
-            ALLOCATE(var2D_frmudsup(PROC_IN_ARRAY))
-            var2D_frmudsup(PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_frmudsup(GLOBAL_2D_ARRAY))
+            var2D_frmudsup(GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_dzs_ksmax) THEN
-            ALLOCATE(var2D_dzs_ksmax(PROC_IN_ARRAY))
-            var2D_dzs_ksmax(PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_dzs_ksmax(GLOBAL_2D_ARRAY))
+            var2D_dzs_ksmax(GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_flx_s2w_w2s) THEN
-            ALLOCATE(var2D_flx_s2w_coh(PROC_IN_ARRAY))
-            var2D_flx_s2w_coh(PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_flx_w2s_coh(PROC_IN_ARRAY))
-            var2D_flx_w2s_coh(PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_flx_s2w_noncoh(PROC_IN_ARRAY))
-            var2D_flx_s2w_noncoh(PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_flx_w2s_noncoh(PROC_IN_ARRAY))
-            var2D_flx_w2s_noncoh(PROC_IN_ARRAY)= 0.0_rsh
+            ALLOCATE(var2D_flx_s2w_coh(GLOBAL_2D_ARRAY))
+            var2D_flx_s2w_coh(GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_w2s_coh(GLOBAL_2D_ARRAY))
+            var2D_flx_w2s_coh(GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_s2w_noncoh(GLOBAL_2D_ARRAY))
+            var2D_flx_s2w_noncoh(GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_w2s_noncoh(GLOBAL_2D_ARRAY))
+            var2D_flx_w2s_noncoh(GLOBAL_2D_ARRAY)= 0.0_rsh
         ENDIF
 
 #ifdef key_MUSTANG_V2
         IF (l_outsed_pephm_fcor) THEN
-            ALLOCATE(var2D_pephm_fcor(nvpc,PROC_IN_ARRAY))
-            var2D_pephm_fcor(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_pephm_fcor(nvpc,GLOBAL_2D_ARRAY))
+            var2D_pephm_fcor(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_theoric_active_layer) THEN
-            ALLOCATE(var2D_theoric_active_layer(PROC_IN_ARRAY))
-            var2D_theoric_active_layer(PROC_IN_ARRAY)= 0.0_rsh
+            ALLOCATE(var2D_theoric_active_layer(GLOBAL_2D_ARRAY))
+            var2D_theoric_active_layer(GLOBAL_2D_ARRAY)= 0.0_rsh
         ENDIF
         IF (l_outsed_ero_details) THEN
-            ALLOCATE(var2D_tero_noncoh(PROC_IN_ARRAY))
-            var2D_tero_noncoh(PROC_IN_ARRAY)= 0.0_rsh
-            ALLOCATE(var2D_tero_coh(PROC_IN_ARRAY))
-            var2D_tero_coh(PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_pct_iter_noncoh(PROC_IN_ARRAY))
-            var2D_pct_iter_noncoh(PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_pct_iter_coh(PROC_IN_ARRAY))
-            var2D_pct_iter_coh(PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_niter_ero(PROC_IN_ARRAY))
-            var2D_niter_ero(PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_tero_noncoh(GLOBAL_2D_ARRAY))
+            var2D_tero_noncoh(GLOBAL_2D_ARRAY)= 0.0_rsh
+            ALLOCATE(var2D_tero_coh(GLOBAL_2D_ARRAY))
+            var2D_tero_coh(GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_pct_iter_noncoh(GLOBAL_2D_ARRAY))
+            var2D_pct_iter_noncoh(GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_pct_iter_coh(GLOBAL_2D_ARRAY))
+            var2D_pct_iter_coh(GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_niter_ero(GLOBAL_2D_ARRAY))
+            var2D_niter_ero(GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
 #ifdef key_MUSTANG_bedload
         IF (l_outsed_bedload) THEN
-            ALLOCATE(var2D_flx_bx(nvpc,PROC_IN_ARRAY))
-            var2D_flx_bx(:,PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_flx_by(nvpc,PROC_IN_ARRAY))
-            var2D_flx_by(:,PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_bil_bedload(nvpc,PROC_IN_ARRAY))
-            var2D_bil_bedload(:,PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_flx_bx_int(PROC_IN_ARRAY))
-            var2D_flx_bx_int(PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_flx_by_int(PROC_IN_ARRAY))
-            var2D_flx_by_int(PROC_IN_ARRAY) = 0.0_rsh
-            ALLOCATE(var2D_bil_bedload_int(PROC_IN_ARRAY)) 
-            var2D_bil_bedload_int(PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_bx(nvpc,GLOBAL_2D_ARRAY))
+            var2D_flx_bx(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_by(nvpc,GLOBAL_2D_ARRAY))
+            var2D_flx_by(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_bil_bedload(nvpc,GLOBAL_2D_ARRAY))
+            var2D_bil_bedload(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_bx_int(GLOBAL_2D_ARRAY))
+            var2D_flx_bx_int(GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_flx_by_int(GLOBAL_2D_ARRAY))
+            var2D_flx_by_int(GLOBAL_2D_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_bil_bedload_int(GLOBAL_2D_ARRAY)) 
+            var2D_bil_bedload_int(GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
         IF (l_outsed_fsusp) THEN
-            ALLOCATE(var2D_fsusp(nvpc,PROC_IN_ARRAY))
-            var2D_fsusp(:,PROC_IN_ARRAY) = 0.0_rsh
+            ALLOCATE(var2D_fsusp(nvpc,GLOBAL_2D_ARRAY))
+            var2D_fsusp(:,GLOBAL_2D_ARRAY) = 0.0_rsh
         ENDIF
 #endif
 #endif
         IF (l_dyn_insed) THEN
             IF (l_outsed_consolidation) THEN
                 IF (choice_nivsed_out == 1) then
-                    ALLOCATE(var3Dksed_loadograv(nk_nivsed_out,PROC_IN_ARRAY)) 
-                    var3Dksed_loadograv(:,PROC_IN_ARRAY) = 0.0_rsh
-                    ALLOCATE(var3Dksed_permeab(nk_nivsed_out,PROC_IN_ARRAY)) 
-                    var3Dksed_permeab(:,PROC_IN_ARRAY) = 0.0_rsh
-                    ALLOCATE(var3Dksed_sigmapsg(nk_nivsed_out,PROC_IN_ARRAY)) 
-                    var3Dksed_sigmapsg(:,PROC_IN_ARRAY) = 0.0_rsh
-                    ALLOCATE(var3Dksed_dtsdzs(nk_nivsed_out,PROC_IN_ARRAY)) 
-                    var3Dksed_dtsdzs(:,PROC_IN_ARRAY) = 0.0_rsh
-                    ALLOCATE(var3Dksed_hinder(nk_nivsed_out,PROC_IN_ARRAY)) 
-                    var3Dksed_hinder(:,PROC_IN_ARRAY) = 0.0_rsh
-                    ALLOCATE(var3Dksed_sed_rate(nk_nivsed_out,PROC_IN_ARRAY)) 
-                    var3Dksed_sed_rate(:,PROC_IN_ARRAY) = 0.0_rsh
-                    ALLOCATE(var3Dksed_sigmadjge(nk_nivsed_out,PROC_IN_ARRAY)) 
-                    var3Dksed_sigmadjge(:,PROC_IN_ARRAY) = 0.0_rsh
-                    ALLOCATE(var3Dksed_stateconsol(nk_nivsed_out,PROC_IN_ARRAY)) 
-                    var3Dksed_stateconsol(:,PROC_IN_ARRAY) = 0.0_rsh
+                    ALLOCATE(var3Dksed_loadograv(nk_nivsed_out,GLOBAL_2D_ARRAY)) 
+                    var3Dksed_loadograv(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+                    ALLOCATE(var3Dksed_permeab(nk_nivsed_out,GLOBAL_2D_ARRAY)) 
+                    var3Dksed_permeab(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+                    ALLOCATE(var3Dksed_sigmapsg(nk_nivsed_out,GLOBAL_2D_ARRAY)) 
+                    var3Dksed_sigmapsg(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+                    ALLOCATE(var3Dksed_dtsdzs(nk_nivsed_out,GLOBAL_2D_ARRAY)) 
+                    var3Dksed_dtsdzs(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+                    ALLOCATE(var3Dksed_hinder(nk_nivsed_out,GLOBAL_2D_ARRAY)) 
+                    var3Dksed_hinder(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+                    ALLOCATE(var3Dksed_sed_rate(nk_nivsed_out,GLOBAL_2D_ARRAY)) 
+                    var3Dksed_sed_rate(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+                    ALLOCATE(var3Dksed_sigmadjge(nk_nivsed_out,GLOBAL_2D_ARRAY)) 
+                    var3Dksed_sigmadjge(:,GLOBAL_2D_ARRAY) = 0.0_rsh
+                    ALLOCATE(var3Dksed_stateconsol(nk_nivsed_out,GLOBAL_2D_ARRAY)) 
+                    var3Dksed_stateconsol(:,GLOBAL_2D_ARRAY) = 0.0_rsh
                 ELSE
                     l_outsed_consolidation = .FALSE. ! no output if not all sediment in output
                 ENDIF
@@ -1442,15 +1668,23 @@ CONTAINS
       !! ** Purpose : initialize MUSTANG output vname and variables
       !!
       !!---------------------------------------------------------------------
+        USE dredging, ONLY : l_dredging
+
         IMPLICIT NONE
 
         INTEGER indx, isubs
 
-        ALLOCATE (rstMust(NT+3))
-        ALLOCATE (rstoutintegerMust(NT+3))
-        ALLOCATE (rstout2DMust(NT+3))
-        ALLOCATE (rstout3DsedMust(NT+3))
-        ALLOCATE (vname_rstMust(20, NT+3))
+        if (l_dredging) then
+            rstMust_nbvar = NT+4
+        else
+            rstMust_nbvar = NT+3
+        endif
+
+        ALLOCATE (rstMust(1:rstMust_nbvar))
+        ALLOCATE (rstoutintegerMust(1:rstMust_nbvar))
+        ALLOCATE (rstout2DMust(1:rstMust_nbvar))
+        ALLOCATE (rstout3DsedMust(1:rstMust_nbvar))
+        ALLOCATE (vname_rstMust(20, 1:rstMust_nbvar))
 
         vname_rstMust(:,:) = ""
         rstoutintegerMust(:) = .FALSE.
@@ -1553,21 +1787,24 @@ CONTAINS
             rstout2DMust(indx) = .FALSE.
             rstout3DsedMust(indx) = .TRUE.
         ENDDO
+
+        if (l_dredging) then
+            indx = indx + 1
+            vname_rstMust(1,indx) = 'dredg_hsed_init'
+            vname_rstMust(2,indx) = 'initial sediment height'
+            vname_rstMust(3,indx) = 'm'
+            vname_rstMust(4,indx) = ' '
+            vname_rstMust(5,indx) = ' '
+            vname_rstMust(6,indx) = ' '
+            vname_rstMust(7,indx) = ' '
+            rstoutintegerMust(indx) = .FALSE.
+            rstout2DMust(indx) = .TRUE.
+            rstout3DsedMust(indx) = .FALSE.
+        endif
+
         ! end for RESTART file
 
         ! HIS file
-
-#ifdef MORPHODYN
-        indx=indxHm
-        wrthis(indx)=.TRUE.
-        vname(1,indx) = 'Hm'
-        vname(2,indx) = 'evolving bathymetry'
-        vname(3,indx) = 'meter'
-        vname(4,indx) = 'evolving_bathymetry, scalar, series'
-        vname(5,indx) = ' '
-        vname(6,indx) = ' '
-        vname(7,indx) = ' '
-#endif
 
         indx = 1
         vname_Must(1,indx) = 'NB_LAY_SED'
@@ -1814,7 +2051,7 @@ CONTAINS
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
             vname_Must(7,indx) = ' '
-            IF (l_outsed_bedload .and. l_out_subs(isubs) .and. &
+            IF (l_outsed_fsusp .and. l_out_subs(isubs) .and. &
                 ((isubs .GE. ibedload1) .AND. (isubs .LE. ibedload2))) THEN
                 outMust(indx) = .TRUE.
             ENDIF
@@ -2150,113 +2387,46 @@ CONTAINS
 !!==========================================================================================================
 
 
-    SUBROUTINE MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast, BATHY_H0, WATER_ELEVATION  &
+    SUBROUTINE MUSTANG_morphoinit(ifirst, ilast, jfirst, jlast   &
 #if defined MORPHODYN 
                   , dhsed                                                &
 #endif
                   )
-
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE morphoinit  ***
     !&E
-    !&E ** Purpose : initialization of hsed, hsed0, hsed_previous,
-    !&E                 morpho0 
-    !&E
-    !&E ** Description :
-    !&E
+    !&E ** Purpose : initialization of hsed, hsed_previous
     !&E ** Called by :  MUSTANG_init_sediment 
-    !&E
     !&E--------------------------------------------------------------------------
 
     !! * Arguments 
     INTEGER, INTENT(IN)                    :: ifirst, ilast, jfirst, jlast
-    REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(INOUT)        :: BATHY_H0                         
-    REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(INOUT) :: WATER_ELEVATION
 #if defined MORPHODYN
-    REAL(KIND=rsh),DIMENSION(ARRAY_DHSED),INTENT(INOUT)           :: dhsed                       
+    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(INOUT)           :: dhsed                       
 #endif
     !! * Local declarations
     INTEGER :: i, j, k
-
-    !! * Executable part
-
-    IF(l_morphocoupl) THEN
-        ! morpho = 1 if morphodynamic effective
-        ! morpho = 0 if depth not vary
-        morpho0(ARRAY_morpho)=1.0_rsh
-        !  **TODO** To Program
-        !   morpho0(boundaries)=0.0_rsh
-    ENDIF
- 
  
     !!  initialisation of hsed  inside the domain  !!!
-    !!  eliminate the meshes at open boundaries
+    !!  eliminate the meshes at open boundaries ??? not reuse from MARS? TODO or not ?
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO j=jfirst,jlast
     DO i=ifirst,ilast
-        !  WARNING : not in first and last mesh on i and j axis (boundaries)
+        !  WARNING : not in first and last mesh on i and j axis (boundaries) ! ??? not reuse from MARS? TODO or not ?
         hsed(i,j)=0.0_rsh
         DO k=ksmi(i,j),ksma(i,j)
             hsed(i,j)=hsed(i,j)+dzs(k,i,j)
-        ENDDO
-    ENDDO
-    ENDDO       
+        ENDDO   
 
-    IF(l_morphocoupl)THEN
-        DO j=jfirst,jlast
-        DO i=ifirst,ilast
-            !  WARNING: not in first and last mesh on i and j axis (boundaries)
-            hsed_previous(i,j)=hsed(i,j)
-        ENDDO
-        ENDDO       
-        
-        IF(.NOT.l_repsed)THEN   
-            hsed0(:,:)=0.0_rsh
-            DO j=jfirst,jlast
-            DO i=ifirst,ilast
-                !  WARNING : not in first and last mesh on i and j axis (boundaries)
-                hsed0(i,j)=hsed(i,j)
-            ENDDO
-            ENDDO
-        ENDIF                         
-
-    ENDIF   ! endif l_morphocoupl
-
-    IF(l_morphocoupl)THEN    
-
-        IF(l_repsed)THEN          
-
-        !!  update bathy and water elevation if initalisation from file !!!
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        DO j=jfirst,jlast
-        DO i=ifirst,ilast
-            !ssh(i,j)=MAX(ssh(i,j),-BATHY_H0(i,j))         
-            SURF_ELEVATION_ij=MAX(SURF_ELEVATION_ij,-BATHY_H0(i,j))         
-        ENDDO
-        ENDDO
-         
-        !!  echange MPI of BATHY_H0 and WATER_ELEVATION for neighboring cells
-        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      
-        !! To Program, has not been program for CROCO **TODO** CALL sed_exchange_hxe_MARS(1,xh0=BATHY_H0,xssh=WATER_ELEVATION)
-
-        ENDIF   ! endif l_repsed
-
-
-
+        IF(l_morphocoupl)THEN
+            !  WARNING: not in first and last mesh on i and j axis (boundaries)! ??? not reuse from MARS? TODO or not ?
+            hsed_previous(i,j)=hsed(i,j)      
 #if defined MORPHODYN
-        DO j=jfirst,jlast
-        DO i=ifirst,ilast
-            dhsed(i,j)=hsed0(i,j)-hsed(i,j)
-#ifdef key_MUSTANG_debug
-            IF (i==i_MUSTANG_debug .AND. j==j_MUSTANG_debug ) THEN
-                MPI_master_only write(*,*) 'dhsed(',i,',',j,') initial:',dhsed(i,j),hsed0(i,j),hsed(i,j)
-            ENDIF
+            dhsed(i,j)=hsed_previous(i,j)-hsed(i,j)
 #endif
-        ENDDO
-        ENDDO
-#endif
-
-    ENDIF        ! endif l_morphocoupl
+        ENDIF        ! endif l_morphocoupl
+    ENDDO
+    ENDDO
 
     END SUBROUTINE MUSTANG_morphoinit
 !!===========================================================================
@@ -2294,44 +2464,43 @@ CONTAINS
  
  
     !  allocation of spatial variables  
-    !  dimensions defined dans coupler_define_MUSTANG.h
-    ALLOCATE(ksmi(PROC_IN_ARRAY))
-    ALLOCATE(ksma(PROC_IN_ARRAY))
-    ALLOCATE(hsed(PROC_IN_ARRAY))  
-    ALLOCATE(z0sed(PROC_IN_ARRAY))
-    ALLOCATE(tauskin(PROC_IN_ARRAY))
-    ALLOCATE(tauskin_c(PROC_IN_ARRAY))
-    ALLOCATE(tauskin_w(PROC_IN_ARRAY))
-    ALLOCATE(ustarbot(PROC_IN_ARRAY))
-    ALLOCATE(dzsmax(PROC_IN_ARRAY))
-    ALLOCATE(htot(PROC_IN_ARRAY_m2p2))
-    ALLOCATE(alt_cw1(PROC_IN_ARRAY))
-    ALLOCATE(epn_bottom_MUSTANG(PROC_IN_ARRAY_m1p2))  
-    ALLOCATE(sal_bottom_MUSTANG(PROC_IN_ARRAY_m1p2))  
-    ALLOCATE(temp_bottom_MUSTANG(PROC_IN_ARRAY_m1p2))
-    ALLOCATE(cw_bottom_MUSTANG(nv_tot,PROC_IN_ARRAY_m1p2))
-    ALLOCATE(ws3_bottom_MUSTANG(nvp,PROC_IN_ARRAY_m1p2))  
-    ALLOCATE(roswat_bot(PROC_IN_ARRAY))  
-    ksmi(PROC_IN_ARRAY) = 0
-    ksma(PROC_IN_ARRAY) = 0
-    hsed(PROC_IN_ARRAY) = 0.0_rsh
-    z0sed(PROC_IN_ARRAY) = 0.0_rsh
-    tauskin(PROC_IN_ARRAY) = 0.0_rsh
-    tauskin_c(PROC_IN_ARRAY) = 0.0_rsh
-    tauskin_w(PROC_IN_ARRAY) = 0.0_rsh
-    ustarbot(PROC_IN_ARRAY) = 0.0_rsh
-    dzsmax(PROC_IN_ARRAY) = 0.0_rsh
-    htot(PROC_IN_ARRAY_m2p2) = 0.0_rsh
-    alt_cw1(PROC_IN_ARRAY) = 0.0_rsh
-    epn_bottom_MUSTANG(PROC_IN_ARRAY_m1p2) = 0.0_rsh
-    sal_bottom_MUSTANG(PROC_IN_ARRAY_m1p2) = 0.0_rsh
-    temp_bottom_MUSTANG(PROC_IN_ARRAY_m1p2) = 0.0_rsh
-    cw_bottom_MUSTANG(nv_tot,PROC_IN_ARRAY_m1p2) = 0.0_rsh
-    ws3_bottom_MUSTANG(nvp,PROC_IN_ARRAY_m1p2) = 0.0_rsh
-    roswat_bot(PROC_IN_ARRAY) = 0.0_rsh
+    ALLOCATE(ksmi(GLOBAL_2D_ARRAY))
+    ALLOCATE(ksma(GLOBAL_2D_ARRAY))
+    ALLOCATE(hsed(GLOBAL_2D_ARRAY))  
+    ALLOCATE(z0sed(GLOBAL_2D_ARRAY))
+    ALLOCATE(tauskin(GLOBAL_2D_ARRAY))
+    ALLOCATE(tauskin_c(GLOBAL_2D_ARRAY))
+    ALLOCATE(tauskin_w(GLOBAL_2D_ARRAY))
+    ALLOCATE(ustarbot(GLOBAL_2D_ARRAY))
+    ALLOCATE(dzsmax(GLOBAL_2D_ARRAY))
+    ALLOCATE(htot(GLOBAL_2D_ARRAY))
+    ALLOCATE(alt_cw1(GLOBAL_2D_ARRAY))
+    ALLOCATE(epn_bottom_MUSTANG(GLOBAL_2D_ARRAY))  
+    ALLOCATE(sal_bottom_MUSTANG(GLOBAL_2D_ARRAY))  
+    ALLOCATE(temp_bottom_MUSTANG(GLOBAL_2D_ARRAY))
+    ALLOCATE(cw_bottom_MUSTANG(nv_tot,GLOBAL_2D_ARRAY))
+    ALLOCATE(ws3_bottom_MUSTANG(nvp,GLOBAL_2D_ARRAY))  
+    ALLOCATE(roswat_bot(GLOBAL_2D_ARRAY))  
+    ksmi(GLOBAL_2D_ARRAY) = 0
+    ksma(GLOBAL_2D_ARRAY) = 0
+    hsed(GLOBAL_2D_ARRAY) = 0.0_rsh
+    z0sed(GLOBAL_2D_ARRAY) = 0.0_rsh
+    tauskin(GLOBAL_2D_ARRAY) = 0.0_rsh
+    tauskin_c(GLOBAL_2D_ARRAY) = 0.0_rsh
+    tauskin_w(GLOBAL_2D_ARRAY) = 0.0_rsh
+    ustarbot(GLOBAL_2D_ARRAY) = 0.0_rsh
+    dzsmax(GLOBAL_2D_ARRAY) = 0.0_rsh
+    htot(GLOBAL_2D_ARRAY) = 0.0_rsh
+    alt_cw1(GLOBAL_2D_ARRAY) = 0.0_rsh
+    epn_bottom_MUSTANG(GLOBAL_2D_ARRAY) = 0.0_rsh
+    sal_bottom_MUSTANG(GLOBAL_2D_ARRAY) = 0.0_rsh
+    temp_bottom_MUSTANG(GLOBAL_2D_ARRAY) = 0.0_rsh
+    cw_bottom_MUSTANG(nv_tot,GLOBAL_2D_ARRAY) = 0.0_rsh
+    ws3_bottom_MUSTANG(nvp,GLOBAL_2D_ARRAY) = 0.0_rsh
+    roswat_bot(GLOBAL_2D_ARRAY) = 0.0_rsh
 #if ! defined key_noTSdiss_insed
-    ALLOCATE(phitemp_s(PROC_IN_ARRAY))
-    phitemp_s(PROC_IN_ARRAY) = 0.0_rsh
+    ALLOCATE(phitemp_s(GLOBAL_2D_ARRAY))
+    phitemp_s(GLOBAL_2D_ARRAY) = 0.0_rsh
 #endif
 #ifdef key_MUSTANG_V2
     ALLOCATE(sigmapsg(ksdmin:ksdmax))
@@ -2341,91 +2510,91 @@ CONTAINS
     psi_sed(1:nvp) = 0.0_rsh
 #endif
 #ifdef key_sand2D
-    ALLOCATE(rouse2D(nv_adv,PROC_IN_ARRAY))
-    ALLOCATE(sum_tmp(nv_adv,PROC_IN_ARRAY))
-    rouse2D(1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
-    sum_tmp(1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
+    ALLOCATE(rouse2D(nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(sum_tmp(nv_adv,GLOBAL_2D_ARRAY))
+    rouse2D(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+    sum_tmp(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
 #endif
     
-    ALLOCATE(cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY))
-    ALLOCATE(c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY))
-    ALLOCATE(poro(ksdmin:ksdmax,PROC_IN_ARRAY))
-    ALLOCATE(dzs(ksdmin:ksdmax,PROC_IN_ARRAY))
-    ALLOCATE(flx_s2w(-1:nv_adv,PROC_IN_ARRAY))
-    ALLOCATE(flx_w2s(-1:nv_adv,PROC_IN_ARRAY))
-    ALLOCATE(flx_w2s_sum(-1:nv_adv,PROC_IN_ARRAY))
-    ALLOCATE(corflux(nv_adv, PROC_IN_ARRAY_m1p1))
-    ALLOCATE(corfluy(nv_adv, PROC_IN_ARRAY_m1p1))
-    ALLOCATE(fludif(-1:nv_adv,PROC_IN_ARRAY))
-    ALLOCATE(fluconsol(-1:nv_adv,PROC_IN_ARRAY))
-    ALLOCATE(fluconsol_drycell(-1:nv_adv,PROC_IN_ARRAY))
-    ALLOCATE(flu_dyninsed(-1:nv_adv,PROC_IN_ARRAY))
-    ALLOCATE(gradvit(NB_LAYER_WAT,PROC_IN_ARRAY))
+    ALLOCATE(cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY))
+    ALLOCATE(c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY))
+    ALLOCATE(poro(ksdmin:ksdmax,GLOBAL_2D_ARRAY))
+    ALLOCATE(dzs(ksdmin:ksdmax,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_s2w(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_w2s(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_w2s_sum(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(corflux(nv_adv, GLOBAL_2D_ARRAY))
+    ALLOCATE(corfluy(nv_adv, GLOBAL_2D_ARRAY))
+    ALLOCATE(fludif(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(fluconsol(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(fluconsol_drycell(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(flu_dyninsed(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(gradvit(N,GLOBAL_2D_ARRAY))
 
-    cv_sed(-1:nv_tot,ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-    c_sedtot(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-    poro(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-    dzs(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-    flx_s2w(-1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
-    flx_w2s(-1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
-    flx_w2s_sum(-1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
-    corflux(1:nv_adv, PROC_IN_ARRAY_m1p1) = 1.0_rsh
-    corfluy(1:nv_adv, PROC_IN_ARRAY_m1p1) = 1.0_rsh
-    fludif(-1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
-    fluconsol(-1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
-    fluconsol_drycell(-1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
-    flu_dyninsed(-1:nv_adv,PROC_IN_ARRAY) = 0.0_rsh
-    gradvit(NB_LAYER_WAT,PROC_IN_ARRAY) = 0.0_rsh
+    cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
+    c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
+    poro(ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
+    dzs(ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
+    flx_s2w(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+    flx_w2s(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+    flx_w2s_sum(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+    corflux(1:nv_adv, GLOBAL_2D_ARRAY) = 1.0_rsh
+    corfluy(1:nv_adv, GLOBAL_2D_ARRAY) = 1.0_rsh
+    fludif(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+    fluconsol(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+    fluconsol_drycell(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+    flu_dyninsed(-1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+    gradvit(N,GLOBAL_2D_ARRAY) = 0.0_rsh
 
 
 #ifdef key_MUSTANG_V2
-    ALLOCATE(poro_mud(ksdmin:ksdmax,PROC_IN_ARRAY))
-    ALLOCATE(crel_mud(ksdmin:ksdmax,PROC_IN_ARRAY))
-    ALLOCATE(l_isitcohesive(PROC_IN_ARRAY))
-    poro_mud(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-    crel_mud(ksdmin:ksdmax,PROC_IN_ARRAY) = 0.0_rsh
-    l_isitcohesive(PROC_IN_ARRAY) = .FALSE.
+    ALLOCATE(poro_mud(ksdmin:ksdmax,GLOBAL_2D_ARRAY))
+    ALLOCATE(crel_mud(ksdmin:ksdmax,GLOBAL_2D_ARRAY))
+    ALLOCATE(l_isitcohesive(GLOBAL_2D_ARRAY))
+    poro_mud(ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
+    crel_mud(ksdmin:ksdmax,GLOBAL_2D_ARRAY) = 0.0_rsh
+    l_isitcohesive(GLOBAL_2D_ARRAY) = .FALSE.
 
 #ifdef key_MUSTANG_bedload
-    ALLOCATE( flx_bx(1:nvp,PROC_IN_ARRAY_m1p1)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
-    ALLOCATE( flx_by(1:nvp,PROC_IN_ARRAY_m1p1)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
-    ALLOCATE( slope_dhdx(PROC_IN_ARRAY))
-    ALLOCATE( slope_dhdy(PROC_IN_ARRAY))
-    ALLOCATE( sedimask_h0plusxe(PROC_IN_ARRAY_m1p1)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
-    flx_bx(1:nvp,PROC_IN_ARRAY_m1p1)=0.0_rsh 
-    flx_by(1:nvp,PROC_IN_ARRAY_m1p1)=0.0_rsh
-    slope_dhdx(PROC_IN_ARRAY)=0.0_rsh
-    slope_dhdy(PROC_IN_ARRAY)=0.0_rsh
-    sedimask_h0plusxe(PROC_IN_ARRAY_m1p1)=0.0_rsh
+    ALLOCATE( flx_bx(1:nvp,GLOBAL_2D_ARRAY)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
+    ALLOCATE( flx_by(1:nvp,GLOBAL_2D_ARRAY)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
+    ALLOCATE( slope_dhdx(GLOBAL_2D_ARRAY))
+    ALLOCATE( slope_dhdy(GLOBAL_2D_ARRAY))
+    ALLOCATE( sedimask_h0plusxe(GLOBAL_2D_ARRAY)) ! Warning /Baptiste : m1p1 sur les 2 indices au lieu d1
+    flx_bx(1:nvp,GLOBAL_2D_ARRAY)=0.0_rsh 
+    flx_by(1:nvp,GLOBAL_2D_ARRAY)=0.0_rsh
+    slope_dhdx(GLOBAL_2D_ARRAY)=0.0_rsh
+    slope_dhdy(GLOBAL_2D_ARRAY)=0.0_rsh
+    sedimask_h0plusxe(GLOBAL_2D_ARRAY)=0.0_rsh
 #endif
 #endif
 
-    ALLOCATE(phieau_s2w(PROC_IN_ARRAY))
-    ALLOCATE(phieau_s2w_drycell(PROC_IN_ARRAY))
-    ALLOCATE(phieau_s2w_consol(PROC_IN_ARRAY))
-    phieau_s2w(PROC_IN_ARRAY)=0.0_rlg
-    phieau_s2w_drycell(PROC_IN_ARRAY)=0.0_rlg
-    phieau_s2w_consol(PROC_IN_ARRAY)=0.0_rlg
+    ALLOCATE(phieau_s2w(GLOBAL_2D_ARRAY))
+    ALLOCATE(phieau_s2w_drycell(GLOBAL_2D_ARRAY))
+    ALLOCATE(phieau_s2w_consol(GLOBAL_2D_ARRAY))
+    phieau_s2w(GLOBAL_2D_ARRAY)=0.0_rlg
+    phieau_s2w_drycell(GLOBAL_2D_ARRAY)=0.0_rlg
+    phieau_s2w_consol(GLOBAL_2D_ARRAY)=0.0_rlg
 
-    ALLOCATE( raphbx(PROC_IN_ARRAY_m1p1), raphby(PROC_IN_ARRAY_m1p1) )
-    ALLOCATE( tauskin_x(PROC_IN_ARRAY), tauskin_y(PROC_IN_ARRAY) )
-    raphbx(PROC_IN_ARRAY_m1p1)=0.0_rsh
-    raphby(PROC_IN_ARRAY_m1p1)=0.0_rsh
+    ALLOCATE( raphbx(GLOBAL_2D_ARRAY), raphby(GLOBAL_2D_ARRAY) )
+    ALLOCATE( tauskin_x(GLOBAL_2D_ARRAY), tauskin_y(GLOBAL_2D_ARRAY) )
+    raphbx(GLOBAL_2D_ARRAY)=0.0_rsh
+    raphby(GLOBAL_2D_ARRAY)=0.0_rsh
 
-    ALLOCATE(flx_s2w_corim1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
-    ALLOCATE(flx_s2w_corip1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
-    ALLOCATE(flx_s2w_corjm1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
-    ALLOCATE(flx_s2w_corjp1(-1:nv_adv,PROC_IN_ARRAY_m1p1))
-    ALLOCATE(flx_w2s_corin(nvp,PROC_IN_ARRAY))
-    ALLOCATE(flx_w2s_corim1(nvp,PROC_IN_ARRAY_m1p1))
-    ALLOCATE(flx_w2s_corip1(nvp,PROC_IN_ARRAY_m1p1))
-    ALLOCATE(flx_w2s_corjm1(nvp,PROC_IN_ARRAY_m1p1))
-    ALLOCATE(flx_w2s_corjp1(nvp,PROC_IN_ARRAY_m1p1))
+    ALLOCATE(flx_s2w_corim1(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_s2w_corip1(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_s2w_corjm1(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_s2w_corjp1(-1:nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_w2s_corin(nvp,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_w2s_corim1(nvp,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_w2s_corip1(nvp,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_w2s_corjm1(nvp,GLOBAL_2D_ARRAY))
+    ALLOCATE(flx_w2s_corjp1(nvp,GLOBAL_2D_ARRAY))
 #if ! defined key_nofluxwat_IWS
-    ALLOCATE(phieau_s2w_corim1(PROC_IN_ARRAY_m1p1))
-    ALLOCATE(phieau_s2w_corip1(PROC_IN_ARRAY_m1p1))
-    ALLOCATE(phieau_s2w_corjm1(PROC_IN_ARRAY_m1p1))
-    ALLOCATE(phieau_s2w_corjp1(PROC_IN_ARRAY_m1p1))
+    ALLOCATE(phieau_s2w_corim1(GLOBAL_2D_ARRAY))
+    ALLOCATE(phieau_s2w_corip1(GLOBAL_2D_ARRAY))
+    ALLOCATE(phieau_s2w_corjm1(GLOBAL_2D_ARRAY))
+    ALLOCATE(phieau_s2w_corjp1(GLOBAL_2D_ARRAY))
 #endif
   
     ! Initialization
@@ -2456,28 +2625,24 @@ CONTAINS
     !!!!!!!!!!!!!!!!!!!!
     IF(l_morphocoupl) THEN
     !! Warning : no hx, hy in other model than MARS 
-        ALLOCATE(morpho0(ARRAY_morpho))
-        ALLOCATE(hsed0(PROC_IN_ARRAY))
-        ALLOCATE(hsed_previous(PROC_IN_ARRAY))
-        hsed0(PROC_IN_ARRAY) = 0.0_rsh
-        hsed_previous(PROC_IN_ARRAY) = 0.0_rsh
-
+        ALLOCATE(hsed_previous(GLOBAL_2D_ARRAY))
+        hsed_previous(GLOBAL_2D_ARRAY) = 0.0_rsh
     ENDIF
 
     !! declaration of the MUSTANG variables needed in the hydro model 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ALLOCATE(EROS_FLUX_s2w(ARRAY_EROS_FLUX_s2w))
-    ALLOCATE(SETTL_FLUX_w2s(ARRAY_SETTL_FLUX_w2s))
-    ALLOCATE(SETTL_FLUXSUM_w2s(ARRAY_SETTL_FLUXSUM_w2s))
-    EROS_FLUX_s2w(ARRAY_EROS_FLUX_s2w) = 0.0_rsh
-    SETTL_FLUX_w2s(ARRAY_SETTL_FLUX_w2s) = 0.0_rsh
-    SETTL_FLUXSUM_w2s(ARRAY_SETTL_FLUXSUM_w2s) = 0.0_rsh
+    ALLOCATE(flx_s2w_CROCO(GLOBAL_2D_ARRAY,1:NT))
+    ALLOCATE(flx_w2s_CROCO(GLOBAL_2D_ARRAY,1:NT))
+    ALLOCATE(flx_w2s_sum_CROCO(GLOBAL_2D_ARRAY,1:NT))
+    flx_s2w_CROCO(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
+    flx_w2s_CROCO(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
+    flx_w2s_sum_CROCO(GLOBAL_2D_ARRAY,1:NT) = 0.0_rsh
 #if ! defined key_nofluxwat_IWS && ! defined key_noTSdiss_insed
-    ALLOCATE(WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS)) ! not operationnal, stil to code **TODO**
-    WATER_FLUX_INPUTS(ARRAY_WATER_FLUX_INPUTS) = 0.0_rsh
+    ALLOCATE(WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N)) ! not operationnal, stil to code **TODO**
+    WATER_FLUX_INPUTS(GLOBAL_2D_ARRAY,1:N) = 0.0_rsh
 #endif    
     
-    ALLOCATE(fwet(PROC_IN_ARRAY))
+    ALLOCATE(fwet(GLOBAL_2D_ARRAY))
     fwet(:,:) = 1.0_rsh
   
 

@@ -4,20 +4,18 @@ MODULE comMUSTANG
 
 #ifdef MUSTANG
 
-!!============================================================================
-!! ***  MODULE  comMUSTANG  ***
-!! Purpose : declare all common variables related to sediment dynamics
-!!============================================================================
+    !!============================================================================
+    !! ***  MODULE  comMUSTANG  ***
+    !! Purpose : declare all common variables related to sediment dynamics
+    !!============================================================================
 
-!! * Modules used
-USE comsubstance ! for lchain, rsh, rlg, riosh
+    !! * Modules used
+    USE comsubstance ! for lchain, rsh, rlg, riosh
 
-implicit none
+    implicit none
 
-! default
-public
-
-#include "coupler_define_MUSTANG.h"
+    ! default
+    public
   
     !! * Shared or public variables for MUSTANG 
 
@@ -34,20 +32,16 @@ public
         ! processes in sediment; format '01/01/0000 00:00:00'
     CHARACTER(len=19) :: date_start_morpho ! starting date for morphodynamic; 
         ! format '01/01/0000 00:00:00'
-    LOGICAL  :: l_repsed ! set to .true. if sedimentary variables are 
-        ! initialized from a previous run
     LOGICAL  :: l_initsed_vardiss !set to .true. if initialization of dissolved
         ! variables, temperature and salinity in sediment (will be done with 
         ! concentrations in water at bottom (k=1))
     LOGICAL  :: l_unised !set to .true. for a uniform bottom initialization
-    LOGICAL  :: l_init_hsed ! set to .true. if we want to adjust the sediment 
-        ! thickness in order to be coherent with sediment 
+    LOGICAL  :: l_unised_adjust_hsed ! set to .true. if we want to adjust the 
+        ! sediment thickness in order to be coherent with sediment 
         ! parameters (calculation of a new hseduni based on 
         ! cseduni, cvolmax values, and csed_ini of each sediment)
     CHARACTER(len=lchain) :: filrepsed ! file path from which the model is 
-        ! initialized for the continuation of a previous run
-    CHARACTER(len=lchain) :: fileinised ! file path for initialization (if 
-        ! l_unised is False)
+        ! initialized for the continuation of a previous run or non uniform init
     REAL(KIND=rsh) :: cseduni ! initial sediment concentration (kg/m3)
     REAL(KIND=rsh) :: hseduni ! initial uniform sediment thickness (m) 
     REAL(KIND=rsh) :: csed_mud_ini ! real, mud concentration into initial 
@@ -199,7 +193,6 @@ public
         ! 3: min( case 0; toce(isand2) )
 
 
-#ifdef key_MUSTANG_V2
     ! namsedim_poro 
     INTEGER :: poro_option ! choice of porosity formulation
         ! 1: Wu and Li (2017) (incompatible with consolidation))
@@ -214,7 +207,6 @@ public
         ! participating in filling , ref value = 0.65
     REAL(KIND=rsh) :: poro_min ! minimum porosity below which consolidation 
         ! is stopped
-#endif
 
 
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
@@ -236,9 +228,9 @@ public
         ! h0+ssh <= hmin_bedload in neighbouring cells
 #endif
 
+    ! namsedim_lateral_erosion
 
-!**TODO** put under cpp key #ifdef key_MUSTANG_lateralerosion
-    ! namsedim_lateral_erosion 
+    LOGICAL        :: l_erolat ! set to .true to activate lateral erosion
     REAL(KIND=rsh) :: htncrit_eros ! critical water height so as to prevent 
         ! erosion under a given threshold (the threshold value is different for
         ! flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
@@ -248,8 +240,6 @@ public
         ! vertical
     LOGICAL        :: l_erolat_wet_cell ! set to .true in order to take 
         ! into account wet cells lateral erosion
-!**TODO** put under cpp key #key_MUSTANG_lateralerosion
-
 
     ! namsedim_consolidation 
     LOGICAL        :: l_consolid ! set to .true. if sediment consolidation is 
@@ -320,9 +310,6 @@ public
         ! (MF_dhsed = MF; then MF will be = 0)
         ! set to .false. if morphodynamic is applied with 
         ! erosion/deposit fluxes amplification (MF_dhsed not used)
-    LOGICAL :: l_bathy_actu ! set to .true. if reading a new bathy issued a 
-        ! previous run and saved in filrepsed (given in namelist namsedim_init)  
-        !!! NOT IMPLEMENTED YET !!! **TODO**
     REAL(KIND=rsh) :: MF ! morphological factor : multiplication factor for 
         ! morphologicalevolutions, equivalent to a "time acceleration" 
         ! (morphological evolutions over a MF*T duration are assumed to be 
@@ -385,23 +372,6 @@ public
         ! an addition layer is an integrative layer till bottom
 
 
-#if defined key_MUSTANG_debug && defined key_MUSTANG_V2
-    ! namsedim_debug 
-    LOGICAL        :: l_debug_effdep ! set to .true. if print some 
-        ! informations for debugging MUSTANG deposition
-    LOGICAL        :: l_debug_erosion ! set to .true. if  print 
-        ! informations for debugging  in erosion routines
-    REAL(kind=rlg)   :: lon_debug, lat_debug ! define mesh location 
-        ! where we print these informations
-    INTEGER          :: i_MUSTANG_debug, j_MUSTANG_debug ! indexes 
-        ! of the mesh where we print these informations 
-        ! (only if lon_debug and lat_debug = 0.)
-    CHARACTER(len=19):: date_start_debug ! starting date for write 
-        ! debugging informations 
-#endif
-
-
-
 #ifdef key_MUSTANG_flocmod
     ! namflocmod  
     LOGICAL :: l_ASH ! set to .true. if aggregation by shear
@@ -441,6 +411,12 @@ public
         !processes are not calculated
 #endif
 
+    CHARACTER(len=lchain) :: dredging_location_file ! TODO DREDGING
+    CHARACTER(len=lchain) :: dredging_settings_file ! TODO DREDGING
+    CHARACTER(len=lchain) :: dredging_out_file ! TODO DREDGING
+    INTEGER :: dredging_dumping_layer ! TODO DREDGING
+    REAL(KIND=rsh) :: dredging_dt ! TODO DREDGING
+    REAL(KIND=rsh) :: dredging_dt_out ! TODO DREDGING
 
 ! end namelist variables
 
@@ -459,9 +435,9 @@ public
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_sum
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: EROS_FLUX_s2w
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUX_w2s
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUXSUM_w2s
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_CROCO
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_CROCO
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_sum_CROCO
 
     ! Sediment parameters
     REAL(KIND=rsh)            :: ros_sand_homogen 
@@ -485,7 +461,6 @@ public
 
     ! Sediment height
     REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed
-    REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed0
     REAL(KIND=rsh),DIMENSION(:,:),ALLOCATABLE       :: hsed_previous
 
     ! Bottom stress variables
@@ -541,7 +516,6 @@ public
     REAL(KIND=rlg) :: tstart_morpho   ! time beginning morphodynamic
     REAL(KIND=rlg) :: t_morpho        ! time of next morphodynamic step
     REAL(KIND=rsh) :: MF_dhsed
-    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: morpho0
 
 #ifdef key_MUSTANG_V2
     REAL(KIND=rsh) :: coeff_dzsmin
@@ -563,12 +537,10 @@ public
             INTEGER :: it_morphoYes
 #endif
 #endif
-#ifdef key_MUSTANG_debug
-        REAL(KIND=rlg)   :: t_start_debug
-#endif
 #endif
 
     ! Sedim output
+    INTEGER                            :: rstMust_nbvar
     INTEGER, DIMENSION(:), ALLOCATABLE :: rstMust                    ! Output identifier
     INTEGER, DIMENSION(:), ALLOCATABLE :: hisMust                    ! Output identifier
     INTEGER, DIMENSION(:), ALLOCATABLE :: avgMust                    ! Output identifier
@@ -627,19 +599,15 @@ public
     REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_diagsed
 #endif
 
-!**TODO** put under cpp key #if defined key_MUSTANG_lateralerosion
-!  used in erosion only but exchange and dimensions could depend on grid model 
+!  used in lateral_erosion only 
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corim1
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corip1
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjm1
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjp1
-!**TODO** put under cpp key #if ! defined key_nofluxwat_IWS
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corim1
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corip1
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
-!**TODO** put under cpp key #endif
-!**TODO** put under cpp key #endif
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corim1
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corip1
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
 
 ! slipdeposit : **TODO** put under cpp key key_MUSTANG_slipdeposit
    !  used in accretion (settling) only bud exchange and dimensions could depend on grid model 

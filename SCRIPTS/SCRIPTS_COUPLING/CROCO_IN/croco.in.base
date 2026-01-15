@@ -1,15 +1,27 @@
 title:
         <title>
+
+logfile:
+        croco.log
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
            <ocentimes>  <ocedt> <ocendtfast> 1
+time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
+                     1         1000         0.01
 S-coord: THETA_S,   THETA_B,    Hc	 (m)
  	 <theta_s>      <theta_b>      <hc>
 
 start_date:
 <dstart>-<mstart>-<ystart> 00:00:00
-origin_date:
+
+end_date:
+<dend>-<mend>-<yend> 00:00:00
+
+xios_origin_date:
 <dorig>-<morig>-<yorig> 00:00:00
 
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                   <oce_his_h>       <oce_avg_h>       <oce_rst_h>
 
 grid:  filename
                           ./croco_grd.nc
@@ -22,10 +34,10 @@ climatology: filename
 boundary: filename
                           ./croco_bry.nc
 initial: NRREC  filename
-          1 
+          <idx_ini> 
                           ./croco_ini.nc
 restart:          NRST, NRPFRST / filename
-               <oce_nrst>    -1
+               <oce_nrst>    <idx_rst>
                           ./croco_rst.nc
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T  <oce_nhis>   0
@@ -35,14 +47,14 @@ averages: NTSAVG, NAVG, NRPFAVG / filename
                           ./croco_avg.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
-                          T    T   T   T  T    40*T
+                          T    T   T   T  T    50*T
 auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks  Bvf  Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
                              F   F     T   F    T    F   F    F       F       T   T    T     F      F     T    T    T    T    T   10*T             
 gls_history_fields:   TKE  GLS  Lscale
                        T     T    T
 
 primary_averages: zeta UBAR VBAR  U  V   wrtT(1:NT)
-                   T    T    T    T  T   40*T
+                   T    T    T    T  T   50*T
 auxiliary_averages: rho Omega  W  Akv  Akt  Aks  Bvf Visc3d Diff3d HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
                      F   T     T   F    T    F    F    F     F      T   T    T     F     F     T   T    T     T    T   10*T
 gls_averages:   TKE  GLS  Lscale
@@ -55,10 +67,10 @@ lateral_visc:   VISC2,    VISC4    [m^2/sec for all]
                  0.       0.
 
 tracer_diff2: TNU2(1:NT)           [m^2/sec for all]
-               30*0.d0 
+               50*0.d0 
 
 tracer_diff4: TNU4(1:NT)           [m^4/sec for all]
-               30*0.d11
+               50*0.d11
 
 vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
                    0.d0    30*0.d0
@@ -83,17 +95,23 @@ diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1        <oce_navg>            0
                                  ./croco_dia_avg.nc
 
+diag_mld_crit_threshold: CRT1 (Dens [kg/m3]), CRT2 (Temp [Celsius]), CRT3 (Temp [Celsius])
+                         3.d-2                2.d-1                  5.d-1
+
+diag_mld_depth_ref: [m]
+                10
+
 diag3D_history_fields:    diag_tracers3D(1:NT) 
-                            30*T
+                            50*T
 
 diag2D_history_fields:    diag_tracers2D(1:NT)
-                            30*T
+                            50*T
 
 diag3D_average_fields:    diag_tracers3D_avg(1:NT)
-                            30*T
+                            50*T
 
 diag2D_average_fields:    diag_tracers2D_avg(1:NT)
-                            30*T
+                            50*T
 
 diagnosticsM:   ldefdiaM   nwrtdiaM    nrpfdiaM /filename
                    T      <oce_nhis>          0
@@ -108,6 +126,81 @@ diagM_history_fields: diag_momentum(1:2)
 
 diagM_average_fields: diag_momentum_avg(1:2)
 		            T T
+
+
+diags_vrt:   ldefdiags_vrt, nwrtdiags_vrt, nrpfdiags_vrt /filename
+                   T          <oce_nhis>        0
+                                 ./croco_diags_vrt.nc
+
+diags_vrt_avg: ldefdiags_vrt_avg  ntsdiags_vrt_avg  nwrtdiags_vrt_avg  nprfdiags_vrt_avg /filename
+               T          1          <oce_navg>          0
+                                 ./croco_diags_vrt_avg.nc
+
+diags_vrt_history_fields: diags_vrt
+                            T
+
+diags_vrt_average_fields: diags_vrt_avg
+                            T
+
+
+diags_ek:   ldefdiags_ek, nwrtdiags_ek, nrpfdiags_ek /filename
+                   T          <oce_nhis>        0
+                                 ./croco_diags_ek.nc
+
+diags_ek_avg: ldefdiags_ek_avg  ntsdiags_ek_avg  nwrtdiags_ek_avg  nprfdiags_ek_avg /filename
+               T          1           <oce_navg>          0
+                                 ./croco_diags_ek_avg.nc
+
+diags_ek_history_fields: diags_ek
+                            T
+
+diags_ek_average_fields: diags_ek_avg
+                            T
+
+surf:   ldefsurf, nwrtsurf, nrpfsurf /filename
+                   T          <oce_nhis>        0
+                                 ./croco_surf.nc
+
+surf_avg: ldefsurf_avg  ntssurf_avg  nwrtsurf_avg  nprfsurf_avg /filename
+               F          1           <oce_navg>          0
+                                 ./croco_surf_avg.nc
+
+surf_history_fields: surf
+                            T
+
+surf_average_fields: surf_avg
+                            F
+
+
+diags_pv:   ldefdiags_pv, nwrtdiags_pv, nrpfdiags_pv /filename
+                   T          <oce_nhis>        0
+                                 ./croco_diags_pv.nc
+
+diags_pv_avg: ldefdiags_pv_avg  ntsdiags_pv_avg  nwrtdiags_pv_avg  nprfdiags_pv_avg /filename
+               T          1           <oce_navg>          0
+                                 ./croco_diags_pv_avg.nc
+
+diags_pv_history_fields: diags_pv(1:NT)
+                            50*T
+
+diags_pv_average_fields: diags_pv_avg(1:NT)
+                            50*T
+
+
+diags_eddy:   ldefdiags_eddy, nwrtdiags_eddy, nrpfdiags_eddy /filename
+                   T          <oce_nhis>        0
+                                 ./croco_diags_eddy.nc
+
+diags_eddy_avg: ldefdiags_eddy_avg  ntsdiags_eddy_avg  nwrtdiags_eddy_avg  nprfdiags_eddy_avg /filename
+               T          1           <oce_navg>          0
+                                 ./croco_diags_eddy_avg.nc
+
+diags_eddy_history_fields: diags_eddy
+                            T
+
+diags_eddy_average_fields: diags_eddy_avg
+                            T
+
 
 diagnostics_bio:   ldefdiabio   nwrtdiabio    nrpfdiabio /filename
                         T         <oce_nhis>              0
@@ -124,16 +217,16 @@ diagbioVSink_history_fields:   wrtdiabioVSink
                                  50*T  
 
 diagbioGasExc_history_fields:  wrtdiabioGasExc 
-			                      50*T 
+                                 50*T 
 
 diagbioFlux_average_fields:    wrtdiabioFlux_avg
-                                  50*T   
+                                 50*T   
 
 diagbioVSink_average_fields:   wrtdiabioVSink_avg
-                                  50*T
+                                 50*T
 
 diagbioGasExc_average_fields:  wrtdiabioGasExc_avg
-			                      50*T
+                                 50*T
 	
 biology:   forcing file
            ./croco_frcbio.nc
@@ -159,15 +252,15 @@ sediments: input file
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                             20*F 
 
+substance: input file (substance module)
+               parasubstance.txt
+
+sediments_mustang: input file ( Mustang sediment model)
+               paraMUSTANG.txt
+
+
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T
-
-floats: LDEFFLT, NFLT, NRPFFLT / inpname, hisname
-           T      6      0
-                                   floats.in
-                                   ./floats.nc
-float_fields:  Grdvar Temp Salt Rho Vel
-                T     T    T    T   T
 
 stations: LDEFSTA, NSTA, NRPFSTA / inpname, hisname
              T      400      0

@@ -56,9 +56,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
-!
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
       call def_diags (nciddia, nrecdia, ierr)
@@ -250,58 +247,34 @@
            call fillvalue2d(work2d,nciddia,diaTentr_mld(itrc),
      &                      vname(1,indxTentr_mld+itrc-1),
      &                      record,r2dvar,type)
+
+!
+! indxTaver_mld
+!
+           work2d=Taver_mld(:,:,itrc)
+           call fillvalue2d(work2d,nciddia,diaTaver_mld(itrc),
+     &                      vname(1,indxTaver_mld+itrc-1),
+     &                      record,r2dvar,type)
+
+
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
+     & .or. itrc.eq.iCRT4) then
+!
+! indxTcrit_mld
+!
+           work2d=Tcrit_mld(:,:,itrc)
+           call fillvalue2d(work2d,nciddia,diaTcrit_mld(itrc),
+     &                      vname(1,indxTcrit_mld+itrc-1),
+     &                      record,r2dvar,type)
+       endif
+# endif
         endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
       enddo
 !
-!--# define DEBUG
-# ifdef DEBUG
-      i=20
-      j=20
-      k=10
-      itrc=1
-      write(*,*) 'Write diag TS his at : i='
-     &                ,i,' j=',j,' k=',k,' iTS=',itrc
-      write(*,*) 'TXadv(i,j,k,itrc) ',TXadv(i,j,k,itrc)
-      write(*,*) 'TYadv(i,j,k,itrc) ',TYadv(i,j,k,itrc)
-      write(*,*) 'TVadv(i,j,k,itrc) ',TVadv(i,j,k,itrc)
-      write(*,*) 'THmix(i,j,k,itrc) ',THmix(i,j,k,itrc)
-      write(*,*) 'TVmix(i,j,k,itrc) ',TVmix(i,j,k,itrc)
-      write(*,*) 'TForc(i,j,k,itrc) ',TForc(i,j,k,itrc)
-      write(*,*) 'Trate(i,j,k,itrc) ',Trate(i,j,k,itrc)
-
-      write(*,*) 'SumTShis(i,j,k,itrc) = ',TXadv(i,j,k,itrc)
-     &                                  +  TYadv(i,j,k,itrc)
-     &                                  +  TVadv(i,j,k,itrc)
-     &                                  +  THmix(i,j,k,itrc)
-     &                                  +  TVmix(i,j,k,itrc)
-     &                                  +  TForc(i,j,k,itrc)
-     &                                  -  Trate(i,j,k,itrc)
-      write(*,*) '========================================='
-      write(*,*) 'Write diag TS_MLD his at : i='
-     &                ,i,' j=',j,' iTS=',itrc
-      write(*,*) 'TXadv_mld(i,j,k,itrc) ',TXadv_mld(i,j,itrc)
-      write(*,*) 'TYadv_mld(i,j,k,itrc) ',TYadv_mld(i,j,itrc)
-      write(*,*) 'TVadv_mld(i,j,k,itrc) ',TVadv_mld(i,j,itrc)
-      write(*,*) 'THmix_mld(i,j,k,itrc) ',THmix_mld(i,j,itrc)
-      write(*,*) 'TVmix_mld(i,j,k,itrc) ',TVmix_mld(i,j,itrc)
-      write(*,*) 'TForc_mld(i,j,k,itrc) ',TForc_mld(i,j,itrc)
-      write(*,*) 'Trate_mld(i,j,k,itrc) ',Trate_mld(i,j,itrc)
-      write(*,*) 'Tentr_mld(i,j,k,itrc) ',Tentr_mld(i,j,itrc)
-
-      write(*,*) 'SumTShis_mld(i,j,k,itrc) = ',TXadv_mld(i,j,itrc)
-     &                                  +  TYadv_mld(i,j,itrc)
-     &                                  +  TVadv_mld(i,j,itrc)
-     &                                  +  THmix_mld(i,j,itrc)
-     &                                  +  TVmix_mld(i,j,itrc)
-     &                                  +  TForc_mld(i,j,itrc)
-     &                                  +  Tentr_mld(i,j,itrc)
-     &                                  -  Trate_mld(i,j,itrc)
-      write(*,*) '-----------------------------------------'
-# endif /* DEBUG */
-!--#undef DEBUG
 
   1   format(/1x,'WRT_DIAG ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',

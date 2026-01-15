@@ -17,11 +17,8 @@ MODULE coupler_MUSTANG
 !&E
 !&E==========================================================================
 
-#include "coupler_define_MUSTANG.h"
-
     USE comMUSTANG
     USE comsubstance
-    USE module_MUSTANG
     USE module_substance
 
     IMPLICIT NONE
@@ -34,7 +31,7 @@ MODULE coupler_MUSTANG
     CONTAINS
     !!=======================================================================
     SUBROUTINE coupl_conv2MUSTANG(ifirst, ilast, jfirst, jlast, iappel,     &
-                                  BATHY_H0, ssh, WATER_CONCENTRATION)
+                                  WATER_CONCENTRATION)
     !&E----------------------------------------------------------------------
     !&E                 ***  ROUTINE coupl_conv2MUSTANG  ***
     !&E
@@ -42,7 +39,7 @@ MODULE coupler_MUSTANG
     !&E               only inside the domain, not at boundaries meshes
     !&E
     !&E ** Description :  
-    !&E  arguments IN : BATHY_H0, ssh, WATER_CONCENTRATION
+    !&E  arguments IN : WATER_CONCENTRATION
     !&E  arguments OUT: no (all variables  in comMUSTANG)
     !&E     
     !&E   variables OUT :   
@@ -72,7 +69,7 @@ MODULE coupler_MUSTANG
     !&E           column
     !&E       calculation of total water height    
     !&E       if not MARS : conversion to transmit to MUSTANG the hydro 
-    !&E           variables: SETTL_FLUXSUM_w2s: effective deposit flux  
+    !&E           variables: flx_w2s_sum_CROCO: effective deposit flux  
     !&E           of the particle variables during transport
     !&E    
     !&E ** Called by :  MUSTANG_init (iappel=0)
@@ -80,14 +77,10 @@ MODULE coupler_MUSTANG
     !&E                 sed_MUSTANG_deposition (iappel=2)
     !&E
     !&E----------------------------------------------------------------------
-   !! * Modules used
-#include "scalars_F90.h"
 
    !! * Arguments 
-   INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast, iappel
-   REAL(KIND=rsh),DIMENSION(ARRAY_BATHY_H0),INTENT(IN)  :: BATHY_H0                         
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_ELEVATION),INTENT(IN):: ssh                         
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION   
+   INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast, iappel       
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN) :: WATER_CONCENTRATION   
    !! * Local declarations
    INTEGER  :: iv, i, j
 
@@ -124,7 +117,7 @@ MODULE coupler_MUSTANG
 
    IF(iappel > 0 ) THEN
    ! WARNING : need to calculate htot at all meshes (imin+1:imax, jmin+1: jmax)
-   ! at interior meshes : for ljmin-1 and ljmax+1 , BATHY_H0 and ssh are known if MPI exchange was done after change
+   ! at interior meshes : for ljmin-1 and ljmax+1 
     DO j=jfirst-1,jlast+1
       DO i=ifirst-1,ilast+1
           !  htot : total water height
@@ -157,7 +150,7 @@ MODULE coupler_MUSTANG
 #else
          DO iv=-1,nv_adv
 #endif
-                flx_w2s_sum(iv,i,j)=SETTL_FLUXSUM_w2s(i,j,IV_HOSTMODEL) ! flux de depot cumule effectif apres transport
+                flx_w2s_sum(iv,i,j)=flx_w2s_sum_CROCO(i,j,itsubs1+iv-1) ! flux de depot cumule effectif apres transport
          ENDDO
      ENDDO
      ENDDO
@@ -174,8 +167,8 @@ MODULE coupler_MUSTANG
     !&E
     !&E ** Description : conversion for hydro code 
     !&E  arguments OUT: no because stored in comMUSTANG
-    !&E     SETTL_FLUX_w2s : deposit trends 
-    !&E     EROS_FLUX_s2w : erosion flux 
+    !&E     flx_w2s_CROCO : deposit trends 
+    !&E     flx_s2w_CROCO : erosion flux 
     !&E     EROS_FLUX_TEMP_s2w et eros_flix_SAL : erosion flux for 
     !&E                                           temperature, salinity
     !&E     
@@ -192,18 +185,18 @@ MODULE coupler_MUSTANG
     DO j = jfirst, jlast
         DO i = ifirst, ilast
             DO iv = 1, nvp
-                SETTL_FLUX_w2s(i, j, IV_HOSTMODEL) = flx_w2s(iv, i, j)
+                flx_w2s_CROCO(i, j, itsubs1+iv-1) = flx_w2s(iv, i, j)
             ENDDO
             DO iv = 1, nv_adv
-                EROS_FLUX_s2w(i, j, IV_HOSTMODEL) = flx_s2w(iv, i, j)
+                flx_s2w_CROCO(i, j, itsubs1+iv-1) = flx_s2w(iv, i, j)
             ENDDO
             ! temperature
-            EROS_FLUX_s2w(i, j, ITEMP_HOSTMODEL) = flx_s2w(-1, i, j)
+            flx_s2w_CROCO(i, j, itemp) = flx_s2w(-1, i, j)
             ! salinity
-            EROS_FLUX_s2w(i, j, ISAL_HOSTMODEL) = flx_s2w(0, i, j)
-        ! no transfer of SETTL_FLUX_w2s_TEMP et SAL and for dissolved subst. 
-        ! because they are merged in EROS_FLUX_s2w for dissolved variables
-        ! (EROS_FLUX_s2w=erosion-settling+consolidation-diffusion) 
+            flx_s2w_CROCO(i, j, itemp+1) = flx_s2w(0, i, j)
+        ! no transfer of flx_w2s_CROCO_TEMP et SAL and for dissolved subst. 
+        ! because they are merged in flx_s2w_CROCO for dissolved variables
+        ! (flx_s2w_CROCO=erosion-settling+consolidation-diffusion) 
         ENDDO
     ENDDO
 

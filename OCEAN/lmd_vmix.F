@@ -139,8 +139,6 @@ C$OMP BARRIER
      &     lmd_sdd2=1.85,    ! (Fedorov, 1988).
      &     lmd_sdd3=0.85)    !
 
-# undef  LMD_NUW_GARGETT
-
 # ifdef LMD_RIMIX
 #  define RI_HSMOOTH
 #  define RI_VSMOOTH
@@ -354,17 +352,10 @@ C$OMP BARRIER
 
 !
 !  Compute interior diffusivity due to wave breaking
-!  (choose constant values as in Large et al. or
-!   Gargett and Holloway parameterization)
+!  (constant values as in Large et al.)
 !
-# ifdef LMD_NUW_GARGETT
-           cff=1./SQRT(MAX(bvf(i,j,k),1.e-7))
-           lmd_iwm=1.e-6*cff
-           lmd_iws=1.e-7*cff
-# else
            lmd_iwm=lmd_nuwm
            lmd_iws=lmd_nuws
-# endif
 !
 ! Compute interior convective diffusivity due to
 ! static instability mixing.
@@ -568,10 +559,6 @@ C$OMP BARRIER
      &     my_Akt_bak=nuws,
      &     my_Aks_bak=nuwm  )
 # endif
-# if defined WET_DRY && defined LMD_VMIX_SWASH
-      real Kv_swash,Kv0_swash
-      parameter(Kv0_swash = 1.e-2) ! Maximum swash zone viscosity
-# endif
 # ifdef MASKING
 #  define SWITCH *
 # else
@@ -583,24 +570,6 @@ C$OMP BARRIER
       do k=1,N-1
         do j=jstr,jend
           do i=istr,iend
-!
-!------------------------------------------------
-!  First apply shallow condition effects
-!  (e.g., swash; used in SANDBAR test case)
-!------------------------------------------------
-!
-# if defined WET_DRY && defined LMD_VMIX_SWASH
-            Kv_swash=Kv0_swash
-     &               *.5*(1.+tanh(1.+5.*min(-1.,log(Dcrit(i,j)))*
-     &                                  (z_w(i,j,N)+h(i,j))))
-            Kv(i,j,k)=Kv(i,j,k) + Kv_swash
-!# ifdef TEMPERATURE
-!            Kt(i,j,k)=Kt(i,j,k) + 0.1*Kv_swash
-!# endif
-!# ifdef SALINITY
-!            Ks(i,j,k)=Ks(i,j,k) + 0.1*Kv_swash
-!# endif
-# endif /* WET_DRY && LMD_VMIX_SWASH */
 !
 !------------------------------------------------
 !  Copy into shared arrays

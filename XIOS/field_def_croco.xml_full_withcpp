@@ -23,6 +23,15 @@
     <field id="Vtransform" long_name="vertical terrain-following transformation equation"  />
   </field_group>
 #endif
+#ifdef ABL1D
+  <!-- ABL1D vertical grid -->
+  <field_group id="Vertical_dimension_abl" grid_ref="abl_vertical_dimension" >
+    <field id="zr_abl" long_name="height of rho grid points"  />
+    <field id="zw_abl" long_name="height of w grid points"  />
+    <field id="Hzr_abl" long_name="Thickness of rho grid points"  />
+    <field id="Hzw_abl" long_name="Thickness of w grid points"  />
+  </field_group>
+#endif
   <!-- T grid -->
   <field_group id="rho" grid_ref="rho_2D">
     <field id="h" long_name="bathymetry at RHO-points" unit="meter" />
@@ -61,7 +70,9 @@
     <!-- SALINITY --> 
     <field id="salt" long_name="salinity" unit="PSU" grid_ref="rho_3D" />
     <field id="salt_surf" long_name="surface salinity" unit="PSU" />
+    <field id="rho_surf" long_name="surface density" unit="kg/m3" />
     <field id="swflx" long_name="surface freshwater flux (E-P)" unit="centimeter day-1"  />
+    <field id="prate" long_name="precipitation" unit="centimeter day-1"  />
     <!--  END SALINITY --> 
 #endif
     <field id="w" long_name="vertical velocity" unit="meter second-1" grid_ref="rho_3D"/>
@@ -106,6 +117,11 @@
     <field id="shflx_rlw" long_name="Long-wave surface radiation" unit="Watts meter-2" />
     <field id="shflx_lat" long_name="Latent surface heat flux" unit="Watts meter-2" />
     <field id="shflx_sen" long_name="Sensible surface heat flux" unit="Watts meter-2" />
+    <field id="tair" long_name="Air temperature" unit="C" />
+    <field id="rhum" long_name="Air specific humidity" unit="kg.kg-1" />
+# ifdef READ_PATM
+    <field id="patm" long_name="Mean sea level pressure" unit="Pa" />
+# endif
 <!-- END BULK_FLUX -->  
 #endif
 #ifdef SST_SKIN
@@ -686,5 +702,28 @@
 #  endif
 #endif
 
+#ifdef ABL1D
+    <field_group id="abl" grid_ref="abl_3D">
+      <field id="pu_dta"   long_name="large scale u-wind"              unit="m/s" />
+      <field id="pv_dta"   long_name="large scale v-wind"              unit="m/s" />
+      <field id="pt_dta"   long_name="large scale temperature"         unit="K" />        
+      <field id="pq_dta"   long_name="large scale specific humidity"   unit="kg/kg" />
+      <field id="pgu_dta"  long_name="large scale u-pressure gradient" unit="m/s" />   
+      <field id="pgv_dta"  long_name="large scale v-pressure gradient" unit="m/s" />
+      <field id="u_abl"    long_name="u-wind abl"                      unit="m/s" />
+      <field id="v_abl"    long_name="v-wind abl"                      unit="m/s" />    
+      <field id="t_abl"    long_name="t-abl"                           unit="K" />
+      <field id="q_abl"    long_name="q-abl"                           unit="kg/kg" />
+      <field id="tke_abl"  long_name="tke abl"                         unit="m2/s2" />
+      <field id="mxlm_abl" long_name="mixing lentgh"                   unit="" />       
+      <field id="mxld_abl" long_name="dissipative lentgh"              unit="" />
+      <field id="avm_abl"  long_name="velocity diffusivity"            unit="" />
+      <field id="avt_abl"  long_name="temperature diffusivity"         unit="" />
+    </field_group>
+
+    <field_group id="abl_2D" grid_ref="rho_2D">
+      <field id="ablh"     long_name="abl height"                      unit="m"  />
+    </field_group>
+#endif
 
 </field_definition>

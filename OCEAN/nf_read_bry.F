@@ -29,6 +29,7 @@
 ! both EAST_WEST and NORTH_SOUTH boundaries) the code has been
 ! unified
 !
+      USE buffer, only: buff
       implicit none
 #include "param.h"
 #ifdef EAST_WEST
@@ -40,7 +41,6 @@
       integer xtype, ndims, dimid(8), natts
       character*12 vname
 #include "netcdf.inc"
-#include "buffer.h"
 #if defined MPI
 # include "scalars.h"
 #endif

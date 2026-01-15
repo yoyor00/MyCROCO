@@ -43,7 +43,7 @@
 !-----------------------------------------------------------------------
 &nampis_snk      !  Sedimentation of particles
 !-----------------------------------------------------------------------
-   ln_sink_mus   = .true. ! MUSCL sinking scheme
+   ln_sink_mus   = .true.  ! MUSCL sinking scheme
       nitermax      =  2   !  number of iterations for sedimentation
    ln_sink_slg   = .false. ! Semi-Lagrangian sinking scheme
       nn_sink_lbc   =  0   !  Type of boundary conditions
@@ -55,7 +55,7 @@
 &nampisbio     !   biological parameters
 !-----------------------------------------------------------------------
    nrdttrc     =  1       ! time step frequency for biology
-   wsbio       =  2.     ! POC sinking speed
+   wsbio       =  2.      ! POC sinking speed
    xkmort      =  1.E-7   ! half saturation constant for mortality
    feratz      =  10.E-6  ! Fe/C in zooplankton 
    feratm      =  15.E-6  ! Fe/C in mesozooplankton
@@ -98,7 +98,7 @@
    xsizedia   =  1.E-6    ! Minimum size criteria for diatoms
    xsizephy   =  1.E-6    ! Minimum size criteria for phyto
    xsizern    =  3.0      ! Size ratio for nanophytoplankton
-   xsizerd    =  4.0      ! Size ratio for diatoms
+   xsizerd    =  6.0      ! Size ratio for diatoms
    xksi1      =  8.E-6    ! half saturation constant for Si uptake
    xksi2      =  20E-6    ! half saturation constant for Si/C
    xkdoc      =  417.E-6  ! half-saturation constant of DOC remineralization
@@ -132,7 +132,7 @@
    xsizepic   =  5.E-7    ! Minimum size criteria for picophyto
    xsizern    =  3.0      ! Size ratio for nanophytoplankton
    xsizerp    =  2.0      ! Size ratio for picophytoplankton
-   xsizerd    =  4.0      ! Size ratio for diatoms
+   xsizerd    =  6.0      ! Size ratio for diatoms
    xksi1      =  8.E-6    ! half saturation constant for Si uptake
    xksi2      =  20E-6    ! half saturation constant for Si/C
    xkdoc      =  417.E-6  ! half-saturation constant of DOC remineralization
@@ -169,8 +169,8 @@
 !              !                  !  (if <0  months)  !   name    !   (logical)  !  (T/F) ! 'monthly' ! filename ! pairing  ! filename      !
    sn_par      = 'par.orca'       ,     24.           , 'fr_par'  ,  .true.      , .true. , 'yearly'  , ''       , ''       , ''
    cn_dir      = './'      !  root directory for the location of the dynamical files
-   ln_varpar   =  .false.   ! boolean for PAR variable
-   parlux      =  0.43      ! Fraction of shortwave as PAR
+   ln_varpar   =  .false.  ! boolean for PAR variable
+   parlux      =  0.43     ! Fraction of shortwave as PAR
    ln_p4z_dcyc =  .false.  ! Diurnal cycle in PISCES
 / 
 !-----------------------------------------------------------------------
@@ -310,8 +310,8 @@
    xthreshzoo =  1.E-8    ! Microzoo feeding threshold for microzooplankton
    xthresh    =  3.E-7    ! Food threshold for feeding
    xkgraz     =  20.E-6   ! half sturation constant for grazing
-   epsher     =  0.4     ! Efficiency of microzoo growth
-   epshermin  =  0.4     ! Minimum efficiency of microzoo growth
+   epsher     =  0.4      ! Efficiency of microzoo growth
+   epshermin  =  0.4      ! Minimum efficiency of microzoo growth
    sigma1     =  0.6      ! Fraction of microzoo excretion as DOM
    unass      =  0.3      ! non assimilated fraction of phyto by zoo
 /
@@ -321,11 +321,11 @@
    part       =  0.75     ! part of calcite not dissolved in microzoo guts
    grazrat    =  2.0      ! maximal zoo grazing rate
    resrat     =  0.02     ! Linear mortality rate of zooplankton
-   mzrat      =  0.005    ! zooplankton mortality rate
+   mzrat      =  0.01     ! zooplankton mortality rate
    xprefc     =  0.15     ! Microzoo preference for POM
    xprefn     =  1.0      ! Microzoo preference for Nanophyto
-   xprefd     =  1.0      ! Microzoo preference for Diatoms
-   xprefz     =  0.0      ! Microzoo preference for Microzoo
+   xprefd     =  0.9      ! Microzoo preference for Diatoms
+   xprefz     =  0.1      ! Microzoo preference for Microzoo
    xthreshdia =  1.E-8    ! Diatoms feeding threshold for microzooplankton 
    xthreshphy =  1.E-8    ! Nanophyto feeding threshold for microzooplankton 
    xthreshpoc =  1.E-8    ! POC feeding threshold for microzooplankton 
@@ -347,12 +347,12 @@
    bmetexc    =  .true.   ! Metabolic use of excess carbon
    resrat     =  0.02     ! exsudation rate of zooplankton
    lmzrat     =  0.02     ! Linear mortality rate of zooplankton
-   mzrat      =  0.005    ! zooplankton mortality rate
+   mzrat      =  0.01     ! zooplankton mortality rate
    xprefc     =  0.15     ! Microzoo preference for POM
    xprefn     =  1.0      ! Microzoo preference for Nanophyto
    xprefp     =  1.0      ! Microzoo preference for picophyto
    xprefd     =  0.9      ! Microzoo preference for Diatoms
-   xprefz     =  0.       ! Microzoo preference for microzooplankton
+   xprefz     =  0.1      ! Microzoo preference for microzooplankton
    xthreshdia =  1.E-8    ! Diatoms feeding threshold for microzooplankton
    xthreshphy =  1.E-8    ! Nanophyto feeding threshold for microzooplankton
    xthreshpic =  1.E-8    ! Picophyto feeding threshold for microzooplankton
@@ -374,9 +374,9 @@
 &nampisfer     !   parameters for iron chemistry
 !-----------------------------------------------------------------------
    ln_ligvar =  .false.   ! variable ligand concentration
-   xlam1     =  0.02      ! scavenging rate of Iron by biogenic particles
-   xlamdust  =  150.0     ! Scavenging rate of Iron by dust
-   ligand    =  1E-9     ! Ligands concentration 
+   xlam1     =  0.04      ! scavenging rate of Iron by biogenic particles
+   xlamdust  =  700.0     ! Scavenging rate of Iron by dust
+   ligand    =  1.E-9     ! Ligands concentration 
    kfep      =  0.01      ! Nanoparticle formation rate constant
    scaveff   =  1.0       ! Fraction of scavenged Fe that goes to POFe
 /
@@ -414,7 +414,7 @@
 !-----------------------------------------------------------------------
 &nampiscal     !   parameters for Calcite chemistry
 !-----------------------------------------------------------------------
-   kdca       =  100.     ! calcite dissolution rate constant (1/time)
+   kdca       =  1000.    ! calcite dissolution rate constant (1/time)
    nca        =  4.7      ! order of dissolution reaction (dimensionless)
 /
 !-----------------------------------------------------------------------
@@ -423,7 +423,7 @@
    ln_dust     =  .false.   ! boolean for dust input from the atmosphere
    ln_ndepo    =  .false.   ! boolean for atmospheric deposition of N
    ln_ironsed  =  .false.   ! boolean for Fe input from sediments
-   sedfeinput  =  2.e-9    ! Coastal release of Iron
+   sedfeinput  =  1.E-9    ! Coastal release of Iron
    mfrac       =  0.035    ! Fe mineral fraction of dust
    wdust       =  2.0      ! Dust sinking speed
 !                          ! ln_ligand
@@ -441,12 +441,12 @@
 !-----------------------------------------------------------------------
 &nampissed     !   Namelist parameters for sediment mobilisation
 !-----------------------------------------------------------------------
-   bureffmin     = 0.013   !: Minimum burial efficiency
-   bureffvar     = 0.053   !: Variable coef. for burial efficiency
+   bureffmin     = 0.013   ! Minimum burial efficiency
+   bureffvar     = 0.053   ! Variable coef. for burial efficiency
    sedsilfrac    = 0.03    ! percentage of silica loss in the sediments
    sedcalfrac    = 0.78    ! percentage of calcite loss in the sediments ( 0.78 is for river x1.5 )
-   sedfactcalmin = 0.3     !: Minimum value for dissolving calcite at the bottom
-   sedfactcalvar = 0.7     !: Variable  value for dissolving calcite at the bottom
+   sedfactcalmin = 0.3     ! Minimum value for dissolving calcite at the bottom
+   sedfactcalvar = 0.7     ! Variable  value for dissolving calcite at the bottom
 /
 !-----------------------------------------------------------------------
 &nampisdmp     !   Damping 
