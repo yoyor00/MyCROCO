@@ -12,6 +12,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - OCEAN : Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
 
+- AGRIF : Fix allocation of  message passing arrays (ibuf...) when 3 ghost points
+  needed (UP5, WENO)    (Issues #310 #458)
+
 - COUPLING : missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
 
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
@@ -39,6 +42,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  G. Cambon, N. Ducousso, S. Le Gac, P. Marchesiello, R. Person
+  G. Cambon, N. Ducousso, M. Le Corre, S. Le Gac, P. Marchesiello, R. Person
 
 - New contributors : E. Le Bouedec
