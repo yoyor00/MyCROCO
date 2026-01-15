@@ -87,6 +87,10 @@
 # ifdef PSOURCE
      &       ,is
 # endif
+      REAL     :: EPSIL
+      PARAMETER (EPSIL=0.125)
+      REAL     :: DELTA
+      PARAMETER (DELTA=0.75)
       real BC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,
@@ -986,8 +990,6 @@
 #  endif
 # endif
 
-# define EPSIL 0.125
-# define DELTA 0.75
 # ifdef MRL_WCI
             FC(i,k)=DELTA*Huon(i,j,k) +
      &              EPSIL*DC(i,k)*(u(i,j,k,nstp)+u(i,j,k,nnew)
