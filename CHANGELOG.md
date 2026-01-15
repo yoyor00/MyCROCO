@@ -15,6 +15,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
   restart inconsistencies with MORPHODYN (#470)
 
+- AGRIF : Fix allocation of  message passing arrays (ibuf...) when 3 ghost points
+  needed (UP5, WENO)    (Issues #310 #458)
+
 - COUPLING : missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
@@ -95,4 +98,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
-  M. Plus, M. Schreiber, A. Zribi  
+  M. Plus, M. Schreiber, A. Zribi, E Le Bouedec  
