@@ -24,11 +24,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
-<<<<<<< CHANGELOG.md
-=======
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
-
->>>>>>> CHANGELOG.md
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
@@ -72,7 +68,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - ROBUST_DIURNAL_SRFLUX (#405)
   - DUKO_2001 was always def (#407)
   - PRED_COUPLED_MODE was always def (#408) 
->>>>>>> CHANGELOG.md
   - START_DATE (#417)
   - ICE (#416)
   - DECALPHA (#414)
