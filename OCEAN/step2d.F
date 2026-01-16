@@ -12,8 +12,6 @@
 
 #if !defined M3FAST || (defined AGRIF && defined NBQ_CHILD_ONLY)
 
-# define PRED_COUPLED_MODE
-
       subroutine step2d (tile)
       implicit none
       integer tile, trd
@@ -1269,8 +1267,6 @@ C$OMP END MASTER
 !
 # ifdef SOLVE3D
       if (FIRST_2D_STEP) then
-
-#  ifdef PRED_COUPLED_MODE
         if (FIRST_TIME_STEP) then
           cff3=0.                        ! This version is designed
           cff2=0.                        ! for coupling during 3D
@@ -1301,14 +1297,6 @@ C$OMP END MASTER
             rvfrc_bak(i,j,nstp)=cff
           enddo
         enddo
-#  else
-        do j=Jstr,Jend                       ! This version is
-          do i=Istr,Iend                     ! designed for coupling
-            rufrc(i,j)=rufrc(i,j)-rubar(i,j) ! during 3D corrector
-            rvfrc(i,j)=rvfrc(i,j)-rvbar(i,j) ! sub-step: no forward
-          enddo                              ! extrapolation needs
-        enddo                                ! to be performed.
-#  endif
 !
 !-----------------------------------------------------------------------
 ! Since coupling requires that pressure gradient term is computed
@@ -1777,13 +1765,8 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
 # if defined BD_EXCHANGE
-!# ifdef BASIN      
-!      call exchange_r2d_1pts_tile (Istr,Iend,Jstr,Jend,
-!     &                   zeta(START_2D_ARRAY,knew))
-!# else
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                   zeta(START_2D_ARRAY,knew))
-!#endif      
       call exchange_u2d_1pts_tile (Istr,Iend,Jstr,Jend,
      &                   ubar(START_2D_ARRAY,knew))
       call exchange_v2d_1pts_tile (Istr,Iend,Jstr,Jend,

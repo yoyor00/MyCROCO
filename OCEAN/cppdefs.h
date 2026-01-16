@@ -81,6 +81,11 @@
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
+# ifdef OA_COUPLING
+#  define READ_PATM
+#  define OBC_PATM
+#  undef  OA_GRID_UV
+# endif
 # undef  OW_COUPLING
 # ifdef OW_COUPLING
 #  undef OW_COUPLING_FULL
@@ -209,7 +214,6 @@
 # define UV_HADV_UP3
 # undef  UV_HADV_UP5
 # undef  UV_HADV_WENO5
-# undef  UV_HADV_TVD
                       /* Lateral Explicit Momentum Mixing */
 # undef  UV_VIS2
 # ifdef UV_VIS2
@@ -218,7 +222,6 @@
                       /* Vertical Momentum Advection */
 # define UV_VADV_SPLINES
 # undef  UV_VADV_WENO5
-# undef  UV_VADV_TVD
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
 # define TS_HADV_RSUP3
@@ -241,7 +244,6 @@
 # undef  BSTRESS_FAST
                       /* Vertical Mixing */
 # undef  BODYFORCE
-# undef  BVF_MIXING
 # define LMD_MIXING
 # undef  GLS_MIXING
 # ifdef LMD_MIXING
@@ -372,10 +374,10 @@
 # endif
                       /*   Choice of Biology models   */
 # ifdef BIOLOGY
-#  undef  PISCES
+#  define PISCES
 #  undef  BIO_NChlPZD
 #  undef  BIO_N2ChlPZD2
-#  define BIO_BioEBUS
+#  undef  BIO_BioEBUS
                       /*   Biology options    */
 #  ifdef PISCES
 #   undef  DIURNAL_INPUT_SRFLX
@@ -450,7 +452,6 @@
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
-# define ZETA_DRY_IO
 # define FILLVAL
                       /* Calendar */
 
@@ -1927,7 +1928,6 @@
 #  undef  key_MUSTANG_V2
 # endif
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined ESTUARY
 /*
@@ -1986,7 +1986,6 @@
 # define ANA_PSOURCE
 # define MASKING
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined SEAGRASS
 /*

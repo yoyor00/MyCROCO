@@ -168,10 +168,10 @@ C$OMP BARRIER
 
 C$OMP MASTER
       time=time_start+dt*float(iic-ntstart)
-      tdays=time*sec2day
 #ifdef USE_CALENDAR
-      time_mars=time_mars+dt
-      tdays=(time_mars-time_start)*sec2day
+      tdays=(time-time_start)*sec2day
+#else
+      tdays=time*sec2day
 #endif
 
 #ifdef SOLVE3D
@@ -458,8 +458,6 @@ C$OMP END MASTER
         call ana_vmix (tile)
 # elif defined LMD_MIXING
         call lmd_vmix (tile)
-# elif defined BVF_MIXING
-        call bvf_mix (tile)
 # endif
         call omega (tile)
 # ifdef VIS_COEF_3D

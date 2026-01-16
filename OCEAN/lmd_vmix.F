@@ -139,8 +139,6 @@ C$OMP BARRIER
      &     lmd_sdd2=1.85,    ! (Fedorov, 1988).
      &     lmd_sdd3=0.85)    !
 
-# undef  LMD_NUW_GARGETT
-
 # ifdef LMD_RIMIX
 #  define RI_HSMOOTH
 #  define RI_VSMOOTH
@@ -354,17 +352,10 @@ C$OMP BARRIER
 
 !
 !  Compute interior diffusivity due to wave breaking
-!  (choose constant values as in Large et al. or
-!   Gargett and Holloway parameterization)
+!  (constant values as in Large et al.)
 !
-# ifdef LMD_NUW_GARGETT
-           cff=1./SQRT(MAX(bvf(i,j,k),1.e-7))
-           lmd_iwm=1.e-6*cff
-           lmd_iws=1.e-7*cff
-# else
            lmd_iwm=lmd_nuwm
            lmd_iws=lmd_nuws
-# endif
 !
 ! Compute interior convective diffusivity due to
 ! static instability mixing.
