@@ -25,7 +25,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
-
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
@@ -62,6 +61,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
+  - WET_DRY0 (#393) never used 
   - UV_HADV_TVD, UV_VADV_TVD, W_HADV_TVD, W_VADV_TVD (#391)
   - BVF_MIXING (#398)
   - LMD_NUW_GARGETT, obsolete (#402)
