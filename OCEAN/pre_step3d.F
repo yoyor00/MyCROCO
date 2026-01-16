@@ -86,6 +86,22 @@
      &       FX(PRIVATE_2D_SCRATCH_ARRAY),      epsil,
      &       FE(PRIVATE_2D_SCRATCH_ARRAY),        cdt,
      &     WORK(PRIVATE_2D_SCRATCH_ARRAY)
+# ifdef KNBQ3
+!$acc declare create( WORK )      
+      real   cff0,cff14,cff15 
+#  ifdef K3FAST 
+      real   cff13
+      real   cff6,cff7,cff8,cff10,cff11
+#   ifdef K3FAST_DISSCOUPLING
+      real   alpha_uv,alpha_w
+#   endif
+#   if defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF
+      real   ru_int_nbq_2d(PRIVATE_2D_SCRATCH_ARRAY),
+     &       rv_int_nbq_2d(PRIVATE_2D_SCRATCH_ARRAY)
+!$acc declare create( ru_int_nbq_2d, rv_int_nbq_2d )     
+#   endif
+#  endif
+# endif
 # ifdef OPENACC
       real FX_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     FE_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
@@ -99,7 +115,7 @@
 # ifdef WET_DRY
       real cff3,cff4,cff5
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined KNBQ3
       real qdm_nstp,qdm_indx
 # endif
       parameter (gamma=1./6., epsil=1.E-16)
@@ -114,7 +130,7 @@
 # if defined PSOURCE || defined PSOURCE_MASS
 #  include "sources.h"
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  include "nbq.h"
 # endif
 # include "openacc_work.h"
@@ -124,10 +140,10 @@
 #  define SWITCH !
 # endif
 
-# ifdef M3FAST
+# if defined  M3FAST || defined K3FAST_C3D_UVFS
 #  define ru_nbq_avg1 ru_nbq
 #  define rv_nbq_avg1 rv_nbq
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST_C3D_WFS
 #   define rw_nbq_avg1 rw_nbq
 #  endif
 # endif
@@ -177,6 +193,31 @@
 !--------------------------------------------------------------------
 !
 # include "compute_auxiliary_bounds.h"
+# ifdef KNBQ3
+! !
+! !
+! !-----------------------------------------------------------------
+! ! Dissipation in coupling scheme: 
+! !   0: no dissipation,
+! !   1: dissipative coupling.
+! !-----------------------------------------------------------------
+! !
+#  ifdef K3FAST_DISSCOUPLING
+#   ifdef KH_INST
+      alpha_uv=0.75
+      alpha_w =0.
+#   elif defined TANK
+      alpha_uv=0.
+      alpha_w =0.
+#   elif defined MILES
+      alpha_uv=0.
+      alpha_w =0. 
+#   else      
+      alpha_uv=0.
+      alpha_w =0.
+#   endif
+#  endif
+# endif
 !
       indx=3-nstp
       nadv=  nstp   !<-- do not remove: used in compute_tracer_fluxes.h
@@ -476,7 +517,8 @@
             cdt=(1.-gamma)*dt
       endif
 
-# ifdef M3FAST
+# if defined  M3FAST || (defined K3FAST_COUPLING2D && defined K3FAST_C3D_UVSF)
+!$acc kernels if(compute_on_device) default(present)
       do j=Jstr,Jend
         do i=IstrU,Iend
            ru_int_nbq_2d(i,j)=0.
@@ -487,9 +529,11 @@
            rv_int_nbq_2d(i,j)=0.
         enddo
       enddo
+!$acc end kernels
 # endif
 
 # if defined TS_HADV_TEST && defined SOLID_BODY_PER
+!$acc kernels if(compute_on_device) default(present)
       do k=1,N
         do j=JstR,JendR
           do i=IstrR,IendR
@@ -502,7 +546,7 @@
           enddo
         enddo
       enddo
-
+!$acc end kernels
 #  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
       call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -517,9 +561,55 @@
 #   endif
 #  endif
 # endif
+# ifdef KNBQ3
 
-# ifdef TRACERS
+! !===================================================================
+! ! Predictor final computations
+! !===================================================================
+
+        cff14=0.5+gamma
+        cff15=0.5-gamma
+#  ifdef K3FAST
+        if (FIRST_TIME_STEP) then
+        cff13=0.                        ! ! This version is designed
+        cff2=0.                        ! ! for coupling during 3D
+        cff1=1.                        ! ! predictor sub-step: here
+#   if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
+        cff6=1.
+        cff7=0.
+        cff8=0.
+#   endif
+        elseif (FIRST_TIME_STEP+1) then  ! ! forcing term "rufrc" is
+        cff13= 0.                       ! ! computed as instantaneous
+        cff2=-0.5                      ! ! value at 3D time step
+        cff1= 1.5                      ! ! "nstp" first, and then
+#   if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
+        cff6=2.
+        cff7=-1.
+        cff8=0.
+#   endif
+        else                             ! ! extrapolated half-step
+        cff13=0.281105                 ! ! forward using  AB3-like
+        cff2=-0.5-2.*cff13              ! ! weights optimized for
+        cff1=1.5+cff13                 ! ! maximum stability (with
+#   if !defined K3FAST_COUPLING_SCH2 || !defined K3FAST_COUPLINGW_SCH2
+        cff6=2.+0.25
+        cff7=-1.-2.*0.25
+        cff8=0.25
+#   endif
+        endif      
+                      ! ! special care for startup)
+#  endif
+# endif 
+! !! !
+! !--------------------------------------------------------------------
+! ! Main j-loop 
+! !--------------------------------------------------------------------
+! !
+!$acc kernels if(compute_on_device) default(present)
+!$acc loop private( DC, FC, CF)
         DOLOOP2D(Istr,Iend,Jstr,Jend)
+# ifdef TRACERS
 #  ifndef VADV_ADAPT_IMP 
         do k=1,N
           do i=Istr,Iend
@@ -530,7 +620,6 @@
         do i=Istr,Iend
            DC(i,0)=cdt*pn(i,j)*pm(i,j)
         enddo
-
         do itrc=1,NT
 !
 !----------------------------------------------------------------------
@@ -586,8 +675,10 @@
 #  endif
 !
         enddo   !<-- itrc  !--> discard DC
-        ENDDOLOOP2D
 # endif /* TRACERS */
+        ENDDOLOOP2D
+
+# ifndef KNBQ3
 !
 !======================================================================
 !
@@ -1078,7 +1169,9 @@
 #   endif
 #  endif
 # endif
-
+# else   /*   KNBQ3   */
+#  include "pre_step3d_KNBQ3.h"
+# endif  /*   KNBQ3   */
 !
 !======================================================================
 ! Prepare viscosity/diffusivity array for GLS_MIXING
