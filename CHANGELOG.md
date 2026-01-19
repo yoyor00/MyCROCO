@@ -13,7 +13,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
 - MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
-  restart inconsistencies with MORPHODYN (#470)
+  restart inconsistencies with MORPHODYN, update testcase plot script 
+  accordingly (#470)
 
 - AGRIF : Fix allocation of  message passing arrays (ibuf...) when 3 ghost points
   needed (UP5, WENO)    (Issues #310 #458)
