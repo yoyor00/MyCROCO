@@ -327,7 +327,7 @@
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
 #  ifdef DIAGNOSTICS_TS_MLD
-#   define DIAGNOSTICS_TS_MLD_CRIT
+#   define DIAGNOSTICS_TS_MLD_CM
 #  endif
 
 # endif
