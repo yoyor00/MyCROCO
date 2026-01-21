@@ -237,7 +237,12 @@ MODULE traject3d
             IF ( .NOT. particle % active ) CYCLE
 #ifdef IBM_SPECIES
             ! Skip if species stage not appropriate
+            ! Modif Clara
+#if defined MPI
             IF ( particle%stage >= 5 .OR. particle%super <= 0.0_rsh )  CYCLE
+#else
+            IF ( particle%stage >= 1 .OR. particle%super <= 0.0_rsh )  CYCLE
+#endif
 #endif
             ! Skip if flag is missing...
             IF ( particle % flag == -valmanq )  CYCLE

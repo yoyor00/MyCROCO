@@ -32,7 +32,7 @@ MODULE trajinitsave
     USE ionc4,      ONLY : ionc4_createfile_traj, ionc4_createvar_traj,   &
                            ionc4_write_time,ionc4_sync,ionc4_close,       &
                            ionc4_write_trajt,ionc4_read_dimtraj,          &
-                           ionc4_read_trajt,ionc4_openr,ionc4_init
+                           ionc4_read_trajt,ionc4_openr,ionc4_init, ionc4_read_dimt
 
     IMPLICIT NONE
     PRIVATE
@@ -199,7 +199,8 @@ MODULE trajinitsave
     USE toolmpi, ONLY : MPI_glob2loc,MPI_loc2glob
     USE comtraj, ONLY : init_mpi_type_particle
 #endif
-    USE comtraj, ONLY : patch_list_append,patches,type_patch,file_trajec,itypetraj,ndtz
+    USE comtraj, ONLY : patch_list_append,patches,type_patch,file_trajec,&
+                        file_pathout,itypetraj,ndtz
 #ifdef DEB_IBM
     USE comtraj, ONLY : ibm_restart
 #endif
@@ -212,6 +213,7 @@ MODULE trajinitsave
 
     !! * Local declarations
     ! For reading input file
+    INTEGER                                     :: idimt                    ! Read last time in restart file 
     LOGICAL                                     :: ex,l_posit
     INTEGER                                     :: lstr, lenstr
     CHARACTER(LEN=5)                            :: comment
@@ -258,7 +260,7 @@ MODULE trajinitsave
 #endif
 #endif
     ! To read data from netcdf patch
-    REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)   :: lon_nc,lat_nc,depth_nc
+    REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)   :: lon_nc,lat_nc,depth_nc, num_nc
 
     !  parameters for interpolation at particle location
     REAL(KIND=rsh)                              :: px,py
@@ -272,7 +274,7 @@ MODULE trajinitsave
 
     REAL(KIND=rlg),DIMENSION(5)                 :: buff_mpi
     
-    NAMELIST/namtraj/file_trajec,itypetraj,ndtz
+    NAMELIST/namtraj/file_trajec,file_pathout,itypetraj,ndtz
 
 # include "compute_auxiliary_bounds.h"
     !!----------------------------------------------------------------------
@@ -854,18 +856,28 @@ MODULE trajinitsave
             READ(49,'(a)',iostat=eof) rec
             kk = index(rec,',|')
             IF (kk > 0 ) THEN
-                new_patch%file_inp = rec(1:kk-1)
+                IF (ibm_restart) THEN
+                    new_patch%file_inp = trim(file_pathout) // rec(1:kk-1)
+                ELSE
+                    new_patch%file_inp = rec(1:kk-1)
+                END IF
+                
             ELSE
-                new_patch%file_inp = rec
+                IF (ibm_restart) THEN
+                    new_patch%file_inp = trim(file_pathout) // rec
+                ELSE
+                    new_patch%file_inp = rec
+                END IF
+                
             END IF
 
             ! Read output file
             READ(49,'(a)',iostat=eof) rec
             kk = index(rec,',|')
             IF (kk > 0 ) THEN
-                new_patch%file_out = rec(1:kk-1)
+                new_patch%file_out = trim(file_pathout) // rec(1:kk-1)
             ELSE
-                new_patch%file_out = rec
+                new_patch%file_out = trim(file_pathout) // rec
             END IF
 
             ! Number of particles set at each initial position
@@ -908,19 +920,26 @@ MODULE trajinitsave
 
             ! Open input file and read number of particles
             CALL ionc4_openr(trim(new_patch % file_inp),.false.)
-            CALL ionc4_read_dimtraj(trim(new_patch % file_inp), nb_part_nc)
-         
+            CALL ionc4_read_dimtraj(trim(new_patch % file_inp), nb_part_nc)         
+
 
             ALLOCATE( lon_nc(nb_part_nc), lat_nc(nb_part_nc), depth_nc(nb_part_nc) )
+            IF (ibm_restart) ALLOCATE( num_nc(nb_part_nc) )
 
+            ! Read time dimension in input file to open last time in restart file
+            idimt = ionc4_read_dimt(trim(new_patch%file_inp))
             ! read lat,lon,depth of particles in file
-            CALL ionc4_read_trajt(trim(new_patch%file_inp), "longitude",lon_nc,  1,nb_part_nc,1)
-            CALL ionc4_read_trajt(trim(new_patch%file_inp), "latitude", lat_nc,  1,nb_part_nc,1)
-            CALL ionc4_read_trajt(trim(new_patch%file_inp), "DEPTH",    depth_nc,1,nb_part_nc,1)
+            CALL ionc4_read_trajt(trim(new_patch%file_inp), "longitude",lon_nc,  1,nb_part_nc,idimt)
+            CALL ionc4_read_trajt(trim(new_patch%file_inp), "latitude", lat_nc,  1,nb_part_nc,idimt)
+            CALL ionc4_read_trajt(trim(new_patch%file_inp), "DEPTH",    depth_nc,1,nb_part_nc,idimt)
+            IF (ibm_restart) CALL ionc4_read_trajt(trim(new_patch%file_inp), "NUM",      num_nc,  1,nb_part_nc,idimt)
 
             nb_part = 0
-            DO nn = 1,nb_part_nc            
+            DO nn = 1,nb_part_nc 
 
+            ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
+                IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
+        
                 IF ( depth_nc(nn) < 0.0_rsh ) THEN
                     WRITE(ierrorlog,*) 'Function INIT_TRAJ : depth of particle has to be > 0'
                     WRITE(ierrorlog,*) 'Check the netcdf traj file :', new_patch % file_inp
@@ -931,12 +950,14 @@ MODULE trajinitsave
 
                 xtemp = tool_latlon2i(lon_nc(nn),lat_nc(nn))
                 ytemp = tool_latlon2j(lon_nc(nn),lat_nc(nn))
+
 #ifdef MPI
                 IF (iminmpi <= NINT(xtemp) .AND. NINT(xtemp) <= imaxmpi .AND. &
                     jminmpi <= NINT(ytemp) .AND. NINT(ytemp) <= jmaxmpi) THEN
 #endif
                     pos1%xp = xtemp; pos1%yp = ytemp
                     CALL define_pos(pos1)
+
                     IF ( h(NINT(pos1%idx_r),NINT(pos1%idy_r)) > depth_nc(nn) ) THEN
                         CALL loc_h0(pos1%idx_r,pos1%idy_r,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,Istr,Iend,Jstr,Jend)
                         xe_lag = xeint(zeta(:,:,nstp),px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,Istr,Iend,Jstr,Jend)
@@ -945,7 +966,7 @@ MODULE trajinitsave
                         IF (d3 > depth_nc(nn)) THEN   ! patch tempo pour restart (martin)
                             nb_part = nb_part + nb_part_intro
                         END IF
-                   END IF
+                    END IF
 #ifdef MPI
                 END IF
 #endif
@@ -956,9 +977,14 @@ MODULE trajinitsave
 
             m2 = 0
             DO nn = 1,nb_part_nc
+
+                ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
+                IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
+
+
                 xtemp = tool_latlon2i(lon_nc(nn),lat_nc(nn))
                 ytemp = tool_latlon2j(lon_nc(nn),lat_nc(nn))
-                pos%xp = xtemp ; pos%yp = ytemp
+                pos%xp = xtemp ; pos%yp = ytemp 
 #ifdef MPI
                 IF (iminmpi <= NINT(xtemp) .AND. NINT(xtemp) <= imaxmpi .AND. &
                     jminmpi <= NINT(ytemp) .AND. NINT(ytemp) <= jmaxmpi) THEN
@@ -975,7 +1001,7 @@ MODULE trajinitsave
 
                         ! total depth at particle s location
                         CALL loc_h0( pos%idx_r, pos%idy_r,  &
-                                     px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,Istr,Iend,Jstr,Jend)
+                                    px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,Istr,Iend,Jstr,Jend)
                         xe_lag = xeint(zeta(:,:,nstp),px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,Istr,Iend,Jstr,Jend)
                         h0_lag = h0int(   px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
                         d3 = h0_lag + xe_lag
@@ -992,15 +1018,18 @@ MODULE trajinitsave
                             new_patch%particles(m1:m2)%h0   = h0_lag
                             new_patch%particles(m1:m2)%xe   = xe_lag
                             DO l = 0,nb_part_intro-1
-                                new_patch%particles(m1+l)%num = idx_s + m1 + l
+                                IF (.not. ibm_restart) new_patch%particles(m1+l)%num = idx_s + m1 + l
+                                ! if restart, we want to keep the original num from netcdf file
+                                IF (ibm_restart) new_patch%particles(m1+l)%num = num_nc(nn)  ! clara : should we add + idx_s + l ?
                             ENDDO
                         ELSE
                             m2 = m2 - nb_part_intro
-                        END IF
+                        END IF   
                     END IF
-                END IF
+                END IF 
             END DO
             DEALLOCATE(lon_nc,lat_nc,depth_nc)
+            IF (ibm_restart) DEALLOCATE(num_nc)
 
             ! close netcdf file
             CALL ionc4_close(new_patch%file_inp)

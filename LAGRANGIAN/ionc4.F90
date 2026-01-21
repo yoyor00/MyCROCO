@@ -209,6 +209,10 @@ module ionc4
       module procedure ionc4_gatt_int
    end interface ionc4_gatt
 
+   interface ionc4_gatt_read
+      module procedure ionc4_gatt_char_read
+   end interface ionc4_gatt_read
+
    interface ionc4_read_subzxyt
       module procedure ionc4_read_subzxyt_real
       module procedure ionc4_read_subzxyt_double
@@ -14157,6 +14161,48 @@ module ionc4
    
    return
    end subroutine ionc4_gatt_int
+
+   ! ***************************************************************
+   ! * subroutine ionc4_gatt_char_read                              *
+   ! *                                                             *
+   ! * auteur         :   cmenu (inspiré de ggaliber / rramel)     *
+   ! * org            :   IFREMER             *
+   ! * date creation  :   23/10/2025                               *
+   ! *                                                             *
+   ! * Role : lit un attribut global (de type char) dans un        *
+   ! *        fichier NetCDF déjà existant                         *
+   ! *                                                             *
+   ! * Parametres :                                                *
+   ! *    entree  : - nom_fichier : nom du fichier NetCDF          *
+   ! *               - gatt_name  : nom de l’attribut global       *
+   ! *    sortie  : - gatt_value : valeur lue                      *
+   ! ***************************************************************
+   subroutine ionc4_gatt_char_read(nom_fichier, gatt_name, gatt_value)
+   implicit none
+   ! ******** PARAMETRES DE LA SUBROUTINE *******
+   character(len=*), intent(in)  :: nom_fichier
+   character(len=*), intent(in)  :: gatt_name
+   character(len=*), intent(out) :: gatt_value
+   ! ******** VARIABLES DE TRAVAIL **************
+   integer :: nc_id, nc_err
+   ! ******** FIN DES DECLARATIONS **************
+   ionc_rout = "ionc4_gatt_char_read"
+
+   !--- Récupérer le handle NetCDF associé au fichier
+   
+   call ionc4_corres(nom_fichier, nc_id)
+
+   if (nc_id .eq. 0) then
+      call ionc4_err(ionc_errfich, ionc_rout, ' ', nom_fichier)
+      stop
+   else
+      !--- Lecture de l’attribut global
+      nc_err = nf90_get_att(nc_id, NF90_GLOBAL, trim(gatt_name), gatt_value)
+      call ionc4_err(nc_err, ionc_rout, 'nf90_get_att', gatt_name)
+   endif
+
+   return
+   end subroutine ionc4_gatt_char_read
    
 ! ***************************************************************
 ! * subroutine ionc4_gatt_conv                                   *

@@ -79,15 +79,24 @@ MODULE debmodel
     REAL(kind=rsh)                  :: SF
 
     ! Mortality and density-dependency parameters (Menu et al. 2023)
-    REAL(KIND=rsh)                  :: gamma     = 0.703343166175024681053_rsh
-    REAL(KIND=rsh)                  :: K_biomass = 85.315712187958894219264_rlg
+    ! REAL(KIND=rsh)                  :: gammaA     = 0.447_rsh ! with selectivity
+    ! REAL(KIND=rsh)                  :: K_biomassA = 10.670_rlg ! with selectivity
+    REAL(KIND=rsh)                  :: gammaS     = 0.703343166175024681053_rsh ! with selectivity
+    REAL(KIND=rsh)                  :: K_biomassS = 85.315712187958894219264_rlg ! with selectivity
+    ! REAL(KIND=rsh), PUBLIC          :: Zea       = 0.063 ! with selectivity
+    REAL(KIND=rsh), PUBLIC          :: Zes       = 0.072 ! with selectivity
+    ! REAL(KIND=rsh), PUBLIC          :: za        = 0.154 ! with selectivity
+    REAL(KIND=rsh), PUBLIC          :: zs        = 0.179 ! with selectivity
+
     REAL(KIND=rsh), PUBLIC          :: Zaa       = 0.0
     REAL(KIND=rsh), PUBLIC          :: Zas       = 0.0
-    REAL(KIND=rsh), PUBLIC          :: Zea       = 0.063
-    REAL(KIND=rsh), PUBLIC          :: Zes       = 0.072
-    REAL(KIND=rsh), PUBLIC          :: za        = 0.154
-    REAL(KIND=rsh), PUBLIC          :: zs        = 0.179
     REAL(KIND=rsh)                  :: frac_deb  = 0.000999999_rlg
+
+    ! without selectivity
+    REAL(KIND=rsh)                  :: gammaA     = 0.384_rsh
+    REAL(KIND=rsh)                  :: K_biomassA = 6.156_rlg
+    REAL(KIND=rsh), PUBLIC          :: Zea       = 0.056
+    REAL(KIND=rsh), PUBLIC          :: za        = 0.136
 
 
  !!===================================================================================================================================
@@ -117,7 +126,7 @@ MODULE debmodel
     !&E
     !&E---------------------------------------------------------------------
     !! * Modules used
-    USE ionc4,      ONLY : ionc4_openr,ionc4_read_trajt,ionc4_read_traj,ionc4_close,ionc4_read_dimt
+    USE ionc4,      ONLY : ionc4_openr,ionc4_read_trajt,ionc4_read_traj,ionc4_close,ionc4_read_dimt, ionc4_read_dimtraj
     USE ibmtools,   ONLY : gasdev_s
     USE comtraj,    ONLY : fileanchovy, filesardine, catch_anc_bob, catch_sar_bob
     USE comtraj,    ONLY : mat_catch, fishing_strategy
@@ -129,16 +138,16 @@ MODULE debmodel
     !! * Local declarations
     CHARACTER(LEN=lchain)                       :: file_inp
     INTEGER                                     :: idimt
-    INTEGER                                     :: m, n, num, nb_part_nc, is, ie
+    INTEGER                                     :: m, n, num, nb_part_nc, is, ie, il, index_num !CLARA
     INTEGER                                     :: lstr,lenstr
     TYPE(type_patch), POINTER                   :: patch
     
     REAL(KIND=rsh)                              :: WV,WE,WR,WG,NRJ_V,NRJ_g,Wat,Wash,L,Wdeb,NRJ
     REAL(KIND=rsh)                              :: zoom
-    INTEGER                                     :: jj,mm,aaaa,hh,minu,sec
+    INTEGER                                     :: jj,mm_clock,aaaa,hh,minu,sec
     CHARACTER(len=19)                           :: tool_sectodat
 
-    INTEGER,        ALLOCATABLE, DIMENSION(:)   :: daysp_nc, yearsp_nc, season_nc
+    INTEGER,        ALLOCATABLE, DIMENSION(:)   :: daysp_nc, yearsp_nc, season_nc, num_nc, zoom_nc !CLARA
     REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: edeb_nc, hdeb_nc, rdeb_nc, gam_nc, neggs_nc, wdeb_nc
 
     CHARACTER(len=lchain)                       :: file_catch
@@ -157,8 +166,8 @@ MODULE debmodel
 
     NAMELIST/deb_para/        pAm,pMi,EG,vc,kap,Hp,Kx,TA,K,shapeb,lfactor,E0,Rfbatch,SF
     NAMELIST/deb_fixed_param/ kj,Hb,Hj,T1,TAL,TL,shape,d_V,rho_V,rho_E,rho_R,rho_Gam,Kr,Sizeb,Lj,TR,E_i,R_i
- 
-    CALL tool_decompdate(tool_sectodat(time),jj,mm,aaaa,hh,minu,sec)
+    
+    CALL tool_decompdate(tool_sectodat(time),jj,mm_clock,aaaa,hh,minu,sec)
 
     patch => patches%first
     DO n = 1,patches%nb
@@ -187,13 +196,15 @@ MODULE debmodel
         IF ( restart ) THEN
             ! Initialize array with content of NetCDF input file
             file_inp = trim(patch%file_inp)
-            CALL ionc4_openr(trim(file_inp),.false.)
+            CALL ionc4_openr(file_inp,.false.)
+            CALL ionc4_read_dimtraj(file_inp, nb_part_nc) !clara
     
-            nb_part_nc = patch%nb_part_total
+            ! nb_part_nc = patch%nb_part_total ! denis
             ALLOCATE( edeb_nc(nb_part_nc), hdeb_nc(nb_part_nc), rdeb_nc(nb_part_nc), gam_nc(nb_part_nc), wdeb_nc(nb_part_nc) )
             ALLOCATE( neggs_nc(nb_part_nc), daysp_nc(nb_part_nc), yearsp_nc(nb_part_nc), season_nc(nb_part_nc) )
+            ALLOCATE( num_nc(nb_part_nc), zoom_nc(nb_part_nc) )
     
-            CALL ionc4_openr(trim(file_inp), .false.)
+            ! CALL ionc4_openr(trim(file_inp), .false.)
             ! Read time dimension in input file to open last time in restart file
             idimt = ionc4_read_dimt(file_inp)
 
@@ -203,28 +214,45 @@ MODULE debmodel
             CALL ionc4_read_trajt(file_inp, "GAM",       gam_nc,   1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NEGGS",     neggs_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "WEIGHT",    wdeb_nc,  1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "NUM",  num_nc,      1, nb_part_nc, idimt)
     
             CALL ionc4_read_traj (trim(file_inp), "DAYSPAWN",  daysp_nc,  1, nb_part_nc)
             CALL ionc4_read_traj (trim(file_inp), "YEARSPAWN", yearsp_nc, 1, nb_part_nc)
+            CALL ionc4_read_traj (trim(file_inp), "ZOOM",      zoom_nc,   1, nb_part_nc)
             !CALL ionc4_read_traj (file_inp, "SEASON",    season_nc, 1, nb_part_nc)
             CALL ionc4_close(file_inp)
             
             DO m = 1,patch%nb_part_alloc
                 IF (patch%nb_part_alloc == 0) CYCLE
                 IF ( .NOT. patch%particles(m)%active ) CYCLE
-                num = patch%particles(m)%num
-                patch % particles(m) % E         = edeb_nc(num)
-                patch % particles(m) % H         = hdeb_nc(num)
-                patch % particles(m) % R         = rdeb_nc(num)
+                num = patch%particles(m)%num 
+                ! CLARA, get index of num_nc
+                ! index_num = findloc(num_nc, num, dim=1)
+                index_num = -1
+                do il = 1, nb_part_nc
+                    if (num_nc(il) == num) then
+                        index_num = il
+                        exit
+                    end if
+                end do
+                IF ( index_num == -1 ) THEN
+                    PRINT *, 'ERROR not found num=', num
+                    CYCLE
+                END IF
+                patch % particles(m) % E         = edeb_nc(index_num)
+                patch % particles(m) % H         = hdeb_nc(index_num)
+                patch % particles(m) % R         = rdeb_nc(index_num)
                 patch % particles(m) % L         = shape*(patch%particles(m)%size)
-                patch % particles(m) % Gam       = gam_nc(num)
-                patch % particles(m) % Neggs     = neggs_nc(num)
-                patch % particles(m) % Wdeb      = wdeb_nc(num)
-                patch % particles(m) % dayspawn  = daysp_nc(num)
-                patch % particles(m) % yearspawn = yearsp_nc(num)
+                patch % particles(m) % Gam       = gam_nc(index_num)
+                patch % particles(m) % Neggs     = neggs_nc(index_num)
+                patch % particles(m) % Wdeb      = wdeb_nc(index_num)
+                patch % particles(m) % dayspawn  = daysp_nc(index_num)
+                patch % particles(m) % yearspawn = yearsp_nc(index_num)
+                patch % particles(m) % zoom      = zoom_nc(index_num)
             END DO
  
-            DEALLOCATE( edeb_nc, hdeb_nc, rdeb_nc, gam_nc, neggs_nc, daysp_nc, yearsp_nc, season_nc )
+            DEALLOCATE( edeb_nc, hdeb_nc, rdeb_nc, gam_nc, wdeb_nc, neggs_nc, daysp_nc, yearsp_nc, season_nc )
+            DEALLOCATE( num_nc, zoom_nc )
         ENDIF  ! Restart
 
 
@@ -318,7 +346,7 @@ MODULE debmodel
         ENDIF
 
         ! Energie densite (dry)
-        patch%init_particle%NRJd = NRJ_g*1d3/patch%init_particle%Wdebd 
+        patch%init_particle%NRJd = (NRJ_g/patch%init_particle%Wdebd)/1d3
 
         ! Wet weight
         patch%init_particle%Wdeb = patch%init_particle%Wdebd + Wat         
@@ -329,7 +357,7 @@ MODULE debmodel
         ENDIF
 
         ! Energie densite (wet) 
-        patch%init_particle%NRJ  = NRJ_g*1d3/patch%init_particle%Wdeb
+        patch%init_particle%NRJ  = (NRJ_g/patch%init_particle%Wdeb)/1d3
 
         nb_part_nc = patch%nb_part_alloc
         DO m = 1,nb_part_nc
@@ -343,21 +371,22 @@ MODULE debmodel
             IF (patch%particles(m)%size >= 2.0_rsh .and. patch%particles(m)%size <= 4.0_rsh) THEN
                 patch%particles(m)%L = patch%particles(m)%size*((L - shapeb*2.0_rsh)*shape + (shape*4.0_rsh - L)*shapeb) &
                                        /(shape*4.0_rsh - shapeb*2.0_rsh)
-            ENDIF 
+            ENDIF ! ce if commenté chez clara
             IF (patch%particles(m)%size > 4.0_rsh) patch%particles(m)%L = patch%particles(m)%size*shape
 
             ! Weight
             WV = d_V*patch%particles(m)%L**3
             WE = patch%particles(m)%E/rho_E         ! W of E
-            WR = patch%particles(m)%R/rho_E         ! W of E_R
-            WG = patch%particles(m)%Gam/rho_E       ! W of G
+            WR = patch%particles(m)%R/rho_R         ! W of E_R
+            WG = patch%particles(m)%Gam/rho_Gam     ! W of G
 
             ! Energy (M Huret)
             NRJ_V = rho_V*WV
             NRJ_g = NRJ_V + patch%particles(m)%E + patch%particles(m)%R + patch%particles(m)%Gam
         
             size = patch%particles(m)%size
-        
+
+
             ! Pour le calcul du poids a l'initialisation si pas de restart
             IF (patch%species == 'anchovy') THEN
                 ! Water - Conversion avec relation poids eau vs. taille * Energie
@@ -369,12 +398,16 @@ MODULE debmodel
                 ! Water - Conversion avec relation poids eau vs. taille * Energie
             	Wat = exp((-0.841256_rsh) + 0.199038_rsh*size + 0.277582_rsh*log(NRJ_g/1000.0_rsh)-0.008299_rsh*size*log(NRJ_g/1d3))
             	Wash = exp(-2.9325954_rsh + 0.912532_rsh*log(Wat))          ! Wash=f(water)
-            ENDIF !( species == 'sardine')
-            
+            ENDIF !( species == 'sardine')    
+       
 
             ! Random parameter for population variability
-            CALL gasdev_s(zoom)
-            zoom = 1 + zoom*0.2_rsh/3.0_rsh
+            IF (restart) THEN
+                zoom = patch%particles(m)%zoom
+            ELSE
+                CALL gasdev_s(zoom)
+                zoom = 1 + zoom*0.2_rsh/3.0_rsh
+            ENDIF
 
             ! Affectation des nouveaux parametres
             ! From species parameters + individual variability
@@ -470,14 +503,14 @@ MODULE debmodel
     CHARACTER(LEN=lchain),INTENT( in )  :: species
 
     !! * Local declarations
-    INTEGER                             :: jj,mm,aaaa,hh,minu,sec
+    INTEGER                             :: jj,mm_clock,aaaa,hh,minu,sec
     CHARACTER(len=19)                   :: tool_sectodat
     REAL(KIND=rsh)                      :: Wash,Wat
     REAL(KIND=rsh)                      :: zoom                     ! zoom factor for inter individual variability
 
     !!----------------------------------------------------------------------
     !! * Executable part
-    CALL tool_decompdate(tool_sectodat(time),jj,mm,aaaa,hh,minu,sec)
+    CALL tool_decompdate(tool_sectodat(time),jj,mm_clock,aaaa,hh,minu,sec)
 
     ! Inter individual variability
     CALL gasdev_s(zoom)
@@ -654,14 +687,19 @@ MODULE debmodel
      
         ! -- Densite-dependance  (Menu et al. 2023)
         IF (particle%WV > 0) THEN
-            f = X/(X + K_food)! + struc_ad_dd_DEB/(K_biomass*10d8*particle%WV**gamma) ), !BD weight effect        
+                IF (species == 'anchovy') THEN
+                    f = X / (X + K_food + struc_ad_dd_DEB/(K_biomassA*10d8*particle%WV**gammaA) ) !BD weight effect     
+                ENDIF
+                IF (species == 'sardine') THEN
+                    f = X / (X + K_food + struc_ad_dd_DEB/(K_biomassS*10d8*particle%WV**gammaS) ) !BD weight effect     
+                ENDIF    
         ELSE
             f = X/(X + K_food) 
         ENDIF
 
         IF (X < 0) THEN
             WRITE (*,*)  "w_dry", particle%Wdebd, "size", particle%size, "L", particle%L, "f", f,             &
-                         "nb", particle%super, "strc", struc_ad, "Kbiom", K_biomass, "Kfood", K_food, "X", X
+                         "nb", particle%super, "strc", struc_ad, "Kbiom", K_biomassA, "Kfood", K_food, "X", X
             CALL_MPI MPI_FINALIZE(ierr_mpi)
             STOP
         ENDIF
@@ -670,8 +708,7 @@ MODULE debmodel
     !-------------------------------------------------------------------------------
     ! shape correction function
     ! correction factor, can be related to increase of assimilation efficiency, or visual acuity
-
-    ! -- Menu et al. 2023
+    !cor_l = MIN(1.0_rsh,MAX(((H-Hb)+(Hj-H)*lfactor) / (Hj-Hb),lfactor))
     cor_l = MIN(1.0_rsh, MAX(((L - Lb) + (Lj - L)*lfactor)/(Lj - Lb), lfactor))
     
 
@@ -683,7 +720,7 @@ MODULE debmodel
     pXmT = pAmT/0.8_rsh
 
     ! FLUXES------------------------------------------------------------------------
-    pA = pAmT*f*(L**2.0_rsh)                 ! Assimilation
+    pA = pAmT*f*(L**2.0_rsh)*cor_l           ! Assimilation
     pM = pMT*(L**3)                          ! J/d somatic maintenance;
 
     pC = (E/(L**3))*((vT*EG*(L**2)) + pM)/(EG + (kap*E/(L**3)))  ! J/d, Reserve Mobilisation, ref=Kooijman (Book,p37);            
@@ -694,7 +731,7 @@ MODULE debmodel
     ! -- Mortality (Menu et al. 2023)
     ! pR can be negative, then energy goes from R to maturity maintenance, but there need to be enough in R
     Ker = rho_R/rho_E
-    IF (pR + R*Ker*86400.0_rsh/dt < 0.0_rsh) THEN
+    IF (pR + R*86400.0_rsh/dt/Ker < 0.0_rsh) THEN
         IF ( frac_deb_death ) THEN
             particle%DEATH_DEB = particle%DEATH_DEB + frac_deb*particle%super
             particle%super = (1._rsh - frac_deb)*particle%super     ! maintenance pas assuree then mortality
@@ -706,7 +743,7 @@ MODULE debmodel
     ENDIF
 
     ! Reproduction and Emergency maintenance (M Huret)
-    IF (H >= HP) THEN
+    IF (H >= Hp) THEN
         IF (species == 'anchovy') THEN
             IF (.not. particle%season .and. month > 3 .and. month < 9 .and. day > 15 .and. year >= particle%yearspawn) THEN
                 particle%season = .TRUE.
@@ -816,12 +853,12 @@ MODULE debmodel
                 particle%Nbatch = particle%Nbatch + 1
 
                 IF(species == 'anchovy') THEN
-                    particle%Neggs = particle%Neggs + Ebatch/E0*(particle%super/2.0_rlg)      ! total egg spawned per particle over dt_spawn (see ibm) 
+                    particle%Neggs = particle%Neggs + Ebatchlast/E0*(particle%super/2.0_rlg)      ! total egg spawned per particle over dt_spawn (see ibm) 
                 ENDIF
                 IF(month <= 7 .and. species == 'sardine') THEN
-                    particle%Neggs = particle%Neggs + Ebatch/E0*(particle%super/2.0_rlg)      ! total egg spawned per particle over dt_spawn (see ibm) 
+                    particle%Neggs = particle%Neggs + Ebatchlast/E0*(particle%super/2.0_rlg)      ! total egg spawned per particle over dt_spawn (see ibm) 
                 ENDIF
-                particle%Neggs_tot = particle%Neggs_tot + Ebatch/E0*(particle%super/2.0_rlg)  ! total egg spawned per particle over life cycle
+                particle%Neggs_tot = particle%Neggs_tot + Ebatchlast/E0*(particle%super/2.0_rlg)  ! total egg spawned per particle over life cycle
             ENDIF
 
             dR = pR*Ker - pR2 - pM2 ! pR can be negative, then energy goes from R to maturity maintenance (like pM2) 
@@ -836,7 +873,7 @@ MODULE debmodel
     particle%E = E + dE*dt/86400.0_rsh
     particle%L = L + dL*dt/86400.0_rsh
     particle%H = H + dH*dt/86400.0_rsh
-    particle%R = R + dR*dt/86400.0_rsh + Ebatchlast  ! on recupere energie dernier batch dans R
+    particle%R = R + dR*dt/86400.0_rsh + Gamres*Kr  ! on recupere energie dernier batch dans R
 
     !---------------------------------------------------------
     ! Calcul du shape si variable en fonction du stade de developement
@@ -853,8 +890,8 @@ MODULE debmodel
     ! Weight
     WV = d_V*particle%L**3
     WE = particle%E/rho_E         ! W of E
-    WR = particle%R/rho_E         ! W of E_R
-    WG = particle%Gam/rho_E       ! W of Gam
+    WR = particle%R/rho_R         ! W of E_R
+    WG = particle%Gam/rho_Gam       ! W of Gam
 
     particle%WV = WV
     particle%WE = WE
@@ -890,7 +927,7 @@ MODULE debmodel
     ENDIF
     
     IF (particle%Wdebd .gt. 0.0_rsh) THEN
-        particle%NRJd = NRJ_g*1d3/particle%Wdebd    ! Energie densite (dry)
+        particle%NRJd = NRJ_g/particle%Wdebd/1d3    ! Energie densite (dry)
     ENDIF
     
     ! Wet weight
@@ -901,7 +938,7 @@ MODULE debmodel
     ENDIF
     
     IF (particle%Wdeb .gt. 0.0_rsh) THEN
-        particle%NRJ = NRJ_g*1d3/particle%Wdeb  ! Energie densite (wet)
+        particle%NRJ = NRJ_g/particle%Wdeb/1d3  ! Energie densite (wet)
     ENDIF
     
     IF (particle%super <= 1._rsh) THEN
@@ -968,7 +1005,7 @@ MODULE debmodel
 
 
  !!======================================================================
- SUBROUTINE readfood3d(limin,limax,ljmin,ljmax)
+ SUBROUTINE readfood3d(limin,limax,ljmin,ljmax,timestep_ibm)
 
     !&E---------------------------------------------------------------------
     !&E                 ***  ROUTINE readfood3d  ***
@@ -1000,7 +1037,7 @@ MODULE debmodel
     CHARACTER(LEN=19)                                    :: tool_sectodat,tdate
     REAL(KIND=rsh),ALLOCATABLE,DIMENSION(:,:)            :: food1_1,food2_1
     REAL(kind=rlg)                                       :: dt1,dt2,torigin, tfood 
-    LOGICAL                                              :: l_pb
+    LOGICAL                                              :: l_pb, timestep_ibm
     INTEGER                                              :: valimin,valimax,valjmin,valjmax
     INTEGER                                              :: imin,jmin,imax,jmax
     INTEGER                                              :: IERR_MPI
@@ -1019,7 +1056,8 @@ MODULE debmodel
     ! Definit les indices de lecture en fonction du proc mpi dans le fichier de forcage
     ! Lit sur tout le domaine en sequentiel sinon
     imin = 0 ; jmin = 0
-    valimin = 1 ; valjmin = 1
+    valimin = 1 ; valjmin = 1 ! version initiale Denis
+    ! valimin = 0 ; valjmin = 0 ! version modifiée Clara
 
 #ifdef MPI
     if (ii .gt. 0) then
@@ -1050,7 +1088,8 @@ MODULE debmodel
     valjmax = jmax - jmin + valjmin
 
     ! Read food at first time step from file
-    IF( FIRST_TIME_STEP ) THEN
+    ! IF( FIRST_TIME_STEP ) THEN
+    IF ( timestep_ibm ) THEN 
 
         ALLOCATE(biomassezoo(GLOBAL_2D_ARRAY))
         ALLOCATE(food1(GLOBAL_2D_ARRAY), food2(GLOBAL_2D_ARRAY))
@@ -1098,8 +1137,19 @@ MODULE debmodel
         CALL ionc4_read_subxyt(file_food,TRIM(name1_in_food),food2_1,valimin,valimax,valjmin,valjmax,ilecf+1,1,1)
         
         ! Copie des lectures dans les bons indices pour CROCO, ie entre 0 et imax-1
-        food1(1:valimax-valimin+1,1:valjmax-valjmin+1) = food1_1
-        food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1
+        ! food1(1:valimax-valimin+1,1:valjmax-valjmin+1) = food1_1 ! version initiale Denis
+        ! food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
+        food1(imin:imax,jmin:jmax) = food1_1(valimin:valimax,valjmin:valjmax) ! version modifiée Clara
+        food2(imin:imax,jmin:jmax) = food2_1(valimin:valimax,valjmin:valjmax) ! version modifiée Clara
+
+        
+! #ifdef MPI
+!             food1(1:valimax-valimin+1,1:valjmax-valjmin+1) = food1_1 ! version initiale Denis
+!             food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
+! #else
+!             food1(LBOUND(food1,1) : MIN(LBOUND(food1,1)+valimax-valimin, UBOUND(food1,1)), LBOUND(food1,2) : MIN(LBOUND(food1,2)+valjmax-valjmin, UBOUND(food1,2)) ) = food1_1 ! version modifiée Clara
+!             food2(LBOUND(food2,1) : MIN(LBOUND(food2,1)+valimax-valimin, UBOUND(food2,1)), LBOUND(food2,2) : MIN(LBOUND(food2,2)+valjmax-valjmin, UBOUND(food2,2)) ) = food2_1 ! version modifiée Clara
+! #endif
 
         DEALLOCATE(food1_1,food2_1)
         ilecmemfood=ilecf
@@ -1134,7 +1184,16 @@ MODULE debmodel
             CALL ionc4_read_subxyt(file_food,TRIM(name1_in_food),food2_1,valimin,valimax,valjmin,valjmax,ilecf+1,1,1)
 
             food1 = food2
-            food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1
+            ! food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
+            food2(imin:imax,jmin:jmax) = food2_1(valimin:valimax,valjmin:valjmax) ! version modifiée Clara
+            
+! #ifdef MPI
+!             food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
+! #else
+!             food2(LBOUND(food2,1) : MIN(LBOUND(food2,1)+valimax-valimin, UBOUND(food2,1)), LBOUND(food2,2) : MIN(LBOUND(food2,2)+valjmax-valjmin, UBOUND(food2,2)) ) = food2_1 ! version modifiée Clara
+! #endif
+            
+            
 
             DEALLOCATE(food2_1)
             ilecmemfood=ilecf
@@ -1156,7 +1215,7 @@ MODULE debmodel
  
  !!======================================================================
  ! --- Unused anymore --- !
- SUBROUTINE readtemp3d(limin,limax,ljmin,ljmax)
+ SUBROUTINE readtemp3d(limin,limax,ljmin,ljmax,timestep_ibm)
 
     !&E---------------------------------------------------------------------
     !&E                 ***  ROUTINE readtemp3d  ***
@@ -1187,7 +1246,7 @@ MODULE debmodel
     REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:,:,:)        :: temp_1,temp_2
     REAL(kind=rlg)                                       :: dt1,dt2,ttemp,toriginp
     CHARACTER(LEN=lchain)                                :: file_temp
-    LOGICAL                                              :: l_pb
+    LOGICAL                                              :: l_pb, timestep_ibm
     INTEGER                                              :: valimin,valimax,valjmin,valjmax
     INTEGER                                              :: imin,imax,jmin,jmax
     INTEGER                                              :: idimt,i,j,k, IERR_MPI
@@ -1236,7 +1295,8 @@ MODULE debmodel
     valimax = imax - imin + valimin
     valjmax = jmax - jmin + valjmin
  
-    IF( FIRST_TIME_STEP ) THEN
+    ! IF( FIRST_TIME_STEP ) THEN
+    IF ( timestep_ibm ) THEN
 
         ALLOCATE(climatemp(GLOBAL_2D_ARRAY,kmax),   &
                  temp1(GLOBAL_2D_ARRAY,kmax),       &
@@ -1606,8 +1666,6 @@ MODULE debmodel
     ESD2weight = 0.447_rsh*DW   !from Mauchline 1998 (average carbon content of copepods)
  
  END FUNCTION ESD2weight
- 
-
 
 
 #endif /* IBM_SPECIES */

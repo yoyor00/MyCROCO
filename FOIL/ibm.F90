@@ -106,7 +106,8 @@ MODULE ibm
     ! Import subroutines
     USE trajinitsave,   ONLY : LAGRANGIAN_init
     USE ionc4,          ONLY : ionc4_openr, ionc4_read_trajt, ionc4_read_traj,   &
-                               ionc4_close, ionc4_read_time, ionc4_read_dimt
+                               ionc4_close, ionc4_read_time, ionc4_read_dimt,    &
+                               ionc4_gatt_char_read, ionc4_read_dimtraj
 #ifdef IBM_SPECIES
     USE debmodel,       ONLY : deb_init
     USE ibmmove,        ONLY : fish_move_init
@@ -116,7 +117,7 @@ MODULE ibm
     ! Import variables
     USE comtraj,        ONLY : iscreenlog
     USE comtraj,        ONLY : type_particle,type_patch,patches,file_trajec,                    &
-                               itypetraj,ndtz,ibm_restart
+                               file_pathout,itypetraj,ndtz,ibm_restart
 #ifdef IBM_SPECIES
     USE comtraj,        ONLY : debuse,F_Fix,ffix,file_food,file_NBSS,frac_deb_death,            &
                                fileanchovy,filesardine,fileprobadistrib_anc,nbSizeClass_anc,    &
@@ -127,7 +128,7 @@ MODULE ibm
     !! * Arguments
     REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY     ),        INTENT( in ) :: xe
     REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax),        INTENT( in ) :: sal,temp
-    INTEGER,                                                INTENT( in ) :: Istr,Iend,Jstr,Jend                                 
+    INTEGER,                                                INTENT( in ) :: Istr,Iend,Jstr,Jend    
 
     !! * Local declarations
     CHARACTER(LEN=lchain)                           :: file_inp                 ! Name of netcdf restart file with data
@@ -140,10 +141,11 @@ MODULE ibm
     INTEGER                                         :: nb_part_nc               ! Number of particles in netcdf for patch
     INTEGER                                         :: duration_ibm_anc,duration_ibm_sar ! Life time of anchovy and sardine
 
-    INTEGER                                         :: i,j,n,m                  ! Integers for loops
+    INTEGER                                         :: i,j,n,m, il                 ! Integers for loops
+    INTEGER                                         :: index_num                          ! Integers for indexing in restart
     ! To convert date to seconds or seconds to date
     CHARACTER(len=19)                               :: tool_sectodat 
-    INTEGER                                         :: mm,hh,minu,sec           ! jj and aaaa are saved as current_year/day for later
+    INTEGER                                         :: mm_clock,hh,minu,sec           ! jj and aaaa are saved as current_year/day for later
 
 #ifdef IBM_SPECIES 
     ! From paraibm, spatial size for eggs merging in a superindividual
@@ -156,10 +158,10 @@ MODULE ibm
     REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: flag_nc, temp_nc, super_nc   
     REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: dens_nc, size_nc, drate_nc
     REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)       :: dayb_nc
-    INTEGER,        ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, ageClass_nc
+    INTEGER,        ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, ageClass_nc, num_nc 
 
     ! Definition of namelists in paraibm
-    NAMELIST/namibmin/      file_trajec,itypetraj,ndtz
+    NAMELIST/namibmin/      file_trajec,file_pathout,itypetraj,ndtz
     NAMELIST/namibmrestart/ ibm_restart,ibm_l_time
     NAMELIST/namibmbio/     w_max, alpha_w
 #ifdef IBM_SPECIES
@@ -169,6 +171,7 @@ MODULE ibm
     NAMELIST/namibmfrc/     fileanchovy,filesardine,catch_anc_bob,catch_sar_bob,fileprobadistrib_anc,nbSizeClass_anc,sizemin_anc, &
                             fileprobadistrib_sar,nbSizeClass_sar,sizemin_sar
 #endif
+
 
 #include "compute_auxiliary_bounds.h"
     !!----------------------------------------------------------------------
@@ -203,15 +206,15 @@ MODULE ibm
         WRITE(iscreenlog,*) 'fichier definissant les caracteristiques des trajectoires : ',trim(file_trajec)
     ENDIF_MPI      
 
-    CALL tool_decompdate(tool_sectodat(time),current_day,mm,current_year,hh,minu,sec)
+    CALL tool_decompdate(tool_sectodat(time),current_day,mm_clock,current_year,hh,minu,sec)
 
     patch => patches % first
     DO n = 1, patches%nb      
         ! Init patch general data
         patch%yearref  = current_year - 1
-        patch%t_spawn  = patch%t_beg
+        patch%t_spawn  = patch%t_beg ! clara : why ???
         patch%dt_spawn = dt_spawn*3600.0_rlg
-        patch%dt_save  = patch%dt_save
+        patch%dt_save  = patch%dt_save ! clara : interet de cette ligne ? sauf si dt_save tout court
 
 
         ! ------------------------- 
@@ -219,12 +222,16 @@ MODULE ibm
         IF ( ibm_restart ) THEN
             file_inp = trim(patch%file_inp)
 
-            nb_part_nc = patch%nb_part_total
+            ! nb_part_nc = patch%nb_part_total ! denis
+            CALL ionc4_openr(file_inp, .false.) ! clara
+            CALL ionc4_read_dimtraj(file_inp, nb_part_nc) !clara
+
             ALLOCATE( flag_nc(nb_part_nc), temp_nc(nb_part_nc),  size_nc(nb_part_nc), stage_nc(nb_part_nc) )
             ALLOCATE( dens_nc(nb_part_nc), super_nc(nb_part_nc), drate_nc(nb_part_nc), dayb_nc(nb_part_nc) )
-            ALLOCATE( age_nc(nb_part_nc), ageClass_nc(nb_part_nc) )
+            ALLOCATE( age_nc(nb_part_nc), ageClass_nc(nb_part_nc), num_nc(nb_part_nc) )
 
-            CALL ionc4_openr(trim(file_inp), .false.)
+            ! CALL ionc4_openr(trim(file_inp), .false.)
+            CALL ionc4_gatt_char_read(file_inp, 'run_id', patch%run_id)
             ! Read time dimension in input file to open last time in restart file
             idimt = ionc4_read_dimt(file_inp)
             CALL ionc4_read_trajt(file_inp, "flag",      flag_nc,     1, nb_part_nc, idimt)
@@ -237,23 +244,37 @@ MODULE ibm
             CALL ionc4_read_traj (file_inp, "DAYBIRTH",  dayb_nc,     1, nb_part_nc)
             CALL ionc4_read_trajt(file_inp, "AGE",       age_nc,      1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGECLASS",  ageClass_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "NUM",  num_nc,      1, nb_part_nc, idimt)
 
             DO m = 1,patch%nb_part_alloc
                 IF (patch%nb_part_alloc == 0) CYCLE     ! To avoid an error because of a proc without any particle at restart
-                IF ( .NOT. patch%particles(m)%active ) CYCLE
-                num = patch % particles(m) % num
-                patch % particles(m) % flag      = flag_nc(num)
-                patch % particles(m) % temp      = temp_nc(num)
-                patch % particles(m) % size      = size_nc(num)
-                patch % particles(m) % density   = dens_nc(num)
-                patch % particles(m) % stage     = stage_nc(num)
-                patch % particles(m) % super     = super_nc(num)
-                patch % particles(m) % Drate     = drate_nc(num)
-                patch % particles(m) % date_orig = dayb_nc(num)
-                patch % particles(m) % age       = age_nc(num)
-                patch % particles(m) % AgeClass  = ageClass_nc(num)
+                IF ( .NOT. patch%particles(m)%active ) CYCLE 
+                num = patch % particles(m) % num 
+                ! CLARA, get index of num_nc
+                ! index_num = findloc(num_nc, num, dim=1)
+                index_num = -1
+                do il = 1, nb_part_nc
+                    if (num_nc(il) == num) then
+                        index_num = il
+                        exit
+                    end if
+                end do
+                IF ( index_num == -1 ) THEN
+                    PRINT *, 'ERROR not found num=', num
+                    CYCLE
+                END IF
+                patch % particles(m) % flag      = flag_nc(index_num)
+                patch % particles(m) % temp      = temp_nc(index_num)
+                patch % particles(m) % size      = size_nc(index_num)
+                patch % particles(m) % density   = dens_nc(index_num)
+                patch % particles(m) % stage     = stage_nc(index_num)
+                patch % particles(m) % super     = super_nc(index_num)
+                patch % particles(m) % Drate     = drate_nc(index_num)
+                patch % particles(m) % date_orig = dayb_nc(index_num)
+                patch % particles(m) % age       = age_nc(index_num)
+                patch % particles(m) % AgeClass  = ageClass_nc(index_num)
             END DO
-             
+            
 #ifdef IBM_SPECIES
             CALL ionc4_read_traj(trim(file_inp), "DAYJUV",   dayb_nc, 1, nb_part_nc)
             CALL ionc4_read_traj(trim(file_inp), "DENSPAWN", dens_nc, 1, nb_part_nc)
@@ -262,33 +283,52 @@ MODULE ibm
                 IF (patch%nb_part_alloc == 0) CYCLE
                 IF ( .NOT. patch%particles(m)%active ) CYCLE
 
-                num = patch%particles(m)%num            
-                patch%particles(m)%dayjuv   = dayb_nc(num)
-                patch%particles(m)%denspawn = dens_nc(num)
+                num = patch%particles(m)%num          
+                ! CLARA, get index of num_nc
+                ! index_num = findloc(num_nc, num, dim=1)
+                index_num = -1
+                do il = 1, nb_part_nc
+                    if (num_nc(il) == num) then
+                        index_num = il
+                        exit
+                    end if
+                end do
+                IF ( index_num == -1 ) THEN
+                    PRINT *, 'ERROR not found num=', num
+                    CYCLE
+                END IF
+                patch%particles(m)%dayjuv   = dayb_nc(index_num)
+                patch%particles(m)%denspawn = dens_nc(index_num)
 
                 IF ( patch%particles(m)%stage >= 5 ) patch%particles(m)%itypevert = 0
             END DO
+
 #endif /*IBM_SPECIES*/
 
             DEALLOCATE( flag_nc, temp_nc, size_nc, stage_nc, dens_nc, super_nc, drate_nc, dayb_nc )
-            DEALLOCATE( age_nc, ageClass_nc )
-
+            DEALLOCATE( age_nc, ageClass_nc, num_nc )
+ 
             ! update the date of restart, and savetraj is delayed not to have twice same time step in output
             IF ( ibm_l_time ) THEN
-               CALL ionc4_read_time(trim(file_inp), 1, patch%t_beg)
-               patch%t_save = patch%t_beg + patch%dt_save*3600.0_rlg
+            !    CALL ionc4_read_time(trim(file_inp), 1, patch%t_beg)
+                CALL ionc4_read_time(trim(file_inp), idimt, patch%t_beg)
+                patch%t_save = patch%t_beg + patch%dt_save*3600.0_rlg
             END IF
             CALL ionc4_close(file_inp)
             
         ! ------------------------- 
         ! --- If not a restart
         ELSE     
-            patch%particles(:)%date_orig = time
+            ! patch%particles(:)%date_orig = time
             nb_part_nc = patch%nb_part_alloc
+            patch%run_id = generate_run_id()
+            !--- Update FOIL.info file
+            call write_run_info(patch%run_id)
 
             !Huret et al. 2016 (egg density =f(surf.density))
             DO m = 1, nb_part_nc
                 particle => patch%particles(m)
+                particle%date_orig = time - particle%age*24.0_rlg*3600.0_rlg
                 IF (patch%nb_part_alloc == 0) CYCLE ! To avoid an error because of a proc without any particle at init
                 IF ( .NOT. particle%active )  CYCLE
 #ifdef IBM_SPECIES
@@ -298,16 +338,15 @@ MODULE ibm
             ENDDO      ! loop on patch%nb_part_alloc
 
         ENDIF  ! restart or not
-
+        
         patch => patch%next
     ENDDO         ! loop on patches%nb
-
-
+    
 #ifdef IBM_SPECIES
     duration = (/duration_ibm_anc, duration_ibm_sar /) ! Store in one variable life expectancy for both species
-
+    
     ! No need of loop to initialize DEB parameters
-    IF (debuse) CALL deb_init(ibm_restart)      ! Init DEB     
+    IF (debuse) CALL deb_init(ibm_restart)      ! Init DEB  
     CALL fish_move_init(Istr,Iend,Jstr,Jend)    ! Init fish_move module
 
     yearclass = current_year + 1                ! Init yearclass to update fish's Ageclass
@@ -327,7 +366,7 @@ MODULE ibm
         nb_indv_ponte(2) = NINT(max_part*(dt_spawn/24.d0)/(211.d0)) ! 211 = nb de jours de ponte pendant une annee pour la sardine
     END IF
 #endif
-
+    
     ! save initialization
     CALL ibm_save
 
@@ -392,6 +431,7 @@ MODULE ibm
 #endif /* IBM_SPECIES */
     USE comtraj,      ONLY : type_particle, type_patch, patches, patch_list_append, resize_patch
 #ifdef IBM_SPECIES
+    USE comtraj,      ONLY : file_pathout
     USE comtraj,      ONLY : jjulien, struc_ad, struc_ad_dd_DEB
     USE comtraj,      ONLY : debuse, F_Fix
     USE comtraj,      ONLY : number_tot, weight_tot, biom_tot, Wdeb_mean
@@ -412,7 +452,7 @@ MODULE ibm
 
 
     !! * Local declarations
-    INTEGER                         :: jj,mm,aaaa,hh,minu,sec   ! To convert date to seconds or seconds to date
+    INTEGER                         :: jj,mm_clock,aaaa,hh,minu,sec   ! To convert date to seconds or seconds to date
     INTEGER                         :: n,m,nn,i,j,k,ind         ! Integers for loops
     INTEGER                         :: nb_part                  ! Number of particles inside a patch for loop
 
@@ -466,6 +506,7 @@ MODULE ibm
     ! Density-dependence variables
     REAL(KIND=rsh), DIMENSION(nb_species)   :: dd_number_eggs, concentration, max_mort
     REAL(KIND=rlg), DIMENSION(nb_species)   :: Z1, Z2
+    LOGICAL, SAVE                           :: first_timestep_ibm = .true.
 
 #endif /* IBM_SPECIES */
 
@@ -480,13 +521,14 @@ MODULE ibm
     CALL LAGRANGIAN_update(xe,uz,vz,Istr,Iend,Jstr,Jend)
  
     ! Save old year for reproduction
-    CALL tool_decompdate(tool_sectodat(time),jj,mm,aaaa,hh,minu,sec)
+    CALL tool_decompdate(tool_sectodat(time),jj,mm_clock,aaaa,hh,minu,sec)
 
 #ifdef IBM_SPECIES
-    jjulien = tool_julien(jj,mm,aaaa) - tool_julien(1,1,aaaa) + 1
+    jjulien = tool_julien(jj,mm_clock,aaaa) - tool_julien(1,1,aaaa) + 1
     IF ( debuse .AND. .NOT. F_Fix ) THEN
-        CALL readfood3d(Istr,Iend,Jstr,Jend)
-        !CALL readtemp3d(Istr,Iend,Jstr,Jend)
+        CALL readfood3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
+        first_timestep_ibm = .false.
+        !CALL readtemp3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
     ENDIF
 #endif /* IBM_SPECIES */
 
@@ -678,7 +720,7 @@ MODULE ibm
                 ! to avoid deep diving at slope, to remove later on   
                   
                 ! Growth
-                IF ( debuse ) CALL deb_cycle(particle,dtm,aaaa,mm,jj,patch%species)
+                IF ( debuse ) CALL deb_cycle(particle,dtm,aaaa,mm_clock,jj,patch%species)
                 IF (particle%size >= 0.6_rsh) THEN 
                    particle%stage = 4
                    update         = .FALSE.
@@ -701,7 +743,7 @@ MODULE ibm
                 particle%w = ibm_nycth_mig(depth_day, depth_night, w_max, w_max, particle, alpha_w)       
 
                 ! Growth
-                IF ( debuse ) CALL deb_cycle(particle,dtm,aaaa,mm,jj,patch%species)
+                IF ( debuse ) CALL deb_cycle(particle,dtm,aaaa,mm_clock,jj,patch%species)
                 IF (particle%H >= particle%Hj) THEN
                     particle%stage = 5
                     particle%itypevert = 0 ! Stop vertical advection/diffusion from stage 5
@@ -751,14 +793,16 @@ MODULE ibm
                 particle%temp = ibm_proftraint(temp,mindepth,maxdepth,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
 
                 ! Growth
-                IF ( debuse ) CALL deb_cycle(particle,dtm,aaaa,mm,jj,patch%species)
+                IF ( debuse ) CALL deb_cycle(particle,dtm,aaaa,mm_clock,jj,patch%species)
 
                 ! Time step to calculate fish movement, depending on size of the fish
                 dh = NINT((100.0/(1.5*particle%size*3600.0))*        &
                      MAX(om_r(nint(pos%idx_r),nint(pos%idy_r)), on_r(nint(pos%idx_r),nint(pos%idy_r))))
 
                 IF (hh >= particle%hmove + dh) THEN
-                    CALL fish_move(particle,ind_species)
+#ifdef MPI
+                        CALL fish_move(particle,ind_species)
+#endif    
                     particle%hmove = hh ! update of the saved hour
 
                     pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
@@ -811,14 +855,16 @@ MODULE ibm
 
                 particle%temp = ibm_proftraint(temp,mindepth,maxdepth,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
 
-                IF (debuse) CALL deb_cycle(particle,dtm,aaaa,mm,jj,patch%species)
+                IF (debuse) CALL deb_cycle(particle,dtm,aaaa,mm_clock,jj,patch%species)
 
                 ! Time step to calculate fish movement, depending on size of the fish and size of the grid
                 dh = NINT((100.0/(1.5*particle%size*3600.0))*        &
                      MAX(om_r(nint(pos%idx_r),nint(pos%idy_r)), on_r(nint(pos%idx_r),nint(pos%idy_r))))
 
                 IF (hh >= particle%hmove + dh) THEN
-                    CALL fish_move(particle,ind_species)
+#ifdef MPI
+                        CALL fish_move(particle,ind_species)
+#endif    
                     particle%hmove = hh ! update of the saved hour
 
                     pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
@@ -850,6 +896,7 @@ MODULE ibm
 
             !---------------------------------------------------------------
             ! Mortality (Menu et al.)
+            Z1(ind_species) = 0.0_rlg
             IF (patch%species == 'anchovy') THEN        ! Equivalent to (ind_species == 1)
                 Z1(ind_species) =  (Zaa + (Zea - Zaa)*exp(-za*(particle%size - 0.0855_rlg))) ! size egg EN DUR
             ELSE IF (patch%species == 'sardine') THEN   ! Equivalent to (ind_species == 2)
@@ -884,14 +931,14 @@ MODULE ibm
             ! ================================================
             ! ===                                          ===
             ! ===             FISHING MORTALITY            ===
-            IF ( fish_mort ) CALL death_by_fishing(particle,patch%species,aaaa,mm,dtm)
+            IF ( fish_mort ) CALL death_by_fishing(particle,patch%species,aaaa,mm_clock,dtm)
 
             ! Some variables on whole population to calculate fishing
             IF (particle%stage >= 5 .and. particle % AgeClass >= 1) THEN
-                number_tot(ind_species) = number_tot(ind_species) + particle%super*                 &
-                                                                    selec_dome_or_asymp(particle%size,alpha_sel,beta_sel)
-                weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)* &
-                                                                    selec_dome_or_asymp(particle%size,alpha_sel,beta_sel)
+                number_tot(ind_species) = number_tot(ind_species) + particle%super!*                 &
+                                                                    !selec_dome_or_asymp(particle%size,alpha_sel,beta_sel)
+                weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)!* &
+                                                                    !selec_dome_or_asymp(particle%size,alpha_sel,beta_sel)
             ENDIF
 
             IF (ind_species == 1 .and. jjulien == 135 .and. fishing_strategy == 'HCR' .and. particle%AgeClass >= 1 ) THEN
@@ -985,17 +1032,18 @@ MODULE ibm
                     child_patch%dt_spawn    = dt_spawn*3600._rsh
                     child_patch%parent_id   = patches%nb + 1                ! keep track of the childs parent
                     child_patch%yearref     = current_year
+                    call read_run_info(child_patch%run_id)  ! read file FOIL.info
 
                     ! Inherit default values for new particles
                     IF (ind == 1) THEN
                         child_patch%init_particle = init_anchovy_egg
                         WRITE( fileout_suffix, '("_",i0,".nc")' ) current_year  ! child_patch % generation
-                        child_patch%file_out      = "anchovy" // fileout_suffix
+                        child_patch%file_out      = trim(file_pathout) // "anchovy" // fileout_suffix
                         child_patch%species       = "anchovy"    ! Initialize species of the patch
                     ELSE IF (ind == 2) THEN
                         child_patch%init_particle = init_sardine_egg
                         WRITE( fileout_suffix, '("_",i0,".nc")' ) current_year  ! child_patch % generation
-                        child_patch%file_out      = "sardine" // fileout_suffix
+                        child_patch%file_out      = trim(file_pathout) // "sardine" // fileout_suffix
                         child_patch%species       = "sardine"    ! Initialize species of the patch
                     ENDIF
 
@@ -1233,7 +1281,8 @@ MODULE ibm
     !! * Modules used
     USE ionc4,          ONLY : ionc4_createfile_traj, ionc4_createvar_traj, &
                                ionc4_write_traj, ionc4_write_trajt,         &
-                               ionc4_write_time, ionc4_sync
+                               ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
+                               ionc4_gatt_char_read, ionc4_open
     USE comtraj,        ONLY : patches, type_patch, type_particle
  
     USE trajinitsave,   ONLY : indices_loc2glob
@@ -1256,10 +1305,15 @@ MODULE ibm
     REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out,f_out,Wdeb_out,Denspawn_out
     REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_out,H_out,R_out,Neggs_out,NRJ_out,Gam_out
     INTEGER,        ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out,yearspawn_out,season_out
+    REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: deaddeb_out, deadfishing_out, deadnatural_out
+    REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_out
 #endif /*IBM_SPECIES*/
     TYPE(type_patch),    POINTER    :: patch
     TYPE(type_particle), POINTER    :: particle
     INTEGER :: idx_s, idx_e
+    LOGICAL                                     :: out_ex
+    character(len=32)                           :: fileinfo_run_id
+    character(len=64) :: run_id_out
  
     !!----------------------------------------------------------------------
     !! * Executable part 
@@ -1281,12 +1335,33 @@ MODULE ibm
  
         file_out = trim(patch%file_out)
 
-        IF ( .NOT. patch%file_out_init ) THEN
-            ! Create output file
+        CALL read_run_info(fileinfo_run_id)  ! read file FOIL.info
+
+        INQUIRE(file=file_out,exist=out_ex) ! does the file exist ?
+        IF (out_ex .AND. .NOT. patch%file_out_init) THEN ! file exists but not yet opened, need to check run_id for restart
             patch%file_out_init = .TRUE.
+            CALL ionc4_open(file_out, .false.)
+            CALL ionc4_gatt_char_read(file_out, 'run_id', run_id_out)
+
+            ! Vérifier la cohérence du run_id
+            IF (trim(run_id_out) /= trim(patch%run_id)) THEN
+                print *, 'ERROR: File ', trim(file_out), ' belongs to another run: ', trim(run_id_out)
+                print *, 'Current run_id is: ', trim(patch%run_id)
+                out_ex = .FALSE.  ! Force re-creation of the file
+            ENDIF
+        ENDIF !out_ex .and. .NOT. patch%file_out_init
+
+        IF (out_ex .AND. patch%file_out_init) THEN ! file has been already opened
+            CALL ionc4_open(file_out, .false.)
+        ENDIF
+                
+
+        IF (.NOT. out_ex) THEN
+            ! Create output file
             nb_part_nc = patch%nb_part_max
 
             CALL ionc4_createfile_traj(file_out, nb_part_nc, 0, 0, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_gatt_char(file_out, 'run_id', trim(patch%run_id)) ! Add a global attribute run_id
             CALL ionc4_createvar_traj(file_out, "latitude", "degrees_north","latitude",                    &
                                                 fill_value=REAL(dg_valmanq_io,kind=out), l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "longitude","degrees_east", "longitude",                   &
@@ -1315,7 +1390,7 @@ MODULE ibm
                                                 fill_value=REAL(dg_valmanq_io,kind=out), l_out_nc4par=l_out_nc4par, ndims=1)
             CALL ionc4_createvar_traj(file_out, "AGE","","Age in days",                                    &
                                                 fill_value=-1, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "AGECLASS","","Age in year of fish",                     &
+            CALL ionc4_createvar_traj(file_out, "AGECLASS","","Age in year of fish",                       &
                                                 fill_value=-1,l_out_nc4par=l_out_nc4par)
 
 #ifdef IBM_SPECIES
@@ -1344,12 +1419,20 @@ MODULE ibm
                                                 fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DAYJUV","","Julien day at metamorphosis",                 &
                                                 fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "ZOOM","","Zoom value",                                    &
+                                                fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
             !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
             !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DENSPAWN","sigma","Density of egg at spawning",           &
                                                 fill_value=fillval, ndims=1, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "Death_DEB","","Number dead by starvation",                &
+                                                fill_value=fillval,l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "Death_FISH","","Number dead by fishing",                  &
+                                                fill_value=fillval,l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "Death_NAT","","Number dead by natural mortality",         &
+                                                fill_value=fillval,l_out_nc4par=l_out_nc4par)
 #endif /*IBM_SPECIES*/
-        END IF    ! (.NOT. patch%file_out_init)
+        ENDIF  ! (.NOT. out_ex)
  
         nb_part = patch%nb_part_alloc
         ALLOCATE( lat_out(nb_part),   lon_out(nb_part) )
@@ -1372,17 +1455,22 @@ MODULE ibm
 #ifdef IBM_SPECIES
         ALLOCATE( dayjuv_out(nb_part), dayspawn_out(nb_part) )
         ALLOCATE( yearspawn_out(nb_part), season_out(nb_part) )
+        ALLOCATE( zoom_out(nb_part) )
         ALLOCATE( Denspawn_out(nb_part) )
         ALLOCATE( food_out(nb_part))
         ALLOCATE( H_out(nb_part), E_out(nb_part), Gam_out(nb_part), R_out(nb_part))
         ALLOCATE( Wdeb_out(nb_part) )
         ALLOCATE( Neggs_out(nb_part) )
         ALLOCATE( f_out(nb_part) )
+        ALLOCATE( deaddeb_out(nb_part) )
+        ALLOCATE( deadfishing_out(nb_part) )
+        ALLOCATE( deadnatural_out(nb_part) ) 
     
         dayjuv_out(:) = 0 ; dayspawn_out(:) = 0 ; yearspawn_out(:) = 0 ; season_out(:) = -1
         Denspawn_out(:) = fillval ; food_out(:) = fillval ; Wdeb_out(:) = fillval
         H_out(:) = fillval ; E_out(:) = fillval ; R_out(:) = fillval ; Gam_out(:) = fillval
-        f_out(:) = fillval
+        f_out(:) = fillval ; zoom_out(:) = 0 ; Neggs_out(:) = fillval
+        deaddeb_out(:) = fillval ; deadfishing_out(:) = fillval ; deadnatural_out(:) = fillval
 #endif /*IBM_SPECIES*/
  
         p = 0
@@ -1421,6 +1509,10 @@ MODULE ibm
             dayspawn_out(p)  = REAL(particle % dayspawn,  kind=out)
             dayjuv_out(p)    = REAL(particle % dayjuv,    kind=out)
             denspawn_out(p)  = REAL(particle % denspawn,  kind=out)
+            zoom_out(p)      = REAL(particle % zoom,      kind=out)
+            deaddeb_out(p)      = REAL(particle % Death_DEB,    kind=out)
+            deadfishing_out(p)  = REAL(particle % Death_FISH,   kind=out)
+            deadnatural_out(p)  = REAL(particle % Death_NAT,    kind=out)
 #endif /*IBM_SPECIES*/
         END DO
  
@@ -1433,9 +1525,16 @@ MODULE ibm
         num1 = idx_s
         num2 = idx_e
 #else
-        num1 = 1
-        num2 = nb_part
+        ! num1 = 1
+        ! num2 = nb_part
+        num1 = idx_s
+        num2 = idx_e
+        print *, ' idx_s=', idx_s, ' idx_e=', idx_e
 #endif
+
+        print *, 'save lat', lat_out(1:nb_part)
+        print *, 'save flag', flag_out(1:nb_part)
+        print *, 'save NUMBER', nb_out(1:nb_part)
 
         CALL ionc4_write_trajt(file_out, 'latitude',  lat_out(1:nb_part),num1,num2,0,REAL(dg_valmanq_io,kind=out))
         CALL ionc4_write_trajt(file_out, 'longitude', lon_out(1:nb_part),num1,num2,0,REAL(dg_valmanq_io,kind=out))
@@ -1466,6 +1565,10 @@ MODULE ibm
         CALL ionc4_write_traj(file_out,  'DAYSPAWN',  dayspawn_out(1:nb_part),num1,num2,0)
         CALL ionc4_write_traj(file_out,  'DAYJUV',    dayjuv_out(1:nb_part),num1,num2,0)
         CALL ionc4_write_traj(file_out,  'DENSPAWN',  denspawn_out(1:nb_part),num1,num2,fillval)
+        CALL ionc4_write_trajt(file_out,  'ZOOM',      zoom_out(1:nb_part),num1,num2,0,fillval)
+        CALL ionc4_write_trajt(file_out, 'Death_DEB', deaddeb_out(1:nb_part),num1,num2,0,fillval)
+        CALL ionc4_write_trajt(file_out, 'Death_FISH', deadfishing_out(1:nb_part),num1,num2,0,fillval)
+        CALL ionc4_write_trajt(file_out, 'Death_NAT',  deadnatural_out(1:nb_part),num1,num2,0,fillval)
 #endif /*IBM_SPECIES*/
  
         ! To write the data on the disk and not loose data in case of run crash
@@ -1475,9 +1578,10 @@ MODULE ibm
         DEALLOCATE(size_out, dateo_out, stage_out, nb_out,age_out,ageClass_out)
 #ifdef IBM_SPECIES
         DEALLOCATE(dayjuv_out, dayspawn_out, yearspawn_out, season_out)
-        DEALLOCATE(Denspawn_out, food_out, Wdeb_out)
+        DEALLOCATE(Denspawn_out, food_out, Wdeb_out, zoom_out)
         DEALLOCATE(Gam_out, H_out, E_out, R_out, Neggs_out)!, NRJ_out)
         DEALLOCATE(f_out)
+        DEALLOCATE(deaddeb_out, deadfishing_out, deadnatural_out)
 #endif /*IBM_SPECIES*/
 
         patch%t_save = time + patch%dt_save*3600.0_rlg
@@ -1511,6 +1615,142 @@ MODULE ibm
 
     selec_dome_or_asymp = 1.0_rsh/( 1.0_rsh + exp(alpha1*(beta1-l)) )
   END FUNCTION selec_dome_or_asymp
+
+  !!======================================================================
+!&E-----------------------------------------------------------------------
+!&E                 ***  ROUTINE generate_run_id  ***
+!&E
+!&E ** Purpose :
+!&E     Generates a unique run identifier (RUN_ID) for each model execution.
+!&E     The identifier is based on the system date, time, and clock counter
+!&E     to ensure uniqueness across multiple simulation launches.
+!&E
+!&E ** Called by      : ibm_init
+!&E ** External calls : date_and_time, system_clock
+!&E
+!&E ** Output:
+!&E     run_id : character string like 'RUN_20251023_070234_000123456789'
+!&E
+!&E ** History :
+!&E     2025-10-21  (C. Menu)  First version
+!&E-----------------------------------------------------------------------
+FUNCTION generate_run_id() RESULT(run_id)
+  implicit none
+  !-----------------------------------------------------------------------
+  !> Purpose:
+  !>   Generate a unique run identifier based on current date, time,
+  !>   and system clock count, ensuring uniqueness across runs.
+  !>
+  !> Output:
+  !>   run_id : character string like 'RUN_20251023_070234_000123456789'
+  !-----------------------------------------------------------------------
+  character(len=64) :: run_id             ! generated run identifier
+  character(len=8)  :: date_str           ! date string: YYYYMMDD
+  character(len=10) :: time_str           ! time string: HHMMSS.SS
+  character(len=12) :: count_str          ! formatted system clock count
+  integer           :: count              ! system clock count (for uniqueness)
+  integer           :: count_rate, count_max
+  !-----------------------------------------------------------------------
+  !> Get current system date and time
+  call date_and_time(date=date_str, time=time_str)
+
+  !-----------------------------------------------------------------------
+  !> Get system clock counter for additional uniqueness
+  call system_clock(count=count, count_rate=count_rate, count_max=count_max)
+
+  !-----------------------------------------------------------------------
+  !> Convert the clock count to string safely
+  write(count_str, '(I12.12)') count
+
+  !-----------------------------------------------------------------------
+  !> Build the RUN_ID string safely
+  run_id = 'RUN_' // trim(date_str) // '_' // time_str(1:6) // '_' // trim(count_str)
+
+END FUNCTION generate_run_id
+    !!======================================================================
+
+    !&E-----------------------------------------------------------------------
+!&E                 ***  ROUTINE write_run_info  ***
+!&E
+!&E ** Purpose :
+!&E     Creates or updates a 'FOIL.info' file in the working directory.
+!&E     Stores the RUN_ID and optionally the last model step written.
+!&E
+!&E ** Called by      : ibm_init
+!&E ** External calls : none
+!&E
+!&E ** History :
+!&E     2025-10-21  (C. Menu)  First version
+!&E-----------------------------------------------------------------------
+SUBROUTINE write_run_info(run_id, last_step)
+  implicit none
+  character(len=*), intent(in) :: run_id
+  integer, intent(in), optional :: last_step
+  integer :: unit
+
+  open(newunit=unit, file='FOIL.info', status='replace', action='write')
+
+  write(unit, '(A,1X,A)') 'RUN_ID=', trim(run_id)
+  if (present(last_step)) write(unit, '(A,I10)') 'LAST_STEP=', last_step
+
+  close(unit)
+END SUBROUTINE write_run_info
+!&E-----------------------------------------------------------------------
+
+
+!&E-----------------------------------------------------------------------
+!&E                 ***  ROUTINE read_run_info  ***
+!&E
+!&E ** Purpose :
+!&E     Reads an existing 'FOIL.info' file if available, to retrieve
+!&E     the RUN_ID and (optionally) the last written model step.
+!&E
+!&E ** Called by      : ibm_init, ibm_3d
+!&E ** External calls : generate_run_id
+!&E
+!&E ** Output:
+!&E     run_id : character string like 'RUN_20251023_070234_000123456789'
+!&E
+!&E ** History :
+!&E     2025-10-21  (C. Menu)  First version
+!&E-----------------------------------------------------------------------
+SUBROUTINE read_run_info(run_id, last_step)
+  implicit none
+  !-----------------------------------------------------------------------
+  !> Declarations
+  character(len=*), intent(out) :: run_id
+  integer, intent(out), optional :: last_step
+  integer :: unit, ios
+  character(len=128) :: line
+  !-----------------------------------------------------------------------
+  !> Try to open existing FOIL.info file
+  open(newunit=unit, file='FOIL.info', status='old', action='read', iostat=ios)
+  if (ios /= 0) then
+    print *, 'No existing FOIL.info found.'
+  endif
+
+  !-----------------------------------------------------------------------
+  !> Read RUN_ID
+  read(unit, '(A)', iostat=ios) line
+  if (ios == 0) then
+    read(line, '(6X,A)', iostat=ios) run_id
+  endif
+
+  !-----------------------------------------------------------------------
+  !> Read LAST_STEP if available
+  if (present(last_step)) then
+    read(unit, '(A)', iostat=ios) line
+    if (ios == 0) then
+      read(line, '(10X,I10)', iostat=ios) last_step
+      if (ios /= 0) last_step = 0
+    else
+      last_step = 0
+    endif
+  endif
+
+  close(unit)
+END SUBROUTINE read_run_info
+!&E-----------------------------------------------------------------------
 
 #endif /* DEB_IBM */
 END MODULE

@@ -89,15 +89,16 @@ MODULE ibmmove
  
     ! Open probadistrib for anchovies
     file_fish1   = fileprobadistrib_anc
+    write(*,*) 'file proba distrib = ',file_fish1
     name_in_fish = 'Probability'
- 
+    
     CALL ionc4_openr(file_fish1,l_in_nc4par=.true.)
-
+    
     ! read number of population distribution along the year
-    idimt = ionc4_read_dimt(file_fish1)              
- 
+    idimt = ionc4_read_dimt(file_fish1)  
     ALLOCATE(fish_anc(GLOBAL_2D_ARRAY,nbSizeClass_anc,idimt)) 
 
+    
     ! Definit les indices de lecture en fonction du proc mpi dans le fichier de forcage
     ! Lit sur tout le domaine en sequentiel sinon
     imin = 0 ; jmin = 0
@@ -130,31 +131,60 @@ MODULE ibmmove
 
     valimax = imax - imin + valimin 
     valjmax = jmax - jmin + valjmin 
-
     ALLOCATE(fish1   (valimin:valimax,valjmin:valjmax,nbSizeClass_anc)) 
+
+    ! ! Vérifie que la taille du bloc à lire ne dépasse pas fish_anc
+    ! ! Modif Clara, pas sur pourquoi les indices de fish_anc commencent à 0 et fish1 à 1 dans 3D-1DV
+    ! ! Attention : si fish1 plus petit que fish_anc, pas de message d'erreur
+    ! if ((valimax-valimin+1 > UBOUND(fish_anc,1)-LBOUND(fish_anc,1)+1) .or. &
+    !     (valjmax-valjmin+1 > UBOUND(fish_anc,2)-LBOUND(fish_anc,2)+1)) then
+    !     WRITE(*,*) 'Erreur : le bloc à lire dépasse les dimensions de fish_anc'
+    !     STOP
+    ! endif !Fin modif Clara
 
     DO t = 1, idimt
         CALL ionc4_read_subzxyt(file_fish1,TRIM(name_in_fish),fish1,valimin,valimax,valjmin,valjmax,1,nbSizeClass_anc,t,1,1,1)
-        fish_anc(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1
-    END DO
+        ! fish_anc(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
+        fish_anc(0:valimax-valimin,0:valjmax-valjmin,:,t) = fish1 ! version modifiée Clara
+! #ifdef MPI
+            ! fish_anc(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
+! #else
+            ! fish_anc(LBOUND(fish_anc,1) : MIN(LBOUND(fish_anc,1)+valimax-valimin, UBOUND(fish_anc,1)), LBOUND(fish_anc,2) : MIN(LBOUND(fish_anc,2)+valjmax-valjmin, UBOUND(fish_anc,2)), :, t ) = fish1 ! version modifiée Clara
+! #endif 
 
+    END DO
     CALL ionc4_close(file_fish1)
     DEALLOCATE(fish1)
-
+    
     ! Open probadistrib for sardines
     file_fish2   = fileprobadistrib_anc
-
     CALL ionc4_openr(file_fish2,l_in_nc4par=.true.)
 
     ! read number of population distribution along the year
-    idimt = ionc4_read_dimt(file_fish1)              
+    idimt = ionc4_read_dimt(file_fish2)              
  
     ALLOCATE(fish_sar(GLOBAL_2D_ARRAY,nbSizeClass_sar,idimt))
     ALLOCATE(fish1   (valimin:valimax,valjmin:valjmax,nbSizeClass_sar))
 
+    ! ! Vérifie que la taille du bloc à lire ne dépasse pas fish_sar
+    ! ! Modif Clara, pas sur pourquoi les indices de fish_sar commencent à 0 et fish1 à 1 dans 3D-1DV
+    ! ! Attention : si fish1 plus petit que fish_sar, pas de message d'erreur
+    ! if ((valimax-valimin+1 > UBOUND(fish_sar,1)-LBOUND(fish_sar,1)+1) .or. &
+    !     (valjmax-valjmin+1 > UBOUND(fish_sar,2)-LBOUND(fish_sar,2)+1)) then
+    !     WRITE(*,*) 'Erreur : le bloc à lire dépasse les dimensions de fish_sar'
+    !     STOP
+    ! endif !Fin modif Clara
+    
     DO t = 1, idimt
         CALL ionc4_read_subzxyt(file_fish2,TRIM(name_in_fish),fish1,valimin,valimax,valjmin,valjmax,1,nbSizeClass_sar,t,1,1,1)
-        fish_sar(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1
+        ! fish_sar(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
+        fish_sar(0:valimax-valimin,0:valjmax-valjmin,:,t) = fish1 ! version modifiée Clara
+! #ifdef MPI
+!             fish_sar(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
+! #else
+!             fish_sar(LBOUND(fish_sar,1) : MIN(LBOUND(fish_sar,1)+valimax-valimin, UBOUND(fish_sar,1)), LBOUND(fish_sar,2) : MIN(LBOUND(fish_sar,2)+valjmax-valjmin, UBOUND(fish_sar,2)), :, t ) = fish1 ! version modifiée Clara
+! #endif
+
     END DO
 
     CALL ionc4_close(file_fish2)
@@ -200,7 +230,7 @@ MODULE ibmmove
     REAL(rsh)            :: v1,v2,Pi,Pj,harvest,xpos_n,ypos_n,cell
     REAL(KIND=rsh)       :: fpos_x, fpos_y
     INTEGER              :: index,icell,jcell,ipos,jpos,saison,icells,jcells
-    INTEGER              :: jj,mm,aaaa,hh,minu,sec
+    INTEGER              :: jj,mm_clock,aaaa,hh,minu,sec
     INTEGER              :: ierr_mpi
     TYPE(type_position)  :: pos,pos_n 
 
@@ -227,16 +257,16 @@ MODULE ibmmove
     jcells = NINT(pos%idy_r)
     
     !Get the seasonal distribution
-    CALL tool_decompdate(tool_sectodat(time),jj,mm,aaaa,hh,minu,sec)
+    CALL tool_decompdate(tool_sectodat(time),jj,mm_clock,aaaa,hh,minu,sec)
     
     ! when transition is let free, it takes 2 to 3 months to come to a reasonable R2 for comparison
     ! between obs and model distribution by size (March-April and July-August)
     IF (n == 1) THEN ! normal migration
         saison = 1
-        IF(mm <= 2 .OR. mm >= 7) THEN
+        IF(mm_clock <= 2 .OR. mm_clock >= 7) THEN
             saison = 2
         END IF
-        IF (mm <= 2 .OR. mm >= 10) THEN 
+        IF (mm_clock <= 2 .OR. mm_clock >= 10) THEN 
             IF (particle%age < 365) THEN ! to avoid remaining offshore for juveniles (still small) in winter...
                 saison = 1
             END IF
@@ -251,7 +281,7 @@ MODULE ibmmove
     !
     !IF (n == 3) THEN ! remain in the north
     !    saison=2
-    !    IF(mm <= 2  .OR. mm >= 10) THEN 
+    !    IF(mm_clock <= 2  .OR. mm_clock >= 10) THEN 
     !        IF ((time - particle%date_orig) < 86400.0_rlg*365.0_rlg) THEN ! to avoid remaining offshore for juveniles in winter...
     !            saison=1
     !        END IF
