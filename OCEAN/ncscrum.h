@@ -114,9 +114,6 @@
 !  indxTHmix,indxTVmix           : horizontal and vertical mixinig terms
 !  indxTbody                     : body force term
 !  indxTrate                     : tendency term
-!  indxCRT2                      : all ML terms will be calculated relative to criteria 2
-!  indxCRT3                      : all ML terms will be calculated relative to criteria 3
-!  indxCRT4                      : all ML terms will be calculated relative to criteria 4
 !
 ! ** DIAGNOSTICS_VRT **
 !  indxvrtXadv,indxvrtYadv       : xi-, eta- advection terms
