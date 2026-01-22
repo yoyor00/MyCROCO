@@ -207,13 +207,6 @@
       parameter (indxS=indxV+ntrc_temp+1)
 #  endif
 
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      integer indxCRT2,indxCRT3,indxCRT4
-      parameter (indxCRT2=indxV+ntrc_temp+ntrc_salt+1,
-     &           indxCRT3=indxCRT2+1,
-     &           indxCRT4=indxCRT3+1)
-# endif
-
 #  ifdef PASSIVE_TRACER
       integer, dimension(ntrc_pas) :: indxTPAS
      & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+ntrc_mld+1,
@@ -356,7 +349,7 @@
      &       ,indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
      &        indxTentr_mld,indxTaver_mld
-# if defined DIAGNOSTICS_TS_MLD_CRIT
+# if defined DIAGNOSTICS_TS_MLD_CM
      &       ,indxTcrit_mld
 # endif
 
@@ -384,7 +377,7 @@
      &           indxTrate_mld=indxTForc_mld+NT,
      &           indxTentr_mld=indxTrate_mld+NT,
      &           indxTaver_mld=indxTentr_mld+NT
-# if defined DIAGNOSTICS_TS_MLD_CRIT
+# if defined DIAGNOSTICS_TS_MLD_CM
      &          ,indxTcrit_mld=indxTaver_mld+NT
 # endif
 #  endif
@@ -1211,7 +1204,7 @@
      &      , diaTHmix_mld(NT), diaTVmix_mld(NT)
      &      , diaTForc_mld(NT), diaTrate_mld(NT), diaTentr_mld(NT)
      &      , diaTaver_mld(NT)
-# if defined DIAGNOSTICS_TS_MLD_CRIT
+# if defined DIAGNOSTICS_TS_MLD_CM
      &      , diaTcrit_mld(NT)
 # endif
 
@@ -1419,7 +1412,7 @@
      &      , diaTHmix_mld_avg(NT), diaTVmix_mld_avg(NT)
      &      , diaTForc_mld_avg(NT), diaTrate_mld_avg(NT)
      &      , diaTentr_mld_avg(NT), diaTaver_mld_avg(NT)
-# if defined DIAGNOSTICS_TS_MLD_CRIT
+# if defined DIAGNOSTICS_TS_MLD_CM
      &      , diaTcrit_mld_avg(NT)
 # endif
 
@@ -1745,7 +1738,7 @@
      &      , diaTXadv_mld, diaTYadv_mld, diaTVadv_mld, diaTHmix_mld
      &      , diaTVmix_mld, diaTForc_mld, diaTrate_mld, diaTentr_mld
      &      , diaTaver_mld
-# if defined DIAGNOSTICS_TS_MLD_CRIT
+# if defined DIAGNOSTICS_TS_MLD_CM
      &      , diaTcrit_mld
 # endif
 # endif
@@ -1762,7 +1755,7 @@
      &      , diaTXadv_mld_avg, diaTYadv_mld_avg, diaTVadv_mld_avg
      &      , diaTHmix_mld_avg, diaTVmix_mld_avg, diaTForc_mld_avg
      &      , diaTrate_mld_avg, diaTentr_mld_avg, diaTaver_mld_avg
-# if defined DIAGNOSTICS_TS_MLD_CRIT
+# if defined DIAGNOSTICS_TS_MLD_CM
      &      , diaTcrit_mld_avg
 # endif
 #  endif

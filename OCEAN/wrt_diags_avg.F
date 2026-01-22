@@ -256,9 +256,7 @@
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
 
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     & .or. itrc.eq.iCRT4) then
+# ifdef DIAGNOSTICS_TS_MLD_CM
 !
 ! indxTcrit_mld
 !

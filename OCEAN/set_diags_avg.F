@@ -159,7 +159,7 @@
               Taver_mld_avg(i,j,itrc) = cff *
      &                    ( cff1*Taver_mld(i,j,itrc) +
      &                           Taver_mld_avg(i,j,itrc) )
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
+# ifdef DIAGNOSTICS_TS_MLD_CM
               Tcrit_mld_avg(i,j,itrc) = cff *
      &                    ( cff1*Tcrit_mld(i,j,itrc) +
      &                           Tcrit_mld_avg(i,j,itrc) )
