@@ -56,6 +56,7 @@ include Makedefs
 	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
 	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
+	tke3d_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
@@ -159,7 +160,7 @@ include Makedefs
 	module_parameter_oa.F90 module_grd_oa.F90\
 	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
-	module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
+	module_oa_level.F90 module_interface_oa.F90 var_oa.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
 	toolorigindate.F90 \
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\

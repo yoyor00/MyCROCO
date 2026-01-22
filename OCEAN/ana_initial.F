@@ -111,7 +111,7 @@
 #endif
 #ifdef ISOLITON
       real zint,depth,dz,gam,del
-      real rho1_exp,rho2_exp,h1_exp,amp_exp, Lt
+      real rho1_exp,rho2_exp,h1_exp,Lt
       real d(0:N)
 !$acc declare create(d)
 #endif

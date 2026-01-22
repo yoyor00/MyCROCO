@@ -211,8 +211,8 @@ c c !$acc kernels if(compute_on_device) default(present)
         vsum=0.
         do k=1,N
 #endif
-        do k=1,N
 # ifdef OPENACC
+        do k=1,N
 # else
           do i=Istr,Iend
 # endif

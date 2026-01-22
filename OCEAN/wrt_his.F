@@ -792,7 +792,8 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !
       if (wrthis(indxW)) then
-# if defined NBQ || defined K3FAST
+# if defined NBQ || defined K3FAST 
+#  if defined NBQ || defined K3SLOW_W
 !$acc update if(compute_on_device) host(wz(:,:,:))
         do k=0,N
           do j=0,Mm+1
@@ -803,6 +804,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
         enddo
         call fillvalue3d(work,ncidhis,hisW,
      &      vname(1,indxW),record,w3dvar,type)
+#  endif        
 # else
         do tile=0,NSUB_X*NSUB_E-1
           call Wvlcty (tile, workr)

@@ -60,8 +60,8 @@
       real tclm(GLOBAL_2D_ARRAY,N,NT)
       common /climat_tclm/tclm
 # endif
-# if defined TRACERS && defined TCLIMATOLOGY
-#  ifdef TNUDGING
+# if defined TRACERS && (defined TCLIMATOLOGY || defined CANARY) /* Potential pb */
+#  if defined TNUDGING || defined CANARY
       real Tnudgcof(GLOBAL_2D_ARRAY,N,NT)
       common /climat_Tnudgcof/Tnudgcof
 #  endif

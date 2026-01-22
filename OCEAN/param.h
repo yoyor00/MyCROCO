@@ -34,6 +34,8 @@
       parameter (LLm0=60,   MMm0=50,   N=10)
 #elif defined CANYON
       parameter (LLm0=65,   MMm0=48,   N=16)
+#elif defined S2DV
+      parameter (LLm0=562, MMm0=3,    N=40)    ! true 2DV
 #elif defined EQUATOR
       parameter (LLm0=40,   MMm0=32,   N=32)   ! 100 km resolution
 #elif defined KH_INST
