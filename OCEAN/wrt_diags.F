@@ -265,7 +265,6 @@
            call fillvalue2d(work2d,nciddia,diaTcrit_mld(itrc),
      &                      vname(1,indxTcrit_mld+itrc-1),
      &                      record,r2dvar,type)
-       endif
 # endif
         endif
 !

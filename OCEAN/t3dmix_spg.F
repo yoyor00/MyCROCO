@@ -145,12 +145,12 @@
 # include "ncscrum.h"
       integer istr,iend,jstr,jend, itrc, i,j,k,k1,k2, kmld,
      &        imin,imax,jmin,jmax, indx, idx,ide
-      integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
       real   FX (PRIVATE_2D_SCRATCH_ARRAY),
      &       FE (PRIVATE_2D_SCRATCH_ARRAY)
       real   cff,cff1
 # ifdef DIAGNOSTICS_TS_MLD_CM
       integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
+      real   FF(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
 # ifndef TS_MIX_S
       real  Akz (PRIVATE_2D_SCRATCH_ARRAY,0:N),
