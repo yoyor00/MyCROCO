@@ -476,7 +476,6 @@
           !
           !++ Compute wave age
           chi = cwage_wasp*(delW(1)/Wstar(1))
-          WRITE(*,*) 'chi=', chi
           !
           !++ Compute coefficient 1
           charn1 = coefu_wasp(1)*(delW(1)**coefu_wasp(2))

@@ -49,7 +49,6 @@
       REAL, PARAMETER :: cwage_wasp    = 9.80665 / (16.*ATAN(1.))  ! g / (4 Pi)
       REAL, PARAMETER :: limcharn_wasp  = 0.018
       REAL, PARAMETER :: limcharn1_wasp = 0.1
-      REAL, PARAMETER :: limcharn2_wasp = 0.002
       REAL, PARAMETER :: thr1_wasp = 7.0
       REAL, PARAMETER :: thr2_wasp = 23.0
       REAL, PARAMETER :: thr3_wasp = 25.0
