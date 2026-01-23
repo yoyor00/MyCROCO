@@ -50,6 +50,7 @@
   "meta_variants": {
     "@debug": ["sequential", "mpi-2", "mpi-4", "openmp-2", "openmp-4"],
     "@debug-ifort": ["sequential-ifort", "mpi-ifort-4"],
+    "@debug-ifx": ["sequential-ifx", "mpi-ifx-4"],
     "@wip-all": [
       "sequential",
       "openmp-2",

@@ -28,6 +28,15 @@
       "cpu": 1,
     },
   },
+  "sequential-ifx": {
+    "configure": "FC=ifx",
+    "tuning_familly": "intel",
+    "environ": {},
+    "command_prefix": "",
+    "requires": {
+      "cpu": 1,
+    },
+  },
   "sequential-ifort": {
     "configure": "FC=ifort",
     "tuning_familly": "intel",
