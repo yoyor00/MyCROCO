@@ -106,11 +106,11 @@
             enddo
 
 !--------------------------------------------------
-! Compute other terms from the momentum budget)
+! Compute other terms from the momentum budget
 !--------------------------------------------------
 
-      do j=JstrR,JendR+1
-        do i=IstrR,IendR+1
+       do j=JU_RANGE
+         do i=IU_RANGE
           do k=1,N
 
             workr(i,j,k)=om_u(i,j)* on_u(i,j)
@@ -121,8 +121,8 @@
         enddo
       enddo
 
-      do j=JstrR,JendR+1
-        do i=IstrR,IendR+1
+       do j=JV_RANGE
+         do i=IV_RANGE
           do k=1,N
 
             work(i,j,k)=om_v(i,j)*on_v(i,j)
@@ -133,8 +133,8 @@
         enddo
       enddo
 
-        do j=JstrR,JendR
-          do i=IstrR,IendR
+        do j=Jstr,Jend
+          do i=Istr,Iend
           do k=1,N
 
             ekHadv(i,j,k) = 0.5 * (
@@ -234,8 +234,8 @@
 
 ! ------- ------------- ------ ------ - -----
 
-        do j=Jstr,JendR
-          do i=Istr,IendR
+        do j=Jstr,Jend
+          do i=Istr,Iend
 
           ekWind(i,j) = 0.5 * (ekwrkWind(i,j,1) + ekwrkWind(i+1,j,1))
      &                + 0.5 * (ekwrkWind(i,j,2) + ekwrkWind(i,j+1,2))
