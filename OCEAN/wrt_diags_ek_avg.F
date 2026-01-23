@@ -97,7 +97,7 @@
         goto 99                                           !--> ERROR
       endif
 !
-! Time
+! Averaged diag Time
 !
       ierr=nf_put_var1_FTYPE (nciddiags_ek_avg, diags_ekTime_avg,
      &                       record, timediags_ek_avg)
@@ -108,10 +108,10 @@
         goto 99                                           !--> ERROR
       endif
 !
-! Time2
+! Averaged diag Time
 !
       ierr=nf_put_var1_FTYPE (nciddiags_ek_avg, diags_ekTime2_avg,
-     &                       record, time)
+     &                       record, timediags_ek_avg)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
         write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
