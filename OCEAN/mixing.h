@@ -134,17 +134,24 @@
 !
       integer kbl(GLOBAL_2D_ARRAY)
       integer kbbl(GLOBAL_2D_ARRAY)
+#  ifdef LMD_SKPP2005      
+      real hbls(GLOBAL_2D_ARRAY,2)
+#  else
+      real hbl(GLOBAL_2D_ARRAY)
+#  endif
+#  ifdef DIAGNOSTICS_TS_MLD
+      integer kbl1(GLOBAL_2D_ARRAY)
+      common /kpp_kbl1/kbl1
+#  endif
       real hbbl(GLOBAL_2D_ARRAY)
       common /lmd_kpp_kbl/ kbl
-      common /lmd_kpp_hbbl/ hbbl
-      common /lmd_kpp_kbbl/ kbbl
 #   ifdef LMD_SKPP2005
-      real hbls(GLOBAL_2D_ARRAY,2)
       common /lmd_kpp_hbl/ hbls
 #   else
-      real hbl (GLOBAL_2D_ARRAY  )
       common /lmd_kpp_hbl/ hbl
 #   endif
+      common /lmd_kpp_hbbl/ hbbl
+      common /lmd_kpp_kbbl/ kbbl
 #   ifdef LMD_NONLOCAL
       real ghats(GLOBAL_2D_ARRAY,0:N)
       common /lmd_kpp_ghats/ghats

@@ -144,8 +144,12 @@
       integer istr,iend,jstr,jend, itrc, i,j,k,k1,k2, kmld,
      &        imin,imax,jmin,jmax, indx, idx,ide
       real   FX (PRIVATE_2D_SCRATCH_ARRAY),
-     &       FE (PRIVATE_2D_SCRATCH_ARRAY)
+     &       FE (PRIVATE_2D_SCRATCH_ARRAY),
+     &       FF(PRIVATE_2D_SCRATCH_ARRAY)
       real   cff,cff1
+# ifdef DIAGNOSTICS_TS_MLD_CM
+      integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
 # ifndef TS_MIX_S
       real  Akz (PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &       CF (PRIVATE_1D_SCRATCH_ARRAY,0:N),
@@ -706,9 +710,42 @@
 #  if defined DIAGNOSTICS_TS_MLD
 #   define T_mld_nnew FX
 #   define T_mld_nstp FE
+#   ifdef DIAGNOSTICS_TS_MLD_CM
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               kbl1(i,j)=1
+               kblt(i,j)=1
+               FF(i,j)=0.
+               cff=0
+               cff1=0
+               do k=N,1,-1
+                  if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+0.03) then
+                     kbl1(i,j)=k
+                  endif
+                  if (rho(i,j,k).ge.rho(i,j,N)+0.03)  cff=1
+
+                  if (cff1.eq.0.and.t(i,j,k,nnew,1).gt.
+     &               t(i,j,N,nnew,1)-0.2) then
+                     kblt(i,j)=k
+                  endif
+                  if (t(i,j,k,nnew,1).le.t(i,j,N,nnew,1)-0.2)  cff1=1
+               enddo
+               FF(i,j)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+               if (itrc.eq.1) Tcrit_mld(i,j,itrc)=
+     &                        z_w(i,j,N)-z_r(i,j,kbl1(i,j))
+               Tcrit_mld(i,j,1)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+               if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
+     &            (z_r(i,j,N)-z_r(i,j,kblt(i,j)))-Tcrit_mld(i,j,1)
+            enddo
+         enddo
+#   endif
+
        do j=Jstr,Jend
          do i=Istr,Iend
             THmix_mld(i,j,itrc)=0.
+            Taver_mld(i,j,itrc)=0.
+            Trate_mld(i,j,itrc)=0.
+
             T_mld_nnew(i,j)=0.
             T_mld_nstp(i,j)=0.
          enddo
@@ -717,6 +754,9 @@
          do i=Istr,Iend
 #   ifdef LMD_SKPP
            kmld=kbl(i,j)
+#     ifdef DIAGNOSTICS_TS_MLD_CM
+           kmld=kbl1(i,j)
+#     endif
 #   else
            kmld=N-5
 #   endif
@@ -727,6 +767,7 @@
              T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
            enddo
+           Taver_mld(i,j,itrc)=T_mld_nnew(i,j) ! mean over mld
          enddo
        enddo
 
@@ -734,6 +775,9 @@
          do i=Istr,Iend
 #   if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
+#     ifdef DIAGNOSTICS_TS_MLD_CM
+           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl1(i,j)
+#     endif
            kmld=kbl_nstp(i,j)
 #   else
            kmld=N-5
@@ -744,6 +788,9 @@
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
+#   ifdef DIAGNOSTICS_TS_MLD_CM
+           if (itrc .eq. NT) kbl_nstp(i,j)=kbl1(i,j)
+#   endif
          enddo
        enddo
        do j=Jstr,Jend

@@ -250,6 +250,21 @@
            call fillvalue2d(work2d,nciddia,diaTentr_mld(itrc),
      &                      vname(1,indxTentr_mld+itrc-1),
      &                      record,r2dvar,type)
+!
+! indxTaver_mld
+!
+           work2d=Taver_mld(:,:,itrc)
+           call fillvalue2d(work2d,nciddia,diaTaver_mld(itrc),
+     &                      vname(1,indxTaver_mld+itrc-1),
+     &                      record,r2dvar,type)
+#  if defined DIAGNOSTICS_TS_MLD_CM
+! indxTcrit_mld
+!
+           work2d=Tcrit_mld(:,:,itrc)
+           call fillvalue2d(work2d,nciddia,diaTcrit_mld(itrc),
+     &                      vname(1,indxTcrit_mld+itrc-1),
+     &                      record,r2dvar,type)
+#  endif
         endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/

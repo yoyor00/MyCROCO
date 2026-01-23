@@ -1018,7 +1018,11 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-      parameter (ntrc_diats=16*NT)
+#    ifdef DIAGNOSTICS_TS_MLD_CM
+      parameter (ntrc_diats=18*NT)
+#    else
+      parameter (ntrc_diats=17*NT)
+#    endif
 #  else
       parameter (ntrc_diats=8*NT)
 #  endif

@@ -165,6 +165,9 @@
      &     dTdr (PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     dTdx (PRIVATE_2D_SCRATCH_ARRAY,0:N),
      &     dTde (PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# ifdef DIAGNOSTICS_TS_MLD_CM
+      integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
        real cff,cff1,
      &      TRIADS1,TRIADS2,TRIADS3,TRIADS4,sumX,sumE,sig,
      &      SLOPEXQ1,SLOPEXQ2,SLOPEXQ3,SLOPEXQ4,

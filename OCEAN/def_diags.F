@@ -75,6 +75,10 @@
 #   define vidTForc_mld diaTForc_mld
 #   define vidTrate_mld diaTrate_mld
 #   define vidTentr_mld diaTentr_mld
+#   define vidTaver_mld diaTaver_mld
+# ifdef DIAGNOSTICS_TS_MLD_CM
+#   define vidTcrit_mld diaTcrit_mld 
+# endif
 #  endif
 !
 # else /* AVRH */
@@ -107,6 +111,10 @@
 #   define vidTForc_mld diaTForc_mld_avg
 #   define vidTrate_mld diaTrate_mld_avg
 #   define vidTentr_mld diaTentr_mld_avg
+#   define vidTaver_mld diaTaver_mld_avg
+#  ifdef DIAGNOSTICS_TS_MLD_CM
+#   define vidTcrit_mld diaTcrit_mld_avg 
+#  endif
 #  endif
 !
         character*60 text
@@ -766,6 +774,64 @@
 
        call nf_add_attribute(ncid,vidTentr_mld(itrc),
      &      vname(:,indxTentr_mld+itrc-1), 5, NF_FOUT, ierr)
+!
+!
+! Taver indxTaver on MLD
+!
+           lvar=lenstr(vname(1,indxTaver_mld+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxTaver_mld+itrc-1)(1:lvar),
+     &                           NF_FOUT, 3, r2dgrd, vidTaver_mld(itrc))
+#  ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,vidTaver_mld(itrc),nf_collective)
+#  endif
+# ifndef AVRH
+           lvar=lenstr(vname(2,indxTaver_mld+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTaver_mld(itrc), 'long_name',
+     &                     lvar, vname(2,indxTaver_mld+itrc-1)(1:lvar))
+# else
+           text='averaged '/ /vname(2,indxTaver_mld+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, vidTaver_mld(itrc), 'long_name',
+     &                                          lvar, text(1:lvar))
+# endif
+           lvar=lenstr(vname(3,indxTaver_mld+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTaver_mld(itrc),'units',
+     &                     lvar, vname(3,indxTaver_mld+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxTaver_mld+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTaver_mld(itrc),'field',
+     &                     lvar, vname(4,indxTaver_mld+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,vidTaver_mld(itrc),
+     &      vname(:,indxTaver_mld+itrc-1),5, NF_FOUT, ierr)
+# if defined DIAGNOSTICS_TS_MLD_CM
+! Tcrit indxTcrit on MLD
+!
+           lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
+           ierr=nf_def_var (ncid, vname(1,indxTcrit_mld+itrc-1)(1:lvar),
+     &                           NF_FOUT, 3, r2dgrd, vidTcrit_mld(itrc))
+#  ifdef NC4PAR
+           ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
+#  endif
+#  ifndef AVRH
+           lvar=lenstr(vname(2,indxTcrit_mld+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc), 'long_name',
+     &                     lvar, vname(2,indxTcrit_mld+itrc-1)(1:lvar))
+#  else
+           text='averaged '/ /vname(2,indxTcrit_mld+itrc-1)
+           lvar=lenstr(text)
+           ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc), 'long_name',
+     &                                          lvar, text(1:lvar))
+#  endif
+           lvar=lenstr(vname(3,indxTcrit_mld+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc),'units',
+     &                     lvar, vname(3,indxTcrit_mld+itrc-1)(1:lvar))
+           lvar=lenstr(vname(4,indxTcrit_mld+itrc-1))
+           ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc),'field',
+     &                     lvar, vname(4,indxTcrit_mld+itrc-1)(1:lvar))
+
+       call nf_add_attribute(ncid,vidTcrit_mld(itrc),
+     &      vname(:,indxTcrit_mld+itrc-1),5, NF_FOUT, ierr)
+# endif/* DIAGNOSTICS_TS_MLD_CM */
          endif
 !
 # endif /* DIAGNOSTICS_TS_MLD */
@@ -1126,7 +1192,39 @@
           ierr=nf_var_par_access(ncid,vidTentr_mld(itrc),nf_collective)
 #  endif
 !
+!
+! indxTaver on MLD
+!
+        lvar=lenstr(vname(1,indxTaver_mld+itrc-1))
+        ierr=nf_inq_varid (ncid,vname(1,indxTaver_mld+itrc-1)(1:lvar),
+     &                                        vidTaver_mld(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxTaver_mld+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTaver_mld(itrc),nf_collective)
+#  endif
+
+# if defined DIAGNOSTICS_TS_MLD_CM
+!
+! indxTcrit on MLD
+!
+        lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
+        ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
+     &                                        vidTcrit_mld(itrc))
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxTcrit_mld+itrc-1)(1:lvar),
+     &                                         ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+#  ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
+#  endif
+# endif
         endif
+
 !
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
@@ -1210,6 +1308,10 @@
 #  undef vidTForc_mld
 #  undef vidTrate_mld
 #  undef vidTentr_mld
+#undef vidTaver_mld
+# ifdef DIAGNOSTICS_TS_MLD_CM
+#  undef vidTcrit_mld
+# endif
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
 # ifdef AVERAGES

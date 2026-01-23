@@ -2992,6 +2992,35 @@ CR       write(stdout,'(20x,A)') vname(1,indxTentr_mld+itrc-1)
        vname(5,indxTentr_mld+itrc-1)='                            '
        vname(6,indxTentr_mld+itrc-1)='                            '
        vname(7,indxTentr_mld+itrc-1)='                            '
+
+CR       write(stdout,'(1x,A,I3)') 'indxTaver_mld = ',indxTaver_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       unitt=vname(3,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_aver_mld                   '
+       vname(1,indxTaver_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
+       vname(2,indxTaver_mld+itrc-1)='MLD averainment rate        '
+       write(vname3,*) trim(unitt),' second-1                     '
+       vname(3,indxTaver_mld+itrc-1)=vname3
+       vname(4,indxTaver_mld+itrc-1)='                            '
+       vname(5,indxTaver_mld+itrc-1)='                            '
+       vname(6,indxTaver_mld+itrc-1)='                            '
+       vname(7,indxTaver_mld+itrc-1)='                            '
+#  if defined DIAGNOSTICS_TS_MLD_CM
+CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
+       nametrc=vname(1,indxT+itrc-1)
+       unitt=vname(3,indxT+itrc-1)
+       write(vname1,*) trim(nametrc),'_crit_mld                   '
+       vname(1,indxTcrit_mld+itrc-1)=vname1
+CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
+       vname(2,indxTcrit_mld+itrc-1)='MLD critainment rate        '
+       write(vname3,*) trim(unitt),' second-1                     '
+       vname(3,indxTcrit_mld+itrc-1)=vname3
+       vname(4,indxTcrit_mld+itrc-1)='                            '
+       vname(5,indxTcrit_mld+itrc-1)='                            '
+       vname(6,indxTcrit_mld+itrc-1)='                            '
+       vname(7,indxTcrit_mld+itrc-1)='                            '
+#  endif  
 # endif /* DIAGNOSTICS_TS_MLD */
 
       enddo  ! itrc
