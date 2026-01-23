@@ -26,6 +26,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
@@ -44,6 +45,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
+- BULK_FLUX : Update wasp bulk flux parametrization, 
+  cppkey BULK_WASP (Issue #453)
 
 ### Deprecated
 
