@@ -1,5 +1,9 @@
 title:
         Southern Benguela Interannual Run
+
+logfile:
+        croco.log
+
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                NUMTIMES     TIMESTEP    NFAST     1
 S-coord: THETA_S,   THETA_B,    Hc (m)
@@ -85,6 +89,12 @@ diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
 diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1           NUMAVG            0
                                  croco_dia_avg.nc
+
+diag_mld_crit_threshold: CRT1 (Dens [kg/m3]), CRT2 (Temp [Celsius]), CRT3 (Temp [Celsius])
+                         3.d-2                2.d-1                  5.d-1
+
+diag_mld_depth_ref: [m]
+                10
 
 diag3D_history_fields:    diag_tracers3D(1:NT) 
                             30*T
@@ -237,15 +247,14 @@ sediments: input file
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                             20*F 
 
+substance: input file (substance module)
+               parasubstance.txt
+
+sediments_mustang: input file ( Mustang sediment model)
+               paraMUSTANG.txt
+
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T
-
-floats: LDEFFLT, NFLT, NRPFFLT / inpname, hisname
-           T      6      0
-                                   floats.in
-                                   floats.nc
-float_fields:  Grdvar Temp Salt Rho Vel
-                T     T    T    T   T
 
 stations: LDEFSTA, NSTA, NRPFSTA / inpname, hisname
              T      400      0
@@ -266,5 +275,5 @@ psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
                          35  13  1  -1   T T   20.0  15.0
 
 online:    byear  bmonth recordsperday byearend bmonthend / data path
-           NYONLINE   NMONLINE      4             2011     3
-          DATA/CFSR_Benguela_LR/
+           NYONLINE   NMONLINE    ONLINEFREQ      ENDYONLINE     ENDMONLINE
+           ONLINEPATH/

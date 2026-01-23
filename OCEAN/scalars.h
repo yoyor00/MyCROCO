@@ -47,9 +47,6 @@
 #  endif
 # endif
 
-#ifdef FLOATS
-     &      , nfp1, nf, nfm1, nfm2, nfm3
-#endif
 #ifdef WKB_WWAVE
      &      , wstp, wnew
 #endif
@@ -66,9 +63,6 @@
 #  endif
 # endif
 
-#ifdef FLOATS
-     &                       nfp1, nf, nfm1, nfm2, nfm3,
-#endif
 #ifdef WKB_WWAVE
      &                       wstp, wnew,
 #endif
@@ -159,6 +153,10 @@
       real time_avg, time2_avg, rho0
      &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt
      &               , xl, el, visc2, visc4, gamma2
+#if (defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT)
+      real mld_crit_T, mld_crit_D, mld_crit_T2
+      integer mld_depth_ref
+#endif
 #ifdef SOLVE3D
       real  theta_s,   theta_b,   Tcline,  hc
 # ifndef M3FAST_SEDLAYERS
@@ -200,9 +198,6 @@
 #endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
-#endif
-#ifdef FLOATS
-      integer nflt, nrpfflt
 #endif
 #ifdef ABL1D
       logical ldefablhis
@@ -274,9 +269,6 @@
 #ifdef BBL
       logical got_inibed(2)
 #endif
-#ifdef FLOATS
-      logical ldefflt
-#endif
 #if defined DIAGNOSTICS_TS
       logical ldefdia
 # ifdef AVERAGES
@@ -337,6 +329,10 @@
      &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
      &           , Zobt,       Cdb_min,   Cdb_max
      &           , xl, el,    visc2,     visc4,   gamma2
+#if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD && \
+     defined DIAGNOSTICS_TS_MLD_CRIT)
+     &           , mld_crit_T, mld_crit_D, mld_crit_T2
+#endif
 #ifdef SOLVE3D
      &           , theta_s,   theta_b,   Tcline,  hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
@@ -364,6 +360,10 @@
 #endif
      &      , numthreads,     ntstart,   ntimes,  ninfo
      &      , nfast,  nrrec,     nrst,    nwrt
+#if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD && \
+     defined DIAGNOSTICS_TS_MLD_CRIT)
+     &      , mld_depth_ref
+#endif
 #ifdef EXACT_RESTART
      &       , forw_start
 #endif
@@ -372,9 +372,6 @@
 #endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
-#endif
-#ifdef FLOATS
-     &                      , nflt, nrpfflt
 #endif
 #ifdef STATIONS
      &                      , nsta, nrpfsta
@@ -387,9 +384,6 @@
 #endif
 #ifdef BBL
      &                      , got_inibed
-#endif
-#ifdef FLOATS
-     &                      , ldefflt
 #endif
 #if defined DIAGNOSTICS_TS
      &                      , ldefdia, nwrtdia
@@ -568,18 +562,6 @@
 #ifdef RESET_RHO0
      &        , avg_vol, avg_rho
 #endif
-
-!
-!  The following common block contains process counters and model
-! timers. These are used to measure CPU time consumed by different
-! parallel threads during the whole run, as well as in various
-! parallel regions, if so is needed. These variables are used purely
-! for diagnostic/performance measurements purposes and do not affect
-! the model results.
-!
-      real*4 CPU_time(0:31,0:NPP)
-      integer proc(0:31,0:NPP),trd_count
-      common /timers_roms/CPU_time,proc,trd_count
 
 #ifdef MPI
 !

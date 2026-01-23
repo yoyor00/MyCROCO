@@ -63,14 +63,14 @@
       my_itrc(4)=iDet2
 # elif defined PISCES
       my_itrc(1)=iDIC_
-      my_itrc(2)=iTAL_
+      my_itrc(2)=iNO3_
       my_itrc(3)=iOXY_
-      my_itrc(4)=iPOC_
-      my_itrc(5)=iPHY_
-      my_itrc(6)=iZOO_
-      my_itrc(7)=iDOC_
-      my_itrc(8)=iNO3_
-      my_itrc(9)=iFer_
+      my_itrc(4)=iFer_
+      my_itrc(5)=iTAL_
+      my_itrc(6)=iDOC_
+      my_itrc(7)=iPOC_
+      my_itrc(8)=iPHY_
+      my_itrc(9)=iZOO_
 # endif
 
       if (mod(iic-1,ninfo).eq.0) then
@@ -130,10 +130,10 @@ C$OMP CRITICAL (bio_cr_rgn)
                   do itrc=0,nbtrc
                     buff(itrc)=global_sum(itrc)  ! This is MPI_Reduce
                   enddo
-                  call MPI_Send (buff, 5, MPI_DOUBLE_PRECISION,
+                  call MPI_Send (buff, nbtrc+1, MPI_DOUBLE_PRECISION,
      &                 mynode-step, 17, MPI_COMM_WORLD,      ierr)
                 elseif (mynode .lt. size-step) then
-                  call MPI_Recv (buff, 5, MPI_DOUBLE_PRECISION,
+                  call MPI_Recv (buff, nbtrc+1, MPI_DOUBLE_PRECISION,
      &                 mynode+step, 17, MPI_COMM_WORLD, status, ierr)
                   do itrc=0,nbtrc
                     global_sum(itrc)=global_sum(itrc)+buff(itrc)
@@ -169,9 +169,9 @@ C$OMP CRITICAL (bio_cr_rgn)
    1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,3x,A3)
 # elif defined PISCES
               write(stdout,1) 'STEP','time[DAYS]','       DIC',
-     &                   '      ALK','     OXY ', '   POC',
-     &                   '      PHY','     ZOO ', '   DOC',
-     &                   '      NO3','     FER ', 'trd'
+     &                   '      NO3','     OXY ', '   FER',
+     &                   '      ALK','     DOC ', '   POC',
+     &                   '      PHY','     ZOO ', 'trd'
    1          format(1x,A4,3x,A10,1x,A10,4x,A10,4x,A10,4x,A10,4x,
      &               A10,4x,A10,4x,A10,4x,A10,4x,A10,4x,3x,A30)
 # endif

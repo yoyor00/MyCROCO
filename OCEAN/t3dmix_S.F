@@ -14,6 +14,7 @@
       implicit none
       integer tile, itrc, trd, omp_get_thread_num
 # include "param.h"
+# include "ncscrum.h"
 # include "private_scratch.h"
 # include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
@@ -65,14 +66,15 @@
 !!   
       implicit none
 #include "param.h"
+#include "ncscrum.h"
       integer itrc, istr,iend,jstr,jend, i,j,k, kmld,
      &        imin,imax,jmin,jmax
+      integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
       real    FX(PRIVATE_2D_SCRATCH_ARRAY),     cff,
      &        FE(PRIVATE_2D_SCRATCH_ARRAY),     cff1,
      &        LapT(PRIVATE_2D_SCRATCH_ARRAY),   cff2,
      &        diff3u(PRIVATE_2D_SCRATCH_ARRAY),
      &        diff3v(PRIVATE_2D_SCRATCH_ARRAY)
-
 #include "grid.h"
 #include "ocean3d.h"
 #include "mixing.h"
@@ -93,6 +95,12 @@
 !
 #include "compute_auxiliary_bounds.h"
 !
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      real    nearest_diff
+      integer indx_depth
+      real rho0i, zN2_c
+      real hmlp(Istr:Iend,Jstr:Jend)
+# endif
 #ifdef CHILD_SPG
 # define TCLM tsponge
 #else
@@ -135,7 +143,6 @@
       jmin=jstr-1
       jmax=jend+1
 #endif
-
 !$acc kernels if(compute_on_device) default(present)
       do k=1,N
 
@@ -208,6 +215,9 @@
      &                        -TCLM(i,j,k,itrc)+TCLM(i-1,j,k,itrc)
 # endif
      &                                       ) SWITCH umask(i,j)
+# if defined WET_DRY
+     &                   *umask_wet(i,j)
+# endif
           enddo
         enddo
         do j=jstr,jend+1
@@ -219,6 +229,9 @@
      &                       -TCLM(i,j,k,itrc)+TCLM(i,j-1,k,itrc)
 # endif
      &                                        ) SWITCH vmask(i,j)
+# if defined WET_DRY
+     &                   *vmask_wet(i,j)
+# endif
           enddo
         enddo
 !
@@ -402,6 +415,9 @@
 # ifdef MASKING
      &                                        * umask(i,j)
 # endif
+# ifdef WET_DRY
+     &                                        * umask_wet(i,j)
+# endif
           enddo
         enddo
         do j=jstr,jend+1
@@ -411,6 +427,9 @@
      &                                *(LapT(i,j)-LapT(i,j-1))
 # ifdef MASKING
      &                                         * vmask(i,j)
+# endif
+# ifdef WET_DRY
+     &                                         * vmask_wet(i,j)
 # endif
           enddo
         enddo
@@ -478,11 +497,95 @@
 !
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
+
+
+        if (itrc.eq.iCRT4) then
+          rho0i = 1.0/rho0
+          zN2_c = g * mld_crit_D * rho0i
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              kbl(i,j)  = N                  ! Initialization to the number of w ocean point
+              hmlp(i,j)  = 0.0                  ! here hmlp used as a dummy variable, integrating vertically N^2
+            enddo
+          enddo
+        endif
+
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            indx_depth = N
+            nearest_diff = abs(z_r(i,j,N)+mld_depth_ref)
+! Find the index corresponding to the reference depth mld_depth_ref
+            do k=N-1,1,-1
+              if (abs(z_r(i,j,k) + mld_depth_ref) < nearest_diff) then
+                nearest_diff = abs(z_r(i,j,k) + mld_depth_ref)
+                indx_depth = k
+              endif
+            enddo
+
+            if (itrc.eq.iCRT4) then
+! for criterion based on brunt-vaisala frequency !
+              do k=indx_depth,1,-1
+                if (k.eq.N) then
+                  hmlp(i,j) = hmlp(i,j) +  max(bvf(i,j,k),0.0) *
+     &                        (2.0* (z_w(i,j,k+1) - z_r(i,j,k)))
+                else
+                  hmlp(i,j) = hmlp(i,j) + max(bvf(i,j,k),0.0) *
+     &                        (z_r(i,j,k+1) - z_r(i,j,k))
+                endif
+                if (hmlp(i,j) < zN2_c) then
+                  kbl(i,j) = k
+                endif
+              enddo
+
+
+            else
+! for criteria based on density and temperature !
+              kbl(i,j)=N
+              cff=0
+              do k=N,1,-1
+                if (itrc.eq.iCRT2) then
+                  if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T) then
+                    kbl(i,j)=k
+                  endif
+                  if (t(i,j,k,nnew,itemp).le.
+     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T)  cff=1
+
+                elseif (itrc.eq.iCRT3) then
+                  if (cff.eq.0.and.t(i,j,k,nnew,itemp).gt.
+     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T2) then
+                    kbl(i,j)=k
+                  endif
+                  if (t(i,j,k,nnew,itemp).le.
+     &            t(i,j,indx_depth,nnew,itemp)-mld_crit_T2)  cff=1
+            
+                else
+                  if (cff.eq.0.and.rho(i,j,k).lt.
+     &            rho(i,j,indx_depth)+mld_crit_D) then
+                    kbl(i,j)=k
+                  endif
+                  if (rho(i,j,k).ge.
+     &            rho(i,j,indx_depth)+mld_crit_D)  cff=1
+                endif
+              enddo
+            endif
+           
+! CALCULATE MIXED LAYER DEPTH            
+            Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbl(i,j))
+#    ifdef MASKING
+     &                        * rmask(i,j)
+#    endif
+          enddo
+        enddo
+
+#    endif /*  DIAGNOSTICS_TS_MLD_CRIT    */
+
        do j=Jstr,Jend
          do i=Istr,Iend
-            THmix_mld(i,j,itrc)=0.
-            T_mld_nnew(i,j)=0.
-            T_mld_nstp(i,j)=0.
+           THmix_mld(i,j,itrc)=0.
+           T_mld_nnew(i,j)=0.
+           T_mld_nstp(i,j)=0.
          enddo
        enddo
        do j=Jstr,Jend
@@ -494,10 +597,23 @@
 #  endif
            do k=N,kmld,-1
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
+             if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3 
+     &       .or. itrc.eq.iCRT4) then 
+               THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
+     &                           THmix(i,j,k,itemp)*cff
+               T_mld_nnew(i,j)=T_mld_nnew(i,j)+
+     &                       t(i,j,k,nnew,itemp)*cff
+
+             else
+# endif
+               THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itrc)*cff
-             T_mld_nnew(i,j)=T_mld_nnew(i,j)+
+               T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
+             endif
+# endif
            enddo
          enddo
        enddo
@@ -512,8 +628,18 @@
 #  endif
            do k=N,kmld,-1
              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
+             if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3 
+     &       .or. itrc.eq.iCRT4) then 
+               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+     &                       t(i,j,k,nstp,itemp)*cff
+             else
+# endif
+               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
+             endif
+# endif
            enddo
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
          enddo
@@ -534,31 +660,6 @@
 #  undef T_mld_nstp
 # endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
 
-# ifdef DIAGNOSTICS_DEBUG
-       if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
-         i=5
-         j=5
-#  if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
-         cff=Trate_mld(i,j,itrc)-
-     &       TXadv_mld(i,j,itrc)-
-     &       TYadv_mld(i,j,itrc)-
-     &       TVadv_mld(i,j,itrc)-
-     &       TVmix_mld(i,j,itrc)-
-     &       THmix_mld(i,j,itrc)-
-     &       Tentr_mld(i,j,itrc)-
-     &       TForc_mld(i,j,itrc)
-       print *,'T3DMIX_S  : T budget closure MLD   : ',cff
-#  endif /* DIAGNOSTICS_TS_MLD && !SPONGE_DIF2 */
-          cff=Trate(i,j,N-5,itrc)-
-     &        TXadv(i,j,N-5,itrc)-
-     &        TYadv(i,j,N-5,itrc)-
-     &        TVadv(i,j,N-5,itrc)-
-     &        TVmix(i,j,N-5,itrc)-
-     &        THmix(i,j,N-5,itrc)-
-     &        TForc(i,j,N-5,itrc)
-       print *,'T3DMIX_S  : T budget closure k=N-5 : ',cff
-      endif
-# endif /* DIAGNOSTICS_DEBUG */
 #endif /* DIAGNOSTICS_TS */
 
 !$acc end kernels

@@ -14,7 +14,6 @@
 : namsedim_bedload         : relative to sediment bedload
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
-:                            (only if key_MUSTANG_lateralerosion)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -23,25 +22,15 @@
 :                            (only if !defined key_noTSdiss_insed)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
-: namsedim_debug           : output for debug
-:                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
+: namdredging              : parameters to activate dredging effect
 
 &namsedim_init
    date_start_dyninsed='2000/01/30 00:00:00'  
    date_start_morpho='1990/01/08 00:00:00' 
-   l_repsed=.true. 
-   filrepsed='./CROCO_FILES/sed_init.nc'
-   l_initsed_vardiss=.false.
-   l_unised = .true.    
-   fileinised =  './Init.nc' 
-   hseduni = 0.1       
-   cseduni= 1508.0  
-   l_init_hsed=.FALSE.   
-   csed_mud_ini = 300.0   
-   ksmiuni = 1      
-   ksmauni = 2   
+   l_unised = .false.   
+   filrepsed='sed_init.nc'
 / 
 &namsedim_layer
    dzsmin=1.0e-5       
@@ -80,10 +69,7 @@
    xexp_ero = 2.0     
  /  
 &namsedim_lateral_erosion
-   coef_erolat=0.000 
-   coef_tauskin_lat=5.0  
-   l_erolat_wet_cell=.FALSE. 
-   htncrit_eros=0.0 / 
+/
 &namsedim_consolidation
 /
 &namsedim_diffusion
@@ -104,7 +90,11 @@
 /
 &namflocmod
 /   
+&namdredging
+/
+&namsedim_poro
+/
 
 
 
-   
+

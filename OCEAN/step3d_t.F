@@ -55,14 +55,13 @@
       USE comsubstance, ONLY : l_subs2D
 #    endif
 #   endif
-#   ifdef SUBSTANCE_SUBMASSBALANCE
       USE submassbalance, ONLY :  submassbalance_flxcum_kiv
       USE submassbalance, ONLY :  submassbalance_psource
       USE submassbalance, ONLY :  submassbalance_flxcum_ws
-#   endif
-#  endif
+#  endif /* SUBSTANCE */
       implicit none
 #  include "param.h"
+#  include "ncscrum.h"
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "mixing.h"
@@ -112,12 +111,18 @@
 #  endif
       real cff1,cff2,gama,dRz,hbltmp,sig,dXmax,dEmax,
      &     dpth,smax,amax,amaxx
-#  ifdef TS_VADV_FCT
-      real tmax,tmin,Ppos,Qpos,Pneg,Qneg,lmdmax
-#  endif
 #  include "openacc_work.h"
       parameter (epsil=1.E-16)
 !
+
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      real    nearest_diff
+      integer indx_depth
+      real rho0i, zN2_c
+      real hmlp(Istr:Iend,Jstr:Jend)
+# endif
+
+
 #  ifdef MASKING
 #   define SWITCH *
 #  else
@@ -359,12 +364,12 @@
 !add submassbalance !! in loop k
 ! this has to be checked with OPENACC
 ! as well as OPENACC and MUSTANG in general          
-#  if defined SUBSTANCE_SUBMASSBALANCE
+#  if defined SUBSTANCE
         if (itrc .ge. itsubs1) then
             call submassbalance_flxcum_kiv(Istr, Iend, Jstr, Jend, 
      &        FX, FE, itrc-itsubs1+1)
         endif
-#  endif
+#  endif /* SUBSTANCE */
 #  if defined OPENACC
             ENDDOEXTEND
 # endif  
@@ -517,13 +522,6 @@
         enddo
 #  endif
 
-!----------------------------------------------------------
-! Apply flux correction for monotonicity
-!----------------------------------------------------------
-!
-#  ifdef TS_VADV_FCT
-#   include "FCT.h"
-#  endif
 !
 !----------------------------------------------------------
 ! Apply vertical advective flux divergence
@@ -757,31 +755,18 @@
 
 
         enddo      ! <-- itrc
+!
+      ENDDOLOOP2D ! <-- j
 
-!
-!----------------------------------------------------------
-! Compute vertical gradient in vertical T-diffusion
-! coefficient for floats random walk.
-!----------------------------------------------------------
-!
-#  if defined FLOATS && defined RANDOM_WALK
-        do k=1,N
-          do i=Istr,Iend
-            dAktdz(i,j,k)=(Akt(i,j,k,1)-Akt(i,j,k-1,1))/Hz(i,j,k)
-          enddo
-        enddo
-#  endif
 
 !add submassbalance for river!! 
 !mustang and openacc not compatible         
-# if defined SUBSTANCE_SUBMASSBALANCE
+# if defined SUBSTANCE
       call submassbalance_psource(Istr, Iend, Jstr, Jend)
 #  ifdef MUSTANG
       call submassbalance_flxcum_ws(Istr, Iend, Jstr, Jend)
 #  endif
 # endif
-!
-      ENDDOLOOP2D ! <-- j
 
 !$acc end kernels
 !======================================================================
@@ -1048,25 +1033,24 @@
             kmld=N-5
 #    endif
             do k=N,kmld,-1
-              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-              TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
+                cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
+                TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
      &                            TXadv(i,j,k,itrc)*cff
-              TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
+                TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
      &                            TYadv(i,j,k,itrc)*cff
-              TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
+                TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
      &                            TVadv(i,j,k,itrc)*cff
-              TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
+                TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
      &                            TVmix(i,j,k,itrc)*cff
-              TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
+                TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
      &                            TForc(i,j,k,itrc)*cff
-              T_mld_nnew(i,j)     =T_mld_nnew(i,j)+
+                T_mld_nnew(i,j)    =T_mld_nnew(i,j)+
      &                            t(i,j,k,nnew,itrc)*cff
             enddo
           enddo
         enddo
 
-#    if (!defined TS_DIF2 && !defined TS_DIF4 && !defined SPONGE_DIF2) \
-       || defined DIAGNOSTICS_DEBUG
+#    if (!defined TS_DIF2 && !defined TS_DIF4 && !defined SPONGE_DIF2)
 !
 ! Compute entrainement/detrainement term.
 ! If diffusion terms are computed in t3dmix routines, entrainement
@@ -1081,12 +1065,23 @@
 #     endif
             kmld=kbl_nstp(i,j)
 #     else
-            kmld=N-5
+              kmld=N-5
 #     endif
             do k=N,kmld,-1
               cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-              T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+#    ifdef DIAGNOSTICS_TS_MLD_CRIT
+
+              if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
+     &        .or. itrc.eq.iCRT4) then
+                T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+     &                        t(i,j,k,nstp,itemp)*cff
+              else
+# endif
+                T_mld_nstp(i,j)=T_mld_nstp(i,j)+              
      &                        t(i,j,k,nstp,itrc)*cff
+#    ifdef DIAGNOSTICS_TS_MLD_CRIT
+              endif
+# endif
             enddo
             if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
 #   ifdef DIAGNOSTICS_TS_MLD_CM
@@ -1110,38 +1105,6 @@
 #    undef T_mld_nstp
 #   endif /* DIAGNOSTICS_TS_MLD */
 
-#   ifdef DIAGNOSTICS_DEBUG
-        if (istr.eq.1 .and. jstr.eq.1
-#    ifdef TEMPERATURE
-     &       .and. itrc.eq.itemp
-#    endif /* TEMPERATURE */
-     &       ) then
-          i=5
-          j=5
-#    if defined DIAGNOSTICS_TS_MLD
-          cff=Trate_mld(i,j,itrc)-
-     &        TXadv_mld(i,j,itrc)-
-     &        TYadv_mld(i,j,itrc)-
-     &        TVadv_mld(i,j,itrc)-
-     &        TVmix_mld(i,j,itrc)-
-     &        THmix_mld(i,j,itrc)-
-     &        Tentr_mld(i,j,itrc)-
-     &        TForc_mld(i,j,itrc)
-             MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &       ' STEP3D_T: T budget closure MLD     :', cff
-!
-#    endif /* DIAGNOSTICS_TS_MLD */
-          cff=Trate(i,j,N-5,itrc)-
-     &        TXadv(i,j,N-5,itrc)-
-     &        TYadv(i,j,N-5,itrc)-
-     &        TVadv(i,j,N-5,itrc)-
-     &        TVmix(i,j,N-5,itrc)-
-     &        THmix(i,j,N-5,itrc)-
-     &        TForc(i,j,N-5,itrc)
-            MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &      ' STEP3D_T: T budget closure at k=N-5:', cff
-        endif
-#   endif /* DIAGNOSTICS_DEBUG */
 #  endif /* DIAGNOSTICS_TS */
 !
 !

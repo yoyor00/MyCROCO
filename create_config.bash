@@ -15,7 +15,7 @@
 # in a dedicated directory under: SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/ and add a case in 
 # SCRIPTS/SCRIPTS_COUPLING/myjob.sh (after l.95)
 # ---------------------------------------------
-MACHINE="Linux"
+MACHINE="DATARMOR"
 
 # General architecture when using CROCO can be one of these: 
 #
@@ -63,19 +63,23 @@ CROCO_DIR=$PWD
 # ---------------------
 TOOLS_DIR=${PWD}/../croco_tools
 
+# croco_pytools directory 
+# ---------------------
+PYTOOLS_DIR=${PWD}/../croco_pytools
+
 # Configuration name
 # ------------------
-MY_CONFIG_NAME=Run
+MY_CONFIG_NAME=mld
 
 # Home and Work configuration directories
 # ---------------------------------------
-MY_CONFIG_HOME=${CROCO_DIR}
-MY_CONFIG_WORK=${CROCO_DIR}
+MY_CONFIG_HOME=${CROCO_DIR}/CONFIGS
+MY_CONFIG_WORK=${CROCO_DIR}/CONFIGS
 
 # Options of your configuration
 # ------------------------------
 ## default option : all-dev for the usual ("all-in") architecture, for forced croco run and/or dev.
-options=( all-dev )
+#options=( all-dev )
 
 ## example for production run architecture
 #options=( all-prod )
@@ -83,8 +87,11 @@ options=( all-dev )
 ## example for production run architecture and coupling with external models:
 #options=( all-prod-cpl )
 
-## example for specified options:
-#options=( oce-prod prepro inter )
+## examples for specified options:
+#options=( oce-prod agrif pytools inter )
+#options=( oce-prod test_cases )
+#options=( oce-prod agrif mattools pytools cpl wav atm toy )
+options=( oce-prod inter )
 
 # List of known options: 
 LIST_OPTIONS=$(cat << EOF
@@ -99,19 +106,21 @@ LIST_OPTIONS=$(cat << EOF
  xios       : xios server and xml files
 
  # -- CROCO built-in scripts and toolboxes -- # 
- prepro     : for getting scripts for CROCO preprocessing
- inter      : for running interannual runs           ( cpl can not be defined) 
+ mattools   : for getting matlab scripts for CROCO preprocessing
+ pytools    : for getting python scripts for CROCO preprocessing
+ inter      : for running interannual runs           ( cpl cannot be defined) 
  forc       : for using forecast scripts
- test_cases : for running test cases 
+ test_cases : for running test cases
+ runcpl     : scripts for running interannual runs compatible with coupling
  cpl        : scripts for coupling with OASIS        ( oce-prod needed )
  toy        : scripts for coupling with a toy model  ( oce-prod needed )
  atm        : scripts for coupling with WRF          ( oce-prod needed )
  wav        : scripts for coupling with WW3          ( oce-prod needed )
 
  # -- All options :
- # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro)
- # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro)
- # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif pisces sediment mustang oanalysis prepro cpl wav atm toy)
+ # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
+ # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
+ # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
 
 EOF
 	    )
@@ -119,9 +128,9 @@ EOF
 # END USER MODIFICATIONS
 #==========================================================================================
 
-allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
-allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis prepro )
-allmodels_cpl=( oce-prod xios test_cases agrif pisces sediment mustang oanalysis prepro cpl wav atm toy )
+allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
+allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
+allmodels_cpl=( oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy )
 
 x_f=0
 
@@ -190,6 +199,7 @@ echo ""
 echo "Your choices :"
 echo " - CROCO_DIR        : ${CROCO_DIR}"
 echo " - TOOLS_DIR        : ${TOOLS_DIR}"
+echo " - PYTOOLS_DIR      : ${PYTOOLS_DIR}"
 echo " - CONFIG_HOME_DIR  : ${MY_CONFIG_HOME%$MY_CONFIG_NAME}"
 echo " - CONFIG_WORK_DIR  : ${MY_CONFIG_WORK%$MY_CONFIG_NAME}"
 echo " - CONFIG_NAME      : ${MY_CONFIG_NAME}"
@@ -220,21 +230,42 @@ fi
 
 # Check if tools are there
 copy_tools=1
-if [[ ! -d $TOOLS_DIR  &&  $x_f -eq 0 ]]; then 
-  echo  " WARNING : croco_tools directory not found "
-  echo -n " Do you want to proceed without MATLAB tools ? [Y/n] "
-  read answer
-  answer=`echo $answer | sed 's/^[yY].*$/y/'`
-  if [  -z "$answer" -o "x$answer" = "xn" ]; then
-#    echo " Creating configuration ..."
-#    echo "  "
-#  else
-    echo " Exiting..."
-    echo "  "
-    exit
-  else
-    copy_tools=0
-  fi
+if [[ ! -d "$TOOLS_DIR" && $x_f -eq 0 ]]; then
+    echo "WARNING: croco_tools directory not found."
+    echo -n "Do you want to proceed without MATLAB tools? [Y/n] "
+    read -r answer
+    case "$answer" in
+        [nN]*) 
+        echo "Exiting..."
+        exit 1
+        ;;
+        *) 
+        echo "Creating configuration ..."
+        echo "Proceeding without MATLAB tools ..."
+        echo "  "
+        copy_tools=0
+        ;;
+    esac
+fi
+
+# Check if pytools are there
+copy_pytools=1
+if [[ ! -d "$PYTOOLS_DIR" && $x_f -eq 0 ]]; then
+    echo "WARNING: croco_pytools directory not found."
+    echo -n "Do you want to proceed without PYTHON tools? [Y/n] "
+    read -r answer
+    case "$answer" in
+        [nN]*) 
+        echo "Exiting..."
+        exit 1
+        ;;
+        *) 
+        echo "Creating configuration ..."
+        echo "Proceeding without PYTHON tools ..."
+        echo "  "
+        copy_pytools=0
+        ;;
+    esac
 fi
  
 # Create the directory
@@ -290,6 +321,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
 	mkdir -p $MY_CONFIG_WORK/DATA
 	MY_CROCO_DIR=$MY_CONFIG_HOME/CROCO_IN/
+        MY_PREPRO_DIR=$MY_CONFIG_HOME/PREPRO/CROCO/
 	MY_XIOS_DIR=$MY_CONFIG_HOME/XIOS_IN/
 	
     elif [[ ${options[@]} =~ "oce-dev" ]] ; then
@@ -298,17 +330,18 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	mkdir -p $MY_CONFIG_WORK/CROCO_FILES
 	mkdir -p $MY_CONFIG_WORK/DATA
 	MY_CROCO_DIR=$MY_CONFIG_HOME/
+        MY_PREPRO_DIR=$MY_CONFIG_HOME/
 	MY_XIOS_DIR=$MY_CONFIG_HOME/
     fi
     cp -f ${CROCO_DIR}/OCEAN/cppdefs.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/cppdefs_dev.h $MY_CROCO_DIR.
     cp -f ${CROCO_DIR}/OCEAN/param.h $MY_CROCO_DIR.
     
-    PAT=$(grep ^SOURCE ${CROCO_DIR}/OCEAN/jobcomp)
-    sed -e "s!${PAT}!SOURCE=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
+    PAT=$(grep ^SOURCE1 ${CROCO_DIR}/OCEAN/jobcomp)
+    sed -e "s!${PAT}!SOURCE1=${CROCO_DIR}/OCEAN!g" $CROCO_DIR/OCEAN/jobcomp > $MY_CROCO_DIR/jobcomp
     chmod +x $MY_CROCO_DIR/jobcomp
 
-    if [[ ${options[@]} =~ "oce-prod" ]]; then
+    if [[ ${options[@]} =~ "runcpl" ]]; then
         cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.        
     else
         cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
@@ -319,7 +352,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	cp -Rf ${CROCO_DIR}/TEST_CASES $MY_CROCO_DIR.
     fi
     # AGRIF
-    if [[ ${options[@]} =~ "agrif" && ${options[@]} =~ "oce-dev" ]] ; then
+    if [[ ${options[@]} =~ "agrif" ]] ; then
 	cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
 	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
     fi
@@ -334,6 +367,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     # PISCES
     if [[ ${options[@]} =~ "pisces" ]] ; then
 	cp -f ${CROCO_DIR}/PISCES/*namelist* $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/PISCES/SED/*namelist* $MY_CROCO_DIR.
     fi
     # SEDIMENT
     if [[ ${options[@]} =~ "sediment" ]] ; then
@@ -355,28 +389,33 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	#     cp -Rf ${CROCO_DIR}/XIOS/README_XIOS $MY_CROCO_DIR.
     fi
     # PREPROCESSING
-    if [[ ${options[@]} =~ "prepro" && ${copy_tools} == 1 ]] ; then
-	cp -Rf $TOOLS_DIR/start.m $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/oct_start.m $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/crocotools_param.m $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/Town/town.dat $MY_CROCO_DIR.
-	cp -Rf $TOOLS_DIR/Oforc_OGCM/download_glorys_data.sh $MY_CROCO_DIR.
+    if [[ ${options[@]} =~ "mattools" && ${copy_tools} == 1 ]] ; then
+        mkdir -p $MY_PREPRO_DIR/croco_tools
+	cp -Rf $TOOLS_DIR/start.m $MY_PREPRO_DIR/croco_tools/.
+	cp -Rf $TOOLS_DIR/oct_start.m $MY_PREPRO_DIR/croco_tools/.
+	cp -Rf $TOOLS_DIR/crocotools_param.m $MY_PREPRO_DIR/croco_tools/.
+	cp -Rf $TOOLS_DIR/Town/town.dat $MY_PREPRO_DIR/croco_tools/.
+	cp -Rf $TOOLS_DIR/Oforc_OGCM/download_glorys_data.sh $MY_PREPRO_DIR/croco_tools/.
 	# Edit start.m
 	sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
             -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
-            ${MY_CROCO_DIR}/start.m > ${MY_CROCO_DIR}/start.m.tmp
-	mv ${MY_CROCO_DIR}/start.m.tmp ${MY_CROCO_DIR}/start.m
+            $MY_PREPRO_DIR/croco_tools/start.m > $MY_PREPRO_DIR/croco_tools/start.m.tmp
+	mv $MY_PREPRO_DIR/croco_tools/start.m.tmp $MY_PREPRO_DIR/croco_tools/start.m
 	# Edit oct_start.m
 	sed -e "s|tools_path=.*|tools_path=\'${TOOLS_DIR}/\';|g" \
             -e "s|croco_path=.*|croco_path=\'${CROCO_DIR}/\';|g" \
-            ${MY_CROCO_DIR}/oct_start.m > ${MY_CROCO_DIR}/oct_start.m.tmp
-	mv ${MY_CROCO_DIR}/oct_start.m.tmp ${MY_CROCO_DIR}/oct_start.m
+            $MY_PREPRO_DIR/croco_tools/oct_start.m > $MY_PREPRO_DIR/croco_tools/oct_start.m.tmp
+	mv $MY_PREPRO_DIR/croco_tools/oct_start.m.tmp $MY_PREPRO_DIR/croco_tools/oct_start.m
 	# Edit crocotools_param.h
 	sed -e "s|CROCOTOOLS_dir = .*|CROCOTOOLS_dir = \'${TOOLS_DIR}/\';|g" \
             -e "s|RUN_dir=.*|RUN_dir=\'${MY_CONFIG_WORK}/\';|g" \
             -e "s|DATADIR=.*|DATADIR=\'${TOOLS_DIR}/DATASETS_CROCOTOOLS/\';|g" \
-            ${MY_CROCO_DIR}/crocotools_param.m > ${MY_CROCO_DIR}/crocotools_param.m.tmp
-	mv ${MY_CROCO_DIR}/crocotools_param.m.tmp ${MY_CROCO_DIR}/crocotools_param.m
+            $MY_PREPRO_DIR/croco_tools/crocotools_param.m > $MY_PREPRO_DIR/croco_tools/crocotools_param.m.tmp
+	mv $MY_PREPRO_DIR/croco_tools/crocotools_param.m.tmp $MY_PREPRO_DIR/croco_tools/crocotools_param.m
+    fi
+    if [[ ${options[@]} =~ "pytools" && ${copy_pytools} == 1 ]] ; then
+        mkdir -p $MY_PREPRO_DIR
+        cp -Rf $PYTOOLS_DIR $MY_PREPRO_DIR.
     fi
     # SCRIPTS FOR RUNNING
     if [[ ${options[@]} =~ "inter" ]] ; then
@@ -386,21 +425,9 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 fi
 
 ### Preprocessing scripts
-if [[ ${options[@]} =~ "prepro" && ${options[@]} =~ "oce-prod" ]] ; then
-    mkdir -p $MY_CONFIG_HOME/PREPRO/CROCO
+if [[ ${options[@]} =~ "mattools" && ${options[@]} =~ "cpl" ]] ; then
     if [[ ${copy_tools} == 1 ]] ; then
-        cp -r $TOOLS_DIR/Coupling_tools/CROCO/* $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/oct_start.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/crocotools_param.m $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/town.dat $MY_CONFIG_HOME/PREPRO/CROCO/.
-        mv $MY_CROCO_DIR/download_glorys_data.sh $MY_CONFIG_HOME/PREPRO/CROCO/.
-    else
-        echo " WARNING : proceed without MATLAB tools but prepro flag is activated"
-        echo " PREPRO/CROCO/ will be empty"
-        echo " You need to proceed with MATLAB tools"
-        echo ' Exiting ...'
-        exit
+        cp -r $TOOLS_DIR/Coupling_tools/CROCO/* $MY_CONFIG_HOME/PREPRO/CROCO/croco_tools/.
     fi
 fi
 
@@ -420,7 +447,7 @@ if [[ ${options[@]} =~ "wav" ]] ; then
     mkdir -p $MY_CONFIG_HOME/WW3_IN
     mkdir -p $MY_CONFIG_WORK/WW3_FILES
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/WW3_IN/* $MY_CONFIG_HOME/WW3_IN/.
-    if [[ ${options[@]} =~ "prepro" ]] ; then
+    if [[ ${options[@]} =~ "mattools" ]] ; then
         cp -r $TOOLS_DIR/Coupling_tools/WW3 $MY_CONFIG_HOME/PREPRO/.
     fi
 fi
@@ -432,7 +459,7 @@ if [[ ${options[@]} =~ "atm" ]] ; then
     mkdir -p $MY_CONFIG_HOME/WRF_IN
     mkdir -p $MY_CONFIG_WORK/WRF_FILES
     cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/WRF_IN/* $MY_CONFIG_HOME/WRF_IN/.
-    if [[ ${options[@]} =~ "prepro" ]] ; then
+    if [[ ${options[@]} =~ "mattools" ]] ; then
         cp -r $TOOLS_DIR/Coupling_tools/WRF_WPS $MY_CONFIG_HOME/PREPRO/.
     fi
 fi
@@ -476,12 +503,10 @@ fi
 # Using the SCRIPT_TOOLBOX scripts (cpl-like architecture)
 # Copy and edit the relevant scripts
 #if [[ ${options[@]} =~ "cpl" ]] || [[ ${options[@]} =~ "wav" ]] || [[ ${options[@]} =~ "atm" ]] || [[ ${options[@]} =~ "toy" ]] ; then
-if [[ ${options[@]} =~ "oce-prod" ]] ; then
+if [[ ${options[@]} =~ "runcpl" ]] ; then
     echo 'Copy scripts production runs'
     echo '-----------------------------'
-    [ -d $MY_CONFIG_HOME/SCRIPTS_TOOLBOX ] && \rm -Rf $MY_CONFIG_HOME/SCRIPTS_TOOLBOX
     cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/*.sh $MY_CONFIG_HOME/
-    cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/ $MY_CONFIG_HOME/SCRIPTS_TOOLBOX
     cp -Rf ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/README* $MY_CONFIG_HOME/
     
     # Edit myjob.sh to add CPU lines for each model
@@ -508,8 +533,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     rm -Rf myjob.tmp
     
     # Create the path file
-    cd $MY_CONFIG_HOME/SCRIPTS_TOOLBOX/PATHS
-    cat ./path_base.sh >> tmppath
+    cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/PATHS/path_base.sh >> tmppath
 
     # add sections for each model
     [[ ${options[@]} =~ "cpl" ]] && printf "export CPL=\"\${HOME}/OASIS/compile_oasis3\"\n" >> tmppath
@@ -520,31 +544,27 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     [[ ${options[@]} =~ "xios" ]] && printf "export XIOS=\"\${HOME}/XIOS\"\n" >> tmppath
     printf "\n" >> tmppath
 
-    [[ ${options[@]} =~ "cpl" ]] && cat ./path_cpl.sh >> tmppath
-    [[ ${options[@]} =~ "oce-prod" ]] && cat ./path_oce.sh >> tmppath
-    [[ ${options[@]} =~ "atm" ]] && cat ./path_atm.sh >> tmppath
-    [[ ${options[@]} =~ "wav" ]] && cat ./path_wav.sh >> tmppath
-    [[ ${options[@]} =~ "toy" ]] && cat ./path_toy.sh >> tmppath
-    [[ ${options[@]} =~ "xios" ]] && cat ./path_xios.sh>> tmppath
+    [[ ${options[@]} =~ "cpl" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/PATHS/path_cpl.sh >> tmppath
+    [[ ${options[@]} =~ "oce-prod" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/PATHS/path_oce.sh >> tmppath
+    [[ ${options[@]} =~ "atm" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/PATHS/path_atm.sh >> tmppath
+    [[ ${options[@]} =~ "wav" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/PATHS/path_wav.sh >> tmppath
+    [[ ${options[@]} =~ "toy" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/PATHS/path_toy.sh >> tmppath
+    [[ ${options[@]} =~ "xios" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/PATHS/path_xios.sh>> tmppath
 
     # replace environment variables in path file
     sed -e "s|export MACHINE=.*|export MACHINE=\"${MACHINE}\"|g" \
         -e "s|export CONFIG=.*|export CONFIG=${MY_CONFIG_NAME}|g" \
         -e "s|export CHOME=.*|export CHOME=${MY_CONFIG_HOME}|g" \
         -e "s|export CWORK=.*|export CWORK=${MY_CONFIG_WORK}|g" \
+        -e "s|export SCRIPTDIR=.*|export SCRIPTDIR=${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX|g" \
         tmppath > tmppath1
     mv tmppath1 tmppath
-    mv tmppath ${MY_CONFIG_HOME}/
 
     # Create the env file
-    [ -d ${MY_CONFIG_HOME}/SCRIPTS_TOOLBOX/MACHINE/${MACHINE} ] && cd ${MY_CONFIG_HOME}/SCRIPTS_TOOLBOX/MACHINE/${MACHINE} || { echo "No environement for ${MACHINE} in ${MY_CONFIG_HOME}/SCRIPT_CPL/SCRIPTS_TOOLBOX/MACHINE/${MACHINE}"; exit ;}
-    cp myenv.${MACHINE} tmpenv
+    [ -d ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/${MACHINE} ] && cp ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/${MACHINE}/myenv.${MACHINE} tmpenv || { echo "No environement for ${MACHINE} in ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/${MACHINE}"; exit ;}
 
-    [[ ${options[@]} =~ "atm" ]] && cat ./myenv.${MACHINE}.wrf >> tmpenv 
-    [[ ${options[@]} =~ "wav" ]] && cat ./myenv.${MACHINE}.ww3 >> tmpenv
-
-    mv tmpenv ${MY_CONFIG_HOME}/
-    cd ${MY_CONFIG_HOME}
+    [[ ${options[@]} =~ "atm" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/${MACHINE}/myenv.${MACHINE}.wrf >> tmpenv 
+    [[ ${options[@]} =~ "wav" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/${MACHINE}/myenv.${MACHINE}.ww3 >> tmpenv
 
     # concatenate path and env file
     cat tmpenv tmppath > myenv_mypath.sh
@@ -552,8 +572,7 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     rm -rf tmppath tmpenv
 
     # Create the namelist file
-    cd ${MY_CONFIG_HOME}/SCRIPTS_TOOLBOX/NAMELISTS
-    cp namelist_head.sh mynamelist.sh
+    cp ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/NAMELISTS/namelist_head.sh mynamelist.sh
 
     if [[ ${options[@]} =~ "cpl" ]]; then
         if [[ ${options[@]} =~ "oce-prod" ]] && [[ ${options[@]} =~ "wav" ]] && [[ ${options[@]} =~ "atm" ]] ; then
@@ -580,20 +599,19 @@ if [[ ${options[@]} =~ "oce-prod" ]] ; then
     sed "s/export CEXPER=BENGUELA/export CEXPER=${MY_CONFIG_NAME}/g" mynamelist.sh > mynamelist.sh.tmp
     mv mynamelist.sh.tmp mynamelist.sh
 
-    [[ ${options[@]} =~ "cpl" ]] && cat ./namelist_cpl.sh >> mynamelist.sh
-    [[ ${options[@]} =~ "oce-prod" ]] && cat ./namelist_oce.sh >> mynamelist.sh
-    [[ ${options[@]} =~ "atm" ]] && cat ./namelist_atm.sh >> mynamelist.sh
-    [[ ${options[@]} =~ "wav" ]] && cat ./namelist_wav.sh >> mynamelist.sh
-    [[ ${options[@]} =~ "toy" ]] && cat ./namelist_toy.sh >> mynamelist.sh
-    [[ ${options[@]} =~ "xios" ]] && cat ./namelist_xios.sh >> mynamelist.sh
+    [[ ${options[@]} =~ "cpl" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/NAMELISTS/namelist_cpl.sh >> mynamelist.sh
+    [[ ${options[@]} =~ "oce-prod" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/NAMELISTS/namelist_oce.sh >> mynamelist.sh
+    [[ ${options[@]} =~ "atm" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/NAMELISTS/namelist_atm.sh >> mynamelist.sh
+    [[ ${options[@]} =~ "wav" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/NAMELISTS/namelist_wav.sh >> mynamelist.sh
+    [[ ${options[@]} =~ "toy" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/NAMELISTS/namelist_toy.sh >> mynamelist.sh
+    [[ ${options[@]} =~ "xios" ]] && cat ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/NAMELISTS/namelist_xios.sh >> mynamelist.sh
 
     chmod 755 mynamelist.sh
-    mv mynamelist.sh ../../.
 
     # Edit jobcomp in CROCO_IN
     if [[ ${options[@]} =~ "oce-prod" ]]; then
         cd ${MY_CONFIG_HOME}/CROCO_IN
-	sed -e 's|SOURCE=.*|source ../myenv_mypath.sh\nSOURCE=${OCE}|g' \
+	sed -e 's|SOURCE1=.*|source ../myenv_mypath.sh\nSOURCE1=${OCE}|g' \
 	    -e 's|FC=gfortran|FC=\${FC}|' \
 	    -e 's|MPIF90=.*|MPIF90=\${MPIF90}|' \
 	    jobcomp > jobcomp.tmp

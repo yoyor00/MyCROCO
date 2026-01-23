@@ -28,7 +28,7 @@
 #endif
 #ifdef PISCES
           USE pisces_ini     ! PISCES modules
-          USE trcini_pisces
+          USE trcnam_pisces
 #endif
 #ifdef SUBSTANCE
           USE substance, ONLY : substance_read_alloc
@@ -45,12 +45,13 @@
           USE module_interface_oa, only : init_parameter_oa
      &                                   ,if_oa, if_oa_fast_mode
 #endif
-#ifdef RVTK_DEBUG
+#ifdef CVTK_DEBUG
       use debug
 #endif
 #ifdef OPENACC
       use openacc
 #endif
+      use buffer, only: init_buffer
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -70,13 +71,12 @@
 # include "work.h"
 #endif
 #include "mpi_cpl.h"
-#ifdef FLOATS
-# include "floats.h"
-# include "ncscrum_floats.h"
-#endif
 #ifdef STATIONS
 # include "sta.h"
 # include "nc_sta.h"
+#endif
+#ifdef USE_CALENDAR
+       character*19 :: tool_sectodat
 #endif
 #ifdef AGRIF
       Type(Agrif_pgrid),pointer  :: parcours
@@ -97,15 +97,6 @@
 #endif
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
-#endif
-#ifdef USE_CALENDAR
-      character*19 :: tool_sectodat
-!      real*8       :: tool_datosec
-#endif
-#ifdef AUTOTILING
-! Initial values of NSUB_X, NSUB_E
-      NSUB_X = 1
-      NSUB_E = NPP
 #endif
 !
 #include "dynderivparam.h"
@@ -149,12 +140,6 @@
       call declare_zoom_variables()
 #endif
 !
-!  Initialize automatic tiling
-!
-#ifdef AUTOTILING
-      call init_auto_tiling
-#endif
-!
 !  Setup MPI domain decomposition
 !
 #ifdef MPI
@@ -165,13 +150,15 @@
 !
 !  Initialize debug procedure
 !
-#if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED || \
-    defined RVTK_DEBUG_PERFRST
+#if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED || \
+    defined CVTK_DEBUG_PERFRST
 
       call debug_ini
 #endif
 !
 #define CR  !
+
+      call init_buffer
 !
 !----------------------------------------------------------------------
 !  Read in tunable model parameters in roms.in file
@@ -244,14 +231,13 @@
 !
 !
 !----------------------------------------------------------------------
-!  Create parallel threads; start timers for each thread;
+!  Create parallel threads; 
 !  initialize (FIRST-TOUCH) model global arrays (most of them
 !  are just set to to zero).
 !----------------------------------------------------------------------
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call start_timers()
         call init_arrays (tile)
       enddo
 CR      write(*,*) '-11' MYID
@@ -277,7 +263,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call ana_grid (tile)
       enddo
-# if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+# if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
        call check_tab2d(h(:,:),'h initialisation #1','r',
@@ -674,37 +660,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call abl_ini (tile)
       enddo
 #endif
-!
-!----------------------------------------------------------------------
-!  Initialization for Lagrangian floats
-!
-!  It is done here and not in init_scalars since it must be done only
-!  once (whether child levels exist or not)
-!----------------------------------------------------------------------
-!
-#ifdef FLOATS
-      nrecflt=0
-      ncidflt=-1
-      flopspval=1.E15  ! spval is the nodata flag for float variables
-      deltac2p=2.3     ! distance from the boundary at which a float
-                       ! is transferred from child to parent
-      deltap2c=2.5     ! same for transfer from parent to child
 
-      call init_arrays_floats
-      call init_floats
-# ifdef SPHERICAL
-      call interp_r2d_type_ini (lonr(START_2D_ARRAY), iflon)
-      call interp_r2d_type_ini (latr(START_2D_ARRAY), iflat)
-# else
-      call interp_r2d_type_ini (  xr(START_2D_ARRAY), iflon)
-      call interp_r2d_type_ini (  yr(START_2D_ARRAY), iflat)
-# endif
-# ifdef SOLVE3D
-      call fill_ini ! fills in trackaux for ixgrd,iygrd,izgrd
-                    ! and ifld (either izgrd or ifld is meaningful)
-# endif
-      if (ldefflt) call wrt_floats
-#endif /* FLOATS */
 !
 !----------------------------------------------------------------------
 !  Initialization for stations
@@ -797,7 +753,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         iwave=iwave+1
         thwave=max(av_wac,av_wkn)
       enddo
-# if defined RVTK_DEBUG || defined RVTK_DEBUG_ADVANCED
+# if defined CVTK_DEBUG || defined CVTK_DEBUG_ADVANCED
 C$OMP BARRIER
 C$OMP MASTER
       call check_tab2d(wac(:,:,wnew),'wac initialisation #1','r')
@@ -999,10 +955,7 @@ CR      write(*,*) '  0' MYID
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
 #endif
-C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
-      do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
-        call stop_timers()
-      enddo
+      ! close netCDF files.
       call closecdf
 #ifdef XIOS
       call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF

@@ -112,8 +112,6 @@
 #if defined BIOLOGY && defined TRACERS
 !$acc&, global_sum
 #endif
-!$acc&, CPU_time
-!$acc&, proc
 #ifdef SOLITON
 #else
 #endif
@@ -270,24 +268,13 @@
 #endif
 
 !private_scratch.h
-#ifdef AUTOTILING
 !$acc&, A2d, A3d
-# if defined SEDIMENT || defined LMD_MIXING
+#if defined SEDIMENT || defined LMD_MIXING
 !$acc&, B2d
-# endif
-# if defined ABL1D
-!$acc&, T1d
-!$acc&, T2d,T3d
-# endif
-#else
-!$acc&, A2d, A3d
-# if defined SEDIMENT || defined LMD_MIXING
-!$acc&, B2d
-# endif
-# if defined ABL1D
+#endif
+#if defined ABL1D
 !$acc&, T1d
 !$acc&, T2d, T3d
-# endif
 #endif
 
 !mixing.h
@@ -344,11 +331,8 @@
 !$acc&, Akv_old
 !$acc&, Akt_old
 # endif
-# ifdef RANDOM_WALK
-!$acc&, dAktdz
-# endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX   || defined LMD_MIXING \
+  || defined LMD_SKPP   || defined LMD_BKPP \
   || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
 !$acc&, bvf
 # endif
@@ -691,8 +675,6 @@
 # if defined BIOLOGY && defined DIAGNOSTICS_BIO
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
 # ifdef MUSTANG
-#  ifdef key_MUSTANG_specif_outputs
-#  endif
 # endif
 # ifdef BIOLOGY
 #  ifdef BIO_BioEBUS
@@ -723,8 +705,8 @@
 # else
 # endif
 #endif /* SOLVE3D */
-#if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#if defined ANA_VMIX  || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 #endif
 #ifdef EXACT_RESTART
@@ -826,8 +808,8 @@
 !$acc&, hisBBL
 #endif
 #ifdef SOLVE3D
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 # endif
 # ifdef BIOLOGY
@@ -839,10 +821,6 @@
 # ifdef SEDIMENT
 # endif /* SEDIMENT */
 # ifdef MUSTANG
-#  ifdef key_MUSTANG_specif_outputs
-#   ifdef key_MUSTANG_V2
-#   endif
-#  endif
 # endif /* MUSTANG */
 # if defined DIAGNOSTICS_TS
 !$acc&, diaTXadv, diaTYadv, diaTVadv
@@ -939,9 +917,9 @@
 #endif /* SOLVE3D */
 #ifdef AVERAGES
 # ifdef SOLVE3D
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+   || defined LMD_SKPP || defined LMD_BKPP \
+   || defined GLS_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -1136,8 +1114,8 @@
 # endif
 #endif
 #ifdef SOLVE3D
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 # endif
 # ifdef BIOLOGY
@@ -1178,9 +1156,9 @@
 #endif
 #ifdef AVERAGES
 # ifdef SOLVE3D
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP  || defined LMD_BKPP \
+  || defined GLS_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -1288,9 +1266,9 @@
 !$acc&, v_avg
 !$acc&, t_avg
 !$acc&, rho_avg
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+   || defined LMD_SKPP || defined LMD_BKPP \
+   || defined GLS_MIXING
 !$acc&, bvf_avg
 #  endif
 !$acc&, omega_avg
@@ -1299,9 +1277,9 @@
 #  else
 !$acc&, w_avg
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+   || defined LMD_SKPP || defined LMD_BKPP \
+   || defined GLS_MIXING
 #  endif
 !$acc&, stflx_avg
 !$acc&, btflx_avg
@@ -1526,9 +1504,6 @@
 # endif
 # ifdef NBQ_HZCORRECT
 !$acc&, Hz_correct
-#  ifdef NBQ_HZCORR_DEBUG
-!$acc&, Hz_corr
-#  endif
 # endif
 # ifdef NBQ_HZ_PROGNOSTIC
 !$acc&, Hz_bak2

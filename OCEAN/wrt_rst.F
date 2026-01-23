@@ -12,13 +12,10 @@
                               ! Write model prognostic
       subroutine wrt_rst      ! variables into restart
                               ! netCDF file.
-#if defined FLOATS && defined AGRIF
-        USE Agrif_Util
-#endif
 
 #if defined MUSTANG
-      USE comMUSTANG, only: ksmi,ksma,cv_sed,dzs
-# include "coupler_define_MUSTANG.h"
+      USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
+      USE dredging, ONLY : l_dredging, dredg_hsed_init
 #endif
 
 !     implicit none
@@ -48,10 +45,6 @@
 #ifdef BBL
 # include "bbl.h"
 #endif
-#if defined FLOATS
-# include "ncscrum_floats.h"
-# include "floats.h"
-#endif
 #ifdef ABL1D
 # include "abl1d.h"
 #endif
@@ -67,17 +60,6 @@
 #endif
 #ifdef SEDIMENT
      &      , indxWrk
-#endif
-#ifdef FLOATS
-      integer i, j, startTinfo(3), starttrack(4)
-     &  ,countTinfo(3), counttrack(4), level
-      real bufftrack(1:6,NFT+1,nfloats)
-# ifdef AGRIF
-      type(Agrif_pgrid), pointer :: parcours
-      integer tmp(0:NFT+1,-1:maxgrids)
-# else
-      integer tmp(NFT+1,-1:0)
-# endif
 #endif
 #if defined MPI & !defined PARALLEL_FILES
       include 'mpif.h'
@@ -226,9 +208,53 @@
 
 #ifdef ABL1D
 !
+! 3D U ABL
+!
+      ierr=nf_fwrite(u_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblU,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_u_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D V ABL
+!
+      ierr=nf_fwrite(v_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblV,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_v_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_v_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D T ABL
+!
+      ierr=nf_fwrite(tq_abl(START_2D_ARRAY,1,nt_a,jp_ta), ncidrst, rstAblT,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_t_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_t_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D Q ABL
+!
+      ierr=nf_fwrite(tq_abl(START_2D_ARRAY,1,nt_a,jp_qa), ncidrst, rstAblQ,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_q_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_q_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif                  
+!
 ! 3D TKE ABL
 !
-      ierr=nf_fwrite(tke_abl(START_2D_ARRAY,1,nstp), ncidrst, rstAblTke,
+      ierr=nf_fwrite(tke_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblTke,
      &                                        record, abl3dvar)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
@@ -236,6 +262,61 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
+!
+! 3D AVM ABL
+!
+      ierr=nf_fwrite(avm_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblAvm,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_avm_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_avm_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D AVT ABL
+!
+      ierr=nf_fwrite(avt_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblAvt,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_avt_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_avt_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif     
+!
+! 3D MXLD ABL
+!
+      ierr=nf_fwrite(mxld_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblMxld,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_mxld_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_mxld_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D MXLM ABL
+!
+      ierr=nf_fwrite(mxlm_abl(START_2D_ARRAY,1,nt_a), ncidrst, rstAblMxlm,
+     &                                        record, abl3dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_mxlm_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_mxlm_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif         
+!
+! 2D ABLH
+!
+      ierr=nf_fwrite(ablh(START_2D_ARRAY,nt_a), ncidrst, rstAblAblh,
+     &                                        record, r2dvar)
+      if (ierr .ne. nf_noerr) then
+        lvar=lenstr(vname_abl1d(1,indxabl_ablh_abl))
+        write(stdout,1) vname_abl1d(1,indxabl_ablh_abl)(1:lvar), record, ierr
+     &                  MYID
+        goto 99                                           !--> ERROR
+      endif               
 #endif
 
 #ifdef SOLVE3D
@@ -269,6 +350,10 @@
 # ifdef TRACERS
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,:))
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &  .and. itrc.ne.iCRT4) then
+# endif
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)
         if (ierr .ne. nf_noerr) then
@@ -277,6 +362,9 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+       endif
+# endif
       enddo
 # endif
 
@@ -355,6 +443,7 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+#  ifdef TEMPERATURE
 !
 ! Write out vertical diffusion coefficient for potential temperature.
 !
@@ -367,6 +456,7 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
+#  endif /* TEMPERATURE  */
 #  ifdef SALINITY
 !
 ! Write out vertical diffusion coefficient for potential temperature.
@@ -596,23 +686,23 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 
 ! ksmi, ksma
       work2d=ksmi
-      indx=indxT+ntrc_salt+ntrc_substot+ntrc_subs+6+1
-      ierr=nf_fwrite(work2d, ncidrst, rstMUS(1),
+      indx=1
+      ierr=nf_fwrite(work2d, ncidrst, rstMust(1),
      &                                       record, r2dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname_rstMust(1,indx))
+        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
 
       work2d=ksma
       indx=indx+1
-      ierr=nf_fwrite(work2d, ncidrst, rstMUS(2),
+      ierr=nf_fwrite(work2d, ncidrst, rstMust(2),
      &                                       record, r2dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname_rstMust(1,indx))
+        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -621,12 +711,12 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       do k=1,ksdmax
         workrsed(:,:,k)=dzs(k,:,:)
       enddo
-      indx=indxT+ntrc_salt+ntrc_substot+4
-      ierr=nf_fwrite(workrsed, ncidrst, rstMUS(3),
+      indx=indx+1
+      ierr=nf_fwrite(workrsed, ncidrst, rstMust(3),
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname_rstMust(1,indx))
+        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -635,12 +725,12 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       do k=1,ksdmax
         workrsed(:,:,k)=cv_sed(-1,k,:,:)
       enddo
-      indx=indxT+ntrc_salt+ntrc_substot+5
-      ierr=nf_fwrite(workrsed, ncidrst, rstMUS(4),
+      indx=indx+1
+      ierr=nf_fwrite(workrsed, ncidrst, rstMust(4),
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname_rstMust(1,indx))
+        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
@@ -649,33 +739,49 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       do k=1,ksdmax
          workrsed(:,:,k)=cv_sed(0,k,:,:)
       enddo
-       indx=indxT+ntrc_salt+ntrc_substot+6
+       indx=indx+1
 
-      ierr=nf_fwrite(workrsed, ncidrst, rstMUS(5),
+      ierr=nf_fwrite(workrsed, ncidrst, rstMust(5),
      &                                       record, b3dvar)
       if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indx))
-        write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+        lvar=lenstr(vname_rstMust(1,indx))
+        write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
      &                  MYID
         goto 99                                         !--> ERROR
       endif
 
 ! cvsed
        do itrc=1,ntrc_subs
-         indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
+         indx=indx+1           ! 3D: traceurSed
          do k=1,ksdmax
            workrsed(:,:,k)=cv_sed(itrc,k,:,:)
          enddo
 
-        ierr=nf_fwrite(workrsed, ncidrst, rstMUS(itrc+5),
+        ierr=nf_fwrite(workrsed, ncidrst, rstMust(indx),
      &                                       record, b3dvar)
         if (ierr .ne. nf_noerr) then
-          lvar=lenstr(vname(1,indx))
-          write(stdout,1) vname(1,indx)(1:lvar), record, ierr
+          lvar=lenstr(vname_rstMust(1,indx))
+          write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
      &                  MYID
           goto 99                                         !--> ERROR
         endif
        enddo
+
+! dredging
+       if (l_dredging) then
+          work2d = dredg_hsed_init
+          indx = indx + 1
+          ierr = nf_fwrite(work2d, ncidrst, rstMust(indx),
+     &                                       record, r2dvar)
+          if (ierr .ne. nf_noerr) then
+            lvar=lenstr(vname_rstMust(1,indx))
+            write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
+     &                  MYID
+            goto 99                                         !--> ERROR
+          endif
+       endif
+
+
 # endif /* MUSTANG */
 
 #endif /* SOLVE3D */
@@ -712,101 +818,6 @@ CR      write(*,*) 'wrt_rst:  Hripple' MYID
       endif
 CR      write(*,*) 'wrt_rst:  Lripple' MYID
 #endif /* BBL */
-
-#ifdef FLOATS
-# ifdef AGRIF
-      if (Agrif_Root()) then
-# endif
-! write nfloats
-      ierr=nf_put_vara_int (ncidrst, rstnfloats, record, 1, nfloats)
-      if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'nfloats', record, ierr, nf_strerror(ierr)
-     &                   MYID
-        goto 99                                           !--> ERROR
-      endif
-
-! write Tinfo
-
-      startTinfo(1)=1
-      startTinfo(2)=1
-      startTinfo(3)=record
-      countTinfo(1)=5
-      countTinfo(2)=nfloats
-      countTinfo(3)=1
-
-      ierr=nf_put_vara_FTYPE (ncidrst, rstTinfo, startTinfo,
-     &   countTinfo, Tinfo)
-      if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'Tinfo', record, ierr, nf_strerror(ierr)
-     &                   MYID
-        goto 99                                           !--> ERROR
-      endif
-
-! write grid level
-
-      start(1)=1
-      start(2)=record
-      count(1)=nfloats
-      count(2)=1
-
-      ierr=nf_put_vara_int (ncidrst, rstfltgrd, start, count, fltgrd)
-      if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'grid level', record, ierr, nf_strerror(ierr)
-     &                   MYID
-        goto 99                                           !--> ERROR
-      endif
-
-! write track
-
-      starttrack(1)=1
-      starttrack(2)=1
-      starttrack(3)=1
-      starttrack(4)=record
-      counttrack(1)=6
-      counttrack(2)=NFT+1
-      counttrack(3)=nfloats
-      counttrack(4)=1
-
-      level=-1
-      tmp(1,level)=nf
-      tmp(2,level)=nfm1
-      tmp(3,level)=nfm2
-      tmp(4,level)=nfm3
-      level=0
-      tmp(1,level)=nf
-      tmp(2,level)=nfm1
-      tmp(3,level)=nfm2
-      tmp(4,level)=nfm3
-# ifdef AGRIF
-      do level=1,AGRIF_Nb_Fine_Grids()
-        tmp(4,level)=floattindex(level)
-        tmp(1,level)=mod(tmp(4,level)+3,NFT+1)
-        tmp(2,level)=mod(tmp(4,level)+2,NFT+1)
-        tmp(3,level)=mod(tmp(4,level)+1,NFT+1)
-      enddo
-# endif
-      do i=1,NFT+1
-        do j=1,nfloats
-          bufftrack(1,i,j)=track(ixgrd,tmp(i,fltgrd(j)),j)
-          bufftrack(2,i,j)=track(iygrd,tmp(i,fltgrd(j)),j)
-          bufftrack(3,i,j)=track(izgrd,tmp(i,fltgrd(j)),j)
-          bufftrack(4,i,j)=track(ixrhs,tmp(i,fltgrd(j)),j)
-          bufftrack(5,i,j)=track(iyrhs,tmp(i,fltgrd(j)),j)
-          bufftrack(6,i,j)=track(izrhs,tmp(i,fltgrd(j)),j)
-        enddo
-      enddo
-
-      ierr=nf_put_vara_FTYPE (ncidrst, rsttrack, starttrack,
-     &   counttrack, bufftrack)
-      if (ierr .ne. nf_noerr) then
-        write(stdout,1) 'track', record, ierr, nf_strerror(ierr)
-     &                   MYID
-        goto 99                                           !--> ERROR
-      endif
-# ifdef AGRIF
-      endif       ! Agrif_Root()
-# endif
-#endif /* FLOATS */
 
   1   format(/1x, 'WRT_RST ERROR while writing variable ''', A,
      &           ''' into restart file.', /11x, 'Time record:',

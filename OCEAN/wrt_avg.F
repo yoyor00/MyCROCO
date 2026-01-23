@@ -279,6 +279,10 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
 !
 #  ifdef TRACERS
       do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &   .and. itrc.ne.iCRT4) then
+# endif
          if (wrtavg(indxV+itrc)) then
 !$acc update if(compute_on_device) host(t_avg(:,:,:,itrc))
             workr=t_avg(:,:,:,itrc)
@@ -286,6 +290,9 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
      &        vname(1,indxV+itrc), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        endif
+# endif
       enddo
 #  endif
 !
@@ -298,9 +305,8 @@ CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
      &        vname(1,indxR), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtRHO' MYID
       endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !
 !     Brunt vaisala frequency.
 !

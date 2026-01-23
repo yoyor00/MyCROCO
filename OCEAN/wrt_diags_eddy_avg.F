@@ -57,9 +57,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
-!
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
       call def_diags_eddy_avg (nciddiags_eddy_avg, nrecdiags_eddy_avg, ierr)

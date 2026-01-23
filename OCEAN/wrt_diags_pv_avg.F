@@ -57,9 +57,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
-!
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
       call def_diags_pv_avg (nciddiags_pv_avg, nrecdiags_pv_avg, ierr)

@@ -12,9 +12,10 @@
                                                   ! Create/open
       subroutine def_rst (ncid, total_rec, ierr)  ! restart netCDF
                                                   ! file.
-
-#if defined FLOATS && defined AGRIF
-        USE Agrif_Util
+#if defined MUSTANG
+        USE comMUSTANG, ONLY : rstMust, vname_rstMust, 
+     &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
+     &   rstMust_nbvar
 #endif
       implicit none
       logical create_new_file
@@ -39,20 +40,11 @@
 #ifdef USE_CALENDAR
       CHARACTER (len=19)    :: cdate,tool_sectodat
 #endif
-#ifdef FLOATS
-      integer fltdim, NFVdim, Tinfovardim, NFTdim
-     & , dim_Tinfo(3), dim_track(4), dim_fltgrd(2)
-      character*65 vinfo(4)
-#endif
 
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #include "netcdf.inc"
-#ifdef FLOATS
-# include "floats.h"
-# include "ncscrum_floats.h"
-#endif
 #ifdef NC4PAR
 # include "mpi_cpl.h"
       include 'mpif.h'
@@ -212,31 +204,6 @@
         w3dgrd(2)=r2dgrd(2)         ! 3D W-type
         w3dgrd(4)=timedim           !
 #endif
-#ifdef FLOATS
-# ifdef AGRIF
-       if (Agrif_Root()) then
-# endif
-          ierr=nf_def_dim(ncid,'drifter',nfloats,fltdim)
-          ierr=nf_def_dim(ncid,'Tinfovar',5,Tinfovardim)
-          ierr=nf_def_dim(ncid,'NFV',6,NFVdim)
-          ierr=nf_def_dim(ncid,'NFT',NFT+1,NFTdim)
-
-          dim_Tinfo(1)=Tinfovardim
-          dim_Tinfo(2)=fltdim
-          dim_Tinfo(3)=timedim
-
-          dim_track(1)=NFVdim
-          dim_track(2)=NFTdim
-          dim_track(3)=fltdim
-          dim_track(4)=timedim
-
-          dim_fltgrd(1)=fltdim
-          dim_fltgrd(2)=timedim
-
-# ifdef AGRIF
-       endif
-# endif
-#endif /* FLOATS */
 
 #ifdef PUT_GRID_INTO_RESTART
 !
@@ -372,6 +339,90 @@
 
 #ifdef ABL1D
 !
+! 3D ABL U
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_u_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblU)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblU,nf_collective)
+# endif
+        lvar=lenstr(vname_abl1d(2,indxabl_u_abl))
+        ierr=nf_put_att_text (ncid, rstAblU, 'long_name', lvar,
+     &                                   vname_abl1d(2,indxabl_u_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_u_abl))
+        ierr=nf_put_att_text (ncid, rstAblU, 'units',     lvar,
+     &                                   vname_abl1d(3,indxabl_u_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_u_abl))
+        ierr=nf_put_att_text (ncid, rstAblU, 'field',     lvar,
+     &                                  vname_abl1d(4,indxabl_u_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblU, vname_abl1d(:,indxabl_u_abl), 5,
+     &                        NF_DOUBLE, ierr)
+!
+! 3D ABL V
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_v_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_v_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblV)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblV,nf_collective)
+# endif
+        lvar=lenstr(vname_abl1d(2,indxabl_v_abl))
+        ierr=nf_put_att_text (ncid, rstAblV, 'long_name', lvar,
+     &                                   vname_abl1d(2,indxabl_v_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_v_abl))
+        ierr=nf_put_att_text (ncid, rstAblV, 'units',     lvar,
+     &                                   vname_abl1d(3,indxabl_v_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_v_abl))
+        ierr=nf_put_att_text (ncid, rstAblV, 'field',     lvar,
+     &                                  vname_abl1d(4,indxabl_v_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblV, vname_abl1d(:,indxabl_v_abl), 5,
+     &                        NF_DOUBLE, ierr)
+!
+! 3D ABL T
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_t_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_t_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblT)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblT,nf_collective)
+# endif
+        lvar=lenstr(vname_abl1d(2,indxabl_t_abl))
+        ierr=nf_put_att_text (ncid, rstAblT, 'long_name', lvar,
+     &                                   vname_abl1d(2,indxabl_t_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_t_abl))
+        ierr=nf_put_att_text (ncid, rstAblT, 'units',     lvar,
+     &                                   vname_abl1d(3,indxabl_t_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_t_abl))
+        ierr=nf_put_att_text (ncid, rstAblT, 'field',     lvar,
+     &                                  vname_abl1d(4,indxabl_t_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblT, vname_abl1d(:,indxabl_t_abl), 5,
+     &                        NF_DOUBLE, ierr)
+!
+! 3D ABL Q
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_q_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_q_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblQ)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblQ,nf_collective)
+# endif
+        lvar=lenstr(vname_abl1d(2,indxabl_q_abl))
+        ierr=nf_put_att_text (ncid, rstAblQ, 'long_name', lvar,
+     &                                   vname_abl1d(2,indxabl_q_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_q_abl))
+        ierr=nf_put_att_text (ncid, rstAblQ, 'units',     lvar,
+     &                                   vname_abl1d(3,indxabl_q_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_q_abl))
+        ierr=nf_put_att_text (ncid, rstAblQ, 'field',     lvar,
+     &                                  vname_abl1d(4,indxabl_q_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblQ, vname_abl1d(:,indxabl_q_abl), 5,
+     &                        NF_DOUBLE, ierr)
+!
 ! 3D ABL TKE
 !
         lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
@@ -392,6 +443,111 @@
 
         call nf_add_attribute(ncid, rstAblTke, 
      &                  vname_abl1d(:,indxabl_tke_abl), 5, NF_DOUBLE, ierr)
+!
+! 3D ABL AVM
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_avm_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_avm_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblAvm)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAvm,nf_collective)
+# endif
+        lvar=lenstr(vname_abl1d(2,indxabl_avm_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvm, 'long_name', lvar,
+     &                                   vname_abl1d(2,indxabl_avm_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_avm_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvm, 'units',     lvar,
+     &                                   vname_abl1d(3,indxabl_avm_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_avm_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvm, 'field',     lvar,
+     &                                  vname_abl1d(4,indxabl_avm_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblAvm, vname_abl1d(:,indxabl_avm_abl), 5,
+     &                        NF_DOUBLE, ierr)   
+!
+! 3D ABL AVT
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_avt_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_avt_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblAvt)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAvt,nf_collective)
+# endif
+        lvar=lenstr(vname_abl1d(2,indxabl_avt_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvt, 'long_name', lvar,
+     &                                   vname_abl1d(2,indxabl_avt_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_avt_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvt, 'units',     lvar,
+     &                                   vname_abl1d(3,indxabl_avt_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_avt_abl))
+        ierr=nf_put_att_text (ncid, rstAblAvt, 'field',     lvar,
+     &                                  vname_abl1d(4,indxabl_avt_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblAvt, vname_abl1d(:,indxabl_avt_abl), 5,
+     &                        NF_DOUBLE, ierr)            
+!
+! 3D ABL MXLD
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_mxld_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_mxld_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblMxld)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblMxld,nf_collective)
+# endif
+        lvar=lenstr(vname_abl1d(2,indxabl_mxld_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxld, 'long_name', lvar,
+     &                                   vname_abl1d(2,indxabl_mxld_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_mxld_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxld, 'units',     lvar,
+     &                                   vname_abl1d(3,indxabl_mxld_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_mxld_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxld, 'field',     lvar,
+     &                                  vname_abl1d(4,indxabl_mxld_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblMxld, vname_abl1d(:,indxabl_mxld_abl), 5,
+     &                        NF_DOUBLE, ierr)   
+!
+! 3D ABL MXLM
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_mxlm_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_mxlm_abl)(1:lvar),
+     &                              NF_DOUBLE, 4, abl3dgrd, rstAblMxlm)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblMxlm,nf_collective)
+# endif
+        lvar=lenstr(vname_abl1d(2,indxabl_mxlm_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxlm, 'long_name', lvar,
+     &                                   vname_abl1d(2,indxabl_mxlm_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_mxlm_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxlm, 'units',     lvar,
+     &                                   vname_abl1d(3,indxabl_mxlm_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_mxlm_abl))
+        ierr=nf_put_att_text (ncid, rstAblMxlm, 'field',     lvar,
+     &                                  vname_abl1d(4,indxabl_mxlm_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblMxlm, vname_abl1d(:,indxabl_mxlm_abl), 5,
+     &                        NF_DOUBLE, ierr)           
+!
+! 2D ABL ABLH
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_ablh_abl))
+        ierr=nf_def_var (ncid, vname_abl1d(1,indxabl_ablh_abl)(1:lvar),
+     &                              NF_DOUBLE, 3, r2dgrd, rstAblAblh)
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAblh,nf_collective)
+# endif
+        lvar=lenstr(vname_abl1d(2,indxabl_ablh_abl))
+        ierr=nf_put_att_text (ncid, rstAblAblh, 'long_name', lvar,
+     &                                   vname_abl1d(2,indxabl_ablh_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(3,indxabl_ablh_abl))
+        ierr=nf_put_att_text (ncid, rstAblAblh, 'units',     lvar,
+     &                                   vname_abl1d(3,indxabl_ablh_abl)(1:lvar))
+        lvar=lenstr(vname_abl1d(4,indxabl_ablh_abl))
+        ierr=nf_put_att_text (ncid, rstAblAblh, 'field',     lvar,
+     &                                  vname_abl1d(4,indxabl_ablh_abl)(1:lvar))
+
+        call nf_add_attribute(ncid, rstAblAblh, vname_abl1d(:,indxabl_ablh_abl), 5,
+     &                        NF_DOUBLE, ierr)        
 #endif
 
 #ifdef SOLVE3D
@@ -441,6 +597,10 @@
 !
 # if defined TRACERS
         do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &   .and. itrc.ne.iCRT4) then
+# endif
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
@@ -459,6 +619,9 @@
 
           call nf_add_attribute(ncid, rstT(itrc), 
      &         vname(:,indxV+itrc), 5, NF_DOUBLE,ierr)
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        endif
+# endif
         enddo
 # endif
 
@@ -967,50 +1130,42 @@
 #endif /* SEDIMENT */
 
 #ifdef MUSTANG
-! ksmi, ksma
-       do itrc=1,2
-       indx=indxT+ntrc_salt+ntrc_substot+ntrc_subs+itrc+6
-       lvar=lenstr(vname(1,indx))
-       ierr=nf_def_var (ncid, vname(1,indx)(1:lvar),
-     &            NF_INT, 3, r2dgrd, rstMUS(itrc)) ! ksmi,ksma
-
-# ifdef NC4PAR
-       ierr=nf_var_par_access(ncid,rstMUS(itrc),nf_collective)
-# endif
-
-        call nf_add_attribute(ncid, rstMUS(itrc), vname(:,indx), 5,
-     &         NF_INT, ierr)
-       enddo
-
-! dzs, tempsed, salsed
-      do itrc=1,3
-       indx=indxT+ntrc_salt+ntrc_substot+itrc+3
-       ierr=nf_def_var (ncid, vname(1,indx),
-     &            NF_DOUBLE, 4, b3dgrd, rstMUS(itrc+2)) ! 3D: dzs,tempsed,salsed
-
-# ifdef NC4PAR
-       ierr=nf_var_par_access(ncid,rstMUS(itrc+2),nf_collective)
-# endif
-
-        call nf_add_attribute(ncid, rstMUS(itrc+2), vname(:,indx), 5,
-     &         NF_DOUBLE, ierr)
-
-      enddo
-
-!cvsed
-       do itrc=1,ntrc_subs
-        indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
-        ierr=nf_def_var (ncid, vname(1,indx),
-     &            NF_DOUBLE, 4, b3dgrd, rstMUS(itrc+5)) ! 3D: traceurSed
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstMUS(itrc+5),nf_collective)
-# endif
-
-        call nf_add_attribute(ncid, rstMUS(itrc+5), vname(:,indx), 5,
-     &         NF_DOUBLE, ierr)
-
+        do indx=1,rstMust_nbvar
+           if (rstout2DMust(indx)) then
+               ierr=nf_def_var (ncid, vname_rstMust(1,indx),
+     &                 NF_DOUBLE, 3, r2dgrd, rstMust(indx))  
+           elseif (rstout3DsedMust(indx)) then
+                ierr=nf_def_var (ncid, vname_rstMust(1,indx),
+     &                 NF_DOUBLE, 4, b3dgrd, rstMust(indx))
+           elseif (rstoutintegerMust(indx)) then
+                ierr=nf_def_var (ncid, vname_rstMust(1,indx),
+     &                 NF_INT, 3, r2dgrd, rstMust(indx))
+           else
+               ierr=nf_def_var (ncid, vname_rstMust(1,indx),
+     &                 NF_DOUBLE, 4, r3dgrd, rstMust(indx)) 
+           endif
+#   ifdef NC4PAR
+            ierr=nf_var_par_access(ncid,rstMust(indx),
+     &                           nf_collective)
+#   endif
+            lvar=lenstr(vname_rstMust(2,indx))
+            ierr=nf_put_att_text (ncid, rstMust(indx), 'long_name',
+     &                                  lvar,vname_rstMust(2,indx)(1:lvar))
+            lvar=lenstr(vname_rstMust(3,indx))
+            ierr=nf_put_att_text (ncid, rstMust(indx), 'units',
+     &                                  lvar,vname_rstMust(3,indx)(1:lvar))
+            lvar=lenstr(vname_rstMust(4,indx))
+            ierr=nf_put_att_text (ncid, rstMust(indx), 'field',
+     &                                  lvar,vname_rstMust(4,indx)(1:lvar))
+            if (rstoutintegerMust(indx)) then
+                call nf_add_attribute(ncid, rstMust(indx),
+     &              vname_rstMust(:,indx), 5, NF_INT, ierr)
+            else
+                call nf_add_attribute(ncid, rstMust(indx),
+     &              vname_rstMust(:,indx), 5, NF_DOUBLE, ierr)
+            endif
         enddo
-#endif
+#endif  /* MUSTANG */
 
 
 #ifdef MORPHODYN
@@ -1082,78 +1237,12 @@
      &       NF_DOUBLE, ierr)
 #endif /* BBL */
 
-
-#ifdef FLOATS
-# ifdef AGRIF
-      if (Agrif_Root()) then
-# endif
-
-           vinfo(1)='nfloats'
-           vinfo(2)='total number of floats'
-
-           lvar=lenstr(vinfo(1))
-           ierr=nf_def_var(ncid,vinfo(1)(1:lvar),nf_int,
-     &                    1,timedim,rstnfloats)
-# ifdef NC4PAR
-           ierr=nf_var_par_access(ncid,rstnfloats,nf_collective)
-# endif
-           lvar=lenstr(vinfo(2))
-           ierr=nf_put_att_text(ncid,rstnfloats,'long_name',lvar,
-     &                         vinfo(2)(1:lvar))
-
-! define Tinfo
-
-           vinfo(1)='Tinfo'
-           vinfo(2)='initial float release information array'
-
-           lvar=lenstr(vinfo(1))
-           ierr=nf_def_var(ncid,vinfo(1)(1:lvar),NF_DOUBLE,
-     &                    3,dim_Tinfo,rstTinfo)
-# ifdef NC4PAR
-           ierr=nf_var_par_access(ncid,rstTinfo,nf_collective)
-# endif
-           lvar=lenstr(vinfo(2))
-           ierr=nf_put_att_text(ncid,rstTinfo,'long_name',lvar,
-     &                         vinfo(2)(1:lvar))
-
-! define grid level
-
-           vinfo(1)='grid_level'
-           vinfo(2)='float position in nested grids hierarchy'
-
-           lvar=lenstr(vinfo(1))
-           ierr=nf_def_var(ncid,vinfo(1)(1:lvar),nf_int,
-     &                    2,dim_fltgrd,rstfltgrd)
-           lvar=lenstr(vinfo(2))
-           ierr=nf_put_att_text(ncid,rstfltgrd,'long_name',lvar,
-     &                         vinfo(2)(1:lvar))
-
-! define track
-
-           vinfo(1)='track'
-           vinfo(2)='Position and velocity array for released floats'
-           vinfo(3)='x,y,z,u,v,w in this order'
-           lvar=lenstr(vinfo(1))
-           ierr=nf_def_var(ncid,vinfo(1)(1:lvar),NF_DOUBLE,
-     &                    4,dim_track,rsttrack)
-           lvar=lenstr(vinfo(2))
-           ierr=nf_put_att_text(ncid,rsttrack,'long_name',lvar,
-     &                         vinfo(2)(1:lvar))
-           lvar=lenstr(vinfo(3))
-           ierr=nf_put_att_text(ncid,rsttrack,'Content',lvar,
-     &                         vinfo(3)(1:lvar))
-
-# ifdef AGRIF
-      endif
-# endif
-#endif /* FLOATS */
-
 !
 ! Leave definition mode.                  Also initialize record
 ! ----- ---------- -----                  dimension size to zero.
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(*,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
      &              'DEF_RST - Created new ',
      &              'netCDF file ''', rstname(1:lstr), '''.'
      &               MYID
@@ -1297,6 +1386,54 @@
 
 #ifdef ABL1D
 !
+! 3D ABL U
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_u_abl))
+        ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_u_abl)(1:lvar), rstAblU)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname_abl1d(1,indxabl_u_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblU,nf_collective)
+# endif
+!
+! 3D ABL V
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_v_abl))
+        ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_v_abl)(1:lvar), rstAblV)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname_abl1d(1,indxabl_v_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblV,nf_collective)
+# endif
+!
+! 3D ABL T
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_t_abl))
+        ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_t_abl)(1:lvar), rstAblT)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname_abl1d(1,indxabl_t_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblT,nf_collective)
+# endif
+!
+! 3D ABL Q
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_q_abl))
+        ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_q_abl)(1:lvar), rstAblQ)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname_abl1d(1,indxabl_q_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblQ,nf_collective)
+# endif
+!
 ! 3D ABL TKE
 !
         lvar=lenstr(vname_abl1d(1,indxabl_tke_abl))
@@ -1308,7 +1445,67 @@
           goto 99                                         !--> ERROR
         endif
 # ifdef NC4PAR
-        ierr=nf_var_par_access(ncid,rstVb,nf_collective)
+        ierr=nf_var_par_access(ncid,rstAblTke,nf_collective)
+# endif
+!
+! 3D ABL AVM
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_avm_abl))
+        ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_avm_abl)(1:lvar), rstAblAvm)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname_abl1d(1,indxabl_avm_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAvm,nf_collective)
+# endif
+!
+! 3D ABL AVT
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_avt_abl))
+        ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_avt_abl)(1:lvar), rstAblAvt)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname_abl1d(1,indxabl_avt_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAvt,nf_collective)
+# endif
+!
+! 3D ABL MXLM
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_mxlm_abl))
+        ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_mxlm_abl)(1:lvar), rstAblMxlm)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname_abl1d(1,indxabl_mxlm_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblMxlm,nf_collective)
+# endif
+!
+! 3D ABL MXLD
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_mxld_abl))
+        ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_mxld_abl)(1:lvar), rstAblMxld)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname_abl1d(1,indxabl_mxld_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblMxld,nf_collective)
+# endif
+!
+! 2D ABL ABLH
+!
+        lvar=lenstr(vname_abl1d(1,indxabl_ablh_abl))
+        ierr=nf_inq_varid (ncid, vname_abl1d(1,indxabl_ablh_abl)(1:lvar), rstAblAblh)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,1) vname_abl1d(1,indxabl_ablh_abl)(1:lvar), rstname(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+# ifdef NC4PAR
+        ierr=nf_var_par_access(ncid,rstAblAblh,nf_collective)
 # endif
 !
 #endif
@@ -1342,6 +1539,10 @@
 !
 # if defined TRACERS
         do itrc=1,NT
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
+     &   .and. itrc.ne.iCRT4) then
+# endif
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                rstT(itrc))
@@ -1353,6 +1554,9 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
 #  endif
+# ifdef DIAGNOSTICS_TS_MLD_CRIT
+        endif
+# endif
         enddo
 # endif
 
@@ -1691,55 +1895,20 @@
 #endif /* SEDIMENT */
 
 #ifdef MUSTANG
-! ksmi, ksma
-        do itrc=1,2
-          indx=indxT+ntrc_salt+ntrc_substot+ntrc_substot+itrc+6
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                                                 rstMUS(itrc))
+       do indx=1,rstMust_nbvar
+
+          lvar=lenstr(vname_rstMust(1,indx))
+          ierr=nf_inq_varid (ncid, vname_rstMust(1,indx)(1:lvar),
+     &                                                 rstMust(indx))
           if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname(1,indx)(1:lvar),
-     &                                            rstMUS(1:lstr)
+            write(stdout,1) vname_rstMust(1,indx)(1:lvar),
+     &                                            rstMust(1:lstr)
             goto 99                                       !--> ERROR
           endif
 # ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,rstMUS(itrc),nf_collective)
+          ierr=nf_var_par_access(ncid,rstMust(indx),nf_collective)
 # endif
         enddo
-
-! dzs, tempsed, salsed
-       do itrc=1,3
-         indx=indxT+ntrc_salt+ntrc_substot+itrc+3
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                                                 rstMUS(itrc+2))
-          if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname(1,indx)(1:lvar),
-     &                                            rstMUS(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-# ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,rstMUS(itrc+2),nf_collective)
-# endif
-        enddo
-
-
-! cvsed
-       do itrc=1,ntrc_subs
-          indx=indxT+ntrc_salt+ntrc_substot+itrc+6           ! 3D: traceurSed
-          lvar=lenstr(vname(1,indx))
-          ierr=nf_inq_varid (ncid, vname(1,indx)(1:lvar),
-     &                                                 rstMUS(itrc+5))
-          if (ierr. ne. nf_noerr) then
-            write(stdout,1) vname(1,indx)(1:lvar),
-     &                                            rstMUS(1:lstr)
-            goto 99                                       !--> ERROR
-          endif
-# ifdef NC4PAR
-          ierr=nf_var_par_access(ncid,rstMUS(itrc+5),nf_collective)
-# endif
-        enddo
-
 #endif
 
 
@@ -1785,7 +1954,7 @@
 # endif
 #endif /* BBL */
 !
-      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
+      MPI_master_only write(stdout,'(6x,2A,i4,1x,A,i4)')
      &             'DEF_RST -- Opened ',
      &             'existing restart file,  record =', rec
      &              MYID

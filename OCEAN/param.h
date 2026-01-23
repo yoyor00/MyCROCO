@@ -71,7 +71,7 @@
        parameter (LLm0=878, MMm0=3,    N=40)
 !      parameter (LLm0=878, MMm0=3,    N=20)
 # else
-       parameter (LLm0=256, MMm0=3,    N=40)
+       parameter (LLm0=878, MMm0=3,    N=40)
 # endif
 #elif defined OVERFLOW
       parameter (LLm0=4,    MMm0=128,  N=10)
@@ -130,8 +130,8 @@
       parameter (LLm0=720,  MMm0=1,    N=20)   !  0.25 m Sandbar
 # endif
 #elif defined SWASH
-!     parameter (LLm0=100,  MMm0=1,    N=10)   !  1 m  Swash
       parameter (LLm0=800,  MMm0=1,    N=10)   ! 12 cm Swash (GLOBEX)
+!     parameter (LLm0=1600, MMm0=1,    N=10)   !  6 cm Swash (GLOBEX)
 #elif defined RIP
 # ifdef BISCA
       parameter (LLm0= 86,  MMm0=92,   N=20)   ! 10 m Bisca Rip
@@ -140,6 +140,8 @@
 !     parameter (LLm0= 96,  MMm0= 96,  N=20)   !  8 m resolution
       parameter (LLm0= 48,  MMm0= 48,  N=20)   ! 16 m resolution
 # endif
+#elif defined FLASH_RIP
+      parameter (LLm0=200,  MMm0=200,  N=8 )   !  1.5 m resolution
 #elif defined THACKER
 # ifdef THACKER_2DV
       parameter (LLm0=200,  MMm0=1,    N=5 )   !  1 km resolution
@@ -248,7 +250,11 @@
       integer NSUB_X, NSUB_E, NPP
 #ifdef MPI
       integer NP_XI, NP_ETA, NNODES
+#if defined(SPLITTING_X) && defined(SPLITTING_ETA)
+      parameter (NP_XI=SPLITTING_X,  NP_ETA=SPLITTING_ETA,  NNODES=NP_XI*NP_ETA)
+#else
       parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
+#endif
       parameter (NPP=1)
       parameter (NSUB_X=1, NSUB_E=1)
 #ifdef OPENACC
@@ -257,19 +263,17 @@
       common/comm_my_device/my_acc_device,compute_on_device
 #endif
 #elif defined OPENMP
+#if defined(SPLITTING_X) && defined(SPLITTING_ETA)
+      parameter (NPP=SPLITTING_X*SPLITTING_ETA)
+      parameter (NSUB_X=SPLITTING_X, NSUB_E=SPLITTING_ETA)
+#else
       parameter (NPP=4)
-# ifdef AUTOTILING
-      common/distrib/NSUB_X, NSUB_E
-# else
       parameter (NSUB_X=1, NSUB_E=NPP)
-# endif
+#endif
+
 #else
       parameter (NPP=1)
-# ifdef AUTOTILING
-      common/distrib/NSUB_X, NSUB_E
-# else
       parameter (NSUB_X=1, NSUB_E=NPP)
-# endif
 #ifdef OPENACC
       integer,parameter :: my_acc_device = 0
       logical,parameter :: compute_on_device = .true.
@@ -312,6 +316,8 @@
       parameter (D_wetdry=0.01)
 # elif defined SANDBAR || defined TIDAL_FLAT || defined ESTUARY
       parameter (D_wetdry=0.1)
+# elif defined FLASH_RIP
+      parameter (D_wetdry=0.05)
 # else
       parameter (D_wetdry=0.2)
 # endif
@@ -346,10 +352,6 @@
       parameter (Msrc=30)        ! ====== == ===== =======
 # endif
 #endif
-#ifdef FLOATS
-       integer Mfloats           ! Maximum number of floats
-       parameter (Mfloats=32000) ! ======= ====== == ======
-#endif
 #ifdef STATIONS
        integer NS                ! Number of output stations
        parameter (NS=5)          ! ====== == ====== ========
@@ -383,7 +385,7 @@
       parameter (padd_E=(Mm+2)/2-(Mm+1)/2)
 #endif
 
-#if defined AGRIF || defined AUTOTILING
+#if defined AGRIF
       integer NSA, N2d,N3d,N3dHz,N1dXI,N1dETA
 # if !defined NBQ
       parameter (NSA=28)
@@ -444,6 +446,7 @@
       integer   NT, NTA, itemp, NTot
       integer   ntrc_temp, ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed
       integer   ntrc_subs, ntrc_substot
+      integer   ntrc_mld
 !
 # ifdef TEMPERATURE
       parameter (itemp=1)
@@ -457,6 +460,11 @@
 # else
       parameter (ntrc_salt=0)
 # endif
+#if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      parameter (ntrc_mld=3)
+# else
+      parameter (ntrc_mld=0)
+# endif
 # ifdef PASSIVE_TRACER
 #  ifdef KH_INST
       parameter (ntrc_pas=2)
@@ -468,7 +476,7 @@
 # endif
 # ifdef BIOLOGY
 #  ifdef PISCES
-#   ifdef key_pisces_light
+#   ifdef key_pisces_npzd
          parameter (ntrc_bio=9)
 #   elif defined key_pisces_quota
 #    ifdef key_ligand
@@ -522,8 +530,8 @@
 #  else
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  endif
-      parameter (itsubs1= itemp+ntrc_salt+ntrc_pas+ntrc_bio+1 )
-      parameter (itsubs2= itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs )
+      parameter (itsubs1= itemp+ntrc_salt+ntrc_pas+ntrc_mld+ntrc_bio+1 )
+      parameter (itsubs2= itemp+ntrc_salt+ntrc_pas+ntrc_mld+ntrc_bio+ntrc_subs )
 # else
       parameter (ntrc_subs=0, ntrc_substot=0)
 # endif /* SUBSTANCE */
@@ -574,10 +582,10 @@
 ! Total number of tracers
 !
 # ifdef SUBSTANCE
-      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs)
+      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs+ntrc_mld)
       parameter (NTot=NT+ntfix)
 # else
-      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
+      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_mld)
       parameter (NTot=NT)
 # endif /* SUBSTANCE */
 
@@ -627,6 +635,9 @@
 # endif
 # ifdef SALINITY
      &          , isalt
+# endif
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+     &          , iCRT2, iCRT3, iCRT4
 # endif
 # ifdef PASSIVE_TRACER
      &          , itpas
@@ -744,8 +755,13 @@
 # ifdef SALINITY
       parameter (isalt=itemp+1)
 # endif
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      parameter (iCRT2=itemp+ntrc_salt+1)
+      parameter (iCRT3=itemp+ntrc_salt+2)
+      parameter (iCRT4=itemp+ntrc_salt+3)
+# endif
 # ifdef PASSIVE_TRACER
-      parameter (itpas=itemp+ntrc_salt+1)
+      parameter (itpas=itemp+ntrc_salt+ntrc_mld+1)
 # endif
 
 !
@@ -753,13 +769,13 @@
 !
 # ifdef BIOLOGY
 #  ifdef PISCES
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
       parameter (iDIC_=itrc_bio, iTAL_=iDIC_+1, iOXY_=iDIC_+2)
-#   ifdef key_pisces_light
+#   ifdef key_pisces_npzd
       parameter ( iPOC_=iDIC_+3,  iPHY_=iDIC_+4, iZOO_=iDIC_+5,
      &            iDOC_=iDIC_+6,  iNO3_=iDIC_+7, iFER_=iDIC_+8)
 #   endif
-#   if ! defined key_pisces_light
+#   if ! defined key_pisces_npzd
       parameter ( iCAL_=iDIC_+3,  iPO4_=iDIC_+4,
      &            iPOC_=iDIC_+5,  iSIL_=iDIC_+6,  iPHY_=iDIC_+7,
      &            iZOO_=iDIC_+8,  iDOC_=iDIC_+9,  iDIA_=iDIC_+10,
@@ -799,16 +815,16 @@
      &            Nfixo2    = 9,
      &            Nirondep  = 10,
      &            Nironsed  = 11,
-     &            Npronew   = 12,
-#    if defined key_pisces_light
+     &            Npronewo2 = 12,
+     &            Npronew   = 13,
+#    if defined key_pisces_npzd
      &            NumFluxTerms = Npronew)
 #    else
-     &            Npronewd  = 13,
-     &            Nprorcad  = 14,
-     &            Nprobsi   = 15,
-     &            Nprofen   = 16,
-     &            Nprofed   = 17,
-     &            Npronewo2 = 18,
+     &            Npronewd  = 14,
+     &            Nprorcad  = 15,
+     &            Nprobsi   = 16,
+     &            Nprofen   = 17,
+     &            Nprofed   = 18,
      &            Nprorego2 = 19,
      &            Ngrapoc2  = 20,
      &            Nmeso2    = 21,
@@ -824,7 +840,7 @@
      &            Nheup     = 6,
      &            Nno3dep   = 7,
      &            Nnitrpot  = 8,
-#    if defined key_pisces_light
+#    if defined key_pisces_npzd
      &            NumGasExcTerms = 0,
      &            NumVSinkTerms = Nnitrpot)
 #    else
@@ -843,7 +859,7 @@
 #   endif
 
 #  elif defined BIO_NChlPZD
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
       parameter (iNO3_=itrc_bio, iChla=iNO3_+1,
      &           iPhy1=iNO3_+2,
      &           iZoo1=iNO3_+3,
@@ -876,7 +892,7 @@
      &           NumVSinkTerms  = 2)
 
 #  elif defined BIO_N2ChlPZD2
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
       parameter (iNO3_=itrc_bio, iNH4_=iNO3_+1, iChla=iNO3_+2,
      &           iPhy1=iNO3_+3,
      &           iZoo1=iNO3_+4,
@@ -903,9 +919,9 @@
 
 #  elif defined BIO_BioEBUS
 #   ifdef NITROUS_OXIDE
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
 #   else
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
 #   endif
 
       parameter (iNO3_=itrc_bio, iNO2_=iNO3_+1, iNH4_=iNO3_+2,
@@ -1004,7 +1020,7 @@
 !
 
 # ifdef SEDIMENT
-      parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+1)
+      parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_mld+1)
       parameter (itrc_sand=itrc_sed,itrc_mud=itrc_sand+NSAND)
       parameter (itrc_grav=itrc_mud+NGRAV)
       parameter (isand1=1,imud1=isand1+NSAND)
@@ -1018,11 +1034,7 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-#    ifdef DIAGNOSTICS_TS_MLD_CM
-      parameter (ntrc_diats=18*NT)
-#    else
-      parameter (ntrc_diats=17*NT)
-#    endif
+      parameter (ntrc_diats=19*NT)
 #  else
       parameter (ntrc_diats=8*NT)
 #  endif

@@ -87,10 +87,10 @@
       common /diag_TForc_mld/TForc_mld
       common /diag_Trate_mld/Trate_mld
       common /diag_Tentr_mld/Tentr_mld
-     &       /diag_Taver_mld/Taver_mld
-#   ifdef DIAGNOSTICS_TS_MLD_CM
-     &       /diag_Tcrit_mld/Tcrit_mld
-#   endif
+      common /diag_Taver_mld/Taver_mld
+# ifdef DIAGNOSTICS_TS_MLD_CM
+      common /diag_Tcrit_mld/Tcrit_mld
+# endif
       common /diag_kbl_nstp/kbl_nstp
 # endif
 # ifdef AVERAGES
@@ -116,9 +116,9 @@
       common /diag_Trate_mld_avg/Trate_mld_avg
       common /diag_Tentr_mld_avg/Tentr_mld_avg
       common /diag_Taver_mld_avg/Taver_mld_avg
-#   ifdef DIAGNOSTICS_TS_MLD_CM
+# ifdef DIAGNOSTICS_TS_MLD_CM 
       common /diag_Tcrit_mld_avg/Tcrit_mld_avg
-#   endif
+# endif
 #  endif
 # endif
 #endif /* DIAGNOSTICS_TS */

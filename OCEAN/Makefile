@@ -35,7 +35,7 @@ include Makedefs
 #======================================================================
 
  SRCS = main.F		step.F		read_inp.F\
-	timers_roms.F	init_scalars.F	init_arrays.F	set_weights.F\
+	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
 \
@@ -55,7 +55,7 @@ include Makedefs
 \
 	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
-	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
+	ana_vmix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
@@ -63,10 +63,10 @@ include Makedefs
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
-	param.F         ncscrum.F   scalars.F\
+	param.F    ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
-	get_date.F	lenstr.F	closecdf.F	insert_node.F\
+	lenstr.F	closecdf.F	insert_node.F\
 	fillvalue.F	nf_add_attribute.F		set_cycle.F\
 	def_grid_2d.F   def_grid_3d.F   def_his.F       def_rst.F\
 	def_diags.F	def_diagsM.F	def_bio_diags.F\
@@ -100,17 +100,12 @@ include Makedefs
 	online_interp.F			online_interpolate_bulk.F\
 	online_set_bulk.F		online_interpolate_3d_bulk.F\
 \
-	init_floats.F	wrt_floats.F	step_floats.F	rhs_floats.F\
-	interp_rho.F	def_floats.F	init_arrays_floats.F\
-	random_walk.F	get_initial_floats.F\
-\
 	init_sta.F	wrt_sta.F	step_sta.F	interp_sta.F\
 	def_sta.F	init_arrays_sta.F\
 \
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
@@ -122,7 +117,7 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-	module_substance.F  module_MUSTANG.F module_OBSTRUCTIONS.F\
+	module_substance.F  module_OBSTRUCTIONS.F\
 	abl_step.F  abl_ini.F  abl_tke.F\
 	wrt_abl_his.F  def_abl_his.F\
 	wrt_abl_avg.F set_abl_avg.F\
@@ -135,23 +130,27 @@ include Makedefs
 
 
  SRCS90 = \
-	par_pisces.F90	ocean2pisces.F90	trc.F90		sms_pisces.F90\
+	buffer.F90\
+	par_pisces.F90	oce_trc.F90	trc.F90		sms_pisces.F90\
+	in_out_manager.F90	iom.F90	lib_mpp.F90		prtctl.F90\
 	p4zche.F90	p4zint.F90		p4zlys.F90	p4zflx.F90\
 	p4zlim.F90	p4zsink.F90		p4zmicro.F90	p4zmeso.F90\
 	p4zmort.F90	p4zopt.F90		p4zprod.F90	p4zrem.F90\
-	p4zsbc.F90	p4zsed.F90		trcwri_pisces.F90\
+	p4zbc.F90	p4zsed.F90		p4zdiaz.F90\
 	p4zagg.F90	p4zfechem.F90		p4zligand.F90	p4zpoc.F90\
 	p2zlim.F90	p2zmicro.F90		p2zmort.F90	p2zprod.F90\
 	p5zmicro.F90	p5zmort.F90		p5zprod.F90\
-	p5zlim.F90	p5zmeso.F90		p4zbio.F90\
-	p4zsms.F90	trcsms_pisces.F90	trcini_pisces.F90\
-	pisces_ini.F90	oce_sed.F90		par_sed.F90	sedadv.F90\
-	sedarr.F90	sedbtb.F90		sedchem.F90	sedco3.F90\
-	seddiff.F90	seddsr.F90		seddta.F90	sed.F90\
+	p5zlim.F90	p5zmeso.F90		p4zbio.F90	p4zsms.F90\
+	trcsink.F90	trcwri_pisces.F90	trcnam_pisces.F90\
+	trcsms_pisces.F90	trcini_pisces.F90	pisces_ini.F90\
+	oce_sed.F90		par_sed.F90	sedadv.F90\
+	sedbtb.F90		sedchem.F90	sedco3.F90\
+	seddsr.F90		seddta.F90	sed.F90\
+	seddsrjac.F90	sedfunc.F90		sedjac.F90	sedsol.F90\
 	sedini.F90	sedinitrc.F90		sedinorg.F90	sedmat.F90\
-	sedmbc.F90	sedmodel.F90		sed_oce.F90	sedorg.F90\
+	sedmodel.F90		sed_oce.F90	sedorg.F90\
 	sedrst.F90	sedsfc.F90		sedstp.F90	sedwri.F90\
-	setavg_sed.F90\
+	trosk.F90	setavg_sed.F90\
 	module_parameter_oa.F90 module_grd_oa.F90\
 	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
@@ -161,7 +160,8 @@ include Makedefs
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
-	comMUSTANG.F90  coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
+	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
 	
 
@@ -170,21 +170,21 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
- TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
+TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
 
 
- RCS = $(SRCS:.F=.f)
+RCS = $(SRCS:.F=.f)
 
- RCS90 = $(SRCS90:.F90=.f90)
+RCS90 = $(SRCS90:.F90=.f90)
 
- OBJS = $(RCS:.f=.o)
- OBJS90 = $(RCS90:.f90=.o)
+OBJS = $(RCS:.f=.o)
+OBJS90 = $(RCS90:.f90=.o)
 
- SBIN = croco
+SBIN = croco
 
- AMRRCS=$(AMRSRCS:.F=.f)
+AMRRCS=$(AMRSRCS:.F=.f)
 
- AMROBJS=$(AMRRCS:.f=.o)
+AMROBJS=$(AMRRCS:.f=.o)
 
 
 %.mod : %.o

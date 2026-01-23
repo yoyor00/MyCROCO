@@ -56,12 +56,13 @@ MODULE comsubstance
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: cini_wat, cini_air, cobc_wat
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: typdiss
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: sub_flx_atm, cv_rain
-    CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: obc_cv_name, name_var, standard_name_var
+    CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: obc_cv_name, long_name_var, name_var, standard_name_var
     CHARACTER(LEN=lchain), DIMENSION(:) ,ALLOCATABLE :: init_cv_name, unit_var
     REAL(KIND=rsh), DIMENSION(:,:,:,:),ALLOCATABLE :: ws_part
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: ws_free_min, ws_free_max
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: unit_modif_mudbio_N2dw
     LOGICAL, DIMENSION(:), ALLOCATABLE :: l_subs2D
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: l_out_subs
 
 #ifdef MUSTANG
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: ws_free_para, ws_hind_para
@@ -122,15 +123,13 @@ MODULE comsubstance
     ! -------------------------------------------------------------------------
     REAL(KIND = rsh), DIMENSION(:,:), ALLOCATABLE  :: surf_cell ! surface cells
 
-#if defined SUBSTANCE_SUBMASSBALANCE
-    LOGICAL                 :: submassbalance_l
-    INTEGER                 :: submassbalance_nb_border
-    CHARACTER(LEN = lchain) :: submassbalance_input_file
-    CHARACTER(LEN = lchain) :: submassbalance_output_file
-    REAL(KIND=rlg)          :: submassbalance_dtout
+    LOGICAL                 :: submassbalance_l = .false.
+    INTEGER                 :: submassbalance_nb_border = 0
+    CHARACTER(LEN = lchain) :: submassbalance_input_file = ""
+    CHARACTER(LEN = lchain) :: submassbalance_output_file = "outsubmassbalance.nc"
+    REAL(KIND=rlg)          :: submassbalance_dtout = 1.
+    CHARACTER(LEN=19)       :: submassbalance_date_start = "1999/01/01 00:00:00"
     REAL(KIND=rlg)          :: submassbalance_tdeb
-    CHARACTER(LEN=19)       :: submassbalance_date_start
-#endif /* ifdef SUBSTANCE_SUBMASSBALANCE */
 
 #endif /* ifdef SUBSTANCE */
 

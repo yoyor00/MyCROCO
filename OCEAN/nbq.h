@@ -61,6 +61,10 @@
 # ifdef NBQ
       real qdmw_nbq(GLOBAL_2D_ARRAY,0:N)
       common /nbq_qdmw_nbq/ qdmw_nbq
+#  ifdef XIOS
+      real worknbq(GLOBAL_2D_ARRAY,0:N)
+      common /work3dnbq/ worknbq
+#  endif     
 # endif
 
 !**********************************************************************
@@ -153,10 +157,6 @@
 # ifdef NBQ_HZCORRECT
        real Hz_correct(GLOBAL_2D_ARRAY,N)
        common /grid_Hz_correct/ Hz_correct
-#  ifdef NBQ_HZCORR_DEBUG
-      real  Hz_corr(GLOBAL_2D_ARRAY,N)
-      common/corr_Hz/Hz_corr
-#  endif
 # endif
 
 # ifdef NBQ_HZ_PROGNOSTIC

@@ -322,9 +322,8 @@ C$    integer omp_get_thread_num
 #  ifdef NBQ
             w_avg(i,j,k)=init
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
             bvf_avg(i,j,k)=init
 #  endif
 # endif
@@ -368,10 +367,14 @@ C$    integer omp_get_thread_num
              tq_abl(i,j,k,2,jp_ta)=init
              tq_abl(i,j,k,1,jp_qa)=init
              tq_abl(i,j,k,2,jp_qa)=init
-             avm_abl(i,j,k       )=avm_bak
-             avt_abl(i,j,k       )=avt_bak
-             mxld_abl(i,j,k      )=mxl_min
-             mxlm_abl(i,j,k      )=mxl_min
+             avm_abl(i,j,k,1     )=avm_bak
+             avm_abl(i,j,k,2     )=avm_bak
+             avt_abl(i,j,k,1     )=avt_bak
+             avt_abl(i,j,k,2     )=avt_bak
+             mxld_abl(i,j,k,1    )=mxl_min
+             mxld_abl(i,j,k,2    )=mxl_min
+             mxlm_abl(i,j,k,1    )=mxl_min
+             mxlm_abl(i,j,k,2    )=mxl_min
              tke_abl (i,j,k,1    )=tke_min
              tke_abl (i,j,k,2    )=tke_min
              pu_dta  (i,j,k      )=init
@@ -412,7 +415,8 @@ C$    integer omp_get_thread_num
       enddo
       do j=JstrR,JendR
         do i=IstrR,IendR
-           ablh    (i,j)=init
+           ablh    (i,j,1)=init
+           ablh    (i,j,2)=init
 #  if defined ABL_NUDGING && defined ABL_DYN_RESTORE_EQ
            rest_eq (i,j)=init
 #  endif
@@ -638,9 +642,6 @@ C$    integer omp_get_thread_num
 #   if defined DIAGNOSTICS_BARO
           ekBaro_mld(i,j)=init
 #   endif
-#   if defined M3FAST
-          ekfast_mld(i,j)=init
-#   endif
 #   ifdef AVERAGES
           ekHadv_mld_avg(i,j)=init
           ekHdiff_mld_avg(i,j)=init
@@ -654,9 +655,6 @@ C$    integer omp_get_thread_num
           ekVmix2_mld_avg(i,j)=init
 #    ifdef DIAGNOSTICS_BARO
           ekBaro_mld_avg(i,j)=init
-#    endif
-#    if defined M3FAST
-          ekfast_mld_avg(i,j)=init
 #    endif
 #   endif /* AVERAGES */
 #  endif /* DIAGNOSTICS_EK_MLD */
@@ -1402,21 +1400,20 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
             Akv(i,j,k)=Akv_bak
 # else
             Akv(i,j,k)=init
 # endif
-# if defined BVF_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIXING
+# if defined GLS_MIXING \
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
             bvf(i,j,k)=init
 # endif
           enddo
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  endif

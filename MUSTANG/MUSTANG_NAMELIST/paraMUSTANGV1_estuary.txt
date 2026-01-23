@@ -14,7 +14,6 @@
 : namsedim_bedload         : relative to sediment bedload
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
-:                            (only if key_MUSTANG_lateralerosion)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -23,14 +22,13 @@
 :                            (only if !defined key_noTSdiss_insed)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
-: namsedim_debug           : output for debug
-:                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
+: namdredging              : parameters to activate dredging effect
 
 &namsedim_init
    l_unised = .true.
-   hseduni = 0.01   
+   hseduni = 1.
    cseduni= 978.3 
    csed_mud_ini = 300.0  
    ksmiuni = 1
@@ -79,4 +77,13 @@
 /
 &namflocmod
 /  
-
+&namdredging
+   dredging_location_file = 'TEST_CASES/estuary_dredging_areas.nc'
+   dredging_settings_file = 'TEST_CASES/estuary_dredging_settings.txt'
+   dredging_out_file = 'dredging_out.nc'
+   dredging_dumping_layer = 1
+   dredging_dt = 3600.
+   dredging_dt_out = 3600.
+/
+&namsedim_poro
+/

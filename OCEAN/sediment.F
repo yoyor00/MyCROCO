@@ -482,7 +482,7 @@ C$OMP BARRIER
             k_wn=kh_calc(Td,depth)/depth        ! Wave number
             c_w=twopi/(k_wn*Td)                 ! Wave speed
 
-            if(NST>1) then
+            if (NST>1) then
               d50_mix=Sdens(i,j)
             else
              d50_mix=d50
@@ -490,12 +490,12 @@ C$OMP BARRIER
 !
 ! Compute bed wave orbital velocity (m/s) & excursion amplitude
 !
-            urms=twopi/Td*Awave(i,j)/(SINH(k_wn*depth)+eps)
+            urms=pi*Hs/(Td*(SINH(k_wn*depth)+eps))
 #   ifdef MASKING
-     &                                          *rmask(i,j)
+     &                             *rmask(i,j)
 #   endif
 #   ifdef WET_DRY
-     &                                      *rmask_wet(i,j)
+     &                         *rmask_wet(i,j)
 #   endif
             uhat=urms*sqrt2
             ahat=uhat*Td*otwopi
@@ -991,7 +991,7 @@ C$OMP BARRIER
      &              (cff2*FE_r(i  ,j)+
      &               cff1*0.5*(FE_r(i,j-1)+FE_r(i,j)))
 #  else
-            FE(i,j)=0.5*(FE_r(i,j-1)+FX_r(i,j))
+            FE(i,j)=0.5*(FE_r(i,j-1)+FE_r(i,j))
 #  endif
 #  ifdef SLOPE_KIRWAN
             dzdy=(h(i,j)-h(i,j-1))/on_v(i,j)
@@ -1140,16 +1140,13 @@ C$OMP BARRIER
 #  ifdef SPONGE_SED
      &                             *sed_sponge(i,j)
 #  endif
-
 #  ifdef BEDLOAD_SHALLOW_LIMIT
-            cff=cff/max(1.,(0.5/(z_w(i,j,N)-z_w(i,j,0)
+            cff=cff*min(1.,((z_w(i,j,N)-z_w(i,j,0)
 #   ifdef WET_DRY
-     &                           -Dcrit(i,j)+eps
+     &                             -Dcrit(i,j)+eps
 #   endif
-     &            )**2))
-     &
+     &                                  )/0.7)**2)
 #  endif
-
             bed_mass(i,j,1,nnew,ised)=MAX(bed_mass(i,j,1,nstp,ised)-
      &                                    cff,0.)
 #  if !defined SUSPLOAD
@@ -1747,15 +1744,11 @@ C$OMP BARRIER
 #   include "diagnostics.h"
 #  endif
       integer Istr,Iend,Jstr,Jend
-      integer i,j,ised,ised0
+      integer i,j,ised
       integer indx
       integer imin,jmin,imax,jmax
       real cff,cff1,cff2,cff3,cff4,cff5,tau_water,Zr
       real tau_w(PRIVATE_2D_SCRATCH_ARRAY)
-#  ifdef BED_ARMOR
-      integer ised0
-      real ph,pe
-#  endif
 !
 !-----------------------------------------------------------------------
 !  Compute bottom skin-friction stress due to combined maximum wave
@@ -2567,7 +2560,7 @@ C$OMP BARRIER
 #  ifdef MORPHODYN
            ! Apply morphology factor.
            bot_thick(i,j)=MAX( bot_thick(i,j)*morph_fac,
-     &          bot_thick(i,j))
+     &                         bot_thick(i,j))
 #  endif
 #  if defined COHESIVE_BED || defined MIXED_BED
 !  Find first layer with tc > tb
@@ -3616,19 +3609,6 @@ C$OMP BARRIER
       enddo
 # endif
 
-# undef DEBUG_ARMOR
-# ifdef DEBUG_ARMOR
-      do ised=1,NST
-        MPI_master_only write(*,*) '================================'
-        MPI_master_only write(*,*) ' ised      :',ised
-        MPI_master_only write(*,*) ' Sd        :',1.e3*Sd(ised)
-        MPI_master_only write(*,*) ' bed_frac  :',bed_frac(25,1,1,ised)
-        MPI_master_only write(*,*) ' tau_ce_2d :',rho0
-     &                                            *tau_ce_2d(25,1,ised)
-        MPI_master_only write(*,*) '================================'
-      enddo
-# endif
-!
 !-----------------------------------------------------------------------
 !  Update mean surface properties.
 !  Sd50 must be positive definite, due to BBL routines.
@@ -4114,7 +4094,7 @@ C$OMP BARRIER
 !
 ! VA2013 Eq 27-28, Phase lag parameter
 !
-      cff=(1.-wavecycle*xi*uhat_i)/c_w
+      cff=1.-(xi*uhat_i)/c_w     !!! different from VA2013
       cff1=1./MAX(2.*(T_i-T_iu)*w_sc, eps)
       P=alpha_fac*delta*cff*cff1
 !

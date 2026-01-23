@@ -24,6 +24,7 @@
       implicit none
       integer tile, itrc, trd, omp_get_thread_num
 #  include "param.h"
+#  include "ncscrum.h"
 #  include "private_scratch.h"
 #  include "compute_tile_bounds.h"
       trd=omp_get_thread_num()
@@ -141,6 +142,13 @@
 !
       implicit none
 # include "param.h"
+# include "ncscrum.h"
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
+      real    nearest_diff
+      integer indx_depth
+      real rho0i, zN2_c
+      real hmlp(Istr:Iend,Jstr:Jend)
+# endif
       integer istr,iend,jstr,jend, itrc, i,j,k,k1,k2, kmld,
      &        imin,imax,jmin,jmax, indx, idx,ide
       real   FX (PRIVATE_2D_SCRATCH_ARRAY),
@@ -242,7 +250,6 @@
       jmax=jend+1
 # endif
 
-   
    
 !$acc kernels if(compute_on_device) default(present) 
 # ifdef TS_MIX_S
@@ -762,12 +769,16 @@
 #   endif
            do k=N,kmld,-1
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
+               THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itrc)*cff
-             T_mld_nnew(i,j)=T_mld_nnew(i,j)+
+               T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
+
            enddo
-           Taver_mld(i,j,itrc)=T_mld_nnew(i,j) ! mean over mld
+           Taver_mld(i,j,itrc)=T_mld_nnew(i,j)
+#    ifdef MASKING
+     &                        * rmask(i,j)
+#    endif
          enddo
        enddo
 
@@ -784,8 +795,18 @@
 #   endif
            do k=N,kmld,-1
              cff=Hz_bak(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
-             T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
+             if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3 
+     &       .or. itrc.eq.iCRT4) then
+               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
+     &                       t(i,j,k,nstp,itemp)*cff
+             else
+# endif
+               T_mld_nstp(i,j)=T_mld_nstp(i,j)+
      &                       t(i,j,k,nstp,itrc)*cff
+#   ifdef DIAGNOSTICS_TS_MLD_CRIT
+             endif
+# endif
            enddo
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
 #   ifdef DIAGNOSTICS_TS_MLD_CM
@@ -808,41 +829,6 @@
 #   undef T_mld_nnew 
 #   undef T_mld_nstp
 #  endif /* DIAGNOSTICS_TS_MLD */
-!
-!  DEBUG DIAGS
-!
-#  ifdef DIAGNOSTICS_DEBUG
-#   ifdef TEMPERATURE 
-       if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.itemp) then
-#   else
-       if (istr.eq.1 .and. jstr.eq.1 .and. itrc.eq.1) then
-#   endif /* TEMPERATURE */
-         i=5
-         j=5
-#   if defined DIAGNOSTICS_TS_MLD
-         cff=Trate_mld(i,j,itrc)-
-     &       TXadv_mld(i,j,itrc)-
-     &       TYadv_mld(i,j,itrc)-
-     &       TVadv_mld(i,j,itrc)-
-     &       TVmix_mld(i,j,itrc)-
-     &       THmix_mld(i,j,itrc)-
-     &       Tentr_mld(i,j,itrc)-
-     &       TForc_mld(i,j,itrc)
-         MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &     ' T3DMIX: T budget closure MLD     :', cff
-
-#   endif /* DIAGNOSTICS_TS_MLD */
-         cff=Trate(i,j,N-5,itrc)-
-     &       TXadv(i,j,N-5,itrc)-
-     &       TYadv(i,j,N-5,itrc)-
-     &       TVadv(i,j,N-5,itrc)-
-     &       TVmix(i,j,N-5,itrc)-
-     &       THmix(i,j,N-5,itrc)-
-     &       TForc(i,j,N-5,itrc)
-         MPI_master_only write(stdout,'(A,2x,1pe10.3)')
-     &     ' T3DMIX: T budget closure at k=N-5:', cff
-      endif
-#  endif /* DIAGNOSTICS_DEBUG */
 # endif /* DIAGNOSTICS_TS */
 !
 !

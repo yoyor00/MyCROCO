@@ -142,13 +142,6 @@ sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostr Bustr Bvstrw
                      T      F       F      T     F     T
 
-floats: LDEFFLT, NFLT, NRPFFLT / inpname, hisname
-           T      6      0
-                                   floats.in
-                                   CROCO_FILES/floats.nc
-float_fields:  Grdvar Temp Salt Rho Vel
-                T     T    T    T   T
-
 stations: LDEFSTA, NSTA, NRPFSTA / inpname, hisname
              T      400      0
                                     stations.in

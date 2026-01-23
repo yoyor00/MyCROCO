@@ -10,9 +10,9 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 start_date:
 2019-01-01 00:00:00
 end_date:
-2019-01-03 00:00:00
+2019-01-02 00:00:00
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
-                     0.25           24         24
+                     1           24         24
 
 initial: NRREC  filename
           0 
@@ -35,8 +35,10 @@ auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL 
 gls_history_fields:   TKE  GLS  Lscale
                        F     F    F
 
-sediments_mustang: input file
+substance: input file (substance module)
                MUSTANG_NAMELIST/parasubstance_MUSTANG_estuary.txt
+
+sediments_mustang: input file ( Mustang sediment model)
                MUSTANG_NAMELIST/paraMUSTANGV1_estuary.txt
 
 rho0:

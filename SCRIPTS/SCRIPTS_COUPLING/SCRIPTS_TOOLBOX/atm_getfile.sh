@@ -23,13 +23,16 @@ fi
 #-------------------------------------------------------------------------------
 
 # First create the list of all necessary input files (bdy and forcings)
-filelist='wrfbdy_d01'
-
-filelist="$filelist wrflowinp_d01"
-if [ $NB_dom -ge 2 ] ; then
-    filelist="$filelist wrflowinp_d02"
-    if [ $NB_dom -eq 3 ] ; then
-        filelist="$filelist wrflowinp_d03"
+if [[ ${idealrun} == "TRUE" ]]; then
+    filelist=''
+else
+    filelist='wrfbdy_d01'
+    filelist="$filelist wrflowinp_d01"
+    if [ $NB_dom -ge 2 ] ; then
+        filelist="$filelist wrflowinp_d02"
+        if [ $NB_dom -eq 3 ] ; then
+            filelist="$filelist wrflowinp_d03"
+        fi
     fi
 fi
 
