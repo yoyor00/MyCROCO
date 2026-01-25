@@ -15,7 +15,7 @@
 # in a dedicated directory under: SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/ and add a case in 
 # SCRIPTS/SCRIPTS_COUPLING/myjob.sh (after l.95)
 # ---------------------------------------------
-MACHINE="DATARMOR"
+MACHINE="Linux"
 
 # General architecture when using CROCO can be one of these: 
 #
@@ -69,17 +69,17 @@ PYTOOLS_DIR=${PWD}/../croco_pytools
 
 # Configuration name
 # ------------------
-MY_CONFIG_NAME=mld
+MY_CONFIG_NAME=Run
 
 # Home and Work configuration directories
 # ---------------------------------------
-MY_CONFIG_HOME=${CROCO_DIR}/CONFIGS
-MY_CONFIG_WORK=${CROCO_DIR}/CONFIGS
+MY_CONFIG_HOME=${CROCO_DIR}
+MY_CONFIG_WORK=${CROCO_DIR}
 
 # Options of your configuration
 # ------------------------------
 ## default option : all-dev for the usual ("all-in") architecture, for forced croco run and/or dev.
-#options=( all-dev )
+options=( all-dev )
 
 ## example for production run architecture
 #options=( all-prod )
@@ -91,7 +91,6 @@ MY_CONFIG_WORK=${CROCO_DIR}/CONFIGS
 #options=( oce-prod agrif pytools inter )
 #options=( oce-prod test_cases )
 #options=( oce-prod agrif mattools pytools cpl wav atm toy )
-options=( oce-prod inter )
 
 # List of known options: 
 LIST_OPTIONS=$(cat << EOF
