@@ -49,6 +49,7 @@ CONTAINS
       INTEGER  :: ji, jj, jk, jn
       INTEGER  :: it
       CHARACTER(len = 20)  ::  cltra
+      REAL(wp) :: zinvdtsed, ztmp
       REAL(wp), DIMENSION(jpoce, jptrased+1) :: zflx
       REAL(wp), DIMENSION(A2D(0), jpksed)   :: trcsedi
       REAL(wp), DIMENSION(A2D(0)) :: flxsedi2d
@@ -63,17 +64,18 @@ CONTAINS
       ! -----------------------------------------------------------------
       IF( ln_timing )  CALL timing_start('sed_wri')
 !
-      !
+      ! Initialize variables
+      ! --------------------
+      zinvdtsed       = 1.0_wp / dtsed
       zw3d_out(:,:,:) = 0._wp 
       zw2d_out(:,:)   = 0._wp 
-
 
       ! 2.  Back to 2D geometry
       ! -----------------------------------------------------------------
       ! Calculation of fluxes mol/cm2/s
       DO jn = 1, jpwat
          DO ji = 1, jpoce
-            zflx(ji,jn) = ( pwcp(ji,1,jn) - pwcp_dta(ji,jn) ) * ( 1.e-3 * dzkbot(ji) ) / dtsed
+            zflx(ji,jn) = ( pwcp(ji,1,jn) - pwcp_dta(ji,jn) ) * ( 1.e-3 * dzkbot(ji) ) * zinvdtsed
          ENDDO
       ENDDO
 
@@ -82,12 +84,13 @@ CONTAINS
       zflx(:,jptrased+1) = 0.0
       DO jn = 1, jpsol
          DO ji = 1, jpoce
-            zflx(ji,jpwat+jn) = ( tosed(ji,jn) - fromsed(ji,jn) ) / dtsed
-            zflx(ji,jptrased+1) = zflx(ji,jptrased+1) + ( tosed(ji,jn) - fromsed(ji,jn) ) / ( dtsed * por1(jpksed) * dens_sol(jn) )
+            ztmp              = ( tosed(ji,jn) - fromsed(ji,jn) ) * zinvdtsed
+            zflx(ji,jpwat+jn) = ztmp
+            zflx(ji,jptrased+1) = zflx(ji,jptrased+1) + ztmp / ( por1(jpksed) * dens_sol(jn) )
          ENDDO
       ENDDO
       
-     !
+      !
       ! Start writing data
       ! ---------------------
      DO jn = 1, jptrased
@@ -117,7 +120,7 @@ CONTAINS
       END DO
 
       IF ( iom_use( "dzdep" ) ) THEN
-         zflx(:,1) = dzdep(:) / dtsed
+         zflx(:,1) = dzdep(:) * zinvdtsed
          flxsedi2d(:,:) = UNPACK( zflx(:,1), sedmask == 1.0, 0.0 )
          zw2d_out(A2D(0)) = flxsedi2d(A2D(0))
          CALL iom_put( "dzdep", zw2d_out )
