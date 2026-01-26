@@ -51,11 +51,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BULK_FLUX : Update wasp bulk flux parametrization, 
   cppkey BULK_WASP (Issue #453)
 
-- BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
-
-- BULK_FLUX : Update wasp bulk flux parametrization, 
-  cppkey BULK_WASP (Issue #453)
-
 ### Deprecated
 
 
