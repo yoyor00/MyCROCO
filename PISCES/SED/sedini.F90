@@ -89,7 +89,7 @@ MODULE sedini
 #  include "do_loop_substitute.h90"
 #  include "domzgr_substitute.h90"
 #  include "read_nml_substitute.h90"
-   !! $Id: sedini.F90 15450 2021-10-27 14:32:08Z cetlod $
+
 CONTAINS
 
 
@@ -118,6 +118,7 @@ CONTAINS
       !---------------------------------------
 
       CALL ctl_opn( numsed, 'sediment.output', 'REPLACE', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
+      IF(lwm) CALL ctl_opn( numons     , 'output.namelist.sed' , 'UNKNOWN', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
 
       IF (lwp) THEN
          WRITE(numsed,*)
@@ -146,12 +147,10 @@ CONTAINS
       IF( ierr /= 0 )   CALL ctl_stop( 'STOP', 'sed_ini: unable to allocate sediment model arrays' )
 
       ! Determination of sediments number of points and allocate global variables
-      epkbot(:,:) = 0.
-      gdepbot(:,:) = 0.
+      epkbot (:,:) = 0._wp
+      gdepbot(:,:) = 0._wp
       DO_2D( 0, 0, 0, 0 )
          ikt = mbkt(ji,jj) 
-      !   IF( tmask(ji,jj,ikt) == 1 ) epkbot(ji,jj) = e3t_0(ji,jj,ikt)
-      !   gdepbot(ji,jj) = gdepw_0(ji,jj,ikt+1)
          IF( tmask(ji,jj,ikt) == 1 ) epkbot(ji,jj) = e3t(ji,jj,ikt,Kmm)
          gdepbot(ji,jj) = gdepw(ji,jj,ikt+1,1)
       END_2D
@@ -160,7 +159,8 @@ CONTAINS
 
       ! computation of total number of ocean points
       !--------------------------------------------
-      jpoce  = COUNT( epkbot(:,:) > 0. ) 
+!      jpoce  = COUNT( epkbot(:,:) > 0. ) 
+      jpoce  = MAX( COUNT( epkbot(:,:) > 0. ) , 1 )
 
       ! Allocate memory size of global variables
       ALLOCATE( pwcp (jpoce,jpksed,jpwat) )  ;  ALLOCATE( pwcp_dta  (jpoce,jpwat) )
@@ -170,10 +170,12 @@ CONTAINS
       ALLOCATE( rainrg(jpoce,jpsol) )        ;  ALLOCATE( xirrigtrd(jpoce,jpwat) )
       ALLOCATE( xirrigtrdtmp(jpoce,jpwat) )
       ALLOCATE( dzdep(jpoce) )               ;  ALLOCATE( dzkbot(jpoce) )
+!      ALLOCATE( slatit(jpoce) )              ;  ALLOCATE( slongit(jpoce) )
       ALLOCATE( zkbot(jpoce) )               ;  ALLOCATE( db(jpoce,jpksed) )
       ALLOCATE( temp(jpoce) )                ;  ALLOCATE( salt(jpoce) )  
-      ALLOCATE( seddiff(jpoce,jpksed,jpwat ) )  ;  ALLOCATE( irrig(jpoce, jpksed) )
+      ALLOCATE( seddiff(jpoce,jpksed,jpwat) ) ;  ALLOCATE( irrig(jpoce, jpksed) )
       ALLOCATE( wacc(jpoce) )                ;  ALLOCATE( fecratio(jpoce) )
+      ALLOCATE( xlabil(jpoce) )
       ALLOCATE( densSW(jpoce) )              ;  ALLOCATE( saturco3(jpoce,jpksed) ) 
       ALLOCATE( hipor(jpoce,jpksed) )        ;  ALLOCATE( co3por(jpoce,jpksed) )
       ALLOCATE( volw3d(jpoce,jpksed) )       ;  ALLOCATE( vols3d(jpoce,jpksed) )
@@ -182,15 +184,18 @@ CONTAINS
       ALLOCATE( apluss(jpoce, jpksed) )      ;  ALLOCATE( aminuss(jpoce,jpksed) )
 
       ! Initialization of global variables
-      pwcp  (:,:,:) = 0.   ;  pwcp_dta  (:,:) = 0.  
-      pwcpa (:,:,:) = 0.   ;  solcpa(:,:,:) = 0.
-      solcp (:,:,:) = 0.
-      rainrg(:,:  ) = 0.
+      pwcp  (:,:,:) = 0.   ;  pwcp_dta (:,:) = 0.  
+      pwcpa (:,:,:) = 0.   ;  solcpa(:,:,:)  = 0.
+      solcp (:,:,:) = 0.   ;  xlabil(:     ) = 0
+      rainrg(:,:  ) = 0.   ;  wacc  (:     ) = 0.
+      xirrigtrd(:,:) = 0.0 ;  xirrigtrdtmp(:,:) = 0.0
       dzdep (:    ) = 0.   ;  dzkbot (:   ) = 0.
+!      slatit(:    ) = 0.   ;  slongit(:   ) = 0.
+      seddiff(:,:,:) = 0.
       temp  (:    ) = 0.   ;  salt   (:   ) = 0.  ; zkbot     (:  ) = 0.
-      densSW (:   ) = 0.   ;  db     (:,:)  = 0. 
+      densSW (:   ) = 0.   ;  db     (:,:)  = 0.  ; saturco3  (:,:) = 0. 
       hipor (:,:  ) = 0.   ;  co3por (:,: ) = 0.  ; irrig     (:,:) = 0. 
-      volw3d (:,: ) = 0.   ;  vols3d  (:,:) = 0. 
+      volw3d (:,: ) = 0.   ;  vols3d  (:,:) = 0.  ; volc    (:,:,:) = 0.
       fecratio(:)   = 1E-5 ;  rearatpom(:,:)= 0. 
       radssol(:,:)  = 1.0  ;  rads1sol(:,:) = 0.
       apluss(:,:)   = 0.0  ;  aminuss(:,:)  = 0.0
@@ -267,9 +272,9 @@ CONTAINS
       ! compute the flux of clays and minerals
       ! --------------------------------------------------------------
       DO ji = 1, jpoce
-          ztmp1 = 0.1 / ( 1.0 + ( zkbot(ji) / 200.)**3.3 )
-          ztmp2 = 0.001 / ( 1.0 + ( MIN(zkbot(ji), 4500.) / 4500.)**11.4 )
-          wacc(ji) = ztmp2+ztmp1
+         ztmp1 = 0.06 / ( 1.0 + ( zkbot(ji) / 200.)**3.3 )
+         ztmp2 = 0.0008 / ( 1.0 + ( MIN(zkbot(ji), 5000.) / 5000.)**11.4 )
+         wacc(ji) = ztmp2+ztmp1
       END DO
 
       ! Vertical profile of of the adsorption factor for adsorbed species
@@ -280,6 +285,8 @@ CONTAINS
          rads1sol(jk,jwnh4) = adsnh4 * por1(jk)
          rads1sol(jk,jwfe2) = adsfe2 * por1(jk)
       END DO
+
+      xlabil(:) = 4.0 * exp(-zkbot(:) / 1000.0 ) + 1.0
 
       ! ---------------------------
       ! Conversion of volume units
@@ -356,7 +363,7 @@ CONTAINS
       ! initialization of dzkbot in [cm]
       !------------------------------------------------    
       dzkbot = PACK( epkbot, sedmask == 1.0 )
-      dzkbot(1:jpoce) = dzkbot(1:jpoce) * 1.e+2
+      dzkbot(1:jpoce) = 1.E8
       zkbot   = PACK( gdepbot, sedmask == 1.0 )
 
       ! Geometry and  constants 
@@ -369,7 +376,7 @@ CONTAINS
       za0  = sedzmin - za1 * TANH( (1-sedkth) / sedacr )
       zsur = - za0 - za1 * sedacr * LOG( COSH( (1-sedkth) / sedacr )  )
 
-      dz(1)       = 0.2
+      dz(1)       = 0.4
       profsedw(1) = 0.0
       profsed(1)  = -dz(1) / 2.
       DO jk = 2, jpksed
@@ -415,10 +422,10 @@ CONTAINS
       !!        !  06-07  (C. Ethe)  Original
       !!----------------------------------------------------------------------
 
-      INTEGER :: numnamsed_ref = -1  !! Character buffer for reference namelist sediment
-      INTEGER :: numnamsed_cfg = -1   !! Character buffer for configuration namelist sediment
+      INTEGER ::   numnamsed_ref = -1           !! Logical units for namelist sediment
+      INTEGER ::   numnamsed_cfg = -1           !! Logical units for namelist sediment
+      INTEGER :: ios                 ! Local integer output status for namelist read
       CHARACTER(LEN=20)   ::   clname
-      INTEGER ::   ios   ! Local integer
 
       TYPE PSED
          CHARACTER(len = 20)  :: snamesed   !: short name
@@ -461,8 +468,6 @@ CONTAINS
       clname = 'namelist_sediment'
       IF(lwp) WRITE(numsed,*) ' sed_ini_nam : read SEDIMENT namelist'
       IF(lwp) WRITE(numsed,*) ' ~~~~~~~~~~~~~~'
-!      CALL load_nml( numnamsed_ref, TRIM( clname )//'_ref', numout, lwm )
-!      CALL load_nml( numnamsed_cfg, TRIM( clname )//'_cfg', numout, lwm )
       CALL ctl_opn( numnamsed_ref, TRIM( clname )//'_ref', 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
       CALL ctl_opn( numnamsed_cfg, TRIM( clname )//'_cfg', 'OLD', 'FORMATTED', 'SEQUENTIAL', -1, numout, lwm )
 
@@ -472,6 +477,7 @@ CONTAINS
       ! Namelist nam_run
       READ_NML_REF(numnamsed,nam_run)
       READ_NML_CFG(numnamsed,nam_run)
+      IF(lwm) WRITE( numons, nam_run )
 
       IF (lwp) THEN
          WRITE(numsed,*) ' namelist nam_run'
@@ -487,6 +493,7 @@ CONTAINS
       ! Namelist nam_geom 
       READ_NML_REF(numnamsed,nam_geom)
       READ_NML_CFG(numnamsed,nam_geom)
+      IF(lwm) WRITE( numons, nam_geom )
 
       IF (lwp) THEN 
          WRITE(numsed,*) ' namelist nam_geom'
@@ -503,6 +510,7 @@ CONTAINS
       ! Namelist nam_diased
       READ_NML_REF(numnamsed,nam_trased)
       READ_NML_CFG(numnamsed,nam_trased)
+      IF(lwm) WRITE( numons, nam_trased )
 
       DO jn = 1, jpsol
          sedtrcd(jn) = sedsol(jn)%snamesed
@@ -532,6 +540,7 @@ CONTAINS
       ! Namelist nam_inorg
       READ_NML_REF(numnamsed,nam_diased)
       READ_NML_CFG(numnamsed,nam_diased)
+      IF(lwm) WRITE( numons, nam_diased )
 
       DO jn = 1, jpdia2dsed
          seddia2d(jn) = seddiag2d(jn)%snamesed
@@ -558,6 +567,7 @@ CONTAINS
       ! Namelist nam_inorg
       READ_NML_REF(numnamsed,nam_inorg)
       READ_NML_CFG(numnamsed,nam_inorg)
+      IF(lwm) WRITE( numons, nam_inorg )
 
       IF (lwp) THEN
          WRITE(numsed,*) ' namelist nam_inorg'
@@ -579,6 +589,7 @@ CONTAINS
       ! Namelist nam_poc
       READ_NML_REF(numnamsed,nam_poc)
       READ_NML_CFG(numnamsed,nam_poc)
+      IF(lwm) WRITE( numons, nam_poc )
 
       IF (lwp) THEN
          WRITE(numsed,*) ' namelist nam_poc'
@@ -636,6 +647,7 @@ CONTAINS
       ! Namelist nam_btb
       READ_NML_REF(numnamsed,nam_btb)
       READ_NML_CFG(numnamsed,nam_btb)
+      IF(lwm) WRITE( numons, nam_btb )
 
       IF (lwp) THEN
          WRITE(numsed,*) ' namelist nam_btb ' 
@@ -654,6 +666,7 @@ CONTAINS
       ! Namelist nam_rst 
       READ_NML_REF(numnamsed,nam_rst)
       READ_NML_CFG(numnamsed,nam_rst)
+      IF(lwm) WRITE( numons, nam_rst )
 
       cn_sedrst_in  = TRIM( cn_sedrst_indir)//'/'//TRIM(cn_sedrst_in)
       cn_sedrst_out = TRIM( cn_sedrst_outdir)//'/'//TRIM(cn_sedrst_out)
