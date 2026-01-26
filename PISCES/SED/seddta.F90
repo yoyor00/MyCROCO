@@ -23,7 +23,6 @@ MODULE seddta
    REAL(wp) ::  conv2    ! [kg/m2/month]-->[g/cm2/s] ( 1 month has 30 days )
 
    !! * Substitutions
-      !!* Substitution
 #  include "ocean2pisces.h90"
 #  include "do_loop_substitute.h90"
 #  include "domzgr_substitute.h90"
@@ -140,12 +139,12 @@ CONTAINS
 
       !  Sinking fluxes for POC in mol.m-2.s-1 ; conversion in mol.cm-2.s-1
       zdtap = PACK( trc_data(:,:,13), sedmask == 1.0 )
-      zzf1 = 0.5187
-      zzf2 = 0.3525
-      zzf3 = 0.0963
-      zzf4 = 0.0243
-      zzf5 = 0.0061
-      zzf6 = 0.0022
+      zzf1 = 0.4365
+      zzf2 = 0.3181
+      zzf3 = 0.1404
+      zzf4 = 0.0601
+      zzf5 = 0.0257
+      zzf6 = 0.0191
       DO ji = 1, jpoce
          rainrg(ji,jspoc1) = zzf1 * zdtap(ji)
          rainrg(ji,jspoc2) = zzf2 * zdtap(ji)
@@ -195,6 +194,8 @@ CONTAINS
             dzdep(ji) = dzdep(ji) + rainrg(ji,js) * zfact
          END DO
       END DO
+
+      zddust(:,:) = 0._wp
 
       IF( lk_iomput ) THEN
           ALLOCATE( zw2d(GLOBAL_2D_ARRAY) )  ;  zw2d(:,:) = 0._wp
