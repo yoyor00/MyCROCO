@@ -5,76 +5,56 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ## [x.x.x] - xxxx-xx-xx
 
 ### Added
-- Issue #361 : Integration of slight reformulation of zooplankton grazing 
-  according to prey size done in PISCES standard version (#340) into quota version
 
 - BENCH : Add performance tracking (Issue #378 and #423)
 
-- SCRIPTS: in run_croco_inter add TIDE_FILES and ONLINE (Freq, path) missing information 
-
 ### Fixed
-
-- COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
-- COUPLING : patm2D was declared twice in case of OW_COUPLING and READ_PATM (Issue #383)
-- COUPLING : undef TIDES_MAS in oce_compile.sh, as it does not work without USE_CALENDAR 
-             (link with #233)
-- COUPLING : update croco.in.base accordingly to original croco.in (solve #366)
-- COUPLING : path to local myenv_mypath in job dir (solve #421)
-- COUPLING : add "if" conditions for cpl restart file path definitions to avoid issues when
-             one of the model was not requested in create_config (solve issue #428)
-- COUPLING and XIOS : correct path and  requested copy of cppdefs_dev (solve #364)
-- COUPLING and EXACT RESTART : manage EXACT_RESTART option in coupling scripts (solve #92)
-- BENCH : do not put report status to True for reference variant to avoid
-  to mark test passed even if not (Issue #342)
-- BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
-- BENCH : remove openmp reproducibility check on SHOREFACE case (Incident #358)
-- BENCH : fix typo AGRIF_2W to AGRIF_2WAY in realist and vortex json files (Issue #368)
-
-- PISCES : Fix dummy line (kt variable) at end in p4zche.F90  (Issue #420)
-- PISCES : Fixed error on diagnostic ligands and add Fe2+ oxydation rate (Issue #371)
-
-- DIAGNOSTICS_EDDY & not XIOS : fix double comma in ncscrum.h (Issue #362)
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
+  restart inconsistencies with MORPHODYN, update testcase plot script 
+  accordingly (#470)
+
+- AGRIF : Fix allocation of  message passing arrays (ibuf...) when 3 ghost points
+  needed (UP5, WENO)    (Issues #310 #458)
+
+- COUPLING : missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
-- Compilation : fix cat "croco_ascii.txt" command in case of relative path
-
-- Wavemaker : Fix boundary forcing in case of eastern boundary (Issue #432)
-
-- AGRIF : incompatibility of AGRIF with cppkeys
-  BULK_ECUMEV0 or BULK_ECUMEV6 (Issue #422)
-- AGRIF and psource_ncfile : in croco.in.1 file should be croco_runoff.nc.1 (solve #436)
-- AGRIF: sponge keyword missing: put it back (even if theoretically useless, 
-  it creates a read_inp error), path for online corrected in croco_inter.in,
-  AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
-
-
-- OUTPUT : incompatibility when activating 
-  PISCES + PSOURCE_NCFILE_TS + DIURNAL_INPUT_SRFLX (Issue #435)
+- PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
 
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
   (Issue #347)
+
 - Compilation : update on jobcomp (support for ifx and different version of gfortran, 
   cleaning exit status, see !172 and Issue#176)
+
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
+
 - MUSTANG : review lateral erosion feature (Issue #349)
+
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
-- SCRIPTS : create_config now allows to deal with 2 new options for preprocessing scripts: 
-            pytools and mattools (instead of prepro) - solve issue #295 
-            and 2 distinct options for run scripts (either inter for Plurimonth_scripts type: 
-            run_croco_inter, or runcpl for SCRIPTS_COUPLING type: submitjob,
-            mynamelist...)
+
 - DIAGNOSTICS : cleaning, simplifications and updates of various diagnostics
   (DIAGNOSTICS_KE, DIAGNOSTICS_VRT, ... )(Issue #388)
+
+- BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
+
+- BULK_FLUX : Update wasp bulk flux parametrization, 
+  cppkey BULK_WASP (Issue #453)
+
+- BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
+
+- BULK_FLUX : Update wasp bulk flux parametrization, 
+  cppkey BULK_WASP (Issue #453)
 
 ### Deprecated
 
@@ -93,6 +73,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
+  - WET_DRY0 (#393) never used 
   - UV_HADV_TVD, UV_VADV_TVD, W_HADV_TVD, W_VADV_TVD (#391)
   - BVF_MIXING (#398)
   - LMD_NUW_GARGETT, obsolete (#402)
@@ -107,6 +88,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - DEBUG_ARMOR, DEBUG, DIAGNOSTICS_DEBUG, NBQ_HZCORR_DEBUG (#415)
   - PP_MIXING, MY2_MIXING, MY25_MIXING (#418)
   - XCOMM_FORMAT (#419)
+  - TR (#395)
+  - LMD_SKPP_MONOB never define (#400)
+  - LIMIT_UNSTABLE_ONLY is always define (#401)
+  - MLCONVEC (#399)
 
 ### Other
 
@@ -115,6 +100,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
   - remove routine set_HUV1, not used (#410)
+  - remove ZETA_DRY_IO cpp key and avoid modifying zeta with bathymetry in output (#406 and #384)
+  - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
 
 
 ### Contributors on this release
@@ -125,4 +112,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   J. Gula
 
 - New contributors : 
-  M. Plus, M. Schreiber, A. Zribi  
+  M. Plus, M. Schreiber, A. Zribi, E Le Bouedec  

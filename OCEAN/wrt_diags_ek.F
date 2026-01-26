@@ -245,7 +245,6 @@
 
         endif
 
-
   1   format(/1x,'WRT_DIAGS_EK ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',
      &                   I6,3x,'netCDF error code',i4,3x,a,i4)
