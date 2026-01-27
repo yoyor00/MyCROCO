@@ -56,19 +56,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
   and not in cppdefs_dev.h (#465)
 
-- BULK_FLUX : Update wasp bulk flux parametrization, 
+- BULK_FLUX : Update wasp bulk flux parametrization,
   cppkey BULK_WASP (Issue #453)
 
 - BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
 
-- BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
-
-- BULK_FLUX : Update wasp bulk flux parametrization, 
-  cppkey BULK_WASP (Issue #453)
-
 - RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
   distribution of flow, enabling a transition from the AKIMA scheme to 
   SPLINES (#478)
+
+- BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
 
 ### Deprecated
 
