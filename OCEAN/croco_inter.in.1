@@ -11,13 +11,13 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 
 
 start_date:
-xxxx-xx-xx xx:xx:xx
+Ystart-Mstart-01 00:00:00
 
 end_date: 
-xxxx-xx-xx xx:xx:xx
+Yend-Mend-01 00:00:00
 
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
-                   XX       XX       XX
+		   NHHIS       NHAVG       NHRST
 
 grid:  filename
                           croco_grd.nc.1
@@ -283,5 +283,5 @@ psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
                          35  13  1  -1   T T   20.0  15.0
 
 online:    byear  bmonth recordsperday byearend bmonthend / data path
-           NYONLINE   NMONLINE      4             2011     3
-          DATA/CFSR_Benguela_LR/
+           NYONLINE   NMONLINE    ONLINEFREQ      ENDYONLINE     ENDMONLINE
+           ONLINEPATH/

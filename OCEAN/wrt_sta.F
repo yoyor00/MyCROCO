@@ -273,6 +273,7 @@ c      endif ! iic=0
 ! Output station data
 !
 # ifdef SOLVE3D
+#  ifdef TEMPERATURE
 !
 ! Station temperature data
 !
@@ -300,6 +301,7 @@ c      endif ! iic=0
           goto 99                                           !--> ERROR
         endif
       endif
+#  endif /* TEMPERATURE */
 #  ifdef SALINITY
 !
 ! salinity at station position
