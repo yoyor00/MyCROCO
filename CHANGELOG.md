@@ -56,7 +56,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
   and not in cppdefs_dev.h (#465)
 
-- BULK_FLUX : Update wasp bulk flux parametrization, 
+- BULK_FLUX : Update wasp bulk flux parametrization,
   cppkey BULK_WASP (Issue #453)
 
 - BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
