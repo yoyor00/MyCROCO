@@ -112,6 +112,9 @@
 #ifdef ISOLITON
       real zint,depth,dz,gam,del
       real rho1_exp,rho2_exp,h1_exp,Lt
+# ifndef K3FAST_SACOUS
+       real amp_exp	
+# endif
       real d(0:N)
 !$acc declare create(d)
 #endif

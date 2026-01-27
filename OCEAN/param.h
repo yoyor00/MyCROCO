@@ -209,8 +209,21 @@
        parameter (LLm0=591, MMm0=272,  N=40)
 #  elif defined GIBRALTAR_HR4
        parameter (LLm0=575, MMm0=315,  N=40)
+#  elif defined GIBRALTAR_VHR1
+       parameter (LLm0=2047, MMm0=2619,  N=40)
 #  elif defined GIBRALTAR_VHR5
        parameter (LLm0=348, MMm0=198,  N=40)
+#  elif defined GIBRALTAR_BR5
+       parameter (LLm0=949, MMm0=494,  N=40)
+#  elif defined LION_BR1
+!       parameter (LLm0=665, MMm0=449,  N=60)	! GULF OF LIONS LR - rc1 and 2
+       parameter (LLm0=683, MMm0=449,  N=60)	! GULF OF LIONS LR - rc3
+#  elif defined LION_HR1
+       parameter (LLm0=765, MMm0=660,  N=60)	! GULF OF LIONS HR - rc3.2       
+#  elif defined LION_HR3
+       parameter (LLm0=1155, MMm0=845,  N=60)	! GULF OF LIONS HR        
+#  elif defined CANARY
+       parameter (LLm0=224, MMm0=288,  N=50)
 # else
       parameter (LLm0=xx,   MMm0=xx,   N=xx)   ! YOUR REGIONAL CONFIG
 # endif
@@ -328,7 +341,7 @@
 ! Tides
 !----------------------------------------------------------------------
 !
-#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+#if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES || defined POT_CUVE
       integer Ntides             ! Number of tides
                                  ! ====== == =====
 # if defined IGW

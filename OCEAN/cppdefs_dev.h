@@ -1282,7 +1282,7 @@
 #define DOLOOP2D_R(irange,jrange) DOLOOP2D(irange,jrange)
 #endif
 
-#if defined RVTK_DEBUG
+#if defined CVTK_DEBUG
 #define POW(x,exponent) (exp((exponent)*log(x)))
 #else
 #define POW(x,exponent) ((x)**exponent)

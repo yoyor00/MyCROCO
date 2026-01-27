@@ -25,7 +25,7 @@ C$OMP MASTER
 C$OMP END MASTER
 # endif    
 !$acc kernels if(compute_on_device) default(present) async(1)
-#  ifdef K3FAST_AM4             
+#  ifdef K3FAST_AM4d
 #   ifdef K3FAST_2DCONT
       if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
 #   else
@@ -54,7 +54,7 @@ C$OMP END MASTER
       do k=-N_sl+1,N
         do j=JstrV-2,Jend+1
           do i=IstrU-2,Iend+1
-#  ifdef K3FAST_AM4             
+#  ifdef K3FAST_AM4d             
              cff=
      &          cff0*thetadiv_nbq(i,j,k)
      &         +cff1*thetadiv_nbq_bak2(i,j,k,kam4_2)

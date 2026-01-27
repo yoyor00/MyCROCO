@@ -491,7 +491,6 @@
 #  endif /* PSOURCE_MASS */
 # endif /* TRACERS */
 
-!$acc kernels if(compute_on_device) default(present)
 !
 ! Continue computation of the auxiliary tracer field: auxiliary
 ! continuity equation (the same for all tracers): DC=1/Hz_half_new,

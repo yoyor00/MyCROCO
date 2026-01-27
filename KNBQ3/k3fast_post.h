@@ -801,7 +801,8 @@ C$OMP MASTER
       endif
 # endif /* !NS_PERIODIC */
 !$acc end kernels
-	cff = 0.
+! !     CYRIL... A VERIFIER !
+! !	cff = 0.
 ! !
 ! !********************************
 ! ! Update Free-slip

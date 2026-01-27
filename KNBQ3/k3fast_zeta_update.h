@@ -184,11 +184,19 @@
 !$acc kernels if(compute_on_device) default(present) async(1)
 #   ifndef K3FAST_SPDUP
 #    define zab3 UFx
+#    ifdef  K3FAST_2DCONT
+      if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
+#    else
       if (FIRST_FAST_STEP) then
+#    endif
         cff1 = 1.0
         cff2 = 0.0
         cff3 = 0.0
+#    ifdef  K3FAST_2DCONT
+      elseif (FIRST_FAST_STEP+1.and.FIRST_TIME_STEP) then ! AB2
+#    else
       elseif (FIRST_FAST_STEP+1) then  ! AB2
+#    endif
         cff1 = 1.5
         cff2 =-0.5
         cff3 = 0.0
@@ -200,6 +208,8 @@
 
       do j=JstrV-2,Jend+1
         do i=IstrU-2,Iend+1
+! ! FRANCIS: A VERIFIER
+!         zab3(i,j) =   zeta(i,j,kstp)
           zab3(i,j) =   cff1 * zeta(i,j,kstp)
      &                + cff2 * zeta(i,j,kbak)
      &                + cff3 * zeta(i,j,kold)

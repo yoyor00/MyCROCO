@@ -1886,7 +1886,7 @@
 #  define NS_PERIODIC
 # endif
 # define NO_FRCFILE
-# undef  RVTK_DEBUG
+# undef  CVTK_DEBUG
 
 #elif defined TS_HADV_TEST
 /*

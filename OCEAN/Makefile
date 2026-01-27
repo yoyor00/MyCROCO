@@ -34,7 +34,7 @@ include Makedefs
 #        analysis routines
 #======================================================================
 
- SRCS = main.F		step.F		read_inp.F\
+ SRCS = main.F		step.F		read_inp.F	trigolow.F\
 	timers_roms.F	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
@@ -91,7 +91,7 @@ include Makedefs
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
 	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
-	clm_tides.F     get_bulk.F      bulk_flux.F\
+        clm_tides.F  	pot_cuve.F 	get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F get_btflux.F\
 \
@@ -131,7 +131,10 @@ include Makedefs
 	online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
 	scal0d_oa_out_loc.F scal0d_oa_out_full.F\
 	output_oa.F\
-	copy_to_devices.F exchange_device_host.F init_acc.F
+        copy_to_devices.F exchange_device_host.F init_acc.F\
+\
+	read_kxxagrif_in.F
+
 
 
 
@@ -253,6 +256,10 @@ check_srcs.F: srcscheck Makefile
 
 setup_kwds.F: checkkwds read_inp.F
 	./checkkwds
+
+oasrc:  oasrc1 module_oa_time.o module_tile_oa.o module_oa_space.o module_oa_level.o module_oa_periode.o  module_oa_interface.o
+
+oasrc1: param.o scalars.o module_grd_oa.o module_parameter_oa.o module_oa_type.o module_oa_variables.o
 
 partit: partit.F insert_node.o lenstr.o
 	$(CPP) -P $(CPPFLAGS) partit.F > partit._.f

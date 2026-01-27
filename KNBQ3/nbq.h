@@ -405,7 +405,7 @@
       integer kbak,kold
       common /nbq_stp1/kbak
       common /nbq_stp2/kold
-#ifdef K3FAST_AB3
+#ifdef K3FAST_AB3b
       real rhsu_bak(GLOBAL_2D_ARRAY,NSLP1N,2)
       common /rhsu_bak/ rhsu_bak
       real rhsv_bak(GLOBAL_2D_ARRAY,NSLP1N,2)

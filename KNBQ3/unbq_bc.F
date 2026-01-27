@@ -35,7 +35,7 @@
 !
 # endif /* K3FAST */
 #else
-# ifdef K3FAST
+# ifdef K3FAST_UV
 !
 ! CHILD
 !

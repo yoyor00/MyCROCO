@@ -122,7 +122,7 @@
      &  'v',ondevice=.TRUE.)
 # endif    
 !$acc kernels if(compute_on_device) default(present) async(1)
-#  ifdef K3FAST_AB3
+#  ifdef K3FAST_AB3b
 #    ifdef  K3FAST_2DCONT
       if (FIRST_FAST_STEP.and.FIRST_TIME_STEP) then
 #    else
@@ -403,7 +403,7 @@
 ! !  AB3 scheme
 ! !................................
 ! !
-#  ifdef K3FAST_AB3
+#  ifdef K3FAST_AB3b
               cff=dum_s
               dum_s=
      &     +cff1*cff
@@ -717,7 +717,7 @@
 ! !  AB3 scheme
 ! !................................
 ! !
-#  ifdef K3FAST_AB3
+#  ifdef K3FAST_AB3b
               cff=dum_s
               dum_s=
      &     +cff1*cff
