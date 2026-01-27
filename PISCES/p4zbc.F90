@@ -79,7 +79,7 @@ CONTAINS
       REAL(wp) :: zpdtan, zpdtmo, zdemi, zt
       REAL(wp) :: zxy, zjulian, zsec
       !
-      REAL(wp)   :: zdust, zwdust, zfact, ztra
+      REAL(wp)   :: zdust, zwdust, ztra
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zno3dep, znh4dep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:  ) :: zpo4dep, zsildep
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) :: zirondep
@@ -183,9 +183,8 @@ CONTAINS
          END_2D
 #if defined key_trc_diaadd
          DO_2D( 0, 0, 0, 0 )
-            zfact = 1.e+3 * tmask(ji,jj,1) 
-            trc2d(ji,jj,jp_sildep) = zsildep(ji,jj) * zfact        ! Si surface deposition
-            trc2d(ji,jj,jp_po4dep) = zpo4dep(ji,jj) * zfact * po4r ! PO4 surface deposition
+            trc2d(ji,jj,jp_sildep) = zsildep(ji,jj) * 1.e+3 * tmask(ji,jj,1)         ! Si surface deposition
+            trc2d(ji,jj,jp_po4dep) = zpo4dep(ji,jj) * po4r * 1.e+3 * tmask(ji,jj,1)  ! PO4 surface deposition
          END_2D
 # endif
 

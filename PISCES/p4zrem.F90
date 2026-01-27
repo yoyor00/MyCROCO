@@ -227,9 +227,9 @@ CONTAINS
       REAL(wp) ::   zammonic, zoxyremc, zosil, ztem, zdenitnh4, zolimic
       REAL(wp) ::   zfacsi, zdepeff
       CHARACTER (len=25) :: charout
-      REAL(wp), DIMENSION(A2D(0),jpk) :: zdepbac, zfacsib
+      REAL(wp), DIMENSION(A2D(0),jpk) :: zdepbac, zfacsib, zolimi
       REAL(wp), DIMENSION(A2D(0)    ) :: ztempbac
-      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zw3d, zolimi, zfebact
+      REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zw3d, zfebact
       !!---------------------------------------------------------------------
       !
       IF( ln_timing )   CALL timing_start('p4z_rem')
@@ -238,12 +238,6 @@ CONTAINS
          l_dia_remin  = iom_use( "REMIN" )  .OR. iom_use( "Remino2" )
          l_dia_bact   = iom_use( "FEBACT" ) .OR. iom_use( "BACT" )
          l_dia_denit  = iom_use( "DENIT" )
-      ENDIF
-      IF( l_dia_remin ) THEN
-         ALLOCATE( zolimi(A2D(0),jpk) )    ;   zolimi(A2D(0),jpk) = 0._wp
-         DO_3D( 0, 0, 0, 0, 1, jpk)
-            zolimi(ji,jj,jk) = tr(ji,jj,jk,jpoxy,Krhs)
-         END_3D
       ENDIF
       IF( l_dia_bact ) THEN
          ALLOCATE( zfebact(A2D(0),jpk) )   ;   zfebact(A2D(0),jpk) = 0._wp
@@ -283,7 +277,7 @@ CONTAINS
          ! -----------------------------------------------------
          zolimic = zremikc * ( 1.- nitrfac(ji,jj,jk) ) * tr(ji,jj,jk,jpdoc,Kbb) 
          zolimic = MAX(0., MIN( ( tr(ji,jj,jk,jpoxy,Kbb) - rtrn ) / o2ut, zolimic ) ) 
-
+         zolimi(ji,jj,jk) = zolimic
          ! Ammonification in suboxic waters with denitrification
          ! -----------------------------------------------------
          zammonic = zremikc * nitrfac(ji,jj,jk) * tr(ji,jj,jk,jpdoc,Kbb)
@@ -425,11 +419,9 @@ CONTAINS
              ALLOCATE( zw3d(GLOBAL_2D_ARRAY,jpk) )  ;  zw3d(:,:,:) = 0._wp
              !
              DO_3D( 0, 0, 0, 0, 1, jpk)
-                zw3d(ji,jj,jkR) = ( zolimi(ji,jj,jk) - tr(ji,jj,jk,jpoxy,Krhs) )  &
-                   &              / o2ut  * rfact2r * tmask(ji,jj,jk) !
+                zw3d(ji,jj,jkR) =  zolimi(ji,jj,jk) * rfact2r * tmask(ji,jj,jk) !
              END_3D
              CALL iom_put( "REMIN", zw3d )
-             DEALLOCATE( zolimi, zw3d )
           ENDIF
           !
           IF( l_dia_bact ) THEN   ! Bacterial biomass
@@ -459,6 +451,16 @@ CONTAINS
           !
       ENDIF          
       !
+# if defined key_trc_diaadd
+     zfact = 1.e3 * rfact2r
+     DO_3D( 0, 0, 0, 0, 1, jpk)
+        zonitr  = nitrif * xstep * tr(ji,jj,jk,jpnh4,Kbb) * ( 1.- nitrfac(ji,jj,jk) )  &
+         &         / ( 1.+ emoy(ji,jj,jk) ) * ( 1. + fr_i(ji,jj) * emoy(ji,jj,jk) ) * tmask(ji,jj,jk)
+        !
+        trc3d(ji,jj,jkR,jp_remino2) =  (-o2ut) * zolimi(ji,jj,jk) * zfact * tmask(ji,jj,jk)
+        trc3d(ji,jj,jkR,jp_nitrifo2) =  (-o2nit) * zonitr * zfact * tmask(ji,jj,jk)
+     END_3D
+#endif      
       IF( ln_timing )   CALL timing_stop('p4z_rem')
       !
    END SUBROUTINE p4z_rem
