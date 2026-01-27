@@ -66,6 +66,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
 
+- BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
+
 ### Deprecated
 
 
