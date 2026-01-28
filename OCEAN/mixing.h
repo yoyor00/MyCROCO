@@ -141,6 +141,10 @@
       real hbl (GLOBAL_2D_ARRAY  )
       common /lmd_kpp_hbl/ hbl
 #   endif
+#  ifdef DIAGNOSTICS_TS_MLD_CM
+      integer kbl1(GLOBAL_2D_ARRAY)
+      common /kpp_kbl1/kbl1
+#  endif
 #   ifdef LMD_NONLOCAL
       real ghats(GLOBAL_2D_ARRAY,0:N)
       common /lmd_kpp_ghats/ghats

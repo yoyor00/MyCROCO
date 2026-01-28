@@ -246,8 +246,6 @@
            call fillvalue2d(work2d,nciddia_avg,diaTentr_mld_avg(itrc),
      &                      vname(1,indxTentr_mld+itrc-1),
      &                      record,r2dvar,type)
-
-
 !
 ! indxTaver_mld
 !
@@ -255,10 +253,7 @@
            call fillvalue2d(work2d,nciddia_avg,diaTaver_mld_avg(itrc),
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
-
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     & .or. itrc.eq.iCRT4) then
+# if defined DIAGNOSTICS_TS_MLD_CM 
 !
 ! indxTcrit_mld
 !
@@ -266,7 +261,6 @@
            call fillvalue2d(work2d,nciddia_avg,diaTcrit_mld_avg(itrc),
      &                      vname(1,indxTcrit_mld+itrc-1),
      &                      record,r2dvar,type)
-       endif
 # endif
         endif
 !
