@@ -2948,10 +2948,10 @@ CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
        write(vname1,*) trim(nametrc),'_depth_mld                  '
        vname(1,indxTcrit_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
+       vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
        if (itrc.eq.2) then
          vname(2,indxTcrit_mld+itrc-1)='Barrier layer             '
        endif
-       vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
        write(vname3,*)               ' meter                      '
        vname(3,indxTcrit_mld+itrc-1)=vname3
        vname(4,indxTcrit_mld+itrc-1)='                            '
