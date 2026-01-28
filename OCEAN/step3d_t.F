@@ -1025,14 +1025,29 @@
               cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
               TXadv_mld(i,j,itrc)=TXadv_mld(i,j,itrc)+
      &                            TXadv(i,j,k,itrc)*cff
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
               TYadv_mld(i,j,itrc)=TYadv_mld(i,j,itrc)+
      &                            TYadv(i,j,k,itrc)*cff
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
               TVadv_mld(i,j,itrc)=TVadv_mld(i,j,itrc)+
      &                            TVadv(i,j,k,itrc)*cff
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
               TVmix_mld(i,j,itrc)=TVmix_mld(i,j,itrc)+
      &                            TVmix(i,j,k,itrc)*cff
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
               TForc_mld(i,j,itrc)=TForc_mld(i,j,itrc)+
      &                            TForc(i,j,k,itrc)*cff
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
               T_mld_nnew(i,j)    =T_mld_nnew(i,j)+
      &                            t(i,j,k,nnew,itrc)*cff
             enddo

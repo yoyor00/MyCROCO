@@ -735,8 +735,14 @@
                if (itrc.eq.1) Tcrit_mld(i,j,itrc)=
      &                        z_w(i,j,N)-z_r(i,j,kbl1(i,j))
                Tcrit_mld(i,j,1)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
                if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
      &            (z_r(i,j,N)-z_r(i,j,kblt(i,j)))-Tcrit_mld(i,j,1)
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
             enddo
          enddo
 #   endif
@@ -763,10 +769,16 @@
              cff=Hz(i,j,k)/(z_w(i,j,N)-z_w(i,j,kmld-1))
              THmix_mld(i,j,itrc)=THmix_mld(i,j,itrc)+
      &                           THmix(i,j,k,itrc)*cff
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
              T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
            enddo
            Taver_mld(i,j,itrc)=T_mld_nnew(i,j) ! mean over mld
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
          enddo
        enddo
 
@@ -795,6 +807,9 @@
        do j=Jstr,Jend
          do i=Istr,Iend
             Trate_mld(i,j,itrc)=(T_mld_nnew(i,j)-T_mld_nstp(i,j))/dt
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
             Tentr_mld(i,j,itrc)=Trate_mld(i,j,itrc)-
      &                          TXadv_mld(i,j,itrc)-
      &                          TYadv_mld(i,j,itrc)-
@@ -802,6 +817,9 @@
      &                          TVmix_mld(i,j,itrc)-
      &                          THmix_mld(i,j,itrc)-
      &                          TForc_mld(i,j,itrc)
+#  ifdef MASKING
+     &                   *rmask(i,j)
+#  endif
          enddo
        enddo
 #   undef T_mld_nnew 
