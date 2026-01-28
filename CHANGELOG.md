@@ -84,6 +84,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - LMD_SKPP_MONOB never define (#400)
   - LIMIT_UNSTABLE_ONLY is always define (#401)
   - MLCONVEC (#399)
+  - TS_VADV_AKIMA and TS_HADV_AKIMA (#392)
 
 ### Other
 

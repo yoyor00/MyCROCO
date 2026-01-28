@@ -233,7 +233,6 @@
 # undef  TS_MIX_S
                       /* Vertical Tracer Advection  */
 # define TS_VADV_SPLINES
-# undef  TS_VADV_AKIMA
 # undef  TS_VADV_WENO5
                       /* Sponge layers for UV and TS */
 # define SPONGE
