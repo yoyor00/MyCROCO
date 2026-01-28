@@ -173,6 +173,10 @@
      &      SLOPEYQ1,SLOPEYQ2,SLOPEYQ3,SLOPEYQ4
        real, dimension(0:4), parameter :: wgt
      &   =(/0.,1.,0.5,0.33333333333,0.25/)
+# ifdef DIAGNOSTICS_TS_MLD_CM
+      integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
+      real    FF(PRIVATE_2D_SCRATCH_ARRAY)
+# endif
 #include "grid.h"
 #include "ocean3d.h"
 #include "mixing.h"
@@ -940,9 +944,40 @@
 # if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
+#   ifdef DIAGNOSTICS_TS_MLD_CM
+         do j=Jstr,Jend
+            do i=Istr,Iend
+               kbl1(i,j)=1
+               kblt(i,j)=1
+               FF(i,j)=0.
+               cff=0
+               cff1=0
+               do k=N,1,-1
+                  if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+0.03) then
+                     kbl1(i,j)=k
+                  endif
+                  if (rho(i,j,k).ge.rho(i,j,N)+0.03)  cff=1
+
+                  if (cff1.eq.0.and.t(i,j,k,nnew,1).gt.
+     &               t(i,j,N,nnew,1)-0.2) then
+                     kblt(i,j)=k
+                  endif
+                  if (t(i,j,k,nnew,1).le.t(i,j,N,nnew,1)-0.2)  cff1=1
+               enddo
+               FF(i,j)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+               if (itrc.eq.1) Tcrit_mld(i,j,itrc)=
+     &                        z_w(i,j,N)-z_r(i,j,kbl1(i,j))
+               Tcrit_mld(i,j,1)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
+               if (itrc.eq.2) Tcrit_mld(i,j,itrc)=
+     &            (z_r(i,j,N)-z_r(i,j,kblt(i,j)))-Tcrit_mld(i,j,1)
+            enddo
+         enddo
+#   endif
+
        do j=Jstr,Jend
          do i=Istr,Iend
             THmix_mld(i,j,itrc)=0.
+            Taver_mld(i,j,itrc)=0.
 #  ifdef TS_MIX_IMP
             TVmix_mld(i,j,itrc)=0.
 #  endif
@@ -954,6 +989,9 @@
          do i=Istr,Iend
 #  ifdef LMD_SKPP
            kmld=kbl(i,j)
+#     ifdef DIAGNOSTICS_TS_MLD_CM
+           kmld=kbl1(i,j)
+#     endif
 #  else
            kmld=N-5
 #  endif
@@ -968,6 +1006,7 @@
              T_mld_nnew(i,j)=T_mld_nnew(i,j)+
      &                       t(i,j,k,nnew,itrc)*cff
            enddo
+           Taver_mld(i,j,itrc)=T_mld_nnew(i,j) ! mean over mld
          enddo
        enddo
 
@@ -975,6 +1014,9 @@
          do i=Istr,Iend
 #  if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
+#     ifdef DIAGNOSTICS_TS_MLD_CM
+           if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl1(i,j)
+#     endif
            kmld=kbl_nstp(i,j)
 #  else
            kmld=N-5
@@ -985,6 +1027,9 @@
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
+#   ifdef DIAGNOSTICS_TS_MLD_CM
+           if (itrc .eq. NT) kbl_nstp(i,j)=kbl1(i,j)
+#   endif
          enddo
        enddo
        do j=Jstr,Jend
