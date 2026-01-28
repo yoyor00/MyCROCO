@@ -2945,11 +2945,14 @@ CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
 CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
        nametrc=vname(1,indxT+itrc-1)
        unitt=vname(3,indxT+itrc-1)
-       write(vname1,*) trim(nametrc),'_depth_mld                   '
+       write(vname1,*) trim(nametrc),'_depth_mld                  '
        vname(1,indxTcrit_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
-       vname(2,indxTcrit_mld+itrc-1)='MLD critainment rate        '
-       write(vname3,*)               ' meter                     '
+       if (itrc.eq.2) then
+         vname(2,indxTcrit_mld+itrc-1)='Barrier layer             '
+       endif
+       vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
+       write(vname3,*)               ' meter                      '
        vname(3,indxTcrit_mld+itrc-1)=vname3
        vname(4,indxTcrit_mld+itrc-1)='                            '
        vname(5,indxTcrit_mld+itrc-1)='                            '
