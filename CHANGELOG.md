@@ -48,6 +48,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BULK_FLUX : Update wasp bulk flux parametrization, 
   cppkey BULK_WASP (Issue #453)
 
+- BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
+
 ### Deprecated
 
 
