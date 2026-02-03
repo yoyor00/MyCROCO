@@ -1587,9 +1587,6 @@
 ! free-surface flows.
 ! Int. J. Numer. Methods Fluids 42, 929â~@~S952.
 */
-# define K3FAST_AM4
-# define K3FAST_AB3
-# define K3FAST_2DCONT
 # undef  MPI
 # undef XIOS
 # undef  NBQ
