@@ -238,7 +238,7 @@ MODULE traject3d
 #ifdef IBM_SPECIES
             ! Skip if species stage not appropriate
             ! Modif Clara
-#if defined MPI
+#ifdef MPI
             IF ( particle%stage >= 5 .OR. particle%super <= 0.0_rsh )  CYCLE
 #else
             IF ( particle%stage >= 1 .OR. particle%super <= 0.0_rsh )  CYCLE
