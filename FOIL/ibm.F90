@@ -436,7 +436,7 @@ MODULE ibm
     USE comtraj,      ONLY : debuse, F_Fix
     USE comtraj,      ONLY : number_tot, weight_tot, biom_tot, Wdeb_mean
     USE comtraj,      ONLY : fishing_strategy
-    USE debmodel,     ONLY : Hp, Hj
+    ! USE debmodel,     ONLY : Hp, Hj ! clara : dont need to import Hp and Hj, they are in the particle properties
     USE debmodel,     ONLY : Zaa, Zas, Zea, Zes, za, zs
 
     USE comtraj,      ONLY : imax, jmax
@@ -513,7 +513,6 @@ MODULE ibm
 
     !!----------------------------------------------------------------------
     !! * Executable part
- 
     ! Save particle properties (before any change for getting exact initial properties) 
     CALL ibm_save
  
@@ -764,29 +763,30 @@ MODULE ibm
                 IF(srflx(NINT(pos%idx_r),NINT(pos%idy_r))*rho0*Cp == 0.0_rsh) THEN
                    night=.TRUE.
                 ENDIF
-                IF (particle%H < Hp .AND. jjulien >= particle%dayjuv .AND. jjulien < 330 ) THEN
+                ! if deb_use should be added, but min and maxdepth needed for temperature
+                IF (particle%H < particle%Hp .AND. jjulien >= particle%dayjuv .AND. jjulien < 330 ) THEN
                     IF ( night ) THEN ! Juvenile Nuit
                         mindepth = 0.0_rsh
                         maxdepth = 30.0_rsh
                     ELSE! Juvenile day
                         mindepth = min(30.0_rsh, 2.27_rsh*particle%size) ! Boyra, 2013
                         maxdepth = 30.0_rsh + (120.0_rsh - 30.0_rsh)*(1.0_rsh - (330.0_rsh - REAL(jjulien,rsh)) &
-                                                                               /(330.0_rsh - REAL(particle%dayjuv,rsh)))
+                                                                            /(330.0_rsh - REAL(particle%dayjuv,rsh)))
                     ENDIF
                 ELSE
-                   IF (jjulien <= 90 .OR. jjulien >= 330) THEN !winter 
-                      mindepth = 40.0_rsh
-                      maxdepth = 120.0_rsh
-                   ELSE
-                      IF ( night ) THEN ! spring/summer
-                         ! Adulte Nuit
-                         mindepth = 0.0_rsh
-                         maxdepth = 40.0_rsh
-                      ELSE ! Adult day
-                         mindepth = 30.0_rsh 
-                         maxdepth = 120.0_rsh
-                      ENDIF
-                   ENDIF
+                    IF (jjulien <= 90 .OR. jjulien >= 330) THEN !winter 
+                        mindepth = 40.0_rsh
+                        maxdepth = 120.0_rsh
+                    ELSE
+                        IF ( night ) THEN ! spring/summer
+                            ! Adulte Nuit
+                            mindepth = 0.0_rsh
+                            maxdepth = 40.0_rsh
+                        ELSE ! Adult day
+                            mindepth = 30.0_rsh 
+                            maxdepth = 120.0_rsh
+                        ENDIF
+                    ENDIF
                 ENDIF
 
                 !PRINT*, 'Min max Depth :', particle%num, particle%stage,mindepth,maxdepth,jjulien,particle%dayjuv,particle%H,Hp
@@ -1420,7 +1420,7 @@ MODULE ibm
             CALL ionc4_createvar_traj(file_out, "DAYJUV","","Julien day at metamorphosis",                 &
                                                 fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "ZOOM","","Zoom value",                                    &
-                                                fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=fillval, ndims=1, l_out_nc4par=l_out_nc4par)
             !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
             !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DENSPAWN","sigma","Density of egg at spawning",           &
@@ -1525,16 +1525,9 @@ MODULE ibm
         num1 = idx_s
         num2 = idx_e
 #else
-        ! num1 = 1
-        ! num2 = nb_part
-        num1 = idx_s
-        num2 = idx_e
-        print *, ' idx_s=', idx_s, ' idx_e=', idx_e
+        num1 = 1
+        num2 = nb_part
 #endif
-
-        print *, 'save lat', lat_out(1:nb_part)
-        print *, 'save flag', flag_out(1:nb_part)
-        print *, 'save NUMBER', nb_out(1:nb_part)
 
         CALL ionc4_write_trajt(file_out, 'latitude',  lat_out(1:nb_part),num1,num2,0,REAL(dg_valmanq_io,kind=out))
         CALL ionc4_write_trajt(file_out, 'longitude', lon_out(1:nb_part),num1,num2,0,REAL(dg_valmanq_io,kind=out))
