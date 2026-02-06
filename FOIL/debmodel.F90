@@ -44,8 +44,10 @@ MODULE debmodel
     REAL(kind=rsh)                  :: kap              ! -, Fraction to growth + maintenance
     REAL(kind=rsh)                  :: kj               ! 1/d, maturity maintenance rate coeff
     REAL(kind=rsh)                  :: Hb               ! J, maturity at birth (first feeding)(Nisbet 2012)
-    REAL(kind=rsh), PUBLIC          :: Hj               ! J, maturity at metamorphosis
-    REAL(kind=rsh), PUBLIC          :: Hp               ! J, maturity at puberty (Nisbet 2012)
+    ! REAL(kind=rsh), PUBLIC          :: Hj               ! J, maturity at metamorphosis
+    ! REAL(kind=rsh), PUBLIC          :: Hp               ! J, maturity at puberty (Nisbet 2012)
+    REAL(kind=rsh)                  :: Hj               ! J, maturity at metamorphosis
+    REAL(kind=rsh)                  :: Hp               ! J, maturity at puberty (Nisbet 2012)
     REAL(kind=rsh)                  :: Kx               ! Assimilation efficiency
     
     !Auxillary and compound parameters
@@ -138,7 +140,7 @@ MODULE debmodel
     !! * Local declarations
     CHARACTER(LEN=lchain)                       :: file_inp
     INTEGER                                     :: idimt
-    INTEGER                                     :: m, n, num, nb_part_nc, is, ie, il, index_num !CLARA
+    INTEGER                                     :: m, n, num, nb_part_nc, is, ie, il, index_num
     INTEGER                                     :: lstr,lenstr
     TYPE(type_patch), POINTER                   :: patch
     
@@ -147,8 +149,9 @@ MODULE debmodel
     INTEGER                                     :: jj,mm_clock,aaaa,hh,minu,sec
     CHARACTER(len=19)                           :: tool_sectodat
 
-    INTEGER,        ALLOCATABLE, DIMENSION(:)   :: daysp_nc, yearsp_nc, season_nc, num_nc, zoom_nc !CLARA
+    INTEGER,        ALLOCATABLE, DIMENSION(:)   :: daysp_nc, yearsp_nc, season_nc, num_nc
     REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: edeb_nc, hdeb_nc, rdeb_nc, gam_nc, neggs_nc, wdeb_nc
+    REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: zoom_nc 
 
     CHARACTER(len=lchain)                       :: file_catch
     INTEGER                                     :: id_species
@@ -216,12 +219,12 @@ MODULE debmodel
             CALL ionc4_read_trajt(file_inp, "WEIGHT",    wdeb_nc,  1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM",  num_nc,      1, nb_part_nc, idimt)
     
-            CALL ionc4_read_traj (trim(file_inp), "DAYSPAWN",  daysp_nc,  1, nb_part_nc)
-            CALL ionc4_read_traj (trim(file_inp), "YEARSPAWN", yearsp_nc, 1, nb_part_nc)
-            CALL ionc4_read_traj (trim(file_inp), "ZOOM",      zoom_nc,   1, nb_part_nc)
+            CALL ionc4_read_traj (file_inp, "DAYSPAWN",  daysp_nc,  1, nb_part_nc)
+            CALL ionc4_read_traj (file_inp, "YEARSPAWN", yearsp_nc, 1, nb_part_nc)
+            CALL ionc4_read_traj (file_inp, "ZOOM",      zoom_nc,   1, nb_part_nc)
             !CALL ionc4_read_traj (file_inp, "SEASON",    season_nc, 1, nb_part_nc)
             CALL ionc4_close(file_inp)
-            
+
             DO m = 1,patch%nb_part_alloc
                 IF (patch%nb_part_alloc == 0) CYCLE
                 IF ( .NOT. patch%particles(m)%active ) CYCLE
@@ -368,10 +371,10 @@ MODULE debmodel
             L = patch%particles(m)%L   
             
             IF (patch%particles(m)%size < 2.0_rsh) patch%particles(m)%L = patch%particles(m)%size *shapeb
-            IF (patch%particles(m)%size >= 2.0_rsh .and. patch%particles(m)%size <= 4.0_rsh) THEN
-                patch%particles(m)%L = patch%particles(m)%size*((L - shapeb*2.0_rsh)*shape + (shape*4.0_rsh - L)*shapeb) &
-                                       /(shape*4.0_rsh - shapeb*2.0_rsh)
-            ENDIF ! ce if commenté chez clara
+            ! IF (patch%particles(m)%size >= 2.0_rsh .and. patch%particles(m)%size <= 4.0_rsh) THEN
+            !     patch%particles(m)%L = patch%particles(m)%size*((L - shapeb*2.0_rsh)*shape + (shape*4.0_rsh - L)*shapeb) &
+            !                            /(shape*4.0_rsh - shapeb*2.0_rsh)
+            ! ENDIF ! ce if commenté chez clara
             IF (patch%particles(m)%size > 4.0_rsh) patch%particles(m)%L = patch%particles(m)%size*shape
 
             ! Weight
@@ -429,11 +432,14 @@ MODULE debmodel
             patch%particles(m)%SF       = SF
             patch%particles(m)%zoom     = zoom
 
+            ! -- Maturity (to ensure puberty is reached in case of initialisation + zoom)
+            if (patch%particles(m)%stage >= 6) patch%particles(m)%H = patch%particles(m)%Hp
+
             ! Just calculated 
             patch%particles(m)%WV       = WV
             patch%particles(m)%WE       = WE
             patch%particles(m)%WR       = WR
-            patch%particles(m)%WG       = 0._rsh
+            patch%particles(m)%WG       = WG ! 0._rsh !Denis, why ?
             patch%particles(m)%Wdebd    = WV + WE + WR + WG + Wash
             patch%particles(m)%Wdeb     = patch%particles(m)%Wdebd + Wat
             patch%particles(m)%NRJd     = patch%init_particle%NRJd
@@ -537,7 +543,9 @@ MODULE debmodel
 
     ! On initialise par défaut avec paramètre des parents.
     particle % L        = Sizeb*shapeb
-    particle % H        = particle % H
+    ! particle % H        = particle % H 
+    ! To account for zoom factor
+    particle % H        = particle % Hb 
     particle % E        = particle % E
     particle % R        = particle % R
 
@@ -688,7 +696,7 @@ MODULE debmodel
         ! -- Densite-dependance  (Menu et al. 2023)
         IF (particle%WV > 0) THEN
                 IF (species == 'anchovy') THEN
-                    f = X / (X + K_food + struc_ad_dd_DEB/(K_biomassA*10d8*particle%WV**gammaA) ) !BD weight effect     
+                    f = X / (X + K_food + struc_ad_dd_DEB/(K_biomassA*10d8*particle%WV**gammaA) ) !BD weight effect  
                 ENDIF
                 IF (species == 'sardine') THEN
                     f = X / (X + K_food + struc_ad_dd_DEB/(K_biomassS*10d8*particle%WV**gammaS) ) !BD weight effect     
@@ -709,7 +717,7 @@ MODULE debmodel
     ! shape correction function
     ! correction factor, can be related to increase of assimilation efficiency, or visual acuity
     !cor_l = MIN(1.0_rsh,MAX(((H-Hb)+(Hj-H)*lfactor) / (Hj-Hb),lfactor))
-    cor_l = MIN(1.0_rsh, MAX(((L - Lb) + (Lj - L)*lfactor)/(Lj - Lb), lfactor))
+    cor_l = MIN(1.0_rsh, MAX(((L - Lb) + (Lj*shape - L)*lfactor)/(Lj*shape - Lb), lfactor))
     
 
     ! CORRECTED PARAMETERS (Mars3D, Menu et al. 2023) ------------------------------
