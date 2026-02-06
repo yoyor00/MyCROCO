@@ -856,28 +856,31 @@ MODULE trajinitsave
             READ(49,'(a)',iostat=eof) rec
             kk = index(rec,',|')
             IF (kk > 0 ) THEN
-                IF (ibm_restart) THEN
-                    new_patch%file_inp = trim(file_pathout) // rec(1:kk-1)
-                ELSE
-                    new_patch%file_inp = rec(1:kk-1)
-                END IF
+                new_patch%file_inp = rec(1:kk-1)
+#ifdef DEB_IBM
+                IF (ibm_restart) new_patch%file_inp = trim(file_pathout) // rec(1:kk-1)
+#endif
                 
             ELSE
-                IF (ibm_restart) THEN
-                    new_patch%file_inp = trim(file_pathout) // rec
-                ELSE
-                    new_patch%file_inp = rec
-                END IF
-                
+                new_patch%file_inp = rec
+#ifdef DEB_IBM
+                IF (ibm_restart) new_patch%file_inp = trim(file_pathout) // rec
+#endif    
             END IF
 
             ! Read output file
             READ(49,'(a)',iostat=eof) rec
             kk = index(rec,',|')
             IF (kk > 0 ) THEN
+                new_patch%file_out = rec(1:kk-1)
+#ifdef DEB_IBM
                 new_patch%file_out = trim(file_pathout) // rec(1:kk-1)
+#endif                
             ELSE
+                new_patch%file_out = rec
+#ifdef DEB_IBM
                 new_patch%file_out = trim(file_pathout) // rec
+#endif               
             END IF
 
             ! Number of particles set at each initial position
@@ -924,20 +927,24 @@ MODULE trajinitsave
 
 
             ALLOCATE( lon_nc(nb_part_nc), lat_nc(nb_part_nc), depth_nc(nb_part_nc) )
+#ifdef DEB_IBM
             IF (ibm_restart) ALLOCATE( num_nc(nb_part_nc) )
-
+#endif
+            
             ! Read time dimension in input file to open last time in restart file
             idimt = ionc4_read_dimt(trim(new_patch%file_inp))
             ! read lat,lon,depth of particles in file
             CALL ionc4_read_trajt(trim(new_patch%file_inp), "longitude",lon_nc,  1,nb_part_nc,idimt)
             CALL ionc4_read_trajt(trim(new_patch%file_inp), "latitude", lat_nc,  1,nb_part_nc,idimt)
             CALL ionc4_read_trajt(trim(new_patch%file_inp), "DEPTH",    depth_nc,1,nb_part_nc,idimt)
+#ifdef DEB_IBM
             IF (ibm_restart) CALL ionc4_read_trajt(trim(new_patch%file_inp), "NUM",      num_nc,  1,nb_part_nc,idimt)
+#endif           
 
             nb_part = 0
             DO nn = 1,nb_part_nc 
 
-            ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
+                ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
                 IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
         
                 IF ( depth_nc(nn) < 0.0_rsh ) THEN
@@ -1018,9 +1025,11 @@ MODULE trajinitsave
                             new_patch%particles(m1:m2)%h0   = h0_lag
                             new_patch%particles(m1:m2)%xe   = xe_lag
                             DO l = 0,nb_part_intro-1
-                                IF (.not. ibm_restart) new_patch%particles(m1+l)%num = idx_s + m1 + l
+                                new_patch%particles(m1+l)%num = idx_s + m1 + l
+#ifdef DEB_IBM
                                 ! if restart, we want to keep the original num from netcdf file
                                 IF (ibm_restart) new_patch%particles(m1+l)%num = num_nc(nn)  ! clara : should we add + idx_s + l ?
+#endif           
                             ENDDO
                         ELSE
                             m2 = m2 - nb_part_intro
@@ -1029,7 +1038,9 @@ MODULE trajinitsave
                 END IF 
             END DO
             DEALLOCATE(lon_nc,lat_nc,depth_nc)
+#ifdef DEB_IBM
             IF (ibm_restart) DEALLOCATE(num_nc)
+#endif            
 
             ! close netcdf file
             CALL ionc4_close(new_patch%file_inp)
