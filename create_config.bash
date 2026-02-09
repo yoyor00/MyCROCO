@@ -103,6 +103,7 @@ LIST_OPTIONS=$(cat << EOF
  sediment   : inputs for sediment 
  mustang    : mustang model
  xios       : xios server and xml files
+ ms3dvar    : MS3DVAR data assimilation (use with ms3dvar-lr, ms3dvar-mr, ms3dvar-filter, or ms3dvar-ms)
 
  # -- CROCO built-in scripts and toolboxes -- # 
  mattools   : for getting matlab scripts for CROCO preprocessing
@@ -127,9 +128,9 @@ EOF
 # END USER MODIFICATIONS
 #==========================================================================================
 
-allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
-allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
-allmodels_cpl=( oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy )
+allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools ms3dvar )
+allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools ms3dvar )
+allmodels_cpl=( oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy ms3dvar )
 
 x_f=0
 
@@ -421,6 +422,83 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
 	cp -Rf ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/*.bash $MY_CONFIG_HOME/
         cp -Rf ${CROCO_DIR}/SCRIPTS/example_job* $MY_CONFIG_HOME/
     fi
+fi
+
+# MS3DVAR (standalone - can work with or without oce-dev/oce-prod)
+if [[ ${options[@]} =~ "ms3dvar" ]] ; then
+    echo ''
+    echo 'Configuring MS3DVAR data assimilation (standalone)'
+    echo '---------------------------------------------------'
+
+    MS3DVAR_DIR=${CROCO_DIR}/ASSIM/MS3DVAR
+
+    # Determine which variant to setup (default to LR if not specified)
+    MS3DVAR_VARIANT=""
+    for variant in lr mr filter ms; do
+        if [[ ${options[@]} =~ "ms3dvar-${variant}" ]] ; then
+            MS3DVAR_VARIANT=${variant}
+            break
+        fi
+    done
+
+    # Default to lr if no variant specified
+    if [ -z "$MS3DVAR_VARIANT" ]; then
+        MS3DVAR_VARIANT="lr"
+        echo "  No variant specified, using default: lr"
+    fi
+
+    echo "  Setting up MS3DVAR ${MS3DVAR_VARIANT} variant..."
+
+    # Convert variant to uppercase for directory name
+    VARIANT_DIR=$(echo ${MS3DVAR_VARIANT} | tr '[:lower:]' '[:upper:]')
+
+    # Create MS3DVAR work directory
+    MS3DVAR_WORK_DIR=${MY_CONFIG_WORK}/MS3DVAR/${VARIANT_DIR}
+    mkdir -p $MS3DVAR_WORK_DIR
+
+    # Copy variant-specific files
+    echo "    Copying variant-specific files from ${VARIANT_DIR}..."
+    \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/*.F ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+    \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/*.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+
+    # Copy common MS3DVAR files
+    echo "    Copying common MS3DVAR files from COMMON..."
+    \cp ${MS3DVAR_DIR}/COMMON/*.F ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+    \cp ${MS3DVAR_DIR}/COMMON/*.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+    \cp ${MS3DVAR_DIR}/COMMON/*.F90 ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+
+    # Copy required CROCO source files
+    echo "    Copying required CROCO source files..."
+    for f in get_initial.F read_inp.F timers_roms.F init_scalars.F init_arrays.F \
+             set_scoord.F setup_grid1.F setup_grid2.F ana_initial.F analytical.F \
+             set_depth.F diag.F checkdims.F grid_stiffness.F check_kwds.F \
+             check_switches2.F debug.F param.F ncscrum.F scalars.F put_global_atts.F \
+             nf_fread.F nf_fread_x.F nf_fread_y.F get_date.F lenstr.F closecdf.F \
+             insert_node.F fillvalue.F nf_add_attribute.F set_cycle.F def_grid_2d.F \
+             def_grid_3d.F def_his.F def_rst.F wrt_grid.F wrt_rst.F get_grid.F \
+             get_ssh.F MPI_Setup.F MessPass2D.F MessPass3D.F exchange.F autotiling.F \
+             buffer.F90 toolorigindate.F90 tooldatosec.F90 toolsectodat.F90 \
+             tooldecompdat.F90 tooldatetosec.F90; do
+        [ -f "${CROCO_DIR}/OCEAN/${f}" ] && \cp "${CROCO_DIR}/OCEAN/${f}" ${MS3DVAR_WORK_DIR}/ || true
+    done
+
+    # Copy build files
+    echo "    Copying build files..."
+    \cp ${MS3DVAR_DIR}/Makefile.inc ${MS3DVAR_WORK_DIR}/
+    \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makefile ${MS3DVAR_WORK_DIR}/
+    \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makedefs ${MS3DVAR_WORK_DIR}/
+    \cp ${MS3DVAR_DIR}/jobcomp ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+    chmod +x ${MS3DVAR_WORK_DIR}/jobcomp 2>/dev/null || true
+
+    # Copy documentation
+    echo "    Copying documentation..."
+    mkdir -p ${MS3DVAR_WORK_DIR}/doc
+    \cp -r ${MS3DVAR_DIR}/doc/* ${MS3DVAR_WORK_DIR}/doc/ 2>/dev/null || true
+
+    echo "  MS3DVAR ${MS3DVAR_VARIANT} configuration complete in: ${MS3DVAR_WORK_DIR}"
+    echo "  To build: cd ${MS3DVAR_WORK_DIR} && ./jobcomp"
+    echo "  Or manually: cd ${MS3DVAR_WORK_DIR} && module load conda3/perso && make"
+    echo ''
 fi
 
 ### Preprocessing scripts

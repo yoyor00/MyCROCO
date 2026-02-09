@@ -1,0 +1,342 @@
+#!/bin/bash
+####################################################
+#        MS3DVAR COMPILATION JOB                   #
+####################################################
+#
+# This script compiles MS3DVAR data assimilation system
+# Similar to CROCO's jobcomp but adapted for MS3DVAR
+#
+# Usage examples:
+#   ./jobcomp                    # Build LR variant (default)
+#   ./jobcomp --variant mr       # Build MR variant
+#   ./jobcomp --variant filter   # Build FILTER variant
+#   ./jobcomp --variant ms       # Build MS variant
+#   ./jobcomp --all              # Build all 4 variants
+#
+# Environment variables:
+#   MS3DVAR_VARIANT      : variant to build (lr, mr, filter, ms)
+#   MS3DVAR_FC           : Fortran compiler (default: gfortran)
+#   MS3DVAR_FFLAGS       : compilation flags
+#   MS3DVAR_NETCDFLIB    : NetCDF library path
+#   MS3DVAR_NETCDFINC    : NetCDF include path
+#   MS3DVAR_NPROCS       : number of parallel compilation jobs
+#
+
+####################################################
+# BEGIN OF USER'S MODIFICATIONS
+####################################################
+
+# Default variant
+VARIANT="lr"
+
+# Compiler
+FC="gfortran"
+
+# NetCDF directories (using nf-config if available)
+if command -v nf-config &> /dev/null; then
+    NETCDFLIB="$(nf-config --flibs)"
+    NETCDFINC="-I$(nf-config --includedir)"
+else
+    # Fallback to conda3/perso paths (adjust as needed)
+    NETCDFINC="-I$HOME/Soft/conda3-perso/include"
+    NETCDFLIB="-L$HOME/Soft/conda3-perso/lib -lnetcdff -lnetcdf"
+fi
+
+# Number of parallel make jobs
+NPROCS=1
+
+# Module to load (leave empty if not needed)
+#MODULE_LOAD="my_module"
+
+####################################################
+# END OF USER'S MODIFICATIONS
+####################################################
+
+# EDIT ALL WHAT FOLLOWS AT YOUR OWN RISKS
+
+# Function to display help
+function show_help() {
+    echo "---------------------------------------------------------------------"
+    echo "JOBCOMP script to compile MS3DVAR data assimilation system"
+    echo "---------------------------------------------------------------------"
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help                  Show this help message and exit"
+    echo "  --variant <name>            Variant to build: lr, mr, filter, ms (default: lr)"
+    echo "  --all                       Build all 4 variants sequentially"
+    echo "  --fc <compiler>             Fortran compiler (default: gfortran)"
+    echo "  --fflags <flags>            Compilation flags"
+    echo "  --netcdf-inc <path>         NetCDF include directory"
+    echo "  --netcdf-lib <libs>         NetCDF libraries"
+    echo "  --jobs <n>                  Number of parallel make jobs (default: 1)"
+    echo "  --no-module                 Don't load any module"
+    echo "  --module <name>             Module to load (default: conda3/perso)"
+    echo "  --clean                     Clean before building"
+    echo ""
+    echo "Examples:"
+    echo "  $0                          # Build LR variant with defaults"
+    echo "  $0 --variant mr             # Build MR variant"
+    echo "  $0 --all                    # Build all variants"
+    echo "  $0 --variant lr --clean     # Clean and build LR"
+    echo "  $0 --jobs 4                 # Build with 4 parallel jobs"
+    echo ""
+}
+
+# Variables
+BUILD_ALL=0
+DO_CLEAN=0
+NO_MODULE=0
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --variant)
+            VARIANT="$2"
+            shift 2
+            ;;
+        --all)
+            BUILD_ALL=1
+            shift
+            ;;
+        --fc)
+            FC="$2"
+            shift 2
+            ;;
+        --fflags)
+            FFLAGS="$2"
+            shift 2
+            ;;
+        --netcdf-inc)
+            NETCDFINC="$2"
+            shift 2
+            ;;
+        --netcdf-lib)
+            NETCDFLIB="$2"
+            shift 2
+            ;;
+        --jobs)
+            NPROCS="$2"
+            shift 2
+            ;;
+        --module)
+            MODULE_LOAD="$2"
+            shift 2
+            ;;
+        --no-module)
+            NO_MODULE=1
+            shift
+            ;;
+        --clean)
+            DO_CLEAN=1
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+# Environment variable overrides
+[ -n "$MS3DVAR_VARIANT" ] && VARIANT="$MS3DVAR_VARIANT"
+[ -n "$MS3DVAR_FC" ] && FC="$MS3DVAR_FC"
+[ -n "$MS3DVAR_FFLAGS" ] && FFLAGS="$MS3DVAR_FFLAGS"
+[ -n "$MS3DVAR_NETCDFINC" ] && NETCDFINC="$MS3DVAR_NETCDFINC"
+[ -n "$MS3DVAR_NETCDFLIB" ] && NETCDFLIB="$MS3DVAR_NETCDFLIB"
+[ -n "$MS3DVAR_NPROCS" ] && NPROCS="$MS3DVAR_NPROCS"
+
+# Validate variant
+VARIANT_LOWER=$(echo "$VARIANT" | tr '[:upper:]' '[:lower:]')
+case "$VARIANT_LOWER" in
+    lr|mr|filter|ms)
+        ;;
+    *)
+        echo "ERROR: Invalid variant '$VARIANT'. Must be one of: lr, mr, filter, ms"
+        exit 1
+        ;;
+esac
+
+# Convert to uppercase for directory name
+VARIANT_UPPER=$(echo "$VARIANT_LOWER" | tr '[:lower:]' '[:upper:]')
+
+# Function to build a single variant
+function build_variant() {
+    local var_lower=$1
+    local var_upper=$2
+    local variant_dir="${var_upper}"
+
+    echo ""
+    echo "========================================================================"
+    echo "Building MS3DVAR variant: ${var_upper}"
+    echo "========================================================================"
+    echo "Variant directory: ${variant_dir}"
+    echo "Compiler: ${FC}"
+    echo "NetCDF include: ${NETCDFINC}"
+    echo "NetCDF library: ${NETCDFLIB}"
+    echo "Parallel jobs: ${NPROCS}"
+    echo ""
+
+    # Check if variant directory exists
+    if [ ! -d "${variant_dir}" ]; then
+        echo "ERROR: Variant directory ${variant_dir} not found"
+        return 1
+    fi
+
+    # Enter variant directory
+    cd "${variant_dir}" || { echo "ERROR: Cannot enter ${variant_dir}"; return 1; }
+
+    # Clean if requested
+    if [ $DO_CLEAN -eq 1 ]; then
+        echo "Cleaning previous build..."
+        make clean 2>/dev/null || true
+        rm -f mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename 2>/dev/null || true
+        echo "Clean complete"
+        echo ""
+    fi
+
+    # Load module if needed
+    if [ $NO_MODULE -eq 0 ] && [ -n "$MODULE_LOAD" ]; then
+        echo "Loading module: ${MODULE_LOAD}"
+        if command -v module &> /dev/null; then
+            module load ${MODULE_LOAD} 2>/dev/null || true
+        else
+            echo "WARNING: 'module' command not found, skipping module load"
+        fi
+        echo ""
+    fi
+
+    # Step 1: Build utility tools (no NetCDF needed)
+    echo "Step 1: Building utility tools..."
+    echo "Building: mpc, cross_matrix, cppcheck, srcscheck, checkkwds, partit"
+
+    if [ ! -f ../../../OCEAN/mpc.F ]; then
+        echo "ERROR: CROCO source files not found at ../../../OCEAN/"
+        echo "Make sure you run this from a properly configured MS3DVAR work directory"
+        cd ..
+        return 1
+    fi
+
+    ${FC} -o mpc ../../../OCEAN/mpc.F || { echo "ERROR: Failed to build mpc"; cd ..; return 1; }
+    ${FC} -o cross_matrix ../../../OCEAN/cross_matrix.F || { echo "ERROR: Failed to build cross_matrix"; cd ..; return 1; }
+    ${FC} -o cppcheck ../../../OCEAN/cppcheck.F || { echo "ERROR: Failed to build cppcheck"; cd ..; return 1; }
+    ${FC} -o srcscheck ../../../OCEAN/srcscheck.F || { echo "ERROR: Failed to build srcscheck"; cd ..; return 1; }
+    ${FC} -o checkkwds ../../../OCEAN/checkkwds.F || { echo "ERROR: Failed to build checkkwds"; cd ..; return 1; }
+    ${FC} -o partit ../../../OCEAN/partit.F || { echo "ERROR: Failed to build partit"; cd ..; return 1; }
+
+    echo "Utility tools built successfully"
+    echo ""
+
+    # Step 2: Build NetCDF-dependent tools
+    echo "Step 2: Building NetCDF-dependent tools..."
+    echo "Building: ncjoin, ncrename"
+
+    ${FC} ${NETCDFINC} ${NETCDFLIB} -o ncjoin ../../../OCEAN/ncjoin.F || \
+        { echo "ERROR: Failed to build ncjoin"; cd ..; return 1; }
+
+    ${FC} ${NETCDFINC} ${NETCDFLIB} -o ncrename ../../../OCEAN/ncrename.F || \
+        { echo "ERROR: Failed to build ncrename"; cd ..; return 1; }
+
+    echo "NetCDF tools built successfully"
+    echo ""
+
+    # Step 3: Build main MS3DVAR code
+    echo "Step 3: Building MS3DVAR main code..."
+    echo "This may take several minutes..."
+    echo ""
+
+    # Export environment for Makefile
+    export FC
+    export NETCDFINC
+    export NETCDFLIB
+    export FFLAGS
+
+    # Build with make
+    if [ $NPROCS -gt 1 ]; then
+        make -j${NPROCS} TOOLS="" all || { echo "ERROR: Make failed"; cd ..; return 1; }
+    else
+        make TOOLS="" all || { echo "ERROR: Make failed"; cd ..; return 1; }
+    fi
+
+    # Find the executable
+    EXE=$(find . -maxdepth 1 -type f -executable -name "ms*" -o -name "da_*" 2>/dev/null | head -1)
+
+    echo ""
+    echo "========================================================================"
+    echo "✅ MS3DVAR ${var_upper} built successfully!"
+    if [ -n "$EXE" ]; then
+        echo "Executable: $(basename $EXE)"
+        echo "Full path: $(pwd)/$(basename $EXE)"
+    fi
+    echo "========================================================================"
+    echo ""
+
+    # Return to parent directory
+    cd ..
+
+    return 0
+}
+
+# Main execution
+echo "========================================================================"
+echo "MS3DVAR Compilation Script"
+echo "========================================================================"
+echo "Operating system: $(uname)"
+echo "Date: $(date)"
+echo ""
+
+# Get script directory (MS3DVAR root)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR" || { echo "ERROR: Cannot access script directory"; exit 1; }
+
+echo "MS3DVAR directory: ${SCRIPT_DIR}"
+echo ""
+
+if [ $BUILD_ALL -eq 1 ]; then
+    # Build all variants
+    echo "Building all 4 variants sequentially..."
+    echo ""
+
+    FAILED_VARIANTS=""
+
+    for var in lr mr filter ms; do
+        var_upper=$(echo "$var" | tr '[:lower:]' '[:upper:]')
+        if ! build_variant "$var" "$var_upper"; then
+            FAILED_VARIANTS="${FAILED_VARIANTS} ${var_upper}"
+        fi
+    done
+
+    echo ""
+    echo "========================================================================"
+    echo "Build Summary"
+    echo "========================================================================"
+    if [ -z "$FAILED_VARIANTS" ]; then
+        echo "✅ All variants built successfully!"
+        echo ""
+        echo "Executables:"
+        for var in lr mr filter ms; do
+            var_upper=$(echo "$var" | tr '[:lower:]' '[:upper:]')
+            EXE=$(find ${var_upper} -maxdepth 1 -type f -executable -name "ms*" -o -name "da_*" 2>/dev/null | head -1)
+            if [ -n "$EXE" ]; then
+                echo "  ${var_upper}: $(basename $EXE)"
+            fi
+        done
+        exit 0
+    else
+        echo "❌ Some variants failed to build:${FAILED_VARIANTS}"
+        exit 1
+    fi
+else
+    # Build single variant
+    if ! build_variant "$VARIANT_LOWER" "$VARIANT_UPPER"; then
+        echo ""
+        echo "❌ Build failed for variant ${VARIANT_UPPER}"
+        exit 1
+    fi
+    exit 0
+fi
