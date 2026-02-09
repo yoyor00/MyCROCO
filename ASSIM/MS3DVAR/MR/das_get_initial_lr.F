@@ -1,0 +1,195 @@
+#include "cppdefs.h"
+                              ! Read initial conditions for the
+      subroutine das_get_initial_lr  ! primitive variables from NetCDF 
+                              ! initialization file.
+      implicit none
+#include "netcdf.inc"
+      real time_scale
+      character vnts*4
+      integer ncid, indx, varid,  ierr, lstr, lvar, latt, lenstr,
+     &      start(2), count(2), ibuff(4),   das_nf_fread_lr, checkdims
+#ifdef SOLVE3D
+     &                                      , itrc
+#endif
+      character units*64
+#include "param.h"
+#include "das_param.h"
+#include "das_param_lr.h"
+#include "scalars.h"
+#include "ncscrum.h"
+#include "das_ocean.h"
+#include "das_ocean_lr.h"
+!
+! Open initial conditions netCDF file for reading. Check that all
+! spatial dimensions in that file are consistent with the model
+! arrays, determine how many time records are available in the file
+! and set record from which the dada will be read.
+!
+! The record is set as follows: (1) if only one time record is
+! available in the file, then that record is used REGARDLESS of
+! value of nrrec supplied from the parameter file; (2) if the
+! file has multiple records and nrrec is positive, then nrrec is
+! used, provided that nrrec is within the available records; 
+! (3) if the file has multiple records and nrrec<0, then THE LAST 
+! available record is used.
+!
+      flag_lr_da=0
+      lstr=lenstr(clmname)
+      write(*,*) "... Trying to open LR increment"
+      write(*,*) clmname
+      write(*,*) lstr 
+      write(*,*) clmname(1:lstr)
+      write(*,*) TRIM(clmname)
+      ierr=nf_open(clmname(1:lstr), nf_nowrite, ncid)
+      if (ierr .ne. nf_noerr) then
+        write(stdout,'(/1x,2A/15x,3A)') 'GET_INC_LR ERROR: Cannot ',
+     &               'open netCDF file', '''', clmname(1:lstr) ,'''.'
+        flag_lr_da=1
+        goto 99                                           !--> ERROR
+      endif
+!
+! Read in evolving model variables:
+! ---- -- -------- ----- ----------
+      indx=1
+!
+! Free-surface.
+!
+      ierr=nf_inq_varid (ncid, 'zeta_da', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=das_nf_fread_lr (zeta_lr(START_2D_ARRAY), ncid, varid,
+     &                                         indx, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,2) 'zeta_da',indx,clmname(1:lstr)
+          flag_lr_da=1
+          goto 99                                         !--> ERROR
+        endif
+      else
+        write(stdout,1) 'zeta_da', clmname(1:lstr)
+        flag_lr_da=1
+        goto 99                                           !--> ERROR
+      endif
+
+      ierr=nf_inq_varid (ncid, 'lat_da', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=das_nf_fread_lr (lat_lr(START_2D_ARRAY), ncid, varid,
+     &                                         indx, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,2) 'lat_da',indx,clmname(1:lstr)
+          flag_lr_da=1
+          goto 99                                         !--> ERROR
+        endif
+      else  
+        write(stdout,1) 'lat_da', clmname(1:lstr)   
+        flag_lr_da=1
+        goto 99                                           !--> ERROR 
+      endif
+
+      ierr=nf_inq_varid (ncid, 'lon_da', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=das_nf_fread_lr (lon_lr(START_2D_ARRAY), ncid, varid,
+     &                                         indx, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,2) 'lon_da',indx,clmname(1:lstr)
+          flag_lr_da=1
+          goto 99                                         !--> ERROR
+        endif
+      else
+        write(stdout,1) 'lon_da', clmname(1:lstr) 
+        flag_lr_da=1
+        goto 99                                           !--> ERROR
+      endif
+
+!
+! 3D momentum component in the XI-direction.
+!
+      ierr=nf_inq_varid (ncid, 'u_da', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=das_nf_fread_lr (u_lr(START_2D_ARRAY,1), ncid, varid,
+     &                                        indx, u3dvar)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,2) 'u_da', indx,
+     &                                     clmname(1:lstr)
+          flag_lr_da=1
+          goto 99                                         !--> ERROR
+        endif
+      else
+        write(stdout,1) 'u_da', clmname(1:lstr)
+        flag_lr_da=1
+        goto 99                                           !--> ERROR
+      endif
+!
+! 3D momentum component in the ETA-direction.
+!
+      ierr=nf_inq_varid (ncid, 'v_da', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=das_nf_fread_lr (v_lr(START_2D_ARRAY,1), ncid, varid,
+     &                                        indx, v3dvar)
+        if (ierr .ne. nf_noerr) then
+          write(stdout,2) 'v_da', indx,
+     &                                       clmname(1:lstr)
+          flag_lr_da=1
+          goto 99                                        !--> ERROR
+        endif
+      else
+        write(stdout,1) 'v_da', clmname(1:lstr)
+        flag_lr_da=1
+        goto 99                                           !--> ERROR
+      endif
+!
+! Tracer variables.
+!
+      do itrc=1,NT
+        if (itrc .eq. 1) then
+           vnts='t_da'
+        else if (itrc .eq. 2) then
+           vnts='s_da'
+        else
+           vnts='BIO-VARIABLES'
+        endif
+
+        ierr=nf_inq_varid (ncid, vnts, varid)
+        if (ierr .eq. nf_noerr) then
+          ierr=das_nf_fread_lr (t_lr(START_2D_ARRAY,1,itrc), ncid,  varid,
+     &                                               indx, r3dvar)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,2) vnts, indx,
+     &                                              clmname(1:lstr)
+            flag_lr_da=1
+            goto 99                                       !--> ERROR
+          endif
+        else
+          write(stdout,1) vnts, clmname(1:lstr)
+          flag_lr_da=1
+          goto 99                                         !--> ERROR
+        endif
+      enddo
+!!
+!! mask
+!!
+!      ierr=nf_inq_varid (ncid, 'mask_da', varid)
+!      if (ierr .eq. nf_noerr) then           
+!        ierr=das_nf_fread_lr (rmask_lr(START_2D_ARRAY,1), ncid,  varid,
+!     &                                               indx, r3dvar)
+!        if (ierr .ne. nf_noerr) then                    
+!          write(stdout,2) 'mask_lr', indx,
+!     &                                              clmname(1:lstr)
+!          goto 99                                       !--> ERROR
+!        endif                                           
+!      else
+!        write(stdout,1) 'mask_lr', clmname(1:lstr)
+!        goto 99                                         !--> ERROR
+!      endif
+!
+  1   format(/1x,'GET_INCREMNT_LR - unable to find variable:',    1x,A,
+     &                            /15x,'in input NetCDF file:',1x,A/)
+  2   format(/1x,'GET_INCREMNT_LR - error while reading variable:',1x, A,
+     &    2x,'at time record =',i4/15x,'in input NetCDF file:',1x,A/)
+!
+!  Close input NetCDF file.
+!
+      ierr=nf_close(ncid)
+      return
+  99  continue
+      ncid=0
+      return
+      end
