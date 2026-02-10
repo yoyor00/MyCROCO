@@ -432,72 +432,100 @@ if [[ ${options[@]} =~ "ms3dvar" ]] ; then
 
     MS3DVAR_DIR=${CROCO_DIR}/ASSIM/MS3DVAR
 
-    # Determine which variant to setup (default to LR if not specified)
-    MS3DVAR_VARIANT=""
+    # Create MS3DVAR parent work directory
+    MS3DVAR_PARENT_DIR=${MY_CONFIG_WORK}/MS3DVAR
+    mkdir -p $MS3DVAR_PARENT_DIR
+
+    # Copy jobcomp to MS3DVAR parent directory (for building all variants)
+    echo "  Copying jobcomp build script to ${MS3DVAR_PARENT_DIR}..."
+    \cp ${MS3DVAR_DIR}/jobcomp ${MS3DVAR_PARENT_DIR}/
+    chmod +x ${MS3DVAR_PARENT_DIR}/jobcomp
+
+    # Determine which variant(s) to setup
+    MS3DVAR_VARIANTS=()
+    SPECIFIC_VARIANT_FOUND=0
+
+    # Check if specific variant(s) are requested
     for variant in lr mr filter ms; do
         if [[ ${options[@]} =~ "ms3dvar-${variant}" ]] ; then
-            MS3DVAR_VARIANT=${variant}
-            break
+            MS3DVAR_VARIANTS+=("${variant}")
+            SPECIFIC_VARIANT_FOUND=1
         fi
     done
 
-    # Default to lr if no variant specified
-    if [ -z "$MS3DVAR_VARIANT" ]; then
-        MS3DVAR_VARIANT="lr"
-        echo "  No variant specified, using default: lr"
+    # If no specific variant requested, setup all variants
+    if [ $SPECIFIC_VARIANT_FOUND -eq 0 ]; then
+        MS3DVAR_VARIANTS=("lr" "mr" "filter" "ms")
+        echo "  No specific variant requested, setting up all variants: LR, MR, FILTER, MS"
+    else
+        echo "  Setting up specific variant(s): ${MS3DVAR_VARIANTS[@]}"
     fi
 
-    echo "  Setting up MS3DVAR ${MS3DVAR_VARIANT} variant..."
+    # Setup each requested variant
+    for MS3DVAR_VARIANT in "${MS3DVAR_VARIANTS[@]}"; do
+        echo ''
+        echo "  Setting up MS3DVAR ${MS3DVAR_VARIANT} variant..."
 
-    # Convert variant to uppercase for directory name
-    VARIANT_DIR=$(echo ${MS3DVAR_VARIANT} | tr '[:lower:]' '[:upper:]')
+        # Convert variant to uppercase for directory name
+        VARIANT_DIR=$(echo ${MS3DVAR_VARIANT} | tr '[:lower:]' '[:upper:]')
 
-    # Create MS3DVAR work directory
-    MS3DVAR_WORK_DIR=${MY_CONFIG_WORK}/MS3DVAR/${VARIANT_DIR}
-    mkdir -p $MS3DVAR_WORK_DIR
+        # Create MS3DVAR work directory
+        MS3DVAR_WORK_DIR=${MY_CONFIG_WORK}/MS3DVAR/${VARIANT_DIR}
+        mkdir -p $MS3DVAR_WORK_DIR
 
-    # Copy variant-specific files
-    echo "    Copying variant-specific files from ${VARIANT_DIR}..."
-    \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/*.F ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
-    \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/*.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        # Copy variant-specific files
+        echo "    Copying variant-specific files from ${VARIANT_DIR}..."
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/*.F ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/*.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
 
-    # Copy common MS3DVAR files
-    echo "    Copying common MS3DVAR files from COMMON..."
-    \cp ${MS3DVAR_DIR}/COMMON/*.F ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
-    \cp ${MS3DVAR_DIR}/COMMON/*.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
-    \cp ${MS3DVAR_DIR}/COMMON/*.F90 ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        # Copy common MS3DVAR files
+        echo "    Copying common MS3DVAR files from COMMON..."
+        \cp ${MS3DVAR_DIR}/COMMON/*.F ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        \cp ${MS3DVAR_DIR}/COMMON/*.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        \cp ${MS3DVAR_DIR}/COMMON/*.F90 ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
 
-    # Copy required CROCO source files
-    echo "    Copying required CROCO source files..."
-    for f in get_initial.F read_inp.F timers_roms.F init_scalars.F init_arrays.F \
-             set_scoord.F setup_grid1.F setup_grid2.F ana_initial.F analytical.F \
-             set_depth.F diag.F checkdims.F grid_stiffness.F check_kwds.F \
-             check_switches2.F debug.F param.F ncscrum.F scalars.F put_global_atts.F \
-             nf_fread.F nf_fread_x.F nf_fread_y.F get_date.F lenstr.F closecdf.F \
-             insert_node.F fillvalue.F nf_add_attribute.F set_cycle.F def_grid_2d.F \
-             def_grid_3d.F def_his.F def_rst.F wrt_grid.F wrt_rst.F get_grid.F \
-             get_ssh.F MPI_Setup.F MessPass2D.F MessPass3D.F exchange.F autotiling.F \
-             buffer.F90 toolorigindate.F90 tooldatosec.F90 toolsectodat.F90 \
-             tooldecompdat.F90 tooldatetosec.F90; do
-        [ -f "${CROCO_DIR}/OCEAN/${f}" ] && \cp "${CROCO_DIR}/OCEAN/${f}" ${MS3DVAR_WORK_DIR}/ || true
+        # Copy required CROCO source files
+        echo "    Copying required CROCO source files..."
+        for f in get_initial.F read_inp.F timers_roms.F init_scalars.F init_arrays.F \
+                 set_scoord.F setup_grid1.F setup_grid2.F ana_initial.F analytical.F \
+                 set_depth.F diag.F checkdims.F grid_stiffness.F check_kwds.F \
+                 check_switches2.F debug.F param.F ncscrum.F scalars.F put_global_atts.F \
+                 nf_fread.F nf_fread_x.F nf_fread_y.F get_date.F lenstr.F closecdf.F \
+                 insert_node.F fillvalue.F nf_add_attribute.F set_cycle.F def_grid_2d.F \
+                 def_grid_3d.F def_his.F def_rst.F wrt_grid.F wrt_rst.F get_grid.F \
+                 get_ssh.F MPI_Setup.F MessPass2D.F MessPass3D.F exchange.F autotiling.F \
+                 buffer.F90 toolorigindate.F90 tooldatosec.F90 toolsectodat.F90 \
+                 tooldecompdat.F90 tooldatetosec.F90; do
+            [ -f "${CROCO_DIR}/OCEAN/${f}" ] && \cp "${CROCO_DIR}/OCEAN/${f}" ${MS3DVAR_WORK_DIR}/ || true
+        done
+
+        # Copy build files
+        echo "    Copying build files..."
+        \cp ${MS3DVAR_DIR}/Makefile.inc ${MS3DVAR_WORK_DIR}/
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makefile ${MS3DVAR_WORK_DIR}/
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makedefs ${MS3DVAR_WORK_DIR}/
+
+        # Copy documentation (only once, to parent directory)
+        if [ ! -d "${MS3DVAR_PARENT_DIR}/doc" ]; then
+            echo "    Copying documentation..."
+            mkdir -p ${MS3DVAR_PARENT_DIR}/doc
+            \cp -r ${MS3DVAR_DIR}/doc/* ${MS3DVAR_PARENT_DIR}/doc/ 2>/dev/null || true
+        fi
+
+        echo "    ✓ MS3DVAR ${MS3DVAR_VARIANT} complete: ${MS3DVAR_WORK_DIR}"
     done
 
-    # Copy build files
-    echo "    Copying build files..."
-    \cp ${MS3DVAR_DIR}/Makefile.inc ${MS3DVAR_WORK_DIR}/
-    \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makefile ${MS3DVAR_WORK_DIR}/
-    \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makedefs ${MS3DVAR_WORK_DIR}/
-    \cp ${MS3DVAR_DIR}/jobcomp ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
-    chmod +x ${MS3DVAR_WORK_DIR}/jobcomp 2>/dev/null || true
-
-    # Copy documentation
-    echo "    Copying documentation..."
-    mkdir -p ${MS3DVAR_WORK_DIR}/doc
-    \cp -r ${MS3DVAR_DIR}/doc/* ${MS3DVAR_WORK_DIR}/doc/ 2>/dev/null || true
-
-    echo "  MS3DVAR ${MS3DVAR_VARIANT} configuration complete in: ${MS3DVAR_WORK_DIR}"
-    echo "  To build: cd ${MS3DVAR_WORK_DIR} && ./jobcomp"
-    echo "  Or manually: cd ${MS3DVAR_WORK_DIR} && module load conda3/perso && make"
+    echo ''
+    echo "  MS3DVAR configuration complete"
+    echo "  ===================================="
+    if [ ${#MS3DVAR_VARIANTS[@]} -gt 1 ]; then
+        echo "  To build all variants: cd ${MS3DVAR_PARENT_DIR} && ./jobcomp"
+        echo "  Or explicitly: cd ${MS3DVAR_PARENT_DIR} && ./jobcomp --variant all"
+        echo "  To build specific variant: cd ${MS3DVAR_PARENT_DIR} && ./jobcomp --variant <lr|mr|filter|ms>"
+    else
+        echo "  To build: cd ${MS3DVAR_PARENT_DIR} && ./jobcomp --variant ${MS3DVAR_VARIANTS[0]}"
+    fi
+    echo "  Or build manually: cd ${MS3DVAR_PARENT_DIR}/<VARIANT> && module load conda3/perso && make"
     echo ''
 fi
 

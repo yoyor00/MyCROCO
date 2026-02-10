@@ -7,11 +7,16 @@
 # Similar to CROCO's jobcomp but adapted for MS3DVAR
 #
 # Usage examples:
-#   ./jobcomp                    # Build LR variant (default)
-#   ./jobcomp --variant mr       # Build MR variant
-#   ./jobcomp --variant filter   # Build FILTER variant
-#   ./jobcomp --variant ms       # Build MS variant
-#   ./jobcomp --all              # Build all 4 variants
+#   ./jobcomp                    # Build all variants (default)
+#   ./jobcomp all                # Build all variants (explicit)
+#   ./jobcomp lr                 # Build LR variant only
+#   ./jobcomp lr ms              # Build LR and MS variants
+#   ./jobcomp mr --clean         # Build MR variant with clean
+#   ./jobcomp --jobs 4 lr mr     # Build LR and MR with 4 jobs
+#   ./jobcomp lr mr filter --clean --jobs 4 # Build 3 variants with options
+#
+# Alternative syntax (explicit --variant flag):
+#   ./jobcomp --variant lr       # Build single variant (old syntax)
 #
 # Environment variables:
 #   MS3DVAR_VARIANT      : variant to build (lr, mr, filter, ms)
@@ -26,8 +31,8 @@
 # BEGIN OF USER'S MODIFICATIONS
 ####################################################
 
-# Default variant
-VARIANT="lr"
+# Default: build all variants (set to specific variant like "lr" to change default)
+VARIANT="all"
 
 # Compiler
 FC="gfortran"
@@ -59,12 +64,18 @@ function show_help() {
     echo "---------------------------------------------------------------------"
     echo "JOBCOMP script to compile MS3DVAR data assimilation system"
     echo "---------------------------------------------------------------------"
-    echo "Usage: $0 [OPTIONS]"
+    echo "Usage: $0 [OPTIONS] [VARIANT...]"
+    echo "   or: $0 [VARIANT...] [OPTIONS]"
+    echo ""
+    echo "Arguments:"
+    echo "  VARIANT...                  Variant(s) to build: lr, mr, filter, ms, all"
+    echo "                              Multiple variants can be specified"
+    echo "                              Can be placed before or after options"
+    echo "                              (default: all if not specified)"
     echo ""
     echo "Options:"
     echo "  -h, --help                  Show this help message and exit"
-    echo "  --variant <name>            Variant to build: lr, mr, filter, ms (default: lr)"
-    echo "  --all                       Build all 4 variants sequentially"
+    echo "  --variant <name>            Alternative way to specify single variant"
     echo "  --fc <compiler>             Fortran compiler (default: gfortran)"
     echo "  --fflags <flags>            Compilation flags"
     echo "  --netcdf-inc <path>         NetCDF include directory"
@@ -75,11 +86,14 @@ function show_help() {
     echo "  --clean                     Clean before building"
     echo ""
     echo "Examples:"
-    echo "  $0                          # Build LR variant with defaults"
-    echo "  $0 --variant mr             # Build MR variant"
-    echo "  $0 --all                    # Build all variants"
-    echo "  $0 --variant lr --clean     # Clean and build LR"
-    echo "  $0 --jobs 4                 # Build with 4 parallel jobs"
+    echo "  $0                          # Build all variants (default)"
+    echo "  $0 all                      # Build all variants (explicit)"
+    echo "  $0 lr                       # Build only LR variant"
+    echo "  $0 lr ms                    # Build LR and MS variants"
+    echo "  $0 mr --clean               # Variant first, then options"
+    echo "  $0 --clean mr filter        # Options first, variants at end"
+    echo "  $0 --jobs 4 lr mr ms        # Multiple options and variants"
+    echo "  $0 lr mr filter --clean     # Variants first, options at end"
     echo ""
 }
 
@@ -87,6 +101,7 @@ function show_help() {
 BUILD_ALL=0
 DO_CLEAN=0
 NO_MODULE=0
+POSITIONAL_VARIANTS=()
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -98,10 +113,6 @@ while [[ $# -gt 0 ]]; do
         --variant)
             VARIANT="$2"
             shift 2
-            ;;
-        --all)
-            BUILD_ALL=1
-            shift
             ;;
         --fc)
             FC="$2"
@@ -135,13 +146,31 @@ while [[ $# -gt 0 ]]; do
             DO_CLEAN=1
             shift
             ;;
-        *)
+        -*)
             echo "Unknown option: $1"
             show_help
             exit 1
             ;;
+        *)
+            # Positional argument (variant name)
+            POSITIONAL_VARIANTS+=("$1")
+            shift
+            ;;
     esac
 done
+
+# Determine variants to build
+if [ ${#POSITIONAL_VARIANTS[@]} -gt 0 ]; then
+    # Positional variants provided - build these specific variants
+    BUILD_ALL=1  # We'll handle multiple variants
+    VARIANTS_TO_BUILD=("${POSITIONAL_VARIANTS[@]}")
+elif [ -n "$VARIANT" ] && [ "$VARIANT" != "all" ]; then
+    # --variant flag used with specific variant
+    VARIANTS_TO_BUILD=("$VARIANT")
+else
+    # No specific variants, use default behavior
+    VARIANT="${VARIANT:-all}"
+fi
 
 # Environment variable overrides
 [ -n "$MS3DVAR_VARIANT" ] && VARIANT="$MS3DVAR_VARIANT"
@@ -151,10 +180,15 @@ done
 [ -n "$MS3DVAR_NETCDFLIB" ] && NETCDFLIB="$MS3DVAR_NETCDFLIB"
 [ -n "$MS3DVAR_NPROCS" ] && NPROCS="$MS3DVAR_NPROCS"
 
-# Validate variant
+# Handle "all" variant
 VARIANT_LOWER=$(echo "$VARIANT" | tr '[:upper:]' '[:lower:]')
+if [ "$VARIANT_LOWER" = "all" ]; then
+    BUILD_ALL=1
+fi
+
+# Validate variant
 case "$VARIANT_LOWER" in
-    lr|mr|filter|ms)
+    lr|mr|filter|ms|all)
         ;;
     *)
         echo "ERROR: Invalid variant '$VARIANT'. Must be one of: lr, mr, filter, ms"
@@ -297,8 +331,55 @@ cd "$SCRIPT_DIR" || { echo "ERROR: Cannot access script directory"; exit 1; }
 echo "MS3DVAR directory: ${SCRIPT_DIR}"
 echo ""
 
-if [ $BUILD_ALL -eq 1 ]; then
-    # Build all variants
+if [ ${#VARIANTS_TO_BUILD[@]} -gt 0 ]; then
+    # Build specific list of variants
+    echo "Building ${#VARIANTS_TO_BUILD[@]} variant(s): ${VARIANTS_TO_BUILD[*]}"
+    echo ""
+
+    FAILED_VARIANTS=""
+
+    for var in "${VARIANTS_TO_BUILD[@]}"; do
+        var_lower=$(echo "$var" | tr '[:upper:]' '[:lower:]')
+        var_upper=$(echo "$var" | tr '[:lower:]' '[:upper:]')
+
+        # Validate variant
+        case "$var_lower" in
+            lr|mr|filter|ms)
+                ;;
+            *)
+                echo "ERROR: Invalid variant '$var'. Must be one of: lr, mr, filter, ms"
+                FAILED_VARIANTS="${FAILED_VARIANTS} ${var_upper}(invalid)"
+                continue
+                ;;
+        esac
+
+        if ! build_variant "$var_lower" "$var_upper"; then
+            FAILED_VARIANTS="${FAILED_VARIANTS} ${var_upper}"
+        fi
+    done
+
+    echo ""
+    echo "========================================================================"
+    echo "Build Summary"
+    echo "========================================================================"
+    if [ -z "$FAILED_VARIANTS" ]; then
+        echo "✅ All requested variants built successfully!"
+        echo ""
+        echo "Executables:"
+        for var in "${VARIANTS_TO_BUILD[@]}"; do
+            var_upper=$(echo "$var" | tr '[:lower:]' '[:upper:]')
+            EXE=$(find ${var_upper} -maxdepth 1 -type f -executable -name "ms*" -o -name "da_*" 2>/dev/null | head -1)
+            if [ -n "$EXE" ]; then
+                echo "  ${var_upper}: $(basename $EXE)"
+            fi
+        done
+        exit 0
+    else
+        echo "❌ Some variants failed to build:${FAILED_VARIANTS}"
+        exit 1
+    fi
+elif [ $BUILD_ALL -eq 1 ]; then
+    # Build all 4 variants
     echo "Building all 4 variants sequentially..."
     echo ""
 
