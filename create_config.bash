@@ -515,6 +515,7 @@ if [[ ${options[@]} =~ "ms3dvar" ]] ; then
         echo "    ✓ MS3DVAR ${MS3DVAR_VARIANT} complete: ${MS3DVAR_WORK_DIR}"
     done
 
+
     echo ''
     echo "  MS3DVAR configuration complete"
     echo "  ===================================="
@@ -525,7 +526,7 @@ if [[ ${options[@]} =~ "ms3dvar" ]] ; then
     else
         echo "  To build: cd ${MS3DVAR_PARENT_DIR} && ./jobcomp --variant ${MS3DVAR_VARIANTS[0]}"
     fi
-    echo "  Or build manually: cd ${MS3DVAR_PARENT_DIR}/<VARIANT> && module load conda3/perso && make"
+    echo "  Or build manually: cd ${MS3DVAR_PARENT_DIR}/<VARIANT> && make"
     echo ''
 fi
 
