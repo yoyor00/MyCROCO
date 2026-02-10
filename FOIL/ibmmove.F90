@@ -89,15 +89,14 @@ MODULE ibmmove
  
     ! Open probadistrib for anchovies
     file_fish1   = fileprobadistrib_anc
-    write(*,*) 'file proba distrib = ',file_fish1
     name_in_fish = 'Probability'
     
     CALL ionc4_openr(file_fish1,l_in_nc4par=.true.)
     
     ! read number of population distribution along the year
     idimt = ionc4_read_dimt(file_fish1)  
+    
     ALLOCATE(fish_anc(GLOBAL_2D_ARRAY,nbSizeClass_anc,idimt)) 
-
     
     ! Definit les indices de lecture en fonction du proc mpi dans le fichier de forcage
     ! Lit sur tout le domaine en sequentiel sinon
@@ -144,13 +143,11 @@ MODULE ibmmove
 
     DO t = 1, idimt
         CALL ionc4_read_subzxyt(file_fish1,TRIM(name_in_fish),fish1,valimin,valimax,valjmin,valjmax,1,nbSizeClass_anc,t,1,1,1)
-        ! fish_anc(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
+#ifdef MPI
+        fish_anc(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
+#else
         fish_anc(0:valimax-valimin,0:valjmax-valjmin,:,t) = fish1 ! version modifiée Clara
-! #ifdef MPI
-            ! fish_anc(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
-! #else
-            ! fish_anc(LBOUND(fish_anc,1) : MIN(LBOUND(fish_anc,1)+valimax-valimin, UBOUND(fish_anc,1)), LBOUND(fish_anc,2) : MIN(LBOUND(fish_anc,2)+valjmax-valjmin, UBOUND(fish_anc,2)), :, t ) = fish1 ! version modifiée Clara
-! #endif 
+#endif 
 
     END DO
     CALL ionc4_close(file_fish1)
@@ -177,13 +174,11 @@ MODULE ibmmove
     
     DO t = 1, idimt
         CALL ionc4_read_subzxyt(file_fish2,TRIM(name_in_fish),fish1,valimin,valimax,valjmin,valjmax,1,nbSizeClass_sar,t,1,1,1)
-        ! fish_sar(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
+#ifdef MPI
+        fish_sar(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
+#else
         fish_sar(0:valimax-valimin,0:valjmax-valjmin,:,t) = fish1 ! version modifiée Clara
-! #ifdef MPI
-!             fish_sar(1:valimax-valimin+1,1:valjmax-valjmin+1,:,t) = fish1 ! version initiale Denis
-! #else
-!             fish_sar(LBOUND(fish_sar,1) : MIN(LBOUND(fish_sar,1)+valimax-valimin, UBOUND(fish_sar,1)), LBOUND(fish_sar,2) : MIN(LBOUND(fish_sar,2)+valjmax-valjmin, UBOUND(fish_sar,2)), :, t ) = fish1 ! version modifiée Clara
-! #endif
+#endif
 
     END DO
 

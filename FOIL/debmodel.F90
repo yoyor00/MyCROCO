@@ -1145,19 +1145,13 @@ MODULE debmodel
         CALL ionc4_read_subxyt(file_food,TRIM(name1_in_food),food2_1,valimin,valimax,valjmin,valjmax,ilecf+1,1,1)
         
         ! Copie des lectures dans les bons indices pour CROCO, ie entre 0 et imax-1
-        ! food1(1:valimax-valimin+1,1:valjmax-valjmin+1) = food1_1 ! version initiale Denis
-        ! food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
+#ifdef MPI
+        food1(1:valimax-valimin+1,1:valjmax-valjmin+1) = food1_1 ! version initiale Denis
+        food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
+#else
         food1(imin:imax,jmin:jmax) = food1_1(valimin:valimax,valjmin:valjmax) ! version modifiée Clara
         food2(imin:imax,jmin:jmax) = food2_1(valimin:valimax,valjmin:valjmax) ! version modifiée Clara
-
-        
-! #ifdef MPI
-!             food1(1:valimax-valimin+1,1:valjmax-valjmin+1) = food1_1 ! version initiale Denis
-!             food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
-! #else
-!             food1(LBOUND(food1,1) : MIN(LBOUND(food1,1)+valimax-valimin, UBOUND(food1,1)), LBOUND(food1,2) : MIN(LBOUND(food1,2)+valjmax-valjmin, UBOUND(food1,2)) ) = food1_1 ! version modifiée Clara
-!             food2(LBOUND(food2,1) : MIN(LBOUND(food2,1)+valimax-valimin, UBOUND(food2,1)), LBOUND(food2,2) : MIN(LBOUND(food2,2)+valjmax-valjmin, UBOUND(food2,2)) ) = food2_1 ! version modifiée Clara
-! #endif
+#endif
 
         DEALLOCATE(food1_1,food2_1)
         ilecmemfood=ilecf
@@ -1192,14 +1186,11 @@ MODULE debmodel
             CALL ionc4_read_subxyt(file_food,TRIM(name1_in_food),food2_1,valimin,valimax,valjmin,valjmax,ilecf+1,1,1)
 
             food1 = food2
-            ! food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
+#ifdef MPI
+            food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
+#else
             food2(imin:imax,jmin:jmax) = food2_1(valimin:valimax,valjmin:valjmax) ! version modifiée Clara
-            
-! #ifdef MPI
-!             food2(1:valimax-valimin+1,1:valjmax-valjmin+1) = food2_1 ! version initiale Denis
-! #else
-!             food2(LBOUND(food2,1) : MIN(LBOUND(food2,1)+valimax-valimin, UBOUND(food2,1)), LBOUND(food2,2) : MIN(LBOUND(food2,2)+valjmax-valjmin, UBOUND(food2,2)) ) = food2_1 ! version modifiée Clara
-! #endif
+#endif
             
             
 
