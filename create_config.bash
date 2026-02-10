@@ -495,7 +495,9 @@ if [[ ${options[@]} =~ "ms3dvar" ]] ; then
                  def_grid_3d.F def_his.F def_rst.F wrt_grid.F wrt_rst.F get_grid.F \
                  get_ssh.F MPI_Setup.F MessPass2D.F MessPass3D.F exchange.F autotiling.F \
                  buffer.F90 toolorigindate.F90 tooldatosec.F90 toolsectodat.F90 \
-                 tooldecompdat.F90 tooldatetosec.F90; do
+                 tooldecompdat.F90 tooldatetosec.F90 \
+                 mpc.F cross_matrix.F cppcheck.F srcscheck.F checkkwds.F partit.F \
+                 ncjoin.F ncrename.F; do
             [ -f "${CROCO_DIR}/OCEAN/${f}" ] && \cp "${CROCO_DIR}/OCEAN/${f}" ${MS3DVAR_WORK_DIR}/ || true
         done
 
