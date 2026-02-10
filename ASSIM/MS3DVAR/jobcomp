@@ -34,6 +34,11 @@
 # Default: build all variants (set to specific variant like "lr" to change default)
 VARIANT="all"
 
+# CROCO source directory (for tool compilation)
+# Default is current directory (tool sources copied by create_config.bash)
+# Can be overridden with --src option or CROCO_SRC environment variable
+SOURCE1="../../OCEAN"
+
 # Compiler
 FC="gfortran"
 
@@ -76,6 +81,8 @@ function show_help() {
     echo "Options:"
     echo "  -h, --help                  Show this help message and exit"
     echo "  --variant <name>            Alternative way to specify single variant"
+    echo "  ---croco-src <path>         CROCO source directory (default: . )"
+    echo "                              Tool sources are copied to work dir by create_config"
     echo "  --fc <compiler>             Fortran compiler (default: gfortran)"
     echo "  --fflags <flags>            Compilation flags"
     echo "  --netcdf-inc <path>         NetCDF include directory"
@@ -142,6 +149,10 @@ while [[ $# -gt 0 ]]; do
             NO_MODULE=1
             shift
             ;;
+        --croco-src)
+            SOURCE1="$2"
+            shift 2
+            ;;
         --clean)
             DO_CLEAN=1
             shift
@@ -179,6 +190,9 @@ fi
 [ -n "$MS3DVAR_NETCDFINC" ] && NETCDFINC="$MS3DVAR_NETCDFINC"
 [ -n "$MS3DVAR_NETCDFLIB" ] && NETCDFLIB="$MS3DVAR_NETCDFLIB"
 [ -n "$MS3DVAR_NPROCS" ] && NPROCS="$MS3DVAR_NPROCS"
+
+# Set CROCO source directory (allow override via CROCO_SRC env variable)
+SOURCE="${CROCO_SRC:-$SOURCE1}"
 
 # Handle "all" variant
 VARIANT_LOWER=$(echo "$VARIANT" | tr '[:upper:]' '[:lower:]')
@@ -248,20 +262,22 @@ function build_variant() {
     # Step 1: Build utility tools (no NetCDF needed)
     echo "Step 1: Building utility tools..."
     echo "Building: mpc, cross_matrix, cppcheck, srcscheck, checkkwds, partit"
+    echo "CROCO source directory: ${SOURCE}"
 
-    if [ ! -f ../../../OCEAN/mpc.F ]; then
-        echo "ERROR: CROCO source files not found at ../../../OCEAN/"
+    if [ ! -f ${SOURCE}/mpc.F ]; then
+        echo "ERROR: CROCO source files not found at ${SOURCE}/"
         echo "Make sure you run this from a properly configured MS3DVAR work directory"
+        echo "Or specify the correct path with --src /path/to/croco/OCEAN"
         cd ..
         return 1
     fi
 
-    ${FC} -o mpc ../../../OCEAN/mpc.F || { echo "ERROR: Failed to build mpc"; cd ..; return 1; }
-    ${FC} -o cross_matrix ../../../OCEAN/cross_matrix.F || { echo "ERROR: Failed to build cross_matrix"; cd ..; return 1; }
-    ${FC} -o cppcheck ../../../OCEAN/cppcheck.F || { echo "ERROR: Failed to build cppcheck"; cd ..; return 1; }
-    ${FC} -o srcscheck ../../../OCEAN/srcscheck.F || { echo "ERROR: Failed to build srcscheck"; cd ..; return 1; }
-    ${FC} -o checkkwds ../../../OCEAN/checkkwds.F || { echo "ERROR: Failed to build checkkwds"; cd ..; return 1; }
-    ${FC} -o partit ../../../OCEAN/partit.F || { echo "ERROR: Failed to build partit"; cd ..; return 1; }
+    ${FC} -o mpc ${SOURCE}/mpc.F || { echo "ERROR: Failed to build mpc"; cd ..; return 1; }
+    ${FC} -o cross_matrix ${SOURCE}/cross_matrix.F || { echo "ERROR: Failed to build cross_matrix"; cd ..; return 1; }
+    ${FC} -o cppcheck ${SOURCE}/cppcheck.F || { echo "ERROR: Failed to build cppcheck"; cd ..; return 1; }
+    ${FC} -o srcscheck ${SOURCE}/srcscheck.F || { echo "ERROR: Failed to build srcscheck"; cd ..; return 1; }
+    ${FC} -o checkkwds ${SOURCE}/checkkwds.F || { echo "ERROR: Failed to build checkkwds"; cd ..; return 1; }
+    ${FC} -o partit ${SOURCE}/partit.F || { echo "ERROR: Failed to build partit"; cd ..; return 1; }
 
     echo "Utility tools built successfully"
     echo ""
@@ -270,10 +286,10 @@ function build_variant() {
     echo "Step 2: Building NetCDF-dependent tools..."
     echo "Building: ncjoin, ncrename"
 
-    ${FC} ${NETCDFINC} ${NETCDFLIB} -o ncjoin ../../../OCEAN/ncjoin.F || \
+    ${FC} ${NETCDFINC} ${NETCDFLIB} -o ncjoin ${SOURCE}/ncjoin.F || \
         { echo "ERROR: Failed to build ncjoin"; cd ..; return 1; }
 
-    ${FC} ${NETCDFINC} ${NETCDFLIB} -o ncrename ../../../OCEAN/ncrename.F || \
+    ${FC} ${NETCDFINC} ${NETCDFLIB} -o ncrename ${SOURCE}/ncrename.F || \
         { echo "ERROR: Failed to build ncrename"; cd ..; return 1; }
 
     echo "NetCDF tools built successfully"
