@@ -154,7 +154,7 @@ MODULE ibmmove
     DEALLOCATE(fish1)
     
     ! Open probadistrib for sardines
-    file_fish2   = fileprobadistrib_anc
+    file_fish2   = fileprobadistrib_sar
     CALL ionc4_openr(file_fish2,l_in_nc4par=.true.)
 
     ! read number of population distribution along the year
