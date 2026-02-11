@@ -44,8 +44,6 @@ MODULE debmodel
     REAL(kind=rsh)                  :: kap              ! -, Fraction to growth + maintenance
     REAL(kind=rsh)                  :: kj               ! 1/d, maturity maintenance rate coeff
     REAL(kind=rsh)                  :: Hb               ! J, maturity at birth (first feeding)(Nisbet 2012)
-    ! REAL(kind=rsh), PUBLIC          :: Hj               ! J, maturity at metamorphosis
-    ! REAL(kind=rsh), PUBLIC          :: Hp               ! J, maturity at puberty (Nisbet 2012)
     REAL(kind=rsh)                  :: Hj               ! J, maturity at metamorphosis
     REAL(kind=rsh)                  :: Hp               ! J, maturity at puberty (Nisbet 2012)
     REAL(kind=rsh)                  :: Kx               ! Assimilation efficiency

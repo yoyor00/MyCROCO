@@ -436,7 +436,6 @@ MODULE ibm
     USE comtraj,      ONLY : debuse, F_Fix
     USE comtraj,      ONLY : number_tot, weight_tot, biom_tot, Wdeb_mean
     USE comtraj,      ONLY : fishing_strategy
-    ! USE debmodel,     ONLY : Hp, Hj ! clara : dont need to import Hp and Hj, they are in the particle properties
     USE debmodel,     ONLY : Zaa, Zas, Zea, Zes, za, zs
 
     USE comtraj,      ONLY : imax, jmax
