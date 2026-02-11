@@ -183,7 +183,6 @@
      &           filetype_diabio=15,filetype_diabio_avg=16,
      &           filetype_abl=18, filetype_abl_avg=19)
 !
-! For the loop 
       integer iloop, indextemp
       integer indxTime, indxZ, indxUb, indxVb
       parameter (indxTime=1, indxZ=2, indxUb=3, indxVb=4)
@@ -579,6 +578,9 @@
       parameter (indxBLMdiag3d=indxBLMdiag2d+NumBLMdiag2d)
 # endif
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv
+#if defined TEMPERATURE
+     &          , indxAkt
+# endif
       parameter (indxO=indxV+ntrc_temp+ntrc_salt
      &                      +ntrc_mld+ntrc_pas+ntrc_bio
      &                      +ntrc_sed+ntrc_substot
@@ -948,10 +950,6 @@
 # endif
 #endif /* PSOURCE_NCFILE */
 
-#ifdef DIURNAL_INPUT_SRFLX
-      integer indxShflx_rswbio
-      parameter (indxShflx_rswbio=indxSUSTR+124)
-#endif
 #if defined BHFLUX && defined TEMPERATURE
       integer indxBhflx
       parameter (indxBhflx=indxSUSTR+131)
@@ -1418,11 +1416,11 @@
 #   elif defined BIO_BioEBUS
       integer avgAOU, avgWIND10
 
-#  endif
-# endif  /* BIOLOGY */
-# if defined TRACERS
+#   endif
+#  endif  /* BIOLOGY */
+#  if defined TRACERS
       integer avgT(NTot)
-# endif
+#  endif
 #  ifdef BULK_FLUX
       integer avgShflx_rlw
      &      , avgShflx_lat,   avgShflx_sen
@@ -2266,7 +2264,7 @@
 #elif defined MUSTANG
      &               ,   sedname_must
 #endif
-#if defined SUBSTANCE 
+#if defined SUBSTANCE
      &               ,    subsfilename
 #endif
 #if defined SUBSTANCE && defined BLOOM
@@ -2387,7 +2385,7 @@
 #ifdef SEDIMENT
      &                                ,   sedname
 #elif defined MUSTANG
-     &               ,    sedname_must
+     &               ,   sedname_must
 #endif
 #if defined SUBSTANCE
      &               ,    subsfilename
