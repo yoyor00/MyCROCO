@@ -709,7 +709,7 @@ MODULE ibmtools
     !! * Local declarations
     REAL(kind=rsh)                        :: depth,w
     character(len=19)                     :: tool_sectodat,date
-    integer                               :: jj,mm,aaaa,hh,minu,sec
+    integer                               :: jj,mm_clock,aaaa,hh,minu,sec
     TYPE(type_position)                   :: pos  
  
     !!----------------------------------------------------------------------
@@ -1487,7 +1487,7 @@ MODULE ibmtools
     TYPE(type_particle)                                                      :: p
 
     !! * Local declarations
-    INTEGER                 :: jj,mm,aaaa,hh,minu,sec
+    INTEGER                 :: jj,mm_clock,aaaa,hh,minu,sec
     REAL(kind=rsh)          :: depth
     
     REAL(KIND=rsh),  ALLOCATABLE, DIMENSION(:,:)  :: xep

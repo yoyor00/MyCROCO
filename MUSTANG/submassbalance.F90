@@ -688,11 +688,13 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
     submassbalance_t_out = time + submassbalance_dtout
 
     ! initialisation to 0
-    submassbalance_stok_wat(:, 1:nv_adv) = 0.0_rlg
-    if(nv_fix > 0) submassbalance_stok_wat_fix(:, 1:nv_fix) = 0.0_rsh
+    if (submassbalance_nb_close > 0) then
+        submassbalance_stok_wat(:, 1:nv_adv) = 0.0_rlg
+        if(nv_fix > 0) submassbalance_stok_wat_fix(:, 1:nv_fix) = 0.0_rsh
 #ifdef MUSTANG
-    submassbalance_stok_sed(:, 1:nv_adv) = 0.0_rlg
+        submassbalance_stok_sed(:, 1:nv_adv) = 0.0_rlg
 #endif
+    endif
 
     do j = Jstr, Jend
         do i = Istr, Iend
@@ -1268,7 +1270,7 @@ subroutine submassbalance_wrt_outnc()
         submassbalance_t_varid, time, (/ submassbalance_next_record /)) )
 
     ! write close line
-    submassbalance_bil(:,:) = 0.0_rlg
+    if (submassbalance_nb_close > 0) submassbalance_bil(:,:) = 0.0_rlg
     do iz=1,submassbalance_nb_close
         ! compute total
         submassbalance_bil(iz,1:nv_adv) = submassbalance_stokw_total(iz,1:nv_adv) &

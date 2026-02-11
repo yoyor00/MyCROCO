@@ -11,11 +11,11 @@
 !
 !  This is the "online_get_bulk.F" script
 !------------------------------------------------------------------------------
-!  This file contains the subfunctions enabling the online extraction of the
-!  forcing from a NCEP/CFSR dataset. A spatial and time interpolation are applied
-!  to the extracted data in order to adapt these to the considered simulation
-!  domain as well as the associated MPI/OPENMP discretisation (if defined MPI/
-!  OPENMP).
+!  This file contains the subfunctions enabling the ONLINE extraction of the
+!  forcing from an atmospheric dataset. A spatial and time interpolation are 
+!  applied to the extracted data in order to adapt these to the considered 
+!  simulation domain as well as the associated MPI/OPENMP discretisation (if 
+!  defined MPI/OPENMP).
 !------------------------------------------------------------------------------
 #include "cppdefs.h"
 #if defined BULK_FLUX && defined ONLINE
@@ -23,13 +23,13 @@
 !*******************************************************************************
       subroutine get_bulk_online
 !------------------------------------------------------------------------------
-!  This subfunction enables the online extraction of data from a forcing netcdf
-!  NCEP/CFSR dataset. It complete the extraction with a spatial interpolation and
+!  This subfunction enables the ONLINE extraction of data from a forcing netcdf
+!  dataset. It complete the extraction with a spatial interpolation and
 !  a recalculation of the forcing fields to generate the bulk forcing (tairg,
 !  rhumg, prateg, radlwg, radswg, uwndg, vwndg) on the simulation domain.
 !------------------------------------------------------------------------------
 !  The main steps of this extraction are:
-!  - Opening of the relevant NCEP/CFSR netcdf file used for the forcing of the
+!  - Opening of the relevant netcdf file used for the forcing of the
 !    considered variable.
 !  - Extraction from this netcdf of the data corresponding with the simulation
 !    domain.
@@ -42,6 +42,7 @@
 !  bulkfilename(X) and are repeated when necessary during the time evolution of
 !  the simulation.
 !
+      USE tools_string, ONLY : to_uppercase
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -78,9 +79,9 @@
 !
       firstiter=.false.
 !
-!===== == === === ==== =========
-! Loop on all the CFSR variables
-!===== == === === ==== =========
+!===== == === === =========
+! Loop on all the variables
+!===== == === === =========
 !
       blkvar_id = 0
   10  blkvar_id = blkvar_id+1
@@ -104,7 +105,7 @@
 !
         if (blkvar_id.gt.nblkvrs) return
 !
-! Open a new CFSR file if necessary
+! Open a new file if necessary
 !
         if (newbulk(blkvar_id)) then
 !
@@ -125,12 +126,20 @@
      &                 ncidbulkO(blkvar_id))
           if (ierr. ne. nf_noerr) goto 4            !--> ERROR
 !
-! Extract the CFSR variable index
+! Extract the variable index
 !
           lvar=lenstr(blk_vname(1, blkvar_id))
           ierr=nf_inq_varid(ncidbulkO(blkvar_id),
      &                      blk_vname(1,blkvar_id)(1:lvar),
      &                      bulk_varid(blkvar_id))
+
+          if (ierr /= NF_NOERR) then
+               ierr = nf_inq_varid(ncidbulkO(blkvar_id), 
+     &               trim(to_uppercase(blk_vname(1,blkvar_id)(1:lvar))), 
+     &               bulk_varid(blkvar_id))
+          end if
+     
+
 !
 ! Extract the number of records
 !
@@ -211,22 +220,22 @@
 !
   1     iblk=3-itbulkO(blkvar_id)
 !
-!===== = ==== ==== === === ======== ===== == =========
-! Open a CFSR file for the previous month if necessary
-!===== = ==== ==== === === ======== ===== == =========
+!===== = ==== === === ======== ===== == =========
+! Open a file for the previous month if necessary
+!===== = ==== === === ======== ===== == =========
 !
-! (i.e. when the current CFSR time limits
+! (i.e. when the current file time limits
 !  are after the current model time)
 !
           if (firstiter) then
             if(timestp.le.(bulkstart*day2sec)) then
 !
-! Open a new CFSR file
+! Open a new file
 !
             newbulk(blkvar_id)=.true.
             bulk_recO(blkvar_id)=0
 !
-! Caracteristics (Year, month), of the CFSR file for the previous month
+! Caracteristics (Year, month), of the file for the previous month
 !
             bulkmonthnum(blkvar_id)=bulkmonthnum(blkvar_id)-1
             if(bulkmonthnum(blkvar_id).le.0) then
@@ -234,12 +243,12 @@
               bulkmonthnum(blkvar_id)=12
             endif
 !
-! Message for the opening of the CFSR file for the previous month
+! Message for the opening of the file for the previous month
 !
             lvar=lenstr(blk_vname(1,blkvar_id))
             MPI_master_only write(stdout,
      &      '(6x,A,1x,A,1x,I4,1x,A,1x,I2,1x,A,1x,A)') 'ONLINE_BULK --',
-     &      'for temporal consistency open CFSR file of year',
+     &      'for temporal consistency open file of year',
      &      bulkyearnum(blkvar_id),
      &      'month',  bulkmonthnum(blkvar_id), 'for',
      &      blk_vname(1,blkvar_id)(1:lvar)
@@ -311,7 +320,7 @@
 !
           if(bulk_recO(blkvar_id).eq.ntbulkO(blkvar_id)) then
 !
-! Open a new CFSR file
+! Open a new file
 !
             newbulk(blkvar_id)=.true.
 !
@@ -343,7 +352,7 @@
 ! Extraction of the 2D forcings for the variable of index blkvar_id:
 ! ========== == === == ======== === === ======== == ===== ========
 !
-! Get CFSR longitude
+! Get longitude
 !
           allocate(lon0(1:NX0(blkvar_id)))
           ierr=nf_inq_varid (ncidbulkO(blkvar_id), 'lon', blk_lonid)
@@ -351,7 +360,7 @@
           ierr=nf_get_var_real(ncidbulkO(blkvar_id),blk_lonid,lon0)
           if (ierr. ne. nf_noerr) goto 99
 !
-! Get CFSR latitude
+! Get latitude
 !
           allocate(lat0(1:NY0(blkvar_id)))
           ierr=nf_inq_varid (ncidbulkO(blkvar_id), 'lat', blk_latid)
@@ -398,13 +407,13 @@
           jmax=jmax+1
           if (jmax.gt.NY0(blkvar_id)) jmax=jmax+1
 !
-! New CFSR subgrid caracteristics
+! New subgrid caracteristics
 ! Size: NX x NY
 !
           NX=1+imax-imin
           NY=1+jmax-jmin
 !
-! Allocate lon and lat for CFSR data
+! Allocate lon and lat for atmospheric data
 !
           allocate(lon(1:NX))
           allocate(lat(1:NY))
@@ -503,7 +512,7 @@
 # endif
 !
 ! ---------------------------------------------------------------------
-! Extract CFSR data for the subgrid
+! Extract data for the subgrid
 ! ---------------------------------------------------------------------
 # ifdef ABL1D
 
@@ -528,11 +537,11 @@
           cnt4(3)=N_abl
           cnt4(4)=1
 !
-! Allocate table for the CFSR data
+! Allocate table for the data
 !
           allocate(var3d(1:NX,1:NY,1:N_abl))
 !
-! Extract CFSR data
+! Extract data
 !
           ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),
      &                          bulk_varid(blkvar_id),strt4,cnt4,var3d)
@@ -556,11 +565,11 @@
           cnt3(2)=NY
           cnt3(3)=1
 !
-! Allocate table for the CFSR data
+! Allocate table for the data
 !
           allocate(var(1:NX,1:NY))
 !
-! Extract CFSR data
+! Extract data
 !
           ierr=nf_get_vara_FTYPE(ncidbulkO(blkvar_id),
      &                          bulk_varid(blkvar_id),strt3,cnt3,var)
@@ -637,7 +646,7 @@
           if (blkvar_id.eq.nblkvrs) then
             MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I8)')
      &              'ONLINE_BULK --',
-     &              'Read CFSR for time =', daycfsr
+     &              'Read file for time =', daycfsr
 # ifdef USE_CALENDAR
      &  -blkO_origin_date_in_sec*sec2day
 # endif

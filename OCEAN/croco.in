@@ -87,6 +87,12 @@ sponge:          X_SPONGE [m],    V_SPONGE [m^2/sec]
 
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
                 1.      360.      3.      360.
+                
+lagrangian:
+                ./paratraj.txt
+                
+deb_ibm:
+                ./paraibm.txt
 
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T        72         0

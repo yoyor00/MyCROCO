@@ -157,7 +157,8 @@ MODULE comtraj
 #endif                  
         CHARACTER(LEN=lchain)                           :: file_inp             ! Input data file name
         CHARACTER(LEN=lchain)                           :: file_out             ! Output NetCDF file name
-        LOGICAL                                         :: file_out_init = .FALSE.               
+        LOGICAL                                         :: file_out_init = .FALSE.   
+        CHARACTER(LEN=lchain)                           :: run_id               ! id of one run (for output file indentation)            
 #ifdef IBM_SPECIES                  
         CHARACTER(LEN=lchain)                           :: species              ! name of species
 #endif    
@@ -194,6 +195,7 @@ MODULE comtraj
 
     ! From paraibm or paratraj file
     CHARACTER(LEN=lchain),  PUBLIC          :: file_trajec                  ! name of configuration file
+    CHARACTER(LEN=lchain),  PUBLIC          :: file_pathout                 ! name of output path 
     INTEGER,                PUBLIC          :: itypetraj                    ! initialisation type (circle, rectangle,netcdf)
     INTEGER,                PUBLIC          :: ndtz                         ! number of time step division for vertical subloop
 
