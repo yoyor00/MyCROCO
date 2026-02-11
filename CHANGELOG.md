@@ -50,6 +50,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
 
+- RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
+  distribution of flow, enabling a transition from the AKIMA scheme to 
+  SPLINES (#478)
+
 ### Deprecated
 
 
@@ -102,7 +106,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
+  R. Benshila, M. Caillaud, G.Cambon, N. Ducousso, S. Jullien, S. Le Gac, 
   P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
