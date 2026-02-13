@@ -971,6 +971,7 @@ c        close(testunit)
         read(input,*,err=95) ldefdiabio, nwrtdiabio, nrpfdiabio
 #ifdef BLOOM
         read(input,'(A)',err=95) filevardiag
+        lstr=lenstr(filevardiag)
 #endif
         read(input,'(A)',err=95) fname
         lstr=lenstr(fname)
