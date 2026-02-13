@@ -578,9 +578,6 @@
       parameter (indxBLMdiag3d=indxBLMdiag2d+NumBLMdiag2d)
 # endif
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv
-#if defined TEMPERATURE
-     &          , indxAkt
-# endif
       parameter (indxO=indxV+ntrc_temp+ntrc_salt
      &                      +ntrc_mld+ntrc_pas+ntrc_bio
      &                      +ntrc_sed+ntrc_substot
