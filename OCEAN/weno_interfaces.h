@@ -2,7 +2,7 @@
      defined TS_HADV_WENO5  || defined TS_VADV_WENO5 || \
      defined UV_HADV_WENO5  || defined UV_VADV_WENO5 || \
      defined W_HADV_WENO5   || defined W_VADV_WENO5 || \
-     defined BEDLOAD_WENO5
+     defined BEDLOAD_WENO5  || defined WKB_ADV_WENO5
       INTERFACE
       ! flux3_weno
       function flux3_weno( q_im2, q_im1, q_i, q_ip1, ua)
