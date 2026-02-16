@@ -125,6 +125,7 @@
       USE trcini_pisces
       USE p4zsbc
 # endif
+      use buffer, only: init_buffer
       implicit none
       integer tile, ierr, trd, subs
 # ifdef WKB_WWAVE
@@ -225,6 +226,8 @@
       call MPI_Setup (ierr)
       if (ierr.ne.0) goto 100         !--> ERROR
 # endif
+
+      call init_buffer
 !
 !----------------------------------------------------------------------
 !  Read in tunable model parameters in roms.in file
