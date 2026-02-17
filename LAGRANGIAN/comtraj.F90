@@ -265,7 +265,7 @@ CONTAINS
     !! * Local declarations
 #ifdef DEB_IBM
 #ifdef IBM_SPECIES
-    INTEGER, PARAMETER   :: nb = 68     ! IBM_SPECIES and DEB_IBM
+    INTEGER, PARAMETER   :: nb = 69     ! IBM_SPECIES and DEB_IBM
 #else
     INTEGER, PARAMETER   :: nb = 25     ! DEB_IBM only
 #endif
@@ -298,7 +298,7 @@ CONTAINS
           type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh,     &
           type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh,     &
           type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh,     &
-          type_mpi_rsh, type_mpi_rsh, type_mpi_rsh                                  &
+          type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh                    &
 #endif
 #endif
     /)
@@ -309,7 +309,7 @@ CONTAINS
 #ifdef IBM_SPECIES
         ,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1                 &
         ,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1                 &
-        ,1, 1, 1                                                                    &
+        ,1, 1, 1, 1                                                                 &
 #endif
 #endif
     /)
@@ -349,6 +349,7 @@ CONTAINS
     CALL MPI_GET_ADDRESS(particle % hmove,     addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % Hb,        addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % Hj,        addresses(i), ierr_mpi) ; i = i+1
+    CALL MPI_GET_ADDRESS(particle % Hp,        addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % pAm,       addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % pMi,       addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % EG,        addresses(i), ierr_mpi) ; i = i+1
