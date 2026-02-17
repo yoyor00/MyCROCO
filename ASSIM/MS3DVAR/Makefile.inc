@@ -52,8 +52,6 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 	ana_initial.F	analytical.F\
 	set_depth.F\
 	diag.F		checkdims.F	grid_stiffness.F\
-	setup_kwds.F    check_kwds.F	check_srcs.F\
-	check_switches1.F		check_switches2.F\
 	debug.F\
         param.F         ncscrum.F   scalars.F\
 	put_global_atts.F\
@@ -136,11 +134,6 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 
 #======================================================================
 
- TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit
-# Note: ncjoin and ncrename skipped due to complex dependencies
-# They are utility tools for NetCDF file manipulation, not required for analysis
-
-
  RCS = $(SRCS:.F=.f)
 
  RCS90 = $(SRCS90:.F90=.f90)
@@ -153,18 +146,16 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 %.mod : %.o
 
 .PHONY: all clean clobber
-all: tools $(SBIN) testkeys
-
-tools: $(TOOLS)
+all: $(SBIN) testkeys
 
 #======================================================================
 
-$(SBIN): cppdefs.h param.h scalars.h ncscrum.h  $(TOOLS)\
+$(SBIN): cppdefs.h param.h scalars.h ncscrum.h \
          $(OBJS) $(OBJS90)
 	$(LDR) $(FFLAGS) -o $(SBIN) $(OBJS) $(OBJS90) $(LCDF) $(LDFLAGS)
 
-$(OBJS): cppdefs.h param.h $(TOOLS)
-$(OBJS90): cppdefs.h param.h $(TOOLS)
+$(OBJS): cppdefs.h param.h
+$(OBJS90): cppdefs.h param.h
 
 testkeys: $(SBIN)
 	@echo ""
@@ -179,7 +170,7 @@ testkeys: $(SBIN)
 
 clean:
 	/bin/rm -f core *.o *.f *.f90 *.trace *.mod
-	/bin/rm -rf *.dSYM $(TOOLS) ./rii_files
+	/bin/rm -rf *.dSYM ./rii_files
 
 clobber: clean
 	/bin/rm -f $(SBIN) *.exe

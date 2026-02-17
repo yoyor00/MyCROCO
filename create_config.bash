@@ -436,10 +436,20 @@ if [[ ${options[@]} =~ "ms3dvar" ]] ; then
     MS3DVAR_PARENT_DIR=${MY_CONFIG_WORK}/MS3DVAR
     mkdir -p $MS3DVAR_PARENT_DIR
 
-    # Copy jobcomp to MS3DVAR parent directory (for building all variants)
-    echo "  Copying jobcomp build script to ${MS3DVAR_PARENT_DIR}..."
-    \cp ${MS3DVAR_DIR}/jobcomp ${MS3DVAR_PARENT_DIR}/
+    # Copy and configure jobcomp to MS3DVAR parent directory (for building all variants)
+    echo "  Copying and configuring jobcomp build script to ${MS3DVAR_PARENT_DIR}..."
+    PAT1=$(grep ^SOURCE1 ${MS3DVAR_DIR}/jobcomp)
+    PAT2=$(grep ^SOURCE2 ${MS3DVAR_DIR}/jobcomp)
+    sed -e "s!${PAT1}!SOURCE1=${CROCO_DIR}/OCEAN!g" \
+        -e "s!${PAT2}!SOURCE2=${MS3DVAR_DIR}!g" \
+        ${MS3DVAR_DIR}/jobcomp > ${MS3DVAR_PARENT_DIR}/jobcomp
     chmod +x ${MS3DVAR_PARENT_DIR}/jobcomp
+
+    # Copy build system files to MS3DVAR parent directory
+    echo "  Copying build system files..."
+    \cp ${MS3DVAR_DIR}/Makefile.inc ${MS3DVAR_PARENT_DIR}/
+    \cp ${MS3DVAR_DIR}/Makefile ${MS3DVAR_PARENT_DIR}/
+    \cp ${MS3DVAR_DIR}/Makedefs.generic ${MS3DVAR_PARENT_DIR}/
 
     # Determine which variant(s) to setup
     MS3DVAR_VARIANTS=()
@@ -473,39 +483,24 @@ if [[ ${options[@]} =~ "ms3dvar" ]] ; then
         MS3DVAR_WORK_DIR=${MY_CONFIG_WORK}/MS3DVAR/${VARIANT_DIR}
         mkdir -p $MS3DVAR_WORK_DIR
 
-        # Copy variant-specific files
-        echo "    Copying variant-specific files from ${VARIANT_DIR}..."
-        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/*.F ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
-        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/*.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        # Copy variant-specific configuration files
+        echo "    Copying variant-specific configuration files from ${VARIANT_DIR}..."
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/cppdefs.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/param.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/scalars.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/ncscrum.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
 
-        # Copy common MS3DVAR files
-        echo "    Copying common MS3DVAR files from COMMON..."
-        \cp ${MS3DVAR_DIR}/COMMON/*.F ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
-        \cp ${MS3DVAR_DIR}/COMMON/*.h ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
-        \cp ${MS3DVAR_DIR}/COMMON/*.F90 ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        # Copy variant build files (Makefile and Makedefs for customization)
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makefile ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makedefs ${MS3DVAR_WORK_DIR}/ 2>/dev/null || true
+        # Copy Makedefs.generic as fallback if no Makedefs exists
+        if [ ! -f ${MS3DVAR_WORK_DIR}/Makedefs ]; then
+            \cp ${MS3DVAR_DIR}/Makedefs.generic ${MS3DVAR_WORK_DIR}/Makedefs 2>/dev/null || true
+        fi
 
-        # Copy required CROCO source files
-        echo "    Copying required CROCO source files..."
-        for f in get_initial.F read_inp.F timers_roms.F init_scalars.F init_arrays.F \
-                 set_scoord.F setup_grid1.F setup_grid2.F ana_initial.F analytical.F \
-                 set_depth.F diag.F checkdims.F grid_stiffness.F check_kwds.F \
-                 check_switches2.F debug.F param.F ncscrum.F scalars.F put_global_atts.F \
-                 nf_fread.F nf_fread_x.F nf_fread_y.F get_date.F lenstr.F closecdf.F \
-                 insert_node.F fillvalue.F nf_add_attribute.F set_cycle.F def_grid_2d.F \
-                 def_grid_3d.F def_his.F def_rst.F wrt_grid.F wrt_rst.F get_grid.F \
-                 get_ssh.F MPI_Setup.F MessPass2D.F MessPass3D.F exchange.F autotiling.F \
-                 buffer.F90 toolorigindate.F90 tooldatosec.F90 toolsectodat.F90 \
-                 tooldecompdat.F90 tooldatetosec.F90 \
-                 mpc.F cross_matrix.F cppcheck.F srcscheck.F checkkwds.F partit.F \
-                 ncjoin.F ncrename.F; do
-            [ -f "${CROCO_DIR}/OCEAN/${f}" ] && \cp "${CROCO_DIR}/OCEAN/${f}" ${MS3DVAR_WORK_DIR}/ || true
-        done
-
-        # Copy build files
-        echo "    Copying build files..."
-        \cp ${MS3DVAR_DIR}/Makefile.inc ${MS3DVAR_WORK_DIR}/
-        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makefile ${MS3DVAR_WORK_DIR}/
-        \cp ${MS3DVAR_DIR}/${VARIANT_DIR}/Makedefs ${MS3DVAR_WORK_DIR}/
+        # Note: Source files (.F, .F90) are NOT copied here
+        # They will be copied by jobcomp to the Compile/ directory at build time
+        # This follows the CROCO oce-dev pattern
 
         # Copy documentation (only once, to parent directory)
         if [ ! -d "${MS3DVAR_PARENT_DIR}/doc" ]; then
