@@ -862,7 +862,7 @@ MODULE ibm
 
                 IF (hh >= particle%hmove + dh) THEN
 #ifdef MPI
-                        CALL fish_move(particle,ind_species)
+                    CALL fish_move(particle,ind_species)
 #endif    
                     particle%hmove = hh ! update of the saved hour
 
