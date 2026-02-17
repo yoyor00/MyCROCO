@@ -14,6 +14,7 @@
 #   ./jobcomp mr --clean         # Build MR variant with clean
 #   ./jobcomp --jobs 4 lr mr     # Build LR and MR with 4 jobs
 #   ./jobcomp lr mr filter --clean --jobs 4 # Build 3 variants with options
+#   ./jobcomp --jobs 4 all       # Build all variants with 4 jobs
 #
 # Alternative syntax (explicit --variant flag):
 #   ./jobcomp --variant lr       # Build single variant (old syntax)
@@ -25,6 +26,8 @@
 #   MS3DVAR_NETCDFLIB    : NetCDF library path
 #   MS3DVAR_NETCDFINC    : NetCDF include path
 #   MS3DVAR_NPROCS       : number of parallel compilation jobs
+#   CROCO_SRC            : CROCO source directory
+#   MS3DVAR_SRC          : MS3DVAR source directory
 #
 
 ####################################################
@@ -34,10 +37,11 @@
 # Default: build all variants (set to specific variant like "lr" to change default)
 VARIANT="all"
 
-# CROCO source directory (for tool compilation)
-# Default is current directory (tool sources copied by create_config.bash)
-# Can be overridden with --src option or CROCO_SRC environment variable
+# CROCO source directory (default: ../../OCEAN from work dir)
 SOURCE1="../../OCEAN"
+
+# MS3DVAR source directory (default: .. from work dir, i.e., ASSIM/MS3DVAR)
+SOURCE2=".."
 
 # Compiler
 FC="gfortran"
@@ -81,8 +85,8 @@ function show_help() {
     echo "Options:"
     echo "  -h, --help                  Show this help message and exit"
     echo "  --variant <name>            Alternative way to specify single variant"
-    echo "  ---croco-src <path>         CROCO source directory (default: . )"
-    echo "                              Tool sources are copied to work dir by create_config"
+    echo "  --croco-src <path>          CROCO source directory (default: ../../OCEAN)"
+    echo "  --ms3dvar-src <path>        MS3DVAR source directory (default: ..)"
     echo "  --fc <compiler>             Fortran compiler (default: gfortran)"
     echo "  --fflags <flags>            Compilation flags"
     echo "  --netcdf-inc <path>         NetCDF include directory"
@@ -101,6 +105,7 @@ function show_help() {
     echo "  $0 --clean mr filter        # Options first, variants at end"
     echo "  $0 --jobs 4 lr mr ms        # Multiple options and variants"
     echo "  $0 lr mr filter --clean     # Variants first, options at end"
+    echo "  $0 --jobs 4 all             # Build all variants with 4 jobs"
     echo ""
 }
 
@@ -153,6 +158,10 @@ while [[ $# -gt 0 ]]; do
             SOURCE1="$2"
             shift 2
             ;;
+        --ms3dvar-src)
+            SOURCE2="$2"
+            shift 2
+            ;;
         --clean)
             DO_CLEAN=1
             shift
@@ -191,8 +200,9 @@ fi
 [ -n "$MS3DVAR_NETCDFLIB" ] && NETCDFLIB="$MS3DVAR_NETCDFLIB"
 [ -n "$MS3DVAR_NPROCS" ] && NPROCS="$MS3DVAR_NPROCS"
 
-# Set CROCO source directory (allow override via CROCO_SRC env variable)
-SOURCE="${CROCO_SRC:-$SOURCE1}"
+# Set source directories (allow override via env variables)
+CROCO_SOURCE="${CROCO_SRC:-$SOURCE1}"
+MS3DVAR_SOURCE="${MS3DVAR_SRC:-$SOURCE2}"
 
 # Handle "all" variant
 VARIANT_LOWER=$(echo "$VARIANT" | tr '[:upper:]' '[:lower:]')
@@ -224,6 +234,8 @@ function build_variant() {
     echo "Building MS3DVAR variant: ${var_upper}"
     echo "========================================================================"
     echo "Variant directory: ${variant_dir}"
+    echo "CROCO source: ${CROCO_SOURCE}"
+    echo "MS3DVAR source: ${MS3DVAR_SOURCE}"
     echo "Compiler: ${FC}"
     echo "NetCDF include: ${NETCDFINC}"
     echo "NetCDF library: ${NETCDFLIB}"
@@ -239,14 +251,14 @@ function build_variant() {
     # Enter variant directory
     cd "${variant_dir}" || { echo "ERROR: Cannot enter ${variant_dir}"; return 1; }
 
-    # Clean if requested
-    if [ $DO_CLEAN -eq 1 ]; then
-        echo "Cleaning previous build..."
-        make clean 2>/dev/null || true
-        rm -f mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename 2>/dev/null || true
-        echo "Clean complete"
-        echo ""
-    fi
+    RUNDIR="$(pwd)"
+    SCRDIR="./Compile"
+
+    # Clean scratch area
+    echo "Preparing compilation directory..."
+    rm -rf "$SCRDIR"
+    mkdir "$SCRDIR"
+    echo ""
 
     # Load module if needed
     if [ $NO_MODULE -eq 0 ] && [ -n "$MODULE_LOAD" ]; then
@@ -259,46 +271,69 @@ function build_variant() {
         echo ""
     fi
 
-    # Step 1: Build utility tools (no NetCDF needed)
-    echo "Step 1: Building utility tools..."
-    echo "Building: mpc, cross_matrix, cppcheck, srcscheck, checkkwds, partit"
-    echo "CROCO source directory: ${SOURCE}"
-
-    if [ ! -f ${SOURCE}/mpc.F ]; then
-        echo "ERROR: CROCO source files not found at ${SOURCE}/"
-        echo "Make sure you run this from a properly configured MS3DVAR work directory"
-        echo "Or specify the correct path with --src /path/to/croco/OCEAN"
+    # Check source files exist
+    if [ ! -f ${CROCO_SOURCE}/main.F ]; then
+        echo "ERROR: CROCO source files not found at ${CROCO_SOURCE}/"
+        echo "Please specify the correct path with --croco-src /path/to/OCEAN"
         cd ..
         return 1
     fi
 
-    ${FC} -o mpc ${SOURCE}/mpc.F || { echo "ERROR: Failed to build mpc"; cd ..; return 1; }
-    ${FC} -o cross_matrix ${SOURCE}/cross_matrix.F || { echo "ERROR: Failed to build cross_matrix"; cd ..; return 1; }
-    ${FC} -o cppcheck ${SOURCE}/cppcheck.F || { echo "ERROR: Failed to build cppcheck"; cd ..; return 1; }
-    ${FC} -o srcscheck ${SOURCE}/srcscheck.F || { echo "ERROR: Failed to build srcscheck"; cd ..; return 1; }
-    ${FC} -o checkkwds ${SOURCE}/checkkwds.F || { echo "ERROR: Failed to build checkkwds"; cd ..; return 1; }
-    ${FC} -o partit ${SOURCE}/partit.F || { echo "ERROR: Failed to build partit"; cd ..; return 1; }
+    if [ ! -d ${MS3DVAR_SOURCE}/COMMON ]; then
+        echo "ERROR: MS3DVAR source files not found at ${MS3DVAR_SOURCE}/"
+        echo "Please specify the correct path with --ms3dvar-src /path/to/MS3DVAR"
+        cd ..
+        return 1
+    fi
 
-    echo "Utility tools built successfully"
+    # Copy CROCO source files needed for MS3DVAR
+    echo "Copying CROCO source files..."
+    ls "${CROCO_SOURCE}/"*.F       > /dev/null 2>&1 && \cp "${CROCO_SOURCE}/"*.F   "$SCRDIR"
+    ls "${CROCO_SOURCE}/"*.F90     > /dev/null 2>&1 && \cp "${CROCO_SOURCE}/"*.F90 "$SCRDIR"
+    ls "${CROCO_SOURCE}/"*.h       > /dev/null 2>&1 && \cp "${CROCO_SOURCE}/"*.h   "$SCRDIR"
+    echo "CROCO sources copied"
     echo ""
 
-    # Step 2: Build NetCDF-dependent tools
-    echo "Step 2: Building NetCDF-dependent tools..."
-    echo "Building: ncjoin, ncrename"
-
-    ${FC} ${NETCDFINC} ${NETCDFLIB} -o ncjoin ${SOURCE}/ncjoin.F || \
-        { echo "ERROR: Failed to build ncjoin"; cd ..; return 1; }
-
-    ${FC} ${NETCDFINC} ${NETCDFLIB} -o ncrename ${SOURCE}/ncrename.F || \
-        { echo "ERROR: Failed to build ncrename"; cd ..; return 1; }
-
-    echo "NetCDF tools built successfully"
+    # Copy MS3DVAR common source files
+    echo "Copying MS3DVAR common source files..."
+    ls "${MS3DVAR_SOURCE}/COMMON/"*.F   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.F   "$SCRDIR"
+    ls "${MS3DVAR_SOURCE}/COMMON/"*.F90 > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.F90 "$SCRDIR"
+    echo "MS3DVAR common sources copied"
     echo ""
 
-    # Step 3: Build main MS3DVAR code
-    echo "Step 3: Building MS3DVAR main code..."
-    echo "This may take several minutes..."
+    # Copy Makefiles and build system
+    echo "Copying build system files..."
+    \cp "${MS3DVAR_SOURCE}/Makefile.inc" "$SCRDIR"
+    \cp "${MS3DVAR_SOURCE}/${var_upper}/Makefile" "$SCRDIR"
+    \cp "${MS3DVAR_SOURCE}/${var_upper}/Makedefs" "$SCRDIR"
+    echo "Build system copied"
     echo ""
+
+    # Copy variant-specific configuration files from variant directory
+    echo "Copying variant-specific files..."
+    ls cppdefs.h > /dev/null 2>&1 && \cp cppdefs.h "$SCRDIR"
+    ls param.h   > /dev/null 2>&1 && \cp param.h   "$SCRDIR"
+    ls scalars.h > /dev/null 2>&1 && \cp scalars.h "$SCRDIR"
+    ls ncscrum.h > /dev/null 2>&1 && \cp ncscrum.h "$SCRDIR"
+    echo "Configuration files copied"
+    echo ""
+
+    # Overwrite with user local files (if any)
+    echo "Checking for user local files..."
+    ls *.F90   > /dev/null 2>&1 && \cp -f *.F90 "$SCRDIR" && echo "  User .F90 files copied"
+    ls *.F     > /dev/null 2>&1 && \cp -f *.F "$SCRDIR" && echo "  User .F files copied"
+    ls *.h     > /dev/null 2>&1 && \cp -f *.h "$SCRDIR" && echo "  User .h files copied"
+    ls *.h90   > /dev/null 2>&1 && \cp -f *.h90 "$SCRDIR" && echo "  User .h90 files copied"
+    ls Make*   > /dev/null 2>&1 && \cp -f Make* "$SCRDIR" && echo "  User Makefile overrides copied"
+    echo ""
+
+    # Build mpc preprocessor from CROCO source (needed by Makedefs suffix rules)
+    echo "Building mpc preprocessor from CROCO source..."
+    ${FC} -o ${SCRDIR}/mpc ${CROCO_SOURCE}/mpc.F || { echo "ERROR: Failed to build mpc"; cd ..; return 1; }
+    echo ""
+
+    # Change to compilation directory
+    cd "$SCRDIR" || { echo "ERROR: Cannot enter compilation directory"; cd ..; return 1; }
 
     # Export environment for Makefile
     export FC
@@ -306,28 +341,48 @@ function build_variant() {
     export NETCDFLIB
     export FFLAGS
 
+    # Modify Makefile to use local paths
+    echo "Configuring Makefile for compilation..."
+    sed -i 's|^COMMON_DIR = .*|COMMON_DIR = .|' Makefile.inc 2>/dev/null || true
+    sed -i 's|^CROCO_SRC = .*|CROCO_SRC = .|' Makefile.inc 2>/dev/null || true
+    sed -i 's|^VPATH = .*|VPATH = .|' Makefile.inc 2>/dev/null || true
+    echo "Makefile configured"
+    echo ""
+
+    # Build main MS3DVAR code
+    echo "Building MS3DVAR main code..."
+    echo "This may take several minutes..."
+    echo ""
+
     # Build with make
     if [ $NPROCS -gt 1 ]; then
-        make -j${NPROCS} TOOLS="" all || { echo "ERROR: Make failed"; cd ..; return 1; }
+        make -j${NPROCS} all || { echo "ERROR: Make failed"; cd ../..; return 1; }
     else
-        make TOOLS="" all || { echo "ERROR: Make failed"; cd ..; return 1; }
+        make all || { echo "ERROR: Make failed"; cd ../..; return 1; }
     fi
 
     # Find the executable
     EXE=$(find . -maxdepth 1 -type f -executable -name "ms*" -o -name "da_*" 2>/dev/null | head -1)
 
+    # Copy executable back to variant directory
+    if [ -n "$EXE" ]; then
+        \cp "$EXE" "${RUNDIR}/"
+        echo ""
+        echo "Executable copied to ${RUNDIR}/$(basename $EXE)"
+    fi
+
     echo ""
     echo "========================================================================"
-    echo "✅ MS3DVAR ${var_upper} built successfully!"
+    echo "MS3DVAR ${var_upper} built successfully!"
     if [ -n "$EXE" ]; then
         echo "Executable: $(basename $EXE)"
-        echo "Full path: $(pwd)/$(basename $EXE)"
+        echo "Location: ${RUNDIR}/$(basename $EXE)"
     fi
     echo "========================================================================"
     echo ""
 
-    # Return to parent directory
-    cd ..
+    # Return to parent directory (MS3DVAR root)
+    cd ../..
 
     return 0
 }
@@ -379,7 +434,7 @@ if [ ${#VARIANTS_TO_BUILD[@]} -gt 0 ]; then
     echo "Build Summary"
     echo "========================================================================"
     if [ -z "$FAILED_VARIANTS" ]; then
-        echo "✅ All requested variants built successfully!"
+        echo "All requested variants built successfully!"
         echo ""
         echo "Executables:"
         for var in "${VARIANTS_TO_BUILD[@]}"; do
@@ -391,7 +446,7 @@ if [ ${#VARIANTS_TO_BUILD[@]} -gt 0 ]; then
         done
         exit 0
     else
-        echo "❌ Some variants failed to build:${FAILED_VARIANTS}"
+        echo "Some variants failed to build:${FAILED_VARIANTS}"
         exit 1
     fi
 elif [ $BUILD_ALL -eq 1 ]; then
@@ -413,7 +468,7 @@ elif [ $BUILD_ALL -eq 1 ]; then
     echo "Build Summary"
     echo "========================================================================"
     if [ -z "$FAILED_VARIANTS" ]; then
-        echo "✅ All variants built successfully!"
+        echo "All variants built successfully!"
         echo ""
         echo "Executables:"
         for var in lr mr filter ms; do
@@ -425,14 +480,14 @@ elif [ $BUILD_ALL -eq 1 ]; then
         done
         exit 0
     else
-        echo "❌ Some variants failed to build:${FAILED_VARIANTS}"
+        echo "Some variants failed to build:${FAILED_VARIANTS}"
         exit 1
     fi
 else
     # Build single variant
     if ! build_variant "$VARIANT_LOWER" "$VARIANT_UPPER"; then
         echo ""
-        echo "❌ Build failed for variant ${VARIANT_UPPER}"
+        echo "Build failed for variant ${VARIANT_UPPER}"
         exit 1
     fi
     exit 0
