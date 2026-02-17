@@ -412,8 +412,8 @@ MODULE debmodel
 
             ! Affectation des nouveaux parametres
             ! From species parameters + individual variability
-            patch%particles(m)%Hj       = Hj*(zoom**3.0_rsh) ! utile dans ibm, pour l'instant commun à tout le monde
-            patch%particles(m)%Hb       = Hb
+            patch%particles(m)%Hj       = Hj*(zoom**3.0_rsh) 
+            patch%particles(m)%Hb       = Hb*(zoom**3.0_rsh)
             patch%particles(m)%pAm      = pAm*zoom
             patch%particles(m)%pMi      = pMi
             patch%particles(m)%EG       = EG
@@ -522,7 +522,7 @@ MODULE debmodel
 
     !   Affectation des paramètres
     particle % Hj       = particle%Hj*(zoom**3.0_rsh) ! utile dans ibm, pour l'instant commun à tout le monde
-    particle % Hb       = Hb*(zoom**3.0_rsh)
+    particle % Hb       = particle%Hb*(zoom**3.0_rsh)
     particle % pAm      = particle%pAm*zoom
     particle % pMi      = particle % pMi
     particle % EG       = particle % EG
