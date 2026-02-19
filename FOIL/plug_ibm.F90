@@ -24,7 +24,7 @@
    INTEGER :: tile
 # include "compute_tile_bounds.h"
 
-   CALL ibm_init(zeta,t(:,:,:,nstp,isalt),t(:,:,:,nstp,itemp),Istr,Iend,Jstr,Jend)
+   CALL ibm_init(zeta,t(:,:,:,nstp,isalt),t(:,:,:,nstp,itemp),t(:,:,:,nstp,9),Istr,Iend,Jstr,Jend)
 
   END SUBROUTINE
 
@@ -35,7 +35,7 @@
    INTEGER :: tile
 # include "compute_tile_bounds.h"
    
-   CALL ibm_3d(zeta,u,v,t(:,:,:,nstp,isalt),t(:,:,:,nstp,itemp),Istr,Iend,Jstr,Jend)
+   CALL ibm_3d(zeta,u,v,t(:,:,:,nstp,isalt),t(:,:,:,nstp,itemp),t(:,:,:,nstp,9),Istr,Iend,Jstr,Jend)
 
   END SUBROUTINE
 

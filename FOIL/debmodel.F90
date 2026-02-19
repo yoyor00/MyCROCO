@@ -22,7 +22,7 @@ MODULE debmodel
     PRIVATE
 
     !! * Accessibility
-    PUBLIC :: deb_init, deb_cycle, deb_egg_init, readfood3d, readtemp3d   ! routines called by ibm
+    PUBLIC :: deb_init, deb_cycle, deb_egg_init!, readfood3d, readtemp3d   ! routines called by ibm
 
     !! * Shared module variables
     REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:,:,:),PUBLIC    :: climatemp
@@ -689,7 +689,8 @@ MODULE debmodel
     f      = ffix
 
     IF (.not. F_Fix .and. particle%size > 0.0_rsh) THEN
-        X = get_Xdeb(particle%xpos, particle%ypos, particle%spos, particle%size, 0.0_rsh, 0.0_rsh, particle%num)
+        ! X = get_Xdeb(particle%xpos, particle%ypos, particle%spos, particle%size, 0.0_rsh, 0.0_rsh, particle%num)
+        X = particle%X
      
         ! -- Densite-dependance  (Menu et al. 2023)
         IF (particle%WV > 0) THEN

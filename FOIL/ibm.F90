@@ -80,7 +80,7 @@ MODULE ibm
  CONTAINS
 
 
- SUBROUTINE ibm_init(xe,sal,temp,Istr,Iend,Jstr,Jend)
+ SUBROUTINE ibm_init(xe,sal,temp,zoo,Istr,Iend,Jstr,Jend)
 
     !&E---------------------------------------------------------------------
     !&E                 ***  ROUTINE ibm_init  ***
@@ -127,7 +127,7 @@ MODULE ibm
 
     !! * Arguments
     REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY     ),        INTENT( in ) :: xe
-    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax),        INTENT( in ) :: sal,temp
+    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax),        INTENT( in ) :: sal,temp,zoo
     INTEGER,                                                INTENT( in ) :: Istr,Iend,Jstr,Jend    
 
     !! * Local declarations
@@ -333,7 +333,7 @@ MODULE ibm
                 IF ( .NOT. particle%active )  CYCLE
 #ifdef IBM_SPECIES
                 ! Init some biological parameters if not a restart
-                CALL ibm_parameter_init(particle,patch%species,temp,sal,xe,Istr,Iend,Jstr,Jend)
+                CALL ibm_parameter_init(particle,patch%species,temp,sal,zoo,xe,Istr,Iend,Jstr,Jend)
 #endif /* IBM_SPECIES */
             ENDDO      ! loop on patch%nb_part_alloc
 
@@ -377,7 +377,7 @@ MODULE ibm
 
 
  !!======================================================================
- SUBROUTINE ibm_3d(xe,uz,vz,sal,temp,Istr,Iend,Jstr,Jend)
+ SUBROUTINE ibm_3d(xe,uz,vz,sal,temp,zoo,Istr,Iend,Jstr,Jend)
     !&E---------------------------------------------------------------------
     !&E                 ***  ROUTINE ibm_3d  ***
     !&E
@@ -427,7 +427,7 @@ MODULE ibm
     USE ibmtools,     ONLY : ibm_parameter_init
     USE ibmmove,      ONLY : fish_move
     USE debmodel,     ONLY : deb_egg_init, deb_cycle
-    USE debmodel,     ONLY : readtemp3d,readfood3d
+    ! USE debmodel,     ONLY : readtemp3d,readfood3d
 #endif /* IBM_SPECIES */
     USE comtraj,      ONLY : type_particle, type_patch, patches, patch_list_append, resize_patch
 #ifdef IBM_SPECIES
@@ -445,7 +445,7 @@ MODULE ibm
 
     !! * Arguments
     REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,4),           INTENT( in ) :: xe
-    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax),        INTENT( in ) :: sal, temp
+    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax),        INTENT( in ) :: sal, temp, zoo
     REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax,3),      INTENT( in ) :: uz, vz
     INTEGER,                                                INTENT( in ) :: Istr,Iend,Jstr,Jend
 
@@ -524,7 +524,7 @@ MODULE ibm
 #ifdef IBM_SPECIES
     jjulien = tool_julien(jj,mm_clock,aaaa) - tool_julien(1,1,aaaa) + 1
     IF ( debuse .AND. .NOT. F_Fix ) THEN
-        CALL readfood3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
+        ! CALL readfood3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
         first_timestep_ibm = .false.
         !CALL readtemp3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
     ENDIF
@@ -703,8 +703,12 @@ MODULE ibm
             IF (particle%stage == 3 .AND. update) THEN 
                 particle%temp = ibm_traint(temp,xe,particle%spos,kp,km,px,py, &
                                            igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,   &
-                                           Istr,Iend,Jstr,Jend) 
-
+                                           Istr,Iend,Jstr,Jend)
+                particle%X    = ibm_traint(zoo,xe,particle%spos,kp,km,px,py,  &
+                                           igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,   &
+                                           Istr,Iend,Jstr,Jend)
+                ! Convert from µmol.L-1 to mgC.m-3 (clara : check if conversion is right)                              
+                particle%X    = particle%X * 5.45_rsh * 12.0_rsh 
                 depth_day   = 25.0_rsh
                 depth_night = 25.0_rsh
                                 
@@ -732,7 +736,12 @@ MODULE ibm
             IF ( particle%stage == 4 .AND. update ) THEN
                 particle%temp = ibm_traint(temp,xe,particle%spos,kp,km,px,py, &
                                              igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,   &
-                                             Istr,Iend,Jstr,Jend) 
+                                             Istr,Iend,Jstr,Jend)
+                particle%X    = ibm_traint(zoo,xe,particle%spos,kp,km,px,py,  &
+                                           igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,   &
+                                           Istr,Iend,Jstr,Jend)   
+                ! Convert from µmol.L-1 to mgC.m-3 (clara : check if conversion is right)                              
+                particle%X    = particle%X * 5.45_rsh * 12.0_rsh 
                 depth_day   = 25.0_rsh
                 depth_night = 0.0_rsh
 
@@ -790,6 +799,9 @@ MODULE ibm
 
                 !PRINT*, 'Min max Depth :', particle%num, particle%stage,mindepth,maxdepth,jjulien,particle%dayjuv,particle%H,Hp
                 particle%temp = ibm_proftraint(temp,mindepth,maxdepth,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
+                particle%X    = ibm_proftraint(zoo,mindepth,maxdepth,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
+                ! Convert from µmol.L-1 to mgC.m-3 (clara : check if conversion is right)                              
+                particle%X    = particle%X * 5.45_rsh * 12.0_rsh 
 
                 ! Growth
                 IF ( debuse ) CALL deb_cycle(particle,dtm,aaaa,mm_clock,jj,patch%species)
@@ -853,6 +865,9 @@ MODULE ibm
                 ENDIF
 
                 particle%temp = ibm_proftraint(temp,mindepth,maxdepth,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
+                particle%X    = ibm_proftraint(zoo,mindepth,maxdepth,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
+                ! Convert from µmol.L-1 to mgC.m-3 (clara : check if conversion is right)                              
+                particle%X    = particle%X * 5.45_rsh * 12.0_rsh 
 
                 IF (debuse) CALL deb_cycle(particle,dtm,aaaa,mm_clock,jj,patch%species)
 
@@ -1169,7 +1184,7 @@ MODULE ibm
 
                                     ! Init IBM parameters of the particle
                                     IF (debuse) CALL ibm_parameter_init(new_particle,child_patch%species,xe,sal,temp, &
-                                                                        Istr,Iend,Jstr,Jend)
+                                                                        zoo,Istr,Iend,Jstr,Jend)
 
                                     new_particle%super = new_super
 

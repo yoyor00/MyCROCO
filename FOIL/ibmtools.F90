@@ -136,7 +136,7 @@ MODULE ibmtools
 #ifdef IBM_SPECIES
 
   !!======================================================================
-  SUBROUTINE ibm_parameter_init(particle,species,xe,sal,temp,Istr,Iend,Jstr,Jend)
+  SUBROUTINE ibm_parameter_init(particle,species,xe,sal,temp,zoo,Istr,Iend,Jstr,Jend)
     !&E---------------------------------------------------------------------
     !&E                *** SUBROUTINE death_by_fishing ***
     !&E ** Purpose : Init IBM parameters, at start simulation and for particles created
@@ -158,7 +158,7 @@ MODULE ibmtools
     TYPE(type_particle),                               INTENT( inout )  :: particle
     CHARACTER(LEN=lchain),                             INTENT( in )     :: species
     REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,4),      INTENT( in )     :: xe
-    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax),   INTENT( in )     :: sal, temp
+    REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax),   INTENT( in )     :: sal, temp, zoo
     INTEGER,                                           INTENT( in )     :: Istr,Iend,Jstr,Jend 
 
     ! Local declaration
@@ -223,6 +223,9 @@ MODULE ibmtools
 
     ! Si temperature realiste a l'initialisation, on prend sa valeur, sinon on prend 0
     particle%temp    = 0._rsh
+    particle%X       = ibm_traint(zoo,xe,particle%spos,kp,km,px,py,      &
+                                 igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,        &
+                                 Istr,Iend,Jstr,Jend)
     particle%density = dens_surf
 
     ! Initialize particle's denspawn
