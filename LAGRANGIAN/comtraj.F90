@@ -95,9 +95,9 @@ MODULE comtraj
         ! --- Population parameters
         REAL(KIND=rlg)          :: date_orig   ! date of release
         INTEGER                 :: stage    = 0
-        INTEGER                 :: age      = 0
         INTEGER                 :: AgeClass = 0
         INTEGER                 :: Nbatch   = 0
+        REAL(KIND=rsh)          :: age      = 0.0_rsh
         REAL(KIND=rsh)          :: Drate    = 0.0_rsh
         REAL(KIND=rsh)          :: temp, w, size, density, denspawn
 
