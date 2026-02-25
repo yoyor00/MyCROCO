@@ -196,7 +196,7 @@
  * This includes the core MS3DVAR CPP defines (~150 lines)
  * Settings above will override defaults in cppdefs_ms3dvar.h
  *=====================================================================*/
-#include "../COMMON/cppdefs_ms3dvar.h"
+#include "cppdefs_ms3dvar.h"
 
 /*=====================================================================
  * FILTER VARIANT-SPECIFIC OVERRIDES

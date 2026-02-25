@@ -9,11 +9,14 @@
 !          no Message Passing partitioning is used, these two are
 !          the same as LLm,MMm. 
 !
+#ifndef NRATIO_DEFINED
+#define NRATIO_DEFINED
       integer  nratio,nhalf ,  LLm_lr,Lm_lr,  MMm_lr,Mm_lr
-      parameter (nratio=1, nhalf=nratio/2+1) 
+      parameter (nratio=1, nhalf=nratio/2+1)
       parameter (LLm_lr=(LLm+2-nhalf)/nratio-1,
      &           MMm_lr=(MMm+2-nhalf)/nratio-1)
 !
       parameter ( Lm_lr=LLm_lr, Mm_lr=MMm_lr)
+#endif
 
 #define GLOBAL_2D_ARRAY_LR 0:Lm_lr+1+padd_X,0:Mm_lr+1+padd_E

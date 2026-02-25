@@ -92,31 +92,31 @@
                 enddo
               enddo
               rc=0.0
-              pp_s(i,j,k)=0.0
+              p_s(i,j,k)=0.0
               if (k .eq. NDAS) then
                 zeta_s(i,j)=0.0
               endif
               do n0=1,count
 #ifdef DISTANCES
                 rc=rc+1./dis(n0)
-                pp_s(i,j,k)=pp_s(i,j,k)+pp(n0)/dis(n0)
+                p_s(i,j,k)=p_s(i,j,k)+pp(n0)/dis(n0)
                 if (k .eq. NDAS) then
                   zeta_s(i,j)=zeta_s(i,j)+zz(n0)/dis(n0)
                 endif
 #else
                 rc=rc+1.
-                pp_s(i,j,k)=pp_s(i,j,k)+pp(n0)
+                p_s(i,j,k)=p_s(i,j,k)+pp(n0)
                 if (k .eq. NDAS) then
                   zeta_s(i,j)=zeta_s(i,j)+zz(n0)
                 endif
 #endif
               enddo
-              pp_s(i,j,k)=pp_s(i,j,k)/rc
+              p_s(i,j,k)=p_s(i,j,k)/rc
              if (k .eq. NDAS) then
                zeta_s(i,j)=zeta_s(i,j)/rc
              endif
             else
-              pp_s(i,j,k)=0.
+              p_s(i,j,k)=0.
               if (k .eq. NDAS) then
                 zeta_s(i,j)=0.0
               endif

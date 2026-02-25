@@ -155,6 +155,7 @@
  * INITIAL CONDITIONS
  *---------------------------------------------------------------------*/
 # define ANA_INITIAL    /* Analytical initial conditions */
+# define ZCLIMATOLOGY   /* Enable clmname for LR initial conditions file */
 
 /*---------------------------------------------------------------------
  * SURFACE FORCING (Analytical for standalone testing)
@@ -196,7 +197,7 @@
  * This includes the core MS3DVAR CPP defines (~150 lines)
  * Settings above will override defaults in cppdefs_ms3dvar.h
  *=====================================================================*/
-#include "../COMMON/cppdefs_ms3dvar.h"
+#include "cppdefs_ms3dvar.h"
 
 /*=====================================================================
  * MR VARIANT-SPECIFIC OVERRIDES

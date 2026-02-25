@@ -73,13 +73,13 @@
               if (abs(fcr) .lt. ff0) then     ! 0.15 degrees
                 ug(i,j)=0.0
               else
-                ug(i,j)=-cff*(pp_s(i,j,k) -pp_s(i,j-1,k))
+                ug(i,j)=-cff*(p_s(i,j,k) -p_s(i,j-1,k))
      &            *(pn(i,j-1)+pn(i,j))/fcr
      &             /(rho02+rho_das9(i,j,k)+rho_das9(i,j-1,k))
                 ug(i,j)=ug(i,j)*abs(fcr)/crit
               endif
             else
-              ug(i,j)=-cff*(pp_s(i,j,k) -pp_s(i,j-1,k))
+              ug(i,j)=-cff*(p_s(i,j,k) -p_s(i,j-1,k))
      &            *(pn(i,j-1)+pn(i,j))/(f(i,j-1)+f(i,j))
      &             /(rho02+rho_das9(i,j,k)+rho_das9(i,j-1,k))
             endif
@@ -111,13 +111,13 @@
               if (abs(fcr) .lt. ff0) then     ! 0.15 degrees
                 vg(i,j)=0.0
               else
-                vg(i,j)= cff * (pp_s(i,j,k) -pp_s(i-1,j,k))
+                vg(i,j)= cff * (p_s(i,j,k) -p_s(i-1,j,k))
      &            *(pm(i-1,j)+pm(i,j))/fcr
      &            /(rho02+rho_das9(i-1,j,k)+rho_das9(i,j,k))
                 vg(i,j)=vg(i,j)*abs(fcr)/crit
                endif
             else
-              vg(i,j)= cff * (pp_s(i,j,k) -pp_s(i-1,j,k))
+              vg(i,j)= cff * (p_s(i,j,k) -p_s(i-1,j,k))
      &            *(pm(i-1,j)+pm(i,j))/(f(i-1,j)+f(i,j))
      &            /(rho02+rho_das9(i-1,j,k)+rho_das9(i,j,k))
             endif

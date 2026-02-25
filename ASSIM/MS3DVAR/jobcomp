@@ -254,6 +254,10 @@ function build_variant() {
     RUNDIR="$(pwd)"
     SCRDIR="./Compile"
 
+    # Convert relative source paths to absolute now (before cd into Compile subdir)
+    [[ ! "${MS3DVAR_SOURCE}" = /* ]] && MS3DVAR_SOURCE="$(cd "${MS3DVAR_SOURCE}" && pwd)"
+    [[ ! "${CROCO_SOURCE}" = /* ]] && CROCO_SOURCE="$(cd "${CROCO_SOURCE}" && pwd)"
+
     # Clean scratch area
     echo "Preparing compilation directory..."
     rm -rf "$SCRDIR"
@@ -298,23 +302,31 @@ function build_variant() {
     echo "Copying MS3DVAR common source files..."
     ls "${MS3DVAR_SOURCE}/COMMON/"*.F   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.F   "$SCRDIR"
     ls "${MS3DVAR_SOURCE}/COMMON/"*.F90 > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.F90 "$SCRDIR"
+    ls "${MS3DVAR_SOURCE}/COMMON/"*.h   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.h   "$SCRDIR"
     echo "MS3DVAR common sources copied"
     echo ""
 
-    # Copy Makefiles and build system
+    # Copy variant Makefile to compilation directory
     echo "Copying build system files..."
-    \cp "${MS3DVAR_SOURCE}/Makefile.inc" "$SCRDIR"
     \cp "${MS3DVAR_SOURCE}/${var_upper}/Makefile" "$SCRDIR"
-    \cp "${MS3DVAR_SOURCE}/${var_upper}/Makedefs" "$SCRDIR"
     echo "Build system copied"
     echo ""
 
-    # Copy variant-specific configuration files from variant directory
+    # Place modified Makefile.inc directly in Compile/.
+    # The variant Makefile uses "include Makefile.inc" (same directory).
+    echo "Configuring Makefile.inc..."
+    \cp "${MS3DVAR_SOURCE}/Makefile.inc" "${SCRDIR}/Makefile.inc"
+    sed -i 's|^COMMON_DIR = .*|COMMON_DIR = .|' "${SCRDIR}/Makefile.inc" 2>/dev/null || true
+    sed -i 's|^CROCO_SRC = .*|CROCO_SRC = .|' "${SCRDIR}/Makefile.inc" 2>/dev/null || true
+    sed -i 's|^VPATH = .*|VPATH = .|' "${SCRDIR}/Makefile.inc" 2>/dev/null || true
+    echo "Makefile.inc configured"
+    echo ""
+
+    # Copy all variant-specific source files from MS3DVAR_SOURCE (the versioned source)
     echo "Copying variant-specific files..."
-    ls cppdefs.h > /dev/null 2>&1 && \cp cppdefs.h "$SCRDIR"
-    ls param.h   > /dev/null 2>&1 && \cp param.h   "$SCRDIR"
-    ls scalars.h > /dev/null 2>&1 && \cp scalars.h "$SCRDIR"
-    ls ncscrum.h > /dev/null 2>&1 && \cp ncscrum.h "$SCRDIR"
+    ls "${MS3DVAR_SOURCE}/${var_upper}/"*.h   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.h   "$SCRDIR"
+    ls "${MS3DVAR_SOURCE}/${var_upper}/"*.F   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.F   "$SCRDIR"
+    ls "${MS3DVAR_SOURCE}/${var_upper}/"*.F90 > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.F90 "$SCRDIR"
     echo "Configuration files copied"
     echo ""
 
@@ -324,7 +336,7 @@ function build_variant() {
     ls *.F     > /dev/null 2>&1 && \cp -f *.F "$SCRDIR" && echo "  User .F files copied"
     ls *.h     > /dev/null 2>&1 && \cp -f *.h "$SCRDIR" && echo "  User .h files copied"
     ls *.h90   > /dev/null 2>&1 && \cp -f *.h90 "$SCRDIR" && echo "  User .h90 files copied"
-    ls Make*   > /dev/null 2>&1 && \cp -f Make* "$SCRDIR" && echo "  User Makefile overrides copied"
+    ls Makefile > /dev/null 2>&1 && \cp -f Makefile "$SCRDIR" && echo "  User Makefile override copied"
     echo ""
 
     # Build mpc preprocessor from CROCO source (needed by Makedefs suffix rules)
@@ -335,18 +347,74 @@ function build_variant() {
     # Change to compilation directory
     cd "$SCRDIR" || { echo "ERROR: Cannot enter compilation directory"; cd ..; return 1; }
 
-    # Export environment for Makefile
-    export FC
-    export NETCDFINC
-    export NETCDFLIB
-    export FFLAGS
+    # Determine OS-based compiler settings (mirrors CROCO OCEAN jobcomp)
+    OS_NAME=$(uname)
+    LDFLAGS1="${NETCDFLIB}"
+    CPPFLAGS1="${NETCDFINC}"
+    if [[ $OS_NAME == Linux || $OS_NAME == Darwin ]]; then
+        if [[ $FC == ifort || $FC == ifc ]]; then
+            CPP1="cpp -traditional -DLinux -DIfort"
+            CFT1="ifort"
+            FFLAGS1="-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise"
+        elif [[ $FC == ifx ]]; then
+            CPP1="cpp -traditional -DLinux -DIfort"
+            CFT1="$FC"
+            FFLAGS1="-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise"
+        elif [[ $FC == gfortran || $FC == gfortran-* ]]; then
+            CPP1="cpp -traditional -DLinux"
+            CFT1="$FC"
+            FFLAGS1="-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy"
+        elif [[ $FC == pgfortran || $FC == nvfortran ]]; then
+            CPP1="cpp -traditional -DLinux -DXLF"
+            CFT1="$FC"
+            FFLAGS1="-g -fast -r8 -i4 -mcmodel=medium -Mbackslash"
+        else
+            echo "WARNING: Unknown Fortran compiler '$FC', using gfortran defaults"
+            CPP1="cpp -traditional -DLinux"
+            CFT1="$FC"
+            FFLAGS1="-O2"
+        fi
+    else
+        echo "ERROR: Unsupported OS '$OS_NAME'. Only Linux and Darwin are supported."
+        cd ../..
+        return 1
+    fi
+    # User --fflags override takes priority
+    [ -n "$FFLAGS" ] && FFLAGS1="$FFLAGS"
+    # Add NetCDF include to compiler flags
+    FFLAGS1="$FFLAGS1 ${NETCDFINC}"
 
-    # Modify Makefile to use local paths
-    echo "Configuring Makefile for compilation..."
-    sed -i 's|^COMMON_DIR = .*|COMMON_DIR = .|' Makefile.inc 2>/dev/null || true
-    sed -i 's|^CROCO_SRC = .*|CROCO_SRC = .|' Makefile.inc 2>/dev/null || true
-    sed -i 's|^VPATH = .*|VPATH = .|' Makefile.inc 2>/dev/null || true
-    echo "Makefile configured"
+    # Detect OpenMP (using testkeys.F from CROCO source, mirrors CROCO jobcomp)
+    echo "Checking COMPILEOMP..."
+    if $($CPP1 testkeys.F | grep -i -q openmpisdefined); then
+        echo " => OpenMP activated"
+        if [[ $FC == ifort || $FC == ifc ]]; then
+            INTEL_VERSION=$(ifort --version 2>&1 | grep -oP "(\d+)" | head -n1)
+            if [[ "$INTEL_VERSION" -gt 18 ]]; then
+                FFLAGS1="$FFLAGS1 -qopenmp"
+            else
+                FFLAGS1="$FFLAGS1 -openmp"
+            fi
+        elif [[ $FC == ifx ]]; then
+            FFLAGS1="$FFLAGS1 -qopenmp"
+        else
+            FFLAGS1="$FFLAGS1 -fopenmp"
+        fi
+    fi
+
+    # Generate concrete Makedefs from the generic template
+    # Substitutes $(CPP1), $(CFT1), $(FFLAGS1), $(LDFLAGS1), $(CPPFLAGS1)
+    # with actual values determined above (same approach as CROCO OCEAN jobcomp).
+    echo "Generating Makedefs from template..."
+    rm -f Makedefs flags.tmp
+    printf 's?$(FFLAGS1)?%s?g\n'   "$FFLAGS1"   >> flags.tmp
+    printf 's?$(LDFLAGS1)?%s?g\n'  "$LDFLAGS1"  >> flags.tmp
+    printf 's?$(CPP1)?%s?g\n'      "$CPP1"       >> flags.tmp
+    printf 's?$(CFT1)?%s?g\n'      "$CFT1"       >> flags.tmp
+    printf 's?$(CPPFLAGS1)?%s?g\n' "$CPPFLAGS1"  >> flags.tmp
+    sed -f flags.tmp "${MS3DVAR_SOURCE}/Makedefs.generic" > Makedefs
+    rm -f flags.tmp
+    echo "Makedefs generated"
     echo ""
 
     # Build main MS3DVAR code

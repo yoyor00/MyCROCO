@@ -70,6 +70,8 @@
  *=====================================================================*/
 #define MASKING         /* Land/sea masking */
 #define NEW_S_COORD     /* New s-coordinate system (Vtransform=2) */
+#define SPHERICAL       /* Spherical (geographic) coordinate grid */
+#define CURVGRID        /* Curvilinear (non-orthogonal) grid */
 
 /*=====================================================================
  * BOUNDARY CONDITIONS

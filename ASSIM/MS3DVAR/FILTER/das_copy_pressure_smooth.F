@@ -26,7 +26,7 @@
         do k=1,NDAS
           do j=JstrR,JendR
             do i=IstrR,IendR
-              pp_s(i,j,k)=p_sm(i,j,k)
+              p_s(i,j,k)=p_sm(i,j,k)
             enddo
           enddo
         enddo

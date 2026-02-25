@@ -154,14 +154,13 @@ c**   goto 100
 !
 !
 !----------------------------------------------------------------------
-!  Create parallel threads; start timers for each thread;
+!  Create parallel threads;
 !  initialize (FIRST-TOUCH) model global arrays (most of them
 !  are just set to to zero).
 !----------------------------------------------------------------------
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call start_timers()
         call init_arrays (tile)
         call das_init_arrays (tile)  ! initialize (FIRST-TOUCH) DAS
       enddo

@@ -47,16 +47,19 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 #======================================================================
 
  SRCS = main.F		read_inp.F\
-	timers_roms.F	init_scalars.F	init_arrays.F\
+	init_scalars.F	init_arrays.F\
 	set_scoord.F	setup_grid1.F	setup_grid2.F\
 	ana_initial.F	analytical.F\
 	set_depth.F\
+	rho_eos.F\
 	diag.F		checkdims.F	grid_stiffness.F\
 	debug.F\
         param.F         ncscrum.F   scalars.F\
 	put_global_atts.F\
+	setup_kwds.F	check_kwds.F	check_srcs.F\
+	check_switches1.F	check_switches2.F\
 	nf_fread.F nf_fread_x.F	nf_fread_y.F\
-	get_date.F	lenstr.F	closecdf.F	insert_node.F\
+	lenstr.F	closecdf.F	insert_node.F\
 	fillvalue.F	nf_add_attribute.F		set_cycle.F\
 	def_grid_2d.F   def_grid_3d.F   def_his.F       def_rst.F\
 	wrt_grid.F      wrt_rst.F\
@@ -64,7 +67,7 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 	get_ssh.F\
 	das_init_arrays.F  das_init_scalars.F\
 	das_setup1.F  das_setup2.F das_spline1d.F das_exchange.F\
-	das_MessPass2D.F das_s2z.F das_z2s.F das_analysis.F \
+	das_MessPass2D.F das_s2z.F das_z2s.F das_analysis.F das_analysis_zeta.F\
 	das_ana_bvar.F das_costb.F das_vec.F das_adj_costb.F\
     das_get_d2c.F\
 	das_get_tmi.F  das_get_mc.F das_get_goes.F das_lbfgs.F das_innov_sst.F\
@@ -105,6 +108,8 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 	das_innov_dorauv.F das_cost_dorauv.F das_adj_dauv.F\
 	das_innov_hfradar.F das_cost_hfradar.F das_adj_chfradar.F\
 	das_copy.F das_setup.F das_get_initial.F das_cost_reg.F das_adj_cost_reg.F\
+	das_add_lr_s.F das_add_zeta_lr_s.F das_ca2zero_s.F\
+	das_interp_lr.F das_nf_fread_lr.F\
 \
 	das_nf_fread.F\
 \
@@ -118,8 +123,7 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 	das_get_TS_profile.F das_innov_TS_profile.F das_cost_TS_profile.F\
 	das_adj_TS_profile.F\
 \
-	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F
+	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F
 
 
 
@@ -156,6 +160,41 @@ $(SBIN): cppdefs.h param.h scalars.h ncscrum.h \
 
 $(OBJS): cppdefs.h param.h
 $(OBJS90): cppdefs.h param.h
+# Module dependency: buffer.F90 uses the param module (from param.F)
+buffer.o: param.o
+# Module dependency: these .F files use the buffer module (from buffer.F90)
+main.o das_nf_fread.o das_nf_fread_lr.o: buffer.o
+
+#======================================================================
+# Tools for generating keyword/switch check source files
+# (mirrors CROCO OCEAN Makefile approach)
+#======================================================================
+
+cppcheck: mpc cppcheck.F
+	$(CPP) -P $(CPPFLAGS) cppcheck.F | ./mpc > cppcheck_.f
+	$(CFT) -c $(FFLAGS) cppcheck_.f -o cppcheck.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o cppcheck cppcheck.o
+
+srcscheck: mpc srcscheck.F
+	$(CPP) -P $(CPPFLAGS) srcscheck.F | ./mpc > srcscheck_.f
+	$(CFT) -c $(FFLAGS) srcscheck_.f -o srcscheck.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
+
+checkkwds: mpc checkkwds.F
+	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
+	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
+	rm -f setup_kwds.F
+
+check_switches1.F: cppcheck cppdefs.h
+	cat cppdefs.h cppdefs_dev.h > mergcpp.txt
+	./cppcheck
+
+check_srcs.F: srcscheck Makefile
+	./srcscheck
+
+setup_kwds.F: checkkwds read_inp.F
+	./checkkwds
 
 testkeys: $(SBIN)
 	@echo ""
