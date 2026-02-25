@@ -60,7 +60,7 @@
      &                  +(latr(i,j)-latr(i0,j0))
      &                  *(latr(i,j)-latr(i0,j0)) 
                 count=count+1
-                pp(count)=pp_s(i0,j0,k)
+                pp(count)=p_s(i0,j0,k)
                 dis(count)=exp(-rr/ro)
               enddo
             enddo

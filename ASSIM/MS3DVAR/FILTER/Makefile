@@ -7,5 +7,16 @@
 VARIANT_NAME = FILTER
 SBIN = msfilter
 
+# FILTER-specific sources (not in common Makefile.inc)
+VARIANT_SRCS = netcdf_filtered.F das_filter.F
+
 # Include common build rules
-include ../Makefile.inc
+include Makefile.inc
+
+# Add variant-specific objects
+VARIANT_OBJS = $(VARIANT_SRCS:.F=.o)
+
+# Override the link rule to include variant objects
+$(SBIN): cppdefs.h param.h scalars.h ncscrum.h \
+         $(OBJS) $(OBJS90) $(VARIANT_OBJS)
+	$(LDR) $(FFLAGS) -o $(SBIN) $(OBJS) $(OBJS90) $(VARIANT_OBJS) $(LCDF) $(LDFLAGS)

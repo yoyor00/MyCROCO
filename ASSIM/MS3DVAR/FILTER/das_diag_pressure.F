@@ -53,7 +53,7 @@
       do k=1,NDAS
         do j=JstrR,JendR
           do i=IstrR,IendR
-            pp_s(i,j,k)=0.
+            p_s(i,j,k)=0.
           enddo
         enddo
       enddo
@@ -63,9 +63,9 @@
 #if defined DAS_PWTHZETATOT
 ! ... Add contribution of the smoothed unbalanced SSH
 # if defined DAS_BKGZETA
-          pp_s(i,j,NDAS) = rho_s(i,j,NDAS)*zetab_das9(i,j) 
+          p_s(i,j,NDAS) = rho_s(i,j,NDAS)*zetab_das9(i,j) 
 # else
-          pp_s(i,j,NDAS) = rho_s(i,j,NDAS)*zeta_das9(i,j) 
+          p_s(i,j,NDAS) = rho_s(i,j,NDAS)*zeta_das9(i,j) 
 # endif
      &           + (rho0+rho_das9(i,j,NDAS))*( 
      &             (1.-alph0)  *  zeta_h(i,j)  + 
@@ -73,9 +73,9 @@
      &             (gama0-beta0)* zeta_h_sm(i,j))
 #else
 # if defined DAS_BKGZETA
-          pp_s(i,j,NDAS) = rho_s(i,j,NDAS)*zetab_das9(i,j) 
+          p_s(i,j,NDAS) = rho_s(i,j,NDAS)*zetab_das9(i,j) 
 # else
-          pp_s(i,j,NDAS) = rho_s(i,j,NDAS)*zeta_das9(i,j) 
+          p_s(i,j,NDAS) = rho_s(i,j,NDAS)*zeta_das9(i,j) 
 # endif
      &           + (rho0+rho_das9(i,j,NDAS))*zeta_h(i,j)
 #endif
@@ -85,7 +85,7 @@
       do j=JstrR,JendR
         do i=IstrR,IendR
           do k=NDAS-1, 1, -1
-            pp_s(i,j,k)=pp_s(i,j,k+1)
+            p_s(i,j,k)=p_s(i,j,k+1)
      &            + 0.5*(rho_s(i,j,k) + rho_s(i,j,k+1))
      &             * (z_das(k+1) - z_das(k))
           enddo

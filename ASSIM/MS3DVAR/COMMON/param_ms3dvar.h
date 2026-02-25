@@ -77,6 +77,7 @@
 ! Example: If LLmH=629, nratio=2 -> LLm_lr ≈ 314 (half resolution)
 !----------------------------------------------------------------------
 
+#define NRATIO_DEFINED
       integer  nratio, nhalf,  LLm_lr, Lm_lr,  MMm_lr, Mm_lr
 
 ! CONFIGURATION: Set downsampling ratio
@@ -86,6 +87,7 @@
 ! Compute low-resolution grid dimensions
       parameter (LLm_lr=(LLmH+2-nhalf)/nratio-1,
      &           MMm_lr=(MMmH+2-nhalf)/nratio-1)
+      parameter (Lm_lr=LLm_lr, Mm_lr=MMm_lr)
 
 !----------------------------------------------------------------------
 ! OpenMP Tiling Configuration
@@ -176,7 +178,12 @@
       parameter (LLm=LLm0,  MMm=MMm0)
       parameter (Lm=LLm, Mm=MMm)
 
+! Standard output unit
+      integer stdout
+      parameter (stdout=6)
+
 ! Padding parameters for staggered grid
+      integer padd_X, padd_E
       parameter (padd_X=(Lm+2)/2-(Lm+1)/2)
       parameter (padd_E=(Mm+2)/2-(Mm+1)/2)
 
@@ -190,6 +197,32 @@
       integer NSUB_X, NSUB_E, NPP
       integer size_XI, size_ETA
       integer sse, ssz, se, sz, N2d, N3d, N3dHz
+      integer NSA
+! NSA: number of arrays in the workspace (28 without NBQ, 35 with NBQ)
+# ifdef NBQ
+      parameter (NSA=35)
+# else
+      parameter (NSA=28)
+# endif
+! NWEIGHT: maximum number of weights for barotropic mode
+      integer NWEIGHT
+      parameter (NWEIGHT=1000)
+
+! Point sources
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+      integer Msrc
+# ifdef RIVER
+      parameter (Msrc=2)
+# elif defined SEAGRASS
+      parameter (Msrc=1)
+# elif defined VILAINE
+      parameter (Msrc=2)
+# elif defined ESTUARY
+      parameter (Msrc=1)
+# else
+      parameter (Msrc=30)
+# endif
+#endif
 
 ! Tiling configuration (default = low-res tiling)
       parameter (NSUB_X=NSUB_XL, NSUB_E=NSUB_EL, NPP=NPPL)
@@ -208,15 +241,8 @@
 #endif    /* DAS_IN_MBFGS */
 
 !----------------------------------------------------------------------
-! End of param_ms3dvar.h
+! End of param_ms3dvar.h grid section.
+! Include CROCO tracer/physics parameters required by CROCO source files.
 !----------------------------------------------------------------------
-!
-! For additional CROCO parameters (tracers, biology, sediment, etc.),
-! see the full CROCO param.h in OCEAN/param.h
-!
-! This minimal file contains only what MS3DVAR needs for:
-! 1. Grid dimensions (LLm, MMm, N)
-! 2. Geopotential grid (LLmH, MMmH, NnH)
-! 3. Multi-scale grid (LLm_lr, MMm_lr)
-! 4. Tiling (NSUB_X, NSUB_E, NPP)
-!----------------------------------------------------------------------
+
+#include "croco_extra_params.h"

@@ -53,7 +53,7 @@
 ! - Standard CROCO grid parameters (LLm, MMm, N, etc.)
 !----------------------------------------------------------------------
 
-#include "../COMMON/param_ms3dvar.h"
+#include "param_ms3dvar.h"
 
 !----------------------------------------------------------------------
 ! MR VARIANT-SPECIFIC PARAMETER OVERRIDES
