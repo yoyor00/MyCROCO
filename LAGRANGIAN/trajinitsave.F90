@@ -253,8 +253,8 @@ MODULE trajinitsave
 
     ! DEB-IBM and SPECIES 
 #ifdef DEB_IBM
-    INTEGER                                     :: age,ageClass,super,number_particle,stage
-    REAL(KIND=rlg)                              :: size, density
+    INTEGER                                     :: ageClass,number_particle,stage
+    REAL(KIND=rlg)                              :: size, density, super, age
 #ifdef IBM_SPECIES
     REAL(KIND=rlg)                              :: E_deb,H_deb,R_deb,Gam_deb
 #endif
@@ -945,7 +945,7 @@ MODULE trajinitsave
             DO nn = 1,nb_part_nc 
 
                 ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
-                IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
+                ! IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
         
                 IF ( depth_nc(nn) < 0.0_rsh ) THEN
                     WRITE(ierrorlog,*) 'Function INIT_TRAJ : depth of particle has to be > 0'
@@ -970,6 +970,8 @@ MODULE trajinitsave
                         xe_lag = xeint(zeta(:,:,nstp),px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,Istr,Iend,Jstr,Jend)
                         h0_lag = h0int(   px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
                         d3     = h0_lag + xe_lag
+                        ! clara test : rustine pas propre, car different avec 2nd boucle
+                        IF ( d3 < depth_nc(nn) ) depth_nc(nn) = d3 - 0.1_rsh ! patch tempo pour restart (martin)
                         IF (d3 > depth_nc(nn)) THEN   ! patch tempo pour restart (martin)
                             nb_part = nb_part + nb_part_intro
                         END IF
@@ -986,7 +988,7 @@ MODULE trajinitsave
             DO nn = 1,nb_part_nc
 
                 ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
-                IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
+                ! IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
 
 
                 xtemp = tool_latlon2i(lon_nc(nn),lat_nc(nn))
