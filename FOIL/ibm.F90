@@ -388,7 +388,7 @@ MODULE ibm
     !&E ** Called by      : ibm_update_main
     !&E ** External calls : LAGRANGIAN_update,init_patch,indices_loc2glob,tool_latlon2i,tool_latlon2j
     !&E                     loc_h0,define_pos,ztosiggen,h0int,xeint,hc_sigint
-    !&E                     ex_traj,ADD_ALL_MPI_INT,init_mpi_type_particle
+    !&E                     ex_traj,ADD_ALL_MPI_INT,ADD_ALL_MPI_REAL,init_mpi_type_particle
     !&E                     ibm_loc_xyz,ibm_buoy,ibm_traint,ibm_proftraint,selec_dome_or_asymp,tool_julien
     !&E                     ibm_nycth_mig,death_by_fishing,eggs_grid,ibm_parameter_init,fish_move,deb_egg_init
     !&E                     deb_cycle,readtemp3d(unused anymore),readfood3d
@@ -416,7 +416,7 @@ MODULE ibm
     USE trajectools,  ONLY : tool_latlon2i, tool_latlon2j
     USE trajectools,  ONLY : loc_h0, define_pos, ztosiggen, h0int, xeint, hc_sigint
 #ifdef MPI
-    USE toolmpi,      ONLY : ex_traj, ADD_ALL_MPI_INT
+    USE toolmpi,      ONLY : ex_traj, ADD_ALL_MPI_INT, ADD_ALL_MPI_REAL
     USE comtraj,      ONLY : init_mpi_type_particle
     USE comtraj,      ONLY : down_give, up_give, right_give, left_give
 #endif
@@ -1229,12 +1229,18 @@ MODULE ibm
     IF (yearclass == aaaa) yearclass = yearclass + 1
 
 #ifdef IBM_SPECIES
+    ! To change if muliple species (add (ind_species))
+    ! To get the total biomass for the whole domain, for mpi implementation 
+    CALL_MPI ADD_ALL_MPI_REAL(struc_ad)
     ! Parametre pour mortalite et densite-dependance
     struc_ad_dd_DEB = struc_ad
     struc_ad        = 0._rsh
 
     ! For catches
     DO i=1,nb_species
+        ! To get the total number and weight of fish for the whole domain, for mpi implementation
+        CALL_MPI ADD_ALL_MPI_REAL(number_tot(ind_species))
+        CALL_MPI ADD_ALL_MPI_REAL(weight_tot(ind_species))
         IF (number_tot(i) > 0._rsh) THEN
             Wdeb_mean(i) = weight_tot(i)/number_tot(i)
             biom_tot(i)  = weight_tot(i)

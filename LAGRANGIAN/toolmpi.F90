@@ -40,6 +40,7 @@ interface MPI_glob2loc
 end interface MPI_glob2loc 
 
     PUBLIC :: ADD_ALL_MPI_INT,MPI_SETUP_LAG,MPI_loc2glob,MPI_glob2loc
+    PUBLIC :: ADD_ALL_MPI_REAL
     INTEGER :: nprocs
     INTEGER :: miniproc,minjproc,maxiproc,maxjproc
     INTEGER :: myi_uproc,myj_uproc  
@@ -354,7 +355,19 @@ end interface MPI_glob2loc
 
 
 
-SUBROUTINE ADD_ALL_MPI_INT(value)
+ SUBROUTINE ADD_ALL_MPI_INT(value)
+    !&E---------------------------------------------------------------------
+    !&E                 ***  ROUTINE  ADD_ALL_MPI_INT  ***
+    !&E
+    !&E ** Purpose :  Compute global sum of an integer over all MPI processes.
+    !&E
+    !&E ** Description :
+    !&E  Performs an MPI_ALLREDUCE with MPI_SUM on 'value'.
+    !&E  On entry:  local integer contribution.
+    !&E  On exit :  global sum available on all ranks.
+    !&E
+    !&E ** History :
+    !&E---------------------------------------------------------------------
     IMPLICIT NONE
     INTEGER, INTENT(inout) :: value
 
@@ -367,6 +380,37 @@ SUBROUTINE ADD_ALL_MPI_INT(value)
     value = value_temp
 
  END SUBROUTINE  ADD_ALL_MPI_INT
+
+   !!======================================================================
+
+ SUBROUTINE ADD_ALL_MPI_REAL(value)
+    !&E---------------------------------------------------------------------
+    !&E                 ***  ROUTINE  ADD_ALL_MPI_REAL  ***
+    !&E
+    !&E ** Purpose :  Compute global sum of a real over all MPI processes.
+    !&E
+    !&E ** Description :
+    !&E  Performs an MPI_ALLREDUCE with MPI_SUM on 'value'.
+    !&E  The MPI datatype (type_mpi_rlg) matches REAL(kind=rlg).
+    !&E  On entry:  local real contribution.
+    !&E  On exit :  global sum available on all ranks.
+    !&E
+    !&E ** History :
+    !&E       !  2026-02 (C. Menu)  Adapted from ADD_ALL_MPI_INT
+    !&E---------------------------------------------------------------------
+    USE comtraj, ONLY : rlg, type_mpi_rlg
+    IMPLICIT NONE
+    REAL(kind=rlg), INTENT(inout) :: value
+
+    !! * Local declarations
+    INTEGER :: ierr_mpi
+    REAL(kind=rlg) :: value_temp
+
+    CALL MPI_ALLREDUCE(value, value_temp, 1, type_mpi_rlg, MPI_SUM, MPI_COMM_WORLD, ierr_mpi)
+    value = value_temp
+    END SUBROUTINE ADD_ALL_MPI_REAL
+
+   !!======================================================================    
 
  SUBROUTINE ex_traj(d_give, u_give, r_give, l_give)
 
