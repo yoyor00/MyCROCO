@@ -8,6 +8,9 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
+! MS3DVAR: guard allows MS3DVAR to provide its own grid parameters
+! and still include the physics/tracer parameters below (line ~427+)
+#ifndef MS3DVAR
 !----------------------------------------------------------------------
 ! Dimensions of Physical Grid and array dimensions
 !----------------------------------------------------------------------
@@ -423,6 +426,7 @@
       parameter (N3dabl=size_XI*size_ETA*(N_abl+1))
 # endif
 #endif
+#endif /* MS3DVAR */
 
 !
 !----------------------------------------------------------------------
