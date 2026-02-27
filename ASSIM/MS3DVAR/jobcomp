@@ -298,6 +298,11 @@ function build_variant() {
     echo "CROCO sources copied"
     echo ""
 
+    # Save CROCO's param.h as croco_ocean_param.h before variant files overwrite it.
+    # MS3DVAR includes this (with MS3DVAR_GRID_PARAMS guard) to get the physics/tracer
+    # parameters from the real CROCO param.h, avoiding duplication in croco_extra_params.h.
+    \cp "${CROCO_SOURCE}/param.h" "${SCRDIR}/croco_ocean_param.h"
+
     # Copy MS3DVAR common source files
     echo "Copying MS3DVAR common source files..."
     ls "${MS3DVAR_SOURCE}/COMMON/"*.F   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.F   "$SCRDIR"

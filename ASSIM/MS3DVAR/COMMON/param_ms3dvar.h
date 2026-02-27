@@ -242,7 +242,12 @@
 
 !----------------------------------------------------------------------
 ! End of param_ms3dvar.h grid section.
-! Include CROCO tracer/physics parameters required by CROCO source files.
+! Include CROCO's own param.h for tracer/physics parameters.
+! The MS3DVAR guard tells param.h to skip its grid section
+! (lines 1-425) since we already defined our own grid above.
+! This avoids duplicating CROCO's param.h physics section and ensures
+! MS3DVAR automatically tracks CROCO code evolution.
 !----------------------------------------------------------------------
 
-#include "croco_extra_params.h"
+#define MS3DVAR
+#include "croco_ocean_param.h"
