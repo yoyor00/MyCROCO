@@ -266,7 +266,7 @@ MODULE ibmmove
                 saison = 1
             END IF
         END IF
-        IF (particle%size < 7.25) saison = 2 ! pour cas ou juvenile avant aout, pas de size_class correspondante saison 1
+        IF (particle%size < 6.25) saison = 2 ! pour cas ou juvenile avant aout, pas de size_class correspondante saison 1
     END IF
     
     !IF (n == 2) THEN ! remain in the south
