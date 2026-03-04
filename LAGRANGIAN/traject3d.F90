@@ -551,7 +551,7 @@ MODULE traject3d
     !!----------------------------------------------------------------------
     !! * Executable part
     dmaill = 0.01_rsh ! plus eleve plus jump en z, car advecte le long des sigmas, martin
-    disp   = 0.0_rsh
+    disp   = 5.0_rsh
     pos0   = pos
 
     !interpolate current components on particle position
