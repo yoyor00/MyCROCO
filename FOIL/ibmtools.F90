@@ -404,17 +404,29 @@ MODULE ibmtools
 
         IF (biom_tot(id_species) .gt. 0.0_rlg) THEN
             !date_start : to avoid 1st t where biom and wdebmean =0
+            ! ! we should add a threshold, Death_FISH = min(Death_FISH, super)
+            ! IF(year > 1970 .and. year < 2000) THEN
+            !     particle%Death_FISH = particle%Death_FISH + particle%Wdeb*particle%super*mat_catch(1,month,id_species)         &
+            !                             *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species)) 
+            !     particle%super = particle%super - particle%Wdeb*particle%super*mat_catch(1,month,id_species)*coeff1   &
+            !                     /(Wdeb_mean(id_species)*biom_tot(id_species)) 
+            ! ELSE IF (year >= 2000) THEN
+            !     particle%Death_FISH = particle%Death_FISH + particle%Wdeb*particle%super*mat_catch(year-1999,month,id_species) &
+            !                             *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species))
+            !     particle%super = particle%super - particle%Wdeb*particle%super*mat_catch(year-1999,month,id_species)             &
+            !                      *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species))
+            ! ENDIF
+
+            ! test to avoid negative super
             IF(year > 1970 .and. year < 2000) THEN
-                particle%Death_FISH = particle%Death_FISH + particle%Wdeb*particle%super*mat_catch(1,month,id_species)         &
-                                        *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species)) 
-                particle%super = particle%super - particle%Wdeb*particle%super*mat_catch(1,month,id_species)*coeff1   &
-                                /(Wdeb_mean(id_species)*biom_tot(id_species)) 
+                Zfishing = particle%Wdeb * mat_catch(1,month,id_species) / &
+                    (Wdeb_mean(id_species) * biom_tot(id_species))
             ELSE IF (year >= 2000) THEN
-                particle%Death_FISH = particle%Death_FISH + particle%Wdeb*particle%super*mat_catch(year-1999,month,id_species) &
-                                        *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species))
-                particle%super = particle%super - particle%Wdeb*particle%super*mat_catch(year-1999,month,id_species)             &
-                                 *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species))
+                Zfishing = particle%Wdeb * mat_catch(year-1999,month,id_species) / &
+                    (Wdeb_mean(id_species) * biom_tot(id_species))
             ENDIF
+            particle%Death_FISH = particle%Death_FISH + particle%super * (1._rlg - exp(-Zfishing * coeff1))
+            particle%super      = particle%super * exp(-Zfishing * coeff1)
         ENDIF
     ENDIF   ! fishing_strategy == Catch
 
