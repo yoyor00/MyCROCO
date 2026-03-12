@@ -432,6 +432,7 @@
 #ifdef NEW_S_COORD
       real Vtransform
       parameter (Vtransform=2)
+! YEIPI 
 #else
       real Vtransform
       parameter (Vtransform=1)
