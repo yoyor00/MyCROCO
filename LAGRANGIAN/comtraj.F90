@@ -125,9 +125,9 @@ MODULE comtraj
         REAL(KIND=rsh)          :: WG           = 0.0_rsh
         REAL(KIND=rsh)          :: NRJ_V        = 0.0_rsh
         REAL(KIND=rsh)          :: NRJ_g        = 0.0_rsh
-        REAL(KIND=rlg)          :: Death_DEB    = 0.0_rsh
-        REAL(KIND=rlg)          :: Death_FISH   = 0.0_rsh
-        REAL(KIND=rlg)          :: Death_NAT    = 0.0_rsh      
+        REAL(KIND=rsh)          :: Death_DEB    = 0.0_rsh
+        REAL(KIND=rsh)          :: Death_FISH   = 0.0_rsh
+        REAL(KIND=rsh)          :: Death_NAT    = 0.0_rsh      
 #endif
 #endif
   END TYPE type_particle
@@ -283,14 +283,14 @@ CONTAINS
     ! Create MPI type for particles 
     old_types = (/                                                                  &
         MPI_LOGICAL, MPI_INTEGER, MPI_INTEGER, MPI_INTEGER,                         &
-        type_mpi_rlg, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh,       &
+        type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh,       &
         type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh                      &
 #ifdef DEB_IBM
-        , type_mpi_rsh, MPI_INTEGER, MPI_INTEGER, MPI_INTEGER, MPI_INTEGER,         &
+        , type_mpi_rlg, MPI_INTEGER, MPI_INTEGER, MPI_INTEGER, type_mpi_rsh,         &
           type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh,     &
           type_mpi_rsh, type_mpi_rsh                                                &
 #ifdef IBM_SPECIES
-        , MPI_INTEGER, MPI_INTEGER, MPI_LOGICAL, MPI_INTEGER, MPI_INTEGER,          &
+        , MPI_INTEGER, MPI_INTEGER, MPI_INTEGER, MPI_LOGICAL, MPI_INTEGER,          &
           type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh,     &
           type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh,     &
           type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh,     &
@@ -331,9 +331,9 @@ CONTAINS
 #ifdef DEB_IBM
     CALL MPI_GET_ADDRESS(particle % date_orig, addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % stage,     addresses(i), ierr_mpi) ; i = i+1
-    CALL MPI_GET_ADDRESS(particle % age,       addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % AgeClass,  addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % Nbatch,    addresses(i), ierr_mpi) ; i = i+1
+    CALL MPI_GET_ADDRESS(particle % age,       addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % w,         addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % size,      addresses(i), ierr_mpi) ; i = i+1
     CALL MPI_GET_ADDRESS(particle % density,   addresses(i), ierr_mpi) ; i = i+1
