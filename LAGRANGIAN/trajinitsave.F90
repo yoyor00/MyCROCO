@@ -945,7 +945,7 @@ MODULE trajinitsave
             DO nn = 1,nb_part_nc 
 
                 ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
-                ! IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
+                IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
         
                 IF ( depth_nc(nn) < 0.0_rsh ) THEN
                     WRITE(ierrorlog,*) 'Function INIT_TRAJ : depth of particle has to be > 0'
@@ -980,7 +980,6 @@ MODULE trajinitsave
                 END IF
 #endif
             END DO
-
             CALL init_patch(new_patch, nb_part)
             CALL indices_loc2glob(0, nb_part, idx_s, idx_e)
 
@@ -988,7 +987,7 @@ MODULE trajinitsave
             DO nn = 1,nb_part_nc
 
                 ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
-                ! IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
+                IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
 
 
                 xtemp = tool_latlon2i(lon_nc(nn),lat_nc(nn))
