@@ -952,7 +952,7 @@ MODULE debmodel
         particle%Wdeb  = 0.0_rsh
         particle%flag  = -valmanq
         particle%super = 0.0_rsh
-        particle%stage = 0
+        ! particle%stage = 0
     ENDIF
 
     ! Auxillary save
