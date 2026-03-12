@@ -89,7 +89,7 @@ MODULE ibm
     !&E
     !&E ** Description    :
     !&E ** Called by      : ibm_init_main
-    !&E ** External calls : LAGRANGIAN_init,ionc4_openr,ionc4_read_trajt,ionc4_read_traj
+    !&E ** External calls : LAGRANGIAN_init,ionc4_openr,ionc4_read_trajt,
     !&E                     ionc4_close,ionc4_read_time,ionc4_read_dimt,deb_init,fish_move_init
     !&E                     ibm_parameter_init
     !&E ** Reference      : Huret et al. (2016)
@@ -105,7 +105,7 @@ MODULE ibm
 
     ! Import subroutines
     USE trajinitsave,   ONLY : LAGRANGIAN_init
-    USE ionc4,          ONLY : ionc4_openr, ionc4_read_trajt, ionc4_read_traj,   &
+    USE ionc4,          ONLY : ionc4_openr, ionc4_read_trajt, &
                                ionc4_close, ionc4_read_time, ionc4_read_dimt,    &
                                ionc4_gatt_char_read, ionc4_read_dimtraj
 #ifdef IBM_SPECIES
@@ -241,7 +241,7 @@ MODULE ibm
             CALL ionc4_read_trajt(file_inp, "STAGE",     stage_nc,    1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUMBER",    super_nc,    1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "DRATE",     drate_nc,    1, nb_part_nc, idimt)
-            CALL ionc4_read_traj (file_inp, "DAYBIRTH",  dayb_nc,     1, nb_part_nc)
+            CALL ionc4_read_trajt(file_inp, "DAYBIRTH",  dayb_nc,     1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGE",       age_nc,      1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGECLASS",  ageClass_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM",  num_nc,      1, nb_part_nc, idimt)
@@ -276,8 +276,8 @@ MODULE ibm
             END DO
             
 #ifdef IBM_SPECIES
-            CALL ionc4_read_traj(trim(file_inp), "DAYJUV",   dayb_nc, 1, nb_part_nc)
-            CALL ionc4_read_traj(trim(file_inp), "DENSPAWN", dens_nc, 1, nb_part_nc)
+            CALL ionc4_read_trajt(trim(file_inp), "DAYJUV",   dayb_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(trim(file_inp), "DENSPAWN", dens_nc, 1, nb_part_nc, idimt)
 
             DO m = 1,patch%nb_part_alloc
                 IF (patch%nb_part_alloc == 0) CYCLE
@@ -890,10 +890,6 @@ MODULE ibm
             ! ===    Divers mortalites sur les poissons 
 
             !---------------------------------------------------------------
-            ! Density dependance, name struc_ad misleading, we take everybody (Menu et al. 2023)
-            IF (particle%stage >= 3) struc_ad = struc_ad + (particle%WV*particle%super)  
-
-            !---------------------------------------------------------------
             ! Mortality (Menu et al.)
             Z1(ind_species) = 0.0_rlg
             IF (patch%species == 'anchovy') THEN        ! Equivalent to (ind_species == 1)
@@ -944,6 +940,10 @@ MODULE ibm
                 number_tot(ind_species) = number_tot(ind_species) + particle%super
                 weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)
             ENDIF 
+
+            !---------------------------------------------------------------
+            ! Density dependance, name struc_ad misleading, we take everybody (Menu et al. 2023)
+            IF (particle%stage >= 3) struc_ad = struc_ad + (particle%WV*particle%super)  
 
             !---------------------------------------------------------------
             ! Add all eggs in mat_eggs, matrix for spawn, looking at the species
@@ -1234,19 +1234,19 @@ MODULE ibm
     CALL_MPI ADD_ALL_MPI_REAL(struc_ad)
     ! Parametre pour mortalite et densite-dependance
     struc_ad_dd_DEB = struc_ad
-    struc_ad        = 0._rsh
+    struc_ad        = 0._rlg
 
     ! For catches
     DO i=1,nb_species
         ! To get the total number and weight of fish for the whole domain, for mpi implementation
-        CALL_MPI ADD_ALL_MPI_REAL(number_tot(ind_species))
-        CALL_MPI ADD_ALL_MPI_REAL(weight_tot(ind_species))
-        IF (number_tot(i) > 0._rsh) THEN
+        CALL_MPI ADD_ALL_MPI_REAL(number_tot(i))
+        CALL_MPI ADD_ALL_MPI_REAL(weight_tot(i))
+        IF (number_tot(i) > 0._rlg) THEN
             Wdeb_mean(i) = weight_tot(i)/number_tot(i)
             biom_tot(i)  = weight_tot(i)
 
-            weight_tot(i) = 0._rsh
-            number_tot(i) = 0._rsh
+            weight_tot(i) = 0._rlg
+            number_tot(i) = 0._rlg
         ENDIF
     ENDDO
 #endif /* IBM_SPECIES*/
@@ -1271,7 +1271,7 @@ MODULE ibm
     !&E
     !&E ** Description    :
     !&E ** Called by      : ibm_init, ibm_3d
-    !&E ** External calls : ionc4_createfile_traj,ionc4_createvar_traj,ionc4_write_traj
+    !&E ** External calls : ionc4_createfile_traj,ionc4_createvar_traj
     !&E                     ionc4_write_trajt,ionc4_write_time,ionc4_sync
     !&E                     indices_loc2glob,tool_ind2lat,tool_ind2lon
     !&E ** Reference :
@@ -1285,7 +1285,7 @@ MODULE ibm
 
     !! * Modules used
     USE ionc4,          ONLY : ionc4_createfile_traj, ionc4_createvar_traj, &
-                               ionc4_write_traj, ionc4_write_trajt,         &
+                               ionc4_write_trajt,         &
                                ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
                                ionc4_gatt_char_read, ionc4_open
     USE comtraj,        ONLY : patches, type_patch, type_particle
@@ -1392,7 +1392,7 @@ MODULE ibm
             CALL ionc4_createvar_traj(file_out, "DRATE","","Development rate of egg or larva",             &
                                                 fill_value=fillval,  l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DAYBIRTH","","Date of birth",                             &
-                                                fill_value=REAL(dg_valmanq_io,kind=out), l_out_nc4par=l_out_nc4par, ndims=1)
+                                                fill_value=REAL(dg_valmanq_io,kind=out), l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "AGE","","Age in days",                                    &
                                                 fill_value=-1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "AGECLASS","","Age in year of fish",                       &
@@ -1419,17 +1419,17 @@ MODULE ibm
             !                                    fill_value=fillval,  l_out_nc4par=l_out_nc4par)
 
             CALL ionc4_createvar_traj(file_out, "YEARSPAWN","","Year authorised to spawn",                 &
-                                                fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=0, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DAYSPAWN","","Julian day start spawning",                 &
-                                                fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=0, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DAYJUV","","Julien day at metamorphosis",                 &
-                                                fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=0, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "ZOOM","","Zoom value",                                    &
-                                                fill_value=fillval, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=fillval, l_out_nc4par=l_out_nc4par)
             !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
             !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DENSPAWN","sigma","Density of egg at spawning",           &
-                                                fill_value=fillval, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=fillval, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "Death_DEB","","Number dead by starvation",                &
                                                 fill_value=fillval,l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "Death_FISH","","Number dead by fishing",                  &
@@ -1546,7 +1546,7 @@ MODULE ibm
         CALL ionc4_write_trajt(file_out, 'NUMBER',    nb_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'DENSITY',   dens_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'DRATE',     Drate_out(1:nb_part),num1,num2,0,fillval)
-        CALL ionc4_write_traj(file_out,  'DAYBIRTH',  dateo_out(1:nb_part),num1,num2,REAL(dg_valmanq_io,kind=out))
+        CALL ionc4_write_trajt(file_out, 'DAYBIRTH',  dateo_out(1:nb_part),num1,num2,0,REAL(dg_valmanq_io,kind=out))
         CALL ionc4_write_trajt(file_out, 'AGE',       age_out(1:nb_part),num1,num2,0,-1)
         CALL ionc4_write_trajt(file_out, 'AGECLASS',  ageClass_out(1:nb_part),num1,num2,0,-1)
 
@@ -1559,10 +1559,10 @@ MODULE ibm
         CALL ionc4_write_trajt(file_out, 'GAM',       Gam_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'WEIGHT',    Wdeb_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'NEGGS',     Neggs_out(1:nb_part),num1,num2,0,fillval)
-        CALL ionc4_write_traj(file_out,  'YEARSPAWN', yearspawn_out(1:nb_part),num1,num2,0)
-        CALL ionc4_write_traj(file_out,  'DAYSPAWN',  dayspawn_out(1:nb_part),num1,num2,0)
-        CALL ionc4_write_traj(file_out,  'DAYJUV',    dayjuv_out(1:nb_part),num1,num2,0)
-        CALL ionc4_write_traj(file_out,  'DENSPAWN',  denspawn_out(1:nb_part),num1,num2,fillval)
+        CALL ionc4_write_trajt(file_out,  'YEARSPAWN', yearspawn_out(1:nb_part),num1,num2,0,-1)
+        CALL ionc4_write_trajt(file_out,  'DAYSPAWN',  dayspawn_out(1:nb_part),num1,num2,0,-1)
+        CALL ionc4_write_trajt(file_out,  'DAYJUV',    dayjuv_out(1:nb_part),num1,num2,0,-1)
+        CALL ionc4_write_trajt(file_out,  'DENSPAWN',  denspawn_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out,  'ZOOM',      zoom_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'Death_DEB', deaddeb_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'Death_FISH', deadfishing_out(1:nb_part),num1,num2,0,fillval)

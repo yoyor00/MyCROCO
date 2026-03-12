@@ -126,7 +126,7 @@ MODULE debmodel
     !&E
     !&E---------------------------------------------------------------------
     !! * Modules used
-    USE ionc4,      ONLY : ionc4_openr,ionc4_read_trajt,ionc4_read_traj,ionc4_close,ionc4_read_dimt, ionc4_read_dimtraj
+    USE ionc4,      ONLY : ionc4_openr,ionc4_read_trajt,ionc4_close,ionc4_read_dimt, ionc4_read_dimtraj
     USE ibmtools,   ONLY : gasdev_s
     USE comtraj,    ONLY : fileanchovy, filesardine, catch_anc_bob, catch_sar_bob
     USE comtraj,    ONLY : mat_catch, fishing_strategy
@@ -217,10 +217,10 @@ MODULE debmodel
             CALL ionc4_read_trajt(file_inp, "WEIGHT",    wdeb_nc,  1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM",  num_nc,      1, nb_part_nc, idimt)
     
-            CALL ionc4_read_traj (file_inp, "DAYSPAWN",  daysp_nc,  1, nb_part_nc)
-            CALL ionc4_read_traj (file_inp, "YEARSPAWN", yearsp_nc, 1, nb_part_nc)
-            CALL ionc4_read_traj (file_inp, "ZOOM",      zoom_nc,   1, nb_part_nc)
-            !CALL ionc4_read_traj (file_inp, "SEASON",    season_nc, 1, nb_part_nc)
+            CALL ionc4_read_trajt (file_inp, "DAYSPAWN",  daysp_nc,  1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt (file_inp, "YEARSPAWN", yearsp_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt (file_inp, "ZOOM",      zoom_nc,   1, nb_part_nc, idimt)
+            !CALL ionc4_read_trajt (file_inp, "SEASON",    season_nc, 1, nb_part_nc, idimt)
             CALL ionc4_close(file_inp)
 
             DO m = 1,patch%nb_part_alloc
@@ -246,6 +246,7 @@ MODULE debmodel
                 patch % particles(m) % L         = shape*(patch%particles(m)%size)
                 patch % particles(m) % Gam       = gam_nc(index_num)
                 patch % particles(m) % Neggs     = neggs_nc(index_num)
+                ! lecture Wdeb ne sert à rien, ecrasée après....
                 patch % particles(m) % Wdeb      = wdeb_nc(index_num)
                 patch % particles(m) % dayspawn  = daysp_nc(index_num)
                 patch % particles(m) % yearspawn = yearsp_nc(index_num)
@@ -369,10 +370,10 @@ MODULE debmodel
             L = patch%particles(m)%L   
             
             IF (patch%particles(m)%size < 2.0_rsh) patch%particles(m)%L = patch%particles(m)%size *shapeb
-            ! IF (patch%particles(m)%size >= 2.0_rsh .and. patch%particles(m)%size <= 4.0_rsh) THEN
-            !     patch%particles(m)%L = patch%particles(m)%size*((L - shapeb*2.0_rsh)*shape + (shape*4.0_rsh - L)*shapeb) &
-            !                            /(shape*4.0_rsh - shapeb*2.0_rsh)
-            ! ENDIF ! ce if commenté chez clara
+            IF (patch%particles(m)%size >= 2.0_rsh .and. patch%particles(m)%size <= 4.0_rsh) THEN
+                patch%particles(m)%L = patch%particles(m)%size*((L - shapeb*2.0_rsh)*shape + (shape*4.0_rsh - L)*shapeb) &
+                                       /(shape*4.0_rsh - shapeb*2.0_rsh)
+            ENDIF ! ce if commenté chez clara
             IF (patch%particles(m)%size > 4.0_rsh) patch%particles(m)%L = patch%particles(m)%size*shape
 
             ! Weight
