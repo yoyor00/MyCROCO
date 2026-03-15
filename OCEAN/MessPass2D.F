@@ -8,6 +8,10 @@
 # else
       subroutine MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend, A)
 # endif
+# ifdef MPI
+      use mpi
+# endif
+
 !
 !======================================================================
 !
@@ -22,7 +26,7 @@
 # include "param.h"
 # include "scalars.h"
 # include "mpi_cpl.h"
-      include 'mpif.h'
+      !include 'mpif.h'
       integer Npts
 # if (!defined MP_3PTS) && (!defined MP_1PTS)
       parameter (Npts=2)

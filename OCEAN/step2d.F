@@ -99,11 +99,14 @@ C$    trd=omp_get_thread_num()
 !
       USE debug
       USE croco_namelist, only: dt, rdrg, rdrg2, m2filter_alpha ! needed when AGRIF_CONSERV_VOL
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,
 # ifdef MPI
-     &         err,
+     &         err,ierr,
 # endif
 # if defined PSOURCE || defined PSOURCE_MASS
      &        is,
@@ -169,7 +172,7 @@ C$    trd=omp_get_thread_num()
 !
 # ifdef MPI
 #  include "mpi_cpl.h"
-      include 'mpif.h'
+      !include 'mpif.h'
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi
 # else
@@ -1928,7 +1931,7 @@ C$OMP END MASTER
 # endif
         may_day_flag=1
 # ifdef MPI
-        call mpi_abort (MPI_COMM_WORLD, err)
+        call mpi_abort (MPI_COMM_WORLD, err, ierr)
 # else
         stop                            !-->  EXIT
 # endif

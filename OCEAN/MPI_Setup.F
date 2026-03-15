@@ -16,6 +16,9 @@
 # ifdef OPENACC
       use openacc
 # endif
+# ifdef MPI
+      use mpi
+# endif
 !     implicit none
 # include "param.h"
       integer ierr, nsize, ii_W, ii_E, jj_S, jj_N
@@ -45,7 +48,7 @@
 # include "ncscrum.h"
 # include "mpi_cpl.h"
 # include "netcdf.inc"
-      include 'mpif.h'
+      !include 'mpif.h'
       call MPI_Comm_size (MPI_COMM_WORLD, nsize,  ierr)
       call MPI_Comm_rank (MPI_COMM_WORLD, mynode, ierr)
       if (nsize.ne.NNODES) then
