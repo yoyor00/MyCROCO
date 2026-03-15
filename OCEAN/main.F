@@ -72,8 +72,11 @@
       use openacc
 #endif
       use buffer, only: init_buffer
+#ifdef MPI
+      use mpi
+#endif
 !     implicit none
-      integer tile, subs, trd, ierr
+      integer tile, subs, trd, ierr, err
 #include "param.h"
 #include "private_scratch.h"
 #include "nbq.h"
@@ -102,7 +105,7 @@
       Type(Agrif_pgrid),pointer  :: parcours
 #endif
 #ifdef MPI
-      include 'mpif.h'
+!      include 'mpif.h'
 !     real*8 start_time2, start_time1, exe_time
 #endif
       integer :: iifroot, iicroot
@@ -1021,7 +1024,7 @@ CR      write(*,*) '  0' MYID
       if (may_day_flag.ne.0) ierr=1
 
 #ifdef MPI
-      if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
+      if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, err,ierr)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
 
 !     start_time2=PMPI_Wtime()
