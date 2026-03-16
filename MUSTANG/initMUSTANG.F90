@@ -1806,18 +1806,6 @@ CONTAINS
 
         ! HIS file
 
-#ifdef MORPHODYN
-        indx=indxHm
-        wrthis(indx)=.TRUE.
-        vname(1,indx) = 'Hm'
-        vname(2,indx) = 'evolving bathymetry'
-        vname(3,indx) = 'meter'
-        vname(4,indx) = 'evolving_bathymetry, scalar, series'
-        vname(5,indx) = ' '
-        vname(6,indx) = ' '
-        vname(7,indx) = ' '
-#endif
-
         indx = 1
         vname_Must(1,indx) = 'NB_LAY_SED'
         vname_Must(2,indx) = 'number of sediment layers'
