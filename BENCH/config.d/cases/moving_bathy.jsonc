@@ -5,6 +5,9 @@
     "case": "MOVING_BATHY",
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1", "6": "6x1", "8": "8x1" },
     "patches": {},
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_MovBat.py",
+    },
     "input_file": "TEST_CASES/croco.in.MovBat",
     "check_outputs": ["movbat_his.nc"],
     "unsupported": ["openmp"],

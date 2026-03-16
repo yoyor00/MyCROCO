@@ -5,6 +5,9 @@
     "case": "JET",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "patches": {},
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_jet.py",
+    },
     "check_outputs": ["jet_his.nc"],
     "unsupported": ["restart", "openmp"],
   },

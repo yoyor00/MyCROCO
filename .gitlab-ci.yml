@@ -60,8 +60,8 @@ plotphy_base:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy-host_ci/junit_report.xml
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+  # rules:
+  #   - if: $CI_PIPELINE_SOURCE == "schedule"
 
 debug_ifort_base:
   stage: bench
@@ -179,8 +179,8 @@ plotphy_vortex:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy_vortex-host_ci/junit_report.xml
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+  # rules:
+  #   - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 debug_realist_base:
@@ -294,8 +294,8 @@ plotphy_realist:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy_realist-host_ci/junit_report.xml
-  rules:
-      - if: $CI_PIPELINE_SOURCE == "schedule"
+  # rules:
+  #     - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 
@@ -382,8 +382,8 @@ plotphy_complement:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy-complement-host_ci/junit_report.xml
-  rules:
-      - if: $CI_PIPELINE_SOURCE == "schedule"
+  # rules:
+  #     - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 plotphy_complement_sequential:
@@ -412,8 +412,8 @@ plotphy_complement_sequential:
     expire_in: 1 week
     reports:
       junit: BENCH/results/plotphy-complement-sequential-host_ci/junit_report.xml
-  rules:
-      - if: $CI_PIPELINE_SOURCE == "schedule"
+  # rules:
+  #     - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 track_perf:

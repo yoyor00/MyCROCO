@@ -42,6 +42,9 @@
       "ANA_DUNE": true,
       "MUSTANG": false,
     },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_ana_dune.py",
+    },
     "patches": {
       "TEST_CASES/croco.in.Dune": {
         "mode": "replace",
@@ -62,6 +65,9 @@
       "SEDIMENT": true,
       "DUNE3D": true,
       "MUSTANG": false,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_dune3d.py",
     },
     "patches": {},
     "input_file": "TEST_CASES/croco.in.Dune3d",

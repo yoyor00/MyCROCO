@@ -6,6 +6,9 @@
     "cppkeys": {
       "THACKER_2DV": false,
     },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_thacker.py",
+    },
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2", "6": "1x6", "8": "2x4" },
     "patches": {
       // Change the size of the mesh

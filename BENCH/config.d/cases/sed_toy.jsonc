@@ -5,6 +5,9 @@
     "case": "SED_TOY",
     "splitting": {},
     "patches": {},
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_sed_toy_rouse.py",
+    },
     "input_file": "TEST_CASES/croco.in.Sed_toy_rouse",
     "check_outputs": ["sed_toy_rouse_his.nc"],
     "unsupported": ["restart", "openmp", "mpi"],
@@ -34,6 +37,9 @@
       "SED_TOY": true,
       "SED_TOY_RESUSP": true,
       "SED_TOY_ROUSE": false,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_sed_toy_resusp.py",
     },
     "splitting": {},
     "patches": {},

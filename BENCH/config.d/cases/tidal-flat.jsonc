@@ -8,6 +8,9 @@
       "MUSTANG": true,
       "SEDIMENT": false,
     },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_tidal_flat.py",
+    },
     "patches": {},
     "check_outputs": ["tidal_flat_his.nc"],
     "unsupported": ["restart", "openmp"],
