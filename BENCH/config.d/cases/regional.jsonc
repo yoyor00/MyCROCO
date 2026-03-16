@@ -236,7 +236,7 @@
       "FRC_BRY": true,
       "BULK_FLUX": false,
       "AGRIF": true,
-      "AGRIF_2W": true,
+      "AGRIF_2WAY": true,
       "DIAGNOSTICS_TS": true,
     },
     "patches": {},

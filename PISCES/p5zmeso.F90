@@ -164,12 +164,14 @@ CONTAINS
       zmetexcess = 0.0
       IF ( bmetexc2 ) zmetexcess = 1.0
       !
+      ztmp1 = -0.1673 + 0.05958 * xsizerd * 6.0 - 7.405E-4 * (xsizerd * 6.0)**2
+      ztmp2 = -0.1481 + 0.1039 * xsizern * 1.67 + 1.144E-2 * (xsizern * 1.67)**2
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          IF ( tmask(ji,jj,jk) == 1 ) THEN
-            ztmp1 = 0.09544 - 0.0628 * EXP(-0.078 * 6.0 * xsizerd)
-            zproportd(ji,jj,jk) = (0.09544 - 0.0628 * EXP(-0.078 * sized(ji,jj,jk) * 6.0) ) / ztmp1
-            ztmp1 = 0.004045 + 0.007842 * xsizern * 4.0
-            zproportn(ji,jj,jk) = (0.004045 + 0.007842 * sizen(ji,jj,jk) * 4.0) / ztmp1
+            zproportd(ji,jj,jk) = (-0.1673 + 0.05958 * sized(ji,jj,jk) &
+              &                   * 6.0 - 7.405E-4 * (sized(ji,jj,jk) * 6.0)**2) / ztmp1
+            zproportn(ji,jj,jk) = (-0.1481 + 0.1039 * sizen(ji,jj,jk) &
+              &                   * 1.67 + 1.144E-2 * (sizen(ji,jj,jk) * 1.67)**2) / ztmp2
          ELSE
             zproportd(ji,jj,jk) = 1.0
             zproportn(ji,jj,jk) = 1.0
@@ -178,26 +180,29 @@ CONTAINS
       !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          zcompam   = MAX( ( tr(ji,jj,jk,jpmes,Kbb) - 1.e-9 ), 0.e0 )
-         zfact     = xstep * tgfunc2(ji,jj,jk) * tr(ji,jj,jk,jpmes,Kbb)
+         zfact     = xstep * tgfunc2(ji,jj,jk) * zcompam
 
          !  linear mortality of mesozooplankton
          !  A michaelis menten modulation term is used to avoid extinction of 
          !  mesozooplankton at very low food concentrations
          !  -----------------------------------------------------------------
-         zrespz    = resrat2 * zfact * zcompam / ( xkmort + tr(ji,jj,jk,jpmes,Kbb) )
+         zrespz    = resrat2 * zfact * tr(ji,jj,jk,jpmes,Kbb)  &
+           &         / ( xkmort + tr(ji,jj,jk,jpmes,Kbb) )
 
          !  linear mortality  of mesozooplankton
          !  A michaelis menten modulation term is used to avoid extinction of 
          !  mesozooplankton at very low food concentrations
          !  -----------------------------------------------------------------
-         zltortz   = lmzrat2 * zfact * zcompam / ( xkmort + tr(ji,jj,jk,jpmes,Kbb) ) &
+         zltortz   = lmzrat2 * zfact * tr(ji,jj,jk,jpmes,Kbb)  &
+           &         / ( xkmort + tr(ji,jj,jk,jpmes,Kbb) ) &
            &         * ( 1.0 + 3. * nitrfac(ji,jj,jk) )
 
          !  Zooplankton quadratic mortality. A square function has been selected with
          !  to mimic predation and disease (density dependent mortality). It also tends
          !  to stabilise the model
          !  -------------------------------------------------------------------------
-         ztortz    = mzrat2 * 1.e6 * zfact * zcompam * (1. - nitrfac(ji,jj,jk))
+         ztortz    = mzrat2 * 1.e6 * zfact * tr(ji,jj,jk,jpmes,Kbb)  &
+           &         * (1. - nitrfac(ji,jj,jk))
          zmortz    = ztortz + zltortz
 
          !   Computation of the abundance of the preys

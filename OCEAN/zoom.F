@@ -59,9 +59,6 @@
 # include "private_scratch.h"
 # include "ncscrum.h"
 # include "scalars.h"
-# ifdef AUTOTILING
-#  include "autotiling.h"
-# endif
 # include "mpi_cpl.h"
 
       integer size_XI,size_ETA,se,sse, sz,ssz
@@ -95,12 +92,6 @@
 # endif
 
       ENDIF
-# ifdef AUTOTILING
-      If (Agrif_Nb_Step() == 0) Then
-        NSUB_X = 1
-        NSUB_E = NPP
-      EndIf
-# endif
 # include "dynderivparam.h"
 # ifdef MPI
       call MPI_Setup(ierr)
@@ -138,9 +129,6 @@
 # endif
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
-# endif
-# ifdef AUTOTILING
-#  include "autotiling.h"
 # endif
 # ifdef M3FAST
 #  include "nbq.h"
@@ -201,10 +189,6 @@
 
 # include "dynderivparam.h"
 
-# ifdef AUTOTILING
-      call init_auto_tiling
-# endif
-
       call declare_zoom_variables()
 
 # ifdef MPI
@@ -258,7 +242,6 @@
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-!        call start_timers()
         call init_arrays (tile)
       enddo
 CR      write(*,*) '-11' MYID
@@ -2432,7 +2415,7 @@ CR      write(*,*) '  0' MYID
 !                   subroutine Agrif_transfer_floatsp2c
 !====================================================================
 !
-# if defined FLOATS || defined STATIONS
+# if defined STATIONS
         subroutine Agrif_transfer_floatsp2c(rank,xfloat,yfloat,delta)
         use Agrif_Util
 !----------------------------------------------------------------------
@@ -2503,7 +2486,7 @@ CR      write(*,*) '  0' MYID
         return
         end subroutine
 
-# endif /* FLOATS || STATIONS */
+# endif /* STATIONS */
 !
 !====================================================================
 !                   subroutine Agrif_Invloc

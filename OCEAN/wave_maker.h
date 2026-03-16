@@ -126,6 +126,9 @@
 !
 !  Convert angles to rad
 !
+#ifdef WAVE_MAKER_EAST
+        wd=wd+180.0
+#endif
         wd =wd *deg2rad  ! incidence angle
         wds=wds*deg2rad  ! directional spread
 !
@@ -219,8 +222,13 @@
             wd_bry(jw)=(-1.)**jw * 0.5*pi*( -1. + 
      &                 (floor(wd_bry(jw)-1.))/(float(Ndir)-1.) )
             wd_bry(jw)=wd_bry(jw)+wd
+#   ifdef WAVE_MAKER_EAST
+            if (wd_bry(jw) .ge.  1.5*pi) wd_bry(jw)= 1.5*pi  ! Wave dir. constrained
+            if (wd_bry(jw) .le.  0.5*pi) wd_bry(jw)= 0.5*pi  ! between [-90,90] deg of mean
+#   else
             if (wd_bry(jw) .ge.  0.5*pi) wd_bry(jw)= 0.5*pi
             if (wd_bry(jw) .le. -0.5*pi) wd_bry(jw)=-0.5*pi
+#   endif
             wa_bry_d(jw)=exp(-((wd_bry(jw)-wd)/
      &                          max(1.5*wds,1.e-12))**2)
             cff1=cff1+wa_bry_d(jw)*wa_bry(jw)
@@ -276,6 +284,10 @@
               wd_bry(jw)=wd_bry_tmp(jw) ! only if change of mean
             enddo                       ! angle <0.5deg or <30%
           endif
+#    ifdef WAVE_MAKER_EAST
+          cff0=cff0-pi
+          cff1=cff1-pi
+#    endif
           MPI_master_only write(stdout,'(6x,A,3(f10.5,1x),f10.3/)')
      &            'Mean wave angle correction (Bef. Aft. Diff %):',
      &                        cff0*180/pi,cff1*180/pi,cff2,cff3*100
@@ -283,7 +295,7 @@
 
           CALL RANDOM_SEED(SIZE=nseed)
           ALLOCATE(seed(nseed))
-          seed = 12345  ! Fix seed for reprocucibility
+          seed = 12345  ! Fix seed for reproducibility
           CALL RANDOM_SEED(PUT=seed)
           call RANDOM_NUMBER(wpha_bry)  ! random phase
           do iw=1,Nfrq
@@ -295,7 +307,7 @@
 # else
           CALL RANDOM_SEED(SIZE=nseed)
           ALLOCATE(seed(nseed))
-          seed = 12345  ! Fix seed for reprocucibility
+          seed = 12345  ! Fix seed for reproducibility
           CALL RANDOM_SEED(PUT=seed)
           call RANDOM_NUMBER(wpha_bry)  ! random phase
           do iw=1,Nfrq

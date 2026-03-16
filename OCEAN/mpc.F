@@ -905,11 +905,7 @@
                 write(iout,*) 'MPC ERROR: Cannot split directive.'
               endif
               write(iout,'(72A1)') (symbol(i),i=1,k)
-# ifdef CRAY
-              m=6
-# else
               m=3
-# endif
               symbol(m)='&'
               do i=m+1,k
                 symbol(i)=' '

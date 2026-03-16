@@ -13,7 +13,6 @@
 : namsedim_bedload         : relative to sediment bedload
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
-:                            (only if key_MUSTANG_lateralerosion)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -22,8 +21,6 @@
 :                            (only if !defined key_noTSdiss_insed)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
-: namsedim_debug           : output for debug
-:                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
 : namdredging              : parameters to activate dredging effect
@@ -348,19 +345,20 @@
 :
 :------------------------------------------------------------------------------
 :  namsedim_lateral_erosion : Namelist relative to lateral sediment erosion
-:  (key_MUSTANG_lateralerosion only)
 :------------------------------------------------------------------------------
+:    l_erolat : boolean, set to .true in order to activate lateral erosion
 :    coef_erolat : real, slope effect multiplicative factor 
 :    coef_tauskin_lat : real, parameter to evaluate the lateral stress as a 
 :                       function of the average tangential velocity on the 
 :                       vertical
 :    l_erolat_wet_cell : boolean, set to .true in order to take into account 
-:                        wet cells lateral erosion
+:                        wet cells in lateral erosion
 :    htncrit_eros : real, critical water height so as to prevent erosion under 
 :                   a given threshold (the threshold value is different for 
 :                   flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
 :------------------------------------------------------------------------------
 &namsedim_lateral_erosion
+   l_erolat = .FALSE.
    coef_erolat = 0.002 
    coef_tauskin_lat = 5.0  
    l_erolat_wet_cell = .FALSE.
@@ -638,31 +636,6 @@
    ep_nivsed_out(4)=0.
    ep_nivsed_out(5)=0. 
    epmax_nivsed_out=0. / 
-:
-:------------------------------------------------------------------------------
-:  Namelist relative to debug MUSTANG V2
-:  (key_MUSTANG_debug and key_MUSTANG_V2 only)
-:------------------------------------------------------------------------------
-:    l_debug_effdep : boolean, set to .true. if print some informations for 
-:                     debugging MUSTANG deposition
-:    l_debug_erosion : boolean, set to .true. if  print informations for 
-:                      debugging  in erosion routines
-:    date_start_debug : string, starting date for write debugging informations 
-:    lon_debug : real, define mesh location where we print these informations
-:    lat_debug : real, define mesh location where we print these informations
-:    i_MUSTANG_debug : integer, indexes of the mesh where we print these 
-:                      informations (only if lon_debug and lat_debug = 0.)
-:    j_MUSTANG_debug : integer, indexes of the mesh where we print these 
-:                      informations (only if lon_debug and lat_debug = 0.)
-:------------------------------------------------------------------------------
-&namsedim_debug
-   l_debug_effdep = .TRUE. 
-   l_debug_erosion = .TRUE. 
-   date_start_debug = '2019/01/01 00:00:00' 
-   lon_debug = 0 
-   lat_debug = 0 
-   i_MUSTANG_debug = 36 
-   j_MUSTANG_debug = 3   / 
 :
 :------------------------------------------------------------------------------
 :  Namelist relative to module FLOCMOD 

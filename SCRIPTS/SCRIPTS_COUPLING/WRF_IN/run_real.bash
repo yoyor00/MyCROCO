@@ -112,12 +112,12 @@ fi
 # ------------------
 if [ ${MACHINE} == "JEANZAY" ] || [ ${MACHINE} == "LEFTRARU" ]; then
     export myMPI="srun -n $NBPROCS "
-elif [ ${MACHINE} == "DATARMOR" ] || [ ${MACHINE} == "WCHPC" ]; then
+elif [ ${MACHINE} == "DATARMOR" ] || [ ${MACHINE} == "WCHPC" ] || [ ${MACHINE} == "NEA" ]; then
     export myMPI="$MPI_LAUNCH -np $NBPROCS "
 elif [ ${MACHINE} == "IRENE" ]; then
     export myMPI="ccc_mprun -n $NBPROCS "
 else
-    echo "Define how to run the job in run_wps.bash"
+    echo "Define how to run the job in run_real.bash"
     exit
 fi
 #
@@ -166,12 +166,9 @@ echo "************************************************************"
 # Rescale parameters from configure.namelist
 #----------------------------------------------
 export interval_s=`expr $obc_freq_h \* 3600`
-export dx_d01=`echo "$dx*1000/1" | bc`
-export dx_d02=`echo "$dx*1000/$refine_d02" | bc`
-export dx_d03=`echo "$dx_d02/$refine_d03" | bc`
-#export dx_d01=`expr $dx \* 1000`       # dx in meters
-#export dx_d02=`expr $dx \* 1000 / $refine_d02`
-#export dx_d03=`expr $dx_d02 \/ $refine_d03`
+export dx_d01=$(awk -v dx="$dx" 'BEGIN {print dx*1000}')
+export dx_d02=$(awk -v dx="$dx" -v ref="$refine_d02" 'BEGIN {print dx*1000/ref}')
+export dx_d03=$(awk -v dx_d02="$dx_d02" -v ref="$refine_d03" 'BEGIN {print dx_d02/ref}')
 
 #------------------------------------------
 # Create output data directory if needed

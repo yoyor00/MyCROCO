@@ -50,7 +50,7 @@
     },
     "cppkeys": {
       "AGRIF": true,
-      "AGRIF_2W": true,
+      "AGRIF_2WAY": true,
     },
     "check_outputs": ["vortex_his.nc"],
   },

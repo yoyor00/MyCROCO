@@ -99,6 +99,7 @@ CONTAINS
       REAL(wp) :: zsigma , zsigma2, zr_poc, zr_pic, zr_phy, zr_dia 
       REAL(wp) :: zsizepn, zsizedn, zsizedp, zdiffdn, zdiffpn, zdiffdp
       REAL(wp) :: zpexpod, zmaxsi, ztra
+      REAL(wp) :: zlogtemp1, zlogtemp2
       REAL(wp), DIMENSION(A2D(0),jpk) :: zproportn, zproportd, zprodlig
       
       REAL(wp), ALLOCATABLE, DIMENSION(:,:,:) ::   zgrazing, zfezoo, zzligprod, zw3d
@@ -135,10 +136,16 @@ CONTAINS
       ! Proportion of nano and diatoms that are within the size range
       ! accessible to microzooplankton. 
       ! -------------------------------------------------------------
+      zlogtemp1 = 1. / (1.206 * EXP( -0.04617 * 6.0 ) - 0.0762)
+      zlogtemp2 = 1. / (-0.3845 * EXP(0.08982 * 1.67) + 1.448 )
+      !
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
          IF ( tmask(ji,jj,jk) == 1 ) THEN
-            zproportd(ji,jj,jk) = EXP( 0.067 - 0.033 * sized(ji,jj,jk) * 6.0) / ( EXP( 0.067 -0.033 * 6.0 ) )
-            zproportn(ji,jj,jk) = EXP( 0.131 - 0.047 * sizen(ji,jj,jk) * 4.0) / ( EXP( 0.131 -0.047 * 4.0 ) )
+            zproportd(ji,jj,jk) = (1.206 * EXP(-0.04617 * sized(ji,jj,jk) * 6.0 ) - 0.0762) &
+              &                   * zlogtemp1   &
+              &                   * MIN(1.0, EXP(-1.0 * MAX(0., ( sized(ji,jj,jk) - 2.0 )) ))
+            zproportn(ji,jj,jk) = (-0.3845 * EXP( 0.08982 * sizen(ji,jj,jk) * 1.67) + 1.448) &
+              &                   * zlogtemp2
          ELSE
             zproportn(ji,jj,jk) = 1.0
             zproportd(ji,jj,jk) = 1.0
@@ -146,8 +153,10 @@ CONTAINS
       END_3D
       !      
       DO_3D( 0, 0, 0, 0, 1, jpkm1)
+      !
          zcompaz = MAX( ( tr(ji,jj,jk,jpzoo,Kbb) - 1.e-9 ), 0.e0 )
-         zfact     = xstep * tgfunc2(ji,jj,jk) * tr(ji,jj,jk,jpzoo,Kbb)
+         zfact   = xstep * tgfunc2(ji,jj,jk) * zcompaz
+
          !  linear mortality of mesozooplankton
          !  A michaelis menten modulation term is used to avoid extinction of 
          !  microzooplankton at very low food concentrations. Mortality is 

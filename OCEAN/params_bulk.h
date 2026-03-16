@@ -32,22 +32,31 @@
       PARAMETER (psurf=100000.0)
 #endif
 #ifdef BULK_WASP
-      REAL            ::  Awasp(0:3,4)
-      REAL            ::  Bwasp(0:3,4)
-      PARAMETER( Awasp = reshape((/  0.7    , 0.      , 0.      , 0.        ,
-     &                              -9.202  , 2.265   ,-0.134   , 2.35e-3   ,
-     &                               2.27   ,-6.67e-2 , 0.      , 0.        ,
-     &                               0.0981 ,-4.13e-3 , 4.34e-5 , 1.16e-8  /)
-     &                                                      , shape(Awasp)) )
-      PARAMETER( Bwasp = reshape((/ -2.52   , 0.      , 0.      , 0.      ,
-     &                              -0.4124 ,-0.2225  , 0.01178 ,-1.616e-4,
-     &                              -2.41   , 4.30e-2 , 0.      , 0.      ,
-     &                               0.     , 0.      , 0.      , 0.      /)
-     &                                                      , shape(Bwasp)) )
-      REAL, PARAMETER :: CWage    = 9.80665 / (16.*ATAN(1.))  ! g / (4 Pi)
-      REAL, PARAMETER :: Charn0   = 0.018
-      REAL, PARAMETER :: Charn1   = 0.1
-      REAL, PARAMETER :: Charn2   = 0.002
+      REAL            ::  coefu_wasp (1:2)
+      REAL            ::  coefa2_wasp(1:2)
+      REAL            ::  coefb2_wasp(1:2)
+      PARAMETER(coefu_wasp  = (/  0.70,     -2.52 /))
+      PARAMETER(coefa2_wasp = (/  2.27, -6.67e-02 /))
+      PARAMETER(coefb2_wasp = (/ -2.41,  4.30e-02 /))
+      REAL            ::  polyu_wasp(1:4)
+      REAL            ::  coefa_wasp(1:4)
+      REAL            ::  coefb_wasp(1:4)
+      PARAMETER(polyu_wasp = (/  0.0981, -4.13e-03, 4.34e-5,  1.16e-08 /))
+      PARAMETER(coefa_wasp = (/  -9.202,     2.265,  -0.134,   2.35e-3 /))
+      PARAMETER(coefb_wasp = (/ -0.4124,   -0.2225, 0.01178, -1.616e-4 /))
+      REAL            ::  polyu2_wasp(1:3)
+      PARAMETER(polyu2_wasp = (/ 5.062E-3, -1.28E-04, 9.08E-7 /))
+      REAL, PARAMETER :: cwage_wasp    = 9.80665 / (16.*ATAN(1.))  ! g / (4 Pi)
+      REAL, PARAMETER :: limcharn_wasp  = 0.018
+      REAL, PARAMETER :: limcharn1_wasp = 0.1
+      REAL, PARAMETER :: thr1_wasp = 7.0
+      REAL, PARAMETER :: thr2_wasp = 23.0
+      REAL, PARAMETER :: thr3_wasp = 25.0
+      REAL, PARAMETER :: thr4_wasp = 46.0
+      REAL, PARAMETER :: lon1_wasp = 0.5
+      REAL, PARAMETER :: lon2_wasp = 1.0
+      REAL, PARAMETER :: lon3_wasp = 1.0
+      REAL, PARAMETER :: lon4_wasp = 1.0
 #endif
 #ifdef BULK_ECUMEV0
       real utu1,utu2,utt,utq1,utq2
@@ -55,41 +64,61 @@
       parameter(utt =33.0)
       parameter(utq1=29.0,utq2=33.0)
       real coefu10,coefu11,coefu12,coefu13
-      parameter (coefu10= 1.3013E-03);parameter (coefu11=-1.2719E-04)
-      parameter (coefu12= 1.3067E-05);parameter (coefu13=-2.2261E-07)
+      parameter (coefu10= 1.3013E-03)
+      parameter (coefu11=-1.2719E-04)
+      parameter (coefu12= 1.3067E-05)
+      parameter (coefu13=-2.2261E-07)
       real coefu20,coefu21,coefu22,coefu23,coefu24,Cdn0
-      parameter (coefu20= 1.3633E-03);parameter (coefu21=-1.3056E-04)
-      parameter (coefu22= 1.6212E-05);parameter (coefu23=-4.8208E-07)
-      parameter (coefu24= 4.2684E-09);parameter (Cdn0   = 1.7828E-03)
+      parameter (coefu20= 1.3633E-03)
+      parameter (coefu21=-1.3056E-04)
+      parameter (coefu22= 1.6212E-05)
+      parameter (coefu23=-4.8208E-07)
+      parameter (coefu24= 4.2684E-09)
+      parameter (Cdn0   = 1.7828E-03)
       real coeft0,coeft1,coeft2,coeft3,coeft4,coeft5
-      parameter (coeft0= 1.2536E-03);      parameter (coeft3=-4.3701E-07)
-      parameter (coeft1=-1.2455E-04);      parameter (coeft4= 3.4517E-09)
-      parameter (coeft2= 1.6038E-05);      parameter (coeft5= 3.5763E-12)
+      parameter (coeft0= 1.2536E-03)
+      parameter (coeft3=-4.3701E-07)
+      parameter (coeft1=-1.2455E-04)
+      parameter (coeft4= 3.4517E-09)
+      parameter (coeft2= 1.6038E-05)
+      parameter (coeft5= 3.5763E-12)
       real Chn0
       parameter (Chn0  = 3.1374E-03)
       real coefq10,coefq11,coefq12,coefq13,coefq14
-      parameter (coefq10= 1.2687E-03);parameter (coefq11=-1.1384E-04)
-      parameter (coefq12= 1.1467E-05);parameter (coefq13=-3.9144E-07)
+      parameter (coefq10= 1.2687E-03)
+      parameter (coefq11=-1.1384E-04)
+      parameter (coefq12= 1.1467E-05)
+      parameter (coefq13=-3.9144E-07)
       parameter (coefq14= 5.0864E-09)
       real coefq20,coefq21,coefq22
-      parameter (coefq20= -1.3526E-03);parameter (coefq21=1.8229E-04)
+      parameter (coefq20= -1.3526E-03)
+      parameter (coefq21=1.8229E-04)
       parameter (coefq22= -2.6995E-06)
       real Cen0
       parameter (Cen0  = 1.7232E-03)
 #endif
 #ifdef BULK_ECUMEV6
       real coefu0,coefu1,coefu2,coefu3,coefu4,coefu5
-      parameter (coefu0= 1.00E-03);      parameter (coefu3= 2.32E-04)
-      parameter (coefu1= 3.66E-02);      parameter (coefu4=-7.02E-06)
-      parameter (coefu2=-1.92E-03);      parameter (coefu5= 6.40E-08)
+      parameter (coefu0= 1.00E-03)
+      parameter (coefu3= 2.32E-04)
+      parameter (coefu1= 3.66E-02)
+      parameter (coefu4=-7.02E-06)
+      parameter (coefu2=-1.92E-03)
+      parameter (coefu5= 6.40E-08)
       real coeft0,coeft1,coeft2,coeft3,coeft4,coeft5
-      parameter (coeft0= 5.36E-03);      parameter (coeft3= 4.50E-04)
-      parameter (coeft1= 2.90E-02);      parameter (coeft4=-2.06E-05)
-      parameter (coeft2=-1.24E-03);      parameter (coeft5= 0.0     )
+      parameter (coeft0= 5.36E-03)
+      parameter (coeft3= 4.50E-04)
+      parameter (coeft1= 2.90E-02)
+      parameter (coeft4=-2.06E-05)
+      parameter (coeft2=-1.24E-03)
+      parameter (coeft5= 0.0     )
       real coefq0,coefq1,coefq2,coefq3,coefq4,coefq5
-      parameter (coefq0= 1.00E-03);      parameter (coefq3= 0.0)
-      parameter (coefq1= 3.59E-02);      parameter (coefq4= 0.0)
-      parameter (coefq2=-2.87E-04);      parameter (coefq5= 0.0)
+      parameter (coefq0= 1.00E-03)
+      parameter (coefq3= 0.0)
+      parameter (coefq1= 3.59E-02)
+      parameter (coefq4= 0.0)
+      parameter (coefq2=-2.87E-04)
+      parameter (coefq5= 0.0)
       real utu,utt,utq
       parameter(utu=40.0)
       parameter(utt=14.4)

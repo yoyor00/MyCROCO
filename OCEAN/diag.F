@@ -41,6 +41,9 @@
      &     pe2d(PRIVATE_2D_SCRATCH_ARRAY)
       real*QUAD cff, my_avgke, my_avgpe, my_volume
       character echar*8
+#ifdef USE_CALENDAR
+       character*19 :: tool_sectodat
+#endif
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
@@ -332,7 +335,7 @@ C$OMP CRITICAL (diag_cr_rgn)
               endif
               trd=omp_get_thread_num()
               write(stdout,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
-#ifdef CALENDAR
+#ifdef USE_CALENDAR
               write(stdout,'(a)') tool_sectodat(time)
 #endif
    3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)

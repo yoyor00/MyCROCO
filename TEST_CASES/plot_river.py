@@ -18,7 +18,6 @@ parser.add_argument(
     default="river_his.nc",
     help="Path to the NetCDF file (default: river_his.nc)",
 )
-parser.add_argument("--floats", action="store_true", help="Include float trajectories")
 parser.add_argument(
     "--vname", type=str, default="salt", help="Variable name to plot (default: salt)"
 )
@@ -50,7 +49,6 @@ args = parser.parse_args()
 os.makedirs(args.output_dir, exist_ok=True)
 
 # Parameters
-floats = args.floats
 vname = args.vname
 step = args.step
 makepdf = args.makepdf
@@ -75,15 +73,6 @@ N = len(nc.dimensions["s_rho"])
 mask = nc.variables["mask_rho"][:]
 mask[mask == 0] = np.nan
 hmax = np.nanmax(h)
-
-# Floats handling
-if floats:
-    try:
-        nf = Dataset("floats.nc", "r")
-        nflt = len(nf.dimensions["drifter"])
-    except FileNotFoundError:
-        print("Error: 'floats.nc' not found.")
-        nflt = 0
 
 # Prepare for movie creation
 if makemovie:
@@ -122,15 +111,6 @@ for tndx in time_steps:
         color="k",
     )
 
-    # Floats trajectories
-    if floats and nflt > 0:
-        for i in range(nflt):
-            iflt = nf.variables["Xgrid"][tndx, i]
-            jflt = nf.variables["Ygrid"][tndx, i]
-            xflt = np.interp(iflt, np.arange(x.shape[1]), x[0, :])
-            yflt = np.interp(jflt, np.arange(y.shape[0]), y[:, 0])
-            plt.plot(xflt, yflt, ".", color="red")
-
     # Format plot
     plt.title(f"RIVER: {vname} - Day {time:.2f}")
     plt.xlabel("X [km]")
@@ -162,8 +142,6 @@ for tndx in time_steps:
 
 # Close NetCDF files
 nc.close()
-if floats and nflt > 0:
-    nf.close()
 
 # Finalize movie
 if makemovie:

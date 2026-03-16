@@ -70,9 +70,6 @@
 # undef  OPENMP
 # define MPI
 # define MPI_COMM_WORLD ocean_grid_comm
-# define READ_PATM
-# define OBC_PATM
-# undef  OA_GRID_UV
 # undef  BULK_FLUX
 # undef  QCORRECTION
 # undef  SFLX_CORR
@@ -191,7 +188,6 @@
    Options for wz HADV numerical schemes (default C4)
 */
 # ifdef W_HADV_UP5  /* Check if options are defined in cppdefs.h */
-# elif defined W_HADV_TVD
 # elif defined W_HADV_WENO5
 # elif defined W_HADV_UP3
 # elif defined W_HADV_C2
@@ -199,7 +195,6 @@
 # elif defined W_HADV_C6
 # else
 #  undef  W_HADV_UP5      /* 5th-order upwind horizontal advection  */
-#  undef  W_HADV_TVD      /* TVD horizontal advection                 */
 #  define W_HADV_WENO5    /* 5th-order WENOZ horizontal advection     */
 #  undef  W_HADV_UP3      /* 3rd-order upwind horizontal advection  */
 #  undef  W_HADV_C2       /* 2nd-order centered horizontal advection  */
@@ -210,12 +205,10 @@
    Options for wz VADV numerical schemes (default SPLINES)
 */
 # ifdef W_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
-# elif defined W_VADV_TVD
 # elif defined W_VADV_WENO5
 # elif defined W_VADV_C2
 # else
 #  undef  W_VADV_SPLINES  /* Splines vertical advection             */
-#  undef  W_VADV_TVD      /* TVD vertical advection                 */
 #  define W_VADV_WENO5    /* !!! 5th-order WENOZ vertical advection */
 #  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
 # endif
@@ -339,7 +332,6 @@
 #elif defined UV_HADV_UP5
 #elif defined UV_HADV_C6
 #elif defined UV_HADV_WENO5
-#elif defined UV_HADV_TVD
 #else
 # define UV_HADV_UP3       /* 3rd-order upstream lateral advection */
 # undef  UV_HADV_C4        /* 4th-order centered lateral advection */
@@ -347,7 +339,6 @@
 # undef  UV_HADV_UP5	   /* 5th-order upstream lateral advection */
 # undef  UV_HADV_C6	   /* 6th-order centered lateral advection */
 # undef  UV_HADV_WENO5	   /* 5th-order WENOZ    lateral advection */
-# undef  UV_HADV_TVD	   /*           TVD      lateral advection */
 #endif
 /*
    UV DIFFUSION: set default orientation
@@ -398,12 +389,10 @@
 #ifdef UV_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
 #elif defined UV_VADV_WENO5
 #elif defined UV_VADV_C2
-#elif defined UV_VADV_TVD
 #else
 # define UV_VADV_SPLINES   /*            Splines vertical advection  */
 # undef  UV_VADV_WENO5     /* 5th-order  WENOZ   vertical advection  */
 # undef  UV_VADV_C2        /* 2nd-order centered vertical advection  */
-# undef  UV_VADV_TVD       /*            TVD     vertical advection  */
 #endif
 
 #ifdef VADV_ADAPT_IMP      /* Semi-implicit vertical advection       */
@@ -516,21 +505,16 @@
 ======================================================================
 */
 #ifdef TS_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
-#elif defined TS_VADV_AKIMA
 #elif defined TS_VADV_WENO5
 #elif defined TS_VADV_C2
 #else
-# undef  TS_VADV_SPLINES   /* Splines vertical advection            */
-# define TS_VADV_AKIMA     /* 4th-order Akima vertical advection    */
+# define  TS_VADV_SPLINES   /* Splines vertical advection            */
 # undef  TS_VADV_WENO5     /* 5th-order WENOZ vertical advection    */
 # undef  TS_VADV_C2        /* 2nd-order centered vertical advection */
 #endif
 
-#undef  TS_VADV_FCT        /* Flux correction of vertical advection */
-
 #ifdef VADV_ADAPT_IMP
 # define TS_VADV_SPLINES
-# undef   TS_VADV_AKIMA
 # undef   TS_VADV_WENO5
 # undef   TS_VADV_C2
 #endif
@@ -775,7 +759,10 @@
 # undef LMD_BKPP2005  /*<- unresolved problems with bkpp2005 at depth
                            default: lmd_bkpp1994 */
 #endif
-
+# ifdef LMD_RIMIX
+#  define RI_HSMOOTH
+#  define RI_VSMOOTH
+# endif
 /*
 ======================================================================
                 Biogeochemical models
@@ -1119,7 +1106,6 @@
 # undef M3_FRC_BRY
 # undef T_FRC_BRY
 # undef BODYFORCE
-# undef BVF_MIXING
 # undef LMD_MIXING
 # undef LMD_BKPP
 # undef LMD_SKPP

@@ -47,5 +47,5 @@ c       stagrd(iflt)=-1 ! -1 is the dead float value.
       return
       end
 
-#endif /* FLOATS */
+#endif /* STATIONS */
 

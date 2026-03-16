@@ -2042,7 +2042,10 @@ C$    integer  trd, omp_get_thread_num
      !if the source is applied as volume vertical influx
      !the distribution must be either uniform or located at the bottom
      !if you want a bottom influx you should use GLS_MIXING instead of LMD
-#   define CST_SHAPE
+     ! NB see #478, CST_SHAPE and BOTTOM_SHAPE seems to trigger issue in VADV 
+     ! still to investigate more
+#   define EXP_SHAPE
+!#    define CST_SHAPE
 !#    define BOTTOM_SHAPE
 #  else
 #   define EXP_SHAPE

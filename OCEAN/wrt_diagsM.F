@@ -57,9 +57,6 @@
       endif
 # endif
 !
-# undef DEBUG
-!
-!
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
       call def_diagsM (nciddiaM, nrecdiaM, ierr)
@@ -281,66 +278,6 @@
         endif
       enddo
 !
-!--#define DEBUG
-# ifdef DEBUG
-      i=20
-      j=20
-      k=10
-      itrc=1
-      write(*,*) 'Write diag UV his at : i='
-     &                      ,i,' j=',j,' k=',k,' iUV=',itrc
-      write(*,*) 'MXadv(i,j,k,itrc)   ',MXadv(i,j,k,itrc)
-      write(*,*) 'MYadv(i,j,k,itrc)   ',MYadv(i,j,k,itrc)
-      write(*,*) 'MVadv(i,j,k,itrc)   ',MVadv(i,j,k,itrc)
-      write(*,*) 'MCor(i,j,k,itrc)    ',MCor(i,j,k,itrc)
-      write(*,*) 'MPrsgrd(i,j,k,itrc) ',MPrsgrd(i,j,k,itrc)
-      write(*,*) 'MHmix(i,j,k,itrc)   ',MHmix(i,j,k,itrc,nstp)
-      write(*,*) 'MHdiff(i,j,k,itrc)  ',MHdiff(i,j,k,itrc)
-      write(*,*) 'MVmix(i,j,k,itrc)   ',MVmix(i,j,k,itrc)
-      write(*,*) 'MVmix2(i,j,k,itrc)  ',MVmix2(i,j,k,itrc)
-#  if defined DIAGNOSTICS_BARO
-      write(*,*) 'MBaro(i,j,k,itrc) ',MBaro(i,j,k,itrc)
-#  endif
-#  if defined M3FAST
-      write(*,*) 'Mfast(i,j,k,itrc) ',Mfast(i,j,k,itrc)
-#  endif
-#  ifdef MRL_WCI
-      write(*,*) 'Mvf(i,j,k,itrc)     ',Mvf(i,j,k,itrc)
-      write(*,*) 'Mbrk(i,j,k,itrc)    ',Mbrk(i,j,k,itrc)
-      write(*,*) 'MStCo(i,j,k,itrc)   ',MStCo(i,j,k,itrc)
-      write(*,*) 'MVvf(i,j,k,itrc)    ',MVvf(i,j,k,itrc)
-      write(*,*) 'MPrscrt(i,j,k,itrc) ',MPrscrt(i,j,k,itrc)
-      write(*,*) 'Msbk(i,j,k,itrc)    ',Msbk(i,j,k,itrc)
-      write(*,*) 'Mbwf(i,j,k,itrc)    ',Mbwf(i,j,k,itrc)
-      write(*,*) 'Mfrc(i,j,k,itrc)    ',Mfrc(i,j,k,itrc)
-#  endif
-      write(*,*) 'Mrate(i,j,k,itrc)   ',Mrate(i,j,k,itrc)
-
-      write(*,*) 'SumUVhis(i,j,k,itrc) = ',MXadv(i,j,k,itrc)
-     &                                  +  MYadv(i,j,k,itrc)
-     &                                  +  MVadv(i,j,k,itrc)
-     &                                  +  MCor(i,j,k,itrc)
-     &                                  +  MPrsgrd(i,j,k,itrc)
-     &                                  +  MHmix(i,j,k,itrc,nstp)
-     &                                  +  MVmix(i,j,k,itrc)
-     &                                  +  MVmix2(i,j,k,itrc)
-#  if defined M3FAST
-     &                                  +  Mfast(i,j,k,itrc)
-#  endif
-#  ifdef MRL_WCI
-     &                                  +  Mvf(i,j,k,itrc)
-     &                                  +  Mbrk(i,j,k,itrc)
-     &                                  +  MStCo(i,j,k,itrc)
-     &                                  +  MVvf(i,j,k,itrc)
-     &                                  +  MPrscrt(i,j,k,itrc)
-     &                                  +  Msbk(i,j,k,itrc)
-     &                                  +  Mbwf(i,j,k,itrc)
-     &                                  +  Mfrc(i,j,k,itrc)
-#  endif
-     &                                  -  Mrate(i,j,k,itrc)
-      write(*,*) '-----------------------------------------'
-# endif /* DEBUG */
-!--#undef DEBUG
 
   1   format(/1x,'WRT_DIAGM ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',

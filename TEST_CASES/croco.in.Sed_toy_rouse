@@ -51,8 +51,10 @@ sediments: input file (USGS Sediment model)
 sediment_history_fields: bed_thick bed_poros bed_fra(sand,silt)
                          20000*T
 
-sediments_mustang: input file (Dhysed Channel / Mustang sediment model)
+substance: input file (substance module)
                MUSTANG_NAMELIST/parasubstance_MUSTANG_Sed_toy.txt
+
+sediments_mustang: input file ( Mustang sediment model)
                MUSTANG_NAMELIST/paraMUSTANGV1_Sed_toy.txt
 
 gls_history_fields:   TKE  GLS  Lscale

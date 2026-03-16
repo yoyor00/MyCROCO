@@ -165,15 +165,6 @@
 #  define LOCALMM Mm
 # endif
 !
-# if defined UV_HADV_TVD || defined UV_VADV_TVD
-      if(nrhs.eq.3) then
-        cdt =     dt                 !<-- Corrector
-      elseif(FIRST_TIME_STEP) then
-        cdt = 0.5*dt
-      else
-        cdt = (1.-1./6.)*dt        !<-- Predictor
-      endif
-# endif
 
 !$acc kernels if(compute_on_device) default(present)
 
@@ -1033,10 +1024,10 @@
 #   undef Huee
 #   undef vxx
 
-#  elif defined UV_HADV_C2 || defined UV_HADV_TVD
+#  elif defined UV_HADV_C2
 !
 !----------------------------------------------------------
-! Second order advection scheme with TVD correction
+! Second order advection scheme
 !----------------------------------------------------------
 !
         do j=Jstr,Jend
@@ -1063,12 +1054,6 @@
      &                       *(Huon(i,j,k)+Huon(i,j-1,k))
           enddo
         enddo
-!
-! Correction with Total Variance Diminishing method
-!
-#   ifdef UV_HADV_TVD
-#    include "uvhadv_tvd.h"
-#   endif
 
 #  endif /* UV_HADV_UP3 */
 !
@@ -1413,11 +1398,11 @@
          endif
 #   endif /* WENO5 */
 
-#  elif defined UV_VADV_C2 || defined UV_VADV_TVD
+#  elif defined UV_VADV_C2
 !
 !----------------------------------------------------------
 !  Compute vertical advective fluxes using
-!  second order advection scheme with TVD correction
+!  second order advection scheme
 !----------------------------------------------------------
 !
         do k=1,N-1
@@ -1430,29 +1415,6 @@
           FC(i,0)=0.
           FC(i,N)=0.
         enddo
-!
-!  Correction with TVD method
-!
-#   ifdef UV_VADV_TVD
-        do k=1,N-1
-          kp2=MIN(N,k+2)
-          kp1=MIN(N,k+1)
-          km1=MAX(1,k-1)
-          do i=IstrU,Iend
-            cff = 0.5 *(We(i,j,k)+We(i-1,j,k) )
-            cu = cff*pm_u(i,j)*pn_u(i,j)
-     &           * cdt*2/(-z_r(i  ,j,k)+z_r(i  ,j,k+1)
-     &                    -z_r(i-1,j,k)+z_r(i-1,j,k+1))
-            rrp= (u(i,j,kp2,nstp) -u(i,j,kp1,nstp))
-            rr = (u(i,j,kp1,nstp) -u(i,j,k  ,nstp))
-            rrm= (u(i,j,k  ,nstp) -u(i,j,km1,nstp))
-            cff1=0.5*( cff*(u(i,j,k,nstp)+u(i,j,kp1,nstp))
-     &                                      -abs(cff)*rr )
-            Cr=limiter(cu,FC(i,k),cff1,rrm,rr,rrp)
-            FC(i,k) = cff1*(1-cr) + Cr*FC(i,k)
-          enddo
-        enddo
-#   endif
 
 #  else
 !
@@ -1660,10 +1622,10 @@
         endif
 #   endif /* WENO5 */
 
-#  elif defined UV_VADV_C2 || defined UV_VADV_TVD
+#  elif defined UV_VADV_C2
 !
 !----------------------------------------------------------
-!  Second order advection scheme with TVD correction
+!  Second order advection scheme
 !----------------------------------------------------------
 !
           do k=1,N-1
@@ -1676,29 +1638,6 @@
             FC(i,0)=0.
             FC(i,N)=0.
           enddo
-!
-!  Correction using TVD method
-!
-#   ifdef UV_VADV_TVD
-          do k=1,N-1
-            kp2=min(N,k+2)
-            kp1=min(N,k+1)
-            km1=max(1,k-1)
-            do i=Istr,Iend
-              cff = 0.5*(We(i,j,k)+We(i,j-1,k))
-              cu = cff*pm_v(i,j)*pn_v(i,j)
-     &             * cdt*2/(-z_r(i,j  ,k)+z_r(i,j  ,k+1)
-     &                      -z_r(i,j-1,k)+z_r(i,j-1,k+1))
-              rrp= v(i,j,kp2,nstp)-v(i,j,kp1,nstp)
-              rr = v(i,j,kp1,nstp)-v(i,j,k  ,nstp)
-              rrm= v(i,j,k  ,nstp)-v(i,j,km1,nstp)
-              cff1=0.5*( cff*(v(i,j,k,nstp)+v(i,j,kp1,nstp))
-     &                                        -abs(cff)*rr )
-              Cr=limiter(cu,FC(i,k),cff1,rrm,rr,rrp)
-              FC(i,k) = cff1*(1-cr) + Cr*FC(i,k)
-            enddo
-          enddo
-#   endif
 
 #  else
 !
@@ -1916,49 +1855,7 @@
 
       return
       end
-!
-!=======================================================================
-!
-# if defined UV_VADV_TVD || defined UV_HADV_TVD
 
-      function limiter(nu,hf,lf,rrm,rr,rrp)
-      implicit none
-      real    :: cff,limiter,Rj,nu,hf,lf,rrm,rr,rrp
-!
-!  Upwind        Limiter(Rj)=0.
-!  Lax-Wendroff  Limiter(Rj)=1.
-!  Min-Mod       Limiter(Rj)=max(0.,min(1.,Rj))
-!  Suberbee      Limiter(Rj)=max(0.,max(min(1.,2*Rj),min(2.,Rj)))
-!  Van Leer      Limiter(Rj)=(Rj+abs(Rj))/(1+abs(Rj))  => default
-!
-      if (abs(rr).gt.1.e-20) THEN
-        if (nu .gt. 1.e-20) THEN
-          Rj=rrm/rr
-        else
-          Rj=rrp/rr
-        endif
-      else
-        if (nu.gt.1.e-20) then
-          Rj=Rrm*1.E20
-        else
-          Rj=Rrp*1.E20
-        endif
-      endif
-
-#  ifdef SUPERBEE
-       limiter=max(0.,max(min(1.,2.*Rj),min(2.,Rj)))
-#  elif defined MINMOD
-       limiter=max(0.,min(1.,Rj))
-#  else
-       limiter=(Rj+abs(Rj))/(1+abs(Rj))  ! Van Leer
-#  endif
-
-      end function
-
-# endif /* UV_VADV_TVD || UV_VADV_TVD */
-!
-!=======================================================================
-!
 #else
       subroutine rhs3d_empty
       end

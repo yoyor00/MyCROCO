@@ -73,17 +73,32 @@ do
         mdy=$( valid_date $(( $MONTH_END_JOB + 1 )) $DAY_END_JOB $YEAR_END_JOB )
         end_Y=$( printf "%04d\n"  $( echo $mdy | cut -d " " -f 3) )
 	end_M=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 1) )
+        end_D=$( printf "%02d\n"  $( echo $mdy | cut -d " " -f 2) )
     else
 	end_Y=${YEAR_END_JOB}
         end_M=${MONTH_END_JOB}
+        end_D=${DAY_END_JOB}
     fi
 
     printf "Computing the origin_date from start_date and scrum_time\n"
     cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 ) 
     cur_D=$( echo $DATE_BEGIN_JOB | cut -c 7-8 )
-    scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
 
+    if [[ ${EXACT_RESTART} == "TRUE" ]]; then
+        idx_rst=0
+	if [[ ${RESTART_FLAG} == "TRUE" ]]; then
+	    idx_ini=2
+            scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ',' -f 2 | cut -d ';' -f 1)
+	else
+            idx_ini=1
+	    scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+	fi
+    else
+        scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
+	idx_ini=1
+	idx_rst=-1
+    fi
     scrumtindays=$(( $scrumt/86400))
 
     mdy=$( valid_date $MONTH_BEGIN_JOB $(( $DAY_BEGIN_JOB - $scrumtindays )) $YEAR_BEGIN_JOB )
@@ -143,12 +158,16 @@ fi
 printf "Fill the $namfile with computed time steps, vertical stretching paramters, output frequencies, dates\n"
 
 sed -e "s/<ocentimes>/${OCE_NTIMES}/g" -e "s/<ocedt>/${DT_OCE_2}/g"   -e "s/<ocendtfast>/${NDTFAST}/g" \
+    -e "s/<idx_ini>/${idx_ini}/g" -e "s/<idx_rst>/${idx_rst}/g" \
     -e "s/<theta_s>/${ts}/g" -e "s/<theta_b>/${tb}/g" -e "s/<hc>/${hc}/g" \
     -e "s/<oce_nrst>/${OCE_NTIMES}/g" \
-    -e "s|<oce_nhis>|$(( ${oce_his_sec}/ ${DT_OCE_2} ))|g" -e "s|<oce_navg>|$(( ${oce_avg_sec}/${DT_OCE_2} ))|g" \
+    -e "s|<oce_nhis>|$(( ${oce_his_sec}/${DT_OCE_2} ))|g" -e "s|<oce_navg>|$(( ${oce_avg_sec}/${DT_OCE_2} ))|g" \
     -e "s/<yr1>/${YEAR_BEGIN_JOB}/g"  -e "s/<mo1>/${MONTH_BEGIN_JOB}/g" -e "s/<rpd>/${rpd}/g" -e "s|<online_frc>|${online_frc}|g" \
     -e "s/<dstart>/${cur_D}/g"  -e "s/<mstart>/${cur_M}/g" -e "s/<ystart>/${cur_Y}/g" \
+    -e "s/<dend>/${end_D}/g"  -e "s/<mend>/${end_M}/g" -e "s/<yend>/${end_Y}/g" \
     -e "s/<dorig>/${or_D}/g"  -e "s/<morig>/${or_M}/g" -e "s/<yorig>/${or_Y}/g" \
+    -e "s|<oce_his_h>|$(( ${oce_his_sec}/3600 ))|g"  -e "s|<oce_avg_h>|$(( ${oce_avg_sec}/3600 ))|g" \
+    -e "s|<oce_rst_h>|$(( ${OCE_NTIMES}*${DT_OCE_2}/3600 ))|g" \
     -e "s/<yr2>/${end_Y}/g"             -e "s/<mo2>/${end_M}/g"           \
     ${namfile} > namelist.tmp
 
