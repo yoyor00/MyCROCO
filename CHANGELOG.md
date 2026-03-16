@@ -101,6 +101,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove routine set_HUV1, not used (#410)
   - remove ZETA_DRY_IO cpp key and avoid modifying zeta with bathymetry in output (#406 and #384)
   - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
+  - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
+    in cppdefs_dev.h (#403)
 
 
 ### Contributors on this release
