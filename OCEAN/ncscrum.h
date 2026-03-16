@@ -1722,17 +1722,11 @@
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks
      &      , hisHbl,  hisHbbl
-<<<<<<< HEAD
 # ifdef STOGEN
      &      , hisXIsto1d, hisXIsto2d, hisXIsto3d
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
-=======
 # if defined ANA_VMIX || defined GLS_MIXING \
   || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
->>>>>>> master
      &      , hisbvf
 # endif
 # ifdef GLS_MIXING
