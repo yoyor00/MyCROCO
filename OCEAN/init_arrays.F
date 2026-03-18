@@ -41,6 +41,9 @@ C$    integer omp_get_thread_num
 # endif
 # endif
 !     implicit none
+# ifdef MPI
+      use mpi
+# endif
 #include "param.h"
 #include "ncscrum.h"
 #include "grid.h"
@@ -99,7 +102,6 @@ C$    integer omp_get_thread_num
       real init    !!!!  0xFFFA5A5A ==> NaN
       parameter (init=0.)
 #ifdef MPI
-      include 'mpif.h'
       integer ierr
 #endif
 !

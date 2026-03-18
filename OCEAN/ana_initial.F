@@ -1825,6 +1825,9 @@ C$OMP BARRIER
 # ifdef AGRIF
       use Agrif_Util
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1856,7 +1859,6 @@ C$OMP BARRIER
      &    dZ(PRIVATE_2D_SCRATCH_ARRAY,0:N)
 !$acc declare create(rhoprof,ru,rv,P)
 # ifdef MPI
-      include 'mpif.h'
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 # endif
       real asymth,zz,zasym,dzasym

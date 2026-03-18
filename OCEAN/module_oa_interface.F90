@@ -130,12 +130,11 @@
 !------------------------------------------------------------------------------
 
       module module_interface_oa
-
+#ifdef MPI
+      use mpi
+#endif
       implicit none
 
-#ifdef MPI
- include 'mpif.h'
-#endif
 
 
       !> MPI parameters for the Croco-OA interface
