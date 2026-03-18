@@ -1240,11 +1240,13 @@
 !
 !======================================================================
 !
-# if defined BIO_HADV_WENO7 || \
-     defined TS_HADV_WENO7  || defined TS_VADV_WENO7 || \
-     defined UV_HADV_WENO7  || defined UV_VADV_WENO7 || \
-     defined W_HADV_WENO7   || defined W_VADV_WENO7  || \
-     defined UV_HADV_UP7
+# if defined TS_HADV_WENO5  || defined TS_HADV_WENO7  || \
+     defined UV_HADV_WENO5  || defined UV_HADV_WENO7  || \
+     defined W_HADV_WENO5   || defined W_HADV_WENO7   || \
+     defined TS_VADV_WENO5  || defined TS_VADV_WENO7  || \
+     defined UV_VADV_WENO5  || defined UV_VADV_WENO7  || \
+     defined W_VADV_WENO5   || defined W_VADV_WENO7   || \
+     defined BIO_HADV_WENO5 || defined BIO_HADV_WENO7
 !
       function flux7_weno(q_im4,q_im3,q_im2,q_im1,q_i,q_ip1,q_ip2,q_ip3,ua)
 !
