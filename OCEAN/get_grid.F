@@ -17,6 +17,9 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
       character*1 char1
       integer ierr, ncid, varid, lstr, lenstr, checkdims, nf_fread
@@ -27,7 +30,6 @@
 # include "grid.h"
 # include "netcdf.inc"
 # ifdef MPI
-      include 'mpif.h'
 #     include "mpi_cpl.h"  
 #  define LOCALLM Lmmpi
 #  define LOCALMM Mmmpi

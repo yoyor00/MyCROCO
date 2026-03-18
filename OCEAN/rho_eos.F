@@ -620,6 +620,9 @@ c #  endif
 #  if !defined NONLIN_EOS
       USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
 #  endif
+#  ifdef MPI
+      use mpi
+#  endif
       implicit none
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, NSUB
@@ -640,10 +643,10 @@ c #  endif
 #  endif
       real*QUAD mrho,vol
 #  ifdef MPI
-      include 'mpif.h'
 #   include "mpi_cpl.h"
       integer ierr
-      real*QUAD allrho(1,NNODES),allvol(1,NNODES)
+      real*8 d_mrho, d_vol
+      real*8 allrho(1,NNODES),allvol(1,NNODES)
 #  endif
 #  include "grid.h"
 #  include "ocean3d.h"
@@ -727,10 +730,12 @@ C$OMP CRITICAL (rho_cr_rgn)
         tile_count=0                   ! it is, not always master.
         mrho=avg_rho/avg_vol
 #  ifdef MPI
-        call MPI_ALLGATHER(mrho,1,MPI_DOUBLE_PRECISION,
+        d_mrho=mrho
+        d_vol=vol
+        call MPI_ALLGATHER(d_mrho,1,MPI_DOUBLE_PRECISION,
      &                   allrho,1,MPI_DOUBLE_PRECISION,
      &                            MPI_COMM_WORLD,ierr)
-        call MPI_ALLGATHER(vol,1,MPI_DOUBLE_PRECISION,
+        call MPI_ALLGATHER(d_vol,1,MPI_DOUBLE_PRECISION,
      &                  allvol,1,MPI_DOUBLE_PRECISION,
      &                           MPI_COMM_WORLD,ierr)
         mrho=QuadZero

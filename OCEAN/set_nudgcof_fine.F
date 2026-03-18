@@ -33,11 +33,13 @@
 # if (defined SPONGE && !defined SPONGE_GRID)
       use croco_namelist, only: x_sponge
 # endif  
+# if defined MPI
+      use mpi
+# endif
 !     implicit none
       integer ierr
 # if defined MPI
 #  include "mpi_cpl.h"
-      include 'mpif.h'
 # endif
 # include "param.h"
 # include "grid.h"

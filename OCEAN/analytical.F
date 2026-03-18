@@ -581,6 +581,9 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       USE croco_namelist, ONLY: testcase_name
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -598,7 +601,6 @@ C$    integer  trd, omp_get_thread_num
       real*QUAD mssh,area,cff1
 #  ifdef MPI
 #   include "mpi_cpl.h"
-      include 'mpif.h'
       integer ierr
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 #  endif

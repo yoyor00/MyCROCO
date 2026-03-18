@@ -14,13 +14,15 @@
 ! Write time-averaged diags flux fields into averages netCDF file
                                   ! Writes requested model
       subroutine wrt_bio_diags_avg    ! fields at requested levels
-                                  ! into diagnostics netCDF file.
+
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif                                  ! into diagnostics netCDF file.
       use croco_namelist, only: dianamebio_avg, nrpfdiabio_avg
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"

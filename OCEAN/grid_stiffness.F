@@ -35,10 +35,12 @@ C$    integer omp_get_thread_num
 ! computations.
 !
 !     implicit none
+# ifdef MPI
+      use mpi
+# endif
       integer Istr,Iend,Jstr,Jend, i,j,k, NSUB
       real my_rx0, my_rx1
 # ifdef MPI
-      include 'mpif.h'
       real*8 buff(2)
       integer size, step, status(MPI_STATUS_SIZE), ierr
 # endif

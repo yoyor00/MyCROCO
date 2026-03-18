@@ -105,7 +105,6 @@
       Type(Agrif_pgrid),pointer  :: parcours
 #endif
 #ifdef MPI
-!      include 'mpif.h'
 !     real*8 start_time2, start_time1, exe_time
 #endif
       integer :: iifroot, iicroot
@@ -177,7 +176,7 @@
 !  Setup MPI domain decomposition
 !
 #ifdef MPI
-!     start_time1=PMPI_Wtime()
+!     start_time1=MPI_Wtime()
       call MPI_Setup (ierr)
       if (ierr.ne.0) goto 100        !--> ERROR
 #endif
@@ -948,12 +947,12 @@ CR      write(*,*) '  0' MYID
 
 #ifdef MPI_TIME
 ! Start Chrono
-      start_time1=PMPI_Wtime()
+      start_time1=MPI_Wtime()
 #endif
 
       do iicroot=ntstart,ntimes+1
 #ifdef MPI_TIME
-        start_time1_1=PMPI_Wtime()
+        start_time1_1=MPI_Wtime()
 #endif
 
 #ifdef USE_CALENDAR
@@ -982,7 +981,7 @@ CR      write(*,*) '  0' MYID
         enddo
 #endif
 #ifdef MPI_TIME
-        start_time1_2=PMPI_Wtime()
+        start_time1_2=MPI_Wtime()
         exe_time_1 = start_time1_2 - start_time1_1
           if (mynode.eq.0) write(97,*) exe_time_1
 #endif
@@ -990,7 +989,7 @@ CR      write(*,*) '  0' MYID
       enddo                                !-->  end of time step
   99  continue                             ! SHUTDOWN:
 #ifdef MPI_TIME
-      start_time2=PMPI_Wtime()
+      start_time2=MPI_Wtime()
       exe_time = start_time2 - start_time1
       MPI_master_only write(stdout,*) '*******************************'
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
@@ -1027,7 +1026,7 @@ CR      write(*,*) '  0' MYID
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, err,ierr)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
 
-!     start_time2=PMPI_Wtime()
+!     start_time2=MPI_Wtime()
 !     exe_time = start_time2 - start_time1
 !     if (mynode.eq.0) print *,'exe_time =',exe_time
 
