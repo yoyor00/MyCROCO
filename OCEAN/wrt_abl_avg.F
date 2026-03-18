@@ -13,6 +13,9 @@
                                ! Writes requested model
       subroutine wrt_abl_avg   ! fields at requested levels
                                ! into averages netCDF file.
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik, varid
@@ -22,7 +25,7 @@
       real stf_cff
       parameter(stf_cff=86400./0.01)
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
+      !include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"

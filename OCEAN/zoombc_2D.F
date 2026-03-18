@@ -19,6 +19,9 @@
       subroutine u2dbc_interp_tile(Istr,Iend,Jstr,Jend
      &                ,DU_west4, DU_east4, DU_west6, DU_east6
      &                ,DU_south4,DU_north4,DU_south6,DU_north6)
+# ifdef MPI
+      use mpi
+# endif
       use AGRIF_Util
 !     implicit none
 # include "param.h"
@@ -52,7 +55,7 @@
 
 # ifdef MPI
 #  include "mpi_cpl.h"
-       include 'mpif.h'
+       !include 'mpif.h'
 # endif
 
 # ifdef MPI
@@ -516,6 +519,9 @@ C$OMP BARRIER
      &                         ,DV_west4, DV_east4, DV_west6, DV_east6
      &                         ,DV_south4,DV_north4,DV_south6,DV_north6)
 
+# if defined MPI
+      use mpi
+# endif
       use AGRIF_Util
 !     implicit none
 # include "param.h"
@@ -549,7 +555,7 @@ C$OMP BARRIER
 
 # ifdef MPI
 #  include "mpi_cpl.h"
-       include 'mpif.h'
+       !include 'mpif.h'
 # endif
 # ifdef MPI
 #  define LOCALLM Lmmpi

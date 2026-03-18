@@ -13,6 +13,9 @@
                                      ! Write time-averaged
       subroutine wrt_avg             ! fields into averages
                                      ! netCDF file.
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
 !     implicit none
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), ibuff(4), nf_fwrite, type
@@ -23,7 +26,7 @@
 #  endif
 # endif
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
+      !include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"

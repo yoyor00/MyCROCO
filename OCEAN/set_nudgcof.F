@@ -24,11 +24,12 @@
       end
 !
       subroutine set_nudgcof_tile (Istr,Iend,Jstr,Jend, wrk)
+# if defined MPI
+      use mpi
+# endif
 !     implicit none
       integer ierr
-# if defined MPI
-      include 'mpif.h'
-# endif
+
 # include "param.h"
 # include "grid.h"
 # include "climat.h"

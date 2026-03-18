@@ -67,6 +67,9 @@
      &     obst_tau, obst_fuz, obst_fvz
 #endif
 
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff
@@ -83,7 +86,7 @@
       integer tile, itrc,i,j,k
 #endif
 #if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
+      !include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 #endif
 #include "param.h"

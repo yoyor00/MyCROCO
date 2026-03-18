@@ -584,6 +584,9 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical sea surface height climatology [m].
 !----------------------------------------------------------------------
 !
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -601,7 +604,7 @@ C$    integer  trd, omp_get_thread_num
       real*QUAD mssh,area,cff1
 #  ifdef MPI
 #   include "mpi_cpl.h"
-      include 'mpif.h'
+      !include 'mpif.h'
       integer ierr
       real*QUAD allmssh(1,NNODES),allarea(1,NNODES)
 #  endif

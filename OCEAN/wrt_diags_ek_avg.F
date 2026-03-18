@@ -19,11 +19,14 @@
 !
       subroutine wrt_diags_ek_avg
 
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
 # if defined MPI & !defined PARALLEL_FILES & !defined NC4PAR
-      include 'mpif.h'
+      !include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"

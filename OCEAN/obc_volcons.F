@@ -33,6 +33,9 @@
 # ifdef AGRIF
       USE Agrif_Util
 # endif
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend,    i,j, NSUB
@@ -43,7 +46,7 @@
 # include "scalars.h"
 # include "mpi_cpl.h"
 # ifdef MPI
-      include 'mpif.h'
+      !include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
       real*QUAD buff(2)
 # endif

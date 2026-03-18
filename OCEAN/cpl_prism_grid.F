@@ -17,8 +17,9 @@
 # ifdef AGRIF
       use Agrif_Util
 # endif
+      use mpi
       IMPLICIT NONE
-      include 'mpif.h'
+      !include 'mpif.h'
 
 # include "param.h"
 # include "grid.h"

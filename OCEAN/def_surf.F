@@ -42,7 +42,7 @@
 # ifdef NC4PAR
      &      , csize,cmode
 #  include "mpi_cpl.h"
-      include 'mpif.h'
+      !include 'mpif.h'
 # endif
       character*60 text
 

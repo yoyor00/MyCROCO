@@ -409,12 +409,13 @@ c#  include "param.h"
       end
 
       subroutine MPI_Test1_tile (Istr,Iend,Jstr,Jend)
+      use mpi
       implicit none
       integer Istr,Iend,Jstr,Jend
 #  include "param.h"
 #  include "scalars.h"
 #  include "mpi_cpl.h"
-      include 'mpif.h'
+      !include 'mpif.h'
 
       integer i,j,k,ierr
       real temp2D(GLOBAL_2D_ARRAY),

@@ -34,6 +34,9 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -49,7 +52,7 @@
 # include "netcdf.inc"
 # ifdef NC4PAR
 #  include "mpi_cpl.h"
-      include 'mpif.h'
+      !include 'mpif.h'
 # endif
       character*70 text
 

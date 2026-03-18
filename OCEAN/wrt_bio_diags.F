@@ -13,11 +13,14 @@
                                    ! Writes requested model
       subroutine wrt_bio_diags     ! fields at requested levels
                                    ! into diagnostics netCDF file.
+# if defined MPI & !defined PARALLEL_FILES
+      use mpi
+# endif
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), ibuff(4), nf_fwrite
 # if defined MPI & !defined PARALLEL_FILES
-      include 'mpif.h'
+      !include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank
 # endif
 # include "param.h"

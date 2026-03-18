@@ -100,13 +100,16 @@
 !======================================================================
 !
           subroutine check_tab2d(tab,comment,typevar,ondevice,correct)
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"
 # include "ocean2d.h"
 # ifdef MPI
 #  include "mpi_cpl.h"
-      include 'mpif.h'
+      !include 'mpif.h'
 # endif
       real,dimension(GLOBAL_2D_ARRAY) :: tab
       integer Lmseq,Mmseq
@@ -306,13 +309,16 @@
 !======================================================================
 !
           subroutine check_tab3d(tab,comment,typevar,ondevice,correct)
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"  
 # include "ocean2d.h" 
 # ifdef MPI
 #  include "mpi_cpl.h"
-      include 'mpif.h'
+      !include 'mpif.h'
 # endif   
 # ifdef MPI
       logical globstop

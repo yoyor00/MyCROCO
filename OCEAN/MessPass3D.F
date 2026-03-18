@@ -16,6 +16,7 @@
      &  nmax)
 #  endif
 # endif
+      use mpi
 !
 !======================================================================
 !
@@ -32,7 +33,7 @@
 # include "param.h"
 # include "scalars.h"
 # include "mpi_cpl.h"
-      include 'mpif.h'
+      !include 'mpif.h'
       logical, parameter :: use_host_device = .TRUE.
 # include "mpi_buffers.h"
 !

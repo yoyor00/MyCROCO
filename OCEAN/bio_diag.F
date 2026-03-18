@@ -20,6 +20,9 @@
       end
 
       subroutine bio_diag_tile (Istr,Iend,Jstr,Jend)
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -40,7 +43,7 @@
       real cff1, NSUB
       real*QUAD cff, my_sum(0:nbtrc)
 # ifdef MPI
-      include 'mpif.h'
+      !include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
       real*QUAD buff(0:nbtrc)
       common /xyz_bio/ buff

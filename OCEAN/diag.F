@@ -22,6 +22,9 @@
       end
 
       subroutine diag_tile (Istr,Iend,Jstr,Jend, ke2d,pe2d)
+# ifdef MPI
+      use mpi
+# endif
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -42,7 +45,7 @@
       real*QUAD cff, my_avgke, my_avgpe, my_volume
       character echar*8
 #ifdef MPI
-      include 'mpif.h'
+      !include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
       real*QUAD buff(9)
       common /xyz/ buff

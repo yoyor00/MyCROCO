@@ -16,7 +16,7 @@
 #include "scalars.h"
 #include "mpi_cpl.h"
 #ifdef MPI
-      include 'mpif.h'
+     !include 'mpif.h'
 #endif
 #include "compute_tile_bounds.h"
       call setup_grid2_tile (Istr,Iend,Jstr,Jend)
@@ -31,6 +31,9 @@
 ! barotropic mode; combined crossection of all open boundaries.
 !
 !     implicit none
+#ifdef MPI
+      use mpi
+#endif
       integer Istr,Iend,Jstr,Jend, i,j, NSUB
       real cff, my_hmax, my_grdmax, my_Cu_max
      &        , my_hmin, my_grdmin, my_Cu_min
@@ -43,7 +46,7 @@
 #include "grid.h"
 #include "mpi_cpl.h"
 #ifdef MPI
-      include 'mpif.h'
+      !include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
       real*8 buff(14)
 # if QUAD == 16

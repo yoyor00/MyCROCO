@@ -13,6 +13,9 @@
       subroutine read_inp (ierr)        ! parameters  from  startup
                                         ! script file using keywords
                                         ! to recognize variables.
+#ifdef MPI
+      use mpi
+#endif
 !     implicit none
 
 #include "param.h"
@@ -40,7 +43,7 @@
 # include "online.h"
 #endif
 #ifdef MPI
-      include 'mpif.h'
+      !include 'mpif.h'
 #endif
 #ifdef NBQ
 # include "nbq.h"

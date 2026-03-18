@@ -614,6 +614,9 @@ c #  endif
       end
 
       subroutine reset_rho0_tile (Istr,Iend,Jstr,Jend)
+#  ifdef MPI
+      use mpi
+#  endif
       implicit none
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, NSUB
@@ -634,7 +637,7 @@ c #  endif
 #  endif
       real*QUAD mrho,vol
 #  ifdef MPI
-      include 'mpif.h'
+      !include 'mpif.h'
 #   include "mpi_cpl.h"
       integer ierr
       real*QUAD allrho(1,NNODES),allvol(1,NNODES)

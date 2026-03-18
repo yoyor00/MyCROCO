@@ -91,7 +91,7 @@
      &                   khmax=20.     ! deep-water limit for k*h
       logical :: ana_ini_wkb
 # if defined MPI
-      include 'mpif.h'
+      !include 'mpif.h'
 #  include "mpi_cpl.h"
       integer ierr
 # endif
@@ -1435,6 +1435,9 @@ c        cff1=3.D0/16.D0
       end
 
       subroutine wkb_diag_tile (istr,iend,jstr,jend)
+# if defined MPI
+      use mpi
+# endif
       implicit none
       integer istr,iend,jstr,jend, i,j,k, nsubs,ie
 # include "param.h"
@@ -1444,7 +1447,7 @@ c        cff1=3.D0/16.D0
       parameter (max_check_line=128)
       character check_line*(max_check_line), tstring*18
 # ifdef MPI
-      include 'mpif.h'
+      !include 'mpif.h'
       integer status(MPI_STATUS_SIZE), ierr
 #  include "mpi_cpl.h"
 # endif

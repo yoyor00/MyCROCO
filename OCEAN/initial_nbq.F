@@ -51,10 +51,13 @@
 !
 !======================================================================
 !
+# ifdef MPI
+      use mpi
+# endif
       implicit none
       integer  Istr, Iend, Jstr, Jend
 # ifdef MPI
-      include 'mpif.h'
+      !include 'mpif.h'
 # endif
 # include "param.h"
 # include "scalars.h"

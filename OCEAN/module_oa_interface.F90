@@ -130,11 +130,13 @@
 !------------------------------------------------------------------------------
 
       module module_interface_oa
-
+#ifdef MPI
+      use mpi
+#endif
       implicit none
 
 #ifdef MPI
- include 'mpif.h'
+ !include 'mpif.h'
 #endif
 
 
