@@ -141,15 +141,17 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-# if defined TS_HADV_UP5 || defined TS_HADV_C6 \
-      || defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 \
-      || defined TS_VADV_WENO5
+#  if  defined TS_HADV_UP5  || defined TS_HADV_C6     || \
+     defined TS_HADV_WENO5  || defined BIO_HADV_WENO5 || \
+     defined TS_VADV_WENO5  || defined TS_HADV_UP7    || \
+     defined TS_HADV_C8     || defined TS_HADV_WENO7  || \
+     defined BIO_HADV_WENO7 || defined TS_VADV_WENO7
 
-      REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
+      REAL    :: q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3
       REAL    :: ua, vel, cdiff, cdif
-      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6
-      REAL    :: flx2, flx3, flx4, flx5
-      REAL    :: mask0, mask1, mask2, mask3
+      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6, flux7, flux8
+      REAL    :: flx2, flx3, flx4, flx5, flx6, flx7
+      REAL    :: mask0, mask1, mask2, mask3, mask4
 
       flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
 
@@ -172,6 +174,19 @@
      &             - sign(1.,ua)*( (q_ip2 - q_im3)-5.*(q_ip1 - q_im2)
      &                                      + 10.*(q_i - q_im1) )/60.
 
+      flux8(q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3, ua) =
+     &      ( 533.*(q_i  +q_im1)
+     &      - 139.*(q_ip1+q_im2)
+     &      + 29. *(q_ip2+q_im3)
+     &      - 3.  *(q_ip3+q_im4) ) / 840.0
+
+      flux7(q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3, ua) =
+     &flux8(q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3, ua)
+     &      -sign(1.,ua)* (
+     &        3.  *(q_im4 - q_ip3)
+     &      - 21. *(q_im3 - q_ip2)
+     &      + 63. *(q_im2 - q_ip1)
+     &      - 105.*(q_im1 - q_i  ) ) / 840.
 # endif
 !
 !--------------------------------------------------------------------
@@ -279,7 +294,6 @@
 #  endif
 #  ifdef BIO_HADV_WENO5
 #   if defined TEMPERATURE && defined SALINITY
-
           if (itrc .le. 2) then
 #   elif defined TEMPERATURE || defined SALINITY
           if (itrc .le. 1) then
@@ -504,17 +518,10 @@
       enddo
 
 #  if defined BD_EXCHANGE
-#   ifdef THREE_GHOST_POINTS_UV
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,nstp))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,nstp))
-#   else
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_U3D_TILE (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nstp))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_V3D_TILE (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nstp))
-#   endif
 #  endif
 # endif
 
@@ -1015,17 +1022,11 @@
       do itrc=1,NT
         call t3dbc_tile (Istr,Iend,Jstr,Jend, nnew,itrc, WORK)
 #  if defined BD_EXCHANGE
-#   ifdef THREE_GHOST_POINTS_TS
-        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                               t(START_2D_ARRAY,1,nnew,itrc))
-#   else
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+        call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
-#   endif
 #  endif
       enddo
 # endif
-
       call u3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
       call v3dbc_tile (Istr,Iend,Jstr,Jend, WORK)
 # ifdef NBQ
@@ -1033,51 +1034,19 @@
 # endif
 !
 !======================================================================
-! Coupling, include ghost points associated with PHYSICAL
-! boundaries ONLY. Do not touch periodic ghost points or
-! internal computational margins (MPI code).
-!======================================================================
-!
-# ifdef EW_PERIODIC
-#  define IU_RANGE Istr,Iend
-#  define IV_RANGE Istr,Iend
-# else
-#  define IU_RANGE Istr,IendR
-#  define IV_RANGE IstrR,IendR
-# endif
-# ifdef NS_PERIODIC
-#  define JU_RANGE Jstr,Jend
-#  define JV_RANGE Jstr,Jend
-# else
-#  define JU_RANGE JstrR,JendR
-#  define JV_RANGE Jstr,JendR
-# endif
-!
-!======================================================================
 ! Set PHYSICAL lateral boundary conditions for momentum.
 !======================================================================
 !
-# if defined BD_EXCHANGE
-#  ifdef THREE_GHOST_POINTS_UV
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,nnew))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,nnew))
-#   ifdef NBQ
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             wz(START_2D_ARRAY,0,nnew))
-#   endif
-#  else
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+#  if defined BD_EXCHANGE
+      call EXCHANGE_U3D_TILE (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nnew))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_V3D_TILE (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nnew))
 #   ifdef NBQ
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_W3D_TILE (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,nnew))
 #   endif
 #  endif
-# endif
 
 !
 !======================================================================
@@ -1103,6 +1072,27 @@
 # endif
 !
 !======================================================================
+! Coupling, include ghost points associated with PHYSICAL
+! boundaries ONLY. Do not touch periodic ghost points or
+! internal computational margins (MPI code).
+!======================================================================
+!
+# ifdef EW_PERIODIC
+#  define IU_RANGE Istr,Iend
+#  define IV_RANGE Istr,Iend
+# else
+#  define IU_RANGE Istr,IendR
+#  define IV_RANGE IstrR,IendR
+# endif
+# ifdef NS_PERIODIC
+#  define JU_RANGE Jstr,Jend
+#  define JV_RANGE Jstr,Jend
+# else
+#  define JU_RANGE JstrR,JendR
+#  define JV_RANGE Jstr,JendR
+# endif
+!
+!======================================================================
 ! Prepare to start two-dimensional time stepping:
 ! set the initial values of the fast-time-step free-surface
 ! field to its fast-time-averaged values corresponding
@@ -1118,7 +1108,7 @@
       enddo
 !$acc end kernels
        call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
-     &                          zeta(START_2D_ARRAY,knew))
+     &                         zeta(START_2D_ARRAY,knew))
 #  else
       do j=JstrR,JendR
         do i=IstrR,IendR

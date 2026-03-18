@@ -296,20 +296,11 @@ C$    integer omp_get_thread_num
 # endif
 
 # ifdef MASKING
-#  ifdef THREE_GHOST_POINTS
-      call exchange_r2d_3pts_tile (Istr,Iend,Jstr,Jend, rmask)
-#  else
-      call exchange_r2d_tile (Istr,Iend,Jstr,Jend,      rmask)
-#  endif
-#  ifdef THREE_GHOST_POINTS_UV
-      call exchange_u2d_3pts_tile (Istr,Iend,Jstr,Jend, umask)
-      call exchange_v2d_3pts_tile (Istr,Iend,Jstr,Jend, vmask)
-#  else
-      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,      umask)
-      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,      vmask)
-#  endif
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,      pmask)
-      call exchange_p2d_tile (Istr,Iend,Jstr,Jend,     pmask2)
+      call EXCHANGE_R2D_TILE (Istr,Iend,Jstr,Jend, rmask)
+      call EXCHANGE_U2D_TILE (Istr,Iend,Jstr,Jend, umask)
+      call EXCHANGE_V2D_TILE (Istr,Iend,Jstr,Jend, vmask)
+      call exchange_p2d_tile (Istr,Iend,Jstr,Jend, pmask)
+      call exchange_p2d_tile (Istr,Iend,Jstr,Jend, pmask2)
 # endif
 #endif
       return

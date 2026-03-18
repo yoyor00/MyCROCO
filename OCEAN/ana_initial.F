@@ -1762,50 +1762,27 @@ C$OMP BARRIER
      &                        vbar(START_2D_ARRAY,2))
 #  endif      
 #  ifdef SOLVE3D
-#   ifdef THREE_GHOST_POINTS_UV
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,1))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,1))
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,2))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,2))
-#    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,3))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,3))
-#    endif
-#    ifdef NBQ
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             wz(START_2D_ARRAY,0,1))
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             wz(START_2D_ARRAY,0,2))
-#    endif
-#   else
-#    ifndef BASIN      
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+#   ifndef BASIN      
+      call EXCHANGE_U3D_TILE (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,1))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_V3D_TILE (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,1))
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_U3D_TILE (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,2))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_V3D_TILE (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,2))
 #    endif      
 #    if defined SOLID_BODY_ROT || defined SOLID_BODY_PER
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_U3D_TILE (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,3))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_V3D_TILE (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,3))
 #    endif
 #    ifdef NBQ
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_W3D_TILE (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,1))
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_W3D_TILE (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,2))
-#    endif
 #   endif
 #  endif /* SOLVE3D */
 # endif /* ANA_INITIAL */
@@ -1813,17 +1790,10 @@ C$OMP BARRIER
 #  ifdef TRACERS
       do itrc=1,NT
         if (.not.got_tini(itrc)) then
-#   ifdef THREE_GHOST_POINTS_TS
-          call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                                 t(START_2D_ARRAY,1,1,itrc))
-          call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                                 t(START_2D_ARRAY,1,2,itrc))
-#   else
-          call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+          call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
      &                            t(START_2D_ARRAY,1,1,itrc))
-          call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+          call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
      &                            t(START_2D_ARRAY,1,2,itrc))
-#   endif
         endif
       enddo
 #  endif /* TRACERS */
@@ -2033,13 +2003,8 @@ C$OMP BARRIER
 !$acc end kernels
 
 # if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
-#  ifdef THREE_GHOST_POINTS_TS
-      call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             t(START_2D_ARRAY,1,tndx,1))
-#  else
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
      &                        t(START_2D_ARRAY,1,tndx,1))
-#  endif
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        rho(START_2D_ARRAY,1))
 # endif

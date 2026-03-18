@@ -114,14 +114,12 @@
 #  include "openacc_work.h"
       parameter (epsil=1.E-16)
 !
-
 #  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
       real    nearest_diff
       integer indx_depth
       real rho0i, zN2_c
       real hmlp(Istr:Iend,Jstr:Jend)
-# endif
-
+#  endif
 
 #  ifdef MASKING
 #   define SWITCH *
@@ -129,9 +127,11 @@
 #   define SWITCH !
 #  endif
 !
-#  if defined TS_HADV_UP5 || defined TS_HADV_C6 || \
-     defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
-     defined TS_VADV_WENO5
+#  if  defined TS_HADV_UP5  || defined TS_HADV_C6     || \
+     defined TS_HADV_WENO5  || defined BIO_HADV_WENO5 || \
+     defined TS_VADV_WENO5  || defined TS_HADV_UP7    || \
+     defined TS_HADV_C8     || defined TS_HADV_WENO7  || \
+     defined BIO_HADV_WENO7 || defined TS_VADV_WENO7
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -142,11 +142,11 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-      REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
+      REAL    :: q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3
       REAL    :: ua, vel, cdiff, cdif
-      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6
-      REAL    :: flx2, flx3, flx4, flx5
-      REAL    :: mask0, mask1, mask2, mask3
+      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6, flux7, flux8
+      REAL    :: flx2, flx3, flx4, flx5, flx6, flx7
+      REAL    :: mask0, mask1, mask2, mask3, mask4
 
       flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
 
@@ -169,9 +169,25 @@
      &      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
      &      -sign(1.,ua)*(
      &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
+
+      flux8(q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3, ua) =
+     &      ( 533.*(q_i  +q_im1)
+     &      - 139.*(q_ip1+q_im2)
+     &      + 29. *(q_ip2+q_im3)
+     &      - 3.  *(q_ip3+q_im4) ) / 840.0
+
+      flux7(q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3, ua) =
+     &flux8(q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3, ua)
+     &      -sign(1.,ua)* (
+     &        3.  *(q_im4 - q_ip3)
+     &      - 21. *(q_im3 - q_ip2)
+     &      + 63. *(q_im2 - q_ip1)
+     &      - 105.*(q_im1 - q_i  ) ) / 840.
 #  endif
-#  if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
-      REAL    :: flux3_weno, flux5_weno
+#  if defined TS_HADV_WENO7  || defined BIO_HADV_WENO7 || \
+      defined TS_VADV_WENO7  || defined TS_HADV_WENO5  || \
+      defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
+      REAL    :: flux3_weno, flux5_weno, flux7_weno
 #  endif
 !
 #  include "compute_auxiliary_bounds.h"
@@ -1213,13 +1229,8 @@
 !----------------------------------------------------------
 !
 #  if defined BD_EXCHANGE
-#   ifdef THREE_GHOST_POINTS_TS
-        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
+        call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
      &                          t(START_2D_ARRAY,1,nnew,itrc))
-#   else
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                          t(START_2D_ARRAY,1,nnew,itrc))
-#   endif
 #  endif
       enddo
 
@@ -1229,18 +1240,181 @@
 !
 !======================================================================
 !
-# if defined BIO_HADV_WENO5 || \
-     defined TS_HADV_WENO5  || defined TS_VADV_WENO5 || \
-     defined UV_HADV_WENO5  || defined UV_VADV_WENO5 || \
-     defined W_HADV_WENO5   || defined W_VADV_WENO5 || \
-     defined BEDLOAD_WENO5
+# if defined BIO_HADV_WENO7 || \
+     defined TS_HADV_WENO7  || defined TS_VADV_WENO7 || \
+     defined UV_HADV_WENO7  || defined UV_VADV_WENO7 || \
+     defined W_HADV_WENO7   || defined W_VADV_WENO7  || \
+     defined UV_HADV_UP7
+!
+      function flux7_weno(q_im4,q_im3,q_im2,q_im1,q_i,q_ip1,q_ip2,q_ip3,ua)
+!
+!$acc routine(flux7_weno) seq
+!
+!     WENO7: Weighted Essentially Non-Oscillatory scheme
+!            with 7th-order accuracy
+!---------------------------------------------------------------------
+! This function computes tracer reconstruction at the grid cell's left
+! edge (u-point i-1/2 or v-point j-1/2). WENO7 uses a convex combination
+! of the polynomials reconstructed on the four ENO4 stencils in order
+! to achieve higher accuracy on smooth profiles. Both left and right
+! combinations of mirror symetric stencils around i-1/2 (j-1/2) points
+! are computed. For stability, the upstream stencil combination,
+! identified by the sign of ua (u or v), is selected.
+!
+! This is the WENO-7Z version (Castro et al., 2011; Rathan and Raju, 2017), 
+! based on the WENO-5Z of Borges et al., 2008, i.e., smoothness indicators 
+! of higher order that provide a scheme with less dissipation, higher 
+! resolution and better monotonicity preservation than the classical WENO7.
+!
+! References:
+! -----------
+! Balsara D.S. & C.W. Shu,, 2000: Monotonicity Preserving Weighted 
+! Essentially Non-oscillatory Schemes with Increasingly High Order of 
+! Accuracy. ! J Comput Phys, 160:405-452.
+!
+! Shen, Y. & G. Zha, 2010: Improved seventh-order WENO scheme. 
+! 48th AIAA Aerospace Sciences Meeting Including the New Horizons Forum 
+! and Aerospace Exposition. 10.2514/6.2010-1451.
+!
+! Castro M, Costa B, Don WS., 2011: High order weighted essentially 
+! nonoscillatory WENO-z schemes for hyperbolic conservation laws. 
+! J Comput Phys, 230:766–92.
+!
+! Don WS, Borges R., 2013: Accuracy of the weighted essentially 
+! non-oscillatory conservative finite difference schemes. 
+! J Comput Phys, 250:347–72.
+!
+! Rathan S. & Naga Raju G., 2017: An improved non-linear weights for 
+! seventh-order weighted essentially non-oscillatory scheme.
+! Computers and Fluids 156 (2017) 496–514.
+!
+!  Implementation: P. Marchesiello 2026
+!---------------------------------------------------------------------
+      implicit none
+      REAL    :: flux7_weno
+      REAL    :: q_im4,q_im3,q_im2,q_im1,q_i,q_ip1,q_ip2,q_ip3, ua
+      REAL    :: IS0, IS1, IS2, IS3
+      REAl    :: d0, d1, d2, d3
+      REAl    :: a0, a1, a2, a3, isuma
+      REAL    :: w0, w1, w2, w3
+      REAL    :: p0, p1, p2, p3
+      REAL    :: Eps, cff1, cff2, T7
+
+! Epsilon value for computing weigths
+      Eps = 1.e-20
+! Weigths coefficients
+      d0 =  1./35.
+      d1 = 12./35.
+      d2 = 18./35.
+      d3 =  4./35.
+! other coefficients
+      cff2 = 1./12.
+!
+      if (ua .ge. 0.) then        ! Take upstream stencils for stability
+!
+! === Reconstruction at u_i-1/2 using LEFT stencils ===
+!
+! Nonlinear Smoothness Indicators
+        IS0 = 
+     &   q_im4*(  547.*q_im4 -  3882.*q_im3  + 4642.*q_im2  - 1854.*q_im1) +
+     &   q_im3*( 7043.*q_im3 - 17246.*q_im2  + 7042.*q_im1) +
+     &   q_im2*(11003.*q_im2 -  9402.*q_im1) + 2107.*q_im1*q_im1
+        IS1 = 
+     &   q_im3*(  267.*q_im3 -  1642.*q_im2  + 1602.*q_im1  -  494.*q_i)   + 
+     &   q_im2*( 2843.*q_im2 -  5966.*q_im1  + 1922.*q_i)   +
+     &   q_im1*( 3443.*q_im1 -  2522.*q_i)   +  547.*q_i*q_i
+        IS2 = 
+     &   q_im2*(  547.*q_im2 -  2522.*q_im1  + 1922.*q_i    -  494.*q_ip1) + 
+     &   q_im1*( 3443.*q_im1 -  5966.*q_i    + 1602.*q_ip1) +
+     &   q_i  *( 2843.*q_i   -  1642.*q_ip1) +  267.*q_ip1*q_ip1
+        IS3 = 
+     &   q_im1*( 2107.*q_im1 -  9402.*q_i    + 7042.*q_ip1  - 1854.*q_ip2) +
+     &   q_i  *(11003.*q_i   - 17246.*q_ip1  + 4642.*q_ip2) + 
+     &   q_ip1*( 7043.*q_ip1 -  3882.*q_ip2) +  547.*q_ip2*q_ip2
+! Global smoothing indicator
+        !T7  = abs(IS3-IS0)             ! Shen&Zha
+        !T7  = abs(IS0-IS1-IS2+IS3)     ! Castro 
+        T7  = abs(IS0+3*IS1-3*IS2-IS3)  ! Don&Borges
+! Non-normalized stencil weights
+        a0  = d0*(1+T7/(Eps+IS0))
+        a1  = d1*(1+T7/(Eps+IS1))
+        a2  = d2*(1+T7/(Eps+IS2))
+        a3  = d3*(1+T7/(Eps+IS3))
+! Normalized Weigths
+        isuma = 1./(a0+a1+a2+a3)
+        w0  = isuma*a0
+        w1  = isuma*a1
+        w2  = isuma*a2
+        w3  = isuma*a3
+! Polynomials
+        p0  = cff2*(-3.*q_im4 + 13.*q_im3 - 23.*q_im2 + 25.*q_im1)
+        p1  = cff2*(    q_im3 -  5.*q_im2 + 13.*q_im1 +  3.*q_i  )
+        p2  = cff2*(-1.*q_im2 +  7.*q_im1 +  7.*q_i   -     q_ip1)
+        p3  = cff2*( 3.*q_im1 + 13.*q_i   -  5.*q_ip1 +     q_ip2)
+! Combination
+
+        flux7_weno = w0*p0 + w1*p1 + w2*p2 + w3*p3
+
+      else
+!
+! === Reconstruction at u_i-1/2 using RIGHT stencils ===
+!
+! Nonlinear Smoothness Indicators
+        IS0 = 
+     &   q_ip3*(  547.*q_ip3 -  3882.*q_ip2  + 4642.*q_ip1  - 1854.*q_i)   +
+     &   q_ip2*( 7043.*q_ip2 - 17246.*q_ip1  + 7042.*q_i)   +
+     &   q_ip1*(11003.*q_ip1 -  9402.*q_i)   + 2107.*q_i*q_i
+        IS1 = 
+     &   q_ip2*(  267.*q_ip2 - 1642.*q_ip1   + 1602.*q_i    -  494.*q_im1) + 
+     &   q_ip1*( 2843.*q_ip1 - 5966.*q_i     + 1922.*q_im1) +
+     &   q_i  *( 3443.*q_i   - 2522.*q_im1)  +  547.*q_im1*q_im1
+        IS2 = 
+     &   q_ip1*(  547.*q_ip1 - 2522.*q_i     + 1922.*q_im1  -  494.*q_im2) + 
+     &   q_i*  ( 3443.*q_i   - 5966.*q_im1   + 1602.*q_im2) +
+     &   q_im1*( 2843.*q_im1 - 1642.*q_im2)  +  267.*q_im2*q_im2
+        IS3 = 
+     &   q_i*  ( 2107.*q_i   -  9402.*q_im1  + 7042.*q_im2  - 1854.*q_im3) + 
+     &   q_im1*(11003.*q_im1 - 17246.*q_im2  + 4642.*q_im3) + 
+     &   q_im2*( 7043.*q_im2 -  3882.*q_im3) +  547.*q_im3*q_im3
+! Global smoothing indicator
+        !T7  = abs(IS3-IS0)             ! Shen&Zha
+        !T7  = abs(IS0-IS1-IS2+IS3)     ! Castro
+        T7  = abs(IS0+3*IS1-3*IS2-IS3)  ! Don&Borges
+! Non-normalized stencil weights
+        a0  = d0*(1+T7/(Eps+IS0))
+        a1  = d1*(1+T7/(Eps+IS1))
+        a2  = d2*(1+T7/(Eps+IS2))
+        a3  = d3*(1+T7/(Eps+IS3))
+! Normalized Weigths
+        isuma = 1./(a0+a1+a2+a3)
+        w0  = isuma*a0
+        w1  = isuma*a1
+        w2  = isuma*a2
+        w3  = isuma*a3
+! Polynomials
+        p0  = cff2*(-3.*q_ip3 + 13.*q_ip2 - 23.*q_ip1 + 25.*q_i  )
+        p1  = cff2*(    q_ip2 -  5.*q_ip1 + 13.*q_i   +  3.*q_im1)
+        p2  = cff2*(-1.*q_ip1 +  7.*q_i   +  7.*q_im1 -     q_im2)
+        p3  = cff2*( 3.*q_i   + 13.*q_im1 -  5.*q_im2 +     q_im3)
+! Combination
+
+        flux7_weno = w0*p0 + w1*p1 + w2*p2 + w3*p3
+
+      endif
+
+      return
+      end
+!
+!======================================================================
+!
 !
       function flux5_weno(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+!
 !$acc routine(flux5_weno) seq
 !
 !     WENO5: Weighted Essentially Non-Oscillatory scheme
 !            with 5th-order accuracy
-!
+!---------------------------------------------------------------------
 ! This function computes tracer reconstruction at the grid cell's left
 ! edge (u-point i-1/2 or v-point j-1/2). WENO5 uses a convex combination
 ! of the polynomials reconstructed on the three ENO3 stencils in order
@@ -1252,23 +1426,22 @@
 ! The scheme includes improvements from Borges et al., 2008 (WENO_Z), i.e.,
 ! smoothness indicators of higher order (with new non-oscillatory weights)
 ! that provide a scheme with less dissipation, higher resolution and better
-! monotonicity preservation than the classical WENO5. In the meantime, WENO_Z
-! removes the need to tune parameter Eps for added dissipation (needed in the
-! original scheme due to suboptimal performance on critical points).
+! monotonicity preservation than the classical WENO5.
 !
 ! References:
-!  Guang-Shan JIANG and Chi-Wang SHU, 1996: Efficient Implementation of
-!  Weighted ENO Schemes. JOURNAL OF COMPUTATIONAL PHYSICS 126, 202–228.
+! -----------
+! Guang-Shan JIANG and Chi-Wang SHU, 1996: Efficient Implementation of
+! Weighted ENO Schemes. JOURNAL OF COMPUTATIONAL PHYSICS 126, 202–228.
 !
-!  Rong WANG and Raymond J. SPITERI, 2007: Linear instability of the
-!  fifth-order WENO method, SIAM J. Numer. Anal., 45, 1871-1901.
+! Rong WANG and Raymond J. SPITERI, 2007: Linear instability of the
+! fifth-order WENO method, SIAM J. Numer. Anal., 45, 1871-1901.
 !
-!  Borges R., M. Carmona, B. Costa, W.S. Don, 2008: An improved weighted
-!  essentially non-oscillatory scheme for hyperbolic conservation laws.
-!  Journal of Computational Physics 227 (2008) 3191–3211
+! Borges R., M. Carmona, B. Costa, W.S. Don, 2008: An improved weighted
+! essentially non-oscillatory scheme for hyperbolic conservation laws.
+! Journal of Computational Physics 227 (2008) 3191–3211
 !
-!  Implementation: P. Marchesiello and J. Demange 2013
-!
+! Implementation: P. Marchesiello and J. Demange 2013
+!---------------------------------------------------------------------
       implicit none
       REAL    :: flux5_weno
       REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua
@@ -1279,15 +1452,8 @@
       REAL    :: p0, p1, p2
       REAL    :: Eps, cff1, cff2, T5
 
-#  define WENO_Z
-
 ! Epsilon value for computing weigths
-#  ifdef WENO_Z
       Eps = 1.e-40
-#  else
-!  --> from 1.e-7 (smoother) to 1.e-5 (sharper)
-      Eps = 1.e-6
-#  endif
 ! Weigths coefficients
       d0=1./10.
       d1=6./10.
@@ -1307,18 +1473,12 @@
      &      + 0.25*(q_im2            -   q_i  )**2
         IS2 = cff1*(q_im1 - 2.*q_i   +   q_ip1)**2
      &   + 0.25*(3.*q_im1 - 4.*q_i   +   q_ip1)**2
-#  ifdef WENO_Z
 ! Non-normalized stencil weights
 ! with parameter T5 of new smoothness indicator
         T5  = abs(IS2-IS0)
         a0  = d0*(1+T5/(Eps+IS0))
         a1  = d1*(1+T5/(Eps+IS1))
         a2  = d2*(1+T5/(Eps+IS2))
-#  else
-        a0  = d0/(Eps+IS0)**2
-        a1  = d1/(Eps+IS1)**2
-        a2  = d2/(Eps+IS2)**2
-#  endif
 ! Normalized Weigths
         w0  = a0/(a0+a1+a2)
         w1  = a1/(a0+a1+a2)
@@ -1341,18 +1501,12 @@
      &      + 0.25*(q_ip1            -   q_im1)**2
         IS2 = cff1*(q_i   - 2.*q_im1 +   q_im2)**2
      &   + 0.25*(3.*q_i   - 4.*q_im1 +   q_im2)**2
-#  ifdef WENO_Z
 ! Non-normalized stencil weights
 ! with parameter T5 of new smoothness indicator
         T5  = abs(IS2-IS0)
         a0  = d0*(1+T5/(Eps+IS0))
         a1  = d1*(1+T5/(Eps+IS1))
         a2  = d2*(1+T5/(Eps+IS2))
-#  else
-        a0  = d0/(Eps+IS0)**2
-        a1  = d1/(Eps+IS1)**2
-        a2  = d2/(Eps+IS2)**2
-#  endif
 ! Normalized Weigths
         w0  = a0/(a0+a1+a2)
         w1  = a1/(a0+a1+a2)
@@ -1372,16 +1526,17 @@
 !======================================================================
 !
       function flux3_weno( q_im2, q_im1, q_i, q_ip1, ua)
+!
 !$acc routine(flux3_weno) seq
-
 !
-!     WENO3: Weighted Essentially Non-Oscillatory of 3rd-order Accuracy
 !
+! WENO3: Weighted Essentially Non-Oscillatory of 3rd-order Accuracy
+!---------------------------------------------------------------------
 ! This function computes tracer reconstruction at the grid cell's left
 ! edge (u-point i-1/2 or v-point j-1/2).
 !
 ! Implementation: P. Marchesiello and J. Demange 2013
-!
+!---------------------------------------------------------------------
       implicit none
       REAL    :: flux3_weno
       REAL    :: q_im2, q_im1, q_i, q_ip1, ua

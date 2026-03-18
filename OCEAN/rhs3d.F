@@ -112,38 +112,55 @@
 !--------------------------------------------------------------------
 !
 # if defined UV_HADV_WENO5 || defined UV_HADV_C6 || defined UV_HADV_UP5 \
-  || defined UV_VADV_WENO5 || defined UV_VADV_C6 || defined UV_VADV_UP5
+  || defined UV_VADV_WENO5 || defined UV_VADV_C6 || defined UV_VADV_UP5 \
+  || defined UV_HADV_WENO7 || defined UV_HADV_C8 || defined UV_HADV_UP7
 
-      REAL    :: q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2
+      REAL    :: q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3
       REAL    :: ua, vel, cdiff, cdif
 !$acc declare create(vel)
-      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6
-      REAL    :: flx2, flx3, flx4, flx5
-      REAL    :: mask0, mask1, mask2, mask3
+      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6, flux7, flux8
+      REAL    :: flx2, flx3, flx4, flx5, flx6, flx7
+      REAL    :: mask0, mask1, mask2, mask3, mask4
 
       flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
 
-      flux1(q_im1, q_i, ua, cdiff) = flux2(q_im1, q_i, ua, cdiff) -
+      flux1(q_im1, q_i, ua, cdiff) = 
+     &flux2(q_im1, q_i, ua, cdiff) -
      &      0.5*cdiff*sign(1.,ua)*(q_i-q_im1)
 
       flux4(q_im2, q_im1, q_i, q_ip1, ua) =
-     &      ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
+     &      ( 7.*(q_i + q_im1) - (q_ip1 + q_im2) ) / 12.0
 
       flux3(q_im2, q_im1, q_i, q_ip1, ua) =
-     &      flux4(q_im2, q_im1, q_i, q_ip1, ua) +
-     &      sign(1.,ua)*((q_ip1 -
-     &      q_im2)-3.*(q_i-q_im1))/12.0
+     &flux4(q_im2, q_im1, q_i, q_ip1, ua) +
+     &      sign(1.,ua)*((q_ip1-q_im2)-3.*(q_i-q_im1)) / 12.0
 
       flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
-     &      ( 37.*(q_i+q_im1) - 8.*(q_ip1+q_im2)
-     &      +(q_ip2+q_im3) )/60.0
+     &      ( 37.*(q_i   + q_im1) 
+     &       - 8.*(q_ip1 + q_im2)
+     &           +(q_ip2 + q_im3) ) / 60.0
 
       flux5(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua) =
-     &      flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
+     &flux6(q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, ua)
      &      -sign(1.,ua)*(
-     &      (q_ip2-q_im3)-5.*(q_ip1-q_im2)+10.*(q_i-q_im1) )/60.0
-# endif
+     &            (q_ip2 - q_im3)
+     &       - 5.*(q_ip1 - q_im2)
+     &      + 10.*(q_i   - q_im1) ) / 60.0
 
+      flux8(q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3, ua) =
+     &      ( 533.*(q_i  +q_im1)
+     &      - 139.*(q_ip1+q_im2)
+     &      + 29. *(q_ip2+q_im3)
+     &      - 3.  *(q_ip3+q_im4) ) / 840.0
+
+      flux7(q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3, ua) =
+     &flux8(q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3, ua)
+     &      -sign(1.,ua)* (
+     &        3.  *(q_im4 - q_ip3)
+     &      - 21. *(q_im3 - q_ip2)
+     &      + 63. *(q_im2 - q_ip1)
+     &      - 105.*(q_im1 - q_i  ) ) / 840.
+# endif
 !
 # include "compute_auxiliary_bounds.h"
 !
@@ -392,20 +409,20 @@
 # endif /* BODYFORCE */
 
 ! TO BE CHANGED, hugly
-# define wrk1(i,j) wrk1_3D(i,j,k)
-# define wrk2(i,j) wrk2_3D(i,j,k)
-# define UFx(i,j) UFx_3D(i,j,k)
-# define UFe(i,j) UFe_3D(i,j,k)
-# define VFx(i,j) VFx_3D(i,j,k)
-# define VFe(i,j) VFe_3D(i,j,k)
+!# define wrk1(i,j) wrk1_3D(i,j,k)
+!# define wrk2(i,j) wrk2_3D(i,j,k)
+!# define UFx(i,j) UFx_3D(i,j,k)
+!# define UFe(i,j) UFe_3D(i,j,k)
+!# define VFx(i,j) VFx_3D(i,j,k)
+!# define VFe(i,j) VFe_3D(i,j,k)
 
       do k=1,N
-
 
 # ifdef OBSTRUCTION
         do j=Jstr,Jend
             do i=IstrU,Iend
-              ru(i,j,k)=ru(i,j,k)-(obst_fuz(i-1,j,k)+obst_fuz(i,j,k)) !/2/2*4 half sum equilibrium
+              ru(i,j,k)=ru(i,j,k)-(obst_fuz(i-1,j,k)
+     &                            +obst_fuz(i  ,j,k)) !/2/2*4 half sum equilibrium
      &                             *(Hz(i,j,k)+Hz(i-1,j,k))
      &                             /(pm (i-1,j)+pm (i,j))
      &                             /(pn (i-1,j)+pn (i,j))
@@ -413,7 +430,8 @@
         enddo
         do j=JstrV,Jend
             do i=Istr,Iend
-              rv(i,j,k)=rv(i,j,k)-(obst_fvz(i,j-1,k)+obst_fvz(i,j,k)) !/2/2*4 half sum equilibrium
+              rv(i,j,k)=rv(i,j,k)-(obst_fvz(i,j-1,k)
+     &                            +obst_fvz(i,j  ,k)) !/2/2*4 half sum equilibrium
      &                             *(Hz(i,j,k)+Hz(i,j-1,k))
      &                             /(pm (i,j-1)+pm (i,j))
      &                             /(pn (i,j-1)+pn (i,j))
@@ -618,9 +636,11 @@
 !
 !======================================================================
 !
-#  if !(defined UV_HADV_UP3 || defined UV_HADV_C4  || \
-        defined UV_HADV_C2  || defined UV_HADV_UP5 || \
-        defined UV_HADV_C6  || defined UV_HADV_WENO5 )
+#  if !(defined UV_HADV_UP3 || defined UV_HADV_C4    || \
+        defined UV_HADV_C2  || defined UV_HADV_UP5   || \
+        defined UV_HADV_C6  || defined UV_HADV_WENO5 || \
+        defined UV_HADV_C8  || defined UV_HADV_UP7   || \
+        defined UV_HADV_WENO7 )
 #   define UV_HADV_UP3
 #  endif
 
@@ -668,6 +688,66 @@
 #     undef FLUX5
 #     undef FLUX3
 #     undef FLUX2
+#    endif
+#   endif
+
+#  elif defined UV_HADV_UP7 || defined UV_HADV_C8 || defined UV_HADV_WENO7
+!
+!----------------------------------------------------------------------
+! 7th or 8th order or WENO7 advection schemes
+!----------------------------------------------------------------------
+!
+#   ifdef UV_HADV_UP7
+#    define FLUX7 flux7
+#    define FLUX5 flux5
+#    define FLUX3 flux3
+#    define FLUX2 flux1
+#    define UP7_MASKING
+          cdif=0.5
+#   elif defined UV_HADV_WENO7
+#    define FLUX7 flux7_weno
+#    define FLUX5 flux5_weno
+#    define FLUX3 flux3_weno
+#    define FLUX2 flux1
+#    define UP7_MASKING
+          cdif=1.0
+#   else /* C8 */
+#    define FLUX7 flux8
+#    define FLUX5 flux6
+#    define FLUX3 flux4
+#    define FLUX2 flux2
+#   endif
+#   include "u_hadv_order7.h"
+#   include "v_hadv_order7.h"
+#   undef FLUX7
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+#   undef UP7_MASKING
+!
+#   ifdef UV_HADV_UP7
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV  || \
+        defined BACKSCATTER
+#     define FLUX7 flux8
+#     define FLUX5 flux6
+#     define FLUX3 flux4
+#     define FLUX2 flux2
+#     define UFe UFe4
+#     define UFx UFx4
+#     define VFe VFe4
+#     define VFx VFx4
+           cdif=0.
+#     include "u_hadv_order7.h"
+#     include "v_hadv_order7.h"
+#     undef FLUX7
+#     undef FLUX5
+#     undef FLUX3
+#     undef FLUX2
+#     undef UFe
+#     undef UFx
+#     undef VFe
+#     undef VFx
 #    endif
 #   endif
 

@@ -1326,17 +1326,10 @@
       enddo
 #  endif
 #  if defined BD_EXCHANGE
-#   ifdef THREE_GHOST_POINTS_UV
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,nrhs))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,nrhs))
-#   else
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_U3D_TILE (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nrhs))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_V3D_TILE (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nrhs))
-#   endif
 #  endif
 
       do j=Jstr,Jend
@@ -2161,25 +2154,16 @@
 !--------------------------------------------------------------------
 !
 # if defined BD_EXCHANGE
-#  ifdef THREE_GHOST_POINTS_UV
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,nnew))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,nnew))
-#  else
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_U3D_TILE (Istr,Iend,Jstr,Jend,
      &                        u(START_2D_ARRAY,1,nnew))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_V3D_TILE (Istr,Iend,Jstr,Jend,
      &                        v(START_2D_ARRAY,1,nnew))
-#  endif
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
      &                        Huon(START_2D_ARRAY,1))
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hvom(START_2D_ARRAY,1))
-
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
      &                        ubar(START_2D_ARRAY,knew))
-
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
      &                        vbar(START_2D_ARRAY,knew))
 #  if defined TS_MIX_ISO || defined TS_MIX_GEO
@@ -2220,9 +2204,6 @@
      &                                 wrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkDrag(START_2D_ARRAY,1))
-
-
-
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MXadv(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (istr,iend,jstr,jend,
@@ -2254,9 +2235,7 @@
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkDrag(START_2D_ARRAY,2))
 
-
 #  elif defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-
 
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkXadv(START_2D_ARRAY,1))
@@ -2288,9 +2267,6 @@
      &                                 wrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkDrag(START_2D_ARRAY,1))
-
-
-
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkXadv(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
@@ -2321,15 +2297,9 @@
      &                                 wrkWind(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkDrag(START_2D_ARRAY,2))
-
-
 #  endif
 
-
 #  if defined TENDENCY
-
-
-
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MXadv(START_2D_ARRAY,1,1))
       call exchange_u3d_tile (istr,iend,jstr,jend,
@@ -2384,9 +2354,7 @@
 #   endif
 #  endif
 
-
 #  if defined DIAGNOSTICS_EK
-
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkHadv(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
@@ -2500,9 +2468,6 @@
 #   endif
 
 #  endif
-
-
-
 # endif
       return
       end

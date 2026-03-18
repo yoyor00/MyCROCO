@@ -203,13 +203,8 @@
 !--------------------------------------------------------------------
 !
 # if defined BD_EXCHANGE
-#  ifdef THREE_GHOST_POINTS_UV
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_W3D_TILE (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,nnew))
-#  else
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
-     &                        wz(START_2D_ARRAY,0,nnew))
-#  endif
 # endif
       return
       end

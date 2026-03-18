@@ -1,7 +1,9 @@
-#ifndef MP_3PTS
+#if (!defined MP_4PTS) && (!defined MP_3PTS)
       subroutine exchange_3d_tile (Istr,Iend,Jstr,Jend, A)
-#else
+#elif defined MP_3PTS
       subroutine exchange_3d_3pts_tile (Istr,Iend,Jstr,Jend, A)
+#else
+      subroutine exchange_3d_4pts_tile (Istr,Iend,Jstr,Jend, A)
 #endif
 !
 ! Set periodic boundary conditions (if any) for a three-dimensional
@@ -17,10 +19,12 @@
 #include "param.h"
 #include "scalars.h"
       integer Npts,ipts,jpts
-#ifndef MP_3PTS
+#if (!defined MP_4PTS) && (!defined MP_3PTS)
       parameter (Npts=2)
-#else
+#elif defined MP_3PTS
       parameter (Npts=3)
+#else
+      parameter (Npts=4)
 #endif
       real A(GLOBAL_2D_ARRAY,KSTART:N)
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -141,23 +145,28 @@
 !$acc end kernels		   
 #ifdef MPI
       k=N-KSTART+1
-# ifndef MP_3PTS
+# if (!defined MP_4PTS) && (!defined MP_3PTS)
 #   ifndef MP_M3FAST_SEDLAYERS
       call MessPass3D_tile (Istr,Iend,Jstr,Jend,  A,k)
 #   else
       call MessPass3D_sl_tile (Istr,Iend,Jstr,Jend,  A,k)
 #   endif      
-#  else
-!!  MP_3PTS        
+# elif defined MP_3PTS
 #   ifndef MP_M3FAST_SEDLAYERS       
       call MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend,  A,k)
 #   else
       call MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend,  A,k)      
 #   endif
-#endif   
-#   ifdef  BAND_DEBUG          
-      chkbandname='none'
+# else /* MP_4PTS */
+#   ifndef MP_M3FAST_SEDLAYERS       
+      call MessPass3D_4pts_tile (Istr,Iend,Jstr,Jend,  A,k)
+#   else
+      call MessPass3D_4pts_sl_tile (Istr,Iend,Jstr,Jend,  A,k)      
 #   endif
+# endif   
+# ifdef  BAND_DEBUG          
+      chkbandname='none'
+# endif
 #endif
 #if defined OPENMP && defined OPENACC
       if (.not.SOUTHERN_EDGE) then
@@ -177,9 +186,14 @@ C$OMP BARRIER
       return
       end
 
-#ifndef MP_3PTS
-# define MP_3PTS
+#if (!defined MP_4PTS) && (!defined MP_3PTS)
+# define MP_4PTS
 # include "exchange_3d_tile.h"
-# undef MP_3PTS
+# undef MP_4PTS
+# ifndef MP_3PTS
+#  define MP_3PTS
+#  include "exchange_3d_tile.h"
+#  undef MP_3PTS
+# endif
 #endif
 

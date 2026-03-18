@@ -367,13 +367,8 @@
       enddo
 !$acc end kernels      
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#   ifdef THREE_GHOST_POINTS_TS
-      call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             rho1(START_2D_ARRAY,1))
-#   else
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
      &                        rho1(START_2D_ARRAY,1))
-#   endif
 #  endif
 !$acc kernels if(compute_on_device) default(present)      
       do j=JstrR,JendR
@@ -438,13 +433,8 @@
         enddo
       enddo
 #  if defined BD_EXCHANGE
-#   ifdef THREE_GHOST_POINTS_TS
-      call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             rho1(START_2D_ARRAY,1))
-#   else
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+      call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
      &                        rho1(START_2D_ARRAY,1))
-#   endif
 #  endif
 
       do j=JstrR,JendR ! resume j loop
@@ -567,15 +557,10 @@
 !$acc update device( rho_nh )
 # endif
 
-c #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-c #   ifdef THREE_GHOST_POINTS_TS
-c       call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-c      &                             rho_nh(START_2D_ARRAY,1))
-c #   else
-c       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-c      &                        rho_nh(START_2D_ARRAY,1))
-c #   endif
-c #  endif
+! #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
+!       call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
+!      &                        rho_nh(START_2D_ARRAY,1))
+! #  endif
 
 !$acc end kernels
       return

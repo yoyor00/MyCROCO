@@ -368,19 +368,12 @@
 # endif
 !$acc end kernels
 # if defined EW_PERIODIC || defined NS_PERIODIC  || defined MPI
-#  ifdef THREE_GHOST_POINTS_UV
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend, 
-     &                             We(START_2D_ARRAY,0))
-#   ifdef VADV_ADAPT_IMP       
-      call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend, 
-     &                             Wi(START_2D_ARRAY,0))
-#   endif
-#  else
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, We(START_2D_ARRAY,0))
-#   ifdef VADV_ADAPT_IMP       
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Wi(START_2D_ARRAY,0))
-#   endif
-#  endif   
+      call EXCHANGE_W3D_TILE (Istr,Iend,Jstr,Jend, 
+     &                        We(START_2D_ARRAY,0))
+#  ifdef VADV_ADAPT_IMP       
+      call EXCHANGE_W3D_TILE (Istr,Iend,Jstr,Jend, 
+     &                        Wi(START_2D_ARRAY,0))
+#  endif
 # endif
       return
       end

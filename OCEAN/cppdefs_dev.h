@@ -107,6 +107,11 @@
 #ifdef PENALIZATION
 # define POROSITY
 # define PERMEABILITY
+
+# if !defined TS_HADV_RSUP3 || !defined TS_HADV_RSUP5 
+#  define DIF_COEF_3D
+#  define TS_DIF2 
+# endif
 #endif
 
 /*
@@ -436,8 +441,15 @@
 # define TS_HADV_C6    /*    6th-order centered advection      */
 # undef  TS_DIF2       /*               +                      */
 # define TS_DIF4       /*         Hyperdiffusion  with         */
-# define TS_MIX_GEO    /*        Geopotential rotation         */
-# undef  TS_MIX_ISO    /*     or Isopycnal    rotation         */
+# undef  TS_MIX_GEO    /*        Geopotential rotation         */
+# define TS_MIX_ISO    /*     or Isopycnal    rotation         */
+#endif
+#ifdef TS_HADV_RSUP7   /*    Pseudo RS 7th-order scheme is:    */
+# define TS_HADV_C8    /*    6th-order centered advection      */
+# undef  TS_DIF2       /*               +                      */
+# define TS_DIF4       /*         Hyperdiffusion  with         */
+# undef  TS_MIX_GEO    /*        Geopotential rotation         */
+# define TS_MIX_ISO    /*     or Isopycnal    rotation         */
 #endif
 #if defined TS_HADV_C4 && !defined TS_HADV_RSUP3
                        /* 4th-order centered advection with:   */
@@ -476,8 +488,8 @@
 /*
    Use 3D diffusivity arrays if needed
 */
-#if defined TS_HADV_RSUP3 \
- || defined TS_HADV_RSUP5 || defined TS_DIF_SMAGO
+#if defined TS_HADV_RSUP3 || defined TS_HADV_RSUP5 \
+ || defined TS_HADV_RSUP7 || defined TS_DIF_SMAGO
 # define DIF_COEF_3D
 #endif
 /*

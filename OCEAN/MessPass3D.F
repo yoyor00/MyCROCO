@@ -1,18 +1,25 @@
 #include "cppdefs.h"
 #if defined MPI && defined SOLVE3D
 
-# ifndef MP_3PTS
+# if (!defined MP_4PTS) && (!defined MP_3PTS)
 #  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_tile (Istr,Iend,Jstr,Jend, A, nmax)
-# else
+#  else
        subroutine MessPass3D_sl_tile (Istr,Iend,Jstr,Jend, A, 
      &  nmax)
 #  endif
-# else
+# elif defined MP_3PTS
 #  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
 #  else
        subroutine MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend, A,
+     &  nmax)
+#  endif
+# else
+#  ifndef MP_M3FAST_SEDLAYERS
+      subroutine MessPass3D_4pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
+#  else
+       subroutine MessPass3D_4pts_sl_tile (Istr,Iend,Jstr,Jend, A,
      &  nmax)
 #  endif
 # endif
@@ -39,17 +46,19 @@
 ! Nb of boundary points involved in communication
 !
       integer Npts,ipts,jpts
-# ifndef MP_3PTS
+# if (!defined MP_4PTS) && (!defined MP_3PTS)
       parameter (Npts=2)
-# else
+# elif defined MP_3PTS
       parameter (Npts=3)
+# else
+      parameter (Npts=4)
 # endif
 # undef  NP1      
 # define NP1 N+1
-#ifdef MP_M3FAST_SEDLAYERS
-# undef  NP1
-# define NP1 N+N_sl+1
-#endif 
+# ifdef MP_M3FAST_SEDLAYERS
+#  undef  NP1
+#  define NP1 N+N_sl+1
+# endif 
       integer nmax
 # ifdef  BAND_DEBUG         
       real,dimension(Npts)        :: checksum
@@ -575,20 +584,25 @@ c          endif
       return
       end
 
-# ifndef MP_3PTS
-#  define MP_3PTS
+# if (!defined MP_4PTS) && (!defined MP_3PTS)
+#  define MP_4PTS
 #  include "MessPass3D.F"
-#  undef MP_3PTS
+#  undef MP_4PTS
+#  ifndef MP_3PTS
+#   define MP_3PTS
+#   include "MessPass3D.F"
+#   undef MP_3PTS
+#  endif
 # endif
 
-# ifndef MP_3PTS
-# ifdef M3FAST_SEDLAYERS      
-# ifndef MP_M3FAST_SEDLAYERS
-#  define MP_M3FAST_SEDLAYERS
-#  include "MessPass3D.F"
-#  undef  MP_M3FAST_SEDLAYERS
-# endif
-# endif      
+# if (!defined MP_4PTS) && (!defined MP_3PTS)
+#  ifdef M3FAST_SEDLAYERS      
+#   ifndef MP_M3FAST_SEDLAYERS
+#    define MP_M3FAST_SEDLAYERS
+#    include "MessPass3D.F"
+#    undef MP_M3FAST_SEDLAYERS
+#   endif
+#  endif      
 # endif
 
 # undef  NP1

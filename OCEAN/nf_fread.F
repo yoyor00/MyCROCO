@@ -275,26 +275,13 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         call exchange_p2d_tile (1,LOCALLM,1,LOCALMM, A)
 #  ifdef SOLVE3D
       elseif (horiz_type.eq.0 .and. vert_type.eq.1) then
-#   ifdef THREE_GHOST_POINTS_TS
-        call exchange_r3d_3pts_tile (1,LOCALLM,1,LOCALMM, A)
-#   else
-        call exchange_r3d_tile (1,LOCALLM,1,LOCALMM, A)
-#   endif
+        call EXCHANGE_R3D_TILE (1,LOCALLM,1,LOCALMM, A)
       elseif (horiz_type.eq.1 .and. vert_type.eq.1) then
-#   ifdef THREE_GHOST_POINTS_UV
-        call exchange_u3d_3pts_tile (1,LOCALLM,1,LOCALMM, A)
-#   else
-        call exchange_u3d_tile (1,LOCALLM,1,LOCALMM, A)
-#   endif
+        call EXCHANGE_U3D_TILE (1,LOCALLM,1,LOCALMM, A)
       elseif (horiz_type.eq.2 .and. vert_type.eq.1) then
-#   ifdef THREE_GHOST_POINTS_UV
-        call exchange_v3d_3pts_tile (1,LOCALLM,1,LOCALMM, A)
-#   else
-        call exchange_v3d_tile (1,LOCALLM,1,LOCALMM, A)
-#   endif
+        call EXCHANGE_V3D_TILE (1,LOCALLM,1,LOCALMM, A)
       elseif (horiz_type.eq.3 .and. vert_type.eq.1) then
         call exchange_p3d_tile (1,LOCALLM,1,LOCALMM, A)
-
       elseif (horiz_type.eq.0 .and. vert_type.eq.2) then
         call exchange_w3d_tile (1,LOCALLM,1,LOCALMM, A)
 #   ifdef ABL1D

@@ -171,13 +171,8 @@ C$OMP BARRIER
 # if defined TRACERS
       do itrc=1,NT
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
-#   ifdef THREE_GHOST_POINTS_TS
-        call  exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &          t(START_2D_ARRAY,1,nnew,itrc))
-#   else
-        call  exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &          t(START_2D_ARRAY,1,nnew,itrc))
-#   endif
+        call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
+     &                          t(START_2D_ARRAY,1,nnew,itrc))
 #  endif
       enddo
 # endif

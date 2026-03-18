@@ -484,6 +484,7 @@
 # include "scalars.h"
 # if defined PENALIZATION
 #  include "penalization.h"
+#  define KBOT last_index(i,j)+1
 # endif
 !
 # include "compute_auxiliary_bounds.h"
@@ -603,15 +604,29 @@
           enddo
         enddo
       enddo
+
+# elif defined PENALIZATION
+!---------------------------------------------------------------
+! Apply sponge in penalized regions
+!---------------------------------------------------------------
+!
+      do k=1,KBOT
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            diff3d_r(i,j,k)=0.01*pena_r(i,j,k)/(pm(i,j)*pn(i,j)*dt)
+          enddo
+        enddo
+      enddo
 # endif /* TS_HADV_RSUP3 */
+
+
 !$acc end kernels
 # if defined BD_EXCHANGE
-#  ifdef TS_DIF_SMAGO
-      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,diff3d_r)
-#  endif
 #  if defined TS_HADV_RSUP3 || defined TS_HADV_RSUP5
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,diff3d_u)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,diff3d_v)
+#  else
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,diff3d_r)
 #  endif
 # endif
 

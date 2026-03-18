@@ -213,13 +213,8 @@ C$OMP BARRIER
 
       do itrc=1,NT
 # if defined BD_EXCHANGE
-#  ifdef THREE_GHOST_POINTS_TS
-        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                               tsponge(START_2D_ARRAY,1,itrc))
-#  else
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
+        call EXCHANGE_R3D_TILE (Istr,Iend,Jstr,Jend,
      &                          tsponge(START_2D_ARRAY,1,itrc))
-#  endif
 # endif
       enddo
 

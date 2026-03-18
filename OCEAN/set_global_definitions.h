@@ -28,104 +28,121 @@
  zones are always provided on the each side. These data for these
  two ghost zones is then exchanged by message passing.
 */
-#if defined TS_HADV_UP5   || defined TS_HADV_C6 || \
-    defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
-    defined BEDLOAD_UP5   || defined BEDLOAD_WENO5
-# define THREE_GHOST_POINTS
-# define THREE_GHOST_POINTS_TS
-#endif
 
-#if defined UV_HADV_UP5   || defined UV_HADV_C6   || \
-    defined UV_HADV_WENO5 || defined W_HADV_WENO5 || \
-    defined W_HADV_UP5    || defined W_HADV_C6
-# define THREE_GHOST_POINTS
-# define THREE_GHOST_POINTS_UV
-#endif
 
-#ifdef THREE_GHOST_POINTS
-# ifdef MPI
-#  define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,-2:Mm+3+padd_E
-#  define GLOBAL_1D_ARRAYXI -2:Lm+3+padd_X
-#  define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
-#  define START_2D_ARRAY -2,-2
-#  define START_1D_ARRAYXI -2
-#  define START_1D_ARRAYETA -2
-# else
-#  ifdef EW_PERIODIC
-#   define GLOBAL_1D_ARRAYXI -2:Lm+3+padd_X
-#   define START_1D_ARRAYXI -2
-#   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,-2:Mm+3+padd_E
-#    define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
-#    define START_2D_ARRAY -2,-2
-#    define START_1D_ARRAYETA -2
-#   else
-#    define GLOBAL_2D_ARRAY -2:Lm+3+padd_X,0:Mm+1+padd_E
-#    define START_2D_ARRAY -2,0
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
-#    define START_1D_ARRAYETA 0
-#   endif
-#  else
-#   define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
-#   define START_1D_ARRAYXI 0
-#   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-2:Mm+3+padd_E
-#    define GLOBAL_1D_ARRAYETA -2:Mm+3+padd_E
-#    define START_2D_ARRAY 0,-2
-#    define START_1D_ARRAYETA -2
-#   else
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
-#    define START_2D_ARRAY 0,0
-#    define START_1D_ARRAYETA 0
-#   endif
-#  endif
-# endif
+#if defined TS_HADV_UP7   || defined TS_HADV_C8     || \
+    defined TS_HADV_WENO7 || defined BIO_HADV_WENO7 || \
+    defined BEDLOAD_UP7   || defined BEDLOAD_WENO7  || \
+    defined UV_HADV_UP7   || defined UV_HADV_C8     || \
+    defined UV_HADV_WENO7 || defined W_HADV_WENO7   || \
+    defined W_HADV_UP7    || defined W_HADV_C8
+
+# define NHALO 4    /* Four Ghost Points */
+
+#elif defined TS_HADV_UP5   || defined TS_HADV_C6     || \
+      defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
+      defined BEDLOAD_UP5   || defined BEDLOAD_WENO5  || \
+      defined UV_HADV_UP5   || defined UV_HADV_C6     || \
+      defined UV_HADV_WENO5 || defined W_HADV_WENO5   || \
+      defined W_HADV_UP5    || defined W_HADV_C6
+
+# define NHALO 3    /* Three Ghost Points */
+
 #else
-# ifdef MPI
-#  define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#  define GLOBAL_1D_ARRAYXI -1:Lm+2+padd_X
-#  define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
-#  define START_2D_ARRAY -1,-1
-#  define START_1D_ARRAYXI -1
-#  define START_1D_ARRAYETA -1
-# else
-#  ifdef EW_PERIODIC
-#   define GLOBAL_1D_ARRAYXI -1:Lm+2+padd_X
-#   define START_1D_ARRAYXI -1
-#   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,-1:Mm+2+padd_E
-#    define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
-#    define START_2D_ARRAY -1,-1
-#    define START_1D_ARRAYETA -1
-#   else
-#    define GLOBAL_2D_ARRAY -1:Lm+2+padd_X,0:Mm+1+padd_E
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
-#    define START_2D_ARRAY -1,0
-#    define START_1D_ARRAYETA 0
-#   endif
+
+# define NHALO 2    /* Two Ghost Points */
+
+#endif
+
+/* Global Dimensions */
+
+#ifdef MPI
+# define GLOBAL_2D_ARRAY 1-NHALO:Lm+NHALO+padd_X,1-NHALO:Mm+NHALO+padd_E
+# define GLOBAL_1D_ARRAYXI 1-NHALO:Lm+NHALO+padd_X
+# define GLOBAL_1D_ARRAYETA 1-NHALO:Mm+NHALO+padd_E
+# define START_2D_ARRAY 1-NHALO,1-NHALO
+# define START_1D_ARRAYXI 1-NHALO
+# define START_1D_ARRAYETA 1-NHALO
+#else
+# ifdef EW_PERIODIC
+#  define GLOBAL_1D_ARRAYXI 1-NHALO:Lm+NHALO+padd_X
+#  define START_1D_ARRAYXI 1-NHALO
+#  ifdef NS_PERIODIC
+#   define GLOBAL_2D_ARRAY 1-NHALO:Lm+NHALO+padd_X,1-NHALO:Mm+NHALO+padd_E
+#   define GLOBAL_1D_ARRAYETA 1-NHALO:Mm+NHALO+padd_E
+#   define START_2D_ARRAY 1-NHALO,1-NHALO
+#   define START_1D_ARRAYETA 1-NHALO
 #  else
-#   define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
-#   define START_1D_ARRAYXI 0
-#   ifdef NS_PERIODIC
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,-1:Mm+2+padd_E
-#    define GLOBAL_1D_ARRAYETA -1:Mm+2+padd_E
-#    define START_2D_ARRAY 0,-1
-#    define START_1D_ARRAYETA -1
-#   else
-#    define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
-#    define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
-#    define START_2D_ARRAY 0,0
-#    define START_1D_ARRAYETA 0
-#   endif
+#   define GLOBAL_2D_ARRAY 1-NHALO:Lm+NHALO+padd_X,0:Mm+1+padd_E
+#   define START_2D_ARRAY 1-NHALO,0
+#   define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#   define START_1D_ARRAYETA 0
+#  endif
+# else
+#  define GLOBAL_1D_ARRAYXI 0:Lm+1+padd_X
+#  define START_1D_ARRAYXI 0
+#  ifdef NS_PERIODIC
+#   define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,1-NHALO:Mm+NHALO+padd_E
+#   define GLOBAL_1D_ARRAYETA 1-NHALO:Mm+NHALO+padd_E
+#   define START_2D_ARRAY 0,1-NHALO
+#   define START_1D_ARRAYETA 1-NHALO
+#  else
+#   define GLOBAL_2D_ARRAY 0:Lm+1+padd_X,0:Mm+1+padd_E
+#   define GLOBAL_1D_ARRAYETA 0:Mm+1+padd_E
+#   define START_2D_ARRAY 0,0
+#   define START_1D_ARRAYETA 0
 #  endif
 # endif
 #endif
+
+/* Private Dimensions */
 
 #define PRIVATE_1D_SCRATCH_ARRAY Istr-2:Iend+2
 #define PRIVATE_2D_SCRATCH_ARRAY Istr-2:Iend+2,Jstr-2:Jend+2
 #define PRIVATE_1DXI_SCRATCH_ARRAY Istr-2:Iend+2
 #define PRIVATE_1DETA_SCRATCH_ARRAY Jstr-2:Jend+2
+
+/* Names of Exchange routines */
+
+# if   defined TS_HADV_UP7   || defined TS_HADV_C8 || \
+       defined TS_HADV_WENO7 || defined BIO_HADV_WENO7 || \
+       defined BEDLOAD_UP7   || defined BEDLOAD_WENO7
+#  define EXCHANGE_R3D_TILE exchange_r3d_4pts_tile
+# elif defined TS_HADV_UP5   || defined TS_HADV_C6 || \
+       defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
+       defined BEDLOAD_UP5   || defined BEDLOAD_WENO5
+#  define EXCHANGE_R3D_TILE exchange_r3d_3pts_tile
+# else
+#  define EXCHANGE_R3D_TILE exchange_r3d_tile
+# endif /* rho */
+
+# if   defined UV_HADV_UP7   || defined UV_HADV_C8   || \
+       defined UV_HADV_WENO7 || defined W_HADV_WENO7 || \
+       defined W_HADV_UP7    || defined W_HADV_C8
+#  define EXCHANGE_U3D_TILE exchange_u3d_4pts_tile
+#  define EXCHANGE_V3D_TILE exchange_v3d_4pts_tile
+#  define EXCHANGE_W3D_TILE exchange_w3d_4pts_tile
+#  define EXCHANGE_R2D_TILE exchange_r2d_4pts_tile
+#  define EXCHANGE_U2D_TILE exchange_u2d_4pts_tile
+#  define EXCHANGE_V2D_TILE exchange_v2d_4pts_tile
+# elif defined UV_HADV_UP5   || defined UV_HADV_C6   || \
+       defined UV_HADV_WENO5 || defined W_HADV_WENO5 || \
+       defined W_HADV_UP5    || defined W_HADV_C6
+#  define EXCHANGE_U3D_TILE exchange_u3d_3pts_tile
+#  define EXCHANGE_V3D_TILE exchange_v3d_3pts_tile
+#  define EXCHANGE_W3D_TILE exchange_w3d_3pts_tile
+#  define EXCHANGE_R2D_TILE exchange_r2d_3pts_tile
+#  define EXCHANGE_U2D_TILE exchange_u2d_3pts_tile
+#  define EXCHANGE_V2D_TILE exchange_v2d_3pts_tile
+# else
+#  define EXCHANGE_U3D_TILE exchange_u3d_tile
+#  define EXCHANGE_V3D_TILE exchange_v3d_tile
+#  define EXCHANGE_W3D_TILE exchange_w3d_tile
+#  define EXCHANGE_R2D_TILE exchange_r2d_tile
+#  define EXCHANGE_U2D_TILE exchange_u2d_tile
+#  define EXCHANGE_V2D_TILE exchange_v2d_tile
+
+# endif /* u & v */
 
 /*
   The following definitions contain fortran logical expressions

@@ -1,12 +1,14 @@
 #include "cppdefs.h"
 #ifdef MPI
 
-# if (!defined MP_3PTS) && (!defined MP_1PTS)
+# if (!defined MP_4PTS) && (!defined MP_3PTS) && (!defined MP_1PTS)
       subroutine MessPass2D_tile (Istr,Iend,Jstr,Jend, A)
 # elif defined MP_1PTS
       subroutine MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend, A)
-# else
+# elif defined MP_3PTS
       subroutine MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend, A)
+# else
+      subroutine MessPass2D_4pts_tile (Istr,Iend,Jstr,Jend, A)
 # endif
 !
 !======================================================================
@@ -24,12 +26,14 @@
 # include "mpi_cpl.h"
       include 'mpif.h'
       integer Npts
-# if (!defined MP_3PTS) && (!defined MP_1PTS)
+# if (!defined MP_4PTS) && (!defined MP_3PTS) && (!defined MP_1PTS)
       parameter (Npts=2)
 # elif defined MP_1PTS
       parameter (Npts=1)
-# else
+# elif defined MP_3PTS
       parameter (Npts=3)
+# else
+      parameter (Npts=4)
 # endif
       logical, parameter :: use_host_device = .TRUE.
 # include "mpi_buffers.h"
@@ -509,16 +513,22 @@ c      write(*,*) 'MessPass2D:    ', mynode,' exit'
       return
       end
 
-# if (!defined MP_3PTS) && (!defined MP_1PTS)
-#  define MP_3PTS
+# if (!defined MP_4PTS) && (!defined MP_3PTS) && (!defined MP_1PTS)
+#  define MP_4PTS
 #  include "MessPass2D.F"
-#  undef MP_3PTS
+#  undef MP_4PTS
+#  ifndef MP_3PTS
+#   define MP_3PTS
+#   include "MessPass2D.F"
+#   undef MP_3PTS
+#  endif
 #  ifndef MP_1PTS
 #   define MP_1PTS
 #   include "MessPass2D.F"
 #   undef MP_1PTS
 #  endif
 # endif
+
 #else
       subroutine MessPass2D_empty
       return

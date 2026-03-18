@@ -58,14 +58,12 @@
       common /mixing_visc3d_p/visc3d_p
 #endif
 #ifdef DIF_COEF_3D
+      real diff3d_r(GLOBAL_2D_ARRAY,N)
+      common /mixing_diff3d_r/diff3d_r
       real diff3d_u(GLOBAL_2D_ARRAY,N)
       real diff3d_v(GLOBAL_2D_ARRAY,N)
       common /mixing_diff3d_u/diff3d_u
       common /mixing_diff3d_v/diff3d_v
-# if defined TS_DIF_SMAGO || defined GLS_MIXING_3D
-      real diff3d_r(GLOBAL_2D_ARRAY,N)
-      common /mixing_diff3d_r/diff3d_r
-# endif
 #endif
 #if defined TS_MIX_ISO || defined TS_MIX_GEO
       real dRdx(GLOBAL_2D_ARRAY,N)

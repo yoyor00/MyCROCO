@@ -1,5 +1,45 @@
-#if defined TS_HADV_UP5 || defined TS_HADV_C6 || defined TS_HADV_WENO5
+#if defined TS_HADV_UP7 || defined TS_HADV_C8 || defined TS_HADV_WENO7
 !----------------------------------------------------------
+! 7th or 8th order or WENO7 advection schemes
+!----------------------------------------------------------
+!
+# ifdef TS_HADV_UP7
+#  ifdef PREDICTOR
+#   define FLUX7 flux8
+#   define FLUX5 flux6
+#   define FLUX3 flux4
+#   define FLUX2 flux2
+#  else
+#   define FLUX7 flux7
+#   define FLUX5 flux5
+#   define FLUX3 flux3
+#   define FLUX2 flux1
+#   define UP7_MASKING
+          cdif=0.5
+#  endif
+# elif defined TS_HADV_WENO7
+#  define FLUX7 flux7_weno
+#  define FLUX5 flux5_weno
+#  define FLUX3 flux3_weno
+#  define FLUX2 flux1
+#  define UP7_MASKING
+          cdif=1.
+# else /* C8 */
+#  define FLUX7 flux8
+#  define FLUX5 flux6
+#  define FLUX3 flux4
+#  define FLUX2 flux2
+# endif
+# include "t3dadv_order7.h"
+# undef FLUX7
+# undef FLUX5
+# undef FLUX3
+# undef FLUX2
+# undef UP7_MASKING
+!
+!----------------------------------------------------------
+#elif defined TS_HADV_UP5 || defined TS_HADV_C6 || defined TS_HADV_WENO5
+!
 # ifdef PREDICTOR
 !
 !----------------------------------------------------------

@@ -5,7 +5,7 @@
 # undef  NP1
 # define NP1 N+N_sl+1
 #endif 
-#define MAXNPTS 3
+#define MAXNPTS 5
       integer sub_X,size_X, sub_E,size_E   
 # ifndef AGRIF
       parameter (sub_X=Lm,  size_X=MAXNPTS*(sub_X+2*MAXNPTS)-1,
@@ -40,10 +40,10 @@
 
 #  ifndef AGRIF
       parameter (size_Z=MAXNPTS*MAXNPTS*(NP1),
-     &       sub_X_3D=(Lm+NSUB_X-1)/NSUB_X,
-     &     size_X_3D=(NP1)*MAXNPTS*(sub_X_3D+2*MAXNPTS),
-     &     sub_E_3D=(Mm+NSUB_E-1)/NSUB_E,
-     &     size_E_3D=(NP1)*MAXNPTS*(sub_E_3D+2*MAXNPTS))
+     &           sub_X_3D=(Lm+NSUB_X-1)/NSUB_X,
+     &           size_X_3D=(NP1)*MAXNPTS*(sub_X_3D+2*MAXNPTS),
+     &           sub_E_3D=(Mm+NSUB_E-1)/NSUB_E,
+     &           size_E_3D=(NP1)*MAXNPTS*(sub_E_3D+2*MAXNPTS))
 
       real ibuf_sndN_3D(size_X_3D), ibuf_revN_3D(size_X_3D),
      &     ibuf_sndS_3D(size_X_3D), ibuf_revS_3D(size_X_3D),
@@ -68,10 +68,10 @@
      &                  buf_rev4_3D, buf_rev2_3D,
      &                  buf_snd1_3D, buf_snd3_3D,
      &                  buf_rev1_3D, buf_rev3_3D,
-     &     ibuf_sndN_3D, ibuf_revN_3D,
-     &     ibuf_sndS_3D, ibuf_revS_3D,
-     &     jbuf_sndW_3D, jbuf_sndE_3D,
-     &     jbuf_revW_3D, jbuf_revE_3D
+     &                  ibuf_sndN_3D, ibuf_revN_3D,
+     &                  ibuf_sndS_3D, ibuf_revS_3D,
+     &                  jbuf_sndW_3D, jbuf_sndE_3D,
+     &                  jbuf_revW_3D, jbuf_revE_3D
 # endif
 #undef NP1
 #endif

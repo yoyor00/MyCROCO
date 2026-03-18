@@ -310,7 +310,6 @@
       enddo
 
 
-
 # else /* TS_MIX_S */
 !==================================================================
 !
@@ -348,8 +347,6 @@
           diff3v(i,j)=0.5*(diff2_sponge(i,j)+diff2_sponge(i,j-1))
         enddo
       enddo
-      
-
      
 !==========================================================
 ! Start computation of fluxes with lateral tracer gradients
@@ -360,7 +357,7 @@
             do i=imin,imax+1
               cff=0.5*(pm(i,j)+pm(i-1,j)) SWITCH umask(i,j)
               dTdx(i,j,k)=cff*( t(i  ,j,k,nstp,itrc)
-     &                          -t(i-1,j,k,nstp,itrc)
+     &                         -t(i-1,j,k,nstp,itrc)
 #  if defined CLIMAT_TS_SPONGE || defined CLIMAT_TS_SPONGE_FINE
      &                       -TCLM(i  ,j,k,itrc)
      &                       +TCLM(i-1,j,k,itrc)
@@ -375,7 +372,7 @@
             do i=imin,imax
               cff=0.5*(pn(i,j)+pn(i,j-1)) SWITCH vmask(i,j)
               dTde(i,j,k)=cff*( t(i,j  ,k,nstp,itrc)
-     &                          -t(i,j-1,k,nstp,itrc)
+     &                         -t(i,j-1,k,nstp,itrc)
 #  if defined CLIMAT_TS_SPONGE || defined CLIMAT_TS_SPONGE_FINE
      &                       -TCLM(i,j  ,k,itrc)
      &                       +TCLM(i,j-1,k,itrc)
@@ -389,7 +386,7 @@
           do j=jmin-1,jmax+1
             do i=imin-1,imax+1
               dTdr(i,j,k)= idRz(i,j,k)*( t(i,j,k+1,nstp,itrc)  
-     &                                  - t(i,j,k  ,nstp,itrc) 
+     &                                 - t(i,j,k  ,nstp,itrc) 
 #  if defined CLIMAT_TS_SPONGE || defined CLIMAT_TS_SPONGE_FINE
      &                                -TCLM(i,j,k+1,itrc)
      &                                +TCLM(i,j,k  ,itrc)
@@ -527,8 +524,6 @@
 #  endif
             enddo
           enddo
-          
-
 
 #  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
 !
@@ -916,13 +911,8 @@
 !==========================================================
 !
 # if defined BD_EXCHANGE
-#  ifdef THREE_GHOST_POINTS_TS
-        call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                               t(START_2D_ARRAY,1,nnew,itrc))
-#  else
-        call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                          t(START_2D_ARRAY,1,nnew,itrc))
-#  endif
+        call EXCHANGE_R3D_TILE(Istr,Iend,Jstr,Jend,
+     &                         t(START_2D_ARRAY,1,nnew,itrc))
 # endif
       return
       end
