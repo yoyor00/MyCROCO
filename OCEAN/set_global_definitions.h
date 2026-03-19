@@ -116,33 +116,50 @@
 #  define EXCHANGE_R3D_TILE exchange_r3d_tile
 # endif /* rho */
 
-# if   defined UV_HADV_UP7   || defined UV_HADV_C8   || \
-       defined UV_HADV_WENO7 || defined W_HADV_WENO7 || \
+# if   defined UV_HADV_UP7   || defined UV_HADV_C8     || \
+       defined UV_HADV_WENO7 || defined W_HADV_WENO7   || \
        defined W_HADV_UP7    || defined W_HADV_C8
 #  define EXCHANGE_U3D_TILE exchange_u3d_4pts_tile
 #  define EXCHANGE_V3D_TILE exchange_v3d_4pts_tile
 #  define EXCHANGE_W3D_TILE exchange_w3d_4pts_tile
-#  define EXCHANGE_R2D_TILE exchange_r2d_4pts_tile
-#  define EXCHANGE_U2D_TILE exchange_u2d_4pts_tile
-#  define EXCHANGE_V2D_TILE exchange_v2d_4pts_tile
-# elif defined UV_HADV_UP5   || defined UV_HADV_C6   || \
-       defined UV_HADV_WENO5 || defined W_HADV_WENO5 || \
+# elif defined UV_HADV_UP5   || defined UV_HADV_C6     || \
+       defined UV_HADV_WENO5 || defined W_HADV_WENO5   || \
        defined W_HADV_UP5    || defined W_HADV_C6
 #  define EXCHANGE_U3D_TILE exchange_u3d_3pts_tile
 #  define EXCHANGE_V3D_TILE exchange_v3d_3pts_tile
 #  define EXCHANGE_W3D_TILE exchange_w3d_3pts_tile
-#  define EXCHANGE_R2D_TILE exchange_r2d_3pts_tile
-#  define EXCHANGE_U2D_TILE exchange_u2d_3pts_tile
-#  define EXCHANGE_V2D_TILE exchange_v2d_3pts_tile
 # else
 #  define EXCHANGE_U3D_TILE exchange_u3d_tile
 #  define EXCHANGE_V3D_TILE exchange_v3d_tile
 #  define EXCHANGE_W3D_TILE exchange_w3d_tile
+# endif /* 3D u v */
+
+# if   defined TS_HADV_UP7   || defined TS_HADV_C8     || \
+       defined TS_HADV_WENO7 || defined BIO_HADV_WENO7 || \
+       defined BEDLOAD_UP7   || defined BEDLOAD_WENO7  || \
+       defined UV_HADV_UP7   || defined UV_HADV_C8     || \
+       defined UV_HADV_WENO7 || defined W_HADV_WENO7   || \
+       defined W_HADV_UP7    || defined W_HADV_C8
+#  define EXCHANGE_R2D_TILE exchange_r2d_4pts_tile
+#  define EXCHANGE_U2D_TILE exchange_u2d_4pts_tile
+#  define EXCHANGE_V2D_TILE exchange_v2d_4pts_tile
+#  define EXCHANGE_P2D_TILE exchange_p2d_4pts_tile
+# elif defined TS_HADV_UP5   || defined TS_HADV_C6     || \
+       defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
+       defined BEDLOAD_UP5   || defined BEDLOAD_WENO5  || \
+       defined UV_HADV_UP5   || defined UV_HADV_C6     || \
+       defined UV_HADV_WENO5 || defined W_HADV_WENO5   || \
+       defined W_HADV_UP5    || defined W_HADV_C6
+#  define EXCHANGE_R2D_TILE exchange_r2d_3pts_tile
+#  define EXCHANGE_U2D_TILE exchange_u2d_3pts_tile
+#  define EXCHANGE_V2D_TILE exchange_v2d_3pts_tile
+#  define EXCHANGE_P2D_TILE exchange_p2d_3pts_tile
+# else
 #  define EXCHANGE_R2D_TILE exchange_r2d_tile
 #  define EXCHANGE_U2D_TILE exchange_u2d_tile
 #  define EXCHANGE_V2D_TILE exchange_v2d_tile
-
-# endif /* u & v */
+#  define EXCHANGE_P2D_TILE exchange_p2d_tile
+# endif /* 2D rho u v psi */
 
 /*
   The following definitions contain fortran logical expressions
