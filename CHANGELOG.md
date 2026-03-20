@@ -69,6 +69,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : 
   - remove key_MUSTANG_lateralerosion replace by a boolean in 
     namelist (Issue #349)
+  - remove key_sand2D, activation only by a boolean in 
+    namelist (Issue #351)
   - remove MUSTANG_CORFLUX replace by a boolean in 
     namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
