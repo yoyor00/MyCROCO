@@ -150,6 +150,9 @@
    z0seduni = 0.00002      
    z0sedmud = 0.0001    
    z0sedbedrock = 0.005  
+   l_tauskin_center = .FALSE. 
+   l_tauskin_ubar = .FALSE. 
+   l_tauskin_upwind = .FALSE. 
    l_fricwave = .true. 
    fricwav = 0.06  
    l_z0hydro_coupl_init = .FALSE. 

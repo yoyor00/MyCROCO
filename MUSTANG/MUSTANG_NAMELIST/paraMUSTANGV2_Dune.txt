@@ -45,6 +45,7 @@
 &namsedim_bottomstress 
    l_z0seduni=.TRUE.  
    z0seduni = 0.0001 
+   l_tauskin_upwind = .TRUE. 
 /
 &namsedim_deposition
 /

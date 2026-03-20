@@ -90,6 +90,9 @@ MODULE comMUSTANG
         ! (used only if l_unised is false)
     REAL(KIND=rsh) :: z0sedbedrock ! bed roughness for bedrock (no sediment) (m) 
         ! (used only if l_unised is false)
+    LOGICAL :: l_tauskin_center ! boolean, to compute tauskin_c at rho point directly
+    LOGICAL :: l_tauskin_ubar ! boolean, to use depth-averaged velocity instead of u(k=1)
+    LOGICAL :: l_tauskin_upwind ! boolean, to use upwind interpolation for tauskin_x/y
     LOGICAL :: l_fricwave ! boolean, set to .true. if using wave related friction 
         ! factor for bottom shear stress (from wave orbital velocity and period)
         ! if .false. then fricwav namelist value is used

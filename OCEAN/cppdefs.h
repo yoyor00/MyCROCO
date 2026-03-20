@@ -415,7 +415,6 @@
 #  undef  MORPHODYN
 #  define key_sand2D
 #  define MUSTANG_CORFLUX
-#  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
 # endif
 
@@ -611,7 +610,6 @@
 #  undef  MORPHODYN
 #  define key_sand2D
 #  define MUSTANG_CORFLUX
-#  undef  key_tauskin_c_upwind
 #  define WAVE_OFFLINE
 # endif
 /*
@@ -1745,7 +1743,6 @@
 # ifdef MUSTANG
 #  define key_MUSTANG_V2
 #  define key_MUSTANG_bedload
-#  define key_tauskin_c_upwind
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE

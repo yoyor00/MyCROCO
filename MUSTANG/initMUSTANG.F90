@@ -80,7 +80,8 @@ MODULE initMUSTANG
 
     namelist /namsedim_bottomstress/ l_z0seduni,                              &
                                      z0seduni, z0sedmud, z0sedbedrock,        &
-                                     l_fricwave, fricwav,                     &
+                                     l_tauskin_center,l_tauskin_ubar,         &
+                                     l_tauskin_upwind, l_fricwave, fricwav,   &
                                      l_z0hydro_coupl_init,                    & 
                                      l_z0hydro_coupl,                         &
                                      coef_z0_coupl,                           &
