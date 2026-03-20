@@ -98,7 +98,9 @@
 !
         ierr=nf_def_dim(ncid,'stanum',nstas0,stadim)
 # ifdef SOLVE3D
+#  if !(defined NO_TEMPERATURE && defined NO_TRACER)
         ierr=nf_def_dim(ncid,'tracer',NT,trcdim)
+#  endif
 #  ifdef ALL_SIGMA
         ierr=nf_def_dim(ncid,'s_rho',N,srho)
 #  endif
@@ -323,11 +325,12 @@
        ierr=nf_put_att_text(ncid,staZeta,'units',lvar,
      &                      vinfo(3)(1:lvar))
 # ifdef SOLVE3D
+#  ifdef TEMPERATURE
 !
 !  Define temperature
 !
        if (wrtsta(indxstaTemp)) then
-#  ifdef ALL_SIGMA
+#   ifdef ALL_SIGMA
         vinfo(1)='temp'
         vinfo(2)='temperature'
         vinfo(3)='degrees Celsius'
@@ -340,7 +343,7 @@
         lvar=lenstr(vinfo(3))
         ierr=nf_put_att_text(ncid,staTemp,'units',lvar,
      &                         vinfo(3)(1:lvar))
-#  else
+#   else
         vinfo(1)='temp'
         vinfo(2)='temperature'
         vinfo(3)='degrees Celsius'
@@ -353,8 +356,9 @@
         lvar=lenstr(vinfo(3))
         ierr=nf_put_att_text(ncid,staTemp,'units',lvar,
      &                         vinfo(3)(1:lvar))
-#  endif
+#   endif
        endif ! temperature
+#  endif /* TEMPERATURE */
 !
 !  Define salinity
 !
@@ -705,6 +709,7 @@
           goto 99                                         !--> ERROR
         endif
 # ifdef SOLVE3D
+#  ifdef TEMPERATURE
 !
 !  Define temperature
 !
@@ -717,6 +722,7 @@
           goto 99                                         !--> ERROR
         endif
        endif
+#  endif /* TEMPERATURE */
 !
 !  Define salinity
 !

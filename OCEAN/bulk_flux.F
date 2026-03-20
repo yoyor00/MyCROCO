@@ -82,8 +82,8 @@
       REAL            :: Cdn(2), partn, parqn
 # endif
 # ifdef BULK_WASP
-      INTEGER         :: idx
       REAL            :: chi,aa,bb
+      REAL            :: charn1, charn2, charn3, charn4, charn5
 # endif
 # ifdef ABL1D
       REAL            :: chosqrcd
@@ -273,7 +273,8 @@
 !======================================================================
 !
 !++ Initial guess for ECUME algorithms
-          ddelW(1:mb)     = SIGN(MAX(ABS(delW(1:mb)),10.0*dWstar0),delW(1:mb))
+          ddelW(1:mb)     = SIGN(MAX(ABS(delW(1:mb)),10.0*dWstar0),
+     &                           delW(1:mb))
           ddelT           = SIGN(MAX(ABS(delT),10.0*dTstar0),delT)
           ddelQ           = SIGN(MAX(ABS(delQ),10.0*dQstar0),delQ)
           deltau10n(1:mb) = ddelW(1:mb)
@@ -472,28 +473,55 @@
           Qstar     = delQ*cff
 !++  Compute Charnock coefficient
 #  ifdef BULK_WASP
-          IF ( wspd0 >= 7.0 .AND. wspd0 < 23.0 ) then
-            idx = 2
-          ELSEIF ( wspd0 >= 23.0 .AND. wspd0 < 25.0 ) then
-            idx = 3
-          ELSEIF ( wspd0 >= 25.0) THEN
-            idx = 4
-          ELSE
-            idx = 1
-          ENDIF
-          chi   = CWage * ( wspd0 / Wstar(1) )   ! Wave age
-          IF(idx==1) chi = wspd0
-          cff   = wspd0 * wspd0
-          aa    =     Awasp(0,idx) + Awasp(1,idx)*wspd0
-     &        + cff*( Awasp(2,idx) + Awasp(3,idx)*wspd0 )
-          bb    =     Bwasp(0,idx) + Bwasp(1,idx)*wspd0
-     &        + cff*( Bwasp(2,idx) + Bwasp(3,idx)*wspd0 )
-!
-          charn = aa *(chi**bb)             ! Wind-dependent Charnock parameter
+          !
+          !++ Compute wave age
+          chi = cwage_wasp*(delW(1)/Wstar(1))
+          !
+          !++ Compute coefficient 1
+          charn1 = coefu_wasp(1)*(delW(1)**coefu_wasp(2))
+          !
+          !++ Compute coefficient 2
+          aa = coefa_wasp(1)
+     &       + coefa_wasp(2)*delW(1)
+     &       + coefa_wasp(3)*delW(1)**2
+     &       + coefa_wasp(4)*delW(1)**3
+          bb = coefb_wasp(1)
+     &       + coefb_wasp(2)*delW(1)
+     &       + coefb_wasp(3)*delW(1)**2
+     &       + coefb_wasp(4)*delW(1)**3
+          charn2 = aa*(chi**bb)
+          !
+          !++ Compute coefficient 3
+          aa = coefa2_wasp(1)+coefa2_wasp(2)*delW(1)
+          bb = coefb2_wasp(1)+coefb2_wasp(2)*delW(1)
+          charn3 = aa*(chi**bb)
+          IF (charn3 < limcharn_wasp) charn3 = limcharn_wasp
+          !
+          !++ Compute coefficient 4
+          charn4 = polyu_wasp(1)
+     &           + polyu_wasp(2)*delW(1)
+     &           + polyu_wasp(3)*delW(1)**2
+     &           + polyu_wasp(4)*delW(1)**3
+          !
+          !++ Compute coefficient 5
+          charn5 = polyu2_wasp(1)
+     &           + polyu2_wasp(2)*delW(1)
+     &           + polyu2_wasp(3)*delW(1)**2
+          !
+          !++ Compute final charnock coefficient
+          charn = (
+     &          charn1*(0.5*(1.0+TANH((thr1_wasp-delW(1))/lon1_wasp)))
+     &        + charn2*(0.5*(1.0+TANH((delW(1)-thr1_wasp)/lon1_wasp)))
+     &            )
+     &        * (       0.5*(1.0+TANH((thr2_wasp-delW(1))/lon2_wasp)))
+     &        + charn3*(0.5*(1.0+TANH((delW(1)-thr2_wasp)/lon2_wasp)))
+     &        * (       0.5*(1.0+TANH((thr3_wasp-delW(1))/lon3_wasp)))
+     &        + charn4*(0.5*(1.0+TANH((delW(1)-thr3_wasp)/lon3_wasp)))
+     &        * (       0.5*(1.0+TANH((thr4_wasp-delW(1))/lon4_wasp)))
+     &        + charn5*(0.5*(1.0+TANH((delW(1)-thr4_wasp)/lon4_wasp)))
+          !
 !++  Limit Charnock parameter
-          IF(idx==3 .AND. charn < Charn0 ) charn = Charn0
-          IF(idx==4 .AND. charn < Charn2 ) charn = Charn2
-          IF(charn > Charn1) charn = Charn1
+          IF(charn > limcharn1_wasp) charn = limcharn1_wasp
 #  else
           charn = 0.011
           IF     ( delW(1) > 18.0 ) then
