@@ -2235,6 +2235,7 @@ C 				  endif
 
 #if defined MUSTANG
       USE comsubstance, ONLY : name_var, nvpc, ws_part, imud1, imud2
+      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
       USE comMUSTANG, only: nk_nivsed_out, l_outsed_hsed , 
      &    l_outsed_poro, l_outsed_dzs, l_outsed_temp_sed, l_outsed_salt_sed, 
@@ -2262,12 +2263,7 @@ C 				  endif
      &    var3Dksed_loadograv, var3Dksed_permeab, 
      &    var3Dksed_sed_rate, var3Dksed_sigmadjge, 
      &    var3Dksed_sigmapsg, var3Dksed_hinder, 
-     &    var3Dksed_stateconsol
-
-#ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
-      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
-#endif
+     &    var3Dksed_stateconsol, rouse2D_integral, rouse2D
 #endif
 
 #if defined OBSTRUCTION
@@ -3720,7 +3716,6 @@ c !$acc wait
 # ifdef MUSTANG
       do itrc=3,NT
          write(nametrc,'(a)') TRIM(name_var(itrc-2))
-#if defined key_sand2D
            if (itrc>=itsubs1+nv_grav .AND.
      &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
            if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
@@ -3729,12 +3724,12 @@ c !$acc wait
             do j=Jstr,Jend
               do i=Istr,Iend
                 DO k=1,N
-           IF( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) > 0.0_rsh) THEN
+           IF( rouse2D_integral(itrc-itsubs1-nv_grav+1,i,j) > 0.0_rsh) THEN
            workr(i,j,k) =t(i,j,1,nstp,itrc)*(z_w(i,j,1)-z_w(i,j,0))*
      &       (  (z_w(i,j,N)-z_r(i,j,k))
      &          /(z_r(i,j,k)-z_w(i,j,0))
      &       ) **rouse2D(itrc-itsubs1-nv_grav+1,i,j)
-           workr(i,j,k)=workr(i,j,k)/sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
+           workr(i,j,k)=workr(i,j,k)/rouse2D_integral(itrc-itsubs1-nv_grav+1,i,j)
            ELSE
            workr(i,j,k)=0.
           ENDIF
@@ -3747,9 +3742,6 @@ c !$acc wait
            else
             workr=t(:,:,:,nstp,itrc)
            endif
-#else
-            workr=t(:,:,:,nstp,itrc)
-#endif
 
       if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),workr)

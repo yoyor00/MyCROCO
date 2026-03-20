@@ -2509,12 +2509,12 @@ CONTAINS
     ALLOCATE(psi_sed(nvp))
     psi_sed(1:nvp) = 0.0_rsh
 #endif
-#ifdef key_sand2D
+
     ALLOCATE(rouse2D(nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(sum_tmp(nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(rouse2D_integral(nv_adv,GLOBAL_2D_ARRAY))
     rouse2D(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-    sum_tmp(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-#endif
+    rouse2D_integral(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+
     
     ALLOCATE(cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY))
     ALLOCATE(c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY))

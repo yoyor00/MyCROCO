@@ -17,7 +17,7 @@
 #endif
 #ifdef MUSTANG
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
-      USE comsubstance, ONLY : ws_part
+      USE comsubstance, ONLY : ws_part, l_subs2D, nv_grav, nv_sand, l_outsandrouse
       USE comMUSTANG,   ONLY : vname_Must, hisMust, outMust,
      &                         nk_nivsed_out, var3D_cvsed, var3D_dzs,
      &                         var3D_TEMP, var3D_SAL, var3D_poro,
@@ -38,11 +38,7 @@
      &                         var3Dksed_loadograv, var3Dksed_permeab, 
      &                         var3Dksed_sed_rate, var3Dksed_sigmadjge, 
      &                         var3Dksed_sigmapsg, var3Dksed_hinder, 
-     &                         var3Dksed_stateconsol
-# ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
-      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
-# endif
+     &                         var3Dksed_stateconsol, rouse2D_integral, rouse2D
 #endif
 
 #ifdef OBSTRUCTION
@@ -1368,7 +1364,7 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 # endif
         if (wrthis(indxT+itrc-1)) then
           workr=t(:,:,:,nstp,itrc)
-# if defined MUSTANG & defined key_sand2D
+# if defined MUSTANG
           if (itrc .ge. itsubs1+nv_grav .and.
      &        itrc .le. itsubs1+nv_grav+nv_sand-1) then ! isand1,isand2
             if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
@@ -1376,14 +1372,14 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
               do j=0,Mm+1
                 do i=0,Lm+1
                   do k=1,N
-                    if ( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) .gt. 0.) then
+                    if ( rouse2D_integral(itrc-itsubs1-nv_grav+1,i,j) .gt. 0.) then
                       workr(i,j,k)=t(i,j,1,nstp,itrc)*
      &                             (z_w(i,j,1)-z_w(i,j,0))*
      &                           ( (z_w(i,j,N)-z_r(i,j,k))
      &                            /(z_r(i,j,k)-z_w(i,j,0))
      &                           )**rouse2D(itrc-itsubs1-nv_grav+1,i,j)
                       workr(i,j,k)=workr(i,j,k)/
-     &                             sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
+     &                             rouse2D_integral(itrc-itsubs1-nv_grav+1,i,j)
                     else
                       workr(i,j,k)=0.
                     endif
