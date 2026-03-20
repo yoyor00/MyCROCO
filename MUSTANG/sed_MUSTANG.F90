@@ -1246,168 +1246,185 @@ MODULE sed_MUSTANG
 !!==============================================================================
 
   SUBROUTINE sed_MUSTANG_sandconcextrap(ifirst, ilast, jfirst, jlast)
-
-   !&E--------------------------------------------------------------------------
-   !&E                 ***  ROUTINE sed_MUSTANG_sandconcextrap  ***
-   !&E
-   !&E ** Purpose : interpolates sand concentration in the first layer
-   !&E              assuming a Rouse profile 
-   !&E
-   !&E ** Description : use arguments and common variable 
-   !&E
-   !&E  arguments IN : 
-   !&E         loops  :ifirst,ilast,jfirst,jlast
-   !&E
-   !&E  variables OUT : (in comMUSTANG) 
-   !&E     flx_w2s : tendances aux depots corriges pour sables 
-   !&E     corflux, corfluy : corrections des flux horizontaux pour les sables
-   !&E     
-   !&E     
-   !&E  need to be know by hydrodynamic code:
-   !&E         kmax=N (known from module_substance)
-   !&E         alt_cw1 , htot: evaluated in coupleur_conv2MUSTANG
-   !&E         
-   !&E  need to be know by code treated substance:
-   !&E         isand1,isand2,nv_adv 
-   !&E     
-   !&E  use module MUSTANG variables  :
-   !&E         aref_sand
-   !&E         ustarbot (evaluated in sed_gravit)
-   !&E
-   !&E ** Called by :  MUSTANG_update
-   !&E
-   !&E--------------------------------------------------------------------------
-   !! * Modules used
-
-   !! * Arguments
-   INTEGER, INTENT(IN)                        :: ifirst, ilast, jfirst, jlast
-   !! * Local declarations
-   INTEGER                              :: izz,ivp,i,j,ivpp
-   REAL(KIND=rsh)                       :: altc1,extrap,rouse,som,dzcche,hzed,     &
-                                           einstein,alogaltc1sz0,ashmapwrouse,rouse1
-   INTEGER,PARAMETER                    :: nbcche=20
-   REAL(KIND=rsh),DIMENSION(1:nbcche+1) :: hzi
+    ! Correct settling flux (flx_w2s) and horizontal flux factors (corflux,
+    ! corfluy) for sand fractions, assuming a Rouse concentration profile.
+    ! Called by : MUSTANG_update
+ 
+    INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
+ 
+    INTEGER, PARAMETER  :: nbcche = 20
+    INTEGER             :: i, j, ivp, ivpp
+    REAL(KIND=rsh)      :: altc1, extrap, rouse, som, einstein, alogaltc1sz0
+    REAL(KIND=rsh), DIMENSION(1:nbcche+1) :: hzi
 #ifdef key_sand2D
-   REAL(KIND=rsh),DIMENSION(1:nbcche+1) :: hzisdbot
+    REAL(KIND=rsh), DIMENSION(1:nbcche+1) :: hzi_2d
 #endif
+ 
+    corflux(:,:,:) = 1.0_rsh
+    corfluy(:,:,:) = 1.0_rsh
+ 
+    DO j = jfirst, jlast
+    DO i = ifirst, ilast
+ 
+       altc1 = alt_cw1(i,j)
+ 
+       IF ( altc1 > aref_sand      .AND. & ! first layer above aref_sand
+            htot(i,j) > h0fond     .AND. & ! wet cell
+            htot(i,j) > aref_sand  .AND. & ! prevents h_total = aref in compute_rouse_correction
+            z0sed(i,j) > 0.0_rsh   .AND. & ! prevents Log(hzed/z0) blowing up
+            altc1 > z0sed(i,j)) THEN       ! prevents alog_z = 0
 
-
-   !!---------------------------------------------------------------------------
-   !! * Executable part
-
-
-    corflux(:,:,:)=1.0_rsh
-    corfluy(:,:,:)=1.0_rsh
-
-      DO j=jfirst,jlast
-      DO i=ifirst,ilast
-
-          altc1=alt_cw1(i,j)
-          IF(altc1 .LE. aref_sand .OR. htot(i,j) .LE. h0fond)THEN
-            extrap=1.0_rsh
-            ! in this case, flx_w2s(ivp,i,j) is not changed
-            DO ivp=isand1,isand2
-              corflux(ivp,i,j)=1.0_rsh
-              corfluy(ivp,i,j)=1.0_rsh
-            ENDDO
-          ELSE
-            alogaltc1sz0=LOG(altc1/z0sed(i,j))
-            hzi(1)=epn_bottom_MUSTANG(i,j)
-            DO izz=1,nbcche
-              hzi(izz+1)=hzi(izz)-(hzi(1)-aref_sand)/2.0_rsh**izz
-            ENDDO     
-            hzi(nbcche+1)=aref_sand
+          alogaltc1sz0 = LOG(altc1 / z0sed(i,j))
+          CALL build_rouse_grid(nbcche, epn_bottom_MUSTANG(i,j), aref_sand, hzi)
 #ifdef key_sand2D
-            hzisdbot(1)=htot(i,j)
-            DO izz=1,nbcche
-              hzisdbot(izz+1)=hzisdbot(izz)-(hzisdbot(1)-aref_sand)/2.0_rsh**izz
-            ENDDO     
-            hzisdbot(nbcche+1)=aref_sand
+          CALL build_rouse_grid(nbcche, htot(i,j), aref_sand, hzi_2d)
 #endif
-            DO ivp=isand1,isand2
-            ! Rouse number depends on settling velocity, then on the sand variable
-            ! modif Julie 2012 to taking into account flat bottom
-              IF(ws3_bottom_MUSTANG(ivp,i,j)>1.34_rsh*ustarbot(i,j)) THEN
-                 rouse=1.2_rsh
-              ELSE
-                rouse1=ws3_bottom_MUSTANG(ivp,i,j)/ustarbot(i,j)
-                IF(rouse1>=0.75_rsh) THEN
-                   rouse=0.353_rsh*rouse1+0.727
-                ELSEIF(rouse1>0.1_rsh .AND. rouse1<0.75_rsh) THEN
-                   rouse=rouse1/(0.4_rsh+0.8_rsh*rouse1*rouse1)   ! rouse=rouse1/(0.4*beta) avec beta=1+2*rouse1*rouse1
-                ELSE
-                  rouse=rouse1/0.4_rsh
-                ENDIF
-              ENDIF
-            ! integral concentration and concentration*vitesse log
-            ! in first layer 
-              som=0.0_rsh
-              einstein=0.0_rsh
-              DO izz=1,nbcche
+ 
+          DO ivp = isand1, isand2
+             rouse = compute_rouse_number(ws3_bottom_MUSTANG(ivp,i,j), ustarbot(i,j))
+ 
 #ifdef key_sand2D
-               IF(l_subs2D(ivp)) THEN
-                hzed=0.5_rsh*(hzisdbot(izz)+hzisdbot(izz+1))
-                dzcche=hzisdbot(izz)-hzisdbot(izz+1) 
-               ELSE
+             IF (l_subs2D(ivp)) THEN
+                CALL integrate_rouse_profile(nbcche, rouse, hzi_2d, htot(i,j), z0sed(i,j), som, einstein)
+                rouse2D(ivp,i,j) = rouse
+                sum_tmp(ivp,i,j) = som
+             ELSE
+                CALL integrate_rouse_profile(nbcche, rouse, hzi,    htot(i,j), z0sed(i,j), som, einstein)
+             ENDIF
+#else
+             CALL integrate_rouse_profile(nbcche, rouse, hzi, htot(i,j), z0sed(i,j), som, einstein)
 #endif
-                hzed=0.5_rsh*(hzi(izz)+hzi(izz+1))
-                dzcche=hzi(izz)-hzi(izz+1) 
+ 
+             CALL compute_rouse_correction(                                              &
 #ifdef key_sand2D
-               ENDIF
+                l_subs2D(ivp),                                                         &
 #endif
-                som=som+dzcche*((htot(i,j)-hzed)/hzed)**rouse
-                einstein=einstein+dzcche*((htot(i,j)-hzed)/hzed)**rouse      &  
-                                  *LOG(hzed/z0sed(i,j))
-              ENDDO
-#ifdef key_sand2D
-              IF(l_subs2D(ivp)) THEN
-                rouse2D(ivp,i,j)=rouse
-                sum_tmp(ivp,i,j)=som
-              ENDIF
-#endif 
-!!
-              ashmapwrouse=(aref_sand/(htot(i,j)-aref_sand))**rouse
-              som=som*ashmapwrouse
+                hzi(1), htot(i,j), aref_sand, alogaltc1sz0, rouse, som, einstein,     &
+                extrap, corflux(ivp,i,j), corfluy(ivp,i,j))
+ 
+             flx_w2s(ivp,i,j) = flx_w2s(ivp,i,j) * extrap
+             DO ivpp = nvpc+1, nvp
+                IF (irkm_var_assoc(ivpp) == ivp) flx_w2s(ivpp,i,j) = flx_w2s(ivpp,i,j) * extrap
+             ENDDO
+ 
+          ENDDO ! ivp on sand
+       ENDIF ! test first layer above aref_sand, wet cell and prevent all floating point
+ 
+    ENDDO ! j
+    ENDDO ! i
+ 
+ END SUBROUTINE sed_MUSTANG_sandconcextrap
+ 
+ 
+ PURE SUBROUTINE build_rouse_grid(nbcche, z_top, aref, hzi)
+    ! Geometrically-refined grid from z_top down to aref.
+    ! Spacing halves at each step; last point snapped to aref.
+    ! z_top = epn_bottom_MUSTANG(i,j) for 3D,  htot(i,j) for 2D.
+ 
+    INTEGER,        INTENT(IN)  :: nbcche
+    REAL(KIND=rsh), INTENT(IN)  :: z_top
+    REAL(KIND=rsh), INTENT(IN)  :: aref
+    REAL(KIND=rsh), INTENT(OUT) :: hzi(1:nbcche+1)
+    INTEGER :: izz
+ 
+    hzi(1) = z_top
+    DO izz = 1, nbcche
+       hzi(izz+1) = hzi(izz) - (hzi(1) - aref) / 2.0_rsh**izz
+    ENDDO
+    hzi(nbcche+1) = aref
+ 
+ END SUBROUTINE build_rouse_grid
+ 
+ 
+ PURE FUNCTION compute_rouse_number(ws, ustar) RESULT(rouse)
+    ! Rouse number Z = ws / (kappa * u*), piecewise fits (Julie Vareilles 2012).
+    ! rouse1 = ws/u* drives regime selection (decreasing order):
+    !   > 1.34          saltation cap  Z = 1.2
+    !   [0.75, 1.34]    linear fit
+    !   (0.10, 0.75)    beta correction: Z = rouse1 / (0.4*(1 + 2*rouse1²))
+    !   <= 0.10          diffusive:      Z = rouse1 / kappa
+    ! ustar = 0 (no turbulence) -> saltation cap by convention
 
-              einstein=einstein*ashmapwrouse/som
-              ! the computation of einstein and USE of corflux should be checked
-              !??? modif P.LeHir              if(hex(i,j).le.hm)then
-              !??? modif P.LeHir              if(hey(i,j).le.hm)then
+    REAL(KIND=rsh), INTENT(IN) :: ws, ustar
+    REAL(KIND=rsh)             :: rouse, rouse1
 
+    IF (ustar <= 0.0_rsh) THEN
+        rouse = 1.2_rsh
+        RETURN
+    ENDIF
+
+    rouse1 = ws / ustar
+ 
+    IF     (rouse1 >  1.34_rsh) THEN ; rouse = 1.2_rsh
+    ELSEIF (rouse1 >= 0.75_rsh) THEN ; rouse = 0.353_rsh * rouse1 + 0.727_rsh
+    ELSEIF (rouse1 >  0.10_rsh) THEN ; rouse = rouse1 / (0.4_rsh + 0.8_rsh * rouse1**2)
+    ELSE                             ; rouse = rouse1 / 0.4_rsh
+    ENDIF
+ 
+ END FUNCTION compute_rouse_number
+ 
+ 
+ PURE SUBROUTINE integrate_rouse_profile(nbcche, rouse, hzi, h_total, z0, som, einstein)
+    ! Integrate normalised Rouse profile C(z)/C(aref) = ((h-z)/z)^rouse
+    ! over the sub-layer grid hzi(:). Caller selects 3D or 2D grid.
+    ! som     = integral of C(z)/C(aref) dz
+    ! einstein = integral of C(z)/C(aref) * log(z/z0) dz
+ 
+    INTEGER,        INTENT(IN)  :: nbcche
+    REAL(KIND=rsh), INTENT(IN)  :: rouse, hzi(1:nbcche+1), h_total, z0
+    REAL(KIND=rsh), INTENT(OUT) :: som, einstein
+    INTEGER        :: izz
+    REAL(KIND=rsh) :: hzed, dzcche, pval
+ 
+    som     = 0.0_rsh
+    einstein = 0.0_rsh
+    DO izz = 1, nbcche
+       hzed  = 0.5_rsh * (hzi(izz) + hzi(izz+1))
+       dzcche = hzi(izz) - hzi(izz+1)
+       pval  = ((h_total - hzed) / hzed)**rouse
+       som      = som     + dzcche * pval
+       einstein = einstein + dzcche * pval * LOG(hzed / z0)
+    ENDDO
+ 
+ END SUBROUTINE integrate_rouse_profile
+ 
+ 
+ PURE SUBROUTINE compute_rouse_correction(  &
 #ifdef key_sand2D
-              IF(l_subs2D(ivp)) THEN
-! with SAN2D in CROCO, transport is done in the bottom layer 
-! (in MARS, we consider the full depth although advection is done using the bottom velocity)
-! i.e. in CROCO, C is representative of the bottom layer, 
-! in MARS C is representative of the depth averaged concentration
-                extrap=hzi(1)/htot(i,j)*(htot(i,j)-aref_sand)/som
-                corflux(ivp,i,j)=einstein/alogaltc1sz0
-                corfluy(ivp,i,j)=einstein/alogaltc1sz0
-              ELSE
+       is_2d,                         &
 #endif
-                extrap=(hzi(1)-aref_sand)/som
-
-                corflux(ivp,i,j)=einstein/alogaltc1sz0
-                corfluy(ivp,i,j)=einstein/alogaltc1sz0
-                
+       z_first, h_total, aref, alog_z, rouse, som, einstein, &
+       extrap, corflux, corfluy)
+    ! Normalise integrals to aref_sand, compute extrap and corflux/y,
+    !   3D : extrap = (z_first - aref) / som_n
+    !   2D : extrap = z_first/h_total * (h_total - aref) / som_n
+    !   corflux = corfluy = (einstein_n / som_n) / alog_z
+ 
 #ifdef key_sand2D
-              ENDIF
-#endif 
-              flx_w2s(ivp,i,j)=flx_w2s(ivp,i,j)*extrap
-              ! for substances which are sorbed on sand 
-              DO ivpp=nvpc+1,nvp
-               IF(irkm_var_assoc(ivpp) .EQ. ivp) THEN
-                flx_w2s(ivpp,i,j)=flx_w2s(ivpp,i,j)*extrap
-               ENDIF
-              ENDDO             
-            ENDDO              
-          ENDIF
-
-
-       ENDDO
-       ENDDO
-         
-  END SUBROUTINE sed_MUSTANG_sandconcextrap
+    LOGICAL,        INTENT(IN)    :: is_2d
+#endif
+    REAL(KIND=rsh), INTENT(IN)    :: z_first, h_total, aref, alog_z, rouse, som, einstein
+    REAL(KIND=rsh), INTENT(OUT)   :: extrap, corflux, corfluy
+    REAL(KIND=rsh) :: asmr, som_n, einstein_n
+ 
+    asmr      = (aref / (h_total - aref))**rouse
+    som_n     = som     * asmr
+    einstein_n = einstein * asmr
+ 
+#ifdef key_sand2D
+    IF (is_2d) THEN
+       extrap = z_first / h_total * (h_total - aref) / som_n
+    ELSE
+#endif
+       extrap = (z_first - aref) / som_n
+#ifdef key_sand2D
+    ENDIF
+#endif
+ 
+    corflux = (einstein_n / som_n) / alog_z
+    corfluy = corflux
+ 
+ END SUBROUTINE compute_rouse_correction
       
 !!==============================================================================
       
