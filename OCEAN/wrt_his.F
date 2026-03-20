@@ -16,7 +16,7 @@
       USE comsubstance, ONLY : cvfix_wat, nvpc
 #endif
 #ifdef MUSTANG
-      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
+      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres, MUSTANG_reconstruct_rouse2D_profile
       USE comsubstance, ONLY : ws_part, l_subs2D, nv_grav, nv_sand, l_outsandrouse
       USE comMUSTANG,   ONLY : vname_Must, hisMust, outMust,
      &                         nk_nivsed_out, var3D_cvsed, var3D_dzs,
@@ -108,6 +108,7 @@
 #include "netcdf.inc"
 
 #ifdef MUSTANG
+      integer  isand
       real     workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
      &         workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
       real     workrsed_nv(GLOBAL_2D_ARRAY),
@@ -1367,26 +1368,16 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 # if defined MUSTANG
           if (itrc .ge. itsubs1+nv_grav .and.
      &        itrc .le. itsubs1+nv_grav+nv_sand-1) then ! isand1,isand2
-            if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
-     &         .and. l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
-              do j=0,Mm+1
-                do i=0,Lm+1
-                  do k=1,N
-                    if ( rouse2D_integral(itrc-itsubs1-nv_grav+1,i,j) .gt. 0.) then
-                      workr(i,j,k)=t(i,j,1,nstp,itrc)*
-     &                             (z_w(i,j,1)-z_w(i,j,0))*
-     &                           ( (z_w(i,j,N)-z_r(i,j,k))
-     &                            /(z_r(i,j,k)-z_w(i,j,0))
-     &                           )**rouse2D(itrc-itsubs1-nv_grav+1,i,j)
-                      workr(i,j,k)=workr(i,j,k)/
-     &                             rouse2D_integral(itrc-itsubs1-nv_grav+1,i,j)
-                    else
-                      workr(i,j,k)=0.
-                    endif
-                  enddo
-                enddo
-              enddo
-            endif
+          isand = itrc - (itsubs1 + nv_grav) + 1
+          if (l_subs2D(isand) .and. l_outsandrouse(isand)) then
+            CALL MUSTANG_reconstruct_rouse2D_profile(0, Lm+1, 0, Mm+1, N,
+     &          rouse2D(isand, 0:Lm+1, 0:Mm+1),
+     &        rouse2D_integral(isand, 0:Lm+1, 0:Mm+1),
+     &        t(0:Lm+1, 0:Mm+1, 1, nstp, itrc),
+     &        z_w(0:Lm+1, 0:Mm+1, 0:N),
+     &        z_r(0:Lm+1, 0:Mm+1, 1:N),
+     &        workr(0:Lm+1, 0:Mm+1, 1:N))
+          endif
           endif
 # endif
           call fillvalue3d(workr,ncidhis,hisT(itrc),

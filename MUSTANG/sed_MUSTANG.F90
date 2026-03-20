@@ -105,6 +105,7 @@ MODULE sed_MUSTANG
    !! * Accessibility
    ! functions & routines of this module, called outside :
    PUBLIC MUSTANG_update, MUSTANG_deposition, sed_MUSTANG_outres
+   PUBLIC MUSTANG_reconstruct_rouse2D_profile
    PUBLIC sed_MUSTANG_comp_z0hydro, MUSTANG_E0sand
 #if defined MORPHODYN
    PUBLIC MUSTANG_morpho
@@ -1405,7 +1406,45 @@ MODULE sed_MUSTANG
     corfluy = corflux
  
  END SUBROUTINE compute_rouse_correction
-      
+
+ PURE SUBROUTINE MUSTANG_reconstruct_rouse2D_profile(istr, iend, jstr, jend, N, &
+                                             rouse, integral,            &
+                                             t_bottom, z_w, z_r, workr)
+   ! Reconstruct the vertical Rouse concentration profile from the
+   ! bottom-layer concentration (t_bottom) and the pre-computed Rouse
+   ! number and depth integral.
+   ! If integral <= 0 the profile is set to zero (degenerate cell).
+   ! Loop bounds (istr:iend, jstr:jend) are passed explicitly
+
+   INTEGER,        INTENT(IN)  :: istr, iend, jstr, jend, N
+   REAL(KIND=rsh), INTENT(IN)  :: rouse   (istr:iend, jstr:jend)
+   REAL(KIND=rsh), INTENT(IN)  :: integral(istr:iend, jstr:jend)
+   REAL(KIND=rsh), INTENT(IN)  :: t_bottom(istr:iend, jstr:jend)
+   REAL(KIND=rsh), INTENT(IN)  :: z_w     (istr:iend, jstr:jend, 0:N)
+   REAL(KIND=rsh), INTENT(IN)  :: z_r     (istr:iend, jstr:jend, 1:N)
+   REAL(KIND=rsh), INTENT(OUT) :: workr   (istr:iend, jstr:jend, 1:N)
+
+   INTEGER        :: i, j, k
+   REAL(KIND=rsh) :: dz_bottom, rouse_profile_val
+
+   DO j = jstr, jend
+   DO i = istr, iend
+      IF (integral(i,j) > 0.0_rsh) THEN
+         dz_bottom = z_w(i,j,1) - z_w(i,j,0)
+         DO k = 1, N
+            rouse_profile_val = ((z_w(i,j,N) - z_r(i,j,k)) &
+                               / (z_r(i,j,k) - z_w(i,j,0)))**rouse(i,j)
+            workr(i,j,k) = t_bottom(i,j) * dz_bottom &
+                           * rouse_profile_val / integral(i,j)
+         ENDDO
+      ELSE
+         workr(i,j,:) = 0.0_rsh
+      ENDIF
+   ENDDO
+   ENDDO
+
+END SUBROUTINE reconstruct_rouse2D_profile
+ 
 !!==============================================================================
       
 #ifdef key_MUSTANG_V2
