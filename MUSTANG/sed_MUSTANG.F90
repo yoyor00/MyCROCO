@@ -1380,7 +1380,7 @@ MODULE sed_MUSTANG
 ! (in MARS, we consider the full depth although advection is done using the bottom velocity)
 ! i.e. in CROCO, C is representative of the bottom layer, 
 ! in MARS C is representative of the depth averaged concentration
-                extrap=(hzi(1)-aref_sand)/som
+                extrap=hzi(1)/htot(i,j)*(htot(i,j)-aref_sand)/som
                 corflux(ivp,i,j)=einstein/alogaltc1sz0
                 corfluy(ivp,i,j)=einstein/alogaltc1sz0
               ELSE
@@ -1393,7 +1393,7 @@ MODULE sed_MUSTANG
 #ifdef key_sand2D
               ENDIF
 #endif 
-              flx_w2s(ivp,i,j)=flx_w2s(ivp,i,j)*extrap 
+              flx_w2s(ivp,i,j)=flx_w2s(ivp,i,j)*extrap
               ! for substances which are sorbed on sand 
               DO ivpp=nvpc+1,nvp
                IF(irkm_var_assoc(ivpp) .EQ. ivp) THEN
