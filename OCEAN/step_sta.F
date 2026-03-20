@@ -191,12 +191,13 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
      &                                      nfltmax, indx)
            endif
 
+#  ifdef TEMPERATURE
            if (wrtsta(indxstaTemp)) then
              itrc=1
              call interp_r3d_sta (t(START_2D_ARRAY,1,nnew,itrc),
      &                            istatem, nfltmax, indx)
            endif
-
+#  endif
 
 #  ifdef SALINITY
            if (wrtsta(indxstaSalt)) then
@@ -224,9 +225,11 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
               staSigm(istau,iflt,k)=stadata(istau,iflt)
               staSigm(istav,iflt,k)=stadata(istav,iflt)
             endif
+#   ifdef TEMPERATURE
             if (wrtsta(indxstaTemp)) then
               staSigm(istatem,iflt,k)=stadata(istatem,iflt)
             endif
+#   endif
 #   ifdef SALINITY
             if (wrtsta(indxstaSalt)) then
               staSigm(istasal,iflt,k)=stadata(istasal,iflt)

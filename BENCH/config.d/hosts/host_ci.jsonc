@@ -18,7 +18,7 @@
       "intel": {
         "extra": "",
         "standard": "-O2 -mcmodel=medium -fno-alias -i4 -r8 -fp-model precise",
-        "debug": "-O0 -g -i4 -r8 -traceback -check bounds -check uninit -CA -CB -CS -ftrapuv -fpe1",
+        "debug": "-O0 -g -i4 -r8 -traceback -check bounds -CA -CB -CS -ftrapuv -fpe1",
         "mpi_options": "",
         "xios_dir": "/xios/xios-3.0-trunk/",
         "xios_oasis_dir": "/xios/xios-3.0-trunk_useoasis",
