@@ -20,7 +20,7 @@ MODULE stopar
    USE stokernel       ! kernel method to generate new stochastic field
    USE stomarginal     ! transformation to requested marginal distribution
    ! user supplied external resources
-   USE stoexternal , only : wp, jpk, nmember, narea, mppsize, lbc_lnk
+   USE stoexternal , only : wp, jpk, nmember, narea, mppsize, lbc_lnk, ctl_stop
 
    IMPLICIT NONE
    PRIVATE
@@ -277,7 +277,7 @@ CONTAINS
          ! kernel method
          CALL sto_kernel( psto, jstoidx )
       ELSE
-         STOP 'Bad type of method to generate 2D field in sto_par_init'
+         CALL ctl_stop('Bad type of method to generate 2D field in sto_par_init')
       ENDIF
 
    END SUBROUTINE sto_new_2d
@@ -451,7 +451,7 @@ CONTAINS
       REAL(wp) :: zran, zmean, zstd, zmisfit1, zmisfit2
       REAL(wp), DIMENSION(:), ALLOCATABLE :: zarn, za, zb
 
-      IF (kjord<2) STOP 'Bad call of tune_ab in module stopar'
+      IF (kjord<2) CALL ctl_stop('Bad call of tune_ab in module stopar')
 
       ALLOCATE(zarn(kjord),za(kjord),zb(kjord))
       zarn(:) = 0._wp

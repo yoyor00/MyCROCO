@@ -198,10 +198,10 @@ ls "${SOURCE}/"croco_ascii.txt   > /dev/null  2>&1 && \cp "${SOURCE}/"croco_asci
 ls "${ROOT_DIR}/"STOGEN/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"STOGEN/* "$SCRDIR"
 
 if [[ -e "namelist_sto_ref" ]] ; then
-        echo "  file namelist_sto_* exist in Run directory"
+        echo "  file namelist_sto exist in Run directory"
 else
-        \cp -f "${ROOT_DIR}/"STOGEN/namelist_sto* "$RUNDIR"
-        echo "  file namelist_sto_* copied from source directory"
+        \cp -f "${ROOT_DIR}/"STOGEN/namelist_sto "$RUNDIR"
+        echo "  file namelist_sto copied from source directory"
 fi
 
 if [[ -e "namelist_pisces_ref" ]] ; then

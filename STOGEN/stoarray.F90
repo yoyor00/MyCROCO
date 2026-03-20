@@ -17,7 +17,7 @@ MODULE stoarray
    !!   sto_array_request_new  : request new stochastic field
    !!----------------------------------------------------------------------
    USE stoexternal , only : wp, lc, jpi, jpj, jpk, numout, &
-   &                        lwm, lwp, numnam_ref, numond, ctl_nam
+   &                        lwm, lwp, numnam_ref, numond, ctl_nam, ctl_stop
    USE stowhite , only : c_rngtype, c_normal_algo
 
    IMPLICIT NONE
@@ -210,7 +210,7 @@ CONTAINS
 
       ! Check that requests for stochatic fields have been made before
       IF (jpsto==0) THEN
-         STOP 'Error in sto_array_init: sto_array_request_new has not been called'
+         CALL ctl_stop('Error in sto_array_init: sto_array_request_new has not been called')
       ENDIF
 
       ! Loop on stochastic fields and set derived parameters
@@ -354,7 +354,7 @@ CONTAINS
             CASE('kernel')
               sto2d_xy(jsto2d) = 2
             CASE DEFAULT
-              STOP 'Bad type of horizontal correlation structure in sto_array_init'
+              CALL ctl_stop('Bad type of horizontal correlation structure in sto_array_init')
             END SELECT
 
             DO jord = 1, stofields(jsto)%nar_order - 1
@@ -379,7 +379,7 @@ CONTAINS
             CASE('kernel')
               sto3d_xy(jsto3d) = 2
             CASE DEFAULT
-              STOP 'Bad type of horizontal correlation structure in sto_array_init'
+              CALL ctl_stop('Bad type of horizontal correlation structure in sto_array_init')
             END SELECT
 
             DO jord = 1, stofields(jsto)%nar_order - 1
@@ -420,7 +420,7 @@ CONTAINS
       IF (jpstomax>0) THEN
          ALLOCATE ( stofields(jpstomax) )
       ELSE
-         STOP 'Bad number of requested stochastic fields in sto_array_init'
+         CALL ctl_stop('Bad number of requested stochastic fields in sto_array_init')
       ENDIF
 
     END SUBROUTINE sto_array_request_size
@@ -437,7 +437,7 @@ CONTAINS
 
       ! Check that request for amximum number of stochatic fields has been made before
       IF (jpstomax==0) THEN
-         STOP 'Error in sto_array_init: sto_array_request_new has not been called'
+         CALL ctl_stop('Error in sto_array_init: sto_array_request_new has not been called')
       ENDIF
 
       ! Attribute new index of stochastic field
@@ -446,7 +446,7 @@ CONTAINS
 
       ! Check size of stochastic arrays
       IF (jpsto>jpstomax) THEN
-         STOP 'Insufficient size of stochastic arrays in sto_array_init'
+         CALL ctl_stop('Insufficient size of stochastic arrays in sto_array_init')
       ENDIF
 
       ! Set default features of stochastic field
@@ -494,105 +494,105 @@ CONTAINS
       SELECT CASE(stofields(kjsto)%type_t)
       CASE('white','arn','constant')
       CASE DEFAULT
-         STOP 'Bad type of time structure in stoarray'
+         CALL ctl_stop('Bad type of time structure in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%type_xy)
       CASE('constant','white','kernel','diffusive')
       CASE DEFAULT
-         STOP 'Bad type of xy structure in stoarray'
+         CALL ctl_stop('Bad type of xy structure in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%type_z)
       CASE('constant','white')
       CASE DEFAULT
-         STOP 'Bad type of z structure in stoarray'
+         CALL ctl_stop('Bad type of z structure in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%type_variate)
       CASE('normal','lognormal','wrapped_normal','bounded_atan')
       CASE DEFAULT
-         STOP 'Bad type of marginal distribution in stoarray'
+         CALL ctl_stop('Bad type of marginal distribution in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%type_grid)
       CASE('T','U','V','F')
       CASE DEFAULT
-         STOP 'Bad type of grid in stoarray'
+         CALL ctl_stop('Bad type of grid in stoarray')
       END SELECT
 
       IF (ABS(stofields(kjsto)%sign_grid) .NE. 1._wp ) THEN
-         STOP 'Bad type of grid connection in stoarray'
+         CALL ctl_stop('Bad type of grid connection in stoarray')
       ENDIF
 
       SELECT CASE(stofields(kjsto)%corr_t_model)
       CASE('none')
       CASE DEFAULT
-         STOP 'Bad type of time correlation model in stoarray'
+         CALL ctl_stop('Bad type of time correlation model in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%corr_xy_model)
       CASE('none')
       CASE DEFAULT
-         STOP 'Bad type of xy correlation model in stoarray'
+         CALL ctl_stop('Bad type of xy correlation model in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%corr_t_file)
       CASE('none')
       CASE DEFAULT
-         STOP 'File option is not yet implemented in stoarray'
+         CALL ctl_stop('File option is not yet implemented in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%corr_xy_file)
       CASE('none')
       CASE DEFAULT
-         STOP 'File option is not yet implemented in stoarray'
+         CALL ctl_stop('File option is not yet implemented in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%corr_z_file)
       CASE('none')
       CASE DEFAULT
-         STOP 'File option is not yet implemented in stoarray'
+         CALL ctl_stop('File option is not yet implemented in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%ave_file)
       CASE('none')
       CASE DEFAULT
-         STOP 'File option is not yet implemented in stoarray'
+         CALL ctl_stop('File option is not yet implemented in stoarray')
       END SELECT
 
       SELECT CASE(stofields(kjsto)%std_file)
       CASE('none')
       CASE DEFAULT
-         STOP 'File option is not yet implemented in stoarray'
+         CALL ctl_stop('File option is not yet implemented in stoarray')
       END SELECT
 
       IF (stofields(kjsto)%nar_order < 1) THEN
-         STOP 'Bad order of AR process in stoarray'
+         CALL ctl_stop('Bad order of AR process in stoarray')
       ENDIF
 
       IF (stofields(kjsto)%nar_update < 1) THEN
-         STOP 'Bad update time of AR process in stoarray'
+         CALL ctl_stop('Bad update time of AR process in stoarray')
       ENDIF
 
       IF ( (stofields(kjsto)%diff_type < 0) .OR. (stofields(kjsto)%diff_type > 1 ) ) THEN
-         STOP 'Bad diffusion operator type in stoarray'
+         CALL ctl_stop('Bad diffusion operator type in stoarray')
       ENDIF
 
       IF (stofields(kjsto)%diff_passes < 0) THEN
-         STOP 'Bad number of passes of the diffusive model in stoarray'
+         CALL ctl_stop('Bad number of passes of the diffusive model in stoarray')
       ENDIF
 
       IF ( (stofields(kjsto)%ker_type < 0) .OR. (stofields(kjsto)%ker_type > 5 ) ) THEN
-         STOP 'Bad kernel type in stoarray'
+         CALL ctl_stop('Bad kernel type in stoarray')
       ENDIF
 
       IF ( (stofields(kjsto)%ker_coord < 0) .OR. (stofields(kjsto)%ker_coord > 2 ) ) THEN
-         STOP 'Bad coordinate type for kernel method in stoarray'
+         CALL ctl_stop('Bad coordinate type for kernel method in stoarray')
       ENDIF
 
       IF (stofields(kjsto)%ker_density < 0._wp ) THEN
-         STOP 'Bad coordinate type for kernel method in stoarray'
+         CALL ctl_stop('Bad coordinate type for kernel method in stoarray')
       ENDIF
 
    END SUBROUTINE check_options

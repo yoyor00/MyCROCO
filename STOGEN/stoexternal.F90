@@ -9,6 +9,7 @@ MODULE stoexternal
    !!=====================================================================
    !!   lbc_lnk      : generic interface for lbc_lnk_3d and lbc_lnk_2d
    !!   ctl_nam      : generate error message if failed to read namelist
+   !!   ctl_stop     : Control error stop and information throughout the code
    !!----------------------------------------------------------------------
 
    ! include parameters from CROCO
@@ -98,7 +99,7 @@ MODULE stoexternal
       MODULE PROCEDURE lbc_lnk_2d, lbc_lnk_3d
    END INTERFACE
 
-   PUBLIC ctl_nam, ocean_2_stogen, broadcast_array, lbc_lnk
+   PUBLIC ctl_nam, ctl_stop, ocean_2_stogen, broadcast_array, lbc_lnk
 
 CONTAINS
 
@@ -185,6 +186,21 @@ CONTAINS
       RETURN
    END SUBROUTINE ctl_nam
 
+   SUBROUTINE ctl_stop(message)
+      !!----------------------------------------------------------------------
+      !!                  ***  ROUTINE ctl_stop  ***
+      !!
+      !! ** Purpose :   Control error stop and information throughout the code
+      !!----------------------------------------------------------------------
+      CHARACTER(LEN=*), INTENT(IN) :: message
+  
+      IF(lwp) THEN
+        WRITE(numout,*) 'E R R O R : ', TRIM(message)
+        CALL FLUSH(numout)
+      ENDIF
+      STOP
+
+   END SUBROUTINE ctl_stop 
 
    SUBROUTINE ocean_2_stogen (tile)
       !!----------------------------------------------------------------------
@@ -211,6 +227,9 @@ C$    integer  trd, omp_get_thread_num
       numnam_ref = 10 ; lwm = .FALSE.
       OPEN(UNIT=numnam_ref,FILE=filnam_ref,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
 
+      ! define standard output
+      numout = stdout
+
 #ifdef ENSEMBLE
       ! Define ensemble member index
       ln_ensemble = .TRUE. 
@@ -219,11 +238,6 @@ C$    integer  trd, omp_get_thread_num
 #endif
 
       ! Define grid size (for local subdomain) -- 
-      ! QJ: should correcpond to GLOBAL_2D_ARRAY defined in set_global_definitions.h
-      ! follow the rule: #if undef THREE_GHOST_POINTS & defined MPI
-      ! need some updates for other options ...
-      ! jpi = Lm+4+padd_X  !size_XI
-      ! jpj = Mm+4+padd_E  !size_ETA
 # ifdef SPHERICAL
       jpi = size(lonr,1) ; ishift_priv = Istr - lbound(lonr, 1) - 1
       jpj = size(lonr,2) ; jshift_priv = Jstr - lbound(lonr, 2) - 1

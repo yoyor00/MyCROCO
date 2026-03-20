@@ -13,7 +13,7 @@ MODULE stowhite
    !!   sto_white      : get array of uncorrelated normal random numbers
    !!   sto_white_init : initialize random number generator
    !!----------------------------------------------------------------------
-   USE stoexternal , only : wp, i4, i8
+   USE stoexternal , only : wp, i4, i8, ctl_stop
    USE storng_kiss      ! KISS random number generator
    USE storng_ziggurat  ! Ziggurat algorithm to generate normal numbers
    USE storng_testmpi   ! 'testmpi' random number generator
@@ -187,7 +187,7 @@ CONTAINS
             ENDDO
          ENDIF
       ELSE
-         STOP 'Bad type of algorithm in stowhite'
+          CALL ctl_stop('Bad type of algorithm in sto_white') 
       ENDIF
 
    END SUBROUTINE sto_white
@@ -219,10 +219,10 @@ CONTAINS
          CASE('testmpi')
             normal_algo = -1
          CASE DEFAULT
-            STOP 'Bad type of random number generator in stowhite_init'
+            CALL ctl_stop('Bad type of random number generator in sto_white_init') 
          END SELECT
       CASE DEFAULT
-         STOP 'Bad type of algorithm in stowhite_init'
+         CALL ctl_stop('Bad type of algorithm in sto_white_init')
       END SELECT
 
       ! Seed random number generator
@@ -256,7 +256,7 @@ CONTAINS
          ! Compute seed for the 'testmpi' random number generator
          CALL kiss_seed_test( )
       CASE DEFAULT
-         STOP 'Bad type of random number generator in stowhite_init'
+         CALL ctl_stop('Bad type of random number generator in sto_white_init')
       END SELECT
 
       ! Initialize Ziggurat algorithm

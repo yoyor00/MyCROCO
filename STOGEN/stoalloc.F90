@@ -15,7 +15,7 @@ MODULE stoalloc
    !!   sto_alloc_init     : define required arrays
    !!----------------------------------------------------------------------
 
-   USE stoexternal , only : wp
+   USE stoexternal , only : wp, ctl_stop
    USE stoarray
    USE stobulk
    USE stogls
@@ -94,7 +94,7 @@ CONTAINS
           IF (ln_stogls.AND.ln_Bprod) sto_xi2d(GLOBAL_2D_ARRAY) => sto_gls_b2d(:,:)
         END SELECT
         IF (.NOT.associated(sto_xi2d)) THEN
-          STOP 'No valid array associated to requested xi2d output'
+          CALL ctl_stop('No valid array associated to requested xi2d output')
         ENDIF
       ENDIF
 
@@ -105,7 +105,7 @@ CONTAINS
           IF (ln_stogls.AND.ln_zlevs) sto_xi3d(GLOBAL_2D_ARRAY,1:N) => sto_gls_z3d(:,:,:)
         END SELECT
         IF (.NOT.associated(sto_xi3d)) THEN
-          STOP 'No valid array associated to requested xi3d output'
+          CALL ctl_stop('No valid array associated to requested xi3d output')
         ENDIF
       ENDIF
 

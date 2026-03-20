@@ -45,7 +45,7 @@ MODULE storng_ziggurat
    !!   shr3_uni    : get next uniform random number using shr3
    !!   shr3_normal : get next normal random number using shr3 + simple method
    !!----------------------------------------------------------------------
-   USE stoexternal , only : sp, dp, wp, i4, i8
+   USE stoexternal , only : sp, dp, wp, i4, i8, ctl_stop
    USE storng_kiss
 
    IMPLICIT NONE
@@ -107,7 +107,7 @@ CONTAINS
         kiss_32bits=.FALSE.
         rngtype = 2
       CASE DEFAULT
-        STOP 'Bad random number generator type in storng_ziggurat'
+        CALL ctl_stop('Bad random number generator type in storng_ziggurat')
       END SELECT
 
       ! Reinitialize parameters if zig_set was already called

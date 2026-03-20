@@ -15,7 +15,7 @@ MODULE stodiff
    USE stowhite        ! uncorrelatedi normal  random number generator
    ! user supplied external resources
    USE stoexternal , only : wp, jpi, jpj, lbc_lnk, rmask2d, umask2d, vmask2d, &
-                          & rmask3d, umask3d, vmask3d, grid_type
+                          & rmask3d, umask3d, vmask3d, grid_type, ctl_stop
 
    IMPLICIT NONE
    PRIVATE
@@ -50,12 +50,12 @@ CONTAINS
       ELSEIF (kdim==3) THEN
         sto_typ = sto3d_typ( jstoidx) ; sto_sgn = sto3d_sgn( jstoidx)
       ELSE
-        STOP 'Bad dimensions in sto_diff'
+        CALL ctl_stop('Bad dimensions in sto_diff')
       ENDIF
 
       ! Check size of input array
-      IF (SIZE(psto,1).NE.jpi) STOP 'Bad dimensions in sto_diff'
-      IF (SIZE(psto,2).NE.jpj) STOP 'Bad dimensions in sto_diff'
+      IF (SIZE(psto,1).NE.jpi) CALL ctl_stop('Bad dimensions in sto_diff')
+      IF (SIZE(psto,2).NE.jpj) CALL ctl_stop('Bad dimensions in sto_diff')
 
       ! fill array with white noise
       CALL sto_white( psto2d = psto )
@@ -157,7 +157,7 @@ CONTAINS
             END DO
          ENDIF
       ELSE
-         STOP 'Bad diffusion operator in stodiff'
+         CALL ctl_stop('Bad diffusion operator in stodiff')
       ENDIF
 
    END SUBROUTINE diff_operator
@@ -204,7 +204,7 @@ CONTAINS
          pflt0( 0,-1) = 1 ; pflt0( 0,0) = 4 ; pflt0( 0,1) = 1
          pflt0( 1,-1) = 0 ; pflt0( 1,0) = 1 ; pflt0( 1,1) = 0
       ELSE
-         STOP 'Bad diffusion operator in stodiff'
+         CALL ctl_stop('Bad diffusion operator in stodiff')
       ENDIF
 
       ALLOCATE(pfltb(-npasses-1:npasses+1,-npasses-1:npasses+1))

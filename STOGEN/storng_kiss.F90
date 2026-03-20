@@ -35,7 +35,7 @@ MODULE storng_kiss
    !!   ---CURRENTLY NOT USED IN NEMO :
    !!   kiss_save, kiss_load, kiss_check, kiss_gamma, kiss_sample
    !!----------------------------------------------------------------------
-   USE stoexternal , only : wp, i4, i8
+   USE stoexternal , only : wp, i4, i8, ctl_stop
 
    IMPLICIT NONE
    PRIVATE
@@ -269,7 +269,7 @@ CONTAINS
       CHARACTER(LEN=*) :: check_type
       LOGICAL :: print_success
 
-      IF (kiss_32bits) STOP 'Cannot check 32-bit kiss'
+      IF (kiss_32bits) CALL ctl_stop('Cannot check 32-bit kiss')
 
       ! Save current state of KISS
       CALL kiss_save()
@@ -288,7 +288,7 @@ CONTAINS
          print_success = .TRUE.
       CASE('default')
       CASE DEFAULT
-         STOP 'Bad check type in kiss_check'
+         CALL ctl_stop('Bad check type in kiss_check')
       END SELECT
 
       ! Run kiss for the required number of iterations (niter)
@@ -298,7 +298,7 @@ CONTAINS
 
       ! Check that last iterate is correct
       IF (iran.NE.correct) THEN
-         STOP 'Check failed: KISS internal error !!'
+         CALL ctl_stop('Check failed: KISS internal error !!')
       ELSE
          IF (print_success) PRINT *, 'Check successful: 100 million calls to KISS OK'
       ENDIF
