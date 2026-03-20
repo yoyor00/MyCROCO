@@ -494,10 +494,8 @@ MODULE comMUSTANG
     REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: corflux
     REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: corfluy
 
-#ifdef key_sand2D
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: rouse2D ! Rouse2D number
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: sum_tmp ! SUM(dzcche*((htot-hzed)/hzed)**rouse) 
-#endif
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: rouse2D_integral ! see integrate_rouse_profile
 
 
     ! Dynamic in sediment (consolidation/diffusion/bioturbation)

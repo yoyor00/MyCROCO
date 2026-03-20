@@ -1256,9 +1256,7 @@ MODULE sed_MUSTANG
     INTEGER             :: i, j, ivp, ivpp
     REAL(KIND=rsh)      :: altc1, extrap, rouse, som, einstein, alogaltc1sz0
     REAL(KIND=rsh), DIMENSION(1:nbcche+1) :: hzi
-#ifdef key_sand2D
     REAL(KIND=rsh), DIMENSION(1:nbcche+1) :: hzi_2d
-#endif
  
     corflux(:,:,:) = 1.0_rsh
     corfluy(:,:,:) = 1.0_rsh
@@ -1276,30 +1274,21 @@ MODULE sed_MUSTANG
 
           alogaltc1sz0 = LOG(altc1 / z0sed(i,j))
           CALL build_rouse_grid(nbcche, epn_bottom_MUSTANG(i,j), aref_sand, hzi)
-#ifdef key_sand2D
           CALL build_rouse_grid(nbcche, htot(i,j), aref_sand, hzi_2d)
-#endif
  
           DO ivp = isand1, isand2
              rouse = compute_rouse_number(ws3_bottom_MUSTANG(ivp,i,j), ustarbot(i,j))
  
-#ifdef key_sand2D
              IF (l_subs2D(ivp)) THEN
                 CALL integrate_rouse_profile(nbcche, rouse, hzi_2d, htot(i,j), z0sed(i,j), som, einstein)
                 rouse2D(ivp,i,j) = rouse
-                sum_tmp(ivp,i,j) = som
+                rouse2D_integral(ivp,i,j) = som
              ELSE
                 CALL integrate_rouse_profile(nbcche, rouse, hzi,    htot(i,j), z0sed(i,j), som, einstein)
              ENDIF
-#else
-             CALL integrate_rouse_profile(nbcche, rouse, hzi, htot(i,j), z0sed(i,j), som, einstein)
-#endif
- 
+
              CALL compute_rouse_correction(                                              &
-#ifdef key_sand2D
-                l_subs2D(ivp),                                                         &
-#endif
-                hzi(1), htot(i,j), aref_sand, alogaltc1sz0, rouse, som, einstein,     &
+                l_subs2D(ivp), hzi(1), htot(i,j), aref_sand, alogaltc1sz0, rouse, som, einstein,     &
                 extrap, corflux(ivp,i,j), corfluy(ivp,i,j))
  
              flx_w2s(ivp,i,j) = flx_w2s(ivp,i,j) * extrap
@@ -1390,19 +1379,14 @@ MODULE sed_MUSTANG
  
  
  PURE SUBROUTINE compute_rouse_correction(  &
-#ifdef key_sand2D
-       is_2d,                         &
-#endif
-       z_first, h_total, aref, alog_z, rouse, som, einstein, &
+       is_2d, z_first, h_total, aref, alog_z, rouse, som, einstein, &
        extrap, corflux, corfluy)
     ! Normalise integrals to aref_sand, compute extrap and corflux/y,
     !   3D : extrap = (z_first - aref) / som_n
     !   2D : extrap = z_first/h_total * (h_total - aref) / som_n
     !   corflux = corfluy = (einstein_n / som_n) / alog_z
  
-#ifdef key_sand2D
     LOGICAL,        INTENT(IN)    :: is_2d
-#endif
     REAL(KIND=rsh), INTENT(IN)    :: z_first, h_total, aref, alog_z, rouse, som, einstein
     REAL(KIND=rsh), INTENT(OUT)   :: extrap, corflux, corfluy
     REAL(KIND=rsh) :: asmr, som_n, einstein_n
@@ -1411,15 +1395,11 @@ MODULE sed_MUSTANG
     som_n     = som     * asmr
     einstein_n = einstein * asmr
  
-#ifdef key_sand2D
     IF (is_2d) THEN
        extrap = z_first / h_total * (h_total - aref) / som_n
     ELSE
-#endif
        extrap = (z_first - aref) / som_n
-#ifdef key_sand2D
     ENDIF
-#endif
  
     corflux = (einstein_n / som_n) / alog_z
     corfluy = corflux
