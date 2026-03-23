@@ -701,15 +701,7 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 !
 !     STOGEN stochastic modeling components 
 !
-!QJ: check how to writte 1D variables
 #ifdef STOGEN
-!!- 1D stochastic field -- TBD -
-!      if (ln_stogen.AND.wrthis(indxXIsto1d)) then
-!        workr=sto_xi1d
-!        call fillvalue3d(workr,ncidhis,hisXIsto1d,indxXIsto1d,
-!     &        record,r3dvar,type)
-!CR      write(stdout,*) 'wrt_his:  wrtXIsto  ' MYID
-!      endif
 !- 2D stochastic field -
       if (ln_stogen.AND.wrthis(indxXIsto2d)) then
         work2d=sto_xi2d
