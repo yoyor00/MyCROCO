@@ -3468,7 +3468,7 @@ c !$acc wait
       endif
 #  ifdef DIAGNOSTICS_TS_MLD_CM
       if (xios_field_is_active("S_depth_mld")) then
-          call xios_send_field("S_depth_mld",Scrit_mld(:,:,itrc))
+          call xios_send_field("S_depth_mld",Tcrit_mld(:,:,itrc))
       endif
 #  endif
 #  endif
