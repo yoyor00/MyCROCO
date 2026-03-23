@@ -130,7 +130,7 @@
         do j=JstrR,JendR
           do i=IstrR,IendR
 #   if defined SINGLE_COLUMN
-#    ifdef KATO_PHILIPS
+#    ifdef KATO_PHILLIPS
             btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
 #    elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
             btflx(i,j,itemp)=-1.0e-5*0.01
@@ -375,7 +375,7 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
         enddo
       enddo
-# elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+# elif defined SINGLE_COLUMN && defined KATO_PHILLIPS
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=(0.01)**2
