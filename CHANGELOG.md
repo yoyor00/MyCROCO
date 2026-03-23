@@ -65,6 +65,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   distribution of flow, enabling a transition from the AKIMA scheme to 
   SPLINES (#478)
 
+- OMEGA : Add a condition on the NBQ_MASS key for some terms of the first 
+  part of the computation of omega (#447)
+
 ### Deprecated
 
 
