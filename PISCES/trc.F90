@@ -162,7 +162,7 @@ MODULE trc
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: trc.F90 15420 2021-10-20 15:26:33Z lovato $
-   !! Software governed by the CeCILL license (see ./LICENSE_PISCES.txt)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 CONTAINS
 

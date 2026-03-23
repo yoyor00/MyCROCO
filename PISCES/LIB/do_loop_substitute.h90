@@ -2,7 +2,7 @@
 ! These comments are not intended to be retained during preprocessing; i.e. do not define "show_comments"
 !!----------------------------------------------------------------------
 !! NEMO/OCE 4.x , NEMO Consortium (2020)
-!! Software governed by the CeCILL license (see ./LICENSE_PISCES.txt)
+!! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
 !!----------------------------------------------------------------------
 ! This header file contains preprocessor definitions and macros used in the do-loop substitutions introduced
 ! between version 4.0 and 4.2. The primary aim of these macros is to assist in future applications of tiling

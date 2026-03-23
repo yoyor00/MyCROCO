@@ -64,6 +64,6 @@ CONTAINS
    !!----------------------------------------------------------------------
    !! NEMO/TOP 3.3 , NEMO Consortium (2010)
    !! $Id: trcwri_pisces.F90 3160 2011-11-20 14:27:18Z cetlod $ 
-   !! Software governed by the CeCILL licence (./LICENSE_PISCES.txt)
+   !! Software governed by the CeCILL licence (../LICENSES/LICENSE_PISCES.txt)
    !!======================================================================
 END MODULE trcwri_pisces
