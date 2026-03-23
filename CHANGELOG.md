@@ -112,7 +112,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
     in cppdefs_dev.h (#403)
 
-- Add Contributing file (#483)
+- Add contributing file (#483)
 
 ### Contributors on this release
 
