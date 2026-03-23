@@ -12,6 +12,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 
+  non equal to 1 and initialisation from file and restart (Issue #469)
 - MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
   restart inconsistencies with MORPHODYN, update testcase plot script 
   accordingly (#470)
@@ -108,8 +110,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, N. Ducousso, S. Jullien, S. Le Gac, 
-  P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
+  R. Benshila, M. Caillaud, G.Cambon, N. Ducousso, F. Dufois, S. Jullien, 
+  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
   M. Plus, M. Schreiber, A. Zribi, E Le Bouedec  
