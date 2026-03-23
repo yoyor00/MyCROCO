@@ -179,15 +179,6 @@
 !
 !=======================================================================
 !
-#  if defined W_HADV_TVD || defined W_VADV_TVD
-      if(nrhs.eq.3) then
-        cdt = dt                     !<-- Corrector
-      elseif(FIRST_TIME_STEP) then
-        cdt = 0.5*dt
-      else
-        cdt = (1.-1./6.)*dt          !<-- Predictor
-      endif
-#  endif
 
 #  if defined W_HADV_WENO5 || defined W_HADV_C6 || defined W_HADV_UP5
 #   ifdef NS_PERIODIC
@@ -280,185 +271,6 @@
           DO i=istr,iend
             WFe(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i,j-1,k,nrhs)
      &                                     )*Hvom_w(i,j,k)
-          ENDDO
-        ENDDO
-
-#  elif defined W_HADV_TVD
-!
-! === TVD horizontal advection scheme ===
-!
-        DO j=Jstr,Jend
-          DO i=Istr,Iend+1
-            WFx(i,j)=0.5*( wz(i,j,k,nrhs)+wz(i-1,j,k,nrhs)
-     &                                     )*Huon_w(i,j,k)
-          ENDDO
-        ENDDO
-
-        DO j=Jstr,Jend
-          ! wz(i-2,..) out of bounds
-          i = Istr
-            if (k==0) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
-            elseif (k==N) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
-            else
-              Hzw (i,k) = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
-     &                           +HZR(i-1,j,k  ) + HZR(i-1,j,k+1))
-            endif
-            cff = Huon_w(i,j,k)
-            cu = pn_u(i,j)*cdt*cff
-     &           /Hzw(i,k)*pm(i,j)
-
-            rrp= (wz(i+1,j,k,nstp)-wz(i  ,j,k,nstp))
-#   ifdef MASKING
-     &                                 *umask(i+1,j)
-#   endif
-            rr = (wz(i  ,j,k,nstp)-wz(i-1,j,k,nstp))
-#   ifdef MASKING
-     &                                   *umask(i,j)
-#   endif
-            rrm= wz(i-1,j,k,nstp)
-#   ifdef MASKING
-     &                                 *umask(i-1,j)
-#   endif
-            cff1=0.5*(cff*(wz(i-1,j,k,nstp)+wz(i,j,k,nstp))
-     &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
-            WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
-
-          DO i=Istr+1,Iend
-            if (k==0) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
-            elseif (k==N) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
-            else
-              Hzw (i,k) = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
-     &                           +HZR(i-1,j,k  ) + HZR(i-1,j,k+1))
-            endif
-            cff = Huon_w(i,j,k)
-            cu = pn_u(i,j)*cdt*cff
-     &           /Hzw(i,k)*pm(i,j)
-
-            rrp= (wz(i+1,j,k,nstp)-wz(i  ,j,k,nstp))
-#   ifdef MASKING
-     &                                 *umask(i+1,j)
-#   endif
-            rr = (wz(i  ,j,k,nstp)-wz(i-1,j,k,nstp))
-#   ifdef MASKING
-     &                                   *umask(i,j)
-#   endif
-            rrm= (wz(i-1,j,k,nstp)-wz(i-2,j,k,nstp))
-#   ifdef MASKING
-     &                                 *umask(i-1,j)
-#   endif
-            cff1=0.5*(cff*(wz(i-1,j,k,nstp)+wz(i,j,k,nstp))
-     &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
-            WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
-          ENDDO
-          ! wz(i+1,.) out of bounds
-          i=Iend+1
-            if (k==0) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k+1) + HZR(i  ,j,k+1))
-            elseif (k==N) then
-              Hzw (i,k) = 0.25 * (HZR(i-1,j,k  ) + HZR(i  ,j,k  ))
-            else
-              Hzw (i,k) = 0.25 * (HZR(i  ,j,k  ) + HZR(i  ,j,k+1)
-     &                           +HZR(i-1,j,k  ) + HZR(i-1,j,k+1))
-            endif
-            cff = Huon_w(i,j,k)
-            cu = pn_u(i,j)*cdt*cff
-     &           /Hzw(i,k)*pm(i,j)
-
-            rrp= wz(i  ,j,k,nstp)
-#   ifdef MASKING
-     &                                 *0.0 ! *umask(i+1,j) out of bounds
-#   endif
-            rr = (wz(i  ,j,k,nstp)-wz(i-1,j,k,nstp))
-#   ifdef MASKING
-     &                                   *umask(i,j)
-#   endif
-            rrm= (wz(i-1,j,k,nstp)-wz(i-2,j,k,nstp))
-#   ifdef MASKING
-     &                                 *umask(i-1,j)
-#   endif
-            cff1=0.5*(cff*(wz(i-1,j,k,nstp)+wz(i,j,k,nstp))
-     &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFx(i,j),cff1,rrm,rr,rrp)
-            WFx(i,j) = (1-Cr)*cff1 + Cr* WFx(i,j)
-
-        ENDDO
-!---
-        DO j=jstr,jend+1
-          DO i=istr,iend
-            WFe(i,j)=0.5*( Wz(i,j,k,nrhs)+Wz(i,j-1,k,nrhs)
-     &                                     )*Hvom_w(i,j,k)
-          ENDDO
-        ENDDO
-
-        ! (wz(:,j-2)outof bounds
-        j=JstrV-1
-          DO i=Istr,Iend
-            if (k==0) then
-              Hzw(i,k) = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
-            elseif (k==N) then
-              Hzw(i,k) = 0.25 * (HZR(i,j,k  ) + HZR(i,j-1,k  ))
-            else
-              Hzw(i,k) = 0.25 * (HZR(i,j  ,k) + HZR(i,j  ,k+1)
-     &                         + HZR(i,j-1,k) + HZR(i,j-1,k+1))
-            endif
-            cff = Hvom_w(i,j,k)
-            cu = pm_v(i,j)*cdt*cff
-     &           /Hzw(i,k)*pn(i,j)
-
-            rrp= (wz(i,j+1,k,nstp)-wz(i,j  ,k,nstp))
-#   ifdef MASKING
-     &                                 *vmask(i,j+1)
-#   endif
-            rr = (wz(i,j  ,k,nstp)-wz(i,j-1,k,nstp))
-#   ifdef MASKING
-     &                                   *vmask(i,j)
-#   endif
-            rrm= wz(i,j-1,k,nstp)
-#   ifdef MASKING
-     &                                 *vmask(i,j-1)
-#   endif
-            cff1=0.5*(cff*(wz(i,j,k,nstp)+wz(i,j-1,k,nstp))
-     &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFe(i,j),cff1,rrm,rr,rrp)
-            WFe(i,j) = (1-Cr)*cff1  + Cr* WFe(i,j)
-          ENDDO
-
-        DO j=JstrV,Jend+1
-          DO i=Istr,Iend
-            if (k==0) then
-              Hzw(i,k) = 0.25 * (HZR(i,j,k+1) + HZR(i,j-1,k+1))
-            elseif (k==N) then
-              Hzw(i,k) = 0.25 * (HZR(i,j,k  ) + HZR(i,j-1,k  ))
-            else
-              Hzw(i,k) = 0.25 * (HZR(i,j  ,k) + HZR(i,j  ,k+1)
-     &                         + HZR(i,j-1,k) + HZR(i,j-1,k+1))
-            endif
-            cff = Hvom_w(i,j,k)
-            cu = pm_v(i,j)*cdt*cff
-     &           /Hzw(i,k)*pn(i,j)
-
-            rrp= (wz(i,j+1,k,nstp)-wz(i,j  ,k,nstp))
-#   ifdef MASKING
-     &                                 *vmask(i,j+1)
-#   endif
-            rr = (wz(i,j  ,k,nstp)-wz(i,j-1,k,nstp))
-#   ifdef MASKING
-     &                                   *vmask(i,j)
-#   endif
-            rrm= (wz(i,j-1,k,nstp)-wz(i,j-2,k,nstp))
-#   ifdef MASKING
-     &                                 *vmask(i,j-1)
-#   endif
-            cff1=0.5*(cff*(wz(i,j,k,nstp)+wz(i,j-1,k,nstp))
-     &                                        -ABS(cff)*rr)
-            Cr=limiter2(cu,WFe(i,j),cff1,rrm,rr,rrp)
-            WFe(i,j) = (1-Cr)*cff1  + Cr* WFe(i,j)
           ENDDO
         ENDDO
 
@@ -732,54 +544,23 @@
 
 #  else
 !
-! === C2 vertical advection scheme with TVD correction ===
+! === C2 vertical advection scheme ===
 !
         DO k=2,N-1
           DO i=Istr,Iend
             FC(i,k) = 0.5*(wz(i,j,k,nrhs) + wz(i,j,k-1,nrhs))*We_r(i,k)
-#   ifdef W_VADV_TVD
-            CF(i,k)=(We_r(i,k) * (wz(i,j,k,nrhs) + wz(i,j,k-1,nrhs) )
-     &          -abs(We_r(i,k))* (wz(i,j,k,nrhs) - wz(i,j,k-1,nrhs) )
-     &               ) *0.5
-#   endif
           ENDDO
         ENDDO
 
         DO i=Istr,Iend
           FC(i,1) = 0.5*( wz(i,j,1,nrhs) + wz(i,j,0,nrhs)  )*We_r(i,1)
-#   ifdef W_VADV_TVD
-          CF(i,1)=(We_r(i,1) * (wz(i,j,1,nstp) + wz(i,j,0,nstp) )
-     &        -abs(We_r(i,1))* (wz(i,j,1,nstp) - wz(i,j,0,nstp) ) )*0.5
-#   endif
           FC(i,N) = 0.5*( wz(i,j,N,nrhs) + wz(i,j,N-1,nrhs))*We_r(i,N)
-#   ifdef W_VADV_TVD
-          CF(i,N)=(We_r(i,N) * (wz(i,j,N,nstp) + wz(i,j,N-1,nstp) )
-     &        -abs(We_r(i,N))* (wz(i,j,N,nstp) - wz(i,j,N-1,nstp) ) )*0.5
-#   endif
         ENDDO
 
         DO i=Istr,Iend
           FC(i,0  )=0.
           FC(i,N+1)=0.
         ENDDO
-
-#   ifdef W_VADV_TVD
-        DO k=1,N
-          kp2=min(N+1,k+2)
-          kp1=min(N+1,k+1)
-          km1=max(1,k-1)
-          DO i=IstrU,Iend
-            cff= We_r(i,k)
-            cu = cff*pm(i,j)*pn(i,j)
-     &            *cdt/Hzw(i,k)
-            rrp= (wz(i,j,min(kp2,N),nstp) -wz(i,j,min(kp1,N),nstp))
-            rr = (wz(i,j,min(kp1,N),nstp) -wz(i ,j,k,nstp))
-            rrm= (wz(i,j,k  ,nstp) -wz(i ,j,km1,nstp))
-            Cr = limiter2(cu,FC(i,k),cff1,rrm,rr,rrp)
-            FC(i,k) = (1-Cr)*CF(i,k) + Cr*FC(i,k)
-          ENDDO
-        ENDDO
-#   endif
 
 #  endif /* W_VADV_SPLINES */
 !
@@ -802,50 +583,7 @@
 !$acc end kernels
       return
       end
-!
-!=======================================================================
-!
-# if defined W_VADV_TVD || defined W_HADV_TVD
 
-      function limiter2(nu,hf,lf,rrm,rr,rrp)
-
-      implicit none
-      real    :: cff,limiter2,Rj,nu,hf,lf,rrm,rr,rrp
-!
-!  Upwind        Limiter(Rj)=0.
-!  Lax-Wendroff  Limiter(Rj)=1.
-!  Min-Mod       Limiter(Rj)=max(0.,min(1.,Rj))
-!  Suberbee      Limiter(Rj)=max(0.,max(min(1.,2*Rj),min(2.,Rj)))
-!  Van Leer      Limiter(Rj)=(Rj+abs(Rj))/(1+abs(Rj))  => default
-!
-      if (abs(rr).gt.1.e-20) THEN
-        if (nu .gt. 1.e-20) THEN
-          Rj=rrm/rr
-        else
-          Rj=rrp/rr
-        endif
-      else
-        if (nu.gt.1.e-20) then
-          Rj=Rrm*1.E20
-        else
-          Rj=Rrp*1.E20
-        endif
-      endif
-
-#  ifdef SUPERBEE
-       limiter2=max(0.,max(min(1.,2.*Rj),min(2.,Rj)))
-#  elif defined MINMOD
-       limiter2=max(0.D0,min(1.,Rj))
-#  else
-       limiter2=(Rj+abs(Rj))/(1+abs(Rj))  ! Van Leer
-#  endif
-
-      end function
-
-# endif /* W_VADV_TVD || W_VADV_TVD */
-!
-!=======================================================================
-!
 #else
       subroutine rhs3d_w_empty
       end

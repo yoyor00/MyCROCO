@@ -12,8 +12,8 @@
 !-----------------------------------------------------------------------
 &namsto        !   general parameters for stochastic parameterization
 !-----------------------------------------------------------------------
-   ln_stogen  = .false.     ! activate/deactivate STOGEN (global switch)
-   ln_stobulk = .false.    ! stochastic bulk formulation for air-sea fluxes
+   ln_stogen  = .true.     ! activate/deactivate STOGEN (global switch)
+   ln_stobulk = .true.     ! stochastic bulk formulation for air-sea fluxes
    ln_stostress = .false.  ! stochastic formulation of surface stress (non-bulk)
    ln_stogls  = .false.     ! stochastic formulation of vertical mixing
    ln_stoics  = .false.     ! stochastic initial condition perturbations
@@ -21,6 +21,10 @@
    ln_rstseed  = .false.   ! read seed of RNG from restart file
    cn_storst_in  = "restart_sto_in.nc"  ! input restart file for stochastic parameters
    cn_storst_out = "restart_sto_out.nc" ! output restart file for stochastic parameters
+   cn_xi2d = "bulk_cd"   ! name of field to save as xi2d in history file (if requested in croco.in)
+   cn_xi3d = "gls_zlevs" ! name of field to save as xi3d in history file (if requested in croco.in)
+   cn_rngtype = 'default'     ! name of random number generator to use (default, kiss32, kiss64, shr3, testmpi)
+   cn_normal_algo = 'default' ! algorithm to obtain normal numbers (default, polar, ziggurat)
 /
 !-----------------------------------------------------------------------
 &namsto_bulk   !   parameters for stochastic bulk formulation
@@ -34,6 +38,9 @@
 !-----------------------------------------------------------------------
 &namsto_gls    !   parameters for stochastic vertical mixing
 !-----------------------------------------------------------------------
+   ln_Sprod =.true.  ! perturb TKE production term
+   ln_Bprod =.true.  ! perturb TKE destruction term
+   ln_zlevs =.false. ! location uncertainty in Sprod and Bprod
    std  = 0.1   ! standard deviation of the multiplicative noise
    tcor = 3.0   ! time correlation (in days)
    npasses = 50 ! number of passes of the horizontal Laplacian filter

@@ -81,6 +81,11 @@
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
+# ifdef OA_COUPLING
+#  define READ_PATM
+#  define OBC_PATM
+#  undef  OA_GRID_UV
+# endif
 # undef  OW_COUPLING
 # ifdef OW_COUPLING
 #  undef OW_COUPLING_FULL
@@ -96,7 +101,6 @@
 # define OBC_SOUTH
                       /* Applications */
 # undef  BIOLOGY
-# undef  FLOATS
 # undef  STATIONS
 # undef  PASSIVE_TRACER
 # undef  SEDIMENT
@@ -125,7 +129,6 @@
 #  undef  MPI_NOLAND
 #  undef  MPI_TIME
 # endif
-# undef  AUTOTILING
                       /* Grid configuration */
 # define CURVGRID
 # define SPHERICAL
@@ -215,7 +218,6 @@
 # define UV_HADV_UP3
 # undef  UV_HADV_UP5
 # undef  UV_HADV_WENO5
-# undef  UV_HADV_TVD
                       /* Lateral Explicit Momentum Mixing */
 # undef  UV_VIS2
 # ifdef UV_VIS2
@@ -224,7 +226,6 @@
                       /* Vertical Momentum Advection */
 # define UV_VADV_SPLINES
 # undef  UV_VADV_WENO5
-# undef  UV_VADV_TVD
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
 # define TS_HADV_RSUP3
@@ -236,7 +237,6 @@
 # undef  TS_MIX_S
                       /* Vertical Tracer Advection  */
 # define TS_VADV_SPLINES
-# undef  TS_VADV_AKIMA
 # undef  TS_VADV_WENO5
                       /* Sponge layers for UV and TS */
 # define SPONGE
@@ -247,7 +247,6 @@
 # undef  BSTRESS_FAST
                       /* Vertical Mixing */
 # undef  BODYFORCE
-# undef  BVF_MIXING
 # define LMD_MIXING
 # undef  GLS_MIXING
 # ifdef LMD_MIXING
@@ -365,7 +364,7 @@
 /*
 !           Applications:
 !---------------------------------
-! Biology, floats, Stations,
+! Biology, Stations,
 ! Passive tracer, Sediments, BBL
 !---------------------------------
 !
@@ -378,10 +377,10 @@
 # endif
                       /*   Choice of Biology models   */
 # ifdef BIOLOGY
-#  undef  PISCES
+#  define PISCES
 #  undef  BIO_NChlPZD
 #  undef  BIO_N2ChlPZD2
-#  define BIO_BioEBUS
+#  undef  BIO_BioEBUS
                       /*   Biology options    */
 #  ifdef PISCES
 #   undef  DIURNAL_INPUT_SRFLX
@@ -401,17 +400,6 @@
 #  define DIAGNOSTICS_BIO
 #  if defined DIAGNOSTICS_BIO && defined PISCES
 #   define key_trc_diaadd
-#  endif
-# endif
-                      /*   Lagrangian floats model    */
-# ifdef FLOATS
-#  undef  FLOATS_GLOBAL_ATTRIBUTES
-#  undef  IBM
-#  undef  RANDOM_WALK
-#  ifdef RANDOM_WALK
-#   define DIEL_MIGRATION
-#   define RANDOM_VERTICAL
-#   define RANDOM_HORIZONTAL
 #  endif
 # endif
                       /*   Stations recording    */
@@ -459,7 +447,6 @@
 # define OBC_SOUTH
                       /* Applications */
 # undef  BIOLOGY
-# undef  FLOATS
 # undef  STATIONS
 # undef  PASSIVE_TRACER
 # undef  SEDIMENT
@@ -468,7 +455,6 @@
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
-# define ZETA_DRY_IO
 # define FILLVAL
                       /* Calendar */
 
@@ -488,7 +474,6 @@
 #  undef  MPI_NOLAND
 #  undef  MPI_TIME
 # endif
-# undef  AUTOTILING
                       /* Non-hydrostatic options */
 # ifdef NBQ
 #  define W_HADV_WENO5
@@ -606,7 +591,7 @@
 /*
 !           Applications:
 !---------------------------------
-! Biology, floats, Stations,
+! Biology, Stations,
 ! Passive tracer, Sediments, BBL
 !---------------------------------
 !
@@ -917,15 +902,6 @@
 # undef  PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
-# undef  FLOATS
-# ifdef FLOATS
-#  define RANDOM_WALK
-#  ifdef RANDOM_WALK
-#   define DIEL_MIGRATION
-#   define RANDOM_VERTICAL
-#   define RANDOM_HORIZONTAL
-#  endif
-# endif
 # define NO_FRCFILE
 
 #elif defined SEAMOUNT
@@ -1957,7 +1933,6 @@
 #  undef  key_MUSTANG_V2
 # endif
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined ESTUARY
 /*
@@ -2011,13 +1986,11 @@
 #  define key_sand2D
 #  undef  key_MUSTANG_V2
 #  define MUSTANG_CORFLUX
-#  define SUBSTANCE_SUBMASSBALANCE 
 # endif
 # define PSOURCE
 # define ANA_PSOURCE
 # define MASKING
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined SEAGRASS
 /*
@@ -2047,7 +2020,6 @@
 # undef  PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
-# undef  FLOATS
 # define NO_FRCFILE
 # define USE_CALENDAR
 # define NEW_S_COORD

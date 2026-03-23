@@ -887,9 +887,8 @@
 ! Brunt Vaisala Frequency.
 !-----------------------------------------------------------------------
 !
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         if (wrt(indxbvf)) then
           lvar=lenstr(vname(1,indxbvf))
           ierr=nf_def_var (ncid, vname(1,indxbvf)(1:lvar),
@@ -3085,9 +3084,8 @@
           ierr=nf_var_par_access(ncid,vidR,nf_collective)
 # endif
         endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !-----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.

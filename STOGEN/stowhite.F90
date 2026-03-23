@@ -13,19 +13,27 @@ MODULE stowhite
    !!   sto_white      : get array of uncorrelated normal random numbers
    !!   sto_white_init : initialize random number generator
    !!----------------------------------------------------------------------
-   USE stoexternal , only : wp, i4, i8
+   USE stoexternal , only : wp, i4, i8, ctl_stop
    USE storng_kiss      ! KISS random number generator
    USE storng_ziggurat  ! Ziggurat algorithm to generate normal numbers
+   USE storng_testmpi   ! 'testmpi' random number generator
 
    IMPLICIT NONE
    PRIVATE
 
    ! Public variable defining method to use
-   ! CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='kiss64'
+   ! --------------------------------------
+   ! Default settings:
    CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='kiss32'
-   ! CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='shr3'
    CHARACTER(len=8), SAVE, PUBLIC :: c_normal_algo='ziggurat'
+   ! Other possible settings:
    !CHARACTER(len=8), SAVE, PUBLIC :: c_normal_algo='polar'
+   !CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='kiss64'
+   !CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='shr3'
+   ! Settings to use 'testmpi':
+   !CHARACTER(len=8), SAVE, PUBLIC :: c_normal_algo='polar'
+   !CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='testmpi'
+
    INTEGER :: normal_algo
 
    ! Public routines
@@ -152,8 +160,34 @@ CONTAINS
             ENDDO
             ENDDO
          ENDIF
+      ELSEIF (normal_algo==-1) THEN
+         ji = 1 ; jj = 1
+         IF (l0d) THEN
+            psto0d = kiss_normal_test(ji,jj)
+         ENDIF
+         IF (l1d) THEN
+            DO ji=1,jp1di
+               psto1d(ji) = kiss_normal_test(ji,jj)
+            ENDDO
+         ENDIF
+         IF (l2d) THEN
+            DO ji=1,jp2di
+            DO jj=1,jp2dj
+               psto2d(ji,jj) = kiss_normal_test(ji,jj)
+            ENDDO
+            ENDDO
+         ENDIF
+         IF (l3d) THEN
+            DO ji=1,jp3di
+            DO jj=1,jp3dj
+            DO jk=1,jp3dk
+               psto3d(ji,jj,jk) = kiss_normal_test(ji,jj)
+            ENDDO
+            ENDDO
+            ENDDO
+         ENDIF
       ELSE
-         STOP 'Bad type of algorithm in stowhite'
+          CALL ctl_stop('Bad type of algorithm in sto_white') 
       ENDIF
 
    END SUBROUTINE sto_white
@@ -182,11 +216,13 @@ CONTAINS
             normal_algo = 1
          CASE('shr3')
             normal_algo = 2
+         CASE('testmpi')
+            normal_algo = -1
          CASE DEFAULT
-            STOP 'Bad type of random number generator in stowhite_init'
+            CALL ctl_stop('Bad type of random number generator in sto_white_init') 
          END SELECT
       CASE DEFAULT
-         STOP 'Bad type of algorithm in stowhite_init'
+         CALL ctl_stop('Bad type of algorithm in sto_white_init')
       END SELECT
 
       ! Seed random number generator
@@ -216,8 +252,11 @@ CONTAINS
             zseed1_4 = kiss32()
          END DO
          CALL shr3_seed(zseed1_4)
+      CASE('testmpi')
+         ! Compute seed for the 'testmpi' random number generator
+         CALL kiss_seed_test( )
       CASE DEFAULT
-         STOP 'Bad type of random number generator in stowhite_init'
+         CALL ctl_stop('Bad type of random number generator in sto_white_init')
       END SELECT
 
       ! Initialize Ziggurat algorithm

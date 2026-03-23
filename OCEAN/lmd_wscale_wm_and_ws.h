@@ -10,12 +10,8 @@
 !
 ! PART OF KPP2005 (Shchepetkin et al. 2005)
 !
-#ifdef LIMIT_UNSTABLE_ONLY
             if (Bfsfc.lt.0.) zscale=min(zscale,
      &                       my_hbl(i,j)*epssfc)
-#else
-            zscale=min(zscale, my_hbl(i,j)*epssfc)
-#endif
 #ifdef MASKING
             zscale=zscale*rmask(i,j)
 #endif

@@ -96,7 +96,7 @@
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
      &   dtinv,inv_zb,a_brk,a_kv,c1o3,c4o3,inv_k,dd,ust_ker,intfb,
      &   fbsrf,fn1,fn2,khmax,bz1,bz2,beta,abot,delta,ks,
-     &   a_frc,kfrc,Hrms,urms,fw, maxwac, twopi,otwopi,sqrtpi,
+     &   a_frc,kfrc,Hrms,urms,fw, maxwac, twopi,otwopi,sqrtpi,arg_fw,
      &             wh(PRIVATE_2D_SCRATCH_ARRAY),
      &             fr(PRIVATE_2D_SCRATCH_ARRAY),
      &             kw(PRIVATE_2D_SCRATCH_ARRAY),
@@ -424,12 +424,22 @@
 #   else
           abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
-          fw=1.39*(Zob(i,j)/max(abot,eps))**0.52    ! Soulsby (1995)
+          ! safe fw
+          if (Zob_my(i,j).ge.0.D0 .and. abot.gt.0.D0) then
+            arg_fw=Zob_my(i,j)/abot
+            if (arg_fw.gt.0.D0 .and. arg_fw.eq.arg_fw) then
+              fw=1.39D0*(arg_fw)**0.52D0                ! Soulsby (1995)
+            else
+              fw=1.39D0
+            endif
+          else
+            fw=1.39D0
+          endif
 #   endif
           cff=0.5/sqrtpi*fw*urms**3                 ! ep_d/rho
           frc(i,j)=wramp2*cff*kw(i,j)*inv_f(i,j)    ! 2DH friction term
 #  else
-          frc(i,j)=0.
+          frc(i,j)=max(0.,eps)
 #  endif
 !
 ! --- Wave action ---
@@ -501,7 +511,7 @@
 # ifdef WKB_WWAVE
           cff = wramp2*wfc(i,j,wnew)
 # else
-          cff = wramp2*frc(i,j)/kw(i,j)
+          cff = wramp2*frc(i,j)/(max(kw(i,j),eps))
 # endif
           wepd(i,j)=cff*fr(i,j)       ! epsilon_d (m3/s3)
 # ifdef MASKING
@@ -1137,7 +1147,7 @@
 #   else
           abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
 #   endif
-          delta=0.09*ks*(abot/ks)**0.82                ! WBL thickness
+          delta=0.09*ks*(abot/max(ks,eps))**0.82       ! WBL thickness
           kfrc=1./min(max(a_frc*delta,eps),Dstp(i,j))  ! friction scale
           frc2d(i,j)=0.
           fb1=1. -exp(-2.*kfrc*Dstp(i,j))

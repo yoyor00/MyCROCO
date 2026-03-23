@@ -45,7 +45,6 @@
 !==================================================================================
 !
 #define HBL_SMOOTH
-#define LIMIT_UNSTABLE_ONLY
 
       implicit none
 #include "param.h"
@@ -94,8 +93,7 @@
       parameter (
      &   Cv=1.8,       ! Ratio of interior Brunt-Vaisala
                        ! frequency "N" to that at the entrainment depth "he".
-#if defined DIURNAL_SRFLUX || defined ROBUST_DIURNAL_SRFLUX \
-                           || defined ANA_DIURNAL_SW \
+#if defined DIURNAL_SRFLUX || defined ANA_DIURNAL_SW \
                            || defined BULK_FLUX || defined OA_COUPLING
      &   Ric=0.15,     ! Critical bulk Richardson number. (must be decreased
      &                 ! in case of a diurnal cycle, see McWilliams et al., JPO 2009)
@@ -396,11 +394,8 @@
 
 #include "lmd_wscale_wm_and_ws.h"
 
-#ifdef LIMIT_UNSTABLE_ONLY
+
           f1=5.0 * max(0., Bfsfc) * vonKar/(ustar(i,j)**4+eps)
-#else
-          f1=0.
-#endif
           cff=1./(z_w(i,j,k)-z_w(i,j,k-1))
           cff_up=cff*(z_bl -z_w(i,j,k-1))
           cff_dn=cff*(z_w(i,j,k)   -z_bl)
@@ -490,20 +485,6 @@
               ghats(i,j,k)=Cg * sigma*(1.-sigma)**2
             else
               ghats(i,j,k)=0.
-            endif
-#endif
-#if defined MLCONVEC
-!
-!  Add convective adjustment in the ML for unresolved convective cells
-!
-            if (bvf(i,j,k).lt.0.) then
-              Kv(i,j,k)=Kv(i,j,k) + nu0c
-# ifdef TEMPERATURE
-              Kt(i,j,k)=Kt(i,j,k) + nu0c
-# endif
-# ifdef SALINITY
-              Ks(i,j,k)=Ks(i,j,k) + nu0c
-# endif
             endif
 #endif
           enddo

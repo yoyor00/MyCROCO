@@ -55,7 +55,7 @@
 ! <- key AGRIF
 
 !********************************************************************
-#if defined AGRIF || defined AUTOTILING
+#if defined AGRIF
 # undef ALLOW_SINGLE_BLOCK_MODE
 # ifdef  ALLOW_SINGLE_BLOCK_MODE
       size_XI=6+Lm; size_ETA=6+Mm
@@ -70,11 +70,6 @@
       N2d=size_XI*(se*size_ETA+sz*Np)
       N3d=size_XI*size_ETA*Np
       N3dHz=size_XI*size_ETA*NpHz
-#endif
-
-#if defined AGRIF && defined AUTOTILING
-      MAX_NSUB_X=Lm/10
-      MAX_NSUB_E=Mm/10
 #endif
 
 #if !defined MPI

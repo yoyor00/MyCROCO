@@ -321,7 +321,9 @@
      &                                , nf_strerror(ierr)
         goto 99                                           !--> ERROR
       endif
-
+#ifdef USE_CALENDAR
+      start_time = start_time + origin_date_in_sec
+#endif
 #ifdef XIOS
       start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year

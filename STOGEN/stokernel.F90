@@ -14,7 +14,7 @@ MODULE stokernel
    USE stoexternal , only : wp, narea, lwp, numout, &
                          & jpi, jpj, jpiglo, jpjglo, mig, mjg, &
                          & glamt, gphit, glamtglo, gphitglo, &
-                         & broadcast_array
+                         & broadcast_array, ctl_stop
    USE stoarray
    USE stowhite
    USE stosobolseq
@@ -56,8 +56,8 @@ CONTAINS
       INTEGER :: jker, ji, jj
       REAL(wp) :: kernel_value
 
-      IF (SIZE(psto,1).NE.jpi) STOP 'Bad dimensions in sto_kernel'
-      IF (SIZE(psto,2).NE.jpj) STOP 'Bad dimensions in sto_kernel'
+      IF (SIZE(psto,1).NE.jpi) CALL ctl_stop('Bad dimensions in sto_kernel')
+      IF (SIZE(psto,2).NE.jpj) CALL ctl_stop('Bad dimensions in sto_kernel')
 
       ! Get number of kernels to superpose for this field
       jpker = get_number_of_kernels(jsto)
@@ -118,17 +118,17 @@ CONTAINS
             jpkermax = MAX(jpker,jpkermax)
             ! Check that grid arrays have correct size (if required)
             IF (stofields(jsto)%ker_coord == 0 ) THEN
-              IF (SIZE(mig,1).NE.jpi) STOP 'Incorrect grid in stokernel'
-              IF (SIZE(mjg,1).NE.jpj) STOP 'Incorrect grid in stokernel'
+              IF (SIZE(mig,1).NE.jpi) CALL ctl_stop('Incorrect grid in stokernel')
+              IF (SIZE(mjg,1).NE.jpj) CALL ctl_stop('Incorrect grid in stokernel')
             ELSE
-              IF (SIZE(glamt,1).NE.jpi) STOP 'Incorrect grid in stokernel'
-              IF (SIZE(glamt,2).NE.jpj) STOP 'Incorrect grid in stokernel'
-              IF (SIZE(gphit,1).NE.jpi) STOP 'Incorrect grid in stokernel'
-              IF (SIZE(gphit,2).NE.jpj) STOP 'Incorrect grid in stokernel'
-              IF (SIZE(glamtglo,1).NE.jpiglo) STOP 'Incorrect grid in stokernel'
-              IF (SIZE(glamtglo,2).NE.jpjglo) STOP 'Incorrect grid in stokernel'
-              IF (SIZE(gphitglo,1).NE.jpiglo) STOP 'Incorrect grid in stokernel'
-              IF (SIZE(gphitglo,2).NE.jpjglo) STOP 'Incorrect grid in stokernel'
+              IF (SIZE(glamt,1).NE.jpi) CALL ctl_stop('Incorrect grid in stokernel')
+              IF (SIZE(glamt,2).NE.jpj) CALL ctl_stop('Incorrect grid in stokernel')
+              IF (SIZE(gphit,1).NE.jpi) CALL ctl_stop('Incorrect grid in stokernel')
+              IF (SIZE(gphit,2).NE.jpj) CALL ctl_stop('Incorrect grid in stokernel')
+              IF (SIZE(glamtglo,1).NE.jpiglo) CALL ctl_stop('Incorrect grid in stokernel')
+              IF (SIZE(glamtglo,2).NE.jpjglo) CALL ctl_stop('Incorrect grid in stokernel')
+              IF (SIZE(gphitglo,1).NE.jpiglo) CALL ctl_stop('Incorrect grid in stokernel')
+              IF (SIZE(gphitglo,2).NE.jpjglo) CALL ctl_stop('Incorrect grid in stokernel')
             ENDIF
          ENDIF
       ENDDO
@@ -191,7 +191,7 @@ CONTAINS
          sizex = MAXVAL(glamtglo) - MINVAL(glamtglo)
          sizey = MAXVAL(gphitglo) - MINVAL(gphitglo)
          IF ( (sizex==0._wp) .OR. (sizey==0._wp) ) THEN
-             STOP 'Bad coordinats in stokernel'
+             CALL ctl_stop('Bad coordinats in stokernel')
          ENDIF
          lx = lx * REAL(jpiglo,wp) / sizex
          ly = ly * REAL(jpjglo,wp) / sizey
@@ -253,7 +253,7 @@ CONTAINS
          ! Morlet wavelet (with specific choice of frequency, adjust if needed)
          kernel = EXP( - 0.5_wp * ds2 ) * COS( SQRT(ds2) )
       ELSE
-         STOP 'Bad kernel type in stokernel'
+         CALL ctl_stop('Bad kernel type in stokernel')
       ENDIF
 
    END FUNCTION kernel
@@ -315,7 +315,7 @@ CONTAINS
          ! scale with length scales
          ds2 = ds * ds / l2
       ELSE
-         STOP 'Bad coordinate type in stokernel'
+         CALL ctl_stop('Bad coordinate type in stokernel')
       ENDIF
 
       get_distance = ds2
@@ -370,7 +370,7 @@ CONTAINS
          y = y + gphitglo(ix+1,iy  ) * ( 1._wp - rx ) *           ry
          y = y + gphitglo(ix+1,iy+1) *           rx   *           ry
       ELSE
-         STOP 'Bad coordinate type in stokernel'
+         CALL ctl_stop('Bad coordinate type in stokernel')
       ENDIF
 
    END SUBROUTINE get_kernel_location

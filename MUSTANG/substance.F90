@@ -12,9 +12,7 @@ MODULE substance
 
    USE module_substance
    USE comsubstance
-#ifdef SUBSTANCE_SUBMASSBALANCE 
    USE submassbalance, ONLY :  submassbalance_readdomain
-#endif
 
    IMPLICIT NONE
    PRIVATE
@@ -58,6 +56,8 @@ CONTAINS
    INTEGER                                   :: ivpc, ivp, iv, iv0, indx, ivTS
    INTEGER                                   :: isubs, nballoc, ivr, it, ntypvar
    INTEGER                                   :: lstr, lenstr
+   INTEGER :: rc
+   CHARACTER(LEN=lchain) :: msg
 
 !! tables (_n) sized to read in namelist by number of substances of such and such a type
 !! tables (_r) intermediates sized to the number of substances, will then be copied into the final 
@@ -88,9 +88,7 @@ CONTAINS
 #endif
 #endif
 
-#ifdef SUBSTANCE_SUBMASSBALANCE 
    REAL(KIND=rlg)        :: tool_datosec
-#endif
                                     
    !! *  define namelists reading in parasubstance.txt
 #ifdef MUSTANG
@@ -141,11 +139,9 @@ CONTAINS
    NAMELIST/nmlvarbent/name_var_bent, long_name_var_bent, standard_name_var_bent, unit_var_bent, &
                        cini_bent, l_out_subs_bent
 #endif 
-#ifdef SUBSTANCE_SUBMASSBALANCE 
    NAMELIST/nmlsubmassbalance/submassbalance_l, submassbalance_nb_border, &
                     submassbalance_input_file, submassbalance_output_file, &
                     submassbalance_dtout, submassbalance_date_start
-#endif 
 
    !!----------------------------------------------------------------------
    !! * Executable part
@@ -159,19 +155,16 @@ CONTAINS
    MPI_master_only   WRITE(stdout,*) ' '
 
 
-#ifdef MUSTANG
-   lstr=lenstr(sedname_subst)
-   OPEN(500,file=sedname_subst(1:lstr),status='old',form='formatted',access='sequential')
-! only substance
-#else 
-   lstr=lenstr(subsname)
-   MPI_master_only  WRITE(stdout,*),'SUBS:',subsname(1:lstr)
-   OPEN(500,file=subsname(1:lstr),status='old',form='formatted',access='sequential')
+   lstr=lenstr(subsfilename)
+   MPI_master_only  WRITE(stdout,*),'SUBS:',subsfilename(1:lstr)
+   OPEN(500,file=subsfilename(1:lstr),status='old',form='formatted',access='sequential')
+   READ(500,nmlnbvar)
+#if !defined MUSTANG
    nv_grav=0
    nv_sand=0
    nv_mud=0
 #endif
-   READ(500,nmlnbvar)
+
 
 ! check coherence between parasubstance and param.h dimensions
 #ifdef MUSTANG
@@ -420,15 +413,17 @@ CONTAINS
    nv_state=nv_adv+nv_fix
    nv_tot=nv_state ! ntrc_substot
 
-#ifdef SUBSTANCE_SUBMASSBALANCE 
-    READ(500, nmlsubmassbalance)
+    READ (500, nmlsubmassbalance, iostat=rc); REWIND (500)
+    IF (rc /= 0) THEN
+       msg = "WARNING : nmlsubmassbalance, namelist not found, default values are used :"
+       MPI_master_only  WRITE(stdout,*) msg
+       MPI_master_only  WRITE(stdout,nml=nmlsubmassbalance)
+    END IF
+
     if (submassbalance_l) then
         submassbalance_tdeb = tool_datosec(submassbalance_date_start)
         CALL submassbalance_readdomain()
     endif
-#endif 
-
-
 
     !******************************************
     !    create new variables 
@@ -766,11 +761,13 @@ CONTAINS
      MPI_master_only WRITE(stdout,*)'uniform initial conc. in air           : ',cini_air_r(isubs)
     END DO
 
-    DO isubs=1,nv_fix
-     MPI_master_only WRITE(stdout,*)' '
-     MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(name_var_fix(isubs))
-     MPI_master_only WRITE(stdout,*)'uniform initial conc. in water column  : ',cini_wat_fix(isubs)
-    END DO
+    IF (nv_fix > 0) THEN
+      DO isubs=1,nv_fix
+      MPI_master_only WRITE(stdout,*)' '
+      MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(name_var_fix(isubs))
+      MPI_master_only WRITE(stdout,*)'uniform initial conc. in water column  : ',cini_wat_fix(isubs)
+      END DO
+    END IF
 #ifdef key_benthic
     DO isubs=1,nv_bent
      MPI_master_only WRITE(stdout,*)' '
@@ -836,20 +833,22 @@ CONTAINS
          wrthis(indx) = .FALSE. !! no output in water for gravel
      ENDIF
    ENDDO
-   DO isubs=1,nv_fix
-     indx=indxT+ntrc_salt+ntrc_subs+isubs
-   !  write(*,*)'fix, indice vname',indx
-     vname(1,indx)=name_var_fix(isubs)
-     MPI_master_only write(*,*)'vname(1,',indx,')=', vname(1,indx)
-     vname(2,indx)=long_name_var_fix(isubs)
-     vname(3,indx)=unit_var_fix(isubs)
-     vname(4,indx)=TRIM(ADJUSTL(ADJUSTR(standard_name_var_fix(isubs))))//', scalar, series'
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     wrthis(indx)=l_out_subs_fix(isubs) 
-    ! MPI_master_only write(*,*)'fix, indice wrthis fixed variables',indx,wrthis(indx),name_var_fix(isubs)
-   ENDDO
+   IF (nv_fix>0) THEN
+      DO isubs=1,nv_fix
+      indx=indxT+ntrc_salt+ntrc_subs+isubs
+      !  write(*,*)'fix, indice vname',indx
+      vname(1,indx)=name_var_fix(isubs)
+      MPI_master_only write(*,*)'vname(1,',indx,')=', vname(1,indx)
+      vname(2,indx)=long_name_var_fix(isubs)
+      vname(3,indx)=unit_var_fix(isubs)
+      vname(4,indx)=TRIM(ADJUSTL(ADJUSTR(standard_name_var_fix(isubs))))//', scalar, series'
+      vname(5,indx)=' '
+      vname(6,indx)=' '
+      vname(7,indx)=' '
+      wrthis(indx)=l_out_subs_fix(isubs) 
+      ! MPI_master_only write(*,*)'fix, indice wrthis fixed variables',indx,wrthis(indx),name_var_fix(isubs)
+      ENDDO
+   END IF
      
 
 #ifdef PSOURCE_NCFILE_TS

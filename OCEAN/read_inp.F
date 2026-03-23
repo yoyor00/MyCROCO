@@ -19,6 +19,9 @@
       use ensmpi, ONLY : ln_ens_rst_in
 # endif
 # endif
+# ifdef ENSEMBLE
+      use ensmpi , only : ln_ens_rst_in ! do we start from an ensemble of restart
+# endif
 
 !     implicit none
 
@@ -30,9 +33,6 @@
 #endif
 #ifdef SEDIMENT
 # include "sediment.h"
-#endif
-#ifdef FLOATS
-# include "ncscrum_floats.h"
 #endif
 #ifdef STATIONS
 # include "nc_sta.h"
@@ -384,6 +384,7 @@
           READ(origin_date(12:13),fmt='(i2)') origin_hour
           READ(origin_date(15:16),fmt='(i2)') origin_minute
           READ(origin_date(18:19),fmt='(i2)') origin_second
+          start_time = origin_date_in_sec
         endif
 # endif
 !
@@ -468,6 +469,13 @@
 #endif
 #if defined MPI && defined PARALLEL_FILES
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+#endif
+#ifdef ENSEMBLE
+          if (ln_ens_rst_in.OR.(nrrec.lt.0)) then
+            nrrec = abs(nrrec)
+            fname=cmember//fname
+            lstr=lenstr(fname)
+          endif
 #endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
@@ -1055,32 +1063,6 @@ c        close(testunit)
 # endif
 #endif /* DIAGNOSTICS_BIO */
 
-#ifdef FLOATS
-!
-! Floats file name.
-!
-      elseif (keyword(1:kwlen).eq.'floats') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef AGRIF
-        if (Agrif_Root()) then
-# endif
-          read(input,*,err=95) ldefflt, nflt, nrpfflt
-          read(input,'(A)',err=95) fposnam
-          read(input,'(A)',err=95) fname
-          lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-          call insert_node (fposnam, lstr, mynode2, NNODES2, ierr)
-# endif
-          fltname=fname(1:lstr)
-# ifdef AGRIF
-        else
-          ldefflt=Agrif_Parent(ldefflt)
-          nflt=Agrif_Parent(nflt)
-          nrpfflt=Agrif_Parent(nrpfflt)
-        endif
-# endif
-#endif /* FLOATS */
-
 #ifdef STATIONS
 !
 ! Stations file name.
@@ -1188,8 +1170,8 @@ c        close(testunit)
 # else
      &                                          ,  dumboolean
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                          ,  wrthis(indxbvf)
 # else
@@ -1285,8 +1267,8 @@ c        close(testunit)
 # ifdef SALINITY
      &                                        .or. wrthis(indxAks)
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                        .or. wrthis(indxbvf)
 # endif
@@ -1399,8 +1381,8 @@ c        close(testunit)
 #  else
      &                                          ,  dumboolean
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#  if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                          ,  wrtavg(indxbvf)
 #  else
@@ -1494,8 +1476,8 @@ c        close(testunit)
 #  ifdef SALINITY
      &                                        .or. wrtavg(indxAks)
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#  if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
      &                                        .or. wrtavg(indxbvf)
 #  endif
@@ -1629,23 +1611,6 @@ c        close(testunit)
 !
 # endif
 #endif /* ABL1D && ! defined XIOS */
-
-#ifdef FLOATS
-!
-! Switches for fields to be saved into floats output file.
-!
-      elseif (keyword(1:kwlen).eq.'float_fields') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef AGRIF
-        if (Agrif_Root()) then
-# endif
-          read(input,*,err=95) wrtflt(indxfltGrd),
-     &       wrtflt(indxfltTemp), wrtflt(indxfltSalt),
-     &       wrtflt(indxfltRho), wrtflt(indxfltVel)
-# ifdef AGRIF
-        endif
-# endif
-#endif /* FLOATS */
 
 #if defined DIAGNOSTICS_TS
 # if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
@@ -2004,8 +1969,7 @@ c        close(testunit)
 #  endif /* TRACERS */
 
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
 !
 ! Background vertical viscosity and mixing coefficients for tracers.
 !
@@ -2143,17 +2107,15 @@ c        close(testunit)
 !
       elseif (keyword(1:kwlen).eq.'sediments_mustang') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) sedname_subst
         read(input,'(A)',err=95) sedname_must
 
 # endif /* SEDIMENT */
 #endif /* SOLVE3D */
 
-#if defined SUBSTANCE && !defined MUSTANG
+#if defined SUBSTANCE
       elseif (keyword(1:kwlen).eq.'substance') then
         call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) subsname
-        lstr=lenstr(subsname)
+        read(input,'(A)',err=95) subsfilename
 #endif
 #ifdef BBL
       elseif (keyword(1:kwlen).eq.'bbl_history_fields') then
@@ -2271,10 +2233,10 @@ c        close(testunit)
           read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
      &                                    (Lsrc(is,itrc), itrc=1,NT)
 #  else
-          read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is),
-     &                                     (Lsrc(is,itrc), itrc=1,NT),
+          read(input,*,err=95) Isrc(is),Jsrc(is),Dsrc(is),qbardir(is)
 #   ifdef TRACERS
-     &                                     (Tsrc0(is,itrc), itrc=1,NT)
+     &                                     ,(Lsrc(is,itrc), itrc=1,NT)
+     &                                     ,(Tsrc0(is,itrc), itrc=1,NT)
 #   endif /* TRACERS */
 #  endif /* PSOURCE_NCFILE_TS  */
 
@@ -2324,7 +2286,7 @@ c        close(testunit)
         btfname=fname(1:lstr)
 #endif  /* BHFLUX || (SALINITY && BWFLUX )  */
 !
-! Online forcing with CFSR
+! Online forcing
 !
 #ifdef ONLINE   /* JG Online */
       elseif (keyword(1:kwlen).eq.'online') then
@@ -2759,20 +2721,6 @@ c        close(testunit)
 # endif
 #endif /* DIAGNOSTICS_BIO */
 
-#ifdef FLOATS
-# ifdef AGRIF
-          if (Agrif_Root()) then
-# endif
-          lstr=lenstr(fltname)
-          MPI_master_only write(stdout,
-     &              '(9x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
-     &        'Float File:',fltname(1:lstr),  'Create new:',
-     &        ldefflt, 'nflt =', nflt, 'rec/file =', nrpfflt
-# ifdef AGRIF
-          endif
-# endif
-#endif /* FLOATS */
-
 #ifdef STATIONS
 # ifdef AGRIF
         if (Agrif_Root()) then
@@ -2832,8 +2780,8 @@ c        close(testunit)
      &  , wrthis(indxAks),  'write Aks  ',
      &                      'Vertical diffusivity for salinity.'
 # endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+     || defined LMD_SKPP || defined LMD_BKPP \
      || defined GLS_MIXING
      &  , wrthis(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
@@ -2955,8 +2903,8 @@ c        close(testunit)
      &  , wrtavg(indxAks),  'write Aks  ',
      &                         'Vertical diffusivity for salinity.'
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-     || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#  if defined ANA_VMIX || defined LMD_MIXING \
+     || defined LMD_SKPP || defined LMD_BKPP \
      || defined GLS_MIXING
      &  , wrtavg(indxbvf),  'write bvf  ',
      &                         'Brunt Vaisala Frequency.'
@@ -3096,23 +3044,6 @@ c        close(testunit)
      &     , wrtabl_avg(indxabl_Hzw_abl) , 'write Hzw ABL'
 # endif
 #endif /* ABL1D && ! defined XIOS */
-
-#ifdef FLOATS
-# ifdef AGRIF
-          if (Agrif_Root()) then
-# endif
-          MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A))')
-     &      'Fields to be saved in floats output file: (T/F)'
-     &     , wrtflt(indxfltGrd),   'write Grid location variables'
-     &     , wrtflt(indxfltTemp),  'write temperature.'
-     &     , wrtflt(indxfltSalt),  'write salinity.'
-     &     , wrtflt(indxfltRho),   'write density.'
-     &     , wrtflt(indxfltVel),   'write mean float velocity'
-# ifdef AGRIF
-          endif
-# endif
-#endif /* FLOATS */
-
 
 #if defined DIAGNOSTICS_TS
 # if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
@@ -3395,8 +3326,7 @@ c        close(testunit)
           enddo
 #  endif /* TRACERS */
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING && \
-     !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
           MPI_master_only write(stdout,'(1pe10.3,2x,A,1x,A)')
      &      Akv_bak, 'Akv_bak    Background vertical viscosity',
      &                                     'coefficient, m2/s.'
@@ -3530,24 +3460,20 @@ c        close(testunit)
      &                            'critical stress of bed layer.'
 #  endif
 # elif defined MUSTANG
-          lstr=lenstr(sedname_subst)
-          MPI_master_only write(stdout,'(7x,A,10x,A)')
-     &         'Sediment input file for Substance:' ,
-     &          sedname_subst(1:lstr)
-          lstr=lenstr(sedname_must)
-          MPI_master_only write(stdout,'(7x,A,2x,A/)')
-     &         'Sediment input file for Mustang (version):' ,
+        lstr=lenstr(sedname_must)
+        MPI_master_only write(stdout,'(7x,A,2x,A/)')
+     &         'Sediment input file for Mustang :' ,
      &          sedname_must(1:lstr)
 
 # endif /* SEDIMENT */
 #endif /* SOLVE3D */
 
-#if defined SUBSTANCE && !defined MUSTANG
-          lstr=lenstr(subsname)
+#if defined SUBSTANCE
+          lstr=lenstr(subsfilename)
           MPI_master_only write(stdout,'(7x,A,12x,A)')
      &         'Input file for Substance:' ,
-     &          subsname(1:lstr)
-#endif
+     &          subsfilename(1:lstr)
+#endif /* SUBSTANCE */
 #ifdef BBL
           MPI_master_only write(stdout,'(6(/6x,L1,2x,A,1x,A))')
      &    wrthis(indxAbed), 'write Abed ',

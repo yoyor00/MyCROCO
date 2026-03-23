@@ -17,7 +17,7 @@ MODULE stobulk
    PRIVATE
 
    ! Index of stochastic field used for the drag coefficient
-   INTEGER, SAVE :: jstobulk_cd
+   INTEGER, PUBLIC, SAVE :: jstobulk_cd
 
    ! Parameters of stochastic fields
    ! (default values are replaced by values read in namelist)
@@ -27,7 +27,7 @@ MODULE stobulk
    INTEGER,  SAVE :: arorder = 1  ! order of autoregressive process
    INTEGER,  SAVE :: nupdate = 1  ! update frequency of autoregressive process (in time steps)
 
-   PUBLIC sto_bulk, sto_bulk_init, sto_bulk_perturb
+   PUBLIC sto_bulk, sto_bulk_init
 
 CONTAINS
 
@@ -89,43 +89,6 @@ CONTAINS
       stofields(jstobulk_cd)%std=std
 
    END SUBROUTINE sto_bulk_init
-
-
-   SUBROUTINE sto_bulk_perturb ( array, array_type )
-      !!----------------------------------------------------------------------
-      !!
-      !!                     ***  ROUTINE sto_bulk_perturb ***
-      !!
-      !! This routine implements perturbation of bulk coeffcients
-      !! (currently only for Cd but other cases can be added)
-      !! 
-      !! array : array with bulk coefficient to perturb
-      !! array_type : type of array (default=GLOBAL_2D_ARRAY),
-      !!              option='private', for PRIVATE_2D_SCRATCH_ARRAY
-      !!
-      !!----------------------------------------------------------------------
-      REAL(wp), DIMENSION(:,:), INTENT(inout) :: array
-      CHARACTER(len=*), INTENT(in), OPTIONAL :: array_type
-
-      INTEGER :: array_type_int, jpiarray, jpjarray
-
-      jpiarray=SIZE(array,1)
-      jpjarray=SIZE(array,2)
-
-      array_type_int = 0
-      IF (PRESENT(array_type)) THEN
-        IF (array_type(1:4) == 'priv') array_type_int = 1
-      ENDIF
-
-      IF (array_type_int == 1 ) THEN
-        array(:,:) = array(:,:) * stofields(jstobulk_cd)%sto2d(ishift_priv:,jshift_priv:)
-      ELSE
-        IF (jpiarray.NE.jpi) STOP 'inconsistent array size in sto_bulk'
-        IF (jpjarray.NE.jpj) STOP 'inconsistent array size in sto_bulk'
-        array(:,:) = array(:,:) * stofields(jstobulk_cd)%sto2d(:,:)
-      ENDIF
-
-   END SUBROUTINE sto_bulk_perturb
 
 
    SUBROUTINE read_parameters

@@ -13,7 +13,7 @@ MODULE stomarginal
    !!----------------------------------------------------------------------
    USE stoarray        ! module with stochastic arrays to update
    ! user supplied external resources
-   USE stoexternal , only : wp, lc, jpi, jpj, jpk
+   USE stoexternal , only : wp, lc, jpi, jpj, jpk, ctl_stop
 
    IMPLICIT NONE
    PRIVATE
@@ -53,11 +53,11 @@ CONTAINS
 
       ! Set index of field to update
       IF (kdim==2) THEN
-         jidx = jpidx2d + jpidxsup2d
+         jidx = jpidxlast2d
       ELSEIF (kdim==3) THEN
-         jidx = jpidx3d + jpidxsup3d
+         jidx = jpidxlast3d
       ELSEIF (kdim==0) THEN
-         jidx = jpidx0d + jpidxsup0d
+         jidx = jpidxlast0d
       ENDIF
 
       ! apply transformation according to requested distribution
@@ -93,7 +93,7 @@ CONTAINS
          ENDIF
       ELSEIF ( type_variate == 'lognormal' ) THEN
          ! for lognormal distribution
-         IF (ave <= 0._wp) STOP 'Bad parameter of lognormal distribution'
+         IF (ave <= 0._wp) CALL ctl_stop('Bad parameter of lognormal distribution')
          ! compute parameters of reference normal distribution
          ! to have the requested mean and std for the lognormal distribution
          var = LOG( 1._wp + std*std/(ave*ave) )
@@ -109,7 +109,7 @@ CONTAINS
          ENDIF
       ELSEIF ( type_variate == 'wrapped_normal' ) THEN
          ! for wrapped normal marginal distributions (e.g. cyclic for angles, with zmin=0 and zmax=2pi)
-         IF (zmin == zmax ) STOP 'Bad parameter of wrapped normal distribution'
+         IF (zmin == zmax ) CALL ctl_stop('Bad parameter of wrapped normal distribution')
          ! wrap normal distribution to fit in required interval
          IF (kdim==2) THEN
             sto2d(:,:,jidx,jstoidx) = sto2d(:,:,jidx,jstoidx) * std + ave
@@ -132,7 +132,7 @@ CONTAINS
          ENDIF
       ELSEIF ( type_variate == 'bounded_atan' ) THEN
          ! for bounded distributions with atan transformation
-         IF (zmin == zmax ) STOP 'Bad parameter of wrapped normal distribution'
+         IF (zmin == zmax ) CALL ctl_stop('Bad parameter of wrapped normal distribution')
          ! compute parameters of reference normal distribution
          ! to have the requested features for the resulting distribution
          ! Warning: input ave is not the mean, only the transformed value of the normal 0
@@ -154,7 +154,7 @@ CONTAINS
             sto0d(jidx,jstoidx) = zmin + sto0d(jidx,jstoidx) * ( zmax - zmin )
          ENDIF
       ELSE
-         STOP 'Bad name of marginal distribution in stomarginal'
+         CALL ctl_stop('Bad name of marginal distribution in stomarginal')
       ENDIF
 
    END SUBROUTINE sto_marginal

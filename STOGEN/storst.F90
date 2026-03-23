@@ -15,7 +15,7 @@ MODULE storst
    USE stowhite         ! white noise generator
    USE storng_kiss      ! KISS random number generator
    USE storng_ziggurat  ! Ziggurat algorithm to generate normal numbers
-   USE stoexternal, only : wp, lc, jpi, jpj, jpk, cn_mem, narea, ln_ensemble
+   USE stoexternal, only : wp, lc, jpi, jpj, jpk, cn_mem, narea, ln_ensemble, ctl_stop
 
    IMPLICIT NONE
    PRIVATE
@@ -48,25 +48,25 @@ CONTAINS
 
       ! Open NetCDF file
       ierr = NF90_OPEN(rstfile,NF90_NOWRITE,idf)
-      IF (ierr.NE.0) STOP 'Error opening input restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error opening input restart file')
 
       ! Get variable ids
       IF (jpsto0d>0) ierr = NF90_INQ_VARID(idf,'sto0d',idv0d)
-      IF (ierr.NE.0) STOP 'Variable sto0d not found in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Variable sto0d not found in restart file')
       IF (jpsto2d>0) ierr = NF90_INQ_VARID(idf,'sto2d',idv2d)
-      IF (ierr.NE.0) STOP 'Variable sto2d not found in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Variable sto2d not found in restart file')
       IF (jpsto3d>0) ierr = NF90_INQ_VARID(idf,'sto3d',idv3d)
-      IF (ierr.NE.0) STOP 'Variable sto3d not found in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Variable sto3d not found in restart file')
       ierr = NF90_INQ_VARID(idf,'seed',idvseed)
-      IF (ierr.NE.0) STOP 'Variable seed not found in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Variable seed not found in restart file')
 
       ! Read stochastic arrays in restart file
       IF (jpsto0d>0) ierr = NF90_GET_VAR(idf,idv0d,sto0d)
-      IF (ierr.NE.0) STOP 'Error reading sto0d in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error reading sto0d in restart file')
       IF (jpsto2d>0) ierr = NF90_GET_VAR(idf,idv2d,sto2d)
-      IF (ierr.NE.0) STOP 'Error reading sto2d in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error reading sto2d in restart file')
       IF (jpsto3d>0) ierr = NF90_GET_VAR(idf,idv3d,sto3d)
-      IF (ierr.NE.0) STOP 'Error reading sto3d in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error reading sto3d in restart file')
 
       ! Get state of random number generator from restart file
       ! and reinitialize random number generator from there
@@ -74,25 +74,33 @@ CONTAINS
         SELECT CASE (c_rngtype)
         CASE('kiss64')
           ierr = NF90_GET_VAR(idf,idvseed,zrseed8)
-          IF (ierr.NE.0) STOP 'Error reading seed in restart file'
+          IF (ierr.NE.0) THEN
+            CALL ctl_stop('Error reading seed in restart file')
+          ENDIF
           ziseed8 = TRANSFER( zrseed8 , ziseed8 )
           CALL kiss_seed( ziseed8(1) , ziseed8(2) , ziseed8(3) , ziseed8(4) )
         CASE('kiss32')
           ierr = NF90_GET_VAR(idf,idvseed,ziseed4)
-          IF (ierr.NE.0) STOP 'Error reading seed in restart file'
+          IF (ierr.NE.0) THEN
+            CALL ctl_stop('Error reading seed in restart file')
+          ENDIF
           CALL kiss_seed( ziseed4(1) , ziseed4(2) , ziseed4(3) , ziseed4(4) )
         CASE('shr3')
           ierr = NF90_GET_VAR(idf,idvseed,ziseed4(1))
-          IF (ierr.NE.0) STOP 'Error reading seed in restart file'
+          IF (ierr.NE.0) THEN
+            CALL ctl_stop('Error reading seed in restart file')
+          ENDIF
           CALL shr3_seed( ziseed4(1) )
+        CASE('testmpi')
+          CALL ctl_stop("Reading seed from storst for type 'testmpi' not available")
         CASE DEFAULT
-          STOP 'Bad type of random number generator in storst'
+          CALL ctl_stop('Bad type of random number generator in storst')
         END SELECT
       ENDIF
 
       ! Close NetCDF file
       ierr = NF90_CLOSE(idf)
-      IF (ierr.NE.0) STOP 'Error closing input restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error closing input restart file')
 
    END SUBROUTINE sto_rst_read
 
@@ -137,7 +145,7 @@ CONTAINS
          seed_type = NF90_INT    ; seed_size = 1
          CALL shr3_state( ziseed4(1) )
       CASE DEFAULT
-         STOP 'Bad type of random number generator in storst'
+         CALL ctl_stop('Bad type of random number generator in storst')
       END SELECT
 
       ! Set type of output arrays
@@ -152,7 +160,7 @@ CONTAINS
       IF (filexists) THEN
         ! Open output NetCDF file
         ierr = NF90_OPEN(rstfile,NF90_WRITE,idf)
-        IF (ierr.NE.0) STOP 'Error opening existing output restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error opening existing output restart file')
         ! Get variable ids
         IF (jpsto0d>0) ierr = NF90_INQ_VARID(idf,'sto0d',idv0d)
         IF (jpsto2d>0) ierr = NF90_INQ_VARID(idf,'sto2d',idv2d)
@@ -160,50 +168,50 @@ CONTAINS
       ELSE
         ! Create output NetCDF file
         ierr = NF90_CREATE(rstfile,NF90_CLOBBER,idf)
-        IF (ierr.NE.0) STOP 'Error creating output restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error creating output restart file')
         IF ( (jpsto2d>0) .OR. (jpsto3d>0) ) ierr = NF90_DEF_DIM(idf,'x',jpi,idx)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         IF ( (jpsto2d>0) .OR. (jpsto3d>0) ) ierr = NF90_DEF_DIM(idf,'y',jpj,idy)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         ! Create dimensions for stochastic arrays
         IF (jpsto3d>0) ierr = NF90_DEF_DIM(idf,'z',jpk,idz)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         IF (jpsto0d>0) ierr = NF90_DEF_DIM(idf,'tslices_0d',jpidx0d+jpidxsup0d,idt0d)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         IF (jpsto2d>0) ierr = NF90_DEF_DIM(idf,'tslices_2d',jpidx2d+jpidxsup2d,idt2d)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         IF (jpsto3d>0) ierr = NF90_DEF_DIM(idf,'tslices_3d',jpidx3d+jpidxsup3d,idt3d)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         IF (jpsto0d>0) ierr = NF90_DEF_DIM(idf,'nsto_0d',jpsto0d,idn0d)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         IF (jpsto2d>0) ierr = NF90_DEF_DIM(idf,'nsto_2d',jpsto2d,idn2d)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         IF (jpsto3d>0) ierr = NF90_DEF_DIM(idf,'nsto_3d',jpsto3d,idn3d)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         ! Create dimension for state of random number generator
         ierr = NF90_DEF_DIM(idf,'nseed',seed_size,idseed)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         ! Create variables
         IF (jpsto0d>0) ierr = NF90_DEF_VAR(idf,'sto0d',nf90_type,(/idt0d,idn0d/),            idv0d)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         IF (jpsto2d>0) ierr = NF90_DEF_VAR(idf,'sto2d',nf90_type,(/idx,idy,idt2d,idn2d/),    idv2d)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         IF (jpsto3d>0) ierr = NF90_DEF_VAR(idf,'sto3d',nf90_type,(/idx,idy,idz,idt3d,idn3d/),idv3d)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         ! Create variable to store state of random number generator
         ierr = NF90_DEF_VAR(idf,'seed',seed_type,(/idseed/),idvseed)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
         ierr = NF90_ENDDEF(idf)
-        IF (ierr.NE.0) STOP 'Error in writing restart file'
+        IF (ierr.NE.0) CALL ctl_stop('Error in writing restart file')
       ENDIF
 
       ! Store stochastic arrays in restart file
       IF (jpsto0d>0) ierr = NF90_PUT_VAR(idf,idv0d,sto0d)
-      IF (ierr.NE.0) STOP 'Error writing sto0d in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error writing sto0d in restart file')
       IF (jpsto2d>0) ierr = NF90_PUT_VAR(idf,idv2d,sto2d)
-      IF (ierr.NE.0) STOP 'Error writing sto2d in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error writing sto2d in restart file')
       IF (jpsto3d>0) ierr = NF90_PUT_VAR(idf,idv3d,sto3d)
-      IF (ierr.NE.0) STOP 'Error writing sto3d in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error writing sto3d in restart file')
 
       ! Store state of random number generator
       SELECT CASE (c_rngtype)
@@ -214,13 +222,13 @@ CONTAINS
       CASE('shr3')
          ierr = NF90_PUT_VAR(idf,idvseed,ziseed4(1))
       CASE DEFAULT
-         STOP 'Bad type of random number generator in storst'
+         CALL ctl_stop('Bad type of random number generator in storst')
       END SELECT
-      IF (ierr.NE.0) STOP 'Error writing rng state in restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error writing rng state in restart file')
 
       ! Close NetCDF file
       ierr = NF90_CLOSE(idf)
-      IF (ierr.NE.0) STOP 'Error closing output restart file'
+      IF (ierr.NE.0) CALL ctl_stop('Error closing output restart file')
 
    END SUBROUTINE sto_rst_write
 

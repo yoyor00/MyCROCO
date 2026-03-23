@@ -10,7 +10,7 @@
 !
 !  This is include file "online.h"
 !------------------------------------------------------------------------------
-!  This file contains all the declarations regarding the online NCEP/CFSR tool:
+!  This file contains all the declarations regarding the ONLINE tool:
 !------------------------------------------------------------------------------
 #ifdef ONLINE
       ! ------------------------ !
