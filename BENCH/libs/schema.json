@@ -141,7 +141,8 @@
             "type": "object",
             "properties": {
               "plotphy_script": { "type": "string" },
-              "plotphy_script_input": { "type": "string" }
+              "plotphy_script_input": { "type": "string" },
+              "plotphy_script_options": { "type": "string" }
             },
             "required": ["plotphy_script", "plotphy_script_input"]
           },
