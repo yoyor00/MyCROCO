@@ -51,6 +51,8 @@ primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    50*T
 auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks  Bvf  Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
                              F   F     T   F    T    F   F    F       F       T   T    T     F      F     T    T    T    T    T   30*T             
+stochastic_history_fields:   xi2d  xi3d
+                             F     F
 gls_history_fields:   TKE  GLS  Lscale
                        T     T    T
 
