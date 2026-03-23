@@ -2,7 +2,7 @@
    !!----------------------------------------------------------------------
    !! NEMO/NST 3.3 , NEMO Consortium (2010)
    !! $Id: agrif2model.F90 3680 2012-11-27 14:42:24Z rblod $
-   !! Software governed by the CeCILL licence (NEMOGCM/NEMO_CeCILL.txt)
+   !! Software governed by the CeCILL licence (./LICENSE_AGRIF.txt)
    !!----------------------------------------------------------------------
    SUBROUTINE Agrif2Model
       !!---------------------------------------------
