@@ -642,8 +642,12 @@
 !++  Compute turbulent latent heat flux (W/m2).
           hflat = - Hlv*rhoAir*Wstar(mb)*Qstar
 !++ Longwave Radiation.
+!++ Add both options to be used with FORMATTED with same convention (i.e. +=down)
 #  ifndef BULK_LW
           hflw   = -radlw(i,j) ! positive downward, i.e., warming the ocean
+#   ifdef FORMATTED
+          hflw   = radlw(i,j) ! positive downward, i.e., warming the ocean
+#   endif
 #  else
 !++  Treat input longwave data as downwelling radiation only and add
 !++  outgoing IR from model sea surface temperature.

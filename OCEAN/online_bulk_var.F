@@ -316,25 +316,32 @@
       blk_vname(3,3)='kg/m^2/s                                 '
       blk_vname(4,3)='??????                                   '
 
-      ! Downward_Short-Wave_Rad_Flux_surface
+      ! Downward_Short-Wave_Rad_Flux_surface (+=down)
       blk_vname(1,4)='xxx                                      '
       blk_vname(2,4)='xxx                                      '
       blk_vname(3,4)='W/m^2                                    '
       blk_vname(4,4)='??????                                   '
 
-      ! Upward_Short-Wave_Rad_Flux_surface
+      ! Net_Short-Wave_Rad_Flux_surface (+=down)
       blk_vname(1,5)='SSR                                      '
-      blk_vname(2,5)='NET SHORT WAVE!!!                        '
+      blk_vname(2,5)='NET SHORT WAVE (+=down)!!!               '
       blk_vname(3,5)='W/m^2                                    '
       blk_vname(4,5)='??????                                   '
 
-      ! Downward_Long-Wave_Rad_Flux
+#   ifdef BULK_LW
+      ! Downward (i.e. atmo component only) long-wave rad flux (+=down)
       blk_vname(1,6)='STRD                                     '
-      blk_vname(2,6)='Downward_Long-Wave_Rad_Flux              '
+      blk_vname(2,6)='Downward_Long-Wave_Rad_Flux (+=down)     '
       blk_vname(3,6)='W/m^2                                    '
       blk_vname(4,6)='??????                                   '
-
-      ! Upward_Long-Wave_Rad_Flux_surface
+#   else
+      ! Net (i.e. atmo-SST) long-wave rad flux (+=down)
+      blk_vname(1,6)='STR                                      '
+      blk_vname(2,6)='Net_Long-Wave_Rad_Flux (+=down)          '
+      blk_vname(3,6)='W/m^2                                    '
+      blk_vname(4,6)='??????                                   '
+#   endif
+      ! record 7 is obsolet (see online_get_bulk.F)
       blk_vname(1,7)='NOPE                                     '
       blk_vname(2,7)='??????                                   '
       blk_vname(3,7)='W/m^2                                    '
