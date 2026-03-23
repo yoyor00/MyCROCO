@@ -223,7 +223,7 @@ MODULE par_pisces
    INTEGER, PUBLIC ::   jp_po4dep   
    INTEGER, PUBLIC ::   jp_no3dep   
    INTEGER, PUBLIC ::   jp_nh4dep   
-   INTEGER, PUBLIC ::   jp_nitrpot 
+   INTEGER, PUBLIC ::   jp_nfix 
 
    INTEGER, PUBLIC ::   jp_hi      
    INTEGER, PUBLIC ::   jp_co3     

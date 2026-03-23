@@ -48,6 +48,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BULK_FLUX : Update wasp bulk flux parametrization, 
   cppkey BULK_WASP (Issue #453)
 
+- BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
+
+- RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
+  distribution of flow, enabling a transition from the AKIMA scheme to 
+  SPLINES (#478)
+
 ### Deprecated
 
 
@@ -84,6 +90,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - LMD_SKPP_MONOB never define (#400)
   - LIMIT_UNSTABLE_ONLY is always define (#401)
   - MLCONVEC (#399)
+  - TS_VADV_AKIMA and TS_HADV_AKIMA (#392)
 
 ### Other
 
@@ -94,12 +101,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove routine set_HUV1, not used (#410)
   - remove ZETA_DRY_IO cpp key and avoid modifying zeta with bathymetry in output (#406 and #384)
   - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
+  - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
+    in cppdefs_dev.h (#403)
 
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
+  R. Benshila, M. Caillaud, G.Cambon, N. Ducousso, S. Jullien, S. Le Gac, 
   P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
