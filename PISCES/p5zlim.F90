@@ -112,7 +112,7 @@ MODULE p5zlim
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p5zlim.F90 10070 2018-08-28 14:30:54Z nicolasmartin $ 
-   !! Software governed by the CeCILL license (see ./LICENSE_PISCES.txt)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 
 CONTAINS

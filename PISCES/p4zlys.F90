@@ -55,7 +55,7 @@ MODULE p4zlys
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zlys.F90 15532 2021-11-24 11:47:32Z techene $ 
-   !! Software governed by the CeCILL license (see ./LICENSE_PISCES.txt)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 
 CONTAINS

@@ -50,7 +50,7 @@ MODULE p4zsed
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zsed.F90 15287 2021-09-24 11:11:02Z cetlod $ 
-   !! Software governed by the CeCILL license (see ./LICENSE_PISCES.txt)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 CONTAINS
 
