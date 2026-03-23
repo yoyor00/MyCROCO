@@ -114,5 +114,5 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
-  D. Gourves, Q. Jamet, L. Weiss,
+  J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, E Le Bouedec  
