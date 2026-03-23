@@ -57,7 +57,7 @@ CONTAINS
       !!----------------------------------------------------------------------
       USE param
 
-      LOGICAL :: output_xi2d, output_xi3d
+      LOGICAL :: output_xi2d, output_xi3d, alloc_xi3d
 
       ! define working arrays used for bulk fluxes
       IF (ln_stogen.AND.ln_stobulk) THEN
@@ -66,6 +66,7 @@ CONTAINS
 
       alloc_xi3d = ln_stogen .AND. ln_hststo3d  ! allocate if output of stochastic array is requested
       alloc_xi3d = alloc_xi3d .OR. (ln_stogen.AND.ln_stoics)  ! needed in any case in stoics
+      
       ! define working arrays used for the stochastic surface stress
       IF (ln_stogen.AND.ln_stostress) THEN
         allocate(sto_stress_factor(GLOBAL_2D_ARRAY))
