@@ -88,7 +88,7 @@ MODULE initMUSTANG
                                      z0_hydro_bed
 
     namelist /namsedim_deposition/ cfreshmud, csedmin, cmudcr, aref_sand,     &
-                                   cvolmaxsort, cvolmaxmel, slopefac
+                                   l_corflux, cvolmaxsort, cvolmaxmel, slopefac
 
     namelist /namsedim_lateral_erosion/ l_erolat, coef_erolat,&
                                         coef_tauskin_lat, l_erolat_wet_cell, &
@@ -2509,12 +2509,12 @@ CONTAINS
     ALLOCATE(psi_sed(nvp))
     psi_sed(1:nvp) = 0.0_rsh
 #endif
-#ifdef key_sand2D
+
     ALLOCATE(rouse2D(nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(sum_tmp(nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(rouse2D_integral(nv_adv,GLOBAL_2D_ARRAY))
     rouse2D(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-    sum_tmp(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-#endif
+    rouse2D_integral(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+
     
     ALLOCATE(cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY))
     ALLOCATE(c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY))
