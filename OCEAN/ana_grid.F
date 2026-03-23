@@ -459,8 +459,8 @@ C$    integer omp_get_thread_num
       y0=-9.E+3
 # endif
 
-CR      write(*,'(4(A3,pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
-CR     &                                'x0=',x0, 'y0=',y0, mynode
+CR      write(*,'(4(A3,1pe15.9,1x),I3)') 'dx=',dx, 'dy=',dy,
+CR     &                                 'x0=',x0, 'y0=',y0, mynode
 !
 !----------------------------------------------------------------------
 ! Setup rectangular grid:  coordinates (XI,ETA) at PSI- and RHO-points.
