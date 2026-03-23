@@ -3374,7 +3374,7 @@ c !$acc wait
 
 #  ifdef DIAGNOSTICS_TS
          itrc=1
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
       if (xios_field_is_active("T_rate")) then
           call xios_send_field("T_rate", Trate(:,:,:,itrc))
       endif
@@ -3391,8 +3391,8 @@ c !$acc wait
       if (xios_field_is_active("T_Forc")) then
           call xios_send_field("T_Forc",TForc(:,:,:,itrc))
       endif
-#  endif          
-#  ifdef SALINITY
+#   endif          
+#   ifdef SALINITY
         itrc = 2
       if (xios_field_is_active("S_rate")) then
           call xios_send_field("S_rate", Trate(:,:,:,itrc))
@@ -3410,9 +3410,9 @@ c !$acc wait
       if (xios_field_is_active("S_Forc")) then
           call xios_send_field("S_Forc",TForc(:,:,:,itrc))
       endif
-#  endif
-#  ifdef DIAGNOSTICS_TS_MLD
-#  ifdef TEMPERATURE
+#   endif
+#   ifdef DIAGNOSTICS_TS_MLD
+#    ifdef TEMPERATURE
         itrc = 1
       if (xios_field_is_active("T_rate_mld")) then
           call xios_send_field("T_rate_mld", Trate_mld(:,:,itrc))
@@ -3436,13 +3436,13 @@ c !$acc wait
       if (xios_field_is_active("T_aver_mld")) then
           call xios_send_field("T_aver_mld",Taver_mld(:,:,itrc))
       endif
-#  ifdef DIAGNOSTICS_TS_MLD_CM
+#     ifdef DIAGNOSTICS_TS_MLD_CM
       if (xios_field_is_active("T_depth_mld")) then
           call xios_send_field("T_depth_mld",Tcrit_mld(:,:,itrc))
       endif
-#  endif
-#  endif
-#  ifdef SALINITY
+#     endif
+#    endif
+#    ifdef SALINITY
         itrc = 2
       if (xios_field_is_active("S_rate_mld")) then
           call xios_send_field("S_rate_mld", Trate_mld(:,:,itrc))
@@ -3466,13 +3466,13 @@ c !$acc wait
       if (xios_field_is_active("S_aver_mld")) then
           call xios_send_field("S_aver_mld",Taver_mld(:,:,itrc))
       endif
-#  ifdef DIAGNOSTICS_TS_MLD_CM
+#     ifdef DIAGNOSTICS_TS_MLD_CM
       if (xios_field_is_active("S_depth_mld")) then
           call xios_send_field("S_depth_mld",Tcrit_mld(:,:,itrc))
       endif
-#  endif
-#  endif
-#  endif
+#     endif
+#    endif
+#   endif
 #  endif
 
 #  ifdef DIAGNOSTICS_VRT
