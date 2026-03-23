@@ -339,9 +339,9 @@
      &       ,indxTXadv_mld,indxTYadv_mld,indxTVadv_mld,
      &        indxTHmix_mld,indxTVmix_mld,indxTForc_mld,indxTrate_mld,
      &        indxTentr_mld,indxTaver_mld
-#    if defined DIAGNOSTICS_TS_MLD_CM
+#   if defined DIAGNOSTICS_TS_MLD_CM
      &      , indxTcrit_mld
-#    endif
+#   endif
 #  endif
       parameter (indxTXadv=indxV+ntrc_temp+ntrc_salt+ntrc_pas+
      &           ntrc_bio+ntrc_sed+1,
@@ -366,9 +366,9 @@
      &           indxTrate_mld=indxTForc_mld+NT,
      &           indxTentr_mld=indxTrate_mld+NT,
      &           indxTaver_mld=indxTentr_mld+NT
-#    if defined DIAGNOSTICS_TS_MLD_CM
+#   if defined DIAGNOSTICS_TS_MLD_CM
      &          ,indxTcrit_mld=indxTaver_mld+NT
-#    endif
+#   endif
 #  endif
      &                                         )
 # endif

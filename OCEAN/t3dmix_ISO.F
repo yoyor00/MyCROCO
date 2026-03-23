@@ -944,7 +944,7 @@
 # if defined DIAGNOSTICS_TS_MLD && !defined SPONGE_DIF2
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
-#   ifdef DIAGNOSTICS_TS_MLD_CM
+#  ifdef DIAGNOSTICS_TS_MLD_CM
          do j=Jstr,Jend
             do i=Istr,Iend
                kbl1(i,j)=1
@@ -972,7 +972,7 @@
      &            (z_r(i,j,N)-z_r(i,j,kblt(i,j)))-Tcrit_mld(i,j,1)
             enddo
          enddo
-#   endif
+#  endif
 
        do j=Jstr,Jend
          do i=Istr,Iend
@@ -989,9 +989,9 @@
          do i=Istr,Iend
 #  ifdef LMD_SKPP
            kmld=kbl(i,j)
-#     ifdef DIAGNOSTICS_TS_MLD_CM
+#   ifdef DIAGNOSTICS_TS_MLD_CM
            kmld=kbl1(i,j)
-#     endif
+#   endif
 #  else
            kmld=N-5
 #  endif
@@ -1014,9 +1014,9 @@
          do i=Istr,Iend
 #  if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
-#     ifdef DIAGNOSTICS_TS_MLD_CM
+#   ifdef DIAGNOSTICS_TS_MLD_CM
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl1(i,j)
-#     endif
+#   endif
            kmld=kbl_nstp(i,j)
 #  else
            kmld=N-5
