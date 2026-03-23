@@ -13,19 +13,19 @@ S-coord: THETA_S,   THETA_B,    Hc (m)
 
 initial: NRREC  filename
           0 
-                          inner_rst.nc
+                          innershelf_rst.nc
 
 restart:          NRST, NRPFRST / filename
                   5760      -1
-                          inner_rst.nc
+                          innershelf_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename 
             T     5760      0 
-                          inner_his.nc
+                          innershelf_his.nc
 
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     576       0
-                          inner_avg.nc
+                          innershelf_avg.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T

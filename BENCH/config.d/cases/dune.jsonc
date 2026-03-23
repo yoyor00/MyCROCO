@@ -44,16 +44,11 @@
     },
     "plotphy": {
       "plotphy_script": "./TEST_CASES/plot_ana_dune.py",
+      "plotphy_script_input": "ana_dune_his.nc",
     },
-    "patches": {
-      "TEST_CASES/croco.in.Dune": {
-        "mode": "replace",
-        "what": "               TEST_CASES/sediment_dune.in",
-        "by": "               TEST_CASES/sediment_ana_dune.in",
-        "descr": "Set correct sediment.in file for ANA_DUNE",
-      },
-    },
-    "check_outputs": ["dune_his.nc"],
+    "patches": {},
+    "input_file": "TEST_CASES/croco.in.Ana_dune",
+    "check_outputs": ["ana_dune_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
   // DUNE3D
@@ -68,6 +63,7 @@
     },
     "plotphy": {
       "plotphy_script": "./TEST_CASES/plot_dune3d.py",
+      "plotphy_script_input": "dune3d_his.nc",
     },
     "patches": {},
     "input_file": "TEST_CASES/croco.in.Dune3d",

@@ -776,6 +776,7 @@ class Croco:
                         False,
                         str(e),
                     )
+
             else:
                 Messaging.step("No Plotting script provided")
         else:

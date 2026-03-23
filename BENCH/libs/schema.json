@@ -142,7 +142,8 @@
             "properties": {
               "plotphy_script": { "type": "string" },
               "plotphy_script_input": { "type": "string" }
-            }
+            },
+            "required": ["plotphy_script", "plotphy_script_input"]
           },
           "cppkeys": {
             "type": "object",
