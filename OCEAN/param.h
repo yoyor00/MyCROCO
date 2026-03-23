@@ -1020,7 +1020,7 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-#   ifdef DIAGNOSTICS_TS_MLD_CM
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
       parameter (ntrc_diats=18*NT)
 #   else
       parameter (ntrc_diats=17*NT)

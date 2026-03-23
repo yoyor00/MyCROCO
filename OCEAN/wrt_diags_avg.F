@@ -261,7 +261,7 @@
            call fillvalue2d(work2d,nciddia_avg,diaTaver_mld_avg(itrc),
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
-#  if defined DIAGNOSTICS_TS_MLD_CM 
+#  if defined DIAGNOSTICS_TS_MLD_DENS 
 !
 !  indxTcrit_mld
 !

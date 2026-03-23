@@ -280,7 +280,7 @@
       <field field_ref="T_Forc_mld" name="T_forc_mld" />
       <field field_ref="T_entr_mld" name="T_entr_mld"  />
       <field field_ref="T_aver_mld" name="T_aver_mld"  />
-#  ifdef DIAGNOSTICS_TS_MLD_CM
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
       <field field_ref="T_depth_mld" name="T_depth_mld" />
 #  endif
 #  endif
@@ -292,7 +292,7 @@
       <field field_ref="S_Forc_mld" name="S_forc_mld" />
       <field field_ref="S_entr_mld" name="S_entr_mld"  />
       <field field_ref="S_aver_mld" name="S_aver_mld"  />
-#  ifdef DIAGNOSTICS_TS_MLD_CM
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
       <field field_ref="S_depth_mld" name="S_depth_mld" />
 #  endif
 #  endif

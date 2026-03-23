@@ -262,7 +262,7 @@
            call fillvalue2d(work2d,nciddia,diaTaver_mld(itrc),
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
-#  if defined DIAGNOSTICS_TS_MLD_CM
+#  if defined DIAGNOSTICS_TS_MLD_DENS
 !  indxTcrit_mld
 !
            work2d=Tcrit_mld(:,:,itrc)

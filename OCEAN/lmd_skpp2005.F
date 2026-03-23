@@ -578,8 +578,8 @@
      &                     hbls(START_2D_ARRAY,3-nstp))
 #endif
 
-# ifdef DIAGNOSTICS_TS_MLD_CM
+#ifdef DIAGNOSTICS_TS_MLD_DENS
            kbl1(i,j)=kbl(i,j)
-# endif
+#endif
       return
       end

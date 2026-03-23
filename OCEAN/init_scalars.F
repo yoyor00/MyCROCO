@@ -2941,7 +2941,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
        vname(6,indxTaver_mld+itrc-1)='                            '
        vname(7,indxTaver_mld+itrc-1)='                            '
 
-#  if defined DIAGNOSTICS_TS_MLD_CM
+#  if defined DIAGNOSTICS_TS_MLD_DENS
 CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
        nametrc=vname(1,indxT+itrc-1)
        unitt=vname(3,indxT+itrc-1)

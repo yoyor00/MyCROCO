@@ -141,7 +141,7 @@
       real hbl (GLOBAL_2D_ARRAY  )
       common /lmd_kpp_hbl/ hbl
 #   endif
-#   ifdef DIAGNOSTICS_TS_MLD_CM
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
       integer kbl1(GLOBAL_2D_ARRAY)
       common /kpp_kbl1/kbl1
 #   endif

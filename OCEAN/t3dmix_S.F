@@ -74,7 +74,7 @@
      &        LapT(PRIVATE_2D_SCRATCH_ARRAY),   cff2,
      &        diff3u(PRIVATE_2D_SCRATCH_ARRAY),
      &        diff3v(PRIVATE_2D_SCRATCH_ARRAY)
-# ifdef DIAGNOSTICS_TS_MLD_CM
+# ifdef DIAGNOSTICS_TS_MLD_DENS
       integer kblt(PRIVATE_2D_SCRATCH_ARRAY)
       real    FF(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
@@ -494,7 +494,7 @@
 !
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
-#  ifdef DIAGNOSTICS_TS_MLD_CM
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
          do j=Jstr,Jend
             do i=Istr,Iend
                kbl1(i,j)=1
@@ -536,7 +536,7 @@
          do i=Istr,Iend
 #  ifdef LMD_SKPP
            kmld=kbl(i,j)
-#   ifdef DIAGNOSTICS_TS_MLD_CM
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
            kmld=kbl1(i,j)
 #   endif
 #  else
@@ -557,7 +557,7 @@
          do i=Istr,Iend
 #  if defined LMD_SKPP || defined GLS_MIXING
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl(i,j)
-#   ifdef DIAGNOSTICS_TS_MLD_CM
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
            if (kbl_nstp(i,j).eq.0) kbl_nstp(i,j)=kbl1(i,j)
 #   endif
            kmld=kbl_nstp(i,j)
@@ -570,7 +570,7 @@
      &                       t(i,j,k,nstp,itrc)*cff
            enddo
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl(i,j)
-#  ifdef DIAGNOSTICS_TS_MLD_CM
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
            if (itrc .eq. NT) kbl_nstp(i,j)=kbl1(i,j)
 #  endif
          enddo
