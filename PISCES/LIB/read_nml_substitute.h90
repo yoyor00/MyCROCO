@@ -34,7 +34,7 @@
 /*                                                                      */
 /*----------------------------------------------------------------------*/
 /* NEMO/OCE 4.3 , NEMO Consortium (2023)                                */
-/* Software governed by the CeCILL license (see ./LICENSE)              */
+/* Software governed by the CeCILL license (see ./LICENSE_PISCES.txt)              */
 /*----------------------------------------------------------------------*/
 /*                                                                      */
 /* For now, 'key_nomultnlg' is defined here to ensure good compiler     */
