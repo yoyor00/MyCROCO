@@ -8,11 +8,11 @@ import argparse
 
 # Command-line arguments
 parser = argparse.ArgumentParser(
-    description="Plot results from the ISOLITON test case.",
+    description="Plot results from the VORTEX test case.",
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="isoliton_his.nc", help="Path to the NetCDF file"
+    "--file", type=str, default="vortex_his.nc", help="Path to the NetCDF file"
 )
 parser.add_argument(
     "--tindex", type=int, nargs="+", default=[30, 50, 70], help="Time indices to plot"
@@ -79,7 +79,6 @@ plt.contour(
     colors="grey",
     linestyles="dashed",
     linewidths=0.2,
-    colorbar=False,
 )
 
 plt.xlabel("X [km]")
