@@ -96,7 +96,6 @@ if nestvortex:
         colors="k",
         linestyles="solid",
         linewidths=0.3,
-        colorbar=False,
     )
 
 # Save in PNG
@@ -143,14 +142,12 @@ if nestvortex:
     print(f"Relative difference = {rel_diff:.2f} %")
 
     plt.figure()
-    # plt.imshow(np.flipud(tdiff), cmap='coolwarm', aspect='auto')
-    plt.contourf(Y2, X2, tdiff, cmap="coolwarm", aspect="auto")
+    plt.contourf(Y2, X2, tdiff, cmap="coolwarm")
     plt.xlabel("X [km]")
     plt.ylabel("Y [km]")
     plt.axis([X.min(), X.max(), Y.min(), Y.max()])
     plt.colorbar()
     plt.title(f"Parent - Child (cm) : {vname} - Day {time}")
-    plt.show()
 
     # Save in PNG
     if args.makepng:
