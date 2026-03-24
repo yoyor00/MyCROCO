@@ -56,11 +56,7 @@ nc.close()
 
 # Convert ubar from u-grid to rho-grid
 print("Converting ubar to rho-grid...")
-ubar_list = []
-for t in range(ubar_raw.shape[0]):
-    ubar_rho = cr.u2rho_1d(ubar_raw[t, :])
-    ubar_list.append(ubar_rho)
-ubar = np.array(ubar_list)
+ubar = cr.u2rho_2d(ubar_raw)
 
 # Time adjustment
 T1 = T[0]
