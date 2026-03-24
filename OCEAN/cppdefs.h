@@ -233,7 +233,6 @@
 # undef  TS_MIX_S
                       /* Vertical Tracer Advection  */
 # define TS_VADV_SPLINES
-# undef  TS_VADV_AKIMA
 # undef  TS_VADV_WENO5
                       /* Sponge layers for UV and TS */
 # define SPONGE
@@ -414,8 +413,6 @@
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
-#  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
 # endif
@@ -610,8 +607,6 @@
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
-#  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  define WAVE_OFFLINE
 # endif
@@ -1924,7 +1919,6 @@
 #  undef  BEDLOAD
 # endif
 # ifdef MUSTANG
-#  define key_sand2D
 #  undef  key_MUSTANG_V2
 # endif
 # define NO_FRCFILE
@@ -1978,9 +1972,7 @@
 #  undef  BEDLOAD
 # endif
 # ifdef MUSTANG
-#  define key_sand2D
 #  undef  key_MUSTANG_V2
-#  define MUSTANG_CORFLUX
 # endif
 # define PSOURCE
 # define ANA_PSOURCE

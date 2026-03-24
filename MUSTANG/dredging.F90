@@ -366,13 +366,12 @@ CONTAINS
       END IF
 
       dump_layer(:) = dredging_dumping_layer
-#ifdef key_sand2D
+
       DO iv = isand1, isand2
          IF (l_subs2D(iv)) THEN
             dump_layer(iv) = 1
          END IF
       END DO
-#endif
 
    END SUBROUTINE dredging_init_var
    !============================================================================

@@ -88,7 +88,7 @@ MODULE initMUSTANG
                                      z0_hydro_bed
 
     namelist /namsedim_deposition/ cfreshmud, csedmin, cmudcr, aref_sand,     &
-                                   cvolmaxsort, cvolmaxmel, slopefac
+                                   l_corflux, cvolmaxsort, cvolmaxmel, slopefac
 
     namelist /namsedim_lateral_erosion/ l_erolat, coef_erolat,&
                                         coef_tauskin_lat, l_erolat_wet_cell, &
@@ -1062,7 +1062,7 @@ CONTAINS
  !  DZS
        ierr=nf_inq_varid (ncid,'DZS', varid)
        if (ierr .eq. nf_noerr) then
-         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
           do k=ksdmin,ksdmax
              dzs(k,:,:)=tmp3d(:,:,k)
           enddo
@@ -1092,7 +1092,7 @@ CONTAINS
  
         ierr=nf_inq_varid (ncid,nomcv, varid)
         if (ierr .eq. nf_noerr) then
-         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
  
          do k=ksdmin,ksdmax
              cv_sed(iv,k,:,:)=tmp3d(:,:,k)
@@ -1806,18 +1806,6 @@ CONTAINS
 
         ! HIS file
 
-#ifdef MORPHODYN
-        indx=indxHm
-        wrthis(indx)=.TRUE.
-        vname(1,indx) = 'Hm'
-        vname(2,indx) = 'evolving bathymetry'
-        vname(3,indx) = 'meter'
-        vname(4,indx) = 'evolving_bathymetry, scalar, series'
-        vname(5,indx) = ' '
-        vname(6,indx) = ' '
-        vname(7,indx) = ' '
-#endif
-
         indx = 1
         vname_Must(1,indx) = 'NB_LAY_SED'
         vname_Must(2,indx) = 'number of sediment layers'
@@ -2521,12 +2509,12 @@ CONTAINS
     ALLOCATE(psi_sed(nvp))
     psi_sed(1:nvp) = 0.0_rsh
 #endif
-#ifdef key_sand2D
+
     ALLOCATE(rouse2D(nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(sum_tmp(nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(rouse2D_integral(nv_adv,GLOBAL_2D_ARRAY))
     rouse2D(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-    sum_tmp(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-#endif
+    rouse2D_integral(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+
     
     ALLOCATE(cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY))
     ALLOCATE(c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY))

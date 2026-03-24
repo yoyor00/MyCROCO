@@ -73,10 +73,7 @@ MODULE comsubstance
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
     INTEGER  :: ibedload1, ibedload2
 #endif /* if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload */
-#ifdef key_sand2D
     LOGICAL, DIMENSION(:), ALLOCATABLE :: l_outsandrouse
-#endif /* ifdef key_sand2D */
-
 #endif /* ifdef MUSTANG */
 
     ! -------------------------------------------------------------------------
