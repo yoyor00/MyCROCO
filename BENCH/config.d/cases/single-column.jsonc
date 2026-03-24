@@ -70,12 +70,12 @@
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
-  "SINGLE_COLUMN_KATO_PHILIPS": {
-    "title": "SINGLE_COLUMN - KATO_PHILIPS - (5 x 5 x 100 : 3600)",
+  "SINGLE_COLUMN_KATO_PHILLIPS": {
+    "title": "SINGLE_COLUMN - KATO_PHILLIPS - (5 x 5 x 100 : 3600)",
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": true,
+      "KATO_PHILLIPS": true,
     },
     "splitting": {},
     "patches": {},
