@@ -74,7 +74,7 @@ class Benchmarking:
         ref_name = self.config.variant_ref_name
 
         # ref variant
-        if ref_name in self.config.case_names:
+        if ref_name in self.config.variant_names:
             self.config.variant_names.remove(ref_name)
             self.config.variant_names.insert(0, ref_name)
 
