@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-#  CROCO — Coastal and Regional Ocean COmmunity model
-#  Copyright (C) 2005-2026 CROCO Development Team
-#
-#  SPDX-License-Identifier: CECILL-2.1
 
 """
 Plot results from the TS_HADV_TEST test case.
