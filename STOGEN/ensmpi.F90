@@ -12,7 +12,7 @@ MODULE ensmpi
    !!----------------------------------------------------------------------
    ! include parameters from CROCO
    USE scalars
-   USE stoexternal , only : lwm, lwp, numnam_ref, numond, ctl_nam, filnam_ref
+   USE stoexternal , only : lwp, numnam_ref, numond, ctl_nam, filnam_ref
 
    IMPLICIT NONE
    PRIVATE
@@ -115,7 +115,7 @@ CONTAINS
       INTEGER  ::   ios                            ! Local integer output status for namelist read
 
       ! Open namelist files
-      numnam_ref = 10 ; lwm = .FALSE.
+      numnam_ref = 10 
       OPEN(UNIT=numnam_ref,FILE=filnam_ref,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
 
       ! Read namens namelist : ensemble simulation

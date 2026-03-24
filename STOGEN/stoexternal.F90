@@ -80,7 +80,6 @@ MODULE stoexternal
 
    ! I/O parameters
    INTEGER, PUBLIC ::   numout      =    6      !: logical unit for output print; set to stdout; do not change
-   LOGICAL, PUBLIC ::   lwm         = .TRUE.    !: true on the 1st processor only (always)
    LOGICAL, PUBLIC ::   lwp         = .TRUE.    !: true on the 1st processor only .OR. ln_ctl
    INTEGER, PUBLIC ::   numnam_ref  =   -1      !: logical unit for reference namelist
    INTEGER, PUBLIC ::   numond      =   -1      !: logical unit for Output Namelist Dynamics
@@ -224,7 +223,7 @@ C$    integer  trd, omp_get_thread_num
       integer :: Istr,Iend,Jstr,Jend
 
       ! Open namelist files
-      numnam_ref = 10 ; lwm = .FALSE.
+      numnam_ref = 10 
       OPEN(UNIT=numnam_ref,FILE=filnam_ref,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
 
       ! define standard output
@@ -261,7 +260,6 @@ C$    integer  trd, omp_get_thread_num
 #ifdef MPI
       if (narea.gt.1) then 
         lwp=.FALSE.
-        lwm=.FALSE.
       endif
 #endif
 

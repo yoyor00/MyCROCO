@@ -9,7 +9,7 @@ MODULE stobulk
    !! Purpose : Stochastic parameterization of the bulk formulation
    !!           for the air-sea fluxes
    !!======================================================================
-   USE stoexternal , only : wp, lwm, lwp, numnam_ref, numond, ctl_nam, &
+   USE stoexternal , only : wp, lwp, numnam_ref, numond, ctl_nam, &
                           & jpi, jpj, stodt, ishift_priv, jshift_priv
    USE stoarray
 

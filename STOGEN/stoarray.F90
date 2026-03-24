@@ -17,7 +17,7 @@ MODULE stoarray
    !!   sto_array_request_new  : request new stochastic field
    !!----------------------------------------------------------------------
    USE stoexternal , only : wp, lc, jpi, jpj, jpk, numout, &
-   &                        lwm, lwp, numnam_ref, numond, ctl_nam, ctl_stop
+   &                        lwp, numnam_ref, numond, ctl_nam, ctl_stop
    USE stowhite , only : c_rngtype, c_normal_algo
 
    IMPLICIT NONE

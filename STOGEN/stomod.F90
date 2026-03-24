@@ -22,6 +22,7 @@ MODULE stomod
    USE stobulk
    USE stostress
    USE stogls
+   USE stowhite , only : c_rngtype
 
    IMPLICIT NONE
    PRIVATE
@@ -106,8 +107,8 @@ CONTAINS
 
       IF (ln_stogen) THEN
 
-        ! write final restart file
-        CALL sto_rst_write
+        ! write final restart file (unless for cn_rngtype='testmpi')
+        IF (trim(c_rngtype) /= 'testmpi') CALL sto_rst_write
 
       ENDIF
 
