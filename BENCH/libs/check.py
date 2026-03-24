@@ -256,21 +256,21 @@ def extract_comparable_arrays(ref: Dataset, actual: Dataset, var: str):
     # [1:-1, 1:-1] to check only interior domain
     if len(shape_ref) == 2:
         return (
-            numpy.array(ref.variables[var])[1:-1, 1:-1],
-            numpy.array(actual.variables[var])[1:-1, 1:-1],
+            ref.variables[var][1:-1, 1:-1],
+            actual.variables[var][1:-1, 1:-1],
         )
     elif len(shape_ref) == 3:
         return (
-            numpy.array(ref.variables[var])[:, 1:-1, 1:-1],
-            numpy.array(actual.variables[var])[:, 1:-1, 1:-1],
+            ref.variables[var][:, 1:-1, 1:-1],
+            actual.variables[var][:, 1:-1, 1:-1],
         )
     elif len(shape_ref) == 4:
         return (
-            numpy.array(ref.variables[var])[:, :, 1:-1, 1:-1],
-            numpy.array(actual.variables[var])[:, :, 1:-1, 1:-1],
+            ref.variables[var][:, :, 1:-1, 1:-1],
+            actual.variables[var][:, :, 1:-1, 1:-1],
         )
     else:
-        return numpy.array(ref.variables[var]), numpy.array(actual.variables[var])
+        return ref.variables[var][:], actual.variables[var][:]
 
 
 def log_comparison_errors(
