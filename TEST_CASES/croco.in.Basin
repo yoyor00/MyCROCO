@@ -7,6 +7,8 @@ time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
 S-coord: THETA_S,   THETA_B,    Hc (m)
           1.0d0      0.0d0        10.d0
 
+logfile:
+        basin.log
 initial: NRREC  filename
           0 
                           basin_rst.nc
