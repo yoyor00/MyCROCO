@@ -12,6 +12,7 @@ MODULE sedini
    !! * Modules used
    USE sed     ! sediment global variable
    USE sed_oce
+   USE oce_sed
    USE sedmat
    USE sedadv
    USE iom
