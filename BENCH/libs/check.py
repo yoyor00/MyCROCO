@@ -148,7 +148,7 @@ def recurse_compare_current_dim(
     """
     # check
     if len(shape_ref) != len(shape_actual):
-        f"Shape is not same in both file for '{varname}'"
+        raise Exception(f"Shape is not same in both file for '{varname}'")
 
     # nothing to check
     if len(shape_ref) == 0:
