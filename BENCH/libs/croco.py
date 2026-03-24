@@ -750,6 +750,13 @@ class Croco:
                     result_dir,
                 ]
 
+                # Handle options in plot script command
+                script_options = ""  # default = no options
+                if "plotphy_script_options" in self.case["plotphy"]:
+                    script_options = self.case["plotphy"]["plotphy_script_options"]
+                if script_options:
+                    command.extend(script_options.split())
+
                 try:
                     subprocess.run(command, check=True)  # Exécute la commande
                     Messaging.step(
@@ -776,6 +783,7 @@ class Croco:
                         False,
                         str(e),
                     )
+
             else:
                 Messaging.step("No Plotting script provided")
         else:

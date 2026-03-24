@@ -7,6 +7,7 @@
     "patches": {},
     "plotphy": {
       "plotphy_script": "./TEST_CASES/plot_MovBat.py",
+      "plotphy_script_input": "movbat_his.nc",
     },
     "input_file": "TEST_CASES/croco.in.MovBat",
     "check_outputs": ["movbat_his.nc"],

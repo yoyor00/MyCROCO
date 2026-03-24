@@ -67,8 +67,8 @@ for i, tndx in enumerate(args.tindex):
     # Read data
     zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
     temp = np.squeeze(nc.variables["temp"][tndx, :, 1, :])
-    w = 1000 * np.squeeze(nc.variables["w"][tndx, :, 1, :])
     N, M = temp.shape
+    w = 1000 * np.squeeze(nc.variables["w"][tndx, :N, 1, :])
 
     # Compute depth
     zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)

@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="inner_avg.nc", help="Path to the NetCDF file"
+    "--file", type=str, default="innershelf_avg.nc", help="Path to the NetCDF file"
 )
 parser.add_argument("--makepdf", action="store_true", help="Save plot as a PDF file")
 parser.add_argument("--makepng", action="store_true", help="Save plot as PNG file")

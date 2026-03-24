@@ -7,6 +7,7 @@
     "patches": {},
     "plotphy": {
       "plotphy_script": "./TEST_CASES/plot_jet.py",
+      "plotphy_script_input": "jet_his.nc",
     },
     "check_outputs": ["jet_his.nc"],
     "unsupported": ["restart", "openmp"],

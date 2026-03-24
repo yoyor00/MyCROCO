@@ -5,6 +5,7 @@
     "case": "FLASH_RIP",
     "plotphy": {
       "plotphy_script": "./TEST_CASES/plot_flashrip.py",
+      "plotphy_script_input": "rip_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
     "patches": {},

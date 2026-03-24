@@ -7,6 +7,7 @@
     "patches": {},
     "plotphy": {
       "plotphy_script": "./TEST_CASES/plot_sed_toy_rouse.py",
+      "plotphy_script_input": "sed_toy_rouse_his.nc",
     },
     "input_file": "TEST_CASES/croco.in.Sed_toy_rouse",
     "check_outputs": ["sed_toy_rouse_his.nc"],
@@ -40,6 +41,7 @@
     },
     "plotphy": {
       "plotphy_script": "./TEST_CASES/plot_sed_toy_resusp.py",
+      "plotphy_script_input": "sed_toy_resusp_his.nc",
     },
     "splitting": {},
     "patches": {},
