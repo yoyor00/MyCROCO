@@ -29,7 +29,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
 
-- WET_DRY : add the correct masking of grid stiffness ratios rx0 and rx1
+- WET_DRY : add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
 
 ### Changed
 
