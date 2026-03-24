@@ -111,6 +111,9 @@
 !
 ! gamma2   Slipperiness parameter, either 1. (free-slip)
 !
+! mld_crit_D     Density criterion to define the ML [kg/m^3] 
+! mld_crit_T     Temperature criterion to define the ML [Celsius]
+!
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
 !                              usually 1, if not a restart run.
 ! ntimes   Number of timesteps for the 3D primitive equations in
@@ -207,6 +210,9 @@
       integer nwrtdia
 # ifdef AVERAGES
       integer ntsdia_avg, nwrtdia_avg
+# endif
+# ifdef DIAGNOSTICS_TS_MLD_DENS
+      real mld_crit_D, mld_crit_T
 # endif
 #endif
 #if defined DIAGNOSTICS_UV
@@ -379,6 +385,9 @@
      &                      , ldefdia_avg
      &                      , nwrtdia_avg
      &                      , ntsdia_avg
+# endif
+# ifdef DIAGNOSTICS_TS_MLD_DENS
+     &                      , mld_crit_D, mld_crit_T
 # endif
 #endif
 #if defined DIAGNOSTICS_UV

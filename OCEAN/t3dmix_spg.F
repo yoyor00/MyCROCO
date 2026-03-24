@@ -720,16 +720,16 @@
                cff=0
                cff1=0
                do k=N,1,-1
-                  if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+0.03) then
+                  if (cff.eq.0.and.rho(i,j,k).lt.rho(i,j,N)+mld_crit_D) then
                      kbl1(i,j)=k
                   endif
-                  if (rho(i,j,k).ge.rho(i,j,N)+0.03)  cff=1
+                  if (rho(i,j,k).ge.rho(i,j,N)+mld_crit_D)  cff=1
 
                   if (cff1.eq.0.and.t(i,j,k,nnew,1).gt.
-     &               t(i,j,N,nnew,1)-0.2) then
+     &               t(i,j,N,nnew,1)-mld_crit_T) then
                      kblt(i,j)=k
                   endif
-                  if (t(i,j,k,nnew,1).le.t(i,j,N,nnew,1)-0.2)  cff1=1
+                  if (t(i,j,k,nnew,1).le.t(i,j,N,nnew,1)-mld_crit_T)  cff1=1
                enddo
                FF(i,j)=z_r(i,j,N)-z_r(i,j,kbl1(i,j))
                if (itrc.eq.1) Tcrit_mld(i,j,itrc)=

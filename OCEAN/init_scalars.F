@@ -2933,25 +2933,26 @@ CR       write(stdout,'(1x,A,I3)') 'indxTaver_mld = ',indxTaver_mld+itrc-1
        write(vname1,*) trim(nametrc),'_aver_mld                   '
        vname(1,indxTaver_mld+itrc-1)=vname1
 CR       write(stdout,'(20x,A)') vname(1,indxTaver_mld+itrc-1)
-       vname(2,indxTaver_mld+itrc-1)='MLD averainment rate        '
-       write(vname3,*) trim(unitt),' second-1                     '
+       vname(2,indxTaver_mld+itrc-1)='MLD average                 '
+       write(vname3,*) trim(unitt),'                              '
        vname(3,indxTaver_mld+itrc-1)=vname3
        vname(4,indxTaver_mld+itrc-1)='                            '
        vname(5,indxTaver_mld+itrc-1)='                            '
        vname(6,indxTaver_mld+itrc-1)='                            '
        vname(7,indxTaver_mld+itrc-1)='                            '
-
 #  if defined DIAGNOSTICS_TS_MLD_DENS
 CR       write(stdout,'(1x,A,I3)') 'indxTcrit_mld = ',indxTcrit_mld+itrc-1
        nametrc=vname(1,indxT+itrc-1)
        unitt=vname(3,indxT+itrc-1)
-       write(vname1,*) trim(nametrc),'_depth_mld                  '
-       vname(1,indxTcrit_mld+itrc-1)=vname1
-CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
-       vname(2,indxTcrit_mld+itrc-1)='Mixed Layer Depth           '
-       if (itrc.eq.2) then
-         vname(2,indxTcrit_mld+itrc-1)='Barrier layer             '
+       if (itrc.eq.1) then
+         vname(1,indxTcrit_mld+itrc-1)='dens_mld_depth            '
+         vname(2,indxTcrit_mld+itrc-1)='MLD (density criterion)   '
        endif
+       if (itrc.eq.2) then
+         vname(1,indxTcrit_mld+itrc-1)='temp_mld_depth            '
+         vname(2,indxTcrit_mld+itrc-1)='MLD (temp criterion)      '
+       endif
+CR       write(stdout,'(20x,A)') vname(1,indxTcrit_mld+itrc-1)
        write(vname3,*)               ' meter                      '
        vname(3,indxTcrit_mld+itrc-1)=vname3
        vname(4,indxTcrit_mld+itrc-1)='                            '
