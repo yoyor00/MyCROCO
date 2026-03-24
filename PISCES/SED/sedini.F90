@@ -118,7 +118,7 @@ CONTAINS
       !---------------------------------------
 
       CALL ctl_opn( numsed, 'sediment.output', 'REPLACE', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
-      IF(lwm) CALL ctl_opn( numons     , 'output.namelist.sed' , 'UNKNOWN', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
+      IF(lwm) CALL ctl_opn( numons, 'output.namelist.sed', 'UNKNOWN', 'FORMATTED', 'SEQUENTIAL', -1, numout, .FALSE. )
 
       IF (lwp) THEN
          WRITE(numsed,*)
