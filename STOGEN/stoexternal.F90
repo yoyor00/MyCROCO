@@ -1,6 +1,7 @@
 MODULE stoexternal
 
 #include "cppdefs.h"
+!#include "param.h"
 #if defined STOGEN
 
    !!======================================================================
@@ -180,6 +181,7 @@ CONTAINS
       IF( kios > 0 ) THEN
          print *, 'E R R O R :   misspelled variable in namelist ' &
  &           // TRIM(cdnam) // ' iostat = ' // TRIM(clios) 
+         STOP
       ENDIF
       kios = 0
       RETURN
@@ -297,14 +299,14 @@ C$    integer  trd, omp_get_thread_num
       ALLOCATE(mjg(1:jpj))
       DO ji1 = 1, jpi
 # ifdef MPI
-        mig(ji1) = ji1 + ii * Lm
+        mig(ji1) = ji1 + ii*Lm
 # else
         mig(ji1) = ji1
 # endif
       ENDDO
       DO jj1 = 1, jpj
 # ifdef MPI 
-        mjg(jj1) = jj1 + jj * Mm
+        mjg(jj1) = jj1 + jj*Mm
 # else
         mjg(jj1) = jj1
 # endif
