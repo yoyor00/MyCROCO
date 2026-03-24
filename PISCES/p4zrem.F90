@@ -422,6 +422,7 @@ CONTAINS
                 zw3d(ji,jj,jkR) =  zolimi(ji,jj,jk) * rfact2r * tmask(ji,jj,jk) !
              END_3D
              CALL iom_put( "REMIN", zw3d )
+             DEALLOCATE( zw3d )
           ENDIF
           !
           IF( l_dia_bact ) THEN   ! Bacterial biomass
