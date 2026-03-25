@@ -31,6 +31,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - OCEAN : Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
 
+- WET_DRY : add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
