@@ -253,24 +253,27 @@ def compare_values(ref: Dataset, actual: Dataset, var: str) -> None:
 def extract_comparable_arrays(ref: Dataset, actual: Dataset, var: str):
     shape_ref = ref.variables[var].shape
 
-    # [1:-1, 1:-1] to check only interior domain
+    # Slice NetCDF4 variable first, then convert — avoids masked array deprecation
     if len(shape_ref) == 2:
         return (
-            ref.variables[var][1:-1, 1:-1],
-            actual.variables[var][1:-1, 1:-1],
+            ref.variables[var][1:-1, 1:-1].data,
+            actual.variables[var][1:-1, 1:-1].data,
         )
     elif len(shape_ref) == 3:
         return (
-            ref.variables[var][:, 1:-1, 1:-1],
-            actual.variables[var][:, 1:-1, 1:-1],
+            ref.variables[var][:, 1:-1, 1:-1].data,
+            actual.variables[var][:, 1:-1, 1:-1].data,
         )
     elif len(shape_ref) == 4:
         return (
-            ref.variables[var][:, :, 1:-1, 1:-1],
-            actual.variables[var][:, :, 1:-1, 1:-1],
+            ref.variables[var][:, :, 1:-1, 1:-1].data,
+            actual.variables[var][:, :, 1:-1, 1:-1].data,
         )
     else:
-        return ref.variables[var][:], actual.variables[var][:]
+        return (
+            ref.variables[var][:].data,
+            actual.variables[var][:].data,
+        )
 
 
 def log_comparison_errors(
