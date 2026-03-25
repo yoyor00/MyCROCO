@@ -72,7 +72,7 @@ klev = -1
 #   SOLID_BODY_ROT: quarter rotation
 #   DIAGONAL_ADV:   quarter diagonal traverse
 t0 = np.squeeze(nc.variables["temp"][0, klev, :, :])
-tquart = np.squeeze(nc.variables["temp"][nt // 4, klev, :, :])
+tquart = np.squeeze(nc.variables["temp"][nt // 3 , klev, :, :])
 tfin = np.squeeze(nc.variables["temp"][-1, klev, :, :])
 
 # Salinity constancy check (if available)
@@ -129,7 +129,7 @@ ax = axes[0, 1]
 cf = ax.pcolormesh(x, y, tquart, cmap="RdYlBu_r", shading="auto",
                    vmin=vmin_t, vmax=vmax_t)
 fig.colorbar(cf, ax=ax)
-ax.set_title("Temperature — t = T/4")
+ax.set_title("Temperature — t = T")
 ax.set_aspect("equal")
 ax.tick_params(labelbottom=False)
 
@@ -140,7 +140,7 @@ cf = ax.pcolormesh(x, y, tfin, cmap="RdYlBu_r", shading="auto",
 fig.colorbar(cf, ax=ax)
 ax.set_xlabel("X (km)")
 ax.set_ylabel("Y (km)")
-ax.set_title("Temperature — t = T (return)")
+ax.set_title("Temperature — t = 3T (return)")
 ax.set_aspect("equal")
 
 # Panel 4: Error T(final) - T(initial)
