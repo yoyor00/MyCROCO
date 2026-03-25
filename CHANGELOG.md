@@ -107,6 +107,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Other
 
 - Cleaning :
+  - remove TEST_CASES/IGW_OA directory with PDFs, namelist, XIOS XML files, and README  (#337)
   - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
@@ -120,8 +121,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, N. Ducousso, F. Dufois, S. Jullien, 
+  R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
-  M. Plus, M. Schreiber, A. Zribi, E Le Bouedec  
+  M. Plus, M. Schreiber, A. Zribi, E. Le Bouedec, B. Lemieux-Dudon
