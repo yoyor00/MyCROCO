@@ -51,8 +51,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
-- DIAGNOSTICS : cleaning, simplifications and updates of various diagnostics
-  (DIAGNOSTICS_KE, DIAGNOSTICS_VRT, ... )(Issue #388)
+- DIAGNOSTICS : 
+	- cleaning, simplifications and updates of momentum-based diagnostics (DIAGNOSTICS\_KE, DIAGNOSTICS\_VRT, DIAGNOSTICS\_M) (Issue #388)
+	- kinetic energy budget is now 3d
+	- momentum and energy diagnostics are saved as cell-volume integrals
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
@@ -106,6 +108,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - LIMIT_UNSTABLE_ONLY is always define (#401)
   - MLCONVEC (#399)
   - TS_VADV_AKIMA and TS_HADV_AKIMA (#392)
+  - TENDENCY, DIAGNOSTICS_EK_FULL, DIAGNOSTICS_EK_MLD (Issue #388)
 
 ### Other
 
