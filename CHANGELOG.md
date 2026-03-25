@@ -60,7 +60,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
   distribution of flow, enabling a transition from the AKIMA scheme to 
   SPLINES (#478)
->>>>>>> master
 
 ### Deprecated
 
