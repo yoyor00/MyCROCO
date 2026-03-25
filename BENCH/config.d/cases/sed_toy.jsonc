@@ -60,6 +60,11 @@
       "SED_TOY_ROUSE": false,
       "SEDIMENT": false,
     },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_flocmod.py",
+      "plotphy_script_input": "sed_toy_floc_his.nc",
+      "plotphy_script_options": "--mode 0D",
+    },
     "patches": {},
     "input_file": "TEST_CASES/croco.in.Sed_toy_floc_0d",
     "check_outputs": ["sed_toy_floc_his.nc"],
@@ -74,6 +79,11 @@
       "MUSTANG": true,
       "SED_TOY_ROUSE": false,
       "SEDIMENT": false,
+    },    
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_flocmod.py",
+      "plotphy_script_input": "sed_toy_floc_his.nc",
+      "plotphy_script_options": "--mode 1DV",
     },
     "splitting": {},
     "patches": {},

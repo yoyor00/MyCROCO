@@ -37,6 +37,10 @@
     "cppkeys": {
       "THACKER_2DV": true,
     },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_thacker.py",
+      "plotphy_script_input": "thacker_his.nc",
+    },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "patches": {},
     "check_outputs": ["thacker_his.nc"],

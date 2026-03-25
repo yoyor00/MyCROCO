@@ -126,7 +126,7 @@
       "SANDBAR",
       "RIP",
     ],
-    "@other": ["KILPATRICK", "SEAGRASS", "SHOREFACE", "THACKER"],
+    "@other": ["KILPATRICK", "SEAGRASS", "SHOREFACE", "THACKER_2DV"],
     "@complement": [
       "CANYON",
       "ESTUARY",

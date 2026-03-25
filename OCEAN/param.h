@@ -516,8 +516,10 @@
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
       integer  itsubs1, itsubs2, ntfix
 #  ifdef SED_TOY
-#   if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
+#   if defined SED_TOY_FLOC_0D 
       parameter (ntrc_subs=15 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#   elif defined SED_TOY_FLOC_1D
+      parameter (ntrc_subs=8 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #   else
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #   endif

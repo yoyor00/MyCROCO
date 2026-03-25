@@ -438,7 +438,7 @@ C$    integer  trd, omp_get_thread_num
 #  elif defined SED_TOY_FLOC_1D
       cff1=0.001875 * sin(2. * pi / (12.0*3600) * time)
 #  else
-#   if defined SED_TOY_RESUSP || defined SED_TOY_FLOC
+#   if defined SED_TOY_RESUSP
       if (tdays.lt.1.8) then
         cff1=0.001
       else if ((tdays.ge.3).and.(tdays.le.4.)) then
