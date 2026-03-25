@@ -108,29 +108,6 @@
 ! any kind shall be reported to Alexander Shchepetkin, (310)-206-9381
 ! or alex@atmos.ucla.edu.
 !
-#if defined Linux && !defined __IFC
-# define INT_TO_INT4
-# define REAL_TO_REAL8
-# define DOUBLE_CONST
-#else
-# undef INT_TO_INT4
-# undef REAL_TO_REAL8
-# undef DOUBLE_CONST
-#endif
-
-#undef REAL_TO_REAL8
-#undef KIND_STYLE
-#define RUTGERS
-#define TRAP_SINGLE_QUOTES
-#define ZIG_ZAG
-#define ZIG_ZAG_OLD
-
-#ifdef __IFC
-# define F77_TO_F95
-# define integer INTEGER(kind=4)
-#else
-# define integer INTEGER*4
-#endif
 
       implicit none
       integer max_length, max_filename
@@ -144,15 +121,11 @@
       integer last_arg, iargc,iin,iout, iocheck, line, istrt,
      &         length, i,j,k,m, is,ie, isft, ks1,ks2,ks3,ks4,ks5
       logical not_end_of_file, directive, dir_switch, lswtch
-#ifdef DOUBLE_CONST
       integer ndots, indx(max_length)
-#endif
-#ifdef ZIG_ZAG_OLD
       logical par_region, lnest
       integer ip1,ip2, is1,is2
       lnest=.false.
       par_region=.false.
-#endif
       k=0
       dir_switch=.false.
       quote=char(39)
@@ -219,10 +192,8 @@
           if (symbol(i).ne.' ') length=i
         enddo
    4    continue
-#ifdef TRAP_SINGLE_QUOTES
         if (lswtch) write(iout,'(/6x,A,I4,1x,A/)')
      &    'ERROR: unmatched quote on line', line,'in .i file.'
-#endif
         if (length.NE.0) then
         do while (length.gt.1 .and. symbol(length).eq.' ')
           length=length-1
@@ -238,19 +209,6 @@
 !
         i=istrt
         type=type_none
-#if defined REAL_TO_REAL8 || defined F77_TO_F95
-        if (symbol(i  ).eq.'R' .or. symbol(i  ).eq.'r') then
-         if (symbol(i+1).eq.'E' .or. symbol(i+1).eq.'e') then
-          if (symbol(i+2).eq.'A' .or. symbol(i+2).eq.'a') then
-           if (symbol(i+3).eq.'L' .or. symbol(i+3).eq.'l') then
-             i=i+3
-             type=real_type
-           endif
-          endif
-         endif
-        endif
-#endif
-#if defined INT_TO_INT4 || defined F77_TO_F95
         if (symbol(i  ).eq.'I' .or. symbol(i  ).eq.'i') then
          if (symbol(i+1).eq.'N' .or. symbol(i+1).eq.'n') then
           if (symbol(i+2).eq.'T' .or. symbol(i+2).eq.'t') then
@@ -267,29 +225,6 @@
           endif
          endif
         endif
-#endif
-#ifdef F77_TO_F95
-        if (symbol(i  ).eq.'C' .or. symbol(i  ).eq.'c') then
-         if (symbol(i+1).eq.'H' .or. symbol(i+1).eq.'h') then
-          if (symbol(i+2).eq.'A' .or. symbol(i+2).eq.'a') then
-           if (symbol(i+3).eq.'R' .or. symbol(i+3).eq.'r') then
-            if (symbol(i+4).eq.'A' .or. symbol(i+4).eq.'a') then
-             if (symbol(i+5).eq.'C' .or. symbol(i+5).eq.'c') then
-              if (symbol(i+6).eq.'T' .or. symbol(i+6).eq.'t') then
-               if (symbol(i+7).eq.'E' .or. symbol(i+7).eq.'e') then
-                if (symbol(i+8).eq.'R' .or. symbol(i+8).eq.'r') then
-                  i=i+8
-                  type=char_type
-                endif
-               endif
-              endif
-             endif
-            endif                       ! After this moment "i" is
-           endif                        ! index of the last character
-          endif                         ! of FORTRAN type declaration
-         endif                          ! which may be etiter "real",
-        endif                           ! "integer", or "character"..
-#endif
         if (type.ne.type_none) then     ! ...and j is index of the
           j=i+1
           do while (j.lt.length .and. symbol(j).eq.' ')
@@ -312,71 +247,6 @@
 ! specifier and size specifier.
 !
           if (symbol(j).eq.'*') then
-#ifdef F77_TO_F95
-            is=j+1
-            do while (symbol(is).eq.' ' .and. is.lt.length)
-              is=is+1
-            enddo
-            ie=is
-            do while (symbol(ie+1).ne.' ' .and.
-     &                symbol(ie+1).ne.',' .and. ie.lt.length)
-              ie=ie+1
-            enddo
-            isft=i+1-is
-            if (symbol(is).eq.'(' .and. symbol(ie).eq.')') then
-              is=is+1
-              ie=ie-1
-              isft=isft-2
-            endif
-            do k=1,ie-is+1
-              buffr(k)=symbol(k+is-1)
-            enddo                        ! Finally, modify the line
-                                         ! of code: add the number of
-            if (type.eq.char_type) then  ! newly inserted characters
-              isft=isft+6                ! to "isft", then move the
-              do k=length,ie+1,-1        ! rest of the line to the
-                symbol(k+isft)=symbol(k) ! right in order to make
-              enddo                      ! room for the insertion,
-              length=length+isft         ! adjust the length of the
-              symbol(i+1)='('            ! line accordingly, then
-              symbol(i+2)='l'            ! insert the new-style size
-              symbol(i+3)='e'            ! specification.
-              symbol(i+4)='n'
-              symbol(i+5)='='
-              do k=1,ie-is+1
-                symbol(i+k+5)=buffr(k)
-              enddo
-              symbol(i+ie-is+7)=')'
-            elseif (type.eq.int_type .or. type.eq.real_type) then
-# ifdef KIND_STYLE
-              isft=isft+7
-# else
-              isft=isft+2
-# endif
-              do k=length,ie+1,-1
-                symbol(k+isft)=symbol(k)
-              enddo
-              length=length+isft
-# ifdef KIND_STYLE
-              symbol(i+1)='('
-              symbol(i+2)='k'
-              symbol(i+3)='i'
-              symbol(i+4)='n'
-              symbol(i+5)='d'
-              symbol(i+6)='='
-              do k=1,ie-is+1
-                symbol(i+k+6)=buffr(k)
-              enddo
-              symbol(i+ie-is+8)=')'
-# else
-              symbol(i+1)='('
-              do k=1,ie-is+1
-                symbol(i+k+1)=buffr(k)
-              enddo
-              symbol(i+ie-is+3)=')'
-# endif
-            endif
-#endif
 !
 ! The following code segment deals with declaration of default-size
 ! real and integer type variables:  if so directed, insert explicit
@@ -399,23 +269,8 @@
           elseif (symbol(j).ne.'(' .and. (symbol(j).eq.' ' .or.
      &                      j.gt.i+1 .or. symbol(j).eq.',')) then
 
-#if defined REAL_TO_REAL8 && defined INT_TO_INT4
-            if (type.eq.int_type .or. type.eq.real_type) then
-#elif defined REAL_TO_REAL8
-            if (type.eq.real_type) then
-#elif defined INT_TO_INT4
             if (type.eq.int_type) then
-#endif
-#if defined REAL_TO_REAL8 || defined INT_TO_INT4
-# ifdef F77_TO_F95
-#  ifdef KIND_STYLE
-              isft=8
-#  else
-              isft=3
-#  endif
-# else
               isft=2
-# endif
               do k=length,j,-1           ! Move the rest of the line
                 symbol(k+isft)=symbol(k) ! isft symbols to the right
               enddo                      ! to make room for explicit
@@ -423,31 +278,12 @@
                 symbol(k)=' '            ! and increase lenght of
               enddo                      ! the line accordingly, then
               length=length+isft         ! insert size declaration.
-# ifdef F77_TO_F95
-#  ifdef KIND_STYLE
-              symbol(i+1)='('
-              symbol(i+2)='k'
-              symbol(i+3)='i'
-              symbol(i+4)='n'
-              symbol(i+5)='d'
-              symbol(i+6)='='
-              symbol(i+7)=type
-              symbol(i+8)=')'
-#  else
-              symbol(i+1)='('
-              symbol(i+2)=type
-              symbol(i+3)=')'
-#  endif
-# else
               symbol(i+1)='*'
               symbol(i+2)=type
-# endif
             endif
-#endif
           endif
         endif
 
-#ifdef DOUBLE_CONST
 !
 ! Recognize numerical constants of real type in the text of the
 ! program and convert them into double precision constants, for
@@ -609,7 +445,6 @@
 ! constant format with explicit type, such that 1.0_4 or 2.3_8.
 ! These are left unchanged.
 !
-# ifdef RUTGERS
                 if (symbol(m+2) .eq. '8') then
                   if (symbol(m+1) .eq. 'r') then
                     symbol(m  )='D'
@@ -626,7 +461,6 @@
                     enddo
                   endif
                 endif
-# endif
               elseif (k.lt.65 .or. (k.gt.90. and.
      &                k.lt.97) .or. k.gt.122) then
                 do while (symbol(m-1).eq.' ')
@@ -642,10 +476,8 @@
             endif
           endif
         enddo
-#endif
 
 
-#ifdef ZIG_ZAG
 !
 ! Recognize and transform parallel loops:
 !---------- --- --------- -------- ------
@@ -707,8 +539,6 @@
             endif
           endif
         endif
-#endif
-#ifdef ZIG_ZAG_OLD
 !
 ! Similarly as above, but designed to work for version of main.F,
 ! where parallel directives are inserted in front of each parallel
@@ -973,7 +803,6 @@
             endif
           endif
         endif
-#endif
 !
 ! Write the modified line of code into the output file.
 !------ --- -------- ---- -- ---- ---- --- ------ -----
