@@ -1179,45 +1179,6 @@
      &                                           *om_u(i,j)*on_u(i,j)/dt
      &                                           - Mrate(i,j,k,1)
             Mrate(i,j,k,1)= MVmix2(i,j,k,1) + Mrate(i,j,k,1)
-
-!
-! Divide all diagnostic terms by the cell surface 1/(pm*pn).
-! There after the unit of diag terms are :
-! (unit of velocity) * m * s-1  =  m2 * s-2
-!
-            cff=pm_u(i,j)*pn_u(i,j)
-     &                             SWITCH umask(i,j)
-
-            MXadv(i,j,k,1)   = MXadv(i,j,k,1)*cff
-            MYadv(i,j,k,1)   = MYadv(i,j,k,1)*cff
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE\
-                             || defined DIAGNOSTICS_VRT
-            MVadv(i,j,k,1)   = MVadv(i,j,k,1)*cff
-            MCor(i,j,k,1)    = MCor(i,j,k,1)*cff
-            MPrsgrd(i,j,k,1) = MPrsgrd(i,j,k,1)*cff
-#   if defined DIAGNOSTICS_BARO
-            MBaro(i,j,k,1)   = MBaro(i,j,k,1)*cff
-#   endif
-#   if defined M3FAST
-            Mfast(i,j,k,1)   = Mfast(i,j,k,1)*cff
-#   endif
-#  endif
-            MHmix(i,j,k,1,3-nstp) = MHmix(i,j,k,1,3-nstp)*cff
-            MVmix(i,j,k,1)   = MVmix(i,j,k,1)*cff
-            MVmix2(i,j,k,1)  = MVmix2(i,j,k,1)*cff
-            Mrate(i,j,k,1)   = Mrate(i,j,k,1)*cff
-            MHdiff(i,j,k,1)  = MHdiff(i,j,k,1)*cff
-
-#  ifdef MRL_WCI
-            Mvf(i,j,k,1)     = Mvf(i,j,k,1)*cff
-            Mbrk(i,j,k,1)    = Mbrk(i,j,k,1)*cff
-            MStCo(i,j,k,1)   = MStCo(i,j,k,1)*cff
-            MVvf(i,j,k,1)    = MVvf(i,j,k,1)*cff
-            MPrscrt(i,j,k,1) = MPrscrt(i,j,k,1)*cff
-            Msbk(i,j,k,1)    = Msbk(i,j,k,1)*cff
-            Mbwf(i,j,k,1)    = Mbwf(i,j,k,1)*cff
-            Mfrc(i,j,k,1)    = Mfrc(i,j,k,1)*cff
-#  endif
           enddo
         enddo
 
@@ -1228,45 +1189,6 @@
      &                                           *om_v(i,j)*on_v(i,j)/dt
      &                                           - Mrate(i,j,k,2)
             Mrate(i,j,k,2)= MVmix2(i,j,k,2) + Mrate(i,j,k,2)
-
-!
-! Divide all diagnostic terms by the cell surface 1/(pm*pn).
-! There after the unit of diag terms are :
-! (unit of velocity) * m * s-1  =  m2 * s-2
-
-            cff=pm_v(i,j)*pn_v(i,j)
-     &                         SWITCH vmask(i,j)
-
-            MXadv(i,j,k,2)   = MXadv(i,j,k,2)*cff
-            MYadv(i,j,k,2)   = MYadv(i,j,k,2)*cff
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE\
-                             || defined DIAGNOSTICS_VRT
-            MVadv(i,j,k,2)   = MVadv(i,j,k,2)*cff
-            MCor(i,j,k,2)    = MCor(i,j,k,2)*cff
-            MPrsgrd(i,j,k,2) = MPrsgrd(i,j,k,2)*cff
-#   if defined DIAGNOSTICS_BARO
-            MBaro(i,j,k,2) = MBaro(i,j,k,2)*cff
-#   endif
-#   if defined M3FAST
-            Mfast(i,j,k,2) = Mfast(i,j,k,2)*cff
-#   endif
-#  endif
-            MHmix(i,j,k,2,3-nstp) = MHmix(i,j,k,2,3-nstp)*cff
-            MVmix(i,j,k,2)   = MVmix(i,j,k,2)*cff
-            MVmix2(i,j,k,2)   = MVmix2(i,j,k,2)*cff
-            Mrate(i,j,k,2)   = Mrate(i,j,k,2)*cff
-            MHdiff(i,j,k,2)   = MHdiff(i,j,k,2)*cff
-
-#  ifdef MRL_WCI
-            Mvf(i,j,k,2)     = Mvf(i,j,k,2)*cff
-            Mbrk(i,j,k,2)    = Mbrk(i,j,k,2)*cff
-            MStCo(i,j,k,2)   = MStCo(i,j,k,2)*cff
-            MVvf(i,j,k,2)    = MVvf(i,j,k,2)*cff
-            MPrscrt(i,j,k,2) = MPrscrt(i,j,k,2)*cff
-            Msbk(i,j,k,2)    = Msbk(i,j,k,2)*cff
-            Mbwf(i,j,k,2)    = Mbwf(i,j,k,2)*cff
-            Mfrc(i,j,k,2)    = Mfrc(i,j,k,2)*cff
-#  endif
           enddo
         enddo
       enddo

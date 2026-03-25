@@ -108,83 +108,71 @@
 !--------------------------------------------------
 ! Compute other terms from the momentum budget
 !--------------------------------------------------
+       do k=1,N
 
-       do j=JU_RANGE
-         do i=IU_RANGE
-          do k=1,N
+         do j=JU_RANGE
+           do i=IU_RANGE
+            work2d(i,j)=0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+           enddo
+         enddo
 
-            workr(i,j,k)=om_u(i,j)* on_u(i,j)
-     &           * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+         do j=JV_RANGE
+           do i=IV_RANGE
+            work2d2(i,j)=0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+           enddo
+         enddo
 
-
-          enddo
-        enddo
-      enddo
-
-       do j=JV_RANGE
-         do i=IV_RANGE
-          do k=1,N
-
-            work(i,j,k)=om_v(i,j)*on_v(i,j)
-     &           * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
-
-
-          enddo
-        enddo
-      enddo
-
-        do j=Jstr,Jend
-          do i=Istr,Iend
-          do k=1,N
+         do j=Jstr,Jend
+           do i=Istr,Iend
 
             ekHadv(i,j,k) = 0.5 * (
-     &       (MXadv(i  ,j  ,k,1)+ MYadv(i  ,j  ,k,1))*workr(i  ,j  ,k)
-     &      +(MXadv(i+1,j  ,k,1)+ MYadv(i+1,j  ,k,1))*workr(i+1,j  ,k)
-     &      +(MXadv(i  ,j  ,k,2)+ MYadv(i  ,j  ,k,2))*work(i  ,j  ,k)
-     &      +(MXadv(i  ,j+1,k,2)+ MYadv(i  ,j+1,k,2))*work(i  ,j+1,k)
+     &       (MXadv(i  ,j  ,k,1)+ MYadv(i  ,j  ,k,1))*work2d(i  ,j)
+     &      +(MXadv(i+1,j  ,k,1)+ MYadv(i+1,j  ,k,1))*work2d(i+1,j)
+     &      +(MXadv(i  ,j  ,k,2)+ MYadv(i  ,j  ,k,2))*work2d2(i,j  )
+     &      +(MXadv(i  ,j+1,k,2)+ MYadv(i  ,j+1,k,2))*work2d2(i,j+1)
      &                      )
 
             ekHdiff(i,j,k) = 0.5 * (
-     &                         MHdiff(i  ,j  ,k,1) * workr(i  ,j  ,k)
-     &                       + MHdiff(i+1,j  ,k,1) * workr(i+1,j  ,k)
-     &                       + MHdiff(i  ,j  ,k,2) * work(i  ,j  ,k)
-     &                       + MHdiff(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                         MHdiff(i  ,j  ,k,1) * work2d(i  ,j)
+     &                       + MHdiff(i+1,j  ,k,1) * work2d(i+1,j)
+     &                       + MHdiff(i  ,j  ,k,2) * work2d2(i,j  )
+     &                       + MHdiff(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 
 
             ekVadv(i,j,k) = 0.5 * (
-     &                         MVadv(i  ,j  ,k,1) * workr(i  ,j  ,k)
-     &                       + MVadv(i+1,j  ,k,1) * workr(i+1,j  ,k)
-     &                       + MVadv(i  ,j  ,k,2) * work(i  ,j  ,k)
-     &                       + MVadv(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                         MVadv(i  ,j  ,k,1) * work2d(i  ,j)
+     &                       + MVadv(i+1,j  ,k,1) * work2d(i+1,j)
+     &                       + MVadv(i  ,j  ,k,2) * work2d2(i,j  )
+     &                       + MVadv(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 
             ekCor(i,j,k) = 0.5 * (
-     &                         MCor(i  ,j  ,k,1) * workr(i  ,j  ,k)
-     &                       + MCor(i+1,j  ,k,1) * workr(i+1,j  ,k)
-     &                       + MCor(i  ,j  ,k,2) * work(i  ,j  ,k)
-     &                       + MCor(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                         MCor(i  ,j  ,k,1) * work2d(i  ,j)
+     &                       + MCor(i+1,j  ,k,1) * work2d(i+1,j)
+     &                       + MCor(i  ,j  ,k,2) * work2d2(i,j  )
+     &                       + MCor(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 
             ekPrsgrd(i,j,k) = 0.5 * (
-     &                        MPrsgrd(i  ,j  ,k,1) * workr(i  ,j  ,k)
-     &                      + MPrsgrd(i+1,j  ,k,1) * workr(i+1,j  ,k)
-     &                      + MPrsgrd(i  ,j  ,k,2) * work(i  ,j  ,k)
-     &                      + MPrsgrd(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                        MPrsgrd(i  ,j  ,k,1) * work2d(i  ,j)
+     &                      + MPrsgrd(i+1,j  ,k,1) * work2d(i+1,j)
+     &                      + MPrsgrd(i  ,j  ,k,2) * work2d2(i,j  )
+     &                      + MPrsgrd(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 
             ekHmix(i,j,k) = 0.5 * (
-     &                    MHmix(i  ,j  ,k,1,3-nstp) * workr(i  ,j  ,k)
-     &                  + MHmix(i+1,j  ,k,1,3-nstp) * workr(i+1,j  ,k)
-     &                  + MHmix(i  ,j  ,k,2,3-nstp) * work(i  ,j  ,k)
-     &                  + MHmix(i  ,j+1,k,2,3-nstp) * work(i  ,j+1,k)
+     &                    MHmix(i  ,j  ,k,1,3-nstp) * work2d(i  ,j)
+     &                  + MHmix(i+1,j  ,k,1,3-nstp) * work2d(i+1,j)
+     &                  + MHmix(i  ,j  ,k,2,3-nstp) * work2d2(i,j  )
+     &                  + MHmix(i  ,j+1,k,2,3-nstp) * work2d2(i,j+1)
      &                      )
 
             ekVmix(i,j,k) = 0.5 * (
-     &                         MVmix(i  ,j  ,k,1) * workr(i  ,j  ,k)
-     &                       + MVmix(i+1,j  ,k,1) * workr(i+1,j  ,k)
-     &                       + MVmix(i  ,j  ,k,2) * work(i  ,j  ,k)
-     &                       + MVmix(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                         MVmix(i  ,j  ,k,1) * work2d(i  ,j)
+     &                       + MVmix(i+1,j  ,k,1) * work2d(i+1,j)
+     &                       + MVmix(i  ,j  ,k,2) * work2d2(i,j  )
+     &                       + MVmix(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 
             ekrate(i,j,k) = 0.5 * (
@@ -202,26 +190,26 @@
      &                      )
 
             ekVmix2(i,j,k) = 0.5 * (
-     &                         MVmix2(i  ,j  ,k,1) * workr(i  ,j  ,k)
-     &                       + MVmix2(i+1,j  ,k,1) * workr(i+1,j  ,k)
-     &                       + MVmix2(i  ,j  ,k,2) * work(i  ,j  ,k)
-     &                       + MVmix2(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                         MVmix2(i  ,j  ,k,1) * work2d(i  ,j)
+     &                       + MVmix2(i+1,j  ,k,1) * work2d(i+1,j)
+     &                       + MVmix2(i  ,j  ,k,2) * work2d2(i,j  )
+     &                       + MVmix2(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 
 # if defined DIAGNOSTICS_BARO
             ekBaro(i,j,k) = 0.5 * (
-     &                         MBaro(i  ,j  ,k,1) * workr(i  ,j  ,k)
-     &                       + MBaro(i+1,j  ,k,1) * workr(i+1,j  ,k)
-     &                       + MBaro(i  ,j  ,k,2) * work(i  ,j  ,k)
-     &                       + MBaro(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                         MBaro(i  ,j  ,k,1) * work2d(i  ,j)
+     &                       + MBaro(i+1,j  ,k,1) * work2d(i+1,j)
+     &                       + MBaro(i  ,j  ,k,2) * work2d2(i,j  )
+     &                       + MBaro(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 # endif
 # if defined M3FAST
             ekfast(i,j,k) = 0.5 * (
-     &                         Mfast(i  ,j  ,k,1) * workr(i  ,j  ,k)
-     &                       + Mfast(i+1,j  ,k,1) * workr(i+1,j  ,k)
-     &                       + Mfast(i  ,j  ,k,2) * work(i  ,j  ,k)
-     &                       + Mfast(i  ,j+1,k,2) * work(i  ,j+1,k)
+     &                         Mfast(i  ,j  ,k,1) * work2d(i  ,j)
+     &                       + Mfast(i+1,j  ,k,1) * work2d(i+1,j)
+     &                       + Mfast(i  ,j  ,k,2) * work2d2(i,j  )
+     &                       + Mfast(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 # endif
 
