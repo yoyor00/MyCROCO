@@ -140,8 +140,6 @@ C$OMP BARRIER
      &     lmd_sdd3=0.85)    !
 
 # ifdef LMD_RIMIX
-#  define RI_HSMOOTH
-#  define RI_VSMOOTH
       real Ri, ratio, dudz,dvdz,shear2
 # endif
 # ifdef LMD_BOTEK

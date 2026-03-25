@@ -490,19 +490,16 @@
 ======================================================================
 */
 #ifdef TS_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
-#elif defined TS_VADV_AKIMA
 #elif defined TS_VADV_WENO5
 #elif defined TS_VADV_C2
 #else
-# undef  TS_VADV_SPLINES   /* Splines vertical advection            */
-# define TS_VADV_AKIMA     /* 4th-order Akima vertical advection    */
+# define  TS_VADV_SPLINES   /* Splines vertical advection            */
 # undef  TS_VADV_WENO5     /* 5th-order WENOZ vertical advection    */
 # undef  TS_VADV_C2        /* 2nd-order centered vertical advection */
 #endif
 
 #ifdef VADV_ADAPT_IMP
 # define TS_VADV_SPLINES
-# undef   TS_VADV_AKIMA
 # undef   TS_VADV_WENO5
 # undef   TS_VADV_C2
 #endif
@@ -747,7 +744,10 @@
 # undef LMD_BKPP2005  /*<- unresolved problems with bkpp2005 at depth
                            default: lmd_bkpp1994 */
 #endif
-
+# ifdef LMD_RIMIX
+#  define RI_HSMOOTH
+#  define RI_VSMOOTH
+# endif
 /*
 ======================================================================
                 Biogeochemical models
