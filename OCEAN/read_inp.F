@@ -2942,12 +2942,12 @@ c        close(testunit)
 #   endif
      &        ' Tracer of index', itrc,'/',NT
           enddo
-#  ifdef DIAGNOSTICS_TS_MLD_DENS
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
         MPI_master_only write(stdout,'(/1x,A,2(/1x,1pe10.3,2x,A))')
      &   'Tresholds for Mixed Layer calculation:', 
      &    mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
      &    mld_crit_T, 'mld_crit_T     Temperature treshold [C]'
-#  endif  /* DIAGNOSTICS_TS_MLD_DENS */
+#   endif  /* DIAGNOSTICS_TS_MLD_DENS */
 #  endif  /* TRACERS */
 # endif  /* DIAGNOSTICS_TS_MLD */
 
@@ -2967,9 +2967,19 @@ c        close(testunit)
           do itrc=1,NT
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia2D_avg(itrc),
+#    ifdef DIAGNOSTIC_TS_MLD_DENS
+     &        'write MLD (density crit.) Integrated Tracer equation terms ',
+#    else
      &        'write Avg Hbl Integrated  Tracer equation terms ',
+#    endif
      &        ' Tracer of index', itrc,'/',NT
           enddo
+#    ifdef DIAGNOSTICS_TS_MLD_DENS
+        MPI_master_only write(stdout,'(/1x,A,2(/1x,1pe10.3,2x,A))')
+     &   'Tresholds for Mixed Layer calculation:',
+     &    mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
+     &    mld_crit_T, 'mld_crit_T     Temperature treshold [C]'
+#    endif  /* DIAGNOSTICS_TS_MLD_DENS */
 #   endif  /* TRACERS */
 #  endif  /* DIAGNOSTICS_TS_MLD */
 # endif  /* AVERAGES */

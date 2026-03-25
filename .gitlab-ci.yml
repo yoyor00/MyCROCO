@@ -122,8 +122,8 @@ debug_ifort_realist:
     expire_in: 1 week
     reports:
       junit: BENCH/results/debug_ifx-host_ci/junit_report.xml
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+#  rules:
+#    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 debug_vortex:
   stage: bench
