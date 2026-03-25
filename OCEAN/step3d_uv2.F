@@ -625,6 +625,19 @@
                             || defined DIAGNOSTICS_PV \
                             || defined DIAGNOSTICS_VRT
       do k=1,N
+
+        do j=JstrR,JendR
+          do i=Istr,IendR
+            Mrate(i,j,k,1)=0.
+          enddo
+        enddo
+
+        do j=Jstr,JendR
+          do i=IstrR,IendR
+            Mrate(i,j,k,2)=0.
+          enddo
+        enddo
+
         do j=Jstr,Jend
           do i=IstrU,Iend
             Mrate(i,j,k,1)=( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
