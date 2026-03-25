@@ -14,7 +14,7 @@
 !-----------------------------------------------------------------------
    ln_stogen  = .true.     ! activate/deactivate STOGEN (global switch)
    ln_stobulk = .false.     ! stochastic bulk formulation for air-sea fluxes
-   ln_stostress = .false.  ! stochastic formulation of surface stress (non-bulk)
+   ln_stostress = .true.  ! stochastic formulation of surface stress (non-bulk)
    ln_stogls  = .false.    ! stochastic formulation of vertical mixing
    ln_rststo   = .false.   ! start from mean parameter (F) or from restart file (T)
    ln_rstseed  = .false.   ! read seed of RNG from restart file
@@ -22,7 +22,7 @@
    cn_storst_out = "restart_sto_out.nc" ! output restart file for stochastic parameters
    cn_xi2d = "stress"   ! name of field to save as xi2d in history file (if requested in croco.in, options : bulk_cd, stress, gls_Sprod, gls_Bprod)
    cn_xi3d = "gls_zlevs" ! name of field to save as xi3d in history file (if requested in croco.in, options : gls_zlevs)
-   cn_rngtype = 'default'     ! name of random number generator to use (default, kiss32, kiss64, shr3, testmpi)
+   cn_rngtype = 'testmpi'     ! name of random number generator to use (default, kiss32, kiss64, shr3, testmpi)
    cn_normal_algo = 'default' ! algorithm to obtain normal numbers (default, polar, ziggurat)
 /
 !-----------------------------------------------------------------------
