@@ -39,7 +39,6 @@
 # include "param.h"
 # include "grid.h"
 # include "ocean3d.h"
-# include "ocean2d.h"
 # include "forces.h"
 # include "scalars.h"
 # include "params_bulk.h"
