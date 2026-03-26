@@ -69,6 +69,7 @@
 #if defined MUSTANG
       real workrsed(GLOBAL_2D_ARRAY,ksdmax)
       real work2d(GLOBAL_2D_ARRAY)
+      integer b3dvar_full
 #endif
 
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
@@ -677,6 +678,9 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 
 # ifdef MUSTANG
 
+      b3dvar_full = 24 
+      ! to use the whole vertical axis whatever choice_nivsed_out value
+
 ! ksmi, ksma
       work2d=ksmi
       indx=1
@@ -706,7 +710,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       enddo
       indx=indx+1
       ierr=nf_fwrite(workrsed, ncidrst, rstMust(3),
-     &                                       record, b3dvar)
+     &                                       record, b3dvar_full)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_rstMust(1,indx))
         write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
@@ -720,7 +724,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       enddo
       indx=indx+1
       ierr=nf_fwrite(workrsed, ncidrst, rstMust(4),
-     &                                       record, b3dvar)
+     &                                       record, b3dvar_full)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_rstMust(1,indx))
         write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
@@ -735,7 +739,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
        indx=indx+1
 
       ierr=nf_fwrite(workrsed, ncidrst, rstMust(5),
-     &                                       record, b3dvar)
+     &                                       record, b3dvar_full)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_rstMust(1,indx))
         write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
@@ -751,7 +755,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
          enddo
 
         ierr=nf_fwrite(workrsed, ncidrst, rstMust(indx),
-     &                                       record, b3dvar)
+     &                                       record, b3dvar_full)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname_rstMust(1,indx))
           write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr

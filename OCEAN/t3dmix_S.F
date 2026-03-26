@@ -165,8 +165,8 @@
 #  ifdef TS_HADV_RSUP3
      &                     +diff3d_u(i,j,k)
 #  endif
-     &                           )
 # endif
+     &                           )
 #endif
           enddo
         enddo
@@ -189,8 +189,8 @@
 #  ifdef TS_HADV_RSUP3
      &                     +diff3d_v(i,j,k)
 #  endif
-     &                           )
 # endif
+     &                           )
 #endif
           enddo
         enddo
