@@ -281,7 +281,7 @@
       <field field_ref="T_entr_mld" name="T_entr_mld"  />
       <field field_ref="T_aver_mld" name="T_aver_mld"  />
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
-      <field field_ref="T_depth_mld" name="T_depth_mld" />
+      <field field_ref="D_depth_mld" name="D_depth_mld" />
 #  endif
 #  endif
 #  ifdef SALINITY
@@ -293,7 +293,7 @@
       <field field_ref="S_entr_mld" name="S_entr_mld"  />
       <field field_ref="S_aver_mld" name="S_aver_mld"  />
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
-      <field field_ref="S_depth_mld" name="S_depth_mld" />
+      <field field_ref="T_depth_mld" name="T_depth_mld" />
 #  endif
 #  endif
 #  endif
