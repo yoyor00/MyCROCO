@@ -27,6 +27,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
 
+- DIAGNOSTICS : integration error in diagnostics on MLD in (density, temp, n2).
+                Corrected. Keep only density criterion (#429)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist

@@ -577,9 +577,5 @@
       call exchange_r2d_tile (istr,iend,jstr,jend,
      &                     hbls(START_2D_ARRAY,3-nstp))
 #endif
-
-#ifdef DIAGNOSTICS_TS_MLD_DENS
-           kbl1(i,j)=kbl(i,j)
-#endif
       return
       end
