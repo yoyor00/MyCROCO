@@ -12,6 +12,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 
+  non equal to 1 and initialisation from file and restart (Issue #469)
+- MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
+  restart inconsistencies with MORPHODYN, update testcase plot script 
+  accordingly (#470)
+
+- AGRIF : Fix allocation of  message passing arrays (ibuf...) when 3 ghost points
+  needed (UP5, WENO)    (Issues #310 #458)
 
 - COUPLING : missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
 
@@ -20,6 +28,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
+
+- OCEAN : Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
+
+- WET_DRY : add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
 
 ### Changed
 
@@ -34,11 +46,24 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : review lateral erosion feature (Issue #349)
 
+- MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
+
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
+- WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
+  and not in cppdefs_dev.h (#465)
+
+- BULK_FLUX : Update wasp bulk flux parametrization, 
+  cppkey BULK_WASP (Issue #453)
+
+- BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
+
+- RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
+  distribution of flow, enabling a transition from the AKIMA scheme to 
+  SPLINES (#478)
 
 ### Deprecated
 
@@ -51,12 +76,17 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : 
   - remove key_MUSTANG_lateralerosion replace by a boolean in 
     namelist (Issue #349)
+  - remove key_sand2D, activation only by a boolean in 
+    namelist (Issue #351)
+  - remove MUSTANG_CORFLUX replace by a boolean in 
+    namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
 
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
+  - WET_DRY0 (#393) never used 
   - UV_HADV_TVD, UV_VADV_TVD, W_HADV_TVD, W_VADV_TVD (#391)
   - BVF_MIXING (#398)
   - LMD_NUW_GARGETT, obsolete (#402)
@@ -71,26 +101,31 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - DEBUG_ARMOR, DEBUG, DIAGNOSTICS_DEBUG, NBQ_HZCORR_DEBUG (#415)
   - PP_MIXING, MY2_MIXING, MY25_MIXING (#418)
   - XCOMM_FORMAT (#419)
+  - TR (#395)
   - LMD_SKPP_MONOB never define (#400)
   - LIMIT_UNSTABLE_ONLY is always define (#401)
   - MLCONVEC (#399)
+  - TS_VADV_AKIMA and TS_HADV_AKIMA (#392)
 
 ### Other
 
 - Cleaning :
+  - remove TEST_CASES/IGW_OA directory with PDFs, namelist, XIOS XML files, and README  (#337)
   - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
   - remove routine set_HUV1, not used (#410)
   - remove ZETA_DRY_IO cpp key and avoid modifying zeta with bathymetry in output (#406 and #384)
   - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
+  - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
+    in cppdefs_dev.h (#403)
 
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
-  P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
+  R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
+  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
-  M. Plus, M. Schreiber, A. Zribi  
+  M. Plus, M. Schreiber, A. Zribi, E. Le Bouedec, B. Lemieux-Dudon
