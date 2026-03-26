@@ -66,7 +66,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   SPLINES (#478)
 
 - CPP keys : restore the default definition for LIMIT_BSTRESS (the key is activated 
-  in cppdefs_dev.h unless BTRESS_FAST is previously defined) (#456) 
+  in cppdefs_dev.h unless BSTRESS_FAST is previously defined) (#456) 
 
 ### Deprecated
 
