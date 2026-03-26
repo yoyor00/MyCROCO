@@ -11,10 +11,14 @@ import os
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker
-import numpy as np
 import xarray
 import xarray.plot
 import argparse
+
+
+def fmt(x, pos):
+    return "{:.4}".format(x)
+
 
 # ── CLI (standard BENCH-compatible interface) ────────────
 
@@ -23,21 +27,30 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="estuary_his.nc",
+    "--file",
+    type=str,
+    default="estuary_his.nc",
     help="Path to the NetCDF history file",
 )
 parser.add_argument(
-    "--makepdf", action="store_true", help="Generate a PDF of the plots",
+    "--makepdf",
+    action="store_true",
+    help="Generate a PDF of the plots",
 )
 parser.add_argument(
-    "--makepng", action="store_true", help="Generate a PNG of the plots",
+    "--makepng",
+    action="store_true",
+    help="Generate a PNG of the plots",
 )
 parser.add_argument(
-    "--no-show", action="store_true",
+    "--no-show",
+    action="store_true",
     help="Do not display the plots on the screen",
 )
 parser.add_argument(
-    "--output-dir", type=str, default=".",
+    "--output-dir",
+    type=str,
+    default=".",
     help="Directory to save the output files",
 )
 args = parser.parse_args()
@@ -95,7 +108,7 @@ fig, ax = plt.subplots(figsize=(10, 5))
 p = tauskinmask_max_xy.plot.pcolormesh(
     cmap=cmap_lev, add_colorbar=False, levels=lev, extend="max"
 )
-fmt = lambda x, pos: "{:.4}".format(x)
+
 cb = matplotlib.pyplot.colorbar(p, ax=ax, format=matplotlib.ticker.FuncFormatter(fmt))
 cb.ax.tick_params(labelsize=10)
 cb.set_ticks(lev)
@@ -104,8 +117,9 @@ ax.set_xlabel("X (m)")
 ax.set_ylabel("Y (m)")
 ax.grid()
 
-plt.suptitle("ESTUARY test case — maximum bed shear stress",
-             fontsize=13, fontweight="bold")
+plt.suptitle(
+    "ESTUARY test case — maximum bed shear stress", fontsize=13, fontweight="bold"
+)
 plt.subplots_adjust(top=0.88)
 
 # ── Save / Show (do not modify) ──────────────────────────

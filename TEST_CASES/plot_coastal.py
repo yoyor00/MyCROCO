@@ -17,6 +17,11 @@ import cartopy
 import cartopy.crs as ccrs
 import argparse
 
+
+def fmt(x, pos):
+    return "{:.4}".format(x)
+
+
 # ── CLI (standard BENCH-compatible interface) ────────────
 
 parser = argparse.ArgumentParser(
@@ -24,21 +29,30 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="vilaine_his.nc",
+    "--file",
+    type=str,
+    default="vilaine_his.nc",
     help="Path to the NetCDF history file",
 )
 parser.add_argument(
-    "--makepdf", action="store_true", help="Generate a PDF of the plots",
+    "--makepdf",
+    action="store_true",
+    help="Generate a PDF of the plots",
 )
 parser.add_argument(
-    "--makepng", action="store_true", help="Generate a PNG of the plots",
+    "--makepng",
+    action="store_true",
+    help="Generate a PNG of the plots",
 )
 parser.add_argument(
-    "--no-show", action="store_true",
+    "--no-show",
+    action="store_true",
     help="Do not display the plots on the screen",
 )
 parser.add_argument(
-    "--output-dir", type=str, default=".",
+    "--output-dir",
+    type=str,
+    default=".",
     help="Directory to save the output files",
 )
 args = parser.parse_args()
@@ -65,6 +79,7 @@ d_hsedmask = xarray.DataArray(
 
 # ── Helper functions ──────────────────────────────────────
 
+
 def add_gridlines(ax):
     """Add formatted lat/lon gridlines to a cartopy axis."""
     gl = ax.gridlines(draw_labels=True, linewidth=0.5, alpha=0.5)
@@ -76,6 +91,7 @@ def add_gridlines(ax):
     gl.yformatter = cartopy.mpl.gridliner.LATITUDE_FORMATTER
     gl.xlocator = matplotlib.ticker.AutoLocator()
     gl.ylocator = matplotlib.ticker.AutoLocator()
+
 
 # ── Plot ─────────────────────────────────────────────────
 
@@ -110,8 +126,9 @@ d_hsedmask.plot.pcolormesh(
     vmin=-0.001,
     vmax=0.001,
 )
-ax.set_title("COASTAL test case — HSED difference (end − start)",
-             fontsize=13, fontweight="bold")
+ax.set_title(
+    "COASTAL test case — HSED difference (end − start)", fontsize=13, fontweight="bold"
+)
 add_gridlines(ax)
 
 # ── Save / Show (do not modify) ──────────────────────────
@@ -151,14 +168,16 @@ for var in listvar:
         levels=lev,
         extend="max",
     )
-    fmt = lambda x, pos: "{:.4}".format(x)
-    cb = matplotlib.pyplot.colorbar(p, ax=ax, format=matplotlib.ticker.FuncFormatter(fmt))
+    cb = matplotlib.pyplot.colorbar(
+        p, ax=ax, format=matplotlib.ticker.FuncFormatter(fmt)
+    )
     cb.ax.tick_params(labelsize=10)
     cb.set_ticks(lev)
     cb.set_label("kg/m³", size=10)
     ax.set_title(
         f"COASTAL test case — maximum concentration of {var}",
-        fontsize=13, fontweight="bold",
+        fontsize=13,
+        fontweight="bold",
     )
     add_gridlines(ax)
 

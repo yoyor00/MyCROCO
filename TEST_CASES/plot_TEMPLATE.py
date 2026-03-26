@@ -12,7 +12,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import argparse
-import croco_utils as cr
 
 # ── CLI (standard BENCH-compatible interface) ────────────
 
@@ -21,21 +20,30 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="xxxx_his.nc",
+    "--file",
+    type=str,
+    default="xxxx_his.nc",
     help="Path to the NetCDF history file",
 )
 parser.add_argument(
-    "--makepdf", action="store_true", help="Generate a PDF of the plots",
+    "--makepdf",
+    action="store_true",
+    help="Generate a PDF of the plots",
 )
 parser.add_argument(
-    "--makepng", action="store_true", help="Generate a PNG of the plots",
+    "--makepng",
+    action="store_true",
+    help="Generate a PNG of the plots",
 )
 parser.add_argument(
-    "--no-show", action="store_true",
+    "--no-show",
+    action="store_true",
     help="Do not display the plots on the screen",
 )
 parser.add_argument(
-    "--output-dir", type=str, default=".",
+    "--output-dir",
+    type=str,
+    default=".",
     help="Directory to save the output files",
 )
 args = parser.parse_args()
@@ -70,7 +78,7 @@ hc = float(hc_var[:]) if hc_var is not None else float(nc.hc)
 # Read variables
 # TODO: adapt to your test case
 zeta = nc.variables["zeta"][tndx, :, :]
-temp = nc.variables["temp"][tndx, -1, :, :]   # surface T
+temp = nc.variables["temp"][tndx, -1, :, :]  # surface T
 
 # Optional: vertical section at mid-domain
 # j_sec = h.shape[0] // 2
@@ -113,8 +121,9 @@ ax.set_aspect("equal")
 # ax.set_ylabel("Depth (m)")
 # ax.set_title(f"Temperature section at j={j_sec}")
 
-plt.suptitle(f"XXXX test case — t = {time[tndx]:.2f} days",
-             fontsize=13, fontweight="bold")
+plt.suptitle(
+    f"XXXX test case — t = {time[tndx]:.2f} days", fontsize=13, fontweight="bold"
+)
 plt.subplots_adjust(top=0.88)
 
 # ── Save / Show (do not modify) ──────────────────────────

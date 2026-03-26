@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import argparse
-import croco_utils as cr
 import xarray
 
 
@@ -14,9 +12,7 @@ def LOAD_MODEL(filein, i0, j0):
     data = xarray.open_dataset(filein)
     ptu = data.u.isel(eta_rho=j0, xi_u=i0, time=slice(-31 * 4, -1)).mean(axis=0)
     sig = data.s_rho
-    sigw = data.s_w
     Cs = data.Cs_rho
-    Csw = data.Cs_w
     hc = data.hc
     h = data.h.isel(eta_rho=j0, xi_rho=i0)
     zeta = data.zeta.isel(eta_rho=j0, xi_rho=i0, time=slice(-31 * 4, -1)).mean(axis=0)

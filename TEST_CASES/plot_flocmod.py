@@ -269,7 +269,7 @@ def trace1DV(
     else:
         ustar = 0.0 * data.wstr
         times = data.time.values
-    dist_surf_on_bottom = ((data.s_w[-1] - data.s_rho)) / ((data.s_rho - data.s_w[0]))
+    dist_surf_on_bottom = (data.s_w[-1] - data.s_rho) / (data.s_rho - data.s_w[0])
     shear_rate = np.sqrt(
         ustar**3.0
         / (0.4 * (data.h + data.zeta) * (1.0e-6 + 1.0e-09))

@@ -25,11 +25,11 @@ import croco_utils as cr
 # (netcdf_name, label, unit, colormap, symmetric, grid)
 
 CANDIDATE_3D = [
-    ("temp", "Temperature",                "°C",   "RdYlBu_r", False, "r"),
-    ("u",    "U-velocity",                 "m/s",  "RdBu_r",   True,  "r"),
-    ("v",    "V-velocity",                 "m/s",  "RdBu_r",   True,  "r"),
-    ("AKv",  "Vertical viscosity (Akv)",   "m²/s", "viridis",  False, "w"),
-    ("AKt",  "Vertical diffusivity (Akt)", "m²/s", "viridis",  False, "w"),
+    ("temp", "Temperature", "°C", "RdYlBu_r", False, "r"),
+    ("u", "U-velocity", "m/s", "RdBu_r", True, "r"),
+    ("v", "V-velocity", "m/s", "RdBu_r", True, "r"),
+    ("AKv", "Vertical viscosity (Akv)", "m²/s", "viridis", False, "w"),
+    ("AKt", "Vertical diffusivity (Akt)", "m²/s", "viridis", False, "w"),
 ]
 
 # ── 2D forcing fields to inspect (time series), in display order ──
@@ -38,13 +38,13 @@ CANDIDATE_3D = [
 #   group: 'surface' or 'bottom' — plotted on separate sub-axes
 
 CANDIDATE_FORCING = [
-    ("sustr",  "Surface u-stress (τx)", "N/m²",  "tab:blue",   "surface"),
-    ("svstr",  "Surface v-stress (τy)", "N/m²",  "tab:cyan",   "surface"),
-    ("shflux",  "Net heat flux",         "W/m²",  "tab:red",    "surface"),
-    ("swrad",  "Shortwave radiation",   "W/m²",  "tab:orange", "surface"),
-    ("bostr",  "Bottom stress",         "N/m²",  "tab:brown",  "bottom"),
-    ("bustr",  "Bottom u-stress",       "N/m²",  "tab:brown",  "bottom"),
-    ("bvstr",  "Bottom v-stress",       "N/m²",  "tab:olive",  "bottom"),
+    ("sustr", "Surface u-stress (τx)", "N/m²", "tab:blue", "surface"),
+    ("svstr", "Surface v-stress (τy)", "N/m²", "tab:cyan", "surface"),
+    ("shflux", "Net heat flux", "W/m²", "tab:red", "surface"),
+    ("swrad", "Shortwave radiation", "W/m²", "tab:orange", "surface"),
+    ("bostr", "Bottom stress", "N/m²", "tab:brown", "bottom"),
+    ("bustr", "Bottom u-stress", "N/m²", "tab:brown", "bottom"),
+    ("bvstr", "Bottom v-stress", "N/m²", "tab:olive", "bottom"),
 ]
 
 # ── CLI ──────────────────────────────────────────────────
@@ -57,27 +57,37 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="scm_his.nc",
+    "--file",
+    type=str,
+    default="scm_his.nc",
     help="Path to the NetCDF history file (default: scm_his.nc)",
 )
 parser.add_argument(
-    "--makepdf", action="store_true", help="Generate a PDF of the plots",
+    "--makepdf",
+    action="store_true",
+    help="Generate a PDF of the plots",
 )
 parser.add_argument(
-    "--makepng", action="store_true", help="Generate a PNG of the plots",
+    "--makepng",
+    action="store_true",
+    help="Generate a PNG of the plots",
 )
 parser.add_argument(
-    "--no-show", action="store_true",
+    "--no-show",
+    action="store_true",
     help="Do not display the plots on the screen",
 )
 parser.add_argument(
-    "--output-dir", type=str, default=".",
+    "--output-dir",
+    type=str,
+    default=".",
     help="Directory to save the output files (default: current directory)",
 )
 args = parser.parse_args()
 
 
 # ── Helpers ──────────────────────────────────────────────
+
 
 def is_nontrivial(arr, rtol=1e-10, require_variation=True):
     """Return True if the array has meaningful content."""
@@ -90,9 +100,10 @@ def is_nontrivial(arr, rtol=1e-10, require_variation=True):
     has_variation = span / scale > rtol
     has_signal = abs(vmax) > rtol
     if require_variation:
-        return has_variation       # for 3D fields: must vary
+        return has_variation  # for 3D fields: must vary
     else:
         return has_variation or has_signal  # for forcing: non-zero suffit
+
 
 # ── Read data ────────────────────────────────────────────
 
@@ -134,7 +145,7 @@ z_col_w = zw[:, j0, i0]
 # ── Scan forcing fields (2D time series) ─────────────────
 
 forcing_curves = []
-seen_forcing = set()   # avoid duplicates (sustr vs Ustr)
+seen_forcing = set()  # avoid duplicates (sustr vs Ustr)
 
 for vname, label, unit, color, group in CANDIDATE_FORCING:
     if vname not in nc.variables:
@@ -161,14 +172,16 @@ for vname, label, unit, color, group in CANDIDATE_FORCING:
         continue
     seen_forcing.add(dedup_key)
 
-    forcing_curves.append({
-        "vname": vname,
-        "values": raw,
-        "label": label,
-        "unit": unit,
-        "color": color,
-        "group": group,
-    })
+    forcing_curves.append(
+        {
+            "vname": vname,
+            "values": raw,
+            "label": label,
+            "unit": unit,
+            "color": color,
+            "group": group,
+        }
+    )
     print(f"  Forcing: '{vname}' ({label}).")
 
 # Group forcing by surface/bottom
@@ -200,15 +213,17 @@ for vname, label, unit, cmap, sym, grid in CANDIDATE_3D:
 
     z_col = z_col_w if grid == "w" else z_col_r
 
-    hovmoller_panels.append({
-        "vname": vname,
-        "values": raw,
-        "z": z_col,
-        "label": label,
-        "unit": unit,
-        "cmap": cmap,
-        "symmetric": sym,
-    })
+    hovmoller_panels.append(
+        {
+            "vname": vname,
+            "values": raw,
+            "z": z_col,
+            "label": label,
+            "unit": unit,
+            "cmap": cmap,
+            "symmetric": sym,
+        }
+    )
     print(f"  Plotting '{vname}'.")
 
 # Title from NetCDF attribute
@@ -221,7 +236,7 @@ nc.close()
 # Hovmöller colorbars go in the right column.
 # Forcing panels leave the right column empty.
 
-n_forcing = len(forcing_groups)    # 0, 1, or 2 panels
+n_forcing = len(forcing_groups)  # 0, 1, or 2 panels
 n_hovmoller = len(hovmoller_panels)
 n_total = n_forcing + n_hovmoller
 
@@ -233,13 +248,12 @@ if n_total == 0:
 heights = [1] * n_forcing + [3] * n_hovmoller
 
 fig = plt.figure(figsize=(10, sum(heights) * 1.0 + 1))
-gs = fig.add_gridspec(n_total, 2,
-                      height_ratios=heights,
-                      width_ratios=[1, 0.03],
-                      hspace=0.35, wspace=0.05)
+gs = fig.add_gridspec(
+    n_total, 2, height_ratios=heights, width_ratios=[1, 0.03], hspace=0.35, wspace=0.05
+)
 
 panel_idx = 0
-plot_axes = []   # all left-column axes, in order
+plot_axes = []  # all left-column axes, in order
 
 # ── Forcing panels (time series) ─────────────────────────
 
@@ -252,8 +266,12 @@ for group_name in ["surface", "bottom"]:
     curves = forcing_groups[group_name]
 
     for curve in curves:
-        ax.plot(time, curve["values"], color=curve["color"],
-                label=f"{curve['label']} [{curve['unit']}]")
+        ax.plot(
+            time,
+            curve["values"],
+            color=curve["color"],
+            label=f"{curve['label']} [{curve['unit']}]",
+        )
 
     ax.set_ylabel(curves[0]["unit"])
     ax.legend(loc="upper right", fontsize=8)

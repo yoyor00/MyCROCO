@@ -110,7 +110,7 @@ try:
                 hm = np.squeeze(nc.variables["Hm"][:, j, :])
                 var_hmorph = "Hm"
             else:
-                raise KeyError(f"Neither 'hmorph' nor 'Hm' found in file")
+                raise KeyError("Neither 'hmorph' nor 'Hm' found in file")
 
         # Convert from masked array to regular array if needed
         if hasattr(hm, "mask"):

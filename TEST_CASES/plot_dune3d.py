@@ -119,7 +119,7 @@ try:
                 hmorph0 = np.squeeze(nc.variables["Hm"][0, :, :])
                 hmorph = np.squeeze(nc.variables["Hm"][tndx, :, :])
             else:
-                raise KeyError(f"Neither 'hmorph' nor 'Hm' found in file")
+                raise KeyError("Neither 'hmorph' nor 'Hm' found in file")
 
             print(f"Using variable: {var_hmorph}")
 

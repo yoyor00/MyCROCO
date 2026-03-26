@@ -27,33 +27,46 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="thacker_his.nc",
+    "--file",
+    type=str,
+    default="thacker_his.nc",
     help="Path to the NetCDF file",
 )
 parser.add_argument(
-    "--tindex", type=int, default=None,
+    "--tindex",
+    type=int,
+    default=None,
     help="Time index to plot (default: last time step)",
 )
 parser.add_argument(
-    "--makepdf", action="store_true", help="Save plots as PDF files",
+    "--makepdf",
+    action="store_true",
+    help="Save plots as PDF files",
 )
 parser.add_argument(
-    "--makepng", action="store_true", help="Save individual plots as PNG files",
+    "--makepng",
+    action="store_true",
+    help="Save individual plots as PNG files",
 )
 parser.add_argument(
-    "--no-show", action="store_true", help="Suppress plot display",
+    "--no-show",
+    action="store_true",
+    help="Suppress plot display",
 )
 parser.add_argument(
-    "--output-dir", type=str, default=".", help="Directory to save output files",
+    "--output-dir",
+    type=str,
+    default=".",
+    help="Directory to save output files",
 )
 args = parser.parse_args()
 os.makedirs(args.output_dir, exist_ok=True)
 
 # ── Physical parameters (must match ana_initial.F) ───────
 
-eta = 0.1       # nondimensional amplitude
-D0 = 10.0       # max depth at rest (m)
-Lt = 80.0e3     # length scale (m)
+eta = 0.1  # nondimensional amplitude
+D0 = 10.0  # max depth at rest (m)
+Lt = 80.0e3  # length scale (m)
 g = 9.81
 
 
@@ -64,10 +77,11 @@ def zeta_analytical_2dv(xr, t, omega):
 
 def zeta_analytical_3d(xr, yr, t, omega):
     """Analytical zeta for THACKER 3D (paraboloid, f!=0)."""
-    return 2 * eta * D0 * (
-        xr * np.cos(omega * t) / Lt
-        + yr * np.sin(omega * t) / Lt
-        - 0.5 * eta / Lt
+    return (
+        2
+        * eta
+        * D0
+        * (xr * np.cos(omega * t) / Lt + yr * np.sin(omega * t) / Lt - 0.5 * eta / Lt)
     )
 
 
@@ -98,11 +112,11 @@ else:
 
 # Detect 2DV vs 3D
 Mm = nc.dimensions["eta_rho"].size
-is_2dv = (Mm <= 3)
+is_2dv = Mm <= 3
 print(f"Detected mode: {'2DV' if is_2dv else '3D'} (eta_rho = {Mm})")
 
 # Grid
-xr = nc.variables["x_rho"][:]    # (M, L) in meters
+xr = nc.variables["x_rho"][:]  # (M, L) in meters
 yr = nc.variables["y_rho"][:]
 hr = nc.variables["h"][:]
 f0 = float(nc.variables["f"][0, 0])
@@ -118,10 +132,11 @@ N = len(nc.dimensions["s_rho"])
 omega = 0.5 * f0 + np.sqrt(0.25 * f0**2 + 2 * g * D0 / Lt**2)
 T_period = 2 * np.pi / omega
 
-print(f"  f = {f0:.2e}, omega = {omega:.6e}, T = {T_period/3600:.2f} h")
+print(f"  f = {f0:.2e}, omega = {omega:.6e}, T = {T_period / 3600:.2f} h")
 
 
 # ── Helper: mask dry cells ───────────────────────────────
+
 
 def mask_dry(zeta_field, h_field, dcrit):
     """Set dry cells to NaN."""
@@ -137,7 +152,7 @@ def mask_dry(zeta_field, h_field, dcrit):
 
 if is_2dv:
     j0 = Mm // 2
-    xr_1d = xr[j0, :] / 1000.0   # km
+    xr_1d = xr[j0, :] / 1000.0  # km
     hr_1d = hr[j0, :]
 
     time_val = scrum_time[tindex]
@@ -181,7 +196,7 @@ if is_2dv:
     # Original instants: every 30min output → index = hours * 2
     t_compare = []
     for hour in [60, 62, 64]:
-        ti = hour * 2   # assuming NWRT gives 1 record every 30 min
+        ti = hour * 2  # assuming NWRT gives 1 record every 30 min
         if ti < nt:
             t_compare.append(ti)
 
@@ -205,8 +220,7 @@ if is_2dv:
     fig1 = plt.figure(figsize=(12, 7))
 
     levels = np.linspace(-100, 100, 21)
-    cf = plt.contourf(xr_2d, zr, uerr, levels=levels,
-                      cmap="RdBu_r", extend="both")
+    cf = plt.contourf(xr_2d, zr, uerr, levels=levels, cmap="RdBu_r", extend="both")
     cbar = plt.colorbar(cf, label="U Error [%]")
     cbar.set_ticks(np.linspace(-100, 100, 11))
 
@@ -222,8 +236,11 @@ if is_2dv:
     plt.grid(True, alpha=0.3)
 
     thour = time_val / 3600
-    plt.title(f"THACKER 2DV — η (m) and U error (%) at t = {thour:.1f} h",
-              fontsize=13, fontweight="bold")
+    plt.title(
+        f"THACKER 2DV — η (m) and U error (%) at t = {thour:.1f} h",
+        fontsize=13,
+        fontweight="bold",
+    )
 
     if args.makepng:
         p = os.path.join(args.output_dir, "thacker_uerr.png")
@@ -240,11 +257,9 @@ if is_2dv:
     plt.plot(xr_1d, -hr_1d, "k-", linewidth=4)
 
     for idx, (ti, time_ti, zm, za) in enumerate(zeta_compare):
-        tlabel = f"{time_ti/3600:.0f} h"
-        plt.plot(xr_1d, za, "g-", linewidth=2,
-                 label="Analytical" if idx == 0 else "")
-        plt.plot(xr_1d, zm, "r-", linewidth=2,
-                 label="Numerical" if idx == 0 else "")
+        tlabel = f"{time_ti / 3600:.0f} h"
+        plt.plot(xr_1d, za, "g-", linewidth=2, label="Analytical" if idx == 0 else "")
+        plt.plot(xr_1d, zm, "r-", linewidth=2, label="Numerical" if idx == 0 else "")
         # Label on curve
         valid_pts = np.where(~np.isnan(zm))[0]
         if len(valid_pts) > 10:
@@ -255,8 +270,9 @@ if is_2dv:
     plt.ylim(-3, 3)
     plt.xlabel("X (km)")
     plt.ylabel("Z (m)")
-    plt.title("THACKER 2DV — Sea level at various times",
-              fontsize=13, fontweight="bold")
+    plt.title(
+        "THACKER 2DV — Sea level at various times", fontsize=13, fontweight="bold"
+    )
     plt.legend()
     plt.grid(True, alpha=0.3)
 
@@ -310,21 +326,32 @@ else:
             # Numerical zeta (color fill)
             vmax = eta * D0 * 2.5 / Lt * Lt  # ~ 2*eta*D0
             vmax = max(np.nanmax(np.abs(zeta_num)), 0.5)
-            cf = ax.pcolormesh(xr_km, yr_km, zeta_num,
-                               cmap="RdBu_r", shading="auto",
-                               vmin=-vmax, vmax=vmax)
+            cf = ax.pcolormesh(
+                xr_km,
+                yr_km,
+                zeta_num,
+                cmap="RdBu_r",
+                shading="auto",
+                vmin=-vmax,
+                vmax=vmax,
+            )
             fig.colorbar(cf, ax=ax, label="m", shrink=0.9)
 
             # Analytical zeta (contour lines)
             clevels = np.linspace(-vmax, vmax, 11)
             clevels = clevels[clevels != 0]
-            ax.contour(xr_km, yr_km, zeta_ana,
-                       levels=clevels, colors="k", linewidths=0.8,
-                       linestyles="dashed")
+            ax.contour(
+                xr_km,
+                yr_km,
+                zeta_ana,
+                levels=clevels,
+                colors="k",
+                linewidths=0.8,
+                linestyles="dashed",
+            )
 
             # Dry area boundary (h=0 contour = rim of the bowl)
-            ax.contour(xr_km, yr_km, hr, levels=[Dcrit],
-                       colors="grey", linewidths=1.5)
+            ax.contour(xr_km, yr_km, hr, levels=[Dcrit], colors="grey", linewidths=1.5)
 
             thour = time_val / 3600
             ax.set_title(f"t = {thour:.1f} h")
@@ -345,7 +372,7 @@ else:
     # ── Read data for vertical section at y=0 (j = Mm/2) ──
 
     j0 = Mm // 2
-    xr_1d = xr[j0, :] / 1000.0   # km
+    xr_1d = xr[j0, :] / 1000.0  # km
     hr_1d = hr[j0, :]
     time_sec = scrum_time[tindex]
 
@@ -390,7 +417,7 @@ else:
     zeta_ana_final = zeta_analytical_3d(xr, yr, scrum_time[tindex], omega)
     valid = hr > Dcrit
     if np.sum(valid) > 0:
-        err_l2 = np.sqrt(np.nanmean((zeta_final[valid] - zeta_ana_final[valid])**2))
+        err_l2 = np.sqrt(np.nanmean((zeta_final[valid] - zeta_ana_final[valid]) ** 2))
         err_linf = np.nanmax(np.abs(zeta_final[valid] - zeta_ana_final[valid]))
     else:
         err_l2 = err_linf = 0.0
@@ -399,7 +426,8 @@ else:
         f"THACKER 3D — Sea surface elevation\n"
         f"Color: numerical, dashed: analytical    "
         f"L2 = {err_l2:.2e} m, L∞ = {err_linf:.2e} m",
-        fontsize=12, fontweight="bold",
+        fontsize=12,
+        fontweight="bold",
     )
     plt.subplots_adjust(hspace=0.25, top=0.90)
 
@@ -417,8 +445,9 @@ else:
     fig2 = plt.figure(figsize=(12, 7))
 
     levels = np.linspace(-100, 100, 21)
-    cf = plt.contourf(xr_sec_2d, zr_sec, uerr_sec, levels=levels,
-                      cmap="RdBu_r", extend="both")
+    cf = plt.contourf(
+        xr_sec_2d, zr_sec, uerr_sec, levels=levels, cmap="RdBu_r", extend="both"
+    )
     cbar = plt.colorbar(cf, label="U Error [%]")
     cbar.set_ticks(np.linspace(-100, 100, 11))
 
@@ -434,9 +463,11 @@ else:
     plt.grid(True, alpha=0.3)
 
     thour = time_sec / 3600
-    plt.title(f"THACKER 3D — Section at y=0: η (m) and U error (%) "
-              f"at t = {thour:.1f} h",
-              fontsize=13, fontweight="bold")
+    plt.title(
+        f"THACKER 3D — Section at y=0: η (m) and U error (%) at t = {thour:.1f} h",
+        fontsize=13,
+        fontweight="bold",
+    )
 
     if args.makepng:
         p = os.path.join(args.output_dir, "thacker_section.png")

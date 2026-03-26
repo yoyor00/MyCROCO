@@ -28,21 +28,30 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="croco_his_body_rot.nc",
+    "--file",
+    type=str,
+    default="croco_his_body_rot.nc",
     help="Path to the NetCDF history file",
 )
 parser.add_argument(
-    "--makepdf", action="store_true", help="Generate a PDF of the plots",
+    "--makepdf",
+    action="store_true",
+    help="Generate a PDF of the plots",
 )
 parser.add_argument(
-    "--makepng", action="store_true", help="Generate a PNG of the plots",
+    "--makepng",
+    action="store_true",
+    help="Generate a PNG of the plots",
 )
 parser.add_argument(
-    "--no-show", action="store_true",
+    "--no-show",
+    action="store_true",
     help="Do not display the plots on the screen",
 )
 parser.add_argument(
-    "--output-dir", type=str, default=".",
+    "--output-dir",
+    type=str,
+    default=".",
     help="Directory to save the output files (default: current directory)",
 )
 args = parser.parse_args()
@@ -72,7 +81,7 @@ klev = -1
 #   SOLID_BODY_ROT: quarter rotation
 #   DIAGONAL_ADV:   quarter diagonal traverse
 t0 = np.squeeze(nc.variables["temp"][0, klev, :, :])
-tquart = np.squeeze(nc.variables["temp"][nt // 3 , klev, :, :])
+tquart = np.squeeze(nc.variables["temp"][nt // 3, klev, :, :])
 tfin = np.squeeze(nc.variables["temp"][-1, klev, :, :])
 
 # Salinity constancy check (if available)
@@ -92,7 +101,7 @@ error = tfin - t0
 peak_init = np.max(t0)
 peak_final = np.max(tfin)
 peak_ratio = peak_final / peak_init if peak_init > 0 else 0.0
-l2_error = np.sqrt(np.mean(error ** 2))
+l2_error = np.sqrt(np.mean(error**2))
 linf_error = np.max(np.abs(error))
 
 print(f"=== {title} ===")
@@ -116,8 +125,7 @@ vmax_t = np.max(t0)
 
 # Panel 1: T initial
 ax = axes[0, 0]
-cf = ax.pcolormesh(x, y, t0, cmap="RdYlBu_r", shading="auto",
-                   vmin=vmin_t, vmax=vmax_t)
+cf = ax.pcolormesh(x, y, t0, cmap="RdYlBu_r", shading="auto", vmin=vmin_t, vmax=vmax_t)
 fig.colorbar(cf, ax=ax)
 ax.set_ylabel("Y (km)")
 ax.set_title("Temperature — t = 0")
@@ -126,8 +134,9 @@ ax.tick_params(labelbottom=False)
 
 # Panel 2: T quarter-period
 ax = axes[0, 1]
-cf = ax.pcolormesh(x, y, tquart, cmap="RdYlBu_r", shading="auto",
-                   vmin=vmin_t, vmax=vmax_t)
+cf = ax.pcolormesh(
+    x, y, tquart, cmap="RdYlBu_r", shading="auto", vmin=vmin_t, vmax=vmax_t
+)
 fig.colorbar(cf, ax=ax)
 ax.set_title("Temperature — t = T")
 ax.set_aspect("equal")
@@ -135,8 +144,9 @@ ax.tick_params(labelbottom=False)
 
 # Panel 3: T final
 ax = axes[1, 0]
-cf = ax.pcolormesh(x, y, tfin, cmap="RdYlBu_r", shading="auto",
-                   vmin=vmin_t, vmax=vmax_t)
+cf = ax.pcolormesh(
+    x, y, tfin, cmap="RdYlBu_r", shading="auto", vmin=vmin_t, vmax=vmax_t
+)
 fig.colorbar(cf, ax=ax)
 ax.set_xlabel("X (km)")
 ax.set_ylabel("Y (km)")
@@ -146,18 +156,20 @@ ax.set_aspect("equal")
 # Panel 4: Error T(final) - T(initial)
 ax = axes[1, 1]
 emax = max(np.max(np.abs(error)), 1e-15)
-cf = ax.pcolormesh(x, y, error, cmap="RdBu_r", shading="auto",
-                   vmin=-emax, vmax=emax)
+cf = ax.pcolormesh(x, y, error, cmap="RdBu_r", shading="auto", vmin=-emax, vmax=emax)
 fig.colorbar(cf, ax=ax)
 ax.set_xlabel("X (km)")
 ax.set_title("Error T(final) − T(initial)")
 ax.set_aspect("equal")
 
-fig.suptitle(f"{title}\n"
-             f"Peak ratio = {peak_ratio:.4f}    "
-             f"L2 error = {l2_error:.2e}    "
-             f"L∞ error = {linf_error:.2e}",
-             fontsize=12, fontweight="bold")
+fig.suptitle(
+    f"{title}\n"
+    f"Peak ratio = {peak_ratio:.4f}    "
+    f"L2 error = {l2_error:.2e}    "
+    f"L∞ error = {linf_error:.2e}",
+    fontsize=12,
+    fontweight="bold",
+)
 plt.subplots_adjust(hspace=0.3, top=0.90)
 
 # ── Save / Show ──────────────────────────────────────────
