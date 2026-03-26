@@ -111,7 +111,6 @@ debug_ifort_realist:
       --compare-to sequential-ifx \
       --title debug_ifx \
       --debug \
-      --cvtk \
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
@@ -143,7 +142,6 @@ debug_ifort_agrif_realist:
       --compare-to sequential-ifx \
       --title debug_ifx \
       --debug \
-      --cvtk \
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
@@ -155,8 +153,8 @@ debug_ifort_agrif_realist:
     expire_in: 1 week
     reports:
       junit: BENCH/results/debug_ifx-host_ci/junit_report.xml
-#  rules:
-#    - if: $CI_PIPELINE_SOURCE == "schedule"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 debug_vortex:
   stage: bench
@@ -346,7 +344,6 @@ debug_agrif_realist:
       --variants sequential,mpi-4 \
       --title debug_agrif_realist \
       --debug \
-      --cvtk \
       --rebuild \
       --host host_ci \
       --data-root-path $DATAROOTPATH \
