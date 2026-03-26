@@ -227,7 +227,7 @@
     },
     "patches": {},
     "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1",
-                      "CROCO_FILES/croco_dia.nc", "CROCO_FILES/croco_dia.nc.1"],
+                      "CROCO_FILES/croco_dia.nc"],
   },
   "BENGUELA_LR_AGRIF_2WAY": {
     "title": "BENGUELA_LR_AGRIF_2WAY",
@@ -244,7 +244,7 @@
     },
     "patches": {},
     "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1",
-                      "CROCO_FILES/croco_dia.nc", "CROCO_FILES/croco_dia.nc.1"],
+                      "CROCO_FILES/croco_dia.nc"],
   },
   "BENGUELA_LR_AGRIF_2WAY_MLD_DENS": {
     "title": "BENGUELA_LR_AGRIF_2WAY",
@@ -262,7 +262,7 @@
     },
     "patches": {},
     "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1",
-                      "CROCO_FILES/croco_dia.nc", "CROCO_FILES/croco_dia.nc.1"],
+                      "CROCO_FILES/croco_dia.nc"],
   },
   // BENGUELA NBQ
   "BENGUELA_LR_NBQ": {
