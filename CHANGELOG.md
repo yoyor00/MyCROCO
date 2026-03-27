@@ -18,6 +18,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - OMEGA : Add a condition on the NBQ_MASS key for some terms of the first 
   part of the computation of omega (#447)
 
+- CPP keys : restore the default definition for LIMIT_BSTRESS (the key is activated 
+  in cppdefs_dev.h unless BSTRESS_FAST is previously defined) (#456) 
+
 ### Deprecated
 
 
