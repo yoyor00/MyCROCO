@@ -104,6 +104,7 @@
     "@realist": [
       "BENGUELA_LR_BRY",
       "BENGUELA_LR_BRY_PISCES",
+      "BENGUELA_LR_BRY_PISCES_AGRIF_2WAY",
       "BENGUELA_LR_TIDES_BULK",
       "BENGUELA_LR_BULK",
       "BENGUELA_LR_BULKONLINE",
@@ -174,7 +175,9 @@
       "SED_TOY_FLOC1D",
     ],
     "@vortex": ["VORTEX", "VORTEX_AGRIF_2WAY"],
-    "@agrif_realist": ["BENGUELA_LR_AGRIF_2WAY"],
+    "@agrif_realist": [
+      "BENGUELA_LR_AGRIF_2WAY"
+    ],
   },
 
   ////////////////////////////// VARIANTS ////////////////////////////////////
