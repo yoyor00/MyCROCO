@@ -125,6 +125,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
   - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
     in cppdefs_dev.h (#403)
+  - remove hard coded keys in mpc.F (#404)
 
 
 ### Contributors on this release
