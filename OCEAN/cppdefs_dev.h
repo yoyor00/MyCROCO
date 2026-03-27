@@ -790,21 +790,24 @@
 #endif
 /*
 ======================================================================
-    Bottom stress option:
+    Bottom stress :
 
-    LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid
-    numerical instability associated with reversing bottom flow
-    NOW replaced by BSTRESS_FAST option
+    LIMIT_BSTRESS: Set limiting factor to avoid numerical instability 
+    associated with the Euler explicit treatment of the bottom stress
+    BSTRESS_FAST is an alternative with computation at fast time step
 ======================================================================
 */
-/*
 #ifndef BSTRESS_FAST
-# define  LIMIT_BSTRESS
+# define LIMIT_BSTRESS
 #endif
-*/
 #ifdef INNERSHELF
-# undef  LIMIT_BSTRESS
+# undef LIMIT_BSTRESS
 #endif
+/*
+======================================================================
+    BBL :
+======================================================================
+*/
 #ifdef BBL
 # ifdef OW_COUPLING
 # elif defined WAVE_OFFLINE
