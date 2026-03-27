@@ -13,8 +13,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
-
 - BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
+
+- OMEGA : Add a condition on the NBQ_MASS key for some terms of the first 
+  part of the computation of omega (#447)
 
 ### Deprecated
 
@@ -29,6 +31,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Contributors on this release
 
 - Contributors already on board : 
-  G. Cambon, S. Le Gac, R. Person
+  G. Cambon, N. Ducousso, S. Le Gac, P. Marchesiello, R. Person
 
 - New contributors : E. Le Bouedec
