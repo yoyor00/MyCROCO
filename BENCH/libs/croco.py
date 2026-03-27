@@ -694,7 +694,7 @@ class Croco:
         # Check time_stepping is a card in this case
         if len(extract_elements_from_file(full_filename, "diags_eddy_avg")) > 0:
             HISTORY_LINE = extract_elements_from_file(full_filename, "diags_eddy_avg")
-            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
+            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 2, 1)
             patches = {
                 filename: {
                     "mode": "insert-after",
