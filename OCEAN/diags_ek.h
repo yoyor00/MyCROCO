@@ -35,10 +35,6 @@
       real ekfast(GLOBAL_2D_ARRAY,N)
 !CSDISTRIBUTE_RESHAPE ekfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
-      real ekwrkrate(GLOBAL_2D_ARRAY,N,2)
-!CSDISTRIBUTE_RESHAPE ekwrkrate(BLOCK_PATTERN,*) BLOCK_CLAUSE
-      real ekwrkvol(GLOBAL_2D_ARRAY,N,2)
-!CSDISTRIBUTE_RESHAPE ekwrkvol(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekwrkwind(GLOBAL_2D_ARRAY,2)
 !CSDISTRIBUTE_RESHAPE ekwrkwind(BLOCK_PATTERN,*) BLOCK_CLAUSE
       real ekwrkdrag(GLOBAL_2D_ARRAY,2)
@@ -98,8 +94,6 @@
 # if defined M3FAST
      &       /diag_ekfast/ekfast
 # endif
-     &       /diag_ekwrkrate/ekwrkrate
-     &       /diag_ekwrkvol/ekwrkvol
      &       /diag_ekwrkwind/ekwrkwind
      &       /diag_ekwrkdrag/ekwrkdrag
 # ifdef AVERAGES

@@ -33,8 +33,8 @@
 # include "work.h"
 # include "diagnostics.h"
 # include "diags_ek.h"
-# include "compute_auxiliary_bounds.h"
-
+!# include "compute_auxiliary_bounds.h"
+# include "compute_extended_bounds.h"
 
 
 !--------------------------------------------------
@@ -43,34 +43,69 @@
 #  define IU_RANGE Istr,Iend
 #  define IV_RANGE Istr,Iend
 # else
-#  define IU_RANGE IstrR,IendR+1
-#  define IV_RANGE IstrR,IendR+1
+#  define IU_RANGE Istr,IendR
+#  define IV_RANGE IstrR,IendR
 # endif
 !
 # ifdef NS_PERIODIC
 #  define JU_RANGE Jstr,Jend
 #  define JV_RANGE Jstr,Jend
 # else
-#  define JU_RANGE JstrR,JendR+1
-#  define JV_RANGE JstrR,JendR+1
+#  define JU_RANGE JstrR,JendR
+#  define JV_RANGE Jstr,JendR
 # endif
 
 !--------------------------------------------------
-! Add supplementary terms ekwrkrate and ekwrkvol (not present in momentum budget)
+! Compute first ekrate and ekol (not present in momentum budget)
 !--------------------------------------------------
 
-        do j=JU_RANGE
-          do i=IU_RANGE
-            do k=1,N
+       do k=1,N
 
-            ekwrkrate(i,j,k,1) = 0.5 * (
+         do j=JU_RANGE
+           do i=IU_RANGE
+            work2d(i,j)=0.5 * (
      &           0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
      &          -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
      &                                        *om_u(i,j)*on_u(i,j)/dt
 #  ifdef MASKING
      &                     *umask(i,j)
 #  endif
-            ekwrkvol(i,j,k,1) = 0.5* (
+           enddo
+         enddo
+
+         do j=JV_RANGE
+           do i=IV_RANGE
+            work2d2(i,j)=0.5 * (
+     &           0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
+     &          -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
+     &                                        *om_v(i,j)*on_v(i,j)/dt
+#  ifdef MASKING
+     &                     *vmask(i,j)
+#  endif
+           enddo
+         enddo
+
+         do j=Jstr,Jend
+           do i=Istr,Iend
+
+            ekrate(i,j,k) = 0.5 * (
+     &                         work2d(i  ,j  )
+     &                       + work2d(i+1,j  )
+     &                       + work2d2(i  ,j  )
+     &                       + work2d2(i  ,j+1)
+     &                      )
+
+
+          enddo
+        enddo
+       enddo
+
+
+      do k=1,N
+
+         do j=JU_RANGE
+           do i=IU_RANGE
+            work2d(i,j)=0.5* (
      &                  (  0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
      &                   - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))        )
      &                  * u(i,j,k,nstp) * u(i,j,k,nnew)
@@ -78,22 +113,12 @@
 #  ifdef MASKING
      &                     *umask(i,j)
 #  endif
-            enddo
-          enddo
-        enddo
+           enddo
+         enddo
 
-        do j=JV_RANGE
-          do i=IV_RANGE
-            do k=1,N
-
-            ekwrkrate(i,j,k,2) = 0.5 * (
-     &           0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
-     &          -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
-     &                                        *om_v(i,j)*on_v(i,j)/dt
-#  ifdef MASKING
-     &                     *vmask(i,j)
-#  endif
-            ekwrkvol(i,j,k,2) = 0.5* (
+         do j=JV_RANGE
+           do i=IV_RANGE
+            work2d2(i,j)=0.5* (
      &                  (  0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))
      &                   - 0.5*(Hz(i,j,k)+Hz(i,j-1,k))        )
      &                  * v(i,j,k,nstp) * v(i,j,k,nnew)
@@ -101,9 +126,23 @@
 #  ifdef MASKING
      &                     *vmask(i,j)
 #  endif
-            enddo
+           enddo
+         enddo
+
+         do j=Jstr,Jend
+           do i=Istr,Iend
+
+            ekvol(i,j,k) = 0.5 * (
+     &                         work2d(i  ,j  )
+     &                       + work2d(i+1,j  )
+     &                       + work2d2(i  ,j  )
+     &                       + work2d2(i  ,j+1)
+     &                      )
+
+
           enddo
-            enddo
+        enddo
+      enddo
 
 !--------------------------------------------------
 ! Compute other terms from the momentum budget
@@ -175,19 +214,6 @@
      &                       + MVmix(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 
-            ekrate(i,j,k) = 0.5 * (
-     &                         ekwrkrate(i  ,j  ,k,1)
-     &                       + ekwrkrate(i+1,j  ,k,1)
-     &                       + ekwrkrate(i  ,j  ,k,2)
-     &                       + ekwrkrate(i  ,j+1,k,2)
-     &                      )
-
-            ekvol(i,j,k) = 0.5 * (
-     &                         ekwrkvol(i  ,j  ,k,1)
-     &                       + ekwrkvol(i+1,j  ,k,1)
-     &                       + ekwrkvol(i  ,j  ,k,2)
-     &                       + ekwrkvol(i  ,j+1,k,2)
-     &                      )
 
             ekVmix2(i,j,k) = 0.5 * (
      &                         MVmix2(i  ,j  ,k,1) * work2d(i  ,j)
@@ -218,7 +244,7 @@
 
           enddo
         enddo
-      enddo
+       enddo
 
 ! ------- ------------- ------ ------ - -----
 
