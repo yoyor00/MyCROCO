@@ -26,19 +26,27 @@
      &                   A2d(1, 7,trd), A2d(1, 8,trd), A2d(1, 9,trd),
      &                   A2d(1,10,trd), A2d(1,11,trd), A2d(1,12,trd),
      &                                                 A2d(1,13,trd),
-     &                   A3d(1, 3,trd), A3d(1, 4,trd), A3d(1, 5,trd),
-     &                   A3d(1, 6,trd), A3d(1, 7,trd), A3d(1, 8,trd))
+     &                                  A3d(1, 3,trd), A3d(1, 4,trd)
+# ifdef OPENACC
+     &                                 ,A3d(1, 5,trd), A3d(1, 6,trd),
+     &                                  A3d(1, 7,trd), A3d(1, 8,trd)
+# endif
+     &                )
       return
       end
 
       subroutine rhs3d_tile (Istr,Iend,Jstr,Jend, ru,rv, CF,FC,DC,
-     &                              wrk1,wrk2,    UFx,UFe,VFx,VFe,
-     &                                        UFx4,UFe4,VFx4,VFe4,
-     &                             wrk1_3D,wrk2_3D, UFx_3D,UFe_3D,
-     &                                              VFx_3D,VFe_3D)
-#ifdef OBSTRUCTION
+     &                                         UFx, UFe, VFx, VFe,
+     &                                         UFx4,UFe4,VFx4,VFe4,
+     &                                  wrk1,wrk2, wrk1_3D,wrk2_3D
+
+# ifdef OPENACC
+     &                                ,UFx_3D,UFe_3D,VFx_3D,VFe_3D
+# endif
+     &                      )
+# ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_fuz, obst_fvz
-#endif
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
@@ -63,26 +71,30 @@
 
       real   ru(PRIVATE_2D_SCRATCH_ARRAY,N),
      &       rv(PRIVATE_2D_SCRATCH_ARRAY,N),
-     &       CF(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,cff1,cff2,
-     &       FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffX,
-     &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cffE,
-     &  wrk1_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), curvX,
-     &  wrk2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), curvE,
-     &   UFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &   UFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
-     &   VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
-     &   VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), gamma
+     &       CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
+     &       FC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
+     &       DC(PRIVATE_1D_SCRATCH_ARRAY,0:N)
       real wrk1(PRIVATE_2D_SCRATCH_ARRAY),
      &     wrk2(PRIVATE_2D_SCRATCH_ARRAY),
      &      UFx(PRIVATE_2D_SCRATCH_ARRAY),
      &      UFe(PRIVATE_2D_SCRATCH_ARRAY),
      &      VFx(PRIVATE_2D_SCRATCH_ARRAY), 
      &      VFe(PRIVATE_2D_SCRATCH_ARRAY)
-      real  UFx4(PRIVATE_2D_SCRATCH_ARRAY),
-     &      UFe4(PRIVATE_2D_SCRATCH_ARRAY),
-     &      VFx4(PRIVATE_2D_SCRATCH_ARRAY),
-     &      VFe4(PRIVATE_2D_SCRATCH_ARRAY)
-
+      real UFx4(PRIVATE_2D_SCRATCH_ARRAY),
+     &     UFe4(PRIVATE_2D_SCRATCH_ARRAY),
+     &     VFx4(PRIVATE_2D_SCRATCH_ARRAY),
+     &     VFe4(PRIVATE_2D_SCRATCH_ARRAY)
+      real  
+     &  wrk1_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &  wrk2_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# ifdef OPENACC
+      real  
+     &   UFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &   UFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N),
+     &   VFx_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N), 
+     &   VFe_3D(PRIVATE_2D_SCRATCH_ARRAY,0:N)
+# endif
+      real cff,cff1,cff2,cffX,cffE,curvX,curvE,gamma
       parameter (gamma = -0.25)
 # include "grid.h"
 # include "ocean3d.h"
@@ -111,16 +123,16 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-# if defined UV_HADV_WENO5 || defined UV_HADV_C6 || defined UV_HADV_UP5 \
-  || defined UV_VADV_WENO5 || defined UV_VADV_C6 || defined UV_VADV_UP5 \
-  || defined UV_HADV_WENO7 || defined UV_HADV_C8 || defined UV_HADV_UP7
+# if defined UV_HADV_WENO5 || defined UV_HADV_C6  || defined UV_HADV_UP5 \
+  || defined UV_HADV_WENO7 || defined UV_HADV_C8  || defined UV_HADV_UP7 \
+  || defined UV_HADV_WENO9 || defined UV_HADV_C10 || defined UV_HADV_UP9
 
-      REAL    :: q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3
-      REAL    :: ua, vel, cdiff, cdif
 !$acc declare create(vel)
-      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6, flux7, flux8
-      REAL    :: flx2, flx3, flx4, flx5, flx6, flx7
-      REAL    :: mask0, mask1, mask2, mask3, mask4
+      REAL :: q_im5,q_im4,q_im3,q_im2,q_im1,q_i,q_ip1,q_ip2,q_ip3,q_ip4
+      REAL :: ua, vel, cdiff, cdif
+      REAL :: flux1,flux2,flux3,flux4,flux5,flux6,flux7,flux8,flux9,flux10
+      REAL :: flx2,flx3,flx4,flx5,flx6,flx7,flx9
+      REAL :: mask0,mask1,mask2,mask3,mask4,mask5
 
       flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
 
@@ -160,6 +172,25 @@
      &      - 21. *(q_im3 - q_ip2)
      &      + 63. *(q_im2 - q_ip1)
      &      - 105.*(q_im1 - q_i  ) ) / 840.
+
+      flux10(q_im5, q_im4, q_im3, q_im2, q_im1,
+     &       q_i,   q_ip1, q_ip2, q_ip3, q_ip4, ua) =
+     &     ( 3254.*(q_i   + q_im1)
+     &     -  946.*(q_ip1 + q_im2)
+     &     +  254.*(q_ip2 + q_im3)
+     &     -   46.*(q_ip3 + q_im4)
+     &     +    4.*(q_ip4 + q_im5) ) / 5040.
+
+      flux9 (q_im5, q_im4, q_im3, q_im2, q_im1,
+     &       q_i,   q_ip1, q_ip2, q_ip3, q_ip4, ua) =
+     &flux10(q_im5, q_im4, q_im3, q_im2, q_im1,
+     &       q_i,   q_ip1, q_ip2, q_ip3, q_ip4, ua)
+     &      -sign(1.,ua)* (
+     &         -4.*(q_im5 - q_ip4)
+     &     +   36.*(q_im4 - q_ip3)
+     &     -  144.*(q_im3 - q_ip2)
+     &     +  336.*(q_im2 - q_ip1)
+     &     -  504.*(q_im1 - q_i  ) ) / 5040.
 # endif
 !
 # include "compute_auxiliary_bounds.h"
@@ -408,13 +439,15 @@
 #  undef Uwrk
 # endif /* BODYFORCE */
 
+# ifdef OPENACC
 ! TO BE CHANGED, hugly
-!# define wrk1(i,j) wrk1_3D(i,j,k)
-!# define wrk2(i,j) wrk2_3D(i,j,k)
-!# define UFx(i,j) UFx_3D(i,j,k)
-!# define UFe(i,j) UFe_3D(i,j,k)
-!# define VFx(i,j) VFx_3D(i,j,k)
-!# define VFe(i,j) VFe_3D(i,j,k)
+#  define wrk1(i,j) wrk1_3D(i,j,k)
+#  define wrk2(i,j) wrk2_3D(i,j,k)
+#  define UFx(i,j) UFx_3D(i,j,k)
+#  define UFe(i,j) UFe_3D(i,j,k)
+#  define VFx(i,j) VFx_3D(i,j,k)
+#  define VFe(i,j) VFe_3D(i,j,k)
+# endif
 
       do k=1,N
 
@@ -636,58 +669,78 @@
 !
 !======================================================================
 !
-#  if !(defined UV_HADV_UP3 || defined UV_HADV_C4    || \
-        defined UV_HADV_C2  || defined UV_HADV_UP5   || \
-        defined UV_HADV_C6  || defined UV_HADV_WENO5 || \
-        defined UV_HADV_C8  || defined UV_HADV_UP7   || \
-        defined UV_HADV_WENO7 )
+#  if !(defined UV_HADV_UP3   || defined UV_HADV_C4    || \
+        defined UV_HADV_C2    || defined UV_HADV_UP5   || \
+        defined UV_HADV_C6    || defined UV_HADV_WENO5 || \
+        defined UV_HADV_C8    || defined UV_HADV_UP7   || \
+        defined UV_HADV_WENO7 || defined UV_HADV_C10   || \
+        defined UV_HADV_UP9   || defined UV_HADV_WENO9 )
 #   define UV_HADV_UP3
 #  endif
 
-#  if defined UV_HADV_UP5 || defined UV_HADV_C6 || defined UV_HADV_WENO5
+#  if defined UV_HADV_UP9 || defined UV_HADV_C10 || defined UV_HADV_WENO9
 !
 !----------------------------------------------------------------------
-! 5th or 6th order or WENO5 advection schemes
+! 7th or 8th order or WENO7 advection schemes
 !----------------------------------------------------------------------
 !
-#   ifdef UV_HADV_WENO5
+#   ifdef UV_HADV_UP9
+#    define FLUX9 flux9
+#    define FLUX7 flux7
+#    define FLUX5 flux5
+#    define FLUX3 flux3
+#    define FLUX2 flux1
+#    undef  UP9_MASKING
+          cdif=0.5
+#   elif defined UV_HADV_WENO9
+#    define FLUX9 flux9_weno
+#    define FLUX7 flux7_weno
 #    define FLUX5 flux5_weno
 #    define FLUX3 flux3_weno
 #    define FLUX2 flux1
-#    define UP5_MASKING
+#    undef  UP9_MASKING
           cdif=1.0
-#   elif defined UV_HADV_UP5
-#    define FLUX5 flux5
-#    define FLUX3 flux3
-#    define FLUX2 flux2
-#    define UP5_MASKING
-          cdif=0.5
-#   else /* C6 */
+#   else /* C8 */
+#    define FLUX9 flux10
+#    define FLUX7 flux8
 #    define FLUX5 flux6
 #    define FLUX3 flux4
 #    define FLUX2 flux2
-          cdif=0.0
 #   endif
-#   include "u_hadv_order5.h"
-#   include "v_hadv_order5.h"
+#   include "u_hadv_order9.h"
+#   include "v_hadv_order9.h"
+#   undef FLUX9
+#   undef FLUX7
 #   undef FLUX5
 #   undef FLUX3
 #   undef FLUX2
-#   undef UP5_MASKING
+#   undef UP9_MASKING
 !
-#   ifdef UV_HADV_UP5
+#   ifdef UV_HADV_UP9
 #    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
         defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV  || \
         defined BACKSCATTER
+#     define FLUX9 flux10
+#     define FLUX7 flux8
 #     define FLUX5 flux6
 #     define FLUX3 flux4
 #     define FLUX2 flux2
+#     define UFe UFe4
+#     define UFx UFx4
+#     define VFe VFe4
+#     define VFx VFx4
            cdif=0.
-#     include "uhdiff_order5.h"
-#     include "vhdiff_order5.h"
+#     include "u_hadv_order9.h"
+#     include "v_hadv_order9.h"
+#     undef FLUX9
+#     undef FLUX7
 #     undef FLUX5
 #     undef FLUX3
 #     undef FLUX2
+#     undef UFe
+#     undef UFx
+#     undef VFe
+#     undef VFx
 #    endif
 #   endif
 
@@ -702,14 +755,14 @@
 #    define FLUX5 flux5
 #    define FLUX3 flux3
 #    define FLUX2 flux1
-#    define UP7_MASKING
+#    undef  UP7_MASKING
           cdif=0.5
 #   elif defined UV_HADV_WENO7
 #    define FLUX7 flux7_weno
 #    define FLUX5 flux5_weno
 #    define FLUX3 flux3_weno
 #    define FLUX2 flux1
-#    define UP7_MASKING
+#    undef  UP7_MASKING
           cdif=1.0
 #   else /* C8 */
 #    define FLUX7 flux8
@@ -748,6 +801,53 @@
 #     undef UFx
 #     undef VFe
 #     undef VFx
+#    endif
+#   endif
+
+#  elif defined UV_HADV_UP5 || defined UV_HADV_C6 || defined UV_HADV_WENO5
+!
+!----------------------------------------------------------------------
+! 5th or 6th order or WENO5 advection schemes
+!----------------------------------------------------------------------
+!
+#   ifdef UV_HADV_WENO5
+#    define FLUX5 flux5_weno
+#    define FLUX3 flux3_weno
+#    define FLUX2 flux1
+#    undef  UP5_MASKING
+          cdif=1.0
+#   elif defined UV_HADV_UP5
+#    define FLUX5 flux5
+#    define FLUX3 flux3
+#    define FLUX2 flux2
+#    undef  UP5_MASKING
+          cdif=0.5
+#   else /* C6 */
+#    define FLUX5 flux6
+#    define FLUX3 flux4
+#    define FLUX2 flux2
+          cdif=0.0
+#   endif
+#   include "u_hadv_order5.h"
+#   include "v_hadv_order5.h"
+#   undef FLUX5
+#   undef FLUX3
+#   undef FLUX2
+#   undef UP5_MASKING
+!
+#   ifdef UV_HADV_UP5
+#    if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_EK  || \
+        defined DIAGNOSTICS_VRT || defined DIAGNOSTICS_PV  || \
+        defined BACKSCATTER
+#     define FLUX5 flux6
+#     define FLUX3 flux4
+#     define FLUX2 flux2
+           cdif=0.
+#     include "uhdiff_order5.h"
+#     include "vhdiff_order5.h"
+#     undef FLUX5
+#     undef FLUX3
+#     undef FLUX2
 #    endif
 #   endif
 
@@ -1382,14 +1482,14 @@
 # ifdef UV_ADV
 
 #  ifdef UV_VADV_SPLINES
-#  define DC3D UFx_3D
-#  define CF3D UFe_3D
+#  define DC3D wrk1_3D
+#  define CF3D wrk2_3D
 !$acc parallel loop if(compute_on_device) default(present) async(1)
 !$acc& collapse(3)
       do k=1,N
         do j=Jstr,Jend
           do i=IstrU,Iend
-#   if defined POROSITY
+#   ifdef POROSITY
             DC3D(i,j,k)=0.5625*(Hzf(i  ,j,k)+Hzf(i-1,j,k))
      &                 -0.0625*(Hzf(i+1,j,k)+Hzf(i-2,j,k))
 #   else
@@ -1406,7 +1506,7 @@
         do j=Jstr,Jend
           do i=IstrU,Iend
             CF3D(i,j,k)=( 0.5625*(We(i  ,j,k)+We(i-1,j,k))-0.0625*(
-     &                                 We(i+1,j,k)+We(i-2,j,k) ))
+     &                            We(i+1,j,k)+We(i-2,j,k) ))
           enddo
         enddo
        enddo
@@ -1624,20 +1724,20 @@
 
 #  undef DC3D
 #  undef CF3D
-#  define DC3D VFx_3D
-#  define CF3D VFe_3D
+#  define DC3D wrk1_3D
+#  define CF3D wrk2_3D
 
 !$acc parallel loop if(compute_on_device) default(present) async(2)
 !$acc& collapse(3)
       do k=1,N
         do j=JstrV,Jend
           do i=Istr,Iend
-#   if defined POROSITY
+#   ifdef POROSITY
             DC3D(i,j,k)=0.5625*(Hzf(i  ,j,k)+Hzf(i,j-1,k))
-     &               -0.0625*(Hzf(i,j+1,k)+Hzf(i,j-2,k))
+     &                 -0.0625*(Hzf(i,j+1,k)+Hzf(i,j-2,k))
 #   else
             DC3D(i,j,k)=0.5625*(HZR(i  ,j,k)+HZR(i,j-1,k))
-     &               -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
+     &                 -0.0625*(HZR(i,j+1,k)+HZR(i,j-2,k))
 #   endif
           enddo
         enddo
@@ -1649,7 +1749,7 @@
         do j=JstrV,Jend
           do i=Istr,Iend
             CF3D(i,j,k)=( 0.5625*(We(i,j  ,k)+We(i,j-1,k))-0.0625*(
-     &                                   We(i,j+1,k)+We(i,j-2,k) ))
+     &                            We(i,j+1,k)+We(i,j-2,k) ))
           enddo
         enddo
        enddo

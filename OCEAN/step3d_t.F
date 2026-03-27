@@ -131,7 +131,10 @@
      defined TS_HADV_WENO5  || defined BIO_HADV_WENO5 || \
      defined TS_VADV_WENO5  || defined TS_HADV_UP7    || \
      defined TS_HADV_C8     || defined TS_HADV_WENO7  || \
-     defined BIO_HADV_WENO7 || defined TS_VADV_WENO7
+     defined BIO_HADV_WENO7 || defined TS_VADV_WENO7  || \
+     defined TS_HADV_UP9    || defined TS_HADV_C10    || \
+     defined TS_HADV_WENO9  || defined BIO_HADV_WENO9 || \
+     defined TS_VADV_WENO9
 !
 !--------------------------------------------------------------------
 ! Definition of flux operators: 1st, 2nd, 3rd, 4th, 5th or 6th order,
@@ -142,11 +145,11 @@
 !    1 --> flux1 gives 1st order monotonic UP1 advection scheme
 !--------------------------------------------------------------------
 !
-      REAL    :: q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3
-      REAL    :: ua, vel, cdiff, cdif
-      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6, flux7, flux8
-      REAL    :: flx2, flx3, flx4, flx5, flx6, flx7
-      REAL    :: mask0, mask1, mask2, mask3, mask4
+      REAL :: q_im5,q_im4,q_im3,q_im2,q_im1,q_i,q_ip1,q_ip2,q_ip3,q_ip4
+      REAL :: ua, vel, cdiff, cdif
+      REAL :: flux1,flux2,flux3,flux4,flux5,flux6,flux7,flux8,flux9,flux10
+      REAL :: flx2,flx3,flx4,flx5,flx6,flx7,flx9
+      REAL :: mask0,mask1,mask2,mask3,mask4,mask5
 
       flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
 
@@ -183,11 +186,34 @@
      &      - 21. *(q_im3 - q_ip2)
      &      + 63. *(q_im2 - q_ip1)
      &      - 105.*(q_im1 - q_i  ) ) / 840.
+
+      flux10(q_im5, q_im4, q_im3, q_im2, q_im1,
+     &       q_i,   q_ip1, q_ip2, q_ip3, q_ip4, ua) =
+     &     ( 3254.*(q_i   + q_im1)
+     &     -  946.*(q_ip1 + q_im2)
+     &     +  254.*(q_ip2 + q_im3)
+     &     -   46.*(q_ip3 + q_im4)
+     &     +    4.*(q_ip4 + q_im5) ) / 5040.
+
+      flux9 (q_im5, q_im4, q_im3, q_im2, q_im1,
+     &       q_i,   q_ip1, q_ip2, q_ip3, q_ip4, ua) =
+     &flux10(q_im5, q_im4, q_im3, q_im2, q_im1,
+     &       q_i,   q_ip1, q_ip2, q_ip3, q_ip4, ua)
+     &      -sign(1.,ua)* (
+     &         -4.*(q_im5 - q_ip4)
+     &     +   36.*(q_im4 - q_ip3)
+     &     -  144.*(q_im3 - q_ip2)
+     &     +  336.*(q_im2 - q_ip1)
+     &     -  504.*(q_im1 - q_i  ) ) / 5040.
+
 #  endif
 #  if defined TS_HADV_WENO7  || defined BIO_HADV_WENO7 || \
       defined TS_VADV_WENO7  || defined TS_HADV_WENO5  || \
-      defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
-      REAL    :: flux3_weno, flux5_weno, flux7_weno
+      defined BIO_HADV_WENO5 || defined TS_VADV_WENO5  || \
+      defined TS_HADV_WENO9  || defined BIO_HADV_WENO9 || \
+      defined TS_VADV_WENO9
+
+      REAL :: flux3_weno, flux5_weno, flux7_weno, flux9_weno
 #  endif
 !
 #  include "compute_auxiliary_bounds.h"
@@ -347,9 +373,10 @@
      &                     -dt*pm(i,j)*pn(i,j)*(FX(i+1,j)-FX(i,j)
      &                                         +FE(i,j+1)-FE(i,j))
      &                               +dt*flx_s2w_CROCO(i,j,itrc) )
-     &                     /(Hz(i,j,k)+dt*flx_w2s_CROCO(i,j,itrc))
-                  flx_w2s_sum_CROCO(i,j,itrc)=flx_w2s_CROCO(i,j,itrc)
-     &                                         *dt*t(i,j,1,nnew,itrc)
+     &                    /(Hz(i,j,k)+dt*flx_w2s_CROCO(i,j,itrc))
+                  flx_w2s_sum_CROCO(i,j,itrc)=
+     &                                     flx_w2s_CROCO(i,j,itrc)
+     &                                      *dt*t(i,j,1,nnew,itrc)
                 endif
               else
                 t(i,j,k,nnew,itrc)=
@@ -409,7 +436,35 @@
 !
 #    undef PREDICTOR
 
-#    if defined TS_HADV_WENO5
+#    if defined TS_HADV_WENO9
+#     define TS_HADV_C10
+#     undef  TS_HADV_WENO9
+#     include "compute_horiz_tracer_fluxes.h"
+#     undef  TS_HADV_C10
+#     define TS_HADV_WENO9
+
+#    elif defined TS_HADV_UP9
+#     define TS_HADV_C10
+#     undef  TS_HADV_UP9
+#     include "compute_horiz_tracer_fluxes.h"
+#     undef  TS_HADV_C10
+#     define TS_HADV_UP9
+
+#    elif defined TS_HADV_WENO7
+#     define TS_HADV_C8
+#     undef  TS_HADV_WENO7
+#     include "compute_horiz_tracer_fluxes.h"
+#     undef  TS_HADV_C8
+#     define TS_HADV_WENO7
+
+#    elif defined TS_HADV_UP7
+#     define TS_HADV_C8
+#     undef  TS_HADV_UP7
+#     include "compute_horiz_tracer_fluxes.h"
+#     undef  TS_HADV_C8
+#     define TS_HADV_UP7
+
+#    elif defined TS_HADV_WENO5
 #     define TS_HADV_C6
 #     undef  TS_HADV_WENO5
 #     include "compute_horiz_tracer_fluxes.h"
@@ -1246,7 +1301,218 @@
      defined TS_VADV_WENO5  || defined TS_VADV_WENO7  || \
      defined UV_VADV_WENO5  || defined UV_VADV_WENO7  || \
      defined W_VADV_WENO5   || defined W_VADV_WENO7   || \
-     defined BIO_HADV_WENO5 || defined BIO_HADV_WENO7
+     defined BIO_HADV_WENO5 || defined BIO_HADV_WENO7 || \
+     defined TS_HADV_WENO9  || \
+     defined UV_HADV_WENO9  || \
+     defined W_HADV_WENO9   || \
+     defined TS_VADV_WENO9  || \
+     defined UV_VADV_WENO9  || \
+     defined W_VADV_WENO9   || \
+     defined BIO_HADV_WENO9 
+!
+      function flux9_weno(q_im5,q_im4,q_im3,q_im2,q_im1,
+     &                    q_i  ,q_ip1,q_ip2,q_ip3,q_ip4, ua)
+!
+!$acc routine(flux9_weno) seq
+!
+!     WENO9: Weighted Essentially Non-Oscillatory scheme
+!            with 9th-order accuracy
+!---------------------------------------------------------------------
+! This function computes tracer reconstruction at the grid cell's left
+! edge (u-point i-1/2 or v-point j-1/2). WENO9 uses a convex combination
+! of the polynomials reconstructed on the four ENO5 stencils in order
+! to achieve higher accuracy on smooth profiles. Both left and right
+! combinations of mirror symetric stencils around i-1/2 (j-1/2) points
+! are computed. For stability, the upstream stencil combination,
+! identified by the sign of ua (u or v), is selected.
+!
+! This is the WENO-9Z version (Castro et al., 2011; Rathan and Raju, 2017), 
+! based on the WENO-5Z of Borges et al., 2008, i.e., smoothness indicators 
+! of higher order that provide a scheme with less dissipation, higher 
+! resolution and better monotonicity preservation than the classical WENO9.
+!
+! References:
+! -----------
+! Balsara D.S. & C.W. Shu,, 2000: Monotonicity Preserving Weighted 
+! Essentially Non-oscillatory Schemes with Increasingly High Order of 
+! Accuracy. ! J Comput Phys, 160:405-452.
+!
+! Shen, Y. & G. Zha, 2010: Improved seventh-order WENO scheme. 
+! 48th AIAA Aerospace Sciences Meeting Including the New Horizons Forum 
+! and Aerospace Exposition. 10.2514/6.2010-1451.
+!
+! Castro M, Costa B, Don WS., 2011: High order weighted essentially 
+! nonoscillatory WENO-z schemes for hyperbolic conservation laws. 
+! J Comput Phys, 230:766–92.
+!
+! Don WS, Borges R., 2013: Accuracy of the weighted essentially 
+! non-oscillatory conservative finite difference schemes. 
+! J Comput Phys, 250:347–72.
+!
+! Rathan S. & Naga Raju G., 2017: An improved non-linear weights for 
+! seventh-order weighted essentially non-oscillatory scheme.
+! Computers and Fluids 156 (2017) 496–514.
+!
+!  Implementation: P. Marchesiello 2026
+!---------------------------------------------------------------------
+      implicit none
+      REAL    :: flux9_weno
+      REAL    :: q_im5,q_im4,q_im3,q_im2,q_im1,
+     &           q_i  ,q_ip1,q_ip2,q_ip3,q_ip4, ua
+      REAL    :: IS0, IS1, IS2, IS3, IS4
+      REAl    :: d0, d1, d2, d3, d4
+      REAl    :: a0, a1, a2, a3, a4, isuma
+      REAL    :: w0, w1, w2, w3, w4
+      REAL    :: p0, p1, p2, p3, p4
+      REAL    :: Eps, cff, T9
+
+! Epsilon value for computing weigths
+      Eps = 1.e-20
+! Weigths coefficients
+      d0 =  1./126.
+      d1 = 10./63.
+      d2 = 10./21.
+      d3 = 20./63.
+      d4 =  5./126.
+! other coefficients
+      cff = 1./60.
+!
+      if (ua .ge. 0.) then   ! Take upstream stencils for stability
+!
+! === Reconstruction at u_i-1/2 using LEFT stencils ===
+!
+! Nonlinear Smoothness Indicators
+        IS0 = 
+     &   q_im5*(  22658.*q_im5 -  208501.*q_im4  +  364863.*q_im3
+     &                         -  288007.*q_im2  +   86329.*q_im1) +
+     &   q_im4*( 482963.*q_im4 - 1704396.*q_im3  + 1358458.*q_im2 
+     &                                           -  411487.*q_im1) +
+     &   q_im3*(1521393.*q_im3 - 2462076.*q_im2  +  758823.*q_im1) +
+     &   q_im2*(1020563.*q_im2 -  649501.*q_im1) +  107918.*q_im1*q_im1
+        IS1 = 
+     &   q_im4*(   6908.*q_im4 -   60871.*q_im3  +   99213.*q_im2 
+     &                         -   70237.*q_im1  +   18079.*q_i  ) +
+     &   q_im3*( 138563.*q_im3 -  464976.*q_im2  +  337018.*q_im1
+     &                                           -   88297.*q_i  ) +
+     &   q_im2*( 406293.*q_im2 -  611976.*q_im1  +  165153.*q_i  ) +
+     &   q_im1*( 242723.*q_im1 -  140251.*q_i  ) +   22658.*q_i*q_i
+        IS2 = 
+     &   q_im3*(   6908.*q_im3 -   51001.*q_im2  +   67923.*q_im1
+     &                         -   38947.*q_i    +    8209.*q_ip1) +
+     &   q_im2*( 104963.*q_im2 -  299076.*q_im1  +  179098.*q_i
+     &                                           -   38947.*q_ip1) +
+     &   q_im1*( 231153.*q_im1 -  299076.*q_i    +   67923.*q_ip1) +
+     &   q_i  *( 104963.*q_i   -   51001.*q_ip1) +    6908.*q_ip1*q_ip1
+        IS3 = 
+     &   q_im2*(  22658.*q_im2 -  140251.*q_im1  +  165153.*q_i   
+     &                         -   88297.*q_ip1  +   18079.*q_ip2) + 
+     &   q_im1*( 242723.*q_im1 -  611976.*q_i    +  337018.*q_ip1
+     &                                           -   70237.*q_ip2) +
+     &   q_i  *( 406293.*q_i   -  464976.*q_ip1  +   99213.*q_ip2) +
+     &   q_ip1*( 138563.*q_ip1 -   60871.*q_ip2) +    6908.*q_ip2*q_ip2
+        IS4 = 
+     &   q_im1*( 107918.*q_im1 -  649501.*q_i    +  758823.*q_ip1  
+     &                         -  411487.*q_ip2  +   86329.*q_ip3) +
+     &   q_i  *(1020563.*q_i   - 2462076.*q_ip1  + 1358458.*q_ip2
+     &                                           -  288007.*q_ip3) + 
+     &   q_ip1*(1521393.*q_ip1 - 1704396.*q_ip2  +  364863.*q_ip3) +
+     &   q_ip2*( 482963.*q_ip2 -  208501.*q_ip3) +   22658.*q_ip3*q_ip3
+
+! Global smoothing indicator
+        !T9 = abs(IS4-IS0)             
+        T9 = abs(IS0 + 2*IS1 - 6*IS2 + 2*IS3 + IS4);
+! Non-normalized stencil weights
+        a0 = d0*(1+T9/(Eps+IS0))
+        a1 = d1*(1+T9/(Eps+IS1))
+        a2 = d2*(1+T9/(Eps+IS2))
+        a3 = d3*(1+T9/(Eps+IS3))
+        a4 = d4*(1+T9/(Eps+IS4))
+! Normalized Weigths
+        isuma = 1./(a0+a1+a2+a3+a4)
+        w0 = isuma*a0
+        w1 = isuma*a1
+        w2 = isuma*a2
+        w3 = isuma*a3
+        w4 = isuma*a4
+! Polynomials
+        p0 = cff*(12.*q_im5-63.*q_im4+137.*q_im3-163.*q_im2+137.*q_im1)
+        p1 = cff*(-3.*q_im4+17.*q_im3- 43.*q_im2+ 77.*q_im1+ 12.*q_i  )
+        p2 = cff*( 2.*q_im3-13.*q_im2+ 47.*q_im1+ 27.*q_i  -  3.*q_ip1)
+        p3 = cff*(-3.*q_im2+27.*q_im1+ 47.*q_i  - 13.*q_ip1+  2.*q_ip2)
+        p4 = cff*(12.*q_im1+77.*q_i  - 43.*q_ip1+ 17.*q_ip2-  3.*q_ip3)
+
+      else
+!
+! === Reconstruction at u_i-1/2 using RIGHT stencils ===
+!
+! Nonlinear Smoothness Indicators
+        IS0 = 
+     &   q_ip4*(   22658.*q_ip4 -  208501.*q_ip3  +  364863.*q_ip2
+     &                          -  288007.*q_ip1  +   86329.*q_i  ) +
+     &   q_ip3*(  482963.*q_ip3 - 1704396.*q_ip2  + 1358458.*q_ip1 
+     &                                            -  411487.*q_i  ) +
+     &   q_ip2*( 1521393.*q_ip2 - 2462076.*q_ip1  +  758823.*q_i  ) +
+     &   q_ip1*( 1020563.*q_ip1 -  649501.*q_i  ) +  107918.*q_i*q_i
+        IS1 = 
+     &   q_ip3*(    6908.*q_ip3 -   60871.*q_ip2  +   99213.*q_ip1 
+     &                          -   70237.*q_i    +   18079.*q_im1) +
+     &   q_ip2*(  138563.*q_ip2 -  464976.*q_ip1  +  337018.*q_i  
+     &                                            -   88297.*q_im1) +
+     &   q_ip1*(  406293.*q_ip1 -  611976.*q_i    +  165153.*q_im1) +
+     &   q_i  *(  242723.*q_i   -  140251.*q_im1) +   22658.*q_im1*q_im1
+        IS2 =
+     &   q_ip2*(   6908.*q_ip2  -   51001.*q_ip1  +   67923.*q_i  
+     &                          -   38947.*q_im1  +    8209.*q_im2) +
+     &   q_ip1*( 104963.*q_ip1  -  299076.*q_i    +  179098.*q_im1
+     &                                            -   38947.*q_im2) +
+     &   q_i  *( 231153.*q_i    -  299076.*q_im1  +   67923.*q_im2) +
+     &   q_im1*( 104963.*q_im1  -   51001.*q_im2) +    6908.*q_im2*q_im2
+        IS3 = 
+     &   q_ip1*(  22658.*q_ip1  -  140251.*q_i    +  165153.*q_im1
+     &                          -   88297.*q_im2  +   18079.*q_im3) + 
+     &   q_i  *( 242723.*q_i    -  611976.*q_im1  +  337018.*q_im2
+     &                                            -   70237.*q_im3) +
+     &   q_im1*( 406293.*q_im1  -  464976.*q_im2  +   99213.*q_im3) +
+     &   q_im2*( 138563.*q_im2  -   60871.*q_im3) +    6908.*q_im3*q_im3
+        IS4 = 
+     &   q_i  *( 107918.*q_i    -  649501.*q_im1  +  758823.*q_im2 
+     &                          -  411487.*q_im3  +   86329.*q_im4) +
+     &   q_im1*(1020563.*q_im1  - 2462076.*q_im2  + 1358458.*q_im3
+     &                                            -  288007.*q_im4) + 
+     &   q_im2*(1521393.*q_im2  - 1704396.*q_im3  +  364863.*q_im4) +
+     &   q_im3*( 482963.*q_im3  -  208501.*q_im4) +   22658.*q_im4*q_im4
+
+! Global smoothing indicator
+        !T9 = abs(IS4-IS0)
+        T9 = abs(IS0 + 2*IS1 - 6*IS2 + 2*IS3 + IS4);            
+! Non-normalized stencil weights
+        a0 = d0*(1+T9/(Eps+IS0))
+        a1 = d1*(1+T9/(Eps+IS1))
+        a2 = d2*(1+T9/(Eps+IS2))
+        a3 = d3*(1+T9/(Eps+IS3))
+        a4 = d4*(1+T9/(Eps+IS4))
+! Normalized Weigths
+        isuma = 1./(a0+a1+a2+a3+a4)
+        w0 = isuma*a0
+        w1 = isuma*a1
+        w2 = isuma*a2
+        w3 = isuma*a3
+        w4 = isuma*a4
+! Polynomials
+        p0 = cff*(12.*q_ip4-63.*q_ip3+137.*q_ip2-163.*q_ip1+137.*q_i  )
+        p1 = cff*(-3.*q_ip3+17.*q_ip2- 43.*q_ip1+ 77.*q_i  + 12.*q_im1)
+        p2 = cff*( 2.*q_ip2-13.*q_ip1+ 47.*q_i  + 27.*q_im1-  3.*q_im2)
+        p3 = cff*(-3.*q_ip1+27.*q_i  + 47.*q_im1- 13.*q_im2+  2.*q_im3)
+        p4 = cff*(12.*q_i  +77.*q_im1- 43.*q_im2+ 17.*q_im3-  3.*q_im4)
+
+      endif
+
+      flux9_weno = w0*p0 + w1*p1 + w2*p2 + w3*p3 + w4*p4 ! Combination
+
+      return
+      end
+!
+!======================================================================
 !
       function flux7_weno(q_im4,q_im3,q_im2,q_im1,q_i,q_ip1,q_ip2,q_ip3,ua)
 !
@@ -1334,8 +1600,6 @@
      &   q_i  *(11003.*q_i   - 17246.*q_ip1  + 4642.*q_ip2) + 
      &   q_ip1*( 7043.*q_ip1 -  3882.*q_ip2) +  547.*q_ip2*q_ip2
 ! Global smoothing indicator
-        !T7  = abs(IS3-IS0)             ! Shen&Zha
-        !T7  = abs(IS0-IS1-IS2+IS3)     ! Castro 
         T7  = abs(IS0+3*IS1-3*IS2-IS3)  ! Don&Borges
 ! Non-normalized stencil weights
         a0  = d0*(1+T7/(Eps+IS0))
@@ -1353,9 +1617,6 @@
         p1  = cff2*(    q_im3 -  5.*q_im2 + 13.*q_im1 +  3.*q_i  )
         p2  = cff2*(-1.*q_im2 +  7.*q_im1 +  7.*q_i   -     q_ip1)
         p3  = cff2*( 3.*q_im1 + 13.*q_i   -  5.*q_ip1 +     q_ip2)
-! Combination
-
-        flux7_weno = w0*p0 + w1*p1 + w2*p2 + w3*p3
 
       else
 !
@@ -1379,8 +1640,6 @@
      &   q_im1*(11003.*q_im1 - 17246.*q_im2  + 4642.*q_im3) + 
      &   q_im2*( 7043.*q_im2 -  3882.*q_im3) +  547.*q_im3*q_im3
 ! Global smoothing indicator
-        !T7  = abs(IS3-IS0)             ! Shen&Zha
-        !T7  = abs(IS0-IS1-IS2+IS3)     ! Castro
         T7  = abs(IS0+3*IS1-3*IS2-IS3)  ! Don&Borges
 ! Non-normalized stencil weights
         a0  = d0*(1+T7/(Eps+IS0))
@@ -1400,9 +1659,9 @@
         p3  = cff2*( 3.*q_i   + 13.*q_im1 -  5.*q_im2 +     q_im3)
 ! Combination
 
-        flux7_weno = w0*p0 + w1*p1 + w2*p2 + w3*p3
-
       endif
+
+      flux7_weno = w0*p0 + w1*p1 + w2*p2 + w3*p3  ! Combination
 
       return
       end
@@ -1489,8 +1748,6 @@
         p0  = cff2*(2.*q_im3 - 7.*q_im2 + 11.*q_im1)
         p1  = cff2*(  -q_im2 + 5.*q_im1 +  2.*q_i  )
         p2  = cff2*(2.*q_im1 + 5.*q_i   -     q_ip1)
-! Combination
-        flux5_weno = w0*p0 + w1*p1 + w2*p2
 
       else
 !
@@ -1517,10 +1774,10 @@
         p0  = cff2*(2.*q_ip2 - 7.*q_ip1 + 11.*q_i  )
         p1  = cff2*(  -q_ip1 + 5.*q_i   +  2.*q_im1)
         p2  = cff2*(2.*q_i   + 5.*q_im1 -     q_im2)
-! Combination
-        flux5_weno = w0*p0 + w1*p1 + w2*p2
 
       endif
+
+      flux5_weno = w0*p0 + w1*p1 + w2*p2   ! Combination
 
       return
       end
@@ -1549,54 +1806,38 @@
       REAL    :: Eps, d0,d1, T3
 !
 ! Epsilon value for computing weigths
-#  ifdef WENO_Z
       Eps = 1.e-40
-#  else
-!  --> from 1.e-7 (smoother) to 1.e-5 (sharper)
-      Eps = 1.e-6
-#  endif
+! Weigths coefficients
       d0=1./3.
       d1=2./3.
-!
-      if (ua .ge. 0.) then        ! Take upstream stencils for stability
+
+      if (ua .ge. 0.) then  ! Take upstream stencils for stability
 
         IS0 = (q_im1-q_im2)**2
         IS1 = (q_im1-q_i)**2
-#  ifdef WENO_Z
-        T3 = abs(IS1-IS0)
+        T3  = abs(IS1-IS0)
         a0  = d0*(1+T3/(Eps+IS0))
         a1  = d1*(1+T3/(Eps+IS1))
-#  else
-        a0  = 1./(3.*(Eps+IS0)**2)
-        a1  = 2./(3.*(Eps+IS1)**2)
-#  endif
         w0  = a0/(a0+a1)
         w1  = a1/(a0+a1)
-        p0  = 1./2.*(3.*q_im1-q_im2)
-        p1  = 1./2.*(q_im1+q_i)
-
-        flux3_weno = w0*p0 + w1*p1
+        p0  = 0.5*(3.*q_im1-q_im2)
+        p1  = 0.5*(q_im1+q_i)
 
       else
 
         IS0 = (q_i-q_ip1)**2
         IS1 = (q_im1-q_i)**2
-#  ifdef WENO_Z
-        T3 = abs(IS1-IS0)
+        T3  = abs(IS1-IS0)
         a0  = d0*(1+T3/(Eps+IS0))
         a1  = d1*(1+T3/(Eps+IS1))
-#  else
-        a0  = 1./(3.*(Eps+IS0)**2)
-        a1  = 2./(3.*(Eps+IS1)**2)
-#  endif
         w0  = a0/(a0+a1)
         w1  = a1/(a0+a1)
-        p0  = 1./2.*(3.*q_i-q_ip1)
-        p1  = 1./2.*(q_im1+q_i)
-
-        flux3_weno = w0*p0 + w1*p1
+        p0  = 0.5*(3.*q_i-q_ip1)
+        p1  = 0.5*(q_im1+q_i)
 
       endif
+
+      flux3_weno = w0*p0 + w1*p1
 
       return
       end

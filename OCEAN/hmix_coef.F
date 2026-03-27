@@ -466,10 +466,13 @@
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc
       real grd_scale(PRIVATE_2D_SCRATCH_ARRAY)
       real cff, surf, defrate, horcon, umag,vmag
-# if defined TS_DIF_SMAGO && (defined UV_VIS_SMAGO_3D ||\
-                              defined GLS_MIXING_3D)
+# if defined TS_DIF_SMAGO 
+#  if defined UV_VIS_SMAGO_3D || defined GLS_MIXING_3D
       real Pr
       parameter (horcon=0.05, Pr=0.3)  ! --> LES SGS model
+#  else
+      parameter (horcon=0.01)
+#  endif
 # else
 #  ifdef TS_HADV_C6
       parameter (horcon=1./20.)  ! --> RSUP5
@@ -589,7 +592,7 @@
           do i=IstrU-1,Iend+1
             umag=abs(u(i,j,k,nrhs))
 #  ifdef PENALIZATION
-            umag=max(umag, 1.e-3*pena_u(i,j,k)**2)
+            umag=max(umag,1.e-3*pena_u(i,j,k)**2)
 #  endif
             diff3d_u(i,j,k)=horcon*umag*om_u(i,j)**3
           enddo
@@ -598,9 +601,9 @@
           do i=Istr-1,Iend+1
             vmag=abs(v(i,j,k,nrhs))
 #  ifdef PENALIZATION
-            vmag=max(vmag, 1.e-3*pena_v(i,j,k)**2)
+            vmag=max(vmag,1.e-3*pena_v(i,j,k)**2)
 #  endif
-            diff3d_v(i,j,k)=horcon*abs(v(i,j,k,nrhs))*on_v(i,j)**3
+            diff3d_v(i,j,k)=horcon*vmag*on_v(i,j)**3
           enddo
         enddo
       enddo
@@ -610,10 +613,11 @@
 ! Apply sponge in penalized regions
 !---------------------------------------------------------------
 !
-      do k=1,KBOT
+      do k=1,max(1,KBOT-1)
         do j=JstrV-1,Jend
           do i=IstrU-1,Iend
-            diff3d_r(i,j,k)=0.01*pena_r(i,j,k)/(pm(i,j)*pn(i,j)*dt)
+            diff3d_r(i,j,k)=1.e-2*pena_r(i,j,k)
+     &                          /(pm(i,j)*pn(i,j)*dt)
           enddo
         enddo
       enddo

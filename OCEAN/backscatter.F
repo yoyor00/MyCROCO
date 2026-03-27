@@ -100,7 +100,7 @@
       REAL            ::  cff,cff1,cff2
 
       ! Parameter values
-      REAL,    PARAMETER ::  Cvisc   = 0.1   ! Antiviscosity coef
+      REAL,    PARAMETER ::  Cvisc   = 0.02   ! Antiviscosity coef
       REAL,    PARAMETER ::  Rdiss   = 1.0    ! Filter scale (vs Ro)
                                               ! for KE --> UKE
       INTEGER, PARAMETER ::  Nsmoo   = 1

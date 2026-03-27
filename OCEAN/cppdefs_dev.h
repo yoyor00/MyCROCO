@@ -415,16 +415,28 @@
 #elif defined TS_HADV_UP5
 #elif defined TS_HADV_WENO5
 #elif defined TS_HADV_C6
+#elif defined TS_HADV_UP7
+#elif defined TS_HADV_WENO7
+#elif defined TS_HADV_C8
+#elif defined TS_HADV_UP9
+#elif defined TS_HADV_WENO9
+#elif defined TS_HADV_C10
 #elif defined TS_HADV_RSUP3
 #elif defined TS_HADV_RSUP5
 #else
-# define TS_HADV_UP3    /* 3rd-order upstream lateral advection */
-# undef  TS_HADV_C4     /* 4th-order centered lateral advection */
-# undef  TS_HADV_UP5    /* 5th-order upstream lateral advection */
-# undef  TS_HADV_WENO5  /* 5th-order WENOZ    lateral advection */
-# undef  TS_HADV_C6     /* 6th-order centered lateral advection */
-# undef  TS_HADV_RSUP3  /* Rotated-Split UP3  lateral advection */
-# undef  TS_HADV_RSUP5  /* Pseudo R-Split UP5 lateral advection */
+# define TS_HADV_UP3    /*  3rd-order upstream lateral advection */
+# undef  TS_HADV_C4     /*  4th-order centered lateral advection */
+# undef  TS_HADV_UP5    /*  5th-order upstream lateral advection */
+# undef  TS_HADV_WENO5  /*  5th-order WENOZ    lateral advection */
+# undef  TS_HADV_C6     /*  6th-order centered lateral advection */
+# undef  TS_HADV_UP7    /*  7th-order upstream lateral advection */
+# undef  TS_HADV_WENO7  /*  7th-order WENOZ    lateral advection */
+# undef  TS_HADV_C8     /*  8th-order centered lateral advection */
+# undef  TS_HADV_UP9    /*  9th-order upstream lateral advection */
+# undef  TS_HADV_WENO9  /*  9th-order WENOZ    lateral advection */
+# undef  TS_HADV_C10    /* 10th-order centered lateral advection */
+# undef  TS_HADV_RSUP3  /* Rotated-Split UP3   lateral advection */
+# undef  TS_HADV_RSUP5  /* Pseudo R-Split UP5  lateral advection */
 #endif
 
 /*
@@ -439,13 +451,6 @@
 #endif
 #ifdef TS_HADV_RSUP5   /*    Pseudo RS 5th-order scheme is:    */
 # define TS_HADV_C6    /*    6th-order centered advection      */
-# undef  TS_DIF2       /*               +                      */
-# define TS_DIF4       /*         Hyperdiffusion  with         */
-# undef  TS_MIX_GEO    /*        Geopotential rotation         */
-# define TS_MIX_ISO    /*     or Isopycnal    rotation         */
-#endif
-#ifdef TS_HADV_RSUP7   /*    Pseudo RS 7th-order scheme is:    */
-# define TS_HADV_C8    /*    6th-order centered advection      */
 # undef  TS_DIF2       /*               +                      */
 # define TS_DIF4       /*         Hyperdiffusion  with         */
 # undef  TS_MIX_GEO    /*        Geopotential rotation         */

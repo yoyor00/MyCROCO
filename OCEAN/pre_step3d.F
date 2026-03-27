@@ -117,6 +117,9 @@
 # ifdef M3FAST
 #  include "nbq.h"
 # endif
+# if defined PENALIZATION
+#  include "penalization.h"
+# endif
 # include "openacc_work.h"
 # ifdef MASKING
 #  define SWITCH *
@@ -145,13 +148,16 @@
      defined TS_HADV_WENO5  || defined BIO_HADV_WENO5 || \
      defined TS_VADV_WENO5  || defined TS_HADV_UP7    || \
      defined TS_HADV_C8     || defined TS_HADV_WENO7  || \
-     defined BIO_HADV_WENO7 || defined TS_VADV_WENO7
+     defined BIO_HADV_WENO7 || defined TS_VADV_WENO7  || \
+     defined TS_HADV_UP9    || defined TS_HADV_C10    || \
+     defined TS_HADV_WENO9  || defined BIO_HADV_WENO9 || \
+     defined TS_VADV_WENO9
 
-      REAL    :: q_im4, q_im3, q_im2, q_im1, q_i, q_ip1, q_ip2, q_ip3
-      REAL    :: ua, vel, cdiff, cdif
-      REAL    :: flux1, flux2, flux3, flux4, flux5, flux6, flux7, flux8
-      REAL    :: flx2, flx3, flx4, flx5, flx6, flx7
-      REAL    :: mask0, mask1, mask2, mask3, mask4
+      REAL :: q_im5,q_im4,q_im3,q_im2,q_im1,q_i,q_ip1,q_ip2,q_ip3,q_ip4
+      REAL :: ua, vel, cdiff, cdif
+      REAL :: flux1,flux2,flux3,flux4,flux5,flux6,flux7,flux8,flux9,flux10
+      REAL :: flx2,flx3,flx4,flx5,flx6,flx7,flx9
+      REAL :: mask0,mask1,mask2,mask3,mask4,mask5
 
       flux2(q_im1, q_i, ua, cdiff) = 0.5*( q_i + q_im1 )
 
@@ -187,6 +193,26 @@
      &      - 21. *(q_im3 - q_ip2)
      &      + 63. *(q_im2 - q_ip1)
      &      - 105.*(q_im1 - q_i  ) ) / 840.
+
+      flux10(q_im5, q_im4, q_im3, q_im2, q_im1,
+     &       q_i,   q_ip1, q_ip2, q_ip3, q_ip4, ua) =
+     &     ( 3254.*(q_i   + q_im1)
+     &     -  946.*(q_ip1 + q_im2)
+     &     +  254.*(q_ip2 + q_im3)
+     &     -   46.*(q_ip3 + q_im4)
+     &     +    4.*(q_ip4 + q_im5) ) / 5040.
+
+      flux9 (q_im5, q_im4, q_im3, q_im2, q_im1,
+     &       q_i,   q_ip1, q_ip2, q_ip3, q_ip4, ua) =
+     &flux10(q_im5, q_im4, q_im3, q_im2, q_im1,
+     &       q_i,   q_ip1, q_ip2, q_ip3, q_ip4, ua)
+     &      -sign(1.,ua)* (
+     &         -4.*(q_im5 - q_ip4)
+     &     +   36.*(q_im4 - q_ip3)
+     &     -  144.*(q_im3 - q_ip2)
+     &     +  336.*(q_im2 - q_ip1)
+     &     -  504.*(q_im1 - q_i  ) ) / 5040.
+
 # endif
 !
 !--------------------------------------------------------------------
@@ -400,14 +426,14 @@
               do i=Istr,Iend
                 t(i,j,k,nnew,itrc)=Hz(i,j,k)*t(i,j,k,nstp,itrc)
      &                 -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                      +FE(i,j+1)-FE(i,j))
+     &                                       +FE(i,j+1)-FE(i,j))
               enddo
             enddo
 #  if defined OPENACC
             ENDDOEXTEND
 #  endif
           else
-            cff=(1.-gamma)*dt
+            cff=(1.0-gamma)*dt
             cff1=0.5+gamma
             cff2=0.5-gamma
 !$acc parallel loop if(compute_on_device) default(present)
@@ -417,10 +443,11 @@
 #  endif
             do j=Jstr,Jend
               do i=Istr,Iend
-                t(i,j,k,nnew,itrc)=cff1*Hz(i,j,k)*t(i,j,k,nstp,itrc)
-     &                            +cff2*Hz_bak(i,j,k)*t(i,j,k,indx,itrc)
-     &                -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
-     &                                     +FE(i,j+1)-FE(i,j))
+                t(i,j,k,nnew,itrc)=
+     &                     cff1*Hz(i,j,k)    *t(i,j,k,nstp,itrc)
+     &                    +cff2*Hz_bak(i,j,k)*t(i,j,k,indx,itrc)
+     &                  -cff*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
+     &                                        +FE(i,j+1)-FE(i,j))
               enddo
             enddo
 #  if defined OPENACC

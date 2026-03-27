@@ -29,13 +29,21 @@
  two ghost zones is then exchanged by message passing.
 */
 
+#if defined TS_HADV_UP9   || defined TS_HADV_C1P     || \
+    defined TS_HADV_WENO9 || defined BIO_HADV_WENO9 || \
+    defined BEDLOAD_UP9   || defined BEDLOAD_WENO9  || \
+    defined UV_HADV_UP9   || defined UV_HADV_C10     || \
+    defined UV_HADV_WENO9 || defined W_HADV_WENO9   || \
+    defined W_HADV_UP9    || defined W_HADV_C10
 
-#if defined TS_HADV_UP7   || defined TS_HADV_C8     || \
-    defined TS_HADV_WENO7 || defined BIO_HADV_WENO7 || \
-    defined BEDLOAD_UP7   || defined BEDLOAD_WENO7  || \
-    defined UV_HADV_UP7   || defined UV_HADV_C8     || \
-    defined UV_HADV_WENO7 || defined W_HADV_WENO7   || \
-    defined W_HADV_UP7    || defined W_HADV_C8
+# define NHALO 5    /* Four Ghost Points */
+
+#elif defined TS_HADV_UP7   || defined TS_HADV_C8     || \
+      defined TS_HADV_WENO7 || defined BIO_HADV_WENO7 || \
+      defined BEDLOAD_UP7   || defined BEDLOAD_WENO7  || \
+      defined UV_HADV_UP7   || defined UV_HADV_C8     || \
+      defined UV_HADV_WENO7 || defined W_HADV_WENO7   || \
+      defined W_HADV_UP7    || defined W_HADV_C8
 
 # define NHALO 4    /* Four Ghost Points */
 
@@ -104,11 +112,15 @@
 
 /* Names of Exchange routines */
 
-# if   defined TS_HADV_UP7   || defined TS_HADV_C8 || \
+# if   defined TS_HADV_UP9   || defined TS_HADV_C10    || \
+       defined TS_HADV_WENO9 || defined BIO_HADV_WENO9 || \
+       defined BEDLOAD_UP9   || defined BEDLOAD_WENO9
+#  define EXCHANGE_R3D_TILE exchange_r3d_5pts_tile
+# elif defined TS_HADV_UP7   || defined TS_HADV_C8     || \
        defined TS_HADV_WENO7 || defined BIO_HADV_WENO7 || \
        defined BEDLOAD_UP7   || defined BEDLOAD_WENO7
 #  define EXCHANGE_R3D_TILE exchange_r3d_4pts_tile
-# elif defined TS_HADV_UP5   || defined TS_HADV_C6 || \
+# elif defined TS_HADV_UP5   || defined TS_HADV_C6     || \
        defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
        defined BEDLOAD_UP5   || defined BEDLOAD_WENO5
 #  define EXCHANGE_R3D_TILE exchange_r3d_3pts_tile
@@ -116,7 +128,13 @@
 #  define EXCHANGE_R3D_TILE exchange_r3d_tile
 # endif /* rho */
 
-# if   defined UV_HADV_UP7   || defined UV_HADV_C8     || \
+# if   defined UV_HADV_UP9   || defined UV_HADV_C9     || \
+       defined UV_HADV_WENO9 || defined W_HADV_WENO9   || \
+       defined W_HADV_UP9    || defined W_HADV_C10
+#  define EXCHANGE_U3D_TILE exchange_u3d_5pts_tile
+#  define EXCHANGE_V3D_TILE exchange_v3d_5pts_tile
+#  define EXCHANGE_W3D_TILE exchange_w3d_5pts_tile
+# elif defined UV_HADV_UP7   || defined UV_HADV_C8     || \
        defined UV_HADV_WENO7 || defined W_HADV_WENO7   || \
        defined W_HADV_UP7    || defined W_HADV_C8
 #  define EXCHANGE_U3D_TILE exchange_u3d_4pts_tile
@@ -134,7 +152,17 @@
 #  define EXCHANGE_W3D_TILE exchange_w3d_tile
 # endif /* 3D u v */
 
-# if   defined TS_HADV_UP7   || defined TS_HADV_C8     || \
+# if   defined TS_HADV_UP9   || defined TS_HADV_C10     || \
+       defined TS_HADV_WENO9 || defined BIO_HADV_WENO9 || \
+       defined BEDLOAD_UP9   || defined BEDLOAD_WENO9  || \
+       defined UV_HADV_UP9   || defined UV_HADV_C10     || \
+       defined UV_HADV_WENO9 || defined W_HADV_WENO0   || \
+       defined W_HADV_UP9    || defined W_HADV_C10
+#  define EXCHANGE_R2D_TILE exchange_r2d_5pts_tile
+#  define EXCHANGE_U2D_TILE exchange_u2d_5pts_tile
+#  define EXCHANGE_V2D_TILE exchange_v2d_5pts_tile
+#  define EXCHANGE_P2D_TILE exchange_p2d_5pts_tile
+# elif defined TS_HADV_UP7   || defined TS_HADV_C8     || \
        defined TS_HADV_WENO7 || defined BIO_HADV_WENO7 || \
        defined BEDLOAD_UP7   || defined BEDLOAD_WENO7  || \
        defined UV_HADV_UP7   || defined UV_HADV_C8     || \

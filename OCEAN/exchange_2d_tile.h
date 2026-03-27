@@ -1,11 +1,14 @@
-#if (!defined MP_4PTS) && (!defined MP_3PTS) && (!defined MP_1PTS)
+#if (!defined MP_5PTS) && (!defined MP_4PTS) && \
+    (!defined MP_3PTS) && (!defined MP_1PTS)
       subroutine exchange_2d_tile (Istr,Iend,Jstr,Jend, A)
 #elif defined MP_1PTS
       subroutine exchange_2d_1pts_tile (Istr,Iend,Jstr,Jend, A)
 #elif defined MP_3PTS
       subroutine exchange_2d_3pts_tile (Istr,Iend,Jstr,Jend, A)
-#else
+#elif defined MP_4PTS
       subroutine exchange_2d_4pts_tile (Istr,Iend,Jstr,Jend, A)
+#else
+      subroutine exchange_2d_5pts_tile (Istr,Iend,Jstr,Jend, A)
 #endif
 !
 ! Set periodic boundary conditions (if any) for a two-dimensional
@@ -20,14 +23,17 @@
 #include "param.h"
 #include "scalars.h"
       integer Npts,ipts,jpts
-#if (!defined MP_4PTS) && (!defined MP_3PTS) && (!defined MP_1PTS)
+#if (!defined MP_5PTS) && (!defined MP_4PTS) && \
+    (!defined MP_3PTS) && (!defined MP_1PTS)
       parameter (Npts=2)
 #elif defined MP_1PTS
       parameter (Npts=1)
 #elif defined MP_3PTS
       parameter (Npts=3)
-#else
+#elif defined MP_4PTS
       parameter (Npts=4)
+#else
+      parameter (Npts=5)
 #endif
       real A(GLOBAL_2D_ARRAY)
       integer Istr,Iend,Jstr,Jend, i,j
@@ -135,14 +141,17 @@
 		 
 		 
 #ifdef MPI
-# if (!defined MP_4PTS) && (!defined MP_3PTS) && (!defined MP_1PTS)
+# if (!defined MP_5PTS) && (!defined MP_4PTS) && \
+     (!defined MP_3PTS) && (!defined MP_1PTS)
       call MessPass2D_tile (Istr,Iend,Jstr,Jend,  A)
 # elif defined MP_1PTS
       call MessPass2D_1pts_tile (Istr,Iend,Jstr,Jend,  A)
 # elif defined MP_3PTS
       call MessPass2D_3pts_tile (Istr,Iend,Jstr,Jend,  A)
-# else  /* MP_4PTS */
+# elif defined MP_4PTS
       call MessPass2D_4pts_tile (Istr,Iend,Jstr,Jend,  A)
+# else  /* MP_5PTS */
+      call MessPass2D_5pts_tile (Istr,Iend,Jstr,Jend,  A)
 # endif
 
 # ifdef  BAND_DEBUG          
@@ -169,18 +178,24 @@ C$OMP BARRIER
       return
       end
 
-#if (!defined MP_4PTS) && (!defined MP_3PTS) && (!defined MP_1PTS)
-# define MP_4PTS
+#if (!defined MP_5PTS) && (!defined MP_4PTS) && \
+    (!defined MP_3PTS) && (!defined MP_1PTS)
+# define MP_5PTS
 # include "exchange_2d_tile.h"
-# undef MP_4PTS
-# ifndef MP_3PTS
-#  define MP_3PTS
+# undef MP_5PTS
+# ifndef MP_4PTS
+#  define MP_4PTS
 #  include "exchange_2d_tile.h"
-#  undef MP_3PTS
-# endif
-# ifndef MP_1PTS
-#  define MP_1PTS
-#  include "exchange_2d_tile.h"
-#  undef MP_1PTS
+#  undef MP_4PTS
+#  ifndef MP_3PTS
+#   define MP_3PTS
+#   include "exchange_2d_tile.h"
+#   undef MP_3PTS
+#  endif
+#  ifndef MP_1PTS
+#   define MP_1PTS
+#   include "exchange_2d_tile.h"
+#   undef MP_1PTS
+#  endif
 # endif
 #endif

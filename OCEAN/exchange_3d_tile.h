@@ -1,9 +1,11 @@
-#if (!defined MP_4PTS) && (!defined MP_3PTS)
+#if (!defined MP_5PTS) && (!defined MP_4PTS) && (!defined MP_3PTS)
       subroutine exchange_3d_tile (Istr,Iend,Jstr,Jend, A)
 #elif defined MP_3PTS
       subroutine exchange_3d_3pts_tile (Istr,Iend,Jstr,Jend, A)
-#else
+#elif defined MP_4PTS
       subroutine exchange_3d_4pts_tile (Istr,Iend,Jstr,Jend, A)
+#else
+      subroutine exchange_3d_5pts_tile (Istr,Iend,Jstr,Jend, A)
 #endif
 !
 ! Set periodic boundary conditions (if any) for a three-dimensional
@@ -19,12 +21,14 @@
 #include "param.h"
 #include "scalars.h"
       integer Npts,ipts,jpts
-#if (!defined MP_4PTS) && (!defined MP_3PTS)
+#if (!defined MP_5PTS) && (!defined MP_4PTS) && (!defined MP_3PTS)
       parameter (Npts=2)
 #elif defined MP_3PTS
       parameter (Npts=3)
-#else
+#elif defined MP_4PTS
       parameter (Npts=4)
+#else
+      parameter (Npts=5)
 #endif
       real A(GLOBAL_2D_ARRAY,KSTART:N)
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -145,7 +149,7 @@
 !$acc end kernels		   
 #ifdef MPI
       k=N-KSTART+1
-# if (!defined MP_4PTS) && (!defined MP_3PTS)
+# if (!defined MP_5PTS) && (!defined MP_4PTS) && (!defined MP_3PTS)
 #   ifndef MP_M3FAST_SEDLAYERS
       call MessPass3D_tile (Istr,Iend,Jstr,Jend,  A,k)
 #   else
@@ -157,11 +161,17 @@
 #   else
       call MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend,  A,k)      
 #   endif
-# else /* MP_4PTS */
+# elif defined MP_4PTS
 #   ifndef MP_M3FAST_SEDLAYERS       
       call MessPass3D_4pts_tile (Istr,Iend,Jstr,Jend,  A,k)
 #   else
       call MessPass3D_4pts_sl_tile (Istr,Iend,Jstr,Jend,  A,k)      
+#   endif
+# else /* MP_5PTS */
+#   ifndef MP_M3FAST_SEDLAYERS       
+      call MessPass3D_5pts_tile (Istr,Iend,Jstr,Jend,  A,k)
+#   else
+      call MessPass3D_5pts_sl_tile (Istr,Iend,Jstr,Jend,  A,k)      
 #   endif
 # endif   
 # ifdef  BAND_DEBUG          
@@ -186,14 +196,19 @@ C$OMP BARRIER
       return
       end
 
-#if (!defined MP_4PTS) && (!defined MP_3PTS)
-# define MP_4PTS
+#if (!defined MP_5PTS) && (!defined MP_4PTS) && (!defined MP_3PTS)
+# define MP_5PTS
 # include "exchange_3d_tile.h"
-# undef MP_4PTS
+# undef MP_5PTS
 # ifndef MP_3PTS
-#  define MP_3PTS
+#  define MP_4PTS
 #  include "exchange_3d_tile.h"
-#  undef MP_3PTS
+#  undef MP_4PTS
+#  ifndef MP_3PTS
+#   define MP_3PTS
+#   include "exchange_3d_tile.h"
+#   undef MP_3PTS
+#  endif
 # endif
 #endif
 

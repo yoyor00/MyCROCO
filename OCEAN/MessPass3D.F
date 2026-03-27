@@ -1,7 +1,7 @@
 #include "cppdefs.h"
 #if defined MPI && defined SOLVE3D
 
-# if (!defined MP_4PTS) && (!defined MP_3PTS)
+# if (!defined MP_5PTS) && (!defined MP_4PTS) && (!defined MP_3PTS)
 #  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_tile (Istr,Iend,Jstr,Jend, A, nmax)
 #  else
@@ -15,11 +15,18 @@
        subroutine MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend, A,
      &  nmax)
 #  endif
-# else
+# elif defined MP_4PTS
 #  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_4pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
 #  else
        subroutine MessPass3D_4pts_sl_tile (Istr,Iend,Jstr,Jend, A,
+     &  nmax)
+#  endif
+# else
+#  ifndef MP_M3FAST_SEDLAYERS
+      subroutine MessPass3D_5pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
+#  else
+       subroutine MessPass3D_5pts_sl_tile (Istr,Iend,Jstr,Jend, A,
      &  nmax)
 #  endif
 # endif
@@ -46,12 +53,14 @@
 ! Nb of boundary points involved in communication
 !
       integer Npts,ipts,jpts
-# if (!defined MP_4PTS) && (!defined MP_3PTS)
+# if (!defined MP_5PTS) && (!defined MP_4PTS) && (!defined MP_3PTS)
       parameter (Npts=2)
 # elif defined MP_3PTS
       parameter (Npts=3)
-# else
+# elif defined MP_4PTS
       parameter (Npts=4)
+# else
+      parameter (Npts=5)
 # endif
 # undef  NP1      
 # define NP1 N+1
@@ -584,18 +593,23 @@ c          endif
       return
       end
 
-# if (!defined MP_4PTS) && (!defined MP_3PTS)
-#  define MP_4PTS
+# if (!defined MP_5PTS) && (!defined MP_4PTS) && (!defined MP_3PTS)
+#  define MP_5PTS
 #  include "MessPass3D.F"
-#  undef MP_4PTS
-#  ifndef MP_3PTS
-#   define MP_3PTS
+#  undef MP_5PTS
+#  ifndef MP_4PTS
+#   define MP_4PTS
 #   include "MessPass3D.F"
-#   undef MP_3PTS
+#   undef MP_4PTS
+#   ifndef MP_3PTS
+#    define MP_3PTS
+#    include "MessPass3D.F"
+#    undef MP_3PTS
+#   endif
 #  endif
 # endif
 
-# if (!defined MP_4PTS) && (!defined MP_3PTS)
+# if (!defined MP_5PTS) && (!defined MP_4PTS) && (!defined MP_3PTS)
 #  ifdef M3FAST_SEDLAYERS      
 #   ifndef MP_M3FAST_SEDLAYERS
 #    define MP_M3FAST_SEDLAYERS
