@@ -107,8 +107,9 @@ if args.makepdf:
 if args.makepng:
     for i, tndx in enumerate(args.tindex):
         png_path = os.path.join(args.output_dir, f"gravadj_t{tndx:04d}.png")
-        extent = axs[i].get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-        fig.savefig(png_path, bbox_inches=extent)
+        renderer = fig.canvas.get_renderer()
+        extent = axs[i].get_tightbbox(renderer).transformed(fig.dpi_scale_trans.inverted())
+        fig.savefig(png_path, bbox_inches=extent.padded(0.1))
         print(f"PNG saved: {png_path}")
 
 # Show or not
