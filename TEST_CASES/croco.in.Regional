@@ -178,21 +178,12 @@ diags_pv_history_fields: diags_pv(1:NT)
 diags_pv_average_fields: diags_pv_avg(1:NT)
                             50*T
 
-
-diags_eddy:   ldefdiags_eddy, nwrtdiags_eddy, nrpfdiags_eddy /filename
-                   T          48        0
-    CROCO_FILES/croco_diags_eddy.nc
-
 diags_eddy_avg: ldefdiags_eddy_avg  ntsdiags_eddy_avg  nwrtdiags_eddy_avg  nprfdiags_eddy_avg /filename
                T          1           48          0
     CROCO_FILES/croco_diags_eddy_avg.nc
 
-diags_eddy_history_fields: diags_eddy
-                            T
-
 diags_eddy_average_fields: diags_eddy_avg
                             T
-
 
 diagnostics_bio:   ldefdiabio   nwrtdiabio    nrpfdiabio /filename
                         T          48             0

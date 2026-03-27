@@ -128,7 +128,6 @@ diagM_history_fields: diag_momentum(1:2)
 diagM_average_fields: diag_momentum_avg(1:2)
 		            T T
 
-
 diags_vrt:   ldefdiags_vrt, nwrtdiags_vrt, nrpfdiags_vrt /filename
                    T          72        0
     CROCO_FILES/croco_diags_vrt.nc
@@ -142,7 +141,6 @@ diags_vrt_history_fields: diags_vrt
 
 diags_vrt_average_fields: diags_vrt_avg
 		            T 
-
 
 diags_ek:   ldefdiags_ek, nwrtdiags_ek, nrpfdiags_ek /filename
                    T          72        0
@@ -172,7 +170,6 @@ surf_history_fields: surf
 surf_average_fields: surf_avg
                             F
 
-
 diags_pv:   ldefdiags_pv, nwrtdiags_pv, nrpfdiags_pv /filename
                    T          72        0
     CROCO_FILES/croco_diags_pv.nc
@@ -187,21 +184,12 @@ diags_pv_history_fields: diags_pv(1:NT)
 diags_pv_average_fields: diags_pv_avg(1:NT)
                             50*T
 
-
-diags_eddy:   ldefdiags_eddy, nwrtdiags_eddy, nrpfdiags_eddy /filename
-                   T          72        0
-    CROCO_FILES/croco_diags_eddy.nc
-
 diags_eddy_avg: ldefdiags_eddy_avg  ntsdiags_eddy_avg  nwrtdiags_eddy_avg  nprfdiags_eddy_avg /filename
                T          1           72          0
     CROCO_FILES/croco_diags_eddy_avg.nc
 
-diags_eddy_history_fields: diags_eddy
-                            T
-
 diags_eddy_average_fields: diags_eddy_avg
                             T
-
 
 diagnostics_bio:   ldefdiabio   nwrtdiabio    nrpfdiabio /filename
                         T          72             0
