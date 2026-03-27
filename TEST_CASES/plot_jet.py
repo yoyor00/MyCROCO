@@ -294,12 +294,12 @@ if tindex > 17:
         cbar.ax.tick_params(labelsize=12)  # Larger tick labels
 
     if args.makepdf:
-        pdf_path = os.path.join(args.output_dir, "jet_multivor.pdf")
+        pdf_path = os.path.join(args.output_dir, "jet_sst_evolution.pdf")
         plt.savefig(pdf_path, bbox_inches="tight", dpi=300)
         print(f"PDF saved: {pdf_path}")
 
     if args.makepng:
-        png_path = os.path.join(args.output_dir, "jet_multivor.png")
+        png_path = os.path.join(args.output_dir, "jet_sst_evolution.png")
         plt.savefig(png_path, bbox_inches="tight", dpi=300)
         print(f"PNG saved: {png_path}")
 
