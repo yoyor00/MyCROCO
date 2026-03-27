@@ -208,6 +208,11 @@ def get_horizontal_data(
 
                 # Get the horizontal slice
                 data = cr.get_hslice(nc_file, nc_file, var_name, tndx, level, grid_type)
+
+                # Apply land mask
+                _, _, mask = cr.read_latlonmask(nc_file, grid_type)
+                data = np.ma.masked_where(mask == 0, data)   
+
                 variables[key] = (lon, lat, data, title, unit)
                 logger.debug(f"Successfully extracted {var_name} data")
             except Exception as e:
