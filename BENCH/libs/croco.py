@@ -705,7 +705,7 @@ class Croco:
             }
             self.apply_patches(patches)
             delete_lines_from_file(
-                full_filename, "diags_pv:", line_offset=2, num_lines=1
+                full_filename, "diags_eddy_avg:", line_offset=2, num_lines=1
             )                        
     def change_card_history_ldefhis(self, filename):
         full_filename = os.path.join(self.dirname, filename)
