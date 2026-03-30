@@ -254,6 +254,7 @@ def extract_comparable_arrays(ref: Dataset, actual: Dataset, var: str):
     shape_ref = ref.variables[var].shape
 
     # Slice NetCDF4 variable first, then convert — avoids masked array deprecation
+    # [1:-1, 1:-1] to check only interior domain
     if len(shape_ref) == 2:
         return (
             ref.variables[var][1:-1, 1:-1].data,
