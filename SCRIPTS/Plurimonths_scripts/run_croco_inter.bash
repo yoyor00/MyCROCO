@@ -243,10 +243,12 @@ while [ $NY != $NY_END ]; do
   while [ $NM != $MONTH_END ]; do
     if [[ $TIME_SCHED == 0 ]]; then
       TIME=Y${NY}
-      echo "Computing YEAR $NY"
+      echo ""
+      echo "YEAR $NY"
     else
-      TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
-      echo "Computing YEAR $NY MONTH $( printf ${MTH_FORMAT} ${NM})"
+    TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
+    echo ""
+    echo "YEAR $NY MONTH $( printf ${MTH_FORMAT} ${NM})"
     fi
     #
     # Get forcing and clim for this time
@@ -376,18 +378,16 @@ while [ $NY != $NY_END ]; do
         echo "Exact restart defined"
         if [[ $NY == $NY_COLDSTART && $NM == $NM_COLDSTART ]]; then
           NUMRECINI=1
-          echo "set NUMRECINI = $NUMRECINI"
+          echo "Exact restart activated but COLD START: NY=$NY_COLDSTART NM=$NM_COLDSTART => USING NUMRECINI = $NUMRECINI"
         else
           NUMRECINI=2
-          echo "set NUMRECINI = $NUMRECINI"
+          echo "Exact restart activated => USING NUMRECINI = $NUMRECINI"
         fi
       else  # no exact restart
-        echo "No exact restart"
         NUMRECINI=1
-        echo "set NUMRECINI = $NUMRECINI"
+        echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
       fi
 
-      echo " "
       echo "Writing in ${MODEL}_inter.in${ENDF}"
       echo "USING DT       = $DT"
       echo "USING NFAST    = $NFAST"
@@ -458,7 +458,6 @@ while [ $NY != $NY_END ]; do
     #
     #  COMPUTE
     #
-    echo " "
     echo "Computing for $TIME"
     date
     ${RUNCMD}$CODFILE  ${MODEL}_${TIME}_inter.in > ${MODEL}_${TIME}.out

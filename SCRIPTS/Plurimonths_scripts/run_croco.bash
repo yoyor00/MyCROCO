@@ -113,8 +113,6 @@ if [[ $NY_START == 1 && $NM_START == 1 ]]; then
 else
   RSTFLAG=1
 fi
-
-
 #
 if [[ $RSTFLAG != 0 ]]; then
   NY=$NY_START
@@ -230,7 +228,8 @@ while [[ $LEVEL != $NLEVEL ]]; do
   sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
     -e 's/\bNUMAVG\b/'$NUMAVG'/' \
     -e 's/\bNUMHIS\b/'$NUMHIS'/' \
-    -e 's/\bNUMRST\b/'$NUMRST'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_inter.in${ENDF}.tmp1
+    -e 's/\bNUMRST\b/'$NUMRST'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_inter.in${ENDF}.tmp1 \
+  && mv ${MODEL}_inter.in${ENDF}.tmp1 ${MODEL}.in${ENDF}
 
   LEVEL=$((LEVEL + 1))
 done
@@ -265,7 +264,10 @@ while [[ $NY != $NY_END ]]; do
     else
       TIME=Y${NY}M$( printf ${MTH_FORMAT} ${NM})
     fi
-
+    #
+    echo " "
+    echo "Computing for $TIME"
+    date
     #
     LEVEL=0
     while [[ $LEVEL != $NLEVEL ]]; do
@@ -276,29 +278,30 @@ while [[ $NY != $NY_END ]]; do
       fi
       if [[ $NY == 1 && $NM == 1 ]]; then
         NUMRECINI=1
-        echo "set NUMRECINI = $NUMRECINI"
+        [[ $EXACT_RST == 1 ]] && echo "Exact restart activated but COLD START: NY=1 NM=1 => USING NUMRECINI = $NUMRECINI"
+        [[ $EXACT_RST != 1 ]] && echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
       else
         if [[ $EXACT_RST == 1 ]]; then
+
           NUMRECINI=2
-          echo "set NUMRECINI = $NUMRECINI"
+          echo "Exact restart activated => USING NUMRECINI = $NUMRECINI"
         else
+
           NUMRECINI=1
-          echo "set NUMRECINI = $NUMRECINI"
+          echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
         fi
-        #
-        sed -e 's/NUMRECINI/'$NUMRECINI'/' \
-          -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
-          < ${MODEL}_inter.in${ENDF}.tmp1 > ${MODEL}.in${ENDF}
-        #
       fi
+      #
+      sed -e 's/NUMRECINI/'$NUMRECINI'/' \
+          -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
+          < ${MODEL}.in${ENDF} > ${MODEL}.in${ENDF}.tmp1 \
+      && mv ${MODEL}.in${ENDF}.tmp1 ${MODEL}.in${ENDF}
+      #
       LEVEL=$((LEVEL + 1))
     done
     #
     #  COMPUTE
     #
-    echo " "
-    echo "Computing for $TIME"
-    date
     ${RUNCMD}$CODFILE  ${MODEL}.in > ${MODEL}_${TIME}.out
     date
     #
