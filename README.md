@@ -55,10 +55,15 @@ PISCES (Pelagic Interactions Scheme for Carbon and Ecosystem Studies)
   Copyright (C) O. Aumont, LOCEAN/IPSL
   License: CeCILL
 
-MUSTANG (MUd and Sand Transport modelling Applied to Nice Geometries)
-  Copyright (C) B. Mengual, P. Le Hir, IFREMER
+MUSTANG (MUd and Sand TrANsport modellinG)
+  Copyright (C) IFREMER
   License: CeCILL-C
   See LICENSES/LICENSE_MUSTANG.txt
+
+OBSTRUCTION
+  Copyright (C) IFREMER
+  License: CeCILL-C
+  See LICENSES/LICENSE_OBSTRUCTION.txt
 
 BENCH (Benchmarking and validation framework)
   Copyright (C) 2023-2025 S. Valat (INRIA/LJK)
