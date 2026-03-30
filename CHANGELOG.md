@@ -65,8 +65,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   distribution of flow, enabling a transition from the AKIMA scheme to 
   SPLINES (#478)
 
-- BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
-
 ### Deprecated
 
 
