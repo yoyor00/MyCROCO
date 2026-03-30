@@ -21,11 +21,9 @@
       integer :: lbx,ubx,lby,uby
       integer chunk_size_X,margin_X,chunk_size_E,margin_E
       integer Istrmpi,Iendmpi,Jstrmpi,Jendmpi, i_X,j_E
-      integer,dimension(0:NP_XI-1,0:NP_ETA-1)  ::   myproc
-!      real,dimension(LLm+2,MMm+2)  ::   zmask
-      real,dimension(0:LLm+1,0:MMm+1)  ::   zmask
-      integer,dimension(0:NNODES-1) :: mymynode!,myistr,myjstr,
-!    &    myiend,myjend
+      integer,dimension(0:NP_XI-1,0:NP_ETA-1) :: myproc
+      real,dimension(0:LLm+1,0:MMm+1) :: zmask
+      integer,dimension(0:NNODES-1) :: mymynode
       integer,dimension(0:NNODES-1) :: mymynode2
       integer ncid,varid,nerr
       integer ip1,im1,jp1,jm1,inu2
@@ -38,7 +36,6 @@
 # ifdef OPENACC
       integer number_of_devices
 # endif
-
 
 # include "scalars.h"
 # include "ncscrum.h"
@@ -147,7 +144,7 @@
       NNODES2=NP_XI*NP_ETA
       mynode2=mynode
 # else
-  !   ! read mask
+     ! read mask
       nerr= nf_open('croco_grd.nc',
      &   NF_NOWRITE, ncid)
       nerr= nf_inq_varid(ncid, 'mask_rho', varid)
@@ -215,7 +212,6 @@
       mynode=mymynode(mynode)
       NNODES2=NP_XI*NP_ETA
 
-      !
       do j=0,NP_ETA -1
         do i=0,NP_XI  -1
           if (myproc(i,j)==mynode)   then
@@ -339,22 +335,22 @@
 !       open (unit=100,file="results.txt",action="write",
 !     &  status="replace")!
 
- !       write(100,*) 'DECOUPAGE : '
- !       write(100,*)
- !       do j=NP_ETA-1,0,-1
- !          write(100,*) (myproc(i,j),i=0,NP_XI-1)
- !       enddo
- !      endif
- !      call MPI_Barrier (MPI_COMM_WORLD, ierr)
- !      if(mynode == 0) close(100)
+!       write(100,*) 'DECOUPAGE : '
+!       write(100,*)
+!       do j=NP_ETA-1,0,-1
+!          write(100,*) (myproc(i,j),i=0,NP_XI-1)
+!       enddo
+!      endif
+!      call MPI_Barrier (MPI_COMM_WORLD, ierr)
+!      if(mynode == 0) close(100)
 
- !       if(jj==4)then
- !      write(*,*) 'diags : ', mynode, CORNER_NE,CORNER_NW,
- !    & CORNER_SE,CORNER_SW
- !      write(*,*) 'bounds : ',mynode,istrmpi,iendmpi,jstrmpi,jendmpi
+!       if(jj==4)then
+!      write(*,*) 'diags : ', mynode, CORNER_NE,CORNER_NW,
+!    & CORNER_SE,CORNER_SW
+!      write(*,*) 'bounds : ',mynode,istrmpi,iendmpi,jstrmpi,jendmpi
 
- !      endif
- !      call MPI_Barrier (MPI_COMM_WORLD, ierr)
+!      endif
+!      call MPI_Barrier (MPI_COMM_WORLD, ierr)
 
 # ifdef PARALLEL_FILES
 !# ifndef EW_PERIODIC
