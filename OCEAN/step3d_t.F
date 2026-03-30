@@ -49,11 +49,9 @@
 #   ifdef MUSTANG
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
-      USE comMUSTANG,  ONLY : corflux, corfluy
+      USE comMUSTANG,  ONLY : l_corflux, corflux, corfluy
       USE comsubstance, ONLY : irkm_var_assoc, nvpc, nvp
-#    ifdef key_sand2D
       USE comsubstance, ONLY : l_subs2D
-#    endif
 #   endif
       USE submassbalance, ONLY :  submassbalance_flxcum_kiv
       USE submassbalance, ONLY :  submassbalance_psource
@@ -227,8 +225,8 @@
           endif
 #  endif
 !
-#  if defined MUSTANG && defined MUSTANG_CORFLUX
-          if (k.eq.1 .and.
+#  if defined MUSTANG
+          if (l_corflux .and. k.eq.1 .and.
      &        (itrc.ge.itsubs1+nv_grav .and.
      &        itrc.le.itsubs1+nv_grav+nv_sand-1) ! isand1, isand2
      &        .or.
@@ -273,8 +271,8 @@
               if (Dsrc(is).eq.0) then
                 if (Lsrc(is,itrc)) then
                   FX(i,j)=Huon(i,j,k)*Tsrc(is,k,itrc)
-#   if defined MUSTANG && defined key_sand2D
-!     To do: sum FX for k=1
+#   if defined MUSTANG 
+!     To do: sum FX for k=1 if sand2D l_subs2D
 #   endif
 #   ifdef MASKING
                 else
@@ -316,7 +314,7 @@
 #  endif
           do j=Jstr,Jend
             do i=Istr,Iend
-#  if !(defined MUSTANG && defined key_sand2D)
+#  if !(defined MUSTANG)
               t(i,j,k,nnew,itrc)=Hz_bak(i,j,k)*t(i,j,k,nstp,itrc)
      &                    -dt*pm(i,j)*pn(i,j)*( FX(i+1,j)-FX(i,j)
      &                                         +FE(i,j+1)-FE(i,j))
@@ -524,7 +522,7 @@
 ! Apply vertical advective flux divergence
 !----------------------------------------------------------
 !
-#  if defined MUSTANG && defined key_sand2D
+#  if defined MUSTANG
           if (.not.l_subs2D(itrc-itsubs1+1)) then
 #  endif
             do k=1,N
@@ -541,7 +539,7 @@
               enddo
             enddo
 #  endif /* DIAGNOSTICS_TS */
-#  if defined MUSTANG && defined key_sand2D
+#  if defined MUSTANG
           endif
 #  endif
 !
@@ -666,9 +664,7 @@
 !
             if (itrc.ge.itsubs1+nv_grav .and.
      &          itrc.le.itsubs1+nvp) then        ! sediment tracers
-#    ifdef key_sand2D
               if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    endif
 #    undef TS_MIX_IMP
 #    define CD EC
 #    define NBSUBSTEP GC
@@ -676,9 +672,7 @@
 #    undef NBSUBSTEP
 #    undef CD
 #    define TS_MIX_IMP
-#    ifdef key_sand2D
               endif
-#    endif
             else                                 ! other tracers
 #    undef TS_MIX_IMP
 #    include "t3dmix_tridiagonal.h"
@@ -711,17 +705,13 @@
 #   else
           if (itrc.ge.itsubs1+nv_grav .and.
      &        itrc.le.itsubs1+nvp) then          ! sediment tracers
-#    ifdef key_sand2D
             if (.not.l_subs2D(itrc-itsubs1+1)) then
-#    endif
 #    define CD EC
 #    define NBSUBSTEP GC
 #    include "t3dmix_tridiagonal_settling.h"
 #    undef NBSUBSTEP
 #    undef CD
-#    ifdef key_sand2D
             endif
-#    endif
           else                                   ! all other tracers
 #    include "t3dmix_tridiagonal.h"
           endif

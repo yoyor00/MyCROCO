@@ -16,8 +16,8 @@
       USE comsubstance, ONLY : cvfix_wat, nvpc
 #endif
 #ifdef MUSTANG
-      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
-      USE comsubstance, ONLY : ws_part
+      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres, MUSTANG_reconstruct_rouse2D_profile
+      USE comsubstance, ONLY : ws_part, l_subs2D, nv_grav, nv_sand, l_outsandrouse
       USE comMUSTANG,   ONLY : vname_Must, hisMust, outMust,
      &                         nk_nivsed_out, var3D_cvsed, var3D_dzs,
      &                         var3D_TEMP, var3D_SAL, var3D_poro,
@@ -38,11 +38,7 @@
      &                         var3Dksed_loadograv, var3Dksed_permeab, 
      &                         var3Dksed_sed_rate, var3Dksed_sigmadjge, 
      &                         var3Dksed_sigmapsg, var3Dksed_hinder, 
-     &                         var3Dksed_stateconsol
-# ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
-      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
-# endif
+     &                         var3Dksed_stateconsol, rouse2D_integral, rouse2D
 #endif
 
 #ifdef OBSTRUCTION
@@ -112,6 +108,7 @@
 #include "netcdf.inc"
 
 #ifdef MUSTANG
+      integer  isand
       real     workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
      &         workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
       real     workrsed_nv(GLOBAL_2D_ARRAY),
@@ -466,9 +463,15 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
+# if defined WAVE_ROLLER && defined WKB_WWAVE 
 !$acc update if(compute_on_device) host(wepb0(:,:))
         ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
+# else
+!$acc update if(compute_on_device) host(wepb(:,:))
+            ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
+     &                                   hisWAVE(6), record, r2dvar)
+# endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
          MPI_master_only write(stdout,1)
@@ -1368,29 +1371,19 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 # endif
         if (wrthis(indxT+itrc-1)) then
           workr=t(:,:,:,nstp,itrc)
-# if defined MUSTANG & defined key_sand2D
+# if defined MUSTANG
           if (itrc .ge. itsubs1+nv_grav .and.
      &        itrc .le. itsubs1+nv_grav+nv_sand-1) then ! isand1,isand2
-            if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
-     &         .and. l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
-              do j=0,Mm+1
-                do i=0,Lm+1
-                  do k=1,N
-                    if ( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) .gt. 0.) then
-                      workr(i,j,k)=t(i,j,1,nstp,itrc)*
-     &                             (z_w(i,j,1)-z_w(i,j,0))*
-     &                           ( (z_w(i,j,N)-z_r(i,j,k))
-     &                            /(z_r(i,j,k)-z_w(i,j,0))
-     &                           )**rouse2D(itrc-itsubs1-nv_grav+1,i,j)
-                      workr(i,j,k)=workr(i,j,k)/
-     &                             sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
-                    else
-                      workr(i,j,k)=0.
-                    endif
-                  enddo
-                enddo
-              enddo
-            endif
+          isand = itrc - (itsubs1 + nv_grav) + 1
+          if (l_subs2D(isand) .and. l_outsandrouse(isand)) then
+            CALL MUSTANG_reconstruct_rouse2D_profile(0, Lm+1, 0, Mm+1, N,
+     &          rouse2D(isand, 0:Lm+1, 0:Mm+1),
+     &        rouse2D_integral(isand, 0:Lm+1, 0:Mm+1),
+     &        t(0:Lm+1, 0:Mm+1, 1, nstp, itrc),
+     &        z_w(0:Lm+1, 0:Mm+1, 0:N),
+     &        z_r(0:Lm+1, 0:Mm+1, 1:N),
+     &        workr(0:Lm+1, 0:Mm+1, 1:N))
+          endif
           endif
 # endif
           call fillvalue3d(workr,ncidhis,hisT(itrc),

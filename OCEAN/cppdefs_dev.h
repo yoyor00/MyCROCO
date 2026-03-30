@@ -726,9 +726,6 @@
          || (defined WAVE_OFFLINE && defined MRL_WCI) \
          || defined ANA_WWAVE
 # define WAVE_IO
-# if !defined WAVE_ROLLER || !defined WKB_WWAVE
-#  define wepb0 wepb
-# endif
 #endif
 
 /*
@@ -744,7 +741,10 @@
 # undef LMD_BKPP2005  /*<- unresolved problems with bkpp2005 at depth
                            default: lmd_bkpp1994 */
 #endif
-
+# ifdef LMD_RIMIX
+#  define RI_HSMOOTH
+#  define RI_VSMOOTH
+# endif
 /*
 ======================================================================
                 Biogeochemical models
@@ -790,21 +790,24 @@
 #endif
 /*
 ======================================================================
-    Bottom stress option:
+    Bottom stress :
 
-    LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid
-    numerical instability associated with reversing bottom flow
-    NOW replaced by BSTRESS_FAST option
+    LIMIT_BSTRESS: Set limiting factor to avoid numerical instability 
+    associated with the Euler explicit treatment of the bottom stress
+    BSTRESS_FAST is an alternative with computation at fast time step
 ======================================================================
 */
-/*
 #ifndef BSTRESS_FAST
-# define  LIMIT_BSTRESS
+# define LIMIT_BSTRESS
 #endif
-*/
 #ifdef INNERSHELF
-# undef  LIMIT_BSTRESS
+# undef LIMIT_BSTRESS
 #endif
+/*
+======================================================================
+    BBL :
+======================================================================
+*/
 #ifdef BBL
 # ifdef OW_COUPLING
 # elif defined WAVE_OFFLINE
