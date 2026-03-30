@@ -29,6 +29,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
 
+- OCEAN : Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
+
+- WET_DRY : add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
@@ -49,6 +53,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
+- WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
+  and not in cppdefs_dev.h (#465)
+
 - BULK_FLUX : Update wasp bulk flux parametrization, 
   cppkey BULK_WASP (Issue #453)
 
@@ -57,6 +64,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
   distribution of flow, enabling a transition from the AKIMA scheme to 
   SPLINES (#478)
+
+- OMEGA : Add a condition on the NBQ_MASS key for some terms of the first 
+  part of the computation of omega (#447)
+
+- CPP keys : restore the default definition for LIMIT_BSTRESS (the key is activated 
+  in cppdefs_dev.h unless BSTRESS_FAST is previously defined) (#456) 
 
 ### Deprecated
 
@@ -103,6 +116,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Other
 
 - Cleaning :
+  - remove TEST_CASES/IGW_OA directory with PDFs, namelist, XIOS XML files, and README  (#337)
   - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
@@ -111,13 +125,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
   - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
     in cppdefs_dev.h (#403)
+  - remove hard coded keys in mpc.F (#404)
 
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, N. Ducousso, F. Dufois, S. Jullien, 
+  R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
-  M. Plus, M. Schreiber, A. Zribi, E Le Bouedec  
+  M. Plus, M. Schreiber, A. Zribi, E. Le Bouedec, B. Lemieux-Dudon
