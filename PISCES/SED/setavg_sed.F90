@@ -20,6 +20,7 @@ MODULE setavg_sed
 
    !! * Modules used
    USE sed
+   USE oce_trc
 
    IMPLICIT NONE
    PRIVATE
