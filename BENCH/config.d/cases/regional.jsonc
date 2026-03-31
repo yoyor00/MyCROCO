@@ -221,7 +221,9 @@
     },
     "unsupported": ["openmp"],
     // error in bry_time set_cycle in restart
-    "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1"],
+    "check_outputs": [
+      "CROCO_FILES/croco_his.nc",
+      "CROCO_FILES/croco_diabio.nc"],
   },
   "BENGUELA_LR_BSTRESS_FASTGLS": {
     "title": "BENGUELA_LR_BSTRESS_FASTGLS",

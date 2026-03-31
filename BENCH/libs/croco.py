@@ -417,6 +417,7 @@ class Croco:
         # and for USE_CALENDAR
         self.change_card_end_date(filename, 6)
         self.change_card_output_time_steps_dthis(filename, 6)
+        self.change_card_diaBIO_nwrt(filename)
 
     def apply_restart_patches(self):
         filename = self.croco_inputfile
@@ -587,7 +588,24 @@ class Croco:
             delete_lines_from_file(
                 full_filename, "history:", line_offset=2, num_lines=1
             )
-
+    def change_card_diaBIO_nwrt(self, filename):
+        full_filename = os.path.join(self.dirname, filename)
+        # Check time_stepping is a card in this case
+        if len(extract_elements_from_file(full_filename, "diagnostics_bio")) > 0:
+            HISTORY_LINE = extract_elements_from_file(full_filename, "diagnostics_bio")
+            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " diagnostics_bio:",
+                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
+                    "descr": "change output to NWRTDIAGBIO=1",
+                }
+            }
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "diagnostics_bio:", line_offset=2, num_lines=1
+            )   
     def change_card_history_ldefhis(self, filename):
         full_filename = os.path.join(self.dirname, filename)
         # Check time_stepping is a card in this case
