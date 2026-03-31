@@ -236,6 +236,9 @@ debug_realist:
       junit: BENCH/results/debug_realist-host_ci/junit_report.xml
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
+    # Manual if the pipeline is triggered from the UI
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
 
 # space disk issue if we want to do restart on all realist cases
 # to split ?
