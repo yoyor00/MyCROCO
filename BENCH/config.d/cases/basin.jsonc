@@ -55,7 +55,7 @@
         "descr": "Set mesh size to (200 x 200 x 50)",
       },},
       "check_outputs": ["basin_his.nc"],
-      "unsupported": ["restart"],
+      "unsupported": ["restart", "openmp"],
     },
   // BASIN a bit larger
   "BASIN-LARGE": {
