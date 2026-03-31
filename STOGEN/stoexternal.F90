@@ -223,6 +223,7 @@ C$    integer  trd, omp_get_thread_num
    SUBROUTINE ocean_2_stogen_tile (Istr,Iend,Jstr,Jend)
       INTEGER :: ji1, jj1, jk1
       integer :: Istr,Iend,Jstr,Jend
+# include "compute_auxiliary_bounds.h"
 
       ! Open namelist files
       numnam_ref = 10 
@@ -240,11 +241,11 @@ C$    integer  trd, omp_get_thread_num
 
       ! Define grid size (for local subdomain) -- 
 # ifdef SPHERICAL
-      jpi = size(lonr,1) ; ishift_priv = Istr - lbound(lonr, 1) - 1
-      jpj = size(lonr,2) ; jshift_priv = Jstr - lbound(lonr, 2) - 1
+      jpi = size(lonr,1) ; ishift_priv = 1 - lbound(lonr, 1) ! 1=reference of STOGEN grid
+      jpj = size(lonr,2) ; jshift_priv = 1 - lbound(lonr, 2) ! 1=reference of STOGEN grid
 # else
-      jpi = size(xr,1)   ; ishift_priv = Istr - lbound(xr, 1) - 1
-      jpj = size(xr,2)   ; jshift_priv = Jstr - lbound(xr, 2) - 1
+      jpi = size(xr,1)   ; ishift_priv = 1 - lbound(xr, 1)   ! 1=reference of STOGEN grid
+      jpj = size(xr,2)   ; jshift_priv = 1 - lbound(xr, 2)   ! 1=reference of STOGEN grid
 # endif
       jpk = N
 
@@ -297,18 +298,18 @@ C$    integer  trd, omp_get_thread_num
       ! Define index of grid points (of local subdomain) in global grid (all subdomains)
       ALLOCATE(mig(1:jpi))
       ALLOCATE(mjg(1:jpj))
-      DO ji1 = 1, jpi
+      DO ji1 = 1, jpi 
 # ifdef MPI
-        mig(ji1) = ji1 + ii*Lm
+        mig(ji1) = ji1 - 1 + iminmpi - ishift_priv
 # else
-        mig(ji1) = ji1
+        mig(ji1) = ji1 - ishift_priv 
 # endif
       ENDDO
       DO jj1 = 1, jpj
 # ifdef MPI 
-        mjg(jj1) = jj1 + jj*Mm
+        mjg(jj1) = jj1 - 1 + jminmpi - jshift_priv
 # else
-        mjg(jj1) = jj1
+        mjg(jj1) = jj1 - jshift_priv
 # endif
       ENDDO
 
