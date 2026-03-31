@@ -71,6 +71,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - CPP keys : restore the default definition for LIMIT_BSTRESS (the key is activated 
   in cppdefs_dev.h unless BSTRESS_FAST is previously defined) (#456) 
 
+- BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
+
 ### Deprecated
 
 
