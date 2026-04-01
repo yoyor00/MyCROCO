@@ -22,14 +22,33 @@ MODULE stostress
    ! Parameters of stochastic fields
    ! (default values are replaced by values read in namelist)
    REAL(wp), SAVE :: std  = 0.1   ! standard deviation of the multiplicative noise
-   REAL(wp), SAVE :: tcor = 0.0   ! time correlation (in days)
-   INTEGER,  SAVE :: npasses = 0  ! number of passes of the horizontal Laplacian filter
+   REAL(wp), SAVE :: tcor = 10.0  ! time correlation (in days)
+   INTEGER,  SAVE :: npasses = 20 ! number of passes of the horizontal Laplacian filter
    INTEGER,  SAVE :: arorder = 1  ! order of autoregressive process
    INTEGER,  SAVE :: nupdate = 1  ! update frequency of autoregressive process (in time steps)
 
    PUBLIC sto_stress_init, sto_stress
 
 CONTAINS
+
+   SUBROUTINE sto_stress ( suvstr, struct_fcn )
+      !!----------------------------------------------------------------------
+      !!
+      !!                     ***  ROUTINE sto_stress  ***
+      !!
+      !! This routine implements perturbation to wind stress.
+      !! Only applied to zonal component for now, 
+      !! i.e. for application to the BASIN test case
+      !!
+      !!----------------------------------------------------------------------
+      REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: suvstr
+      REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: struct_fcn
+
+      struct_fcn(:,:) = struct_fcn(:,:) * stofields(jstostress)%sto2d(:,:)
+      suvstr(:,:) = suvstr(:,:) * (1 + struct_fcn(:,:))
+
+   END SUBROUTINE sto_stress
+
 
    SUBROUTINE sto_stress_init
       !!----------------------------------------------------------------------
@@ -40,6 +59,9 @@ CONTAINS
       !! to request stochastic field with appropriate features
       !!
       !!----------------------------------------------------------------------
+
+      ! Read namelist block corresponding to this stochastic scheme
+      CALL read_parameters
 
       ! Request index for a new stochastic array
       CALL sto_array_request_new(jstostress)
@@ -61,23 +83,26 @@ CONTAINS
    END SUBROUTINE sto_stress_init
 
 
-   SUBROUTINE sto_stress ( suvstr, struct_fcn )
+   SUBROUTINE read_parameters
       !!----------------------------------------------------------------------
+      !!                  ***  routine read_parameters  ***
       !!
-      !!                     ***  ROUTINE sto_stress  ***
-      !!
-      !! This routine implements perturbation to wind stress.
-      !! Only applied to zonal component for now, 
-      !! i.e. for application to the BASIN test case
+      !! ** Purpose :   Read parameters for this stochastic module
       !!
       !!----------------------------------------------------------------------
-      REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: suvstr
-      REAL(wp), DIMENSION(1:jpi,1:jpj), INTENT(inout) :: struct_fcn
 
-      struct_fcn(:,:) = struct_fcn(:,:) * stofields(jstostress)%sto2d(:,:)
-      suvstr(:,:) = suvstr(:,:) * (1 + struct_fcn(:,:))
+      ! Namelist with parameters for this stochastic module
+      NAMELIST/namsto_stress/ tcor, std, npasses, arorder, nupdate
+      !!----------------------------------------------------------------------
+      INTEGER  ::   ios                            ! Local integer output status for namelist read
 
-   END SUBROUTINE sto_stress
+      ! Read namsto_stress namelist
+      REWIND( numnam_ref )
+      READ  ( numnam_ref, namsto_stress, IOSTAT = ios, ERR = 901)
+901   IF( ios /= 0 ) CALL ctl_nam ( ios , 'namsto_stress in reference namelist', lwp )
+
+   END SUBROUTINE read_parameters
+
 
    !!======================================================================
 

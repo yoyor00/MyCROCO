@@ -35,6 +35,15 @@
    nupdate = 12 ! udpate frequency of the autorgeressive processes (in time steps)
 /
 !-----------------------------------------------------------------------
+&namsto_stress   !   parameters for stochastic stress in BASIN test case
+!-----------------------------------------------------------------------
+   std  = 0.1   ! standard deviation of the multiplicative noise
+   tcor = 10.0  ! time correlation (in days)
+   npasses = 20 ! number of passes of the horizontal Laplacian filter
+   arorder = 1  ! order of the autorgeressive processes
+   nupdate = 1  ! udpate frequency of the autorgeressive processes (in time steps)
+/
+!-----------------------------------------------------------------------
 &namsto_gls    !   parameters for stochastic vertical mixing
 !-----------------------------------------------------------------------
    ln_Sprod =.false.  ! perturb TKE production term
