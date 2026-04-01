@@ -1038,6 +1038,9 @@ c        close(testunit)
      &                    ,  wrthis(indxU),  wrthis(indxV)
 # ifdef TRACERS
      &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT)
+        do itrc=1,NT
+          if (wrthis(indxV+itrc)) wrthis(indxTime)=.true.
+        enddo
 # endif
 #endif
         if ( wrthis(indxZ) .or. wrthis(indxUb) .or. wrthis(indxVb)
