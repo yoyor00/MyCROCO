@@ -117,6 +117,9 @@
 !
 ! gamma2   Slipperiness parameter, either 1. (free-slip)
 !
+! mld_crit_D     Density criterion to define the ML [kg/m^3] 
+! mld_crit_T     Temperature criterion to define the ML [Celsius]
+!
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
 !                              usually 1, if not a restart run.
 ! ntimes   Number of timesteps for the 3D primitive equations in
@@ -159,10 +162,6 @@
       real time_avg, time2_avg, rho0
      &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt
      &               , xl, el, visc2, visc4, gamma2
-#if (defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT)
-      real mld_crit_T, mld_crit_D, mld_crit_T2
-      integer mld_depth_ref
-#endif
 #ifdef SOLVE3D
       real  theta_s,   theta_b,   Tcline,  hc
 # ifndef M3FAST_SEDLAYERS
@@ -220,6 +219,9 @@
       integer nwrtdia
 # ifdef AVERAGES
       integer ntsdia_avg, nwrtdia_avg
+# endif
+# ifdef DIAGNOSTICS_TS_MLD_DENS
+      real mld_crit_D, mld_crit_T
 # endif
 #endif
 #if defined DIAGNOSTICS_UV
@@ -341,10 +343,6 @@
      &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
      &           , Zobt,       Cdb_min,   Cdb_max
      &           , xl, el,    visc2,     visc4,   gamma2
-#if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD && \
-     defined DIAGNOSTICS_TS_MLD_CRIT)
-     &           , mld_crit_T, mld_crit_D, mld_crit_T2
-#endif
 #ifdef SOLVE3D
      &           , theta_s,   theta_b,   Tcline,  hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
@@ -372,10 +370,6 @@
 #endif
      &      , numthreads,     ntstart,   ntimes,  ninfo
      &      , nfast,  nrrec,     nrst,    nwrt
-#if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD && \
-     defined DIAGNOSTICS_TS_MLD_CRIT)
-     &      , mld_depth_ref
-#endif
 #ifdef EXACT_RESTART
      &       , forw_start
 #endif
@@ -409,6 +403,9 @@
      &                      , ldefdia_avg
      &                      , nwrtdia_avg
      &                      , ntsdia_avg
+# endif
+# ifdef DIAGNOSTICS_TS_MLD_DENS
+     &                      , mld_crit_D, mld_crit_T
 # endif
 #endif
 #if defined DIAGNOSTICS_UV

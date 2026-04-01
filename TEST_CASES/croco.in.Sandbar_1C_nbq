@@ -64,6 +64,8 @@ diags_eddy_history_fields: diags_eddy
 diags_eddy_average_fields: diags_eddy_avg
                             T
 
+diag_mld_dens: RHO threshold [kg/m3], T threshold [Celsius]
+                         3.d-2                2.d-1
 
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T        300         0
