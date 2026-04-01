@@ -778,16 +778,6 @@ c        close(testunit)
 # endif
 #endif /* ABL1D */
 #if defined DIAGNOSTICS_TS
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
-      elseif (keyword(1:kwlen).eq.'diag_mld_dens') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) mld_crit_D, mld_crit_T
-        MPI_master_only write(stdout,'(/1x,A,2(/1x,1pe10.3,2x,A))')
-     &   'Tresholds for Mixed Layer calculation:', 
-     &    mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
-     &    mld_crit_T, 'mld_crit_T     Temperature treshold [C]'
-
-# endif  /* DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_DENS */
 !
 ! Diagnostics file name.
 !
@@ -1988,10 +1978,6 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,*,err=95) mld_crit_D, mld_crit_T
 # endif  /* DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_DENS */
-# endif  /* DIAGNOSTICS_TS */
-
-
-#if defined DIAGNOSTICS_TS
 !
 ! Switches for fields to be saved into tracer diagnostics file.
 !
@@ -2007,6 +1993,12 @@ c        close(testunit)
      &        'write Tracer equation terms ',
      &        ' Tracer of index', itrc,'/',NT
         enddo
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+        MPI_master_only write(stdout,'(/1x,A,2(/1x,1pe10.3,2x,A))')
+     &   'Tresholds for Mixed Layer calculation:', 
+     &    mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
+     &    mld_crit_T, 'mld_crit_T     Temperature treshold [C]'
+#   endif  /* DIAGNOSTICS_TS_MLD_DENS */
 # endif  /* TRACERS */
 # ifdef DIAGNOSTICS_TS_MLD
       elseif (keyword(1:kwlen).eq.'diag2D_history_fields') then
@@ -2024,6 +2016,12 @@ c        close(testunit)
 #   endif
      &        ' Tracer of index', itrc,'/',NT
         enddo
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+        MPI_master_only write(stdout,'(/1x,A,2(/1x,1pe10.3,2x,A))')
+     &   'Tresholds for Mixed Layer calculation:', 
+     &    mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
+     &    mld_crit_T, 'mld_crit_T     Temperature treshold [C]'
+#   endif  /* DIAGNOSTICS_TS_MLD_DENS */
 #  endif  /* TRACERS */
 # endif  /* DIAGNOSTICS_TS_MLD */
 
