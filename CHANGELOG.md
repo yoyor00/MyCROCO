@@ -29,6 +29,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
 
+- DIAGNOSTICS : integration error in diagnostics on MLD in (density, temp, n2).
+                Corrected. Keep only density criterion (#429)
+
 - OCEAN : Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
 
 - WET_DRY : add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
@@ -134,7 +137,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
-  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
+  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, Anne-Lou Schaefer
 
 - New contributors : 
   M. Plus, M. Schreiber, A. Zribi, E. Le Bouedec, B. Lemieux-Dudon

@@ -326,9 +326,8 @@
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
 #  ifdef DIAGNOSTICS_TS_MLD
-#   define DIAGNOSTICS_TS_MLD_CRIT
+#   undef  DIAGNOSTICS_TS_MLD_DENS
 #  endif
-
 # endif
 
 # undef DIAGNOSTICS_TSVAR

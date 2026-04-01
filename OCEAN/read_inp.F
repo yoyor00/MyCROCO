@@ -733,6 +733,11 @@ c        close(testunit)
 #endif /* ABL1D */
 
 #if defined DIAGNOSTICS_TS
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+      elseif (keyword(1:kwlen).eq.'diag_mld_dens') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) mld_crit_D, mld_crit_T
+# endif  /* DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_DENS */
 !
 ! Diagnostics file name.
 !
@@ -1033,16 +1038,6 @@ c        close(testunit)
      &                    ,  wrthis(indxU),  wrthis(indxV)
 # ifdef TRACERS
      &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT)
-        do itrc=1,NT
-          if (wrthis(indxV+itrc)) wrthis(indxTime)=.true.
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-          if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     &   .or. itrc.eq.iCRT4) then
-            wrthis(indxV+itrc)=.false.
-          endif
-
-# endif
-        enddo
 # endif
 #endif
         if ( wrthis(indxZ) .or. wrthis(indxUb) .or. wrthis(indxVb)
@@ -1522,14 +1517,6 @@ c        close(testunit)
 #endif /* ABL1D && ! defined XIOS */
 
 #if defined DIAGNOSTICS_TS
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      elseif (keyword(1:kwlen).eq.'diag_mld_crit_threshold') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) mld_crit_D, mld_crit_T, mld_crit_T2
-      elseif (keyword(1:kwlen).eq.'diag_mld_depth_ref') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) mld_depth_ref
-# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
 !
 ! Switches for fields to be saved into tracer diagnostics file.
 !
@@ -1537,13 +1524,6 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
 # ifdef TRACERS
         read(input,*,err=95)  (wrtdia3D(itrc), itrc=1, NT)
-# ifdef DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-        if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     &      .or. itrc.eq.iCRT4) then
-          wrtdia3D(itrc)=.false.
-        endif
-# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
-
         do itrc=1,NT
           if (wrtdia3D(itrc)) wrtdia3D(NT+1)=.true.
         enddo
@@ -1567,14 +1547,6 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
 #  ifdef TRACERS
         read(input,*,err=95) (wrtdia3D_avg(itrc),itrc=1,NT)
-# ifdef DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-        if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     &     .or. itrc.eq.iCRT4) then
-            wrtdia3D_avg(itrc)=.false.
-        endif
-# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
-
-
         do itrc=1,NT
           if (wrtdia3D_avg(itrc)) wrtdia3D_avg(NT+1)=.true.
         enddo
@@ -2950,17 +2922,6 @@ c        close(testunit)
 #endif /* ABL1D && ! defined XIOS */
 
 #if defined DIAGNOSTICS_TS
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-        MPI_master_only write(stdout,'(/1x,A,3(/1x,1pe10.3,2x,A))')
-     &   'Tresholds for Mixed Layer calculation:', 
-     &    mld_crit_D, 'CRT1 : mld_crit_D     Density threshold [kg/m3]',
-     &   mld_crit_T, 'CRT2 : mld_crit_T     Temperature treshold [C]',
-     & mld_crit_T2, 'CRT3 : mld_crit_T2   Temperature threshold bis [C]'
-
-        MPI_master_only write(stdout,'(/1x,A,/1x,I6,2x,A,1x/)')
-     &   'Depth reference for Mixed Layer calculation:',
-     &        mld_depth_ref, 'mld_depth_ref     Depth reference [m]'
-# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
 # ifdef TRACERS
           do itrc=1,NT
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
@@ -2974,9 +2935,19 @@ c        close(testunit)
           do itrc=1,NT
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia2D(itrc),
+#   ifdef DIAGNOSTIC_TS_MLD_DENS
+     &        'write MLD (density crit.) Integrated Tracer equation terms ',
+#   else
      &        'write Hbl Integrated Tracer equation terms ',
+#   endif
      &        ' Tracer of index', itrc,'/',NT
           enddo
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+        MPI_master_only write(stdout,'(/1x,A,2(/1x,1pe10.3,2x,A))')
+     &   'Tresholds for Mixed Layer calculation:', 
+     &    mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
+     &    mld_crit_T, 'mld_crit_T     Temperature treshold [C]'
+#   endif  /* DIAGNOSTICS_TS_MLD_DENS */
 #  endif  /* TRACERS */
 # endif  /* DIAGNOSTICS_TS_MLD */
 
@@ -2996,9 +2967,19 @@ c        close(testunit)
           do itrc=1,NT
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia2D_avg(itrc),
+#    ifdef DIAGNOSTIC_TS_MLD_DENS
+     &        'write MLD (density crit.) Integrated Tracer equation terms ',
+#    else
      &        'write Avg Hbl Integrated  Tracer equation terms ',
+#    endif
      &        ' Tracer of index', itrc,'/',NT
           enddo
+#    ifdef DIAGNOSTICS_TS_MLD_DENS
+        MPI_master_only write(stdout,'(/1x,A,2(/1x,1pe10.3,2x,A))')
+     &   'Tresholds for Mixed Layer calculation:',
+     &    mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
+     &    mld_crit_T, 'mld_crit_T     Temperature treshold [C]'
+#    endif  /* DIAGNOSTICS_TS_MLD_DENS */
 #   endif  /* TRACERS */
 #  endif  /* DIAGNOSTICS_TS_MLD */
 # endif  /* AVERAGES */
