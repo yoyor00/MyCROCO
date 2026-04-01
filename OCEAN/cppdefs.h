@@ -644,7 +644,6 @@
 # define ANA_BTFLUX
 # define NO_FRCFILE
 # undef  STOGEN
-# undef  RVTK_DEBUG
 
 #elif defined CANYON
 /*
