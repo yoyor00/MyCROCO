@@ -109,7 +109,7 @@ debug_ifort_realist:
       --case @realist \
       --variants @debug-ifort \
       --compare-to sequential-ifort \
-      --title debug_ifort \
+      --title debug_ifort_realist \
       --debug \
       --rebuild \
       --host host_ci \
@@ -130,17 +130,16 @@ debug_ifort_agrif_realist:
   tags:
     - ci.inria.fr
     - large_more_disk
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:26.04
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:2.0.0
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
-    #note : check step done on sequential-ifort
     - |
       ./bench-croco.py \
       --case @agrif_realist \
-      --variants @debug-ifx \
-      --compare-to sequential-ifx \
-      --title debug_ifx \
+      --variants @debug-ifort \
+      --compare-to sequential-ifort\
+      --title debug_ifort_agrif_realist \
       --debug \
       --rebuild \
       --host host_ci \
