@@ -26,9 +26,9 @@
       USE module_substance
 
 # if !defined SUBSTANCE_SUBMASSBALANCE
-#include "ocean2d.h"
+!#include "ocean2d.h"
 # endif
-#include "ocean3d.h"
+!#include "ocean3d.h"
 #if defined BLOOM && defined GLS_MIXING
 #include "mixing.h"
 #endif
