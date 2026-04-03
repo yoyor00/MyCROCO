@@ -138,7 +138,7 @@ debug_ifort_agrif_realist:
       ./bench-croco.py \
       --case @agrif_realist \
       --variants @debug-ifort \
-      --compare-to sequential-ifort\
+      --compare-to sequential-ifort \
       --title debug_ifort_agrif_realist \
       --debug \
       --rebuild \
