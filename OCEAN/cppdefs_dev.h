@@ -487,7 +487,7 @@
    If BIO_HADV_WENO5 is chosen, the advection scheme for passive tracers is
    independent from that selected for the two active tracers (TS_HADV)
 */
-#ifdef BIO_HADV_WENO5
+#ifdef BIO_HADV_WENO5 || defined BIO_HADV_MUSCL
 # if defined TEMPERATURE && defined SALINITY
 #  define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
 # elif defined TEMPERATURE || defined SALINITY
