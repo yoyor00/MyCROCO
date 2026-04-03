@@ -229,6 +229,7 @@
                       /* Lateral Tracer Advection (default UP3) */
 # undef  TS_HADV_UP3
 # define TS_HADV_RSUP3
+# undef  TS_HADV_C2
 # undef  TS_HADV_UP5
 # undef  TS_HADV_WENO5
                       /* Lateral Explicit Tracer Mixing */
@@ -238,6 +239,7 @@
                       /* Vertical Tracer Advection  */
 # define TS_VADV_SPLINES
 # undef  TS_VADV_WENO5
+# undef  TS_VADV_C2
                       /* Sponge layers for UV and TS */
 # define SPONGE
                       /* Semi-implicit Vertical Tracer/Mom Advection */
@@ -372,7 +374,9 @@
 */
 # if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
                                                || defined MUSTANG
-#  define BIO_HADV_WENO5
+#  undef BIO_HADV_WENO5
+#  define BIO_HADV_MUSCL
+#  define BIO_VADV_MUSCL
 # endif
                       /*   Choice of Biology models   */
 # ifdef BIOLOGY
