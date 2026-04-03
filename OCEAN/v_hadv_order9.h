@@ -189,7 +189,7 @@
 !
 ! ---- 7th order with masking ----
 !
-              flx7 = vel*FLUX7(
+                flx7 = vel*FLUX7(
      &             v(i,j-3,k,nrhs), v(i,j-2,k,nrhs),
      &             v(i,j-1,k,nrhs), v(i,j  ,k,nrhs),
      &             v(i,j+1,k,nrhs), v(i,j+2,k,nrhs),
@@ -376,7 +376,7 @@
 !
 ! ---- 7th order with masking ----
 !
-              flx7 = vel*FLUX7(
+                flx7 = vel*FLUX7(
      &             v(i-4,j,k,nrhs), v(i-3,j,k,nrhs),
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs),

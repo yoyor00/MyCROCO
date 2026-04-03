@@ -681,7 +681,7 @@
 #  if defined UV_HADV_UP9 || defined UV_HADV_C10 || defined UV_HADV_WENO9
 !
 !----------------------------------------------------------------------
-! 7th or 8th order or WENO7 advection schemes
+! 9th or 10th order or WENO9 advection schemes
 !----------------------------------------------------------------------
 !
 #   ifdef UV_HADV_UP9
@@ -1308,13 +1308,15 @@
      &                         SWITCH umask(i,j)
               MYadv(i,j,k,1) = (-UFe(i,j+1)+UFe(i,j))
      &                         SWITCH umask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
               MHdiff(i,j,k,1) = (UFx4(i-1,j)-UFx4(i,j)
      &                         + UFe4(i  ,j)-UFe4(i,j+1))
      &                         SWITCH umask(i,j)
 #    endif
 #   elif defined DIAGNOSTICS_EK
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
               if (k.eq.1) then
                 ekwrkHdiff(i,j,1) = 0
                 ekwrkHadv(i,j,1) = 0
@@ -1324,7 +1326,8 @@
      &                         +(UFx(i-1,j)-UFx(i,j)
      &                         + UFe(i  ,j)-UFe(i,j+1))
      &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
               ekwrkHdiff(i,j,1) = ekwrkHdiff(i,j,1)
      &                         +(UFx4(i-1,j)-UFx4(i,j)
      &                         + UFe4(i  ,j)-UFe4(i,j+1))
@@ -1336,7 +1339,8 @@
      &                         +(UFx(i-1,j)-UFx(i,j  )
      &                         + UFe(i  ,j)-UFe(i,j+1))
      &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-#     if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#     if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+         defined UV_HADV_UP7 || defined UV_HADV_UP9
                 ekwrkHdiff_mld(i,j,1) =
      &                         + (UFx4(i-1,j)-UFx4(i,j)
      &                         +  UFe4(i  ,j)-UFe4(i,j+1))
@@ -1347,7 +1351,8 @@
      &                         +(UFx(i-1,j)-UFx(i,j)
      &                         + UFe(i  ,j)-UFe(i,j+1))
      &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-#     if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#     if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
                 ekwrkHdiff_mld(i,j,1) = ekwrkHdiff_mld(i,j,1)
      &                         + (UFx4(i-1,j)-UFx4(i,j)
      &                         +  UFe4(i  ,j)-UFe4(i,j+1))
@@ -1362,7 +1367,8 @@
      &                         SWITCH umask(i,j)
                 wrkXadv(i,j,1) = (-UFx(i,j)+UFx(i-1,j))
      &                         SWITCH umask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
                 wrkHdiff(i,j,1) = (UFx4(i-1,j)-UFx4(i,j)
      &                          +  UFe4(i  ,j)-UFe4(i,j+1))
      &                         SWITCH umask(i,j)
@@ -1374,7 +1380,8 @@
                 wrkXadv(i,j,1) = wrkXadv(i,j,1)
      &                         +(-UFx(i,j)+UFx(i-1,j))
      &                         SWITCH umask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
                 wrkHdiff(i,j,1) = wrkHdiff(i,j,1)
      &                         +(UFx4(i-1,j)-UFx4(i,j)
      &                         + UFe4(i  ,j)-UFe4(i,j+1))
@@ -1393,13 +1400,15 @@
      &                        SWITCH vmask(i,j)
               MYadv(i,j,k,2) = (-VFe(i,j)+VFe(i,j-1))
      &                         SWITCH vmask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
               MHdiff(i,j,k,2) = (VFx4(i,j  )-VFx4(i+1,j)
      &                        +  VFe4(i,j-1)-VFe4(i,j))
      &                         SWITCH vmask(i,j)
 #    endif
 #   elif defined DIAGNOSTICS_EK
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
               if (k.eq.1) then
                ekwrkHdiff(i,j,2) = 0
                ekwrkHadv(i,j,2) = 0
@@ -1409,7 +1418,8 @@
      &                           +(VFx(i,j  )-VFx(i+1,j)
      &                           + VFe(i,j-1)-VFe(i  ,j))
      &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
               ekwrkHdiff(i,j,2) = ekwrkHdiff(i,j,2) +
      &                            (VFx4(i,j  )-VFx4(i+1,j)
      &                           + VFe4(i,j-1)-VFe4(i  ,j))
@@ -1421,7 +1431,8 @@
      &                           +(VFx(i,j  )-VFx(i+1,j)
      &                           + VFe(i,j-1)-VFe(i  ,j))
      &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-#     if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#     if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+         defined UV_HADV_UP7 || defined UV_HADV_UP9
                 ekwrkHdiff_mld(i,j,2) =
      &                            (VFx4(i,j  )-VFx4(i+1,j)
      &                           + VFe4(i,j-1)-VFe4(i  ,j))
@@ -1432,7 +1443,8 @@
      &                           +(VFx(i,j  )-VFx(i+1,j)
      &                           + VFe(i,j-1)-VFe(i  ,j))
      &                           * v(i,j,k,nrhs) SWITCH vmask(i,j)
-#     if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#     if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+         defined UV_HADV_UP7 || defined UV_HADV_UP9
                 ekwrkHdiff_mld(i,j,2) = ekwrkHdiff_mld(i,j,2) +
      &                            (VFx4(i,j  )-VFx4(i+1,j)
      &                           + VFe4(i,j-1)-VFe4(i  ,j))
@@ -1447,7 +1459,8 @@
      &                         SWITCH vmask(i,j)
                 wrkXadv(i,j,2) = (-VFx(i+1,j)+VFx(i,j))
      &                        SWITCH vmask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
                 wrkHdiff(i,j,2) = (VFx4(i,j  )-VFx4(i+1,j)
      &                           + VFe4(i,j-1)-VFe4(i  ,j))
      &                         SWITCH vmask(i,j)
@@ -1459,7 +1472,8 @@
                 wrkXadv(i,j,2) = wrkXadv(i,j,2)
      &                         + (-VFx(i+1,j)+VFx(i,j))
      &                        SWITCH vmask(i,j)
-#    if defined UV_HADV_UP3 || defined UV_HADV_UP5
+#    if defined UV_HADV_UP3 || defined UV_HADV_UP5 || \
+        defined UV_HADV_UP7 || defined UV_HADV_UP9
                 wrkHdiff(i,j,2) = wrkHdiff(i,j,2)
      &                        +(VFx4(i,j  )-VFx4(i+1,j)
      &                        + VFe4(i,j-1)-VFe4(i  ,j))

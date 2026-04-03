@@ -200,7 +200,7 @@ C$OMP BARRIER
 # define MP_5PTS
 # include "exchange_3d_tile.h"
 # undef MP_5PTS
-# ifndef MP_3PTS
+# ifndef MP_4PTS
 #  define MP_4PTS
 #  include "exchange_3d_tile.h"
 #  undef MP_4PTS

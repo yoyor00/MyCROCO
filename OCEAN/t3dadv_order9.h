@@ -229,12 +229,12 @@
 #   else
                 mask4=rmask(i,j-4)*rmask(i,j+3)*mask3
 #   endif
-              FE(i,j)=flx7*mask4
+                FE(i,j)=flx7*mask4
      &               +flx5*(1-mask4)*mask3
      &               +flx3*(1-mask4)*(1-mask3)*mask2
      &               +flx2*(1-mask4)*(1-mask3)*(1-mask2)
 #  else
-              FE(i,j)=flx7
+                FE(i,j)=flx7
 #  endif
               ENDIF
             ENDDO

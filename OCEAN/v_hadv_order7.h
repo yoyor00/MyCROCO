@@ -60,14 +60,11 @@
      &                    Hvom(i,j+1,k),Hvom(i,j+2,k),
      &                    Hvom(i,j+3,k),Hvom(i,j+4,k),1.)
 
-              !vel  = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
-
               flx7 = vel*FLUX7(
      &             v(i,j-3,k,nrhs), v(i,j-2,k,nrhs),
      &             v(i,j-1,k,nrhs), v(i,j  ,k,nrhs),
      &             v(i,j+1,k,nrhs), v(i,j+2,k,nrhs),
      &             v(i,j+3,k,nrhs), v(i,j+4,k,nrhs), vel )
-
 #  ifdef MASKING
               vel  = 0.5*(Hvom(i,j,k)+Hvom(i,j+1,k))
               flx5 = vel*FLUX5(
@@ -198,14 +195,11 @@
                 vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
               endif
 
-              !vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
-
               flx7 = vel*FLUX7(
      &             v(i-4,j,k,nrhs), v(i-3,j,k,nrhs),
      &             v(i-2,j,k,nrhs), v(i-1,j,k,nrhs),
      &             v(i  ,j,k,nrhs), v(i+1,j,k,nrhs),
      &             v(i+2,j,k,nrhs), v(i+3,j,k,nrhs), vel )
-
 #  ifdef MASKING
               vel = 0.5*(Huon(i,j-1,k)+Huon(i,j,k))
               flx5 = vel*FLUX5(

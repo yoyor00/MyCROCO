@@ -5,29 +5,28 @@
 #  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_tile (Istr,Iend,Jstr,Jend, A, nmax)
 #  else
-       subroutine MessPass3D_sl_tile (Istr,Iend,Jstr,Jend, A, 
-     &  nmax)
+      subroutine MessPass3D_sl_tile (Istr,Iend,Jstr,Jend, A, nmax)
 #  endif
 # elif defined MP_3PTS
 #  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
 #  else
-       subroutine MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend, A,
-     &  nmax)
+      subroutine MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend, A,
+     &                                                         nmax)
 #  endif
 # elif defined MP_4PTS
 #  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_4pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
 #  else
-       subroutine MessPass3D_4pts_sl_tile (Istr,Iend,Jstr,Jend, A,
-     &  nmax)
+      subroutine MessPass3D_4pts_sl_tile (Istr,Iend,Jstr,Jend, A,
+     &                                                         nmax)
 #  endif
 # else
 #  ifndef MP_M3FAST_SEDLAYERS
       subroutine MessPass3D_5pts_tile (Istr,Iend,Jstr,Jend, A, nmax)
 #  else
-       subroutine MessPass3D_5pts_sl_tile (Istr,Iend,Jstr,Jend, A,
-     &  nmax)
+      subroutine MessPass3D_5pts_sl_tile (Istr,Iend,Jstr,Jend, A,
+     &                                                         nmax)
 #  endif
 # endif
 !

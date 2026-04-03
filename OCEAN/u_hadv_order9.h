@@ -192,7 +192,7 @@
 !
 ! ---- 7th order with masking ----
 !
-              flx7 = vel*FLUX7(
+                flx7 = vel*FLUX7(
      &             u(i,j-4,k,nrhs), u(i,j-3,k,nrhs),
      &             u(i,j-2,k,nrhs), u(i,j-1,k,nrhs),
      &             u(i,j  ,k,nrhs), u(i,j+1,k,nrhs),
@@ -345,15 +345,15 @@
 !
 ! ---- 5th order with masking ----
 !
-              flx5 = vel*FLUX5(
+                flx5 = vel*FLUX5(
      &             u(i-2,j,k,nrhs), u(i-1,j,k,nrhs),
      &             u(i  ,j,k,nrhs), u(i+1,j,k,nrhs),
      &             u(i+2,j,k,nrhs), u(i+3,j,k,nrhs), vel )
 #  ifdef MASKING
-              flx3 = vel*FLUX3(
+                flx3 = vel*FLUX3(
      &             u(i-1,j,k,nrhs), u(i  ,j,k,nrhs),
      &             u(i+1,j,k,nrhs), u(i+2,j,k,nrhs), vel )
-              flx2 = vel*FLUX2(
+                flx2 = vel*FLUX2(
      &             u(i  ,j,k,nrhs), u(i+1,j,k,nrhs), vel, cdif)
                 mask2=umask(i-1,j)*umask(i+2,j)
 #   ifdef UP9_MASKING
@@ -376,20 +376,20 @@
 !
 ! ---- 7th order with masking ----
 !
-              flx7 = vel*FLUX7(
+                flx7 = vel*FLUX7(
      &             u(i-3,j,k,nrhs), u(i-2,j,k,nrhs),
      &             u(i-1,j,k,nrhs), u(i  ,j,k,nrhs),
      &             u(i+1,j,k,nrhs), u(i+2,j,k,nrhs),
      &             u(i+3,j,k,nrhs), u(i+4,j,k,nrhs), vel )
 #  ifdef MASKING
-              flx5 = vel*FLUX5(
+                flx5 = vel*FLUX5(
      &             u(i-2,j,k,nrhs), u(i-1,j,k,nrhs),
      &             u(i  ,j,k,nrhs), u(i+1,j,k,nrhs),
      &             u(i+2,j,k,nrhs), u(i+3,j,k,nrhs), vel )
-              flx3 = vel*FLUX3(
+                flx3 = vel*FLUX3(
      &             u(i-1,j,k,nrhs), u(i  ,j,k,nrhs),
      &             u(i+1,j,k,nrhs), u(i+2,j,k,nrhs), vel )
-              flx2 = vel*FLUX2(
+                flx2 = vel*FLUX2(
      &             u(i  ,j,k,nrhs), u(i+1,j,k,nrhs), vel, cdif)
                 mask2=umask(i-1,j)*umask(i+2,j)
                 mask3=umask(i-2,j)*umask(i+3,j)

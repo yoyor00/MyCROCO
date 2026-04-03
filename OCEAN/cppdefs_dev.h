@@ -327,18 +327,30 @@
 ======================================================================
 */
 #ifdef UV_HADV_UP3     /* Check if options are defined in cppdefs.h */
-#elif defined UV_HADV_C4
-#elif defined UV_HADV_C2
 #elif defined UV_HADV_UP5
+#elif defined UV_HADV_UP7
+#elif defined UV_HADV_UP9
+#elif defined UV_HADV_C2
+#elif defined UV_HADV_C4
 #elif defined UV_HADV_C6
+#elif defined UV_HADV_C8
+#elif defined UV_HADV_C10
 #elif defined UV_HADV_WENO5
+#elif defined UV_HADV_WENO7
+#elif defined UV_HADV_WENO9
 #else
-# define UV_HADV_UP3       /* 3rd-order upstream lateral advection */
-# undef  UV_HADV_C4        /* 4th-order centered lateral advection */
-# undef  UV_HADV_C2        /* 2nd-order centered lateral advection */
-# undef  UV_HADV_UP5	   /* 5th-order upstream lateral advection */
-# undef  UV_HADV_C6	   /* 6th-order centered lateral advection */
-# undef  UV_HADV_WENO5	   /* 5th-order WENOZ    lateral advection */
+# define UV_HADV_UP3       /*  3rd-order upstream lateral advection */
+# undef  UV_HADV_UP5	   /*  5th-order upstream lateral advection */
+# undef  UV_HADV_UP7	   /*  7th-order upstream lateral advection */
+# undef  UV_HADV_UP9	   /*  9th-order upstream lateral advection */
+# undef  UV_HADV_C2        /*  2nd-order centered lateral advection */
+# undef  UV_HADV_C4        /*  4th-order centered lateral advection */
+# undef  UV_HADV_C6	   /*  6th-order centered lateral advection */
+# undef  UV_HADV_C8	   /*  8th-order centered lateral advection */
+# undef  UV_HADV_C10	   /* 10th-order centered lateral advection */
+# undef  UV_HADV_WENO5	   /*  5th-order WENOZ    lateral advection */
+# undef  UV_HADV_WENO7	   /*  7th-order WENOZ    lateral advection */
+# undef  UV_HADV_WENO9	   /*  9th-order WENOZ    lateral advection */
 #endif
 /*
    UV DIFFUSION: set default orientation
@@ -411,31 +423,31 @@
 ======================================================================
 */
 #ifdef TS_HADV_UP3    /* Check if options are defined in cppdefs.h */
-#elif defined TS_HADV_C4
 #elif defined TS_HADV_UP5
-#elif defined TS_HADV_WENO5
-#elif defined TS_HADV_C6
 #elif defined TS_HADV_UP7
-#elif defined TS_HADV_WENO7
-#elif defined TS_HADV_C8
 #elif defined TS_HADV_UP9
-#elif defined TS_HADV_WENO9
+#elif defined TS_HADV_C4
+#elif defined TS_HADV_C6
+#elif defined TS_HADV_C8
 #elif defined TS_HADV_C10
+#elif defined TS_HADV_WENO5
+#elif defined TS_HADV_WENO7
+#elif defined TS_HADV_WENO9
 #elif defined TS_HADV_RSUP3
 #elif defined TS_HADV_RSUP5
 #else
 # define TS_HADV_UP3    /*  3rd-order upstream lateral advection */
-# undef  TS_HADV_C4     /*  4th-order centered lateral advection */
 # undef  TS_HADV_UP5    /*  5th-order upstream lateral advection */
-# undef  TS_HADV_WENO5  /*  5th-order WENOZ    lateral advection */
-# undef  TS_HADV_C6     /*  6th-order centered lateral advection */
 # undef  TS_HADV_UP7    /*  7th-order upstream lateral advection */
-# undef  TS_HADV_WENO7  /*  7th-order WENOZ    lateral advection */
-# undef  TS_HADV_C8     /*  8th-order centered lateral advection */
 # undef  TS_HADV_UP9    /*  9th-order upstream lateral advection */
-# undef  TS_HADV_WENO9  /*  9th-order WENOZ    lateral advection */
+# undef  TS_HADV_C4     /*  4th-order centered lateral advection */
+# undef  TS_HADV_C6     /*  6th-order centered lateral advection */
+# undef  TS_HADV_C8     /*  8th-order centered lateral advection */
 # undef  TS_HADV_C10    /* 10th-order centered lateral advection */
-# undef  TS_HADV_RSUP3  /* Rotated-Split UP3   lateral advection */
+# undef  TS_HADV_WENO5  /*  5th-order WENOZ    lateral advection */
+# undef  TS_HADV_WENO7  /*  7th-order WENOZ    lateral advection */
+# undef  TS_HADV_WENO9  /*  9th-order WENOZ    lateral advection */
+# undef  TS_HADV_RSUP3  /* Rotated-Split  UP3  lateral advection */
 # undef  TS_HADV_RSUP5  /* Pseudo R-Split UP5  lateral advection */
 #endif
 
@@ -830,11 +842,9 @@
     NOW replaced by BSTRESS_FAST option
 ======================================================================
 */
-/*
 #ifndef BSTRESS_FAST
 # define  LIMIT_BSTRESS
 #endif
-*/
 #ifdef INNERSHELF
 # undef  LIMIT_BSTRESS
 #endif
