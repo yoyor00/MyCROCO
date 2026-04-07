@@ -118,7 +118,10 @@
       "BENGUELA_LR_NBQ",
       "VILAINE",
     ],
-    "@nbq": ["GRAV_ADJ_NBQ", "IGW_NBQ"],
+    "@nbq": [
+      "GRAV_ADJ_NBQ", 
+      "IGW_NBQ"  // test broken
+    ],
     "@sediment_mustang": [
       "DUNE_SEDIMENT",
       "DUNE_MUSTANG",
