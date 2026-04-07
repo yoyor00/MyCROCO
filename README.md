@@ -5,12 +5,13 @@ CROCO — Coastal and Regional Ocean COmmunity model
 -----------------------------------------
 
 CROCO is an oceanic modeling system built upon ROMS_AGRIF and maintained 
-by IRD, INRIA, CNRS, IFREMER and SHOM, French institutes working on 
-environmental sciences and applied mathematics. An important objective for 
-CROCO is to resolve very fine scales (especially in the coastal area), and 
-their interactions with larger scales. It includes new capabilities such as 
-a non-hydrostatic solver, ocean-wave-atmosphere coupling, evolving sediment 
-dynamics and marine biogeochemistry, new high-order numerical schemes for 
+by Inria, Ifremer, SHOM, CNRS, IRD, Université de Toulouse and UBO, 
+French institutes working on environmental sciences and applied mathematics. 
+An important objective for CROCO is to resolve very fine scales 
+(especially in the coastal area), and their interactions with larger scales. 
+It includes new capabilities such as a non-hydrostatic solver, 
+ocean-wave-atmosphere coupling, evolving sediment dynamics and marine 
+biogeochemistry, new high-order numerical schemes for 
 advection and mixing, and a dedicated I/O server (XIOS). 
 
 More informations on the croco website at 
@@ -91,5 +92,5 @@ license. This project follows the [REUSE](https://reuse.software/) specification
 Copyright
 ---------
 Copyright © 2005–2026 CROCO Development Team
-(CNRS, IRD, INRIA, IFREMER, Université de Toulouse, Université Grenoble Alpes, Université de Brest)
+(CNRS, IRD, Inria, Ifremer, Université de Toulouse, UBO)
 

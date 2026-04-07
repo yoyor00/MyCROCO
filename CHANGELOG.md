@@ -6,6 +6,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- LICENSE : Clarify license (#7)
+
 - BENCH : Add performance tracking (Issue #378 and #423)
 
 - STATION : Add TEMPERATURE cppkey for stations (#445)
