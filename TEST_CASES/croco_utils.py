@@ -9,6 +9,7 @@ from netCDF4 import Dataset
 #  Internal building blocks
 # ──────────────────────────────────────────────────────────
 
+
 def _compute_sc(N, point_type):
     """
     Compute raw S-coordinate values in [-1, 0].
@@ -59,7 +60,7 @@ def _compute_cs(sc, theta_s, theta_b, vtransform):
         if theta_s > 0.0:
             csrf = (1.0 - np.cosh(theta_s * sc)) / (np.cosh(theta_s) - 1.0)
         else:
-            csrf = -(sc ** 2)
+            csrf = -(sc**2)
 
         if theta_b > 0.0:
             Cs = (np.exp(theta_b * csrf) - 1.0) / (1.0 - np.exp(-theta_b))
@@ -70,8 +71,9 @@ def _compute_cs(sc, theta_s, theta_b, vtransform):
         # Old S-coordinate: sinh/tanh stretching
         cff1 = 1.0 / np.sinh(theta_s)
         cff2 = 0.5 / np.tanh(0.5 * theta_s)
-        Cs = ((1.0 - theta_b) * cff1 * np.sinh(theta_s * sc)
-              + theta_b * (cff2 * np.tanh(theta_s * (sc + 0.5)) - 0.5))
+        Cs = (1.0 - theta_b) * cff1 * np.sinh(theta_s * sc) + theta_b * (
+            cff2 * np.tanh(theta_s * (sc + 0.5)) - 0.5
+        )
 
     else:
         raise ValueError(f"Unknown vtransform={vtransform}, expected 1 or 2")
@@ -125,6 +127,7 @@ def _compute_z(h, zeta, sc, Cs, hc, vtransform):
 # ──────────────────────────────────────────────────────────
 #  Public API (signatures preserved for backward compat)
 # ──────────────────────────────────────────────────────────
+
 
 def get_csf(sc, theta_s, theta_b):
     """
@@ -213,7 +216,7 @@ def rho2u_2d(rho_in):
     """
 
     def _r2u(rho_in, Lp):
-        u_out = 0.5 * (rho_in[:, :Lp - 1] + rho_in[:, 1:Lp])
+        u_out = 0.5 * (rho_in[:, : Lp - 1] + rho_in[:, 1:Lp])
         return u_out.squeeze()
 
     assert rho_in.ndim == 2, "rho_in must be 2d"
@@ -236,7 +239,7 @@ def rho2v_2d(rho_in):
     """
 
     def _r2v(rho_in, Mp):
-        v_out = 0.5 * (rho_in[:Mp - 1] + rho_in[1:Mp])
+        v_out = 0.5 * (rho_in[: Mp - 1] + rho_in[1:Mp])
         return v_out.squeeze()
 
     assert rho_in.ndim == 2, "rho_in must be 2d"
@@ -323,8 +326,11 @@ def read_latlonmask(fname, var_type):
     with Dataset(fname) as nc:
         lat = nc.variables["lat_rho"][:]
         lon = nc.variables["lon_rho"][:]
-        mask = (nc.variables["mask_rho"][:] if "mask_rho" in nc.variables
-                else np.ones_like(lon))
+        mask = (
+            nc.variables["mask_rho"][:]
+            if "mask_rho" in nc.variables
+            else np.ones_like(lon)
+        )
 
     # Manage specific types
     if var_type == "u":
@@ -416,9 +422,14 @@ def get_type(fname, vname, vlevin):
                 return "v", vlevout
 
             # Fallback: check for rho-grid or generic dimensions
-            if any(d.startswith("eta") or d.startswith("xi") or
-                   d.startswith("x") or d.startswith("y") or
-                   d.startswith("e") for d in dims):
+            if any(
+                d.startswith("eta")
+                or d.startswith("xi")
+                or d.startswith("x")
+                or d.startswith("y")
+                or d.startswith("e")
+                for d in dims
+            ):
                 return "r", vlevout
 
             return "", vlevout
@@ -452,15 +463,16 @@ def vinterp(var, z, depth):
     levs = np.clip(levs, 1, N - 1)
 
     # Create a mask: NaN where the depth is entirely above or below the grid
-    mask = np.where((np.sum(below, axis=0) > 0) & (np.sum(below, axis=0) < N),
-                    1.0, np.nan)
+    mask = np.where(
+        (np.sum(below, axis=0) > 0) & (np.sum(below, axis=0) < N), 1.0, np.nan
+    )
 
     # Build index arrays for the two bracketing levels
     jmat, imat = np.meshgrid(np.arange(Mp), np.arange(Lp), indexing="ij")
     # C-order ravel: z[k, j, i] -> k * Mp * Lp + j * Lp + i
     stride = Mp * Lp
-    pos_lo = (levs - 1) * stride + jmat * Lp + imat   # level below
-    pos_hi = levs * stride + jmat * Lp + imat          # level above
+    pos_lo = (levs - 1) * stride + jmat * Lp + imat  # level below
+    pos_hi = levs * stride + jmat * Lp + imat  # level above
 
     z_lo = z.ravel()[pos_lo]
     z_hi = z.ravel()[pos_hi]
@@ -738,8 +750,7 @@ def get_vertical_section(fname, vname, tindex, direction, ind_sec, gname):
 
 
 #################################################################
-def plot_vertical_section(section_data, title="Vertical Section", unit="°C",
-                          show=True):
+def plot_vertical_section(section_data, title="Vertical Section", unit="°C", show=True):
     """
     Plots a vertical section.
 

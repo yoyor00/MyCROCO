@@ -86,7 +86,7 @@ plt.xlabel("Y [km]")
 plt.ylabel("Z [m]")
 plt.text(10, -30, f"t={time:.1f} days", fontsize=14)
 plt.grid()
-plt.tight_layout() 
+plt.tight_layout()
 
 # Save to files if requested
 output_dir = args.output_dir

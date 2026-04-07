@@ -73,7 +73,7 @@ plt.clim(12, 18)
 
 # Overlay velocity contours
 C1 = plt.contour(yr, zr, 100 * u, levels=np.arange(-5, 10, 2), colors="k")
-plt.clabel(C1, fmt='%d cm/s', fontsize=8)
+plt.clabel(C1, fmt="%d cm/s", fontsize=8)
 
 # Plot formatting
 plt.title(f"SHELFRONT - Temp [°C] & u velocity contours - Day = {time:.1f}")

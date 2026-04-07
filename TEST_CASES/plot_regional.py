@@ -211,7 +211,7 @@ def get_horizontal_data(
 
                 # Apply land mask
                 _, _, mask = cr.read_latlonmask(nc_file, grid_type)
-                data = np.ma.masked_where(mask == 0, data)   
+                data = np.ma.masked_where(mask == 0, data)
 
                 variables[key] = (lon, lat, data, title, unit)
                 logger.debug(f"Successfully extracted {var_name} data")
