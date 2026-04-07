@@ -2,46 +2,43 @@
 
 Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco/-/releases
 
-## [2.1.2] - 2025-11-18
+## [2.1.3] - 2026-04-07
 
 ### Added
  
-- SCRIPTS : update run_croco_inter.bash to handle "USE_CALENDAR" outputs logic (Issue #455)
 
 ### Fixed
 
-- BOTTOM STRESS : Incorrect definition of loop indices for calculating
-  the bottom stress components in the case rdrg2>0 (Issue #441)
 
-- COUPLING : exchange of some v-grid variables in cpl_prism_get when defined OA_GRID_UV (#450) 
+OCEAN :
+- Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
 
-- MUSTANG : error in case of SAND only type and key_MUSTANG_V2 
-  not defined (Issue #451)
+AGRIF : 
+- Fix allocation of message passing arrays (ibuf...) when 3 ghost points
+  needed (UP5, WENO) (#310 and #458)
 
-- SUBSTANCE: submassbalance error if no closed border (Issue #449)
+COUPLING : 
+- Fix missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
 
-- Cleaning : remove printing variable time_mars (#374)
+PSOURCE_NCFILE : 
+- Make it usable with NO_TRACER (#459)
 
-- AGRIF: 
-  - sponge keyword missing: put it back (even if theoretically useless, 
-    it creates a read_inp error), path for online corrected in croco_inter.in,
-    AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
-  - make it usable with USE_CALENDAR (Issue #339)
+DIAGNOSTICS : 
+- Fix integration error in diagnostics on MLD in (density, temp, n2) (#429) 
+- Keep only density criterion (#429)
 
-- BENCH : 
-  - fix hwloc-ls not mandatory (solve #442)
-  - fix result_pattern used to retrive performance data for performance plot, fix
-    results directory for copying jobcomp.log in case of failed compilation (solve #446)
-
-- OUTPUT : fix output with XIOS and using ABL1D (Issue #425)
-
+WET_DRY : 
+- Add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
 
 ### Changed
 
-- BULK : change input reading to search for uppercase variable 
-  before exiting in error (#454)
+BIOLOGY : 
+- Bug fix (#474)
+- Add of PISCES diagnostics without XIOS (#474)
 
-- BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
+CPP keys :
+- Restore default definition of `LIMIT_BSTRESS`
+  (enabled in `cppdefs_dev.h` unless `BSTRESS_FAST` is defined) (#456) 
 
 ### Deprecated
 
@@ -51,13 +48,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Other
 
-- CI :
-  - change container managment for CI test (#437)
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  G. Cambon, N. Ducousso, S. Jullien, M. Le Corre,
-  S. Le Gac, P. Marchesiello, J. Pianezze
+  G. Cambon, N. Ducousso, S. Jullien, M. Le Corre, S. Le Gac, P. Marchesiello, R. Person, 
+  A.-L. Schaefer
 
-- New contributors : 
+- New contributors : E. Le Bouedec

@@ -414,6 +414,8 @@ class Croco:
         filename = self.croco_inputfile
         self.change_card_time_stepping_ntimes(filename, 6)
         self.change_card_history_nwrt(filename)
+        self.change_card_dia_nwrt(filename)
+        self.change_card_diaM_nwrt(filename)
         # and for USE_CALENDAR
         self.change_card_end_date(filename, 6)
         self.change_card_output_time_steps_dthis(filename, 6)
@@ -586,6 +588,44 @@ class Croco:
             self.apply_patches(patches)
             delete_lines_from_file(
                 full_filename, "history:", line_offset=2, num_lines=1
+            )
+
+    def change_card_dia_nwrt(self, filename):
+        full_filename = os.path.join(self.dirname, filename)
+        # Check time_stepping is a card in this case
+        if len(extract_elements_from_file(full_filename, "diagnostics")) > 0:
+            HISTORY_LINE = extract_elements_from_file(full_filename, "diagnostics")
+            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " diagnostics:",
+                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
+                    "descr": "change output to NWRT=1",
+                }
+            }
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "diagnostics:", line_offset=2, num_lines=1
+            )
+
+    def change_card_diaM_nwrt(self, filename):
+        full_filename = os.path.join(self.dirname, filename)
+        # Check time_stepping is a card in this case
+        if len(extract_elements_from_file(full_filename, "diagnosticsM")) > 0:
+            HISTORY_LINE = extract_elements_from_file(full_filename, "diagnosticsM")
+            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " diagnosticsM:",
+                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
+                    "descr": "change output to NWRT=1",
+                }
+            }
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "diagnosticsM:", line_offset=2, num_lines=1
             )
 
     def change_card_history_ldefhis(self, filename):

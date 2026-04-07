@@ -100,7 +100,11 @@
 !
 ! Time
 !
-      ierr=nf_put_var1_FTYPE (nciddia, diaTime, record, time)
+      ierr=nf_put_var1_FTYPE (nciddia, diaTime, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
@@ -110,7 +114,11 @@
 !
 ! Time2
 !
-      ierr=nf_put_var1_FTYPE (nciddia, diaTime2, record, time)
+      ierr=nf_put_var1_FTYPE (nciddia, diaTime2, record, time
+#ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+#endif
+     &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
         write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
@@ -250,7 +258,6 @@
            call fillvalue2d(work2d,nciddia,diaTentr_mld(itrc),
      &                      vname(1,indxTentr_mld+itrc-1),
      &                      record,r2dvar,type)
-
 !
 ! indxTaver_mld
 !
@@ -258,20 +265,14 @@
            call fillvalue2d(work2d,nciddia,diaTaver_mld(itrc),
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
-
-
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     & .or. itrc.eq.iCRT4) then
-!
-! indxTcrit_mld
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+!  indxTcrit_mld
 !
            work2d=Tcrit_mld(:,:,itrc)
            call fillvalue2d(work2d,nciddia,diaTcrit_mld(itrc),
      &                      vname(1,indxTcrit_mld+itrc-1),
      &                      record,r2dvar,type)
-       endif
-# endif
+#  endif
         endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/
