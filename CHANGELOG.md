@@ -2,7 +2,7 @@
 
 Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco/-/releases
 
-## [2.1.3] - 2026-04-03
+## [2.1.3] - 2026-04-07
 
 ### Added
  
@@ -10,26 +10,35 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Fixed
 
 
-- OCEAN : Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
+OCEAN :
+- Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
 
-- AGRIF : Fix allocation of  message passing arrays (ibuf...) when 3 ghost points
-  needed (UP5, WENO)    (Issues #310 #458)
+AGRIF : 
+- Fix allocation of message passing arrays (ibuf...) when 3 ghost points
+  needed (UP5, WENO) (#310 and #458)
 
-- COUPLING : missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
+COUPLING : 
+- Fix missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
 
-- PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
+PSOURCE_NCFILE : 
+- Make it usable with NO_TRACER (#459)
 
-- DIAGNOSTICS : integration error in diagnostics on MLD in (density, temp, n2).
-                Corrected. Keep only density criterion (#429)
+DIAGNOSTICS : 
+- Fix integration error in diagnostics on MLD in (density, temp, n2) (#429) 
+- Keep only density criterion (#429)
 
-- WET_DRY : add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
+WET_DRY : 
+- Add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
 
 ### Changed
 
-- BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
+BIOLOGY : 
+- Bug fix (#474)
+- Add of PISCES diagnostics without XIOS (#474)
 
-- CPP keys : restore the default definition for LIMIT_BSTRESS (the key is activated 
-  in cppdefs_dev.h unless BSTRESS_FAST is previously defined) (#456) 
+CPP keys :
+- Restore default definition of `LIMIT_BSTRESS`
+  (enabled in `cppdefs_dev.h` unless `BSTRESS_FAST` is defined) (#456) 
 
 ### Deprecated
 
@@ -38,7 +47,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Other
-
 
 
 ### Contributors on this release
