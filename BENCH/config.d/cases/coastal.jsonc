@@ -7,7 +7,7 @@
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2", "8": "2x4" },
     "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_coastal.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "croco_his.nc",
     },
     "check_outputs": ["croco_his.nc"],
