@@ -157,64 +157,12 @@ def plot_class_distri(
     return ax
 
 
-def check_conservativity(data, listvar, namefig, inth=1, axis=1):
-    susp = data[listvar[0]] * 0.0
-    if listvar[0] == "SED1":
-        bed = data[listvar[0] + "_sed"] * 0.0
-    else:
-        bed = data["bed_frac_" + listvar[0]] * 0.0
-    for i, var in enumerate(listvar):
-        susp = susp + data[var] * (data.h + data.zeta) * (1.0 / len(data.s_rho))
-        if listvar[0] == "SED1":
-            bed = bed + data[var + "_sed"] * data.DZS
-        else:
-            bed = (
-                bed
-                + data["bed_frac_" + var]
-                * (1.0 - data.bed_poros)
-                * 2600.0
-                * data.bed_thick
-            )
-    tot = susp.sum(axis=axis) + bed.sum(axis=axis)
-    if listvar[0] == "SED1":
-        times = matplotlib.dates.date2num(data.time.values)
-    else:
-        times = data.time.values
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(times, tot, color="blue", label="total (kg/m2)", linewidth=2)
-    ax.plot(
-        times, susp.sum(axis=axis), color="red", label="suspension (kg/m2)", linewidth=1
-    )
-    ax.plot(
-        times,
-        bed.sum(axis=axis),
-        color="green",
-        label="in sediment bed (kg/m2)",
-        linewidth=1,
-    )
-    ax.legend(loc="lower left")
-    ax.set_yscale("log")
-    ax.set_xlim([times[0], times[-1]])
-    if listvar[0] == "SED1":
-        ax.xaxis.set_major_locator(
-            matplotlib.dates.HourLocator(byhour=np.arange(24 / inth) * inth)
-        )
-        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%H:%M"))
-    ax.grid()
-    fig.savefig(namefig, bbox_inches="tight", dpi=300)
-    plt.close(fig)
-    return tot, susp, bed
-
-
 # ── Plot functions ────────────────────────────────────────────────────────────
 
 
 def trace0D(diam, listvar, namecas, ncfic, output_dir="."):
     datafic = xarray.open_dataset(ncfic)
     data = datafic.isel(eta_rho=3, xi_rho=3).squeeze()
-
-    conserv_path = os.path.join(output_dir, "%s_conservativity_0D.png" % namecas)
-    tot, susp, bed = check_conservativity(data, listvar, conserv_path)
 
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=[10, 5])
     ax1, times, d10, d50, d90, ssc = plot_d50(
@@ -286,9 +234,6 @@ def trace1DV(
             else:
                 diss = 0.5 * (Eps_gls.isel(s_w=k + 1) + Eps_gls.isel(s_w=k))
             shear_rate[:, k] = np.sqrt(diss / 1.0e-6)
-
-    conserv_path = os.path.join(output_dir, "%s_conservativity_1DV.png" % namecas)
-    tot, susp, bed = check_conservativity(data, listvar, conserv_path)
 
     # Figure 1 : time-depth colormaps
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(
