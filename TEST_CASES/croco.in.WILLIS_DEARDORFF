@@ -71,6 +71,9 @@ sponge:          X_SPONGE [m]
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
                 1.       360.      3.      360.
 
+diag_mld_dens: RHO threshold [kg/m3], T threshold [Celsius]
+                         3.d-2                2.d-1
+
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T        72         0
                                  CROCO_FILES/croco_dia.nc

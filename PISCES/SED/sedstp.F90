@@ -8,6 +8,7 @@ MODULE sedstp
    !!======================================================================
 #if defined key_sediment
    USE sed      ! sediment global variables
+   USE oce_sed
    USE seddta   ! data read
    USE sedchem  ! chemical constant
    USE sedsol   ! Organic reactions and diffusion

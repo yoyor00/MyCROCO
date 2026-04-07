@@ -76,9 +76,9 @@
 #   define vidTrate_mld diaTrate_mld
 #   define vidTentr_mld diaTentr_mld
 #   define vidTaver_mld diaTaver_mld
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-#   define vidTcrit_mld diaTcrit_mld
-# endif
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+#    define vidTcrit_mld diaTcrit_mld 
+#   endif
 #  endif
 !
 # else /* AVRH */
@@ -112,9 +112,9 @@
 #   define vidTrate_mld diaTrate_mld_avg
 #   define vidTentr_mld diaTentr_mld_avg
 #   define vidTaver_mld diaTaver_mld_avg
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-#   define vidTcrit_mld diaTcrit_mld_avg
-# endif
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+#    define vidTcrit_mld diaTcrit_mld_avg 
+#   endif
 #  endif
 !
         character*60 text
@@ -774,8 +774,6 @@
 
        call nf_add_attribute(ncid,vidTentr_mld(itrc),
      &      vname(:,indxTentr_mld+itrc-1), 5, NF_FOUT, ierr)
-
-!
 !
 ! Taver indxTaver on MLD
 !
@@ -803,32 +801,27 @@
      &                     lvar, vname(4,indxTaver_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTaver_mld(itrc),
-     &      vname(:,indxTaver_mld+itrc-1), 5, NF_FOUT, ierr)
-
-
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     & .or. itrc.eq.iCRT4) then
+     &      vname(:,indxTaver_mld+itrc-1),5, NF_FOUT, ierr)
 !
-!
-! Tcrit indxTcrit on MLD
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+!  Tcrit indxTcrit on MLD
 !
            lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidTcrit_mld(itrc))
-#  ifdef NC4PAR
+#   ifdef NC4PAR
            ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
-#  endif
-# ifndef AVRH
+#   endif
+#   ifndef AVRH
            lvar=lenstr(vname(2,indxTcrit_mld+itrc-1))
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc), 'long_name',
      &                     lvar, vname(2,indxTcrit_mld+itrc-1)(1:lvar))
-# else
+#   else
            text='averaged '/ /vname(2,indxTcrit_mld+itrc-1)
            lvar=lenstr(text)
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc), 'long_name',
      &                                          lvar, text(1:lvar))
-# endif
+#   endif
            lvar=lenstr(vname(3,indxTcrit_mld+itrc-1))
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc),'units',
      &                     lvar, vname(3,indxTcrit_mld+itrc-1)(1:lvar))
@@ -837,16 +830,10 @@
      &                     lvar, vname(4,indxTcrit_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTcrit_mld(itrc),
-     &      vname(:,indxTcrit_mld+itrc-1), 5, NF_FOUT, ierr)
-
-       endif
-
-#endif /* DIAGNOSTICS_TS_MLD_CRIT */
-
-         endif
-
-
+     &      vname(:,indxTcrit_mld+itrc-1),5, NF_FOUT, ierr)
+#  endif/* DIAGNOSTICS_TS_MLD_DENS */
 !
+        endif
 # endif /* DIAGNOSTICS_TS_MLD */
        enddo
 !
@@ -1204,9 +1191,6 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTentr_mld(itrc),nf_collective)
 #  endif
-
-
-!
 !
 ! indxTaver on MLD
 !
@@ -1221,32 +1205,24 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTaver_mld(itrc),nf_collective)
 #  endif
-
-
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-        if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     &  .or. itrc.eq.iCRT4) then
-!          
+#  if defined DIAGNOSTICS_TS_MLD_DENS
 !
-! indxTcrit on MLD
+!  indxTcrit on MLD
 !
-          lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
-          ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
+        lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
+        ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                                        vidTcrit_mld(itrc))
           if (ierr .ne. nf_noerr) then
             write(stdout,1) vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-#  ifdef NC4PAR
+#   ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
-#  endif
+#   endif
+#  endif /*DIAGNOSTICS_TS_MLD_DENS*/
         endif
-!
-# endif /*DIAGNOSTICS_TS_MLD_CRIT*/
 
-!
-        endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
@@ -1278,7 +1254,6 @@
 !
       endif             !<--  create_new_file
 !
-
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_DIAG ERROR: Cannot ',
@@ -1332,9 +1307,9 @@
 #  undef vidTrate_mld
 #  undef vidTentr_mld
 #  undef vidTaver_mld
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-#  undef vidTcrit_mld
-# endif
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
+#   undef vidTcrit_mld
+#  endif
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
 # ifdef AVERAGES
