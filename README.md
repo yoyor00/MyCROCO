@@ -92,5 +92,5 @@ license. This project follows the [REUSE](https://reuse.software/) specification
 Copyright
 ---------
 Copyright © 2005–2026 CROCO Development Team
-(CNRS, IRD, Inria, Ifremer, Université de Toulouse, UBO)
+(Inria, Ifremer, SHOM, CNRS, IRD, Université de Toulouse, UBO)
 
