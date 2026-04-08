@@ -342,9 +342,6 @@ def read_latlonmask(fname, var_type):
         lon = rho2v_2d(lon)
         mask = mask[:-1, :] * mask[1:, :]
 
-    # Convert mask : 0 -> NaN
-    mask = np.where(mask == 0, np.nan, mask)
-
     return lat, lon, mask
 
 

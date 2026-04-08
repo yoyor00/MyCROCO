@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-CROCO Regional Visualization Tool
+CROCO Realist configuration visualization script
 
 This script creates visualizations from CROCO model NetCDF outputs including:
 - Horizontal maps of various variables (SSH, SST, SSS, velocities, and stresses)
 - Vertical sections for temperature, salinity, and velocity components
 
 Usage examples:
-  python plot_regional.py --makepdf --file croco_his.nc
-  python plot_regional.py --makepng --no-show --output-dir ./plots
-  python plot_regional.py --file croco_his.nc --vars temp,salt --sections x
+  python plot_realist.py --makepdf --file croco_his.nc
+  python plot_realist.py --makepng --no-show --output-dir ./plots
+  python plot_realist.py --file croco_his.nc --vars temp,salt --sections x
 """
 
 import os
@@ -44,8 +44,8 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Plot data from a NetCDF file and optionally save as PDF or PNG.",
         epilog="Example usage:\n"
-        + "  python plot_regional.py --makepdf --file croco_his.nc\n"
-        + "  python plot_regional.py --makepng --no-show",
+        + "  python plot_realist.py --makepdf --file croco_his.nc\n"
+        + "  python plot_realist.py --makepng --no-show",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -211,7 +211,14 @@ def get_horizontal_data(
 
                 # Apply land mask
                 _, _, mask = cr.read_latlonmask(nc_file, grid_type)
-                data = np.ma.masked_where(mask == 0, data)
+
+                if data.shape != mask.shape:
+                    logger.error(
+                        f"Shape mismatch! data: {data.shape} mask: {mask.shape}"
+                    )
+
+                mask_bool = (mask == 0) | np.isnan(mask)
+                data = np.where(mask_bool, np.nan, data)
 
                 variables[key] = (lon, lat, data, title, unit)
                 logger.debug(f"Successfully extracted {var_name} data")
@@ -318,31 +325,39 @@ def create_horizontal_plots(
         # Better title with clear spacing and font style
         ax.set_title(rf"{title} ($\mathrm{{{units}}}$)", fontweight="bold", pad=10)
 
-        # Use robust min/max values (ignoring outliers) for better color scaling
-        valid_data = data[~np.isnan(data)]
-        if len(valid_data) > 0:
-            vmin = np.percentile(valid_data, 2)
-            vmax = np.percentile(valid_data, 98)
-
-            # Center diverging colormaps at zero for velocity and stress fields
-            if key in ["U-Bar", "V-Bar", "U-Surf", "V-Surf", "U-Wstress", "V-Wstress"]:
-                abs_max = max(abs(vmin), abs(vmax))
-                vmin, vmax = -abs_max, abs_max
-        else:
+        # Center diverging colormaps at zero for velocity and stress fields
+        if key in [
+            "SSH",
+            "U-Bar",
+            "V-Bar",
+            "U-Surf",
+            "V-Surf",
+            "U-Wstress",
+            "V-Wstress",
+        ]:
             vmin, vmax = np.nanmin(data), np.nanmax(data)
+            abs_max = max(abs(vmin), abs(vmax))
+            vmin, vmax = -abs_max, abs_max
+        else:
+            # Use robust min/max values (ignoring outliers) for better color scaling
+            valid_data = data[~np.isnan(data)]
+            if len(valid_data) > 0:
+                vmin = np.percentile(valid_data, 2)
+                vmax = np.percentile(valid_data, 98)
+            else:
+                vmin, vmax = np.nanmin(data), np.nanmax(data)
 
         # Get appropriate colormap
         cmap = cmaps.get(key, "viridis")
 
         # Create the color mesh plot with improved parameters
-        mesh = ax.contourf(
+        mesh = ax.pcolormesh(
             lon,
             lat,
             data,
-            levels=20,
             cmap=cmap,
             norm=Normalize(vmin=vmin, vmax=vmax),
-            extend="both",  # To extend color for off-range values
+            shading="auto",
         )
 
         # Add coastlines and land mask if available
@@ -450,6 +465,7 @@ def create_horizontal_plots(
             pad=0.04,
             aspect=30,
             shrink=0.7,
+            extend="both",
         )
         cbar.ax.tick_params(labelsize=8)
         cbar.set_label(units, fontsize=9)
@@ -619,7 +635,7 @@ def create_vertical_section_plots(
 
             # Get data and mask zeros
             data = section["variable"]
-            m_data = np.ma.masked_equal(data, 0)
+            m_data = np.ma.masked_invalid(data)
 
             # Configure the axes
             ax = axes[axis_index]
@@ -699,7 +715,7 @@ def create_vertical_section_plots(
             )
 
             # Add a color bar
-            cbar = fig.colorbar(im, ax=ax, orientation="vertical")
+            cbar = fig.colorbar(im, ax=ax, orientation="vertical", extend="both")
             cbar.set_label(var_unit)
 
             # Update axis index
@@ -783,7 +799,7 @@ def main():
             save_figure(
                 horiz_fig,
                 output_dir,
-                "REGIONAL_maps",
+                "maps",
                 save_pdf=args.makepdf,
                 save_png=args.makepng,
             )
@@ -813,7 +829,7 @@ def main():
                 save_figure(
                     section_fig,
                     output_dir,
-                    "REGIONAL_sections",
+                    "sections",
                     save_pdf=args.makepdf,
                     save_png=args.makepng,
                 )
