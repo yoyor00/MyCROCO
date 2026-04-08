@@ -52,12 +52,10 @@
     PUBLIC sed_exchange_w2s
 #endif
 
-#if defined MUSTANG_CORFLUX
     PUBLIC sed_obc_corflu
     PUBLIC sed_meshedges_corflu
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
     PUBLIC sed_exchange_corflu
-#endif
 #endif
 
 
@@ -895,7 +893,6 @@ END SUBROUTINE combine_wave_current
 #endif /* defined MPI && defined key_MUSTANG_slipdeposit */
 !!=============================================================================
 
-#if defined MUSTANG_CORFLUX
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
   SUBROUTINE sed_exchange_corflu(ifirst, ilast, jfirst, jlast, type)
    !&E-------------------------------------------------------------------------
@@ -1047,7 +1044,6 @@ END SUBROUTINE combine_wave_current
 
     END SUBROUTINE sed_meshedges_corflu
 !!=============================================================================
-#endif /* MUSTANG_CORFLUX */
 
  
 ! **TODO** code for CROCO if needed

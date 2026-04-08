@@ -124,6 +124,8 @@ MODULE comMUSTANG
         ! column and correct sand transport, value by default = 0.02 
         ! correspond to Van Rijn experiments 
         ! DO NOT CHANGED IF NOT EXPERT
+    LOGICAL :: l_corflux ! boolean to activate correction on horizontal sand 
+        ! fluxes
     REAL(KIND=rsh) :: cvolmaxsort ! max volumic concentration of sorted sand
     REAL(KIND=rsh) :: cvolmaxmel ! maxvolumic concentration of mixed sediments
     REAL(KIND=rsh) :: slopefac !slope effect multiplicative on deposit 
@@ -492,14 +494,11 @@ MODULE comMUSTANG
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: ws3_bottom_MUSTANG ! settling velocities in  bottom cell (m/s)
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: roswat_bot
 
-!**TODO** put under cppkey MUSTANG_CORFLUX
-    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corflux
-    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corfluy
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: corflux
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: corfluy
 
-#ifdef key_sand2D
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: rouse2D ! Rouse2D number
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: sum_tmp ! SUM(dzcche*((htot-hzed)/hzed)**rouse) 
-#endif
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: rouse2D_integral ! see integrate_rouse_profile
 
 
     ! Dynamic in sediment (consolidation/diffusion/bioturbation)

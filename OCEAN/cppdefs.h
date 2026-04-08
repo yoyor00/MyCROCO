@@ -326,9 +326,8 @@
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
 #  ifdef DIAGNOSTICS_TS_MLD
-#   define DIAGNOSTICS_TS_MLD_CRIT
+#   undef  DIAGNOSTICS_TS_MLD_DENS
 #  endif
-
 # endif
 
 # undef DIAGNOSTICS_TSVAR
@@ -413,8 +412,6 @@
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
-#  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  undef  WAVE_OFFLINE
 # endif
 
@@ -608,8 +605,6 @@
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
-#  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  define WAVE_OFFLINE
 # endif
 /*
@@ -1920,7 +1915,6 @@
 #  undef  BEDLOAD
 # endif
 # ifdef MUSTANG
-#  define key_sand2D
 #  undef  key_MUSTANG_V2
 # endif
 # define NO_FRCFILE
@@ -1974,9 +1968,7 @@
 #  undef  BEDLOAD
 # endif
 # ifdef MUSTANG
-#  define key_sand2D
 #  undef  key_MUSTANG_V2
-#  define MUSTANG_CORFLUX
 # endif
 # define PSOURCE
 # define ANA_PSOURCE
