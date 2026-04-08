@@ -500,11 +500,11 @@ pages:
     - ci.inria.fr
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
   script:
-    - mkdir -p $CI_PROJECT_DIR/public/dev
+    - mkdir -p $CI_PROJECT_DIR/public
     - cd $CI_PROJECT_DIR/BENCH
     - source /venv/bin/activate
     - ./bench-croco.py --globalhtml
-    - cp -R $CI_PROJECT_DIR/BENCH/results $CI_PROJECT_DIR/public/dev
+    - cp -R $CI_PROJECT_DIR/BENCH/results $CI_PROJECT_DIR/public
   artifacts:
     paths:
       - public

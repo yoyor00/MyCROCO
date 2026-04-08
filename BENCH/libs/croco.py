@@ -725,7 +725,8 @@ class Croco:
             try:
                 self.check_one_file_internal(filename)
             except Exception as e:
-                Messaging.step_error("Failed to compare !")
+                Messaging.step_error("Comparison failure !")
+                Messaging.step_error(f"With error: {e}")
                 self.config.report.report_status(
                     self.case_name,
                     self.variant_name,
@@ -876,8 +877,10 @@ class Croco:
         if self.variant_name != variant_ref_name:
             return
 
-        # create dir if not exist
+        # create dir (pre_checks already guarded against overwrite without --force-ref)
         refdir_case = f"{refdir}/{case_name}"
+        if os.path.isdir(refdir_case):
+            Messaging.step(f"--force-ref set: overwriting existing ref {refdir_case}")
         os.makedirs(refdir_case, exist_ok=True)
 
         # copy the files there
@@ -911,3 +914,17 @@ class Croco:
                 )
                 + "\n"
             )
+
+        # copy plotphy PNGs so the HTML report can compare against them.
+        # Clean the destination first so stale PNGs from a previous ref don't linger.
+        png_dest_dir = f"{refdir}/{case_name}"
+        if os.path.isdir(png_dest_dir):
+            for old_png in glob.glob(os.path.join(png_dest_dir, "*.png")):
+                os.remove(old_png)
+        os.makedirs(png_dest_dir, exist_ok=True)
+        png_src_dir = self.dirname_result
+        png_files = glob.glob(os.path.join(png_src_dir, "*.png"))
+        if png_files:
+            for png in png_files:
+                shutil.copyfile(png, os.path.join(png_dest_dir, os.path.basename(png)))
+                Messaging.step(f"Storing plot {os.path.basename(png)} into ref")
