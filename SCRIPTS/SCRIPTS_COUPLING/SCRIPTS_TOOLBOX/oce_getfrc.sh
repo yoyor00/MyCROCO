@@ -10,7 +10,7 @@ if [ ${interponline} -eq 1 ]; then
         if [ ${frc_ext} == "ERA_ECMWF" ]; then
             vnames='T2M U10M V10M Q STRD SSR TP'
         elif [ ${frc_ext} == "FORMATTED" ]; then
-            vnames='T2M U10M V10M R STRD SSR TP'
+            vnames='T2M U10M V10M R STRD SSR TP MSL'
         else
             vnames='Temperature_height_above_ground Specific_humidity Precipitation_rate Downward_Short-Wave_Rad_Flux_surface Upward_Short-Wave_Rad_Flux_surface Downward_Long-Wave_Rad_Flux Upward_Long-Wave_Rad_Flux_surface U-component_of_wind V-component_of_wind'
         fi
@@ -96,7 +96,7 @@ else
             echo "Job is one month long or less ---> Using netcdf of the current month"
             cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
             cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 )
-            [[ ! -f ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc${agrif_ext} ]] && { echo "Missing ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc to build oce frc file."; exit 1 ;}
+            [[ ! -f ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc${agrif_ext} ]] && { echo "Missing ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc${agrif_ext} to build oce frc file."; exit 1 ;}
 	    ${io_getfile} ${OCE_FILES_DIR}/croco_${frc_ext}_Y${cur_Y}M${cur_M}.nc${agrif_ext} croco_${extend}.nc${agrif_ext}
         else
             if [[ ${JOB_DUR_MTH} -eq 0 && ${LOCAL_MTH_END} -ne ${cur_M} ]]; then
