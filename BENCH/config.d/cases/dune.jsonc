@@ -32,7 +32,7 @@
     "check_outputs": ["dune_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
-  // ANA_DUNE
+  // ANA_DUNE_USGS
   "DUNE_ANA_DUNE": {
     "title": "ANA_DUNE (150 x 1 x 20 : 3000)",
     "case": "DUNE",
@@ -51,7 +51,7 @@
     "check_outputs": ["ana_dune_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
-  // ANA_DUNE
+  // ANA_DUNE_MUSTANG
   "DUNE_ANA_DUNE_MUSTANG": {
     "title": "ANA_DUNE_MUSTANG (150 x 1 x 20 : 3000)",
     "case": "DUNE",
@@ -64,6 +64,7 @@
     "plotphy": {
       "plotphy_script": "./TEST_CASES/plot_ana_dune.py",
       "plotphy_script_input": "ana_dune_his.nc",
+      "plotphy_script_options": "--mustang",
     },
     "patches": {},
     "input_file": "TEST_CASES/croco.in.Ana_dune",

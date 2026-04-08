@@ -48,7 +48,7 @@ print("Comparing analytical and numerical bed evolution")
 if args.mustang:
     usgs = False
     model_name = "MUSTANG"
-    var_hmorph = "Hm"
+    var_hmorph = "hmorph"
     print("Using MUSTANG model")
 else:
     usgs = True  # Default
@@ -97,11 +97,8 @@ try:
             if "hmorph" in nc.variables:
                 hm = np.squeeze(nc.variables["hmorph"][:, j, :])
                 var_hmorph = "hmorph"
-            elif "Hm" in nc.variables:
-                hm = np.squeeze(nc.variables["Hm"][:, j, :])
-                var_hmorph = "Hm"
             else:
-                raise KeyError("Neither 'hmorph' nor 'Hm' found in file")
+                raise KeyError("'hmorph' not found in file")
 
         # Convert from masked array to regular array if needed
         if hasattr(hm, "mask"):
@@ -242,8 +239,8 @@ print("Creating plot...")
 # Plot analytical and numerical bed evolution
 fig = plt.figure(figsize=(13, 8))  # 920x550 equivalent
 
-# Plot every 3rd time step up to half the total time
-n_steps = len(t) // 2
+# Plot every time step
+n_steps = len(t)
 step_size = max(1, n_steps // 10)  # Ensure we don't plot too many lines
 
 colors_num = []
