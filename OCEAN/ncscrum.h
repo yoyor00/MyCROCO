@@ -204,13 +204,6 @@
       parameter (indxS=indxV+ntrc_temp+1)
 #  endif
 
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      integer indxCRT2,indxCRT3,indxCRT4
-      parameter (indxCRT2=indxV+ntrc_temp+ntrc_salt+1,
-     &           indxCRT3=indxCRT2+1,
-     &           indxCRT4=indxCRT3+1)
-# endif
-
 #  ifdef STOGEN
       integer indxXIsto1d, indxXIsto2d, indxXIsto3d
       parameter (indxXIsto1d=indxV+ntrc_temp+ntrc_salt+1)
