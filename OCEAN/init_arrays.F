@@ -491,9 +491,9 @@ C$    integer omp_get_thread_num
             Trate_mld(i,j,itrc)=init
             Tentr_mld(i,j,itrc)=init
             Taver_mld(i,j,itrc)=init
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
             Tcrit_mld(i,j,itrc)=init
-# endif
+#   endif
 #   ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
             TYadv_mld_avg(i,j,itrc)=init
@@ -504,9 +504,9 @@ C$    integer omp_get_thread_num
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
             Taver_mld_avg(i,j,itrc)=init
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#    ifdef DIAGNOSTICS_TS_MLD_DENS
             Tcrit_mld_avg(i,j,itrc)=init
-# endif
+#    endif
 #   endif /* AVERAGES*/
           enddo
         enddo
@@ -1455,6 +1455,9 @@ C$    integer omp_get_thread_num
           hbl(i,j)=init
 #  endif
           kbl(i,j)=init
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+          kbl1(i,j)=init
+#  endif
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
 #  endif

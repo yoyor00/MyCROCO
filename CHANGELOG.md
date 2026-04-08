@@ -14,6 +14,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
+- MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 
+  non equal to 1 and initialisation from file and restart (Issue #469)
 - MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
   restart inconsistencies with MORPHODYN, update testcase plot script 
   accordingly (#470)
@@ -29,6 +31,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
 
+- DIAGNOSTICS : integration error in diagnostics on MLD in (density, temp, n2).
+                Corrected. Keep only density criterion (#429)
+
+- OCEAN : Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
+
+- WET_DRY : add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
@@ -42,10 +51,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : review lateral erosion feature (Issue #349)
 
+- MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
+
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
+
+- WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
+  and not in cppdefs_dev.h (#465)
 
 - BULK_FLUX : Update wasp bulk flux parametrization, 
   cppkey BULK_WASP (Issue #453)
@@ -55,6 +69,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
   distribution of flow, enabling a transition from the AKIMA scheme to 
   SPLINES (#478)
+
+- OMEGA : Add a condition on the NBQ_MASS key for some terms of the first 
+  part of the computation of omega (#447)
+
+- CPP keys : restore the default definition for LIMIT_BSTRESS (the key is activated 
+  in cppdefs_dev.h unless BSTRESS_FAST is previously defined) (#456) 
+
+- BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
 
 ### Deprecated
 
@@ -67,6 +89,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : 
   - remove key_MUSTANG_lateralerosion replace by a boolean in 
     namelist (Issue #349)
+  - remove key_sand2D, activation only by a boolean in 
+    namelist (Issue #351)
+  - remove MUSTANG_CORFLUX replace by a boolean in 
+    namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
 
@@ -97,6 +123,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Other
 
 - Cleaning :
+  - remove TEST_CASES/IGW_OA directory with PDFs, namelist, XIOS XML files, and README  (#337)
   - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
@@ -105,14 +132,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
   - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
     in cppdefs_dev.h (#403)
+  - remove hard coded keys in mpc.F (#404)
 
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, N. Ducousso, S. Jullien, S. Le Gac, 
-  P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
+  R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
+  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, Anne-Lou Schaefer
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
-  M. Plus, M. Schreiber, A. Zribi, E Le Bouedec  
+  M. Plus, M. Schreiber, A. Zribi, E. Le Bouedec, B. Lemieux-Dudon 
