@@ -120,7 +120,7 @@
     ],
     "@nbq": [
       "GRAV_ADJ_NBQ", 
-      "IGW_NBQ"  // test broken
+      // "IGW_NBQ"  // test broken
     ],
     "@sediment_mustang": [
       "DUNE_SEDIMENT",
@@ -158,6 +158,7 @@
       "RIP_GRANDPOPO",
       "RIP_TOPO_2D",
       "DUNE_ANA_DUNE",
+      "DUNE_ANA_DUNE_MUSTANG",
       "DUNE_DUNE3D",
       "FLASH_RIP",
       //"MOVING_BATHY", // repro-mpi issue

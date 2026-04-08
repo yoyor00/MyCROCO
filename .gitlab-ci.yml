@@ -310,7 +310,7 @@ plotphy_realist:
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py \
-      --case BENGUELA_LR_TIDES_BULK \
+      --case BENGUELA_LR_TIDES_BULK,VILAINE \
       --variants mpi-4 \
       --title plotphy_realist \
       -s build,run,plotphy \

@@ -18,12 +18,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "--file", type=str, default="ana_dune_his.nc", help="Path to the NetCDF file"
 )
-parser.add_argument(
-    "--tindex",
-    type=int,
-    default=2,
-    help="Time index to plot (default: 2 - half-hourly outputs)",
-)
+
 parser.add_argument(
     "--j", type=int, default=2, help="Y index for cross-section (default: 2)"
 )
@@ -71,7 +66,6 @@ if args.no_show:
 # Parameters
 fname = args.file
 j = args.j - 1  # Convert to Python 0-based indexing
-tndx = args.tindex
 
 print(f"Using file: {fname}")
 print(f"Y-section index: {j + 1} (Matlab indexing)")
@@ -87,9 +81,6 @@ try:
         t = np.zeros(nt)
         for i in range(1, nt):
             t[i] = t0[i] - t0[0]
-
-        tndx = min(tndx, len(t) - 1)  # Ensure valid index
-        print(f"tndx = {tndx} - Time = {t[tndx] / 3600:.1f} hr")
 
         x = np.squeeze(nc.variables["x_rho"][j, :])
 
