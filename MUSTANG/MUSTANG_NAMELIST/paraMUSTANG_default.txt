@@ -129,6 +129,13 @@
 :               l_unised is false)
 :    z0sedbedrock : real, bed roughness for bedrock (no sediment) (m) (used 
 :                   only if l_unised is false)
+:    l_tauskin_center : boolean, set to .true. to compute bottom shear stress 
+:                       with u* directly at (rho) location (center of the cell)
+:                       (not compatible with l_tauskin_upwind)
+:    l_tauskin_ubar : boolean, set to .true. to compute bottom shear stress 
+:                     from depth-averaged velocity instead of bottom layer
+:    l_tauskin_upwind : boolean, set to .true. to use upwind scheme for 
+:                       current-induced bottom shear stress
 :    l_fricwave : boolean, set to .true. if using wave related friction factor 
 :                 for bottom shear stress (from wave orbital velocity and 
 :                 period)
