@@ -262,7 +262,7 @@ plt.text(120, -3.6, "Numerical", color="k", fontsize=20)
 plt.text(120, -3.8, "Analytical", color="r", fontsize=20)
 
 plt.grid(True)
-plt.axis([120, 200, -7, -3])
+plt.axis([120, 250, -7, -3])
 plt.xlabel("X [m]")
 plt.ylabel("Bed Level [m]")
 
