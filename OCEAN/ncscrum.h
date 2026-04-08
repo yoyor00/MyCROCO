@@ -213,9 +213,9 @@
 
 #  ifdef STOGEN
       integer indxXIsto1d, indxXIsto2d, indxXIsto3d
-      parameter (indxXIsto1d=indxV+ntrc_temp+ntrc_salt+ntrc_mld+1)
-      parameter (indxXIsto2d=indxV+ntrc_temp+ntrc_salt+ntrc_mld+2)
-      parameter (indxXIsto3d=indxV+ntrc_temp+ntrc_salt+ntrc_mld+3)
+      parameter (indxXIsto1d=indxV+ntrc_temp+ntrc_salt+1)
+      parameter (indxXIsto2d=indxV+ntrc_temp+ntrc_salt+2)
+      parameter (indxXIsto3d=indxV+ntrc_temp+ntrc_salt+3)
 #  endif
 
 #  ifdef PASSIVE_TRACER
