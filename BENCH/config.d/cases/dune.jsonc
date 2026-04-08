@@ -57,7 +57,7 @@
     "case": "DUNE",
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "cppkeys": {
-      "SEDIMENT": true,
+      "SEDIMENT": false,
       "ANA_DUNE": true,
       "MUSTANG": true,
     },

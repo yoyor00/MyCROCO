@@ -448,7 +448,7 @@
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
-# define FILLVAL
+# undef  FILLVAL
                       /* Calendar */
 
 # define USE_CALENDAR
