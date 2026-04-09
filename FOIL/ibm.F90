@@ -331,7 +331,7 @@ MODULE ibm
                 IF ( .NOT. particle%active )  CYCLE
 #ifdef IBM_SPECIES
                 ! Init some biological parameters if not a restart
-                CALL ibm_parameter_init(particle,patch%species,temp,sal,xe,Istr,Iend,Jstr,Jend)
+                CALL ibm_parameter_init(particle,patch%species,xe,sal,temp,Istr,Iend,Jstr,Jend)
 #endif /* IBM_SPECIES */
             ENDDO      ! loop on patch%nb_part_alloc
 
