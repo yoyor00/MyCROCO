@@ -98,6 +98,7 @@ LIST_OPTIONS=$(cat << EOF
  # -- CROCO built-in codes -- #
  oce-dev    : croco all-in (classic) architecture
  oce-prod   : croco production architecture => croco files and namelists in CROCO_IN directory
+ stogen     : stogen inputs
  pisces     : pisces inputs
  agrif      : inputs for nests
  sediment   : inputs for sediment 
@@ -117,9 +118,9 @@ LIST_OPTIONS=$(cat << EOF
  wav        : scripts for coupling with WW3          ( oce-prod needed )
 
  # -- All options :
- # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
- # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
- # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
+ # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc stogen pisces sediment mustang oanalysis mattools pytools)
+ # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc stogen pisces sediment mustang oanalysis mattools pytools)
+ # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif runcpl stogen pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
 
 EOF
 	    )
@@ -127,9 +128,9 @@ EOF
 # END USER MODIFICATIONS
 #==========================================================================================
 
-allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
-allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
-allmodels_cpl=( oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy )
+allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc stogen pisces sediment mustang oanalysis mattools pytools )
+allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc stogen pisces sediment mustang oanalysis mattools pytools )
+allmodels_cpl=( oce-prod xios test_cases agrif runcpl stogen pisces sediment mustang oanalysis mattools pytools cpl wav atm toy )
 
 x_f=0
 
@@ -362,6 +363,10 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     # FORECAST
     if [[ ${options[@]} =~ "forc" ]] ; then
 	cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CROCO_DIR.
+    fi
+    # STOGEN
+    if [[ ${options[@]} =~ "stogen" ]] ; then
+	cp -f ${CROCO_DIR}/STOGEN/*namelist* $MY_CROCO_DIR.
     fi
     # PISCES
     if [[ ${options[@]} =~ "pisces" ]] ; then

@@ -106,6 +106,9 @@
 # undef  SEDIMENT
 # undef  MUSTANG
 # undef  BBL
+                      /* Stochastic and Ensemble */
+# undef STOGEN
+# undef ENSEMBLE
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
@@ -635,6 +638,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+# undef  STOGEN
 
 #elif defined CANYON
 /*
