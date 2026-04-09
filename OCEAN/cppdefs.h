@@ -451,7 +451,7 @@
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
-# define FILLVAL
+# undef  FILLVAL
                       /* Calendar */
 
 # define USE_CALENDAR
@@ -743,7 +743,7 @@
 !                              Seven  sets up are encompassed :
 */
 /* erosion of linear strat by constant wind stress */
-# define KATO_PHILIPS
+# define KATO_PHILLIPS
 /* erosion of linear strat by constant surf buoyancy loss */
 # undef  WILLIS_DEARDORFF
 /* erosion of linear strat by constant surf buoyancy loss */

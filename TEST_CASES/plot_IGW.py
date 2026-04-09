@@ -47,14 +47,17 @@ N = len(nc.dimensions["s_rho"])
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-vtransform = np.squeeze(nc.variables.get("Vtransform", 1))
+if "Vtransform" in nc.variables:
+    vtransform = int(np.squeeze(nc.variables["Vtransform"][:]))
+else:
+    vtransform = 1
 ssh = np.squeeze(nc.variables["zeta"][:, 1, :])
 zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
 u = np.squeeze(nc.variables["ubar"][:, 1, :])
 v = np.squeeze(nc.variables["vbar"][:, 1, :])
 usec = np.squeeze(nc.variables["u"][tndx, :, 1, :])
 vsec = np.squeeze(nc.variables["v"][tndx, :, 1, :])
-wsec = np.squeeze(nc.variables["w"][tndx, :, 1, :])
+wsec = np.squeeze(nc.variables["w"][tndx, :N, 1, :])
 tsec = np.squeeze(nc.variables["temp"][tndx, :, 1, :])
 rsec = np.squeeze(nc.variables["rho"][tndx, :, 1, :])
 drsec = rsec - np.squeeze(nc.variables["rho"][0, :, 1, :])

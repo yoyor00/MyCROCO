@@ -78,7 +78,7 @@
 #elif defined TS_HADV_TEST
       parameter (LLm0=100,  MMm0=100,  N=5)
 #elif defined SINGLE_COLUMN
-# ifdef KATO_PHILIPS
+# ifdef KATO_PHILLIPS
       parameter (LLm0=5 ,   MMm0=5,    N=100)
 # elif defined WILLIS_DEARDORFF || defined FORCED_NONROTBBL \
     || defined FORCED_OSCNONROTBBL
@@ -516,8 +516,10 @@
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
       integer  itsubs1, itsubs2, ntfix
 #  ifdef SED_TOY
-#   if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
+#   if defined SED_TOY_FLOC_0D 
       parameter (ntrc_subs=15 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#   elif defined SED_TOY_FLOC_1D
+      parameter (ntrc_subs=8 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #   else
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #   endif

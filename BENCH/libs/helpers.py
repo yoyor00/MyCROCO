@@ -99,7 +99,7 @@ def run_shell_command_time(command, logfilename=None, verbose: bool = False):
 
         try:
             return timeit(
-                stmt=f"subprocess.run('({command}) 2>&1 > {log_fp}', check=True, shell=True)",
+                stmt=f"subprocess.run('({command}) > {log_fp} 2>&1', check=True, shell=True)",
                 setup="import subprocess",
                 number=1,
             )
