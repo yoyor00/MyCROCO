@@ -85,15 +85,31 @@ if args.makepdf:
     plt.savefig(pdf_path)
     print(f"PDF saved: {pdf_path}")
 
-# Save in PNG
+# Save in PNG (one file per time index, full figure)
 if args.makepng:
-    renderer = fig.canvas.get_renderer()
-    for i, tndx in enumerate(args.tindex):
+    for tndx in args.tindex:
+        tndx = min(tndx, len(nc.variables["scrum_time"][:]) - 1)
+        zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
+        temp = np.squeeze(nc.variables["temp"][tndx, :, 1, :])
+        temp[temp == 0] = np.nan
+        zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)
+        zr = np.squeeze(zr[:, 1, :])
+        xr_loop = np.tile(x, (N, 1))
+
+        fig_png, ax_png = plt.subplots(figsize=(10, 4), constrained_layout=True)
+        levels = np.arange(-40, 41, 1)
+        cont = ax_png.contourf(xr_loop, zr, temp, levels=levels,
+                                cmap="jet", extend="both")
+        ax_png.set_xlabel("X [m]")
+        ax_png.set_ylabel("Depth [m]")
+        ax_png.set_ylim(-0.25, -0.15)
+        ax_png.set_xlim(np.min(xr_loop), np.max(xr_loop))
+        ax_png.set_title(f"Internal Soliton - Time Index {tndx}")
+        fig_png.colorbar(cont, ax=ax_png)
+
         png_path = os.path.join(args.output_dir, f"isoliton_t{tndx:04d}.png")
-        bbox = (
-            axs[i].get_tightbbox(renderer).transformed(fig.dpi_scale_trans.inverted())
-        )
-        fig.savefig(png_path, bbox_inches=bbox.padded(0.1), dpi=300)
+        fig_png.savefig(png_path, dpi=300)
+        plt.close(fig_png)
         print(f"PNG saved: {png_path}")
 
 # Show or not
