@@ -180,8 +180,6 @@ MODULE ibmtools
     ! Egg density ----------------
     prof = min(4.0_rsh, particle%d3) ! surface
     prof = -prof + particle%xe ! switch from immersion to real z
-
-    write(*,*) particle%num, particle%d3, particle%xe
     
     CALL ztosiggen(prof, particle%spos, particle%xe, particle%h0, particle%hc)
 
@@ -226,8 +224,6 @@ MODULE ibmtools
     ! Si temperature realiste a l'initialisation, on prend sa valeur, sinon on prend 0
     particle%temp    = temp_surf
     particle%density = dens_surf
-
-    write(*,*) particle%num, sal_surf, temp_surf, particle%density
 
     ! Initialize particle's denspawn
     IF (species == "anchovy") THEN
