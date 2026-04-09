@@ -222,7 +222,8 @@ MODULE ibmtools
     dens_surf = w_dens(temp_surf, sal_surf)
 
     ! Si temperature realiste a l'initialisation, on prend sa valeur, sinon on prend 0
-    particle%temp    = 0._rsh
+    particle%temp    = temp_surf
+    write(*,*) 'Temp', particle%num, particle%temp, temp_surf, dens_surf
     particle%density = dens_surf
 
     ! Initialize particle's denspawn

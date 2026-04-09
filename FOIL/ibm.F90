@@ -92,7 +92,6 @@ MODULE ibm
     !&E ** External calls : LAGRANGIAN_init,ionc4_openr,ionc4_read_trajt,
     !&E                     ionc4_close,ionc4_read_time,ionc4_read_dimt,deb_init,fish_move_init
     !&E                     ibm_parameter_init
-    !&E ** Reference      : Huret et al. (2016)
     !&E
     !&E ** History :
     !&E       !  2010-11 (M. Huret) Original code
@@ -325,7 +324,6 @@ MODULE ibm
             !--- Update FOIL.info file
             call write_run_info(patch%run_id)
 
-            !Huret et al. 2016 (egg density =f(surf.density))
             DO m = 1, nb_part_nc
                 particle => patch%particles(m)
                 particle%date_orig = time - particle%age*24.0_rlg*3600.0_rlg
@@ -637,10 +635,10 @@ MODULE ibm
                 ENDIF
 
                 IF (patch%species == 'sardine') THEN
-                    ! Egg density dependent on development (Garcia-Garcia)
-                    particle%density = particle%denspawn + 3.58_rsh*(0.0012_rsh - 1.8528_rsh*particle%Drate &
+                    ! Egg density dependent on development (Garcia-Garcia. Coefs a reajuster avec nos données)
+                    particle%density = particle%denspawn + 2.58_rsh*(0.0012_rsh - 1.8528_rsh*particle%Drate &
                                        + 15.507_rsh*(particle%Drate)**2 - 41.1312_rsh*(particle%Drate)**3   &
-                                       + 40.5289_rsh*(particle%Drate)**4) 
+                                       + 40.5289_rsh*(particle%Drate)**4 - 12.1166*(particle%Drate)**5) 
 
                     ! Egg developement miranda Peck (dvpt prédit pour dt en jour) dtm en s
                     particle%Drate = particle%Drate + ((dtm/86400.0_rsh)*0.17_rsh*(particle%temp)**1.9286_rsh)/100.0_rsh
