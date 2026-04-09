@@ -115,7 +115,7 @@ C$    integer omp_get_thread_num
                      f0=1.E-4
                      beta=2.E-11
 # elif defined SINGLE_COLUMN
-#  if defined KATO_PHILIPS || defined WILLIS_DEARDORFF
+#  if defined KATO_PHILLIPS || defined WILLIS_DEARDORFF
                      depth=50.
                      f0=0.
                      beta=0.

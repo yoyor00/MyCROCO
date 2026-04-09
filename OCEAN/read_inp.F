@@ -122,7 +122,7 @@
       fname='TEST_CASES/croco.in.Sandbar'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
-#elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+#elif defined SINGLE_COLUMN && defined KATO_PHILLIPS
       fname='TEST_CASES/croco.in.KATO_PHILLIPS'
 #elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
       fname='TEST_CASES/croco.in.WILLIS_DEARDORFF'
@@ -173,8 +173,10 @@
       fname='TEST_CASES/croco.in.Sed_toy_resusp'
 # elif defined SED_TOY_CONSOLID
       fname='TEST_CASES/croco.in.Sed_toy_consolid'
-# elif defined SED_TOY_FLOC
-      fname='TEST_CASES/croco.in.Sed_toy_floc'
+# elif defined SED_TOY_FLOC_0D
+      fname='TEST_CASES/croco.in.Sed_toy_floc_0d'
+# elif defined SED_TOY_FLOC_1D
+      fname='TEST_CASES/croco.in.Sed_toy_floc_1d'
 # elif defined SED_TOY_ROUSE
       fname='TEST_CASES/croco.in.Sed_toy_rouse'
 # endif

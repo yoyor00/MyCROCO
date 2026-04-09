@@ -74,7 +74,7 @@ class Benchmarking:
         ref_name = self.config.variant_ref_name
 
         # ref variant
-        if ref_name in self.config.case_names:
+        if ref_name in self.config.variant_names:
             self.config.variant_names.remove(ref_name)
             self.config.variant_names.insert(0, ref_name)
 
@@ -204,6 +204,8 @@ class Benchmarking:
             generate_html(
                 self.config.results,
                 output_file=os.path.join(self.config.results, "treeview.html"),
+                ref_variant_name=self.config.variant_ref_name,
+                use_ref_path=self.config.use_ref if self.config.use_ref else None,
             )
         if self.config.report.contains_false():
             Messaging.step_error("Error: False detected in report")

@@ -7,6 +7,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ### Added
 
 - BENCH : Add performance tracking (Issue #378 and #423)
+- BENCH : Add missing plot scripts for test cases (#379)
 
 - STATION : Add TEMPERATURE cppkey for stations (#445)
 
