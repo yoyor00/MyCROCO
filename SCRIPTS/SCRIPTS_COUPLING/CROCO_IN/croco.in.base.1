@@ -87,6 +87,9 @@ sponge:          X_SPONGE [m]
 nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
                 1.       360.      3.      360.
 
+diag_mld_dens: RHO threshold [kg/m3], T threshold [Celsius]
+                         3.d-2                2.d-1
+
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T    <oce_nhis>         0
                                  ./croco_dia.nc.1
@@ -94,12 +97,6 @@ diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
 diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1        <oce_navg>            0
                                  ./croco_dia_avg.nc.1
-
-diag_mld_crit_threshold: CRT1 (Dens [kg/m3]), CRT2 (Temp [Celsius]), CRT3 (Temp [Celsius])
-                         3.d-2                2.d-1                  5.d-1
-
-diag_mld_depth_ref: [m]
-                10
 
 diag3D_history_fields:    diag_tracers3D(1:NT) 
                             50*T
@@ -257,7 +254,6 @@ substance: input file (substance module)
 
 sediments_mustang: input file ( Mustang sediment model)
                paraMUSTANG.txt
-
 
 bbl_history_fields: Abed Hripple Lripple Zbnot Zbapp Bostrw
                      T      F       F      T     F     T
