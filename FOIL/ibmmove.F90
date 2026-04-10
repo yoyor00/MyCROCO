@@ -229,10 +229,7 @@ MODULE ibmmove
     INTEGER              :: jj,mm_clock,aaaa,hh,minu,sec
     INTEGER              :: ierr_mpi
     TYPE(type_position)  :: pos,pos_n 
-
     REAL(KIND=rsh)       :: sizemin
-    
-    INTEGER, PARAMETER   :: n = 1     ! FIXME : a l'origine, c'etait le numero du patch... (mh-2015)
      
     !!----------------------------------------------------------------------
     !! * Executable part
@@ -258,8 +255,8 @@ MODULE ibmmove
     
     ! when transition is let free, it takes 2 to 3 months to come to a reasonable R2 for comparison
     ! between obs and model distribution by size (March-April and July-August)
-    IF (n == 1) THEN ! normal migration
-        IF (ind_species == 1) THEN
+  
+    IF (ind_species == 1) THEN
         saison = 1
         IF(mm_clock <= 2 .OR. mm_clock >= 7) THEN
             saison = 2
@@ -271,33 +268,15 @@ MODULE ibmmove
         END IF
         IF (particle%size < 6.25) saison = 2 ! pour cas ou juvenile avant aout, pas de size_class correspondante saison 1
     END IF
-        IF (ind_species == 2) THEN
-            saison = 1
-            IF(mm_clock <= 2 .OR. mm_clock >= 7) THEN
-                saison = 2
-            END IF
-       END IF
+    IF (ind_species == 2) THEN
+        saison = 1
+        IF(mm_clock <= 2 .OR. mm_clock >= 7) THEN
+            saison = 2
+        END IF
     END IF
     
-    !IF (n == 2) THEN ! remain in the south
-    !   saison = 1
-    !   IF (particle%size < 7.25) saison = 2 ! pour cas ou juvenile avant aout, pas de size_class correspondante saison 1
-    !END IF
-    !
-    !IF (n == 3) THEN ! remain in the north
-    !    saison=2
-    !    IF(mm_clock <= 2  .OR. mm_clock >= 10) THEN 
-    !        IF ((time - particle%date_orig) < 86400.0_rlg*365.0_rlg) THEN ! to avoid remaining offshore for juveniles in winter...
-    !            saison=1
-    !        END IF
-    !    END IF
-    !    IF (particle%size < 7.25) saison = 2 ! pour cas ou juvenile avant aout, pas de size_class correspondante saison 1
-    !END IF
-    IF (ind_species == 1) THEN
-        Pi = fish_anc(icells,jcells,index,saison)
-    ELSE IF (ind_species == 2) THEN
-        Pi = fish_sar(icells,jcells,index,saison)
-    ENDIF
+    IF (ind_species == 1) Pi = fish_anc(icells,jcells,index,saison)
+    IF (ind_species == 2) Pi = fish_sar(icells,jcells,index,saison)
 
     !Select a neighbouring cell j at random among the 4 neighbouring cells
     CALL random_number(v1) 
@@ -329,11 +308,8 @@ MODULE ibmmove
     jcell = MIN(MAX(jcell,jmin),jmax)
     
     ! Get the probability at this new cell
-    IF (ind_species == 1) THEN
-        Pj = fish_anc(icell,jcell,index,saison)
-    ELSE IF (ind_species == 2) THEN
-        Pj = fish_sar(icell,jcell,index,saison)
-    ENDIF
+    IF (ind_species == 1) Pj = fish_anc(icell,jcell,index,saison)
+    IF (ind_species == 2) Pj = fish_sar(icell,jcell,index,saison)
     
     ! Metropolis algorithm to decide on whether to move or not
     CALL random_number(harvest) 
