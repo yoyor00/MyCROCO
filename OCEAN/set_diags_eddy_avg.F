@@ -120,8 +120,8 @@
         enddo
 
         do k=1,N
-          do j=JstrR,JendR
-            do i=IstrR,IendR
+         do j=Jstr,Jend
+           do i=Istr,Iend
 
               GRho=-1*g/rho0
 
