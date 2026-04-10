@@ -7,18 +7,35 @@
 : namibmin	        INPUT   
 :-----------------------------------------------------------------------------
 :
-: file_trajec : name of file with characteristics for each patch
-: itypetraj   : type of definition of patch initial position: 
+: file_trajec : name of patch file
+: dir_pathout : base name/path of the result files
+: itypepatch   : type of definition of patch initial position: 
 :  	      1: circle, 2: rectangle, 3:netcdf
 :	      choose depending on the file file_trajec you use in inputs directory
-: ndtz        : number of time-step within the hydrodynamic model time step
-:        See (Ross and Sharples, 2004, Limnol.Oceanogr.) for sensitivity analysis
-:        To choose depending on the model time resolution, dt/ndtz should be of the order of few seconds
+:
 :-----------------------------------------------------------------------------
+:
  &namibmin
 	file_trajec = 'ibm_patch.dat'
-	itypetraj =   3 
-	ndtz  = 50 /
+	dir_pathout = '../output_foil/'
+	itypepatch =   3 /
+:
+:-----------------------------------------------------------------------------
+: namibmdiff	        INPUT   
+:-----------------------------------------------------------------------------
+:
+: dtz        : time-step of the randow walk on the vertical, for consideration 
+:			 	of vertical diffusion
+:        See (Ross and Sharples, 2004, Limnol.Oceanogr.) for sensitivity analysis
+:        Few seconds make sure there are no accumulation in low diffusivity areas
+:			and near boundaries
+: hdiff		: Horizontal diffusion coefficient
+: 
+:-----------------------------------------------------------------------------
+:
+ &namibmdiff
+	dtz  = 3
+	hdiff = 5.0 /
 :
 :-----------------------------------------------------------------------------
 : namibmrestart	SAVE-RESTART CONDITIONS (Not ready yet)

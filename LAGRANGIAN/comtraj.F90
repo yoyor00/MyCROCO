@@ -195,9 +195,11 @@ MODULE comtraj
 
     ! From paraibm or paratraj file
     CHARACTER(LEN=lchain),  PUBLIC          :: file_trajec                  ! name of configuration file
-    CHARACTER(LEN=lchain),  PUBLIC          :: file_pathout                 ! name of output path 
-    INTEGER,                PUBLIC          :: itypetraj                    ! initialisation type (circle, rectangle,netcdf)
-    INTEGER,                PUBLIC          :: ndtz                         ! number of time step division for vertical subloop
+    CHARACTER(LEN=lchain),  PUBLIC          :: dir_pathout                 ! name of output path 
+    INTEGER,                PUBLIC          :: itypepatch                    ! initialisation type (circle, rectangle,netcdf)
+
+    REAL(kind=rlg),         PUBLIC          :: dtz                          ! time step division for vertical subloop for diffusion
+    REAL(kind=rsh),         PUBLIC          :: hdiff                        ! horizontal diffusion coefficient
 
 #ifdef DEB_IBM
     LOGICAL,                PUBLIC          :: ibm_restart                  ! Logical for ibm restart 

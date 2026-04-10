@@ -87,16 +87,7 @@ MODULE ibmmove
     !!----------------------------------------------------------------------
     !! * Executable part
  
-    ! Open probadistrib for anchovies
-    file_fish1   = fileprobadistrib_anc
     name_in_fish = 'Probability'
-    
-    CALL ionc4_openr(file_fish1,l_in_nc4par=.true.)
-    
-    ! read number of population distribution along the year
-    idimt = ionc4_read_dimt(file_fish1)  
-    
-    ALLOCATE(fish_anc(GLOBAL_2D_ARRAY,nbSizeClass_anc,idimt)) 
     
     ! Definit les indices de lecture en fonction du proc mpi dans le fichier de forcage
     ! Lit sur tout le domaine en sequentiel sinon
@@ -132,6 +123,16 @@ MODULE ibmmove
     valjmax = jmax - jmin + valjmin 
     ALLOCATE(fish1   (valimin:valimax,valjmin:valjmax,nbSizeClass_anc)) 
 
+    ! Open probadistrib for anchovies
+    file_fish1   = fileprobadistrib_anc
+    
+    CALL ionc4_openr(file_fish1,l_in_nc4par=.true.)
+    
+    ! read number of population distribution along the year
+    idimt = ionc4_read_dimt(file_fish1)  
+    
+    ALLOCATE(fish_anc(GLOBAL_2D_ARRAY,nbSizeClass_anc,idimt)) 
+    
     ! ! Vérifie que la taille du bloc à lire ne dépasse pas fish_anc
     ! ! Modif Clara, pas sur pourquoi les indices de fish_anc commencent à 0 et fish1 à 1 dans 3D-1DV
     ! ! Attention : si fish1 plus petit que fish_anc, pas de message d'erreur
@@ -148,8 +149,8 @@ MODULE ibmmove
 #else
         fish_anc(0:valimax-valimin,0:valjmax-valjmin,:,t) = fish1 ! version modifiée Clara
 #endif 
-
     END DO
+    
     CALL ionc4_close(file_fish1)
     DEALLOCATE(fish1)
     
@@ -238,15 +239,16 @@ MODULE ibmmove
 
     IF (ind_species == 1) THEN
         sizemin = sizemin_anc
+        index  = min(max(1, NINT(particle%size*2) - INT(sizemin*2) + 1), nbSizeClass_anc) 
     ELSE IF (ind_species == 2) THEN
         sizemin = sizemin_sar
+        index  = min(max(1, NINT(particle%size*2) - INT(sizemin*2) + 1), nbSizeClass_sar) 
     ENDIF
 
     pos%xp = particle%xpos ; pos%yp = particle%ypos
     CALL define_pos(pos)
     
     !Get the index of size in the probability distribution matrix
-    index  = min(max(1, NINT(particle%size*2) - INT(sizemin*2) + 1), 34) ! 34=20cm, au dela rien a l automne
 
     icells = NINT(pos%idx_r)
     jcells = NINT(pos%idy_r)
@@ -257,6 +259,7 @@ MODULE ibmmove
     ! when transition is let free, it takes 2 to 3 months to come to a reasonable R2 for comparison
     ! between obs and model distribution by size (March-April and July-August)
     IF (n == 1) THEN ! normal migration
+        IF (ind_species == 1) THEN
         saison = 1
         IF(mm_clock <= 2 .OR. mm_clock >= 7) THEN
             saison = 2
@@ -267,6 +270,13 @@ MODULE ibmmove
             END IF
         END IF
         IF (particle%size < 6.25) saison = 2 ! pour cas ou juvenile avant aout, pas de size_class correspondante saison 1
+    END IF
+        IF (ind_species == 2) THEN
+            saison = 1
+            IF(mm_clock <= 2 .OR. mm_clock >= 7) THEN
+                saison = 2
+            END IF
+       END IF
     END IF
     
     !IF (n == 2) THEN ! remain in the south

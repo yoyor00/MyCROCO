@@ -58,8 +58,7 @@
 :       Sizeb   : -cm, Length at first feeding (birth in DEB)
 :       Lj      : 
 :       TR      : K, temperature at start spawning
-:       Eb      : J/cm3, specific batch energy (Pethybridge), 0.15(E0)*550 (egg/cm3)
-:       E       : (Pethybridge 2011)
+:       E_i       : (Pethybridge 2011)
 :       R       : 
 :--------------------------------------------------------------------------------
 :    
@@ -80,7 +79,6 @@
     Sizeb   = 0.40
     Lj      = 4.0
     TR      = 286.0
-    Eb      = 82.5
     E_i     = 0.110
     R_i     = 0.0/
 :	

@@ -200,7 +200,7 @@ MODULE trajinitsave
     USE comtraj, ONLY : init_mpi_type_particle
 #endif
     USE comtraj, ONLY : patch_list_append,patches,type_patch,file_trajec,&
-                        file_pathout,itypetraj,ndtz
+                        dir_pathout,itypepatch,dtz,hdiff
 #ifdef DEB_IBM
     USE comtraj, ONLY : ibm_restart
 #endif
@@ -274,7 +274,7 @@ MODULE trajinitsave
 
     REAL(KIND=rlg),DIMENSION(5)                 :: buff_mpi
     
-    NAMELIST/namtraj/file_trajec,file_pathout,itypetraj,ndtz
+    NAMELIST/namtraj/file_trajec,dir_pathout,itypepatch,dtz,hdiff
 
 # include "compute_auxiliary_bounds.h"
     !!----------------------------------------------------------------------
@@ -374,7 +374,7 @@ MODULE trajinitsave
         STOP
     END IF
 
-    IF (itypetraj/=1 .AND. itypetraj/=2 .AND. itypetraj/=3) THEN
+    IF (itypepatch/=1 .AND. itypepatch/=2 .AND. itypepatch/=3) THEN
         PRINT*, "Type of trajectory is not defined correctly."
         PRINT*, "Must be 1 (circle patch), 2 (rectangle patch) or 3 (Netcdf)"
         PRINT*, "Simulation stopped."
@@ -456,8 +456,8 @@ MODULE trajinitsave
                                 '   with a ', dt_traj, 'hours time step.'
         ENDIF_MPI
 
-        ! Depending on itypetraj in paratraj or paraibm, initialise patches with good patch
-        IF (itypetraj == 1) THEN
+        ! Depending on itypepatch in paratraj or paraibm, initialise patches with good patch
+        IF (itypepatch == 1) THEN
 
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Initialize circle patches
@@ -695,7 +695,7 @@ MODULE trajinitsave
             END DO
 
 
-        ELSEIF ( itypetraj == 2 ) THEN
+        ELSEIF ( itypepatch == 2 ) THEN
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Initialize rectangular patches
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -847,7 +847,7 @@ MODULE trajinitsave
 
 
 
-        ELSEIF ( itypetraj == 3 ) THEN
+        ELSEIF ( itypepatch == 3 ) THEN
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Initialize netcdf patches
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -858,13 +858,13 @@ MODULE trajinitsave
             IF (kk > 0 ) THEN
                 new_patch%file_inp = rec(1:kk-1)
 #ifdef DEB_IBM
-                IF (ibm_restart) new_patch%file_inp = trim(file_pathout) // rec(1:kk-1)
+                IF (ibm_restart) new_patch%file_inp = trim(dir_pathout) // rec(1:kk-1)
 #endif
                 
             ELSE
                 new_patch%file_inp = rec
 #ifdef DEB_IBM
-                IF (ibm_restart) new_patch%file_inp = trim(file_pathout) // rec
+                IF (ibm_restart) new_patch%file_inp = trim(dir_pathout) // rec
 #endif    
             END IF
 
@@ -874,12 +874,12 @@ MODULE trajinitsave
             IF (kk > 0 ) THEN
                 new_patch%file_out = rec(1:kk-1)
 #ifdef DEB_IBM
-                new_patch%file_out = trim(file_pathout) // rec(1:kk-1)
+                new_patch%file_out = trim(dir_pathout) // rec(1:kk-1)
 #endif                
             ELSE
                 new_patch%file_out = rec
 #ifdef DEB_IBM
-                new_patch%file_out = trim(file_pathout) // rec
+                new_patch%file_out = trim(dir_pathout) // rec
 #endif               
             END IF
 
@@ -1066,7 +1066,7 @@ MODULE trajinitsave
             ENDIF
 #endif
 #endif
-        END IF  ! end test on itypetraj
+        END IF  ! end test on itypepatch
 
     END DO  ! loop on patches
 
@@ -1079,7 +1079,7 @@ MODULE trajinitsave
             patch => patches%first
             write(iscreenlog,*) 'VERTICAL COMPONENT OF THE DISPLACEMENT:  '
             DO npa = 1,patches%nb
-                write(iscreenlog,*) ' ndtz : ', ndtz
+                write(iscreenlog,*) ' dtz : ', dtz
                 IF     ( patch%init_particle%itypevert == 0 ) THEN
                     WRITE(iscreenlog,*) ' Patch number',npa,': Trajectories at constant depth ' 
                 ELSEIF ( patch%init_particle%itypevert < 0  ) THEN

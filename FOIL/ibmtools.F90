@@ -1307,7 +1307,7 @@ MODULE ibmtools
     !&E
     !&E ** History :
     !&E       !  2013-04  (M. Huret) 
-    !&E
+    !&E         Not operational as it is in CROCO
     !&E---------------------------------------------------------------------
    !! * Modules used
    USE comtraj,  ONLY : htx
@@ -1400,6 +1400,7 @@ MODULE ibmtools
     !&E
     !&E ** History :
     !&E       !  2013-04  (M. Huret) 
+    !&E         Not operational as it is in CROCO
     !&E
     !&E---------------------------------------------------------------------
    !! * Modules used
@@ -1487,6 +1488,7 @@ MODULE ibmtools
     !&E ** History        : 
     !&E                ! 2010-11  (M. Huret) (A ameliorer)
     !&E                ! 2011-11  (V. Garnier) Spatial extension of ssh(liminm2:limaxp2,ljminm2:ljmaxp2)
+    !&E         Not operational as it is in CROCO
     !&E---------------------------------------------------------------------
 
     !! * Modules used
@@ -1556,6 +1558,7 @@ MODULE ibmtools
     !&E ** History : 
     !&E       ! 2008     (M. Sourisseau) non terminée mais pas encore utilisée
     !&E       ! 2011-11  (V. Garnier) Spatial extension of ssh(liminm2:limaxp2,ljminm2:ljmaxp2)
+    !&E         Not operational as it is in CROCO
     !&E---------------------------------------------------------------------
    !! * Modules used
    !USE comvars2d, ONLY : hm,ig,id

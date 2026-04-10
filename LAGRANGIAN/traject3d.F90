@@ -95,7 +95,7 @@ MODULE traject3d
     USE toolmpi,        ONLY : ex_traj
     USE comtraj,        ONLY : down_give, up_give, right_give, left_give
 #endif
-    USE comtraj,        ONLY : patches, type_patch, type_particle, type_position,ndtz,htx,hty,wz
+    USE comtraj,        ONLY : patches, type_patch, type_particle, type_position,dtz,htx,hty,wz
 
     !! * Arguments
     REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,4),      INTENT( in )    :: xe
@@ -126,8 +126,8 @@ MODULE traject3d
     INTEGER                                     :: l
 
     ! Model time step
-    REAL(KIND=rlg)                              :: dtm,dtz
-    INTEGER                                     :: time_step
+    REAL(KIND=rlg)                              :: dtm
+    INTEGER                                     :: time_step,ndtz
 
     TYPE(type_patch),                  POINTER  :: patch    => NULL()
     TYPE(type_particle),               POINTER  :: particle => NULL()
@@ -163,7 +163,7 @@ MODULE traject3d
 #endif
 
     ! Implement intermediate time step, for Random Walk
-    IF ( nb_patch /= 0 ) dtz = dtm/real(ndtz,kind=rlg)
+    IF ( nb_patch /= 0 ) ndtz = MAX(1,NINT(dtm/dtz))  ! si dtz > dtm then diffusion timestep not subdivised
 
     patch => patches%first
     DO npa = 1,nb_patch
@@ -421,10 +421,12 @@ MODULE traject3d
                             ! s_int=s_int+ds_dif+(2.0_rsh*tir-1.0_rsh)*sqrt(2.0_rsh*dtz*kzz/(r*d3_mid*d3_mid))  en sigma
                             z_int = z_int + (ds_dif + (2.0_rsh*tir - 1.0_rsh)*sqrt(2.0_rsh*dtz*kzz/r))
                             
-                            ! handle boundary conditions
-                            ! s_int=MIN(MAX(s_int,-1.0_rsh),0.0_rsh)         ! particle set on boundary
-                            ! s_int=MIN(MAX(s_int,-(2_rsh+s_int)),-s_int)  ! reflective boundary condition
-                            ! random mixed layer to avoid accumulation (see Ross and Sharples, 2004)
+                            !! handle boundary conditions in sigma, with different possible choices
+                            !! particle set on boundary
+                            ! s_int=MIN(MAX(s_int,-1.0_rsh),0.0_rsh)
+                            !! reflective boundary condition
+                            ! s_int=MIN(MAX(s_int,-(2_rsh+s_int)),-s_int)
+                            !! random mixed layer to avoid accumulation (see Ross and Sharples, 2004)
                             ! lb=0.5_rsh        ! distance in meters for the random boundary layer
                             ! lt=0.5_rsh
                             ! lts=lt/d3_mid
@@ -433,10 +435,12 @@ MODULE traject3d
                             ! IF (s_int > -lts) s_int=-tir*lts
                             ! IF (s_int < -1_rsh+lbs) s_int=tir*lbs-1_rsh
                 
-                            ! handle boundary conditions
-                            ! z_int=MIN(MAX(z_int,-h0_mid),xe_mid)         ! particle set on boundary
-                            ! z_int=MIN(MAX(z_int,-(2_rsh*h0_mid+z_int)),2_rsh*xe_mid-z_int)  ! reflective boundary condition
-                            ! random mixed layer to avoid accumulation (see Ross and Sharples, 2004)
+                            !! handle boundary conditions in z, with different possible choices
+                            !! particle set on boundary
+                            ! z_int=MIN(MAX(z_int,-h0_mid),xe_mid)
+                            !! reflective boundary condition
+                            ! z_int=MIN(MAX(z_int,-(2_rsh*h0_mid+z_int)),2_rsh*xe_mid-z_int)
+                            !! random mixed layer to avoid accumulation (see Ross and Sharples, 2004)
                             lb = 2.0_rsh        ! distance in meters for the random boundary layer
                             lt = 2.0_rsh        ! twice the boundary layer should be ok
                             CALL random_number(tir)
@@ -503,6 +507,7 @@ MODULE traject3d
     !&E              sous l action d un courant et d une composante
     !&E              aleatoire de deplacement (random walk), dans
     !&E              le plan horizontal.
+    !&E              The horizontal diffusion coefficient is provided in the namelist           
     !&E              Le deplacement sous l'action du courant est calcule avec 
     !&E              un schema de Runge-Kutta 2
     !&E
@@ -520,7 +525,7 @@ MODULE traject3d
     !&E
     !&E---------------------------------------------------------------------
     !! * Modules used
-    USE comtraj,            ONLY : valmanq, type_position
+    USE comtraj,            ONLY : valmanq, type_position, hdiff
     USE module_lagrangian ! on_r,om_r
     USE trajectools,        ONLY: uint,vint,define_pos
 #ifdef MPI
@@ -543,7 +548,7 @@ MODULE traject3d
     ! For randow movement
     REAL(KIND=rsh)                           :: a,b,tir1,tir2
 
-    REAL(KIND=rsh)                           :: dkx,disp
+    REAL(KIND=rsh)                           :: dkx
     REAL(KIND=rsh)                           :: dmaill,tetha
 
     TYPE(type_position)                      :: pos0,pos1,posint
@@ -551,7 +556,6 @@ MODULE traject3d
     !!----------------------------------------------------------------------
     !! * Executable part
     dmaill = 0.01_rsh ! plus eleve plus jump en z, car advecte le long des sigmas, martin
-    disp   = 5.0_rsh
     pos0   = pos
 
     !interpolate current components on particle position
@@ -570,11 +574,11 @@ MODULE traject3d
     CALL define_pos(pos1)
 
     ! add random dispersion 
-    IF (disp /= 0.0_rsh) then
+    IF (hdiff /= 0.0_rsh) then
         call random_number(tir1)
         tetha = 2.0_rsh*pi*tir1
         call random_number(tir2)
-        dkx  = sqrt(2.0_rsh*disp*deltat*3.0_rsh)*tir2
+        dkx  = sqrt(2.0_rsh*hdiff*deltat*3.0_rsh)*tir2
         IF (0.5_rsh*(ux0+uxp) /= 0.0_rsh .and. 0.5_rsh*(uy0+uyp) /= 0.0_rsh) THEN
             pos1%xp = pos1%xp + dkx*cos(tetha)/om_r(nint(pos1%idx_r),nint(pos1%idy_r))
             pos1%yp = pos1%yp + dkx*sin(tetha)/on_r(nint(pos1%idx_r),nint(pos1%idy_r))

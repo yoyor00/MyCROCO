@@ -116,7 +116,7 @@ MODULE ibm
     ! Import variables
     USE comtraj,        ONLY : iscreenlog
     USE comtraj,        ONLY : type_particle,type_patch,patches,file_trajec,                    &
-                               file_pathout,itypetraj,ndtz,ibm_restart
+                               dir_pathout,itypepatch,dtz,hdiff,ibm_restart
 #ifdef IBM_SPECIES
     USE comtraj,        ONLY : debuse,F_Fix,ffix,file_food,file_NBSS,frac_deb_death,            &
                                fileanchovy,filesardine,fileprobadistrib_anc,nbSizeClass_anc,    &
@@ -160,7 +160,8 @@ MODULE ibm
     INTEGER,        ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, ageClass_nc, num_nc 
 
     ! Definition of namelists in paraibm
-    NAMELIST/namibmin/      file_trajec,file_pathout,itypetraj,ndtz
+    NAMELIST/namibmin/      file_trajec,dir_pathout,itypepatch
+    NAMELIST/namibmdiff/    dtz,hdiff
     NAMELIST/namibmrestart/ ibm_restart,ibm_l_time
     NAMELIST/namibmbio/     w_max, alpha_w
 #ifdef IBM_SPECIES
@@ -181,6 +182,7 @@ MODULE ibm
     lstr = lenstr(debibmname)
     OPEN(50,file=debibmname(1:lstr),status='old',form='formatted',access='sequential')
     READ(50,namibmin)
+    READ(50,namibmdiff)
     READ(50,namibmrestart)
     READ(50,namibmbio)
 #ifdef IBM_SPECIES
@@ -389,7 +391,7 @@ MODULE ibm
     !&E                     ex_traj,ADD_ALL_MPI_INT,ADD_ALL_MPI_REAL,init_mpi_type_particle
     !&E                     ibm_loc_xyz,ibm_buoy,ibm_traint,ibm_proftraint,selec_dome_or_asymp,tool_julien
     !&E                     ibm_nycth_mig,death_by_fishing,eggs_grid,ibm_parameter_init,fish_move,deb_egg_init
-    !&E                     deb_cycle,readtemp3d(unused anymore),readfood3d
+    !&E                     deb_cycle,readfood3d
     !&E
     !&E ** Reference      : Menu et al. (2023), Bueno-Pardo et al. (2020), Gatti et al. (2017), Huret et al. (2010), 
     !&E                     Boussouar et al. (2001), , Regner (1996), Zweifel&Lasker (1976), Rose el al. (2015)
@@ -425,11 +427,11 @@ MODULE ibm
     USE ibmtools,     ONLY : ibm_parameter_init
     USE ibmmove,      ONLY : fish_move
     USE debmodel,     ONLY : deb_egg_init, deb_cycle
-    USE debmodel,     ONLY : readtemp3d,readfood3d
+    USE debmodel,     ONLY : readfood3d
 #endif /* IBM_SPECIES */
     USE comtraj,      ONLY : type_particle, type_patch, patches, patch_list_append, resize_patch
 #ifdef IBM_SPECIES
-    USE comtraj,      ONLY : file_pathout
+    USE comtraj,      ONLY : dir_pathout
     USE comtraj,      ONLY : jjulien, struc_ad, struc_ad_dd_DEB
     USE comtraj,      ONLY : debuse, F_Fix
     USE comtraj,      ONLY : number_tot, weight_tot, biom_tot, Wdeb_mean
@@ -524,7 +526,6 @@ MODULE ibm
     IF ( debuse .AND. .NOT. F_Fix ) THEN
         CALL readfood3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
         first_timestep_ibm = .false.
-        !CALL readtemp3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
     ENDIF
 #endif /* IBM_SPECIES */
 
@@ -1035,12 +1036,12 @@ MODULE ibm
                     IF (ind == 1) THEN
                         child_patch%init_particle = init_anchovy_egg
                         WRITE( fileout_suffix, '("_",i0,".nc")' ) current_year  ! child_patch % generation
-                        child_patch%file_out      = trim(file_pathout) // "anchovy" // fileout_suffix
+                        child_patch%file_out      = trim(dir_pathout) // "anchovy" // fileout_suffix
                         child_patch%species       = "anchovy"    ! Initialize species of the patch
                     ELSE IF (ind == 2) THEN
                         child_patch%init_particle = init_sardine_egg
                         WRITE( fileout_suffix, '("_",i0,".nc")' ) current_year  ! child_patch % generation
-                        child_patch%file_out      = trim(file_pathout) // "sardine" // fileout_suffix
+                        child_patch%file_out      = trim(dir_pathout) // "sardine" // fileout_suffix
                         child_patch%species       = "sardine"    ! Initialize species of the patch
                     ENDIF
 
