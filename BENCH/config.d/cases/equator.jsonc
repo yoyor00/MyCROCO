@@ -3,6 +3,10 @@
   "EQUATOR": {
     "title": "EQUATOR - (40 x 32 x 32 : 3600)",
     "case": "EQUATOR",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_equator.py",
+      "plotphy_script_input": "equator_his.nc",
+    },
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
     "patches": {},
     "check_outputs": ["equator_his.nc"],

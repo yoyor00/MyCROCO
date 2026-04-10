@@ -6,7 +6,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- STOGEN : add stochastic parametrizations (Issue #301)
+
 - BENCH : Add performance tracking (Issue #378 and #423)
+- BENCH : Add missing plot scripts for test cases (#379)
 
 - STATION : Add TEMPERATURE cppkey for stations (#445)
 
@@ -125,4 +128,5 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
 
 - New contributors : 
-  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon
+  J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
+  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon 

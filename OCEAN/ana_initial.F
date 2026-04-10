@@ -587,7 +587,7 @@
           enddo
         enddo
 #    endif /* TEMPERATURE */
-#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+#   elif defined SINGLE_COLUMN && defined KATO_PHILLIPS
 #    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE

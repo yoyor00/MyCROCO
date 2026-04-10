@@ -27,4 +27,3 @@
       real Duon(GLOBAL_2D_ARRAY)
       real DVom(GLOBAL_2D_ARRAY)
 #endif
-

@@ -106,6 +106,9 @@
 # undef  SEDIMENT
 # undef  MUSTANG
 # undef  BBL
+                      /* Stochastic and Ensemble */
+# undef STOGEN
+# undef ENSEMBLE
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
@@ -447,7 +450,7 @@
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
-# define FILLVAL
+# undef  FILLVAL
                       /* Calendar */
 
 # define USE_CALENDAR
@@ -633,6 +636,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+# undef  STOGEN
 
 #elif defined CANYON
 /*
@@ -737,7 +741,7 @@
 !                              Seven  sets up are encompassed :
 */
 /* erosion of linear strat by constant wind stress */
-# define KATO_PHILIPS
+# define KATO_PHILLIPS
 /* erosion of linear strat by constant surf buoyancy loss */
 # undef  WILLIS_DEARDORFF
 /* erosion of linear strat by constant surf buoyancy loss */

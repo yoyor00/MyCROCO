@@ -4,7 +4,7 @@
     "title": "BENGUELA_LR_TIDES_BULK",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -20,7 +20,7 @@
     "title": "BENGUELA_LR_BULK",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -36,7 +36,7 @@
     "title": "BENGUELA_LR_BULKONLINE",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -54,7 +54,7 @@
     "title": "BENGUELA_LR_CFB",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -71,7 +71,7 @@
     "title": "BENGUELA_LR_CFBBULK",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -88,7 +88,7 @@
     "title": "BENGUELA_LR_CFBBULKONLINE",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -107,7 +107,7 @@
     "title": "BENGUELA_LR_CFBBULKONLINERUNOFF",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -289,7 +289,7 @@
   // "BENGUELA_VHR_TIDES_BULK": {
   //   "title": "BENGUELA_VHR_TIDES_BULK",
   //   "case": "REGIONAL",
-  //   "plotphy" : { "plotphy_script": "./TEST_CASES/plot_regional.py",
+  //   "plotphy" : { "plotphy_script": "./TEST_CASES/plot_realist.py",
   //   "croco_files_path": "VHR_CROCO_FILES_BCK",
   //   "splitting": {
   //     "1": "1x1",

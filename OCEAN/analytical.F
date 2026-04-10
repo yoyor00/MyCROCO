@@ -130,7 +130,7 @@
         do j=JstrR,JendR
           do i=IstrR,IendR
 #   if defined SINGLE_COLUMN
-#    ifdef KATO_PHILIPS
+#    ifdef KATO_PHILLIPS
             btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
 #    elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
             btflx(i,j,itemp)=-1.0e-5*0.01
@@ -345,6 +345,11 @@ C$    integer  trd, omp_get_thread_num
 # ifdef AGRIF
       use Agrif_UTIL
 # endif
+#ifdef STOGEN
+      USE stostress         ! Stochastic parameterization of bulk formulation
+      USE stoarray          ! Stochastic arrays and options
+      USE stoalloc          ! Stochastic working arrays
+#endif
       implicit none
 # include "param.h"
 # include "ocean2d.h"
@@ -375,7 +380,20 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
         enddo
       enddo
-# elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+#  ifdef STOGEN
+      if (ln_stogen .and. ln_stostress) then
+!       apply additive noise to wind stress
+!       First construct a structure fonction for the noise ...
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sto_stress_factor(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
+          enddo
+        enddo
+!       ... then apply noise
+        call sto_stress( sustr, sto_stress_factor )
+      endif
+#  endif
+# elif defined SINGLE_COLUMN && defined KATO_PHILLIPS
       do j=JstrR,JendR
         do i=IstrR,IendR
           sustr(i,j)=(0.01)**2
@@ -438,7 +456,7 @@ C$    integer  trd, omp_get_thread_num
 #  elif defined SED_TOY_FLOC_1D
       cff1=0.001875 * sin(2. * pi / (12.0*3600) * time)
 #  else
-#   if defined SED_TOY_RESUSP || defined SED_TOY_FLOC
+#   if defined SED_TOY_RESUSP
       if (tdays.lt.1.8) then
         cff1=0.001
       else if ((tdays.ge.3).and.(tdays.le.4.)) then

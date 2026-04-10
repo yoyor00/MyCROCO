@@ -83,7 +83,7 @@
    f_ero_frac = 0.3   
    f_ero_nbfrag = 2.0    
    f_ero_iv = 4    
-   f_mneg_param = 0.00 
+   f_mneg_param = 0.001 
    f_dmin_frag = 0.00001  
    f_cfcst = 0.2   
    f_fp = 0.1     

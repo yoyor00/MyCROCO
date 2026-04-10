@@ -5,6 +5,10 @@
     "case": "TANK",
     "splitting": { "1": "1x1", "2": "2x1" },
     "patches": {},
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_tank.py",
+      "plotphy_script_input": "tank_his.nc",
+    },
     "check_outputs": ["tank_his.nc"],
     "unsupported": ["openmp"],
   },

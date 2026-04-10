@@ -92,7 +92,8 @@
           enddo
         enddo
       enddo
-# elif defined SED_TOY &&(defined SED_TOY_ROUSE || defined SED_TOY_FLOC)
+# elif defined SED_TOY && (defined SED_TOY_ROUSE \
+      || defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D)
       do k=1,N-1
         do j=Jstr,Jend
           do i=Istr,Iend

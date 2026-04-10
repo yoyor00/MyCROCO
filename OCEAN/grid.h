@@ -100,8 +100,13 @@
 #endif
 
 #ifdef SPHERICAL
+# ifdef STOGEN
+      real, TARGET :: latr(GLOBAL_2D_ARRAY)
+      real, TARGET :: lonr(GLOBAL_2D_ARRAY)
+# else
       real latr(GLOBAL_2D_ARRAY)
       real lonr(GLOBAL_2D_ARRAY)
+# endif
       real latu(GLOBAL_2D_ARRAY)
       real lonu(GLOBAL_2D_ARRAY)
       real latv(GLOBAL_2D_ARRAY)
@@ -111,10 +116,15 @@
       common /grid_latu/latu /grid_lonu/lonu
       common /grid_latv/latv /grid_lonv/lonv
 #else
-      real xp(GLOBAL_2D_ARRAY)
+# ifdef STOGEN
+      real, TARGET :: xr(GLOBAL_2D_ARRAY)
+      real, TARGET :: yr(GLOBAL_2D_ARRAY)
+# else
       real xr(GLOBAL_2D_ARRAY)
-      real yp(GLOBAL_2D_ARRAY)
       real yr(GLOBAL_2D_ARRAY)
+# endif
+      real xp(GLOBAL_2D_ARRAY)
+      real yp(GLOBAL_2D_ARRAY)
       common /grid_xr/xr /grid_xp/xp /grid_yp/yp /grid_yr/yr
 #endif
 
@@ -159,10 +169,16 @@
       common /metrics_grdscl/grdscl
 
 #ifdef MASKING
+# ifdef STOGEN
+      real, TARGET :: rmask(GLOBAL_2D_ARRAY)
+      real, TARGET :: umask(GLOBAL_2D_ARRAY)
+      real, TARGET :: vmask(GLOBAL_2D_ARRAY)
+# else
       real rmask(GLOBAL_2D_ARRAY)
-      real pmask(GLOBAL_2D_ARRAY)
       real umask(GLOBAL_2D_ARRAY)
       real vmask(GLOBAL_2D_ARRAY)
+# endif
+      real pmask(GLOBAL_2D_ARRAY)
       real pmask2(GLOBAL_2D_ARRAY)
       common /mask_r/rmask
       common /mask_p/pmask

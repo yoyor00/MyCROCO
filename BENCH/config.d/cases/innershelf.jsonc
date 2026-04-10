@@ -3,8 +3,12 @@
   "INNERSHELF": {
     "title": "INNERSHELF - (200 x 3 x 60 : 5760)",
     "case": "INNERSHELF",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_innershelf.py",
+      "plotphy_script_input": "innershelf_avg.nc",
+    },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "patches": {},
-    "check_outputs": ["inner_his.nc"],
+    "check_outputs": ["innershelf_his.nc"],
   },
 }

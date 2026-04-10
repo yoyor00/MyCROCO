@@ -31,6 +31,10 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
+# ifdef STOGEN
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -685,6 +689,11 @@
           aer(i,j)  = rhoAir*delW(1)
           Cd        = (Wstar(1)/ddelW(1))**2
           cer(i,j)  = Cd
+#  ifdef STOGEN
+          if (ln_stogen .and. ln_stobulk) then
+            cer(i,j)  = cer(i,j) * sto_bulk_cd(i,j)
+          endif
+#  endif
 #  ifdef CFB_STRESS
           stau(i,j) = cfb_slope * delW(1) + cfb_offset
 #  endif
