@@ -31,9 +31,9 @@
     !! * Modules used
     USE comMUSTANG
     USE comsubstance
-    USE module_substance
+   USE module_substance   ! provides Uwave, Dwave, Pwave when WAVE_OFFLINE
 # if defined key_MUSTANG_flocmod
-    USE flocmod, ONLY : f_ws
+   USE flocmod, ONLY: f_ws
 #endif
     IMPLICIT NONE
 
@@ -57,7 +57,6 @@
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
     PUBLIC sed_exchange_corflu
 #endif
-
 
 PRIVATE
 
@@ -276,16 +275,25 @@ END SUBROUTINE sed_gradvit
 
 
 SUBROUTINE sed_skinstress(ifirst, ilast, jfirst, jlast)
-! Compute bottom skin-friction stress (tauskin, ustarbot)
-! from combined wave and current interaction (Soulsby 1995).
-! Called by : MUSTANG_update
-!
-! l_tauskin_center : compute tauskin_c at rho point directly
-! l_tauskin_ubar   : use depth-averaged velocity instead of u(k=1)
-! l_tauskin_upwind : use upwind interpolation for tauskin_x/y
-# ifdef WAVE_OFFLINE
-    USE module_substance, ONLY : Uwave, Dwave, Pwave
-# endif
+!&E--------------------------------------------------------------------------
+!&E                 ***  ROUTINE sed_skinstress  ***
+!&E
+!&E ** Purpose : compute bottom skin-friction stress (tauskin, ustarbot)
+!&E              from combined wave and current interaction (Soulsby 1995).
+!&E
+!&E ** Description :
+!&E   Available options (set via logical flags in comMUSTANG) :
+!&E   - l_tauskin_ubar   : use depth-averaged velocity (ubar) instead of u(k=1)
+!&E   - l_tauskin_center : compute tauskin_c directly at rho point
+!&E   - l_tauskin_upwind : use upwind interpolation for tauskin_x/y
+!&E   - BBL              : tauskin from wave-current stress (bustrw/bvstrw);
+!&E                        d50 is constant (160 microns) — see bbl.F;
+!&E                        l_tauskin_* flags do not apply in this branch.
+!&E   - WAVE_OFFLINE     : add wave contribution via Soulsby (1995) formula
+!&E
+!&E ** Called by : MUSTANG_update
+!&E
+!&E--------------------------------------------------------------------------
 #  ifdef BBL
 #  include "bbl.h"
 #  endif
@@ -298,9 +306,9 @@ REAL(KIND=rsh), DIMENSION(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1) :: ux, vx
 REAL(KIND=rsh) :: z0_factor
 
 !--- Bottom cell height, clipped to z0sed + margin -----------------------
-Zr = compute_zr(z_r(ifirst-1:ilast+1, jfirst-1:jlast+1, 1),  &
-                z_w(ifirst-1:ilast+1, jfirst-1:jlast+1, 0),  &
-                z0sed(ifirst-1:ilast+1, jfirst-1:jlast+1))
+    Zr = compute_zr(z_r(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1), &
+                    z_w(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 0), &
+                    z0sed(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1))
 
 #ifdef BBL
 !--- BBL branch : tauskin from wave-current bottom stress ----------------
@@ -313,100 +321,100 @@ CALL compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
 #  endif
     tauskin, tauskin_c, &
     tauskin_x, tauskin_y)
-#else
+#else /* else BBL */
 !--- Select velocity field and log-argument numerator --------------------
 !    ubar / full depth if l_tauskin_ubar
 !    u(k=1) / bottom cell height otherwise
-IF (l_tauskin_ubar) THEN
-  ux        = ubar(ifirst-1:ilast+1, jfirst-1:jlast+1, nnew)
-  vx        = vbar(ifirst-1:ilast+1, jfirst-1:jlast+1, nnew)
-  Zref      = z_w(ifirst-1:ilast+1, jfirst-1:jlast+1, N) &
-            - z_w(ifirst-1:ilast+1, jfirst-1:jlast+1, 0) ! full water column
-  z0_factor = 2.718_rsh ! Euler number — log-layer correction
-ELSE
-  ux        = u(ifirst-1:ilast+1, jfirst-1:jlast+1, 1, nnew)
-  vx        = v(ifirst-1:ilast+1, jfirst-1:jlast+1, 1, nnew)
-  Zref      = Zr ! bottom cell height
-  z0_factor = 1.0_rsh
-ENDIF
+    IF (l_tauskin_ubar) THEN
+        ux = ubar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, nnew)
+        vx = vbar(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, nnew)
+        Zref = z_w(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, N) &
+                - z_w(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 0) ! full water column
+        z0_factor = 2.718_rsh ! Euler number — log-layer correction
+    ELSE
+        ux = u(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1, nnew)
+        vx = v(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1, nnew)
+        Zref = Zr ! bottom cell height
+        z0_factor = 1.0_rsh
+    END IF
 
 !--- Log-law skin friction ------------------------------------------------
-IF (l_tauskin_center) THEN
-  CALL compute_tauskin_c_center(ifirst, ilast, jfirst, jlast,             &
-       ux(ifirst-1:ilast+1, jfirst-1:jlast+1),                            &
-       vx(ifirst-1:ilast+1, jfirst-1:jlast+1), Zref,                      &
-       z0sed  (ifirst-1:ilast+1, jfirst-1:jlast+1),                       &
-       z0_factor,                                                         &
-       rho    (ifirst-1:ilast+1, jfirst-1:jlast+1, :),                    &
-       rho0,                                                              &
-       tauskin_c(ifirst-1:ilast+1, jfirst-1:jlast+1),                     &
-       tauskin_x(ifirst-1:ilast+1, jfirst-1:jlast+1),                     &
-       tauskin_y(ifirst-1:ilast+1, jfirst-1:jlast+1))
-ELSE
-  CALL compute_ustar2_uv(ifirst, ilast, jfirst, jlast,                    &
-       ux(ifirst-1:ilast+1, jfirst-1:jlast+1),                            &
-       vx(ifirst-1:ilast+1, jfirst-1:jlast+1), Zref,                      &
-       z0sed    (ifirst-1:ilast+1, jfirst-1:jlast+1),                     &
-       z0_factor,                                                         &
-       ustar2_u(ifirst-1:ilast+1, jfirst-1:jlast+1),                      &
-       ustar2_v(ifirst-1:ilast+1, jfirst-1:jlast+1),                      &
-       raphbx   (ifirst-1:ilast+1, jfirst-1:jlast+1),                     &
-       raphby   (ifirst-1:ilast+1, jfirst-1:jlast+1))
+    IF (l_tauskin_center) THEN
+        CALL compute_tauskin_c_center(ifirst, ilast, jfirst, jlast, &
+            ux(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            vx(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), Zref, &
+            z0sed(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            z0_factor, &
+            rho(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1), &
+            rho0, &
+            tauskin_c(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            tauskin_x(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            tauskin_y(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1))
+    ELSE
+        CALL compute_ustar2_uv(ifirst, ilast, jfirst, jlast, &
+            ux(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            vx(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), Zref, &
+            z0sed(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            z0_factor, &
+            ustar2_u(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            ustar2_v(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            raphbx(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            raphby(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1))
 
-  CALL interpolate_tauskin_c(ifirst, ilast, jfirst, jlast,                &
-       l_tauskin_upwind,                                                  &
-       ustar2_u(ifirst-1:ilast+1, jfirst-1:jlast+1),                      &
-       ustar2_v(ifirst-1:ilast+1, jfirst-1:jlast+1),                      &
-       raphbx   (ifirst-1:ilast+1, jfirst-1:jlast+1),                     &
-       raphby   (ifirst-1:ilast+1, jfirst-1:jlast+1),                     &
-       rho      (ifirst-1:ilast+1, jfirst-1:jlast+1, :),                  &
-       rho0,                                                              &
-       tauskin_x(ifirst-1:ilast+1, jfirst-1:jlast+1),                     &
-       tauskin_y(ifirst-1:ilast+1, jfirst-1:jlast+1),                     &
-       tauskin_c(ifirst-1:ilast+1, jfirst-1:jlast+1))
-ENDIF
+        CALL interpolate_tauskin_c(ifirst, ilast, jfirst, jlast, &
+            l_tauskin_upwind, &
+            ustar2_u(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            ustar2_v(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            raphbx(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            raphby(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            rho(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1), &
+            rho0, &
+            tauskin_x(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            tauskin_y(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+            tauskin_c(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1))
+    END IF
 
 !--- Wave + current combination (Soulsby 1995) ----------------------------
 #  ifdef WAVE_OFFLINE
-CALL combine_wave_current(ifirst, ilast, jfirst, jlast,               &
-     tauskin_c(ifirst:ilast, jfirst:jlast),                           &
-     Uwave(ifirst:ilast, jfirst:jlast),                               &
-     Dwave(ifirst:ilast, jfirst:jlast),                               &
-     Pwave(ifirst:ilast, jfirst:jlast),                               &
-     ubar(ifirst:ilast, jfirst:jlast, nnew),                          &
-     vbar(ifirst:ilast, jfirst:jlast, nnew),                          &
-     z0sed(ifirst:ilast, jfirst:jlast),                               &
-     rho(ifirst:ilast, jfirst:jlast, 1),                              &
-     rho0, l_fricwave, fws2, tauskin(ifirst:ilast, jfirst:jlast),     &
-     tauskin_w(ifirst:ilast, jfirst:jlast))
+    CALL combine_wave_current(ifirst, ilast, jfirst, jlast, &
+        tauskin_c(ifirst:ilast, jfirst:jlast), &
+        Uwave(ifirst:ilast, jfirst:jlast), &
+        Dwave(ifirst:ilast, jfirst:jlast), &
+        Pwave(ifirst:ilast, jfirst:jlast), &
+        ubar(ifirst:ilast, jfirst:jlast, nnew), &
+        vbar(ifirst:ilast, jfirst:jlast, nnew), &
+        z0sed(ifirst:ilast, jfirst:jlast), &
+        rho(ifirst:ilast, jfirst:jlast, 1), &
+        rho0, l_fricwave, fws2, tauskin(ifirst:ilast, jfirst:jlast), &
+        tauskin_w(ifirst:ilast, jfirst:jlast))
 #  else
-tauskin(ifirst:ilast, jfirst:jlast) = tauskin_c(ifirst:ilast, jfirst:jlast)
+    tauskin(ifirst:ilast, jfirst:jlast) = tauskin_c(ifirst:ilast, jfirst:jlast)
 #  endif
 
 #  if defined WET_DRY && defined MASKING
-tauskin(ifirst:ilast, jfirst:jlast) = tauskin(ifirst:ilast, jfirst:jlast)* &
+    tauskin(ifirst:ilast, jfirst:jlast) = tauskin(ifirst:ilast, jfirst:jlast)* &
                                       rmask_wet(ifirst:ilast, jfirst:jlast)
 #  endif
 
-#endif  /* BBL */
+#endif  /* else BBL */
 
-!--- Bottom friction velocity ---------------------------------------------
-WHERE (htot(ifirst:ilast, jfirst:jlast) > h0fond)
-ustarbot(ifirst:ilast, jfirst:jlast) = &
-  SQRT(MAX(0.0_rsh, tauskin(ifirst:ilast, jfirst:jlast))/rho0)
-ELSEWHERE
-ustarbot(ifirst:ilast, jfirst:jlast) = 0.0_rsh
-END WHERE
+    !--- Bottom friction velocity ---------------------------------------------
+    WHERE (htot(ifirst:ilast, jfirst:jlast) > h0fond)
+        ustarbot(ifirst:ilast, jfirst:jlast) = &
+            SQRT(MAX(0.0_rsh, tauskin(ifirst:ilast, jfirst:jlast))/rho0)
+    ELSEWHERE
+        ustarbot(ifirst:ilast, jfirst:jlast) = 0.0_rsh
+    END WHERE
 
 END SUBROUTINE sed_skinstress
 
-
 ELEMENTAL PURE FUNCTION compute_zr(z_r1, z_w0, z0sed) RESULT(Zr)
-! Bottom cell height clipped to z0sed + z0_margin to prevent log(0).
+! Bottom cell height, clipped to at least z0sed + z0_margin to prevent log(0).
+! Result = MAX(z_r1 - z_w0, z0sed + z0_margin)
 REAL(KIND=rsh), INTENT(IN) :: z_r1, z_w0, z0sed
 REAL(KIND=rsh)             :: Zr
 REAL(KIND=rsh), PARAMETER  :: z0_margin = 1.0e-4_rsh
-Zr = MAX(z_r1 - z_w0 - z0sed, z0_margin) + z0sed
+      Zr = MAX(z_r1 - z_w0, z0sed + z0_margin)
 END FUNCTION compute_zr
 
 ELEMENTAL PURE FUNCTION log_law_drag(numerator, log_arg) RESULT(ustar2)
@@ -416,7 +424,7 @@ ELEMENTAL PURE FUNCTION log_law_drag(numerator, log_arg) RESULT(ustar2)
 REAL(KIND=rsh), INTENT(IN) :: numerator   ! speed*u_component or speed^2
 REAL(KIND=rsh), INTENT(IN) :: log_arg     ! Z/z0, must be > 0
 REAL(KIND=rsh)             :: ustar2
-ustar2 = 0.16_rsh*LOG(log_arg)**(-2)*numerator
+    ustar2 = 0.16_rsh*LOG(log_arg)**(-2)*numerator
 END FUNCTION log_law_drag
 
 ELEMENTAL PURE FUNCTION upwind_interp(f_i, f_ip1) RESULT(res)
@@ -426,12 +434,12 @@ ELEMENTAL PURE FUNCTION upwind_interp(f_i, f_ip1) RESULT(res)
 !   otherwise              : take average
 REAL(KIND=rsh), INTENT(IN) :: f_i, f_ip1
 REAL(KIND=rsh)             :: res, cff1, cff2, cff3, cff4
-cff1 = 0.5_rsh*(1.0_rsh + SIGN(1.0_rsh, f_ip1))
-cff2 = 0.5_rsh*(1.0_rsh - SIGN(1.0_rsh, f_ip1))
-cff3 = 0.5_rsh*(1.0_rsh + SIGN(1.0_rsh, f_i))
-cff4 = 0.5_rsh*(1.0_rsh - SIGN(1.0_rsh, f_i))
-res = cff3*(cff1*f_i + cff2*0.5_rsh*(f_i + f_ip1)) &
-+ cff4*(cff2*f_ip1 + cff1*0.5_rsh*(f_i + f_ip1))
+    cff1 = 0.5_rsh*(1.0_rsh + SIGN(1.0_rsh, f_ip1))
+    cff2 = 0.5_rsh*(1.0_rsh - SIGN(1.0_rsh, f_ip1))
+    cff3 = 0.5_rsh*(1.0_rsh + SIGN(1.0_rsh, f_i))
+    cff4 = 0.5_rsh*(1.0_rsh - SIGN(1.0_rsh, f_i))
+    res = cff3*(cff1*f_i + cff2*0.5_rsh*(f_i + f_ip1)) &
+        + cff4*(cff2*f_ip1 + cff1*0.5_rsh*(f_i + f_ip1))
 END FUNCTION upwind_interp
 
 ELEMENTAL PURE FUNCTION weighted_avg(f_i, f_ip1, w_i, w_ip1) RESULT(res)
@@ -440,7 +448,7 @@ ELEMENTAL PURE FUNCTION weighted_avg(f_i, f_ip1, w_i, w_ip1) RESULT(res)
 ! eps guard prevents division by zero when both velocities vanish.
 REAL(KIND=rsh), INTENT(IN) :: f_i, f_ip1, w_i, w_ip1
 REAL(KIND=rsh)             :: res
-res = (f_i*w_i + f_ip1*w_ip1)/(w_i + w_ip1 + epsilon_MUSTANG)
+    res = (f_i*w_i + f_ip1*w_ip1)/(w_i + w_ip1 + epsilon_MUSTANG)
 END FUNCTION weighted_avg
 
 #ifdef WAVE_OFFLINE
@@ -455,14 +463,14 @@ LOGICAL, INTENT(IN) :: l_fricwave
 REAL(KIND=rsh)             :: fws2ij
 REAL(KIND=rsh), PARAMETER  :: uwave_min = 0.001_rsh
 REAL(KIND=rsh), PARAMETER  :: pwave_min = 0.001_rsh
-fws2ij = fws2_default
-IF (l_fricwave .AND. &
-Uwave*Pwave > 0.0_rsh .AND. &
-Pwave > pwave_min .AND. &
-Uwave > uwave_min) THEN
-fws2ij = 0.5_rsh*1.39_rsh &
-*(Uwave*Pwave/REAL(2.0_rlg*pi*z0sed, rsh))**(-0.52_rsh)
-END IF
+    fws2ij = fws2_default
+    IF (l_fricwave .AND. &
+        Uwave*Pwave > 0.0_rsh .AND. &
+        Pwave > pwave_min .AND. &
+        Uwave > uwave_min) THEN
+        fws2ij = 0.5_rsh*1.39_rsh &
+        *(Uwave*Pwave/REAL(2.0_rlg*pi*z0sed, rsh))**(-0.52_rsh)
+    END IF
 END FUNCTION compute_fws2
 
 ELEMENTAL PURE FUNCTION compute_tauskin_wc(tauskin_c, tauskin_w, &
@@ -476,19 +484,17 @@ REAL(KIND=rsh), INTENT(IN) :: tauskin_c, tauskin_w
 REAL(KIND=rsh), INTENT(IN) :: ubar, vbar, Dwave
 REAL(KIND=rsh)             :: tauskin
 REAL(KIND=rsh)             :: speedbar, tauskin_cw, alpha, beta
-speedbar = SQRT(ubar**2 + vbar**2)
-IF (tauskin_c > 0.0_rsh .AND. &
-tauskin_w > 0.0_rsh .AND. &
-speedbar > 0.0_rsh) THEN
-tauskin_cw = tauskin_c*(1.0_rsh + 1.2_rsh &
-      *(tauskin_w/(tauskin_w + tauskin_c))**3.2_rsh)
-alpha = ACOS(vbar/speedbar)   ! current direction from north
-beta = Dwave                    ! wave direction from north
-tauskin = SQRT((tauskin_cw + tauskin_w*ABS(COS(alpha - beta)))**2 &
-+ (tauskin_w*ABS(SIN(alpha - beta)))**2)
-ELSE
-tauskin = tauskin_w + tauskin_c
-END IF
+    speedbar = SQRT(ubar**2 + vbar**2)
+    IF (tauskin_c > 0.0_rsh .AND. tauskin_w > 0.0_rsh .AND. speedbar > 0.0_rsh) THEN
+        tauskin_cw = tauskin_c*(1.0_rsh + 1.2_rsh &
+            *(tauskin_w/(tauskin_w + tauskin_c))**3.2_rsh)
+        alpha = ACOS(vbar/speedbar)   ! current direction from north
+        beta = Dwave           ! wave direction from north
+        tauskin = SQRT((tauskin_cw + tauskin_w*ABS(COS(alpha - beta)))**2 &
+            + (tauskin_w*ABS(SIN(alpha - beta)))**2)
+    ELSE
+        tauskin = tauskin_w + tauskin_c
+    END IF
 END FUNCTION compute_tauskin_wc
 #endif
 
@@ -523,30 +529,28 @@ REAL(KIND=rsh) :: speed_u, speed_v, z0_u, z0_v, Zref_u, Zref_v
 !--- u points : (ifirst:ilast+1, jfirst:jlast) ---------------------------
 DO j = jfirst, jlast
 DO i = ifirst, ilast + 1
-raphbx(i, j) = ABS(ux(i, j))/(ABS(ux(i, j)) + epsilon_MUSTANG)
-z0_u = 0.5_rsh*(z0sed(i - 1, j) + z0sed(i, j))
-Zref_u = 0.5_rsh*(Zref(i - 1, j) + Zref(i, j))
-speed_u = SQRT(0.0625_rsh*(vx(i, j) + vx(i, j + 1) + &
-         vx(i - 1, j) + vx(i - 1, j + 1))**2 &
-+ ux(i, j)**2)*ux(i, j)
-ustar2_u(i, j) = log_law_drag(speed_u, &
-            Zref_u/MAX(z0_u*z0_factor, &
-                       epsilon_MUSTANG))
+    raphbx(i, j) = ABS(ux(i, j))/(ABS(ux(i, j)) + epsilon_MUSTANG)
+    z0_u = 0.5_rsh*(z0sed(i - 1, j) + z0sed(i, j))
+    Zref_u = 0.5_rsh*(Zref(i - 1, j) + Zref(i, j))
+    speed_u = SQRT(0.0625_rsh*(vx(i, j) + vx(i, j + 1) + &
+        vx(i - 1, j) + vx(i - 1, j + 1))**2 &
+        + ux(i, j)**2)*ux(i, j)
+    ustar2_u(i, j) = log_law_drag(speed_u, &
+        Zref_u/MAX(z0_u*z0_factor, epsilon_MUSTANG))
 END DO
 END DO
 
 !--- v points : (ifirst:ilast, jfirst:jlast+1) ---------------------------
 DO j = jfirst, jlast + 1
 DO i = ifirst, ilast
-raphby(i, j) = ABS(vx(i, j))/(ABS(vx(i, j)) + epsilon_MUSTANG)
-z0_v = 0.5_rsh*(z0sed(i, j - 1) + z0sed(i, j))
-Zref_v = 0.5_rsh*(Zref(i, j - 1) + Zref(i, j))
-speed_v = SQRT(0.0625_rsh*(ux(i, j) + ux(i + 1, j) + &
-         ux(i, j - 1) + ux(i + 1, j - 1))**2 &
-+ vx(i, j)**2)*vx(i, j)
-ustar2_v(i, j) = log_law_drag(speed_v, &
-            Zref_v/MAX(z0_v*z0_factor, &
-                       epsilon_MUSTANG))
+    raphby(i, j) = ABS(vx(i, j))/(ABS(vx(i, j)) + epsilon_MUSTANG)
+    z0_v = 0.5_rsh*(z0sed(i, j - 1) + z0sed(i, j))
+    Zref_v = 0.5_rsh*(Zref(i, j - 1) + Zref(i, j))
+    speed_v = SQRT(0.0625_rsh*(ux(i, j) + ux(i + 1, j) + &
+        ux(i, j - 1) + ux(i + 1, j - 1))**2 &
+        + vx(i, j)**2)*vx(i, j)
+    ustar2_v(i, j) = log_law_drag(speed_v, &
+        Zref_v/MAX(z0_v*z0_factor, epsilon_MUSTANG))
 END DO
 END DO
 
@@ -570,7 +574,7 @@ REAL(KIND=rsh), INTENT(IN)  :: vx(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(IN)  :: Zref(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(IN)  :: z0sed(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(IN)  :: z0_factor
-REAL(KIND=rsh), INTENT(IN)  :: rho(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, N)
+REAL(KIND=rsh), INTENT(IN)  :: rho(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1) ! bottom layer only
 REAL(KIND=rsh), INTENT(IN)  :: rho0_val
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_c(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_x(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
@@ -581,16 +585,14 @@ REAL(KIND=rsh) :: urho, vrho, speed, rhotot
 
 DO j = jfirst, jlast
 DO i = ifirst, ilast
-urho = 0.5_rsh*(ux(i, j) + ux(i + 1, j))
-vrho = 0.5_rsh*(vx(i, j) + vx(i, j + 1))
-speed = SQRT(urho**2 + vrho**2)
-rhotot = rho(i, j, 1) + rho0_val
-tauskin_c(i, j) = log_law_drag(speed**2, &
-             Zref(i, j)/MAX(z0sed(i, j)*z0_factor, &
-                            epsilon_MUSTANG)) &
-*rhotot
-tauskin_x(i, j) = urho/(speed + epsilon_MUSTANG)*tauskin_c(i, j)
-tauskin_y(i, j) = vrho/(speed + epsilon_MUSTANG)*tauskin_c(i, j)
+    urho = 0.5_rsh*(ux(i, j) + ux(i + 1, j))
+    vrho = 0.5_rsh*(vx(i, j) + vx(i, j + 1))
+    speed = SQRT(urho**2 + vrho**2)
+    rhotot = rho(i, j) + rho0_val
+    tauskin_c(i, j) = log_law_drag(speed**2, &
+        Zref(i, j)/MAX(z0sed(i, j)*z0_factor, epsilon_MUSTANG)) *rhotot
+    tauskin_x(i, j) = urho/(speed + epsilon_MUSTANG)*tauskin_c(i, j)
+    tauskin_y(i, j) = vrho/(speed + epsilon_MUSTANG)*tauskin_c(i, j)
 END DO
 END DO
 
@@ -612,7 +614,7 @@ REAL(KIND=rsh), INTENT(IN)  :: ustar2_u(ifirst - 1:ilast + 1, jfirst - 1:jlast +
 REAL(KIND=rsh), INTENT(IN)  :: ustar2_v(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(IN)  :: raphbx(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(IN)  :: raphby(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
-REAL(KIND=rsh), INTENT(IN)  :: rho(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, N)
+      REAL(KIND=rsh), INTENT(IN)  :: rho(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1) ! bottom layer only
 REAL(KIND=rsh), INTENT(IN)  :: rho0_val
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_x(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_y(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
@@ -621,31 +623,31 @@ REAL(KIND=rsh), INTENT(OUT) :: tauskin_c(ifirst - 1:ilast + 1, jfirst - 1:jlast 
 INTEGER        :: i, j
 REAL(KIND=rsh) :: rhotot, tx, ty
 
-IF (l_upwind) THEN
-DO j = jfirst, jlast
-DO i = ifirst, ilast
-tx = upwind_interp(ustar2_u(i, j), ustar2_u(i + 1, j))
-ty = upwind_interp(ustar2_v(i, j), ustar2_v(i, j + 1))
-rhotot = rho(i, j, 1) + rho0_val
-tauskin_c(i, j) = SQRT(tx**2 + ty**2)*rhotot
-tauskin_x(i, j) = tx*rhotot
-tauskin_y(i, j) = ty*rhotot
-END DO
-END DO
-ELSE
-DO j = jfirst, jlast
-DO i = ifirst, ilast
-tx = weighted_avg(ustar2_u(i, j), ustar2_u(i + 1, j), &
-raphbx(i, j), raphbx(i + 1, j))
-ty = weighted_avg(ustar2_v(i, j), ustar2_v(i, j + 1), &
-raphby(i, j), raphby(i, j + 1))
-rhotot = rho(i, j, 1) + rho0_val
-tauskin_c(i, j) = SQRT(tx**2 + ty**2)*rhotot
-tauskin_x(i, j) = tx*rhotot
-tauskin_y(i, j) = ty*rhotot
-END DO
-END DO
-END IF
+    IF (l_upwind) THEN
+        DO j = jfirst, jlast
+        DO i = ifirst, ilast
+            tx = upwind_interp(ustar2_u(i, j), ustar2_u(i + 1, j))
+            ty = upwind_interp(ustar2_v(i, j), ustar2_v(i, j + 1))
+                rhotot = rho(i, j) + rho0_val
+            tauskin_c(i, j) = SQRT(tx**2 + ty**2)*rhotot
+            tauskin_x(i, j) = tx*rhotot
+            tauskin_y(i, j) = ty*rhotot
+        END DO
+        END DO
+    ELSE
+        DO j = jfirst, jlast
+        DO i = ifirst, ilast
+            tx = weighted_avg(ustar2_u(i, j), ustar2_u(i + 1, j), &
+            raphbx(i, j), raphbx(i + 1, j))
+            ty = weighted_avg(ustar2_v(i, j), ustar2_v(i, j + 1), &
+            raphby(i, j), raphby(i, j + 1))
+                rhotot = rho(i, j) + rho0_val
+            tauskin_c(i, j) = SQRT(tx**2 + ty**2)*rhotot
+            tauskin_x(i, j) = tx*rhotot
+            tauskin_y(i, j) = ty*rhotot
+        END DO
+        END DO
+    END IF
 
 END SUBROUTINE interpolate_tauskin_c
 
@@ -681,25 +683,25 @@ INTEGER        :: i, j
 REAL(KIND=rsh) :: urho, vrho, speed
 #endif
 
-tauskin = SQRT(bustrw**2 + bvstrw**2)*rho0_val
+    tauskin = SQRT(bustrw**2 + bvstrw**2)*rho0_val
 #if defined WET_DRY && defined MASKING
-tauskin = tauskin*rmask_wet
+    tauskin = tauskin*rmask_wet
 #endif
-tauskin_c = tauskin
+    tauskin_c = tauskin
 
 #ifdef key_MUSTANG_bedload
-DO j = jfirst, jlast
-DO i = ifirst, ilast
-urho = 0.5_rsh*(ux(i, j) + ux(i + 1, j))
-vrho = 0.5_rsh*(vx(i, j) + vx(i, j + 1))
-speed = SQRT(urho**2 + vrho**2)
-tauskin_x(i, j) = urho/(speed + epsilon_MUSTANG)*tauskin_c(i, j)
-tauskin_y(i, j) = vrho/(speed + epsilon_MUSTANG)*tauskin_c(i, j)
-END DO
-END DO
+    DO j = jfirst, jlast
+    DO i = ifirst, ilast
+        urho = 0.5_rsh*(ux(i, j) + ux(i + 1, j))
+        vrho = 0.5_rsh*(vx(i, j) + vx(i, j + 1))
+        speed = SQRT(urho**2 + vrho**2)
+        tauskin_x(i, j) = urho/(speed + epsilon_MUSTANG)*tauskin_c(i, j)
+        tauskin_y(i, j) = vrho/(speed + epsilon_MUSTANG)*tauskin_c(i, j)
+    END DO
+    END DO
 #else
-tauskin_x = 0.0_rsh
-tauskin_y = 0.0_rsh
+    tauskin_x = 0.0_rsh
+    tauskin_y = 0.0_rsh
 #endif
 
 END SUBROUTINE compute_tauskin_bbl
@@ -729,13 +731,13 @@ LOGICAL, INTENT(IN)  :: l_fricwave
 REAL(KIND=rsh), INTENT(OUT) :: tauskin(ifirst:ilast, jfirst:jlast)
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_w(ifirst:ilast, jfirst:jlast)
 
-! tauskin_w : vectorised over full domain
-tauskin_w = (rho + rho0_val)                                              &
-            * compute_fws2(Uwave, Pwave, z0sed, l_fricwave, fws2_default) &
-            * Uwave**2
+    ! tauskin_w : vectorised over full domain
+    tauskin_w = (rho + rho0_val)                                              &
+                * compute_fws2(Uwave, Pwave, z0sed, l_fricwave, fws2_default) &
+                * Uwave**2
 
-! tauskin : wave + current combination at each rho point
-tauskin = compute_tauskin_wc(tauskin_c, tauskin_w, ubar, vbar, Dwave)
+    ! tauskin : wave + current combination at each rho point
+    tauskin = compute_tauskin_wc(tauskin_c, tauskin_w, ubar, vbar, Dwave)   
 END SUBROUTINE combine_wave_current
 #endif
 
