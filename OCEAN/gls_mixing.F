@@ -97,6 +97,11 @@
       USE com_OBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
      &  obst_tau, obst_t, obst_c2turb
 #endif
+#ifdef STOGEN
+      USE stogls        ! Stochastic parameterization of gls formulation
+      USE stoarray      ! Stochastic arrays and options
+      USE stoalloc      ! Stochastic working arrays
+#endif
       IMPLICIT NONE
 # include "param.h"
 # include "mixing.h"
@@ -260,6 +265,7 @@
 #define RHINM1      RH3D(i,j,N-1)  
 
 #endif
+
 !
 !--------------------------------------------------------------------
 ! Compute extended bounds (necessary because of
@@ -635,11 +641,23 @@
      &                  obst_c2turb * gls * invk)
                   endif
 # endif
+
 # if defined TEMPERATURE || defined SALINITY
                   Bprod = -Akt_old(i,j,k)*( cff3m*MAX(bvf(i,j,k),0.)
      &                                   +  cff3p*MIN(bvf(i,j,k),0.) )
 # else
                   Bprod = 0.
+# endif
+
+# if defined STOGEN
+                  if (ln_stogen .and. ln_stogls) then
+                    IF (ln_Sprod) Sprod = Sprod * sto_gls_s2d(i,j)
+                    IF (ln_Bprod) Bprod = Bprod * sto_gls_b2d(i,j)
+                    IF (ln_zlevs) THEN
+                      Sprod = Sprod / ( sto_gls_z3d(i,j,k) * sto_gls_z3d(i,j,k) )
+                      Bprod = Bprod / sto_gls_z3d(i,j,k)
+                    ENDIF
+                  endif
 # endif
                   ! Patankar trick to ensure non-negative solutions
                   cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1)) 

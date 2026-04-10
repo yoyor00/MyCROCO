@@ -6,7 +6,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Added
 
+- STOGEN : add stochastic parametrizations (Issue #301)
+
 - BENCH : Add performance tracking (Issue #378 and #423)
+- BENCH : Add missing plot scripts for test cases (#379)
+
+- STATION : Add TEMPERATURE cppkey for stations (#445)
 
 ### Fixed
 
@@ -18,20 +23,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   restart inconsistencies with MORPHODYN, update testcase plot script 
   accordingly (#470)
 
-- AGRIF : Fix allocation of  message passing arrays (ibuf...) when 3 ghost points
-  needed (UP5, WENO)    (Issues #310 #458)
-
-- COUPLING : missing mpi_cpl.h in get_grid.F in case of variable Z0 (Z0B_VAR) (#466)
-
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
-- PSOURCE_NCFILE : make it usable with NO_TRACER (#459)
-
-- OCEAN : Fix unclosed parenthesis when TS_DIF4 is defined without DIF_COEF_3D (#482)
-
-- WET_DRY : add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
 
 ### Changed
 
@@ -58,20 +53,25 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
+- WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
+  and not in cppdefs_dev.h (#465)
+
 - BULK_FLUX : Update wasp bulk flux parametrization, 
   cppkey BULK_WASP (Issue #453)
-
-- BIOLOGY : Bug fix + add of PISCES diagnostics without XIOS (#474)
 
 - RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
   distribution of flow, enabling a transition from the AKIMA scheme to 
   SPLINES (#478)
 
+- OMEGA : Add a condition on the NBQ_MASS key for some terms of the first 
+  part of the computation of omega (#447)
+
+- BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
+
 ### Deprecated
 
 
 ### Removed
-
 
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
@@ -122,7 +122,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
   - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
     in cppdefs_dev.h (#403)
+  - remove hard coded keys in mpc.F (#404)
 
+- Support :
+  - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
 
 ### Contributors on this release
 
@@ -132,4 +135,5 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   J. Gula
 
 - New contributors : 
-  M. Plus, M. Schreiber, A. Zribi, E. Le Bouedec, B. Lemieux-Dudon
+  J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
+  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon 

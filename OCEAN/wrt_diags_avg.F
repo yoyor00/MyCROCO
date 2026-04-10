@@ -98,7 +98,11 @@
 ! Averaged diag Time
 !
       ierr=nf_put_var1_FTYPE (nciddia_avg, diaTime_avg, record,
-     &                                              timedia_avg)
+     &                                              timedia_avg
+# ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+# endif
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
         write(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
@@ -109,7 +113,11 @@
 ! Averaged diag Time
 !
       ierr=nf_put_var1_FTYPE (nciddia_avg, diaTime2_avg, record,
-     &                                              timedia_avg)
+     &                                              timedia_avg
+# ifdef USE_CALENDAR
+     &  - origin_date_in_sec
+# endif
+     & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))
         write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
@@ -246,8 +254,6 @@
            call fillvalue2d(work2d,nciddia_avg,diaTentr_mld_avg(itrc),
      &                      vname(1,indxTentr_mld+itrc-1),
      &                      record,r2dvar,type)
-
-
 !
 ! indxTaver_mld
 !
@@ -255,19 +261,15 @@
            call fillvalue2d(work2d,nciddia_avg,diaTaver_mld_avg(itrc),
      &                      vname(1,indxTaver_mld+itrc-1),
      &                      record,r2dvar,type)
-
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     & .or. itrc.eq.iCRT4) then
+#  if defined DIAGNOSTICS_TS_MLD_DENS 
 !
-! indxTcrit_mld
+!  indxTcrit_mld
 !
            work2d=Tcrit_mld_avg(:,:,itrc)
            call fillvalue2d(work2d,nciddia_avg,diaTcrit_mld_avg(itrc),
      &                      vname(1,indxTcrit_mld+itrc-1),
      &                      record,r2dvar,type)
-       endif
-# endif
+#  endif
         endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/

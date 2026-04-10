@@ -63,6 +63,11 @@
      &     obst_tau, obst_fuz, obst_fvz
 #endif
 
+#ifdef STOGEN
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
+#endif
+
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff
@@ -463,9 +468,15 @@ CR      write(*,*) 'wrt_his:  wrtWkx' MYID
 CR      write(*,*) 'wrt_his:  wrtWke' MYID
       endif
       if (wrthis(indxEPB)) then
+# if defined WAVE_ROLLER && defined WKB_WWAVE 
 !$acc update if(compute_on_device) host(wepb0(:,:))
         ierr=nf_fwrite (wepb0(START_2D_ARRAY), ncidhis,
      &                                   hisWAVE(6), record, r2dvar)
+# else
+!$acc update if(compute_on_device) host(wepb(:,:))
+            ierr=nf_fwrite (wepb(START_2D_ARRAY), ncidhis,
+     &                                   hisWAVE(6), record, r2dvar)
+# endif
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname(1,indxEPB))
          MPI_master_only write(stdout,1)
@@ -691,14 +702,35 @@ CR      write(*,*) 'wrt_his:  wrtU  ' MYID
 CR      write(*,*) 'wrt_his:  wrtV  ' MYID
       endif
 !
+!     STOGEN stochastic modeling components 
+!
+#ifdef STOGEN
+!- 2D stochastic field -
+      if (ln_stogen.AND.wrthis(indxXIsto2d)) then
+        work2d=sto_xi2d
+        ierr=nf_fwrite(work2d, ncidhis, hisXIsto2d, record, r2dvar)
+        if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxXIsto2d))
+          MPI_master_only write(stdout,1)
+     &        vname(1,indxXIsto2d)(1:lvar), record, ierr
+     &           MYID
+          goto 99             !--> ERROR
+        endif
+CR      write(stdout,*) 'wrt_his:  wrtstoXI2d' MYID
+      endif
+!- 3D stochastic field -
+      if (ln_stogen.AND.wrthis(indxXIsto3d)) then
+        workr=sto_xi3d
+        call fillvalue3d(workr,ncidhis,hisXIsto3d,indxXIsto3d,
+     &        record,r3dvar,type)
+CR      write(stdout,*) 'wrt_his:    wrtstoXI3d' MYID
+      endif
+#endif /* STOGEN */
+!
 !     Tracer variables.
 !
 # ifdef TRACERS
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
          if (wrthis(indxV+itrc)) then
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,itrc))
             workr=t(:,:,:,nstp,itrc)
@@ -720,9 +752,6 @@ CR      write(*,*) 'wrt_his:  wrtV  ' MYID
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 
       endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-      endif
-# endif
       enddo
 # endif /* TRACERS */
 !
@@ -1359,10 +1388,6 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
 !     Tracer variables.
 !
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
         if (wrthis(indxT+itrc-1)) then
           workr=t(:,:,:,nstp,itrc)
 # if defined MUSTANG
@@ -1384,9 +1409,6 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
      &                     vname(1,indxT+itrc-1),record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtT  ' MYID
         endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         endif
-# endif
       enddo
 
 !

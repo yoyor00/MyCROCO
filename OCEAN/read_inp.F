@@ -13,6 +13,13 @@
       subroutine read_inp (ierr)        ! parameters  from  startup
                                         ! script file using keywords
                                         ! to recognize variables.
+# ifdef STOGEN
+      use stoalloc                      ! do we output stochastic fields
+# endif
+# ifdef ENSEMBLE
+      use ensmpi , only : ln_ens_rst_in ! do we start from an ensemble of restart
+# endif
+
 !     implicit none
 
 #include "param.h"
@@ -122,7 +129,7 @@
       fname='TEST_CASES/croco.in.Sandbar'
 #elif defined THACKER
       fname='TEST_CASES/croco.in.Thacker'
-#elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+#elif defined SINGLE_COLUMN && defined KATO_PHILLIPS
       fname='TEST_CASES/croco.in.KATO_PHILLIPS'
 #elif defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
       fname='TEST_CASES/croco.in.WILLIS_DEARDORFF'
@@ -173,8 +180,10 @@
       fname='TEST_CASES/croco.in.Sed_toy_resusp'
 # elif defined SED_TOY_CONSOLID
       fname='TEST_CASES/croco.in.Sed_toy_consolid'
-# elif defined SED_TOY_FLOC
-      fname='TEST_CASES/croco.in.Sed_toy_floc'
+# elif defined SED_TOY_FLOC_0D
+      fname='TEST_CASES/croco.in.Sed_toy_floc_0d'
+# elif defined SED_TOY_FLOC_1D
+      fname='TEST_CASES/croco.in.Sed_toy_floc_1d'
 # elif defined SED_TOY_ROUSE
       fname='TEST_CASES/croco.in.Sed_toy_rouse'
 # endif
@@ -312,9 +321,6 @@
 !
 ! Read input parameters according to the keyword:
 ! ==== ===== ========== ========= == === ========
-!
-! Title
-!
       if (keyword(1:kwlen).eq.'title') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) title
@@ -323,7 +329,7 @@
 !
 ! LOGFILE file name. Check its availability and open it.
 !
-       elseif (keyword(1:kwlen).eq.'logfile') then
+      elseif (keyword(1:kwlen).eq.'logfile') then
          call cancel_kwd (keyword(1:kwlen), ierr)
          read(input,'(A)',err=95) fname
          lstr=lenstr(fname)
@@ -359,7 +365,6 @@
           endif
 # endif
 #endif /*LOGFILE*/
-        
 
 #ifdef USE_CALENDAR
 !
@@ -441,6 +446,7 @@
         read(input,*,err=95) theta_s, theta_b, Tcline
 
 #endif
+
 !
 ! Initial conditions file name. Check its availability (in the case
 ! of analytical initial conditions and nrrec=0 initial conditions are
@@ -456,6 +462,13 @@
           lstr=lenstr(fname)
 #if defined MPI && defined PARALLEL_FILES
           call insert_node (fname, lstr, mynode2, NNODES2, ierr)
+#endif
+#ifdef ENSEMBLE
+          if (ln_ens_rst_in.OR.(nrrec.lt.0)) then
+            nrrec = abs(nrrec)
+            fname=cmember//fname
+            lstr=lenstr(fname)
+          endif
 #endif
           open (testunit, file=fname(1:lstr), status='old', err=97)
           close(testunit)
@@ -667,6 +680,9 @@ c        close(testunit)
         nrst=ceiling((dt_rst*3600.)/dt)
 #endif
         rstname=fname(1:lstr)
+#ifdef ENSEMBLE
+        rstname=cmember//rstname
+#endif
 !
 ! History file name.
 !
@@ -682,6 +698,9 @@ c        close(testunit)
         nwrt=ceiling((dt_his*3600.)/dt)
 #endif
         hisname=fname(1:lstr)
+#ifdef ENSEMBLE
+        hisname=cmember//hisname
+#endif
 
 #ifdef AVERAGES
 !
@@ -699,6 +718,9 @@ c        close(testunit)
         navg=ceiling((dt_avg*3600.)/dt)
 # endif
         avgname=fname(1:lstr)
+#ifdef ENSEMBLE
+        avgname=cmember//avgname
+#endif
 
 #endif
 
@@ -715,6 +737,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         ablname=fname(1:lstr)
+#ifdef ENSEMBLE
+        ablname=cmember//ablname
+#endif
 
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'abl_averages') then
@@ -728,11 +753,19 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         ablname_avg=fname(1:lstr)
+#ifdef ENSEMBLE
+        ablname_avg=cmember//ablname_avg
+#endif
 
 # endif
 #endif /* ABL1D */
 
 #if defined DIAGNOSTICS_TS
+# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+      elseif (keyword(1:kwlen).eq.'diag_mld_dens') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) mld_crit_D, mld_crit_T
+# endif  /* DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_DENS */
 !
 ! Diagnostics file name.
 !
@@ -746,6 +779,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianame=fname(1:lstr)
+#ifdef ENSEMBLE
+        dianame=cmember//dianame
+#endif
 !
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'diag_avg') then
@@ -759,6 +795,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         dianame_avg=fname(1:lstr)
+#ifdef ENSEMBLE
+        dianame_avg=cmember//dianame_avg
+#endif
 # endif
 #endif /* DIAGOSTICS_TS */
 
@@ -776,6 +815,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianameM=fname(1:lstr)
+#ifdef ENSEMBLE
+        dianameM=cmember//dianameM
+#endif
 !
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'diagM_avg') then
@@ -789,6 +831,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         dianameM_avg=fname(1:lstr)
+#ifdef ENSEMBLE
+        dianameM_avg=cmember//dianameM_avg
+#endif
 
 # endif
 #endif /*DIAGNOSTICS_UV */
@@ -808,6 +853,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_vrtname=fname(1:lstr)
+#ifdef ENSEMBLE
+        diags_vrtname=cmember//diags_vrtname
+#endif
 !
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'diags_vrt_avg') then
@@ -821,6 +869,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         diags_vrtname_avg=fname(1:lstr)
+#ifdef ENSEMBLE
+        diags_vrtname_avg=cmember//diags_vrtname_avg
+#endif
 
 # endif
 #endif /*DIAGNOSTICS_VRT */
@@ -840,6 +891,10 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_ekname=fname(1:lstr)
+#ifdef ENSEMBLE
+        diags_ekname=cmember//diags_ekname
+#endif
+!
 
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'diags_ek_avg') then
@@ -853,6 +908,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         diags_ekname_avg=fname(1:lstr)
+#ifdef ENSEMBLE
+        diags_ekname_avg=cmember//diags_ekname_avg
+#endif
 
 # endif
 #endif /*DIAGNOSTICS_KE */
@@ -871,6 +929,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         diags_pvname=fname(1:lstr)
+#ifdef ENSEMBLE
+        diags_pvname=cmember//diags_pvname
+#endif
 !
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'diags_pv_avg') then
@@ -884,6 +945,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         diags_pvname_avg=fname(1:lstr)
+#ifdef ENSEMBLE
+        diags_pvname_avg=cmember//diags_pvname_avg
+#endif
 
 # endif
 #endif /*DIAGNOSTICS_PV */
@@ -915,6 +979,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         diags_eddyname_avg=fname(1:lstr)
+#ifdef ENSEMBLE
+        diags_eddyname_avg=cmember//diags_eddyname_avg
+#endif
 
 # endif
 #endif /*DIAGNOSTICS_EDDY */
@@ -933,6 +1000,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         surfname=fname(1:lstr)
+#ifdef ENSEMBLE
+        surfname=cmember//surfname
+#endif
 !
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'surf_avg') then
@@ -946,6 +1016,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         surfname_avg=fname(1:lstr)
+#ifdef ENSEMBLE
+        surfname_avg=cmember//surfname_avg
+#endif
 
 # endif
 #endif /*OUTPUTS_SURFACE */
@@ -964,6 +1037,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 # endif
         dianamebio=fname(1:lstr)
+#ifdef ENSEMBLE
+        dianamebio=cmember//dianamebio
+#endif
 !
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'diagbio_avg') then
@@ -976,6 +1052,9 @@ c        close(testunit)
         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
 #  endif
         dianamebio_avg=fname(1:lstr)
+#ifdef ENSEMBLE
+        dianamebio_avg=cmember//dianamebio_avg
+#endif
 # endif
 #endif /* DIAGNOSTICS_BIO */
 
@@ -1035,13 +1114,6 @@ c        close(testunit)
      &                    , (wrthis(itrc), itrc=indxV+1,indxV+NT)
         do itrc=1,NT
           if (wrthis(indxV+itrc)) wrthis(indxTime)=.true.
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-          if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     &   .or. itrc.eq.iCRT4) then
-            wrthis(indxV+itrc)=.false.
-          endif
-
-# endif
         enddo
 # endif
 #endif
@@ -1051,6 +1123,13 @@ c        close(testunit)
 #endif
      &     ) wrthis(indxTime)=.true.
 
+#ifdef STOGEN
+      elseif (keyword(1:kwlen).eq.'stochastic_history_fields') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) wrthis(indxXIsto2d), wrthis(indxXIsto3d)
+        ln_hststo2d = wrthis(indxXIsto2d)
+        ln_hststo3d = wrthis(indxXIsto3d)
+#endif
 #if !defined SOLVE3D && defined RIP
       elseif (keyword(1:kwlen).eq.'auxiliary_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
@@ -1522,14 +1601,6 @@ c        close(testunit)
 #endif /* ABL1D && ! defined XIOS */
 
 #if defined DIAGNOSTICS_TS
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      elseif (keyword(1:kwlen).eq.'diag_mld_crit_threshold') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) mld_crit_D, mld_crit_T, mld_crit_T2
-      elseif (keyword(1:kwlen).eq.'diag_mld_depth_ref') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) mld_depth_ref
-# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
 !
 ! Switches for fields to be saved into tracer diagnostics file.
 !
@@ -1537,13 +1608,6 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
 # ifdef TRACERS
         read(input,*,err=95)  (wrtdia3D(itrc), itrc=1, NT)
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-        if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     &      .or. itrc.eq.iCRT4) then
-          wrtdia3D(itrc)=.false.
-        endif
-# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
-
         do itrc=1,NT
           if (wrtdia3D(itrc)) wrtdia3D(NT+1)=.true.
         enddo
@@ -1567,14 +1631,6 @@ c        close(testunit)
         call cancel_kwd (keyword(1:kwlen), ierr)
 #  ifdef TRACERS
         read(input,*,err=95) (wrtdia3D_avg(itrc),itrc=1,NT)
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-        if (itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     &     .or. itrc.eq.iCRT4) then
-            wrtdia3D_avg(itrc)=.false.
-        endif
-# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
-
-
         do itrc=1,NT
           if (wrtdia3D_avg(itrc)) wrtdia3D_avg(NT+1)=.true.
         enddo
@@ -2661,6 +2717,11 @@ c        close(testunit)
 #ifdef SOLVE3D
      &    , wrthis(indxU),  'write U    ', '3D U-momentum component.'
      &    , wrthis(indxV),  'write V    ', '3D V-momentum component.'
+# ifdef STOGEN
+!     &    , wrthis(indxXIsto1d),'write sto_xi1d', '1D stochastic field -- NOT AVAILABLE YET'
+     &    , wrthis(indxXIsto2d),'write sto_xi2d', '2D stochastic field.'
+     &    , wrthis(indxXIsto3d),'write sto_xi3d', '3D stochastic field.'
+# endif
 # ifdef TRACERS
           do itrc=1,NT
           MPI_master_only write(stdout, '(6x,L1,2x,A,I2,A,I2,A)')
@@ -2950,17 +3011,6 @@ c        close(testunit)
 #endif /* ABL1D && ! defined XIOS */
 
 #if defined DIAGNOSTICS_TS
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-        MPI_master_only write(stdout,'(/1x,A,3(/1x,1pe10.3,2x,A))')
-     &   'Tresholds for Mixed Layer calculation:', 
-     &    mld_crit_D, 'CRT1 : mld_crit_D     Density threshold [kg/m3]',
-     &   mld_crit_T, 'CRT2 : mld_crit_T     Temperature treshold [C]',
-     & mld_crit_T2, 'CRT3 : mld_crit_T2   Temperature threshold bis [C]'
-
-        MPI_master_only write(stdout,'(/1x,A,/1x,I6,2x,A,1x/)')
-     &   'Depth reference for Mixed Layer calculation:',
-     &        mld_depth_ref, 'mld_depth_ref     Depth reference [m]'
-# endif  /* DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT */
 # ifdef TRACERS
           do itrc=1,NT
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
@@ -2974,9 +3024,19 @@ c        close(testunit)
           do itrc=1,NT
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia2D(itrc),
+#   ifdef DIAGNOSTIC_TS_MLD_DENS
+     &        'write MLD (density crit.) Integrated Tracer equation terms ',
+#   else
      &        'write Hbl Integrated Tracer equation terms ',
+#   endif
      &        ' Tracer of index', itrc,'/',NT
           enddo
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+        MPI_master_only write(stdout,'(/1x,A,2(/1x,1pe10.3,2x,A))')
+     &   'Tresholds for Mixed Layer calculation:', 
+     &    mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
+     &    mld_crit_T, 'mld_crit_T     Temperature treshold [C]'
+#   endif  /* DIAGNOSTICS_TS_MLD_DENS */
 #  endif  /* TRACERS */
 # endif  /* DIAGNOSTICS_TS_MLD */
 
@@ -2996,9 +3056,19 @@ c        close(testunit)
           do itrc=1,NT
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2,A,I4)')
      &        wrtdia2D_avg(itrc),
+#    ifdef DIAGNOSTIC_TS_MLD_DENS
+     &        'write MLD (density crit.) Integrated Tracer equation terms ',
+#    else
      &        'write Avg Hbl Integrated  Tracer equation terms ',
+#    endif
      &        ' Tracer of index', itrc,'/',NT
           enddo
+#    ifdef DIAGNOSTICS_TS_MLD_DENS
+        MPI_master_only write(stdout,'(/1x,A,2(/1x,1pe10.3,2x,A))')
+     &   'Tresholds for Mixed Layer calculation:',
+     &    mld_crit_D, 'mld_crit_D     Density threshold [kg/m3]',
+     &    mld_crit_T, 'mld_crit_T     Temperature treshold [C]'
+#    endif  /* DIAGNOSTICS_TS_MLD_DENS */
 #   endif  /* TRACERS */
 #  endif  /* DIAGNOSTICS_TS_MLD */
 # endif  /* AVERAGES */

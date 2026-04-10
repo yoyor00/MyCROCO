@@ -99,7 +99,7 @@ def run_shell_command_time(command, logfilename=None, verbose: bool = False):
 
         try:
             return timeit(
-                stmt=f"subprocess.run('({command}) 2>&1 > {log_fp}', check=True, shell=True)",
+                stmt=f"subprocess.run('({command}) > {log_fp} 2>&1', check=True, shell=True)",
                 setup="import subprocess",
                 number=1,
             )
@@ -366,19 +366,16 @@ def patch_lines(file_path, rules):
         shutil.copyfile(file_path, backup_path)
         print(f"Backup created: {backup_path}")
     except FileNotFoundError:
-        print(f"Error: File '{file_path}' not found. Aborting.")
-        return
+        raise Exception(f"Error: File '{file_path}' not found. Aborting.")
     except Exception as e:
-        print(f"Error while creating backup: {e}")
-        return
+        raise Exception(f"Error while creating backup: {e}")
 
     # Read the original file
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
     except Exception as e:
-        print(f"Error reading the file: {e}")
-        return
+        raise Exception(f"Error reading the file: {e}")
 
     # Apply each rule in-memory
     for rule in rules:
@@ -390,7 +387,7 @@ def patch_lines(file_path, rules):
             f.writelines(lines)
     #        print(f"Modifications completed successfully for {file_path}.")
     except Exception as e:
-        print(f"Error writing the file: {e}")
+        raise Exception(f"Error writing the file: {e}")
 
 
 @contextmanager

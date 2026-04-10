@@ -45,6 +45,21 @@
 
 /*
 ======================================================================
+   Set ENSEMBLE options:
+   Define MPI
+   Change the generic name of MPI communicator MPI_COMM_WORLD
+   to communicator used for individual member
+======================================================================
+*/
+#ifdef ENSEMBLE
+# define MPI
+# define MPI_COMM_WORLD ocean_grid_comm
+# define MPI_COMM_ALL MPI_COMM_WORLD
+# define LOGFILE
+#endif
+
+/*
+======================================================================
    Set OA COUPLING options:
    Define MPI
    Change the generic name of MPI communicator MPI_COMM_WORLD
@@ -726,9 +741,6 @@
          || (defined WAVE_OFFLINE && defined MRL_WCI) \
          || defined ANA_WWAVE
 # define WAVE_IO
-# if !defined WAVE_ROLLER || !defined WKB_WWAVE
-#  define wepb0 wepb
-# endif
 #endif
 
 /*
@@ -793,21 +805,24 @@
 #endif
 /*
 ======================================================================
-    Bottom stress option:
+    Bottom stress :
 
-    LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid
-    numerical instability associated with reversing bottom flow
-    NOW replaced by BSTRESS_FAST option
+    LIMIT_BSTRESS: Set limiting factor to avoid numerical instability 
+    associated with the Euler explicit treatment of the bottom stress
+    BSTRESS_FAST is an alternative with computation at fast time step
 ======================================================================
 */
-/*
 #ifndef BSTRESS_FAST
-# define  LIMIT_BSTRESS
+# define LIMIT_BSTRESS
 #endif
-*/
 #ifdef INNERSHELF
-# undef  LIMIT_BSTRESS
+# undef LIMIT_BSTRESS
 #endif
+/*
+======================================================================
+    BBL :
+======================================================================
+*/
 #ifdef BBL
 # ifdef OW_COUPLING
 # elif defined WAVE_OFFLINE
