@@ -192,6 +192,9 @@
 # ifdef AGRIF
 #  include "zoom.h"
 # endif
+#  if defined PENALIZATION
+#   include "penalization.h"
+#  endif
 # include "openacc_work.h"
 !
 # include "compute_auxiliary_bounds.h"
@@ -290,6 +293,9 @@
             t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)+dt*cff1
      &                 *(FX(i+1,j)-FX(i,j)+FE(i,j+1)-FE(i,j))
      &                                             /Hz(i,j,k)
+#  ifdef PENALIZATION
+     &                                    *(1.-pena_r(i,j,k))
+#  endif
           enddo
         enddo
 
@@ -301,9 +307,12 @@
             do i=istr,iend
               cff1=Hz(i,j,k)/(pm(i,j)*pn(i,j))
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff1
-     &                         +FX(i+1,j)-FX(i,j)
-     &                         +FE(i,j+1)-FE(i,j)
+     &                         +(FX(i+1,j)-FX(i,j)
+     &                          +FE(i,j+1)-FE(i,j))
      &                                SWITCH rmask(i,j)
+#  ifdef PENALIZATION
+     &                              *(1.-pena_r(i,j,k))
+#  endif
             enddo
           enddo
 #  endif
@@ -522,6 +531,9 @@
      &                                    +FE(i,j+1)-FE(i,j))
      &                  +FC(i,j,k)-FC(i,j,k-1)    )/Hz(i,j,k)
 #  endif
+#  ifdef PENALIZATION
+     &                                    *(1.-pena_r(i,j,k))
+#  endif
             enddo
           enddo
 
@@ -533,10 +545,13 @@
             do i=istr,iend
               cff1=1./(pm(i,j)*pn(i,j))
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*Hz(i,j,k)*cff1
-     &                         +FX(i+1,j)-FX(i,j)
-     &                         +FE(i,j+1)-FE(i,j)
-     &                         +(FC(i,j,k)-FC(i,j,k-1))*cff1
-     &                                   SWITCH rmask(i,j)
+     &                         +(FX(i+1,j)-FX(i,j)
+     &                          +FE(i,j+1)-FE(i,j)
+     &                          +(FC(i,j,k)-FC(i,j,k-1))*cff1)
+     &                                       SWITCH rmask(i,j)
+#  ifdef PENALIZATION
+     &                                    *(1.-pena_r(i,j,k))
+#  endif
             enddo
           enddo
 #  endif
@@ -677,13 +692,11 @@
      &                      -Hz_bak(i,j,k)*t(i,j,k,nstp,itrc))
      &                                              /(dt*cff1)
      &                                       SWITCH rmask(i,j)
-
 !
 ! Divide all diagnostic terms by the cell volume
 ! (Hz(i,j,k,itrc)/(pm(i,j).*pn(i,j)). There after the unit
 ! of diag terms are: (unit of tracers)* s-1.
 !
-
               cff=cff1/Hz(i,j,k)
               THmix(i,j,k,itrc)=THmix(i,j,k,itrc)*cff
               Trate(i,j,k,itrc)=Trate(i,j,k,itrc)*cff

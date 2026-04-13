@@ -111,6 +111,8 @@
 # if !defined TS_HADV_RSUP3 || !defined TS_HADV_RSUP5 
 #  define DIF_COEF_3D
 #  define TS_DIF2 
+#  define VIS_COEF_3D
+#  define UV_VIS2
 # endif
 #endif
 

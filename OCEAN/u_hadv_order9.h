@@ -103,7 +103,7 @@
                 mask2=umask(i,j+1)
               ENDIF
 #   else
-              mask4=umask(i,j-5)*umask(i,j+4)*mask4
+              mask5=umask(i,j-5)*umask(i,j+4)*mask4
 #   endif
               UFe(i,j)=flx9*mask5
      &               +flx7*(1-mask5)*mask4
@@ -416,5 +416,4 @@
               ENDIF
             ENDDO
           ENDDO
-
 

@@ -39,14 +39,18 @@
 # include "ocean3d.h"
 # include "ocean2d.h"
 # include "scalars.h"
+# if defined PENALIZATION
+#  include "penalization.h"
+#  define KBOT last_index(i,j)
+# endif
       integer Istr,Iend,Jstr,Jend, i,j,k,itrc,
      &        imin,imax,jmin,jmax, kp
-      real horcon, cff,cff0,cff1,cff2,cff3,cff4,cff5
+      real cff,cff0,cff1,cff2,cff3,cff4,cff5
+      real horcon, Ric, Pr
 # ifdef UV_VIS_SMAGO_3D
-      real Ric, Pr
       parameter (horcon=0.01, Ric=0.25, Pr=0.3)
 # else
-      parameter (horcon=0.1)
+      parameter (horcon=0.10, Pr=1.0)
 # endif
 # ifdef SWASH
       real dZdt,dZdt0,Bbr
@@ -202,22 +206,20 @@
           enddo
         enddo
       enddo
-
 #  ifdef UV_VIS_SMAGO_3D
 !
 !  Compute vertical Smagorinsky viscosity at W points
-!
-!      Lv = Hz          --> Akv
 !
       do k=1,N
         kp=min(k+1,N)
         do j=jmin,jmax
           do i=imin,imax
-            Akv(i,j,k)=0.5*(visc3d_r(i,j,k)+visc3d_r(i,j,kp)) ! Cs*dz²*D²
-     &                                       *pm(i,j)*pn(i,j)
-     &                                       *Hz(i,j,k)*Hz(i,j,k)
+            Akv(i,j,k)=0.5*(visc3d_r(i,j,k )+
+     &                      visc3d_r(i,j,kp)) ! Cs*dz²*D²
+     &                       *pm(i,j)*pn(i,j)
+     &                   *Hz(i,j,k)*Hz(i,j,k)
 #   if !defined LMD_MIXING && !defined GLS_MIXING
-     &                                              + Akv_bak
+     &                              + Akv_bak
 #   endif
 !
 !  Apply SGS Prandtl number for tracers
@@ -230,12 +232,45 @@
         enddo
       enddo
 #  endif /* UV_VIS_SMAGO_3D */
+# endif /* UV_VIS_SMAGO  */
+
+# ifdef PENALIZATION
+!---------------------------------------------------------------
+! Apply sponge in penalized regions
+!---------------------------------------------------------------
+!
+      do j=jmin,jmax
+         do i=imin,imax
+          do k=1,max(1,KBOT)
+            visc3d_r(i,j,k)=1.e-2*pena_r(i,j,k)
+     &                          /(pm(i,j)*pn(i,j)*dt)
+          enddo
+        enddo
+      enddo
+      do k=1,N
+        kp=min(k+1,N)
+        do j=jmin,jmax
+          do i=imin,imax
+            cff=0.5*(visc3d_r(i,j,k)
+     &              +visc3d_r(i,j,kp)) ! Cs*dz²*D²
+     &                *pm(i,j)*pn(i,j)
+     &            *Hz(i,j,k)*Hz(i,j,k)
+            Akv(i,j,k)=cff
+#  if defined LMD_MIXING || defined GLS_MIXING
+     &                      + Akv(i,j,k)
+#  else
+     &                      + Akv_bak
+#  endif
+          enddo
+        enddo
+      enddo
+# endif /* PENALIZATION */
 !
 !------------------------------------------------------------
 ! Boundary conditions
 !------------------------------------------------------------
 !
-#  ifndef EW_PERIODIC
+# ifndef EW_PERIODIC
       if (WESTERN_EDGE) then
         do k=1,N
           do j=JstrV-1,Jend
@@ -250,8 +285,8 @@
           enddo
         enddo
       endif
-#  endif /* !EW_PERIODIC */
-#  ifndef NS_PERIODIC
+# endif /* !EW_PERIODIC */
+# ifndef NS_PERIODIC
       if (SOUTHERN_EDGE) then
         do k=1,N
           do i=IstrU-1,Iend
@@ -266,11 +301,11 @@
           enddo
         enddo
       endif
-#  endif /* !NS_PERIODIC */
+# endif /* !NS_PERIODIC */
 !
 ! Corners
 !
-#  if !defined EW_PERIODIC && !defined NS_PERIODIC
+# if !defined EW_PERIODIC && !defined NS_PERIODIC
 
       if (SOUTHERN_EDGE .and. WESTERN_EDGE) then
         do k=1,N
@@ -300,11 +335,11 @@
      &                           +visc3d_r(Iend+1,Jend,k))
         enddo
       endif
-#  endif /* !EW_PERIODIC && !NS_PERIODIC */
+# endif /* !EW_PERIODIC && !NS_PERIODIC */
 !
-#  if defined BD_EXCHANGE
-!      call exchange_r3d_tile (Istr,Iend,Jstr,Jend,visc3d_r)
-#  endif
+# if defined BD_EXCHANGE
+      call exchange_r3d_tile (Istr,Iend,Jstr,Jend, visc3d_r)
+# endif
 !
 !  Viscosity at PSI points
 !
@@ -318,11 +353,11 @@
         enddo
       enddo
 !
-#  if defined BD_EXCHANGE
+# if defined BD_EXCHANGE
       call exchange_p3d_tile(Istr,Iend,Jstr,Jend,visc3d_p)
-#  endif
+# endif
 
-#  ifdef UV_VIS_SMAGO_3D
+# if defined UV_VIS_SMAGO_3D || defined PENALIZATION
 !------------------------------------------------------
 !  Lateral boundary conditions for vertical diffusivity
 !  in case of 3D Smagorinsky SGS model
@@ -425,8 +460,9 @@
 !     &                        Akt(START_2D_ARRAY,0,isalt))
 !#   endif
 !#  endif
-#  endif /* UV_VIS_SMAGO_3D */
-# endif /* UV_VIS_SMAGO  */
+
+# endif /* UV_VIS_SMAGO_3D */
+
 #else
       subroutine hvisc_coef_empty
 #endif
@@ -487,7 +523,7 @@
 # include "scalars.h"
 # if defined PENALIZATION
 #  include "penalization.h"
-#  define KBOT last_index(i,j)+1
+#  define KBOT last_index(i,j)
 # endif
 !
 # include "compute_auxiliary_bounds.h"
@@ -613,11 +649,11 @@
 ! Apply sponge in penalized regions
 !---------------------------------------------------------------
 !
-      do k=1,max(1,KBOT-1)
-        do j=JstrV-1,Jend
-          do i=IstrU-1,Iend
-            diff3d_r(i,j,k)=1.e-2*pena_r(i,j,k)
-     &                          /(pm(i,j)*pn(i,j)*dt)
+      do j=JstrV-1,Jend+1
+        do i=IstrU-1,Iend+1
+          do k=1,max(1,KBOT)
+            diff3d_r(i,j,k)=1.e-4*pena_r(i,j,k)
+     &                        /(pm(i,j)*pn(i,j)*dt)
           enddo
         enddo
       enddo
