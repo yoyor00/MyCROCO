@@ -4,7 +4,7 @@
     "title": "BENGUELA_LR_TIDES_BULK",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -20,7 +20,7 @@
     "title": "BENGUELA_LR_BULK",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -36,7 +36,7 @@
     "title": "BENGUELA_LR_BULKONLINE",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -54,7 +54,7 @@
     "title": "BENGUELA_LR_CFB",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -71,7 +71,7 @@
     "title": "BENGUELA_LR_CFBBULK",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -88,7 +88,7 @@
     "title": "BENGUELA_LR_CFBBULKONLINE",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -107,7 +107,7 @@
     "title": "BENGUELA_LR_CFBBULKONLINERUNOFF",
     "case": "REGIONAL",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_regional.py",
+      "plotphy_script": "./TEST_CASES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -223,9 +223,11 @@
       "BULK_FLUX": false,
       "AGRIF": true,
       "DIAGNOSTICS_TS": true,
+      "DIAGNOSTICS_TS_MLD": true,
     },
     "patches": {},
-    "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1"],
+    "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1",
+                      "CROCO_FILES/croco_dia.nc"],
   },
   "BENGUELA_LR_AGRIF_2WAY": {
     "title": "BENGUELA_LR_AGRIF_2WAY",
@@ -238,9 +240,29 @@
       "AGRIF": true,
       "AGRIF_2WAY": true,
       "DIAGNOSTICS_TS": true,
+      "DIAGNOSTICS_TS_MLD": true,
     },
     "patches": {},
-    "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1"],
+    "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1",
+                      "CROCO_FILES/croco_dia.nc"],
+  },
+  "BENGUELA_LR_AGRIF_2WAY_MLD_DENS": {
+    "title": "BENGUELA_LR_AGRIF_2WAY",
+    "case": "REGIONAL",
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "cppkeys": {
+      "FRC_BRY": true,
+      "BULK_FLUX": false,
+      "AGRIF": true,
+      "AGRIF_2WAY": true,
+      "DIAGNOSTICS_TS": true,
+      "DIAGNOSTICS_TS_MLD": true,
+      "DIAGNOSTICS_TS_MLD_DENS": true,
+    },
+    "patches": {},
+    "check_outputs": ["CROCO_FILES/croco_his.nc", "CROCO_FILES/croco_his.nc.1",
+                      "CROCO_FILES/croco_dia.nc"],
   },
   // BENGUELA NBQ
   "BENGUELA_LR_NBQ": {
@@ -267,7 +289,7 @@
   // "BENGUELA_VHR_TIDES_BULK": {
   //   "title": "BENGUELA_VHR_TIDES_BULK",
   //   "case": "REGIONAL",
-  //   "plotphy" : { "plotphy_script": "./TEST_CASES/plot_regional.py",
+  //   "plotphy" : { "plotphy_script": "./TEST_CASES/plot_realist.py",
   //   "croco_files_path": "VHR_CROCO_FILES_BCK",
   //   "splitting": {
   //     "1": "1x1",

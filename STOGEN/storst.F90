@@ -94,7 +94,7 @@ CONTAINS
         CASE('testmpi')
           CALL ctl_stop("Reading seed from storst for type 'testmpi' not available")
         CASE DEFAULT
-          CALL ctl_stop('Bad type of random number generator in storst')
+          CALL ctl_stop('Bad type of random number generator in sto_rst_read')
         END SELECT
       ENDIF
 
@@ -145,7 +145,7 @@ CONTAINS
          seed_type = NF90_INT    ; seed_size = 1
          CALL shr3_state( ziseed4(1) )
       CASE DEFAULT
-         CALL ctl_stop('Bad type of random number generator in storst')
+         CALL ctl_stop('Bad type of random number generator in storst sto_rst_write - 1')
       END SELECT
 
       ! Set type of output arrays
@@ -222,7 +222,7 @@ CONTAINS
       CASE('shr3')
          ierr = NF90_PUT_VAR(idf,idvseed,ziseed4(1))
       CASE DEFAULT
-         CALL ctl_stop('Bad type of random number generator in storst')
+         CALL ctl_stop('Bad type of random number generator in sto_rst_write - 2')
       END SELECT
       IF (ierr.NE.0) CALL ctl_stop('Error writing rng state in restart file')
 

@@ -8,7 +8,7 @@ MODULE stogls
     !!
     !! Purpose : Stochastic parameterization of the gls mixing
     !!======================================================================
-    USE stoexternal , only : wp, lwm, lwp, numnam_ref, numond, ctl_nam, &
+    USE stoexternal , only : wp, lwp, numnam_ref, numond, ctl_nam, &
                           & jpi, jpj, stodt
     USE stoarray
 

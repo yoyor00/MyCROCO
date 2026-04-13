@@ -1,6 +1,7 @@
 MODULE stoexternal
 
 #include "cppdefs.h"
+!#include "param.h"
 #if defined STOGEN
 
    !!======================================================================
@@ -84,7 +85,6 @@ MODULE stoexternal
 # else
    INTEGER, PUBLIC ::   numout      = 6    !: logical unit for output print; set to stdout; do not change
 # endif
-   LOGICAL, PUBLIC ::   lwm         = .TRUE.    !: true on the 1st processor only (always)
    LOGICAL, PUBLIC ::   lwp         = .TRUE.    !: true on the 1st processor only .OR. ln_ctl
    INTEGER, PUBLIC ::   numnam_ref  =   -1      !: logical unit for reference namelist
    INTEGER, PUBLIC ::   numond      =   -1      !: logical unit for Output Namelist Dynamics
@@ -178,13 +178,14 @@ CONTAINS
       !!----------------------------------------------------------------------
       WRITE (clios, '(I5.0)') kios
       IF( kios < 0 ) THEN
-         WRITE(numout,*) 'W A R N I N G:  end of record or file while reading namelist ' &
-  &           // TRIM(cdnam) // ' iostat = ' // TRIM(clios)
+         print *, 'W A R N I N G:  end of record or file while reading namelist ' &
+ &           // TRIM(cdnam) // ' iostat = ' // TRIM(clios)
       ENDIF
 
       IF( kios > 0 ) THEN
-         WRITE(numout,*) 'E R R O R :   misspelled variable in namelist ' &
+         print *, 'E R R O R :   misspelled variable in namelist ' &
  &           // TRIM(cdnam) // ' iostat = ' // TRIM(clios) 
+         STOP
       ENDIF
       kios = 0
       RETURN
@@ -227,8 +228,10 @@ C$    integer  trd, omp_get_thread_num
       INTEGER :: ji1, jj1, jk1
       integer :: Istr,Iend,Jstr,Jend
 
+# include "compute_auxiliary_bounds.h"
+
       ! Open namelist files
-      numnam_ref = 10 ; lwm = .FALSE.
+      numnam_ref = 10 
       OPEN(UNIT=numnam_ref,FILE=filnam_ref,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL')
 
       ! define standard output
@@ -243,11 +246,11 @@ C$    integer  trd, omp_get_thread_num
 
       ! Define grid size (for local subdomain) -- 
 # ifdef SPHERICAL
-      jpi = size(lonr,1) ; ishift_priv = Istr - lbound(lonr, 1) - 1
-      jpj = size(lonr,2) ; jshift_priv = Jstr - lbound(lonr, 2) - 1
+      jpi = size(lonr,1) ; ishift_priv = 1 - lbound(lonr, 1) ! 1=reference of STOGEN grid
+      jpj = size(lonr,2) ; jshift_priv = 1 - lbound(lonr, 2) ! 1=reference of STOGEN grid
 # else
-      jpi = size(xr,1)   ; ishift_priv = Istr - lbound(xr, 1) - 1
-      jpj = size(xr,2)   ; jshift_priv = Jstr - lbound(xr, 2) - 1
+      jpi = size(xr,1)   ; ishift_priv = 1 - lbound(xr, 1)   ! 1=reference of STOGEN grid
+      jpj = size(xr,2)   ; jshift_priv = 1 - lbound(xr, 2)   ! 1=reference of STOGEN grid
 # endif
       jpk = N
 
@@ -265,7 +268,6 @@ C$    integer  trd, omp_get_thread_num
 #ifdef MPI
       if (narea.gt.1) then 
         lwp=.FALSE.
-        lwm=.FALSE.
       endif
 #endif
 
@@ -301,18 +303,18 @@ C$    integer  trd, omp_get_thread_num
       ! Define index of grid points (of local subdomain) in global grid (all subdomains)
       ALLOCATE(mig(1:jpi))
       ALLOCATE(mjg(1:jpj))
-      DO ji1 = 1, jpi
+      DO ji1 = 1, jpi 
 # ifdef MPI
-        mig(ji1) = ji1 + ii * Lm
+        mig(ji1) = ji1 - 1 + iminmpi - ishift_priv
 # else
-        mig(ji1) = ji1
+        mig(ji1) = ji1 - ishift_priv 
 # endif
       ENDDO
       DO jj1 = 1, jpj
 # ifdef MPI 
-        mjg(jj1) = jj1 + jj * Mm
+        mjg(jj1) = jj1 - 1 + jminmpi - jshift_priv
 # else
-        mjg(jj1) = jj1
+        mjg(jj1) = jj1 - jshift_priv
 # endif
       ENDDO
 

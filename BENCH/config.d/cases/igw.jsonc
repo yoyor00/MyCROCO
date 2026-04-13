@@ -18,6 +18,10 @@
   "IGW_NBQ": {
     "title": "IGW - NBQ - (878 x 3 x 40 : 105360)",
     "case": "IGW",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_IGW.py",
+      "plotphy_script_input": "igw_his.nc",
+    },
     "cppkeys": {
       "NBQ": true,
     },

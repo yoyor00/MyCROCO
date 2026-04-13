@@ -347,7 +347,7 @@ C$OMP END MASTER
 # endif
 
 #ifdef STOGEN
-      call sto_mod(iic) ! update (?) stochastic fields 
+      call sto_mod(iic) ! update stochastic fields 
 #endif
 
 # ifdef BULK_FLUX

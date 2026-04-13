@@ -161,7 +161,10 @@ CONTAINS
         ! starting from pre-computed initial seed.
         ! For a given global grid point [mig(ji), mjg(jj)] and a given member,
         ! the seed will thus be the same, whatever the MPI domain decomposition.
-        seedindex = ( mjg(jj) - 1 ) * jpiglo + mig(ji)
+        ! mig, mjg grid counts both start at 1 on the interior MPI domain, 
+        ! hence at zero on the output domin with +1 grid point on each side of the domain.
+        seedindex = mjg(jj) * jpiglo + mig(ji)
+
         ! Compute seed using standard KISS code
         DO jseed = 1, seedindex
           zseed1_8 = kiss64() ; zseed2_8 = kiss64()
@@ -196,24 +199,16 @@ CONTAINS
       REAL(KIND=wp) :: kiss_normal_test
       REAL(KIND=wp) :: u1, u2, rsq, fac
 
-      IF (ig.EQ.1) THEN
-         rsq = two
-         DO WHILE ( (rsq.GE.one).OR. (rsq.EQ.zero) )
-            u1 = REAL(kiss64_test(ji,jj),wp) * scaling_uni2_8
-            u2 = REAL(kiss64_test(ji,jj),wp) * scaling_uni2_8
-            rsq = u1*u1 + u2*u2
-         ENDDO
-         fac = SQRT(-two*LOG(rsq)/rsq)
-         gran1 = u1 * fac
-         gran2 = u2 * fac
-      ENDIF
+      rsq = two
+      DO WHILE ( (rsq.GE.one).OR. (rsq.EQ.zero) )
+         u1 = REAL(kiss64_test(ji,jj),wp) * scaling_uni2_8
+         u2 = REAL(kiss64_test(ji,jj),wp) * scaling_uni2_8
+         rsq = u1*u1 + u2*u2
+      ENDDO
+      fac = SQRT(-two*LOG(rsq)/rsq)
+      gran1 = u1 * fac
 
-      ! Output one of the 2 draws
-      IF (ig.EQ.1) THEN
-         kiss_normal_test = gran1 ; ig = 2
-      ELSE
-         kiss_normal_test = gran2 ; ig = 1
-      ENDIF
+      kiss_normal_test = gran1 
 
    END FUNCTION kiss_normal_test
 

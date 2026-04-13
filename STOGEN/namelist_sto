@@ -5,7 +5,7 @@
 !-----------------------------------------------------------------------
 &namens        !   general parameters for ensemble simulations
 !-----------------------------------------------------------------------
-   nn_ens_size = 3         ! ensemble size
+   nn_ens_size = 1         ! ensemble size
    nn_ens_start = 1        ! index of the first ensemble member
    ln_ens_rst_in = .FALSE. ! use ensemble (T) or single (F) input restart file
 /
@@ -21,8 +21,8 @@
    ln_rstseed  = .false.   ! read seed of RNG from restart file
    cn_storst_in  = "restart_sto_in.nc"  ! input restart file for stochastic parameters
    cn_storst_out = "restart_sto_out.nc" ! output restart file for stochastic parameters
-   cn_xi2d = "bulk_cd"   ! name of field to save as xi2d in history file (if requested in croco.in)
-   cn_xi3d = "gls_zlevs" ! name of field to save as xi3d in history file (if requested in croco.in)
+   cn_xi2d = "stress"   ! name of field to save as xi2d in history file (if requested in croco.in, options : bulk_cd, stress, gls_Sprod, gls_Bprod)
+   cn_xi3d = "gls_zlevs" ! name of field to save as xi3d in history file (if requested in croco.in, options : gls_zlevs)
    cn_rngtype = 'default'     ! name of random number generator to use (default, kiss32, kiss64, shr3, testmpi)
    cn_normal_algo = 'default' ! algorithm to obtain normal numbers (default, polar, ziggurat)
 /
@@ -36,10 +36,19 @@
    nupdate = 12 ! udpate frequency of the autorgeressive processes (in time steps)
 /
 !-----------------------------------------------------------------------
+&namsto_stress   !   parameters for stochastic stress in BASIN test case
+!-----------------------------------------------------------------------
+   std  = 0.1   ! standard deviation of the multiplicative noise
+   tcor = 10.0  ! time correlation (in days)
+   npasses = 20 ! number of passes of the horizontal Laplacian filter
+   arorder = 1  ! order of the autorgeressive processes
+   nupdate = 1  ! udpate frequency of the autorgeressive processes (in time steps)
+/
+!-----------------------------------------------------------------------
 &namsto_gls    !   parameters for stochastic vertical mixing
 !-----------------------------------------------------------------------
-   ln_Sprod =.true.  ! perturb TKE production term
-   ln_Bprod =.true.  ! perturb TKE destruction term
+   ln_Sprod =.false.  ! perturb TKE production term
+   ln_Bprod =.false.  ! perturb TKE destruction term
    ln_zlevs =.false. ! location uncertainty in Sprod and Bprod
    std  = 0.1   ! standard deviation of the multiplicative noise
    tcor = 3.0   ! time correlation (in days)

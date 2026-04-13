@@ -23,6 +23,7 @@ MODULE stomod
    USE stostress
    USE stogls
    USE stoics
+   USE stowhite , only : c_rngtype
 
    IMPLICIT NONE
    PRIVATE
@@ -84,6 +85,7 @@ CONTAINS
         IF (ln_stogls)    CALL sto_gls_init
         IF (ln_stoics)    CALL sto_ics_init
 
+
         ! Initialize stochastic arrays
         CALL sto_array_init
 
@@ -107,9 +109,8 @@ CONTAINS
       !!----------------------------------------------------------------------
 
       IF (ln_stogen) THEN
-
-        ! write final restart file
-        CALL sto_rst_write
+        ! write final restart file (unless for cn_rngtype='testmpi')
+        IF (trim(c_rngtype) /= 'testmpi') CALL sto_rst_write
 
       ENDIF
 

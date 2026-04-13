@@ -26,11 +26,11 @@ MODULE stowhite
    ! Default settings:
    CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='kiss32'
    CHARACTER(len=8), SAVE, PUBLIC :: c_normal_algo='ziggurat'
-   ! Other possible settings:
+   ! Other possible settings (to be defined in namelist_sto):
    !CHARACTER(len=8), SAVE, PUBLIC :: c_normal_algo='polar'
    !CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='kiss64'
    !CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='shr3'
-   ! Settings to use 'testmpi':
+   ! Settings to use 'testmpi' (to be defined in namelist_sto)
    !CHARACTER(len=8), SAVE, PUBLIC :: c_normal_algo='polar'
    !CHARACTER(len=8), SAVE, PUBLIC :: c_rngtype='testmpi'
 
