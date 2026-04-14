@@ -211,13 +211,6 @@
       parameter (indxXIsto3d=indxV+ntrc_temp+ntrc_salt+3)
 #  endif
 
-#  ifdef STOGEN
-      integer indxXIsto1d, indxXIsto2d, indxXIsto3d
-      parameter (indxXIsto1d=indxV+ntrc_temp+ntrc_salt+ntrc_mld+1)
-      parameter (indxXIsto2d=indxV+ntrc_temp+ntrc_salt+ntrc_mld+2)
-      parameter (indxXIsto3d=indxV+ntrc_temp+ntrc_salt+ntrc_mld+3)
-#  endif
-
 #  ifdef PASSIVE_TRACER
       integer, dimension(ntrc_pas) :: indxTPAS
      & =(/(iloop,iloop=indxV+ntrc_temp+ntrc_salt+1,
@@ -235,11 +228,7 @@
      &        indxDIA, indxMES, indxDSI, indxFER, indxBFE,
      &        indxGOC, indxSFE, indxDFE, indxGSI, indxNFE,
      &        indxNCH, indxDCH, indxNO3, indxNH4
-<<<<<<< HEAD
-      parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+ntrc_mld+
-=======
       parameter (indxDIC =indxV+ntrc_temp+ntrc_salt+
->>>>>>> master
      &                    ntrc_stogen+ntrc_pas+1,
      &           indxTAL =indxDIC+1, indxOXY=indxDIC+2)
 #   ifdef key_pisces_npzd
@@ -408,11 +397,7 @@
       integer indxMXadv,indxMYadv,indxMVadv,indxMCor,
      &        indxMPrsgrd,indxMHmix,indxMVmix,indxMrate,
      &        indxMVmix2,indxMHdiff
-<<<<<<< HEAD
-      parameter (indxMXadv=indxV+ntrc_temp+ntrc_salt+ntrc_mld+
-=======
       parameter (indxMXadv=indxV+ntrc_temp+ntrc_salt+
->>>>>>> master
      &           ntrc_stogen+ntrc_pas+ntrc_bio+ntrc_sed+
      &           ntrc_diats+1,
      &           indxMYadv=indxMXadv+2,
@@ -437,11 +422,7 @@
       integer indxvrtXadv,indxvrtYadv,indxvrtHdiff,indxvrtCor,
      &        indxvrtPrsgrd,indxvrtHmix,indxvrtVmix,indxvrtrate,
      &        indxvrtVmix2,indxvrtWind,indxvrtDrag
-<<<<<<< HEAD
-      parameter (indxvrtXadv=indxV+ntrc_temp+ntrc_salt+ntrc_mld
-=======
       parameter (indxvrtXadv=indxV+ntrc_temp+ntrc_salt
->>>>>>> master
      &                        +ntrc_stogen+ntrc_pas+
      &                        +ntrc_bio+ntrc_sed
      &                        +ntrc_diats+ntrc_diauv+1,
@@ -469,11 +450,7 @@
      &        indxekPrsgrd,indxekHmix,indxekVmix,indxekrate,
      &        indxekvol,indxekVmix2,indxekWind,indxekDrag
       parameter (indxekHadv=indxV+ntrc_temp+ntrc_salt+
-<<<<<<< HEAD
-     &           ntrc_mld+ntrc_stogen+ntrc_pas+
-=======
      &           ntrc_stogen+ntrc_pas+
->>>>>>> master
      &           ntrc_bio+ntrc_sed+
      &           ntrc_diats+ntrc_diauv+ntrc_diavrt+1,
      &           indxekHdiff=indxekHadv+1,
@@ -520,17 +497,10 @@
 # endif
 # ifdef DIAGNOSTICS_PV
       integer indxpvMrhs,indxpvTrhs
-<<<<<<< HEAD
-      parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt
-     &               +ntrc_mld+ntrc_stogen+ntrc_pas
-     &               +ntrc_bio+ntrc_sed
-     &               +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
-=======
       parameter (indxpvTrhs=indxV+ntrc_temp+ntrc_salt+
      &                ntrc_stogen+ntrc_pas+
      &                ntrc_bio+ntrc_sed+
      &                ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek+1,
->>>>>>> master
      &           indxpvMrhs=indxpvTrhs+2)
 #  ifdef DIAGNOSTICS_PV_FULL
       integer indxpvpv,indxpvpvd
@@ -545,11 +515,7 @@
      &        indxeddyubu,indxeddyvbv,
      &        indxeddyusu,indxeddyvsv,
      &        indxeddyugsu,indxeddyvgsv
-<<<<<<< HEAD
-      parameter (indxeddyzz=indxV+ntrc_temp+ntrc_salt+ntrc_mld
-=======
       parameter (indxeddyzz=indxV+ntrc_temp+ntrc_salt
->>>>>>> master
      &                           +ntrc_stogen
      &                           +ntrc_pas+ntrc_bio+ntrc_sed
      &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
@@ -572,11 +538,7 @@
 # if defined OUTPUTS_SURFACE && ! defined XIOS
       integer indxsurft,indxsurfs,indxsurfz,indxsurfu,
      &        indxsurfv
-<<<<<<< HEAD
-      parameter (indxsurft=indxV+ntrc_temp+ntrc_salt+ntrc_mld
-=======
       parameter (indxsurft=indxV+ntrc_temp+ntrc_salt
->>>>>>> master
      &                         +ntrc_stogen
      &                         +ntrc_pas+ntrc_bio+ntrc_sed
      &                         +ntrc_diats+ntrc_diauv+ntrc_diavrt
@@ -591,11 +553,7 @@
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
      &        , indxGasExcFlux
 #  endif
-<<<<<<< HEAD
-      parameter (indxbioFlux=indxV+ntrc_temp+ntrc_salt+ntrc_mld
-=======
       parameter (indxbioFlux=indxV+ntrc_temp+ntrc_salt
->>>>>>> master
      &                           +ntrc_stogen
      &                           +ntrc_pas+ntrc_bio+ntrc_sed
      &                           +ntrc_diats+ntrc_diauv+ntrc_diavrt
@@ -610,11 +568,7 @@
 
       integer indxO, indxW, indxR, indxVisc, indxDiff, indxAkv, indxAkt
       parameter (indxO=indxV+ntrc_temp+ntrc_salt
-<<<<<<< HEAD
-     &                      +ntrc_mld+ntrc_stogen+ntrc_pas+ntrc_bio
-=======
      &                      +ntrc_stogen+ntrc_pas+ntrc_bio
->>>>>>> master
      &                      +ntrc_sed+ntrc_substot
      &           +ntrc_diats+ntrc_diauv+ntrc_diavrt+ntrc_diaek
      &           +ntrc_diapv+ntrc_diaeddy+ntrc_surf+ntrc_diabio+1,

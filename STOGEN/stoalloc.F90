@@ -19,6 +19,7 @@ MODULE stoalloc
    USE stoarray
    USE stobulk
    USE stogls
+   USE stoics
 
    IMPLICIT NONE
    PRIVATE
@@ -42,6 +43,7 @@ MODULE stoalloc
    REAL(wp), PUBLIC, DIMENSION(:,:),   POINTER, contiguous :: sto_gls_s2d ! perturbation of production term
    REAL(wp), PUBLIC, DIMENSION(:,:),   POINTER, contiguous :: sto_gls_b2d ! perturbation of destruction term
    REAL(wp), PUBLIC, DIMENSION(:,:,:), POINTER, contiguous :: sto_gls_z3d ! perturbation of destruction term
+   REAL(wp), PUBLIC, DIMENSION(:,:,:), POINTER, contiguous :: sto_3d_ics     ! perturbation of initial condition
 
    ! Value used to initialize working arrays
    REAL(wp), PARAMETER :: init = 0.
@@ -69,6 +71,10 @@ CONTAINS
         allocate(sto_stress_factor(GLOBAL_2D_ARRAY))
         sto_stress_factor(:,:) = init
       ENDIF
+	  
+	  IF (ln_stogen .AND. ln_stoics) THEN
+		 sto_3d_ics(GLOBAL_2D_ARRAY,1:N) => sto3d(:,:,:,jpidxlast3d,stofields(jstoics)%index)
+      ENDIF 
 
       ! define working arrays used for vertical mixing
       IF (ln_stogen.AND.ln_stogls) THEN
@@ -103,6 +109,8 @@ CONTAINS
         SELECT CASE (cn_xi3d)
         CASE('gls_zlevs')
           IF (ln_stogls.AND.ln_zlevs) sto_xi3d(GLOBAL_2D_ARRAY,1:N) => sto_gls_z3d(:,:,:)
+		CASE('ics')
+		  IF (ln_stoics)              sto_xi3d(GLOBAL_2D_ARRAY,1:N) => sto_3d_ics(:,:,:)
         END SELECT
         IF (.NOT.associated(sto_xi3d)) THEN
           CALL ctl_stop('No valid array associated to requested xi3d output')

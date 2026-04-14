@@ -11,12 +11,13 @@ MODULE stoics
    USE stoexternal , only : wp, lwp, numnam_ref, numond, ctl_nam, &
                           & jpi, jpj, jpk
    USE stoarray
+   
 
    IMPLICIT NONE
    PRIVATE
 
    ! Index of stochastic field used for the drag coefficient
-   INTEGER, SAVE :: jstoics
+   INTEGER, PUBLIC, SAVE :: jstoics
 
    ! Parameters of stochastic fields
    ! (default values are replaced by values read in namelist)

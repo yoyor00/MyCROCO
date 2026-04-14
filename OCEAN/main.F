@@ -33,6 +33,7 @@
 #ifdef STOGEN
           USE stomod         ! Stochastic module
           USE stoexternal    ! Provide parameters to stochastic modules
+		  USE stoarray
 #endif
 #ifdef ENSEMBLE
           USE ensmpi         ! Ensemble module
@@ -363,17 +364,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #endif
 !
 !----------------------------------------------------------------------
-!  STOGEN: initialization
-!----------------------------------------------------------------------
-!
-#ifdef STOGEN
-      do tile=0,NSUB_X*NSUB_E-1
-        call ocean_2_stogen (tile)    ! provide parameters to STOGEN module
-        call sto_mod_init             ! initialize STOGEN module
-      enddo
-#endif
-!
-!----------------------------------------------------------------------
 !  Set initial conditions for momentum and tracer variables
 !----------------------------------------------------------------------
 !
@@ -432,8 +422,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
         MPI_master_only write(stdout,*)
      &     'Apply stochastic perturbations on (temperature) initial conditions'
-        call sto_mod( ntstart ) ! update (?) stochastic fields
-C$OMP PARALLEL DO PRIVATE(tile)
+        call sto_mod( ntstart ) ! update stochastic fields
         do tile=0,NSUB_X*NSUB_E-1
           call sto_initial (tile)
         enddo
