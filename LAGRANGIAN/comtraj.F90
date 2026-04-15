@@ -204,8 +204,6 @@ MODULE comtraj
 #ifdef DEB_IBM
     LOGICAL,                PUBLIC          :: ibm_restart                  ! Logical for ibm restart 
 
-    REAL(KIND=rsh),         PUBLIC          :: struc_ad = 0.0_rsh           ! Density-dependance parameter
-    REAL(KIND=rsh),         PUBLIC          :: struc_ad_dd_DEB = 0.0_rsh    ! Density-dependance parameter
 #ifdef IBM_SPECIES
     INTEGER, DIMENSION(nb_species), PUBLIC  :: duration                     ! Duree de vie des individus selon leur espece
     ! namibmdeb namelist parameters from paraibm
@@ -232,6 +230,9 @@ MODULE comtraj
     REAL(KIND=rlg), DIMENSION(nb_species)       :: Wdeb_mean = 0._rsh
 
     REAL(KIND=rlg)                              :: time2spawn
+
+    REAL(KIND=rsh), DIMENSION(nb_species),   PUBLIC  :: struc_ad = 0.0_rsh           ! Density-dependance parameter
+    REAL(KIND=rsh), DIMENSION(nb_species),   PUBLIC  :: struc_ad_dd_DEB = 0.0_rsh    ! Density-dependance parameter
 
     ! DEB parameters from input file deb_parameter_species
     TYPE(type_particle)                             :: init_anchovy_egg     ! Init values used for new anchovy's particles 

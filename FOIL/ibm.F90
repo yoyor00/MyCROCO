@@ -58,9 +58,6 @@ MODULE ibm
     LOGICAL                                         :: fish_mort, density_dependent
     REAL(KIND=rsh)                                  :: multiplier_tac
 
-    ! Number of eggs and stade 1 for larvae mortality
-    REAL(KIND=rsh), DIMENSION(nb_species)           :: number_eggs
-
     ! Variables pour la 2e methode de repro
     REAL(KIND=rsh),DIMENSION(nb_species)            :: nb_indv_ponte
 
@@ -502,8 +499,7 @@ MODULE ibm
     REAL(KIND=rsh)                                      :: ratio
     REAL(KIND=rsh)                                      :: new_super
 
-    ! Density-dependence variables
-    REAL(KIND=rsh), DIMENSION(nb_species)   :: dd_number_eggs, concentration, max_mort
+    ! Mortality variables
     REAL(KIND=rlg), DIMENSION(nb_species)   :: Z1, Z2
     LOGICAL, SAVE                           :: first_timestep_ibm = .true.
 
@@ -527,6 +523,9 @@ MODULE ibm
         CALL readfood3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
         first_timestep_ibm = .false.
     ENDIF
+
+    ! Remise a 0 de la matrice des oeufs pondus avant boucle sur les patches
+    IF ( repro ) mat_eggs       = 0._rsh
 #endif /* IBM_SPECIES */
 
  !--------------------------------------------------------------
@@ -534,24 +533,6 @@ MODULE ibm
  !---------------------------------------------------------------
     dtm = dt   ! dt = CROCO time step
     time_step=nrhs
-
-#ifdef IBM_SPECIES
-    ! Menu et al., but script inside for density dependence from Bueno Pardo
-    IF ( FIRST_TIME_STEP ) number_eggs(:)    = 0._rsh       ! For initialisation
-
-    IF ( repro .and. density_dependent  ) THEN
-        dd_number_eggs   = number_eggs
-        number_eggs(:)   = 0.0_rlg
-        concentration    = dd_number_eggs / 50.d9 ! 50,000 km2: area considered
-
-        max_mort(1)      = (Zaa+(Zea-Zaa)*exp(-za*(0.35_rlg - 0.0855_rlg)))  ! For anchovy
-        max_mort(2)      = (Zas+(Zes-Zas)*exp(-zs*(0.35_rlg - 0.0855_rlg)))  ! For sardine
-    ENDIF
-
-    ! Remise a 0 de la matrice des oeufs pondus avant boucle sur les patches
-    IF ( repro ) mat_eggs       = 0._rsh
-#endif
-
 
 #ifdef MPI
    down_give  = 0
@@ -650,8 +631,6 @@ MODULE ibm
 
                 ! Buyoncy
                 particle%w = ibm_buoy(particle%density, particle%size, particle%temp, sal_part)
-
-                IF ( density_dependent ) number_eggs(ind_species) = number_eggs(ind_species) + particle%super
 
                 IF ( particle%Drate >= 1.0_rsh ) THEN
                     particle%Drate = 0.0_rsh
@@ -886,10 +865,9 @@ MODULE ibm
 
 
             ! ===========================================
-            ! ===    Divers mortalites sur les poissons 
-
+            ! ===    Different sources of mortality 
             !---------------------------------------------------------------
-            ! Mortality (Menu et al.)
+            ! Natural Mortality - size dependent (Menu et al.)
             Z1(ind_species) = 0.0_rlg
             IF (patch%species == 'anchovy') THEN        ! Equivalent to (ind_species == 1)
                 Z1(ind_species) =  (Zaa + (Zea - Zaa)*exp(-za*(particle%size - 0.0855_rlg))) ! size egg EN DUR
@@ -897,30 +875,9 @@ MODULE ibm
                 Z1(ind_species) =  (Zas + (Zes - Zas)*exp(-zs*(particle%size - 0.1608_rlg))) ! size egg EN DUR
             ENDIF
 
-
-
-
-
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!         DENSITE - DEPENDANCE NON SAPTIALISEE        !!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            ! --- Density dependent mortality of larvae in relation to the concentration of eggs (Somarakis, 2007) - density dependence from bueno pardo
-            IF ( density_dependent ) THEN
-                IF (particle%stage == 3 .OR. particle%stage == 4) THEN
-                    IF (concentration(ind_species) == 0._rsh) THEN
-                        Z2(ind_species) = 0
-                    ELSE 
-                        Z2(ind_species) =  -0.154_rlg + slope*log10(concentration(ind_species))
-                    ENDIF
-                    Z1(ind_species) = max(Z1(ind_species), Z1(ind_species) - max_mort(ind_species) + Z2(ind_species))
-                ENDIF
-            ENDIF
-
             ! The mortality of Somarakis is daily, so 86400 is OK
             particle%Death_NAT = particle%Death_NAT + particle%super*(1 - exp(-(Z1(ind_species)*dtm/86400_rlg))) 
             particle%super     = particle%super*exp(-Z1(ind_species)*dtm/86400_rlg)
-
-
 
             ! ================================================
             ! ===                                          ===
@@ -942,20 +899,15 @@ MODULE ibm
 
             !---------------------------------------------------------------
             ! Density dependance, name struc_ad misleading, we take everybody (Menu et al. 2023)
-            IF (particle%stage >= 3) struc_ad = struc_ad + (particle%WV*particle%super)  
+            IF (particle%stage >= 3) struc_ad(ind_species) = struc_ad(ind_species) + (particle%WV*particle%super)  
 
             !---------------------------------------------------------------
             ! Add all eggs in mat_eggs, matrix for spawn, looking at the species
             IF( repro ) THEN
                 ! When time to spawn comes, particle releases all accumulated eggs (Neggs) in mat_eggs where it is  
                 IF (time_to_spawn .and. particle%Neggs > 0.0_rsh) THEN
-
                     mat_eggs(NINT(particle%xpos),NINT(particle%ypos),ind_species) = particle%Neggs +   &
                                           mat_eggs( NINT(particle%xpos), NINT(particle%ypos),ind_species)
-
-                    ! Collect number of eggs for density-dependence on larvae
-                    IF ( density_dependent ) number_eggs(ind_species) = number_eggs(ind_species) + particle%Neggs
-
                     particle%Neggs = 0.0_rsh
                 END IF
 
@@ -1229,14 +1181,17 @@ MODULE ibm
 
 #ifdef IBM_SPECIES
     ! To change if muliple species (add (ind_species))
-    ! To get the total biomass for the whole domain, for mpi implementation 
-    CALL_MPI ADD_ALL_MPI_REAL(struc_ad)
-    ! Parametre pour mortalite et densite-dependance
-    struc_ad_dd_DEB = struc_ad
-    struc_ad        = 0._rlg
+    
 
     ! For catches
     DO i=1,nb_species
+
+        ! To get the total biomass for the whole domain, for mpi implementation 
+        CALL_MPI ADD_ALL_MPI_REAL(struc_ad(i))
+        ! Parametre pour mortalite et densite-dependance
+        struc_ad_dd_DEB(i) = struc_ad(i)
+        struc_ad(i)        = 0._rlg
+
         ! To get the total number and weight of fish for the whole domain, for mpi implementation
         CALL_MPI ADD_ALL_MPI_REAL(number_tot(i))
         CALL_MPI ADD_ALL_MPI_REAL(weight_tot(i))
@@ -1248,6 +1203,8 @@ MODULE ibm
             number_tot(i) = 0._rlg
         ENDIF
     ENDDO
+
+
 #endif /* IBM_SPECIES*/
 
 #ifdef MPI

@@ -81,12 +81,12 @@ MODULE debmodel
     ! Mortality and density-dependency parameters (Menu et al. 2023)
     ! REAL(KIND=rsh)                  :: gammaA     = 0.447_rsh ! with selectivity
     ! REAL(KIND=rsh)                  :: K_biomassA = 10.670_rlg ! with selectivity
-    REAL(KIND=rsh)                  :: gammaS     = 0.703343166175024681053_rsh ! with selectivity
-    REAL(KIND=rsh)                  :: K_biomassS = 85.315712187958894219264_rlg ! with selectivity
+    ! REAL(KIND=rsh)                  :: gammaS     = 0.703343166175024681053_rsh ! with selectivity
+    ! REAL(KIND=rsh)                  :: K_biomassS = 85.315712187958894219264_rlg ! with selectivity
     ! REAL(KIND=rsh), PUBLIC          :: Zea       = 0.063 ! with selectivity
-    REAL(KIND=rsh), PUBLIC          :: Zes       = 0.072 ! with selectivity
+    ! REAL(KIND=rsh), PUBLIC          :: Zes       = 0.072 ! with selectivity
     ! REAL(KIND=rsh), PUBLIC          :: za        = 0.154 ! with selectivity
-    REAL(KIND=rsh), PUBLIC          :: zs        = 0.179 ! with selectivity
+    ! REAL(KIND=rsh), PUBLIC          :: zs        = 0.179 ! with selectivity
 
     REAL(KIND=rsh), PUBLIC          :: Zaa       = 0.0
     REAL(KIND=rsh), PUBLIC          :: Zas       = 0.0
@@ -97,7 +97,10 @@ MODULE debmodel
     REAL(KIND=rsh)                  :: K_biomassA = 6.156_rlg
     REAL(KIND=rsh), PUBLIC          :: Zea       = 0.056
     REAL(KIND=rsh), PUBLIC          :: za        = 0.136
-
+    REAL(KIND=rsh)                  :: gammaS     = 0.387_rsh
+    REAL(KIND=rsh)                  :: K_biomassS = 3.626_rlg
+    REAL(KIND=rsh), PUBLIC          :: Zes       = 0.075
+    REAL(KIND=rsh), PUBLIC          :: zs        = 0.201
 
  !!===================================================================================================================================
  !!===================================================================================================================================
@@ -695,10 +698,10 @@ MODULE debmodel
         ! -- Densite-dependance  (Menu et al. 2023)
         IF (particle%WV > 0) THEN
                 IF (species == 'anchovy') THEN
-                    f = X / (X + K_food + struc_ad_dd_DEB/(K_biomassA*10d8*particle%WV**gammaA) ) !BD weight effect  
+                    f = X / (X + K_food + struc_ad_dd_DEB(1)/(K_biomassA*10d8*particle%WV**gammaA) ) !BD weight effect  
                 ENDIF
                 IF (species == 'sardine') THEN
-                    f = X / (X + K_food + struc_ad_dd_DEB/(K_biomassS*10d8*particle%WV**gammaS) ) !BD weight effect     
+                    f = X / (X + K_food + struc_ad_dd_DEB(2)/(K_biomassS*10d8*particle%WV**gammaS) ) !BD weight effect     
                 ENDIF    
         ELSE
             f = X/(X + K_food) 

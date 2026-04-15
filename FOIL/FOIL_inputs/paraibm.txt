@@ -64,7 +64,7 @@
 	alpha_w  = 0.8 /
 :
 :-----------------------------------------------------------------------------
-: namibmout	OUTPUT PARAMETERS FOR THE IBM
+: namibmpop	OUTPUT PARAMETERS FOR THE IBM
 :-----------------------------------------------------------------------------
 :
 : repro             : activate or deactivate reproduction of species
@@ -78,6 +78,7 @@
 : multiplier_tac    : multiplicative factor to regulate catches, between 0 and 1
 : month_sp_season   : month at which new spawning season starts, on which new patch creation depends
 :-----------------------------------------------------------------------------
+:
  &namibmout
     repro             = .true.
 	dt_spawn          = 72
