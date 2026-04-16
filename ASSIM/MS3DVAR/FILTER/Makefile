@@ -5,7 +5,7 @@
 
 # Variant-specific settings
 VARIANT_NAME = FILTER
-SBIN = msfilter
+SBIN = ms3dvar-filter
 
 # FILTER-specific sources (not in common Makefile.inc)
 VARIANT_SRCS = netcdf_filtered.F das_filter.F

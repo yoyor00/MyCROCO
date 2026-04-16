@@ -433,7 +433,7 @@ if [[ ${options[@]} =~ "ms3dvar" ]] ; then
     MS3DVAR_DIR=${CROCO_DIR}/ASSIM/MS3DVAR
 
     # Create MS3DVAR parent work directory
-    MS3DVAR_PARENT_DIR=${MY_CONFIG_WORK}/MS3DVAR
+    MS3DVAR_PARENT_DIR=${MY_CONFIG_WORK}/ASSIM/MS3DVAR
     mkdir -p $MS3DVAR_PARENT_DIR
 
     # Copy and configure jobcomp to MS3DVAR parent directory (for building all variants)
@@ -480,7 +480,7 @@ if [[ ${options[@]} =~ "ms3dvar" ]] ; then
         VARIANT_DIR=$(echo ${MS3DVAR_VARIANT} | tr '[:lower:]' '[:upper:]')
 
         # Create MS3DVAR work directory
-        MS3DVAR_WORK_DIR=${MY_CONFIG_WORK}/MS3DVAR/${VARIANT_DIR}
+        MS3DVAR_WORK_DIR=${MY_CONFIG_WORK}/ASSIM/MS3DVAR/${VARIANT_DIR}
         mkdir -p $MS3DVAR_WORK_DIR
 
         # Copy variant-specific configuration files
