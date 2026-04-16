@@ -252,7 +252,8 @@ function build_variant() {
     cd "${variant_dir}" || { echo "ERROR: Cannot enter ${variant_dir}"; return 1; }
 
     RUNDIR="$(pwd)"
-    SCRDIR="./Compile"
+    COMPILE_DIR="./Compile"
+    SCRDIR=$COMPILE_DIR  # backward-compat alias
 
     # Convert relative source paths to absolute now (before cd into Compile subdir)
     [[ ! "${MS3DVAR_SOURCE}" = /* ]] && MS3DVAR_SOURCE="$(cd "${MS3DVAR_SOURCE}" && pwd)"
@@ -260,8 +261,8 @@ function build_variant() {
 
     # Clean scratch area
     echo "Preparing compilation directory..."
-    rm -rf "$SCRDIR"
-    mkdir "$SCRDIR"
+    rm -rf "$COMPILE_DIR"
+    mkdir "$COMPILE_DIR"
     echo ""
 
     # Load module if needed
@@ -292,65 +293,65 @@ function build_variant() {
 
     # Copy CROCO source files needed for MS3DVAR
     echo "Copying CROCO source files..."
-    ls "${CROCO_SOURCE}/"*.F       > /dev/null 2>&1 && \cp "${CROCO_SOURCE}/"*.F   "$SCRDIR"
-    ls "${CROCO_SOURCE}/"*.F90     > /dev/null 2>&1 && \cp "${CROCO_SOURCE}/"*.F90 "$SCRDIR"
-    ls "${CROCO_SOURCE}/"*.h       > /dev/null 2>&1 && \cp "${CROCO_SOURCE}/"*.h   "$SCRDIR"
+    ls "${CROCO_SOURCE}/"*.F       > /dev/null 2>&1 && \cp "${CROCO_SOURCE}/"*.F   "$COMPILE_DIR"
+    ls "${CROCO_SOURCE}/"*.F90     > /dev/null 2>&1 && \cp "${CROCO_SOURCE}/"*.F90 "$COMPILE_DIR"
+    ls "${CROCO_SOURCE}/"*.h       > /dev/null 2>&1 && \cp "${CROCO_SOURCE}/"*.h   "$COMPILE_DIR"
     echo "CROCO sources copied"
     echo ""
 
     # Save CROCO's param.h as croco_ocean_param.h before variant files overwrite it.
     # MS3DVAR includes this (with MS3DVAR_GRID_PARAMS guard) to get the physics/tracer
     # parameters from the real CROCO param.h, avoiding duplication in croco_extra_params.h.
-    \cp "${CROCO_SOURCE}/param.h" "${SCRDIR}/croco_ocean_param.h"
+    \cp "${CROCO_SOURCE}/param.h" "${COMPILE_DIR}/croco_ocean_param.h"
 
     # Copy MS3DVAR common source files
     echo "Copying MS3DVAR common source files..."
-    ls "${MS3DVAR_SOURCE}/COMMON/"*.F   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.F   "$SCRDIR"
-    ls "${MS3DVAR_SOURCE}/COMMON/"*.F90 > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.F90 "$SCRDIR"
-    ls "${MS3DVAR_SOURCE}/COMMON/"*.h   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.h   "$SCRDIR"
+    ls "${MS3DVAR_SOURCE}/COMMON/"*.F   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.F   "$COMPILE_DIR"
+    ls "${MS3DVAR_SOURCE}/COMMON/"*.F90 > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.F90 "$COMPILE_DIR"
+    ls "${MS3DVAR_SOURCE}/COMMON/"*.h   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.h   "$COMPILE_DIR"
     echo "MS3DVAR common sources copied"
     echo ""
 
     # Copy variant Makefile to compilation directory
     echo "Copying build system files..."
-    \cp "${MS3DVAR_SOURCE}/${var_upper}/Makefile" "$SCRDIR"
+    \cp "${MS3DVAR_SOURCE}/${var_upper}/Makefile" "$COMPILE_DIR"
     echo "Build system copied"
     echo ""
 
     # Place modified Makefile.inc directly in Compile/.
     # The variant Makefile uses "include Makefile.inc" (same directory).
     echo "Configuring Makefile.inc..."
-    \cp "${MS3DVAR_SOURCE}/Makefile.inc" "${SCRDIR}/Makefile.inc"
-    sed -i 's|^COMMON_DIR = .*|COMMON_DIR = .|' "${SCRDIR}/Makefile.inc" 2>/dev/null || true
-    sed -i 's|^CROCO_SRC = .*|CROCO_SRC = .|' "${SCRDIR}/Makefile.inc" 2>/dev/null || true
-    sed -i 's|^VPATH = .*|VPATH = .|' "${SCRDIR}/Makefile.inc" 2>/dev/null || true
+    \cp "${MS3DVAR_SOURCE}/Makefile.inc" "${COMPILE_DIR}/Makefile.inc"
+    sed -i 's|^COMMON_DIR = .*|COMMON_DIR = .|' "${COMPILE_DIR}/Makefile.inc" 2>/dev/null || true
+    sed -i 's|^CROCO_SRC = .*|CROCO_SRC = .|' "${COMPILE_DIR}/Makefile.inc" 2>/dev/null || true
+    sed -i 's|^VPATH = .*|VPATH = .|' "${COMPILE_DIR}/Makefile.inc" 2>/dev/null || true
     echo "Makefile.inc configured"
     echo ""
 
     # Copy all variant-specific source files from MS3DVAR_SOURCE (the versioned source)
     echo "Copying variant-specific files..."
-    ls "${MS3DVAR_SOURCE}/${var_upper}/"*.h   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.h   "$SCRDIR"
-    ls "${MS3DVAR_SOURCE}/${var_upper}/"*.F   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.F   "$SCRDIR"
-    ls "${MS3DVAR_SOURCE}/${var_upper}/"*.F90 > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.F90 "$SCRDIR"
+    ls "${MS3DVAR_SOURCE}/${var_upper}/"*.h   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.h   "$COMPILE_DIR"
+    ls "${MS3DVAR_SOURCE}/${var_upper}/"*.F   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.F   "$COMPILE_DIR"
+    ls "${MS3DVAR_SOURCE}/${var_upper}/"*.F90 > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.F90 "$COMPILE_DIR"
     echo "Configuration files copied"
     echo ""
 
     # Overwrite with user local files (if any)
     echo "Checking for user local files..."
-    ls *.F90   > /dev/null 2>&1 && \cp -f *.F90 "$SCRDIR" && echo "  User .F90 files copied"
-    ls *.F     > /dev/null 2>&1 && \cp -f *.F "$SCRDIR" && echo "  User .F files copied"
-    ls *.h     > /dev/null 2>&1 && \cp -f *.h "$SCRDIR" && echo "  User .h files copied"
-    ls *.h90   > /dev/null 2>&1 && \cp -f *.h90 "$SCRDIR" && echo "  User .h90 files copied"
-    ls Makefile > /dev/null 2>&1 && \cp -f Makefile "$SCRDIR" && echo "  User Makefile override copied"
+    ls *.F90   > /dev/null 2>&1 && \cp -f *.F90 "$COMPILE_DIR" && echo "  User .F90 files copied"
+    ls *.F     > /dev/null 2>&1 && \cp -f *.F "$COMPILE_DIR" && echo "  User .F files copied"
+    ls *.h     > /dev/null 2>&1 && \cp -f *.h "$COMPILE_DIR" && echo "  User .h files copied"
+    ls *.h90   > /dev/null 2>&1 && \cp -f *.h90 "$COMPILE_DIR" && echo "  User .h90 files copied"
+    ls Make*   > /dev/null 2>&1 && \cp -f Make* "$COMPILE_DIR" && echo "  User Make* files copied"
     echo ""
 
     # Build mpc preprocessor from CROCO source (needed by Makedefs suffix rules)
     echo "Building mpc preprocessor from CROCO source..."
-    ${FC} -o ${SCRDIR}/mpc ${CROCO_SOURCE}/mpc.F || { echo "ERROR: Failed to build mpc"; cd ..; return 1; }
+    ${FC} -o ${COMPILE_DIR}/mpc ${CROCO_SOURCE}/mpc.F || { echo "ERROR: Failed to build mpc"; cd ..; return 1; }
     echo ""
 
     # Change to compilation directory
-    cd "$SCRDIR" || { echo "ERROR: Cannot enter compilation directory"; cd ..; return 1; }
+    cd "$COMPILE_DIR" || { echo "ERROR: Cannot enter compilation directory"; cd ..; return 1; }
 
     # Determine OS-based compiler settings (mirrors CROCO OCEAN jobcomp)
     OS_NAME=$(uname)

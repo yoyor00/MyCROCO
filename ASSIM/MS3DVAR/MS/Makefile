@@ -5,7 +5,7 @@
 
 # Variant-specific settings
 VARIANT_NAME = MS
-SBIN = msms
+SBIN = ms3dvar-ms
 
 # MS-specific sources (not in common Makefile.inc)
 VARIANT_SRCS = das_add_lr.F das_get_initial_lr.F
