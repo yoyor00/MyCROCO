@@ -253,7 +253,7 @@ MODULE trajinitsave
 
     ! DEB-IBM and SPECIES 
 #ifdef DEB_IBM
-    INTEGER                                     :: ageClass,number_particle,stage
+    INTEGER                                     :: ageClass,stage
     REAL(KIND=rlg)                              :: size, density, super, age
 #ifdef IBM_SPECIES
     REAL(KIND=rlg)                              :: E_deb,H_deb,R_deb,Gam_deb
@@ -511,7 +511,7 @@ MODULE trajinitsave
             ! Read ray of initial patch
             READ(49,*,iostat=eof) ray_patch
 
-            ! Read nbpart_patch
+            ! Read nbpart_patch (for a given depth, then total number will depend on the vertical resolution set in patch file)
             READ(49,*,iostat=eof) nbpart_patch
 
             ! Read depth of initial patch (read as immersion in meters)
@@ -525,7 +525,7 @@ MODULE trajinitsave
             kmin_patch  = ABS(kmin_patch)
             kmax_patch  = ABS(kmax_patch)
 
-            ! Number of particles set at each initial position
+            ! Number of particles set at each exact initial position (x,y,z)
             READ(49,*,iostat=eof) nb_part_intro
 
             ! Type of vertical behavior (integer):
@@ -747,7 +747,7 @@ MODULE trajinitsave
             ! Read resolution depth of initial patch
             READ(49,*,iostat=eof) kstep_patch
 
-            ! Number of particles set at each initial position
+            ! Number of particles set at each exact initial position (x,y,z)
             READ(49,*,iostat=eof) nb_part_intro
 
             ! Type of vertical behavior (integer):
@@ -883,7 +883,7 @@ MODULE trajinitsave
 #endif               
             END IF
 
-            ! Number of particles set at each initial position
+            ! Number of particles set at each exact initial position (x,y,z)
             READ(49,*,iostat=eof) nb_part_intro
 
             ! Type of vertical behavior (integer):
@@ -901,7 +901,6 @@ MODULE trajinitsave
             ! Done here because starting values are given in patch file which 
             ! is read in this routine
             READ(49,'(a)',iostat=eof) species
-            READ(49,*, iostat=eof) number_particle
             READ(49,*, iostat=eof) stage
             READ(49,*, iostat=eof) size
             READ(49,*, iostat=eof) super
