@@ -767,7 +767,8 @@ MODULE debmodel
         ENDIF   ! if (species == 'anchovy') 
     
         IF (species == 'sardine') THEN
-            IF (.not. particle%season .and. ((month >= 3 .and. month < 7) .or. (month >= 10 .and. month < 12))) THEN ! &
+            IF (.not. particle%season .and. ((month >= 3 .and. month < 7))) THEN ! only spring spawning
+            !IF (.not. particle%season .and. ((month >= 3 .and. month < 7) .or. (month >= 10 .and. month < 12))) THEN ! &
                 !.and. (particle%age>=624)) THEN ! printemps + automne - hiver
                 particle%season = .TRUE.
             ENDIF
@@ -822,13 +823,7 @@ MODULE debmodel
             IF (Gam > Eb*2.0_rsh) THEN  ! enough energy to spawn 1 batch and same amount remains for vitellogenesis (Somarakis Reproduce Del.), explicit
                 Ebatch = Eb
                 particle%Nbatch = particle%Nbatch + 1
-
-                IF(species=='anchovy') THEN
-                    particle%Neggs = particle%Neggs + Ebatch/E0*(particle%super/2.0_rlg)           ! total egg spawned per particle over dt_spawn (see ibm) 
-                ENDIF
-                IF(month <= 7 .and. species == 'sardine') THEN
-                    particle%Neggs = particle%Neggs + Ebatch/E0*(particle%super/2.0_rlg)           ! total egg spawned per particle over dt_spawn (see ibm) 
-                ENDIF
+                particle%Neggs = particle%Neggs + Ebatch/E0*(particle%super/2.0_rlg)           ! total egg spawned per particle over dt_spawn (see ibm) 
                 particle%Neggs_tot = particle%Neggs_tot + Ebatch/E0*(particle%super/2.0_rlg)       ! total egg spawned per particle over life cycle
 
                 !test if first batch...
