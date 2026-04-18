@@ -391,7 +391,7 @@ MODULE ibm
     !&E                     deb_cycle,readfood3d
     !&E
     !&E ** Reference      : Menu et al. (2023), Bueno-Pardo et al. (2020), Gatti et al. (2017), Huret et al. (2010), 
-    !&E                     Boussouar et al. (2001), , Regner (1996), Zweifel&Lasker (1976), Rose el al. (2015)
+    !&E                     Boussouar et al. (2001), Regner (1996), Zweifel&Lasker (1976), Rose el al. (2015)
     !&E                     Boyra (2013), Ospina (2012), Somarakis (2007)
     !&E
     !&E ** History :

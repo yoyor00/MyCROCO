@@ -767,7 +767,7 @@ MODULE debmodel
         ENDIF   ! if (species == 'anchovy') 
     
         IF (species == 'sardine') THEN
-            IF (.not. particle%season .and. ((month >= 2 .and. month < 7) .or. (month >= 10 .and. month < 12))) THEN ! &
+            IF (.not. particle%season .and. ((month >= 3 .and. month < 7) .or. (month >= 10 .and. month < 12))) THEN ! &
                 !.and. (particle%age>=624)) THEN ! printemps + automne - hiver
                 particle%season = .TRUE.
             ENDIF
@@ -848,12 +848,12 @@ MODULE debmodel
                 ! just to make sure we don't spawn again within the same year
                 IF ((jjulien > particle%dayspawn + 120 .or. month > 8)  ) THEN    
                     particle%dayspawn = 367                                     
-                    lastbatch           = .true.
+                    lastbatch         = .true.
                 ENDIF
             ENDIF !if (species == 'anchovy')
 
             IF (species == 'sardine') THEN
-                IF(((month >= 7 .and. month < 10) .or. (month == 1) .or. (month == 12))) lastbatch = .true.
+                IF(((month >= 7 .and. month < 10) .or. (month <= 2) .or. (month == 12))) lastbatch = .true.
             ENDIF !if (species == 'sardine')
 
             IF ( lastbatch ) THEN
