@@ -27,28 +27,35 @@
       call pre_step3d_tile (Istr,Iend,Jstr,Jend,
      &                A3d(1,1,trd), A3d(1,2,trd), A3d(1,3,trd),
      &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
+     &                A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd)
+     &                                          , A3d(1,4,trd)         
 # ifdef VADV_ADAPT_IMP
-     &                                            A2d(1,4,trd),
+     &                                          , A2d(1,7,trd)
 # endif
-     &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd)
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+     &                  , A2d(1,8,trd), A2d(1,9,trd),
+     &                    A2d(1,10,trd), A2d(1,11,trd)
+#  endif
 # ifdef OPENACC
-     &   ,A3d(1,4,trd),A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd)
+     &   ,A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd),A3d(1,8,trd)
 # endif
-     &                                          , A3d(1,8,trd)         
      &                                                        )
       return
       end
 
       subroutine pre_step3d_tile (Istr,Iend,Jstr,Jend, ru,rv,rw,
      &                                                 FC,CF,DC,
-# ifdef VADV_ADAPT_IMP
-     &                                                       WC,
-# endif
      &                                               FX,FE,WORK
+     &                                                 ,Hz_half
+# ifdef VADV_ADAPT_IMP
+     &                                                      ,WC
+# endif
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+     &                            ,ZDXT, ZDYT, zslpx, zslpy
+#  endif
 # ifdef OPENACC
      &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
 # endif
-     &                                                 ,Hz_half
      &                                                         )
 !
 !--------------------------------------------------------------------

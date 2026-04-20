@@ -29,6 +29,10 @@
      &                    A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                    A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
      &                                                A3d(1,1,trd)
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+     &                  , A2d(1,10,trd), A2d(1,11,trd),
+     &                    A2d(1,12,trd), A2d(1,13,trd)
+#  endif
 #  ifdef OPENACC
      &   ,A3d(1,2,trd),A3d(1,3,trd),A3d(1,4,trd),A3d(1,5,trd)
 #  endif
@@ -40,6 +44,9 @@
 # ifdef TRACERS
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+     &                           ,ZDXT, ZDYT, zslpx, zslpy
+#  endif
 #  ifdef OPENACC
      &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
 #  endif
