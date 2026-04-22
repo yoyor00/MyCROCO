@@ -56,6 +56,10 @@ PISCES (Pelagic Interactions Scheme for Carbon and Ecosystem Studies)
   Copyright (C) O. Aumont, LOCEAN/IPSL
   License: CeCILL
 
+STOGEN (Stochastic parameterization)
+  Copyright (C) J-M. Brankart
+  License: CeCILL
+
 MUSTANG (MUd and Sand TrANsport modellinG)
   Copyright (C) IFREMER
   License: CeCILL-C
