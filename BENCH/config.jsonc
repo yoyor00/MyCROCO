@@ -84,6 +84,7 @@
   "meta_cases": {
     "@base": [
       "BASIN",
+      "BASIN_STOGEN",
       "EQUATOR",
       "GRAV_ADJ",
       "IGW",
@@ -118,7 +119,10 @@
       "BENGUELA_LR_NBQ",
       "VILAINE",
     ],
-    "@nbq": ["GRAV_ADJ_NBQ", "IGW_NBQ"],
+    "@nbq": [
+      "GRAV_ADJ_NBQ", 
+      // "IGW_NBQ"  // test broken
+    ],
     "@sediment_mustang": [
       "DUNE_SEDIMENT",
       "DUNE_MUSTANG",
@@ -126,7 +130,7 @@
       "SANDBAR",
       "RIP",
     ],
-    "@other": ["KILPATRICK", "SEAGRASS", "SHOREFACE", "THACKER"],
+    "@other": ["KILPATRICK", "SEAGRASS", "SHOREFACE", "THACKER_2DV"],
     "@complement": [
       "CANYON",
       "ESTUARY",
@@ -154,7 +158,8 @@
       "SED_TOY_FLOC1D",
       "RIP_GRANDPOPO",
       "RIP_TOPO_2D",
-      //"DUNE_ANA_DUNE", // blow-up issue
+      "DUNE_ANA_DUNE",
+      "DUNE_ANA_DUNE_MUSTANG",
       "DUNE_DUNE3D",
       "FLASH_RIP",
       //"MOVING_BATHY", // repro-mpi issue

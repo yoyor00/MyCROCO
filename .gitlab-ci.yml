@@ -310,7 +310,7 @@ plotphy_realist:
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py \
-      --case BENGUELA_LR_TIDES_BULK \
+      --case BENGUELA_LR_TIDES_BULK,VILAINE \
       --variants mpi-4 \
       --title plotphy_realist \
       -s build,run,plotphy \
@@ -326,7 +326,7 @@ plotphy_realist:
     reports:
       junit: BENCH/results/plotphy_realist-host_ci/junit_report.xml
   rules:
-      - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 
@@ -384,7 +384,7 @@ debug_complement:
     reports:
       junit: BENCH/results/debug-complement-host_ci/junit_report.xml
   rules:
-      - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 plotphy_complement:
@@ -414,7 +414,7 @@ plotphy_complement:
     reports:
       junit: BENCH/results/plotphy-complement-host_ci/junit_report.xml
   rules:
-      - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 plotphy_complement_sequential:
@@ -444,7 +444,7 @@ plotphy_complement_sequential:
     reports:
       junit: BENCH/results/plotphy-complement-sequential-host_ci/junit_report.xml
   rules:
-      - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 track_perf:
@@ -500,11 +500,11 @@ pages:
     - ci.inria.fr
   image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
   script:
-    - mkdir -p $CI_PROJECT_DIR/public/dev
+    - mkdir -p $CI_PROJECT_DIR/public
     - cd $CI_PROJECT_DIR/BENCH
     - source /venv/bin/activate
     - ./bench-croco.py --globalhtml
-    - cp -R $CI_PROJECT_DIR/BENCH/results $CI_PROJECT_DIR/public/dev
+    - cp -R $CI_PROJECT_DIR/BENCH/results $CI_PROJECT_DIR/public
   artifacts:
     paths:
       - public

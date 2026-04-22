@@ -540,6 +540,34 @@ CR      write(stdout,'(1x,A,I3)') 'indxS = ',indxS
       vname(7,indxS)='                                            '
 # endif /* SALINITY */
 
+# ifdef STOGEN
+CR      write(stdout,'(1x,A,I3)') 'indxXIsto2d = ',indxXIsto2d
+      vname(1,indxXIsto2d)='sto_xi_2d                                 '
+      vname(2,indxXIsto2d)='2D Stochastic autoregressive process      '
+      vname(3,indxXIsto2d)='no unit                                   '
+      vname(4,indxXIsto2d)='[attrs]                                   '
+      vname(5,indxXIsto2d)='stochastic_field_2d                       '
+#ifdef SPHERICAL
+      vname(6,indxXIsto2d)='lat_rho lon_rho                           '
+#else
+      vname(6,indxXIsto2d)='x_rho y_rho                               '
+#endif
+      vname(7,indxXIsto2d)='                                          '
+
+CR      write(stdout,'(1x,A,I3)') 'indxXIsto3d = ',indxXIsto3d
+      vname(1,indxXIsto3d)='sto_xi_3d                                 '
+      vname(2,indxXIsto3d)='3D Stochastic autoregressive process      '
+      vname(3,indxXIsto3d)='no unit                                   '
+      vname(4,indxXIsto3d)='[attrs]                                   '
+      vname(5,indxXIsto3d)='stochastic_field_3d                       '
+#ifdef SPHERICAL
+      vname(6,indxXIsto3d)='lat_rho lon_rho                           '
+#else
+      vname(6,indxXIsto3d)='x_rho y_rho                               '
+#endif
+      vname(7,indxXIsto3d)='                                          '
+# endif /* STOGEN */
+
 # ifdef PASSIVE_TRACER
       do i=1,ntrc_pas
         if( i < 10) then

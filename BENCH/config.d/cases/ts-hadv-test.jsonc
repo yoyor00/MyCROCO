@@ -11,9 +11,17 @@
       "8": "2x4",
       "16": "4x4",
     },
+    "cppkeys": {
+      "DIAGONAL_ADV": true,
+      "SOLID_BODY_PER": false,
+    },
     "patches": {},
-    "input_file": "TEST_CASES/croco.in.TS_adv_rep",
-    "check_outputs": ["croco_his_body_rot.nc"],
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_ts_hadv_test.py",
+      "plotphy_script_input": "croco_his_diag_adv.nc",
+    },
+    "input_file": "TEST_CASES/croco.in.TS_adv_diag",
+    "check_outputs": ["croco_his_diag_adv.nc"],
     "unsupported": ["restart", "openmp"],
   },
 }

@@ -108,7 +108,7 @@ class Report:
             status_check = infos["status"]["check"]["status"]
             status_plotphy = infos["status"]["plotphy"]["status"]
 
-            cprint(f"{full_name:<40} ", "white", end="")
+            cprint(f"{full_name:<40} ", "magenta", end="")
             cprint(f"{str(status_build):<8} ", self.get_color(status_build), end="")
             cprint(f"{str(status_run):<8} ", self.get_color(status_run), end="")
             cprint(f"{str(status_check):<8} ", self.get_color(status_check), end="")
