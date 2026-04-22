@@ -26,8 +26,7 @@
 #   MS3DVAR_NETCDFLIB    : NetCDF library path
 #   MS3DVAR_NETCDFINC    : NetCDF include path
 #   MS3DVAR_NPROCS       : number of parallel compilation jobs
-#   CROCO_SRC            : CROCO source directory
-#   MS3DVAR_SRC          : MS3DVAR source directory
+#   CROCO_SRC            : CROCO OCEAN source directory (same as in OCEAN/jobcomp)
 #
 
 ####################################################
@@ -37,11 +36,8 @@
 # Default: build all variants (set to specific variant like "lr" to change default)
 VARIANT="all"
 
-# CROCO source directory (default: ../../OCEAN from work dir)
+# CROCO OCEAN source directory (default: ../../OCEAN from work dir)
 SOURCE1="../../OCEAN"
-
-# MS3DVAR source directory (default: .. from work dir, i.e., ASSIM/MS3DVAR)
-SOURCE2=".."
 
 # Compiler
 FC="gfortran"
@@ -85,8 +81,7 @@ function show_help() {
     echo "Options:"
     echo "  -h, --help                  Show this help message and exit"
     echo "  --variant <name>            Alternative way to specify single variant"
-    echo "  --croco-src <path>          CROCO source directory (default: ../../OCEAN)"
-    echo "  --ms3dvar-src <path>        MS3DVAR source directory (default: ..)"
+    echo "  --croco-src <path>          CROCO OCEAN source directory (default: ../../OCEAN)"
     echo "  --fc <compiler>             Fortran compiler (default: gfortran)"
     echo "  --fflags <flags>            Compilation flags"
     echo "  --netcdf-inc <path>         NetCDF include directory"
@@ -158,10 +153,6 @@ while [[ $# -gt 0 ]]; do
             SOURCE1="$2"
             shift 2
             ;;
-        --ms3dvar-src)
-            SOURCE2="$2"
-            shift 2
-            ;;
         --clean)
             DO_CLEAN=1
             shift
@@ -200,9 +191,9 @@ fi
 [ -n "$MS3DVAR_NETCDFLIB" ] && NETCDFLIB="$MS3DVAR_NETCDFLIB"
 [ -n "$MS3DVAR_NPROCS" ] && NPROCS="$MS3DVAR_NPROCS"
 
-# Set source directories (allow override via env variables)
+# Set source directories
 CROCO_SOURCE="${CROCO_SRC:-$SOURCE1}"
-MS3DVAR_SOURCE="${MS3DVAR_SRC:-$SOURCE2}"
+MS3DVAR_SOURCE="${CROCO_SOURCE}/../ASSIM/MS3DVAR"
 
 # Handle "all" variant
 VARIANT_LOWER=$(echo "$VARIANT" | tr '[:upper:]' '[:lower:]')
@@ -255,9 +246,9 @@ function build_variant() {
     COMPILE_DIR="./Compile"
     SCRDIR=$COMPILE_DIR  # backward-compat alias
 
-    # Convert relative source paths to absolute now (before cd into Compile subdir)
-    [[ ! "${MS3DVAR_SOURCE}" = /* ]] && MS3DVAR_SOURCE="$(cd "${MS3DVAR_SOURCE}" && pwd)"
+    # Convert relative paths to absolute now (before cd into Compile subdir)
     [[ ! "${CROCO_SOURCE}" = /* ]] && CROCO_SOURCE="$(cd "${CROCO_SOURCE}" && pwd)"
+    MS3DVAR_SOURCE="${CROCO_SOURCE}/../ASSIM/MS3DVAR"
 
     # Clean scratch area
     echo "Preparing compilation directory..."
@@ -286,7 +277,7 @@ function build_variant() {
 
     if [ ! -d ${MS3DVAR_SOURCE}/COMMON ]; then
         echo "ERROR: MS3DVAR source files not found at ${MS3DVAR_SOURCE}/"
-        echo "Please specify the correct path with --ms3dvar-src /path/to/MS3DVAR"
+        echo "Please specify the correct path with --croco-src /path/to/OCEAN"
         cd ..
         return 1
     fi

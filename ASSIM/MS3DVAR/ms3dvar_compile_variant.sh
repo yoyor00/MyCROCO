@@ -13,7 +13,7 @@
 #   MPC_PATH  : path to the pre-built mpc binary (artifact from compile_mpc task)
 #
 # Environment variables (set by WOOM hosts.cfg ms3dvar_compile env):
-#   MS3DVAR_SRC, CROCO_SRC, FC, CPP1, CFT1, FFLAGS1, CPPFLAGS1, LDFLAGS1, NPROCS
+#   CROCO_SRC, FC, CPP1, CFT1, FFLAGS1, CPPFLAGS1, LDFLAGS1, NPROCS
 #
 # WOOM runs this script from the task run_dir (already set as cwd).
 # All source files are copied in; the built executable stays in run_dir
@@ -24,8 +24,9 @@ set -e
 VARIANT="${1:?Usage: $0 VARIANT MPC_PATH}"
 MPC_PATH="${2:?MPC_PATH required}"
 
-: "${MS3DVAR_SRC:?MS3DVAR_SRC env var is not set}"
 : "${CROCO_SRC:?CROCO_SRC env var is not set}"
+
+MS3DVAR_SRC="${CROCO_SRC}/../ASSIM/MS3DVAR"
 
 echo "===== MS3DVAR compile: ${VARIANT} ====="
 echo "MS3DVAR_SRC : ${MS3DVAR_SRC}"
@@ -75,6 +76,10 @@ sed -f flags.tmp "${MS3DVAR_SRC}/Makedefs.generic" > Makedefs
 rm -f flags.tmp
 
 # ---- Build -----------------------------------------------------------
+# Remove stale Fortran module files: make's built-in .mod.o rule (for MATLAB)
+# takes priority over our .F90.o suffix rule when .mod files exist from a
+# previous run, causing spurious "m2c: No such file or directory" errors.
+rm -f *.mod
 make -j${NPROCS} all
 
 echo ""
