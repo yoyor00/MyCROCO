@@ -155,7 +155,6 @@
  * INITIAL CONDITIONS
  *---------------------------------------------------------------------*/
 # define ANA_INITIAL    /* Analytical initial conditions */
-# define ZCLIMATOLOGY   /* Enable clmname for LR initial conditions file */
 
 /*---------------------------------------------------------------------
  * SURFACE FORCING (Analytical for standalone testing)
