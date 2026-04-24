@@ -8,7 +8,7 @@ VARIANT_NAME = LR
 SBIN = ms3dvar-lr
 
 # LR-specific sources (not in common Makefile.inc)
-VARIANT_SRCS = das_add_lr.F das_get_initial_lr.F
+VARIANT_SRCS = das_get_initial.F
 
 # Include common build rules
 include Makefile.inc

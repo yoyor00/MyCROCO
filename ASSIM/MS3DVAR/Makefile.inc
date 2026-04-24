@@ -107,7 +107,7 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 	das_get_auv.F das_innov_calauv.F das_cost_calauv.F das_adj_cauv.F\
 	das_innov_dorauv.F das_cost_dorauv.F das_adj_dauv.F\
 	das_innov_hfradar.F das_cost_hfradar.F das_adj_chfradar.F\
-	das_copy.F das_setup.F das_get_initial.F das_cost_reg.F das_adj_cost_reg.F\
+	das_copy.F das_setup.F das_cost_reg.F das_adj_cost_reg.F\
 	das_add_lr_s.F das_add_zeta_lr_s.F das_ca2zero_s.F\
 	das_interp_lr.F das_nf_fread_lr.F\
 \
