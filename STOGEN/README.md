@@ -149,3 +149,9 @@ more than a few lines of code (e.g. a call to a routine) in the main CROCO code.
   If we need OpenMP, this would require modifying the range of the variations
   of the i and j indices in the whole stochastic code (as it is done for PISCES).
   This would also require a testcase with OpenMP.
+
+
+## License
+
+Copyright (C) J.-M. Brankart
+License: CeCILL — see LICENSES/LICENSE_STOGEN.txt
