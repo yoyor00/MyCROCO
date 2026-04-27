@@ -155,7 +155,6 @@
  * INITIAL CONDITIONS
  *---------------------------------------------------------------------*/
 # define ANA_INITIAL    /* Analytical initial conditions */
-# define ZCLIMATOLOGY   /* Enable clmname for LR initial conditions file */
 
 /*---------------------------------------------------------------------
  * SURFACE FORCING (Analytical for standalone testing)
@@ -206,7 +205,11 @@
  * These override the defaults in cppdefs_ms3dvar.h
  *=====================================================================*/
 
-/* No MR-specific overrides currently - using defaults from cppdefs_ms3dvar.h */
+/* MR-specific overrides currently - using defaults from cppdefs_ms3dvar.h */
+
+#define  DAS_READ_INC          /* Read increments from file */
+
+#define  DAS_JASONSSH          /* Jason altimeter series */
 
 /*=====================================================================
  * END OF CONFIGURATION
