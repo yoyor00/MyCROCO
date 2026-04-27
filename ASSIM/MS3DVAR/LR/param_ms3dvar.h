@@ -24,7 +24,7 @@
 ! - LLmH, MMmH, NnH : High-resolution grid dimensions (geopotential levels)
 ! - nratio, nhalf   : Downsampling ratio (high-res to low-res)
 ! - LLm_lr, MMm_lr  : Low-resolution derived dimensions
-! - NSUB_XH, NSUB_EH: Tiling for OpenMP parallelization ; H = High reso. grid
+! - NSUB_XL, NSUB_EL: Tiling for OpenMP parallelization ; L = Low reso. grid LR
 !
 ! CPP Keys:
 ! - DAS          : Enable data assimilation (defined in cppdefs_ms3dvar.h)
@@ -52,7 +52,7 @@
 ! NnH        : Number of vertical geopotential levels
 !----------------------------------------------------------------------
 
-      integer  LLmH,  MMmH, NnH, NSUB_XH, NSUB_EH, NPPH
+      integer  LLmH,  MMmH, NnH, NSUB_XL, NSUB_EL, NPPL
 
 ! CONFIGURATION: Edit this section for your domain
 ! -------------------------------------------------
@@ -95,20 +95,20 @@
 !----------------------------------------------------------------------
 ! OpenMP Tiling Configuration
 !----------------------------------------------------------------------
-! For OpenMP parallelization, the domain is split into tiles.
+! For OpenMP parallelization, the domain is split into tiles (LR grid).
 !
-! NSUB_XH : Number of tiles in X direction
-! NSUB_EH : Number of tiles in Y (Eta) direction
-! NPPH    : Total number of tiles (= NSUB_XH * NSUB_EH)
+! NSUB_XL : Number of tiles in X direction
+! NSUB_EL : Number of tiles in Y (Eta) direction
+! NPPL    : Total number of tiles (= NSUB_XL * NSUB_EL)
 !
 ! Adjust based on your number of OpenMP threads and domain size.
 !----------------------------------------------------------------------
 
 ! CONFIGURATION: Set tiling
 ! --------------------------
-!      parameter (NSUB_XH=6, NSUB_EH=6, NPPH=NSUB_XH*NSUB_EH)
-!      parameter (NSUB_XH=4, NSUB_EH=4, NPPH=16)  ! Alternative: 4x4 = 16 tiles
-      parameter (NSUB_XH=5, NSUB_EH=4, NPPH=20)
+!      parameter (NSUB_XL=6, NSUB_EL=6, NPPL=NSUB_XL*NSUB_EL)
+!      parameter (NSUB_XL=4, NSUB_EL=4, NPPL=16)  ! Alternative: 4x4 = 16 tiles
+      parameter (NSUB_XL=5, NSUB_EL=4, NPPL=20)
 
 !----------------------------------------------------------------------
 ! Special Case: Minimizer Grid Configuration
@@ -122,8 +122,8 @@
 ! Use high-resolution grid for minimization
       integer NSUB_X, NSUB_E, NPP
       integer  LLm, Lm,  MMm, Mm
-      parameter (LLm=LLmH,  MMm=MMmH)
-      parameter (NSUB_X=NSUB_XH, NSUB_E=NSUB_EH, NPP=NPPH,
+      parameter (LLm=LLm_lr,  MMm=MMm_lr)
+      parameter (NSUB_X=NSUB_XL, NSUB_E=NSUB_EL, NPP=NPPL,
      &           Lm=LLm, Mm=MMm)
 
 #else
@@ -148,7 +148,7 @@
 # if defined WMED
 ! West Mediterranean configuration
 ! Use low-resolution grid derived from high-res
-      parameter (LLm0=LLmH,  MMm0=MMmH,  N=NnH)
+      parameter (LLm0=LLm_lr,  MMm0=MMm_lr,  N=NnH)
 
 # elif defined BENGUELA
 ! Benguela upwelling system
@@ -161,7 +161,7 @@
 # else
 ! Default/generic regional configuration
 ! YOU MUST SET THESE VALUES FOR YOUR DOMAIN
-      parameter (LLm0=LLmH,  MMm0=MMmH,  N=NnH)
+      parameter (LLm0=LLm_lr,  MMm0=MMm_lr,  N=NnH)
 !     parameter (LLm0=xx,   MMm0=xx,   N=xx)   ! Placeholder
 
 # endif  /* Regional configuration selection */
@@ -189,7 +189,6 @@
 #else
       parameter (stdout=6)
 #endif
-
 
 ! Padding parameters for staggered grid
       integer padd_X, padd_E
@@ -234,7 +233,7 @@
 #endif
 
 ! Tiling configuration (default = low-res tiling)
-      parameter (NSUB_X=NSUB_XH, NSUB_E=NSUB_EH, NPP=NPPH)
+      parameter (NSUB_X=NSUB_XL, NSUB_E=NSUB_EL, NPP=NPPL)
 
 ! Tile size computation
       parameter (size_XI=7+(Lm+NSUB_X-1)/NSUB_X)
