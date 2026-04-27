@@ -14,9 +14,9 @@ VARIANT_SRCS = netcdf_filtered.F das_filter.F
 include Makefile.inc
 
 # Add variant-specific objects
-VARIANT_OBJS = $(VARIANT_SRCS:.F=.o)
+VARIANT_RCS = $(VARIANT_SRCS:.F=.f)
+VARIANT_OBJS = $(VARIANT_RCS:.f=.o)
 
 # Override the link rule to include variant objects
-$(SBIN): cppdefs.h param.h scalars.h ncscrum.h \
-         $(OBJS) $(OBJS90) $(VARIANT_OBJS)
+$(SBIN): $(OBJS) $(OBJS90) $(VARIANT_OBJS)
 	$(LDR) $(FFLAGS) -o $(SBIN) $(OBJS) $(OBJS90) $(VARIANT_OBJS) $(LCDF) $(LDFLAGS)
