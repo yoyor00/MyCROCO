@@ -125,7 +125,7 @@
  *---------------------------------------------------------------------*/
 #define DAS                    /* Enable data assimilation (REQUIRED) */
 #undef  DAS_READ_INC          /* Read increments from file */
-#undef  DAS_DBLE_BKG          /* Use double background for testing */
+#undef  DAS_DBLE_BKG          /* Use double background for single-scale */
 
 /*---------------------------------------------------------------------
  * DYNAMICAL CONSTRAINTS

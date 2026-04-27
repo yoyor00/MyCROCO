@@ -154,7 +154,6 @@
  * INITIAL CONDITIONS
  *---------------------------------------------------------------------*/
 # define ANA_INITIAL    /* Analytical initial conditions */
-# define ZCLIMATOLOGY   /* Enable clmname for LR initial conditions file */
 
 /*---------------------------------------------------------------------
  * SURFACE FORCING (Analytical for standalone testing)
@@ -205,7 +204,8 @@
  * These override the defaults in cppdefs_ms3dvar.h
  *=====================================================================*/
 
-/* No MS-specific overrides currently - using defaults from cppdefs_ms3dvar.h */
+/* MS-specific overrides currently - using defaults from cppdefs_ms3dvar.h */
+#define  DAS_READ_INC          /* Read increments from file */
 
 /*=====================================================================
  * END OF CONFIGURATION
