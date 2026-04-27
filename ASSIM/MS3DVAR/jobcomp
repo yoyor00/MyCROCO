@@ -41,7 +41,7 @@ VARIANT="all"
 SOURCE1="../../OCEAN"
 
 # MS3DVAR source directory (default: .. from work dir, i.e., ASSIM/MS3DVAR)
-SOURCE2=".."
+SOURCE2="."
 
 # Compiler
 FC="gfortran"
@@ -113,6 +113,7 @@ function show_help() {
 BUILD_ALL=0
 DO_CLEAN=0
 NO_MODULE=0
+DEBUG=0
 POSITIONAL_VARIANTS=()
 
 # Parse command-line arguments
@@ -152,6 +153,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --no-module)
             NO_MODULE=1
+            shift
+            ;;
+        --debug)
+            DEBUG=1
             shift
             ;;
         --croco-src)
@@ -229,6 +234,10 @@ function build_variant() {
     local var_upper=$2
     local variant_dir="${var_upper}"
 
+    # Convert relative source paths to absolute now (before cd into Compile subdir)
+    [[ ! "${MS3DVAR_SOURCE}" = /* ]] && MS3DVAR_SOURCE="$(cd "${MS3DVAR_SOURCE}" && pwd)"
+    [[ ! "${CROCO_SOURCE}" = /*   ]] && CROCO_SOURCE="$(cd "${CROCO_SOURCE}" && pwd)"
+
     echo ""
     echo "========================================================================"
     echo "Building MS3DVAR variant: ${var_upper}"
@@ -243,21 +252,17 @@ function build_variant() {
     echo ""
 
     # Check if variant directory exists
-    if [ ! -d "${variant_dir}" ]; then
+    if [ ! -d "${MS3DVAR_SOURCE}/${variant_dir}" ]; then
         echo "ERROR: Variant directory ${variant_dir} not found"
         return 1
     fi
 
     # Enter variant directory
-    cd "${variant_dir}" || { echo "ERROR: Cannot enter ${variant_dir}"; return 1; }
+    cd "${MS3DVAR_SOURCE}/${variant_dir}" || { echo "ERROR: Cannot enter ${MS3DVAR_SOURCE}/${variant_dir}"; return 1; }
 
     RUNDIR="$(pwd)"
     COMPILE_DIR="./Compile"
     SCRDIR=$COMPILE_DIR  # backward-compat alias
-
-    # Convert relative source paths to absolute now (before cd into Compile subdir)
-    [[ ! "${MS3DVAR_SOURCE}" = /* ]] && MS3DVAR_SOURCE="$(cd "${MS3DVAR_SOURCE}" && pwd)"
-    [[ ! "${CROCO_SOURCE}" = /* ]] && CROCO_SOURCE="$(cd "${CROCO_SOURCE}" && pwd)"
 
     # Clean scratch area
     echo "Preparing compilation directory..."
@@ -337,12 +342,13 @@ function build_variant() {
     echo ""
 
     # Overwrite with user local files (if any)
-    echo "Checking for user local files..."
+    # WARNING Local dir. = ${MS3DVAR_SOURCE}/${var_upper}
+    echo "Checking for user local files in $(pwd)..."
     ls *.F90   > /dev/null 2>&1 && \cp -f *.F90 "$COMPILE_DIR" && echo "  User .F90 files copied"
     ls *.F     > /dev/null 2>&1 && \cp -f *.F "$COMPILE_DIR" && echo "  User .F files copied"
     ls *.h     > /dev/null 2>&1 && \cp -f *.h "$COMPILE_DIR" && echo "  User .h files copied"
     ls *.h90   > /dev/null 2>&1 && \cp -f *.h90 "$COMPILE_DIR" && echo "  User .h90 files copied"
-    ls Make*   > /dev/null 2>&1 && \cp -f Make* "$COMPILE_DIR" && echo "  User Make* files copied"
+    ls Makefile > /dev/null 2>&1 && \cp -f Makefile "$COMPILE_DIR" && echo "  User Makefile override copied"
     echo ""
 
     # Build mpc preprocessor from CROCO source (needed by Makedefs suffix rules)
@@ -369,7 +375,11 @@ function build_variant() {
         elif [[ $FC == gfortran || $FC == gfortran-* ]]; then
             CPP1="cpp -traditional -DLinux"
             CFT1="$FC"
-            FFLAGS1="-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy"
+            if [ $DEBUG -eq 0 ] ; then
+                FFLAGS1="-O2 -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy"
+            else
+                FFLAGS1="-g -fbacktrace -mcmodel=medium -fdefault-real-8 -fdefault-double-8 -std=legacy"
+            fi
         elif [[ $FC == pgfortran || $FC == nvfortran ]]; then
             CPP1="cpp -traditional -DLinux -DXLF"
             CFT1="$FC"
@@ -427,6 +437,9 @@ function build_variant() {
     echo "Building MS3DVAR main code..."
     echo "This may take several minutes..."
     echo ""
+
+    # Re-introducing original croco dependence mechanism
+    make depend
 
     # Build with make
     if [ $NPROCS -gt 1 ]; then

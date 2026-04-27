@@ -138,6 +138,10 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 
 #======================================================================
 
+ TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds
+ FULL_TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
+
+
  RCS = $(SRCS:.F=.f)
 
  RCS90 = $(SRCS90:.F90=.f90)
@@ -148,27 +152,40 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 # SBIN is set by the variant Makefile
 
 %.mod : %.o
+	@touch $@
 
-.PHONY: all clean clobber
-all: $(SBIN) testkeys
+.PHONY: all tools clean clobber
+
+#
+# Everything
+# ==========
+all: tools depend $(SBIN) okmsg
+
 
 #======================================================================
 
-$(SBIN): cppdefs.h param.h scalars.h ncscrum.h \
-         $(OBJS) $(OBJS90)
+# Executable rule :
+# - removing headers deps (included at precompilation stage)
+$(SBIN): $(OBJS) $(OBJS90)
 	$(LDR) $(FFLAGS) -o $(SBIN) $(OBJS) $(OBJS90) $(LCDF) $(LDFLAGS)
 
-$(OBJS): cppdefs.h param.h
-$(OBJS90): cppdefs.h param.h
-# Module dependency: buffer.F90 uses the param module (from param.F)
-buffer.o: param.o
-# Module dependency: these .F files use the buffer module (from buffer.F90)
-main.o das_nf_fread.o das_nf_fread_lr.o: buffer.o
 
 #======================================================================
 # Tools for generating keyword/switch check source files
-# (mirrors CROCO OCEAN Makefile approach)
+# (mirrors CROCO OCEAN Makefile approach
+# Use FULL_TOOLS instead of TOOLS to compile ncjoin, partit, ncrename
 #======================================================================
+
+tools: $(TOOLS)
+
+mpc: mpc.F
+	$(CPP) -P $(CPPFLAGS) mpc.F > mpc_.f
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o mpc mpc_.f
+
+cross_matrix: mpc cross_matrix.F
+	$(CPP) -P $(CPPFLAGS) cross_matrix.F | ./mpc > cross_matrix_.f
+	$(CFT) -c $(FFLAGS) cross_matrix_.f -o cross_matrix.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o cross_matrix cross_matrix.o
 
 cppcheck: mpc cppcheck.F
 	$(CPP) -P $(CPPFLAGS) cppcheck.F | ./mpc > cppcheck_.f
@@ -179,6 +196,7 @@ srcscheck: mpc srcscheck.F
 	$(CPP) -P $(CPPFLAGS) srcscheck.F | ./mpc > srcscheck_.f
 	$(CFT) -c $(FFLAGS) srcscheck_.f -o srcscheck.o
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
+	rm -f check_srcs.F
 
 checkkwds: mpc checkkwds.F
 	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
@@ -186,8 +204,11 @@ checkkwds: mpc checkkwds.F
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
 	rm -f setup_kwds.F
 
+checkdefs: check_switches1.F setup_kwds.F
+
+# Adding the newly included cppdefs file type
 check_switches1.F: cppcheck cppdefs.h
-	cat cppdefs.h cppdefs_dev.h > mergcpp.txt
+	cat cppdefs.h cppdefs_ms3dvar.h cppdefs_dev.h > mergcpp.txt
 	./cppcheck
 
 check_srcs.F: srcscheck Makefile
@@ -196,7 +217,26 @@ check_srcs.F: srcscheck Makefile
 setup_kwds.F: checkkwds read_inp.F
 	./checkkwds
 
-testkeys: $(SBIN)
+partit: partit.F insert_node.o lenstr.o
+	$(CPP) -P $(CPPFLAGS) partit.F > partit._.f
+	$(CFT) -c $(FFLAGS) partit._.f -o partit.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o partit partit.o insert_node.o  lenstr.o $(LCDF)
+
+ncjoin: ncjoin.F lenstr.o
+	$(CPP) -P $(CPPFLAGS) ncjoin.F | ./mpc  > ncjoin._.f
+	$(CFT) -c $(FFLAGS) ncjoin._.f -o ncjoin.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncjoin ncjoin.o lenstr.o $(LCDF)
+
+
+ncrename: ncrename.F lenstr.o
+	$(CPP) -P $(CPPFLAGS) ncrename.F | ./mpc > ncrename._.f
+	$(CFT) -c $(FFLAGS) ncrename._.f -o ncrename.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o ncrename ncrename.o lenstr.o $(LCDF)
+
+depend: checkdefs cross_matrix
+	./cross_matrix  *.F90 *.F
+	
+okmsg: $(SBIN)
 	@echo ""
 	@echo '********************************************'
 	@echo '****** MS3DVAR-$(VARIANT_NAME) Compilation Done ******'
@@ -213,3 +253,4 @@ clean:
 
 clobber: clean
 	/bin/rm -f $(SBIN) *.exe
+-include Make.depend
