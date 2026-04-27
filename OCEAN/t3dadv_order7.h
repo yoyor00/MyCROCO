@@ -1,7 +1,7 @@
 !
 !===============================================================
 !
-! Compute 7th order horizontal advection (u-component)
+! Compute 7th order horizontal advection for tracers
 !
 !===============================================================
 !

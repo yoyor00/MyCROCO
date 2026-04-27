@@ -1,7 +1,7 @@
 !
 !===============================================================
 !
-! Compute 7th order horizontal advection (u-component)
+! Compute 7th order horizontal advection for tracers
 !
 !===============================================================
 !
@@ -349,12 +349,12 @@
      &             t(i-1,j,k,nrhs,itrc), t(i  ,j,k,nrhs,itrc), vel, cdif)
 #   ifdef UP9_MASKING
                 IF (vel.gt.0) THEN
-                  mask2=rmask(i,j-2)
+                  mask2=rmask(i-2,j)
                 ELSE
-                  mask2=rmask(i,j+1)
+                  mask2=rmask(i+1,j)
                 ENDIF
 #   else
-                mask2 = rmask(i,j-2)*rmask(i,j+1)
+                mask2 = rmask(i-2,j)*rmask(i+1,j)
 #   endif
                 FX(i,j)=mask2*flx3+(1-mask2)*flx2
 #  else
@@ -394,7 +394,7 @@
 #  endif
               ELSE IF ( i.eq.imin-1 .or. i.eq.imax+1 ) THEN
 !
-! ---- 5th order with masking ----
+! ---- 7th order with masking ----
 !
                 flx7 = vel*FLUX7(
      &             t(i-4,j,k,nrhs,itrc), t(i-3,j,k,nrhs,itrc),

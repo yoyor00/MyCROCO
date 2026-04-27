@@ -4,21 +4,13 @@
 !----------------------------------------------------------
 !
 # ifdef TS_HADV_UP9
-#  ifdef PREDICTOR0
-#   define FLUX9 flux10
-#   define FLUX7 flux8
-#   define FLUX5 flux6
-#   define FLUX3 flux4
-#   define FLUX2 flux2
-#  else
-#   define FLUX9 flux9
-#   define FLUX7 flux7
-#   define FLUX5 flux5
-#   define FLUX3 flux3
-#   define FLUX2 flux1
-#   undef  UP9_MASKING
+#  define FLUX9 flux9
+#  define FLUX7 flux7
+#  define FLUX5 flux5
+#  define FLUX3 flux3
+#  define FLUX2 flux1
+#  undef  UP9_MASKING
           cdif=0.5
-#  endif
 # elif defined TS_HADV_WENO9
 #  define FLUX9 flux9_weno
 #  define FLUX7 flux7_weno
@@ -48,19 +40,12 @@
 !----------------------------------------------------------
 !
 # ifdef TS_HADV_UP7
-#  ifdef PREDICTOR
-#   define FLUX7 flux8
-#   define FLUX5 flux6
-#   define FLUX3 flux4
-#   define FLUX2 flux2
-#  else
-#   define FLUX7 flux7
-#   define FLUX5 flux5
-#   define FLUX3 flux3
-#   define FLUX2 flux1
-#   undef  UP7_MASKING
+#  define FLUX7 flux7
+#  define FLUX5 flux5
+#  define FLUX3 flux3
+#  define FLUX2 flux1
+#  undef  UP7_MASKING
           cdif=0.5
-#  endif
 # elif defined TS_HADV_WENO7
 #  define FLUX7 flux7_weno
 #  define FLUX5 flux5_weno

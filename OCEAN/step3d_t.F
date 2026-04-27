@@ -429,7 +429,9 @@
           enddo
         enddo
 !
-#   if defined TS_HADV_WENO5 || defined TS_HADV_UP5 || defined TS_HADV_UP3
+#   if defined TS_HADV_UP5   || defined TS_HADV_UP7   || \
+       defined TS_HADV_UP9   || defined TS_HADV_WENO5 || \
+       defined TS_HADV_WENO7 || defined TS_HADV_WENO9
 !
 ! Compute centered scheme fluxes FX and FE to separate
 ! advection and diffusion parts of the transport term

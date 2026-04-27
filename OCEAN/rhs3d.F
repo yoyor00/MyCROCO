@@ -691,7 +691,7 @@
 #    define FLUX3 flux3
 #    define FLUX2 flux1
 #    undef  UP9_MASKING
-          cdif=0.5
+          cdif=1.0
 #   elif defined UV_HADV_WENO9
 #    define FLUX9 flux9_weno
 #    define FLUX7 flux7_weno
@@ -756,7 +756,7 @@
 #    define FLUX3 flux3
 #    define FLUX2 flux1
 #    undef  UP7_MASKING
-          cdif=0.5
+          cdif=1.0
 #   elif defined UV_HADV_WENO7
 #    define FLUX7 flux7_weno
 #    define FLUX5 flux5_weno
