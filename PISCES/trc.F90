@@ -112,9 +112,9 @@ MODULE trc
 !      LOGICAL           ::   llais     ! read in a file or not
    END TYPE PTRACER
    !
-   CHARACTER(len=*), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnm   !: tracer name 
-   CHARACTER(len=*), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnl   !: trccer field long name
-   CHARACTER(len=*), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnu   !: tracer unit
+   CHARACTER(len=500), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnm   !: tracer name 
+   CHARACTER(len=500), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnl   !: trccer field long name
+   CHARACTER(len=500), PUBLIC, ALLOCATABLE, SAVE, DIMENSION(:) ::   ctrcnu   !: tracer unit
    !
    TYPE, PUBLIC ::   DIAG         !: Passive trcacer ddditional diagnostic type
       CHARACTER(len=20) ::   sname   ! short name
