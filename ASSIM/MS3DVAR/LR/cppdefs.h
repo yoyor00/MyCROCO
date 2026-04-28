@@ -45,156 +45,76 @@
  */
 
 /*=====================================================================
- * LR VARIANT: CONFIGURATION NAME
+ * CROCO STANDARD CONFIGURATION FILE
  *
- * Define your regional configuration. This must match the
- * configuration in param.h
+ * The file included below is the standard croco cppdefs.h
+ * to which has been removed the final include, namely
+ * cppdefs_dev.h and set_global_definitions.h
+ *
+ * Also a factorization of the standard croco cppdefs.h file
+ * is performed when the user either selects the REGIONAL or the
+ * COASTAL configuration type.
+ * In this case, the jobcomp will modify the standard croco cppdefs
+ * replacing all config definition lines in between 
+ * the REGIONAL (or COASTAL) markups by including
+ * the user defined configuration file cppdefs_config.h
+ * 
+ * See path ASSIM/MS3DVAR/COMMON/cppdefs_config.h
+ * Copied to  ASSIM/MS3DVAR/FILTER/Compile/cppdefs_config.h
+ *
+ * See path OCEAN/cppdefs.h
+ * Copied to ASSIM/MS3DVAR/LR/Compile/cppdefs_croco.h
  *=====================================================================*/
-#undef  COASTAL         /* COASTAL Applications */
-#define REGIONAL        /* REGIONAL Applications */
-
-#if defined REGIONAL
-/*=====================================================================
- * REGIONAL CONFIGURATION: WMED (West Mediterranean)
- *=====================================================================*/
-# define WMED
-
-/*---------------------------------------------------------------------
- * PARALLELIZATION
- *---------------------------------------------------------------------*/
-# define OPENMP         /* OpenMP parallelization */
-# undef  MPI            /* MPI parallelization */
-
-/*---------------------------------------------------------------------
- * NON-HYDROSTATIC AND NESTING
- *---------------------------------------------------------------------*/
-# undef  NBQ            /* Non-Boussinesq/non-hydrostatic */
-# undef  CROCO_QH       /* Quasi-hydrostatic */
-# undef  AGRIF          /* Adaptive grid refinement */
-# undef  AGRIF_2WAY     /* Two-way nesting */
-
-/*---------------------------------------------------------------------
- * COUPLING
- *---------------------------------------------------------------------*/
-# undef  OA_COUPLING    /* Ocean-Atmosphere coupling via OASIS */
-# undef  OW_COUPLING    /* Ocean-Wave coupling via OASIS */
-
-/*---------------------------------------------------------------------
- * OPEN BOUNDARY CONDITIONS
- *---------------------------------------------------------------------*/
-# undef  TIDES          /* Tidal forcing */
-# define OBC_EAST       /* Open boundary east */
-# define OBC_WEST       /* Open boundary west */
-# undef  OBC_NORTH      /* Open boundary north */
-# undef  OBC_SOUTH      /* Open boundary south */
-
-/*---------------------------------------------------------------------
- * APPLICATIONS
- *---------------------------------------------------------------------*/
-# undef  BIOLOGY        /* Biology module */
-# undef  FLOATS         /* Lagrangian floats */
-# undef  STATIONS       /* Station output */
-# undef  SEDIMENT       /* Sediment transport */
-# undef  MUSTANG        /* Wave-sediment interactions */
-# undef  BBL            /* Bottom boundary layer */
-
-/*---------------------------------------------------------------------
- * TRACERS
- *---------------------------------------------------------------------*/
-# define TEMPERATURE    /* Temperature tracer */
-# define SALINITY       /* Salinity tracer (REQUIRED for MS3DVAR) */
-# undef  PASSIVE_TRACER /* Passive tracers */
-
-/*---------------------------------------------------------------------
- * EQUATION OF STATE
- *---------------------------------------------------------------------*/
-# define NONLIN_EOS     /* Nonlinear equation of state */
-# undef  SPLIT_EOS      /* Split equation of state */
-
-/*---------------------------------------------------------------------
- * ADVECTION
- *---------------------------------------------------------------------*/
-# define UV_ADV         /* Advection of momentum */
-# undef  UV_COR         /* Coriolis term */
-
-/*---------------------------------------------------------------------
- * LATERAL BOUNDARY CONDITIONS (if OBC defined)
- *---------------------------------------------------------------------*/
-# ifdef OBC_EAST
-#  define FRC_BRY       /* Forcing at boundaries */
-#  ifdef FRC_BRY
-#   define ANA_BRY      /* Analytical boundary conditions */
-#   define Z_FRC_BRY    /* SSH forcing at boundaries */
-#   define OBC_M2CHARACT /* M2 characteristic BCs */
-#   define OBC_REDUCED_PHYSICS /* Reduced physics at boundaries */
-#   define M2_FRC_BRY   /* 2D momentum forcing */
-#   undef  M3_FRC_BRY   /* 3D momentum forcing */
-#   define T_FRC_BRY    /* Tracer forcing */
-#  endif
-# endif
-
-/*---------------------------------------------------------------------
- * VERTICAL MIXING
- *---------------------------------------------------------------------*/
-# define GLS_MIXING     /* Generic Length Scale mixing */
-
-/*---------------------------------------------------------------------
- * SOURCES/SINKS
- *---------------------------------------------------------------------*/
-# define PSOURCE        /* Point sources/sinks */
-# undef  PSOURCE_MASS   /* Include mass in point sources */
-# define ANA_PSOURCE    /* Analytical point sources */
-
-/*---------------------------------------------------------------------
- * GRID AND MASKING
- *---------------------------------------------------------------------*/
-# define ANA_GRID       /* Analytical grid */
-# define MASKING        /* Land/sea masking */
-
-/*---------------------------------------------------------------------
- * INITIAL CONDITIONS
- *---------------------------------------------------------------------*/
-# define ANA_INITIAL    /* Analytical initial conditions */
-
-/*---------------------------------------------------------------------
- * SURFACE FORCING (Analytical for standalone testing)
- *---------------------------------------------------------------------*/
-# define ANA_SMFLUX     /* Analytical surface momentum flux */
-# define ANA_STFLUX     /* Analytical surface tracer flux */
-# define ANA_SSFLUX     /* Analytical surface salinity flux */
-# define ANA_SRFLUX     /* Analytical surface radiation flux */
-# define ANA_BTFLUX     /* Analytical bottom temperature flux */
-# define ANA_BSFLUX     /* Analytical bottom salinity flux */
-
-/*---------------------------------------------------------------------
- * PERIODICITY
- *---------------------------------------------------------------------*/
-# define NS_PERIODIC    /* North-South periodic */
-# undef  EW_PERIODIC    /* East-West periodic */
-
-/*---------------------------------------------------------------------
- * FILE OPTIONS
- *---------------------------------------------------------------------*/
-# undef  FLOATS         /* Lagrangian floats */
-# define NO_FRCFILE     /* No forcing file */
-
-/*---------------------------------------------------------------------
- * CALENDAR AND TIME
- *---------------------------------------------------------------------*/
-# define USE_CALENDAR   /* Use calendar for time management */
-
-/*---------------------------------------------------------------------
- * COORDINATE SYSTEM
- *---------------------------------------------------------------------*/
-# define NEW_S_COORD    /* New s-coordinate (Vtransform=2) */
-
-#endif /* REGIONAL */
+#include "cppdefs_croco.h"
 
 /*=====================================================================
- * INCLUDE MINIMAL MS3DVAR CONFIGURATION
+ * MANDATORY CONFIGURATION CHANGES FOR ALL MS3DVAR SCALE EXECUTABLES
+ *
+ *=====================================================================*/
+
+/*=====================================================================
+ * Parallelization options
+ *
+ * OpenMP (shared memory) is mandatory
+ * MPI (distributed memory) doesn't work yet.
+ * Note: DAS is incompatible with CROCO's AUTOTILING + OpenMP combination.
+ *=====================================================================*/
+#define OPENMP          /* OpenMP parallelization */
+#undef  MPI             /* MPI parallelization */
+
+/*=====================================================================
+ * Grid and coordinate options
+ *
+ * Expected grid configuration for MS3DVAR (TOCHECK)
+ *=====================================================================*/
+#define MASKING         /* Land/sea masking */
+#define NEW_S_COORD     /* New s-coordinate system (Vtransform=2) */
+#define SPHERICAL       /* Spherical (geographic) coordinate grid */
+#define CURVGRID        /* Curvilinear (non-orthogonal) grid */
+
+/*=====================================================================
+ * Time management
+ *=====================================================================*/
+#undef USE_CALENDAR    /* Use calendar for time management */
+
+/*=====================================================================
+ * XIOS I/O server
+ *=====================================================================*/
+#undef  XIOS
+
+/*=====================================================================
+ * LR VARIANT CPP-switch : DO NOT CHANGE
+ *=====================================================================*/
+#define DAS_LR
+
+/*=====================================================================
+ * FULL STANDARD MS3DVAR CONFIGURATION
  *
  * This includes the core MS3DVAR CPP defines (~150 lines)
- * Settings above will override defaults in cppdefs_ms3dvar.h
+ * Settings below the include will override defaults in cppdefs_ms3dvar.h
+ *
+ * See path ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar.
+ * Copied to  ASSIM/MS3DVAR/LR/Compile/cppdefs_ms3dvar.h
  *=====================================================================*/
 #include "cppdefs_ms3dvar.h"
 
@@ -210,3 +130,13 @@
 /*=====================================================================
  * END OF CONFIGURATION
  *=====================================================================*/
+
+/*=====================================================================
+ * DO NOT TOUCH THE BELOW INCLUDED FILES
+ *
+ * These files contain additional preprocessor logic and global
+ * definitions. They must be included last.
+ *=====================================================================*/
+#include "cppdefs_dev.h"
+#include "set_global_definitions.h"
+#include "das_set_global_def.h"

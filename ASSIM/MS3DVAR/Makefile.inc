@@ -208,7 +208,7 @@ checkdefs: check_switches1.F setup_kwds.F
 
 # Adding the newly included cppdefs file type
 check_switches1.F: cppcheck cppdefs.h
-	cat cppdefs.h cppdefs_ms3dvar.h cppdefs_dev.h > mergcpp.txt
+	cat cppdefs_croco.h cppdefs_config.h cppdefs_ms3dvar.h cppdefs_dev.h > mergcpp.txt
 	./cppcheck
 
 check_srcs.F: srcscheck Makefile
