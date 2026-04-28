@@ -115,6 +115,9 @@ DO_CLEAN=0
 NO_MODULE=0
 DEBUG=0
 POSITIONAL_VARIANTS=()
+# Default config type and name as defined in the standard croco cppdefs.h file
+CONFIG_TYPE=REGIONAL
+CONFIG_NAME=BENGUELA_LR
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -165,6 +168,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --ms3dvar-src)
             SOURCE2="$2"
+            shift 2
+            ;;
+        --config-name)
+            CONFIG_NAME="$2"
+            shift 2
+            ;;
+        --config-type)
+            CONFIG_TYPE="$2"
             shift 2
             ;;
         --clean)
@@ -304,6 +315,44 @@ function build_variant() {
     echo "CROCO sources copied"
     echo ""
 
+    # Save a modified CROCO's cppdefs.h as cppdefs_croco.h before variant files overwrite it.
+    # Modifications are required if following a MS3DVAR cppdefs.h decomposition/recomposition strategy
+    # (by the mean of successive includes to recompose the final variant-scale cppdefs.h)
+    # - remove final includes cppdefs_dev.h, set_global_definitions.h
+    # - undef default configuration BENGUELA_LR 
+    cppdefs_croco="cppdefs_croco.h"
+    echo "... Croco cppdefs.h default file copied in ${COMPILE_DIR}/${cppdefs_croco}"
+    \cp "${CROCO_SOURCE}/cppdefs.h" "${COMPILE_DIR}/${cppdefs_croco}"
+    echo "    Modifications of the Croco cppdefs.h default file : removing last includes"
+    sed -i '/^#.*include .*cppdefs_dev/{d;}' "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+    sed -i '/^#.*include .*set_global_definitions/{d;}' "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+    #sed -i '/^#.*define .*BENGUELA_LR/{d;}' "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+    echo "    Modifications of the Croco cppdefs.h default file : user requested a $CONFIG_TYPE named $CONFIG_NAME"
+    if [ "${CONFIG_TYPE}" == "REGIONAL" ]; then
+        echo "... Requesting a REGIONAL config type with name $CONFIG_NAME"
+        sed -i "s/^\#.*undef .*REGIONAL/\#define REGIONAL/g" "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+        sed -i "s/^\#.*define .*COASTAL/\#undef COASTAL/g"   "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+        echo "... Requesting a REGIONAL config type with name $CONFIG_NAME"
+        sed -i '/^#if defined REGIONAL.*/,/^#elif defined COASTAL.*/{/^#if defined REGIONAL.*/b;/^#elif defined COASTAL.*/b;d}' \
+               "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+        sed -i '/^#if defined REGIONAL.*/a # include "cppdefs_config.h"' "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+    elif [ "${CONFIG_TYPE}" == "COASTAL" ]; then
+        echo "... Requesting a COASTAL config type with name $CONFIG_NAME"
+        sed -i "s/^\#.*undef .*COASTAL/\#define COASTAL/g"   "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+        sed -i "s/^\#.*define .*REGIONAL/\#undef REGIONAL/g" "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+    else 
+        echo "... Requesting an ACADEMIC config type with name $CONFIG_NAME"
+        sed -i "s/^\#.*define .*COASTAL/\#undef COASTAL/g"   "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+        sed -i "s/^\#.*define .*REGIONAL/\#undef REGIONAL/g" "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+    fi
+    if [ "${CONFIG_NAME}" != "BENGUELA_LR" ]; then
+        echo "... if default config name BENGUELA_LR found will substitute the default to $CONFIG_NAME"
+        sed -i "s/^\#.*define .*BENGUELA_LR/\# define ${CONFIG_NAME}/g" "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+        echo "    Configuration name substitution to $CONFIG_NAME done"
+    fi
+    echo "CROCO standard cppdefs.h copied and modified"
+    echo 
+
     # Save CROCO's param.h as croco_ocean_param.h before variant files overwrite it.
     # MS3DVAR includes this (with MS3DVAR_GRID_PARAMS guard) to get the physics/tracer
     # parameters from the real CROCO param.h, avoiding duplication in croco_extra_params.h.
@@ -316,6 +365,32 @@ function build_variant() {
     ls "${MS3DVAR_SOURCE}/COMMON/"*.h   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/COMMON/"*.h   "$COMPILE_DIR"
     echo "MS3DVAR common sources copied"
     echo ""
+
+    # User defined CPP-switches in COMMON/cppdefs_config.h for COASTAL or REGIONAL config
+    cppdefs_config="cppdefs_config.h"
+    if [ "${CONFIG_TYPE}" == "REGIONAL" ]; then
+        echo "... Will complete the  $CONFIG_NAME REGIONAL config with  ${MS3DVAR_SOURCE}/COMMON/$cppdefs_config"
+        if [ -f "${COMPILE_DIR}/${cppdefs_config}" ]; then
+            echo "... In ${COMPILE_DIR}/${cppdefs_croco} will replace the REGIONAL config definition by including cppdefs_config.h"
+            sed -i '/^#if defined REGIONAL.*/,/^#elif defined COASTAL.*/{/^#if defined REGIONAL.*/b;/^#elif defined COASTAL.*/b;d}' \
+                   "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+            sed -i '/^#if defined REGIONAL.*/a # include "cppdefs_config.h"' "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+        else
+            echo "... WARNING: user config ${cppdefs_config} was apparently not in the ${MS3DVAR_SOURCE}/COMMON directory"
+            echo "             the CPP-switches might not be the one expected by the user"
+        fi
+    elif [ "${CONFIG_TYPE}" == "COASTAL" ]; then
+        echo "... Will complete the  $CONFIG_NAME COASTAL config with  ${MS3DVAR_SOURCE}/COMMON/$cppdefs_config"
+        if [ -f "${COMPILE_DIR}/${cppdefs_config}" ]; then
+            echo "... In ${COMPILE_DIR}/${cppdefs_croco} will replace the COASTAL config definition by including cppdefs_config.h"
+            sed -i '/^#elif defined COASTAL.*/,/^#elif defined BASIN.*/{/^#elif defined COASTAL.*/b;/^#elif defined BASIN.*/b;d}' \
+                   "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+            sed -i '/^#elif defined COASTAL.*/a # include "cppdefs_config.h"' "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+        else
+            echo "... WARNING: user config ${cppdefs_config} was apparently not in the ${MS3DVAR_SOURCE}/COMMON directory"
+            echo "             the CPP-switches might not be the one expected by the user"
+        fi
+    fi
 
     # Copy variant Makefile to compilation directory
     echo "Copying build system files..."
@@ -352,9 +427,9 @@ function build_variant() {
     echo ""
 
     # Build mpc preprocessor from CROCO source (needed by Makedefs suffix rules)
-    echo "Building mpc preprocessor from CROCO source..."
-    ${FC} -o ${COMPILE_DIR}/mpc ${CROCO_SOURCE}/mpc.F || { echo "ERROR: Failed to build mpc"; cd ..; return 1; }
-    echo ""
+    #echo "Building mpc preprocessor from CROCO source..."
+    #${FC} -o ${COMPILE_DIR}/mpc ${CROCO_SOURCE}/mpc.F || { echo "ERROR: Failed to build mpc"; cd ..; return 1; }
+    #echo ""
 
     # Change to compilation directory
     cd "$COMPILE_DIR" || { echo "ERROR: Cannot enter compilation directory"; cd ..; return 1; }
