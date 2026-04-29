@@ -182,12 +182,12 @@
 
 # endif
 
-#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL || \
-       defined TS_VADV_C2 || defined BIO_VADV_MUSCL
-       REAL rdtstp
+# if defined TS_HADV_C2 || defined BIO_HADV_MUSCL \
+      || defined TS_VADV_C2 || defined BIO_VADV_MUSCL
+      REAL rdtstp
 #  endif
 #  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
-      real ZDXT(PRIVATE_2D_SCRATCH_ARRAY),
+      REAL ZDXT(PRIVATE_2D_SCRATCH_ARRAY),
      &     ZDYT(PRIVATE_2D_SCRATCH_ARRAY),
      &     zslpx(PRIVATE_2D_SCRATCH_ARRAY),
      &     zslpy(PRIVATE_2D_SCRATCH_ARRAY)
@@ -195,7 +195,7 @@
       REAL zzslpx, zzslpy
 #  endif
 #  if defined TS_VADV_C2 || defined BIO_VADV_MUSCL
-      real zdzt_kp1(PRIVATE_1D_SCRATCH_ARRAY),
+      REAL zdzt_kp1(PRIVATE_1D_SCRATCH_ARRAY),
      &     zslpz(PRIVATE_1D_SCRATCH_ARRAY)
       REAL zalphaw, z0w, zw, zzwzx, zzwzy, zslpz_kp1
       REAL zdzt_kp2
