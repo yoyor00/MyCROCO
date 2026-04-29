@@ -40,7 +40,7 @@ close all
 %
 % --- model params ---
 %
-fname  = 'inner_avg.nc';  % croco file name
+fname  = 'innershelf_avg.nc';  % croco file name
 tauy   = 0.07;            % alongshore wind-stress (Pa)
 taux   = 0;               % onshore wind-stress (Pa)
 ug0    = 2;               % onshore geostrophic flow (cm/s)

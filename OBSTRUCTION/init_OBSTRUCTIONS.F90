@@ -1,3 +1,7 @@
+! Copyright (C) IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_OBSTRUCTION.txt
+
 MODULE init_OBSTRUCTIONS
 
 #include "cppdefs.h"

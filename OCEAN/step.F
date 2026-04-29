@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !
@@ -120,6 +121,9 @@ C$OMP END PARALLEL
 #endif
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
+#endif
+#ifdef STOGEN
+          USE stomod   ! stochastic module
 #endif
       implicit none
 #include "param.h"
@@ -342,6 +346,10 @@ C$OMP MASTER
 C$OMP END MASTER
 #  endif
 # endif
+
+#ifdef STOGEN
+      call sto_mod(iic) ! update stochastic fields 
+#endif
 
 # ifdef BULK_FLUX
       do tile=my_first,my_last

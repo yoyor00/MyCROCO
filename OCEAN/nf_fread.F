@@ -1,29 +1,30 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifdef WRITER
-      integer function nf_fwrite (A, ncid, varid, record, type)
+      integer function nf_fwrite (A, ncid, varid, record, grid_type)
 #else
-      integer function nf_fread  (A, ncid, varid, record, type)
+      integer function nf_fread  (A, ncid, varid, record, grid_type)
 # include "cppdefs.h"
 #endif
 !
 ! Read/Write a floating point array from/into an input/output
 ! NetCDF file.
 !
-! Arguments: A       real array of standard horizontal dimensions
+! Arguments: A         real array of standard horizontal dimensions
 !                             which is to be read or written.
-!            ncid    NetCDF ID of in the file.
-!            varid   variable ID of that variable in NetCDF file.
-!            record  record number.
-!            type    type of the grid (RHO-, U, V, W, PSI etc.)
+!            ncid      NetCDF ID of in the file.
+!            varid     variable ID of that variable in NetCDF file.
+!            record    record number.
+!            grid_type type of the grid (RHO-, U, V, W, PSI etc.)
 !
 ! Because significant portion of the code calculates starting and
 ! stopping indices for the subarray (which are exactly the same for
@@ -41,7 +42,7 @@
 #include "param.h"
       real A(GLOBAL_2D_ARRAY,max_buffer_N_size)
 
-      integer ncid,  type,   vert_type,  imin, imax,  start(4)
+      integer ncid,  grid_type,   vert_type,  imin, imax,  start(4)
      &      , varid, record, horiz_type, jmin, jmax,  count(4)
      &      , i,j,k, shift,  ierr
 
@@ -50,8 +51,8 @@
 #endif
 #include "netcdf.inc"
                                       ! Decode grid type into
-      vert_type=type/4                ! vertical and horizontal
-      horiz_type=type-4*vert_type     ! grid types, then calculate
+      vert_type=grid_type/4                ! vertical and horizontal
+      horiz_type=grid_type-4*vert_type     ! grid types, then calculate
       jmin=horiz_type/2               ! starting indices indices
       imin=horiz_type-2*jmin          ! in horizontal directions.
 
@@ -168,14 +169,21 @@ C**  &                         'jj=',jj, 'jmin=',jmin, 'jmax=',jmax
         start(3)=1
         start(4)=record
 #endif
+#ifdef MUSTANG
+      elseif (vert_type.eq.6) then
+        count(3)=ksdmax
+        count(4)=1                !--> 3D BED-grid
+        start(3)=1
+        start(4)=record
+#endif
       else
 #ifndef WRITER
         write(*,'(/1x,2A,I3/)') 'NF_FREAD ERROR: ',
-     &                'illegal grid type', type
+     &                'illegal grid type', grid_type
         nf_fread=nf_noerr+1
 #else
         write(*,'(/1x,2A,I4/)') 'NF_FWRITE ERROR: ',
-     &                'illegal grid type', type
+     &                'illegal grid type', grid_type
         nf_fwrite=nf_noerr+1
 #endif
         return

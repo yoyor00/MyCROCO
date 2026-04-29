@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -29,6 +30,13 @@
 #ifdef PISCES
           USE pisces_ini     ! PISCES modules
           USE trcnam_pisces
+#endif
+#ifdef STOGEN
+          USE stomod         ! Stochastic module
+          USE stoexternal    ! Provide parameters to stochastic modules
+#endif
+#ifdef ENSEMBLE
+          USE ensmpi         ! Ensemble module
 #endif
 #ifdef SUBSTANCE
           USE substance, ONLY : substance_read_alloc
@@ -142,6 +150,17 @@
       call cpl_prism_init  ! In AGRIF case, cpl_prism_init is in zoom.F
 # elif defined AGRIF
       call Agrif_MPI_Init(MPI_COMM_WORLD)
+# endif
+!                                            
+!  ENSEMBLE: further split CROCO communicator
+!                                           
+# if defined ENSEMBLE                      
+#  if defined XIOS                       
+      mpi_comm_all = MPI_COMM_WORLD      
+#  else                                
+      mpi_comm_all = mpi_comm_world   ! true world communicator (keep lowercase to avoid cpp replacement!)
+#  endif                                                   
+      call ens_comm_set ( )                                  
 # endif
 #endif /* MPI */
 !
@@ -473,6 +492,17 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 #ifdef SUBSTANCE
       call substance_surfcell
+#endif
+!
+!----------------------------------------------------------------------
+!  STOGEN: initialization
+!----------------------------------------------------------------------
+!
+#ifdef STOGEN
+      do tile=0,NSUB_X*NSUB_E-1
+        call ocean_2_stogen (tile)    ! provide parameters to STOGEN module
+        call sto_mod_init             ! initialize STOGEN module
+      enddo
 #endif
 !
 !----------------------------------------------------------------------
@@ -992,6 +1022,9 @@ CR      write(*,*) '  0' MYID
 #endif
       ! close netCDF files.
       call closecdf
+#ifdef STOGEN
+      call sto_mod_finalize
+#endif
 #ifdef XIOS
       call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF
 #endif

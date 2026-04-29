@@ -1,5 +1,6 @@
-! MUSTANG - This software is governed by the CeCILL-C license
-! see LICENSE_MUSTANG.txt
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
 
 MODULE dredging
    !============================================================================
@@ -366,13 +367,12 @@ CONTAINS
       END IF
 
       dump_layer(:) = dredging_dumping_layer
-#ifdef key_sand2D
+
       DO iv = isand1, isand2
          IF (l_subs2D(iv)) THEN
             dump_layer(iv) = 1
          END IF
       END DO
-#endif
 
    END SUBROUTINE dredging_init_var
    !============================================================================

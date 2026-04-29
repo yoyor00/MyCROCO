@@ -414,6 +414,8 @@ class Croco:
         filename = self.croco_inputfile
         self.change_card_time_stepping_ntimes(filename, 6)
         self.change_card_history_nwrt(filename)
+        self.change_card_dia_nwrt(filename)
+        self.change_card_diaM_nwrt(filename)
         # and for USE_CALENDAR
         self.change_card_end_date(filename, 6)
         self.change_card_output_time_steps_dthis(filename, 6)
@@ -588,6 +590,44 @@ class Croco:
                 full_filename, "history:", line_offset=2, num_lines=1
             )
 
+    def change_card_dia_nwrt(self, filename):
+        full_filename = os.path.join(self.dirname, filename)
+        # Check time_stepping is a card in this case
+        if len(extract_elements_from_file(full_filename, "diagnostics")) > 0:
+            HISTORY_LINE = extract_elements_from_file(full_filename, "diagnostics")
+            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " diagnostics:",
+                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
+                    "descr": "change output to NWRT=1",
+                }
+            }
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "diagnostics:", line_offset=2, num_lines=1
+            )
+
+    def change_card_diaM_nwrt(self, filename):
+        full_filename = os.path.join(self.dirname, filename)
+        # Check time_stepping is a card in this case
+        if len(extract_elements_from_file(full_filename, "diagnosticsM")) > 0:
+            HISTORY_LINE = extract_elements_from_file(full_filename, "diagnosticsM")
+            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " diagnosticsM:",
+                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
+                    "descr": "change output to NWRT=1",
+                }
+            }
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "diagnosticsM:", line_offset=2, num_lines=1
+            )
+
     def change_card_history_ldefhis(self, filename):
         full_filename = os.path.join(self.dirname, filename)
         # Check time_stepping is a card in this case
@@ -685,7 +725,8 @@ class Croco:
             try:
                 self.check_one_file_internal(filename)
             except Exception as e:
-                Messaging.step_error("Failed to compare !")
+                Messaging.step_error("Comparison failure !")
+                Messaging.step_error(f"With error: {e}")
                 self.config.report.report_status(
                     self.case_name,
                     self.variant_name,
@@ -750,6 +791,13 @@ class Croco:
                     result_dir,
                 ]
 
+                # Handle options in plot script command
+                script_options = ""  # default = no options
+                if "plotphy_script_options" in self.case["plotphy"]:
+                    script_options = self.case["plotphy"]["plotphy_script_options"]
+                if script_options:
+                    command.extend(script_options.split())
+
                 try:
                     subprocess.run(command, check=True)  # Exécute la commande
                     Messaging.step(
@@ -776,6 +824,7 @@ class Croco:
                         False,
                         str(e),
                     )
+
             else:
                 Messaging.step("No Plotting script provided")
         else:
@@ -828,8 +877,10 @@ class Croco:
         if self.variant_name != variant_ref_name:
             return
 
-        # create dir if not exist
+        # create dir (pre_checks already guarded against overwrite without --force-ref)
         refdir_case = f"{refdir}/{case_name}"
+        if os.path.isdir(refdir_case):
+            Messaging.step(f"--force-ref set: overwriting existing ref {refdir_case}")
         os.makedirs(refdir_case, exist_ok=True)
 
         # copy the files there
@@ -863,3 +914,17 @@ class Croco:
                 )
                 + "\n"
             )
+
+        # copy plotphy PNGs so the HTML report can compare against them.
+        # Clean the destination first so stale PNGs from a previous ref don't linger.
+        png_dest_dir = f"{refdir}/{case_name}"
+        if os.path.isdir(png_dest_dir):
+            for old_png in glob.glob(os.path.join(png_dest_dir, "*.png")):
+                os.remove(old_png)
+        os.makedirs(png_dest_dir, exist_ok=True)
+        png_src_dir = self.dirname_result
+        png_files = glob.glob(os.path.join(png_src_dir, "*.png"))
+        if png_files:
+            for png in png_files:
+                shutil.copyfile(png, os.path.join(png_dest_dir, os.path.basename(png)))
+                Messaging.step(f"Storing plot {os.path.basename(png)} into ref")
