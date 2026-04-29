@@ -1,0 +1,10 @@
+&croco_title
+  title = "Acoustic waves example"
+/
+
+&croco_time_stepping
+  ntimes = 200
+  dt = 0.001
+  ndtfast= 1
+  ninfo = 100
+/

@@ -14,6 +14,7 @@
       subroutine read_inp (ierr)        ! parameters  from  startup
                                         ! script file using keywords
                                         ! to recognize variables.
+      use croco_namelist, only: dt
 # ifdef STOGEN
       use stoalloc                      ! do we output stochastic fields
 # endif
@@ -203,7 +204,7 @@
       if (mynode.eq.0 .and. iargc().GT.0) call getarg(1,fname)
       call MPI_Bcast(fname,64,MPI_BYTE, 0, MPI_COMM_WORLD,ierr)
 #else
-      if (iargc().eq.1) call getarg(1,fname)
+      if (iargc().ge.1) call getarg(1,fname)
 #endif
 !
 ! if child grid, use an input name: fname.1, .2, .3, ...
@@ -322,9 +323,9 @@
 !
 ! Read input parameters according to the keyword:
 ! ==== ===== ========== ========= == === ========
-      if (keyword(1:kwlen).eq.'title') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) title
+      if (1 == 0) then ! temporary, just to keep if first, TODO remove it when all is in nml
+          ! never pass here, it is just to keep first if
+          ! (to be remove when all is in nml)
 
 #ifdef LOGFILE
 !
@@ -408,23 +409,7 @@
         read(input,'(A)',err=95) xios_origin_date
         xios_origin_date_in_sec=tool_datosec(xios_origin_date)
 #endif
-!
-! Time-stepping parameters
-!
-      elseif (keyword(1:kwlen).eq.'time_stepping') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ntimes,dt,ndtfast, ninfo
 
-        dtfast=dt/float(ndtfast)     ! set barotropic time step.
-
-        if (NWEIGHT.lt.(2*ndtfast-1)) then
-          write(stdout,'(a,i3)')
-     &    ' Error - Number of 2D timesteps (2*ndtfast-1): ',
-     &    2*ndtfast-1
-          write(stdout,'(a,i3)')
-     &    '           exceeds barotopic weight dimension: ',NWEIGHT
-          goto 95
-        endif
 
 #ifdef NBQ
 !
@@ -2322,8 +2307,6 @@ c        close(testunit)
       if (ierr.eq.0) then
       
           ! Write stdout in logfile or stdout
-          lstr=lenstr(title)
-          MPI_master_only write(stdout,'(/1x,A)') title(1:lstr)
 #ifdef LOGFILE
           lstr=lenstr(logname)
           MPI_master_only write(stdout,'(/1x,A)') logname(1:lstr)
@@ -2343,16 +2326,6 @@ c        close(testunit)
      &  'DT RST=',dt_rst,'H'
           MPI_master_only write(stdout,*)
 #endif
-
-          MPI_master_only write(stdout,
-     & '(I10,2x,A,1x,A /F10.2,2x,A,2(/I10,2x,A,1x,A)/F10.4,2x,A)')
-     &    ntimes,  'ntimes   Total number of timesteps for',
-     &                                            '3D equations.',
-     &    dt,      'dt       Timestep [sec] for 3D equations',
-     &    ndtfast, 'ndtfast  Number of 2D timesteps within each',
-     &                                                 '3D step.',
-     &    ninfo,   'ninfo    Number of timesteps between',
-     &                                     'runtime diagnostics.'
 
 #ifdef NBQ
 

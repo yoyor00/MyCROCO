@@ -14,6 +14,7 @@
                               ! Read point or grided surface momentum
       subroutine get_smflux   ! flux (wind stress) at the appropriate
                               ! time from forcing netCDF file.
+      use croco_namelist, only: dt
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -207,6 +208,7 @@ c**        call opencdf (frcname,N)
       end
 
       subroutine set_smflux_tile (Istr,Iend,Jstr,Jend)
+      use croco_namelist, only: dt
 # define SMFLUX_DATA
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2

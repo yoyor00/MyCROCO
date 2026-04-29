@@ -1,0 +1,10 @@
+&croco_title
+  title = "IGW TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 5
+  dt = 30.000
+  ndtfast= 60
+  ninfo = 500
+/

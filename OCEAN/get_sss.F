@@ -24,6 +24,7 @@
 !
 !  we use DQDSST for CST....
 !
+      use croco_namelist, only: dt
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -208,6 +209,7 @@
 !
 ! Set-up sea surface salinity data for current tile.
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
       real cff, cff1,cff2, cff3,cff4, val1, val2

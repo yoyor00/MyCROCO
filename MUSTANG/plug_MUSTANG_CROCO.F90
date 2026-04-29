@@ -9,6 +9,7 @@
       module plug_MUSTANG_CROCO
 
       USE module_substance
+      USE croco_namelist, only: dt
       USE initMUSTANG, ONLY : MUSTANG_init
       USE sed_MUSTANG, ONLY : MUSTANG_update
       USE sed_MUSTANG, ONLY : MUSTANG_deposition

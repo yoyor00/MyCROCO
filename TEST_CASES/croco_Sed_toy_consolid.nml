@@ -1,0 +1,10 @@
+&croco_title
+  title = "SED TOY Mixed bed Consolidation TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 1728000
+  dt = 2.000
+  ndtfast= 20
+  ninfo = 40
+/

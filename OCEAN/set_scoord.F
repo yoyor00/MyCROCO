@@ -20,6 +20,7 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
+      use croco_namelist, only: ndtfast, dt
       implicit none
 # include "param.h"
 # include "scalars.h"

@@ -1,0 +1,10 @@
+&croco_title
+  title = "Shelf Front Example"
+/
+
+&croco_time_stepping
+  ntimes = 720
+  dt = 1200.000
+  ndtfast= 50
+  ninfo = 1
+/

@@ -1,0 +1,10 @@
+&croco_title
+  title = "Flash rip test case"
+/
+
+&croco_time_stepping
+  ntimes = 17680
+  dt = 0.050
+  ndtfast= 5
+  ninfo = 10
+/

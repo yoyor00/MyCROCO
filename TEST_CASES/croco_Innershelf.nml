@@ -1,0 +1,10 @@
+&croco_title
+  title = "Inner Shelf 2D-V Example (Homogeneous case)"
+/
+
+&croco_time_stepping
+  ntimes = 5760
+  dt = 300.000
+  ndtfast= 50
+  ninfo = 10
+/

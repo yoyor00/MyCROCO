@@ -21,6 +21,8 @@
 !
 !======================================================================
 !
+          USE croco_namelist, ONLY : read_nml, read_nml_fname
+          USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
 #if defined OA_COUPLING || defined OW_COUPLING
           USE mod_prism
 #endif
@@ -180,9 +182,12 @@
       call init_buffer
 !
 !----------------------------------------------------------------------
-!  Read in tunable model parameters in roms.in file
+!  Read in tunable model parameters in croco input file
 !----------------------------------------------------------------------
 !
+      call read_nml_fname ()
+      call read_nml (ierr)
+      if (ierr.ne.0) goto 100
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !
@@ -190,7 +195,7 @@
 !  Initialize global model parameters
 !----------------------------------------------------------------------
 !
-!  Gobal scalar variables
+!  Global scalar variables
 !
       call init_scalars (ierr)
       if (ierr.ne.0) goto 100

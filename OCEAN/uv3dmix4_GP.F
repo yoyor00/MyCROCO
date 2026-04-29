@@ -125,6 +125,7 @@
 ! ******************************Common Code***************************
 !---------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
 #include "param.h"
 #include "grid.h"

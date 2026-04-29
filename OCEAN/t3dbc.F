@@ -52,6 +52,7 @@ c        call t3dbc_interp_tile(Istr,Iend,Jstr,Jend,indx,itrc)
 !
 ! Common Code
 !
+      USE croco_namelist, only: dt
 # include "set_obc_definitions.h"
 !
       implicit none

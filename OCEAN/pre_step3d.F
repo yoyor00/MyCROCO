@@ -68,6 +68,7 @@
 ! mode) computations.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt, ntimes
 #ifdef CVTK_DEBUG
       use debug
 #endif              

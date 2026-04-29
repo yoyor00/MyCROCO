@@ -1,0 +1,10 @@
+&croco_title
+  title = "Dune3D test case (Dhysed Bosse / Mustang sediment model)"
+/
+
+&croco_time_stepping
+  ntimes = 172800
+  dt = 1.000
+  ndtfast= 20
+  ninfo = 10
+/

@@ -1,0 +1,10 @@
+&croco_title
+  title = "TS_adv_body Example"
+/
+
+&croco_time_stepping
+  ntimes = 750
+  dt = 7.000
+  ndtfast= 1
+  ninfo = 1
+/

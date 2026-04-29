@@ -1,0 +1,10 @@
+&croco_title
+  title = "Upwelling Example"
+/
+
+&croco_time_stepping
+  ntimes = 410
+  dt = 960.000
+  ndtfast= 48
+  ninfo = 1
+/

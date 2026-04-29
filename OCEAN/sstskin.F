@@ -57,6 +57,7 @@
 !                             WRF routine module_sf_sstskin.F
 !======================================================================
 !
+      use croco_namelist, only: dt
       IMPLICIT NONE
 # include "param.h"
 # include "grid.h"

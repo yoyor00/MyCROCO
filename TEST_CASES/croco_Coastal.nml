@@ -1,0 +1,10 @@
+&croco_title
+  title = "LOIRE TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 10000
+  dt = 40.000
+  ndtfast= 10
+  ninfo = 1
+/

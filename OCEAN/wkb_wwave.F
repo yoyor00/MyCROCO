@@ -1355,6 +1355,7 @@ c        cff1=3.D0/16.D0
       end
 
       subroutine wkb_cew_finalize_tile (istr,iend,jstr,jend)
+      use croco_namelist, only: ndtfast
       implicit none
 #  include "param.h"
       integer istr,iend,jstr,jend, i,j

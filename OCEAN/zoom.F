@@ -104,6 +104,7 @@
 !====================================================================
 !
       subroutine Agrif_initvalues()
+      use croco_namelist, only: dt
       use AGRIF_UTIL
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules
@@ -201,6 +202,9 @@
 !  Read in tunable model parameters in roms.in file
 !----------------------------------------------------------------------
 !
+      call read_nml_fname ()
+      call read_nml (ierr)
+      if (ierr.ne.0) goto 100
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !

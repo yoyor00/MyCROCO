@@ -15,6 +15,7 @@
 
       subroutine get_bry            ! Read side boundary forcing
                                     ! fields from boundary file
+      use croco_namelist, only: dt
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -506,6 +507,7 @@
 !  Set-up all boundary forcing fields
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2, itrc
       real cff, cff1,cff2

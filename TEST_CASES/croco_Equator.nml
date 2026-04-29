@@ -1,0 +1,10 @@
+&croco_title
+  title = "Equator Example"
+/
+
+&croco_time_stepping
+  ntimes = 3600
+  dt = 8640.000
+  ndtfast= 45
+  ninfo = 1
+/

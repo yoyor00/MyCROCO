@@ -1,0 +1,10 @@
+&croco_title
+  title = "Sed_toy (flocculation) TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 34560
+  dt = 10.000
+  ndtfast= 10
+  ninfo = 1
+/

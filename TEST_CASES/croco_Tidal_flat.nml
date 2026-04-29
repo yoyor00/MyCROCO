@@ -1,0 +1,10 @@
+&croco_title
+  title = "Tide Flat 2DV TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 8640
+  dt = 15.000
+  ndtfast= 5
+  ninfo = 100
+/

@@ -118,6 +118,7 @@ C$    trd=omp_get_thread_num()
 !
 !***********************************************************************
 !
+      use croco_namelist, only: dt
 # ifdef CVTK_DEBUG
       USE debug
 # endif

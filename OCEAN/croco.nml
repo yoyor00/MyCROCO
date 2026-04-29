@@ -1,0 +1,9 @@
+&croco_title
+  title = "Basin Example"
+/
+&croco_time_stepping
+  NTIMES = 3240
+  dt = 9600
+  NDTFAST = 65
+  NINFO = 1 
+/

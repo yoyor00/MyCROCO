@@ -34,6 +34,7 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "grid.h"

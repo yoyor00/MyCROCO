@@ -30,15 +30,14 @@
 ! time        Time since initialization [seconds];
 ! time_start  Initialization time [seconds];
 ! tdays       Time since initialization [days];
-! dt          Time step for 3D primitive equations [seconds];
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
-      real dt, dtfast, time, time2, time_start, tdays, start_time
+      real dtfast, time, time2, time_start, tdays, start_time
 #ifdef USE_CALENDAR
       real time_end
       character*19 date, end_date, start_date
 #endif
-      integer ndtfast, iic, kstp, krhs, knew, next_kstp
+      integer iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
 #endif
@@ -52,9 +51,9 @@
      &      , wstp, wnew
 #endif
       logical PREDICTOR_2D_STEP
-      common /time_indices/  dt,dtfast, time, time2,time_start, tdays,
-     &     ndtfast, iic, kstp, krhs, knew, next_kstp,
+      common /time_indices/  dtfast, time, time2,time_start, tdays,
      &     start_time,
+     &     iic, kstp, krhs, knew, next_kstp,
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
@@ -117,15 +116,9 @@
 !
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
 !                              usually 1, if not a restart run.
-! ntimes   Number of timesteps for the 3D primitive equations in
-!                                                    the current run.
-! ndtfast  Number of timesteps for 2-D equations between each "dt".
-!
 ! nrst     Number of timesteps between storage of restart fields.
 ! nwrt     Number of timesteps between writing of fields into
 !                                                     history file.
-! ninfo    Number of timesteps between print of single line
-!                                   information to standard output.
 ! nsta     Number of timesteps between storage of station data.
 ! navg     Number of timesteps between storage of time-averaged
 !                                                           fields.
@@ -188,7 +181,7 @@
      defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
        real  tauT_in, tauT_out, tauM_in, tauM_out
 #endif
-      integer numthreads,     ntstart,   ntimes,  ninfo
+      integer numthreads,     ntstart
      &      , nfast,  nrrec,     nrst,    nwrt
 #ifdef EXACT_RESTART
      &     ,  forw_start
@@ -357,7 +350,7 @@
      defined WCLIMATOLOGY
      &                      , tauT_in, tauT_out, tauM_in, tauM_out
 #endif
-     &      , numthreads,     ntstart,   ntimes,  ninfo
+     &      , numthreads,     ntstart
      &      , nfast,  nrrec,     nrst,    nwrt
 #ifdef EXACT_RESTART
      &       , forw_start

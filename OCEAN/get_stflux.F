@@ -16,6 +16,7 @@
                                     ! Read point or grided surface
       subroutine get_stflux (itrc)  ! flux for tracer variables itrc
                                     ! from forcing NetCDF file.
+      use croco_namelist, only: dt
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -198,6 +199,7 @@ c**        call opencdf (frcname,N)
 ! Set-up surface tracer flux for current tile.
 !--------------------------------------------------------------------
 !
+        use croco_namelist, only: dt
 # define STFLUX_DATA
       implicit none
       integer Istr,Iend,Jstr,Jend, itrc, i,j, it1,it2

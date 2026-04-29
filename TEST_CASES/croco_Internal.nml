@@ -1,0 +1,10 @@
+&croco_title
+  title = "Internal Tide 2D-V Example"
+/
+
+&croco_time_stepping
+  ntimes = 992
+  dt = 540.000
+  ndtfast= 60
+  ninfo = 10
+/

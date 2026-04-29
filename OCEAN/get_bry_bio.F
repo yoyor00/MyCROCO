@@ -14,6 +14,7 @@
                     && !defined ANA_BRY
 
       subroutine get_bry_bio    ! Read side boundary forcing
+      use croco_namelist, only: dt
       implicit none             ! fields from boundary file
 # include "param.h"
 # include "scalars.h"
@@ -848,6 +849,7 @@ c                goto 99         !--> ERROR
 !  Set-up biology boundary forcing fields
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2, itrc
       real cff, cff1,cff2

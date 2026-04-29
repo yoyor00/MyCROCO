@@ -45,6 +45,7 @@
 #  endif
      &  )
 
+      use croco_namelist, only: dt
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand
 #   ifdef MUSTANG

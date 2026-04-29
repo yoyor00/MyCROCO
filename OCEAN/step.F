@@ -16,6 +16,9 @@
 !
 #include "cppdefs.h"
       subroutine step()
+# if defined OA_COUPLING || defined OW_COUPLING
+      use croco_namelist, only: ntimes, dt
+# endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -107,6 +110,7 @@ C$OMP END PARALLEL
 !====================================================================
 !
       subroutine prestep3D_thread()
+      use croco_namelist, only: dt, ndtfast
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS

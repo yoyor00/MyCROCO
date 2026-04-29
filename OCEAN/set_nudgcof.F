@@ -25,6 +25,7 @@
       end
 !
       subroutine set_nudgcof_tile (Istr,Iend,Jstr,Jend, wrk)
+      use croco_namelist, only: dt
 !     implicit none
       integer ierr
 # if defined MPI

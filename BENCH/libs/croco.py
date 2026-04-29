@@ -14,6 +14,7 @@ import platform
 import subprocess
 from datetime import timedelta
 import math
+import f90nml
 
 
 # internal
@@ -65,6 +66,12 @@ class Croco:
         if "input_file" in self.case:
             if len(self.case["input_file"]) > 0:
                 self.croco_inputfile = self.case["input_file"]
+
+        # namelist file (optional 2nd argument to croco executable)
+        self.croco_nmlfile = "TEST_CASES/croco_%s.nml" % self.case["case"].capitalize()
+        if "nml_file" in self.case:
+            if len(self.case["nml_file"]) > 0:
+                self.croco_nmlfile = self.case["nml_file"]
 
         self.croco_build = JobcompCrocoSetup(
             self.config, self.dirname, self.variant["tuning_familly"]
@@ -305,11 +312,13 @@ class Croco:
             env_line += f'{var}="{value}" '
 
         # build command and run
-        command = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
+        command = "%s ../../../scripts/correct_end.sh %s ./croco %s %s" % (
             env_line,
             command_prefix,
             self.croco_inputfile,
+            self.croco_nmlfile,
         )
+        command = command.rstrip()
         if restart:
             # execute twice one without restart and one with
             command = "%s && %s_rst" % (
@@ -412,7 +421,8 @@ class Croco:
 
     def apply_debug_patches(self):
         filename = self.croco_inputfile
-        self.change_card_time_stepping_ntimes(filename, 6)
+        filename_nml = self.croco_nmlfile
+        self.change_nml_ntimes(filename_nml, 6)
         self.change_card_history_nwrt(filename)
         self.change_card_dia_nwrt(filename)
         self.change_card_diaM_nwrt(filename)
@@ -422,6 +432,7 @@ class Croco:
 
     def apply_restart_patches(self):
         filename = self.croco_inputfile
+        filename_nml = self.croco_nmlfile
 
         # for all case (write/read), put ldefhis to F
         self.change_card_history_ldefhis(filename)
@@ -432,14 +443,18 @@ class Croco:
             filename_rst = filename + "_rst"
             full_filename_rst = os.path.join(self.dirname, filename_rst)
             shutil.copy(full_filename, full_filename_rst)
+            full_filename_nml = os.path.join(self.dirname, filename_nml)
+            filename_nml_rst = filename_nml + "_rst"
+            full_filename_nml_rst = os.path.join(self.dirname, filename_nml_rst)
+            shutil.copy(full_filename_nml, full_filename_nml_rst)
             file_nc_rst = "croco_restart.nc"
 
             # first run with filename
-            self.change_card_time_stepping_ntimes(filename, 3)
+            self.change_nml_ntimes(filename_nml, 3)
             self.change_card_restart(filename, 3, file_nc_rst)
 
             # second run with filename_rst
-            self.change_card_time_stepping_ntimes(filename_rst, 3)
+            self.change_nml_ntimes(filename_nml_rst, 3)
             self.change_card_initial(filename_rst, file_nc_rst)
 
             # and for USE_CALENDAR
@@ -552,24 +567,14 @@ class Croco:
                 full_filename, "end_date", line_offset=2, num_lines=1
             )
 
-    def change_card_time_stepping_ntimes(self, filename, ntimes):
+    def change_nml_ntimes(self, filename, ntimes):
+        """Change ntimes value in a CROCO namelist file."""
+        # Read namelist
         full_filename = os.path.join(self.dirname, filename)
-        # Check time_stepping is a card in this case
-        if len(extract_elements_from_file(full_filename, "time_stepping")) > 0:
-            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-            NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, ntimes)
-            patches = {
-                filename: {
-                    "mode": "insert-after",
-                    "what": " time_stepping:",
-                    "insert": " ".join(map(str, NEW_TIME_LINE)),
-                    "descr": "change duration to NTIMES=%i" % ntimes,
-                }
-            }
-            self.apply_patches(patches)
-            delete_lines_from_file(
-                full_filename, "time_stepping", line_offset=2, num_lines=1
-            )
+        Messaging.step(f"Patching ntimes in {full_filename}")
+        nml = f90nml.read(full_filename)
+        nml["croco_time_stepping"]["ntimes"] = ntimes
+        nml.write(full_filename, force=True)
 
     def change_card_history_nwrt(self, filename):
         full_filename = os.path.join(self.dirname, filename)

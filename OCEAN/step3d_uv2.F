@@ -59,6 +59,10 @@
 ! using implicit backward time step.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
+# if defined SOLID_BODY_PER
+      use croco_namelist, only: ntimes
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"

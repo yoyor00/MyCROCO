@@ -1,0 +1,10 @@
+&croco_title
+  title = "KILPATRICK"
+/
+
+&croco_time_stepping
+  ntimes = 1296
+  dt = 100.000
+  ndtfast= 2
+  ninfo = 1
+/

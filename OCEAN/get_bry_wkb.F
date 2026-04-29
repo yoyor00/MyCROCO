@@ -13,6 +13,7 @@
 #if !defined ANA_BRY_WKB && defined WKB_WWAVE
 
       subroutine get_bry_wkb        ! Read side boundary forcing
+       use croco_namelist, only: dt
       implicit none                 ! fields from boundary file
 
 # define wac_west 'cdir_west'
@@ -241,6 +242,7 @@
 !  Set-up all boundary forcing fields
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
       real cff, cff1,cff2

@@ -16,6 +16,7 @@
                              ! Read tracer(s) climatology
       subroutine get_uclima  ! fields from climatology file
                              ! at appropriate time.
+      use croco_namelist, only: dt
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -235,6 +236,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set-up momentum climatology for current tile.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "scalars.h"

@@ -1,0 +1,10 @@
+&croco_title
+  title = "Tank Example"
+/
+
+&croco_time_stepping
+  ntimes = 50250
+  dt = 0.002
+  ndtfast= 5
+  ninfo = 100
+/

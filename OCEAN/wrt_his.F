@@ -13,6 +13,7 @@
                                ! Writes requested model
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
+      USE croco_namelist, only: dt
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat, nvpc
 #endif

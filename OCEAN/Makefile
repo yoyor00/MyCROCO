@@ -130,6 +130,7 @@ include Makedefs
 
 
  SRCS90 = \
+	croco_namelist.F90\
 	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	storng_testmpi.F90\
 	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90	stowhite.F90\
 	stobulk.F90	stomarginal.F90	storst.F90	stopar.F90	stomod.F90\

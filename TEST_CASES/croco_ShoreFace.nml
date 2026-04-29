@@ -1,0 +1,10 @@
+&croco_title
+  title = "SHOREFACE Example"
+/
+
+&croco_time_stepping
+  ntimes = 7200
+  dt = 5.000
+  ndtfast= 30
+  ninfo = 72
+/

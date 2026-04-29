@@ -1,0 +1,10 @@
+&croco_title
+  title = "Dune Test case"
+/
+
+&croco_time_stepping
+  ntimes = 172800
+  dt = 1.000
+  ndtfast= 20
+  ninfo = 1
+/

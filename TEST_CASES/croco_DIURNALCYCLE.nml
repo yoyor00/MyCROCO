@@ -1,0 +1,10 @@
+&croco_title
+  title = "SCM TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 23040
+  dt = 30.000
+  ndtfast= 60
+  ninfo = 1
+/

@@ -35,6 +35,7 @@
       end
 !======================================================================
       subroutine abl_ini_tile(Istr,Iend,Jstr,Jend)
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "scalars.h"

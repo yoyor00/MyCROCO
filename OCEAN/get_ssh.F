@@ -14,6 +14,7 @@
                                          ! Read sea surface height
       subroutine get_ssh                 ! at appropriate time from
                                          ! climatology NetCDF file.
+      use croco_namelist, only: dt
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -165,6 +166,7 @@ C$    integer  trd, omp_get_thread_num
 !
 ! Set-up sea surface height climatology for current tile.
 !
+      use croco_namelist, only: dt
 # define SSH_DATA
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2

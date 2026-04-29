@@ -1,0 +1,10 @@
+&croco_title
+  title = "BENGUELA TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 384
+  dt = 3600.000
+  ndtfast= 60
+  ninfo = 1
+/

@@ -1,0 +1,10 @@
+&croco_title
+  title = "SANDBAR Example"
+/
+
+&croco_time_stepping
+  ntimes = 72000
+  dt = 0.050
+  ndtfast= 10
+  ninfo = 100
+/

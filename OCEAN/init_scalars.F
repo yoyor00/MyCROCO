@@ -19,6 +19,7 @@
 ! summation counters, etc; NONE of the physical parameters of
 ! the model is set here.
 !
+      use croco_namelist, only: dt
       implicit none
       integer ierr, i,j,itrc, lvar, lenstr
 #if defined ONLINE

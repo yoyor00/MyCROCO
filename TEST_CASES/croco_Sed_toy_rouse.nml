@@ -1,0 +1,10 @@
+&croco_title
+  title = "Sed_toy rouse experiment (Single Column GradP / SCM) TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 21600
+  dt = 2.000
+  ndtfast= 10
+  ninfo = 1
+/

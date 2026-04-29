@@ -343,6 +343,7 @@ C$    integer  trd, omp_get_thread_num
 !  Sets kinematic surface momentum flux (wind stress) "sustr" and "svstr"
 !  [m^2/s^2] using an analytical expression.
 !
+        use croco_namelist, only: dt
 # ifdef AGRIF
       use Agrif_UTIL
 # endif
@@ -2020,6 +2021,7 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       subroutine ana_psource_tile (Istr,Iend,Jstr,Jend)
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -2638,6 +2640,7 @@ C$    integer  trd, omp_get_thread_num
 !  Set analytical boundary forcing
 !----------------------------------------------------------------------
 !
+      USE croco_namelist, only: dt
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
 # endif

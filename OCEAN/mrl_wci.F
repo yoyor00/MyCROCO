@@ -70,6 +70,7 @@
 !
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "forces.h"

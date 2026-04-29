@@ -24,6 +24,7 @@
       end
 
       subroutine step3d_uv1_tile (Istr,Iend,Jstr,Jend, ru,rv,DC)
+        use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 # include "param.h"

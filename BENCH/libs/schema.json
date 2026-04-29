@@ -173,7 +173,8 @@
               "type": "string"
             }
           },
-          "input_file": { "type": "string" }
+          "input_file": { "type": "string" },
+          "nml_file": { "type": "string" }
         },
         "required": ["title", "case", "splitting", "patches", "check_outputs"]
       }

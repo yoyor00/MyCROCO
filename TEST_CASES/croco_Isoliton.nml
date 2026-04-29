@@ -1,0 +1,10 @@
+&croco_title
+  title = "Gravitational Adjustment Example"
+/
+
+&croco_time_stepping
+  ntimes = 1400
+  dt = 0.200
+  ndtfast= 25
+  ninfo = 100
+/

@@ -137,7 +137,7 @@
 !     permitting ocean models, Mon. Wea. Rev., 128, 8, 2935-2946.
 !--------------------------------------------------------------------
 !
-
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, k1, k2,indx
       real UFe(PRIVATE_2D_SCRATCH_ARRAY),

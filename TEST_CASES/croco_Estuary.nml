@@ -1,0 +1,10 @@
+&croco_title
+  title = "Estuary TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 8640
+  dt = 5.000
+  ndtfast= 5
+  ninfo = 1
+/

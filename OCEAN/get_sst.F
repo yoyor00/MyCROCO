@@ -23,6 +23,7 @@
 !
 !       Q_model ~ Q + dQdSST * (T_model - SST)
 !
+      use croco_namelist, only: dt
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -200,6 +201,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
 ! Set-up sea surface temperature data for current tile.
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, it1,it2
       real cff, cff1,cff2, cff3,cff4, val1,val2

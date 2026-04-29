@@ -94,6 +94,7 @@
 !
 !======================================================================
 
+      USE croco_namelist, only: dt
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
      &  obst_tau, obst_t, obst_c2turb

@@ -275,10 +275,10 @@
     },
     "patches": {
       // Change the ndtfast
-      "TEST_CASES/croco.in.Regional": {
+      "TEST_CASES/croco_Regional.nml": {
         "mode": "replace",
-        "what": "                384      3600      60      1",
-        "by": "                384      3600      80      1",
+        "what": "  ndtfast= 60",
+        "by": "  ndtfast= 80",
         "descr": "Set stepping ndtfast = 80",
       },
     },

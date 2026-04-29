@@ -17,6 +17,7 @@
 !  time from forcing NetCDF file.
 !
 !
+      use croco_namelist, only: dt
 # define BTFLUX_DATA
       implicit none
 # include "param.h"
@@ -190,6 +191,7 @@ c**        call opencdf (btfname,N)
 ! Set-up surface tracer flux for current tile.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
 # define BTFLUX_DATA
       implicit none
       integer Istr,Iend,Jstr,Jend, itrc, i,j, it1,it2

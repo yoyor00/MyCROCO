@@ -1,0 +1,10 @@
+&croco_title
+  title = "JET Example (use make_jet.m for non ANA_JET config)"
+/
+
+&croco_time_stepping
+  ntimes = 4860
+  dt = 3200.000
+  ndtfast= 80
+  ninfo = 1
+/

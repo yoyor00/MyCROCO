@@ -1,0 +1,10 @@
+&croco_title
+  title = "River run off  Example"
+/
+
+&croco_time_stepping
+  ntimes = 800
+  dt = 540.000
+  ndtfast= 60
+  ninfo = 1
+/

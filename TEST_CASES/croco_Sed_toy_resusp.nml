@@ -1,0 +1,10 @@
+&croco_title
+  title = "SED TOY Mixed bed (erosion and sediment resuspension) TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 216000
+  dt = 2.000
+  ndtfast= 20
+  ninfo = 40
+/

@@ -225,6 +225,7 @@ C$OMP BARRIER
 #  endif
      &                            )
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend
       real  FX(PRIVATE_2D_SCRATCH_ARRAY)
@@ -1445,6 +1446,7 @@ C$OMP BARRIER
      &                              Hz_inv,Hz_inv2,Hz_inv3,qc,
      &                              FC,qR,qL,WR,WL,tau_w,ksource)
 !
+      use croco_namelist, only: dt
       implicit none
 #  include "param.h"
 #  include "ocean3d.h"
@@ -1731,6 +1733,7 @@ C$OMP BARRIER
 !
       subroutine sed_fluxes_tile (Istr,Iend,Jstr,Jend, tau_w)
 !
+      use croco_namelist, only: dt
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -1897,6 +1900,7 @@ C$OMP BARRIER
       subroutine sed_bed_tile (Istr,Iend,Jstr,Jend,
      &                         tau_w,dep_mass,Awrk1,Awrk2)
 !
+      use croco_namelist, only: dt
       implicit none
 #  include "param.h"
 #  include "bbl.h"
@@ -2417,6 +2421,7 @@ C$OMP BARRIER
      &                         Istr,Iend,Jstr,Jend,tau_w,dep_mass)
 !***********************************************************************
 !
+      use croco_namelist, only: dt
       implicit none
 #  include "param.h"
 #  include "bbl.h"
@@ -5151,6 +5156,7 @@ C$OMP BARRIER
 # ifdef SED_FLOCS
       subroutine sed_flocmod_tile (Istr,Iend,Jstr,Jend)
         USE flocmod, ONLY : flocmod_main, flocmod_comp_g
+        use croco_namelist, only: dt
       implicit none
 #  include "param.h"
 #  include "scalars.h"

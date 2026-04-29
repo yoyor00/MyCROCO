@@ -81,6 +81,7 @@
 !             model grid (must account for grid angle)
 !********************************************************************!
 !
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "bbl.h"

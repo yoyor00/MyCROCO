@@ -28,6 +28,7 @@
     },
     "patches": {},
     "input_file": "TEST_CASES/croco.in.Grav_adj_nbq",
+    "nml_file": "TEST_CASES/croco_Grav_adj_nbq.nml",
     "check_outputs": ["gravadj_his.nc"],
     "unsupported": ["restart", "openmp"],
   },

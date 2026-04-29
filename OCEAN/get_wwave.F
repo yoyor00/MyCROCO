@@ -15,6 +15,7 @@
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
                               ! time from forcing NetCDF file.
+      use croco_namelist, only: dt
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -454,6 +455,7 @@
 !  Set-up wave amplitude, direction, period for current tile.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
 
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2

@@ -1,0 +1,10 @@
+&croco_title
+  title = "RIP Example"
+/
+
+&croco_time_stepping
+  ntimes = 1800
+  dt = 4.000
+  ndtfast= 20
+  ninfo = 10
+/

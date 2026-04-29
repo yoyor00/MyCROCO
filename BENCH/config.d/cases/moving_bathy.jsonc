@@ -10,6 +10,7 @@
       "plotphy_script_input": "movbat_his.nc",
     },
     "input_file": "TEST_CASES/croco.in.MovBat",
+    "nml_file": "TEST_CASES/croco_MovBat.nml",
     "check_outputs": ["movbat_his.nc"],
     "unsupported": ["openmp"],
   },

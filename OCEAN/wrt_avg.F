@@ -14,6 +14,7 @@
                                      ! Write time-averaged
       subroutine wrt_avg             ! fields into averages
                                      ! netCDF file.
+      use croco_namelist, only: dt
 !     implicit none
       integer ierr, record, lstr, lvar, lenstr
      &  , start(2), count(2), ibuff(4), nf_fwrite, type
