@@ -31,7 +31,8 @@
 */
 #if defined TS_HADV_UP5   || defined TS_HADV_C6 || \
     defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || \
-    defined BEDLOAD_UP5   || defined BEDLOAD_WENO5
+    defined BEDLOAD_UP5   || defined BEDLOAD_WENO5 || \
+    defined TS_HADV_C2    || defined BIO_HADV_MUSCL
 # define THREE_GHOST_POINTS
 # define THREE_GHOST_POINTS_TS
 #endif
