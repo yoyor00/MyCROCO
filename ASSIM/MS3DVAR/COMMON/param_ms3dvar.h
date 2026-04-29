@@ -17,14 +17,24 @@
 !
 ! MS3DVAR-specific grid parameters:
 ! ----------------------------------
-! MS3DVAR works with a HIGH-RESOLUTION geopotential grid (z-levels)
-! and optionally a LOW-RESOLUTION grid for multi-scale analysis.
+! MS3DVAR works with :
+! - an horizontal grid whose dimensions are defined with
+!   LLmH, MMmH which can be applied at all scales (LR, MR, MS)
+!   including the FILTER task or with a decimated LR-scale horizontal grid
+!   whose dimensions named LLm_lr, MMm_lr are deduced from the positive integer 
+!   parameter nratio.
+! - a geopotential grid (z-levels) with NnH levels.
+!
+! The downsampling of the LR grid is optional and only works with 
+! the multi-scale analysis (as opposed to the single scale analysis which
+! only involves the MS scale fortran sources).
 !
 ! Key Parameters:
 ! - LLmH, MMmH, NnH : High-resolution grid dimensions (geopotential levels)
 ! - nratio, nhalf   : Downsampling ratio (high-res to low-res)
 ! - LLm_lr, MMm_lr  : Low-resolution derived dimensions
 ! - NSUB_XH, NSUB_EH: Tiling for OpenMP parallelization ; H = High reso. grid
+! - NSUB_XL, NSUB_EL: Tiling for OpenMP parallelization ; L = Low  reso. grid
 !
 ! CPP Keys:
 ! - DAS          : Enable data assimilation (defined in cppdefs_ms3dvar.h)
@@ -37,8 +47,7 @@
 ! USAGE:
 ! ------
 ! This file should be included by variant-specific param.h files
-! (LR/param.h, MR/param.h, etc.) which can then override or extend
-! these settings as needed.
+! (LR/param.h, MR/param.h, etc.)
 !
 !======================================================================
 
@@ -52,10 +61,26 @@
 ! NnH        : Number of vertical geopotential levels
 !----------------------------------------------------------------------
 
-      integer  LLmH,  MMmH, NnH, NSUB_XH, NSUB_EH, NPPH
+      integer  LLmH,  MMmH, NnH
+
+#ifndef DAS_LR
+      integer NSUB_XH, NSUB_EH, NPPH
+#else
+      integer NSUB_XL, NSUB_EL, NPPL
+#endif
 
 ! CONFIGURATION: Edit this section for your domain
 ! -------------------------------------------------
+! Check dimensions LLm0, MMm0, N based on configuration name defined in
+! In the standard croco param.h, please check the grid dimensions 
+! (LLm0, MMm0, N parameters) based on your configuration name and type 
+! (e.g., WMED or BENGUELA REGIONAL config, etc.).
+! 
+! Then set accordingly the ms3dvar grid parameters :
+! - LLmH, MMmH, NnH 
+! - and eventually nratio if you wish to use a decimated grid
+!   at the LR scale stage (multi-scale analysis scheme only)
+
 ! Example 1: WMED (West Mediterranean) - DEFAULT
 !    parameter (LLmH=629,  MMmH=537, NnH=50)
 
@@ -87,7 +112,7 @@
 ! --------------------------------------
       parameter (nratio=1, nhalf=nratio/2+1)
 
-! Compute low-resolution grid dimensions
+! Compute low-resolution grid dimensions LLm_lr, MMm_lr for the LR scale
       parameter (LLm_lr=(LLmH+2-nhalf)/nratio-1,
      &           MMm_lr=(MMmH+2-nhalf)/nratio-1)
       parameter (Lm_lr=LLm_lr, Mm_lr=MMm_lr)
@@ -97,36 +122,53 @@
 !----------------------------------------------------------------------
 ! For OpenMP parallelization, the domain is split into tiles.
 !
-! NSUB_XH : Number of tiles in X direction
-! NSUB_EH : Number of tiles in Y (Eta) direction
-! NPPH    : Total number of tiles (= NSUB_XH * NSUB_EH)
+! 1. FILTER, MR, MS TASKS :
+!    NSUB_XH : Number of tiles in X direction
+!    NSUB_EH : Number of tiles in Y (Eta) direction
+!    NPPH    : Total number of tiles (= NSUB_XH * NSUB_EH)
+!
+! 2. LR SCALE
+!    NSUB_XL : Number of tiles in X direction
+!    NSUB_EL : Number of tiles in Y (Eta) direction
+!    NPPL    : Total number of tiles (= NSUB_XL * NSUB_EL)
 !
 ! Adjust based on your number of OpenMP threads and domain size.
 !----------------------------------------------------------------------
 
 ! CONFIGURATION: Set tiling
 ! --------------------------
+
+#ifndef DAS_LR
 !      parameter (NSUB_XH=6, NSUB_EH=6, NPPH=NSUB_XH*NSUB_EH)
 !      parameter (NSUB_XH=4, NSUB_EH=4, NPPH=16)  ! Alternative: 4x4 = 16 tiles
       parameter (NSUB_XH=5, NSUB_EH=4, NPPH=20)
+#else
+!      parameter (NSUB_XL=6, NSUB_EL=6, NPPL=NSUB_XL*NSUB_EL)
+!      parameter (NSUB_XL=4, NSUB_EL=4, NPPL=16)  ! Alternative: 4x4 = 16 tiles
+      parameter (NSUB_XL=5, NSUB_EL=4, NPPL=20)
+#endif  
 
 !----------------------------------------------------------------------
 ! Special Case: Minimizer Grid Configuration
 !----------------------------------------------------------------------
 ! The L-BFGS minimizer (das_lbfgs.F) temporarily defines DAS_IN_MBFGS
-! and needs to work with the high-resolution grid directly.
 !----------------------------------------------------------------------
 
 #if defined DAS_IN_MBFGS
 ! When DAS_IN_MBFGS is defined (only in das_lbfgs.F):
-! Use high-resolution grid for minimization
       integer NSUB_X, NSUB_E, NPP
       integer  LLm, Lm,  MMm, Mm
+#ifndef DAS_LR
       parameter (LLm=LLmH,  MMm=MMmH)
       parameter (NSUB_X=NSUB_XH, NSUB_E=NSUB_EH, NPP=NPPH,
      &           Lm=LLm, Mm=MMm)
-
 #else
+      parameter (LLm=LLm_lr,  MMm=MMm_lr)
+      parameter (NSUB_X=NSUB_XL, NSUB_E=NSUB_EL, NPP=NPPL,
+     &           Lm=LLm, Mm=MMm)
+#endif
+
+#else    /* DAS_IN_MBFGS */
 !----------------------------------------------------------------------
 ! Standard CROCO Grid Parameters
 !----------------------------------------------------------------------
@@ -139,37 +181,55 @@
 !----------------------------------------------------------------------
 ! Grid Dimensions Based on Configuration
 !----------------------------------------------------------------------
-! Set LLm0, MMm0, N based on your configuration name defined in
-! cppdefs_ms3dvar.h (e.g., WMED, BENGUELA, etc.)
+! Check dimensions LLm0, MMm0, N based on configuration name defined in
+! param.h (e.g., WMED, BENGUELA, etc.). Then set accodingly :
+! LLmH, MMmH, NnH and eventually nratio to use a decimated grid
+! at the LR scale stage
 !----------------------------------------------------------------------
 
 #if defined REGIONAL
 
 # if defined WMED
 ! West Mediterranean configuration
-! Use low-resolution grid derived from high-res
-      parameter (LLm0=LLmH,  MMm0=MMmH,  N=NnH)
 
-# elif defined BENGUELA
-! Benguela upwelling system
-      parameter (LLm0=41,   MMm0=42,   N=32)
+#ifndef DAS_LR
+      parameter (LLm0=LLmH,  MMm0=MMmH,  N=NnH)
+#else
+      parameter (LLm0=LLm_lr,  MMm0=MMm_lr,  N=NnH)
+#endif
 
 # elif defined YOUR_CONFIG
 ! Your custom regional configuration
-!     parameter (LLm0=xxx,  MMm0=yyy,  N=zz)
+! you must check the values for your domain
+! See explicit dimensions in the standard croco param.h
+#ifndef DAS_LR
+      parameter (LLm0=LLmH,  MMm0=MMmH,  N=NnH)
+#else
+      parameter (LLm0=LLm_lr,  MMm0=MMm_lr,  N=NnH)
+#endif
 
 # else
 ! Default/generic regional configuration
-! YOU MUST SET THESE VALUES FOR YOUR DOMAIN
+! you must check the values for your domain
+#ifndef DAS_LR
       parameter (LLm0=LLmH,  MMm0=MMmH,  N=NnH)
-!     parameter (LLm0=xx,   MMm0=xx,   N=xx)   ! Placeholder
+#else
+      parameter (LLm0=LLm_lr,  MMm0=MMm_lr,  N=NnH)
+#endif
 
 # endif  /* Regional configuration selection */
 
 #else
+
 ! For non-REGIONAL configurations (test cases, etc.)
-! Set explicit dimensions here if needed
-      parameter (LLm0=xx,   MMm0=xx,   N=xx)
+! you must check the values for your domain
+! See explicit dimensions in the standard croco param.h
+!     parameter (LLm0=xx,   MMm0=xx,   N=xx)
+#ifndef DAS_LR
+      parameter (LLm0=LLmH,  MMm0=MMmH,  N=NnH)
+#else
+      parameter (LLm0=LLm_lr,  MMm0=MMm_lr,  N=NnH)
+#endif
 
 #endif  /* REGIONAL */
 
@@ -189,7 +249,6 @@
 #else
       parameter (stdout=6)
 #endif
-
 
 ! Padding parameters for staggered grid
       integer padd_X, padd_E
@@ -234,7 +293,11 @@
 #endif
 
 ! Tiling configuration (default = low-res tiling)
+#ifndef DAS_LR
       parameter (NSUB_X=NSUB_XH, NSUB_E=NSUB_EH, NPP=NPPH)
+#else
+      parameter (NSUB_X=NSUB_XL, NSUB_E=NSUB_EL, NPP=NPPL)
+#endif
 
 ! Tile size computation
       parameter (size_XI=7+(Lm+NSUB_X-1)/NSUB_X)
