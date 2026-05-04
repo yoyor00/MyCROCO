@@ -40,17 +40,34 @@ class Report:
                 "variant": variant,
                 "restarted": restarted,
                 "status": {
-                    "build": {"status": None},
-                    "run": {"status": None},
-                    "check": {"status": None},
-                    "plotphy": {"status": None},
+                    "build": {"status": None, "message": "", "log": ""},
+                    "run": {"status": None, "message": "", "log": ""},
+                    "check": {"status": None, "message": "", "log": ""},
+                    "plotphy": {"status": None, "message": "", "log": ""},
                 },
             }
-        self.report[full_name]["status"][step] = {
-            "status": status,
-            "message": message,
-            "log": log,
-        }
+
+        step_data = self.report[full_name]["status"].setdefault(
+            step, {"status": None, "message": "", "log": ""}
+        )
+
+        # status logic : once False, always False
+        if step_data["status"] is False:
+            new_status = False
+        else:
+            new_status = status
+
+        # message append
+        if message:
+            if step_data["message"]:
+                step_data["message"] += "\n" + message
+            else:
+                step_data["message"] = message
+
+        # log append
+        step_data["log"] += log
+
+        step_data["status"] = new_status
 
     def save(self) -> None:
         status_report_file = os.path.join(self.config.results, "status_report.json")
