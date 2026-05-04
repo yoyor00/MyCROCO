@@ -1,7 +1,9 @@
-!---------------------------------------------------------------------------
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 MODULE sed_MUSTANG
-!---------------------------------------------------------------------------
-   
+
 #include "cppdefs.h"
 
 #if defined MUSTANG 

@@ -1,3 +1,7 @@
+! Copyright (C) 2023 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_OBSTRUCTION.txt
+
 #include "cppdefs.h"
 
 #if defined OBSTRUCTION
