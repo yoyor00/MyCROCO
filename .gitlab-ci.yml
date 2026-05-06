@@ -12,7 +12,7 @@ debug_base:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - source /venv/bin/activate
@@ -39,7 +39,7 @@ plotphy_base:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - source /venv/bin/activate
@@ -68,7 +68,7 @@ debug_ifort_base:
   tags:
     - ci.inria.fr
     - large_more_disk
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev_nml
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
@@ -99,7 +99,7 @@ debug_ifort_realist:
   tags:
     - ci.inria.fr
     - large_more_disk
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev_nml
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
@@ -130,7 +130,7 @@ debug_ifort_agrif_realist:
   tags:
     - ci.inria.fr
     - large_more_disk
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev_nml
   script:
     - ulimit -s unlimited
     - cd $CI_PROJECT_DIR/BENCH
@@ -161,7 +161,7 @@ debug_vortex:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - source /venv/bin/activate
@@ -189,7 +189,7 @@ plotphy_vortex:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - source /venv/bin/activate
@@ -219,7 +219,7 @@ debug_realist_base:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -245,7 +245,7 @@ debug_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -275,7 +275,7 @@ restart_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -305,8 +305,7 @@ plotphy_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
-  script:
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev_nml
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py \
@@ -335,7 +334,7 @@ debug_agrif_realist:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -362,7 +361,7 @@ debug_complement:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - source /venv/bin/activate
@@ -392,7 +391,7 @@ plotphy_complement:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - source /venv/bin/activate
@@ -422,7 +421,7 @@ plotphy_complement_sequential:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - source /venv/bin/activate
@@ -452,7 +451,7 @@ track_perf:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
@@ -498,7 +497,7 @@ pages:
   stage: report
   tags:
     - ci.inria.fr
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_nml
   script:
     - mkdir -p $CI_PROJECT_DIR/public
     - cd $CI_PROJECT_DIR/BENCH
