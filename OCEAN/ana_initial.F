@@ -588,7 +588,7 @@
           enddo
         enddo
 #    endif /* TEMPERATURE */
-#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS && !defined DYFAMED
+#   elif defined SINGLE_COLUMN && defined KATO_PHILLIPS && !defined DYFAMED
 #    ifdef TEMPERATURE        
         do k=1,N
           do j=JR_RANGE
@@ -600,7 +600,7 @@
           enddo
         enddo
 #    endif /* TEMPERATURE */
-#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS && defined DYFAMED
+#   elif defined SINGLE_COLUMN && defined KATO_PHILLIPS && defined DYFAMED
 #    ifdef TEMPERATURE        
         open(18,file='../AnalyticalProfiles/dyfamed_ts_init.dat')
         do k=1,N

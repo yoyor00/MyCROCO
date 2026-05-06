@@ -131,7 +131,7 @@
         do j=JstrR,JendR
           do i=IstrR,IendR
 #  if defined SINGLE_COLUMN 
-#   ifdef KATO_PHILIPS
+#   ifdef KATO_PHILLIPS
 #       if defined DYFAMED
             btflx(i,j,itemp)=0
 #  else
@@ -401,7 +401,7 @@ C$    integer  trd, omp_get_thread_num
         call sto_stress( sustr, sto_stress_factor )
       endif
 #  endif
-# elif defined SINGLE_COLUMN && defined KATO_PHILIPS
+# elif defined SINGLE_COLUMN && defined KATO_PHILLIPS
 #if defined IN_REAL_WIND
       kount=max(kount,1)
       u_spd=u10_in(kount) 
@@ -533,7 +533,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 #  endif
-# elif defined SINGLE_COLUMN && defined KATO_PHILIPS && defined DYFAMED
+# elif defined SINGLE_COLUMN && defined KATO_PHILLIPS && defined DYFAMED
 #if defined IN_REAL_WIND
       do j=JstrR,JendR
         do i=IstrR,IendR

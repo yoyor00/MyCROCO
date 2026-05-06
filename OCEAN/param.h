@@ -79,7 +79,7 @@
 #elif defined TS_HADV_TEST
       parameter (LLm0=100,  MMm0=100,  N=5)
 #elif defined SINGLE_COLUMN
-# ifdef KATO_PHILIPS
+# ifdef KATO_PHILLIPS
 # ifdef DYFAMED
       parameter (LLm0=5 ,   MMm0=5,    N=41)
 # else
