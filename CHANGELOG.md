@@ -120,6 +120,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
     in cppdefs_dev.h (#403)
   - remove hard coded keys in mpc.F (#404)
+  - typo and file mode (#499)
 
 - Support :
   - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
@@ -132,4 +133,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
-  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon 
+  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu 
