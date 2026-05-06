@@ -29,6 +29,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
+- BENCH : Fix report check status in case of several files (#498)
 
 ### Changed
 
