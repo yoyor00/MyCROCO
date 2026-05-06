@@ -1,3 +1,7 @@
+! Copyright (C) 2024-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_LAGRANGIAN_FOIL.txt
+
 module ionc4
 #include "cppdefs.h"
    !!======================================================================
