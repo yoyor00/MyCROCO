@@ -53,10 +53,6 @@
      &                         var3Dksed_sigmapsg, var3Dksed_hinder, 
      &                         var3Dksed_stateconsol, rouse2D_integral, rouse2D,
      &                         c_sedtot
-# ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse
-      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
-# endif
 #endif
 
 #ifdef OBSTRUCTION
