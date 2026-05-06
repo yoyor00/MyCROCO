@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !----------------------------------------------------------------------
@@ -450,7 +451,7 @@
       integer   NT, NTA, itemp, NTot
       integer   ntrc_temp, ntrc_salt, ntrc_pas, ntrc_bio, ntrc_sed
       integer   ntrc_subs, ntrc_substot
-      integer   ntrc_mld
+      integer   ntrc_stogen
 !
 # ifdef TEMPERATURE
       parameter (itemp=1)
@@ -464,11 +465,11 @@
 # else
       parameter (ntrc_salt=0)
 # endif
-#if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      parameter (ntrc_mld=3)
+# ifdef STOGEN
+      parameter (ntrc_stogen=3)
 # else
-      parameter (ntrc_mld=0)
-# endif
+      parameter (ntrc_stogen=0)
+#endif
 # ifdef PASSIVE_TRACER
 #  ifdef KH_INST
       parameter (ntrc_pas=2)
@@ -520,8 +521,10 @@
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
       integer  itsubs1, itsubs2, ntfix
 #  ifdef SED_TOY
-#   if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
+#   if defined SED_TOY_FLOC_0D 
       parameter (ntrc_subs=15 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
+#   elif defined SED_TOY_FLOC_1D
+      parameter (ntrc_subs=8 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #   else
       parameter (ntrc_subs=6 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #   endif
@@ -534,8 +537,8 @@
 #  else
       parameter (ntrc_subs=2 , ntfix=0, ntrc_substot=ntrc_subs+ntfix )
 #  endif
-      parameter (itsubs1= itemp+ntrc_salt+ntrc_pas+ntrc_mld+ntrc_bio+1 )
-      parameter (itsubs2= itemp+ntrc_salt+ntrc_pas+ntrc_mld+ntrc_bio+ntrc_subs )
+      parameter (itsubs1= itemp+ntrc_salt+ntrc_pas+ntrc_bio+1 )
+      parameter (itsubs2= itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs )
 # else
       parameter (ntrc_subs=0, ntrc_substot=0)
 # endif /* SUBSTANCE */
@@ -586,10 +589,10 @@
 ! Total number of tracers
 !
 # ifdef SUBSTANCE
-      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs+ntrc_mld)
+      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs)
       parameter (NTot=NT+ntfix)
 # else
-      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_mld)
+      parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed)
       parameter (NTot=NT)
 # endif /* SUBSTANCE */
 
@@ -639,9 +642,6 @@
 # endif
 # ifdef SALINITY
      &          , isalt
-# endif
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-     &          , iCRT2, iCRT3, iCRT4
 # endif
 # ifdef PASSIVE_TRACER
      &          , itpas
@@ -759,13 +759,8 @@
 # ifdef SALINITY
       parameter (isalt=itemp+1)
 # endif
-# if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      parameter (iCRT2=itemp+ntrc_salt+1)
-      parameter (iCRT3=itemp+ntrc_salt+2)
-      parameter (iCRT4=itemp+ntrc_salt+3)
-# endif
 # ifdef PASSIVE_TRACER
-      parameter (itpas=itemp+ntrc_salt+ntrc_mld+1)
+      parameter (itpas=itemp+ntrc_salt+1)
 # endif
 
 !
@@ -773,7 +768,7 @@
 !
 # ifdef BIOLOGY
 #  ifdef PISCES
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
       parameter (iDIC_=itrc_bio, iTAL_=iDIC_+1, iOXY_=iDIC_+2)
 #   ifdef key_pisces_npzd
       parameter ( iPOC_=iDIC_+3,  iPHY_=iDIC_+4, iZOO_=iDIC_+5,
@@ -863,7 +858,7 @@
 #   endif
 
 #  elif defined BIO_NChlPZD
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
       parameter (iNO3_=itrc_bio, iChla=iNO3_+1,
      &           iPhy1=iNO3_+2,
      &           iZoo1=iNO3_+3,
@@ -896,7 +891,7 @@
      &           NumVSinkTerms  = 2)
 
 #  elif defined BIO_N2ChlPZD2
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
       parameter (iNO3_=itrc_bio, iNH4_=iNO3_+1, iChla=iNO3_+2,
      &           iPhy1=iNO3_+3,
      &           iZoo1=iNO3_+4,
@@ -923,9 +918,9 @@
 
 #  elif defined BIO_BioEBUS
 #   ifdef NITROUS_OXIDE
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
 #   else
-      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+ntrc_mld+1)
+      parameter (itrc_bio=itemp+ntrc_salt+ntrc_pas+1)
 #   endif
 
       parameter (iNO3_=itrc_bio, iNO2_=iNO3_+1, iNH4_=iNO3_+2,
@@ -1024,7 +1019,7 @@
 !
 
 # ifdef SEDIMENT
-      parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_mld+1)
+      parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+1)
       parameter (itrc_sand=itrc_sed,itrc_mud=itrc_sand+NSAND)
       parameter (itrc_grav=itrc_mud+NGRAV)
       parameter (isand1=1,imud1=isand1+NSAND)
@@ -1038,7 +1033,11 @@
 !
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
-      parameter (ntrc_diats=19*NT)
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+      parameter (ntrc_diats=18*NT)
+#   else
+      parameter (ntrc_diats=17*NT)
+#   endif
 #  else
       parameter (ntrc_diats=8*NT)
 #  endif

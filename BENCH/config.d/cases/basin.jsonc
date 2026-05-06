@@ -23,6 +23,52 @@
     "check_outputs": ["basin_his.nc"],
     "unsupported": ["restart"],
   },
+  // BASIN STOGEN case
+  "BASIN_STOGEN": {
+    "title": "BASIN (60 x 50 x 10 : 3240)",
+    "case": "BASIN",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_basin.py",
+      "plotphy_script_input": "basin_his.nc",
+    },
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+      "3": "3x1",
+      "4": "2x2",
+      "6": "1x6",
+      "8": "2x4",
+      "12": "2x6",
+      "16": "1x16",
+      "32": "1x32",
+      "64": "1x64",
+    },
+    "cppkeys": {
+      "STOGEN": true,
+    },
+
+    "patches": {
+      // Change to use testmpi
+      "namelist_sto": [
+        {
+          "mode": "replace",
+          "after": "&namsto",
+          "what": "   cn_rngtype = 'default'     ! name of random number generator to use (default, kiss32, kiss64, shr3, testmpi)",
+          "by": "   cn_rngtype = 'testmpi'     ! name of random number generator to use (default, kiss32, kiss64, shr3, testmpi)",
+          "descr": "Set testmpi random number generator",
+        },
+        {
+          "mode": "replace",
+          "after": "&namsto_stress",
+          "what": "   npasses = 20 ! number of passes of the horizontal Laplacian filter",
+          "by": "   npasses = 0  ! number of passes of the horizontal Laplacian filter",
+          "descr": "Set pure white noise",
+        },
+      ]
+    },
+    "check_outputs": ["basin_his.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
   // BASIN a bit larger
   "BASIN-LARGE": {
     "title": "BASIN - LARGE - (200 x 200 x 50 : 100)",

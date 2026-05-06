@@ -1,3 +1,7 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 #include "cppdefs.h"
 
 MODULE substance
@@ -103,9 +107,8 @@ CONTAINS
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
    LOGICAL                                    ::  l_ibedload1, l_ibedload2
 #endif
-#if defined key_sand2D
+
    LOGICAL, DIMENSION(ntrc_subs)              :: l_outsandrouse_r, l_sand2D_r
-#endif
 #endif
 
    REAL(KIND=rlg)        :: tool_datosec
@@ -292,10 +295,8 @@ CONTAINS
      diam_r(ivp)=diam_n(ivr)
      ros_r(ivp)=ros_n(ivr)
      l_bedload_r(ivp)=l_bedload_n(ivr)
-#ifdef key_sand2D
      l_sand2D_r(ivp)=l_sand2D_n(ivr)
      l_outsandrouse_r(ivp)=l_outsandrouse_n(ivr)
-#endif
      itypv_r(iv0+ivr)=2
     ENDDO
     DEALLOCATE(tocd_n,diam_n,ros_n,l_sand2D_n,l_outsandrouse_n,l_bedload_n)
@@ -681,10 +682,8 @@ CONTAINS
    ENDIF
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
-#if defined key_sand2D
    ALLOCATE(l_outsandrouse(nvp))
    l_outsandrouse(:)=.false.
-#endif
 
 
 
@@ -948,15 +947,6 @@ CONTAINS
      ros(iv)=ros_r(irk_fil(iv))
      diam_sed(iv)=diam_r(irk_fil(iv))
    END DO
-# if ! defined key_noTSdiss_insed
-      DO iv=nvp+1,nvp+nv_dis
-       D0_funcT_opt(iv)=D0_funcT_opt_r(iv)
-       D0_m0(iv)=D0_m0_r(iv)
-       D0_m1(iv)=D0_m1_r(iv)
-      ENDDO
-# endif
-
-#ifdef key_sand2D
    DO iv=igrav1,igrav2
      l_subs2D(iv)=.TRUE.
    ENDDO
@@ -964,7 +954,6 @@ CONTAINS
      l_subs2D(iv)=l_sand2D_r(irk_fil(iv))
      l_outsandrouse(iv)=l_outsandrouse_r(irk_fil(iv))
    ENDDO
-#endif
 #else
    DO iv=1,nvp
      ws_free_min(iv)=ws_free_min_r(irk_fil(iv))

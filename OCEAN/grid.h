@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 ! This is include file "grid.h": Environmental two-dimensional
@@ -100,8 +101,13 @@
 #endif
 
 #ifdef SPHERICAL
+# ifdef STOGEN
+      real, TARGET :: latr(GLOBAL_2D_ARRAY)
+      real, TARGET :: lonr(GLOBAL_2D_ARRAY)
+# else
       real latr(GLOBAL_2D_ARRAY)
       real lonr(GLOBAL_2D_ARRAY)
+# endif
       real latu(GLOBAL_2D_ARRAY)
       real lonu(GLOBAL_2D_ARRAY)
       real latv(GLOBAL_2D_ARRAY)
@@ -111,10 +117,15 @@
       common /grid_latu/latu /grid_lonu/lonu
       common /grid_latv/latv /grid_lonv/lonv
 #else
-      real xp(GLOBAL_2D_ARRAY)
+# ifdef STOGEN
+      real, TARGET :: xr(GLOBAL_2D_ARRAY)
+      real, TARGET :: yr(GLOBAL_2D_ARRAY)
+# else
       real xr(GLOBAL_2D_ARRAY)
-      real yp(GLOBAL_2D_ARRAY)
       real yr(GLOBAL_2D_ARRAY)
+# endif
+      real xp(GLOBAL_2D_ARRAY)
+      real yp(GLOBAL_2D_ARRAY)
       common /grid_xr/xr /grid_xp/xp /grid_yp/yp /grid_yr/yr
 #endif
 
@@ -159,10 +170,16 @@
       common /metrics_grdscl/grdscl
 
 #ifdef MASKING
+# ifdef STOGEN
+      real, TARGET :: rmask(GLOBAL_2D_ARRAY)
+      real, TARGET :: umask(GLOBAL_2D_ARRAY)
+      real, TARGET :: vmask(GLOBAL_2D_ARRAY)
+# else
       real rmask(GLOBAL_2D_ARRAY)
-      real pmask(GLOBAL_2D_ARRAY)
       real umask(GLOBAL_2D_ARRAY)
       real vmask(GLOBAL_2D_ARRAY)
+# endif
+      real pmask(GLOBAL_2D_ARRAY)
       real pmask2(GLOBAL_2D_ARRAY)
       common /mask_r/rmask
       common /mask_p/pmask

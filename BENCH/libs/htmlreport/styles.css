@@ -112,3 +112,177 @@ tr:nth-child(even) {
    color: gray;
    font-style: italic;
 }
+/* ---- Plotphy inline gallery ---- */
+.plotphy-gallery {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 10px;
+   padding: 8px 0 8px 10px;
+}
+
+.plot-item {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   max-width: 220px;
+}
+
+.plot-item img {
+   max-width: 220px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   transition: transform 0.15s;
+}
+
+.plot-item img:hover {
+   transform: scale(1.04);
+   border-color: #007bff;
+}
+
+.plot-caption {
+   font-size: 11px;
+   color: #555;
+   margin-top: 4px;
+   text-align: center;
+   word-break: break-word;
+   max-width: 220px;
+}
+
+/* ---- Side-by-side compare mode ---- */
+.plotphy-compare {
+   flex-direction: column;
+   gap: 16px;
+}
+
+.plot-pair {
+   border: 1px solid #ddd;
+   border-radius: 6px;
+   padding: 8px;
+   background: #fafafa;
+}
+
+.plot-pair-title {
+   font-size: 12px;
+   font-weight: bold;
+   color: #333;
+   margin-bottom: 6px;
+}
+
+.plot-pair-cols {
+   display: flex;
+   gap: 10px;
+   flex-wrap: wrap;
+}
+
+.plot-cell {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   max-width: 220px;
+}
+
+.plot-cell img {
+   max-width: 220px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   transition: transform 0.15s;
+}
+
+.plot-cell img:hover {
+   transform: scale(1.04);
+}
+
+.plot-label {
+   font-size: 10px;
+   font-weight: bold;
+   padding: 1px 6px;
+   border-radius: 3px;
+   margin-bottom: 4px;
+   text-transform: uppercase;
+   letter-spacing: 0.05em;
+}
+
+.plot-label-cur {
+   background: #d4edff;
+   color: #004f9e;
+}
+
+.plot-label-ref {
+   background: #d4f4d4;
+   color: #1a6b1a;
+}
+
+.plot-missing {
+   color: #999;
+   font-size: 12px;
+   font-style: italic;
+   padding: 10px;
+   border: 1px dashed #ccc;
+   border-radius: 4px;
+   min-width: 100px;
+   text-align: center;
+}
+
+/* ---- Grouped plots per case (always visible, no click needed) ---- */
+.case-plots {
+   padding: 6px 0 6px 10px;
+}
+
+.case-variant-plots {
+   margin-bottom: 18px;
+}
+
+.case-variant-label {
+   font-size: 12px;
+   font-weight: bold;
+   color: #004f9e;
+   background: #d4edff;
+   display: inline-block;
+   padding: 2px 10px;
+   border-radius: 4px;
+   margin-bottom: 6px;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+}
+
+/* ---- Flat plots section (all cases/variants at once) ---- */
+#plots-section {
+   margin-bottom: 20px;
+}
+
+#plots-section > summary {
+   font-size: 16px;
+   font-weight: bold;
+   cursor: pointer;
+   padding: 6px 0;
+}
+
+.plots-section-toolbar {
+   margin: 8px 0 12px 0;
+}
+
+.pdf-btn {
+   background: #007bff;
+   color: white;
+   border: none;
+   border-radius: 4px;
+   padding: 6px 14px;
+   font-size: 13px;
+   cursor: pointer;
+}
+
+.pdf-btn:hover {
+   background: #0056b3;
+}
+
+.plots-section-title {
+   font-size: 15px;
+   color: #222;
+   border-bottom: 2px solid #007bff;
+   padding-bottom: 4px;
+   margin: 20px 0 8px 0;
+}
+
+.plots-section-body {
+   padding-left: 10px;
+}

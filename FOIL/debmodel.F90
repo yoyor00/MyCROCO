@@ -22,7 +22,7 @@ MODULE debmodel
     PRIVATE
 
     !! * Accessibility
-    PUBLIC :: deb_init, deb_cycle, deb_egg_init!, readfood3d, readtemp3d   ! routines called by ibm
+    PUBLIC :: deb_init, deb_cycle, deb_egg_init, readfood3d   ! routines called by ibm
 
     !! * Shared module variables
     REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:,:,:),PUBLIC    :: climatemp
@@ -81,12 +81,12 @@ MODULE debmodel
     ! Mortality and density-dependency parameters (Menu et al. 2023)
     ! REAL(KIND=rsh)                  :: gammaA     = 0.447_rsh ! with selectivity
     ! REAL(KIND=rsh)                  :: K_biomassA = 10.670_rlg ! with selectivity
-    REAL(KIND=rsh)                  :: gammaS     = 0.703343166175024681053_rsh ! with selectivity
-    REAL(KIND=rsh)                  :: K_biomassS = 85.315712187958894219264_rlg ! with selectivity
+    ! REAL(KIND=rsh)                  :: gammaS     = 0.703343166175024681053_rsh ! with selectivity
+    ! REAL(KIND=rsh)                  :: K_biomassS = 85.315712187958894219264_rlg ! with selectivity
     ! REAL(KIND=rsh), PUBLIC          :: Zea       = 0.063 ! with selectivity
-    REAL(KIND=rsh), PUBLIC          :: Zes       = 0.072 ! with selectivity
+    ! REAL(KIND=rsh), PUBLIC          :: Zes       = 0.072 ! with selectivity
     ! REAL(KIND=rsh), PUBLIC          :: za        = 0.154 ! with selectivity
-    REAL(KIND=rsh), PUBLIC          :: zs        = 0.179 ! with selectivity
+    ! REAL(KIND=rsh), PUBLIC          :: zs        = 0.179 ! with selectivity
 
     REAL(KIND=rsh), PUBLIC          :: Zaa       = 0.0
     REAL(KIND=rsh), PUBLIC          :: Zas       = 0.0
@@ -97,7 +97,10 @@ MODULE debmodel
     REAL(KIND=rsh)                  :: K_biomassA = 6.156_rlg
     REAL(KIND=rsh), PUBLIC          :: Zea       = 0.056
     REAL(KIND=rsh), PUBLIC          :: za        = 0.136
-
+    REAL(KIND=rsh)                  :: gammaS     = 0.387_rsh
+    REAL(KIND=rsh)                  :: K_biomassS = 3.626_rlg
+    REAL(KIND=rsh), PUBLIC          :: Zes       = 0.075
+    REAL(KIND=rsh), PUBLIC          :: zs        = 0.201
 
  !!===================================================================================================================================
  !!===================================================================================================================================
@@ -126,7 +129,7 @@ MODULE debmodel
     !&E
     !&E---------------------------------------------------------------------
     !! * Modules used
-    USE ionc4,      ONLY : ionc4_openr,ionc4_read_trajt,ionc4_read_traj,ionc4_close,ionc4_read_dimt, ionc4_read_dimtraj
+    USE ionc4,      ONLY : ionc4_openr,ionc4_read_trajt,ionc4_close,ionc4_read_dimt, ionc4_read_dimtraj
     USE ibmtools,   ONLY : gasdev_s
     USE comtraj,    ONLY : fileanchovy, filesardine, catch_anc_bob, catch_sar_bob
     USE comtraj,    ONLY : mat_catch, fishing_strategy
@@ -217,10 +220,10 @@ MODULE debmodel
             CALL ionc4_read_trajt(file_inp, "WEIGHT",    wdeb_nc,  1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM",  num_nc,      1, nb_part_nc, idimt)
     
-            CALL ionc4_read_traj (file_inp, "DAYSPAWN",  daysp_nc,  1, nb_part_nc)
-            CALL ionc4_read_traj (file_inp, "YEARSPAWN", yearsp_nc, 1, nb_part_nc)
-            CALL ionc4_read_traj (file_inp, "ZOOM",      zoom_nc,   1, nb_part_nc)
-            !CALL ionc4_read_traj (file_inp, "SEASON",    season_nc, 1, nb_part_nc)
+            CALL ionc4_read_trajt (file_inp, "DAYSPAWN",  daysp_nc,  1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt (file_inp, "YEARSPAWN", yearsp_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt (file_inp, "ZOOM",      zoom_nc,   1, nb_part_nc, idimt)
+            !CALL ionc4_read_trajt (file_inp, "SEASON",    season_nc, 1, nb_part_nc, idimt)
             CALL ionc4_close(file_inp)
 
             DO m = 1,patch%nb_part_alloc
@@ -246,6 +249,7 @@ MODULE debmodel
                 patch % particles(m) % L         = shape*(patch%particles(m)%size)
                 patch % particles(m) % Gam       = gam_nc(index_num)
                 patch % particles(m) % Neggs     = neggs_nc(index_num)
+                ! lecture Wdeb ne sert à rien, ecrasée après....
                 patch % particles(m) % Wdeb      = wdeb_nc(index_num)
                 patch % particles(m) % dayspawn  = daysp_nc(index_num)
                 patch % particles(m) % yearspawn = yearsp_nc(index_num)
@@ -369,10 +373,10 @@ MODULE debmodel
             L = patch%particles(m)%L   
             
             IF (patch%particles(m)%size < 2.0_rsh) patch%particles(m)%L = patch%particles(m)%size *shapeb
-            ! IF (patch%particles(m)%size >= 2.0_rsh .and. patch%particles(m)%size <= 4.0_rsh) THEN
-            !     patch%particles(m)%L = patch%particles(m)%size*((L - shapeb*2.0_rsh)*shape + (shape*4.0_rsh - L)*shapeb) &
-            !                            /(shape*4.0_rsh - shapeb*2.0_rsh)
-            ! ENDIF ! ce if commenté chez clara
+            IF (patch%particles(m)%size >= 2.0_rsh .and. patch%particles(m)%size <= 4.0_rsh) THEN
+                patch%particles(m)%L = patch%particles(m)%size*((L - shapeb*2.0_rsh)*shape + (shape*4.0_rsh - L)*shapeb) &
+                                       /(shape*4.0_rsh - shapeb*2.0_rsh)
+            ENDIF ! ce if commenté chez clara
             IF (patch%particles(m)%size > 4.0_rsh) patch%particles(m)%L = patch%particles(m)%size*shape
 
             ! Weight
@@ -695,10 +699,10 @@ MODULE debmodel
         ! -- Densite-dependance  (Menu et al. 2023)
         IF (particle%WV > 0) THEN
                 IF (species == 'anchovy') THEN
-                    f = X / (X + K_food + struc_ad_dd_DEB/(K_biomassA*10d8*particle%WV**gammaA) ) !BD weight effect  
+                    f = X / (X + K_food + struc_ad_dd_DEB(1)/(K_biomassA*10d8*particle%WV**gammaA) ) !BD weight effect  
                 ENDIF
                 IF (species == 'sardine') THEN
-                    f = X / (X + K_food + struc_ad_dd_DEB/(K_biomassS*10d8*particle%WV**gammaS) ) !BD weight effect     
+                    f = X / (X + K_food + struc_ad_dd_DEB(2)/(K_biomassS*10d8*particle%WV**gammaS) ) !BD weight effect     
                 ENDIF    
         ELSE
             f = X/(X + K_food) 
@@ -764,7 +768,8 @@ MODULE debmodel
         ENDIF   ! if (species == 'anchovy') 
     
         IF (species == 'sardine') THEN
-            IF (.not. particle%season .and. ((month >= 2 .and. month < 7) .or. (month >= 10 .and. month < 12))) THEN ! &
+            IF (.not. particle%season .and. ((month >= 3 .and. month < 7))) THEN ! only spring spawning
+            !IF (.not. particle%season .and. ((month >= 3 .and. month < 7) .or. (month >= 10 .and. month < 12))) THEN ! &
                 !.and. (particle%age>=624)) THEN ! printemps + automne - hiver
                 particle%season = .TRUE.
             ENDIF
@@ -819,13 +824,7 @@ MODULE debmodel
             IF (Gam > Eb*2.0_rsh) THEN  ! enough energy to spawn 1 batch and same amount remains for vitellogenesis (Somarakis Reproduce Del.), explicit
                 Ebatch = Eb
                 particle%Nbatch = particle%Nbatch + 1
-
-                IF(species=='anchovy') THEN
-                    particle%Neggs = particle%Neggs + Ebatch/E0*(particle%super/2.0_rlg)           ! total egg spawned per particle over dt_spawn (see ibm) 
-                ENDIF
-                IF(month <= 7 .and. species == 'sardine') THEN
-                    particle%Neggs = particle%Neggs + Ebatch/E0*(particle%super/2.0_rlg)           ! total egg spawned per particle over dt_spawn (see ibm) 
-                ENDIF
+                particle%Neggs = particle%Neggs + Ebatch/E0*(particle%super/2.0_rlg)           ! total egg spawned per particle over dt_spawn (see ibm) 
                 particle%Neggs_tot = particle%Neggs_tot + Ebatch/E0*(particle%super/2.0_rlg)       ! total egg spawned per particle over life cycle
 
                 !test if first batch...
@@ -845,12 +844,12 @@ MODULE debmodel
                 ! just to make sure we don't spawn again within the same year
                 IF ((jjulien > particle%dayspawn + 120 .or. month > 8)  ) THEN    
                     particle%dayspawn = 367                                     
-                    lastbatch           = .true.
+                    lastbatch         = .true.
                 ENDIF
             ENDIF !if (species == 'anchovy')
 
             IF (species == 'sardine') THEN
-                IF(((month >= 7 .and. month < 10) .or. (month == 1) .or. (month == 12))) lastbatch = .true.
+                IF(((month >= 7 .and. month < 10) .or. (month <= 2) .or. (month == 12))) lastbatch = .true.
             ENDIF !if (species == 'sardine')
 
             IF ( lastbatch ) THEN
@@ -952,7 +951,7 @@ MODULE debmodel
         particle%Wdeb  = 0.0_rsh
         particle%flag  = -valmanq
         particle%super = 0.0_rsh
-        particle%stage = 0
+        ! particle%stage = 0
     ENDIF
 
     ! Auxillary save
@@ -1208,178 +1207,6 @@ MODULE debmodel
     biomassezoo(:,:) = biomassezoo(:,:) !*5.45_rsh*12.0_rsh
 
  END SUBROUTINE readfood3d
-
-
- 
- !!======================================================================
- ! --- Unused anymore --- !
- SUBROUTINE readtemp3d(limin,limax,ljmin,ljmax,timestep_ibm)
-
-    !&E---------------------------------------------------------------------
-    !&E                 ***  ROUTINE readtemp3d  ***
-    !&E
-    !&E ** Purpose : read temperature data from a NetCDF file
-    !&E   !!! USELESS SINCE ONLINE READ FROM HYDRODYNAMIC MODEL !!!
-    !&E
-    !&E ** Description    : read temp from a climatology file
-    !&E ** Called by      : ibm_3d
-    !&E ** External calls : ionc4_openr,ionc4_read_subzxyt
-    !&E ** Reference      :
-    !&E
-    !&E ** History :
-    !&E       !          (M. Huret)
-    !&E       !  2024    (D. Gourves) Coupled with CROCO
-    !&E---------------------------------------------------------------------
- 
-    !! * Modules used
-    USE comtraj,   ONLY : ierrorlog
-    USE ionc4,     ONLY : ionc4_openr,ionc4_read_subzxyt,ionc4_read_dimt,ionc4_read_time
- 
-    !! * Arguments
-    INTEGER, INTENT( in )                                :: limin,limax,ljmin,ljmax 
- 
-    !! * Local declarations
-    CHARACTER(LEN=lchain)                                :: name_in_temp
-    CHARACTER(LEN=19)                                    :: tool_sectodat,tdatep
-    REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:,:,:)        :: temp_1,temp_2
-    REAL(kind=rlg)                                       :: dt1,dt2,ttemp,toriginp
-    CHARACTER(LEN=lchain)                                :: file_temp
-    LOGICAL                                              :: l_pb, timestep_ibm
-    INTEGER                                              :: valimin,valimax,valjmin,valjmax
-    INTEGER                                              :: imin,imax,jmin,jmax
-    INTEGER                                              :: idimt,i,j,k, IERR_MPI
- 
-    !!----------------------------------------------------------------------
-    !! * Executable part
- 
-    file_temp = 'PREPROC/ibm_temp.nc'
-    name_in_temp = 'TEMP'
- 
-    ttemp=time
-    toriginp=0.0_rlg
- 
-    CALL ionc4_openr(file_temp,l_in_nc4par=.true.)
-
-    ! Definit les indices de lecture en fonction du proc mpi dans le fichier de forcage
-    ! Lit sur tout le domaine en sequentiel sinon
-    imin = 0 ; jmin = 0
-    valimin = 1 ; valjmin = 1
-
-#ifdef MPI
-    if (ii .gt. 0) then
-        valimin = 1 - imin + iminmpi
-        imin    = 1
-    endif
-    if (ii .eq. NP_XI-1) then
-        imax = Lmmpi + 1
-    else
-        imax = Lmmpi
-    endif
-    if (jj .gt. 0) then
-        valjmin = 1 - jmin + jminmpi
-        jmin    = 1
-    endif
-    if (jj .eq. NP_ETA-1) then
-        jmax = Mmmpi+1
-    else
-        jmax = Mmmpi
-    endif
-
-#else
-    imax = Lm+1
-    jmax = Mm+1
-#endif
-
-    valimax = imax - imin + valimin
-    valjmax = jmax - jmin + valjmin
- 
-    ! IF( FIRST_TIME_STEP ) THEN
-    IF ( timestep_ibm ) THEN
-
-        ALLOCATE(climatemp(GLOBAL_2D_ARRAY,kmax),   &
-                 temp1(GLOBAL_2D_ARRAY,kmax),       &
-                 temp2(GLOBAL_2D_ARRAY,kmax))
-        ALLOCATE(temp_1(valimin:valimax,valjmin:valjmax,kmax),      &
-                 temp_2(valimin:valimax,valjmin:valjmax,kmax))
-
-        idimt=ionc4_read_dimt(file_temp)
-        ilecp = 0
-        tncp1 = 0.0_rlg
-        tncp2 = 0.0_rlg
-        l_pb  = .false.
-
-
-        DO WHILE((ttemp-(tncp1-toriginp))*(ttemp-(tncp2-toriginp)) > 0.0_rlg .AND. ilecp < idimt)
-            ilecp=ilecp+1
-            IF (ilecp == idimt) THEN
-              WRITE(ierrorlog,*) ' '
-              WRITE(ierrorlog,*) 'ERROR: routine readtemp3d.F90'
-              WRITE(ierrorlog,*) 'All records are read, dates are not compatible with simulation time.'
-              WRITE(ierrorlog,*) 'Make sure your food file is correct: ',TRIM(file_temp)
-              WRITE(ierrorlog,*) 'Make sure the origin time is 01/01/1900 00:00:00 in the temp file.'
-              WRITE(ierrorlog,*) 'If not, modify variable "torigin" in the routine readtemp3d.F90.'
-              WRITE(ierrorlog,*) ''
-              tdatep = tool_sectodat(ttemp)
-              WRITE(ierrorlog,*) 't in MARS model =',tdatep
-              tdatep = tool_sectodat(tncp1-toriginp)
-              WRITE(ierrorlog,*) 't1 in temp file =',tdatep
-              tdatep = tool_sectodat(tncp2-toriginp)
-              WRITE(ierrorlog,*) 't2 in temp file =',tdatep
-              WRITE(ierrorlog,*) 'Simulation stopped.'
-              WRITE(ierrorlog,*) ''
-              l_pb = .true.
-            END IF
-            IF (.NOT. l_pb) THEN
-              CALL ionc4_read_time(file_temp,ilecp,tncp1)
-              CALL ionc4_read_time(file_temp,ilecp+1,tncp2)
-            END IF
-        ENDDO
-        
-        CALL ionc4_read_subzxyt(file_temp,TRIM(name_in_temp),temp_1,valimin,valimax,valjmin,valjmax,1,kmax,ilecp  ,1,1,1)
-        CALL ionc4_read_subzxyt(file_temp,TRIM(name_in_temp),temp_2,valimin,valimax,valjmin,valjmax,1,kmax,ilecp+1,1,1,1)
-        
-        temp1(1:valimax-valimin+1,1:valjmax-valjmin+1,:) = temp_1(:,:,:)
-        temp2(1:valimax-valimin+1,1:valjmax-valjmin+1,:) = temp_2(:,:,:)
-        DEALLOCATE(temp_1,temp_2)
-        ilecmemtemp=ilecp
- 
-    ELSE
-
-        idimt=ionc4_read_dimt(file_temp)
-        DO WHILE((ttemp-(tncp1-toriginp))*(ttemp-(tncp2-toriginp)) > 0.0_rlg .AND. ilecp < idimt)
-          ilecp=ilecp+1
-          IF (ilecp == idimt) THEN
-            WRITE(ierrorlog,*) ' '
-            WRITE(ierrorlog,*) 'ERROR: routine readtemp3d.F90'
-            WRITE(ierrorlog,*) 'All records are already read.'
-            WRITE(ierrorlog,*) 'The temp file is not long enough'
-            WRITE(ierrorlog,*) 'Simulation stopped.'
-            WRITE(ierrorlog,*) ''
-            CALL_MPI MPI_FINALIZE(IERR_MPI)
-            STOP
-          END IF
-            CALL ionc4_read_time(file_temp,ilecp,tncp1)
-            CALL ionc4_read_time(file_temp,ilecp+1,tncp2)
-        ENDDO
- 
-       IF(ilecmemtemp/=ilecp) THEN
-          ALLOCATE(temp_2(valimin:valimax,valjmin:valjmax,kmax))
-          CALL ionc4_read_subzxyt(file_temp,TRIM(name_in_temp),temp_2,valimin,valimax,valjmin,valjmax,1,kmax,ilecp+1,1,1,1)
-
-          temp1(1:valimax-valimin+1,1:valjmax-valjmin+1,:) = temp2(:,:,:)
-          temp2(1:valimax-valimin+1,1:valjmax-valjmin+1,:) = temp_2(:,:,:)
-          DEALLOCATE(temp_2)
-          ilecmemtemp=ilecp
-       ENDIF
-    ENDIF
-
-    dt1=(tncp2-toriginp-ttemp)/(tncp2-tncp1)
-    dt2=1.0_rlg-dt1
-
-    climatemp(:,:,:) = temp1(:,:,:)*dt1 + temp2(:,:,:)*dt2
- 
-  END SUBROUTINE readtemp3d
-
 
 
  !!======================================================================

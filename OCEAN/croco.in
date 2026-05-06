@@ -51,6 +51,8 @@ primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    50*T
 auxiliary_history_fields:   rho Omega  W  Akv  Akt  Aks  Bvf  Visc3d Diff3d  HBL HBBL Bostr Bustr Bvstr Wstr Ustr Vstr Shfl Swfl rsw rlw lat sen HEL
                              F   F     T   F    T    F   F    F       F       T   T    T     F      F     T    T    T    T    T   30*T             
+stochastic_history_fields:   xi2d  xi3d
+                             F     F
 gls_history_fields:   TKE  GLS  Lscale
                        T     T    T
 
@@ -94,6 +96,9 @@ lagrangian:
 deb_ibm:
                 ./paraibm.txt
 
+diag_mld_dens: RHO threshold [kg/m3], T threshold [Celsius]
+                         3.d-2                2.d-1
+
 diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
                   T        72         0
     CROCO_FILES/croco_dia.nc
@@ -101,12 +106,6 @@ diagnostics:   ldefdia   nwrtdia    nrpfdia /filename
 diag_avg: ldefdia_avg  ntsdia_avg  nwrtdia_avg  nprfdia_avg /filename
                T          1           72            0
     CROCO_FILES/croco_dia_avg.nc
-
-diag_mld_crit_threshold: CRT1 (Dens [kg/m3]), CRT2 (Temp [Celsius]), CRT3 (Temp [Celsius])
-                         3.d-2                2.d-1                  5.d-1
-
-diag_mld_depth_ref: [m]
-                10
 
 diag3D_history_fields:    diag_tracers3D(1:NT) 
                             50*T

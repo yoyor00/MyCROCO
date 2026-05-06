@@ -58,9 +58,6 @@ MODULE ibm
     LOGICAL                                         :: fish_mort, density_dependent
     REAL(KIND=rsh)                                  :: multiplier_tac
 
-    ! Number of eggs and stade 1 for larvae mortality
-    REAL(KIND=rsh), DIMENSION(nb_species)           :: number_eggs
-
     ! Variables pour la 2e methode de repro
     REAL(KIND=rsh),DIMENSION(nb_species)            :: nb_indv_ponte
 
@@ -89,10 +86,9 @@ MODULE ibm
     !&E
     !&E ** Description    :
     !&E ** Called by      : ibm_init_main
-    !&E ** External calls : LAGRANGIAN_init,ionc4_openr,ionc4_read_trajt,ionc4_read_traj
+    !&E ** External calls : LAGRANGIAN_init,ionc4_openr,ionc4_read_trajt,
     !&E                     ionc4_close,ionc4_read_time,ionc4_read_dimt,deb_init,fish_move_init
     !&E                     ibm_parameter_init
-    !&E ** Reference      : Huret et al. (2016)
     !&E
     !&E ** History :
     !&E       !  2010-11 (M. Huret) Original code
@@ -105,7 +101,7 @@ MODULE ibm
 
     ! Import subroutines
     USE trajinitsave,   ONLY : LAGRANGIAN_init
-    USE ionc4,          ONLY : ionc4_openr, ionc4_read_trajt, ionc4_read_traj,   &
+    USE ionc4,          ONLY : ionc4_openr, ionc4_read_trajt, &
                                ionc4_close, ionc4_read_time, ionc4_read_dimt,    &
                                ionc4_gatt_char_read, ionc4_read_dimtraj
 #ifdef IBM_SPECIES
@@ -117,7 +113,7 @@ MODULE ibm
     ! Import variables
     USE comtraj,        ONLY : iscreenlog
     USE comtraj,        ONLY : type_particle,type_patch,patches,file_trajec,                    &
-                               file_pathout,itypetraj,ndtz,ibm_restart
+                               dir_pathout,itypepatch,dtz,hdiff,ibm_restart
 #ifdef IBM_SPECIES
     USE comtraj,        ONLY : debuse,F_Fix,ffix,file_food,file_NBSS,frac_deb_death,            &
                                fileanchovy,filesardine,fileprobadistrib_anc,nbSizeClass_anc,    &
@@ -161,7 +157,8 @@ MODULE ibm
     INTEGER,        ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, ageClass_nc, num_nc 
 
     ! Definition of namelists in paraibm
-    NAMELIST/namibmin/      file_trajec,file_pathout,itypetraj,ndtz
+    NAMELIST/namibmin/      file_trajec,dir_pathout,itypepatch
+    NAMELIST/namibmdiff/    dtz,hdiff
     NAMELIST/namibmrestart/ ibm_restart,ibm_l_time
     NAMELIST/namibmbio/     w_max, alpha_w
 #ifdef IBM_SPECIES
@@ -182,6 +179,7 @@ MODULE ibm
     lstr = lenstr(debibmname)
     OPEN(50,file=debibmname(1:lstr),status='old',form='formatted',access='sequential')
     READ(50,namibmin)
+    READ(50,namibmdiff)
     READ(50,namibmrestart)
     READ(50,namibmbio)
 #ifdef IBM_SPECIES
@@ -241,7 +239,7 @@ MODULE ibm
             CALL ionc4_read_trajt(file_inp, "STAGE",     stage_nc,    1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUMBER",    super_nc,    1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "DRATE",     drate_nc,    1, nb_part_nc, idimt)
-            CALL ionc4_read_traj (file_inp, "DAYBIRTH",  dayb_nc,     1, nb_part_nc)
+            CALL ionc4_read_trajt(file_inp, "DAYBIRTH",  dayb_nc,     1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGE",       age_nc,      1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGECLASS",  ageClass_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM",  num_nc,      1, nb_part_nc, idimt)
@@ -276,8 +274,8 @@ MODULE ibm
             END DO
             
 #ifdef IBM_SPECIES
-            CALL ionc4_read_traj(trim(file_inp), "DAYJUV",   dayb_nc, 1, nb_part_nc)
-            CALL ionc4_read_traj(trim(file_inp), "DENSPAWN", dens_nc, 1, nb_part_nc)
+            CALL ionc4_read_trajt(trim(file_inp), "DAYJUV",   dayb_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(trim(file_inp), "DENSPAWN", dens_nc, 1, nb_part_nc, idimt)
 
             DO m = 1,patch%nb_part_alloc
                 IF (patch%nb_part_alloc == 0) CYCLE
@@ -325,7 +323,6 @@ MODULE ibm
             !--- Update FOIL.info file
             call write_run_info(patch%run_id)
 
-            !Huret et al. 2016 (egg density =f(surf.density))
             DO m = 1, nb_part_nc
                 particle => patch%particles(m)
                 particle%date_orig = time - particle%age*24.0_rlg*3600.0_rlg
@@ -363,7 +360,7 @@ MODULE ibm
 
         ! Calcul nb particules a creer a chaque evenement de ponte
         nb_indv_ponte(1) = NINT(max_part*(dt_spawn/24.d0)/(138.d0)) ! 138 = nb de jours de ponte pendant une annee pour l'anchois
-        nb_indv_ponte(2) = NINT(max_part*(dt_spawn/24.d0)/(211.d0)) ! 211 = nb de jours de ponte pendant une annee pour la sardine
+        nb_indv_ponte(2) = NINT(max_part*(dt_spawn/24.d0)/(122.d0)) ! 183 = nb de jours de ponte pendant une annee pour la sardine, si 2 saisons, sinon 122
     END IF
 #endif
     
@@ -391,10 +388,10 @@ MODULE ibm
     !&E                     ex_traj,ADD_ALL_MPI_INT,ADD_ALL_MPI_REAL,init_mpi_type_particle
     !&E                     ibm_loc_xyz,ibm_buoy,ibm_traint,ibm_proftraint,selec_dome_or_asymp,tool_julien
     !&E                     ibm_nycth_mig,death_by_fishing,eggs_grid,ibm_parameter_init,fish_move,deb_egg_init
-    !&E                     deb_cycle,readtemp3d(unused anymore),readfood3d
+    !&E                     deb_cycle,readfood3d
     !&E
     !&E ** Reference      : Menu et al. (2023), Bueno-Pardo et al. (2020), Gatti et al. (2017), Huret et al. (2010), 
-    !&E                     Boussouar et al. (2001), , Regner (1996), Zweifel&Lasker (1976), Rose el al. (2015)
+    !&E                     Boussouar et al. (2001), Regner (1996), Zweifel&Lasker (1976), Rose el al. (2015)
     !&E                     Boyra (2013), Ospina (2012), Somarakis (2007)
     !&E
     !&E ** History :
@@ -431,7 +428,7 @@ MODULE ibm
 #endif /* IBM_SPECIES */
     USE comtraj,      ONLY : type_particle, type_patch, patches, patch_list_append, resize_patch
 #ifdef IBM_SPECIES
-    USE comtraj,      ONLY : file_pathout
+    USE comtraj,      ONLY : dir_pathout
     USE comtraj,      ONLY : jjulien, struc_ad, struc_ad_dd_DEB
     USE comtraj,      ONLY : debuse, F_Fix
     USE comtraj,      ONLY : number_tot, weight_tot, biom_tot, Wdeb_mean
@@ -502,8 +499,7 @@ MODULE ibm
     REAL(KIND=rsh)                                      :: ratio
     REAL(KIND=rsh)                                      :: new_super
 
-    ! Density-dependence variables
-    REAL(KIND=rsh), DIMENSION(nb_species)   :: dd_number_eggs, concentration, max_mort
+    ! Mortality variables
     REAL(KIND=rlg), DIMENSION(nb_species)   :: Z1, Z2
     LOGICAL, SAVE                           :: first_timestep_ibm = .true.
 
@@ -526,8 +522,10 @@ MODULE ibm
     IF ( debuse .AND. .NOT. F_Fix ) THEN
         ! CALL readfood3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
         first_timestep_ibm = .false.
-        !CALL readtemp3d(Istr,Iend,Jstr,Jend,first_timestep_ibm)
     ENDIF
+
+    ! Remise a 0 de la matrice des oeufs pondus avant boucle sur les patches
+    IF ( repro ) mat_eggs       = 0._rsh
 #endif /* IBM_SPECIES */
 
  !--------------------------------------------------------------
@@ -535,24 +533,6 @@ MODULE ibm
  !---------------------------------------------------------------
     dtm = dt   ! dt = CROCO time step
     time_step=nrhs
-
-#ifdef IBM_SPECIES
-    ! Menu et al., but script inside for density dependence from Bueno Pardo
-    IF ( FIRST_TIME_STEP ) number_eggs(:)    = 0._rsh       ! For initialisation
-
-    IF ( repro .and. density_dependent  ) THEN
-        dd_number_eggs   = number_eggs
-        number_eggs(:)   = 0.0_rlg
-        concentration    = dd_number_eggs / 50.d9 ! 50,000 km2: area considered
-
-        max_mort(1)      = (Zaa+(Zea-Zaa)*exp(-za*(0.35_rlg - 0.0855_rlg)))  ! For anchovy
-        max_mort(2)      = (Zas+(Zes-Zas)*exp(-zs*(0.35_rlg - 0.0855_rlg)))  ! For sardine
-    ENDIF
-
-    ! Remise a 0 de la matrice des oeufs pondus avant boucle sur les patches
-    IF ( repro ) mat_eggs       = 0._rsh
-#endif
-
 
 #ifdef MPI
    down_give  = 0
@@ -637,10 +617,10 @@ MODULE ibm
                 ENDIF
 
                 IF (patch%species == 'sardine') THEN
-                    ! Egg density dependent on development (Garcia-Garcia)
-                    particle%density = particle%denspawn + 3.58_rsh*(0.0012_rsh - 1.8528_rsh*particle%Drate &
+                    ! Egg density dependent on development (Garcia-Garcia. Coefs a reajuster avec nos données)
+                    particle%density = particle%denspawn + 2.58_rsh*(0.0012_rsh - 1.8528_rsh*particle%Drate &
                                        + 15.507_rsh*(particle%Drate)**2 - 41.1312_rsh*(particle%Drate)**3   &
-                                       + 40.5289_rsh*(particle%Drate)**4) 
+                                       + 40.5289_rsh*(particle%Drate)**4 - 12.1166*(particle%Drate)**5) 
 
                     ! Egg developement miranda Peck (dvpt prédit pour dt en jour) dtm en s
                     particle%Drate = particle%Drate + ((dtm/86400.0_rsh)*0.17_rsh*(particle%temp)**1.9286_rsh)/100.0_rsh
@@ -651,8 +631,6 @@ MODULE ibm
 
                 ! Buyoncy
                 particle%w = ibm_buoy(particle%density, particle%size, particle%temp, sal_part)
-
-                IF ( density_dependent ) number_eggs(ind_species) = number_eggs(ind_species) + particle%super
 
                 IF ( particle%Drate >= 1.0_rsh ) THEN
                     particle%Drate = 0.0_rsh
@@ -902,14 +880,9 @@ MODULE ibm
 
 
             ! ===========================================
-            ! ===    Divers mortalites sur les poissons 
-
+            ! ===    Different sources of mortality 
             !---------------------------------------------------------------
-            ! Density dependance, name struc_ad misleading, we take everybody (Menu et al. 2023)
-            IF (particle%stage >= 3) struc_ad = struc_ad + (particle%WV*particle%super)  
-
-            !---------------------------------------------------------------
-            ! Mortality (Menu et al.)
+            ! Natural Mortality - size dependent (Menu et al.)
             Z1(ind_species) = 0.0_rlg
             IF (patch%species == 'anchovy') THEN        ! Equivalent to (ind_species == 1)
                 Z1(ind_species) =  (Zaa + (Zea - Zaa)*exp(-za*(particle%size - 0.0855_rlg))) ! size egg EN DUR
@@ -917,30 +890,9 @@ MODULE ibm
                 Z1(ind_species) =  (Zas + (Zes - Zas)*exp(-zs*(particle%size - 0.1608_rlg))) ! size egg EN DUR
             ENDIF
 
-
-
-
-
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !!!         DENSITE - DEPENDANCE NON SAPTIALISEE        !!!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            ! --- Density dependent mortality of larvae in relation to the concentration of eggs (Somarakis, 2007) - density dependence from bueno pardo
-            IF ( density_dependent ) THEN
-                IF (particle%stage == 3 .OR. particle%stage == 4) THEN
-                    IF (concentration(ind_species) == 0._rsh) THEN
-                        Z2(ind_species) = 0
-                    ELSE 
-                        Z2(ind_species) =  -0.154_rlg + slope*log10(concentration(ind_species))
-                    ENDIF
-                    Z1(ind_species) = max(Z1(ind_species), Z1(ind_species) - max_mort(ind_species) + Z2(ind_species))
-                ENDIF
-            ENDIF
-
             ! The mortality of Somarakis is daily, so 86400 is OK
             particle%Death_NAT = particle%Death_NAT + particle%super*(1 - exp(-(Z1(ind_species)*dtm/86400_rlg))) 
             particle%super     = particle%super*exp(-Z1(ind_species)*dtm/86400_rlg)
-
-
 
             ! ================================================
             ! ===                                          ===
@@ -961,17 +913,16 @@ MODULE ibm
             ENDIF 
 
             !---------------------------------------------------------------
+            ! Density dependance, name struc_ad misleading, we take everybody (Menu et al. 2023)
+            IF (particle%stage >= 3) struc_ad(ind_species) = struc_ad(ind_species) + (particle%WV*particle%super)  
+
+            !---------------------------------------------------------------
             ! Add all eggs in mat_eggs, matrix for spawn, looking at the species
             IF( repro ) THEN
                 ! When time to spawn comes, particle releases all accumulated eggs (Neggs) in mat_eggs where it is  
                 IF (time_to_spawn .and. particle%Neggs > 0.0_rsh) THEN
-
                     mat_eggs(NINT(particle%xpos),NINT(particle%ypos),ind_species) = particle%Neggs +   &
                                           mat_eggs( NINT(particle%xpos), NINT(particle%ypos),ind_species)
-
-                    ! Collect number of eggs for density-dependence on larvae
-                    IF ( density_dependent ) number_eggs(ind_species) = number_eggs(ind_species) + particle%Neggs
-
                     particle%Neggs = 0.0_rsh
                 END IF
 
@@ -1052,12 +1003,12 @@ MODULE ibm
                     IF (ind == 1) THEN
                         child_patch%init_particle = init_anchovy_egg
                         WRITE( fileout_suffix, '("_",i0,".nc")' ) current_year  ! child_patch % generation
-                        child_patch%file_out      = trim(file_pathout) // "anchovy" // fileout_suffix
+                        child_patch%file_out      = trim(dir_pathout) // "anchovy" // fileout_suffix
                         child_patch%species       = "anchovy"    ! Initialize species of the patch
                     ELSE IF (ind == 2) THEN
                         child_patch%init_particle = init_sardine_egg
                         WRITE( fileout_suffix, '("_",i0,".nc")' ) current_year  ! child_patch % generation
-                        child_patch%file_out      = trim(file_pathout) // "sardine" // fileout_suffix
+                        child_patch%file_out      = trim(dir_pathout) // "sardine" // fileout_suffix
                         child_patch%species       = "sardine"    ! Initialize species of the patch
                     ENDIF
 
@@ -1245,25 +1196,30 @@ MODULE ibm
 
 #ifdef IBM_SPECIES
     ! To change if muliple species (add (ind_species))
-    ! To get the total biomass for the whole domain, for mpi implementation 
-    CALL_MPI ADD_ALL_MPI_REAL(struc_ad)
-    ! Parametre pour mortalite et densite-dependance
-    struc_ad_dd_DEB = struc_ad
-    struc_ad        = 0._rsh
+    
 
     ! For catches
     DO i=1,nb_species
+
+        ! To get the total biomass for the whole domain, for mpi implementation 
+        CALL_MPI ADD_ALL_MPI_REAL(struc_ad(i))
+        ! Parametre pour mortalite et densite-dependance
+        struc_ad_dd_DEB(i) = struc_ad(i)
+        struc_ad(i)        = 0._rlg
+
         ! To get the total number and weight of fish for the whole domain, for mpi implementation
-        CALL_MPI ADD_ALL_MPI_REAL(number_tot(ind_species))
-        CALL_MPI ADD_ALL_MPI_REAL(weight_tot(ind_species))
-        IF (number_tot(i) > 0._rsh) THEN
+        CALL_MPI ADD_ALL_MPI_REAL(number_tot(i))
+        CALL_MPI ADD_ALL_MPI_REAL(weight_tot(i))
+        IF (number_tot(i) > 0._rlg) THEN
             Wdeb_mean(i) = weight_tot(i)/number_tot(i)
             biom_tot(i)  = weight_tot(i)
 
-            weight_tot(i) = 0._rsh
-            number_tot(i) = 0._rsh
+            weight_tot(i) = 0._rlg
+            number_tot(i) = 0._rlg
         ENDIF
     ENDDO
+
+
 #endif /* IBM_SPECIES*/
 
 #ifdef MPI
@@ -1286,7 +1242,7 @@ MODULE ibm
     !&E
     !&E ** Description    :
     !&E ** Called by      : ibm_init, ibm_3d
-    !&E ** External calls : ionc4_createfile_traj,ionc4_createvar_traj,ionc4_write_traj
+    !&E ** External calls : ionc4_createfile_traj,ionc4_createvar_traj
     !&E                     ionc4_write_trajt,ionc4_write_time,ionc4_sync
     !&E                     indices_loc2glob,tool_ind2lat,tool_ind2lon
     !&E ** Reference :
@@ -1300,7 +1256,7 @@ MODULE ibm
 
     !! * Modules used
     USE ionc4,          ONLY : ionc4_createfile_traj, ionc4_createvar_traj, &
-                               ionc4_write_traj, ionc4_write_trajt,         &
+                               ionc4_write_trajt,         &
                                ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
                                ionc4_gatt_char_read, ionc4_open
     USE comtraj,        ONLY : patches, type_patch, type_particle
@@ -1407,7 +1363,7 @@ MODULE ibm
             CALL ionc4_createvar_traj(file_out, "DRATE","","Development rate of egg or larva",             &
                                                 fill_value=fillval,  l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DAYBIRTH","","Date of birth",                             &
-                                                fill_value=REAL(dg_valmanq_io,kind=out), l_out_nc4par=l_out_nc4par, ndims=1)
+                                                fill_value=REAL(dg_valmanq_io,kind=out), l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "AGE","","Age in days",                                    &
                                                 fill_value=-1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "AGECLASS","","Age in year of fish",                       &
@@ -1434,17 +1390,17 @@ MODULE ibm
             !                                    fill_value=fillval,  l_out_nc4par=l_out_nc4par)
 
             CALL ionc4_createvar_traj(file_out, "YEARSPAWN","","Year authorised to spawn",                 &
-                                                fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=0, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DAYSPAWN","","Julian day start spawning",                 &
-                                                fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=0, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DAYJUV","","Julien day at metamorphosis",                 &
-                                                fill_value=0, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=0, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "ZOOM","","Zoom value",                                    &
-                                                fill_value=fillval, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=fillval, l_out_nc4par=l_out_nc4par)
             !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
             !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "DENSPAWN","sigma","Density of egg at spawning",           &
-                                                fill_value=fillval, ndims=1, l_out_nc4par=l_out_nc4par)
+                                                fill_value=fillval, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "Death_DEB","","Number dead by starvation",                &
                                                 fill_value=fillval,l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "Death_FISH","","Number dead by fishing",                  &
@@ -1561,7 +1517,7 @@ MODULE ibm
         CALL ionc4_write_trajt(file_out, 'NUMBER',    nb_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'DENSITY',   dens_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'DRATE',     Drate_out(1:nb_part),num1,num2,0,fillval)
-        CALL ionc4_write_traj(file_out,  'DAYBIRTH',  dateo_out(1:nb_part),num1,num2,REAL(dg_valmanq_io,kind=out))
+        CALL ionc4_write_trajt(file_out, 'DAYBIRTH',  dateo_out(1:nb_part),num1,num2,0,REAL(dg_valmanq_io,kind=out))
         CALL ionc4_write_trajt(file_out, 'AGE',       age_out(1:nb_part),num1,num2,0,-1)
         CALL ionc4_write_trajt(file_out, 'AGECLASS',  ageClass_out(1:nb_part),num1,num2,0,-1)
 
@@ -1574,10 +1530,10 @@ MODULE ibm
         CALL ionc4_write_trajt(file_out, 'GAM',       Gam_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'WEIGHT',    Wdeb_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'NEGGS',     Neggs_out(1:nb_part),num1,num2,0,fillval)
-        CALL ionc4_write_traj(file_out,  'YEARSPAWN', yearspawn_out(1:nb_part),num1,num2,0)
-        CALL ionc4_write_traj(file_out,  'DAYSPAWN',  dayspawn_out(1:nb_part),num1,num2,0)
-        CALL ionc4_write_traj(file_out,  'DAYJUV',    dayjuv_out(1:nb_part),num1,num2,0)
-        CALL ionc4_write_traj(file_out,  'DENSPAWN',  denspawn_out(1:nb_part),num1,num2,fillval)
+        CALL ionc4_write_trajt(file_out,  'YEARSPAWN', yearspawn_out(1:nb_part),num1,num2,0,-1)
+        CALL ionc4_write_trajt(file_out,  'DAYSPAWN',  dayspawn_out(1:nb_part),num1,num2,0,-1)
+        CALL ionc4_write_trajt(file_out,  'DAYJUV',    dayjuv_out(1:nb_part),num1,num2,0,-1)
+        CALL ionc4_write_trajt(file_out,  'DENSPAWN',  denspawn_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out,  'ZOOM',      zoom_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'Death_DEB', deaddeb_out(1:nb_part),num1,num2,0,fillval)
         CALL ionc4_write_trajt(file_out, 'Death_FISH', deadfishing_out(1:nb_part),num1,num2,0,fillval)

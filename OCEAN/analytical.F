@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -349,6 +350,11 @@ C$    integer  trd, omp_get_thread_num
 # ifdef AGRIF
       use Agrif_UTIL
 # endif
+#ifdef STOGEN
+      USE stostress         ! Stochastic parameterization of bulk formulation
+      USE stoarray          ! Stochastic arrays and options
+      USE stoalloc          ! Stochastic working arrays
+#endif
       implicit none
 # include "param.h"
 # include "ocean2d.h"
@@ -382,6 +388,19 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=-cff1*cos(cff2*yr(i,j))
         enddo
       enddo
+#  ifdef STOGEN
+      if (ln_stogen .and. ln_stostress) then
+!       apply additive noise to wind stress
+!       First construct a structure fonction for the noise ...
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sto_stress_factor(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
+          enddo
+        enddo
+!       ... then apply noise
+        call sto_stress( sustr, sto_stress_factor )
+      endif
+#  endif
 # elif defined SINGLE_COLUMN && defined KATO_PHILIPS
 #if defined IN_REAL_WIND
       kount=max(kount,1)
@@ -459,7 +478,7 @@ C$    integer  trd, omp_get_thread_num
 #  elif defined SED_TOY_FLOC_1D
       cff1=0.001875 * sin(2. * pi / (12.0*3600) * time)
 #  else
-#   if defined SED_TOY_RESUSP || defined SED_TOY_FLOC
+#   if defined SED_TOY_RESUSP
       if (tdays.lt.1.8) then
         cff1=0.001
       else if ((tdays.ge.3).and.(tdays.le.4.)) then
@@ -2135,7 +2154,10 @@ C$    integer  trd, omp_get_thread_num
      !if the source is applied as volume vertical influx
      !the distribution must be either uniform or located at the bottom
      !if you want a bottom influx you should use GLS_MIXING instead of LMD
-#   define CST_SHAPE
+     ! NB see #478, CST_SHAPE and BOTTOM_SHAPE seems to trigger issue in VADV 
+     ! still to investigate more
+#   define EXP_SHAPE
+!#    define CST_SHAPE
 !#    define BOTTOM_SHAPE
 #  else
 #   define EXP_SHAPE

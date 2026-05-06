@@ -222,7 +222,7 @@ MODULE ibmtools
     dens_surf = w_dens(temp_surf, sal_surf)
 
     ! Si temperature realiste a l'initialisation, on prend sa valeur, sinon on prend 0
-    particle%temp    = 0._rsh
+    particle%temp    = temp_surf
     particle%X       = ibm_traint(zoo,xe,particle%spos,kp,km,px,py,      &
                                  igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,        &
                                  Istr,Iend,Jstr,Jend)
@@ -407,17 +407,29 @@ MODULE ibmtools
 
         IF (biom_tot(id_species) .gt. 0.0_rlg) THEN
             !date_start : to avoid 1st t where biom and wdebmean =0
+            ! ! we should add a threshold, Death_FISH = min(Death_FISH, super)
+            ! IF(year > 1970 .and. year < 2000) THEN
+            !     particle%Death_FISH = particle%Death_FISH + particle%Wdeb*particle%super*mat_catch(1,month,id_species)         &
+            !                             *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species)) 
+            !     particle%super = particle%super - particle%Wdeb*particle%super*mat_catch(1,month,id_species)*coeff1   &
+            !                     /(Wdeb_mean(id_species)*biom_tot(id_species)) 
+            ! ELSE IF (year >= 2000) THEN
+            !     particle%Death_FISH = particle%Death_FISH + particle%Wdeb*particle%super*mat_catch(year-1999,month,id_species) &
+            !                             *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species))
+            !     particle%super = particle%super - particle%Wdeb*particle%super*mat_catch(year-1999,month,id_species)             &
+            !                      *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species))
+            ! ENDIF
+
+            ! test to avoid negative super
             IF(year > 1970 .and. year < 2000) THEN
-                particle%Death_FISH = particle%Death_FISH + particle%Wdeb*particle%super*mat_catch(1,month,id_species)         &
-                                        *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species)) 
-                particle%super = particle%super - particle%Wdeb*particle%super*mat_catch(1,month,id_species)*coeff1   &
-                                /(Wdeb_mean(id_species)*biom_tot(id_species)) 
+                Zfishing = particle%Wdeb * mat_catch(1,month,id_species) / &
+                    (Wdeb_mean(id_species) * biom_tot(id_species))
             ELSE IF (year >= 2000) THEN
-                particle%Death_FISH = particle%Death_FISH + particle%Wdeb*particle%super*mat_catch(year-1999,month,id_species) &
-                                        *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species))
-                particle%super = particle%super - particle%Wdeb*particle%super*mat_catch(year-1999,month,id_species)             &
-                                 *coeff1/(Wdeb_mean(id_species)*biom_tot(id_species))
+                Zfishing = particle%Wdeb * mat_catch(year-1999,month,id_species) / &
+                    (Wdeb_mean(id_species) * biom_tot(id_species))
             ENDIF
+            particle%Death_FISH = particle%Death_FISH + particle%super * (1._rlg - exp(-Zfishing * coeff1))
+            particle%super      = particle%super * exp(-Zfishing * coeff1)
         ENDIF
     ENDIF   ! fishing_strategy == Catch
 
@@ -1298,7 +1310,7 @@ MODULE ibmtools
     !&E
     !&E ** History :
     !&E       !  2013-04  (M. Huret) 
-    !&E
+    !&E         Not operational as it is in CROCO
     !&E---------------------------------------------------------------------
    !! * Modules used
    USE comtraj,  ONLY : htx
@@ -1391,6 +1403,7 @@ MODULE ibmtools
     !&E
     !&E ** History :
     !&E       !  2013-04  (M. Huret) 
+    !&E         Not operational as it is in CROCO
     !&E
     !&E---------------------------------------------------------------------
    !! * Modules used
@@ -1478,6 +1491,7 @@ MODULE ibmtools
     !&E ** History        : 
     !&E                ! 2010-11  (M. Huret) (A ameliorer)
     !&E                ! 2011-11  (V. Garnier) Spatial extension of ssh(liminm2:limaxp2,ljminm2:ljmaxp2)
+    !&E         Not operational as it is in CROCO
     !&E---------------------------------------------------------------------
 
     !! * Modules used
@@ -1547,6 +1561,7 @@ MODULE ibmtools
     !&E ** History : 
     !&E       ! 2008     (M. Sourisseau) non terminée mais pas encore utilisée
     !&E       ! 2011-11  (V. Garnier) Spatial extension of ssh(liminm2:limaxp2,ljminm2:ljmaxp2)
+    !&E         Not operational as it is in CROCO
     !&E---------------------------------------------------------------------
    !! * Modules used
    !USE comvars2d, ONLY : hm,ig,id

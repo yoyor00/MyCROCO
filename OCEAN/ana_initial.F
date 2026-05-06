@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -1261,30 +1262,6 @@ C$OMP BARRIER
 #endif /* ANA_INITIAL */
 
 #ifdef SOLVE3D
-
-!
-!--------------------------------------------------------------------
-!  Initial conditions for MLD CRIT2 & CRIT3
-!--------------------------------------------------------------------
-!
-#if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      do k=1,N
-        do j=JR_RANGE
-          do i=IR_RANGE
-
-              t(i,j,k,1,iCRT2)=20.
-              t(i,j,k,2,iCRT2)=20.
-              t(i,j,k,1,iCRT3)=20.
-              t(i,j,k,2,iCRT3)=20.
-              t(i,j,k,1,iCRT4)=20.
-              t(i,j,k,2,iCRT4)=20.
-            enddo
-          enddo
-        enddo
-
-# endif
-
-
 !
 !--------------------------------------------------------------------
 !  Initial conditions for passive tracer

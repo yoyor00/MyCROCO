@@ -11,7 +11,7 @@ western,eastern,southern,northern boundary of the initial patch
 step in i and j between particles within the the patch boundaries
 depth of the initial patch (min and max), as immersion
 step in z(m) for the initial patch starting at ktachemin 
-Number of particles set at each initial location
+Number of particles set at each exact initial location
 itypevert: type of vertical moving at beginning of simulation (may be updated next)
            =0 if constant depth (no vertical moving)
            <0 if only vertical advection

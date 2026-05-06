@@ -6,16 +6,20 @@
 :              caracteristiques
 : file_trajec : file where the "spots" position and characteristics
 :              are described.
-: itypetraj   : type of definition for patch initial position:
+: itypepatch   : type of definition for patch initial position:
 :             1: circle, 2: rectangle, 3:netcdf
-: ndtz        :    number of time-step within the hydrodynamic model time step
+: dtz        : time-step of the randow walk on the vertical, for consideration 
+:			 	of vertical diffusion
 :        See (Ross and Sharples, 2004, Limnol.Oceanogr.) for sensitivity analysis
-:        To choose depending on the model time resolution, dt/ndtz should be of the order of few seconds
+:        Few seconds make sure there are no accumulation in low diffusivity areas
+:			and near boundaries
+: hdiff		: Horizontal diffusion coefficient
 : 
 :-----------------------------------------------------------------------------
 :
  &namtraj
      file_trajec='../croco/LAGRANGIAN/LAGRANGIAN_INPUTS/traject3d_type1circ.dat'
-     itypetraj = 1
-     ndtz  = 50  /
+     itypepatch = 1
+     dtz  = 3  
+     hdiff = 5.0 /
 
