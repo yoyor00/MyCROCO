@@ -182,6 +182,11 @@
     ],
     "@vortex": ["VORTEX", "VORTEX_AGRIF_2WAY"],
     "@agrif_realist": ["BENGUELA_LR_AGRIF_2WAY"],
+    "@agrif_realist_complement": [
+      "BENGUELA_LR_AGRIF_2WAY_DIAGS_ALL",
+      "BENGUELA_LR_AGRIF_2WAY_MLD_DENS",
+      // test realist + diags + agrif for schedule
+          ],
   },
 
   ////////////////////////////// VARIANTS ////////////////////////////////////
