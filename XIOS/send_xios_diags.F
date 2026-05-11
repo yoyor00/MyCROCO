@@ -3816,41 +3816,7 @@ c !$acc wait
 #  endif /* SEDIMENT */
 
 # ifdef MUSTANG
-<<<<<<< HEAD
       do itrc=itsubs1,itsubs1+ntrc_sedim-1
-           write(nametrc,'(a)') TRIM(name_var(itrc-2))
-#if defined key_sand2D
-           if (itrc>=itsubs1+nv_grav .AND.
-     &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
-            if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
-     &          .AND.l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
-              workr=t(:,:,:,nstp,itrc)
-              do j=Jstr,Jend
-               do i=Istr,Iend
-                DO k=1,N
-                 IF( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) > 0.0_rsh) THEN
-                  workr(i,j,k) =t(i,j,1,nstp,itrc)*(z_w(i,j,1)-z_w(i,j,0))*
-     &            (  (z_w(i,j,N)-z_r(i,j,k))
-     &            /(z_r(i,j,k)-z_w(i,j,0))
-     &            ) **rouse2D(itrc-itsubs1-nv_grav+1,i,j)
-                  workr(i,j,k)=workr(i,j,k)/sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
-                 ELSE
-                  workr(i,j,k)=0.
-                 ENDIF
-                ENDDO
-               enddo
-              enddo
-            else
-             workr=t(:,:,:,nstp,itrc)
-            endif
-           else
-            workr=t(:,:,:,nstp,itrc)
-           endif
-#else
-            workr=t(:,:,:,nstp,itrc)
-#endif
-=======
-      do itrc=3,NT
          write(nametrc,'(a)') TRIM(name_var(itrc-2))
          workr=t(:,:,:,nstp,itrc)
          if (itrc .ge. itsubs1+nv_grav .and.
@@ -3866,7 +3832,6 @@ c !$acc wait
      &          workr(Istr:Iend, Jstr:Jend, 1:N))
             endif
           endif
->>>>>>> origin/dev_2025_FOIL
 
       if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),workr)
