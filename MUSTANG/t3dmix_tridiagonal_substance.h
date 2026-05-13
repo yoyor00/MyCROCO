@@ -355,6 +355,6 @@
           enddo
 # endif /* DIAGNOSTICS_TS */
 #endif /* CONST_TRACERS */
-#    if !defined TS_MIX_IMP && defined MUSTANG && defined key_sand2D
+#    if !defined TS_MIX_IMP && defined MUSTANG
        endif
 #    endif
