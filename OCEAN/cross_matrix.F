@@ -318,7 +318,6 @@
                 goto 12
               else
                 write(iout,'(A)') string(1:i)
-                k=k-1
                 goto 11
               endif
             elseif (k.lt.nmax) then
@@ -351,3 +350,4 @@
 
       return
       end
+

@@ -4,6 +4,7 @@
 
 module ionc4
 #include "cppdefs.h"
+
    !!======================================================================
    !!                   ***  MODULE ionc4  ***
    !!
@@ -22,9 +23,13 @@ module ionc4
    use typeSizes
    use comionc4
 
-!#include "set_global_definitions.h"
-
    implicit none
+
+
+#  ifdef MPI
+#   include "mpi_cpl.h"
+#  endif
+
 
 #ifdef key_oasis
    INTEGER, PUBLIC :: MPI_COMM_MARS
