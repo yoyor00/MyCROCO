@@ -2269,10 +2269,6 @@ C 				  endif
      &    var3Dksed_sigmapsg, var3Dksed_hinder, 
      &    var3Dksed_stateconsol, rouse2D_integral, rouse2D
 
-#ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
-      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
-#endif
 # if defined ECO3M
       USE mod_eco3m, only : E_PARZ, VAR, nbvar
 #endif
