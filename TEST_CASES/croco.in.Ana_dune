@@ -12,7 +12,7 @@ start_date:
 end_date:
 2019-01-01 02:00:00
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
-	             0.05         4          4
+	             0.5         4          4
 
 initial: NRREC  filename
           0
@@ -22,7 +22,7 @@ restart:          NRST, NRPFRST / filename
                           ana_dune_rst.nc
 
 history: LDEFHIS, NWRT, NRPFHIS / filename
-            T     1800        0
+            T     18000        0
                           ana_dune_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)

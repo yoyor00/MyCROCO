@@ -5,6 +5,10 @@
     "case": "ESTUARY",
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2", "6": "2x3", "8": "2x4" },
     "patches": {},
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_estuary.py",
+      "plotphy_script_input": "estuary_his.nc",
+    },
     "check_outputs": ["estuary_his.nc"],
     "unsupported": ["restart", "openmp"],
   },

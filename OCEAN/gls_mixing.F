@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 #include "cppdefs.h"
 
@@ -96,6 +97,11 @@
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
      &  obst_tau, obst_t, obst_c2turb
+#endif
+#ifdef STOGEN
+      USE stogls        ! Stochastic parameterization of gls formulation
+      USE stoarray      ! Stochastic arrays and options
+      USE stoalloc      ! Stochastic working arrays
 #endif
       IMPLICIT NONE
 # include "param.h"
@@ -260,6 +266,7 @@
 #define RHINM1      RH3D(i,j,N-1)  
 
 #endif
+
 !
 !--------------------------------------------------------------------
 ! Compute extended bounds (necessary because of
@@ -636,11 +643,23 @@
      &                  obst_c2turb * gls * invk)
                   endif
 # endif
+
 # if defined TEMPERATURE || defined SALINITY
                   Bprod = -Akt_old(i,j,k)*( cff3m*MAX(bvf(i,j,k),0.)
      &                                   +  cff3p*MIN(bvf(i,j,k),0.) )
 # else
                   Bprod = 0.
+# endif
+
+# if defined STOGEN
+                  if (ln_stogen .and. ln_stogls) then
+                    IF (ln_Sprod) Sprod = Sprod * sto_gls_s2d(i,j)
+                    IF (ln_Bprod) Bprod = Bprod * sto_gls_b2d(i,j)
+                    IF (ln_zlevs) THEN
+                      Sprod = Sprod / ( sto_gls_z3d(i,j,k) * sto_gls_z3d(i,j,k) )
+                      Bprod = Bprod / sto_gls_z3d(i,j,k)
+                    ENDIF
+                  endif
 # endif
                   ! Patankar trick to ensure non-negative solutions
                   cff   =       0.5*(Hz(i,j,k)+Hz(i,j,k+1)) 

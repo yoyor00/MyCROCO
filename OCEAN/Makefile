@@ -130,6 +130,10 @@ include Makedefs
 
 
  SRCS90 = \
+	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	storng_testmpi.F90\
+	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90	stowhite.F90\
+	stobulk.F90	stomarginal.F90	storst.F90	stopar.F90	stomod.F90\
+	ensmpi.F90	stostress.F90   stoalloc.F90    stogls.F90\
 	buffer.F90\
 	par_pisces.F90	oce_trc.F90	trc.F90		sms_pisces.F90\
 	in_out_manager.F90	iom.F90	lib_mpp.F90		prtctl.F90\
@@ -187,7 +191,6 @@ include Makedefs
 	eco3m_init.F90\
 	eco3m_rgb.F90\
 	eco3m_run.F90
-	
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
@@ -224,9 +227,9 @@ all: tools depend $(SBIN)
 # Executable file.
 # ========= =====
 #
-$(SBIN):   $(OBJS90) $(OBJS) 
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
-	mv a.out $(SBIN)
+$(SBIN):   $(OBJS90) $(OBJS)
+	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI)
+	 mv a.out $(SBIN)
 
 #
 # Auxiliary utility programs and List of Dependecies:

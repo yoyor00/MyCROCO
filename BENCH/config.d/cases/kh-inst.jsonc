@@ -5,6 +5,10 @@
     "case": "KH_INST",
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "patches": {},
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_kh_inst.py",
+      "plotphy_script_input": "khinst_his.nc",
+    },
     "input_file": "TEST_CASES/croco.in.KH_INST",
     "check_outputs": ["khinst_his.nc"],
     "unsupported": ["openmp"],

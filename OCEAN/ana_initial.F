@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -587,8 +588,8 @@
           enddo
         enddo
 #    endif /* TEMPERATURE */
-#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS && !defined DYFAMED
-#    ifdef TEMPERATURE        
+#   elif defined SINGLE_COLUMN && defined KATO_PHILLIPS && !defined DYFAMED
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -599,7 +600,7 @@
           enddo
         enddo
 #    endif /* TEMPERATURE */
-#   elif defined SINGLE_COLUMN && defined KATO_PHILIPS && defined DYFAMED
+#   elif defined SINGLE_COLUMN && defined KATO_PHILLIPS && defined DYFAMED
 #    ifdef TEMPERATURE        
         open(18,file='../AnalyticalProfiles/dyfamed_ts_init.dat')
         do k=1,N
@@ -1261,30 +1262,6 @@ C$OMP BARRIER
 #endif /* ANA_INITIAL */
 
 #ifdef SOLVE3D
-
-!
-!--------------------------------------------------------------------
-!  Initial conditions for MLD CRIT2 & CRIT3
-!--------------------------------------------------------------------
-!
-#if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_CRIT
-      do k=1,N
-        do j=JR_RANGE
-          do i=IR_RANGE
-
-              t(i,j,k,1,iCRT2)=20.
-              t(i,j,k,2,iCRT2)=20.
-              t(i,j,k,1,iCRT3)=20.
-              t(i,j,k,2,iCRT3)=20.
-              t(i,j,k,1,iCRT4)=20.
-              t(i,j,k,2,iCRT4)=20.
-            enddo
-          enddo
-        enddo
-
-# endif
-
-
 !
 !--------------------------------------------------------------------
 !  Initial conditions for passive tracer
@@ -1369,7 +1346,7 @@ C$OMP BARRIER
               if (.not.got_tini(iv)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
                 t(i,j,k,1,iv)=cini_wat(iv)
-#  elif defined SINGLE_COLUMN 
+#  elif defined DYFAMED 
                 t(i,j,k,1,iv)=cini_wat(iv)
 #  elif defined TIDAL_FLAT || defined ESTUARY
                 if (h(i,j).gt.0) then

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -31,6 +32,10 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
+# ifdef STOGEN
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -685,6 +690,11 @@
           aer(i,j)  = rhoAir*delW(1)
           Cd        = (Wstar(1)/ddelW(1))**2
           cer(i,j)  = Cd
+#  ifdef STOGEN
+          if (ln_stogen .and. ln_stobulk) then
+            cer(i,j)  = cer(i,j) * sto_bulk_cd(i,j)
+          endif
+#  endif
 #  ifdef CFB_STRESS
           stau(i,j) = cfb_slope * delW(1) + cfb_offset
 #  endif

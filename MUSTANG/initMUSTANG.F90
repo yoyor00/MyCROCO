@@ -1,6 +1,8 @@
-!------------------------------------------------------------------------------
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 MODULE initMUSTANG
-!------------------------------------------------------------------------------
 
 #include "cppdefs.h"
 
@@ -88,7 +90,7 @@ MODULE initMUSTANG
                                      z0_hydro_bed
 
     namelist /namsedim_deposition/ cfreshmud, csedmin, cmudcr, aref_sand,     &
-                                   cvolmaxsort, cvolmaxmel, slopefac
+                                   l_corflux, cvolmaxsort, cvolmaxmel, slopefac
 
     namelist /namsedim_lateral_erosion/ l_erolat, coef_erolat,&
                                         coef_tauskin_lat, l_erolat_wet_cell, &
@@ -1061,7 +1063,7 @@ CONTAINS
  !  DZS
        ierr=nf_inq_varid (ncid,'DZS', varid)
        if (ierr .eq. nf_noerr) then
-         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
           do k=ksdmin,ksdmax
              dzs(k,:,:)=tmp3d(:,:,k)
           enddo
@@ -1091,7 +1093,7 @@ CONTAINS
  
         ierr=nf_inq_varid (ncid,nomcv, varid)
         if (ierr .eq. nf_noerr) then
-         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
  
          do k=ksdmin,ksdmax
              cv_sed(iv,k,:,:)=tmp3d(:,:,k)
@@ -2523,12 +2525,12 @@ CONTAINS
     ALLOCATE(psi_sed(nvp))
     psi_sed(1:nvp) = 0.0_rsh
 #endif
-#ifdef key_sand2D
+
     ALLOCATE(rouse2D(nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(sum_tmp(nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(rouse2D_integral(nv_adv,GLOBAL_2D_ARRAY))
     rouse2D(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-    sum_tmp(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-#endif
+    rouse2D_integral(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+
     
     ALLOCATE(cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY))
     ALLOCATE(c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY))

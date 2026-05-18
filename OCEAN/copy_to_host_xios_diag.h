@@ -147,8 +147,6 @@
 #if defined MUSTANG
 # ifdef WAVE_OFFLINE
 # endif
-#ifdef key_sand2D
-#endif
 #endif
 #if defined MUSTANG
 #endif
@@ -1048,9 +1046,6 @@ c       endif
 #   endif
 #  endif /* SEDIMENT */
 # ifdef MUSTANG
-#if defined key_sand2D
-#else
-#endif
       if (xios_field_is_active("tauskin")) then
 !$acc update host( tauskin ) 
       endif

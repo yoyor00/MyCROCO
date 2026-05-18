@@ -1,3 +1,7 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 #include "cppdefs.h"
 
 MODULE substance
@@ -93,19 +97,19 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: D0_m0_r,D0_m1_r
 # endif
    LOGICAL, DIMENSION(ntrc_subs)              :: l_bedload_r
-   LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n,l_outsandrouse_n,l_bedload_n
+   LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n, l_outsandrouse_n, l_bedload_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: ws_free_opt_n, ws_hind_opt_n
+   REAL(KIND=rsh), DIMENSION(:,:),ALLOCATABLE :: ws_free_para_n, ws_hind_para_n
    INTEGER, DIMENSION(:),ALLOCATABLE          :: D0_funcT_opt_n
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: D0_m0_n,D0_m1_n
 
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: ws_free_opt_n,ws_hind_opt_n
-   REAL(KIND=rsh), DIMENSION(:,:),ALLOCATABLE :: ws_free_para_n,ws_hind_para_n
+
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
    LOGICAL                                    ::  l_ibedload1, l_ibedload2
 #endif
-#if defined key_sand2D
+
    LOGICAL, DIMENSION(ntrc_subs)              :: l_outsandrouse_r, l_sand2D_r
-#endif
 #endif
 
    REAL(KIND=rlg)        :: tool_datosec
@@ -190,7 +194,7 @@ CONTAINS
 #if defined MUSTANG
    IF(nv_dis+nv_ncp+nv_grav+nv_sand+nv_mud+nv_sorb .NE. ntrc_subs) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the total number of substances read from the file'
-     MPI_master_only  WRITE(stdout,*) 'parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
+     MPI_master_only  WRITE(stdout,*)' parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
      MPI_master_only  WRITE(stdout,*)'  nv_dis ',nv_dis
@@ -292,10 +296,8 @@ CONTAINS
      diam_r(ivp)=diam_n(ivr)
      ros_r(ivp)=ros_n(ivr)
      l_bedload_r(ivp)=l_bedload_n(ivr)
-#ifdef key_sand2D
      l_sand2D_r(ivp)=l_sand2D_n(ivr)
      l_outsandrouse_r(ivp)=l_outsandrouse_n(ivr)
-#endif
      itypv_r(iv0+ivr)=2
     ENDDO
     DEALLOCATE(tocd_n,diam_n,ros_n,l_sand2D_n,l_outsandrouse_n,l_bedload_n)
@@ -681,10 +683,8 @@ CONTAINS
    ENDIF
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
-#if defined key_sand2D
    ALLOCATE(l_outsandrouse(nvp))
    l_outsandrouse(:)=.false.
-#endif
 
 
 
@@ -723,7 +723,6 @@ CONTAINS
    ! ------------------------------------------------------------------------------------
    ALLOCATE(irkm_var_assoc(nvp))
    irkm_var_assoc(:)=0
-
 #ifdef MUSTANG
    DO iv=1,nv_sorb
      isubs=nvpc+nv_ncp+iv
@@ -956,7 +955,6 @@ CONTAINS
       ENDDO
 # endif
 
-#ifdef key_sand2D
    DO iv=igrav1,igrav2
      l_subs2D(iv)=.TRUE.
    ENDDO
@@ -964,7 +962,6 @@ CONTAINS
      l_subs2D(iv)=l_sand2D_r(irk_fil(iv))
      l_outsandrouse(iv)=l_outsandrouse_r(irk_fil(iv))
    ENDDO
-#endif
 #else
    DO iv=1,nvp
      ws_free_min(iv)=ws_free_min_r(irk_fil(iv))

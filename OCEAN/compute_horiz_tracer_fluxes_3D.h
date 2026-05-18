@@ -90,7 +90,7 @@
 !----------------------------------------------------------
 !  CORRECTOR
 !
-#  if !(defined TS_HADV_C4 || defined TS_HADV_AKIMA)
+#  if ! defined TS_HADV_C4
 #   define TS_HADV_UP3
 #  endif
 !
@@ -187,13 +187,6 @@
             do i=Istr-1,Iend+1
 #  if (defined TS_HADV_C4 || defined PREDICTOR)
               grad(i,j)=0.5*(FX(i+1,j)+FX(i,j))
-#  elif defined TS_HADV_AKIMA
-              cff=2.*FX(i+1,j)*FX(i,j)
-              if (cff.gt.epsil) then
-                grad(i,j)=cff/(FX(i+1,j)+FX(i,j))
-              else
-                grad(i,j)=0.
-              endif
 #  elif defined TS_HADV_UP3
               curv(i,j)=FX(i+1,j)-FX(i,j)
 #  endif
@@ -272,13 +265,6 @@
             do i=Istr,Iend
 #  if (defined TS_HADV_C4 || defined PREDICTOR)
               grad(i,j)=0.5*(FE(i,j+1)+FE(i,j))
-#  elif defined TS_HADV_AKIMA
-              cff=2.*FE(i,j+1)*FE(i,j)
-              if (cff.gt.epsil) then
-                grad(i,j)=cff/(FE(i,j+1)+FE(i,j))
-              else
-                grad(i,j)=0.
-              endif
 #  elif defined TS_HADV_UP3
               curv(i,j)=FE(i,j+1)-FE(i,j)
 #  endif

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA,
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 /*
@@ -41,6 +42,21 @@
 # define CONST_TRACERS
 #else
 # undef CONST_TRACERS
+#endif
+
+/*
+======================================================================
+   Set ENSEMBLE options:
+   Define MPI
+   Change the generic name of MPI communicator MPI_COMM_WORLD
+   to communicator used for individual member
+======================================================================
+*/
+#ifdef ENSEMBLE
+# define MPI
+# define MPI_COMM_WORLD ocean_grid_comm
+# define MPI_COMM_ALL MPI_COMM_WORLD
+# define LOGFILE
 #endif
 
 /*
@@ -490,19 +506,16 @@
 ======================================================================
 */
 #ifdef TS_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
-#elif defined TS_VADV_AKIMA
 #elif defined TS_VADV_WENO5
 #elif defined TS_VADV_C2
 #else
-# undef  TS_VADV_SPLINES   /* Splines vertical advection            */
-# define TS_VADV_AKIMA     /* 4th-order Akima vertical advection    */
+# define  TS_VADV_SPLINES   /* Splines vertical advection            */
 # undef  TS_VADV_WENO5     /* 5th-order WENOZ vertical advection    */
 # undef  TS_VADV_C2        /* 2nd-order centered vertical advection */
 #endif
 
 #ifdef VADV_ADAPT_IMP
 # define TS_VADV_SPLINES
-# undef   TS_VADV_AKIMA
 # undef   TS_VADV_WENO5
 # undef   TS_VADV_C2
 #endif
@@ -729,9 +742,6 @@
          || (defined WAVE_OFFLINE && defined MRL_WCI) \
          || defined ANA_WWAVE
 # define WAVE_IO
-# if !defined WAVE_ROLLER || !defined WKB_WWAVE
-#  define wepb0 wepb
-# endif
 #endif
 
 /*
@@ -747,7 +757,10 @@
 # undef LMD_BKPP2005  /*<- unresolved problems with bkpp2005 at depth
                            default: lmd_bkpp1994 */
 #endif
-
+# ifdef LMD_RIMIX
+#  define RI_HSMOOTH
+#  define RI_VSMOOTH
+# endif
 /*
 ======================================================================
                 Biogeochemical models
@@ -793,21 +806,24 @@
 #endif
 /*
 ======================================================================
-    Bottom stress option:
+    Bottom stress :
 
-    LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid
-    numerical instability associated with reversing bottom flow
-    NOW replaced by BSTRESS_FAST option
+    LIMIT_BSTRESS: Set limiting factor to avoid numerical instability 
+    associated with the Euler explicit treatment of the bottom stress
+    BSTRESS_FAST is an alternative with computation at fast time step
 ======================================================================
 */
-/*
 #ifndef BSTRESS_FAST
-# define  LIMIT_BSTRESS
+# define LIMIT_BSTRESS
 #endif
-*/
 #ifdef INNERSHELF
-# undef  LIMIT_BSTRESS
+# undef LIMIT_BSTRESS
 #endif
+/*
+======================================================================
+    BBL :
+======================================================================
+*/
 #ifdef BBL
 # ifdef OW_COUPLING
 # elif defined WAVE_OFFLINE
