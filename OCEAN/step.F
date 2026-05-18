@@ -79,7 +79,7 @@ C$OMP END PARALLEL
       endif
 # if defined OA_COUPLING || defined OW_COUPLING
 !--Put phase of OASIS3
-      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+1)) then
+      if ((iif==-1).and.(oasis_time>=0).and.(nbstep3d<ntimes-ntstart+2)) then
 #  ifdef AGRIF
         if(it_inside_root==Agrif_rel_idt()) then 
 #  endif
