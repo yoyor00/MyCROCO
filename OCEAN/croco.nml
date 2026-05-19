@@ -7,3 +7,8 @@
   NDTFAST = 65
   NINFO = 1 
 /
+
+&croco_time_stepping_nbq
+  ndtnbq = 1
+  csound_nbq = 1000
+  visc2_nbq = 0.01d0

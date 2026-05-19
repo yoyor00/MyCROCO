@@ -42,14 +42,14 @@
       common /nbq_param7/ ifl_imp_nbq
 
 !**********************************************************************
-      integer ndtnbq
-      common /time_nbq1/ ndtnbq
+      !cmzy integer ndtnbq
+      !cmzy common /time_nbq1/ ndtnbq
       real dtnbq
       common /time_nbq2/ dtnbq
-      real csound_nbq
-      common /nbq_csound/ csound_nbq
-      real visc2_nbq
-      common /nbq_visc2/ visc2_nbq
+      !cmzy real csound_nbq
+      !cmzy common /nbq_csound/ csound_nbq
+      !cmzy real visc2_nbq
+      !cmzy common /nbq_visc2/ visc2_nbq
 
       real dtgrid_nbq
       common /nbq_dtgrid/ dtgrid_nbq

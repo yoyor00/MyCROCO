@@ -13,6 +13,12 @@ MODULE croco_namelist
    integer :: ndtfast = 20
    integer :: ninfo = 1
 
+   ! &croco_time_stepping_nbq
+   integer :: ndtnbq = 1
+   real :: csound_nbq = 1000
+   real :: visc2_nbq = 0.01d0
+
+
    ! namelist filename (set via read_nml_fname from command-line arg 2)
    character(len=200) :: fname_nml = 'croco.nml'
 
@@ -45,6 +51,7 @@ contains
 
       namelist /croco_title/ title
       namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
+      namelist /croco_time_stepping_nbq/ ndtnbq, csound_nbq, visc2_nbq
 
       ierr = 0
       nmlunit = 10
@@ -57,6 +64,8 @@ contains
          return
       end if
 
+      write (*, '(a)') '****** READING NAMELIST ******'
+
       read (nmlunit, nml=croco_title, iostat=ios)
       rewind (nmlunit)
 
@@ -64,7 +73,22 @@ contains
       rewind (nmlunit)
       call check_nml_croco_time_stepping(ierr)
       call init_time_stepping_param
+#ifdef NBQ
+      read (nmlunit, nml=croco_time_stepping_nbq, iostat=ios)
+      rewind (nmlunit)
+      call check_nml_croco_time_stepping_nbq(ierr)
 
+
+          MPI_master_only write(stdout,
+     &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
+     &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
+     &                                                 '2D step.',
+     &   csound_nbq,'csound_nbq  Sound wave celerity.',
+     &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
+     &                                      'compressible fluids.'
+
+
+# endif
       close (nmlunit)
 
    end subroutine read_nml
@@ -94,5 +118,33 @@ contains
          ierr = ierr + 1
       end if
    end subroutine check_nml_croco_time_stepping
+
+   subroutine check_nml_croco_time_stepping_nbq(ierr)
+      use param, ONLY: stdout
+      use scalars, ONLY : g
+      implicit none
+      integer, intent(inout) :: ierr
+      if (ndtnbq <= 0) then
+         write (stdout, '(a,i0)') 'Error - NBQ acoustic substep ratio ndtnbq must be strictly positive: ', ndtnbq
+         ierr = ierr + 1
+      end if
+      ! à l'initialisation: (pas encore possible a la lecture de la namelist)
+      !if (csound_nbq <= 5.d0 * sqrt(g* hmax)) then
+      !   write (stdout, '(a,f12.4,a,f12.4)') 'Error - pseudo-acoustic speed csound_nbq = ', csound_nbq, &
+      !                               ' must exceed 5*sqrt(g*hmax) = ', 5.d0 * sqrt(g * hmax)
+      !   ierr = ierr + 1
+      !end if
+      if (csound_nbq > 1500.d0) then
+         write (stdout, '(a,f12.4,a)') 'Error - NBQ pseudo-acoustic speed csound_nbq = ', csound_nbq, &
+                                       ' must not exceed real acoustic speed (1500 m/s).'
+         ierr = ierr + 1
+      end if
+      if (visc2_nbq < 0.d0) then
+         write (stdout, '(a,f12.4,a)') 'Error - NBQ bulk viscosity visc2_nbq = ', visc2_nbq, &
+                                       ' must be positive.'
+         ierr = ierr + 1
+      end if
+
+   end subroutine check_nml_croco_time_stepping_nbq 
 
 end module croco_namelist

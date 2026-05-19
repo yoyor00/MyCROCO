@@ -15,6 +15,10 @@
                                         ! script file using keywords
                                         ! to recognize variables.
       use croco_namelist, only: dt
+# ifdef NBQ
+      use croco_namelist, only: ndtnbq
+# endif
+
 # ifdef STOGEN
       use stoalloc                      ! do we output stochastic fields
 # endif
@@ -415,9 +419,9 @@
 !
 ! NBQ Time-stepping parameters
 !
-      elseif (keyword(1:kwlen).eq.'time_stepping_nbq') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ndtnbq, csound_nbq, visc2_nbq
+!      elseif (keyword(1:kwlen).eq.'time_stepping_nbq') then
+!        call cancel_kwd (keyword(1:kwlen), ierr)
+!        read(input,*,err=95) ndtnbq, csound_nbq, visc2_nbq
 
         dtnbq=dtfast
         ndtnbq=1
@@ -2327,17 +2331,17 @@ c        close(testunit)
           MPI_master_only write(stdout,*)
 #endif
 
-#ifdef NBQ
-
-          MPI_master_only write(stdout,
-     &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
-     &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
-     &                                                 '2D step.',
-     &   csound_nbq,'csound_nbq  Sound wave celerity.',
-     &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
-     &                                      'compressible fluids.'
-
-#endif
+!#ifdef NBQ
+!
+!          MPI_master_only write(stdout,
+!     &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
+!     &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
+!     &                                                 '2D step.',
+!     &   csound_nbq,'csound_nbq  Sound wave celerity.',
+!     &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
+!     &                                      'compressible fluids.'
+!
+!#endif
 
 #ifdef SOLVE3D
           MPI_master_only write(stdout,

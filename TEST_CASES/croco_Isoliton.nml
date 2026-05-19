@@ -8,3 +8,9 @@
   ndtfast= 25
   ninfo = 100
 /
+
+&croco_time_stepping_nbq
+  ndtnbq = 1
+  csound_nbq = 10
+  visc2_nbq = 1.e-2
+/
