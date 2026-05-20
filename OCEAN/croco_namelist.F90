@@ -13,6 +13,19 @@ MODULE croco_namelist
    integer :: ndtfast = 20
    integer :: ninfo = 1
 
+#ifdef USE_CALENDAR
+   ! &croco_start_date
+   character(len=19) :: start_date = '2000-01-01 00:00:00'
+
+   ! &croco_end_date
+   character(len=19) :: end_date = '2000-02-01 00:00:00'
+
+   ! &output_time_steps:
+   real :: dt_his = 1
+   real :: dt_avg = 6
+   real :: dt_rst = 12
+#endif
+
    ! namelist filename (set via read_nml_fname from command-line arg 2)
    character(len=200) :: fname_nml = 'croco.nml'
 
@@ -38,14 +51,19 @@ contains
    end subroutine read_nml_fname
 
    subroutine read_nml(ierr)
+      use param, ONLY: stdout
       implicit none
       integer, intent(out) :: ierr
 
       integer :: nmlunit, ios
 
-      namelist /croco_title/ title
-      namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
-
+      namelist /croco_title/              title
+      namelist /croco_time_stepping/      dt, ntimes, ndtfast, ninfo
+#ifdef USE_CALENDAR
+      namelist /croco_start_date/         start_date
+      namelist /croco_end_date/           end_date
+      namelist /croco_output_time_steps/  dt_his, dt_avg, dt_rst
+#endif
       ierr = 0
       nmlunit = 10
 
@@ -62,8 +80,25 @@ contains
 
       read (nmlunit, nml=croco_time_stepping, iostat=ios)
       rewind (nmlunit)
+#ifdef USE_CALENDAR
+      read (nmlunit, nml=croco_start_date, iostat=ios)
+      rewind (nmlunit)
+      WRITE (stdout, nml=croco_start_date) 
+
+      read (nmlunit, nml=croco_end_date, iostat=ios)
+      rewind (nmlunit)
+      WRITE (stdout, nml=croco_end_date)
+      
+      read (nmlunit, nml=croco_output_time_steps, iostat=ios)
+      rewind (nmlunit)
+      WRITE (stdout, nml=croco_output_time_steps)
+#endif
+
       call check_nml_croco_time_stepping(ierr)
       call init_time_stepping_param
+#ifdef USE_CALENDAR
+      call init_calendar_param
+#endif
 
       close (nmlunit)
 
@@ -95,4 +130,29 @@ contains
       end if
    end subroutine check_nml_croco_time_stepping
 
+#ifdef USE_CALENDAR
+   subroutine init_calendar_param
+      use scalars, ONLY: nrrec,start_time
+      use ncscrum, ONLY: origin_year,origin_month, origin_day, origin_hour, &
+                         origin_minute,origin_second, origin_date,origin_date_in_sec
+      implicit none
+      ! TODO : place this in initialisation phase 
+      real*8 :: tool_datosec 
+# ifdef ANA_INITIAL
+        if (nrrec.eq.0) then
+          origin_date=start_date
+          origin_date_in_sec=tool_datosec(origin_date)
+          READ(origin_date(1:4),fmt='(i4)') origin_year
+          READ(origin_date(6:7),fmt='(i2)') origin_month
+          READ(origin_date(9:10),fmt='(i2)') origin_day
+          READ(origin_date(12:13),fmt='(i2)') origin_hour
+          READ(origin_date(15:16),fmt='(i2)') origin_minute
+          READ(origin_date(18:19),fmt='(i2)') origin_second
+          start_time = origin_date_in_sec
+        endif
+# endif
+   end subroutine init_calendar_param
+#endif
+
 end module croco_namelist
+

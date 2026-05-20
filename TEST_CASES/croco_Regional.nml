@@ -8,3 +8,17 @@
   ndtfast= 60
   ninfo = 1
 /
+
+&croco_start_date
+  start_date = '2005-01-01 00:00:00'
+/
+
+&croco_end_date
+  end_date = '2005-01-03 00:00:00'
+/
+
+&croco_output_time_steps
+  dt_his = 1.0
+  dt_avg = 6.0
+  dt_rst = 12.0
+/
