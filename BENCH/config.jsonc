@@ -132,6 +132,7 @@
     ],
     "@other": ["KILPATRICK", "SEAGRASS", "SHOREFACE", "THACKER_2DV"],
     "@complement": [
+      "BASIN_PARALLEL_FILES_LOGFILE",
       "CANYON",
       "ESTUARY",
       "INNERSHELF",

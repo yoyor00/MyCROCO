@@ -327,46 +327,7 @@
           ! never pass here, it is just to keep first if
           ! (to be remove when all is in nml)
 
-#ifdef LOGFILE
-!
-! LOGFILE file name. Check its availability and open it.
-!
-      elseif (keyword(1:kwlen).eq.'logfile') then
-         call cancel_kwd (keyword(1:kwlen), ierr)
-         read(input,'(A)',err=95) fname
-         lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-         logname=fname(1:lstr)
-# ifndef AGRIF
-         MPI_master_only stdout=80
-# else
-         stdout=Agrif_Get_Unit()
-         if (.Not.Agrif_Root()) then
-           if(mynode.eq.0) then
-             open (stdout,file=logname//'.'//Agrif_Cfixed(),
-     &         status='REPLACE',form='formatted',err=98)
-           else
-             stdout=6
-           endif
-          else
-# endif
-            if(mynode.eq.0) then
-# ifdef ENSEMBLE
-              open (stdout,file=cmember//logname,
-     &          status='REPLACE',form='formatted',err=98)
-# else
-              open (stdout,file=logname,
-     &          status='REPLACE',form='formatted',err=98)
-# endif
-            else
-              stdout=6
-            endif
-# ifdef AGRIF
-          endif
-# endif
-#endif /*LOGFILE*/
+
 
 #ifdef USE_CALENDAR
 !
@@ -2268,10 +2229,7 @@ c        close(testunit)
       goto 99
   97  write(stdout,'(/1x,4A/)') 'READ_INP ERROR: Cannot find input ',
      &                                'file ''', fname(1:lstr), '''.'
-#ifdef LOGFILE
-  98  write(6,'(/1x,4A/)') 'READ_INP ERROR: Cannot open log file ',
-     &                                'file   , croco.log', '''.'
-#endif
+
       ierr=ierr+1
   99  close (input)
 !
@@ -2306,12 +2264,6 @@ c        close(testunit)
       ! start of summary writing
       if (ierr.eq.0) then
       
-          ! Write stdout in logfile or stdout
-#ifdef LOGFILE
-          lstr=lenstr(logname)
-          MPI_master_only write(stdout,'(/1x,A)') logname(1:lstr)
-#endif
-
 #ifdef USE_CALENDAR
           lstr=lenstr(start_date)
           MPI_master_only write(stdout,'(/2x,A,1x,A/)')
