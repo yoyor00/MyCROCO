@@ -129,6 +129,10 @@
 
 #ifdef ANA_INITIAL
 
+# ifdef EXACT_RESTART
+       if (nrrec.eq.0) forw_start=1
+# endif
+      
 !$acc kernels if(compute_on_device) default(present)
 !
 !----------------------------------------------------------------------
