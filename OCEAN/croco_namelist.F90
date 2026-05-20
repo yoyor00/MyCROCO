@@ -65,7 +65,6 @@ contains
       end if
 
       write (*, '(a)') '****** READING NAMELIST ******'
-
       read (nmlunit, nml=croco_title, iostat=ios)
       rewind (nmlunit)
 
@@ -78,14 +77,6 @@ contains
       rewind (nmlunit)
       call check_nml_croco_time_stepping_nbq(ierr)
 
-
-          MPI_master_only write(stdout,
-     &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
-     &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
-     &                                                 '2D step.',
-     &   csound_nbq,'csound_nbq  Sound wave celerity.',
-     &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
-     &                                      'compressible fluids.'
 
 
 # endif
