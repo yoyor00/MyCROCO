@@ -17,6 +17,7 @@ MODULE croco_namelist
    integer :: ndtnbq = 1
    real :: csound_nbq = 1000
    real :: visc2_nbq = 0.01d0
+   real :: dtnbq = 0.d0 ! probably to move to a NBQ module
 
 
    ! namelist filename (set via read_nml_fname from command-line arg 2)
@@ -76,8 +77,7 @@ contains
       read (nmlunit, nml=croco_time_stepping_nbq, iostat=ios)
       rewind (nmlunit)
       call check_nml_croco_time_stepping_nbq(ierr)
-
-
+      call init_time_stepping_nbq_param
 
 # endif
       close (nmlunit)
@@ -90,6 +90,15 @@ contains
       ! TODO : place this in initialisation phase ??
       dtfast = dt/float(ndtfast)     ! set barotropic time step.
    end subroutine init_time_stepping_param
+
+   subroutine init_time_stepping_nbq_param
+      use scalars, ONLY: dtfast
+      implicit none
+      ! TODO : place this in initialisation phase ??
+      dtnbq=dtfast
+      ndtnbq=1
+   end subroutine init_time_stepping_nbq_param
+
 
    subroutine check_nml_croco_time_stepping(ierr)
       use param, ONLY: stdout, NWEIGHT

@@ -24,6 +24,9 @@
 
       subroutine diag_tile (Istr,Iend,Jstr,Jend, ke2d,pe2d)
         use croco_namelist, only: ninfo, dt
+#if defined NBQ && defined DIAG_CFL
+        use croco_namelist, only: dtnbq
+#endif 
       implicit none
 #include "param.h"
 #include "grid.h"
