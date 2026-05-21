@@ -15,6 +15,10 @@
                                         ! script file using keywords
                                         ! to recognize variables.
       use croco_namelist, only: dt
+# ifdef USE_CALENDAR
+      use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
+     &                          dt_rst
+# endif
 # ifdef STOGEN
       use stoalloc                      ! do we output stochastic fields
 # endif
@@ -67,9 +71,6 @@
      &                                       , iflux
 #endif
       logical dumboolean
-#ifdef USE_CALENDAR
-      real  dt_his,dt_avg,dt_rst
-#endif
 #ifdef XIOS
       REAL*8        :: tool_datosec
 #endif
@@ -328,38 +329,6 @@
           ! (to be remove when all is in nml)
 
 
-
-#ifdef USE_CALENDAR
-!
-! start date
-!
-      elseif (keyword(1:kwlen).eq.'start_date') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) start_date
-# ifdef ANA_INITIAL
-        if (nrrec.eq.0) then
-          origin_date=start_date
-          origin_date_in_sec=tool_datosec(origin_date)
-          READ(origin_date(1:4),fmt='(i4)') origin_year
-          READ(origin_date(6:7),fmt='(i2)') origin_month
-          READ(origin_date(9:10),fmt='(i2)') origin_day
-          READ(origin_date(12:13),fmt='(i2)') origin_hour
-          READ(origin_date(15:16),fmt='(i2)') origin_minute
-          READ(origin_date(18:19),fmt='(i2)') origin_second
-          start_time = origin_date_in_sec
-        endif
-# endif
-!
-! end date
-!
-      elseif (keyword(1:kwlen).eq.'end_date') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) end_date
-! output time steps
-      elseif (keyword(1:kwlen).eq.'output_time_steps') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) dt_his,dt_avg,dt_rst
-#endif /*USE_CALENDAR*/
 
 #ifdef XIOS
 !
@@ -2263,21 +2232,6 @@ c        close(testunit)
 
       ! start of summary writing
       if (ierr.eq.0) then
-      
-#ifdef USE_CALENDAR
-          lstr=lenstr(start_date)
-          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &   'Run start date:', start_date(1:lstr)
-          lstr=lenstr(end_date)
-          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &   'Run end date:', end_date(1:lstr)
-
-          MPI_master_only  write(stdout,
-     &  '(2x,A,f6.2,A,1x,A,f6.2,A,1x,A,f6.2,A)')
-     &  'DT HIS =',dt_his,'H','DT AVG =',dt_avg,'H',
-     &  'DT RST=',dt_rst,'H'
-          MPI_master_only write(stdout,*)
-#endif
 
 #ifdef NBQ
 

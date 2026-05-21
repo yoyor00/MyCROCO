@@ -230,7 +230,7 @@
 #endif
 
 #if defined USE_CALENDAR
-            call tool_origindate(ncid,varid,origin_date_in_sec)
+      call tool_origindate(ncid,varid,origin_date_in_sec)
       MPI_master_only write(stdout,'(/2x,A,1x,A/)')
      &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
      &    tool_sectodat(origin_date_in_sec)

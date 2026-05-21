@@ -1,7 +1,4 @@
-title:
-        SCM TEST MODEL
-time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                8640      30      60      1
+
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0      0.0d0     1.0d16
 grid:  filename
