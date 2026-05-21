@@ -96,6 +96,14 @@ contains
       call init_logfile_param(ierr)
 #endif
 
+      ! put LOGFILE at the end so that all the warning about missing nml
+      ! are write in stdout before change on logfile
+#ifdef LOGFILE
+      read (nmlunit, nml=croco_logfile, iostat=ios); rewind (nmlunit)
+      call warn_if_nml_missing(ios, "croco_logfile")
+      call init_logfile_param(ierr)
+#endif
+
       close (nmlunit)
 
       ! write all namelist in stdout
