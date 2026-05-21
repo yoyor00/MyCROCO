@@ -8,3 +8,17 @@
   ndtfast= 20
   ninfo = 10
 /
+
+&croco_start_date
+  start_date = '2019-01-01 00:00:00'
+/
+
+&croco_end_date
+  end_date = '2019-01-03 00:00:00'
+/
+
+&croco_output_time_steps
+  dt_his = 24
+  dt_avg = 24
+  dt_rst = 24
+/
