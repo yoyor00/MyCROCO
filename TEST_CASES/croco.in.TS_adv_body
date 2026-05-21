@@ -1,7 +1,3 @@
-title:
-        TS_adv_body Example
-time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                750       7       1      1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0     0.0d0      300000000.

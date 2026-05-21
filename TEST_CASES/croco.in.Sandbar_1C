@@ -1,8 +1,4 @@
-title:
-        SANDBAR Example 
 
-time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               36000      0.1      10     200
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       5.0d0      1.e16

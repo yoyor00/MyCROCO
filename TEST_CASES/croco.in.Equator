@@ -1,15 +1,3 @@
-!
-! Keyword-based startup file 
-!
-title:
-	Equator Example
-!
-! Based on:
-! Boccaletti, G., R.C. Pacanowski, G.H. Philander and A.V. Fedorov, 2004,
-! The Thermal Structure of the Upper Ocean, J.Phys.Oceanogr., 34, 888-902.
-!
-time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               3600     8640     45       1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          5.0d0      0.0d0       10.d0

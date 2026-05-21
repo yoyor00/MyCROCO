@@ -23,6 +23,9 @@
 !
           USE croco_namelist, ONLY : read_nml, read_nml_fname
           USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
+#ifdef USE_CALENDAR
+          USE croco_namelist, ONLY : end_date
+#endif
 #if defined OA_COUPLING || defined OW_COUPLING
           USE mod_prism
 #endif

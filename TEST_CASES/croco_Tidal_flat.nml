@@ -8,3 +8,11 @@
   ndtfast= 5
   ninfo = 100
 /
+
+&croco_use_calendar
+  start_date = '2019-01-01 00:00:00'
+  end_date = '2019-01-03 00:00:00'
+  dt_his = 0.25
+  dt_avg = 24
+  dt_rst = 24
+/
