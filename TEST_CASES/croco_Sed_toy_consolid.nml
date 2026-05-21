@@ -9,15 +9,9 @@
   ninfo = 40
 /
 
-&croco_start_date
+&croco_use_calendar
   start_date = '2019-01-01 00:00:00'
-/
-
-&croco_end_date
   end_date = '2019-02-10 00:00:00'
-/
-
-&croco_output_time_steps
   dt_his = 1
   dt_avg = 1
   dt_rst = 24

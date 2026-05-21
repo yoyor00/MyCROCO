@@ -494,43 +494,37 @@ class Croco:
         full_filename = os.path.join(self.dirname, filename)
         nml = f90nml.read(full_filename)
         # Check section exists
-        if "croco_end_date" in nml:
-            # Check param exists within the section
-            if "end_date" in nml["croco_end_date"]:
-                dt = nml["croco_time_stepping"]["dt"]
-                duration = math.ceil(max(dt * ntimes, min_dt))
-                dt_his_hours = max(dt / 3600.0, duration / (ntimes * 3600))
-                self.change_nml(
-                    self, filename, "croco_output_time_steps", "dt_his", dt_his_hours
-                )
+        if "croco_use_calendar" in nml:
+            dt = nml["croco_time_stepping"]["dt"]
+            duration = math.ceil(max(dt * ntimes, min_dt))
+            dt_his_hours = max(dt / 3600.0, duration / (ntimes * 3600))
+            self.change_nml(
+                self, filename, "croco_use_calendar", "dt_his", dt_his_hours
+            )
 
     def change_nml_output_time_steps_dtrst(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
         nml = f90nml.read(full_filename)
         # Check section exists
-        if "croco_end_date" in nml:
-            # Check param exists within the section
-            if "end_date" in nml["croco_end_date"]:
-                dt = nml["croco_time_stepping"]["dt"]
-                duration = math.ceil(max(dt * ntimes, min_dt))
-                dt_rst_hours = duration / 3600.0
-                self.change_nml(
-                    self, filename, "croco_output_time_steps", "dt_rst", dt_rst_hours
-                )
+        if "croco_use_calendar" in nml:
+            dt = nml["croco_time_stepping"]["dt"]
+            duration = math.ceil(max(dt * ntimes, min_dt))
+            dt_rst_hours = duration / 3600.0
+            self.change_nml(
+                self, filename, "croco_use_calendar", "dt_rst", dt_rst_hours
+            )
 
     def change_nml_end_date(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
         nml = f90nml.read(full_filename)
         # Check section exists
-        if "croco_end_date" in nml:
-            # Check param exists within the section
-            if "end_date" in nml["croco_end_date"]:
-                dt = nml["croco_time_stepping"]["dt"]
-                duration = math.ceil(max(dt * ntimes, min_dt))
-                datetime_start = parse_datetime(nml["croco_start_date"]["start_date"])
-                datetime_end = datetime_start + timedelta(seconds=duration)
-                end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
-                self.change_nml(self, filename, "croco_end_date", "end_date", end_date)
+        if "croco_use_calendar" in nml:
+            dt = nml["croco_time_stepping"]["dt"]
+            duration = math.ceil(max(dt * ntimes, min_dt))
+            datetime_start = parse_datetime(nml["croco_use_calendar"]["start_date"])
+            datetime_end = datetime_start + timedelta(seconds=duration)
+            end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
+            self.change_nml(self, filename, "croco_use_calendar", "end_date", end_date)
 
     def change_nml(self, filename, nml_section_name, nml_param_name, values):
         """Change value in a CROCO namelist file."""

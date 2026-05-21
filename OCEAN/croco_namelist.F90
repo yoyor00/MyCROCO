@@ -18,11 +18,9 @@ MODULE croco_namelist
    integer :: ninfo = 1
 
 #ifdef USE_CALENDAR
-   ! &croco_start_date
+   ! &croco_use_calendar
    character(len=19) :: start_date = '2000-01-01 00:00:00'
-   ! &croco_end_date
    character(len=19) :: end_date = '2000-02-01 00:00:00'
-   ! &output_time_steps:
    real :: dt_his = 1
    real :: dt_avg = 6
    real :: dt_rst = 12
@@ -66,9 +64,7 @@ contains
       namelist /croco_logfile/ logname
       namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
 #ifdef USE_CALENDAR
-      namelist /croco_start_date/ start_date
-      namelist /croco_end_date/ end_date
-      namelist /croco_output_time_steps/ dt_his, dt_avg, dt_rst
+      namelist /croco_use_calendar/ start_date, end_date, dt_his, dt_avg, dt_rst
 #endif
 
       ierr = 0
@@ -92,12 +88,8 @@ contains
       call init_time_stepping_param
 
 #ifdef USE_CALENDAR
-      read (nmlunit, nml=croco_start_date, iostat=ios); rewind (nmlunit)
-      call warn_if_nml_missing(ios, "croco_start_date")
-      read (nmlunit, nml=croco_end_date, iostat=ios); rewind (nmlunit)
-      call warn_if_nml_missing(ios, "croco_end_date")
-      read (nmlunit, nml=croco_output_time_steps, iostat=ios); rewind (nmlunit)
-      call warn_if_nml_missing(ios, "croco_output_time_steps")
+      read (nmlunit, nml=croco_use_calendar, iostat=ios); rewind (nmlunit)
+      call warn_if_nml_missing(ios, "croco_use_calendar")
       call init_calendar_param
 #endif
 
@@ -118,9 +110,7 @@ contains
 #endif
       MPI_master_only WRITE (stdout, nml=croco_time_stepping)
 #ifdef USE_CALENDAR
-      MPI_master_only WRITE (stdout, nml=croco_start_date)
-      MPI_master_only WRITE (stdout, nml=croco_end_date)
-      MPI_master_only WRITE (stdout, nml=croco_output_time_steps)
+      MPI_master_only WRITE (stdout, nml=croco_use_calendar)
 #endif
 
    end subroutine read_nml
