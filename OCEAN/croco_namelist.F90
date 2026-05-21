@@ -24,10 +24,8 @@ MODULE croco_namelist
    real :: visc2_nbq = 0.01d0
 #endif
 
-
    ! namelist filename (set via read_nml_fname from command-line arg 2)
    character(len=200) :: fname_nml = 'croco.nml'
-
 
 contains
    subroutine read_nml_fname()
@@ -176,12 +174,11 @@ contains
       use scalars, ONLY: dtfast
       implicit none
       real dtnbq
-      common /time_nbq2/ dtnbq
+      common/time_nbq2/dtnbq
       ! TODO : place this in initialisation phase ??
-      dtnbq=dtfast
-      ndtnbq=1
+      dtnbq = dtfast
+      ndtnbq = 1
    end subroutine init_time_stepping_nbq_param
-
 
    subroutine check_nml_croco_time_stepping(ierr)
       use param, ONLY: stdout, NWEIGHT
@@ -207,7 +204,7 @@ contains
 #if defined NBQ
    subroutine check_nml_croco_time_stepping_nbq(ierr)
       use param, ONLY: stdout
-      use scalars, ONLY : g
+      use scalars, ONLY: g
 #  if defined MPI
       use scalars, ONLY: mynode   ! needed for MPI_master_only
 #  endif
@@ -225,16 +222,16 @@ contains
       !end if
       if (csound_nbq > 1500.d0) then
          MPI_master_only write (stdout, '(a,f12.4,a)') 'Error - NBQ pseudo-acoustic speed csound_nbq = ', csound_nbq, &
-                                       ' must not exceed real acoustic speed (1500 m/s).'
+            ' must not exceed real acoustic speed (1500 m/s).'
          ierr = ierr + 1
       end if
       if (visc2_nbq < 0.d0) then
          MPI_master_only write (stdout, '(a,f12.4,a)') 'Error - NBQ bulk viscosity visc2_nbq = ', visc2_nbq, &
-                                       ' must be positive.'
+            ' must be positive.'
          ierr = ierr + 1
       end if
+   end subroutine check_nml_croco_time_stepping_nbq
 #endif
-   end subroutine check_nml_croco_time_stepping_nbq 
    subroutine warn_if_nml_missing(ios, nml_name)
       use param, ONLY: stdout
 #if defined MPI
