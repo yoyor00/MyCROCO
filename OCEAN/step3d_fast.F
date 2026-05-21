@@ -120,7 +120,7 @@ C$    trd=omp_get_thread_num()
 !
       use croco_namelist, only: dt
 # ifdef NBQ
-      use croco_namelist, only: ndtnbq, csound_nbq, visc2_nbq, dtnbq
+      use croco_namelist, only: ndtnbq, csound_nbq, visc2_nbq
 # endif
 # ifdef CVTK_DEBUG
       USE debug

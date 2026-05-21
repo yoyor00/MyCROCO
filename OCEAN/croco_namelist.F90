@@ -17,15 +17,17 @@ MODULE croco_namelist
    integer :: ndtfast = 20
    integer :: ninfo = 1
 
+#ifdef NBQ
    ! &croco_time_stepping_nbq
    integer :: ndtnbq = 1
    real :: csound_nbq = 1000
    real :: visc2_nbq = 0.01d0
-   real :: dtnbq = 0.d0 ! probably to move to a NBQ module
+#endif
 
 
    ! namelist filename (set via read_nml_fname from command-line arg 2)
    character(len=200) :: fname_nml = 'croco.nml'
+
 
 contains
    subroutine read_nml_fname()
@@ -61,8 +63,9 @@ contains
       namelist /croco_title/ title
       namelist /croco_logfile/ logname
       namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
+#ifdef NBQ
       namelist /croco_time_stepping_nbq/ ndtnbq, csound_nbq, visc2_nbq
-
+#endif
       ierr = 0
       nmlunit = 10
 
@@ -179,6 +182,8 @@ contains
    subroutine init_time_stepping_nbq_param
       use scalars, ONLY: dtfast
       implicit none
+      real dtnbq
+      common /time_nbq2/ dtnbq
       ! TODO : place this in initialisation phase ??
       dtnbq=dtfast
       ndtnbq=1

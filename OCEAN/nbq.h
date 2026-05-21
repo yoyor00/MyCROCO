@@ -43,6 +43,8 @@
 
 !**********************************************************************
 
+      real dtnbq
+      common /time_nbq2/ dtnbq
       real dtgrid_nbq
       common /nbq_dtgrid/ dtgrid_nbq
 
