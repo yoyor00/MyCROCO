@@ -69,6 +69,23 @@
     "check_outputs": ["basin_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
+    // PARALLEL_FILES LOGFILE BASIN case
+    "BASIN_PARALLEL_FILES_LOGFILE": {
+      "title": "BASIN (60 x 50 x 10 : 3240)",
+      "case": "BASIN",
+      "cppkeys": {
+        "PARALLEL_FILES": true,
+        "LOGFILE": true,
+      },
+      "splitting": {
+        "1": "1x1",
+        "2": "1x2",
+        "4": "2x2"
+      },
+      "patches": {},
+      "check_outputs": [],
+      "unsupported": ["restart", "plotphy", "check"],
+    },
   // BASIN a bit larger
   "BASIN-LARGE": {
     "title": "BASIN - LARGE - (200 x 200 x 50 : 100)",

@@ -1,9 +1,13 @@
 &croco_title
-  title = "Basin Example"
+  title = "Example"
 /
 &croco_time_stepping
-  NTIMES = 3240
+  ntimes = 3240
   dt = 9600
-  NDTFAST = 65
-  NINFO = 1 
+  ndtfast = 65
+  ninfo = 1 
+/
+
+&croco_logfile
+  fname_logfile = "croco.log"
 /

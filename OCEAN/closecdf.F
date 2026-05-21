@@ -158,6 +158,11 @@
       if (may_day_flag.eq.0) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'MAIN: DONE'
+#ifdef LOGFILE
+        ! ensure "MAIN: DONE" is written in 6 (real stdout) at the end to catch it in BENCH
+        MPI_master_only write(6,'(/1x,A/)')
+     &           'MAIN: DONE'
+#endif
       elseif (may_day_flag.eq.1) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'MAIN: Abnormal termination: BLOWUP'

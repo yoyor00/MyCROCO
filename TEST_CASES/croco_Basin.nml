@@ -8,3 +8,7 @@
   ndtfast = 65
   ninfo = 1 
 /
+
+&croco_logfile
+  fname_logfile = "basin.log"
+/
