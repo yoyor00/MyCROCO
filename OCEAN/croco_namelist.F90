@@ -128,7 +128,7 @@ contains
          write (stdout, '(a,i0)') 'Error - NBQ acoustic substep ratio ndtnbq must be strictly positive: ', ndtnbq
          ierr = ierr + 1
       end if
-      ! à l'initialisation: (pas encore possible a la lecture de la namelist)
+      ! TODO : à l'initialisation: (pas encore possible a la lecture de la namelist)
       !if (csound_nbq <= 5.d0 * sqrt(g* hmax)) then
       !   write (stdout, '(a,f12.4,a,f12.4)') 'Error - pseudo-acoustic speed csound_nbq = ', csound_nbq, &
       !                               ' must exceed 5*sqrt(g*hmax) = ', 5.d0 * sqrt(g * hmax)
