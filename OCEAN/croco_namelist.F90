@@ -170,16 +170,6 @@ contains
       dtfast = dt/float(ndtfast)     ! set barotropic time step.
    end subroutine init_time_stepping_param
 
-   subroutine init_time_stepping_nbq_param
-      use scalars, ONLY: dtfast
-      implicit none
-      real dtnbq
-      common/time_nbq2/dtnbq
-      ! TODO : place this in initialisation phase ??
-      dtnbq = dtfast
-      ndtnbq = 1
-   end subroutine init_time_stepping_nbq_param
-
    subroutine check_nml_croco_time_stepping(ierr)
       use param, ONLY: stdout, NWEIGHT
 #if defined MPI
@@ -201,7 +191,18 @@ contains
          ierr = ierr + 1
       end if
    end subroutine check_nml_croco_time_stepping
+
 #if defined NBQ
+   subroutine init_time_stepping_nbq_param
+      use scalars, ONLY: dtfast
+      implicit none
+      real dtnbq
+      common/time_nbq2/dtnbq
+      ! TODO : place this in initialisation phase ??
+      dtnbq = dtfast
+      ndtnbq = 1
+   end subroutine init_time_stepping_nbq_param
+
    subroutine check_nml_croco_time_stepping_nbq(ierr)
       use param, ONLY: stdout
       use scalars, ONLY: g
@@ -232,6 +233,7 @@ contains
       end if
    end subroutine check_nml_croco_time_stepping_nbq
 #endif
+
    subroutine warn_if_nml_missing(ios, nml_name)
       use param, ONLY: stdout
 #if defined MPI
