@@ -355,7 +355,7 @@ C$OMP END MASTER
 #  ifdef NBQ
       Subroutine Updatewnbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
-      use croco_namelist, only: dt      
+      use croco_namelist, only: dt
       implicit none
 #   include "param.h"
 #   include "grid.h"
