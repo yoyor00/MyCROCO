@@ -1,11 +1,3 @@
-!
-! Keyword-based startup file 
-!
-title:
-	Inner Shelf 2D-V Example (Homogeneous case)
-
-time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               5760      300      50       10
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.001d0      1.0d0     4.9d0

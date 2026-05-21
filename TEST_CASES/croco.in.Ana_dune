@@ -1,8 +1,3 @@
-title:
-        Dune Test case (Analytical case)
-
-time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-                72000    0.1     60       100
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0d0        10000

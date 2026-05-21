@@ -1,8 +1,3 @@
-title:
-        Sed_toy rouse experiment (Single Column GradP / SCM) TEST MODEL
-
-time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
-               21600     2       10     1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0     0.0d0      200000.0d0
