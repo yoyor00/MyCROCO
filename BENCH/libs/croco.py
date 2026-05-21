@@ -530,7 +530,7 @@ class Croco:
         """Change value in a CROCO namelist file."""
         full_filename = os.path.join(self.dirname, filename)
         Messaging.step(
-            f"Patching {nml_section_name}/{nml_param_name} in {full_filename}"
+            f"Change {nml_section_name}/{nml_param_name} in {full_filename} to {values}"
         )
         nml = f90nml.read(full_filename)
         nml.setdefault(nml_section_name, f90nml.Namelist())
