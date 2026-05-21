@@ -17,6 +17,13 @@ MODULE croco_namelist
    integer :: ndtfast = 20
    integer :: ninfo = 1
 
+#ifdef NBQ
+   ! &croco_time_stepping_nbq
+   integer :: ndtnbq = 1
+   real :: csound_nbq = 1000
+   real :: visc2_nbq = 0.01d0
+#endif
+
 #ifdef USE_CALENDAR
    ! &croco_use_calendar
    character(len=19) :: start_date = '2000-01-01 00:00:00'
@@ -63,6 +70,9 @@ contains
       namelist /croco_title/ title
       namelist /croco_logfile/ logname
       namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
+#ifdef NBQ
+      namelist /croco_time_stepping_nbq/ ndtnbq, csound_nbq, visc2_nbq
+#endif
 #ifdef USE_CALENDAR
       namelist /croco_use_calendar/ start_date, end_date, dt_his, dt_avg, dt_rst
 #endif
@@ -86,6 +96,12 @@ contains
       call warn_if_nml_missing(ios, "croco_time_stepping")
       call check_nml_croco_time_stepping(ierr)
       call init_time_stepping_param
+#ifdef NBQ
+      read (nmlunit, nml=croco_time_stepping_nbq, iostat=ios); rewind (nmlunit)
+      call warn_if_nml_missing(ios, "croco_time_stepping_nbq")
+      call check_nml_croco_time_stepping_nbq(ierr)
+      call init_time_stepping_nbq_param
+# endif
 
 #ifdef USE_CALENDAR
       read (nmlunit, nml=croco_use_calendar, iostat=ios); rewind (nmlunit)
@@ -109,6 +125,9 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_logfile)
 #endif
       MPI_master_only WRITE (stdout, nml=croco_time_stepping)
+#ifdef NBQ
+      MPI_master_only WRITE (stdout, nml=croco_time_stepping_nbq)
+#endif
 #ifdef USE_CALENDAR
       MPI_master_only WRITE (stdout, nml=croco_use_calendar)
 #endif
@@ -195,6 +214,48 @@ contains
       end if
    end subroutine check_nml_croco_time_stepping
 
+#if defined NBQ
+   subroutine init_time_stepping_nbq_param
+      use scalars, ONLY: dtfast
+      implicit none
+      real dtnbq
+      common/time_nbq2/dtnbq
+      ! TODO : place this in initialisation phase ??
+      dtnbq = dtfast
+      ndtnbq = 1
+   end subroutine init_time_stepping_nbq_param
+
+   subroutine check_nml_croco_time_stepping_nbq(ierr)
+      use param, ONLY: stdout
+      use scalars, ONLY: g
+#  if defined MPI
+      use scalars, ONLY: mynode   ! needed for MPI_master_only
+#  endif
+      implicit none
+      integer, intent(inout) :: ierr
+      if (ndtnbq <= 0) then
+         MPI_master_only write (stdout, '(a,i0)') 'Error - NBQ acoustic substep ratio ndtnbq must be strictly positive: ', ndtnbq
+         ierr = ierr + 1
+      end if
+      ! TODO : à l'initialisation: (pas encore possible a la lecture de la namelist)
+      !if (csound_nbq <= 5.d0 * sqrt(g* hmax)) then
+      !   write (stdout, '(a,f12.4,a,f12.4)') 'Error - pseudo-acoustic speed csound_nbq = ', csound_nbq, &
+      !                               ' must exceed 5*sqrt(g*hmax) = ', 5.d0 * sqrt(g * hmax)
+      !   ierr = ierr + 1
+      !end if
+      if (csound_nbq > 1500.d0) then
+         MPI_master_only write (stdout, '(a,f12.4,a)') 'Error - NBQ pseudo-acoustic speed csound_nbq = ', csound_nbq, &
+            ' must not exceed real acoustic speed (1500 m/s).'
+         ierr = ierr + 1
+      end if
+      if (visc2_nbq < 0.d0) then
+         MPI_master_only write (stdout, '(a,f12.4,a)') 'Error - NBQ bulk viscosity visc2_nbq = ', visc2_nbq, &
+            ' must be positive.'
+         ierr = ierr + 1
+      end if
+   end subroutine check_nml_croco_time_stepping_nbq
+#endif
+
 #ifdef USE_CALENDAR
    subroutine init_calendar_param
       use scalars, ONLY: nrrec, start_time
@@ -218,6 +279,7 @@ contains
 # endif
    end subroutine init_calendar_param
 #endif
+
    subroutine warn_if_nml_missing(ios, nml_name)
       use param, ONLY: stdout
 #if defined MPI

@@ -15,6 +15,8 @@
                                         ! script file using keywords
                                         ! to recognize variables.
       use croco_namelist, only: dt
+
+
 # ifdef USE_CALENDAR
       use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
      &                          dt_rst
@@ -54,9 +56,6 @@
 #endif
 #ifdef MPI
       include 'mpif.h'
-#endif
-#ifdef NBQ
-# include "nbq.h"
 #endif
 #include "mpi_cpl.h"
       integer kwsize, testunit, input
@@ -340,19 +339,6 @@
         xios_origin_date_in_sec=tool_datosec(xios_origin_date)
 #endif
 
-
-#ifdef NBQ
-!
-! NBQ Time-stepping parameters
-!
-      elseif (keyword(1:kwlen).eq.'time_stepping_nbq') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ndtnbq, csound_nbq, visc2_nbq
-
-        dtnbq=dtfast
-        ndtnbq=1
-#endif
-
 #ifdef SOLVE3D
 !
 ! Vertical S-coordinates parameters.
@@ -362,6 +348,7 @@
         read(input,*,err=95) theta_s, theta_b, Tcline
 
 #endif
+
 
 !
 ! Initial conditions file name. Check its availability (in the case
@@ -2233,17 +2220,6 @@ c        close(testunit)
       ! start of summary writing
       if (ierr.eq.0) then
 
-#ifdef NBQ
-
-          MPI_master_only write(stdout,
-     &    '(I10,2x,A,1x,A,/F10.2,2x,A,/1pe10.3,2x,A,1x,A/)')
-     &   ndtnbq,    'ndtnbq      Number of NBQ timesteps within each',
-     &                                                 '2D step.',
-     &   csound_nbq,'csound_nbq  Sound wave celerity.',
-     &   visc2_nbq, 'visc2_nbq   Second viscosity coefficient for',
-     &                                      'compressible fluids.'
-
-#endif
 
 #ifdef SOLVE3D
           MPI_master_only write(stdout,
