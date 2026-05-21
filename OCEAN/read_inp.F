@@ -586,24 +586,7 @@ c        close(testunit)
 #ifdef ENSEMBLE
         rstname=cmember//rstname
 #endif
-!
-! History file name.
-!
-      elseif (keyword(1:kwlen).eq.'history') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ldefhis, nwrt, nrpfhis
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-#if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#endif
-#ifdef USE_CALENDAR
-        nwrt=ceiling((dt_his*3600.)/dt)
-#endif
-        hisname=fname(1:lstr)
-#ifdef ENSEMBLE
-        hisname=cmember//hisname
-#endif
+
 
 #ifdef AVERAGES
 !
@@ -2355,11 +2338,7 @@ c        close(testunit)
      &             '(7x,A,2x,A,4x,A,I6,4x,A,I4)')
      &             'Restart File:', rstname(1:lstr),
      &             'nrst =', nrst, 'rec/file: ', nrpfrst
-          lstr=lenstr(hisname)
-          MPI_master_only write(stdout,
-     &             '(7x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
-     &       'History File:', hisname(1:lstr),  'Create new:',
-     &       ldefhis, 'nwrt =', nwrt, 'rec/file =', nrpfhis
+
 #ifdef AVERAGES
           lstr=lenstr(avgname)
           MPI_master_only write(stdout,

@@ -14,6 +14,7 @@
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
       USE croco_namelist, only: dt
+      USE croco_namelist, ONLY: nrpfhis, hisname
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat, nvpc
 #endif

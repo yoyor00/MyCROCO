@@ -1134,7 +1134,7 @@
 # endif
 #endif
 
-      integer  ncidhis, nrechis,  nrpfhis
+      integer  ncidhis, nrechis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
@@ -1680,7 +1680,7 @@
 #ifdef BBL
      &                         , rstBBL
 #endif
-     &      , ncidhis, nrechis,  nrpfhis
+     &      , ncidhis, nrechis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
@@ -2105,7 +2105,7 @@
 
       REAL(kind=8) :: origin_date_in_sec, xios_origin_date_in_sec
 
-      character*180 ininame,  grdname,  hisname
+      character*180 ininame,  grdname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
@@ -2213,7 +2213,7 @@
       common /cncscrum/   
      &             origin_date, start_date_run
      &         ,   xios_origin_date
-     &         ,   ininame,  grdname, hisname
+     &         ,   ininame,  grdname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname, origin_date_in_sec

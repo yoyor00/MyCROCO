@@ -104,7 +104,7 @@
 !====================================================================
 !
       subroutine Agrif_initvalues()
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, ldefhis
       use AGRIF_UTIL
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules

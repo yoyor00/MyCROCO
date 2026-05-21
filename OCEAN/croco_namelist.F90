@@ -7,15 +7,36 @@ MODULE croco_namelist
 
    ! &croco_title
    character(len=80) :: title = "CROCO simulation"
+   !! Configuration name
 
    ! &croco_logfile
    character(len=180) :: logname = "croco.log"
+   !! Logfile name
 
    ! &croco_time_stepping
    real    :: dt = 0.d0
+   !! Baroclinic time step [in s]
    integer :: ntimes = 0
+   !! Number of time-steps required for the simulation
    integer :: ndtfast = 20
+   !! Number of barotropic time-steps between each baroclinic time step.
+   !! For 2D configurations, ndtfast should be unity
    integer :: ninfo = 1
+   !! Number of time-steps between printing of information to standard output
+
+   ! &croco_history
+   logical :: ldefhis = .true.
+   !! Logical switch used to create the history file.
+   !! If TRUE, a new history file is created. If FALSE,
+   !! data is appended to an existing history file.
+   integer :: nwrt = 72 
+   !! Number of timesteps between writing of fields into history file.
+   integer :: nrpfhis = 0
+   !! 0: write several records every NWRT time steps
+   !! >0: create more than one file (with sequential numbers) and write NRPHIS records per file
+   !! -1: overwrite record every NWRT time steps
+   character(len=180) :: hisname = "CROCO_FILES/croco_his.nc"
+   !! Name of history file
 
 #ifdef NBQ
    ! &croco_time_stepping_nbq
@@ -70,6 +91,7 @@ contains
       namelist /croco_title/ title
       namelist /croco_logfile/ logname
       namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
+      namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
 #ifdef NBQ
       namelist /croco_time_stepping_nbq/ ndtnbq, csound_nbq, visc2_nbq
 #endif
@@ -117,6 +139,10 @@ contains
       call init_logfile_param(ierr)
 #endif
 
+      read (nmlunit, nml=croco_history, iostat=ios); rewind (nmlunit)
+      call warn_if_nml_missing(ios, "croco_history")
+      call init_history_param(ierr)
+
       close (nmlunit)
 
       ! write all namelist in stdout
@@ -131,6 +157,7 @@ contains
 #ifdef USE_CALENDAR
       MPI_master_only WRITE (stdout, nml=croco_use_calendar)
 #endif
+      MPI_master_only WRITE (stdout, nml=croco_history)
 
    end subroutine read_nml
 
@@ -139,8 +166,8 @@ contains
       use param, ONLY: stdout
 #if defined MPI
       use scalars, ONLY: mynode   ! needed for MPI_master_only
-#endif
       use scalars, ONLY: mynode2, NNODES2
+#endif
       implicit none
 #ifdef ENSEMBLE
       ! needed for ENSEMBLE cmember
@@ -279,6 +306,34 @@ contains
 # endif
    end subroutine init_calendar_param
 #endif
+
+   subroutine init_history_param(ierr)
+      use param, ONLY: stdout
+#if defined MPI
+      use scalars, ONLY: mynode   ! needed for MPI_master_only
+      use scalars, ONLY: mynode2, NNODES2
+#endif
+      implicit none
+#ifdef ENSEMBLE
+      ! needed for ENSEMBLE cmember
+#include "mpi_cpl.h"
+#endif
+      integer, intent(inout) :: ierr
+
+#if defined MPI && defined PARALLEL_FILES
+      call insert_node(hisname, len_trim(hisname), mynode2, NNODES2, ierr)
+#endif
+      hisname = trim(hisname)
+#ifdef ENSEMBLE
+      hisname=cmember//hisname
+#endif
+
+#ifdef USE_CALENDAR
+      nwrt=ceiling((dt_his*3600.)/dt)
+#endif
+
+   end subroutine init_history_param
+
 
    subroutine warn_if_nml_missing(ios, nml_name)
       use param, ONLY: stdout
