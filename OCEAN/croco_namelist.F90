@@ -68,9 +68,9 @@ contains
       namelist /croco_logfile/ logname
       namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
 #ifdef USE_CALENDAR
-      namelist /croco_start_date/         start_date
-      namelist /croco_end_date/           end_date
-      namelist /croco_output_time_steps/  dt_his, dt_avg, dt_rst
+      namelist /croco_start_date/ start_date
+      namelist /croco_end_date/ end_date
+      namelist /croco_output_time_steps/ dt_his, dt_avg, dt_rst
 #endif
 
       ierr = 0
@@ -209,24 +209,24 @@ contains
 
 #ifdef USE_CALENDAR
    subroutine init_calendar_param
-      use scalars, ONLY: nrrec,start_time
-      use ncscrum, ONLY: origin_year,origin_month, origin_day, origin_hour, &
-                         origin_minute,origin_second, origin_date,origin_date_in_sec
+      use scalars, ONLY: nrrec, start_time
+      use ncscrum, ONLY: origin_year, origin_month, origin_day, origin_hour, &
+                         origin_minute, origin_second, origin_date, origin_date_in_sec
       implicit none
-      ! TODO : place this in initialisation phase 
-      real*8 :: tool_datosec 
+      ! TODO : place this in initialisation phase
+      real*8 :: tool_datosec
 # ifdef ANA_INITIAL
-        if (nrrec.eq.0) then
-          origin_date=start_date
-          origin_date_in_sec=tool_datosec(origin_date)
-          READ(origin_date(1:4),fmt='(i4)') origin_year
-          READ(origin_date(6:7),fmt='(i2)') origin_month
-          READ(origin_date(9:10),fmt='(i2)') origin_day
-          READ(origin_date(12:13),fmt='(i2)') origin_hour
-          READ(origin_date(15:16),fmt='(i2)') origin_minute
-          READ(origin_date(18:19),fmt='(i2)') origin_second
-          start_time = origin_date_in_sec
-        endif
+      if (nrrec .eq. 0) then
+         origin_date = start_date
+         origin_date_in_sec = tool_datosec(origin_date)
+         READ (origin_date(1:4), fmt='(i4)') origin_year
+         READ (origin_date(6:7), fmt='(i2)') origin_month
+         READ (origin_date(9:10), fmt='(i2)') origin_day
+         READ (origin_date(12:13), fmt='(i2)') origin_hour
+         READ (origin_date(15:16), fmt='(i2)') origin_minute
+         READ (origin_date(18:19), fmt='(i2)') origin_second
+         start_time = origin_date_in_sec
+      end if
 # endif
    end subroutine init_calendar_param
 #endif
