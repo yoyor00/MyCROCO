@@ -91,13 +91,6 @@ contains
       call check_nml_croco_time_stepping_nbq(ierr)
       call init_time_stepping_nbq_param
 # endif
-      ! put LOGFILE at the end so that all the warning about missing nml
-      ! are write in stdout before change on logfile
-#ifdef LOGFILE
-      read (nmlunit, nml=croco_logfile, iostat=ios); rewind (nmlunit)
-      call warn_if_nml_missing(ios, "croco_logfile")
-      call init_logfile_param(ierr)
-#endif
 
       ! put LOGFILE at the end so that all the warning about missing nml
       ! are write in stdout before change on logfile
@@ -211,13 +204,13 @@ contains
          ierr = ierr + 1
       end if
    end subroutine check_nml_croco_time_stepping
-
+#if defined NBQ
    subroutine check_nml_croco_time_stepping_nbq(ierr)
       use param, ONLY: stdout
       use scalars, ONLY : g
-#if defined MPI
+#  if defined MPI
       use scalars, ONLY: mynode   ! needed for MPI_master_only
-#endif
+#  endif
       implicit none
       integer, intent(inout) :: ierr
       if (ndtnbq <= 0) then
@@ -240,7 +233,7 @@ contains
                                        ' must be positive.'
          ierr = ierr + 1
       end if
-
+#endif
    end subroutine check_nml_croco_time_stepping_nbq 
    subroutine warn_if_nml_missing(ios, nml_name)
       use param, ONLY: stdout
