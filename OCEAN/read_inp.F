@@ -339,6 +339,17 @@
         xios_origin_date_in_sec=tool_datosec(xios_origin_date)
 #endif
 
+#ifdef SOLVE3D
+!
+! Vertical S-coordinates parameters.
+!
+      elseif (keyword(1:kwlen).eq.'S-coord') then
+        call cancel_kwd (keyword(1:kwlen), ierr)
+        read(input,*,err=95) theta_s, theta_b, Tcline
+
+#endif
+
+
 !
 ! Initial conditions file name. Check its availability (in the case
 ! of analytical initial conditions and nrrec=0 initial conditions are
