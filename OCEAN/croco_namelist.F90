@@ -20,10 +20,8 @@ MODULE croco_namelist
 #ifdef USE_CALENDAR
    ! &croco_start_date
    character(len=19) :: start_date = '2000-01-01 00:00:00'
-
    ! &croco_end_date
    character(len=19) :: end_date = '2000-02-01 00:00:00'
-
    ! &output_time_steps:
    real :: dt_his = 1
    real :: dt_avg = 6

@@ -422,13 +422,13 @@ class Croco:
     def apply_debug_patches(self):
         filename = self.croco_inputfile
         filename_nml = self.croco_nmlfile
-        self.change_nml_ntimes(filename_nml, 6)
+        self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 6)
         self.change_card_history_nwrt(filename)
         self.change_card_dia_nwrt(filename)
         self.change_card_diaM_nwrt(filename)
         # and for USE_CALENDAR
-        self.change_card_end_date(filename, 6)
-        self.change_card_output_time_steps_dthis(filename, 6)
+        self.change_nml_end_date(filename, 6)
+        self.change_nml_output_time_steps_dthis(filename, 6)
 
     def apply_restart_patches(self):
         filename = self.croco_inputfile
@@ -450,16 +450,16 @@ class Croco:
             file_nc_rst = "croco_restart.nc"
 
             # first run with filename
-            self.change_nml_ntimes(filename_nml, 3)
+            self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 3)
             self.change_card_restart(filename, 3, file_nc_rst)
 
             # second run with filename_rst
-            self.change_nml_ntimes(filename_nml_rst, 3)
+            self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 3)
             self.change_card_initial(filename_rst, file_nc_rst)
 
             # and for USE_CALENDAR
-            self.change_card_end_date(filename, 3)
-            self.change_card_output_time_steps_dtrst(filename, 3)
+            self.change_nml_end_date(filename, 3)
+            self.change_nml_output_time_steps_dtrst(filename, 3)
             # no need to change end_date or dtrsr for filename_rst
 
     def change_card_restart(self, filename, nrst, file_nc_rst):
@@ -490,90 +490,57 @@ class Croco:
         self.apply_patches(patches)
         delete_lines_from_file(full_filename, "initial", line_offset=3, num_lines=2)
 
-    def change_card_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
+    def change_nml_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
-        # Check end_date is a card in this case
-        if len(extract_elements_from_file(full_filename, "output_time_steps")) > 0:
-            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-            OUTPUT_TIME_STEPS = extract_elements_from_file(
-                full_filename, "output_time_steps"
-            )
-            dt = float(TIME_LINE[1])
-            duration = math.ceil(max(dt * ntimes, min_dt))
-            dt_his_hours = max(dt / 3600.0, duration / (ntimes * 3600))
-            # in case of very small dt put put a minimum
-            NEW_OUTPUT_TIME_STEPS = copy_and_replace(OUTPUT_TIME_STEPS, 0, dt_his_hours)
-            patches = {
-                filename: {
-                    "mode": "insert-after",
-                    "what": " output_time_steps:",
-                    "insert": " ".join(map(str, NEW_OUTPUT_TIME_STEPS)),
-                    "descr": f"change output_time_steps to DT_HIS(H)={dt_his_hours}",
-                }
-            }
-            self.apply_patches(patches)
-            delete_lines_from_file(
-                full_filename, "output_time_steps", line_offset=2, num_lines=1
-            )
-
-    def change_card_output_time_steps_dtrst(self, filename, ntimes, min_dt=1.0):
-        full_filename = os.path.join(self.dirname, filename)
-        # Check end_date is a card in this case
-        if len(extract_elements_from_file(full_filename, "output_time_steps")) > 0:
-            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-            OUTPUT_TIME_STEPS = extract_elements_from_file(
-                full_filename, "output_time_steps"
-            )
-            dt = float(TIME_LINE[1])
-            duration = math.ceil(max(dt * ntimes, min_dt))
-            dt_rst_hours = duration / 3600.0
-            # in case of very small dt put put a minimum
-            NEW_OUTPUT_TIME_STEPS = copy_and_replace(OUTPUT_TIME_STEPS, 2, dt_rst_hours)
-            patches = {
-                filename: {
-                    "mode": "insert-after",
-                    "what": " output_time_steps:",
-                    "insert": " ".join(map(str, NEW_OUTPUT_TIME_STEPS)),
-                    "descr": f"change output_time_steps to DT_RST(H)={dt_rst_hours}",
-                }
-            }
-            self.apply_patches(patches)
-            delete_lines_from_file(
-                full_filename, "output_time_steps", line_offset=2, num_lines=1
-            )
-
-    def change_card_end_date(self, filename, ntimes, min_dt=1.0):
-        full_filename = os.path.join(self.dirname, filename)
-        # Check end_date is a card in this case
-        if len(extract_elements_from_file(full_filename, "end_date")) > 0:
-            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-            START_DATE = extract_elements_from_file(full_filename, "start_date")
-            dt = float(TIME_LINE[1])
-            duration = math.ceil(max(dt * ntimes, min_dt))
-            # in case of very small dt put a minimum
-            datetime_start = parse_datetime(START_DATE[0] + " " + START_DATE[1])
-            datetime_end = datetime_start + timedelta(seconds=duration)
-            end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
-            patches = {
-                filename: {
-                    "mode": "insert-after",
-                    "what": " end_date:",
-                    "insert": end_date,
-                    "descr": f"change end_date to {end_date}",
-                }
-            }
-            self.apply_patches(patches)
-            delete_lines_from_file(
-                full_filename, "end_date", line_offset=2, num_lines=1
-            )
-
-    def change_nml_ntimes(self, filename, ntimes):
-        """Change ntimes value in a CROCO namelist file."""
-        # Read namelist
-        full_filename = os.path.join(self.dirname, filename)
-        Messaging.step(f"Patching ntimes in {full_filename}")
         nml = f90nml.read(full_filename)
-        nml["croco_time_stepping"]["ntimes"] = ntimes
+        # Check section exists
+        if "croco_end_date" in nml:
+            # Check param exists within the section
+            if "end_date" in nml["croco_end_date"]:
+                dt = nml["croco_time_stepping"]["dt"]
+                duration = math.ceil(max(dt * ntimes, min_dt))
+                dt_his_hours = max(dt / 3600.0, duration / (ntimes * 3600))
+                self.change_nml(
+                    self, filename, "croco_output_time_steps", "dt_his", dt_his_hours
+                )
+
+    def change_nml_output_time_steps_dtrst(self, filename, ntimes, min_dt=1.0):
+        full_filename = os.path.join(self.dirname, filename)
+        nml = f90nml.read(full_filename)
+        # Check section exists
+        if "croco_end_date" in nml:
+            # Check param exists within the section
+            if "end_date" in nml["croco_end_date"]:
+                dt = nml["croco_time_stepping"]["dt"]
+                duration = math.ceil(max(dt * ntimes, min_dt))
+                dt_rst_hours = duration / 3600.0
+                self.change_nml(
+                    self, filename, "croco_output_time_steps", "dt_rst", dt_rst_hours
+                )
+
+    def change_nml_end_date(self, filename, ntimes, min_dt=1.0):
+        full_filename = os.path.join(self.dirname, filename)
+        nml = f90nml.read(full_filename)
+        # Check section exists
+        if "croco_end_date" in nml:
+            # Check param exists within the section
+            if "end_date" in nml["croco_end_date"]:
+                dt = nml["croco_time_stepping"]["dt"]
+                duration = math.ceil(max(dt * ntimes, min_dt))
+                datetime_start = parse_datetime(nml["croco_start_date"]["start_date"])
+                datetime_end = datetime_start + timedelta(seconds=duration)
+                end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
+                self.change_nml(self, filename, "croco_end_date", "end_date", end_date)
+
+    def change_nml(self, filename, nml_section_name, nml_param_name, values):
+        """Change value in a CROCO namelist file."""
+        full_filename = os.path.join(self.dirname, filename)
+        Messaging.step(
+            f"Patching {nml_section_name}/{nml_param_name} in {full_filename}"
+        )
+        nml = f90nml.read(full_filename)
+        nml.setdefault(nml_section_name, f90nml.Namelist())
+        nml[nml_section_name][nml_param_name] = values
         nml.write(full_filename, force=True)
 
     def change_card_history_nwrt(self, filename):
