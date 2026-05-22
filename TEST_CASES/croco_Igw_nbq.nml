@@ -14,3 +14,9 @@
    theta_b = 0.0d0
    Tcline = 1.e3   
 /
+
+&croco_time_stepping_nbq
+  ndtnbq = 10
+  csound_nbq = 1500
+  visc2_nbq = 1.d0
+/
