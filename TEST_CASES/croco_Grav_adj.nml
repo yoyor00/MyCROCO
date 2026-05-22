@@ -8,3 +8,10 @@
   ndtfast= 10
   ninfo = 90
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 90
+  nrpfhis = 0
+  hisname = "gravadj_his.nc"
+/

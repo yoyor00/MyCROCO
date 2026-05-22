@@ -10,9 +10,6 @@ restart:          NRST, NRPFRST / filename
                    2592    -1
     croco_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T      36     0
-    croco_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      36     0
     croco_avg.nc

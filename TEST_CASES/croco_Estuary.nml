@@ -16,3 +16,10 @@
   dt_avg = 1.0
   dt_rst = 24.0
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 100
+  nrpfhis = 0
+  hisname = "estuary_his.nc"
+/

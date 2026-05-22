@@ -12,9 +12,6 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                   1000000     -1
                           movbat_rst.nc
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     1005        0 
-                          movbat_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T    T  T   20*T 

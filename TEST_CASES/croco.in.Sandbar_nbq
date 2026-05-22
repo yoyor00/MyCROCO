@@ -24,10 +24,6 @@ restart:          NRST, NRPFRST / filename
                   180000   -1
                           sandbar_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename
-            T     6000       0
-                          sandbar_his.nc
-
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   10*T
 

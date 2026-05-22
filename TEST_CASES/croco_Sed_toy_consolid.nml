@@ -17,3 +17,9 @@
   dt_rst = 24
 /
 
+&croco_history
+  ldefhis = T
+  nwrt = 3600
+  nrpfhis = 0
+  hisname = "sed_toy_consolid_his.nc"
+/

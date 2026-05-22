@@ -17,3 +17,10 @@
   dt_rst = 24
 /
 
+&croco_history
+  ldefhis = T
+  nwrt = 400
+  nrpfhis = 0
+  hisname = "seagrass_his.nc"
+/
+

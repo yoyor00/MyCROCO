@@ -23,10 +23,6 @@ restart:          NRST, NRPFRST / filename
                   1800   -1
                           rip_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename
-            T     300        0
-                          rip_his.nc
-
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     1800         0
                           rip_avg.nc

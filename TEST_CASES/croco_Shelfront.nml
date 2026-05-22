@@ -8,3 +8,10 @@
   ndtfast= 50
   ninfo = 1
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 72
+  nrpfhis = 0
+  hisname = "shelfront_his.nc"
+/

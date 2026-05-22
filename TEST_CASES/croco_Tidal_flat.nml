@@ -16,3 +16,10 @@
   dt_avg = 24
   dt_rst = 24
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 100
+  nrpfhis = 0
+  hisname = "tidal_flat_his.nc"
+/

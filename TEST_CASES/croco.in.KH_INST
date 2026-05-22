@@ -14,10 +14,6 @@ restart:          NRST, NRPFRST / filename
                   1600      -1
                           khinst_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     400      0 
-                         khinst_his.nc 
-
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                          T    T    F    T  F   10*T 
 

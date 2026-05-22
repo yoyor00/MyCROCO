@@ -14,3 +14,10 @@
   csound_nbq = 10
   visc2_nbq = 1.e-2
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 400
+  nrpfhis = 0
+  hisname = "khinst_his.nc"
+/

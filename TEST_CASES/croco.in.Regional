@@ -23,10 +23,6 @@ initial: NRREC / filename
 restart:          NRST, NRPFRST / filename
                    384    -1
     CROCO_FILES/croco_rst.nc
-    
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T      48     0
-    CROCO_FILES/croco_his.nc
 
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      48     0

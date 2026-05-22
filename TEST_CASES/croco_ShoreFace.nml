@@ -8,3 +8,10 @@
   ndtfast= 30
   ninfo = 72
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 720
+  nrpfhis = 0
+  hisname = "shoreface_his.nc"
+/

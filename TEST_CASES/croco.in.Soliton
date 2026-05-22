@@ -7,10 +7,6 @@ restart:          NRST, NRPFRST / filename
                   1200      -1
                           soliton_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T      80      0 
-                          soliton_his.nc
-
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      80      0
                           soliton_avg.nc

@@ -8,3 +8,10 @@
   ndtfast= 60
   ninfo = 1
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 120
+  nrpfhis = 0
+  hisname = "scm_his.nc"
+/

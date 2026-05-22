@@ -8,3 +8,10 @@
   ndtfast= 1
   ninfo = 5
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 80
+  nrpfhis = 0
+  hisname = "soliton_his.nc"
+/

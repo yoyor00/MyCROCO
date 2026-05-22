@@ -10,10 +10,6 @@ restart:          NRST, NRPFRST / filename
                   3600      -1
                           equator_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     30      0 
-                          equator_his.nc
-
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   T T 
 

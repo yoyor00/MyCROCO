@@ -12,9 +12,6 @@ restart:          NRST, NRPFRST / filename
                   20000000      -1
                           basin_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     90       0 
-                          basin_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     3240     0
                           basin_avg.nc

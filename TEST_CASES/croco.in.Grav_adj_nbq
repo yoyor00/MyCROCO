@@ -14,10 +14,6 @@ restart:          NRST, NRPFRST / filename
                   1000      -1
                           gravadj_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T      40        0 
-                          gravadj_his.nc
-
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                          T   T    T     T   T   T F 
 

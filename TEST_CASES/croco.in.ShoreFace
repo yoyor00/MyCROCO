@@ -24,10 +24,6 @@ restart:          NRST, NRPFRST / filename
                   7200   -1
                           shoreface_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename
-            T     720       0
-                          shoreface_his.nc
-
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     720        0
                           shoreface_avg.nc

@@ -10,11 +10,6 @@ restart:          NRST, NRPFRST / filename
                    1728000    -1
                           sed_toy_consolid_rst.nc
 
-                                                    
-history: LDEFHIS, NWRT, NRPFHIS / filename
-            T      3600     0
-                          sed_toy_consolid_his.nc
-
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      3600     0
                           sed_toy_consolid_avg.nc

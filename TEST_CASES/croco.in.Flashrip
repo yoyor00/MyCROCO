@@ -19,10 +19,6 @@ restart:          NRST, NRPFRST / filename
                   17680   -1
                           rip_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename
-            T     1040        0
-                          rip_his.nc
-
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     1040         0
                           rip_avg.nc

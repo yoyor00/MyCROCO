@@ -14,3 +14,10 @@
   csound_nbq = 10
   visc2_nbq = 0.d0
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 1005
+  nrpfhis = 0
+  hisname = "movbat_his.nc"
+/

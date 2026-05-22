@@ -8,3 +8,10 @@
   ndtfast= 10
   ninfo = 200
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 3000
+  nrpfhis = 0
+  hisname = "sandbar_his.nc"
+/

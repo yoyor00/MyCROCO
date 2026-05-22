@@ -17,3 +17,9 @@
   dt_rst = 4.0
 /
 
+&croco_history
+  ldefhis = T
+  nwrt = 18000
+  nrpfhis = 0
+  hisname = "ana_dune_his.nc"
+/

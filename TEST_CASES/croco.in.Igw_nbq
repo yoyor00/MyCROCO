@@ -15,9 +15,7 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                    5    -1
                           igw_rst.nc
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     5      0
-                          igw_his.nc
+
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      259200     0
                           igw_avg.nc

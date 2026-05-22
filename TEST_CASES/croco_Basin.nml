@@ -12,3 +12,10 @@
 &croco_logfile
   fname_logfile = "basin.log"
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 90
+  nrpfhis = 0
+  hisname = "basin_his.nc"
+/

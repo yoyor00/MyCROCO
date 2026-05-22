@@ -8,3 +8,10 @@
   ndtfast= 48
   ninfo = 1
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 82
+  nrpfhis = 0
+  hisname = "upwelling_his.nc"
+/

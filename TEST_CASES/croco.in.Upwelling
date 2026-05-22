@@ -10,10 +10,6 @@ restart:          NRST, NRPFRST / filename
                   410      -1
                           upwelling_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     82      0 
-                          upwelling_his.nc
-
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     82      0
                           upwelling_avg.nc

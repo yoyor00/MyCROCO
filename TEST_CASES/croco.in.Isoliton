@@ -14,10 +14,6 @@ restart:          NRST, NRPFRST / filename
                   7000      -1
                           isoliton_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     20          0 
-                          isoliton_his.nc
-
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                          T   T    T     T   T   T F 
 

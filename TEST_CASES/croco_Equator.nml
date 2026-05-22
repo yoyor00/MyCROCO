@@ -14,3 +14,10 @@
   ndtfast= 45
   ninfo = 1
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 30
+  nrpfhis = 0
+  hisname = "equator_his.nc"
+/

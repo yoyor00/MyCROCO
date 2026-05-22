@@ -16,9 +16,7 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                    3600    -1
                           scm_rst.nc
-history: LDEFHIS, NWRT, NRPFHIS / filename
-            T      120     0
-                          scm_his.nc
+
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      120     0
                           scm_avg.nc

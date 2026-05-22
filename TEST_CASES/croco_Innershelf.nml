@@ -8,3 +8,10 @@
   ndtfast= 50
   ninfo = 10
 /
+
+&croco_history
+  ldefhis = T
+  nwrt = 5760
+  nrpfhis = 0
+  hisname = "innershelf_his.nc"
+/

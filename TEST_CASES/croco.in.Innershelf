@@ -11,10 +11,6 @@ restart:          NRST, NRPFRST / filename
                   5760      -1
                           innershelf_rst.nc
 
-history: LDEFHIS, NWRT, NRPFHIS / filename 
-            T     5760      0 
-                          innershelf_his.nc
-
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     576       0
                           innershelf_avg.nc
