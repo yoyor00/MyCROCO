@@ -139,8 +139,9 @@ contains
       use param, ONLY: stdout
 #if defined MPI
       use scalars, ONLY: mynode   ! needed for MPI_master_only
-#endif
       use scalars, ONLY: mynode2, NNODES2
+#endif
+
       implicit none
 #ifdef ENSEMBLE
       ! needed for ENSEMBLE cmember

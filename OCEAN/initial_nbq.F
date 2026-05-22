@@ -52,7 +52,10 @@
 !
 !======================================================================
 !
-      use croco_namelist, only: dt, ndtnbq, csound_nbq
+      use croco_namelist, only: dt
+# ifdef NBQ
+      use croco_namelist, only: ndtnbq, csound_nbq
+# endif
       implicit none
       integer  Istr, Iend, Jstr, Jend
 # ifdef MPI
