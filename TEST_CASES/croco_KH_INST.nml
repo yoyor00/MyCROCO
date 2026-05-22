@@ -4,7 +4,7 @@
 
 &croco_time_stepping
   ntimes = 1600
-  dt = 0.300
+  dt = 0.3
   ndtfast= 20
   ninfo = 50
 /
@@ -12,5 +12,5 @@
 &croco_time_stepping_nbq
   ndtnbq = 1
   csound_nbq = 10
-  visc2_nbq = 1.e-2
+  visc2_nbq = 1.e2
 /
