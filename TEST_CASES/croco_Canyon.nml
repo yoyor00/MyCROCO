@@ -5,7 +5,7 @@
 &croco_time_stepping
   ntimes = 240
   dt = 360.000
-  ndtfast= 65
+  ndtfast = 65
   ninfo = 1
 /
 

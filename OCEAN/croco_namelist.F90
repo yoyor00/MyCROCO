@@ -16,7 +16,6 @@
 !
 !  Purpose : Declaration and storage of all namelist parameters.
 !            Default values are set here.
-!            No I/O, no initialisation of derived parameters.
 !=======================================================================
 
 MODULE croco_namelist
@@ -346,7 +345,6 @@ contains
 
    end subroutine fatal_nml_error
 
-
    !---------------------------------------------------------------------
    !  init_time_stepping
    !  Derive dtfast from dt and ndtfast.
@@ -506,105 +504,104 @@ contains
    end subroutine init_calendar
 #endif
 
-
    !---------------------------------------------------------------------
    !  check_time_stepping
    !  Validate &croco_time_stepping parameters.
    !---------------------------------------------------------------------
-subroutine check_time_stepping(ierr)
-   use param, ONLY: stdout, NWEIGHT
+   subroutine check_time_stepping(ierr)
+      use param, ONLY: stdout, NWEIGHT
 #if defined MPI
-   use scalars, ONLY: mynode   ! needed for MPI_master_only
+      use scalars, ONLY: mynode   ! needed for MPI_master_only
 #endif
-   implicit none
-   integer, intent(inout) :: ierr
+      implicit none
+      integer, intent(inout) :: ierr
 
-   if (dt == 0.0) then
-      MPI_master_only write (stdout, '(a,f10.1)') &
-         'Error - Null baroclinic time step dt: ', dt
-      ierr = ierr + 1
-   end if
+      if (dt == 0.0) then
+         MPI_master_only write (stdout, '(a,f10.1)') &
+            'Error - Null baroclinic time step dt: ', dt
+         ierr = ierr + 1
+      end if
 
-   if (ntimes == 0) then
-      MPI_master_only write (stdout, '(a,i0)') &
-         'Error - Null number of time steps ntimes: ', ntimes
-      ierr = ierr + 1
-   end if
+      if (ntimes == 0) then
+         MPI_master_only write (stdout, '(a,i0)') &
+            'Error - Null number of time steps ntimes: ', ntimes
+         ierr = ierr + 1
+      end if
 
-   if (NWEIGHT < (2*ndtfast - 1)) then
-      MPI_master_only write (stdout, '(a,i0)') &
-         'Error - Number of 2D time steps (2*ndtfast-1): ', 2*ndtfast - 1
-      MPI_master_only write (stdout, '(a,i0)') &
-         '        exceeds barotropic weight dimension NWEIGHT: ', NWEIGHT
-      ierr = ierr + 1
-   end if
+      if (NWEIGHT < (2*ndtfast - 1)) then
+         MPI_master_only write (stdout, '(a,i0)') &
+            'Error - Number of 2D time steps (2*ndtfast-1): ', 2*ndtfast - 1
+         MPI_master_only write (stdout, '(a,i0)') &
+            '        exceeds barotropic weight dimension NWEIGHT: ', NWEIGHT
+         ierr = ierr + 1
+      end if
 
-end subroutine check_time_stepping
+   end subroutine check_time_stepping
 
 !---------------------------------------------------------------------
 !  check_history
 !  Validate &croco_history parameters.
 !---------------------------------------------------------------------
-subroutine check_history(ierr)
-   use param, ONLY: stdout
+   subroutine check_history(ierr)
+      use param, ONLY: stdout
 #if defined MPI
-   use scalars, ONLY: mynode
+      use scalars, ONLY: mynode
 #endif
-   implicit none
-   integer, intent(inout) :: ierr
+      implicit none
+      integer, intent(inout) :: ierr
 
-   if (nwrt <= 0) then
-      MPI_master_only write (stdout, '(a,i0)') &
-         'Error - History output frequency nwrt must be > 0: ', nwrt
-      ierr = ierr + 1
-   end if
+      if (nwrt <= 0) then
+         MPI_master_only write (stdout, '(a,i0)') &
+            'Error - History output frequency nwrt must be > 0: ', nwrt
+         ierr = ierr + 1
+      end if
 
-   if (nrpfhis < -1) then
-      MPI_master_only write (stdout, '(a,i0)') &
-         'Error - nrpfhis must be >= -1: ', nrpfhis
-      ierr = ierr + 1
-   end if
+      if (nrpfhis < -1) then
+         MPI_master_only write (stdout, '(a,i0)') &
+            'Error - nrpfhis must be >= -1: ', nrpfhis
+         ierr = ierr + 1
+      end if
 
-end subroutine check_history
+   end subroutine check_history
 
 #ifdef NBQ
 !---------------------------------------------------------------------
 !  check_time_stepping_nbq
 !  Validate &croco_time_stepping_nbq parameters.
 !---------------------------------------------------------------------
-subroutine check_time_stepping_nbq(ierr)
-   use param, ONLY: stdout
+   subroutine check_time_stepping_nbq(ierr)
+      use param, ONLY: stdout
 #  if defined MPI
-   use scalars, ONLY: mynode
+      use scalars, ONLY: mynode
 #  endif
-   implicit none
-   integer, intent(inout) :: ierr
+      implicit none
+      integer, intent(inout) :: ierr
 
-   if (ndtnbq <= 0) then
-      MPI_master_only write (stdout, '(a,i0)') &
-         'Error - NBQ acoustic substep ratio ndtnbq must be > 0: ', ndtnbq
-      ierr = ierr + 1
-   end if
+      if (ndtnbq <= 0) then
+         MPI_master_only write (stdout, '(a,i0)') &
+            'Error - NBQ acoustic substep ratio ndtnbq must be > 0: ', ndtnbq
+         ierr = ierr + 1
+      end if
 
-   if (csound_nbq > 1500.0) then
-      MPI_master_only write (stdout, '(a,f12.4,a)') &
-         'Error - NBQ pseudo-acoustic speed csound_nbq = ', csound_nbq, &
-         ' must not exceed real acoustic speed (1500 m/s).'
-      ierr = ierr + 1
-   end if
+      if (csound_nbq > 1500.0) then
+         MPI_master_only write (stdout, '(a,f12.4,a)') &
+            'Error - NBQ pseudo-acoustic speed csound_nbq = ', csound_nbq, &
+            ' must not exceed real acoustic speed (1500 m/s).'
+         ierr = ierr + 1
+      end if
 
-   if (visc2_nbq < 0.0) then
-      MPI_master_only write (stdout, '(a,f12.4,a)') &
-         'Error - NBQ bulk viscosity visc2_nbq = ', visc2_nbq, &
-         ' must be positive.'
-      ierr = ierr + 1
-   end if
+      if (visc2_nbq < 0.0) then
+         MPI_master_only write (stdout, '(a,f12.4,a)') &
+            'Error - NBQ bulk viscosity visc2_nbq = ', visc2_nbq, &
+            ' must be positive.'
+         ierr = ierr + 1
+      end if
 
-   ! NOTE: the check csound_nbq > 5*sqrt(g*hmax) requires hmax which
-   ! is not yet available at namelist-reading time. It should be moved
-   ! to the model initialisation phase once hmax is known.
+      ! NOTE: the check csound_nbq > 5*sqrt(g*hmax) requires hmax which
+      ! is not yet available at namelist-reading time. It should be moved
+      ! to the model initialisation phase once hmax is known.
 
-end subroutine check_time_stepping_nbq
+   end subroutine check_time_stepping_nbq
 #endif
 
 END MODULE croco_namelist

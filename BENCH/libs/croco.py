@@ -435,7 +435,7 @@ class Croco:
         filename_nml = self.croco_nmlfile
 
         # for all case (write/read), put ldefhis to F
-        self.change_card_history_ldefhis(filename)
+        self.change_nml(filename_nml, "croco_history", "ldefhis", False)
 
         if self.restarted:
             # prepare 2 files for the restarted run
@@ -570,25 +570,6 @@ class Croco:
             self.apply_patches(patches)
             delete_lines_from_file(
                 full_filename, "diagnosticsM:", line_offset=2, num_lines=1
-            )
-
-    def change_card_history_ldefhis(self, filename):
-        full_filename = os.path.join(self.dirname, filename)
-        # Check time_stepping is a card in this case
-        if len(extract_elements_from_file(full_filename, "history")) > 0:
-            HISTORY_LINE = extract_elements_from_file(full_filename, "history")
-            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 0, "F")
-            patches = {
-                filename: {
-                    "mode": "insert-after",
-                    "what": " history:",
-                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
-                    "descr": "change output to LDEFHIS=F",
-                }
-            }
-            self.apply_patches(patches)
-            delete_lines_from_file(
-                full_filename, "history:", line_offset=2, num_lines=1
             )
 
     def setup_case(self):
