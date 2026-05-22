@@ -14,3 +14,9 @@
   csound_nbq = 100
   visc2_nbq = 0d0
 /
+
+&croco_s_coord
+   theta_s = 0.0d0
+   theta_b = 8.0d0
+   Tcline = 2.0d0   
+/

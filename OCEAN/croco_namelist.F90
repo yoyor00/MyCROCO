@@ -24,6 +24,13 @@ MODULE croco_namelist
    real :: visc2_nbq = 0.01d0
 #endif
 
+#ifdef SOLVE3D
+   ! &croco_s_coord
+   real :: theta_s = 7.0d0
+   real :: theta_b = 2.0d0
+   real :: Tcline = 200.0d0
+#endif
+
 #ifdef USE_CALENDAR
    ! &croco_use_calendar
    character(len=19) :: start_date = '2000-01-01 00:00:00'
@@ -73,6 +80,9 @@ contains
 #ifdef NBQ
       namelist /croco_time_stepping_nbq/ ndtnbq, csound_nbq, visc2_nbq
 #endif
+#ifdef SOLVE3D
+      namelist /croco_s_coord/ theta_s, theta_b, Tcline
+#endif
 #ifdef USE_CALENDAR
       namelist /croco_use_calendar/ start_date, end_date, dt_his, dt_avg, dt_rst
 #endif
@@ -102,6 +112,12 @@ contains
       call check_nml_croco_time_stepping_nbq(ierr)
       call init_time_stepping_nbq_param
 # endif
+#ifdef SOLVE3D
+      read (nmlunit, nml=croco_s_coord, iostat=ios); rewind (nmlunit)
+      call warn_if_nml_missing(ios, "croco_s_coord")
+      call check_nml_croco_s_coord(ierr)
+      ! TODO call init_s_coord_param
+#endif
 
 #ifdef USE_CALENDAR
       read (nmlunit, nml=croco_use_calendar, iostat=ios); rewind (nmlunit)
@@ -127,6 +143,9 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_time_stepping)
 #ifdef NBQ
       MPI_master_only WRITE (stdout, nml=croco_time_stepping_nbq)
+#endif
+#ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_s_coord)
 #endif
 #ifdef USE_CALENDAR
       MPI_master_only WRITE (stdout, nml=croco_use_calendar)
@@ -254,6 +273,38 @@ contains
          ierr = ierr + 1
       end if
    end subroutine check_nml_croco_time_stepping_nbq
+#endif
+
+#ifdef SOLVE3D
+   subroutine check_nml_croco_s_coord(ierr)
+      use param, ONLY: stdout
+#if defined MPI
+      use scalars, ONLY: mynode   ! needed for MPI_master_only
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      if (theta_s < 0.d0) then
+         MPI_master_only write (stdout, '(a,f12.4,a)') 'Error - S-coord surface control parameter theta_s = ', theta_s, &
+            ' must be positive.'
+         ierr = ierr + 1
+      end if
+      if (theta_s > 20.d0) then
+         MPI_master_only write (stdout, '(a,f12.4,a)') 'Error - S-coord surface control parameter theta_s = ', theta_s, &
+            ' is too large. It should not exceed 20.'
+         ierr = ierr + 1
+      end if
+      if (theta_b < 0.d0) then
+         MPI_master_only write (stdout, '(a,f12.4,a)') 'Error - S-coord bottom control parameter theta_b = ', theta_b, &
+            ' must be positive.'
+         ierr = ierr + 1
+      end if
+      if (Tcline < 0.d0) then
+         MPI_master_only write (stdout, *) 'Error - S-coordinate surface/bottom layer width used in', &
+            'vertical coordinate stretching Tcline = ', Tcline, &
+            ' must be positive.'
+         ierr = ierr + 1
+      end if
+   end subroutine check_nml_croco_s_coord
 #endif
 
 #ifdef USE_CALENDAR

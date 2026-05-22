@@ -339,16 +339,6 @@
         xios_origin_date_in_sec=tool_datosec(xios_origin_date)
 #endif
 
-#ifdef SOLVE3D
-!
-! Vertical S-coordinates parameters.
-!
-      elseif (keyword(1:kwlen).eq.'S-coord') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) theta_s, theta_b, Tcline
-
-#endif
-
 
 !
 ! Initial conditions file name. Check its availability (in the case
@@ -2219,18 +2209,6 @@ c        close(testunit)
 
       ! start of summary writing
       if (ierr.eq.0) then
-
-
-#ifdef SOLVE3D
-          MPI_master_only write(stdout,
-     &                        '(3(1pe10.3,2x,A,1x,A/),32x,A)')
-     &    theta_s, 'theta_s  S-coordinate surface control',
-     &                                               'parameter.',
-     &    theta_b, 'theta_b  S-coordinate bottom control',
-     &                                               'parameter.',
-     &    Tcline,  'Tcline   S-coordinate surface/bottom layer',
-     &  'width used in', 'vertical coordinate stretching, meters.'
-#endif
 
 #ifdef ANA_INITIAL
           if (nrrec.gt.0) then

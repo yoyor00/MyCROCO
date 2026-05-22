@@ -112,12 +112,12 @@
         "descr": "Set mesh size to (200 x 200 x 50)",
       },
       // Change the dt
-      "TEST_CASES/croco.in.Basin": {
+      "TEST_CASES/croco_Basin.nml": {
         "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                3240     9600     65      1",
-        "by": "                100      2400     65      1",
-        "descr": "Set stepping (steps=100, dt=2400, fast=65)",
+        "after": "&croco_time_stepping",
+        "what": " dt = 9600",
+        "by": " dt = 2400",
+        "descr": "Set stepping (dt=2400)",
       },
     },
     "check_outputs": ["basin_his.nc"],
@@ -148,12 +148,12 @@
         "descr": "Set mesh size to (400 x 400 x 100)",
       },
       // CHange the dt
-      "TEST_CASES/croco.in.Basin": {
+      "TEST_CASES/croco_Basin.nml": {
         "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                3240     9600     65      1",
-        "by": "                100      1200     65      1",
-        "descr": "Set stepping (steps=100, dt=1200, fast=65)",
+        "after": "&croco_time_stepping",
+        "what": " dt = 9600",
+        "by": " dt = 1200",
+        "descr": "Set stepping (dt=1200)",
       },
     },
     "check_outputs": ["basin_his.nc"],

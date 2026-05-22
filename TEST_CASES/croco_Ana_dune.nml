@@ -9,11 +9,8 @@
   ninfo = 100
 /
 
-&croco_use_calendar
-  start_date = '2019-01-01 00:00:00'
-  end_date = '2019-01-01 02:00:00'
-  dt_his = 0.5
-  dt_avg = 4.0
-  dt_rst = 4.0
+&croco_s_coord
+   theta_s = 0.0d0
+   theta_b = 0.0d0
+   Tcline = 10000   
 /
-

@@ -8,3 +8,9 @@
   ndtfast= 10
   ninfo = 200
 /
+
+&croco_s_coord
+   theta_s = 0.0d0
+   theta_b = 5.0d0
+   Tcline = 2.0d0   
+/

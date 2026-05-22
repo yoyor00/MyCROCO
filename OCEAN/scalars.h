@@ -79,10 +79,6 @@
 !
 ! xl, el   Physical size (m) of domain box in the XI-,ETA-directions.
 !
-! Tcline   Width (m) of surface or bottom boundary layer in which
-!          higher vertical resolution is required during stretching.
-! theta_s  S-coordinate surface control parameter, [0<theta_s<20].
-! theta_b  S-coordinate bottom control parameter, [0<theta_b<1].
 ! hc       S-coordinate parameter, hc=min(hmin,Tcline).
 !
 ! sc_r     S-coordinate independent variable, [-1 < sc < 0] at
@@ -151,7 +147,7 @@
      &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt
      &               , xl, el, visc2, visc4, gamma2
 #ifdef SOLVE3D
-      real  theta_s,   theta_b,   Tcline,  hc
+      real hc
 # ifndef M3FAST_SEDLAYERS
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
 # else
@@ -326,7 +322,7 @@
      &           , Zobt,       Cdb_min,   Cdb_max
      &           , xl, el,    visc2,     visc4,   gamma2
 #ifdef SOLVE3D
-     &           , theta_s,   theta_b,   Tcline,  hc
+     &           , hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
      &           , rx0,       rx1
 # ifdef TRACERS
