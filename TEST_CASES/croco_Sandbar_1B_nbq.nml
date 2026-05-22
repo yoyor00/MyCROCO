@@ -20,3 +20,4 @@
    theta_b = 8.0d0
    Tcline = 2.d0   
 /
+! END OF NAMELIST
