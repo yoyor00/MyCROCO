@@ -67,7 +67,7 @@
       !
       ! See ncscrum.h for r2dvar ...
       SELECT CASE (TRIM(cdgrd))
-      CASE ("rho")
+      CASE ("rho", "rho_unmasked")
          vtype=r2dvar
          nx_glo=LLm+2
          ny_glo=MMm+2
@@ -75,11 +75,11 @@
          vtype=r2dvar
          nx_glo=LLm+2
          ny_glo=MMm+2
-      CASE ("u")
+      CASE ("u", "u_unmasked")
          vtype=u2dvar
          nx_glo=LLm+1
          ny_glo=MMm+2
-      CASE ("v")
+      CASE ("v", "v_unmasked")
          vtype=v2dvar
          nx_glo=LLm+2
          ny_glo=MMm+1
@@ -1902,6 +1902,9 @@ C 				  endif
       CALL set_grid( "v"  , lonv, latv )
       CALL set_grid( "w"  , lonr, latr )
       CALL set_grid( "psi", lonu, latv )
+      CALL set_grid( "rho_unmasked", lonr, latr )
+      CALL set_grid( "u_unmasked"  , lonu, latu )
+      CALL set_grid( "v_unmasked"  , lonv, latv )
 # else
       CALL set_grid( "rho", xr, yr )
       CALL set_grid( "b"  , xr, yr )
@@ -1909,6 +1912,9 @@ C 				  endif
       CALL set_grid( "v"  , xr, yp )
       CALL set_grid( "w"  , xr, yr )
       CALL set_grid( "psi", xp, yp )
+      CALL set_grid( "rho_unmasked", xr, yr )
+      CALL set_grid( "u_unmasked"  , xp, yr )
+      CALL set_grid( "v_unmasked"  , xr, yp )
 # endif
 
 # ifdef MASKING
@@ -2850,10 +2856,10 @@ c !$acc wait
 ! but I found it quiet ugly
 
       if (xios_field_is_active("rho")) then
-      call xios_send_field("rho",rho)
+      call xios_send_field("rho",rho+rho0-1000.)
       endif
       if (xios_field_is_active("rho_surf")) then
-      call xios_send_field("rho_surf",rho(:,:,N))
+      call xios_send_field("rho_surf",rho(:,:,N)+rho0-1000.)
       endif
 
 # if defined ANA_VMIX || defined LMD_MIXING \

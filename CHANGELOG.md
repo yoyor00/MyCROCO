@@ -71,6 +71,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   part of the computation of omega (#447)
 
 - BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
+- XIOS : Align density anomaly computation with native netCDF writer,
+  now with respect to 1000 kg m-3 (Issue #484)
+
+- XIOS : Unmask output grid/geometry variables so that they keep valid
+  values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
 ### Deprecated
 
