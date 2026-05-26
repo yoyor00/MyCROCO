@@ -4,14 +4,23 @@
 
 &croco_time_stepping
   ntimes = 800
-  dt = 540.000
+  dt = 540
   ndtfast = 60
   ninfo = 1
 /
 
+&croco_s_coord
+  theta_s = 3.0d0
+  theta_b = 0.0d0
+  Tcline = 50.d0
+/
+
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 40
   nrpfhis = 0
   hisname = "river_his.nc"
 /
+
+
+! End of namelist

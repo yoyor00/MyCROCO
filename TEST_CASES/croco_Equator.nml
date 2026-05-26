@@ -1,23 +1,26 @@
-!
-! Based on:
-! Boccaletti, G., R.C. Pacanowski, G.H. Philander and A.V. Fedorov, 2004,
-! The Thermal Structure of the Upper Ocean, J.Phys.Oceanogr., 34, 888-902.
-!
-
 &croco_title
   title = "Equator Example"
 /
 
 &croco_time_stepping
   ntimes = 3600
-  dt = 8640.000
+  dt = 8640
   ndtfast = 45
   ninfo = 1
 /
 
+&croco_s_coord
+  theta_s = 5.0d0
+  theta_b = 0.0d0
+  Tcline = 10.d0
+/
+
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 30
   nrpfhis = 0
   hisname = "equator_his.nc"
 /
+
+
+! End of namelist

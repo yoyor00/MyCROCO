@@ -1,6 +1,16 @@
+title:
+       Dune3D test case (Dhysed Bosse / Mustang sediment model)
+
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+              172800    1.      20      10
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0     0.0d0      10000.0d0
+
+start_date:
+2019-01-01 00:00:00
+end_date: 
+2019-01-03 00:00:00
 
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                    24       24       24
@@ -11,6 +21,10 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                    1728000    -1
     dune3d_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename 
+            T      86400     0
+    dune3d_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T

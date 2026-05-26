@@ -1,3 +1,8 @@
+title:
+        SHOREFACE Example 
+
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+                7200     5.       30       72 
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0.0d0      1.e16
@@ -23,6 +28,10 @@ wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
 restart:          NRST, NRPFRST / filename
                   7200   -1
                           shoreface_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename
+            T     720       0
+                          shoreface_his.nc
 
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     720        0

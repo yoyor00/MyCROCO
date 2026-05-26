@@ -1,3 +1,9 @@
+title:
+        RIP Example 
+
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+                1800      4        20      10
+
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       0.0d0      1.e16
 
@@ -22,6 +28,10 @@ wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
 restart:          NRST, NRPFRST / filename
                   1800   -1
                           rip_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename
+            T     300        0
+                          rip_his.nc
 
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     1800         0

@@ -1,3 +1,8 @@
+title:
+	Canyon Example
+
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+                240     360     65      1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
           1.0d0      0.0d0        20.d0
@@ -9,6 +14,10 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                   240      -1
                           canyon_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename 
+            T      120      0 
+                          canyon_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   T T

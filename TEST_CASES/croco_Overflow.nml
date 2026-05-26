@@ -4,14 +4,23 @@
 
 &croco_time_stepping
   ntimes = 2160
-  dt = 200.000
+  dt = 200
   ndtfast = 15
   ninfo = 10
 /
 
+&croco_s_coord
+  theta_s = 1.0d0
+  theta_b = 0.0d0
+  Tcline = 10.d0
+/
+
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 216
   nrpfhis = 0
   hisname = "over_his.nc"
 /
+
+
+! End of namelist

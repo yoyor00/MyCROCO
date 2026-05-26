@@ -1,4 +1,8 @@
+title:
+        SANDBAR Example 
 
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               36000      0.1      10     200
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0       5.0d0      2
@@ -22,6 +26,10 @@ wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
 restart:          NRST, NRPFRST / filename
                   18000   -1
                           sandbar_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename
+            T     3000       0
+                          sandbar_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   10*T

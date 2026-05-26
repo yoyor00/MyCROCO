@@ -1,3 +1,11 @@
+!
+! Keyword-based startup file 
+!
+title:
+	River run off  Example
+
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               800      540       60      1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            3.0d0      0.0d0        50.d0
@@ -9,6 +17,10 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                   800      -1
                           river_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename 
+            T      40       0 
+                          river_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T

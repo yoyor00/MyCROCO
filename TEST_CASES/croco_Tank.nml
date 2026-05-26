@@ -4,20 +4,29 @@
 
 &croco_time_stepping
   ntimes = 200
-  dt = 0.100
+  dt = 0.1
   ndtfast = 60
   ninfo = 100
 /
 
 &croco_time_stepping_nbq
   ndtnbq = 1
-  csound_nbq = 100
-  visc2_nbq = 0.d0
+  csound_nbq = 100.
+  visc2_nbq = 0.
+/
+
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 1.e16
 /
 
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 2
   nrpfhis = 0
   hisname = "tank_his.nc"
 /
+
+
+! End of namelist

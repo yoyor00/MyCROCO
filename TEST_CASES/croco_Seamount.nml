@@ -4,14 +4,23 @@
 
 &croco_time_stepping
   ntimes = 360
-  dt = 1000.000
+  dt = 1000
   ndtfast = 50
   ninfo = 1
 /
 
+&croco_s_coord
+  theta_s = 1.0d0
+  theta_b = 0.0d0
+  Tcline = 10.d0
+/
+
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 72
   nrpfhis = 0
   hisname = "seamount_his.nc"
 /
+
+
+! End of namelist

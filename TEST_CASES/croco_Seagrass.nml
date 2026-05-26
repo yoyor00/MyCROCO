@@ -4,23 +4,31 @@
 
 &croco_time_stepping
   ntimes = 80000
-  dt = 0.003
+  dt = 0.0025
   ndtfast = 20
   ninfo = 1
 /
 
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0d0
+  Tcline = 1000000000
+/
+
 &croco_use_calendar
-  start_date = '2019-01-01 00:00:00'
-  end_date = '2019-01-01 00:03:05'
+  start_date = "2019/01/01"
+  end_date = "2019/01/01"
   dt_his = 0.00006944444
   dt_avg = 24
   dt_rst = 24
 /
 
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 400
   nrpfhis = 0
   hisname = "seagrass_his.nc"
 /
 
+
+! End of namelist

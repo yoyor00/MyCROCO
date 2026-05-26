@@ -4,7 +4,7 @@
 
 &croco_time_stepping
   ntimes = 5
-  dt = 30.000
+  dt = 30.
   ndtfast = 60
   ninfo = 500
 /
@@ -12,13 +12,21 @@
 &croco_time_stepping_nbq
   ndtnbq = 10
   csound_nbq = 1500
-  visc2_nbq = 1.d0
+  visc2_nbq = 1.
+/
+
+&croco_s_coord
+  theta_s = 1
+  theta_b = 0
+  Tcline = 1.e3
 /
 
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 5
   nrpfhis = 0
   hisname = "igw_his.nc"
 /
 
+
+! End of namelist

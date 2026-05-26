@@ -4,7 +4,7 @@
 
 &croco_time_stepping
   ntimes = 1
-  dt = 1200.000
+  dt = 1200
   ndtfast = 60
   ninfo = 1
 /
@@ -12,21 +12,29 @@
 &croco_time_stepping_nbq
   ndtnbq = 1
   csound_nbq = 1000
-  visc2_nbq = 1.e-2
+  visc2_nbq = 0.01
+/
+
+&croco_s_coord
+  theta_s = 7.0d0
+  theta_b = 2.0d0
+  Tcline = 200.0d0
 /
 
 &croco_use_calendar
-  start_date = '2005-01-01 00:00:00'
-  end_date = '2005-01-03 00:00:00'
-  dt_his = 1.0
-  dt_avg = 6.0
-  dt_rst = 12.0
+  start_date = "2014-01-04 00:00:00"
+  end_date = "2016-01-01 00:00:00"
+  dt_his = 1
+  dt_avg = 6
+  dt_rst = 12
 /
 
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 216
   nrpfhis = 0
   hisname = "CROCO_FILES/croco_his.nc.1"
 /
 
+
+! End of namelist

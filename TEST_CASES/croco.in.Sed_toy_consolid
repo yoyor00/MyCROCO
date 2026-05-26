@@ -1,6 +1,17 @@
+title:
+        SED TOY Mixed bed Consolidation TEST MODEL
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+                1728000      2.      20      40
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            1.0         0.8       0.
+
+start_date:
+2019-01-01 00:00:00
+end_date:
+2019-02-10 00:00:00
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                     1         1         24
 
 initial: NRREC  filename
           0 
@@ -9,6 +20,11 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                    1728000    -1
                           sed_toy_consolid_rst.nc
+
+                                                    
+history: LDEFHIS, NWRT, NRPFHIS / filename
+            T      3600     0
+                          sed_toy_consolid_his.nc
 
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      3600     0

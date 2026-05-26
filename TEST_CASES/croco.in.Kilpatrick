@@ -1,4 +1,7 @@
-
+title:
+        KILPATRICK
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+                1296      100      2      1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0     2.0d0      200.0d0
@@ -10,6 +13,9 @@ restart:          NRST, NRPFRST / filename
                    2592    -1
     croco_rst.nc
 
+history: LDEFHIS, NWRT, NRPFHIS / filename 
+            T      36     0
+    croco_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      36     0
     croco_avg.nc

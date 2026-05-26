@@ -4,14 +4,23 @@
 
 &croco_time_stepping
   ntimes = 36000
-  dt = 0.100
+  dt = 0.1
   ndtfast = 10
   ninfo = 200
 /
 
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 5.0d0
+  Tcline = 2
+/
+
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 3000
   nrpfhis = 0
   hisname = "sandbar_his.nc"
 /
+
+
+! End of namelist

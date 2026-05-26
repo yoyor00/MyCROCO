@@ -4,14 +4,23 @@
 
 &croco_time_stepping
   ntimes = 410
-  dt = 960.000
+  dt = 960
   ndtfast = 48
   ninfo = 1
 /
 
+&croco_s_coord
+  theta_s = 7.0d0
+  theta_b = 0.0d0
+  Tcline = 50.d0
+/
+
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 82
   nrpfhis = 0
   hisname = "upwelling_his.nc"
 /
+
+
+! End of namelist

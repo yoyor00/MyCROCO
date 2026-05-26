@@ -4,22 +4,31 @@
 
 &croco_time_stepping
   ntimes = 8640
-  dt = 15.000
+  dt = 15
   ndtfast = 5
   ninfo = 100
 /
 
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 500.0d0
+/
+
 &croco_use_calendar
-  start_date = '2019-01-01 00:00:00'
-  end_date = '2019-01-03 00:00:00'
+  start_date = "2019-01-01 00:00:00"
+  end_date = "2019-01-03 00:00:00"
   dt_his = 0.25
   dt_avg = 24
   dt_rst = 24
 /
 
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 100
   nrpfhis = 0
   hisname = "tidal_flat_his.nc"
 /
+
+
+! End of namelist

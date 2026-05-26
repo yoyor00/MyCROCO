@@ -4,22 +4,31 @@
 
 &croco_time_stepping
   ntimes = 72000
-  dt = 0.100
+  dt = 0.1
   ndtfast = 60
   ninfo = 100
 /
 
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0d0
+  Tcline = 10000
+/
+
 &croco_use_calendar
-  start_date = '2019-01-01 00:00:00'
-  end_date = '2019-01-01 02:00:00'
+  start_date = "2019-01-01 00:00:00"
+  end_date = "2019-01-01 02:00:00"
   dt_his = 0.5
-  dt_avg = 4.0
-  dt_rst = 4.0
+  dt_avg = 4
+  dt_rst = 4
 /
 
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 18000
   nrpfhis = 0
   hisname = "ana_dune_his.nc"
 /
+
+
+! End of namelist

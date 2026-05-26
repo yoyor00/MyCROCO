@@ -1,3 +1,7 @@
+title:
+        SCM TEST MODEL
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+                23040      30      60      1
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0      0.0d0     1.0d16
 grid:  filename
@@ -16,7 +20,9 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                    3600    -1
                           scm_rst.nc
-
+history: LDEFHIS, NWRT, NRPFHIS / filename
+            T      120     0
+                          scm_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      120     0
                           scm_avg.nc

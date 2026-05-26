@@ -1,4 +1,7 @@
-
+title:
+        IGW TEST MODEL
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               5760     150       60       10
 S-coord: THETA_S,   THETA_B,    Hc (m)
            0.0d0      0.0d0     1.0d16
 grid:  filename
@@ -13,7 +16,9 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                   5760    -1
                           igw_rst.nc
-
+history: LDEFHIS, NWRT, NRPFHIS / filename
+            T      72     0
+                          igw_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1     5760     0
                           igw_avg.nc

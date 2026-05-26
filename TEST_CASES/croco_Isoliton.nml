@@ -4,7 +4,7 @@
 
 &croco_time_stepping
   ntimes = 1400
-  dt = 0.200
+  dt = 0.20
   ndtfast = 25
   ninfo = 100
 /
@@ -15,9 +15,18 @@
   visc2_nbq = 1.e-2
 /
 
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 1.d16
+/
+
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 20
   nrpfhis = 0
   hisname = "isoliton_his.nc"
 /
+
+
+! End of namelist

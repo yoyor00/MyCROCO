@@ -1,4 +1,7 @@
-
+title:
+        IGW TEST MODEL
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+                 5    30.    60     500 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                     10          1500          1.
 S-coord: THETA_S,   THETA_B,    Hc (m)
@@ -15,7 +18,9 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                    5    -1
                           igw_rst.nc
-
+history: LDEFHIS, NWRT, NRPFHIS / filename 
+            T     5      0
+                          igw_his.nc
 averages: NTSAVG, NAVG, NRPFAVG / filename
             1      259200     0
                           igw_avg.nc

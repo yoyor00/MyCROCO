@@ -1,4 +1,8 @@
+title:
+        SANDBAR Example 
 
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               72000     0.05      10      100
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                     1          100           0.0
 
@@ -23,6 +27,10 @@ wci_history_fields:  SUP UST2D VST2D UST VST WST AKB AKW KVF CALP KAPS
 restart:          NRST, NRPFRST / filename
                   180000   -1
                           sandbar_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename
+            T     6000       0
+                          sandbar_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                         T    T    T     T  T   10*T

@@ -1,3 +1,8 @@
+title:
+        Vortex Example (DON'T FORGET make_vortex.m)
+
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               600      2880       50       1
 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                      1          200          1.
@@ -18,6 +23,10 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                   600   -1
                           TEST_CASES/VORTEX/vortex_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename
+            T      60      0
+                          vortex_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T

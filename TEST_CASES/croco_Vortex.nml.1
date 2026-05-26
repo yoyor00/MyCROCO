@@ -1,5 +1,5 @@
 &croco_title
-  title = "Vortex Example Zoom #1"
+  title = "Vortex Example Zoom #1 (DON'T FORGET make_vortex.m)"
 /
 
 &croco_time_stepping
@@ -9,9 +9,24 @@
   ninfo = 1
 /
 
+&croco_time_stepping_nbq
+  ndtnbq = 1
+  csound_nbq = 200
+  visc2_nbq = 1.
+/
+
+&croco_s_coord
+  theta_s = 1.0d0
+  theta_b = 0.0d0
+  Tcline = 5000.0d0
+/
+
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 180
   nrpfhis = 0
   hisname = "vortex_his.nc.1"
 /
+
+
+! End of namelist

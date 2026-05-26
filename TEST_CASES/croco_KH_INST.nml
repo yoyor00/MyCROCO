@@ -5,7 +5,7 @@
 &croco_time_stepping
   ntimes = 1600
   dt = 0.3
-  ndtfast= 20
+  ndtfast = 20
   ninfo = 50
 /
 
@@ -15,9 +15,18 @@
   visc2_nbq = 1.e2
 /
 
+&croco_s_coord
+  theta_s = 0
+  theta_b = 0
+  Tcline = 1.e16
+/
+
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 400
   nrpfhis = 0
   hisname = "khinst_his.nc"
 /
+
+
+! End of namelist

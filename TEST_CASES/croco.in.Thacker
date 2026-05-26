@@ -1,4 +1,7 @@
-
+title:
+	Thacker Example
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               4320      60       30       1
 S-coord: THETA_S,   THETA_B,    Hc (m)
          0.0d0      0.0d0       1.e16
 initial: NRREC  filename
@@ -7,6 +10,9 @@ initial: NRREC  filename
 restart:          NRST, NRPFRST / filename
                   4320      -1
                           thacker_rst.nc
+history: LDEFHIS, NWRT, NRPFHIS / filename 
+            T     30      0 
+                          thacker_his.nc
 
 primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
                           T    T   T   T  T    30*T
