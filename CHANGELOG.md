@@ -31,6 +31,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BENCH : Fix report check status in case of several files (#498)
 
+- NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
+  2d and 3d U-momentum for northern open boundary conditions (#508).
+
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
@@ -133,4 +137,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
-  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu 
+  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
