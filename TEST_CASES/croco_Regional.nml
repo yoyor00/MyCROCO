@@ -9,6 +9,14 @@
   ninfo = 1
 /
 
+&croco_use_calendar
+  start_date = '2005-01-01 00:00:00'
+  end_date = '2005-01-03 00:00:00'
+  dt_his = 1.0
+  dt_avg = 6.0
+  dt_rst = 12.0
+/
+
 &croco_s_coord
    theta_s = 7.0d0
    theta_b = 2.0d0
