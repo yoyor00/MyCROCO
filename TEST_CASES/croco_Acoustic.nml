@@ -4,8 +4,8 @@
 
 &croco_time_stepping
   ntimes = 200
-  dt = 0.001
-  ndtfast = 1
+  dt = 0.0005
+  ndtfast= 1
   ninfo = 100
 /
 
