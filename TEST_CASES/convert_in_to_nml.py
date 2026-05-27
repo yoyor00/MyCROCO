@@ -84,6 +84,8 @@ MAPPINGS = [
     ("grid",               0,   0,  "str",   "&croco_grid",                "grdname"),
     ("forcing",            0,   0,  "str",   "&croco_forcing",             "frcname"),
 
+    ("wave_offline",       0,   0,  "str",   "&croco_wave_offline",        "wave_file"),
+
 
     # ("xios_origin_date",   0,   0,  "str",   "&croco_use_calendar",        "xios_origin_date"),
     # ("bulk_forcing",       0,   0,  "str",   "&croco_bulk_forcing",        "fname_bulk_forcing"),

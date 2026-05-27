@@ -151,4 +151,9 @@ MODULE croco_namelist
    logical :: use_frcname = .false.
 #endif
 
+#if defined WAVE_OFFLINE && defined MUSTANG
+   ! &croco_wave_offline
+   character(len=180) :: wave_file
+#endif
+
 END MODULE croco_namelist

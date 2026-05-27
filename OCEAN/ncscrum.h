@@ -2177,9 +2177,6 @@
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
 #endif
-#ifdef WAVE_OFFLINE
-     &                                ,   wave_file
-#endif
 #ifdef ASSIMILATION
      &                     ,   aparnam,   assname
 #endif
@@ -2289,9 +2286,6 @@
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
-#endif
-#ifdef WAVE_OFFLINE
-     &                                ,   wave_file
 #endif
 #ifdef ASSIMILATION
      &                     ,   aparnam,   assname

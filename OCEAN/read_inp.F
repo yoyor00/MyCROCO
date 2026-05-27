@@ -339,23 +339,6 @@
         xios_origin_date_in_sec=tool_datosec(xios_origin_date)
 #endif
 
-
-#if defined WAVE_OFFLINE && defined MUSTANG
-! Forcing file name. Check its availability.
-!
-      elseif (keyword(1:kwlen).eq.'wave_offline') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
-# endif
-        open (testunit, file=fname(1:lstr), status='old', err=97)
-        close(testunit)
-        wave_file=fname(1:lstr)
-
-#endif  /* !defined WAVE_OFFLINE */
-
 !
 ! Biology forcing: iron dust deposition.
 !
@@ -2081,13 +2064,6 @@ c        close(testunit)
 
       ! start of summary writing
       if (ierr.eq.0) then
-
-!
-#if defined WAVE_OFFLINE && defined MUSTANG
-          lstr=lenstr(wave_file)
-          MPI_master_only write(stdout,'(2x,A,2x,A)')
-     &             'Wave Data File:', wave_file(1:lstr)
-#endif  /* !defined WAVE_OFFLINE */
 
 !
 ! Biology forcing: iron dust deposition.

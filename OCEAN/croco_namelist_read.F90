@@ -93,6 +93,10 @@ contains
 #ifndef ANA_GRID
       use croco_namelist, ONLY: grdname
 #endif
+#if defined WAVE_OFFLINE && defined MUSTANG
+      use croco_namelist, ONLY: wave_file
+#endif
+
 #if defined MPI
       use scalars, ONLY: mynode
 #endif
@@ -122,7 +126,9 @@ contains
       namelist /croco_grid/ grdname
 #endif
       namelist /croco_forcing/ frcname
-
+#if defined WAVE_OFFLINE && defined MUSTANG
+      namelist /croco_wave_offline/ wave_file
+#endif
       ierr = 0
 
       MPI_master_only write (stdout, *) '*** READING NAMELIST ***'
@@ -264,6 +270,18 @@ contains
          end if
       end if
 
+#if defined WAVE_OFFLINE && defined MUSTANG
+      ! --- croco_wave_offline (optional) ---
+      call check_nml_presence(nmlunit, "croco_wave_offline", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wave_offline, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wave_offline (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
       ! --- croco_logfile (optional) ---
 #ifdef LOGFILE
       call check_nml_presence(nmlunit, "croco_logfile", .false., found, ierr)
@@ -329,6 +347,9 @@ contains
       if (use_frcname) then
          MPI_master_only WRITE (stdout, nml=croco_forcing)
       end if
+#if defined WAVE_OFFLINE && defined MUSTANG
+      MPI_master_only WRITE (stdout, nml=croco_wave_offline)
+#endif
 
       MPI_master_only WRITE (stdout, *) "End of CROCO namelist"
       MPI_master_only WRITE (stdout, *) "---------------------"

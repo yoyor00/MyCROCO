@@ -49,5 +49,9 @@
   frcname = "croco_frc_vilaine.nc"
 /
 
+&croco_wave_offline
+  wave_file = "wave_vilaine_201501.nc"
+/
+
 
 ! End of namelist

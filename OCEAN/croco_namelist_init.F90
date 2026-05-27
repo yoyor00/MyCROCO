@@ -36,6 +36,9 @@ MODULE croco_namelist_init
    public :: init_grid
 #endif
    public :: init_forcing
+#if defined WAVE_OFFLINE && defined MUSTANG
+   public :: init_wave_offline
+#endif
 #ifdef LOGFILE
    public :: init_logfile
 #endif
@@ -79,6 +82,9 @@ contains
       if (use_frcname) then
          call init_forcing(ierr)
       end if
+#if defined WAVE_OFFLINE && defined MUSTANG
+      call init_wave_offline(ierr)
+#endif
 #ifdef LOGFILE
       if (ierr == 0) call init_logfile(ierr)
 #endif
@@ -239,6 +245,37 @@ contains
       end if
 
    end subroutine init_forcing
+
+
+#if defined WAVE_OFFLINE && defined MUSTANG
+   !---------------------------------------------------------------------
+   !  init_wave_offline
+   !  Adjust wave_file for MPI and check file availability.
+   !---------------------------------------------------------------------
+   subroutine init_wave_offline(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: wave_file
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      call adjust_filename_parallel(wave_file, "wave_file", ierr)
+      if (ierr /= 0) return
+
+      open (testunit, file=trim(wave_file), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open wave_offline file ', trim(wave_file)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_wave_offline
+# endif
 
 #ifdef LOGFILE
    !---------------------------------------------------------------------

@@ -16,6 +16,9 @@
       subroutine get_wwave    ! height, direction, period at approp.
                               ! time from forcing NetCDF file.
       use croco_namelist, only: dt, frcname
+# ifdef MUSTANG  
+      use croco_namelist, only: wave_file
+# endif
 # ifdef OPENACC
       use exchange_device_host
 # endif
