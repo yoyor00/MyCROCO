@@ -8,3 +8,10 @@
   ndtfast= 2
   ninfo = 1
 /
+
+&croco_s_coord
+   theta_s = 7.0d0
+   theta_b = 2.0d0
+   Tcline = 200.0d0   
+/
+! END OF NAMELIST

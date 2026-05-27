@@ -21,6 +21,9 @@
       use exchange_device_host
 # endif
       use croco_namelist, only: ndtfast, dt
+#ifdef SOLVE3D
+      use croco_namelist, only: theta_s, theta_b, Tcline
+#endif
       implicit none
 # include "param.h"
 # include "scalars.h"

@@ -16,3 +16,10 @@
   dt_avg = 1
   dt_rst = 24
 /
+
+&croco_s_coord
+   theta_s = 1.0d0
+   theta_b = 0.8d0
+   Tcline = 0.0d0   
+/
+! END OF NAMELIST
