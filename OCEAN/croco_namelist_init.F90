@@ -45,12 +45,15 @@ contains
    !---------------------------------------------------------------------
    !  init_all
    !  Single entry point that runs every init_xxx in sequence.
-   !  Stops on the first error since later inits may depend on earlier ones.
+   !  Guaranteed to be called with ierr == 0 (check_all passed), but
+   !  init_history and init_logfile can still fail on system errors
+   !  (e.g. filesystem issues), so ierr is checked between them.
    !---------------------------------------------------------------------
    subroutine init_all(ierr)
       implicit none
-      integer, intent(inout) :: ierr
+      integer, intent(out) :: ierr
 
+      ierr = 0
       call init_time_stepping()
 #ifdef NBQ
       call init_time_stepping_nbq()
@@ -59,9 +62,8 @@ contains
       call init_calendar()
 #endif
       call init_history(ierr)
-      if (ierr /= 0) return
 #ifdef LOGFILE
-      call init_logfile(ierr)
+      if (ierr == 0) call init_logfile(ierr)
 #endif
 
    end subroutine init_all
@@ -87,11 +89,11 @@ contains
    subroutine init_history(ierr)
       use param, ONLY: stdout
       use croco_namelist, ONLY: hisname, nwrt
-#if defined MPI
-      use scalars, ONLY: mynode, mynode2, NNODES2
-#endif
 #ifdef USE_CALENDAR
       use croco_namelist, ONLY: dt_his, dt
+#endif
+#if defined MPI
+      use scalars, ONLY: mynode, mynode2, NNODES2
 #endif
       implicit none
 #ifdef ENSEMBLE
@@ -183,8 +185,13 @@ contains
    !---------------------------------------------------------------------
    !  init_time_stepping_nbq
    !  Propagate dtfast into the NBQ common block.
-   !  NOTE: the COMMON block is legacy; it should eventually be replaced
-   !        by a proper module variable.
+   !
+   !  NOTE 1: ndtnbq is intentionally forced to 1 here regardless of the
+   !          namelist value.  The substep ratio is always 1 at startup;
+   !          the namelist variable is reserved for future dynamic use.
+   !          This behaviour is documented in the namelist declaration.
+   !  NOTE 2: the COMMON block is legacy; it should eventually be replaced
+   !          by a proper module variable.
    !---------------------------------------------------------------------
    subroutine init_time_stepping_nbq()
       use croco_namelist, ONLY: ndtnbq
@@ -214,7 +221,7 @@ contains
                          origin_date, origin_date_in_sec
       implicit none
 
-      real*8, external :: tool_datosec
+      real(kind=8), external :: tool_datosec
 
 #ifdef ANA_INITIAL
       if (nrrec == 0) then
