@@ -39,6 +39,9 @@ MODULE croco_namelist_init
 #if defined WAVE_OFFLINE && defined MUSTANG
    public :: init_wave_offline
 #endif
+#if defined BIOLOGY && defined PISCES
+   public :: init_biology
+#endif
 #ifdef LOGFILE
    public :: init_logfile
 #endif
@@ -84,6 +87,9 @@ contains
       end if
 #if defined WAVE_OFFLINE && defined MUSTANG
       call init_wave_offline(ierr)
+#endif
+#if defined BIOLOGY && defined PISCES
+      call init_biology(ierr)
 #endif
 #ifdef LOGFILE
       if (ierr == 0) call init_logfile(ierr)
@@ -246,7 +252,6 @@ contains
 
    end subroutine init_forcing
 
-
 #if defined WAVE_OFFLINE && defined MUSTANG
    !---------------------------------------------------------------------
    !  init_wave_offline
@@ -275,6 +280,29 @@ contains
       end if
 
    end subroutine init_wave_offline
+# endif
+
+#if defined BIOLOGY && defined PISCES
+   !---------------------------------------------------------------------
+   !  init_biology
+   !  Adjust bioname for MPI
+   !---------------------------------------------------------------------
+   subroutine init_biology(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: bioname
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      call adjust_filename_parallel(bioname, "bioname", ierr)
+      if (ierr /= 0) return
+
+      ! Notes : no check of availability here
+
+   end subroutine init_biology
 # endif
 
 #ifdef LOGFILE

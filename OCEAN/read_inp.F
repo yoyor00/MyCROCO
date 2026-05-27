@@ -339,22 +339,7 @@
         xios_origin_date_in_sec=tool_datosec(xios_origin_date)
 #endif
 
-!
-! Biology forcing: iron dust deposition.
-!
-#if defined BIOLOGY && defined PISCES
-      elseif (keyword(1:kwlen).eq.'biology') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-c        open (testunit, file=fname(1:lstr), status='old', err=97)
-c        close(testunit)
-        bioname=fname(1:lstr)
 
-#endif
 !
 ! Bulk file name. Check its availability.
 !
@@ -2064,15 +2049,6 @@ c        close(testunit)
 
       ! start of summary writing
       if (ierr.eq.0) then
-
-!
-! Biology forcing: iron dust deposition.
-!
-#if defined BIOLOGY && defined PISCES
-          lstr=lenstr(bioname)
-          MPI_master_only write(stdout,'(2x,A,2x,A)')
-     &             'Biology Forcing Data File:', bioname(1:lstr)
-#endif
 !
 ! Bulk file name. Check its availability.
 !

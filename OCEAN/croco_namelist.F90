@@ -156,4 +156,9 @@ MODULE croco_namelist
    character(len=180) :: wave_file
 #endif
 
+#if defined BIOLOGY && defined PISCES
+   ! &croco_biology
+   character(len=180) :: bioname
+#endif
+
 END MODULE croco_namelist

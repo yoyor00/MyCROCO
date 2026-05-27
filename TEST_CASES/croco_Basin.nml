@@ -3,7 +3,7 @@
 /
 
 &croco_logfile
-  fname_logfile = "basin.log"
+  logname = "basin.log"
 /
 
 &croco_time_stepping

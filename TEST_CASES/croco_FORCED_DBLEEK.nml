@@ -41,5 +41,9 @@
   frcname = "fileforc"
 /
 
+&croco_biology
+  bioname = "CROCO_FILES/croco_frcbio.nc"
+/
+
 
 ! End of namelist

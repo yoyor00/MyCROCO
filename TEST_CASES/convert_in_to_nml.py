@@ -47,7 +47,7 @@ import argparse
 MAPPINGS = [
     ("title",              0,   0,  "str_line", "&croco_title",               "title"),
 
-    ("logfile",            0,   0,  "str",   "&croco_logfile",             "fname_logfile"),
+    ("logfile",            0,   0,  "str",   "&croco_logfile",             "logname"),
 
     ("time_stepping",      0,   0,  "int",   "&croco_time_stepping",       "ntimes"),
     ("time_stepping",      0,   1,  "float", "&croco_time_stepping",       "dt"),
@@ -85,6 +85,7 @@ MAPPINGS = [
     ("forcing",            0,   0,  "str",   "&croco_forcing",             "frcname"),
 
     ("wave_offline",       0,   0,  "str",   "&croco_wave_offline",        "wave_file"),
+    ("biology",            0,   0,  "str",   "&croco_biology",             "bioname"),
 
 
     # ("xios_origin_date",   0,   0,  "str",   "&croco_use_calendar",        "xios_origin_date"),

@@ -96,7 +96,9 @@ contains
 #if defined WAVE_OFFLINE && defined MUSTANG
       use croco_namelist, ONLY: wave_file
 #endif
-
+#if defined BIOLOGY && defined PISCES
+      use croco_namelist, ONLY: bioname
+#endif
 #if defined MPI
       use scalars, ONLY: mynode
 #endif
@@ -128,6 +130,9 @@ contains
       namelist /croco_forcing/ frcname
 #if defined WAVE_OFFLINE && defined MUSTANG
       namelist /croco_wave_offline/ wave_file
+#endif
+#if defined BIOLOGY && defined PISCES
+      namelist /croco_biology/ bioname
 #endif
       ierr = 0
 
@@ -282,6 +287,18 @@ contains
       end if
 #endif
 
+#if defined BIOLOGY && defined PISCES
+      ! --- croco_biology (optional) ---
+      call check_nml_presence(nmlunit, "croco_biology", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_biology, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_biology (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
       ! --- croco_logfile (optional) ---
 #ifdef LOGFILE
       call check_nml_presence(nmlunit, "croco_logfile", .false., found, ierr)
@@ -314,6 +331,7 @@ contains
       ! init logfile change stdout direction
       ! ----------------------------------------------------------------
       call init_all(ierr)
+      if (ierr /= 0) return
 
       ! ----------------------------------------------------------------
       ! Phase 4 – write nml in log
@@ -350,10 +368,14 @@ contains
 #if defined WAVE_OFFLINE && defined MUSTANG
       MPI_master_only WRITE (stdout, nml=croco_wave_offline)
 #endif
+#if defined BIOLOGY && defined PISCES
+      MPI_master_only WRITE (stdout, nml=croco_biology)
+#endif
 
       MPI_master_only WRITE (stdout, *) "End of CROCO namelist"
       MPI_master_only WRITE (stdout, *) "---------------------"
       MPI_master_only WRITE (stdout, *)
+
    end subroutine read_nml
 
    !---------------------------------------------------------------------

@@ -2180,9 +2180,6 @@
 #ifdef ASSIMILATION
      &                     ,   aparnam,   assname
 #endif
-#ifdef BIOLOGY
-     &                                ,   bioname
-#endif
 #ifdef SEDIMENT
      &                                ,   sedname
 #elif defined MUSTANG
@@ -2300,9 +2297,6 @@
 #endif
 #if defined OBSTRUCTION
      &               ,    obstname
-#endif
-#ifdef BIOLOGY
-     &                                ,   bioname
 #endif
      &                                ,   vname
 #ifdef ABL1D
