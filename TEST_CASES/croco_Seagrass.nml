@@ -16,8 +16,8 @@
 /
 
 &croco_use_calendar
-  start_date = "2019/01/01"
-  end_date = "2019/01/01"
+  start_date = "2019-01-01 00:00:00"
+  end_date = "2019-01-01 00:03:05"
   dt_his = 0.00006944444
   dt_avg = 24
   dt_rst = 24

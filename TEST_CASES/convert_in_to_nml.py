@@ -176,7 +176,7 @@ def parse_in_file(path):
 # Value formatter
 # ---------------------------------------------------------------------------
 
-def format_value(raw, typ, all_tokens):
+def format_value(raw, typ):
     """
     Format a single token according to its declared type.
 
@@ -204,11 +204,6 @@ def format_value(raw, typ, all_tokens):
         return f'"{raw}"'   # raw is already the full line, passed by build_nml
 
     if typ == "str":
-        # Date-time: value is YYYY-MM-DD, time is the next token
-        if re.match(r'^\d{4}-\d{2}-\d{2}$', raw):
-            idx = all_tokens.index(raw)
-            if idx + 1 < len(all_tokens):
-                raw = raw + " " + all_tokens[idx + 1]
         return f'"{raw}"'
 
     return raw   # unknown type: pass through
@@ -250,7 +245,15 @@ def build_nml(cards, mappings):
                 continue   # token doesn't exist on this line
             raw = tokens[pos_idx]
 
-        val = format_value(raw, typ, tokens)
+        # Assemble date + heure before formatting
+        if (
+            typ == "str"
+            and re.match(r'^\d{4}[-/]\d{2}[-/]\d{2}$', raw)
+            and pos_idx + 1 < len(tokens)
+        ):
+            raw = raw.replace("/", "-") + " " + tokens[pos_idx + 1]
+
+        val = format_value(raw, typ)
 
         if nml_name not in nml_entries:
             nml_entries[nml_name] = []
