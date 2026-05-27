@@ -790,7 +790,7 @@
 #endif  /* ONLINE_ANALYSIS */
 
       SUBROUTINE set_xml_global_att(cdid)
-            use croco_namelist, only: ntimes, dt, ndtfast, title, $
+            use croco_namelist, only: ntimes, dt, ndtfast, $
                                       ininame, rstname, title
 
 # include "param.h"
