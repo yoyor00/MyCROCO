@@ -17,6 +17,9 @@
       subroutine put_global_atts (ncid, ierr)
             use croco_namelist, only: title, dt, ndtfast, ntimes
             use croco_namelist, only: hisname, nwrt
+#ifdef SOLVE3D
+            use croco_namelist, only: theta_s, theta_b, Tcline
+#endif
       implicit none
       integer ncid, ierr, nf_ftype, lvar,lenstr
 #include "param.h"
