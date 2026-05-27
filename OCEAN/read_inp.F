@@ -529,24 +529,7 @@ c        close(testunit)
        endif
 # endif
 #endif
-!
-! Restart file name.
-!
-      elseif (keyword(1:kwlen).eq.'restart') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) nrst, nrpfrst
-        read(input,'(A)',err=95)  fname
-        lstr=lenstr(fname)
-#if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#endif
-#ifdef USE_CALENDAR
-        nrst=ceiling((dt_rst*3600.)/dt)
-#endif
-        rstname=fname(1:lstr)
-#ifdef ENSEMBLE
-        rstname=cmember//rstname
-#endif
+
 
 
 #ifdef AVERAGES
@@ -2272,12 +2255,6 @@ c        close(testunit)
 # endif
 #endif
 
-
-          lstr=lenstr(rstname)
-          MPI_master_only write(stdout,
-     &             '(7x,A,2x,A,4x,A,I6,4x,A,I4)')
-     &             'Restart File:', rstname(1:lstr),
-     &             'nrst =', nrst, 'rec/file: ', nrpfrst
 
 #ifdef AVERAGES
           lstr=lenstr(avgname)

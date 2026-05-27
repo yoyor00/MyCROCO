@@ -27,5 +27,11 @@
   ininame = "innershelf_rst.nc"
 /
 
+&croco_restart
+  nrst = 5760
+  nrpfrst = -1
+  rstname = "innershelf_rst.nc"
+/
+
 
 ! End of namelist

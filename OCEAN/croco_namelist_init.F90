@@ -31,6 +31,7 @@ MODULE croco_namelist_init
    public :: init_time_stepping
    public :: init_history
    public :: init_initial
+   public :: init_restart
 #ifdef LOGFILE
    public :: init_logfile
 #endif
@@ -41,7 +42,7 @@ MODULE croco_namelist_init
    public :: init_calendar
 #endif
 
-   integer :: testunit = 40 ! to test availability of input files
+   integer, parameter :: testunit = 40 ! unit used to probe input file availability
 
 contains
 
@@ -49,8 +50,8 @@ contains
    !  init_all
    !  Single entry point that runs every init_xxx in sequence.
    !  Guaranteed to be called with ierr == 0 (check_all passed), but
-   !  init_history and init_logfile can still fail on system errors
-   !  (e.g. filesystem issues), so ierr is checked between them.
+   !  filesystem errors can still occur in init_history / init_initial /
+   !  init_restart / init_logfile, so ierr is checked before init_logfile.
    !---------------------------------------------------------------------
    subroutine init_all(ierr)
       implicit none
@@ -66,6 +67,7 @@ contains
 #endif
       call init_history(ierr)
       call init_initial(ierr)
+      call init_restart(ierr)
 #ifdef LOGFILE
       if (ierr == 0) call init_logfile(ierr)
 #endif
@@ -91,34 +93,18 @@ contains
    !  when USE_CALENDAR is active.
    !---------------------------------------------------------------------
    subroutine init_history(ierr)
-      use param, ONLY: stdout
       use croco_namelist, ONLY: hisname, nwrt
 #ifdef USE_CALENDAR
+      ! Two separate use statements on croco_namelist are intentional:
+      ! a Fortran continuation line (&) cannot span a CPP directive,
+      ! so the conditional dt_his/dt cannot be merged into the block above.
       use croco_namelist, ONLY: dt_his, dt
 #endif
-#if defined MPI
-      use scalars, ONLY: mynode, mynode2, NNODES2
-#endif
       implicit none
-#ifdef ENSEMBLE
-#include "mpi_cpl.h"
-#endif
       integer, intent(inout) :: ierr
 
-#if defined MPI && defined PARALLEL_FILES
-      call insert_node(hisname, len_trim(hisname), mynode2, NNODES2, ierr)
-      if (ierr /= 0) then
-         MPI_master_only write (stdout, *) &
-            'Error in init_history: insert_node failed for hisname'
-         return
-      end if
-#endif
-
-      hisname = trim(hisname)
-
-#ifdef ENSEMBLE
-      hisname = cmember//hisname
-#endif
+      call adjust_filename(hisname, "hisname", ierr)
+      if (ierr /= 0) return
 
 #ifdef USE_CALENDAR
       nwrt = ceiling((dt_his*3600.0)/dt)
@@ -128,57 +114,59 @@ contains
 
    !---------------------------------------------------------------------
    !  init_initial
-   !  Adjust ininame for MPI/ENSEMBLE
-   !  Check its availability (in the case
-   !  of analytical initial conditions and nrrec=0 initial conditions are
-   !  created internally and no file is needed).
+   !  Adjust ininame for MPI/ENSEMBLE and check file availability.
+   !  Skipped when ANA_INITIAL is defined and nrrec == 0 (initial
+   !  conditions are generated internally; no file needed).
    !---------------------------------------------------------------------
    subroutine init_initial(ierr)
       use param, ONLY: stdout
       use croco_namelist, ONLY: ininame, nrrec
 #if defined MPI
-      use scalars, ONLY: mynode, mynode2, NNODES2
+      use scalars, ONLY: mynode
 #endif
       implicit none
-#ifdef ENSEMBLE
-#include "mpi_cpl.h"
-#endif
       integer, intent(inout) :: ierr
       integer :: ios
 
 #ifdef ANA_INITIAL
-        if (nrrec.gt.0) then
+      if (nrrec == 0) return
 #endif
 
-#if defined MPI && defined PARALLEL_FILES
-      call insert_node(ininame, len_trim(ininame), mynode2, NNODES2, ierr)
-      if (ierr /= 0) then
+      call adjust_filename(ininame, "ininame", ierr)
+      if (ierr /= 0) return
+
+      open (testunit, file=trim(ininame), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
          MPI_master_only write (stdout, *) &
-            'Error in init_initial: insert_node failed for ininame'
-         return
+            'Error: cannot open initial file ', trim(ininame)
+         ierr = ierr + 1
       end if
-#endif
-
-      ininame = trim(ininame)
-
-#ifdef ENSEMBLE
-      ininame = cmember//ininame
-#endif
-
-   open(testunit, file=trim(ininame), status='old', iostat=ios)
-
-   if (ios == 0) then
-      close(testunit)
-   else
-      MPI_master_only write(stdout, *) &
-         'Error: cannot open initial file ', trim(ininame)
-      return
-   endif
-#ifdef ANA_INITIAL
-   endif
-#endif
 
    end subroutine init_initial
+
+   !---------------------------------------------------------------------
+   !  init_restart
+   !  Adjust rstname for MPI/ENSEMBLE and derive nrst from dt_rst
+   !  when USE_CALENDAR is active.
+   !---------------------------------------------------------------------
+   subroutine init_restart(ierr)
+      use croco_namelist, ONLY: rstname, nrst
+#ifdef USE_CALENDAR
+      use croco_namelist, ONLY: dt_rst, dt
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      call adjust_filename(rstname, "rstname", ierr)
+      if (ierr /= 0) return
+
+#ifdef USE_CALENDAR
+      nrst = ceiling((dt_rst*3600.0)/dt)
+#endif
+
+   end subroutine init_restart
 
 #ifdef LOGFILE
    !---------------------------------------------------------------------
@@ -200,13 +188,8 @@ contains
       integer :: ios
       character(len=len(logname) + 20) :: logfile_path
 
-#if defined MPI && defined PARALLEL_FILES
-      call insert_node(logname, len_trim(logname), mynode2, NNODES2, ierr)
-      if (ierr /= 0) then
-         write (6, *) 'Error in init_logfile: insert_node failed for logname'
-         return
-      end if
-#endif
+      call adjust_filename(logname, "logname", ierr)
+      if (ierr /= 0) return
 
       if (mynode == 0) then
 #ifndef AGRIF
@@ -221,16 +204,11 @@ contains
          end if
 #endif
 
-#ifdef ENSEMBLE
-         logfile_path = trim(cmember)//trim(logname)
-#endif
-
          open (unit=stdout, file=trim(logfile_path), &
                status='REPLACE', form='formatted', iostat=ios)
          if (ios /= 0) then
             write (6, '(/1x,3A/)') 'ERROR: Cannot open log file: ', trim(logfile_path)
             ierr = ierr + 1
-            return
          end if
       else
          stdout = 6
@@ -297,5 +275,45 @@ contains
 
    end subroutine init_calendar
 #endif /* USE_CALENDAR */
+
+   !---------------------------------------------------------------------
+   !  adjust_filename  (private helper)
+   !
+   !  Apply all standard filename adjustments in one place:
+   !    1. insert MPI node suffix  (only if MPI + PARALLEL_FILES)
+   !    2. trim trailing blanks
+   !    3. prepend ensemble member prefix  (only if ENSEMBLE)
+   !
+   !  context : caller name used in error messages (e.g. "hisname")
+   !---------------------------------------------------------------------
+   subroutine adjust_filename(fname, context, ierr)
+      use param, ONLY: stdout
+#if defined MPI
+      use scalars, ONLY: mynode, mynode2, NNODES2
+#endif
+      implicit none
+#ifdef ENSEMBLE
+#include "mpi_cpl.h"
+#endif
+      character(len=*), intent(inout) :: fname
+      character(len=*), intent(in)    :: context
+      integer, intent(inout) :: ierr
+
+#if defined MPI && defined PARALLEL_FILES
+      call insert_node(fname, len_trim(fname), mynode2, NNODES2, ierr)
+      if (ierr /= 0) then
+         MPI_master_only write (stdout, '(3a)') &
+            'Error in adjust_filename: insert_node failed for ', trim(context), '.'
+         return
+      end if
+#endif
+
+      fname = trim(fname)
+
+#ifdef ENSEMBLE
+      fname = cmember//fname
+#endif
+
+   end subroutine adjust_filename
 
 END MODULE croco_namelist_init

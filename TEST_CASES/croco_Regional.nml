@@ -41,5 +41,11 @@
   ininame = "CROCO_FILES/croco_ini.nc"
 /
 
+&croco_restart
+  nrst = 384
+  nrpfrst = -1
+  rstname = "CROCO_FILES/croco_rst.nc"
+/
+
 
 ! End of namelist

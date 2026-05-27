@@ -33,5 +33,11 @@
   ininame = "TEST_CASES/xxxxx"
 /
 
+&croco_restart
+  nrst = 4860
+  nrpfrst = -1
+  rstname = "jet_rst.nc"
+/
+
 
 ! End of namelist

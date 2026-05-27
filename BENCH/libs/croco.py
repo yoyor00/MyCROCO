@@ -320,10 +320,17 @@ class Croco:
         )
         command = command.rstrip()
         if restart:
+            command_rst = "%s ../../../scripts/correct_end.sh %s ./croco %s %s" % (
+                env_line,
+                command_prefix,
+                "%s_rst" % self.croco_inputfile,
+                "%s_rst" % self.croco_nmlfile,
+            )
+            command_rst = command_rst.rstrip()
             # execute twice one without restart and one with
-            command = "%s && %s_rst" % (
+            command = "%s && %s" % (
                 command.replace("../../../scripts/correct_end.sh", "").strip(),
-                command,
+                command_rst,
             )
 
         with move_in_dir(dirname):
@@ -451,7 +458,9 @@ class Croco:
 
             # first run with filename
             self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 3)
-            self.change_card_restart(filename, 3, file_nc_rst)
+            self.change_nml(filename_nml, "croco_restart", "nrst", 3)
+            self.change_nml(filename_nml, "croco_restart", "nrpfrst", 0)
+            self.change_nml(filename_nml, "croco_restart", "rstname", file_nc_rst)
 
             # second run with filename_rst
             self.change_nml(filename_nml_rst , "croco_time_stepping", "ntimes", 3)
@@ -462,20 +471,6 @@ class Croco:
             self.change_nml_end_date(filename_nml, 3)
             self.change_nml_output_time_steps_dtrst(filename_nml, 3)
             # no need to change end_date or dtrsr for filename_rst
-
-    def change_card_restart(self, filename, nrst, file_nc_rst):
-        full_filename = os.path.join(self.dirname, filename)
-        patches = {
-            filename: {
-                "file": filename,
-                "mode": "insert-after",
-                "what": "restart:",
-                "insert": ["%i   0" % nrst, file_nc_rst],
-                "descr": "change restart NRST=3",
-            }
-        }
-        self.apply_patches(patches)
-        delete_lines_from_file(full_filename, "restart", line_offset=3, num_lines=2)
 
     def change_nml_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)

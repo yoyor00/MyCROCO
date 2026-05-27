@@ -26,5 +26,11 @@
   nrrec = 0
 /
 
+&croco_restart
+  nrst = 7200
+  nrpfrst = -1
+  rstname = "shoreface_rst.nc"
+/
+
 
 ! End of namelist

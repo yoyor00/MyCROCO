@@ -27,5 +27,11 @@
   ininame = "seamount_rst.nc"
 /
 
+&croco_restart
+  nrst = 360
+  nrpfrst = -1
+  rstname = "seamount_rst.nc"
+/
+
 
 ! End of namelist

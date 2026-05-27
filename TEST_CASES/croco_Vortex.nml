@@ -33,5 +33,11 @@
   ininame = "TEST_CASES/VORTEX/vortex_ini.nc"
 /
 
+&croco_restart
+  nrst = 600
+  nrpfrst = -1
+  rstname = "TEST_CASES/VORTEX/vortex_rst.nc"
+/
+
 
 ! End of namelist

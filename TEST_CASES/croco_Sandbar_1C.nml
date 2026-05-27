@@ -27,5 +27,11 @@
   ininame = "sandbar_rst.nc"
 /
 
+&croco_restart
+  nrst = 18000
+  nrpfrst = -1
+  rstname = "sandbar_rst.nc"
+/
+
 
 ! End of namelist

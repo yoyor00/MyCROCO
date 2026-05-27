@@ -34,5 +34,11 @@
   nrrec = 0
 /
 
+&croco_restart
+  nrst = 1728000
+  nrpfrst = -1
+  rstname = "dune3d_rst.nc"
+/
+
 
 ! End of namelist

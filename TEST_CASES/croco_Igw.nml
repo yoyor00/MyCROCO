@@ -27,5 +27,11 @@
   ininame = "TEST_CASES/XXXX"
 /
 
+&croco_restart
+  nrst = 5760
+  nrpfrst = -1
+  rstname = "igw_rst.nc"
+/
+
 
 ! End of namelist

@@ -1068,7 +1068,7 @@
       integer nttclm(NT), ntstf(NT), nttsrc(NT)
      &       , ntbtf(NT)
 #endif
-      integer ncidrst, nrecrst,  nrpfrst
+      integer ncidrst, nrecrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
      &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
@@ -1628,7 +1628,7 @@
      &     ,  nttclm, ntstf, nttsrc, ntbtf
 
 #endif
-     &      , ncidrst, nrecrst,  nrpfrst
+     &      , ncidrst, nrecrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
      &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
@@ -2106,7 +2106,7 @@
       REAL(kind=8) :: origin_date_in_sec, xios_origin_date_in_sec
 
       character*180 grdname
-     &         ,   rstname,  frcname,  bulkname,  usrname
+     &         ,   frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
 #ifdef AVERAGES
@@ -2214,7 +2214,7 @@
      &             origin_date, start_date_run
      &         ,   xios_origin_date
      &         ,   grdname
-     &         ,   rstname,  frcname, bulkname,  usrname
+     &         ,   frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname, origin_date_in_sec
      &         ,   xios_origin_date_in_sec

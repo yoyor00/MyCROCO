@@ -27,5 +27,11 @@
   ininame = "gravadj_rst.nc"
 /
 
+&croco_restart
+  nrst = 6120
+  nrpfrst = -1
+  rstname = "gravadj_rst.nc"
+/
+
 
 ! End of namelist

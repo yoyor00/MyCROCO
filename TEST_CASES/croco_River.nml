@@ -27,5 +27,11 @@
   ininame = "river_rst.nc"
 /
 
+&croco_restart
+  nrst = 800
+  nrpfrst = -1
+  rstname = "river_rst.nc"
+/
+
 
 ! End of namelist

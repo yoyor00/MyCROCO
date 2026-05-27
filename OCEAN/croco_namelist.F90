@@ -61,13 +61,23 @@ MODULE croco_namelist
 
    ! &croco_initial
    integer :: nrrec = 1
-   !! Switch to indicate start or re-start from a previous solution. 
-   !! nrrec is the time index of the initial or re-start NetCDF file 
-   !! assigned for initialization. If nrrec is negative (say nrrec = -1), 
-   !! the model will start from the most recent time record. 
+   !! Switch to indicate start or re-start from a previous solution.
+   !! nrrec is the time index of the initial or re-start NetCDF file
+   !! assigned for initialization. If nrrec is negative (say nrrec = -1),
+   !! the model will start from the most recent time record.
    !! That is, the initialization record is assigned internally.
    character(len=180) :: ininame = "CROCO_FILES/croco_ini.nc"
    !! Name of file containing the initial state.
+
+   ! &croco_restart
+   integer :: nrst = 720
+   !! Number of time-steps between writing of re-start fields
+   integer :: nrpfrst = -1
+   !! 0: write several records every NRST time steps
+   !! >0: create more than one file (with sequential numbers) and write NRPRST records per file
+   !! -1: overwrite record every NRST time steps
+   character(len=180) :: rstname = "CROCO_FILES/croco_rst.nc"
+   !! Name of restart file.
 
 #ifdef NBQ
    ! &croco_time_stepping_nbq

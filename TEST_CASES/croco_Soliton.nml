@@ -21,5 +21,11 @@
   ininame = "soliton_rst.nc"
 /
 
+&croco_restart
+  nrst = 1200
+  nrpfrst = -1
+  rstname = "soliton_rst.nc"
+/
+
 
 ! End of namelist

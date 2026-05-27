@@ -19,7 +19,7 @@
 !                                                                      !
 !=======================================================================
 !
-      USE croco_namelist, ONLY: nwrt
+      USE croco_namelist, ONLY: nwrt, nrst
 #ifdef AGRIF
       use Agrif_Util
 #endif

@@ -27,5 +27,11 @@
   ininame = "croco_ini_diag_adv.nc"
 /
 
+&croco_restart
+  nrst = 720
+  nrpfrst = -1
+  rstname = "croco_rst_diag_adv.nc"
+/
+
 
 ! End of namelist

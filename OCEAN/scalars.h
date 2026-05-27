@@ -112,7 +112,6 @@
 !
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
 !                              usually 1, if not a restart run.
-! nrst     Number of timesteps between storage of restart fields.
 ! nsta     Number of timesteps between storage of station data.
 ! navg     Number of timesteps between storage of time-averaged
 !                                                           fields.
@@ -171,7 +170,7 @@
        real  tauT_in, tauT_out, tauM_in, tauM_out
 #endif
       integer numthreads,     ntstart
-     &      , nfast,  nrst
+     &      , nfast
 #ifdef EXACT_RESTART
      &     ,  forw_start
 #endif
@@ -339,7 +338,7 @@
      &                      , tauT_in, tauT_out, tauM_in, tauM_out
 #endif
      &      , numthreads,     ntstart
-     &      , nfast,  nrst
+     &      , nfast
 #ifdef EXACT_RESTART
      &       , forw_start
 #endif

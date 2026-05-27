@@ -34,5 +34,11 @@
   nrrec = 0
 /
 
+&croco_restart
+  nrst = 72000
+  nrpfrst = 0
+  rstname = "ana_dune_rst.nc"
+/
+
 
 ! End of namelist

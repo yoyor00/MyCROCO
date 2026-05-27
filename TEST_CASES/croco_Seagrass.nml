@@ -34,5 +34,11 @@
   nrrec = 0
 /
 
+&croco_restart
+  nrst = 172800
+  nrpfrst = 0
+  rstname = "seagrass_rst.nc"
+/
+
 
 ! End of namelist

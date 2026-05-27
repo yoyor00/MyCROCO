@@ -35,5 +35,11 @@
   ininame = "fileini"
 /
 
+&croco_restart
+  nrst = 21600
+  nrpfrst = -1
+  rstname = "sed_toy_rouse_rst.nc"
+/
+
 
 ! End of namelist

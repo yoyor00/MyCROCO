@@ -27,5 +27,11 @@
   ininame = "canyon_ini.nc"
 /
 
+&croco_restart
+  nrst = 240
+  nrpfrst = -1
+  rstname = "canyon_rst.nc"
+/
+
 
 ! End of namelist

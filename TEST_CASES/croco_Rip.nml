@@ -26,5 +26,11 @@
   nrrec = 0
 /
 
+&croco_restart
+  nrst = 1800
+  nrpfrst = -1
+  rstname = "rip_rst.nc"
+/
+
 
 ! End of namelist

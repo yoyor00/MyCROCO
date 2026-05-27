@@ -33,5 +33,11 @@
   ininame = "igw_ini.nc"
 /
 
+&croco_restart
+  nrst = 5
+  nrpfrst = -1
+  rstname = "igw_rst.nc"
+/
+
 
 ! End of namelist

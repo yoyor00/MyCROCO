@@ -27,5 +27,11 @@
   ininame = "equator_ini.nc"
 /
 
+&croco_restart
+  nrst = 3600
+  nrpfrst = -1
+  rstname = "equator_rst.nc"
+/
+
 
 ! End of namelist

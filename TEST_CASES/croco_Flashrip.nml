@@ -33,5 +33,11 @@
   ininame = "rip_rst.nc"
 /
 
+&croco_restart
+  nrst = 17680
+  nrpfrst = -1
+  rstname = "rip_rst.nc"
+/
+
 
 ! End of namelist

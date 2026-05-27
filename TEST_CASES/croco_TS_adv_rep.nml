@@ -27,5 +27,11 @@
   ininame = "croco_ini_body_rot.nc"
 /
 
+&croco_restart
+  nrst = 720
+  nrpfrst = -1
+  rstname = "croco_rst_body_rot.nc"
+/
+
 
 ! End of namelist

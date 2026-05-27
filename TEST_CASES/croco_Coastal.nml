@@ -35,5 +35,11 @@
   ininame = "vilaine_ini.nc"
 /
 
+&croco_restart
+  nrst = 14400
+  nrpfrst = -1
+  rstname = "croco_rst.nc"
+/
+
 
 ! End of namelist

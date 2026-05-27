@@ -35,5 +35,11 @@
   ininame = "fileini"
 /
 
+&croco_restart
+  nrst = 720000
+  nrpfrst = -1
+  rstname = "estuary_rst.nc"
+/
+
 
 ! End of namelist

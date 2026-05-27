@@ -75,7 +75,8 @@ contains
                                 title, logname, &
                                 dt, ntimes, ndtfast, ninfo, &
                                 ldefhis, nwrt, nrpfhis, hisname, &
-                                nrrec, ininame
+                                nrrec, ininame, &
+                                nrst, nrpfrst, rstname
       use croco_namelist_check, ONLY: check_all
       use croco_namelist_init, ONLY: init_all
 #ifdef NBQ
@@ -102,6 +103,7 @@ contains
       namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
       namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
       namelist /croco_initial/ nrrec, ininame
+      namelist /croco_restart/ nrst, nrpfrst, rstname
 #ifdef NBQ
       namelist /croco_time_stepping_nbq/ ndtnbq, csound_nbq, visc2_nbq
 #endif
@@ -122,11 +124,11 @@ contains
       ! newunit= lets the compiler pick a free unit number automatically.
       ! open (newunit=nmlunit, file=trim(fname_nml), status='old', &
       !       action='read', iostat=ios)
-      ! AGRIF conv incompatibility with newunit for now... 
+      ! AGRIF conv incompatibility with newunit for now...
       ! TODO, update AGRIF conv
-      nmlunit=10
+      nmlunit = 10
       open (unit=nmlunit, file=trim(fname_nml), status='old', &
-             action='read', iostat=ios)
+            action='read', iostat=ios)
       if (ios /= 0) then
          MPI_master_only write (stdout, *) &
             'WARNING: namelist file not found: ', trim(fname_nml)
@@ -220,6 +222,16 @@ contains
          end if
       end if
 
+      ! --- croco_restart (optional) ---
+      call check_nml_presence(nmlunit, "croco_restart", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_restart, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_restart (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+
       ! --- croco_logfile (optional) ---
       ! Read last so that all warnings above are printed to stdout
       ! before the log file is opened and stdout is redirected.
@@ -257,6 +269,8 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_use_calendar)
 #endif
       MPI_master_only WRITE (stdout, nml=croco_history)
+      MPI_master_only WRITE (stdout, nml=croco_initial)
+      MPI_master_only WRITE (stdout, nml=croco_restart)
 
       ! ----------------------------------------------------------------
       ! Phase 2 – validate all parameter values
