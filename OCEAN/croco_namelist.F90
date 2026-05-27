@@ -59,6 +59,16 @@ MODULE croco_namelist
    character(len=180) :: hisname = "CROCO_FILES/croco_his.nc"
    !! Name of history file
 
+   ! &croco_initial
+   integer :: nrrec = 1
+   !! Switch to indicate start or re-start from a previous solution. 
+   !! nrrec is the time index of the initial or re-start NetCDF file 
+   !! assigned for initialization. If nrrec is negative (say nrrec = -1), 
+   !! the model will start from the most recent time record. 
+   !! That is, the initialization record is assigned internally.
+   character(len=180) :: ininame = "CROCO_FILES/croco_ini.nc"
+   !! Name of file containing the initial state.
+
 #ifdef NBQ
    ! &croco_time_stepping_nbq
    integer :: ndtnbq = 1

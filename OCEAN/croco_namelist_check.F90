@@ -34,7 +34,7 @@ MODULE croco_namelist_check
    public :: check_time_stepping_nbq
 #endif
 #ifdef SOLVE3D
-   public :: check_nml_croco_s_coord
+   public :: check_croco_s_coord
 #endif
 
 contains
@@ -54,7 +54,7 @@ contains
       call check_time_stepping_nbq(ierr)
 #endif
 #ifdef SOLVE3D
-      call check_nml_croco_s_coord(ierr)
+      call check_croco_s_coord(ierr)
 #endif
       call check_history(ierr)
 
@@ -107,13 +107,13 @@ contains
       integer, intent(inout) :: ierr
 
       if (nwrt <= 0) then
-         MPI_master_only write (stdout, '(a,i0)') &
+         MPI_master_only write (stdout, *) &
             'Error - History output frequency nwrt must be > 0: ', nwrt
          ierr = ierr + 1
       end if
 
       if (nrpfhis < -1) then
-         MPI_master_only write (stdout, '(a,i0)') &
+         MPI_master_only write (stdout, *) &
             'Error - nrpfhis must be >= -1: ', nrpfhis
          ierr = ierr + 1
       end if
@@ -164,7 +164,7 @@ contains
    !---------------------------------------------------------------------
    !  check_nml_croco_s_coord
    !---------------------------------------------------------------------
-   subroutine check_nml_croco_s_coord(ierr)
+   subroutine check_croco_s_coord(ierr)
       use param, ONLY: stdout
       use croco_namelist, ONLY: theta_s, theta_b, Tcline
 #  if defined MPI
@@ -199,7 +199,7 @@ contains
          ierr = ierr + 1
       end if
 
-   end subroutine check_nml_croco_s_coord
+   end subroutine check_croco_s_coord
 #endif /* SOLVE3D */
 
 END MODULE croco_namelist_check

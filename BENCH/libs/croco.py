@@ -454,8 +454,9 @@ class Croco:
             self.change_card_restart(filename, 3, file_nc_rst)
 
             # second run with filename_rst
-            self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 3)
-            self.change_card_initial(filename_rst, file_nc_rst)
+            self.change_nml(filename_nml_rst , "croco_time_stepping", "ntimes", 3)
+            self.change_nml(filename_nml_rst , "croco_initial", "nrrec", 2)
+            self.change_nml(filename_nml_rst , "croco_initial", "ininame", file_nc_rst)
 
             # and for USE_CALENDAR
             self.change_nml_end_date(filename_nml, 3)
@@ -475,20 +476,6 @@ class Croco:
         }
         self.apply_patches(patches)
         delete_lines_from_file(full_filename, "restart", line_offset=3, num_lines=2)
-
-    def change_card_initial(self, filename, file_nc_rst):
-        full_filename = os.path.join(self.dirname, filename)
-        patches = {
-            filename: {
-                "mode": "insert-after",
-                "what": "initial:",
-                "insert": ["     2", file_nc_rst],
-                "descr": "change restart for reading step to NRREC=2 and file=%s"
-                % file_nc_rst,
-            }
-        }
-        self.apply_patches(patches)
-        delete_lines_from_file(full_filename, "initial", line_offset=3, num_lines=2)
 
     def change_nml_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)

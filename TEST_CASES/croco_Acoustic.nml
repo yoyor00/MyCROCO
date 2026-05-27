@@ -28,5 +28,10 @@
   hisname = "acous_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "INPUT/gravadj_rst.nc"
+/
+
 
 ! End of namelist

@@ -27,7 +27,7 @@
 !  analytical expressions.
 !----------------------------------------------------------------------
 !
-        use croco_namelist, only: dt
+        use croco_namelist, only: dt, nrrec
 #ifdef AGRIF
       use Agrif_Util
 #endif

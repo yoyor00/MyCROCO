@@ -22,5 +22,10 @@
   hisname = "croco_his_diag_adv.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "croco_ini_diag_adv.nc"
+/
+
 
 ! End of namelist

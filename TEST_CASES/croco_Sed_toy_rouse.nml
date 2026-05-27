@@ -30,5 +30,10 @@
   hisname = "sed_toy_rouse_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "fileini"
+/
+
 
 ! End of namelist

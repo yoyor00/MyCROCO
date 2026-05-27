@@ -74,7 +74,8 @@ contains
       use croco_namelist, ONLY: fname_nml, &
                                 title, logname, &
                                 dt, ntimes, ndtfast, ninfo, &
-                                ldefhis, nwrt, nrpfhis, hisname
+                                ldefhis, nwrt, nrpfhis, hisname, &
+                                nrrec, ininame
       use croco_namelist_check, ONLY: check_all
       use croco_namelist_init, ONLY: init_all
 #ifdef NBQ
@@ -100,6 +101,7 @@ contains
       namelist /croco_logfile/ logname
       namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
       namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
+      namelist /croco_initial/ nrrec, ininame
 #ifdef NBQ
       namelist /croco_time_stepping_nbq/ ndtnbq, csound_nbq, visc2_nbq
 #endif
@@ -204,6 +206,16 @@ contains
          read (nmlunit, nml=croco_history, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then
             call fatal_nml_error("croco_history (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+
+      ! --- croco_initial (optional) ---
+      call check_nml_presence(nmlunit, "croco_initial", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_initial, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_initial (parse error)")
             ierr = ierr + 1; close (nmlunit); return
          end if
       end if

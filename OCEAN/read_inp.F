@@ -340,36 +340,7 @@
 #endif
 
 
-!
-! Initial conditions file name. Check its availability (in the case
-! of analytical initial conditions and nrrec=0 initial conditions are
-! created internally and no file is needed).
-!
-      elseif (keyword(1:kwlen).eq.'initial') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) nrrec
-#ifdef ANA_INITIAL
-        if (nrrec.gt.0) then
-#endif
-          read(input,'(A)',err=95) fname
-          lstr=lenstr(fname)
-#if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#endif
-#ifdef ENSEMBLE
-          if (ln_ens_rst_in.OR.(nrrec.lt.0)) then
-            nrrec = abs(nrrec)
-            fname=cmember//fname
-            lstr=lenstr(fname)
-          endif
-#endif
-          open (testunit, file=fname(1:lstr), status='old', err=97)
-          close(testunit)
-          ininame=fname(1:lstr)
 
-#ifdef ANA_INITIAL
-        endif
-#endif
 #ifndef ANA_GRID
 !
 ! Grid file name. Check its availability.
@@ -2193,15 +2164,6 @@ c        close(testunit)
       ! start of summary writing
       if (ierr.eq.0) then
 
-#ifdef ANA_INITIAL
-          if (nrrec.gt.0) then
-#endif
-          lstr=lenstr(ininame)
-          MPI_master_only write(stdout,'(1x,A,2x,A,4x,A,I3)')
-     &     'Initial State File:', ininame(1:lstr), 'Record:',nrrec
-#ifdef ANA_INITIAL
-          endif
-#endif
 #ifndef ANA_GRID
           lstr=lenstr(grdname)
           MPI_master_only write(stdout,'(10x,A,2x,A)')

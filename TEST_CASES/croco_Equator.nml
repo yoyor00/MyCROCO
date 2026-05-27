@@ -22,5 +22,10 @@
   hisname = "equator_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "equator_ini.nc"
+/
+
 
 ! End of namelist

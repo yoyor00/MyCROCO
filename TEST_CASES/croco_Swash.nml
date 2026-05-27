@@ -28,5 +28,10 @@
   hisname = "swash_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "swash_rst.nc"
+/
+
 
 ! End of namelist

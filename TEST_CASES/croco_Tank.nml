@@ -28,5 +28,10 @@
   hisname = "tank_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "tank_rst.nc"
+/
+
 
 ! End of namelist

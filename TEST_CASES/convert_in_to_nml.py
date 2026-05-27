@@ -74,6 +74,9 @@ MAPPINGS = [
     ("history",            0,   2,  "int",   "&croco_history",             "nrpfhis"),
     ("history",            1,   0,  "str",   "&croco_history",             "hisname"),
 
+    ("initial",            0,   0,  "int",   "&croco_initial",             "nrrec"),
+    ("initial",            1,   0,  "str",   "&croco_initial",             "ininame"),
+
 
     # ("xios_origin_date",   0,   0,  "str",   "&croco_use_calendar",        "xios_origin_date"),
     # ("grid",               0,   0,  "str",   "&croco_grid",                "fname_grid"),
@@ -82,8 +85,6 @@ MAPPINGS = [
     # ("climatology",        0,   0,  "str",   "&croco_climatology",         "fname_climatology"),
     # ("boundary",           0,   0,  "str",   "&croco_boundary",            "fname_boundary"),
 
-    # ("initial",            0,   0,  "int",   "&croco_initial",             "nrrec"),
-    # ("initial",            1,   0,  "str",   "&croco_initial",             "fname_initial"),
 
     # ("restart",            0,   0,  "int",   "&croco_restart",             "nrst"),
     # ("restart",            0,   1,  "int",   "&croco_restart",             "nrpfrst"),

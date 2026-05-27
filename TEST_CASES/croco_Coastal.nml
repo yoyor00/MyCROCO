@@ -30,5 +30,10 @@
   hisname = "croco_his.nc"
 /
 
+&croco_initial
+  nrrec = 1
+  ininame = "vilaine_ini.nc"
+/
+
 
 ! End of namelist

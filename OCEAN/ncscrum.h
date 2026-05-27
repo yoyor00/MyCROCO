@@ -2105,7 +2105,7 @@
 
       REAL(kind=8) :: origin_date_in_sec, xios_origin_date_in_sec
 
-      character*180 ininame,  grdname
+      character*180 grdname
      &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
@@ -2213,7 +2213,7 @@
       common /cncscrum/   
      &             origin_date, start_date_run
      &         ,   xios_origin_date
-     &         ,   ininame,  grdname
+     &         ,   grdname
      &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname, origin_date_in_sec

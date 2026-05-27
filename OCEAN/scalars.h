@@ -118,8 +118,6 @@
 !                                                           fields.
 ! ntsavg   Starting timestep for accumulation of output time-
 !                                                 averaged fields.
-! nrrec    Counter of restart time records to read from disk,
-!                   the last is used as the initial conditions.
 !
 ! levsfrc  Deepest level to apply surface momentum stress as
 !                                                 bodyforce.
@@ -173,7 +171,7 @@
        real  tauT_in, tauT_out, tauM_in, tauM_out
 #endif
       integer numthreads,     ntstart
-     &      , nfast,  nrrec,     nrst
+     &      , nfast,  nrst
 #ifdef EXACT_RESTART
      &     ,  forw_start
 #endif
@@ -341,7 +339,7 @@
      &                      , tauT_in, tauT_out, tauM_in, tauM_out
 #endif
      &      , numthreads,     ntstart
-     &      , nfast,  nrrec,     nrst
+     &      , nfast,  nrst
 #ifdef EXACT_RESTART
      &       , forw_start
 #endif

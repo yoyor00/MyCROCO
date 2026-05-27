@@ -16,5 +16,10 @@
   hisname = "soliton_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "soliton_rst.nc"
+/
+
 
 ! End of namelist

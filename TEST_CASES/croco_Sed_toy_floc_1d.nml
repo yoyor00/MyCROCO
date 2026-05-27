@@ -16,8 +16,8 @@
 /
 
 &croco_use_calendar
-  start_date = "2019/01/01"
-  end_date = "2019/01/05"
+  start_date = "2019-01-01 00:00:00"
+  end_date = "2019-01-05 00:00:00"
   dt_his = 0.25
   dt_avg = 24
   dt_rst = 24
@@ -28,6 +28,11 @@
   nwrt = 90
   nrpfhis = 0
   hisname = "sed_toy_floc_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "fileini"
 /
 
 

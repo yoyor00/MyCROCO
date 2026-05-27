@@ -22,5 +22,9 @@
   hisname = "shoreface_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+/
+
 
 ! End of namelist

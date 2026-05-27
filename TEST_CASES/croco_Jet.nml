@@ -28,5 +28,10 @@
   hisname = "jet_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "TEST_CASES/xxxxx"
+/
+
 
 ! End of namelist

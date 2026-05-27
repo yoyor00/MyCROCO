@@ -22,5 +22,10 @@
   hisname = "seamount_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "seamount_rst.nc"
+/
+
 
 ! End of namelist

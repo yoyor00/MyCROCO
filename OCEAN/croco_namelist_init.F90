@@ -30,6 +30,7 @@ MODULE croco_namelist_init
    public :: init_all
    public :: init_time_stepping
    public :: init_history
+   public :: init_initial
 #ifdef LOGFILE
    public :: init_logfile
 #endif
@@ -39,6 +40,8 @@ MODULE croco_namelist_init
 #ifdef USE_CALENDAR
    public :: init_calendar
 #endif
+
+   integer :: testunit = 40 ! to test availability of input files
 
 contains
 
@@ -62,6 +65,7 @@ contains
       call init_calendar()
 #endif
       call init_history(ierr)
+      call init_initial(ierr)
 #ifdef LOGFILE
       if (ierr == 0) call init_logfile(ierr)
 #endif
@@ -121,6 +125,60 @@ contains
 #endif
 
    end subroutine init_history
+
+   !---------------------------------------------------------------------
+   !  init_initial
+   !  Adjust ininame for MPI/ENSEMBLE
+   !  Check its availability (in the case
+   !  of analytical initial conditions and nrrec=0 initial conditions are
+   !  created internally and no file is needed).
+   !---------------------------------------------------------------------
+   subroutine init_initial(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: ininame, nrrec
+#if defined MPI
+      use scalars, ONLY: mynode, mynode2, NNODES2
+#endif
+      implicit none
+#ifdef ENSEMBLE
+#include "mpi_cpl.h"
+#endif
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+#ifdef ANA_INITIAL
+        if (nrrec.gt.0) then
+#endif
+
+#if defined MPI && defined PARALLEL_FILES
+      call insert_node(ininame, len_trim(ininame), mynode2, NNODES2, ierr)
+      if (ierr /= 0) then
+         MPI_master_only write (stdout, *) &
+            'Error in init_initial: insert_node failed for ininame'
+         return
+      end if
+#endif
+
+      ininame = trim(ininame)
+
+#ifdef ENSEMBLE
+      ininame = cmember//ininame
+#endif
+
+   open(testunit, file=trim(ininame), status='old', iostat=ios)
+
+   if (ios == 0) then
+      close(testunit)
+   else
+      MPI_master_only write(stdout, *) &
+         'Error: cannot open initial file ', trim(ininame)
+      return
+   endif
+#ifdef ANA_INITIAL
+   endif
+#endif
+
+   end subroutine init_initial
 
 #ifdef LOGFILE
    !---------------------------------------------------------------------
@@ -214,8 +272,8 @@ contains
    !  Only active when nrrec == 0 (ANA_INITIAL).
    !---------------------------------------------------------------------
    subroutine init_calendar()
-      use croco_namelist, ONLY: start_date
-      use scalars, ONLY: nrrec, start_time
+      use croco_namelist, ONLY: start_date, nrrec
+      use scalars, ONLY: start_time
       use ncscrum, ONLY: origin_year, origin_month, origin_day, &
                          origin_hour, origin_minute, origin_second, &
                          origin_date, origin_date_in_sec

@@ -36,5 +36,10 @@
   hisname = "CROCO_FILES/croco_his.nc"
 /
 
+&croco_initial
+  nrrec = 1
+  ininame = "CROCO_FILES/croco_ini.nc"
+/
+
 
 ! End of namelist

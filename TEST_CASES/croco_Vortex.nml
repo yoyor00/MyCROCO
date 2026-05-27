@@ -28,5 +28,10 @@
   hisname = "vortex_his.nc"
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "TEST_CASES/VORTEX/vortex_ini.nc"
+/
+
 
 ! End of namelist
