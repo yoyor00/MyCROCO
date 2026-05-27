@@ -15,7 +15,7 @@
                               ! Read point or grided shortwave
       subroutine get_srflux   ! radiation flux at the appropriate
                               ! time from forcing NetCDF file.
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, frcname
 # ifdef OPENACC
       use exchange_device_host
 # endif

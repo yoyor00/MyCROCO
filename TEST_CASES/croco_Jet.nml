@@ -39,5 +39,9 @@
   rstname = "jet_rst.nc"
 /
 
+&croco_grid
+  grdname = "TEST_CASES/xxxxx"
+/
+
 
 ! End of namelist

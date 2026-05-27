@@ -102,4 +102,53 @@ MODULE croco_namelist
    real :: dt_rst = 12.0
 #endif
 
+#ifndef ANA_GRID
+   ! &croco_grid
+   character(len=180) :: grdname = "CROCO_FILES/croco_grd.nc"
+#endif
+
+   ! &croco_forcing
+   character(len=180) :: frcname = "CROCO_FILES/croco_frc.nc"
+   ! TODO : clean this mess of cpp keys
+#if !defined(NO_FRCFILE) && ( \
+   defined(TIDES) ||\
+   (defined(MRL_WCI) &&\
+   !defined(ANA_WWAVE) && \
+   !defined(WKB_WWAVE) && \
+   !defined(OW_COUPLING) ) || \
+   (defined(SFLX_CORR) &&\
+   !defined(ANA_SSS) && \
+   !defined(BULK_FLUX) && \
+   !defined(OA_COUPLING) ) || \
+   (defined(QCORRECTION) &&\
+   !defined(ANA_SST) && \
+   !defined(OA_COUPLING) ) || \
+   (defined(BBL) &&\
+   !defined(ANA_BSEDIM) && \
+   !defined(SEDIMENT) ) || \
+   ( !defined(ANA_STFLUX) && \
+   !defined(BULK_FLUX) && \
+   !defined(OA_COUPLING) && \
+   defined(SOLVE3D)) ||\
+   (defined(SALINITY) &&\
+   !defined(ANA_SSFLUX) && \
+   !defined(BULK_FLUX) && \
+   !defined(OA_COUPLING) && \
+   defined(SOLVE3D)) ||\
+   ( !defined(ANA_SRFLUX) && \
+   !defined(BULK_FLUX) && \
+   !defined(OA_COUPLING) && \
+   defined(SOLVE3D)) ||\
+   ( !defined(ANA_SMFLUX) && \
+   !defined(BULK_FLUX) && \
+   !defined(OA_COUPLING) ) || \
+   (defined(BULK_FLUX) &&\
+   !defined(SALINITY) ) || \
+   (defined(WAVE_OFFLINE) &&\
+   !defined(MUSTANG) ) )
+   logical :: use_frcname = .true.
+#else
+   logical :: use_frcname = .false.
+#endif
+
 END MODULE croco_namelist

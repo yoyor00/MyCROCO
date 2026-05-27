@@ -32,6 +32,10 @@ MODULE croco_namelist_init
    public :: init_history
    public :: init_initial
    public :: init_restart
+#ifndef ANA_GRID
+   public :: init_grid
+#endif
+   public :: init_forcing
 #ifdef LOGFILE
    public :: init_logfile
 #endif
@@ -54,6 +58,7 @@ contains
    !  init_restart / init_logfile, so ierr is checked before init_logfile.
    !---------------------------------------------------------------------
    subroutine init_all(ierr)
+      use croco_namelist, ONLY: use_frcname
       implicit none
       integer, intent(out) :: ierr
 
@@ -68,6 +73,12 @@ contains
       call init_history(ierr)
       call init_initial(ierr)
       call init_restart(ierr)
+#ifndef ANA_GRID
+      call init_grid(ierr)
+#endif
+      if (use_frcname) then
+         call init_forcing(ierr)
+      end if
 #ifdef LOGFILE
       if (ierr == 0) call init_logfile(ierr)
 #endif
@@ -103,7 +114,8 @@ contains
       implicit none
       integer, intent(inout) :: ierr
 
-      call adjust_filename(hisname, "hisname", ierr)
+      call adjust_filename_parallel(hisname, "hisname", ierr)
+      call adjust_filename_ensemble(hisname)
       if (ierr /= 0) return
 
 #ifdef USE_CALENDAR
@@ -132,7 +144,8 @@ contains
       if (nrrec == 0) return
 #endif
 
-      call adjust_filename(ininame, "ininame", ierr)
+      call adjust_filename_parallel(ininame, "ininame", ierr)
+      call adjust_filename_ensemble(ininame)
       if (ierr /= 0) return
 
       open (testunit, file=trim(ininame), status='old', iostat=ios)
@@ -159,7 +172,8 @@ contains
       implicit none
       integer, intent(inout) :: ierr
 
-      call adjust_filename(rstname, "rstname", ierr)
+      call adjust_filename_parallel(rstname, "rstname", ierr)
+      call adjust_filename_ensemble(rstname)
       if (ierr /= 0) return
 
 #ifdef USE_CALENDAR
@@ -167,6 +181,64 @@ contains
 #endif
 
    end subroutine init_restart
+
+#ifndef ANA_GRID
+   !---------------------------------------------------------------------
+   !  init_grid
+   !  Adjust grdname for MPI and check file availability.
+   !---------------------------------------------------------------------
+   subroutine init_grid(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: grdname
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      call adjust_filename_parallel(grdname, "grdname", ierr)
+      if (ierr /= 0) return
+
+      open (testunit, file=trim(grdname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open grid file ', trim(grdname)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_grid
+# endif
+
+   !---------------------------------------------------------------------
+   !  init_forcing
+   !  Adjust frcname for MPI and check file availability.
+   !---------------------------------------------------------------------
+   subroutine init_forcing(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: frcname
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      call adjust_filename_parallel(frcname, "frcname", ierr)
+      if (ierr /= 0) return
+
+      open (testunit, file=trim(frcname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open forcing file ', trim(frcname)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_forcing
 
 #ifdef LOGFILE
    !---------------------------------------------------------------------
@@ -188,8 +260,9 @@ contains
       integer :: ios
       character(len=len(logname) + 20) :: logfile_path
 
-      call adjust_filename(logname, "logname", ierr)
+      call adjust_filename_parallel(logname, "logname", ierr)
       if (ierr /= 0) return
+      call adjust_filename_ensemble(logname)
 
       if (mynode == 0) then
 #ifndef AGRIF
@@ -277,7 +350,7 @@ contains
 #endif /* USE_CALENDAR */
 
    !---------------------------------------------------------------------
-   !  adjust_filename  (private helper)
+   !  adjust_filename_parallel  (private helper)
    !
    !  Apply all standard filename adjustments in one place:
    !    1. insert MPI node suffix  (only if MPI + PARALLEL_FILES)
@@ -286,15 +359,12 @@ contains
    !
    !  context : caller name used in error messages (e.g. "hisname")
    !---------------------------------------------------------------------
-   subroutine adjust_filename(fname, context, ierr)
+   subroutine adjust_filename_parallel(fname, context, ierr)
       use param, ONLY: stdout
 #if defined MPI
       use scalars, ONLY: mynode, mynode2, NNODES2
 #endif
       implicit none
-#ifdef ENSEMBLE
-#include "mpi_cpl.h"
-#endif
       character(len=*), intent(inout) :: fname
       character(len=*), intent(in)    :: context
       integer, intent(inout) :: ierr
@@ -303,17 +373,29 @@ contains
       call insert_node(fname, len_trim(fname), mynode2, NNODES2, ierr)
       if (ierr /= 0) then
          MPI_master_only write (stdout, '(3a)') &
-            'Error in adjust_filename: insert_node failed for ', trim(context), '.'
+            'Error in adjust_filename_parallel: insert_node failed for ', &
+            trim(context), '.'
          return
       end if
 #endif
+      fname = trim(fname)
+   end subroutine adjust_filename_parallel
+
+   !---------------------------------------------------------------------
+   !  adjust_filename_ensemble (private helper)
+   !---------------------------------------------------------------------
+   subroutine adjust_filename_ensemble(fname)
+      implicit none
+#ifdef ENSEMBLE
+#include "mpi_cpl.h"
+#endif
+      character(len=*), intent(inout) :: fname
 
       fname = trim(fname)
-
 #ifdef ENSEMBLE
       fname = cmember//fname
 #endif
 
-   end subroutine adjust_filename
+   end subroutine adjust_filename_ensemble
 
 END MODULE croco_namelist_init

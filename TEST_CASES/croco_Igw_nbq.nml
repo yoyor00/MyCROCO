@@ -39,5 +39,13 @@
   rstname = "igw_rst.nc"
 /
 
+&croco_grid
+  grdname = "TEST_CASES/igw_grd.nc"
+/
+
+&croco_forcing
+  frcname = "TEST_CASES/igw_frc.nc"
+/
+
 
 ! End of namelist

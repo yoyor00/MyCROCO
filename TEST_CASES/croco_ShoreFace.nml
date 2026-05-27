@@ -32,5 +32,9 @@
   rstname = "shoreface_rst.nc"
 /
 
+&croco_forcing
+  frcname = "TEST_CASES/shoreface_JW_frc.nc"
+/
+
 
 ! End of namelist

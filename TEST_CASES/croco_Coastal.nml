@@ -41,5 +41,13 @@
   rstname = "croco_rst.nc"
 /
 
+&croco_grid
+  grdname = "croco_grd.nc"
+/
+
+&croco_forcing
+  frcname = "croco_frc_vilaine.nc"
+/
+
 
 ! End of namelist

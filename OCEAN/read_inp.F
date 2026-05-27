@@ -340,71 +340,6 @@
 #endif
 
 
-
-#ifndef ANA_GRID
-!
-! Grid file name. Check its availability.
-!
-      elseif (keyword(1:kwlen).eq.'grid') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-        open(testunit,file=fname(1:lstr), status='old', err=97)
-        close(testunit)
-        grdname=fname(1:lstr)
-
-#endif
-
-
-! forcing file for tides
-#if !defined NO_FRCFILE  && \
-        ( defined TIDES \
-          || (defined MRL_WCI     && !defined ANA_WWAVE && \
-                                     !defined WKB_WWAVE && \
-                                     !defined OW_COUPLING) \
-          || (defined SFLX_CORR   && !defined ANA_SSS   && \
-                                   !defined BULK_FLUX   && \
-                                   !defined OA_COUPLING) \
-          || (defined QCORRECTION && !defined ANA_SST   && \
-                                   !defined OA_COUPLING) \
-          || (defined BBL         && !defined ANA_BSEDIM  && \
-                                   !defined SEDIMENT) \
-          || (!defined ANA_STFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (defined SALINITY    && !defined ANA_SSFLUX && \
-                                   !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                    defined SOLVE3D) \
-          || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING) \
-          || ( defined BULK_FLUX    && !defined SALINITY ) \
-          || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
-!
-!
-! Forcing file name. Check its availability.
-!
-      elseif (keyword(1:kwlen).eq.'forcing') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-        open (testunit, file=fname(1:lstr), status='old', err=97)
-        close(testunit)
-        frcname=fname(1:lstr)
-
-#endif  /* !defined NO_FRCFILE */
-
-!
-
 #if defined WAVE_OFFLINE && defined MUSTANG
 ! Forcing file name. Check its availability.
 !
@@ -2146,46 +2081,6 @@ c        close(testunit)
 
       ! start of summary writing
       if (ierr.eq.0) then
-
-#ifndef ANA_GRID
-          lstr=lenstr(grdname)
-          MPI_master_only write(stdout,'(10x,A,2x,A)')
-     &                   'Grid File:', grdname(1:lstr)
-#endif
-
-
-! forcing file for tides
-#if !defined NO_FRCFILE  && \
-          ( defined TIDES \
-          || (defined MRL_WCI     && !defined ANA_WWAVE && \
-                                        !defined WKB_WWAVE && \
-                                        !defined OW_COUPLING) \
-          || (defined SFLX_CORR   && !defined ANA_SSS   && \
-                                   !defined BULK_FLUX   && \
-                                   !defined OA_COUPLING) \
-          || (defined QCORRECTION && !defined ANA_SST   && \
-                                   !defined OA_COUPLING) \
-          || (defined BBL         && !defined ANA_BSEDIM  && \
-                                   !defined SEDIMENT) \
-          || (!defined ANA_STFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (defined SALINITY    && !defined ANA_SSFLUX && \
-                                   !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING) \
-          || ( defined BULK_FLUX    && !defined SALINITY ) \
-          || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
-! Forcing file name.
-          lstr=lenstr(frcname)
-          MPI_master_only write(stdout,'(2x,A,2x,A)')
-     &             'Forcing Data File:', frcname(1:lstr)
-#endif  /* !defined NO_FRCFILE */
 
 !
 #if defined WAVE_OFFLINE && defined MUSTANG

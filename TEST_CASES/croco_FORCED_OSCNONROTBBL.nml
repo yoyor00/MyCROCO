@@ -33,5 +33,13 @@
   rstname = "scm_rst.nc"
 /
 
+&croco_grid
+  grdname = "filegrid"
+/
+
+&croco_forcing
+  frcname = "fileforc"
+/
+
 
 ! End of namelist

@@ -2105,8 +2105,7 @@
 
       REAL(kind=8) :: origin_date_in_sec, xios_origin_date_in_sec
 
-      character*180 grdname
-     &         ,   frcname,  bulkname,  usrname
+      character*180 bulkname, usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
 #ifdef AVERAGES
@@ -2213,8 +2212,7 @@
       common /cncscrum/   
      &             origin_date, start_date_run
      &         ,   xios_origin_date
-     &         ,   grdname
-     &         ,   frcname, bulkname,  usrname
+     &         ,   bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname, origin_date_in_sec
      &         ,   xios_origin_date_in_sec

@@ -16,7 +16,7 @@
                                     ! Read point or grided surface
       subroutine get_stflux (itrc)  ! flux for tracer variables itrc
                                     ! from forcing NetCDF file.
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, frcname
 # ifdef OPENACC
       use exchange_device_host
 # endif

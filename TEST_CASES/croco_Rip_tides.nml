@@ -32,5 +32,9 @@
   rstname = "rip_rst.nc"
 /
 
+&croco_grid
+  grdname = "rip_grd.nc"
+/
+
 
 ! End of namelist

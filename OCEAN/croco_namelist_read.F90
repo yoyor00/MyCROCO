@@ -76,7 +76,8 @@ contains
                                 dt, ntimes, ndtfast, ninfo, &
                                 ldefhis, nwrt, nrpfhis, hisname, &
                                 nrrec, ininame, &
-                                nrst, nrpfrst, rstname
+                                nrst, nrpfrst, rstname, &
+                                use_frcname, frcname
       use croco_namelist_check, ONLY: check_all
       use croco_namelist_init, ONLY: init_all
 #ifdef NBQ
@@ -88,6 +89,9 @@ contains
 #ifdef USE_CALENDAR
       use croco_namelist, ONLY: start_date, end_date, &
                                 dt_his, dt_avg, dt_rst
+#endif
+#ifndef ANA_GRID
+      use croco_namelist, ONLY: grdname
 #endif
 #if defined MPI
       use scalars, ONLY: mynode
@@ -114,6 +118,10 @@ contains
       namelist /croco_use_calendar/ start_date, end_date, &
          dt_his, dt_avg, dt_rst
 #endif
+#ifndef ANA_GRID
+      namelist /croco_grid/ grdname
+#endif
+      namelist /croco_forcing/ frcname
 
       ierr = 0
 
@@ -232,9 +240,31 @@ contains
          end if
       end if
 
+#ifndef ANA_GRID
+      ! --- croco_grid (optional) ---
+      call check_nml_presence(nmlunit, "croco_grid", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_grid, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_grid (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif /* ANA_GRID */
+
+      if (use_frcname) then
+         ! --- croco_forcing (optional) ---
+         call check_nml_presence(nmlunit, "croco_forcing", .false., found, ierr)
+         if (found) then
+            read (nmlunit, nml=croco_forcing, iostat=ios); rewind (nmlunit)
+            if (ios /= 0) then
+               call fatal_nml_error("croco_forcing (parse error)")
+               ierr = ierr + 1; close (nmlunit); return
+            end if
+         end if
+      end if
+
       ! --- croco_logfile (optional) ---
-      ! Read last so that all warnings above are printed to stdout
-      ! before the log file is opened and stdout is redirected.
 #ifdef LOGFILE
       call check_nml_presence(nmlunit, "croco_logfile", .false., found, ierr)
       if (found) then
@@ -253,7 +283,29 @@ contains
       ! so that check_all and init_all never run on incomplete data.
       if (ierr /= 0) return
 
+      ! ----------------------------------------------------------------
+      ! Phase 2 – validate all parameter values
+      ! All check_xxx routines run regardless of individual failures so
+      ! the user sees the complete error list in one pass.
+      ! ----------------------------------------------------------------
+      call check_all(ierr)
+      if (ierr /= 0) return
+
+      ! ----------------------------------------------------------------
+      ! Phase 3 – compute derived quantities
+      ! init logfile change stdout direction
+      ! ----------------------------------------------------------------
+      call init_all(ierr)
+
+      ! ----------------------------------------------------------------
+      ! Phase 4 – write nml in log
+      ! ----------------------------------------------------------------
       ! Echo all namelists to stdout so the user can verify what was read
+      ! Note : can not do that in subroutine due to incompatibility of
+      ! AGRIF conv with a namelist declaration at module level
+      MPI_master_only WRITE (stdout, *) "---------------------"
+      MPI_master_only WRITE (stdout, *) "CROCO namelist :"
+      MPI_master_only WRITE (stdout, *)
       MPI_master_only WRITE (stdout, nml=croco_title)
 #ifdef LOGFILE
       MPI_master_only WRITE (stdout, nml=croco_logfile)
@@ -271,20 +323,16 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_history)
       MPI_master_only WRITE (stdout, nml=croco_initial)
       MPI_master_only WRITE (stdout, nml=croco_restart)
+#ifndef ANA_GRID
+      MPI_master_only WRITE (stdout, nml=croco_grid)
+#endif
+      if (use_frcname) then
+         MPI_master_only WRITE (stdout, nml=croco_forcing)
+      end if
 
-      ! ----------------------------------------------------------------
-      ! Phase 2 – validate all parameter values
-      ! All check_xxx routines run regardless of individual failures so
-      ! the user sees the complete error list in one pass.
-      ! ----------------------------------------------------------------
-      call check_all(ierr)
-      if (ierr /= 0) return
-
-      ! ----------------------------------------------------------------
-      ! Phase 3 – compute derived quantities
-      ! ----------------------------------------------------------------
-      call init_all(ierr)
-
+      MPI_master_only WRITE (stdout, *) "End of CROCO namelist"
+      MPI_master_only WRITE (stdout, *) "---------------------"
+      MPI_master_only WRITE (stdout, *)
    end subroutine read_nml
 
    !---------------------------------------------------------------------
