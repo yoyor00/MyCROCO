@@ -32,7 +32,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - BENCH : Fix report check status in case of several files (#498)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
-  2d and 3d U-momentum for northern open boundary conditions (#508).
+  2d and 3d U-momentum for northern open boundary conditions when 
+  QDM_OBC_TANG_CORRECT is activated (#508).
 
 
 ### Changed
