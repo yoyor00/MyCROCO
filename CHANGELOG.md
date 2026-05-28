@@ -35,6 +35,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   2d and 3d U-momentum for northern open boundary conditions when 
   QDM_OBC_TANG_CORRECT is activated (#508).
 
+- XIOS : fix wrong name for mask_rho in field_def_croco.xml_full_withcpp (#513)
 
 ### Changed
 
@@ -139,3 +140,4 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
+  S. Theetten
