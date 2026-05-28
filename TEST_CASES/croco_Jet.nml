@@ -43,5 +43,9 @@
   grdname = "TEST_CASES/xxxxx"
 /
 
+&croco_climatology
+  clmname = "TEST_CASES/xxxxx"
+/
+
 
 ! End of namelist

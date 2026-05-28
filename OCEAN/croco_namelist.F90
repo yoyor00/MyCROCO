@@ -151,6 +151,19 @@ MODULE croco_namelist
    logical :: use_frcname = .false.
 #endif
 
+#if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
+   ! &croco_bulk_forcing
+   character(len=180) :: bulkname = "CROCO_FILES/croco_blk.nc"
+#endif
+
+#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
+   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
+   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
+   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+   ! &croco_climatology
+   character(len=180) :: clmname = "CROCO_FILES/croco_clm.nc"
+#endif
+
 #if defined WAVE_OFFLINE && defined MUSTANG
    ! &croco_wave_offline
    character(len=180) :: wave_file

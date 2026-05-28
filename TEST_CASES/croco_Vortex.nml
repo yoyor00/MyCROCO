@@ -43,5 +43,9 @@
   grdname = "TEST_CASES/VORTEX/vortex_grd.nc"
 /
 
+&croco_climatology
+  clmname = "TEST_CASES/VORTEX/vortex_clm.nc"
+/
+
 
 ! End of namelist

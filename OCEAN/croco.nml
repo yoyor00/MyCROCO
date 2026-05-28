@@ -1,21 +1,28 @@
 &croco_title
-  title = "Example"
+  title = "BENGUELA TEST MODEL"
 /
+
+&croco_logfile
+  logname = "croco.log"
+/
+
 &croco_time_stepping
-  ntimes = 3240
-  dt = 9600
-  ndtfast = 65
-  ninfo = 1 
+  ntimes = 720
+  dt = 3600
+  ndtfast = 60
+  ninfo = 1
 /
 
 &croco_time_stepping_nbq
   ndtnbq = 1
   csound_nbq = 1000
-  visc2_nbq = 0.01d0
+  visc2_nbq = 0.01
 /
 
-&croco_logfile
-  fname_logfile = "croco.log"
+&croco_s_coord
+  theta_s = 7.0d0
+  theta_b = 2.0d0
+  Tcline = 200.0d0
 /
 
 &croco_use_calendar
@@ -27,8 +34,42 @@
 /
 
 &croco_history
-  ldefhis = T
+  ldefhis = .true.
   nwrt = 72
   nrpfhis = 0
   hisname = "CROCO_FILES/croco_his.nc"
 /
+
+&croco_initial
+  nrrec = 1
+  ininame = "CROCO_FILES/croco_ini.nc"
+/
+
+&croco_restart
+  nrst = 720
+  nrpfrst = -1
+  rstname = "CROCO_FILES/croco_rst.nc"
+/
+
+&croco_grid
+  grdname = "CROCO_FILES/croco_grd.nc"
+/
+
+&croco_forcing
+  frcname = "CROCO_FILES/croco_frc.nc"
+/
+
+&croco_bulk_forcing
+  bulkname = "CROCO_FILES/croco_blk.nc"
+/
+
+&croco_climatology
+  clmname = "CROCO_FILES/croco_clm.nc"
+/
+
+&croco_biology
+  bioname = "CROCO_FILES/croco_frcbio.nc"
+/
+
+
+! End of namelist

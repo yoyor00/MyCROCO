@@ -15,7 +15,7 @@
                              ! Read tracer(s) climatology
       subroutine get_tclima  ! fields from climatology file
                              ! at appropriate time.
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, clmname
 # ifdef OPENACC
       use exchange_device_host
 # endif

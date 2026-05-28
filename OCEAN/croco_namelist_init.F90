@@ -36,6 +36,15 @@ MODULE croco_namelist_init
    public :: init_grid
 #endif
    public :: init_forcing
+#if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
+   public :: init_bulk_forcing
+#endif
+#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
+   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
+   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
+   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+   public :: init_climatology
+#endif
 #if defined WAVE_OFFLINE && defined MUSTANG
    public :: init_wave_offline
 #endif
@@ -85,6 +94,15 @@ contains
       if (use_frcname) then
          call init_forcing(ierr)
       end if
+#if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
+      call init_bulk_forcing(ierr)
+#endif
+#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
+   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
+   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
+   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+      call init_climatology(ierr)
+#endif
 #if defined WAVE_OFFLINE && defined MUSTANG
       call init_wave_offline(ierr)
 #endif
@@ -251,6 +269,74 @@ contains
       end if
 
    end subroutine init_forcing
+
+#if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
+   !---------------------------------------------------------------------
+   !  init_bulk_forcing
+   !  Adjust bulkname for MPI and check file availability.
+   !---------------------------------------------------------------------
+   subroutine init_bulk_forcing(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: bulkname
+#  if defined MPI
+      use scalars, ONLY: mynode
+#  endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      call adjust_filename_parallel(bulkname, "bulkname", ierr)
+      if (ierr /= 0) return
+
+      open (testunit, file=trim(bulkname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open bulk forcing file ', trim(bulkname)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_bulk_forcing
+#endif
+
+#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
+   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
+   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
+   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+   !---------------------------------------------------------------------
+   !  init_climatology
+   !  Adjust clmname for MPI and check file availability.
+   !  For AGRIF child grids the climatology file is not used.
+   !---------------------------------------------------------------------
+   subroutine init_climatology(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: clmname
+#  if defined MPI
+      use scalars, ONLY: mynode
+#  endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+#  ifdef AGRIF
+      if (.not. Agrif_Root()) return
+#  endif
+
+      call adjust_filename_parallel(clmname, "clmname", ierr)
+      if (ierr /= 0) return
+
+      open (testunit, file=trim(clmname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open climatology file ', trim(clmname)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_climatology
+#endif
 
 #if defined WAVE_OFFLINE && defined MUSTANG
    !---------------------------------------------------------------------

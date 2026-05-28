@@ -14,7 +14,7 @@
                                          ! Read sea surface height
       subroutine get_ssh                 ! at appropriate time from
                                          ! climatology NetCDF file.
-      use croco_namelist, only: dt, frcname
+      use croco_namelist, only: dt, frcname, clmname
 # ifdef OPENACC
       use exchange_device_host
 # endif

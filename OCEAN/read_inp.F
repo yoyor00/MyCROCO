@@ -340,53 +340,6 @@
 #endif
 
 
-!
-! Bulk file name. Check its availability.
-!
-#if defined BULK_FLUX && !defined ANA_ABL_LSDATA
-# ifndef ONLINE /* ONLINE FORCING */
-        elseif (keyword(1:kwlen).eq.'bulk_forcing') then
-          call cancel_kwd (keyword(1:kwlen), ierr)
-          read(input,'(A)',err=95) fname
-          lstr=lenstr(fname)
-#  if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#  endif
-          open (testunit, file=fname(1:lstr), status='old', err=97)
-          close(testunit)
-          bulkname=fname(1:lstr)
-
-# endif  /* ONLINE FORCING */
-#endif
-
-
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-      (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
-      (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
-      (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
-!
-! Climatology file name. Check availability.
-!
-      elseif (keyword(1:kwlen).eq.'climatology') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef AGRIF
-       if (Agrif_Root()) then
-# endif
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-        open (testunit, file=fname(1:lstr), status='old', err=97)
-        close(testunit)
-        clmname=fname(1:lstr)
-
-# ifdef AGRIF
-       endif
-# endif
-#endif
-
-
 #if !defined ANA_BRY && defined FRC_BRY
 !
 ! Boundary file name. Check availability.
@@ -2049,33 +2002,6 @@
 
       ! start of summary writing
       if (ierr.eq.0) then
-!
-! Bulk file name. Check its availability.
-!
-#if defined BULK_FLUX && !defined ANA_ABL_LSDATA
-# ifndef ONLINE /* ONLINE FORCING */
-          lstr=lenstr(bulkname)
-          MPI_master_only write(stdout,'(2x,A,2x,A)')
-     &               '   Bulk Data File:', bulkname(1:lstr)
-# endif  /* ONLINE FORCING */
-#endif
-
-
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-     (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
-     (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
-     (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
-# ifdef AGRIF
-          if (Agrif_Root()) then
-# endif
-          lstr=lenstr(clmname)
-          MPI_master_only write(stdout,'(3x,A,2x,A)')
-     &            'Climatology File:', clmname(1:lstr)
-# ifdef AGRIF
-          endif
-# endif
-#endif
-
 
 #if !defined ANA_BRY && defined FRC_BRY
 # ifdef AGRIF

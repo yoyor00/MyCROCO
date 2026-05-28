@@ -55,6 +55,14 @@
   frcname = "CROCO_FILES/croco_frc.nc"
 /
 
+&croco_bulk_forcing
+  bulkname = "CROCO_FILES/croco_blk.nc"
+/
+
+&croco_climatology
+  clmname = "CROCO_FILES/croco_clm.nc"
+/
+
 &croco_biology
   bioname = "CROCO_FILES/croco_frcbio.nc"
 /

@@ -2105,7 +2105,7 @@
 
       REAL(kind=8) :: origin_date_in_sec, xios_origin_date_in_sec
 
-      character*180 bulkname, usrname
+      character*180 usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
 #ifdef AVERAGES
@@ -2165,12 +2165,6 @@
      &                                ,  dianamebio_avg
 # endif
 #endif
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA)\
- || (defined ZCLIMATOLOGY  && !defined ANA_SSH)\
- || (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA)\
- || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
-     &                                ,   clmname
-#endif
 #ifdef FRC_BRY
      &                                ,   bry_file
 #endif
@@ -2206,7 +2200,7 @@
       common /cncscrum/   
      &             origin_date, start_date_run
      &         ,   xios_origin_date
-     &         ,   bulkname,  usrname
+     &         ,   usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname, origin_date_in_sec
      &         ,   xios_origin_date_in_sec
@@ -2271,12 +2265,6 @@
 # ifdef AVERAGES
      &                                ,  dianamebio_avg
 # endif
-#endif
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA)\
- || (defined ZCLIMATOLOGY  && !defined ANA_SSH)\
- || (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA)\
- || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
-     &                                ,   clmname
 #endif
 #ifdef FRC_BRY
      &                                ,   bry_file

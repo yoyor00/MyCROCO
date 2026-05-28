@@ -47,5 +47,9 @@
   frcname = "TEST_CASES/igw_frc.nc"
 /
 
+&croco_climatology
+  clmname = "TEST_CASES/igw_clm.nc"
+/
+
 
 ! End of namelist

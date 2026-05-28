@@ -49,6 +49,14 @@
   frcname = "croco_frc_vilaine.nc"
 /
 
+&croco_bulk_forcing
+  bulkname = "bidon.nc"
+/
+
+&croco_climatology
+  clmname = "croco_clm.nc"
+/
+
 &croco_wave_offline
   wave_file = "wave_vilaine_201501.nc"
 /
