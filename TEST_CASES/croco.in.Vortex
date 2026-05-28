@@ -1,5 +1,5 @@
 title:
-        Vortex Example (DON'T FORGET make_vortex.m)
+        Vortex Example
 
 time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
                600      2880       50       1

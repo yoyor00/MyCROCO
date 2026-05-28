@@ -1,5 +1,5 @@
 &croco_title
-  title = "Vortex Example (DON'T FORGET make_vortex.m)"
+  title = "Vortex Example"
 /
 
 &croco_time_stepping
