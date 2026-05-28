@@ -4,14 +4,34 @@
 
 &croco_time_stepping
   ntimes = 5760
-  dt = 300.000
-  ndtfast= 50
+  dt = 300
+  ndtfast = 50
   ninfo = 10
 /
 
 &croco_s_coord
-   theta_s = 0.001d0
-   theta_b = 1.0d0
-   Tcline = 4.9d0   
+  theta_s = 0.001d0
+  theta_b = 1.0d0
+  Tcline = 4.9d0
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 5760
+  nrpfhis = 0
+  hisname = "innershelf_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "innershelf_rst.nc"
+/
+
+&croco_restart
+  nrst = 5760
+  nrpfrst = -1
+  rstname = "innershelf_rst.nc"
+/
+
+
+! End of namelist

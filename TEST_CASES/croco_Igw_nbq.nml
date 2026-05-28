@@ -4,21 +4,48 @@
 
 &croco_time_stepping
   ntimes = 5
-  dt = 30.000
-  ndtfast= 60
+  dt = 30.
+  ndtfast = 60
   ninfo = 500
-/
-
-&croco_s_coord
-   theta_s = 1.0d0
-   theta_b = 0.0d0
-   Tcline = 1.e3   
 /
 
 &croco_time_stepping_nbq
   ndtnbq = 10
   csound_nbq = 1500
-  visc2_nbq = 1.d0
+  visc2_nbq = 1.
 /
 
-! END OF NAMELIST
+&croco_s_coord
+  theta_s = 1
+  theta_b = 0
+  Tcline = 1.e3
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 5
+  nrpfhis = 0
+  hisname = "igw_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "igw_ini.nc"
+/
+
+&croco_restart
+  nrst = 5
+  nrpfrst = -1
+  rstname = "igw_rst.nc"
+/
+
+&croco_grid
+  grdname = "TEST_CASES/igw_grd.nc"
+/
+
+&croco_forcing
+  frcname = "TEST_CASES/igw_frc.nc"
+/
+
+
+! End of namelist

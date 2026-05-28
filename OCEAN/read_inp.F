@@ -341,132 +341,6 @@
 
 
 !
-! Initial conditions file name. Check its availability (in the case
-! of analytical initial conditions and nrrec=0 initial conditions are
-! created internally and no file is needed).
-!
-      elseif (keyword(1:kwlen).eq.'initial') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) nrrec
-#ifdef ANA_INITIAL
-        if (nrrec.gt.0) then
-#endif
-          read(input,'(A)',err=95) fname
-          lstr=lenstr(fname)
-#if defined MPI && defined PARALLEL_FILES
-          call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#endif
-#ifdef ENSEMBLE
-          if (ln_ens_rst_in.OR.(nrrec.lt.0)) then
-            nrrec = abs(nrrec)
-            fname=cmember//fname
-            lstr=lenstr(fname)
-          endif
-#endif
-          open (testunit, file=fname(1:lstr), status='old', err=97)
-          close(testunit)
-          ininame=fname(1:lstr)
-
-#ifdef ANA_INITIAL
-        endif
-#endif
-#ifndef ANA_GRID
-!
-! Grid file name. Check its availability.
-!
-      elseif (keyword(1:kwlen).eq.'grid') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-        open(testunit,file=fname(1:lstr), status='old', err=97)
-        close(testunit)
-        grdname=fname(1:lstr)
-
-#endif
-
-
-! forcing file for tides
-#if !defined NO_FRCFILE  && \
-        ( defined TIDES \
-          || (defined MRL_WCI     && !defined ANA_WWAVE && \
-                                     !defined WKB_WWAVE && \
-                                     !defined OW_COUPLING) \
-          || (defined SFLX_CORR   && !defined ANA_SSS   && \
-                                   !defined BULK_FLUX   && \
-                                   !defined OA_COUPLING) \
-          || (defined QCORRECTION && !defined ANA_SST   && \
-                                   !defined OA_COUPLING) \
-          || (defined BBL         && !defined ANA_BSEDIM  && \
-                                   !defined SEDIMENT) \
-          || (!defined ANA_STFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (defined SALINITY    && !defined ANA_SSFLUX && \
-                                   !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                    defined SOLVE3D) \
-          || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING) \
-          || ( defined BULK_FLUX    && !defined SALINITY ) \
-          || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
-!
-!
-! Forcing file name. Check its availability.
-!
-      elseif (keyword(1:kwlen).eq.'forcing') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-        open (testunit, file=fname(1:lstr), status='old', err=97)
-        close(testunit)
-        frcname=fname(1:lstr)
-
-#endif  /* !defined NO_FRCFILE */
-
-!
-
-#if defined WAVE_OFFLINE && defined MUSTANG
-! Forcing file name. Check its availability.
-!
-      elseif (keyword(1:kwlen).eq.'wave_offline') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode, NNODES, ierr)
-# endif
-        open (testunit, file=fname(1:lstr), status='old', err=97)
-        close(testunit)
-        wave_file=fname(1:lstr)
-
-#endif  /* !defined WAVE_OFFLINE */
-
-!
-! Biology forcing: iron dust deposition.
-!
-#if defined BIOLOGY && defined PISCES
-      elseif (keyword(1:kwlen).eq.'biology') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-c        open (testunit, file=fname(1:lstr), status='old', err=97)
-c        close(testunit)
-        bioname=fname(1:lstr)
-
-#endif
-!
 ! Bulk file name. Check its availability.
 !
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA
@@ -558,42 +432,8 @@ c        close(testunit)
        endif
 # endif
 #endif
-!
-! Restart file name.
-!
-      elseif (keyword(1:kwlen).eq.'restart') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) nrst, nrpfrst
-        read(input,'(A)',err=95)  fname
-        lstr=lenstr(fname)
-#if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#endif
-#ifdef USE_CALENDAR
-        nrst=ceiling((dt_rst*3600.)/dt)
-#endif
-        rstname=fname(1:lstr)
-#ifdef ENSEMBLE
-        rstname=cmember//rstname
-#endif
-!
-! History file name.
-!
-      elseif (keyword(1:kwlen).eq.'history') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ldefhis, nwrt, nrpfhis
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-#if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#endif
-#ifdef USE_CALENDAR
-        nwrt=ceiling((dt_his*3600.)/dt)
-#endif
-        hisname=fname(1:lstr)
-#ifdef ENSEMBLE
-        hisname=cmember//hisname
-#endif
+
+
 
 #ifdef AVERAGES
 !
@@ -2209,71 +2049,6 @@ c        close(testunit)
 
       ! start of summary writing
       if (ierr.eq.0) then
-
-#ifdef ANA_INITIAL
-          if (nrrec.gt.0) then
-#endif
-          lstr=lenstr(ininame)
-          MPI_master_only write(stdout,'(1x,A,2x,A,4x,A,I3)')
-     &     'Initial State File:', ininame(1:lstr), 'Record:',nrrec
-#ifdef ANA_INITIAL
-          endif
-#endif
-#ifndef ANA_GRID
-          lstr=lenstr(grdname)
-          MPI_master_only write(stdout,'(10x,A,2x,A)')
-     &                   'Grid File:', grdname(1:lstr)
-#endif
-
-
-! forcing file for tides
-#if !defined NO_FRCFILE  && \
-          ( defined TIDES \
-          || (defined MRL_WCI     && !defined ANA_WWAVE && \
-                                        !defined WKB_WWAVE && \
-                                        !defined OW_COUPLING) \
-          || (defined SFLX_CORR   && !defined ANA_SSS   && \
-                                   !defined BULK_FLUX   && \
-                                   !defined OA_COUPLING) \
-          || (defined QCORRECTION && !defined ANA_SST   && \
-                                   !defined OA_COUPLING) \
-          || (defined BBL         && !defined ANA_BSEDIM  && \
-                                   !defined SEDIMENT) \
-          || (!defined ANA_STFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (defined SALINITY    && !defined ANA_SSFLUX && \
-                                   !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (!defined ANA_SRFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING && \
-                                   defined SOLVE3D) \
-          || (!defined ANA_SMFLUX && !defined BULK_FLUX && \
-                                   !defined OA_COUPLING) \
-          || ( defined BULK_FLUX    && !defined SALINITY ) \
-          || ( defined WAVE_OFFLINE && !defined MUSTANG ) )
-! Forcing file name.
-          lstr=lenstr(frcname)
-          MPI_master_only write(stdout,'(2x,A,2x,A)')
-     &             'Forcing Data File:', frcname(1:lstr)
-#endif  /* !defined NO_FRCFILE */
-
-!
-#if defined WAVE_OFFLINE && defined MUSTANG
-          lstr=lenstr(wave_file)
-          MPI_master_only write(stdout,'(2x,A,2x,A)')
-     &             'Wave Data File:', wave_file(1:lstr)
-#endif  /* !defined WAVE_OFFLINE */
-
-!
-! Biology forcing: iron dust deposition.
-!
-#if defined BIOLOGY && defined PISCES
-          lstr=lenstr(bioname)
-          MPI_master_only write(stdout,'(2x,A,2x,A)')
-     &             'Biology Forcing Data File:', bioname(1:lstr)
-#endif
 !
 ! Bulk file name. Check its availability.
 !
@@ -2328,16 +2103,6 @@ c        close(testunit)
 #endif
 
 
-          lstr=lenstr(rstname)
-          MPI_master_only write(stdout,
-     &             '(7x,A,2x,A,4x,A,I6,4x,A,I4)')
-     &             'Restart File:', rstname(1:lstr),
-     &             'nrst =', nrst, 'rec/file: ', nrpfrst
-          lstr=lenstr(hisname)
-          MPI_master_only write(stdout,
-     &             '(7x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
-     &       'History File:', hisname(1:lstr),  'Create new:',
-     &       ldefhis, 'nwrt =', nwrt, 'rec/file =', nrpfhis
 #ifdef AVERAGES
           lstr=lenstr(avgname)
           MPI_master_only write(stdout,

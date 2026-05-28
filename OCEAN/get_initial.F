@@ -13,7 +13,7 @@
                                                 ! Read initial conditions for the
       subroutine get_initial (req_rec, tindx)   ! primitive variables from NetCDF
                                                 ! initialization file.
-      use croco_namelist, only: dt, ntimes
+      use croco_namelist, only: dt, ntimes, nrrec, ininame
       implicit none
 #include "param.h"
 #include "scalars.h"

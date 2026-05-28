@@ -4,14 +4,34 @@
 
 &croco_time_stepping
   ntimes = 4320
-  dt = 60.000
-  ndtfast= 30
+  dt = 60
+  ndtfast = 30
   ninfo = 1
 /
 
 &croco_s_coord
-   theta_s = 0.0d0
-   theta_b = 0.0d0
-   Tcline = 1.e16   
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 1.e16
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 30
+  nrpfhis = 0
+  hisname = "thacker_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "thacker_rst.nc"
+/
+
+&croco_restart
+  nrst = 4320
+  nrpfrst = -1
+  rstname = "thacker_rst.nc"
+/
+
+
+! End of namelist

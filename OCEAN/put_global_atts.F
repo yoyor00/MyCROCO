@@ -16,6 +16,11 @@
 
       subroutine put_global_atts (ncid, ierr)
             use croco_namelist, only: title, dt, ndtfast, ntimes
+            use croco_namelist, only: hisname, nwrt, ininame, rstname
+            use croco_namelist, only: frcname
+#ifndef ANA_GRID
+            use croco_namelist, only: grdname
+#endif
 #ifdef SOLVE3D
             use croco_namelist, only: theta_s, theta_b, Tcline
 #endif

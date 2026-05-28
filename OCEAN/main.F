@@ -21,8 +21,9 @@
 !
 !======================================================================
 !
-          USE croco_namelist, ONLY : read_nml, read_nml_fname
+          USE croco_namelist_read, ONLY : read_nml, read_nml_fname
           USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
+          USE croco_namelist, ONLY : ldefhis, nrrec
 #ifdef USE_CALENDAR
           USE croco_namelist, ONLY : end_date
 #endif

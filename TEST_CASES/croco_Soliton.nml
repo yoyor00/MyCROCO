@@ -4,9 +4,28 @@
 
 &croco_time_stepping
   ntimes = 1200
-  dt = 0.100
-  ndtfast= 1
+  dt = 0.1
+  ndtfast = 1
   ninfo = 5
 /
 
-! END OF NAMELIST
+&croco_history
+  ldefhis = .true.
+  nwrt = 80
+  nrpfhis = 0
+  hisname = "soliton_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "soliton_rst.nc"
+/
+
+&croco_restart
+  nrst = 1200
+  nrpfrst = -1
+  rstname = "soliton_rst.nc"
+/
+
+
+! End of namelist

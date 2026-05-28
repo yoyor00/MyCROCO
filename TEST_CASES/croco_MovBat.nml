@@ -5,19 +5,39 @@
 &croco_time_stepping
   ntimes = 50250
   dt = 0.002
-  ndtfast= 5
+  ndtfast = 5
   ninfo = 100
 /
 
 &croco_time_stepping_nbq
   ndtnbq = 1
-  csound_nbq = 10
-  visc2_nbq = 0.d0
+  csound_nbq = 10.
+  visc2_nbq = 0.
 /
 
 &croco_s_coord
-   theta_s = 0.0d0
-   theta_b = 0.0d0
-   Tcline = 1.e16   
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 1.e16
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 1005
+  nrpfhis = 0
+  hisname = "movbat_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "movbat_rst.nc"
+/
+
+&croco_restart
+  nrst = 1000000
+  nrpfrst = -1
+  rstname = "movbat_rst.nc"
+/
+
+
+! End of namelist

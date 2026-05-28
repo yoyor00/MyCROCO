@@ -1,4 +1,7 @@
-
+title:
+	Tank Example
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               50250     0.002     5       100
 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                      1         10.           0.

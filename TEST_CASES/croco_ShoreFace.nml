@@ -4,14 +4,37 @@
 
 &croco_time_stepping
   ntimes = 7200
-  dt = 5.000
-  ndtfast= 30
+  dt = 5.
+  ndtfast = 30
   ninfo = 72
 /
 
 &croco_s_coord
-   theta_s = 0.0d0
-   theta_b = 0.0d0
-   Tcline = 1.e16   
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 1.e16
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 720
+  nrpfhis = 0
+  hisname = "shoreface_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+/
+
+&croco_restart
+  nrst = 7200
+  nrpfrst = -1
+  rstname = "shoreface_rst.nc"
+/
+
+&croco_forcing
+  frcname = "TEST_CASES/shoreface_JW_frc.nc"
+/
+
+
+! End of namelist

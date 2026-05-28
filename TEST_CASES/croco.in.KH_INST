@@ -1,4 +1,8 @@
+title:
+	Kelvin-Helmoltz instability Example
 
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               1600      0.3      20      50 
 
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                    1           10           1.e2

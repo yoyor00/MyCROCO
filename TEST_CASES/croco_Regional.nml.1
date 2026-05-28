@@ -4,15 +4,60 @@
 
 &croco_time_stepping
   ntimes = 1
-  dt = 1200.000
-  ndtfast= 60
+  dt = 1200
+  ndtfast = 60
   ninfo = 1
 /
 
-&croco_use_calendar
-  start_date = '2005-01-01 00:00:00'
-  end_date = '2005-01-03 00:00:00'
-  dt_his = 1.0
-  dt_avg = 6.0
-  dt_rst = 12.0
+&croco_time_stepping_nbq
+  ndtnbq = 1
+  csound_nbq = 1000
+  visc2_nbq = 0.01
 /
+
+&croco_s_coord
+  theta_s = 7.0d0
+  theta_b = 2.0d0
+  Tcline = 200.0d0
+/
+
+&croco_use_calendar
+  start_date = "2014-01-04 00:00:00"
+  end_date = "2016-01-01 00:00:00"
+  dt_his = 1
+  dt_avg = 6
+  dt_rst = 12
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 216
+  nrpfhis = 0
+  hisname = "CROCO_FILES/croco_his.nc.1"
+/
+
+&croco_initial
+  nrrec = 1
+  ininame = "CROCO_FILES/croco_ini.nc.1"
+/
+
+&croco_restart
+  nrst = 2160
+  nrpfrst = -1
+  rstname = "CROCO_FILES/croco_rst.nc.1"
+/
+
+&croco_grid
+  grdname = "CROCO_FILES/croco_grd.nc.1"
+/
+
+&croco_forcing
+  frcname = "CROCO_FILES/croco_frc.nc.1"
+/
+
+&croco_biology
+  bioname = "CROCO_FILES/croco_frcbio.nc.1"
+/
+
+
+! End of namelist

@@ -277,8 +277,8 @@
       // Change the ndtfast
       "TEST_CASES/croco_Regional.nml": {
         "mode": "replace",
-        "what": "  ndtfast= 60",
-        "by": "  ndtfast= 80",
+        "what": "  ndtfast = 60",
+        "by": "  ndtfast = 80",
         "descr": "Set stepping ndtfast = 80",
       },
     },

@@ -4,22 +4,42 @@
 
 &croco_time_stepping
   ntimes = 21600
-  dt = 2.000
-  ndtfast= 10
+  dt = 2
+  ndtfast = 10
   ninfo = 1
 /
 
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 200000.0d0
+/
+
 &croco_use_calendar
-  start_date = '2019-01-01 00:00:00'
-  end_date = '2019-01-01 12:00:00'
+  start_date = "2019-01-01 00:00:00"
+  end_date = "2019-01-01 12:00:00"
   dt_his = 1
   dt_avg = 1
   dt_rst = 12
 /
 
-&croco_s_coord
-   theta_s = 0.0d0
-   theta_b = 0.0d0
-   Tcline = 200000.0d0   
+&croco_history
+  ldefhis = .true.
+  nwrt = 1800
+  nrpfhis = 0
+  hisname = "sed_toy_rouse_his.nc"
 /
-! END OF NAMELIST
+
+&croco_initial
+  nrrec = 0
+  ininame = "fileini"
+/
+
+&croco_restart
+  nrst = 21600
+  nrpfrst = -1
+  rstname = "sed_toy_rouse_rst.nc"
+/
+
+
+! End of namelist

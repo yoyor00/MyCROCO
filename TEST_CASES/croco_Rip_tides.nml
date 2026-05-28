@@ -4,14 +4,37 @@
 
 &croco_time_stepping
   ntimes = 21600
-  dt = 4.000
-  ndtfast= 20
+  dt = 4
+  ndtfast = 20
   ninfo = 10
 /
 
 &croco_s_coord
-   theta_s = 0.0d0
-   theta_b = 0.0d0
-   Tcline = 1.e16   
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 1.e16
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 900
+  nrpfhis = 0
+  hisname = "rip_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+/
+
+&croco_restart
+  nrst = 21600
+  nrpfrst = -1
+  rstname = "rip_rst.nc"
+/
+
+&croco_grid
+  grdname = "rip_grd.nc"
+/
+
+
+! End of namelist

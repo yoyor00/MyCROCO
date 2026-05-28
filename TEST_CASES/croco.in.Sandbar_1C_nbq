@@ -1,4 +1,8 @@
+title:
+        SANDBAR Example 
 
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               36000     0.025      12      100
 time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
                     1          100           0.0
 

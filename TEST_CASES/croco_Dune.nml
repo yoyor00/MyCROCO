@@ -4,22 +4,41 @@
 
 &croco_time_stepping
   ntimes = 172800
-  dt = 1.000
-  ndtfast= 20
+  dt = 1
+  ndtfast = 20
   ninfo = 1
 /
 
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0d0
+  Tcline = 10000
+/
+
 &croco_use_calendar
-  start_date = '2019-01-01 00:00:00'
-  end_date = '2019-01-03 00:00:00'
+  start_date = "2019-01-01 00:00:00"
+  end_date = "2019-01-03 00:00:00"
   dt_his = 24
   dt_avg = 24
   dt_rst = 24
 /
 
-&croco_s_coord
-   theta_s = 0.0d0
-   theta_b = 0.0d0
-   Tcline = 10000   
+&croco_history
+  ldefhis = .true.
+  nwrt = 86400
+  nrpfhis = 0
+  hisname = "dune_his.nc"
 /
-! END OF NAMELIST
+
+&croco_initial
+  nrrec = 0
+/
+
+&croco_restart
+  nrst = 172800
+  nrpfrst = 0
+  rstname = "dune_rst.nc"
+/
+
+
+! End of namelist

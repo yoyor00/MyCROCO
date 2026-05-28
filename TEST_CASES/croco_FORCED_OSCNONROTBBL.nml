@@ -4,14 +4,46 @@
 
 &croco_time_stepping
   ntimes = 7200
-  dt = 30.000
-  ndtfast= 60
+  dt = 30
+  ndtfast = 60
   ninfo = 1
 /
 
 &croco_s_coord
-   theta_s = 0.0d0
-   theta_b = 0.0d0
-   Tcline = 1.0d16   
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 1.0d16
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 120
+  nrpfhis = 0
+  hisname = "scm_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "fileini"
+/
+
+&croco_restart
+  nrst = 3600
+  nrpfrst = -1
+  rstname = "scm_rst.nc"
+/
+
+&croco_grid
+  grdname = "filegrid"
+/
+
+&croco_forcing
+  frcname = "fileforc"
+/
+
+&croco_biology
+  bioname = "CROCO_FILES/croco_frcbio.nc"
+/
+
+
+! End of namelist

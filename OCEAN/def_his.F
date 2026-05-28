@@ -35,6 +35,7 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
+      USE croco_namelist, ONLY: nrpfhis, ldefhis, hisname
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
       USE comMUSTANG, ONLY : hisMust, avgMust, outMust, outMust_nbvar,

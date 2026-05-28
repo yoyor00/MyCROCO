@@ -5,19 +5,39 @@
 &croco_time_stepping
   ntimes = 36000
   dt = 0.025
-  ndtfast= 12
+  ndtfast = 12
   ninfo = 100
 /
 
 &croco_time_stepping_nbq
   ndtnbq = 1
   csound_nbq = 100
-  visc2_nbq = 0d0
+  visc2_nbq = 0.0
 /
 
 &croco_s_coord
-   theta_s = 0.0d0
-   theta_b = 8.0d0
-   Tcline = 2.0d0   
+  theta_s = 0.
+  theta_b = 8.
+  Tcline = 2.
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 6000
+  nrpfhis = 0
+  hisname = "sandbar_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "sandbar_rst.nc"
+/
+
+&croco_restart
+  nrst = 36000
+  nrpfrst = -1
+  rstname = "sandbar_rst.nc"
+/
+
+
+! End of namelist

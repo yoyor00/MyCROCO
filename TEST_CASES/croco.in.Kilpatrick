@@ -1,4 +1,7 @@
-
+title:
+        KILPATRICK
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+                1296      100      2      1
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
            7.0d0     2.0d0      200.0d0

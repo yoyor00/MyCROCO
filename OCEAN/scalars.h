@@ -112,20 +112,12 @@
 !
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
 !                              usually 1, if not a restart run.
-! nrst     Number of timesteps between storage of restart fields.
-! nwrt     Number of timesteps between writing of fields into
-!                                                     history file.
 ! nsta     Number of timesteps between storage of station data.
 ! navg     Number of timesteps between storage of time-averaged
 !                                                           fields.
 ! ntsavg   Starting timestep for accumulation of output time-
 !                                                 averaged fields.
-! nrrec    Counter of restart time records to read from disk,
-!                   the last is used as the initial conditions.
 !
-! ldefhis  Logical switch used to create the history file.
-!             If TRUE, a new history file is created. If FALSE,
-!             data is appended to an existing history file.
 ! levsfrc  Deepest level to apply surface momentum stress as
 !                                                 bodyforce.
 ! levbfrc  Shallowest level to apply bottom momentum stress as
@@ -178,7 +170,7 @@
        real  tauT_in, tauT_out, tauM_in, tauM_out
 #endif
       integer numthreads,     ntstart
-     &      , nfast,  nrrec,     nrst,    nwrt
+     &      , nfast
 #ifdef EXACT_RESTART
      &     ,  forw_start
 #endif
@@ -251,7 +243,6 @@
       integer nsta, nrpfsta
 #endif
 
-      logical ldefhis
 #if defined SOLVE3D && defined TRACERS
       logical got_tini(NT)
 #endif
@@ -347,7 +338,7 @@
      &                      , tauT_in, tauT_out, tauM_in, tauM_out
 #endif
      &      , numthreads,     ntstart
-     &      , nfast,  nrrec,     nrst,    nwrt
+     &      , nfast
 #ifdef EXACT_RESTART
      &       , forw_start
 #endif
@@ -439,7 +430,6 @@
 #ifdef STATIONS
      &                      , ldefsta
 #endif
-     &                      , ldefhis
 #ifdef ABL1D
      &                      , ldefablhis
      &                      , nwrtablhis

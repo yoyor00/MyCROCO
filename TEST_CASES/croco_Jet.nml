@@ -4,14 +4,44 @@
 
 &croco_time_stepping
   ntimes = 4860
-  dt = 3200.000
-  ndtfast= 80
+  dt = 3200
+  ndtfast = 80
   ninfo = 1
 /
 
-&croco_s_coord
-   theta_s = 5.0d0
-   theta_b = 0.0d0
-   Tcline = 100.0d0   
+&croco_time_stepping_nbq
+  ndtnbq = 1
+  csound_nbq = 1000
+  visc2_nbq = 100
 /
-! END OF NAMELIST
+
+&croco_s_coord
+  theta_s = 5.0d0
+  theta_b = 0.0d0
+  Tcline = 100.0d0
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 270
+  nrpfhis = 0
+  hisname = "jet_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "TEST_CASES/xxxxx"
+/
+
+&croco_restart
+  nrst = 4860
+  nrpfrst = -1
+  rstname = "jet_rst.nc"
+/
+
+&croco_grid
+  grdname = "TEST_CASES/xxxxx"
+/
+
+
+! End of namelist

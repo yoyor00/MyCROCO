@@ -4,14 +4,34 @@
 
 &croco_time_stepping
   ntimes = 3600
-  dt = 8640.000
-  ndtfast= 45
+  dt = 8640
+  ndtfast = 45
   ninfo = 1
 /
 
 &croco_s_coord
-   theta_s = 5.0d0
-   theta_b = 0.0d0
-   Tcline = 10.d0   
+  theta_s = 5.0d0
+  theta_b = 0.0d0
+  Tcline = 10.d0
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 30
+  nrpfhis = 0
+  hisname = "equator_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "equator_ini.nc"
+/
+
+&croco_restart
+  nrst = 3600
+  nrpfrst = -1
+  rstname = "equator_rst.nc"
+/
+
+
+! End of namelist

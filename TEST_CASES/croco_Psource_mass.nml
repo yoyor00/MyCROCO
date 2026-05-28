@@ -4,14 +4,34 @@
 
 &croco_time_stepping
   ntimes = 800
-  dt = 540.000
-  ndtfast= 60
+  dt = 540
+  ndtfast = 60
   ninfo = 1
 /
 
 &croco_s_coord
-   theta_s = 3.0d0
-   theta_b = 0.0d0
-   Tcline = 50.d0   
+  theta_s = 3.0d0
+  theta_b = 0.0d0
+  Tcline = 50.d0
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 40
+  nrpfhis = 0
+  hisname = "river_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "river_rst.nc"
+/
+
+&croco_restart
+  nrst = 800
+  nrpfrst = -1
+  rstname = "river_rst.nc"
+/
+
+
+! End of namelist

@@ -104,7 +104,8 @@
 !====================================================================
 !
       subroutine Agrif_initvalues()
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, ldefhis, nrrec
+      use croco_namelist_read, only: read_nml_fname, read_nml
       use AGRIF_UTIL
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules

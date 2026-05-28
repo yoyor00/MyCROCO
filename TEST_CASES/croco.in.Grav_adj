@@ -1,4 +1,8 @@
+title:
+	Gravitational Adjustment Example
 
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+               6120      10       10       90
 
 S-coord: THETA_S,   THETA_B,    Hc (m)
          1.0d0      0.0d0       20.d0

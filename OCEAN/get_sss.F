@@ -24,7 +24,7 @@
 !
 !  we use DQDSST for CST....
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, frcname
 # ifdef OPENACC
       use exchange_device_host
 # endif

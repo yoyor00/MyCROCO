@@ -4,14 +4,34 @@
 
 &croco_time_stepping
   ntimes = 992
-  dt = 540.000
-  ndtfast= 60
+  dt = 540
+  ndtfast = 60
   ninfo = 10
 /
 
 &croco_s_coord
-   theta_s = 1.0d0
-   theta_b = 0.0d0
-   Tcline = 2000.d0   
+  theta_s = 1.0d0
+  theta_b = 0.0d0
+  Tcline = 2000.d0
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 32
+  nrpfhis = 0
+  hisname = "internal_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "internal_rst.nc"
+/
+
+&croco_restart
+  nrst = 992
+  nrpfrst = -1
+  rstname = "internal_rst.nc"
+/
+
+
+! End of namelist

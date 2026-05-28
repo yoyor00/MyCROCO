@@ -4,20 +4,40 @@
 
 &croco_time_stepping
   ntimes = 106700
-  dt = 0.002
-  ndtfast= 5
+  dt = 0.0019532775
+  ndtfast = 5
   ninfo = 200
 /
 
 &croco_time_stepping_nbq
   ndtnbq = 1
   csound_nbq = 50
-  visc2_nbq = 0.d0
+  visc2_nbq = 0.
 /
 
 &croco_s_coord
-   theta_s = 0.0d0
-   theta_b = 0.0d0
-   Tcline = 1.e16   
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 1.e16
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 10670
+  nrpfhis = 0
+  hisname = "swash_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "swash_rst.nc"
+/
+
+&croco_restart
+  nrst = 900000
+  nrpfrst = -1
+  rstname = "swash_rst.nc"
+/
+
+
+! End of namelist

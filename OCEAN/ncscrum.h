@@ -1068,7 +1068,7 @@
       integer nttclm(NT), ntstf(NT), nttsrc(NT)
      &       , ntbtf(NT)
 #endif
-      integer ncidrst, nrecrst,  nrpfrst
+      integer ncidrst, nrecrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
      &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
@@ -1134,7 +1134,7 @@
 # endif
 #endif
 
-      integer  ncidhis, nrechis,  nrpfhis
+      integer  ncidhis, nrechis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
@@ -1628,7 +1628,7 @@
      &     ,  nttclm, ntstf, nttsrc, ntbtf
 
 #endif
-     &      , ncidrst, nrecrst,  nrpfrst
+     &      , ncidrst, nrecrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
      &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
@@ -1680,7 +1680,7 @@
 #ifdef BBL
      &                         , rstBBL
 #endif
-     &      , ncidhis, nrechis,  nrpfhis
+     &      , ncidhis, nrechis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
@@ -2105,8 +2105,7 @@
 
       REAL(kind=8) :: origin_date_in_sec, xios_origin_date_in_sec
 
-      character*180 ininame,  grdname,  hisname
-     &         ,   rstname,  frcname,  bulkname,  usrname
+      character*180 bulkname, usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
 #ifdef AVERAGES
@@ -2178,14 +2177,8 @@
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
 #endif
-#ifdef WAVE_OFFLINE
-     &                                ,   wave_file
-#endif
 #ifdef ASSIMILATION
      &                     ,   aparnam,   assname
-#endif
-#ifdef BIOLOGY
-     &                                ,   bioname
 #endif
 #ifdef SEDIMENT
      &                                ,   sedname
@@ -2213,8 +2206,7 @@
       common /cncscrum/   
      &             origin_date, start_date_run
      &         ,   xios_origin_date
-     &         ,   ininame,  grdname, hisname
-     &         ,   rstname,  frcname, bulkname,  usrname
+     &         ,   bulkname,  usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname, origin_date_in_sec
      &         ,   xios_origin_date_in_sec
@@ -2292,9 +2284,6 @@
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
      &                                ,   brywkb_file
 #endif
-#ifdef WAVE_OFFLINE
-     &                                ,   wave_file
-#endif
 #ifdef ASSIMILATION
      &                     ,   aparnam,   assname
 #endif
@@ -2308,9 +2297,6 @@
 #endif
 #if defined OBSTRUCTION
      &               ,    obstname
-#endif
-#ifdef BIOLOGY
-     &                                ,   bioname
 #endif
      &                                ,   vname
 #ifdef ABL1D

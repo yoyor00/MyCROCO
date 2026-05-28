@@ -2,20 +2,40 @@
   title = "Basin Example"
 /
 
+&croco_logfile
+  logname = "basin.log"
+/
+
 &croco_time_stepping
   ntimes = 3240
   dt = 9600
   ndtfast = 65
-  ninfo = 1 
-/
-
-&croco_logfile
-  fname_logfile = "basin.log"
+  ninfo = 1
 /
 
 &croco_s_coord
-   theta_s = 1.0d0
-   theta_b = 0.0d0
-   Tcline = 10.d0   
+  theta_s = 1.0d0
+  theta_b = 0.0d0
+  Tcline = 10.d0
 /
-! END OF NAMELIST
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 90
+  nrpfhis = 0
+  hisname = "basin_his.nc"
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "basin_rst.nc"
+/
+
+&croco_restart
+  nrst = 20000000
+  nrpfrst = -1
+  rstname = "basin_rst.nc"
+/
+
+
+! End of namelist
