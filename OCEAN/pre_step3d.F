@@ -27,28 +27,35 @@
       call pre_step3d_tile (Istr,Iend,Jstr,Jend,
      &                A3d(1,1,trd), A3d(1,2,trd), A3d(1,3,trd),
      &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd),
+     &                A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd)
+     &                                          , A3d(1,4,trd)         
 # ifdef VADV_ADAPT_IMP
-     &                                            A2d(1,4,trd),
+     &                                          , A2d(1,7,trd)
 # endif
-     &                A2d(1,1,trd), A2d(1,2,trd), A2d(1,3,trd)
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+     &                  , A2d(1,8,trd), A2d(1,9,trd),
+     &                    A2d(1,10,trd), A2d(1,11,trd)
+#  endif
 # ifdef OPENACC
-     &   ,A3d(1,4,trd),A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd)
+     &   ,A3d(1,5,trd),A3d(1,6,trd),A3d(1,7,trd),A3d(1,8,trd)
 # endif
-     &                                          , A3d(1,8,trd)         
      &                                                        )
       return
       end
 
       subroutine pre_step3d_tile (Istr,Iend,Jstr,Jend, ru,rv,rw,
      &                                                 FC,CF,DC,
-# ifdef VADV_ADAPT_IMP
-     &                                                       WC,
-# endif
      &                                               FX,FE,WORK
+     &                                                 ,Hz_half
+# ifdef VADV_ADAPT_IMP
+     &                                                      ,WC
+# endif
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+     &                            ,ZDXT, ZDYT, zslpx, zslpy
+#  endif
 # ifdef OPENACC
      &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
 # endif
-     &                                                 ,Hz_half
      &                                                         )
 !
 !--------------------------------------------------------------------
@@ -174,6 +181,26 @@
      &                                      + 10.*(q_i - q_im1) )/60.
 
 # endif
+
+# if defined TS_HADV_C2 || defined BIO_HADV_MUSCL \
+      || defined TS_VADV_C2 || defined BIO_VADV_MUSCL
+      REAL rdtstp
+#  endif
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+      REAL ZDXT(PRIVATE_2D_SCRATCH_ARRAY),
+     &     ZDYT(PRIVATE_2D_SCRATCH_ARRAY),
+     &     zslpx(PRIVATE_2D_SCRATCH_ARRAY),
+     &     zslpy(PRIVATE_2D_SCRATCH_ARRAY)
+      REAL zalpha, z0u, zu, zv, zzwx, zzwy, z0v
+      REAL zzslpx, zzslpy
+#  endif
+#  if defined TS_VADV_C2 || defined BIO_VADV_MUSCL
+      REAL zdzt_kp1(PRIVATE_1D_SCRATCH_ARRAY),
+     &     zslpz(PRIVATE_1D_SCRATCH_ARRAY)
+      REAL zalphaw, z0w, zw, zzwzx, zzwzy, zslpz_kp1
+      REAL zdzt_kp2
+#  endif
+
 !
 !--------------------------------------------------------------------
 !
@@ -278,7 +305,7 @@
 #  if !defined OPENACC
       do k=1,N
 #  endif
-#  ifdef BIO_HADV_WENO5
+#  if defined BIO_HADV_WENO5 || defined BIO_HADV_MUSCL
 #   if defined TEMPERATURE && defined SALINITY
 
           if (itrc .le. 2) then
@@ -304,7 +331,7 @@
 ! WENO5 advection for passive tracers (biology ...)
 !----------------------------------------------------------
 !
-#  ifdef BIO_HADV_WENO5
+#  if defined BIO_HADV_WENO5
           else  ! if (itrc .gt. 2)
 #   define FLUX5 flux5_weno
 #   define FLUX3 flux3_weno
@@ -318,6 +345,11 @@
 #   undef FLUX3
 #   undef FLUX2
 #   undef UP5_MASKING
+          endif
+
+#  elif defined BIO_HADV_MUSCL
+          else  ! if (itrc .gt. 2)
+#   include "t3dadv_muscl.h"
           endif
 #  endif
 !
@@ -543,7 +575,22 @@
 #  else
 #   define PREDICTOR
 #  endif
+#  if defined BIO_VADV_MUSCL
+#   if defined TEMPERATURE && defined SALINITY
+        if (itrc .le. 2) then
+#   elif defined TEMPERATURE || defined SALINITY
+        if (itrc .le. 1) then
+#   endif
+#  endif
+
 #  include "compute_vert_tracer_fluxes.h"
+
+#  if defined BIO_VADV_MUSCL
+        else  ! if (itrc .gt. 2 )
+#   include "t3dvadv_muscl.h"
+        endif
+#   endif
+
 #  undef PREDICTOR
 !
 #  ifdef TS_HADV_TEST

@@ -29,6 +29,10 @@
      &                    A2d(1,4,trd), A2d(1,5,trd), A2d(1,6,trd),
      &                    A2d(1,7,trd), A2d(1,8,trd), A2d(1,9,trd),
      &                                                A3d(1,1,trd)
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+     &                  , A2d(1,10,trd), A2d(1,11,trd),
+     &                    A2d(1,12,trd), A2d(1,13,trd)
+#  endif
 #  ifdef OPENACC
      &   ,A3d(1,2,trd),A3d(1,3,trd),A3d(1,4,trd),A3d(1,5,trd)
 #  endif
@@ -40,6 +44,9 @@
 # ifdef TRACERS
       subroutine step3d_t_tile (Istr,Iend,Jstr,Jend,
      &                          FX,FE, WORK, FC,CF,BC,DC,EC,GC, swdk
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+     &                           ,ZDXT, ZDYT, zslpx, zslpy
+#  endif
 #  ifdef OPENACC
      &                           ,FX_3D,FE_3D,WORK_3D,WORK2_3D
 #  endif
@@ -166,6 +173,25 @@
 #  if defined TS_HADV_WENO5 || defined BIO_HADV_WENO5 || defined TS_VADV_WENO5
       REAL    :: flux3_weno, flux5_weno
 #  endif
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL || \
+      defined TS_VADV_C2 || defined BIO_VADV_MUSCL
+       REAL rdtstp
+#  endif
+
+#  if defined TS_HADV_C2 || defined BIO_HADV_MUSCL
+      real ZDXT(PRIVATE_2D_SCRATCH_ARRAY),
+     &     ZDYT(PRIVATE_2D_SCRATCH_ARRAY),
+     &     zslpx(PRIVATE_2D_SCRATCH_ARRAY),
+     &     zslpy(PRIVATE_2D_SCRATCH_ARRAY)
+      REAL zalpha, z0u, zu, zv, zzwx, zzwy, z0v
+      REAL zzslpx, zzslpy
+#  endif
+#  if defined TS_VADV_C2 || defined BIO_VADV_MUSCL
+      real zdzt_kp1(PRIVATE_1D_SCRATCH_ARRAY),
+     &     zslpz(PRIVATE_1D_SCRATCH_ARRAY)
+      REAL zalphaw, z0w, zw, zzwzx, zzwzy, zslpz_kp1
+      REAL zdzt_kp2
+#  endif
 !
 #  include "compute_auxiliary_bounds.h"
 
@@ -183,7 +209,7 @@
       do k=1,N
 #  endif
 
-#  ifdef BIO_HADV_WENO5
+#  if defined BIO_HADV_WENO5 || defined BIO_HADV_MUSCL
 #   if defined TEMPERATURE && defined SALINITY
         if (itrc .le. 2) then
 #   elif defined TEMPERATURE || defined SALINITY
@@ -208,7 +234,7 @@
 ! WENO5 advection for passive tracers (biology ...)
 !----------------------------------------------------------
 !
-#  ifdef BIO_HADV_WENO5
+#  if defined BIO_HADV_WENO5
           else  !<-- if (itrc .gt. 2)
 #   define FLUX5 flux5_weno
 #   define FLUX3 flux3_weno
@@ -222,6 +248,10 @@
 #   undef FLUX3
 #   undef FLUX2
 #   undef UP5_MASKING
+          endif
+#   elif defined BIO_HADV_MUSCL
+          else  !<-- if (itrc .gt. 2)
+#   include "t3dadv_muscl.h"
           endif
 #  endif
 !
@@ -509,7 +539,23 @@
 !----------------------------------------------------------
 !
 #  undef PREDICTOR
+
+#  if defined BIO_VADV_MUSCL
+#   if defined TEMPERATURE && defined SALINITY
+
+        if (itrc .le. 2) then
+#   elif defined TEMPERATURE || defined SALINITY
+        if (itrc .le. 1) then
+#   endif
+#  endif
+
 #  include "compute_vert_tracer_fluxes.h"
+
+#  if defined BIO_VADV_MUSCL
+        else  ! if (itrc .gt. 2 )
+#   include "t3dvadv_muscl.h"
+        endif
+#   endif
 
 #  ifdef TS_HADV_TEST
         do i=Istr,Iend
