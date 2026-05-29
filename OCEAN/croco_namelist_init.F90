@@ -45,6 +45,21 @@ MODULE croco_namelist_init
    (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
    public :: init_climatology
 #endif
+#if !defined ANA_BRY && defined FRC_BRY
+   public :: init_boundary
+#endif
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+   public :: init_wkb_boundary
+#endif
+#ifdef AVERAGES
+   public :: init_averages
+#endif
+#if defined ABL1D && !defined XIOS
+   public :: init_abl
+#  ifdef AVERAGES
+   public :: init_abl_averages
+#  endif
+#endif
 #if defined WAVE_OFFLINE && defined MUSTANG
    public :: init_wave_offline
 #endif
@@ -102,6 +117,21 @@ contains
    (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
    (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
       call init_climatology(ierr)
+#endif
+#if !defined ANA_BRY && defined FRC_BRY
+      call init_boundary(ierr)
+#endif
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+      call init_wkb_boundary(ierr)
+#endif
+#ifdef AVERAGES
+      call init_averages(ierr)
+#endif
+#if defined ABL1D && !defined XIOS
+      call init_abl(ierr)
+#  ifdef AVERAGES
+      call init_abl_averages(ierr)
+#  endif
 #endif
 #if defined WAVE_OFFLINE && defined MUSTANG
       call init_wave_offline(ierr)
@@ -390,6 +420,136 @@ contains
 
    end subroutine init_biology
 # endif
+
+#if !defined ANA_BRY && defined FRC_BRY
+   !---------------------------------------------------------------------
+   !  init_boundary
+   !  Adjust bry_file for MPI and check file availability.
+   !  AGRIF child grids do not use a boundary file.
+   !---------------------------------------------------------------------
+   subroutine init_boundary(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: bry_file
+#  if defined MPI
+      use scalars, ONLY: mynode
+#  endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+#  ifdef AGRIF
+      if (.not. Agrif_Root()) return
+#  endif
+
+      call adjust_filename_parallel(bry_file, "bry_file", ierr)
+      if (ierr /= 0) return
+
+      open (testunit, file=trim(bry_file), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open boundary file ', trim(bry_file)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_boundary
+#endif
+
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+   !---------------------------------------------------------------------
+   !  init_wkb_boundary
+   !  Adjust brywkb_file for MPI and check file availability.
+   !  AGRIF child grids do not use a WKB boundary file.
+   !---------------------------------------------------------------------
+   subroutine init_wkb_boundary(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: brywkb_file
+#  if defined MPI
+      use scalars, ONLY: mynode
+#  endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+#  ifdef AGRIF
+      if (.not. Agrif_Root()) return
+#  endif
+
+      call adjust_filename_parallel(brywkb_file, "brywkb_file", ierr)
+      if (ierr /= 0) return
+
+      open (testunit, file=trim(brywkb_file), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open WKB boundary file ', trim(brywkb_file)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_wkb_boundary
+#endif
+
+#ifdef AVERAGES
+   !---------------------------------------------------------------------
+   !  init_averages
+   !  Adjust avgname for MPI/ENSEMBLE and derive navg from dt_avg
+   !  when USE_CALENDAR is active.
+   !---------------------------------------------------------------------
+   subroutine init_averages(ierr)
+      use croco_namelist, ONLY: avgname, navg
+#  ifdef USE_CALENDAR
+      use croco_namelist, ONLY: dt_avg, dt
+#  endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      call adjust_filename_parallel(avgname, "avgname", ierr)
+      call adjust_filename_ensemble(avgname)
+      if (ierr /= 0) return
+
+#  ifdef USE_CALENDAR
+      navg = ceiling((dt_avg*3600.0)/dt)
+#  endif
+
+   end subroutine init_averages
+#endif
+
+#if defined ABL1D && !defined XIOS
+   !---------------------------------------------------------------------
+   !  init_abl
+   !  Adjust ablname for MPI/ENSEMBLE.
+   !---------------------------------------------------------------------
+   subroutine init_abl(ierr)
+      use croco_namelist, ONLY: ablname
+      implicit none
+      integer, intent(inout) :: ierr
+
+      call adjust_filename_parallel(ablname, "ablname", ierr)
+      call adjust_filename_ensemble(ablname)
+
+   end subroutine init_abl
+
+#  ifdef AVERAGES
+   !---------------------------------------------------------------------
+   !  init_abl_averages
+   !  Adjust ablname_avg for MPI/ENSEMBLE.
+   !  Apply default nwrtablavg = navg when nwrtablavg is 0.
+   !---------------------------------------------------------------------
+   subroutine init_abl_averages(ierr)
+      use croco_namelist, ONLY: ablname_avg, nwrtablavg, navg
+      implicit none
+      integer, intent(inout) :: ierr
+
+      if (nwrtablavg == 0) nwrtablavg = navg
+
+      call adjust_filename_parallel(ablname_avg, "ablname_avg", ierr)
+      call adjust_filename_ensemble(ablname_avg)
+
+   end subroutine init_abl_averages
+#  endif
+#endif
 
 #ifdef LOGFILE
    !---------------------------------------------------------------------

@@ -111,6 +111,9 @@ C$OMP END PARALLEL
 !
       subroutine prestep3D_thread()
       use croco_namelist, only: dt, ndtfast
+#if defined ABL1D && defined AVERAGES && !defined XIOS
+      use croco_namelist, only: ldefablavg
+#endif
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS

@@ -36,5 +36,12 @@
   frcname = "TEST_CASES/shoreface_JW_frc.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 720
+  nrpfavg = 0
+  avgname = "shoreface_avg.nc"
+/
+
 
 ! End of namelist

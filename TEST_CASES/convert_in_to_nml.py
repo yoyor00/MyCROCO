@@ -91,14 +91,25 @@ MAPPINGS = [
 
 
     # ("xios_origin_date",   0,   0,  "str",   "&croco_use_calendar",        "xios_origin_date"),
-    # ("boundary",           0,   0,  "str",   "&croco_boundary",            "fname_boundary"),
+    ("boundary",           0,   0,  "str",   "&croco_boundary",            "bry_file"),
 
+    ("wkb_boundary",       0,   0,  "str",   "&croco_wkb_boundary",        "brywkb_file"),
 
+    ("averages",           0,   0,  "int",   "&croco_averages",            "ntsavg"),
+    ("averages",           0,   1,  "int",   "&croco_averages",            "navg"),
+    ("averages",           0,   2,  "int",   "&croco_averages",            "nrpfavg"),
+    ("averages",           1,   0,  "str",   "&croco_averages",            "avgname"),
 
-    # ("averages",           0,   0,  "int",   "&croco_averages",            "ntsavg"),
-    # ("averages",           0,   1,  "int",   "&croco_averages",            "navg"),
-    # ("averages",           0,   2,  "int",   "&croco_averages",            "nrpfavg"),
-    # ("averages",           1,   0,  "str",   "&croco_averages",            "fname_averages"),
+    ("abl",                0,   0,  "bool",  "&croco_abl",                 "ldefablhis"),
+    ("abl",                0,   1,  "int",   "&croco_abl",                 "nwrtablhis"),
+    ("abl",                0,   2,  "int",   "&croco_abl",                 "nrpfablhis"),
+    ("abl",                1,   0,  "str",   "&croco_abl",                 "ablname"),
+
+    ("abl_averages",       0,   0,  "bool",  "&croco_abl_averages",        "ldefablavg"),
+    ("abl_averages",       0,   1,  "int",   "&croco_abl_averages",        "ntsablavg"),
+    ("abl_averages",       0,   2,  "int",   "&croco_abl_averages",        "nwrtablavg"),
+    ("abl_averages",       0,   3,  "int",   "&croco_abl_averages",        "nrpfablavg"),
+    ("abl_averages",       1,   0,  "str",   "&croco_abl_averages",        "ablname_avg"),
 
     # ("rho0",               0,   0,  "float", "&croco_rho0",                "rho0"),
 

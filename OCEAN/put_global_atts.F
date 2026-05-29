@@ -24,6 +24,9 @@
 #ifdef SOLVE3D
             use croco_namelist, only: theta_s, theta_b, Tcline
 #endif
+#ifdef AVERAGES
+            use croco_namelist, only: avgname, ntsavg, navg
+#endif
       implicit none
       integer ncid, ierr, nf_ftype, lvar,lenstr
 #include "param.h"

@@ -33,5 +33,27 @@
   rstname = "croco_rst.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 36
+  nrpfavg = 0
+  avgname = "croco_avg.nc"
+/
+
+&croco_abl
+  ldefablhis = .true.
+  nwrtablhis = 36
+  nrpfablhis = 0
+  ablname = "croco_abl_his.nc"
+/
+
+&croco_abl_averages
+  ldefablavg = .false.
+  ntsablavg = 1
+  nwrtablavg = 1
+  nrpfablavg = 0
+  ablname_avg = "croco_abl_avg.nc"
+/
+
 
 ! End of namelist

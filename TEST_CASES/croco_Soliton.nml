@@ -27,5 +27,12 @@
   rstname = "soliton_rst.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 80
+  nrpfavg = 0
+  avgname = "soliton_avg.nc"
+/
+
 
 ! End of namelist

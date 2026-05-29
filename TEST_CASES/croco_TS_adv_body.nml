@@ -33,5 +33,12 @@
   rstname = "croco_rst_body_rot.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 10
+  nrpfavg = 0
+  avgname = "croco_avg_body_rot.nc"
+/
+
 
 ! End of namelist

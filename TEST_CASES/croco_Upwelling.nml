@@ -33,5 +33,12 @@
   rstname = "upwelling_rst.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 82
+  nrpfavg = 0
+  avgname = "upwelling_avg.nc"
+/
+
 
 ! End of namelist

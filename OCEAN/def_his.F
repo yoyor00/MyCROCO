@@ -36,6 +36,9 @@
 ! by CPP.
 !
       USE croco_namelist, ONLY: nrpfhis, ldefhis, hisname
+#ifdef AVERAGES
+      USE croco_namelist, ONLY: nrpfavg, avgname
+#endif
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
       USE comMUSTANG, ONLY : hisMust, avgMust, outMust, outMust_nbvar,

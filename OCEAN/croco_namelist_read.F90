@@ -102,6 +102,22 @@ contains
    (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
       use croco_namelist, ONLY: clmname
 #endif
+#if !defined ANA_BRY && defined FRC_BRY
+      use croco_namelist, ONLY: bry_file
+#endif
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+      use croco_namelist, ONLY: brywkb_file
+#endif
+#ifdef AVERAGES
+      use croco_namelist, ONLY: ntsavg, navg, nrpfavg, avgname
+#endif
+#if defined ABL1D && !defined XIOS
+      use croco_namelist, ONLY: ldefablhis, nwrtablhis, nrpfablhis, ablname
+#  ifdef AVERAGES
+      use croco_namelist, ONLY: ldefablavg, ntsablavg, nwrtablavg, nrpfablavg, &
+                                ablname_avg
+#  endif
+#endif
 #if defined WAVE_OFFLINE && defined MUSTANG
       use croco_namelist, ONLY: wave_file
 #endif
@@ -145,6 +161,22 @@ contains
    (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
    (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
       namelist /croco_climatology/ clmname
+#endif
+#if !defined ANA_BRY && defined FRC_BRY
+      namelist /croco_boundary/ bry_file
+#endif
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+      namelist /croco_wkb_boundary/ brywkb_file
+#endif
+#ifdef AVERAGES
+      namelist /croco_averages/ ntsavg, navg, nrpfavg, avgname
+#endif
+#if defined ABL1D && !defined XIOS
+      namelist /croco_abl/ ldefablhis, nwrtablhis, nrpfablhis, ablname
+#  ifdef AVERAGES
+      namelist /croco_abl_averages/ ldefablavg, ntsablavg, nwrtablavg, &
+                                    nrpfablavg, ablname_avg
+#  endif
 #endif
 #if defined WAVE_OFFLINE && defined MUSTANG
       namelist /croco_wave_offline/ wave_file
@@ -344,6 +376,65 @@ contains
       end if
 #endif
 
+#if !defined ANA_BRY && defined FRC_BRY
+      ! --- croco_boundary (optional) ---
+      call check_nml_presence(nmlunit, "croco_boundary", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_boundary, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_boundary (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+      ! --- croco_wkb_boundary (optional) ---
+      call check_nml_presence(nmlunit, "croco_wkb_boundary", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wkb_boundary, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wkb_boundary (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#ifdef AVERAGES
+      ! --- croco_averages (optional) ---
+      call check_nml_presence(nmlunit, "croco_averages", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_averages, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_averages (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#if defined ABL1D && !defined XIOS
+      ! --- croco_abl (optional) ---
+      call check_nml_presence(nmlunit, "croco_abl", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_abl, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_abl (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef AVERAGES
+      ! --- croco_abl_averages (optional) ---
+      call check_nml_presence(nmlunit, "croco_abl_averages", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_abl_averages, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_abl_averages (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+
       ! --- croco_logfile (optional) ---
 #ifdef LOGFILE
       call check_nml_presence(nmlunit, "croco_logfile", .false., found, ierr)
@@ -424,6 +515,21 @@ contains
 #endif
 #if defined BIOLOGY && defined PISCES
       MPI_master_only WRITE (stdout, nml=croco_biology)
+#endif
+#if !defined ANA_BRY && defined FRC_BRY
+      MPI_master_only WRITE (stdout, nml=croco_boundary)
+#endif
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+      MPI_master_only WRITE (stdout, nml=croco_wkb_boundary)
+#endif
+#ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_averages)
+#endif
+#if defined ABL1D && !defined XIOS
+      MPI_master_only WRITE (stdout, nml=croco_abl)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_abl_averages)
+#  endif
 #endif
 
       MPI_master_only WRITE (stdout, *) "End of CROCO namelist"

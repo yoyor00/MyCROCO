@@ -53,5 +53,16 @@
   bioname = "CROCO_FILES/croco_frcbio.nc"
 /
 
+&croco_boundary
+  bry_file = "filebound"
+/
+
+&croco_averages
+  ntsavg = 1
+  navg = 120
+  nrpfavg = 0
+  avgname = "scm_avg.nc"
+/
+
 
 ! End of namelist

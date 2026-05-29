@@ -20,6 +20,15 @@
 !=======================================================================
 !
       USE croco_namelist, ONLY: nwrt, nrst
+#ifdef AVERAGES
+      USE croco_namelist, ONLY: ntsavg, navg, nrpfavg
+#endif
+#if defined ABL1D && !defined XIOS
+      USE croco_namelist, ONLY: nwrtablhis, ldefablhis
+#  ifdef AVERAGES
+      USE croco_namelist, ONLY: ldefablavg, ntsablavg, nwrtablavg
+#  endif
+#endif
 #ifdef AGRIF
       use Agrif_Util
 #endif

@@ -61,5 +61,16 @@
   wave_file = "wave_vilaine_201501.nc"
 /
 
+&croco_boundary
+  bry_file = "bry_vilaine_201501.nc"
+/
+
+&croco_averages
+  ntsavg = 1
+  navg = 1000000
+  nrpfavg = 0
+  avgname = "croco_avg.nc"
+/
+
 
 ! End of namelist

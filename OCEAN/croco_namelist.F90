@@ -164,6 +164,40 @@ MODULE croco_namelist
    character(len=180) :: clmname = "CROCO_FILES/croco_clm.nc"
 #endif
 
+#if !defined ANA_BRY && defined FRC_BRY
+   ! &croco_boundary
+   character(len=180) :: bry_file = "CROCO_FILES/croco_bry.nc"
+#endif
+
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+   ! &croco_wkb_boundary
+   character(len=180) :: brywkb_file = "CROCO_FILES/croco_wkb.nc"
+#endif
+
+#ifdef AVERAGES
+   ! &croco_averages
+   integer :: ntsavg = 1
+   integer :: navg = 48
+   integer :: nrpfavg = 0
+   character(len=180) :: avgname = "CROCO_FILES/croco_avg.nc"
+#endif
+
+#if defined ABL1D && !defined XIOS
+   ! &croco_abl
+   logical :: ldefablhis = .true.
+   integer :: nwrtablhis = 36
+   integer :: nrpfablhis = 0
+   character(len=180) :: ablname = "croco_abl_his.nc"
+#  ifdef AVERAGES
+   ! &croco_abl_averages
+   logical :: ldefablavg = .false.
+   integer :: ntsablavg = 1
+   integer :: nwrtablavg = 0
+   integer :: nrpfablavg = 0
+   character(len=180) :: ablname_avg = "croco_abl_avg.nc"
+#  endif
+#endif
+
 #if defined WAVE_OFFLINE && defined MUSTANG
    ! &croco_wave_offline
    character(len=180) :: wave_file

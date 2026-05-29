@@ -1325,7 +1325,7 @@
 #endif /* SOLVE3D */
 
 #ifdef AVERAGES
-      integer ncidavg, nrecavg,  nrpfavg
+      integer ncidavg, nrecavg
      &      , avgTime, avgTime2, avgTstep, avgZ, avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
      &      , avgBustr, avgBvstr
@@ -1958,7 +1958,7 @@
 #endif
 
 #ifdef AVERAGES
-     &      , ncidavg,  nrecavg,  nrpfavg
+     &      , ncidavg,  nrecavg
      &      , avgTime, avgTime2, avgTstep, avgZ,    avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUWstr, avgVWstr
      &      , avgBustr, avgBvstr
@@ -2108,15 +2108,6 @@
       character*180 usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
-#ifdef AVERAGES
-     &                                ,  avgname
-#endif
-#ifdef ABL1D
-     &                                 , ablname
-# ifdef AVERAGES
-     &                                 , ablname_avg
-# endif
-#endif
 #ifdef DIAGNOSTICS_TS
      &                                ,  dianame
 # ifdef AVERAGES
@@ -2164,12 +2155,6 @@
 # ifdef AVERAGES
      &                                ,  dianamebio_avg
 # endif
-#endif
-#ifdef FRC_BRY
-     &                                ,   bry_file
-#endif
-#if defined WKB_WWAVE && !defined ANA_BRY_WKB
-     &                                ,   brywkb_file
 #endif
 #ifdef ASSIMILATION
      &                     ,   aparnam,   assname
@@ -2209,15 +2194,6 @@
      &         ,   origin_day, origin_month, origin_year
      &         ,   origin_hour, origin_minute, origin_second
 
-#ifdef AVERAGES
-     &                                ,  avgname
-#endif
-#ifdef ABL1D
-     &                                ,  ablname
-# ifdef AVERAGES
-     &                                ,  ablname_avg
-# endif
-#endif
 #ifdef DIAGNOSTICS_TS
      &                                ,  dianame
 # ifdef AVERAGES
@@ -2265,12 +2241,6 @@
 # ifdef AVERAGES
      &                                ,  dianamebio_avg
 # endif
-#endif
-#ifdef FRC_BRY
-     &                                ,   bry_file
-#endif
-#if defined WKB_WWAVE && !defined ANA_BRY_WKB
-     &                                ,   brywkb_file
 #endif
 #ifdef ASSIMILATION
      &                     ,   aparnam,   assname

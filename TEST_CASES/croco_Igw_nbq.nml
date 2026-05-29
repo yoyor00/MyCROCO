@@ -51,5 +51,12 @@
   clmname = "TEST_CASES/igw_clm.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 259200
+  nrpfavg = 0
+  avgname = "igw_avg.nc"
+/
+
 
 ! End of namelist

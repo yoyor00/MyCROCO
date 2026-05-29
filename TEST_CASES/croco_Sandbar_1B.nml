@@ -33,5 +33,12 @@
   rstname = "sandbar_rst.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 6000
+  nrpfavg = 0
+  avgname = "sandbar_avg.nc"
+/
+
 
 ! End of namelist

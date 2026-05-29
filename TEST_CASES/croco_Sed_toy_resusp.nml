@@ -41,5 +41,12 @@
   rstname = "sed_toy_resusp_rst.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 3600
+  nrpfavg = 0
+  avgname = "sed_toy_resusp_avg.nc"
+/
+
 
 ! End of namelist

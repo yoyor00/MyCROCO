@@ -174,19 +174,8 @@
 #ifdef EXACT_RESTART
      &     ,  forw_start
 #endif
-#ifdef AVERAGES
-     &                                 , ntsavg,  navg
-#endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
-#endif
-#ifdef ABL1D
-      logical ldefablhis
-      integer nwrtablhis, nrpfablhis
-# ifdef AVERAGES
-      logical ldefablavg
-      integer ntsablavg, nrpfablavg, nwrtablavg
-# endif
 #endif
 #if defined DIAGNOSTICS_TS
       integer nwrtdia
@@ -342,9 +331,6 @@
 #ifdef EXACT_RESTART
      &       , forw_start
 #endif
-#ifdef AVERAGES
-     &                                 , ntsavg,  navg
-#endif
 #ifdef BODYFORCE
      &                      , levbfrc,   levsfrc
 #endif
@@ -429,17 +415,6 @@
 #endif
 #ifdef STATIONS
      &                      , ldefsta
-#endif
-#ifdef ABL1D
-     &                      , ldefablhis
-     &                      , nwrtablhis
-     &                      , nrpfablhis
-# ifdef AVERAGES
-     &                      , ldefablavg
-     &                      , ntsablavg
-     &                      , nrpfablavg
-     &                      , nwrtablavg
-# endif
 #endif
 
 #ifdef  BAND_DEBUG         

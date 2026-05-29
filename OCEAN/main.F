@@ -24,6 +24,9 @@
           USE croco_namelist_read, ONLY : read_nml, read_nml_fname
           USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
           USE croco_namelist, ONLY : ldefhis, nrrec
+#if defined ABL1D && !defined XIOS
+          USE croco_namelist, ONLY : ldefablhis
+#endif
 #ifdef USE_CALENDAR
           USE croco_namelist, ONLY : end_date
 #endif

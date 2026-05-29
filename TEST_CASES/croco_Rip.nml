@@ -36,5 +36,12 @@
   grdname = "rip_grd.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 1800
+  nrpfavg = 0
+  avgname = "rip_avg.nc"
+/
+
 
 ! End of namelist

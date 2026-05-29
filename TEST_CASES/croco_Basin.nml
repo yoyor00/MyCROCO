@@ -37,5 +37,12 @@
   rstname = "basin_rst.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 3240
+  nrpfavg = 0
+  avgname = "basin_avg.nc"
+/
+
 
 ! End of namelist

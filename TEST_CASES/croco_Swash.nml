@@ -39,5 +39,12 @@
   rstname = "swash_rst.nc"
 /
 
+&croco_averages
+  ntsavg = 1
+  navg = 12190
+  nrpfavg = 0
+  avgname = "swash_avg.nc"
+/
+
 
 ! End of namelist

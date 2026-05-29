@@ -15,7 +15,7 @@
 
       subroutine get_bry            ! Read side boundary forcing
                                     ! fields from boundary file
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, bry_file
 # ifdef OPENACC
       use exchange_device_host
 # endif
