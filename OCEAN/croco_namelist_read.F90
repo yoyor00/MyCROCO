@@ -97,10 +97,10 @@ contains
       use croco_namelist, ONLY: bulkname
 #endif
 #if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
-   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
-   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
-      use croco_namelist, ONLY: clmname
+      (defined ZCLIMATOLOGY( & !defined ANA_SSH) || \
+       defined M2CLIMATOLOGY(d & !defined ANA_M2CLIMA) || \
+                             efined M3CLIMATOLOGY use & !defined ANA_M3CLIMA)
+                             croco_namelist, ONLY:clmname
 #endif
 #if !defined ANA_BRY && defined FRC_BRY
       use croco_namelist, ONLY: bry_file
@@ -156,10 +156,14 @@ contains
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
       namelist /croco_bulk_forcing/ bulkname
 #endif
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
-   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
-   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+#if (  defined TCLIMATOLOGY  && \
+      !defined ANA_TCLIMA) || \
+      (defined ZCLIMATOLOGY&&\
+      !defined ANA_SSH) || \
+      (defined M2CLIMATOLOGY&&\
+      !defined ANA_M2CLIMA) || \
+      (defined M3CLIMATOLOGY&&\
+      !defined ANA_M3CLIMA)
       namelist /croco_climatology/ clmname
 #endif
 #if !defined ANA_BRY && defined FRC_BRY
@@ -175,7 +179,7 @@ contains
       namelist /croco_abl/ ldefablhis, nwrtablhis, nrpfablhis, ablname
 #  ifdef AVERAGES
       namelist /croco_abl_averages/ ldefablavg, ntsablavg, nwrtablavg, &
-                                    nrpfablavg, ablname_avg
+         nrpfablavg, ablname_avg
 #  endif
 #endif
 #if defined WAVE_OFFLINE && defined MUSTANG
@@ -337,10 +341,14 @@ contains
       end if
 #endif
 
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
-   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
-   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+#if (  defined TCLIMATOLOGY  && \
+      !defined ANA_TCLIMA) || \
+      (defined ZCLIMATOLOGY&&\
+      !defined ANA_SSH) || \
+      (defined M2CLIMATOLOGY&&\
+      !defined ANA_M2CLIMA) || \
+      (defined M3CLIMATOLOGY&&\
+      !defined ANA_M3CLIMA)
       ! --- croco_climatology (optional) ---
       call check_nml_presence(nmlunit, "croco_climatology", .false., found, ierr)
       if (found) then
@@ -504,10 +512,14 @@ contains
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
       MPI_master_only WRITE (stdout, nml=croco_bulk_forcing)
 #endif
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
-   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
-   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+#if (  defined TCLIMATOLOGY  && \
+      !defined ANA_TCLIMA) || \
+      (defined ZCLIMATOLOGY&&\
+      !defined ANA_SSH) || \
+      (defined M2CLIMATOLOGY&&\
+      !defined ANA_M2CLIMA) || \
+      (defined M3CLIMATOLOGY&&\
+      !defined ANA_M3CLIMA)
       MPI_master_only WRITE (stdout, nml=croco_climatology)
 #endif
 #if defined WAVE_OFFLINE && defined MUSTANG

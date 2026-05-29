@@ -39,10 +39,14 @@ MODULE croco_namelist_init
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
    public :: init_bulk_forcing
 #endif
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
-   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
-   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+#if (  defined TCLIMATOLOGY  && \
+   !defined ANA_TCLIMA) || \
+   (defined ZCLIMATOLOGY&&\
+   !defined ANA_SSH) || \
+   (defined M2CLIMATOLOGY&&\
+   !defined ANA_M2CLIMA) || \
+   (defined M3CLIMATOLOGY&&\
+   !defined ANA_M3CLIMA)
    public :: init_climatology
 #endif
 #if !defined ANA_BRY && defined FRC_BRY
@@ -112,10 +116,14 @@ contains
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
       call init_bulk_forcing(ierr)
 #endif
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
-   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
-   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+#if (  defined TCLIMATOLOGY  && \
+      !defined ANA_TCLIMA) || \
+      (defined ZCLIMATOLOGY&&\
+      !defined ANA_SSH) || \
+      (defined M2CLIMATOLOGY&&\
+      !defined ANA_M2CLIMA) || \
+      (defined M3CLIMATOLOGY&&\
+      !defined ANA_M3CLIMA)
       call init_climatology(ierr)
 #endif
 #if !defined ANA_BRY && defined FRC_BRY
@@ -330,10 +338,14 @@ contains
    end subroutine init_bulk_forcing
 #endif
 
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-   (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
-   (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
-   (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+#if (  defined TCLIMATOLOGY  && \
+   !defined ANA_TCLIMA) || \
+   (defined ZCLIMATOLOGY&&\
+   !defined ANA_SSH) || \
+   (defined M2CLIMATOLOGY&&\
+   !defined ANA_M2CLIMA) || \
+   (defined M3CLIMATOLOGY&&\
+   !defined ANA_M3CLIMA)
    !---------------------------------------------------------------------
    !  init_climatology
    !  Adjust clmname for MPI and check file availability.

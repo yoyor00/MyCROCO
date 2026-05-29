@@ -669,7 +669,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
 ! Set-up bulk data for current tile.
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, bulkname
       implicit none
 # include "param.h"
 # include "forces.h"
