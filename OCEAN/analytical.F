@@ -111,6 +111,9 @@
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
+#  if !defined NONLIN_EOS
+      USE croco_namelist, ONLY: Tcoef
+#  endif
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -977,6 +980,9 @@ C$    integer  trd, omp_get_thread_num
 !
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
+# endif
+# if !defined NONLIN_EOS
+      USE croco_namelist, ONLY: R0, Tcoef
 # endif
       implicit none
 # include "param.h"

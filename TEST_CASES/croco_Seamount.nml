@@ -33,5 +33,13 @@
   rstname = "seamount_rst.nc"
 /
 
+&croco_lin_eos
+  R0 = 30.
+  T0 = 5.
+  S0 = 0.
+  Tcoef = -1.
+  Scoef = 0.
+/
+
 
 ! End of namelist

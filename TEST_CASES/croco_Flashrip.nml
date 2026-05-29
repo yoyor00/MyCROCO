@@ -43,6 +43,14 @@
   grdname = "rip_grd.nc"
 /
 
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
+/
+
 &croco_wave_maker
   wmaker_amp = 0.24
   wmaker_prd = 13.

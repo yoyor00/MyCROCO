@@ -70,6 +70,18 @@ MODULE croco_namelist_init
 #if defined BIOLOGY && defined PISCES
    public :: init_biology
 #endif
+#ifdef SEDIMENT
+   public :: init_sediments
+#endif
+#ifdef MUSTANG
+   public :: init_sediments_mustang
+#endif
+#ifdef SUBSTANCE
+   public :: init_substance
+#endif
+#ifdef OBSTRUCTION
+   public :: init_obstruction
+#endif
 #ifdef LOGFILE
    public :: init_logfile
 #endif
@@ -146,6 +158,18 @@ contains
 #endif
 #if defined BIOLOGY && defined PISCES
       call init_biology(ierr)
+#endif
+#ifdef SEDIMENT
+      call init_sediments(ierr)
+#endif
+#ifdef MUSTANG
+      call init_sediments_mustang(ierr)
+#endif
+#ifdef SUBSTANCE
+      call init_substance(ierr)
+#endif
+#ifdef OBSTRUCTION
+      call init_obstruction(ierr)
 #endif
 #ifdef LOGFILE
       if (ierr == 0) call init_logfile(ierr)
@@ -432,6 +456,110 @@ contains
 
    end subroutine init_biology
 # endif
+
+#ifdef SEDIMENT
+   !---------------------------------------------------------------------
+   !  init_sediments
+   !---------------------------------------------------------------------
+   subroutine init_sediments(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: sedname
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      open (testunit, file=trim(sedname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open sediment file ', trim(sedname)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_sediments
+#endif
+
+#ifdef MUSTANG
+   !---------------------------------------------------------------------
+   !  init_sediments_mustang
+   !---------------------------------------------------------------------
+   subroutine init_sediments_mustang(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: sedname_must
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      open (testunit, file=trim(sedname_must), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open MUSTANG sediment file ', trim(sedname_must)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_sediments_mustang
+#endif
+
+#ifdef SUBSTANCE
+   !---------------------------------------------------------------------
+   !  init_substance
+   !---------------------------------------------------------------------
+   subroutine init_substance(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: subsfilename
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      open (testunit, file=trim(subsfilename), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open substance file ', trim(subsfilename)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_substance
+#endif
+
+#ifdef OBSTRUCTION
+   !---------------------------------------------------------------------
+   !  init_obstruction
+   !---------------------------------------------------------------------
+   subroutine init_obstruction(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: obstname
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      open (testunit, file=trim(obstname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open obstruction file ', trim(obstname)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_obstruction
+#endif
 
 #if !defined ANA_BRY && defined FRC_BRY
    !---------------------------------------------------------------------

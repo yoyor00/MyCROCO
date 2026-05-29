@@ -117,6 +117,9 @@
 #  ifdef MUSTANG
       USE comsubstance, ONLY : ros, nvpc, l_subs2D
 #  endif
+#  if !defined NONLIN_EOS
+      USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
+#  endif
       implicit none
 
 #  include "param.h"

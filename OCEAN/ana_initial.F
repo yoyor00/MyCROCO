@@ -28,6 +28,9 @@
 !----------------------------------------------------------------------
 !
         use croco_namelist, only: dt, nrrec
+#if !defined NONLIN_EOS
+        use croco_namelist, only: R0, T0, S0, Tcoef, Scoef
+#endif
 #ifdef AGRIF
       use Agrif_Util
 #endif

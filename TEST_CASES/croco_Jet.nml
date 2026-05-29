@@ -47,5 +47,13 @@
   clmname = "TEST_CASES/xxxxx"
 /
 
+&croco_lin_eos
+  R0 = 0.d0
+  T0 = 0.d0
+  S0 = 0.d0
+  Tcoef = -1.0d0
+  Scoef = 0.d0
+/
+
 
 ! End of namelist

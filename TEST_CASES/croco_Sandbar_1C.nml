@@ -33,6 +33,18 @@
   rstname = "sandbar_rst.nc"
 /
 
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
+/
+
+&croco_sediments
+  sedname = "TEST_CASES/sediment_sandbar_1C.in"
+/
+
 &croco_wkb_wwave
   wkb_amp = 0.18
   wkb_ang = 0.0

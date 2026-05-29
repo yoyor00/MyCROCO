@@ -1527,21 +1527,6 @@
          read(input,*,err=95) Akv_bak,(Akt_bak(itrc),itrc=1,NT)
 #  endif /* TRACERS */
 # endif
-# ifdef BODYFORCE
-      elseif (keyword(1:kwlen).eq.'bodyforce') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) levsfrc,levbfrc
-        if (levsfrc.lt.1 .or. levsfrc.gt.N) then
-          MPI_master_only write(stdout,19) 'LEVSFRC = ',levsfrc
-  19      format(' READ_INP - Illegal bodyforce level, ',A,i4)
-          ierr=ierr+1
-        endif
-        if (levbfrc.lt.1 .or. levbfrc.gt.N) then
-          MPI_master_only write(stdout,19) 'LEVBFRC = ',levbfrc
-          ierr=ierr+1
-        endif
-
-# endif
 #endif /*SOLVE3D*/
 
 #if (defined SPONGE && !defined SPONGE_GRID)
@@ -1566,20 +1551,6 @@
 !
 ! Nudging parameters for restoring toward large-scale data in ABL
 !
-#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_TRA
-      elseif (keyword(1:kwlen).eq.'abl_nudg_tra_cof') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ltra_min,ltra_max
-        ltra_min = 1./ltra_min
-        ltra_max = 1./ltra_max
-#endif
-#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_DYN
-      elseif (keyword(1:kwlen).eq.'abl_nudg_dyn_cof') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ldyn_min,ldyn_max
-        ldyn_min = 1./ldyn_min
-        ldyn_max = 1./ldyn_max
-#endif
 
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
@@ -1607,21 +1578,10 @@
 #endif
 
 #ifdef SOLVE3D
-# if !defined NONLIN_EOS
-!
-! Parameters for linear equations of state.
-!
-      elseif (keyword(1:kwlen).eq.'lin_EOS_cff') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) R0, T0, S0, Tcoef, Scoef
-# endif
 # ifdef SEDIMENT
 !
 ! Sediments input file name for USGS sediment model.
 !
-      elseif (keyword(1:kwlen).eq.'sediments') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) sedname
 
       elseif (keyword(1:kwlen).eq.'sediment_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
@@ -1649,22 +1609,9 @@
         enddo
 #  endif
 
-# elif defined MUSTANG
-!
-! Sediments input file name for Mustang.
-!
-      elseif (keyword(1:kwlen).eq.'sediments_mustang') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) sedname_must
-
 # endif /* SEDIMENT */
 #endif /* SOLVE3D */
 
-#if defined SUBSTANCE
-      elseif (keyword(1:kwlen).eq.'substance') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) subsfilename
-#endif
 #ifdef BBL
       elseif (keyword(1:kwlen).eq.'bbl_history_fields') then
         call cancel_kwd (keyword(1:kwlen), ierr)
@@ -1673,12 +1620,6 @@
 
 #endif /* BBL */
 
-#if defined OBSTRUCTION
-      elseif (keyword(1:kwlen).eq.'obstruction') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) obstname
-        lstr=lenstr(obstname)
-#endif /* OBSTRUCTION */
 
 #ifdef MRL_WCI
 !
@@ -2652,15 +2593,6 @@
           enddo
 #  endif /* TRACERS */
 # endif
-# ifdef BODYFORCE
-          MPI_master_only write(stdout,20) levsfrc, levbfrc
- 20    format(4x,i6,2x,'levsfrc     ',
-     &           'Deepest level to apply surface stress as a ',
-     &           'bodyforce.',/,
-     &         4x,i6,2x,'levbfrc     ',
-     &           'Shallowest level to apply bottom stress as a ',
-     &           'bodyforce.')
-# endif
 #endif /*SOLVE3D*/
 
 #if (defined SPONGE && !defined SPONGE_GRID)
@@ -2676,19 +2608,6 @@
 !
 ! Nudging parameters for restoring toward large-scale data in ABL
 !
-#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_TRA
-          MPI_master_only write(stdout,'(1pe10.3,2x,A)')
-     &        1./ltra_min,'ltra_min ABL Nudging coefficients [sec]'
-          MPI_master_only write(stdout,'(1pe10.3,2x,A)')
-     &        1./ltra_max,'ltra_max ABL Nudging coefficients [sec]'
-#endif
-#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_DYN
-          MPI_master_only write(stdout,'(1pe10.3,2x,A)')
-     &        1./ldyn_min,'ldyn_min ABL Nudging coefficients [sec]'
-          MPI_master_only write(stdout,'(1pe10.3,2x,A/)')
-     &        1./ldyn_max,'ldyn_max ABL Nudging coefficients [sec]'
-
-#endif
 
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
      defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
@@ -2712,24 +2631,8 @@
 # endif
 #endif
 
-#ifdef SOLVE3D  
-# if !defined NONLIN_EOS
-          MPI_master_only write(stdout,'(5(f10.4,2x,A,1x,A/))')
-     &       T0, 'T0       Background value for potential',
-     &                                     'temperature (Celsius).',
-     &       S0, 'S0       Background salinity (PSU),', 'constant.',
-     &       R0, 'R0       Background density (kg/m3) used in',
-     &                                                'linear EOS.',
-     &    Tcoef, 'Tcoef    Thermal expansion coefficient',
-     &                                           '(kg/m3/Celsius).',
-     &    Scoef, 'Scoef    Saline contraction coefficient',
-     &                                                '(kg/m3/PSU).'
-# endif
-
+#ifdef SOLVE3D
 # ifdef SEDIMENT
-          MPI_master_only write(stdout,
-     &              '(/9x,A,2x,A)')
-     &        'Sediment input file:',sedname
           MPI_master_only write(stdout,'(3(/6x,L1,2x,A,1x,A))')
      &    wrthis(indxATHK), 'write act_thick ',
      &                            'thickness of active bed layer.'
@@ -2771,21 +2674,9 @@
      &      wrthis(indxBTCR), 'write bed_tau_crit ',
      &                            'critical stress of bed layer.'
 #  endif
-# elif defined MUSTANG
-        lstr=lenstr(sedname_must)
-        MPI_master_only write(stdout,'(7x,A,2x,A/)')
-     &         'Sediment input file for Mustang :' ,
-     &          sedname_must(1:lstr)
-
 # endif /* SEDIMENT */
 #endif /* SOLVE3D */
 
-#if defined SUBSTANCE
-          lstr=lenstr(subsfilename)
-          MPI_master_only write(stdout,'(7x,A,12x,A)')
-     &         'Input file for Substance:' ,
-     &          subsfilename(1:lstr)
-#endif /* SUBSTANCE */
 #ifdef BBL
           MPI_master_only write(stdout,'(6(/6x,L1,2x,A,1x,A))')
      &    wrthis(indxAbed), 'write Abed ',
@@ -2803,11 +2694,6 @@
 
 #endif /* BBL */
     
-#if defined OBSTRUCTION
-          MPI_master_only write(stdout,'(7x,A,12x,A)')
-     &         'Input file for Obstruction module:' ,
-     &          obstname
-#endif /* OBSTRUCTION */
     
 #ifdef MRL_WCI
           MPI_master_only write(stdout,'(/1x,A,3(/6x,l1,2x,A))')

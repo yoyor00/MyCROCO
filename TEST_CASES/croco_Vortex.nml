@@ -47,5 +47,13 @@
   clmname = "TEST_CASES/VORTEX/vortex_clm.nc"
 /
 
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
+/
+
 
 ! End of namelist

@@ -37,6 +37,19 @@
   rstname = "basin_rst.nc"
 /
 
+&croco_bodyforce
+  levsfrc = 10
+  levbfrc = 1
+/
+
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
+/
+
 &croco_averages
   ntsavg = 1
   navg = 3240

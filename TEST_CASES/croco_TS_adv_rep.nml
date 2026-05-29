@@ -33,6 +33,14 @@
   rstname = "croco_rst_body_rot.nc"
 /
 
+&croco_lin_eos
+  R0 = 0.
+  T0 = 16.
+  S0 = 0.
+  Tcoef = 0.2048
+  Scoef = 0.
+/
+
 &croco_averages
   ntsavg = 1
   navg = 10

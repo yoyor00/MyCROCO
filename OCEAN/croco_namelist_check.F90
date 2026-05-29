@@ -39,6 +39,9 @@ MODULE croco_namelist_check
 #if defined WKB_WWAVE && defined WAVE_ROLLER
    public :: check_wkb_roller
 #endif
+#ifdef BODYFORCE
+   public :: check_bodyforce
+#endif
 
 contains
 
@@ -62,6 +65,9 @@ contains
       call check_history(ierr)
 #if defined WKB_WWAVE && defined WAVE_ROLLER
       call check_wkb_roller(ierr)
+#endif
+#ifdef BODYFORCE
+      call check_bodyforce(ierr)
 #endif
 
    end subroutine check_all
@@ -230,5 +236,34 @@ contains
 
    end subroutine check_wkb_roller
 #endif /* WKB_WWAVE && WAVE_ROLLER */
+
+#ifdef BODYFORCE
+   !---------------------------------------------------------------------
+   !  check_bodyforce
+   !---------------------------------------------------------------------
+   subroutine check_bodyforce(ierr)
+      use param, ONLY: stdout, N
+      use croco_namelist, ONLY: levsfrc, levbfrc
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      if (levsfrc < 1 .or. levsfrc > N) then
+         MPI_master_only write (stdout, '(a,i4,a)') &
+            'Error - levsfrc = ', levsfrc, &
+            ' must be in [1, N].'
+         ierr = ierr + 1
+      end if
+      if (levbfrc < 1 .or. levbfrc > N) then
+         MPI_master_only write (stdout, '(a,i4,a)') &
+            'Error - levbfrc = ', levbfrc, &
+            ' must be in [1, N].'
+         ierr = ierr + 1
+      end if
+
+   end subroutine check_bodyforce
+#endif /* BODYFORCE */
 
 END MODULE croco_namelist_check

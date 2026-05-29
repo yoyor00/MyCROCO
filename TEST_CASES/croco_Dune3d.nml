@@ -40,5 +40,25 @@
   rstname = "dune3d_rst.nc"
 /
 
+&croco_lin_eos
+  R0 = 26.65
+  T0 = 10.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
+/
+
+&croco_sediments
+  sedname = "TEST_CASES/sediment_dune.in"
+/
+
+&croco_sediments_mustang
+  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV2_Dune.txt"
+/
+
+&croco_substance
+  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Dune.txt"
+/
+
 
 ! End of namelist

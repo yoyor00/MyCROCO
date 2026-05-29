@@ -41,6 +41,18 @@
   rstname = "sed_toy_consolid_rst.nc"
 /
 
+&croco_lin_eos
+  R0 = 27
+  T0 = 10.
+  S0 = 35.
+  Tcoef = 1.7d-4
+  Scoef = 7.6d-4
+/
+
+&croco_sediments
+  sedname = "TEST_CASES/sediment_sed_toy_consolid.in"
+/
+
 &croco_averages
   ntsavg = 1
   navg = 3600

@@ -150,9 +150,6 @@
 # ifdef TRACERS
       real  tnu2(NT),tnu4(NT)
 # endif
-# if !defined NONLIN_EOS || defined MUSTANG
-      real R0,T0,S0, Tcoef, Scoef
-# endif
       real weight(6,0:NWEIGHT)
 
 #endif
@@ -173,9 +170,6 @@
      &      , nfast
 #ifdef EXACT_RESTART
      &     ,  forw_start
-#endif
-#ifdef BODYFORCE
-     &                      , levbfrc,   levsfrc
 #endif
 #if defined DIAGNOSTICS_TS
       integer nwrtdia
@@ -308,9 +302,6 @@
 # ifdef TRACERS
      &           ,       tnu2,    tnu4
 # endif
-# ifndef NONLIN_EOS
-     &                      , R0,T0,S0,  Tcoef,   Scoef
-# endif
      &                      , weight
 #endif
 #if defined SPONGE || \
@@ -330,9 +321,6 @@
      &      , nfast
 #ifdef EXACT_RESTART
      &       , forw_start
-#endif
-#ifdef BODYFORCE
-     &                      , levbfrc,   levsfrc
 #endif
 #ifdef STATIONS
      &                      , nsta, nrpfsta

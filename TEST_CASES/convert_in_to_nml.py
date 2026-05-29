@@ -95,6 +95,26 @@ MAPPINGS = [
 
     ("wkb_boundary",       0,   0,  "str",   "&croco_wkb_boundary",        "brywkb_file"),
 
+    ("bodyforce",          0,   0,  "int",   "&croco_bodyforce",           "levsfrc"),
+    ("bodyforce",          0,   1,  "int",   "&croco_bodyforce",           "levbfrc"),
+
+    ("lin_EOS_cff",        0,   0,  "float", "&croco_lin_eos",             "R0"),
+    ("lin_EOS_cff",        0,   1,  "float", "&croco_lin_eos",             "T0"),
+    ("lin_EOS_cff",        0,   2,  "float", "&croco_lin_eos",             "S0"),
+    ("lin_EOS_cff",        0,   3,  "float", "&croco_lin_eos",             "Tcoef"),
+    ("lin_EOS_cff",        0,   4,  "float", "&croco_lin_eos",             "Scoef"),
+
+    ("abl_nudg_tra_cof",   0,   0,  "float", "&croco_abl_nudg_tra",        "ltra_min"),
+    ("abl_nudg_tra_cof",   0,   1,  "float", "&croco_abl_nudg_tra",        "ltra_max"),
+
+    ("abl_nudg_dyn_cof",   0,   0,  "float", "&croco_abl_nudg_dyn",        "ldyn_min"),
+    ("abl_nudg_dyn_cof",   0,   1,  "float", "&croco_abl_nudg_dyn",        "ldyn_max"),
+
+    ("sediments",          0,   0,  "str",   "&croco_sediments",           "sedname"),
+    ("sediments_mustang",  0,   0,  "str",   "&croco_sediments_mustang",   "sedname_must"),
+    ("substance",          0,   0,  "str",   "&croco_substance",           "subsfilename"),
+    ("obstruction",        0,   0,  "str",   "&croco_obstruction",         "obstname"),
+
     ("wkb_wwave",          0,   0,  "float", "&croco_wkb_wwave",           "wkb_amp"),
     ("wkb_wwave",          0,   1,  "float", "&croco_wkb_wwave",           "wkb_ang"),
     ("wkb_wwave",          0,   2,  "float", "&croco_wkb_wwave",           "wkb_prd"),

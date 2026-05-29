@@ -41,5 +41,21 @@
   rstname = "tidal_flat_rst.nc"
 /
 
+&croco_lin_eos
+  R0 = 30.d0
+  T0 = 20.d0
+  S0 = 35.5d0
+  Tcoef = 0.0d-10
+  Scoef = 0.0d-10
+/
+
+&croco_sediments_mustang
+  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV1_Tidal_flat.txt"
+/
+
+&croco_substance
+  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Tidal_flat.txt"
+/
+
 
 ! End of namelist

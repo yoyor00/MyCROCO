@@ -36,6 +36,12 @@
 !======================================================================
       subroutine abl_ini_tile(Istr,Iend,Jstr,Jend)
       use croco_namelist, only: dt
+#  if defined ABL_NUDGING && defined ABL_NUDGING_TRA
+      use croco_namelist, only: ltra_min, ltra_max
+#  endif
+#  if defined ABL_NUDGING && defined ABL_NUDGING_DYN
+      use croco_namelist, only: ldyn_min, ldyn_max
+#  endif
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -230,6 +236,9 @@
 #  endif
 #  if defined ABL_NUDGING_TRA
       cff1     = 1. / ( bmax - bmin )**3
+! invert timescales [s] -> coefficients [s^-1]
+      ltra_min = 1./ltra_min
+      ltra_max = 1./ltra_max
 ! for active tracers
       alp3_tra = -2. * cff1                 * ( ltra_max - ltra_min )
       alp2_tra =  3. * cff1 * (bmax + bmin) * ( ltra_max - ltra_min )
@@ -263,6 +272,9 @@
 #  endif
 #  if defined ABL_NUDGING_DYN
       cff1     = 1. / ( bmax - bmin )**3
+! invert timescales [s] -> coefficients [s^-1]
+      ldyn_min = 1./ldyn_min
+      ldyn_max = 1./ldyn_max
 ! for dynamics
       alp3_dyn = -2. * cff1                 * ( ldyn_max - ldyn_min )
       alp2_dyn =  3. * cff1 * (bmax + bmin) * ( ldyn_max - ldyn_min )

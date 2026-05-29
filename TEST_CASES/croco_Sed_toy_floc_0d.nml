@@ -41,5 +41,30 @@
   rstname = "sed_toy_floc_rst.nc"
 /
 
+&croco_bodyforce
+  levsfrc = 1
+  levbfrc = 1
+/
+
+&croco_lin_eos
+  R0 = 30.d0
+  T0 = 20.d0
+  S0 = 35.5d0
+  Tcoef = 0.0d-10
+  Scoef = 0.0d-10
+/
+
+&croco_sediments
+  sedname = "TEST_CASES/sediment_sed_toy_floc_0d.in"
+/
+
+&croco_sediments_mustang
+  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV1_Sed_toy_floc_0d.txt"
+/
+
+&croco_substance
+  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Sed_toy_floc_0d.txt"
+/
+
 
 ! End of namelist

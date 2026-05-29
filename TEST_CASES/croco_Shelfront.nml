@@ -33,5 +33,13 @@
   rstname = "shelfront_rst.nc"
 /
 
+&croco_lin_eos
+  R0 = 30.
+  T0 = 15.
+  S0 = 35.
+  Tcoef = 0.28d0
+  Scoef = 0.78d0
+/
+
 
 ! End of namelist

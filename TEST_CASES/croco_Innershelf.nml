@@ -33,6 +33,14 @@
   rstname = "innershelf_rst.nc"
 /
 
+&croco_lin_eos
+  R0 = 30.
+  T0 = 20.
+  S0 = 35.
+  Tcoef = 0.28d0
+  Scoef = 0.78d0
+/
+
 &croco_averages
   ntsavg = 1
   navg = 576

@@ -36,6 +36,18 @@
   grdname = "rip_grd.nc"
 /
 
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
+/
+
+&croco_sediments
+  sedname = "sediment.in"
+/
+
 &croco_wkb_wwave
   wkb_amp = 0.5
   wkb_ang = 0.

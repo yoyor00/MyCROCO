@@ -40,5 +40,9 @@
   rstname = "seagrass_rst.nc"
 /
 
+&croco_obstruction
+  obstname = "TEST_CASES/obstruction_seagrass_para.txt"
+/
+
 
 ! End of namelist

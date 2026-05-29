@@ -27,6 +27,12 @@
 #ifdef AVERAGES
             use croco_namelist, only: avgname, ntsavg, navg
 #endif
+#if !defined NONLIN_EOS
+            use croco_namelist, only: R0, T0, S0, Tcoef, Scoef
+#endif
+#ifdef BODYFORCE
+            use croco_namelist, only: levsfrc, levbfrc
+#endif
       implicit none
       integer ncid, ierr, nf_ftype, lvar,lenstr
 #include "param.h"

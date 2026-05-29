@@ -57,6 +57,7 @@
 # define MORPH_FAC *morph_fac
 
       subroutine sediment (tile)
+      use croco_namelist, only: sedname
 !
 !=======================================================================
 !                                                                      !

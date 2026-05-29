@@ -2159,17 +2159,6 @@
 #ifdef ASSIMILATION
      &                     ,   aparnam,   assname
 #endif
-#ifdef SEDIMENT
-     &                                ,   sedname
-#elif defined MUSTANG
-     &               ,   sedname_must
-#endif
-#if defined SUBSTANCE
-     &               ,    subsfilename
-#endif
-#if defined OBSTRUCTION
-     &               ,    obstname
-#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
@@ -2244,17 +2233,6 @@
 #endif
 #ifdef ASSIMILATION
      &                     ,   aparnam,   assname
-#endif
-#ifdef SEDIMENT
-     &                                ,   sedname
-#elif defined MUSTANG
-     &               ,   sedname_must
-#endif
-#if defined SUBSTANCE
-     &               ,    subsfilename
-#endif
-#if defined OBSTRUCTION
-     &               ,    obstname
 #endif
      &                                ,   vname
 #ifdef ABL1D

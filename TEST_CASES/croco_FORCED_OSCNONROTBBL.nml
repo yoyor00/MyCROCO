@@ -57,6 +57,18 @@
   bry_file = "filebound"
 /
 
+&croco_lin_eos
+  R0 = 24
+  T0 = 16.
+  S0 = 0.
+  Tcoef = 0.2
+  Scoef = 0.
+/
+
+&croco_sediments
+  sedname = "sediment_flume.in"
+/
+
 &croco_averages
   ntsavg = 1
   navg = 120

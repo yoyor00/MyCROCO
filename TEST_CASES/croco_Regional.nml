@@ -75,6 +75,32 @@
   brywkb_file = "CROCO_FILES/croco_wkb.nc"
 /
 
+&croco_sediments
+  sedname = "sediment.in"
+/
+
+&croco_sediments_mustang
+  sedname_must = "paraMUSTANG.txt"
+/
+
+&croco_substance
+  subsfilename = "parasubstance.txt"
+/
+
+&croco_wkb_wwave
+  wkb_amp = 0.25
+  wkb_ang = 190.
+  wkb_prd = 8.
+  wkb_tide = -2.
+  wkb_btg = 1.3
+  wkb_gam = 0.38
+/
+
+&croco_wkb_roller
+  wkb_rsb = 0.1
+  wkb_roller = 0.5
+/
+
 &croco_averages
   ntsavg = 1
   navg = 48

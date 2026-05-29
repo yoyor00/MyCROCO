@@ -247,4 +247,66 @@ MODULE croco_namelist
    character(len=180) :: bioname
 #endif
 
+#ifdef BODYFORCE
+   ! &croco_bodyforce
+   integer :: levsfrc = 1
+   !! Deepest level to apply surface stress as a bodyforce
+   integer :: levbfrc = 1
+   !! Shallowest level to apply bottom stress as a bodyforce
+#endif
+
+#if !defined NONLIN_EOS
+   ! &croco_lin_eos
+   real :: R0 = 1027.0
+   !! Background density [kg/m3] used in linear EOS
+   real :: T0 = 14.0
+   !! Background potential temperature [Celsius]
+   real :: S0 = 35.0
+   !! Background salinity [PSU]
+   real :: Tcoef = 1.7e-4
+   !! Thermal expansion coefficient [kg/m3/Celsius]
+   real :: Scoef = 7.6e-4
+   !! Saline contraction coefficient [kg/m3/PSU]
+#endif
+
+#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_TRA
+   ! &croco_abl_nudg_tra
+   real :: ltra_min = 1.0e5
+   !! ABL tracer nudging timescale at bottom [s]
+   real :: ltra_max = 1.0e4
+   !! ABL tracer nudging timescale at top [s]
+#endif
+
+#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_DYN
+   ! &croco_abl_nudg_dyn
+   real :: ldyn_min = 1.0e5
+   !! ABL dynamics nudging timescale at bottom [s]
+   real :: ldyn_max = 1.0e4
+   !! ABL dynamics nudging timescale at top [s]
+#endif
+
+#ifdef SEDIMENT
+   ! &croco_sediments
+   character(len=180) :: sedname = "sediment.in"
+   !! Sediment model input file
+#endif
+
+#ifdef MUSTANG
+   ! &croco_sediments_mustang
+   character(len=180) :: sedname_must = "paraMUSTANG.txt"
+   !! MUSTANG sediment model input file
+#endif
+
+#ifdef SUBSTANCE
+   ! &croco_substance
+   character(len=180) :: subsfilename = "parasubstance.txt"
+   !! Substance module input file
+#endif
+
+#ifdef OBSTRUCTION
+   ! &croco_obstruction
+   character(len=180) :: obstname = "obstruction.in"
+   !! Obstruction module input file
+#endif
+
 END MODULE croco_namelist

@@ -137,6 +137,30 @@ contains
 #if defined BIOLOGY && defined PISCES
       use croco_namelist, ONLY: bioname
 #endif
+#ifdef BODYFORCE
+      use croco_namelist, ONLY: levsfrc, levbfrc
+#endif
+#if !defined NONLIN_EOS
+      use croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
+#endif
+#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_TRA
+      use croco_namelist, ONLY: ltra_min, ltra_max
+#endif
+#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_DYN
+      use croco_namelist, ONLY: ldyn_min, ldyn_max
+#endif
+#ifdef SEDIMENT
+      use croco_namelist, ONLY: sedname
+#endif
+#ifdef MUSTANG
+      use croco_namelist, ONLY: sedname_must
+#endif
+#ifdef SUBSTANCE
+      use croco_namelist, ONLY: subsfilename
+#endif
+#ifdef OBSTRUCTION
+      use croco_namelist, ONLY: obstname
+#endif
 #if defined MPI
       use scalars, ONLY: mynode
 #endif
@@ -209,6 +233,30 @@ contains
 #endif
 #if defined BIOLOGY && defined PISCES
       namelist /croco_biology/ bioname
+#endif
+#ifdef BODYFORCE
+      namelist /croco_bodyforce/ levsfrc, levbfrc
+#endif
+#if !defined NONLIN_EOS
+      namelist /croco_lin_eos/ R0, T0, S0, Tcoef, Scoef
+#endif
+#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_TRA
+      namelist /croco_abl_nudg_tra/ ltra_min, ltra_max
+#endif
+#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_DYN
+      namelist /croco_abl_nudg_dyn/ ldyn_min, ldyn_max
+#endif
+#ifdef SEDIMENT
+      namelist /croco_sediments/ sedname
+#endif
+#ifdef MUSTANG
+      namelist /croco_sediments_mustang/ sedname_must
+#endif
+#ifdef SUBSTANCE
+      namelist /croco_substance/ subsfilename
+#endif
+#ifdef OBSTRUCTION
+      namelist /croco_obstruction/ obstname
 #endif
       ierr = 0
 
@@ -512,6 +560,102 @@ contains
       end if
 #endif /* LOGFILE */
 
+#ifdef BODYFORCE
+      ! --- croco_bodyforce (optional) ---
+      call check_nml_presence(nmlunit, "croco_bodyforce", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bodyforce, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_bodyforce (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#if !defined NONLIN_EOS
+      ! --- croco_lin_eos (optional) ---
+      call check_nml_presence(nmlunit, "croco_lin_eos", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_lin_eos, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_lin_eos (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_TRA
+      ! --- croco_abl_nudg_tra (optional) ---
+      call check_nml_presence(nmlunit, "croco_abl_nudg_tra", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_abl_nudg_tra, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_abl_nudg_tra (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_DYN
+      ! --- croco_abl_nudg_dyn (optional) ---
+      call check_nml_presence(nmlunit, "croco_abl_nudg_dyn", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_abl_nudg_dyn, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_abl_nudg_dyn (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#ifdef SEDIMENT
+      ! --- croco_sediments (optional) ---
+      call check_nml_presence(nmlunit, "croco_sediments", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_sediments, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_sediments (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#ifdef MUSTANG
+      ! --- croco_sediments_mustang (optional) ---
+      call check_nml_presence(nmlunit, "croco_sediments_mustang", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_sediments_mustang, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_sediments_mustang (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#ifdef SUBSTANCE
+      ! --- croco_substance (optional) ---
+      call check_nml_presence(nmlunit, "croco_substance", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_substance, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_substance (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#ifdef OBSTRUCTION
+      ! --- croco_obstruction (optional) ---
+      call check_nml_presence(nmlunit, "croco_obstruction", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_obstruction, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_obstruction (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
       ! Single close: the file is no longer needed after this point.
       close (nmlunit)
 
@@ -608,6 +752,30 @@ contains
 #  ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_abl_averages)
 #  endif
+#  if defined ABL_NUDGING && defined ABL_NUDGING_TRA
+      MPI_master_only WRITE (stdout, nml=croco_abl_nudg_tra)
+#  endif
+#  if defined ABL_NUDGING && defined ABL_NUDGING_DYN
+      MPI_master_only WRITE (stdout, nml=croco_abl_nudg_dyn)
+#  endif
+#endif
+#ifdef BODYFORCE
+      MPI_master_only WRITE (stdout, nml=croco_bodyforce)
+#endif
+#if !defined NONLIN_EOS
+      MPI_master_only WRITE (stdout, nml=croco_lin_eos)
+#endif
+#ifdef SEDIMENT
+      MPI_master_only WRITE (stdout, nml=croco_sediments)
+#endif
+#ifdef MUSTANG
+      MPI_master_only WRITE (stdout, nml=croco_sediments_mustang)
+#endif
+#ifdef SUBSTANCE
+      MPI_master_only WRITE (stdout, nml=croco_substance)
+#endif
+#ifdef OBSTRUCTION
+      MPI_master_only WRITE (stdout, nml=croco_obstruction)
 #endif
 
       MPI_master_only WRITE (stdout, *) "End of CROCO namelist"
