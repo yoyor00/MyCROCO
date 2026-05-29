@@ -47,6 +47,36 @@
   Scoef = 0.
 /
 
+&croco_rho0
+  rho0 = 1024.4
+/
+
+&croco_bottom_drag
+  rdrg = 0.
+  rdrg2 = 0.
+  Zobt = 5.e-5
+  Cdb_min = 1.e-7
+  Cdb_max = 1.e-1
+/
+
+&croco_gamma2
+  gamma2 = 1
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 1*0.d0
+/
+
+&croco_vertical_mixing
+  Akv_bak = 1.e-6
+  Akt_bak = 1*1.e-6
+/
+
 &croco_wave_maker
   wmaker_amp = 0.0442
   wmaker_prd = 2.0

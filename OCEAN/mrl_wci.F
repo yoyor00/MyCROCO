@@ -70,7 +70,7 @@
 !
 !----------------------------------------------------------------------
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rho0, Zobt
 # ifdef WKB_WWAVE
       use croco_namelist, only: wkb_roller
 # endif

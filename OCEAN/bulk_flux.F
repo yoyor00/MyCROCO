@@ -36,6 +36,7 @@
       USE stoarray        ! Stochastic arrays and options
       USE stoalloc        ! Stochastic working arrays
 # endif
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "grid.h"

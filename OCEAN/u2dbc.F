@@ -50,7 +50,7 @@
 ! Common Code
 !
 #include "set_obc_definitions.h"
-!
+      USE croco_namelist, ONLY: gamma2
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
       real    grad(PRIVATE_2D_SCRATCH_ARRAY)

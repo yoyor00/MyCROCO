@@ -17,7 +17,7 @@
 #if defined DIAGNOSTICS_DISS
       subroutine alfabeta_k_tile (Istr,Iend,Jstr,Jend,k, alpha,beta)
 # if !defined NONLIN_EOS
-      USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
+      USE croco_namelist, ONLY: rho0, R0, T0, S0, Tcoef, Scoef
 # endif
 !
 !--------------------------------------------------------------------

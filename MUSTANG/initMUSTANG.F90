@@ -40,7 +40,7 @@ MODULE initMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
     USE comsubstance
     USE module_substance
-    USE croco_namelist, ONLY : nrrec, sedname_must
+    USE croco_namelist, ONLY : nrrec, sedname_must, rho0
 #ifdef key_MUSTANG_flocmod
     USE flocmod, ONLY : flocmod_alloc, flocmod_init
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass

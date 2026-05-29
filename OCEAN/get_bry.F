@@ -507,7 +507,7 @@
 !  Set-up all boundary forcing fields
 !--------------------------------------------------------------------
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rho0
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2, itrc
       real cff, cff1,cff2

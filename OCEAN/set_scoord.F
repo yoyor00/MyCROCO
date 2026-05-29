@@ -20,7 +20,7 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
-      use croco_namelist, only: ndtfast, dt
+      use croco_namelist, only: ndtfast, dt, Zobt
 #ifdef SOLVE3D
       use croco_namelist, only: theta_s, theta_b, Tcline
 #endif

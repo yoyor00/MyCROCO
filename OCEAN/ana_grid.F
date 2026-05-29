@@ -22,6 +22,7 @@ C$    integer omp_get_thread_num
       end
 
       subroutine ana_grid_tile (Istr,Iend,Jstr,Jend)
+      USE croco_namelist, ONLY: Zobt
 !
 !  Set up model grid using analytical expressions:
 !-------------------------------------------------------------------

@@ -98,7 +98,7 @@ C$    trd=omp_get_thread_num()
 !======================================================================
 !
       USE debug
-      USE croco_namelist, only: dt ! needed when AGRIF_CONSERV_VOL
+      USE croco_namelist, only: dt, rdrg, rdrg2 ! needed when AGRIF_CONSERV_VOL
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,

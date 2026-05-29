@@ -135,9 +135,8 @@
 !              If FALSE, the ripple var. is obtained from file (ifdef also SEDIMENT)
 !                        the ripple var. is set in ana_bsedim (ifndef SEDIMENT)
 !
-      real time_avg, time2_avg, rho0
-     &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt
-     &               , xl, el, visc2, visc4, gamma2
+      real time_avg, time2_avg
+     &               , xl, el
 #ifdef SOLVE3D
       real hc
 # ifndef M3FAST_SEDLAYERS
@@ -147,9 +146,6 @@
      &    , sc_r(-N_sl+1:N), Cs_r(-N_sl+1:N)
 # endif
       real  rx0, rx1
-# ifdef TRACERS
-      real  tnu2(NT),tnu4(NT)
-# endif
       real weight(6,0:NWEIGHT)
 
 #endif
@@ -292,16 +288,12 @@
       character(len=50) :: fileline
 #endif
       common /scalars_main/
-     &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
-     &           , Zobt,       Cdb_min,   Cdb_max
-     &           , xl, el,    visc2,     visc4,   gamma2
+     &             time_avg, time2_avg
+     &           , xl, el
 #ifdef SOLVE3D
      &           , hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
      &           , rx0,       rx1
-# ifdef TRACERS
-     &           ,       tnu2,    tnu4
-# endif
      &                      , weight
 #endif
 #if defined SPONGE || \
@@ -408,14 +400,6 @@
 #ifdef  BAND_DEBUG         
        common /scalchkbandname/ chkbandname
 #endif       
-#if defined SOLVE3D  && !defined LMD_MIXING
-      real Akv_bak
-      common /scalars_akv/ Akv_bak
-# ifdef TRACERS
-      real Akt_bak(NT)
-      common /scalars_akt/ Akt_bak
-# endif
-#endif
 !
 !-----------------------------------------------------------------------
 ! This following common block contains a set of globally accessable

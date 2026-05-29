@@ -70,7 +70,7 @@ contains
    !    - each phase remains independently readable / testable
    !---------------------------------------------------------------------
    subroutine read_nml(ierr)
-      use param, ONLY: stdout
+      use param, ONLY: stdout, NT
       use croco_namelist, ONLY: fname_nml, &
                                 title, logname, &
                                 dt, ntimes, ndtfast, ninfo, &
@@ -160,6 +160,20 @@ contains
 #endif
 #ifdef OBSTRUCTION
       use croco_namelist, ONLY: obstname
+#endif
+#ifdef XIOS
+      use croco_namelist, ONLY: xios_origin_date
+#endif
+#ifdef ASSIMILATION
+      use croco_namelist, ONLY: aparnam, assname
+#endif
+      use croco_namelist, ONLY: rho0, rdrg, rdrg2, Zobt, Cdb_min, Cdb_max, &
+                                gamma2, visc2, visc4
+#ifdef SOLVE3D
+      use croco_namelist, ONLY: tnu2, tnu4
+#  if !defined LMD_MIXING && !defined GLS_MIXING
+      use croco_namelist, ONLY: Akv_bak, Akt_bak
+#  endif
 #endif
 #if defined MPI
       use scalars, ONLY: mynode
@@ -258,7 +272,36 @@ contains
 #ifdef OBSTRUCTION
       namelist /croco_obstruction/ obstname
 #endif
+#ifdef XIOS
+      namelist /croco_xios_origin_date/ xios_origin_date
+#endif
+#ifdef ASSIMILATION
+      namelist /croco_assimilation/ aparnam, assname
+#endif
+      namelist /croco_rho0/ rho0
+      namelist /croco_bottom_drag/ rdrg, rdrg2, Zobt, Cdb_min, Cdb_max
+      namelist /croco_gamma2/ gamma2
+      namelist /croco_lateral_visc/ visc2, visc4
+#ifdef SOLVE3D
+      namelist /croco_tracer_diff2/ tnu2
+      namelist /croco_tracer_diff4/ tnu4
+#  if !defined LMD_MIXING && !defined GLS_MIXING
+      namelist /croco_vertical_mixing/ Akv_bak, Akt_bak
+#  endif
+#endif
       ierr = 0
+
+      ! Allocate tracer arrays with the actual NT size (from use param).
+      ! source=val both allocates and initializes every element.
+#ifdef SOLVE3D
+#  ifdef TRACERS
+      if (.not. allocated(tnu2))    allocate(tnu2(NT),    source=0.0)
+      if (.not. allocated(tnu4))    allocate(tnu4(NT),    source=0.0)
+#    if !defined LMD_MIXING && !defined GLS_MIXING
+      if (.not. allocated(Akt_bak)) allocate(Akt_bak(NT), source=1.e-6)
+#    endif
+#  endif
+#endif
 
       MPI_master_only write (stdout, *) '*** READING NAMELIST ***'
 
@@ -656,6 +699,104 @@ contains
       end if
 #endif
 
+#ifdef XIOS
+      ! --- croco_xios_origin_date (optional) ---
+      call check_nml_presence(nmlunit, "croco_xios_origin_date", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_xios_origin_date, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_xios_origin_date (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#ifdef ASSIMILATION
+      ! --- croco_assimilation (optional) ---
+      call check_nml_presence(nmlunit, "croco_assimilation", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_assimilation, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_assimilation (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+      ! --- croco_rho0 (optional) ---
+      call check_nml_presence(nmlunit, "croco_rho0", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_rho0, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_rho0 (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+
+      ! --- croco_bottom_drag (optional) ---
+      call check_nml_presence(nmlunit, "croco_bottom_drag", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bottom_drag, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_bottom_drag (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+
+      ! --- croco_gamma2 (optional) ---
+      call check_nml_presence(nmlunit, "croco_gamma2", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_gamma2, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_gamma2 (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+
+      ! --- croco_lateral_visc (optional) ---
+      call check_nml_presence(nmlunit, "croco_lateral_visc", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_lateral_visc, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_lateral_visc (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+
+#ifdef SOLVE3D
+      ! --- croco_tracer_diff2 (optional) ---
+      call check_nml_presence(nmlunit, "croco_tracer_diff2", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_tracer_diff2, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_tracer_diff2 (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+
+      ! --- croco_tracer_diff4 (optional) ---
+      call check_nml_presence(nmlunit, "croco_tracer_diff4", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_tracer_diff4, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_tracer_diff4 (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+
+#  if !defined LMD_MIXING && !defined GLS_MIXING
+      ! --- croco_vertical_mixing (optional) ---
+      call check_nml_presence(nmlunit, "croco_vertical_mixing", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_vertical_mixing, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_vertical_mixing (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+
       ! Single close: the file is no longer needed after this point.
       close (nmlunit)
 
@@ -776,6 +917,23 @@ contains
 #endif
 #ifdef OBSTRUCTION
       MPI_master_only WRITE (stdout, nml=croco_obstruction)
+#endif
+#ifdef XIOS
+      MPI_master_only WRITE (stdout, nml=croco_xios_origin_date)
+#endif
+#ifdef ASSIMILATION
+      MPI_master_only WRITE (stdout, nml=croco_assimilation)
+#endif
+      MPI_master_only WRITE (stdout, nml=croco_rho0)
+      MPI_master_only WRITE (stdout, nml=croco_bottom_drag)
+      MPI_master_only WRITE (stdout, nml=croco_gamma2)
+      MPI_master_only WRITE (stdout, nml=croco_lateral_visc)
+#ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_tracer_diff2)
+      MPI_master_only WRITE (stdout, nml=croco_tracer_diff4)
+#  if !defined LMD_MIXING && !defined GLS_MIXING
+      MPI_master_only WRITE (stdout, nml=croco_vertical_mixing)
+#  endif
 #endif
 
       MPI_master_only WRITE (stdout, *) "End of CROCO namelist"

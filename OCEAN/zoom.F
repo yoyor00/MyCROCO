@@ -1790,6 +1790,7 @@ CR      write(*,*) '  0' MYID
 # ifdef MASKING
        recursive subroutine ResetMask()
        Use Agrif_Util
+       USE croco_namelist, ONLY: gamma2
 #  include "param.h"
 #  include "grid.h"
 #  include "scalars.h"

@@ -23,7 +23,7 @@
       end
 
       subroutine diag_tile (Istr,Iend,Jstr,Jend, ke2d,pe2d)
-        use croco_namelist, only: ninfo, dt
+        use croco_namelist, only: ninfo, dt, rho0
       implicit none
 #include "param.h"
 #include "grid.h"

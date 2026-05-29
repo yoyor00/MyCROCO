@@ -329,15 +329,6 @@
 
 
 
-#ifdef XIOS
-!
-! XIOS origin date
-!
-      elseif (keyword(1:kwlen).eq.'xios_origin_date') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) xios_origin_date
-        xios_origin_date_in_sec=tool_datosec(xios_origin_date)
-#endif
 
 
 #if defined DIAGNOSTICS_TS
@@ -667,23 +658,6 @@
 # endif
 #endif /* STATIONS */
 
-#ifdef ASSIMILATION
-!
-! Assimilation input/output file names.
-!
-      elseif (keyword(1:kwlen).eq.'assimilation') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,'(A)',err=95) aparnam
-        read(input,'(A)',err=95) assname
-        fname=aparnam
-        lstr=lenstr(aparnam)
-        open (testunit,file=aparnam(1:lstr),status='old',err=97)
-        close(testunit)
-        fname=assname
-        lstr=lenstr(assname)
-        open (testunit,file=assname(1:lstr),status='old',err=97)
-        close(testunit)
-#endif
 !
 ! Switches for fields to be saved into history file.
 !
@@ -1470,64 +1444,7 @@
 #endif /* STATIONS */
 
 !
-! Boussinesq Approximation mean density.
-!
-      elseif (keyword(1:kwlen).eq.'rho0') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) rho0
-#if defined UV_VIS2 || defined UV_VIS4 || defined SPONGE_VIS2
-!
-! Horizontal viscosity coefficients.
-!
-      elseif (keyword(1:kwlen).eq.'lateral_visc') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) visc2, visc4
-#endif
 
-!
-! Bottom drag coefficients.
-!
-      elseif (keyword(1:kwlen).eq.'bottom_drag') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) rdrg, rdrg2, Zobt, Cdb_min, Cdb_max
-! Lateral boundary slipperness.
-!
-      elseif (keyword(1:kwlen).eq.'gamma2') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) gamma2
-#ifdef SOLVE3D
-# if defined TS_DIF2 || defined SPONGE_DIF2
-!
-! Horizontal Laplacian mixing coefficients for tracers.
-!
-      elseif (keyword(1:kwlen).eq.'tracer_diff2') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef TRACERS
-        read(input,*,err=95) (tnu2(itrc),itrc=1,NT)
-#  endif /* TRACERS */
-# endif
-# ifdef TS_DIF4
-!
-! Horizontal biharmonic mixing coefficients for tracer.
-!
-      elseif (keyword(1:kwlen).eq.'tracer_diff4') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef TRACERS
-        read(input,*,err=95) (tnu4(itrc),itrc=1,NT)
-#  endif /* TRACERS */
-
-# endif
-# if !defined LMD_MIXING && !defined GLS_MIXING
-!
-! Background vertical viscosity and mixing coefficients for tracers.
-!
-      elseif (keyword(1:kwlen).eq.'vertical_mixing') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-#  ifdef TRACERS
-         read(input,*,err=95) Akv_bak,(Akt_bak(itrc),itrc=1,NT)
-#  endif /* TRACERS */
-# endif
-#endif /*SOLVE3D*/
 
 #if (defined SPONGE && !defined SPONGE_GRID)
 !
@@ -1979,14 +1896,6 @@
 # endif
 #endif /* STATIONS */
 
-#ifdef ASSIMILATION
-          lstr=lenstr(aparnam)
-          MPI_master_only write(stdout,'(1x,A,2x,A)')
-     &         'Assimilation Parameters File:', aparnam(1:lstr)
-          lstr=lenstr(assname)
-          MPI_master_only write(stdout,'(12x,A,2x,A)')
-     &                    'Assimilation File:', assname(1:lstr)
-#endif /* ASSIMILATION */
 
           MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
      &    'Fields to be saved in history file: (T/F)'
@@ -2536,64 +2445,7 @@
 #endif /* STATIONS */
 
 
-          MPI_master_only write(stdout,'(F10.4,2x,A,1x,A)')
-     &        rho0, 'rho0     Boussinesq approximation',
-     &                           'mean density, kg/m3.'
 
-#if defined UV_VIS2 || defined SPONGE_VIS2
-          MPI_master_only write(stdout,9) visc2
- 9    format(1pe10.3,2x,'visc2    Horizontal Laplacian ',
-     &       'mixing coefficient [m2/s]',/,32x,'for momentum.')
-#endif
-#ifdef UV_VIS4
-          MPI_master_only write(stdout,10) visc4
-10    format(1pe10.3,2x,'visc4    Horizontal biharmonic ',
-     &       'mixing coefficient [m4/s]',/,32x,'for momentum.')
-#endif
-          MPI_master_only write(stdout,'(5(1pe10.3,2x,A/))')
-     &     rdrg, 'rdrg     Linear bottom drag coefficient (m/si).',
-     &    rdrg2, 'rdrg2    Quadratic bottom drag coefficient.',
-     &     Zobt, 'Zobt     Bottom roughness for logarithmic law (m).',
-     &  Cdb_min, 'Cdb_min  Minimum bottom drag coefficient.',
-     &  Cdb_max, 'Cdb_max  Maximum bottom drag coefficient.'
-
-          MPI_master_only write(stdout,'(f10.2,2x,A,1x,A)')
-     &     gamma2, 'gamma2   Slipperiness parameter:',
-     &                     'free-slip +1, or no-slip -1.'
-#ifdef SOLVE3D 
-# if defined TS_DIF2 || defined SPONGE_DIF2
-#  ifdef TRACERS
-          do itrc=1,NT
-          MPI_master_only write(stdout,7) tnu2(itrc), itrc, itrc
-7      format(1pe10.3,'  tnu2(',i2,')  Horizontal Laplacian '
-     &     ,'mixing coefficient (m2/s)',/,32x,'for tracer ',i2,'.')
-          enddo
-#  endif /* TRACERS */
-# endif
-# ifdef TS_DIF4
-#  ifdef TRACERS
-          do itrc=1,NT
-          MPI_master_only write(stdout,8) tnu4(itrc), itrc, itrc
-8      format(1pe10.3,'  tnu4(',i2,')  Horizontal biharmonic'
-     &    ,' mixing coefficient [m4/s]',/,32x,'for tracer ',i2,'.')
-          enddo
-#  endif /* TRACERS */
-# endif
-# if !defined LMD_MIXING && !defined GLS_MIXING
-          MPI_master_only write(stdout,'(1pe10.3,2x,A,1x,A)')
-     &      Akv_bak, 'Akv_bak    Background vertical viscosity',
-     &                                     'coefficient, m2/s.'
-#  ifdef TRACERS
-          do itrc=1,NT
-          MPI_master_only write(stdout,
-     &           '(1pe10.3,2x,A,I2,A,1x,A/32x,A,I2,A)')
-     &            Akt_bak(itrc), 'Akt_bak(', itrc, ')',
-     &           'Background vertical mixing coefficient, m2/s,',
-     &                                  'for tracer ', itrc, '.'
-          enddo
-#  endif /* TRACERS */
-# endif
-#endif /*SOLVE3D*/
 
 #if (defined SPONGE && !defined SPONGE_GRID)
           MPI_master_only write(stdout,'(1pe10.2,2x,A,1x,A)')

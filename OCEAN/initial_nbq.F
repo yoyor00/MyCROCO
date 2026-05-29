@@ -52,7 +52,7 @@
 !
 !======================================================================
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rho0
 # ifdef NBQ
       use croco_namelist, only: ndtnbq, csound_nbq
 # endif

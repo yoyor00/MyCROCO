@@ -41,6 +41,36 @@
   Scoef = 0.78d0
 /
 
+&croco_rho0
+  rho0 = 1000.
+/
+
+&croco_bottom_drag
+  rdrg = 5.E-03
+  rdrg2 = 0.
+  Zobt = 0.e-2
+  Cdb_min = 5.e-3
+  Cdb_max = 100.e-3
+/
+
+&croco_gamma2
+  gamma2 = 1.
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 1*0.d0
+/
+
+&croco_vertical_mixing
+  Akv_bak = 1.e-2
+  Akt_bak = 1*5.e-3
+/
+
 &croco_averages
   ntsavg = 1
   navg = 576

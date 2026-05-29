@@ -17,6 +17,9 @@
 #ifdef AVERAGES
       use croco_namelist, only: ntsavg
 #endif
+#ifdef XIOS
+      use croco_namelist, only: xios_origin_date
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"

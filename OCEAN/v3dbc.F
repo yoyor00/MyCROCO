@@ -52,7 +52,7 @@ c        call v3dbc_interp_tile(Istr,Iend,Jstr,Jend)
 !
 ! Common Code
 !
-        USE croco_namelist, only: dt
+        USE croco_namelist, only: dt, gamma2
 # include "set_obc_definitions.h"
 !
       implicit none

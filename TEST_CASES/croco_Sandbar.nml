@@ -45,6 +45,36 @@
   sedname = "TEST_CASES/sediment_sandbar_1B.in"
 /
 
+&croco_rho0
+  rho0 = 1024.4
+/
+
+&croco_bottom_drag
+  rdrg = 0.
+  rdrg2 = 0.
+  Zobt = 5.e-5
+  Cdb_min = 1.e-5
+  Cdb_max = 1.e-1
+/
+
+&croco_gamma2
+  gamma2 = 1.
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 3*0.d0
+/
+
+&croco_vertical_mixing
+  Akv_bak = 0.
+  Akt_bak = 3*0.
+/
+
 &croco_wkb_wwave
   wkb_amp = 0.45
   wkb_ang = 0.0

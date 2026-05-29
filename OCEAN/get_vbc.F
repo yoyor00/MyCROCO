@@ -199,7 +199,7 @@
 !                                     the ETA-direction (m^2/s^2).
 !----------------------------------------------------------------
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rdrg, rdrg2, Zobt, Cdb_min, Cdb_max
       USE debug
 #ifdef AGRIF
       use Agrif_Util

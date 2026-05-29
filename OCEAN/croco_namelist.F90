@@ -32,83 +32,101 @@ MODULE croco_namelist
 
    ! &croco_logfile
    character(len=180) :: logname = "croco.log"
-   !! Logfile name
+   !! File path for STDOUT (used with the `LOGFILE` CPP option)
 
    ! &croco_time_stepping
    real    :: dt = 0.0
-   !! Baroclinic time step [in s]
+   !! Baroclinic time step [s]
    integer :: ntimes = 0
    !! Number of time-steps required for the simulation
    integer :: ndtfast = 20
    !! Number of barotropic time-steps between each baroclinic time step.
-   !! For 2D configurations, ndtfast should be unity
+   !! For 2D configurations, ndtfast should be unity.
    integer :: ninfo = 1
    !! Number of time-steps between printing of information to standard output
 
    ! &croco_history
    logical :: ldefhis = .true.
-   !! Logical switch used to create the history file.
-   !! If TRUE, a new history file is created. If FALSE,
-   !! data is appended to an existing history file.
+   !! Flag (T/F) for writing history files.
+   !! If `.true.`, a new history file is created.
+   !! If `.false.`, data is appended to an existing history file.
    integer :: nwrt = 72
-   !! Number of timesteps between writing of fields into history file.
+   !! Number of time-steps between the writing of history fields
    integer :: nrpfhis = 0
-   !! 0: write several records every NWRT time steps
-   !! >0: create more than one file (sequential numbers), NRPFHIS records per file
-   !! -1: overwrite record every NWRT time steps
+   !! History file cycling switch:
+   !!
+   !!  - 0: write several records every NWRT time steps
+   !!  - >0: create more than one file (with sequential numbers) and write NRPFHIS records per file
+   !!  - -1: overwrite record every NWRT time steps
    character(len=180) :: hisname = "CROCO_FILES/croco_his.nc"
    !! Name of history file
 
    ! &croco_initial
    integer :: nrrec = 1
-   !! Switch to indicate start or re-start from a previous solution.
-   !! nrrec is the time index of the initial or re-start NetCDF file
-   !! assigned for initialization. If nrrec is negative (say nrrec = -1),
-   !! the model will start from the most recent time record.
-   !! That is, the initialization record is assigned internally.
+   !! Switch to indicate start or restart from a previous solution.
+   !! `nrrec` is the time index of the initial or restart NetCDF file
+   !! assigned for initialization. If `nrrec` is negative (e.g. `nrrec = -1`),
+   !! the model will start from the most recent time record available
+   !! in the file (the initialization record is assigned internally).
    character(len=180) :: ininame = "CROCO_FILES/croco_ini.nc"
-   !! Name of file containing the initial state.
+   !! Name of file containing the initial state
 
    ! &croco_restart
    integer :: nrst = 720
-   !! Number of time-steps between writing of re-start fields
+   !! Number of time-steps between writing of restart fields
    integer :: nrpfrst = -1
-   !! 0: write several records every NRST time steps
-   !! >0: create more than one file (with sequential numbers) and write NRPRST records per file
-   !! -1: overwrite record every NRST time steps
+   !! Restart file cycling switch:
+   !!
+   !!  - 0: write several records every NRST time steps
+   !!  - >0: create more than one file (with sequential numbers) and write NRPFRST records per file
+   !!  - -1: overwrite record every NRST time steps
    character(len=180) :: rstname = "CROCO_FILES/croco_rst.nc"
-   !! Name of restart file.
+   !! Name of restart file
 
 #ifdef NBQ
    ! &croco_time_stepping_nbq
    integer :: ndtnbq = 1
+   !! Number of non-hydrostatic (NBQ) sub-steps per baroclinic time step
    real    :: csound_nbq = 1000.0
+   !! Speed of sound used in the NBQ solver [m/s]
    real    :: visc2_nbq = 0.01
+   !! Laplacian viscosity coefficient for the NBQ pressure solver [m2/s]
 #endif
 
 #ifdef SOLVE3D
    ! &croco_s_coord
    real :: theta_s = 7.0d0
+   !! S-coordinate surface control parameter (stretching toward surface when > 0)
    real :: theta_b = 2.0d0
+   !! S-coordinate bottom control parameter (stretching toward bottom when > 0)
    real :: Tcline = 200.0d0
+   !! Width of the surface or bottom boundary layer [m] in which higher vertical
+   !! resolution is required during S-coordinate stretching
 #endif
 
 #ifdef USE_CALENDAR
    ! &croco_use_calendar
    character(len=19) :: start_date = '2000-01-01 00:00:00'
+   !! Run start date, format `YYYY-MM-DD HH:MM:SS` (used with `USE_CALENDAR`)
    character(len=19) :: end_date = '2000-02-01 00:00:00'
+   !! Run end date, format `YYYY-MM-DD HH:MM:SS` (used with `USE_CALENDAR`)
    real :: dt_his = 1.0
+   !! Time interval between history output records [hours] (used with `USE_CALENDAR`)
    real :: dt_avg = 6.0
+   !! Time interval between averages output records [hours] (used with `USE_CALENDAR`)
    real :: dt_rst = 12.0
+   !! Time interval between restart output records [hours] (used with `USE_CALENDAR`)
 #endif
 
 #ifndef ANA_GRID
    ! &croco_grid
    character(len=180) :: grdname = "CROCO_FILES/croco_grd.nc"
+   !! Grid filename
 #endif
 
    ! &croco_forcing
    character(len=180) :: frcname = "CROCO_FILES/croco_frc.nc"
+   !! Forcing filename
    ! TODO : clean this mess of cpp keys
 #if !defined(NO_FRCFILE) && ( \
    defined(TIDES) ||\
@@ -153,6 +171,7 @@ MODULE croco_namelist
 
    ! &croco_bulk_forcing
    character(len=180) :: bulkname = "CROCO_FILES/croco_blk.nc"
+   !! Bulk forcing filename (used with `BULK_FLUX`)
 
 #if (  defined TCLIMATOLOGY  && \
    !defined ANA_TCLIMA) || \
@@ -164,38 +183,41 @@ MODULE croco_namelist
    !defined ANA_M3CLIMA)
    ! &croco_climatology
    character(len=180) :: clmname = "CROCO_FILES/croco_clm.nc"
+   !! Climatology filename for boundary and nudging (used with `CLIMATOLOGY`)
 #endif
 
 #if !defined ANA_BRY && defined FRC_BRY
    ! &croco_boundary
    character(len=180) :: bry_file = "CROCO_FILES/croco_bry.nc"
+   !! Boundary conditions filename (used with `FRC_BRY`)
 #endif
 
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
    ! &croco_wkb_boundary
    character(len=180) :: brywkb_file = "CROCO_FILES/croco_wkb.nc"
+   !! WKB wave boundary conditions filename (used with `WKB_WWAVE`)
 #endif
 
 #ifdef WKB_WWAVE
    ! &croco_wkb_wwave  – primary waves and empirical breaking model parameters
    real :: wkb_amp = 0.25
-   !! offshore wave amplitude [m]
+   !! Offshore wave amplitude [m]
    real :: wkb_ang = 190.0
-   !! offshore wave angle [deg]
+   !! Offshore wave angle [deg]
    real :: wkb_prd = 8.0
-   !! offshore wave period [s]
+   !! Offshore wave period [s]
    real :: wkb_tide = -2.0
-   !! constant offshore water level [m]
+   !! Constant offshore water level [m]
    real :: wkb_btg = 1.3
-   !! B parameter (breaking)
+   !! B parameter for the empirical wave breaking model
    real :: wkb_gam = 0.38
-   !! gamma parameter (Hrms/h ratio)
+   !! Gamma parameter: Hrms/h ratio threshold for wave breaking
 #  ifdef WAVE_ROLLER
    ! &croco_wkb_roller  – Svendsen (1984) surface roller model parameters
    real :: wkb_rsb = 0.1
-   !! sin(beta) roller dissipation
+   !! sin(beta): roller dissipation slope parameter
    real :: wkb_roller = 0.5
-   !! breaking contrib to roller: [0,1]
+   !! Fraction of breaking energy transferred to the surface roller [0, 1]
 #  endif
 #endif
 
@@ -204,65 +226,94 @@ MODULE croco_namelist
    real :: wmaker_amp = 0.0
    !! RMS wave amplitude [m]
    real :: wmaker_prd = 8.0
-   !! peak wave period [s]
+   !! Peak wave period [s]
    real :: wmaker_dir = 0.0
-   !! mean wave angle [deg]
+   !! Mean wave angle [deg]
    real :: wmaker_dsp = 0.0
-   !! directional spread [deg]
+   !! Directional spread [deg]
    real :: wmaker_fsp = 3.3
-   !! freq. spread (gamma in JONSWAP)
+   !! Frequency spread: gamma parameter in JONSWAP spectrum
 #endif
 
 #ifdef AVERAGES
    ! &croco_averages
    integer :: ntsavg = 1
+   !! Starting time-step for the accumulation of output time-averaged data.
+   !! For instance, set to start averaging over the last day of a 30-day run.
    integer :: navg = 48
+   !! Number of time-steps between writing of time-averaged fields
    integer :: nrpfavg = 0
+   !! Averages file cycling switch:
+   !!
+   !!  - 0: write several records every NAVG time steps
+   !!  - >0: create more than one file (with sequential numbers) and write NRPFAVG records per file
+   !!  - -1: overwrite record every NAVG time steps
    character(len=180) :: avgname = "CROCO_FILES/croco_avg.nc"
+   !! Name of averages file
 #endif
 
 #if defined ABL1D && !defined XIOS
    ! &croco_abl
    logical :: ldefablhis = .true.
+   !! Flag (T/F) for creating the ABL history file.
+   !! If `.true.`, a new file is created; if `.false.`, data is appended.
    integer :: nwrtablhis = 36
+   !! Number of time-steps between writing of ABL history fields
    integer :: nrpfablhis = 0
+   !! ABL history file cycling switch:
+   !!
+   !!  - 0: write several records every NWRTABLHIS time steps
+   !!  - >0: create more than one file (with sequential numbers) and write NRPFABLHIS records per file
+   !!  - -1: overwrite record every NWRTABLHIS time steps
    character(len=180) :: ablname = "croco_abl_his.nc"
+   !! Name of ABL history file
 #  ifdef AVERAGES
    ! &croco_abl_averages
    logical :: ldefablavg = .false.
+   !! Flag (T/F) for writing time-averaged ABL fields
    integer :: ntsablavg = 1
+   !! Starting time-step for the accumulation of ABL time-averaged data
    integer :: nwrtablavg = 0
+   !! Number of time-steps between writing of ABL averaged fields
    integer :: nrpfablavg = 0
+   !! ABL averages file cycling switch:
+   !!
+   !!  - 0: write several records every NWRTABLAVG time steps
+   !!  - >0: create more than one file (with sequential numbers) and write NRPFABLAVG records per file
+   !!  - -1: overwrite record every NWRTABLAVG time steps
    character(len=180) :: ablname_avg = "croco_abl_avg.nc"
+   !! Name of ABL averages file
 #  endif
 #endif
 
 #if defined WAVE_OFFLINE && defined MUSTANG
    ! &croco_wave_offline
    character(len=180) :: wave_file
+   !! Offline wave forcing file for MUSTANG sediment model
 #endif
 
 #if defined BIOLOGY && defined PISCES
    ! &croco_biology
    character(len=180) :: bioname
+   !! Name of file containing the iron dust forcing for the PISCES biogeochemical model
 #endif
 
 #ifdef BODYFORCE
    ! &croco_bodyforce
    integer :: levsfrc = 1
-   !! Deepest level to apply surface stress as a bodyforce
+   !! Deepest sigma level to apply surface stress as a body force
    integer :: levbfrc = 1
-   !! Shallowest level to apply bottom stress as a bodyforce
+   !! Shallowest sigma level to apply bottom stress as a body force
 #endif
 
 #if !defined NONLIN_EOS
    ! &croco_lin_eos
    real :: R0 = 1027.0
-   !! Background density [kg/m3] used in linear EOS
+   !! Background (reference) density [kg/m3] used in the linear equation of state
    real :: T0 = 14.0
-   !! Background potential temperature [Celsius]
+   !! Background (reference) potential temperature [Celsius]
    real :: S0 = 35.0
-   !! Background salinity [PSU]
+   !! Background (reference) salinity [PSU]
    real :: Tcoef = 1.7e-4
    !! Thermal expansion coefficient [kg/m3/Celsius]
    real :: Scoef = 7.6e-4
@@ -272,41 +323,103 @@ MODULE croco_namelist
 #if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_TRA
    ! &croco_abl_nudg_tra
    real :: ltra_min = 1.0e5
-   !! ABL tracer nudging timescale at bottom [s]
+   !! ABL tracer nudging timescale at the bottom of the ABL [s]
    real :: ltra_max = 1.0e4
-   !! ABL tracer nudging timescale at top [s]
+   !! ABL tracer nudging timescale at the top of the ABL [s]
 #endif
 
 #if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_DYN
    ! &croco_abl_nudg_dyn
    real :: ldyn_min = 1.0e5
-   !! ABL dynamics nudging timescale at bottom [s]
+   !! ABL dynamics nudging timescale at the bottom of the ABL [s]
    real :: ldyn_max = 1.0e4
-   !! ABL dynamics nudging timescale at top [s]
+   !! ABL dynamics nudging timescale at the top of the ABL [s]
 #endif
 
 #ifdef SEDIMENT
    ! &croco_sediments
    character(len=180) :: sedname = "sediment.in"
-   !! Sediment model input file
+   !! Sediment model parameters input file
 #endif
 
 #ifdef MUSTANG
    ! &croco_sediments_mustang
    character(len=180) :: sedname_must = "paraMUSTANG.txt"
-   !! MUSTANG sediment model input file
+   !! MUSTANG sediment model parameters input file
 #endif
 
 #ifdef SUBSTANCE
    ! &croco_substance
    character(len=180) :: subsfilename = "parasubstance.txt"
-   !! Substance module input file
+   !! Substance module parameters input file
 #endif
 
 #ifdef OBSTRUCTION
    ! &croco_obstruction
    character(len=180) :: obstname = "obstruction.in"
-   !! Obstruction module input file
+   !! Sub-grid obstruction module parameters input file
+#endif
+
+#ifdef XIOS
+   ! &croco_xios_origin_date
+   character(len=80) :: xios_origin_date = "1900-01-01 00:00:00"
+   !! XIOS time origin date (format: `YYYY-MM-DD HH:MM:SS`)
+#endif
+
+#ifdef ASSIMILATION
+   ! &croco_assimilation
+   character(len=180) :: aparnam = "assimilation.par"
+   !! Assimilation parameters file
+   character(len=180) :: assname = "assimilation.nc"
+   !! Assimilation data file
+#endif
+
+   ! &croco_rho0
+   real :: rho0 = 1025.0
+   !! Mean density [kg/m3] used in the Boussinesq approximation
+
+   ! &croco_bottom_drag
+   real :: rdrg    = 3.e-4
+   !! Drag coefficient for the linear bottom stress formulation [m/s]
+   real :: rdrg2   = 3.e-3
+   !! Drag coefficient for the constant quadratic bottom stress formulation
+   real :: Zobt    = 0.02
+   !! Bottom roughness length for the Von-Karman (logarithmic) bottom stress formulation [m]
+   real :: Cdb_min = 1.e-4
+   !! Minimum drag coefficient value for the Von-Karman quadratic bottom stress formulation
+   real :: Cdb_max = 1.e-1
+   !! Maximum drag coefficient value for the Von-Karman quadratic bottom stress formulation
+
+   ! &croco_gamma2
+   real :: gamma2 = -1.0
+   !! Lateral boundary slipperiness parameter.
+   !! `+1` = free-slip, `-1` = no-slip, intermediate values give partial-slip.
+
+   ! &croco_lateral_visc
+   real :: visc2 = 0.0
+   !! Laplacian background horizontal momentum viscosity [m2/s] (used with `UV_VIS2`)
+   real :: visc4 = 0.0
+   !! Bilaplacian background horizontal momentum viscosity [m4/s] (used with `UV_VIS4`)
+
+#ifdef SOLVE3D
+   ! &croco_tracer_diff2  – Horizontal Laplacian mixing coefficients for tracers
+   real, allocatable :: tnu2(:)
+   !! Laplacian background horizontal diffusivity for each tracer [m2/s] (used with `TS_DIF2`).
+   !! Array of size NT (number of tracers).
+
+   ! &croco_tracer_diff4  – Horizontal biharmonic mixing coefficients for tracers
+   real, allocatable :: tnu4(:)
+   !! Bilaplacian background horizontal diffusivity for each tracer [m4/s] (used with `TS_DIF4`).
+   !! Array of size NT (number of tracers).
+
+#  if !defined LMD_MIXING
+   ! &croco_vertical_mixing  – Background vertical mixing coefficients
+   real :: Akv_bak = 1.e-5
+   !! Background vertical viscosity coefficient [m2/s] (used with `ANA_VMIX`)
+   real, allocatable :: Akt_bak(:)
+   !! Background vertical diffusivity coefficient for each tracer [m2/s] (used with `ANA_VMIX`).
+   !! Array of size NT (number of tracers).
+#  endif
 #endif
 
 END MODULE croco_namelist

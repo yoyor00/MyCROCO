@@ -99,8 +99,9 @@ MODULE sed_MUSTANG
    USE comsubstance
    USE module_substance
 
-   USE comMUSTANG 
-   USE coupler_MUSTANG 
+   USE comMUSTANG
+   USE coupler_MUSTANG
+   USE croco_namelist, ONLY : rho0
 
    IMPLICIT NONE
    

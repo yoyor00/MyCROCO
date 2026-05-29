@@ -60,5 +60,26 @@
   subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Ana_dune.txt"
 /
 
+&croco_rho0
+  rho0 = 1024.4
+/
+
+&croco_bottom_drag
+  rdrg = 0.0e-04
+  rdrg2 = 0.0e-3
+  Zobt = 0.0001
+  Cdb_min = 1.d-4
+  Cdb_max = 1.d-1
+/
+
+&croco_gamma2
+  gamma2 = 1.
+/
+
+&croco_vertical_mixing
+  Akv_bak = 0.d0
+  Akt_bak = 2*0.d0
+/
+
 
 ! End of namelist

@@ -51,7 +51,7 @@
 !
 ! Common Code
 !
-      USE croco_namelist, only: dt
+      USE croco_namelist, only: dt, gamma2
 # include "set_obc_definitions.h"
 !
       implicit none

@@ -53,6 +53,40 @@
   Scoef = 0.
 /
 
+&croco_rho0
+  rho0 = 1027.d0
+/
+
+&croco_bottom_drag
+  rdrg = 0.
+  rdrg2 = 0.
+  Zobt = 0.
+  Cdb_min = 0.
+  Cdb_max = 0.
+/
+
+&croco_gamma2
+  gamma2 = 1.d0
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 1*0.d0
+/
+
+&croco_tracer_diff4
+  tnu4 = 1*0.d11
+/
+
+&croco_vertical_mixing
+  Akv_bak = 1.d-05
+  Akt_bak = 1*1.d-06
+/
+
 &croco_averages
   ntsavg = 1
   navg = 5760

@@ -13,7 +13,7 @@
 #ifndef ANA_GRID
                              ! Read grid information
       subroutine get_grid    ! from GRID NetCDF file.
-      use croco_namelist, only: grdname
+      use croco_namelist, only: grdname, Zobt
 # ifdef OPENACC
       use exchange_device_host
 # endif

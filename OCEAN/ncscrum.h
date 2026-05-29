@@ -2097,7 +2097,7 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-      character*80 origin_date, start_date_run, xios_origin_date
+      character*80 origin_date, start_date_run
       integer      start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year
@@ -2156,9 +2156,6 @@
      &                                ,  dianamebio_avg
 # endif
 #endif
-#ifdef ASSIMILATION
-     &                     ,   aparnam,   assname
-#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
@@ -2173,7 +2170,6 @@
 
       common /cncscrum/   
      &             origin_date, start_date_run
-     &         ,   xios_origin_date
      &         ,   usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname, origin_date_in_sec
@@ -2230,9 +2226,6 @@
 # ifdef AVERAGES
      &                                ,  dianamebio_avg
 # endif
-#endif
-#ifdef ASSIMILATION
-     &                     ,   aparnam,   assname
 #endif
      &                                ,   vname
 #ifdef ABL1D

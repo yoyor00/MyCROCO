@@ -42,6 +42,7 @@ c********************************************************************
       subroutine prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
      &                                       dR,dZ, FC,dZx,rx,dRx)
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax
 #  include "param.h"
@@ -573,6 +574,7 @@ c********************************************************************
 #  endif
      &                                           )
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"

@@ -82,6 +82,12 @@ MODULE croco_namelist_init
 #ifdef OBSTRUCTION
    public :: init_obstruction
 #endif
+#ifdef XIOS
+   public :: init_xios_origin_date
+#endif
+#ifdef ASSIMILATION
+   public :: init_assimilation
+#endif
 #ifdef LOGFILE
    public :: init_logfile
 #endif
@@ -170,6 +176,12 @@ contains
 #endif
 #ifdef OBSTRUCTION
       call init_obstruction(ierr)
+#endif
+#ifdef XIOS
+      call init_xios_origin_date()
+#endif
+#ifdef ASSIMILATION
+      call init_assimilation(ierr)
 #endif
 #ifdef LOGFILE
       if (ierr == 0) call init_logfile(ierr)
@@ -848,5 +860,59 @@ contains
 #endif
 
    end subroutine adjust_filename_ensemble
+
+#ifdef XIOS
+   !---------------------------------------------------------------------
+   !  init_xios_origin_date
+   !  Compute xios_origin_date_in_sec from the date string.
+   !---------------------------------------------------------------------
+   subroutine init_xios_origin_date()
+      use croco_namelist, ONLY: xios_origin_date
+      implicit none
+# include "param.h"
+# include "ncscrum.h"
+      real(kind=8), external :: tool_datosec
+
+      xios_origin_date_in_sec = tool_datosec(xios_origin_date)
+
+   end subroutine init_xios_origin_date
+#endif
+
+#ifdef ASSIMILATION
+   !---------------------------------------------------------------------
+   !  init_assimilation
+   !  Check that both assimilation files exist.
+   !---------------------------------------------------------------------
+   subroutine init_assimilation(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: aparnam, assname
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      open (testunit, file=trim(aparnam), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open assimilation parameters file ', trim(aparnam)
+         ierr = ierr + 1
+      end if
+
+      open (testunit, file=trim(assname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open assimilation data file ', trim(assname)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_assimilation
+#endif
+
 
 END MODULE croco_namelist_init

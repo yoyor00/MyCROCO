@@ -81,7 +81,7 @@
 !             model grid (must account for grid angle)
 !********************************************************************!
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rho0, Cdb_min, Cdb_max
       implicit none
 # include "param.h"
 # include "bbl.h"

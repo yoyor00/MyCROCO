@@ -22,6 +22,7 @@ C$    integer omp_get_thread_num
       end
 
       subroutine setup_grid1_tile (Istr,Iend,Jstr,Jend)
+      use croco_namelist, ONLY: gamma2
 #ifdef WKB_WWAVE
       use croco_namelist, ONLY: wkb_tide
 #endif

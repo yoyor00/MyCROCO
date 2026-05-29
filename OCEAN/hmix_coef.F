@@ -454,6 +454,11 @@
       end
 !
       subroutine hdiff_coef_tile (Istr,Iend,Jstr,Jend,grd_scale)
+# if !defined LMD_MIXING && !defined GLS_MIXING
+      USE croco_namelist, ONLY: tnu2, tnu4, Akt_bak
+# else
+      USE croco_namelist, ONLY: tnu2, tnu4
+# endif
 !
 !==================================================================
 !

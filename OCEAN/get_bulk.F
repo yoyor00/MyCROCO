@@ -17,7 +17,7 @@
 !  Read in wind speed and surface air temperature
 !
 !
-      use croco_namelist, only: dt, bulkname
+      use croco_namelist, only: dt, bulkname, rho0
       implicit none
 # include "param.h"
 # include "forces.h"

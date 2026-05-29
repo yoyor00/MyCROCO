@@ -25,6 +25,7 @@
 ! Set vertical mixing coefficients for momentum "Akv"
 ! and tracers "Akt" [m^2/s] using analytical expressions.
 !
+      USE croco_namelist, ONLY: Akv_bak, Akt_bak
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
       real cff, kappustr

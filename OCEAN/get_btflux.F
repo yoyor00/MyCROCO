@@ -17,7 +17,7 @@
 !  time from forcing NetCDF file.
 !
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rho0
 # define BTFLUX_DATA
       implicit none
 # include "param.h"

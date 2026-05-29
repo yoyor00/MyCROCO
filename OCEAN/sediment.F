@@ -226,7 +226,7 @@ C$OMP BARRIER
 #  endif
      &                            )
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rho0
       implicit none
       integer Istr,Iend,Jstr,Jend
       real  FX(PRIVATE_2D_SCRATCH_ARRAY)
@@ -1734,7 +1734,7 @@ C$OMP BARRIER
 !
       subroutine sed_fluxes_tile (Istr,Iend,Jstr,Jend, tau_w)
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rho0
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -1901,7 +1901,7 @@ C$OMP BARRIER
       subroutine sed_bed_tile (Istr,Iend,Jstr,Jend,
      &                         tau_w,dep_mass,Awrk1,Awrk2)
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rho0
       implicit none
 #  include "param.h"
 #  include "bbl.h"
@@ -2422,7 +2422,7 @@ C$OMP BARRIER
      &                         Istr,Iend,Jstr,Jend,tau_w,dep_mass)
 !***********************************************************************
 !
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, rho0
       implicit none
 #  include "param.h"
 #  include "bbl.h"
@@ -3733,6 +3733,7 @@ C$OMP BARRIER
         USE flocmod, ONLY : flocmod_alloc, flocmod_init
         USE flocmod, ONLY : f_ws
 # endif
+      USE croco_namelist, ONLY: rho0
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -5133,6 +5134,7 @@ C$OMP BARRIER
 !
 ! Critical Shields parameter from Soulsby (1997).
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
 #  include "param.h"
 #  include "scalars.h"

@@ -27,7 +27,7 @@
 !  analytical expressions.
 !----------------------------------------------------------------------
 !
-        use croco_namelist, only: dt, nrrec
+        use croco_namelist, only: dt, nrrec, rho0
 #if !defined NONLIN_EOS
         use croco_namelist, only: R0, T0, S0, Tcoef, Scoef
 #endif

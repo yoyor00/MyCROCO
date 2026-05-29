@@ -43,7 +43,7 @@
 !  bulkfilename(X) and are repeated when necessary during the time evolution of
 !  the simulation.
 !
-      USE croco_namelist, only: dt
+      USE croco_namelist, only: dt, rho0
       USE tools_string, ONLY : to_uppercase
       implicit none
 # include "param.h"

@@ -73,6 +73,40 @@
   subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_vilaine.txt"
 /
 
+&croco_rho0
+  rho0 = 1025.d0
+/
+
+&croco_bottom_drag
+  rdrg = 0.0d-4
+  rdrg2 = 1.d-3
+  Zobt = 3.5d-4
+  Cdb_min = 1.d-4
+  Cdb_max = 1.d-2
+/
+
+&croco_gamma2
+  gamma2 = 1.d0
+/
+
+&croco_lateral_visc
+  visc2 = 0.0
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 5*0.d-2
+/
+
+&croco_tracer_diff4
+  tnu4 = 5*0.d11
+/
+
+&croco_vertical_mixing
+  Akv_bak = 0.d0
+  Akt_bak = 5*0.d0
+/
+
 &croco_averages
   ntsavg = 1
   navg = 1000000

@@ -6,9 +6,13 @@ Convert a CROCO `.in` file into a Fortran namelist `.nml` file.
 
 Usage
 -----
-    python croco_in_to_nml.py croco.in.Name            # -> croco_Name.nml
-    python croco_in_to_nml.py croco.in                 # -> croco.nml
-    python croco_in_to_nml.py croco.in -o my_out.nml   # explicit output
+    python croco_in_to_nml.py croco.in.Name                   # -> croco_Name.nml
+    python croco_in_to_nml.py croco.in                        # -> croco.nml
+    python croco_in_to_nml.py croco.in -o my_out.nml          # explicit output
+    python croco_in_to_nml.py croco.in.Name -p param_Name.h   # explicit param file
+
+    If -p is omitted the script auto-discovers TEST_CASES/param_<Name>.h next to
+    the .in file, where <Name> is the suffix of the .in filename.
 
 Extending the mapping
 ---------------------
@@ -19,15 +23,21 @@ Add a row to MAPPINGS:
 
   card_name : key that starts the card in the .in file  (before the colon)
   line      : 0-based index of the value line inside that card block
-  pos       : 0-based token index on that line
-  type      : "int" | "float" | "bool" | "str" | "str_line"
-                int      -> written as a bare integer
-                float    -> kept as-is (preserves Fortran d0 notation)
-                bool     -> T/F -> .true./.false.
-                str      -> double-quoted single token; if the value looks like
-                            a date (YYYY-MM-DD) the time token is appended
-                str_line -> double-quoted entire line (for multi-word values
-                            like titles; pos is ignored)
+  pos       : 0-based token index on that line (ignored for float_array)
+  type      : "int" | "float" | "float_array" | "bool" | "str" | "str_line"
+                int         -> written as a bare integer
+                float       -> kept as-is (preserves Fortran d0 notation)
+                float_array -> all tokens from pos to end of line; Fortran
+                               repeat notation n*v is expanded to n copies;
+                               written as  NT*v  when all values are equal and
+                               NT is known from the param file, otherwise as
+                               v1, v2, v3, ...
+                bool        -> T/F -> .true./.false.
+                str         -> double-quoted single token; if the value looks
+                               like a date (YYYY-MM-DD) the time token is
+                               appended
+                str_line    -> double-quoted entire line (for multi-word values
+                               like titles; pos is ignored)
   nml_name  : namelist block name (with leading &)
   nml_var   : variable name inside that block
 
@@ -89,8 +99,6 @@ MAPPINGS = [
     ("wave_offline",       0,   0,  "str",   "&croco_wave_offline",        "wave_file"),
     ("biology",            0,   0,  "str",   "&croco_biology",             "bioname"),
 
-
-    # ("xios_origin_date",   0,   0,  "str",   "&croco_use_calendar",        "xios_origin_date"),
     ("boundary",           0,   0,  "str",   "&croco_boundary",            "bry_file"),
 
     ("wkb_boundary",       0,   0,  "str",   "&croco_wkb_boundary",        "brywkb_file"),
@@ -114,6 +122,31 @@ MAPPINGS = [
     ("sediments_mustang",  0,   0,  "str",   "&croco_sediments_mustang",   "sedname_must"),
     ("substance",          0,   0,  "str",   "&croco_substance",           "subsfilename"),
     ("obstruction",        0,   0,  "str",   "&croco_obstruction",         "obstname"),
+
+    ("xios_origin_date",   0,   0,  "str_line", "&croco_xios_origin_date", "xios_origin_date"),
+
+    ("assimilation",       0,   0,  "str",   "&croco_assimilation",        "aparnam"),
+    ("assimilation",       1,   0,  "str",   "&croco_assimilation",        "assname"),
+
+    ("rho0",               0,   0,  "float", "&croco_rho0",                "rho0"),
+
+    ("bottom_drag",        0,   0,  "float", "&croco_bottom_drag",         "rdrg"),
+    ("bottom_drag",        0,   1,  "float", "&croco_bottom_drag",         "rdrg2"),
+    ("bottom_drag",        0,   2,  "float", "&croco_bottom_drag",         "Zobt"),
+    ("bottom_drag",        0,   3,  "float", "&croco_bottom_drag",         "Cdb_min"),
+    ("bottom_drag",        0,   4,  "float", "&croco_bottom_drag",         "Cdb_max"),
+
+    ("gamma2",             0,   0,  "float", "&croco_gamma2",              "gamma2"),
+
+    ("lateral_visc",       0,   0,  "float", "&croco_lateral_visc",        "visc2"),
+    ("lateral_visc",       0,   1,  "float", "&croco_lateral_visc",        "visc4"),
+
+    ("tracer_diff2",       0,   0,  "float_array", "&croco_tracer_diff2",   "tnu2"),
+
+    ("tracer_diff4",       0,   0,  "float_array", "&croco_tracer_diff4",   "tnu4"),
+
+    ("vertical_mixing",    0,   0,  "float",       "&croco_vertical_mixing", "Akv_bak"),
+    ("vertical_mixing",    0,   1,  "float_array", "&croco_vertical_mixing", "Akt_bak"),
 
     ("wkb_wwave",          0,   0,  "float", "&croco_wkb_wwave",           "wkb_amp"),
     ("wkb_wwave",          0,   1,  "float", "&croco_wkb_wwave",           "wkb_ang"),
@@ -146,40 +179,104 @@ MAPPINGS = [
     ("abl_averages",       0,   2,  "int",   "&croco_abl_averages",        "nwrtablavg"),
     ("abl_averages",       0,   3,  "int",   "&croco_abl_averages",        "nrpfablavg"),
     ("abl_averages",       1,   0,  "str",   "&croco_abl_averages",        "ablname_avg"),
-
-    # ("rho0",               0,   0,  "float", "&croco_rho0",                "rho0"),
-
-    # ("lateral_visc",       0,   0,  "float", "&croco_lateral_visc",        "visc2"),
-    # ("lateral_visc",       0,   1,  "float", "&croco_lateral_visc",        "visc4"),
-
-    # ("tracer_diff2",       0,   0,  "float", "&croco_tracer_diff2",        "tnu2"),
-    # ("tracer_diff4",       0,   0,  "float", "&croco_tracer_diff4",        "tnu4"),
-
-    # ("vertical_mixing",    0,   0,  "float", "&croco_vertical_mixing",     "akv_bak"),
-    # ("vertical_mixing",    0,   1,  "float", "&croco_vertical_mixing",     "akt_bak"),
-
-    # ("bottom_drag",        0,   0,  "float", "&croco_bottom_drag",         "rdrg"),
-    # ("bottom_drag",        0,   1,  "float", "&croco_bottom_drag",         "rdrg2"),
-    # ("bottom_drag",        0,   2,  "float", "&croco_bottom_drag",         "zob"),
-    # ("bottom_drag",        0,   3,  "float", "&croco_bottom_drag",         "cdb_min"),
-    # ("bottom_drag",        0,   4,  "float", "&croco_bottom_drag",         "cdb_max"),
-
-    # ("gamma2",             0,   0,  "float", "&croco_gamma2",              "gamma2"),
-
-    # ("sponge",             0,   0,  "float", "&croco_sponge",              "x_sponge"),
-    # ("sponge",             0,   1,  "float", "&croco_sponge",              "v_sponge"),
-
-    # ("nudg_cof",           0,   0,  "float", "&croco_nudg_cof",            "taut_in"),
-    # ("nudg_cof",           0,   1,  "float", "&croco_nudg_cof",            "taut_out"),
-    # ("nudg_cof",           0,   2,  "float", "&croco_nudg_cof",            "taum_in"),
-    # ("nudg_cof",           0,   3,  "float", "&croco_nudg_cof",            "taum_out"),
-
-    # ("stations",           0,   0,  "bool",  "&croco_stations",            "ldefsta"),
-    # ("stations",           0,   1,  "int",   "&croco_stations",            "nsta"),
-    # ("stations",           0,   2,  "int",   "&croco_stations",            "nrpfsta"),
-    # ("stations",           1,   0,  "str",   "&croco_stations",            "fname_stations_in"),
-    # ("stations",           2,   0,  "str",   "&croco_stations",            "fname_stations"),
 ]
+
+
+# ---------------------------------------------------------------------------
+# param_CaseName.h reader
+# ---------------------------------------------------------------------------
+
+def read_param_file(path):
+    """
+    Parse a param_CaseName.h file (either the simple hand-written format or the
+    full preprocessed Fortran format produced by generate_case_params.py).
+
+    Handles two formats:
+      Simple:   integer, parameter :: NT = 30
+      Fortran:  parameter (NT=itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs)
+                where the constituent parameters are also present in the file.
+
+    Returns a dict of resolved integer values.
+    """
+    params = {}
+
+    with open(path) as f:
+        content = f.read()
+
+    # --- Simple format: "integer, parameter :: NAME = VALUE" ---
+    for m in re.finditer(r'integer\s*,\s*parameter\s*::\s*(\w+)\s*=\s*(\d+)', content):
+        params[m.group(1)] = int(m.group(2))
+
+    # --- Fortran format: "parameter (NAME=EXPR, NAME2=EXPR2, ...)" ---
+    # Collect all parameter assignments from every parameter(...) statement.
+    # Multiple assignments may appear in one statement, separated by commas.
+    for stmt in re.finditer(r'parameter\s*\(([^)]+)\)', content, re.IGNORECASE):
+        for assign in stmt.group(1).split(','):
+            m = re.match(r'\s*(\w+)\s*=\s*(.+)', assign.strip())
+            if not m:
+                continue
+            name, expr = m.group(1), m.group(2).strip()
+            # Try to evaluate the expression using already-known params
+            try:
+                val = _eval_fortran_expr(expr, params)
+                params[name] = val
+            except Exception:
+                pass  # skip if un-resolvable (e.g. references not yet seen)
+
+    # Second pass: resolve any that depended on later definitions
+    changed = True
+    while changed:
+        changed = False
+        for stmt in re.finditer(r'parameter\s*\(([^)]+)\)', content, re.IGNORECASE):
+            for assign in stmt.group(1).split(','):
+                m = re.match(r'\s*(\w+)\s*=\s*(.+)', assign.strip())
+                if not m:
+                    continue
+                name, expr = m.group(1), m.group(2).strip()
+                if name not in params:
+                    try:
+                        val = _eval_fortran_expr(expr, params)
+                        params[name] = val
+                        changed = True
+                    except Exception:
+                        pass
+
+    return params
+
+
+def _eval_fortran_expr(expr, known):
+    """
+    Evaluate a simple integer Fortran parameter expression using known values.
+    Supports +, -, *, integer literals, and named parameters.
+    """
+    # Replace named identifiers with their known integer values
+    def replace_name(m):
+        name = m.group(0)
+        if name in known:
+            return str(known[name])
+        raise ValueError(f"Unknown parameter: {name}")
+
+    resolved = re.sub(r'[A-Za-z_]\w*', replace_name, expr)
+    # Only allow safe arithmetic characters
+    if not re.match(r'^[\d\s+\-*/()]+$', resolved):
+        raise ValueError(f"Unsafe expression: {resolved}")
+    return int(eval(resolved))  # noqa: S307 – input sanitised above
+
+
+def find_param_file(input_path):
+    """
+    Auto-discover param_<Name>.h next to the input file.
+    croco.in.Kilpatrick  ->  param_Kilpatrick.h
+    croco.in             ->  None
+    """
+    base = os.path.basename(input_path)
+    m = re.match(r'^.+\.in\.(.+?)(\.\d+)?$', base)
+    if not m:
+        return None
+    name = m.group(1)
+    candidate = os.path.join(os.path.dirname(os.path.abspath(input_path)),
+                             f"param_{name}.h")
+    return candidate if os.path.isfile(candidate) else None
 
 
 # ---------------------------------------------------------------------------
@@ -264,7 +361,48 @@ def format_value(raw, typ):
 # NML builder
 # ---------------------------------------------------------------------------
 
-def build_nml(cards, mappings):
+def expand_repeat(tokens):
+    """Expand Fortran repeat notation  n*value  ->  n copies of value."""
+    expanded = []
+    for t in tokens:
+        if '*' in t:
+            count_str, val_str = t.split('*', 1)
+            try:
+                expanded.extend([val_str] * int(count_str))
+            except ValueError:
+                expanded.append(t)
+        else:
+            expanded.append(t)
+    return expanded
+
+
+def format_float_array(expanded, NT):
+    """
+    Format an expanded list of float values for the namelist.
+
+    Rules:
+      - If all values are equal AND NT is known: emit  NT*value  (compact)
+      - If all values are equal AND NT unknown:  emit  N*value   (N = actual count)
+      - Otherwise:                               emit  v1, v2, v3, ...
+    If NT > len(expanded), pad with the last value to reach NT.
+    """
+    if not expanded:
+        return ""
+
+    # Pad to NT if needed
+    if NT is not None and len(expanded) < NT:
+        expanded = expanded + [expanded[-1]] * (NT - len(expanded))
+
+    unique = set(v.lower() for v in expanded)
+    if len(unique) == 1:
+        val = expanded[0]
+        count = NT if NT is not None else len(expanded)
+        return f"{count}*{val}"
+
+    return ", ".join(expanded)
+
+
+def build_nml(cards, mappings, params):
     """
     Walk MAPPINGS in order.  For each row whose card_name exists in `cards`,
     extract the requested token and format it, then accumulate into the
@@ -272,7 +410,11 @@ def build_nml(cards, mappings):
 
     nml_name blocks are written in first-seen order.
     Missing cards produce no output at all.
+
+    params : dict from param_CaseName.h (may be empty).
     """
+    NT = params.get("NT", None)
+
     nml_entries = {}   # nml_name -> list of "  var = val" strings
     nml_order   = []   # preserves first-seen insertion order
 
@@ -288,6 +430,19 @@ def build_nml(cards, mappings):
             continue   # line doesn't exist in this card
 
         tokens = vlines[line_idx].split()
+
+        # --- float_array: grabs pos_idx..end, formats with repeat notation ---
+        if typ == "float_array":
+            raw_tokens = tokens[pos_idx:]
+            if not raw_tokens:
+                continue
+            expanded = expand_repeat(raw_tokens)
+            val = format_float_array(expanded, NT)
+            if nml_name not in nml_entries:
+                nml_entries[nml_name] = []
+                nml_order.append(nml_name)
+            nml_entries[nml_name].append(f"  {nml_var} = {val}")
+            continue
 
         if typ == "str_line":
             raw = vlines[line_idx].strip()
@@ -367,6 +522,9 @@ def main():
     parser.add_argument("input", help="Path to the .in file (e.g. croco.in, croco.in.Name)")
     parser.add_argument("-o", "--output",
                         help="Output .nml path (default: derived from input name)")
+    parser.add_argument("-p", "--param",
+                        help="param_CaseName.h file with NT/N/LLm0/MMm0 "
+                             "(auto-discovered if omitted)")
     args = parser.parse_args()
 
     if not os.path.isfile(args.input):
@@ -374,6 +532,16 @@ def main():
         sys.exit(1)
 
     out_path = args.output or derive_output_name(args.input)
+
+    # Resolve param file
+    param_path = args.param or find_param_file(args.input)
+    params = {}
+    if param_path:
+        if os.path.isfile(param_path):
+            params = read_param_file(param_path)
+            print(f"Params   : {param_path}  (NT={params.get('NT','?')})")
+        else:
+            print(f"Warning  : param file not found: {param_path}", file=sys.stderr)
 
     cards = parse_in_file(args.input)
 
@@ -388,7 +556,7 @@ def main():
     if unmapped:
         print(f"Ignored  (present in .in, no mapping) : {', '.join(sorted(unmapped))}")
 
-    nml_text = build_nml(cards, MAPPINGS)
+    nml_text = build_nml(cards, MAPPINGS, params)
 
     with open(out_path, "w") as fh:
         fh.write(nml_text)

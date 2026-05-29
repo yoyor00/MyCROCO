@@ -23,7 +23,7 @@
 !
 !       Q_model ~ Q + dQdSST * (T_model - SST)
 !
-      use croco_namelist, only: dt, frcname
+      use croco_namelist, only: dt, frcname, rho0
 # ifdef OPENACC
       use exchange_device_host
 # endif

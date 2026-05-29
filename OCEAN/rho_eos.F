@@ -120,6 +120,7 @@
 #  if !defined NONLIN_EOS
       USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
 #  endif
+      USE croco_namelist, ONLY: rho0
       implicit none
 
 #  include "param.h"
@@ -325,6 +326,7 @@
       end
 
       subroutine rho_eos_tile (Istr,Iend,Jstr,Jend)
+      USE croco_namelist, ONLY: rho0, R0, T0, S0, Tcoef, Scoef
       implicit none
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -614,6 +616,10 @@ c #  endif
       end
 
       subroutine reset_rho0_tile (Istr,Iend,Jstr,Jend)
+      USE croco_namelist, ONLY: rho0
+#  if !defined NONLIN_EOS
+      USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
+#  endif
       implicit none
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, NSUB

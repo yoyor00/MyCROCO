@@ -34,6 +34,7 @@
     USE comMUSTANG
     USE comsubstance
     USE module_substance
+    USE croco_namelist, ONLY : rho0
 # if defined key_MUSTANG_flocmod
     USE flocmod, ONLY : f_ws
 #endif

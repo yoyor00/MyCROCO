@@ -87,6 +87,44 @@
   subsfilename = "parasubstance.txt"
 /
 
+&croco_xios_origin_date
+  xios_origin_date = "2014-01-04 00:00:00"
+/
+
+&croco_rho0
+  rho0 = 1025.d0
+/
+
+&croco_bottom_drag
+  rdrg = 0.0d-04
+  rdrg2 = 0.d-3
+  Zobt = 1.d-2
+  Cdb_min = 1.d-4
+  Cdb_max = 1.d-1
+/
+
+&croco_gamma2
+  gamma2 = 1.d0
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 2*0.d0
+/
+
+&croco_tracer_diff4
+  tnu4 = 2*0.d11
+/
+
+&croco_vertical_mixing
+  Akv_bak = 0.d0
+  Akt_bak = 2*0.d0
+/
+
 &croco_wkb_wwave
   wkb_amp = 0.25
   wkb_ang = 190.

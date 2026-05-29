@@ -52,7 +52,7 @@
 ! Common Code
 !
 # include "set_obc_definitions.h"
-!
+      USE croco_namelist, ONLY: gamma2
       implicit none
 # include "param.h"
 # include "grid.h"
