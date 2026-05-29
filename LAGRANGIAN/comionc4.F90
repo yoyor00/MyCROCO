@@ -2,7 +2,7 @@
 ! License: CeCILL-C
 ! See LICENSES/LICENSE_LAGRANGIAN_FOIL.txt
 
- MODULE comionc4
+MODULE comionc4
 
    !!======================================================================
    !!                   ***  MODULE comionc4  ***
@@ -16,7 +16,7 @@
    !!======================================================================
 
    IMPLICIT NONE
-      
+
    REAL,PARAMETER :: ionc_valmanque=1.e+37
    INTEGER,PARAMETER ::  ionc_longtabfich=10000
    INTEGER,PARAMETER ::  ionc_longnomfich=200
@@ -76,7 +76,7 @@
    ! codes d'erreur:
 
    INTEGER,PARAMETER :: ionc_errcreation = -1000
-   INTEGER,PARAMETER :: ionc_errfich     = -1001 
+   INTEGER,PARAMETER :: ionc_errfich     = -1001
    INTEGER,PARAMETER :: ionc_err_i       = -1002
    INTEGER,PARAMETER :: ionc_err_j       = -1003
    INTEGER,PARAMETER :: ionc_err_k       = -1004
@@ -85,4 +85,4 @@
    ! number of bits of the packed
    INTEGER,        PARAMETER   :: nb_bits = 16
 
- END MODULE comionc4      
+END MODULE comionc4
