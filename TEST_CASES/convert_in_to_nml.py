@@ -95,6 +95,22 @@ MAPPINGS = [
 
     ("wkb_boundary",       0,   0,  "str",   "&croco_wkb_boundary",        "brywkb_file"),
 
+    ("wkb_wwave",          0,   0,  "float", "&croco_wkb_wwave",           "wkb_amp"),
+    ("wkb_wwave",          0,   1,  "float", "&croco_wkb_wwave",           "wkb_ang"),
+    ("wkb_wwave",          0,   2,  "float", "&croco_wkb_wwave",           "wkb_prd"),
+    ("wkb_wwave",          0,   3,  "float", "&croco_wkb_wwave",           "wkb_tide"),
+    ("wkb_wwave",          0,   4,  "float", "&croco_wkb_wwave",           "wkb_btg"),
+    ("wkb_wwave",          0,   5,  "float", "&croco_wkb_wwave",           "wkb_gam"),
+
+    ("wkb_roller",         0,   0,  "float", "&croco_wkb_roller",          "wkb_rsb"),
+    ("wkb_roller",         0,   1,  "float", "&croco_wkb_roller",          "wkb_roller"),
+
+    ("wave_maker",         0,   0,  "float", "&croco_wave_maker",          "wmaker_amp"),
+    ("wave_maker",         0,   1,  "float", "&croco_wave_maker",          "wmaker_prd"),
+    ("wave_maker",         0,   2,  "float", "&croco_wave_maker",          "wmaker_dir"),
+    ("wave_maker",         0,   3,  "float", "&croco_wave_maker",          "wmaker_dsp"),
+    ("wave_maker",         0,   4,  "float", "&croco_wave_maker",          "wmaker_fsp"),
+
     ("averages",           0,   0,  "int",   "&croco_averages",            "ntsavg"),
     ("averages",           0,   1,  "int",   "&croco_averages",            "navg"),
     ("averages",           0,   2,  "int",   "&croco_averages",            "nrpfavg"),

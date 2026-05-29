@@ -33,6 +33,20 @@
   rstname = "sandbar_rst.nc"
 /
 
+&croco_wkb_wwave
+  wkb_amp = 0.45
+  wkb_ang = 0.0
+  wkb_prd = 5.
+  wkb_tide = 0.0
+  wkb_btg = 0.6
+  wkb_gam = 0.4
+/
+
+&croco_wkb_roller
+  wkb_rsb = 0.15
+  wkb_roller = 1.8
+/
+
 &croco_averages
   ntsavg = 1
   navg = 6000

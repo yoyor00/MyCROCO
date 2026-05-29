@@ -176,6 +176,43 @@ MODULE croco_namelist
    character(len=180) :: brywkb_file = "CROCO_FILES/croco_wkb.nc"
 #endif
 
+#ifdef WKB_WWAVE
+   ! &croco_wkb_wwave  – primary waves and empirical breaking model parameters
+   real :: wkb_amp = 0.25
+   !! offshore wave amplitude [m]
+   real :: wkb_ang = 190.0
+   !! offshore wave angle [deg]
+   real :: wkb_prd = 8.0
+   !! offshore wave period [s]
+   real :: wkb_tide = -2.0
+   !! constant offshore water level [m]
+   real :: wkb_btg = 1.3
+   !! B parameter (breaking)
+   real :: wkb_gam = 0.38
+   !! gamma parameter (Hrms/h ratio)
+#  ifdef WAVE_ROLLER
+   ! &croco_wkb_roller  – Svendsen (1984) surface roller model parameters
+   real :: wkb_rsb = 0.1
+   !! sin(beta) roller dissipation
+   real :: wkb_roller = 0.5
+   !! breaking contrib to roller: [0,1]
+#  endif
+#endif
+
+#ifdef WAVE_MAKER
+   ! &croco_wave_maker  – offshore wavemaker parameters for wave-resolving simulations
+   real :: wmaker_amp = 0.0
+   !! RMS wave amplitude [m]
+   real :: wmaker_prd = 8.0
+   !! peak wave period [s]
+   real :: wmaker_dir = 0.0
+   !! mean wave angle [deg]
+   real :: wmaker_dsp = 0.0
+   !! directional spread [deg]
+   real :: wmaker_fsp = 3.3
+   !! freq. spread (gamma in JONSWAP)
+#endif
+
 #ifdef AVERAGES
    ! &croco_averages
    integer :: ntsavg = 1

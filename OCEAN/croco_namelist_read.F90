@@ -96,17 +96,30 @@ contains
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
       use croco_namelist, ONLY: bulkname
 #endif
-#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
-      (defined ZCLIMATOLOGY( & !defined ANA_SSH) || \
-       defined M2CLIMATOLOGY(d & !defined ANA_M2CLIMA) || \
-                             efined M3CLIMATOLOGY use & !defined ANA_M3CLIMA)
-                             croco_namelist, ONLY:clmname
+#if (  defined TCLIMATOLOGY  && \
+      !defined ANA_TCLIMA) || \
+      (defined ZCLIMATOLOGY&&\
+      !defined ANA_SSH) || \
+      (defined M2CLIMATOLOGY&&\
+      !defined ANA_M2CLIMA) || \
+      (defined M3CLIMATOLOGY&&\
+      !defined ANA_M3CLIMA)
+      use croco_namelist, ONLY: clmname
 #endif
 #if !defined ANA_BRY && defined FRC_BRY
       use croco_namelist, ONLY: bry_file
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
       use croco_namelist, ONLY: brywkb_file
+#endif
+#ifdef WKB_WWAVE
+      use croco_namelist, ONLY: wkb_amp, wkb_ang, wkb_prd, wkb_tide, wkb_btg, wkb_gam
+#  ifdef WAVE_ROLLER
+      use croco_namelist, ONLY: wkb_rsb, wkb_roller
+#  endif
+#endif
+#ifdef WAVE_MAKER
+      use croco_namelist, ONLY: wmaker_amp, wmaker_prd, wmaker_dir, wmaker_dsp, wmaker_fsp
 #endif
 #ifdef AVERAGES
       use croco_namelist, ONLY: ntsavg, navg, nrpfavg, avgname
@@ -171,6 +184,15 @@ contains
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
       namelist /croco_wkb_boundary/ brywkb_file
+#endif
+#ifdef WKB_WWAVE
+      namelist /croco_wkb_wwave/ wkb_amp, wkb_ang, wkb_prd, wkb_tide, wkb_btg, wkb_gam
+#  ifdef WAVE_ROLLER
+      namelist /croco_wkb_roller/ wkb_rsb, wkb_roller
+#  endif
+#endif
+#ifdef WAVE_MAKER
+      namelist /croco_wave_maker/ wmaker_amp, wmaker_prd, wmaker_dir, wmaker_dsp, wmaker_fsp
 #endif
 #ifdef AVERAGES
       namelist /croco_averages/ ntsavg, navg, nrpfavg, avgname
@@ -408,6 +430,41 @@ contains
       end if
 #endif
 
+#ifdef WKB_WWAVE
+      ! --- croco_wkb_wwave (optional) ---
+      call check_nml_presence(nmlunit, "croco_wkb_wwave", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wkb_wwave, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wkb_wwave (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef WAVE_ROLLER
+      ! --- croco_wkb_roller (optional) ---
+      call check_nml_presence(nmlunit, "croco_wkb_roller", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wkb_roller, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wkb_roller (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+
+#ifdef WAVE_MAKER
+      ! --- croco_wave_maker (optional) ---
+      call check_nml_presence(nmlunit, "croco_wave_maker", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wave_maker, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wave_maker (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
 #ifdef AVERAGES
       ! --- croco_averages (optional) ---
       call check_nml_presence(nmlunit, "croco_averages", .false., found, ierr)
@@ -533,6 +590,15 @@ contains
 #endif
 #if defined WKB_WWAVE && !defined ANA_BRY_WKB
       MPI_master_only WRITE (stdout, nml=croco_wkb_boundary)
+#endif
+#ifdef WKB_WWAVE
+      MPI_master_only WRITE (stdout, nml=croco_wkb_wwave)
+#  ifdef WAVE_ROLLER
+      MPI_master_only WRITE (stdout, nml=croco_wkb_roller)
+#  endif
+#endif
+#ifdef WAVE_MAKER
+      MPI_master_only WRITE (stdout, nml=croco_wave_maker)
 #endif
 #ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_averages)

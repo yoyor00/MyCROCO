@@ -1728,34 +1728,6 @@
 # endif
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
 
-#if defined WKB_WWAVE
-!
-! WKB primary waves and empirical breaking model parameters
-!
-      elseif (keyword(1:kwlen).eq.'wkb_wwave') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wkb_amp,wkb_ang,wkb_prd,wkb_tide,wkb_btg,
-     &                       wkb_gam
-
-# ifdef WAVE_ROLLER
-!
-! Svendsen's surface roller model parameters
-!
-      elseif (keyword(1:kwlen).eq.'wkb_roller') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wkb_rsb, wkb_roller
-# endif
-#endif /* WKB_WWAVE */
-
-#ifdef WAVE_MAKER
-!
-! Offshore wavemaker parameters for wave-resolving simulations
-!
-      elseif (keyword(1:kwlen).eq.'wave_maker') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) wmaker_amp,wmaker_prd,wmaker_dir,
-     &                       wmaker_dsp,wmaker_fsp
-#endif /* WAVE_MAKER */
 
 #ifdef ANA_PSOURCE
 !
@@ -2927,43 +2899,6 @@
 # endif
 #endif /* WKB_WWAVE || OW_COUPLING || WAVE_OFFLINE */
     
-#if defined WKB_WWAVE
-          MPI_master_only write(stdout,
-     &             '(/1x,A,4(/3x,f10.4,2x,A),/3x,A,2(/3x,f10.4,2x,A))')
-     &    'Primary waves and breaking parameters for WKB wave model',
-     &   wkb_amp,   'wkb_amp    offshore wave amplitude [m]',
-     &   wkb_ang,   'wkb_ang    offshore wave angle [deg]',
-     &   wkb_prd,   'wkb_prd    offshore wave period [s]',
-     &   wkb_tide,  'wkb_tide   constant offshore water level [m]',
-# ifdef WAVE_BREAK_TG86
-     &  'breaking model (Thornton & Guza, 1983a) is specifield.',
-# elif defined WAVE_BREAK_TG86A
-     &  'breaking model (Thornton & Guza, 1983b) is specifield.',
-# elif defined WAVE_BREAK_CT93
-     &  'breaking model (Church & Thornton, 1993) is specifield.',
-# else
-     &  'breaking model (Church & Thornton, 1993) is default.',
-# endif
-     &   wkb_btg,   'wkb_btg    B parameter',
-     &   wkb_gam,   'wkb_gam    gamma paramemer (Hrms/h ratio)'
-
-# ifdef WAVE_ROLLER
-          MPI_master_only write(stdout,'(/1x,A,2(/3x,f10.4,2x,A))')
-     &  'Svenden (1984) surface roller model parameters.',
-     &   wkb_rsb,   'wkb_rsb     sin(beta) roller dissipation',
-     &   wkb_roller,'wkb_roller  breaking contrib to roller: [0,1]'
-# endif
-#endif /* WKB_WWAVE */
-    
-#ifdef WAVE_MAKER
-          MPI_master_only write(stdout,'(/1x,A,5(/3x,f10.4,2x,A))')
-     &    'Offshore wavemaker parameters for wave modeling',
-     &   wmaker_amp, 'wmaker_amp  RMS wave amplitude [m]',
-     &   wmaker_prd, 'wmaker_prd  peak wave period [s]',
-     &   wmaker_dir, 'wmaker_dir  mean wave angle [deg]',
-     &   wmaker_dsp, 'wmaker_dsp  directional spread [deg]',
-     &   wmaker_fsp, 'wmaker_fsp  freq. spread (gamma in JONSWAP)'
-#endif /* WAVE_MAKER */
     
 #ifdef ANA_PSOURCE
 # ifdef PSOURCE_NCFILE

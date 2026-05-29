@@ -69,6 +69,11 @@
 !  Adapted to CROCO by R. Benshila & P. Marchesiello, 2013
 !======================================================================
 !
+      use croco_namelist, ONLY: wkb_amp, wkb_ang, wkb_prd,
+     &                          wkb_btg, wkb_gam
+# ifdef WAVE_ROLLER
+      use croco_namelist, ONLY: wkb_rsb, wkb_roller
+# endif
       implicit none
 # include "param.h"
       integer istr,iend,jstr,jend, i, j, k, wprv, wbak, wold,

@@ -36,6 +36,20 @@
   frcname = "TEST_CASES/shoreface_JW_frc.nc"
 /
 
+&croco_wkb_wwave
+  wkb_amp = 0.707
+  wkb_ang = -10.0
+  wkb_prd = 10.
+  wkb_tide = 0.0
+  wkb_btg = 0.8
+  wkb_gam = 0.4
+/
+
+&croco_wkb_roller
+  wkb_rsb = 0.1
+  wkb_roller = 0.0
+/
+
 &croco_averages
   ntsavg = 1
   navg = 720

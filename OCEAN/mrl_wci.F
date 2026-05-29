@@ -71,6 +71,9 @@
 !----------------------------------------------------------------------
 !
       use croco_namelist, only: dt
+# ifdef WKB_WWAVE
+      use croco_namelist, only: wkb_roller
+# endif
       implicit none
 # include "param.h"
 # include "forces.h"

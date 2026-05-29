@@ -36,6 +36,9 @@ MODULE croco_namelist_check
 #ifdef SOLVE3D
    public :: check_croco_s_coord
 #endif
+#if defined WKB_WWAVE && defined WAVE_ROLLER
+   public :: check_wkb_roller
+#endif
 
 contains
 
@@ -57,6 +60,9 @@ contains
       call check_croco_s_coord(ierr)
 #endif
       call check_history(ierr)
+#if defined WKB_WWAVE && defined WAVE_ROLLER
+      call check_wkb_roller(ierr)
+#endif
 
    end subroutine check_all
 
@@ -201,5 +207,28 @@ contains
 
    end subroutine check_croco_s_coord
 #endif /* SOLVE3D */
+
+#if defined WKB_WWAVE && defined WAVE_ROLLER
+   !---------------------------------------------------------------------
+   !  check_wkb_roller
+   !---------------------------------------------------------------------
+   subroutine check_wkb_roller(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: wkb_roller
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      if (wkb_roller < 0.d0 .or. wkb_roller > 1.d0) then
+         MPI_master_only write (stdout, '(a,f12.4,a)') &
+            'Error - wkb_roller = ', wkb_roller, &
+            ' must be in [0, 1].'
+         ierr = ierr + 1
+      end if
+
+   end subroutine check_wkb_roller
+#endif /* WKB_WWAVE && WAVE_ROLLER */
 
 END MODULE croco_namelist_check

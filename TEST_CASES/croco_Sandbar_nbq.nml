@@ -39,6 +39,14 @@
   rstname = "sandbar_rst.nc"
 /
 
+&croco_wave_maker
+  wmaker_amp = 0.21
+  wmaker_prd = 8.0
+  wmaker_dir = 0.
+  wmaker_dsp = 0.
+  wmaker_fsp = 3.3
+/
+
 &croco_averages
   ntsavg = 1
   navg = 6000

@@ -2641,6 +2641,10 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       USE croco_namelist, only: dt
+# ifdef WAVE_MAKER
+      USE croco_namelist, only: wmaker_amp, wmaker_prd, wmaker_dir,
+     &                          wmaker_dsp, wmaker_fsp
+# endif
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
 # endif
