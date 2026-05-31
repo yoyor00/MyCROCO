@@ -79,7 +79,7 @@
 /
 
 &croco_tracer_diff2
-  tnu2 = 30*0.d0
+  tnu2 = 5*0.d0
 /
 
 

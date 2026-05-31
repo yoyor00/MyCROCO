@@ -67,12 +67,12 @@
 /
 
 &croco_tracer_diff2
-  tnu2 = 10*0.d0
+  tnu2 = 3*0.d0
 /
 
 &croco_vertical_mixing
   Akv_bak = 0.
-  Akt_bak = 10*0.
+  Akt_bak = 3*0.
 /
 
 &croco_wkb_wwave

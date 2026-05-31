@@ -73,12 +73,12 @@
 /
 
 &croco_tracer_diff2
-  tnu2 = 10*0.d0
+  tnu2 = 1*0.d0
 /
 
 &croco_vertical_mixing
   Akv_bak = 0.
-  Akt_bak = 10*0.
+  Akt_bak = 1*0.
 /
 
 &croco_wave_maker
