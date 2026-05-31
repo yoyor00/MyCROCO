@@ -206,12 +206,6 @@
       integer ntsdiags_eddy_avg, nwrtdiags_eddy_avg
 # endif
 #endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-      integer nwrtsurf
-# ifdef AVERAGES
-      integer ntssurf_avg, nwrtsurf_avg
-# endif
-#endif
 #ifdef DIAGNOSTICS_BIO
       integer nwrtdiabio
 # ifdef AVERAGES
@@ -265,12 +259,6 @@
       logical ldefdiags_eddy
 # ifdef AVERAGES
       logical ldefdiags_eddy_avg
-# endif
-#endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-      logical ldefsurf
-# ifdef AVERAGES
-      logical ldefsurf_avg
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
@@ -375,14 +363,6 @@
      &                      , ldefdiags_eddy_avg
      &                      , nwrtdiags_eddy_avg
      &                      , ntsdiags_eddy_avg
-# endif
-#endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-     &                      , ldefsurf, nwrtsurf
-# ifdef AVERAGES
-     &                      , ldefsurf_avg
-     &                      , nwrtsurf_avg
-     &                      , ntssurf_avg
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO

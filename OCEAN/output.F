@@ -23,6 +23,12 @@
 #ifdef AVERAGES
       USE croco_namelist, ONLY: ntsavg, navg, nrpfavg
 #endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      USE croco_namelist, ONLY: nwrtsurf
+#  ifdef AVERAGES
+      USE croco_namelist, ONLY: ntssurf_avg, nwrtsurf_avg
+#  endif
+#endif
 #if defined ABL1D && !defined XIOS
       USE croco_namelist, ONLY: nwrtablhis, ldefablhis
 #  ifdef AVERAGES

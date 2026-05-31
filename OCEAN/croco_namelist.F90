@@ -252,6 +252,42 @@ MODULE croco_namelist
    !! Name of averages file
 #endif
 
+#if defined OUTPUTS_SURFACE && !defined XIOS
+   ! &croco_surf
+   logical :: ldefsurf = .true.
+   !! Flag (T/F) for writing surface output files.
+   !! If `.true.`, a new file is created; if `.false.`, data is appended.
+   integer :: nwrtsurf = 0
+   !! Number of time-steps between writing of surface fields.
+   !! 0: use the same frequency as history (nwrt).
+   integer :: nrpfsurf = 0
+   !! Surface output file cycling switch:
+   !!
+   !!  - 0: write several records every NWRTSURF time steps
+   !!  - >0: create more than one file (with sequential numbers) and write NRPFSURF records per file
+   !!  - -1: overwrite record every NWRTSURF time steps
+   character(len=180) :: surfname = "CROCO_FILES/croco_surf.nc"
+   !! Name of surface output file
+#  ifdef AVERAGES
+   ! &croco_surf_avg
+   logical :: ldefsurf_avg = .true.
+   !! Flag (T/F) for writing surface averaged output files.
+   integer :: ntssurf_avg = 1
+   !! Starting time-step for the accumulation of surface time-averaged data
+   integer :: nwrtsurf_avg = 0
+   !! Number of time-steps between writing of averaged surface fields.
+   !! 0: use the same frequency as averages (navg).
+   integer :: nrpfsurf_avg = 0
+   !! Surface averages file cycling switch:
+   !!
+   !!  - 0: write several records every NWRTSURF_AVG time steps
+   !!  - >0: create more than one file (with sequential numbers) and write NRPFSURF_AVG records per file
+   !!  - -1: overwrite record every NWRTSURF_AVG time steps
+   character(len=180) :: surfname_avg = "CROCO_FILES/croco_surf_avg.nc"
+   !! Name of surface averages file
+#  endif
+#endif
+
 #if defined ABL1D && !defined XIOS
    ! &croco_abl
    logical :: ldefablhis = .true.

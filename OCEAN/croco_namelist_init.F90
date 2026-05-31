@@ -58,6 +58,12 @@ MODULE croco_namelist_init
 #ifdef AVERAGES
    public :: init_averages
 #endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+   public :: init_surf
+#  ifdef AVERAGES
+   public :: init_surf_avg
+#  endif
+#endif
 #if defined ABL1D && !defined XIOS
    public :: init_abl
 #  ifdef AVERAGES
@@ -152,6 +158,12 @@ contains
 #endif
 #ifdef AVERAGES
       call init_averages(ierr)
+#endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      call init_surf(ierr)
+#  ifdef AVERAGES
+      call init_surf_avg(ierr)
+#  endif
 #endif
 #if defined ABL1D && !defined XIOS
       call init_abl(ierr)
@@ -666,6 +678,41 @@ contains
 #  endif
 
    end subroutine init_averages
+#endif
+
+#if defined OUTPUTS_SURFACE && !defined XIOS
+   !---------------------------------------------------------------------
+   !  init_surf
+   !  Adjust surfname for MPI/ENSEMBLE and apply nwrtsurf default.
+   !---------------------------------------------------------------------
+   subroutine init_surf(ierr)
+      use croco_namelist, ONLY: surfname, nwrtsurf, nwrt
+      implicit none
+      integer, intent(inout) :: ierr
+
+      call adjust_filename_parallel(surfname, "surfname", ierr)
+      call adjust_filename_ensemble(surfname)
+      if (ierr /= 0) return
+      if (nwrtsurf == 0) nwrtsurf = nwrt
+
+   end subroutine init_surf
+#  ifdef AVERAGES
+   !---------------------------------------------------------------------
+   !  init_surf_avg
+   !  Adjust surfname_avg for MPI/ENSEMBLE and apply nwrtsurf_avg default.
+   !---------------------------------------------------------------------
+   subroutine init_surf_avg(ierr)
+      use croco_namelist, ONLY: surfname_avg, nwrtsurf_avg, navg
+      implicit none
+      integer, intent(inout) :: ierr
+
+      call adjust_filename_parallel(surfname_avg, "surfname_avg", ierr)
+      call adjust_filename_ensemble(surfname_avg)
+      if (ierr /= 0) return
+      if (nwrtsurf_avg == 0) nwrtsurf_avg = navg
+
+   end subroutine init_surf_avg
+#  endif
 #endif
 
 #if defined ABL1D && !defined XIOS

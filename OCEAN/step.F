@@ -19,6 +19,9 @@
 # if defined OA_COUPLING || defined OW_COUPLING
       use croco_namelist, only: ntimes, dt
 # endif
+#if defined OUTPUTS_SURFACE && defined AVERAGES && !defined XIOS
+      use croco_namelist, only: ldefsurf_avg
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"

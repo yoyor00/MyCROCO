@@ -142,6 +142,17 @@ MAPPINGS = [
     ("averages",           0,   1,  "int",   "&croco_averages",            "navg"),
     ("averages",           0,   2,  "int",   "&croco_averages",            "nrpfavg"),
     ("averages",           1,   0,  "str",   "&croco_averages",            "avgname"),
+    ("surf",               0,   0,  "bool",  "&croco_surf",                "ldefsurf"),
+    ("surf",               0,   1,  "int",   "&croco_surf",                "nwrtsurf"),
+    ("surf",               0,   2,  "int",   "&croco_surf",                "nrpfsurf"),
+    ("surf",               1,   0,  "str",   "&croco_surf",                "surfname"),
+
+    ("surf_avg",           0,   0,  "bool",  "&croco_surf_avg",            "ldefsurf_avg"),
+    ("surf_avg",           0,   1,  "int",   "&croco_surf_avg",            "ntssurf_avg"),
+    ("surf_avg",           0,   2,  "int",   "&croco_surf_avg",            "nwrtsurf_avg"),
+    ("surf_avg",           0,   3,  "int",   "&croco_surf_avg",            "nrpfsurf_avg"),
+    ("surf_avg",           1,   0,  "str",   "&croco_surf_avg",            "surfname_avg"),
+
     ("abl",                0,   0,  "bool",  "&croco_abl",                 "ldefablhis"),
     ("abl",                0,   1,  "int",   "&croco_abl",                 "nwrtablhis"),
     ("abl",                0,   2,  "int",   "&croco_abl",                 "nrpfablhis"),

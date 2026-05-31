@@ -560,42 +560,6 @@
 # endif
 #endif /*DIAGNOSTICS_EDDY */
 
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-!
-! surface outputs file name.
-!
-      elseif (keyword(1:kwlen).eq.'surf') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ldefsurf, nwrtsurf, nrpfsurf
-        if (nwrtsurf.eq.0) nwrtsurf = nwrt
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-        surfname=fname(1:lstr)
-#ifdef ENSEMBLE
-        surfname=cmember//surfname
-#endif
-!
-# ifdef AVERAGES
-      elseif (keyword(1:kwlen).eq.'surf_avg') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ldefsurf_avg, ntssurf_avg,
-     &                      nwrtsurf_avg,  nrpfsurf_avg
-        if (nwrtsurf_avg.eq.0) nwrtsurf_avg = navg
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-#  if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-#  endif
-        surfname_avg=fname(1:lstr)
-#ifdef ENSEMBLE
-        surfname_avg=cmember//surfname_avg
-#endif
-
-# endif
-#endif /*OUTPUTS_SURFACE */
 
 
 #ifdef DIAGNOSTICS_BIO
@@ -1844,25 +1808,6 @@
 # endif
 #endif /*DIAGNOSTICS_EDDY */
 
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-          lstr=lenstr(surfname)
-          MPI_master_only write(stdout,
-     &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
-     &    'Surface outputs File:', surfname(1:lstr),
-     &    'Create new:', ldefsurf, 'nwrt =', nwrtsurf,
-     &    'rec/file =', nrpfsurf
-!
-# ifdef AVERAGES
-          lstr=lenstr(surfname_avg)
-          MPI_master_only write(stdout,
-     &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3,/32x,A,I10)')
-     &    'Surface outputs AVG File:',surfname_avg(1:lstr),
-     &    'Create new:', ldefsurf_avg,'nwrt =',nwrtsurf_avg,
-     &    'rec/file =',nrpfsurf_avg,
-     &    'Starting timestep = ',ntssurf_avg
-
-# endif
-#endif /*OUTPUTS_SURFACE */
 
 
 #ifdef DIAGNOSTICS_BIO

@@ -1305,7 +1305,7 @@
 # endif
 
 # if defined OUTPUTS_SURFACE && ! defined XIOS
-      integer ncidsurf, nrecsurf, nrpfsurf
+      integer ncidsurf, nrecsurf
      &      , surfTime, surfTime2, surfTstep
      &      , surf_surft(2), surf_surfs(2),  surf_surfz(2)
      &      , surf_surfu(2), surf_surfv(2)
@@ -1516,7 +1516,7 @@
      &      , diags_eddyugsu_avg(2), diags_eddyvgsv_avg(2)
 #  endif
 #  if defined OUTPUTS_SURFACE && ! defined XIOS
-       integer ncidsurf_avg, nrecsurf_avg, nrpfsurf_avg
+       integer ncidsurf_avg, nrecsurf_avg
      &      , surfTime_avg, surfTime2_avg, surfTstep_avg
      &      , surf_surft_avg(2), surf_surfs_avg(2), surf_surfz_avg(2)
      &      , surf_surfu_avg(2), surf_surfv_avg(2)
@@ -1932,12 +1932,12 @@
 # endif
 #endif
 #if defined OUTPUTS_SURFACE && ! defined XIOS
-     &      , ncidsurf, nrecsurf, nrpfsurf
+     &      , ncidsurf, nrecsurf
      &      , surfTime, surfTime2, surfTstep
      &      , surf_surft, surf_surfs,  surf_surfz
      &      , surf_surfu, surf_surfv
 # ifdef AVERAGES
-     &      , ncidsurf_avg, nrecsurf_avg, nrpfsurf_avg
+     &      , ncidsurf_avg, nrecsurf_avg
      &      , surfTime_avg, surfTime2_avg, surfTstep_avg
      &      , surf_surft_avg, surf_surfs_avg,  surf_surfz_avg
      &      , surf_surfu_avg, surf_surfv_avg
@@ -2144,12 +2144,6 @@
      &                                ,  diags_eddyname_avg
 # endif
 #endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-     &                                ,  surfname
-# ifdef AVERAGES
-     &                                ,  surfname_avg
-# endif
-#endif
 #ifdef DIAGNOSTICS_BIO
      &                                ,  dianamebio
 # ifdef AVERAGES
@@ -2213,12 +2207,6 @@
      &                                ,  diags_eddyname
 # ifdef AVERAGES
      &                                ,  diags_eddyname_avg
-# endif
-#endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-     &                                ,  surfname
-# ifdef AVERAGES
-     &                                ,  surfname_avg
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO

@@ -124,6 +124,13 @@ contains
 #ifdef AVERAGES
       use croco_namelist, ONLY: ntsavg, navg, nrpfavg, avgname
 #endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      use croco_namelist, ONLY: ldefsurf, nwrtsurf, nrpfsurf, surfname
+#  ifdef AVERAGES
+      use croco_namelist, ONLY: ldefsurf_avg, ntssurf_avg, nwrtsurf_avg, &
+                                nrpfsurf_avg, surfname_avg
+#  endif
+#endif
 #if defined ABL1D && !defined XIOS
       use croco_namelist, ONLY: ldefablhis, nwrtablhis, nrpfablhis, ablname
 #  ifdef AVERAGES
@@ -234,6 +241,13 @@ contains
 #endif
 #ifdef AVERAGES
       namelist /croco_averages/ ntsavg, navg, nrpfavg, avgname
+#endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      namelist /croco_surf/ ldefsurf, nwrtsurf, nrpfsurf, surfname
+#  ifdef AVERAGES
+      namelist /croco_surf_avg/ ldefsurf_avg, ntssurf_avg, nwrtsurf_avg, &
+         nrpfsurf_avg, surfname_avg
+#  endif
 #endif
 #if defined ABL1D && !defined XIOS
       namelist /croco_abl/ ldefablhis, nwrtablhis, nrpfablhis, ablname
@@ -568,6 +582,29 @@ contains
       end if
 #endif
 
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      ! --- croco_surf (optional) ---
+      call check_nml_presence(nmlunit, "croco_surf", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_surf, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_surf (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef AVERAGES
+      ! --- croco_surf_avg (optional) ---
+      call check_nml_presence(nmlunit, "croco_surf_avg", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_surf_avg, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_surf_avg (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+
 #if defined ABL1D && !defined XIOS
       ! --- croco_abl (optional) ---
       call check_nml_presence(nmlunit, "croco_abl", .false., found, ierr)
@@ -887,6 +924,12 @@ contains
 #endif
 #ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_averages)
+#endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      MPI_master_only WRITE (stdout, nml=croco_surf)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_surf_avg)
+#  endif
 #endif
 #if defined ABL1D && !defined XIOS
       MPI_master_only WRITE (stdout, nml=croco_abl)

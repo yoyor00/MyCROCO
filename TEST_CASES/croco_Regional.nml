@@ -146,5 +146,20 @@
   avgname = "CROCO_FILES/croco_avg.nc"
 /
 
+&croco_surf
+  ldefsurf = .true.
+  nwrtsurf = 1
+  nrpfsurf = 0
+  surfname = "CROCO_FILES/croco_surf.nc"
+/
+
+&croco_surf_avg
+  ldefsurf_avg = .false.
+  ntssurf_avg = 1
+  nwrtsurf_avg = 4
+  nrpfsurf_avg = 0
+  surfname_avg = "CROCO_FILES/croco_surf_avg.nc"
+/
+
 
 ! End of namelist
