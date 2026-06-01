@@ -63,7 +63,7 @@
 /
 
 &croco_tracer_diff2
-  tnu2 = 100., 0.
+  tnu2 = 1*100.
 /
 
 &croco_vertical_mixing

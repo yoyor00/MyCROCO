@@ -21,7 +21,7 @@
 !
       USE croco_namelist, ONLY: nwrt, nrst
 #ifdef AVERAGES
-      USE croco_namelist, ONLY: ntsavg, navg, nrpfavg
+      USE croco_namelist, ONLY: ntsavg, navg
 #endif
 #if defined OUTPUTS_SURFACE && !defined XIOS
       USE croco_namelist, ONLY: nwrtsurf

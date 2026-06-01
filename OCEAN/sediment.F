@@ -57,7 +57,6 @@
 # define MORPH_FAC *morph_fac
 
       subroutine sediment (tile)
-      use croco_namelist, only: sedname
 !
 !=======================================================================
 !                                                                      !
@@ -3733,7 +3732,7 @@ C$OMP BARRIER
         USE flocmod, ONLY : flocmod_alloc, flocmod_init
         USE flocmod, ONLY : f_ws
 # endif
-      USE croco_namelist, ONLY: rho0
+      USE croco_namelist, ONLY: rho0, sedname
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -4163,6 +4162,7 @@ C$OMP BARRIER
 !  T_c, T_t, T_cu, T_tu: Updated time periods in half cycles
 !                        based on current velocity
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
 #  include "param.h"
 #  include "scalars.h"
@@ -4321,6 +4321,7 @@ C$OMP BARRIER
 !  theta_ix, theta_iy  : Shields parameter in x and y dir.
 !  mag_theta_i         : Magnitude of Shields parameter for half cycle
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
 #  include "param.h"
 #  include "scalars.h"
@@ -4877,6 +4878,7 @@ C$OMP BARRIER
 ! Critical Shields parameter from Soulsby (1997).
 ! Dynamics of Marine Sands
 !
+      USE croco_namelist, ONLY: rho0
       implicit none
 #  include "param.h"
 #  include "scalars.h"

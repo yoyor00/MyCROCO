@@ -69,7 +69,7 @@
 !  Adapted to CROCO by R. Benshila & P. Marchesiello, 2013
 !======================================================================
 !
-      use croco_namelist, ONLY: Zobt, rho0, wkb_amp, wkb_ang, wkb_prd,
+      use croco_namelist, ONLY: Zobt, wkb_amp, wkb_ang, wkb_prd,
      &                          wkb_btg, wkb_gam
 # ifdef WAVE_ROLLER
       use croco_namelist, ONLY: wkb_rsb, wkb_roller

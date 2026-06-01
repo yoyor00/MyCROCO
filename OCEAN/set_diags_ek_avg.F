@@ -2,6 +2,11 @@
 #if (defined DIAGNOSTICS_EK && defined AVERAGES)
 
       subroutine set_diags_ek_avg (tile)
+#ifdef DIAGNOSTICS_EK
+      use croco_namelist, only: ldefdiags_ek_avg, ntsdiags_ek_avg,
+     &     nwrtdiags_ek_avg
+#endif
+
       implicit none
       integer tile
 # include "param.h"

@@ -43,7 +43,6 @@
 !
 !==================================================================================
 !
-      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "grid.h"

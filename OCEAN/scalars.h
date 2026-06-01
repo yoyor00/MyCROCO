@@ -167,51 +167,6 @@
 #ifdef EXACT_RESTART
      &     ,  forw_start
 #endif
-#if defined DIAGNOSTICS_TS
-      integer nwrtdia
-# ifdef AVERAGES
-      integer ntsdia_avg, nwrtdia_avg
-# endif
-# ifdef DIAGNOSTICS_TS_MLD_DENS
-      real mld_crit_D, mld_crit_T
-# endif
-#endif
-#if defined DIAGNOSTICS_UV
-      integer nwrtdiaM
-# ifdef AVERAGES
-      integer ntsdiaM_avg, nwrtdiaM_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_VRT
-      integer nwrtdiags_vrt
-# ifdef AVERAGES
-      integer ntsdiags_vrt_avg, nwrtdiags_vrt_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_EK
-      integer nwrtdiags_ek
-# ifdef AVERAGES
-      integer ntsdiags_ek_avg, nwrtdiags_ek_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_PV
-      integer nwrtdiags_pv
-# ifdef AVERAGES
-      integer ntsdiags_pv_avg, nwrtdiags_pv_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
-      integer nwrtdiags_eddy
-# ifdef AVERAGES
-      integer ntsdiags_eddy_avg, nwrtdiags_eddy_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-      integer nwrtdiabio
-# ifdef AVERAGES
-      integer ntsdiabio_avg, nwrtdiabio_avg
-# endif
-#endif
 #ifdef STATIONS
       integer nsta, nrpfsta
 #endif
@@ -224,48 +179,6 @@
 #endif
 #ifdef BBL
       logical got_inibed(2)
-#endif
-#if defined DIAGNOSTICS_TS
-      logical ldefdia
-# ifdef AVERAGES
-      logical ldefdia_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_UV
-      logical ldefdiaM
-# ifdef AVERAGES
-      logical ldefdiaM_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_VRT
-      logical ldefdiags_vrt
-# ifdef AVERAGES
-      logical ldefdiags_vrt_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_EK
-      logical ldefdiags_ek
-# ifdef AVERAGES
-      logical ldefdiags_ek_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_PV
-      logical ldefdiags_pv
-# ifdef AVERAGES
-      logical ldefdiags_pv_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
-      logical ldefdiags_eddy
-# ifdef AVERAGES
-      logical ldefdiags_eddy_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-      logical ldefdiabio
-# ifdef AVERAGES
-      logical ldefdiabio_avg
-# endif
 #endif
 #ifdef STATIONS
       logical ldefsta
@@ -313,65 +226,6 @@
 #endif
 #ifdef BBL
      &                      , got_inibed
-#endif
-#if defined DIAGNOSTICS_TS
-     &                      , ldefdia, nwrtdia
-# ifdef AVERAGES
-     &                      , ldefdia_avg
-     &                      , nwrtdia_avg
-     &                      , ntsdia_avg
-# endif
-# ifdef DIAGNOSTICS_TS_MLD_DENS
-     &                      , mld_crit_D, mld_crit_T
-# endif
-#endif
-#if defined DIAGNOSTICS_UV
-     &                      , ldefdiaM, nwrtdiaM
-# ifdef AVERAGES
-     &                      , ldefdiaM_avg
-     &                      , nwrtdiaM_avg
-     &                      , ntsdiaM_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_VRT
-     &                      , ldefdiags_vrt, nwrtdiags_vrt
-# ifdef AVERAGES
-     &                      , ldefdiags_vrt_avg
-     &                      , nwrtdiags_vrt_avg
-     &                      , ntsdiags_vrt_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_EK
-     &                      , ldefdiags_ek, nwrtdiags_ek
-# ifdef AVERAGES
-     &                      , ldefdiags_ek_avg
-     &                      , nwrtdiags_ek_avg
-     &                      , ntsdiags_ek_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_PV
-     &                      , ldefdiags_pv, nwrtdiags_pv
-# ifdef AVERAGES
-     &                      , ldefdiags_pv_avg
-     &                      , nwrtdiags_pv_avg
-     &                      , ntsdiags_pv_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
-     &                      , ldefdiags_eddy, nwrtdiags_eddy
-# ifdef AVERAGES
-     &                      , ldefdiags_eddy_avg
-     &                      , nwrtdiags_eddy_avg
-     &                      , ntsdiags_eddy_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-     &                      , ldefdiabio, nwrtdiabio
-# ifdef AVERAGES
-     &                      , ldefdiabio_avg
-     &                      , nwrtdiabio_avg
-     &                      , ntsdiabio_avg
-# endif
 #endif
 #ifdef STATIONS
      &                      , ldefsta

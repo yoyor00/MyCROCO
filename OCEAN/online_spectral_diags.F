@@ -111,7 +111,6 @@ C$      trd=omp_get_thread_num()
 ! - include "param.h"
 ! - include "scalars.h"
 !      use scalars
-      USE croco_namelist, ONLY: gamma2
       implicit none
       integer, intent(in) :: Istr, Iend, Jstr, Jend
       integer, intent(in) :: tile

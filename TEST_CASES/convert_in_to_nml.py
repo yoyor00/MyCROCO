@@ -153,6 +153,72 @@ MAPPINGS = [
     ("surf_avg",           0,   3,  "int",   "&croco_surf_avg",            "nrpfsurf_avg"),
     ("surf_avg",           1,   0,  "str",   "&croco_surf_avg",            "surfname_avg"),
 
+    ("diagnostics",        0,   0,  "bool",  "&croco_diagnostics_ts",      "ldefdia"),
+    ("diagnostics",        0,   1,  "int",   "&croco_diagnostics_ts",      "nwrtdia"),
+    ("diagnostics",        0,   2,  "int",   "&croco_diagnostics_ts",      "nrpfdia"),
+    ("diagnostics",        1,   0,  "str",   "&croco_diagnostics_ts",      "dianame"),
+    ("diag_avg",           0,   0,  "bool",  "&croco_diag_avg",            "ldefdia_avg"),
+    ("diag_avg",           0,   1,  "int",   "&croco_diag_avg",            "ntsdia_avg"),
+    ("diag_avg",           0,   2,  "int",   "&croco_diag_avg",            "nwrtdia_avg"),
+    ("diag_avg",           0,   3,  "int",   "&croco_diag_avg",            "nrpfdia_avg"),
+    ("diag_avg",           1,   0,  "str",   "&croco_diag_avg",            "dianame_avg"),
+    ("diag_mld_dens",      0,   0,  "float", "&croco_diag_mld_dens",       "mld_crit_D"),
+    ("diag_mld_dens",      0,   1,  "float", "&croco_diag_mld_dens",       "mld_crit_T"),
+    ("diagnosticsM",       0,   0,  "bool",  "&croco_diagnosticsM",        "ldefdiaM"),
+    ("diagnosticsM",       0,   1,  "int",   "&croco_diagnosticsM",        "nwrtdiaM"),
+    ("diagnosticsM",       0,   2,  "int",   "&croco_diagnosticsM",        "nrpfdiaM"),
+    ("diagnosticsM",       1,   0,  "str",   "&croco_diagnosticsM",        "dianameM"),
+    ("diagM_avg",          0,   0,  "bool",  "&croco_diagM_avg",           "ldefdiaM_avg"),
+    ("diagM_avg",          0,   1,  "int",   "&croco_diagM_avg",           "ntsdiaM_avg"),
+    ("diagM_avg",          0,   2,  "int",   "&croco_diagM_avg",           "nwrtdiaM_avg"),
+    ("diagM_avg",          0,   3,  "int",   "&croco_diagM_avg",           "nrpfdiaM_avg"),
+    ("diagM_avg",          1,   0,  "str",   "&croco_diagM_avg",           "dianameM_avg"),
+    ("diags_vrt",          0,   0,  "bool",  "&croco_diags_vrt",           "ldefdiags_vrt"),
+    ("diags_vrt",          0,   1,  "int",   "&croco_diags_vrt",           "nwrtdiags_vrt"),
+    ("diags_vrt",          0,   2,  "int",   "&croco_diags_vrt",           "nrpfdiags_vrt"),
+    ("diags_vrt",          1,   0,  "str",   "&croco_diags_vrt",           "diags_vrtname"),
+    ("diags_vrt_avg",      0,   0,  "bool",  "&croco_diags_vrt_avg",       "ldefdiags_vrt_avg"),
+    ("diags_vrt_avg",      0,   1,  "int",   "&croco_diags_vrt_avg",       "ntsdiags_vrt_avg"),
+    ("diags_vrt_avg",      0,   2,  "int",   "&croco_diags_vrt_avg",       "nwrtdiags_vrt_avg"),
+    ("diags_vrt_avg",      0,   3,  "int",   "&croco_diags_vrt_avg",       "nrpfdiags_vrt_avg"),
+    ("diags_vrt_avg",      1,   0,  "str",   "&croco_diags_vrt_avg",       "diags_vrtname_avg"),
+    ("diags_ek",           0,   0,  "bool",  "&croco_diags_ek",            "ldefdiags_ek"),
+    ("diags_ek",           0,   1,  "int",   "&croco_diags_ek",            "nwrtdiags_ek"),
+    ("diags_ek",           0,   2,  "int",   "&croco_diags_ek",            "nrpfdiags_ek"),
+    ("diags_ek",           1,   0,  "str",   "&croco_diags_ek",            "diags_ekname"),
+    ("diags_ek_avg",       0,   0,  "bool",  "&croco_diags_ek_avg",        "ldefdiags_ek_avg"),
+    ("diags_ek_avg",       0,   1,  "int",   "&croco_diags_ek_avg",        "ntsdiags_ek_avg"),
+    ("diags_ek_avg",       0,   2,  "int",   "&croco_diags_ek_avg",        "nwrtdiags_ek_avg"),
+    ("diags_ek_avg",       0,   3,  "int",   "&croco_diags_ek_avg",        "nrpfdiags_ek_avg"),
+    ("diags_ek_avg",       1,   0,  "str",   "&croco_diags_ek_avg",        "diags_ekname_avg"),
+    ("diags_pv",           0,   0,  "bool",  "&croco_diags_pv",            "ldefdiags_pv"),
+    ("diags_pv",           0,   1,  "int",   "&croco_diags_pv",            "nwrtdiags_pv"),
+    ("diags_pv",           0,   2,  "int",   "&croco_diags_pv",            "nrpfdiags_pv"),
+    ("diags_pv",           1,   0,  "str",   "&croco_diags_pv",            "diags_pvname"),
+    ("diags_pv_avg",       0,   0,  "bool",  "&croco_diags_pv_avg",        "ldefdiags_pv_avg"),
+    ("diags_pv_avg",       0,   1,  "int",   "&croco_diags_pv_avg",        "ntsdiags_pv_avg"),
+    ("diags_pv_avg",       0,   2,  "int",   "&croco_diags_pv_avg",        "nwrtdiags_pv_avg"),
+    ("diags_pv_avg",       0,   3,  "int",   "&croco_diags_pv_avg",        "nrpfdiags_pv_avg"),
+    ("diags_pv_avg",       1,   0,  "str",   "&croco_diags_pv_avg",        "diags_pvname_avg"),
+    ("diags_eddy",         0,   0,  "bool",  "&croco_diags_eddy",          "ldefdiags_eddy"),
+    ("diags_eddy",         0,   1,  "int",   "&croco_diags_eddy",          "nwrtdiags_eddy"),
+    ("diags_eddy",         0,   2,  "int",   "&croco_diags_eddy",          "nrpfdiags_eddy"),
+    ("diags_eddy",         1,   0,  "str",   "&croco_diags_eddy",          "diags_eddyname"),
+    ("diags_eddy_avg",     0,   0,  "bool",  "&croco_diags_eddy_avg",      "ldefdiags_eddy_avg"),
+    ("diags_eddy_avg",     0,   1,  "int",   "&croco_diags_eddy_avg",      "ntsdiags_eddy_avg"),
+    ("diags_eddy_avg",     0,   2,  "int",   "&croco_diags_eddy_avg",      "nwrtdiags_eddy_avg"),
+    ("diags_eddy_avg",     0,   3,  "int",   "&croco_diags_eddy_avg",      "nrpfdiags_eddy_avg"),
+    ("diags_eddy_avg",     1,   0,  "str",   "&croco_diags_eddy_avg",      "diags_eddyname_avg"),
+    ("diagnostics_bio",    0,   0,  "bool",  "&croco_diagnostics_bio",     "ldefdiabio"),
+    ("diagnostics_bio",    0,   1,  "int",   "&croco_diagnostics_bio",     "nwrtdiabio"),
+    ("diagnostics_bio",    0,   2,  "int",   "&croco_diagnostics_bio",     "nrpfdiabio"),
+    ("diagnostics_bio",    1,   0,  "str",   "&croco_diagnostics_bio",     "dianamebio"),
+    ("diagbio_avg",        0,   0,  "bool",  "&croco_diagbio_avg",         "ldefdiabio_avg"),
+    ("diagbio_avg",        0,   1,  "int",   "&croco_diagbio_avg",         "ntsdiabio_avg"),
+    ("diagbio_avg",        0,   2,  "int",   "&croco_diagbio_avg",         "nwrtdiabio_avg"),
+    ("diagbio_avg",        0,   3,  "int",   "&croco_diagbio_avg",         "nrpfdiabio_avg"),
+    ("diagbio_avg",        1,   0,  "str",   "&croco_diagbio_avg",         "dianamebio_avg"),
+
     ("abl",                0,   0,  "bool",  "&croco_abl",                 "ldefablhis"),
     ("abl",                0,   1,  "int",   "&croco_abl",                 "nwrtablhis"),
     ("abl",                0,   2,  "int",   "&croco_abl",                 "nrpfablhis"),
@@ -485,6 +551,8 @@ def format_float_array(expanded, NT):
         return ""
     if NT is not None and len(expanded) < NT:
         expanded = expanded + [expanded[-1]] * (NT - len(expanded))
+    if NT is not None and len(expanded) > NT:
+        expanded = expanded[:NT]
     unique = set(v.lower() for v in expanded)
     if len(unique) == 1:
         count = NT if NT is not None else len(expanded)
@@ -514,6 +582,8 @@ def build_nml(cards, mappings, params):
             if not raw_tokens:
                 continue
             val = format_float_array(expand_repeat(raw_tokens), NT)
+            if not val:
+                continue
             if nml_name not in nml_entries:
                 nml_entries[nml_name] = []
                 nml_order.append(nml_name)

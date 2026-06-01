@@ -15,6 +15,11 @@
       subroutine set_diags_pv_avg(tile)
 
 !      USE param
+#ifdef DIAGNOSTICS_PV
+      use croco_namelist, only: ldefdiags_pv_avg, ntsdiags_pv_avg,
+     &     nwrtdiags_pv_avg
+#endif
+
 
       implicit none
       integer tile

@@ -19,8 +19,6 @@
 !
 !  Public entry points:
 !    init_all               – call every init_xxx in order
-!
-!  Individual init routines are kept public for unit-testing purposes.
 !=======================================================================
 
 MODULE croco_namelist_init
@@ -28,81 +26,6 @@ MODULE croco_namelist_init
    private
 
    public :: init_all
-   public :: init_time_stepping
-   public :: init_history
-   public :: init_initial
-   public :: init_restart
-#ifndef ANA_GRID
-   public :: init_grid
-#endif
-   public :: init_forcing
-#if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
-   public :: init_bulk_forcing
-#endif
-#if (  defined TCLIMATOLOGY  && \
-   !defined ANA_TCLIMA) || \
-   (defined ZCLIMATOLOGY&&\
-   !defined ANA_SSH) || \
-   (defined M2CLIMATOLOGY&&\
-   !defined ANA_M2CLIMA) || \
-   (defined M3CLIMATOLOGY&&\
-   !defined ANA_M3CLIMA)
-   public :: init_climatology
-#endif
-#if !defined ANA_BRY && defined FRC_BRY
-   public :: init_boundary
-#endif
-#if defined WKB_WWAVE && !defined ANA_BRY_WKB
-   public :: init_wkb_boundary
-#endif
-#ifdef AVERAGES
-   public :: init_averages
-#endif
-#if defined OUTPUTS_SURFACE && !defined XIOS
-   public :: init_surf
-#  ifdef AVERAGES
-   public :: init_surf_avg
-#  endif
-#endif
-#if defined ABL1D && !defined XIOS
-   public :: init_abl
-#  ifdef AVERAGES
-   public :: init_abl_averages
-#  endif
-#endif
-#if defined WAVE_OFFLINE && defined MUSTANG
-   public :: init_wave_offline
-#endif
-#if defined BIOLOGY && defined PISCES
-   public :: init_biology
-#endif
-#ifdef SEDIMENT
-   public :: init_sediments
-#endif
-#ifdef MUSTANG
-   public :: init_sediments_mustang
-#endif
-#ifdef SUBSTANCE
-   public :: init_substance
-#endif
-#ifdef OBSTRUCTION
-   public :: init_obstruction
-#endif
-#ifdef XIOS
-   public :: init_xios_origin_date
-#endif
-#ifdef ASSIMILATION
-   public :: init_assimilation
-#endif
-#ifdef LOGFILE
-   public :: init_logfile
-#endif
-#ifdef NBQ
-   public :: init_time_stepping_nbq
-#endif
-#ifdef USE_CALENDAR
-   public :: init_calendar
-#endif
 
    integer, parameter :: testunit = 40 ! unit used to probe input file availability
 
@@ -163,6 +86,48 @@ contains
       call init_surf(ierr)
 #  ifdef AVERAGES
       call init_surf_avg(ierr)
+#  endif
+#endif
+#if defined DIAGNOSTICS_TS
+      call init_diagnostics_ts(ierr)
+#  ifdef AVERAGES
+      call init_diag_avg(ierr)
+#  endif
+#endif
+#if defined DIAGNOSTICS_UV
+      call init_diagnosticsM(ierr)
+#  ifdef AVERAGES
+      call init_diagM_avg(ierr)
+#  endif
+#endif
+#ifdef DIAGNOSTICS_VRT
+      call init_diags_vrt(ierr)
+#  ifdef AVERAGES
+      call init_diags_vrt_avg(ierr)
+#  endif
+#endif
+#ifdef DIAGNOSTICS_EK
+      call init_diags_ek(ierr)
+#  ifdef AVERAGES
+      call init_diags_ek_avg(ierr)
+#  endif
+#endif
+#ifdef DIAGNOSTICS_PV
+      call init_diags_pv(ierr)
+#  ifdef AVERAGES
+      call init_diags_pv_avg(ierr)
+#  endif
+#endif
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+      call init_diags_eddy(ierr)
+#  ifdef AVERAGES
+      call init_diags_eddy_avg(ierr)
+#  endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+      call init_diagnostics_bio(ierr)
+#  ifdef AVERAGES
+      call init_diagbio_avg(ierr)
 #  endif
 #endif
 #if defined ABL1D && !defined XIOS
@@ -962,4 +927,164 @@ contains
 #endif
 
 
+#if defined DIAGNOSTICS_TS
+   subroutine init_diagnostics_ts(ierr)
+      use croco_namelist, ONLY: dianame, nwrtdia, nwrt
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(dianame, "dianame", ierr)
+      call adjust_filename_ensemble(dianame)
+      if (ierr /= 0) return
+      if (nwrtdia == 0) nwrtdia = nwrt
+   end subroutine init_diagnostics_ts
+#  ifdef AVERAGES
+   subroutine init_diag_avg(ierr)
+      use croco_namelist, ONLY: dianame_avg, nwrtdia_avg, navg
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(dianame_avg, "dianame_avg", ierr)
+      call adjust_filename_ensemble(dianame_avg)
+      if (ierr /= 0) return
+      if (nwrtdia_avg == 0) nwrtdia_avg = navg
+   end subroutine init_diag_avg
+#  endif
+#endif
+
+#if defined DIAGNOSTICS_UV
+   subroutine init_diagnosticsM(ierr)
+      use croco_namelist, ONLY: dianameM, nwrtdiaM, nwrt
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(dianameM, "dianameM", ierr)
+      call adjust_filename_ensemble(dianameM)
+      if (ierr /= 0) return
+      if (nwrtdiaM == 0) nwrtdiaM = nwrt
+   end subroutine init_diagnosticsM
+#  ifdef AVERAGES
+   subroutine init_diagM_avg(ierr)
+      use croco_namelist, ONLY: dianameM_avg, nwrtdiaM_avg, navg
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(dianameM_avg, "dianameM_avg", ierr)
+      call adjust_filename_ensemble(dianameM_avg)
+      if (ierr /= 0) return
+      if (nwrtdiaM_avg == 0) nwrtdiaM_avg = navg
+   end subroutine init_diagM_avg
+#  endif
+#endif
+
+#ifdef DIAGNOSTICS_VRT
+   subroutine init_diags_vrt(ierr)
+      use croco_namelist, ONLY: diags_vrtname, nwrtdiags_vrt, nwrt
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(diags_vrtname, "diags_vrtname", ierr)
+      call adjust_filename_ensemble(diags_vrtname)
+      if (ierr /= 0) return
+      if (nwrtdiags_vrt == 0) nwrtdiags_vrt = nwrt
+   end subroutine init_diags_vrt
+#  ifdef AVERAGES
+   subroutine init_diags_vrt_avg(ierr)
+      use croco_namelist, ONLY: diags_vrtname_avg, nwrtdiags_vrt_avg, navg
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(diags_vrtname_avg, "diags_vrtname_avg", ierr)
+      call adjust_filename_ensemble(diags_vrtname_avg)
+      if (ierr /= 0) return
+      if (nwrtdiags_vrt_avg == 0) nwrtdiags_vrt_avg = navg
+   end subroutine init_diags_vrt_avg
+#  endif
+#endif
+
+#ifdef DIAGNOSTICS_EK
+   subroutine init_diags_ek(ierr)
+      use croco_namelist, ONLY: diags_ekname, nwrtdiags_ek, nwrt
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(diags_ekname, "diags_ekname", ierr)
+      call adjust_filename_ensemble(diags_ekname)
+      if (ierr /= 0) return
+      if (nwrtdiags_ek == 0) nwrtdiags_ek = nwrt
+   end subroutine init_diags_ek
+#  ifdef AVERAGES
+   subroutine init_diags_ek_avg(ierr)
+      use croco_namelist, ONLY: diags_ekname_avg, nwrtdiags_ek_avg, navg
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(diags_ekname_avg, "diags_ekname_avg", ierr)
+      call adjust_filename_ensemble(diags_ekname_avg)
+      if (ierr /= 0) return
+      if (nwrtdiags_ek_avg == 0) nwrtdiags_ek_avg = navg
+   end subroutine init_diags_ek_avg
+#  endif
+#endif
+
+#ifdef DIAGNOSTICS_PV
+   subroutine init_diags_pv(ierr)
+      use croco_namelist, ONLY: diags_pvname, nwrtdiags_pv, nwrt
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(diags_pvname, "diags_pvname", ierr)
+      call adjust_filename_ensemble(diags_pvname)
+      if (ierr /= 0) return
+      if (nwrtdiags_pv == 0) nwrtdiags_pv = nwrt
+   end subroutine init_diags_pv
+#  ifdef AVERAGES
+   subroutine init_diags_pv_avg(ierr)
+      use croco_namelist, ONLY: diags_pvname_avg, nwrtdiags_pv_avg, navg
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(diags_pvname_avg, "diags_pvname_avg", ierr)
+      call adjust_filename_ensemble(diags_pvname_avg)
+      if (ierr /= 0) return
+      if (nwrtdiags_pv_avg == 0) nwrtdiags_pv_avg = navg
+   end subroutine init_diags_pv_avg
+#  endif
+#endif
+
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+   subroutine init_diags_eddy(ierr)
+      use croco_namelist, ONLY: diags_eddyname, nwrtdiags_eddy, nwrt
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(diags_eddyname, "diags_eddyname", ierr)
+      call adjust_filename_ensemble(diags_eddyname)
+      if (ierr /= 0) return
+      if (nwrtdiags_eddy == 0) nwrtdiags_eddy = nwrt
+   end subroutine init_diags_eddy
+#  ifdef AVERAGES
+   subroutine init_diags_eddy_avg(ierr)
+      use croco_namelist, ONLY: diags_eddyname_avg, nwrtdiags_eddy_avg, navg
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(diags_eddyname_avg, "diags_eddyname_avg", ierr)
+      call adjust_filename_ensemble(diags_eddyname_avg)
+      if (ierr /= 0) return
+      if (nwrtdiags_eddy_avg == 0) nwrtdiags_eddy_avg = navg
+   end subroutine init_diags_eddy_avg
+#  endif
+#endif
+
+#ifdef DIAGNOSTICS_BIO
+   subroutine init_diagnostics_bio(ierr)
+      use croco_namelist, ONLY: dianamebio, nwrtdiabio, nwrt
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(dianamebio, "dianamebio", ierr)
+      call adjust_filename_ensemble(dianamebio)
+      if (ierr /= 0) return
+      if (nwrtdiabio == 0) nwrtdiabio = nwrt
+   end subroutine init_diagnostics_bio
+#  ifdef AVERAGES
+   subroutine init_diagbio_avg(ierr)
+      use croco_namelist, ONLY: dianamebio_avg, nwrtdiabio_avg, navg
+      implicit none
+      integer, intent(inout) :: ierr
+      call adjust_filename_parallel(dianamebio_avg, "dianamebio_avg", ierr)
+      call adjust_filename_ensemble(dianamebio_avg)
+      if (ierr /= 0) return
+      if (nwrtdiabio_avg == 0) nwrtdiabio_avg = navg
+   end subroutine init_diagbio_avg
+#  endif
+#endif
 END MODULE croco_namelist_init

@@ -99,5 +99,12 @@
   avgname = "rip_avg.nc"
 /
 
+&croco_diagnosticsM
+  ldefdiaM = .true.
+  nwrtdiaM = 300
+  nrpfdiaM = -1
+  dianameM = "rip_diaM.nc"
+/
+
 
 ! End of namelist

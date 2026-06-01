@@ -280,6 +280,7 @@ C$    integer  trd, omp_get_thread_num
 !  and density used in the bottom boundary formulation [kg/m^3].
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "bbl.h"
@@ -346,7 +347,7 @@ C$    integer  trd, omp_get_thread_num
 !  Sets kinematic surface momentum flux (wind stress) "sustr" and "svstr"
 !  [m^2/s^2] using an analytical expression.
 !
-        use croco_namelist, only: dt
+        use croco_namelist, only: dt, rho0
 # ifdef AGRIF
       use Agrif_UTIL
 # endif
@@ -540,6 +541,7 @@ C$    integer  trd, omp_get_thread_num
 !  flux "srflx" (degC m/s) using an analytical expression.
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -766,6 +768,7 @@ C$    integer  trd, omp_get_thread_num
 !       Q_model ~ Q + dQdSST * (T_model - SST)
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -877,6 +880,7 @@ C$    integer  trd, omp_get_thread_num
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "grid.h"

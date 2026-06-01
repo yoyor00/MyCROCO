@@ -1208,7 +1208,7 @@
 # endif /* SEDIMENT */
 
 # if defined DIAGNOSTICS_TS
-      integer nciddia, nrecdia, nrpfdia
+      integer nciddia, nrecdia
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv(NT), diaTYadv(NT), diaTVadv(NT)
      &      , diaTHmix(NT), diaTVmix(NT)
@@ -1227,7 +1227,7 @@
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
-        integer nciddiaM, nrecdiaM, nrpfdiaM
+        integer nciddiaM, nrecdiaM
      &      , diaTimeM,diaTime2M, diaTstepM
      &      , diaMXadv(2), diaMYadv(2), diaMVadv(2)
      &      , diaMCor(2), diaMPrsgrd(2), diaMHmix(2)
@@ -1246,7 +1246,7 @@
 #  endif
 # endif
 # ifdef DIAGNOSTICS_VRT
-      integer nciddiags_vrt, nrecdiags_vrt, nrpfdiags_vrt
+      integer nciddiags_vrt, nrecdiags_vrt
      &      , diags_vrtTime, diags_vrtTime2, diags_vrtTstep
      &      , diags_vrtXadv(2), diags_vrtYadv(2), diags_vrtHdiff(2)
      &      , diags_vrtCor(2), diags_vrtPrsgrd(2), diags_vrtHmix(2)
@@ -1260,7 +1260,7 @@
 #  endif
 # endif
 # ifdef DIAGNOSTICS_EK
-      integer nciddiags_ek, nrecdiags_ek, nrpfdiags_ek
+      integer nciddiags_ek, nrecdiags_ek
      &      , diags_ekTime, diags_ekTime2, diags_ekTstep
      &      , diags_ekHadv(2), diags_ekHdiff(2),  diags_ekVadv(2)
      &      , diags_ekCor(2), diags_ekPrsgrd(2), diags_ekHmix(2)
@@ -1284,7 +1284,7 @@
 #  endif
 # endif
 # ifdef DIAGNOSTICS_PV
-      integer nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
+      integer nciddiags_pv, nrecdiags_pv
      &      , diags_pvTime, diags_pvTime2, diags_pvTstep
 #  ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv(2), diags_pvpvd(2)
@@ -1293,7 +1293,7 @@
 # endif
 
 # if defined DIAGNOSTICS_EDDY && ! defined XIOS
-      integer nciddiags_eddy, nrecdiags_eddy, nrpfdiags_eddy
+      integer nciddiags_eddy, nrecdiags_eddy
      &      , diags_eddyTime, diags_eddyTime2, diags_eddyTstep
      &      , diags_eddyzz(2)
      &      , diags_eddyuu(2), diags_eddyvv(2), diags_eddyuv(2)
@@ -1311,7 +1311,7 @@
      &      , surf_surfu(2), surf_surfv(2)
 # endif
 # ifdef DIAGNOSTICS_BIO
-      integer nciddiabio, nrecdiabio, nrpfdiabio
+      integer nciddiabio, nrecdiabio
      &      , diaTimebio, diaTime2bio, diaTstepbio
      &      , diabioFlux(NumFluxTerms)
      &      , diabioVSink(NumVSinkTerms)
@@ -1414,7 +1414,7 @@
 # endif
 # ifdef SOLVE3D
 #  if defined DIAGNOSTICS_TS && defined TRACERS
-      integer nciddia_avg, nrecdia_avg, nrpfdia_avg
+      integer nciddia_avg, nrecdia_avg
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg(NT), diaTYadv_avg(NT), diaTVadv_avg(NT)
      &      , diaTHmix_avg(NT), diaTVmix_avg(NT)
@@ -1434,7 +1434,7 @@
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_UV
-       integer nciddiaM_avg, nrecdiaM_avg, nrpfdiaM_avg
+       integer nciddiaM_avg, nrecdiaM_avg
      &      , diaTimeM_avg, diaTime2M_avg, diaTstepM_avg
      &      , diaMXadv_avg(2), diaMYadv_avg(2), diaMVadv_avg(2)
      &      , diaMCor_avg(2), diaMPrsgrd_avg(2), diaMHmix_avg(2)
@@ -1448,7 +1448,7 @@
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
-       integer nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg
+       integer nciddiags_vrt_avg, nrecdiags_vrt_avg
      &      , diags_vrtTime_avg, diags_vrtTime2_avg, diags_vrtTstep_avg
      &      , diags_vrtXadv_avg(2), diags_vrtYadv_avg(2)
      &      , diags_vrtHdiff_avg(2)
@@ -1465,7 +1465,7 @@
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_EK
-       integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
+       integer nciddiags_ek_avg, nrecdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
      &      , diags_ekHadv_avg(2), diags_ekHdiff_avg(2)
      &      , diags_ekVadv_avg(2)
@@ -1493,7 +1493,7 @@
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_PV
-       integer nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
+       integer nciddiags_pv_avg, nrecdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
 #   ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv_avg(2), diags_pvpvd_avg(2)
@@ -1502,7 +1502,7 @@
 #  endif
 #  if defined DIAGNOSTICS_EDDY && ! defined XIOS
        integer nciddiags_eddy_avg, nrecdiags_eddy_avg
-     &      , nrpfdiags_eddy_avg
+     &      
      &      , diags_eddyTime_avg, diags_eddyTime2_avg
      &      , diags_eddyTstep_avg
      &      , diags_eddyzz_avg(2)
@@ -1522,7 +1522,7 @@
      &      , surf_surfu_avg(2), surf_surfv_avg(2)
 #  endif
 #  ifdef DIAGNOSTICS_BIO
-      integer nciddiabio_avg, nrecdiabio_avg, nrpfdiabio_avg
+      integer nciddiabio_avg, nrecdiabio_avg
      &      , diaTimebio_avg, diaTime2bio_avg, diaTstepbio_avg
      &      , diabioFlux_avg(NumFluxTerms)
      &      , diabioVSink_avg(NumVSinkTerms)
@@ -1745,7 +1745,7 @@
      &      , hisBBL
 #endif
 #ifdef DIAGNOSTICS_TS
-     &      , nciddia, nrecdia, nrpfdia
+     &      , nciddia, nrecdia
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv, diaTYadv, diaTVadv, diaTHmix
      &      , diaTVmix, diaTForc, diaTrate
@@ -1761,7 +1761,7 @@
 #   endif
 # endif
 # ifdef AVERAGES
-     &      , nciddia_avg, nrecdia_avg, nrpfdia_avg
+     &      , nciddia_avg, nrecdia_avg
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg, diaTYadv_avg, diaTVadv_avg
      &      , diaTHmix_avg, diaTVmix_avg, diaTForc_avg
@@ -1780,7 +1780,7 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV
-     &      , nciddiaM, nrecdiaM, nrpfdiaM
+     &      , nciddiaM, nrecdiaM
      &      , diaTimeM, diaTime2M, diaTstepM
      &      , diaMXadv, diaMYadv, diaMVadv, diaMCor
      &      , diaMPrsgrd, diaMHmix, diaMVmix, diaMVmix2, diaMrate
@@ -1797,7 +1797,7 @@
      &      , diaMbwf, diaMfrc
 # endif
 # ifdef AVERAGES
-     &      , nciddiaM_avg, nrecdiaM_avg, nrpfdiaM_avg
+     &      , nciddiaM_avg, nrecdiaM_avg
      &      , diaTimeM_avg, diaTime2M_avg, diaTstepM_avg
      &      , diaMXadv_avg, diaMYadv_avg, diaMVadv_avg
      &      , diaMCor_avg, diaMPrsgrd_avg, diaMHmix_avg
@@ -1817,7 +1817,7 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_VRT
-     &      , nciddiags_vrt, nrecdiags_vrt, nrpfdiags_vrt
+     &      , nciddiags_vrt, nrecdiags_vrt
      &      , diags_vrtTime, diags_vrtTime2, diags_vrtTstep
      &      , diags_vrtXadv, diags_vrtYadv, diags_vrtHdiff
      &      , diags_vrtCor
@@ -1831,7 +1831,7 @@
      &      , diags_vrtfast
 # endif
 # ifdef AVERAGES
-     &      , nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg
+     &      , nciddiags_vrt_avg, nrecdiags_vrt_avg
      &      , diags_vrtTime_avg, diags_vrtTime2_avg, diags_vrtTstep_avg
      &      , diags_vrtXadv_avg, diags_vrtYadv_avg, diags_vrtHdiff_avg
      &      , diags_vrtCor_avg, diags_vrtPrsgrd_avg, diags_vrtHmix_avg
@@ -1846,7 +1846,7 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_EK
-     &      , nciddiags_ek, nrecdiags_ek, nrpfdiags_ek
+     &      , nciddiags_ek, nrecdiags_ek
      &      , diags_ekTime, diags_ekTime2, diags_ekTstep
      &      , diags_ekHadv, diags_ekHdiff,  diags_ekVadv
      &      , diags_ekCor, diags_ekPrsgrd, diags_ekHmix
@@ -1859,7 +1859,7 @@
      &      , diags_ekfast
 # endif
 # ifdef AVERAGES
-     &      , nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
+     &      , nciddiags_ek_avg, nrecdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
      &      , diags_ekHadv_avg, diags_ekHdiff_avg, diags_ekVadv_avg
      &      , diags_ekCor_avg, diags_ekPrsgrd_avg, diags_ekHmix_avg
@@ -1893,14 +1893,14 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_PV
-     &      , nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
+     &      , nciddiags_pv, nrecdiags_pv
      &      , diags_pvTime, diags_pvTime2, diags_pvTstep
 # ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv, diags_pvpvd
 # endif
      &      , diags_pvTrhs, diags_pvMrhs
 # ifdef AVERAGES
-     &      , nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
+     &      , nciddiags_pv_avg, nrecdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
 #  ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv_avg, diags_pvpvd_avg
@@ -1909,7 +1909,7 @@
 # endif
 #endif
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
-     &      , nciddiags_eddy, nrecdiags_eddy, nrpfdiags_eddy
+     &      , nciddiags_eddy, nrecdiags_eddy
      &      , diags_eddyTime, diags_eddyTstep
      &      , diags_eddyzz
      &      , diags_eddyuu, diags_eddyvv, diags_eddyuv, diags_eddyub
@@ -1919,7 +1919,7 @@
      &      , diags_eddyugsu, diags_eddyvgsv
 # ifdef AVERAGES
      &      , nciddiags_eddy_avg, nrecdiags_eddy_avg
-     &      , nrpfdiags_eddy_avg
+     &      
      &      , diags_eddyTime_avg, diags_eddyTime2_avg
      &      , diags_eddyTstep_avg
      &      , diags_eddyzz_avg
@@ -1944,12 +1944,12 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
-     &      , nciddiabio, nrecdiabio, nrpfdiabio
+     &      , nciddiabio, nrecdiabio
      &      , diaTimebio, diaTime2bio, diaTstepbio, diabioFlux
      &      , diabioVSink
      &      , diabioGasExc
 # ifdef AVERAGES
-     &      , nciddiabio_avg, nrecdiabio_avg, nrpfdiabio_avg
+     &      , nciddiabio_avg, nrecdiabio_avg
      &      , diaTimebio_avg, diaTime2bio_avg, diaTstepbio_avg
      &      , diabioFlux_avg
      &      , diabioVSink_avg
@@ -2108,48 +2108,6 @@
       character*180 usrname
      &         ,   qbarname, tsrcname
      &         ,   btfname
-#ifdef DIAGNOSTICS_TS
-     &                                ,  dianame
-# ifdef AVERAGES
-     &                                ,  dianame_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_UV
-     &                                ,  dianameM
-# ifdef AVERAGES
-     &                                ,  dianameM_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_VRT
-     &                                ,  diags_vrtname
-# ifdef AVERAGES
-     &                                ,  diags_vrtname_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_EK
-     &                                ,  diags_ekname
-# ifdef AVERAGES
-     &                                ,  diags_ekname_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_PV
-     &                                ,  diags_pvname
-# ifdef AVERAGES
-     &                                ,  diags_pvname_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
-     &                                ,  diags_eddyname
-# ifdef AVERAGES
-     &                                ,  diags_eddyname_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-     &                                ,  dianamebio
-# ifdef AVERAGES
-     &                                ,  dianamebio_avg
-# endif
-#endif
 
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
@@ -2173,48 +2131,6 @@
      &         ,   origin_day, origin_month, origin_year
      &         ,   origin_hour, origin_minute, origin_second
 
-#ifdef DIAGNOSTICS_TS
-     &                                ,  dianame
-# ifdef AVERAGES
-     &                                ,  dianame_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_UV
-     &                                ,  dianameM
-# ifdef AVERAGES
-     &                                ,  dianameM_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_VRT
-     &                                ,  diags_vrtname
-# ifdef AVERAGES
-     &                                ,  diags_vrtname_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_EK
-     &                                ,  diags_ekname
-# ifdef AVERAGES
-     &                                ,  diags_ekname_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_PV
-     &                                ,  diags_pvname
-# ifdef AVERAGES
-     &                                ,  diags_pvname_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
-     &                                ,  diags_eddyname
-# ifdef AVERAGES
-     &                                ,  diags_eddyname_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-     &                                ,  dianamebio
-# ifdef AVERAGES
-     &                                ,  dianamebio_avg
-# endif
-#endif
      &                                ,   vname
 #ifdef ABL1D
      &                                ,   vname_abl1d

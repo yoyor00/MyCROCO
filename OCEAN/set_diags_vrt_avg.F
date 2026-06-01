@@ -2,6 +2,11 @@
 #if (defined DIAGNOSTICS_VRT && defined AVERAGES)
 
       subroutine set_diags_vrt_avg (tile)
+#ifdef DIAGNOSTICS_VRT
+      use croco_namelist, only: ldefdiags_vrt_avg, ntsdiags_vrt_avg,
+     &     nwrtdiags_vrt_avg
+#endif
+
       implicit none
       integer tile
 # include "param.h"

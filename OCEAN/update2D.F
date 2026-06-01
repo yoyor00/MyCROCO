@@ -915,6 +915,7 @@ C$OMP END MASTER
 
       Subroutine Updateduavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "grid.h"

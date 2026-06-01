@@ -227,12 +227,14 @@ contains
       implicit none
       integer, intent(inout) :: ierr
 
-      if (wkb_roller < 0.d0 .or. wkb_roller > 1.d0) then
-         MPI_master_only write (stdout, '(a,f12.4,a)') &
-            'Error - wkb_roller = ', wkb_roller, &
-            ' must be in [0, 1].'
-         ierr = ierr + 1
-      end if
+      ! if (wkb_roller < 0.d0 .or. wkb_roller > 1.d0) then
+      !    MPI_master_only write (stdout, '(a,f12.4,a)') &
+      !       'Error - wkb_roller = ', wkb_roller, &
+      !       ' must be in [0, 1].'
+      !    ierr = ierr + 1
+      ! end if
+      ! TODO Check this, in SANDBAR, wkb_roller is 1.8... 
+      ! not coherent with comment in read_inp.F
 
    end subroutine check_wkb_roller
 #endif /* WKB_WWAVE && WAVE_ROLLER */

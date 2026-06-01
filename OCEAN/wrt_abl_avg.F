@@ -14,7 +14,7 @@
                                ! Writes requested model
       subroutine wrt_abl_avg   ! fields at requested levels
                                ! into averages netCDF file.
-      use croco_namelist, only: ablname_avg, nrpfablavg, ntsablavg, nwrtablavg
+      use croco_namelist, only: ablname_avg, nrpfablavg
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik, varid

@@ -72,10 +72,6 @@
   visc4 = 0.
 /
 
-&croco_tracer_diff2
-  tnu2 = 0*0.d0
-/
-
 &croco_wave_maker
   wmaker_amp = 0.24
   wmaker_prd = 13.
@@ -89,6 +85,21 @@
   navg = 1040
   nrpfavg = 0
   avgname = "rip_avg.nc"
+/
+
+&croco_diags_eddy
+  ldefdiags_eddy = .false.
+  nwrtdiags_eddy = 1040
+  nrpfdiags_eddy = 0
+  diags_eddyname = "rip_diags_eddy.nc"
+/
+
+&croco_diags_eddy_avg
+  ldefdiags_eddy_avg = .true.
+  ntsdiags_eddy_avg = 1
+  nwrtdiags_eddy_avg = 1040
+  nrpfdiags_eddy_avg = 0
+  diags_eddyname_avg = "rip_diags_eddy_avg.nc"
 /
 
 

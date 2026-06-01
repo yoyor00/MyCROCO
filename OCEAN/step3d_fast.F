@@ -118,7 +118,7 @@ C$    trd=omp_get_thread_num()
 !
 !***********************************************************************
 !
-      use croco_namelist, only: dt, rho0
+      use croco_namelist, only: dt, rho0, rdrg, rdrg2
 # ifdef NBQ
       use croco_namelist, only: ndtnbq, csound_nbq, visc2_nbq
 # endif

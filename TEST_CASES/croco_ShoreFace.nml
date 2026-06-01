@@ -99,5 +99,25 @@
   avgname = "shoreface_avg.nc"
 /
 
+&croco_diagnostics_ts
+  ldefdia = .true.
+  nwrtdia = 1440
+  nrpfdia = 0
+  dianame = "shoreface_dia.nc"
+/
+
+&croco_diag_avg
+  ldefdia_avg = .true.
+  ntsdia_avg = 1
+  nwrtdia_avg = 1440
+  nrpfdia_avg = 0
+  dianame_avg = "shoreface_dia_avg.nc"
+/
+
+&croco_diag_mld_dens
+  mld_crit_D = 3.d-2
+  mld_crit_T = 2.d-1
+/
+
 
 ! End of namelist

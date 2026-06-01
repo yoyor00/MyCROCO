@@ -15,6 +15,11 @@
       subroutine set_diags_eddy_avg(tile)
 
 !      USE param
+#ifdef DIAGNOSTICS_EDDY
+      use croco_namelist, only: ldefdiags_eddy_avg,
+     &     ntsdiags_eddy_avg, nwrtdiags_eddy_avg
+#endif
+
 
       implicit none
       integer tile

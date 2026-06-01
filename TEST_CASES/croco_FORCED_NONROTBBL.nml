@@ -110,5 +110,55 @@
   avgname = "scm_avg.nc"
 /
 
+&croco_diagnostics_ts
+  ldefdia = .true.
+  nwrtdia = 72
+  nrpfdia = 0
+  dianame = "CROCO_FILES/croco_dia.nc"
+/
+
+&croco_diag_avg
+  ldefdia_avg = .true.
+  ntsdia_avg = 1
+  nwrtdia_avg = 72
+  nrpfdia_avg = 0
+  dianame_avg = "CROCO_FILES/croco_dia_avg.nc"
+/
+
+&croco_diag_mld_dens
+  mld_crit_D = 3.d-2
+  mld_crit_T = 2.d-1
+/
+
+&croco_diagnosticsM
+  ldefdiaM = .true.
+  nwrtdiaM = 72
+  nrpfdiaM = 0
+  dianameM = "CROCO_FILES/croco_diaM.nc"
+/
+
+&croco_diagM_avg
+  ldefdiaM_avg = .true.
+  ntsdiaM_avg = 1
+  nwrtdiaM_avg = 72
+  nrpfdiaM_avg = 0
+  dianameM_avg = "CROCO_FILES/croco_diaM_avg.nc"
+/
+
+&croco_diagnostics_bio
+  ldefdiabio = .true.
+  nwrtdiabio = 72
+  nrpfdiabio = 0
+  dianamebio = "CROCO_FILES/croco_diabio.nc"
+/
+
+&croco_diagbio_avg
+  ldefdiabio_avg = .true.
+  ntsdiabio_avg = 1
+  nwrtdiabio_avg = 72
+  nrpfdiabio_avg = 0
+  dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc"
+/
+
 
 ! End of namelist

@@ -33,7 +33,9 @@ C$    integer omp_get_thread_num
 !
         USE croco_namelist, ONLY: visc2, visc4
 #ifdef SOLVE3D
+# ifdef TRACERS
         USE croco_namelist, ONLY: tnu2, tnu4
+# endif
 # if !defined LMD_MIXING && !defined GLS_MIXING
         USE croco_namelist, ONLY: Akv_bak, Akt_bak
 # endif

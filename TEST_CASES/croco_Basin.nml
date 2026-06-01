@@ -72,7 +72,7 @@
 /
 
 &croco_tracer_diff2
-  tnu2 = 1000., 0.
+  tnu2 = 1*1000.
 /
 
 &croco_tracer_diff4
@@ -89,6 +89,51 @@
   navg = 3240
   nrpfavg = 0
   avgname = "basin_avg.nc"
+/
+
+&croco_diagnosticsM
+  ldefdiaM = .true.
+  nwrtdiaM = 270
+  nrpfdiaM = 0
+  dianameM = "basin_diaM.nc"
+/
+
+&croco_diagM_avg
+  ldefdiaM_avg = .true.
+  ntsdiaM_avg = 1
+  nwrtdiaM_avg = 0
+  nrpfdiaM_avg = 0
+  dianameM_avg = "basin_diaM_avg.nc"
+/
+
+&croco_diags_vrt
+  ldefdiags_vrt = .true.
+  nwrtdiags_vrt = 0
+  nrpfdiags_vrt = 0
+  diags_vrtname = "basin_diags_vrt.nc"
+/
+
+&croco_diags_vrt_avg
+  ldefdiags_vrt_avg = .true.
+  ntsdiags_vrt_avg = 1
+  nwrtdiags_vrt_avg = 0
+  nrpfdiags_vrt_avg = 0
+  diags_vrtname_avg = "basin_diags_vrt_avg.nc"
+/
+
+&croco_diags_ek
+  ldefdiags_ek = .true.
+  nwrtdiags_ek = 0
+  nrpfdiags_ek = 0
+  diags_ekname = "basin_diags_ek.nc"
+/
+
+&croco_diags_ek_avg
+  ldefdiags_ek_avg = .true.
+  ntsdiags_ek_avg = 1
+  nwrtdiags_ek_avg = 0
+  nrpfdiags_ek_avg = 0
+  diags_ekname_avg = "basin_diags_ek_avg.nc"
 /
 
 

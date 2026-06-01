@@ -96,5 +96,40 @@
   avgname = "sandbar_avg.nc"
 /
 
+&croco_diagnostics_ts
+  ldefdia = .true.
+  nwrtdia = 300
+  nrpfdia = 0
+  dianame = "sandbar_dia.nc"
+/
+
+&croco_diag_avg
+  ldefdia_avg = .true.
+  ntsdia_avg = 1
+  nwrtdia_avg = 250
+  nrpfdia_avg = 0
+  dianame_avg = "sandbar_dia_avg.nc"
+/
+
+&croco_diag_mld_dens
+  mld_crit_D = 3.d-2
+  mld_crit_T = 2.d-1
+/
+
+&croco_diags_eddy
+  ldefdiags_eddy = .false.
+  nwrtdiags_eddy = 6000
+  nrpfdiags_eddy = 0
+  diags_eddyname = "sandbar_diags_eddy.nc"
+/
+
+&croco_diags_eddy_avg
+  ldefdiags_eddy_avg = .true.
+  ntsdiags_eddy_avg = 1
+  nwrtdiags_eddy_avg = 6000
+  nrpfdiags_eddy_avg = 0
+  diags_eddyname_avg = "sandbar_diags_eddy_avg.nc"
+/
+
 
 ! End of namelist

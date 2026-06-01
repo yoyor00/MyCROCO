@@ -71,117 +71,9 @@ contains
    !---------------------------------------------------------------------
    subroutine read_nml(ierr)
       use param, ONLY: stdout, NT
-      use croco_namelist, ONLY: fname_nml, &
-                                title, logname, &
-                                dt, ntimes, ndtfast, ninfo, &
-                                ldefhis, nwrt, nrpfhis, hisname, &
-                                nrrec, ininame, &
-                                nrst, nrpfrst, rstname, &
-                                use_frcname, frcname
+      use croco_namelist
       use croco_namelist_check, ONLY: check_all
       use croco_namelist_init, ONLY: init_all
-#ifdef NBQ
-      use croco_namelist, ONLY: ndtnbq, csound_nbq, visc2_nbq
-#endif
-#ifdef SOLVE3D
-      use croco_namelist, ONLY: theta_s, theta_b, Tcline
-#endif
-#ifdef USE_CALENDAR
-      use croco_namelist, ONLY: start_date, end_date, &
-                                dt_his, dt_avg, dt_rst
-#endif
-#ifndef ANA_GRID
-      use croco_namelist, ONLY: grdname
-#endif
-#if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
-      use croco_namelist, ONLY: bulkname
-#endif
-#if (  defined TCLIMATOLOGY  && \
-      !defined ANA_TCLIMA) || \
-      (defined ZCLIMATOLOGY&&\
-      !defined ANA_SSH) || \
-      (defined M2CLIMATOLOGY&&\
-      !defined ANA_M2CLIMA) || \
-      (defined M3CLIMATOLOGY&&\
-      !defined ANA_M3CLIMA)
-      use croco_namelist, ONLY: clmname
-#endif
-#if !defined ANA_BRY && defined FRC_BRY
-      use croco_namelist, ONLY: bry_file
-#endif
-#if defined WKB_WWAVE && !defined ANA_BRY_WKB
-      use croco_namelist, ONLY: brywkb_file
-#endif
-#ifdef WKB_WWAVE
-      use croco_namelist, ONLY: wkb_amp, wkb_ang, wkb_prd, wkb_tide, wkb_btg, wkb_gam
-#  ifdef WAVE_ROLLER
-      use croco_namelist, ONLY: wkb_rsb, wkb_roller
-#  endif
-#endif
-#ifdef WAVE_MAKER
-      use croco_namelist, ONLY: wmaker_amp, wmaker_prd, wmaker_dir, wmaker_dsp, wmaker_fsp
-#endif
-#ifdef AVERAGES
-      use croco_namelist, ONLY: ntsavg, navg, nrpfavg, avgname
-#endif
-#if defined OUTPUTS_SURFACE && !defined XIOS
-      use croco_namelist, ONLY: ldefsurf, nwrtsurf, nrpfsurf, surfname
-#  ifdef AVERAGES
-      use croco_namelist, ONLY: ldefsurf_avg, ntssurf_avg, nwrtsurf_avg, &
-                                nrpfsurf_avg, surfname_avg
-#  endif
-#endif
-#if defined ABL1D && !defined XIOS
-      use croco_namelist, ONLY: ldefablhis, nwrtablhis, nrpfablhis, ablname
-#  ifdef AVERAGES
-      use croco_namelist, ONLY: ldefablavg, ntsablavg, nwrtablavg, nrpfablavg, &
-                                ablname_avg
-#  endif
-#endif
-#if defined WAVE_OFFLINE && defined MUSTANG
-      use croco_namelist, ONLY: wave_file
-#endif
-#if defined BIOLOGY && defined PISCES
-      use croco_namelist, ONLY: bioname
-#endif
-#ifdef BODYFORCE
-      use croco_namelist, ONLY: levsfrc, levbfrc
-#endif
-#if !defined NONLIN_EOS
-      use croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
-#endif
-#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_TRA
-      use croco_namelist, ONLY: ltra_min, ltra_max
-#endif
-#if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_DYN
-      use croco_namelist, ONLY: ldyn_min, ldyn_max
-#endif
-#ifdef SEDIMENT
-      use croco_namelist, ONLY: sedname
-#endif
-#ifdef MUSTANG
-      use croco_namelist, ONLY: sedname_must
-#endif
-#ifdef SUBSTANCE
-      use croco_namelist, ONLY: subsfilename
-#endif
-#ifdef OBSTRUCTION
-      use croco_namelist, ONLY: obstname
-#endif
-#ifdef XIOS
-      use croco_namelist, ONLY: xios_origin_date
-#endif
-#ifdef ASSIMILATION
-      use croco_namelist, ONLY: aparnam, assname
-#endif
-      use croco_namelist, ONLY: rho0, rdrg, rdrg2, Zobt, Cdb_min, Cdb_max, &
-                                gamma2, visc2, visc4
-#ifdef SOLVE3D
-      use croco_namelist, ONLY: tnu2, tnu4
-#  if !defined LMD_MIXING && !defined GLS_MIXING
-      use croco_namelist, ONLY: Akv_bak, Akt_bak
-#  endif
-#endif
 #if defined MPI
       use scalars, ONLY: mynode
 #endif
@@ -256,6 +148,63 @@ contains
          nrpfablavg, ablname_avg
 #  endif
 #endif
+
+#if defined DIAGNOSTICS_TS
+      namelist /croco_diagnostics_ts/ ldefdia, nwrtdia, nrpfdia, dianame
+#  ifdef AVERAGES
+      namelist /croco_diag_avg/ ldefdia_avg, ntsdia_avg, nwrtdia_avg, &
+         nrpfdia_avg, dianame_avg
+#  endif
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+      namelist /croco_diag_mld_dens/ mld_crit_D, mld_crit_T
+#  endif
+#endif
+#if defined DIAGNOSTICS_UV
+      namelist /croco_diagnosticsM/ ldefdiaM, nwrtdiaM, nrpfdiaM, dianameM
+#  ifdef AVERAGES
+      namelist /croco_diagM_avg/ ldefdiaM_avg, ntsdiaM_avg, nwrtdiaM_avg, &
+         nrpfdiaM_avg, dianameM_avg
+#  endif
+#endif
+#ifdef DIAGNOSTICS_VRT
+      namelist /croco_diags_vrt/ ldefdiags_vrt, nwrtdiags_vrt, nrpfdiags_vrt, &
+         diags_vrtname
+#  ifdef AVERAGES
+      namelist /croco_diags_vrt_avg/ ldefdiags_vrt_avg, ntsdiags_vrt_avg, &
+         nwrtdiags_vrt_avg, nrpfdiags_vrt_avg, diags_vrtname_avg
+#  endif
+#endif
+#ifdef DIAGNOSTICS_EK
+      namelist /croco_diags_ek/ ldefdiags_ek, nwrtdiags_ek, nrpfdiags_ek, &
+         diags_ekname
+#  ifdef AVERAGES
+      namelist /croco_diags_ek_avg/ ldefdiags_ek_avg, ntsdiags_ek_avg, &
+         nwrtdiags_ek_avg, nrpfdiags_ek_avg, diags_ekname_avg
+#  endif
+#endif
+#ifdef DIAGNOSTICS_PV
+      namelist /croco_diags_pv/ ldefdiags_pv, nwrtdiags_pv, nrpfdiags_pv, &
+         diags_pvname
+#  ifdef AVERAGES
+      namelist /croco_diags_pv_avg/ ldefdiags_pv_avg, ntsdiags_pv_avg, &
+         nwrtdiags_pv_avg, nrpfdiags_pv_avg, diags_pvname_avg
+#  endif
+#endif
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+      namelist /croco_diags_eddy/ ldefdiags_eddy, nwrtdiags_eddy, nrpfdiags_eddy, &
+         diags_eddyname
+#  ifdef AVERAGES
+      namelist /croco_diags_eddy_avg/ ldefdiags_eddy_avg, ntsdiags_eddy_avg, &
+         nwrtdiags_eddy_avg, nrpfdiags_eddy_avg, diags_eddyname_avg
+#  endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+      namelist /croco_diagnostics_bio/ ldefdiabio, nwrtdiabio, nrpfdiabio, dianamebio
+#  ifdef AVERAGES
+      namelist /croco_diagbio_avg/ ldefdiabio_avg, ntsdiabio_avg, nwrtdiabio_avg, &
+         nrpfdiabio_avg, dianamebio_avg
+#  endif
+#endif
 #if defined WAVE_OFFLINE && defined MUSTANG
       namelist /croco_wave_offline/ wave_file
 #endif
@@ -297,8 +246,10 @@ contains
       namelist /croco_gamma2/ gamma2
       namelist /croco_lateral_visc/ visc2, visc4
 #ifdef SOLVE3D
+#  ifdef TRACERS
       namelist /croco_tracer_diff2/ tnu2
       namelist /croco_tracer_diff4/ tnu4
+#  endif
 #  if !defined LMD_MIXING && !defined GLS_MIXING
       namelist /croco_vertical_mixing/ Akv_bak, Akt_bak
 #  endif
@@ -306,13 +257,12 @@ contains
       ierr = 0
 
       ! Allocate tracer arrays with the actual NT size (from use param).
-      ! source=val both allocates and initializes every element.
 #ifdef SOLVE3D
 #  ifdef TRACERS
-      if (.not. allocated(tnu2))    allocate(tnu2(NT),    source=0.0)
-      if (.not. allocated(tnu4))    allocate(tnu4(NT),    source=0.0)
+      if (.not. allocated(tnu2))    then; allocate(tnu2(NT));    tnu2    = 0.0;   endif
+      if (.not. allocated(tnu4))    then; allocate(tnu4(NT));    tnu4    = 0.0;   endif
 #    if !defined LMD_MIXING && !defined GLS_MIXING
-      if (.not. allocated(Akt_bak)) allocate(Akt_bak(NT), source=1.e-6)
+      if (.not. allocated(Akt_bak)) then; allocate(Akt_bak(NT)); Akt_bak = 1.e-6; endif
 #    endif
 #  endif
 #endif
@@ -640,6 +590,171 @@ contains
       end if
 #endif /* LOGFILE */
 
+#if defined DIAGNOSTICS_TS
+      ! --- croco_diagnostics_ts (optional) ---
+      call check_nml_presence(nmlunit, "croco_diagnostics_ts", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagnostics_ts, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagnostics_ts (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef AVERAGES
+      ! --- croco_diag_avg (optional) ---
+      call check_nml_presence(nmlunit, "croco_diag_avg", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diag_avg, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diag_avg (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+      ! --- croco_diag_mld_dens (optional) ---
+      call check_nml_presence(nmlunit, "croco_diag_mld_dens", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diag_mld_dens, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diag_mld_dens (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+#if defined DIAGNOSTICS_UV
+      ! --- croco_diagnosticsM (optional) ---
+      call check_nml_presence(nmlunit, "croco_diagnosticsM", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagnosticsM, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagnosticsM (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef AVERAGES
+      ! --- croco_diagM_avg (optional) ---
+      call check_nml_presence(nmlunit, "croco_diagM_avg", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagM_avg, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagM_avg (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+#ifdef DIAGNOSTICS_VRT
+      ! --- croco_diags_vrt (optional) ---
+      call check_nml_presence(nmlunit, "croco_diags_vrt", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_vrt, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_vrt (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef AVERAGES
+      ! --- croco_diags_vrt_avg (optional) ---
+      call check_nml_presence(nmlunit, "croco_diags_vrt_avg", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_vrt_avg, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_vrt_avg (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+#ifdef DIAGNOSTICS_EK
+      ! --- croco_diags_ek (optional) ---
+      call check_nml_presence(nmlunit, "croco_diags_ek", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_ek, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_ek (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef AVERAGES
+      ! --- croco_diags_ek_avg (optional) ---
+      call check_nml_presence(nmlunit, "croco_diags_ek_avg", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_ek_avg, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_ek_avg (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+#ifdef DIAGNOSTICS_PV
+      ! --- croco_diags_pv (optional) ---
+      call check_nml_presence(nmlunit, "croco_diags_pv", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_pv, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_pv (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef AVERAGES
+      ! --- croco_diags_pv_avg (optional) ---
+      call check_nml_presence(nmlunit, "croco_diags_pv_avg", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_pv_avg, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_pv_avg (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+      ! --- croco_diags_eddy (optional) ---
+      call check_nml_presence(nmlunit, "croco_diags_eddy", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_eddy, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_eddy (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef AVERAGES
+      ! --- croco_diags_eddy_avg (optional) ---
+      call check_nml_presence(nmlunit, "croco_diags_eddy_avg", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_eddy_avg, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_eddy_avg (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+      ! --- croco_diagnostics_bio (optional) ---
+      call check_nml_presence(nmlunit, "croco_diagnostics_bio", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagnostics_bio, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagnostics_bio (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef AVERAGES
+      ! --- croco_diagbio_avg (optional) ---
+      call check_nml_presence(nmlunit, "croco_diagbio_avg", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagbio_avg, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagbio_avg (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+#endif
 #ifdef BODYFORCE
       ! --- croco_bodyforce (optional) ---
       call check_nml_presence(nmlunit, "croco_bodyforce", .false., found, ierr)
@@ -801,6 +916,7 @@ contains
       end if
 
 #ifdef SOLVE3D
+#  ifdef TRACERS
       ! --- croco_tracer_diff2 (optional) ---
       call check_nml_presence(nmlunit, "croco_tracer_diff2", .false., found, ierr)
       if (found) then
@@ -820,6 +936,7 @@ contains
             ierr = ierr + 1; close (nmlunit); return
          end if
       end if
+#  endif
 
 #  if !defined LMD_MIXING && !defined GLS_MIXING
       ! --- croco_vertical_mixing (optional) ---
@@ -943,6 +1060,51 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_abl_nudg_dyn)
 #  endif
 #endif
+#if defined DIAGNOSTICS_TS
+      MPI_master_only WRITE (stdout, nml=croco_diagnostics_ts)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diag_avg)
+#  endif
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+      MPI_master_only WRITE (stdout, nml=croco_diag_mld_dens)
+#  endif
+#endif
+#if defined DIAGNOSTICS_UV
+      MPI_master_only WRITE (stdout, nml=croco_diagnosticsM)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diagM_avg)
+#  endif
+#endif
+#ifdef DIAGNOSTICS_VRT
+      MPI_master_only WRITE (stdout, nml=croco_diags_vrt)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_vrt_avg)
+#  endif
+#endif
+#ifdef DIAGNOSTICS_EK
+      MPI_master_only WRITE (stdout, nml=croco_diags_ek)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_ek_avg)
+#  endif
+#endif
+#ifdef DIAGNOSTICS_PV
+      MPI_master_only WRITE (stdout, nml=croco_diags_pv)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_pv_avg)
+#  endif
+#endif
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+      MPI_master_only WRITE (stdout, nml=croco_diags_eddy)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_eddy_avg)
+#  endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+      MPI_master_only WRITE (stdout, nml=croco_diagnostics_bio)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diagbio_avg)
+#  endif
+#endif
 #ifdef BODYFORCE
       MPI_master_only WRITE (stdout, nml=croco_bodyforce)
 #endif
@@ -972,8 +1134,10 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_gamma2)
       MPI_master_only WRITE (stdout, nml=croco_lateral_visc)
 #ifdef SOLVE3D
+#  ifdef TRACERS
       MPI_master_only WRITE (stdout, nml=croco_tracer_diff2)
       MPI_master_only WRITE (stdout, nml=croco_tracer_diff4)
+#  endif
 #  if !defined LMD_MIXING && !defined GLS_MIXING
       MPI_master_only WRITE (stdout, nml=croco_vertical_mixing)
 #  endif

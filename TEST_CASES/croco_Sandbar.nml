@@ -96,5 +96,20 @@
   avgname = "sandbar_avg.nc"
 /
 
+&croco_diagnostics_ts
+  ldefdia = .true.
+  nwrtdia = 300
+  nrpfdia = 0
+  dianame = "sandbar_dia.nc"
+/
+
+&croco_diag_avg
+  ldefdia_avg = .true.
+  ntsdia_avg = 1
+  nwrtdia_avg = 250
+  nrpfdia_avg = 0
+  dianame_avg = "sandbar_dia_avg.nc"
+/
+
 
 ! End of namelist

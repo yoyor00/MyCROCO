@@ -438,6 +438,7 @@ MODULE croco_namelist
    !! Bilaplacian background horizontal momentum viscosity [m4/s] (used with `UV_VIS4`)
 
 #ifdef SOLVE3D
+#  ifdef TRACERS
    ! &croco_tracer_diff2  – Horizontal Laplacian mixing coefficients for tracers
    real, allocatable :: tnu2(:)
    !! Laplacian background horizontal diffusivity for each tracer [m2/s] (used with `TS_DIF2`).
@@ -447,6 +448,7 @@ MODULE croco_namelist
    real, allocatable :: tnu4(:)
    !! Bilaplacian background horizontal diffusivity for each tracer [m4/s] (used with `TS_DIF4`).
    !! Array of size NT (number of tracers).
+#  endif
 
 #  if !defined LMD_MIXING
    ! &croco_vertical_mixing  – Background vertical mixing coefficients
@@ -455,6 +457,188 @@ MODULE croco_namelist
    real, allocatable :: Akt_bak(:)
    !! Background vertical diffusivity coefficient for each tracer [m2/s] (used with `ANA_VMIX`).
    !! Array of size NT (number of tracers).
+#  endif
+#endif
+
+#if defined DIAGNOSTICS_TS
+   ! &croco_diagnostics_ts
+   logical :: ldefdia = .true.
+   !! Flag (T/F) for writing the tracer diagnostics file
+   integer :: nwrtdia = 72
+   !! Number of time-steps between writing of tracer diagnostic fields (0 = use nwrt)
+   integer :: nrpfdia = 0
+   !! Tracer diagnostics file cycling switch (0: multi-record, >0: multi-file, -1: overwrite)
+   character(len=180) :: dianame = "CROCO_FILES/croco_dia.nc"
+   !! Name of tracer diagnostics file
+#  ifdef AVERAGES
+   ! &croco_diag_avg
+   logical :: ldefdia_avg = .true.
+   !! Flag (T/F) for writing averaged tracer diagnostics
+   integer :: ntsdia_avg = 1
+   !! Starting time-step for accumulation of averaged tracer diagnostics
+   integer :: nwrtdia_avg = 72
+   !! Number of time-steps between writing of averaged tracer diagnostics (0 = use navg)
+   integer :: nrpfdia_avg = 0
+   !! Averaged tracer diagnostics file cycling switch
+   character(len=180) :: dianame_avg = "CROCO_FILES/croco_dia_avg.nc"
+   !! Name of averaged tracer diagnostics file
+#  endif
+#  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
+   ! &croco_diag_mld_dens
+   real :: mld_crit_D = 0.03
+   !! Density criterion to define the mixed layer depth [kg/m3]
+   real :: mld_crit_T = 0.2
+   !! Temperature criterion to define the mixed layer depth [Celsius]
+#  endif
+#endif
+
+#if defined DIAGNOSTICS_UV
+   ! &croco_diagnosticsM
+   logical :: ldefdiaM = .true.
+   !! Flag (T/F) for writing momentum diagnostics file
+   integer :: nwrtdiaM = 72
+   !! Number of time-steps between writing of momentum diagnostics (0 = use nwrt)
+   integer :: nrpfdiaM = 0
+   !! Momentum diagnostics file cycling switch
+   character(len=180) :: dianameM = "CROCO_FILES/croco_diaM.nc"
+   !! Name of momentum diagnostics file
+#  ifdef AVERAGES
+   ! &croco_diagM_avg
+   logical :: ldefdiaM_avg = .true.
+   !! Flag (T/F) for writing averaged momentum diagnostics
+   integer :: ntsdiaM_avg = 1
+   !! Starting time-step for accumulation of averaged momentum diagnostics
+   integer :: nwrtdiaM_avg = 72
+   !! Number of time-steps between writing of averaged momentum diagnostics (0 = use navg)
+   integer :: nrpfdiaM_avg = 0
+   !! Averaged momentum diagnostics file cycling switch
+   character(len=180) :: dianameM_avg = "CROCO_FILES/croco_diaM_avg.nc"
+   !! Name of averaged momentum diagnostics file
+#  endif
+#endif
+
+#ifdef DIAGNOSTICS_VRT
+   ! &croco_diags_vrt
+   logical :: ldefdiags_vrt = .true.
+   !! Flag (T/F) for writing vorticity diagnostics file
+   integer :: nwrtdiags_vrt = 72
+   !! Number of time-steps between writing of vorticity diagnostics (0 = use nwrt)
+   integer :: nrpfdiags_vrt = 0
+   !! Vorticity diagnostics file cycling switch
+   character(len=180) :: diags_vrtname = "CROCO_FILES/croco_diags_vrt.nc"
+   !! Name of vorticity diagnostics file
+#  ifdef AVERAGES
+   ! &croco_diags_vrt_avg
+   logical :: ldefdiags_vrt_avg = .true.
+   !! Flag (T/F) for writing averaged vorticity diagnostics
+   integer :: ntsdiags_vrt_avg = 1
+   !! Starting time-step for accumulation of averaged vorticity diagnostics
+   integer :: nwrtdiags_vrt_avg = 72
+   !! Number of time-steps between writing of averaged vorticity diagnostics (0 = use navg)
+   integer :: nrpfdiags_vrt_avg = 0
+   !! Averaged vorticity diagnostics file cycling switch
+   character(len=180) :: diags_vrtname_avg = "CROCO_FILES/croco_diags_vrt_avg.nc"
+   !! Name of averaged vorticity diagnostics file
+#  endif
+#endif
+
+#ifdef DIAGNOSTICS_EK
+   ! &croco_diags_ek
+   logical :: ldefdiags_ek = .true.
+   !! Flag (T/F) for writing energy diagnostics file
+   integer :: nwrtdiags_ek = 72
+   !! Number of time-steps between writing of energy diagnostics (0 = use nwrt)
+   integer :: nrpfdiags_ek = 0
+   !! Energy diagnostics file cycling switch
+   character(len=180) :: diags_ekname = "CROCO_FILES/croco_diags_ek.nc"
+   !! Name of energy diagnostics file
+#  ifdef AVERAGES
+   ! &croco_diags_ek_avg
+   logical :: ldefdiags_ek_avg = .true.
+   !! Flag (T/F) for writing averaged energy diagnostics
+   integer :: ntsdiags_ek_avg = 1
+   !! Starting time-step for accumulation of averaged energy diagnostics
+   integer :: nwrtdiags_ek_avg = 72
+   !! Number of time-steps between writing of averaged energy diagnostics (0 = use navg)
+   integer :: nrpfdiags_ek_avg = 0
+   !! Averaged energy diagnostics file cycling switch
+   character(len=180) :: diags_ekname_avg = "CROCO_FILES/croco_diags_ek_avg.nc"
+   !! Name of averaged energy diagnostics file
+#  endif
+#endif
+
+#ifdef DIAGNOSTICS_PV
+   ! &croco_diags_pv
+   logical :: ldefdiags_pv = .true.
+   !! Flag (T/F) for writing potential vorticity diagnostics file
+   integer :: nwrtdiags_pv = 72
+   !! Number of time-steps between writing of PV diagnostics (0 = use nwrt)
+   integer :: nrpfdiags_pv = 0
+   !! PV diagnostics file cycling switch
+   character(len=180) :: diags_pvname = "CROCO_FILES/croco_diags_pv.nc"
+   !! Name of potential vorticity diagnostics file
+#  ifdef AVERAGES
+   ! &croco_diags_pv_avg
+   logical :: ldefdiags_pv_avg = .true.
+   !! Flag (T/F) for writing averaged PV diagnostics
+   integer :: ntsdiags_pv_avg = 1
+   !! Starting time-step for accumulation of averaged PV diagnostics
+   integer :: nwrtdiags_pv_avg = 72
+   !! Number of time-steps between writing of averaged PV diagnostics (0 = use navg)
+   integer :: nrpfdiags_pv_avg = 0
+   !! Averaged PV diagnostics file cycling switch
+   character(len=180) :: diags_pvname_avg = "CROCO_FILES/croco_diags_pv_avg.nc"
+   !! Name of averaged PV diagnostics file
+#  endif
+#endif
+
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+   ! &croco_diags_eddy
+   logical :: ldefdiags_eddy = .true.
+   !! Flag (T/F) for writing eddy diagnostics file
+   integer :: nwrtdiags_eddy = 72
+   !! Number of time-steps between writing of eddy diagnostics (0 = use nwrt)
+   integer :: nrpfdiags_eddy = 0
+   !! Eddy diagnostics file cycling switch
+   character(len=180) :: diags_eddyname = "CROCO_FILES/croco_diags_eddy.nc"
+   !! Name of eddy diagnostics file
+#  ifdef AVERAGES
+   ! &croco_diags_eddy_avg
+   logical :: ldefdiags_eddy_avg = .true.
+   !! Flag (T/F) for writing averaged eddy diagnostics
+   integer :: ntsdiags_eddy_avg = 1
+   !! Starting time-step for accumulation of averaged eddy diagnostics
+   integer :: nwrtdiags_eddy_avg = 72
+   !! Number of time-steps between writing of averaged eddy diagnostics (0 = use navg)
+   integer :: nrpfdiags_eddy_avg = 0
+   !! Averaged eddy diagnostics file cycling switch
+   character(len=180) :: diags_eddyname_avg = "CROCO_FILES/croco_diags_eddy_avg.nc"
+   !! Name of averaged eddy diagnostics file
+#  endif
+#endif
+
+#ifdef DIAGNOSTICS_BIO
+   ! &croco_diagnostics_bio
+   logical :: ldefdiabio = .true.
+   !! Flag (T/F) for writing biogeochemical diagnostics file
+   integer :: nwrtdiabio = 72
+   !! Number of time-steps between writing of bio diagnostics (0 = use nwrt)
+   integer :: nrpfdiabio = 0
+   !! Bio diagnostics file cycling switch
+   character(len=180) :: dianamebio = "CROCO_FILES/croco_diabio.nc"
+   !! Name of biogeochemical diagnostics file
+#  ifdef AVERAGES
+   ! &croco_diagbio_avg
+   logical :: ldefdiabio_avg = .true.
+   !! Flag (T/F) for writing averaged bio diagnostics
+   integer :: ntsdiabio_avg = 1
+   !! Starting time-step for accumulation of averaged bio diagnostics
+   integer :: nwrtdiabio_avg = 72
+   !! Number of time-steps between writing of averaged bio diagnostics (0 = use navg)
+   integer :: nrpfdiabio_avg = 0
+   !! Averaged bio diagnostics file cycling switch
+   character(len=180) :: dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc"
+   !! Name of averaged bio diagnostics file
 #  endif
 #endif
 
