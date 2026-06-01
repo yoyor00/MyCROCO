@@ -71,7 +71,7 @@
 !----------------------------------------------------------------------
 !
       use croco_namelist, only: dt, rho0, Zobt
-# ifdef WKB_WWAVE
+# ifdef WAVE_ROLLER
       use croco_namelist, only: wkb_roller
 # endif
       implicit none
