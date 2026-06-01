@@ -35,6 +35,10 @@
       USE croco_namelist, ONLY: ldefablavg, ntsablavg, nwrtablavg
 #  endif
 #endif
+#ifdef DIAGNOSTICS_BIO
+      USE croco_namelist, ONLY: nwrtdiabio, ldefdiabio_avg,
+     &                          nwrtdiabio_avg
+#endif
 #ifdef AGRIF
       use Agrif_Util
 #endif

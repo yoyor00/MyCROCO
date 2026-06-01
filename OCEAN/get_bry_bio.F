@@ -14,7 +14,7 @@
                     && !defined ANA_BRY
 
       subroutine get_bry_bio    ! Read side boundary forcing
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, bry_file
       implicit none             ! fields from boundary file
 # include "param.h"
 # include "scalars.h"
