@@ -508,11 +508,6 @@ C$OMP BARRIER
 # if defined DIAGNOSTICS_VRT
         call set_diags_vrt (tile)
 # endif
-! Move diagnostics to the end of step3d_uv
-! because we need u(:::,nstp)
-!# if defined DIAGNOSTICS_KE
-!        call set_diags_ek (tile)
-!# endif
 # if defined DIAGNOSTICS_PV
         call set_diags_pv (tile)
 # endif
@@ -961,10 +956,12 @@ C$OMP BARRIER
 
       do tile=my_first,my_last
 # if defined DIAGNOSTICS_KE
+        ! located at the end of step3d_uv because we need u(:::,nstp)
         call set_diags_ek (tile)
 # endif
       enddo
 
+#endif /* SOLVE3D */
 #endif /* SOLVE3D */
 !
 #if defined AGRIF && defined AGRIF_2WAY
