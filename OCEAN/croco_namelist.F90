@@ -454,9 +454,11 @@ MODULE croco_namelist
    ! &croco_vertical_mixing  – Background vertical mixing coefficients
    real :: Akv_bak = 1.e-5
    !! Background vertical viscosity coefficient [m2/s] (used with `ANA_VMIX`)
+#    ifdef TRACERS
    real, allocatable :: Akt_bak(:)
    !! Background vertical diffusivity coefficient for each tracer [m2/s] (used with `ANA_VMIX`).
    !! Array of size NT (number of tracers).
+#    endif
 #  endif
 #endif
 

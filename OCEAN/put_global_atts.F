@@ -15,38 +15,7 @@
 #include "cppdefs.h"
 
       subroutine put_global_atts (ncid, ierr)
-            use croco_namelist, only: title, dt, ndtfast, ntimes
-            use croco_namelist, only: hisname, nwrt, ininame, rstname
-            use croco_namelist, only: frcname
-            use croco_namelist, only: rho0, visc2, visc4, gamma2
-            use croco_namelist, only: rdrg, rdrg2, Cdb_min, Cdb_max
-#ifndef ANA_GRID
-            use croco_namelist, only: grdname
-#endif
-#ifdef SOLVE3D
-            use croco_namelist, only: theta_s, theta_b, Tcline
-#  ifdef TRACERS
-            use croco_namelist, only: tnu2, tnu4
-#  endif
-#  if !defined LMD_MIXING
-            use croco_namelist, only: Akv_bak, Akt_bak
-#  endif
-#endif
-#ifdef AVERAGES
-            use croco_namelist, only: avgname, ntsavg, navg
-#endif
-#if !defined NONLIN_EOS
-            use croco_namelist, only: R0, T0, S0, Tcoef, Scoef
-#endif
-#ifdef BODYFORCE
-            use croco_namelist, only: levsfrc, levbfrc
-#endif
-#ifdef ASSIMILATION
-            use croco_namelist, only: aparnam, assname
-#endif
-#ifdef STATIONS
-            use croco_namelist, only: staname, staposname, nsta
-#endif
+            use croco_namelist
       implicit none
       integer ncid, ierr, nf_ftype, lvar,lenstr
 #include "param.h"

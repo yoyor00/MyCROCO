@@ -268,7 +268,7 @@ contains
 #  ifdef TRACERS
       if (.not. allocated(tnu2)) then; allocate (tnu2(NT)); tnu2 = 0.0; end if
       if (.not. allocated(tnu4)) then; allocate (tnu4(NT)); tnu4 = 0.0; end if
-#    if !defined LMD_MIXING && !defined GLS_MIXING
+#    if !defined LMD_MIXING
       if (.not. allocated(Akt_bak)) then; allocate (Akt_bak(NT)); Akt_bak = 1.e-6; end if
 #    endif
 #  endif
