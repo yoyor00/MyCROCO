@@ -205,6 +205,13 @@ contains
          nrpfdiabio_avg, dianamebio_avg
 #  endif
 #endif
+#ifdef STATIONS
+      namelist /croco_stations/ ldefsta, nsta, nrpfsta, staposname, staname
+#endif
+#ifdef ONLINE
+      namelist /croco_online/ yearnum, monthnum, recordsperday, &
+         yearend, monthend, pathbulk
+#endif
 #if defined WAVE_OFFLINE && defined MUSTANG
       namelist /croco_wave_offline/ wave_file
 #endif
@@ -259,10 +266,10 @@ contains
       ! Allocate tracer arrays with the actual NT size (from use param).
 #ifdef SOLVE3D
 #  ifdef TRACERS
-      if (.not. allocated(tnu2))    then; allocate(tnu2(NT));    tnu2    = 0.0;   endif
-      if (.not. allocated(tnu4))    then; allocate(tnu4(NT));    tnu4    = 0.0;   endif
+      if (.not. allocated(tnu2)) then; allocate (tnu2(NT)); tnu2 = 0.0; end if
+      if (.not. allocated(tnu4)) then; allocate (tnu4(NT)); tnu4 = 0.0; end if
 #    if !defined LMD_MIXING && !defined GLS_MIXING
-      if (.not. allocated(Akt_bak)) then; allocate(Akt_bak(NT)); Akt_bak = 1.e-6; endif
+      if (.not. allocated(Akt_bak)) then; allocate (Akt_bak(NT)); Akt_bak = 1.e-6; end if
 #    endif
 #  endif
 #endif
@@ -755,6 +762,28 @@ contains
       end if
 #  endif
 #endif
+#ifdef STATIONS
+      ! --- croco_stations (optional) ---
+      call check_nml_presence(nmlunit, "croco_stations", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_stations, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_stations (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+#ifdef ONLINE
+      ! --- croco_online (optional) ---
+      call check_nml_presence(nmlunit, "croco_online", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_online, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_online (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
 #ifdef BODYFORCE
       ! --- croco_bodyforce (optional) ---
       call check_nml_presence(nmlunit, "croco_bodyforce", .false., found, ierr)
@@ -1104,6 +1133,12 @@ contains
 #  ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_diagbio_avg)
 #  endif
+#endif
+#ifdef STATIONS
+      MPI_master_only WRITE (stdout, nml=croco_stations)
+#endif
+#ifdef ONLINE
+      MPI_master_only WRITE (stdout, nml=croco_online)
 #endif
 #ifdef BODYFORCE
       MPI_master_only WRITE (stdout, nml=croco_bodyforce)

@@ -44,6 +44,9 @@
 #ifdef ASSIMILATION
             use croco_namelist, only: aparnam, assname
 #endif
+#ifdef STATIONS
+            use croco_namelist, only: staname, staposname, nsta
+#endif
       implicit none
       integer ncid, ierr, nf_ftype, lvar,lenstr
 #include "param.h"

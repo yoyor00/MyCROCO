@@ -114,6 +114,7 @@
 #  if !defined NONLIN_EOS
       USE croco_namelist, ONLY: Tcoef
 #  endif
+      USE croco_namelist, ONLY: rho0
       implicit none
 #  include "param.h"
 #  include "grid.h"

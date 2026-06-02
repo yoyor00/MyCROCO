@@ -14,13 +14,7 @@
       subroutine read_inp (ierr)        ! parameters  from  startup
                                         ! script file using keywords
                                         ! to recognize variables.
-      use croco_namelist, only: dt
 
-
-# ifdef USE_CALENDAR
-      use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
-     &                          dt_rst
-# endif
 # ifdef STOGEN
       use stoalloc                      ! do we output stochastic fields
 # endif
@@ -332,31 +326,6 @@
 
 
 
-#ifdef STATIONS
-!
-! Stations file name.
-!
-      elseif (keyword(1:kwlen).eq.'stations') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-# ifdef AGRIF
-        if (Agrif_Root()) then
-# endif
-          read(input,*,err=95) ldefsta, nsta, nrpfsta
-          read(input,'(A)',err=95) staposname
-          read(input,'(A)',err=95) fname
-          lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-          call insert_node (staposname, lstr, mynode2, NNODES2, ierr)
-# endif
-          staname=fname(1:lstr)
-# ifdef AGRIF
-        else
-          ldefsta=Agrif_Parent(ldefsta)
-          nsta=Agrif_Parent(nsta)
-          nrpfsta=Agrif_Parent(nrpfsta)
-        endif
-# endif
-#endif /* STATIONS */
 
 !
 ! Switches for fields to be saved into history file.
@@ -1366,15 +1335,6 @@
 !
 ! Online forcing
 !
-#ifdef ONLINE   /* JG Online */
-      elseif (keyword(1:kwlen).eq.'online') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) yearnum, monthnum, recordsperday, yearend,
-     &                       monthend
-        read(input,'(A)',err=95)  fname
-        lstr=lenstr(fname)
-        pathbulk=fname(1:lstr)
-#endif /* ONLINE */
 
       else
         MPI_master_only write(stdout,'(/3(1x,A)/)')
@@ -1427,19 +1387,7 @@
       ! start of summary writing
       if (ierr.eq.0) then
 
-#ifdef STATIONS
-# ifdef AGRIF
-        if (Agrif_Root()) then
-# endif
-          lstr=lenstr(staname)
-          MPI_master_only write(stdout,
-     &              '(9x,A,2x,A,2x,A,1x,L1,2x,A,I4,2x,A,I3)')
-     &        'Station File:',staname(1:lstr),  'Create new:',
-     &        ldefsta, 'nsta =', nsta, 'rec/file =', nrpfsta
-# ifdef AGRIF
-        endif
-# endif
-#endif /* STATIONS */
+
 
 
           MPI_master_only write(stdout,'(/1x,A,5(/6x,l1,2x,A,1x,A))')
@@ -2259,21 +2207,6 @@
 #endif  /* BHFLUX || (SALINITY && BWFLUX )  */
 
 
-#ifdef ONLINE   /* JG Online */
-          MPI_master_only write(stdout,
-     &         '(7x,A,1x,I4,A,1x,I2,A)')
-     &         'Online forcing: first forcing, year',yearnum,
-     &         ', month', monthnum,'.'
-          MPI_master_only write(stdout,
-     &         '(7x,A,1x,I4,A,1x,I2,A)')
-     &         'Online forcing: last forcing year',yearend,
-     &         ', month', monthend,'.'
-          lstr=lenstr(pathbulk)
-          MPI_master_only write(stdout,
-     &         '(7x,A,A,1x,A4,1x,I2,A)')
-     &         'Online forcing: datasets in ',pathbulk(1:lstr),
-     &         'with',recordsperday, ' records per day.'
-#endif /* ONLINE */
        
       endif ! ierr.eq.0  
       ! end of summary writing

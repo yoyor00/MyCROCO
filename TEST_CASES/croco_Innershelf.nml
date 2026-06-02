@@ -78,6 +78,14 @@
   avgname = "innershelf_avg.nc"
 /
 
+&croco_stations
+  ldefsta = .true.
+  nsta = 24
+  nrpfsta = 0
+  staposname = "stations.in"
+  staname = "stations.nc"
+/
+
 &croco_diagnostics_ts
   ldefdia = .false.
   nwrtdia = 5760

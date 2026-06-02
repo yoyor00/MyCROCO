@@ -163,6 +163,9 @@ contains
 #ifdef LOGFILE
       if (ierr == 0) call init_logfile(ierr)
 #endif
+#ifdef STATIONS
+      call init_stations(ierr)
+#endif
 
    end subroutine init_all
 
@@ -926,7 +929,6 @@ contains
    end subroutine init_assimilation
 #endif
 
-
 #if defined DIAGNOSTICS_TS
    subroutine init_diagnostics_ts(ierr)
       use croco_namelist, ONLY: dianame, nwrtdia, nwrt
@@ -1087,4 +1089,21 @@ contains
    end subroutine init_diagbio_avg
 #  endif
 #endif
+#ifdef STATIONS
+   subroutine init_stations(ierr)
+      use croco_namelist, ONLY: staname, staposname
+#  ifdef AGRIF
+      use croco_namelist, ONLY: ldefsta, nsta, nrpfsta
+      use Agrif_Util
+#  endif
+      implicit none
+      integer, intent(inout) :: ierr
+#  ifdef AGRIF
+      if (.not. Agrif_Root()) return
+#  endif
+      call adjust_filename_parallel(staname, "staname", ierr)
+      call adjust_filename_ensemble(staname)
+   end subroutine init_stations
+#endif
+
 END MODULE croco_namelist_init

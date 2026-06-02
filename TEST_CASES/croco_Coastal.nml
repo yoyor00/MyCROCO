@@ -129,5 +129,22 @@
   surfname_avg = "croco_surf_avg.nc"
 /
 
+&croco_stations
+  ldefsta = .true.
+  nsta = 400
+  nrpfsta = 0
+  staposname = "stations.in"
+  staname = "CROCO_FILES/stations.nc"
+/
+
+&croco_online
+  yearnum = 2014
+  monthnum = 12
+  recordsperday = 24
+  yearend = 2016
+  monthend = 1
+  pathbulk = "met_vilaine_201501.nc"
+/
+
 
 ! End of namelist

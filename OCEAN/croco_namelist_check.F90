@@ -69,6 +69,9 @@ contains
 #ifdef BODYFORCE
       call check_bodyforce(ierr)
 #endif
+#ifdef ONLINE
+      call check_online(ierr)
+#endif
 
    end subroutine check_all
 
@@ -233,7 +236,7 @@ contains
       !       ' must be in [0, 1].'
       !    ierr = ierr + 1
       ! end if
-      ! TODO Check this, in SANDBAR, wkb_roller is 1.8... 
+      ! TODO Check this, in SANDBAR, wkb_roller is 1.8...
       ! not coherent with comment in read_inp.F
 
    end subroutine check_wkb_roller
@@ -267,5 +270,27 @@ contains
 
    end subroutine check_bodyforce
 #endif /* BODYFORCE */
+
+#ifdef ONLINE
+   !---------------------------------------------------------------------
+   !  check_online
+   !---------------------------------------------------------------------
+   subroutine check_online(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: pathbulk
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      if (len_trim(pathbulk) == 0) then
+         MPI_master_only write (stdout, '(a)') &
+            'Error - pathbulk is empty in &croco_online.'
+         ierr = ierr + 1
+      end if
+
+   end subroutine check_online
+#endif /* ONLINE */
 
 END MODULE croco_namelist_check

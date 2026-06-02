@@ -110,6 +110,23 @@
   avgname = "scm_avg.nc"
 /
 
+&croco_stations
+  ldefsta = .true.
+  nsta = 400
+  nrpfsta = 0
+  staposname = "stations.in"
+  staname = "CROCO_FILES/stations.nc"
+/
+
+&croco_online
+  yearnum = 2000
+  monthnum = 1
+  recordsperday = 4
+  yearend = 2000
+  monthend = 3
+  pathbulk = "DATA/CFSR_Benguela_LR/"
+/
+
 &croco_diagnostics_ts
   ldefdia = .true.
   nwrtdia = 72

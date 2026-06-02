@@ -167,9 +167,6 @@
 #ifdef EXACT_RESTART
      &     ,  forw_start
 #endif
-#ifdef STATIONS
-      integer nsta, nrpfsta
-#endif
 
 #if defined SOLVE3D && defined TRACERS
       logical got_tini(NT)
@@ -179,9 +176,6 @@
 #endif
 #ifdef BBL
       logical got_inibed(2)
-#endif
-#ifdef STATIONS
-      logical ldefsta
 #endif
 
 #ifdef  BAND_DEBUG         
@@ -215,9 +209,6 @@
 #ifdef EXACT_RESTART
      &       , forw_start
 #endif
-#ifdef STATIONS
-     &                      , nsta, nrpfsta
-#endif
 #if defined SOLVE3D && defined TRACERS
      &                      , got_tini
 #endif
@@ -226,9 +217,6 @@
 #endif
 #ifdef BBL
      &                      , got_inibed
-#endif
-#ifdef STATIONS
-     &                      , ldefsta
 #endif
 
 #ifdef  BAND_DEBUG         

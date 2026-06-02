@@ -39,6 +39,9 @@
       USE croco_namelist, ONLY: nwrtdiabio, ldefdiabio_avg,
      &                          nwrtdiabio_avg
 #endif
+#ifdef STATIONS
+      USE croco_namelist, ONLY: nsta
+#endif
 #ifdef AGRIF
       use Agrif_Util
 #endif

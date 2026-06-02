@@ -153,6 +153,19 @@ MAPPINGS = [
     ("surf_avg",           0,   3,  "int",   "&croco_surf_avg",            "nrpfsurf_avg"),
     ("surf_avg",           1,   0,  "str",   "&croco_surf_avg",            "surfname_avg"),
 
+    ("stations",           0,   0,  "bool",  "&croco_stations",            "ldefsta"),
+    ("stations",           0,   1,  "int",   "&croco_stations",            "nsta"),
+    ("stations",           0,   2,  "int",   "&croco_stations",            "nrpfsta"),
+    ("stations",           1,   0,  "str",   "&croco_stations",            "staposname"),
+    ("stations",           2,   0,  "str",   "&croco_stations",            "staname"),
+
+    ("online",             0,   0,  "int",   "&croco_online",              "yearnum"),
+    ("online",             0,   1,  "int",   "&croco_online",              "monthnum"),
+    ("online",             0,   2,  "int",   "&croco_online",              "recordsperday"),
+    ("online",             0,   3,  "int",   "&croco_online",              "yearend"),
+    ("online",             0,   4,  "int",   "&croco_online",              "monthend"),
+    ("online",             1,   0,  "str",   "&croco_online",              "pathbulk"),
+
     ("diagnostics",        0,   0,  "bool",  "&croco_diagnostics_ts",      "ldefdia"),
     ("diagnostics",        0,   1,  "int",   "&croco_diagnostics_ts",      "nwrtdia"),
     ("diagnostics",        0,   2,  "int",   "&croco_diagnostics_ts",      "nrpfdia"),

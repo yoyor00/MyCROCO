@@ -415,11 +415,11 @@ MODULE croco_namelist
    !! Mean density [kg/m3] used in the Boussinesq approximation
 
    ! &croco_bottom_drag
-   real :: rdrg    = 3.e-4
+   real :: rdrg = 3.e-4
    !! Drag coefficient for the linear bottom stress formulation [m/s]
-   real :: rdrg2   = 3.e-3
+   real :: rdrg2 = 3.e-3
    !! Drag coefficient for the constant quadratic bottom stress formulation
-   real :: Zobt    = 0.02
+   real :: Zobt = 0.02
    !! Bottom roughness length for the Von-Karman (logarithmic) bottom stress formulation [m]
    real :: Cdb_min = 1.e-4
    !! Minimum drag coefficient value for the Von-Karman quadratic bottom stress formulation
@@ -640,6 +640,36 @@ MODULE croco_namelist
    character(len=180) :: dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc"
    !! Name of averaged bio diagnostics file
 #  endif
+#endif
+
+#ifdef STATIONS
+   ! &croco_stations
+   logical :: ldefsta = .true.
+   !! Flag (T/F) for creating a new stations output file
+   integer :: nsta = 0
+   !! Number of time-steps between storage of station data
+   integer :: nrpfsta = 0
+   !! Stations file cycling switch
+   character(len=180) :: staposname = "stations.in"
+   !! Station positions input file
+   character(len=180) :: staname = "CROCO_FILES/stations.nc"
+   !! Stations output file
+#endif
+
+#ifdef ONLINE
+   ! &croco_online
+   integer :: yearnum = 0
+   !! Start year for online bulk forcing
+   integer :: monthnum = 1
+   !! Start month for online bulk forcing
+   integer :: recordsperday = 1
+   !! Number of forcing records per day
+   integer :: yearend = 0
+   !! End year for online bulk forcing
+   integer :: monthend = 12
+   !! End month for online bulk forcing
+   character(len=250) :: pathbulk = "./"
+   !! Path to bulk forcing data files
 #endif
 
 END MODULE croco_namelist
