@@ -21,6 +21,9 @@
 # ifdef ENSEMBLE
       use ensmpi , only : ln_ens_rst_in ! do we start from an ensemble of restart
 # endif
+# ifdef DIAGNOSTICS_TS_MLD_DENS
+      use croco_namelist, only: mld_crit_D, mld_crit_T
+# endif
 
 !     implicit none
 
