@@ -962,7 +962,6 @@ C$OMP BARRIER
       enddo
 
 #endif /* SOLVE3D */
-#endif /* SOLVE3D */
 !
 #if defined AGRIF && defined AGRIF_2WAY
 !
