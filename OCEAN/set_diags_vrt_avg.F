@@ -65,8 +65,6 @@
 
           if (ZEROTH_TILE) then
             timediags_vrt_avg=time
-!      MPI_master_only write(*,*) 'started averaging vrt',iic,
-!     &                    ntsdiags_vrt_avg,nwrtdiags_vrt_avg
           endif
 
 
