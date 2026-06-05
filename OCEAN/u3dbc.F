@@ -52,6 +52,9 @@
 ! Common Code
 !
       USE croco_namelist, only: dt, gamma2
+#if defined M3_FRC_BRY || defined M3CLIMATOLOGY
+      USE croco_namelist, only: tauM_in, tauM_out
+#endif
 # include "set_obc_definitions.h"
 !
       implicit none

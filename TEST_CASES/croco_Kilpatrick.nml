@@ -33,6 +33,43 @@
   rstname = "croco_rst.nc"
 /
 
+&croco_nudging
+  tauT_in = 1.
+  tauT_out = 360.
+  tauM_in = 3.
+  tauM_out = 360.
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 1*.true.
+/
+
+&croco_primary_average_fields
+  avg_zeta = .true.
+  avg_ubar = .true.
+  avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  avg_u = .true.
+  avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  avg_tracer = 1*.true.
+/
+
 &croco_rho0
   rho0 = 1025.d0
 /
@@ -74,6 +111,52 @@
   nwrtablavg = 1
   nrpfablavg = 0
   ablname_avg = "croco_abl_avg.nc"
+/
+
+&croco_abl_history_fields
+  his_abl_pu_dta = .true.
+  his_abl_pv_dta = .true.
+  his_abl_pt_dta = .true.
+  his_abl_pq_dta = .true.
+  his_abl_pgu_dta = .true.
+  his_abl_pgv_dta = .true.
+  his_abl_u_abl = .true.
+  his_abl_v_abl = .true.
+  his_abl_t_abl = .true.
+  his_abl_q_abl = .true.
+  his_abl_tke_abl = .true.
+  his_abl_mxlm_abl = .true.
+  his_abl_mxld_abl = .true.
+  his_abl_avm_abl = .true.
+  his_abl_avt_abl = .true.
+  his_abl_ablh_abl = .true.
+  his_abl_zr_abl = .true.
+  his_abl_zw_abl = .true.
+  his_abl_Hzr_abl = .true.
+  his_abl_Hzw_abl = .true.
+/
+
+&croco_abl_averages_fields
+  avg_abl_pu_dta = .true.
+  avg_abl_pv_dta = .true.
+  avg_abl_pt_dta = .true.
+  avg_abl_pq_dta = .true.
+  avg_abl_pgu_dta = .true.
+  avg_abl_pgv_dta = .true.
+  avg_abl_u_abl = .true.
+  avg_abl_v_abl = .true.
+  avg_abl_t_abl = .true.
+  avg_abl_q_abl = .true.
+  avg_abl_tke_abl = .true.
+  avg_abl_mxlm_abl = .true.
+  avg_abl_mxld_abl = .true.
+  avg_abl_avm_abl = .true.
+  avg_abl_avt_abl = .true.
+  avg_abl_ablh_abl = .true.
+  avg_abl_zr_abl = .true.
+  avg_abl_zw_abl = .true.
+  avg_abl_Hzr_abl = .true.
+  avg_abl_Hzw_abl = .true.
 /
 
 

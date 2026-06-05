@@ -968,17 +968,15 @@ C 				  endif
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='gamma2_expl', value=
      &          'Slipperiness parameter')
-# ifdef SPONGE
+#if (defined SPONGE && !defined SPONGE_GRID)
 !
 ! Sponge parameters
 !
       CALL iom_set_file_global_attr_float   (cdid
      &      ,type='float',name='x_sponge', value=x_sponge)
-      CALL iom_set_file_global_attr_float   (cdid
-     &     ,type='float',name='v_sponge', value=v_sponge)
       CALL iom_set_file_global_attr_char   (cdid,
      &     type='string',name='sponge_expl',value=
-     &     'Sponge parameters : extent (m) & viscosity (m2.s-1)')
+     &     'Sponge layer width [m]: x_sponge')
 # endif
 # ifdef SEDIMENT
 !

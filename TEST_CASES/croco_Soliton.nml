@@ -27,6 +27,18 @@
   rstname = "soliton_rst.nc"
 /
 
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_average_fields
+  avg_zeta = .true.
+  avg_ubar = .true.
+  avg_vbar = .true.
+/
+
 &croco_rho0
   rho0 = 1025.
 /

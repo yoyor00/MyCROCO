@@ -39,6 +39,21 @@
   rstname = "khinst_rst.nc"
 /
 
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .false.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .false.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 1*.true.
+/
+
 &croco_lin_eos
   R0 = 30.
   T0 = 0.

@@ -41,6 +41,47 @@
   frcname = "TEST_CASES/igw_frc.nc"
 /
 
+&croco_sponge
+  x_sponge = 20.e+3
+/
+
+&croco_nudging
+  tauT_in = 0.05
+  tauT_out = 0.05
+  tauM_in = 0.05
+  tauM_out = 0.05
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 1*.true.
+/
+
+&croco_primary_average_fields
+  avg_zeta = .true.
+  avg_ubar = .true.
+  avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  avg_u = .true.
+  avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  avg_tracer = 1*.true.
+/
+
 &croco_climatology
   clmname = "TEST_CASES/XXXX"
 /

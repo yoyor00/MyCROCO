@@ -43,6 +43,39 @@
   grdname = "rip_grd.nc"
 /
 
+&croco_sponge
+  x_sponge = XXX
+/
+
+&croco_nudging
+  tauT_in = 1.e-5
+  tauT_out = 1.e-2
+  tauM_in = 1.e-5
+  tauM_out = 1.e-2
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_average_fields
+  avg_zeta = .true.
+  avg_ubar = .true.
+  avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  avg_u = .true.
+  avg_v = .true.
+/
+
 &croco_lin_eos
   R0 = 30.
   T0 = 0.
@@ -100,6 +133,26 @@
   nwrtdiags_eddy_avg = 1040
   nrpfdiags_eddy_avg = 0
   diags_eddyname_avg = "rip_diags_eddy_avg.nc"
+/
+
+&croco_diags_eddy_history_fields
+  his_diags_eddy = .false.
+/
+
+&croco_diags_eddy_average_fields
+  avg_diags_eddy = .true.
+/
+
+&croco_gls_history_fields
+  his_tke = .true.
+  his_gls = .false.
+  his_lscale = .false.
+/
+
+&croco_gls_averages_fields
+  avg_tke = .true.
+  avg_gls = .false.
+  avg_lscale = .false.
 /
 
 

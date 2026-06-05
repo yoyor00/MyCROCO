@@ -2107,7 +2107,6 @@
 
       character*180 usrname
      &         ,   qbarname, tsrcname
-     &         ,   btfname
 
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
@@ -2120,12 +2119,12 @@
 ! 26 abl1d var + 1 var Time
 #endif
 
-      common /cncscrum/   
+      common /cncscrum/
      &             origin_date, start_date_run
+     &         ,   origin_date_in_sec
+     &         ,   xios_origin_date_in_sec
      &         ,   usrname
      &         ,   qbarname, tsrcname
-     &         ,   btfname, origin_date_in_sec
-     &         ,   xios_origin_date_in_sec
      &         ,   start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year

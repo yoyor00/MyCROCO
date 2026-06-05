@@ -49,6 +49,47 @@
   frcname = "croco_frc_vilaine.nc"
 /
 
+&croco_sponge
+  x_sponge = XXX
+/
+
+&croco_nudging
+  tauT_in = 1.
+  tauT_out = 360.
+  tauM_in = 3.
+  tauM_out = 360.
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 5*.true.
+/
+
+&croco_primary_average_fields
+  avg_zeta = .false.
+  avg_ubar = .false.
+  avg_vbar = .false.
+/
+
+&croco_primary_3d_average_fields
+  avg_u = .false.
+  avg_v = .false.
+/
+
+&croco_primary_tracer_average_fields
+  avg_tracer = 5*.false.
+/
+
 &croco_bulk_forcing
   bulkname = "bidon.nc"
 /
@@ -144,6 +185,34 @@
   yearend = 2016
   monthend = 1
   pathbulk = "met_vilaine_201501.nc"
+/
+
+&croco_gls_history_fields
+  his_tke = .false.
+  his_gls = .false.
+  his_lscale = .false.
+/
+
+&croco_gls_averages_fields
+  avg_tke = .false.
+  avg_gls = .false.
+  avg_lscale = .false.
+/
+
+&croco_surf_history_fields
+  his_surf = .true.
+/
+
+&croco_surf_average_fields
+  avg_surf = .true.
+/
+
+&croco_station_fields
+  sta_grd = .true.
+  sta_temp = .true.
+  sta_salt = .true.
+  sta_rho = .true.
+  sta_vel = .true.
 /
 
 

@@ -33,6 +33,32 @@
   rstname = "internal_rst.nc"
 /
 
+&croco_sponge
+  x_sponge = XXX
+/
+
+&croco_nudging
+  tauT_in = 1.
+  tauT_out = 180.
+  tauM_in = 1.
+  tauM_out = 180.
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 1*.true.
+/
+
 &croco_lin_eos
   R0 = 0.
   T0 = 0.

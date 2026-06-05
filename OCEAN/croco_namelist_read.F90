@@ -71,6 +71,15 @@ contains
    !---------------------------------------------------------------------
    subroutine read_nml(ierr)
       use param, ONLY: stdout, NT
+#ifdef DIAGNOSTICS_BIO
+      use param, ONLY: NumFluxTerms, NumVSinkTerms
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      use param, ONLY: NumGasExcTerms
+# endif
+#endif
+#if defined SOLVE3D && defined SEDIMENT
+      use param, ONLY: NST
+#endif
       use croco_namelist
       use croco_namelist_check, ONLY: check_all
       use croco_namelist_init, ONLY: init_all
@@ -103,6 +112,18 @@ contains
       namelist /croco_grid/ grdname
 #endif
       namelist /croco_forcing/ frcname
+#if defined SPONGE && !defined SPONGE_GRID
+      namelist /croco_sponge/ x_sponge
+#endif
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
+     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
+     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  
+      namelist /croco_nudging/ tauT_in, tauT_out, tauM_in, tauM_out
+#endif
+#if defined BHFLUX || (defined BWFLUX && defined SALINITY)
+      namelist /croco_bottom_forcing/ btfname
+#endif
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
       namelist /croco_bulk_forcing/ bulkname
 #endif
@@ -208,6 +229,164 @@ contains
 #ifdef STATIONS
       namelist /croco_stations/ ldefsta, nsta, nrpfsta, staposname, staname
 #endif
+      namelist /croco_primary_history_fields/ his_zeta, his_ubar, his_vbar
+#ifdef SOLVE3D
+      namelist /croco_primary_history_3d_fields/ his_u, his_v
+# ifdef TRACERS
+      namelist /croco_primary_history_tracer_fields/ his_tracer
+# endif
+#endif
+#ifdef AVERAGES
+      namelist /croco_primary_average_fields/ avg_zeta, avg_ubar, avg_vbar
+# ifdef SOLVE3D
+      namelist /croco_primary_3d_average_fields/ avg_u, avg_v
+#  ifdef TRACERS
+      namelist /croco_primary_tracer_average_fields/ avg_tracer
+#  endif
+# endif
+#endif
+#ifdef DIAGNOSTICS_TS
+# ifdef TRACERS
+      namelist /croco_diag3D_history_fields/ his_dia3D_tracer
+#  ifdef DIAGNOSTICS_TS_MLD
+      namelist /croco_diag2D_history_fields/ his_dia2D_tracer
+#  endif
+# endif
+# if defined AVERAGES && defined TRACERS
+      namelist /croco_diag3D_average_fields/ avg_dia3D_tracer
+#  ifdef DIAGNOSTICS_TS_MLD
+      namelist /croco_diag2D_average_fields/ avg_dia2D_tracer
+#  endif
+# endif
+#endif
+#ifdef DIAGNOSTICS_UV
+      namelist /croco_diagM_history_fields/ his_diagM_u, his_diagM_v
+# ifdef AVERAGES
+      namelist /croco_diagM_average_fields/ avg_diagM_u, avg_diagM_v
+# endif
+#endif
+#ifdef DIAGNOSTICS_VRT
+      namelist /croco_diags_vrt_history_fields/ his_diags_vrt
+# ifdef AVERAGES
+      namelist /croco_diags_vrt_average_fields/ avg_diags_vrt
+# endif
+#endif
+#ifdef DIAGNOSTICS_EK
+      namelist /croco_diags_ek_history_fields/ his_diags_ek
+# ifdef AVERAGES
+      namelist /croco_diags_ek_average_fields/ avg_diags_ek
+# endif
+#endif
+#if defined DIAGNOSTICS_PV && defined TRACERS
+      namelist /croco_diags_pv_history_fields/ his_diags_pv_tracer
+# ifdef AVERAGES
+      namelist /croco_diags_pv_average_fields/ avg_diags_pv_tracer
+# endif
+#endif
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+      namelist /croco_diags_eddy_history_fields/ his_diags_eddy
+# ifdef AVERAGES
+      namelist /croco_diags_eddy_average_fields/ avg_diags_eddy
+# endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+      namelist /croco_diagbioFlux_history_fields/   his_diagbioFlux
+      namelist /croco_diagbioVSink_history_fields/  his_diagbioVSink
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      namelist /croco_diagbioGasExc_history_fields/ his_diagbioGasExc
+# endif
+# ifdef AVERAGES
+      namelist /croco_diagbioFlux_average_fields/   avg_diagbioFlux
+      namelist /croco_diagbioVSink_average_fields/  avg_diagbioVSink
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      namelist /croco_diagbioGasExc_average_fields/ avg_diagbioGasExc
+#  endif
+# endif
+#endif
+#ifdef STOGEN
+      namelist /croco_stochastic_history_fields/ his_xi2d, his_xi3d
+#endif
+#if defined SOLVE3D && defined GLS_MIXING
+      namelist /croco_gls_history_fields/ his_tke, his_gls, his_lscale
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined GLS_MIXING
+      namelist /croco_gls_averages_fields/ avg_tke, avg_gls, avg_lscale
+#endif
+#if defined ABL1D && !defined XIOS
+      namelist /croco_abl_history_fields/ &
+         his_abl_pu_dta, his_abl_pv_dta, his_abl_pt_dta, &
+         his_abl_pq_dta, his_abl_pgu_dta, his_abl_pgv_dta, &
+         his_abl_u_abl, his_abl_v_abl, his_abl_t_abl, his_abl_q_abl, &
+         his_abl_tke_abl, his_abl_mxlm_abl, his_abl_mxld_abl, &
+         his_abl_avm_abl, his_abl_avt_abl, his_abl_ablh_abl, &
+         his_abl_zr_abl, his_abl_zw_abl, his_abl_Hzr_abl, his_abl_Hzw_abl
+# ifdef AVERAGES
+      namelist /croco_abl_averages_fields/ &
+         avg_abl_pu_dta, avg_abl_pv_dta, avg_abl_pt_dta, &
+         avg_abl_pq_dta, avg_abl_pgu_dta, avg_abl_pgv_dta, &
+         avg_abl_u_abl, avg_abl_v_abl, avg_abl_t_abl, avg_abl_q_abl, &
+         avg_abl_tke_abl, avg_abl_mxlm_abl, avg_abl_mxld_abl, &
+         avg_abl_avm_abl, avg_abl_avt_abl, avg_abl_ablh_abl, &
+         avg_abl_zr_abl, avg_abl_zw_abl, avg_abl_Hzr_abl, avg_abl_Hzw_abl
+# endif
+#endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      namelist /croco_surf_history_fields/ his_surf
+# ifdef AVERAGES
+      namelist /croco_surf_average_fields/ avg_surf
+# endif
+#endif
+#ifdef STATIONS
+      namelist /croco_station_fields/ sta_grd, sta_temp, sta_salt, &
+         sta_rho, sta_vel
+#endif
+#if defined SOLVE3D && defined SEDIMENT
+      namelist /croco_sediment_history_fields/ &
+         his_sed_athk, his_sed_bthk, his_sed_bpor
+      namelist /croco_sediment_bfra_history_fields/ his_sed_bfra
+# ifdef SUSPLOAD
+      namelist /croco_sediment_suspload_history_fields/ &
+         his_sed_dflx, his_sed_eflx
+# endif
+# ifdef BEDLOAD
+      namelist /croco_sediment_bedload_history_fields/ &
+         his_sed_bdlu, his_sed_bdlv
+# endif
+# if defined MIXED_BED || defined COHESIVE_BED
+      namelist /croco_sediment_cohesive_history_fields/ his_sed_btcr
+# endif
+#endif
+#ifdef BBL
+      namelist /croco_bbl_history_fields/ &
+         his_abed, his_hripple, his_lripple, his_zbnot, his_zbapp, &
+         his_bostrw
+#endif
+#ifdef MRL_WCI
+      namelist /croco_wci_history_fields/ his_sup, his_ust2d, his_vst2d
+# ifdef SOLVE3D
+      namelist /croco_wci_history_3d_fields/ &
+         his_ust, his_vst, his_wst, his_akb, his_akw, his_kvf, &
+         his_calp, his_kaps
+# endif
+# ifdef AVERAGES
+      namelist /croco_wci_average_fields/ avg_sup, avg_ust2d, avg_vst2d
+#  ifdef SOLVE3D
+      namelist /croco_wci_average_3d_fields/ &
+         avg_ust, avg_vst, avg_wst, avg_akb, avg_akw, avg_kvf, &
+         avg_calp, avg_kaps
+#  endif
+# endif
+#endif
+#if defined MRL_WCI || defined OW_COUPLING
+      namelist /croco_wave_history_fields/ &
+         his_hrm, his_frq, his_action, his_k_xi, his_k_eta, &
+         his_eps_b, his_eps_d, his_erol, his_eps_r
+# ifdef AVERAGES
+      namelist /croco_wave_average_fields/ &
+         avg_hrm, avg_frq, avg_action, avg_k_xi, avg_k_eta, &
+         avg_eps_b, avg_eps_d, avg_erol, avg_eps_r
+# endif
+#endif
 #ifdef ONLINE
       namelist /croco_online/ yearnum, monthnum, recordsperday, &
          yearend, monthend, pathbulk
@@ -263,15 +442,72 @@ contains
 #endif
       ierr = 0
 
-      ! Allocate tracer arrays with the actual NT size (from use param).
+      ! Allocate all NT-sized arrays before any namelist read.
 #ifdef SOLVE3D
-#  ifdef TRACERS
-      if (.not. allocated(tnu2)) then; allocate (tnu2(NT)); tnu2 = 0.0; end if
-      if (.not. allocated(tnu4)) then; allocate (tnu4(NT)); tnu4 = 0.0; end if
-#    if !defined LMD_MIXING
-      if (.not. allocated(Akt_bak)) then; allocate (Akt_bak(NT)); Akt_bak = 1.e-6; end if
-#    endif
+# ifdef TRACERS
+      if (.not. allocated(tnu2))      then; allocate(tnu2(NT));      tnu2      = 0.0;   end if
+      if (.not. allocated(tnu4))      then; allocate(tnu4(NT));      tnu4      = 0.0;   end if
+#  if !defined LMD_MIXING
+      if (.not. allocated(Akt_bak))   then; allocate(Akt_bak(NT));   Akt_bak   = 1.e-6; end if
 #  endif
+      if (.not. allocated(his_tracer)) then; allocate(his_tracer(NT)); his_tracer = .true.; end if
+#  if defined AVERAGES
+      if (.not. allocated(avg_tracer)) then; allocate(avg_tracer(NT)); avg_tracer = .true.; end if
+#  endif
+#  ifdef DIAGNOSTICS_TS
+      if (.not. allocated(his_dia3D_tracer)) then; allocate(his_dia3D_tracer(NT)); his_dia3D_tracer = .true.; end if
+#   ifdef DIAGNOSTICS_TS_MLD
+      if (.not. allocated(his_dia2D_tracer)) then; allocate(his_dia2D_tracer(NT)); his_dia2D_tracer = .true.; end if
+#   endif
+#   ifdef AVERAGES
+      if (.not. allocated(avg_dia3D_tracer)) then; allocate(avg_dia3D_tracer(NT)); avg_dia3D_tracer = .true.; end if
+#    ifdef DIAGNOSTICS_TS_MLD
+      if (.not. allocated(avg_dia2D_tracer)) then; allocate(avg_dia2D_tracer(NT)); avg_dia2D_tracer = .true.; end if
+#    endif
+#   endif
+#  endif
+#  ifdef DIAGNOSTICS_PV
+      if (.not. allocated(his_diags_pv_tracer)) then; allocate(his_diags_pv_tracer(NT)); his_diags_pv_tracer = .true.; end if
+#   ifdef AVERAGES
+      if (.not. allocated(avg_diags_pv_tracer)) then; allocate(avg_diags_pv_tracer(NT)); avg_diags_pv_tracer = .true.; end if
+#   endif
+#  endif
+# endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+      if (.not. allocated(his_diagbioFlux))  then; allocate(his_diagbioFlux(NumFluxTerms));   his_diagbioFlux  = .true.; end if
+      if (.not. allocated(his_diagbioVSink)) then; allocate(his_diagbioVSink(NumVSinkTerms));  his_diagbioVSink = .true.; end if
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      if (.not. allocated(his_diagbioGasExc)) then; allocate(his_diagbioGasExc(NumGasExcTerms)); his_diagbioGasExc = .true.; end if
+# endif
+# ifdef AVERAGES
+      if (.not. allocated(avg_diagbioFlux))  then; allocate(avg_diagbioFlux(NumFluxTerms));   avg_diagbioFlux  = .true.; end if
+      if (.not. allocated(avg_diagbioVSink)) then; allocate(avg_diagbioVSink(NumVSinkTerms));  avg_diagbioVSink = .true.; end if
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      if (.not. allocated(avg_diagbioGasExc)) then; allocate(avg_diagbioGasExc(NumGasExcTerms)); avg_diagbioGasExc = .true.; end if
+#  endif
+# endif
+#endif
+#if defined SOLVE3D && defined SEDIMENT
+      if (.not. allocated(his_sed_bfra)) then
+         allocate(his_sed_bfra(NST)); his_sed_bfra = .true.
+      end if
+# ifdef SUSPLOAD
+      if (.not. allocated(his_sed_dflx)) then
+         allocate(his_sed_dflx(NST)); his_sed_dflx = .true.
+      end if
+      if (.not. allocated(his_sed_eflx)) then
+         allocate(his_sed_eflx(NST)); his_sed_eflx = .true.
+      end if
+# endif
+# ifdef BEDLOAD
+      if (.not. allocated(his_sed_bdlu)) then
+         allocate(his_sed_bdlu(NST)); his_sed_bdlu = .true.
+      end if
+      if (.not. allocated(his_sed_bdlv)) then
+         allocate(his_sed_bdlv(NST)); his_sed_bdlv = .true.
+      end if
+# endif
 #endif
 
       MPI_master_only write (stdout, *) '*** READING NAMELIST ***'
@@ -412,6 +648,47 @@ contains
             end if
          end if
       end if
+
+#if defined SPONGE && !defined SPONGE_GRID
+      ! --- croco_sponge (optional) ---
+      call check_nml_presence(nmlunit, "croco_sponge", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_sponge, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_sponge (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
+     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
+     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
+     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
+     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
+      ! --- croco_nudging (optional) ---
+      call check_nml_presence(nmlunit, "croco_nudging", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_nudging, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_nudging (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#if defined BHFLUX || (defined BWFLUX && defined SALINITY)
+      ! --- croco_bottom_forcing (optional) ---
+      call check_nml_presence(nmlunit, "croco_bottom_forcing", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bottom_forcing, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_bottom_forcing (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
 
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
       ! --- croco_bulk_forcing (optional) ---
@@ -773,6 +1050,466 @@ contains
          end if
       end if
 #endif
+      ! --- croco_primary_history_fields (optional) ---
+      call check_nml_presence(nmlunit, "croco_primary_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_primary_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_primary_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#ifdef SOLVE3D
+      ! --- croco_primary_history_3d_fields (optional) ---
+      call check_nml_presence(nmlunit, "croco_primary_history_3d_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_primary_history_3d_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_primary_history_3d_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef TRACERS
+      ! --- croco_primary_history_tracer_fields (optional) ---
+      call check_nml_presence(nmlunit, "croco_primary_history_tracer_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_primary_history_tracer_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_primary_history_tracer_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
+#ifdef AVERAGES
+      ! --- croco_primary_average_fields (optional) ---
+      call check_nml_presence(nmlunit, "croco_primary_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_primary_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_primary_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef SOLVE3D
+      ! --- croco_primary_3d_average_fields (optional) ---
+      call check_nml_presence(nmlunit, "croco_primary_3d_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_primary_3d_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_primary_3d_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef TRACERS
+      ! --- croco_primary_tracer_average_fields (optional) ---
+      call check_nml_presence(nmlunit, "croco_primary_tracer_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_primary_tracer_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_primary_tracer_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+# endif
+#endif
+#ifdef DIAGNOSTICS_TS
+# ifdef TRACERS
+      call check_nml_presence(nmlunit, "croco_diag3D_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diag3D_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diag3D_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef DIAGNOSTICS_TS_MLD
+      call check_nml_presence(nmlunit, "croco_diag2D_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diag2D_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diag2D_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+# endif
+# if defined AVERAGES && defined TRACERS
+      call check_nml_presence(nmlunit, "croco_diag3D_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diag3D_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diag3D_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef DIAGNOSTICS_TS_MLD
+      call check_nml_presence(nmlunit, "croco_diag2D_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diag2D_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diag2D_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+# endif
+#endif
+#ifdef DIAGNOSTICS_UV
+      call check_nml_presence(nmlunit, "croco_diagM_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagM_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagM_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_diagM_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagM_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagM_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
+#ifdef DIAGNOSTICS_VRT
+      call check_nml_presence(nmlunit, "croco_diags_vrt_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_vrt_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_vrt_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_diags_vrt_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_vrt_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_vrt_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
+#ifdef DIAGNOSTICS_EK
+      call check_nml_presence(nmlunit, "croco_diags_ek_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_ek_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_ek_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_diags_ek_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_ek_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_ek_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
+#if defined DIAGNOSTICS_PV && defined TRACERS
+      call check_nml_presence(nmlunit, "croco_diags_pv_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_pv_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_pv_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_diags_pv_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_pv_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_pv_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+      call check_nml_presence(nmlunit, "croco_diags_eddy_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_eddy_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_eddy_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_diags_eddy_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diags_eddy_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diags_eddy_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+      call check_nml_presence(nmlunit, "croco_diagbioFlux_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagbioFlux_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagbioFlux_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+      call check_nml_presence(nmlunit, "croco_diagbioVSink_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagbioVSink_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagbioVSink_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      call check_nml_presence(nmlunit, "croco_diagbioGasExc_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagbioGasExc_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagbioGasExc_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_diagbioFlux_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagbioFlux_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagbioFlux_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+      call check_nml_presence(nmlunit, "croco_diagbioVSink_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagbioVSink_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagbioVSink_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      call check_nml_presence(nmlunit, "croco_diagbioGasExc_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_diagbioGasExc_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_diagbioGasExc_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+# endif
+#endif
+#ifdef STOGEN
+      call check_nml_presence(nmlunit, "croco_stochastic_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_stochastic_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_stochastic_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+#if defined SOLVE3D && defined GLS_MIXING
+      call check_nml_presence(nmlunit, "croco_gls_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_gls_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_gls_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined GLS_MIXING
+      call check_nml_presence(nmlunit, "croco_gls_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_gls_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_gls_averages_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+#if defined ABL1D && !defined XIOS
+      call check_nml_presence(nmlunit, "croco_abl_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_abl_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_abl_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_abl_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_abl_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_abl_averages_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      call check_nml_presence(nmlunit, "croco_surf_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_surf_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_surf_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_surf_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_surf_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_surf_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
+#ifdef STATIONS
+      call check_nml_presence(nmlunit, "croco_station_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_station_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_station_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+#if defined SOLVE3D && defined SEDIMENT
+      call check_nml_presence(nmlunit, "croco_sediment_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_sediment_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_sediment_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+      call check_nml_presence(nmlunit, "croco_sediment_bfra_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_sediment_bfra_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_sediment_bfra_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef SUSPLOAD
+      call check_nml_presence(nmlunit, "croco_sediment_suspload_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_sediment_suspload_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_sediment_suspload_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+# ifdef BEDLOAD
+      call check_nml_presence(nmlunit, "croco_sediment_bedload_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_sediment_bedload_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_sediment_bedload_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+# if defined MIXED_BED || defined COHESIVE_BED
+      call check_nml_presence(nmlunit, "croco_sediment_cohesive_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_sediment_cohesive_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_sediment_cohesive_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
+#ifdef BBL
+      call check_nml_presence(nmlunit, "croco_bbl_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bbl_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_bbl_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+#ifdef MRL_WCI
+      call check_nml_presence(nmlunit, "croco_wci_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wci_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wci_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef SOLVE3D
+      call check_nml_presence(nmlunit, "croco_wci_history_3d_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wci_history_3d_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wci_history_3d_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_wci_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wci_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wci_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  ifdef SOLVE3D
+      call check_nml_presence(nmlunit, "croco_wci_average_3d_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wci_average_3d_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wci_average_3d_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#  endif
+# endif
+#endif
+#if defined MRL_WCI || defined OW_COUPLING
+      call check_nml_presence(nmlunit, "croco_wave_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wave_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wave_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# ifdef AVERAGES
+      call check_nml_presence(nmlunit, "croco_wave_average_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wave_average_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wave_average_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+# endif
+#endif
 #ifdef ONLINE
       ! --- croco_online (optional) ---
       call check_nml_presence(nmlunit, "croco_online", .false., found, ierr)
@@ -1034,6 +1771,20 @@ contains
       if (use_frcname) then
          MPI_master_only WRITE (stdout, nml=croco_forcing)
       end if
+#if defined SPONGE && !defined SPONGE_GRID
+      MPI_master_only WRITE (stdout, nml=croco_sponge)
+#endif
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
+     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
+     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
+     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
+     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
+      MPI_master_only WRITE (stdout, nml=croco_nudging)
+#endif
+#if defined BHFLUX || (defined BWFLUX && defined SALINITY)
+      MPI_master_only WRITE (stdout, nml=croco_bottom_forcing)
+#endif
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
       MPI_master_only WRITE (stdout, nml=croco_bulk_forcing)
 #endif
@@ -1136,6 +1887,138 @@ contains
 #endif
 #ifdef STATIONS
       MPI_master_only WRITE (stdout, nml=croco_stations)
+#endif
+      MPI_master_only WRITE (stdout, nml=croco_primary_history_fields)
+#ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_primary_history_3d_fields)
+# ifdef TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_primary_history_tracer_fields)
+# endif
+#endif
+#ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_primary_average_fields)
+# ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_primary_3d_average_fields)
+#  ifdef TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_primary_tracer_average_fields)
+#  endif
+# endif
+#endif
+#ifdef DIAGNOSTICS_TS
+# ifdef TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_diag3D_history_fields)
+#  ifdef DIAGNOSTICS_TS_MLD
+      MPI_master_only WRITE (stdout, nml=croco_diag2D_history_fields)
+#  endif
+# endif
+# if defined AVERAGES && defined TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_diag3D_average_fields)
+#  ifdef DIAGNOSTICS_TS_MLD
+      MPI_master_only WRITE (stdout, nml=croco_diag2D_average_fields)
+#  endif
+# endif
+#endif
+#ifdef DIAGNOSTICS_UV
+      MPI_master_only WRITE (stdout, nml=croco_diagM_history_fields)
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diagM_average_fields)
+# endif
+#endif
+#ifdef DIAGNOSTICS_VRT
+      MPI_master_only WRITE (stdout, nml=croco_diags_vrt_history_fields)
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_vrt_average_fields)
+# endif
+#endif
+#ifdef DIAGNOSTICS_EK
+      MPI_master_only WRITE (stdout, nml=croco_diags_ek_history_fields)
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_ek_average_fields)
+# endif
+#endif
+#if defined DIAGNOSTICS_PV && defined TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_diags_pv_history_fields)
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_pv_average_fields)
+# endif
+#endif
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+      MPI_master_only WRITE (stdout, nml=croco_diags_eddy_history_fields)
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_eddy_average_fields)
+# endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+      MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_history_fields)
+      MPI_master_only WRITE (stdout, nml=croco_diagbioVSink_history_fields)
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_history_fields)
+# endif
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_average_fields)
+      MPI_master_only WRITE (stdout, nml=croco_diagbioVSink_average_fields)
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_average_fields)
+#  endif
+# endif
+#endif
+#ifdef STOGEN
+      MPI_master_only WRITE (stdout, nml=croco_stochastic_history_fields)
+#endif
+#if defined SOLVE3D && defined GLS_MIXING
+      MPI_master_only WRITE (stdout, nml=croco_gls_history_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined GLS_MIXING
+      MPI_master_only WRITE (stdout, nml=croco_gls_averages_fields)
+#endif
+#if defined ABL1D && !defined XIOS
+      MPI_master_only WRITE (stdout, nml=croco_abl_history_fields)
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_abl_averages_fields)
+# endif
+#endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      MPI_master_only WRITE (stdout, nml=croco_surf_history_fields)
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_surf_average_fields)
+# endif
+#endif
+#ifdef STATIONS
+      MPI_master_only WRITE (stdout, nml=croco_station_fields)
+#endif
+#if defined SOLVE3D && defined SEDIMENT
+      MPI_master_only WRITE (stdout, nml=croco_sediment_history_fields)
+      MPI_master_only WRITE (stdout, nml=croco_sediment_bfra_history_fields)
+# ifdef SUSPLOAD
+      MPI_master_only WRITE (stdout, nml=croco_sediment_suspload_history_fields)
+# endif
+# ifdef BEDLOAD
+      MPI_master_only WRITE (stdout, nml=croco_sediment_bedload_history_fields)
+# endif
+# if defined MIXED_BED || defined COHESIVE_BED
+      MPI_master_only WRITE (stdout, nml=croco_sediment_cohesive_history_fields)
+# endif
+#endif
+#ifdef BBL
+      MPI_master_only WRITE (stdout, nml=croco_bbl_history_fields)
+#endif
+#ifdef MRL_WCI
+      MPI_master_only WRITE (stdout, nml=croco_wci_history_fields)
+# ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_wci_history_3d_fields)
+# endif
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_wci_average_fields)
+#  ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_wci_average_3d_fields)
+#  endif
+# endif
+#endif
+#if defined MRL_WCI || defined OW_COUPLING
+      MPI_master_only WRITE (stdout, nml=croco_wave_history_fields)
+# ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_wave_average_fields)
+# endif
 #endif
 #ifdef ONLINE
       MPI_master_only WRITE (stdout, nml=croco_online)

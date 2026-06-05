@@ -33,6 +33,40 @@
   rstname = "innershelf_rst.nc"
 /
 
+&croco_sponge
+  x_sponge = 40.e3
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 1*.true.
+/
+
+&croco_primary_average_fields
+  avg_zeta = .true.
+  avg_ubar = .true.
+  avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  avg_u = .true.
+  avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  avg_tracer = 1*.true.
+/
+
 &croco_lin_eos
   R0 = 30.
   T0 = 20.
@@ -104,6 +138,14 @@
 &croco_diag_mld_dens
   mld_crit_D = 3.d-2
   mld_crit_T = 2.d-1
+/
+
+&croco_station_fields
+  sta_grd = .true.
+  sta_temp = .true.
+  sta_salt = .false.
+  sta_rho = .false.
+  sta_vel = .true.
 /
 
 

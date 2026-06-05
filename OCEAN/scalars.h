@@ -149,19 +149,6 @@
       real weight(6,0:NWEIGHT)
 
 #endif
-#if defined SPONGE || \
-     defined TNUDGING   || defined M2NUDGING  || \
-     defined M3NUDGING  || defined ZNUDGING
-      real  x_sponge,   v_sponge
-#endif
-#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
-     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
-       real  tauT_in, tauT_out, tauM_in, tauM_out
-#endif
       integer numthreads,     ntstart
      &      , nfast
 #ifdef EXACT_RESTART
@@ -190,19 +177,6 @@
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
      &           , rx0,       rx1
      &                      , weight
-#endif
-#if defined SPONGE || \
-     defined TNUDGING   || defined M2NUDGING  || \
-     defined M3NUDGING  || defined ZNUDGING
-     &                      , x_sponge,   v_sponge
-#endif
-#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined W_FRC_BRY     ||                          \
-     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY
-     &                      , tauT_in, tauT_out, tauM_in, tauM_out
 #endif
      &      , numthreads,     ntstart
      &      , nfast

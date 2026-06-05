@@ -33,6 +33,36 @@
   rstname = "croco_rst_body_rot.nc"
 /
 
+&croco_primary_history_fields
+  his_zeta = .false.
+  his_ubar = .false.
+  his_vbar = .false.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 2*.true.
+/
+
+&croco_primary_average_fields
+  avg_zeta = .false.
+  avg_ubar = .false.
+  avg_vbar = .false.
+/
+
+&croco_primary_3d_average_fields
+  avg_u = .true.
+  avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  avg_tracer = 2*.true.
+/
+
 &croco_lin_eos
   R0 = 0.
   T0 = 16.

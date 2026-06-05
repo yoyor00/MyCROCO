@@ -37,6 +37,36 @@
   rstname = "basin_rst.nc"
 /
 
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 1*.true.
+/
+
+&croco_primary_average_fields
+  avg_zeta = .true.
+  avg_ubar = .true.
+  avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  avg_u = .true.
+  avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  avg_tracer = 1*.true.
+/
+
 &croco_bodyforce
   levsfrc = 10
   levbfrc = 1
@@ -134,6 +164,37 @@
   nwrtdiags_ek_avg = 0
   nrpfdiags_ek_avg = 0
   diags_ekname_avg = "basin_diags_ek_avg.nc"
+/
+
+&croco_diagM_history_fields
+  his_diagM_u = .true.
+  his_diagM_v = .true.
+/
+
+&croco_diagM_average_fields
+  avg_diagM_u = .true.
+  avg_diagM_v = .true.
+/
+
+&croco_diags_vrt_history_fields
+  his_diags_vrt = .true.
+/
+
+&croco_diags_vrt_average_fields
+  avg_diags_vrt = .true.
+/
+
+&croco_diags_ek_history_fields
+  his_diags_ek = .true.
+/
+
+&croco_diags_ek_average_fields
+  avg_diags_ek = .true.
+/
+
+&croco_stochastic_history_fields
+  his_xi2d = .true.
+  his_xi3d = .false.
 /
 
 

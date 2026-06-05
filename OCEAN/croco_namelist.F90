@@ -658,6 +658,144 @@ MODULE croco_namelist
    !! Stations output file
 #endif
 
+#if (defined SPONGE && !defined SPONGE_GRID)
+   ! &croco_sponge
+   real :: x_sponge = 0.0
+   !! Thickness of sponge/nudging layer [m]
+#endif
+
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
+     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
+     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
+     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
+     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
+   ! &croco_nudging
+   real :: tauT_in  = 1.0
+   !! Inflow nudging time-scale for tracers [days]
+   real :: tauT_out = 360.0
+   !! Outflow nudging time-scale for tracers [days]
+   real :: tauM_in  = 3.0
+   !! Inflow nudging time-scale for momentum [days]
+   real :: tauM_out = 360.0
+   !! Outflow nudging time-scale for momentum [days]
+#endif
+
+#if defined BHFLUX || (defined BWFLUX && defined SALINITY)
+   ! &croco_bottom_forcing
+   character(len=180) :: btfname = "CROCO_FILES/croco_btf.nc"
+   !! Name of bottom hydrothermal forcing file
+#endif
+
+   ! &croco_primary_history_fields / &croco_primary_history_3d_fields
+   logical :: his_zeta = .true.
+   logical :: his_ubar = .true.
+   logical :: his_vbar = .true.
+#ifdef SOLVE3D
+   logical :: his_u    = .true.
+   logical :: his_v    = .true.
+# ifdef TRACERS
+   logical, allocatable :: his_tracer(:)
+# endif
+#endif
+
+#ifdef AVERAGES
+   ! &croco_primary_average_fields / &croco_primary_3d_average_fields
+   logical :: avg_zeta = .true.
+   logical :: avg_ubar = .true.
+   logical :: avg_vbar = .true.
+# ifdef SOLVE3D
+   logical :: avg_u    = .true.
+   logical :: avg_v    = .true.
+#  ifdef TRACERS
+   logical, allocatable :: avg_tracer(:)
+#  endif
+# endif
+#endif
+
+#ifdef DIAGNOSTICS_TS
+# ifdef TRACERS
+   ! &croco_diag3D_history_fields
+   logical, allocatable :: his_dia3D_tracer(:)
+#  ifdef DIAGNOSTICS_TS_MLD
+   ! &croco_diag2D_history_fields
+   logical, allocatable :: his_dia2D_tracer(:)
+#  endif
+# endif
+# if defined AVERAGES && defined TRACERS
+   ! &croco_diag3D_average_fields
+   logical, allocatable :: avg_dia3D_tracer(:)
+#  ifdef DIAGNOSTICS_TS_MLD
+   ! &croco_diag2D_average_fields
+   logical, allocatable :: avg_dia2D_tracer(:)
+#  endif
+# endif
+#endif
+
+#ifdef DIAGNOSTICS_UV
+   ! &croco_diagM_history_fields
+   logical :: his_diagM_u = .true.
+   logical :: his_diagM_v = .true.
+# ifdef AVERAGES
+   ! &croco_diagM_average_fields
+   logical :: avg_diagM_u = .true.
+   logical :: avg_diagM_v = .true.
+# endif
+#endif
+
+#ifdef DIAGNOSTICS_VRT
+   ! &croco_diags_vrt_history_fields
+   logical :: his_diags_vrt = .true.
+# ifdef AVERAGES
+   ! &croco_diags_vrt_average_fields
+   logical :: avg_diags_vrt = .true.
+# endif
+#endif
+
+#ifdef DIAGNOSTICS_EK
+   ! &croco_diags_ek_history_fields
+   logical :: his_diags_ek = .true.
+# ifdef AVERAGES
+   ! &croco_diags_ek_average_fields
+   logical :: avg_diags_ek = .true.
+# endif
+#endif
+
+#if defined DIAGNOSTICS_PV && defined TRACERS
+   ! &croco_diags_pv_history_fields
+   logical, allocatable :: his_diags_pv_tracer(:)
+# ifdef AVERAGES
+   ! &croco_diags_pv_average_fields
+   logical, allocatable :: avg_diags_pv_tracer(:)
+# endif
+#endif
+
+#if defined DIAGNOSTICS_EDDY && !defined XIOS
+   ! &croco_diags_eddy_history_fields
+   logical :: his_diags_eddy = .true.
+# ifdef AVERAGES
+   ! &croco_diags_eddy_average_fields
+   logical :: avg_diags_eddy = .true.
+# endif
+#endif
+
+#ifdef DIAGNOSTICS_BIO
+   ! &croco_diagbioFlux/VSink/GasExc_history_fields
+   logical, allocatable :: his_diagbioFlux(:)
+   logical, allocatable :: his_diagbioVSink(:)
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+   logical, allocatable :: his_diagbioGasExc(:)
+# endif
+# ifdef AVERAGES
+   ! &croco_diagbioFlux/VSink/GasExc_average_fields
+   logical, allocatable :: avg_diagbioFlux(:)
+   logical, allocatable :: avg_diagbioVSink(:)
+#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+   logical, allocatable :: avg_diagbioGasExc(:)
+#  endif
+# endif
+#endif
+
 #ifdef ONLINE
    ! &croco_online
    integer :: yearnum = 0
@@ -672,6 +810,118 @@ MODULE croco_namelist
    !! End month for online bulk forcing
    character(len=250) :: pathbulk = "./"
    !! Path to bulk forcing data files
+#endif
+
+#ifdef STOGEN
+   ! &croco_stochastic_history_fields
+   logical :: his_xi2d = .true.
+   logical :: his_xi3d = .true.
+#endif
+
+#if defined SOLVE3D && defined GLS_MIXING
+   ! &croco_gls_history_fields
+   logical :: his_tke    = .true.
+   logical :: his_gls    = .true.
+   logical :: his_lscale = .true.
+# ifdef AVERAGES
+   ! &croco_gls_averages_fields
+   logical :: avg_tke    = .true.
+   logical :: avg_gls    = .true.
+   logical :: avg_lscale = .true.
+# endif
+#endif
+
+#if defined SOLVE3D && defined SEDIMENT
+   ! &croco_sediment_history_fields
+   logical :: his_sed_athk = .true.
+   logical :: his_sed_bthk = .true.
+   logical :: his_sed_bpor = .true.
+   ! &croco_sediment_bfra_history_fields
+   logical, allocatable :: his_sed_bfra(:)
+# ifdef SUSPLOAD
+   ! &croco_sediment_suspload_history_fields
+   logical, allocatable :: his_sed_dflx(:)
+   logical, allocatable :: his_sed_eflx(:)
+# endif
+# ifdef BEDLOAD
+   ! &croco_sediment_bedload_history_fields
+   logical, allocatable :: his_sed_bdlu(:)
+   logical, allocatable :: his_sed_bdlv(:)
+# endif
+# if defined MIXED_BED || defined COHESIVE_BED
+   ! &croco_sediment_cohesive_history_fields
+   logical :: his_sed_btcr = .true.
+# endif
+#endif
+
+#ifdef BBL
+   ! &croco_bbl_history_fields
+   logical :: his_abed    = .true.
+   logical :: his_hripple = .true.
+   logical :: his_lripple = .true.
+   logical :: his_zbnot   = .true.
+   logical :: his_zbapp   = .true.
+   logical :: his_bostrw  = .true.
+#endif
+
+#ifdef MRL_WCI
+   ! &croco_wci_history_fields
+   logical :: his_sup   = .true.
+   logical :: his_ust2d = .true.
+   logical :: his_vst2d = .true.
+# ifdef SOLVE3D
+   ! &croco_wci_history_3d_fields
+   logical :: his_ust  = .true.
+   logical :: his_vst  = .true.
+   logical :: his_wst  = .true.
+   logical :: his_akb  = .true.
+   logical :: his_akw  = .true.
+   logical :: his_kvf  = .true.
+   logical :: his_calp = .true.
+   logical :: his_kaps = .true.
+# endif
+# ifdef AVERAGES
+   ! &croco_wci_average_fields
+   logical :: avg_sup   = .true.
+   logical :: avg_ust2d = .true.
+   logical :: avg_vst2d = .true.
+#  ifdef SOLVE3D
+   ! &croco_wci_average_3d_fields
+   logical :: avg_ust  = .true.
+   logical :: avg_vst  = .true.
+   logical :: avg_wst  = .true.
+   logical :: avg_akb  = .true.
+   logical :: avg_akw  = .true.
+   logical :: avg_kvf  = .true.
+   logical :: avg_calp = .true.
+   logical :: avg_kaps = .true.
+#  endif
+# endif
+#endif
+
+#if defined MRL_WCI || defined OW_COUPLING
+   ! &croco_wave_history_fields
+   logical :: his_hrm    = .true.
+   logical :: his_frq    = .true.
+   logical :: his_action = .true.
+   logical :: his_k_xi   = .true.
+   logical :: his_k_eta  = .true.
+   logical :: his_eps_b  = .true.
+   logical :: his_eps_d  = .true.
+   logical :: his_erol   = .true.
+   logical :: his_eps_r  = .true.
+# ifdef AVERAGES
+   ! &croco_wave_average_fields
+   logical :: avg_hrm    = .true.
+   logical :: avg_frq    = .true.
+   logical :: avg_action = .true.
+   logical :: avg_k_xi   = .true.
+   logical :: avg_k_eta  = .true.
+   logical :: avg_eps_b  = .true.
+   logical :: avg_eps_d  = .true.
+   logical :: avg_erol   = .true.
+   logical :: avg_eps_r  = .true.
+# endif
 #endif
 
 END MODULE croco_namelist

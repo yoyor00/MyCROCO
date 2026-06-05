@@ -36,6 +36,47 @@
   grdname = "rip_grd.nc"
 /
 
+&croco_sponge
+  x_sponge = XXX
+/
+
+&croco_nudging
+  tauT_in = 1.
+  tauT_out = 30.
+  tauM_in = 0.1
+  tauM_out = 100.
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 1*.true.
+/
+
+&croco_primary_average_fields
+  avg_zeta = .true.
+  avg_ubar = .true.
+  avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  avg_u = .true.
+  avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  avg_tracer = 1*.true.
+/
+
 &croco_lin_eos
   R0 = 30.
   T0 = 0.
@@ -104,6 +145,49 @@
   nwrtdiaM = 300
   nrpfdiaM = -1
   dianameM = "rip_diaM.nc"
+/
+
+&croco_diagM_history_fields
+  his_diagM_u = .true.
+  his_diagM_v = .true.
+/
+
+&croco_bbl_history_fields
+  his_abed = .false.
+  his_hripple = .false.
+  his_lripple = .false.
+  his_zbnot = .true.
+  his_zbapp = .true.
+  his_bostrw = .true.
+/
+
+&croco_wci_history_fields
+  his_sup = .true.
+  his_ust2d = .true.
+  his_vst2d = .true.
+/
+
+&croco_wci_history_3d_fields
+  his_ust = .true.
+  his_vst = .true.
+  his_wst = .true.
+  his_akb = .true.
+  his_akw = .true.
+  his_kvf = .true.
+  his_calp = .true.
+  his_kaps = .true.
+/
+
+&croco_wave_history_fields
+  his_hrm = .true.
+  his_frq = .true.
+  his_action = .true.
+  his_k_xi = .true.
+  his_k_eta = .true.
+  his_eps_b = .true.
+  his_eps_d = .true.
+  his_erol = .true.
+  his_eps_r = .true.
 /
 
 

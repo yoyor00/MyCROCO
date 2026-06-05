@@ -43,6 +43,32 @@
   grdname = "TEST_CASES/VORTEX/vortex_grd.nc.1"
 /
 
+&croco_sponge
+  x_sponge = 100.e3
+/
+
+&croco_nudging
+  tauT_in = 1.
+  tauT_out = 360.
+  tauM_in = 1.
+  tauM_out = 360.
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 1*.true.
+/
+
 &croco_climatology
   clmname = "XXXXX"
 /

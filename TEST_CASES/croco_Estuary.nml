@@ -41,6 +41,32 @@
   rstname = "estuary_rst.nc"
 /
 
+&croco_sponge
+  x_sponge = 1000.
+/
+
+&croco_nudging
+  tauT_in = 1.
+  tauT_out = 360.
+  tauM_in = 3.
+  tauM_out = 360.
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 4*.true.
+/
+
 &croco_lin_eos
   R0 = 30.d0
   T0 = 20.d0
@@ -80,6 +106,12 @@
 
 &croco_tracer_diff2
   tnu2 = 4*0.d0
+/
+
+&croco_gls_history_fields
+  his_tke = .false.
+  his_gls = .false.
+  his_lscale = .false.
 /
 
 
