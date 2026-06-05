@@ -31,6 +31,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - BENCH : Fix report check status in case of several files (#498)
 
+- NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
+  2d and 3d U-momentum for northern open boundary conditions when 
+  QDM_OBC_TANG_CORRECT is activated (#508).
+
+- XIOS : fix wrong name for mask_rho in field_def_croco.xml_full_withcpp (#513)
+
+- WAVEMAKER : fix use of wavemaker spectrum from data (bulk wave parameters not 
+  initialized in this case). This was done through key ROGUE_WAVES, now changed 
+  to WAVE_MAKER_DATA (#518)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
@@ -126,6 +136,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
     in cppdefs_dev.h (#403)
   - remove hard coded keys in mpc.F (#404)
+  - typo and file mode (#499)
 
 - Support :
   - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
@@ -139,4 +150,5 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
-  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon 
+  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
+  S. Theetten

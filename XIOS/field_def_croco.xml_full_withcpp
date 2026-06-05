@@ -56,7 +56,7 @@
      <field id="angle" long_name="angle between XI-axis and EAST" unit="radians" />
 #endif
 #ifdef MASKING
-     <field id="mask_rho" long_name="angle between XI-axis and EAST" unit="radians" />
+     <field id="mask_rho" long_name="land/sea mask along rho points" unit="--" />
 #endif
      <field id="zeta" long_name="free-surface" unit="meter" />
      <field id="bostr" long_name="Kinematic bottom stress" unit="N/m2" />

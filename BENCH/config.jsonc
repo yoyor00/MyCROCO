@@ -150,7 +150,7 @@
       "SINGLE_COLUMN_FORCED_EKBBL",
       "SINGLE_COLUMN_FORCED_NONROTBBL",
       "SINGLE_COLUMN_FORCED_OSCNONROTBBL",
-      "SINGLE_COLUMN_KATO_PHILIPS",
+      "SINGLE_COLUMN_KATO_PHILLIPS",
       "SINGLE_COLUMN_WILLIS_DEARDORFF",
       "ACOUSTIC",
       "SED_TOY_ROUSE",
@@ -172,7 +172,7 @@
       "SINGLE_COLUMN_FORCED_EKBBL",
       "SINGLE_COLUMN_FORCED_NONROTBBL",
       "SINGLE_COLUMN_FORCED_OSCNONROTBBL",
-      "SINGLE_COLUMN_KATO_PHILIPS",
+      "SINGLE_COLUMN_KATO_PHILLIPS",
       "SINGLE_COLUMN_WILLIS_DEARDORFF",
       "SED_TOY_ROUSE",
       "SED_TOY_CONSOLID",
@@ -181,12 +181,11 @@
       "SED_TOY_FLOC1D",
     ],
     "@vortex": ["VORTEX", "VORTEX_AGRIF_2WAY"],
-    "@agrif_realist": ["BENGUELA_LR_AGRIF_2WAY"],
-    "@agrif_realist_complement": [
-      "BENGUELA_LR_AGRIF_2WAY_DIAGS_ALL",
+    "@agrif_realist": [
+      "BENGUELA_LR_AGRIF_2WAY", 
       "BENGUELA_LR_AGRIF_2WAY_MLD_DENS",
-      // test realist + diags + agrif for schedule
-          ],
+      "BENGUELA_LR_AGRIF_2WAY_DIAGS_ALL",
+    ],
   },
 
   ////////////////////////////// VARIANTS ////////////////////////////////////
