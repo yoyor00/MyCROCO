@@ -37,6 +37,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - XIOS : fix wrong name for mask_rho in field_def_croco.xml_full_withcpp (#513)
 
+- WAVEMAKER : fix use of wavemaker spectrum from data (bulk wave parameters not 
+  initialized in this case). This was done through key ROGUE_WAVES, now changed 
+  to WAVE_MAKER_DATA (#518)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
