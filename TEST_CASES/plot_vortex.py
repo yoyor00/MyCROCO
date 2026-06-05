@@ -8,11 +8,11 @@ import argparse
 
 # Command-line arguments
 parser = argparse.ArgumentParser(
-    description="Plot results from the ISOLITON test case.",
+    description="Plot results from the VORTEX test case.",
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument(
-    "--file", type=str, default="isoliton_his.nc", help="Path to the NetCDF file"
+    "--file", type=str, default="vortex_his.nc", help="Path to the NetCDF file"
 )
 parser.add_argument(
     "--tindex", type=int, nargs="+", default=[30, 50, 70], help="Time indices to plot"
@@ -79,7 +79,6 @@ plt.contour(
     colors="grey",
     linestyles="dashed",
     linewidths=0.2,
-    colorbar=False,
 )
 
 plt.xlabel("X [km]")
@@ -97,7 +96,6 @@ if nestvortex:
         colors="k",
         linestyles="solid",
         linewidths=0.3,
-        colorbar=False,
     )
 
 # Save in PNG
@@ -144,14 +142,12 @@ if nestvortex:
     print(f"Relative difference = {rel_diff:.2f} %")
 
     plt.figure()
-    # plt.imshow(np.flipud(tdiff), cmap='coolwarm', aspect='auto')
-    plt.contourf(Y2, X2, tdiff, cmap="coolwarm", aspect="auto")
+    plt.contourf(Y2, X2, tdiff, cmap="coolwarm")
     plt.xlabel("X [km]")
     plt.ylabel("Y [km]")
     plt.axis([X.min(), X.max(), Y.min(), Y.max()])
     plt.colorbar()
     plt.title(f"Parent - Child (cm) : {vname} - Day {time}")
-    plt.show()
 
     # Save in PNG
     if args.makepng:

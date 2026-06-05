@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -41,6 +42,9 @@
      &     pe2d(PRIVATE_2D_SCRATCH_ARRAY)
       real*QUAD cff, my_avgke, my_avgpe, my_volume
       character echar*8
+#ifdef USE_CALENDAR
+       character*19 :: tool_sectodat
+#endif
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
@@ -332,7 +336,7 @@ C$OMP CRITICAL (diag_cr_rgn)
               endif
               trd=omp_get_thread_num()
               write(stdout,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
-#ifdef CALENDAR
+#ifdef USE_CALENDAR
               write(stdout,'(a)') tool_sectodat(time)
 #endif
    3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)

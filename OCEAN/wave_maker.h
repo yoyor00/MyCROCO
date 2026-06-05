@@ -38,7 +38,7 @@
 !
 !  Set configuration parameters or get from croco.in file
 !
-#ifdef ROGUE_WAVE
+#ifdef WAVE_MAKER_DATA
 # define WAVE_MAKER_SPECTRUM
 
 #elif defined RIP && !defined MRL_WCI
@@ -110,22 +110,17 @@
         gamma=wmaker_fsp  ! JONSWAP peakedness parameter
 #endif
 !
-        wf=2*pi/wp        ! frequency
-!
 !  Time & space origins
 !
-#ifdef ROGUE_WAVE
-        x0=14.1
-        y0=0.
-        time0=64.
-#else
         x0=xr(IB0,0)
         y0=0.
         time0=0.
-#endif
 !
 !  Convert angles to rad
 !
+#ifdef WAVE_MAKER_EAST
+        wd=wd+180.0
+#endif
         wd =wd *deg2rad  ! incidence angle
         wds=wds*deg2rad  ! directional spread
 !
@@ -136,11 +131,13 @@
 !
 !  Peak frequency and wavenumber
 !
+#ifndef WAVE_MAKER_DATA
         h0=h(IB0,1)
         wf=2*pi/wp          ! peak frequency
         khd=h0*wf*wf/g      ! peak wavenumber
         wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                   khd*(K5+K6*khd)))))) )/h0
+#endif
 !
 #if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 # define WAVE_MAKER_SPECTRUM
@@ -150,21 +147,21 @@
 !  Initialisation
 !--------------------------------------------------------------------
 !
-#ifdef ROGUE_WAVE
+#ifdef WAVE_MAKER_DATA
 !
 !  Read file
 !
         if (FIRST_TIME_STEP) then
-!         open(117,file='datwaves_CORR1.txt',form='formatted',status='old')
           open(117,file='datwaves.txt',form='formatted',status='old')
-          do k=1,Nfrq !--> Nfrq=320 in forces.h
-            read(117,*) wa_bry(k), wf_bry(k), wpha_bry(k), wk_bry(k)
-            wa_bry(k)=wa_bry(k)*0.154/0.05  ! correct amplitude
-            ! wpha_bry(k)=wpha_bry(k) + 1.5*pi
-!            khd=h0*wf_bry(k)**2/g      ! recompute wavenumber
+          do iw=1,Nfrq  !--> forces.h
+            read(117,*) wa_bry(iw),wf_bry(iw),wpha_bry(iw),wk_bry(iw)
+!            khd=h0*wf_bry(iw)**2/g  ! compute wavenumber if not given
 !            kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
 !     &                                       khd*(K5+K6*khd)))))) )
-!            wk_bry(k)=kh/h0
+!            wk_bry(iw)=kh/h0
+             wd=0.
+             wkx_bry(iw)=wk_bry(iw)*cos(wd)
+             wky_bry(iw)=wk_bry(iw)*sin(wd)
           enddo
         endif
         ramp=tanh(dt/2.*float(iic-ntstart))
@@ -219,8 +216,13 @@
             wd_bry(jw)=(-1.)**jw * 0.5*pi*( -1. + 
      &                 (floor(wd_bry(jw)-1.))/(float(Ndir)-1.) )
             wd_bry(jw)=wd_bry(jw)+wd
+#   ifdef WAVE_MAKER_EAST
+            if (wd_bry(jw) .ge.  1.5*pi) wd_bry(jw)= 1.5*pi  ! Wave dir. constrained
+            if (wd_bry(jw) .le.  0.5*pi) wd_bry(jw)= 0.5*pi  ! between [-90,90] deg of mean
+#   else
             if (wd_bry(jw) .ge.  0.5*pi) wd_bry(jw)= 0.5*pi
             if (wd_bry(jw) .le. -0.5*pi) wd_bry(jw)=-0.5*pi
+#   endif
             wa_bry_d(jw)=exp(-((wd_bry(jw)-wd)/
      &                          max(1.5*wds,1.e-12))**2)
             cff1=cff1+wa_bry_d(jw)*wa_bry(jw)
@@ -276,6 +278,10 @@
               wd_bry(jw)=wd_bry_tmp(jw) ! only if change of mean
             enddo                       ! angle <0.5deg or <30%
           endif
+#    ifdef WAVE_MAKER_EAST
+          cff0=cff0-pi
+          cff1=cff1-pi
+#    endif
           MPI_master_only write(stdout,'(6x,A,3(f10.5,1x),f10.3/)')
      &            'Mean wave angle correction (Bef. Aft. Diff %):',
      &                        cff0*180/pi,cff1*180/pi,cff2,cff3*100
@@ -283,7 +289,7 @@
 
           CALL RANDOM_SEED(SIZE=nseed)
           ALLOCATE(seed(nseed))
-          seed = 12345  ! Fix seed for reprocucibility
+          seed = 12345  ! Fix seed for reproducibility
           CALL RANDOM_SEED(PUT=seed)
           call RANDOM_NUMBER(wpha_bry)  ! random phase
           do iw=1,Nfrq
@@ -295,7 +301,7 @@
 # else
           CALL RANDOM_SEED(SIZE=nseed)
           ALLOCATE(seed(nseed))
-          seed = 12345  ! Fix seed for reprocucibility
+          seed = 12345  ! Fix seed for reproducibility
           CALL RANDOM_SEED(PUT=seed)
           call RANDOM_NUMBER(wpha_bry)  ! random phase
           do iw=1,Nfrq
@@ -333,7 +339,7 @@
 !
         ramp=tanh(dt/wp*float(iic-ntstart))
         wa=wa*ramp
-#endif /* ROGUE_WAVE ... */
+#endif /* WAVE_MAKER_DATA ... */
 !
 !--------------------------------------------------------------------
 !  Sea level zetabry
@@ -389,7 +395,7 @@
      &                   (4.*sigma**3)*cos(2.*theta)
 #  endif
      &                     )*cff_spread
-# endif /* ROGUE_WAVE ... */
+# endif /* WAVE_MAKER_DATA ... */
         enddo  ! j loop
 #endif /* Z_FRC_BRY */
 !
@@ -401,7 +407,7 @@
         do j=JstrR,JendR
           h0=0.5*(h(IB0,j)+h(IB1,j))
           Du=h0
-# ifdef ROGUE_WAVE
+# ifdef WAVE_MAKER_DATA
           do k=1,N
             UBRY(j,k)=0.
             Zu=Du+0.5*(z_r(IB0,j,k)+z_r(IB1,j,k))
@@ -460,10 +466,11 @@
      &              +cff2*cosh(2*wk*Zu)
 #  endif
           enddo
-# endif /* ROGUE_WAVE */
+# endif /* WAVE_MAKER_DATA */
 
         enddo  ! j loop
 
+# ifndef WAVE_MAKER_DATA
         do j=JstrR,JendR                  ! compensation flow
           Du=0.5*(h(IB0,j)+h(IB1,j))
           cff1=0.5*g*wa*wa*wk/(wf*Du)
@@ -471,6 +478,7 @@
             UBRY(j,k)=UBRY(j,k) - cff1
           enddo
         enddo
+# endif
 
 #endif /* M3_FRC_BRY */
 
@@ -495,7 +503,7 @@
         do j=JstrV,JendR
           h0=0.5*(h(IB0,j)+h(IB0,j-1))
           Dv=h0
-# if defined ROGUE_WAVE || defined SWASH || defined SANDBAR
+# if defined WAVE_MAKER_DATA || defined SWASH || defined SANDBAR
           do k=1,N
             VBRY(j,k)=0.
           enddo

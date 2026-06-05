@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -56,9 +57,6 @@
      &                 1, MPI_COMM_WORLD, status, ierr)
       endif
 # endif
-!
-# undef DEBUG
-!
 !
 ! Create/open diagnostic file; write grid arrays, if so needed.
 !
@@ -364,37 +362,6 @@
 
         endif
 !
-# ifdef DEBUG
-      i=5
-      j=5
-      write(*,*) 'Write diag ek his at : i='
-     &                      ,i,' j=',j
-      write(*,*) 'ekHadv_avg(i,j)   ',ekHadv_avg(i,j)
-      write(*,*) 'ekHdiff_avg(i,j)   ',ekHdiff_avg(i,j)
-      write(*,*) 'ekVadv_avg(i,j)   ',ekVadv_avg(i,j)
-      write(*,*) 'ekCor_avg(i,j)    ',ekCor_avg(i,j)
-      write(*,*) 'ekPrsgrd_avg(i,j) ',ekPrsgrd_avg(i,j)
-      write(*,*) 'ekHmix_avg(i,j)   ',ekHmix_avg(i,j)
-      write(*,*) 'ekVmix_avg(i,j)   ',ekVmix_avg(i,j)
-      write(*,*) 'ekvol_avg(i,j)   ',ekvol_avg(i,j)
-#  if defined DIAGNOSTICS_BARO
-      write(*,*) 'ekBaro_avg(i,j) ',ekBaro_avg(i,j)
-#  endif
-#  if defined M3FAST
-      write(*,*) 'ekfast_avg(i,j) ',ekfast_avg(i,j)
-#  endif
-      write(*,*) 'ekrate_avg(i,j)   ',ekrate_avg(i,j)
-
-      write(*,*) 'SumUVhis_avg(i,j) = ',ekHadv_avg(i,j)
-     &                                  +  ekVadv_avg(i,j)
-     &                                  +  ekCor_avg(i,j)
-     &                                  +  ekPrsgrd_avg(i,j)
-     &                                  +  ekHmix_avg(i,j)
-     &                                  +  ekVmix_avg(i,j)
-     &                                  +  ekvol_avg(i,j)
-     &                                  -  ekrate_avg(i,j)
-      write(*,*) '-----------------------------------------'
-# endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_EK_AVG ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',

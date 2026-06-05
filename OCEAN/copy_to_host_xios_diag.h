@@ -53,7 +53,7 @@
 # endif
 # ifdef TS_DIF4
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING
+# if !defined LMD_MIXING
 # endif
 #endif
 #ifdef SOLVE3D
@@ -147,8 +147,6 @@
 #if defined MUSTANG
 # ifdef WAVE_OFFLINE
 # endif
-#ifdef key_sand2D
-#endif
 #endif
 #if defined MUSTANG
 #endif
@@ -464,7 +462,7 @@ c       endif
       if (xios_field_is_active("rho")) then
 !$acc update host( rho ) 
       endif
-# if defined ANA_VMIX || defined BVF_MIXING 
+# if defined ANA_VMIX
       if (xios_field_is_active("bvf")) then
 !$acc update host( bvf ) 
       endif
@@ -1048,9 +1046,6 @@ c       endif
 #   endif
 #  endif /* SEDIMENT */
 # ifdef MUSTANG
-#if defined key_sand2D
-#else
-#endif
       if (xios_field_is_active("tauskin")) then
 !$acc update host( tauskin ) 
       endif

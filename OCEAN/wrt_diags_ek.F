@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -56,8 +57,6 @@
      &                 1, MPI_COMM_WORLD, status, ierr)
       endif
 # endif
-!
-# undef DEBUG
 !
 !
 ! Create/open diagnostic file; write grid arrays, if so needed.
@@ -342,42 +341,6 @@
 # endif
 
         endif
-
-
-# ifdef DEBUG
-      i=5
-      j=5
-      write(*,*) 'Write diag ek his at : i='
-     &                      ,i,' j=',j
-      write(*,*) 'ekHadv(i,j)   ',ekHadv(i,j)
-      write(*,*) 'ekHdiff(i,j)   ',ekHdiff(i,j)
-      write(*,*) 'ekVadv(i,j)   ',ekVadv(i,j)
-      write(*,*) 'ekCor(i,j)    ',ekCor(i,j)
-      write(*,*) 'ekPrsgrd(i,j) ',ekPrsgrd(i,j)
-      write(*,*) 'ekHmix(i,j)   ',ekHmix(i,j)
-      write(*,*) 'ekVmix(i,j)   ',ekVmix(i,j)
-      write(*,*) 'ekvol(i,j)   ',ekvol(i,j)
-
-      write(*,*) 'ekrate(i,j)   ',ekrate(i,j)
-#  if defined DIAGNOSTICS_BARO
-      write(*,*) 'ekBaro(i,j) ',ekBaro(i,j)
-#  endif
-#  if defined M3FAST
-      write(*,*) 'ekfast(i,j) ',ekfast(i,j)
-#  endif
-      write(*,*) 'SumUVhis(i,j) = ',ekHadv(i,j)
-     &                                  +  ekVadv(i,j)
-     &                                  +  ekCor(i,j)
-     &                                  +  ekPrsgrd(i,j)
-     &                                  +  ekHmix(i,j)
-     &                                  +  ekVmix(i,j)
-     &                                  +  ekvol(i,j)
-#  if defined M3FAST
-     &                                  +  ekfast(i,j)
-#  endif
-     &                                  -  ekrate(i,j)
-      write(*,*) '-----------------------------------------'
-# endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_EK ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',

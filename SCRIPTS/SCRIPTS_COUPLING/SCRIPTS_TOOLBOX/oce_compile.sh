@@ -12,6 +12,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
 #-------------------------------------------------------------------------------
     cd ${JOBDIR_ROOT}
     cpfile ${OCE_EXE_DIR}/jobcomp .
+    cpfile ${OCE_EXE_DIR}/cppdefs_dev.h .
     cpfile ${OCE_EXE_DIR}/param.h.base .
     cpfile ${OCE_EXE_DIR}/cppdefs.h.base .
 
@@ -74,14 +75,32 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
       mv tmp$$ cppdefs.h
     fi
 
+    if [[ ${EXACT_RESTART} == "TRUE" ]]; then
+      sed -e "s/# *undef *EXACT_RESTART/# define EXACT_RESTART/g" cppdefs.h > tmp$$
+      mv tmp$$ cppdefs.h
+    fi
+
     sed -e "s/# undef  LOGFILE/# define  LOGFILE/g" cppdefs.h > tmp$$
     mv tmp$$ cppdefs.h
 
     if [ $USE_CPL -ge 1 ]; then
         if [ $USE_ATM -eq 1 ] || [ $USE_TOYATM -eq 1 ]; then 
             sed -e "s/#  *undef  *OA_COUPLING/# define OA_COUPLING/g" cppdefs.h > tmp$$
-            printf "           Coupling with ATM \n"
 	    mv tmp$$ cppdefs.h
+            printf "           Coupling with ATM \n"
+	    if [ ${CPL_PATM} == "TRUE" ]; then
+	        printf "             Coupling PATM is defined \n"
+                sed -e "s/# *undef *READ_PATM/#  define READ_PATM/g" \
+                    -e "s/# *undef *OBC_PATM/#  define OBC_PATM/g" \
+                    cppdefs.h > tmp$$
+	    else
+		printf "             Coupling PATM is NOT defined \n"
+		printf "cppdefs.h is : "
+                sed -e "s/# *define *READ_PATM/#  undef  READ_PATM/g" \
+                    -e "s/# *define *OBC_PATM/#  undef  OBC_PATM/g" \
+                    cppdefs.h > tmp$$
+   	    fi
+            mv tmp$$ cppdefs.h
 	else
             sed -e "s/#  *define  *OA_COUPLING/# undef OA_COUPLING/g" cppdefs.h > tmp$$
 	    mv tmp$$ cppdefs.h
@@ -177,6 +196,8 @@ if [[ ${RESTART_FLAG} == "FALSE" ]] ; then # || [[ ! -f "${OCE_EXE_DIR}/croco.${
 
     if [ ${tide_flag} == "TRUE" ]; then
 	sed -e "s/#  *undef  *TIDES/# define TIDES/g" cppdefs.h > tmp$$
+        mv tmp$$ cppdefs.h
+        sed -e "s/#  *define  *TIDES_MAS/# undef TIDES_MAS/g" cppdefs.h > tmp$$
         mv tmp$$ cppdefs.h
         printf "           Tides are taken into account\n"
     else

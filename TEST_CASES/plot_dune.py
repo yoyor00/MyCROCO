@@ -51,13 +51,13 @@ lastonly = True
 
 # Check if variables exist in dataset
 if (
-    "Hm" in data
+    "hmorph" in data
     and "HSED" in data
     and "DZS" in data
     and "GRAV_sed" in data
     and "SAND_sed" in data
 ):
-    bathy = data.Hm
+    bathy = data.hmorph
     hsed = data.HSED
     dzstot = data.DZS
     grav_sed = data.GRAV_sed

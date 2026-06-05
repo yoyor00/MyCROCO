@@ -1,17 +1,17 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #ifdef SOLVE3D
 # ifdef NONLIN_EOS
-#  define DUKO_2001
 !
       subroutine rho_eos (tile)
 !
@@ -154,14 +154,12 @@
 
      &          E00=+1.045941e-5, E01=-5.782165e-10,E02=+1.296821e-7,
      &          E10=-2.595994e-7, E11=-1.248266e-9, E12=-3.508914e-9)
-#  ifdef DUKO_2001
       real K0_Duk
-#  endif
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "coupling.h"
 #  include "scalars.h"
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 #   include "mixing.h"
 #  endif
@@ -175,14 +173,13 @@
 !
 #  include "compute_extended_bounds.h"
 !
-#  ifdef DUKO_2001
+      ! DUKO2001
       Tt=3.8D0
       Ts=34.5D0
       sqrtTs=sqrt(Ts)
       K0_Duk= Tt*( K01+Tt*( K02+Tt*( K03+Tt*K04 )))
      &       +Ts*( K10+Tt*( K11+Tt*( K12+Tt*K13 ))
      &            +sqrtTs*( KS0+Tt*( KS1+Tt*KS2 )))
-#  endif
 
 !
 !  compute rho as a perturbation to rho0 (at the surface)
@@ -225,12 +222,9 @@
      &              +sqrtTs*( KS0+Tt*( KS1+Tt*KS2 )))
 
 #  ifdef SPLIT_EOS
-#   ifdef DUKO_2001
+            ! DUKO_2001
             qp1(i,j,k)=0.1*(rho0+rho1(i,j,k))*(K0_Duk-K0)
      &                               /((K00+K0)*(K00+K0_Duk))
-#   else
-            qp1(i,j,k)=0.1*(K00*rho1(i,j,k)-rho0*K0)/(K00*(K00+K0))
-#   endif
 #   ifdef MASKING
      &                                                  *rmask(i,j)
 #   endif
@@ -260,7 +254,7 @@
 !  and vertical W-points!
 !-----------------------------------------------------------------------
 !
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 #   ifndef SPLIT_EOS
             dpth=z_w(i,j,N)-z_w(i,j,k)
@@ -303,7 +297,7 @@
 #  endif /* ANA_VMIX ... */
           enddo
         enddo
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         do i=istrR,iendR
           bvf(i,j,N)=bvf(i,j,N-1)
@@ -403,7 +397,7 @@
 !  and vertical W-points.
 !-----------------------------------------------------------------------
 !
-#  if defined ANA_VMIX || defined BVF_MIXING || defined GLS_MIXING \
+#  if defined ANA_VMIX || defined GLS_MIXING \
       || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         cff=g/rho0
         do k=1,N-1
@@ -503,15 +497,11 @@
 
 #  elif defined MUSTANG /* MUSTANG */
             do iv=1,nvpc
-#    if defined key_sand2D
               if (.not.l_subs2D(iv)) then
-#    endif
                 itrc=iv+itsubs1-1
                 cff=cff+t(i,j,k,nrhs,itrc)*
      &                (ros(iv)-rho(i,j,k)-rho0)/ros(iv)
-#    if defined key_sand2D
               endif
-#    endif
             enddo
 
 #  endif /* SEDMENT or MUSTANG */

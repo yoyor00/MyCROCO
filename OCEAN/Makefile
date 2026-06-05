@@ -55,7 +55,7 @@ include Makedefs
 \
 	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
-	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
+	ana_vmix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
@@ -132,6 +132,10 @@ include Makedefs
 
 
  SRCS90 = \
+	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	storng_testmpi.F90\
+	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90	stowhite.F90\
+	stobulk.F90	stomarginal.F90	storst.F90	stopar.F90	stomod.F90\
+	ensmpi.F90	stostress.F90   stoalloc.F90    stogls.F90\
 	buffer.F90\
 	par_pisces.F90	oce_trc.F90	trc.F90		sms_pisces.F90\
 	in_out_manager.F90	iom.F90	lib_mpp.F90		prtctl.F90\
@@ -157,6 +161,7 @@ include Makedefs
 	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
 	module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
+	tools_string.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
 	toolorigindate.F90 \
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
@@ -165,7 +170,6 @@ include Makedefs
 	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
 	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
 	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
-	
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES

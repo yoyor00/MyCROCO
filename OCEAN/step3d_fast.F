@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
-! CROCO website : http://www.croco-ocean.org
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
+!
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -2306,18 +2307,7 @@ C$OMP END MASTER
 #  ifndef NBQ
       endif
 #  endif
-!      call exchange_u2d_tile (Istr,Iend,Jstr,Jend,
-!     &                        DU_nbq(START_2D_ARRAY))
-!      call exchange_v2d_tile (Istr,Iend,Jstr,Jend,
-!     &                        DV_nbq(START_2D_ARRAY))
 # endif
-!$$$# ifdef CVTK_DEBUG_ADVANCED
-!$$$C$OMP BARRIER
-!$$$C$OMP MASTER
-!$$$      call check_tab3d(qdmu_nbq,'qdmu_nbq','u')
-!$$$      call check_tab3d(qdmv_nbq,'qdmv_nbq','v')
-!$$$C$OMP END MASTER
-!$$$# endif  
 
 !$acc kernels if(compute_on_device) default(present)
 # ifdef NBQ
@@ -4094,18 +4084,6 @@ C$OMP END MASTER
 #  ifdef MASKING
      &               *rmask(i,j)
 #  endif
-
-#  ifdef NBQ_HZCORR_DEBUG
-              Hz_corr(i,j,k)=Hz(i,j,k)-Hz_correct(i,j,k)
-#  endif
-
-!# ifdef NBQ_MASS
-!              Hzr(i,j,k)=(Hz(i,j,k)-rho_nbq(i,j,k)) ! adjust Zw,Zr?
-!     &                        /(1.+rho(i,j,k)/rho0)
-!# endif
-!              z_w(i,j,k)=z_w(i,j,k-1)+Hzr(i,j,k)
-!              z_r(i,j,k)=0.5*(z_w(i,j,k)+z_w(i,j,k-1))
-
             enddo
           enddo
         enddo

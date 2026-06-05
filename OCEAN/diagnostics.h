@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 ! This is include file "diagnostics.h": tracer equation terms
@@ -34,9 +35,9 @@
       real Trate_mld(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld(GLOBAL_2D_ARRAY,NT)
       real Taver_mld(GLOBAL_2D_ARRAY,NT)
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
       real Tcrit_mld(GLOBAL_2D_ARRAY,NT)
-# endif
+#  endif
       integer kbl_nstp(GLOBAL_2D_ARRAY)
 # endif
 # ifdef AVERAGES
@@ -62,9 +63,9 @@
       real Trate_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Taver_mld_avg(GLOBAL_2D_ARRAY,NT)
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
       real Tcrit_mld_avg(GLOBAL_2D_ARRAY,NT)
-# endif
+#   endif
 #  endif
 # endif
       common /diag_TXadv/TXadv
@@ -88,9 +89,9 @@
       common /diag_Trate_mld/Trate_mld
       common /diag_Tentr_mld/Tentr_mld
       common /diag_Taver_mld/Taver_mld
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
       common /diag_Tcrit_mld/Tcrit_mld
-# endif
+#  endif
       common /diag_kbl_nstp/kbl_nstp
 # endif
 # ifdef AVERAGES
@@ -116,9 +117,9 @@
       common /diag_Trate_mld_avg/Trate_mld_avg
       common /diag_Tentr_mld_avg/Tentr_mld_avg
       common /diag_Taver_mld_avg/Taver_mld_avg
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
       common /diag_Tcrit_mld_avg/Tcrit_mld_avg
-# endif
+#   endif
 #  endif
 # endif
 #endif /* DIAGNOSTICS_TS */

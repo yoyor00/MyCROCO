@@ -63,11 +63,11 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 # include "compute_message_bounds.h"
 
 # ifdef AGRIF
-      size_Z=Npts*Npts*(NP1)
+      size_Z=MAXNPTS*MAXNPTS*(NP1)
       sub_X=(Lm+NSUB_X-1)/NSUB_X
-      size_X=(NP1)*Npts*(sub_X+2*Npts)
+      size_X=(NP1)*MAXNPTS*(sub_X+2*MAXNPTS)
       sub_E=(Mm+NSUB_E-1)/NSUB_E
-      size_E=(NP1)*Npts*(sub_E+2*Npts)
+      size_E=(NP1)*MAXNPTS*(sub_E+2*MAXNPTS)
 
       if(.not. allocated(buf_snd4_3D)) then
       Allocate(buf_snd4_3D(size_Z),  ibuf_sndN_3D(size_X),  

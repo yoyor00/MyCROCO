@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -44,7 +45,7 @@
      &          wrk3(PRIVATE_2D_SCRATCH_ARRAY),
      &          Rib(PRIVATE_2D_SCRATCH_ARRAY,2)
 
-      real Vtc,    hekman,  hmonob, dVsq,   Vtsq,
+      real Vtc,    hekman,  dVsq,   Vtsq,
      &     sl_dpth,sl_dnew, sig,    Kv_bl,  Kt_bl,  Ks_bl,
      &     cff,    lmd_a1, dKv_bl, dKt_bl, dKs_bl,
      &     cff_up, lmd_a2, Gm,     Gt,     Gs,
@@ -54,7 +55,7 @@
       real eps
       parameter (eps=1.E-20)
       real lmd_nubl, lmd_cs, lmd_Cv, Ric, lmd_betaT, lmd_epsilon,
-     &     lmd_cekman, lmd_cmonob, lmd_Cstar, lmd_Cg, lmd_nu0c,
+     &     lmd_cekman, lmd_Cstar, lmd_Cg, lmd_nu0c,
      &     ustarb
       real su_r, sv_r, ustokes
 !======================================================================
@@ -86,9 +87,6 @@
      &   lmd_cekman=0.7,   ! Constant used in the computation
                            !           of Ekman depth.
                            !
-     &   lmd_cmonob=1.,    ! Constant used in the computaion
-                           ! Monin-Obukhov depth.
-                           !
      &   lmd_Cstar=10.,    ! Proportionality coefficient
                            ! parameterizing nonlocal transport.
                            !
@@ -97,7 +95,6 @@
                            ! to shear instability, [m^2/s];
      &                                                           )
 !======================================================================
-# undef LMD_SKPP_MONOB
 # define HBL_SMOOTH
 
 # ifdef EW_PERIODIC
@@ -337,19 +334,13 @@
 # undef zgrid
 # undef swdk_hbl
 !
-!  Correct "hbl" with physically limiting cases (Ekman depth
-!  and Monin-Obukhov depth).
+!  Correct "hbl" with physically limiting cases (Ekman depth).
 !
       do j=J_EXT_RANGE
         do i=I_EXT_RANGE
           if (Bflux(i,j).gt.0.) then
             hekman=lmd_cekman*ustar(i,j)/max(abs(f(i,j)),eps)
             my_hbl(i,j)=min(my_hbl(i,j),hekman)
-# ifdef LMD_SKPP_MONOB
-            hmonob=lmd_cmonob*ustar(i,j)*ustar(i,j)*ustar(i,j)
-     &                                    /(vonKar*Bflux(i,j))
-            my_hbl(i,j)=min(my_hbl(i,j),hmonob)
-# endif
           endif
           !my_kbl(i,j)=1
         enddo

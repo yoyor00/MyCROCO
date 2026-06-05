@@ -1,18 +1,17 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 
 #if !defined M3FAST || (defined AGRIF && defined NBQ_CHILD_ONLY)
-
-# define PRED_COUPLED_MODE
 
       subroutine step2d (tile)
       implicit none
@@ -765,9 +764,6 @@ C$OMP END MASTER
 #   ifdef MASKING
      &                                 *pmask(i+1,j)
 #   endif
-#   ifdef WET_DRY0
-     &                                 *pmask_wet(i+1,j)
-#   endif
         enddo
       enddo
       do j=Jstr-1,Jend
@@ -779,9 +775,6 @@ C$OMP END MASTER
      &                   *(urhs(i,j+1)+urhs(i,j))
 #   ifdef MASKING
      &                                 *pmask(i,j+1)
-#   endif
-#   ifdef WET_DRY0
-     &                                 *pmask_wet(i,j+1)
 #   endif
         enddo
       enddo
@@ -1328,8 +1321,6 @@ C$OMP END MASTER
 !
 # ifdef SOLVE3D
       if (FIRST_2D_STEP) then
-
-#  ifdef PRED_COUPLED_MODE
         if (FIRST_TIME_STEP) then
           cff3=0.                        ! This version is designed
           cff2=0.                        ! for coupling during 3D
@@ -1360,14 +1351,6 @@ C$OMP END MASTER
             rvfrc_bak(i,j,nstp)=cff
           enddo
         enddo
-#  else
-        do j=Jstr,Jend                       ! This version is
-          do i=Istr,Iend                     ! designed for coupling
-            rufrc(i,j)=rufrc(i,j)-rubar(i,j) ! during 3D corrector
-            rvfrc(i,j)=rvfrc(i,j)-rvbar(i,j) ! sub-step: no forward
-          enddo                              ! extrapolation needs
-        enddo                                ! to be performed.
-#  endif
 !
 !-----------------------------------------------------------------------
 ! Since coupling requires that pressure gradient term is computed

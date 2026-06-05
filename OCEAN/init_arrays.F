@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -95,6 +96,7 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_extended_bounds.h"
+
 !
 !  Initialize 2-D primitive variables.
 !
@@ -333,9 +335,8 @@ C$    integer omp_get_thread_num
 #  ifdef NBQ
             w_avg(i,j,k)=init
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
             bvf_avg(i,j,k)=init
 #  endif
 # endif
@@ -502,9 +503,9 @@ C$    integer omp_get_thread_num
             Trate_mld(i,j,itrc)=init
             Tentr_mld(i,j,itrc)=init
             Taver_mld(i,j,itrc)=init
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
             Tcrit_mld(i,j,itrc)=init
-# endif
+#   endif
 #   ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
             TYadv_mld_avg(i,j,itrc)=init
@@ -515,9 +516,9 @@ C$    integer omp_get_thread_num
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
             Taver_mld_avg(i,j,itrc)=init
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#    ifdef DIAGNOSTICS_TS_MLD_DENS
             Tcrit_mld_avg(i,j,itrc)=init
-# endif
+#    endif
 #   endif /* AVERAGES*/
           enddo
         enddo
@@ -1417,21 +1418,20 @@ C$    integer omp_get_thread_num
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
             Akv(i,j,k)=Akv_bak
 # else
             Akv(i,j,k)=init
 # endif
-# if defined BVF_MIXING \
-      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIXING
+# if defined GLS_MIXING \
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
             bvf(i,j,k)=init
 # endif
           enddo
         enddo
         do j=JstrR,JendR
           do i=IstrR,IendR
-# if !defined LMD_MIXING && !defined BVF_MIXING && !defined GLS_MIXING
+# if !defined LMD_MIXING && !defined GLS_MIXING
 #  ifdef TEMPERATURE
               Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  endif
@@ -1472,6 +1472,9 @@ C$    integer omp_get_thread_num
           hbl(i,j)=init
 #  endif
           kbl(i,j)=init
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+          kbl1(i,j)=init
+#  endif
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
 #  endif

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -98,7 +99,9 @@
 !
         ierr=nf_def_dim(ncid,'stanum',nstas0,stadim)
 # ifdef SOLVE3D
+#  if !(defined NO_TEMPERATURE && defined NO_TRACER)
         ierr=nf_def_dim(ncid,'tracer',NT,trcdim)
+#  endif
 #  ifdef ALL_SIGMA
         ierr=nf_def_dim(ncid,'s_rho',N,srho)
 #  endif
@@ -323,11 +326,12 @@
        ierr=nf_put_att_text(ncid,staZeta,'units',lvar,
      &                      vinfo(3)(1:lvar))
 # ifdef SOLVE3D
+#  ifdef TEMPERATURE
 !
 !  Define temperature
 !
        if (wrtsta(indxstaTemp)) then
-#  ifdef ALL_SIGMA
+#   ifdef ALL_SIGMA
         vinfo(1)='temp'
         vinfo(2)='temperature'
         vinfo(3)='degrees Celsius'
@@ -340,7 +344,7 @@
         lvar=lenstr(vinfo(3))
         ierr=nf_put_att_text(ncid,staTemp,'units',lvar,
      &                         vinfo(3)(1:lvar))
-#  else
+#   else
         vinfo(1)='temp'
         vinfo(2)='temperature'
         vinfo(3)='degrees Celsius'
@@ -353,8 +357,9 @@
         lvar=lenstr(vinfo(3))
         ierr=nf_put_att_text(ncid,staTemp,'units',lvar,
      &                         vinfo(3)(1:lvar))
-#  endif
+#   endif
        endif ! temperature
+#  endif /* TEMPERATURE */
 !
 !  Define salinity
 !
@@ -705,6 +710,7 @@
           goto 99                                         !--> ERROR
         endif
 # ifdef SOLVE3D
+#  ifdef TEMPERATURE
 !
 !  Define temperature
 !
@@ -717,6 +723,7 @@
           goto 99                                         !--> ERROR
         endif
        endif
+#  endif /* TEMPERATURE */
 !
 !  Define salinity
 !

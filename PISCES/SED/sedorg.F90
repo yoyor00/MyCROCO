@@ -22,7 +22,6 @@ MODULE sedorg
       !!* Substitution
 #  include "ocean2pisces.h90"
 
-   !! $Id: seddsr.F90 5215 2015-04-15 16:11:56Z nicolasmartin $
 CONTAINS
    
    SUBROUTINE sed_org( kt )

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 /*
@@ -81,6 +82,11 @@
 # undef  AGRIF_2WAY
                       /* OA and OW Coupling via OASIS (MPI) */
 # undef  OA_COUPLING
+# ifdef OA_COUPLING
+#  define READ_PATM
+#  define OBC_PATM
+#  undef  OA_GRID_UV
+# endif
 # undef  OW_COUPLING
 # ifdef OW_COUPLING
 #  undef OW_COUPLING_FULL
@@ -101,6 +107,9 @@
 # undef  SEDIMENT
 # undef  MUSTANG
 # undef  BBL
+                      /* Stochastic and Ensemble */
+# undef STOGEN
+# undef ENSEMBLE
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
@@ -228,7 +237,6 @@
 # undef  TS_MIX_S
                       /* Vertical Tracer Advection  */
 # define TS_VADV_SPLINES
-# undef  TS_VADV_AKIMA
 # undef  TS_VADV_WENO5
                       /* Sponge layers for UV and TS */
 # define SPONGE
@@ -239,7 +247,6 @@
 # undef  BSTRESS_FAST
                       /* Vertical Mixing */
 # undef  BODYFORCE
-# undef  BVF_MIXING
 # define LMD_MIXING
 # undef  GLS_MIXING
 # ifdef LMD_MIXING
@@ -323,9 +330,8 @@
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
 #  ifdef DIAGNOSTICS_TS_MLD
-#   define DIAGNOSTICS_TS_MLD_CRIT
+#   undef  DIAGNOSTICS_TS_MLD_DENS
 #  endif
-
 # endif
 
 # undef DIAGNOSTICS_TSVAR
@@ -370,10 +376,10 @@
 # endif
                       /*   Choice of Biology models   */
 # ifdef BIOLOGY
-#  undef  PISCES
+#  define PISCES
 #  undef  BIO_NChlPZD
 #  undef  BIO_N2ChlPZD2
-#  define BIO_BioEBUS
+#  undef  BIO_BioEBUS
                       /*   Biology options    */
 #  ifdef PISCES
 #   undef  DIURNAL_INPUT_SRFLX
@@ -410,8 +416,6 @@
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
-#  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
 # endif
@@ -448,8 +452,7 @@
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
-# define ZETA_DRY_IO
-# define FILLVAL
+# undef  FILLVAL
                       /* Calendar */
 
 # define USE_CALENDAR
@@ -607,8 +610,6 @@
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
-#  define key_sand2D
-#  define MUSTANG_CORFLUX
 #  undef  key_tauskin_c_upwind
 #  define WAVE_OFFLINE
 # endif
@@ -638,6 +639,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+# undef  STOGEN
 
 #elif defined CANYON
 /*
@@ -742,7 +744,7 @@
 !                              Seven  sets up are encompassed :
 */
 /* erosion of linear strat by constant wind stress */
-# define KATO_PHILIPS
+# define KATO_PHILLIPS
 /* erosion of linear strat by constant surf buoyancy loss */
 # undef  WILLIS_DEARDORFF
 /* erosion of linear strat by constant surf buoyancy loss */
@@ -1921,11 +1923,9 @@
 #  undef  BEDLOAD
 # endif
 # ifdef MUSTANG
-#  define key_sand2D
 #  undef  key_MUSTANG_V2
 # endif
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined ESTUARY
 /*
@@ -1976,15 +1976,12 @@
 #  undef  BEDLOAD
 # endif
 # ifdef MUSTANG
-#  define key_sand2D
 #  undef  key_MUSTANG_V2
-#  define MUSTANG_CORFLUX
 # endif
 # define PSOURCE
 # define ANA_PSOURCE
 # define MASKING
 # define NO_FRCFILE
-# undef  ZETA_DRY_IO
 
 #elif defined SEAGRASS
 /*

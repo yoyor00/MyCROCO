@@ -173,19 +173,21 @@
 :                column and correct sand transport, value by default = 0.02 
 :                correspond to Van Rijn experiments 
 :                DO NOT CHANGED IF NOT EXPERT
+:    l_corflux : boolean to activate correction on horizontal sand fluxes
 :    cvolmaxsort : real, maximum volumic concentration of sorted sand
 :    cvolmaxmel : real, maximum volumic concentration of mixed sediments
 :    slopefac : real, slope effect multiplicative on deposit 
 :               (only if key_MUSTANG_slipdeposit)
 :------------------------------------------------------------------------------
 &namsedim_deposition
-   cfreshmud=550.0 
-   csedmin=100. 
-   cmudcr=2000.     
-   aref_sand=0.02 
-   cvolmaxsort=0.58
-   cvolmaxmel=0.67
-   slopefac=0.01 /
+   cfreshmud = 550.0 
+   csedmin = 100. 
+   cmudcr = 2000.     
+   aref_sand = 0.02 
+   l_corflux = .TRUE.
+   cvolmaxsort = 0.58
+   cvolmaxmel = 0.67
+   slopefac = 0.01 /
 :
 :------------------------------------------------------------------------------
 :  namsedim_erosion : Namelist relative to sediment erosion

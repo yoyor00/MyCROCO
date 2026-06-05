@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !   
 #include "cppdefs.h"
@@ -912,7 +913,7 @@ C      &     ,type='float',name='tnu4', value=tnu4)
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='units', value='meter4 second-1')
 # endif
-# if !defined LMD_MIXING && !defined BVF_MIXING
+# if !defined LMD_MIXING
 !
 ! Background vertical viscosity and tracer mixing coefficients.
 !
@@ -2235,7 +2236,8 @@ C 				  endif
 
 #if defined MUSTANG
       USE comsubstance, ONLY : name_var, nvpc, ws_part, imud1, imud2
-      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres
+      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
+      USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres, MUSTANG_reconstruct_rouse2D_profile
       USE comMUSTANG, only: nk_nivsed_out, l_outsed_hsed , 
      &    l_outsed_poro, l_outsed_dzs, l_outsed_temp_sed, l_outsed_salt_sed, 
      &    l_outsed_cv_sed, l_outsed_toce, l_outsed_flx_s2w_w2s,
@@ -2262,12 +2264,7 @@ C 				  endif
      &    var3Dksed_loadograv, var3Dksed_permeab, 
      &    var3Dksed_sed_rate, var3Dksed_sigmadjge, 
      &    var3Dksed_sigmapsg, var3Dksed_hinder, 
-     &    var3Dksed_stateconsol
-
-#ifdef key_sand2D
-      USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
-      USE comMUSTANG,   ONLY : sum_tmp, rouse2D
-#endif
+     &    var3Dksed_stateconsol, rouse2D_integral, rouse2D
 #endif
 
 #if defined OBSTRUCTION
@@ -2372,6 +2369,7 @@ C 				  endif
       parameter(stf_cff=86400/0.01)
 !
 #if defined MUSTANG
+      integer isand
       real workrsed(GLOBAL_2D_ARRAY,nk_nivsed_out),
      &     workrsed1(GLOBAL_2D_ARRAY,nk_nivsed_out)
 
@@ -2686,22 +2684,43 @@ c !$acc wait
 
 # ifdef BULK_FLUX
       if (xios_field_is_active("tair")) then
+#   ifdef ABL1D
+      call xios_send_field("tair",tq_abl(:,:,2,nstp,1))
+#   else
       call xios_send_field("tair",tair)
+#   endif
       endif
       if (xios_field_is_active("rhum")) then
+#   ifdef ABL1D
+      call xios_send_field("rhum",tq_abl(:,:,2,nstp,2))
+#   else
       call xios_send_field("rhum",rhum)
+#   endif
       endif
       if (xios_field_is_active("prate")) then
       call xios_send_field("prate",prate)
       endif
+#   ifdef READ_PATM
+      if (xios_field_is_active("patm")) then
+      call xios_send_field("patm",patm2d)
+      endif
+#   endif
 # endif
 
 # if defined BULK_SM_UPDATE || defined BULK_FLUX 
       if (xios_field_is_active("uwnd")) then
+#   ifdef ABL1D
+      call xios_send_field("uwnd",u_abl(:,:,2,nstp))
+#   else
       call xios_send_field("uwnd",uwnd)
+#   endif
       endif
       if (xios_field_is_active("vwnd")) then
+#   ifdef ABL1D
+      call xios_send_field("vwnd",v_abl(:,:,2,nstp))
+#   else
       call xios_send_field("vwnd",vwnd)
+#   endif
       endif
 # endif
 # ifdef WKB_WWAVE
@@ -2837,8 +2856,8 @@ c !$acc wait
       call xios_send_field("rho_surf",rho(:,:,N))
       endif
 
-# if defined ANA_VMIX || defined BVF_MIXING \
-|| defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+|| defined LMD_SKPP   || defined LMD_BKPP \
 || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
       if (xios_field_is_active("bvf")) then
       call xios_send_field("bvf",bvf)
@@ -3353,7 +3372,7 @@ c !$acc wait
 
 #  ifdef DIAGNOSTICS_TS
          itrc=1
-#  ifdef TEMPERATURE
+#   ifdef TEMPERATURE
       if (xios_field_is_active("T_rate")) then
           call xios_send_field("T_rate", Trate(:,:,:,itrc))
       endif
@@ -3370,8 +3389,8 @@ c !$acc wait
       if (xios_field_is_active("T_Forc")) then
           call xios_send_field("T_Forc",TForc(:,:,:,itrc))
       endif
-#  endif          
-#  ifdef SALINITY
+#   endif          
+#   ifdef SALINITY
         itrc = 2
       if (xios_field_is_active("S_rate")) then
           call xios_send_field("S_rate", Trate(:,:,:,itrc))
@@ -3389,11 +3408,70 @@ c !$acc wait
       if (xios_field_is_active("S_Forc")) then
           call xios_send_field("S_Forc",TForc(:,:,:,itrc))
       endif
+#   endif
+#   ifdef DIAGNOSTICS_TS_MLD
+#    ifdef TEMPERATURE
+        itrc = 1
+      if (xios_field_is_active("T_rate_mld")) then
+          call xios_send_field("T_rate_mld", Trate_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_adv_mld")) then
+          call xios_send_field("T_adv_mld", TXadv_mld(:,:,itrc)
+     &           + TYadv_mld(:,:,itrc) + TVadv_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Hmix_mld")) then
+          call xios_send_field("T_Hmix_mld",THmix_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Vmix_mld")) then
+          call xios_send_field("T_Vmix_mld",TVmix_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_Forc_mld")) then
+          call xios_send_field("T_Forc_mld",TForc_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_entr_mld")) then
+          call xios_send_field("T_entr_mld",Tentr_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("T_aver_mld")) then
+          call xios_send_field("T_aver_mld",Taver_mld(:,:,itrc))
+      endif
+#     ifdef DIAGNOSTICS_TS_MLD_DENS
+      if (xios_field_is_active("D_depth_mld")) then
+          call xios_send_field("D_depth_mld",Tcrit_mld(:,:,itrc))
+      endif
+#     endif
+#    endif
+#    ifdef SALINITY
+        itrc = 2
+      if (xios_field_is_active("S_rate_mld")) then
+          call xios_send_field("S_rate_mld", Trate_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_adv_mld")) then
+          call xios_send_field("S_adv_mld", TXadv_mld(:,:,itrc)
+     &           + TYadv_mld(:,:,itrc) + TVadv_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Hmix_mld")) then
+          call xios_send_field("S_Hmix_mld",THmix_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Vmix_mld")) then
+          call xios_send_field("S_Vmix_mld",TVmix_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_Forc_mld")) then
+          call xios_send_field("S_Forc_mld",TForc_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_entr_mld")) then
+          call xios_send_field("S_entr_mld",Tentr_mld(:,:,itrc))
+      endif
+      if (xios_field_is_active("S_aver_mld")) then
+          call xios_send_field("S_aver_mld",Taver_mld(:,:,itrc))
+      endif
+#     ifdef DIAGNOSTICS_TS_MLD_DENS
+      if (xios_field_is_active("T_depth_mld")) then
+          call xios_send_field("T_depth_mld",Tcrit_mld(:,:,itrc))
+      endif
+#     endif
+#    endif
+#   endif
 #  endif
-#  endif
-
-
-
 
 #  ifdef DIAGNOSTICS_VRT
       if (xios_field_is_active("vrtrate")) then
@@ -3699,36 +3777,20 @@ c !$acc wait
 # ifdef MUSTANG
       do itrc=3,NT
          write(nametrc,'(a)') TRIM(name_var(itrc-2))
-#if defined key_sand2D
-           if (itrc>=itsubs1+nv_grav .AND.
-     &         itrc<=itsubs1+nv_grav+nv_sand-1) THEN   ! isand1,isand2
-           if (l_subs2D(itrc-(itsubs1+nv_grav)+1)
-     &         .AND.l_outsandrouse(itrc-(itsubs1+nv_grav)+1)) then
-            workr=t(:,:,:,nstp,itrc)
-            do j=Jstr,Jend
-              do i=Istr,Iend
-                DO k=1,N
-           IF( sum_tmp(itrc-itsubs1-nv_grav+1,i,j) > 0.0_rsh) THEN
-           workr(i,j,k) =t(i,j,1,nstp,itrc)*(z_w(i,j,1)-z_w(i,j,0))*
-     &       (  (z_w(i,j,N)-z_r(i,j,k))
-     &          /(z_r(i,j,k)-z_w(i,j,0))
-     &       ) **rouse2D(itrc-itsubs1-nv_grav+1,i,j)
-           workr(i,j,k)=workr(i,j,k)/sum_tmp(itrc-itsubs1-nv_grav+1,i,j)
-           ELSE
-           workr(i,j,k)=0.
-          ENDIF
-          ENDDO
-          enddo
-          enddo
-           else
-            workr=t(:,:,:,nstp,itrc)
-           endif
-           else
-            workr=t(:,:,:,nstp,itrc)
-           endif
-#else
-            workr=t(:,:,:,nstp,itrc)
-#endif
+         workr=t(:,:,:,nstp,itrc)
+         if (itrc .ge. itsubs1+nv_grav .and.
+     &        itrc .le. itsubs1+nv_grav+nv_sand-1) then ! isand1,isand2
+              isand = itrc - (itsubs1 + nv_grav) + 1
+           if (l_subs2D(isand) .and. l_outsandrouse(isand)) then
+             CALL MUSTANG_reconstruct_rouse2D_profile(Istr, Iend, Jstr, Jend, N,
+     &          rouse2D(isand, Istr:Iend, Jstr:Jend),
+     &          rouse2D_integral(isand, Istr:Iend, Jstr:Jend),
+     &          t(Istr:Iend, Jstr:Jend, 1, nstp, itrc),
+     &          z_w(Istr:Iend, Jstr:Jend, 0:N),
+     &          z_r(Istr:Iend, Jstr:Jend, 1:N),
+     &          workr(Istr:Iend, Jstr:Jend, 1:N))
+            endif
+          endif
 
       if (xios_field_is_active(TRIM(nametrc))) then
          call xios_send_field(TRIM(nametrc),workr)

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -69,6 +70,7 @@
 #if defined MUSTANG
       real workrsed(GLOBAL_2D_ARRAY,ksdmax)
       real work2d(GLOBAL_2D_ARRAY)
+      integer b3dvar_full
 #endif
 
 #if defined MPI & !defined PARALLEL_FILES  & !defined NC4PAR
@@ -350,10 +352,6 @@
 # ifdef TRACERS
 !$acc update if(compute_on_device) host(t(:,:,:,nstp,:))
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-        if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &  .and. itrc.ne.iCRT4) then
-# endif
         ierr=nf_fwrite(t(START_2D_ARRAY,1,nstp,itrc), ncidrst,
      &                             rstT(itrc), record, r3dvar)
         if (ierr .ne. nf_noerr) then
@@ -362,9 +360,6 @@
      &                    ierr MYID
           goto 99                                         !--> ERROR
         endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-       endif
-# endif
       enddo
 # endif
 
@@ -684,6 +679,9 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
 
 # ifdef MUSTANG
 
+      b3dvar_full = 24 
+      ! to use the whole vertical axis whatever choice_nivsed_out value
+
 ! ksmi, ksma
       work2d=ksmi
       indx=1
@@ -713,7 +711,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       enddo
       indx=indx+1
       ierr=nf_fwrite(workrsed, ncidrst, rstMust(3),
-     &                                       record, b3dvar)
+     &                                       record, b3dvar_full)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_rstMust(1,indx))
         write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
@@ -727,7 +725,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
       enddo
       indx=indx+1
       ierr=nf_fwrite(workrsed, ncidrst, rstMust(4),
-     &                                       record, b3dvar)
+     &                                       record, b3dvar_full)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_rstMust(1,indx))
         write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
@@ -742,7 +740,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
        indx=indx+1
 
       ierr=nf_fwrite(workrsed, ncidrst, rstMust(5),
-     &                                       record, b3dvar)
+     &                                       record, b3dvar_full)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname_rstMust(1,indx))
         write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr
@@ -758,7 +756,7 @@ CR      write(*,*) 'wrt_rst:  Bed_frac' MYID
          enddo
 
         ierr=nf_fwrite(workrsed, ncidrst, rstMust(indx),
-     &                                       record, b3dvar)
+     &                                       record, b3dvar_full)
         if (ierr .ne. nf_noerr) then
           lvar=lenstr(vname_rstMust(1,indx))
           write(stdout,1) vname_rstMust(1,indx)(1:lvar), record, ierr

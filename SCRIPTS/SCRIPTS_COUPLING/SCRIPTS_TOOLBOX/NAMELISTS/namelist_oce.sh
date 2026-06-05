@@ -29,6 +29,10 @@ export ONLINE_COMP=1
 export DT_OCE=3600
 export NDTFAST=60
 
+# EXACT_RESTART
+#--------------
+export EXACT_RESTART="FALSE"
+
 # MPI_NOLAND
 #-----------
 export MPI_NOLAND="FALSE"
@@ -43,6 +47,14 @@ else
 # Simulation with 1 ocean domain
     export AGRIFZ=0
     export AGRIF_2WAY="FALSE"
+fi
+
+# Atm coupling
+#--------------
+if [[ $RUNtype =~ .*NOpsfc.* ]] ; then
+    export CPL_PATM="FALSE"
+else
+    export CPL_PATM="TRUE"
 fi
 
 # Wave coupling

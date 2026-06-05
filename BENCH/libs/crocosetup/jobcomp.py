@@ -200,7 +200,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         self.tuning_familly = tuning_familly
         self.fflags = ""
         self.fc = "gfortran"
-        self.mpif90 = "mpifort"
+        self.mpif90 = "mpif90"
 
     @staticmethod
     def convert_arg_for_argparse(arg_string: str) -> list:
@@ -298,16 +298,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             elif var_name == "FC":
                 if is_mpi:
                     self.mpif90 = var_value
-                if self.tuning_familly == "gnu":
-                    self.fc = "gfortran"
-                elif self.tuning_familly == "intel":
-                    self.fc = "ifort"
-                elif self.tuning_familly == "nvfortran":
-                    self.fc = "nvfortran"
-                else:
-                    raise Exception(
-                        f"Unsupported tuning familly : {self.tuning_familly}"
-                    )
+                self.fc = var_value
             else:
                 raise Exception(f"Unsupported variable : {entry}")
 

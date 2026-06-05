@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -87,6 +88,10 @@
 # ifdef PSOURCE
      &       ,is
 # endif
+      REAL     :: EPSIL
+      PARAMETER (EPSIL=0.125)
+      REAL     :: DELTA
+      PARAMETER (DELTA=0.75)
       real BC(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     CF(PRIVATE_1D_SCRATCH_ARRAY,0:N),
      &     FC(PRIVATE_1D_SCRATCH_ARRAY,0:N), cff,
@@ -986,26 +991,14 @@
 #  endif
 # endif
 
-!--# define TR
-# ifdef TR
-#  ifdef MRL_WCI
-            FC(i,k)=DC(i,k)*(0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
-     &                                            +ust(i,j,k))
-#  else
-            FC(i,k)=0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))*DC(i,k)
-#  endif
-# else
-#  define EPSIL 0.125
-#  define DELTA 0.75
-#  ifdef MRL_WCI
+# ifdef MRL_WCI
             FC(i,k)=DELTA*Huon(i,j,k) +
      &              EPSIL*DC(i,k)*(u(i,j,k,nstp)+u(i,j,k,nnew)
      &                                        +2.0*ust(i,j,k))
-#  else
+# else
             FC(i,k)=DELTA*Huon(i,j,k) +
      &              EPSIL*DC(i,k)*(u(i,j,k,nstp)+u(i,j,k,nnew))
-#  endif
-# endif /* TR */
+# endif
 
             FC(i,0)=FC(i,0)+FC(i,k)
           enddo
@@ -1132,25 +1125,16 @@
 #  endif
 # endif
 
-# ifdef TR
-#  ifdef MRL_WCI
-              FC(i,k)=DC(i,k)*(0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
-     &                                              +vst(i,j,k))
-#  else
-              FC(i,k)=0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))*DC(i,k)
-#  endif
-# else
-#  ifdef MRL_WCI
+# ifdef MRL_WCI
               FC(i,k)=DELTA*Hvom(i,j,k)+
      &                EPSIL*DC(i,k)*(v(i,j,k,nstp)+v(i,j,k,nnew)
      &                                          +2.0*vst(i,j,k))
-#  else
+# else
               FC(i,k)=DELTA*Hvom(i,j,k)+
      &                EPSIL*DC(i,k)*(v(i,j,k,nstp)+v(i,j,k,nnew))
-#  endif
-#  undef DELTA
-#  undef EPSIL
-# endif /* TR */
+# endif
+# undef DELTA
+# undef EPSIL
 
               FC(i,0)=FC(i,0)+FC(i,k)
             enddo
