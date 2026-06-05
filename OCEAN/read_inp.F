@@ -270,7 +270,6 @@
 # endif
 #endif
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
-     !  wrtdiags_eddy(3)=.false.
 # ifdef AVERAGES
       wrtdiags_eddy_avg(3)=.false.
 # endif
@@ -957,16 +956,6 @@ c        close(testunit)
 !
 ! Diagnostics eddy file name.
 !
-!       elseif (keyword(1:kwlen).eq.'diags_eddy') then
-!         call cancel_kwd (keyword(1:kwlen), ierr)
-!         read(input,*,err=95) ldefdiags_eddy, nwrtdiags_eddy, nrpfdiags_eddy
-!         if (nwrtdiags_eddy.eq.0) nwrtdiags_eddy = nwrt
-!         read(input,'(A)',err=95) fname
-!         lstr=lenstr(fname)
-! # if defined MPI && defined PARALLEL_FILES
-!         call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-! # endif
-!         diags_eddyname=fname(1:lstr)
 !
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'diags_eddy_avg') then
