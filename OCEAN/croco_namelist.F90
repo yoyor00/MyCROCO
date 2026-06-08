@@ -669,7 +669,10 @@ MODULE croco_namelist
      defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
      defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
+     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY || \
+     defined TNUDGING      || defined ZNUDGING      || \
+     defined M2NUDGING     || defined M3NUDGING     || \
+     defined NBQ_NUDGING   || defined SPONGE
    ! &croco_nudging
    real :: tauT_in  = 1.0
    !! Inflow nudging time-scale for tracers [days]
@@ -921,6 +924,53 @@ MODULE croco_namelist
    logical :: avg_eps_d  = .true.
    logical :: avg_erol   = .true.
    logical :: avg_eps_r  = .true.
+# endif
+#endif
+
+#if defined ABL1D && !defined XIOS
+   ! &croco_abl_history_fields
+   logical :: his_abl_pu_dta  = .true.
+   logical :: his_abl_pv_dta  = .true.
+   logical :: his_abl_pt_dta  = .true.
+   logical :: his_abl_pq_dta  = .true.
+   logical :: his_abl_pgu_dta = .true.
+   logical :: his_abl_pgv_dta = .true.
+   logical :: his_abl_u_abl   = .true.
+   logical :: his_abl_v_abl   = .true.
+   logical :: his_abl_t_abl   = .true.
+   logical :: his_abl_q_abl   = .true.
+   logical :: his_abl_tke_abl  = .true.
+   logical :: his_abl_mxlm_abl = .true.
+   logical :: his_abl_mxld_abl = .true.
+   logical :: his_abl_avm_abl  = .true.
+   logical :: his_abl_avt_abl  = .true.
+   logical :: his_abl_ablh_abl = .true.
+   logical :: his_abl_zr_abl   = .true.
+   logical :: his_abl_zw_abl   = .true.
+   logical :: his_abl_Hzr_abl  = .true.
+   logical :: his_abl_Hzw_abl  = .true.
+# ifdef AVERAGES
+   ! &croco_abl_averages_fields
+   logical :: avg_abl_pu_dta  = .true.
+   logical :: avg_abl_pv_dta  = .true.
+   logical :: avg_abl_pt_dta  = .true.
+   logical :: avg_abl_pq_dta  = .true.
+   logical :: avg_abl_pgu_dta = .true.
+   logical :: avg_abl_pgv_dta = .true.
+   logical :: avg_abl_u_abl   = .true.
+   logical :: avg_abl_v_abl   = .true.
+   logical :: avg_abl_t_abl   = .true.
+   logical :: avg_abl_q_abl   = .true.
+   logical :: avg_abl_tke_abl  = .true.
+   logical :: avg_abl_mxlm_abl = .true.
+   logical :: avg_abl_mxld_abl = .true.
+   logical :: avg_abl_avm_abl  = .true.
+   logical :: avg_abl_avt_abl  = .true.
+   logical :: avg_abl_ablh_abl = .true.
+   logical :: avg_abl_zr_abl   = .true.
+   logical :: avg_abl_zw_abl   = .true.
+   logical :: avg_abl_Hzr_abl  = .true.
+   logical :: avg_abl_Hzw_abl  = .true.
 # endif
 #endif
 
