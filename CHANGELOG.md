@@ -41,6 +41,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   initialized in this case). This was done through key ROGUE_WAVES, now changed 
   to WAVE_MAKER_DATA (#518)
 
+- Fix time in surf average output file (#388)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
