@@ -58,11 +58,11 @@ contains
       call init_grid(ierr)
 #endif
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
-     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
+      defined M3_FRC_BRY||defined Z_FRC_BRY||\
+      defined W_FRC_BRY||defined NBQ_FRC_BRY||\
+      defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
+      defined M3CLIMATOLOGY||defined ZCLIMATOLOGY||\
+      defined WCLIMATOLOGY||defined NBQCLIMATOLOGY
       call init_nudging()
 #endif
 #if defined BHFLUX || (defined BWFLUX && defined SALINITY)
@@ -403,9 +403,9 @@ contains
    end subroutine init_forcing
 
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-   defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-   defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-   defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  
+   defined M3_FRC_BRY||defined Z_FRC_BRY||\
+   defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
+   defined M3CLIMATOLOGY||defined ZCLIMATOLOGY
    !---------------------------------------------------------------------
    !  init_nudging
    !  Convert nudging time-scales from days (namelist input) to sec^-1
@@ -424,10 +424,10 @@ contains
       !defined AGRIF_OBC_M3ORLANSKI && !defined AGRIF_OBC_TORLANSKI
       if (.not. Agrif_Root()) return
 #  endif
-      tauT_in  = 1.0 / (tauT_in  * 86400.0)
-      tauT_out = 1.0 / (tauT_out * 86400.0)
-      tauM_in  = 1.0 / (tauM_in  * 86400.0)
-      tauM_out = 1.0 / (tauM_out * 86400.0)
+      tauT_in = 1.0/(tauT_in*86400.0)
+      tauT_out = 1.0/(tauT_out*86400.0)
+      tauM_in = 1.0/(tauM_in*86400.0)
+      tauM_out = 1.0/(tauM_out*86400.0)
 
    end subroutine init_nudging
 #endif
@@ -1023,7 +1023,7 @@ contains
       use croco_namelist, ONLY: xios_origin_date
       use ncscrum, ONLY: xios_origin_date_in_sec
       implicit none
-      
+
       real(kind=8), external :: tool_datosec
 
       xios_origin_date_in_sec = tool_datosec(xios_origin_date)
@@ -1264,7 +1264,7 @@ contains
       implicit none
       integer :: itrc
 
-      wrthis(indxZ)  = his_zeta
+      wrthis(indxZ) = his_zeta
       wrthis(indxUb) = his_ubar
       wrthis(indxVb) = his_vbar
       if (his_zeta .or. his_ubar .or. his_vbar) wrthis(indxTime) = .true.
@@ -1274,7 +1274,7 @@ contains
       if (his_u .or. his_v) wrthis(indxTime) = .true.
 # ifdef TRACERS
       do itrc = 1, NT
-         wrthis(indxV+itrc) = his_tracer(itrc)
+         wrthis(indxV + itrc) = his_tracer(itrc)
          if (his_tracer(itrc)) wrthis(indxTime) = .true.
       end do
 # endif
@@ -1302,7 +1302,7 @@ contains
       implicit none
       integer :: itrc
 
-      wrtavg(indxZ)  = avg_zeta
+      wrtavg(indxZ) = avg_zeta
       wrtavg(indxUb) = avg_ubar
       wrtavg(indxVb) = avg_vbar
       if (avg_zeta .or. avg_ubar .or. avg_vbar) wrtavg(indxTime) = .true.
@@ -1312,7 +1312,7 @@ contains
       if (avg_u .or. avg_v) wrtavg(indxTime) = .true.
 #  ifdef TRACERS
       do itrc = 1, NT
-         wrtavg(indxV+itrc) = avg_tracer(itrc)
+         wrtavg(indxV + itrc) = avg_tracer(itrc)
          if (avg_tracer(itrc)) wrtavg(indxTime) = .true.
       end do
 #  endif
@@ -1342,24 +1342,24 @@ contains
 # ifdef TRACERS
       do itrc = 1, NT
          wrtdia3D(itrc) = his_dia3D_tracer(itrc)
-         if (his_dia3D_tracer(itrc)) wrtdia3D(NT+1) = .true.
+         if (his_dia3D_tracer(itrc)) wrtdia3D(NT + 1) = .true.
       end do
 #  ifdef DIAGNOSTICS_TS_MLD
       do itrc = 1, NT
          wrtdia2D(itrc) = his_dia2D_tracer(itrc)
-         if (his_dia2D_tracer(itrc)) wrtdia2D(NT+1) = .true.
+         if (his_dia2D_tracer(itrc)) wrtdia2D(NT + 1) = .true.
       end do
 #  endif
 # endif
 # if defined AVERAGES && defined TRACERS
       do itrc = 1, NT
          wrtdia3D_avg(itrc) = avg_dia3D_tracer(itrc)
-         if (avg_dia3D_tracer(itrc)) wrtdia3D_avg(NT+1) = .true.
+         if (avg_dia3D_tracer(itrc)) wrtdia3D_avg(NT + 1) = .true.
       end do
 #  ifdef DIAGNOSTICS_TS_MLD
       do itrc = 1, NT
          wrtdia2D_avg(itrc) = avg_dia2D_tracer(itrc)
-         if (avg_dia2D_tracer(itrc)) wrtdia2D_avg(NT+1) = .true.
+         if (avg_dia2D_tracer(itrc)) wrtdia2D_avg(NT + 1) = .true.
       end do
 #  endif
 # endif
@@ -1441,12 +1441,12 @@ contains
 # ifdef TRACERS
       do itrc = 1, NT
          wrtdiags_pv(itrc) = his_diags_pv_tracer(itrc)
-         if (his_diags_pv_tracer(itrc)) wrtdiags_pv(NT+1) = .true.
+         if (his_diags_pv_tracer(itrc)) wrtdiags_pv(NT + 1) = .true.
       end do
 #  ifdef AVERAGES
       do itrc = 1, NT
          wrtdiags_pv_avg(itrc) = avg_diags_pv_tracer(itrc)
-         if (avg_diags_pv_tracer(itrc)) wrtdiags_pv_avg(NT+1) = .true.
+         if (avg_diags_pv_tracer(itrc)) wrtdiags_pv_avg(NT + 1) = .true.
       end do
 #  endif
 # endif
@@ -1502,31 +1502,31 @@ contains
       integer :: iflux
       do iflux = 1, NumFluxTerms
          wrtdiabioFlux(iflux) = his_diagbioFlux(iflux)
-         if (his_diagbioFlux(iflux)) wrtdiabioFlux(NumFluxTerms+1) = .true.
+         if (his_diagbioFlux(iflux)) wrtdiabioFlux(NumFluxTerms + 1) = .true.
       end do
       do iflux = 1, NumVSinkTerms
          wrtdiabioVSink(iflux) = his_diagbioVSink(iflux)
-         if (his_diagbioVSink(iflux)) wrtdiabioVSink(NumVSinkTerms+1) = .true.
+         if (his_diagbioVSink(iflux)) wrtdiabioVSink(NumVSinkTerms + 1) = .true.
       end do
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       do iflux = 1, NumGasExcTerms
          wrtdiabioGasExc(iflux) = his_diagbioGasExc(iflux)
-         if (his_diagbioGasExc(iflux)) wrtdiabioGasExc(NumGasExcTerms+1) = .true.
+         if (his_diagbioGasExc(iflux)) wrtdiabioGasExc(NumGasExcTerms + 1) = .true.
       end do
 # endif
 # ifdef AVERAGES
       do iflux = 1, NumFluxTerms
          wrtdiabioFlux_avg(iflux) = avg_diagbioFlux(iflux)
-         if (avg_diagbioFlux(iflux)) wrtdiabioFlux_avg(NumFluxTerms+1) = .true.
+         if (avg_diagbioFlux(iflux)) wrtdiabioFlux_avg(NumFluxTerms + 1) = .true.
       end do
       do iflux = 1, NumVSinkTerms
          wrtdiabioVSink_avg(iflux) = avg_diagbioVSink(iflux)
-         if (avg_diagbioVSink(iflux)) wrtdiabioVSink_avg(NumVSinkTerms+1) = .true.
+         if (avg_diagbioVSink(iflux)) wrtdiabioVSink_avg(NumVSinkTerms + 1) = .true.
       end do
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       do iflux = 1, NumGasExcTerms
          wrtdiabioGasExc_avg(iflux) = avg_diagbioGasExc(iflux)
-         if (avg_diagbioGasExc(iflux)) wrtdiabioGasExc_avg(NumGasExcTerms+1) = .true.
+         if (avg_diagbioGasExc(iflux)) wrtdiabioGasExc_avg(NumGasExcTerms + 1) = .true.
       end do
 #  endif
 # endif
@@ -1582,43 +1582,43 @@ contains
          his_abl_avm_abl, his_abl_avt_abl, his_abl_ablh_abl, &
          his_abl_zr_abl, his_abl_zw_abl, his_abl_Hzr_abl, his_abl_Hzw_abl
       use ncscrum, ONLY: wrtabl, indxTime, &
-         indxabl_pu_dta, indxabl_pv_dta, indxabl_pt_dta, &
-         indxabl_pq_dta, indxabl_pgu_dta, indxabl_pgv_dta, &
-         indxabl_u_abl, indxabl_v_abl, indxabl_t_abl, indxabl_q_abl, &
-         indxabl_tke_abl, indxabl_mxlm_abl, indxabl_mxld_abl, &
-         indxabl_avm_abl, indxabl_avt_abl, indxabl_ablh_abl, &
-         indxabl_zr_abl, indxabl_zw_abl, indxabl_Hzr_abl, indxabl_Hzw_abl
+                         indxabl_pu_dta, indxabl_pv_dta, indxabl_pt_dta, &
+                         indxabl_pq_dta, indxabl_pgu_dta, indxabl_pgv_dta, &
+                         indxabl_u_abl, indxabl_v_abl, indxabl_t_abl, indxabl_q_abl, &
+                         indxabl_tke_abl, indxabl_mxlm_abl, indxabl_mxld_abl, &
+                         indxabl_avm_abl, indxabl_avt_abl, indxabl_ablh_abl, &
+                         indxabl_zr_abl, indxabl_zw_abl, indxabl_Hzr_abl, indxabl_Hzw_abl
       implicit none
-      wrtabl(indxabl_pu_dta)   = his_abl_pu_dta
-      wrtabl(indxabl_pv_dta)   = his_abl_pv_dta
-      wrtabl(indxabl_pt_dta)   = his_abl_pt_dta
-      wrtabl(indxabl_pq_dta)   = his_abl_pq_dta
-      wrtabl(indxabl_pgu_dta)  = his_abl_pgu_dta
-      wrtabl(indxabl_pgv_dta)  = his_abl_pgv_dta
-      wrtabl(indxabl_u_abl)    = his_abl_u_abl
-      wrtabl(indxabl_v_abl)    = his_abl_v_abl
-      wrtabl(indxabl_t_abl)    = his_abl_t_abl
-      wrtabl(indxabl_q_abl)    = his_abl_q_abl
-      wrtabl(indxabl_tke_abl)  = his_abl_tke_abl
+      wrtabl(indxabl_pu_dta) = his_abl_pu_dta
+      wrtabl(indxabl_pv_dta) = his_abl_pv_dta
+      wrtabl(indxabl_pt_dta) = his_abl_pt_dta
+      wrtabl(indxabl_pq_dta) = his_abl_pq_dta
+      wrtabl(indxabl_pgu_dta) = his_abl_pgu_dta
+      wrtabl(indxabl_pgv_dta) = his_abl_pgv_dta
+      wrtabl(indxabl_u_abl) = his_abl_u_abl
+      wrtabl(indxabl_v_abl) = his_abl_v_abl
+      wrtabl(indxabl_t_abl) = his_abl_t_abl
+      wrtabl(indxabl_q_abl) = his_abl_q_abl
+      wrtabl(indxabl_tke_abl) = his_abl_tke_abl
       wrtabl(indxabl_mxlm_abl) = his_abl_mxlm_abl
       wrtabl(indxabl_mxld_abl) = his_abl_mxld_abl
-      wrtabl(indxabl_avm_abl)  = his_abl_avm_abl
-      wrtabl(indxabl_avt_abl)  = his_abl_avt_abl
+      wrtabl(indxabl_avm_abl) = his_abl_avm_abl
+      wrtabl(indxabl_avt_abl) = his_abl_avt_abl
       wrtabl(indxabl_ablh_abl) = his_abl_ablh_abl
-      wrtabl(indxabl_zr_abl)   = his_abl_zr_abl
-      wrtabl(indxabl_zw_abl)   = his_abl_zw_abl
-      wrtabl(indxabl_Hzr_abl)  = his_abl_Hzr_abl
-      wrtabl(indxabl_Hzw_abl)  = his_abl_Hzw_abl
-      if (his_abl_pu_dta   .or. his_abl_pv_dta   .or. &
-          his_abl_pt_dta   .or. his_abl_pq_dta   .or. &
-          his_abl_pgu_dta  .or. his_abl_pgv_dta  .or. &
-          his_abl_u_abl    .or. his_abl_v_abl    .or. &
-          his_abl_t_abl    .or. his_abl_q_abl    .or. &
-          his_abl_tke_abl  .or. his_abl_mxlm_abl .or. &
-          his_abl_mxld_abl .or. his_abl_avm_abl  .or. &
-          his_abl_avt_abl  .or. his_abl_ablh_abl .or. &
-          his_abl_zr_abl   .or. his_abl_zw_abl   .or. &
-          his_abl_Hzr_abl  .or. his_abl_Hzw_abl) wrtabl(indxTime) = .true.
+      wrtabl(indxabl_zr_abl) = his_abl_zr_abl
+      wrtabl(indxabl_zw_abl) = his_abl_zw_abl
+      wrtabl(indxabl_Hzr_abl) = his_abl_Hzr_abl
+      wrtabl(indxabl_Hzw_abl) = his_abl_Hzw_abl
+      if (his_abl_pu_dta .or. his_abl_pv_dta .or. &
+          his_abl_pt_dta .or. his_abl_pq_dta .or. &
+          his_abl_pgu_dta .or. his_abl_pgv_dta .or. &
+          his_abl_u_abl .or. his_abl_v_abl .or. &
+          his_abl_t_abl .or. his_abl_q_abl .or. &
+          his_abl_tke_abl .or. his_abl_mxlm_abl .or. &
+          his_abl_mxld_abl .or. his_abl_avm_abl .or. &
+          his_abl_avt_abl .or. his_abl_ablh_abl .or. &
+          his_abl_zr_abl .or. his_abl_zw_abl .or. &
+          his_abl_Hzr_abl .or. his_abl_Hzw_abl) wrtabl(indxTime) = .true.
    end subroutine init_abl_history_fields
 
 # ifdef AVERAGES
@@ -1631,43 +1631,43 @@ contains
          avg_abl_avm_abl, avg_abl_avt_abl, avg_abl_ablh_abl, &
          avg_abl_zr_abl, avg_abl_zw_abl, avg_abl_Hzr_abl, avg_abl_Hzw_abl
       use ncscrum, ONLY: wrtabl_avg, indxTime, &
-         indxabl_pu_dta, indxabl_pv_dta, indxabl_pt_dta, &
-         indxabl_pq_dta, indxabl_pgu_dta, indxabl_pgv_dta, &
-         indxabl_u_abl, indxabl_v_abl, indxabl_t_abl, indxabl_q_abl, &
-         indxabl_tke_abl, indxabl_mxlm_abl, indxabl_mxld_abl, &
-         indxabl_avm_abl, indxabl_avt_abl, indxabl_ablh_abl, &
-         indxabl_zr_abl, indxabl_zw_abl, indxabl_Hzr_abl, indxabl_Hzw_abl
+                         indxabl_pu_dta, indxabl_pv_dta, indxabl_pt_dta, &
+                         indxabl_pq_dta, indxabl_pgu_dta, indxabl_pgv_dta, &
+                         indxabl_u_abl, indxabl_v_abl, indxabl_t_abl, indxabl_q_abl, &
+                         indxabl_tke_abl, indxabl_mxlm_abl, indxabl_mxld_abl, &
+                         indxabl_avm_abl, indxabl_avt_abl, indxabl_ablh_abl, &
+                         indxabl_zr_abl, indxabl_zw_abl, indxabl_Hzr_abl, indxabl_Hzw_abl
       implicit none
-      wrtabl_avg(indxabl_pu_dta)   = avg_abl_pu_dta
-      wrtabl_avg(indxabl_pv_dta)   = avg_abl_pv_dta
-      wrtabl_avg(indxabl_pt_dta)   = avg_abl_pt_dta
-      wrtabl_avg(indxabl_pq_dta)   = avg_abl_pq_dta
-      wrtabl_avg(indxabl_pgu_dta)  = avg_abl_pgu_dta
-      wrtabl_avg(indxabl_pgv_dta)  = avg_abl_pgv_dta
-      wrtabl_avg(indxabl_u_abl)    = avg_abl_u_abl
-      wrtabl_avg(indxabl_v_abl)    = avg_abl_v_abl
-      wrtabl_avg(indxabl_t_abl)    = avg_abl_t_abl
-      wrtabl_avg(indxabl_q_abl)    = avg_abl_q_abl
-      wrtabl_avg(indxabl_tke_abl)  = avg_abl_tke_abl
+      wrtabl_avg(indxabl_pu_dta) = avg_abl_pu_dta
+      wrtabl_avg(indxabl_pv_dta) = avg_abl_pv_dta
+      wrtabl_avg(indxabl_pt_dta) = avg_abl_pt_dta
+      wrtabl_avg(indxabl_pq_dta) = avg_abl_pq_dta
+      wrtabl_avg(indxabl_pgu_dta) = avg_abl_pgu_dta
+      wrtabl_avg(indxabl_pgv_dta) = avg_abl_pgv_dta
+      wrtabl_avg(indxabl_u_abl) = avg_abl_u_abl
+      wrtabl_avg(indxabl_v_abl) = avg_abl_v_abl
+      wrtabl_avg(indxabl_t_abl) = avg_abl_t_abl
+      wrtabl_avg(indxabl_q_abl) = avg_abl_q_abl
+      wrtabl_avg(indxabl_tke_abl) = avg_abl_tke_abl
       wrtabl_avg(indxabl_mxlm_abl) = avg_abl_mxlm_abl
       wrtabl_avg(indxabl_mxld_abl) = avg_abl_mxld_abl
-      wrtabl_avg(indxabl_avm_abl)  = avg_abl_avm_abl
-      wrtabl_avg(indxabl_avt_abl)  = avg_abl_avt_abl
+      wrtabl_avg(indxabl_avm_abl) = avg_abl_avm_abl
+      wrtabl_avg(indxabl_avt_abl) = avg_abl_avt_abl
       wrtabl_avg(indxabl_ablh_abl) = avg_abl_ablh_abl
-      wrtabl_avg(indxabl_zr_abl)   = avg_abl_zr_abl
-      wrtabl_avg(indxabl_zw_abl)   = avg_abl_zw_abl
-      wrtabl_avg(indxabl_Hzr_abl)  = avg_abl_Hzr_abl
-      wrtabl_avg(indxabl_Hzw_abl)  = avg_abl_Hzw_abl
-      if (avg_abl_pu_dta   .or. avg_abl_pv_dta   .or. &
-          avg_abl_pt_dta   .or. avg_abl_pq_dta   .or. &
-          avg_abl_pgu_dta  .or. avg_abl_pgv_dta  .or. &
-          avg_abl_u_abl    .or. avg_abl_v_abl    .or. &
-          avg_abl_t_abl    .or. avg_abl_q_abl    .or. &
-          avg_abl_tke_abl  .or. avg_abl_mxlm_abl .or. &
-          avg_abl_mxld_abl .or. avg_abl_avm_abl  .or. &
-          avg_abl_avt_abl  .or. avg_abl_ablh_abl .or. &
-          avg_abl_zr_abl   .or. avg_abl_zw_abl   .or. &
-          avg_abl_Hzr_abl  .or. avg_abl_Hzw_abl) wrtabl_avg(indxTime) = .true.
+      wrtabl_avg(indxabl_zr_abl) = avg_abl_zr_abl
+      wrtabl_avg(indxabl_zw_abl) = avg_abl_zw_abl
+      wrtabl_avg(indxabl_Hzr_abl) = avg_abl_Hzr_abl
+      wrtabl_avg(indxabl_Hzw_abl) = avg_abl_Hzw_abl
+      if (avg_abl_pu_dta .or. avg_abl_pv_dta .or. &
+          avg_abl_pt_dta .or. avg_abl_pq_dta .or. &
+          avg_abl_pgu_dta .or. avg_abl_pgv_dta .or. &
+          avg_abl_u_abl .or. avg_abl_v_abl .or. &
+          avg_abl_t_abl .or. avg_abl_q_abl .or. &
+          avg_abl_tke_abl .or. avg_abl_mxlm_abl .or. &
+          avg_abl_mxld_abl .or. avg_abl_avm_abl .or. &
+          avg_abl_avt_abl .or. avg_abl_ablh_abl .or. &
+          avg_abl_zr_abl .or. avg_abl_zw_abl .or. &
+          avg_abl_Hzr_abl .or. avg_abl_Hzw_abl) wrtabl_avg(indxTime) = .true.
    end subroutine init_abl_averages_fields
 # endif
 #endif
@@ -1703,18 +1703,18 @@ contains
 #ifdef AGRIF
       if (.not. Agrif_Root()) return
 #endif
-      wrtsta(indxstaGrd)  = sta_grd
+      wrtsta(indxstaGrd) = sta_grd
       wrtsta(indxstaTemp) = sta_temp
       wrtsta(indxstaSalt) = sta_salt
-      wrtsta(indxstaRho)  = sta_rho
-      wrtsta(indxstaVel)  = sta_vel
+      wrtsta(indxstaRho) = sta_rho
+      wrtsta(indxstaVel) = sta_vel
    end subroutine init_station_fields
 #endif
 
 #if defined SOLVE3D && defined SEDIMENT
    subroutine init_sediment_history_fields()
       use croco_namelist, ONLY: his_sed_athk, his_sed_bthk, his_sed_bpor, &
-         his_sed_bfra
+                                his_sed_bfra
 # ifdef SUSPLOAD
       use croco_namelist, ONLY: his_sed_dflx, his_sed_eflx
 # endif
@@ -1767,15 +1767,15 @@ contains
       do itrc = indxSed, &
 # ifdef SUSPLOAD
 # ifdef BEDLOAD
-                indxSed+NST+1+4*NST
+         indxSed + NST + 1 + 4*NST
 # else
-                indxSed+NST+1+2*NST
+         indxSed + NST + 1 + 2*NST
 # endif
 # else
 # ifdef BEDLOAD
-                indxSed+NST+1+2*NST
+         indxSed + NST + 1 + 2*NST
 # else
-                indxSed+NST+1
+         indxSed + NST + 1
 # endif
 # endif
          wrtavg(itrc) = wrthis(itrc)
@@ -1791,11 +1791,11 @@ contains
       use ncscrum, ONLY: wrthis, indxAbed, indxHrip, indxLrip, &
                          indxZbnot, indxZbapp, indxBostrw
       implicit none
-      wrthis(indxAbed)   = his_abed
-      wrthis(indxHrip)   = his_hripple
-      wrthis(indxLrip)   = his_lripple
-      wrthis(indxZbnot)  = his_zbnot
-      wrthis(indxZbapp)  = his_zbapp
+      wrthis(indxAbed) = his_abed
+      wrthis(indxHrip) = his_hripple
+      wrthis(indxLrip) = his_lripple
+      wrthis(indxZbnot) = his_zbnot
+      wrthis(indxZbapp) = his_zbapp
       wrthis(indxBostrw) = his_bostrw
    end subroutine init_bbl_history_fields
 #endif
@@ -1813,16 +1813,16 @@ contains
                          indxKVF, indxCALP, indxKAPS
 # endif
       implicit none
-      wrthis(indxSUP)   = his_sup
+      wrthis(indxSUP) = his_sup
       wrthis(indxUST2D) = his_ust2d
       wrthis(indxVST2D) = his_vst2d
 # ifdef SOLVE3D
-      wrthis(indxUST)  = his_ust
-      wrthis(indxVST)  = his_vst
-      wrthis(indxWST)  = his_wst
-      wrthis(indxAkb)  = his_akb
-      wrthis(indxAkw)  = his_akw
-      wrthis(indxKVF)  = his_kvf
+      wrthis(indxUST) = his_ust
+      wrthis(indxVST) = his_vst
+      wrthis(indxWST) = his_wst
+      wrthis(indxAkb) = his_akb
+      wrthis(indxAkw) = his_akw
+      wrthis(indxKVF) = his_kvf
       wrthis(indxCALP) = his_calp
       wrthis(indxKAPS) = his_kaps
 # endif
@@ -1841,16 +1841,16 @@ contains
                          indxKVF, indxCALP, indxKAPS
 #  endif
       implicit none
-      wrtavg(indxSUP)   = avg_sup
+      wrtavg(indxSUP) = avg_sup
       wrtavg(indxUST2D) = avg_ust2d
       wrtavg(indxVST2D) = avg_vst2d
 #  ifdef SOLVE3D
-      wrtavg(indxUST)  = avg_ust
-      wrtavg(indxVST)  = avg_vst
-      wrtavg(indxWST)  = avg_wst
-      wrtavg(indxAkb)  = avg_akb
-      wrtavg(indxAkw)  = avg_akw
-      wrtavg(indxKVF)  = avg_kvf
+      wrtavg(indxUST) = avg_ust
+      wrtavg(indxVST) = avg_vst
+      wrtavg(indxWST) = avg_wst
+      wrtavg(indxAkb) = avg_akb
+      wrtavg(indxAkw) = avg_akw
+      wrtavg(indxKVF) = avg_kvf
       wrtavg(indxCALP) = avg_calp
       wrtavg(indxKAPS) = avg_kaps
 #  endif
@@ -1861,7 +1861,7 @@ contains
 #if defined MRL_WCI || defined OW_COUPLING
    subroutine init_wave_history_fields()
       use croco_namelist, ONLY: his_hrm, his_frq, his_action, his_k_xi, &
-         his_k_eta, his_eps_b, his_eps_d, his_erol, his_eps_r
+                                his_k_eta, his_eps_b, his_eps_d, his_erol, his_eps_r
       use ncscrum, ONLY: wrthis, indxHRM, indxFRQ, indxWAC, indxWKX, &
                          indxWKE, indxEPB, indxEPD, indxWAR, indxEPR
       implicit none
@@ -1879,7 +1879,7 @@ contains
 # ifdef AVERAGES
    subroutine init_wave_average_fields()
       use croco_namelist, ONLY: avg_hrm, avg_frq, avg_action, avg_k_xi, &
-         avg_k_eta, avg_eps_b, avg_eps_d, avg_erol, avg_eps_r
+                                avg_k_eta, avg_eps_b, avg_eps_d, avg_erol, avg_eps_r
       use ncscrum, ONLY: wrtavg, indxHRM, indxFRQ, indxWAC, indxWKX, &
                          indxWKE, indxEPB, indxEPD, indxWAR, indxEPR
       implicit none

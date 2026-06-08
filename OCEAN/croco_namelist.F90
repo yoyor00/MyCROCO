@@ -665,20 +665,20 @@ MODULE croco_namelist
 #endif
 
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
-     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY || \
-     defined TNUDGING      || defined ZNUDGING      || \
-     defined M2NUDGING     || defined M3NUDGING     || \
-     defined NBQ_NUDGING   || defined SPONGE
+   defined M3_FRC_BRY||defined Z_FRC_BRY||\
+   defined W_FRC_BRY||defined NBQ_FRC_BRY||\
+   defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
+   defined M3CLIMATOLOGY||defined ZCLIMATOLOGY||\
+   defined WCLIMATOLOGY||defined NBQCLIMATOLOGY||\
+   defined TNUDGING||defined ZNUDGING||\
+   defined M2NUDGING||defined M3NUDGING||\
+   defined NBQ_NUDGING||defined SPONGE
    ! &croco_nudging
-   real :: tauT_in  = 1.0
+   real :: tauT_in = 1.0
    !! Inflow nudging time-scale for tracers [days]
    real :: tauT_out = 360.0
    !! Outflow nudging time-scale for tracers [days]
-   real :: tauM_in  = 3.0
+   real :: tauM_in = 3.0
    !! Inflow nudging time-scale for momentum [days]
    real :: tauM_out = 360.0
    !! Outflow nudging time-scale for momentum [days]
@@ -695,8 +695,8 @@ MODULE croco_namelist
    logical :: his_ubar = .true.
    logical :: his_vbar = .true.
 #ifdef SOLVE3D
-   logical :: his_u    = .true.
-   logical :: his_v    = .true.
+   logical :: his_u = .true.
+   logical :: his_v = .true.
 # ifdef TRACERS
    logical, allocatable :: his_tracer(:)
 # endif
@@ -708,8 +708,8 @@ MODULE croco_namelist
    logical :: avg_ubar = .true.
    logical :: avg_vbar = .true.
 # ifdef SOLVE3D
-   logical :: avg_u    = .true.
-   logical :: avg_v    = .true.
+   logical :: avg_u = .true.
+   logical :: avg_v = .true.
 #  ifdef TRACERS
    logical, allocatable :: avg_tracer(:)
 #  endif
@@ -823,13 +823,13 @@ MODULE croco_namelist
 
 #if defined SOLVE3D && defined GLS_MIXING
    ! &croco_gls_history_fields
-   logical :: his_tke    = .true.
-   logical :: his_gls    = .true.
+   logical :: his_tke = .true.
+   logical :: his_gls = .true.
    logical :: his_lscale = .true.
 # ifdef AVERAGES
    ! &croco_gls_averages_fields
-   logical :: avg_tke    = .true.
-   logical :: avg_gls    = .true.
+   logical :: avg_tke = .true.
+   logical :: avg_gls = .true.
    logical :: avg_lscale = .true.
 # endif
 #endif
@@ -859,43 +859,43 @@ MODULE croco_namelist
 
 #ifdef BBL
    ! &croco_bbl_history_fields
-   logical :: his_abed    = .true.
+   logical :: his_abed = .true.
    logical :: his_hripple = .true.
    logical :: his_lripple = .true.
-   logical :: his_zbnot   = .true.
-   logical :: his_zbapp   = .true.
-   logical :: his_bostrw  = .true.
+   logical :: his_zbnot = .true.
+   logical :: his_zbapp = .true.
+   logical :: his_bostrw = .true.
 #endif
 
 #ifdef MRL_WCI
    ! &croco_wci_history_fields
-   logical :: his_sup   = .true.
+   logical :: his_sup = .true.
    logical :: his_ust2d = .true.
    logical :: his_vst2d = .true.
 # ifdef SOLVE3D
    ! &croco_wci_history_3d_fields
-   logical :: his_ust  = .true.
-   logical :: his_vst  = .true.
-   logical :: his_wst  = .true.
-   logical :: his_akb  = .true.
-   logical :: his_akw  = .true.
-   logical :: his_kvf  = .true.
+   logical :: his_ust = .true.
+   logical :: his_vst = .true.
+   logical :: his_wst = .true.
+   logical :: his_akb = .true.
+   logical :: his_akw = .true.
+   logical :: his_kvf = .true.
    logical :: his_calp = .true.
    logical :: his_kaps = .true.
 # endif
 # ifdef AVERAGES
    ! &croco_wci_average_fields
-   logical :: avg_sup   = .true.
+   logical :: avg_sup = .true.
    logical :: avg_ust2d = .true.
    logical :: avg_vst2d = .true.
 #  ifdef SOLVE3D
    ! &croco_wci_average_3d_fields
-   logical :: avg_ust  = .true.
-   logical :: avg_vst  = .true.
-   logical :: avg_wst  = .true.
-   logical :: avg_akb  = .true.
-   logical :: avg_akw  = .true.
-   logical :: avg_kvf  = .true.
+   logical :: avg_ust = .true.
+   logical :: avg_vst = .true.
+   logical :: avg_wst = .true.
+   logical :: avg_akb = .true.
+   logical :: avg_akw = .true.
+   logical :: avg_kvf = .true.
    logical :: avg_calp = .true.
    logical :: avg_kaps = .true.
 #  endif
@@ -904,73 +904,73 @@ MODULE croco_namelist
 
 #if defined MRL_WCI || defined OW_COUPLING
    ! &croco_wave_history_fields
-   logical :: his_hrm    = .true.
-   logical :: his_frq    = .true.
+   logical :: his_hrm = .true.
+   logical :: his_frq = .true.
    logical :: his_action = .true.
-   logical :: his_k_xi   = .true.
-   logical :: his_k_eta  = .true.
-   logical :: his_eps_b  = .true.
-   logical :: his_eps_d  = .true.
-   logical :: his_erol   = .true.
-   logical :: his_eps_r  = .true.
+   logical :: his_k_xi = .true.
+   logical :: his_k_eta = .true.
+   logical :: his_eps_b = .true.
+   logical :: his_eps_d = .true.
+   logical :: his_erol = .true.
+   logical :: his_eps_r = .true.
 # ifdef AVERAGES
    ! &croco_wave_average_fields
-   logical :: avg_hrm    = .true.
-   logical :: avg_frq    = .true.
+   logical :: avg_hrm = .true.
+   logical :: avg_frq = .true.
    logical :: avg_action = .true.
-   logical :: avg_k_xi   = .true.
-   logical :: avg_k_eta  = .true.
-   logical :: avg_eps_b  = .true.
-   logical :: avg_eps_d  = .true.
-   logical :: avg_erol   = .true.
-   logical :: avg_eps_r  = .true.
+   logical :: avg_k_xi = .true.
+   logical :: avg_k_eta = .true.
+   logical :: avg_eps_b = .true.
+   logical :: avg_eps_d = .true.
+   logical :: avg_erol = .true.
+   logical :: avg_eps_r = .true.
 # endif
 #endif
 
 #if defined ABL1D && !defined XIOS
    ! &croco_abl_history_fields
-   logical :: his_abl_pu_dta  = .true.
-   logical :: his_abl_pv_dta  = .true.
-   logical :: his_abl_pt_dta  = .true.
-   logical :: his_abl_pq_dta  = .true.
+   logical :: his_abl_pu_dta = .true.
+   logical :: his_abl_pv_dta = .true.
+   logical :: his_abl_pt_dta = .true.
+   logical :: his_abl_pq_dta = .true.
    logical :: his_abl_pgu_dta = .true.
    logical :: his_abl_pgv_dta = .true.
-   logical :: his_abl_u_abl   = .true.
-   logical :: his_abl_v_abl   = .true.
-   logical :: his_abl_t_abl   = .true.
-   logical :: his_abl_q_abl   = .true.
-   logical :: his_abl_tke_abl  = .true.
+   logical :: his_abl_u_abl = .true.
+   logical :: his_abl_v_abl = .true.
+   logical :: his_abl_t_abl = .true.
+   logical :: his_abl_q_abl = .true.
+   logical :: his_abl_tke_abl = .true.
    logical :: his_abl_mxlm_abl = .true.
    logical :: his_abl_mxld_abl = .true.
-   logical :: his_abl_avm_abl  = .true.
-   logical :: his_abl_avt_abl  = .true.
+   logical :: his_abl_avm_abl = .true.
+   logical :: his_abl_avt_abl = .true.
    logical :: his_abl_ablh_abl = .true.
-   logical :: his_abl_zr_abl   = .true.
-   logical :: his_abl_zw_abl   = .true.
-   logical :: his_abl_Hzr_abl  = .true.
-   logical :: his_abl_Hzw_abl  = .true.
+   logical :: his_abl_zr_abl = .true.
+   logical :: his_abl_zw_abl = .true.
+   logical :: his_abl_Hzr_abl = .true.
+   logical :: his_abl_Hzw_abl = .true.
 # ifdef AVERAGES
    ! &croco_abl_averages_fields
-   logical :: avg_abl_pu_dta  = .true.
-   logical :: avg_abl_pv_dta  = .true.
-   logical :: avg_abl_pt_dta  = .true.
-   logical :: avg_abl_pq_dta  = .true.
+   logical :: avg_abl_pu_dta = .true.
+   logical :: avg_abl_pv_dta = .true.
+   logical :: avg_abl_pt_dta = .true.
+   logical :: avg_abl_pq_dta = .true.
    logical :: avg_abl_pgu_dta = .true.
    logical :: avg_abl_pgv_dta = .true.
-   logical :: avg_abl_u_abl   = .true.
-   logical :: avg_abl_v_abl   = .true.
-   logical :: avg_abl_t_abl   = .true.
-   logical :: avg_abl_q_abl   = .true.
-   logical :: avg_abl_tke_abl  = .true.
+   logical :: avg_abl_u_abl = .true.
+   logical :: avg_abl_v_abl = .true.
+   logical :: avg_abl_t_abl = .true.
+   logical :: avg_abl_q_abl = .true.
+   logical :: avg_abl_tke_abl = .true.
    logical :: avg_abl_mxlm_abl = .true.
    logical :: avg_abl_mxld_abl = .true.
-   logical :: avg_abl_avm_abl  = .true.
-   logical :: avg_abl_avt_abl  = .true.
+   logical :: avg_abl_avm_abl = .true.
+   logical :: avg_abl_avt_abl = .true.
    logical :: avg_abl_ablh_abl = .true.
-   logical :: avg_abl_zr_abl   = .true.
-   logical :: avg_abl_zw_abl   = .true.
-   logical :: avg_abl_Hzr_abl  = .true.
-   logical :: avg_abl_Hzw_abl  = .true.
+   logical :: avg_abl_zr_abl = .true.
+   logical :: avg_abl_zw_abl = .true.
+   logical :: avg_abl_Hzr_abl = .true.
+   logical :: avg_abl_Hzw_abl = .true.
 # endif
 #endif
 

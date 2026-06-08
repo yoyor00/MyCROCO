@@ -116,9 +116,9 @@ contains
       namelist /croco_sponge/ x_sponge
 #endif
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  
+      defined M3_FRC_BRY||defined Z_FRC_BRY||\
+      defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
+      defined M3CLIMATOLOGY||defined ZCLIMATOLOGY
       namelist /croco_nudging/ tauT_in, tauT_out, tauM_in, tauM_out
 #endif
 #if defined BHFLUX || (defined BWFLUX && defined SALINITY)
@@ -290,14 +290,14 @@ contains
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
-      namelist /croco_diagbioFlux_history_fields/   his_diagbioFlux
-      namelist /croco_diagbioVSink_history_fields/  his_diagbioVSink
+      namelist /croco_diagbioFlux_history_fields/ his_diagbioFlux
+      namelist /croco_diagbioVSink_history_fields/ his_diagbioVSink
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       namelist /croco_diagbioGasExc_history_fields/ his_diagbioGasExc
 # endif
 # ifdef AVERAGES
-      namelist /croco_diagbioFlux_average_fields/   avg_diagbioFlux
-      namelist /croco_diagbioVSink_average_fields/  avg_diagbioVSink
+      namelist /croco_diagbioFlux_average_fields/ avg_diagbioFlux
+      namelist /croco_diagbioVSink_average_fields/ avg_diagbioVSink
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       namelist /croco_diagbioGasExc_average_fields/ avg_diagbioGasExc
 #  endif
@@ -445,67 +445,67 @@ contains
       ! Allocate all NT-sized arrays before any namelist read.
 #ifdef SOLVE3D
 # ifdef TRACERS
-      if (.not. allocated(tnu2))      then; allocate(tnu2(NT));      tnu2      = 0.0;   end if
-      if (.not. allocated(tnu4))      then; allocate(tnu4(NT));      tnu4      = 0.0;   end if
+      if (.not. allocated(tnu2)) then; allocate (tnu2(NT)); tnu2 = 0.0; end if
+      if (.not. allocated(tnu4)) then; allocate (tnu4(NT)); tnu4 = 0.0; end if
 #  if !defined LMD_MIXING
-      if (.not. allocated(Akt_bak))   then; allocate(Akt_bak(NT));   Akt_bak   = 1.e-6; end if
+      if (.not. allocated(Akt_bak)) then; allocate (Akt_bak(NT)); Akt_bak = 1.e-6; end if
 #  endif
-      if (.not. allocated(his_tracer)) then; allocate(his_tracer(NT)); his_tracer = .true.; end if
+      if (.not. allocated(his_tracer)) then; allocate (his_tracer(NT)); his_tracer = .true.; end if
 #  if defined AVERAGES
-      if (.not. allocated(avg_tracer)) then; allocate(avg_tracer(NT)); avg_tracer = .true.; end if
+      if (.not. allocated(avg_tracer)) then; allocate (avg_tracer(NT)); avg_tracer = .true.; end if
 #  endif
 #  ifdef DIAGNOSTICS_TS
-      if (.not. allocated(his_dia3D_tracer)) then; allocate(his_dia3D_tracer(NT)); his_dia3D_tracer = .true.; end if
+      if (.not. allocated(his_dia3D_tracer)) then; allocate (his_dia3D_tracer(NT)); his_dia3D_tracer = .true.; end if
 #   ifdef DIAGNOSTICS_TS_MLD
-      if (.not. allocated(his_dia2D_tracer)) then; allocate(his_dia2D_tracer(NT)); his_dia2D_tracer = .true.; end if
+      if (.not. allocated(his_dia2D_tracer)) then; allocate (his_dia2D_tracer(NT)); his_dia2D_tracer = .true.; end if
 #   endif
 #   ifdef AVERAGES
-      if (.not. allocated(avg_dia3D_tracer)) then; allocate(avg_dia3D_tracer(NT)); avg_dia3D_tracer = .true.; end if
+      if (.not. allocated(avg_dia3D_tracer)) then; allocate (avg_dia3D_tracer(NT)); avg_dia3D_tracer = .true.; end if
 #    ifdef DIAGNOSTICS_TS_MLD
-      if (.not. allocated(avg_dia2D_tracer)) then; allocate(avg_dia2D_tracer(NT)); avg_dia2D_tracer = .true.; end if
+      if (.not. allocated(avg_dia2D_tracer)) then; allocate (avg_dia2D_tracer(NT)); avg_dia2D_tracer = .true.; end if
 #    endif
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_PV
-      if (.not. allocated(his_diags_pv_tracer)) then; allocate(his_diags_pv_tracer(NT)); his_diags_pv_tracer = .true.; end if
+      if (.not. allocated(his_diags_pv_tracer)) then; allocate (his_diags_pv_tracer(NT)); his_diags_pv_tracer = .true.; end if
 #   ifdef AVERAGES
-      if (.not. allocated(avg_diags_pv_tracer)) then; allocate(avg_diags_pv_tracer(NT)); avg_diags_pv_tracer = .true.; end if
+      if (.not. allocated(avg_diags_pv_tracer)) then; allocate (avg_diags_pv_tracer(NT)); avg_diags_pv_tracer = .true.; end if
 #   endif
 #  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
-      if (.not. allocated(his_diagbioFlux))  then; allocate(his_diagbioFlux(NumFluxTerms));   his_diagbioFlux  = .true.; end if
-      if (.not. allocated(his_diagbioVSink)) then; allocate(his_diagbioVSink(NumVSinkTerms));  his_diagbioVSink = .true.; end if
+      if (.not. allocated(his_diagbioFlux)) then; allocate (his_diagbioFlux(NumFluxTerms)); his_diagbioFlux = .true.; end if
+      if (.not. allocated(his_diagbioVSink)) then; allocate (his_diagbioVSink(NumVSinkTerms)); his_diagbioVSink = .true.; end if
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      if (.not. allocated(his_diagbioGasExc)) then; allocate(his_diagbioGasExc(NumGasExcTerms)); his_diagbioGasExc = .true.; end if
+      if (.not. allocated(his_diagbioGasExc)) then; allocate (his_diagbioGasExc(NumGasExcTerms)); his_diagbioGasExc = .true.; end if
 # endif
 # ifdef AVERAGES
-      if (.not. allocated(avg_diagbioFlux))  then; allocate(avg_diagbioFlux(NumFluxTerms));   avg_diagbioFlux  = .true.; end if
-      if (.not. allocated(avg_diagbioVSink)) then; allocate(avg_diagbioVSink(NumVSinkTerms));  avg_diagbioVSink = .true.; end if
+      if (.not. allocated(avg_diagbioFlux)) then; allocate (avg_diagbioFlux(NumFluxTerms)); avg_diagbioFlux = .true.; end if
+      if (.not. allocated(avg_diagbioVSink)) then; allocate (avg_diagbioVSink(NumVSinkTerms)); avg_diagbioVSink = .true.; end if
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      if (.not. allocated(avg_diagbioGasExc)) then; allocate(avg_diagbioGasExc(NumGasExcTerms)); avg_diagbioGasExc = .true.; end if
+      if (.not. allocated(avg_diagbioGasExc)) then; allocate (avg_diagbioGasExc(NumGasExcTerms)); avg_diagbioGasExc = .true.; end if
 #  endif
 # endif
 #endif
 #if defined SOLVE3D && defined SEDIMENT
       if (.not. allocated(his_sed_bfra)) then
-         allocate(his_sed_bfra(NST)); his_sed_bfra = .true.
+         allocate (his_sed_bfra(NST)); his_sed_bfra = .true.
       end if
 # ifdef SUSPLOAD
       if (.not. allocated(his_sed_dflx)) then
-         allocate(his_sed_dflx(NST)); his_sed_dflx = .true.
+         allocate (his_sed_dflx(NST)); his_sed_dflx = .true.
       end if
       if (.not. allocated(his_sed_eflx)) then
-         allocate(his_sed_eflx(NST)); his_sed_eflx = .true.
+         allocate (his_sed_eflx(NST)); his_sed_eflx = .true.
       end if
 # endif
 # ifdef BEDLOAD
       if (.not. allocated(his_sed_bdlu)) then
-         allocate(his_sed_bdlu(NST)); his_sed_bdlu = .true.
+         allocate (his_sed_bdlu(NST)); his_sed_bdlu = .true.
       end if
       if (.not. allocated(his_sed_bdlv)) then
-         allocate(his_sed_bdlv(NST)); his_sed_bdlv = .true.
+         allocate (his_sed_bdlv(NST)); his_sed_bdlv = .true.
       end if
 # endif
 #endif
@@ -662,11 +662,11 @@ contains
 #endif
 
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
-     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
+      defined M3_FRC_BRY||defined Z_FRC_BRY||\
+      defined W_FRC_BRY||defined NBQ_FRC_BRY||\
+      defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
+      defined M3CLIMATOLOGY||defined ZCLIMATOLOGY||\
+      defined WCLIMATOLOGY||defined NBQCLIMATOLOGY
       ! --- croco_nudging (optional) ---
       call check_nml_presence(nmlunit, "croco_nudging", .false., found, ierr)
       if (found) then
@@ -1775,11 +1775,11 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_sponge)
 #endif
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
-     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
+      defined M3_FRC_BRY||defined Z_FRC_BRY||\
+      defined W_FRC_BRY||defined NBQ_FRC_BRY||\
+      defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
+      defined M3CLIMATOLOGY||defined ZCLIMATOLOGY||\
+      defined WCLIMATOLOGY||defined NBQCLIMATOLOGY
       MPI_master_only WRITE (stdout, nml=croco_nudging)
 #endif
 #if defined BHFLUX || (defined BWFLUX && defined SALINITY)
