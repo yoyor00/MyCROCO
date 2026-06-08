@@ -41,21 +41,6 @@
   rstname = "sed_toy_consolid_rst.nc"
 /
 
-&croco_primary_history_fields
-  his_zeta = .true.
-  his_ubar = .true.
-  his_vbar = .true.
-/
-
-&croco_primary_history_3d_fields
-  his_u = .true.
-  his_v = .true.
-/
-
-&croco_primary_history_tracer_fields
-  his_tracer = 6*.true.
-/
-
 &croco_lin_eos
   R0 = 27
   T0 = 10.
@@ -113,6 +98,69 @@
   his_tke = .true.
   his_gls = .true.
   his_lscale = .true.
+/
+
+&croco_primary_history_fields
+  his_zeta = .true.
+  his_ubar = .true.
+  his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  his_u = .true.
+  his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  his_tracer = 6*.true.
+/
+
+&croco_auxiliary_history_fields
+  his_rho = .true.
+  his_omega = .true.
+  his_w = .true.
+  his_akv = .true.
+  his_bostr = .true.
+  his_wstr = .true.
+  his_ustr = .true.
+  his_vstr = .true.
+/
+
+&croco_temperature_history_fields
+  his_akt = .true.
+  his_shflx = .true.
+  his_shflx_rsw = .true.
+/
+
+&croco_salinity_history_fields
+  his_aks = .true.
+  his_swflx = .true.
+/
+
+&croco_bulk_flux_history_fields
+  his_shflx_rlw = .true.
+  his_shflx_lat = .true.
+  his_shflx_sen = .true.
+/
+
+&croco_hbl_history_fields
+  his_hbl = .true.
+/
+
+&croco_lmd_bkpp_history_fields
+  his_hbbl = .true.
+/
+
+&croco_vis_coef_history_fields
+  his_visc3d = .true.
+/
+
+&croco_dif_coef_history_fields
+  his_diff3d = .true.
+/
+
+&croco_biology_history_fields
+  his_hel = .true.
 /
 
 

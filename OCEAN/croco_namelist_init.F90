@@ -179,7 +179,104 @@ contains
 #endif
       call init_primary_history_fields()
 #ifdef AVERAGES
-      call init_primary_averages()
+      call init_primary_averages_fields()
+#endif
+#if defined SOLVE3D || (!defined SOLVE3D && defined RIP)
+      call init_auxiliary_history_fields()
+#endif
+#if defined SOLVE3D && defined TEMPERATURE
+      call init_temperature_history_fields()
+#endif
+#if defined SOLVE3D && defined SALINITY
+      call init_salinity_history_fields()
+#endif
+#if defined SOLVE3D && defined BULK_FLUX
+      call init_bulk_flux_history_fields()
+#endif
+#if defined SOLVE3D && defined BHFLUX
+      call init_bhflux_history_fields()
+#endif
+#if defined SOLVE3D && defined BWFLUX && defined SALINITY
+      call init_bwflux_history_fields()
+#endif
+#if defined SOLVE3D && \
+      (defined ANA_VMIX||defined LMD_MIXING||\
+      defined LMD_SKPP||defined LMD_BKPP||\
+      defined GLS_MIXING)
+      call init_bvf_history_fields()
+#endif
+#if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
+      call init_hbl_history_fields()
+#endif
+#if defined SOLVE3D && defined LMD_BKPP
+      call init_lmd_bkpp_history_fields()
+#endif
+#if defined SOLVE3D && defined VIS_COEF_3D
+      call init_vis_coef_history_fields()
+#endif
+#if defined SOLVE3D && defined DIF_COEF_3D
+      call init_dif_coef_history_fields()
+#endif
+#if defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      call init_biology_history_fields()
+#endif
+#if defined SOLVE3D && defined BIO_NChlPZD
+      call init_bio_nchlpzd_history_fields()
+#endif
+#if defined SOLVE3D && defined BIO_BioEBUS
+      call init_bio_bioebus_history_fields()
+#endif
+#if defined SOLVE3D && defined MORPHODYN
+      call init_morphodyn_history_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D
+      call init_auxiliary_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
+      call init_temperature_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined SALINITY
+      call init_salinity_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
+      call init_bulk_flux_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BHFLUX
+      call init_bhflux_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
+      call init_bwflux_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && \
+      (defined ANA_VMIX||defined LMD_MIXING||\
+      defined LMD_SKPP||defined LMD_BKPP||\
+      defined GLS_MIXING)
+      call init_bvf_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && \
+      (defined LMD_SKPP||defined GLS_MIXING)
+      call init_hbl_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
+      call init_lmd_bkpp_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
+      call init_vis_coef_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
+      call init_dif_coef_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      call init_biology_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
+      call init_bio_nchlpzd_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
+      call init_bio_bioebus_averages_fields()
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
+      call init_morphodyn_averages_fields()
 #endif
 #ifdef DIAGNOSTICS_TS
       call init_diag_ts_fields()
@@ -1283,10 +1380,10 @@ contains
 
 #ifdef AVERAGES
    !---------------------------------------------------------------------
-   !  init_primary_averages
+   !  init_primary_averages_fields
    !  Copy avg_* module variables into the legacy wrtavg() array.
    !---------------------------------------------------------------------
-   subroutine init_primary_averages()
+   subroutine init_primary_averages_fields()
       use croco_namelist, ONLY: avg_zeta, avg_ubar, avg_vbar
 # ifdef SOLVE3D
       use croco_namelist, ONLY: avg_u, avg_v
@@ -1317,8 +1414,398 @@ contains
       end do
 #  endif
 # endif
-   end subroutine init_primary_averages
+   end subroutine init_primary_averages_fields
 #endif
+
+#if defined SOLVE3D || (!defined SOLVE3D && defined RIP)
+   !---------------------------------------------------------------------
+   !  init_auxiliary_history_fields
+   !  SOLVE3D basics (rho, omega, w, akv) + surface stress (always).
+   !---------------------------------------------------------------------
+   subroutine init_auxiliary_history_fields()
+      use croco_namelist, ONLY: &
+         his_rho, his_omega, his_w, his_akv, &
+         his_bostr, his_bustr, his_bvstr, his_wstr, his_ustr, his_vstr
+      use ncscrum, ONLY: wrthis, indxTime, &
+                         indxBostr, indxBustr, indxBvstr, &
+                         indxWstr, indxUWstr, indxVWstr
+#ifdef SOLVE3D
+      use ncscrum, ONLY: indxR, indxO, indxW, indxAkv
+#endif
+      implicit none
+
+      wrthis(indxBostr) = his_bostr
+      wrthis(indxBustr) = his_bustr
+      wrthis(indxBvstr) = his_bvstr
+      wrthis(indxWstr) = his_wstr
+      wrthis(indxUWstr) = his_ustr
+      wrthis(indxVWstr) = his_vstr
+      if (his_bostr .or. his_bustr .or. his_bvstr .or. &
+          his_wstr .or. his_ustr .or. his_vstr) wrthis(indxTime) = .true.
+#ifdef SOLVE3D
+      wrthis(indxR) = his_rho
+      wrthis(indxO) = his_omega
+      wrthis(indxW) = his_w
+      wrthis(indxAkv) = his_akv
+      if (his_rho .or. his_omega .or. his_w .or. his_akv) wrthis(indxTime) = .true.
+#endif
+   end subroutine init_auxiliary_history_fields
+#endif
+
+#if defined SOLVE3D && defined TEMPERATURE
+   subroutine init_temperature_history_fields()
+      use croco_namelist, ONLY: his_akt, his_shflx, his_shflx_rsw
+      use ncscrum, ONLY: wrthis, indxTime, indxAkt, indxShflx, indxShflx_rsw
+      implicit none
+      wrthis(indxAkt) = his_akt
+      wrthis(indxShflx) = his_shflx
+      wrthis(indxShflx_rsw) = his_shflx_rsw
+      if (his_akt .or. his_shflx .or. his_shflx_rsw) wrthis(indxTime) = .true.
+   end subroutine init_temperature_history_fields
+#endif
+
+#if defined SOLVE3D && defined SALINITY
+   subroutine init_salinity_history_fields()
+      use croco_namelist, ONLY: his_aks, his_swflx
+      use ncscrum, ONLY: wrthis, indxTime, indxAks, indxSwflx
+      implicit none
+      wrthis(indxAks) = his_aks
+      wrthis(indxSwflx) = his_swflx
+      if (his_aks .or. his_swflx) wrthis(indxTime) = .true.
+   end subroutine init_salinity_history_fields
+#endif
+
+#if defined SOLVE3D && defined BULK_FLUX
+   subroutine init_bulk_flux_history_fields()
+      use croco_namelist, ONLY: his_shflx_rlw, his_shflx_lat, his_shflx_sen
+      use ncscrum, ONLY: wrthis, indxTime, indxShflx_rlw, indxShflx_lat, indxShflx_sen
+      implicit none
+      wrthis(indxShflx_rlw) = his_shflx_rlw
+      wrthis(indxShflx_lat) = his_shflx_lat
+      wrthis(indxShflx_sen) = his_shflx_sen
+      if (his_shflx_rlw .or. his_shflx_lat .or. his_shflx_sen) wrthis(indxTime) = .true.
+   end subroutine init_bulk_flux_history_fields
+#endif
+
+#if defined SOLVE3D && defined BHFLUX
+   subroutine init_bhflux_history_fields()
+      use croco_namelist, ONLY: his_bhflx
+      use ncscrum, ONLY: wrthis, indxTime, indxBhflx
+      implicit none
+      wrthis(indxBhflx) = his_bhflx
+      if (his_bhflx) wrthis(indxTime) = .true.
+   end subroutine init_bhflux_history_fields
+#endif
+
+#if defined SOLVE3D && defined BWFLUX && defined SALINITY
+   subroutine init_bwflux_history_fields()
+      use croco_namelist, ONLY: his_bwflx
+      use ncscrum, ONLY: wrthis, indxTime, indxBwflx
+      implicit none
+      wrthis(indxBwflx) = his_bwflx
+      if (his_bwflx) wrthis(indxTime) = .true.
+   end subroutine init_bwflux_history_fields
+#endif
+
+#if defined SOLVE3D && (defined ANA_VMIX || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING)
+   subroutine init_bvf_history_fields()
+      use croco_namelist, ONLY: his_bvf
+      use ncscrum, ONLY: wrthis, indxTime, indxbvf
+      implicit none
+      wrthis(indxbvf) = his_bvf
+      if (his_bvf) wrthis(indxTime) = .true.
+   end subroutine init_bvf_history_fields
+#endif
+
+#if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
+   subroutine init_hbl_history_fields()
+      use croco_namelist, ONLY: his_hbl
+      use ncscrum, ONLY: wrthis, indxTime, indxHbl
+      implicit none
+      wrthis(indxHbl) = his_hbl
+      if (his_hbl) wrthis(indxTime) = .true.
+   end subroutine init_hbl_history_fields
+#endif
+
+#if defined SOLVE3D && defined LMD_BKPP
+   subroutine init_lmd_bkpp_history_fields()
+      use croco_namelist, ONLY: his_hbbl
+      use ncscrum, ONLY: wrthis, indxTime, indxHbbl
+      implicit none
+      wrthis(indxHbbl) = his_hbbl
+      if (his_hbbl) wrthis(indxTime) = .true.
+   end subroutine init_lmd_bkpp_history_fields
+#endif
+
+#if defined SOLVE3D && defined VIS_COEF_3D
+   subroutine init_vis_coef_history_fields()
+      use croco_namelist, ONLY: his_visc3d
+      use ncscrum, ONLY: wrthis, indxTime, indxVisc
+      implicit none
+      wrthis(indxVisc) = his_visc3d
+      if (his_visc3d) wrthis(indxTime) = .true.
+   end subroutine init_vis_coef_history_fields
+#endif
+
+#if defined SOLVE3D && defined DIF_COEF_3D
+   subroutine init_dif_coef_history_fields()
+      use croco_namelist, ONLY: his_diff3d
+      use ncscrum, ONLY: wrthis, indxTime, indxDiff
+      implicit none
+      wrthis(indxDiff) = his_diff3d
+      if (his_diff3d) wrthis(indxTime) = .true.
+   end subroutine init_dif_coef_history_fields
+#endif
+
+#if defined SOLVE3D && defined BIOLOGY && !defined PISCES
+   subroutine init_biology_history_fields()
+      use croco_namelist, ONLY: his_hel
+      use ncscrum, ONLY: wrthis, indxTime, indxHel
+      implicit none
+      wrthis(indxHel) = his_hel
+      if (his_hel) wrthis(indxTime) = .true.
+   end subroutine init_biology_history_fields
+#endif
+
+#if defined SOLVE3D && defined BIO_NChlPZD
+   subroutine init_bio_nchlpzd_history_fields()
+      use croco_namelist, ONLY: his_chc, his_u10, his_kvo2, his_o2sat
+      use ncscrum, ONLY: wrthis, indxTime, indxChC
+# ifdef OXYGEN
+      use ncscrum, ONLY: indxU10, indxKvO2, indxO2sat
+# endif
+      implicit none
+      wrthis(indxChC) = his_chc
+      if (his_chc) wrthis(indxTime) = .true.
+# ifdef OXYGEN
+      wrthis(indxU10) = his_u10
+      wrthis(indxKvO2) = his_kvo2
+      wrthis(indxO2sat) = his_o2sat
+      if (his_u10 .or. his_kvo2 .or. his_o2sat) wrthis(indxTime) = .true.
+# endif
+   end subroutine init_bio_nchlpzd_history_fields
+#endif
+
+#if defined SOLVE3D && defined BIO_BioEBUS
+   subroutine init_bio_bioebus_history_fields()
+      use croco_namelist, ONLY: his_aou, his_wind10
+      use ncscrum, ONLY: wrthis, indxTime, indxAOU, indxWIND10
+      implicit none
+      wrthis(indxAOU) = his_aou
+      wrthis(indxWIND10) = his_wind10
+      if (his_aou .or. his_wind10) wrthis(indxTime) = .true.
+   end subroutine init_bio_bioebus_history_fields
+#endif
+
+# if defined SOLVE3D && defined MORPHODYN
+   !---------------------------------------------------------------------
+   !  init_morphodyn_history_fields
+   !  Morphodynamics output field (MORPHODYN).
+   !---------------------------------------------------------------------
+   subroutine init_morphodyn_history_fields()
+      use croco_namelist, ONLY: his_hm
+      use ncscrum, ONLY: wrthis, indxTime, indxHm
+      implicit none
+
+      wrthis(indxHm) = his_hm
+      if (his_hm) wrthis(indxTime) = .true.
+   end subroutine init_morphodyn_history_fields
+# endif
+
+#if defined AVERAGES && defined SOLVE3D
+   !---------------------------------------------------------------------
+   !  init_auxiliary_averages_fields
+   !  SOLVE3D basics (rho, omega, w, akv) + surface stress.
+   !---------------------------------------------------------------------
+   subroutine init_auxiliary_averages_fields()
+      use croco_namelist, ONLY: &
+         avg_rho, avg_omega, avg_w, avg_akv, &
+         avg_bostr, avg_bustr, avg_bvstr, avg_wstr, avg_ustr, avg_vstr
+      use ncscrum, ONLY: wrtavg, indxTime, &
+                         indxR, indxO, indxW, indxAkv, &
+                         indxBostr, indxBustr, indxBvstr, &
+                         indxWstr, indxUWstr, indxVWstr
+      implicit none
+
+      wrtavg(indxR) = avg_rho
+      wrtavg(indxO) = avg_omega
+      wrtavg(indxW) = avg_w
+      wrtavg(indxAkv) = avg_akv
+      if (avg_rho .or. avg_omega .or. avg_w .or. avg_akv) wrtavg(indxTime) = .true.
+      wrtavg(indxBostr) = avg_bostr
+      wrtavg(indxBustr) = avg_bustr
+      wrtavg(indxBvstr) = avg_bvstr
+      wrtavg(indxWstr) = avg_wstr
+      wrtavg(indxUWstr) = avg_ustr
+      wrtavg(indxVWstr) = avg_vstr
+      if (avg_bostr .or. avg_bustr .or. avg_bvstr .or. &
+          avg_wstr .or. avg_ustr .or. avg_vstr) wrtavg(indxTime) = .true.
+   end subroutine init_auxiliary_averages_fields
+#endif
+
+# if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
+   subroutine init_temperature_averages_fields()
+      use croco_namelist, ONLY: avg_akt, avg_shflx, avg_shflx_rsw
+      use ncscrum, ONLY: wrtavg, indxTime, indxAkt, indxShflx, indxShflx_rsw
+      implicit none
+      wrtavg(indxAkt) = avg_akt
+      wrtavg(indxShflx) = avg_shflx
+      wrtavg(indxShflx_rsw) = avg_shflx_rsw
+      if (avg_akt .or. avg_shflx .or. avg_shflx_rsw) wrtavg(indxTime) = .true.
+   end subroutine init_temperature_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined SALINITY
+   subroutine init_salinity_averages_fields()
+      use croco_namelist, ONLY: avg_aks, avg_swflx
+      use ncscrum, ONLY: wrtavg, indxTime, indxAks, indxSwflx
+      implicit none
+      wrtavg(indxAks) = avg_aks
+      wrtavg(indxSwflx) = avg_swflx
+      if (avg_aks .or. avg_swflx) wrtavg(indxTime) = .true.
+   end subroutine init_salinity_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
+   subroutine init_bulk_flux_averages_fields()
+      use croco_namelist, ONLY: avg_shflx_rlw, avg_shflx_lat, avg_shflx_sen
+      use ncscrum, ONLY: wrtavg, indxTime, indxShflx_rlw, indxShflx_lat, indxShflx_sen
+      implicit none
+      wrtavg(indxShflx_rlw) = avg_shflx_rlw
+      wrtavg(indxShflx_lat) = avg_shflx_lat
+      wrtavg(indxShflx_sen) = avg_shflx_sen
+      if (avg_shflx_rlw .or. avg_shflx_lat .or. avg_shflx_sen) wrtavg(indxTime) = .true.
+   end subroutine init_bulk_flux_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined BHFLUX
+   subroutine init_bhflux_averages_fields()
+      use croco_namelist, ONLY: avg_bhflx
+      use ncscrum, ONLY: wrtavg, indxTime, indxBhflx
+      implicit none
+      wrtavg(indxBhflx) = avg_bhflx
+      if (avg_bhflx) wrtavg(indxTime) = .true.
+   end subroutine init_bhflux_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
+   subroutine init_bwflux_averages_fields()
+      use croco_namelist, ONLY: avg_bwflx
+      use ncscrum, ONLY: wrtavg, indxTime, indxBwflx
+      implicit none
+      wrtavg(indxBwflx) = avg_bwflx
+      if (avg_bwflx) wrtavg(indxTime) = .true.
+   end subroutine init_bwflux_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && \
+   (defined ANA_VMIX||defined LMD_MIXING||\
+   defined LMD_SKPP||defined LMD_BKPP||\
+   defined GLS_MIXING)
+   subroutine init_bvf_averages_fields()
+      use croco_namelist, ONLY: avg_bvf
+      use ncscrum, ONLY: wrtavg, indxTime, indxbvf
+      implicit none
+      wrtavg(indxbvf) = avg_bvf
+      if (avg_bvf) wrtavg(indxTime) = .true.
+   end subroutine init_bvf_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && \
+   (defined LMD_SKPP||defined GLS_MIXING)
+   subroutine init_hbl_averages_fields()
+      use croco_namelist, ONLY: avg_hbl
+      use ncscrum, ONLY: wrtavg, indxTime, indxHbl
+      implicit none
+      wrtavg(indxHbl) = avg_hbl
+      if (avg_hbl) wrtavg(indxTime) = .true.
+   end subroutine init_hbl_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
+   subroutine init_lmd_bkpp_averages_fields()
+      use croco_namelist, ONLY: avg_hbbl
+      use ncscrum, ONLY: wrtavg, indxTime, indxHbbl
+      implicit none
+      wrtavg(indxHbbl) = avg_hbbl
+      if (avg_hbbl) wrtavg(indxTime) = .true.
+   end subroutine init_lmd_bkpp_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
+   subroutine init_vis_coef_averages_fields()
+      use croco_namelist, ONLY: avg_visc3d
+      use ncscrum, ONLY: wrtavg, indxTime, indxVisc
+      implicit none
+      wrtavg(indxVisc) = avg_visc3d
+      if (avg_visc3d) wrtavg(indxTime) = .true.
+   end subroutine init_vis_coef_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
+   subroutine init_dif_coef_averages_fields()
+      use croco_namelist, ONLY: avg_diff3d
+      use ncscrum, ONLY: wrtavg, indxTime, indxDiff
+      implicit none
+      wrtavg(indxDiff) = avg_diff3d
+      if (avg_diff3d) wrtavg(indxTime) = .true.
+   end subroutine init_dif_coef_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
+   subroutine init_biology_averages_fields()
+      use croco_namelist, ONLY: avg_hel
+      use ncscrum, ONLY: wrtavg, indxTime, indxHel
+      implicit none
+      wrtavg(indxHel) = avg_hel
+      if (avg_hel) wrtavg(indxTime) = .true.
+   end subroutine init_biology_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
+   subroutine init_bio_nchlpzd_averages_fields()
+      use croco_namelist, ONLY: avg_chc, avg_u10, avg_kvo2, avg_o2sat
+      use ncscrum, ONLY: wrtavg, indxTime, indxChC
+#  ifdef OXYGEN
+      use ncscrum, ONLY: indxU10, indxKvO2, indxO2sat
+#  endif
+      implicit none
+      wrtavg(indxChC) = avg_chc
+      if (avg_chc) wrtavg(indxTime) = .true.
+#  ifdef OXYGEN
+      wrtavg(indxU10) = avg_u10
+      wrtavg(indxKvO2) = avg_kvo2
+      wrtavg(indxO2sat) = avg_o2sat
+      if (avg_u10 .or. avg_kvo2 .or. avg_o2sat) wrtavg(indxTime) = .true.
+#  endif
+   end subroutine init_bio_nchlpzd_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
+   subroutine init_bio_bioebus_averages_fields()
+      use croco_namelist, ONLY: avg_aou, avg_wind10
+      use ncscrum, ONLY: wrtavg, indxTime, indxAOU, indxWIND10
+      implicit none
+      wrtavg(indxAOU) = avg_aou
+      wrtavg(indxWIND10) = avg_wind10
+      if (avg_aou .or. avg_wind10) wrtavg(indxTime) = .true.
+   end subroutine init_bio_bioebus_averages_fields
+# endif
+
+# if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
+   !---------------------------------------------------------------------
+   !  init_morphodyn_averages_fields
+   !  Morphodynamics average field (MORPHODYN).
+   !---------------------------------------------------------------------
+   subroutine init_morphodyn_averages_fields()
+      use croco_namelist, ONLY: avg_hm
+      use ncscrum, ONLY: wrtavg, indxTime, indxHm
+      implicit none
+
+      wrtavg(indxHm) = avg_hm
+      if (avg_hm) wrtavg(indxTime) = .true.
+   end subroutine init_morphodyn_averages_fields
+# endif
 
 #ifdef DIAGNOSTICS_TS
    subroutine init_diag_ts_fields()

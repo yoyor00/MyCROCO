@@ -43,9 +43,12 @@ Add a row to MAPPINGS:
   line      : 0-based index of the value line inside that card block
   pos       : 0-based token index on that line (ignored for float_array)
   type      : "int" | "float" | "float_array" | "bool" | "bool_array[:SIZE]" | "str" | "str_line"
+             | "labeled_bool"
              bool_array reads tokens[pos:] and trims/pads to SIZE elements, where
              SIZE is a param name (NT, NST, NumFluxTerms, …).  Plain "bool_array"
              defaults to NT.
+             labeled_bool: pos is a label name (case-insensitive); the converter
+             looks it up in the header comment of that card to find the column.
   nml_name  : namelist block name (with leading &)
   nml_var   : variable name inside that block
 
@@ -97,20 +100,7 @@ MAPPINGS = [
     ("nudg_cof",           0,   2,  "float", "&croco_nudging",             "tauM_in"),
     ("nudg_cof",           0,   3,  "float", "&croco_nudging",             "tauM_out"),
     ("bottom_forcing",     0,   0,  "str",   "&croco_bottom_forcing",      "btfname"),
-    # primary_history_fields: zeta ubar vbar [u v [tracer(1:NT)]]
-    ("primary_history_fields", 0, 0, "bool", "&croco_primary_history_fields", "his_zeta"),
-    ("primary_history_fields", 0, 1, "bool", "&croco_primary_history_fields", "his_ubar"),
-    ("primary_history_fields", 0, 2, "bool", "&croco_primary_history_fields", "his_vbar"),
-    ("primary_history_fields", 0, 3, "bool", "&croco_primary_history_3d_fields", "his_u"),
-    ("primary_history_fields", 0, 4, "bool", "&croco_primary_history_3d_fields", "his_v"),
-    ("primary_history_fields", 0, 5, "bool_array", "&croco_primary_history_tracer_fields", "his_tracer"),
-    # primary_averages: zeta ubar vbar [u v [tracer(1:NT)]]
-    ("primary_averages",  0,   0,  "bool", "&croco_primary_average_fields",       "avg_zeta"),
-    ("primary_averages",  0,   1,  "bool", "&croco_primary_average_fields",       "avg_ubar"),
-    ("primary_averages",  0,   2,  "bool", "&croco_primary_average_fields",       "avg_vbar"),
-    ("primary_averages",  0,   3,  "bool", "&croco_primary_3d_average_fields",    "avg_u"),
-    ("primary_averages",  0,   4,  "bool", "&croco_primary_3d_average_fields",    "avg_v"),
-    ("primary_averages",  0,   5,  "bool_array", "&croco_primary_tracer_average_fields", "avg_tracer"),
+
     ("bulk_forcing",       0,   0,  "str",   "&croco_bulk_forcing",        "bulkname"),
     ("climatology",        0,   0,  "str",   "&croco_climatology",         "clmname"),
     ("wave_offline",       0,   0,  "str",   "&croco_wave_offline",        "wave_file"),
@@ -254,28 +244,6 @@ MAPPINGS = [
     ("diagbio_avg",        0,   2,  "int",   "&croco_diagbio_avg",         "nwrtdiabio_avg"),
     ("diagbio_avg",        0,   3,  "int",   "&croco_diagbio_avg",         "nrpfdiabio_avg"),
     ("diagbio_avg",        1,   0,  "str",   "&croco_diagbio_avg",         "dianamebio_avg"),
-    ("diag3D_history_fields",       0, 0, "bool_array", "&croco_diag3D_history_fields",       "his_dia3D_tracer"),
-    ("diag2D_history_fields",       0, 0, "bool_array", "&croco_diag2D_history_fields",       "his_dia2D_tracer"),
-    ("diag3D_average_fields",       0, 0, "bool_array", "&croco_diag3D_average_fields",       "avg_dia3D_tracer"),
-    ("diag2D_average_fields",       0, 0, "bool_array", "&croco_diag2D_average_fields",       "avg_dia2D_tracer"),
-    ("diagM_history_fields",        0, 0, "bool",       "&croco_diagM_history_fields",        "his_diagM_u"),
-    ("diagM_history_fields",        0, 1, "bool",       "&croco_diagM_history_fields",        "his_diagM_v"),
-    ("diagM_average_fields",        0, 0, "bool",       "&croco_diagM_average_fields",        "avg_diagM_u"),
-    ("diagM_average_fields",        0, 1, "bool",       "&croco_diagM_average_fields",        "avg_diagM_v"),
-    ("diags_vrt_history_fields",    0, 0, "bool",       "&croco_diags_vrt_history_fields",    "his_diags_vrt"),
-    ("diags_vrt_average_fields",    0, 0, "bool",       "&croco_diags_vrt_average_fields",    "avg_diags_vrt"),
-    ("diags_ek_history_fields",     0, 0, "bool",       "&croco_diags_ek_history_fields",     "his_diags_ek"),
-    ("diags_ek_average_fields",     0, 0, "bool",       "&croco_diags_ek_average_fields",     "avg_diags_ek"),
-    ("diags_pv_history_fields",     0, 0, "bool_array", "&croco_diags_pv_history_fields",     "his_diags_pv_tracer"),
-    ("diags_pv_average_fields",     0, 0, "bool_array", "&croco_diags_pv_average_fields",     "avg_diags_pv_tracer"),
-    ("diags_eddy_history_fields",   0, 0, "bool",       "&croco_diags_eddy_history_fields",   "his_diags_eddy"),
-    ("diags_eddy_average_fields",   0, 0, "bool",       "&croco_diags_eddy_average_fields",   "avg_diags_eddy"),
-    ("diagbioFlux_history_fields",  0, 0, "bool_array:NumFluxTerms",  "&croco_diagbioFlux_history_fields",  "his_diagbioFlux"),
-    ("diagbioVSink_history_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_history_fields", "his_diagbioVSink"),
-    ("diagbioGasExc_history_fields",0, 0, "bool_array:NumGasExcTerms","&croco_diagbioGasExc_history_fields","his_diagbioGasExc"),
-    ("diagbioFlux_average_fields",  0, 0, "bool_array:NumFluxTerms",  "&croco_diagbioFlux_average_fields",  "avg_diagbioFlux"),
-    ("diagbioVSink_average_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_average_fields", "avg_diagbioVSink"),
-    ("diagbioGasExc_average_fields",0, 0, "bool_array:NumGasExcTerms","&croco_diagbioGasExc_average_fields","avg_diagbioGasExc"),
 
     ("abl",                0,   0,  "bool",  "&croco_abl",                 "ldefablhis"),
     ("abl",                0,   1,  "int",   "&croco_abl",                 "nwrtablhis"),
@@ -406,6 +374,98 @@ MAPPINGS = [
     ("wave_average_fields", 0, 6, "bool", "&croco_wave_average_fields", "avg_eps_d"),
     ("wave_average_fields", 0, 7, "bool", "&croco_wave_average_fields", "avg_erol"),
     ("wave_average_fields", 0, 8, "bool", "&croco_wave_average_fields", "avg_eps_r"),
+
+    # primary_history_fields: zeta ubar vbar [u v [tracer(1:NT)]]
+    ("primary_history_fields", 0, 0, "bool", "&croco_primary_history_fields", "his_zeta"),
+    ("primary_history_fields", 0, 1, "bool", "&croco_primary_history_fields", "his_ubar"),
+    ("primary_history_fields", 0, 2, "bool", "&croco_primary_history_fields", "his_vbar"),
+    ("primary_history_fields", 0, 3, "bool", "&croco_primary_history_3d_fields", "his_u"),
+    ("primary_history_fields", 0, 4, "bool", "&croco_primary_history_3d_fields", "his_v"),
+    ("primary_history_fields", 0, 5, "bool_array", "&croco_primary_history_tracer_fields", "his_tracer"),
+    # primary_averages: zeta ubar vbar [u v [tracer(1:NT)]]
+    ("primary_averages",  0,   0,  "bool", "&croco_primary_average_fields",       "avg_zeta"),
+    ("primary_averages",  0,   1,  "bool", "&croco_primary_average_fields",       "avg_ubar"),
+    ("primary_averages",  0,   2,  "bool", "&croco_primary_average_fields",       "avg_vbar"),
+    ("primary_averages",  0,   3,  "bool", "&croco_primary_3d_average_fields",    "avg_u"),
+    ("primary_averages",  0,   4,  "bool", "&croco_primary_3d_average_fields",    "avg_v"),
+    ("primary_averages",  0,   5,  "bool_array", "&croco_primary_tracer_average_fields", "avg_tracer"),
+    # auxiliary_history_fields: label-based (order varies per case)
+    ("auxiliary_history_fields", 0, "rho",    "labeled_bool", "&croco_auxiliary_history_fields",   "his_rho"),
+    ("auxiliary_history_fields", 0, "Omega",  "labeled_bool", "&croco_auxiliary_history_fields",   "his_omega"),
+    ("auxiliary_history_fields", 0, "W",      "labeled_bool", "&croco_auxiliary_history_fields",   "his_w"),
+    ("auxiliary_history_fields", 0, "Akv",    "labeled_bool", "&croco_auxiliary_history_fields",   "his_akv"),
+    ("auxiliary_history_fields", 0, "Bostr",  "labeled_bool", "&croco_auxiliary_history_fields",   "his_bostr"),
+    ("auxiliary_history_fields", 0, "Bustr",  "labeled_bool", "&croco_auxiliary_history_fields",   "his_bustr"),
+    ("auxiliary_history_fields", 0, "Bvstr",  "labeled_bool", "&croco_auxiliary_history_fields",   "his_bvstr"),
+    ("auxiliary_history_fields", 0, "Wstr",   "labeled_bool", "&croco_auxiliary_history_fields",   "his_wstr"),
+    ("auxiliary_history_fields", 0, "Ustr",   "labeled_bool", "&croco_auxiliary_history_fields",   "his_ustr"),
+    ("auxiliary_history_fields", 0, "Vstr",   "labeled_bool", "&croco_auxiliary_history_fields",   "his_vstr"),
+    ("auxiliary_history_fields", 0, "Akt",    "labeled_bool", "&croco_temperature_history_fields", "his_akt"),
+    ("auxiliary_history_fields", 0, "Shfl",   "labeled_bool", "&croco_temperature_history_fields", "his_shflx"),
+    ("auxiliary_history_fields", 0, "rsw",    "labeled_bool", "&croco_temperature_history_fields", "his_shflx_rsw"),
+    ("auxiliary_history_fields", 0, "Aks",    "labeled_bool", "&croco_salinity_history_fields",    "his_aks"),
+    ("auxiliary_history_fields", 0, "Swfl",   "labeled_bool", "&croco_salinity_history_fields",    "his_swflx"),
+    ("auxiliary_history_fields", 0, "rlw",    "labeled_bool", "&croco_bulk_flux_history_fields",   "his_shflx_rlw"),
+    ("auxiliary_history_fields", 0, "lat",    "labeled_bool", "&croco_bulk_flux_history_fields",   "his_shflx_lat"),
+    ("auxiliary_history_fields", 0, "sen",    "labeled_bool", "&croco_bulk_flux_history_fields",   "his_shflx_sen"),
+    ("auxiliary_history_fields", 0, "Bvf",    "labeled_bool", "&croco_bvf_history_fields",         "his_bvf"),
+    ("auxiliary_history_fields", 0, "HBL",    "labeled_bool", "&croco_hbl_history_fields",         "his_hbl"),
+    ("auxiliary_history_fields", 0, "HBBL",   "labeled_bool", "&croco_lmd_bkpp_history_fields",    "his_hbbl"),
+    ("auxiliary_history_fields", 0, "Visc3d", "labeled_bool", "&croco_vis_coef_history_fields",    "his_visc3d"),
+    ("auxiliary_history_fields", 0, "Diff3d", "labeled_bool", "&croco_dif_coef_history_fields",    "his_diff3d"),
+    ("auxiliary_history_fields", 0, "HEL",    "labeled_bool", "&croco_biology_history_fields",     "his_hel"),
+    ("auxiliary_history_fields", 0, "Hm",     "labeled_bool", "&croco_morphodyn_history_fields",   "his_hm"),
+    # auxiliary_averages: label-based (order varies per case)
+    ("auxiliary_averages", 0, "rho",    "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_rho"),
+    ("auxiliary_averages", 0, "Omega",  "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_omega"),
+    ("auxiliary_averages", 0, "W",      "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_w"),
+    ("auxiliary_averages", 0, "Akv",    "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_akv"),
+    ("auxiliary_averages", 0, "Bostr",  "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_bostr"),
+    ("auxiliary_averages", 0, "Bustr",  "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_bustr"),
+    ("auxiliary_averages", 0, "Bvstr",  "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_bvstr"),
+    ("auxiliary_averages", 0, "Wstr",   "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_wstr"),
+    ("auxiliary_averages", 0, "Ustr",   "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_ustr"),
+    ("auxiliary_averages", 0, "Vstr",   "labeled_bool", "&croco_auxiliary_averages_fields",   "avg_vstr"),
+    ("auxiliary_averages", 0, "Akt",    "labeled_bool", "&croco_temperature_averages_fields", "avg_akt"),
+    ("auxiliary_averages", 0, "Shfl",   "labeled_bool", "&croco_temperature_averages_fields", "avg_shflx"),
+    ("auxiliary_averages", 0, "rsw",    "labeled_bool", "&croco_temperature_averages_fields", "avg_shflx_rsw"),
+    ("auxiliary_averages", 0, "Aks",    "labeled_bool", "&croco_salinity_averages_fields",    "avg_aks"),
+    ("auxiliary_averages", 0, "Swfl",   "labeled_bool", "&croco_salinity_averages_fields",    "avg_swflx"),
+    ("auxiliary_averages", 0, "rlw",    "labeled_bool", "&croco_bulk_flux_averages_fields",   "avg_shflx_rlw"),
+    ("auxiliary_averages", 0, "lat",    "labeled_bool", "&croco_bulk_flux_averages_fields",   "avg_shflx_lat"),
+    ("auxiliary_averages", 0, "sen",    "labeled_bool", "&croco_bulk_flux_averages_fields",   "avg_shflx_sen"),
+    ("auxiliary_averages", 0, "Bvf",    "labeled_bool", "&croco_bvf_averages_fields",         "avg_bvf"),
+    ("auxiliary_averages", 0, "HBL",    "labeled_bool", "&croco_hbl_averages_fields",         "avg_hbl"),
+    ("auxiliary_averages", 0, "HBBL",   "labeled_bool", "&croco_lmd_bkpp_averages_fields",    "avg_hbbl"),
+    ("auxiliary_averages", 0, "Visc3d", "labeled_bool", "&croco_vis_coef_averages_fields",    "avg_visc3d"),
+    ("auxiliary_averages", 0, "Diff3d", "labeled_bool", "&croco_dif_coef_averages_fields",    "avg_diff3d"),
+    ("auxiliary_averages", 0, "HEL",    "labeled_bool", "&croco_biology_averages_fields",     "avg_hel"),
+    ("auxiliary_averages", 0, "Hm",     "labeled_bool", "&croco_morphodyn_averages_fields",   "avg_hm"),
+
+
+    ("diag3D_history_fields",       0, 0, "bool_array", "&croco_diag3D_history_fields",       "his_dia3D_tracer"),
+    ("diag2D_history_fields",       0, 0, "bool_array", "&croco_diag2D_history_fields",       "his_dia2D_tracer"),
+    ("diag3D_average_fields",       0, 0, "bool_array", "&croco_diag3D_average_fields",       "avg_dia3D_tracer"),
+    ("diag2D_average_fields",       0, 0, "bool_array", "&croco_diag2D_average_fields",       "avg_dia2D_tracer"),
+    ("diagM_history_fields",        0, 0, "bool",       "&croco_diagM_history_fields",        "his_diagM_u"),
+    ("diagM_history_fields",        0, 1, "bool",       "&croco_diagM_history_fields",        "his_diagM_v"),
+    ("diagM_average_fields",        0, 0, "bool",       "&croco_diagM_average_fields",        "avg_diagM_u"),
+    ("diagM_average_fields",        0, 1, "bool",       "&croco_diagM_average_fields",        "avg_diagM_v"),
+    ("diags_vrt_history_fields",    0, 0, "bool",       "&croco_diags_vrt_history_fields",    "his_diags_vrt"),
+    ("diags_vrt_average_fields",    0, 0, "bool",       "&croco_diags_vrt_average_fields",    "avg_diags_vrt"),
+    ("diags_ek_history_fields",     0, 0, "bool",       "&croco_diags_ek_history_fields",     "his_diags_ek"),
+    ("diags_ek_average_fields",     0, 0, "bool",       "&croco_diags_ek_average_fields",     "avg_diags_ek"),
+    ("diags_pv_history_fields",     0, 0, "bool_array", "&croco_diags_pv_history_fields",     "his_diags_pv_tracer"),
+    ("diags_pv_average_fields",     0, 0, "bool_array", "&croco_diags_pv_average_fields",     "avg_diags_pv_tracer"),
+    ("diags_eddy_history_fields",   0, 0, "bool",       "&croco_diags_eddy_history_fields",   "his_diags_eddy"),
+    ("diags_eddy_average_fields",   0, 0, "bool",       "&croco_diags_eddy_average_fields",   "avg_diags_eddy"),
+    ("diagbioFlux_history_fields",  0, 0, "bool_array:NumFluxTerms",  "&croco_diagbioFlux_history_fields",  "his_diagbioFlux"),
+    ("diagbioVSink_history_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_history_fields", "his_diagbioVSink"),
+    ("diagbioGasExc_history_fields",0, 0, "bool_array:NumGasExcTerms","&croco_diagbioGasExc_history_fields","his_diagbioGasExc"),
+    ("diagbioFlux_average_fields",  0, 0, "bool_array:NumFluxTerms",  "&croco_diagbioFlux_average_fields",  "avg_diagbioFlux"),
+    ("diagbioVSink_average_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_average_fields", "avg_diagbioVSink"),
+    ("diagbioGasExc_average_fields",0, 0, "bool_array:NumGasExcTerms","&croco_diagbioGasExc_average_fields","avg_diagbioGasExc"),
+
 ]
 
 
@@ -667,7 +727,13 @@ def is_full_cppdefs(path):
 # ---------------------------------------------------------------------------
 
 def parse_in_file(path):
+    """Return (cards, headers).
+    cards[key]   = list of value lines (stripped).
+    headers[key] = list of label tokens from the header comment on the card
+                   key line (the text after "key:" on that same line).
+    """
     cards = {}
+    headers = {}
     current_key = None
     current_lines = []
     with open(path) as fh:
@@ -681,13 +747,14 @@ def parse_in_file(path):
                 if current_key is not None:
                     cards[current_key] = current_lines
                 current_key = m.group(1)
+                headers[current_key] = line[m.end():].split()
                 current_lines = []
                 continue
             if current_key is not None:
                 current_lines.append(stripped)
     if current_key is not None:
         cards[current_key] = current_lines
-    return cards
+    return cards, headers
 
 
 # ---------------------------------------------------------------------------
@@ -761,7 +828,7 @@ def format_bool_array(expanded, NT):
 # NML builder
 # ---------------------------------------------------------------------------
 
-def build_nml(cards, mappings, params):
+def build_nml(cards, headers, mappings, params):
     NT = params.get("NT", None)
     nml_entries = {}
     nml_order   = []
@@ -773,6 +840,21 @@ def build_nml(cards, mappings, params):
         if line_idx >= len(vlines):
             continue
         tokens = expand_repeat(vlines[line_idx].split())
+
+        if typ == "labeled_bool":
+            hdr = [lbl.lower() for lbl in headers.get(card_name, [])]
+            target = str(pos_idx).lower()
+            if target not in hdr:
+                continue
+            actual_pos = hdr.index(target)
+            if actual_pos >= len(tokens):
+                continue
+            val = format_value(tokens[actual_pos], "bool")
+            if nml_name not in nml_entries:
+                nml_entries[nml_name] = []
+                nml_order.append(nml_name)
+            nml_entries[nml_name].append(f"  {nml_var} = {val}")
+            continue
 
         if typ == "float_array":
             raw_tokens = tokens[pos_idx:]
@@ -920,7 +1002,7 @@ Defaults (all auto-derived from croco.in.<Name>):
                   file=sys.stderr)
 
     # ---- Convert .in → .nml --------------------------------------------------
-    cards = parse_in_file(args.input)
+    cards, headers = parse_in_file(args.input)
 
     mapped_cards  = {row[0] for row in MAPPINGS}
     present_cards = set(cards.keys())
@@ -931,7 +1013,7 @@ Defaults (all auto-derived from croco.in.<Name>):
     if unmapped:
         print(f"Ignored (no mapping)   : {', '.join(sorted(unmapped))}")
 
-    nml_text = build_nml(cards, MAPPINGS, params)
+    nml_text = build_nml(cards, headers, MAPPINGS, params)
     with open(out_nml, "w") as f:
         f.write(nml_text)
     print(f"Output .nml    : {out_nml}")

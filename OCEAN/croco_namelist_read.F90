@@ -336,6 +336,107 @@ contains
       namelist /croco_surf_average_fields/ avg_surf
 # endif
 #endif
+# if defined SOLVE3D || defined RIP
+      namelist /croco_auxiliary_history_fields/ &
+         his_rho, his_omega, his_w, his_akv, &
+         his_bostr, his_bustr, his_bvstr, his_wstr, his_ustr, his_vstr
+# endif
+# if defined SOLVE3D && defined TEMPERATURE
+      namelist /croco_temperature_history_fields/ his_akt, his_shflx, his_shflx_rsw
+# endif
+# if defined SOLVE3D && defined SALINITY
+      namelist /croco_salinity_history_fields/ his_aks, his_swflx
+# endif
+# if defined SOLVE3D && defined BULK_FLUX
+      namelist /croco_bulk_flux_history_fields/ his_shflx_rlw, his_shflx_lat, his_shflx_sen
+# endif
+# if defined SOLVE3D && defined BHFLUX
+      namelist /croco_bhflux_history_fields/ his_bhflx
+# endif
+# if defined SOLVE3D && defined BWFLUX && defined SALINITY
+      namelist /croco_bwflux_history_fields/ his_bwflx
+# endif
+# if defined SOLVE3D && \
+      (defined ANA_VMIX||defined LMD_MIXING||\
+      defined LMD_SKPP||defined LMD_BKPP||\
+      defined GLS_MIXING)
+      namelist /croco_bvf_history_fields/ his_bvf
+# endif
+# if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
+      namelist /croco_hbl_history_fields/ his_hbl
+# endif
+# if defined SOLVE3D && defined LMD_BKPP
+      namelist /croco_lmd_bkpp_history_fields/ his_hbbl
+# endif
+# if defined SOLVE3D && defined VIS_COEF_3D
+      namelist /croco_vis_coef_history_fields/ his_visc3d
+# endif
+# if defined SOLVE3D && defined DIF_COEF_3D
+      namelist /croco_dif_coef_history_fields/ his_diff3d
+# endif
+# if defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      namelist /croco_biology_history_fields/ his_hel
+# endif
+# if defined SOLVE3D && defined BIO_NChlPZD
+      namelist /croco_bio_nchlpzd_history_fields/ his_chc, his_u10, his_kvo2, his_o2sat
+# endif
+# if defined SOLVE3D && defined BIO_BioEBUS
+      namelist /croco_bio_bioebus_history_fields/ his_aou, his_wind10
+# endif
+# if defined SOLVE3D && defined MORPHODYN
+      namelist /croco_morphodyn_history_fields/ his_hm
+# endif
+# if defined AVERAGES && defined SOLVE3D
+      namelist /croco_auxiliary_averages_fields/ &
+         avg_rho, avg_omega, avg_w, avg_akv, &
+         avg_bostr, avg_bustr, avg_bvstr, avg_wstr, avg_ustr, avg_vstr
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
+      namelist /croco_temperature_averages_fields/ avg_akt, avg_shflx, avg_shflx_rsw
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined SALINITY
+      namelist /croco_salinity_averages_fields/ avg_aks, avg_swflx
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
+      namelist /croco_bulk_flux_averages_fields/ avg_shflx_rlw, avg_shflx_lat, avg_shflx_sen
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BHFLUX
+      namelist /croco_bhflux_averages_fields/ avg_bhflx
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
+      namelist /croco_bwflux_averages_fields/ avg_bwflx
+# endif
+# if defined AVERAGES && defined SOLVE3D && \
+      (defined ANA_VMIX||defined LMD_MIXING||\
+      defined LMD_SKPP||defined LMD_BKPP||\
+      defined GLS_MIXING)
+      namelist /croco_bvf_averages_fields/ avg_bvf
+# endif
+# if defined AVERAGES && defined SOLVE3D && \
+      (defined LMD_SKPP||defined GLS_MIXING)
+      namelist /croco_hbl_averages_fields/ avg_hbl
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
+      namelist /croco_lmd_bkpp_averages_fields/ avg_hbbl
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
+      namelist /croco_vis_coef_averages_fields/ avg_visc3d
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
+      namelist /croco_dif_coef_averages_fields/ avg_diff3d
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      namelist /croco_biology_averages_fields/ avg_hel
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
+      namelist /croco_bio_nchlpzd_averages_fields/ avg_chc, avg_u10, avg_kvo2, avg_o2sat
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
+      namelist /croco_bio_bioebus_averages_fields/ avg_aou, avg_wind10
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
+      namelist /croco_morphodyn_averages_fields/ avg_hm
+# endif
 #ifdef STATIONS
       namelist /croco_station_fields/ sta_grd, sta_temp, sta_salt, &
          sta_rho, sta_vel
@@ -1114,6 +1215,256 @@ contains
 #  endif
 # endif
 #endif
+      ! --- croco_auxiliary_history_fields (optional) ---
+      call check_nml_presence(nmlunit, "croco_auxiliary_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_auxiliary_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_auxiliary_history_fields (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+      ! --- history: per-physics optional blocks (14 blocks) ---
+# if defined SOLVE3D && defined TEMPERATURE
+      call check_nml_presence(nmlunit, "croco_temperature_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_temperature_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_temperature_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined SALINITY
+      call check_nml_presence(nmlunit, "croco_salinity_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_salinity_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_salinity_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined BULK_FLUX
+      call check_nml_presence(nmlunit, "croco_bulk_flux_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bulk_flux_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bulk_flux_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined BHFLUX
+      call check_nml_presence(nmlunit, "croco_bhflux_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bhflux_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bhflux_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined BWFLUX && defined SALINITY
+      call check_nml_presence(nmlunit, "croco_bwflux_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bwflux_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bwflux_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && \
+      (defined ANA_VMIX||defined LMD_MIXING||\
+      defined LMD_SKPP||defined LMD_BKPP||\
+      defined GLS_MIXING)
+      call check_nml_presence(nmlunit, "croco_bvf_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bvf_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bvf_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
+      call check_nml_presence(nmlunit, "croco_hbl_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_hbl_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_hbl_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined LMD_BKPP
+      call check_nml_presence(nmlunit, "croco_lmd_bkpp_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_lmd_bkpp_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_lmd_bkpp_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined VIS_COEF_3D
+      call check_nml_presence(nmlunit, "croco_vis_coef_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_vis_coef_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_vis_coef_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined DIF_COEF_3D
+      call check_nml_presence(nmlunit, "croco_dif_coef_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_dif_coef_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_dif_coef_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      call check_nml_presence(nmlunit, "croco_biology_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_biology_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_biology_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined BIO_NChlPZD
+      call check_nml_presence(nmlunit, "croco_bio_nchlpzd_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bio_nchlpzd_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bio_nchlpzd_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined BIO_BioEBUS
+      call check_nml_presence(nmlunit, "croco_bio_bioebus_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bio_bioebus_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bio_bioebus_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined SOLVE3D && defined MORPHODYN
+      call check_nml_presence(nmlunit, "croco_morphodyn_history_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_morphodyn_history_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_morphodyn_history_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+      ! --- averages: per-physics optional blocks (15 blocks) ---
+# if defined AVERAGES && defined SOLVE3D
+      call check_nml_presence(nmlunit, "croco_auxiliary_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_auxiliary_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_auxiliary_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
+      call check_nml_presence(nmlunit, "croco_temperature_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_temperature_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_temperature_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined SALINITY
+      call check_nml_presence(nmlunit, "croco_salinity_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_salinity_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_salinity_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
+      call check_nml_presence(nmlunit, "croco_bulk_flux_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bulk_flux_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bulk_flux_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BHFLUX
+      call check_nml_presence(nmlunit, "croco_bhflux_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bhflux_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bhflux_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
+      call check_nml_presence(nmlunit, "croco_bwflux_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bwflux_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bwflux_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && \
+      (defined ANA_VMIX||defined LMD_MIXING||\
+      defined LMD_SKPP||defined LMD_BKPP||\
+      defined GLS_MIXING)
+      call check_nml_presence(nmlunit, "croco_bvf_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bvf_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bvf_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && \
+      (defined LMD_SKPP||defined GLS_MIXING)
+      call check_nml_presence(nmlunit, "croco_hbl_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_hbl_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_hbl_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
+      call check_nml_presence(nmlunit, "croco_lmd_bkpp_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_lmd_bkpp_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_lmd_bkpp_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
+      call check_nml_presence(nmlunit, "croco_vis_coef_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_vis_coef_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_vis_coef_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
+      call check_nml_presence(nmlunit, "croco_dif_coef_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_dif_coef_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_dif_coef_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      call check_nml_presence(nmlunit, "croco_biology_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_biology_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_biology_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
+      call check_nml_presence(nmlunit, "croco_bio_nchlpzd_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bio_nchlpzd_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bio_nchlpzd_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
+      call check_nml_presence(nmlunit, "croco_bio_bioebus_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_bio_bioebus_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_bio_bioebus_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
+      call check_nml_presence(nmlunit, "croco_morphodyn_averages_fields", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_morphodyn_averages_fields, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then; call fatal_nml_error("croco_morphodyn_averages_fields")
+         ierr = ierr + 1; close (nmlunit); return; end if
+      end if
+# endif
 #ifdef DIAGNOSTICS_TS
 # ifdef TRACERS
       call check_nml_presence(nmlunit, "croco_diag3D_history_fields", .false., found, ierr)
@@ -1904,6 +2255,103 @@ contains
 #  endif
 # endif
 #endif
+# if defined SOLVE3D || defined RIP
+      MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_fields)
+# endif
+# if defined SOLVE3D && defined TEMPERATURE
+      MPI_master_only WRITE (stdout, nml=croco_temperature_history_fields)
+# endif
+# if defined SOLVE3D && defined SALINITY
+      MPI_master_only WRITE (stdout, nml=croco_salinity_history_fields)
+# endif
+# if defined SOLVE3D && defined BULK_FLUX
+      MPI_master_only WRITE (stdout, nml=croco_bulk_flux_history_fields)
+# endif
+# if defined SOLVE3D && defined BHFLUX
+      MPI_master_only WRITE (stdout, nml=croco_bhflux_history_fields)
+# endif
+# if defined SOLVE3D && defined BWFLUX && defined SALINITY
+      MPI_master_only WRITE (stdout, nml=croco_bwflux_history_fields)
+# endif
+# if defined SOLVE3D && \
+      (defined ANA_VMIX||defined LMD_MIXING||\
+      defined LMD_SKPP||defined LMD_BKPP||\
+      defined GLS_MIXING)
+      MPI_master_only WRITE (stdout, nml=croco_bvf_history_fields)
+# endif
+# if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
+      MPI_master_only WRITE (stdout, nml=croco_hbl_history_fields)
+# endif
+# if defined SOLVE3D && defined LMD_BKPP
+      MPI_master_only WRITE (stdout, nml=croco_lmd_bkpp_history_fields)
+# endif
+# if defined SOLVE3D && defined VIS_COEF_3D
+      MPI_master_only WRITE (stdout, nml=croco_vis_coef_history_fields)
+# endif
+# if defined SOLVE3D && defined DIF_COEF_3D
+      MPI_master_only WRITE (stdout, nml=croco_dif_coef_history_fields)
+# endif
+# if defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      MPI_master_only WRITE (stdout, nml=croco_biology_history_fields)
+# endif
+# if defined SOLVE3D && defined BIO_NChlPZD
+      MPI_master_only WRITE (stdout, nml=croco_bio_nchlpzd_history_fields)
+# endif
+# if defined SOLVE3D && defined BIO_BioEBUS
+      MPI_master_only WRITE (stdout, nml=croco_bio_bioebus_history_fields)
+# endif
+# if defined SOLVE3D && defined MORPHODYN
+      MPI_master_only WRITE (stdout, nml=croco_morphodyn_history_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
+      MPI_master_only WRITE (stdout, nml=croco_temperature_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined SALINITY
+      MPI_master_only WRITE (stdout, nml=croco_salinity_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
+      MPI_master_only WRITE (stdout, nml=croco_bulk_flux_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BHFLUX
+      MPI_master_only WRITE (stdout, nml=croco_bhflux_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
+      MPI_master_only WRITE (stdout, nml=croco_bwflux_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && \
+      (defined ANA_VMIX||defined LMD_MIXING||\
+      defined LMD_SKPP||defined LMD_BKPP||\
+      defined GLS_MIXING)
+      MPI_master_only WRITE (stdout, nml=croco_bvf_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && \
+      (defined LMD_SKPP||defined GLS_MIXING)
+      MPI_master_only WRITE (stdout, nml=croco_hbl_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
+      MPI_master_only WRITE (stdout, nml=croco_lmd_bkpp_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
+      MPI_master_only WRITE (stdout, nml=croco_vis_coef_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
+      MPI_master_only WRITE (stdout, nml=croco_dif_coef_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      MPI_master_only WRITE (stdout, nml=croco_biology_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
+      MPI_master_only WRITE (stdout, nml=croco_bio_nchlpzd_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
+      MPI_master_only WRITE (stdout, nml=croco_bio_bioebus_averages_fields)
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
+      MPI_master_only WRITE (stdout, nml=croco_morphodyn_averages_fields)
+# endif
 #ifdef DIAGNOSTICS_TS
 # ifdef TRACERS
       MPI_master_only WRITE (stdout, nml=croco_diag3D_history_fields)

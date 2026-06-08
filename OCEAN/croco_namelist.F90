@@ -974,4 +974,168 @@ MODULE croco_namelist
 # endif
 #endif
 
+# if defined SOLVE3D || defined RIP
+   ! &croco_auxiliary_history_fields  (SOLVE3D basics + surface stress)
+   logical :: his_rho = .false.
+   logical :: his_omega = .false.
+   logical :: his_w = .false.
+   logical :: his_akv = .false.
+   logical :: his_bostr = .false.
+   logical :: his_bustr = .false.
+   logical :: his_bvstr = .false.
+   logical :: his_wstr = .false.
+   logical :: his_ustr = .false.
+   logical :: his_vstr = .false.
+# endif
+# if defined SOLVE3D && defined TEMPERATURE
+   ! &croco_temperature_history_fields
+   logical :: his_akt = .false.
+   logical :: his_shflx = .false.
+   logical :: his_shflx_rsw = .false.
+# endif
+# if defined SOLVE3D && defined SALINITY
+   ! &croco_salinity_history_fields
+   logical :: his_aks = .false.
+   logical :: his_swflx = .false.
+# endif
+# if defined SOLVE3D && defined BULK_FLUX
+   ! &croco_bulk_flux_history_fields
+   logical :: his_shflx_rlw = .false.
+   logical :: his_shflx_lat = .false.
+   logical :: his_shflx_sen = .false.
+# endif
+# if defined SOLVE3D && defined BHFLUX
+   ! &croco_bhflux_history_fields
+   logical :: his_bhflx = .false.
+# endif
+# if defined SOLVE3D && defined BWFLUX && defined SALINITY
+   ! &croco_bwflux_history_fields
+   logical :: his_bwflx = .false.
+# endif
+# if defined SOLVE3D && \
+   (defined ANA_VMIX||defined LMD_MIXING||\
+   defined LMD_SKPP||defined LMD_BKPP||\
+   defined GLS_MIXING)
+   ! &croco_bvf_history_fields
+   logical :: his_bvf = .false.
+# endif
+# if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
+   ! &croco_hbl_history_fields
+   logical :: his_hbl = .false.
+# endif
+# if defined SOLVE3D && defined LMD_BKPP
+   ! &croco_lmd_bkpp_history_fields
+   logical :: his_hbbl = .false.
+# endif
+# if defined SOLVE3D && defined VIS_COEF_3D
+   ! &croco_vis_coef_history_fields
+   logical :: his_visc3d = .false.
+# endif
+# if defined SOLVE3D && defined DIF_COEF_3D
+   ! &croco_dif_coef_history_fields
+   logical :: his_diff3d = .false.
+# endif
+# if defined SOLVE3D && defined BIOLOGY && !defined PISCES
+   ! &croco_biology_history_fields
+   logical :: his_hel = .false.
+# endif
+# if defined SOLVE3D && defined BIO_NChlPZD
+   ! &croco_bio_nchlpzd_history_fields
+   logical :: his_chc = .false.
+   logical :: his_u10 = .false.
+   logical :: his_kvo2 = .false.
+   logical :: his_o2sat = .false.
+# endif
+# if defined SOLVE3D && defined BIO_BioEBUS
+   ! &croco_bio_bioebus_history_fields
+   logical :: his_aou = .false.
+   logical :: his_wind10 = .false.
+# endif
+# if defined SOLVE3D && defined MORPHODYN
+   ! &croco_morphodyn_history_fields
+   logical :: his_hm = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D
+   ! &croco_auxiliary_averages_fields  (SOLVE3D basics + surface stress)
+   logical :: avg_rho = .false.
+   logical :: avg_omega = .false.
+   logical :: avg_w = .false.
+   logical :: avg_akv = .false.
+   logical :: avg_bostr = .false.
+   logical :: avg_bustr = .false.
+   logical :: avg_bvstr = .false.
+   logical :: avg_wstr = .false.
+   logical :: avg_ustr = .false.
+   logical :: avg_vstr = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
+   ! &croco_temperature_averages_fields
+   logical :: avg_akt = .false.
+   logical :: avg_shflx = .false.
+   logical :: avg_shflx_rsw = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined SALINITY
+   ! &croco_salinity_averages_fields
+   logical :: avg_aks = .false.
+   logical :: avg_swflx = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
+   ! &croco_bulk_flux_averages_fields
+   logical :: avg_shflx_rlw = .false.
+   logical :: avg_shflx_lat = .false.
+   logical :: avg_shflx_sen = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BHFLUX
+   ! &croco_bhflux_averages_fields
+   logical :: avg_bhflx = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
+   ! &croco_bwflux_averages_fields
+   logical :: avg_bwflx = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && \
+   (defined ANA_VMIX||defined LMD_MIXING||\
+   defined LMD_SKPP||defined LMD_BKPP||\
+   defined GLS_MIXING)
+   ! &croco_bvf_averages_fields
+   logical :: avg_bvf = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && \
+   (defined LMD_SKPP||defined GLS_MIXING)
+   ! &croco_hbl_averages_fields
+   logical :: avg_hbl = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
+   ! &croco_lmd_bkpp_averages_fields
+   logical :: avg_hbbl = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
+   ! &croco_vis_coef_averages_fields
+   logical :: avg_visc3d = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
+   ! &croco_dif_coef_averages_fields
+   logical :: avg_diff3d = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
+   ! &croco_biology_averages_fields
+   logical :: avg_hel = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
+   ! &croco_bio_nchlpzd_averages_fields
+   logical :: avg_chc = .false.
+   logical :: avg_u10 = .false.
+   logical :: avg_kvo2 = .false.
+   logical :: avg_o2sat = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
+   ! &croco_bio_bioebus_averages_fields
+   logical :: avg_aou = .false.
+   logical :: avg_wind10 = .false.
+# endif
+# if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
+   ! &croco_morphodyn_averages_fields
+   logical :: avg_hm = .false.
+# endif
+
 END MODULE croco_namelist
