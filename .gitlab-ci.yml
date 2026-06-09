@@ -356,6 +356,34 @@ debug_agrif_realist:
     reports:
       junit: BENCH/results/debug_agrif_realist-host_ci/junit_report.xml
 
+# in schedule
+debug_agrif_realist_complement:
+  stage: bench
+  tags:
+    - ci.inria.fr
+    - large
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  script:
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py \
+      --case @agrif_realist_complement \
+      --variants sequential,mpi-4 \
+      --title debug_agrif_realist_complement \
+      --debug \
+      --rebuild \
+      --host host_ci \
+      --data-root-path $DATAROOTPATH \
+      --html -N --report --no_date_in_result_dir
+  artifacts:
+    paths:
+      - BENCH/results
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: BENCH/results/debug_agrif_realist_complement-host_ci/junit_report.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 debug_complement:
   stage: bench

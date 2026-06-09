@@ -165,6 +165,12 @@
       logical got_inibed(2)
 #endif
 
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+      integer nwrtdiags_eddy
+      logical ldefdiags_eddy
+#endif
+
+
 #ifdef  BAND_DEBUG         
       character(len=50) :: chkbandname
       character(len=50) :: fileline
@@ -192,7 +198,9 @@
 #ifdef BBL
      &                      , got_inibed
 #endif
-
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+     &                      , ldefdiags_eddy, nwrtdiags_eddy
+#endif  
 #ifdef  BAND_DEBUG         
        common /scalchkbandname/ chkbandname
 #endif       

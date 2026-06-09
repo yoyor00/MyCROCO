@@ -421,6 +421,18 @@ class Croco:
         self.change_nml(filename_nml, "croco_history", "nwrt", 1)
         self.change_nml(filename_nml, "croco_diagnostics_ts", "nwrtdia", 1)
         self.change_nml(filename_nml, "croco_diagnosticsm", "nwrtdiam", 1)
+
+        self.change_nml(filename_nml, "croco_diags_ek", "nwrtdiags_ek", 1)
+        self.change_nml(filename_nml, "croco_diags_vrt", "nwrtdiags_vrt", 1)
+        self.change_nml(filename_nml, "croco_diags_pv", "nwrtdiags_pv", 1)
+        self.change_nml(filename_nml, "croco_averages", "navg", 1)
+        self.change_nml(filename_nml, "croco_diag_avg", "nwrtdia_avg", 1)
+        self.change_nml(filename_nml, "croco_diagM_avg", "nwrtdiaM_avg", 1)
+        self.change_nml(filename_nml, "croco_diags_ek_avg", "nwrtdiags_ek_avg", 1)
+        self.change_nml(filename_nml, "croco_diags_vrt_avg", "nwrtdiags_vrt_avg", 1)
+        self.change_nml(filename_nml, "croco_diags_pv_avg", "nwrtdiags_pv_avg", 1)
+        self.change_nml(filename_nml, "croco_diags_eddy_avg", "nwrtdiags_eddy_avg", 1)
+
         # and for USE_CALENDAR
         self.change_nml_end_date(filename_nml, 6)
         self.change_nml_output_time_steps_dthis(filename_nml, 6)
@@ -430,6 +442,9 @@ class Croco:
 
         # for all case (write/read), put ldefhis to F
         self.change_nml(filename_nml, "croco_history", "ldefhis", False)
+        # only for history for now... 
+        # T needed for avg and diag 
+        # because it is not the same behavior as history file
 
         if self.restarted:
             # prepare 2 files for the restarted run

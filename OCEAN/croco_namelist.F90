@@ -466,7 +466,7 @@ MODULE croco_namelist
    ! &croco_psource
    integer :: psource_Nsrc = 0
    !! Number of point sources/sinks
-   
+
    ! &croco_psource_ncfile_data / &croco_psource_data
    integer, allocatable :: psource_Isrc(:)
    !! I-grid indices of point sources (size psource_Nsrc)
@@ -482,12 +482,12 @@ MODULE croco_namelist
    !! Vertically integrated transport [m3/s] at each source (size psource_Nsrc)
 # if defined TRACERS
    ! &croco_psource_tracer
-   logical, allocatable :: psource_Lsrc(:,:)
+   logical, allocatable :: psource_Lsrc(:, :)
    !! Tracer switch per source/tracer (psource_Nsrc,NT): .true. = apply source
-   real, allocatable :: psource_Tsrc0(:,:)
+   real, allocatable :: psource_Tsrc0(:, :)
    !! Initial tracer value at each source (psource_Nsrc,NT)
 # endif
-#endif 
+#endif
 #if defined DIAGNOSTICS_TS
    ! &croco_diagnostics_ts
    logical :: ldefdia = .true.
@@ -570,7 +570,7 @@ MODULE croco_namelist
 #  endif
 #endif
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
    ! &croco_diags_ek
    logical :: ldefdiags_ek = .true.
    !! Flag (T/F) for writing energy diagnostics file
@@ -621,15 +621,6 @@ MODULE croco_namelist
 #endif
 
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-   ! &croco_diags_eddy
-   logical :: ldefdiags_eddy = .true.
-   !! Flag (T/F) for writing eddy diagnostics file
-   integer :: nwrtdiags_eddy = 72
-   !! Number of time-steps between writing of eddy diagnostics (0 = use nwrt)
-   integer :: nrpfdiags_eddy = 0
-   !! Eddy diagnostics file cycling switch
-   character(len=180) :: diags_eddyname = "CROCO_FILES/croco_diags_eddy.nc"
-   !! Name of eddy diagnostics file
 #  ifdef AVERAGES
    ! &croco_diags_eddy_avg
    logical :: ldefdiags_eddy_avg = .true.
@@ -781,7 +772,7 @@ MODULE croco_namelist
 # endif
 #endif
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
    ! &croco_diags_ek_history_fields
    logical :: his_diags_ek = .true.
 # ifdef AVERAGES
@@ -800,8 +791,6 @@ MODULE croco_namelist
 #endif
 
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-   ! &croco_diags_eddy_history_fields
-   logical :: his_diags_eddy = .true.
 # ifdef AVERAGES
    ! &croco_diags_eddy_average_fields
    logical :: avg_diags_eddy = .true.

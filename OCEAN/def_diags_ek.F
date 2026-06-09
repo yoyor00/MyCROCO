@@ -12,7 +12,7 @@
 #ifndef AVRH
 # include "cppdefs.h"
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 
 # ifndef AVRH
       subroutine def_diags_ek (ncid, total_rec, ierr)
@@ -25,12 +25,10 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
-#ifdef DIAGNOSTICS_EK
       use croco_namelist, only: ldefdiags_ek, nwrtdiags_ek,
      &     nrpfdiags_ek, diags_ekname, ldefdiags_ek_avg,
      &     ntsdiags_ek_avg, nwrtdiags_ek_avg, nrpfdiags_ek_avg,
      &     diags_ekname_avg
-#endif
 
       implicit none
 # include "param.h"
@@ -80,21 +78,7 @@
 #  ifdef M3FAST
 #   define viddiags_ekfast diags_ekfast
 #  endif
-#  ifdef DIAGNOSTICS_EK_MLD
-#   define viddiags_ekHadv_mld diags_ekHadv_mld
-#   define viddiags_ekHdiff_mld diags_ekHdiff_mld
-#   define viddiags_ekVadv_mld diags_ekVadv_mld
-#   define viddiags_ekCor_mld diags_ekCor_mld
-#   define viddiags_ekPrsgrd_mld diags_ekPrsgrd_mld
-#   define viddiags_ekHmix_mld diags_ekHmix_mld
-#   define viddiags_ekVmix_mld diags_ekVmix_mld
-#   define viddiags_ekrate_mld diags_ekrate_mld
-#   define viddiags_ekvol_mld diags_ekvol_mld
-#   define viddiags_ekVmix2_mld diags_ekVmix2_mld
-#   ifdef DIAGNOSTICS_BARO
-#    define viddiags_ekBaro_mld diags_ekBaro_mld
-#   endif
-#  endif
+
 
 # else
 
@@ -122,21 +106,7 @@
 #  ifdef M3FAST
 #   define viddiags_ekfast diags_ekfast_avg
 #  endif
-#  ifdef DIAGNOSTICS_EK_MLD
-#   define viddiags_ekHadv_mld diags_ekHadv_mld_avg
-#   define viddiags_ekHdiff_mld diags_ekHdiff_mld_avg
-#   define viddiags_ekVadv_mld diags_ekVadv_mld_avg
-#   define viddiags_ekCor_mld diags_ekCor_mld_avg
-#   define viddiags_ekPrsgrd_mld diags_ekPrsgrd_mld_avg
-#   define viddiags_ekHmix_mld diags_ekHmix_mld_avg
-#   define viddiags_ekVmix_mld diags_ekVmix_mld_avg
-#   define viddiags_ekrate_mld diags_ekrate_mld_avg
-#   define viddiags_ekvol_mld diags_ekvol_mld_avg
-#   define viddiags_ekVmix2_mld diags_ekVmix2_mld_avg
-#   ifdef DIAGNOSTICS_BARO
-#    define viddiags_ekBaro_mld diags_ekBaro_mld_avg
-#   endif
-#  endif
+
 
 # endif
 !
@@ -148,6 +118,8 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 !  Create a new diagnostics data file.
@@ -358,7 +330,7 @@
 !
           lvar=lenstr(vname(1,indxekHadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekHadv+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekHadv(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekHadv(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekHadv(itrc),
      &                                          nf_collective)
@@ -389,7 +361,7 @@
 !
           lvar=lenstr(vname(1,indxekHdiff+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekHdiff+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekHdiff(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekHdiff(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekHdiff(itrc),
      &                                          nf_collective)
@@ -420,7 +392,7 @@
 !
           lvar=lenstr(vname(1,indxekVadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekVadv+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekVadv(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekVadv(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekVadv(itrc),
      &                                          nf_collective)
@@ -451,7 +423,7 @@
 !
           lvar=lenstr(vname(1,indxekCor+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekCor+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekCor(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekCor(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekCor(itrc),
      &                                          nf_collective)
@@ -483,7 +455,7 @@
 !
           lvar=lenstr(vname(1,indxekPrsgrd+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekPrsgrd+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekPrsgrd(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekPrsgrd(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekPrsgrd(itrc),
      &                                          nf_collective)
@@ -514,7 +486,7 @@
 !
           lvar=lenstr(vname(1,indxekHmix+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekHmix+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekHmix(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekHmix(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekHmix(itrc),
      &                                          nf_collective)
@@ -545,7 +517,7 @@
 !
           lvar=lenstr(vname(1,indxekVmix+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekVmix+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekVmix(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekVmix(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekVmix(itrc),
      &                                          nf_collective)
@@ -575,7 +547,7 @@
 !
           lvar=lenstr(vname(1,indxekrate+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekrate+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekrate(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekrate(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekrate(itrc),
      &                                          nf_collective)
@@ -606,7 +578,7 @@
 !
           lvar=lenstr(vname(1,indxekvol+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekvol+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekvol(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekvol(itrc))
 # ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekvol(itrc),
      &                                         nf_collective)
@@ -637,7 +609,7 @@
 !
           lvar=lenstr(vname(1,indxekVmix2+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekVmix2+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekVmix2(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekVmix2(itrc))
 # ifdef NC4PAR
           ierr=nf_var_par_access(ncid, viddiags_ekVmix2(itrc),
      &                                          nf_collective)
@@ -731,7 +703,7 @@
 !
           lvar=lenstr(vname(1,indxekBaro+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekBaro+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekBaro(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekBaro(itrc))
 #  ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekBaro(itrc),
      &                                          nf_collective)
@@ -764,7 +736,7 @@
 !
           lvar=lenstr(vname(1,indxekfast+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxekfast+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekfast(itrc))
+     &                     NF_FOUT, 4, r3dgrd, viddiags_ekfast(itrc))
 #  ifdef NC4PAR
            ierr=nf_var_par_access(ncid, viddiags_ekfast(itrc),
      &                                          nf_collective)
@@ -789,366 +761,6 @@
      &                          vname(:,indxekfast+itrc-1), 5,
      &                          NF_FOUT, ierr)
 # endif
-
-# ifdef DIAGNOSTICS_EK_MLD
-!------------------------------
-!
-! indxekHadv_mld
-!
-          lvar=lenstr(vname(1,indxekHadv_mld+itrc-1))
-          ierr=nf_def_var (ncid, vname(1,indxekHadv_mld+itrc-1)(1:lvar),
-     &                    NF_FOUT, 3, r2dgrd, viddiags_ekHadv_mld(itrc))
-#  ifdef NC4PAR
-           ierr=nf_var_par_access(ncid, viddiags_ekHadv_mld(itrc),
-     &                                              nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekHadv_mld+itrc-1)
-#  else
-          text=vname(2,indxekHadv_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekHadv_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekHadv_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekHadv_mld(itrc),
-     &                          'units', lvar,
-     &                          vname(3,indxekHadv_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekHadv_mld+itrc-1))
-          ierr=nf_put_att_text (ncid,viddiags_ekHadv_mld(itrc), 'field',
-     &                     lvar, vname(4,indxekHadv_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekHadv_mld(itrc),
-     &                          vname(:,indxekHadv_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!
-!------------------------------
-!
-! indxekHdiff_mld
-!
-          lvar=lenstr(vname(1,indxekHdiff_mld+itrc-1))
-          ierr=nf_def_var (ncid,
-     &                     vname(1,indxekHdiff_mld+itrc-1)(1:lvar),
-     &                   NF_FOUT, 3, r2dgrd, viddiags_ekHdiff_mld(itrc))
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekHdiff_mld(itrc),
-     &                                             nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekHdiff_mld+itrc-1)
-#  else
-          text=vname(2,indxekHdiff_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekHdiff_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekHdiff_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekHdiff_mld(itrc),
-     &                          'units', lvar,
-     &                          vname(3,indxekHdiff_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekHdiff_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekHdiff_mld(itrc),
-     &                          'field',lvar,
-     &                          vname(4,indxekHdiff_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekHdiff_mld(itrc),
-     &                          vname(:,indxekHdiff_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!
-!------------------------------
-!
-! indxekVadv_mld
-!
-          lvar=lenstr(vname(1,indxekVadv_mld+itrc-1))
-          ierr=nf_def_var (ncid,
-     &                     vname(1,indxekVadv_mld+itrc-1)(1:lvar),
-     &                    NF_FOUT, 3, r2dgrd, viddiags_ekVadv_mld(itrc))
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekVadv_mld(itrc),
-     &                                          nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekVadv_mld+itrc-1)
-#  else
-          text=vname(2,indxekVadv_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekVadv_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekVadv_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekVadv_mld(itrc),
-     &                          'units', lvar,
-     &                          vname(3,indxekVadv_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekVadv_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekVadv_mld(itrc),
-     &                          'field', lvar,
-     &                          vname(4,indxekVadv_mld+itrc-1)(1:lvar))
-          call nf_add_attribute(ncid, viddiags_ekVadv_mld(itrc),
-     &                          vname(:,indxekVadv_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!------------------------------
-!
-! indxekCor_mld
-!
-          lvar=lenstr(vname(1,indxekCor_mld+itrc-1))
-          ierr=nf_def_var (ncid, vname(1,indxekCor_mld+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekCor_mld(itrc))
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekCor_mld(itrc),
-     &                                            nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekCor_mld+itrc-1)
-#  else
-          text=vname(2,indxekCor_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekCor_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekCor_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekCor_mld(itrc),
-     &                          'units', lvar,
-     &                          vname(3,indxekCor_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekCor_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekCor_mld(itrc), 'field',
-     &                      lvar, vname(4,indxekCor_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekCor_mld(itrc),
-     &                          vname(:,indxekCor_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!
-!------------------------------
-!
-! indxekPrsgrd_mld
-!
-          lvar=lenstr(vname(1,indxekPrsgrd_mld+itrc-1))
-          ierr=nf_def_var (ncid,
-     &                     vname(1,indxekPrsgrd_mld+itrc-1)(1:lvar),
-     &                  NF_FOUT, 3, r2dgrd, viddiags_ekPrsgrd_mld(itrc))
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekPrsgrd_mld(itrc),
-     &                                               nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekPrsgrd_mld+itrc-1)
-#  else
-          text=vname(2,indxekPrsgrd_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekPrsgrd_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekPrsgrd_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekPrsgrd_mld(itrc),
-     &                          'units', lvar,
-     &                         vname(3,indxekPrsgrd_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekPrsgrd_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekPrsgrd_mld(itrc),
-     &                          'field', lvar,
-     &                         vname(4,indxekPrsgrd_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekPrsgrd_mld(itrc),
-     &                          vname(:,indxekPrsgrd_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!
-!------------------------------
-!
-! indxekHmix_mld
-!
-          lvar=lenstr(vname(1,indxekHmix_mld+itrc-1))
-          ierr=nf_def_var (ncid,
-     &                     vname(1,indxekHmix_mld+itrc-1)(1:lvar),
-     &                    NF_FOUT, 3, r2dgrd, viddiags_ekHmix_mld(itrc))
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekHmix_mld(itrc),
-     &                                             nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekHmix_mld+itrc-1)
-#  else
-          text=vname(2,indxekHmix_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekHmix_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekHmix_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekHmix_mld(itrc),
-     &                          'units', lvar,
-     &                          vname(3,indxekHmix_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekHmix_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekHmix_mld(itrc),
-     &                          'field', lvar,
-     &                          vname(4,indxekHmix_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekHmix_mld(itrc),
-     &                          vname(:,indxekHmix_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!
-!------------------------------
-!
-! indxekVmix_mld
-!
-          lvar=lenstr(vname(1,indxekVmix_mld+itrc-1))
-          ierr=nf_def_var (ncid,
-     &                     vname(1,indxekVmix_mld+itrc-1)(1:lvar),
-     &                    NF_FOUT, 3, r2dgrd, viddiags_ekVmix_mld(itrc))
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekVmix_mld(itrc),
-     &                                             nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekVmix_mld+itrc-1)
-#  else
-          text=vname(2,indxekVmix_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekVmix_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekVmix_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekVmix_mld(itrc),
-     &                          'units', lvar,
-     &                          vname(3,indxekVmix_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekVmix_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekVmix_mld(itrc),
-     &                          'field', lvar,
-     &                          vname(4,indxekVmix_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekVmix_mld(itrc),
-     &                          vname(:,indxekVmix_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!
-!------------------------------
-!
-! indxekrate_mld
-!
-          lvar=lenstr(vname(1,indxekrate_mld+itrc-1))
-          ierr=nf_def_var (ncid,
-     &                     vname(1,indxekrate_mld+itrc-1)(1:lvar),
-     &                    NF_FOUT, 3, r2dgrd, viddiags_ekrate_mld(itrc))
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekrate_mld(itrc),
-     &                                             nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekrate_mld+itrc-1)
-#  else
-          text=vname(2,indxekrate_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekrate_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekrate_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekrate_mld(itrc),
-     &                          'units', lvar,
-     &                          vname(3,indxekrate_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekrate_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekrate_mld(itrc),
-     &                          'field', lvar,
-     &                          vname(4,indxekrate_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekrate_mld(itrc),
-     &                          vname(:,indxekrate_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!
-!------------------------------
-!
-! indxekvol_mld
-!
-          lvar=lenstr(vname(1,indxekvol_mld+itrc-1))
-          ierr=nf_def_var (ncid,
-     &                     vname(1,indxekvol_mld+itrc-1)(1:lvar),
-     &                     NF_FOUT, 3, r2dgrd, viddiags_ekvol_mld(itrc))
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekvol_mld(itrc),
-     &                                            nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekvol_mld+itrc-1)
-#  else
-          text=vname(2,indxekvol_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekvol_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekvol_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekvol_mld(itrc),
-     &                          'units', lvar,
-     &                          vname(3,indxekvol_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekvol_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekvol_mld(itrc), 'field',
-     &                      lvar, vname(4,indxekvol_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekvol_mld(itrc),
-     &                          vname(:,indxekvol_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!
-!------------------------------
-!
-! indxekVmix2_mld
-!
-          lvar=lenstr(vname(1,indxekVmix2_mld+itrc-1))
-          ierr=nf_def_var (ncid,
-     &                     vname(1,indxekVmix2_mld+itrc-1)(1:lvar),
-     &                   NF_FOUT, 3, r2dgrd, viddiags_ekVmix2_mld(itrc))
-#  ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekVmix2_mld(itrc),
-     &                                              nf_collective)
-#  endif
-#  ifdef AVRH
-          text='averaged '/ /vname(2,indxekVmix2_mld+itrc-1)
-#  else
-          text=vname(2,indxekVmix2_mld+itrc-1)
-#  endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekVmix2_mld(itrc),
-     &                          'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekVmix2_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekVmix2_mld(itrc),
-     &                          'units', lvar,
-     &                          vname(3,indxekVmix2_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekVmix2_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekVmix2_mld(itrc),
-     &                          'field', lvar,
-     &                          vname(4,indxekVmix2_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekVmix2_mld(itrc),
-     &                          vname(:,indxekVmix2_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-!
-#  if defined DIAGNOSTICS_BARO
-!------------------------------
-!
-! indxekBaro_mld
-!
-          lvar=lenstr(vname(1,indxekBaro_mld+itrc-1))
-          ierr=nf_def_var (ncid,
-     &                     vname(1,indxekBaro_mld+itrc-1)(1:lvar),
-     &                    NF_FOUT, 3, r2dgrd, viddiags_ekBaro_mld(itrc))
-#   ifdef NC4PAR
-          ierr=nf_var_par_access(ncid, viddiags_ekBaro_mld(itrc),
-     &                                             nf_collective)
-#   endif
-#   ifdef AVRH
-          text='averaged '/ /vname(2,indxekBaro_mld+itrc-1)
-#   else
-          text=vname(2,indxekBaro_mld+itrc-1)
-#   endif
-          lvar=lenstr(text)
-          ierr=nf_put_att_text (ncid, viddiags_ekBaro_mld(itrc),
-     &                         'long_name', lvar, text(1:lvar))
-          lvar=lenstr(vname(3,indxekBaro_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekBaro_mld(itrc),
-     &                         'units', lvar,
-     &                          vname(3,indxekBaro_mld+itrc-1)(1:lvar))
-          lvar=lenstr(vname(4,indxekBaro_mld+itrc-1))
-          ierr=nf_put_att_text (ncid, viddiags_ekBaro_mld(itrc),
-     &                          'field', lvar,
-     &                          vname(4,indxekBaro_mld+itrc-1)(1:lvar))
-
-          call nf_add_attribute(ncid, viddiags_ekBaro_mld(itrc),
-     &                          vname(:,indxekBaro_mld+itrc-1), 5,
-     &                          NF_FOUT, ierr)
-#  endif
-# endif /* DIAGNOSTICS_EK_MLD */
 
         endif
 
@@ -1490,196 +1102,11 @@
 #  endif
 # endif
 
-# ifdef DIAGNOSTICS_EK_MLD
-!
-! indxekHadv_mld
-!
-         lvar=lenstr(vname(1,indxekHadv_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekHadv_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekHadv_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekHadv_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekHadv_mld(itrc),
-     &                        nf_collective)
-#  endif
-!
-! indxekHdiff_mld
-!
-         lvar=lenstr(vname(1,indxekHdiff_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekHdiff_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekHdiff_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekHdiff_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekHdiff_mld(itrc),
-     &                        nf_collective)
-#  endif
-!
-! indxekVadv_mld
-!
-         lvar=lenstr(vname(1,indxekVadv_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekVadv_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekVadv_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekVadv_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekVadv_mld(itrc),
-     &                        nf_collective)
-#  endif
-!
-! indxekCor_mld
-!
-         lvar=lenstr(vname(1,indxekCor_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekCor_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekCor_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekCor_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekCor_mld(itrc),
-     &                        nf_collective)
-#  endif
-!
-! indxekPrsgrd_mld
-!
-         lvar=lenstr(vname(1,indxekPrsgrd_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekPrsgrd_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekPrsgrd_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekPrsgrd_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekPrsgrd_mld(itrc),
-     &                        nf_collective)
-#  endif
-!
-! indxekHmix_mld
-!
-         lvar=lenstr(vname(1,indxekHmix_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekHmix_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekHmix_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekHmix_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekHmix_mld(itrc),
-     &                        nf_collective)
-#  endif
-!
-! indxekVmix_mld
-!
-         lvar=lenstr(vname(1,indxekVmix_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekVmix_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekVmix_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekVmix_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekVmix_mld(itrc),
-     &                        nf_collective)
-#  endif
-!
-! indxekrate_mld
-!
-         lvar=lenstr(vname(1,indxekrate_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekrate_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekrate_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekrate_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekrate_mld(itrc),
-     &                        nf_collective)
-#  endif
-!
-! indxekvol_mld
-!
-         lvar=lenstr(vname(1,indxekvol_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekvol_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekvol_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekvol_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekvol_mld(itrc),
-     &                        nf_collective)
-#  endif
-!
-! indxekVmix2_mld
-!
-         lvar=lenstr(vname(1,indxekVmix2_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekVmix2_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekVmix2_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekVmix2_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#  ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekVmix2_mld(itrc),
-     &                        nf_collective)
-#  endif
-#  if defined DIAGNOSTICS_BARO
-!
-! indxekBaro_mld
-!
-         lvar=lenstr(vname(1,indxekBaro_mld+itrc-1))
-         ierr=nf_inq_varid (ncid,
-     &                      vname(1,indxekBaro_mld+itrc-1)(1:lvar),
-     &                      viddiags_ekBaro_mld(itrc))
-         if (ierr .ne. nf_noerr) then
-           write(stdout,1) vname(1,indxekBaro_mld+itrc-1)(1:lvar),
-     &                     ncname(1:lstr)
-           goto 99                                       !--> ERROR
-         endif
-#   ifdef NC4PAR
-         ierr=nf_var_par_access(ncid,viddiags_ekBaro_mld(itrc),
-     &                        nf_collective)
-#   endif
-#  endif
-# endif
 !
        endif
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_ek: -- Opened ',
-     &                     'existing file  from record =', rec
-     &                      MYID
-!
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_ek: -- Opened ',
+     &                     'DEF_DIAGS_EK -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
 !
@@ -1738,21 +1165,7 @@
 # if defined M3FAST
 #  undef viddiags_ekfast
 # endif
-# ifdef DIAGNOSTICS_EK_MLD
-#  undef viddiags_ekHadv_mld
-#  undef viddiags_ekHdiff_mld
-#  undef viddiags_ekVadv_mld
-#  undef viddiags_ekCor_mld
-#  undef viddiags_ekPrsgrd_mld
-#  undef viddiags_ekHmix_mld
-#  undef viddiags_ekVmix_mld
-#  undef viddiags_ekrate_mld
-#  undef viddiags_ekvol_mld
-#  undef viddiags_ekVmix2_mld
-#  if defined DIAGNOSTICS_BARO
-#   undef viddiags_ekBaro_mld
-#  endif
-# endif
+
 !
 # ifdef AVERAGES
 #  ifndef AVRH
@@ -1761,8 +1174,8 @@
 #  endif
 # endif /* AVERAGES */
 !
-#else /*DIAGNOSTICS_EK */
+#else /*DIAGNOSTICS_KE */
       subroutine def_diags_ek_empty()
       return
       end
-#endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_KE */

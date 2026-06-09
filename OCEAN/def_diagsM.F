@@ -141,10 +141,26 @@
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifndef AVRH
-      create_new_file=ldefdiaM
+# ifdef DO_NOT_OVERWRITE
+      if (lvar.eq.total_rec-1) then
+#  ifndef AVRH
+        create_new_file=ldefdiaM
+#  else
+        create_new_file=ldefdiaM_avg
+#  endif
+      else
+#  ifndef AVRH
+        create_new_file=.false.
+#  else
+        create_new_file=.false.
+#  endif
+      endif
 # else
+#  ifndef AVRH
+      create_new_file=ldefdiaM
+#  else
       create_new_file=ldefdiaM_avg
+#  endif
 # endif
 !
       if (ncid.ne.-1) create_new_file=.false.
@@ -329,14 +345,11 @@
 !
 ! indxMXadv
 !
-# ifndef TENDENCY
           if (itrc.eq.1) then
             r3dgrd=u3dgrd
           else
             r3dgrd=v3dgrd
           endif
-# endif
-
 !
           lvar=lenstr(vname(1,indxMXadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMXadv+itrc-1)(1:lvar),

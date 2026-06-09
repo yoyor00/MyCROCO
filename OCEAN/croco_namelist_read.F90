@@ -195,7 +195,7 @@ contains
          nwrtdiags_vrt_avg, nrpfdiags_vrt_avg, diags_vrtname_avg
 #  endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       namelist /croco_diags_ek/ ldefdiags_ek, nwrtdiags_ek, nrpfdiags_ek, &
          diags_ekname
 #  ifdef AVERAGES
@@ -212,8 +212,6 @@ contains
 #  endif
 #endif
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-      namelist /croco_diags_eddy/ ldefdiags_eddy, nwrtdiags_eddy, nrpfdiags_eddy, &
-         diags_eddyname
 #  ifdef AVERAGES
       namelist /croco_diags_eddy_avg/ ldefdiags_eddy_avg, ntsdiags_eddy_avg, &
          nwrtdiags_eddy_avg, nrpfdiags_eddy_avg, diags_eddyname_avg
@@ -271,7 +269,7 @@ contains
       namelist /croco_diags_vrt_average_fields/ avg_diags_vrt
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       namelist /croco_diags_ek_history_fields/ his_diags_ek
 # ifdef AVERAGES
       namelist /croco_diags_ek_average_fields/ avg_diags_ek
@@ -284,7 +282,6 @@ contains
 # endif
 #endif
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-      namelist /croco_diags_eddy_history_fields/ his_diags_eddy
 # ifdef AVERAGES
       namelist /croco_diags_eddy_average_fields/ avg_diags_eddy
 # endif
@@ -546,7 +543,7 @@ contains
       namelist /croco_psource/ psource_Nsrc
 #  if defined PSOURCE_NCFILE
       namelist /croco_psource_ncfile_data/ psource_Isrc, psource_Jsrc, psource_Dsrc, &
-                                           psource_qbarname, psource_qbardir
+         psource_qbarname, psource_qbardir
 #  else
       namelist /croco_psource_data/ psource_Isrc, psource_Jsrc, psource_Dsrc, psource_Qbar
 #  endif
@@ -554,7 +551,7 @@ contains
       namelist /croco_psource_tracer/ psource_Lsrc, psource_Tsrc0
 #  endif
 # endif
-#endif 
+#endif
       ierr = 0
 
       ! Allocate all NT-sized arrays before any namelist read.
@@ -1066,7 +1063,7 @@ contains
       end if
 #  endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       ! --- croco_diags_ek (optional) ---
       call check_nml_presence(nmlunit, "croco_diags_ek", .false., found, ierr)
       if (found) then
@@ -1111,15 +1108,6 @@ contains
 #  endif
 #endif
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-      ! --- croco_diags_eddy (optional) ---
-      call check_nml_presence(nmlunit, "croco_diags_eddy", .false., found, ierr)
-      if (found) then
-         read (nmlunit, nml=croco_diags_eddy, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then
-            call fatal_nml_error("croco_diags_eddy (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
-         end if
-      end if
 #  ifdef AVERAGES
       ! --- croco_diags_eddy_avg (optional) ---
       call check_nml_presence(nmlunit, "croco_diags_eddy_avg", .false., found, ierr)
@@ -1244,7 +1232,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_temperature_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_temperature_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined SALINITY
@@ -1252,7 +1240,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_salinity_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_salinity_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined BULK_FLUX
@@ -1260,7 +1248,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bulk_flux_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bulk_flux_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined BHFLUX
@@ -1268,7 +1256,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bhflux_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bhflux_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined BWFLUX && defined SALINITY
@@ -1276,7 +1264,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bwflux_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bwflux_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && \
@@ -1287,7 +1275,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bvf_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bvf_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
@@ -1295,7 +1283,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_hbl_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_hbl_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined LMD_BKPP
@@ -1303,7 +1291,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_lmd_bkpp_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_lmd_bkpp_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined VIS_COEF_3D
@@ -1311,7 +1299,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_vis_coef_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_vis_coef_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined DIF_COEF_3D
@@ -1319,7 +1307,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_dif_coef_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_dif_coef_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined BIOLOGY && !defined PISCES
@@ -1327,7 +1315,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_biology_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_biology_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined BIO_NChlPZD
@@ -1335,7 +1323,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bio_nchlpzd_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bio_nchlpzd_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined BIO_BioEBUS
@@ -1343,7 +1331,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bio_bioebus_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bio_bioebus_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined SOLVE3D && defined MORPHODYN
@@ -1351,7 +1339,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_morphodyn_history_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_morphodyn_history_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
       ! --- averages: per-physics optional blocks (15 blocks) ---
@@ -1360,7 +1348,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_auxiliary_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_auxiliary_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
@@ -1368,7 +1356,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_temperature_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_temperature_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined SALINITY
@@ -1376,7 +1364,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_salinity_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_salinity_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
@@ -1384,7 +1372,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bulk_flux_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bulk_flux_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BHFLUX
@@ -1392,7 +1380,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bhflux_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bhflux_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
@@ -1400,7 +1388,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bwflux_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bwflux_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && \
@@ -1411,7 +1399,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bvf_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bvf_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && \
@@ -1420,7 +1408,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_hbl_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_hbl_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
@@ -1428,7 +1416,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_lmd_bkpp_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_lmd_bkpp_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
@@ -1436,7 +1424,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_vis_coef_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_vis_coef_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
@@ -1444,7 +1432,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_dif_coef_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_dif_coef_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
@@ -1452,7 +1440,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_biology_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_biology_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
@@ -1460,7 +1448,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bio_nchlpzd_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bio_nchlpzd_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
@@ -1468,7 +1456,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_bio_bioebus_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_bio_bioebus_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
@@ -1476,7 +1464,7 @@ contains
       if (found) then
          read (nmlunit, nml=croco_morphodyn_averages_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then; call fatal_nml_error("croco_morphodyn_averages_fields")
-         ierr = ierr + 1; close (nmlunit); return; end if
+            ierr = ierr + 1; close (nmlunit); return; end if
       end if
 # endif
 #ifdef DIAGNOSTICS_TS
@@ -1561,7 +1549,7 @@ contains
       end if
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       call check_nml_presence(nmlunit, "croco_diags_ek_history_fields", .false., found, ierr)
       if (found) then
          read (nmlunit, nml=croco_diags_ek_history_fields, iostat=ios); rewind (nmlunit)
@@ -1602,14 +1590,6 @@ contains
 # endif
 #endif
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-      call check_nml_presence(nmlunit, "croco_diags_eddy_history_fields", .false., found, ierr)
-      if (found) then
-         read (nmlunit, nml=croco_diags_eddy_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then
-            call fatal_nml_error("croco_diags_eddy_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
-         end if
-      end if
 # ifdef AVERAGES
       call check_nml_presence(nmlunit, "croco_diags_eddy_average_fields", .false., found, ierr)
       if (found) then
@@ -2095,26 +2075,26 @@ contains
       ! Allocate per-source arrays now that psource_Nsrc is known
       if (psource_Nsrc > 0) then
          if (.not. allocated(psource_Isrc)) then
-            allocate(psource_Isrc(psource_Nsrc)); psource_Isrc = 0
+            allocate (psource_Isrc(psource_Nsrc)); psource_Isrc = 0
          end if
          if (.not. allocated(psource_Jsrc)) then
-            allocate(psource_Jsrc(psource_Nsrc)); psource_Jsrc = 0
+            allocate (psource_Jsrc(psource_Nsrc)); psource_Jsrc = 0
          end if
          if (.not. allocated(psource_Dsrc)) then
-            allocate(psource_Dsrc(psource_Nsrc)); psource_Dsrc = 0
+            allocate (psource_Dsrc(psource_Nsrc)); psource_Dsrc = 0
          end if
          if (.not. allocated(psource_Qbar)) then
-            allocate(psource_Qbar(psource_Nsrc)); psource_Qbar = 0.0
+            allocate (psource_Qbar(psource_Nsrc)); psource_Qbar = 0.0
          end if
          if (.not. allocated(psource_qbardir)) then
-            allocate(psource_qbardir(psource_Nsrc)); psource_qbardir = 0.0
+            allocate (psource_qbardir(psource_Nsrc)); psource_qbardir = 0.0
          end if
 #  if defined TRACERS
          if (.not. allocated(psource_Lsrc)) then
-            allocate(psource_Lsrc(psource_Nsrc, NT)); psource_Lsrc = .false.
+            allocate (psource_Lsrc(psource_Nsrc, NT)); psource_Lsrc = .false.
          end if
          if (.not. allocated(psource_Tsrc0)) then
-            allocate(psource_Tsrc0(psource_Nsrc, NT)); psource_Tsrc0 = 0.0
+            allocate (psource_Tsrc0(psource_Nsrc, NT)); psource_Tsrc0 = 0.0
          end if
 #  endif
          ! --- read per-source data ---
@@ -2149,7 +2129,7 @@ contains
 #  endif
       end if
 # endif
-#endif 
+#endif
       ! Single close: the file is no longer needed after this point.
       close (nmlunit)
 
@@ -2294,7 +2274,7 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_diags_vrt_avg)
 #  endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       MPI_master_only WRITE (stdout, nml=croco_diags_ek)
 #  ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_diags_ek_avg)
@@ -2307,7 +2287,6 @@ contains
 #  endif
 #endif
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-      MPI_master_only WRITE (stdout, nml=croco_diags_eddy)
 #  ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_diags_eddy_avg)
 #  endif
@@ -2460,7 +2439,7 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_diags_vrt_average_fields)
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       MPI_master_only WRITE (stdout, nml=croco_diags_ek_history_fields)
 # ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_diags_ek_average_fields)
@@ -2473,7 +2452,6 @@ contains
 # endif
 #endif
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-      MPI_master_only WRITE (stdout, nml=croco_diags_eddy_history_fields)
 # ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_diags_eddy_average_fields)
 # endif

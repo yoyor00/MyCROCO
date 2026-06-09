@@ -120,7 +120,7 @@ contains
       call init_diags_vrt_avg(ierr)
 #  endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       call init_diags_ek(ierr)
 #  ifdef AVERAGES
       call init_diags_ek_avg(ierr)
@@ -133,7 +133,6 @@ contains
 #  endif
 #endif
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-      call init_diags_eddy(ierr)
 #  ifdef AVERAGES
       call init_diags_eddy_avg(ierr)
 #  endif
@@ -290,13 +289,13 @@ contains
 #ifdef DIAGNOSTICS_VRT
       call init_diags_vrt_fields()
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       call init_diags_ek_fields()
 #endif
 #ifdef DIAGNOSTICS_PV
       call init_diags_pv_fields()
 #endif
-#if defined DIAGNOSTICS_EDDY && !defined XIOS
+#if defined DIAGNOSTICS_EDDY && !defined XIOS && defined AVERAGES
       call init_diags_eddy_fields()
 #endif
 #ifdef DIAGNOSTICS_BIO
@@ -1236,7 +1235,7 @@ contains
 #  endif
 #endif
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
    subroutine init_diags_ek(ierr)
       use croco_namelist, ONLY: diags_ekname, nwrtdiags_ek, nwrt
       implicit none
@@ -1283,15 +1282,6 @@ contains
 #endif
 
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
-   subroutine init_diags_eddy(ierr)
-      use croco_namelist, ONLY: diags_eddyname, nwrtdiags_eddy, nwrt
-      implicit none
-      integer, intent(inout) :: ierr
-      call adjust_filename_parallel(diags_eddyname, "diags_eddyname", ierr)
-      call adjust_filename_ensemble(diags_eddyname)
-      if (ierr /= 0) return
-      if (nwrtdiags_eddy == 0) nwrtdiags_eddy = nwrt
-   end subroutine init_diags_eddy
 #  ifdef AVERAGES
    subroutine init_diags_eddy_avg(ierr)
       use croco_namelist, ONLY: diags_eddyname_avg, nwrtdiags_eddy_avg, navg
@@ -1896,7 +1886,7 @@ contains
    end subroutine init_diags_vrt_fields
 #endif
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
    subroutine init_diags_ek_fields()
       use croco_namelist, ONLY: his_diags_ek
 # ifdef AVERAGES
@@ -1943,22 +1933,13 @@ contains
    end subroutine init_diags_pv_fields
 #endif
 
-#if defined DIAGNOSTICS_EDDY && !defined XIOS
+#if defined DIAGNOSTICS_EDDY && !defined XIOS && defined AVERAGES
    subroutine init_diags_eddy_fields()
-      use croco_namelist, ONLY: his_diags_eddy
-# ifdef AVERAGES
       use croco_namelist, ONLY: avg_diags_eddy
-      use ncscrum, ONLY: wrtdiags_eddy, wrtdiags_eddy_avg
-# else
-      use ncscrum, ONLY: wrtdiags_eddy
-# endif
+      use ncscrum, ONLY: wrtdiags_eddy_avg
       implicit none
-      wrtdiags_eddy(1) = his_diags_eddy
-      if (his_diags_eddy) wrtdiags_eddy(3) = .true.
-# ifdef AVERAGES
       wrtdiags_eddy_avg(1) = avg_diags_eddy
       if (avg_diags_eddy) wrtdiags_eddy_avg(3) = .true.
-# endif
    end subroutine init_diags_eddy_fields
 #endif
 
@@ -2394,7 +2375,7 @@ contains
    !  the MPI tile-relative source indices.
    !---------------------------------------------------------------------
    subroutine init_psource(ierr)
-      use param,          ONLY: stdout, Msrc
+      use param, ONLY: stdout, Msrc
       use ncscrum, ONLY: qbarname
       use croco_namelist, ONLY: psource_Nsrc, psource_Isrc, psource_Jsrc, psource_Dsrc
 #  ifndef PSOURCE_NCFILE
@@ -2404,11 +2385,11 @@ contains
       use croco_namelist, ONLY: psource_qbarname, psource_qbardir
 #  endif
 #  if defined TRACERS
-      use param,          ONLY: NT
+      use param, ONLY: NT
       use croco_namelist, ONLY: psource_Lsrc, psource_Tsrc0
 #  endif
 #  ifdef MPI
-      use param,   ONLY: iminmpi, jminmpi, NNODES
+      use param, ONLY: iminmpi, jminmpi, NNODES
       use scalars, ONLY: mynode
 #  endif
       implicit none
@@ -2422,26 +2403,26 @@ contains
       integer :: Nsrc
       integer :: Isrc(Msrc), Jsrc(Msrc), Dsrc(Msrc)
       real    :: Qbar(Msrc)
-      common /source_Nsrc/ Nsrc
-      common /source_Isrc/ Isrc
-      common /source_Jsrc/ Jsrc
-      common /source_Dsrc/ Dsrc
-      common /source_Qbar/ Qbar
+      common/source_Nsrc/Nsrc
+      common/source_Isrc/Isrc
+      common/source_Jsrc/Jsrc
+      common/source_Dsrc/Dsrc
+      common/source_Qbar/Qbar
 #  if defined TRACERS
       logical :: Lsrc(Msrc, NT)
       real    :: Tsrc0(Msrc, NT)
-      common /source_Lsrc/ Lsrc
-      common /source_Tsrc0/ Tsrc0
+      common/source_Lsrc/Lsrc
+      common/source_Tsrc0/Tsrc0
 #  endif
 #  ifdef PSOURCE_NCFILE
       real :: qbardir(Msrc)
-      common /source_qbardir/ qbardir
+      common/source_qbardir/qbardir
 #  endif
 #  ifdef MPI
-      integer :: Isrc_mpi(Msrc, 0:NNODES-1)
-      integer :: Jsrc_mpi(Msrc, 0:NNODES-1)
-      common /source_Isrc_mpi/ Isrc_mpi
-      common /source_Jsrc_mpi/ Jsrc_mpi
+      integer :: Isrc_mpi(Msrc, 0:NNODES - 1)
+      integer :: Jsrc_mpi(Msrc, 0:NNODES - 1)
+      common/source_Isrc_mpi/Isrc_mpi
+      common/source_Jsrc_mpi/Jsrc_mpi
 #  endif
 
 #  ifdef PSOURCE_NCFILE

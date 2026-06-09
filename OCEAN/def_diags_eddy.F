@@ -27,8 +27,7 @@
 !---------------------------------------------------------------
 !
 #ifdef DIAGNOSTICS_EDDY
-      use croco_namelist, only: ldefdiags_eddy, nwrtdiags_eddy,
-     &     nrpfdiags_eddy, diags_eddyname, ldefdiags_eddy_avg,
+      use croco_namelist, only: ldefdiags_eddy_avg,
      &     ntsdiags_eddy_avg, nwrtdiags_eddy_avg, nrpfdiags_eddy_avg,
      &     diags_eddyname_avg
 #endif
@@ -1115,12 +1114,7 @@
 ! ---------------------------------
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_eddy: -- Opened ',
-     &                     'existing file  from record =', rec
-     &                      MYID
-!
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_eddy: -- Opened ',
+     &                     'DEF_DIAGS_EDDY -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
 !
