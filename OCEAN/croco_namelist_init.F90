@@ -57,6 +57,9 @@ contains
 #ifndef ANA_GRID
       call init_grid(ierr)
 #endif
+#if defined ANA_PSOURCE
+      call init_psource(ierr)
+#endif
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
       defined M3_FRC_BRY||defined Z_FRC_BRY||\
       defined W_FRC_BRY||defined NBQ_FRC_BRY||\
@@ -2382,5 +2385,104 @@ contains
    end subroutine init_wave_average_fields
 # endif
 #endif
+
+#if defined ANA_PSOURCE
+   !---------------------------------------------------------------------
+   !  init_psource
+   !  Copy psource_* namelist vars into sources.h COMMON block variables,
+   !  verify qbarname file accessibility (PSOURCE_NCFILE), and set up
+   !  the MPI tile-relative source indices.
+   !---------------------------------------------------------------------
+   subroutine init_psource(ierr)
+      use param,          ONLY: stdout, Msrc
+      use ncscrum, ONLY: qbarname
+      use croco_namelist, ONLY: psource_Nsrc, psource_Isrc, psource_Jsrc, psource_Dsrc
+#  ifndef PSOURCE_NCFILE
+      use croco_namelist, ONLY: psource_Qbar
+#  endif
+#  ifdef PSOURCE_NCFILE
+      use croco_namelist, ONLY: psource_qbarname, psource_qbardir
+#  endif
+#  if defined TRACERS
+      use param,          ONLY: NT
+      use croco_namelist, ONLY: psource_Lsrc, psource_Tsrc0
+#  endif
+#  ifdef MPI
+      use param,   ONLY: iminmpi, jminmpi, NNODES
+      use scalars, ONLY: mynode
+#  endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: is
+#  if defined TRACERS
+      integer :: itrc
+#  endif
+      integer :: ios
+
+      integer :: Nsrc
+      integer :: Isrc(Msrc), Jsrc(Msrc), Dsrc(Msrc)
+      real    :: Qbar(Msrc)
+      common /source_Nsrc/ Nsrc
+      common /source_Isrc/ Isrc
+      common /source_Jsrc/ Jsrc
+      common /source_Dsrc/ Dsrc
+      common /source_Qbar/ Qbar
+#  if defined TRACERS
+      logical :: Lsrc(Msrc, NT)
+      real    :: Tsrc0(Msrc, NT)
+      common /source_Lsrc/ Lsrc
+      common /source_Tsrc0/ Tsrc0
+#  endif
+#  ifdef PSOURCE_NCFILE
+      real :: qbardir(Msrc)
+      common /source_qbardir/ qbardir
+#  endif
+#  ifdef MPI
+      integer :: Isrc_mpi(Msrc, 0:NNODES-1)
+      integer :: Jsrc_mpi(Msrc, 0:NNODES-1)
+      common /source_Isrc_mpi/ Isrc_mpi
+      common /source_Jsrc_mpi/ Jsrc_mpi
+#  endif
+
+#  ifdef PSOURCE_NCFILE
+      open (testunit, file=trim(psource_qbarname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open runoff file ', trim(psource_qbarname)
+         ierr = ierr + 1
+         return
+      end if
+      qbarname = psource_qbarname
+#  endif
+
+      Nsrc = psource_Nsrc
+      do is = 1, Nsrc
+         Isrc(is) = psource_Isrc(is)
+         Jsrc(is) = psource_Jsrc(is)
+         Dsrc(is) = psource_Dsrc(is)
+#  ifndef PSOURCE_NCFILE
+         Qbar(is) = psource_Qbar(is)
+#  else
+         qbardir(is) = psource_qbardir(is)
+#  endif
+#  if defined TRACERS
+         do itrc = 1, NT
+            Lsrc(is, itrc) = psource_Lsrc(is, itrc)
+            Tsrc0(is, itrc) = psource_Tsrc0(is, itrc)
+         end do
+#  endif
+      end do
+
+#  ifdef MPI
+      do is = 1, Nsrc
+         Isrc_mpi(is, mynode) = Isrc(is) - iminmpi + 1
+         Jsrc_mpi(is, mynode) = Jsrc(is) - jminmpi + 1
+      end do
+#  endif
+
+   end subroutine init_psource
+#endif /* ANA_PSOURCE */
 
 END MODULE croco_namelist_init

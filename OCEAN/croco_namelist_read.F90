@@ -18,7 +18,7 @@
 !            check_all and init_all.
 !
 !  Public entry points:
-!    read_nml_fname  – set fname_nml from command-line argument 2
+!    read_nml_fname  – set fname_nml from command-line argument 1
 !    read_nml        – full read / check / init sequence
 !
 !  Internal helpers:
@@ -38,13 +38,13 @@ contains
 
    !---------------------------------------------------------------------
    !  read_nml_fname
-   !  Set fname_nml from command-line argument 2 (defaults to croco.nml).
+   !  Set fname_nml from command-line argument 1 (defaults to croco.nml).
    !---------------------------------------------------------------------
    subroutine read_nml_fname()
       use croco_namelist, ONLY: fname_nml
       implicit none
 
-      call get_command_argument(2, fname_nml)
+      call get_command_argument(1, fname_nml)
       if (len_trim(fname_nml) == 0) fname_nml = 'croco.nml'
 
 #ifdef AGRIF
@@ -541,6 +541,20 @@ contains
       namelist /croco_vertical_mixing/ Akv_bak, Akt_bak
 #  endif
 #endif
+#if defined ANA_PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+      namelist /croco_psource/ psource_Nsrc
+#  if defined PSOURCE_NCFILE
+      namelist /croco_psource_ncfile_data/ psource_Isrc, psource_Jsrc, psource_Dsrc, &
+                                           psource_qbarname, psource_qbardir
+#  else
+      namelist /croco_psource_data/ psource_Isrc, psource_Jsrc, psource_Dsrc, psource_Qbar
+#  endif
+#  if defined TRACERS
+      namelist /croco_psource_tracer/ psource_Lsrc, psource_Tsrc0
+#  endif
+# endif
+#endif 
       ierr = 0
 
       ! Allocate all NT-sized arrays before any namelist read.
@@ -2067,7 +2081,75 @@ contains
       end if
 #  endif
 #endif
-
+#if defined ANA_PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+      ! --- croco_psource: read psource_Nsrc first ---
+      call check_nml_presence(nmlunit, "croco_psource", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_psource, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_psource (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+      ! Allocate per-source arrays now that psource_Nsrc is known
+      if (psource_Nsrc > 0) then
+         if (.not. allocated(psource_Isrc)) then
+            allocate(psource_Isrc(psource_Nsrc)); psource_Isrc = 0
+         end if
+         if (.not. allocated(psource_Jsrc)) then
+            allocate(psource_Jsrc(psource_Nsrc)); psource_Jsrc = 0
+         end if
+         if (.not. allocated(psource_Dsrc)) then
+            allocate(psource_Dsrc(psource_Nsrc)); psource_Dsrc = 0
+         end if
+         if (.not. allocated(psource_Qbar)) then
+            allocate(psource_Qbar(psource_Nsrc)); psource_Qbar = 0.0
+         end if
+         if (.not. allocated(psource_qbardir)) then
+            allocate(psource_qbardir(psource_Nsrc)); psource_qbardir = 0.0
+         end if
+#  if defined TRACERS
+         if (.not. allocated(psource_Lsrc)) then
+            allocate(psource_Lsrc(psource_Nsrc, NT)); psource_Lsrc = .false.
+         end if
+         if (.not. allocated(psource_Tsrc0)) then
+            allocate(psource_Tsrc0(psource_Nsrc, NT)); psource_Tsrc0 = 0.0
+         end if
+#  endif
+         ! --- read per-source data ---
+#  if defined PSOURCE_NCFILE
+         call check_nml_presence(nmlunit, "croco_psource_ncfile_data", .false., found, ierr)
+         if (found) then
+            read (nmlunit, nml=croco_psource_ncfile_data, iostat=ios); rewind (nmlunit)
+            if (ios /= 0) then
+               call fatal_nml_error("croco_psource_ncfile_data (parse error)")
+               ierr = ierr + 1; close (nmlunit); return
+            end if
+         end if
+#  else
+         call check_nml_presence(nmlunit, "croco_psource_data", .false., found, ierr)
+         if (found) then
+            read (nmlunit, nml=croco_psource_data, iostat=ios); rewind (nmlunit)
+            if (ios /= 0) then
+               call fatal_nml_error("croco_psource_data (parse error)")
+               ierr = ierr + 1; close (nmlunit); return
+            end if
+         end if
+#  endif
+#  if defined TRACERS
+         call check_nml_presence(nmlunit, "croco_psource_tracer", .false., found, ierr)
+         if (found) then
+            read (nmlunit, nml=croco_psource_tracer, iostat=ios); rewind (nmlunit)
+            if (ios /= 0) then
+               call fatal_nml_error("croco_psource_tracer (parse error)")
+               ierr = ierr + 1; close (nmlunit); return
+            end if
+         end if
+#  endif
+      end if
+# endif
+#endif 
       ! Single close: the file is no longer needed after this point.
       close (nmlunit)
 
@@ -2507,6 +2589,19 @@ contains
 #  if !defined LMD_MIXING && !defined GLS_MIXING
       MPI_master_only WRITE (stdout, nml=croco_vertical_mixing)
 #  endif
+#endif
+#if defined ANA_PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+      MPI_master_only WRITE (stdout, nml=croco_psource)
+#  ifdef PSOURCE_NCFILE
+      MPI_master_only WRITE (stdout, nml=croco_psource_ncfile_data)
+#  else
+      MPI_master_only WRITE (stdout, nml=croco_psource_data)
+#  endif
+#  ifdef TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_psource_tracer)
+#  endif
+# endif
 #endif
 
       MPI_master_only WRITE (stdout, *) "End of CROCO namelist"

@@ -192,7 +192,7 @@
       call init_buffer
 !
 !----------------------------------------------------------------------
-!  Read in tunable model parameters in croco input file
+!  Read in tunable model parameters from croco namelist file
 !----------------------------------------------------------------------
 !
       call read_nml_fname ()

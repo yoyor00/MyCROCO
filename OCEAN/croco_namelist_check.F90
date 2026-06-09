@@ -42,6 +42,9 @@ MODULE croco_namelist_check
 #ifdef BODYFORCE
    public :: check_bodyforce
 #endif
+#ifdef ANA_PSOURCE
+   public :: check_psource
+#endif
 
 contains
 
@@ -71,6 +74,9 @@ contains
 #endif
 #ifdef ONLINE
       call check_online(ierr)
+#endif
+#ifdef ANA_PSOURCE
+      call check_psource(ierr)
 #endif
 
    end subroutine check_all
@@ -292,5 +298,26 @@ contains
 
    end subroutine check_online
 #endif /* ONLINE */
+
+#ifdef ANA_PSOURCE
+   !---------------------------------------------------------------------
+   !  check_psource
+   !---------------------------------------------------------------------
+   subroutine check_psource(ierr)
+      use param, ONLY: stdout, Msrc
+      use croco_namelist, ONLY: psource_Nsrc
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      if (psource_Nsrc < 0 .or. psource_Nsrc > Msrc) then
+         MPI_master_only write (stdout, '(a,i4,a,i4,a)') &
+            'Error - psource_Nsrc = ', psource_Nsrc, ' must be in [0, Msrc=', Msrc, '].'
+         ierr = ierr + 1
+      end if
+   end subroutine check_psource
+#endif /* ANA_PSOURCE */
 
 END MODULE croco_namelist_check

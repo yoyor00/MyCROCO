@@ -590,5 +590,25 @@
   avg_diags_eddy = .true.
 /
 
+&croco_psource
+  psource_Nsrc = 2
+/
+
+&croco_psource_data
+  psource_Isrc(   1) =    24, psource_Jsrc(   1) =    35, psource_Dsrc(   1) =     1, psource_Qbar(   1) = -200.
+  psource_Isrc(   2) =    35, psource_Jsrc(   2) =    13, psource_Dsrc(   2) =     0, psource_Qbar(   2) = -200.
+/
+
+&croco_psource_tracer
+  psource_Lsrc(1,1) = T
+  psource_Lsrc(1,2) = T
+  psource_Lsrc(2,1) = T
+  psource_Lsrc(2,2) = T
+  psource_Tsrc0(1,1) = 20.
+  psource_Tsrc0(1,2) = 15.
+  psource_Tsrc0(2,1) = 20.
+  psource_Tsrc0(2,2) = 15.
+/
+
 
 ! End of namelist

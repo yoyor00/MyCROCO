@@ -59,7 +59,7 @@ include Makedefs
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
-	bio_diag.F	setup_kwds.F    check_kwds.F	check_srcs.F\
+	bio_diag.F	check_srcs.F\
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
@@ -176,7 +176,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
-TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
+TOOLS = mpc cross_matrix cppcheck srcscheck partit ncjoin ncrename
 
 
 RCS = $(SRCS:.F=.f)
@@ -237,13 +237,8 @@ srcscheck: mpc srcscheck.F
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
 	rm -f check_srcs.F
 
-checkkwds: mpc checkkwds.F
-	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
-	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
-	rm -f setup_kwds.F
 
-checkdefs: check_switches1.F setup_kwds.F
+checkdefs: check_switches1.F
 
 check_switches1.F: cppcheck cppdefs.h
 	cat cppdefs.h cppdefs_dev.h > mergcpp.txt
@@ -252,8 +247,6 @@ check_switches1.F: cppcheck cppdefs.h
 check_srcs.F: srcscheck Makefile
 	./srcscheck
 
-setup_kwds.F: checkkwds read_inp.F
-	./checkkwds
 
 partit: partit.F insert_node.o lenstr.o
 	$(CPP) -P $(CPPFLAGS) partit.F > partit._.f
@@ -280,7 +273,7 @@ mymodules: $(MOBJS) $(AMROBJS)
 # ====== == ====== === =====
 #
 tarfile:
-	tar cvf croco.tar Make* *.h *.F *.F90 *.in *.in.*
+	tar cvf croco.tar Make* *.h *.F *.F90 *.nml *.nml.*
 #
 # Cleaning:
 # =========

@@ -9,7 +9,6 @@
       "plotphy_script": "./TEST_CASES/plot_shoreface.py",
       "plotphy_script_input": "shoreface_his.nc",
     },
-    "input_file": "TEST_CASES/croco.in.ShoreFace",
     "nml_file": "TEST_CASES/croco_ShoreFace.nml",
     "check_outputs": ["shoreface_his.nc"],
     "unsupported": ["openmp"],

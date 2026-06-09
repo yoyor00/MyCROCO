@@ -462,6 +462,32 @@ MODULE croco_namelist
 #  endif
 #endif
 
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+   ! &croco_psource
+   integer :: psource_Nsrc = 0
+   !! Number of point sources/sinks
+   
+   ! &croco_psource_ncfile_data / &croco_psource_data
+   integer, allocatable :: psource_Isrc(:)
+   !! I-grid indices of point sources (size psource_Nsrc)
+   integer, allocatable :: psource_Jsrc(:)
+   !! J-grid indices of point sources (size psource_Nsrc)
+   integer, allocatable :: psource_Dsrc(:)
+   !! Direction flag per source: 0 = along XI, >0 = along ETA (size psource_Nsrc)
+   character(len=180) :: psource_qbarname = ""
+   !! Path to the river runoff NetCDF file (used with PSOURCE_NCFILE)
+   real, allocatable :: psource_qbardir(:)
+   !! Sign of runoff direction at each source (size psource_Nsrc)
+   real, allocatable :: psource_Qbar(:)
+   !! Vertically integrated transport [m3/s] at each source (size psource_Nsrc)
+# if defined TRACERS
+   ! &croco_psource_tracer
+   logical, allocatable :: psource_Lsrc(:,:)
+   !! Tracer switch per source/tracer (psource_Nsrc,NT): .true. = apply source
+   real, allocatable :: psource_Tsrc0(:,:)
+   !! Initial tracer value at each source (psource_Nsrc,NT)
+# endif
+#endif 
 #if defined DIAGNOSTICS_TS
    ! &croco_diagnostics_ts
    logical :: ldefdia = .true.

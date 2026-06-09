@@ -20,7 +20,6 @@
       "plotphy_script": "./TEST_CASES/plot_ts_hadv_test.py",
       "plotphy_script_input": "croco_his_diag_adv.nc",
     },
-    "input_file": "TEST_CASES/croco.in.TS_adv_diag",
     "nml_file": "TEST_CASES/croco_TS_adv_diag.nml",
     "check_outputs": ["croco_his_diag_adv.nc"],
     "unsupported": ["restart", "openmp"],

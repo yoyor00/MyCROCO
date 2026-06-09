@@ -468,6 +468,9 @@ MAPPINGS = [
 
 ]
 
+# Cards handled by dedicated code rather than the MAPPINGS table.
+SPECIAL_CARDS = {"psource", "psource_ncfile"}
+
 
 # ---------------------------------------------------------------------------
 # CPP helpers
@@ -480,6 +483,16 @@ def _run_cpp(wrapper_src, include_dirs):
     if r.returncode != 0:
         print(f"  cpp error:\n{r.stderr}", file=sys.stderr)
     return r.stdout
+
+
+def cpp_define_active(cppdefs_path, define_name):
+    """Return True if define_name is set in cppdefs_path (via cpp)."""
+    cppdefs_abs = os.path.realpath(cppdefs_path)
+    cppdefs_dir = os.path.dirname(cppdefs_abs)
+    sentinel = f"__{define_name}_IS_ACTIVE__"
+    wrapper = f'#include "{cppdefs_abs}"\n#ifdef {define_name}\n{sentinel}\n#endif\n'
+    out = _run_cpp(wrapper, [cppdefs_dir])
+    return sentinel in out
 
 
 def preprocess_param(cppdefs_path, param_path):
@@ -825,6 +838,144 @@ def format_bool_array(expanded, NT):
 
 
 # ---------------------------------------------------------------------------
+# psource / psource_ncfile special handlers
+# ---------------------------------------------------------------------------
+
+def _bool_token(t):
+    return t.upper() in ("T", "F", ".TRUE.", ".FALSE.")
+
+
+def _fmt_bool(t):
+    return ".true." if t.upper() in ("T", ".TRUE.") else ".false."
+
+
+def _is_numeric(t):
+    try:
+        float(t)
+        return True
+    except ValueError:
+        return False
+
+
+def _split_rest(tokens, nt):
+    """Split tokens[4:] into (Lsrc_tokens, Tsrc0_tokens) for one source line.
+
+    Lsrc tokens are T/F booleans; Tsrc0 tokens are numeric.  If NT is known
+    both lists are trimmed to NT elements.  Trailing non-numeric labels
+    (e.g. river names appended after Tsrc) are discarded.
+    """
+    rest = tokens[4:]
+    # find where booleans end
+    split = len(rest)
+    for i, t in enumerate(rest):
+        if not _bool_token(t):
+            split = i
+            break
+    lsrc = rest[:split]
+    tsrc = [t for t in rest[split:] if _is_numeric(t)]
+    if nt is not None:
+        lsrc = (lsrc + [".false."] * nt)[:nt]
+        tsrc = (tsrc + ["0."] * nt)[:nt]
+    return lsrc, tsrc
+
+
+def _build_psource_lines(cards, params):
+    """Return list of namelist text lines for psource/psource_ncfile cards."""
+    NT = params.get("NT", None)
+    lines = []
+
+    # Use the cpp-probed flag when available; fall back to card presence otherwise.
+    use_ncfile = params.get('_psource_ncfile', 'psource_ncfile' in cards)
+
+    if not use_ncfile and "psource" in cards:
+        vlines = [l for l in cards["psource"] if l.strip()]
+        if not vlines:
+            return lines
+        Nsrc = int(expand_repeat(vlines[0].split())[0])
+
+        Isrc, Jsrc, Dsrc, Qbar = [], [], [], []
+        lsrc_per_src, tsrc0_per_src = [], []
+        for i in range(Nsrc):
+            if i + 1 >= len(vlines):
+                break
+            toks = expand_repeat(vlines[i + 1].split())
+            Isrc.append(toks[0]); Jsrc.append(toks[1])
+            Dsrc.append(toks[2]); Qbar.append(toks[3])
+            lsrc, tsrc0 = _split_rest(toks, NT)
+            lsrc_per_src.append(lsrc); tsrc0_per_src.append(tsrc0)
+
+        lines += [f"&croco_psource", f"  psource_Nsrc = {Nsrc}", "/", ""]
+        lines += ["&croco_psource_data"]
+        for i in range(len(Isrc)):
+            n = i + 1
+            lines.append(f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"+
+                         f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"+
+                         f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"+
+                         f" psource_Qbar({n:>4}) = {Qbar[i]:>5}")
+        lines += ["/", ""]
+        if NT>0:
+            lines += ["&croco_psource_tracer"]
+            for isrc, lsrc in enumerate(lsrc_per_src, start=1):
+                for itr, val in enumerate(lsrc, start=1):
+                    lines.append(
+                        f"  psource_Lsrc({isrc},{itr}) = {val}"
+                    )
+            for isrc, tsrc in enumerate(tsrc0_per_src, start=1):
+                for itr, val in enumerate(tsrc, start=1):
+                    lines.append(
+                        f"  psource_Tsrc0({isrc},{itr}) = {val}"
+                    )
+            lines += ["/", ""]
+
+    elif use_ncfile and "psource_ncfile" in cards:
+        vlines = [l for l in cards["psource_ncfile"] if l.strip()]
+        if len(vlines) < 2:
+            return lines
+        qbarname = vlines[0].strip()
+        Nsrc = int(expand_repeat(vlines[1].split())[0])
+
+        Isrc, Jsrc, Dsrc, Qbardir = [], [], [], []
+        lsrc_per_src, tsrc0_per_src = [], []
+        for i in range(Nsrc):
+            if i + 2 >= len(vlines):
+                break
+            toks = expand_repeat(vlines[i + 2].split())
+            Isrc.append(toks[0]); Jsrc.append(toks[1])
+            Dsrc.append(toks[2]); Qbardir.append(toks[3])
+            lsrc, tsrc0 = _split_rest(toks, NT)
+            lsrc_per_src.append(lsrc); tsrc0_per_src.append(tsrc0)
+
+        lines += [f"&croco_psource", f"  psource_Nsrc = {Nsrc}", "/", ""]
+        lines += ["&croco_psource_ncfile_data"]
+        lines.append(f'  psource_qbarname = "{qbarname}"')
+        for i in range(len(Isrc)):
+            n = i + 1
+            lines.append(f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"+
+                         f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"+
+                         f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"+
+                         f" psource_qbardir({n:>4}) = {Qbardir[i]:>5}")
+        lines += ["/", ""]
+
+        if NT>0:
+            lines += ["&croco_psource_tracer"]
+
+            for isrc, lsrc in enumerate(lsrc_per_src, start=1):
+                for itr, val in enumerate(lsrc, start=1):
+                    lines.append(
+                        f"  psource_Lsrc({isrc},{itr}) = {val}"
+                    )
+            for isrc, tsrc in enumerate(tsrc0_per_src, start=1):
+                for itr, val in enumerate(tsrc, start=1):
+                    lines.append(
+                        f"  psource_Tsrc0({isrc},{itr}) = {val}"
+                    )
+
+            lines += ["/", ""]
+
+    return lines
+
+
+# ---------------------------------------------------------------------------
 # NML builder
 # ---------------------------------------------------------------------------
 
@@ -908,6 +1059,7 @@ def build_nml(cards, headers, mappings, params):
         lines.extend(nml_entries[nml_name])
         lines.append("/")
         lines.append("")
+    lines.extend(_build_psource_lines(cards, params))
     lines += ["", "! End of namelist", ""]
     return "\n".join(lines)
 
@@ -1001,10 +1153,14 @@ Defaults (all auto-derived from croco.in.<Name>):
             print(f"Warning        : param.h not found at '{param_path}' — NT unknown.",
                   file=sys.stderr)
 
+    # ---- Check CPP flags that affect special-card handling -------------------
+    if cppdefs_path and os.path.isfile(cppdefs_path):
+        params['_psource_ncfile'] = cpp_define_active(cppdefs_path, 'PSOURCE_NCFILE')
+
     # ---- Convert .in → .nml --------------------------------------------------
     cards, headers = parse_in_file(args.input)
 
-    mapped_cards  = {row[0] for row in MAPPINGS}
+    mapped_cards  = {row[0] for row in MAPPINGS} | SPECIAL_CARDS
     present_cards = set(cards.keys())
     missing   = mapped_cards - present_cards
     unmapped  = present_cards - mapped_cards

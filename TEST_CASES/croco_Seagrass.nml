@@ -141,5 +141,20 @@
   his_hm = .false.
 /
 
+&croco_psource
+  psource_Nsrc = 1
+/
+
+&croco_psource_data
+  psource_Isrc(   1) =     3, psource_Jsrc(   1) =     3, psource_Dsrc(   1) =     0, psource_Qbar(   1) = 0.0039775
+/
+
+&croco_psource_tracer
+  psource_Lsrc(1,1) = T
+  psource_Lsrc(1,2) = T
+  psource_Tsrc0(1,1) = 10.
+  psource_Tsrc0(1,2) = 36.
+/
+
 
 ! End of namelist

@@ -58,13 +58,7 @@ class Croco:
         self.case = config.config["cases"][case_name]
         self.variant = config.config["variants"][variant_name]
 
-        # input file
-        self.croco_inputfile = "TEST_CASES/croco.in.%s" % self.case["case"].capitalize()
-        if "input_file" in self.case:
-            if len(self.case["input_file"]) > 0:
-                self.croco_inputfile = self.case["input_file"]
-
-        # namelist file (optional 2nd argument to croco executable)
+        # namelist file
         self.croco_nmlfile = "TEST_CASES/croco_%s.nml" % self.case["case"].capitalize()
         if "nml_file" in self.case:
             if len(self.case["nml_file"]) > 0:
@@ -309,18 +303,16 @@ class Croco:
             env_line += f'{var}="{value}" '
 
         # build command and run
-        command = "%s ../../../scripts/correct_end.sh %s ./croco %s %s" % (
+        command = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
             env_line,
             command_prefix,
-            self.croco_inputfile,
             self.croco_nmlfile,
         )
         command = command.rstrip()
         if restart:
-            command_rst = "%s ../../../scripts/correct_end.sh %s ./croco %s %s" % (
+            command_rst = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
                 env_line,
                 command_prefix,
-                "%s_rst" % self.croco_inputfile,
                 "%s_rst" % self.croco_nmlfile,
             )
             command_rst = command_rst.rstrip()
@@ -434,7 +426,6 @@ class Croco:
         self.change_nml_output_time_steps_dthis(filename_nml, 6)
 
     def apply_restart_patches(self):
-        filename = self.croco_inputfile
         filename_nml = self.croco_nmlfile
 
         # for all case (write/read), put ldefhis to F
@@ -442,10 +433,6 @@ class Croco:
 
         if self.restarted:
             # prepare 2 files for the restarted run
-            full_filename = os.path.join(self.dirname, filename)
-            filename_rst = filename + "_rst"
-            full_filename_rst = os.path.join(self.dirname, filename_rst)
-            shutil.copy(full_filename, full_filename_rst)
             full_filename_nml = os.path.join(self.dirname, filename_nml)
             filename_nml_rst = filename_nml + "_rst"
             full_filename_nml_rst = os.path.join(self.dirname, filename_nml_rst)
@@ -758,14 +745,10 @@ class Croco:
         # also copy the config
         self.croco_build.copy_config(refdir_case, case_name, patches_and_keys)
 
-        # add the case config files
-        case_file = self.croco_inputfile
+        # add the case namelist file
+        nml_file = self.croco_nmlfile
         os.makedirs(f"{refdir}/{case_name}/TEST_CASES", exist_ok=True)
-        shutil.copyfile(f"{dirname}/{case_file}", f"{refdir}/{case_name}/{case_file}")
-
-        # copy the case file under croco.in
-        if not os.path.exists(f"{refdir}/{case_name}/croco.in"):
-            os.symlink(case_file, f"{refdir}/{case_name}/croco.in")
+        shutil.copyfile(f"{dirname}/{nml_file}", f"{refdir}/{case_name}/{nml_file}")
 
         # dump case info
         with open(f"{refdir}/{case_name}/case.json", "w+") as fp:

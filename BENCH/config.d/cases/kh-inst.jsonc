@@ -9,7 +9,6 @@
       "plotphy_script": "./TEST_CASES/plot_kh_inst.py",
       "plotphy_script_input": "khinst_his.nc",
     },
-    "input_file": "TEST_CASES/croco.in.KH_INST",
     "nml_file": "TEST_CASES/croco_KH_INST.nml",
     "check_outputs": ["khinst_his.nc"],
     "unsupported": ["openmp"],
