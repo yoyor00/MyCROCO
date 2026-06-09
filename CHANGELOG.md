@@ -41,6 +41,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   initialized in this case). This was done through key ROGUE_WAVES, now changed 
   to WAVE_MAKER_DATA (#518)
 
+- Fix time in surf average output file (#388)
+
 ### Changed
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
@@ -58,6 +60,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
+
+- DIAGNOSTICS : 
+	- cleaning, simplifications and updates of momentum-based diagnostics (DIAGNOSTICS\_KE, DIAGNOSTICS\_VRT, DIAGNOSTICS\_M) (Issue #388)
+	- kinetic energy budget is now 3d
+	- momentum and energy diagnostics are saved as cell-volume integrals
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
@@ -116,6 +123,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - LIMIT_UNSTABLE_ONLY is always define (#401)
   - MLCONVEC (#399)
   - TS_VADV_AKIMA and TS_HADV_AKIMA (#392)
+  - TENDENCY, DIAGNOSTICS_EK_FULL, DIAGNOSTICS_EK_MLD (Issue #388)
 
 ### Other
 
@@ -139,7 +147,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
-  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
+  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
+  J. Gula
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,

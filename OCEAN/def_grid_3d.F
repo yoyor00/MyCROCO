@@ -41,6 +41,7 @@
 !
       if (ncid.eq.ncidrst) then
         nf_ftype=NF_FTYPE
+        !nf_ftype=NF_FOUT
       else
         nf_ftype=NF_FOUT
       endif
