@@ -315,12 +315,6 @@
   psource_Nsrc = 2
 /
 
-&croco_psource_ncfile_data
-  psource_qbarname = "croco_runoff_vilaine.nc"
-  psource_Isrc(   1) =   167, psource_Jsrc(   1) =    56, psource_Dsrc(   1) =     0, psource_qbardir(   1) =    -1
-  psource_Isrc(   2) =    91, psource_Jsrc(   2) =    99, psource_Dsrc(   2) =     0, psource_qbardir(   2) =    -1
-/
-
 &croco_psource_tracer
   psource_Lsrc(1,1) = T
   psource_Lsrc(1,2) = T
@@ -342,6 +336,12 @@
   psource_Tsrc0(2,3) = 0.
   psource_Tsrc0(2,4) = 0.
   psource_Tsrc0(2,5) = 0.
+/
+
+&croco_psource_ncfile_data
+  psource_qbarname = "croco_runoff_vilaine.nc"
+  psource_Isrc(   1) =   167, psource_Jsrc(   1) =    56, psource_Dsrc(   1) =     0, psource_qbardir(   1) =    -1
+  psource_Isrc(   2) =    91, psource_Jsrc(   2) =    99, psource_Dsrc(   2) =     0, psource_qbardir(   2) =    -1
 /
 
 

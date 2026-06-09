@@ -380,5 +380,11 @@
   psource_Tsrc0(2,1) = 5.
 /
 
+&croco_psource_ncfile_data
+  psource_qbarname = "CROCO_FILES/croco_runoff.nc"
+  psource_Isrc(   1) =    24, psource_Jsrc(   1) =    35, psource_Dsrc(   1) =     0, psource_qbardir(   1) =    -1
+  psource_Isrc(   2) =    35, psource_Jsrc(   2) =    13, psource_Dsrc(   2) =     1, psource_qbardir(   2) =    -1
+/
+
 
 ! End of namelist
