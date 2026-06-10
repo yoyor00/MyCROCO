@@ -12,7 +12,7 @@
 #include "cppdefs.h"
 #if defined SOLVE3D
       subroutine def_grid_3d (ncid, r2dgrd, u2dgrd, v2dgrd,
-     &                        r3dgrd, w3dgrd)
+     &                        r3dgrd, w3dgrd, nf_ftype)
 !
 ! Define grid variables in output NetCDF file for 3D configuration,
 ! which may be restart, history, averages, etc..
@@ -36,16 +36,6 @@
 # include "param.h"
 # include "ncscrum.h"
 # include "netcdf.inc"
-!
-! Decide about precision:
-!
-      if (ncid.eq.ncidrst) then
-        nf_ftype=NF_FTYPE
-        !nf_ftype=NF_FOUT
-      else
-        nf_ftype=NF_FOUT
-      endif
-!
 !
 ! Grid type switch: Spherical or Cartesian.
 !

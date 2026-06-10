@@ -306,9 +306,12 @@
     },
     "patches": {},
     "check_outputs": [
-      "CROCO_FILES/croco_his.nc", 
+      "CROCO_FILES/croco_his.nc",
+      "CROCO_FILES/croco_avg.nc", 
       "CROCO_FILES/croco_dia.nc",
+      "CROCO_FILES/croco_dia_avg.nc",
       "CROCO_FILES/croco_diaM.nc",
+      "CROCO_FILES/croco_diaM_avg.nc",
       "CROCO_FILES/croco_diags_ek.nc",
       "CROCO_FILES/croco_diags_ek_avg.nc",
       "CROCO_FILES/croco_diags_vrt.nc",
