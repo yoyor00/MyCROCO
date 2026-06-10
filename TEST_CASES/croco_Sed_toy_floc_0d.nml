@@ -88,81 +88,81 @@
 /
 
 &croco_gls_history_fields
-  his_tke = .true.
-  his_gls = .true.
-  his_lscale = .true.
+  out_his_tke = .true.
+  out_his_gls = .true.
+  out_his_lscale = .true.
 /
 
 &croco_bbl_history_fields
-  his_abed = .true.
-  his_hripple = .true.
-  his_lripple = .true.
-  his_zbnot = .true.
-  his_zbapp = .true.
-  his_bostrw = .true.
+  out_his_abed = .true.
+  out_his_hripple = .true.
+  out_his_lripple = .true.
+  out_his_zbnot = .true.
+  out_his_zbapp = .true.
+  out_his_bostrw = .true.
 /
 
 &croco_primary_history_fields
-  his_zeta = .true.
-  his_ubar = .true.
-  his_vbar = .true.
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
 /
 
 &croco_primary_history_3d_fields
-  his_u = .true.
-  his_v = .true.
+  out_his_u = .true.
+  out_his_v = .true.
 /
 
 &croco_primary_history_tracer_fields
-  his_tracer = 17*.true.
+  out_his_tracer = 17*.true.
 /
 
 &croco_auxiliary_history_fields
-  his_rho = .false.
-  his_omega = .false.
-  his_w = .false.
-  his_akv = .true.
-  his_bostr = .false.
-  his_wstr = .false.
-  his_ustr = .true.
-  his_vstr = .true.
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .false.
+  out_his_akv = .true.
+  out_his_bostr = .false.
+  out_his_wstr = .false.
+  out_his_ustr = .true.
+  out_his_vstr = .true.
 /
 
 &croco_temperature_history_fields
-  his_akt = .true.
-  his_shflx = .true.
-  his_shflx_rsw = .true.
+  out_his_akt = .true.
+  out_his_shflx = .true.
+  out_his_shflx_rsw = .true.
 /
 
 &croco_salinity_history_fields
-  his_aks = .false.
-  his_swflx = .true.
+  out_his_aks = .false.
+  out_his_swflx = .true.
 /
 
 &croco_bulk_flux_history_fields
-  his_shflx_rlw = .true.
-  his_shflx_lat = .true.
-  his_shflx_sen = .true.
+  out_his_shflx_rlw = .true.
+  out_his_shflx_lat = .true.
+  out_his_shflx_sen = .true.
 /
 
 &croco_hbl_history_fields
-  his_hbl = .true.
+  out_his_hbl = .true.
 /
 
 &croco_lmd_bkpp_history_fields
-  his_hbbl = .false.
+  out_his_hbbl = .false.
 /
 
 &croco_vis_coef_history_fields
-  his_visc3d = .false.
+  out_his_visc3d = .false.
 /
 
 &croco_dif_coef_history_fields
-  his_diff3d = .false.
+  out_his_diff3d = .false.
 /
 
 &croco_biology_history_fields
-  his_hel = .true.
+  out_his_hel = .true.
 /
 
 

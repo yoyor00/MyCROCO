@@ -1336,14 +1336,14 @@ contains
 
    !---------------------------------------------------------------------
    !  init_primary_history_fields
-   !  Copy his_* module variables into the legacy wrthis() array.
+   !  Copy out_his_* module variables into the legacy wrthis() array.
    !---------------------------------------------------------------------
    subroutine init_primary_history_fields()
-      use croco_namelist, ONLY: his_zeta, his_ubar, his_vbar
+      use croco_namelist, ONLY: out_his_zeta, out_his_ubar, out_his_vbar
 #ifdef SOLVE3D
-      use croco_namelist, ONLY: his_u, his_v
+      use croco_namelist, ONLY: out_his_u, out_his_v
 # ifdef TRACERS
-      use croco_namelist, ONLY: his_tracer
+      use croco_namelist, ONLY: out_his_tracer
 # endif
 #endif
       use param, ONLY: NT
@@ -1354,18 +1354,18 @@ contains
       implicit none
       integer :: itrc
 
-      wrthis(indxZ) = his_zeta
-      wrthis(indxUb) = his_ubar
-      wrthis(indxVb) = his_vbar
-      if (his_zeta .or. his_ubar .or. his_vbar) wrthis(indxTime) = .true.
+      wrthis(indxZ) = out_his_zeta
+      wrthis(indxUb) = out_his_ubar
+      wrthis(indxVb) = out_his_vbar
+      if (out_his_zeta .or. out_his_ubar .or. out_his_vbar) wrthis(indxTime) = .true.
 #ifdef SOLVE3D
-      wrthis(indxU) = his_u
-      wrthis(indxV) = his_v
-      if (his_u .or. his_v) wrthis(indxTime) = .true.
+      wrthis(indxU) = out_his_u
+      wrthis(indxV) = out_his_v
+      if (out_his_u .or. out_his_v) wrthis(indxTime) = .true.
 # ifdef TRACERS
       do itrc = 1, NT
-         wrthis(indxV + itrc) = his_tracer(itrc)
-         if (his_tracer(itrc)) wrthis(indxTime) = .true.
+         wrthis(indxV + itrc) = out_his_tracer(itrc)
+         if (out_his_tracer(itrc)) wrthis(indxTime) = .true.
       end do
 # endif
 #endif
@@ -1374,14 +1374,14 @@ contains
 #ifdef AVERAGES
    !---------------------------------------------------------------------
    !  init_primary_averages_fields
-   !  Copy avg_* module variables into the legacy wrtavg() array.
+   !  Copy out_avg_* module variables into the legacy wrtavg() array.
    !---------------------------------------------------------------------
    subroutine init_primary_averages_fields()
-      use croco_namelist, ONLY: avg_zeta, avg_ubar, avg_vbar
+      use croco_namelist, ONLY: out_avg_zeta, out_avg_ubar, out_avg_vbar
 # ifdef SOLVE3D
-      use croco_namelist, ONLY: avg_u, avg_v
+      use croco_namelist, ONLY: out_avg_u, out_avg_v
 #  ifdef TRACERS
-      use croco_namelist, ONLY: avg_tracer
+      use croco_namelist, ONLY: out_avg_tracer
 #  endif
 # endif
       use param, ONLY: NT
@@ -1392,18 +1392,18 @@ contains
       implicit none
       integer :: itrc
 
-      wrtavg(indxZ) = avg_zeta
-      wrtavg(indxUb) = avg_ubar
-      wrtavg(indxVb) = avg_vbar
-      if (avg_zeta .or. avg_ubar .or. avg_vbar) wrtavg(indxTime) = .true.
+      wrtavg(indxZ) = out_avg_zeta
+      wrtavg(indxUb) = out_avg_ubar
+      wrtavg(indxVb) = out_avg_vbar
+      if (out_avg_zeta .or. out_avg_ubar .or. out_avg_vbar) wrtavg(indxTime) = .true.
 # ifdef SOLVE3D
-      wrtavg(indxU) = avg_u
-      wrtavg(indxV) = avg_v
-      if (avg_u .or. avg_v) wrtavg(indxTime) = .true.
+      wrtavg(indxU) = out_avg_u
+      wrtavg(indxV) = out_avg_v
+      if (out_avg_u .or. out_avg_v) wrtavg(indxTime) = .true.
 #  ifdef TRACERS
       do itrc = 1, NT
-         wrtavg(indxV + itrc) = avg_tracer(itrc)
-         if (avg_tracer(itrc)) wrtavg(indxTime) = .true.
+         wrtavg(indxV + itrc) = out_avg_tracer(itrc)
+         if (out_avg_tracer(itrc)) wrtavg(indxTime) = .true.
       end do
 #  endif
 # endif
@@ -1417,8 +1417,8 @@ contains
    !---------------------------------------------------------------------
    subroutine init_auxiliary_history_fields()
       use croco_namelist, ONLY: &
-         his_rho, his_omega, his_w, his_akv, &
-         his_bostr, his_bustr, his_bvstr, his_wstr, his_ustr, his_vstr
+         out_his_rho, out_his_omega, out_his_w, out_his_akv, &
+         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
       use ncscrum, ONLY: wrthis, indxTime, &
                          indxBostr, indxBustr, indxBvstr, &
                          indxWstr, indxUWstr, indxVWstr
@@ -1427,166 +1427,166 @@ contains
 #endif
       implicit none
 
-      wrthis(indxBostr) = his_bostr
-      wrthis(indxBustr) = his_bustr
-      wrthis(indxBvstr) = his_bvstr
-      wrthis(indxWstr) = his_wstr
-      wrthis(indxUWstr) = his_ustr
-      wrthis(indxVWstr) = his_vstr
-      if (his_bostr .or. his_bustr .or. his_bvstr .or. &
-          his_wstr .or. his_ustr .or. his_vstr) wrthis(indxTime) = .true.
+      wrthis(indxBostr) = out_his_bostr
+      wrthis(indxBustr) = out_his_bustr
+      wrthis(indxBvstr) = out_his_bvstr
+      wrthis(indxWstr) = out_his_wstr
+      wrthis(indxUWstr) = out_his_ustr
+      wrthis(indxVWstr) = out_his_vstr
+      if (out_his_bostr .or. out_his_bustr .or. out_his_bvstr .or. &
+          out_his_wstr .or. out_his_ustr .or. out_his_vstr) wrthis(indxTime) = .true.
 #ifdef SOLVE3D
-      wrthis(indxR) = his_rho
-      wrthis(indxO) = his_omega
-      wrthis(indxW) = his_w
-      wrthis(indxAkv) = his_akv
-      if (his_rho .or. his_omega .or. his_w .or. his_akv) wrthis(indxTime) = .true.
+      wrthis(indxR) = out_his_rho
+      wrthis(indxO) = out_his_omega
+      wrthis(indxW) = out_his_w
+      wrthis(indxAkv) = out_his_akv
+      if (out_his_rho .or. out_his_omega .or. out_his_w .or. out_his_akv) wrthis(indxTime) = .true.
 #endif
    end subroutine init_auxiliary_history_fields
 #endif
 
 #if defined SOLVE3D && defined TEMPERATURE
    subroutine init_temperature_history_fields()
-      use croco_namelist, ONLY: his_akt, his_shflx, his_shflx_rsw
+      use croco_namelist, ONLY: out_his_akt, out_his_shflx, out_his_shflx_rsw
       use ncscrum, ONLY: wrthis, indxTime, indxAkt, indxShflx, indxShflx_rsw
       implicit none
-      wrthis(indxAkt) = his_akt
-      wrthis(indxShflx) = his_shflx
-      wrthis(indxShflx_rsw) = his_shflx_rsw
-      if (his_akt .or. his_shflx .or. his_shflx_rsw) wrthis(indxTime) = .true.
+      wrthis(indxAkt) = out_his_akt
+      wrthis(indxShflx) = out_his_shflx
+      wrthis(indxShflx_rsw) = out_his_shflx_rsw
+      if (out_his_akt .or. out_his_shflx .or. out_his_shflx_rsw) wrthis(indxTime) = .true.
    end subroutine init_temperature_history_fields
 #endif
 
 #if defined SOLVE3D && defined SALINITY
    subroutine init_salinity_history_fields()
-      use croco_namelist, ONLY: his_aks, his_swflx
+      use croco_namelist, ONLY: out_his_aks, out_his_swflx
       use ncscrum, ONLY: wrthis, indxTime, indxAks, indxSwflx
       implicit none
-      wrthis(indxAks) = his_aks
-      wrthis(indxSwflx) = his_swflx
-      if (his_aks .or. his_swflx) wrthis(indxTime) = .true.
+      wrthis(indxAks) = out_his_aks
+      wrthis(indxSwflx) = out_his_swflx
+      if (out_his_aks .or. out_his_swflx) wrthis(indxTime) = .true.
    end subroutine init_salinity_history_fields
 #endif
 
 #if defined SOLVE3D && defined BULK_FLUX
    subroutine init_bulk_flux_history_fields()
-      use croco_namelist, ONLY: his_shflx_rlw, his_shflx_lat, his_shflx_sen
+      use croco_namelist, ONLY: out_his_shflx_rlw, out_his_shflx_lat, out_his_shflx_sen
       use ncscrum, ONLY: wrthis, indxTime, indxShflx_rlw, indxShflx_lat, indxShflx_sen
       implicit none
-      wrthis(indxShflx_rlw) = his_shflx_rlw
-      wrthis(indxShflx_lat) = his_shflx_lat
-      wrthis(indxShflx_sen) = his_shflx_sen
-      if (his_shflx_rlw .or. his_shflx_lat .or. his_shflx_sen) wrthis(indxTime) = .true.
+      wrthis(indxShflx_rlw) = out_his_shflx_rlw
+      wrthis(indxShflx_lat) = out_his_shflx_lat
+      wrthis(indxShflx_sen) = out_his_shflx_sen
+      if (out_his_shflx_rlw .or. out_his_shflx_lat .or. out_his_shflx_sen) wrthis(indxTime) = .true.
    end subroutine init_bulk_flux_history_fields
 #endif
 
 #if defined SOLVE3D && defined BHFLUX
    subroutine init_bhflux_history_fields()
-      use croco_namelist, ONLY: his_bhflx
+      use croco_namelist, ONLY: out_his_bhflx
       use ncscrum, ONLY: wrthis, indxTime, indxBhflx
       implicit none
-      wrthis(indxBhflx) = his_bhflx
-      if (his_bhflx) wrthis(indxTime) = .true.
+      wrthis(indxBhflx) = out_his_bhflx
+      if (out_his_bhflx) wrthis(indxTime) = .true.
    end subroutine init_bhflux_history_fields
 #endif
 
 #if defined SOLVE3D && defined BWFLUX && defined SALINITY
    subroutine init_bwflux_history_fields()
-      use croco_namelist, ONLY: his_bwflx
+      use croco_namelist, ONLY: out_his_bwflx
       use ncscrum, ONLY: wrthis, indxTime, indxBwflx
       implicit none
-      wrthis(indxBwflx) = his_bwflx
-      if (his_bwflx) wrthis(indxTime) = .true.
+      wrthis(indxBwflx) = out_his_bwflx
+      if (out_his_bwflx) wrthis(indxTime) = .true.
    end subroutine init_bwflux_history_fields
 #endif
 
 #if defined SOLVE3D && (defined ANA_VMIX || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING)
    subroutine init_bvf_history_fields()
-      use croco_namelist, ONLY: his_bvf
+      use croco_namelist, ONLY: out_his_bvf
       use ncscrum, ONLY: wrthis, indxTime, indxbvf
       implicit none
-      wrthis(indxbvf) = his_bvf
-      if (his_bvf) wrthis(indxTime) = .true.
+      wrthis(indxbvf) = out_his_bvf
+      if (out_his_bvf) wrthis(indxTime) = .true.
    end subroutine init_bvf_history_fields
 #endif
 
 #if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
    subroutine init_hbl_history_fields()
-      use croco_namelist, ONLY: his_hbl
+      use croco_namelist, ONLY: out_his_hbl
       use ncscrum, ONLY: wrthis, indxTime, indxHbl
       implicit none
-      wrthis(indxHbl) = his_hbl
-      if (his_hbl) wrthis(indxTime) = .true.
+      wrthis(indxHbl) = out_his_hbl
+      if (out_his_hbl) wrthis(indxTime) = .true.
    end subroutine init_hbl_history_fields
 #endif
 
 #if defined SOLVE3D && defined LMD_BKPP
    subroutine init_lmd_bkpp_history_fields()
-      use croco_namelist, ONLY: his_hbbl
+      use croco_namelist, ONLY: out_his_hbbl
       use ncscrum, ONLY: wrthis, indxTime, indxHbbl
       implicit none
-      wrthis(indxHbbl) = his_hbbl
-      if (his_hbbl) wrthis(indxTime) = .true.
+      wrthis(indxHbbl) = out_his_hbbl
+      if (out_his_hbbl) wrthis(indxTime) = .true.
    end subroutine init_lmd_bkpp_history_fields
 #endif
 
 #if defined SOLVE3D && defined VIS_COEF_3D
    subroutine init_vis_coef_history_fields()
-      use croco_namelist, ONLY: his_visc3d
+      use croco_namelist, ONLY: out_his_visc3d
       use ncscrum, ONLY: wrthis, indxTime, indxVisc
       implicit none
-      wrthis(indxVisc) = his_visc3d
-      if (his_visc3d) wrthis(indxTime) = .true.
+      wrthis(indxVisc) = out_his_visc3d
+      if (out_his_visc3d) wrthis(indxTime) = .true.
    end subroutine init_vis_coef_history_fields
 #endif
 
 #if defined SOLVE3D && defined DIF_COEF_3D
    subroutine init_dif_coef_history_fields()
-      use croco_namelist, ONLY: his_diff3d
+      use croco_namelist, ONLY: out_his_diff3d
       use ncscrum, ONLY: wrthis, indxTime, indxDiff
       implicit none
-      wrthis(indxDiff) = his_diff3d
-      if (his_diff3d) wrthis(indxTime) = .true.
+      wrthis(indxDiff) = out_his_diff3d
+      if (out_his_diff3d) wrthis(indxTime) = .true.
    end subroutine init_dif_coef_history_fields
 #endif
 
 #if defined SOLVE3D && defined BIOLOGY && !defined PISCES
    subroutine init_biology_history_fields()
-      use croco_namelist, ONLY: his_hel
+      use croco_namelist, ONLY: out_his_hel
       use ncscrum, ONLY: wrthis, indxTime, indxHel
       implicit none
-      wrthis(indxHel) = his_hel
-      if (his_hel) wrthis(indxTime) = .true.
+      wrthis(indxHel) = out_his_hel
+      if (out_his_hel) wrthis(indxTime) = .true.
    end subroutine init_biology_history_fields
 #endif
 
 #if defined SOLVE3D && defined BIO_NChlPZD
    subroutine init_bio_nchlpzd_history_fields()
-      use croco_namelist, ONLY: his_chc, his_u10, his_kvo2, his_o2sat
+      use croco_namelist, ONLY: out_his_chc, out_his_u10, out_his_kvo2, out_his_o2sat
       use ncscrum, ONLY: wrthis, indxTime, indxChC
 # ifdef OXYGEN
       use ncscrum, ONLY: indxU10, indxKvO2, indxO2sat
 # endif
       implicit none
-      wrthis(indxChC) = his_chc
-      if (his_chc) wrthis(indxTime) = .true.
+      wrthis(indxChC) = out_his_chc
+      if (out_his_chc) wrthis(indxTime) = .true.
 # ifdef OXYGEN
-      wrthis(indxU10) = his_u10
-      wrthis(indxKvO2) = his_kvo2
-      wrthis(indxO2sat) = his_o2sat
-      if (his_u10 .or. his_kvo2 .or. his_o2sat) wrthis(indxTime) = .true.
+      wrthis(indxU10) = out_his_u10
+      wrthis(indxKvO2) = out_his_kvo2
+      wrthis(indxO2sat) = out_his_o2sat
+      if (out_his_u10 .or. out_his_kvo2 .or. out_his_o2sat) wrthis(indxTime) = .true.
 # endif
    end subroutine init_bio_nchlpzd_history_fields
 #endif
 
 #if defined SOLVE3D && defined BIO_BioEBUS
    subroutine init_bio_bioebus_history_fields()
-      use croco_namelist, ONLY: his_aou, his_wind10
+      use croco_namelist, ONLY: out_his_aou, out_his_wind10
       use ncscrum, ONLY: wrthis, indxTime, indxAOU, indxWIND10
       implicit none
-      wrthis(indxAOU) = his_aou
-      wrthis(indxWIND10) = his_wind10
-      if (his_aou .or. his_wind10) wrthis(indxTime) = .true.
+      wrthis(indxAOU) = out_his_aou
+      wrthis(indxWIND10) = out_his_wind10
+      if (out_his_aou .or. out_his_wind10) wrthis(indxTime) = .true.
    end subroutine init_bio_bioebus_history_fields
 #endif
 
@@ -1596,12 +1596,12 @@ contains
    !  Morphodynamics output field (MORPHODYN).
    !---------------------------------------------------------------------
    subroutine init_morphodyn_history_fields()
-      use croco_namelist, ONLY: his_hm
+      use croco_namelist, ONLY: out_his_hm
       use ncscrum, ONLY: wrthis, indxTime, indxHm
       implicit none
 
-      wrthis(indxHm) = his_hm
-      if (his_hm) wrthis(indxTime) = .true.
+      wrthis(indxHm) = out_his_hm
+      if (out_his_hm) wrthis(indxTime) = .true.
    end subroutine init_morphodyn_history_fields
 # endif
 
@@ -1612,82 +1612,82 @@ contains
    !---------------------------------------------------------------------
    subroutine init_auxiliary_averages_fields()
       use croco_namelist, ONLY: &
-         avg_rho, avg_omega, avg_w, avg_akv, &
-         avg_bostr, avg_bustr, avg_bvstr, avg_wstr, avg_ustr, avg_vstr
+         out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
+         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr
       use ncscrum, ONLY: wrtavg, indxTime, &
                          indxR, indxO, indxW, indxAkv, &
                          indxBostr, indxBustr, indxBvstr, &
                          indxWstr, indxUWstr, indxVWstr
       implicit none
 
-      wrtavg(indxR) = avg_rho
-      wrtavg(indxO) = avg_omega
-      wrtavg(indxW) = avg_w
-      wrtavg(indxAkv) = avg_akv
-      if (avg_rho .or. avg_omega .or. avg_w .or. avg_akv) wrtavg(indxTime) = .true.
-      wrtavg(indxBostr) = avg_bostr
-      wrtavg(indxBustr) = avg_bustr
-      wrtavg(indxBvstr) = avg_bvstr
-      wrtavg(indxWstr) = avg_wstr
-      wrtavg(indxUWstr) = avg_ustr
-      wrtavg(indxVWstr) = avg_vstr
-      if (avg_bostr .or. avg_bustr .or. avg_bvstr .or. &
-          avg_wstr .or. avg_ustr .or. avg_vstr) wrtavg(indxTime) = .true.
+      wrtavg(indxR) = out_avg_rho
+      wrtavg(indxO) = out_avg_omega
+      wrtavg(indxW) = out_avg_w
+      wrtavg(indxAkv) = out_avg_akv
+      if (out_avg_rho .or. out_avg_omega .or. out_avg_w .or. out_avg_akv) wrtavg(indxTime) = .true.
+      wrtavg(indxBostr) = out_avg_bostr
+      wrtavg(indxBustr) = out_avg_bustr
+      wrtavg(indxBvstr) = out_avg_bvstr
+      wrtavg(indxWstr) = out_avg_wstr
+      wrtavg(indxUWstr) = out_avg_ustr
+      wrtavg(indxVWstr) = out_avg_vstr
+      if (out_avg_bostr .or. out_avg_bustr .or. out_avg_bvstr .or. &
+          out_avg_wstr .or. out_avg_ustr .or. out_avg_vstr) wrtavg(indxTime) = .true.
    end subroutine init_auxiliary_averages_fields
 #endif
 
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
    subroutine init_temperature_averages_fields()
-      use croco_namelist, ONLY: avg_akt, avg_shflx, avg_shflx_rsw
+      use croco_namelist, ONLY: out_avg_akt, out_avg_shflx, out_avg_shflx_rsw
       use ncscrum, ONLY: wrtavg, indxTime, indxAkt, indxShflx, indxShflx_rsw
       implicit none
-      wrtavg(indxAkt) = avg_akt
-      wrtavg(indxShflx) = avg_shflx
-      wrtavg(indxShflx_rsw) = avg_shflx_rsw
-      if (avg_akt .or. avg_shflx .or. avg_shflx_rsw) wrtavg(indxTime) = .true.
+      wrtavg(indxAkt) = out_avg_akt
+      wrtavg(indxShflx) = out_avg_shflx
+      wrtavg(indxShflx_rsw) = out_avg_shflx_rsw
+      if (out_avg_akt .or. out_avg_shflx .or. out_avg_shflx_rsw) wrtavg(indxTime) = .true.
    end subroutine init_temperature_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined SALINITY
    subroutine init_salinity_averages_fields()
-      use croco_namelist, ONLY: avg_aks, avg_swflx
+      use croco_namelist, ONLY: out_avg_aks, out_avg_swflx
       use ncscrum, ONLY: wrtavg, indxTime, indxAks, indxSwflx
       implicit none
-      wrtavg(indxAks) = avg_aks
-      wrtavg(indxSwflx) = avg_swflx
-      if (avg_aks .or. avg_swflx) wrtavg(indxTime) = .true.
+      wrtavg(indxAks) = out_avg_aks
+      wrtavg(indxSwflx) = out_avg_swflx
+      if (out_avg_aks .or. out_avg_swflx) wrtavg(indxTime) = .true.
    end subroutine init_salinity_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
    subroutine init_bulk_flux_averages_fields()
-      use croco_namelist, ONLY: avg_shflx_rlw, avg_shflx_lat, avg_shflx_sen
+      use croco_namelist, ONLY: out_avg_shflx_rlw, out_avg_shflx_lat, out_avg_shflx_sen
       use ncscrum, ONLY: wrtavg, indxTime, indxShflx_rlw, indxShflx_lat, indxShflx_sen
       implicit none
-      wrtavg(indxShflx_rlw) = avg_shflx_rlw
-      wrtavg(indxShflx_lat) = avg_shflx_lat
-      wrtavg(indxShflx_sen) = avg_shflx_sen
-      if (avg_shflx_rlw .or. avg_shflx_lat .or. avg_shflx_sen) wrtavg(indxTime) = .true.
+      wrtavg(indxShflx_rlw) = out_avg_shflx_rlw
+      wrtavg(indxShflx_lat) = out_avg_shflx_lat
+      wrtavg(indxShflx_sen) = out_avg_shflx_sen
+      if (out_avg_shflx_rlw .or. out_avg_shflx_lat .or. out_avg_shflx_sen) wrtavg(indxTime) = .true.
    end subroutine init_bulk_flux_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined BHFLUX
    subroutine init_bhflux_averages_fields()
-      use croco_namelist, ONLY: avg_bhflx
+      use croco_namelist, ONLY: out_avg_bhflx
       use ncscrum, ONLY: wrtavg, indxTime, indxBhflx
       implicit none
-      wrtavg(indxBhflx) = avg_bhflx
-      if (avg_bhflx) wrtavg(indxTime) = .true.
+      wrtavg(indxBhflx) = out_avg_bhflx
+      if (out_avg_bhflx) wrtavg(indxTime) = .true.
    end subroutine init_bhflux_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
    subroutine init_bwflux_averages_fields()
-      use croco_namelist, ONLY: avg_bwflx
+      use croco_namelist, ONLY: out_avg_bwflx
       use ncscrum, ONLY: wrtavg, indxTime, indxBwflx
       implicit none
-      wrtavg(indxBwflx) = avg_bwflx
-      if (avg_bwflx) wrtavg(indxTime) = .true.
+      wrtavg(indxBwflx) = out_avg_bwflx
+      if (out_avg_bwflx) wrtavg(indxTime) = .true.
    end subroutine init_bwflux_averages_fields
 # endif
 
@@ -1696,92 +1696,92 @@ contains
    defined LMD_SKPP||defined LMD_BKPP||\
    defined GLS_MIXING)
    subroutine init_bvf_averages_fields()
-      use croco_namelist, ONLY: avg_bvf
+      use croco_namelist, ONLY: out_avg_bvf
       use ncscrum, ONLY: wrtavg, indxTime, indxbvf
       implicit none
-      wrtavg(indxbvf) = avg_bvf
-      if (avg_bvf) wrtavg(indxTime) = .true.
+      wrtavg(indxbvf) = out_avg_bvf
+      if (out_avg_bvf) wrtavg(indxTime) = .true.
    end subroutine init_bvf_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && \
    (defined LMD_SKPP||defined GLS_MIXING)
    subroutine init_hbl_averages_fields()
-      use croco_namelist, ONLY: avg_hbl
+      use croco_namelist, ONLY: out_avg_hbl
       use ncscrum, ONLY: wrtavg, indxTime, indxHbl
       implicit none
-      wrtavg(indxHbl) = avg_hbl
-      if (avg_hbl) wrtavg(indxTime) = .true.
+      wrtavg(indxHbl) = out_avg_hbl
+      if (out_avg_hbl) wrtavg(indxTime) = .true.
    end subroutine init_hbl_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
    subroutine init_lmd_bkpp_averages_fields()
-      use croco_namelist, ONLY: avg_hbbl
+      use croco_namelist, ONLY: out_avg_hbbl
       use ncscrum, ONLY: wrtavg, indxTime, indxHbbl
       implicit none
-      wrtavg(indxHbbl) = avg_hbbl
-      if (avg_hbbl) wrtavg(indxTime) = .true.
+      wrtavg(indxHbbl) = out_avg_hbbl
+      if (out_avg_hbbl) wrtavg(indxTime) = .true.
    end subroutine init_lmd_bkpp_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
    subroutine init_vis_coef_averages_fields()
-      use croco_namelist, ONLY: avg_visc3d
+      use croco_namelist, ONLY: out_avg_visc3d
       use ncscrum, ONLY: wrtavg, indxTime, indxVisc
       implicit none
-      wrtavg(indxVisc) = avg_visc3d
-      if (avg_visc3d) wrtavg(indxTime) = .true.
+      wrtavg(indxVisc) = out_avg_visc3d
+      if (out_avg_visc3d) wrtavg(indxTime) = .true.
    end subroutine init_vis_coef_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
    subroutine init_dif_coef_averages_fields()
-      use croco_namelist, ONLY: avg_diff3d
+      use croco_namelist, ONLY: out_avg_diff3d
       use ncscrum, ONLY: wrtavg, indxTime, indxDiff
       implicit none
-      wrtavg(indxDiff) = avg_diff3d
-      if (avg_diff3d) wrtavg(indxTime) = .true.
+      wrtavg(indxDiff) = out_avg_diff3d
+      if (out_avg_diff3d) wrtavg(indxTime) = .true.
    end subroutine init_dif_coef_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
    subroutine init_biology_averages_fields()
-      use croco_namelist, ONLY: avg_hel
+      use croco_namelist, ONLY: out_avg_hel
       use ncscrum, ONLY: wrtavg, indxTime, indxHel
       implicit none
-      wrtavg(indxHel) = avg_hel
-      if (avg_hel) wrtavg(indxTime) = .true.
+      wrtavg(indxHel) = out_avg_hel
+      if (out_avg_hel) wrtavg(indxTime) = .true.
    end subroutine init_biology_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
    subroutine init_bio_nchlpzd_averages_fields()
-      use croco_namelist, ONLY: avg_chc, avg_u10, avg_kvo2, avg_o2sat
+      use croco_namelist, ONLY: out_avg_chc, out_avg_u10, out_avg_kvo2, out_avg_o2sat
       use ncscrum, ONLY: wrtavg, indxTime, indxChC
 #  ifdef OXYGEN
       use ncscrum, ONLY: indxU10, indxKvO2, indxO2sat
 #  endif
       implicit none
-      wrtavg(indxChC) = avg_chc
-      if (avg_chc) wrtavg(indxTime) = .true.
+      wrtavg(indxChC) = out_avg_chc
+      if (out_avg_chc) wrtavg(indxTime) = .true.
 #  ifdef OXYGEN
-      wrtavg(indxU10) = avg_u10
-      wrtavg(indxKvO2) = avg_kvo2
-      wrtavg(indxO2sat) = avg_o2sat
-      if (avg_u10 .or. avg_kvo2 .or. avg_o2sat) wrtavg(indxTime) = .true.
+      wrtavg(indxU10) = out_avg_u10
+      wrtavg(indxKvO2) = out_avg_kvo2
+      wrtavg(indxO2sat) = out_avg_o2sat
+      if (out_avg_u10 .or. out_avg_kvo2 .or. out_avg_o2sat) wrtavg(indxTime) = .true.
 #  endif
    end subroutine init_bio_nchlpzd_averages_fields
 # endif
 
 # if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
    subroutine init_bio_bioebus_averages_fields()
-      use croco_namelist, ONLY: avg_aou, avg_wind10
+      use croco_namelist, ONLY: out_avg_aou, out_avg_wind10
       use ncscrum, ONLY: wrtavg, indxTime, indxAOU, indxWIND10
       implicit none
-      wrtavg(indxAOU) = avg_aou
-      wrtavg(indxWIND10) = avg_wind10
-      if (avg_aou .or. avg_wind10) wrtavg(indxTime) = .true.
+      wrtavg(indxAOU) = out_avg_aou
+      wrtavg(indxWIND10) = out_avg_wind10
+      if (out_avg_aou .or. out_avg_wind10) wrtavg(indxTime) = .true.
    end subroutine init_bio_bioebus_averages_fields
 # endif
 
@@ -1791,25 +1791,25 @@ contains
    !  Morphodynamics average field (MORPHODYN).
    !---------------------------------------------------------------------
    subroutine init_morphodyn_averages_fields()
-      use croco_namelist, ONLY: avg_hm
+      use croco_namelist, ONLY: out_avg_hm
       use ncscrum, ONLY: wrtavg, indxTime, indxHm
       implicit none
 
-      wrtavg(indxHm) = avg_hm
-      if (avg_hm) wrtavg(indxTime) = .true.
+      wrtavg(indxHm) = out_avg_hm
+      if (out_avg_hm) wrtavg(indxTime) = .true.
    end subroutine init_morphodyn_averages_fields
 # endif
 
 #ifdef DIAGNOSTICS_TS
    subroutine init_diag_ts_fields()
-      use croco_namelist, ONLY: his_dia3D_tracer
+      use croco_namelist, ONLY: out_his_dia3D_tracer
 # ifdef DIAGNOSTICS_TS_MLD
-      use croco_namelist, ONLY: his_dia2D_tracer
+      use croco_namelist, ONLY: out_his_dia2D_tracer
 # endif
 # ifdef AVERAGES
-      use croco_namelist, ONLY: avg_dia3D_tracer
+      use croco_namelist, ONLY: out_avg_dia3D_tracer
 #  ifdef DIAGNOSTICS_TS_MLD
-      use croco_namelist, ONLY: avg_dia2D_tracer
+      use croco_namelist, ONLY: out_avg_dia2D_tracer
 #  endif
 # endif
       use param, ONLY: NT
@@ -1821,25 +1821,25 @@ contains
       integer :: itrc
 # ifdef TRACERS
       do itrc = 1, NT
-         wrtdia3D(itrc) = his_dia3D_tracer(itrc)
-         if (his_dia3D_tracer(itrc)) wrtdia3D(NT + 1) = .true.
+         wrtdia3D(itrc) = out_his_dia3D_tracer(itrc)
+         if (out_his_dia3D_tracer(itrc)) wrtdia3D(NT + 1) = .true.
       end do
 #  ifdef DIAGNOSTICS_TS_MLD
       do itrc = 1, NT
-         wrtdia2D(itrc) = his_dia2D_tracer(itrc)
-         if (his_dia2D_tracer(itrc)) wrtdia2D(NT + 1) = .true.
+         wrtdia2D(itrc) = out_his_dia2D_tracer(itrc)
+         if (out_his_dia2D_tracer(itrc)) wrtdia2D(NT + 1) = .true.
       end do
 #  endif
 # endif
 # if defined AVERAGES && defined TRACERS
       do itrc = 1, NT
-         wrtdia3D_avg(itrc) = avg_dia3D_tracer(itrc)
-         if (avg_dia3D_tracer(itrc)) wrtdia3D_avg(NT + 1) = .true.
+         wrtdia3D_avg(itrc) = out_avg_dia3D_tracer(itrc)
+         if (out_avg_dia3D_tracer(itrc)) wrtdia3D_avg(NT + 1) = .true.
       end do
 #  ifdef DIAGNOSTICS_TS_MLD
       do itrc = 1, NT
-         wrtdia2D_avg(itrc) = avg_dia2D_tracer(itrc)
-         if (avg_dia2D_tracer(itrc)) wrtdia2D_avg(NT + 1) = .true.
+         wrtdia2D_avg(itrc) = out_avg_dia2D_tracer(itrc)
+         if (out_avg_dia2D_tracer(itrc)) wrtdia2D_avg(NT + 1) = .true.
       end do
 #  endif
 # endif
@@ -1848,59 +1848,59 @@ contains
 
 #ifdef DIAGNOSTICS_UV
    subroutine init_diagM_fields()
-      use croco_namelist, ONLY: his_diagM_u, his_diagM_v
+      use croco_namelist, ONLY: out_his_diagM_u, out_his_diagM_v
 # ifdef AVERAGES
-      use croco_namelist, ONLY: avg_diagM_u, avg_diagM_v
+      use croco_namelist, ONLY: out_avg_diagM_u, out_avg_diagM_v
       use ncscrum, ONLY: wrtdiaM, wrtdiaM_avg
 # else
       use ncscrum, ONLY: wrtdiaM
 # endif
       implicit none
-      wrtdiaM(1) = his_diagM_u
-      wrtdiaM(2) = his_diagM_v
-      if (his_diagM_u .or. his_diagM_v) wrtdiaM(3) = .true.
+      wrtdiaM(1) = out_his_diagM_u
+      wrtdiaM(2) = out_his_diagM_v
+      if (out_his_diagM_u .or. out_his_diagM_v) wrtdiaM(3) = .true.
 # ifdef AVERAGES
-      wrtdiaM_avg(1) = avg_diagM_u
-      wrtdiaM_avg(2) = avg_diagM_v
-      if (avg_diagM_u .or. avg_diagM_v) wrtdiaM_avg(3) = .true.
+      wrtdiaM_avg(1) = out_avg_diagM_u
+      wrtdiaM_avg(2) = out_avg_diagM_v
+      if (out_avg_diagM_u .or. out_avg_diagM_v) wrtdiaM_avg(3) = .true.
 # endif
    end subroutine init_diagM_fields
 #endif
 
 #ifdef DIAGNOSTICS_VRT
    subroutine init_diags_vrt_fields()
-      use croco_namelist, ONLY: his_diags_vrt
+      use croco_namelist, ONLY: out_his_diags_vrt
 # ifdef AVERAGES
-      use croco_namelist, ONLY: avg_diags_vrt
+      use croco_namelist, ONLY: out_avg_diags_vrt
       use ncscrum, ONLY: wrtdiags_vrt, wrtdiags_vrt_avg
 # else
       use ncscrum, ONLY: wrtdiags_vrt
 # endif
       implicit none
-      wrtdiags_vrt(1) = his_diags_vrt
-      if (his_diags_vrt) wrtdiags_vrt(3) = .true.
+      wrtdiags_vrt(1) = out_his_diags_vrt
+      if (out_his_diags_vrt) wrtdiags_vrt(3) = .true.
 # ifdef AVERAGES
-      wrtdiags_vrt_avg(1) = avg_diags_vrt
-      if (avg_diags_vrt) wrtdiags_vrt_avg(3) = .true.
+      wrtdiags_vrt_avg(1) = out_avg_diags_vrt
+      if (out_avg_diags_vrt) wrtdiags_vrt_avg(3) = .true.
 # endif
    end subroutine init_diags_vrt_fields
 #endif
 
 #ifdef DIAGNOSTICS_KE
    subroutine init_diags_ek_fields()
-      use croco_namelist, ONLY: his_diags_ek
+      use croco_namelist, ONLY: out_his_diags_ek
 # ifdef AVERAGES
-      use croco_namelist, ONLY: avg_diags_ek
+      use croco_namelist, ONLY: out_avg_diags_ek
       use ncscrum, ONLY: wrtdiags_ek, wrtdiags_ek_avg
 # else
       use ncscrum, ONLY: wrtdiags_ek
 # endif
       implicit none
-      wrtdiags_ek(1) = his_diags_ek
-      if (his_diags_ek) wrtdiags_ek(3) = .true.
+      wrtdiags_ek(1) = out_his_diags_ek
+      if (out_his_diags_ek) wrtdiags_ek(3) = .true.
 # ifdef AVERAGES
-      wrtdiags_ek_avg(1) = avg_diags_ek
-      if (avg_diags_ek) wrtdiags_ek_avg(3) = .true.
+      wrtdiags_ek_avg(1) = out_avg_diags_ek
+      if (out_avg_diags_ek) wrtdiags_ek_avg(3) = .true.
 # endif
    end subroutine init_diags_ek_fields
 #endif
@@ -1908,10 +1908,10 @@ contains
 #ifdef DIAGNOSTICS_PV
    subroutine init_diags_pv_fields()
 # ifdef TRACERS
-      use croco_namelist, ONLY: his_diags_pv_tracer
+      use croco_namelist, ONLY: out_his_diags_pv_tracer
       use ncscrum, ONLY: wrtdiags_pv
 #  ifdef AVERAGES
-      use croco_namelist, ONLY: avg_diags_pv_tracer
+      use croco_namelist, ONLY: out_avg_diags_pv_tracer
       use ncscrum, ONLY: wrtdiags_pv_avg
 #  endif
       use param, ONLY: NT
@@ -1920,13 +1920,13 @@ contains
       integer :: itrc
 # ifdef TRACERS
       do itrc = 1, NT
-         wrtdiags_pv(itrc) = his_diags_pv_tracer(itrc)
-         if (his_diags_pv_tracer(itrc)) wrtdiags_pv(NT + 1) = .true.
+         wrtdiags_pv(itrc) = out_his_diags_pv_tracer(itrc)
+         if (out_his_diags_pv_tracer(itrc)) wrtdiags_pv(NT + 1) = .true.
       end do
 #  ifdef AVERAGES
       do itrc = 1, NT
-         wrtdiags_pv_avg(itrc) = avg_diags_pv_tracer(itrc)
-         if (avg_diags_pv_tracer(itrc)) wrtdiags_pv_avg(NT + 1) = .true.
+         wrtdiags_pv_avg(itrc) = out_avg_diags_pv_tracer(itrc)
+         if (out_avg_diags_pv_tracer(itrc)) wrtdiags_pv_avg(NT + 1) = .true.
       end do
 #  endif
 # endif
@@ -1935,24 +1935,24 @@ contains
 
 #if defined DIAGNOSTICS_EDDY && !defined XIOS && defined AVERAGES
    subroutine init_diags_eddy_fields()
-      use croco_namelist, ONLY: avg_diags_eddy
+      use croco_namelist, ONLY: out_avg_diags_eddy
       use ncscrum, ONLY: wrtdiags_eddy_avg
       implicit none
-      wrtdiags_eddy_avg(1) = avg_diags_eddy
-      if (avg_diags_eddy) wrtdiags_eddy_avg(3) = .true.
+      wrtdiags_eddy_avg(1) = out_avg_diags_eddy
+      if (out_avg_diags_eddy) wrtdiags_eddy_avg(3) = .true.
    end subroutine init_diags_eddy_fields
 #endif
 
 #ifdef DIAGNOSTICS_BIO
    subroutine init_diagbio_fields()
-      use croco_namelist, ONLY: his_diagbioFlux, his_diagbioVSink
+      use croco_namelist, ONLY: out_his_diagbioFlux, out_his_diagbioVSink
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      use croco_namelist, ONLY: his_diagbioGasExc
+      use croco_namelist, ONLY: out_his_diagbioGasExc
 # endif
 # ifdef AVERAGES
-      use croco_namelist, ONLY: avg_diagbioFlux, avg_diagbioVSink
+      use croco_namelist, ONLY: out_avg_diagbioFlux, out_avg_diagbioVSink
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      use croco_namelist, ONLY: avg_diagbioGasExc
+      use croco_namelist, ONLY: out_avg_diagbioGasExc
 #  endif
 # endif
       use param, ONLY: NumFluxTerms, NumVSinkTerms
@@ -1972,32 +1972,32 @@ contains
       implicit none
       integer :: iflux
       do iflux = 1, NumFluxTerms
-         wrtdiabioFlux(iflux) = his_diagbioFlux(iflux)
-         if (his_diagbioFlux(iflux)) wrtdiabioFlux(NumFluxTerms + 1) = .true.
+         wrtdiabioFlux(iflux) = out_his_diagbioFlux(iflux)
+         if (out_his_diagbioFlux(iflux)) wrtdiabioFlux(NumFluxTerms + 1) = .true.
       end do
       do iflux = 1, NumVSinkTerms
-         wrtdiabioVSink(iflux) = his_diagbioVSink(iflux)
-         if (his_diagbioVSink(iflux)) wrtdiabioVSink(NumVSinkTerms + 1) = .true.
+         wrtdiabioVSink(iflux) = out_his_diagbioVSink(iflux)
+         if (out_his_diagbioVSink(iflux)) wrtdiabioVSink(NumVSinkTerms + 1) = .true.
       end do
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       do iflux = 1, NumGasExcTerms
-         wrtdiabioGasExc(iflux) = his_diagbioGasExc(iflux)
-         if (his_diagbioGasExc(iflux)) wrtdiabioGasExc(NumGasExcTerms + 1) = .true.
+         wrtdiabioGasExc(iflux) = out_his_diagbioGasExc(iflux)
+         if (out_his_diagbioGasExc(iflux)) wrtdiabioGasExc(NumGasExcTerms + 1) = .true.
       end do
 # endif
 # ifdef AVERAGES
       do iflux = 1, NumFluxTerms
-         wrtdiabioFlux_avg(iflux) = avg_diagbioFlux(iflux)
-         if (avg_diagbioFlux(iflux)) wrtdiabioFlux_avg(NumFluxTerms + 1) = .true.
+         wrtdiabioFlux_avg(iflux) = out_avg_diagbioFlux(iflux)
+         if (out_avg_diagbioFlux(iflux)) wrtdiabioFlux_avg(NumFluxTerms + 1) = .true.
       end do
       do iflux = 1, NumVSinkTerms
-         wrtdiabioVSink_avg(iflux) = avg_diagbioVSink(iflux)
-         if (avg_diagbioVSink(iflux)) wrtdiabioVSink_avg(NumVSinkTerms + 1) = .true.
+         wrtdiabioVSink_avg(iflux) = out_avg_diagbioVSink(iflux)
+         if (out_avg_diagbioVSink(iflux)) wrtdiabioVSink_avg(NumVSinkTerms + 1) = .true.
       end do
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       do iflux = 1, NumGasExcTerms
-         wrtdiabioGasExc_avg(iflux) = avg_diagbioGasExc(iflux)
-         if (avg_diagbioGasExc(iflux)) wrtdiabioGasExc_avg(NumGasExcTerms + 1) = .true.
+         wrtdiabioGasExc_avg(iflux) = out_avg_diagbioGasExc(iflux)
+         if (out_avg_diagbioGasExc(iflux)) wrtdiabioGasExc_avg(NumGasExcTerms + 1) = .true.
       end do
 #  endif
 # endif
@@ -2006,52 +2006,52 @@ contains
 
 #ifdef STOGEN
    subroutine init_stochastic_history_fields()
-      use croco_namelist, ONLY: his_xi2d, his_xi3d
+      use croco_namelist, ONLY: out_his_xi2d, out_his_xi3d
       use ncscrum, ONLY: wrthis, indxXIsto2d, indxXIsto3d
       use stoalloc, ONLY: ln_hststo2d, ln_hststo3d
       implicit none
-      wrthis(indxXIsto2d) = his_xi2d
-      wrthis(indxXIsto3d) = his_xi3d
-      ln_hststo2d = his_xi2d
-      ln_hststo3d = his_xi3d
+      wrthis(indxXIsto2d) = out_his_xi2d
+      wrthis(indxXIsto3d) = out_his_xi3d
+      ln_hststo2d = out_his_xi2d
+      ln_hststo3d = out_his_xi3d
    end subroutine init_stochastic_history_fields
 #endif
 
 #if defined SOLVE3D && defined GLS_MIXING
    subroutine init_gls_history_fields()
-      use croco_namelist, ONLY: his_tke, his_gls, his_lscale
+      use croco_namelist, ONLY: out_his_tke, out_his_gls, out_his_lscale
       use ncscrum, ONLY: wrthis, indxTke, indxGls, indxLsc, indxTime
       implicit none
-      wrthis(indxTke) = his_tke
-      wrthis(indxGls) = his_gls
-      wrthis(indxLsc) = his_lscale
-      if (his_tke .or. his_gls .or. his_lscale) wrthis(indxTime) = .true.
+      wrthis(indxTke) = out_his_tke
+      wrthis(indxGls) = out_his_gls
+      wrthis(indxLsc) = out_his_lscale
+      if (out_his_tke .or. out_his_gls .or. out_his_lscale) wrthis(indxTime) = .true.
    end subroutine init_gls_history_fields
 #endif
 
 #if defined AVERAGES && defined SOLVE3D && defined GLS_MIXING
    subroutine init_gls_averages_fields()
-      use croco_namelist, ONLY: avg_tke, avg_gls, avg_lscale
+      use croco_namelist, ONLY: out_avg_tke, out_avg_gls, out_avg_lscale
       use ncscrum, ONLY: wrtavg, indxAkk, indxAkp, indxTke, indxGls, &
                          indxLsc, indxTime
       implicit none
-      wrtavg(indxTke) = avg_tke
-      wrtavg(indxGls) = avg_gls
-      wrtavg(indxLsc) = avg_lscale
-      if (wrtavg(indxAkk) .or. wrtavg(indxAkp) .or. avg_tke &
-          .or. avg_gls .or. avg_lscale) wrtavg(indxTime) = .true.
+      wrtavg(indxTke) = out_avg_tke
+      wrtavg(indxGls) = out_avg_gls
+      wrtavg(indxLsc) = out_avg_lscale
+      if (wrtavg(indxAkk) .or. wrtavg(indxAkp) .or. out_avg_tke &
+          .or. out_avg_gls .or. out_avg_lscale) wrtavg(indxTime) = .true.
    end subroutine init_gls_averages_fields
 #endif
 
 #if defined ABL1D && !defined XIOS
    subroutine init_abl_history_fields()
       use croco_namelist, ONLY: &
-         his_abl_pu_dta, his_abl_pv_dta, his_abl_pt_dta, &
-         his_abl_pq_dta, his_abl_pgu_dta, his_abl_pgv_dta, &
-         his_abl_u_abl, his_abl_v_abl, his_abl_t_abl, his_abl_q_abl, &
-         his_abl_tke_abl, his_abl_mxlm_abl, his_abl_mxld_abl, &
-         his_abl_avm_abl, his_abl_avt_abl, his_abl_ablh_abl, &
-         his_abl_zr_abl, his_abl_zw_abl, his_abl_Hzr_abl, his_abl_Hzw_abl
+         out_his_abl_pu_dta, out_his_abl_pv_dta, out_his_abl_pt_dta, &
+         out_his_abl_pq_dta, out_his_abl_pgu_dta, out_his_abl_pgv_dta, &
+         out_his_abl_u_abl, out_his_abl_v_abl, out_his_abl_t_abl, out_his_abl_q_abl, &
+         out_his_abl_tke_abl, out_his_abl_mxlm_abl, out_his_abl_mxld_abl, &
+         out_his_abl_avm_abl, out_his_abl_avt_abl, out_his_abl_ablh_abl, &
+         out_his_abl_zr_abl, out_his_abl_zw_abl, out_his_abl_Hzr_abl, out_his_abl_Hzw_abl
       use ncscrum, ONLY: wrtabl, indxTime, &
                          indxabl_pu_dta, indxabl_pv_dta, indxabl_pt_dta, &
                          indxabl_pq_dta, indxabl_pgu_dta, indxabl_pgv_dta, &
@@ -2060,47 +2060,47 @@ contains
                          indxabl_avm_abl, indxabl_avt_abl, indxabl_ablh_abl, &
                          indxabl_zr_abl, indxabl_zw_abl, indxabl_Hzr_abl, indxabl_Hzw_abl
       implicit none
-      wrtabl(indxabl_pu_dta) = his_abl_pu_dta
-      wrtabl(indxabl_pv_dta) = his_abl_pv_dta
-      wrtabl(indxabl_pt_dta) = his_abl_pt_dta
-      wrtabl(indxabl_pq_dta) = his_abl_pq_dta
-      wrtabl(indxabl_pgu_dta) = his_abl_pgu_dta
-      wrtabl(indxabl_pgv_dta) = his_abl_pgv_dta
-      wrtabl(indxabl_u_abl) = his_abl_u_abl
-      wrtabl(indxabl_v_abl) = his_abl_v_abl
-      wrtabl(indxabl_t_abl) = his_abl_t_abl
-      wrtabl(indxabl_q_abl) = his_abl_q_abl
-      wrtabl(indxabl_tke_abl) = his_abl_tke_abl
-      wrtabl(indxabl_mxlm_abl) = his_abl_mxlm_abl
-      wrtabl(indxabl_mxld_abl) = his_abl_mxld_abl
-      wrtabl(indxabl_avm_abl) = his_abl_avm_abl
-      wrtabl(indxabl_avt_abl) = his_abl_avt_abl
-      wrtabl(indxabl_ablh_abl) = his_abl_ablh_abl
-      wrtabl(indxabl_zr_abl) = his_abl_zr_abl
-      wrtabl(indxabl_zw_abl) = his_abl_zw_abl
-      wrtabl(indxabl_Hzr_abl) = his_abl_Hzr_abl
-      wrtabl(indxabl_Hzw_abl) = his_abl_Hzw_abl
-      if (his_abl_pu_dta .or. his_abl_pv_dta .or. &
-          his_abl_pt_dta .or. his_abl_pq_dta .or. &
-          his_abl_pgu_dta .or. his_abl_pgv_dta .or. &
-          his_abl_u_abl .or. his_abl_v_abl .or. &
-          his_abl_t_abl .or. his_abl_q_abl .or. &
-          his_abl_tke_abl .or. his_abl_mxlm_abl .or. &
-          his_abl_mxld_abl .or. his_abl_avm_abl .or. &
-          his_abl_avt_abl .or. his_abl_ablh_abl .or. &
-          his_abl_zr_abl .or. his_abl_zw_abl .or. &
-          his_abl_Hzr_abl .or. his_abl_Hzw_abl) wrtabl(indxTime) = .true.
+      wrtabl(indxabl_pu_dta) = out_his_abl_pu_dta
+      wrtabl(indxabl_pv_dta) = out_his_abl_pv_dta
+      wrtabl(indxabl_pt_dta) = out_his_abl_pt_dta
+      wrtabl(indxabl_pq_dta) = out_his_abl_pq_dta
+      wrtabl(indxabl_pgu_dta) = out_his_abl_pgu_dta
+      wrtabl(indxabl_pgv_dta) = out_his_abl_pgv_dta
+      wrtabl(indxabl_u_abl) = out_his_abl_u_abl
+      wrtabl(indxabl_v_abl) = out_his_abl_v_abl
+      wrtabl(indxabl_t_abl) = out_his_abl_t_abl
+      wrtabl(indxabl_q_abl) = out_his_abl_q_abl
+      wrtabl(indxabl_tke_abl) = out_his_abl_tke_abl
+      wrtabl(indxabl_mxlm_abl) = out_his_abl_mxlm_abl
+      wrtabl(indxabl_mxld_abl) = out_his_abl_mxld_abl
+      wrtabl(indxabl_avm_abl) = out_his_abl_avm_abl
+      wrtabl(indxabl_avt_abl) = out_his_abl_avt_abl
+      wrtabl(indxabl_ablh_abl) = out_his_abl_ablh_abl
+      wrtabl(indxabl_zr_abl) = out_his_abl_zr_abl
+      wrtabl(indxabl_zw_abl) = out_his_abl_zw_abl
+      wrtabl(indxabl_Hzr_abl) = out_his_abl_Hzr_abl
+      wrtabl(indxabl_Hzw_abl) = out_his_abl_Hzw_abl
+      if (out_his_abl_pu_dta .or. out_his_abl_pv_dta .or. &
+          out_his_abl_pt_dta .or. out_his_abl_pq_dta .or. &
+          out_his_abl_pgu_dta .or. out_his_abl_pgv_dta .or. &
+          out_his_abl_u_abl .or. out_his_abl_v_abl .or. &
+          out_his_abl_t_abl .or. out_his_abl_q_abl .or. &
+          out_his_abl_tke_abl .or. out_his_abl_mxlm_abl .or. &
+          out_his_abl_mxld_abl .or. out_his_abl_avm_abl .or. &
+          out_his_abl_avt_abl .or. out_his_abl_ablh_abl .or. &
+          out_his_abl_zr_abl .or. out_his_abl_zw_abl .or. &
+          out_his_abl_Hzr_abl .or. out_his_abl_Hzw_abl) wrtabl(indxTime) = .true.
    end subroutine init_abl_history_fields
 
 # ifdef AVERAGES
    subroutine init_abl_averages_fields()
       use croco_namelist, ONLY: &
-         avg_abl_pu_dta, avg_abl_pv_dta, avg_abl_pt_dta, &
-         avg_abl_pq_dta, avg_abl_pgu_dta, avg_abl_pgv_dta, &
-         avg_abl_u_abl, avg_abl_v_abl, avg_abl_t_abl, avg_abl_q_abl, &
-         avg_abl_tke_abl, avg_abl_mxlm_abl, avg_abl_mxld_abl, &
-         avg_abl_avm_abl, avg_abl_avt_abl, avg_abl_ablh_abl, &
-         avg_abl_zr_abl, avg_abl_zw_abl, avg_abl_Hzr_abl, avg_abl_Hzw_abl
+         out_avg_abl_pu_dta, out_avg_abl_pv_dta, out_avg_abl_pt_dta, &
+         out_avg_abl_pq_dta, out_avg_abl_pgu_dta, out_avg_abl_pgv_dta, &
+         out_avg_abl_u_abl, out_avg_abl_v_abl, out_avg_abl_t_abl, out_avg_abl_q_abl, &
+         out_avg_abl_tke_abl, out_avg_abl_mxlm_abl, out_avg_abl_mxld_abl, &
+         out_avg_abl_avm_abl, out_avg_abl_avt_abl, out_avg_abl_ablh_abl, &
+         out_avg_abl_zr_abl, out_avg_abl_zw_abl, out_avg_abl_Hzr_abl, out_avg_abl_Hzw_abl
       use ncscrum, ONLY: wrtabl_avg, indxTime, &
                          indxabl_pu_dta, indxabl_pv_dta, indxabl_pt_dta, &
                          indxabl_pq_dta, indxabl_pgu_dta, indxabl_pgv_dta, &
@@ -2109,56 +2109,56 @@ contains
                          indxabl_avm_abl, indxabl_avt_abl, indxabl_ablh_abl, &
                          indxabl_zr_abl, indxabl_zw_abl, indxabl_Hzr_abl, indxabl_Hzw_abl
       implicit none
-      wrtabl_avg(indxabl_pu_dta) = avg_abl_pu_dta
-      wrtabl_avg(indxabl_pv_dta) = avg_abl_pv_dta
-      wrtabl_avg(indxabl_pt_dta) = avg_abl_pt_dta
-      wrtabl_avg(indxabl_pq_dta) = avg_abl_pq_dta
-      wrtabl_avg(indxabl_pgu_dta) = avg_abl_pgu_dta
-      wrtabl_avg(indxabl_pgv_dta) = avg_abl_pgv_dta
-      wrtabl_avg(indxabl_u_abl) = avg_abl_u_abl
-      wrtabl_avg(indxabl_v_abl) = avg_abl_v_abl
-      wrtabl_avg(indxabl_t_abl) = avg_abl_t_abl
-      wrtabl_avg(indxabl_q_abl) = avg_abl_q_abl
-      wrtabl_avg(indxabl_tke_abl) = avg_abl_tke_abl
-      wrtabl_avg(indxabl_mxlm_abl) = avg_abl_mxlm_abl
-      wrtabl_avg(indxabl_mxld_abl) = avg_abl_mxld_abl
-      wrtabl_avg(indxabl_avm_abl) = avg_abl_avm_abl
-      wrtabl_avg(indxabl_avt_abl) = avg_abl_avt_abl
-      wrtabl_avg(indxabl_ablh_abl) = avg_abl_ablh_abl
-      wrtabl_avg(indxabl_zr_abl) = avg_abl_zr_abl
-      wrtabl_avg(indxabl_zw_abl) = avg_abl_zw_abl
-      wrtabl_avg(indxabl_Hzr_abl) = avg_abl_Hzr_abl
-      wrtabl_avg(indxabl_Hzw_abl) = avg_abl_Hzw_abl
-      if (avg_abl_pu_dta .or. avg_abl_pv_dta .or. &
-          avg_abl_pt_dta .or. avg_abl_pq_dta .or. &
-          avg_abl_pgu_dta .or. avg_abl_pgv_dta .or. &
-          avg_abl_u_abl .or. avg_abl_v_abl .or. &
-          avg_abl_t_abl .or. avg_abl_q_abl .or. &
-          avg_abl_tke_abl .or. avg_abl_mxlm_abl .or. &
-          avg_abl_mxld_abl .or. avg_abl_avm_abl .or. &
-          avg_abl_avt_abl .or. avg_abl_ablh_abl .or. &
-          avg_abl_zr_abl .or. avg_abl_zw_abl .or. &
-          avg_abl_Hzr_abl .or. avg_abl_Hzw_abl) wrtabl_avg(indxTime) = .true.
+      wrtabl_avg(indxabl_pu_dta) = out_avg_abl_pu_dta
+      wrtabl_avg(indxabl_pv_dta) = out_avg_abl_pv_dta
+      wrtabl_avg(indxabl_pt_dta) = out_avg_abl_pt_dta
+      wrtabl_avg(indxabl_pq_dta) = out_avg_abl_pq_dta
+      wrtabl_avg(indxabl_pgu_dta) = out_avg_abl_pgu_dta
+      wrtabl_avg(indxabl_pgv_dta) = out_avg_abl_pgv_dta
+      wrtabl_avg(indxabl_u_abl) = out_avg_abl_u_abl
+      wrtabl_avg(indxabl_v_abl) = out_avg_abl_v_abl
+      wrtabl_avg(indxabl_t_abl) = out_avg_abl_t_abl
+      wrtabl_avg(indxabl_q_abl) = out_avg_abl_q_abl
+      wrtabl_avg(indxabl_tke_abl) = out_avg_abl_tke_abl
+      wrtabl_avg(indxabl_mxlm_abl) = out_avg_abl_mxlm_abl
+      wrtabl_avg(indxabl_mxld_abl) = out_avg_abl_mxld_abl
+      wrtabl_avg(indxabl_avm_abl) = out_avg_abl_avm_abl
+      wrtabl_avg(indxabl_avt_abl) = out_avg_abl_avt_abl
+      wrtabl_avg(indxabl_ablh_abl) = out_avg_abl_ablh_abl
+      wrtabl_avg(indxabl_zr_abl) = out_avg_abl_zr_abl
+      wrtabl_avg(indxabl_zw_abl) = out_avg_abl_zw_abl
+      wrtabl_avg(indxabl_Hzr_abl) = out_avg_abl_Hzr_abl
+      wrtabl_avg(indxabl_Hzw_abl) = out_avg_abl_Hzw_abl
+      if (out_avg_abl_pu_dta .or. out_avg_abl_pv_dta .or. &
+          out_avg_abl_pt_dta .or. out_avg_abl_pq_dta .or. &
+          out_avg_abl_pgu_dta .or. out_avg_abl_pgv_dta .or. &
+          out_avg_abl_u_abl .or. out_avg_abl_v_abl .or. &
+          out_avg_abl_t_abl .or. out_avg_abl_q_abl .or. &
+          out_avg_abl_tke_abl .or. out_avg_abl_mxlm_abl .or. &
+          out_avg_abl_mxld_abl .or. out_avg_abl_avm_abl .or. &
+          out_avg_abl_avt_abl .or. out_avg_abl_ablh_abl .or. &
+          out_avg_abl_zr_abl .or. out_avg_abl_zw_abl .or. &
+          out_avg_abl_Hzr_abl .or. out_avg_abl_Hzw_abl) wrtabl_avg(indxTime) = .true.
    end subroutine init_abl_averages_fields
 # endif
 #endif
 
 #if defined OUTPUTS_SURFACE && !defined XIOS
    subroutine init_surf_history_fields()
-      use croco_namelist, ONLY: his_surf
+      use croco_namelist, ONLY: out_his_surf
       use ncscrum, ONLY: wrtsurf
       implicit none
-      wrtsurf(1) = his_surf
-      if (his_surf) wrtsurf(3) = .true.
+      wrtsurf(1) = out_his_surf
+      if (out_his_surf) wrtsurf(3) = .true.
    end subroutine init_surf_history_fields
 
 # ifdef AVERAGES
    subroutine init_surf_average_fields()
-      use croco_namelist, ONLY: avg_surf
+      use croco_namelist, ONLY: out_avg_surf
       use ncscrum, ONLY: wrtsurf_avg
       implicit none
-      wrtsurf_avg(1) = avg_surf
-      if (avg_surf) wrtsurf_avg(3) = .true.
+      wrtsurf_avg(1) = out_avg_surf
+      if (out_avg_surf) wrtsurf_avg(3) = .true.
    end subroutine init_surf_average_fields
 # endif
 #endif
@@ -2184,16 +2184,16 @@ contains
 
 #if defined SOLVE3D && defined SEDIMENT
    subroutine init_sediment_history_fields()
-      use croco_namelist, ONLY: his_sed_athk, his_sed_bthk, his_sed_bpor, &
-                                his_sed_bfra
+      use croco_namelist, ONLY: out_his_sed_athk, out_his_sed_bthk, out_his_sed_bpor, &
+                                out_his_sed_bfra
 # ifdef SUSPLOAD
-      use croco_namelist, ONLY: his_sed_dflx, his_sed_eflx
+      use croco_namelist, ONLY: out_his_sed_dflx, out_his_sed_eflx
 # endif
 # ifdef BEDLOAD
-      use croco_namelist, ONLY: his_sed_bdlu, his_sed_bdlv
+      use croco_namelist, ONLY: out_his_sed_bdlu, out_his_sed_bdlv
 # endif
 # if defined MIXED_BED || defined COHESIVE_BED
-      use croco_namelist, ONLY: his_sed_btcr
+      use croco_namelist, ONLY: out_his_sed_btcr
 # endif
 # ifdef AVERAGES
       use ncscrum, ONLY: wrtavg
@@ -2213,26 +2213,26 @@ contains
       implicit none
       integer :: itrc
 
-      wrthis(indxATHK) = his_sed_athk
-      wrthis(indxBTHK) = his_sed_bthk
-      wrthis(indxBPOR) = his_sed_bpor
+      wrthis(indxATHK) = out_his_sed_athk
+      wrthis(indxBTHK) = out_his_sed_bthk
+      wrthis(indxBPOR) = out_his_sed_bpor
       do itrc = 1, NST
-         wrthis(indxBFRA(itrc)) = his_sed_bfra(itrc)
+         wrthis(indxBFRA(itrc)) = out_his_sed_bfra(itrc)
       end do
 # ifdef SUSPLOAD
       do itrc = 1, NST
-         wrthis(indxDFLX(itrc)) = his_sed_dflx(itrc)
-         wrthis(indxEFLX(itrc)) = his_sed_eflx(itrc)
+         wrthis(indxDFLX(itrc)) = out_his_sed_dflx(itrc)
+         wrthis(indxEFLX(itrc)) = out_his_sed_eflx(itrc)
       end do
 # endif
 # ifdef BEDLOAD
       do itrc = 1, NST
-         wrthis(indxBDLU(itrc)) = his_sed_bdlu(itrc)
-         wrthis(indxBDLV(itrc)) = his_sed_bdlv(itrc)
+         wrthis(indxBDLU(itrc)) = out_his_sed_bdlu(itrc)
+         wrthis(indxBDLV(itrc)) = out_his_sed_bdlv(itrc)
       end do
 # endif
 # if defined MIXED_BED || defined COHESIVE_BED
-      wrthis(indxBTCR) = his_sed_btcr
+      wrthis(indxBTCR) = out_his_sed_btcr
 # endif
 # ifdef AVERAGES
       do itrc = indxSed, &
@@ -2257,26 +2257,26 @@ contains
 
 #ifdef BBL
    subroutine init_bbl_history_fields()
-      use croco_namelist, ONLY: his_abed, his_hripple, his_lripple, &
-                                his_zbnot, his_zbapp, his_bostrw
+      use croco_namelist, ONLY: out_his_abed, out_his_hripple, out_his_lripple, &
+                                out_his_zbnot, out_his_zbapp, out_his_bostrw
       use ncscrum, ONLY: wrthis, indxAbed, indxHrip, indxLrip, &
                          indxZbnot, indxZbapp, indxBostrw
       implicit none
-      wrthis(indxAbed) = his_abed
-      wrthis(indxHrip) = his_hripple
-      wrthis(indxLrip) = his_lripple
-      wrthis(indxZbnot) = his_zbnot
-      wrthis(indxZbapp) = his_zbapp
-      wrthis(indxBostrw) = his_bostrw
+      wrthis(indxAbed) = out_his_abed
+      wrthis(indxHrip) = out_his_hripple
+      wrthis(indxLrip) = out_his_lripple
+      wrthis(indxZbnot) = out_his_zbnot
+      wrthis(indxZbapp) = out_his_zbapp
+      wrthis(indxBostrw) = out_his_bostrw
    end subroutine init_bbl_history_fields
 #endif
 
 #ifdef MRL_WCI
    subroutine init_wci_history_fields()
-      use croco_namelist, ONLY: his_sup, his_ust2d, his_vst2d
+      use croco_namelist, ONLY: out_his_sup, out_his_ust2d, out_his_vst2d
 # ifdef SOLVE3D
-      use croco_namelist, ONLY: his_ust, his_vst, his_wst, his_akb, &
-                                his_akw, his_kvf, his_calp, his_kaps
+      use croco_namelist, ONLY: out_his_ust, out_his_vst, out_his_wst, out_his_akb, &
+                                out_his_akw, out_his_kvf, out_his_calp, out_his_kaps
 # endif
       use ncscrum, ONLY: wrthis, indxSUP, indxUST2D, indxVST2D
 # ifdef SOLVE3D
@@ -2284,27 +2284,27 @@ contains
                          indxKVF, indxCALP, indxKAPS
 # endif
       implicit none
-      wrthis(indxSUP) = his_sup
-      wrthis(indxUST2D) = his_ust2d
-      wrthis(indxVST2D) = his_vst2d
+      wrthis(indxSUP) = out_his_sup
+      wrthis(indxUST2D) = out_his_ust2d
+      wrthis(indxVST2D) = out_his_vst2d
 # ifdef SOLVE3D
-      wrthis(indxUST) = his_ust
-      wrthis(indxVST) = his_vst
-      wrthis(indxWST) = his_wst
-      wrthis(indxAkb) = his_akb
-      wrthis(indxAkw) = his_akw
-      wrthis(indxKVF) = his_kvf
-      wrthis(indxCALP) = his_calp
-      wrthis(indxKAPS) = his_kaps
+      wrthis(indxUST) = out_his_ust
+      wrthis(indxVST) = out_his_vst
+      wrthis(indxWST) = out_his_wst
+      wrthis(indxAkb) = out_his_akb
+      wrthis(indxAkw) = out_his_akw
+      wrthis(indxKVF) = out_his_kvf
+      wrthis(indxCALP) = out_his_calp
+      wrthis(indxKAPS) = out_his_kaps
 # endif
    end subroutine init_wci_history_fields
 
 # ifdef AVERAGES
    subroutine init_wci_average_fields()
-      use croco_namelist, ONLY: avg_sup, avg_ust2d, avg_vst2d
+      use croco_namelist, ONLY: out_avg_sup, out_avg_ust2d, out_avg_vst2d
 #  ifdef SOLVE3D
-      use croco_namelist, ONLY: avg_ust, avg_vst, avg_wst, avg_akb, &
-                                avg_akw, avg_kvf, avg_calp, avg_kaps
+      use croco_namelist, ONLY: out_avg_ust, out_avg_vst, out_avg_wst, out_avg_akb, &
+                                out_avg_akw, out_avg_kvf, out_avg_calp, out_avg_kaps
 #  endif
       use ncscrum, ONLY: wrtavg, indxSUP, indxUST2D, indxVST2D
 #  ifdef SOLVE3D
@@ -2312,18 +2312,18 @@ contains
                          indxKVF, indxCALP, indxKAPS
 #  endif
       implicit none
-      wrtavg(indxSUP) = avg_sup
-      wrtavg(indxUST2D) = avg_ust2d
-      wrtavg(indxVST2D) = avg_vst2d
+      wrtavg(indxSUP) = out_avg_sup
+      wrtavg(indxUST2D) = out_avg_ust2d
+      wrtavg(indxVST2D) = out_avg_vst2d
 #  ifdef SOLVE3D
-      wrtavg(indxUST) = avg_ust
-      wrtavg(indxVST) = avg_vst
-      wrtavg(indxWST) = avg_wst
-      wrtavg(indxAkb) = avg_akb
-      wrtavg(indxAkw) = avg_akw
-      wrtavg(indxKVF) = avg_kvf
-      wrtavg(indxCALP) = avg_calp
-      wrtavg(indxKAPS) = avg_kaps
+      wrtavg(indxUST) = out_avg_ust
+      wrtavg(indxVST) = out_avg_vst
+      wrtavg(indxWST) = out_avg_wst
+      wrtavg(indxAkb) = out_avg_akb
+      wrtavg(indxAkw) = out_avg_akw
+      wrtavg(indxKVF) = out_avg_kvf
+      wrtavg(indxCALP) = out_avg_calp
+      wrtavg(indxKAPS) = out_avg_kaps
 #  endif
    end subroutine init_wci_average_fields
 # endif
@@ -2331,38 +2331,38 @@ contains
 
 #if defined MRL_WCI || defined OW_COUPLING
    subroutine init_wave_history_fields()
-      use croco_namelist, ONLY: his_hrm, his_frq, his_action, his_k_xi, &
-                                his_k_eta, his_eps_b, his_eps_d, his_erol, his_eps_r
+      use croco_namelist, ONLY: out_his_hrm, out_his_frq, out_his_action, out_his_k_xi, &
+                                out_his_k_eta, out_his_eps_b, out_his_eps_d, out_his_erol, out_his_eps_r
       use ncscrum, ONLY: wrthis, indxHRM, indxFRQ, indxWAC, indxWKX, &
                          indxWKE, indxEPB, indxEPD, indxWAR, indxEPR
       implicit none
-      wrthis(indxHRM) = his_hrm
-      wrthis(indxFRQ) = his_frq
-      wrthis(indxWAC) = his_action
-      wrthis(indxWKX) = his_k_xi
-      wrthis(indxWKE) = his_k_eta
-      wrthis(indxEPB) = his_eps_b
-      wrthis(indxEPD) = his_eps_d
-      wrthis(indxWAR) = his_erol
-      wrthis(indxEPR) = his_eps_r
+      wrthis(indxHRM) = out_his_hrm
+      wrthis(indxFRQ) = out_his_frq
+      wrthis(indxWAC) = out_his_action
+      wrthis(indxWKX) = out_his_k_xi
+      wrthis(indxWKE) = out_his_k_eta
+      wrthis(indxEPB) = out_his_eps_b
+      wrthis(indxEPD) = out_his_eps_d
+      wrthis(indxWAR) = out_his_erol
+      wrthis(indxEPR) = out_his_eps_r
    end subroutine init_wave_history_fields
 
 # ifdef AVERAGES
    subroutine init_wave_average_fields()
-      use croco_namelist, ONLY: avg_hrm, avg_frq, avg_action, avg_k_xi, &
-                                avg_k_eta, avg_eps_b, avg_eps_d, avg_erol, avg_eps_r
+      use croco_namelist, ONLY: out_avg_hrm, out_avg_frq, out_avg_action, out_avg_k_xi, &
+                                out_avg_k_eta, out_avg_eps_b, out_avg_eps_d, out_avg_erol, out_avg_eps_r
       use ncscrum, ONLY: wrtavg, indxHRM, indxFRQ, indxWAC, indxWKX, &
                          indxWKE, indxEPB, indxEPD, indxWAR, indxEPR
       implicit none
-      wrtavg(indxHRM) = avg_hrm
-      wrtavg(indxFRQ) = avg_frq
-      wrtavg(indxWAC) = avg_action
-      wrtavg(indxWKX) = avg_k_xi
-      wrtavg(indxWKE) = avg_k_eta
-      wrtavg(indxEPB) = avg_eps_b
-      wrtavg(indxEPD) = avg_eps_d
-      wrtavg(indxWAR) = avg_erol
-      wrtavg(indxEPR) = avg_eps_r
+      wrtavg(indxHRM) = out_avg_hrm
+      wrtavg(indxFRQ) = out_avg_frq
+      wrtavg(indxWAC) = out_avg_action
+      wrtavg(indxWKX) = out_avg_k_xi
+      wrtavg(indxWKE) = out_avg_k_eta
+      wrtavg(indxEPB) = out_avg_eps_b
+      wrtavg(indxEPD) = out_avg_eps_d
+      wrtavg(indxWAR) = out_avg_erol
+      wrtavg(indxEPR) = out_avg_eps_r
    end subroutine init_wave_average_fields
 # endif
 #endif

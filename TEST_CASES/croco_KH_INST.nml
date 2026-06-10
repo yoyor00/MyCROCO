@@ -78,72 +78,72 @@
 /
 
 &croco_primary_history_fields
-  his_zeta = .true.
-  his_ubar = .true.
-  his_vbar = .false.
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .false.
 /
 
 &croco_primary_history_3d_fields
-  his_u = .true.
-  his_v = .false.
+  out_his_u = .true.
+  out_his_v = .false.
 /
 
 &croco_primary_history_tracer_fields
-  his_tracer = 1*.true.
+  out_his_tracer = 1*.true.
 /
 
 &croco_auxiliary_history_fields
-  his_rho = .true.
-  his_omega = .true.
-  his_w = .true.
-  his_akv = .false.
-  his_bostr = .false.
-  his_bustr = .false.
-  his_bvstr = .false.
-  his_wstr = .false.
-  his_ustr = .false.
-  his_vstr = .false.
+  out_his_rho = .true.
+  out_his_omega = .true.
+  out_his_w = .true.
+  out_his_akv = .false.
+  out_his_bostr = .false.
+  out_his_bustr = .false.
+  out_his_bvstr = .false.
+  out_his_wstr = .false.
+  out_his_ustr = .false.
+  out_his_vstr = .false.
 /
 
 &croco_temperature_history_fields
-  his_akt = .false.
-  his_shflx = .false.
-  his_shflx_rsw = .false.
+  out_his_akt = .false.
+  out_his_shflx = .false.
+  out_his_shflx_rsw = .false.
 /
 
 &croco_salinity_history_fields
-  his_aks = .false.
-  his_swflx = .false.
+  out_his_aks = .false.
+  out_his_swflx = .false.
 /
 
 &croco_bulk_flux_history_fields
-  his_shflx_rlw = .false.
-  his_shflx_lat = .false.
-  his_shflx_sen = .false.
+  out_his_shflx_rlw = .false.
+  out_his_shflx_lat = .false.
+  out_his_shflx_sen = .false.
 /
 
 &croco_bvf_history_fields
-  his_bvf = .false.
+  out_his_bvf = .false.
 /
 
 &croco_hbl_history_fields
-  his_hbl = .false.
+  out_his_hbl = .false.
 /
 
 &croco_lmd_bkpp_history_fields
-  his_hbbl = .false.
+  out_his_hbbl = .false.
 /
 
 &croco_vis_coef_history_fields
-  his_visc3d = .false.
+  out_his_visc3d = .false.
 /
 
 &croco_dif_coef_history_fields
-  his_diff3d = .false.
+  out_his_diff3d = .false.
 /
 
 &croco_biology_history_fields
-  his_hel = .false.
+  out_his_hel = .false.
 /
 
 

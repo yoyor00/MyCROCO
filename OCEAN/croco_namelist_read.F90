@@ -227,212 +227,212 @@ contains
 #ifdef STATIONS
       namelist /croco_stations/ ldefsta, nsta, nrpfsta, staposname, staname
 #endif
-      namelist /croco_primary_history_fields/ his_zeta, his_ubar, his_vbar
+      namelist /croco_primary_history_fields/ out_his_zeta, out_his_ubar, out_his_vbar
 #ifdef SOLVE3D
-      namelist /croco_primary_history_3d_fields/ his_u, his_v
+      namelist /croco_primary_history_3d_fields/ out_his_u, out_his_v
 # ifdef TRACERS
-      namelist /croco_primary_history_tracer_fields/ his_tracer
+      namelist /croco_primary_history_tracer_fields/ out_his_tracer
 # endif
 #endif
 #ifdef AVERAGES
-      namelist /croco_primary_average_fields/ avg_zeta, avg_ubar, avg_vbar
+      namelist /croco_primary_average_fields/ out_avg_zeta, out_avg_ubar, out_avg_vbar
 # ifdef SOLVE3D
-      namelist /croco_primary_3d_average_fields/ avg_u, avg_v
+      namelist /croco_primary_3d_average_fields/ out_avg_u, out_avg_v
 #  ifdef TRACERS
-      namelist /croco_primary_tracer_average_fields/ avg_tracer
+      namelist /croco_primary_tracer_average_fields/ out_avg_tracer
 #  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_TS
 # ifdef TRACERS
-      namelist /croco_diag3D_history_fields/ his_dia3D_tracer
+      namelist /croco_diag3D_history_fields/ out_his_dia3D_tracer
 #  ifdef DIAGNOSTICS_TS_MLD
-      namelist /croco_diag2D_history_fields/ his_dia2D_tracer
+      namelist /croco_diag2D_history_fields/ out_his_dia2D_tracer
 #  endif
 # endif
 # if defined AVERAGES && defined TRACERS
-      namelist /croco_diag3D_average_fields/ avg_dia3D_tracer
+      namelist /croco_diag3D_average_fields/ out_avg_dia3D_tracer
 #  ifdef DIAGNOSTICS_TS_MLD
-      namelist /croco_diag2D_average_fields/ avg_dia2D_tracer
+      namelist /croco_diag2D_average_fields/ out_avg_dia2D_tracer
 #  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV
-      namelist /croco_diagM_history_fields/ his_diagM_u, his_diagM_v
+      namelist /croco_diagM_history_fields/ out_his_diagM_u, out_his_diagM_v
 # ifdef AVERAGES
-      namelist /croco_diagM_average_fields/ avg_diagM_u, avg_diagM_v
+      namelist /croco_diagM_average_fields/ out_avg_diagM_u, out_avg_diagM_v
 # endif
 #endif
 #ifdef DIAGNOSTICS_VRT
-      namelist /croco_diags_vrt_history_fields/ his_diags_vrt
+      namelist /croco_diags_vrt_history_fields/ out_his_diags_vrt
 # ifdef AVERAGES
-      namelist /croco_diags_vrt_average_fields/ avg_diags_vrt
+      namelist /croco_diags_vrt_average_fields/ out_avg_diags_vrt
 # endif
 #endif
 #ifdef DIAGNOSTICS_KE
-      namelist /croco_diags_ek_history_fields/ his_diags_ek
+      namelist /croco_diags_ek_history_fields/ out_his_diags_ek
 # ifdef AVERAGES
-      namelist /croco_diags_ek_average_fields/ avg_diags_ek
+      namelist /croco_diags_ek_average_fields/ out_avg_diags_ek
 # endif
 #endif
 #if defined DIAGNOSTICS_PV && defined TRACERS
-      namelist /croco_diags_pv_history_fields/ his_diags_pv_tracer
+      namelist /croco_diags_pv_history_fields/ out_his_diags_pv_tracer
 # ifdef AVERAGES
-      namelist /croco_diags_pv_average_fields/ avg_diags_pv_tracer
+      namelist /croco_diags_pv_average_fields/ out_avg_diags_pv_tracer
 # endif
 #endif
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
 # ifdef AVERAGES
-      namelist /croco_diags_eddy_average_fields/ avg_diags_eddy
+      namelist /croco_diags_eddy_average_fields/ out_avg_diags_eddy
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
-      namelist /croco_diagbioFlux_history_fields/ his_diagbioFlux
-      namelist /croco_diagbioVSink_history_fields/ his_diagbioVSink
+      namelist /croco_diagbioFlux_history_fields/ out_his_diagbioFlux
+      namelist /croco_diagbioVSink_history_fields/ out_his_diagbioVSink
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      namelist /croco_diagbioGasExc_history_fields/ his_diagbioGasExc
+      namelist /croco_diagbioGasExc_history_fields/ out_his_diagbioGasExc
 # endif
 # ifdef AVERAGES
-      namelist /croco_diagbioFlux_average_fields/ avg_diagbioFlux
-      namelist /croco_diagbioVSink_average_fields/ avg_diagbioVSink
+      namelist /croco_diagbioFlux_average_fields/ out_avg_diagbioFlux
+      namelist /croco_diagbioVSink_average_fields/ out_avg_diagbioVSink
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      namelist /croco_diagbioGasExc_average_fields/ avg_diagbioGasExc
+      namelist /croco_diagbioGasExc_average_fields/ out_avg_diagbioGasExc
 #  endif
 # endif
 #endif
 #ifdef STOGEN
-      namelist /croco_stochastic_history_fields/ his_xi2d, his_xi3d
+      namelist /croco_stochastic_history_fields/ out_his_xi2d, out_his_xi3d
 #endif
 #if defined SOLVE3D && defined GLS_MIXING
-      namelist /croco_gls_history_fields/ his_tke, his_gls, his_lscale
+      namelist /croco_gls_history_fields/ out_his_tke, out_his_gls, out_his_lscale
 #endif
 #if defined AVERAGES && defined SOLVE3D && defined GLS_MIXING
-      namelist /croco_gls_averages_fields/ avg_tke, avg_gls, avg_lscale
+      namelist /croco_gls_averages_fields/ out_avg_tke, out_avg_gls, out_avg_lscale
 #endif
 #if defined ABL1D && !defined XIOS
       namelist /croco_abl_history_fields/ &
-         his_abl_pu_dta, his_abl_pv_dta, his_abl_pt_dta, &
-         his_abl_pq_dta, his_abl_pgu_dta, his_abl_pgv_dta, &
-         his_abl_u_abl, his_abl_v_abl, his_abl_t_abl, his_abl_q_abl, &
-         his_abl_tke_abl, his_abl_mxlm_abl, his_abl_mxld_abl, &
-         his_abl_avm_abl, his_abl_avt_abl, his_abl_ablh_abl, &
-         his_abl_zr_abl, his_abl_zw_abl, his_abl_Hzr_abl, his_abl_Hzw_abl
+         out_his_abl_pu_dta, out_his_abl_pv_dta, out_his_abl_pt_dta, &
+         out_his_abl_pq_dta, out_his_abl_pgu_dta, out_his_abl_pgv_dta, &
+         out_his_abl_u_abl, out_his_abl_v_abl, out_his_abl_t_abl, out_his_abl_q_abl, &
+         out_his_abl_tke_abl, out_his_abl_mxlm_abl, out_his_abl_mxld_abl, &
+         out_his_abl_avm_abl, out_his_abl_avt_abl, out_his_abl_ablh_abl, &
+         out_his_abl_zr_abl, out_his_abl_zw_abl, out_his_abl_Hzr_abl, out_his_abl_Hzw_abl
 # ifdef AVERAGES
       namelist /croco_abl_averages_fields/ &
-         avg_abl_pu_dta, avg_abl_pv_dta, avg_abl_pt_dta, &
-         avg_abl_pq_dta, avg_abl_pgu_dta, avg_abl_pgv_dta, &
-         avg_abl_u_abl, avg_abl_v_abl, avg_abl_t_abl, avg_abl_q_abl, &
-         avg_abl_tke_abl, avg_abl_mxlm_abl, avg_abl_mxld_abl, &
-         avg_abl_avm_abl, avg_abl_avt_abl, avg_abl_ablh_abl, &
-         avg_abl_zr_abl, avg_abl_zw_abl, avg_abl_Hzr_abl, avg_abl_Hzw_abl
+         out_avg_abl_pu_dta, out_avg_abl_pv_dta, out_avg_abl_pt_dta, &
+         out_avg_abl_pq_dta, out_avg_abl_pgu_dta, out_avg_abl_pgv_dta, &
+         out_avg_abl_u_abl, out_avg_abl_v_abl, out_avg_abl_t_abl, out_avg_abl_q_abl, &
+         out_avg_abl_tke_abl, out_avg_abl_mxlm_abl, out_avg_abl_mxld_abl, &
+         out_avg_abl_avm_abl, out_avg_abl_avt_abl, out_avg_abl_ablh_abl, &
+         out_avg_abl_zr_abl, out_avg_abl_zw_abl, out_avg_abl_Hzr_abl, out_avg_abl_Hzw_abl
 # endif
 #endif
 #if defined OUTPUTS_SURFACE && !defined XIOS
-      namelist /croco_surf_history_fields/ his_surf
+      namelist /croco_surf_history_fields/ out_his_surf
 # ifdef AVERAGES
-      namelist /croco_surf_average_fields/ avg_surf
+      namelist /croco_surf_average_fields/ out_avg_surf
 # endif
 #endif
 # if defined SOLVE3D || defined RIP
       namelist /croco_auxiliary_history_fields/ &
-         his_rho, his_omega, his_w, his_akv, &
-         his_bostr, his_bustr, his_bvstr, his_wstr, his_ustr, his_vstr
+         out_his_rho, out_his_omega, out_his_w, out_his_akv, &
+         out_his_bostr, out_his_bustr, out_his_bvstr, out_his_wstr, out_his_ustr, out_his_vstr
 # endif
 # if defined SOLVE3D && defined TEMPERATURE
-      namelist /croco_temperature_history_fields/ his_akt, his_shflx, his_shflx_rsw
+      namelist /croco_temperature_history_fields/ out_his_akt, out_his_shflx, out_his_shflx_rsw
 # endif
 # if defined SOLVE3D && defined SALINITY
-      namelist /croco_salinity_history_fields/ his_aks, his_swflx
+      namelist /croco_salinity_history_fields/ out_his_aks, out_his_swflx
 # endif
 # if defined SOLVE3D && defined BULK_FLUX
-      namelist /croco_bulk_flux_history_fields/ his_shflx_rlw, his_shflx_lat, his_shflx_sen
+      namelist /croco_bulk_flux_history_fields/ out_his_shflx_rlw, out_his_shflx_lat, out_his_shflx_sen
 # endif
 # if defined SOLVE3D && defined BHFLUX
-      namelist /croco_bhflux_history_fields/ his_bhflx
+      namelist /croco_bhflux_history_fields/ out_his_bhflx
 # endif
 # if defined SOLVE3D && defined BWFLUX && defined SALINITY
-      namelist /croco_bwflux_history_fields/ his_bwflx
+      namelist /croco_bwflux_history_fields/ out_his_bwflx
 # endif
 # if defined SOLVE3D && \
       (defined ANA_VMIX||defined LMD_MIXING||\
       defined LMD_SKPP||defined LMD_BKPP||\
       defined GLS_MIXING)
-      namelist /croco_bvf_history_fields/ his_bvf
+      namelist /croco_bvf_history_fields/ out_his_bvf
 # endif
 # if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
-      namelist /croco_hbl_history_fields/ his_hbl
+      namelist /croco_hbl_history_fields/ out_his_hbl
 # endif
 # if defined SOLVE3D && defined LMD_BKPP
-      namelist /croco_lmd_bkpp_history_fields/ his_hbbl
+      namelist /croco_lmd_bkpp_history_fields/ out_his_hbbl
 # endif
 # if defined SOLVE3D && defined VIS_COEF_3D
-      namelist /croco_vis_coef_history_fields/ his_visc3d
+      namelist /croco_vis_coef_history_fields/ out_his_visc3d
 # endif
 # if defined SOLVE3D && defined DIF_COEF_3D
-      namelist /croco_dif_coef_history_fields/ his_diff3d
+      namelist /croco_dif_coef_history_fields/ out_his_diff3d
 # endif
 # if defined SOLVE3D && defined BIOLOGY && !defined PISCES
-      namelist /croco_biology_history_fields/ his_hel
+      namelist /croco_biology_history_fields/ out_his_hel
 # endif
 # if defined SOLVE3D && defined BIO_NChlPZD
-      namelist /croco_bio_nchlpzd_history_fields/ his_chc, his_u10, his_kvo2, his_o2sat
+      namelist /croco_bio_nchlpzd_history_fields/ out_his_chc, out_his_u10, out_his_kvo2, out_his_o2sat
 # endif
 # if defined SOLVE3D && defined BIO_BioEBUS
-      namelist /croco_bio_bioebus_history_fields/ his_aou, his_wind10
+      namelist /croco_bio_bioebus_history_fields/ out_his_aou, out_his_wind10
 # endif
 # if defined SOLVE3D && defined MORPHODYN
-      namelist /croco_morphodyn_history_fields/ his_hm
+      namelist /croco_morphodyn_history_fields/ out_his_hm
 # endif
 # if defined AVERAGES && defined SOLVE3D
       namelist /croco_auxiliary_averages_fields/ &
-         avg_rho, avg_omega, avg_w, avg_akv, &
-         avg_bostr, avg_bustr, avg_bvstr, avg_wstr, avg_ustr, avg_vstr
+         out_avg_rho, out_avg_omega, out_avg_w, out_avg_akv, &
+         out_avg_bostr, out_avg_bustr, out_avg_bvstr, out_avg_wstr, out_avg_ustr, out_avg_vstr
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
-      namelist /croco_temperature_averages_fields/ avg_akt, avg_shflx, avg_shflx_rsw
+      namelist /croco_temperature_averages_fields/ out_avg_akt, out_avg_shflx, out_avg_shflx_rsw
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined SALINITY
-      namelist /croco_salinity_averages_fields/ avg_aks, avg_swflx
+      namelist /croco_salinity_averages_fields/ out_avg_aks, out_avg_swflx
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
-      namelist /croco_bulk_flux_averages_fields/ avg_shflx_rlw, avg_shflx_lat, avg_shflx_sen
+      namelist /croco_bulk_flux_averages_fields/ out_avg_shflx_rlw, out_avg_shflx_lat, out_avg_shflx_sen
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BHFLUX
-      namelist /croco_bhflux_averages_fields/ avg_bhflx
+      namelist /croco_bhflux_averages_fields/ out_avg_bhflx
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
-      namelist /croco_bwflux_averages_fields/ avg_bwflx
+      namelist /croco_bwflux_averages_fields/ out_avg_bwflx
 # endif
 # if defined AVERAGES && defined SOLVE3D && \
       (defined ANA_VMIX||defined LMD_MIXING||\
       defined LMD_SKPP||defined LMD_BKPP||\
       defined GLS_MIXING)
-      namelist /croco_bvf_averages_fields/ avg_bvf
+      namelist /croco_bvf_averages_fields/ out_avg_bvf
 # endif
 # if defined AVERAGES && defined SOLVE3D && \
       (defined LMD_SKPP||defined GLS_MIXING)
-      namelist /croco_hbl_averages_fields/ avg_hbl
+      namelist /croco_hbl_averages_fields/ out_avg_hbl
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
-      namelist /croco_lmd_bkpp_averages_fields/ avg_hbbl
+      namelist /croco_lmd_bkpp_averages_fields/ out_avg_hbbl
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
-      namelist /croco_vis_coef_averages_fields/ avg_visc3d
+      namelist /croco_vis_coef_averages_fields/ out_avg_visc3d
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
-      namelist /croco_dif_coef_averages_fields/ avg_diff3d
+      namelist /croco_dif_coef_averages_fields/ out_avg_diff3d
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
-      namelist /croco_biology_averages_fields/ avg_hel
+      namelist /croco_biology_averages_fields/ out_avg_hel
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
-      namelist /croco_bio_nchlpzd_averages_fields/ avg_chc, avg_u10, avg_kvo2, avg_o2sat
+      namelist /croco_bio_nchlpzd_averages_fields/ out_avg_chc, out_avg_u10, out_avg_kvo2, out_avg_o2sat
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
-      namelist /croco_bio_bioebus_averages_fields/ avg_aou, avg_wind10
+      namelist /croco_bio_bioebus_averages_fields/ out_avg_aou, out_avg_wind10
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
-      namelist /croco_morphodyn_averages_fields/ avg_hm
+      namelist /croco_morphodyn_averages_fields/ out_avg_hm
 # endif
 #ifdef STATIONS
       namelist /croco_station_fields/ sta_grd, sta_temp, sta_salt, &
@@ -440,49 +440,49 @@ contains
 #endif
 #if defined SOLVE3D && defined SEDIMENT
       namelist /croco_sediment_history_fields/ &
-         his_sed_athk, his_sed_bthk, his_sed_bpor
-      namelist /croco_sediment_bfra_history_fields/ his_sed_bfra
+         out_his_sed_athk, out_his_sed_bthk, out_his_sed_bpor
+      namelist /croco_sediment_bfra_history_fields/ out_his_sed_bfra
 # ifdef SUSPLOAD
       namelist /croco_sediment_suspload_history_fields/ &
-         his_sed_dflx, his_sed_eflx
+         out_his_sed_dflx, out_his_sed_eflx
 # endif
 # ifdef BEDLOAD
       namelist /croco_sediment_bedload_history_fields/ &
-         his_sed_bdlu, his_sed_bdlv
+         out_his_sed_bdlu, out_his_sed_bdlv
 # endif
 # if defined MIXED_BED || defined COHESIVE_BED
-      namelist /croco_sediment_cohesive_history_fields/ his_sed_btcr
+      namelist /croco_sediment_cohesive_history_fields/ out_his_sed_btcr
 # endif
 #endif
 #ifdef BBL
       namelist /croco_bbl_history_fields/ &
-         his_abed, his_hripple, his_lripple, his_zbnot, his_zbapp, &
-         his_bostrw
+         out_his_abed, out_his_hripple, out_his_lripple, out_his_zbnot, out_his_zbapp, &
+         out_his_bostrw
 #endif
 #ifdef MRL_WCI
-      namelist /croco_wci_history_fields/ his_sup, his_ust2d, his_vst2d
+      namelist /croco_wci_history_fields/ out_his_sup, out_his_ust2d, out_his_vst2d
 # ifdef SOLVE3D
       namelist /croco_wci_history_3d_fields/ &
-         his_ust, his_vst, his_wst, his_akb, his_akw, his_kvf, &
-         his_calp, his_kaps
+         out_his_ust, out_his_vst, out_his_wst, out_his_akb, out_his_akw, out_his_kvf, &
+         out_his_calp, out_his_kaps
 # endif
 # ifdef AVERAGES
-      namelist /croco_wci_average_fields/ avg_sup, avg_ust2d, avg_vst2d
+      namelist /croco_wci_average_fields/ out_avg_sup, out_avg_ust2d, out_avg_vst2d
 #  ifdef SOLVE3D
       namelist /croco_wci_average_3d_fields/ &
-         avg_ust, avg_vst, avg_wst, avg_akb, avg_akw, avg_kvf, &
-         avg_calp, avg_kaps
+         out_avg_ust, out_avg_vst, out_avg_wst, out_avg_akb, out_avg_akw, out_avg_kvf, &
+         out_avg_calp, out_avg_kaps
 #  endif
 # endif
 #endif
 #if defined MRL_WCI || defined OW_COUPLING
       namelist /croco_wave_history_fields/ &
-         his_hrm, his_frq, his_action, his_k_xi, his_k_eta, &
-         his_eps_b, his_eps_d, his_erol, his_eps_r
+         out_his_hrm, out_his_frq, out_his_action, out_his_k_xi, out_his_k_eta, &
+         out_his_eps_b, out_his_eps_d, out_his_erol, out_his_eps_r
 # ifdef AVERAGES
       namelist /croco_wave_average_fields/ &
-         avg_hrm, avg_frq, avg_action, avg_k_xi, avg_k_eta, &
-         avg_eps_b, avg_eps_d, avg_erol, avg_eps_r
+         out_avg_hrm, out_avg_frq, out_avg_action, out_avg_k_xi, out_avg_k_eta, &
+         out_avg_eps_b, out_avg_eps_d, out_avg_erol, out_avg_eps_r
 # endif
 #endif
 #ifdef ONLINE
@@ -562,62 +562,62 @@ contains
 #  if !defined LMD_MIXING
       if (.not. allocated(Akt_bak)) then; allocate (Akt_bak(NT)); Akt_bak = 1.e-6; end if
 #  endif
-      if (.not. allocated(his_tracer)) then; allocate (his_tracer(NT)); his_tracer = .true.; end if
+      if (.not. allocated(out_his_tracer)) then; allocate (out_his_tracer(NT)); out_his_tracer = .true.; end if
 #  if defined AVERAGES
-      if (.not. allocated(avg_tracer)) then; allocate (avg_tracer(NT)); avg_tracer = .true.; end if
+      if (.not. allocated(out_avg_tracer)) then; allocate (out_avg_tracer(NT)); out_avg_tracer = .true.; end if
 #  endif
 #  ifdef DIAGNOSTICS_TS
-      if (.not. allocated(his_dia3D_tracer)) then; allocate (his_dia3D_tracer(NT)); his_dia3D_tracer = .true.; end if
+      if (.not. allocated(out_his_dia3D_tracer)) then; allocate (out_his_dia3D_tracer(NT)); out_his_dia3D_tracer = .true.; end if
 #   ifdef DIAGNOSTICS_TS_MLD
-      if (.not. allocated(his_dia2D_tracer)) then; allocate (his_dia2D_tracer(NT)); his_dia2D_tracer = .true.; end if
+      if (.not. allocated(out_his_dia2D_tracer)) then; allocate (out_his_dia2D_tracer(NT)); out_his_dia2D_tracer = .true.; end if
 #   endif
 #   ifdef AVERAGES
-      if (.not. allocated(avg_dia3D_tracer)) then; allocate (avg_dia3D_tracer(NT)); avg_dia3D_tracer = .true.; end if
+      if (.not. allocated(out_avg_dia3D_tracer)) then; allocate (out_avg_dia3D_tracer(NT)); out_avg_dia3D_tracer = .true.; end if
 #    ifdef DIAGNOSTICS_TS_MLD
-      if (.not. allocated(avg_dia2D_tracer)) then; allocate (avg_dia2D_tracer(NT)); avg_dia2D_tracer = .true.; end if
+      if (.not. allocated(out_avg_dia2D_tracer)) then; allocate (out_avg_dia2D_tracer(NT)); out_avg_dia2D_tracer = .true.; end if
 #    endif
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_PV
-      if (.not. allocated(his_diags_pv_tracer)) then; allocate (his_diags_pv_tracer(NT)); his_diags_pv_tracer = .true.; end if
+      if (.not. allocated(out_his_diags_pv_tracer)) then; allocate (out_his_diags_pv_tracer(NT)); out_his_diags_pv_tracer = .true.; end if
 #   ifdef AVERAGES
-      if (.not. allocated(avg_diags_pv_tracer)) then; allocate (avg_diags_pv_tracer(NT)); avg_diags_pv_tracer = .true.; end if
+      if (.not. allocated(out_avg_diags_pv_tracer)) then; allocate (out_avg_diags_pv_tracer(NT)); out_avg_diags_pv_tracer = .true.; end if
 #   endif
 #  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
-      if (.not. allocated(his_diagbioFlux)) then; allocate (his_diagbioFlux(NumFluxTerms)); his_diagbioFlux = .true.; end if
-      if (.not. allocated(his_diagbioVSink)) then; allocate (his_diagbioVSink(NumVSinkTerms)); his_diagbioVSink = .true.; end if
+      if (.not. allocated(out_his_diagbioFlux)) then; allocate (out_his_diagbioFlux(NumFluxTerms)); out_his_diagbioFlux = .true.; end if
+      if (.not. allocated(out_his_diagbioVSink)) then; allocate (out_his_diagbioVSink(NumVSinkTerms)); out_his_diagbioVSink = .true.; end if
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      if (.not. allocated(his_diagbioGasExc)) then; allocate (his_diagbioGasExc(NumGasExcTerms)); his_diagbioGasExc = .true.; end if
+      if (.not. allocated(out_his_diagbioGasExc)) then; allocate (out_his_diagbioGasExc(NumGasExcTerms)); out_his_diagbioGasExc = .true.; end if
 # endif
 # ifdef AVERAGES
-      if (.not. allocated(avg_diagbioFlux)) then; allocate (avg_diagbioFlux(NumFluxTerms)); avg_diagbioFlux = .true.; end if
-      if (.not. allocated(avg_diagbioVSink)) then; allocate (avg_diagbioVSink(NumVSinkTerms)); avg_diagbioVSink = .true.; end if
+      if (.not. allocated(out_avg_diagbioFlux)) then; allocate (out_avg_diagbioFlux(NumFluxTerms)); out_avg_diagbioFlux = .true.; end if
+      if (.not. allocated(out_avg_diagbioVSink)) then; allocate (out_avg_diagbioVSink(NumVSinkTerms)); out_avg_diagbioVSink = .true.; end if
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      if (.not. allocated(avg_diagbioGasExc)) then; allocate (avg_diagbioGasExc(NumGasExcTerms)); avg_diagbioGasExc = .true.; end if
+      if (.not. allocated(out_avg_diagbioGasExc)) then; allocate (out_avg_diagbioGasExc(NumGasExcTerms)); out_avg_diagbioGasExc = .true.; end if
 #  endif
 # endif
 #endif
 #if defined SOLVE3D && defined SEDIMENT
-      if (.not. allocated(his_sed_bfra)) then
-         allocate (his_sed_bfra(NST)); his_sed_bfra = .true.
+      if (.not. allocated(out_his_sed_bfra)) then
+         allocate (out_his_sed_bfra(NST)); out_his_sed_bfra = .true.
       end if
 # ifdef SUSPLOAD
-      if (.not. allocated(his_sed_dflx)) then
-         allocate (his_sed_dflx(NST)); his_sed_dflx = .true.
+      if (.not. allocated(out_his_sed_dflx)) then
+         allocate (out_his_sed_dflx(NST)); out_his_sed_dflx = .true.
       end if
-      if (.not. allocated(his_sed_eflx)) then
-         allocate (his_sed_eflx(NST)); his_sed_eflx = .true.
+      if (.not. allocated(out_his_sed_eflx)) then
+         allocate (out_his_sed_eflx(NST)); out_his_sed_eflx = .true.
       end if
 # endif
 # ifdef BEDLOAD
-      if (.not. allocated(his_sed_bdlu)) then
-         allocate (his_sed_bdlu(NST)); his_sed_bdlu = .true.
+      if (.not. allocated(out_his_sed_bdlu)) then
+         allocate (out_his_sed_bdlu(NST)); out_his_sed_bdlu = .true.
       end if
-      if (.not. allocated(his_sed_bdlv)) then
-         allocate (his_sed_bdlv(NST)); his_sed_bdlv = .true.
+      if (.not. allocated(out_his_sed_bdlv)) then
+         allocate (out_his_sed_bdlv(NST)); out_his_sed_bdlv = .true.
       end if
 # endif
 #endif

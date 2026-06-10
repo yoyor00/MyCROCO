@@ -708,27 +708,27 @@ MODULE croco_namelist
 #endif
 
    ! &croco_primary_history_fields / &croco_primary_history_3d_fields
-   logical :: his_zeta = .true.
-   logical :: his_ubar = .true.
-   logical :: his_vbar = .true.
+   logical :: out_his_zeta = .true.
+   logical :: out_his_ubar = .true.
+   logical :: out_his_vbar = .true.
 #ifdef SOLVE3D
-   logical :: his_u = .true.
-   logical :: his_v = .true.
+   logical :: out_his_u = .true.
+   logical :: out_his_v = .true.
 # ifdef TRACERS
-   logical, allocatable :: his_tracer(:)
+   logical, allocatable :: out_his_tracer(:)
 # endif
 #endif
 
 #ifdef AVERAGES
    ! &croco_primary_average_fields / &croco_primary_3d_average_fields
-   logical :: avg_zeta = .true.
-   logical :: avg_ubar = .true.
-   logical :: avg_vbar = .true.
+   logical :: out_avg_zeta = .true.
+   logical :: out_avg_ubar = .true.
+   logical :: out_avg_vbar = .true.
 # ifdef SOLVE3D
-   logical :: avg_u = .true.
-   logical :: avg_v = .true.
+   logical :: out_avg_u = .true.
+   logical :: out_avg_v = .true.
 #  ifdef TRACERS
-   logical, allocatable :: avg_tracer(:)
+   logical, allocatable :: out_avg_tracer(:)
 #  endif
 # endif
 #endif
@@ -736,80 +736,80 @@ MODULE croco_namelist
 #ifdef DIAGNOSTICS_TS
 # ifdef TRACERS
    ! &croco_diag3D_history_fields
-   logical, allocatable :: his_dia3D_tracer(:)
+   logical, allocatable :: out_his_dia3D_tracer(:)
 #  ifdef DIAGNOSTICS_TS_MLD
    ! &croco_diag2D_history_fields
-   logical, allocatable :: his_dia2D_tracer(:)
+   logical, allocatable :: out_his_dia2D_tracer(:)
 #  endif
 # endif
 # if defined AVERAGES && defined TRACERS
    ! &croco_diag3D_average_fields
-   logical, allocatable :: avg_dia3D_tracer(:)
+   logical, allocatable :: out_avg_dia3D_tracer(:)
 #  ifdef DIAGNOSTICS_TS_MLD
    ! &croco_diag2D_average_fields
-   logical, allocatable :: avg_dia2D_tracer(:)
+   logical, allocatable :: out_avg_dia2D_tracer(:)
 #  endif
 # endif
 #endif
 
 #ifdef DIAGNOSTICS_UV
    ! &croco_diagM_history_fields
-   logical :: his_diagM_u = .true.
-   logical :: his_diagM_v = .true.
+   logical :: out_his_diagM_u = .true.
+   logical :: out_his_diagM_v = .true.
 # ifdef AVERAGES
    ! &croco_diagM_average_fields
-   logical :: avg_diagM_u = .true.
-   logical :: avg_diagM_v = .true.
+   logical :: out_avg_diagM_u = .true.
+   logical :: out_avg_diagM_v = .true.
 # endif
 #endif
 
 #ifdef DIAGNOSTICS_VRT
    ! &croco_diags_vrt_history_fields
-   logical :: his_diags_vrt = .true.
+   logical :: out_his_diags_vrt = .true.
 # ifdef AVERAGES
    ! &croco_diags_vrt_average_fields
-   logical :: avg_diags_vrt = .true.
+   logical :: out_avg_diags_vrt = .true.
 # endif
 #endif
 
 #ifdef DIAGNOSTICS_KE
    ! &croco_diags_ek_history_fields
-   logical :: his_diags_ek = .true.
+   logical :: out_his_diags_ek = .true.
 # ifdef AVERAGES
    ! &croco_diags_ek_average_fields
-   logical :: avg_diags_ek = .true.
+   logical :: out_avg_diags_ek = .true.
 # endif
 #endif
 
 #if defined DIAGNOSTICS_PV && defined TRACERS
    ! &croco_diags_pv_history_fields
-   logical, allocatable :: his_diags_pv_tracer(:)
+   logical, allocatable :: out_his_diags_pv_tracer(:)
 # ifdef AVERAGES
    ! &croco_diags_pv_average_fields
-   logical, allocatable :: avg_diags_pv_tracer(:)
+   logical, allocatable :: out_avg_diags_pv_tracer(:)
 # endif
 #endif
 
 #if defined DIAGNOSTICS_EDDY && !defined XIOS
 # ifdef AVERAGES
    ! &croco_diags_eddy_average_fields
-   logical :: avg_diags_eddy = .true.
+   logical :: out_avg_diags_eddy = .true.
 # endif
 #endif
 
 #ifdef DIAGNOSTICS_BIO
    ! &croco_diagbioFlux/VSink/GasExc_history_fields
-   logical, allocatable :: his_diagbioFlux(:)
-   logical, allocatable :: his_diagbioVSink(:)
+   logical, allocatable :: out_his_diagbioFlux(:)
+   logical, allocatable :: out_his_diagbioVSink(:)
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-   logical, allocatable :: his_diagbioGasExc(:)
+   logical, allocatable :: out_his_diagbioGasExc(:)
 # endif
 # ifdef AVERAGES
    ! &croco_diagbioFlux/VSink/GasExc_average_fields
-   logical, allocatable :: avg_diagbioFlux(:)
-   logical, allocatable :: avg_diagbioVSink(:)
+   logical, allocatable :: out_avg_diagbioFlux(:)
+   logical, allocatable :: out_avg_diagbioVSink(:)
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-   logical, allocatable :: avg_diagbioGasExc(:)
+   logical, allocatable :: out_avg_diagbioGasExc(:)
 #  endif
 # endif
 #endif
@@ -832,325 +832,325 @@ MODULE croco_namelist
 
 #ifdef STOGEN
    ! &croco_stochastic_history_fields
-   logical :: his_xi2d = .true.
-   logical :: his_xi3d = .true.
+   logical :: out_his_xi2d = .true.
+   logical :: out_his_xi3d = .true.
 #endif
 
 #if defined SOLVE3D && defined GLS_MIXING
    ! &croco_gls_history_fields
-   logical :: his_tke = .true.
-   logical :: his_gls = .true.
-   logical :: his_lscale = .true.
+   logical :: out_his_tke = .true.
+   logical :: out_his_gls = .true.
+   logical :: out_his_lscale = .true.
 # ifdef AVERAGES
    ! &croco_gls_averages_fields
-   logical :: avg_tke = .true.
-   logical :: avg_gls = .true.
-   logical :: avg_lscale = .true.
+   logical :: out_avg_tke = .true.
+   logical :: out_avg_gls = .true.
+   logical :: out_avg_lscale = .true.
 # endif
 #endif
 
 #if defined SOLVE3D && defined SEDIMENT
    ! &croco_sediment_history_fields
-   logical :: his_sed_athk = .true.
-   logical :: his_sed_bthk = .true.
-   logical :: his_sed_bpor = .true.
+   logical :: out_his_sed_athk = .true.
+   logical :: out_his_sed_bthk = .true.
+   logical :: out_his_sed_bpor = .true.
    ! &croco_sediment_bfra_history_fields
-   logical, allocatable :: his_sed_bfra(:)
+   logical, allocatable :: out_his_sed_bfra(:)
 # ifdef SUSPLOAD
    ! &croco_sediment_suspload_history_fields
-   logical, allocatable :: his_sed_dflx(:)
-   logical, allocatable :: his_sed_eflx(:)
+   logical, allocatable :: out_his_sed_dflx(:)
+   logical, allocatable :: out_his_sed_eflx(:)
 # endif
 # ifdef BEDLOAD
    ! &croco_sediment_bedload_history_fields
-   logical, allocatable :: his_sed_bdlu(:)
-   logical, allocatable :: his_sed_bdlv(:)
+   logical, allocatable :: out_his_sed_bdlu(:)
+   logical, allocatable :: out_his_sed_bdlv(:)
 # endif
 # if defined MIXED_BED || defined COHESIVE_BED
    ! &croco_sediment_cohesive_history_fields
-   logical :: his_sed_btcr = .true.
+   logical :: out_his_sed_btcr = .true.
 # endif
 #endif
 
 #ifdef BBL
    ! &croco_bbl_history_fields
-   logical :: his_abed = .true.
-   logical :: his_hripple = .true.
-   logical :: his_lripple = .true.
-   logical :: his_zbnot = .true.
-   logical :: his_zbapp = .true.
-   logical :: his_bostrw = .true.
+   logical :: out_his_abed = .true.
+   logical :: out_his_hripple = .true.
+   logical :: out_his_lripple = .true.
+   logical :: out_his_zbnot = .true.
+   logical :: out_his_zbapp = .true.
+   logical :: out_his_bostrw = .true.
 #endif
 
 #ifdef MRL_WCI
    ! &croco_wci_history_fields
-   logical :: his_sup = .true.
-   logical :: his_ust2d = .true.
-   logical :: his_vst2d = .true.
+   logical :: out_his_sup = .true.
+   logical :: out_his_ust2d = .true.
+   logical :: out_his_vst2d = .true.
 # ifdef SOLVE3D
    ! &croco_wci_history_3d_fields
-   logical :: his_ust = .true.
-   logical :: his_vst = .true.
-   logical :: his_wst = .true.
-   logical :: his_akb = .true.
-   logical :: his_akw = .true.
-   logical :: his_kvf = .true.
-   logical :: his_calp = .true.
-   logical :: his_kaps = .true.
+   logical :: out_his_ust = .true.
+   logical :: out_his_vst = .true.
+   logical :: out_his_wst = .true.
+   logical :: out_his_akb = .true.
+   logical :: out_his_akw = .true.
+   logical :: out_his_kvf = .true.
+   logical :: out_his_calp = .true.
+   logical :: out_his_kaps = .true.
 # endif
 # ifdef AVERAGES
    ! &croco_wci_average_fields
-   logical :: avg_sup = .true.
-   logical :: avg_ust2d = .true.
-   logical :: avg_vst2d = .true.
+   logical :: out_avg_sup = .true.
+   logical :: out_avg_ust2d = .true.
+   logical :: out_avg_vst2d = .true.
 #  ifdef SOLVE3D
    ! &croco_wci_average_3d_fields
-   logical :: avg_ust = .true.
-   logical :: avg_vst = .true.
-   logical :: avg_wst = .true.
-   logical :: avg_akb = .true.
-   logical :: avg_akw = .true.
-   logical :: avg_kvf = .true.
-   logical :: avg_calp = .true.
-   logical :: avg_kaps = .true.
+   logical :: out_avg_ust = .true.
+   logical :: out_avg_vst = .true.
+   logical :: out_avg_wst = .true.
+   logical :: out_avg_akb = .true.
+   logical :: out_avg_akw = .true.
+   logical :: out_avg_kvf = .true.
+   logical :: out_avg_calp = .true.
+   logical :: out_avg_kaps = .true.
 #  endif
 # endif
 #endif
 
 #if defined MRL_WCI || defined OW_COUPLING
    ! &croco_wave_history_fields
-   logical :: his_hrm = .true.
-   logical :: his_frq = .true.
-   logical :: his_action = .true.
-   logical :: his_k_xi = .true.
-   logical :: his_k_eta = .true.
-   logical :: his_eps_b = .true.
-   logical :: his_eps_d = .true.
-   logical :: his_erol = .true.
-   logical :: his_eps_r = .true.
+   logical :: out_his_hrm = .true.
+   logical :: out_his_frq = .true.
+   logical :: out_his_action = .true.
+   logical :: out_his_k_xi = .true.
+   logical :: out_his_k_eta = .true.
+   logical :: out_his_eps_b = .true.
+   logical :: out_his_eps_d = .true.
+   logical :: out_his_erol = .true.
+   logical :: out_his_eps_r = .true.
 # ifdef AVERAGES
    ! &croco_wave_average_fields
-   logical :: avg_hrm = .true.
-   logical :: avg_frq = .true.
-   logical :: avg_action = .true.
-   logical :: avg_k_xi = .true.
-   logical :: avg_k_eta = .true.
-   logical :: avg_eps_b = .true.
-   logical :: avg_eps_d = .true.
-   logical :: avg_erol = .true.
-   logical :: avg_eps_r = .true.
+   logical :: out_avg_hrm = .true.
+   logical :: out_avg_frq = .true.
+   logical :: out_avg_action = .true.
+   logical :: out_avg_k_xi = .true.
+   logical :: out_avg_k_eta = .true.
+   logical :: out_avg_eps_b = .true.
+   logical :: out_avg_eps_d = .true.
+   logical :: out_avg_erol = .true.
+   logical :: out_avg_eps_r = .true.
 # endif
 #endif
 
 #if defined ABL1D && !defined XIOS
    ! &croco_abl_history_fields
-   logical :: his_abl_pu_dta = .true.
-   logical :: his_abl_pv_dta = .true.
-   logical :: his_abl_pt_dta = .true.
-   logical :: his_abl_pq_dta = .true.
-   logical :: his_abl_pgu_dta = .true.
-   logical :: his_abl_pgv_dta = .true.
-   logical :: his_abl_u_abl = .true.
-   logical :: his_abl_v_abl = .true.
-   logical :: his_abl_t_abl = .true.
-   logical :: his_abl_q_abl = .true.
-   logical :: his_abl_tke_abl = .true.
-   logical :: his_abl_mxlm_abl = .true.
-   logical :: his_abl_mxld_abl = .true.
-   logical :: his_abl_avm_abl = .true.
-   logical :: his_abl_avt_abl = .true.
-   logical :: his_abl_ablh_abl = .true.
-   logical :: his_abl_zr_abl = .true.
-   logical :: his_abl_zw_abl = .true.
-   logical :: his_abl_Hzr_abl = .true.
-   logical :: his_abl_Hzw_abl = .true.
+   logical :: out_his_abl_pu_dta = .true.
+   logical :: out_his_abl_pv_dta = .true.
+   logical :: out_his_abl_pt_dta = .true.
+   logical :: out_his_abl_pq_dta = .true.
+   logical :: out_his_abl_pgu_dta = .true.
+   logical :: out_his_abl_pgv_dta = .true.
+   logical :: out_his_abl_u_abl = .true.
+   logical :: out_his_abl_v_abl = .true.
+   logical :: out_his_abl_t_abl = .true.
+   logical :: out_his_abl_q_abl = .true.
+   logical :: out_his_abl_tke_abl = .true.
+   logical :: out_his_abl_mxlm_abl = .true.
+   logical :: out_his_abl_mxld_abl = .true.
+   logical :: out_his_abl_avm_abl = .true.
+   logical :: out_his_abl_avt_abl = .true.
+   logical :: out_his_abl_ablh_abl = .true.
+   logical :: out_his_abl_zr_abl = .true.
+   logical :: out_his_abl_zw_abl = .true.
+   logical :: out_his_abl_Hzr_abl = .true.
+   logical :: out_his_abl_Hzw_abl = .true.
 # ifdef AVERAGES
    ! &croco_abl_averages_fields
-   logical :: avg_abl_pu_dta = .true.
-   logical :: avg_abl_pv_dta = .true.
-   logical :: avg_abl_pt_dta = .true.
-   logical :: avg_abl_pq_dta = .true.
-   logical :: avg_abl_pgu_dta = .true.
-   logical :: avg_abl_pgv_dta = .true.
-   logical :: avg_abl_u_abl = .true.
-   logical :: avg_abl_v_abl = .true.
-   logical :: avg_abl_t_abl = .true.
-   logical :: avg_abl_q_abl = .true.
-   logical :: avg_abl_tke_abl = .true.
-   logical :: avg_abl_mxlm_abl = .true.
-   logical :: avg_abl_mxld_abl = .true.
-   logical :: avg_abl_avm_abl = .true.
-   logical :: avg_abl_avt_abl = .true.
-   logical :: avg_abl_ablh_abl = .true.
-   logical :: avg_abl_zr_abl = .true.
-   logical :: avg_abl_zw_abl = .true.
-   logical :: avg_abl_Hzr_abl = .true.
-   logical :: avg_abl_Hzw_abl = .true.
+   logical :: out_avg_abl_pu_dta = .true.
+   logical :: out_avg_abl_pv_dta = .true.
+   logical :: out_avg_abl_pt_dta = .true.
+   logical :: out_avg_abl_pq_dta = .true.
+   logical :: out_avg_abl_pgu_dta = .true.
+   logical :: out_avg_abl_pgv_dta = .true.
+   logical :: out_avg_abl_u_abl = .true.
+   logical :: out_avg_abl_v_abl = .true.
+   logical :: out_avg_abl_t_abl = .true.
+   logical :: out_avg_abl_q_abl = .true.
+   logical :: out_avg_abl_tke_abl = .true.
+   logical :: out_avg_abl_mxlm_abl = .true.
+   logical :: out_avg_abl_mxld_abl = .true.
+   logical :: out_avg_abl_avm_abl = .true.
+   logical :: out_avg_abl_avt_abl = .true.
+   logical :: out_avg_abl_ablh_abl = .true.
+   logical :: out_avg_abl_zr_abl = .true.
+   logical :: out_avg_abl_zw_abl = .true.
+   logical :: out_avg_abl_Hzr_abl = .true.
+   logical :: out_avg_abl_Hzw_abl = .true.
 # endif
 #endif
 
 # if defined SOLVE3D || defined RIP
    ! &croco_auxiliary_history_fields  (SOLVE3D basics + surface stress)
-   logical :: his_rho = .false.
-   logical :: his_omega = .false.
-   logical :: his_w = .false.
-   logical :: his_akv = .false.
-   logical :: his_bostr = .false.
-   logical :: his_bustr = .false.
-   logical :: his_bvstr = .false.
-   logical :: his_wstr = .false.
-   logical :: his_ustr = .false.
-   logical :: his_vstr = .false.
+   logical :: out_his_rho = .false.
+   logical :: out_his_omega = .false.
+   logical :: out_his_w = .false.
+   logical :: out_his_akv = .false.
+   logical :: out_his_bostr = .false.
+   logical :: out_his_bustr = .false.
+   logical :: out_his_bvstr = .false.
+   logical :: out_his_wstr = .false.
+   logical :: out_his_ustr = .false.
+   logical :: out_his_vstr = .false.
 # endif
 # if defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_history_fields
-   logical :: his_akt = .false.
-   logical :: his_shflx = .false.
-   logical :: his_shflx_rsw = .false.
+   logical :: out_his_akt = .false.
+   logical :: out_his_shflx = .false.
+   logical :: out_his_shflx_rsw = .false.
 # endif
 # if defined SOLVE3D && defined SALINITY
    ! &croco_salinity_history_fields
-   logical :: his_aks = .false.
-   logical :: his_swflx = .false.
+   logical :: out_his_aks = .false.
+   logical :: out_his_swflx = .false.
 # endif
 # if defined SOLVE3D && defined BULK_FLUX
    ! &croco_bulk_flux_history_fields
-   logical :: his_shflx_rlw = .false.
-   logical :: his_shflx_lat = .false.
-   logical :: his_shflx_sen = .false.
+   logical :: out_his_shflx_rlw = .false.
+   logical :: out_his_shflx_lat = .false.
+   logical :: out_his_shflx_sen = .false.
 # endif
 # if defined SOLVE3D && defined BHFLUX
    ! &croco_bhflux_history_fields
-   logical :: his_bhflx = .false.
+   logical :: out_his_bhflx = .false.
 # endif
 # if defined SOLVE3D && defined BWFLUX && defined SALINITY
    ! &croco_bwflux_history_fields
-   logical :: his_bwflx = .false.
+   logical :: out_his_bwflx = .false.
 # endif
 # if defined SOLVE3D && \
    (defined ANA_VMIX||defined LMD_MIXING||\
    defined LMD_SKPP||defined LMD_BKPP||\
    defined GLS_MIXING)
    ! &croco_bvf_history_fields
-   logical :: his_bvf = .false.
+   logical :: out_his_bvf = .false.
 # endif
 # if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
    ! &croco_hbl_history_fields
-   logical :: his_hbl = .false.
+   logical :: out_his_hbl = .false.
 # endif
 # if defined SOLVE3D && defined LMD_BKPP
    ! &croco_lmd_bkpp_history_fields
-   logical :: his_hbbl = .false.
+   logical :: out_his_hbbl = .false.
 # endif
 # if defined SOLVE3D && defined VIS_COEF_3D
    ! &croco_vis_coef_history_fields
-   logical :: his_visc3d = .false.
+   logical :: out_his_visc3d = .false.
 # endif
 # if defined SOLVE3D && defined DIF_COEF_3D
    ! &croco_dif_coef_history_fields
-   logical :: his_diff3d = .false.
+   logical :: out_his_diff3d = .false.
 # endif
 # if defined SOLVE3D && defined BIOLOGY && !defined PISCES
    ! &croco_biology_history_fields
-   logical :: his_hel = .false.
+   logical :: out_his_hel = .false.
 # endif
 # if defined SOLVE3D && defined BIO_NChlPZD
    ! &croco_bio_nchlpzd_history_fields
-   logical :: his_chc = .false.
-   logical :: his_u10 = .false.
-   logical :: his_kvo2 = .false.
-   logical :: his_o2sat = .false.
+   logical :: out_his_chc = .false.
+   logical :: out_his_u10 = .false.
+   logical :: out_his_kvo2 = .false.
+   logical :: out_his_o2sat = .false.
 # endif
 # if defined SOLVE3D && defined BIO_BioEBUS
    ! &croco_bio_bioebus_history_fields
-   logical :: his_aou = .false.
-   logical :: his_wind10 = .false.
+   logical :: out_his_aou = .false.
+   logical :: out_his_wind10 = .false.
 # endif
 # if defined SOLVE3D && defined MORPHODYN
    ! &croco_morphodyn_history_fields
-   logical :: his_hm = .false.
+   logical :: out_his_hm = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D
    ! &croco_auxiliary_averages_fields  (SOLVE3D basics + surface stress)
-   logical :: avg_rho = .false.
-   logical :: avg_omega = .false.
-   logical :: avg_w = .false.
-   logical :: avg_akv = .false.
-   logical :: avg_bostr = .false.
-   logical :: avg_bustr = .false.
-   logical :: avg_bvstr = .false.
-   logical :: avg_wstr = .false.
-   logical :: avg_ustr = .false.
-   logical :: avg_vstr = .false.
+   logical :: out_avg_rho = .false.
+   logical :: out_avg_omega = .false.
+   logical :: out_avg_w = .false.
+   logical :: out_avg_akv = .false.
+   logical :: out_avg_bostr = .false.
+   logical :: out_avg_bustr = .false.
+   logical :: out_avg_bvstr = .false.
+   logical :: out_avg_wstr = .false.
+   logical :: out_avg_ustr = .false.
+   logical :: out_avg_vstr = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
    ! &croco_temperature_averages_fields
-   logical :: avg_akt = .false.
-   logical :: avg_shflx = .false.
-   logical :: avg_shflx_rsw = .false.
+   logical :: out_avg_akt = .false.
+   logical :: out_avg_shflx = .false.
+   logical :: out_avg_shflx_rsw = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined SALINITY
    ! &croco_salinity_averages_fields
-   logical :: avg_aks = .false.
-   logical :: avg_swflx = .false.
+   logical :: out_avg_aks = .false.
+   logical :: out_avg_swflx = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
    ! &croco_bulk_flux_averages_fields
-   logical :: avg_shflx_rlw = .false.
-   logical :: avg_shflx_lat = .false.
-   logical :: avg_shflx_sen = .false.
+   logical :: out_avg_shflx_rlw = .false.
+   logical :: out_avg_shflx_lat = .false.
+   logical :: out_avg_shflx_sen = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BHFLUX
    ! &croco_bhflux_averages_fields
-   logical :: avg_bhflx = .false.
+   logical :: out_avg_bhflx = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
    ! &croco_bwflux_averages_fields
-   logical :: avg_bwflx = .false.
+   logical :: out_avg_bwflx = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && \
    (defined ANA_VMIX||defined LMD_MIXING||\
    defined LMD_SKPP||defined LMD_BKPP||\
    defined GLS_MIXING)
    ! &croco_bvf_averages_fields
-   logical :: avg_bvf = .false.
+   logical :: out_avg_bvf = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && \
    (defined LMD_SKPP||defined GLS_MIXING)
    ! &croco_hbl_averages_fields
-   logical :: avg_hbl = .false.
+   logical :: out_avg_hbl = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
    ! &croco_lmd_bkpp_averages_fields
-   logical :: avg_hbbl = .false.
+   logical :: out_avg_hbbl = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
    ! &croco_vis_coef_averages_fields
-   logical :: avg_visc3d = .false.
+   logical :: out_avg_visc3d = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
    ! &croco_dif_coef_averages_fields
-   logical :: avg_diff3d = .false.
+   logical :: out_avg_diff3d = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
    ! &croco_biology_averages_fields
-   logical :: avg_hel = .false.
+   logical :: out_avg_hel = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
    ! &croco_bio_nchlpzd_averages_fields
-   logical :: avg_chc = .false.
-   logical :: avg_u10 = .false.
-   logical :: avg_kvo2 = .false.
-   logical :: avg_o2sat = .false.
+   logical :: out_avg_chc = .false.
+   logical :: out_avg_u10 = .false.
+   logical :: out_avg_kvo2 = .false.
+   logical :: out_avg_o2sat = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
    ! &croco_bio_bioebus_averages_fields
-   logical :: avg_aou = .false.
-   logical :: avg_wind10 = .false.
+   logical :: out_avg_aou = .false.
+   logical :: out_avg_wind10 = .false.
 # endif
 # if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
    ! &croco_morphodyn_averages_fields
-   logical :: avg_hm = .false.
+   logical :: out_avg_hm = .false.
 # endif
 
 END MODULE croco_namelist

@@ -135,191 +135,191 @@
 /
 
 &croco_gls_history_fields
-  his_tke = .true.
-  his_gls = .true.
-  his_lscale = .true.
+  out_his_tke = .true.
+  out_his_gls = .true.
+  out_his_lscale = .true.
 /
 
 &croco_gls_averages_fields
-  avg_tke = .true.
-  avg_gls = .true.
-  avg_lscale = .true.
+  out_avg_tke = .true.
+  out_avg_gls = .true.
+  out_avg_lscale = .true.
 /
 
 &croco_bbl_history_fields
-  his_abed = .false.
-  his_hripple = .false.
-  his_lripple = .false.
-  his_zbnot = .false.
-  his_zbapp = .false.
-  his_bostrw = .false.
+  out_his_abed = .false.
+  out_his_hripple = .false.
+  out_his_lripple = .false.
+  out_his_zbnot = .false.
+  out_his_zbapp = .false.
+  out_his_bostrw = .false.
 /
 
 &croco_wci_history_fields
-  his_sup = .true.
-  his_ust2d = .true.
-  his_vst2d = .true.
+  out_his_sup = .true.
+  out_his_ust2d = .true.
+  out_his_vst2d = .true.
 /
 
 &croco_wci_history_3d_fields
-  his_ust = .true.
-  his_vst = .true.
-  his_wst = .true.
-  his_akb = .true.
-  his_akw = .true.
-  his_kvf = .true.
-  his_calp = .true.
-  his_kaps = .true.
+  out_his_ust = .true.
+  out_his_vst = .true.
+  out_his_wst = .true.
+  out_his_akb = .true.
+  out_his_akw = .true.
+  out_his_kvf = .true.
+  out_his_calp = .true.
+  out_his_kaps = .true.
 /
 
 &croco_primary_history_fields
-  his_zeta = .true.
-  his_ubar = .true.
-  his_vbar = .true.
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
 /
 
 &croco_primary_history_3d_fields
-  his_u = .true.
-  his_v = .true.
+  out_his_u = .true.
+  out_his_v = .true.
 /
 
 &croco_primary_history_tracer_fields
-  his_tracer = 1*.true.
+  out_his_tracer = 1*.true.
 /
 
 &croco_primary_average_fields
-  avg_zeta = .true.
-  avg_ubar = .true.
-  avg_vbar = .true.
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
 /
 
 &croco_primary_3d_average_fields
-  avg_u = .true.
-  avg_v = .true.
+  out_avg_u = .true.
+  out_avg_v = .true.
 /
 
 &croco_primary_tracer_average_fields
-  avg_tracer = 1*.true.
+  out_avg_tracer = 1*.true.
 /
 
 &croco_auxiliary_history_fields
-  his_rho = .false.
-  his_omega = .false.
-  his_w = .true.
-  his_akv = .true.
-  his_bostr = .true.
-  his_wstr = .true.
-  his_ustr = .true.
-  his_vstr = .true.
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .true.
+  out_his_bostr = .true.
+  out_his_wstr = .true.
+  out_his_ustr = .true.
+  out_his_vstr = .true.
 /
 
 &croco_temperature_history_fields
-  his_akt = .false.
-  his_shflx = .true.
-  his_shflx_rsw = .true.
+  out_his_akt = .false.
+  out_his_shflx = .true.
+  out_his_shflx_rsw = .true.
 /
 
 &croco_salinity_history_fields
-  his_aks = .false.
-  his_swflx = .true.
+  out_his_aks = .false.
+  out_his_swflx = .true.
 /
 
 &croco_bulk_flux_history_fields
-  his_shflx_rlw = .true.
-  his_shflx_lat = .true.
-  his_shflx_sen = .true.
+  out_his_shflx_rlw = .true.
+  out_his_shflx_lat = .true.
+  out_his_shflx_sen = .true.
 /
 
 &croco_hbl_history_fields
-  his_hbl = .true.
+  out_his_hbl = .true.
 /
 
 &croco_lmd_bkpp_history_fields
-  his_hbbl = .true.
+  out_his_hbbl = .true.
 /
 
 &croco_vis_coef_history_fields
-  his_visc3d = .false.
+  out_his_visc3d = .false.
 /
 
 &croco_dif_coef_history_fields
-  his_diff3d = .false.
+  out_his_diff3d = .false.
 /
 
 &croco_biology_history_fields
-  his_hel = .true.
+  out_his_hel = .true.
 /
 
 &croco_auxiliary_averages_fields
-  avg_rho = .false.
-  avg_omega = .false.
-  avg_w = .true.
-  avg_akv = .true.
-  avg_bostr = .true.
-  avg_wstr = .true.
-  avg_ustr = .true.
-  avg_vstr = .true.
+  out_avg_rho = .false.
+  out_avg_omega = .false.
+  out_avg_w = .true.
+  out_avg_akv = .true.
+  out_avg_bostr = .true.
+  out_avg_wstr = .true.
+  out_avg_ustr = .true.
+  out_avg_vstr = .true.
 /
 
 &croco_temperature_averages_fields
-  avg_akt = .false.
-  avg_shflx = .true.
-  avg_shflx_rsw = .true.
+  out_avg_akt = .false.
+  out_avg_shflx = .true.
+  out_avg_shflx_rsw = .true.
 /
 
 &croco_salinity_averages_fields
-  avg_aks = .false.
-  avg_swflx = .true.
+  out_avg_aks = .false.
+  out_avg_swflx = .true.
 /
 
 &croco_bulk_flux_averages_fields
-  avg_shflx_rlw = .true.
-  avg_shflx_lat = .true.
-  avg_shflx_sen = .true.
+  out_avg_shflx_rlw = .true.
+  out_avg_shflx_lat = .true.
+  out_avg_shflx_sen = .true.
 /
 
 &croco_hbl_averages_fields
-  avg_hbl = .true.
+  out_avg_hbl = .true.
 /
 
 &croco_lmd_bkpp_averages_fields
-  avg_hbbl = .true.
+  out_avg_hbbl = .true.
 /
 
 &croco_vis_coef_averages_fields
-  avg_visc3d = .false.
+  out_avg_visc3d = .false.
 /
 
 &croco_dif_coef_averages_fields
-  avg_diff3d = .false.
+  out_avg_diff3d = .false.
 /
 
 &croco_biology_averages_fields
-  avg_hel = .true.
+  out_avg_hel = .true.
 /
 
 &croco_diag3D_history_fields
-  his_dia3D_tracer = 1*.true.
+  out_his_dia3D_tracer = 1*.true.
 /
 
 &croco_diag2D_history_fields
-  his_dia2D_tracer = 1*.true.
+  out_his_dia2D_tracer = 1*.true.
 /
 
 &croco_diag3D_average_fields
-  avg_dia3D_tracer = 1*.true.
+  out_avg_dia3D_tracer = 1*.true.
 /
 
 &croco_diag2D_average_fields
-  avg_dia2D_tracer = 1*.true.
+  out_avg_dia2D_tracer = 1*.true.
 /
 
 &croco_diags_eddy_history_fields
-  his_diags_eddy = .false.
+  out_his_diags_eddy = .false.
 /
 
 &croco_diags_eddy_average_fields
-  avg_diags_eddy = .true.
+  out_avg_diags_eddy = .true.
 /
 
 

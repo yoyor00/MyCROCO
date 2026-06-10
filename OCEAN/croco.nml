@@ -117,33 +117,33 @@
 /
 
 &croco_primary_history_fields
-  his_zeta = .true.
-  his_ubar = .true.
-  his_vbar = .true.
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
 /
 
 &croco_primary_history_3d_fields
-  his_u = .true.
-  his_v = .true.
+  out_his_u = .true.
+  out_his_v = .true.
 /
 
 &croco_primary_history_tracer_fields
-  his_tracer = 2*.true.
+  out_his_tracer = 2*.true.
 /
 
 &croco_primary_average_fields
-  avg_zeta = .true.
-  avg_ubar = .true.
-  avg_vbar = .true.
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
 /
 
 &croco_primary_3d_average_fields
-  avg_u = .true.
-  avg_v = .true.
+  out_avg_u = .true.
+  out_avg_v = .true.
 /
 
 &croco_primary_tracer_average_fields
-  avg_tracer = 2*.true.
+  out_avg_tracer = 2*.true.
 /
 
 &croco_averages
