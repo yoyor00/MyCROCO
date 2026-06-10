@@ -13,13 +13,7 @@
                                                 ! Read initial conditions for the
       subroutine get_initial (req_rec, tindx)   ! primitive variables from NetCDF
                                                 ! initialization file.
-      use croco_namelist, only: dt, ntimes, nrrec, ininame
-#ifdef AVERAGES
-      use croco_namelist, only: ntsavg
-#endif
-#ifdef XIOS
-      use croco_namelist, only: xios_origin_date
-#endif
+      use croco_namelist
       implicit none
 #include "param.h"
 #include "scalars.h"

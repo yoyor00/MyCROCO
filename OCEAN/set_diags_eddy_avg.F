@@ -15,12 +15,6 @@
       subroutine set_diags_eddy_avg(tile)
 
 !      USE param
-#ifdef DIAGNOSTICS_EDDY
-      use croco_namelist, only: ldefdiags_eddy_avg,
-     &     ntsdiags_eddy_avg, nwrtdiags_eddy_avg
-#endif
-
-
       implicit none
       integer tile
 # include "param.h"
@@ -30,6 +24,10 @@
       end
 
       subroutine set_diags_eddy_avg_tile(Istr,Iend,Jstr,Jend)
+#if defined DIAGNOSTICS_EDDY && ! defined XIOS
+      use croco_namelist, only: ldefdiags_eddy_avg,
+     &     ntsdiags_eddy_avg, nwrtdiags_eddy_avg, rho0
+#endif
 !
 ! Compute time-averaged fields within a tile.
 ! ------- ------------- ------ ------ - -----

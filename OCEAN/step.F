@@ -19,9 +19,6 @@
 # if defined OA_COUPLING || defined OW_COUPLING
       use croco_namelist, only: ntimes, dt
 # endif
-#if defined OUTPUTS_SURFACE && defined AVERAGES && !defined XIOS
-      use croco_namelist, only: ldefsurf_avg
-#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -113,10 +110,7 @@ C$OMP END PARALLEL
 !====================================================================
 !
       subroutine prestep3D_thread()
-      use croco_namelist, only: dt, ndtfast
-#if defined ABL1D && defined AVERAGES && !defined XIOS
-      use croco_namelist, only: ldefablavg
-#endif
+      use croco_namelist
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS
