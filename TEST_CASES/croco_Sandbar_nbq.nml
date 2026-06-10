@@ -126,14 +126,6 @@
   mld_crit_D = 3.d-2
   mld_crit_T = 2.d-1
 /
-
-&croco_diags_eddy
-  ldefdiags_eddy = .false.
-  nwrtdiags_eddy = 6000
-  nrpfdiags_eddy = 0
-  diags_eddyname = "sandbar_diags_eddy.nc"
-/
-
 &croco_diags_eddy_avg
   ldefdiags_eddy_avg = .true.
   ntsdiags_eddy_avg = 1

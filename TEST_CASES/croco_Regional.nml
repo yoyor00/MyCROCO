@@ -268,14 +268,6 @@
   nrpfdiags_pv_avg = 0
   diags_pvname_avg = "CROCO_FILES/croco_diags_pv_avg.nc"
 /
-
-&croco_diags_eddy
-  ldefdiags_eddy = .true.
-  nwrtdiags_eddy = 48
-  nrpfdiags_eddy = 0
-  diags_eddyname = "CROCO_FILES/croco_diags_eddy.nc"
-/
-
 &croco_diags_eddy_avg
   ldefdiags_eddy_avg = .true.
   ntsdiags_eddy_avg = 1
