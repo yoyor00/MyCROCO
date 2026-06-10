@@ -144,6 +144,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Support :
   - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
+  - use matrix capabilities (#519)
 
 ### Contributors on this release
 
