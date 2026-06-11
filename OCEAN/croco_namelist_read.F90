@@ -579,24 +579,40 @@ contains
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_PV
-      if (.not. allocated(out_his_diags_pv_tracer)) then; allocate (out_his_diags_pv_tracer(NT)); out_his_diags_pv_tracer = .true.; end if
+      if (.not. allocated(out_his_diags_pv_tracer)) then
+         allocate (out_his_diags_pv_tracer(NT)); out_his_diags_pv_tracer = .true.
+      end if
 #   ifdef AVERAGES
-      if (.not. allocated(out_avg_diags_pv_tracer)) then; allocate (out_avg_diags_pv_tracer(NT)); out_avg_diags_pv_tracer = .true.; end if
+      if (.not. allocated(out_avg_diags_pv_tracer)) then
+         allocate (out_avg_diags_pv_tracer(NT)); out_avg_diags_pv_tracer = .true.
+      end if
 #   endif
 #  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
-      if (.not. allocated(out_his_diagbioFlux)) then; allocate (out_his_diagbioFlux(NumFluxTerms)); out_his_diagbioFlux = .true.; end if
-      if (.not. allocated(out_his_diagbioVSink)) then; allocate (out_his_diagbioVSink(NumVSinkTerms)); out_his_diagbioVSink = .true.; end if
+      if (.not. allocated(out_his_diagbioFlux)) then
+         allocate (out_his_diagbioFlux(NumFluxTerms)); out_his_diagbioFlux = .true.
+      end if
+      if (.not. allocated(out_his_diagbioVSink)) then
+         allocate (out_his_diagbioVSink(NumVSinkTerms)); out_his_diagbioVSink = .true.
+      end if
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      if (.not. allocated(out_his_diagbioGasExc)) then; allocate (out_his_diagbioGasExc(NumGasExcTerms)); out_his_diagbioGasExc = .true.; end if
+      if (.not. allocated(out_his_diagbioGasExc)) then
+         allocate (out_his_diagbioGasExc(NumGasExcTerms)); out_his_diagbioGasExc = .true.
+      end if
 # endif
 # ifdef AVERAGES
-      if (.not. allocated(out_avg_diagbioFlux)) then; allocate (out_avg_diagbioFlux(NumFluxTerms)); out_avg_diagbioFlux = .true.; end if
-      if (.not. allocated(out_avg_diagbioVSink)) then; allocate (out_avg_diagbioVSink(NumVSinkTerms)); out_avg_diagbioVSink = .true.; end if
+      if (.not. allocated(out_avg_diagbioFlux)) then
+         allocate (out_avg_diagbioFlux(NumFluxTerms)); out_avg_diagbioFlux = .true.
+      end if
+      if (.not. allocated(out_avg_diagbioVSink)) then
+         allocate (out_avg_diagbioVSink(NumVSinkTerms)); out_avg_diagbioVSink = .true.
+      end if
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      if (.not. allocated(out_avg_diagbioGasExc)) then; allocate (out_avg_diagbioGasExc(NumGasExcTerms)); out_avg_diagbioGasExc = .true.; end if
+      if (.not. allocated(out_avg_diagbioGasExc)) then
+         allocate (out_avg_diagbioGasExc(NumGasExcTerms)); out_avg_diagbioGasExc = .true.
+      end if
 #  endif
 # endif
 #endif

@@ -362,7 +362,7 @@ debug_agrif_realist_complement:
   tags:
     - ci.inria.fr
     - large
-  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev
+  image : registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev_nml
   script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
