@@ -117,6 +117,12 @@
   dianameM = "rip_diaM.nc"
 /
 
+&croco_sediment_history_fields
+  out_his_sed_athk = .false.
+  out_his_sed_bthk = .false.
+  out_his_sed_bpor = .false.
+/
+
 &croco_bbl_history_fields
   out_his_abed = .false.
   out_his_hripple = .false.

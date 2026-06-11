@@ -208,6 +208,12 @@
   sta_vel = .true.
 /
 
+&croco_sediment_history_fields
+  out_his_sed_athk = .true.
+  out_his_sed_bthk = .true.
+  out_his_sed_bpor = .true.
+/
+
 &croco_bbl_history_fields
   out_his_abed = .true.
   out_his_hripple = .false.
@@ -378,12 +384,6 @@
   psource_Lsrc(2,1) = T
   psource_Tsrc0(1,1) = 5.
   psource_Tsrc0(2,1) = 5.
-/
-
-&croco_psource_ncfile_data
-  psource_qbarname = "CROCO_FILES/croco_runoff.nc"
-  psource_Isrc(   1) =    24, psource_Jsrc(   1) =    35, psource_Dsrc(   1) =     0, psource_qbardir(   1) =    -1
-  psource_Isrc(   2) =    35, psource_Jsrc(   2) =    13, psource_Dsrc(   2) =     1, psource_qbardir(   2) =    -1
 /
 
 

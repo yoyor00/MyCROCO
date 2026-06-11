@@ -314,11 +314,12 @@ MAPPINGS = [
     ("station_fields", 0, 3, "bool", "&croco_station_fields", "sta_rho"),
     ("station_fields", 0, 4, "bool", "&croco_station_fields", "sta_vel"),
     # sediment_history_fields: athk bthk bpor bfra(1:NST) [dflx eflx](NST) [bdlu bdlv](NST) [btcr]
-    # Note: positions 3+N*NST onwards depend on CPP keys — convert only the fixed prefix.
-    ("sediment_history_fields", 1, 0, "bool", "&croco_sediment_history_fields", "out_his_sed_athk"),
-    ("sediment_history_fields", 1, 1, "bool", "&croco_sediment_history_fields", "out_his_sed_bthk"),
-    ("sediment_history_fields", 1, 2, "bool", "&croco_sediment_history_fields", "out_his_sed_bpor"),
-    ("sediment_history_fields", 1, 3, "bool_array:NST", "&croco_sediment_bfra_history_fields", "out_his_sed_bfra"),
+    # CPP-conditional fields (dflx/eflx/bdlu/bdlv/btcr) are handled by
+    # _build_sediment_extra_history_lines() because their offset depends on NST and CPP keys.
+    ("sediment_history_fields", 0, 0, "bool", "&croco_sediment_history_fields", "out_his_sed_athk"),
+    ("sediment_history_fields", 0, 1, "bool", "&croco_sediment_history_fields", "out_his_sed_bthk"),
+    ("sediment_history_fields", 0, 2, "bool", "&croco_sediment_history_fields", "out_his_sed_bpor"),
+    ("sediment_history_fields", 0, 3, "bool_array:NST", "&croco_sediment_bfra_history_fields", "out_his_sed_bfra"),
     # bbl_history_fields: abed hripple lripple zbnot zbapp bostrw
     ("bbl_history_fields", 0, 0, "bool", "&croco_bbl_history_fields", "out_his_abed"),
     ("bbl_history_fields", 0, 1, "bool", "&croco_bbl_history_fields", "out_his_hripple"),
@@ -410,7 +411,7 @@ MAPPINGS = [
     ("auxiliary_history_fields", 0, "Visc3d", "labeled_bool", "&croco_vis_coef_history_fields",    "out_his_visc3d"),
     ("auxiliary_history_fields", 0, "Diff3d", "labeled_bool", "&croco_dif_coef_history_fields",    "out_his_diff3d"),
     ("auxiliary_history_fields", 0, "HEL",    "labeled_bool", "&croco_biology_history_fields",     "out_his_hel"),
-    ("auxiliary_history_fields", 0, "Hm",     "labeled_bool", "&croco_morphodyn_history_fields",   "out_his_hm"),
+    ("auxiliary_history_fields", 0, "Hm",     "labeled_bool", "&croco_morphodyn_history_fields",   "out_his_hm",  "_morphodyn", ".true."),
     # auxiliary_averages: label-based (order varies per case)
     ("auxiliary_averages", 0, "rho",    "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_rho"),
     ("auxiliary_averages", 0, "Omega",  "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_omega"),
@@ -436,7 +437,7 @@ MAPPINGS = [
     ("auxiliary_averages", 0, "Visc3d", "labeled_bool", "&croco_vis_coef_averages_fields",    "out_avg_visc3d"),
     ("auxiliary_averages", 0, "Diff3d", "labeled_bool", "&croco_dif_coef_averages_fields",    "out_avg_diff3d"),
     ("auxiliary_averages", 0, "HEL",    "labeled_bool", "&croco_biology_averages_fields",     "out_avg_hel"),
-    ("auxiliary_averages", 0, "Hm",     "labeled_bool", "&croco_morphodyn_averages_fields",   "out_avg_hm"),
+    ("auxiliary_averages", 0, "Hm",     "labeled_bool", "&croco_morphodyn_averages_fields",   "out_avg_hm",  "_morphodyn", ".false."),
 
 
     ("diag3D_history_fields",       0, 0, "bool_array", "&croco_diag3D_history_fields",       "out_his_dia3D_tracer"),
@@ -465,6 +466,7 @@ MAPPINGS = [
 
 # Cards handled by dedicated code rather than the MAPPINGS table.
 SPECIAL_CARDS = {"psource", "psource_ncfile"}
+
 
 
 # ---------------------------------------------------------------------------
@@ -971,7 +973,108 @@ def _build_psource_lines(cards, params):
 
 
 # ---------------------------------------------------------------------------
+# Labeled_bool fallback handler
+# ---------------------------------------------------------------------------
+
+def _build_labeled_bool_fallback_lines(cards, headers, params, mappings):
+    """Emit labeled_bool fields that are absent from the .in header but declared
+    in the namelist
+
+    Operates on MAPPINGS rows that carry two extra fields (cpp_key, default):
+      (card, line, label, "labeled_bool", nml_block, nml_var, cpp_key, default)
+    - If the label IS in the .in header, MAPPINGS labeled_bool already handled it → skip.
+    - If NOT in the header and the CPP guard is active → emit the namelist default.
+    """
+    lines_by_block = {}
+    block_order = []
+    for row in mappings:
+        if len(row) < 8:
+            continue
+        card, _, label, typ, nml_block, nml_var, cpp_key, default = row
+        if typ != "labeled_bool":
+            continue
+        if card not in cards:
+            continue
+        hdr = [t.lower() for t in headers.get(card, [])]
+        if label.lower() in hdr:
+            continue  # already handled by MAPPINGS labeled_bool
+        if cpp_key and not params.get(cpp_key, False):
+            continue
+        if nml_block not in lines_by_block:
+            lines_by_block[nml_block] = []
+            block_order.append(nml_block)
+        lines_by_block[nml_block].append(f"  {nml_var} = {default}")
+
+    lines = []
+    for nml_block in block_order:
+        lines.append(nml_block)
+        lines.extend(lines_by_block[nml_block])
+        lines += ["/", ""]
+    return lines
+
+
+# ---------------------------------------------------------------------------
 # NML builder
+# ---------------------------------------------------------------------------
+# Sediment CPP-conditional output field handler
+# ---------------------------------------------------------------------------
+
+def _build_sediment_extra_history_lines(cards, params):
+    """Convert CPP-conditional sediment history fields: dflx/eflx (SUSPLOAD),
+    bdlu/bdlv (BEDLOAD), btcr (MIXED_BED or COHESIVE_BED).
+    Their position in the boolean array shifts with NST and active CPP keys,
+    so they cannot be expressed as fixed-offset MAPPINGS entries.
+    """
+    lines = []
+    if "sediment_history_fields" not in cards:
+        return lines
+    NST = params.get("NST", None)
+    if NST is None:
+        return lines
+    vlines = [l for l in cards["sediment_history_fields"] if l.strip()]
+    if not vlines:
+        return lines
+    tokens = expand_repeat(vlines[0].split())
+
+    offset = 3 + NST  # past: athk bthk bpor bfra(NST)
+
+    if params.get("_suspload", False):
+        dflx = tokens[offset:offset + NST]
+        eflx = tokens[offset + NST:offset + 2 * NST]
+        v1 = format_bool_array(dflx, NST)
+        v2 = format_bool_array(eflx, NST)
+        if v1 or v2:
+            lines.append("&croco_sediment_suspload_history_fields")
+            if v1:
+                lines.append(f"  out_his_sed_dflx = {v1}")
+            if v2:
+                lines.append(f"  out_his_sed_eflx = {v2}")
+            lines += ["/", ""]
+        offset += 2 * NST
+
+    if params.get("_bedload", False):
+        bdlu = tokens[offset:offset + NST]
+        bdlv = tokens[offset + NST:offset + 2 * NST]
+        v1 = format_bool_array(bdlu, NST)
+        v2 = format_bool_array(bdlv, NST)
+        if v1 or v2:
+            lines.append("&croco_sediment_bedload_history_fields")
+            if v1:
+                lines.append(f"  out_his_sed_bdlu = {v1}")
+            if v2:
+                lines.append(f"  out_his_sed_bdlv = {v2}")
+            lines += ["/", ""]
+        offset += 2 * NST
+
+    if params.get("_mixed_or_cohesive", False) and offset < len(tokens):
+        val = format_value(tokens[offset], "bool")
+        lines += ["&croco_sediment_cohesive_history_fields",
+                  f"  out_his_sed_btcr = {val}",
+                  "/", ""]
+
+    return lines
+
+
 # ---------------------------------------------------------------------------
 
 def build_nml(cards, headers, mappings, params):
@@ -1055,6 +1158,8 @@ def build_nml(cards, headers, mappings, params):
         lines.append("/")
         lines.append("")
     lines.extend(_build_psource_lines(cards, params))
+    lines.extend(_build_sediment_extra_history_lines(cards, params))
+    lines.extend(_build_labeled_bool_fallback_lines(cards, headers, params, mappings))
     lines += ["", "! End of namelist", ""]
     return "\n".join(lines)
 
@@ -1151,6 +1256,13 @@ Defaults (all auto-derived from croco.in.<Name>):
     # ---- Check CPP flags that affect special-card handling -------------------
     if cppdefs_path and os.path.isfile(cppdefs_path):
         params['_psource_ncfile'] = cpp_define_active(cppdefs_path, 'PSOURCE_NCFILE')
+        params['_suspload'] = cpp_define_active(cppdefs_path, 'SUSPLOAD')
+        params['_bedload'] = cpp_define_active(cppdefs_path, 'BEDLOAD')
+        params['_mixed_or_cohesive'] = (
+            cpp_define_active(cppdefs_path, 'MIXED_BED') or
+            cpp_define_active(cppdefs_path, 'COHESIVE_BED')
+        )
+        params['_morphodyn'] = cpp_define_active(cppdefs_path, 'MORPHODYN')
 
     # ---- Convert .in → .nml --------------------------------------------------
     cards, headers = parse_in_file(args.input)

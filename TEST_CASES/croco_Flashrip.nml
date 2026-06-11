@@ -97,6 +97,7 @@
   nrpfavg = 0
   avgname = "rip_avg.nc"
 /
+
 &croco_diags_eddy_avg
   ldefdiags_eddy_avg = .true.
   ntsdiags_eddy_avg = 1
@@ -239,10 +240,6 @@
 
 &croco_morphodyn_averages_fields
   out_avg_hm = .false.
-/
-
-&croco_diags_eddy_history_fields
-  out_his_diags_eddy = .false.
 /
 
 &croco_diags_eddy_average_fields

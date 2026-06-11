@@ -133,6 +133,16 @@
   out_his_lscale = .true.
 /
 
+&croco_sediment_history_fields
+  out_his_sed_athk = .true.
+  out_his_sed_bthk = .true.
+  out_his_sed_bpor = .true.
+/
+
+&croco_sediment_bfra_history_fields
+  out_his_sed_bfra = 2*.true.
+/
+
 &croco_bbl_history_fields
   out_his_abed = .true.
   out_his_hripple = .true.
@@ -311,6 +321,16 @@
 
 &croco_diag2D_average_fields
   out_avg_dia2D_tracer = 3*.true.
+/
+
+&croco_sediment_suspload_history_fields
+  out_his_sed_dflx = 2*.true.
+  out_his_sed_eflx = 2*.true.
+/
+
+&croco_sediment_bedload_history_fields
+  out_his_sed_bdlu = 2*.true.
+  out_his_sed_bdlv = 2*.true.
 /
 
 

@@ -1068,7 +1068,7 @@ MODULE croco_namelist
 # endif
 # if defined SOLVE3D && defined MORPHODYN
    ! &croco_morphodyn_history_fields
-   logical :: out_his_hm = .false.
+   logical :: out_his_hm = .true.
 # endif
 # if defined AVERAGES && defined SOLVE3D
    ! &croco_auxiliary_averages_fields  (SOLVE3D basics + surface stress)

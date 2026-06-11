@@ -130,6 +130,12 @@
   mld_crit_T = 2.d-1
 /
 
+&croco_sediment_history_fields
+  out_his_sed_athk = .true.
+  out_his_sed_bthk = .true.
+  out_his_sed_bpor = .true.
+/
+
 &croco_bbl_history_fields
   out_his_abed = .false.
   out_his_hripple = .false.

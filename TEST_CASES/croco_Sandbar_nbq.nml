@@ -126,6 +126,7 @@
   mld_crit_D = 3.d-2
   mld_crit_T = 2.d-1
 /
+
 &croco_diags_eddy_avg
   ldefdiags_eddy_avg = .true.
   ntsdiags_eddy_avg = 1
@@ -144,6 +145,12 @@
   out_avg_tke = .true.
   out_avg_gls = .true.
   out_avg_lscale = .true.
+/
+
+&croco_sediment_history_fields
+  out_his_sed_athk = .false.
+  out_his_sed_bthk = .false.
+  out_his_sed_bpor = .false.
 /
 
 &croco_bbl_history_fields
@@ -312,10 +319,6 @@
 
 &croco_diag2D_average_fields
   out_avg_dia2D_tracer = 1*.true.
-/
-
-&croco_diags_eddy_history_fields
-  out_his_diags_eddy = .false.
 /
 
 &croco_diags_eddy_average_fields

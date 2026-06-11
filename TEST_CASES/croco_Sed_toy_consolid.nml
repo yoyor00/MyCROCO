@@ -100,6 +100,16 @@
   out_his_lscale = .true.
 /
 
+&croco_sediment_history_fields
+  out_his_sed_athk = .true.
+  out_his_sed_bthk = .true.
+  out_his_sed_bpor = .true.
+/
+
+&croco_sediment_bfra_history_fields
+  out_his_sed_bfra = 4*.true.
+/
+
 &croco_primary_history_fields
   out_his_zeta = .true.
   out_his_ubar = .true.
@@ -161,6 +171,15 @@
 
 &croco_biology_history_fields
   out_his_hel = .true.
+/
+
+&croco_sediment_suspload_history_fields
+  out_his_sed_dflx = 4*.true.
+  out_his_sed_eflx = 4*.true.
+/
+
+&croco_sediment_cohesive_history_fields
+  out_his_sed_btcr = .true.
 /
 
 

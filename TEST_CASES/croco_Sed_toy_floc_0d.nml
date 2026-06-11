@@ -93,6 +93,12 @@
   out_his_lscale = .true.
 /
 
+&croco_sediment_history_fields
+  out_his_sed_athk = .true.
+  out_his_sed_bthk = .true.
+  out_his_sed_bpor = .true.
+/
+
 &croco_bbl_history_fields
   out_his_abed = .true.
   out_his_hripple = .true.
