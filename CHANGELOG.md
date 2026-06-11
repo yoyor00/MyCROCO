@@ -42,6 +42,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   to WAVE_MAKER_DATA (#518)
 
 - Fix time in surf average output file (#388)
+- Fix grid variables writing in average and diagnostic file (#522)
 
 ### Changed
 
