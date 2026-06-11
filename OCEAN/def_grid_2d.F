@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 #if !defined SOLVE3D
-      subroutine def_grid_2d (ncid, r2dgrd, u2dgrd, v2dgrd)
+      subroutine def_grid_2d (ncid, r2dgrd, u2dgrd, v2dgrd, nf_ftype)
 !
 ! Define grid variables in output NetCDF file for 2D configuration,
 ! which may be restart, history, averages, etc...
@@ -25,22 +25,12 @@
 !            u2dgrd  integer array of size 2, which contains NetCDF
 !                        IDs for dimensions 'xi_rho' and 'eta_u'.
       implicit none
-      integer ncid, r2dgrd(2), u2dgrd(2), v2dgrd(2)
-     &      , nf_ftype, varid, ierr
+      integer ncid, r2dgrd(2), u2dgrd(2), v2dgrd(2), nf_ftype
+     &      , varid, ierr
       character(len=30) strtmp
 # include "param.h"
 # include "ncscrum.h"
 # include "netcdf.inc"
-!
-! Decide about precision:
-!
-      if (ncid.eq.ncidrst) then
-        nf_ftype=NF_FTYPE
-        !nf_ftype=NF_FOUT
-      else
-        nf_ftype=NF_FOUT
-      endif
-!
 !
 ! Grid type switch: Spherical or Cartesian.
 !
