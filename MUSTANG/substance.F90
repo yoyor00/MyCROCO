@@ -683,8 +683,10 @@ CONTAINS
    ENDIF
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
+#ifdef MUSTANG
    ALLOCATE(l_outsandrouse(nvp))
    l_outsandrouse(:)=.false.
+#endif
 
 
 
