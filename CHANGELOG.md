@@ -95,7 +95,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove key_MUSTANG_lateralerosion replace by a boolean in 
     namelist (Issue #349)
   - remove key_sand2D, activation only by a boolean in 
-    namelist (Issue #351)
+    namelist (Issue #351 and #525)
   - remove MUSTANG_CORFLUX replace by a boolean in 
     namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
@@ -149,7 +149,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula
+  J. Gula, C. Mazoyer
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
