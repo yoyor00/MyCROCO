@@ -50,7 +50,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   (Issue #347)
 
 - Compilation : update on jobcomp (support for ifx and different version of gfortran, 
-  cleaning exit status, see !172 and Issue#176)
+  cleaning exit status, see !172 and Issue#176), 
+  update NETCDF paths default from nf-config and nc-config (Issue #473)
 
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
