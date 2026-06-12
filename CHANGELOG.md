@@ -30,6 +30,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
 - BENCH : Fix report check status in case of several files (#498)
+- BENCH : Fix label in plot_realist.py (#494)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
   2d and 3d U-momentum for northern open boundary conditions when 
