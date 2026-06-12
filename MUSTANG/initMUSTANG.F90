@@ -1082,7 +1082,7 @@ CONTAINS
  ! CVSED
   
        c_sedtot(:,:,:)=0.0_rsh
-       do iv=-1,nv_tot 
+       do iv=-1,ntrc_subs ! no fix substance in sed
  
         if (iv == -1) then
            nomcv='temp_sed'
