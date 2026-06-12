@@ -411,6 +411,7 @@
 #  undef  MORPHODYN
 #  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
+#  define key_noTSdiss_insed
 # endif
 
 #elif defined COASTAL
@@ -1739,6 +1740,7 @@
 #  define key_MUSTANG_V2
 #  define key_MUSTANG_bedload
 #  define key_tauskin_c_upwind
+#  define key_noTSdiss_insed
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE
@@ -1803,6 +1805,7 @@
 #   define GLS_MIXING
 #   define GLS_KOMEGA
 #  endif
+#  define key_noTSdiss_insed
 # endif
 
 
@@ -1917,6 +1920,7 @@
 # endif
 # ifdef MUSTANG
 #  undef  key_MUSTANG_V2
+#  define key_noTSdiss_insed
 # endif
 # define NO_FRCFILE
 
@@ -1970,6 +1974,7 @@
 # endif
 # ifdef MUSTANG
 #  undef  key_MUSTANG_V2
+#  define key_noTSdiss_insed
 # endif
 # define PSOURCE
 # define ANA_PSOURCE
