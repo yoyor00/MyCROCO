@@ -266,8 +266,8 @@ while [ $NY != $NY_END ]; do
           $LN -sf $MSSDIR/${RNFFILE}.nc${ENDF} ${RNFFILE}.nc${ENDF}
       fi
       if [[ ${TIDE_FILES} == 1 ]]; then
-          echo "Getting ${TIDEFILE}_${TIDE_FRC}.nc${ENDF} from $MSSDIR"
-	  $LN -sf $MSSDIR/${TIDEFILE}_${TIDE_FRC}.nc${ENDF} ${TIDEFILE}.nc${ENDF}
+        echo "Getting ${TIDEFILE}_${TIDE_FRC}.nc${ENDF} from $MSSDIR"
+        $LN -sf $MSSDIR/${TIDEFILE}_${TIDE_FRC}.nc${ENDF} ${TIDEFILE}.nc${ENDF}
       fi
 
       LEVEL=$((LEVEL + 1))
