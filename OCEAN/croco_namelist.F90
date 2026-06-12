@@ -268,6 +268,9 @@ MODULE croco_namelist
    !!  - -1: overwrite record every NWRTSURF time steps
    character(len=180) :: surfname = "CROCO_FILES/croco_surf.nc"
    !! Name of surface output file
+   ! &croco_surf_history_fields
+   logical :: out_his_surf = .true.
+   !! Flag (T/F) to write the surface output fields to the surface history file
 #  ifdef AVERAGES
    ! &croco_surf_avg
    logical :: ldefsurf_avg = .true.
@@ -285,6 +288,9 @@ MODULE croco_namelist
    !!  - -1: overwrite record every NWRTSURF_AVG time steps
    character(len=180) :: surfname_avg = "CROCO_FILES/croco_surf_avg.nc"
    !! Name of surface averages file
+   ! &croco_surf_average_fields
+   logical :: out_avg_surf = .true.
+   !! Flag (T/F) to write the surface output fields to the surface averages file
 #  endif
 #endif
 
@@ -673,6 +679,17 @@ MODULE croco_namelist
    !! Station positions input file
    character(len=180) :: staname = "CROCO_FILES/stations.nc"
    !! Stations output file
+   ! &croco_station_fields
+   logical :: sta_grd  = .true.
+   !! Write grid metrics (h, f, pm, pn, angle) to stations file
+   logical :: sta_temp = .true.
+   !! Write temperature to stations file
+   logical :: sta_salt = .true.
+   !! Write salinity to stations file
+   logical :: sta_rho  = .true.
+   !! Write density to stations file
+   logical :: sta_vel  = .true.
+   !! Write velocity (u, v, w, ubar, vbar) to stations file
 #endif
 
 #if (defined SPONGE && !defined SPONGE_GRID)
