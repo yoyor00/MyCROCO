@@ -39,13 +39,14 @@
 # ifdef M3FAST
 #  include "nbq.h"
 # endif
-# ifdef DIAGNOSTICS_UV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                            || defined DIAGNOSTICS_VRT
 #  include "diagnostics.h"
 # endif
 # if defined DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 !
@@ -75,27 +76,10 @@
 ! Diagnostics
 !------------
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                             || defined DIAGNOSTICS_VRT
             Mfast(i,j,k,1) = ru_nbq_avg2(i,j,k) SWITCH umask(i,j)
-#  elif defined DIAGNOSTICS_EK
-            if (k.eq.1) then
-              ekwrkfast(i,j,1) = ru_nbq_avg2(i,j,k)
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-            else
-              ekwrkfast(i,j,1) = ekwrkfast(i,j,1)
-     &                         + ru_nbq_avg2(i,j,k)
-     &                         * u(i,j,k,nrhs) SWITCH umask(i,j)
-            endif
 #  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (k.eq.1) then
-              wrkfast(i,j,1) = ru_nbq_avg2(i,j,k) SWITCH umask(i,j)
-            else
-              wrkfast(i,j,1) = wrkfast(i,j,1) + ru_nbq_avg2(i,j,k)
-     &                     SWITCH umask(i,j)
-            endif
-#  endif
-
 # else
             u(i,j,k,nnew)=u(i,j,k,nnew)+DC(i,0)*ru(i,j,k)
 # endif
@@ -120,27 +104,10 @@
 ! Diagnostics
 !------------
 
-#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                             || defined DIAGNOSTICS_VRT
             Mfast(i,j,k,2) = rv_nbq_avg2(i,j,k) SWITCH vmask(i,j)
-#  elif defined DIAGNOSTICS_EK
-            if (k.eq.1) then
-              ekwrkfast(i,j,2) = rv_nbq_avg2(i,j,k)
-     &                         * v(i,j,k,nrhs) SWITCH vmask(i,j)
-            else
-              ekwrkfast(i,j,2) = ekwrkfast(i,j,2)
-     &                         + rv_nbq_avg2(i,j,k)
-     &                         * v(i,j,k,nrhs) SWITCH vmask(i,j)
-            endif
 #  endif
-#  if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
-            if (k.eq.1) then
-              wrkfast(i,j,2) = rv_nbq_avg2(i,j,k) SWITCH vmask(i,j)
-            else
-              wrkfast(i,j,2) = wrkfast(i,j,2) + rv_nbq_avg2(i,j,k)
-     &                     SWITCH vmask(i,j)
-            endif
-#  endif
-
 # else
               v(i,j,k,nnew)=v(i,j,k,nnew)+DC(i,0)*rv(i,j,k)
 # endif

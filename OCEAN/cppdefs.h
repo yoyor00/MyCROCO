@@ -327,7 +327,7 @@
 # undef RESTART_DIAGS
 
 # undef DIAGNOSTICS_TS
-# undef DIAGNOSTICS_UV
+
 # ifdef DIAGNOSTICS_TS
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
@@ -342,14 +342,11 @@
 #  define DIAGNOSTICS_TS_ADV
 # endif
 
-# undef  DIAGNOSTICS_VRT
-# undef  DIAGNOSTICS_EK
-# ifdef DIAGNOSTICS_EK
-#  undef DIAGNOSTICS_EK_FULL
-#  undef DIAGNOSTICS_EK_MLD
-# endif
-
+# undef DIAGNOSTICS_UV
+# undef DIAGNOSTICS_VRT
+# undef DIAGNOSTICS_KE
 # undef DIAGNOSTICS_BARO
+
 # undef DIAGNOSTICS_PV
 # undef DIAGNOSTICS_DISS
 # ifdef DIAGNOSTICS_DISS
@@ -358,10 +355,6 @@
 
 # undef DIAGNOSTICS_EDDY
 
-# undef TENDENCY
-# ifdef TENDENCY
-#  define DIAGNOSTICS_UV
-# endif
 /*
 !           Applications:
 !---------------------------------
