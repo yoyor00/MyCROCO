@@ -12,30 +12,7 @@
 #include "das_innov.h"
 #include "das_lbgfs.h"
       real LCT,LCS, alpha, exphT,exphS,alphaT, alphaS
-      real z_dep(ndas), tclm1d(ndas), sclm1d(ndas)
-
-! BLXD Test with ndas=42 levels
-! "Climato" Extracted from 
-! CMEMS MED REA monthly average centered on te 15th of January 2022
-! Decimation 1:3
-! T/S average over the full MED when level available
-!
-      data z_dep/ 
-     &  1.018237, 5.464963, 10.5366, 16.27059, 22.70639, 29.88564, 
-     &  37.85219, 
-     &  46.65221, 56.33429, 66.94949, 78.5515, 91.19663, 104.944, 
-     &  119.8554, 
-     &  135.9958, 153.4328, 172.2374, 192.4831, 214.2472, 237.6095,
-     &  262.6532, 
-     &  289.4648, 318.1335, 348.752, 381.4154, 416.2223, 453.2738, 
-     &  492.6735, 
-     &  534.5276, 578.9446, 626.0349, 675.9107, 728.6856, 784.4743,
-     &  843.3922, 
-     &  905.5548, 971.0779, 1040.076, 1112.664, 1188.952, 1269.052,
-     &  1353.069 /
-!      data z_dep/ 0.,5., 10., 15., 20., 25., 30., 35., 40., 50., 60.,
-!     &            75., 100., 125., 150., 200., 250., 300., 400., 500.,
-!     &           600., 800., 1000., 1200. /
+      real tclm1d(ndas), sclm1d(ndas)
 
       integer k
                          ! One-dimesional profiles of T/S are need

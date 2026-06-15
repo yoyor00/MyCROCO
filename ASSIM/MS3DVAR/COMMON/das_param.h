@@ -87,6 +87,25 @@
       PARAMETER( geo_ratio = 1.0, cross_tsp=0.)
       integer sm_rad   ! for smoothing radius
       PARAMETER( sm_rad=3)
+!
+! Geopotential depth levels (m, positive downward) for the DAS grid.
+! z_das(k) = -z_dep(NDAS-k+1)  (reversed and sign-flipped at runtime).
+! Kept here so pycroco can parse and edit NDAS and z_dep in one place.
+!
+      real z_dep(NDAS)
+      PARAMETER( z_dep=(/
+     &  1.018237, 5.464963, 10.5366, 16.27059, 22.70639, 29.88564,
+     &  37.85219,
+     &  46.65221, 56.33429, 66.94949, 78.5515, 91.19663, 104.944,
+     &  119.8554,
+     &  135.9958, 153.4328, 172.2374, 192.4831, 214.2472, 237.6095,
+     &  262.6532,
+     &  289.4648, 318.1335, 348.752, 381.4154, 416.2223, 453.2738,
+     &  492.6735,
+     &  534.5276, 578.9446, 626.0349, 675.9107, 728.6856, 784.4743,
+     &  843.3922,
+     &  905.5548, 971.0779, 1040.076, 1112.664, 1188.952, 1269.052,
+     &  1353.069/) )
 
       integer Local_len
       PARAMETER( Local_len=24)   ! correlation set zero beyond this length
