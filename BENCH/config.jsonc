@@ -98,6 +98,7 @@
       "BENGUELA_LR_BRY_PISCES",
       "BENGUELA_LR_TIDES_BULK",
       "BENGUELA_LR_CFBBULKONLINERUNOFF",
+      "BENGUELA_LR_DIAGS_ALL",
       "BENGUELA_LR_GLS",
       "BENGUELA_LR_NBQ",
       "VILAINE",
@@ -114,6 +115,7 @@
       "BENGUELA_LR_CFBBULK",
       "BENGUELA_LR_CFBBULKONLINE",
       "BENGUELA_LR_CFBBULKONLINERUNOFF",
+      "BENGUELA_LR_DIAGS_ALL",
       "BENGUELA_LR_BSTRESS_FASTGLS",
       "BENGUELA_LR_BSTRESS_FASTKPP",
       "BENGUELA_LR_NBQ",
@@ -179,7 +181,11 @@
       "SED_TOY_FLOC1D",
     ],
     "@vortex": ["VORTEX", "VORTEX_AGRIF_2WAY"],
-    "@agrif_realist": ["BENGUELA_LR_AGRIF_2WAY"],
+    "@agrif_realist": [
+      "BENGUELA_LR_AGRIF_2WAY", 
+      "BENGUELA_LR_AGRIF_2WAY_MLD_DENS",
+      "BENGUELA_LR_AGRIF_2WAY_DIAGS_ALL",
+    ],
   },
 
   ////////////////////////////// VARIANTS ////////////////////////////////////

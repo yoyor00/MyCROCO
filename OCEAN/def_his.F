@@ -301,6 +301,8 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 ! Decide whether to create a new file, or open existing one.
@@ -441,9 +443,9 @@
         if (total_rec.le.1) then
 # ifdef SOLVE3D
           call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &                                  ,r3dgrd, w3dgrd)
+     &                                  ,r3dgrd, w3dgrd, NF_FOUT)
 # else
-          call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+          call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FOUT)
 # endif
         endif
 #endif

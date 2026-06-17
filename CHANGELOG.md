@@ -30,6 +30,20 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
 - BENCH : Fix report check status in case of several files (#498)
+- BENCH : Fix label in plot_realist.py (#494)
+
+- NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
+  2d and 3d U-momentum for northern open boundary conditions when 
+  QDM_OBC_TANG_CORRECT is activated (#508).
+
+- XIOS : fix wrong name for mask_rho in field_def_croco.xml_full_withcpp (#513)
+
+- WAVEMAKER : fix use of wavemaker spectrum from data (bulk wave parameters not 
+  initialized in this case). This was done through key ROGUE_WAVES, now changed 
+  to WAVE_MAKER_DATA (#518)
+
+- Fix time in surf average output file (#388)
+- Fix grid variables writing in average and diagnostic file (#522)
 
 ### Changed
 
@@ -48,6 +62,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
+
+- DIAGNOSTICS : 
+	- cleaning, simplifications and updates of momentum-based diagnostics (DIAGNOSTICS\_KE, DIAGNOSTICS\_VRT, DIAGNOSTICS\_M) (Issue #388)
+	- kinetic energy budget is now 3d
+	- momentum and energy diagnostics are saved as cell-volume integrals
 
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
@@ -77,7 +96,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove key_MUSTANG_lateralerosion replace by a boolean in 
     namelist (Issue #349)
   - remove key_sand2D, activation only by a boolean in 
-    namelist (Issue #351)
+    namelist (Issue #351 and #525)
   - remove MUSTANG_CORFLUX replace by a boolean in 
     namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
@@ -106,6 +125,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - LIMIT_UNSTABLE_ONLY is always define (#401)
   - MLCONVEC (#399)
   - TS_VADV_AKIMA and TS_HADV_AKIMA (#392)
+  - TENDENCY, DIAGNOSTICS_EK_FULL, DIAGNOSTICS_EK_MLD (Issue #388)
 
 ### Other
 
@@ -120,6 +140,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
     in cppdefs_dev.h (#403)
   - remove hard coded keys in mpc.F (#404)
+  - typo and file mode (#499)
 
 - Support :
   - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
@@ -128,8 +149,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
-  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
+  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
+  J. Gula, C. Mazoyer
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
-  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon 
+  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
+  S. Theetten

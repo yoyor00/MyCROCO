@@ -228,7 +228,7 @@
       integer ntsdiags_vrt_avg, nwrtdiags_vrt_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       integer nwrtdiags_ek
 # ifdef AVERAGES
       integer ntsdiags_ek_avg, nwrtdiags_ek_avg
@@ -290,7 +290,7 @@
       logical ldefdiags_vrt_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
       logical ldefdiags_ek
 # ifdef AVERAGES
       logical ldefdiags_ek_avg
@@ -407,7 +407,7 @@
      &                      , ntsdiags_vrt_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
      &                      , ldefdiags_ek, nwrtdiags_ek
 # ifdef AVERAGES
      &                      , ldefdiags_ek_avg
