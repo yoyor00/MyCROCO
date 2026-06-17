@@ -38,6 +38,9 @@
 # ifdef WAVE_ROLLER
      &                                                ,A2d(1,10,trd)
 # endif
+# ifdef WKB_ADD_DIFF
+     &                                  ,A2d(1,11,trd),A2d(1,12,trd)
+# endif
      &                    )
       return
       end
@@ -50,6 +53,9 @@
 # endif
 # ifdef WAVE_ROLLER
      &                          ,rwar
+# endif
+# ifdef WKB_ADD_DIFF
+     &                          ,nux,nue
 # endif
      &                          )
 !
@@ -84,15 +90,19 @@
 # ifdef WAVE_ROLLER
       real rwar(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
+# ifdef WKB_ADD_DIFF
+      real, dimension(PRIVATE_2D_SCRATCH_ARRAY) :: nux,nue
+# endif
       real, dimension(3) :: wkb_bry
       real sbc, kh, kk, nw, cg, a0, ax, ax1, ax2, ay, ay1, ay2,
      &     cosw, sinw, cw, dtinv, cxu, cev, orbital, peg,
-     &     inv_k, khn, cff,cff0,cff1,cff2,cffX,cffE, w1, w2, w3,
+     &     inv_k, khn, cff,cff0,cff1,cff2, w1, w2, w3,
      &     dtwave, cfrc, inv_f, urms, abot, fw, c_roller, twopi
       real wamp, wh, cfrq, cdir, Btg, gamw, khd, kw, kr, ks,
      &     ho, dd, co, cgo, dsup
-      real, parameter :: eps=1.e-10,
-     &                   khmax=20.     ! deep-water limit for k*h
+      real, parameter :: eps   = 1.e-10,
+     &                   khmax = 20.,    ! deep-water limit for k*h
+     &                   nu0   = 0.5     ! background diffusivity
       logical :: ana_ini_wkb
 # if defined MPI
       include 'mpif.h'
@@ -101,10 +111,10 @@
       integer ierr, flag, source, req(3), rank, target_rank
 # endif
 # if defined BREAKER_DELAY
-      real delay_eff
-      real cff3,cff4
+      real, parameter :: alpha_delay = 5.
+      real xd
       real hmpi(Lm)
-      integer eta
+      integer ieta, ixd
 # endif
 # include "grid.h"
 # include "ocean2d.h"
@@ -658,7 +668,7 @@ C$OMP BARRIER
 !
       do j=jmin,jmax
         do i=imin,imax
-# ifdef MRL_CEW
+
 #  if defined WKB_KZ_FILTER || defined WKB_TIME_FILTER
 #   ifdef WET_DRY
           Dstp(i,j)=max(h(i,j)+zwave(i,j,wmod),Dcrit(i,j))
@@ -667,68 +677,86 @@ C$OMP BARRIER
 #   endif
 #  else
           Dstp(i,j)=max(h(i,j)+zeta(i,j,knew),eps)
-#   ifdef BREAKER_DELAY
-! 
-! Breaker delay
-! 
-         ! Hs^2/L0
-   !       cff1=frq(i,j,1)**2./(twopi*9.81)
-   !       cff1=1300.*cff1*(hrm(i,j,1)*sqrt(2.))**2.
-         ! Hs^2*sqrt(L)
-          cff1=twopi/((wkx(i,j,1)**2.)+(wke(i,j,1)**2.))**(1./2.)
-          cff1=5.*(cff1**(1./2.))*(hrm(i,j,1)*SQRT(2.))**2.
-          cff3=1.*h(i,j)
-          cff4=1.
-#    ifdef OBC_WEST
-#     define DELAY_SIGN -
-          cff2=max(i-floor(cff1*pm(i,j)),-Lm)  ! Delay position
-          do eta=cff2,i
-#    elif defined OBC_EAST
-#     define DELAY_SIGN +
-          cff2=min(i+floor(cff1*pm(i,j)),2*Lm) ! Delay position
-          do eta=i,cff2
-#    endif
-            if (eta.le.iend .and. eta.ge.imin) then
-              cff3=cff3+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
-     &                                            *h(eta,j)
-              cff4=cff4+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
-            endif
-#    ifdef MPI
-            ! if MPI get h from next MPI node
-#     ifdef OBC_WEST
-            if (eta.lt.imin .and. WEST_INTER) then
-              cff3=cff3+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
-     &                                        *hmpi(Lm+eta)
-#     elif defined OBC_EAST
-            if (eta.gt.iend .and. EAST_INTER) then
-              cff3=cff3+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
-     &                                      *hmpi(eta-iend)
-#     endif
-              cff4=cff4+(cff1 DELAY_SIGN ((i-eta)/pm(i,j)))
-            endif
-#    endif
-          enddo
-#    undef DELAY_SIGN
-          hdelay(i,j)=cff3/cff4
-          Dstp_delay(i,j)=max(hdelay(i,j)+zeta(i,j,knew),eps)
-#   endif
 #  endif
-# else
-          Dstp(i,j)=h(i,j)+zeta(i,j,knew)
-# endif
+!
+!---------------------------------------------------------------------
+! Breaker Delay: Compute delayed depth used for delayed breaking
+!
+! Ref: Klotz, Marchesiello (2026, Ocean Modelling)
+!      Roelvink et al. (1995, Coastal Dynamics ’95)
+!
+!---------------------------------------------------------------------
+!
+#  ifdef BREAKER_DELAY
+#   ifdef BREAKER_DELAY_R95
+      ! Xd = alpha_delay*L.
+          cff=twopi/SQRT((wkx(i,j,1)**2.)+(wke(i,j,1)**2.))
+          xd=alpha_delay*cff
+#   else
+      ! Xd = alpha_delay*Hs^2*sqrt(L).
+          cff=twopi/SQRT((wkx(i,j,1)**2.)+(wke(i,j,1)**2.))
+          xd=alpha_delay*SQRT(cff)*(hrm(i,j,1)*SQRT(2.))**2.
+#   endif
+          cff1=h(i,j)
+          cff2=1.
+#   ifdef OBC_WEST
+#     define DELAY_SIGN -
+          ixd=max(i-floor(xd*pm(i,j)),-Lm)  ! Xd index
+          do ieta=ixd,i
+#   elif defined OBC_EAST
+#     define DELAY_SIGN +
+          ixd=min(i+floor(xd*pm(i,j)),2*Lm) ! Xd index
+          do ieta=i,ixd
+#   endif
+            if (ieta.le.iend .and. ieta.ge.imin) then
+              cff1=cff1+(xd DELAY_SIGN (float(i-ieta)/pm(i,j)))
+     &                                               *h(ieta,j)
+              cff2=cff2+(xd DELAY_SIGN (float(i-ieta)/pm(i,j)))
+            endif
+#   ifdef MPI
+            ! if MPI get h from next MPI node
+#    ifdef OBC_WEST
+            if (ieta.lt.imin .and. WEST_INTER) then
+              cff1=cff1+(xd DELAY_SIGN (float(i-ieta)/pm(i,j)))
+     &                                           *hmpi(Lm+ieta)
+#    elif defined OBC_EAST
+            if (ieta.gt.iend .and. EAST_INTER) then
+              cff1=cff1+(xd DELAY_SIGN (float(i-ieta)/pm(i,j)))
+     &                                         *hmpi(ieta-iend)
+#    endif
+              cff2=cff2+(xd DELAY_SIGN (float(i-ieta)/pm(i,j)))
+            endif
+#   endif
+          enddo
+#   undef DELAY_SIGN
+          hdelay(i,j)=cff1/cff2
+          Dstp_delay(i,j)=max(hdelay(i,j)+zeta(i,j,knew),eps)
+#  endif
           cgx(i,j)=wcg(i,j,wstp)*rkx(i,j)
           cge(i,j)=wcg(i,j,wstp)*rke(i,j)
         enddo
       enddo
 !
 !---------------------------------------------------------------------
-! Solve primary wavenumber equation
+! Add diffraction as an along crest diffusion term following the parabolic 
+! equation for transmitted waves derived by Radder (JFM, 1979)
 !---------------------------------------------------------------------
 !
 # ifdef WKB_ADD_DIFF
-      cffX=0.   ! isotropic diffusion
-      cffE=0.
+      do j=jmin,jmax
+        do i=imin,imax
+          cff=0.5*wcg(i,j,wstp)/max(wvn(i,j,wstp),eps)  ! nu=0.5*Cg/k
+          cff=min(cff,0.1*om_r(i,j)*on_r(i,j)/dt)       ! CFL limitation
+          inv_k=1./max(rkx(i,j)**2+rke(i,j)**2,eps)     !-> diffraction =
+          nux(i,j)=nu0+cff*min(1.,inv_k*rke(i,j)**2)    !  diffusion along
+          nue(i,j)=nu0+cff*min(1.,inv_k*rkx(i,j)**2)    !  wave crest
+        enddo
+      enddo
 # endif
+!
+!---------------------------------------------------------------------
+! Solve primary wavenumber equation
+!---------------------------------------------------------------------
 !
 #  define kvx acx
 #  define kue ace
@@ -756,12 +784,7 @@ C$OMP BARRIER
           ay2=cev-abs(cev)
           kh =min(wvn(i,j,wstp)*Dstp(i,j),khmax)
           a0 =frq(i,j,wstp)*wvn(i,j,wstp)/max(sinh(2.0*kh),eps)
-#  if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
-          cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
-          cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
-          cffX=10.*min(1.,max(0.,cff1*cff2*rke(i,j)**2))
-          cffE=10.*min(1.,max(0.,cff1*cff2*rkx(i,j)**2))
-#  endif
+
           wkx(i,j,wnew)=wkx(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
      &                *( a0*0.5*on_r(i,j)*(Dstp(i+1,j)-Dstp(i-1,j))
      &               +0.5*( ax1*on_u(i  ,j)*(rkx(i  ,j)-rkx(i-1,j))
@@ -775,8 +798,8 @@ C$OMP BARRIER
      &               *(kvx(i,j)+kvx(i+1,j)+kvx(i,j+1)+kvx(i+1,j+1))
 #  endif
 #  ifdef WKB_ADD_DIFF
-     &          -cffX*on_r(i,j)*(rkx(i+1,j)-2.*rkx(i,j)+rkx(i-1,j))
-     &          -cffE*om_r(i,j)*(rkx(i,j+1)-2.*rkx(i,j)+rkx(i,j-1))
+     &          -nux(i,j)*on_r(i,j)*(rkx(i+1,j)-2.*rkx(i,j)+rkx(i-1,j))
+     &          -nue(i,j)*om_r(i,j)*(rkx(i,j+1)-2.*rkx(i,j)+rkx(i,j-1))
 #  endif
      &                                                            )
           wke(i,j,wnew) =wke(i,j,wprv) -dtwave*pm(i,j)*pn(i,j)
@@ -792,8 +815,8 @@ C$OMP BARRIER
      &               *(kue(i,j)+kue(i+1,j)+kue(i,j+1)+kue(i+1,j+1))
 #  endif
 #  ifdef WKB_ADD_DIFF
-     &          -cffX*on_r(i,j)*(rke(i+1,j)-2.*rke(i,j)+rke(i-1,j))
-     &          -cffE*om_r(i,j)*(rke(i,j+1)-2.*rke(i,j)+rke(i,j-1))
+     &          -nux(i,j)*on_r(i,j)*(rke(i+1,j)-2.*rke(i,j)+rke(i-1,j))
+     &          -nue(i,j)*om_r(i,j)*(rke(i,j+1)-2.*rke(i,j)+rke(i,j-1))
 #  endif
      &                                                            )
 #  ifdef MASKING
@@ -808,11 +831,6 @@ C$OMP BARRIER
 !---------------------------------------------------------------------
 ! Solve primary action balance equation
 !---------------------------------------------------------------------
-!
-# ifdef WKB_ADD_DIFF
-      cffX=0.5   ! isotropic diffusion
-      cffE=0.5
-# endif
 !
 # ifdef WKB_ADV_WENO5
 #  define VAR rwac
@@ -848,18 +866,12 @@ C$OMP BARRIER
 !
       do j=jstr,jend
         do i=istr,iend
-# if defined WKB_ADD_DIFF && defined WKB_ADD_DIFFRACTION
-          cff1=0.5+0.5*(tanh(5.*(Dstp(i,j)-10.)))  ! innershelf only
-          cff2=1./max(rkx(i,j)**2+rke(i,j)**2,eps) ! diffraction
-          cffX=10.*min(1.,max(.1,cff1*cff2*rke(i,j)**2))
-          cffE=10.*min(1.,max(.1,cff1*cff2*rkx(i,j)**2))
-# endif
           wac(i,j,wnew)=wac(i,j,wprv)-dtwave*( pm(i,j)*pn(i,j)
      &                  *( acx(i+1,j)-acx(i,j)+ace(i,j+1)-ace(i,j)
 # ifdef WKB_ADD_DIFF
-     &                           -cffX*on_r(i,j)*(wac(i+1,j,wprv)
+     &                           -nux(i,j)*on_r(i,j)*(wac(i+1,j,wprv)
      &                          -2.*wac(i,j,wprv)+wac(i-1,j,wprv))
-     &                           -cffE*om_r(i,j)*(wac(i,j+1,wprv)
+     &                           -nue(i,j)*om_r(i,j)*(wac(i,j+1,wprv)
      &                          -2.*wac(i,j,wprv)+wac(i,j-1,wprv))
 # endif
      &                            ) +wsb(i,j,wstp)+wfc(i,j,wstp) )
@@ -1247,8 +1259,8 @@ C$OMP BARRIER
 !   window smoother           Laplacian             Laplacian
 !  (Gaussian filter)
 !
-        cff=1.D0/8.D0
-        cff1=1.D0/4.D0
+        cff=1.D0/4.D0
+        cff1=1.D0/2.D0
 c        cff=1.D0/12.D0
 c        cff1=3.D0/16.D0
 
