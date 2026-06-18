@@ -144,6 +144,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Support :
   - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
+  - use matrix capabilities in gitlab-ci (#519)
+  - avoid misnaming ifort/ifx in gitlab-ci (#492)
 
 ### Contributors on this release
 
