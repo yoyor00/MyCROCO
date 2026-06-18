@@ -296,8 +296,8 @@ restart_realist:
     expire_in: 1 week
     reports:
       junit: BENCH/results/restart_realist-host_ci/junit_report.xml
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+#  rules:
+#    - if: $CI_PIPELINE_SOURCE == "schedule"
 
 
 plotphy_realist:
