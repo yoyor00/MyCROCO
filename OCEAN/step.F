@@ -201,6 +201,7 @@ C$OMP MASTER
 !------ ----- ------ ---- ------------------- ---- ---- ------ ------
 !
       if (synchro_flag) then
+        call get_vbc ! to read Patm before get_bry
 #ifdef AGRIF
         IF (Agrif_Root()) THEN
 #endif
@@ -226,7 +227,6 @@ C$OMP MASTER
 #ifdef AGRIF
         ENDIF
 #endif
-        call get_vbc
         synchro_flag=.false.
       endif  !<-- synchro_flag
 C$OMP END MASTER
