@@ -10,7 +10,7 @@ MODEL=croco
 # Scratch directory where the model is run
 SCRATCHDIR=`pwd`/SCRATCH
 
-# Input directory where the croco_inter.in input file is located
+# Input directory where the croco_inter.nml input file is located
 INPUTDIR=`pwd`/CROCO_IN  # prod architecture
 #INPUTDIR=`pwd`          # dev architecture
 
@@ -199,8 +199,8 @@ while [ $LEVEL != $NLEVEL ]; do
   fi
   echo "Getting ${GRDFILE}.nc${ENDF} from $MSSDIR"
   $LN -sf $MSSDIR/${GRDFILE}.nc${ENDF} $SCRATCHDIR
-  echo "Getting ${MODEL}_inter.in${ENDF} from $INPUTDIR"
-  $CP -f $INPUTDIR/${MODEL}_inter.in${ENDF} $SCRATCHDIR
+  echo "Getting ${MODEL}_inter.nml${ENDF} from $INPUTDIR"
+  $CP -f $INPUTDIR/${MODEL}_inter.nml${ENDF} $SCRATCHDIR
   if [[ $RSTFLAG == 0 ]]; then
     echo "Getting ${INIFILE}_${OGCM}_${TIME}.nc${ENDF} from $MSSDIR"
     $CP -f $MSSDIR/${INIFILE}_${OGCM}_${TIME}.nc${ENDF} $SCRATCHDIR
@@ -326,7 +326,7 @@ while [ $NY != $NY_END ]; do
       fi
     fi
     #
-    # Put the number of time steps in the .in files
+    # Put the number of time steps in the .nml files
     #
     echo "YEAR = $NY MONTH = $NM DAYS = $NDAYS DT = $DT NTIMES = $NUMTIMES"
     NUMTIMES=$((NDAYS * 24 * 3600))
@@ -383,7 +383,7 @@ while [ $NY != $NY_END ]; do
 	fi
 	
 	echo " "
-	echo "Writing in ${MODEL}_inter.in${ENDF}"
+	echo "Writing in ${MODEL}_inter.nml${ENDF}"
 	echo "USING DT       = $DT"
 	echo "USING NFAST    = $NFAST"
 	echo "USING NUMTIMES = $NUMTIMES"
@@ -398,9 +398,9 @@ while [ $NY != $NY_END ]; do
 	echo "USING ONLINEFREQ = $ONLINEFREQ"
 	echo "USING ONLINEPATH = $ONLINEPATH"
 	
-	if [ ! -f ${MODEL}_inter.in${ENDF} ]; then
+	if [ ! -f ${MODEL}_inter.nml${ENDF} ]; then
 	    echo "=="
-	    echo "=> ERROR : miss the ${MODEL}_inter.in${ENDF} file"
+	    echo "=> ERROR : miss the ${MODEL}_inter.nml${ENDF} file"
 	  echo "=="
 	  exit 1
 	fi
@@ -419,7 +419,7 @@ while [ $NY != $NY_END ]; do
           -e "s/ONLINEFREQ/${ONLINEFREQ}/" \
           -e "s|ONLINEPATH|${ONLINEPATH}|" \
           -e "s|<logfilename>|${MODEL}_${TIME}.out|" \
-          < "${MODEL}_inter.in${ENDF}" > "${MODEL}_${TIME}_inter.in${ENDF}"
+          < "${MODEL}_inter.nml${ENDF}" > "${MODEL}_${TIME}_inter.nml${ENDF}"
 
 	if [[ $USE_CALENDAR == 1 ]]; then
 	    if [[ ${NM} == 12 ]]; then
@@ -443,8 +443,8 @@ while [ $NY != $NY_END ]; do
 		-e "s/Mstart/$(printf "%02d" $NM)/" \
 		-e "s/Yend/${NY_E_UC}/" \
 		-e "s/Mend/$(printf "%02d" $NM_E_UC)/" \
-		< "${MODEL}_${TIME}_inter.in${ENDF}" > "${MODEL}_${TIME}_inter_UC.in${ENDF}"
-	    mv "${MODEL}_${TIME}_inter_UC.in${ENDF}" "${MODEL}_${TIME}_inter.in${ENDF}"
+		< "${MODEL}_${TIME}_inter.nml${ENDF}" > "${MODEL}_${TIME}_inter_UC.nml${ENDF}"
+	    mv "${MODEL}_${TIME}_inter_UC.nml${ENDF}" "${MODEL}_${TIME}_inter.nml${ENDF}"
 	    fi
 	#
 	LEVEL=$((LEVEL + 1))
@@ -456,7 +456,7 @@ while [ $NY != $NY_END ]; do
     echo " "
     echo "Computing for $TIME"
     date
-    ${RUNCMD}$CODFILE  ${MODEL}_${TIME}_inter.in > ${MODEL}_${TIME}.out
+    ${RUNCMD}$CODFILE  ${MODEL}_${TIME}_inter.nml > ${MODEL}_${TIME}.out
     date
     #
     
@@ -486,12 +486,12 @@ while [ $NY != $NY_END ]; do
       else
         ENDF=.${LEVEL}
       fi
-	  $CP -f ${MODEL}_rst.nc${ENDF} ${INIFILE}.nc${ENDF}
-	  $MV -f ${MODEL}_his.nc${ENDF} ${MSSOUT}/${MODEL}_his_${TIME}.nc${ENDF}
-	  $MV -f ${MODEL}_rst.nc${ENDF} ${MSSOUT}/${MODEL}_rst_${TIME}.nc${ENDF}
-	  $MV -f ${MODEL}_avg.nc${ENDF} ${MSSOUT}/${MODEL}_avg_${TIME}.nc${ENDF}
-          $MV -f ${MODEL}_dia.nc${ENDF} ${MSSOUT}/${MODEL}_dia_${TIME}.nc${ENDF}
-          $MV -f ${MODEL}_dia_avg.nc${ENDF} ${MSSOUT}/${MODEL}_dia_avg_${TIME}.nc${ENDF}
+	    $CP -f ${MODEL}_rst.nc${ENDF} ${INIFILE}.nc${ENDF}
+	    $MV -f ${MODEL}_his.nc${ENDF} ${MSSOUT}/${MODEL}_his_${TIME}.nc${ENDF}
+	    $MV -f ${MODEL}_rst.nc${ENDF} ${MSSOUT}/${MODEL}_rst_${TIME}.nc${ENDF}
+	    $MV -f ${MODEL}_avg.nc${ENDF} ${MSSOUT}/${MODEL}_avg_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_dia.nc${ENDF} ${MSSOUT}/${MODEL}_dia_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_dia_avg.nc${ENDF} ${MSSOUT}/${MODEL}_dia_avg_${TIME}.nc${ENDF}
       LEVEL=$((LEVEL + 1))
     done
     NM=$((NM + 1))
