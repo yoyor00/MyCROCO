@@ -2,35 +2,28 @@
 """
 convert_in_to_nml.py
 ====================
-Convert a CROCO `.in` file into a Fortran namelist `.nml` file.
-Optionally also produces a clean `param_<Name>.h` and `cppdefs_<Name>.h`.
+Convert a CROCO `croco.in` + `cppdefs.h` + `param.h` set into
+`croco.nml` + `cppdefs_config.h` + `param_config.h`.
+
+Takes these 3 inputs and an optional one to specified CROCO source path 
+if the script is used elsewhere.
 
 Usage
 -----
-    # Basic: auto-discovers param_<Name>.h next to the .in file
-    python convert_in_to_nml.py croco.in.Estuary
+    python convert_in_to_nml.py croco.in cppdefs.h param.h
+    python convert_in_to_nml.py croco.in cppdefs.h param.h -o /path/to/rundir
 
-    # Full: provide cppdefs + param, get all three outputs
-    python convert_in_to_nml.py croco.in.Estuary \\
-        --cppdefs cppdefs.h --param ../OCEAN/param.h
+Outputs (written to --outdir, default: current directory)
+-----------------------------------------------------------
+    croco.nml          Fortran namelist.  Array variables (tnu2, Akt_bak, …)
+                        use compact Fortran repeat notation  NT*value  when
+                        all values are equal, where NT is resolved from
+                        param.h.
 
-    # Explicit output paths
-    python convert_in_to_nml.py croco.in.Estuary \\
-        --cppdefs cppdefs.h --param ../OCEAN/param.h \\
-        -o croco_Estuary.nml \\
-        --out-param param_Estuary.h \\
-        --out-cppdefs cppdefs_Estuary.h
+    param_config.h      Preprocessed param.h (resolved against cppdefs.h):
+                        blank lines and Fortran comment lines removed.
 
-Outputs
--------
-    .nml         Fortran namelist.  Array variables (tnu2, Akt_bak, …) use
-                 compact Fortran repeat notation  NT*value  when all values
-                 are equal, where NT is resolved from the param file.
-
-    param_<N>.h  Preprocessed param.h: only the lines active for this case,
-                 blank lines and Fortran comment lines removed.
-
-    cppdefs_<N>.h  Active CPP defines for this case, one #define per line
+    cppdefs_config.h     The input cppdefs.h, copied through as-is.
 
 Extending the mapping
 ---------------------
@@ -59,6 +52,7 @@ Cards absent from the .in file are silently skipped (no block written).
 import re
 import sys
 import os
+import shutil
 import argparse
 import subprocess
 
@@ -482,25 +476,94 @@ def _run_cpp(wrapper_src, include_dirs):
     return r.stdout
 
 
-def cpp_define_active(cppdefs_path, define_name):
-    """Return True if define_name is set in cppdefs_path (via cpp)."""
+def cpp_define_active(cppdefs_path, define_name, extra_dirs=()):
+    """Return True if define_name is set in cppdefs_path (via cpp).
+
+    extra_dirs: additional -I directories (e.g. OCEAN/) so cppdefs.h's own
+    includes like cppdefs_dev.h / set_global_definitions.h can be resolved
+    even when cppdefs_path lives in an unrelated run directory.
+    """
     cppdefs_abs = os.path.realpath(cppdefs_path)
     cppdefs_dir = os.path.dirname(cppdefs_abs)
     sentinel = f"__{define_name}_IS_ACTIVE__"
     wrapper = f'#include "{cppdefs_abs}"\n#ifdef {define_name}\n{sentinel}\n#endif\n'
-    out = _run_cpp(wrapper, [cppdefs_dir])
+    out = _run_cpp(wrapper, [cppdefs_dir, *extra_dirs])
     return sentinel in out
 
 
-def preprocess_param(cppdefs_path, param_path):
+def preprocess_param(cppdefs_path, param_path, extra_dirs=()):
     """
     Run cpp on param.h using cppdefs.h for defines.
     Returns the preprocessed text (no CPP directives, resolved conditionals).
+
+    extra_dirs: additional -I directories (e.g. OCEAN/) so cppdefs.h's own
+    includes like cppdefs_dev.h / set_global_definitions.h can be resolved
+    even when cppdefs_path/param_path live in an unrelated run directory.
     """
     cppdefs_abs = os.path.realpath(cppdefs_path)
     param_dir   = os.path.dirname(os.path.realpath(param_path))
     wrapper = f'#include "{cppdefs_abs}"\n#include "param.h"\n'
-    return _run_cpp(wrapper, [param_dir])
+    return _run_cpp(wrapper, [param_dir, *extra_dirs])
+
+
+def is_full_cppdefs(path, min_cases=10):
+    """
+    Return True if the file is a full, multi-case cppdefs.h master template
+    rather than an already-extracted, single-case file.
+
+    Detected structurally (name-agnostic, independent of which case if any
+    is currently #define'd vs #undef'd):
+      1. A case-selector block: a run of bare "#undef NAME" / "#define NAME"
+         lines (no value) before any #if/#ifdef/#ifndef block.
+      2. A matching top-level "#if defined X" / "#elif defined Y" / ...
+         chain right after, whose branch names overlap with the selector
+         block.
+    Both must list at least `min_cases` names to count as "full" — a
+    genuinely single-case file won't have anywhere near that many.
+    """
+    lines = open(path).read().splitlines()
+
+    # 1. Case-selector names: bare #undef/#define lines before the first
+    #    #if/#ifdef/#ifndef directive.
+    selector_names = set()
+    chain_start = None
+    for i, line in enumerate(lines):
+        s = line.strip()
+        if re.match(r'^#\s*(?:if|ifdef|ifndef)\b', s):
+            chain_start = i
+            break
+        m = re.match(r'^#\s*(?:undef|define)\s+(\w+)\s*(?:/\*.*)?$', s)
+        if m:
+            selector_names.add(m.group(1))
+    if chain_start is None:
+        return False
+
+    # 2. Branches of that first top-level #if/#elif chain only (depth-tracked
+    #    so nested conditionals inside a branch don't get counted).
+    chain_branches = set()
+    depth = 0
+    for line in lines[chain_start:]:
+        s = line.strip()
+        if re.match(r'^#\s*(?:if|ifdef|ifndef)\b', s):
+            if depth == 0:
+                m = re.match(r'^#\s*if\s+defined\s+(\w+)\b', s)
+                if m:
+                    chain_branches.add(m.group(1))
+            depth += 1
+        elif re.match(r'^#\s*elif\b', s):
+            if depth == 1:
+                m = re.match(r'^#\s*elif\s+defined\s+(\w+)\b', s)
+                if m:
+                    chain_branches.add(m.group(1))
+        elif re.match(r'^#\s*endif\b', s):
+            depth -= 1
+            if depth == 0:
+                break
+
+    shared = selector_names & chain_branches
+    return (len(selector_names) >= min_cases
+            and len(chain_branches) >= min_cases
+            and len(shared) >= min_cases)
 
 
 def extract_case_section(cppdefs_path):
@@ -508,28 +571,36 @@ def extract_case_section(cppdefs_path):
     Extract the case-specific block from cppdefs_path verbatim, preserving
     the original order and nested #ifdef structure.
 
-    Returns (case_key, text) where text is ready to write as cppdefs_<Name>.h:
+    Returns (case_key, text) where text is ready to write as cppdefs_config.h:
         # define <CASE_KEY>           <- synthetic first line
         <block content, as-is>        <- inside #elif defined <CASE>
         <trailing #include lines>     <- e.g. #include "cppdefs_dev.h"
     """
     lines = open(cppdefs_path).readlines()
 
-    # 1. Detect the active case key from the top-level #define inserted by
-    #    patch_select_case (the line after "#undef REGIONAL")
-    case_key = None
+    # 1. Detect the active case key: the single bare "#define NAME" line in
+    #    the case-selector header, i.e. before the #if/#elif chain starts.
+    #    Two conventions are supported:
+    #      - direct edit: the case is selected in place among the
+    #        "#undef CASE / ... / #define CASE" selector list
+    #        (e.g. "#define REGIONAL" or "#define UPWELLING").
+    #      - patch_select_case style: "#undef REGIONAL" followed by a
+    #        synthetic "#define <CASE>" line appended after it.
+    #    In both cases the active key is simply the last bare #define found
+    #    before the chain start (there must be exactly one, per cppdefs.h's
+    #    "exactly one activated test case" rule).
+    chain_start = None
     for i, line in enumerate(lines):
-        if re.match(r'#undef\s+REGIONAL\b', line.strip()):
-            if i + 1 < len(lines):
-                m = re.match(r'#define\s+(\w+)', lines[i + 1].strip())
-                if m:
-                    case_key = m.group(1)
+        if re.match(r'^#\s*if\s+defined\s+\w+\b', line.strip()):
+            chain_start = i
             break
-    if case_key is None:
-        for line in lines:
-            if re.match(r'#define\s+REGIONAL\b', line.strip()):
-                case_key = "REGIONAL"
-                break
+    header_lines = lines[:chain_start] if chain_start is not None else lines
+
+    case_key = None
+    for line in header_lines:
+        m = re.match(r'^#\s*define\s+(\w+)\s*(?:/\*.*)?$', line.strip())
+        if m:
+            case_key = m.group(1)
     if case_key is None:
         return None, ""
 
@@ -688,49 +759,6 @@ def make_clean_param(preprocessed_text):
             continue
         lines.append(line.rstrip())
     return "\n".join(lines) + "\n"
-
-# ---------------------------------------------------------------------------
-# Auto-discovery helpers
-# ---------------------------------------------------------------------------
-
-def derive_case_name(input_path):
-    base = os.path.basename(input_path)
-    m = re.match(r'^.+\.in\.([^.]+)', base)
-    return m.group(1) if m else "case"
-
-
-def derive_output_name(input_path):
-    basename = os.path.basename(input_path)
-    m = re.match(r'^(.+)\.in\.([^.]+)(\.\d+)?$', basename)
-    if m:
-        return f"{m.group(1)}_{m.group(2)}.nml{m.group(3) or ''}"
-    m = re.match(r'^(.+)\.in$', basename)
-    if m:
-        return f"{m.group(1)}.nml"
-    return basename + ".nml"
-
-
-def find_cppdefs(input_path, case_name):
-    """
-    Auto-discover the cppdefs file for this case.
-    Tries cppdefs_<Name>.h first (simplified), then cppdefs_full_<Name>.h.
-    Returns (path, is_full) or (None, False).
-    """
-    here = os.path.dirname(os.path.abspath(input_path))
-    simplified = os.path.join(here, f"cppdefs_{case_name}.h")
-    full       = os.path.join(here, f"cppdefs_full_{case_name}.h")
-    if os.path.isfile(simplified):
-        return simplified, False
-    if os.path.isfile(full):
-        return full, True
-    return None, False
-
-
-def is_full_cppdefs(path):
-    """Return True if the file contains the full #if/#elif case chain."""
-    text = open(path).read()
-    return bool(re.search(r'^#undef\s+REGIONAL\b', text, re.MULTILINE))
-
 
 # ---------------------------------------------------------------------------
 # .in file parser
@@ -1085,7 +1113,10 @@ def build_nml(cards, headers, mappings, params):
     nml_entries = {}
     nml_order   = []
 
-    for (card_name, line_idx, pos_idx, typ, nml_name, nml_var) in mappings:
+    for row in mappings:
+        # Some labeled_bool rows carry 2 extra fields (cpp_key, default) used
+        # only by _build_labeled_bool_fallback_lines(); ignore them here.
+        card_name, line_idx, pos_idx, typ, nml_name, nml_var = row[:6]
         if card_name not in cards:
             continue
         vlines = [l for l in cards[card_name] if l.strip()]
@@ -1172,103 +1203,87 @@ def build_nml(cards, headers, mappings, params):
 # ---------------------------------------------------------------------------
 
 def main():
-    here = os.path.dirname(os.path.abspath(__file__))
-    default_param = os.path.join(here, "..", "OCEAN", "param.h")
+    default_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "OCEAN")
 
     parser = argparse.ArgumentParser(
-        description="Convert a CROCO .in file to a Fortran namelist .nml file.",
+        description="Convert a CROCO croco.in + cppdefs.h + param.h into "
+                     "croco.nml + cppdefs_config.h + param_config.h.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Defaults (all auto-derived from croco.in.<Name>):
-  cppdefs  : cppdefs_<Name>.h  (simplified)  or  cppdefs_full_<Name>.h  (full)
-  param    : ../OCEAN/param.h
-  output   : croco_<Name>.nml
-  param out: param_<Name>.h
-  cpp out  : cppdefs_<Name>.h  (only written when input was a full cppdefs)
+Takes these 3 inputs and an optional one to specified CROCO source path 
+if the script is used elsewhere.
 """)
-    parser.add_argument("input",
-                        help="Path to the .in file (e.g. croco.in.Estuary)")
-    parser.add_argument("-o", "--output",
-                        help="Output .nml path")
-    parser.add_argument("-c", "--cppdefs",
-                        help="cppdefs file (simplified or full); auto-discovered if omitted")
-    parser.add_argument("-p", "--param",
-                        help=f"param.h path (default: {default_param})")
-    parser.add_argument("--out-param",
-                        help="Output param_<Name>.h path")
-    parser.add_argument("--out-cppdefs",
-                        help="Output cppdefs_<Name>.h path")
+    parser.add_argument("croco_in", help="Path to the croco.in file")
+    parser.add_argument("cppdefs", help="Path to cppdefs.h")
+    parser.add_argument("param", help="Path to param.h")
+    parser.add_argument("--output_namelist", default="croco.nml",
+                        help="Output .nml path (default: croco.nml)")
+    parser.add_argument("--output_cppdef", default="cppdefs_config.h",
+                        help="Output cppdefs path (default: cppdefs_config.h)")
+    parser.add_argument("--output_param", default="param_config.h",
+                        help="Output param path (default: param_config.h)")
+    parser.add_argument("--src", default=default_src,
+                        help="Path to the CROCO OCEAN/ source dir, used as an extra "
+                             f"include path for cpp (default: {default_src}). Needed "
+                             "to resolve cppdefs.h's own includes (cppdefs_dev.h, "
+                             "set_global_definitions.h) when cppdefs.h/param.h live "
+                             "in a separate run directory.")
     args = parser.parse_args()
 
-    if not os.path.isfile(args.input):
-        sys.exit(f"Error: input file '{args.input}' not found.")
+    for label, path in (("croco.in", args.croco_in),
+                         ("cppdefs.h", args.cppdefs),
+                         ("param.h", args.param)):
+        if not os.path.isfile(path):
+            sys.exit(f"Error: {label} file '{path}' not found.")
 
-    case_name   = derive_case_name(args.input)
-    input_dir   = os.path.dirname(os.path.abspath(args.input))
-    out_nml     = args.output     or os.path.join(input_dir, derive_output_name(args.input))
-    out_dir     = os.path.dirname(os.path.abspath(out_nml))
+    src_dirs = [args.src] if os.path.isdir(args.src) else []
 
-    # ---- Resolve cppdefs file ------------------------------------------------
-    if args.cppdefs:
-        cppdefs_path = args.cppdefs
-        if not os.path.isfile(cppdefs_path):
-            sys.exit(f"Error: cppdefs file '{cppdefs_path}' not found.")
-        full_cppdefs = is_full_cppdefs(cppdefs_path)
-    else:
-        cppdefs_path, full_cppdefs = find_cppdefs(args.input, case_name)
+    out_nml     = args.output_namelist
+    out_cppdefs = args.output_cppdef
+    out_param   = args.output_param
+    for out_path in (out_nml, out_cppdefs, out_param):
+        out_dir = os.path.dirname(os.path.abspath(out_path))
+        os.makedirs(out_dir, exist_ok=True)
 
-    # ---- Resolve param.h -----------------------------------------------------
-    param_path = args.param or (default_param if os.path.isfile(default_param) else None)
-
-    # ---- Log inputs ----------------------------------------------------------
-    cpp_mode = "full" if full_cppdefs else "simplified"
-    print(f"Input .in      : {args.input}")
-    print(f"Input cppdefs  : {cppdefs_path or '(not found)'}  [{cpp_mode}]")
-    print(f"Input param.h  : {param_path or '(not found)'}")
+    print(f"Input croco.in : {args.croco_in}")
+    print(f"Input cppdefs  : {args.cppdefs}")
+    print(f"Input param.h  : {args.param}")
     print()
 
-    # ---- Preprocess param.h with cpp -----------------------------------------
-    params = {}
-    if cppdefs_path and param_path and os.path.isfile(param_path):
-        preprocessed = preprocess_param(cppdefs_path, param_path)
-        params = read_param_text(preprocessed)
+    # ---- param.h: preprocess with cpp, resolved against cppdefs.h -----------
+    preprocessed = preprocess_param(args.cppdefs, args.param, extra_dirs=src_dirs)
+    params = read_param_text(preprocessed)
+    with open(out_param, "w") as f:
+        f.write(make_clean_param(preprocessed))
+    print(f"Output param   : {out_param}  (NT={params.get('NT', '?')})")
 
-        out_param = args.out_param or os.path.join(out_dir, f"param_{case_name}.h")
-        with open(out_param, "w") as f:
-            f.write(make_clean_param(preprocessed))
-        print(f"Output param   : {out_param}  (NT={params.get('NT', '?')})")
-
-        # Extract and write clean cppdefs only when input was a full cppdefs
-        if full_cppdefs:
-            out_cppdefs = args.out_cppdefs or os.path.join(out_dir, f"cppdefs_{case_name}.h")
-            _ck, section_text = extract_case_section(cppdefs_path)
-            if section_text:
-                with open(out_cppdefs, "w") as f:
-                    f.write(section_text)
-                print(f"Output cppdefs : {out_cppdefs}  (case={_ck})")
+    # ---- cppdefs.h: always written out as a simplified, single-case file ----
+    # If the input is a "full" cppdefs.h (multi-case #if/#elif chain), extract
+    # just the active case's block. If it's already simplified, copy through.
+    if is_full_cppdefs(args.cppdefs):
+        case_key, section_text = extract_case_section(args.cppdefs)
+        if section_text:
+            with open(out_cppdefs, "w") as f:
+                f.write(section_text)
+            print(f"Output cppdefs : {out_cppdefs}  (case={case_key}, extracted from full cppdefs)")
         else:
-            print(f"Output cppdefs : (input already simplified — not rewritten)")
+            sys.exit(f"Error: could not extract a case section from full cppdefs '{args.cppdefs}'.")
     else:
-        if not cppdefs_path:
-            print(f"Warning        : no cppdefs found for '{case_name}' — NT unknown.",
-                  file=sys.stderr)
-        elif not param_path or not os.path.isfile(param_path):
-            print(f"Warning        : param.h not found at '{param_path}' — NT unknown.",
-                  file=sys.stderr)
+        shutil.copyfile(args.cppdefs, out_cppdefs)
+        print(f"Output cppdefs : {out_cppdefs}  (already simplified)")
 
     # ---- Check CPP flags that affect special-card handling -------------------
-    if cppdefs_path and os.path.isfile(cppdefs_path):
-        params['_psource_ncfile'] = cpp_define_active(cppdefs_path, 'PSOURCE_NCFILE')
-        params['_suspload'] = cpp_define_active(cppdefs_path, 'SUSPLOAD')
-        params['_bedload'] = cpp_define_active(cppdefs_path, 'BEDLOAD')
-        params['_mixed_or_cohesive'] = (
-            cpp_define_active(cppdefs_path, 'MIXED_BED') or
-            cpp_define_active(cppdefs_path, 'COHESIVE_BED')
-        )
-        params['_morphodyn'] = cpp_define_active(cppdefs_path, 'MORPHODYN')
+    params['_psource_ncfile'] = cpp_define_active(args.cppdefs, 'PSOURCE_NCFILE', extra_dirs=src_dirs)
+    params['_suspload'] = cpp_define_active(args.cppdefs, 'SUSPLOAD', extra_dirs=src_dirs)
+    params['_bedload'] = cpp_define_active(args.cppdefs, 'BEDLOAD', extra_dirs=src_dirs)
+    params['_mixed_or_cohesive'] = (
+        cpp_define_active(args.cppdefs, 'MIXED_BED', extra_dirs=src_dirs) or
+        cpp_define_active(args.cppdefs, 'COHESIVE_BED', extra_dirs=src_dirs)
+    )
+    params['_morphodyn'] = cpp_define_active(args.cppdefs, 'MORPHODYN', extra_dirs=src_dirs)
 
     # ---- Convert .in → .nml --------------------------------------------------
-    cards, headers = parse_in_file(args.input)
+    cards, headers = parse_in_file(args.croco_in)
 
     mapped_cards  = {row[0] for row in MAPPINGS} | SPECIAL_CARDS
     present_cards = set(cards.keys())
