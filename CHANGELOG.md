@@ -30,6 +30,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : useless sponge option in croco.in.1 (#436)
 
 - BENCH : Fix report check status in case of several files (#498)
+- BENCH : Fix label in plot_realist.py (#494)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
   2d and 3d U-momentum for northern open boundary conditions when 
@@ -95,7 +96,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove key_MUSTANG_lateralerosion replace by a boolean in 
     namelist (Issue #349)
   - remove key_sand2D, activation only by a boolean in 
-    namelist (Issue #351)
+    namelist (Issue #351 and #525)
   - remove MUSTANG_CORFLUX replace by a boolean in 
     namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
@@ -143,13 +144,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Support :
   - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
+  - use matrix capabilities in gitlab-ci (#519)
+  - avoid misnaming ifort/ifx in gitlab-ci (#492)
 
 ### Contributors on this release
 
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula
+  J. Gula, C. Mazoyer
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
