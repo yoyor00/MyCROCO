@@ -309,7 +309,7 @@ MAPPINGS = [
     ("station_fields", 0, 4, "bool", "&croco_station_fields", "sta_vel"),
     # sediment_history_fields: athk bthk bpor bfra(1:NST) [dflx eflx](NST) [bdlu bdlv](NST) [btcr]
     # CPP-conditional fields (dflx/eflx/bdlu/bdlv/btcr) are handled by
-    # _build_sediment_extra_history_lines() because their offset depends on NST and CPP keys.
+    # _build_sediment_extra_history_blocks() because their offset depends on NST and CPP keys.
     ("sediment_history_fields", 0, 0, "bool", "&croco_sediment_history_fields", "out_his_sed_athk"),
     ("sediment_history_fields", 0, 1, "bool", "&croco_sediment_history_fields", "out_his_sed_bthk"),
     ("sediment_history_fields", 0, 2, "bool", "&croco_sediment_history_fields", "out_his_sed_bpor"),
@@ -460,6 +460,73 @@ MAPPINGS = [
 
 # Cards handled by dedicated code rather than the MAPPINGS table.
 SPECIAL_CARDS = {"psource", "psource_ncfile"}
+
+# Canonical namelist block order, taken from croco_full.nml. Output blocks are
+# sorted to match this order; any block not listed here (should not happen —
+# every nml_name produced by MAPPINGS/special handlers is covered) is appended
+# at the end in encounter order.
+CANONICAL_BLOCK_ORDER = (
+    "&croco_title", "&croco_logfile", "&croco_time_stepping",
+    "&croco_time_stepping_nbq", "&croco_use_calendar", "&croco_s_coord",
+    "&croco_initial", "&croco_grid", "&croco_forcing", "&croco_bulk_forcing",
+    "&croco_climatology", "&croco_boundary", "&croco_bottom_forcing",
+    "&croco_sponge", "&croco_nudging", "&croco_history", "&croco_averages",
+    "&croco_restart", "&croco_surf", "&croco_surf_avg", "&croco_rho0",
+    "&croco_bottom_drag", "&croco_gamma2", "&croco_lateral_visc",
+    "&croco_tracer_diff2", "&croco_tracer_diff4", "&croco_vertical_mixing",
+    "&croco_lin_eos", "&croco_diagnostics_ts", "&croco_diag_avg",
+    "&croco_diag_mld_dens", "&croco_diagnosticsM", "&croco_diagM_avg",
+    "&croco_diags_vrt", "&croco_diags_vrt_avg", "&croco_diags_ek",
+    "&croco_diags_ek_avg", "&croco_diags_pv", "&croco_diags_pv_avg",
+    "&croco_diags_eddy_avg", "&croco_diagnostics_bio", "&croco_diagbio_avg",
+    "&croco_stations", "&croco_abl", "&croco_abl_averages",
+    "&croco_abl_nudg_tra", "&croco_abl_nudg_dyn", "&croco_online",
+    "&croco_wkb_boundary", "&croco_wkb_wwave", "&croco_wkb_roller",
+    "&croco_wave_maker", "&croco_wave_offline", "&croco_biology",
+    "&croco_bodyforce", "&croco_psource", "&croco_psource_ncfile_data",
+    "&croco_psource_data", "&croco_psource_tracer", "&croco_sediments",
+    "&croco_sediments_mustang", "&croco_substance", "&croco_obstruction",
+    "&croco_xios_origin_date", "&croco_assimilation",
+    "&croco_primary_history_fields", "&croco_primary_history_3d_fields",
+    "&croco_primary_history_tracer_fields", "&croco_auxiliary_history_fields",
+    "&croco_temperature_history_fields", "&croco_salinity_history_fields",
+    "&croco_bulk_flux_history_fields", "&croco_bhflux_history_fields",
+    "&croco_bwflux_history_fields", "&croco_bvf_history_fields",
+    "&croco_hbl_history_fields", "&croco_lmd_bkpp_history_fields",
+    "&croco_vis_coef_history_fields", "&croco_dif_coef_history_fields",
+    "&croco_gls_history_fields", "&croco_biology_history_fields",
+    "&croco_bio_nchlpzd_history_fields", "&croco_bio_bioebus_history_fields",
+    "&croco_morphodyn_history_fields", "&croco_sediment_history_fields",
+    "&croco_sediment_bfra_history_fields",
+    "&croco_sediment_suspload_history_fields",
+    "&croco_sediment_bedload_history_fields",
+    "&croco_sediment_cohesive_history_fields", "&croco_bbl_history_fields",
+    "&croco_wci_history_fields", "&croco_wci_history_3d_fields",
+    "&croco_wave_history_fields", "&croco_abl_history_fields",
+    "&croco_surf_history_fields", "&croco_stochastic_history_fields",
+    "&croco_diag3D_history_fields", "&croco_diag2D_history_fields",
+    "&croco_diagM_history_fields", "&croco_diags_vrt_history_fields",
+    "&croco_diags_ek_history_fields", "&croco_diags_pv_history_fields",
+    "&croco_diagbioFlux_history_fields", "&croco_diagbioVSink_history_fields",
+    "&croco_diagbioGasExc_history_fields", "&croco_primary_average_fields",
+    "&croco_primary_3d_average_fields", "&croco_primary_tracer_average_fields",
+    "&croco_auxiliary_averages_fields", "&croco_temperature_averages_fields",
+    "&croco_salinity_averages_fields", "&croco_bulk_flux_averages_fields",
+    "&croco_bhflux_averages_fields", "&croco_bwflux_averages_fields",
+    "&croco_bvf_averages_fields", "&croco_hbl_averages_fields",
+    "&croco_lmd_bkpp_averages_fields", "&croco_vis_coef_averages_fields",
+    "&croco_dif_coef_averages_fields", "&croco_gls_averages_fields",
+    "&croco_biology_averages_fields", "&croco_bio_nchlpzd_averages_fields",
+    "&croco_bio_bioebus_averages_fields", "&croco_morphodyn_averages_fields",
+    "&croco_abl_averages_fields", "&croco_surf_average_fields",
+    "&croco_wci_average_fields", "&croco_wci_average_3d_fields",
+    "&croco_wave_average_fields", "&croco_diag3D_average_fields",
+    "&croco_diag2D_average_fields", "&croco_diagM_average_fields",
+    "&croco_diags_vrt_average_fields", "&croco_diags_ek_average_fields",
+    "&croco_diags_pv_average_fields", "&croco_diags_eddy_average_fields",
+    "&croco_diagbioFlux_average_fields", "&croco_diagbioVSink_average_fields",
+    "&croco_diagbioGasExc_average_fields", "&croco_station_fields",
+)
 
 
 
@@ -907,10 +974,13 @@ def _split_rest(tokens, nt):
     return lsrc, tsrc
 
 
-def _build_psource_lines(cards, params):
-    """Return list of namelist text lines for psource/psource_ncfile cards."""
+def _build_psource_blocks(cards, params):
+    """Return {nml_block_name: [entry_lines]} for psource/psource_ncfile cards."""
     NT = params.get("NT", None)
-    lines = []
+    blocks = {}
+
+    def add(name, line):
+        blocks.setdefault(name, []).append(line)
 
     # Use the cpp-probed flag when available; fall back to card presence otherwise.
     use_ncfile = params.get('_psource_ncfile', 'psource_ncfile' in cards)
@@ -918,7 +988,7 @@ def _build_psource_lines(cards, params):
     if not use_ncfile and "psource" in cards:
         vlines = [l for l in cards["psource"] if l.strip()]
         if not vlines:
-            return lines
+            return blocks
         Nsrc = int(expand_repeat(vlines[0].split())[0])
 
         Isrc, Jsrc, Dsrc, Qbar = [], [], [], []
@@ -932,33 +1002,26 @@ def _build_psource_lines(cards, params):
             lsrc, tsrc0 = _split_rest(toks, NT)
             lsrc_per_src.append(lsrc); tsrc0_per_src.append(tsrc0)
 
-        lines += [f"&croco_psource", f"  psource_Nsrc = {Nsrc}", "/", ""]
-        lines += ["&croco_psource_data"]
+        add("&croco_psource", f"  psource_Nsrc = {Nsrc}")
         for i in range(len(Isrc)):
             n = i + 1
-            lines.append(f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"+
-                         f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"+
-                         f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"+
-                         f" psource_Qbar({n:>4}) = {Qbar[i]:>5}")
-        lines += ["/", ""]
+            add("&croco_psource_data",
+                f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"+
+                f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"+
+                f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"+
+                f" psource_Qbar({n:>4}) = {Qbar[i]:>5}")
         if NT>0:
-            lines += ["&croco_psource_tracer"]
             for isrc, lsrc in enumerate(lsrc_per_src, start=1):
                 for itr, val in enumerate(lsrc, start=1):
-                    lines.append(
-                        f"  psource_Lsrc({isrc},{itr}) = {val}"
-                    )
+                    add("&croco_psource_tracer", f"  psource_Lsrc({isrc},{itr}) = {val}")
             for isrc, tsrc in enumerate(tsrc0_per_src, start=1):
                 for itr, val in enumerate(tsrc, start=1):
-                    lines.append(
-                        f"  psource_Tsrc0({isrc},{itr}) = {val}"
-                    )
-            lines += ["/", ""]
+                    add("&croco_psource_tracer", f"  psource_Tsrc0({isrc},{itr}) = {val}")
 
     elif use_ncfile and "psource_ncfile" in cards:
         vlines = [l for l in cards["psource_ncfile"] if l.strip()]
         if len(vlines) < 2:
-            return lines
+            return blocks
         qbarname = vlines[0].strip()
         Nsrc = int(expand_repeat(vlines[1].split())[0])
 
@@ -973,51 +1036,41 @@ def _build_psource_lines(cards, params):
             lsrc, tsrc0 = _split_rest(toks, NT)
             lsrc_per_src.append(lsrc); tsrc0_per_src.append(tsrc0)
 
-        lines += [f"&croco_psource", f"  psource_Nsrc = {Nsrc}", "/", ""]
-        lines += ["&croco_psource_ncfile_data"]
-        lines.append(f'  psource_qbarname = "{qbarname}"')
+        add("&croco_psource", f"  psource_Nsrc = {Nsrc}")
+        add("&croco_psource_ncfile_data", f'  psource_qbarname = "{qbarname}"')
         for i in range(len(Isrc)):
             n = i + 1
-            lines.append(f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"+
-                         f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"+
-                         f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"+
-                         f" psource_qbardir({n:>4}) = {Qbardir[i]:>5}")
-        lines += ["/", ""]
+            add("&croco_psource_ncfile_data",
+                f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"+
+                f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"+
+                f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"+
+                f" psource_qbardir({n:>4}) = {Qbardir[i]:>5}")
 
         if NT>0:
-            lines += ["&croco_psource_tracer"]
-
             for isrc, lsrc in enumerate(lsrc_per_src, start=1):
                 for itr, val in enumerate(lsrc, start=1):
-                    lines.append(
-                        f"  psource_Lsrc({isrc},{itr}) = {val}"
-                    )
+                    add("&croco_psource_tracer", f"  psource_Lsrc({isrc},{itr}) = {val}")
             for isrc, tsrc in enumerate(tsrc0_per_src, start=1):
                 for itr, val in enumerate(tsrc, start=1):
-                    lines.append(
-                        f"  psource_Tsrc0({isrc},{itr}) = {val}"
-                    )
+                    add("&croco_psource_tracer", f"  psource_Tsrc0({isrc},{itr}) = {val}")
 
-            lines += ["/", ""]
-
-    return lines
+    return blocks
 
 
 # ---------------------------------------------------------------------------
 # Labeled_bool fallback handler
 # ---------------------------------------------------------------------------
 
-def _build_labeled_bool_fallback_lines(cards, headers, params, mappings):
-    """Emit labeled_bool fields that are absent from the .in header but declared
-    in the namelist
+def _build_labeled_bool_fallback_blocks(cards, headers, params, mappings):
+    """Return {nml_block_name: [entry_lines]} for labeled_bool fields that are
+    absent from the .in header but declared in the namelist.
 
     Operates on MAPPINGS rows that carry two extra fields (cpp_key, default):
       (card, line, label, "labeled_bool", nml_block, nml_var, cpp_key, default)
     - If the label IS in the .in header, MAPPINGS labeled_bool already handled it → skip.
     - If NOT in the header and the CPP guard is active → emit the namelist default.
     """
-    lines_by_block = {}
-    block_order = []
+    blocks = {}
     for row in mappings:
         if len(row) < 8:
             continue
@@ -1031,17 +1084,8 @@ def _build_labeled_bool_fallback_lines(cards, headers, params, mappings):
             continue  # already handled by MAPPINGS labeled_bool
         if cpp_key and not params.get(cpp_key, False):
             continue
-        if nml_block not in lines_by_block:
-            lines_by_block[nml_block] = []
-            block_order.append(nml_block)
-        lines_by_block[nml_block].append(f"  {nml_var} = {default}")
-
-    lines = []
-    for nml_block in block_order:
-        lines.append(nml_block)
-        lines.extend(lines_by_block[nml_block])
-        lines += ["/", ""]
-    return lines
+        blocks.setdefault(nml_block, []).append(f"  {nml_var} = {default}")
+    return blocks
 
 
 # ---------------------------------------------------------------------------
@@ -1050,21 +1094,23 @@ def _build_labeled_bool_fallback_lines(cards, headers, params, mappings):
 # Sediment CPP-conditional output field handler
 # ---------------------------------------------------------------------------
 
-def _build_sediment_extra_history_lines(cards, params):
+def _build_sediment_extra_history_blocks(cards, params):
     """Convert CPP-conditional sediment history fields: dflx/eflx (SUSPLOAD),
     bdlu/bdlv (BEDLOAD), btcr (MIXED_BED or COHESIVE_BED).
     Their position in the boolean array shifts with NST and active CPP keys,
     so they cannot be expressed as fixed-offset MAPPINGS entries.
+
+    Returns {nml_block_name: [entry_lines]}.
     """
-    lines = []
+    blocks = {}
     if "sediment_history_fields" not in cards:
-        return lines
+        return blocks
     NST = params.get("NST", None)
     if NST is None:
-        return lines
+        return blocks
     vlines = [l for l in cards["sediment_history_fields"] if l.strip()]
     if not vlines:
-        return lines
+        return blocks
     tokens = expand_repeat(vlines[0].split())
 
     offset = 3 + NST  # past: athk bthk bpor bfra(NST)
@@ -1074,13 +1120,13 @@ def _build_sediment_extra_history_lines(cards, params):
         eflx = tokens[offset + NST:offset + 2 * NST]
         v1 = format_bool_array(dflx, NST)
         v2 = format_bool_array(eflx, NST)
-        if v1 or v2:
-            lines.append("&croco_sediment_suspload_history_fields")
-            if v1:
-                lines.append(f"  out_his_sed_dflx = {v1}")
-            if v2:
-                lines.append(f"  out_his_sed_eflx = {v2}")
-            lines += ["/", ""]
+        entries = []
+        if v1:
+            entries.append(f"  out_his_sed_dflx = {v1}")
+        if v2:
+            entries.append(f"  out_his_sed_eflx = {v2}")
+        if entries:
+            blocks["&croco_sediment_suspload_history_fields"] = entries
         offset += 2 * NST
 
     if params.get("_bedload", False):
@@ -1088,22 +1134,20 @@ def _build_sediment_extra_history_lines(cards, params):
         bdlv = tokens[offset + NST:offset + 2 * NST]
         v1 = format_bool_array(bdlu, NST)
         v2 = format_bool_array(bdlv, NST)
-        if v1 or v2:
-            lines.append("&croco_sediment_bedload_history_fields")
-            if v1:
-                lines.append(f"  out_his_sed_bdlu = {v1}")
-            if v2:
-                lines.append(f"  out_his_sed_bdlv = {v2}")
-            lines += ["/", ""]
+        entries = []
+        if v1:
+            entries.append(f"  out_his_sed_bdlu = {v1}")
+        if v2:
+            entries.append(f"  out_his_sed_bdlv = {v2}")
+        if entries:
+            blocks["&croco_sediment_bedload_history_fields"] = entries
         offset += 2 * NST
 
     if params.get("_mixed_or_cohesive", False) and offset < len(tokens):
         val = format_value(tokens[offset], "bool")
-        lines += ["&croco_sediment_cohesive_history_fields",
-                  f"  out_his_sed_btcr = {val}",
-                  "/", ""]
+        blocks["&croco_sediment_cohesive_history_fields"] = [f"  out_his_sed_btcr = {val}"]
 
-    return lines
+    return blocks
 
 
 # ---------------------------------------------------------------------------
@@ -1111,11 +1155,17 @@ def _build_sediment_extra_history_lines(cards, params):
 def build_nml(cards, headers, mappings, params):
     NT = params.get("NT", None)
     nml_entries = {}
-    nml_order   = []
+    nml_order   = []  # encounter order, used as fallback for blocks not in CANONICAL_BLOCK_ORDER
+
+    def add_entry(nml_name, entry_line):
+        if nml_name not in nml_entries:
+            nml_entries[nml_name] = []
+            nml_order.append(nml_name)
+        nml_entries[nml_name].append(entry_line)
 
     for row in mappings:
         # Some labeled_bool rows carry 2 extra fields (cpp_key, default) used
-        # only by _build_labeled_bool_fallback_lines(); ignore them here.
+        # only by _build_labeled_bool_fallback_blocks(); ignore them here.
         card_name, line_idx, pos_idx, typ, nml_name, nml_var = row[:6]
         if card_name not in cards:
             continue
@@ -1133,10 +1183,7 @@ def build_nml(cards, headers, mappings, params):
             if actual_pos >= len(tokens):
                 continue
             val = format_value(tokens[actual_pos], "bool")
-            if nml_name not in nml_entries:
-                nml_entries[nml_name] = []
-                nml_order.append(nml_name)
-            nml_entries[nml_name].append(f"  {nml_var} = {val}")
+            add_entry(nml_name, f"  {nml_var} = {val}")
             continue
 
         if typ == "float_array":
@@ -1146,10 +1193,7 @@ def build_nml(cards, headers, mappings, params):
             val = format_float_array(expand_repeat(raw_tokens), NT)
             if not val:
                 continue
-            if nml_name not in nml_entries:
-                nml_entries[nml_name] = []
-                nml_order.append(nml_name)
-            nml_entries[nml_name].append(f"  {nml_var} = {val}")
+            add_entry(nml_name, f"  {nml_var} = {val}")
             continue
 
         if typ == "bool_array" or typ.startswith("bool_array:"):
@@ -1161,10 +1205,7 @@ def build_nml(cards, headers, mappings, params):
             val = format_bool_array(expand_repeat(raw_tokens), N)
             if not val:
                 continue
-            if nml_name not in nml_entries:
-                nml_entries[nml_name] = []
-                nml_order.append(nml_name)
-            nml_entries[nml_name].append(f"  {nml_var} = {val}")
+            add_entry(nml_name, f"  {nml_var} = {val}")
             continue
 
         if typ == "str_line":
@@ -1180,20 +1221,33 @@ def build_nml(cards, headers, mappings, params):
             raw = raw.replace("/", "-") + " " + tokens[pos_idx + 1]
 
         val = format_value(raw, typ)
-        if nml_name not in nml_entries:
-            nml_entries[nml_name] = []
-            nml_order.append(nml_name)
-        nml_entries[nml_name].append(f"  {nml_var} = {val}")
+        add_entry(nml_name, f"  {nml_var} = {val}")
+
+    for nml_name, entry_lines in _build_psource_blocks(cards, params).items():
+        for entry_line in entry_lines:
+            add_entry(nml_name, entry_line)
+    for nml_name, entry_lines in _build_sediment_extra_history_blocks(cards, params).items():
+        for entry_line in entry_lines:
+            add_entry(nml_name, entry_line)
+    for nml_name, entry_lines in _build_labeled_bool_fallback_blocks(cards, headers, params, mappings).items():
+        for entry_line in entry_lines:
+            add_entry(nml_name, entry_line)
+
+    # Order blocks to match croco_full.nml; anything unlisted falls back to
+    # the order it was first encountered (should not normally happen).
+    ordered_names = [n for n in CANONICAL_BLOCK_ORDER if n in nml_entries]
+    leftover = [n for n in nml_order if n not in CANONICAL_BLOCK_ORDER]
+    if leftover:
+        print(f"Note: blocks not in canonical order, appended at end: {', '.join(leftover)}",
+              file=sys.stderr)
+    ordered_names += leftover
 
     lines = []
-    for nml_name in nml_order:
+    for nml_name in ordered_names:
         lines.append(nml_name)
         lines.extend(nml_entries[nml_name])
         lines.append("/")
         lines.append("")
-    lines.extend(_build_psource_lines(cards, params))
-    lines.extend(_build_sediment_extra_history_lines(cards, params))
-    lines.extend(_build_labeled_bool_fallback_lines(cards, headers, params, mappings))
     lines += ["", "! End of namelist", ""]
     return "\n".join(lines)
 
