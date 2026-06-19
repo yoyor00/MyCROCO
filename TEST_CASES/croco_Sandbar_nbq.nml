@@ -21,22 +21,9 @@
   Tcline = 10
 /
 
-&croco_history
-  ldefhis = .true.
-  nwrt = 6000
-  nrpfhis = 0
-  hisname = "sandbar_his.nc"
-/
-
 &croco_initial
   nrrec = 0
   ininame = "sandbar_ini.nc"
-/
-
-&croco_restart
-  nrst = 180000
-  nrpfrst = -1
-  rstname = "sandbar_rst.nc"
 /
 
 &croco_sponge
@@ -50,16 +37,24 @@
   tauM_out = 0.1
 /
 
-&croco_lin_eos
-  R0 = 30.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = 0.28
-  Scoef = 0.
+&croco_history
+  ldefhis = .true.
+  nwrt = 6000
+  nrpfhis = 0
+  hisname = "sandbar_his.nc"
 /
 
-&croco_sediments
-  sedname = "sediment_sandbar_1B.in"
+&croco_averages
+  ntsavg = 1
+  navg = 6000
+  nrpfavg = 0
+  avgname = "sandbar_avg.nc"
+/
+
+&croco_restart
+  nrst = 180000
+  nrpfrst = -1
+  rstname = "sandbar_rst.nc"
 /
 
 &croco_rho0
@@ -92,19 +87,12 @@
   Akt_bak = 1*0.
 /
 
-&croco_wave_maker
-  wmaker_amp = 0.21
-  wmaker_prd = 8.0
-  wmaker_dir = 0.
-  wmaker_dsp = 0.
-  wmaker_fsp = 3.3
-/
-
-&croco_averages
-  ntsavg = 1
-  navg = 6000
-  nrpfavg = 0
-  avgname = "sandbar_avg.nc"
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
 /
 
 &croco_diagnostics_ts
@@ -135,48 +123,16 @@
   diags_eddyname_avg = "sandbar_diags_eddy_avg.nc"
 /
 
-&croco_gls_history_fields
-  out_his_tke = .true.
-  out_his_gls = .true.
-  out_his_lscale = .true.
+&croco_wave_maker
+  wmaker_amp = 0.21
+  wmaker_prd = 8.0
+  wmaker_dir = 0.
+  wmaker_dsp = 0.
+  wmaker_fsp = 3.3
 /
 
-&croco_gls_averages_fields
-  out_avg_tke = .true.
-  out_avg_gls = .true.
-  out_avg_lscale = .true.
-/
-
-&croco_sediment_history_fields
-  out_his_sed_athk = .false.
-  out_his_sed_bthk = .false.
-  out_his_sed_bpor = .false.
-/
-
-&croco_bbl_history_fields
-  out_his_abed = .false.
-  out_his_hripple = .false.
-  out_his_lripple = .false.
-  out_his_zbnot = .false.
-  out_his_zbapp = .false.
-  out_his_bostrw = .false.
-/
-
-&croco_wci_history_fields
-  out_his_sup = .true.
-  out_his_ust2d = .true.
-  out_his_vst2d = .true.
-/
-
-&croco_wci_history_3d_fields
-  out_his_ust = .true.
-  out_his_vst = .true.
-  out_his_wst = .true.
-  out_his_akb = .true.
-  out_his_akw = .true.
-  out_his_kvf = .true.
-  out_his_calp = .true.
-  out_his_kaps = .true.
+&croco_sediments
+  sedname = "sediment_sandbar_1B.in"
 /
 
 &croco_primary_history_fields
@@ -192,21 +148,6 @@
 
 &croco_primary_history_tracer_fields
   out_his_tracer = 1*.true.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .true.
-  out_avg_ubar = .true.
-  out_avg_vbar = .true.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .true.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 1*.true.
 /
 
 &croco_auxiliary_history_fields
@@ -253,8 +194,69 @@
   out_his_diff3d = .false.
 /
 
+&croco_gls_history_fields
+  out_his_tke = .true.
+  out_his_gls = .true.
+  out_his_lscale = .true.
+/
+
 &croco_biology_history_fields
   out_his_hel = .true.
+/
+
+&croco_sediment_history_fields
+  out_his_sed_athk = .false.
+  out_his_sed_bthk = .false.
+  out_his_sed_bpor = .false.
+/
+
+&croco_bbl_history_fields
+  out_his_abed = .false.
+  out_his_hripple = .false.
+  out_his_lripple = .false.
+  out_his_zbnot = .false.
+  out_his_zbapp = .false.
+  out_his_bostrw = .false.
+/
+
+&croco_wci_history_fields
+  out_his_sup = .true.
+  out_his_ust2d = .true.
+  out_his_vst2d = .true.
+/
+
+&croco_wci_history_3d_fields
+  out_his_ust = .true.
+  out_his_vst = .true.
+  out_his_wst = .true.
+  out_his_akb = .true.
+  out_his_akw = .true.
+  out_his_kvf = .true.
+  out_his_calp = .true.
+  out_his_kaps = .true.
+/
+
+&croco_diag3D_history_fields
+  out_his_dia3D_tracer = 1*.true.
+/
+
+&croco_diag2D_history_fields
+  out_his_dia2D_tracer = 1*.true.
+/
+
+&croco_primary_average_fields
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  out_avg_tracer = 1*.true.
 /
 
 &croco_auxiliary_averages_fields
@@ -301,16 +303,14 @@
   out_avg_diff3d = .false.
 /
 
+&croco_gls_averages_fields
+  out_avg_tke = .true.
+  out_avg_gls = .true.
+  out_avg_lscale = .true.
+/
+
 &croco_biology_averages_fields
   out_avg_hel = .true.
-/
-
-&croco_diag3D_history_fields
-  out_his_dia3D_tracer = 1*.true.
-/
-
-&croco_diag2D_history_fields
-  out_his_dia2D_tracer = 1*.true.
 /
 
 &croco_diag3D_average_fields

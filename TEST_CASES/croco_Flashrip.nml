@@ -21,22 +21,9 @@
   Tcline = 1.e16
 /
 
-&croco_history
-  ldefhis = .true.
-  nwrt = 1040
-  nrpfhis = 0
-  hisname = "rip_his.nc"
-/
-
 &croco_initial
   nrrec = 0
   ininame = "rip_rst.nc"
-/
-
-&croco_restart
-  nrst = 17680
-  nrpfrst = -1
-  rstname = "rip_rst.nc"
 /
 
 &croco_grid
@@ -54,12 +41,24 @@
   tauM_out = 1.e-2
 /
 
-&croco_lin_eos
-  R0 = 30.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = 0.28
-  Scoef = 0.
+&croco_history
+  ldefhis = .true.
+  nwrt = 1040
+  nrpfhis = 0
+  hisname = "rip_his.nc"
+/
+
+&croco_averages
+  ntsavg = 1
+  navg = 1040
+  nrpfavg = 0
+  avgname = "rip_avg.nc"
+/
+
+&croco_restart
+  nrst = 17680
+  nrpfrst = -1
+  rstname = "rip_rst.nc"
 /
 
 &croco_rho0
@@ -83,19 +82,12 @@
   visc4 = 0.
 /
 
-&croco_wave_maker
-  wmaker_amp = 0.24
-  wmaker_prd = 13.
-  wmaker_dir = 0.
-  wmaker_dsp = 30.
-  wmaker_fsp = 3.3
-/
-
-&croco_averages
-  ntsavg = 1
-  navg = 1040
-  nrpfavg = 0
-  avgname = "rip_avg.nc"
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
 /
 
 &croco_diags_eddy_avg
@@ -106,16 +98,12 @@
   diags_eddyname_avg = "rip_diags_eddy_avg.nc"
 /
 
-&croco_gls_history_fields
-  out_his_tke = .true.
-  out_his_gls = .false.
-  out_his_lscale = .false.
-/
-
-&croco_gls_averages_fields
-  out_avg_tke = .true.
-  out_avg_gls = .false.
-  out_avg_lscale = .false.
+&croco_wave_maker
+  wmaker_amp = 0.24
+  wmaker_prd = 13.
+  wmaker_dir = 0.
+  wmaker_dsp = 30.
+  wmaker_fsp = 3.3
 /
 
 &croco_primary_history_fields
@@ -127,17 +115,6 @@
 &croco_primary_history_3d_fields
   out_his_u = .true.
   out_his_v = .true.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .true.
-  out_avg_ubar = .true.
-  out_avg_vbar = .true.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .true.
 /
 
 &croco_auxiliary_history_fields
@@ -183,12 +160,29 @@
   out_his_diff3d = .false.
 /
 
+&croco_gls_history_fields
+  out_his_tke = .true.
+  out_his_gls = .false.
+  out_his_lscale = .false.
+/
+
 &croco_biology_history_fields
   out_his_hel = .false.
 /
 
 &croco_morphodyn_history_fields
   out_his_hm = .false.
+/
+
+&croco_primary_average_fields
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .true.
 /
 
 &croco_auxiliary_averages_fields
@@ -232,6 +226,12 @@
 
 &croco_dif_coef_averages_fields
   out_avg_diff3d = .false.
+/
+
+&croco_gls_averages_fields
+  out_avg_tke = .true.
+  out_avg_gls = .false.
+  out_avg_lscale = .false.
 /
 
 &croco_biology_averages_fields

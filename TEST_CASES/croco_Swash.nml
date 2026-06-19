@@ -21,22 +21,9 @@
   Tcline = 1.e16
 /
 
-&croco_history
-  ldefhis = .true.
-  nwrt = 10670
-  nrpfhis = 0
-  hisname = "swash_his.nc"
-/
-
 &croco_initial
   nrrec = 0
   ininame = "swash_rst.nc"
-/
-
-&croco_restart
-  nrst = 900000
-  nrpfrst = -1
-  rstname = "swash_rst.nc"
 /
 
 &croco_sponge
@@ -50,12 +37,24 @@
   tauM_out = 0.01
 /
 
-&croco_lin_eos
-  R0 = 30.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = 0.28
-  Scoef = 0.
+&croco_history
+  ldefhis = .true.
+  nwrt = 10670
+  nrpfhis = 0
+  hisname = "swash_his.nc"
+/
+
+&croco_averages
+  ntsavg = 1
+  navg = 12190
+  nrpfavg = 0
+  avgname = "swash_avg.nc"
+/
+
+&croco_restart
+  nrst = 900000
+  nrpfrst = -1
+  rstname = "swash_rst.nc"
 /
 
 &croco_rho0
@@ -88,31 +87,20 @@
   Akt_bak = 1*1.e-6
 /
 
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
+/
+
 &croco_wave_maker
   wmaker_amp = 0.0442
   wmaker_prd = 2.0
   wmaker_dir = 0.
   wmaker_dsp = 0.
   wmaker_fsp = 3.3
-/
-
-&croco_averages
-  ntsavg = 1
-  navg = 12190
-  nrpfavg = 0
-  avgname = "swash_avg.nc"
-/
-
-&croco_gls_history_fields
-  out_his_tke = .true.
-  out_his_gls = .false.
-  out_his_lscale = .true.
-/
-
-&croco_gls_averages_fields
-  out_avg_tke = .true.
-  out_avg_gls = .false.
-  out_avg_lscale = .true.
 /
 
 &croco_primary_history_fields
@@ -128,21 +116,6 @@
 
 &croco_primary_history_tracer_fields
   out_his_tracer = 1*.false.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .true.
-  out_avg_ubar = .true.
-  out_avg_vbar = .true.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .false.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 1*.false.
 /
 
 &croco_auxiliary_history_fields
@@ -190,12 +163,33 @@
   out_his_diff3d = .false.
 /
 
+&croco_gls_history_fields
+  out_his_tke = .true.
+  out_his_gls = .false.
+  out_his_lscale = .true.
+/
+
 &croco_biology_history_fields
   out_his_hel = .false.
 /
 
 &croco_morphodyn_history_fields
   out_his_hm = .false.
+/
+
+&croco_primary_average_fields
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .false.
+/
+
+&croco_primary_tracer_average_fields
+  out_avg_tracer = 1*.false.
 /
 
 &croco_auxiliary_averages_fields
@@ -246,6 +240,12 @@
 
 &croco_dif_coef_averages_fields
   out_avg_diff3d = .false.
+/
+
+&croco_gls_averages_fields
+  out_avg_tke = .true.
+  out_avg_gls = .false.
+  out_avg_lscale = .true.
 /
 
 &croco_biology_averages_fields

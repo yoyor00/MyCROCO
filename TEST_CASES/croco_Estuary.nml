@@ -9,12 +9,6 @@
   ninfo = 1
 /
 
-&croco_s_coord
-  theta_s = 0.0d0
-  theta_b = 0.0d0
-  Tcline = 500.0d0
-/
-
 &croco_use_calendar
   start_date = "2019-01-01 00:00:00"
   end_date = "2019-01-02 00:00:00"
@@ -23,22 +17,15 @@
   dt_rst = 24
 /
 
-&croco_history
-  ldefhis = .true.
-  nwrt = 100
-  nrpfhis = 0
-  hisname = "estuary_his.nc"
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 500.0d0
 /
 
 &croco_initial
   nrrec = 0
   ininame = "fileini"
-/
-
-&croco_restart
-  nrst = 720000
-  nrpfrst = -1
-  rstname = "estuary_rst.nc"
 /
 
 &croco_sponge
@@ -52,20 +39,17 @@
   tauM_out = 360.
 /
 
-&croco_lin_eos
-  R0 = 30.d0
-  T0 = 20.d0
-  S0 = 35.5d0
-  Tcoef = 0.0d-10
-  Scoef = 0.0d-10
+&croco_history
+  ldefhis = .true.
+  nwrt = 100
+  nrpfhis = 0
+  hisname = "estuary_his.nc"
 /
 
-&croco_sediments_mustang
-  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV1_estuary.txt"
-/
-
-&croco_substance
-  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_estuary.txt"
+&croco_restart
+  nrst = 720000
+  nrpfrst = -1
+  rstname = "estuary_rst.nc"
 /
 
 &croco_rho0
@@ -93,10 +77,39 @@
   tnu2 = 4*0.d0
 /
 
-&croco_gls_history_fields
-  out_his_tke = .false.
-  out_his_gls = .false.
-  out_his_lscale = .false.
+&croco_lin_eos
+  R0 = 30.d0
+  T0 = 20.d0
+  S0 = 35.5d0
+  Tcoef = 0.0d-10
+  Scoef = 0.0d-10
+/
+
+&croco_psource
+  psource_Nsrc = 1
+/
+
+&croco_psource_data
+  psource_Isrc(   1) =   200, psource_Jsrc(   1) =    45, psource_Dsrc(   1) =     0, psource_Qbar(   1) = -400.
+/
+
+&croco_psource_tracer
+  psource_Lsrc(1,1) = T
+  psource_Lsrc(1,2) = T
+  psource_Lsrc(1,3) = T
+  psource_Lsrc(1,4) = T
+  psource_Tsrc0(1,1) = 10.
+  psource_Tsrc0(1,2) = 0.
+  psource_Tsrc0(1,3) = 0.
+  psource_Tsrc0(1,4) = 0.05
+/
+
+&croco_sediments_mustang
+  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV1_estuary.txt"
+/
+
+&croco_substance
+  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_estuary.txt"
 /
 
 &croco_primary_history_fields
@@ -158,27 +171,14 @@
   out_his_diff3d = .true.
 /
 
+&croco_gls_history_fields
+  out_his_tke = .false.
+  out_his_gls = .false.
+  out_his_lscale = .false.
+/
+
 &croco_biology_history_fields
   out_his_hel = .false.
-/
-
-&croco_psource
-  psource_Nsrc = 1
-/
-
-&croco_psource_data
-  psource_Isrc(   1) =   200, psource_Jsrc(   1) =    45, psource_Dsrc(   1) =     0, psource_Qbar(   1) = -400.
-/
-
-&croco_psource_tracer
-  psource_Lsrc(1,1) = T
-  psource_Lsrc(1,2) = T
-  psource_Lsrc(1,3) = T
-  psource_Lsrc(1,4) = T
-  psource_Tsrc0(1,1) = 10.
-  psource_Tsrc0(1,2) = 0.
-  psource_Tsrc0(1,3) = 0.
-  psource_Tsrc0(1,4) = 0.05
 /
 
 

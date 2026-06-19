@@ -15,6 +15,11 @@
   Tcline = 300000000.
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "croco_ini_body_rot.nc"
+/
+
 &croco_history
   ldefhis = .true.
   nwrt = 10
@@ -22,23 +27,17 @@
   hisname = "croco_his_body_rot.nc"
 /
 
-&croco_initial
-  nrrec = 0
-  ininame = "croco_ini_body_rot.nc"
+&croco_averages
+  ntsavg = 1
+  navg = 10
+  nrpfavg = 0
+  avgname = "croco_avg_body_rot.nc"
 /
 
 &croco_restart
   nrst = 720
   nrpfrst = -1
   rstname = "croco_rst_body_rot.nc"
-/
-
-&croco_lin_eos
-  R0 = 0.
-  T0 = 16.
-  S0 = 0.
-  Tcoef = 0.2048
-  Scoef = 0.
 /
 
 &croco_rho0
@@ -75,11 +74,12 @@
   Akt_bak = 2*0.d0
 /
 
-&croco_averages
-  ntsavg = 1
-  navg = 10
-  nrpfavg = 0
-  avgname = "croco_avg_body_rot.nc"
+&croco_lin_eos
+  R0 = 0.
+  T0 = 16.
+  S0 = 0.
+  Tcoef = 0.2048
+  Scoef = 0.
 /
 
 &croco_primary_history_fields
@@ -95,21 +95,6 @@
 
 &croco_primary_history_tracer_fields
   out_his_tracer = 2*.true.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .false.
-  out_avg_ubar = .false.
-  out_avg_vbar = .false.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .true.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 2*.true.
 /
 
 &croco_auxiliary_history_fields
@@ -160,6 +145,21 @@
 
 &croco_biology_history_fields
   out_his_hel = .false.
+/
+
+&croco_primary_average_fields
+  out_avg_zeta = .false.
+  out_avg_ubar = .false.
+  out_avg_vbar = .false.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  out_avg_tracer = 2*.true.
 /
 
 &croco_auxiliary_averages_fields

@@ -1,1336 +1,618 @@
-! ======================================================================
-! CROCO reference namelist – OCEAN/croco.nml
-!
-! This file documents every namelist block and variable that CROCO
-! recognises at runtime.  Copy it to your run directory and edit the
-! values for your configuration.
-!
-! STRUCTURE
-!   1.  General                  – title, logfile
-!   2.  Time stepping            – baroclinic, NBQ sub-stepping
-!   3.  Calendar                 – USE_CALENDAR absolute-date mode
-!   4.  Vertical grid            – S-coordinate stretching
-!   5.  Physics parameters       – rho0, bottom drag, viscosity, mixing
-!   6.  History output           – file control
-!   7.  Initial conditions       – IC file / restart record
-!   8.  Restart output           – restart file control
-!   9.  Grid and forcing files   – grid, forcing, bulk, clim, bry, ...
-!   10. Averages                 – time-average file control
-!   11. Diagnostics              – TS, momentum, vorticity, energy, PV,
-!                                  eddy, biology diagnostic files
-!   12. Stations                 – station file control
-!   13. Optional modules         – ABL1D, OUTPUTS_SURFACE, ONLINE,
-!                                  WAVE (WKB/WCI/WAVE_MAKER), STOGEN,
-!                                  sediment (SEDIMENT/MUSTANG), BBL,
-!                                  BODYFORCE, PSOURCE, OBSTRUCTION,
-!                                  SUBSTANCE, ASSIMILATION, XIOS
-!   14. Output field selectors   – logical flags controlling which
-!                                  variables are written to each file
-!        14a. History fields
-!        14b. Average fields
-!        14c. Station fields
-!
-! CPP GUARD CONVENTIONS
-!   Blocks that are only compiled when specific CPP keys are defined
-!   carry an "! CPP: ..." comment on the &block line.  The model
-!   silently ignores unrecognised blocks, so it is safe to leave all
-!   blocks present in the file regardless of the active CPP keys.
-!
-! CYCLING SWITCH (nrpf* variables)
-!   0  : write multiple records per file (single output file)
-!  >0  : write N records per file, then open a new numbered file
-!  -1  : overwrite the same record each time (single-slot file)
-! ======================================================================
-
-
-! ======================================================================
-! 1.  GENERAL
-! ======================================================================
-
 &croco_title
-  ! Short label written to output files.
-  title = "CROCO simulation"
+  title = "BENGUELA TEST MODEL"
 /
 
 &croco_logfile
-  ! CPP: LOGFILE
-  ! Redirect stdout to this file.  Only active when LOGFILE is defined.
   logname = "croco.log"
 /
 
-
-! ======================================================================
-! 2.  TIME STEPPING
-! ======================================================================
-
 &croco_time_stepping
-  ! Baroclinic (3-D) time step [s].
-  dt      = 3600.0
-  ! Total number of baroclinic time steps for this run.
-  ntimes  = 720
-  ! Number of barotropic (2-D) sub-steps per baroclinic step.
-  ! Set ndtfast = 1 for pure 2-D configurations.
+  ntimes = 720
+  dt = 3600
   ndtfast = 60
-  ! Print diagnostics to stdout every ninfo baroclinic steps.
-  ninfo   = 1
+  ninfo = 1
 /
 
 &croco_time_stepping_nbq
-  ! CPP: NBQ
-  ! Non-hydrostatic (NBQ) acoustic sub-stepping parameters.
-  ! Number of NBQ sub-steps per baroclinic step.
-  ndtnbq     = 1
-  ! Speed of sound used in the NBQ pressure solver [m/s].
-  csound_nbq = 1000.0
-  ! Laplacian viscosity coefficient for the NBQ pressure solver [m2/s].
-  visc2_nbq  = 0.01
+  ndtnbq = 1
+  csound_nbq = 1000
+  visc2_nbq = 0.01
 /
-
-
-! ======================================================================
-! 3.  CALENDAR  (CPP: USE_CALENDAR)
-! ======================================================================
 
 &croco_use_calendar
-  ! CPP: USE_CALENDAR
-  ! Use absolute calendar dates instead of step counters for output.
-  ! Start and end dates in format "YYYY-MM-DD HH:MM:SS".
   start_date = "2000-01-01 00:00:00"
-  end_date   = "2000-02-01 00:00:00"
-  ! Output intervals expressed in hours (real values allowed).
-  ! Time interval between history records [hours].
-  dt_his = 1.0
-  ! Time interval between averages records [hours].
-  dt_avg = 6.0
-  ! Time interval between restart records [hours].
-  dt_rst = 12.0
+  end_date = "2000-02-01 00:00:00"
+  dt_his = 1
+  dt_avg = 6
+  dt_rst = 12
 /
-
-
-! ======================================================================
-! 4.  VERTICAL GRID  (CPP: SOLVE3D)
-! ======================================================================
 
 &croco_s_coord
-  ! CPP: SOLVE3D
-  ! S-coordinate surface control parameter.
-  ! Larger values concentrate grid points near the surface (theta_s > 0).
   theta_s = 7.0d0
-  ! S-coordinate bottom control parameter.
-  ! Larger values concentrate grid points near the bottom (theta_b > 0).
   theta_b = 2.0d0
-  ! Surface/bottom boundary layer width [m] where higher vertical
-  ! resolution is required during S-coordinate stretching.
-  Tcline  = 200.0d0
+  Tcline = 200.0d0
 /
-
-
-! ======================================================================
-! 5.  PHYSICS PARAMETERS
-! ======================================================================
-
-&croco_rho0
-  ! Mean density used in the Boussinesq approximation [kg/m3].
-  rho0 = 1025.0
-/
-
-&croco_bottom_drag
-  ! Drag coefficient for the linear bottom stress formulation [m/s].
-  rdrg    = 3.e-4
-  ! Drag coefficient for the constant quadratic bottom stress formulation
-  ! (dimensionless).
-  rdrg2   = 3.e-3
-  ! Bottom roughness length for the log-layer (Von-Karman) bottom stress
-  ! formulation [m].
-  Zobt    = 0.02
-  ! Minimum drag coefficient for the Von-Karman quadratic formulation.
-  Cdb_min = 1.e-4
-  ! Maximum drag coefficient for the Von-Karman quadratic formulation.
-  Cdb_max = 1.e-1
-/
-
-&croco_gamma2
-  ! Lateral boundary slipperiness parameter.
-  !  +1  = free-slip
-  !  -1  = no-slip
-  !  intermediate values = partial-slip
-  gamma2 = -1.0
-/
-
-&croco_lateral_visc
-  ! Laplacian horizontal momentum viscosity background value [m2/s].
-  ! Active when UV_VIS2 is defined; set to 0 to disable.
-  visc2 = 0.0
-  ! Bilaplacian horizontal momentum viscosity background value [m4/s].
-  ! Active when UV_VIS4 is defined; set to 0 to disable.
-  visc4 = 0.0
-/
-
-&croco_tracer_diff2
-  ! CPP: SOLVE3D && TRACERS
-  ! Laplacian horizontal diffusivity for each tracer [m2/s].
-  ! Active when TS_DIF2 is defined.  One value per tracer; the array
-  ! size equals NT (number of active tracers, e.g. 2 for temp+salt).
-  tnu2 = 2*0.0
-/
-
-&croco_tracer_diff4
-  ! CPP: SOLVE3D && TRACERS
-  ! Bilaplacian horizontal diffusivity for each tracer [m4/s].
-  ! Active when TS_DIF4 is defined.  Array of size NT.
-  tnu4 = 2*0.0
-/
-
-&croco_vertical_mixing
-  ! CPP: SOLVE3D && !LMD_MIXING && !GLS_MIXING
-  ! Background vertical mixing coefficients used when no turbulence
-  ! closure scheme is active (i.e. with ANA_VMIX).
-  ! Background vertical viscosity [m2/s].
-  Akv_bak = 1.e-5
-  ! Background vertical diffusivity for each tracer [m2/s].
-  ! Array of size NT.
-  Akt_bak = 2*1.e-6
-/
-
-&croco_lin_eos
-  ! CPP: !NONLIN_EOS
-  ! Linear equation of state parameters (used when NONLIN_EOS is NOT defined).
-  ! Reference density [kg/m3].
-  R0    = 1027.0
-  ! Reference potential temperature [Celsius].
-  T0    = 14.0
-  ! Reference salinity [PSU].
-  S0    = 35.0
-  ! Thermal expansion coefficient [kg/m3/Celsius].
-  Tcoef = 1.7e-4
-  ! Saline contraction coefficient [kg/m3/PSU].
-  Scoef = 7.6e-4
-/
-
-
-! ======================================================================
-! 6.  HISTORY OUTPUT
-! ======================================================================
-
-&croco_history
-  ! Create a new history file (.true.) or append to existing (.false.).
-  ldefhis = .true.
-  ! Write history output every nwrt baroclinic time steps.
-  nwrt    = 72
-  ! History file cycling switch (see header for values).
-  nrpfhis = 0
-  ! History output file path.
-  hisname = "CROCO_FILES/croco_his.nc"
-/
-
-
-! ======================================================================
-! 7.  INITIAL CONDITIONS
-! ======================================================================
 
 &croco_initial
-  ! Time index of the record to read from the IC/restart file.
-  !  > 0 : read that specific record
-  !  -1  : read the most recent record in the file (auto-detect)
-  nrrec   = 1
-  ! Path to the initial conditions or restart NetCDF file.
+  nrrec = 1
   ininame = "CROCO_FILES/croco_ini.nc"
 /
 
-
-! ======================================================================
-! 8.  RESTART OUTPUT
-! ======================================================================
-
-&croco_restart
-  ! Write restart fields every nrst baroclinic time steps.
-  nrst    = 720
-  ! Restart file cycling switch (see header for values).
-  nrpfrst = -1
-  ! Restart output file path.
-  rstname = "CROCO_FILES/croco_rst.nc"
-/
-
-
-! ======================================================================
-! 9.  GRID AND FORCING FILES
-! ======================================================================
-
 &croco_grid
-  ! CPP: !ANA_GRID
-  ! NetCDF grid file (not read when ANA_GRID is defined).
   grdname = "CROCO_FILES/croco_grd.nc"
 /
 
 &croco_forcing
-  ! Surface/tidal forcing file.  Read when the active CPP combination
-  ! requires an external forcing file (TIDES, surface fluxes, MRL_WCI
-  ! with external wave data, etc.).  See croco_namelist.F90 for the full
-  ! condition.
   frcname = "CROCO_FILES/croco_frc.nc"
 /
 
 &croco_bulk_forcing
-  ! CPP: BULK_FLUX && !ANA_ABL_LSDATA && !ONLINE
-  ! Atmospheric bulk forcing fields (wind, T, q, radiation, ...).
   bulkname = "CROCO_FILES/croco_blk.nc"
 /
 
 &croco_climatology
-  ! CPP: (TCLIMATOLOGY && !ANA_TCLIMA) || (ZCLIMATOLOGY && !ANA_SSH) ||
-  !       (M2CLIMATOLOGY && !ANA_M2CLIMA) || (M3CLIMATOLOGY && !ANA_M3CLIMA)
-  ! Climatology file used for boundary nudging.
   clmname = "CROCO_FILES/croco_clm.nc"
 /
 
 &croco_boundary
-  ! CPP: !ANA_BRY && FRC_BRY
-  ! Open-boundary conditions file.
   bry_file = "CROCO_FILES/croco_bry.nc"
 /
 
-&croco_bottom_forcing
-  ! CPP: BHFLUX || (BWFLUX && SALINITY)
-  ! Bottom hydrothermal flux file.
-  btfname = "CROCO_FILES/croco_btf.nc"
-/
-
 &croco_sponge
-  ! CPP: SPONGE && !SPONGE_GRID
-  ! Thickness of the lateral sponge / nudging layer [m].
-  ! Set to 0 to disable the sponge.
-  x_sponge = 0.0
+  x_sponge = XXX
 /
 
 &croco_nudging
-  ! CPP: any of T_FRC_BRY, M2_FRC_BRY, M3_FRC_BRY, Z_FRC_BRY,
-  !       W_FRC_BRY, NBQ_FRC_BRY, TCLIMATOLOGY, M2CLIMATOLOGY,
-  !       M3CLIMATOLOGY, ZCLIMATOLOGY, WCLIMATOLOGY, NBQCLIMATOLOGY,
-  !       TNUDGING, ZNUDGING, M2NUDGING, M3NUDGING, NBQ_NUDGING, SPONGE
-  ! Nudging (relaxation) time scales [days].
-  ! Inflow nudging time scale for tracers.
-  tauT_in  = 1.0
-  ! Outflow nudging time scale for tracers.
-  tauT_out = 360.0
-  ! Inflow nudging time scale for momentum.
-  tauM_in  = 3.0
-  ! Outflow nudging time scale for momentum.
-  tauM_out = 360.0
+  tauT_in = 1.
+  tauT_out = 360.
+  tauM_in = 3.
+  tauM_out = 360.
 /
 
-
-! ======================================================================
-! 10.  AVERAGES  (CPP: AVERAGES)
-! ======================================================================
+&croco_history
+  ldefhis = .true.
+  nwrt = 72
+  nrpfhis = 0
+  hisname = "CROCO_FILES/croco_his.nc"
+/
 
 &croco_averages
-  ! CPP: AVERAGES
-  ! First baroclinic step at which accumulation of averages begins.
-  ! Useful for spin-up: set to the first step of the averaging period.
-  ntsavg  = 1
-  ! Write time-averaged output every navg baroclinic steps.
-  navg    = 72
-  ! Averages file cycling switch (see header for values).
+  ntsavg = 1
+  navg = 72
   nrpfavg = 0
-  ! Averages output file path.
   avgname = "CROCO_FILES/croco_avg.nc"
 /
 
+&croco_restart
+  nrst = 720
+  nrpfrst = -1
+  rstname = "CROCO_FILES/croco_rst.nc"
+/
 
-! ======================================================================
-! 11.  DIAGNOSTICS
-! ======================================================================
+&croco_surf
+  ldefsurf = .true.
+  nwrtsurf = 1
+  nrpfsurf = 0
+  surfname = "CROCO_FILES/croco_surf.nc"
+/
 
-! --- Tracer (T/S) diagnostics  (CPP: DIAGNOSTICS_TS) ---
+&croco_surf_avg
+  ldefsurf_avg = .false.
+  ntssurf_avg = 1
+  nwrtsurf_avg = 4
+  nrpfsurf_avg = 0
+  surfname_avg = "CROCO_FILES/croco_surf_avg.nc"
+/
+
+&croco_rho0
+  rho0 = 1025.d0
+/
+
+&croco_bottom_drag
+  rdrg = 0.0d-04
+  rdrg2 = 0.d-3
+  Zobt = 1.d-2
+  Cdb_min = 1.d-4
+  Cdb_max = 1.d-1
+/
+
+&croco_gamma2
+  gamma2 = 1.d0
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 2*0.d0
+/
+
+&croco_tracer_diff4
+  tnu4 = 2*0.d11
+/
+
+&croco_vertical_mixing
+  Akv_bak = 0.d0
+  Akt_bak = 2*0.d0
+/
 
 &croco_diagnostics_ts
-  ! CPP: DIAGNOSTICS_TS
-  ! Create new file (.true.) or append (.false.).
-  ldefdia  = .true.
-  ! Write tracer diagnostic fields every nwrtdia steps (0 = use nwrt).
-  nwrtdia  = 72
-  ! File cycling switch.
-  nrpfdia  = 0
-  ! Tracer diagnostics file path.
-  dianame  = "CROCO_FILES/croco_dia.nc"
+  ldefdia = .true.
+  nwrtdia = 72
+  nrpfdia = 0
+  dianame = "CROCO_FILES/croco_dia.nc"
 /
 
 &croco_diag_avg
-  ! CPP: DIAGNOSTICS_TS && AVERAGES
   ldefdia_avg = .true.
-  ! First step for accumulation of diagnostic averages.
-  ntsdia_avg  = 1
-  ! Write averaged tracer diagnostics every nwrtdia_avg steps (0 = navg).
+  ntsdia_avg = 1
   nwrtdia_avg = 72
   nrpfdia_avg = 0
   dianame_avg = "CROCO_FILES/croco_dia_avg.nc"
 /
 
 &croco_diag_mld_dens
-  ! CPP: DIAGNOSTICS_TS && DIAGNOSTICS_TS_MLD && DIAGNOSTICS_TS_MLD_DENS
-  ! Density criterion for mixed-layer depth [kg/m3].
-  mld_crit_D = 3.e-2
-  ! Temperature criterion for mixed-layer depth [Celsius].
-  mld_crit_T = 2.e-1
+  mld_crit_D = 3.d-2
+  mld_crit_T = 2.d-1
 /
 
-! --- Momentum diagnostics  (CPP: DIAGNOSTICS_UV) ---
-
 &croco_diagnosticsM
-  ! CPP: DIAGNOSTICS_UV
-  ldefdiaM  = .true.
-  ! Write momentum diagnostic fields every nwrtdiaM steps (0 = nwrt).
-  nwrtdiaM  = 72
-  nrpfdiaM  = 0
-  dianameM  = "CROCO_FILES/croco_diaM.nc"
+  ldefdiaM = .true.
+  nwrtdiaM = 72
+  nrpfdiaM = 0
+  dianameM = "CROCO_FILES/croco_diaM.nc"
 /
 
 &croco_diagM_avg
-  ! CPP: DIAGNOSTICS_UV && AVERAGES
   ldefdiaM_avg = .true.
-  ntsdiaM_avg  = 1
+  ntsdiaM_avg = 1
   nwrtdiaM_avg = 72
   nrpfdiaM_avg = 0
   dianameM_avg = "CROCO_FILES/croco_diaM_avg.nc"
 /
 
-! --- Vorticity diagnostics  (CPP: DIAGNOSTICS_VRT) ---
-
 &croco_diags_vrt
-  ! CPP: DIAGNOSTICS_VRT
-  ldefdiags_vrt  = .true.
-  ! Write vorticity budget every nwrtdiags_vrt steps (0 = nwrt).
-  nwrtdiags_vrt  = 72
-  nrpfdiags_vrt  = 0
-  diags_vrtname  = "CROCO_FILES/croco_diags_vrt.nc"
+  ldefdiags_vrt = .true.
+  nwrtdiags_vrt = 72
+  nrpfdiags_vrt = 0
+  diags_vrtname = "CROCO_FILES/croco_diags_vrt.nc"
 /
 
 &croco_diags_vrt_avg
-  ! CPP: DIAGNOSTICS_VRT && AVERAGES
   ldefdiags_vrt_avg = .true.
-  ntsdiags_vrt_avg  = 1
+  ntsdiags_vrt_avg = 1
   nwrtdiags_vrt_avg = 72
   nrpfdiags_vrt_avg = 0
   diags_vrtname_avg = "CROCO_FILES/croco_diags_vrt_avg.nc"
 /
 
-! --- Kinetic energy diagnostics  (CPP: DIAGNOSTICS_KE) ---
-
 &croco_diags_ek
-  ! CPP: DIAGNOSTICS_KE
-  ldefdiags_ek  = .true.
-  nwrtdiags_ek  = 72
-  nrpfdiags_ek  = 0
-  diags_ekname  = "CROCO_FILES/croco_diags_ek.nc"
+  ldefdiags_ek = .true.
+  nwrtdiags_ek = 72
+  nrpfdiags_ek = 0
+  diags_ekname = "CROCO_FILES/croco_diags_ek.nc"
 /
 
 &croco_diags_ek_avg
-  ! CPP: DIAGNOSTICS_KE && AVERAGES
   ldefdiags_ek_avg = .true.
-  ntsdiags_ek_avg  = 1
+  ntsdiags_ek_avg = 1
   nwrtdiags_ek_avg = 72
   nrpfdiags_ek_avg = 0
   diags_ekname_avg = "CROCO_FILES/croco_diags_ek_avg.nc"
 /
 
-! --- Potential vorticity diagnostics  (CPP: DIAGNOSTICS_PV) ---
-
 &croco_diags_pv
-  ! CPP: DIAGNOSTICS_PV
-  ldefdiags_pv  = .true.
-  nwrtdiags_pv  = 72
-  nrpfdiags_pv  = 0
-  diags_pvname  = "CROCO_FILES/croco_diags_pv.nc"
+  ldefdiags_pv = .true.
+  nwrtdiags_pv = 72
+  nrpfdiags_pv = 0
+  diags_pvname = "CROCO_FILES/croco_diags_pv.nc"
 /
 
 &croco_diags_pv_avg
-  ! CPP: DIAGNOSTICS_PV && AVERAGES
   ldefdiags_pv_avg = .true.
-  ntsdiags_pv_avg  = 1
+  ntsdiags_pv_avg = 1
   nwrtdiags_pv_avg = 72
   nrpfdiags_pv_avg = 0
   diags_pvname_avg = "CROCO_FILES/croco_diags_pv_avg.nc"
 /
 
-! --- Eddy diagnostics  (CPP: DIAGNOSTICS_EDDY && !XIOS && AVERAGES) ---
-
 &croco_diags_eddy_avg
-  ! CPP: DIAGNOSTICS_EDDY && !XIOS && AVERAGES
   ldefdiags_eddy_avg = .true.
-  ntsdiags_eddy_avg  = 1
+  ntsdiags_eddy_avg = 1
   nwrtdiags_eddy_avg = 72
   nrpfdiags_eddy_avg = 0
   diags_eddyname_avg = "CROCO_FILES/croco_diags_eddy_avg.nc"
 /
 
-! --- Biogeochemical diagnostics  (CPP: DIAGNOSTICS_BIO) ---
-
 &croco_diagnostics_bio
-  ! CPP: DIAGNOSTICS_BIO
-  ldefdiabio  = .true.
-  nwrtdiabio  = 72
-  nrpfdiabio  = 0
-  dianamebio  = "CROCO_FILES/croco_diabio.nc"
+  ldefdiabio = .true.
+  nwrtdiabio = 72
+  nrpfdiabio = 0
+  dianamebio = "CROCO_FILES/croco_diabio.nc"
 /
 
 &croco_diagbio_avg
-  ! CPP: DIAGNOSTICS_BIO && AVERAGES
   ldefdiabio_avg = .true.
-  ntsdiabio_avg  = 1
+  ntsdiabio_avg = 1
   nwrtdiabio_avg = 72
   nrpfdiabio_avg = 0
   dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc"
 /
 
-
-! ======================================================================
-! 12.  STATIONS  (CPP: STATIONS)
-! ======================================================================
-
 &croco_stations
-  ! CPP: STATIONS
-  ! Create new stations file (.true.) or append (.false.).
-  ldefsta    = .true.
-  ! Write station data every nsta baroclinic time steps.
-  nsta       = 400
-  ! Stations file cycling switch.
-  nrpfsta    = 0
-  ! ASCII file listing station positions (lon/lat or i/j indices).
+  ldefsta = .true.
+  nsta = 400
+  nrpfsta = 0
   staposname = "stations.in"
-  ! Stations output NetCDF file path.
-  staname    = "CROCO_FILES/stations.nc"
+  staname = "CROCO_FILES/stations.nc"
 /
-
-
-! ======================================================================
-! 13.  OPTIONAL MODULES
-! ======================================================================
-
-! --- ABL 1-D boundary layer  (CPP: ABL1D && !XIOS) ---
-
-&croco_abl
-  ! CPP: ABL1D && !XIOS
-  ! Create new ABL history file (.true.) or append (.false.).
-  ldefablhis = .true.
-  ! Write ABL history every nwrtablhis baroclinic steps.
-  nwrtablhis = 36
-  nrpfablhis = 0
-  ablname    = "CROCO_FILES/croco_abl_his.nc"
-/
-
-&croco_abl_averages
-  ! CPP: ABL1D && !XIOS && AVERAGES
-  ldefablavg  = .false.
-  ntsablavg   = 1
-  nwrtablavg  = 0
-  nrpfablavg  = 0
-  ablname_avg = "CROCO_FILES/croco_abl_avg.nc"
-/
-
-&croco_abl_nudg_tra
-  ! CPP: ABL1D && ABL_NUDGING && ABL_NUDGING_TRA
-  ! ABL tracer nudging timescale at the bottom of the ABL [s].
-  ltra_min = 1.0e5
-  ! ABL tracer nudging timescale at the top of the ABL [s].
-  ltra_max = 1.0e4
-/
-
-&croco_abl_nudg_dyn
-  ! CPP: ABL1D && ABL_NUDGING && ABL_NUDGING_DYN
-  ! ABL dynamics nudging timescale at the bottom of the ABL [s].
-  ldyn_min = 1.0e5
-  ! ABL dynamics nudging timescale at the top of the ABL [s].
-  ldyn_max = 1.0e4
-/
-
-! --- Surface output files  (CPP: OUTPUTS_SURFACE && !XIOS) ---
-
-&croco_surf
-  ! CPP: OUTPUTS_SURFACE && !XIOS
-  ! Create new surface output file (.true.) or append (.false.).
-  ldefsurf = .true.
-  ! Write surface fields every nwrtsurf steps (0 = use nwrt).
-  nwrtsurf = 0
-  nrpfsurf = 0
-  surfname = "CROCO_FILES/croco_surf.nc"
-/
-
-&croco_surf_avg
-  ! CPP: OUTPUTS_SURFACE && !XIOS && AVERAGES
-  ldefsurf_avg = .true.
-  ntssurf_avg  = 1
-  nwrtsurf_avg = 0
-  nrpfsurf_avg = 0
-  surfname_avg = "CROCO_FILES/croco_surf_avg.nc"
-/
-
-! --- Online bulk forcing  (CPP: ONLINE) ---
 
 &croco_online
-  ! CPP: ONLINE
-  ! Start year for online bulk forcing data.
-  yearnum       = 2000
-  ! Start month for online bulk forcing data.
-  monthnum      = 1
-  ! Number of forcing records per day.
+  yearnum = 2000
+  monthnum = 1
   recordsperday = 4
-  ! End year for the forcing data series.
-  yearend       = 2000
-  ! End month for the forcing data series.
-  monthend      = 3
-  ! Path to the directory containing bulk forcing data files.
-  pathbulk      = "DATA/"
+  yearend = 2000
+  monthend = 3
+  pathbulk = "DATA/CFSR_Benguela_LR/"
 /
 
-! --- WKB wave model  (CPP: WKB_WWAVE) ---
-
 &croco_wkb_boundary
-  ! CPP: WKB_WWAVE && !ANA_BRY_WKB
-  ! WKB wave boundary conditions file.
   brywkb_file = "CROCO_FILES/croco_wkb.nc"
 /
 
 &croco_wkb_wwave
-  ! CPP: WKB_WWAVE
-  ! Offshore incident wave amplitude [m].
-  wkb_amp  = 0.25
-  ! Offshore wave angle (coming from) [degrees, measured from North].
-  wkb_ang  = 190.0
-  ! Offshore wave period [s].
-  wkb_prd  = 8.0
-  ! Constant offshore water level [m].
-  wkb_tide = -2.0
-  ! B parameter for the empirical wave-breaking model (Battjes-Janssen).
-  wkb_btg  = 1.3
-  ! Gamma parameter: Hrms/h ratio threshold for wave breaking.
-  wkb_gam  = 0.38
+  wkb_amp = 0.25
+  wkb_ang = 190.
+  wkb_prd = 8.
+  wkb_tide = -2.
+  wkb_btg = 1.3
+  wkb_gam = 0.38
 /
 
 &croco_wkb_roller
-  ! CPP: WKB_WWAVE && WAVE_ROLLER
-  ! sin(beta): roller-energy dissipation slope parameter.
-  wkb_rsb    = 0.1
-  ! Fraction of breaking energy transferred to the surface roller [0, 1].
+  wkb_rsb = 0.1
   wkb_roller = 0.5
 /
 
-! --- Offshore wave maker  (CPP: WAVE_MAKER) ---
-
-&croco_wave_maker
-  ! CPP: WAVE_MAKER
-  ! RMS wave amplitude [m].
-  wmaker_amp = 0.0
-  ! Peak wave period [s].
-  wmaker_prd = 8.0
-  ! Mean wave direction [degrees].
-  wmaker_dir = 0.0
-  ! Directional spread [degrees].
-  wmaker_dsp = 0.0
-  ! Frequency spread – gamma parameter in the JONSWAP spectrum.
-  wmaker_fsp = 3.3
-/
-
-! --- Offline wave forcing for MUSTANG  (CPP: WAVE_OFFLINE && MUSTANG) ---
-
-&croco_wave_offline
-  ! CPP: WAVE_OFFLINE && MUSTANG
-  ! Offline wave forcing file used by the MUSTANG sediment model.
-  wave_file = "CROCO_FILES/croco_wave.nc"
-/
-
-! --- PISCES biogeochemistry  (CPP: BIOLOGY && PISCES) ---
-
 &croco_biology
-  ! CPP: BIOLOGY && PISCES
-  ! Iron dust deposition forcing file for PISCES.
   bioname = "CROCO_FILES/croco_frcbio.nc"
 /
 
-! --- Body force  (CPP: BODYFORCE) ---
-
-&croco_bodyforce
-  ! CPP: BODYFORCE
-  ! Deepest sigma level to apply surface stress as a body force.
-  levsfrc = 1
-  ! Shallowest sigma level to apply bottom stress as a body force.
-  levbfrc = 1
-/
-
-! --- Point sources / rivers  (CPP: ANA_PSOURCE && PSOURCE/PSOURCE_MASS/PSOURCE_NCFILE) ---
-
 &croco_psource
-  ! CPP: ANA_PSOURCE && (PSOURCE || PSOURCE_MASS || PSOURCE_NCFILE)
-  ! Total number of point sources/sinks.
-  psource_Nsrc = 0
-/
-
-&croco_psource_ncfile_data
-  ! CPP: ANA_PSOURCE && PSOURCE_NCFILE
-  ! I-grid indices of each source (array of size psource_Nsrc).
-  psource_Isrc     = 1
-  ! J-grid indices of each source.
-  psource_Jsrc     = 1
-  ! Direction flag per source: 0 = along XI, >0 = along ETA.
-  psource_Dsrc     = 0
-  ! Path to the river runoff NetCDF file.
-  psource_qbarname = ""
-  ! Sign of runoff direction at each source (+1 or -1).
-  psource_qbardir  = 1.0
+  psource_Nsrc = 2
 /
 
 &croco_psource_data
-  ! CPP: ANA_PSOURCE && (PSOURCE || PSOURCE_MASS) && !PSOURCE_NCFILE
-  ! I-grid indices of each source.
-  psource_Isrc = 1
-  ! J-grid indices of each source.
-  psource_Jsrc = 1
-  ! Direction flag per source.
-  psource_Dsrc = 0
-  ! Vertically integrated transport at each source [m3/s].
-  psource_Qbar = 0.0
+  psource_Isrc(   1) =    24, psource_Jsrc(   1) =    35, psource_Dsrc(   1) =     1, psource_Qbar(   1) = -200.
+  psource_Isrc(   2) =    35, psource_Jsrc(   2) =    13, psource_Dsrc(   2) =     0, psource_Qbar(   2) = -200.
 /
 
 &croco_psource_tracer
-  ! CPP: ANA_PSOURCE && (PSOURCE || PSOURCE_MASS || PSOURCE_NCFILE) && TRACERS
-  ! Tracer switch per source/tracer (psource_Nsrc x NT):
-  !   .true. = apply tracer value at this source.
-  psource_Lsrc  = .false.
-  ! Initial tracer value at each source (psource_Nsrc x NT).
-  psource_Tsrc0 = 0.0
+  psource_Lsrc(1,1) = T
+  psource_Lsrc(1,2) = T
+  psource_Lsrc(2,1) = T
+  psource_Lsrc(2,2) = T
+  psource_Tsrc0(1,1) = 20.
+  psource_Tsrc0(1,2) = 15.
+  psource_Tsrc0(2,1) = 20.
+  psource_Tsrc0(2,2) = 15.
 /
 
-! --- Sediment model  (CPP: SEDIMENT) ---
-
 &croco_sediments
-  ! CPP: SEDIMENT
-  ! Path to the sediment model parameters input file.
   sedname = "sediment.in"
 /
 
-! --- MUSTANG sediment model  (CPP: MUSTANG) ---
-
 &croco_sediments_mustang
-  ! CPP: MUSTANG
-  ! Path to the MUSTANG parameters input file.
   sedname_must = "paraMUSTANG.txt"
 /
 
-! --- Substance module  (CPP: SUBSTANCE) ---
-
 &croco_substance
-  ! CPP: SUBSTANCE
-  ! Path to the substance module parameters file.
   subsfilename = "parasubstance.txt"
 /
 
-! --- Sub-grid obstruction module  (CPP: OBSTRUCTION) ---
-
-&croco_obstruction
-  ! CPP: OBSTRUCTION
-  ! Path to the sub-grid obstruction parameters file.
-  obstname = "obstruction.in"
-/
-
-! --- XIOS I/O server  (CPP: XIOS) ---
-
 &croco_xios_origin_date
-  ! CPP: XIOS
-  ! Time origin for XIOS output (format: "YYYY-MM-DD HH:MM:SS").
-  xios_origin_date = "1900-01-01 00:00:00"
+  xios_origin_date = "2014-01-04 00:00:00"
 /
-
-! --- Data assimilation  (CPP: ASSIMILATION) ---
-
-&croco_assimilation
-  ! CPP: ASSIMILATION
-  ! Assimilation parameters namelist file.
-  aparnam = "assimilation.par"
-  ! Assimilation observations file.
-  assname = "assimilation.nc"
-/
-
-
-! ======================================================================
-! 14.  OUTPUT FIELD SELECTORS
-!
-! Logical flags controlling which variables are written to each output
-! file.  All blocks are optional: the model falls back to compiled-in
-! defaults when a block is absent.
-!
-! Arrays of size NT hold one flag per tracer (default NT=2: temp+salt).
-! Arrays of size NST hold one flag per sediment class.
-! ======================================================================
-
-! ======================================================================
-! 14a.  HISTORY FIELDS
-! ======================================================================
-
-! --- Primary fields (always available) ---
 
 &croco_primary_history_fields
-  out_his_zeta = .true.   ! Free-surface elevation
-  out_his_ubar = .true.   ! Depth-averaged u-velocity
-  out_his_vbar = .true.   ! Depth-averaged v-velocity
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
 /
 
 &croco_primary_history_3d_fields
-  ! CPP: SOLVE3D
-  out_his_u = .true.   ! 3-D u-velocity
-  out_his_v = .true.   ! 3-D v-velocity
+  out_his_u = .true.
+  out_his_v = .true.
 /
 
 &croco_primary_history_tracer_fields
-  ! CPP: SOLVE3D && TRACERS
-  ! Array of size NT.
-  out_his_tracer = 2*.true.   ! Temperature, salinity (and extra tracers)
+  out_his_tracer = 2*.true.
 /
-
-! --- Auxiliary 3-D fields ---
 
 &croco_auxiliary_history_fields
-  ! CPP: SOLVE3D || RIP
-  out_his_rho   = .false.   ! Density anomaly
-  out_his_omega = .false.   ! S-coordinate vertical velocity
-  out_his_w     = .false.   ! True vertical velocity
-  out_his_akv   = .false.   ! Vertical viscosity Akv
-  out_his_bostr = .false.   ! Bottom stress magnitude
-  out_his_bustr = .false.   ! Bottom xi-stress
-  out_his_bvstr = .false.   ! Bottom eta-stress
-  out_his_wstr  = .false.   ! Wind stress magnitude
-  out_his_ustr  = .false.   ! Surface xi-stress
-  out_his_vstr  = .false.   ! Surface eta-stress
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
+  out_his_bostr = .true.
+  out_his_bustr = .false.
+  out_his_bvstr = .false.
+  out_his_wstr = .true.
+  out_his_ustr = .true.
+  out_his_vstr = .true.
 /
 
-! --- Physics-specific optional fields ---
-
 &croco_temperature_history_fields
-  ! CPP: SOLVE3D && TEMPERATURE
-  out_his_akt       = .false.   ! Vertical diffusivity for temperature
-  out_his_shflx     = .false.   ! Net surface heat flux
-  out_his_shflx_rsw = .false.   ! Shortwave radiation component
+  out_his_akt = .true.
+  out_his_shflx = .true.
+  out_his_shflx_rsw = .true.
 /
 
 &croco_salinity_history_fields
-  ! CPP: SOLVE3D && SALINITY
-  out_his_aks   = .false.   ! Vertical diffusivity for salinity
-  out_his_swflx = .false.   ! Net surface freshwater flux
+  out_his_aks = .false.
+  out_his_swflx = .true.
 /
 
 &croco_bulk_flux_history_fields
-  ! CPP: SOLVE3D && BULK_FLUX
-  out_his_shflx_rlw = .false.   ! Longwave radiation
-  out_his_shflx_lat = .false.   ! Latent heat flux
-  out_his_shflx_sen = .false.   ! Sensible heat flux
-/
-
-&croco_bhflux_history_fields
-  ! CPP: SOLVE3D && BHFLUX
-  out_his_bhflx = .false.   ! Bottom hydrothermal heat flux
-/
-
-&croco_bwflux_history_fields
-  ! CPP: SOLVE3D && BWFLUX && SALINITY
-  out_his_bwflx = .false.   ! Bottom hydrothermal freshwater flux
+  out_his_shflx_rlw = .true.
+  out_his_shflx_lat = .true.
+  out_his_shflx_sen = .true.
 /
 
 &croco_bvf_history_fields
-  ! CPP: SOLVE3D && (ANA_VMIX || LMD_MIXING || LMD_SKPP || LMD_BKPP || GLS_MIXING)
-  out_his_bvf = .false.   ! Brunt-Väisälä frequency squared
+  out_his_bvf = .false.
 /
 
 &croco_hbl_history_fields
-  ! CPP: SOLVE3D && (LMD_SKPP || GLS_MIXING)
-  out_his_hbl = .false.   ! Surface boundary layer depth
+  out_his_hbl = .true.
 /
 
 &croco_lmd_bkpp_history_fields
-  ! CPP: SOLVE3D && LMD_BKPP
-  out_his_hbbl = .false.   ! Bottom boundary layer depth
+  out_his_hbbl = .true.
 /
 
 &croco_vis_coef_history_fields
-  ! CPP: SOLVE3D && VIS_COEF_3D
-  out_his_visc3d = .false.   ! 3-D horizontal viscosity field
+  out_his_visc3d = .false.
 /
 
 &croco_dif_coef_history_fields
-  ! CPP: SOLVE3D && DIF_COEF_3D
-  out_his_diff3d = .false.   ! 3-D horizontal diffusivity field
+  out_his_diff3d = .false.
 /
 
 &croco_gls_history_fields
-  ! CPP: SOLVE3D && GLS_MIXING
-  out_his_tke    = .true.   ! Turbulent kinetic energy
-  out_his_gls    = .true.   ! GLS length-scale variable
-  out_his_lscale = .true.   ! Turbulent length scale
+  out_his_tke = .true.
+  out_his_gls = .true.
+  out_his_lscale = .true.
 /
-
-! --- Biology / morphodynamics fields ---
 
 &croco_biology_history_fields
-  ! CPP: SOLVE3D && BIOLOGY && !PISCES
-  out_his_hel = .false.   ! Euphotic layer depth
+  out_his_hel = .true.
 /
-
-&croco_bio_nchlpzd_history_fields
-  ! CPP: SOLVE3D && BIO_NChlPZD
-  out_his_chc   = .false.   ! Chlorophyll concentration
-  out_his_u10   = .false.   ! 10-m wind speed (for gas exchange)
-  out_his_kvo2  = .false.   ! Piston velocity for O2
-  out_his_o2sat = .false.   ! O2 saturation
-/
-
-&croco_bio_bioebus_history_fields
-  ! CPP: SOLVE3D && BIO_BioEBUS
-  out_his_aou    = .false.   ! Apparent oxygen utilisation
-  out_his_wind10 = .false.   ! 10-m wind speed
-/
-
-&croco_morphodyn_history_fields
-  ! CPP: SOLVE3D && MORPHODYN
-  out_his_hm = .true.   ! Morphodynamic bed level
-/
-
-! --- Sediment fields ---
 
 &croco_sediment_history_fields
-  ! CPP: SOLVE3D && SEDIMENT
-  out_his_sed_athk = .true.   ! Active layer thickness
-  out_his_sed_bthk = .true.   ! Total sediment bed thickness
-  out_his_sed_bpor = .true.   ! Bed porosity
-/
-
-&croco_sediment_bfra_history_fields
-  ! CPP: SOLVE3D && SEDIMENT
-  ! Array of size NST.
-  out_his_sed_bfra = 1*.true.   ! Bed fraction per sediment class
-/
-
-&croco_sediment_suspload_history_fields
-  ! CPP: SOLVE3D && SEDIMENT && SUSPLOAD
-  ! Arrays of size NST.
-  out_his_sed_dflx = 1*.true.   ! Deposition flux per sediment class
-  out_his_sed_eflx = 1*.true.   ! Erosion flux per sediment class
-/
-
-&croco_sediment_bedload_history_fields
-  ! CPP: SOLVE3D && SEDIMENT && BEDLOAD
-  ! Arrays of size NST.
-  out_his_sed_bdlu = 1*.true.   ! Bedload transport u per sediment class
-  out_his_sed_bdlv = 1*.true.   ! Bedload transport v per sediment class
-/
-
-&croco_sediment_cohesive_history_fields
-  ! CPP: SOLVE3D && SEDIMENT && (MIXED_BED || COHESIVE_BED)
-  out_his_sed_btcr = .true.   ! Critical bed shear stress for erosion
+  out_his_sed_athk = .false.
+  out_his_sed_bthk = .false.
+  out_his_sed_bpor = .false.
 /
 
 &croco_bbl_history_fields
-  ! CPP: BBL
-  out_his_abed    = .true.   ! Near-bottom wave orbital amplitude
-  out_his_hripple = .true.   ! Ripple height
-  out_his_lripple = .true.   ! Ripple wavelength
-  out_his_zbnot   = .true.   ! Physical bottom roughness
-  out_his_zbapp   = .true.   ! Apparent bottom roughness
-  out_his_bostrw  = .true.   ! Wave-current combined bottom stress
+  out_his_abed = .true.
+  out_his_hripple = .false.
+  out_his_lripple = .false.
+  out_his_zbnot = .true.
+  out_his_zbapp = .false.
+  out_his_bostrw = .true.
 /
 
-! --- Wave / ocean coupling fields ---
-
 &croco_wci_history_fields
-  ! CPP: MRL_WCI
-  out_his_sup   = .true.   ! Wave-induced set-up
-  out_his_ust2d = .true.   ! Depth-averaged Stokes drift u
-  out_his_vst2d = .true.   ! Depth-averaged Stokes drift v
+  out_his_sup = .false.
+  out_his_ust2d = .false.
+  out_his_vst2d = .false.
 /
 
 &croco_wci_history_3d_fields
-  ! CPP: MRL_WCI && SOLVE3D
-  out_his_ust  = .true.   ! 3-D Stokes drift u
-  out_his_vst  = .true.   ! 3-D Stokes drift v
-  out_his_wst  = .true.   ! 3-D Stokes drift w
-  out_his_akb  = .true.   ! Wave breaking-induced eddy viscosity
-  out_his_akw  = .true.   ! Wave-induced eddy viscosity (full)
-  out_his_kvf  = .true.   ! Vortex-force viscosity
-  out_his_calp = .true.   ! Wave celerity
-  out_his_kaps = .true.   ! Wave energy dissipation
+  out_his_ust = .false.
+  out_his_vst = .false.
+  out_his_wst = .false.
+  out_his_akb = .false.
+  out_his_akw = .false.
+  out_his_kvf = .false.
+  out_his_calp = .false.
+  out_his_kaps = .false.
 /
 
 &croco_wave_history_fields
-  ! CPP: MRL_WCI || OW_COUPLING
-  out_his_hrm    = .true.   ! RMS wave height
-  out_his_frq    = .true.   ! Peak wave frequency
-  out_his_action = .true.   ! Wave action density
-  out_his_k_xi   = .true.   ! Wavenumber xi-component
-  out_his_k_eta  = .true.   ! Wavenumber eta-component
-  out_his_eps_b  = .true.   ! Wave breaking dissipation
-  out_his_eps_d  = .true.   ! Wave dissipation (bottom friction)
-  out_his_erol   = .true.   ! Wave roller energy
-  out_his_eps_r  = .true.   ! Wave roller dissipation
+  out_his_hrm = .false.
+  out_his_frq = .false.
+  out_his_action = .false.
+  out_his_k_xi = .false.
+  out_his_k_eta = .false.
+  out_his_eps_b = .false.
+  out_his_eps_d = .false.
+  out_his_erol = .false.
+  out_his_eps_r = .false.
 /
-
-! --- ABL fields ---
-
-&croco_abl_history_fields
-  ! CPP: ABL1D && !XIOS
-  out_his_abl_pu_dta   = .true.   ! ABL geostrophic u at bottom
-  out_his_abl_pv_dta   = .true.   ! ABL geostrophic v at bottom
-  out_his_abl_pt_dta   = .true.   ! ABL potential temperature at bottom
-  out_his_abl_pq_dta   = .true.   ! ABL specific humidity at bottom
-  out_his_abl_pgu_dta  = .true.   ! ABL zonal pressure gradient
-  out_his_abl_pgv_dta  = .true.   ! ABL meridional pressure gradient
-  out_his_abl_u_abl    = .true.   ! ABL zonal wind
-  out_his_abl_v_abl    = .true.   ! ABL meridional wind
-  out_his_abl_t_abl    = .true.   ! ABL potential temperature
-  out_his_abl_q_abl    = .true.   ! ABL specific humidity
-  out_his_abl_tke_abl  = .true.   ! ABL turbulent kinetic energy
-  out_his_abl_mxlm_abl = .true.   ! ABL mixing length (master)
-  out_his_abl_mxld_abl = .true.   ! ABL mixing length (dissipation)
-  out_his_abl_avm_abl  = .true.   ! ABL eddy viscosity
-  out_his_abl_avt_abl  = .true.   ! ABL eddy diffusivity
-  out_his_abl_ablh_abl = .true.   ! ABL boundary layer height
-  out_his_abl_zr_abl   = .true.   ! ABL cell-centre heights
-  out_his_abl_zw_abl   = .true.   ! ABL cell-edge heights
-  out_his_abl_Hzr_abl  = .true.   ! ABL cell thicknesses at centres
-  out_his_abl_Hzw_abl  = .true.   ! ABL cell thicknesses at edges
-/
-
-! --- Surface output fields ---
 
 &croco_surf_history_fields
-  ! CPP: OUTPUTS_SURFACE && !XIOS
-  out_his_surf = .true.   ! Write fields to the surface history file
+  out_his_surf = .true.
 /
-
-! --- Stochastic fields ---
 
 &croco_stochastic_history_fields
-  ! CPP: STOGEN
-  out_his_xi2d = .true.   ! 2-D stochastic forcing pattern
-  out_his_xi3d = .true.   ! 3-D stochastic forcing pattern
+  out_his_xi2d = .false.
+  out_his_xi3d = .false.
 /
 
-! --- Diagnostic budget fields in history ---
-
 &croco_diag3D_history_fields
-  ! CPP: DIAGNOSTICS_TS && TRACERS
-  ! Array of size NT.
-  out_his_dia3D_tracer = 2*.true.   ! 3-D tracer tendency budget terms
+  out_his_dia3D_tracer = 2*.true.
 /
 
 &croco_diag2D_history_fields
-  ! CPP: DIAGNOSTICS_TS && TRACERS && DIAGNOSTICS_TS_MLD
-  ! Array of size NT.
-  out_his_dia2D_tracer = 2*.true.   ! 2-D MLD-integrated tracer tendency terms
+  out_his_dia2D_tracer = 2*.true.
 /
 
 &croco_diagM_history_fields
-  ! CPP: DIAGNOSTICS_UV
-  out_his_diagM_u = .true.   ! Momentum tendency u budget
-  out_his_diagM_v = .true.   ! Momentum tendency v budget
+  out_his_diagM_u = .true.
+  out_his_diagM_v = .true.
 /
 
 &croco_diags_vrt_history_fields
-  ! CPP: DIAGNOSTICS_VRT
-  out_his_diags_vrt = .true.   ! Vorticity budget terms
+  out_his_diags_vrt = .true.
 /
 
 &croco_diags_ek_history_fields
-  ! CPP: DIAGNOSTICS_KE
-  out_his_diags_ek = .true.   ! Kinetic energy budget terms
+  out_his_diags_ek = .true.
 /
 
 &croco_diags_pv_history_fields
-  ! CPP: DIAGNOSTICS_PV && TRACERS
-  ! Array of size NT.
-  out_his_diags_pv_tracer = 2*.true.   ! PV budget per tracer
+  out_his_diags_pv_tracer = 2*.true.
 /
-
-&croco_diagbioFlux_history_fields
-  ! CPP: DIAGNOSTICS_BIO
-  ! Array of size NumFluxTerms.
-  out_his_diagbioFlux = 1*.true.   ! Bio flux diagnostics
-/
-
-&croco_diagbioVSink_history_fields
-  ! CPP: DIAGNOSTICS_BIO
-  ! Array of size NumVSinkTerms.
-  out_his_diagbioVSink = 1*.true.   ! Bio vertical sinking diagnostics
-/
-
-&croco_diagbioGasExc_history_fields
-  ! CPP: DIAGNOSTICS_BIO && (BIO_NChlPZD && OXYGEN || BIO_BioEBUS)
-  ! Array of size NumGasExcTerms.
-  out_his_diagbioGasExc = 1*.true.   ! Gas exchange diagnostics
-/
-
-
-! ======================================================================
-! 14b.  AVERAGE FIELDS  (all require CPP: AVERAGES)
-! ======================================================================
-
-! --- Primary fields ---
 
 &croco_primary_average_fields
-  ! CPP: AVERAGES
   out_avg_zeta = .true.
   out_avg_ubar = .true.
   out_avg_vbar = .true.
 /
 
 &croco_primary_3d_average_fields
-  ! CPP: AVERAGES && SOLVE3D
   out_avg_u = .true.
   out_avg_v = .true.
 /
 
 &croco_primary_tracer_average_fields
-  ! CPP: AVERAGES && SOLVE3D && TRACERS
-  ! Array of size NT.
   out_avg_tracer = 2*.true.
 /
 
-! --- Auxiliary 3-D fields ---
-
 &croco_auxiliary_averages_fields
-  ! CPP: AVERAGES && SOLVE3D
-  out_avg_rho   = .false.
-  out_avg_omega = .false.
-  out_avg_w     = .false.
-  out_avg_akv   = .false.
-  out_avg_bostr = .false.
+  out_avg_rho = .false.
+  out_avg_omega = .true.
+  out_avg_w = .true.
+  out_avg_akv = .false.
+  out_avg_bostr = .true.
   out_avg_bustr = .false.
   out_avg_bvstr = .false.
-  out_avg_wstr  = .false.
-  out_avg_ustr  = .false.
-  out_avg_vstr  = .false.
+  out_avg_wstr = .true.
+  out_avg_ustr = .true.
+  out_avg_vstr = .true.
 /
 
-! --- Physics-specific optional fields ---
-
 &croco_temperature_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && TEMPERATURE
-  out_avg_akt       = .false.
-  out_avg_shflx     = .false.
-  out_avg_shflx_rsw = .false.
+  out_avg_akt = .true.
+  out_avg_shflx = .true.
+  out_avg_shflx_rsw = .true.
 /
 
 &croco_salinity_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && SALINITY
-  out_avg_aks   = .false.
-  out_avg_swflx = .false.
+  out_avg_aks = .false.
+  out_avg_swflx = .true.
 /
 
 &croco_bulk_flux_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && BULK_FLUX
-  out_avg_shflx_rlw = .false.
-  out_avg_shflx_lat = .false.
-  out_avg_shflx_sen = .false.
-/
-
-&croco_bhflux_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && BHFLUX
-  out_avg_bhflx = .false.
-/
-
-&croco_bwflux_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && BWFLUX && SALINITY
-  out_avg_bwflx = .false.
+  out_avg_shflx_rlw = .true.
+  out_avg_shflx_lat = .true.
+  out_avg_shflx_sen = .true.
 /
 
 &croco_bvf_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && (ANA_VMIX || LMD_MIXING || LMD_SKPP || LMD_BKPP || GLS_MIXING)
   out_avg_bvf = .false.
 /
 
 &croco_hbl_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && (LMD_SKPP || GLS_MIXING)
-  out_avg_hbl = .false.
+  out_avg_hbl = .true.
 /
 
 &croco_lmd_bkpp_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && LMD_BKPP
-  out_avg_hbbl = .false.
+  out_avg_hbbl = .true.
 /
 
 &croco_vis_coef_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && VIS_COEF_3D
   out_avg_visc3d = .false.
 /
 
 &croco_dif_coef_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && DIF_COEF_3D
   out_avg_diff3d = .false.
 /
 
 &croco_gls_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && GLS_MIXING
-  out_avg_tke    = .true.
-  out_avg_gls    = .true.
+  out_avg_tke = .true.
+  out_avg_gls = .true.
   out_avg_lscale = .true.
 /
 
-! --- Biology / morphodynamics fields ---
-
 &croco_biology_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && BIOLOGY && !PISCES
-  out_avg_hel = .false.
+  out_avg_hel = .true.
 /
-
-&croco_bio_nchlpzd_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && BIO_NChlPZD
-  out_avg_chc   = .false.
-  out_avg_u10   = .false.
-  out_avg_kvo2  = .false.
-  out_avg_o2sat = .false.
-/
-
-&croco_bio_bioebus_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && BIO_BioEBUS
-  out_avg_aou    = .false.
-  out_avg_wind10 = .false.
-/
-
-&croco_morphodyn_averages_fields
-  ! CPP: AVERAGES && SOLVE3D && MORPHODYN
-  out_avg_hm = .false.
-/
-
-! --- ABL fields ---
-
-&croco_abl_averages_fields
-  ! CPP: ABL1D && !XIOS && AVERAGES
-  out_avg_abl_pu_dta   = .true.
-  out_avg_abl_pv_dta   = .true.
-  out_avg_abl_pt_dta   = .true.
-  out_avg_abl_pq_dta   = .true.
-  out_avg_abl_pgu_dta  = .true.
-  out_avg_abl_pgv_dta  = .true.
-  out_avg_abl_u_abl    = .true.
-  out_avg_abl_v_abl    = .true.
-  out_avg_abl_t_abl    = .true.
-  out_avg_abl_q_abl    = .true.
-  out_avg_abl_tke_abl  = .true.
-  out_avg_abl_mxlm_abl = .true.
-  out_avg_abl_mxld_abl = .true.
-  out_avg_abl_avm_abl  = .true.
-  out_avg_abl_avt_abl  = .true.
-  out_avg_abl_ablh_abl = .true.
-  out_avg_abl_zr_abl   = .true.
-  out_avg_abl_zw_abl   = .true.
-  out_avg_abl_Hzr_abl  = .true.
-  out_avg_abl_Hzw_abl  = .true.
-/
-
-! --- Surface average fields ---
 
 &croco_surf_average_fields
-  ! CPP: OUTPUTS_SURFACE && !XIOS && AVERAGES
-  out_avg_surf = .true.   ! Write fields to the surface averages file
+  out_avg_surf = .false.
 /
 
-! --- Wave / ocean coupling fields ---
-
 &croco_wci_average_fields
-  ! CPP: MRL_WCI && AVERAGES
-  out_avg_sup   = .true.
-  out_avg_ust2d = .true.
-  out_avg_vst2d = .true.
+  out_avg_sup = .false.
+  out_avg_ust2d = .false.
+  out_avg_vst2d = .false.
 /
 
 &croco_wci_average_3d_fields
-  ! CPP: MRL_WCI && AVERAGES && SOLVE3D
-  out_avg_ust  = .true.
-  out_avg_vst  = .true.
-  out_avg_wst  = .true.
-  out_avg_akb  = .true.
-  out_avg_akw  = .true.
-  out_avg_kvf  = .true.
-  out_avg_calp = .true.
-  out_avg_kaps = .true.
+  out_avg_ust = .false.
+  out_avg_vst = .false.
+  out_avg_wst = .false.
+  out_avg_akb = .false.
+  out_avg_akw = .false.
+  out_avg_kvf = .false.
+  out_avg_calp = .false.
+  out_avg_kaps = .false.
 /
 
 &croco_wave_average_fields
-  ! CPP: (MRL_WCI || OW_COUPLING) && AVERAGES
-  out_avg_hrm    = .true.
-  out_avg_frq    = .true.
-  out_avg_action = .true.
-  out_avg_k_xi   = .true.
-  out_avg_k_eta  = .true.
-  out_avg_eps_b  = .true.
-  out_avg_eps_d  = .true.
-  out_avg_erol   = .true.
-  out_avg_eps_r  = .true.
+  out_avg_hrm = .false.
+  out_avg_frq = .false.
+  out_avg_action = .false.
+  out_avg_k_xi = .false.
+  out_avg_k_eta = .false.
+  out_avg_eps_b = .false.
+  out_avg_eps_d = .false.
+  out_avg_erol = .false.
+  out_avg_eps_r = .false.
 /
 
-! --- Diagnostic budget fields in averages ---
-
 &croco_diag3D_average_fields
-  ! CPP: DIAGNOSTICS_TS && AVERAGES && TRACERS
-  ! Array of size NT.
   out_avg_dia3D_tracer = 2*.true.
 /
 
 &croco_diag2D_average_fields
-  ! CPP: DIAGNOSTICS_TS && AVERAGES && TRACERS && DIAGNOSTICS_TS_MLD
-  ! Array of size NT.
   out_avg_dia2D_tracer = 2*.true.
 /
 
 &croco_diagM_average_fields
-  ! CPP: DIAGNOSTICS_UV && AVERAGES
   out_avg_diagM_u = .true.
   out_avg_diagM_v = .true.
 /
 
 &croco_diags_vrt_average_fields
-  ! CPP: DIAGNOSTICS_VRT && AVERAGES
   out_avg_diags_vrt = .true.
 /
 
 &croco_diags_ek_average_fields
-  ! CPP: DIAGNOSTICS_KE && AVERAGES
   out_avg_diags_ek = .true.
 /
 
 &croco_diags_pv_average_fields
-  ! CPP: DIAGNOSTICS_PV && TRACERS && AVERAGES
-  ! Array of size NT.
   out_avg_diags_pv_tracer = 2*.true.
 /
 
 &croco_diags_eddy_average_fields
-  ! CPP: DIAGNOSTICS_EDDY && !XIOS && AVERAGES
   out_avg_diags_eddy = .true.
 /
 
-&croco_diagbioFlux_average_fields
-  ! CPP: DIAGNOSTICS_BIO && AVERAGES
-  out_avg_diagbioFlux = 1*.true.
-/
-
-&croco_diagbioVSink_average_fields
-  ! CPP: DIAGNOSTICS_BIO && AVERAGES
-  out_avg_diagbioVSink = 1*.true.
-/
-
-&croco_diagbioGasExc_average_fields
-  ! CPP: DIAGNOSTICS_BIO && AVERAGES && (BIO_NChlPZD && OXYGEN || BIO_BioEBUS)
-  out_avg_diagbioGasExc = 1*.true.
-/
-
-
-! ======================================================================
-! 14c.  STATION FIELDS  (CPP: STATIONS)
-! ======================================================================
-
 &croco_station_fields
-  ! CPP: STATIONS
-  sta_grd  = .true.   ! Grid metrics (h, f, pm, pn, angle)
-  sta_temp = .true.   ! Temperature
-  sta_salt = .true.   ! Salinity
-  sta_rho  = .true.   ! Density
-  sta_vel  = .true.   ! Velocity (u, v, w, ubar, vbar)
+  sta_grd = .true.
+  sta_temp = .true.
+  sta_salt = .true.
+  sta_rho = .true.
+  sta_vel = .true.
 /
+
 
 ! End of namelist

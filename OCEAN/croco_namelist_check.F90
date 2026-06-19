@@ -20,7 +20,8 @@
 !    check_all              – call every check_xxx in order, accumulate
 !                             all errors before returning
 !
-!  Individual check routines are kept public for unit-testing purposes.
+!  Individual check routines are not used outside this module and are
+!  kept private.
 !=======================================================================
 
 MODULE croco_namelist_check
@@ -28,23 +29,6 @@ MODULE croco_namelist_check
    private
 
    public :: check_all
-   public :: check_time_stepping
-   public :: check_history
-#ifdef NBQ
-   public :: check_time_stepping_nbq
-#endif
-#ifdef SOLVE3D
-   public :: check_croco_s_coord
-#endif
-#if defined WKB_WWAVE && defined WAVE_ROLLER
-   public :: check_wkb_roller
-#endif
-#ifdef BODYFORCE
-   public :: check_bodyforce
-#endif
-#ifdef ANA_PSOURCE
-   public :: check_psource
-#endif
 
 contains
 
@@ -66,14 +50,14 @@ contains
       call check_croco_s_coord(ierr)
 #endif
       call check_history(ierr)
+#ifdef ONLINE
+      call check_online(ierr)
+#endif
 #if defined WKB_WWAVE && defined WAVE_ROLLER
       call check_wkb_roller(ierr)
 #endif
 #ifdef BODYFORCE
       call check_bodyforce(ierr)
-#endif
-#ifdef ONLINE
-      call check_online(ierr)
 #endif
 #ifdef ANA_PSOURCE
       call check_psource(ierr)
@@ -114,32 +98,6 @@ contains
       end if
 
    end subroutine check_time_stepping
-
-   !---------------------------------------------------------------------
-   !  check_history
-   !---------------------------------------------------------------------
-   subroutine check_history(ierr)
-      use param, ONLY: stdout
-      use croco_namelist, ONLY: nwrt, nrpfhis
-#if defined MPI
-      use scalars, ONLY: mynode
-#endif
-      implicit none
-      integer, intent(inout) :: ierr
-
-      if (nwrt <= 0) then
-         MPI_master_only write (stdout, *) &
-            'Error - History output frequency nwrt must be > 0: ', nwrt
-         ierr = ierr + 1
-      end if
-
-      if (nrpfhis < -1) then
-         MPI_master_only write (stdout, *) &
-            'Error - nrpfhis must be >= -1: ', nrpfhis
-         ierr = ierr + 1
-      end if
-
-   end subroutine check_history
 
 #ifdef NBQ
    !---------------------------------------------------------------------
@@ -223,6 +181,54 @@ contains
    end subroutine check_croco_s_coord
 #endif /* SOLVE3D */
 
+   !---------------------------------------------------------------------
+   !  check_history
+   !---------------------------------------------------------------------
+   subroutine check_history(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: nwrt, nrpfhis
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      if (nwrt <= 0) then
+         MPI_master_only write (stdout, *) &
+            'Error - History output frequency nwrt must be > 0: ', nwrt
+         ierr = ierr + 1
+      end if
+
+      if (nrpfhis < -1) then
+         MPI_master_only write (stdout, *) &
+            'Error - nrpfhis must be >= -1: ', nrpfhis
+         ierr = ierr + 1
+      end if
+
+   end subroutine check_history
+
+#ifdef ONLINE
+   !---------------------------------------------------------------------
+   !  check_online
+   !---------------------------------------------------------------------
+   subroutine check_online(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: pathbulk
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      if (len_trim(pathbulk) == 0) then
+         MPI_master_only write (stdout, '(a)') &
+            'Error - pathbulk is empty in &croco_online.'
+         ierr = ierr + 1
+      end if
+
+   end subroutine check_online
+#endif /* ONLINE */
+
 #if defined WKB_WWAVE && defined WAVE_ROLLER
    !---------------------------------------------------------------------
    !  check_wkb_roller
@@ -276,28 +282,6 @@ contains
 
    end subroutine check_bodyforce
 #endif /* BODYFORCE */
-
-#ifdef ONLINE
-   !---------------------------------------------------------------------
-   !  check_online
-   !---------------------------------------------------------------------
-   subroutine check_online(ierr)
-      use param, ONLY: stdout
-      use croco_namelist, ONLY: pathbulk
-#if defined MPI
-      use scalars, ONLY: mynode
-#endif
-      implicit none
-      integer, intent(inout) :: ierr
-
-      if (len_trim(pathbulk) == 0) then
-         MPI_master_only write (stdout, '(a)') &
-            'Error - pathbulk is empty in &croco_online.'
-         ierr = ierr + 1
-      end if
-
-   end subroutine check_online
-#endif /* ONLINE */
 
 #ifdef ANA_PSOURCE
    !---------------------------------------------------------------------

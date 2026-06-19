@@ -19,6 +19,11 @@
   Tcline = 10.d0
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "basin_rst.nc"
+/
+
 &croco_history
   ldefhis = .true.
   nwrt = 90
@@ -26,28 +31,17 @@
   hisname = "basin_his.nc"
 /
 
-&croco_initial
-  nrrec = 0
-  ininame = "basin_rst.nc"
+&croco_averages
+  ntsavg = 1
+  navg = 3240
+  nrpfavg = 0
+  avgname = "basin_avg.nc"
 /
 
 &croco_restart
   nrst = 20000000
   nrpfrst = -1
   rstname = "basin_rst.nc"
-/
-
-&croco_bodyforce
-  levsfrc = 10
-  levbfrc = 1
-/
-
-&croco_lin_eos
-  R0 = 30.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = 0.28
-  Scoef = 0.
 /
 
 &croco_rho0
@@ -84,11 +78,12 @@
   Akt_bak = 1*1.e-6
 /
 
-&croco_averages
-  ntsavg = 1
-  navg = 3240
-  nrpfavg = 0
-  avgname = "basin_avg.nc"
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
 /
 
 &croco_diagnosticsM
@@ -136,9 +131,9 @@
   diags_ekname_avg = "basin_diags_ek_avg.nc"
 /
 
-&croco_stochastic_history_fields
-  out_his_xi2d = .true.
-  out_his_xi3d = .false.
+&croco_bodyforce
+  levsfrc = 10
+  levbfrc = 1
 /
 
 &croco_primary_history_fields
@@ -154,21 +149,6 @@
 
 &croco_primary_history_tracer_fields
   out_his_tracer = 1*.true.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .true.
-  out_avg_ubar = .true.
-  out_avg_vbar = .true.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .true.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 1*.true.
 /
 
 &croco_auxiliary_history_fields
@@ -224,6 +204,39 @@
   out_his_hm = .false.
 /
 
+&croco_stochastic_history_fields
+  out_his_xi2d = .true.
+  out_his_xi3d = .false.
+/
+
+&croco_diagM_history_fields
+  out_his_diagM_u = .true.
+  out_his_diagM_v = .true.
+/
+
+&croco_diags_vrt_history_fields
+  out_his_diags_vrt = .true.
+/
+
+&croco_diags_ek_history_fields
+  out_his_diags_ek = .true.
+/
+
+&croco_primary_average_fields
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  out_avg_tracer = 1*.true.
+/
+
 &croco_auxiliary_averages_fields
   out_avg_rho = .false.
   out_avg_omega = .false.
@@ -274,26 +287,13 @@
   out_avg_hel = .false.
 /
 
-&croco_diagM_history_fields
-  out_his_diagM_u = .true.
-  out_his_diagM_v = .true.
-/
-
 &croco_diagM_average_fields
   out_avg_diagM_u = .true.
   out_avg_diagM_v = .true.
 /
 
-&croco_diags_vrt_history_fields
-  out_his_diags_vrt = .true.
-/
-
 &croco_diags_vrt_average_fields
   out_avg_diags_vrt = .true.
-/
-
-&croco_diags_ek_history_fields
-  out_his_diags_ek = .true.
 /
 
 &croco_diags_ek_average_fields

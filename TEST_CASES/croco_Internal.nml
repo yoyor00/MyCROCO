@@ -15,22 +15,9 @@
   Tcline = 2000.d0
 /
 
-&croco_history
-  ldefhis = .true.
-  nwrt = 32
-  nrpfhis = 0
-  hisname = "internal_his.nc"
-/
-
 &croco_initial
   nrrec = 0
   ininame = "internal_rst.nc"
-/
-
-&croco_restart
-  nrst = 992
-  nrpfrst = -1
-  rstname = "internal_rst.nc"
 /
 
 &croco_sponge
@@ -44,12 +31,17 @@
   tauM_out = 180.
 /
 
-&croco_lin_eos
-  R0 = 0.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = -1.
-  Scoef = 0.
+&croco_history
+  ldefhis = .true.
+  nwrt = 32
+  nrpfhis = 0
+  hisname = "internal_his.nc"
+/
+
+&croco_restart
+  nrst = 992
+  nrpfrst = -1
+  rstname = "internal_rst.nc"
 /
 
 &croco_rho0
@@ -80,6 +72,14 @@
 &croco_vertical_mixing
   Akv_bak = 1.e-5
   Akt_bak = 1*1.e-5
+/
+
+&croco_lin_eos
+  R0 = 0.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = -1.
+  Scoef = 0.
 /
 
 &croco_primary_history_fields

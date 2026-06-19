@@ -342,9 +342,9 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     chmod +x $MY_CROCO_DIR/jobcomp
 
     if [[ ${options[@]} =~ "runcpl" ]]; then
-        cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.        
+        cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.
     else
-        cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
+        cp -f ${CROCO_DIR}/OCEAN/croco.nml $MY_CROCO_DIR/croco.nml
     fi
     cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CROCO_DIR.
     # TEST_CASES
@@ -353,16 +353,16 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     fi
     # AGRIF
     if [[ ${options[@]} =~ "agrif" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/OCEAN/croco.nml.1 $MY_CROCO_DIR.
 	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
     fi
     # INTER
     if [[ ${options[@]} =~ "inter" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/croco_inter.in* $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/OCEAN/croco_inter.nml* $MY_CROCO_DIR.
     fi
     # FORECAST
     if [[ ${options[@]} =~ "forc" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/OCEAN/croco_forecast.nml $MY_CROCO_DIR.
     fi
     # STOGEN
     if [[ ${options[@]} =~ "stogen" ]] ; then

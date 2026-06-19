@@ -1,10 +1,14 @@
 &croco_title
-  title = "BENGUELA TEST MODEL"
+  title = "BENGUELA TEST MODEL ZOOM LEVEL #1"
+/
+
+&croco_logfile
+  logname = "croco.log"
 /
 
 &croco_time_stepping
-  ntimes = 384
-  dt = 3600
+  ntimes = 1
+  dt = 1200
   ndtfast = 60
   ninfo = 1
 /
@@ -16,8 +20,8 @@
 /
 
 &croco_use_calendar
-  start_date = "2000-01-01 00:00:00"
-  end_date = "2000-02-01 00:00:00"
+  start_date = "2014-01-04 00:00:00"
+  end_date = "2016-01-01 00:00:00"
   dt_his = 1
   dt_avg = 6
   dt_rst = 12
@@ -31,27 +35,27 @@
 
 &croco_initial
   nrrec = 1
-  ininame = "CROCO_FILES/croco_ini.nc"
+  ininame = "CROCO_FILES/croco_ini.nc.1"
 /
 
 &croco_grid
-  grdname = "CROCO_FILES/croco_grd.nc"
+  grdname = "CROCO_FILES/croco_grd.nc.1"
 /
 
 &croco_forcing
-  frcname = "CROCO_FILES/croco_frc.nc"
+  frcname = "CROCO_FILES/croco_frc.nc.1"
 /
 
 &croco_bulk_forcing
-  bulkname = "CROCO_FILES/croco_blk.nc"
+  bulkname = "CROCO_FILES/croco_blk.nc.1"
 /
 
 &croco_climatology
-  clmname = "CROCO_FILES/croco_clm.nc"
+  clmname = "XXXXXXXXX"
 /
 
 &croco_boundary
-  bry_file = "CROCO_FILES/croco_bry.nc"
+  bry_file = "XXXXXXXXX"
 /
 
 &croco_sponge
@@ -67,37 +71,37 @@
 
 &croco_history
   ldefhis = .true.
-  nwrt = 48
+  nwrt = 216
   nrpfhis = 0
-  hisname = "CROCO_FILES/croco_his.nc"
+  hisname = "CROCO_FILES/croco_his.nc.1"
 /
 
 &croco_averages
   ntsavg = 1
-  navg = 48
+  navg = 216
   nrpfavg = 0
-  avgname = "CROCO_FILES/croco_avg.nc"
+  avgname = "CROCO_FILES/croco_avg.nc.1"
 /
 
 &croco_restart
-  nrst = 384
+  nrst = 2160
   nrpfrst = -1
-  rstname = "CROCO_FILES/croco_rst.nc"
+  rstname = "CROCO_FILES/croco_rst.nc.1"
 /
 
 &croco_surf
   ldefsurf = .true.
-  nwrtsurf = 1
+  nwrtsurf = 12
   nrpfsurf = 0
-  surfname = "CROCO_FILES/croco_surf.nc"
+  surfname = "CROCO_FILES/croco_surf.nc.1"
 /
 
 &croco_surf_avg
-  ldefsurf_avg = .false.
+  ldefsurf_avg = .true.
   ntssurf_avg = 1
-  nwrtsurf_avg = 4
+  nwrtsurf_avg = 12
   nrpfsurf_avg = 0
-  surfname_avg = "CROCO_FILES/croco_surf_avg.nc"
+  surfname_avg = "CROCO_FILES/croco_surf_avg.nc.1"
 /
 
 &croco_rho0
@@ -136,17 +140,17 @@
 
 &croco_diagnostics_ts
   ldefdia = .true.
-  nwrtdia = 48
+  nwrtdia = 216
   nrpfdia = 0
-  dianame = "CROCO_FILES/croco_dia.nc"
+  dianame = "CROCO_FILES/croco_dia.nc.1"
 /
 
 &croco_diag_avg
   ldefdia_avg = .true.
   ntsdia_avg = 1
-  nwrtdia_avg = 48
+  nwrtdia_avg = 216
   nrpfdia_avg = 0
-  dianame_avg = "CROCO_FILES/croco_dia_avg.nc"
+  dianame_avg = "CROCO_FILES/croco_dia_avg.nc.1"
 /
 
 &croco_diag_mld_dens
@@ -156,85 +160,85 @@
 
 &croco_diagnosticsM
   ldefdiaM = .true.
-  nwrtdiaM = 48
+  nwrtdiaM = 216
   nrpfdiaM = 0
-  dianameM = "CROCO_FILES/croco_diaM.nc"
+  dianameM = "CROCO_FILES/croco_diaM.nc.1"
 /
 
 &croco_diagM_avg
   ldefdiaM_avg = .true.
   ntsdiaM_avg = 1
-  nwrtdiaM_avg = 48
+  nwrtdiaM_avg = 216
   nrpfdiaM_avg = 0
-  dianameM_avg = "CROCO_FILES/croco_diaM_avg.nc"
+  dianameM_avg = "CROCO_FILES/croco_diaM_avg.nc.1"
 /
 
 &croco_diags_vrt
   ldefdiags_vrt = .true.
-  nwrtdiags_vrt = 48
+  nwrtdiags_vrt = 216
   nrpfdiags_vrt = 0
-  diags_vrtname = "CROCO_FILES/croco_diags_vrt.nc"
+  diags_vrtname = "CROCO_FILES/croco_diags_vrt.nc.1"
 /
 
 &croco_diags_vrt_avg
   ldefdiags_vrt_avg = .true.
   ntsdiags_vrt_avg = 1
-  nwrtdiags_vrt_avg = 48
+  nwrtdiags_vrt_avg = 216
   nrpfdiags_vrt_avg = 0
-  diags_vrtname_avg = "CROCO_FILES/croco_diags_vrt_avg.nc"
+  diags_vrtname_avg = "CROCO_FILES/croco_diags_vrt_avg.nc.1"
 /
 
 &croco_diags_ek
   ldefdiags_ek = .true.
-  nwrtdiags_ek = 48
+  nwrtdiags_ek = 216
   nrpfdiags_ek = 0
-  diags_ekname = "CROCO_FILES/croco_diags_ek.nc"
+  diags_ekname = "CROCO_FILES/croco_diags_ek.nc.1"
 /
 
 &croco_diags_ek_avg
   ldefdiags_ek_avg = .true.
   ntsdiags_ek_avg = 1
-  nwrtdiags_ek_avg = 48
+  nwrtdiags_ek_avg = 216
   nrpfdiags_ek_avg = 0
-  diags_ekname_avg = "CROCO_FILES/croco_diags_ek_avg.nc"
+  diags_ekname_avg = "CROCO_FILES/croco_diags_ek_avg.nc.1"
 /
 
 &croco_diags_pv
   ldefdiags_pv = .true.
-  nwrtdiags_pv = 48
+  nwrtdiags_pv = 216
   nrpfdiags_pv = 0
-  diags_pvname = "CROCO_FILES/croco_diags_pv.nc"
+  diags_pvname = "CROCO_FILES/croco_diags_pv.nc.1"
 /
 
 &croco_diags_pv_avg
   ldefdiags_pv_avg = .true.
   ntsdiags_pv_avg = 1
-  nwrtdiags_pv_avg = 48
+  nwrtdiags_pv_avg = 216
   nrpfdiags_pv_avg = 0
-  diags_pvname_avg = "CROCO_FILES/croco_diags_pv_avg.nc"
+  diags_pvname_avg = "CROCO_FILES/croco_diags_pv_avg.nc.1"
 /
 
 &croco_diags_eddy_avg
   ldefdiags_eddy_avg = .true.
   ntsdiags_eddy_avg = 1
-  nwrtdiags_eddy_avg = 48
+  nwrtdiags_eddy_avg = 216
   nrpfdiags_eddy_avg = 0
-  diags_eddyname_avg = "CROCO_FILES/croco_diags_eddy_avg.nc"
+  diags_eddyname_avg = "CROCO_FILES/croco_diags_eddy_avg.nc.1"
 /
 
 &croco_diagnostics_bio
   ldefdiabio = .true.
-  nwrtdiabio = 48
+  nwrtdiabio = 216
   nrpfdiabio = 0
-  dianamebio = "CROCO_FILES/croco_diabio.nc"
+  dianamebio = "CROCO_FILES/croco_diabio.nc.1"
 /
 
 &croco_diagbio_avg
   ldefdiabio_avg = .true.
   ntsdiabio_avg = 1
-  nwrtdiabio_avg = 48
+  nwrtdiabio_avg = 216
   nrpfdiabio_avg = 0
-  dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc"
+  dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc.1"
 /
 
 &croco_stations
@@ -255,7 +259,7 @@
 /
 
 &croco_wkb_boundary
-  brywkb_file = "CROCO_FILES/croco_wkb.nc"
+  brywkb_file = "XXXXXXX"
 /
 
 &croco_wkb_wwave
@@ -273,22 +277,16 @@
 /
 
 &croco_biology
-  bioname = "CROCO_FILES/croco_frcbio.nc"
+  bioname = "CROCO_FILES/croco_frcbio.nc.1"
 /
 
 &croco_psource
   psource_Nsrc = 2
 /
 
-&croco_psource_ncfile_data
-  psource_qbarname = "CROCO_FILES/croco_runoff.nc"
-  psource_Isrc(   1) =    24, psource_Jsrc(   1) =    35, psource_Dsrc(   1) =     0, psource_qbardir(   1) =    -1
-  psource_Isrc(   2) =    35, psource_Jsrc(   2) =    13, psource_Dsrc(   2) =     1, psource_qbardir(   2) =    -1
-/
-
 &croco_psource_data
-  psource_Isrc(   1) =    24, psource_Jsrc(   1) =    35, psource_Dsrc(   1) =     1, psource_Qbar(   1) = -200.
-  psource_Isrc(   2) =    35, psource_Jsrc(   2) =    13, psource_Dsrc(   2) =     0, psource_Qbar(   2) = -200.
+  psource_Isrc(   1) =     3, psource_Jsrc(   1) =    54, psource_Dsrc(   1) =     1, psource_Qbar(   1) =  200.
+  psource_Isrc(   2) =     3, psource_Jsrc(   2) =    40, psource_Dsrc(   2) =     0, psource_Qbar(   2) =  200.
 /
 
 &croco_psource_tracer
@@ -542,7 +540,7 @@
 /
 
 &croco_surf_average_fields
-  out_avg_surf = .false.
+  out_avg_surf = .true.
 /
 
 &croco_wci_average_fields
@@ -610,5 +608,6 @@
   sta_rho = .true.
   sta_vel = .true.
 /
+
 
 ! End of namelist
