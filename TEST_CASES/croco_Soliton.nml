@@ -9,6 +9,11 @@
   ninfo = 5
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "soliton_rst.nc"
+/
+
 &croco_history
   ldefhis = .true.
   nwrt = 80
@@ -16,9 +21,11 @@
   hisname = "soliton_his.nc"
 /
 
-&croco_initial
-  nrrec = 0
-  ininame = "soliton_rst.nc"
+&croco_averages
+  ntsavg = 1
+  navg = 80
+  nrpfavg = 0
+  avgname = "soliton_avg.nc"
 /
 
 &croco_restart
@@ -41,13 +48,6 @@
 
 &croco_gamma2
   gamma2 = 1.
-/
-
-&croco_averages
-  ntsavg = 1
-  navg = 80
-  nrpfavg = 0
-  avgname = "soliton_avg.nc"
 /
 
 &croco_primary_history_fields

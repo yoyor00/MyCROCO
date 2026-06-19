@@ -772,19 +772,22 @@ def parse_in_file(path):
 # ---------------------------------------------------------------------------
 
 def format_value(raw, typ):
-    if typ == "bool":
-        if raw.upper() in ("T", ".TRUE."):
-            return ".true."
-        if raw.upper() in ("F", ".FALSE."):
-            return ".false."
+    try:
+        if typ == "bool":
+            if raw.upper() in ("T", ".TRUE."):
+                return ".true."
+            if raw.upper() in ("F", ".FALSE."):
+                return ".false."
+            return raw
+        if typ == "int":
+            return str(int(float(raw.lower().replace("d", "e"))))
+        if typ == "float":
+            return raw
+        if typ in ("str", "str_line"):
+            return f'"{raw}"'
         return raw
-    if typ == "int":
-        return str(int(float(raw.lower().replace("d", "e"))))
-    if typ == "float":
+    except Exception:
         return raw
-    if typ in ("str", "str_line"):
-        return f'"{raw}"'
-    return raw
 
 
 def expand_repeat(tokens):

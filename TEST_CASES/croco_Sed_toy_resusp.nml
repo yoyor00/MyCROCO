@@ -9,18 +9,23 @@
   ninfo = 40
 /
 
-&croco_s_coord
-  theta_s = 1.0
-  theta_b = 0.8
-  Tcline = 0.
-/
-
 &croco_use_calendar
   start_date = "2019-01-01 00:00:00"
   end_date = "2019-01-05 00:00:00"
   dt_his = 1
   dt_avg = 1
   dt_rst = 24
+/
+
+&croco_s_coord
+  theta_s = 1.0
+  theta_b = 0.8
+  Tcline = 0.
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "fileini"
 /
 
 &croco_history
@@ -30,27 +35,17 @@
   hisname = "sed_toy_resusp_his.nc"
 /
 
-&croco_initial
-  nrrec = 0
-  ininame = "fileini"
+&croco_averages
+  ntsavg = 1
+  navg = 3600
+  nrpfavg = 0
+  avgname = "sed_toy_resusp_avg.nc"
 /
 
 &croco_restart
   nrst = 216000
   nrpfrst = -1
   rstname = "sed_toy_resusp_rst.nc"
-/
-
-&croco_lin_eos
-  R0 = 27
-  T0 = 10.
-  S0 = 35.
-  Tcoef = 1.7d-4
-  Scoef = 7.6d-4
-/
-
-&croco_sediments
-  sedname = "TEST_CASES/sediment_sed_toy_resusp.in"
 /
 
 &croco_rho0
@@ -87,27 +82,16 @@
   Akt_bak = 6*1.d-06
 /
 
-&croco_averages
-  ntsavg = 1
-  navg = 3600
-  nrpfavg = 0
-  avgname = "sed_toy_resusp_avg.nc"
+&croco_lin_eos
+  R0 = 27
+  T0 = 10.
+  S0 = 35.
+  Tcoef = 1.7d-4
+  Scoef = 7.6d-4
 /
 
-&croco_gls_history_fields
-  out_his_tke = .true.
-  out_his_gls = .true.
-  out_his_lscale = .true.
-/
-
-&croco_sediment_history_fields
-  out_his_sed_athk = .true.
-  out_his_sed_bthk = .true.
-  out_his_sed_bpor = .true.
-/
-
-&croco_sediment_bfra_history_fields
-  out_his_sed_bfra = 4*.true.
+&croco_sediments
+  sedname = "TEST_CASES/sediment_sed_toy_resusp.in"
 /
 
 &croco_primary_history_fields
@@ -169,8 +153,24 @@
   out_his_diff3d = .true.
 /
 
+&croco_gls_history_fields
+  out_his_tke = .true.
+  out_his_gls = .true.
+  out_his_lscale = .true.
+/
+
 &croco_biology_history_fields
   out_his_hel = .true.
+/
+
+&croco_sediment_history_fields
+  out_his_sed_athk = .true.
+  out_his_sed_bthk = .true.
+  out_his_sed_bpor = .true.
+/
+
+&croco_sediment_bfra_history_fields
+  out_his_sed_bfra = 4*.true.
 /
 
 &croco_sediment_suspload_history_fields

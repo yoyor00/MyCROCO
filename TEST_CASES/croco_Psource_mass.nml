@@ -15,6 +15,15 @@
   Tcline = 50.d0
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "river_rst.nc"
+/
+
+&croco_sponge
+  x_sponge = 150.e3
+/
+
 &croco_history
   ldefhis = .true.
   nwrt = 40
@@ -22,27 +31,10 @@
   hisname = "river_his.nc"
 /
 
-&croco_initial
-  nrrec = 0
-  ininame = "river_rst.nc"
-/
-
 &croco_restart
   nrst = 800
   nrpfrst = -1
   rstname = "river_rst.nc"
-/
-
-&croco_sponge
-  x_sponge = 150.e3
-/
-
-&croco_lin_eos
-  R0 = 30.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = -1.
-  Scoef = 0.
 /
 
 &croco_rho0
@@ -73,6 +65,34 @@
 &croco_vertical_mixing
   Akv_bak = 1.e-4
   Akt_bak = 2*1.e-6
+/
+
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = -1.
+  Scoef = 0.
+/
+
+&croco_psource
+  psource_Nsrc = 2
+/
+
+&croco_psource_data
+  psource_Isrc(   1) =     3, psource_Jsrc(   1) =    54, psource_Dsrc(   1) =     1, psource_Qbar(   1) =  200.
+  psource_Isrc(   2) =     3, psource_Jsrc(   2) =    40, psource_Dsrc(   2) =     0, psource_Qbar(   2) =  200.
+/
+
+&croco_psource_tracer
+  psource_Lsrc(1,1) = T
+  psource_Lsrc(1,2) = T
+  psource_Lsrc(2,1) = T
+  psource_Lsrc(2,2) = T
+  psource_Tsrc0(1,1) = 5.
+  psource_Tsrc0(1,2) = 0.
+  psource_Tsrc0(2,1) = 5.
+  psource_Tsrc0(2,2) = 0.
 /
 
 &croco_primary_history_fields
@@ -141,26 +161,6 @@
 
 &croco_morphodyn_history_fields
   out_his_hm = .false.
-/
-
-&croco_psource
-  psource_Nsrc = 2
-/
-
-&croco_psource_data
-  psource_Isrc(   1) =     3, psource_Jsrc(   1) =    54, psource_Dsrc(   1) =     1, psource_Qbar(   1) =  200.
-  psource_Isrc(   2) =     3, psource_Jsrc(   2) =    40, psource_Dsrc(   2) =     0, psource_Qbar(   2) =  200.
-/
-
-&croco_psource_tracer
-  psource_Lsrc(1,1) = T
-  psource_Lsrc(1,2) = T
-  psource_Lsrc(2,1) = T
-  psource_Lsrc(2,2) = T
-  psource_Tsrc0(1,1) = 5.
-  psource_Tsrc0(1,2) = 0.
-  psource_Tsrc0(2,1) = 5.
-  psource_Tsrc0(2,2) = 0.
 /
 
 

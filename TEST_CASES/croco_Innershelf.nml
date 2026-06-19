@@ -15,6 +15,15 @@
   Tcline = 4.9d0
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "innershelf_rst.nc"
+/
+
+&croco_sponge
+  x_sponge = 40.e3
+/
+
 &croco_history
   ldefhis = .true.
   nwrt = 5760
@@ -22,27 +31,17 @@
   hisname = "innershelf_his.nc"
 /
 
-&croco_initial
-  nrrec = 0
-  ininame = "innershelf_rst.nc"
+&croco_averages
+  ntsavg = 1
+  navg = 576
+  nrpfavg = 0
+  avgname = "innershelf_avg.nc"
 /
 
 &croco_restart
   nrst = 5760
   nrpfrst = -1
   rstname = "innershelf_rst.nc"
-/
-
-&croco_sponge
-  x_sponge = 40.e3
-/
-
-&croco_lin_eos
-  R0 = 30.
-  T0 = 20.
-  S0 = 35.
-  Tcoef = 0.28d0
-  Scoef = 0.78d0
 /
 
 &croco_rho0
@@ -75,19 +74,12 @@
   Akt_bak = 1*5.e-3
 /
 
-&croco_averages
-  ntsavg = 1
-  navg = 576
-  nrpfavg = 0
-  avgname = "innershelf_avg.nc"
-/
-
-&croco_stations
-  ldefsta = .true.
-  nsta = 24
-  nrpfsta = 0
-  staposname = "stations.in"
-  staname = "stations.nc"
+&croco_lin_eos
+  R0 = 30.
+  T0 = 20.
+  S0 = 35.
+  Tcoef = 0.28d0
+  Scoef = 0.78d0
 /
 
 &croco_diagnostics_ts
@@ -110,12 +102,12 @@
   mld_crit_T = 2.d-1
 /
 
-&croco_station_fields
-  sta_grd = .true.
-  sta_temp = .true.
-  sta_salt = .false.
-  sta_rho = .false.
-  sta_vel = .true.
+&croco_stations
+  ldefsta = .true.
+  nsta = 24
+  nrpfsta = 0
+  staposname = "stations.in"
+  staname = "stations.nc"
 /
 
 &croco_primary_history_fields
@@ -131,21 +123,6 @@
 
 &croco_primary_history_tracer_fields
   out_his_tracer = 1*.true.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .true.
-  out_avg_ubar = .true.
-  out_avg_vbar = .true.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .true.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 1*.true.
 /
 
 &croco_auxiliary_history_fields
@@ -201,6 +178,21 @@
   out_his_hm = .false.
 /
 
+&croco_primary_average_fields
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  out_avg_tracer = 1*.true.
+/
+
 &croco_auxiliary_averages_fields
   out_avg_rho = .true.
   out_avg_omega = .false.
@@ -252,6 +244,14 @@
 
 &croco_morphodyn_averages_fields
   out_avg_hm = .false.
+/
+
+&croco_station_fields
+  sta_grd = .true.
+  sta_temp = .true.
+  sta_salt = .false.
+  sta_rho = .false.
+  sta_vel = .true.
 /
 
 

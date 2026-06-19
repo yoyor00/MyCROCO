@@ -15,6 +15,11 @@
   Tcline = 50.d0
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "upwelling_rst.nc"
+/
+
 &croco_history
   ldefhis = .true.
   nwrt = 82
@@ -22,9 +27,11 @@
   hisname = "upwelling_his.nc"
 /
 
-&croco_initial
-  nrrec = 0
-  ininame = "upwelling_rst.nc"
+&croco_averages
+  ntsavg = 1
+  navg = 82
+  nrpfavg = 0
+  avgname = "upwelling_avg.nc"
 /
 
 &croco_restart
@@ -49,13 +56,6 @@
   gamma2 = 1.
 /
 
-&croco_averages
-  ntsavg = 1
-  navg = 82
-  nrpfavg = 0
-  avgname = "upwelling_avg.nc"
-/
-
 &croco_primary_history_fields
   out_his_zeta = .true.
   out_his_ubar = .true.
@@ -69,21 +69,6 @@
 
 &croco_primary_history_tracer_fields
   out_his_tracer = 2*.true.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .true.
-  out_avg_ubar = .true.
-  out_avg_vbar = .true.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .true.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 2*.true.
 /
 
 &croco_auxiliary_history_fields
@@ -137,6 +122,21 @@
 
 &croco_morphodyn_history_fields
   out_his_hm = .false.
+/
+
+&croco_primary_average_fields
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  out_avg_tracer = 2*.true.
 /
 
 &croco_auxiliary_averages_fields

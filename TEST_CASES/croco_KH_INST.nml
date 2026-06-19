@@ -21,6 +21,11 @@
   Tcline = 1.e16
 /
 
+&croco_initial
+  nrrec = 0
+  ininame = "khinst_rst.nc"
+/
+
 &croco_history
   ldefhis = .true.
   nwrt = 400
@@ -28,23 +33,10 @@
   hisname = "khinst_his.nc"
 /
 
-&croco_initial
-  nrrec = 0
-  ininame = "khinst_rst.nc"
-/
-
 &croco_restart
   nrst = 1600
   nrpfrst = -1
   rstname = "khinst_rst.nc"
-/
-
-&croco_lin_eos
-  R0 = 30.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = 1.
-  Scoef = 0.
 /
 
 &croco_rho0
@@ -75,6 +67,14 @@
 &croco_vertical_mixing
   Akv_bak = 1.e-6
   Akt_bak = 1*1.e-6
+/
+
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 1.
+  Scoef = 0.
 /
 
 &croco_primary_history_fields

@@ -21,26 +21,17 @@
   Tcline = 5000.0d0
 /
 
-&croco_history
-  ldefhis = .true.
-  nwrt = 60
-  nrpfhis = 0
-  hisname = "vortex_his.nc"
-/
-
 &croco_initial
   nrrec = 0
   ininame = "TEST_CASES/VORTEX/vortex_ini.nc"
 /
 
-&croco_restart
-  nrst = 600
-  nrpfrst = -1
-  rstname = "TEST_CASES/VORTEX/vortex_rst.nc"
-/
-
 &croco_grid
   grdname = "TEST_CASES/VORTEX/vortex_grd.nc"
+/
+
+&croco_climatology
+  clmname = "TEST_CASES/VORTEX/vortex_clm.nc"
 /
 
 &croco_sponge
@@ -54,16 +45,17 @@
   tauM_out = 360.
 /
 
-&croco_climatology
-  clmname = "TEST_CASES/VORTEX/vortex_clm.nc"
+&croco_history
+  ldefhis = .true.
+  nwrt = 60
+  nrpfhis = 0
+  hisname = "vortex_his.nc"
 /
 
-&croco_lin_eos
-  R0 = 30.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = 0.28
-  Scoef = 0.
+&croco_restart
+  nrst = 600
+  nrpfrst = -1
+  rstname = "TEST_CASES/VORTEX/vortex_rst.nc"
 /
 
 &croco_rho0
@@ -94,6 +86,14 @@
 &croco_vertical_mixing
   Akv_bak = 0.
   Akt_bak = 1*0.
+/
+
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
 /
 
 &croco_primary_history_fields

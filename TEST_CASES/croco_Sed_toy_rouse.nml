@@ -9,18 +9,23 @@
   ninfo = 1
 /
 
-&croco_s_coord
-  theta_s = 0.0d0
-  theta_b = 0.0d0
-  Tcline = 200000.0d0
-/
-
 &croco_use_calendar
   start_date = "2019-01-01 00:00:00"
   end_date = "2019-01-01 12:00:00"
   dt_his = 1
   dt_avg = 1
   dt_rst = 12
+/
+
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  Tcline = 200000.0d0
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "fileini"
 /
 
 &croco_history
@@ -30,40 +35,10 @@
   hisname = "sed_toy_rouse_his.nc"
 /
 
-&croco_initial
-  nrrec = 0
-  ininame = "fileini"
-/
-
 &croco_restart
   nrst = 21600
   nrpfrst = -1
   rstname = "sed_toy_rouse_rst.nc"
-/
-
-&croco_bodyforce
-  levsfrc = 1
-  levbfrc = 1
-/
-
-&croco_lin_eos
-  R0 = 30.d0
-  T0 = 20.d0
-  S0 = 35.5d0
-  Tcoef = 0.0d-10
-  Scoef = 0.0d-10
-/
-
-&croco_sediments
-  sedname = "TEST_CASES/sediment_sed_toy_rouse.in"
-/
-
-&croco_sediments_mustang
-  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV1_Sed_toy.txt"
-/
-
-&croco_substance
-  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Sed_toy.txt"
 /
 
 &croco_rho0
@@ -87,29 +62,29 @@
   Akt_bak = 8*1.d-6
 /
 
-&croco_gls_history_fields
-  out_his_tke = .true.
-  out_his_gls = .true.
-  out_his_lscale = .true.
+&croco_lin_eos
+  R0 = 30.d0
+  T0 = 20.d0
+  S0 = 35.5d0
+  Tcoef = 0.0d-10
+  Scoef = 0.0d-10
 /
 
-&croco_sediment_history_fields
-  out_his_sed_athk = .true.
-  out_his_sed_bthk = .true.
-  out_his_sed_bpor = .true.
+&croco_bodyforce
+  levsfrc = 1
+  levbfrc = 1
 /
 
-&croco_sediment_bfra_history_fields
-  out_his_sed_bfra = 6*.true.
+&croco_sediments
+  sedname = "TEST_CASES/sediment_sed_toy_rouse.in"
 /
 
-&croco_bbl_history_fields
-  out_his_abed = .true.
-  out_his_hripple = .true.
-  out_his_lripple = .true.
-  out_his_zbnot = .true.
-  out_his_zbapp = .true.
-  out_his_bostrw = .true.
+&croco_sediments_mustang
+  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV1_Sed_toy.txt"
+/
+
+&croco_substance
+  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Sed_toy.txt"
 /
 
 &croco_primary_history_fields
@@ -171,13 +146,38 @@
   out_his_diff3d = .false.
 /
 
+&croco_gls_history_fields
+  out_his_tke = .true.
+  out_his_gls = .true.
+  out_his_lscale = .true.
+/
+
 &croco_biology_history_fields
   out_his_hel = .true.
+/
+
+&croco_sediment_history_fields
+  out_his_sed_athk = .true.
+  out_his_sed_bthk = .true.
+  out_his_sed_bpor = .true.
+/
+
+&croco_sediment_bfra_history_fields
+  out_his_sed_bfra = 6*.true.
 /
 
 &croco_sediment_suspload_history_fields
   out_his_sed_dflx = 6*.true.
   out_his_sed_eflx = 6*.true.
+/
+
+&croco_bbl_history_fields
+  out_his_abed = .true.
+  out_his_hripple = .true.
+  out_his_lripple = .true.
+  out_his_zbnot = .true.
+  out_his_zbapp = .true.
+  out_his_bostrw = .true.
 /
 
 

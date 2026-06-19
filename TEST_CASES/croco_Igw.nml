@@ -15,22 +15,9 @@
   Tcline = 1.0d16
 /
 
-&croco_history
-  ldefhis = .true.
-  nwrt = 72
-  nrpfhis = 0
-  hisname = "igw_his.nc"
-/
-
 &croco_initial
   nrrec = 0
   ininame = "TEST_CASES/XXXX"
-/
-
-&croco_restart
-  nrst = 5760
-  nrpfrst = -1
-  rstname = "igw_rst.nc"
 /
 
 &croco_grid
@@ -39,6 +26,10 @@
 
 &croco_forcing
   frcname = "TEST_CASES/igw_frc.nc"
+/
+
+&croco_climatology
+  clmname = "TEST_CASES/XXXX"
 /
 
 &croco_sponge
@@ -52,16 +43,24 @@
   tauM_out = 0.05
 /
 
-&croco_climatology
-  clmname = "TEST_CASES/XXXX"
+&croco_history
+  ldefhis = .true.
+  nwrt = 72
+  nrpfhis = 0
+  hisname = "igw_his.nc"
 /
 
-&croco_lin_eos
-  R0 = 30.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = 0.28
-  Scoef = 0.
+&croco_averages
+  ntsavg = 1
+  navg = 5760
+  nrpfavg = 0
+  avgname = "igw_avg.nc"
+/
+
+&croco_restart
+  nrst = 5760
+  nrpfrst = -1
+  rstname = "igw_rst.nc"
 /
 
 &croco_rho0
@@ -98,11 +97,12 @@
   Akt_bak = 1*1.d-06
 /
 
-&croco_averages
-  ntsavg = 1
-  navg = 5760
-  nrpfavg = 0
-  avgname = "igw_avg.nc"
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
 /
 
 &croco_primary_history_fields
@@ -118,21 +118,6 @@
 
 &croco_primary_history_tracer_fields
   out_his_tracer = 1*.true.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .true.
-  out_avg_ubar = .true.
-  out_avg_vbar = .true.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .true.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 1*.true.
 /
 
 &croco_auxiliary_history_fields
@@ -186,6 +171,21 @@
 
 &croco_morphodyn_history_fields
   out_his_hm = .false.
+/
+
+&croco_primary_average_fields
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  out_avg_tracer = 1*.true.
 /
 
 &croco_auxiliary_averages_fields

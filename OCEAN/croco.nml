@@ -10,25 +10,24 @@
 !   2.  Time stepping            – baroclinic, NBQ sub-stepping
 !   3.  Calendar                 – USE_CALENDAR absolute-date mode
 !   4.  Vertical grid            – S-coordinate stretching
-!   5.  Physics parameters       – rho0, bottom drag, viscosity, mixing
-!   6.  History output           – file control
-!   7.  Initial conditions       – IC file / restart record
-!   8.  Restart output           – restart file control
-!   9.  Grid and forcing files   – grid, forcing, bulk, clim, bry, ...
-!   10. Averages                 – time-average file control
-!   11. Diagnostics              – TS, momentum, vorticity, energy, PV,
+!   5.  Initial conditions       – IC file / restart record
+!   6.  Grid and forcing files   – grid, forcing, bulk, clim, bry, ...
+!   7.  History, Averages,       – history, averages and restart file
+!       Restart output             control
+!   8.  Physics parameters       – rho0, bottom drag, viscosity, mixing
+!   9.  Diagnostics              – TS, momentum, vorticity, energy, PV,
 !                                  eddy, biology diagnostic files
-!   12. Stations                 – station file control
-!   13. Optional modules         – ABL1D, OUTPUTS_SURFACE, ONLINE,
+!   10. Stations                 – station file control
+!   11. Optional modules         – ABL1D, OUTPUTS_SURFACE, ONLINE,
 !                                  WAVE (WKB/WCI/WAVE_MAKER), STOGEN,
 !                                  sediment (SEDIMENT/MUSTANG), BBL,
 !                                  BODYFORCE, PSOURCE, OBSTRUCTION,
 !                                  SUBSTANCE, ASSIMILATION, XIOS
-!   14. Output field selectors   – logical flags controlling which
+!   12. Output field selectors   – logical flags controlling which
 !                                  variables are written to each file
-!        14a. History fields
-!        14b. Average fields
-!        14c. Station fields
+!        12a. History fields
+!        12b. Average fields
+!        12c. Station fields
 !
 ! CPP GUARD CONVENTIONS
 !   Blocks that are only compiled when specific CPP keys are defined
@@ -126,7 +125,147 @@
 
 
 ! ======================================================================
-! 5.  PHYSICS PARAMETERS
+! 5.  INITIAL CONDITIONS
+! ======================================================================
+
+&croco_initial
+  ! Time index of the record to read from the IC/restart file.
+  !  > 0 : read that specific record
+  !  -1  : read the most recent record in the file (auto-detect)
+  nrrec   = 1
+  ! Path to the initial conditions or restart NetCDF file.
+  ininame = "CROCO_FILES/croco_ini.nc"
+/
+
+
+! ======================================================================
+! 6.  GRID AND FORCING FILES
+! ======================================================================
+
+&croco_grid
+  ! CPP: !ANA_GRID
+  ! NetCDF grid file (not read when ANA_GRID is defined).
+  grdname = "CROCO_FILES/croco_grd.nc"
+/
+
+&croco_forcing
+  ! Surface/tidal forcing file.  Read when the active CPP combination
+  ! requires an external forcing file (TIDES, surface fluxes, MRL_WCI
+  ! with external wave data, etc.).  See croco_namelist.F90 for the full
+  ! condition.
+  frcname = "CROCO_FILES/croco_frc.nc"
+/
+
+&croco_bulk_forcing
+  ! CPP: BULK_FLUX && !ANA_ABL_LSDATA && !ONLINE
+  ! Atmospheric bulk forcing fields (wind, T, q, radiation, ...).
+  bulkname = "CROCO_FILES/croco_blk.nc"
+/
+
+&croco_climatology
+  ! CPP: (TCLIMATOLOGY && !ANA_TCLIMA) || (ZCLIMATOLOGY && !ANA_SSH) ||
+  !       (M2CLIMATOLOGY && !ANA_M2CLIMA) || (M3CLIMATOLOGY && !ANA_M3CLIMA)
+  ! Climatology file used for boundary nudging.
+  clmname = "CROCO_FILES/croco_clm.nc"
+/
+
+&croco_boundary
+  ! CPP: !ANA_BRY && FRC_BRY
+  ! Open-boundary conditions file.
+  bry_file = "CROCO_FILES/croco_bry.nc"
+/
+
+&croco_bottom_forcing
+  ! CPP: BHFLUX || (BWFLUX && SALINITY)
+  ! Bottom hydrothermal flux file.
+  btfname = "CROCO_FILES/croco_btf.nc"
+/
+
+&croco_sponge
+  ! CPP: SPONGE && !SPONGE_GRID
+  ! Thickness of the lateral sponge / nudging layer [m].
+  ! Set to 0 to disable the sponge.
+  x_sponge = 0.0
+/
+
+&croco_nudging
+  ! CPP: any of T_FRC_BRY, M2_FRC_BRY, M3_FRC_BRY, Z_FRC_BRY,
+  !       W_FRC_BRY, NBQ_FRC_BRY, TCLIMATOLOGY, M2CLIMATOLOGY,
+  !       M3CLIMATOLOGY, ZCLIMATOLOGY, WCLIMATOLOGY, NBQCLIMATOLOGY,
+  !       TNUDGING, ZNUDGING, M2NUDGING, M3NUDGING, NBQ_NUDGING, SPONGE
+  ! Nudging (relaxation) time scales [days].
+  ! Inflow nudging time scale for tracers.
+  tauT_in  = 1.0
+  ! Outflow nudging time scale for tracers.
+  tauT_out = 360.0
+  ! Inflow nudging time scale for momentum.
+  tauM_in  = 3.0
+  ! Outflow nudging time scale for momentum.
+  tauM_out = 360.0
+/
+
+
+! ======================================================================
+! 7.  HISTORY, AVERAGES, RESTART OUTPUT
+! ======================================================================
+
+&croco_history
+  ! Create a new history file (.true.) or append to existing (.false.).
+  ldefhis = .true.
+  ! Write history output every nwrt baroclinic time steps.
+  nwrt    = 72
+  ! History file cycling switch (see header for values).
+  nrpfhis = 0
+  ! History output file path.
+  hisname = "CROCO_FILES/croco_his.nc"
+/
+
+&croco_averages
+  ! CPP: AVERAGES
+  ! First baroclinic step at which accumulation of averages begins.
+  ! Useful for spin-up: set to the first step of the averaging period.
+  ntsavg  = 1
+  ! Write time-averaged output every navg baroclinic steps.
+  navg    = 72
+  ! Averages file cycling switch (see header for values).
+  nrpfavg = 0
+  ! Averages output file path.
+  avgname = "CROCO_FILES/croco_avg.nc"
+/
+
+&croco_restart
+  ! Write restart fields every nrst baroclinic time steps.
+  nrst    = 720
+  ! Restart file cycling switch (see header for values).
+  nrpfrst = -1
+  ! Restart output file path.
+  rstname = "CROCO_FILES/croco_rst.nc"
+/
+
+! --- Surface output files  (CPP: OUTPUTS_SURFACE && !XIOS) ---
+
+&croco_surf
+  ! CPP: OUTPUTS_SURFACE && !XIOS
+  ! Create new surface output file (.true.) or append (.false.).
+  ldefsurf = .true.
+  ! Write surface fields every nwrtsurf steps (0 = use nwrt).
+  nwrtsurf = 0
+  nrpfsurf = 0
+  surfname = "CROCO_FILES/croco_surf.nc"
+/
+
+&croco_surf_avg
+  ! CPP: OUTPUTS_SURFACE && !XIOS && AVERAGES
+  ldefsurf_avg = .true.
+  ntssurf_avg  = 1
+  nwrtsurf_avg = 0
+  nrpfsurf_avg = 0
+  surfname_avg = "CROCO_FILES/croco_surf_avg.nc"
+/
+
+
+! ======================================================================
+! 8.  PHYSICS PARAMETERS
 ! ======================================================================
 
 &croco_rho0
@@ -209,136 +348,7 @@
 
 
 ! ======================================================================
-! 6.  HISTORY OUTPUT
-! ======================================================================
-
-&croco_history
-  ! Create a new history file (.true.) or append to existing (.false.).
-  ldefhis = .true.
-  ! Write history output every nwrt baroclinic time steps.
-  nwrt    = 72
-  ! History file cycling switch (see header for values).
-  nrpfhis = 0
-  ! History output file path.
-  hisname = "CROCO_FILES/croco_his.nc"
-/
-
-
-! ======================================================================
-! 7.  INITIAL CONDITIONS
-! ======================================================================
-
-&croco_initial
-  ! Time index of the record to read from the IC/restart file.
-  !  > 0 : read that specific record
-  !  -1  : read the most recent record in the file (auto-detect)
-  nrrec   = 1
-  ! Path to the initial conditions or restart NetCDF file.
-  ininame = "CROCO_FILES/croco_ini.nc"
-/
-
-
-! ======================================================================
-! 8.  RESTART OUTPUT
-! ======================================================================
-
-&croco_restart
-  ! Write restart fields every nrst baroclinic time steps.
-  nrst    = 720
-  ! Restart file cycling switch (see header for values).
-  nrpfrst = -1
-  ! Restart output file path.
-  rstname = "CROCO_FILES/croco_rst.nc"
-/
-
-
-! ======================================================================
-! 9.  GRID AND FORCING FILES
-! ======================================================================
-
-&croco_grid
-  ! CPP: !ANA_GRID
-  ! NetCDF grid file (not read when ANA_GRID is defined).
-  grdname = "CROCO_FILES/croco_grd.nc"
-/
-
-&croco_forcing
-  ! Surface/tidal forcing file.  Read when the active CPP combination
-  ! requires an external forcing file (TIDES, surface fluxes, MRL_WCI
-  ! with external wave data, etc.).  See croco_namelist.F90 for the full
-  ! condition.
-  frcname = "CROCO_FILES/croco_frc.nc"
-/
-
-&croco_bulk_forcing
-  ! CPP: BULK_FLUX && !ANA_ABL_LSDATA && !ONLINE
-  ! Atmospheric bulk forcing fields (wind, T, q, radiation, ...).
-  bulkname = "CROCO_FILES/croco_blk.nc"
-/
-
-&croco_climatology
-  ! CPP: (TCLIMATOLOGY && !ANA_TCLIMA) || (ZCLIMATOLOGY && !ANA_SSH) ||
-  !       (M2CLIMATOLOGY && !ANA_M2CLIMA) || (M3CLIMATOLOGY && !ANA_M3CLIMA)
-  ! Climatology file used for boundary nudging.
-  clmname = "CROCO_FILES/croco_clm.nc"
-/
-
-&croco_boundary
-  ! CPP: !ANA_BRY && FRC_BRY
-  ! Open-boundary conditions file.
-  bry_file = "CROCO_FILES/croco_bry.nc"
-/
-
-&croco_bottom_forcing
-  ! CPP: BHFLUX || (BWFLUX && SALINITY)
-  ! Bottom hydrothermal flux file.
-  btfname = "CROCO_FILES/croco_btf.nc"
-/
-
-&croco_sponge
-  ! CPP: SPONGE && !SPONGE_GRID
-  ! Thickness of the lateral sponge / nudging layer [m].
-  ! Set to 0 to disable the sponge.
-  x_sponge = 0.0
-/
-
-&croco_nudging
-  ! CPP: any of T_FRC_BRY, M2_FRC_BRY, M3_FRC_BRY, Z_FRC_BRY,
-  !       W_FRC_BRY, NBQ_FRC_BRY, TCLIMATOLOGY, M2CLIMATOLOGY,
-  !       M3CLIMATOLOGY, ZCLIMATOLOGY, WCLIMATOLOGY, NBQCLIMATOLOGY,
-  !       TNUDGING, ZNUDGING, M2NUDGING, M3NUDGING, NBQ_NUDGING, SPONGE
-  ! Nudging (relaxation) time scales [days].
-  ! Inflow nudging time scale for tracers.
-  tauT_in  = 1.0
-  ! Outflow nudging time scale for tracers.
-  tauT_out = 360.0
-  ! Inflow nudging time scale for momentum.
-  tauM_in  = 3.0
-  ! Outflow nudging time scale for momentum.
-  tauM_out = 360.0
-/
-
-
-! ======================================================================
-! 10.  AVERAGES  (CPP: AVERAGES)
-! ======================================================================
-
-&croco_averages
-  ! CPP: AVERAGES
-  ! First baroclinic step at which accumulation of averages begins.
-  ! Useful for spin-up: set to the first step of the averaging period.
-  ntsavg  = 1
-  ! Write time-averaged output every navg baroclinic steps.
-  navg    = 72
-  ! Averages file cycling switch (see header for values).
-  nrpfavg = 0
-  ! Averages output file path.
-  avgname = "CROCO_FILES/croco_avg.nc"
-/
-
-
-! ======================================================================
-! 11.  DIAGNOSTICS
+! 9.  DIAGNOSTICS
 ! ======================================================================
 
 ! --- Tracer (T/S) diagnostics  (CPP: DIAGNOSTICS_TS) ---
@@ -484,7 +494,7 @@
 
 
 ! ======================================================================
-! 12.  STATIONS  (CPP: STATIONS)
+! 10.  STATIONS  (CPP: STATIONS)
 ! ======================================================================
 
 &croco_stations
@@ -503,7 +513,7 @@
 
 
 ! ======================================================================
-! 13.  OPTIONAL MODULES
+! 11.  OPTIONAL MODULES
 ! ======================================================================
 
 ! --- ABL 1-D boundary layer  (CPP: ABL1D && !XIOS) ---
@@ -541,27 +551,6 @@
   ldyn_min = 1.0e5
   ! ABL dynamics nudging timescale at the top of the ABL [s].
   ldyn_max = 1.0e4
-/
-
-! --- Surface output files  (CPP: OUTPUTS_SURFACE && !XIOS) ---
-
-&croco_surf
-  ! CPP: OUTPUTS_SURFACE && !XIOS
-  ! Create new surface output file (.true.) or append (.false.).
-  ldefsurf = .true.
-  ! Write surface fields every nwrtsurf steps (0 = use nwrt).
-  nwrtsurf = 0
-  nrpfsurf = 0
-  surfname = "CROCO_FILES/croco_surf.nc"
-/
-
-&croco_surf_avg
-  ! CPP: OUTPUTS_SURFACE && !XIOS && AVERAGES
-  ldefsurf_avg = .true.
-  ntssurf_avg  = 1
-  nwrtsurf_avg = 0
-  nrpfsurf_avg = 0
-  surfname_avg = "CROCO_FILES/croco_surf_avg.nc"
 /
 
 ! --- Online bulk forcing  (CPP: ONLINE) ---
@@ -751,7 +740,7 @@
 
 
 ! ======================================================================
-! 14.  OUTPUT FIELD SELECTORS
+! 12.  OUTPUT FIELD SELECTORS
 !
 ! Logical flags controlling which variables are written to each output
 ! file.  All blocks are optional: the model falls back to compiled-in
@@ -762,7 +751,7 @@
 ! ======================================================================
 
 ! ======================================================================
-! 14a.  HISTORY FIELDS
+! 12a.  HISTORY FIELDS
 ! ======================================================================
 
 ! --- Primary fields (always available) ---
@@ -1066,7 +1055,7 @@
 
 
 ! ======================================================================
-! 14b.  AVERAGE FIELDS  (all require CPP: AVERAGES)
+! 12b.  AVERAGE FIELDS  (all require CPP: AVERAGES)
 ! ======================================================================
 
 ! --- Primary fields ---
@@ -1321,7 +1310,7 @@
 
 
 ! ======================================================================
-! 14c.  STATION FIELDS  (CPP: STATIONS)
+! 12c.  STATION FIELDS  (CPP: STATIONS)
 ! ======================================================================
 
 &croco_station_fields

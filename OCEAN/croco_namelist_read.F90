@@ -2177,43 +2177,39 @@ contains
       MPI_master_only WRITE (stdout, *) "---------------------"
       MPI_master_only WRITE (stdout, *) "CROCO namelist :"
       MPI_master_only WRITE (stdout, *)
+
+      MPI_master_only WRITE (stdout, *) "1.  GENERAL ----------------------------------------"
       MPI_master_only WRITE (stdout, nml=croco_title)
 #ifdef LOGFILE
       MPI_master_only WRITE (stdout, nml=croco_logfile)
 #endif
+
+      MPI_master_only WRITE (stdout, *) "2.  TIME STEPPING ----------------------------------"
       MPI_master_only WRITE (stdout, nml=croco_time_stepping)
 #ifdef NBQ
       MPI_master_only WRITE (stdout, nml=croco_time_stepping_nbq)
 #endif
-#ifdef SOLVE3D
-      MPI_master_only WRITE (stdout, nml=croco_s_coord)
-#endif
+
+      MPI_master_only WRITE (stdout, *) "3.  CALENDAR  (CPP: USE_CALENDAR) ------------------"
 #ifdef USE_CALENDAR
       MPI_master_only WRITE (stdout, nml=croco_use_calendar)
 #endif
-      MPI_master_only WRITE (stdout, nml=croco_history)
+
+      MPI_master_only WRITE (stdout, *) "4.  VERTICAL GRID  (CPP: SOLVE3D) ------------------"
+#ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_s_coord)
+#endif
+
+      MPI_master_only WRITE (stdout, *) "5.  INITIAL CONDITIONS -----------------------------"
       MPI_master_only WRITE (stdout, nml=croco_initial)
-      MPI_master_only WRITE (stdout, nml=croco_restart)
+
+      MPI_master_only WRITE (stdout, *) "6.  GRID AND FORCING FILES -------------------------"
 #ifndef ANA_GRID
       MPI_master_only WRITE (stdout, nml=croco_grid)
 #endif
       if (use_frcname) then
          MPI_master_only WRITE (stdout, nml=croco_forcing)
       end if
-#if defined SPONGE && !defined SPONGE_GRID
-      MPI_master_only WRITE (stdout, nml=croco_sponge)
-#endif
-#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-      defined M3_FRC_BRY||defined Z_FRC_BRY||\
-      defined W_FRC_BRY||defined NBQ_FRC_BRY||\
-      defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
-      defined M3CLIMATOLOGY||defined ZCLIMATOLOGY||\
-      defined WCLIMATOLOGY||defined NBQCLIMATOLOGY
-      MPI_master_only WRITE (stdout, nml=croco_nudging)
-#endif
-#if defined BHFLUX || (defined BWFLUX && defined SALINITY)
-      MPI_master_only WRITE (stdout, nml=croco_bottom_forcing)
-#endif
 #if defined BULK_FLUX && !defined ANA_ABL_LSDATA && !defined ONLINE
       MPI_master_only WRITE (stdout, nml=croco_bulk_forcing)
 #endif
@@ -2227,48 +2223,56 @@ contains
       !defined ANA_M3CLIMA)
       MPI_master_only WRITE (stdout, nml=croco_climatology)
 #endif
-#if defined WAVE_OFFLINE && defined MUSTANG
-      MPI_master_only WRITE (stdout, nml=croco_wave_offline)
-#endif
-#if defined BIOLOGY && defined PISCES
-      MPI_master_only WRITE (stdout, nml=croco_biology)
-#endif
 #if !defined ANA_BRY && defined FRC_BRY
       MPI_master_only WRITE (stdout, nml=croco_boundary)
 #endif
-#if defined WKB_WWAVE && !defined ANA_BRY_WKB
-      MPI_master_only WRITE (stdout, nml=croco_wkb_boundary)
+#if defined BHFLUX || (defined BWFLUX && defined SALINITY)
+      MPI_master_only WRITE (stdout, nml=croco_bottom_forcing)
 #endif
-#ifdef WKB_WWAVE
-      MPI_master_only WRITE (stdout, nml=croco_wkb_wwave)
-#  ifdef WAVE_ROLLER
-      MPI_master_only WRITE (stdout, nml=croco_wkb_roller)
-#  endif
+#if defined SPONGE && !defined SPONGE_GRID
+      MPI_master_only WRITE (stdout, nml=croco_sponge)
 #endif
-#ifdef WAVE_MAKER
-      MPI_master_only WRITE (stdout, nml=croco_wave_maker)
+#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
+      defined M3_FRC_BRY||defined Z_FRC_BRY||\
+      defined W_FRC_BRY||defined NBQ_FRC_BRY||\
+      defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
+      defined M3CLIMATOLOGY||defined ZCLIMATOLOGY||\
+      defined WCLIMATOLOGY||defined NBQCLIMATOLOGY
+      MPI_master_only WRITE (stdout, nml=croco_nudging)
 #endif
+
+      MPI_master_only WRITE (stdout, *) "7.  HISTORY (AVERAGES) RESTART (SURFACE) OUTPUT ----"
+      MPI_master_only WRITE (stdout, nml=croco_history)
 #ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_averages)
 #endif
+      MPI_master_only WRITE (stdout, nml=croco_restart)
 #if defined OUTPUTS_SURFACE && !defined XIOS
       MPI_master_only WRITE (stdout, nml=croco_surf)
 #  ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_surf_avg)
 #  endif
 #endif
-#if defined ABL1D && !defined XIOS
-      MPI_master_only WRITE (stdout, nml=croco_abl)
-#  ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_abl_averages)
+
+      MPI_master_only WRITE (stdout, *) "8.  PHYSICS PARAMETERS -----------------------------"
+      MPI_master_only WRITE (stdout, nml=croco_rho0)
+      MPI_master_only WRITE (stdout, nml=croco_bottom_drag)
+      MPI_master_only WRITE (stdout, nml=croco_gamma2)
+      MPI_master_only WRITE (stdout, nml=croco_lateral_visc)
+#ifdef SOLVE3D
+#  ifdef TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_tracer_diff2)
+      MPI_master_only WRITE (stdout, nml=croco_tracer_diff4)
 #  endif
-#  if defined ABL_NUDGING && defined ABL_NUDGING_TRA
-      MPI_master_only WRITE (stdout, nml=croco_abl_nudg_tra)
-#  endif
-#  if defined ABL_NUDGING && defined ABL_NUDGING_DYN
-      MPI_master_only WRITE (stdout, nml=croco_abl_nudg_dyn)
+#  if !defined LMD_MIXING && !defined GLS_MIXING
+      MPI_master_only WRITE (stdout, nml=croco_vertical_mixing)
 #  endif
 #endif
+#if !defined NONLIN_EOS
+      MPI_master_only WRITE (stdout, nml=croco_lin_eos)
+#endif
+
+      MPI_master_only WRITE (stdout, *) "9. DIAGNOSTICS -------------------------------------"
 #if defined DIAGNOSTICS_TS
       MPI_master_only WRITE (stdout, nml=croco_diagnostics_ts)
 #  ifdef AVERAGES
@@ -2313,9 +2317,83 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_diagbio_avg)
 #  endif
 #endif
+
+      MPI_master_only WRITE (stdout, *) "10.  STATIONS  (CPP: STATIONS) ---------------------"
 #ifdef STATIONS
       MPI_master_only WRITE (stdout, nml=croco_stations)
 #endif
+
+      MPI_master_only WRITE (stdout, *) "11.  OPTIONAL MODULES ------------------------------"
+#if defined ABL1D && !defined XIOS
+      MPI_master_only WRITE (stdout, nml=croco_abl)
+#  ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_abl_averages)
+#  endif
+#  if defined ABL_NUDGING && defined ABL_NUDGING_TRA
+      MPI_master_only WRITE (stdout, nml=croco_abl_nudg_tra)
+#  endif
+#  if defined ABL_NUDGING && defined ABL_NUDGING_DYN
+      MPI_master_only WRITE (stdout, nml=croco_abl_nudg_dyn)
+#  endif
+#endif
+#ifdef ONLINE
+      MPI_master_only WRITE (stdout, nml=croco_online)
+#endif
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+      MPI_master_only WRITE (stdout, nml=croco_wkb_boundary)
+#endif
+#ifdef WKB_WWAVE
+      MPI_master_only WRITE (stdout, nml=croco_wkb_wwave)
+#  ifdef WAVE_ROLLER
+      MPI_master_only WRITE (stdout, nml=croco_wkb_roller)
+#  endif
+#endif
+#ifdef WAVE_MAKER
+      MPI_master_only WRITE (stdout, nml=croco_wave_maker)
+#endif
+#if defined WAVE_OFFLINE && defined MUSTANG
+      MPI_master_only WRITE (stdout, nml=croco_wave_offline)
+#endif
+#if defined BIOLOGY && defined PISCES
+      MPI_master_only WRITE (stdout, nml=croco_biology)
+#endif
+#ifdef BODYFORCE
+      MPI_master_only WRITE (stdout, nml=croco_bodyforce)
+#endif
+#if defined ANA_PSOURCE
+# if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+      MPI_master_only WRITE (stdout, nml=croco_psource)
+#  ifdef PSOURCE_NCFILE
+      MPI_master_only WRITE (stdout, nml=croco_psource_ncfile_data)
+#  else
+      MPI_master_only WRITE (stdout, nml=croco_psource_data)
+#  endif
+#  ifdef TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_psource_tracer)
+#  endif
+# endif
+#endif
+#ifdef SEDIMENT
+      MPI_master_only WRITE (stdout, nml=croco_sediments)
+#endif
+#ifdef MUSTANG
+      MPI_master_only WRITE (stdout, nml=croco_sediments_mustang)
+#endif
+#ifdef SUBSTANCE
+      MPI_master_only WRITE (stdout, nml=croco_substance)
+#endif
+#ifdef OBSTRUCTION
+      MPI_master_only WRITE (stdout, nml=croco_obstruction)
+#endif
+#ifdef XIOS
+      MPI_master_only WRITE (stdout, nml=croco_xios_origin_date)
+#endif
+#ifdef ASSIMILATION
+      MPI_master_only WRITE (stdout, nml=croco_assimilation)
+#endif
+
+      MPI_master_only WRITE (stdout, *) "12.  OUTPUT FIELD SELECTORS ------------------------"
+      MPI_master_only WRITE (stdout, *) "12a.  HISTORY FIELDS"
       MPI_master_only WRITE (stdout, nml=croco_primary_history_fields)
 #ifdef SOLVE3D
       MPI_master_only WRITE (stdout, nml=croco_primary_history_3d_fields)
@@ -2323,192 +2401,56 @@ contains
       MPI_master_only WRITE (stdout, nml=croco_primary_history_tracer_fields)
 # endif
 #endif
-#ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_primary_average_fields)
-# ifdef SOLVE3D
-      MPI_master_only WRITE (stdout, nml=croco_primary_3d_average_fields)
-#  ifdef TRACERS
-      MPI_master_only WRITE (stdout, nml=croco_primary_tracer_average_fields)
-#  endif
-# endif
-#endif
-# if defined SOLVE3D || defined RIP
+#if defined SOLVE3D || defined RIP
       MPI_master_only WRITE (stdout, nml=croco_auxiliary_history_fields)
-# endif
-# if defined SOLVE3D && defined TEMPERATURE
+#endif
+#if defined SOLVE3D && defined TEMPERATURE
       MPI_master_only WRITE (stdout, nml=croco_temperature_history_fields)
-# endif
-# if defined SOLVE3D && defined SALINITY
+#endif
+#if defined SOLVE3D && defined SALINITY
       MPI_master_only WRITE (stdout, nml=croco_salinity_history_fields)
-# endif
-# if defined SOLVE3D && defined BULK_FLUX
+#endif
+#if defined SOLVE3D && defined BULK_FLUX
       MPI_master_only WRITE (stdout, nml=croco_bulk_flux_history_fields)
-# endif
-# if defined SOLVE3D && defined BHFLUX
+#endif
+#if defined SOLVE3D && defined BHFLUX
       MPI_master_only WRITE (stdout, nml=croco_bhflux_history_fields)
-# endif
-# if defined SOLVE3D && defined BWFLUX && defined SALINITY
+#endif
+#if defined SOLVE3D && defined BWFLUX && defined SALINITY
       MPI_master_only WRITE (stdout, nml=croco_bwflux_history_fields)
-# endif
-# if defined SOLVE3D && \
+#endif
+#if defined SOLVE3D && \
       (defined ANA_VMIX||defined LMD_MIXING||\
       defined LMD_SKPP||defined LMD_BKPP||\
       defined GLS_MIXING)
       MPI_master_only WRITE (stdout, nml=croco_bvf_history_fields)
-# endif
-# if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
+#endif
+#if defined SOLVE3D && (defined LMD_SKPP || defined GLS_MIXING)
       MPI_master_only WRITE (stdout, nml=croco_hbl_history_fields)
-# endif
-# if defined SOLVE3D && defined LMD_BKPP
+#endif
+#if defined SOLVE3D && defined LMD_BKPP
       MPI_master_only WRITE (stdout, nml=croco_lmd_bkpp_history_fields)
-# endif
-# if defined SOLVE3D && defined VIS_COEF_3D
+#endif
+#if defined SOLVE3D && defined VIS_COEF_3D
       MPI_master_only WRITE (stdout, nml=croco_vis_coef_history_fields)
-# endif
-# if defined SOLVE3D && defined DIF_COEF_3D
+#endif
+#if defined SOLVE3D && defined DIF_COEF_3D
       MPI_master_only WRITE (stdout, nml=croco_dif_coef_history_fields)
-# endif
-# if defined SOLVE3D && defined BIOLOGY && !defined PISCES
-      MPI_master_only WRITE (stdout, nml=croco_biology_history_fields)
-# endif
-# if defined SOLVE3D && defined BIO_NChlPZD
-      MPI_master_only WRITE (stdout, nml=croco_bio_nchlpzd_history_fields)
-# endif
-# if defined SOLVE3D && defined BIO_BioEBUS
-      MPI_master_only WRITE (stdout, nml=croco_bio_bioebus_history_fields)
-# endif
-# if defined SOLVE3D && defined MORPHODYN
-      MPI_master_only WRITE (stdout, nml=croco_morphodyn_history_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D
-      MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
-      MPI_master_only WRITE (stdout, nml=croco_temperature_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined SALINITY
-      MPI_master_only WRITE (stdout, nml=croco_salinity_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
-      MPI_master_only WRITE (stdout, nml=croco_bulk_flux_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined BHFLUX
-      MPI_master_only WRITE (stdout, nml=croco_bhflux_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
-      MPI_master_only WRITE (stdout, nml=croco_bwflux_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && \
-      (defined ANA_VMIX||defined LMD_MIXING||\
-      defined LMD_SKPP||defined LMD_BKPP||\
-      defined GLS_MIXING)
-      MPI_master_only WRITE (stdout, nml=croco_bvf_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && \
-      (defined LMD_SKPP||defined GLS_MIXING)
-      MPI_master_only WRITE (stdout, nml=croco_hbl_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
-      MPI_master_only WRITE (stdout, nml=croco_lmd_bkpp_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
-      MPI_master_only WRITE (stdout, nml=croco_vis_coef_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
-      MPI_master_only WRITE (stdout, nml=croco_dif_coef_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
-      MPI_master_only WRITE (stdout, nml=croco_biology_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
-      MPI_master_only WRITE (stdout, nml=croco_bio_nchlpzd_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
-      MPI_master_only WRITE (stdout, nml=croco_bio_bioebus_averages_fields)
-# endif
-# if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
-      MPI_master_only WRITE (stdout, nml=croco_morphodyn_averages_fields)
-# endif
-#ifdef DIAGNOSTICS_TS
-# ifdef TRACERS
-      MPI_master_only WRITE (stdout, nml=croco_diag3D_history_fields)
-#  ifdef DIAGNOSTICS_TS_MLD
-      MPI_master_only WRITE (stdout, nml=croco_diag2D_history_fields)
-#  endif
-# endif
-# if defined AVERAGES && defined TRACERS
-      MPI_master_only WRITE (stdout, nml=croco_diag3D_average_fields)
-#  ifdef DIAGNOSTICS_TS_MLD
-      MPI_master_only WRITE (stdout, nml=croco_diag2D_average_fields)
-#  endif
-# endif
-#endif
-#ifdef DIAGNOSTICS_UV
-      MPI_master_only WRITE (stdout, nml=croco_diagM_history_fields)
-# ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_diagM_average_fields)
-# endif
-#endif
-#ifdef DIAGNOSTICS_VRT
-      MPI_master_only WRITE (stdout, nml=croco_diags_vrt_history_fields)
-# ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_diags_vrt_average_fields)
-# endif
-#endif
-#ifdef DIAGNOSTICS_KE
-      MPI_master_only WRITE (stdout, nml=croco_diags_ek_history_fields)
-# ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_diags_ek_average_fields)
-# endif
-#endif
-#if defined DIAGNOSTICS_PV && defined TRACERS
-      MPI_master_only WRITE (stdout, nml=croco_diags_pv_history_fields)
-# ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_diags_pv_average_fields)
-# endif
-#endif
-#if defined DIAGNOSTICS_EDDY && !defined XIOS
-# ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_diags_eddy_average_fields)
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-      MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_history_fields)
-      MPI_master_only WRITE (stdout, nml=croco_diagbioVSink_history_fields)
-# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_history_fields)
-# endif
-# ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_average_fields)
-      MPI_master_only WRITE (stdout, nml=croco_diagbioVSink_average_fields)
-#  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
-      MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_average_fields)
-#  endif
-# endif
-#endif
-#ifdef STOGEN
-      MPI_master_only WRITE (stdout, nml=croco_stochastic_history_fields)
 #endif
 #if defined SOLVE3D && defined GLS_MIXING
       MPI_master_only WRITE (stdout, nml=croco_gls_history_fields)
 #endif
-#if defined AVERAGES && defined SOLVE3D && defined GLS_MIXING
-      MPI_master_only WRITE (stdout, nml=croco_gls_averages_fields)
+#if defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      MPI_master_only WRITE (stdout, nml=croco_biology_history_fields)
 #endif
-#if defined ABL1D && !defined XIOS
-      MPI_master_only WRITE (stdout, nml=croco_abl_history_fields)
-# ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_abl_averages_fields)
-# endif
+#if defined SOLVE3D && defined BIO_NChlPZD
+      MPI_master_only WRITE (stdout, nml=croco_bio_nchlpzd_history_fields)
 #endif
-#if defined OUTPUTS_SURFACE && !defined XIOS
-      MPI_master_only WRITE (stdout, nml=croco_surf_history_fields)
-# ifdef AVERAGES
-      MPI_master_only WRITE (stdout, nml=croco_surf_average_fields)
-# endif
+#if defined SOLVE3D && defined BIO_BioEBUS
+      MPI_master_only WRITE (stdout, nml=croco_bio_bioebus_history_fields)
 #endif
-#ifdef STATIONS
-      MPI_master_only WRITE (stdout, nml=croco_station_fields)
+#if defined SOLVE3D && defined MORPHODYN
+      MPI_master_only WRITE (stdout, nml=croco_morphodyn_history_fields)
 #endif
 #if defined SOLVE3D && defined SEDIMENT
       MPI_master_only WRITE (stdout, nml=croco_sediment_history_fields)
@@ -2531,6 +2473,114 @@ contains
 # ifdef SOLVE3D
       MPI_master_only WRITE (stdout, nml=croco_wci_history_3d_fields)
 # endif
+#endif
+#if defined MRL_WCI || defined OW_COUPLING
+      MPI_master_only WRITE (stdout, nml=croco_wave_history_fields)
+#endif
+#if defined ABL1D && !defined XIOS
+      MPI_master_only WRITE (stdout, nml=croco_abl_history_fields)
+#endif
+#if defined OUTPUTS_SURFACE && !defined XIOS
+      MPI_master_only WRITE (stdout, nml=croco_surf_history_fields)
+#endif
+#ifdef STOGEN
+      MPI_master_only WRITE (stdout, nml=croco_stochastic_history_fields)
+#endif
+#if defined DIAGNOSTICS_TS && defined TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_diag3D_history_fields)
+# ifdef DIAGNOSTICS_TS_MLD
+      MPI_master_only WRITE (stdout, nml=croco_diag2D_history_fields)
+# endif
+#endif
+#ifdef DIAGNOSTICS_UV
+      MPI_master_only WRITE (stdout, nml=croco_diagM_history_fields)
+#endif
+#ifdef DIAGNOSTICS_VRT
+      MPI_master_only WRITE (stdout, nml=croco_diags_vrt_history_fields)
+#endif
+#ifdef DIAGNOSTICS_KE
+      MPI_master_only WRITE (stdout, nml=croco_diags_ek_history_fields)
+#endif
+#if defined DIAGNOSTICS_PV && defined TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_diags_pv_history_fields)
+#endif
+#ifdef DIAGNOSTICS_BIO
+      MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_history_fields)
+      MPI_master_only WRITE (stdout, nml=croco_diagbioVSink_history_fields)
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_history_fields)
+# endif
+#endif
+
+      MPI_master_only WRITE (stdout, *) "12b.  AVERAGE FIELDS  (all require CPP: AVERAGES)"
+#ifdef AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_primary_average_fields)
+# ifdef SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_primary_3d_average_fields)
+#  ifdef TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_primary_tracer_average_fields)
+#  endif
+# endif
+#endif
+#if defined AVERAGES && defined SOLVE3D
+      MPI_master_only WRITE (stdout, nml=croco_auxiliary_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined TEMPERATURE
+      MPI_master_only WRITE (stdout, nml=croco_temperature_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined SALINITY
+      MPI_master_only WRITE (stdout, nml=croco_salinity_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BULK_FLUX
+      MPI_master_only WRITE (stdout, nml=croco_bulk_flux_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BHFLUX
+      MPI_master_only WRITE (stdout, nml=croco_bhflux_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BWFLUX && defined SALINITY
+      MPI_master_only WRITE (stdout, nml=croco_bwflux_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && \
+      (defined ANA_VMIX||defined LMD_MIXING||\
+      defined LMD_SKPP||defined LMD_BKPP||\
+      defined GLS_MIXING)
+      MPI_master_only WRITE (stdout, nml=croco_bvf_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && \
+      (defined LMD_SKPP||defined GLS_MIXING)
+      MPI_master_only WRITE (stdout, nml=croco_hbl_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined LMD_BKPP
+      MPI_master_only WRITE (stdout, nml=croco_lmd_bkpp_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined VIS_COEF_3D
+      MPI_master_only WRITE (stdout, nml=croco_vis_coef_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined DIF_COEF_3D
+      MPI_master_only WRITE (stdout, nml=croco_dif_coef_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined GLS_MIXING
+      MPI_master_only WRITE (stdout, nml=croco_gls_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BIOLOGY && !defined PISCES
+      MPI_master_only WRITE (stdout, nml=croco_biology_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BIO_NChlPZD
+      MPI_master_only WRITE (stdout, nml=croco_bio_nchlpzd_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined BIO_BioEBUS
+      MPI_master_only WRITE (stdout, nml=croco_bio_bioebus_averages_fields)
+#endif
+#if defined AVERAGES && defined SOLVE3D && defined MORPHODYN
+      MPI_master_only WRITE (stdout, nml=croco_morphodyn_averages_fields)
+#endif
+#if defined ABL1D && !defined XIOS && defined AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_abl_averages_fields)
+#endif
+#if defined OUTPUTS_SURFACE && !defined XIOS && defined AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_surf_average_fields)
+#endif
+#ifdef MRL_WCI
 # ifdef AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_wci_average_fields)
 #  ifdef SOLVE3D
@@ -2538,66 +2588,44 @@ contains
 #  endif
 # endif
 #endif
-#if defined MRL_WCI || defined OW_COUPLING
-      MPI_master_only WRITE (stdout, nml=croco_wave_history_fields)
-# ifdef AVERAGES
+#if (defined MRL_WCI || defined OW_COUPLING) && defined AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_wave_average_fields)
+#endif
+#if defined DIAGNOSTICS_TS && defined AVERAGES && defined TRACERS
+      MPI_master_only WRITE (stdout, nml=croco_diag3D_average_fields)
+# ifdef DIAGNOSTICS_TS_MLD
+      MPI_master_only WRITE (stdout, nml=croco_diag2D_average_fields)
 # endif
 #endif
-#ifdef ONLINE
-      MPI_master_only WRITE (stdout, nml=croco_online)
+#if defined DIAGNOSTICS_UV && defined AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diagM_average_fields)
 #endif
-#ifdef BODYFORCE
-      MPI_master_only WRITE (stdout, nml=croco_bodyforce)
+#if defined DIAGNOSTICS_VRT && defined AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_vrt_average_fields)
 #endif
-#if !defined NONLIN_EOS
-      MPI_master_only WRITE (stdout, nml=croco_lin_eos)
+#if defined DIAGNOSTICS_KE && defined AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_ek_average_fields)
 #endif
-#ifdef SEDIMENT
-      MPI_master_only WRITE (stdout, nml=croco_sediments)
+#if defined DIAGNOSTICS_PV && defined TRACERS && defined AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_pv_average_fields)
 #endif
-#ifdef MUSTANG
-      MPI_master_only WRITE (stdout, nml=croco_sediments_mustang)
+#if defined DIAGNOSTICS_EDDY && !defined XIOS && defined AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diags_eddy_average_fields)
 #endif
-#ifdef SUBSTANCE
-      MPI_master_only WRITE (stdout, nml=croco_substance)
-#endif
-#ifdef OBSTRUCTION
-      MPI_master_only WRITE (stdout, nml=croco_obstruction)
-#endif
-#ifdef XIOS
-      MPI_master_only WRITE (stdout, nml=croco_xios_origin_date)
-#endif
-#ifdef ASSIMILATION
-      MPI_master_only WRITE (stdout, nml=croco_assimilation)
-#endif
-      MPI_master_only WRITE (stdout, nml=croco_rho0)
-      MPI_master_only WRITE (stdout, nml=croco_bottom_drag)
-      MPI_master_only WRITE (stdout, nml=croco_gamma2)
-      MPI_master_only WRITE (stdout, nml=croco_lateral_visc)
-#ifdef SOLVE3D
-#  ifdef TRACERS
-      MPI_master_only WRITE (stdout, nml=croco_tracer_diff2)
-      MPI_master_only WRITE (stdout, nml=croco_tracer_diff4)
-#  endif
-#  if !defined LMD_MIXING && !defined GLS_MIXING
-      MPI_master_only WRITE (stdout, nml=croco_vertical_mixing)
-#  endif
-#endif
-#if defined ANA_PSOURCE
-# if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
-      MPI_master_only WRITE (stdout, nml=croco_psource)
-#  ifdef PSOURCE_NCFILE
-      MPI_master_only WRITE (stdout, nml=croco_psource_ncfile_data)
-#  else
-      MPI_master_only WRITE (stdout, nml=croco_psource_data)
-#  endif
-#  ifdef TRACERS
-      MPI_master_only WRITE (stdout, nml=croco_psource_tracer)
-#  endif
+#if defined DIAGNOSTICS_BIO && defined AVERAGES
+      MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_average_fields)
+      MPI_master_only WRITE (stdout, nml=croco_diagbioVSink_average_fields)
+# if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
+      MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_average_fields)
 # endif
 #endif
 
+      MPI_master_only WRITE (stdout, *) "12c.  STATION FIELDS  (CPP: STATIONS)"
+#ifdef STATIONS
+      MPI_master_only WRITE (stdout, nml=croco_station_fields)
+#endif
+
+      MPI_master_only WRITE (stdout, *)
       MPI_master_only WRITE (stdout, *) "End of CROCO namelist"
       MPI_master_only WRITE (stdout, *) "---------------------"
       MPI_master_only WRITE (stdout, *)
