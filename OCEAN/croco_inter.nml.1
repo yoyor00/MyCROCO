@@ -1,0 +1,603 @@
+&croco_title
+  title = "Southern Benguela Interannual Run Zoom level #1"
+/
+
+&croco_logfile
+  logname = "croco.log"
+/
+
+&croco_time_stepping
+  ntimes = 1
+  dt = TIMESTEP
+  ndtfast = NFAST
+  ninfo = 1
+/
+
+&croco_s_coord
+  theta_s = 7.0d0
+  theta_b = 2.0d0
+  Tcline = 200.0d0
+/
+
+&croco_use_calendar
+  start_date = "Ystart-Mstart-01"
+  end_date = "Yend-Mend-01"
+  dt_his = NHHIS
+  dt_avg = NHAVG
+  dt_rst = NHRST
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = NUMHIS
+  nrpfhis = 0
+  hisname = "croco_his.nc.1"
+/
+
+&croco_initial
+  nrrec = NUMRECINI
+  ininame = "croco_ini.nc.1"
+/
+
+&croco_restart
+  nrst = NUMRST
+  nrpfrst = 0
+  rstname = "croco_rst.nc.1"
+/
+
+&croco_grid
+  grdname = "croco_grd.nc.1"
+/
+
+&croco_forcing
+  frcname = "croco_frc.nc.1"
+/
+
+&croco_sponge
+  x_sponge = XXX
+/
+
+&croco_nudging
+  tauT_in = 1.
+  tauT_out = 360.
+  tauM_in = 3.
+  tauM_out = 360.
+/
+
+&croco_bulk_forcing
+  bulkname = "croco_blk.nc.1"
+/
+
+&croco_climatology
+  clmname = "XXXXXXXXXXXXXX"
+/
+
+&croco_biology
+  bioname = "croco_frcbio.nc.1"
+/
+
+&croco_boundary
+  bry_file = "XXXXXXXXXXXXXX"
+/
+
+&croco_wkb_boundary
+  brywkb_file = "croco_wkb.nc.1"
+/
+
+&croco_sediments
+  sedname = "sediment.in"
+/
+
+&croco_sediments_mustang
+  sedname_must = "paraMUSTANG.txt"
+/
+
+&croco_substance
+  subsfilename = "parasubstance.txt"
+/
+
+&croco_rho0
+  rho0 = 1025.d0
+/
+
+&croco_bottom_drag
+  rdrg = 0.0d-04
+  rdrg2 = 0.d-3
+  Zobt = 1.d-2
+  Cdb_min = 1.d-4
+  Cdb_max = 1.d-1
+/
+
+&croco_gamma2
+  gamma2 = 1.d0
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 2*0.d0
+/
+
+&croco_tracer_diff4
+  tnu4 = 2*0.d11
+/
+
+&croco_vertical_mixing
+  Akv_bak = 0.d0
+  Akt_bak = 2*0.d0
+/
+
+&croco_wkb_wwave
+  wkb_amp = 0.25
+  wkb_ang = 190.
+  wkb_prd = 8.
+  wkb_tide = -2.
+  wkb_btg = 1.3
+  wkb_gam = 0.38
+/
+
+&croco_wkb_roller
+  wkb_rsb = 0.1
+  wkb_roller = 0.5
+/
+
+&croco_averages
+  ntsavg = 1
+  navg = NUMAVG
+  nrpfavg = 0
+  avgname = "croco_avg.nc.1"
+/
+
+&croco_surf
+  ldefsurf = .true.
+  nwrtsurf = NUMHISSURF
+  nrpfsurf = 0
+  surfname = "croco_surf.nc.1"
+/
+
+&croco_surf_avg
+  ldefsurf_avg = .true.
+  ntssurf_avg = 1
+  nwrtsurf_avg = NUMAVGSURF
+  nrpfsurf_avg = 0
+  surfname_avg = "croco_surf_avg.nc.1"
+/
+
+&croco_stations
+  ldefsta = .true.
+  nsta = 400
+  nrpfsta = 0
+  staposname = "stations.in"
+  staname = "stations.nc.1"
+/
+
+&croco_online
+  yearnum = NYONLINE
+  monthnum = NMONLINE
+  recordsperday = ONLINEFREQ
+  yearend = ENDYONLINE
+  monthend = ENDMONLINE
+  pathbulk = "ONLINEPATH/"
+/
+
+&croco_diagnostics_ts
+  ldefdia = .true.
+  nwrtdia = NUMHIS
+  nrpfdia = 0
+  dianame = "croco_dia.nc.1"
+/
+
+&croco_diag_avg
+  ldefdia_avg = .true.
+  ntsdia_avg = 1
+  nwrtdia_avg = NUMAVG
+  nrpfdia_avg = 0
+  dianame_avg = "croco_dia_avg.nc.1"
+/
+
+&croco_diag_mld_dens
+  mld_crit_D = 3.d-2
+  mld_crit_T = 2.d-1
+/
+
+&croco_diagnosticsM
+  ldefdiaM = .true.
+  nwrtdiaM = NUMHIS
+  nrpfdiaM = 0
+  dianameM = "croco_diaM.nc.1"
+/
+
+&croco_diagM_avg
+  ldefdiaM_avg = .true.
+  ntsdiaM_avg = 1
+  nwrtdiaM_avg = NUMAVG
+  nrpfdiaM_avg = 0
+  dianameM_avg = "croco_diaM_avg.nc.1"
+/
+
+&croco_diags_vrt
+  ldefdiags_vrt = .true.
+  nwrtdiags_vrt = NUMHIS
+  nrpfdiags_vrt = 0
+  diags_vrtname = "croco_diags_vrt.nc.1"
+/
+
+&croco_diags_vrt_avg
+  ldefdiags_vrt_avg = .true.
+  ntsdiags_vrt_avg = 1
+  nwrtdiags_vrt_avg = NUMAVG
+  nrpfdiags_vrt_avg = 0
+  diags_vrtname_avg = "croco_diags_vrt_avg.nc.1"
+/
+
+&croco_diags_ek
+  ldefdiags_ek = .true.
+  nwrtdiags_ek = NUMHIS
+  nrpfdiags_ek = 0
+  diags_ekname = "croco_diags_ek.nc.1"
+/
+
+&croco_diags_ek_avg
+  ldefdiags_ek_avg = .true.
+  ntsdiags_ek_avg = 1
+  nwrtdiags_ek_avg = NUMAVG
+  nrpfdiags_ek_avg = 0
+  diags_ekname_avg = "croco_diags_ek_avg.nc.1"
+/
+
+&croco_diags_pv
+  ldefdiags_pv = .true.
+  nwrtdiags_pv = NUMHIS
+  nrpfdiags_pv = 0
+  diags_pvname = "croco_diags_pv.nc.1"
+/
+
+&croco_diags_pv_avg
+  ldefdiags_pv_avg = .true.
+  ntsdiags_pv_avg = 1
+  nwrtdiags_pv_avg = NUMAVG
+  nrpfdiags_pv_avg = 0
+  diags_pvname_avg = "croco_diags_pv_avg.nc.1"
+/
+
+&croco_diags_eddy_avg
+  ldefdiags_eddy_avg = .true.
+  ntsdiags_eddy_avg = 1
+  nwrtdiags_eddy_avg = NUMAVG
+  nrpfdiags_eddy_avg = 0
+  diags_eddyname_avg = "croco_diags_eddy_avg.nc.1"
+/
+
+&croco_diagnostics_bio
+  ldefdiabio = .true.
+  nwrtdiabio = NUMHIS
+  nrpfdiabio = 0
+  dianamebio = "croco_diabio.nc.1"
+/
+
+&croco_diagbio_avg
+  ldefdiabio_avg = .true.
+  ntsdiabio_avg = 1
+  nwrtdiabio_avg = NUMAVG
+  nrpfdiabio_avg = 0
+  dianamebio_avg = "croco_diabio_avg.nc.1"
+/
+
+&croco_gls_history_fields
+  out_his_tke = .true.
+  out_his_gls = .true.
+  out_his_lscale = .true.
+/
+
+&croco_gls_averages_fields
+  out_avg_tke = .true.
+  out_avg_gls = .true.
+  out_avg_lscale = .true.
+/
+
+&croco_surf_history_fields
+  out_his_surf = .true.
+/
+
+&croco_surf_average_fields
+  out_avg_surf = .true.
+/
+
+&croco_station_fields
+  sta_grd = .true.
+  sta_temp = .true.
+  sta_salt = .true.
+  sta_rho = .true.
+  sta_vel = .true.
+/
+
+&croco_sediment_history_fields
+  out_his_sed_athk = .false.
+  out_his_sed_bthk = .false.
+  out_his_sed_bpor = .false.
+/
+
+&croco_bbl_history_fields
+  out_his_abed = .true.
+  out_his_hripple = .false.
+  out_his_lripple = .false.
+  out_his_zbnot = .true.
+  out_his_zbapp = .false.
+  out_his_bostrw = .true.
+/
+
+&croco_wci_history_fields
+  out_his_sup = .false.
+  out_his_ust2d = .false.
+  out_his_vst2d = .false.
+/
+
+&croco_wci_history_3d_fields
+  out_his_ust = .false.
+  out_his_vst = .false.
+  out_his_wst = .false.
+  out_his_akb = .false.
+  out_his_akw = .false.
+  out_his_kvf = .false.
+  out_his_calp = .false.
+  out_his_kaps = .false.
+/
+
+&croco_wci_average_fields
+  out_avg_sup = .false.
+  out_avg_ust2d = .false.
+  out_avg_vst2d = .false.
+/
+
+&croco_wci_average_3d_fields
+  out_avg_ust = .false.
+  out_avg_vst = .false.
+  out_avg_wst = .false.
+  out_avg_akb = .false.
+  out_avg_akw = .false.
+  out_avg_kvf = .false.
+  out_avg_calp = .false.
+  out_avg_kaps = .false.
+/
+
+&croco_wave_history_fields
+  out_his_hrm = .false.
+  out_his_frq = .false.
+  out_his_action = .false.
+  out_his_k_xi = .false.
+  out_his_k_eta = .false.
+  out_his_eps_b = .false.
+  out_his_eps_d = .false.
+  out_his_erol = .false.
+  out_his_eps_r = .false.
+/
+
+&croco_wave_average_fields
+  out_avg_hrm = .false.
+  out_avg_frq = .false.
+  out_avg_action = .false.
+  out_avg_k_xi = .false.
+  out_avg_k_eta = .false.
+  out_avg_eps_b = .false.
+  out_avg_eps_d = .false.
+  out_avg_erol = .false.
+  out_avg_eps_r = .false.
+/
+
+&croco_primary_history_fields
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  out_his_u = .true.
+  out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 2*.true.
+/
+
+&croco_primary_average_fields
+  out_avg_zeta = .true.
+  out_avg_ubar = .true.
+  out_avg_vbar = .true.
+/
+
+&croco_primary_3d_average_fields
+  out_avg_u = .true.
+  out_avg_v = .true.
+/
+
+&croco_primary_tracer_average_fields
+  out_avg_tracer = 2*.true.
+/
+
+&croco_auxiliary_history_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
+  out_his_bostr = .true.
+  out_his_bustr = .false.
+  out_his_bvstr = .false.
+  out_his_wstr = .true.
+  out_his_ustr = .true.
+  out_his_vstr = .true.
+/
+
+&croco_temperature_history_fields
+  out_his_akt = .true.
+  out_his_shflx = .true.
+  out_his_shflx_rsw = .true.
+/
+
+&croco_salinity_history_fields
+  out_his_aks = .false.
+  out_his_swflx = .true.
+/
+
+&croco_bulk_flux_history_fields
+  out_his_shflx_rlw = .true.
+  out_his_shflx_lat = .true.
+  out_his_shflx_sen = .true.
+/
+
+&croco_bvf_history_fields
+  out_his_bvf = .false.
+/
+
+&croco_hbl_history_fields
+  out_his_hbl = .true.
+/
+
+&croco_lmd_bkpp_history_fields
+  out_his_hbbl = .true.
+/
+
+&croco_vis_coef_history_fields
+  out_his_visc3d = .false.
+/
+
+&croco_dif_coef_history_fields
+  out_his_diff3d = .false.
+/
+
+&croco_biology_history_fields
+  out_his_hel = .true.
+/
+
+&croco_auxiliary_averages_fields
+  out_avg_rho = .false.
+  out_avg_omega = .true.
+  out_avg_w = .true.
+  out_avg_akv = .false.
+  out_avg_bostr = .true.
+  out_avg_bustr = .false.
+  out_avg_bvstr = .false.
+  out_avg_wstr = .true.
+  out_avg_ustr = .true.
+  out_avg_vstr = .true.
+/
+
+&croco_temperature_averages_fields
+  out_avg_akt = .true.
+  out_avg_shflx = .true.
+  out_avg_shflx_rsw = .true.
+/
+
+&croco_salinity_averages_fields
+  out_avg_aks = .false.
+  out_avg_swflx = .true.
+/
+
+&croco_bulk_flux_averages_fields
+  out_avg_shflx_rlw = .true.
+  out_avg_shflx_lat = .true.
+  out_avg_shflx_sen = .true.
+/
+
+&croco_bvf_averages_fields
+  out_avg_bvf = .false.
+/
+
+&croco_hbl_averages_fields
+  out_avg_hbl = .true.
+/
+
+&croco_lmd_bkpp_averages_fields
+  out_avg_hbbl = .true.
+/
+
+&croco_vis_coef_averages_fields
+  out_avg_visc3d = .false.
+/
+
+&croco_dif_coef_averages_fields
+  out_avg_diff3d = .false.
+/
+
+&croco_biology_averages_fields
+  out_avg_hel = .true.
+/
+
+&croco_diag3D_history_fields
+  out_his_dia3D_tracer = 2*.true.
+/
+
+&croco_diag2D_history_fields
+  out_his_dia2D_tracer = 2*.true.
+/
+
+&croco_diag3D_average_fields
+  out_avg_dia3D_tracer = 2*.true.
+/
+
+&croco_diag2D_average_fields
+  out_avg_dia2D_tracer = 2*.true.
+/
+
+&croco_diagM_history_fields
+  out_his_diagM_u = .true.
+  out_his_diagM_v = .true.
+/
+
+&croco_diagM_average_fields
+  out_avg_diagM_u = .true.
+  out_avg_diagM_v = .true.
+/
+
+&croco_diags_vrt_history_fields
+  out_his_diags_vrt = .true.
+/
+
+&croco_diags_vrt_average_fields
+  out_avg_diags_vrt = .true.
+/
+
+&croco_diags_ek_history_fields
+  out_his_diags_ek = .true.
+/
+
+&croco_diags_ek_average_fields
+  out_avg_diags_ek = .true.
+/
+
+&croco_diags_pv_history_fields
+  out_his_diags_pv_tracer = 2*.true.
+/
+
+&croco_diags_pv_average_fields
+  out_avg_diags_pv_tracer = 2*.true.
+/
+
+&croco_diags_eddy_average_fields
+  out_avg_diags_eddy = .true.
+/
+
+&croco_psource
+  psource_Nsrc = 2
+/
+
+&croco_psource_data
+  psource_Isrc(   1) =     3, psource_Jsrc(   1) =    54, psource_Dsrc(   1) =     1, psource_Qbar(   1) =  200.
+  psource_Isrc(   2) =     3, psource_Jsrc(   2) =    40, psource_Dsrc(   2) =     0, psource_Qbar(   2) =  200.
+/
+
+&croco_psource_tracer
+  psource_Lsrc(1,1) = T
+  psource_Lsrc(1,2) = T
+  psource_Lsrc(2,1) = T
+  psource_Lsrc(2,2) = T
+  psource_Tsrc0(1,1) = 20.
+  psource_Tsrc0(1,2) = 15.
+  psource_Tsrc0(2,1) = 20.
+  psource_Tsrc0(2,2) = 15.
+/
+
+
+! End of namelist
