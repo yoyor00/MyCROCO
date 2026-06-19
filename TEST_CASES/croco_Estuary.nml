@@ -32,6 +32,10 @@
   x_sponge = 1000.
 /
 
+&croco_wetdry
+  D_wetdry = 0.1
+/
+
 &croco_nudging
   tauT_in = 1.
   tauT_out = 360.

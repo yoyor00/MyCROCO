@@ -10,6 +10,8 @@
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
     "patches": {},
     "nml_file": "TEST_CASES/croco_Flashrip.nml",
+    "cppdefs_file": "TEST_CASES/cppdefs_Flashrip.h",
+    "param_file": "TEST_CASES/param_Flashrip.h",
     "check_outputs": ["rip_his.nc"],
     "unsupported": ["openmp"],
   },

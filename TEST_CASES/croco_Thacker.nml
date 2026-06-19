@@ -20,6 +20,10 @@
   ininame = "thacker_rst.nc"
 /
 
+&croco_wetdry
+  D_wetdry = 0.01
+/
+
 &croco_history
   ldefhis = .true.
   nwrt = 30

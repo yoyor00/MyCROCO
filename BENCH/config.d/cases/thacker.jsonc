@@ -12,14 +12,6 @@
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2", "6": "1x6", "8": "2x4" },
     "patches": {
-      // Change the size of the mesh
-      "param.h": {
-        "mode": "replace",
-        "after": "#if defined THACKER",
-        "what": "      parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution",
-        "by": "      parameter (LLm0=200,  MMm0=200,  N=5 )   !  1 km resolution",
-        "descr": "Set mesh size to (200 x 200 x 5)",
-      },
       // Change the dt
       "TEST_CASES/croco_Thacker.nml": {
         "mode": "replace",

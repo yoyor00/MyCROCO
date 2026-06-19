@@ -698,6 +698,19 @@ MODULE croco_namelist
    !! Thickness of sponge/nudging layer [m]
 #endif
 
+#ifdef WET_DRY
+   ! &croco_wetdry
+   real :: D_wetdry = 0.2
+   !! Critical depth for wetting/drying cells [m]
+#endif
+
+#if defined MRL_WCI && defined WAVE_DRY
+   ! &croco_wavedry
+   real :: D_wavedry = 1.0
+   !! Minimum water depth above which wave forcing is applied [m]
+   !! (should be > D_wetdry when WET_DRY is also active)
+#endif
+
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
    defined M3_FRC_BRY||defined Z_FRC_BRY||\
    defined W_FRC_BRY||defined NBQ_FRC_BRY||\

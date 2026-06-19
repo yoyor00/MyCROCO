@@ -115,6 +115,12 @@ contains
 #if defined SPONGE && !defined SPONGE_GRID
       namelist /croco_sponge/ x_sponge
 #endif
+#ifdef WET_DRY
+      namelist /croco_wetdry/ D_wetdry
+#endif
+#if defined MRL_WCI && defined WAVE_DRY
+      namelist /croco_wavedry/ D_wavedry
+#endif
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
       defined M3_FRC_BRY||defined Z_FRC_BRY||\
       defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
@@ -784,6 +790,30 @@ contains
          read (nmlunit, nml=croco_sponge, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then
             call fatal_nml_error("croco_sponge (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#ifdef WET_DRY
+      ! --- croco_wetdry (optional) ---
+      call check_nml_presence(nmlunit, "croco_wetdry", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wetdry, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wetdry (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#if defined MRL_WCI && defined WAVE_DRY
+      ! --- croco_wavedry (optional) ---
+      call check_nml_presence(nmlunit, "croco_wavedry", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_wavedry, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_wavedry (parse error)")
             ierr = ierr + 1; close (nmlunit); return
          end if
       end if
@@ -2231,6 +2261,12 @@ contains
 #endif
 #if defined SPONGE && !defined SPONGE_GRID
       MPI_master_only WRITE (stdout, nml=croco_sponge)
+#endif
+#ifdef WET_DRY
+      MPI_master_only WRITE (stdout, nml=croco_wetdry)
+#endif
+#if defined MRL_WCI && defined WAVE_DRY
+      MPI_master_only WRITE (stdout, nml=croco_wavedry)
 #endif
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
       defined M3_FRC_BRY||defined Z_FRC_BRY||\

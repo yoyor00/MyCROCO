@@ -20,8 +20,15 @@ Outputs (written to --outdir, default: current directory)
                         all values are equal, where NT is resolved from
                         param.h.
 
-    param_config.h      Preprocessed param.h (resolved against cppdefs.h):
-                        blank lines and Fortran comment lines removed.
+    param_config.h      {--src}/param.h (e.g. OCEAN/param.h) used as a
+                        structural template - same line count, comments,
+                        #ifdef sections, and #include lines - with each
+                        simple literal value (grid dimensions, MPI, Tides,
+                        point sources, tracer counts, ...) filled in from
+                        the input param.h wherever cppdefs.h makes that
+                        line active. Values absent from the input param.h
+                        keep the template's own value; expression-valued
+                        lines and #include lines are left untouched.
 
     cppdefs_config.h     The input cppdefs.h, copied through as-is.
 
@@ -470,6 +477,8 @@ CANONICAL_BLOCK_ORDER = (
     "&croco_boundary",
     "&croco_bottom_forcing",
     "&croco_sponge",
+    "&croco_wetdry",
+    "&croco_wavedry",
     "&croco_nudging",
     "&croco_history",
     "&croco_averages",
@@ -638,9 +647,78 @@ def preprocess_param(cppdefs_path, param_path, extra_dirs=()):
     even when cppdefs_path/param_path live in an unrelated run directory.
     """
     cppdefs_abs = os.path.realpath(cppdefs_path)
-    param_dir = os.path.dirname(os.path.realpath(param_path))
-    wrapper = f'#include "{cppdefs_abs}"\n#include "param.h"\n'
-    return _run_cpp(wrapper, [param_dir, *extra_dirs])
+    param_abs = os.path.realpath(param_path)
+    wrapper = f'#include "{cppdefs_abs}"\n#include "{param_abs}"\n'
+    return _run_cpp(wrapper, [os.path.dirname(param_abs), *extra_dirs])
+
+
+def _candidate_value_lines(line):
+    """Yield (name, old_value) for each simple `NAME = <literal>` assignment
+    found on `line` (modern "integer/real, parameter :: NAME = VALUE" or
+    legacy "parameter (NAME=VALUE, ...)" syntax). Lines whose value is an
+    expression/macro reference (e.g. NNODES=NP_XI*NP_ETA) are not yielded —
+    only plain numeric literals are considered fillable.
+    """
+    if line.strip().startswith("!"):
+        return
+    m = re.match(r"^\s*(?:integer|real)\s*,\s*parameter\s*::\s*(\w+)\s*=\s*([+-]?[\d.]+)\s*(?:!.*)?$", line)
+    if m:
+        yield m.group(1), m.group(2)
+        return
+    pm = re.search(r"parameter\s*\(([^)]*)\)", line, re.IGNORECASE)
+    if pm:
+        for assign in pm.group(1).split(","):
+            am = re.match(r"\s*(\w+)\s*=\s*([+-]?[\d.]+)\s*$", assign.strip())
+            if am:
+                yield am.group(1), am.group(2)
+
+
+def fill_param_template(template_path, value_source_path, cppdefs_path, extra_dirs=()):
+    """
+    Take template_path (e.g. {--src}/param.h) as the structural template —
+    same line count, comments, #ifdef sections, and #include lines — and
+    fill in each simple `NAME = <literal>` value from value_source_path
+    (e.g. param_old.h), resolved against cppdefs_path. Only lines that are
+    currently active per cppdefs_path are touched; if a name has no
+    resolved value in value_source_path, the template's existing value is
+    left as-is. Expression-valued lines (e.g. NNODES=NP_XI*NP_ETA) and
+    #include lines are never modified.
+    """
+    template_text = open(template_path).read()
+
+    preprocessed_values = preprocess_param(cppdefs_path, value_source_path, extra_dirs=extra_dirs)
+    value_dict = read_param_text(preprocessed_values)
+
+    # Determine which template lines are active for this cppdefs case: swap
+    # the template's own #include lines for placeholders (so cpp doesn't try
+    # to resolve/inline them), run cpp, and check which original lines
+    # survive verbatim in the output.
+    include_lines = re.findall(r'^[ \t]*#[ \t]*include\b.*$', template_text, re.MULTILINE)
+    protected_text = template_text
+    for i, line in enumerate(include_lines):
+        protected_text = protected_text.replace(line, f"__TPL_INCLUDE_{i}__", 1)
+
+    cppdefs_abs = os.path.realpath(cppdefs_path)
+    template_dir = os.path.dirname(os.path.realpath(template_path))
+    wrapper = f'#include "{cppdefs_abs}"\n{protected_text}\n'
+    cpp_out = _run_cpp(wrapper, [template_dir, os.path.dirname(cppdefs_abs), *extra_dirs])
+    active_lines = {l.strip() for l in cpp_out.splitlines() if l.strip()}
+
+    out_lines = []
+    for line in template_text.splitlines():
+        new_line = line
+        if line.strip() in active_lines:
+            for name, old_val in _candidate_value_lines(line):
+                if name in value_dict and str(value_dict[name]) != old_val:
+                    new_line = re.sub(
+                        rf"(\b{re.escape(name)}\s*=\s*){re.escape(old_val)}\b",
+                        rf"\g<1>{value_dict[name]}",
+                        new_line,
+                        count=1,
+                    )
+        out_lines.append(new_line)
+
+    return "\n".join(out_lines) + "\n"
 
 
 def is_full_cppdefs(path, min_cases=10):
@@ -822,42 +900,41 @@ def read_param_text(text):
     """
     Parse Fortran parameter statements from preprocessed text and return a
     dict of resolved integer values.  Evaluates arithmetic expressions
-    (e.g. NT = itemp + ntrc_salt + ntrc_pas + …).
+    (e.g. NT = itemp + ntrc_salt + ntrc_pas + …). Handles both the modern
+    "integer, parameter :: NAME = EXPR" format and the legacy
+    "parameter (NAME=EXPR, …)" format — including modern declarations whose
+    value is an expression rather than a literal (e.g. param_dev.h's
+    "integer, parameter :: NT = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed").
     """
-    params = {}
+    # Strip Fortran "!" comments first, so commented-out example/alternative
+    # lines (e.g. "!     parameter (N_sl=40)") aren't mistaken for live code.
+    text = re.sub(r"!.*", "", text)
 
-    # Simple "integer, parameter :: NAME = VALUE" (hand-written format)
-    for m in re.finditer(r"integer\s*,\s*parameter\s*::\s*(\w+)\s*=\s*(\d+)", text):
-        params[m.group(1)] = int(m.group(2))
+    assignments = []  # ordered (name, expr) pairs from both syntaxes
 
-    # Fortran "parameter (NAME=EXPR, …)" statements
+    for m in re.finditer(r"integer\s*,\s*parameter\s*::\s*(\w+)\s*=\s*(\S+)", text):
+        assignments.append((m.group(1), m.group(2).strip()))
+
     for stmt in re.finditer(r"parameter\s*\(([^)]+)\)", text, re.IGNORECASE):
         for assign in stmt.group(1).split(","):
             m = re.match(r"\s*(\w+)\s*=\s*(.+)", assign.strip())
-            if not m:
-                continue
-            name, expr = m.group(1), m.group(2).strip()
-            try:
-                params[name] = _eval_fortran_expr(expr, params)
-            except Exception:
-                pass
+            if m:
+                assignments.append((m.group(1), m.group(2).strip()))
 
-    # Second pass: resolve any that depended on later definitions
+    # Resolve with retries: some expressions reference names assigned later
+    # in file order (e.g. across separate #ifdef branches).
+    params = {}
     changed = True
     while changed:
         changed = False
-        for stmt in re.finditer(r"parameter\s*\(([^)]+)\)", text, re.IGNORECASE):
-            for assign in stmt.group(1).split(","):
-                m = re.match(r"\s*(\w+)\s*=\s*(.+)", assign.strip())
-                if not m:
-                    continue
-                name, expr = m.group(1), m.group(2).strip()
-                if name not in params:
-                    try:
-                        params[name] = _eval_fortran_expr(expr, params)
-                        changed = True
-                    except Exception:
-                        pass
+        for name, expr in assignments:
+            if name in params:
+                continue
+            try:
+                params[name] = _eval_fortran_expr(expr, params)
+                changed = True
+            except Exception:
+                pass
     return params
 
 
@@ -881,22 +958,6 @@ def read_param_file(path):
 # ---------------------------------------------------------------------------
 # Output generators
 # ---------------------------------------------------------------------------
-
-
-def make_clean_param(preprocessed_text):
-    """
-    Strip blank lines and Fortran comment lines from preprocessed param text.
-    Keeps all active Fortran statements.
-    """
-    lines = []
-    for line in preprocessed_text.splitlines():
-        s = line.strip()
-        if not s:
-            continue
-        if s.startswith("!") or s.upper().startswith("C ") or s.upper() == "C":
-            continue
-        lines.append(line.rstrip())
-    return "\n".join(lines) + "\n"
 
 
 # ---------------------------------------------------------------------------
@@ -1048,9 +1109,48 @@ def _split_rest(tokens, nt):
     return lsrc, tsrc
 
 
+def _read_real_param(text, name):
+    """Find a real-valued `name = VALUE` parameter declaration in preprocessed
+    Fortran text, supporting both the modern (`real, parameter :: name = value`)
+    and legacy (`parameter (name=value)`) syntax. Returns the value as a
+    string (original formatting preserved) or None if not declared.
+    """
+    text = re.sub(r"!.*", "", text)  # strip comments; see read_param_text
+    m = re.search(rf"real\s*,\s*parameter\s*::\s*{name}\s*=\s*([\d.eEdD+-]+)", text)
+    if m:
+        return m.group(1)
+    m = re.search(rf"parameter\s*\(\s*{name}\s*=\s*([\d.eEdD+-]+)\s*\)", text)
+    if m:
+        return m.group(1)
+    return None
+
+
+def _build_wetdry_blocks(cards, params):
+    """Return {nml_block_name: [entry_lines]} for &croco_wetdry / &croco_wavedry.
+
+    D_wetdry/D_wavedry used to be compile-time CPP constants hard-coded per
+    test case in OCEAN/param.h, now migrated to runtime namelist defaults
+    (&croco_wetdry / &croco_wavedry in croco_namelist.F90). There is no .in
+    card for them, so instead of guessing a value we read whatever param.h
+    (preprocessed against the active cppdefs.h) actually declares for them
+    via params["D_wetdry"]/params["D_wavedry"] (set in main()). If param.h
+    doesn't declare them (e.g. WET_DRY inactive, or already fully migrated),
+    no block is emitted and the namelist default in croco_namelist.F90 applies.
+    """
+    blocks = {}
+    d_wetdry = params.get("D_wetdry")
+    if d_wetdry is not None:
+        blocks["&croco_wetdry"] = [f"  D_wetdry = {d_wetdry}"]
+    d_wavedry = params.get("D_wavedry")
+    if d_wavedry is not None:
+        blocks["&croco_wavedry"] = [f"  D_wavedry = {d_wavedry}"]
+    return blocks
+
+
 def _build_psource_blocks(cards, params):
     """Return {nml_block_name: [entry_lines]} for psource/psource_ncfile cards."""
-    NT = params.get("NT", None)
+    # NT is undeclared (None) for SOLVE3D-less (2D-only) configs; treat as 0 tracers.
+    NT = params.get("NT") or 0
     blocks = {}
 
     def add(name, line):
@@ -1308,6 +1408,9 @@ def build_nml(cards, headers, mappings, params):
         val = format_value(raw, typ)
         add_entry(nml_name, f"  {nml_var} = {val}")
 
+    for nml_name, entry_lines in _build_wetdry_blocks(cards, params).items():
+        for entry_line in entry_lines:
+            add_entry(nml_name, entry_line)
     for nml_name, entry_lines in _build_psource_blocks(cards, params).items():
         for entry_line in entry_lines:
             add_entry(nml_name, entry_line)
@@ -1388,10 +1491,19 @@ if the script is used elsewhere.
     print()
 
     # ---- param.h: preprocess with cpp, resolved against cppdefs.h -----------
+    # `preprocessed`/`params` fully resolve every #ifdef (including whatever
+    # param.h's own #include's, e.g. param_dev.h, declare) so that NT/NST/
+    # D_wetdry/etc. can be extracted below. The written param_config.h is
+    # different: it's {--src}/param.h used as a structural template (same
+    # line count, comments, #ifdef sections, #include lines), with each
+    # simple literal value filled in from args.param wherever cppdefs.h
+    # makes that line active; values absent from args.param keep the
+    # template's own value.
     preprocessed = preprocess_param(args.cppdefs, args.param, extra_dirs=src_dirs)
     params = read_param_text(preprocessed)
+    template_path = os.path.join(args.src, "param.h")
     with open(out_param, "w") as f:
-        f.write(make_clean_param(preprocessed))
+        f.write(fill_param_template(template_path, args.param, args.cppdefs, extra_dirs=src_dirs))
     print(f"Output param   : {out_param}  (NT={params.get('NT', '?')})")
 
     # ---- cppdefs.h: always written out as a simplified, single-case file ----
@@ -1417,6 +1529,9 @@ if the script is used elsewhere.
         args.cppdefs, "COHESIVE_BED", extra_dirs=src_dirs
     )
     params["_morphodyn"] = cpp_define_active(args.cppdefs, "MORPHODYN", extra_dirs=src_dirs)
+
+    params["D_wetdry"] = _read_real_param(preprocessed, "D_wetdry")
+    params["D_wavedry"] = _read_real_param(preprocessed, "D_wavedry")
 
     # ---- Convert .in → .nml --------------------------------------------------
     cards, headers = parse_in_file(args.croco_in)
