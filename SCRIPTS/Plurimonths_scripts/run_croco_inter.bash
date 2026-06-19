@@ -486,10 +486,10 @@ while [ $NY != $NY_END ]; do
       else
         ENDF=.${LEVEL}
       fi
-	    $CP -f ${MODEL}_rst.nc${ENDF} ${INIFILE}.nc${ENDF}
-	    $MV -f ${MODEL}_his.nc${ENDF} ${MSSOUT}/${MODEL}_his_${TIME}.nc${ENDF}
-	    $MV -f ${MODEL}_rst.nc${ENDF} ${MSSOUT}/${MODEL}_rst_${TIME}.nc${ENDF}
-	    $MV -f ${MODEL}_avg.nc${ENDF} ${MSSOUT}/${MODEL}_avg_${TIME}.nc${ENDF}
+      $CP -f ${MODEL}_rst.nc${ENDF} ${INIFILE}.nc${ENDF}
+      $MV -f ${MODEL}_his.nc${ENDF} ${MSSOUT}/${MODEL}_his_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_rst.nc${ENDF} ${MSSOUT}/${MODEL}_rst_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_avg.nc${ENDF} ${MSSOUT}/${MODEL}_avg_${TIME}.nc${ENDF}
       $MV -f ${MODEL}_dia.nc${ENDF} ${MSSOUT}/${MODEL}_dia_${TIME}.nc${ENDF}
       $MV -f ${MODEL}_dia_avg.nc${ENDF} ${MSSOUT}/${MODEL}_dia_avg_${TIME}.nc${ENDF}
       LEVEL=$((LEVEL + 1))
