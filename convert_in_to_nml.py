@@ -5,7 +5,7 @@ convert_in_to_nml.py
 Convert a CROCO `croco.in` + `cppdefs.h` + `param.h` set into
 `croco.nml` + `cppdefs_config.h` + `param_config.h`.
 
-Takes these 3 inputs and an optional one to specified CROCO source path 
+Takes these 3 inputs and an optional one to specified CROCO source path
 if the script is used elsewhere.
 
 Usage
@@ -60,190 +60,184 @@ import subprocess
 # Mapping table
 # ---------------------------------------------------------------------------
 MAPPINGS = [
-    ("title",              0,   0,  "str_line", "&croco_title",               "title"),
-    ("logfile",            0,   0,  "str",   "&croco_logfile",             "logname"),
-    ("time_stepping",      0,   0,  "int",   "&croco_time_stepping",       "ntimes"),
-    ("time_stepping",      0,   1,  "float", "&croco_time_stepping",       "dt"),
-    ("time_stepping",      0,   2,  "int",   "&croco_time_stepping",       "ndtfast"),
-    ("time_stepping",      0,   3,  "int",   "&croco_time_stepping",       "ninfo"),
-    ("time_stepping_nbq",  0,   0,  "int",   "&croco_time_stepping_nbq",   "ndtnbq"),
-    ("time_stepping_nbq",  0,   1,  "float", "&croco_time_stepping_nbq",   "csound_nbq"),
-    ("time_stepping_nbq",  0,   2,  "float", "&croco_time_stepping_nbq",   "visc2_nbq"),
-    ("S-coord",            0,   0,  "float", "&croco_s_coord",              "theta_s"),
-    ("S-coord",            0,   1,  "float", "&croco_s_coord",              "theta_b"),
-    ("S-coord",            0,   2,  "float", "&croco_s_coord",              "Tcline"),
-    ("start_date",         0,   0,  "str",   "&croco_use_calendar",        "start_date"),
-    ("end_date",           0,   0,  "str",   "&croco_use_calendar",        "end_date"),
-    ("output_time_steps",  0,   0,  "float", "&croco_use_calendar",        "dt_his"),
-    ("output_time_steps",  0,   1,  "float", "&croco_use_calendar",        "dt_avg"),
-    ("output_time_steps",  0,   2,  "float", "&croco_use_calendar",        "dt_rst"),
-    ("history",            0,   0,  "bool",  "&croco_history",             "ldefhis"),
-    ("history",            0,   1,  "int",   "&croco_history",             "nwrt"),
-    ("history",            0,   2,  "int",   "&croco_history",             "nrpfhis"),
-    ("history",            1,   0,  "str",   "&croco_history",             "hisname"),
-    ("initial",            0,   0,  "int",   "&croco_initial",             "nrrec"),
-    ("initial",            1,   0,  "str",   "&croco_initial",             "ininame"),
-    ("restart",            0,   0,  "int",   "&croco_restart",             "nrst"),
-    ("restart",            0,   1,  "int",   "&croco_restart",             "nrpfrst"),
-    ("restart",            1,   0,  "str",   "&croco_restart",             "rstname"),
-    ("grid",               0,   0,  "str",   "&croco_grid",                "grdname"),
-    ("forcing",            0,   0,  "str",   "&croco_forcing",             "frcname"),
-    ("sponge",             0,   0,  "float", "&croco_sponge",              "x_sponge"),
-    ("nudg_cof",           0,   0,  "float", "&croco_nudging",             "tauT_in"),
-    ("nudg_cof",           0,   1,  "float", "&croco_nudging",             "tauT_out"),
-    ("nudg_cof",           0,   2,  "float", "&croco_nudging",             "tauM_in"),
-    ("nudg_cof",           0,   3,  "float", "&croco_nudging",             "tauM_out"),
-    ("bottom_forcing",     0,   0,  "str",   "&croco_bottom_forcing",      "btfname"),
-
-    ("bulk_forcing",       0,   0,  "str",   "&croco_bulk_forcing",        "bulkname"),
-    ("climatology",        0,   0,  "str",   "&croco_climatology",         "clmname"),
-    ("wave_offline",       0,   0,  "str",   "&croco_wave_offline",        "wave_file"),
-    ("biology",            0,   0,  "str",   "&croco_biology",             "bioname"),
-    ("boundary",           0,   0,  "str",   "&croco_boundary",            "bry_file"),
-    ("wkb_boundary",       0,   0,  "str",   "&croco_wkb_boundary",        "brywkb_file"),
-    ("bodyforce",          0,   0,  "int",   "&croco_bodyforce",           "levsfrc"),
-    ("bodyforce",          0,   1,  "int",   "&croco_bodyforce",           "levbfrc"),
-    ("lin_EOS_cff",        0,   0,  "float", "&croco_lin_eos",             "R0"),
-    ("lin_EOS_cff",        0,   1,  "float", "&croco_lin_eos",             "T0"),
-    ("lin_EOS_cff",        0,   2,  "float", "&croco_lin_eos",             "S0"),
-    ("lin_EOS_cff",        0,   3,  "float", "&croco_lin_eos",             "Tcoef"),
-    ("lin_EOS_cff",        0,   4,  "float", "&croco_lin_eos",             "Scoef"),
-    ("abl_nudg_tra_cof",   0,   0,  "float", "&croco_abl_nudg_tra",        "ltra_min"),
-    ("abl_nudg_tra_cof",   0,   1,  "float", "&croco_abl_nudg_tra",        "ltra_max"),
-    ("abl_nudg_dyn_cof",   0,   0,  "float", "&croco_abl_nudg_dyn",        "ldyn_min"),
-    ("abl_nudg_dyn_cof",   0,   1,  "float", "&croco_abl_nudg_dyn",        "ldyn_max"),
-    ("sediments",          0,   0,  "str",   "&croco_sediments",           "sedname"),
-    ("sediments_mustang",  0,   0,  "str",   "&croco_sediments_mustang",   "sedname_must"),
-    ("substance",          0,   0,  "str",   "&croco_substance",           "subsfilename"),
-    ("obstruction",        0,   0,  "str",   "&croco_obstruction",         "obstname"),
-    ("xios_origin_date",   0,   0,  "str_line", "&croco_xios_origin_date", "xios_origin_date"),
-    ("assimilation",       0,   0,  "str",   "&croco_assimilation",        "aparnam"),
-    ("assimilation",       1,   0,  "str",   "&croco_assimilation",        "assname"),
-    ("rho0",               0,   0,  "float", "&croco_rho0",                "rho0"),
-    ("bottom_drag",        0,   0,  "float", "&croco_bottom_drag",         "rdrg"),
-    ("bottom_drag",        0,   1,  "float", "&croco_bottom_drag",         "rdrg2"),
-    ("bottom_drag",        0,   2,  "float", "&croco_bottom_drag",         "Zobt"),
-    ("bottom_drag",        0,   3,  "float", "&croco_bottom_drag",         "Cdb_min"),
-    ("bottom_drag",        0,   4,  "float", "&croco_bottom_drag",         "Cdb_max"),
-    ("gamma2",             0,   0,  "float", "&croco_gamma2",              "gamma2"),
-    ("lateral_visc",       0,   0,  "float", "&croco_lateral_visc",        "visc2"),
-    ("lateral_visc",       0,   1,  "float", "&croco_lateral_visc",        "visc4"),
-    ("tracer_diff2",       0,   0,  "float_array", "&croco_tracer_diff2",   "tnu2"),
-    ("tracer_diff4",       0,   0,  "float_array", "&croco_tracer_diff4",   "tnu4"),
-    ("vertical_mixing",    0,   0,  "float",       "&croco_vertical_mixing", "Akv_bak"),
-    ("vertical_mixing",    0,   1,  "float_array", "&croco_vertical_mixing", "Akt_bak"),
-    ("wkb_wwave",          0,   0,  "float", "&croco_wkb_wwave",           "wkb_amp"),
-    ("wkb_wwave",          0,   1,  "float", "&croco_wkb_wwave",           "wkb_ang"),
-    ("wkb_wwave",          0,   2,  "float", "&croco_wkb_wwave",           "wkb_prd"),
-    ("wkb_wwave",          0,   3,  "float", "&croco_wkb_wwave",           "wkb_tide"),
-    ("wkb_wwave",          0,   4,  "float", "&croco_wkb_wwave",           "wkb_btg"),
-    ("wkb_wwave",          0,   5,  "float", "&croco_wkb_wwave",           "wkb_gam"),
-    ("wkb_roller",         0,   0,  "float", "&croco_wkb_roller",          "wkb_rsb"),
-    ("wkb_roller",         0,   1,  "float", "&croco_wkb_roller",          "wkb_roller"),
-    ("wave_maker",         0,   0,  "float", "&croco_wave_maker",          "wmaker_amp"),
-    ("wave_maker",         0,   1,  "float", "&croco_wave_maker",          "wmaker_prd"),
-    ("wave_maker",         0,   2,  "float", "&croco_wave_maker",          "wmaker_dir"),
-    ("wave_maker",         0,   3,  "float", "&croco_wave_maker",          "wmaker_dsp"),
-    ("wave_maker",         0,   4,  "float", "&croco_wave_maker",          "wmaker_fsp"),
-    ("averages",           0,   0,  "int",   "&croco_averages",            "ntsavg"),
-    ("averages",           0,   1,  "int",   "&croco_averages",            "navg"),
-    ("averages",           0,   2,  "int",   "&croco_averages",            "nrpfavg"),
-    ("averages",           1,   0,  "str",   "&croco_averages",            "avgname"),
-    ("surf",               0,   0,  "bool",  "&croco_surf",                "ldefsurf"),
-    ("surf",               0,   1,  "int",   "&croco_surf",                "nwrtsurf"),
-    ("surf",               0,   2,  "int",   "&croco_surf",                "nrpfsurf"),
-    ("surf",               1,   0,  "str",   "&croco_surf",                "surfname"),
-
-    ("surf_avg",           0,   0,  "bool",  "&croco_surf_avg",            "ldefsurf_avg"),
-    ("surf_avg",           0,   1,  "int",   "&croco_surf_avg",            "ntssurf_avg"),
-    ("surf_avg",           0,   2,  "int",   "&croco_surf_avg",            "nwrtsurf_avg"),
-    ("surf_avg",           0,   3,  "int",   "&croco_surf_avg",            "nrpfsurf_avg"),
-    ("surf_avg",           1,   0,  "str",   "&croco_surf_avg",            "surfname_avg"),
-
-    ("stations",           0,   0,  "bool",  "&croco_stations",            "ldefsta"),
-    ("stations",           0,   1,  "int",   "&croco_stations",            "nsta"),
-    ("stations",           0,   2,  "int",   "&croco_stations",            "nrpfsta"),
-    ("stations",           1,   0,  "str",   "&croco_stations",            "staposname"),
-    ("stations",           2,   0,  "str",   "&croco_stations",            "staname"),
-
-    ("online",             0,   0,  "int",   "&croco_online",              "yearnum"),
-    ("online",             0,   1,  "int",   "&croco_online",              "monthnum"),
-    ("online",             0,   2,  "int",   "&croco_online",              "recordsperday"),
-    ("online",             0,   3,  "int",   "&croco_online",              "yearend"),
-    ("online",             0,   4,  "int",   "&croco_online",              "monthend"),
-    ("online",             1,   0,  "str",   "&croco_online",              "pathbulk"),
-
-    ("diagnostics",        0,   0,  "bool",  "&croco_diagnostics_ts",      "ldefdia"),
-    ("diagnostics",        0,   1,  "int",   "&croco_diagnostics_ts",      "nwrtdia"),
-    ("diagnostics",        0,   2,  "int",   "&croco_diagnostics_ts",      "nrpfdia"),
-    ("diagnostics",        1,   0,  "str",   "&croco_diagnostics_ts",      "dianame"),
-    ("diag_avg",           0,   0,  "bool",  "&croco_diag_avg",            "ldefdia_avg"),
-    ("diag_avg",           0,   1,  "int",   "&croco_diag_avg",            "ntsdia_avg"),
-    ("diag_avg",           0,   2,  "int",   "&croco_diag_avg",            "nwrtdia_avg"),
-    ("diag_avg",           0,   3,  "int",   "&croco_diag_avg",            "nrpfdia_avg"),
-    ("diag_avg",           1,   0,  "str",   "&croco_diag_avg",            "dianame_avg"),
-    ("diag_mld_dens",      0,   0,  "float", "&croco_diag_mld_dens",       "mld_crit_D"),
-    ("diag_mld_dens",      0,   1,  "float", "&croco_diag_mld_dens",       "mld_crit_T"),
-    ("diagnosticsM",       0,   0,  "bool",  "&croco_diagnosticsM",        "ldefdiaM"),
-    ("diagnosticsM",       0,   1,  "int",   "&croco_diagnosticsM",        "nwrtdiaM"),
-    ("diagnosticsM",       0,   2,  "int",   "&croco_diagnosticsM",        "nrpfdiaM"),
-    ("diagnosticsM",       1,   0,  "str",   "&croco_diagnosticsM",        "dianameM"),
-    ("diagM_avg",          0,   0,  "bool",  "&croco_diagM_avg",           "ldefdiaM_avg"),
-    ("diagM_avg",          0,   1,  "int",   "&croco_diagM_avg",           "ntsdiaM_avg"),
-    ("diagM_avg",          0,   2,  "int",   "&croco_diagM_avg",           "nwrtdiaM_avg"),
-    ("diagM_avg",          0,   3,  "int",   "&croco_diagM_avg",           "nrpfdiaM_avg"),
-    ("diagM_avg",          1,   0,  "str",   "&croco_diagM_avg",           "dianameM_avg"),
-    ("diags_vrt",          0,   0,  "bool",  "&croco_diags_vrt",           "ldefdiags_vrt"),
-    ("diags_vrt",          0,   1,  "int",   "&croco_diags_vrt",           "nwrtdiags_vrt"),
-    ("diags_vrt",          0,   2,  "int",   "&croco_diags_vrt",           "nrpfdiags_vrt"),
-    ("diags_vrt",          1,   0,  "str",   "&croco_diags_vrt",           "diags_vrtname"),
-    ("diags_vrt_avg",      0,   0,  "bool",  "&croco_diags_vrt_avg",       "ldefdiags_vrt_avg"),
-    ("diags_vrt_avg",      0,   1,  "int",   "&croco_diags_vrt_avg",       "ntsdiags_vrt_avg"),
-    ("diags_vrt_avg",      0,   2,  "int",   "&croco_diags_vrt_avg",       "nwrtdiags_vrt_avg"),
-    ("diags_vrt_avg",      0,   3,  "int",   "&croco_diags_vrt_avg",       "nrpfdiags_vrt_avg"),
-    ("diags_vrt_avg",      1,   0,  "str",   "&croco_diags_vrt_avg",       "diags_vrtname_avg"),
-    ("diags_ek",           0,   0,  "bool",  "&croco_diags_ek",            "ldefdiags_ek"),
-    ("diags_ek",           0,   1,  "int",   "&croco_diags_ek",            "nwrtdiags_ek"),
-    ("diags_ek",           0,   2,  "int",   "&croco_diags_ek",            "nrpfdiags_ek"),
-    ("diags_ek",           1,   0,  "str",   "&croco_diags_ek",            "diags_ekname"),
-    ("diags_ek_avg",       0,   0,  "bool",  "&croco_diags_ek_avg",        "ldefdiags_ek_avg"),
-    ("diags_ek_avg",       0,   1,  "int",   "&croco_diags_ek_avg",        "ntsdiags_ek_avg"),
-    ("diags_ek_avg",       0,   2,  "int",   "&croco_diags_ek_avg",        "nwrtdiags_ek_avg"),
-    ("diags_ek_avg",       0,   3,  "int",   "&croco_diags_ek_avg",        "nrpfdiags_ek_avg"),
-    ("diags_ek_avg",       1,   0,  "str",   "&croco_diags_ek_avg",        "diags_ekname_avg"),
-    ("diags_pv",           0,   0,  "bool",  "&croco_diags_pv",            "ldefdiags_pv"),
-    ("diags_pv",           0,   1,  "int",   "&croco_diags_pv",            "nwrtdiags_pv"),
-    ("diags_pv",           0,   2,  "int",   "&croco_diags_pv",            "nrpfdiags_pv"),
-    ("diags_pv",           1,   0,  "str",   "&croco_diags_pv",            "diags_pvname"),
-    ("diags_pv_avg",       0,   0,  "bool",  "&croco_diags_pv_avg",        "ldefdiags_pv_avg"),
-    ("diags_pv_avg",       0,   1,  "int",   "&croco_diags_pv_avg",        "ntsdiags_pv_avg"),
-    ("diags_pv_avg",       0,   2,  "int",   "&croco_diags_pv_avg",        "nwrtdiags_pv_avg"),
-    ("diags_pv_avg",       0,   3,  "int",   "&croco_diags_pv_avg",        "nrpfdiags_pv_avg"),
-    ("diags_pv_avg",       1,   0,  "str",   "&croco_diags_pv_avg",        "diags_pvname_avg"),
-    ("diags_eddy_avg",     0,   0,  "bool",  "&croco_diags_eddy_avg",      "ldefdiags_eddy_avg"),
-    ("diags_eddy_avg",     0,   1,  "int",   "&croco_diags_eddy_avg",      "ntsdiags_eddy_avg"),
-    ("diags_eddy_avg",     0,   2,  "int",   "&croco_diags_eddy_avg",      "nwrtdiags_eddy_avg"),
-    ("diags_eddy_avg",     0,   3,  "int",   "&croco_diags_eddy_avg",      "nrpfdiags_eddy_avg"),
-    ("diags_eddy_avg",     1,   0,  "str",   "&croco_diags_eddy_avg",      "diags_eddyname_avg"),
-    ("diagnostics_bio",    0,   0,  "bool",  "&croco_diagnostics_bio",     "ldefdiabio"),
-    ("diagnostics_bio",    0,   1,  "int",   "&croco_diagnostics_bio",     "nwrtdiabio"),
-    ("diagnostics_bio",    0,   2,  "int",   "&croco_diagnostics_bio",     "nrpfdiabio"),
-    ("diagnostics_bio",    1,   0,  "str",   "&croco_diagnostics_bio",     "dianamebio"),
-    ("diagbio_avg",        0,   0,  "bool",  "&croco_diagbio_avg",         "ldefdiabio_avg"),
-    ("diagbio_avg",        0,   1,  "int",   "&croco_diagbio_avg",         "ntsdiabio_avg"),
-    ("diagbio_avg",        0,   2,  "int",   "&croco_diagbio_avg",         "nwrtdiabio_avg"),
-    ("diagbio_avg",        0,   3,  "int",   "&croco_diagbio_avg",         "nrpfdiabio_avg"),
-    ("diagbio_avg",        1,   0,  "str",   "&croco_diagbio_avg",         "dianamebio_avg"),
-
-    ("abl",                0,   0,  "bool",  "&croco_abl",                 "ldefablhis"),
-    ("abl",                0,   1,  "int",   "&croco_abl",                 "nwrtablhis"),
-    ("abl",                0,   2,  "int",   "&croco_abl",                 "nrpfablhis"),
-    ("abl",                1,   0,  "str",   "&croco_abl",                 "ablname"),
-    ("abl_averages",       0,   0,  "bool",  "&croco_abl_averages",        "ldefablavg"),
-    ("abl_averages",       0,   1,  "int",   "&croco_abl_averages",        "ntsablavg"),
-    ("abl_averages",       0,   2,  "int",   "&croco_abl_averages",        "nwrtablavg"),
-    ("abl_averages",       0,   3,  "int",   "&croco_abl_averages",        "nrpfablavg"),
-    ("abl_averages",       1,   0,  "str",   "&croco_abl_averages",        "ablname_avg"),
+    ("title", 0, 0, "str_line", "&croco_title", "title"),
+    ("logfile", 0, 0, "str", "&croco_logfile", "logname"),
+    ("time_stepping", 0, 0, "int", "&croco_time_stepping", "ntimes"),
+    ("time_stepping", 0, 1, "float", "&croco_time_stepping", "dt"),
+    ("time_stepping", 0, 2, "int", "&croco_time_stepping", "ndtfast"),
+    ("time_stepping", 0, 3, "int", "&croco_time_stepping", "ninfo"),
+    ("time_stepping_nbq", 0, 0, "int", "&croco_time_stepping_nbq", "ndtnbq"),
+    ("time_stepping_nbq", 0, 1, "float", "&croco_time_stepping_nbq", "csound_nbq"),
+    ("time_stepping_nbq", 0, 2, "float", "&croco_time_stepping_nbq", "visc2_nbq"),
+    ("S-coord", 0, 0, "float", "&croco_s_coord", "theta_s"),
+    ("S-coord", 0, 1, "float", "&croco_s_coord", "theta_b"),
+    ("S-coord", 0, 2, "float", "&croco_s_coord", "Tcline"),
+    ("start_date", 0, 0, "str", "&croco_use_calendar", "start_date"),
+    ("end_date", 0, 0, "str", "&croco_use_calendar", "end_date"),
+    ("output_time_steps", 0, 0, "float", "&croco_use_calendar", "dt_his"),
+    ("output_time_steps", 0, 1, "float", "&croco_use_calendar", "dt_avg"),
+    ("output_time_steps", 0, 2, "float", "&croco_use_calendar", "dt_rst"),
+    ("history", 0, 0, "bool", "&croco_history", "ldefhis"),
+    ("history", 0, 1, "int", "&croco_history", "nwrt"),
+    ("history", 0, 2, "int", "&croco_history", "nrpfhis"),
+    ("history", 1, 0, "str", "&croco_history", "hisname"),
+    ("initial", 0, 0, "int", "&croco_initial", "nrrec"),
+    ("initial", 1, 0, "str", "&croco_initial", "ininame"),
+    ("restart", 0, 0, "int", "&croco_restart", "nrst"),
+    ("restart", 0, 1, "int", "&croco_restart", "nrpfrst"),
+    ("restart", 1, 0, "str", "&croco_restart", "rstname"),
+    ("grid", 0, 0, "str", "&croco_grid", "grdname"),
+    ("forcing", 0, 0, "str", "&croco_forcing", "frcname"),
+    ("sponge", 0, 0, "float", "&croco_sponge", "x_sponge"),
+    ("nudg_cof", 0, 0, "float", "&croco_nudging", "tauT_in"),
+    ("nudg_cof", 0, 1, "float", "&croco_nudging", "tauT_out"),
+    ("nudg_cof", 0, 2, "float", "&croco_nudging", "tauM_in"),
+    ("nudg_cof", 0, 3, "float", "&croco_nudging", "tauM_out"),
+    ("bottom_forcing", 0, 0, "str", "&croco_bottom_forcing", "btfname"),
+    ("bulk_forcing", 0, 0, "str", "&croco_bulk_forcing", "bulkname"),
+    ("climatology", 0, 0, "str", "&croco_climatology", "clmname"),
+    ("wave_offline", 0, 0, "str", "&croco_wave_offline", "wave_file"),
+    ("biology", 0, 0, "str", "&croco_biology", "bioname"),
+    ("boundary", 0, 0, "str", "&croco_boundary", "bry_file"),
+    ("wkb_boundary", 0, 0, "str", "&croco_wkb_boundary", "brywkb_file"),
+    ("bodyforce", 0, 0, "int", "&croco_bodyforce", "levsfrc"),
+    ("bodyforce", 0, 1, "int", "&croco_bodyforce", "levbfrc"),
+    ("lin_EOS_cff", 0, 0, "float", "&croco_lin_eos", "R0"),
+    ("lin_EOS_cff", 0, 1, "float", "&croco_lin_eos", "T0"),
+    ("lin_EOS_cff", 0, 2, "float", "&croco_lin_eos", "S0"),
+    ("lin_EOS_cff", 0, 3, "float", "&croco_lin_eos", "Tcoef"),
+    ("lin_EOS_cff", 0, 4, "float", "&croco_lin_eos", "Scoef"),
+    ("abl_nudg_tra_cof", 0, 0, "float", "&croco_abl_nudg_tra", "ltra_min"),
+    ("abl_nudg_tra_cof", 0, 1, "float", "&croco_abl_nudg_tra", "ltra_max"),
+    ("abl_nudg_dyn_cof", 0, 0, "float", "&croco_abl_nudg_dyn", "ldyn_min"),
+    ("abl_nudg_dyn_cof", 0, 1, "float", "&croco_abl_nudg_dyn", "ldyn_max"),
+    ("sediments", 0, 0, "str", "&croco_sediments", "sedname"),
+    ("sediments_mustang", 0, 0, "str", "&croco_sediments_mustang", "sedname_must"),
+    ("substance", 0, 0, "str", "&croco_substance", "subsfilename"),
+    ("obstruction", 0, 0, "str", "&croco_obstruction", "obstname"),
+    ("xios_origin_date", 0, 0, "str_line", "&croco_xios_origin_date", "xios_origin_date"),
+    ("assimilation", 0, 0, "str", "&croco_assimilation", "aparnam"),
+    ("assimilation", 1, 0, "str", "&croco_assimilation", "assname"),
+    ("rho0", 0, 0, "float", "&croco_rho0", "rho0"),
+    ("bottom_drag", 0, 0, "float", "&croco_bottom_drag", "rdrg"),
+    ("bottom_drag", 0, 1, "float", "&croco_bottom_drag", "rdrg2"),
+    ("bottom_drag", 0, 2, "float", "&croco_bottom_drag", "Zobt"),
+    ("bottom_drag", 0, 3, "float", "&croco_bottom_drag", "Cdb_min"),
+    ("bottom_drag", 0, 4, "float", "&croco_bottom_drag", "Cdb_max"),
+    ("gamma2", 0, 0, "float", "&croco_gamma2", "gamma2"),
+    ("lateral_visc", 0, 0, "float", "&croco_lateral_visc", "visc2"),
+    ("lateral_visc", 0, 1, "float", "&croco_lateral_visc", "visc4"),
+    ("tracer_diff2", 0, 0, "float_array", "&croco_tracer_diff2", "tnu2"),
+    ("tracer_diff4", 0, 0, "float_array", "&croco_tracer_diff4", "tnu4"),
+    ("vertical_mixing", 0, 0, "float", "&croco_vertical_mixing", "Akv_bak"),
+    ("vertical_mixing", 0, 1, "float_array", "&croco_vertical_mixing", "Akt_bak"),
+    ("wkb_wwave", 0, 0, "float", "&croco_wkb_wwave", "wkb_amp"),
+    ("wkb_wwave", 0, 1, "float", "&croco_wkb_wwave", "wkb_ang"),
+    ("wkb_wwave", 0, 2, "float", "&croco_wkb_wwave", "wkb_prd"),
+    ("wkb_wwave", 0, 3, "float", "&croco_wkb_wwave", "wkb_tide"),
+    ("wkb_wwave", 0, 4, "float", "&croco_wkb_wwave", "wkb_btg"),
+    ("wkb_wwave", 0, 5, "float", "&croco_wkb_wwave", "wkb_gam"),
+    ("wkb_roller", 0, 0, "float", "&croco_wkb_roller", "wkb_rsb"),
+    ("wkb_roller", 0, 1, "float", "&croco_wkb_roller", "wkb_roller"),
+    ("wave_maker", 0, 0, "float", "&croco_wave_maker", "wmaker_amp"),
+    ("wave_maker", 0, 1, "float", "&croco_wave_maker", "wmaker_prd"),
+    ("wave_maker", 0, 2, "float", "&croco_wave_maker", "wmaker_dir"),
+    ("wave_maker", 0, 3, "float", "&croco_wave_maker", "wmaker_dsp"),
+    ("wave_maker", 0, 4, "float", "&croco_wave_maker", "wmaker_fsp"),
+    ("averages", 0, 0, "int", "&croco_averages", "ntsavg"),
+    ("averages", 0, 1, "int", "&croco_averages", "navg"),
+    ("averages", 0, 2, "int", "&croco_averages", "nrpfavg"),
+    ("averages", 1, 0, "str", "&croco_averages", "avgname"),
+    ("surf", 0, 0, "bool", "&croco_surf", "ldefsurf"),
+    ("surf", 0, 1, "int", "&croco_surf", "nwrtsurf"),
+    ("surf", 0, 2, "int", "&croco_surf", "nrpfsurf"),
+    ("surf", 1, 0, "str", "&croco_surf", "surfname"),
+    ("surf_avg", 0, 0, "bool", "&croco_surf_avg", "ldefsurf_avg"),
+    ("surf_avg", 0, 1, "int", "&croco_surf_avg", "ntssurf_avg"),
+    ("surf_avg", 0, 2, "int", "&croco_surf_avg", "nwrtsurf_avg"),
+    ("surf_avg", 0, 3, "int", "&croco_surf_avg", "nrpfsurf_avg"),
+    ("surf_avg", 1, 0, "str", "&croco_surf_avg", "surfname_avg"),
+    ("stations", 0, 0, "bool", "&croco_stations", "ldefsta"),
+    ("stations", 0, 1, "int", "&croco_stations", "nsta"),
+    ("stations", 0, 2, "int", "&croco_stations", "nrpfsta"),
+    ("stations", 1, 0, "str", "&croco_stations", "staposname"),
+    ("stations", 2, 0, "str", "&croco_stations", "staname"),
+    ("online", 0, 0, "int", "&croco_online", "yearnum"),
+    ("online", 0, 1, "int", "&croco_online", "monthnum"),
+    ("online", 0, 2, "int", "&croco_online", "recordsperday"),
+    ("online", 0, 3, "int", "&croco_online", "yearend"),
+    ("online", 0, 4, "int", "&croco_online", "monthend"),
+    ("online", 1, 0, "str", "&croco_online", "pathbulk"),
+    ("diagnostics", 0, 0, "bool", "&croco_diagnostics_ts", "ldefdia"),
+    ("diagnostics", 0, 1, "int", "&croco_diagnostics_ts", "nwrtdia"),
+    ("diagnostics", 0, 2, "int", "&croco_diagnostics_ts", "nrpfdia"),
+    ("diagnostics", 1, 0, "str", "&croco_diagnostics_ts", "dianame"),
+    ("diag_avg", 0, 0, "bool", "&croco_diag_avg", "ldefdia_avg"),
+    ("diag_avg", 0, 1, "int", "&croco_diag_avg", "ntsdia_avg"),
+    ("diag_avg", 0, 2, "int", "&croco_diag_avg", "nwrtdia_avg"),
+    ("diag_avg", 0, 3, "int", "&croco_diag_avg", "nrpfdia_avg"),
+    ("diag_avg", 1, 0, "str", "&croco_diag_avg", "dianame_avg"),
+    ("diag_mld_dens", 0, 0, "float", "&croco_diag_mld_dens", "mld_crit_D"),
+    ("diag_mld_dens", 0, 1, "float", "&croco_diag_mld_dens", "mld_crit_T"),
+    ("diagnosticsM", 0, 0, "bool", "&croco_diagnosticsM", "ldefdiaM"),
+    ("diagnosticsM", 0, 1, "int", "&croco_diagnosticsM", "nwrtdiaM"),
+    ("diagnosticsM", 0, 2, "int", "&croco_diagnosticsM", "nrpfdiaM"),
+    ("diagnosticsM", 1, 0, "str", "&croco_diagnosticsM", "dianameM"),
+    ("diagM_avg", 0, 0, "bool", "&croco_diagM_avg", "ldefdiaM_avg"),
+    ("diagM_avg", 0, 1, "int", "&croco_diagM_avg", "ntsdiaM_avg"),
+    ("diagM_avg", 0, 2, "int", "&croco_diagM_avg", "nwrtdiaM_avg"),
+    ("diagM_avg", 0, 3, "int", "&croco_diagM_avg", "nrpfdiaM_avg"),
+    ("diagM_avg", 1, 0, "str", "&croco_diagM_avg", "dianameM_avg"),
+    ("diags_vrt", 0, 0, "bool", "&croco_diags_vrt", "ldefdiags_vrt"),
+    ("diags_vrt", 0, 1, "int", "&croco_diags_vrt", "nwrtdiags_vrt"),
+    ("diags_vrt", 0, 2, "int", "&croco_diags_vrt", "nrpfdiags_vrt"),
+    ("diags_vrt", 1, 0, "str", "&croco_diags_vrt", "diags_vrtname"),
+    ("diags_vrt_avg", 0, 0, "bool", "&croco_diags_vrt_avg", "ldefdiags_vrt_avg"),
+    ("diags_vrt_avg", 0, 1, "int", "&croco_diags_vrt_avg", "ntsdiags_vrt_avg"),
+    ("diags_vrt_avg", 0, 2, "int", "&croco_diags_vrt_avg", "nwrtdiags_vrt_avg"),
+    ("diags_vrt_avg", 0, 3, "int", "&croco_diags_vrt_avg", "nrpfdiags_vrt_avg"),
+    ("diags_vrt_avg", 1, 0, "str", "&croco_diags_vrt_avg", "diags_vrtname_avg"),
+    ("diags_ek", 0, 0, "bool", "&croco_diags_ek", "ldefdiags_ek"),
+    ("diags_ek", 0, 1, "int", "&croco_diags_ek", "nwrtdiags_ek"),
+    ("diags_ek", 0, 2, "int", "&croco_diags_ek", "nrpfdiags_ek"),
+    ("diags_ek", 1, 0, "str", "&croco_diags_ek", "diags_ekname"),
+    ("diags_ek_avg", 0, 0, "bool", "&croco_diags_ek_avg", "ldefdiags_ek_avg"),
+    ("diags_ek_avg", 0, 1, "int", "&croco_diags_ek_avg", "ntsdiags_ek_avg"),
+    ("diags_ek_avg", 0, 2, "int", "&croco_diags_ek_avg", "nwrtdiags_ek_avg"),
+    ("diags_ek_avg", 0, 3, "int", "&croco_diags_ek_avg", "nrpfdiags_ek_avg"),
+    ("diags_ek_avg", 1, 0, "str", "&croco_diags_ek_avg", "diags_ekname_avg"),
+    ("diags_pv", 0, 0, "bool", "&croco_diags_pv", "ldefdiags_pv"),
+    ("diags_pv", 0, 1, "int", "&croco_diags_pv", "nwrtdiags_pv"),
+    ("diags_pv", 0, 2, "int", "&croco_diags_pv", "nrpfdiags_pv"),
+    ("diags_pv", 1, 0, "str", "&croco_diags_pv", "diags_pvname"),
+    ("diags_pv_avg", 0, 0, "bool", "&croco_diags_pv_avg", "ldefdiags_pv_avg"),
+    ("diags_pv_avg", 0, 1, "int", "&croco_diags_pv_avg", "ntsdiags_pv_avg"),
+    ("diags_pv_avg", 0, 2, "int", "&croco_diags_pv_avg", "nwrtdiags_pv_avg"),
+    ("diags_pv_avg", 0, 3, "int", "&croco_diags_pv_avg", "nrpfdiags_pv_avg"),
+    ("diags_pv_avg", 1, 0, "str", "&croco_diags_pv_avg", "diags_pvname_avg"),
+    ("diags_eddy_avg", 0, 0, "bool", "&croco_diags_eddy_avg", "ldefdiags_eddy_avg"),
+    ("diags_eddy_avg", 0, 1, "int", "&croco_diags_eddy_avg", "ntsdiags_eddy_avg"),
+    ("diags_eddy_avg", 0, 2, "int", "&croco_diags_eddy_avg", "nwrtdiags_eddy_avg"),
+    ("diags_eddy_avg", 0, 3, "int", "&croco_diags_eddy_avg", "nrpfdiags_eddy_avg"),
+    ("diags_eddy_avg", 1, 0, "str", "&croco_diags_eddy_avg", "diags_eddyname_avg"),
+    ("diagnostics_bio", 0, 0, "bool", "&croco_diagnostics_bio", "ldefdiabio"),
+    ("diagnostics_bio", 0, 1, "int", "&croco_diagnostics_bio", "nwrtdiabio"),
+    ("diagnostics_bio", 0, 2, "int", "&croco_diagnostics_bio", "nrpfdiabio"),
+    ("diagnostics_bio", 1, 0, "str", "&croco_diagnostics_bio", "dianamebio"),
+    ("diagbio_avg", 0, 0, "bool", "&croco_diagbio_avg", "ldefdiabio_avg"),
+    ("diagbio_avg", 0, 1, "int", "&croco_diagbio_avg", "ntsdiabio_avg"),
+    ("diagbio_avg", 0, 2, "int", "&croco_diagbio_avg", "nwrtdiabio_avg"),
+    ("diagbio_avg", 0, 3, "int", "&croco_diagbio_avg", "nrpfdiabio_avg"),
+    ("diagbio_avg", 1, 0, "str", "&croco_diagbio_avg", "dianamebio_avg"),
+    ("abl", 0, 0, "bool", "&croco_abl", "ldefablhis"),
+    ("abl", 0, 1, "int", "&croco_abl", "nwrtablhis"),
+    ("abl", 0, 2, "int", "&croco_abl", "nrpfablhis"),
+    ("abl", 1, 0, "str", "&croco_abl", "ablname"),
+    ("abl_averages", 0, 0, "bool", "&croco_abl_averages", "ldefablavg"),
+    ("abl_averages", 0, 1, "int", "&croco_abl_averages", "ntsablavg"),
+    ("abl_averages", 0, 2, "int", "&croco_abl_averages", "nwrtablavg"),
+    ("abl_averages", 0, 3, "int", "&croco_abl_averages", "nrpfablavg"),
+    ("abl_averages", 1, 0, "str", "&croco_abl_averages", "ablname_avg"),
     # stochastic_history_fields: xi2d xi3d
     ("stochastic_history_fields", 0, 0, "bool", "&croco_stochastic_history_fields", "out_his_xi2d"),
     ("stochastic_history_fields", 0, 1, "bool", "&croco_stochastic_history_fields", "out_his_xi3d"),
@@ -256,37 +250,37 @@ MAPPINGS = [
     ("gls_averages", 0, 1, "bool", "&croco_gls_averages_fields", "out_avg_gls"),
     ("gls_averages", 0, 2, "bool", "&croco_gls_averages_fields", "out_avg_lscale"),
     # abl_history_fields: 20 bools
-    ("abl_history_fields",  0,  0, "bool", "&croco_abl_history_fields", "out_his_abl_pu_dta"),
-    ("abl_history_fields",  0,  1, "bool", "&croco_abl_history_fields", "out_his_abl_pv_dta"),
-    ("abl_history_fields",  0,  2, "bool", "&croco_abl_history_fields", "out_his_abl_pt_dta"),
-    ("abl_history_fields",  0,  3, "bool", "&croco_abl_history_fields", "out_his_abl_pq_dta"),
-    ("abl_history_fields",  0,  4, "bool", "&croco_abl_history_fields", "out_his_abl_pgu_dta"),
-    ("abl_history_fields",  0,  5, "bool", "&croco_abl_history_fields", "out_his_abl_pgv_dta"),
-    ("abl_history_fields",  0,  6, "bool", "&croco_abl_history_fields", "out_his_abl_u_abl"),
-    ("abl_history_fields",  0,  7, "bool", "&croco_abl_history_fields", "out_his_abl_v_abl"),
-    ("abl_history_fields",  0,  8, "bool", "&croco_abl_history_fields", "out_his_abl_t_abl"),
-    ("abl_history_fields",  0,  9, "bool", "&croco_abl_history_fields", "out_his_abl_q_abl"),
-    ("abl_history_fields",  0, 10, "bool", "&croco_abl_history_fields", "out_his_abl_tke_abl"),
-    ("abl_history_fields",  0, 11, "bool", "&croco_abl_history_fields", "out_his_abl_mxlm_abl"),
-    ("abl_history_fields",  0, 12, "bool", "&croco_abl_history_fields", "out_his_abl_mxld_abl"),
-    ("abl_history_fields",  0, 13, "bool", "&croco_abl_history_fields", "out_his_abl_avm_abl"),
-    ("abl_history_fields",  0, 14, "bool", "&croco_abl_history_fields", "out_his_abl_avt_abl"),
-    ("abl_history_fields",  0, 15, "bool", "&croco_abl_history_fields", "out_his_abl_ablh_abl"),
-    ("abl_history_fields",  0, 16, "bool", "&croco_abl_history_fields", "out_his_abl_zr_abl"),
-    ("abl_history_fields",  0, 17, "bool", "&croco_abl_history_fields", "out_his_abl_zw_abl"),
-    ("abl_history_fields",  0, 18, "bool", "&croco_abl_history_fields", "out_his_abl_Hzr_abl"),
-    ("abl_history_fields",  0, 19, "bool", "&croco_abl_history_fields", "out_his_abl_Hzw_abl"),
+    ("abl_history_fields", 0, 0, "bool", "&croco_abl_history_fields", "out_his_abl_pu_dta"),
+    ("abl_history_fields", 0, 1, "bool", "&croco_abl_history_fields", "out_his_abl_pv_dta"),
+    ("abl_history_fields", 0, 2, "bool", "&croco_abl_history_fields", "out_his_abl_pt_dta"),
+    ("abl_history_fields", 0, 3, "bool", "&croco_abl_history_fields", "out_his_abl_pq_dta"),
+    ("abl_history_fields", 0, 4, "bool", "&croco_abl_history_fields", "out_his_abl_pgu_dta"),
+    ("abl_history_fields", 0, 5, "bool", "&croco_abl_history_fields", "out_his_abl_pgv_dta"),
+    ("abl_history_fields", 0, 6, "bool", "&croco_abl_history_fields", "out_his_abl_u_abl"),
+    ("abl_history_fields", 0, 7, "bool", "&croco_abl_history_fields", "out_his_abl_v_abl"),
+    ("abl_history_fields", 0, 8, "bool", "&croco_abl_history_fields", "out_his_abl_t_abl"),
+    ("abl_history_fields", 0, 9, "bool", "&croco_abl_history_fields", "out_his_abl_q_abl"),
+    ("abl_history_fields", 0, 10, "bool", "&croco_abl_history_fields", "out_his_abl_tke_abl"),
+    ("abl_history_fields", 0, 11, "bool", "&croco_abl_history_fields", "out_his_abl_mxlm_abl"),
+    ("abl_history_fields", 0, 12, "bool", "&croco_abl_history_fields", "out_his_abl_mxld_abl"),
+    ("abl_history_fields", 0, 13, "bool", "&croco_abl_history_fields", "out_his_abl_avm_abl"),
+    ("abl_history_fields", 0, 14, "bool", "&croco_abl_history_fields", "out_his_abl_avt_abl"),
+    ("abl_history_fields", 0, 15, "bool", "&croco_abl_history_fields", "out_his_abl_ablh_abl"),
+    ("abl_history_fields", 0, 16, "bool", "&croco_abl_history_fields", "out_his_abl_zr_abl"),
+    ("abl_history_fields", 0, 17, "bool", "&croco_abl_history_fields", "out_his_abl_zw_abl"),
+    ("abl_history_fields", 0, 18, "bool", "&croco_abl_history_fields", "out_his_abl_Hzr_abl"),
+    ("abl_history_fields", 0, 19, "bool", "&croco_abl_history_fields", "out_his_abl_Hzw_abl"),
     # abl_averages_fields: 20 bools
-    ("abl_averages_fields", 0,  0, "bool", "&croco_abl_averages_fields", "out_avg_abl_pu_dta"),
-    ("abl_averages_fields", 0,  1, "bool", "&croco_abl_averages_fields", "out_avg_abl_pv_dta"),
-    ("abl_averages_fields", 0,  2, "bool", "&croco_abl_averages_fields", "out_avg_abl_pt_dta"),
-    ("abl_averages_fields", 0,  3, "bool", "&croco_abl_averages_fields", "out_avg_abl_pq_dta"),
-    ("abl_averages_fields", 0,  4, "bool", "&croco_abl_averages_fields", "out_avg_abl_pgu_dta"),
-    ("abl_averages_fields", 0,  5, "bool", "&croco_abl_averages_fields", "out_avg_abl_pgv_dta"),
-    ("abl_averages_fields", 0,  6, "bool", "&croco_abl_averages_fields", "out_avg_abl_u_abl"),
-    ("abl_averages_fields", 0,  7, "bool", "&croco_abl_averages_fields", "out_avg_abl_v_abl"),
-    ("abl_averages_fields", 0,  8, "bool", "&croco_abl_averages_fields", "out_avg_abl_t_abl"),
-    ("abl_averages_fields", 0,  9, "bool", "&croco_abl_averages_fields", "out_avg_abl_q_abl"),
+    ("abl_averages_fields", 0, 0, "bool", "&croco_abl_averages_fields", "out_avg_abl_pu_dta"),
+    ("abl_averages_fields", 0, 1, "bool", "&croco_abl_averages_fields", "out_avg_abl_pv_dta"),
+    ("abl_averages_fields", 0, 2, "bool", "&croco_abl_averages_fields", "out_avg_abl_pt_dta"),
+    ("abl_averages_fields", 0, 3, "bool", "&croco_abl_averages_fields", "out_avg_abl_pq_dta"),
+    ("abl_averages_fields", 0, 4, "bool", "&croco_abl_averages_fields", "out_avg_abl_pgu_dta"),
+    ("abl_averages_fields", 0, 5, "bool", "&croco_abl_averages_fields", "out_avg_abl_pgv_dta"),
+    ("abl_averages_fields", 0, 6, "bool", "&croco_abl_averages_fields", "out_avg_abl_u_abl"),
+    ("abl_averages_fields", 0, 7, "bool", "&croco_abl_averages_fields", "out_avg_abl_v_abl"),
+    ("abl_averages_fields", 0, 8, "bool", "&croco_abl_averages_fields", "out_avg_abl_t_abl"),
+    ("abl_averages_fields", 0, 9, "bool", "&croco_abl_averages_fields", "out_avg_abl_q_abl"),
     ("abl_averages_fields", 0, 10, "bool", "&croco_abl_averages_fields", "out_avg_abl_tke_abl"),
     ("abl_averages_fields", 0, 11, "bool", "&croco_abl_averages_fields", "out_avg_abl_mxlm_abl"),
     ("abl_averages_fields", 0, 12, "bool", "&croco_abl_averages_fields", "out_avg_abl_mxld_abl"),
@@ -298,9 +292,9 @@ MAPPINGS = [
     ("abl_averages_fields", 0, 18, "bool", "&croco_abl_averages_fields", "out_avg_abl_Hzr_abl"),
     ("abl_averages_fields", 0, 19, "bool", "&croco_abl_averages_fields", "out_avg_abl_Hzw_abl"),
     # surf_history_fields: 1 bool
-    ("surf_history_fields",  0, 0, "bool", "&croco_surf_history_fields",  "out_his_surf"),
+    ("surf_history_fields", 0, 0, "bool", "&croco_surf_history_fields", "out_his_surf"),
     # surf_average_fields: 1 bool
-    ("surf_average_fields",  0, 0, "bool", "&croco_surf_average_fields",  "out_avg_surf"),
+    ("surf_average_fields", 0, 0, "bool", "&croco_surf_average_fields", "out_avg_surf"),
     # station_fields: grd temp salt rho vel
     ("station_fields", 0, 0, "bool", "&croco_station_fields", "sta_grd"),
     ("station_fields", 0, 1, "bool", "&croco_station_fields", "sta_temp"),
@@ -332,7 +326,7 @@ MAPPINGS = [
     ("wci_history_fields", 0, 7, "bool", "&croco_wci_history_3d_fields", "out_his_akw"),
     ("wci_history_fields", 0, 8, "bool", "&croco_wci_history_3d_fields", "out_his_kvf"),
     ("wci_history_fields", 0, 9, "bool", "&croco_wci_history_3d_fields", "out_his_calp"),
-    ("wci_history_fields", 0,10, "bool", "&croco_wci_history_3d_fields", "out_his_kaps"),
+    ("wci_history_fields", 0, 10, "bool", "&croco_wci_history_3d_fields", "out_his_kaps"),
     # wci_average_fields: sup ust2d vst2d [ust vst wst akb akw kvf calp kaps]
     ("wci_average_fields", 0, 0, "bool", "&croco_wci_average_fields", "out_avg_sup"),
     ("wci_average_fields", 0, 1, "bool", "&croco_wci_average_fields", "out_avg_ust2d"),
@@ -344,7 +338,7 @@ MAPPINGS = [
     ("wci_average_fields", 0, 7, "bool", "&croco_wci_average_3d_fields", "out_avg_akw"),
     ("wci_average_fields", 0, 8, "bool", "&croco_wci_average_3d_fields", "out_avg_kvf"),
     ("wci_average_fields", 0, 9, "bool", "&croco_wci_average_3d_fields", "out_avg_calp"),
-    ("wci_average_fields", 0,10, "bool", "&croco_wci_average_3d_fields", "out_avg_kaps"),
+    ("wci_average_fields", 0, 10, "bool", "&croco_wci_average_3d_fields", "out_avg_kaps"),
     # wave_history_fields: hrm frq action k_xi k_eta eps_b eps_d erol eps_r
     ("wave_history_fields", 0, 0, "bool", "&croco_wave_history_fields", "out_his_hrm"),
     ("wave_history_fields", 0, 1, "bool", "&croco_wave_history_fields", "out_his_frq"),
@@ -365,7 +359,6 @@ MAPPINGS = [
     ("wave_average_fields", 0, 6, "bool", "&croco_wave_average_fields", "out_avg_eps_d"),
     ("wave_average_fields", 0, 7, "bool", "&croco_wave_average_fields", "out_avg_erol"),
     ("wave_average_fields", 0, 8, "bool", "&croco_wave_average_fields", "out_avg_eps_r"),
-
     # primary_history_fields: zeta ubar vbar [u v [tracer(1:NT)]]
     ("primary_history_fields", 0, 0, "bool", "&croco_primary_history_fields", "out_his_zeta"),
     ("primary_history_fields", 0, 1, "bool", "&croco_primary_history_fields", "out_his_ubar"),
@@ -374,88 +367,85 @@ MAPPINGS = [
     ("primary_history_fields", 0, 4, "bool", "&croco_primary_history_3d_fields", "out_his_v"),
     ("primary_history_fields", 0, 5, "bool_array", "&croco_primary_history_tracer_fields", "out_his_tracer"),
     # primary_averages: zeta ubar vbar [u v [tracer(1:NT)]]
-    ("primary_averages",  0,   0,  "bool", "&croco_primary_average_fields",       "out_avg_zeta"),
-    ("primary_averages",  0,   1,  "bool", "&croco_primary_average_fields",       "out_avg_ubar"),
-    ("primary_averages",  0,   2,  "bool", "&croco_primary_average_fields",       "out_avg_vbar"),
-    ("primary_averages",  0,   3,  "bool", "&croco_primary_3d_average_fields",    "out_avg_u"),
-    ("primary_averages",  0,   4,  "bool", "&croco_primary_3d_average_fields",    "out_avg_v"),
-    ("primary_averages",  0,   5,  "bool_array", "&croco_primary_tracer_average_fields", "out_avg_tracer"),
+    ("primary_averages", 0, 0, "bool", "&croco_primary_average_fields", "out_avg_zeta"),
+    ("primary_averages", 0, 1, "bool", "&croco_primary_average_fields", "out_avg_ubar"),
+    ("primary_averages", 0, 2, "bool", "&croco_primary_average_fields", "out_avg_vbar"),
+    ("primary_averages", 0, 3, "bool", "&croco_primary_3d_average_fields", "out_avg_u"),
+    ("primary_averages", 0, 4, "bool", "&croco_primary_3d_average_fields", "out_avg_v"),
+    ("primary_averages", 0, 5, "bool_array", "&croco_primary_tracer_average_fields", "out_avg_tracer"),
     # auxiliary_history_fields: label-based (order varies per case)
-    ("auxiliary_history_fields", 0, "rho",    "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_rho"),
-    ("auxiliary_history_fields", 0, "Omega",  "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_omega"),
-    ("auxiliary_history_fields", 0, "W",      "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_w"),
-    ("auxiliary_history_fields", 0, "Akv",    "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_akv"),
-    ("auxiliary_history_fields", 0, "Bostr",  "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_bostr"),
-    ("auxiliary_history_fields", 0, "Bustr",  "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_bustr"),
-    ("auxiliary_history_fields", 0, "Bvstr",  "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_bvstr"),
-    ("auxiliary_history_fields", 0, "Wstr",   "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_wstr"),
-    ("auxiliary_history_fields", 0, "Ustr",   "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_ustr"),
-    ("auxiliary_history_fields", 0, "Vstr",   "labeled_bool", "&croco_auxiliary_history_fields",   "out_his_vstr"),
-    ("auxiliary_history_fields", 0, "Akt",    "labeled_bool", "&croco_temperature_history_fields", "out_his_akt"),
-    ("auxiliary_history_fields", 0, "Shfl",   "labeled_bool", "&croco_temperature_history_fields", "out_his_shflx"),
-    ("auxiliary_history_fields", 0, "rsw",    "labeled_bool", "&croco_temperature_history_fields", "out_his_shflx_rsw"),
-    ("auxiliary_history_fields", 0, "Aks",    "labeled_bool", "&croco_salinity_history_fields",    "out_his_aks"),
-    ("auxiliary_history_fields", 0, "Swfl",   "labeled_bool", "&croco_salinity_history_fields",    "out_his_swflx"),
-    ("auxiliary_history_fields", 0, "rlw",    "labeled_bool", "&croco_bulk_flux_history_fields",   "out_his_shflx_rlw"),
-    ("auxiliary_history_fields", 0, "lat",    "labeled_bool", "&croco_bulk_flux_history_fields",   "out_his_shflx_lat"),
-    ("auxiliary_history_fields", 0, "sen",    "labeled_bool", "&croco_bulk_flux_history_fields",   "out_his_shflx_sen"),
-    ("auxiliary_history_fields", 0, "Bvf",    "labeled_bool", "&croco_bvf_history_fields",         "out_his_bvf"),
-    ("auxiliary_history_fields", 0, "HBL",    "labeled_bool", "&croco_hbl_history_fields",         "out_his_hbl"),
-    ("auxiliary_history_fields", 0, "HBBL",   "labeled_bool", "&croco_lmd_bkpp_history_fields",    "out_his_hbbl"),
-    ("auxiliary_history_fields", 0, "Visc3d", "labeled_bool", "&croco_vis_coef_history_fields",    "out_his_visc3d"),
-    ("auxiliary_history_fields", 0, "Diff3d", "labeled_bool", "&croco_dif_coef_history_fields",    "out_his_diff3d"),
-    ("auxiliary_history_fields", 0, "HEL",    "labeled_bool", "&croco_biology_history_fields",     "out_his_hel"),
-    ("auxiliary_history_fields", 0, "Hm",     "labeled_bool", "&croco_morphodyn_history_fields",   "out_his_hm",  "_morphodyn", ".true."),
+    ("auxiliary_history_fields", 0, "rho", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_rho"),
+    ("auxiliary_history_fields", 0, "Omega", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_omega"),
+    ("auxiliary_history_fields", 0, "W", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_w"),
+    ("auxiliary_history_fields", 0, "Akv", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_akv"),
+    ("auxiliary_history_fields", 0, "Bostr", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_bostr"),
+    ("auxiliary_history_fields", 0, "Bustr", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_bustr"),
+    ("auxiliary_history_fields", 0, "Bvstr", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_bvstr"),
+    ("auxiliary_history_fields", 0, "Wstr", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_wstr"),
+    ("auxiliary_history_fields", 0, "Ustr", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_ustr"),
+    ("auxiliary_history_fields", 0, "Vstr", "labeled_bool", "&croco_auxiliary_history_fields", "out_his_vstr"),
+    ("auxiliary_history_fields", 0, "Akt", "labeled_bool", "&croco_temperature_history_fields", "out_his_akt"),
+    ("auxiliary_history_fields", 0, "Shfl", "labeled_bool", "&croco_temperature_history_fields", "out_his_shflx"),
+    ("auxiliary_history_fields", 0, "rsw", "labeled_bool", "&croco_temperature_history_fields", "out_his_shflx_rsw"),
+    ("auxiliary_history_fields", 0, "Aks", "labeled_bool", "&croco_salinity_history_fields", "out_his_aks"),
+    ("auxiliary_history_fields", 0, "Swfl", "labeled_bool", "&croco_salinity_history_fields", "out_his_swflx"),
+    ("auxiliary_history_fields", 0, "rlw", "labeled_bool", "&croco_bulk_flux_history_fields", "out_his_shflx_rlw"),
+    ("auxiliary_history_fields", 0, "lat", "labeled_bool", "&croco_bulk_flux_history_fields", "out_his_shflx_lat"),
+    ("auxiliary_history_fields", 0, "sen", "labeled_bool", "&croco_bulk_flux_history_fields", "out_his_shflx_sen"),
+    ("auxiliary_history_fields", 0, "Bvf", "labeled_bool", "&croco_bvf_history_fields", "out_his_bvf"),
+    ("auxiliary_history_fields", 0, "HBL", "labeled_bool", "&croco_hbl_history_fields", "out_his_hbl"),
+    ("auxiliary_history_fields", 0, "HBBL", "labeled_bool", "&croco_lmd_bkpp_history_fields", "out_his_hbbl"),
+    ("auxiliary_history_fields", 0, "Visc3d", "labeled_bool", "&croco_vis_coef_history_fields", "out_his_visc3d"),
+    ("auxiliary_history_fields", 0, "Diff3d", "labeled_bool", "&croco_dif_coef_history_fields", "out_his_diff3d"),
+    ("auxiliary_history_fields", 0, "HEL", "labeled_bool", "&croco_biology_history_fields", "out_his_hel"),
+    ("auxiliary_history_fields", 0, "Hm", "labeled_bool", "&croco_morphodyn_history_fields", "out_his_hm", "_morphodyn", ".true."),
     # auxiliary_averages: label-based (order varies per case)
-    ("auxiliary_averages", 0, "rho",    "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_rho"),
-    ("auxiliary_averages", 0, "Omega",  "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_omega"),
-    ("auxiliary_averages", 0, "W",      "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_w"),
-    ("auxiliary_averages", 0, "Akv",    "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_akv"),
-    ("auxiliary_averages", 0, "Bostr",  "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_bostr"),
-    ("auxiliary_averages", 0, "Bustr",  "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_bustr"),
-    ("auxiliary_averages", 0, "Bvstr",  "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_bvstr"),
-    ("auxiliary_averages", 0, "Wstr",   "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_wstr"),
-    ("auxiliary_averages", 0, "Ustr",   "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_ustr"),
-    ("auxiliary_averages", 0, "Vstr",   "labeled_bool", "&croco_auxiliary_averages_fields",   "out_avg_vstr"),
-    ("auxiliary_averages", 0, "Akt",    "labeled_bool", "&croco_temperature_averages_fields", "out_avg_akt"),
-    ("auxiliary_averages", 0, "Shfl",   "labeled_bool", "&croco_temperature_averages_fields", "out_avg_shflx"),
-    ("auxiliary_averages", 0, "rsw",    "labeled_bool", "&croco_temperature_averages_fields", "out_avg_shflx_rsw"),
-    ("auxiliary_averages", 0, "Aks",    "labeled_bool", "&croco_salinity_averages_fields",    "out_avg_aks"),
-    ("auxiliary_averages", 0, "Swfl",   "labeled_bool", "&croco_salinity_averages_fields",    "out_avg_swflx"),
-    ("auxiliary_averages", 0, "rlw",    "labeled_bool", "&croco_bulk_flux_averages_fields",   "out_avg_shflx_rlw"),
-    ("auxiliary_averages", 0, "lat",    "labeled_bool", "&croco_bulk_flux_averages_fields",   "out_avg_shflx_lat"),
-    ("auxiliary_averages", 0, "sen",    "labeled_bool", "&croco_bulk_flux_averages_fields",   "out_avg_shflx_sen"),
-    ("auxiliary_averages", 0, "Bvf",    "labeled_bool", "&croco_bvf_averages_fields",         "out_avg_bvf"),
-    ("auxiliary_averages", 0, "HBL",    "labeled_bool", "&croco_hbl_averages_fields",         "out_avg_hbl"),
-    ("auxiliary_averages", 0, "HBBL",   "labeled_bool", "&croco_lmd_bkpp_averages_fields",    "out_avg_hbbl"),
-    ("auxiliary_averages", 0, "Visc3d", "labeled_bool", "&croco_vis_coef_averages_fields",    "out_avg_visc3d"),
-    ("auxiliary_averages", 0, "Diff3d", "labeled_bool", "&croco_dif_coef_averages_fields",    "out_avg_diff3d"),
-    ("auxiliary_averages", 0, "HEL",    "labeled_bool", "&croco_biology_averages_fields",     "out_avg_hel"),
-    ("auxiliary_averages", 0, "Hm",     "labeled_bool", "&croco_morphodyn_averages_fields",   "out_avg_hm",  "_morphodyn", ".false."),
-
-
-    ("diag3D_history_fields",       0, 0, "bool_array", "&croco_diag3D_history_fields",       "out_his_dia3D_tracer"),
-    ("diag2D_history_fields",       0, 0, "bool_array", "&croco_diag2D_history_fields",       "out_his_dia2D_tracer"),
-    ("diag3D_average_fields",       0, 0, "bool_array", "&croco_diag3D_average_fields",       "out_avg_dia3D_tracer"),
-    ("diag2D_average_fields",       0, 0, "bool_array", "&croco_diag2D_average_fields",       "out_avg_dia2D_tracer"),
-    ("diagM_history_fields",        0, 0, "bool",       "&croco_diagM_history_fields",        "out_his_diagM_u"),
-    ("diagM_history_fields",        0, 1, "bool",       "&croco_diagM_history_fields",        "out_his_diagM_v"),
-    ("diagM_average_fields",        0, 0, "bool",       "&croco_diagM_average_fields",        "out_avg_diagM_u"),
-    ("diagM_average_fields",        0, 1, "bool",       "&croco_diagM_average_fields",        "out_avg_diagM_v"),
-    ("diags_vrt_history_fields",    0, 0, "bool",       "&croco_diags_vrt_history_fields",    "out_his_diags_vrt"),
-    ("diags_vrt_average_fields",    0, 0, "bool",       "&croco_diags_vrt_average_fields",    "out_avg_diags_vrt"),
-    ("diags_ek_history_fields",     0, 0, "bool",       "&croco_diags_ek_history_fields",     "out_his_diags_ek"),
-    ("diags_ek_average_fields",     0, 0, "bool",       "&croco_diags_ek_average_fields",     "out_avg_diags_ek"),
-    ("diags_pv_history_fields",     0, 0, "bool_array", "&croco_diags_pv_history_fields",     "out_his_diags_pv_tracer"),
-    ("diags_pv_average_fields",     0, 0, "bool_array", "&croco_diags_pv_average_fields",     "out_avg_diags_pv_tracer"),
-    ("diags_eddy_average_fields",   0, 0, "bool",       "&croco_diags_eddy_average_fields",   "out_avg_diags_eddy"),
-    ("diagbioFlux_history_fields",  0, 0, "bool_array:NumFluxTerms",  "&croco_diagbioFlux_history_fields",  "out_his_diagbioFlux"),
+    ("auxiliary_averages", 0, "rho", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_rho"),
+    ("auxiliary_averages", 0, "Omega", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_omega"),
+    ("auxiliary_averages", 0, "W", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_w"),
+    ("auxiliary_averages", 0, "Akv", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_akv"),
+    ("auxiliary_averages", 0, "Bostr", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_bostr"),
+    ("auxiliary_averages", 0, "Bustr", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_bustr"),
+    ("auxiliary_averages", 0, "Bvstr", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_bvstr"),
+    ("auxiliary_averages", 0, "Wstr", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_wstr"),
+    ("auxiliary_averages", 0, "Ustr", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_ustr"),
+    ("auxiliary_averages", 0, "Vstr", "labeled_bool", "&croco_auxiliary_averages_fields", "out_avg_vstr"),
+    ("auxiliary_averages", 0, "Akt", "labeled_bool", "&croco_temperature_averages_fields", "out_avg_akt"),
+    ("auxiliary_averages", 0, "Shfl", "labeled_bool", "&croco_temperature_averages_fields", "out_avg_shflx"),
+    ("auxiliary_averages", 0, "rsw", "labeled_bool", "&croco_temperature_averages_fields", "out_avg_shflx_rsw"),
+    ("auxiliary_averages", 0, "Aks", "labeled_bool", "&croco_salinity_averages_fields", "out_avg_aks"),
+    ("auxiliary_averages", 0, "Swfl", "labeled_bool", "&croco_salinity_averages_fields", "out_avg_swflx"),
+    ("auxiliary_averages", 0, "rlw", "labeled_bool", "&croco_bulk_flux_averages_fields", "out_avg_shflx_rlw"),
+    ("auxiliary_averages", 0, "lat", "labeled_bool", "&croco_bulk_flux_averages_fields", "out_avg_shflx_lat"),
+    ("auxiliary_averages", 0, "sen", "labeled_bool", "&croco_bulk_flux_averages_fields", "out_avg_shflx_sen"),
+    ("auxiliary_averages", 0, "Bvf", "labeled_bool", "&croco_bvf_averages_fields", "out_avg_bvf"),
+    ("auxiliary_averages", 0, "HBL", "labeled_bool", "&croco_hbl_averages_fields", "out_avg_hbl"),
+    ("auxiliary_averages", 0, "HBBL", "labeled_bool", "&croco_lmd_bkpp_averages_fields", "out_avg_hbbl"),
+    ("auxiliary_averages", 0, "Visc3d", "labeled_bool", "&croco_vis_coef_averages_fields", "out_avg_visc3d"),
+    ("auxiliary_averages", 0, "Diff3d", "labeled_bool", "&croco_dif_coef_averages_fields", "out_avg_diff3d"),
+    ("auxiliary_averages", 0, "HEL", "labeled_bool", "&croco_biology_averages_fields", "out_avg_hel"),
+    ("auxiliary_averages", 0, "Hm", "labeled_bool", "&croco_morphodyn_averages_fields", "out_avg_hm", "_morphodyn", ".false."),
+    ("diag3D_history_fields", 0, 0, "bool_array", "&croco_diag3D_history_fields", "out_his_dia3D_tracer"),
+    ("diag2D_history_fields", 0, 0, "bool_array", "&croco_diag2D_history_fields", "out_his_dia2D_tracer"),
+    ("diag3D_average_fields", 0, 0, "bool_array", "&croco_diag3D_average_fields", "out_avg_dia3D_tracer"),
+    ("diag2D_average_fields", 0, 0, "bool_array", "&croco_diag2D_average_fields", "out_avg_dia2D_tracer"),
+    ("diagM_history_fields", 0, 0, "bool", "&croco_diagM_history_fields", "out_his_diagM_u"),
+    ("diagM_history_fields", 0, 1, "bool", "&croco_diagM_history_fields", "out_his_diagM_v"),
+    ("diagM_average_fields", 0, 0, "bool", "&croco_diagM_average_fields", "out_avg_diagM_u"),
+    ("diagM_average_fields", 0, 1, "bool", "&croco_diagM_average_fields", "out_avg_diagM_v"),
+    ("diags_vrt_history_fields", 0, 0, "bool", "&croco_diags_vrt_history_fields", "out_his_diags_vrt"),
+    ("diags_vrt_average_fields", 0, 0, "bool", "&croco_diags_vrt_average_fields", "out_avg_diags_vrt"),
+    ("diags_ek_history_fields", 0, 0, "bool", "&croco_diags_ek_history_fields", "out_his_diags_ek"),
+    ("diags_ek_average_fields", 0, 0, "bool", "&croco_diags_ek_average_fields", "out_avg_diags_ek"),
+    ("diags_pv_history_fields", 0, 0, "bool_array", "&croco_diags_pv_history_fields", "out_his_diags_pv_tracer"),
+    ("diags_pv_average_fields", 0, 0, "bool_array", "&croco_diags_pv_average_fields", "out_avg_diags_pv_tracer"),
+    ("diags_eddy_average_fields", 0, 0, "bool", "&croco_diags_eddy_average_fields", "out_avg_diags_eddy"),
+    ("diagbioFlux_history_fields", 0, 0, "bool_array:NumFluxTerms", "&croco_diagbioFlux_history_fields", "out_his_diagbioFlux"),
     ("diagbioVSink_history_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_history_fields", "out_his_diagbioVSink"),
-    ("diagbioGasExc_history_fields",0, 0, "bool_array:NumGasExcTerms","&croco_diagbioGasExc_history_fields","out_his_diagbioGasExc"),
-    ("diagbioFlux_average_fields",  0, 0, "bool_array:NumFluxTerms",  "&croco_diagbioFlux_average_fields",  "out_avg_diagbioFlux"),
+    ("diagbioGasExc_history_fields", 0, 0, "bool_array:NumGasExcTerms", "&croco_diagbioGasExc_history_fields", "out_his_diagbioGasExc"),
+    ("diagbioFlux_average_fields", 0, 0, "bool_array:NumFluxTerms", "&croco_diagbioFlux_average_fields", "out_avg_diagbioFlux"),
     ("diagbioVSink_average_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_average_fields", "out_avg_diagbioVSink"),
-    ("diagbioGasExc_average_fields",0, 0, "bool_array:NumGasExcTerms","&croco_diagbioGasExc_average_fields","out_avg_diagbioGasExc"),
-
+    ("diagbioGasExc_average_fields", 0, 0, "bool_array:NumGasExcTerms", "&croco_diagbioGasExc_average_fields", "out_avg_diagbioGasExc"),
 ]
 
 # Cards handled by dedicated code rather than the MAPPINGS table.
@@ -466,73 +456,153 @@ SPECIAL_CARDS = {"psource", "psource_ncfile"}
 # every nml_name produced by MAPPINGS/special handlers is covered) is appended
 # at the end in encounter order.
 CANONICAL_BLOCK_ORDER = (
-    "&croco_title", "&croco_logfile", "&croco_time_stepping",
-    "&croco_time_stepping_nbq", "&croco_use_calendar", "&croco_s_coord",
-    "&croco_initial", "&croco_grid", "&croco_forcing", "&croco_bulk_forcing",
-    "&croco_climatology", "&croco_boundary", "&croco_bottom_forcing",
-    "&croco_sponge", "&croco_nudging", "&croco_history", "&croco_averages",
-    "&croco_restart", "&croco_surf", "&croco_surf_avg", "&croco_rho0",
-    "&croco_bottom_drag", "&croco_gamma2", "&croco_lateral_visc",
-    "&croco_tracer_diff2", "&croco_tracer_diff4", "&croco_vertical_mixing",
-    "&croco_lin_eos", "&croco_diagnostics_ts", "&croco_diag_avg",
-    "&croco_diag_mld_dens", "&croco_diagnosticsM", "&croco_diagM_avg",
-    "&croco_diags_vrt", "&croco_diags_vrt_avg", "&croco_diags_ek",
-    "&croco_diags_ek_avg", "&croco_diags_pv", "&croco_diags_pv_avg",
-    "&croco_diags_eddy_avg", "&croco_diagnostics_bio", "&croco_diagbio_avg",
-    "&croco_stations", "&croco_abl", "&croco_abl_averages",
-    "&croco_abl_nudg_tra", "&croco_abl_nudg_dyn", "&croco_online",
-    "&croco_wkb_boundary", "&croco_wkb_wwave", "&croco_wkb_roller",
-    "&croco_wave_maker", "&croco_wave_offline", "&croco_biology",
-    "&croco_bodyforce", "&croco_psource", "&croco_psource_ncfile_data",
-    "&croco_psource_data", "&croco_psource_tracer", "&croco_sediments",
-    "&croco_sediments_mustang", "&croco_substance", "&croco_obstruction",
-    "&croco_xios_origin_date", "&croco_assimilation",
-    "&croco_primary_history_fields", "&croco_primary_history_3d_fields",
-    "&croco_primary_history_tracer_fields", "&croco_auxiliary_history_fields",
-    "&croco_temperature_history_fields", "&croco_salinity_history_fields",
-    "&croco_bulk_flux_history_fields", "&croco_bhflux_history_fields",
-    "&croco_bwflux_history_fields", "&croco_bvf_history_fields",
-    "&croco_hbl_history_fields", "&croco_lmd_bkpp_history_fields",
-    "&croco_vis_coef_history_fields", "&croco_dif_coef_history_fields",
-    "&croco_gls_history_fields", "&croco_biology_history_fields",
-    "&croco_bio_nchlpzd_history_fields", "&croco_bio_bioebus_history_fields",
-    "&croco_morphodyn_history_fields", "&croco_sediment_history_fields",
+    "&croco_title",
+    "&croco_logfile",
+    "&croco_time_stepping",
+    "&croco_time_stepping_nbq",
+    "&croco_use_calendar",
+    "&croco_s_coord",
+    "&croco_initial",
+    "&croco_grid",
+    "&croco_forcing",
+    "&croco_bulk_forcing",
+    "&croco_climatology",
+    "&croco_boundary",
+    "&croco_bottom_forcing",
+    "&croco_sponge",
+    "&croco_nudging",
+    "&croco_history",
+    "&croco_averages",
+    "&croco_restart",
+    "&croco_surf",
+    "&croco_surf_avg",
+    "&croco_rho0",
+    "&croco_bottom_drag",
+    "&croco_gamma2",
+    "&croco_lateral_visc",
+    "&croco_tracer_diff2",
+    "&croco_tracer_diff4",
+    "&croco_vertical_mixing",
+    "&croco_lin_eos",
+    "&croco_diagnostics_ts",
+    "&croco_diag_avg",
+    "&croco_diag_mld_dens",
+    "&croco_diagnosticsM",
+    "&croco_diagM_avg",
+    "&croco_diags_vrt",
+    "&croco_diags_vrt_avg",
+    "&croco_diags_ek",
+    "&croco_diags_ek_avg",
+    "&croco_diags_pv",
+    "&croco_diags_pv_avg",
+    "&croco_diags_eddy_avg",
+    "&croco_diagnostics_bio",
+    "&croco_diagbio_avg",
+    "&croco_stations",
+    "&croco_abl",
+    "&croco_abl_averages",
+    "&croco_abl_nudg_tra",
+    "&croco_abl_nudg_dyn",
+    "&croco_online",
+    "&croco_wkb_boundary",
+    "&croco_wkb_wwave",
+    "&croco_wkb_roller",
+    "&croco_wave_maker",
+    "&croco_wave_offline",
+    "&croco_biology",
+    "&croco_bodyforce",
+    "&croco_psource",
+    "&croco_psource_ncfile_data",
+    "&croco_psource_data",
+    "&croco_psource_tracer",
+    "&croco_sediments",
+    "&croco_sediments_mustang",
+    "&croco_substance",
+    "&croco_obstruction",
+    "&croco_xios_origin_date",
+    "&croco_assimilation",
+    "&croco_primary_history_fields",
+    "&croco_primary_history_3d_fields",
+    "&croco_primary_history_tracer_fields",
+    "&croco_auxiliary_history_fields",
+    "&croco_temperature_history_fields",
+    "&croco_salinity_history_fields",
+    "&croco_bulk_flux_history_fields",
+    "&croco_bhflux_history_fields",
+    "&croco_bwflux_history_fields",
+    "&croco_bvf_history_fields",
+    "&croco_hbl_history_fields",
+    "&croco_lmd_bkpp_history_fields",
+    "&croco_vis_coef_history_fields",
+    "&croco_dif_coef_history_fields",
+    "&croco_gls_history_fields",
+    "&croco_biology_history_fields",
+    "&croco_bio_nchlpzd_history_fields",
+    "&croco_bio_bioebus_history_fields",
+    "&croco_morphodyn_history_fields",
+    "&croco_sediment_history_fields",
     "&croco_sediment_bfra_history_fields",
     "&croco_sediment_suspload_history_fields",
     "&croco_sediment_bedload_history_fields",
-    "&croco_sediment_cohesive_history_fields", "&croco_bbl_history_fields",
-    "&croco_wci_history_fields", "&croco_wci_history_3d_fields",
-    "&croco_wave_history_fields", "&croco_abl_history_fields",
-    "&croco_surf_history_fields", "&croco_stochastic_history_fields",
-    "&croco_diag3D_history_fields", "&croco_diag2D_history_fields",
-    "&croco_diagM_history_fields", "&croco_diags_vrt_history_fields",
-    "&croco_diags_ek_history_fields", "&croco_diags_pv_history_fields",
-    "&croco_diagbioFlux_history_fields", "&croco_diagbioVSink_history_fields",
-    "&croco_diagbioGasExc_history_fields", "&croco_primary_average_fields",
-    "&croco_primary_3d_average_fields", "&croco_primary_tracer_average_fields",
-    "&croco_auxiliary_averages_fields", "&croco_temperature_averages_fields",
-    "&croco_salinity_averages_fields", "&croco_bulk_flux_averages_fields",
-    "&croco_bhflux_averages_fields", "&croco_bwflux_averages_fields",
-    "&croco_bvf_averages_fields", "&croco_hbl_averages_fields",
-    "&croco_lmd_bkpp_averages_fields", "&croco_vis_coef_averages_fields",
-    "&croco_dif_coef_averages_fields", "&croco_gls_averages_fields",
-    "&croco_biology_averages_fields", "&croco_bio_nchlpzd_averages_fields",
-    "&croco_bio_bioebus_averages_fields", "&croco_morphodyn_averages_fields",
-    "&croco_abl_averages_fields", "&croco_surf_average_fields",
-    "&croco_wci_average_fields", "&croco_wci_average_3d_fields",
-    "&croco_wave_average_fields", "&croco_diag3D_average_fields",
-    "&croco_diag2D_average_fields", "&croco_diagM_average_fields",
-    "&croco_diags_vrt_average_fields", "&croco_diags_ek_average_fields",
-    "&croco_diags_pv_average_fields", "&croco_diags_eddy_average_fields",
-    "&croco_diagbioFlux_average_fields", "&croco_diagbioVSink_average_fields",
-    "&croco_diagbioGasExc_average_fields", "&croco_station_fields",
+    "&croco_sediment_cohesive_history_fields",
+    "&croco_bbl_history_fields",
+    "&croco_wci_history_fields",
+    "&croco_wci_history_3d_fields",
+    "&croco_wave_history_fields",
+    "&croco_abl_history_fields",
+    "&croco_surf_history_fields",
+    "&croco_stochastic_history_fields",
+    "&croco_diag3D_history_fields",
+    "&croco_diag2D_history_fields",
+    "&croco_diagM_history_fields",
+    "&croco_diags_vrt_history_fields",
+    "&croco_diags_ek_history_fields",
+    "&croco_diags_pv_history_fields",
+    "&croco_diagbioFlux_history_fields",
+    "&croco_diagbioVSink_history_fields",
+    "&croco_diagbioGasExc_history_fields",
+    "&croco_primary_average_fields",
+    "&croco_primary_3d_average_fields",
+    "&croco_primary_tracer_average_fields",
+    "&croco_auxiliary_averages_fields",
+    "&croco_temperature_averages_fields",
+    "&croco_salinity_averages_fields",
+    "&croco_bulk_flux_averages_fields",
+    "&croco_bhflux_averages_fields",
+    "&croco_bwflux_averages_fields",
+    "&croco_bvf_averages_fields",
+    "&croco_hbl_averages_fields",
+    "&croco_lmd_bkpp_averages_fields",
+    "&croco_vis_coef_averages_fields",
+    "&croco_dif_coef_averages_fields",
+    "&croco_gls_averages_fields",
+    "&croco_biology_averages_fields",
+    "&croco_bio_nchlpzd_averages_fields",
+    "&croco_bio_bioebus_averages_fields",
+    "&croco_morphodyn_averages_fields",
+    "&croco_abl_averages_fields",
+    "&croco_surf_average_fields",
+    "&croco_wci_average_fields",
+    "&croco_wci_average_3d_fields",
+    "&croco_wave_average_fields",
+    "&croco_diag3D_average_fields",
+    "&croco_diag2D_average_fields",
+    "&croco_diagM_average_fields",
+    "&croco_diags_vrt_average_fields",
+    "&croco_diags_ek_average_fields",
+    "&croco_diags_pv_average_fields",
+    "&croco_diags_eddy_average_fields",
+    "&croco_diagbioFlux_average_fields",
+    "&croco_diagbioVSink_average_fields",
+    "&croco_diagbioGasExc_average_fields",
+    "&croco_station_fields",
 )
-
 
 
 # ---------------------------------------------------------------------------
 # CPP helpers
 # ---------------------------------------------------------------------------
+
 
 def _run_cpp(wrapper_src, include_dirs):
     """Run cpp -P -traditional on wrapper_src (passed via stdin). Return stdout."""
@@ -568,7 +638,7 @@ def preprocess_param(cppdefs_path, param_path, extra_dirs=()):
     even when cppdefs_path/param_path live in an unrelated run directory.
     """
     cppdefs_abs = os.path.realpath(cppdefs_path)
-    param_dir   = os.path.dirname(os.path.realpath(param_path))
+    param_dir = os.path.dirname(os.path.realpath(param_path))
     wrapper = f'#include "{cppdefs_abs}"\n#include "param.h"\n'
     return _run_cpp(wrapper, [param_dir, *extra_dirs])
 
@@ -596,10 +666,10 @@ def is_full_cppdefs(path, min_cases=10):
     chain_start = None
     for i, line in enumerate(lines):
         s = line.strip()
-        if re.match(r'^#\s*(?:if|ifdef|ifndef)\b', s):
+        if re.match(r"^#\s*(?:if|ifdef|ifndef)\b", s):
             chain_start = i
             break
-        m = re.match(r'^#\s*(?:undef|define)\s+(\w+)\s*(?:/\*.*)?$', s)
+        m = re.match(r"^#\s*(?:undef|define)\s+(\w+)\s*(?:/\*.*)?$", s)
         if m:
             selector_names.add(m.group(1))
     if chain_start is None:
@@ -611,26 +681,24 @@ def is_full_cppdefs(path, min_cases=10):
     depth = 0
     for line in lines[chain_start:]:
         s = line.strip()
-        if re.match(r'^#\s*(?:if|ifdef|ifndef)\b', s):
+        if re.match(r"^#\s*(?:if|ifdef|ifndef)\b", s):
             if depth == 0:
-                m = re.match(r'^#\s*if\s+defined\s+(\w+)\b', s)
+                m = re.match(r"^#\s*if\s+defined\s+(\w+)\b", s)
                 if m:
                     chain_branches.add(m.group(1))
             depth += 1
-        elif re.match(r'^#\s*elif\b', s):
+        elif re.match(r"^#\s*elif\b", s):
             if depth == 1:
-                m = re.match(r'^#\s*elif\s+defined\s+(\w+)\b', s)
+                m = re.match(r"^#\s*elif\s+defined\s+(\w+)\b", s)
                 if m:
                     chain_branches.add(m.group(1))
-        elif re.match(r'^#\s*endif\b', s):
+        elif re.match(r"^#\s*endif\b", s):
             depth -= 1
             if depth == 0:
                 break
 
     shared = selector_names & chain_branches
-    return (len(selector_names) >= min_cases
-            and len(chain_branches) >= min_cases
-            and len(shared) >= min_cases)
+    return len(selector_names) >= min_cases and len(chain_branches) >= min_cases and len(shared) >= min_cases
 
 
 def extract_case_section(cppdefs_path):
@@ -658,14 +726,14 @@ def extract_case_section(cppdefs_path):
     #    "exactly one activated test case" rule).
     chain_start = None
     for i, line in enumerate(lines):
-        if re.match(r'^#\s*if\s+defined\s+\w+\b', line.strip()):
+        if re.match(r"^#\s*if\s+defined\s+\w+\b", line.strip()):
             chain_start = i
             break
     header_lines = lines[:chain_start] if chain_start is not None else lines
 
     case_key = None
     for line in header_lines:
-        m = re.match(r'^#\s*define\s+(\w+)\s*(?:/\*.*)?$', line.strip())
+        m = re.match(r"^#\s*define\s+(\w+)\s*(?:/\*.*)?$", line.strip())
         if m:
             case_key = m.group(1)
     if case_key is None:
@@ -673,9 +741,9 @@ def extract_case_section(cppdefs_path):
 
     # 2. Find the start of the case block (#elif defined CASE or #if for REGIONAL)
     if case_key == "REGIONAL":
-        start_re = re.compile(r'^#if\s+defined\s+REGIONAL\b')
+        start_re = re.compile(r"^#if\s+defined\s+REGIONAL\b")
     else:
-        start_re = re.compile(rf'^#elif\s+defined\s+{re.escape(case_key)}\b')
+        start_re = re.compile(rf"^#elif\s+defined\s+{re.escape(case_key)}\b")
 
     start_idx = None
     for i, line in enumerate(lines):
@@ -694,7 +762,7 @@ def extract_case_section(cppdefs_path):
     skip_opening_comment = True
     in_c_comment = False
 
-    for line in lines[start_idx + 1:]:
+    for line in lines[start_idx + 1 :]:
         s = line.rstrip()
         stripped = s.strip()
 
@@ -717,14 +785,14 @@ def extract_case_section(cppdefs_path):
                 continue
 
         if depth == 0:
-            if re.match(r'^#\s*(elif|else)\b', s):
+            if re.match(r"^#\s*(elif|else)\b", s):
                 break
-            if re.match(r'^#\s*endif\b', s):
+            if re.match(r"^#\s*endif\b", s):
                 break
 
-        if re.match(r'^#\s*if(def|ndef)?\b', s):
+        if re.match(r"^#\s*if(def|ndef)?\b", s):
             depth += 1
-        elif re.match(r'^#\s*endif\b', s):
+        elif re.match(r"^#\s*endif\b", s):
             depth -= 1
 
         block.append(line)
@@ -735,9 +803,9 @@ def extract_case_section(cppdefs_path):
     trailing = []
     for line in reversed(lines):
         s = line.strip()
-        if re.match(r'^#\s*endif\b', s):
-            break   # reached the closing #endif — done
-        if s.startswith('#include') or s == '':
+        if re.match(r"^#\s*endif\b", s):
+            break  # reached the closing #endif — done
+        if s.startswith("#include") or s == "":
             trailing.insert(0, line)
 
     # 5. Assemble: synthetic case-key line + block + trailing includes
@@ -749,6 +817,7 @@ def extract_case_section(cppdefs_path):
 # param file reader  (handles both simple and preprocessed Fortran formats)
 # ---------------------------------------------------------------------------
 
+
 def read_param_text(text):
     """
     Parse Fortran parameter statements from preprocessed text and return a
@@ -758,13 +827,13 @@ def read_param_text(text):
     params = {}
 
     # Simple "integer, parameter :: NAME = VALUE" (hand-written format)
-    for m in re.finditer(r'integer\s*,\s*parameter\s*::\s*(\w+)\s*=\s*(\d+)', text):
+    for m in re.finditer(r"integer\s*,\s*parameter\s*::\s*(\w+)\s*=\s*(\d+)", text):
         params[m.group(1)] = int(m.group(2))
 
     # Fortran "parameter (NAME=EXPR, …)" statements
-    for stmt in re.finditer(r'parameter\s*\(([^)]+)\)', text, re.IGNORECASE):
-        for assign in stmt.group(1).split(','):
-            m = re.match(r'\s*(\w+)\s*=\s*(.+)', assign.strip())
+    for stmt in re.finditer(r"parameter\s*\(([^)]+)\)", text, re.IGNORECASE):
+        for assign in stmt.group(1).split(","):
+            m = re.match(r"\s*(\w+)\s*=\s*(.+)", assign.strip())
             if not m:
                 continue
             name, expr = m.group(1), m.group(2).strip()
@@ -777,9 +846,9 @@ def read_param_text(text):
     changed = True
     while changed:
         changed = False
-        for stmt in re.finditer(r'parameter\s*\(([^)]+)\)', text, re.IGNORECASE):
-            for assign in stmt.group(1).split(','):
-                m = re.match(r'\s*(\w+)\s*=\s*(.+)', assign.strip())
+        for stmt in re.finditer(r"parameter\s*\(([^)]+)\)", text, re.IGNORECASE):
+            for assign in stmt.group(1).split(","):
+                m = re.match(r"\s*(\w+)\s*=\s*(.+)", assign.strip())
                 if not m:
                     continue
                 name, expr = m.group(1), m.group(2).strip()
@@ -798,8 +867,9 @@ def _eval_fortran_expr(expr, known):
         if n in known:
             return str(known[n])
         raise ValueError(f"Unknown: {n}")
-    resolved = re.sub(r'[A-Za-z_]\w*', replace_name, expr)
-    if not re.match(r'^[\d\s+\-*/()]+$', resolved):
+
+    resolved = re.sub(r"[A-Za-z_]\w*", replace_name, expr)
+    if not re.match(r"^[\d\s+\-*/()]+$", resolved):
         raise ValueError(f"Unsafe: {resolved}")
     return int(eval(resolved))  # noqa: S307 – input sanitised above
 
@@ -812,6 +882,7 @@ def read_param_file(path):
 # Output generators
 # ---------------------------------------------------------------------------
 
+
 def make_clean_param(preprocessed_text):
     """
     Strip blank lines and Fortran comment lines from preprocessed param text.
@@ -822,14 +893,16 @@ def make_clean_param(preprocessed_text):
         s = line.strip()
         if not s:
             continue
-        if s.startswith('!') or s.upper().startswith('C ') or s.upper() == 'C':
+        if s.startswith("!") or s.upper().startswith("C ") or s.upper() == "C":
             continue
         lines.append(line.rstrip())
     return "\n".join(lines) + "\n"
 
+
 # ---------------------------------------------------------------------------
 # .in file parser
 # ---------------------------------------------------------------------------
+
 
 def parse_in_file(path):
     """Return (cards, headers).
@@ -847,12 +920,12 @@ def parse_in_file(path):
             stripped = line.strip()
             if stripped == "":
                 continue
-            m = re.match(r'^([A-Za-z][A-Za-z0-9_\-]*):', line)
+            m = re.match(r"^([A-Za-z][A-Za-z0-9_\-]*):", line)
             if m:
                 if current_key is not None:
                     cards[current_key] = current_lines
                 current_key = m.group(1)
-                headers[current_key] = line[m.end():].split()
+                headers[current_key] = line[m.end() :].split()
                 current_lines = []
                 continue
             if current_key is not None:
@@ -865,6 +938,7 @@ def parse_in_file(path):
 # ---------------------------------------------------------------------------
 # Value formatter
 # ---------------------------------------------------------------------------
+
 
 def format_value(raw, typ):
     try:
@@ -888,8 +962,8 @@ def format_value(raw, typ):
 def expand_repeat(tokens):
     expanded = []
     for t in tokens:
-        if '*' in t:
-            count_str, val_str = t.split('*', 1)
+        if "*" in t:
+            count_str, val_str = t.split("*", 1)
             try:
                 expanded.extend([val_str] * int(count_str))
             except ValueError:
@@ -916,8 +990,7 @@ def format_float_array(expanded, NT):
 def format_bool_array(expanded, NT):
     if not expanded:
         return ""
-    normalized = [".true." if v.upper() in ("T", ".TRUE.") else ".false."
-                  for v in expanded]
+    normalized = [".true." if v.upper() in ("T", ".TRUE.") else ".false." for v in expanded]
     if NT is not None and len(normalized) < NT:
         normalized = normalized + [normalized[-1]] * (NT - len(normalized))
     if NT is not None and len(normalized) > NT:
@@ -935,6 +1008,7 @@ def format_bool_array(expanded, NT):
 # ---------------------------------------------------------------------------
 # psource / psource_ncfile special handlers
 # ---------------------------------------------------------------------------
+
 
 def _bool_token(t):
     return t.upper() in ("T", "F", ".TRUE.", ".FALSE.")
@@ -983,10 +1057,10 @@ def _build_psource_blocks(cards, params):
         blocks.setdefault(name, []).append(line)
 
     # Use the cpp-probed flag when available; fall back to card presence otherwise.
-    use_ncfile = params.get('_psource_ncfile', 'psource_ncfile' in cards)
+    use_ncfile = params.get("_psource_ncfile", "psource_ncfile" in cards)
 
     if not use_ncfile and "psource" in cards:
-        vlines = [l for l in cards["psource"] if l.strip()]
+        vlines = [line for line in cards["psource"] if line.strip()]
         if not vlines:
             return blocks
         Nsrc = int(expand_repeat(vlines[0].split())[0])
@@ -997,20 +1071,25 @@ def _build_psource_blocks(cards, params):
             if i + 1 >= len(vlines):
                 break
             toks = expand_repeat(vlines[i + 1].split())
-            Isrc.append(toks[0]); Jsrc.append(toks[1])
-            Dsrc.append(toks[2]); Qbar.append(toks[3])
+            Isrc.append(toks[0])
+            Jsrc.append(toks[1])
+            Dsrc.append(toks[2])
+            Qbar.append(toks[3])
             lsrc, tsrc0 = _split_rest(toks, NT)
-            lsrc_per_src.append(lsrc); tsrc0_per_src.append(tsrc0)
+            lsrc_per_src.append(lsrc)
+            tsrc0_per_src.append(tsrc0)
 
         add("&croco_psource", f"  psource_Nsrc = {Nsrc}")
         for i in range(len(Isrc)):
             n = i + 1
-            add("&croco_psource_data",
-                f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"+
-                f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"+
-                f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"+
-                f" psource_Qbar({n:>4}) = {Qbar[i]:>5}")
-        if NT>0:
+            add(
+                "&croco_psource_data",
+                f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"
+                + f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"
+                + f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"
+                + f" psource_Qbar({n:>4}) = {Qbar[i]:>5}",
+            )
+        if NT > 0:
             for isrc, lsrc in enumerate(lsrc_per_src, start=1):
                 for itr, val in enumerate(lsrc, start=1):
                     add("&croco_psource_tracer", f"  psource_Lsrc({isrc},{itr}) = {val}")
@@ -1019,7 +1098,7 @@ def _build_psource_blocks(cards, params):
                     add("&croco_psource_tracer", f"  psource_Tsrc0({isrc},{itr}) = {val}")
 
     elif use_ncfile and "psource_ncfile" in cards:
-        vlines = [l for l in cards["psource_ncfile"] if l.strip()]
+        vlines = [line for line in cards["psource_ncfile"] if line.strip()]
         if len(vlines) < 2:
             return blocks
         qbarname = vlines[0].strip()
@@ -1031,22 +1110,27 @@ def _build_psource_blocks(cards, params):
             if i + 2 >= len(vlines):
                 break
             toks = expand_repeat(vlines[i + 2].split())
-            Isrc.append(toks[0]); Jsrc.append(toks[1])
-            Dsrc.append(toks[2]); Qbardir.append(toks[3])
+            Isrc.append(toks[0])
+            Jsrc.append(toks[1])
+            Dsrc.append(toks[2])
+            Qbardir.append(toks[3])
             lsrc, tsrc0 = _split_rest(toks, NT)
-            lsrc_per_src.append(lsrc); tsrc0_per_src.append(tsrc0)
+            lsrc_per_src.append(lsrc)
+            tsrc0_per_src.append(tsrc0)
 
         add("&croco_psource", f"  psource_Nsrc = {Nsrc}")
         add("&croco_psource_ncfile_data", f'  psource_qbarname = "{qbarname}"')
         for i in range(len(Isrc)):
             n = i + 1
-            add("&croco_psource_ncfile_data",
-                f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"+
-                f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"+
-                f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"+
-                f" psource_qbardir({n:>4}) = {Qbardir[i]:>5}")
+            add(
+                "&croco_psource_ncfile_data",
+                f"  psource_Isrc({n:>4}) = {Isrc[i]:>5},"
+                + f" psource_Jsrc({n:>4}) = {Jsrc[i]:>5},"
+                + f" psource_Dsrc({n:>4}) = {Dsrc[i]:>5},"
+                + f" psource_qbardir({n:>4}) = {Qbardir[i]:>5}",
+            )
 
-        if NT>0:
+        if NT > 0:
             for isrc, lsrc in enumerate(lsrc_per_src, start=1):
                 for itr, val in enumerate(lsrc, start=1):
                     add("&croco_psource_tracer", f"  psource_Lsrc({isrc},{itr}) = {val}")
@@ -1060,6 +1144,7 @@ def _build_psource_blocks(cards, params):
 # ---------------------------------------------------------------------------
 # Labeled_bool fallback handler
 # ---------------------------------------------------------------------------
+
 
 def _build_labeled_bool_fallback_blocks(cards, headers, params, mappings):
     """Return {nml_block_name: [entry_lines]} for labeled_bool fields that are
@@ -1094,6 +1179,7 @@ def _build_labeled_bool_fallback_blocks(cards, headers, params, mappings):
 # Sediment CPP-conditional output field handler
 # ---------------------------------------------------------------------------
 
+
 def _build_sediment_extra_history_blocks(cards, params):
     """Convert CPP-conditional sediment history fields: dflx/eflx (SUSPLOAD),
     bdlu/bdlv (BEDLOAD), btcr (MIXED_BED or COHESIVE_BED).
@@ -1108,7 +1194,7 @@ def _build_sediment_extra_history_blocks(cards, params):
     NST = params.get("NST", None)
     if NST is None:
         return blocks
-    vlines = [l for l in cards["sediment_history_fields"] if l.strip()]
+    vlines = [line for line in cards["sediment_history_fields"] if line.strip()]
     if not vlines:
         return blocks
     tokens = expand_repeat(vlines[0].split())
@@ -1116,8 +1202,8 @@ def _build_sediment_extra_history_blocks(cards, params):
     offset = 3 + NST  # past: athk bthk bpor bfra(NST)
 
     if params.get("_suspload", False):
-        dflx = tokens[offset:offset + NST]
-        eflx = tokens[offset + NST:offset + 2 * NST]
+        dflx = tokens[offset : offset + NST]
+        eflx = tokens[offset + NST : offset + 2 * NST]
         v1 = format_bool_array(dflx, NST)
         v2 = format_bool_array(eflx, NST)
         entries = []
@@ -1130,8 +1216,8 @@ def _build_sediment_extra_history_blocks(cards, params):
         offset += 2 * NST
 
     if params.get("_bedload", False):
-        bdlu = tokens[offset:offset + NST]
-        bdlv = tokens[offset + NST:offset + 2 * NST]
+        bdlu = tokens[offset : offset + NST]
+        bdlv = tokens[offset + NST : offset + 2 * NST]
         v1 = format_bool_array(bdlu, NST)
         v2 = format_bool_array(bdlv, NST)
         entries = []
@@ -1152,10 +1238,11 @@ def _build_sediment_extra_history_blocks(cards, params):
 
 # ---------------------------------------------------------------------------
 
+
 def build_nml(cards, headers, mappings, params):
     NT = params.get("NT", None)
     nml_entries = {}
-    nml_order   = []  # encounter order, used as fallback for blocks not in CANONICAL_BLOCK_ORDER
+    nml_order = []  # encounter order, used as fallback for blocks not in CANONICAL_BLOCK_ORDER
 
     def add_entry(nml_name, entry_line):
         if nml_name not in nml_entries:
@@ -1169,7 +1256,7 @@ def build_nml(cards, headers, mappings, params):
         card_name, line_idx, pos_idx, typ, nml_name, nml_var = row[:6]
         if card_name not in cards:
             continue
-        vlines = [l for l in cards[card_name] if l.strip()]
+        vlines = [line for line in cards[card_name] if line.strip()]
         if line_idx >= len(vlines):
             continue
         tokens = expand_repeat(vlines[line_idx].split())
@@ -1215,9 +1302,7 @@ def build_nml(cards, headers, mappings, params):
                 continue
             raw = tokens[pos_idx]
 
-        if (typ == "str"
-                and re.match(r'^\d{4}[-/]\d{2}[-/]\d{2}$', raw)
-                and pos_idx + 1 < len(tokens)):
+        if typ == "str" and re.match(r"^\d{4}[-/]\d{2}[-/]\d{2}$", raw) and pos_idx + 1 < len(tokens):
             raw = raw.replace("/", "-") + " " + tokens[pos_idx + 1]
 
         val = format_value(raw, typ)
@@ -1238,8 +1323,7 @@ def build_nml(cards, headers, mappings, params):
     ordered_names = [n for n in CANONICAL_BLOCK_ORDER if n in nml_entries]
     leftover = [n for n in nml_order if n not in CANONICAL_BLOCK_ORDER]
     if leftover:
-        print(f"Note: blocks not in canonical order, appended at end: {', '.join(leftover)}",
-              file=sys.stderr)
+        print(f"Note: blocks not in canonical order, appended at end: {', '.join(leftover)}", file=sys.stderr)
     ordered_names += leftover
 
     lines = []
@@ -1256,45 +1340,44 @@ def build_nml(cards, headers, mappings, params):
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main():
     default_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "OCEAN")
 
     parser = argparse.ArgumentParser(
-        description="Convert a CROCO croco.in + cppdefs.h + param.h into "
-                     "croco.nml + cppdefs_config.h + param_config.h.",
+        description="Convert a CROCO croco.in + cppdefs.h + param.h into croco.nml + cppdefs_config.h + param_config.h.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Takes these 3 inputs and an optional one to specified CROCO source path 
 if the script is used elsewhere.
-""")
+""",
+    )
     parser.add_argument("croco_in", help="Path to the croco.in file")
     parser.add_argument("cppdefs", help="Path to cppdefs.h")
     parser.add_argument("param", help="Path to param.h")
-    parser.add_argument("--output_namelist", default="croco.nml",
-                        help="Output .nml path (default: croco.nml)")
-    parser.add_argument("--output_cppdef", default="cppdefs_config.h",
-                        help="Output cppdefs path (default: cppdefs_config.h)")
-    parser.add_argument("--output_param", default="param_config.h",
-                        help="Output param path (default: param_config.h)")
-    parser.add_argument("--src", default=default_src,
-                        help="Path to the CROCO OCEAN/ source dir, used as an extra "
-                             f"include path for cpp (default: {default_src}). Needed "
-                             "to resolve cppdefs.h's own includes (cppdefs_dev.h, "
-                             "set_global_definitions.h) when cppdefs.h/param.h live "
-                             "in a separate run directory.")
+    parser.add_argument("--output_namelist", default="croco.nml", help="Output .nml path (default: croco.nml)")
+    parser.add_argument("--output_cppdef", default="cppdefs_config.h", help="Output cppdefs path (default: cppdefs_config.h)")
+    parser.add_argument("--output_param", default="param_config.h", help="Output param path (default: param_config.h)")
+    parser.add_argument(
+        "--src",
+        default=default_src,
+        help="Path to the CROCO OCEAN/ source dir, used as an extra "
+        f"include path for cpp (default: {default_src}). Needed "
+        "to resolve cppdefs.h's own includes (cppdefs_dev.h, "
+        "set_global_definitions.h) when cppdefs.h/param.h live "
+        "in a separate run directory.",
+    )
     args = parser.parse_args()
 
-    for label, path in (("croco.in", args.croco_in),
-                         ("cppdefs.h", args.cppdefs),
-                         ("param.h", args.param)):
+    for label, path in (("croco.in", args.croco_in), ("cppdefs.h", args.cppdefs), ("param.h", args.param)):
         if not os.path.isfile(path):
             sys.exit(f"Error: {label} file '{path}' not found.")
 
     src_dirs = [args.src] if os.path.isdir(args.src) else []
 
-    out_nml     = args.output_namelist
+    out_nml = args.output_namelist
     out_cppdefs = args.output_cppdef
-    out_param   = args.output_param
+    out_param = args.output_param
     for out_path in (out_nml, out_cppdefs, out_param):
         out_dir = os.path.dirname(os.path.abspath(out_path))
         os.makedirs(out_dir, exist_ok=True)
@@ -1327,22 +1410,21 @@ if the script is used elsewhere.
         print(f"Output cppdefs : {out_cppdefs}  (already simplified)")
 
     # ---- Check CPP flags that affect special-card handling -------------------
-    params['_psource_ncfile'] = cpp_define_active(args.cppdefs, 'PSOURCE_NCFILE', extra_dirs=src_dirs)
-    params['_suspload'] = cpp_define_active(args.cppdefs, 'SUSPLOAD', extra_dirs=src_dirs)
-    params['_bedload'] = cpp_define_active(args.cppdefs, 'BEDLOAD', extra_dirs=src_dirs)
-    params['_mixed_or_cohesive'] = (
-        cpp_define_active(args.cppdefs, 'MIXED_BED', extra_dirs=src_dirs) or
-        cpp_define_active(args.cppdefs, 'COHESIVE_BED', extra_dirs=src_dirs)
+    params["_psource_ncfile"] = cpp_define_active(args.cppdefs, "PSOURCE_NCFILE", extra_dirs=src_dirs)
+    params["_suspload"] = cpp_define_active(args.cppdefs, "SUSPLOAD", extra_dirs=src_dirs)
+    params["_bedload"] = cpp_define_active(args.cppdefs, "BEDLOAD", extra_dirs=src_dirs)
+    params["_mixed_or_cohesive"] = cpp_define_active(args.cppdefs, "MIXED_BED", extra_dirs=src_dirs) or cpp_define_active(
+        args.cppdefs, "COHESIVE_BED", extra_dirs=src_dirs
     )
-    params['_morphodyn'] = cpp_define_active(args.cppdefs, 'MORPHODYN', extra_dirs=src_dirs)
+    params["_morphodyn"] = cpp_define_active(args.cppdefs, "MORPHODYN", extra_dirs=src_dirs)
 
     # ---- Convert .in → .nml --------------------------------------------------
     cards, headers = parse_in_file(args.croco_in)
 
-    mapped_cards  = {row[0] for row in MAPPINGS} | SPECIAL_CARDS
+    mapped_cards = {row[0] for row in MAPPINGS} | SPECIAL_CARDS
     present_cards = set(cards.keys())
-    missing   = mapped_cards - present_cards
-    unmapped  = present_cards - mapped_cards
+    missing = mapped_cards - present_cards
+    unmapped = present_cards - mapped_cards
     if missing:
         print(f"Skipped (no .in card)  : {', '.join(sorted(missing))}")
     if unmapped:
