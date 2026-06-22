@@ -76,7 +76,7 @@
 # if defined SUBSTANCE
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
 !
-      integer, parameter :: ntrc_subs = 0
+      integer, parameter :: ntrc_subs = 2
       integer, parameter :: ntfix = 0
       integer, parameter :: ntrc_substot = ntrc_subs+ntfix
 # else

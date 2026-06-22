@@ -94,10 +94,6 @@
   out_his_v = .true.
 /
 
-&croco_primary_history_tracer_fields
-  out_his_tracer = 3*.true.
-/
-
 &croco_auxiliary_history_fields
   out_his_rho = .true.
   out_his_omega = .false.
