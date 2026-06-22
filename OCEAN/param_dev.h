@@ -563,6 +563,12 @@
       parameter (ntrc_diabio=0)
 # endif /* BIOLOGY */
 
+
+# if defined SUBSTANCE
+      integer, parameter :: itsubs1 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+1
+      integer, parameter :: itsubs2 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs
+# endif /* SUBSTANCE */
+
 !
 !
 ! Total number of active tracers

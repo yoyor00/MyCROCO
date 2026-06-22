@@ -79,8 +79,6 @@
       integer, parameter :: ntrc_subs = 2
       integer, parameter :: ntfix = 0
       integer, parameter :: ntrc_substot = ntrc_subs+ntfix
-      integer, parameter :: itsubs1 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+1
-      integer, parameter :: itsubs2 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs
 # else
       integer, parameter :: ntrc_subs = 2
       integer, parameter :: ntrc_substot = 0
