@@ -527,7 +527,7 @@
 #   define AROME
 #   undef  ERA_ECMWF
 #  endif
-#  undef READ_PATM
+#  define READ_PATM
 #  ifdef READ_PATM
 #   define OBC_PATM
 #  endif
