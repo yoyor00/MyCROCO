@@ -98,7 +98,7 @@ variables:
 # ─── gfortran_parallel (schedule) ─────────────────────────────────────────
 
 gfortran_parallel_schedule:
-  <<: [*gfortran_parallel, *schedule]
+  <<: [*gfortran_parallel]
   parallel:
     matrix:
       #- { CASES: "@realist",                       VARIANTS: "sequential,mpi-4", TITLE: "debug_realist",                  OPTIONS: "--debug" }
