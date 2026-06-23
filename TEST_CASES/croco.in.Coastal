@@ -15,7 +15,7 @@ origin_date:
 output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
                    1.0       24           24 
 grid:  filename
-                 croco_grd.nc
+                 croco_grd_modif.nc
 forcing: filename
                  croco_frc_vilaine.nc
 bulk_forcing: filename

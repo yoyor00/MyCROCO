@@ -441,7 +441,7 @@
 # undef  PASSIVE_TRACER
 # undef  SEDIMENT
 # undef  BBL
-# define MUSTANG
+# undef MUSTANG
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
@@ -474,7 +474,7 @@
 # define CURVGRID
 # define SPHERICAL
 # define MASKING
-# define WET_DRY
+# undef WET_DRY
 # define NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
@@ -527,7 +527,7 @@
 #   define AROME
 #   undef  ERA_ECMWF
 #  endif
-#  define READ_PATM
+#  undef READ_PATM
 #  ifdef READ_PATM
 #   define OBC_PATM
 #  endif

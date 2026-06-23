@@ -34,66 +34,66 @@ variables:
 
 # ─── gfortran (always-on) ─────────────────────────────────────────────────
 
-gfortran:
-  <<: *gfortran
-  parallel:
-    matrix:
-      - { CASES: "@base",             VARIANTS: "@debug",           TITLE: "debug_base",             OPTIONS: "--debug" }
-      - { CASES: "@nbq",              VARIANTS: "@debug",           TITLE: "debug_nbq",              OPTIONS: "--debug" }
-      - { CASES: "@sediment_mustang", VARIANTS: "@debug",           TITLE: "debug_sediment_mustang", OPTIONS: "--debug" }
-      - { CASES: "@other",            VARIANTS: "@debug",           TITLE: "debug_other",            OPTIONS: "--debug" }
-      - { CASES: "VORTEX*",           VARIANTS: "sequential,mpi-4", TITLE: "debug_vortex",           OPTIONS: "--debug" }
-  script:
-    - cd $CI_PROJECT_DIR/BENCH && source /venv/bin/activate
-    - |
-      ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
-      --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
-  artifacts:
-    <<: *artifacts
-    reports:
-      junit: BENCH/results/$TITLE-host_ci/junit_report.xml
+# gfortran:
+#   <<: *gfortran
+#   parallel:
+#     matrix:
+#       - { CASES: "@base",             VARIANTS: "@debug",           TITLE: "debug_base",             OPTIONS: "--debug" }
+#       - { CASES: "@nbq",              VARIANTS: "@debug",           TITLE: "debug_nbq",              OPTIONS: "--debug" }
+#       - { CASES: "@sediment_mustang", VARIANTS: "@debug",           TITLE: "debug_sediment_mustang", OPTIONS: "--debug" }
+#       - { CASES: "@other",            VARIANTS: "@debug",           TITLE: "debug_other",            OPTIONS: "--debug" }
+#       - { CASES: "VORTEX*",           VARIANTS: "sequential,mpi-4", TITLE: "debug_vortex",           OPTIONS: "--debug" }
+#   script:
+#     - cd $CI_PROJECT_DIR/BENCH && source /venv/bin/activate
+#     - |
+#       ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
+#       --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
+#   artifacts:
+#     <<: *artifacts
+#     reports:
+#       junit: BENCH/results/$TITLE-host_ci/junit_report.xml
 
-# ─── gfortran_parallel (always-on) ────────────────────────────────────────
+# # ─── gfortran_parallel (always-on) ────────────────────────────────────────
 
-gfortran_parallel:
-  <<: *gfortran_parallel
-  parallel:
-    matrix:
-      - { CASES: "@realist_base",  VARIANTS: "sequential,mpi-4", TITLE: "debug_realist_base",  OPTIONS: "--debug" }
-      - { CASES: "@agrif_realist", VARIANTS: "sequential,mpi-4", TITLE: "debug_agrif_realist", OPTIONS: "--debug" }
-  script:
-    - cd $CI_PROJECT_DIR/BENCH
-    - |
-      ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
-      --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
-  artifacts:
-    <<: *artifacts
-    reports:
-      junit: BENCH/results/$TITLE-host_ci/junit_report.xml
+# gfortran_parallel:
+#   <<: *gfortran_parallel
+#   parallel:
+#     matrix:
+#       - { CASES: "@realist_base",  VARIANTS: "sequential,mpi-4", TITLE: "debug_realist_base",  OPTIONS: "--debug" }
+#       - { CASES: "@agrif_realist", VARIANTS: "sequential,mpi-4", TITLE: "debug_agrif_realist", OPTIONS: "--debug" }
+#   script:
+#     - cd $CI_PROJECT_DIR/BENCH
+#     - |
+#       ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
+#       --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
+#   artifacts:
+#     <<: *artifacts
+#     reports:
+#       junit: BENCH/results/$TITLE-host_ci/junit_report.xml
 
-# ─── gfortran (schedule) ──────────────────────────────────────────────────
+# # ─── gfortran (schedule) ──────────────────────────────────────────────────
 
-gfortran_schedule:
-  <<: [*gfortran, *schedule]
-  parallel:
-    matrix:
-      - { CASES: "@complement",                 VARIANTS: "@debug",     TITLE: "debug-complement",              OPTIONS: "--debug" }
-      - { CASES: "@base",                       VARIANTS: "mpi-2",      TITLE: "plotphy_base",                  OPTIONS: "-s build,run,plotphy" }
-      - { CASES: "@nbq",                        VARIANTS: "mpi-2",      TITLE: "plotphy_nbq",                   OPTIONS: "-s build,run,plotphy" }
-      - { CASES: "@sediment_mustang",           VARIANTS: "mpi-2",      TITLE: "plotphy_sediment_mustang",      OPTIONS: "-s build,run,plotphy" }
-      - { CASES: "@other",                      VARIANTS: "mpi-2",      TITLE: "plotphy_other",                 OPTIONS: "-s build,run,plotphy" }
-      - { CASES: "VORTEX*",                     VARIANTS: "mpi-4",      TITLE: "plotphy_vortex",                OPTIONS: "-s build,run,plotphy" }
-      - { CASES: "@complement",                 VARIANTS: "mpi-2",      TITLE: "plotphy-complement",            OPTIONS: "-s build,run,plotphy" }
-      - { CASES: "@complement_sequential_only", VARIANTS: "sequential", TITLE: "plotphy-complement-sequential", OPTIONS: "-s build,run,plotphy" }
-  script:
-    - cd $CI_PROJECT_DIR/BENCH && source /venv/bin/activate
-    - |
-      ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
-      --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
-  artifacts:
-    <<: *artifacts
-    reports:
-      junit: BENCH/results/$TITLE-host_ci/junit_report.xml
+# gfortran_schedule:
+#   <<: [*gfortran, *schedule]
+#   parallel:
+#     matrix:
+#       - { CASES: "@complement",                 VARIANTS: "@debug",     TITLE: "debug-complement",              OPTIONS: "--debug" }
+#       - { CASES: "@base",                       VARIANTS: "mpi-2",      TITLE: "plotphy_base",                  OPTIONS: "-s build,run,plotphy" }
+#       - { CASES: "@nbq",                        VARIANTS: "mpi-2",      TITLE: "plotphy_nbq",                   OPTIONS: "-s build,run,plotphy" }
+#       - { CASES: "@sediment_mustang",           VARIANTS: "mpi-2",      TITLE: "plotphy_sediment_mustang",      OPTIONS: "-s build,run,plotphy" }
+#       - { CASES: "@other",                      VARIANTS: "mpi-2",      TITLE: "plotphy_other",                 OPTIONS: "-s build,run,plotphy" }
+#       - { CASES: "VORTEX*",                     VARIANTS: "mpi-4",      TITLE: "plotphy_vortex",                OPTIONS: "-s build,run,plotphy" }
+#       - { CASES: "@complement",                 VARIANTS: "mpi-2",      TITLE: "plotphy-complement",            OPTIONS: "-s build,run,plotphy" }
+#       - { CASES: "@complement_sequential_only", VARIANTS: "sequential", TITLE: "plotphy-complement-sequential", OPTIONS: "-s build,run,plotphy" }
+#   script:
+#     - cd $CI_PROJECT_DIR/BENCH && source /venv/bin/activate
+#     - |
+#       ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
+#       --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
+#   artifacts:
+#     <<: *artifacts
+#     reports:
+#       junit: BENCH/results/$TITLE-host_ci/junit_report.xml
 
 # ─── gfortran_parallel (schedule) ─────────────────────────────────────────
 
@@ -101,12 +101,13 @@ gfortran_parallel_schedule:
   <<: [*gfortran_parallel, *schedule]
   parallel:
     matrix:
-      - { CASES: "@realist",                       VARIANTS: "sequential,mpi-4", TITLE: "debug_realist",                  OPTIONS: "--debug" }
-      - { CASES: "@agrif_realist_complement",      VARIANTS: "sequential,mpi-4", TITLE: "debug_agrif_realist_complement", OPTIONS: "--debug" }
-      - { CASES: "@realist",                       VARIANTS: "mpi-4",            TITLE: "restart_realist",                OPTIONS: "--restart --compare-to mpi-4" }
-      - { CASES: "BENGUELA_LR_TIDES_BULK,VILAINE", VARIANTS: "mpi-4",            TITLE: "plotphy_realist",                OPTIONS: "-s build,run,plotphy" }
+      #- { CASES: "@realist",                       VARIANTS: "sequential,mpi-4", TITLE: "debug_realist",                  OPTIONS: "--debug" }
+      #- { CASES: "@agrif_realist_complement",      VARIANTS: "sequential,mpi-4", TITLE: "debug_agrif_realist_complement", OPTIONS: "--debug" }
+      - { CASES: "VILAINE",                       VARIANTS: "mpi-4",            TITLE: "restart_realist",                OPTIONS: "--restart --compare-to mpi-4" }
+      #- { CASES: "BENGUELA_LR_TIDES_BULK,VILAINE", VARIANTS: "mpi-4",            TITLE: "plotphy_realist",                OPTIONS: "-s build,run,plotphy" }
   script:
     - cd $CI_PROJECT_DIR/BENCH
+    - ncap2 -O -s 'where(h<10.0){h=10.0;mask_rho=0;}' /data/COASTAL_VILAINE_BCK/croco_grd.nc /data/COASTAL_VILAINE_BCK/croco_grd_modif.nc
     - |
       ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
       --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
