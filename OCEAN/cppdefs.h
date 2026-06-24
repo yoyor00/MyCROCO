@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 /*
@@ -106,6 +107,9 @@
 # undef  SEDIMENT
 # undef  MUSTANG
 # undef  BBL
+                      /* Stochastic and Ensemble */
+# undef STOGEN
+# undef ENSEMBLE
                       /* I/O server */
 # undef  XIOS
                       /* Calendar */
@@ -321,14 +325,13 @@
 # undef RESTART_DIAGS
 
 # undef DIAGNOSTICS_TS
-# undef DIAGNOSTICS_UV
+
 # ifdef DIAGNOSTICS_TS
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
 #  ifdef DIAGNOSTICS_TS_MLD
-#   define DIAGNOSTICS_TS_MLD_CRIT
+#   undef  DIAGNOSTICS_TS_MLD_DENS
 #  endif
-
 # endif
 
 # undef DIAGNOSTICS_TSVAR
@@ -337,14 +340,11 @@
 #  define DIAGNOSTICS_TS_ADV
 # endif
 
-# undef  DIAGNOSTICS_VRT
-# undef  DIAGNOSTICS_EK
-# ifdef DIAGNOSTICS_EK
-#  undef DIAGNOSTICS_EK_FULL
-#  undef DIAGNOSTICS_EK_MLD
-# endif
-
+# undef DIAGNOSTICS_UV
+# undef DIAGNOSTICS_VRT
+# undef DIAGNOSTICS_KE
 # undef DIAGNOSTICS_BARO
+
 # undef DIAGNOSTICS_PV
 # undef DIAGNOSTICS_DISS
 # ifdef DIAGNOSTICS_DISS
@@ -353,10 +353,6 @@
 
 # undef DIAGNOSTICS_EDDY
 
-# undef TENDENCY
-# ifdef TENDENCY
-#  define DIAGNOSTICS_UV
-# endif
 /*
 !           Applications:
 !---------------------------------
@@ -449,7 +445,7 @@
                       /* I/O server */
 # undef  XIOS
                      /* Custion IO */
-# define FILLVAL
+# undef  FILLVAL
                       /* Calendar */
 
 # define USE_CALENDAR
@@ -636,6 +632,7 @@
 # define ANA_STFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
+# undef  STOGEN
 
 #elif defined CANYON
 /*
@@ -740,7 +737,7 @@
 !                              Seven  sets up are encompassed :
 */
 /* erosion of linear strat by constant wind stress */
-# define KATO_PHILIPS
+# define KATO_PHILLIPS
 /* erosion of linear strat by constant surf buoyancy loss */
 # undef  WILLIS_DEARDORFF
 /* erosion of linear strat by constant surf buoyancy loss */

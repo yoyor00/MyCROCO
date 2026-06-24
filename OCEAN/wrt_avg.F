@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -279,10 +280,6 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
 !
 #  ifdef TRACERS
       do itrc=1,NT
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
          if (wrtavg(indxV+itrc)) then
 !$acc update if(compute_on_device) host(t_avg(:,:,:,itrc))
             workr=t_avg(:,:,:,itrc)
@@ -290,9 +287,6 @@ CR      write(*,*) 'wrt_avg:  wrtV' MYID
      &        vname(1,indxV+itrc), record,r3dvar,type)
 CR      write(*,*) 'wrt_avg:  wrtT  ' MYID
          endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-        endif
-# endif
       enddo
 #  endif
 !

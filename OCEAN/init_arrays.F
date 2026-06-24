@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -58,7 +59,7 @@ C$    integer omp_get_thread_num
 # include "diags_vrt.h"
 #endif
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 # include "diags_ek.h"
 #endif
 
@@ -94,6 +95,7 @@ C$    integer omp_get_thread_num
 #endif
 !
 #include "compute_extended_bounds.h"
+
 !
 !  Initialize 2-D primitive variables.
 !
@@ -200,7 +202,7 @@ C$    integer omp_get_thread_num
 #  endif
 # endif
 !
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE
             MVadv(i,j,k,1)=init
             MVadv(i,j,k,2)=init
             MCor(i,j,k,1)=init
@@ -216,7 +218,7 @@ C$    integer omp_get_thread_num
             Mfast(i,j,k,2)=init
 #  endif
 # endif
-# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE || defined DIAGNOSTICS_PV
             MXadv(i,j,k,1)=init ! indice 1 for u_momentum
             MXadv(i,j,k,2)=init ! indice 2 for v_momentum
             MYadv(i,j,k,1)=init ! ...
@@ -490,9 +492,9 @@ C$    integer omp_get_thread_num
             Trate_mld(i,j,itrc)=init
             Tentr_mld(i,j,itrc)=init
             Taver_mld(i,j,itrc)=init
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
             Tcrit_mld(i,j,itrc)=init
-# endif
+#   endif
 #   ifdef AVERAGES
             TXadv_mld_avg(i,j,itrc)=init
             TYadv_mld_avg(i,j,itrc)=init
@@ -503,9 +505,9 @@ C$    integer omp_get_thread_num
             Trate_mld_avg(i,j,itrc)=init
             Tentr_mld_avg(i,j,itrc)=init
             Taver_mld_avg(i,j,itrc)=init
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#    ifdef DIAGNOSTICS_TS_MLD_DENS
             Tcrit_mld_avg(i,j,itrc)=init
-# endif
+#    endif
 #   endif /* AVERAGES*/
           enddo
         enddo
@@ -586,81 +588,60 @@ C$    integer omp_get_thread_num
       enddo
 # endif /* DIAGNOSTICS_VRT */
 
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
       do j=jstrR,jendR             ! 3-D primitive
         do i=istrR,iendR           ! variables.
-          ekHadv(i,j)=init
-          ekHdiff(i,j)=init
-          ekVadv(i,j)=init
-          ekCor(i,j)=init
-          ekPrsgrd(i,j)=init
-          ekHmix(i,j)=init
-          ekVmix(i,j)=init
-          ekrate(i,j)=init
-          ekvol(i,j)=init
-          ekVmix2(i,j)=init
           ekWind(i,j)=init
           ekDrag(i,j)=init
+#  ifdef AVERAGES
+            ekWind_avg(i,j)=init
+            ekDrag_avg(i,j)=init
+#  endif /* AVERAGES */
+          enddo
+        enddo
+
+
+      do k=1,N
+        do j=jstrR,jendR             ! 3-D primitive
+          do i=istrR,iendR           ! variables.
+            ekHadv(i,j,k)=init
+            ekHdiff(i,j,k)=init
+            ekVadv(i,j,k)=init
+            ekCor(i,j,k)=init
+            ekPrsgrd(i,j,k)=init
+            ekHmix(i,j,k)=init
+            ekVmix(i,j,k)=init
+            ekrate(i,j,k)=init
+            ekvol(i,j,k)=init
+            ekVmix2(i,j,k)=init
 #  if defined DIAGNOSTICS_BARO
-          ekBaro(i,j)=init
+            ekBaro(i,j,k)=init
 #  endif
 #  if defined M3FAST
-          ekfast(i,j)=init
+            ekfast(i,j,k)=init
 #  endif
 #  ifdef AVERAGES
-          ekHadv_avg(i,j)=init
-          ekHdiff_avg(i,j)=init
-          ekVadv_avg(i,j)=init
-          ekCor_avg(i,j)=init
-          ekPrsgrd_avg(i,j)=init
-          ekHmix_avg(i,j)=init
-          ekVmix_avg(i,j)=init
-          ekrate_avg(i,j)=init
-          ekvol_avg(i,j)=init
-          ekVmix2_avg(i,j)=init
-          ekWind_avg(i,j)=init
-          ekDrag_avg(i,j)=init
+            ekHadv_avg(i,j,k)=init
+            ekHdiff_avg(i,j,k)=init
+            ekVadv_avg(i,j,k)=init
+            ekCor_avg(i,j,k)=init
+            ekPrsgrd_avg(i,j,k)=init
+            ekHmix_avg(i,j,k)=init
+            ekVmix_avg(i,j,k)=init
+            ekrate_avg(i,j,k)=init
+            ekvol_avg(i,j,k)=init
+            ekVmix2_avg(i,j,k)=init
 #   ifdef DIAGNOSTICS_BARO
-          ekBaro_avg(i,j)=init
+            ekBaro_avg(i,j,k)=init
 #   endif
 #   if defined M3FAST
-          ekfast_avg(i,j)=init
+            ekfast_avg(i,j,k)=init
 #   endif
 #  endif /* AVERAGES */
-
-#  ifdef DIAGNOSTICS_EK_MLD
-          ekHadv_mld(i,j)=init
-          ekHdiff_mld(i,j)=init
-          ekVadv_mld(i,j)=init
-          ekCor_mld(i,j)=init
-          ekPrsgrd_mld(i,j)=init
-          ekHmix_mld(i,j)=init
-          ekVmix_mld(i,j)=init
-          ekrate_mld(i,j)=init
-          ekvol_mld(i,j)=init
-          ekVmix2_mld(i,j)=init
-#   if defined DIAGNOSTICS_BARO
-          ekBaro_mld(i,j)=init
-#   endif
-#   ifdef AVERAGES
-          ekHadv_mld_avg(i,j)=init
-          ekHdiff_mld_avg(i,j)=init
-          ekVadv_mld_avg(i,j)=init
-          ekCor_mld_avg(i,j)=init
-          ekPrsgrd_mld_avg(i,j)=init
-          ekHmix_mld_avg(i,j)=init
-          ekVmix_mld_avg(i,j)=init
-          ekrate_mld_avg(i,j)=init
-          ekvol_mld_avg(i,j)=init
-          ekVmix2_mld_avg(i,j)=init
-#    ifdef DIAGNOSTICS_BARO
-          ekBaro_mld_avg(i,j)=init
-#    endif
-#   endif /* AVERAGES */
-#  endif /* DIAGNOSTICS_EK_MLD */
+          enddo
         enddo
       enddo
-# endif /* DIAGNOSTICS_EK */
+# endif /* DIAGNOSTICS_KE */
 
 # ifdef DIAGNOSTICS_PV
 #  if defined DIAGNOSTICS_PV_FULL
@@ -1454,6 +1435,9 @@ C$    integer omp_get_thread_num
           hbl(i,j)=init
 #  endif
           kbl(i,j)=init
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+          kbl1(i,j)=init
+#  endif
 #  ifdef AVERAGES
           hbl_avg(i,j)=init
 #  endif

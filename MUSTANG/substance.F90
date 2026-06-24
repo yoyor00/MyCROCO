@@ -1,3 +1,7 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 #include "cppdefs.h"
 
 MODULE substance
@@ -632,8 +636,10 @@ CONTAINS
    ENDIF
    ALLOCATE(l_subs2D(-1:nvp))
    l_subs2D(:)=.false.
+#ifdef MUSTANG
    ALLOCATE(l_outsandrouse(nvp))
    l_outsandrouse(:)=.false.
+#endif
 
 ! a priori si pour l instant on ne rajoute pas des variables supplementaires crees a partir 
 ! des premieres (varaibles de tracage N ou P avec BIOLO)

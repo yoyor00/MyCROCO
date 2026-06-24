@@ -4,7 +4,7 @@
 
 if [[ ${RESTART_FLAG} == "FALSE" ]]; then
 
-    module load $ncomod
+    [[ -n ${ncomod} ]] && module load $ncomod
 #
     if [ ${USE_ATM} -eq 1 ] ; then
         maxatmdom=$( echo $wrfcpldom | wc -w )
@@ -109,7 +109,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh ${toyfile[$k]} ${toytype[$k]}.nc ${model_to_toy[$k]} "$varlist"  >> cpl_getrst.log
         done
     fi
-    module unload $ncomod
+    [[ -n ${ncomod} ]] && module unload $ncomod
 
 else   
 

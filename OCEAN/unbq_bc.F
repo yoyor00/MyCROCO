@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifndef CHILD
@@ -625,7 +626,7 @@
           do i=IstrU,Iend
             cff1=0.5*(Hz(i,Jend+1,k)+Hz(i-1,Jend+1,k))
             cff2=0.5*(h(i  ,Jend+1)+zeta(i  ,Jend+1,knew)
-     &               +h(i-1,Jstr-1)+zeta(i-1,Jend+1,knew))
+     &               +h(i-1,Jend+1)+zeta(i-1,Jend+1,knew))
             qdmu_nbq(i,Jend+1,k)=qdmu_nbq(i,Jend+1,k)
      &                           +(DU_nbq(i,Jend+1)
      &                              -usum(i,Jend+1))*cff1/cff2

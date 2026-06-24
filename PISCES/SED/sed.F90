@@ -50,6 +50,7 @@ MODULE sed
    REAL(wp), PUBLIC               ::  dtsed               !: sedimentation time step
    INTEGER , PUBLIC               ::  nitsed000
    INTEGER , PUBLIC               ::  nitsedend
+   INTEGER , PUBLIC               ::  numons      = -1    !: Logical unit for namelist sediment output
    LOGICAL , PUBLIC               ::  lrst_sed       !: logical to control the trc restart write
    LOGICAL , PUBLIC               ::  ln_rst_sed  = .TRUE.     !: initialisation from a restart file or not
    LOGICAL , PUBLIC               ::  ln_btbz     = .FALSE.    !: Depth variation of the bioturbation coefficient
@@ -74,7 +75,7 @@ MODULE sed
    REAL(wp), PUBLIC, DIMENSION(:,:  ), ALLOCATABLE ::  rainrg     !: rain of each solid component in [g/(cm**2.s)]
    REAL(wp), PUBLIC, DIMENSION(:,:  ), ALLOCATABLE ::  fromsed    !:
    REAL(wp), PUBLIC, DIMENSION(:,:  ), ALLOCATABLE ::  tosed      !:
-   REAL(wp), PUBLIC, DIMENSION(:,:  ), ALLOCATABLE ::  burial      !:
+   REAL(wp), PUBLIC, DIMENSION(:,:  ), ALLOCATABLE ::  burial     !:
    REAL(wp), PUBLIC, DIMENSION(:,:  ), ALLOCATABLE ::  rearatpom  !: 
    REAL(wp), PUBLIC, DIMENSION(:,:  ), ALLOCATABLE ::  apluss, aminuss  !: 
    REAL(wp), PUBLIC, DIMENSION(:,:  ), ALLOCATABLE ::  xirrigtrd, xirrigtrdtmp  !: 
@@ -82,6 +83,7 @@ MODULE sed
    REAL(wp), PUBLIC, DIMENSION(:    ), ALLOCATABLE ::  temp       !: temperature
    REAL(wp), PUBLIC, DIMENSION(:    ), ALLOCATABLE ::  salt       !: salinity
    REAL(wp), PUBLIC, DIMENSION(:    ), ALLOCATABLE ::  fecratio   !: Fe/C ratio in falling particles to the sediments
+   REAL(wp), PUBLIC, DIMENSION(:    ), ALLOCATABLE ::  xlabil     !: Lability fraction of sediment POC classes
    REAL(wp), PUBLIC, DIMENSION(:    ), ALLOCATABLE ::  dzdep, slatit, slongit   !: total thickness of solid material rained [cm] in each cell
    REAL(wp), PUBLIC, DIMENSION(:    ), ALLOCATABLE ::  zkbot      !: total thickness of solid material rained [cm] in each cell
    REAL(wp), PUBLIC, DIMENSION(:    ), ALLOCATABLE ::  wacc       !: total thickness of solid material rained [cm] in each cell

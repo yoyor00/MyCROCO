@@ -480,9 +480,9 @@ while [ $NY != $NY_END ]; do
       echo
       exit 1
     fi
-    #
-    #  Archive
-    #
+#
+#  Archive
+#
     LEVEL=0
     while [[ $LEVEL != $NLEVEL ]]; do
       if [[ ${LEVEL} == 0 ]]; then
@@ -494,6 +494,8 @@ while [ $NY != $NY_END ]; do
       $MV -f ${MODEL}_his.nc${ENDF} ${MSSOUT}/${MODEL}_his_${TIME}.nc${ENDF}
       $MV -f ${MODEL}_rst.nc${ENDF} ${MSSOUT}/${MODEL}_rst_${TIME}.nc${ENDF}
       $MV -f ${MODEL}_avg.nc${ENDF} ${MSSOUT}/${MODEL}_avg_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_dia.nc${ENDF} ${MSSOUT}/${MODEL}_dia_${TIME}.nc${ENDF}
+      $MV -f ${MODEL}_dia_avg.nc${ENDF} ${MSSOUT}/${MODEL}_dia_avg_${TIME}.nc${ENDF}
       LEVEL=$((LEVEL + 1))
     done
     NM=$((NM + 1))

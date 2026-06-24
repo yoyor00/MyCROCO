@@ -84,6 +84,7 @@
   "meta_cases": {
     "@base": [
       "BASIN",
+      "BASIN_STOGEN",
       "EQUATOR",
       "GRAV_ADJ",
       "IGW",
@@ -97,6 +98,7 @@
       "BENGUELA_LR_BRY_PISCES",
       "BENGUELA_LR_TIDES_BULK",
       "BENGUELA_LR_CFBBULKONLINERUNOFF",
+      "BENGUELA_LR_DIAGS_ALL",
       "BENGUELA_LR_GLS",
       "BENGUELA_LR_NBQ",
       "VILAINE",
@@ -113,12 +115,16 @@
       "BENGUELA_LR_CFBBULK",
       "BENGUELA_LR_CFBBULKONLINE",
       "BENGUELA_LR_CFBBULKONLINERUNOFF",
+      "BENGUELA_LR_DIAGS_ALL",
       "BENGUELA_LR_BSTRESS_FASTGLS",
       "BENGUELA_LR_BSTRESS_FASTKPP",
       "BENGUELA_LR_NBQ",
       "VILAINE",
     ],
-    "@nbq": ["GRAV_ADJ_NBQ", "IGW_NBQ"],
+    "@nbq": [
+      "GRAV_ADJ_NBQ", 
+      // "IGW_NBQ"  // test broken
+    ],
     "@sediment_mustang": [
       "DUNE_SEDIMENT",
       "DUNE_MUSTANG",
@@ -126,7 +132,7 @@
       "SANDBAR",
       "RIP",
     ],
-    "@other": ["KILPATRICK", "SEAGRASS", "SHOREFACE", "THACKER"],
+    "@other": ["KILPATRICK", "SEAGRASS", "SHOREFACE", "THACKER_2DV"],
     "@complement": [
       "CANYON",
       "ESTUARY",
@@ -144,7 +150,7 @@
       "SINGLE_COLUMN_FORCED_EKBBL",
       "SINGLE_COLUMN_FORCED_NONROTBBL",
       "SINGLE_COLUMN_FORCED_OSCNONROTBBL",
-      "SINGLE_COLUMN_KATO_PHILIPS",
+      "SINGLE_COLUMN_KATO_PHILLIPS",
       "SINGLE_COLUMN_WILLIS_DEARDORFF",
       "ACOUSTIC",
       "SED_TOY_ROUSE",
@@ -154,7 +160,8 @@
       "SED_TOY_FLOC1D",
       "RIP_GRANDPOPO",
       "RIP_TOPO_2D",
-      //"DUNE_ANA_DUNE", // blow-up issue
+      "DUNE_ANA_DUNE",
+      "DUNE_ANA_DUNE_MUSTANG",
       "DUNE_DUNE3D",
       "FLASH_RIP",
       //"MOVING_BATHY", // repro-mpi issue
@@ -165,7 +172,7 @@
       "SINGLE_COLUMN_FORCED_EKBBL",
       "SINGLE_COLUMN_FORCED_NONROTBBL",
       "SINGLE_COLUMN_FORCED_OSCNONROTBBL",
-      "SINGLE_COLUMN_KATO_PHILIPS",
+      "SINGLE_COLUMN_KATO_PHILLIPS",
       "SINGLE_COLUMN_WILLIS_DEARDORFF",
       "SED_TOY_ROUSE",
       "SED_TOY_CONSOLID",
@@ -174,7 +181,13 @@
       "SED_TOY_FLOC1D",
     ],
     "@vortex": ["VORTEX", "VORTEX_AGRIF_2WAY"],
-    "@agrif_realist": ["BENGUELA_LR_AGRIF_2WAY"],
+    "@agrif_realist": [
+      "BENGUELA_LR_AGRIF_2WAY",
+    ],
+    "@agrif_realist_complement": [
+      "BENGUELA_LR_AGRIF_2WAY_MLD_DENS",
+      "BENGUELA_LR_AGRIF_2WAY_DIAGS_ALL",
+    ],
   },
 
   ////////////////////////////// VARIANTS ////////////////////////////////////

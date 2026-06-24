@@ -5,8 +5,12 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "DIURNAL_CYCLE": true,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
     "patches": {},
@@ -19,8 +23,12 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "FORCED_DBLEEK": true,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
     "patches": {},
@@ -33,8 +41,12 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "FORCED_EKBBL": true,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
     "patches": {},
@@ -47,8 +59,12 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "FORCED_NONROTBBL": true,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
     "patches": {},
@@ -61,8 +77,12 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "FORCED_OSCNONROTBBL": true,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
     "patches": {},
@@ -70,16 +90,20 @@
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
-  "SINGLE_COLUMN_KATO_PHILIPS": {
-    "title": "SINGLE_COLUMN - KATO_PHILIPS - (5 x 5 x 100 : 3600)",
+  "SINGLE_COLUMN_KATO_PHILLIPS": {
+    "title": "SINGLE_COLUMN - KATO_PHILLIPS - (5 x 5 x 100 : 3600)",
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": true,
+      "KATO_PHILLIPS": true,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
     "patches": {},
-    "input_file": "TEST_CASES/croco.in.KATO_PHILIPS",
+    "input_file": "TEST_CASES/croco.in.KATO_PHILLIPS",
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
@@ -88,8 +112,12 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "WILLIS_DEARDORFF": true,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
     "patches": {},
