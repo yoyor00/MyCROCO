@@ -53,7 +53,6 @@ CLIMATOLOGY_FILES=0
 BOUNDARY_FILES=1
 RUNOFF_FILES=0
 TIDE_FILES=0
-ONLINE_FILES=0
 ONLINEFREQ=4
 ONLINEPATH="../DATA/CFSR_Benguela_LR" # we recommend using an absolute path
 
@@ -115,7 +114,7 @@ NHRST_UC=-1
 
 #  Restart file - RSTFLAG=0 --> No Restart  FOR BEGINING OF SIMULATION
 #		              RSTFLAG=1 --> Restart
-RSTFLAG=1
+RSTFLAG=0
 
 # Cold start Year and Month - define the Year and Month of the cold start ini file
 NY_COLDSTART=2005
