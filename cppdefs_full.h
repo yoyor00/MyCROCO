@@ -25,35 +25,121 @@
 !======================================================================
 !  CONFIGURATION NAME
 !  ------------------
-!  Exactly one configuration-case key must be defined
+!  Exactly one configuration-case key must be defined.
 !  Defining more than one is an error.
 !======================================================================
 */
-/* Realistic configurations */
+
+/* ── Realistic configurations ─────────────────────────────────────── */
 # define REGIONAL        /* Realistic regional simulations              */
 # undef  COASTAL         /* Coastal configuration (alternative to REGIONAL) */
 
-/* Idealised test cases (undef all for REGIONAL/COASTAL) */
+/* ── Classical idealised cases ────────────────────────────────────── */
+# undef  UPWELLING       /* Upwelling example                           */
 # undef  BASIN           /* Basin example                               */
-# undef  CANYON_A        /* Canyon_A example                            */
-# undef  CANYON_B        /* Canyon_B example                            */
+# undef  CANYON          /* Canyon example                              */
+# ifdef  CANYON
+#  undef  CANYON_STRAT   /* Stratified canyon variant                   */
+# endif
 # undef  EQUATOR         /* Equatorial channel example                  */
-# undef  GRAV_ADJ        /* Gravitational Adjustment example            */
-# undef  ACOUSTIC        /* Acoustic wave example                       */
+# undef  GRAV_ADJ        /* Gravitational Adjustment example (also with NBQ) */
+# undef  ACOUSTIC        /* Acoustic wave example (requires NBQ)        */
 # undef  INNERSHELF      /* Inner Shelf example                         */
-# undef  OVERFLOW        /* Overflow / gravitational collapse example   */
+# ifdef  INNERSHELF
+#  define INNERSHELF_EKMAN /* Ekman layer variant                       */
+#  define INNERSHELF_APG   /* Atmospheric pressure gradient variant     */
+# endif
+# undef  OVERFLOW        /* Gravitational/Overflow example              */
 # undef  SEAMOUNT        /* Seamount example                            */
 # undef  SHELFRONT       /* Shelf Front example                         */
 # undef  SOLITON         /* Equatorial Rossby Wave example              */
-# undef  UPWELLING       /* Upwelling example                           */
 # undef  INTERNAL        /* Internal tides example                      */
+# ifdef  INTERNAL
+#  undef  BODYTIDE       /* Tidal body force variant                    */
+# endif
 # undef  VORTEX          /* Baroclinic Vortex example                   */
 # undef  JET             /* Jet example                                 */
-# undef  THACKER         /* Thacker example                             */
+# undef  THACKER         /* Thacker analytical solution example         */
+# ifdef  THACKER
+#  undef  THACKER_2DV    /* 2D vertical plane variant                   */
+# endif
 # undef  TANK            /* Tank example                                */
+# undef  ISOLITON        /* Nonlinear internal solitary wave example    */
+# undef  IGW             /* Internal Gravity Wave example (also with NBQ) */
+# ifdef  IGW
+#  undef  EXPERIMENT3    /* 3rd experiment variant (default)            */
+#  undef  ONLINE_ANALYSIS /* Online spectral analysis output            */
+# endif
+# undef  KILPATRICK      /* SST fronts and island wakes example         */
+# undef  KH_INST         /* Kelvin-Helmholtz shear instability example  */
+# ifdef  KH_INST
+#  undef  KH_INSTY       /* Y-direction (2D horizontal) variant         */
+#  undef  KH_INST3D      /* 3D variant                                  */
+# endif
+
+/* ── Nearshore / wave cases ───────────────────────────────────────── */
 # undef  RIP             /* Rip current example                         */
-# undef  SHOREFACE       /* Shoreface example                           */
-# undef  SWASH           /* Swash example                               */
+# ifdef  RIP
+#  undef  RIP_TOPO_2D    /* Simplified 2D cross-shore topography        */
+#  undef  BISCA          /* Biscarrosse beach config (no rip channel)  */
+#  undef  GRANDPOPO      /* Grand Popo beach initial conditions         */
+# endif
+# undef  FLASH_RIP       /* Flash rip current example                   */
+# undef  SHOREFACE       /* Shoreface cross-shore dynamics example      */
+# undef  SWASH           /* Swash zone wave runup example               */
+# ifdef  SWASH
+#  define SWASH_GLOBEX_B3  /* GLOBEX B3 beach profile (default)        */
+#  undef  SWASH_GLOBEX_B2  /* GLOBEX B2 beach profile                  */
+#  undef  SWASH_GLOBEX_A3  /* GLOBEX A3 beach profile                  */
+# endif
+# undef  SANDBAR         /* Sandbar cross-shore dynamics (with MRL_WCI) */
+# ifdef  SANDBAR
+#  undef  SANDBAR_OFFSHORE /* Offshore bar variant                      */
+#  undef  SANDBAR_ONSHORE  /* Onshore bar variant                       */
+# endif
+
+/* ── Sediment / morphodynamics cases ─────────────────────────────── */
+# undef  DUNE            /* 2D dune migration (SEDIMENT or MUSTANG)     */
+# ifdef  DUNE
+#  undef  ANA_DUNE        /* Analytical dune initial conditions          */
+#  undef  DUNE3D          /* 3D dune variant                             */
+# endif
+# undef  TIDAL_FLAT      /* Tidal flat morphodynamics example           */
+# undef  ESTUARY         /* Estuary sediment dynamics example           */
+# undef  RIVER           /* River / point-source test case              */
+# undef  SEAGRASS        /* Seagrass bed wave-damping example           */
+# undef  SED_TOY         /* Sediment 0D/1D toy model                   */
+# ifdef  SED_TOY
+#  undef  SED_TOY_ROUSE      /* Rouse equilibrium profile variant       */
+#  undef  SED_TOY_RESUSP     /* Resuspension variant                    */
+#  undef  SED_TOY_CONSOLID   /* Consolidation variant                   */
+#  undef  SED_TOY_FLOC_0D    /* 0D flocculation variant                 */
+#  undef  SED_TOY_FLOC_1D    /* 1D flocculation variant                 */
+# endif
+# undef  MOVING_BATHY    /* Moving bathymetry (NBQ) example             */
+
+/* ── Single-column mixing cases ──────────────────────────────────── */
+/* Use SINGLE_COLUMN + one forcing flag                               */
+# undef  SINGLE_COLUMN   /* Single-column model base key                */
+# ifdef  SINGLE_COLUMN
+#  undef  KATO_PHILLIPS        /* Kato-Phillips mixed-layer forcing      */
+#  undef  WILLIS_DEARDORFF     /* Willis-Deardorff convection forcing    */
+#  undef  DIURNAL_CYCLE        /* Diurnal shortwave heating cycle        */
+#  undef  FORCED_DBLEEK        /* Forced double-Ekman layer              */
+#  undef  FORCED_EKBBL         /* Forced Ekman bottom boundary layer     */
+#  undef  FORCED_NONROTBBL     /* Forced non-rotating bottom BBL         */
+#  undef  FORCED_OSCNONROTBBL  /* Oscillating non-rotating BBL           */
+# endif
+
+/* ── Tracer advection verification cases ─────────────────────────── */
+/* Use TS_HADV_TEST + one variant flag                                */
+# undef  TS_HADV_TEST    /* Tracer advection test base key              */
+# ifdef  TS_HADV_TEST
+#  undef  SOLID_BODY_PER  /* Rotating solid-body (repeating)            */
+#  undef  SOLID_BODY_ROT  /* Rotating solid-body (one rotation)         */
+#  undef  DIAGONAL_ADV    /* Diagonal advection variant                  */
+                          /* Without any variant: body-force case        */
+# endif
 
 
 /*
@@ -66,7 +152,7 @@
 */
 # undef  OPENMP          /* Open-MP shared-memory parallelism           */
 # undef  MPI             /* MPI distributed-memory parallelism          */
-
+# undef  OPENACC
 # ifdef MPI
    /* Activated automatically when MPI is defined – do not edit below  */
 #  undef  PARALLEL_FILES  /* Parallel I/O: each MPI task writes its own file */
@@ -103,6 +189,9 @@
 !======================================================================
 */
 # undef  NBQ             /* Non-Boussinesq (non-hydrostatic) solver     */
+# ifdef  NBQ
+#  undef  NBQ_PRECISE    /* More precise NBQ time-stepping (slower)     */
+# endif
 # undef  CROCO_QH        /* Quasi-hydrostatic option (advanced)         */
 
 /*
@@ -176,6 +265,8 @@
 # undef  SEDIMENT        /* USGS sediment transport model               */
 # undef  MUSTANG         /* MUSTANG sediment dynamics model             */
 # undef  BBL             /* Bottom Boundary Layer parameterization      */
+# undef  OBSTRUCTION     /* Sub-grid flow obstruction (e.g. seagrass)   */
+# undef  FILLVAL         /* Write fill value in masked land points      */
 
 /*
 !======================================================================
@@ -195,6 +286,8 @@
 # define MASKING         /* Land masking                                */
 # undef  WET_DRY         /* Wetting-and-drying scheme                   */
 # define NEW_S_COORD     /* New (Song & Haidvogel 1994) vertical S-coord */
+# undef  EW_PERIODIC     /* East-West periodic boundary conditions      */
+# undef  NS_PERIODIC     /* North-South periodic boundary conditions    */
 
 /*
 !======================================================================
@@ -204,6 +297,12 @@
 # define SOLVE3D         /* Solve 3D primitive equations (baroclinic)   */
 # define UV_COR          /* Coriolis terms in momentum equations        */
 # define UV_ADV          /* Advection terms in momentum equations       */
+# undef  NO_FRCFILE      /* Run without any external forcing files      */
+# undef  NO_TEMPERATURE  /* Suppress temperature tracer                 */
+# undef  NO_TRACER       /* Suppress all tracers (barotropic only)     */
+# undef  M2FILTER_NONE   /* Disable barotropic time filter
+                            (set automatically with NBQ or M3FAST)     */
+# undef  ZONAL_NUDGING   /* Zonal mean flow nudging (used with JET)    */
 
 /*
 !======================================================================
@@ -327,7 +426,7 @@
 # ifdef UV_VIS2
 #  define UV_VIS_SMAGO   /* Smagorinsky parameterization of viscosity (2D) */
 # endif
-# undef  UV_VIS_SMAGO3D  /* 3D Smagorinsky parameterization             */
+# undef  UV_VIS_SMAGO_3D  /* 3D Smagorinsky parameterization            */
 # undef  UV_MIX_GEO      /* Mix momentum on geopotential (z) surfaces   */
 # undef  UV_MIX_S        /* Mix momentum on iso-sigma surfaces          */
 
@@ -338,6 +437,17 @@
 */
 # define UV_VADV_SPLINES /* Splines vertical advection for momentum     */
 # undef  UV_VADV_WENO5   /* WENO5 vertical advection for momentum       */
+
+/*
+!======================================================================
+!  VERTICAL VELOCITY ADVECTION (W)
+!  --------------------------------
+!  Only relevant with NBQ or wave-resolving simulations.
+!  Set automatically by cppdefs_dev.h when UV_HADV_WENO5 is defined.
+!======================================================================
+*/
+# undef  W_HADV_WENO5    /* 5th-order WENOZ horizontal advection for W  */
+# undef  W_VADV_WENO5    /* 5th-order WENOZ vertical advection for W    */
 
 /*
 !======================================================================
@@ -425,7 +535,13 @@
 #  undef  LMD_LANGMUIR    /* Langmuir-cell parameterization              */
 # endif
 
-# undef  GLS_MIXING       /* Generic Length Scale scheme */
+# undef  GLS_MIXING       /* Generic Length Scale turbulence scheme     */
+# ifdef  GLS_MIXING
+#  undef  GLS_MIXING_3D   /* Full 3D GLS (vs. columnar 1D version)      */
+#  ifdef  GLS_MIXING_3D
+#   define GLS_KOMEGA     /* K-omega model (K-epsilon if not defined)   */
+#  endif
+# endif
 
 /*
 !======================================================================
@@ -442,6 +558,7 @@
 #  define BBL
 # endif
 # ifdef MRL_WCI
+#  undef  MRL_CEW          /* Wave-driven longshore current energetics   */
 #  ifndef OW_COUPLING
 #   undef  WAVE_OFFLINE   /* Read pre-computed wave fields from a file  */
 #   define ANA_WWAVE      /* Analytical (constant) wave forcing (Hs,Tp,Dir) */
@@ -458,12 +575,27 @@
 #   define WKB_OBC_WEST   /* WKB open boundary – west side              */
 #   undef  WKB_OBC_EAST   /* WKB open boundary – east side              */
 #  endif
-/* Wave breaking parameterization (for WKB)                            */
+   /* Wave breaking parameterization (for WKB)                         */
 #  undef  WAVE_BREAK_CT93 /* Thornton & Guza (1983) wave breaking       */
 #  undef  WAVE_BREAK_TG86 /* Church & Thornton (1993) wave breaking     */
 #  undef  WAVE_BREAK_TG86A /* Alternate Church-Thornton formulation     */
 #  undef  ANA_BRY_WKB     /* Analytical wave boundary forcing (croco.in) */
 # endif
+
+/*
+!======================================================================
+!  WAVE MAKER
+!  ----------
+!  WAVE_MAKER: wave-resolving internal wave generation (ideal cases,
+!  e.g. SANDBAR, SWASH, RIP).
+!======================================================================
+*/
+# undef  WAVE_MAKER          /* Wave-maker boundary source               */
+# ifdef  WAVE_MAKER
+#  undef  WAVE_MAKER_SPECTRUM /* Multi-frequency spectrum input          */
+#  undef  WAVE_MAKER_DSPREAD  /* Directional spreading                  */
+# endif
+# undef  WAVE_MAKER_INTERNAL  /* Internal (immersed) wave maker         */
 
 /*
 !======================================================================
@@ -475,6 +607,31 @@
 
 /*
 !======================================================================
+!  ANALYTICAL FORCING
+!  ------------------
+!  Use these keys when running test cases without external NetCDF files.
+!  Each ANA_ key replaces a file read with an inline Fortran function.
+!======================================================================
+*/
+# undef  ANA_GRID         /* Analytical grid (no grid NetCDF file)      */
+# undef  ANA_INITIAL      /* Analytical initial conditions               */
+# undef  ANA_BRY          /* Analytical open boundary conditions         */
+# undef  ANA_SSH          /* Analytical sea level (replaces ZCLIMATOLOGY) */
+# undef  ANA_M2CLIMA      /* Analytical barotropic velocity climatology  */
+# undef  ANA_M3CLIMA      /* Analytical baroclinic velocity climatology  */
+# undef  ANA_TCLIMA       /* Analytical tracer climatology               */
+# undef  ANA_SMFLUX       /* Analytical surface momentum (wind) flux     */
+# undef  ANA_SRFLUX       /* Analytical shortwave radiation flux         */
+# undef  ANA_STFLUX       /* Analytical surface heat flux                */
+# undef  ANA_SSFLUX       /* Analytical surface salinity flux            */
+# undef  ANA_SST          /* Analytical SST (for QCORRECTION)           */
+# undef  ANA_TIDES        /* Analytical tidal forcing (RIP / TIDAL_FLAT) */
+# undef  ANA_JET          /* Analytical jet initial condition (JET case) */
+# undef  ANA_MORPHODYN    /* Analytical morphodynamic forcing           */
+# undef  ANA_PSOURCE      /* Analytical vertical profiles for point sources */
+
+/*
+!======================================================================
 !  POINT SOURCES – RIVERS
 !======================================================================
 */
@@ -483,7 +640,6 @@
 # ifdef PSOURCE_NCFILE
 #  undef  PSOURCE_NCFILE_TS /* Read time-varying river concentrations from NetCDF */
 # endif
-# undef  ANA_PSOURCE       /* Analytical vertical profiles for point sources */
 # undef  PSOURCE_MASS      /* Inject river as vertical volume flux at rho
                               points (instead of flux through u,v faces) */
 
@@ -496,10 +652,11 @@
 */
 # define OBC_M2CHARACT    /* Characteristic methods for barotropic velocities */
 # undef  OBC_M2ORLANSKI   /* Radiative OBC for barotropic velocities     */
-# undef  OBC_M2FLATHER    /* Flather OBC for barotropic velocities       */
 # undef  OBC_M2SPECIFIED  /* Specified (Dirichlet) OBC for barotropic velocities */
 # undef  OBC_VOLCONS      /* Enforce volume conservation at open boundaries
                              (use with OBC_M2ORLANSKI)                  */
+# undef  OBC_SPECIFIED_WEST /* Specified (Dirichlet) OBC on western boundary */
+# undef  OBC_REDUCED_PHYSICS /* Simplified physics at OBCs (for tidal flat etc.) */
 
 # define OBC_M3ORLANSKI   /* Radiative OBC for baroclinic velocities     */
 # undef  OBC_M3SPECIFIED  /* Specified OBC for baroclinic velocities     */
@@ -632,15 +789,33 @@
 !----------------------------------------------------------------------
 */
 # ifdef SEDIMENT
+   /* Transport components */
 #  define SUSPLOAD        /* Suspended load transport                    */
 #  define BEDLOAD         /* Bedload transport                           */
 #  define MORPHODYN       /* Morphodynamics (bed evolution)              */
+   /* Analytical / parameter inputs */
 #  undef  ANA_SEDIMENT    /* Analytical sediment ripple and bed parameters */
 #  undef  ANA_BPFLUX      /* Analytical kinematic bottom flux of sediment */
-#  undef  SLOPE_NEMETH    /* Avalanching: Nemeth et al. (2006) formulation */
-#  undef  SLOPE_LESSER    /* Avalanching: Lesser et al. (2004) formulation */
-#  undef  BEDLOAD_SOULSBY /* Bedload: Soulsby & Damgaard (2005) formulation */
+   /* Bedload formulation (mutually exclusive)                          */
 #  undef  BEDLOAD_MPM     /* Bedload: Meyer-Peter-Muller formulation     */
+#  undef  BEDLOAD_WULIN   /* Bedload: Wu & Lin formulation               */
+#  undef  BEDLOAD_MARIEU  /* Bedload: Marieu formulation                 */
+#  undef  BEDLOAD_WENO5   /* Bedload: WENO 5th-order advection           */
+   /* Avalanching */
+#  undef  SLOPE_NEMETH    /* Avalanching: Nemeth et al. (2006)           */
+#  undef  SLOPE_LESSER    /* Avalanching: Lesser et al. (2004)           */
+   /* Bed composition */
+#  undef  COHESIVE_BED    /* Purely cohesive (mud) bed                   */
+#  undef  MIXED_BED       /* Mixed cohesive/non-cohesive bed             */
+   /* Flocculation (requires COHESIVE_BED or MIXED_BED)                */
+#  undef  SED_FLOCS       /* Flocculation of cohesive particles         */
+#  undef  SED_DEFLOC      /* De-flocculation process                    */
+#  undef  FLOC_TURB_DISS  /* Turbulent dissipation of flocs             */
+#  undef  FLOC_BBL_DISS   /* BBL dissipation of flocs                   */
+   /* Bed friction */
+#  undef  SED_TAU_CD_CONST /* Constant drag coefficient for bed stress  */
+   /* Critical shear stress */
+#  undef  TAU_CRIT_WULIN  /* Wu & Lin critical shear stress formulation  */
 # endif
 
 /*
@@ -649,10 +824,12 @@
 !----------------------------------------------------------------------
 */
 # ifdef MUSTANG
-#  undef  key_MUSTANG_V2  /* MUSTANG version 2 (advanced features)      */
-#  undef  key_MUSTANG_bedload /* MUSTANG bedload transport              */
-#  undef  MORPHODYN        /* Morphodynamics (usually off with MUSTANG)  */
-#  undef  WAVE_OFFLINE     /* Wave offline forcing with MUSTANG          */
+#  undef  key_MUSTANG_V2       /* MUSTANG version 2 (advanced features) */
+#  undef  key_MUSTANG_bedload  /* MUSTANG bedload transport             */
+#  undef  key_MUSTANG_flocmod  /* MUSTANG flocculation model            */
+#  undef  key_tauskin_c_upwind /* Upwind skin friction for MUSTANG      */
+#  undef  MORPHODYN             /* Morphodynamics (usually off)         */
+#  undef  WAVE_OFFLINE          /* Wave offline forcing with MUSTANG    */
 # endif
 
 /*
@@ -663,6 +840,7 @@
 !======================================================================
 */
 # ifdef BBL
+#  undef  BBL_BREAKING_STIR /* Wave breaking stirring in BBL            */
 #  undef  ANA_BSEDIM      /* Analytical bed parameters (when SEDIMENT not defined) */
 #  undef  ANA_WWAVE       /* Analytical wave forcing for BBL            */
 #  undef  Z0_BL           /* Compute bedload roughness for ripple predictor */
