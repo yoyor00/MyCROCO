@@ -73,12 +73,10 @@ class JobcompCrocoConfig:
 
         # cppdefs.h is always a pre-resolved, single-case file (no "#elif
         # defined <CASE>" block to anchor on, but also no other case in the
-        # file to accidentally affect) - insert the missing key right after
-        # the case marker (1st line).
+        # file to accidentally affect) - insert the missing key at begining
         rules = [
             {
-                "mode": "insert-after",
-                "what": existing_lines[0].strip(),
+                "mode": "insert-at-begin",
                 "insert": f"# {status_wanted} {key_name}",
                 "descr": f"Add missing key {key_name} = {status}",
             }
