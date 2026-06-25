@@ -1,6 +1,4 @@
 # define TS_HADV_TEST
-# undef  SOLID_BODY_PER
-# define  DIAGONAL_ADV
 /*
 !                       Horizontal TRACER ADVECTION EXAMPLE
 !                       ========== ====== ========= =======

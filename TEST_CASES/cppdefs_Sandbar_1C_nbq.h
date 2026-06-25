@@ -1,6 +1,4 @@
 # define SANDBAR
-# define  NBQ
-# define  SEDIMENT
 /*
 !                       SANDBAR Example
 !                       ======= =======

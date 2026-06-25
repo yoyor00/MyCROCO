@@ -1,4 +1,5 @@
 # define RIVER
+/* River run-off test problem */
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D

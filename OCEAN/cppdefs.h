@@ -14,6 +14,7 @@
    ==== == ============ ===== ============= ====
 */
                       /* Configuration Name */
+# define REGIONAL
 # define BENGUELA_LR
                       /* Parallelization */
 # undef  OPENMP
@@ -353,10 +354,8 @@
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
-#  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
 # endif
-
 
 #include "cppdefs_dev.h"
 #include "set_global_definitions.h"

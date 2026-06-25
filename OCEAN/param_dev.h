@@ -25,6 +25,28 @@
 
 !
 !----------------------------------------------------------------------
+! MPI related variables
+!----------------------------------------------------------------------
+      integer Lmmpi,Mmmpi,iminmpi,imaxmpi,jminmpi,jmaxmpi
+      common /comm_setup_mpi1/ Lmmpi,Mmmpi
+      common /comm_setup_mpi2/ iminmpi,imaxmpi,jminmpi,jmaxmpi
+#ifdef MPI
+#ifdef OPENACC
+      integer my_acc_device
+      logical compute_on_device
+      common/comm_my_device/my_acc_device,compute_on_device
+#endif
+#elif defined OPENMP
+#else
+#ifdef OPENACC
+      integer, parameter :: my_acc_device = 0
+      logical, parameter :: compute_on_device = .true.
+#endif
+#endif
+
+
+!
+!----------------------------------------------------------------------
 ! Number maximum of weights for the barotropic mode
 !----------------------------------------------------------------------
 !
@@ -105,6 +127,12 @@
       real, parameter :: Vtransform = 1
 #endif
 
+
+#ifdef STATIONS
+      ! Maximum number of stations
+      integer, parameter :: Msta = 1000
+#endif
+
 !
 !----------------------------------------------------------------------
 ! Number of tracers
@@ -173,6 +201,8 @@
 # endif
 
 #endif /* SOLVE3D */
+
+
 
 !
 !----------------------------------------------------------------------
@@ -563,32 +593,23 @@
       parameter (ntrc_diabio=0)
 # endif /* BIOLOGY */
 
-
-# if defined SUBSTANCE
-      integer, parameter :: itsubs1 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+1
-      integer, parameter :: itsubs2 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs
-# endif /* SUBSTANCE */
-
-!
 !
 ! Total number of active tracers
 !
       integer, parameter :: NTA = itemp+ntrc_salt
-
 !
 ! Total number of tracers
 !
 # ifdef SUBSTANCE
       integer, parameter :: NT = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed+ntrc_subs
       integer, parameter :: NTot = NT+ntfix
+      integer, parameter :: itsubs1 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+1
+      integer, parameter :: itsubs2 = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_subs
 # else
       integer, parameter :: NT = itemp+ntrc_salt+ntrc_pas+ntrc_bio+ntrc_sed
       integer, parameter :: NTot = NT
 # endif /* SUBSTANCE */
 
-
-! === SEDIMENTS ===
-!
 
 # ifdef SEDIMENT
       parameter (itrc_sed=itemp+ntrc_salt+ntrc_pas+ntrc_bio+1)
@@ -600,9 +621,12 @@
       parameter (igrav2=igrav1+NGRAV-1)
 # endif
 
+# ifdef MUSTANG
+! Vertical dimension (ksdmin:ksdmax) of variables in sediment
+      integer, parameter :: ksdmin = 1
+# endif /* MUSTANG */
 !
 ! ===  u,v and tracer equations Diagnostics  ===
-!
 # ifdef DIAGNOSTICS_TS
 #  ifdef DIAGNOSTICS_TS_MLD
 #   ifdef DIAGNOSTICS_TS_MLD_DENS

@@ -1,7 +1,4 @@
 # define SED_TOY
-# undef  SED_TOY_ROUSE
-# define  SED_TOY_RESUSP
-# define  SED_TOY
 /*
 !                       SED TOY (1D Single Column example)
 !                       === === === ====== ====== ========

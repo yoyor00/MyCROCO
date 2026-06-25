@@ -26,37 +26,30 @@
 !----------------------------------------------------------------------
 ! ABL1D
 !----------------------------------------------------------------------
-!
 # if defined ABL1D
 ! N_abl Number of layer use in ABL1D
       integer, parameter :: N_abl=50
 # endif
-
 !
 !----------------------------------------------------------------------
 ! Tides
 !----------------------------------------------------------------------
-!
 #if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
-                                 ! Number of tides
-                                 ! ====== == =====
+! Number of tides
       integer, parameter :: Ntides = 8
 #endif
-
 !
 !----------------------------------------------------------------------
-! Point sources, Floast, Stations
+! Point sources, Stations
 !----------------------------------------------------------------------
-!
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
-                                  ! Number of point sources
-      integer, parameter :: Msrc = 30        ! ====== == ===== =======
+! Number of point sources
+      integer, parameter :: Msrc = 30
 #endif
 #ifdef STATIONS
-       integer, parameter :: NS = 5          ! Number of output stations
-       integer, parameter :: Msta = 1000     ! Maximum number of stations
+! Number of output stations
+      integer, parameter :: NS = 5
 #endif
-
 
 #ifdef SOLVE3D
 !
@@ -71,11 +64,8 @@
       integer, parameter :: ntrc_pas = 0
 # endif
 
-/*! === SUBSTANCE ===*/
-!
 # if defined SUBSTANCE
 ! ntrc_subs : number of advected substances (not fixed, neither benthic)
-!
       integer, parameter :: ntrc_subs = 8
       integer, parameter :: ntfix = 0
       integer, parameter :: ntrc_substot = ntrc_subs+ntfix
@@ -112,10 +102,7 @@
 # endif /* SEDIMENT */
 
 # ifdef MUSTANG
-! Vertical dimension (ksdmin:ksdmax) of variables in sediment
-! (ksdmax : max number of layers)
-!
-      integer, parameter :: ksdmin = 1
+! ksdmax : maximum number of layers in sediment bed
       integer, parameter :: ksdmax = 10
 # endif /* MUSTANG */
 
@@ -125,77 +112,44 @@
 
 #endif /* SOLVE3D */
 
-
 !
 !----------------------------------------------------------------------
 ! Number of layers in Sediment (SL)
 !----------------------------------------------------------------------
-!
       integer, parameter :: N_sl = 0
 
-!
 !----------------------------------------------------------------------
 ! Max time increment for computing bottom stress at the 3D fast time
 ! steps
 !----------------------------------------------------------------------
-!
 #ifdef BSTRESS_FAST
       integer, parameter :: inc_faststep_max = 10
 #endif
-
-
 
 !
 !----------------------------------------------------------------------
 ! MPI related variables
 !----------------------------------------------------------------------
-!
-      integer Lmmpi,Mmmpi,iminmpi,imaxmpi,jminmpi,jmaxmpi
-      common /comm_setup_mpi1/ Lmmpi,Mmmpi
-      common /comm_setup_mpi2/ iminmpi,imaxmpi,jminmpi,jmaxmpi
-!
 ! Domain subdivision parameters
-! ====== =========== ==========
-!
 ! NPP            Maximum allowed number of parallel threads;
-! NSUB_X,NSUB_E  Number of SHARED memory subdomains in XI- and
-!                                                ETA-directions;
-! NNODES        Total number of MPI processes (nodes);
-! NP_XI,NP_ETA  Number of MPI subdomains in XI- and ETA-directions;
-!
-      integer NSUB_X, NSUB_E, NPP
+! NSUB_X,NSUB_E  Number of SHARED memory subdomains in XI/ETA directions;
+! NNODES         Total number of MPI processes (nodes);
+! NP_XI,NP_ETA   Number of MPI subdomains in XI/ETA directions;
 #ifdef MPI
-      integer NP_XI, NP_ETA, NNODES
-#if defined(SPLITTING_X) && defined(SPLITTING_ETA)
-      parameter (NP_XI=SPLITTING_X,  NP_ETA=SPLITTING_ETA,  NNODES=NP_XI*NP_ETA)
-#else
-      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)
-#endif
-      parameter (NPP=1)
-      parameter (NSUB_X=1, NSUB_E=1)
-#ifdef OPENACC
-      integer my_acc_device
-      logical compute_on_device
-      common/comm_my_device/my_acc_device,compute_on_device
-#endif
+      integer, parameter :: NP_XI = 1
+      integer, parameter :: NP_ETA = 4
+      integer, parameter :: NNODES = NP_XI*NP_ETA
+      integer, parameter :: NPP = 1
+      integer, parameter :: NSUB_X = 1
+      integer, parameter :: NSUB_E = 1
 #elif defined OPENMP
-#if defined(SPLITTING_X) && defined(SPLITTING_ETA)
-      parameter (NPP=SPLITTING_X*SPLITTING_ETA)
-      parameter (NSUB_X=SPLITTING_X, NSUB_E=SPLITTING_ETA)
+      integer, parameter :: NPP = 4
+      integer, parameter :: NSUB_X = 1
+      integer, parameter :: NSUB_E = NPP
 #else
-      parameter (NPP=4)
-      parameter (NSUB_X=1, NSUB_E=NPP)
+      integer, parameter :: NPP = 1
+      integer, parameter :: NSUB_X = 1
+      integer, parameter :: NSUB_E = NPP
 #endif
-
-#else
-      parameter (NPP=1)
-      parameter (NSUB_X=1, NSUB_E=NPP)
-#ifdef OPENACC
-      integer,parameter :: my_acc_device = 0
-      logical,parameter :: compute_on_device = .true.
-#endif
-#endif
-
-
 
 #include "param_dev.h"

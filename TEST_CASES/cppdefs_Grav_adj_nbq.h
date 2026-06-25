@@ -1,10 +1,5 @@
 # define GRAV_ADJ
-# define  GRAV_ADJ
-# define  NBQ
-/*
-!                       Gravitational Adjustment Example
-!                       ============= ========== =======
-*/
+/* Gravitational Adjustment Example */
 # undef  OPENMP
 # undef  MPI
 # define  NBQ

@@ -89,10 +89,10 @@
                       /* Surface Forcing */
 # define BULK_FLUX
 # ifdef BULK_FLUX
-#  undef  ECUMEv0
-#  undef  ECUMEv6
-#  undef  WASP
-#  define GUSTINESS
+#  undef  BULK_ECUMEV0
+#  undef  BULK_ECUMEV6
+#  undef  BULK_WASP
+#  define BULK_GUSTINESS
 #  undef  BULK_LW
 #  undef  SST_SKIN
 #  undef  ANA_DIURNAL_SW

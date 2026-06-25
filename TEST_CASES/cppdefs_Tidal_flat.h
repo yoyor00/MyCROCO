@@ -1,6 +1,4 @@
 # define TIDAL_FLAT
-# undef  SEDIMENT
-# define  MUSTANG
 /*
 !                       TIDAL_FLAT  Example
 !                       ==========  =======

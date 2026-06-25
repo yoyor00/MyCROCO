@@ -28,40 +28,6 @@ class JobcompCrocoConfig:
     def __init__(self, builddir: str):
         self.builddir = builddir
 
-    def cppdef_h_select_case(self, case_name: str):
-        """
-        Patch the cppdef.h to select the CASE to be used.
-        """
-
-        # progress
-        Messaging.step(f"Select case : {case_name}")
-
-        # set patching rules
-        rules = []
-
-        # disable REGIONAL
-        rules.append(
-            {
-                "mode": "replace",
-                "what": "#define REGIONAL        /* REGIONAL Applications */\n",
-                "by": "#undef REGIONAL        /* REGIONAL Applications */\n",
-                "descr": "Disable default REGIONAL case",
-            }
-        )
-
-        # insert the wanted one
-        rules.append(
-            {
-                "mode": "insert-after",
-                "what": "#undef REGIONAL        /* REGIONAL Applications */\n",
-                "insert": f"#define {case_name}\n",
-                "descr": f"Enabled wanted {case_name} case",
-            }
-        )
-
-        # apply
-        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
-
     def cppdef_h_set_key(self, key_name: str, status: bool):
         """
         Force enabling or disabling some cppkeys in cppdefs.h.
@@ -136,8 +102,8 @@ class JobcompCrocoConfig:
         rules = [
             {
                 "mode": "replace",
-                "what": "      parameter (NPP=4)\n",
-                "by": f"      parameter (NPP={threads})\n",
+                "what": "      integer, parameter :: NPP = 4",
+                "by": f"      integer, parameter :: NPP = {threads}",
                 "descr": f"Set OPENMP threads = {threads}",
             }
         ]
@@ -149,9 +115,15 @@ class JobcompCrocoConfig:
         rules = [
             {
                 "mode": "replace",
-                "what": "      parameter (NSUB_X=1, NSUB_E=NPP)\n",
-                "by": f"      parameter (NSUB_X={np_x}, NSUB_E={np_eta})\n",
-                "descr": f"Set OPENMP splitting : {splitting} : ranks={threads}, np_xi={np_x}, np_eta={np_eta}",
+                "what": "      integer, parameter :: NSUB_X = 1 ",
+                "by": f"      integer, parameter :: NSUB_X = {np_x}",
+                "descr": f"Set OPENMP splitting : {splitting} : ranks={threads}, NSUB_X={np_x}",
+            },
+            {
+                "mode": "replace",
+                "what": "      integer, parameter :: NSUB_E = NPP",
+                "by": f"      integer, parameter :: NSUB_E = {np_eta}",
+                "descr": f"Set OPENMP splitting : {splitting} : ranks={threads}, NSUB_E={np_eta}",
             }
         ]
 
@@ -180,9 +152,15 @@ class JobcompCrocoConfig:
         rules = [
             {
                 "mode": "replace",
-                "what": "      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)\n",
-                "by": f"      parameter (NP_XI={np_x},  NP_ETA={np_eta},  NNODES=NP_XI*NP_ETA)\n",
-                "descr": f"Set MPI splitting : {splitting} : ranks={ranks}, np_xi={np_x}, np_eta={np_eta}",
+                "what": "      integer, parameter :: NP_XI = 1",
+                "by": f"      integer, parameter :: NP_XI = {np_x}",
+                "descr": f"Set MPI splitting : {splitting} : ranks={ranks}, np_xi={np_x}",
+            },
+            {
+                "mode": "replace",
+                "what": "      integer, parameter :: NP_ETA = 4",
+                "by": f"      integer, parameter :: NP_ETA = {np_eta}",
+                "descr": f"Set MPI splitting : {splitting} : ranks={ranks}, np_eta={np_eta}",
             }
         ]
 
@@ -415,9 +393,6 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         if cppdefs_file is not None:
             Messaging.step(f"Use pre-resolved cppdefs.h : {cppdefs_file}")
             shutil.copyfile(cppdefs_file, os.path.join(self.builddir, "cppdefs.h"))
-        else:
-            # set case
-            self.croco_config.cppdef_h_select_case(options.with_case)
 
         if param_file is not None:
             Messaging.step(f"Use pre-resolved param.h : {param_file}")
