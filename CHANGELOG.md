@@ -49,6 +49,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Changed
 
+- AGRIF : update conv version (#510)
+
 - SUBSTANCE : submassbalance feature is now activated only by namelist
   (Issue #347)
 

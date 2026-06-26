@@ -33,8 +33,8 @@
 /* version 1.7                                                                */
 /******************************************************************************/
 #include <stdio.h>
-//#include <stdlib.h>
-//#include <string.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "decl.h"
 
@@ -273,6 +273,7 @@ void  CompleteThelistvarindoloop()
 /******************************************************************************/
 void Merge_Variables(variable *var1, variable *var2)
 {
+    if ( var1 == var2 ) return;
 
     if ( !strcasecmp(var1->v_typevar,"") )
             strcpy(var1->v_typevar,var2->v_typevar);
@@ -401,6 +402,10 @@ void Merge_Variables(variable *var1, variable *var2)
     if ( var1->v_optionaldeclare == 0 )
             var1->v_optionaldeclare = var2->v_optionaldeclare;
     else    var2->v_optionaldeclare = var1->v_optionaldeclare ;
+
+    if ( var1->v_contiguousdeclare == 0 )
+            var1->v_contiguousdeclare = var2->v_contiguousdeclare;
+    else    var2->v_contiguousdeclare = var1->v_contiguousdeclare ;
 
     if ( var1->v_allocatable == 0 )
             var1->v_allocatable = var2->v_allocatable ;
@@ -1463,7 +1468,8 @@ void UpdateTheRemainingList(listvar *record)
            !strcasecmp(parcours->var->v_commonname,record->var->v_commonname)
          )
       {
-         strcpy(parcours->var->v_commoninfile,record->var->v_commoninfile);
+         if ( parcours->var != record->var )
+            strcpy(parcours->var->v_commoninfile,record->var->v_commoninfile);
          Merge_Variables(parcours->var,record->var);
       }
       parcours = parcours -> suiv;
