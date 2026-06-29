@@ -9,14 +9,41 @@
 !======================================================================
 !
 /*
- * cppdefs.h - MS3DVAR FILTER Variant Configuration
- * =================================================
+ * cppdefs.h - MS3DVAR Low Resolution (LR) Variant Configuration
+ * ==============================================================
  *
- * This is the CPP configuration file for the MS3DVAR FILTER variant.
- * It includes the minimal cppdefs_ms3dvar.h and adds FILTER-specific
- * settings.
+ * This is the CPP configuration file for the MS3DVAR LR (Low Resolution)
+ * variant. It includes :
  *
- * WHAT CHANGED (February 2026):
+ * 1. A slightly modified version of the standard Croco header
+ *    "OCEAN/croco/cppdefs.h" which is copied to 
+ *    "ASSIM/MS3DVAR/${SCALE}/cppdefs_croco.h" with on the fly 
+ *    modifications introduced at compilation stage, namely : 
+ *    - the final standard includes of "OCEAN/croco/cppdefs_dev.h" and 
+ *      "set_global_definitions.h" are removed; because these instructions
+ *      must be brought at the very end of the current final header 
+ *      "ASSIM/MS3DVAR/${SCALE}/cppdefs.h". This change is mandatory.
+ *    - The "ASSIM/MS3DVAR/${SCALE}/cppdefs_croco.h" header may be itself 
+ *      a factorized header file, in the case the user run a REGIONAL 
+ *      or COASTAL configuration. 
+ *      This is a proposal to follow @sraynaud's work. 
+ *      But this latter change is not mandatory and in any case 
+ *      it has to be decided at the Croco-dev level.
+ * 2. Very few redefinition of cpp switches, such as OPENMP,
+ *    in order to fullfill a set of mandatory MS3DVAR cpp keys.
+ * 3. An MS3DVAR cpp switch saying which scale-variant is currently active : 
+ *    DAS_FILTER, DAS_LR , DAS_MR or DAS_MS
+ * 4. The main MS3DVAR header file "ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar.h" 
+ *    with MS3DVAR CPP switches shared among all scales 
+ * 5. MS3DVAR Scale-variant specific cpp switches such as :
+ *    DAS_READ_INC,...
+ * 6. The final standard croco includes of "OCEAN/croco/cppdefs_dev.h" 
+ *    and "set_global_definitions.h" followed by the MS3DVAR final
+ *    include "ASSIM/MS3DVAR/COMMON/das_set_global_def.h"
+ *
+ * SCALE = FILTER, LR, MR or MS
+ *
+ * WHAT CHANGED (SPRING 2026):
  * -----------------------------
  * This file was refactored from 2203 lines to ~200 lines.
  * The full CROCO cppdefs.h (lines 1-2139) has been removed because
@@ -32,38 +59,45 @@
  *
  * BACKWARD COMPATIBILITY:
  * -----------------------
- * The full original file is saved as cppdefs.h.full_backup
  * All functionality is preserved - this is a restructuring, not a change.
  *
  * BENEFITS:
  * ---------
- * - 90% smaller file (2203 lines -> ~200 lines)
  * - Only shows relevant MS3DVAR options
- * - Eliminates confusion about CROCO test cases
  * - Easier to understand and maintain
  * - Reduces risk of enabling incompatible options
  */
 
 /*=====================================================================
- * CROCO STANDARD CONFIGURATION FILE
+ * CROCO STANDARD CONFIGURATION FILE INCLUDED
  *
- * The file included below is the standard croco cppdefs.h
- * to which has been removed the final include, namely
- * cppdefs_dev.h and set_global_definitions.h
+ * A slightly modified version of the standard Croco header
+ * "OCEAN/croco/cppdefs.h" is copied to 
+ * "ASSIM/MS3DVAR/${SCALE}/cppdefs_croco.h" with on the fly 
+ * modifications introduced at compilation stage, namely : 
+ *  - the final standard includes of "OCEAN/croco/cppdefs_dev.h" and 
+ *    "set_global_definitions.h" are removed; because these instructions
+ *    must be brought at the very end of the current final header 
+ *    "ASSIM/MS3DVAR/$SCALE/cppdefs.h". This change is mandatory.
+ *  - Also a factorization of  "ASSIM/MS3DVAR/$SCALE/cppdefs_croco.h" 
+ *    may itself be performed when the user either selects the REGIONAL 
+ *    or the COASTAL configuration type.
+ *    In this case, the jobcomp will modify this header file
+ *    eliminating all configuration definition lines in between 
+ *    the REGIONAL (or COASTAL) markups and replacing them by including
+ *    the user defined configuration file "ASSIM/MS3DVAR/COMMON/cppdefs_config.h"
+ *    This is ONLY A PROPOSAL to follow @sraynaud's work. 
+ *    But this latter change is NOT MANDATORY and in any case 
+ *    it has TO BE DECIDED AT the Croco-dev level.
  *
- * Also a factorization of the standard croco cppdefs.h file
- * is performed when the user either selects the REGIONAL or the
- * COASTAL configuration type.
- * In this case, the jobcomp will modify the standard croco cppdefs
- * replacing all config definition lines in between 
- * the REGIONAL (or COASTAL) markups by including
- * the user defined configuration file cppdefs_config.h
+ * SCALE = FILTER, LR, MR or MS
+ *
+ * See path "OCEAN/cppdefs.h"
+ * Copied to "ASSIM/MS3DVAR/${SCALE}/Compile/cppdefs_croco.h"
  * 
- * See path ASSIM/MS3DVAR/COMMON/cppdefs_config.h
- * Copied to  ASSIM/MS3DVAR/FILTER/Compile/cppdefs_config.h
+ * See path "ASSIM/MS3DVAR/COMMON/cppdefs_config.h"
+ * Copied to "ASSIM/MS3DVAR/${SCALE}/Compile/cppdefs_config.h"
  *
- * See path OCEAN/cppdefs.h
- * Copied to ASSIM/MS3DVAR/FILTER/Compile/cppdefs_croco.h
  *=====================================================================*/
 #include "cppdefs_croco.h"
 
