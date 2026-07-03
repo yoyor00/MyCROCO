@@ -26,10 +26,6 @@
   ininame = "sandbar_rst.nc"
 /
 
-&croco_sponge
-  x_sponge = XXX
-/
-
 &croco_wetdry
   D_wetdry = 0.1
 /
@@ -86,11 +82,6 @@
   tnu2 = 3*0.d0
 /
 
-&croco_vertical_mixing
-  Akv_bak = 0.
-  Akt_bak = 3*0.
-/
-
 &croco_lin_eos
   R0 = 30.
   T0 = 0.
@@ -99,40 +90,12 @@
   Scoef = 0.
 /
 
-&croco_diagnostics_ts
-  ldefdia = .true.
-  nwrtdia = 300
-  nrpfdia = 0
-  dianame = "sandbar_dia.nc"
-/
-
-&croco_diag_avg
-  ldefdia_avg = .true.
-  ntsdia_avg = 1
-  nwrtdia_avg = 250
-  nrpfdia_avg = 0
-  dianame_avg = "sandbar_dia_avg.nc"
-/
-
-&croco_diag_mld_dens
-  mld_crit_D = 3.d-2
-  mld_crit_T = 2.d-1
-/
-
 &croco_diags_eddy_avg
   ldefdiags_eddy_avg = .true.
   ntsdiags_eddy_avg = 1
   nwrtdiags_eddy_avg = 6000
   nrpfdiags_eddy_avg = 0
   diags_eddyname_avg = "sandbar_diags_eddy_avg.nc"
-/
-
-&croco_stations
-  ldefsta = .true.
-  nsta = 8
-  nrpfsta = 0
-  staposname = "stations.in"
-  staname = "stations.nc"
 /
 
 &croco_wave_maker
@@ -179,41 +142,18 @@
   out_his_shflx_rsw = .true.
 /
 
-&croco_salinity_history_fields
-  out_his_aks = .false.
-  out_his_swflx = .true.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .true.
-  out_his_shflx_lat = .true.
-  out_his_shflx_sen = .true.
-/
-
 &croco_hbl_history_fields
   out_his_hbl = .true.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .true.
 /
 
 &croco_vis_coef_history_fields
   out_his_visc3d = .false.
 /
 
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
 &croco_gls_history_fields
   out_his_tke = .true.
   out_his_gls = .true.
   out_his_lscale = .true.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .true.
 /
 
 &croco_sediment_history_fields
@@ -229,40 +169,6 @@
 &croco_sediment_suspload_history_fields
   out_his_sed_dflx = 2*.false.
   out_his_sed_eflx = 2*.false.
-/
-
-&croco_bbl_history_fields
-  out_his_abed = .false.
-  out_his_hripple = .false.
-  out_his_lripple = .false.
-  out_his_zbnot = .false.
-  out_his_zbapp = .false.
-  out_his_bostrw = .false.
-/
-
-&croco_wci_history_fields
-  out_his_sup = .true.
-  out_his_ust2d = .true.
-  out_his_vst2d = .true.
-/
-
-&croco_wci_history_3d_fields
-  out_his_ust = .true.
-  out_his_vst = .true.
-  out_his_wst = .true.
-  out_his_akb = .true.
-  out_his_akw = .true.
-  out_his_kvf = .true.
-  out_his_calp = .true.
-  out_his_kaps = .true.
-/
-
-&croco_diag3D_history_fields
-  out_his_dia3D_tracer = 3*.true.
-/
-
-&croco_diag2D_history_fields
-  out_his_dia2D_tracer = 3*.true.
 /
 
 &croco_primary_average_fields
@@ -297,31 +203,12 @@
   out_avg_shflx_rsw = .true.
 /
 
-&croco_salinity_averages_fields
-  out_avg_aks = .false.
-  out_avg_swflx = .true.
-/
-
-&croco_bulk_flux_averages_fields
-  out_avg_shflx_rlw = .true.
-  out_avg_shflx_lat = .true.
-  out_avg_shflx_sen = .true.
-/
-
 &croco_hbl_averages_fields
   out_avg_hbl = .true.
 /
 
-&croco_lmd_bkpp_averages_fields
-  out_avg_hbbl = .true.
-/
-
 &croco_vis_coef_averages_fields
   out_avg_visc3d = .false.
-/
-
-&croco_dif_coef_averages_fields
-  out_avg_diff3d = .false.
 /
 
 &croco_gls_averages_fields
@@ -330,29 +217,10 @@
   out_avg_lscale = .true.
 /
 
-&croco_biology_averages_fields
-  out_avg_hel = .true.
-/
-
-&croco_diag3D_average_fields
-  out_avg_dia3D_tracer = 3*.true.
-/
-
-&croco_diag2D_average_fields
-  out_avg_dia2D_tracer = 3*.true.
-/
-
 &croco_diags_eddy_average_fields
   out_avg_diags_eddy = .true.
 /
 
-&croco_station_fields
-  sta_grd = .true.
-  sta_temp = .true.
-  sta_salt = .false.
-  sta_rho = .false.
-  sta_vel = .true.
-/
 
 
 ! End of namelist

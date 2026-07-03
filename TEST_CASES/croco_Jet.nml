@@ -9,12 +9,6 @@
   ninfo = 1
 /
 
-&croco_time_stepping_nbq
-  ndtnbq = 1
-  csound_nbq = 1000
-  visc2_nbq = 100
-/
-
 &croco_s_coord
   theta_s = 5.0d0
   theta_b = 0.0d0
@@ -24,14 +18,6 @@
 &croco_initial
   nrrec = 0
   ininame = "TEST_CASES/xxxxx"
-/
-
-&croco_grid
-  grdname = "TEST_CASES/xxxxx"
-/
-
-&croco_climatology
-  clmname = "TEST_CASES/xxxxx"
 /
 
 &croco_nudging
@@ -121,44 +107,6 @@
   out_his_shflx_rsw = .false.
 /
 
-&croco_salinity_history_fields
-  out_his_aks = .false.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
-&croco_hbl_history_fields
-  out_his_hbl = .false.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .false.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .false.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
-
-&croco_morphodyn_history_fields
-  out_his_hm = .false.
-/
-
-&croco_diagM_history_fields
-  out_his_diagM_u = .true.
-  out_his_diagM_v = .true.
-/
 
 
 ! End of namelist

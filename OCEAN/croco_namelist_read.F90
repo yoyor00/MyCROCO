@@ -879,7 +879,7 @@ contains
       end if
 #endif
 
-#if defined WAVE_OFFLINE && defined MUSTANG
+#if defined WAVE_OFFLINE && (defined MUSTANG || defined BBL || defined MRL_WCI)
       ! --- croco_wave_offline (optional) ---
       call check_nml_presence(nmlunit, "croco_wave_offline", .false., found, ierr)
       if (found) then

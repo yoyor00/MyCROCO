@@ -632,11 +632,11 @@
   wmaker_fsp = 3.3
 /
 
-! --- Offline wave forcing for MUSTANG  (CPP: WAVE_OFFLINE && MUSTANG) ---
+! --- Offline wave forcing  (CPP: WAVE_OFFLINE && (MUSTANG || BBL || MRL_WCI)) ---
 
 &croco_wave_offline
-  ! CPP: WAVE_OFFLINE && MUSTANG
-  ! Offline wave forcing file used by the MUSTANG sediment model.
+  ! CPP: WAVE_OFFLINE && (MUSTANG || BBL || MRL_WCI)
+  ! Offline wave forcing file (used by MUSTANG, BBL, or MRL_WCI).
   wave_file = "CROCO_FILES/croco_wave.nc"
 /
 
@@ -867,7 +867,7 @@
   out_his_lscale = .true.   ! Turbulent length scale
 /
 
-! --- Biology / morphodynamics fields ---
+! --- Biology fields ---
 
 &croco_biology_history_fields
   ! CPP: SOLVE3D && BIOLOGY && !PISCES
@@ -887,6 +887,8 @@
   out_his_aou    = .false.   ! Apparent oxygen utilisation
   out_his_wind10 = .false.   ! 10-m wind speed
 /
+
+! --- Morphodynamics fields ---
 
 &croco_morphodyn_history_fields
   ! CPP: SOLVE3D && MORPHODYN

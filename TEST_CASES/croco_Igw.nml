@@ -28,14 +28,6 @@
   frcname = "TEST_CASES/igw_frc.nc"
 /
 
-&croco_climatology
-  clmname = "TEST_CASES/XXXX"
-/
-
-&croco_sponge
-  x_sponge = 20.e+3
-/
-
 &croco_nudging
   tauT_in = 0.05
   tauT_out = 0.05
@@ -48,13 +40,6 @@
   nwrt = 72
   nrpfhis = 0
   hisname = "igw_his.nc"
-/
-
-&croco_averages
-  ntsavg = 1
-  navg = 5760
-  nrpfavg = 0
-  avgname = "igw_avg.nc"
 /
 
 &croco_restart
@@ -139,104 +124,6 @@
   out_his_shflx_rsw = .false.
 /
 
-&croco_salinity_history_fields
-  out_his_aks = .true.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
-&croco_hbl_history_fields
-  out_his_hbl = .true.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .true.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .true.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .true.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
-
-&croco_morphodyn_history_fields
-  out_his_hm = .false.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .true.
-  out_avg_ubar = .true.
-  out_avg_vbar = .true.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .true.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 1*.true.
-/
-
-&croco_auxiliary_averages_fields
-  out_avg_rho = .false.
-  out_avg_omega = .true.
-  out_avg_w = .true.
-  out_avg_akv = .false.
-  out_avg_bostr = .true.
-  out_avg_bustr = .true.
-  out_avg_bvstr = .true.
-  out_avg_wstr = .true.
-  out_avg_ustr = .true.
-  out_avg_vstr = .false.
-/
-
-&croco_temperature_averages_fields
-  out_avg_akt = .true.
-  out_avg_shflx = .false.
-  out_avg_shflx_rsw = .false.
-/
-
-&croco_salinity_averages_fields
-  out_avg_aks = .true.
-  out_avg_swflx = .false.
-/
-
-&croco_bulk_flux_averages_fields
-  out_avg_shflx_rlw = .false.
-  out_avg_shflx_lat = .false.
-  out_avg_shflx_sen = .false.
-/
-
-&croco_hbl_averages_fields
-  out_avg_hbl = .true.
-/
-
-&croco_lmd_bkpp_averages_fields
-  out_avg_hbbl = .true.
-/
-
-&croco_vis_coef_averages_fields
-  out_avg_visc3d = .true.
-/
-
-&croco_dif_coef_averages_fields
-  out_avg_diff3d = .true.
-/
-
-&croco_biology_averages_fields
-  out_avg_hel = .false.
-/
 
 
 ! End of namelist

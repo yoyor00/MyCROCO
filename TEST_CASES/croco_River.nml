@@ -20,10 +20,6 @@
   ininame = "river_rst.nc"
 /
 
-&croco_sponge
-  x_sponge = 150.e3
-/
-
 &croco_history
   ldefhis = .true.
   nwrt = 40
@@ -60,19 +56,6 @@
 
 &croco_tracer_diff2
   tnu2 = 2*0.d0
-/
-
-&croco_vertical_mixing
-  Akv_bak = 1.e-4
-  Akt_bak = 2*1.e-6
-/
-
-&croco_lin_eos
-  R0 = 30.
-  T0 = 0.
-  S0 = 0.
-  Tcoef = -1.
-  Scoef = 0.
 /
 
 &croco_psource
@@ -133,12 +116,6 @@
   out_his_aks = .false.
 /
 
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
 &croco_hbl_history_fields
   out_his_hbl = .false.
 /
@@ -147,21 +124,6 @@
   out_his_hbbl = .false.
 /
 
-&croco_vis_coef_history_fields
-  out_his_visc3d = .false.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
-
-&croco_morphodyn_history_fields
-  out_his_hm = .false.
-/
 
 
 ! End of namelist

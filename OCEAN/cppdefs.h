@@ -1,17 +1,12 @@
-!======================================================================
-! CROCO is derived from the ROMS-AGRIF branch of ROMS.
-! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
-! from the UCLA branch (Shchepetkin et al.) and the Rutgers
-! University branch (Arango et al.), both under MIT/X style license.
-! Copyright (C) 2005-2026 CROCO Development Team
-! License: CeCILL-2.1 - see LICENSE.txt
-!
-! CROCO website : https://www.croco-ocean.org
-!======================================================================
-!
 /*
-   This is "cppdefs.h": MODEL CONFIGURATION FILE
-   ==== == ============ ===== ============= ====
+!====================================================================
+!               REGIONAL (realistic) Configurations
+!====================================================================
+!
+!----------------------
+! BASIC OPTIONS
+!----------------------
+!
 */
                       /* Configuration Name */
 # define REGIONAL
@@ -49,14 +44,17 @@
 # undef  BIOLOGY
 # undef  STATIONS
 # undef  PASSIVE_TRACER
-# undef  SEDIMENT
+# undef  SUBSTANCE
 # undef  MUSTANG
+# undef  SEDIMENT
 # undef  BBL
                       /* Stochastic and Ensemble */
 # undef STOGEN
 # undef ENSEMBLE
                       /* I/O server */
 # undef  XIOS
+                     /* Custion IO */
+# undef  FILLVAL
                       /* Calendar */
 # undef  USE_CALENDAR
                       /* dedicated croco.log file */
@@ -74,6 +72,11 @@
 #  undef  NC4PAR
 #  undef  MPI_NOLAND
 #  undef  MPI_TIME
+# endif
+                      /* Non-hydrostatic options */
+# ifdef NBQ
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
 # endif
                       /* Grid configuration */
 # define CURVGRID
@@ -230,16 +233,21 @@
 # define ANA_BTFLUX
                       /* Point Sources - Rivers */
 # undef PSOURCE
+# undef  PSOURCE_MASS
 # undef PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE
-#  undef PSOURCE_NCFILE_TS
+#  define PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
+#  undef M2FILTER_NONE
 #  define SSH_TIDES
 #  define UV_TIDES
 #  define POT_TIDES
 #  undef  TIDES_MAS
+#  ifndef UV_TIDES
+#   define OBC_REDUCED_PHYSICS
+#  endif
 #  define TIDERAMP
 # endif
 # define OBC_M2CHARACT
@@ -297,7 +305,6 @@
 # endif
 
 # undef DIAGNOSTICS_EDDY
-
 /*
 !           Applications:
 !---------------------------------
@@ -308,8 +315,8 @@
    Quasi-monotone lateral advection scheme (WENO5)
    for passive/biology/sediment tracers
 */
-# if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
-                                               || defined MUSTANG
+# if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT  \
+                            || defined SUBSTANCE || defined MUSTANG
 #  define BIO_HADV_WENO5
 # endif
                       /*   Choice of Biology models   */

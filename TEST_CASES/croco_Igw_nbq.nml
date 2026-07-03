@@ -34,14 +34,6 @@
   frcname = "TEST_CASES/igw_frc.nc"
 /
 
-&croco_climatology
-  clmname = "TEST_CASES/igw_clm.nc"
-/
-
-&croco_sponge
-  x_sponge = 20.e+3
-/
-
 &croco_nudging
   tauT_in = 0.1
   tauT_out = 100
@@ -54,13 +46,6 @@
   nwrt = 5
   nrpfhis = 0
   hisname = "igw_his.nc"
-/
-
-&croco_averages
-  ntsavg = 1
-  navg = 259200
-  nrpfavg = 0
-  avgname = "igw_avg.nc"
 /
 
 &croco_restart
@@ -145,85 +130,6 @@
   out_his_shflx_rsw = .false.
 /
 
-&croco_salinity_history_fields
-  out_his_aks = .false.
-  out_his_swflx = .false.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
-&croco_hbl_history_fields
-  out_his_hbl = .false.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .false.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .false.
-  out_avg_ubar = .false.
-  out_avg_vbar = .false.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .false.
-  out_avg_v = .false.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 1*.false.
-/
-
-&croco_auxiliary_averages_fields
-  out_avg_rho = .false.
-  out_avg_omega = .true.
-  out_avg_w = .false.
-  out_avg_akv = .false.
-  out_avg_bostr = .false.
-  out_avg_bustr = .false.
-  out_avg_bvstr = .false.
-  out_avg_wstr = .false.
-  out_avg_ustr = .false.
-  out_avg_vstr = .false.
-/
-
-&croco_temperature_averages_fields
-  out_avg_akt = .false.
-  out_avg_shflx = .false.
-  out_avg_shflx_rsw = .false.
-/
-
-&croco_salinity_averages_fields
-  out_avg_aks = .false.
-  out_avg_swflx = .false.
-/
-
-&croco_bulk_flux_averages_fields
-  out_avg_shflx_rlw = .false.
-  out_avg_shflx_lat = .false.
-  out_avg_shflx_sen = .false.
-/
-
-&croco_hbl_averages_fields
-  out_avg_hbl = .false.
-/
-
-&croco_lmd_bkpp_averages_fields
-  out_avg_hbbl = .false.
-/
-
-&croco_biology_averages_fields
-  out_avg_hel = .false.
-/
 
 
 ! End of namelist
