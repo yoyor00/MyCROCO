@@ -1003,6 +1003,8 @@ CR      write(*,*) '  0' MYID
 
  100  continue
 
+      if (may_day_flag.ne.0) ierr=1
+
 #ifdef MPI
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
