@@ -9,6 +9,14 @@
   ninfo = 1
 /
 
+&croco_use_calendar
+  start_date = "2019-01-01 00:00:00"
+  end_date = "2019-01-03 00:00:00"
+  dt_his = 24
+  dt_avg = 24
+  dt_rst = 24
+/
+
 &croco_s_coord
   theta_s = 0.0d0
   theta_b = 0d0
@@ -55,6 +63,19 @@
   gamma2 = 1.
 /
 
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 2*0.0
+/
+
+&croco_tracer_diff4
+  tnu4 = 2*0.0
+/
+
 &croco_lin_eos
   R0 = 26.65
   T0 = 10.
@@ -71,6 +92,10 @@
   sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV2_Dune.txt"
 /
 
+&croco_substance
+  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Dune.txt"
+/
+
 &croco_primary_history_fields
   out_his_zeta = .true.
   out_his_ubar = .true.
@@ -80,6 +105,10 @@
 &croco_primary_history_3d_fields
   out_his_u = .true.
   out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 2*.true.
 /
 
 &croco_auxiliary_history_fields
@@ -93,10 +122,18 @@
   out_his_vstr = .true.
 /
 
+&croco_bvf_history_fields
+  out_his_bvf = .false.
+/
+
 &croco_temperature_history_fields
   out_his_akt = .true.
   out_his_shflx = .true.
   out_his_shflx_rsw = .true.
+/
+
+&croco_salinity_history_fields
+  out_his_aks = .false.
 /
 
 &croco_hbl_history_fields
