@@ -102,7 +102,7 @@ contains
       namelist /croco_time_stepping_nbq/ csound_nbq, visc2_nbq
 #endif
 #ifdef SOLVE3D
-      namelist /croco_s_coord/ theta_s, theta_b, Tcline
+      namelist /croco_s_coord/ theta_s, theta_b, hc
 #endif
 #ifdef USE_CALENDAR
       namelist /croco_use_calendar/ start_date, end_date, &

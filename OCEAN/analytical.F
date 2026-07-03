@@ -2577,6 +2577,7 @@ C$    integer  trd, omp_get_thread_num
       end
 
       subroutine get_qshape_exp(Qshapeij, hij, hinvij)
+        use croco_namelist, only: hc
         implicit none
 # include "param.h"
 # include "scalars.h"

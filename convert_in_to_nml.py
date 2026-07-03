@@ -77,7 +77,7 @@ MAPPINGS = [
     ("time_stepping_nbq", 0, 2, "float", "&croco_time_stepping_nbq", "visc2_nbq"),
     ("S-coord", 0, 0, "float", "&croco_s_coord", "theta_s"),
     ("S-coord", 0, 1, "float", "&croco_s_coord", "theta_b"),
-    ("S-coord", 0, 2, "float", "&croco_s_coord", "Tcline"),
+    ("S-coord", 0, 2, "float", "&croco_s_coord", "hc"),
     ("start_date", 0, 0, "str", "&croco_use_calendar", "start_date"),
     ("end_date", 0, 0, "str", "&croco_use_calendar", "end_date"),
     ("output_time_steps", 0, 0, "float", "&croco_use_calendar", "dt_his"),

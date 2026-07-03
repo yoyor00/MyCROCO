@@ -118,7 +118,7 @@
   theta_b = 2.0d0
   ! Surface/bottom boundary layer width [m] where higher vertical
   ! resolution is required during S-coordinate stretching.
-  Tcline  = 200.0d0
+  hc  = 200.0d0
 /
 
 

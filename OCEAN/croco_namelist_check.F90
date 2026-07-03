@@ -142,7 +142,7 @@ contains
    !---------------------------------------------------------------------
    subroutine check_croco_s_coord(ierr)
       use param, ONLY: stdout
-      use croco_namelist, ONLY: theta_s, theta_b, Tcline
+      use croco_namelist, ONLY: theta_s, theta_b, hc
 #  if defined MPI
       use scalars, ONLY: mynode
 #  endif
@@ -167,10 +167,10 @@ contains
             ' must be positive.'
          ierr = ierr + 1
       end if
-      if (Tcline < 0.d0) then
+      if (hc < 0.d0) then
          MPI_master_only write (stdout, *) &
             'Error - S-coordinate surface/bottom layer width used in', &
-            'vertical coordinate stretching Tcline = ', Tcline, &
+            'vertical coordinate stretching hc = ', hc, &
             ' must be positive.'
          ierr = ierr + 1
       end if

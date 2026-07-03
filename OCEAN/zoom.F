@@ -1851,6 +1851,7 @@ CR      write(*,*) '  0' MYID
 !====================================================================
 !
       Subroutine Updateh(tabres,i1,i2,j1,j2,before)
+      use croco_namelist, only: hc
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1991,6 +1992,7 @@ CR      write(*,*) '  0' MYID
 !====================================================================
 !
       subroutine hinterp(tabres,i1,i2,j1,j2,before,nb,ndir)
+      use croco_namelist, only: hc
       implicit none
 # include "param.h"
 # include "grid.h"

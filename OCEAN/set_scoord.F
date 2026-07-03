@@ -12,7 +12,7 @@
 #include "cppdefs.h"
 #ifdef SOLVE3D
 
-      subroutine set_scoord     ! Input:   hmin,   Tcline,
+      subroutine set_scoord     ! Input:   hmin, hc,
 !                               !          theta_s, theta_b
 ! Define S-coordinate system.   !
 !                               ! Output:  hc, sc_w(0:N), Cs_w(0:N)
@@ -23,7 +23,7 @@
       use croco_namelist, only: ndtfast, dt, Zobt,
      &                          rdrg, rdrg2, Cdb_min, Cdb_max
 #ifdef SOLVE3D
-      use croco_namelist, only: theta_s, theta_b, Tcline
+      use croco_namelist, only: theta_s, theta_b, hc
 #endif
 # ifdef WET_DRY
       use croco_namelist, only: D_wetdry
@@ -41,7 +41,7 @@
 ! Set S-Curves in domain [-1 < sc < 0] at vertical W- and RHO-points.
 !
 # ifndef NEW_S_COORD
-      hc=min(hmin,Tcline)
+      hc=min(hmin,hc)
       cff1=1./sinh(theta_s)
       cff2=0.5/tanh(0.5*theta_s)
 
@@ -81,7 +81,6 @@
       endif
 #  endif
 # else
-      hc= Tcline
       ds=1./float(N)
       do k=1,N,+1
         sc     = ds*(float(k-N)-0.5)

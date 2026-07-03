@@ -17,7 +17,7 @@
 &croco_s_coord
   theta_s = 0.0d0
   theta_b = 0.0d0
-  Tcline = 1.d16
+  hc = 1.d16
 /
 
 &croco_initial

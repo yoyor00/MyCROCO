@@ -17,7 +17,7 @@
 &croco_s_coord
   theta_s = <theta_s>
   theta_b = <theta_b>
-  Tcline = <hc>
+  hc = <hc>
 /
 
 &croco_use_calendar

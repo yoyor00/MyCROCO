@@ -96,9 +96,11 @@ MODULE croco_namelist
    !! S-coordinate surface control parameter (stretching toward surface when > 0)
    real :: theta_b = 2.0d0
    !! S-coordinate bottom control parameter (stretching toward bottom when > 0)
-   real :: Tcline = 200.0d0
+   real :: hc = 200.0d0
    !! Width of the surface or bottom boundary layer [m] in which higher vertical
    !! resolution is required during S-coordinate stretching
+   real :: Tcline
+   !! Kept for backward-compatible NetCDF global attribute; initialized to hc after read
 #endif
 
 #ifdef USE_CALENDAR

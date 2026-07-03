@@ -79,7 +79,6 @@
 !
 ! xl, el   Physical size (m) of domain box in the XI-,ETA-directions.
 !
-! hc       S-coordinate parameter, hc=min(hmin,Tcline).
 !
 ! sc_r     S-coordinate independent variable, [-1 < sc < 0] at
 !             vertical RHO-points
@@ -138,7 +137,6 @@
       real time_avg, time2_avg
      &               , xl, el
 #ifdef SOLVE3D
-      real hc
 # ifndef M3FAST_SEDLAYERS
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
 # else
@@ -179,7 +177,6 @@
      &             time_avg, time2_avg
      &           , xl, el
 #ifdef SOLVE3D
-     &           , hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
      &           , rx0,       rx1
      &                      , weight

@@ -45,6 +45,9 @@ contains
 
       ierr = 0
       call init_time_stepping()
+#ifdef SOLVE3D
+      call init_croco_s_coord()
+#endif
 #ifdef NBQ
       call init_time_stepping_nbq()
 #endif
@@ -358,6 +361,20 @@ contains
       dtfast = dt/real(ndtfast)
 
    end subroutine init_time_stepping
+
+#ifdef SOLVE3D
+   !---------------------------------------------------------------------
+   !  init_croco_s_coord
+   !  Set Tcline = hc for backward-compatible NetCDF global attribute.
+   !---------------------------------------------------------------------
+   subroutine init_croco_s_coord()
+      use croco_namelist, ONLY: hc, Tcline
+      implicit none
+
+      Tcline = hc
+
+   end subroutine init_croco_s_coord
+#endif
 
    !---------------------------------------------------------------------
    !  init_history
