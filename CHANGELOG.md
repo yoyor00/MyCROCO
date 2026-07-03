@@ -30,6 +30,9 @@ DIAGNOSTICS :
 WET_DRY : 
 - Add the correct masking of grid stiffness ratios rx0 and rx1 (#373)
 
+- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
+           inconsistent with what done for calcite dissolution (#531)
+
 ### Changed
 
 BIOLOGY : 
