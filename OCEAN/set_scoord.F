@@ -25,6 +25,9 @@
 #ifdef SOLVE3D
       use croco_namelist, only: theta_s, theta_b, Tcline
 #endif
+# ifdef WET_DRY
+      use croco_namelist, only: D_wetdry
+# endif
       implicit none
 # include "param.h"
 # include "scalars.h"

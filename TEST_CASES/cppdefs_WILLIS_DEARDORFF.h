@@ -1,7 +1,4 @@
 # define SINGLE_COLUMN
-# define  WILLIS_DEARDORFF
-# undef  KATO_PHILLIPS
-# define  SINGLE_COLUMN
 /*
 !                       Single Column Example
 !                       ====== ====== =======

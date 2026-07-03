@@ -27,13 +27,6 @@
   hisname = "croco_his_body_rot.nc"
 /
 
-&croco_averages
-  ntsavg = 1
-  navg = 10
-  nrpfavg = 0
-  avgname = "croco_avg_body_rot.nc"
-/
-
 &croco_restart
   nrst = 720
   nrpfrst = -1
@@ -121,96 +114,6 @@
   out_his_swflx = .false.
 /
 
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
-&croco_hbl_history_fields
-  out_his_hbl = .false.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .false.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .false.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
-
-&croco_primary_average_fields
-  out_avg_zeta = .false.
-  out_avg_ubar = .false.
-  out_avg_vbar = .false.
-/
-
-&croco_primary_3d_average_fields
-  out_avg_u = .true.
-  out_avg_v = .true.
-/
-
-&croco_primary_tracer_average_fields
-  out_avg_tracer = 2*.true.
-/
-
-&croco_auxiliary_averages_fields
-  out_avg_rho = .false.
-  out_avg_omega = .false.
-  out_avg_w = .false.
-  out_avg_akv = .false.
-  out_avg_bostr = .false.
-  out_avg_bustr = .false.
-  out_avg_bvstr = .false.
-  out_avg_wstr = .false.
-  out_avg_ustr = .false.
-  out_avg_vstr = .false.
-/
-
-&croco_temperature_averages_fields
-  out_avg_akt = .false.
-  out_avg_shflx = .false.
-  out_avg_shflx_rsw = .false.
-/
-
-&croco_salinity_averages_fields
-  out_avg_aks = .false.
-  out_avg_swflx = .false.
-/
-
-&croco_bulk_flux_averages_fields
-  out_avg_shflx_rlw = .false.
-  out_avg_shflx_lat = .false.
-  out_avg_shflx_sen = .false.
-/
-
-&croco_hbl_averages_fields
-  out_avg_hbl = .false.
-/
-
-&croco_lmd_bkpp_averages_fields
-  out_avg_hbbl = .false.
-/
-
-&croco_vis_coef_averages_fields
-  out_avg_visc3d = .false.
-/
-
-&croco_dif_coef_averages_fields
-  out_avg_diff3d = .false.
-/
-
-&croco_biology_averages_fields
-  out_avg_hel = .false.
-/
 
 
 ! End of namelist

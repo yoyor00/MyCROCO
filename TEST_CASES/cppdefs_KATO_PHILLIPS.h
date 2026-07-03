@@ -1,6 +1,4 @@
 # define SINGLE_COLUMN
-# define  KATO_PHILLIPS
-# define  SINGLE_COLUMN
 /*
 !                       Single Column Example
 !                       ====== ====== =======

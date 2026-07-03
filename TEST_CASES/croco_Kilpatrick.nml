@@ -20,13 +20,6 @@
   ininame = "croco_ini.nc"
 /
 
-&croco_nudging
-  tauT_in = 1.
-  tauT_out = 360.
-  tauM_in = 3.
-  tauM_out = 360.
-/
-
 &croco_history
   ldefhis = .true.
   nwrt = 36
@@ -117,39 +110,10 @@
   out_his_shflx_rsw = .true.
 /
 
-&croco_salinity_history_fields
-  out_his_aks = .false.
-  out_his_swflx = .true.
-/
-
 &croco_bulk_flux_history_fields
   out_his_shflx_rlw = .true.
   out_his_shflx_lat = .true.
   out_his_shflx_sen = .true.
-/
-
-&croco_bvf_history_fields
-  out_his_bvf = .false.
-/
-
-&croco_hbl_history_fields
-  out_his_hbl = .true.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .true.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .false.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .true.
 /
 
 &croco_abl_history_fields
@@ -209,39 +173,10 @@
   out_avg_shflx_rsw = .true.
 /
 
-&croco_salinity_averages_fields
-  out_avg_aks = .false.
-  out_avg_swflx = .true.
-/
-
 &croco_bulk_flux_averages_fields
   out_avg_shflx_rlw = .true.
   out_avg_shflx_lat = .true.
   out_avg_shflx_sen = .true.
-/
-
-&croco_bvf_averages_fields
-  out_avg_bvf = .false.
-/
-
-&croco_hbl_averages_fields
-  out_avg_hbl = .true.
-/
-
-&croco_lmd_bkpp_averages_fields
-  out_avg_hbbl = .true.
-/
-
-&croco_vis_coef_averages_fields
-  out_avg_visc3d = .false.
-/
-
-&croco_dif_coef_averages_fields
-  out_avg_diff3d = .false.
-/
-
-&croco_biology_averages_fields
-  out_avg_hel = .true.
 /
 
 &croco_abl_averages_fields
@@ -266,6 +201,7 @@
   out_avg_abl_Hzr_abl = .true.
   out_avg_abl_Hzw_abl = .true.
 /
+
 
 
 ! End of namelist

@@ -1,6 +1,3 @@
-# define REGIONAL
-# define  BULK_FLUX
-# define  TIDES
 /*
 !====================================================================
 !               REGIONAL (realistic) Configurations
@@ -12,6 +9,7 @@
 !
 */
                       /* Configuration Name */
+# define REGIONAL
 # define BENGUELA_LR
                       /* Parallelization */
 # undef  OPENMP
@@ -37,7 +35,7 @@
                       /* Wave-current interactions */
 # undef  MRL_WCI
                       /* Open Boundary Conditions */
-# define  TIDES
+# undef  TIDES
 # define OBC_EAST
 # define OBC_WEST
 # define OBC_NORTH
@@ -46,14 +44,17 @@
 # undef  BIOLOGY
 # undef  STATIONS
 # undef  PASSIVE_TRACER
-# undef  SEDIMENT
+# undef  SUBSTANCE
 # undef  MUSTANG
+# undef  SEDIMENT
 # undef  BBL
                       /* Stochastic and Ensemble */
 # undef STOGEN
 # undef ENSEMBLE
                       /* I/O server */
 # undef  XIOS
+                     /* Custion IO */
+# undef  FILLVAL
                       /* Calendar */
 # undef  USE_CALENDAR
                       /* dedicated croco.log file */
@@ -71,6 +72,11 @@
 #  undef  NC4PAR
 #  undef  MPI_NOLAND
 #  undef  MPI_TIME
+# endif
+                      /* Non-hydrostatic options */
+# ifdef NBQ
+#  define W_HADV_WENO5
+#  define W_VADV_WENO5
 # endif
                       /* Grid configuration */
 # define CURVGRID
@@ -227,16 +233,21 @@
 # define ANA_BTFLUX
                       /* Point Sources - Rivers */
 # undef PSOURCE
+# undef  PSOURCE_MASS
 # undef PSOURCE_NCFILE
 # ifdef PSOURCE_NCFILE
-#  undef PSOURCE_NCFILE_TS
+#  define PSOURCE_NCFILE_TS
 # endif
                       /* Open Boundary Conditions */
 # ifdef TIDES
+#  undef M2FILTER_NONE
 #  define SSH_TIDES
 #  define UV_TIDES
 #  define POT_TIDES
 #  undef  TIDES_MAS
+#  ifndef UV_TIDES
+#   define OBC_REDUCED_PHYSICS
+#  endif
 #  define TIDERAMP
 # endif
 # define OBC_M2CHARACT
@@ -267,7 +278,7 @@
 # undef RESTART_DIAGS
 
 # undef DIAGNOSTICS_TS
-# undef DIAGNOSTICS_UV
+
 # ifdef DIAGNOSTICS_TS
 #  undef  DIAGNOSTICS_TS_ADV
 #  undef  DIAGNOSTICS_TS_MLD
@@ -282,14 +293,11 @@
 #  define DIAGNOSTICS_TS_ADV
 # endif
 
-# undef  DIAGNOSTICS_VRT
-# undef  DIAGNOSTICS_EK
-# ifdef DIAGNOSTICS_EK
-#  undef DIAGNOSTICS_EK_FULL
-#  undef DIAGNOSTICS_EK_MLD
-# endif
-
+# undef DIAGNOSTICS_UV
+# undef DIAGNOSTICS_VRT
+# undef DIAGNOSTICS_KE
 # undef DIAGNOSTICS_BARO
+
 # undef DIAGNOSTICS_PV
 # undef DIAGNOSTICS_DISS
 # ifdef DIAGNOSTICS_DISS
@@ -297,11 +305,6 @@
 # endif
 
 # undef DIAGNOSTICS_EDDY
-
-# undef TENDENCY
-# ifdef TENDENCY
-#  define DIAGNOSTICS_UV
-# endif
 /*
 !           Applications:
 !---------------------------------
@@ -312,8 +315,8 @@
    Quasi-monotone lateral advection scheme (WENO5)
    for passive/biology/sediment tracers
 */
-# if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT \
-                                               || defined MUSTANG
+# if defined PASSIVE_TRACER || defined BIOLOGY || defined SEDIMENT  \
+                            || defined SUBSTANCE || defined MUSTANG
 #  define BIO_HADV_WENO5
 # endif
                       /*   Choice of Biology models   */
@@ -358,10 +361,8 @@
 #  undef  key_MUSTANG_V2
 #  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
-#  undef  key_tauskin_c_upwind
 #  undef  WAVE_OFFLINE
 # endif
-
 
 #include "cppdefs_dev.h"
 #include "set_global_definitions.h"

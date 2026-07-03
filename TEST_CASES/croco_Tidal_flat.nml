@@ -28,8 +28,8 @@
   ininame = "fileini"
 /
 
-&croco_sponge
-  x_sponge = 1000.
+&croco_wetdry
+  D_wetdry = 0.1
 /
 
 &croco_nudging
@@ -130,26 +130,8 @@
   out_his_swflx = .false.
 /
 
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
 &croco_hbl_history_fields
   out_his_hbl = .true.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .true.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .true.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .true.
 /
 
 &croco_gls_history_fields
@@ -158,9 +140,6 @@
   out_his_lscale = .false.
 /
 
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
 
 
 ! End of namelist

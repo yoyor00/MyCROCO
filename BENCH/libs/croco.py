@@ -58,15 +58,63 @@ class Croco:
         self.case = config.config["cases"][case_name]
         self.variant = config.config["variants"][variant_name]
 
-        # namelist file
-        self.croco_nmlfile = "TEST_CASES/croco_%s.nml" % self.case["case"].capitalize()
-        if "nml_file" in self.case:
-            if len(self.case["nml_file"]) > 0:
-                self.croco_nmlfile = self.case["nml_file"]
+        # namelist file: must exist, but kept relative (consumed later as a
+        # CLI arg to ./croco run from the builddir, and patched in-place
+        # there - an absolute source-tree path would point at the wrong copy)
+        self.croco_nmlfile = self.resolve_case_file(
+            "nml_file",
+            "TEST_CASES/croco_%s.nml" % self.case["case"].capitalize(),
+            absolute=False,
+            must_exist=True,
+        )
+
+        # pre-resolved, single-case cppdefs.h/param.h (TEST_CASES/cppdefs_<Case>.h
+        # and TEST_CASES/param_<Case>.h by default, overridable per case in the
+        # jsonc config). Used in place of patching the master cppdefs.h/param.h
+        # when the file exists; None falls back to the legacy patch mechanism.
+        self.croco_cppdefsfile = self.resolve_case_file(
+            "cppdefs_file", "TEST_CASES/cppdefs_%s.h" % self.case["case"].capitalize()
+        )
+        self.croco_paramfile = self.resolve_case_file(
+            "param_file", "TEST_CASES/param_%s.h" % self.case["case"].capitalize()
+        )
 
         self.croco_build = JobcompCrocoSetup(
             self.config, self.dirname, self.variant["tuning_familly"]
         )
+
+    def resolve_case_file(
+        self,
+        override_key: str,
+        default_relpath: str,
+        absolute: bool = True,
+        must_exist: bool = False,
+    ) -> str:
+        """
+        Resolve an optional per-case file override (e.g. "cppdefs_file" /
+        "param_file" / "nml_file"), falling back to a default relative path
+        under croco_source_dir.
+
+        absolute: return the absolute path (for files copied as a source,
+        e.g. cppdefs_file/param_file) or the relative path as given/derived
+        (for files consumed relative to the build dir, e.g. nml_file).
+
+        must_exist: if True, a missing file is always an error, whether it
+        came from an explicit override or the auto-derived default (e.g.
+        nml_file, which should always exist). If False (default), a
+        missing AUTO-DERIVED default silently returns None (expected for
+        cases with no matching file - caller falls back to legacy
+        behavior); an explicit override is still always an error if
+        missing.
+        """
+        explicit = self.case.get(override_key)
+        relpath = explicit or default_relpath
+        abspath = os.path.join(self.config.croco_source_dir, relpath)
+        if os.path.isfile(abspath):
+            return abspath if absolute else relpath
+        if explicit or must_exist:
+            raise Exception(f"Case '{self.case_name}': {override_key} '{relpath}' not found.")
+        return None
 
     def calc_rundir(self, variant_name, case_name, restarted):
         if restarted:
@@ -159,7 +207,11 @@ class Croco:
         )
 
         # jump in & configure
-        self.croco_build.configure(command)
+        self.croco_build.configure(
+            command,
+            cppdefs_file=self.croco_cppdefsfile,
+            param_file=self.croco_paramfile,
+        )
 
     def compile(self):
         # display

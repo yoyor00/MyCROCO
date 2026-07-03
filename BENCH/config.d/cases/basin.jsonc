@@ -104,13 +104,26 @@
 
     "patches": {
       // Change the size of the mesh
-      "param.h": {
-        "mode": "replace",
-        "after": "#if defined BASIN",
-        "what": "      parameter (LLm0=60,   MMm0=50,   N=10)",
-        "by": "      parameter (LLm0=200,  MMm0=200,  N=50)",
-        "descr": "Set mesh size to (200 x 200 x 50)",
-      },
+      "param.h": [
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: LLm0 = 60",
+          "by": "      integer, parameter :: LLm0 = 200",
+          "descr": "Set LLm0 = 200",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: MMm0 = 50",
+          "by": "      integer, parameter :: MMm0 = 200",
+          "descr": "Set MMm0 = 200",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: N = 10",
+          "by": "      integer, parameter :: N = 50",
+          "descr": "Set N = 50",
+        },
+      ],
       // Change the dt
       "TEST_CASES/croco_Basin.nml": {
         "mode": "replace",
@@ -140,13 +153,26 @@
 
     "patches": {
       // Change the size of the mesh
-      "param.h": {
-        "mode": "replace",
-        "after": "#if defined BASIN",
-        "what": "      parameter (LLm0=60,   MMm0=50,   N=10)",
-        "by": "      parameter (LLm0=400,  MMm0=400,  N=100)",
-        "descr": "Set mesh size to (400 x 400 x 100)",
-      },
+      "param.h": [
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: LLm0 = 60",
+          "by": "      integer, parameter :: LLm0 = 400",
+          "descr": "Set LLm0 = 400",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: MMm0 = 50",
+          "by": "      integer, parameter :: MMm0 = 400",
+          "descr": "Set MMm0 = 400",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: N = 10",
+          "by": "      integer, parameter :: N = 100",
+          "descr": "Set N = 100",
+        },
+      ],
       // CHange the dt
       "TEST_CASES/croco_Basin.nml": {
         "mode": "replace",

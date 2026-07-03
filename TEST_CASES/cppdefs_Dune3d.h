@@ -1,14 +1,5 @@
 # define DUNE
-# undef  MUSTANG
-# define  DUNE3D
-# define  SEDIMENT
-/*
-!                       Dune test case example
-!                       ==== ==== ==== =======
-!
-*/
-/* Analytical test case (Marieu) */
-# undef  ANA_DUNE
+/* Dune test case example */
 /* 3D Dune example */
 # define  DUNE3D
 

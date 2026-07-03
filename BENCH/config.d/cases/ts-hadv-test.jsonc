@@ -21,6 +21,8 @@
       "plotphy_script_input": "croco_his_diag_adv.nc",
     },
     "nml_file": "TEST_CASES/croco_TS_adv_diag.nml",
+    "cppdefs_file": "TEST_CASES/cppdefs_TS_adv_diag.h",
+    "param_file": "TEST_CASES/param_TS_adv_diag.h",
     "check_outputs": ["croco_his_diag_adv.nc"],
     "unsupported": ["restart", "openmp"],
   },

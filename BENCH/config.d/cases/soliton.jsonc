@@ -29,13 +29,20 @@
     },
     "patches": {
       // Change the size of the mesh
-      "param.h": {
-        "mode": "replace",
-        "after": "#elif defined SOLITON",
-        "what": "      parameter (LLm0=96,   MMm0=32,   N=10)",
-        "by": "      parameter (LLm0=960,  MMm0=320,  N=10)",
-        "descr": "Set mesh size to (960 x 320 x 10)",
-      },
+      "param.h": [
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: LLm0 = 96",
+          "by": "      integer, parameter :: LLm0 = 960",
+          "descr": "Set LLm0 = 960",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: MMm0 = 32",
+          "by": "      integer, parameter :: MMm0 = 320",
+          "descr": "Set MMm0 = 320",
+        },
+      ],
       // CHange the dt
       "TEST_CASES/croco_Soliton.nml": [
         {

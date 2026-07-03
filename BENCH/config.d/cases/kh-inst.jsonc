@@ -10,6 +10,8 @@
       "plotphy_script_input": "khinst_his.nc",
     },
     "nml_file": "TEST_CASES/croco_KH_INST.nml",
+    "cppdefs_file": "TEST_CASES/cppdefs_KH_INST.h",
+    "param_file": "TEST_CASES/param_KH_INST.h",
     "check_outputs": ["khinst_his.nc"],
     "unsupported": ["openmp"],
   },

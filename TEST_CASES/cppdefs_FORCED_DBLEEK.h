@@ -1,7 +1,4 @@
 # define SINGLE_COLUMN
-# define  FORCED_DBLEEK
-# undef  KATO_PHILLIPS
-# define  SINGLE_COLUMN
 /*
 !                       Single Column Example
 !                       ====== ====== =======

@@ -1,9 +1,5 @@
 # define RIVER
-# define  PSOURCE_MASS
-/*
-!                       River run-off test problem
-!                       ==========================
-*/
+/* River run-off test problem */
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
@@ -26,7 +22,7 @@
 # define LMD_RIMIX
 # define LMD_CONVEC
 # define PSOURCE
-# define  PSOURCE_MASS
+# define PSOURCE_MASS
 # define ANA_PSOURCE
 # define NS_PERIODIC
 # define NO_FRCFILE

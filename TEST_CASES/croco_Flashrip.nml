@@ -26,12 +26,8 @@
   ininame = "rip_rst.nc"
 /
 
-&croco_grid
-  grdname = "rip_grd.nc"
-/
-
-&croco_sponge
-  x_sponge = XXX
+&croco_wetdry
+  D_wetdry = 0.05
 /
 
 &croco_nudging
@@ -90,14 +86,6 @@
   Scoef = 0.
 /
 
-&croco_diags_eddy_avg
-  ldefdiags_eddy_avg = .true.
-  ntsdiags_eddy_avg = 1
-  nwrtdiags_eddy_avg = 1040
-  nrpfdiags_eddy_avg = 0
-  diags_eddyname_avg = "rip_diags_eddy_avg.nc"
-/
-
 &croco_wave_maker
   wmaker_amp = 0.24
   wmaker_prd = 13.
@@ -128,50 +116,18 @@
   out_his_vstr = .false.
 /
 
-&croco_temperature_history_fields
-  out_his_akt = .false.
-  out_his_shflx = .false.
-  out_his_shflx_rsw = .false.
-/
-
-&croco_salinity_history_fields
-  out_his_aks = .false.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
 &croco_hbl_history_fields
   out_his_hbl = .false.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .false.
 /
 
 &croco_vis_coef_history_fields
   out_his_visc3d = .false.
 /
 
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
 &croco_gls_history_fields
   out_his_tke = .true.
   out_his_gls = .false.
   out_his_lscale = .false.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
-
-&croco_morphodyn_history_fields
-  out_his_hm = .false.
 /
 
 &croco_primary_average_fields
@@ -196,36 +152,12 @@
   out_avg_vstr = .false.
 /
 
-&croco_temperature_averages_fields
-  out_avg_akt = .false.
-  out_avg_shflx = .false.
-  out_avg_shflx_rsw = .false.
-/
-
-&croco_salinity_averages_fields
-  out_avg_aks = .false.
-/
-
-&croco_bulk_flux_averages_fields
-  out_avg_shflx_rlw = .false.
-  out_avg_shflx_lat = .false.
-  out_avg_shflx_sen = .false.
-/
-
 &croco_hbl_averages_fields
   out_avg_hbl = .false.
 /
 
-&croco_lmd_bkpp_averages_fields
-  out_avg_hbbl = .false.
-/
-
 &croco_vis_coef_averages_fields
   out_avg_visc3d = .false.
-/
-
-&croco_dif_coef_averages_fields
-  out_avg_diff3d = .false.
 /
 
 &croco_gls_averages_fields
@@ -234,17 +166,6 @@
   out_avg_lscale = .false.
 /
 
-&croco_biology_averages_fields
-  out_avg_hel = .false.
-/
-
-&croco_morphodyn_averages_fields
-  out_avg_hm = .false.
-/
-
-&croco_diags_eddy_average_fields
-  out_avg_diags_eddy = .true.
-/
 
 
 ! End of namelist

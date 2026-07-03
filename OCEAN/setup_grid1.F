@@ -26,6 +26,12 @@ C$    integer omp_get_thread_num
 #ifdef WKB_WWAVE
       use croco_namelist, ONLY: wkb_tide
 #endif
+#ifdef WET_DRY
+      use croco_namelist, ONLY: D_wetdry
+#endif
+#ifdef WAVE_DRY
+      use croco_namelist, ONLY: D_wavedry
+#endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
 #ifdef WET_DRY

@@ -63,9 +63,17 @@
   gamma2 = 1.
 /
 
-&croco_vertical_mixing
-  Akv_bak = 0.d0
-  Akt_bak = 2*0.d0
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 2*0.0
+/
+
+&croco_tracer_diff4
+  tnu4 = 2*0.0
 /
 
 &croco_lin_eos
@@ -114,6 +122,10 @@
   out_his_vstr = .true.
 /
 
+&croco_bvf_history_fields
+  out_his_bvf = .false.
+/
+
 &croco_temperature_history_fields
   out_his_akt = .true.
   out_his_shflx = .true.
@@ -124,36 +136,14 @@
   out_his_aks = .false.
 /
 
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .true.
-  out_his_shflx_lat = .true.
-  out_his_shflx_sen = .true.
-/
-
 &croco_hbl_history_fields
   out_his_hbl = .true.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .true.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .false.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
 /
 
 &croco_gls_history_fields
   out_his_tke = .true.
   out_his_gls = .true.
   out_his_lscale = .true.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .true.
 /
 
 &croco_morphodyn_history_fields
@@ -174,6 +164,7 @@
   out_his_sed_bdlu = 1*.true.
   out_his_sed_bdlv = 1*.true.
 /
+
 
 
 ! End of namelist

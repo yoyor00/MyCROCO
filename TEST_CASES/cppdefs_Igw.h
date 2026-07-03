@@ -1,10 +1,5 @@
 # define IGW
-# undef  NBQ
-# define  IGW
-/*
-!                  COMODO Internal Tide Example
-!                  ====== ======== ==== =======
-!
+/* COMODO Internal Tide Example
 ! Pichon, A., 2007: Tests academiques de maree, Rapport interne n 21 du 19 octobre 2007,
 ! Service Hydrographique et Oceanographique de la Marine.
 */

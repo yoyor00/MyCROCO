@@ -1,9 +1,4 @@
 # define SED_TOY
-# undef  SEDIMENT
-# undef  SED_TOY_ROUSE
-# define  MUSTANG
-# define  SED_TOY_FLOC_1D
-# define  SED_TOY
 /*
 !                       SED TOY (1D Single Column example)
 !                       === === === ====== ====== ========

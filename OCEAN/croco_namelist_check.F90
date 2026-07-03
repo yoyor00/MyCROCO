@@ -59,6 +59,9 @@ contains
 #ifdef BODYFORCE
       call check_bodyforce(ierr)
 #endif
+#ifdef WET_DRY
+      call check_wetdry(ierr)
+#endif
 #ifdef ANA_PSOURCE
       call check_psource(ierr)
 #endif
@@ -282,6 +285,41 @@ contains
 
    end subroutine check_bodyforce
 #endif /* BODYFORCE */
+
+#ifdef WET_DRY
+   !---------------------------------------------------------------------
+   !  check_wetdry
+   !---------------------------------------------------------------------
+   subroutine check_wetdry(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: D_wetdry
+#if defined MRL_WCI && defined WAVE_DRY
+      use croco_namelist, ONLY: D_wavedry
+#endif
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      if (D_wetdry <= 0.0) then
+         MPI_master_only write (stdout, '(a,f12.4,a)') &
+            'Error - Critical wetting/drying depth D_wetdry = ', D_wetdry, &
+            ' must be positive.'
+         ierr = ierr + 1
+      end if
+
+#if defined MRL_WCI && defined WAVE_DRY
+      if (D_wavedry <= D_wetdry) then
+         MPI_master_only write (stdout, '(a,f12.4,a,f12.4)') &
+            'Error - Wave-drying depth D_wavedry = ', D_wavedry, &
+            ' must exceed critical wetting/drying depth D_wetdry = ', D_wetdry
+         ierr = ierr + 1
+      end if
+#endif
+
+   end subroutine check_wetdry
+#endif /* WET_DRY */
 
 #ifdef ANA_PSOURCE
    !---------------------------------------------------------------------

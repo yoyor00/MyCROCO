@@ -188,6 +188,19 @@
   x_sponge = 0.0
 /
 
+&croco_wetdry
+  ! CPP: WET_DRY
+  ! Critical depth for wetting/drying cells [m].
+  D_wetdry = 0.2
+/
+
+&croco_wavedry
+  ! CPP: MRL_WCI && WAVE_DRY
+  ! Minimum water depth above which wave forcing is applied [m]
+  ! (should be > D_wetdry when WET_DRY is also active).
+  D_wavedry = 1.0
+/
+
 &croco_nudging
   ! CPP: any of T_FRC_BRY, M2_FRC_BRY, M3_FRC_BRY, Z_FRC_BRY,
   !       W_FRC_BRY, NBQ_FRC_BRY, TCLIMATOLOGY, M2CLIMATOLOGY,
@@ -619,11 +632,11 @@
   wmaker_fsp = 3.3
 /
 
-! --- Offline wave forcing for MUSTANG  (CPP: WAVE_OFFLINE && MUSTANG) ---
+! --- Offline wave forcing  (CPP: WAVE_OFFLINE && (MUSTANG || BBL || MRL_WCI)) ---
 
 &croco_wave_offline
-  ! CPP: WAVE_OFFLINE && MUSTANG
-  ! Offline wave forcing file used by the MUSTANG sediment model.
+  ! CPP: WAVE_OFFLINE && (MUSTANG || BBL || MRL_WCI)
+  ! Offline wave forcing file (used by MUSTANG, BBL, or MRL_WCI).
   wave_file = "CROCO_FILES/croco_wave.nc"
 /
 
@@ -854,7 +867,7 @@
   out_his_lscale = .true.   ! Turbulent length scale
 /
 
-! --- Biology / morphodynamics fields ---
+! --- Biology fields ---
 
 &croco_biology_history_fields
   ! CPP: SOLVE3D && BIOLOGY && !PISCES
@@ -874,6 +887,8 @@
   out_his_aou    = .false.   ! Apparent oxygen utilisation
   out_his_wind10 = .false.   ! 10-m wind speed
 /
+
+! --- Morphodynamics fields ---
 
 &croco_morphodyn_history_fields
   ! CPP: SOLVE3D && MORPHODYN

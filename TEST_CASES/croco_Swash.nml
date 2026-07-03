@@ -26,8 +26,8 @@
   ininame = "swash_rst.nc"
 /
 
-&croco_sponge
-  x_sponge = XXX
+&croco_wetdry
+  D_wetdry = 0.001
 /
 
 &croco_nudging
@@ -82,11 +82,6 @@
   tnu2 = 1*0.d0
 /
 
-&croco_vertical_mixing
-  Akv_bak = 1.e-6
-  Akt_bak = 1*1.e-6
-/
-
 &croco_lin_eos
   R0 = 30.
   T0 = 0.
@@ -137,44 +132,18 @@
   out_his_shflx_rsw = .false.
 /
 
-&croco_salinity_history_fields
-  out_his_aks = .false.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
 &croco_hbl_history_fields
   out_his_hbl = .false.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .false.
 /
 
 &croco_vis_coef_history_fields
   out_his_visc3d = .true.
 /
 
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
 &croco_gls_history_fields
   out_his_tke = .true.
   out_his_gls = .false.
   out_his_lscale = .true.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
-
-&croco_morphodyn_history_fields
-  out_his_hm = .false.
 /
 
 &croco_primary_average_fields
@@ -211,17 +180,6 @@
   out_avg_shflx_rsw = .false.
 /
 
-&croco_salinity_averages_fields
-  out_avg_aks = .false.
-  out_avg_swflx = .false.
-/
-
-&croco_bulk_flux_averages_fields
-  out_avg_shflx_rlw = .false.
-  out_avg_shflx_lat = .false.
-  out_avg_shflx_sen = .false.
-/
-
 &croco_bvf_averages_fields
   out_avg_bvf = .false.
 /
@@ -230,16 +188,8 @@
   out_avg_hbl = .false.
 /
 
-&croco_lmd_bkpp_averages_fields
-  out_avg_hbbl = .false.
-/
-
 &croco_vis_coef_averages_fields
   out_avg_visc3d = .true.
-/
-
-&croco_dif_coef_averages_fields
-  out_avg_diff3d = .false.
 /
 
 &croco_gls_averages_fields
@@ -248,9 +198,6 @@
   out_avg_lscale = .true.
 /
 
-&croco_biology_averages_fields
-  out_avg_hel = .false.
-/
 
 
 ! End of namelist

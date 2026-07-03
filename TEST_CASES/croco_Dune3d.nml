@@ -9,14 +9,6 @@
   ninfo = 10
 /
 
-&croco_use_calendar
-  start_date = "2019-01-01 00:00:00"
-  end_date = "2019-01-03 00:00:00"
-  dt_his = 24
-  dt_avg = 24
-  dt_rst = 24
-/
-
 &croco_s_coord
   theta_s = 0.0d0
   theta_b = 0.0d0
@@ -75,14 +67,6 @@
   sedname = "TEST_CASES/sediment_dune.in"
 /
 
-&croco_sediments_mustang
-  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV2_Dune.txt"
-/
-
-&croco_substance
-  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Dune.txt"
-/
-
 &croco_primary_history_fields
   out_his_zeta = .true.
   out_his_ubar = .true.
@@ -115,41 +99,14 @@
   out_his_shflx_rsw = .true.
 /
 
-&croco_salinity_history_fields
-  out_his_aks = .false.
-  out_his_swflx = .true.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .true.
-  out_his_shflx_lat = .true.
-  out_his_shflx_sen = .true.
-/
-
 &croco_hbl_history_fields
   out_his_hbl = .true.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .true.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .false.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
 /
 
 &croco_gls_history_fields
   out_his_tke = .true.
   out_his_gls = .true.
   out_his_lscale = .true.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .true.
 /
 
 &croco_sediment_history_fields
@@ -166,6 +123,7 @@
   out_his_sed_bdlu = 2*.true.
   out_his_sed_bdlv = 2*.true.
 /
+
 
 
 ! End of namelist

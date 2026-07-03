@@ -1,16 +1,5 @@
 # define DUNE
-# undef  MUSTANG
-# define  SEDIMENT
-/*
-!                       Dune test case example
-!                       ==== ==== ==== =======
-!
-*/
-/* Analytical test case (Marieu) */
-# undef  ANA_DUNE
-/* 3D Dune example */
-# undef  DUNE3D
-
+/* Dune test case example */
 # undef  OPENMP
 # undef  MPI
 # define M2FILTER_NONE

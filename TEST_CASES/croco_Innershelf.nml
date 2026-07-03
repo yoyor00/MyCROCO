@@ -82,34 +82,6 @@
   Scoef = 0.78d0
 /
 
-&croco_diagnostics_ts
-  ldefdia = .false.
-  nwrtdia = 5760
-  nrpfdia = -1
-  dianame = "croco_diags.nc"
-/
-
-&croco_diag_avg
-  ldefdia_avg = .true.
-  ntsdia_avg = 1
-  nwrtdia_avg = 576
-  nrpfdia_avg = 0
-  dianame_avg = "croco_diags_avg.nc"
-/
-
-&croco_diag_mld_dens
-  mld_crit_D = 3.d-2
-  mld_crit_T = 2.d-1
-/
-
-&croco_stations
-  ldefsta = .true.
-  nsta = 24
-  nrpfsta = 0
-  staposname = "stations.in"
-  staname = "stations.nc"
-/
-
 &croco_primary_history_fields
   out_his_zeta = .true.
   out_his_ubar = .true.
@@ -142,40 +114,6 @@
   out_his_akt = .true.
   out_his_shflx = .false.
   out_his_shflx_rsw = .false.
-/
-
-&croco_salinity_history_fields
-  out_his_aks = .false.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
-&croco_hbl_history_fields
-  out_his_hbl = .false.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .false.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .false.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
-
-&croco_morphodyn_history_fields
-  out_his_hm = .false.
 /
 
 &croco_primary_average_fields
@@ -212,47 +150,6 @@
   out_avg_shflx_rsw = .false.
 /
 
-&croco_salinity_averages_fields
-  out_avg_aks = .false.
-/
-
-&croco_bulk_flux_averages_fields
-  out_avg_shflx_rlw = .false.
-  out_avg_shflx_lat = .false.
-  out_avg_shflx_sen = .false.
-/
-
-&croco_hbl_averages_fields
-  out_avg_hbl = .false.
-/
-
-&croco_lmd_bkpp_averages_fields
-  out_avg_hbbl = .false.
-/
-
-&croco_vis_coef_averages_fields
-  out_avg_visc3d = .false.
-/
-
-&croco_dif_coef_averages_fields
-  out_avg_diff3d = .false.
-/
-
-&croco_biology_averages_fields
-  out_avg_hel = .false.
-/
-
-&croco_morphodyn_averages_fields
-  out_avg_hm = .false.
-/
-
-&croco_station_fields
-  sta_grd = .true.
-  sta_temp = .true.
-  sta_salt = .false.
-  sta_rho = .false.
-  sta_vel = .true.
-/
 
 
 ! End of namelist

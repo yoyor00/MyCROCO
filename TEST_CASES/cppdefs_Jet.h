@@ -39,7 +39,6 @@
 # ifdef  LMD_MIXING
 #  undef  ANA_VMIX
 #  define ANA_SRFLUX
-#  undef  LMD_KPP
 #  define LMD_RIMIX
 #  define LMD_CONVEC
 # endif

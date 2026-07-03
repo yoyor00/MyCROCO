@@ -28,6 +28,8 @@
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "patches": {},
     "nml_file": "TEST_CASES/croco_Igw_nbq.nml",
+    "cppdefs_file": "TEST_CASES/cppdefs_Igw_nbq.h",
+    "param_file": "TEST_CASES/param_Igw_nbq.h",
     "check_outputs": ["igw_his.nc"],
     "unsupported": ["restart", "openmp"],
   },

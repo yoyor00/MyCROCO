@@ -9,12 +9,6 @@
   ninfo = 1
 /
 
-&croco_time_stepping_nbq
-  ndtnbq = 1
-  csound_nbq = 200
-  visc2_nbq = 1.
-/
-
 &croco_s_coord
   theta_s = 1.0d0
   theta_b = 0.0d0
@@ -32,10 +26,6 @@
 
 &croco_climatology
   clmname = "TEST_CASES/VORTEX/vortex_clm.nc"
-/
-
-&croco_sponge
-  x_sponge = 150.e3
 /
 
 &croco_nudging
@@ -130,39 +120,6 @@
   out_his_shflx_rsw = .false.
 /
 
-&croco_salinity_history_fields
-  out_his_aks = .false.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .false.
-  out_his_shflx_lat = .false.
-  out_his_shflx_sen = .false.
-/
-
-&croco_hbl_history_fields
-  out_his_hbl = .false.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .false.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .false.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .false.
-/
-
-&croco_morphodyn_history_fields
-  out_his_hm = .false.
-/
 
 
 ! End of namelist

@@ -105,39 +105,10 @@
   out_his_shflx_rsw = .true.
 /
 
-&croco_salinity_history_fields
-  out_his_aks = .false.
-/
-
-&croco_bulk_flux_history_fields
-  out_his_shflx_rlw = .true.
-  out_his_shflx_lat = .true.
-  out_his_shflx_sen = .true.
-/
-
-&croco_hbl_history_fields
-  out_his_hbl = .false.
-/
-
-&croco_lmd_bkpp_history_fields
-  out_his_hbbl = .false.
-/
-
-&croco_vis_coef_history_fields
-  out_his_visc3d = .false.
-/
-
-&croco_dif_coef_history_fields
-  out_his_diff3d = .false.
-/
-
-&croco_biology_history_fields
-  out_his_hel = .true.
-/
-
 &croco_morphodyn_history_fields
   out_his_hm = .true.
 /
+
 
 
 ! End of namelist

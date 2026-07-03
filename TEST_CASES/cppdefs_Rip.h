@@ -1,10 +1,4 @@
 # define RIP
-# undef  GRANDPOPO
-# undef  WAVE_MAKER
-# undef  NBQ
-# undef  BISCA
-# undef  RIP_TOPO_2D
-# define  RIP
 /*
 !                       Rip Current Example
 !                       === ======= =======

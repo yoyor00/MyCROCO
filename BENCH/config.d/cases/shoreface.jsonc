@@ -10,6 +10,8 @@
       "plotphy_script_input": "shoreface_his.nc",
     },
     "nml_file": "TEST_CASES/croco_ShoreFace.nml",
+    "cppdefs_file": "TEST_CASES/cppdefs_ShoreFace.h",
+    "param_file": "TEST_CASES/param_ShoreFace.h",
     "check_outputs": ["shoreface_his.nc"],
     "unsupported": ["openmp"],
   },

@@ -1,8 +1,5 @@
 # define RIP
-# undef  WAVE_MAKER
-# undef  NBQ
 # define  TIDES
-# define  RIP
 /*
 !                       Rip Current Example
 !                       === ======= =======
