@@ -84,9 +84,6 @@ MODULE croco_namelist
    !! Name of restart file
 
 #ifdef NBQ
-   ! &croco_time_stepping_nbq
-   integer :: ndtnbq = 1
-   !! Number of non-hydrostatic (NBQ) sub-steps per baroclinic time step
    real    :: csound_nbq = 1000.0
    !! Speed of sound used in the NBQ solver [m/s]
    real    :: visc2_nbq = 0.01

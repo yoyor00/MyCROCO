@@ -15,8 +15,6 @@
       common /nbq_M2bc/ M2bc_nbq_flag
 
 !**********************************************************************
-      integer iteration_nbq_max
-      common /nbq_var1/ iteration_nbq_max
       integer iteration_nbq
       common /nbq_var2/ iteration_nbq
       integer ifl_nbq

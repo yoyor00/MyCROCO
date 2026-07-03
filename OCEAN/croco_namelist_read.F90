@@ -99,7 +99,7 @@ contains
       namelist /croco_initial/ nrrec, ininame
       namelist /croco_restart/ nrst, nrpfrst, rstname
 #ifdef NBQ
-      namelist /croco_time_stepping_nbq/ ndtnbq, csound_nbq, visc2_nbq
+      namelist /croco_time_stepping_nbq/ csound_nbq, visc2_nbq
 #endif
 #ifdef SOLVE3D
       namelist /croco_s_coord/ theta_s, theta_b, Tcline

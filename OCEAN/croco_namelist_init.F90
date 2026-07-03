@@ -1010,15 +1010,10 @@ contains
    !  init_time_stepping_nbq
    !  Propagate dtfast into the NBQ common block.
    !
-   !  NOTE 1: ndtnbq is intentionally forced to 1 here regardless of the
-   !          namelist value.  The substep ratio is always 1 at startup;
-   !          the namelist variable is reserved for future dynamic use.
-   !          This behaviour is documented in the namelist declaration.
-   !  NOTE 2: the COMMON block is legacy; it should eventually be replaced
+   !  NOTE : the COMMON block is legacy; it should eventually be replaced
    !          by a proper module variable.
    !---------------------------------------------------------------------
    subroutine init_time_stepping_nbq()
-      use croco_namelist, ONLY: ndtnbq
       use scalars, ONLY: dtfast
       implicit none
 
@@ -1026,7 +1021,6 @@ contains
       common/time_nbq2/dtnbq   ! TODO: replace with module variable
 
       dtnbq = dtfast
-      ndtnbq = 1   ! reset: substep ratio is always 1 at init
 
    end subroutine init_time_stepping_nbq
 #endif /* NBQ */

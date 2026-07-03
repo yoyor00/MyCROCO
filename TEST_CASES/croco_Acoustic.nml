@@ -10,7 +10,6 @@
 /
 
 &croco_time_stepping_nbq
-  ndtnbq = 1
   csound_nbq = 1500
   visc2_nbq = 0.
 /

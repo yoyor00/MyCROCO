@@ -73,7 +73,6 @@ MAPPINGS = [
     ("time_stepping", 0, 1, "float", "&croco_time_stepping", "dt"),
     ("time_stepping", 0, 2, "int", "&croco_time_stepping", "ndtfast"),
     ("time_stepping", 0, 3, "int", "&croco_time_stepping", "ninfo"),
-    ("time_stepping_nbq", 0, 0, "int", "&croco_time_stepping_nbq", "ndtnbq"),
     ("time_stepping_nbq", 0, 1, "float", "&croco_time_stepping_nbq", "csound_nbq"),
     ("time_stepping_nbq", 0, 2, "float", "&croco_time_stepping_nbq", "visc2_nbq"),
     ("S-coord", 0, 0, "float", "&croco_s_coord", "theta_s"),

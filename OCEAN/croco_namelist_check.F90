@@ -108,18 +108,12 @@ contains
    !---------------------------------------------------------------------
    subroutine check_time_stepping_nbq(ierr)
       use param, ONLY: stdout
-      use croco_namelist, ONLY: ndtnbq, csound_nbq, visc2_nbq
+      use croco_namelist, ONLY: csound_nbq, visc2_nbq
 #  if defined MPI
       use scalars, ONLY: mynode
 #  endif
       implicit none
       integer, intent(inout) :: ierr
-
-      if (ndtnbq <= 0) then
-         MPI_master_only write (stdout, '(a,i0)') &
-            'Error - NBQ acoustic substep ratio ndtnbq must be > 0: ', ndtnbq
-         ierr = ierr + 1
-      end if
 
       if (csound_nbq > 1500.0) then
          MPI_master_only write (stdout, '(a,f12.4,a)') &
@@ -251,8 +245,16 @@ contains
       !       ' must be in [0, 1].'
       !    ierr = ierr + 1
       ! end if
-      ! TODO Check this, in SANDBAR, wkb_roller is 1.8...
-      ! not coherent with comment in read_inp.F
+      ! TODO Check this, in SANDBAR, wkb_roller is 1.8..., cf work_item #533
+      ! not coherent with comment in read_inp.F : 
+      !     # ifdef WAVE_ROLLER
+      !           MPI_master_only write(stdout,'(/1x,A,2(/3x,f10.4,2x,A))')
+      !      &  'Svenden (1984) surface roller model parameters.',
+      !      &   wkb_rsb,   'wkb_rsb     sin(beta) roller dissipation',
+      !      &   wkb_roller,'wkb_roller  breaking contrib to roller: [0,1]'
+      !     # endif
+
+
 
    end subroutine check_wkb_roller
 #endif /* WKB_WWAVE && WAVE_ROLLER */

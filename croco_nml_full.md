@@ -77,8 +77,6 @@
 &croco_time_stepping_nbq
   ! CPP: NBQ
   ! Non-hydrostatic (NBQ) acoustic sub-stepping parameters.
-  ! Number of NBQ sub-steps per baroclinic step.
-  ndtnbq     = 1
   ! Speed of sound used in the NBQ pressure solver [m/s].
   csound_nbq = 1000.0
   ! Laplacian viscosity coefficient for the NBQ pressure solver [m2/s].

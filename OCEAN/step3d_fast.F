@@ -120,7 +120,7 @@ C$    trd=omp_get_thread_num()
 !
       use croco_namelist, only: dt, rho0, rdrg, rdrg2, Cdb_min, Cdb_max
 # ifdef NBQ
-      use croco_namelist, only: ndtnbq, csound_nbq, visc2_nbq
+      use croco_namelist, only: csound_nbq, visc2_nbq
 # endif
 # ifdef CVTK_DEBUG
       USE debug
@@ -3193,7 +3193,7 @@ C$OMP END MASTER
           do j=Jstr,Jend              
             do i=Istr,Iend
               rw_nbq(i,j,k)=((qdmw_nbq(i,j,k)-rw_nbq(i,j,k))
-     &                              /dtnbq-ndtnbq*rw_int_nbq(i,j,k))
+     &                              /dtnbq-rw_int_nbq(i,j,k))
      &                                            /(pm(i,j)*pn(i,j))
             enddo
           enddo
