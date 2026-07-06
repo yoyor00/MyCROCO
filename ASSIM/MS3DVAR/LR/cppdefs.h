@@ -18,44 +18,35 @@
  * 1. A slightly modified version of the standard Croco header
  *    "OCEAN/croco/cppdefs.h" which is copied to 
  *    "ASSIM/MS3DVAR/${SCALE}/cppdefs_croco.h" with on the fly 
- *    modifications introduced at compilation stage, namely : 
+ *    modifications introduced at the compilation stage, namely : 
  *    - the final standard includes of "OCEAN/croco/cppdefs_dev.h" and 
- *      "set_global_definitions.h" are removed; because these instructions
- *      must be brought at the very end of the current final header 
- *      "ASSIM/MS3DVAR/${SCALE}/cppdefs.h". This change is mandatory.
- *    - The "ASSIM/MS3DVAR/${SCALE}/cppdefs_croco.h" header may be itself 
- *      a factorized header file, in the case the user run a REGIONAL 
- *      or COASTAL configuration. 
- *      This is a proposal to follow @sraynaud's work. 
- *      But this latter change is not mandatory and in any case 
- *      it has to be decided at the Croco-dev level.
- * 2. Very few redefinition of cpp switches, such as OPENMP,
- *    in order to fullfill a set of mandatory MS3DVAR cpp keys.
- * 3. An MS3DVAR cpp switch saying which scale-variant is currently active : 
- *    DAS_FILTER, DAS_LR , DAS_MR or DAS_MS
- * 4. The main MS3DVAR header file "ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar.h" 
- *    with MS3DVAR CPP switches shared among all scales 
- * 5. MS3DVAR Scale-variant specific cpp switches such as :
+ *      "set_global_definitions.h" are removed; because to be effective
+ *      it is mandatory for those two instructions to be brought 
+ *      at the very end of the current cppdefs header file
+ *      "ASSIM/MS3DVAR/${SCALE}/cppdefs.h". 
+ * 2. The definition of the MS3DVAR CPP switch saying which 
+ *    scale-variant is currently active : DAS_FILTER or DAS_LR or 
+ *    DAS_MR or DAS_MS.
+ * 3. The core MS3DVAR header file "ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar.h" 
+ *    which performs :
+ *    - the redefinition of a very small number of Croco CPP keys in order
+ *      to fullfill the current set of mandatory MS3DVAR CPP keys, e.g.,
+ *      defining OPENMP, undefing MPI.
+ *    - the definition of the core MS3DVAR CPP switches basically 
+ *      shared among all scales. 
+ * 4. The Specific MS3DVAR Scale-variant CPP switches such as :
  *    DAS_READ_INC,...
- * 6. The final standard croco includes of "OCEAN/croco/cppdefs_dev.h" 
- *    and "set_global_definitions.h" followed by the MS3DVAR final
- *    include "ASSIM/MS3DVAR/COMMON/das_set_global_def.h"
+ * 5. At the very end, the mandatory final standard Croco cppdefs includes 
+ *    of "OCEAN/croco/cppdefs_dev.h" and "set_global_definitions.h" 
+ *    followed by the MS3DVAR mandatory final include 
+ *    "ASSIM/MS3DVAR/COMMON/das_set_global_def.h".
  *
- * SCALE = FILTER, LR, MR or MS
+ * where the $SCALE parameter refer to either FILTER, LR, MR or MS scale.
  *
  * WHAT CHANGED (SPRING 2026):
  * -----------------------------
  * This file was refactored from 2203 lines to ~200 lines.
- * The full CROCO cppdefs.h (lines 1-2139) has been removed because
- * MS3DVAR only needs ~5 CROCO defines + ~60 DAS_* defines.
- *
- * Old structure: cppdefs.h (2203 lines)
- *   - Lines 1-2139: Full CROCO config (test cases, physics, biology, etc.)
- *   - Lines 2142-2203: MS3DVAR-specific (DAS_*) defines
- *
- * New structure: cppdefs.h (this file, ~200 lines)
- *   - Include ../COMMON/cppdefs_ms3dvar.h (minimal core + DAS_* defines)
- *   - Add LR variant-specific overrides below
+ * The full CROCO cppdefs.h (lines 1-2139) has been removed
  *
  * BACKWARD COMPATIBILITY:
  * -----------------------
@@ -79,84 +70,58 @@
  *    "set_global_definitions.h" are removed; because these instructions
  *    must be brought at the very end of the current final header 
  *    "ASSIM/MS3DVAR/$SCALE/cppdefs.h". This change is mandatory.
- *  - Also a factorization of  "ASSIM/MS3DVAR/$SCALE/cppdefs_croco.h" 
- *    may itself be performed when the user either selects the REGIONAL 
- *    or the COASTAL configuration type.
- *    In this case, the jobcomp will modify this header file
- *    eliminating all configuration definition lines in between 
- *    the REGIONAL (or COASTAL) markups and replacing them by including
- *    the user defined configuration file "ASSIM/MS3DVAR/COMMON/cppdefs_config.h"
- *    This is ONLY A PROPOSAL to follow @sraynaud's work. 
- *    But this latter change is NOT MANDATORY and in any case 
- *    it has TO BE DECIDED AT the Croco-dev level.
  *
  * SCALE = FILTER, LR, MR or MS
  *
  * See path "OCEAN/cppdefs.h"
  * Copied to "ASSIM/MS3DVAR/${SCALE}/Compile/cppdefs_croco.h"
  * 
- * See path "ASSIM/MS3DVAR/COMMON/cppdefs_config.h"
- * Copied to "ASSIM/MS3DVAR/${SCALE}/Compile/cppdefs_config.h"
- *
  *=====================================================================*/
 #include "cppdefs_croco.h"
 
 /*=====================================================================
- * MANDATORY CONFIGURATION CHANGES FOR ALL MS3DVAR SCALE EXECUTABLES
+ * LR VARIANT CPP-switch :
  *
- *=====================================================================*/
-
-/*=====================================================================
- * Parallelization options
+ * The following MS3DVAR CPP key is positioning the scale-variant 
+ * for further use.
  *
- * OpenMP (shared memory) is mandatory
- * MPI (distributed memory) doesn't work yet.
- * Note: DAS is incompatible with CROCO's AUTOTILING + OpenMP combination.
- *=====================================================================*/
-#define OPENMP          /* OpenMP parallelization */
-#undef  MPI             /* MPI parallelization */
-
-/*=====================================================================
- * Grid and coordinate options
+ * DO NOT CHANGE or REMOVE, 
+ * DO NOT MOVE THIS INSTRUCTION ACCROSS THIS FILE.
  *
- * Expected grid configuration for MS3DVAR (TOCHECK)
- *=====================================================================*/
-#define MASKING         /* Land/sea masking */
-#define NEW_S_COORD     /* New s-coordinate system (Vtransform=2) */
-#define SPHERICAL       /* Spherical (geographic) coordinate grid */
-#define CURVGRID        /* Curvilinear (non-orthogonal) grid */
-
-/*=====================================================================
- * Time management
- *=====================================================================*/
-#undef USE_CALENDAR    /* Use calendar for time management */
-
-/*=====================================================================
- * XIOS I/O server
- *=====================================================================*/
-#undef  XIOS
-
-/*=====================================================================
- * LR VARIANT CPP-switch : DO NOT CHANGE
+ * The Scale-variant CPP key has to be set to either DAS_FILTER or DAS_LR, 
+ * or DAS_MR or DAS_MS, according to the MS3DVAR SCALE currently
+ * defined (here LR scale => DAS_LR ccp key)
+ *
+ * All the MS3DVAR CPP keys all start with pattern DAS_*
  *=====================================================================*/
 #define DAS_LR
 
 /*=====================================================================
- * FULL STANDARD MS3DVAR CONFIGURATION
+ * CORE STANDARD MS3DVAR CONFIGURATION
  *
- * This includes the core MS3DVAR CPP defines (~150 lines)
- * Settings below the include will override defaults in cppdefs_ms3dvar.h
+ * The next included file contains the core MS3DVAR CPP 
+ * switches (~150 lines) which are shared among all scales
+ * (FILTER, LR, MR and MS) enabling the definition of
+ * part of the Multi-Scale 3D Variational DA scheme.
  *
- * See path ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar.
- * Copied to  ASSIM/MS3DVAR/LR/Compile/cppdefs_ms3dvar.h
+ * All the MS3DVAR CPP keys all start with pattern DAS_*
+ *
+ * See path ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar
+ * Copied to "ASSIM/MS3DVAR/${SCALE}/Compile/cppdefs_ms3dvar.h"
+ *
+ * Note that DAS cpp keys settings below this include 
+ * will override the core defaults.
+ *
  *=====================================================================*/
 #include "cppdefs_ms3dvar.h"
 
 /*=====================================================================
  * LR VARIANT-SPECIFIC OVERRIDES
  *
- * Customize MS3DVAR DAS_* options specifically for LR variant.
- * These override the defaults in cppdefs_ms3dvar.h
+ * Customized MS3DVAR DAS_* options associated to the MS scale-variant.
+ * The following MS3DVAR CPP keys override the defaults previously defined 
+ * in through the included file "ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar.h"
+ *
  *=====================================================================*/
 
 /* No LR-specific overrides currently - using defaults from cppdefs_ms3dvar.h */
@@ -169,7 +134,7 @@
  * DO NOT TOUCH THE BELOW INCLUDED FILES
  *
  * These files contain additional preprocessor logic and global
- * definitions. They must be included last.
+ * definitions. They must be included at the very end.
  *=====================================================================*/
 #include "cppdefs_dev.h"
 #include "set_global_definitions.h"
