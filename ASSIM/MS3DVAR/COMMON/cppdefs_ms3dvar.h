@@ -9,8 +9,8 @@
 !======================================================================
 !
 /*
- * cppdefs_ms3dvar.h - MS3DVAR CPP Configuration
- * ==============================================
+ * cppdefs_ms3dvar.h - MS3DVAR CPP Core Configuration
+ * ==================================================
  *
  * This file contains ONLY the CPP defines needed by MS3DVAR.
  * It is independent of CROCO's full cppdefs.h to avoid confusion
@@ -32,9 +32,50 @@
 
 
 /*=====================================================================
+ * MANDATORY CONFIGURATION CHANGES FOR ALL MS3DVAR SCALE EXECUTABLES
+ *
+ * Below is performed the redefinition of a very small number of 
+ * Croco CPP keys in order to fullfill the current set of mandatory 
+ * MS3DVAR CPP keys, among which : defining OPENMP, undefing MPI,...
+ *
+ *=====================================================================*/
+
+/*=====================================================================
+ * Parallelization options
+ *
+ * OpenMP (shared memory) is mandatory
+ * MPI (distributed memory) doesn't work yet.
+ * Note: DAS is incompatible with CROCO's AUTOTILING + OpenMP combination.
+ *=====================================================================*/
+#define OPENMP          /* OpenMP parallelization */
+#undef  MPI             /* MPI parallelization */
+
+/*=====================================================================
+ * Grid and coordinate options
+ *
+ * Expected grid configuration for MS3DVAR (TOCHECK)
+ *=====================================================================*/
+#define MASKING         /* Land/sea masking */
+#define NEW_S_COORD     /* New s-coordinate system (Vtransform=2) */
+#define SPHERICAL       /* Spherical (geographic) coordinate grid */
+#define CURVGRID        /* Curvilinear (non-orthogonal) grid */
+
+/*=====================================================================
+ * Time management
+ *=====================================================================*/
+#undef USE_CALENDAR    /* Use calendar for time management */
+
+/*=====================================================================
+ * XIOS I/O server
+ *=====================================================================*/
+#undef  XIOS
+
+/*=====================================================================
  * MS3DVAR DATA ASSIMILATION OPTIONS
  *
- * The file below contains all DAS_* specific CPP defines for configuring
+ * Below is the definition of the core MS3DVAR CPP switches which are 
+ * shared among all scale-variant, i.d., FILTER, LR, MR and MS
+ * These CPP keys all start with pattern DAS_* and enable configuring
  * the Multi-Scale 3D Variational data assimilation system.
  *=====================================================================*/
 
