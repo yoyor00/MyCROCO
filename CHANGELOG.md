@@ -28,6 +28,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
+  
+- SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
 
 - BENCH : Fix report check status in case of several files (#498)
 - BENCH : Fix label in plot_realist.py (#494)
