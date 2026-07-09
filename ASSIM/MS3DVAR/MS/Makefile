@@ -8,15 +8,15 @@ VARIANT_NAME = MS
 SBIN = ms3dvar-ms
 
 # MS-specific sources (not in common Makefile.inc)
-VARIANT_SRCS = das_add_lr.F das_get_initial_lr.F
+VARIANT_SRCS = das_get_initial.F das_add_lr.F das_get_initial_lr.F
 
 # Include common build rules
 include Makefile.inc
 
 # Add variant-specific objects
-VARIANT_OBJS = $(VARIANT_SRCS:.F=.o)
+VARIANT_RCS = $(VARIANT_SRCS:.F=.f)
+VARIANT_OBJS = $(VARIANT_RCS:.f=.o)
 
 # Override the link rule to include variant objects
-$(SBIN): cppdefs.h param.h scalars.h ncscrum.h \
-         $(OBJS) $(OBJS90) $(VARIANT_OBJS)
+$(SBIN): $(OBJS) $(OBJS90) $(VARIANT_OBJS)
 	$(LDR) $(FFLAGS) -o $(SBIN) $(OBJS) $(OBJS90) $(VARIANT_OBJS) $(LCDF) $(LDFLAGS)

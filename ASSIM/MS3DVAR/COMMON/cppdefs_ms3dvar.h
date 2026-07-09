@@ -9,8 +9,8 @@
 !======================================================================
 !
 /*
- * cppdefs_ms3dvar.h - MS3DVAR CPP Configuration
- * ==============================================
+ * cppdefs_ms3dvar.h - MS3DVAR CPP Core Configuration
+ * ==================================================
  *
  * This file contains ONLY the CPP defines needed by MS3DVAR.
  * It is independent of CROCO's full cppdefs.h to avoid confusion
@@ -30,43 +30,30 @@
  * include this file and override specific settings as needed.
  */
 
+
 /*=====================================================================
- * CONFIGURATION SELECTION
+ * MANDATORY CONFIGURATION CHANGES FOR ALL MS3DVAR SCALE EXECUTABLES
  *
- * Define your configuration name here. This should match your
- * regional configuration in param_ms3dvar.h
+ * Below is performed the redefinition of a very small number of 
+ * Croco CPP keys in order to fullfill the current set of mandatory 
+ * MS3DVAR CPP keys, among which : defining OPENMP, undefing MPI,...
+ *
  *=====================================================================*/
-#undef  BASIN           /* Basin Example */
-#undef  CANYON          /* Canyon Example */
-#undef  UPWELLING       /* Upwelling Example */
-#undef  REGIONAL        /* REGIONAL Applications */
-
-/* Select your configuration - default to REGIONAL */
-/* This will be overridden by variant-specific cppdefs.h */
-#define REGIONAL
 
 /*=====================================================================
- * REQUIRED CROCO CORE OPTIONS
+ * Parallelization options
  *
- * These options are always required for MS3DVAR to function.
- * DO NOT modify these unless you know what you're doing.
- *=====================================================================*/
-#define SOLVE3D         /* 3D solution (REQUIRED for MS3DVAR) */
-#define SALINITY        /* Salinity tracer (REQUIRED for MS3DVAR) */
-
-/*=====================================================================
- * PARALLELIZATION OPTIONS
- *
- * Choose between OpenMP (shared memory) or MPI (distributed memory).
+ * OpenMP (shared memory) is mandatory
+ * MPI (distributed memory) doesn't work yet.
  * Note: DAS is incompatible with CROCO's AUTOTILING + OpenMP combination.
  *=====================================================================*/
 #define OPENMP          /* OpenMP parallelization */
 #undef  MPI             /* MPI parallelization */
 
 /*=====================================================================
- * GRID AND COORDINATE OPTIONS
+ * Grid and coordinate options
  *
- * Basic grid configuration for MS3DVAR.
+ * Expected grid configuration for MS3DVAR (TOCHECK)
  *=====================================================================*/
 #define MASKING         /* Land/sea masking */
 #define NEW_S_COORD     /* New s-coordinate system (Vtransform=2) */
@@ -74,49 +61,21 @@
 #define CURVGRID        /* Curvilinear (non-orthogonal) grid */
 
 /*=====================================================================
- * BOUNDARY CONDITIONS
- *
- * Configure your domain boundaries.
- * These settings are typically overridden in variant-specific files.
+ * Time management
  *=====================================================================*/
-#undef  OBC_EAST        /* Open boundary east */
-#undef  OBC_WEST        /* Open boundary west */
-#undef  OBC_NORTH       /* Open boundary north */
-#undef  OBC_SOUTH       /* Open boundary south */
-#undef  EW_PERIODIC     /* East-West periodic boundaries */
-#undef  NS_PERIODIC     /* North-South periodic boundaries */
+#undef USE_CALENDAR    /* Use calendar for time management */
 
 /*=====================================================================
- * ANALYTICAL FUNCTIONS
- *
- * For standalone MS3DVAR testing without external forcing files.
- * Typically disabled when assimilating into real ocean model runs.
+ * XIOS I/O server
  *=====================================================================*/
-#undef  ANA_GRID        /* Analytical grid */
-#undef  ANA_INITIAL     /* Analytical initial conditions */
-#undef  ANA_SMFLUX      /* Analytical surface momentum flux */
-#undef  ANA_STFLUX      /* Analytical surface tracer flux */
-#undef  ANA_SSFLUX      /* Analytical surface salinity flux */
-#undef  ANA_SRFLUX      /* Analytical surface radiation flux */
-#undef  ANA_BTFLUX      /* Analytical bottom temperature flux */
-#undef  ANA_BSFLUX      /* Analytical bottom salinity flux */
-
-/*=====================================================================
- * MIXING OPTIONS
- *
- * Vertical mixing scheme (if needed by MS3DVAR).
- *=====================================================================*/
-#undef  GLS_MIXING      /* Generic Length Scale mixing */
-
-/*=====================================================================
- * TIME MANAGEMENT
- *=====================================================================*/
-#define USE_CALENDAR    /* Use calendar for time management */
+#undef  XIOS
 
 /*=====================================================================
  * MS3DVAR DATA ASSIMILATION OPTIONS
  *
- * This section contains all DAS_* specific CPP defines for configuring
+ * Below is the definition of the core MS3DVAR CPP switches which are 
+ * shared among all scale-variant, i.d., FILTER, LR, MR and MS
+ * These CPP keys all start with pattern DAS_* and enable configuring
  * the Multi-Scale 3D Variational data assimilation system.
  *=====================================================================*/
 
@@ -124,8 +83,18 @@
  * CORE DATA ASSIMILATION SETTINGS
  *---------------------------------------------------------------------*/
 #define DAS                    /* Enable data assimilation (REQUIRED) */
-#undef  DAS_READ_INC          /* Read increments from file */
-#undef  DAS_DBLE_BKG          /* Use double background for testing */
+
+#if defined DAS_MS || defined DAS_MR
+# define  DAS_READ_INC          /* Read increments from file */
+#else
+# undef  DAS_READ_INC           /* Do not read increments from file */
+#endif
+
+#if defined DAS_SS 
+# define  DAS_DBLE_BKG          /* Use double background (single-scale only) */
+#else
+# undef  DAS_DBLE_BKG           /* Do not use double background */
+#endif
 
 /*---------------------------------------------------------------------
  * DYNAMICAL CONSTRAINTS
@@ -255,11 +224,5 @@
 #undef  DAS_WRT_ADJ_END       /* Write adjoint final state */
 
 /*=====================================================================
- * INCLUDE ADDITIONAL DEFINITIONS
- *
- * These files contain additional preprocessor logic and global
- * definitions. They must be included last.
+ * END OF CONFIGURATION
  *=====================================================================*/
-#include "cppdefs_dev.h"
-#include "set_global_definitions.h"
-#include "das_set_global_def.h"

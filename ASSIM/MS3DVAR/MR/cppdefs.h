@@ -13,201 +13,131 @@
  * ================================================================
  *
  * This is the CPP configuration file for the MS3DVAR MR (Medium Resolution)
- * variant. It includes the minimal cppdefs_ms3dvar.h and adds MR-specific
- * settings.
+ * variant. It includes :
  *
- * WHAT CHANGED (February 2026):
+ * 1. A slightly modified version of the standard Croco header
+ *    "OCEAN/croco/cppdefs.h" which is copied to 
+ *    "ASSIM/MS3DVAR/${SCALE}/cppdefs_croco.h" with on the fly 
+ *    modifications introduced at the compilation stage, namely : 
+ *    - the final standard includes of "OCEAN/croco/cppdefs_dev.h" and 
+ *      "set_global_definitions.h" are removed; because to be effective
+ *      it is mandatory for those two instructions to be brought 
+ *      at the very end of the current cppdefs header file
+ *      "ASSIM/MS3DVAR/${SCALE}/cppdefs.h". 
+ * 2. The definition of the MS3DVAR CPP switch saying which 
+ *    scale-variant is currently active : DAS_FILTER or DAS_LR or 
+ *    DAS_MR or DAS_MS.
+ * 3. The core MS3DVAR header file "ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar.h" 
+ *    which performs :
+ *    - the redefinition of a very small number of Croco CPP keys in order
+ *      to fullfill the current set of mandatory MS3DVAR CPP keys, e.g.,
+ *      defining OPENMP, undefing MPI.
+ *    - the definition of the core MS3DVAR CPP switches basically 
+ *      shared among all scales. 
+ * 4. The Specific MS3DVAR Scale-variant CPP switches such as :
+ *    DAS_READ_INC,...
+ * 5. At the very end, the mandatory final standard Croco cppdefs includes 
+ *    of "OCEAN/croco/cppdefs_dev.h" and "set_global_definitions.h" 
+ *    followed by the MS3DVAR mandatory final include 
+ *    "ASSIM/MS3DVAR/COMMON/das_set_global_def.h".
+ *
+ * where the $SCALE parameter refer to either FILTER, LR, MR or MS scale.
+ *
+ * WHAT CHANGED (SPRING 2026):
  * -----------------------------
  * This file was refactored from 2203 lines to ~200 lines.
- * The full CROCO cppdefs.h (lines 1-2139) has been removed because
- * MS3DVAR only needs ~5 CROCO defines + ~60 DAS_* defines.
- *
- * Old structure: cppdefs.h (2203 lines)
- *   - Lines 1-2139: Full CROCO config (test cases, physics, biology, etc.)
- *   - Lines 2142-2203: MS3DVAR-specific (DAS_*) defines
- *
- * New structure: cppdefs.h (this file, ~200 lines)
- *   - Include ../COMMON/cppdefs_ms3dvar.h (minimal core + DAS_* defines)
- *   - Add MR variant-specific overrides below
+ * The full CROCO cppdefs.h (lines 1-2139) has been removed
  *
  * BACKWARD COMPATIBILITY:
  * -----------------------
- * The full original file is saved as cppdefs.h.full_backup
  * All functionality is preserved - this is a restructuring, not a change.
  *
  * BENEFITS:
  * ---------
- * - 90% smaller file (2203 lines -> ~200 lines)
  * - Only shows relevant MS3DVAR options
- * - Eliminates confusion about CROCO test cases
  * - Easier to understand and maintain
  * - Reduces risk of enabling incompatible options
  */
 
 /*=====================================================================
- * MR VARIANT: CONFIGURATION NAME
+ * CROCO STANDARD CONFIGURATION FILE INCLUDED
  *
- * Define your regional configuration. This must match the
- * configuration in param.h
+ * A slightly modified version of the standard Croco header
+ * "OCEAN/croco/cppdefs.h" is copied to 
+ * "ASSIM/MS3DVAR/${SCALE}/cppdefs_croco.h" with on the fly 
+ * modifications introduced at compilation stage, namely : 
+ *  - the final standard includes of "OCEAN/croco/cppdefs_dev.h" and 
+ *    "set_global_definitions.h" are removed; because these instructions
+ *    must be brought at the very end of the current final header 
+ *    "ASSIM/MS3DVAR/$SCALE/cppdefs.h". This change is mandatory.
+ *
+ * SCALE = FILTER, LR, MR or MS
+ *
+ * See path "OCEAN/cppdefs.h"
+ * Copied to "ASSIM/MS3DVAR/${SCALE}/Compile/cppdefs_croco.h"
+ * 
  *=====================================================================*/
-#undef  COASTAL         /* COASTAL Applications */
-#define REGIONAL        /* REGIONAL Applications */
-
-#if defined REGIONAL
-/*=====================================================================
- * REGIONAL CONFIGURATION: WMED (West Mediterranean)
- *=====================================================================*/
-# define WMED
-
-/*---------------------------------------------------------------------
- * PARALLELIZATION
- *---------------------------------------------------------------------*/
-# define OPENMP         /* OpenMP parallelization */
-# undef  MPI            /* MPI parallelization */
-
-/*---------------------------------------------------------------------
- * NON-HYDROSTATIC AND NESTING
- *---------------------------------------------------------------------*/
-# undef  NBQ            /* Non-Boussinesq/non-hydrostatic */
-# undef  CROCO_QH       /* Quasi-hydrostatic */
-# undef  AGRIF          /* Adaptive grid refinement */
-# undef  AGRIF_2WAY     /* Two-way nesting */
-
-/*---------------------------------------------------------------------
- * COUPLING
- *---------------------------------------------------------------------*/
-# undef  OA_COUPLING    /* Ocean-Atmosphere coupling via OASIS */
-# undef  OW_COUPLING    /* Ocean-Wave coupling via OASIS */
-
-/*---------------------------------------------------------------------
- * OPEN BOUNDARY CONDITIONS
- *---------------------------------------------------------------------*/
-# undef  TIDES          /* Tidal forcing */
-# define OBC_EAST       /* Open boundary east */
-# define OBC_WEST       /* Open boundary west */
-# undef  OBC_NORTH      /* Open boundary north */
-# undef  OBC_SOUTH      /* Open boundary south */
-
-/*---------------------------------------------------------------------
- * APPLICATIONS
- *---------------------------------------------------------------------*/
-# undef  BIOLOGY        /* Biology module */
-# undef  FLOATS         /* Lagrangian floats */
-# undef  STATIONS       /* Station output */
-# undef  SEDIMENT       /* Sediment transport */
-# undef  MUSTANG        /* Wave-sediment interactions */
-# undef  BBL            /* Bottom boundary layer */
-
-/*---------------------------------------------------------------------
- * TRACERS
- *---------------------------------------------------------------------*/
-# define TEMPERATURE    /* Temperature tracer */
-# define SALINITY       /* Salinity tracer (REQUIRED for MS3DVAR) */
-# undef  PASSIVE_TRACER /* Passive tracers */
-
-/*---------------------------------------------------------------------
- * EQUATION OF STATE
- *---------------------------------------------------------------------*/
-# define NONLIN_EOS     /* Nonlinear equation of state */
-# undef  SPLIT_EOS      /* Split equation of state */
-
-/*---------------------------------------------------------------------
- * ADVECTION
- *---------------------------------------------------------------------*/
-# define UV_ADV         /* Advection of momentum */
-# undef  UV_COR         /* Coriolis term */
-
-/*---------------------------------------------------------------------
- * LATERAL BOUNDARY CONDITIONS (if OBC defined)
- *---------------------------------------------------------------------*/
-# ifdef OBC_EAST
-#  define FRC_BRY       /* Forcing at boundaries */
-#  ifdef FRC_BRY
-#   define ANA_BRY      /* Analytical boundary conditions */
-#   define Z_FRC_BRY    /* SSH forcing at boundaries */
-#   define OBC_M2CHARACT /* M2 characteristic BCs */
-#   define OBC_REDUCED_PHYSICS /* Reduced physics at boundaries */
-#   define M2_FRC_BRY   /* 2D momentum forcing */
-#   undef  M3_FRC_BRY   /* 3D momentum forcing */
-#   define T_FRC_BRY    /* Tracer forcing */
-#  endif
-# endif
-
-/*---------------------------------------------------------------------
- * VERTICAL MIXING
- *---------------------------------------------------------------------*/
-# define GLS_MIXING     /* Generic Length Scale mixing */
-
-/*---------------------------------------------------------------------
- * SOURCES/SINKS
- *---------------------------------------------------------------------*/
-# define PSOURCE        /* Point sources/sinks */
-# undef  PSOURCE_MASS   /* Include mass in point sources */
-# define ANA_PSOURCE    /* Analytical point sources */
-
-/*---------------------------------------------------------------------
- * GRID AND MASKING
- *---------------------------------------------------------------------*/
-# define ANA_GRID       /* Analytical grid */
-# define MASKING        /* Land/sea masking */
-
-/*---------------------------------------------------------------------
- * INITIAL CONDITIONS
- *---------------------------------------------------------------------*/
-# define ANA_INITIAL    /* Analytical initial conditions */
-# define ZCLIMATOLOGY   /* Enable clmname for LR initial conditions file */
-
-/*---------------------------------------------------------------------
- * SURFACE FORCING (Analytical for standalone testing)
- *---------------------------------------------------------------------*/
-# define ANA_SMFLUX     /* Analytical surface momentum flux */
-# define ANA_STFLUX     /* Analytical surface tracer flux */
-# define ANA_SSFLUX     /* Analytical surface salinity flux */
-# define ANA_SRFLUX     /* Analytical surface radiation flux */
-# define ANA_BTFLUX     /* Analytical bottom temperature flux */
-# define ANA_BSFLUX     /* Analytical bottom salinity flux */
-
-/*---------------------------------------------------------------------
- * PERIODICITY
- *---------------------------------------------------------------------*/
-# define NS_PERIODIC    /* North-South periodic */
-# undef  EW_PERIODIC    /* East-West periodic */
-
-/*---------------------------------------------------------------------
- * FILE OPTIONS
- *---------------------------------------------------------------------*/
-# undef  FLOATS         /* Lagrangian floats */
-# define NO_FRCFILE     /* No forcing file */
-
-/*---------------------------------------------------------------------
- * CALENDAR AND TIME
- *---------------------------------------------------------------------*/
-# define USE_CALENDAR   /* Use calendar for time management */
-
-/*---------------------------------------------------------------------
- * COORDINATE SYSTEM
- *---------------------------------------------------------------------*/
-# define NEW_S_COORD    /* New s-coordinate (Vtransform=2) */
-
-#endif /* REGIONAL */
+#include "cppdefs_croco.h"
 
 /*=====================================================================
- * INCLUDE MINIMAL MS3DVAR CONFIGURATION
+ * MR VARIANT CPP-switch : 
  *
- * This includes the core MS3DVAR CPP defines (~150 lines)
- * Settings above will override defaults in cppdefs_ms3dvar.h
+ * The following MS3DVAR CPP key is positioning the scale-variant 
+ * for further use.
+ *
+ * DO NOT CHANGE or REMOVE, 
+ * DO NOT MOVE THIS INSTRUCTION ACCROSS THIS FILE.
+ *
+ * The Scale-variant CPP key has to be set to either DAS_FILTER or DAS_LR, 
+ * or DAS_MR or DAS_MS, according to the MS3DVAR SCALE currently
+ * defined (here MR scale => DAS_MR ccp key)
+ *
+ * All the MS3DVAR CPP keys all start with pattern DAS_*
+ *=====================================================================*/
+#define DAS_MR
+
+/*=====================================================================
+ * CORE STANDARD MS3DVAR CONFIGURATION
+ *
+ * The next included file contains the core MS3DVAR CPP 
+ * switches (~150 lines) which are shared among all scales
+ * (FILTER, LR, MR and MS) enabling the definition of
+ * part of the Multi-Scale 3D Variational DA scheme.
+ *
+ * All the MS3DVAR CPP keys all start with pattern DAS_*
+ *
+ * See path ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar.
+ * Copied to "ASSIM/MS3DVAR/${SCALE}/Compile/cppdefs_ms3dvar.h"
+ *
+ * Note that DAS cpp keys settings below this include 
+ * will override the core defaults.
+ *
  *=====================================================================*/
 #include "cppdefs_ms3dvar.h"
 
 /*=====================================================================
  * MR VARIANT-SPECIFIC OVERRIDES
  *
- * Customize MS3DVAR DAS_* options specifically for MR variant.
- * These override the defaults in cppdefs_ms3dvar.h
+ * Customized MS3DVAR DAS_* options associated to the MS scale-variant.
+ * The following MS3DVAR CPP keys override the defaults previously defined 
+ * in through the included file "ASSIM/MS3DVAR/COMMON/cppdefs_ms3dvar.h"
+ *
  *=====================================================================*/
 
-/* No MR-specific overrides currently - using defaults from cppdefs_ms3dvar.h */
+/* MR-specific overrides currently - using defaults from cppdefs_ms3dvar.h */
+
+#define  DAS_JASONSSH          /* Jason altimeter series */
 
 /*=====================================================================
  * END OF CONFIGURATION
  *=====================================================================*/
+
+/*=====================================================================
+ * DO NOT TOUCH THE BELOW INCLUDED FILES
+ *
+ * These files contain additional preprocessor logic and global
+ * definitions. They must be included at the very end.
+ *=====================================================================*/
+#include "cppdefs_dev.h"
+#include "set_global_definitions.h"
+#include "das_set_global_def.h"

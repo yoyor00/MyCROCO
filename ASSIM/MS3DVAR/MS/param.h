@@ -60,6 +60,15 @@
 !
 ! If the MS variant needs different grid dimensions or tiling
 ! from the defaults in param_ms3dvar.h, override them here.
+!
+! THE PROPOSAL OF MAKING HEREAFTER SOME LOCAL MODIFICATION TO THE MS3DVAR 
+! SCALE-VARIANT GRID SIZE OR (OPENMP) TILE PARAMETERS (e.g., changing LLmH, MMmH
+! or changing nratio or changing NSUB_XH, NSUB_EH or NSUB_XL, NSUB_EL)
+! CANNOT WORK BECAUSE THESE NEW VALUE ASSIGNEMENTS COME AFTER THE STANDARD SEQUENCE 
+! OF INSTRUCTIONS DEFINED IN THE CROCO-LIKE param_ms3dvar.h WHICH CALCULATES
+! THE EFFECTIVE CROCO GRID SIZE (LLm0, MMm0,...), THE TILE VARIABLES (NSUB_X, NSUB_E)
+! AND EVENTUALLY THE LOW-RESOLUTION GRID SIZE (nratio => nhalf => LLm_lr). 
+! 
 !----------------------------------------------------------------------
 
 ! Currently using defaults from param_ms3dvar.h:
