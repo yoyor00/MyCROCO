@@ -28,6 +28,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
+  
+- SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
 
 - BENCH : Fix report check status in case of several files (#498)
 - BENCH : Fix label in plot_realist.py (#494)
@@ -42,10 +44,17 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   initialized in this case). This was done through key ROGUE_WAVES, now changed 
   to WAVE_MAKER_DATA (#518)
 
+- SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
+
 - Fix time in surf average output file (#388)
 - Fix grid variables writing in average and diagnostic file (#522)
 
+- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
+           inconsistent with what done for calcite dissolution (#531)
+
 ### Changed
+
+- AGRIF : update conv version (#510)
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
   (Issue #347)
@@ -144,6 +153,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Support :
   - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
+  - use matrix capabilities in gitlab-ci (#519)
+  - avoid misnaming ifort/ifx in gitlab-ci (#492)
 
 ### Contributors on this release
 
