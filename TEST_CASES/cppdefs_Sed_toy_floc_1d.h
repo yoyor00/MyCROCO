@@ -20,15 +20,30 @@
 # define NS_PERIODIC
 # define ANA_VMIX
 # define BODYFORCE
+
 # undef  SEDIMENT
 # define MUSTANG
-# define key_MUSTANG_flocmod
-# define GLS_MIXING
-# define GLS_KOMEGA
-# define FLOC_TURB_DISS
-# undef  FLOC_BBL_DISS
-# define SED_FLOCS
-# undef  SED_DEFLOC
+
+# ifdef MUSTANG
+#   define key_MUSTANG_flocmod
+#   define GLS_MIXING
+#   define GLS_KOMEGA
+# endif
+
+# ifdef SEDIMENT
+#  define SUSPLOAD
+#  undef  BEDLOAD
+#  undef  BBL
+#  define GLS_MIXING
+#  define GLS_KOMEGA
+#  define MIXED_BED
+#  undef  COHESIVE_BED
+#  define FLOC_TURB_DISS
+#  undef FLOC_BBL_DISS
+#  define SED_FLOCS
+#  undef SED_DEFLOC
+# endif
+
 # undef  MORPHODYN
 # define NO_FRCFILE
 

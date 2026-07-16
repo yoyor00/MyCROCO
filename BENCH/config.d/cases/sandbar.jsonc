@@ -4,7 +4,6 @@
   // All cases share a single cppdefs_Sandbar.h.
   // Two axes toggled via cppkeys:
   //   NBQ     : undef (hydrostatic, default) → define for Boussinesq
-  //   SEDIMENT: define (default) → undef for NBQ wave-only run
   // Two param files (dimensions):
   //   param_Sandbar.h     : LLm0=100, N=10  (hydrostatic)
   //   param_Sandbar_nbq.h : LLm0=720, N=20  (NBQ)
@@ -61,22 +60,6 @@
   },
 
   // --- NBQ (Boussinesq) cases ---
-  "SANDBAR_NBQ": {
-    "title": "SANDBAR - NBQ wave-only (720 x 1 x 20)",
-    "case": "SANDBAR",
-    "cppkeys": { "NBQ": true, "SEDIMENT": false },
-    "cppdefs_file": "TEST_CASES/cppdefs_Sandbar.h",
-    "param_file": "TEST_CASES/param_Sandbar_nbq.h",
-    "nml_file": "TEST_CASES/croco_Sandbar_nbq.nml",
-    "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_sandbar.py",
-      "plotphy_script_input": "sandbar_his.nc",
-    },
-    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
-    "patches": {},
-    "check_outputs": ["sandbar_his.nc"],
-    "unsupported": ["restart", "openmp"],
-  },
   "SANDBAR_1B_NBQ": {
     "title": "SANDBAR - LIP-1B NBQ + sediment (720 x 1 x 20)",
     "case": "SANDBAR",

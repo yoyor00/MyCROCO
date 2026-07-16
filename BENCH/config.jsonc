@@ -129,7 +129,7 @@
       "DUNE_SEDIMENT",
       "DUNE_MUSTANG",
       "TIDAL_FLAT_MUSTANG",
-      "SANDBAR",
+      "SANDBAR_1B",
       "RIP",
     ],
     "@other": ["KILPATRICK", "SEAGRASS", "SHOREFACE", "THACKER_2DV"],

@@ -20,11 +20,16 @@
 # define NS_PERIODIC
 # define ANA_VMIX
 # define BODYFORCE
+
 # define SEDIMENT
 # undef  MUSTANG
-# define SUSPLOAD
-# undef  BEDLOAD
-# define SED_TAU_CD_CONST
+
+# ifdef SEDIMENT
+#  define SUSPLOAD
+#  undef  BEDLOAD
+#  define SED_TAU_CD_CONST
+# endif
+
 # undef  MORPHODYN
 # define NO_FRCFILE
 

@@ -18,18 +18,17 @@
 # define ANA_BSFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
+
 # define SEDIMENT
 # undef  MUSTANG
-# define SUSPLOAD
-# undef  BEDLOAD
-# undef  BBL
-# define GLS_MIXING
-# define GLS_KOMEGA
-# define MIXED_BED
-# undef  COHESIVE_BED
+
+# ifdef SEDIMENT
+#  define SUSPLOAD
+#  undef  BEDLOAD
+# endif
+
 # undef  MORPHODYN
 # define NO_FRCFILE
-
 
 #include "cppdefs_dev.h"
 #include "set_global_definitions.h"
