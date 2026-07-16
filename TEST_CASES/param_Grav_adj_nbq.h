@@ -18,9 +18,11 @@
 !          points and peroodic ghost points (if any) are excluded].
 ! N        Number of vertical levels.
 !
-      integer, parameter :: LLm0 = 300
+      integer, parameter :: LLm0 = 300   !  10 mm resolution
       integer, parameter :: MMm0 = 1
       integer, parameter :: N = 30
+!     integer, parameter :: LLm0 = 600   !   5 mm resolution
+!     integer, parameter :: N    = 60
 
 !
 !----------------------------------------------------------------------

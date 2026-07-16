@@ -1,7 +1,7 @@
 {
-  // JET
+  // ANA_JET (analytical forcing variant of JET)
   "JET": {
-    "title": "JET - (30 x 50 x 30 : 1200)",
+    "title": "ANA_JET - (25 x 100 x 40 : 100000)",
     "case": "JET",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "patches": {},
@@ -9,6 +9,9 @@
       "plotphy_script": "./TEST_CASES/plot_jet.py",
       "plotphy_script_input": "jet_his.nc",
     },
+    "cppdefs_file": "TEST_CASES/cppdefs_Ana_jet.h",
+    "param_file": "TEST_CASES/param_Ana_jet.h",
+    "nml_file": "TEST_CASES/croco_Ana_jet.nml",
     "check_outputs": ["jet_his.nc"],
     "unsupported": ["restart", "openmp"],
   },

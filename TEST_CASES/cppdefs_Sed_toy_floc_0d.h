@@ -1,21 +1,6 @@
 # define SED_TOY
-/*
-!                       SED TOY (1D Single Column example)
-!                       === === === ====== ====== ========
-!
-*/ 
-/* Choose an experiment :               */
-/*   Rouse                              */
-# undef  SED_TOY_ROUSE
-/*   Consolidation                      */ 
-# undef  SED_TOY_CONSOLID
-/*   Erosion and sediment resuspension  */
-# undef  SED_TOY_RESUSP
-/*   Flocculation                       */
-# define  SED_TOY_FLOC_0D
-/*   Flocculation                       */
-# undef  SED_TOY_FLOC_1D
-
+# define SED_TOY_FLOC_0D
+/* SED TOY — Flocculation 0D (5 x 5 x 50) */
 # undef  OPENMP
 # undef  MPI
 # define NEW_S_COORD
@@ -33,59 +18,17 @@
 # define ANA_BSFLUX
 # define EW_PERIODIC
 # define NS_PERIODIC
-
-# ifdef SED_TOY_ROUSE
-#  define ANA_VMIX
-#  define BODYFORCE
-# endif
-
-# ifdef SED_TOY_FLOC_1D
-#  define ANA_VMIX
-#  define BODYFORCE
-# endif
-
-# ifdef SED_TOY_FLOC_0D
-#  define ANA_VMIX
-#  define BODYFORCE
-# endif
-
+# define ANA_VMIX
+# define BODYFORCE
 # undef  SEDIMENT
-# define  MUSTANG
-
-# ifdef MUSTANG
-#  if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
-#   define key_MUSTANG_flocmod
-#   define GLS_MIXING
-#   define GLS_KOMEGA
-#  endif
-# endif
-
-
-# ifdef SEDIMENT
-#  define SUSPLOAD
-#  undef  BEDLOAD
-
-#  ifdef SED_TOY_ROUSE
-#   define SED_TAU_CD_CONST
-#  endif
-
-#  if defined SED_TOY_FLOC_1D || defined SED_TOY_CONSOLID || \
-	defined SED_TOY_RESUSP
-#   undef  BBL
-#   define GLS_MIXING
-#   define GLS_KOMEGA
-#   define MIXED_BED
-#   undef  COHESIVE_BED
-#  endif
-
-#  if defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D
-#   define FLOC_TURB_DISS
-#   undef FLOC_BBL_DISS
-#   define SED_FLOCS
-#   undef SED_DEFLOC
-#  endif
-
-# endif
+# define MUSTANG
+# define key_MUSTANG_flocmod
+# define GLS_MIXING
+# define GLS_KOMEGA
+# define FLOC_TURB_DISS
+# undef  FLOC_BBL_DISS
+# define SED_FLOCS
+# undef  SED_DEFLOC
 # undef  MORPHODYN
 # define NO_FRCFILE
 

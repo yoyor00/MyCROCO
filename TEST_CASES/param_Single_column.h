@@ -20,7 +20,11 @@
 !
       integer, parameter :: LLm0 = 5
       integer, parameter :: MMm0 = 5
-      integer, parameter :: N = 150
+      integer, parameter :: N = 100   ! KATO_PHILLIPS (default)
+!     integer, parameter :: N = 150   ! DIURNAL_CYCLE
+!     integer, parameter :: N = 50    ! WILLIS_DEARDORFF, FORCED_NONROTBBL, FORCED_OSCNONROTBBL
+!     integer, parameter :: N = 40    ! FORCED_EKBBL
+!     integer, parameter :: N = 25    ! FORCED_DBLEEK
 
 !
 !----------------------------------------------------------------------

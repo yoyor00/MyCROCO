@@ -12,12 +12,17 @@
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2", "6": "1x6", "8": "2x4" },
     "patches": {
-      // Change the dt
       "TEST_CASES/croco_Thacker.nml": {
         "mode": "replace",
         "what": "ntimes = 4320",
         "by": "ntimes = 600",
         "descr": "Set stepping (ntimes=600)",
+      },
+      "TEST_CASES/param_Thacker.h": {
+        "mode": "replace",
+        "what": "integer, parameter :: MMm0 = 1",
+        "by": "      integer, parameter :: MMm0 = 200",
+        "descr": "Switch to 3D case (MMm0=200)",
       },
     },
     "check_outputs": ["thacker_his.nc"],
@@ -33,7 +38,8 @@
       "plotphy_script_input": "thacker_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
-    "patches": {},
+    "patches": {
+    },
     "check_outputs": ["thacker_his.nc"],
   },
 }

@@ -12,4 +12,32 @@
     "check_outputs": ["tank_his.nc"],
     "unsupported": ["openmp"],
   },
+  "TANKY": {
+    "title": "TANK - Y-oriented (1 x 50 x 50 : 2500)",
+    "case": "TANK",
+    "cppkeys": { "TANKY": true },
+    "splitting": { "1": "1x1", "2": "1x2" },
+    "patches": {
+      "TEST_CASES/param_Tank.h": [
+        {
+          "mode": "replace",
+          "what": "integer, parameter :: LLm0 = 50",
+          "by": "      integer, parameter :: LLm0 = 1",
+          "descr": "Switch to Y-oriented tank (LLm0=1)",
+        },
+        {
+          "mode": "replace",
+          "what": "integer, parameter :: MMm0 = 1",
+          "by": "      integer, parameter :: MMm0 = 50",
+          "descr": "Switch to Y-oriented tank (MMm0=50)",
+        },
+      ],
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_tank.py",
+      "plotphy_script_input": "tank_his.nc",
+    },
+    "check_outputs": ["tank_his.nc"],
+    "unsupported": ["openmp"],
+  },
 }

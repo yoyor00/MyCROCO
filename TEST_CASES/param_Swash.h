@@ -18,9 +18,10 @@
 !          points and peroodic ghost points (if any) are excluded].
 ! N        Number of vertical levels.
 !
-      integer, parameter :: LLm0 = 800
+      integer, parameter :: LLm0 = 800   ! 12 cm resolution (GLOBEX)
       integer, parameter :: MMm0 = 1
       integer, parameter :: N = 10
+!     integer, parameter :: LLm0 = 1600  !  6 cm resolution (GLOBEX)
 
 !
 !----------------------------------------------------------------------

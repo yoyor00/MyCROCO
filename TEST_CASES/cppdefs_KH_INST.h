@@ -1,6 +1,10 @@
+/* Default (X-slice):      LLm0=128, MMm0=1, N=128   */
+/* CPP KH_INSTY : Y-slice: LLm0=1,   MMm0=256, N=256 */
+/* CPP KH_INST3D : 3-D:    LLm0=256, MMm0=32,  N=256 */
 # define KH_INST
-# undef  KH_INSTY
-# undef  KH_INST3D
+# undef  KH_INSTY    
+# undef  KH_INST3D   
+
 # undef  MPI
 # define NBQ
 # undef  NBQ_PRECISE

@@ -21,6 +21,12 @@
       integer, parameter :: LLm0 = 128
       integer, parameter :: MMm0 = 1
       integer, parameter :: N = 128
+!     integer, parameter :: LLm0 = 1    ! KH_INSTY (Y-slice)
+!     integer, parameter :: MMm0 = 256  ! KH_INSTY
+!     integer, parameter :: N    = 256  ! KH_INSTY
+!     integer, parameter :: LLm0 = 256  ! KH_INST3D (3-D)
+!     integer, parameter :: MMm0 = 32   ! KH_INST3D
+!     integer, parameter :: N    = 256  ! KH_INST3D
 
 !
 !----------------------------------------------------------------------

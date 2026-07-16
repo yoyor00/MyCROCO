@@ -1,5 +1,5 @@
 # define THACKER
-# undef  THACKER_2DV
+# define  THACKER_2DV
 /*
 !                       Thacker Example
 !                       ======= =======
@@ -9,7 +9,7 @@
 */
 # undef  OPENMP
 # undef  MPI
-# undef  THACKER_2DV
+
 # define SOLVE3D
 # define UV_COR
 # define UV_ADV

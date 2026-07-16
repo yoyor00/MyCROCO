@@ -18,6 +18,11 @@
 !          points and peroodic ghost points (if any) are excluded].
 ! N        Number of vertical levels.
 !
+!  Set LLm0/MMm0/N to match your regional grid.
+!  BENGUELA examples:
+!     integer, parameter :: LLm0 = 41,  MMm0 = 42,  N = 32   ! BENGUELA_LR
+!     integer, parameter :: LLm0 = 83,  MMm0 = 85,  N = 32   ! BENGUELA_HR
+!     integer, parameter :: LLm0 = 167, MMm0 = 170, N = 32   ! BENGUELA_VHR
       integer, parameter :: LLm0 = 41
       integer, parameter :: MMm0 = 42
       integer, parameter :: N = 32

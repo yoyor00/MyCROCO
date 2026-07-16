@@ -18,9 +18,18 @@
 !          points and peroodic ghost points (if any) are excluded].
 ! N        Number of vertical levels.
 !
-      integer, parameter :: LLm0 = 48
-      integer, parameter :: MMm0 = 48
-      integer, parameter :: N = 20
+      integer, parameter :: LLm0 = 25    ! 20 km resolution
+      integer, parameter :: MMm0 = 100
+      integer, parameter :: N = 40
+!     integer, parameter :: LLm0 = 50    ! 10 km resolution
+!     integer, parameter :: MMm0 = 200
+!     integer, parameter :: N    = 60
+!     integer, parameter :: LLm0 = 100   !  5 km resolution
+!     integer, parameter :: MMm0 = 400
+!     integer, parameter :: N    = 80
+!     integer, parameter :: LLm0 = 250   !  2 km resolution
+!     integer, parameter :: MMm0 = 1000
+!     integer, parameter :: N    = 100
 
 !
 !----------------------------------------------------------------------

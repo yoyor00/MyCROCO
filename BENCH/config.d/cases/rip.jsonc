@@ -1,5 +1,6 @@
 {
-  // RIP
+  // RIP — Rip current test cases (48 x 48 x 20)
+  // All cases share cppdefs_Rip.h; variants toggled via cppkeys.
   "RIP": {
     "title": "RIP - (48 x 48 x 20 : 1800)",
     "case": "RIP",

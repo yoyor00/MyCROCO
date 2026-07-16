@@ -21,6 +21,8 @@
       integer, parameter :: LLm0 = 50
       integer, parameter :: MMm0 = 1
       integer, parameter :: N = 50
+!     integer, parameter :: LLm0 = 1     ! TANKY (Y-oriented tank)
+!     integer, parameter :: MMm0 = 50    ! TANKY
 
 !
 !----------------------------------------------------------------------

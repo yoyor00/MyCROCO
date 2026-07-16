@@ -1,6 +1,8 @@
 # define GRAV_ADJ
+/* Gravitational Adjustment Example */
 # undef  OPENMP
 # undef  MPI
+/* define NBQ for Boussinesq; also use param_Grav_adj_nbq.h (300x1x30) */
 # undef  NBQ
 # undef  XIOS
 # define SOLVE3D

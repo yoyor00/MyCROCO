@@ -21,6 +21,8 @@
       integer, parameter :: LLm0 = 878
       integer, parameter :: MMm0 = 3
       integer, parameter :: N = 40
+!     integer, parameter :: N    = 80    ! finer vertical
+!     integer, parameter :: N    = 20    ! coarser vertical
 
 !
 !----------------------------------------------------------------------

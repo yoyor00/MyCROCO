@@ -1,7 +1,14 @@
 {
-  // TS_HADV_TEST
+  // TS_HADV_TEST — Horizontal tracer advection test cases (100 x 100 x 5)
+  //
+  // All cases share cppdefs_TS_adv_diag.h and param_TS_adv_diag.h.
+  // Three velocity modes toggled via cppkeys; nml files differ (dt, output filenames):
+  //   DIAGONAL_ADV (default) : constant diagonal velocity,  dt=4, croco_TS_adv_diag.nml
+  //   body-forced             : no special flag,             dt=7, croco_TS_adv_body.nml
+  //   SOLID_BODY_PER          : periodic solid-body rotation,dt=4, croco_TS_adv_rep.nml
+
   "TS_HADV_TEST": {
-    "title": "TS_HADV_TEST - (100 x 100 x 5 : 50000)",
+    "title": "TS_HADV_TEST - diagonal advection - (100 x 100 x 5 : 50000)",
     "case": "TS_HADV_TEST",
     "splitting": {
       "1": "1x1",
@@ -15,15 +22,67 @@
       "DIAGONAL_ADV": true,
       "SOLID_BODY_PER": false,
     },
-    "patches": {},
+    "cppdefs_file": "TEST_CASES/cppdefs_TS_adv_diag.h",
+    "param_file": "TEST_CASES/param_TS_adv_diag.h",
+    "nml_file": "TEST_CASES/croco_TS_adv_diag.nml",
     "plotphy": {
       "plotphy_script": "./TEST_CASES/plot_ts_hadv_test.py",
       "plotphy_script_input": "croco_his_diag_adv.nc",
     },
-    "nml_file": "TEST_CASES/croco_TS_adv_diag.nml",
+    "patches": {},
+    "check_outputs": ["croco_his_diag_adv.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+  "TS_HADV_TEST_BODY": {
+    "title": "TS_HADV_TEST - body-forced advection - (100 x 100 x 5 : 50000)",
+    "case": "TS_HADV_TEST",
+    "cppkeys": {
+      "DIAGONAL_ADV": false,
+      "SOLID_BODY_PER": false,
+    },
     "cppdefs_file": "TEST_CASES/cppdefs_TS_adv_diag.h",
     "param_file": "TEST_CASES/param_TS_adv_diag.h",
-    "check_outputs": ["croco_his_diag_adv.nc"],
+    "nml_file": "TEST_CASES/croco_TS_adv_body.nml",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_ts_hadv_test.py",
+      "plotphy_script_input": "croco_his_body_rot.nc",
+    },
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+      "4": "2x2",
+      "6": "2x3",
+      "8": "2x4",
+      "16": "4x4",
+    },
+    "patches": {},
+    "check_outputs": ["croco_his_body_rot.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+  "TS_HADV_TEST_REP": {
+    "title": "TS_HADV_TEST - solid-body periodic rotation - (100 x 100 x 5 : 50000)",
+    "case": "TS_HADV_TEST",
+    "cppkeys": {
+      "DIAGONAL_ADV": false,
+      "SOLID_BODY_PER": true,
+    },
+    "cppdefs_file": "TEST_CASES/cppdefs_TS_adv_diag.h",
+    "param_file": "TEST_CASES/param_TS_adv_diag.h",
+    "nml_file": "TEST_CASES/croco_TS_adv_rep.nml",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/plot_ts_hadv_test.py",
+      "plotphy_script_input": "croco_his_body_rot.nc",
+    },
+    "splitting": {
+      "1": "1x1",
+      "2": "1x2",
+      "4": "2x2",
+      "6": "2x3",
+      "8": "2x4",
+      "16": "4x4",
+    },
+    "patches": {},
+    "check_outputs": ["croco_his_body_rot.nc"],
     "unsupported": ["restart", "openmp"],
   },
 }

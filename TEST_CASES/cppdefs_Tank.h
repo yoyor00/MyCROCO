@@ -1,4 +1,5 @@
 # define TANK
+# undef  TANKY   /* Y-oriented tank: swap LLm0=1,MMm0=50 in param_Tank.h */
 # undef  MPI
 # define NBQ
 # define NBQ_PRECISE

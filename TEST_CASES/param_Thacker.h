@@ -19,9 +19,9 @@
 ! N        Number of vertical levels.
 !
       integer, parameter :: LLm0 = 200
-      integer, parameter :: MMm0 = 200
+      integer, parameter :: MMm0 = 1
       integer, parameter :: N = 5
-
+!     integer, parameter :: MMm0 = 200     ! THACKER 3D
 !
 !----------------------------------------------------------------------
 ! ABL1D

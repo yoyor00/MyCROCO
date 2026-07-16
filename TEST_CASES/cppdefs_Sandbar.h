@@ -1,9 +1,21 @@
 # define SANDBAR
+/*
+ * SANDBAR test cases — Roelvink & Reniers (1995) LIP flume experiments.
+ *
+ * Two axes toggled via cppkeys in sandbar.jsonc:
+ *   NBQ     : undef (default, hydrostatic MRL-WCI) → define for Boussinesq
+ *             also switch param_file to param_Sandbar_nbq.h (LLm0=720, N=20)
+ *   SEDIMENT: define (default, with morphodynamics) → undef for wave-only run
+ *
+ * Bar migration type (OFFSHORE is the LIP-1B default):
+ */
+/* LIP-1B */
 # define SANDBAR_OFFSHORE
 /* LIP-1C */
 # undef  SANDBAR_ONSHORE
 # undef  OPENMP
 # undef  MPI
+/* define NBQ to use Boussinesq solver + param_Sandbar_nbq.h */
 # undef  NBQ
 # define SOLVE3D
 # define UV_ADV

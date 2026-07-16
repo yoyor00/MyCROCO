@@ -4,11 +4,12 @@
 !                       ========== ====== ========= =======
 !
 */
-/* Example with spatially varying velocity */
+/* Choose ONE velocity mode (activate via cppkeys in ts-hadv-test.jsonc):  */
+/* Body-forced (default): all three undef                   dt=7           */
 # undef  SOLID_BODY_ROT
-/* Constant advection in the diagonal   */
+/* Constant advection in the diagonal                       dt=4           */
 # define  DIAGONAL_ADV
-/* Example with a space and time-varying velocity */
+/* Space/time-varying velocity (solid-body periodic)        dt=4           */
 # undef  SOLID_BODY_PER
 
 # undef  OPENMP

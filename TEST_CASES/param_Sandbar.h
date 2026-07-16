@@ -18,9 +18,12 @@
 !          points and peroodic ghost points (if any) are excluded].
 ! N        Number of vertical levels.
 !
-      integer, parameter :: LLm0 = 100
+      integer, parameter :: LLm0 = 100   !  3 m resolution (hydrostatic)
       integer, parameter :: MMm0 = 1
       integer, parameter :: N = 10
+!     integer, parameter :: LLm0 = 180   !  1.0 m resolution
+!     integer, parameter :: LLm0 = 360   !  0.5 m resolution
+!     integer, parameter :: N    = 20
 
 !
 !----------------------------------------------------------------------

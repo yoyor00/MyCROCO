@@ -1,7 +1,7 @@
 # define SWASH
-# define SWASH_GLOBEX_B3
-# undef  SWASH_GLOBEX_B2
-# undef  SWASH_GLOBEX_A3
+# define SWASH_GLOBEX_B3    /* bichromatic (default): wa1=0.07, wa2=0.03 */
+# undef  SWASH_GLOBEX_B2    /* alt bichromatic: wa1=0.09, wa2=0.01       */
+# undef  SWASH_GLOBEX_A3    /* alt JONSWAP: wp=2.25, wa=0.0354, gamma=20 */
 # undef  OPENMP
 # undef  MPI
 # define SOLVE3D
