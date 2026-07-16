@@ -436,32 +436,32 @@ CONTAINS
           CALL iom_put( "tintpp"  , tpp * zfact )  !  global total integrated primary production molC/s
           ! new primary production by nano
           DO_3D( 0, 0, 0, 0, 1, jpk)
-             zw3d(ji,jj,jkR) = ( zprorcan(ji,jj,jk) + xnanono3(ji,jj,jk)  &
+             zw3d(ji,jj,jkR) = ( zprorcan(ji,jj,jk) * xnanono3(ji,jj,jk)  &
                 &              / ( xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk) + rtrn ) ) &
                 &           * zfact * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "PPNEWN", zw3d )  
           ! new primary production by diatomes
           DO_3D( 0, 0, 0, 0, 1, jpk)
-             zw3d(ji,jj,jkR) = ( zprorcad(ji,jj,jk) + xdiatno3(ji,jj,jk)  &
+             zw3d(ji,jj,jkR) = ( zprorcad(ji,jj,jk) * xdiatno3(ji,jj,jk)  &
                 &              / ( xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk) + rtrn ) ) &
                 &           * zfact * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "PPNEWD", zw3d )  
           ! total new production 
           DO_3D( 0, 0, 0, 0, 1, jpk)
-             zw3d(ji,jj,jkR) = ( ( zprorcan(ji,jj,jk) + xnanono3(ji,jj,jk)  &
+             zw3d(ji,jj,jkR) = ( ( zprorcan(ji,jj,jk) * xnanono3(ji,jj,jk)  &
                 &              / ( xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk) + rtrn ) ) &
-                &              +  ( zprorcad(ji,jj,jk) + xdiatno3(ji,jj,jk)  &
+                &              +  ( zprorcad(ji,jj,jk) * xdiatno3(ji,jj,jk)  &
                 &              / ( xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk) + rtrn ) ) ) &
                 &           * zfact * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "TPNEW", zw3d )  
           ! Regenerated production 
           DO_3D( 0, 0, 0, 0, 1, jpk)
-             zw3d(ji,jj,jkR) = ( ( zprorcan(ji,jj,jk) + xnanonh4(ji,jj,jk)  &
+             zw3d(ji,jj,jkR) = ( ( zprorcan(ji,jj,jk) * xnanonh4(ji,jj,jk)  &
                 &              / ( xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk) + rtrn ) ) &
-                &              +  ( zprorcad(ji,jj,jk) + xdiatnh4(ji,jj,jk)  &
+                &              +  ( zprorcad(ji,jj,jk) * xdiatnh4(ji,jj,jk)  &
                 &              / ( xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk) + rtrn ) ) ) &
                 &           * o2ut * zfact * tmask(ji,jj,jk)
           END_3D
