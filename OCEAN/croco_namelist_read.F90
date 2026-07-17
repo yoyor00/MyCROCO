@@ -293,14 +293,14 @@ contains
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
-      namelist /croco_diagbioFlux_history_fields/ out_his_diagbioFlux
-      namelist /croco_diagbioVSink_history_fields/ out_his_diagbioVSink
+      namelist /croco_diagbioFlux_history_fields/ &
+         out_his_diagbioFlux, out_his_diagbioVSink
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       namelist /croco_diagbioGasExc_history_fields/ out_his_diagbioGasExc
 # endif
 # ifdef AVERAGES
-      namelist /croco_diagbioFlux_average_fields/ out_avg_diagbioFlux
-      namelist /croco_diagbioVSink_average_fields/ out_avg_diagbioVSink
+      namelist /croco_diagbioFlux_average_fields/ &
+         out_avg_diagbioFlux, out_avg_diagbioVSink
 #  if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       namelist /croco_diagbioGasExc_average_fields/ out_avg_diagbioGasExc
 #  endif
@@ -1656,14 +1656,6 @@ contains
             ierr = ierr + 1; close (nmlunit); return
          end if
       end if
-      call check_nml_presence(nmlunit, "croco_diagbioVSink_history_fields", .false., found, ierr)
-      if (found) then
-         read (nmlunit, nml=croco_diagbioVSink_history_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then
-            call fatal_nml_error("croco_diagbioVSink_history_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
-         end if
-      end if
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       call check_nml_presence(nmlunit, "croco_diagbioGasExc_history_fields", .false., found, ierr)
       if (found) then
@@ -1680,14 +1672,6 @@ contains
          read (nmlunit, nml=croco_diagbioFlux_average_fields, iostat=ios); rewind (nmlunit)
          if (ios /= 0) then
             call fatal_nml_error("croco_diagbioFlux_average_fields (parse error)")
-            ierr = ierr + 1; close (nmlunit); return
-         end if
-      end if
-      call check_nml_presence(nmlunit, "croco_diagbioVSink_average_fields", .false., found, ierr)
-      if (found) then
-         read (nmlunit, nml=croco_diagbioVSink_average_fields, iostat=ios); rewind (nmlunit)
-         if (ios /= 0) then
-            call fatal_nml_error("croco_diagbioVSink_average_fields (parse error)")
             ierr = ierr + 1; close (nmlunit); return
          end if
       end if
@@ -2542,7 +2526,6 @@ contains
 #endif
 #ifdef DIAGNOSTICS_BIO
       MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_history_fields)
-      MPI_master_only WRITE (stdout, nml=croco_diagbioVSink_history_fields)
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_history_fields)
 # endif
@@ -2650,7 +2633,6 @@ contains
 #endif
 #if defined DIAGNOSTICS_BIO && defined AVERAGES
       MPI_master_only WRITE (stdout, nml=croco_diagbioFlux_average_fields)
-      MPI_master_only WRITE (stdout, nml=croco_diagbioVSink_average_fields)
 # if (defined BIO_NChlPZD && defined OXYGEN) || defined BIO_BioEBUS
       MPI_master_only WRITE (stdout, nml=croco_diagbioGasExc_average_fields)
 # endif

@@ -26,7 +26,7 @@
 !----------------------------------------------------------------------
 # if defined ABL1D
 ! N_abl Number of layer use in ABL1D
-      integer, parameter :: N_abl=50
+      integer, parameter :: N_abl = 50
 # endif
 !
 !----------------------------------------------------------------------

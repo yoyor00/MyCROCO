@@ -432,7 +432,7 @@ MODULE croco_namelist
    !! Maximum drag coefficient value for the Von-Karman quadratic bottom stress formulation
 
    ! &croco_gamma2
-   real :: gamma2 = -1.0
+   real :: gamma2 = 1.0
    !! Lateral boundary slipperiness parameter.
    !! `+1` = free-slip, `-1` = no-slip, intermediate values give partial-slip.
 

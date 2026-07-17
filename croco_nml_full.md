@@ -16,10 +16,12 @@
 !       Restart output             control
 !   8.  Physics parameters       – rho0, bottom drag, viscosity, mixing
 !   9.  Diagnostics              – TS, momentum, vorticity, energy, PV,
-!                                  eddy, biology diagnostic files
+!                                  eddy
 !   10. Stations                 – station file control
 !   11. Optional modules         – ABL1D, OUTPUTS_SURFACE, ONLINE,
-!                                  WAVE (WKB/WCI/WAVE_MAKER), STOGEN,
+!                                  WAVE (WKB/WCI/WAVE_MAKER), biology
+!                                  (BIOLOGY, PISCES, DIAGNOSTICS_BIO),
+!                                  STOGEN,
 !                                  sediment (SEDIMENT/MUSTANG), BBL,
 !                                  BODYFORCE, PSOURCE, OBSTRUCTION,
 !                                  SUBSTANCE, ASSIMILATION, XIOS
@@ -484,25 +486,6 @@
   diags_eddyname_avg = "CROCO_FILES/croco_diags_eddy_avg.nc"
 /
 
-! --- Biogeochemical diagnostics  (CPP: DIAGNOSTICS_BIO) ---
-
-&croco_diagnostics_bio
-  ! CPP: DIAGNOSTICS_BIO
-  ldefdiabio  = .true.
-  nwrtdiabio  = 72
-  nrpfdiabio  = 0
-  dianamebio  = "CROCO_FILES/croco_diabio.nc"
-/
-
-&croco_diagbio_avg
-  ! CPP: DIAGNOSTICS_BIO && AVERAGES
-  ldefdiabio_avg = .true.
-  ntsdiabio_avg  = 1
-  nwrtdiabio_avg = 72
-  nrpfdiabio_avg = 0
-  dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc"
-/
-
 
 ! ======================================================================
 ! 10.  STATIONS  (CPP: STATIONS)
@@ -644,6 +627,25 @@
   ! CPP: BIOLOGY && PISCES
   ! Iron dust deposition forcing file for PISCES.
   bioname = "CROCO_FILES/croco_frcbio.nc"
+/
+
+! --- Biogeochemical diagnostics  (CPP: DIAGNOSTICS_BIO) ---
+
+&croco_diagnostics_bio
+  ! CPP: DIAGNOSTICS_BIO
+  ldefdiabio  = .true.
+  nwrtdiabio  = 72
+  nrpfdiabio  = 0
+  dianamebio  = "CROCO_FILES/croco_diabio.nc"
+/
+
+&croco_diagbio_avg
+  ! CPP: DIAGNOSTICS_BIO && AVERAGES
+  ldefdiabio_avg = .true.
+  ntsdiabio_avg  = 1
+  nwrtdiabio_avg = 72
+  nrpfdiabio_avg = 0
+  dianamebio_avg = "CROCO_FILES/croco_diabio_avg.nc"
 /
 
 ! --- Body force  (CPP: BODYFORCE) ---
@@ -1052,11 +1054,6 @@
   ! CPP: DIAGNOSTICS_BIO
   ! Array of size NumFluxTerms.
   out_his_diagbioFlux = 1*.true.   ! Bio flux diagnostics
-/
-
-&croco_diagbioVSink_history_fields
-  ! CPP: DIAGNOSTICS_BIO
-  ! Array of size NumVSinkTerms.
   out_his_diagbioVSink = 1*.true.   ! Bio vertical sinking diagnostics
 /
 
@@ -1309,10 +1306,6 @@
 &croco_diagbioFlux_average_fields
   ! CPP: DIAGNOSTICS_BIO && AVERAGES
   out_avg_diagbioFlux = 1*.true.
-/
-
-&croco_diagbioVSink_average_fields
-  ! CPP: DIAGNOSTICS_BIO && AVERAGES
   out_avg_diagbioVSink = 1*.true.
 /
 

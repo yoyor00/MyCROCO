@@ -447,10 +447,10 @@ MAPPINGS = [
     ("diags_pv_average_fields", 0, 0, "bool_array", "&croco_diags_pv_average_fields", "out_avg_diags_pv_tracer"),
     ("diags_eddy_average_fields", 0, 0, "bool", "&croco_diags_eddy_average_fields", "out_avg_diags_eddy"),
     ("diagbioFlux_history_fields", 0, 0, "bool_array:NumFluxTerms", "&croco_diagbioFlux_history_fields", "out_his_diagbioFlux"),
-    ("diagbioVSink_history_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_history_fields", "out_his_diagbioVSink"),
+    ("diagbioFlux_history_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_history_fields", "out_his_diagbioVSink"),
     ("diagbioGasExc_history_fields", 0, 0, "bool_array:NumGasExcTerms", "&croco_diagbioGasExc_history_fields", "out_his_diagbioGasExc"),
     ("diagbioFlux_average_fields", 0, 0, "bool_array:NumFluxTerms", "&croco_diagbioFlux_average_fields", "out_avg_diagbioFlux"),
-    ("diagbioVSink_average_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_average_fields", "out_avg_diagbioVSink"),
+    ("diagbioFlux_average_fields", 0, 0, "bool_array:NumVSinkTerms", "&croco_diagbioVSink_average_fields", "out_avg_diagbioVSink"),
     ("diagbioGasExc_average_fields", 0, 0, "bool_array:NumGasExcTerms", "&croco_diagbioGasExc_average_fields", "out_avg_diagbioGasExc"),
 ]
 
