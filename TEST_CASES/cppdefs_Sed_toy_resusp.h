@@ -25,6 +25,11 @@
 # ifdef SEDIMENT
 #  define SUSPLOAD
 #  undef  BEDLOAD
+#  undef  BBL
+#  define GLS_MIXING
+#  define GLS_KOMEGA
+#  define MIXED_BED
+#  undef  COHESIVE_BED
 # endif
 
 # undef  MORPHODYN
