@@ -44,7 +44,7 @@
     },
     "splitting": {},
     "patches": {
-      "TEST_CASES/param_Single_column.h": {
+      "param.h": {
         "mode": "replace",
         "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
         "by": "      integer, parameter :: N = 150   ! DIURNAL_CYCLE",
@@ -69,7 +69,7 @@
     },
     "splitting": {},
     "patches": {
-      "TEST_CASES/param_Single_column.h": {
+      "param.h": {
         "mode": "replace",
         "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
         "by": "      integer, parameter :: N = 50    ! WILLIS_DEARDORFF",
@@ -94,7 +94,7 @@
     },
     "splitting": {},
     "patches": {
-      "TEST_CASES/param_Single_column.h": {
+      "param.h": {
         "mode": "replace",
         "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
         "by": "      integer, parameter :: N = 40    ! FORCED_EKBBL",
@@ -119,7 +119,7 @@
     },
     "splitting": {},
     "patches": {
-      "TEST_CASES/param_Single_column.h": {
+      "param.h": {
         "mode": "replace",
         "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
         "by": "      integer, parameter :: N = 25    ! FORCED_DBLEEK",
@@ -144,7 +144,7 @@
     },
     "splitting": {},
     "patches": {
-      "TEST_CASES/param_Single_column.h": {
+      "param.h": {
         "mode": "replace",
         "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
         "by": "      integer, parameter :: N = 50    ! FORCED_NONROTBBL",
@@ -169,7 +169,7 @@
     },
     "splitting": {},
     "patches": {
-      "TEST_CASES/param_Single_column.h": {
+      "param.h": {
         "mode": "replace",
         "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
         "by": "      integer, parameter :: N = 50    ! OSCNONROTBBL",

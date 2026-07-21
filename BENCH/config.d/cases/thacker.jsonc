@@ -18,7 +18,7 @@
         "by": "ntimes = 600",
         "descr": "Set stepping (ntimes=600)",
       },
-      "TEST_CASES/param_Thacker.h": {
+      "param.h": {
         "mode": "replace",
         "what": "integer, parameter :: MMm0 = 1",
         "by": "      integer, parameter :: MMm0 = 200",
@@ -38,8 +38,7 @@
       "plotphy_script_input": "thacker_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
-    "patches": {
-    },
+    "patches": {},
     "check_outputs": ["thacker_his.nc"],
   },
 }

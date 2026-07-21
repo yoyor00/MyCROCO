@@ -21,7 +21,7 @@
     "cppkeys": { "KH_INSTY": true },
     "splitting": { "1": "1x1", "2": "1x2", "4": "1x4" },
     "patches": {
-      "TEST_CASES/param_KH_INST.h": [
+      "param.h": [
         {
           "mode": "replace",
           "what": "integer, parameter :: LLm0 = 128",
@@ -54,7 +54,7 @@
     "cppkeys": { "KH_INST3D": true },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "patches": {
-      "TEST_CASES/param_KH_INST.h": [
+      "param.h": [
         {
           "mode": "replace",
           "what": "integer, parameter :: LLm0 = 128",

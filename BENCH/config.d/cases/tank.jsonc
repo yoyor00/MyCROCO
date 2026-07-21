@@ -18,7 +18,7 @@
     "cppkeys": { "TANKY": true },
     "splitting": { "1": "1x1", "2": "1x2" },
     "patches": {
-      "TEST_CASES/param_Tank.h": [
+      "TEST_CASES/param.h": [
         {
           "mode": "replace",
           "what": "integer, parameter :: LLm0 = 50",
