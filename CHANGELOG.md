@@ -51,6 +51,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - PISCES : Bug - Switch from relative to potential density for surface pH proxy,
            inconsistent with what done for calcite dissolution (#531)
+           Big fix in the calculation of NEW primary productivity with XIOS (#535)
 
 ### Changed
 
