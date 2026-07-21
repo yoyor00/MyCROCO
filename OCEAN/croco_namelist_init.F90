@@ -2411,30 +2411,7 @@ contains
 #  endif
       integer :: ios
 
-      integer :: Nsrc
-      integer :: Isrc(Msrc), Jsrc(Msrc), Dsrc(Msrc)
-      real    :: Qbar(Msrc)
-      common/source_Nsrc/Nsrc
-      common/source_Isrc/Isrc
-      common/source_Jsrc/Jsrc
-      common/source_Dsrc/Dsrc
-      common/source_Qbar/Qbar
-#  if defined TRACERS
-      logical :: Lsrc(Msrc, NT)
-      real    :: Tsrc0(Msrc, NT)
-      common/source_Lsrc/Lsrc
-      common/source_Tsrc0/Tsrc0
-#  endif
-#  ifdef PSOURCE_NCFILE
-      real :: qbardir(Msrc)
-      common/source_qbardir/qbardir
-#  endif
-#  ifdef MPI
-      integer :: Isrc_mpi(Msrc, 0:NNODES - 1)
-      integer :: Jsrc_mpi(Msrc, 0:NNODES - 1)
-      common/source_Isrc_mpi/Isrc_mpi
-      common/source_Jsrc_mpi/Jsrc_mpi
-#  endif
+#  include "sources.h"
 
 #  ifdef PSOURCE_NCFILE
       open (testunit, file=trim(psource_qbarname), status='old', iostat=ios)
