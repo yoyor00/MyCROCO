@@ -308,11 +308,7 @@ C$OMP END PARALLEL
 
 !#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
-#ifdef MILES
-      vname(1,indxTime)='ocean_time'
-#else
       vname(1,indxTime)='scrum_time'
-#endif
       vname(2,indxTime)='time since initialization'
 #if defined USE_CALENDAR && defined ANA_INITIAL
       vname(3,indxTime)='seconds since '//start_date

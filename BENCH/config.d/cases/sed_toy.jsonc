@@ -1,23 +1,16 @@
 {
   // SED_TOY — 1D single-column sediment test cases
   //
-  // Each case has its own standalone cppdefs file; no cppkeys dispatch needed.
-  // param_file varies by grid dimensions and ntrc_subs:
-  //   param_Sed_toy_rouse.h   : 5 x 5 x 100
-  //   param_Sed_toy_consolid.h: 4 x 3 x 20  (also used for resusp)
-  //   param_Sed_toy_floc_0d.h : 5 x 5 x 50, ntrc_subs=15
-  //   param_Sed_toy_floc_1d.h : 5 x 5 x 50, ntrc_subs=8
-
   "SED_TOY_ROUSE": {
     "title": "SED_TOY_ROUSE - (5 x 5 x 100 : 2500)",
-    "case": "SED_TOY",
-    "cppdefs_file": "TEST_CASES/cppdefs_Sed_toy_rouse.h",
-    "param_file": "TEST_CASES/param_Sed_toy_rouse.h",
-    "nml_file": "TEST_CASES/croco_Sed_toy_rouse.nml",
+    "case": "SED_TOY_ROUSE",
+    "nml_file": "TEST_CASES/SED_TOY/croco_SED_TOY_ROUSE.nml",
+    "cppdefs_file": "TEST_CASES/SED_TOY/cppdefs_SED_TOY_ROUSE.h",
+    "param_file": "TEST_CASES/SED_TOY/param_SED_TOY_ROUSE.h",
     "splitting": {},
     "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_sed_toy_rouse.py",
+      "plotphy_script": "./TEST_CASES/SED_TOY/plot_sed_toy_rouse.py",
       "plotphy_script_input": "sed_toy_rouse_his.nc",
     },
     "check_outputs": ["sed_toy_rouse_his.nc"],
@@ -25,14 +18,14 @@
   },
   "SED_TOY_CONSOLID": {
     "title": "SED_TOY_CONSOLID - (4 x 3 x 20 : 240)",
-    "case": "SED_TOY",
-    "cppdefs_file": "TEST_CASES/cppdefs_Sed_toy_consolid.h",
-    "param_file": "TEST_CASES/param_Sed_toy_consolid.h",
-    "nml_file": "TEST_CASES/croco_Sed_toy_consolid.nml",
+    "case": "SED_TOY_CONSOLID",
+    "nml_file": "TEST_CASES/SED_TOY/croco_SED_TOY_CONSOLID.nml",
+    "cppdefs_file": "TEST_CASES/SED_TOY/cppdefs_SED_TOY_CONSOLID.h",
+    "param_file": "TEST_CASES/SED_TOY/param_SED_TOY_CONSOLID.h",
     "splitting": {},
     "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_sed_toy_consolid.py",
+      "plotphy_script": "./TEST_CASES/SED_TOY/plot_sed_toy_consolid.py",
       "plotphy_script_input": "sed_toy_consolid_his.nc",
     },
     "check_outputs": ["sed_toy_consolid_his.nc"],
@@ -40,45 +33,45 @@
   },
   "SED_TOY_RESUSP": {
     "title": "SED_TOY_RESUSP - (4 x 3 x 20 : 240)",
-    "case": "SED_TOY",
-    "cppdefs_file": "TEST_CASES/cppdefs_Sed_toy_resusp.h",
-    "param_file": "TEST_CASES/param_Sed_toy_consolid.h",
-    "nml_file": "TEST_CASES/croco_Sed_toy_resusp.nml",
+    "case": "SED_TOY_RESUSP",
+    "nml_file": "TEST_CASES/SED_TOY/croco_SED_TOY_RESUSP.nml",
+    "cppdefs_file": "TEST_CASES/SED_TOY/cppdefs_SED_TOY_RESUSP.h",
+    "param_file": "TEST_CASES/SED_TOY/param_SED_TOY_RESUSP.h",
     "splitting": {},
     "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_sed_toy_resusp.py",
+      "plotphy_script": "./TEST_CASES/SED_TOY/plot_sed_toy_resusp.py",
       "plotphy_script_input": "sed_toy_resusp_his.nc",
     },
     "check_outputs": ["sed_toy_resusp_his.nc"],
     "unsupported": ["restart", "openmp", "mpi"],
   },
-  "SED_TOY_FLOC0D": {
+  "SED_TOY_FLOC_0D": {
     "title": "SED_TOY_FLOC_0D - (5 x 5 x 50 : 1250)",
-    "case": "SED_TOY",
-    "cppdefs_file": "TEST_CASES/cppdefs_Sed_toy_floc_0d.h",
-    "param_file": "TEST_CASES/param_Sed_toy_floc_0d.h",
-    "nml_file": "TEST_CASES/croco_Sed_toy_floc_0d.nml",
+    "case": "SED_TOY_FLOC_0D",
+    "nml_file": "TEST_CASES/SED_TOY/croco_SED_TOY_FLOC_0D.nml",
+    "cppdefs_file": "TEST_CASES/SED_TOY/cppdefs_SED_TOY_FLOC_0D.h",
+    "param_file": "TEST_CASES/SED_TOY/param_SED_TOY_FLOC_0D.h",
     "splitting": {},
     "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_flocmod.py",
+      "plotphy_script": "./TEST_CASES/SED_TOY/plot_flocmod.py",
       "plotphy_script_input": "sed_toy_floc_his.nc",
       "plotphy_script_options": "--mode 0D",
     },
     "check_outputs": ["sed_toy_floc_his.nc"],
     "unsupported": ["restart", "openmp", "mpi"],
   },
-  "SED_TOY_FLOC1D": {
+  "SED_TOY_FLOC_1D": {
     "title": "SED_TOY_FLOC_1D - (5 x 5 x 50 : 1250)",
-    "case": "SED_TOY",
-    "cppdefs_file": "TEST_CASES/cppdefs_Sed_toy_floc_1d.h",
-    "param_file": "TEST_CASES/param_Sed_toy_floc_1d.h",
-    "nml_file": "TEST_CASES/croco_Sed_toy_floc_1d.nml",
+    "case": "SED_TOY_FLOC_1D",
+    "nml_file": "TEST_CASES/SED_TOY/croco_SED_TOY_FLOC_1D.nml",
+    "cppdefs_file": "TEST_CASES/SED_TOY/cppdefs_SED_TOY_FLOC_1D.h",
+    "param_file": "TEST_CASES/SED_TOY/param_SED_TOY_FLOC_1D.h",
     "splitting": {},
     "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_flocmod.py",
+      "plotphy_script": "./TEST_CASES/SED_TOY/plot_flocmod.py",
       "plotphy_script_input": "sed_toy_floc_his.nc",
       "plotphy_script_options": "--mode 1DV",
     },

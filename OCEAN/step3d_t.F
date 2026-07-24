@@ -45,7 +45,7 @@
 #  endif
      &  )
 
-      use croco_namelist, only: dt
+      use croco_namelist, only: dt, lts_hadv
 #  ifdef SUBSTANCE
       USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand
 #   ifdef MUSTANG
@@ -507,11 +507,11 @@
 #  undef PREDICTOR
 #  include "compute_vert_tracer_fluxes.h"
 
-#  ifdef TS_HADV_TEST
-        do i=Istr,Iend
-          FC(i,0:N)=0.
-        enddo
-#  endif
+        if (lts_hadv) then
+          do i=Istr,Iend
+            FC(i,0:N)=0.
+          enddo
+        endif
 
 !
 !----------------------------------------------------------

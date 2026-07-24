@@ -92,9 +92,10 @@ contains
       integer :: nmlunit, ios
       logical :: found
 
+      namelist /croco_testcase/ testcase_name
       namelist /croco_title/ title
       namelist /croco_logfile/ logname
-      namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo
+      namelist /croco_time_stepping/ dt, ntimes, ndtfast, ninfo, m2filter_alpha
       namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
       namelist /croco_initial/ nrrec, ininame
       namelist /croco_restart/ nrst, nrpfrst, rstname
@@ -156,7 +157,8 @@ contains
 #  endif
 #endif
 #ifdef WAVE_MAKER
-      namelist /croco_wave_maker/ wmaker_amp, wmaker_prd, wmaker_dir, wmaker_dsp, wmaker_fsp
+      namelist /croco_wave_maker/ wmaker_amp, wmaker_prd, wmaker_dir, wmaker_dsp, wmaker_fsp, &
+                                  wmaker_wf1, wmaker_wf2, wmaker_wa1, wmaker_wa2
 #endif
 #ifdef AVERAGES
       namelist /croco_averages/ ntsavg, navg, nrpfavg, avgname
@@ -672,6 +674,16 @@ contains
       !     because continuing to read a corrupt file is meaningless.
       ! In both cases the file is closed by read_nml.
       ! ----------------------------------------------------------------
+
+      ! --- croco_testcase (optional) ---
+      call check_nml_presence(nmlunit, "croco_testcase", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_testcase, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_testcase (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
 
       ! --- croco_title (optional) ---
       call check_nml_presence(nmlunit, "croco_title", .false., found, ierr)
@@ -2193,6 +2205,7 @@ contains
       MPI_master_only WRITE (stdout, *)
 
       MPI_master_only WRITE (stdout, *) "1.  GENERAL ----------------------------------------"
+      MPI_master_only WRITE (stdout, nml=croco_testcase)
       MPI_master_only WRITE (stdout, nml=croco_title)
 #ifdef LOGFILE
       MPI_master_only WRITE (stdout, nml=croco_logfile)

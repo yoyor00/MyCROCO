@@ -42,7 +42,8 @@ c********************************************************************
       subroutine prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
      &                                       dR,dZ, FC,dZx,rx,dRx)
 !
-      USE croco_namelist, ONLY: rho0
+      USE croco_namelist, ONLY: rho0, lekman_apg, lnonrot, UG_forced
+      USE croco_namelist, ONLY: lts_hadv, loscnonrot
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax
 #  include "param.h"
@@ -61,22 +62,7 @@ c********************************************************************
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
-#  ifdef INNERSHELF_APG
-! Impose alongshore pressure gradient balancing
-! a constant cross-shore geostrophic flow UG (m/s)
-       real UG
-       parameter (UG=0.02)
-#  elif defined FORCED_EKBBL
-       real UG
-       parameter (UG=10.0)
-#  elif defined  FORCED_DBLEEK
-       real UG
-       parameter (UG=0.0015)
-#  elif defined FORCED_OSCNONROTBBL || defined FORCED_NONROTBBL
-       real gdzetady, omega
-       parameter (gdzetady=2.e-6*9.81)
-       parameter (omega=2.*pi/(12.4*3600.))
-#  endif
+       real apg_forced, gdzetady, omega
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
 #   include "diagnostics.h"
@@ -92,9 +78,6 @@ c********************************************************************
 #  endif
 #  ifdef POT_TIDES
 #   include "tides.h"
-#  endif
-#  ifdef SED_TOY
-#   include "forces.h"
 #  endif
 #  include "openacc_work.h"
 !
@@ -153,6 +136,8 @@ c********************************************************************
 !
       GRho=g/rho0
       HalfGRho=0.5*GRho
+      gdzetady = 2.e-6*9.81
+      omega    = 2.*pi/(12.4*3600.)
 
 !$acc kernels if(compute_on_device) default(present)
       !do j=JstrV-1,Jend
@@ -423,15 +408,17 @@ c********************************************************************
 
         do j=JstrV,Jend
           do i=Istr,Iend
+            if (lekman_apg) then
+              apg_forced = on_v(i,j)*f(i,j)*UG_forced
+            elseif (loscnonrot) then
+              apg_forced = -gdzetady*cos(omega*time)*on_v(i,j)
+            elseif (lnonrot) then
+              apg_forced = -gdzetady*on_v(i,j)
+            else
+              apg_forced = 0.
+            endif
             rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*(
-
-#  if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
-     &                on_v(i,j)*f(i,j)*UG +  ! specified alongshore PG
-#  elif defined FORCED_OSCNONROTBBL
-     &     -gdzetady*cos(omega*time)*on_v(i,j)+
-#  elif defined FORCED_NONROTBBL
-     &     -gdzetady*on_v(i,j)+
-#  endif
+     &                apg_forced +
      &                                             P(i,j-1,k)-P(i,j,k)
 #  ifndef PGF_FLAT_BOTTOM
      &                           -HalfGRho*( (rho(i,j,k)+rho(i,j-1,k))
@@ -515,7 +502,7 @@ c********************************************************************
 #  endif
      &                                           )
 !
-      USE croco_namelist, ONLY: rho0
+      USE croco_namelist, ONLY: rho0, lts_hadv
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"
@@ -785,20 +772,20 @@ c********************************************************************
 !
 !--------------------------------------------------------------------
 !
-# ifdef TS_HADV_TEST
-      do k=1,N
-        do j=Jstr,Jend
-          do i=IstrU,Iend
-            ru(i,j,k)  = 0.d0
+      if (lts_hadv) then
+        do k=1,N
+          do j=Jstr,Jend
+            do i=IstrU,Iend
+              ru(i,j,k)  = 0.d0
+            enddo
+          enddo
+          do j=JstrV,Jend
+            do i=Istr,Iend
+              rv(i,j,k)  = 0.d0
+            enddo
           enddo
         enddo
-        do j=JstrV,Jend
-          do i=Istr,Iend
-            rv(i,j,k)  = 0.d0
-          enddo
-        enddo
-      enddo
-# endif
+      endif
 !$acc end kernels
 
 !

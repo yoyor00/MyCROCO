@@ -42,6 +42,7 @@ contains
       implicit none
       integer, intent(inout) :: ierr
 
+      call check_testcase(ierr)
       call check_time_stepping(ierr)
 #ifdef NBQ
       call check_time_stepping_nbq(ierr)
@@ -67,6 +68,88 @@ contains
 #endif
 
    end subroutine check_all
+
+   !---------------------------------------------------------------------
+   !  check_testcase
+   !  Validates testcase_name against the list of known test-case names.
+   !  An empty name ('') is always valid (realistic / no dispatch needed).
+   !  Known sub-variants (e.g. CANYON_STRAT, ESTUARY_SQUARE) are accepted
+   !  alongside their parent name.
+   !---------------------------------------------------------------------
+   subroutine check_testcase(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: testcase_name
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+
+      logical :: found
+      character(len=64) :: tc
+
+      tc = adjustl(testcase_name)
+      if (len_trim(tc) == 0) return     ! empty → realistic config, always OK
+
+      ! Canonical test-case names (including known sub-variants).
+      ! SELECT CASE avoids a large array constructor that trips AGRIF conv.
+      select case (trim(tc))
+      ! ── analytic idealised ─────────────────────────────────────────────
+      case ('ACOUSTIC', 'BASIN', &
+            'CANYON', 'CANYON_STRAT', &
+            'EQUATOR', &
+            'GRAV_ADJ', &
+            'IGW', &
+            'INNERSHELF', 'INNERSHELF_EKMAN', &
+            'INTERNAL', &
+            'ISOLITON', &
+            'ANA_JET', &
+            'KH_INST', 'KH_INST3D', 'KH_INSTY', &
+            'KILPATRICK', &
+            'MOVING_BATHY', &
+            'OVERFLOW', &
+            'SANDBAR', 'SANDBAR_OFFSHORE', 'SANDBAR_ONSHORE', &
+            'SEAMOUNT', &
+            'SHELFRONT', &
+            'SHOREFACE', &
+            'SOLITON', &
+            'SWASH', &
+            'TANK', 'TANKY', &
+            'THACKER', 'THACKER_2DV', &
+            'TIDAL_FLAT', &
+            'TS_HADV_TEST', 'TS_HADV_TEST_DIAG', &
+            'TS_HADV_TEST_ROT', 'TS_HADV_TEST_PER', &
+            'UPWELLING', &
+            'VORTEX', &
+      ! ── wave / nearshore ───────────────────────────────────────────────
+            'RIP', 'RIP_TOPO_2D', 'BISCA', 'GRANDPOPO', &
+            'FLASH_RIP', &
+      ! ── sediment / morphodynamics ──────────────────────────────────────
+            'ANA_DUNE', &
+            'DUNE', 'DUNE3D', &
+            'ESTUARY', 'ESTUARY_SQUARE', &
+            'RIVER', &
+            'SEAGRASS', &
+            'SED_TOY', 'SED_TOY_CONSOLID', 'SED_TOY_FLOC_0D', &
+            'SED_TOY_FLOC_1D', 'SED_TOY_RESUSP', 'SED_TOY_ROUSE', &
+      ! ── single-column sub-variants ─────────────────────────────────────
+            'SC_KATO_PHILLIPS', 'SC_WILLIS_DEARDORFF', 'SC_DIURNAL_CYCLE', &
+            'SC_FORCED_EKBBL', 'SC_FORCED_DBLEEK', &
+            'SC_FORCED_NONROTBBL', 'SC_FORCED_OSCNONROTBBL')
+         found = .true.
+      case default
+         found = .false.
+      end select
+
+      if (.not. found) then
+         MPI_master_only write (stdout, '(a,a,a)') &
+            'Warning - testcase_name = ''', trim(tc), &
+            ''' is not in the list of known test cases. ' // &
+            'Analytical routines (ANA_GRID, ANA_INITIAL, ANA_VMIX) ' // &
+            'may fall through to their ''case default'' branch.'
+      end if
+
+   end subroutine check_testcase
 
    !---------------------------------------------------------------------
    !  check_time_stepping

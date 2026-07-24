@@ -1,27 +1,24 @@
 {
-  // SINGLE_COLUMN — 1D water column test cases
+  // Single-column (1D water-column) test cases
   //
-  // All cases share cppdefs_Single_column.h (default: KATO_PHILLIPS)
-  // and param_Single_column.h (default: N=100).
-  // Activate each experiment via cppkeys; patch N when it differs from default.
-  //   KATO_PHILLIPS        : N=100 (no patch)
-  //   DIURNAL_CYCLE        : N=150
-  //   WILLIS_DEARDORFF     : N=50
-  //   FORCED_NONROTBBL     : N=50
-  //   FORCED_OSCNONROTBBL  : N=50
-  //   FORCED_EKBBL         : N=40
-  //   FORCED_DBLEEK        : N=25
+  // The active experiment is selected at compile time name
+  // when it differs from the default.
+  //   SC_KATO_PHILLIPS        : N=100
+  //   SC_DIURNAL_CYCLE        : N=150
+  //   SC_WILLIS_DEARDORFF     : N=50
+  //   SC_FORCED_NONROTBBL     : N=50
+  //   SC_FORCED_OSCNONROTBBL  : N=50
+  //   SC_FORCED_EKBBL         : N=40
+  //   SC_FORCED_DBLEEK        : N=25
 
-  "SINGLE_COLUMN_KATO_PHILLIPS": {
-    "title": "SINGLE_COLUMN - KATO_PHILLIPS - (5 x 5 x 100 : 3600)",
-    "case": "SINGLE_COLUMN",
-    "cppkeys": {
-      "KATO_PHILLIPS": true,
-    },
-    "param_file": "TEST_CASES/param_Single_column.h",
-    "nml_file": "TEST_CASES/croco_KATO_PHILLIPS.nml",
+  "SC_KATO_PHILLIPS": {
+    "title": "SC_KATO_PHILLIPS - (5 x 5 x 100 : 3600)",
+    "case": "SC_KATO_PHILLIPS",
+    "cppdefs_file": "TEST_CASES/SINGLE_COLUMN/cppdefs_SC_KATO_PHILLIPS.h",
+    "param_file": "TEST_CASES/SINGLE_COLUMN/param_SC_KATO_PHILLIPS.h",
+    "nml_file": "TEST_CASES/SINGLE_COLUMN/croco_SC_KATO_PHILLIPS.nml",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script": "./TEST_CASES/SINGLE_COLUMN/plot_single_column.py",
       "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
@@ -29,153 +26,105 @@
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
-  "SINGLE_COLUMN_DIURNAL_CYCLE": {
-    "title": "SINGLE_COLUMN - DIURNAL_CYCLE - (5 x 5 x 150 : 23040)",
-    "case": "SINGLE_COLUMN",
-    "cppkeys": {
-      "KATO_PHILLIPS": false,
-      "DIURNAL_CYCLE": true,
-    },
-    "param_file": "TEST_CASES/param_Single_column.h",
-    "nml_file": "TEST_CASES/croco_DIURNALCYCLE.nml",
+  "SC_DIURNAL_CYCLE": {
+    "title": "SC_DIURNAL_CYCLE - (5 x 5 x 150 : 23040)",
+    "case": "SC_DIURNAL_CYCLE",
+    "cppdefs_file": "TEST_CASES/SINGLE_COLUMN/cppdefs_SC_DIURNAL_CYCLE.h",
+    "param_file": "TEST_CASES/SINGLE_COLUMN/param_SC_DIURNAL_CYCLE.h",
+    "nml_file": "TEST_CASES/SINGLE_COLUMN/croco_SC_DIURNAL_CYCLE.nml",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script": "./TEST_CASES/SINGLE_COLUMN/plot_single_column.py",
       "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
-    "patches": {
-      "param.h": {
-        "mode": "replace",
-        "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
-        "by": "      integer, parameter :: N = 150   ! DIURNAL_CYCLE",
-        "descr": "Switch to N=150 for DIURNAL_CYCLE",
-      },
-    },
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
-  "SINGLE_COLUMN_WILLIS_DEARDORFF": {
-    "title": "SINGLE_COLUMN - WILLIS_DEARDORFF - (5 x 5 x 50 : 8640)",
-    "case": "SINGLE_COLUMN",
-    "cppkeys": {
-      "KATO_PHILLIPS": false,
-      "WILLIS_DEARDORFF": true,
-    },
-    "param_file": "TEST_CASES/param_Single_column.h",
-    "nml_file": "TEST_CASES/croco_WILLIS_DEARDORFF.nml",
+  "SC_WILLIS_DEARDORFF": {
+    "title": "SC_WILLIS_DEARDORFF - (5 x 5 x 50 : 8640)",
+    "case": "SC_WILLIS_DEARDORFF",
+    "cppdefs_file": "TEST_CASES/SINGLE_COLUMN/cppdefs_SC_WILLIS_DEARDORFF.h",
+    "param_file": "TEST_CASES/SINGLE_COLUMN/param_SC_WILLIS_DEARDORFF.h",
+    "nml_file": "TEST_CASES/SINGLE_COLUMN/croco_SC_WILLIS_DEARDORFF.nml",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script": "./TEST_CASES/SINGLE_COLUMN/plot_single_column.py",
       "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
-    "patches": {
-      "param.h": {
-        "mode": "replace",
-        "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
-        "by": "      integer, parameter :: N = 50    ! WILLIS_DEARDORFF",
-        "descr": "Switch to N=50 for WILLIS_DEARDORFF",
-      },
-    },
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
-  "SINGLE_COLUMN_FORCED_EKBBL": {
-    "title": "SINGLE_COLUMN - FORCED_EKBBL - (5 x 5 x 40 : 23040)",
-    "case": "SINGLE_COLUMN",
-    "cppkeys": {
-      "KATO_PHILLIPS": false,
-      "FORCED_EKBBL": true,
-    },
-    "param_file": "TEST_CASES/param_Single_column.h",
-    "nml_file": "TEST_CASES/croco_FORCED_EKBBL.nml",
+  "SC_FORCED_EKBBL": {
+    "title": "SC_FORCED_EKBBL - (5 x 5 x 40 : 23040)",
+    "case": "SC_FORCED_EKBBL",
+    "cppdefs_file": "TEST_CASES/SINGLE_COLUMN/cppdefs_SC_FORCED_EKBBL.h",
+    "param_file": "TEST_CASES/SINGLE_COLUMN/param_SC_FORCED_EKBBL.h",
+    "nml_file": "TEST_CASES/SINGLE_COLUMN/croco_SC_FORCED_EKBBL.nml",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script": "./TEST_CASES/SINGLE_COLUMN/plot_single_column.py",
       "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
-    "patches": {
-      "param.h": {
-        "mode": "replace",
-        "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
-        "by": "      integer, parameter :: N = 40    ! FORCED_EKBBL",
-        "descr": "Switch to N=40 for FORCED_EKBBL",
-      },
-    },
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
-  "SINGLE_COLUMN_FORCED_DBLEEK": {
-    "title": "SINGLE_COLUMN - FORCED_DBLEEK - (5 x 5 x 25 : 2880)",
-    "case": "SINGLE_COLUMN",
+  "SC_FORCED_DBLEEK": {
+    "title": "SC_FORCED_DBLEEK - (5 x 5 x 25 : 2880)",
+    "case": "SC_FORCED_DBLEEK",
     "cppkeys": {
       "KATO_PHILLIPS": false,
       "FORCED_DBLEEK": true,
     },
-    "param_file": "TEST_CASES/param_Single_column.h",
-    "nml_file": "TEST_CASES/croco_FORCED_DBLEEK.nml",
+    "cppdefs_file": "TEST_CASES/SINGLE_COLUMN/cppdefs_SC_FORCED_DBLEEK.h",
+    "param_file": "TEST_CASES/SINGLE_COLUMN/param_SC_FORCED_DBLEEK.h",
+    "nml_file": "TEST_CASES/SINGLE_COLUMN/croco_SC_FORCED_DBLEEK.nml",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script": "./TEST_CASES/SINGLE_COLUMN/plot_single_column.py",
       "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
-    "patches": {
-      "param.h": {
-        "mode": "replace",
-        "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
-        "by": "      integer, parameter :: N = 25    ! FORCED_DBLEEK",
-        "descr": "Switch to N=25 for FORCED_DBLEEK",
-      },
-    },
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
-  "SINGLE_COLUMN_FORCED_NONROTBBL": {
-    "title": "SINGLE_COLUMN - FORCED_NONROTBBL - (5 x 5 x 50 : 3600)",
-    "case": "SINGLE_COLUMN",
+  "SC_FORCED_NONROTBBL": {
+    "title": "SC_FORCED_NONROTBBL - (5 x 5 x 50 : 3600)",
+    "case": "SC_FORCED_NONROTBBL",
     "cppkeys": {
       "KATO_PHILLIPS": false,
       "FORCED_NONROTBBL": true,
     },
-    "param_file": "TEST_CASES/param_Single_column.h",
-    "nml_file": "TEST_CASES/croco_FORCED_NONROTBBL.nml",
+    "cppdefs_file": "TEST_CASES/SINGLE_COLUMN/cppdefs_SC_FORCED_NONROTBBL.h",
+    "param_file": "TEST_CASES/SINGLE_COLUMN/param_SC_FORCED_NONROTBBL.h",
+    "nml_file": "TEST_CASES/SINGLE_COLUMN/croco_SC_FORCED_NONROTBBL.nml",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script": "./TEST_CASES/SINGLE_COLUMN/plot_single_column.py",
       "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
-    "patches": {
-      "param.h": {
-        "mode": "replace",
-        "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
-        "by": "      integer, parameter :: N = 50    ! FORCED_NONROTBBL",
-        "descr": "Switch to N=50 for FORCED_NONROTBBL",
-      },
-    },
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
-  "SINGLE_COLUMN_FORCED_OSCNONROTBBL": {
-    "title": "SINGLE_COLUMN - FORCED_OSCNONROTBBL - (5 x 5 x 50 : 7200)",
-    "case": "SINGLE_COLUMN",
+  "SC_FORCED_OSCNONROTBBL": {
+    "title": "SC_FORCED_OSCNONROTBBL - (5 x 5 x 50 : 7200)",
+    "case": "SC_FORCED_OSCNONROTBBL",
     "cppkeys": {
       "KATO_PHILLIPS": false,
       "FORCED_OSCNONROTBBL": true,
     },
-    "param_file": "TEST_CASES/param_Single_column.h",
-    "nml_file": "TEST_CASES/croco_FORCED_OSCNONROTBBL.nml",
+    "cppdefs_file": "TEST_CASES/SINGLE_COLUMN/cppdefs_SC_FORCED_OSCNONROTBBL.h",
+    "param_file": "TEST_CASES/SINGLE_COLUMN/param_SC_FORCED_OSCNONROTBBL.h",
+    "nml_file": "TEST_CASES/SINGLE_COLUMN/croco_SC_FORCED_OSCNONROTBBL.nml",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_single_column.py",
+      "plotphy_script": "./TEST_CASES/SINGLE_COLUMN/plot_single_column.py",
       "plotphy_script_input": "scm_his.nc",
     },
     "splitting": {},
-    "patches": {
-      "param.h": {
-        "mode": "replace",
-        "what": "integer, parameter :: N = 100   ! KATO_PHILLIPS (default)",
-        "by": "      integer, parameter :: N = 50    ! OSCNONROTBBL",
-        "descr": "Switch to N=50 for FORCED_OSCNONROTBBL",
-      },
-    },
+    "patches": {},
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },

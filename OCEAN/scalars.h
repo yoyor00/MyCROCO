@@ -323,13 +323,11 @@
      &           year2day=365.25, day2year=1./365.25,
      &           jul_off=2440000.)
 !
-! Acceleration of gravity (nondimensional for Soliton problem)
-!
-#ifdef SOLITON
-      parameter (g=1.)
-#else
-      parameter (g=9.81)
+! Acceleration of gravity [m/s^2] (overridable via param_*.h)
+#ifndef GRAVITY
+# define GRAVITY 9.81
 #endif
+      parameter (g=GRAVITY)
 !
 !  Specific heat [Joules/kg/degC] for seawater, it is approximately
 !  4000, and varies only slightly (see Gill, 1982, Appendix 3).

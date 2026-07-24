@@ -100,10 +100,6 @@
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
-# ifdef SANDBAR
-#  undef  BBL_WAVE_SKEWNESS
-#  define BBL_BREAKING_STIR
-# endif
       logical SAND, SILT
       integer Iend, Istr, Jend, Jstr, i, ised, j, k
       integer ISTRm,ISTRp,IENDp,JSTRm,JSTRp,JENDp

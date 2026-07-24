@@ -44,6 +44,7 @@ contains
       integer, intent(out) :: ierr
 
       ierr = 0
+      call init_testcase()
       call init_time_stepping()
 #ifdef SOLVE3D
       call init_croco_s_coord()
@@ -353,6 +354,43 @@ contains
    !  init_time_stepping
    !  Derive dtfast from dt and ndtfast.
    !---------------------------------------------------------------------
+   !---------------------------------------------------------------------
+   !  init_testcase
+   !  Set derived logicals from testcase_name (validated by check_testcase).
+   !---------------------------------------------------------------------
+   subroutine init_testcase()
+      use croco_namelist, ONLY: testcase_name, &
+     &                         lts_hadv, lts_rot_or_diag, lts_per, &
+     &                         lekman_apg, loscnonrot, lnonrot, UG_forced, &
+     &                         wave_ramp_duration
+      implicit none
+      character(len=64) :: tc
+
+      tc = trim(testcase_name)
+
+      lts_hadv        = tc == 'TS_HADV_TEST'      .or. &
+     &                  tc == 'TS_HADV_TEST_ROT'   .or. &
+     &                  tc == 'TS_HADV_TEST_DIAG'  .or. &
+     &                  tc == 'TS_HADV_TEST_PER'
+      lts_rot_or_diag = tc == 'TS_HADV_TEST_ROT'  .or. &
+     &                  tc == 'TS_HADV_TEST_DIAG'
+      lts_per         = tc == 'TS_HADV_TEST_PER'
+
+      lekman_apg = tc == 'SC_FORCED_EKBBL'  .or. &
+     &             tc == 'SC_FORCED_DBLEEK' .or. &
+     &             tc == 'INNERSHELF'        .or. &
+     &             tc == 'INNERSHELF_EKMAN'
+      loscnonrot = tc == 'SC_FORCED_OSCNONROTBBL'
+      lnonrot    = tc == 'SC_FORCED_NONROTBBL'
+      if (tc == 'SC_FORCED_EKBBL')  UG_forced = 10.0
+      if (tc == 'SC_FORCED_DBLEEK') UG_forced = 0.0015
+      if (tc == 'INNERSHELF' .or. tc == 'INNERSHELF_EKMAN') &
+     &                               UG_forced = 0.02
+
+      if (tc == 'RIP_TOPO_2D') wave_ramp_duration = 192.
+
+   end subroutine init_testcase
+
    subroutine init_time_stepping()
       use croco_namelist, ONLY: dt, ndtfast
       use scalars, ONLY: dtfast

@@ -59,6 +59,53 @@
   logname = "croco.log"
 /
 
+&croco_testcase
+  ! Identifies the analytical test case to use appropriate parameters 
+  ! at runtime.
+  ! Leave empty (default) for realistic configurations.
+  ! 
+  ! Available test cases (validated by croco_namelist_check.F90):
+  !   ACOUSTIC,
+  !   ANA_JET,
+  !   BASIN,
+  !   CANYON, CANYON_STRAT,
+  !   DUNE, ANA_DUNE, DUNE3D, 
+  !   EQUATOR,
+  !   ESTUARY, ESTUARY_SQUARE,
+  !   FLASH_RIP,
+  !   GRAV_ADJ,
+  !   IGW,
+  !   INNERSHELF, INNERSHELF_EKMAN,
+  !   INTERNAL,
+  !   ISOLITON,
+  !   KH_INST, KH_INST3D, KH_INSTY,
+  !   KILPATRICK,
+  !   MOVING_BATHY,
+  !   OVERFLOW,
+  !   RIP, RIP_TOPO_2D, BISCA, GRANDPOPO,
+  !   RIVER,
+  !   SEAGRASS,
+  !   SANDBAR, SANDBAR_OFFSHORE, SANDBAR_ONSHORE,
+  !   SC_DIURNAL_CYCLE, SC_KATO_PHILLIPS, SC_WILLIS_DEARDORFF
+  !   SC_FORCED_EKBBL, SC_FORCED_DBLEEK, SC_FORCED_NONROTBBL, SC_FORCED_OSCNONROTBBL
+  !   SEAMOUNT,
+  !   SED_TOY, SED_TOY_CONSOLID, SED_TOY_FLOC_0D, SED_TOY_FLOC_1D,
+  !   SED_TOY_RESUSP, SED_TOY_ROUSE
+  !   SHELFRONT,
+  !   SHOREFACE, 
+  !   SOLITON,
+  !   SWASH,
+  !   TANK, TANKY,
+  !   THACKER, THACKER_2DV,
+  !   TIDAL_FLAT, 
+  !   TS_HADV_TEST, TS_HADV_TEST_ROT, TS_HADV_TEST_DIAG, TS_HADV_TEST_PER, 
+  !   UPWELLING,
+  !   VORTEX,
+
+
+  testcase_name = ''
+/
+
 
 ! ======================================================================
 ! 2.  TIME STEPPING
@@ -346,7 +393,7 @@
 
 &croco_lin_eos
   ! CPP: !NONLIN_EOS
-  ! Linear equation of state parameters (used when NONLIN_EOS is NOT defined).
+  ! Linear equation of state parameters when NONLIN_EOS is NOT defined.
   ! Reference density [kg/m3].
   R0    = 1027.0
   ! Reference potential temperature [Celsius].

@@ -9,10 +9,8 @@
       "IGW": true,
       "NBQ": false,
     },
-    "param_file": "TEST_CASES/param_Igw.h",
-    "nml_file": "TEST_CASES/croco_Igw.nml",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_IGW.py",
+      "plotphy_script": "./TEST_CASES/IGW/plot_IGW.py",
       "plotphy_script_input": "igw_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1", "6": "6x1", "8": "8x1" },
@@ -25,10 +23,9 @@
     "cppkeys": {
       "NBQ": true,
     },
-    "param_file": "TEST_CASES/param_Igw.h",
-    "nml_file": "TEST_CASES/croco_Igw_nbq.nml",
+    "nml_file": "TEST_CASES/IGW/croco_IGW_NBQ.nml",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_IGW.py",
+      "plotphy_script": "./TEST_CASES/IGW/plot_IGW.py",
       "plotphy_script_input": "igw_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },

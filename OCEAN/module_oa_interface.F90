@@ -7281,6 +7281,7 @@
 #ifdef MPI
       use module_parameter_oa, only : iminmpi, jminmpi
 #endif
+      use croco_namelist, only: testcase_name
       implicit none
 
       integer, intent(in)  :: tile, ic_u, iv_u, lt_u, la_u, imd
@@ -7450,19 +7451,15 @@
 #endif
                  !if ( (lt_u==ltrec_fst_oa(iv_u)) ) then
 
-# if ( defined IGW || defined MILES || defined TANK )
-
-#   if defined IGW
-                if ( iu_glob ==itgt_glob .and. (k_u==ktgt) ) then
-#   elif ( defined MILES || defined TANK )
-                if ( iu_glob==itgt_glob .and. ju_glob==jtgt_glob .and. k_u==ktgt ) then
-#   endif
+                if ( (trim(testcase_name) == 'IGW' .and. &
+                      iu_glob==itgt_glob .and. k_u==ktgt) .or. &
+                     ((trim(testcase_name) == 'TANK') .and. &
+                      iu_glob==itgt_glob .and. ju_glob==jtgt_glob .and. k_u==ktgt) ) then
                      io_nodoa = set_io_nodoa(iv_u,mynode,4,3)! [3/4](odd/even-iv)000+mynode
                      ! old script iv_u =1 => 30000+mynode iv_u=2 => 40000+mynode
                      write (io_nodoa,fmt='(i5,i5,i3,2(1x,ES22.15E2))')i_u,j_u,k_u &
                          ,REAL(DBLE( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) )),REAL(DIMAG( var3d_oa(i_u,j_u,k_u,tupd_oa(iv_u)) ))
                 endif
-# endif
              endif if_verb3d
 #endif
           else not_a_scalogram
@@ -8808,6 +8805,7 @@
 
       !use module_oa_variables, only : vardp_test_oa
       use module_tile_oa, only : sts, tile_test_str
+      use croco_namelist, only: testcase_name
 
       implicit none
 
@@ -8831,8 +8829,7 @@
         iper1=1
         iper2=nper_test
 
-#ifdef IGW
-       if ( scalogram_analysis ) then
+       if (trim(testcase_name) == 'IGW' .and. scalogram_analysis) then
            !iper1 = 1; iper2=nper_test
            if (iic_oa <= 52 ) then
             iper1=1 ; iper2=1
@@ -8844,7 +8841,6 @@
            !else
            endif
        endif
-#endif
 
        time_t = dti * real(iic_oa)
      
@@ -8883,6 +8879,7 @@
 
 
       use module_tile_oa, only : sts, tile_test_str
+      use croco_namelist, only: testcase_name
 
       implicit none
 
@@ -8903,7 +8900,7 @@
       double precision  :: time_t, var_t
       integer           :: i, j, k, iper, iper1, iper2
       !logical           :: ll_ptra
-#ifdef IGW
+
 ! nper3 fun2 amp 1,2,3 per 893 1132 1434
 ! 576 time steps 150s 4 * per ~ 2000s
 !      real, parameter:: dit0=90., dit1=30., dit2=60, dit3=90.
@@ -8914,12 +8911,10 @@
 !      real, parameter:: dit0=120., dit1=60., dit2=120, dit3=120.
 ! 4x864 time steps 150s 4 * per ~ 2000s _v5
       real, parameter:: dit0=480., dit1=240., dit2=480, dit3=480.
-    
-      logical,parameter::old_nper_test_2=.false.
+      logical, parameter :: old_nper_test_2=.false.
       real              :: it_phy1, it_tr12, it_phy2, it_tr23, &
                            it_phy3, it_tr34, it_phy4, it_phy5, it_phy6
       real              :: delta_it, delta_amp
-#endif
       logical,parameter::if_norm_amp=.true.
       logical,parameter::if_norm_amp_fact=.true.
       real,parameter:: fact=5
@@ -8945,7 +8940,7 @@
       endif
 
 
-#ifdef IGW
+      if (trim(testcase_name) == 'IGW') then
 
 !......IGW + scalogram test function + slow mode             
        if_sclg : if ( scalogram_analysis .and. (ichoix==0) ) then
@@ -9140,17 +9135,15 @@
 
        endif if_sclg
 
-#else
-    
-!......Test function       
+      else
+
+!......Test function
 
        do iper=iper1,iper2
          amp_test2_oa(iper) = amp_test_oa(iper)
        enddo
 
-       !write(*,*)'ERROR OA : OA test function only applied to IGW configuration ccp key'
-       !stop
-#endif
+      endif
 
 !......Select proper mode time axis
        time_t = pdti * real(iic_oa)

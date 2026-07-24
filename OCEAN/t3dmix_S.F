@@ -602,11 +602,9 @@
 # ifdef THREE_GHOST_POINTS_TS
         call exchange_r3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               t(START_2D_ARRAY,1,nnew,itrc))
-# else
-!#   ifndef BASIN        
+# else     
         call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
-     &                          t(START_2D_ARRAY,1,nnew,itrc))
-!#    endif        
+     &                          t(START_2D_ARRAY,1,nnew,itrc))    
 # endif
 #endif
 !

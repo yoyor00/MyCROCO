@@ -213,11 +213,11 @@
           Q        = spec_hum (RH,psurf,TairC)
 # else
           uwnd_r   = u_abl(i,j,2,nt_n)
-#  ifndef KILPATRICK
+#  ifndef ABL_NO_OCEAN_FEEDBACK
      &             - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
 #  endif
           vwnd_r   = v_abl(i,j,2,nt_n)
-#  ifndef KILPATRICK
+#  ifndef ABL_NO_OCEAN_FEEDBACK
      &             - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
 #  endif
           wspd0    = SQRT ( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
@@ -241,7 +241,7 @@
           Qsea   = qsat(TseaK,psurf,0.98)
 # ifdef ABL1D
           sst_abl(i,j) = TseaK*iexns
-#  ifdef KILPATRICK
+#  ifdef ABL_NO_OCEAN_FEEDBACK
           ssq_abl(i,j) = 0.0
 #  else
           ssq_abl(i,j) = Qsea
@@ -260,7 +260,7 @@
           delW(2) = wspd0_cfb
 #  endif
 # endif
-# ifdef KILPATRICK
+# ifdef ABL_NO_OCEAN_FEEDBACK
           delQ = 0.0
 # else
           delQ = Q-Qsea

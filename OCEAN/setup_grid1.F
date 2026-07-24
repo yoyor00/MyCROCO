@@ -272,9 +272,7 @@ C$    integer omp_get_thread_num
 !$acc end kernels
 
 #ifdef BD_EXCHANGE
-# ifndef BASIN      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   zob)
-# endif      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   om_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   on_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, pnom_r)

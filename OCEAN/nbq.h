@@ -245,7 +245,7 @@
 # endif
 
 !**********************************************************************
-# ifdef ACOUSTIC
+# ifdef ACOUSTIC_FORCING
       real  period_exp
       common/ACOUS1/period_exp
       real  for_a_exp

@@ -26,6 +26,20 @@ MODULE croco_namelist
    ! namelist filename (set via read_nml_fname from command-line arg 2)
    character(len=200) :: fname_nml = 'croco.nml'
 
+   ! &croco_testcase
+   character(len=64) :: testcase_name = ''
+   !! Test-case name used for runtime dispatch in ana_*.F routines
+
+   ! Derived logicals set by init_testcase (croco_namelist_init) after check_all passes
+   logical :: lts_hadv        = .false.  ! any TS_HADV_TEST variant
+   logical :: lts_rot_or_diag = .false.  ! TS_HADV_TEST_ROT or _DIAG
+   logical :: lts_per         = .false.  ! TS_HADV_TEST_PER
+   logical :: lekman_apg      = .false.  ! FORCED_EKBBL or FORCED_DBLEEK
+   logical :: loscnonrot      = .false.  ! FORCED_OSCNONROTBBL
+   logical :: lnonrot         = .false.  ! FORCED_NONROTBBL
+   real    :: UG_forced       = 0.       ! geostrophic velocity for forced APG
+   real    :: wave_ramp_duration = 12.   ! WAVE_RAMP tanh coefficient [days^-1]
+
    ! &croco_title
    character(len=80) :: title = "CROCO simulation"
    !! Configuration name
@@ -44,6 +58,8 @@ MODULE croco_namelist
    !! For 2D configurations, ndtfast should be unity.
    integer :: ninfo = 1
    !! Number of time-steps between printing of information to standard output
+   real :: m2filter_alpha = 0.25
+   !! M2FILTER_NONE alpha coefficient (controls barotropic time-filter weight)
 
    ! &croco_history
    logical :: ldefhis = .true.
@@ -232,6 +248,14 @@ MODULE croco_namelist
    !! Directional spread [deg]
    real :: wmaker_fsp = 3.3
    !! Frequency spread: gamma parameter in JONSWAP spectrum
+   real :: wmaker_wf1 = 0.0
+   !! First frequency [Hz] — BICHROMATIC mode
+   real :: wmaker_wf2 = 0.0
+   !! Second frequency [Hz] — BICHROMATIC mode
+   real :: wmaker_wa1 = 0.0
+   !! Amplitude of first bichromatic component [m]
+   real :: wmaker_wa2 = 0.0
+   !! Amplitude of second bichromatic component [m]
 #endif
 
 #ifdef AVERAGES
@@ -347,7 +371,6 @@ MODULE croco_namelist
    !! Shallowest sigma level to apply bottom stress as a body force
 #endif
 
-#if !defined NONLIN_EOS
    ! &croco_lin_eos
    real :: R0 = 1027.0
    !! Background (reference) density [kg/m3] used in the linear equation of state
@@ -359,7 +382,6 @@ MODULE croco_namelist
    !! Thermal expansion coefficient [kg/m3/Celsius]
    real :: Scoef = 7.6e-4
    !! Saline contraction coefficient [kg/m3/PSU]
-#endif
 
 #if defined ABL1D && defined ABL_NUDGING && defined ABL_NUDGING_TRA
    ! &croco_abl_nudg_tra

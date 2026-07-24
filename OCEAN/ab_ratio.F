@@ -13,9 +13,7 @@
 #ifdef LMD_MIXING
 
       subroutine ab_ratio_slice (ratio, Istr,Iend, j)
-# if !defined NONLIN_EOS
       USE croco_namelist, ONLY: Tcoef, Scoef
-# endif
 !
 !--------------------------------------------------------------------
 !   This subroutine calculates the ratio of the thermodynamic

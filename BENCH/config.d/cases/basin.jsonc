@@ -4,7 +4,7 @@
     "title": "BASIN (60 x 50 x 10 : 3240)",
     "case": "BASIN",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_basin.py",
+      "plotphy_script": "./TEST_CASES/BASIN/plot_basin.py",
       "plotphy_script_input": "basin_his.nc",
     },
     "splitting": {
@@ -28,7 +28,7 @@
     "title": "BASIN (60 x 50 x 10 : 3240)",
     "case": "BASIN",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_basin.py",
+      "plotphy_script": "./TEST_CASES/BASIN/plot_basin.py",
       "plotphy_script_input": "basin_his.nc",
     },
     "splitting": {
@@ -125,7 +125,7 @@
         },
       ],
       // Change the dt
-      "TEST_CASES/croco_Basin.nml": {
+      "TEST_CASES/BASIN/croco_BASIN.nml": {
         "mode": "replace",
         "after": "&croco_time_stepping",
         "what": " dt = 9600",
@@ -174,7 +174,7 @@
         },
       ],
       // CHange the dt
-      "TEST_CASES/croco_Basin.nml": {
+      "TEST_CASES/BASIN/croco_BASIN.nml": {
         "mode": "replace",
         "after": "&croco_time_stepping",
         "what": " dt = 9600",

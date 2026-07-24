@@ -32,10 +32,8 @@
 #  ifndef BEDLOAD_VANDERA
 #   define BSTRESS_UPWIND
 #  endif
-#  ifdef ANA_DUNE
+#  ifdef NO_BSTRESS_UPWIND
 #   undef  BSTRESS_UPWIND
-#   undef  BEDLOAD_SLUMP
-#   undef  BEDLOAD_SHALLOW_LIMIT
 #  endif
 #  ifdef BEDLOAD_VANDERA /* wave half-cycle concept */
 #   define BEDLOAD_VANDERA_ZEROCURR

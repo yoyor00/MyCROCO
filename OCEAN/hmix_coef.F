@@ -50,9 +50,6 @@
 # else
       parameter (horcon=0.1)
 # endif
-# ifdef SWASH
-      real dZdt,dZdt0,Bbr
-# endif
       real defrate(PRIVATE_2D_SCRATCH_ARRAY,1:N)
 !
 # include "compute_auxiliary_bounds.h"

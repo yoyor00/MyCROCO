@@ -4,7 +4,7 @@
     "title": "SOLITON (96 x 32 x 10 : 1200)",
     "case": "SOLITON",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_soliton.py",
+      "plotphy_script": "./TEST_CASES/SOLITON/plot_soliton.py",
       "plotphy_script_input": "soliton_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
@@ -44,7 +44,7 @@
         },
       ],
       // CHange the dt
-      "TEST_CASES/croco_Soliton.nml": [
+      "TEST_CASES/SOLITON/croco_SOLITON.nml": [
         {
           "mode": "replace",
           "what": "dt = 0.1",

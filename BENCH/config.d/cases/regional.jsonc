@@ -3,8 +3,11 @@
   "BENGUELA_LR_TIDES_BULK": {
     "title": "BENGUELA_LR_TIDES_BULK",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_realist.py",
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -19,8 +22,11 @@
   "BENGUELA_LR_BULK": {
     "title": "BENGUELA_LR_BULK",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_realist.py",
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -35,8 +41,11 @@
   "BENGUELA_LR_BULKONLINE": {
     "title": "BENGUELA_LR_BULKONLINE",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_realist.py",
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -53,8 +62,11 @@
   "BENGUELA_LR_CFB": {
     "title": "BENGUELA_LR_CFB",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_realist.py",
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -70,8 +82,11 @@
   "BENGUELA_LR_CFBBULK": {
     "title": "BENGUELA_LR_CFBBULK",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_realist.py",
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -87,8 +102,11 @@
   "BENGUELA_LR_CFBBULKONLINE": {
     "title": "BENGUELA_LR_CFBBULKONLINE",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_realist.py",
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -106,8 +124,11 @@
   "BENGUELA_LR_CFBBULKONLINERUNOFF": {
     "title": "BENGUELA_LR_CFBBULKONLINERUNOFF",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_realist.py",
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
       "plotphy_script_input": "CROCO_FILES/croco_his.nc",
     },
     "croco_files_path": "LR_CROCO_FILES_BCK",
@@ -123,7 +144,7 @@
     },
     "patches": {
       // Change runoff file
-      "TEST_CASES/croco_Regional.nml": {
+      "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml": {
         "mode": "replace",
         "what": "psource_qbarname = \"CROCO_FILES/croco_runoff.nc\"",
         "by": "psource_qbarname = \"CROCO_FILES/croco_runoff.nc_2rivx1000\"",
@@ -135,6 +156,9 @@
   "BENGUELA_LR_CLIM": {
     "title": "BENGUELA_LR_CLIM",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -148,6 +172,9 @@
   "BENGUELA_LR_BRY": {
     "title": "BENGUELA_LR_BRY",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -160,6 +187,9 @@
   "BENGUELA_LR_BRY_PISCES": {
     "title": "BENGUELA_LR_BRY_PISCES",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -185,6 +215,9 @@
   "BENGUELA_LR_BSTRESS_FASTGLS": {
     "title": "BENGUELA_LR_BSTRESS_FASTGLS",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -201,6 +234,9 @@
   "BENGUELA_LR_BSTRESS_FASTKPP": {
     "title": "BENGUELA_LR_BSTRESS_FASTKPP",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -216,6 +252,9 @@
   "BENGUELA_LR_AGRIF_1WAY": {
     "title": "BENGUELA_LR_AGRIF_1WAY",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -232,6 +271,9 @@
   "BENGUELA_LR_AGRIF_2WAY": {
     "title": "BENGUELA_LR_AGRIF_2WAY",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -249,6 +291,9 @@
   "BENGUELA_LR_AGRIF_2WAY_MLD_DENS": {
     "title": "BENGUELA_LR_AGRIF_2WAY",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -268,6 +313,9 @@
   "BENGUELA_LR_NBQ": {
     "title": "BENGUELA_LR_NBQ",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -275,7 +323,7 @@
     },
     "patches": {
       // Change the ndtfast
-      "TEST_CASES/croco_Regional.nml": {
+      "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml": {
         "mode": "replace",
         "what": "  ndtfast = 60",
         "by": "  ndtfast = 80",
@@ -288,6 +336,9 @@
   "BENGUELA_LR_DIAGS_ALL": {
     "title": "BENGUELA_LR_DIAGS_ALL",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -323,6 +374,9 @@
   "BENGUELA_LR_AGRIF_2WAY_DIAGS_ALL": {
     "title": "BENGUELA_LR_AGRIF_2WAY_DIAGS_ALL",
     "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
@@ -354,7 +408,10 @@
   // "BENGUELA_VHR_TIDES_BULK": {
   //   "title": "BENGUELA_VHR_TIDES_BULK",
   //   "case": "REGIONAL",
-  //   "plotphy" : { "plotphy_script": "./TEST_CASES/plot_realist.py",
+  //   "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+  //   "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+  //   "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
+  //   "plotphy" : { "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
   //   "croco_files_path": "VHR_CROCO_FILES_BCK",
   //   "splitting": {
   //     "1": "1x1",

@@ -224,11 +224,12 @@ C$    trd=omp_get_thread_num()
 #  include "zoom.h"
         integer irhox, irhoy, irhot
 # endif
-# if defined INTERNAL || defined BODYTIDE
+! BODYTIDE in INTERNAL test case
+# ifdef BODYTIDE
       real,parameter :: U0 = 0.02
       real,parameter :: omega = 2.*pi/(12.4*3600.)
 # endif
-# ifdef ACOUSTIC
+# ifdef ACOUSTIC_FORCING
       real dist_d  
 # endif
 # ifdef WET_DRY
@@ -1450,7 +1451,7 @@ C$OMP END MASTER
 !  Acoustic wave emission
 !-------------------------------------------------------------------
 !
-# ifdef ACOUSTIC 
+# ifdef ACOUSTIC_FORCING 
       if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
         period_exp = 0.025/2.
         for_a_exp  = 2.5
@@ -1932,7 +1933,7 @@ C$OMP END MASTER
 #  ifdef UV_COR_NT
           dum_s=dum_s+ntcoru(i,j,k)
 #  endif
-#  if defined INTERNAL || defined BODYTIDE
+#  ifdef BODYTIDE
           dum_s=dum_s+0.5*omega*U0*cos(omega*time)
      &                       *(Hz(i-1,j,k)+Hz(i,j,k))
 #  endif
@@ -2076,7 +2077,7 @@ C$OMP END MASTER
 #  ifdef UV_COR_NT
               dum_s=dum_s+ntcorv(i,j,k)
 #  endif
-#  if defined INTERNAL || defined BODYTIDE
+#  ifdef BODYTIDE
               dum_s=dum_s+0.25*(f(i,j)+f(i,j-1))*
      &                       U0*sin(omega*time)*
      &                       (Hz(i,j,k)+Hz(i,j-1,k))
@@ -3090,7 +3091,7 @@ C$OMP END MASTER
 !  Acoustic wave emission
 !-------------------------------------------------------------------
 !
-#  ifdef ACOUSTIC
+#  ifdef ACOUSTIC_FORCING
         time_nbq = time_nbq + dtfast
         do k=1,N
           do j=JstrV-2,Jend+1

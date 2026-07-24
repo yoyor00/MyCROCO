@@ -464,6 +464,7 @@ SPECIAL_CARDS = {"psource", "psource_ncfile"}
 CANONICAL_BLOCK_ORDER = (
     "&croco_title",
     "&croco_logfile",
+    "&croco_testcase",
     "&croco_time_stepping",
     "&croco_time_stepping_nbq",
     "&croco_use_calendar",
@@ -1337,6 +1338,31 @@ def _build_sediment_extra_history_blocks(cards, params):
 
 # ---------------------------------------------------------------------------
 
+# Test-case keys that are always CPP-only (no ANA_GRID/ANA_VMIX dispatch).
+# For these, testcase_name is still set so croco_namelist_check can validate it.
+_REALISTIC_CASES = frozenset({"REGIONAL", "COASTAL"})
+
+
+def _detect_case_key_from_simplified(cppdefs_path):
+    """Return the first bare #define key from a simplified single-case cppdefs.h."""
+    try:
+        with open(cppdefs_path) as fh:
+            for line in fh:
+                m = re.match(r"^#\s*define\s+(\w+)", line)
+                if m:
+                    return m.group(1)
+    except OSError:
+        pass
+    return None
+
+
+def _build_testcase_block(params):
+    """Return {nml_name: [entry_lines]} for &croco_testcase when testcase_name is known."""
+    name = params.get("_testcase_name", "")
+    if not name:
+        return {}
+    return {"&croco_testcase": [f"  testcase_name = '{name}'"]}
+
 
 def build_nml(cards, headers, mappings, params):
     NT = params.get("NT", None)
@@ -1417,6 +1443,9 @@ def build_nml(cards, headers, mappings, params):
         for entry_line in entry_lines:
             add_entry(nml_name, entry_line)
     for nml_name, entry_lines in _build_labeled_bool_fallback_blocks(cards, headers, params, mappings).items():
+        for entry_line in entry_lines:
+            add_entry(nml_name, entry_line)
+    for nml_name, entry_lines in _build_testcase_block(params).items():
         for entry_line in entry_lines:
             add_entry(nml_name, entry_line)
 
@@ -1517,8 +1546,15 @@ if the script is used elsewhere.
         else:
             sys.exit(f"Error: could not extract a case section from full cppdefs '{args.cppdefs}'.")
     else:
+        case_key = _detect_case_key_from_simplified(args.cppdefs)
         shutil.copyfile(args.cppdefs, out_cppdefs)
-        print(f"Output cppdefs : {out_cppdefs}  (already simplified)")
+        print(f"Output cppdefs : {out_cppdefs}  (already simplified, case={case_key})")
+
+    # Inject testcase_name for non-realistic configurations.
+    if case_key and case_key not in _REALISTIC_CASES:
+        params["_testcase_name"] = case_key
+    else:
+        params["_testcase_name"] = ""
 
     # ---- Check CPP flags that affect special-card handling -------------------
     params["_psource_ncfile"] = cpp_define_active(args.cppdefs, "PSOURCE_NCFILE", extra_dirs=src_dirs)

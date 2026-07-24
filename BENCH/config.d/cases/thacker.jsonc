@@ -3,38 +3,21 @@
   "THACKER": {
     "title": "THACKER - NO-2DV - (200 x 200 x 5 : 600)",
     "case": "THACKER",
-    "cppkeys": {
-      "THACKER_2DV": false,
-    },
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_thacker.py",
+      "plotphy_script": "./TEST_CASES/THACKER/plot_thacker.py",
       "plotphy_script_input": "thacker_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2", "6": "1x6", "8": "2x4" },
-    "patches": {
-      "TEST_CASES/croco_Thacker.nml": {
-        "mode": "replace",
-        "what": "ntimes = 4320",
-        "by": "ntimes = 600",
-        "descr": "Set stepping (ntimes=600)",
-      },
-      "param.h": {
-        "mode": "replace",
-        "what": "integer, parameter :: MMm0 = 1",
-        "by": "      integer, parameter :: MMm0 = 200",
-        "descr": "Switch to 3D case (MMm0=200)",
-      },
-    },
-    "check_outputs": ["thacker_his.nc"],
+    "patches": {},
+    "check_outputs": ["thacker_his.nc"]
   },
   "THACKER_2DV": {
     "title": "THACKER - 2DV - (200 x 1 x 5 : 4320)",
     "case": "THACKER",
-    "cppkeys": {
-      "THACKER_2DV": true,
-    },
+    "nml_file": "TEST_CASES/THACKER/croco_THACKER_2DV.nml",
+    "param_file": "TEST_CASES/THACKER/param_THACKER_2DV.h",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_thacker.py",
+      "plotphy_script": "./TEST_CASES/THACKER/plot_thacker.py",
       "plotphy_script_input": "thacker_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },

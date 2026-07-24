@@ -6,12 +6,9 @@
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1", "6": "6x1", "8": "8x1" },
     "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_MovBat.py",
+      "plotphy_script": "./TEST_CASES/MOVING_BATHY/plot_MovBat.py",
       "plotphy_script_input": "movbat_his.nc",
     },
-    "nml_file": "TEST_CASES/croco_MovBat.nml",
-    "cppdefs_file": "TEST_CASES/cppdefs_MovBat.h",
-    "param_file": "TEST_CASES/param_MovBat.h",
     "check_outputs": ["movbat_his.nc"],
     "unsupported": ["openmp"],
   },

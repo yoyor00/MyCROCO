@@ -61,22 +61,25 @@ class Croco:
         # namelist file: must exist, but kept relative (consumed later as a
         # CLI arg to ./croco run from the builddir, and patched in-place
         # there - an absolute source-tree path would point at the wrong copy)
+        #
+        # Convention: TEST_CASES/<CASE>/croco_<CASE>.nml
+        _case = self.case["case"]
         self.croco_nmlfile = self.resolve_case_file(
             "nml_file",
-            "TEST_CASES/croco_%s.nml" % self.case["case"].capitalize(),
+            "TEST_CASES/%s/croco_%s.nml" % (_case, _case),
             absolute=False,
             must_exist=True,
         )
 
-        # pre-resolved, single-case cppdefs.h/param.h (TEST_CASES/cppdefs_<Case>.h
-        # and TEST_CASES/param_<Case>.h by default, overridable per case in the
-        # jsonc config). Used in place of patching the master cppdefs.h/param.h
-        # when the file exists; None falls back to the legacy patch mechanism.
+        # pre-resolved, single-case cppdefs.h/param.h
+        # Convention: TEST_CASES/<CASE>/cppdefs_<CASE>.h  TEST_CASES/<CASE>/param_<CASE>.h
         self.croco_cppdefsfile = self.resolve_case_file(
-            "cppdefs_file", "TEST_CASES/cppdefs_%s.h" % self.case["case"].capitalize()
+            "cppdefs_file",
+            "TEST_CASES/%s/cppdefs_%s.h" % (_case, _case),
         )
         self.croco_paramfile = self.resolve_case_file(
-            "param_file", "TEST_CASES/param_%s.h" % self.case["case"].capitalize()
+            "param_file",
+            "TEST_CASES/%s/param_%s.h" % (_case, _case),
         )
 
         self.croco_build = JobcompCrocoSetup(
@@ -717,8 +720,12 @@ class Croco:
                 if script_options:
                     command.extend(script_options.split())
 
+                env = os.environ.copy()
+                tc_path = os.path.join(self.config.croco_source_dir, "TEST_CASES")
+                env["PYTHONPATH"] = tc_path + (":" + env["PYTHONPATH"] if "PYTHONPATH" in env else "")
+
                 try:
-                    subprocess.run(command, check=True)  # Exécute la commande
+                    subprocess.run(command, check=True, env=env)  # Exécute la commande
                     Messaging.step(
                         "Successfully executed %s with arguments --no-show --makepng"
                         % self.plot_diag_script

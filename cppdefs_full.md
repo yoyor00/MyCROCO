@@ -8,103 +8,6 @@ Indented keys are only meaningful when their parent key is defined.
 
 ---
 
-## Configuration Name
-
-Exactly one main configuration-case key (and optionnaly one sub-case key) must be defined.
-
-**Realistic configurations**
-
-- `REGIONAL` — Realistic regional simulations
-- `COASTAL` — Coastal configuration (alternative to REGIONAL)
-
-**Classical idealised cases**
-
-- `UPWELLING` — Upwelling example
-- `BASIN` — Basin example
-- `CANYON` — Canyon example
-  - `CANYON_STRAT` — Stratified canyon variant
-- `EQUATOR` — Equatorial channel example
-- `GRAV_ADJ` — Gravitational Adjustment example (also with NBQ)
-- `ACOUSTIC` — Acoustic wave example (requires NBQ)
-- `INNERSHELF` — Inner Shelf example
-  - `INNERSHELF_EKMAN` — Ekman layer variant
-  - `INNERSHELF_APG` — Atmospheric pressure gradient variant
-- `OVERFLOW` — Gravitational/Overflow example
-- `SEAMOUNT` — Seamount example
-- `SHELFRONT` — Shelf Front example
-- `SOLITON` — Equatorial Rossby Wave example
-- `INTERNAL` — Internal tides example
-  - `BODYTIDE` — Tidal body force variant
-- `VORTEX` — Baroclinic Vortex example
-- `JET` — Jet example
-- `THACKER` — Thacker analytical solution example
-  - `THACKER_2DV` — 2D vertical plane variant
-- `TANK` — Tank example
-- `ISOLITON` — Nonlinear internal solitary wave example
-- `IGW` — Internal Gravity Wave example (also with NBQ)
-  - `EXPERIMENT3` — 3rd experiment variant (default)
-  - `ONLINE_ANALYSIS` — Online spectral analysis output
-- `KILPATRICK` — SST fronts and island wakes example
-- `KH_INST` — Kelvin-Helmholtz shear instability example
-  - `KH_INSTY` — Y-direction (2D horizontal) variant
-  - `KH_INST3D` — 3D variant
-
-**Nearshore / wave cases**
-
-- `RIP` — Rip current example
-  - `RIP_TOPO_2D` — Simplified 2D cross-shore topography
-  - `BISCA` — Biscarrosse beach config (no rip channel)
-  - `GRANDPOPO` — Grand Popo beach initial conditions
-- `FLASH_RIP` — Flash rip current example
-- `SHOREFACE` — Shoreface cross-shore dynamics example
-- `SWASH` — Swash zone wave runup example
-  - `SWASH_GLOBEX_B3` — GLOBEX B3 beach profile (default)
-  - `SWASH_GLOBEX_B2` — GLOBEX B2 beach profile
-  - `SWASH_GLOBEX_A3` — GLOBEX A3 beach profile
-- `SANDBAR` — Sandbar cross-shore dynamics (with MRL_WCI)
-  - `SANDBAR_OFFSHORE` — Offshore bar variant
-  - `SANDBAR_ONSHORE` — Onshore bar variant
-
-**Sediment / morphodynamics cases**
-
-- `DUNE` — 2D dune migration (SEDIMENT or MUSTANG)
-  - `ANA_DUNE` — Analytical dune initial conditions
-  - `DUNE3D` — 3D dune variant
-- `TIDAL_FLAT` — Tidal flat morphodynamics example
-- `ESTUARY` — Estuary sediment dynamics example
-- `RIVER` — River / point-source test case
-- `SEAGRASS` — Seagrass bed wave-damping example
-- `SED_TOY` — Sediment 0D/1D toy model
-  - `SED_TOY_ROUSE` — Rouse equilibrium profile variant
-  - `SED_TOY_RESUSP` — Resuspension variant
-  - `SED_TOY_CONSOLID` — Consolidation variant
-  - `SED_TOY_FLOC_0D` — 0D flocculation variant
-  - `SED_TOY_FLOC_1D` — 1D flocculation variant
-- `MOVING_BATHY` — Moving bathymetry (NBQ) example
-
-**Single-column mixing cases**
-
-Use `SINGLE_COLUMN` + one forcing flag.
-
-- `SINGLE_COLUMN` — Single-column model base key
-  - `KATO_PHILLIPS` — Kato-Phillips mixed-layer forcing
-  - `WILLIS_DEARDORFF` — Willis-Deardorff convection forcing
-  - `DIURNAL_CYCLE` — Diurnal shortwave heating cycle
-  - `FORCED_DBLEEK` — Forced double-Ekman layer
-  - `FORCED_EKBBL` — Forced Ekman bottom boundary layer
-  - `FORCED_NONROTBBL` — Forced non-rotating bottom BBL
-  - `FORCED_OSCNONROTBBL` — Oscillating non-rotating BBL
-
-**Tracer advection verification cases**
-
-Use `TS_HADV_TEST` + one variant flag.
-
-- `TS_HADV_TEST` — Tracer advection test base key
-  - `SOLID_BODY_PER` — Rotating solid-body (repeating)
-  - `SOLID_BODY_ROT` — Rotating solid-body (one rotation)
-  - `DIAGONAL_ADV` — Diagonal advection variant
-
----
 
 ## Parallelization and I/O Server
 
@@ -137,6 +40,8 @@ Only one of `OPENMP` / `MPI` may be defined at a time.
 
 - `NBQ` — Non-Boussinesq (non-hydrostatic) solver
   - `NBQ_PRECISE` — More precise NBQ time-stepping (slower)
+  - `NOT_NBQ_AM4` — Disable AM4 time filter in the NBQ solver
+  - `ACOUSTIC_FORCING` — Activate acoustic source forcing in NBQ mode (ACOUSTIC test case)
 - `CROCO_QH` — Quasi-hydrostatic option (advanced)
 
 ---
@@ -245,6 +150,7 @@ Choose one scheme per variable class (M2, M3, T).
 - `NO_FRCFILE` — Run without any external forcing files
 - `NO_TEMPERATURE` — Suppress temperature tracer
 - `NO_TRACER` — Suppress all tracers (barotropic only)
+- `CONST_TRACERS` — Freeze tracers (hold T/S constant; no tracer advection or diffusion)
 - `M2FILTER_NONE` — Disable barotropic time filter; 
 - `ZONAL_NUDGING` — Zonal mean flow nudging (used with JET)
 
@@ -255,6 +161,8 @@ Choose one scheme per variable class (M2, M3, T).
 - `SALINITY` — Salinity as an active tracer
 - `NONLIN_EOS` — Nonlinear equation of state
 - `SPLIT_EOS` — Split EOS into adiabatic + compressible parts to reduce pressure-gradient errors
+- `NO_RESET_RHO0` — Disable automatic reset of rho0 when using linear EOS
+- `GRAVITY` — Override default gravity constant (9.81 m/s²); set as `# define GRAVITY <value>` in param.h file
 
 ---
 
@@ -307,6 +215,7 @@ Without `BULK_FLUX`: use prescribed flux fields + `QCORRECTION`.
     - `ABL_NUDGING_DYN` — Nudge dynamics (wind) _(auto-derived)_
     - `ABL_NUDGING_TRA` — Nudge thermodynamics (temperature) _(auto-derived)_
     - `ABL_DYN_RESTORE_EQ` — Restore ABL dynamics towards equilibrium
+    - `ABL_NO_OCEAN_FEEDBACK` — Suppress ocean SST feedback to the ABL (one-way ABL > ocean coupling, used in test case KILPATRICK)
     - `SFLUX_CFB` — Current feedback on wind stress (modifies surface stress based on ocean surface velocity)
   - `QCORRECTION` — Linear bulk SST correction of heat flux _(without BULK\_FLUX only)_
   - `SFLX_CORR` — Freshwater flux correction towards model SSS _(without BULK\_FLUX only)_
@@ -326,6 +235,7 @@ Choose exactly one horizontal advection scheme for momentum. Default (none defin
 - `UV_HADV_C4` — 4th-order centred (use with explicit mixing)
 - `UV_HADV_C6` — 6th-order centred (use with explicit mixing)
 - `UV_HADV_WENO5` — 5th-order WENO quasi-monotone advection
+- `NO_M2_HADV_UP3` — Disable automatic UP3 advection for 2D (barotropic-only) runs (used in SOLITON test case)
 
 ---
 
@@ -401,12 +311,15 @@ Choose exactly one horizontal advection scheme for tracers.
 Enhance viscosity and diffusivity near open boundaries to damp spurious reflections.
 
 - `SPONGE` — Sponge layers near lateral open boundaries;
+  - `NO_SPONGE_GRID` — Disable reading sponge coefficients from the grid file (use analytical, used for INNERSHELF)
 
 ---
 
 ## Bottom Stress
 
 - `LIMIT_BSTRESS` — Limit bottom stress to prevent negative transport
+  - `NO_LIMIT_BSTRESS` — Disable the bottom stress limiter (overrides `LIMIT_BSTRESS` default, used for INNERSHELF)
+- `NO_BSTRESS_UPWIND` — Disable upwind bottom-stress scheme in sediment transport
 - `BSTRESS_FAST` — Compute bottom stress at 3D fast (baroclinic) time steps
 
 ---
@@ -428,6 +341,7 @@ Choose exactly one of `LMD_MIXING` or `GLS_MIXING` (or neither for analytical).
 - `GLS_MIXING` — Generic Length Scale turbulence scheme
   - `GLS_MIXING_3D` — Full 3D GLS (vs. columnar 1D version)
   - `GLS_KOMEGA` — K-omega model (K-epsilon if not defined)
+  - `GLS_COASTAL_ROUGHNESS` — Enhanced bottom roughness near coastal boundaries
 
 ---
 
@@ -445,6 +359,7 @@ Wave forcing source (choose one; also used with `BBL` or `MUSTANG` independently
   - `WAVE_ROLLER` — Wave roller model
   - `WAVE_FRICTION` — Bottom friction
   - `ANA_BRY_WKB` — Analytical wave boundary forcing
+  - `WKB_SHORELIKE_BRY` — Shorelike (zero-energy) inner boundary condition for WKB
 
 Wave breaking parameterization (used with `MRL_WCI` or `WKB_WWAVE`; choose one):
 
@@ -468,6 +383,8 @@ Wave-resolving internal wave generation (ideal cases, e.g. SANDBAR, SWASH, RIP).
 
 - `WAVE_MAKER` — Wave-maker boundary source
   - `WAVE_MAKER_SPECTRUM` — Multi-frequency spectrum input
+  - `WAVE_MAKER_BICHROMATIC` — Bichromatic (two-frequency) wave input (e.g. SWASH GLOBEX B2/B3)
+  - `WAVE_MAKER_JONSWAP` — JONSWAP spectrum input
   - `WAVE_MAKER_DSPREAD` — Directional spreading
 - `WAVE_MAKER_INTERNAL` — Internal (immersed) wave maker
 
@@ -617,6 +534,7 @@ Exactly one biogeochemical model must be chosen when `BIOLOGY` is defined.
 
 - `BBL` — Bottom Boundary Layer parameterization
   - `BBL_BREAKING_STIR` — Wave breaking stirring in BBL
+  - `COASTAL_BSTRESS_TKE` — Inject wave-breaking TKE into the BBL (requires `GLS_MIXING`)
   - `ANA_BSEDIM` — Analytical bed parameters (when SEDIMENT not defined)
   - `ANA_WWAVE` — Analytical wave forcing for BBL
   - `Z0_BL` — Compute bedload roughness for ripple predictor

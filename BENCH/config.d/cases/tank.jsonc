@@ -6,7 +6,7 @@
     "splitting": { "1": "1x1", "2": "2x1" },
     "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_tank.py",
+      "plotphy_script": "./TEST_CASES/TANK/plot_tank.py",
       "plotphy_script_input": "tank_his.nc",
     },
     "check_outputs": ["tank_his.nc"],
@@ -14,27 +14,14 @@
   },
   "TANKY": {
     "title": "TANK - Y-oriented (1 x 50 x 50 : 2500)",
-    "case": "TANK",
-    "cppkeys": { "TANKY": true },
+    "case": "TANKY",
+    "nml_file": "TEST_CASES/TANK/croco_TANKY.nml",
+    "cppdefs_file": "TEST_CASES/TANK/cppdefs_TANKY.h",
+    "param_file": "TEST_CASES/TANK/param_TANKY.h",
     "splitting": { "1": "1x1", "2": "1x2" },
-    "patches": {
-      "TEST_CASES/param.h": [
-        {
-          "mode": "replace",
-          "what": "integer, parameter :: LLm0 = 50",
-          "by": "      integer, parameter :: LLm0 = 1",
-          "descr": "Switch to Y-oriented tank (LLm0=1)",
-        },
-        {
-          "mode": "replace",
-          "what": "integer, parameter :: MMm0 = 1",
-          "by": "      integer, parameter :: MMm0 = 50",
-          "descr": "Switch to Y-oriented tank (MMm0=50)",
-        },
-      ],
-    },
+    "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_tank.py",
+      "plotphy_script": "./TEST_CASES/TANK/plot_tank.py",
       "plotphy_script_input": "tank_his.nc",
     },
     "check_outputs": ["tank_his.nc"],

@@ -15,7 +15,7 @@
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
                               ! time from forcing NetCDF file.
-      use croco_namelist, only: dt, frcname
+      use croco_namelist, only: dt, frcname, testcase_name
 # ifdef MUSTANG  
       use croco_namelist, only: wave_file
 # endif
@@ -645,24 +645,32 @@
 !          the direction where the waves travel to,
 !          measured clockwise from geographic North.
 !
-# if defined CURVGRID || !defined SHOREFACE
+# ifdef CURVGRID
 !$acc parallel loop if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
-#  if !defined SHOREFACE && !defined MUSTANG
-!         Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
-          Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
+#  ifndef MUSTANG
+          if (trim(testcase_name) /= 'SHOREFACE') &
+            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
 #  endif
-#  ifdef CURVGRID
-#   ifdef MUSTANG
+#  ifdef MUSTANG
           Dwave(i,j)=Dwave(i,j)-angler(i,j)*rad2deg
-#   else
+#  else
           Dwave(i,j)=Dwave(i,j)-angler(i,j)
-#   endif
 #  endif
         enddo
       enddo
-# endif /* CURVGRID || !SHOREFACE */
+# else
+      if (trim(testcase_name) /= 'SHOREFACE') then
+!$acc parallel loop if(compute_on_device) default(present)
+        do j=jstrR,jendR
+          do i=istrR,iendR
+!           Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
+            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
+          enddo
+        enddo
+      endif
+# endif /* CURVGRID */
 !
 !--------------------------------------------------------------------
 ! Simulate nearshore modifications for low resolution data

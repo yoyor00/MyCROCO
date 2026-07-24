@@ -4,7 +4,7 @@
     "title": "DUNE (50 x 1 x 20 : 1000)",
     "case": "DUNE",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_dune.py",
+      "plotphy_script": "./TEST_CASES/DUNE/plot_dune.py",
       "plotphy_script_input": "dune_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1" },
@@ -20,7 +20,7 @@
     "title": "DUNE (50 x 1 x 20 : 1000)",
     "case": "DUNE",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_dune.py",
+      "plotphy_script": "./TEST_CASES/DUNE/plot_dune.py",
       "plotphy_script_input": "dune_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1" },
@@ -32,67 +32,64 @@
     "check_outputs": ["dune_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
-  // ANA_DUNE_USGS
-  "DUNE_ANA_DUNE": {
+  // ANA_DUNE
+  "ANA_DUNE_SEDIMENT": {
     "title": "ANA_DUNE (150 x 1 x 20 : 3000)",
-    "case": "DUNE",
+    "case": "ANA_DUNE",
+    "nml_file": "TEST_CASES/DUNE/croco_ANA_DUNE.nml",
+    "cppdefs_file": "TEST_CASES/DUNE/cppdefs_ANA_DUNE.h",
+    "param_file": "TEST_CASES/DUNE/param_ANA_DUNE.h",
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "cppkeys": {
       "SEDIMENT": true,
-      "ANA_DUNE": true,
       "MUSTANG": false,
     },
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_ana_dune.py",
+      "plotphy_script": "./TEST_CASES/DUNE/plot_ana_dune.py",
       "plotphy_script_input": "ana_dune_his.nc",
     },
     "patches": {},
-    "nml_file": "TEST_CASES/croco_Ana_dune.nml",
-    "cppdefs_file": "TEST_CASES/cppdefs_Ana_dune.h",
-    "param_file": "TEST_CASES/param_Ana_dune.h",
     "check_outputs": ["ana_dune_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
   // ANA_DUNE_MUSTANG
-  "DUNE_ANA_DUNE_MUSTANG": {
+  "ANA_DUNE_MUSTANG": {
     "title": "ANA_DUNE_MUSTANG (150 x 1 x 20 : 3000)",
-    "case": "DUNE",
+    "case": "ANA_DUNE",
+    "nml_file": "TEST_CASES/DUNE/croco_ANA_DUNE.nml",
+    "cppdefs_file": "TEST_CASES/DUNE/cppdefs_ANA_DUNE.h",
+    "param_file": "TEST_CASES/DUNE/param_ANA_DUNE.h",
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "cppkeys": {
       "SEDIMENT": false,
-      "ANA_DUNE": true,
       "MUSTANG": true,
     },
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_ana_dune.py",
+      "plotphy_script": "./TEST_CASES/DUNE/plot_ana_dune.py",
       "plotphy_script_input": "ana_dune_his.nc",
       "plotphy_script_options": "--mustang",
     },
     "patches": {},
-    "nml_file": "TEST_CASES/croco_Ana_dune.nml",
-    "cppdefs_file": "TEST_CASES/cppdefs_Ana_dune.h",
-    "param_file": "TEST_CASES/param_Ana_dune.h",
     "check_outputs": ["ana_dune_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
   // DUNE3D
-  "DUNE_DUNE3D": {
+  "DUNE3D_SEDIMENT": {
     "title": "DUNE3D (50 x 50 x 20 : 50000)",
-    "case": "DUNE",
+    "case": "DUNE3D",
+    "nml_file": "TEST_CASES/DUNE/croco_DUNE3D.nml",
+    "cppdefs_file": "TEST_CASES/DUNE/cppdefs_DUNE3D.h",
+    "param_file": "TEST_CASES/DUNE/param_DUNE3D.h",
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
     "cppkeys": {
       "SEDIMENT": true,
-      "DUNE3D": true,
       "MUSTANG": false,
     },
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_dune3d.py",
+      "plotphy_script": "./TEST_CASES/DUNE/plot_dune3d.py",
       "plotphy_script_input": "dune3d_his.nc",
     },
     "patches": {},
-    "nml_file": "TEST_CASES/croco_Dune3d.nml",
-    "cppdefs_file": "TEST_CASES/cppdefs_Dune3d.h",
-    "param_file": "TEST_CASES/param_Dune3d.h",
     "check_outputs": ["dune3d_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
