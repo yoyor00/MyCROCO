@@ -1,22 +1,22 @@
-# Makefile for MS3DVAR Multi-Scale (MS) variant
+# Makefile for MS3DVAR Multi-Scale (MS) scale
 #
-# This is a simple variant-specific Makefile that includes
+# This is a simple scale-specific Makefile that includes
 # the common build rules from ../Makefile.inc
 
-# Variant-specific settings
-VARIANT_NAME = MS
+# Scale-specific settings
+SCALE_NAME = MS
 SBIN = ms3dvar-ms
 
 # MS-specific sources (not in common Makefile.inc)
-VARIANT_SRCS = das_get_initial.F das_add_lr.F das_get_initial_lr.F
+SCALE_SRCS = ms3dvar_get_increment.F ms3dvar_add_lr.F ms3dvar_get_increment_lr.F
 
 # Include common build rules
 include Makefile.inc
 
-# Add variant-specific objects
-VARIANT_RCS = $(VARIANT_SRCS:.F=.f)
-VARIANT_OBJS = $(VARIANT_RCS:.f=.o)
+# Add scale-specific objects
+SCALE_RCS = $(SCALE_SRCS:.F=.f)
+SCALE_OBJS = $(SCALE_RCS:.f=.o)
 
-# Override the link rule to include variant objects
-$(SBIN): $(OBJS) $(OBJS90) $(VARIANT_OBJS)
-	$(LDR) $(FFLAGS) -o $(SBIN) $(OBJS) $(OBJS90) $(VARIANT_OBJS) $(LCDF) $(LDFLAGS)
+# Override the link rule to include scale objects
+$(SBIN): $(OBJS) $(OBJS90) $(SCALE_OBJS)
+	$(LDR) $(FFLAGS) -o $(SBIN) $(OBJS) $(OBJS90) $(SCALE_OBJS) $(LCDF) $(LDFLAGS)

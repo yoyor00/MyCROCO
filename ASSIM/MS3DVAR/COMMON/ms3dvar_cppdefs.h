@@ -1,0 +1,228 @@
+!======================================================================
+! CROCO is a branch of ROMS developped at IRD, INRIA,
+! Ifremer, CNRS and Univ. Toulouse III  in France
+! The two other branches from UCLA (Shchepetkin et al)
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
+!
+! CROCO website : http://www.croco-ocean.org
+!======================================================================
+!
+/*
+ * ms3dvar_cppdefs.h - MS3DVAR CPP Core Configuration
+ * ==================================================
+ *
+ * This file contains ONLY the CPP defines needed by MS3DVAR.
+ * It is independent of CROCO's full cppdefs.h to avoid confusion
+ * and maintenance issues.
+ *
+ * The full CROCO cppdefs.h has 2203 lines with configurations for:
+ * - Academic test cases (BASIN, CANYON, UPWELLING, etc.)
+ * - Physics modules (BIOLOGY, PISCES, SEDIMENT, etc.)
+ * - Coupling options (WRF, WW3, OASIS, etc.)
+ *
+ * MS3DVAR only needs ~5 core CROCO defines plus ~60 DAS_* specific defines.
+ * This minimal file contains exactly what's needed.
+ *
+ * USAGE:
+ * ------
+ * Scale-specific files (LR/cppdefs.h, MR/cppdefs.h, etc.) should
+ * include this file and override specific settings as needed.
+ */
+
+
+/*=====================================================================
+ * MANDATORY CONFIGURATION CHANGES FOR ALL MS3DVAR SCALE EXECUTABLES
+ *
+ * Below is performed the redefinition of a very small number of 
+ * Croco CPP keys in order to fullfill the current set of mandatory 
+ * MS3DVAR CPP keys, among which : defining OPENMP, undefing MPI,...
+ *
+ *=====================================================================*/
+
+/*=====================================================================
+ * Parallelization options
+ *
+ * OpenMP (shared memory) is mandatory
+ * MPI (distributed memory) doesn't work yet.
+ * Note: DAS is incompatible with CROCO's AUTOTILING + OpenMP combination.
+ *=====================================================================*/
+#define OPENMP          /* OpenMP parallelization */
+#undef  MPI             /* MPI parallelization */
+
+/*=====================================================================
+ * Grid and coordinate options
+ *
+ * Expected grid configuration for MS3DVAR (TOCHECK)
+ *=====================================================================*/
+#define MASKING         /* Land/sea masking */
+#define NEW_S_COORD     /* New s-coordinate system (Vtransform=2) */
+#define SPHERICAL       /* Spherical (geographic) coordinate grid */
+#define CURVGRID        /* Curvilinear (non-orthogonal) grid */
+
+/*=====================================================================
+ * Time management
+ *=====================================================================*/
+#undef USE_CALENDAR    /* Use calendar for time management */
+
+/*=====================================================================
+ * XIOS I/O server
+ *=====================================================================*/
+#undef  XIOS
+
+/*=====================================================================
+ * MS3DVAR DATA ASSIMILATION OPTIONS
+ *
+ * Below is the definition of the core MS3DVAR CPP switches which are 
+ * shared among all scale, i.d., FILTER, LR, MR and MS
+ * These CPP keys all start with pattern DAS_* and enable configuring
+ * the Multi-Scale 3D Variational data assimilation system.
+ *=====================================================================*/
+
+/*---------------------------------------------------------------------
+ * CORE DATA ASSIMILATION SETTINGS
+ *---------------------------------------------------------------------*/
+#define DAS                    /* Enable data assimilation (REQUIRED) */
+
+#if defined DAS_MS || defined DAS_MR
+# define  DAS_READ_INC          /* Read increments from file */
+#else
+# undef  DAS_READ_INC           /* Do not read increments from file */
+#endif
+
+#if defined DAS_SS 
+# define  DAS_DBLE_BKG          /* Use double background (single-scale only) */
+#else
+# undef  DAS_DBLE_BKG           /* Do not use double background */
+#endif
+
+/*---------------------------------------------------------------------
+ * DYNAMICAL CONSTRAINTS
+ *
+ * Control how strongly the analysis respects dynamical balance.
+ * Choose ONE geostrophic option and ONE hydrostatic option.
+ *---------------------------------------------------------------------*/
+
+/* Geostrophic Balance */
+#define DAS_GEOS_STRONG       /* Strong geostrophic constraint (recommended) */
+#undef  DAS_GEOS_WEAK         /* Weak geostrophic constraint */
+
+/* Hydrostatic Balance */
+#undef  DAS_HYDRO_STRONG      /* Strong hydrostatic constraint */
+#undef  DAS_HYDRO_WEAK        /* Weak hydrostatic constraint */
+
+/*---------------------------------------------------------------------
+ * BACKGROUND ERROR COVARIANCE
+ *
+ * Configuration of background error statistics.
+ *---------------------------------------------------------------------*/
+#define DAS_BVAR_CORR         /* Background error correlations (recommended) */
+#undef  DAS_ANA_BVAR          /* Analytical background variance (for testing) */
+
+/*---------------------------------------------------------------------
+ * OBSERVATION QUALITY CONTROL
+ *
+ * Options for filtering or weighting observations.
+ *---------------------------------------------------------------------*/
+#define DAS_DISCOAST          /* Discount coastal observations (recommended) */
+
+/*---------------------------------------------------------------------
+ * SATELLITE SEA SURFACE TEMPERATURE (SST) OBSERVATIONS
+ *
+ * Enable the satellite SST products you want to assimilate.
+ *---------------------------------------------------------------------*/
+#define DAS_MCSST             /* Multi-channel SST (AVHRR, MODIS, VIIRS) */
+#define DAS_SSTMCMSK          /* SST multi-channel mask for quality control */
+#undef  DAS_GOES_SST          /* GOES geostationary satellite SST */
+#undef  DAS_TMISST            /* TMI (TRMM Microwave Imager) SST */
+#undef  DAS_FDN_MCSST         /* Foundation temperature from multi-channel SST */
+
+/*---------------------------------------------------------------------
+ * SATELLITE SEA SURFACE HEIGHT (SSH) OBSERVATIONS
+ *
+ * Enable the altimetry products you want to assimilate.
+ *---------------------------------------------------------------------*/
+#define DAS_SWOTSSH           /* SWOT (Surface Water and Ocean Topography) */
+#define DAS_SWOTSSHMSK        /* SWOT SSH mask for quality control */
+#undef  DAS_JASONSSH          /* Jason altimeter series */
+#undef  DAS_TPSSH             /* TOPEX/Poseidon altimeter */
+#undef  DAS_ERS2SSH           /* ERS-2 altimeter */
+#undef  DAS_GFOSSH            /* GFO altimeter */
+
+/*---------------------------------------------------------------------
+ * SATELLITE SEA SURFACE SALINITY (SSS) OBSERVATIONS
+ *
+ * Enable for SMOS, SMAP, or Aquarius SSS products.
+ *---------------------------------------------------------------------*/
+#undef  DAS_SATSSSS           /* Satellite sea surface salinity */
+
+/*---------------------------------------------------------------------
+ * IN-SITU OBSERVATIONS
+ *
+ * Enable in-situ observation platforms (ARGO, gliders, CTD, etc.)
+ *---------------------------------------------------------------------*/
+#define DAS_INSITU            /* Enable in-situ observations (master switch) */
+
+/* Gliders */
+#undef  DAS_WHOIGLIDER        /* WHOI (Woods Hole) gliders */
+#undef  DAS_SIOGLIDER         /* SIO (Scripps) gliders */
+
+/* CTD (Conductivity-Temperature-Depth) */
+#undef  DAS_PTSURCDT          /* Point surface CTD */
+#undef  DAS_MARTINCDT         /* Martin CTD */
+#undef  DAS_MAPPEDCDT         /* Gridded/mapped CTD */
+#undef  DAS_PRFCDT            /* Profile CTD */
+
+/* Ships and Floats */
+#undef  DAS_SHIPSST           /* Ship-based SST measurements */
+#undef  DAS_NPSFLIGHT         /* NPS flight/aircraft observations */
+
+/* Autonomous Underwater Vehicles (AUV) */
+#undef  DAS_CALPOLYAUV        /* Cal Poly AUV */
+#undef  DAS_DORADOAUV         /* Dorado AUV */
+
+/*---------------------------------------------------------------------
+ * CURRENT OBSERVATIONS
+ *
+ * Direct velocity measurements from HF radar, ADCP, etc.
+ *---------------------------------------------------------------------*/
+#undef  DAS_HFRADAR           /* HF radar surface currents */
+#undef  DAS_CURRENT_UV        /* Direct UV current observations */
+#undef  DAS_SYNTHRADAR        /* Synthetic radar for testing */
+#undef  DAS_HUGEHRADAR        /* Support for very large radar datasets */
+#undef  DAS_HFHEADER          /* HF radar header processing */
+
+/*---------------------------------------------------------------------
+ * MAPPED/GRIDDED OBSERVATIONS
+ *
+ * For pre-gridded observation products.
+ *---------------------------------------------------------------------*/
+#undef  DAS_MAPPED            /* Mapped/gridded observations */
+
+/*---------------------------------------------------------------------
+ * PROCESSING AND ANALYSIS OPTIONS
+ *
+ * Advanced options for tuning the analysis procedure.
+ *---------------------------------------------------------------------*/
+#define DAS_PWTHZETATOT       /* Weight total sea surface height */
+#define DAS_ZETAHADJCORR      /* SSH adjustment with correlations */
+#define DAS_REDUCED_ZCORR     /* Reduced vertical correlation lengths */
+#undef  DAS_BKGZETA           /* Use background SSH in analysis */
+#undef  DAS_PSICHI_COSTREG    /* Streamfunction cost regularization */
+#undef  DAS_ADIMPSICHI        /* Adimensional psi/chi formulation */
+#undef  DAS_COUNT_PSICHI      /* Count psi/chi observations for diagnostics */
+#undef  DAS_UVAGEO_DIAG       /* Diagnose ageostrophic velocity components */
+#undef  DAS_D2CUV             /* Second-order current analysis */
+
+/*---------------------------------------------------------------------
+ * DIAGNOSTIC OUTPUT
+ *
+ * Options for debugging and detailed output.
+ *---------------------------------------------------------------------*/
+#undef  DAS_VERBOSE_INSITU    /* Verbose output for in-situ observations */
+#undef  DAS_WRT_ADJ_INI       /* Write adjoint initial state */
+#undef  DAS_WRT_ADJ_END       /* Write adjoint final state */
+
+/*=====================================================================
+ * END OF CONFIGURATION
+ *=====================================================================*/

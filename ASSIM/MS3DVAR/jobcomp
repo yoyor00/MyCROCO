@@ -7,20 +7,20 @@
 # Similar to CROCO's jobcomp but adapted for MS3DVAR
 #
 # Usage examples:
-#   ./jobcomp                    # Build all variants (default)
-#   ./jobcomp all                # Build all variants (explicit)
-#   ./jobcomp lr                 # Build LR variant only
-#   ./jobcomp lr ms              # Build LR and MS variants
-#   ./jobcomp mr --clean         # Build MR variant with clean
+#   ./jobcomp                    # Build all scales (default)
+#   ./jobcomp all                # Build all scales (explicit)
+#   ./jobcomp lr                 # Build LR scale only
+#   ./jobcomp lr ms              # Build LR and MS scales
+#   ./jobcomp mr --clean         # Build MR scale with clean
 #   ./jobcomp --jobs 4 lr mr     # Build LR and MR with 4 jobs
-#   ./jobcomp lr mr filter --clean --jobs 4 # Build 3 variants with options
-#   ./jobcomp --jobs 4 all       # Build all variants with 4 jobs
+#   ./jobcomp lr mr filter --clean --jobs 4 # Build 3 scales with options
+#   ./jobcomp --jobs 4 all       # Build all scales with 4 jobs
 #
-# Alternative syntax (explicit --variant flag):
-#   ./jobcomp --variant lr       # Build single variant (old syntax)
+# Alternative syntax (explicit --scale flag):
+#   ./jobcomp --scale lr         # Build single scale (old syntax)
 #
 # Environment variables:
-#   MS3DVAR_VARIANT      : variant to build (lr, mr, filter, ms)
+#   MS3DVAR_SCALE        : scale to build (lr, mr, filter, ms)
 #   MS3DVAR_FC           : Fortran compiler (default: gfortran)
 #   MS3DVAR_FFLAGS       : compilation flags
 #   MS3DVAR_NETCDFLIB    : NetCDF library path
@@ -34,8 +34,8 @@
 # BEGIN OF USER'S MODIFICATIONS
 ####################################################
 
-# Default: build all variants (set to specific variant like "lr" to change default)
-VARIANT="all"
+# Default: build all scales (set to specific scale like "lr" to change default)
+SCALE="all"
 
 # CROCO source directory (default: ../../OCEAN from work dir)
 SOURCE1="../../OCEAN"
@@ -73,18 +73,18 @@ function show_help() {
     echo "---------------------------------------------------------------------"
     echo "JOBCOMP script to compile MS3DVAR data assimilation system"
     echo "---------------------------------------------------------------------"
-    echo "Usage: $0 [OPTIONS] [VARIANT...]"
-    echo "   or: $0 [VARIANT...] [OPTIONS]"
+    echo "Usage: $0 [OPTIONS] [SCALE...]"
+    echo "   or: $0 [SCALE...] [OPTIONS]"
     echo ""
     echo "Arguments:"
-    echo "  VARIANT...                  Variant(s) to build: lr, mr, filter, ms, all"
-    echo "                              Multiple variants can be specified"
+    echo "  SCALE...                  Scale(s) to build: lr, mr, filter, ms, all"
+    echo "                              Multiple scales can be specified"
     echo "                              Can be placed before or after options"
     echo "                              (default: all if not specified)"
     echo ""
     echo "Options:"
     echo "  -h, --help                  Show this help message and exit"
-    echo "  --variant <name>            Alternative way to specify single variant"
+    echo "  --scale <name>            Alternative way to specify single scale"
     echo "  --croco-src <path>          CROCO source directory (default: ../../OCEAN)"
     echo "  --ms3dvar-src <path>        MS3DVAR source directory (default: ..)"
     echo "  --fc <compiler>             Fortran compiler (default: gfortran)"
@@ -97,15 +97,15 @@ function show_help() {
     echo "  --clean                     Clean before building"
     echo ""
     echo "Examples:"
-    echo "  $0                          # Build all variants (default)"
-    echo "  $0 all                      # Build all variants (explicit)"
-    echo "  $0 lr                       # Build only LR variant"
-    echo "  $0 lr ms                    # Build LR and MS variants"
-    echo "  $0 mr --clean               # Variant first, then options"
-    echo "  $0 --clean mr filter        # Options first, variants at end"
-    echo "  $0 --jobs 4 lr mr ms        # Multiple options and variants"
-    echo "  $0 lr mr filter --clean     # Variants first, options at end"
-    echo "  $0 --jobs 4 all             # Build all variants with 4 jobs"
+    echo "  $0                          # Build all scales (default)"
+    echo "  $0 all                      # Build all scales (explicit)"
+    echo "  $0 lr                       # Build only LR scale"
+    echo "  $0 lr ms                    # Build LR and MS scales"
+    echo "  $0 mr --clean               # Scale first, then options"
+    echo "  $0 --clean mr filter        # Options first, scales at end"
+    echo "  $0 --jobs 4 lr mr ms        # Multiple options and scales"
+    echo "  $0 lr mr filter --clean     # Scales first, options at end"
+    echo "  $0 --jobs 4 all             # Build all scales with 4 jobs"
     echo ""
 }
 
@@ -114,7 +114,7 @@ BUILD_ALL=0
 DO_CLEAN=0
 NO_MODULE=0
 DEBUG=0
-POSITIONAL_VARIANTS=()
+POSITIONAL_SCALES=()
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -123,8 +123,8 @@ while [[ $# -gt 0 ]]; do
             show_help
             exit 0
             ;;
-        --variant)
-            VARIANT="$2"
+        --scale)
+            SCALE="$2"
             shift 2
             ;;
         --fc)
@@ -177,35 +177,35 @@ while [[ $# -gt 0 ]]; do
             exit 1
             ;;
         *)
-            # Positional argument (variant name)
-            POSITIONAL_VARIANTS+=("$1")
+            # Positional argument (scale name)
+            POSITIONAL_SCALES+=("$1")
             shift
             ;;
     esac
 done
 
-# Determine variants to build
-if [ ${#POSITIONAL_VARIANTS[@]} -gt 0 ]; then
-    # Positional variants provided - build these specific variants
-    BUILD_ALL=1  # We'll handle multiple variants
-    VARIANTS_TO_BUILD=("${POSITIONAL_VARIANTS[@]}")
-    # Expand a positional "all" (documented usage: "./jobcomp all") to the four variants
-    for v in "${VARIANTS_TO_BUILD[@]}"; do
+# Determine scales to build
+if [ ${#POSITIONAL_SCALES[@]} -gt 0 ]; then
+    # Positional scales provided - build these specific scales
+    BUILD_ALL=1  # We'll handle multiple scales
+    SCALES_TO_BUILD=("${POSITIONAL_SCALES[@]}")
+    # Expand a positional "all" (documented usage: "./jobcomp all") to the four scales
+    for v in "${SCALES_TO_BUILD[@]}"; do
         if [ "$(echo "$v" | tr '[:upper:]' '[:lower:]')" = "all" ]; then
-            VARIANTS_TO_BUILD=(lr mr filter ms)
+            SCALES_TO_BUILD=(lr mr filter ms)
             break
         fi
     done
-elif [ -n "$VARIANT" ] && [ "$VARIANT" != "all" ]; then
-    # --variant flag used with specific variant
-    VARIANTS_TO_BUILD=("$VARIANT")
+elif [ -n "$SCALE" ] && [ "$SCALE" != "all" ]; then
+    # --scale flag used with specific scale
+    SCALES_TO_BUILD=("$SCALE")
 else
-    # No specific variants, use default behavior
-    VARIANT="${VARIANT:-all}"
+    # No specific scales, use default behavior
+    SCALE="${SCALE:-all}"
 fi
 
 # Environment variable overrides
-[ -n "$MS3DVAR_VARIANT" ] && VARIANT="$MS3DVAR_VARIANT"
+[ -n "$MS3DVAR_SCALE" ] && SCALE="$MS3DVAR_SCALE"
 [ -n "$MS3DVAR_FC" ] && FC="$MS3DVAR_FC"
 [ -n "$MS3DVAR_FFLAGS" ] && FFLAGS="$MS3DVAR_FFLAGS"
 [ -n "$MS3DVAR_NETCDFINC" ] && NETCDFINC="$MS3DVAR_NETCDFINC"
@@ -216,30 +216,30 @@ fi
 CROCO_SOURCE="${CROCO_SRC:-$SOURCE1}"
 MS3DVAR_SOURCE="${MS3DVAR_SRC:-$SOURCE2}"
 
-# Handle "all" variant
-VARIANT_LOWER=$(echo "$VARIANT" | tr '[:upper:]' '[:lower:]')
-if [ "$VARIANT_LOWER" = "all" ]; then
+# Handle "all" scale
+SCALE_LOWER=$(echo "$SCALE" | tr '[:upper:]' '[:lower:]')
+if [ "$SCALE_LOWER" = "all" ]; then
     BUILD_ALL=1
 fi
 
-# Validate variant
-case "$VARIANT_LOWER" in
+# Validate scale
+case "$SCALE_LOWER" in
     lr|mr|filter|ms|all)
         ;;
     *)
-        echo "ERROR: Invalid variant '$VARIANT'. Must be one of: lr, mr, filter, ms"
+        echo "ERROR: Invalid scale '$SCALE'. Must be one of: lr, mr, filter, ms"
         exit 1
         ;;
 esac
 
 # Convert to uppercase for directory name
-VARIANT_UPPER=$(echo "$VARIANT_LOWER" | tr '[:lower:]' '[:upper:]')
+SCALE_UPPER=$(echo "$SCALE_LOWER" | tr '[:lower:]' '[:upper:]')
 
-# Function to build a single variant
-function build_variant() {
+# Function to build a single scale
+function build_scale() {
     local var_lower=$1
     local var_upper=$2
-    local variant_dir="${var_upper}"
+    local scale_dir="${var_upper}"
 
     # Convert relative source paths to absolute now (before cd into Compile subdir)
     [[ ! "${MS3DVAR_SOURCE}" = /* ]] && MS3DVAR_SOURCE="$(cd "${MS3DVAR_SOURCE}" && pwd)"
@@ -247,9 +247,9 @@ function build_variant() {
 
     echo ""
     echo "========================================================================"
-    echo "Building MS3DVAR variant: ${var_upper}"
+    echo "Building MS3DVAR scale: ${var_upper}"
     echo "========================================================================"
-    echo "Variant directory: ${variant_dir}"
+    echo "Scale directory: ${scale_dir}"
     echo "CROCO source: ${CROCO_SOURCE}"
     echo "MS3DVAR source: ${MS3DVAR_SOURCE}"
     echo "Compiler: ${FC}"
@@ -258,14 +258,14 @@ function build_variant() {
     echo "Parallel jobs: ${NPROCS}"
     echo ""
 
-    # Check if variant directory exists
-    if [ ! -d "${MS3DVAR_SOURCE}/${variant_dir}" ]; then
-        echo "ERROR: Variant directory ${variant_dir} not found"
+    # Check if scale directory exists
+    if [ ! -d "${MS3DVAR_SOURCE}/${scale_dir}" ]; then
+        echo "ERROR: Scale directory ${scale_dir} not found"
         return 1
     fi
 
-    # Enter variant directory
-    cd "${MS3DVAR_SOURCE}/${variant_dir}" || { echo "ERROR: Cannot enter ${MS3DVAR_SOURCE}/${variant_dir}"; return 1; }
+    # Enter scale directory
+    cd "${MS3DVAR_SOURCE}/${scale_dir}" || { echo "ERROR: Cannot enter ${MS3DVAR_SOURCE}/${scale_dir}"; return 1; }
 
     RUNDIR="$(pwd)"
     COMPILE_DIR="./Compile"
@@ -311,24 +311,24 @@ function build_variant() {
     echo "CROCO sources copied"
     echo ""
 
-    # Save a modified CROCO's cppdefs.h as cppdefs_croco.h before variant files overwrite it.
+    # Save a modified CROCO's cppdefs.h as croco_cppdefs.h before scale files overwrite it.
     # Modifications are required if following a MS3DVAR cppdefs.h decomposition/recomposition strategy
-    # (by the mean of successive includes to recompose the final variant-scale cppdefs.h)
+    # (by the mean of successive includes to recompose the final scale-scale cppdefs.h)
     # - remove final includes cppdefs_dev.h, set_global_definitions.h
     # - undef default configuration BENGUELA_LR 
-    cppdefs_croco="cppdefs_croco.h"
-    echo "... Croco ${CROCO_SOURCE}/cppdefs.h default file copied to ${COMPILE_DIR}/${cppdefs_croco}"
-    \cp "${CROCO_SOURCE}/cppdefs.h" "${COMPILE_DIR}/${cppdefs_croco}"
+    croco_cppdefs="croco_cppdefs.h"
+    echo "... Croco ${CROCO_SOURCE}/cppdefs.h default file copied to ${COMPILE_DIR}/${croco_cppdefs}"
+    \cp "${CROCO_SOURCE}/cppdefs.h" "${COMPILE_DIR}/${croco_cppdefs}"
     echo "    Modifications of the Croco cppdefs.h default file : removing last includes"
-    sed -i '/^#.*include .*cppdefs_dev/{d;}' "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
-    sed -i '/^#.*include .*set_global_definitions/{d;}' "${COMPILE_DIR}/${cppdefs_croco}" 2>/dev/null || true
+    sed -i '/^#.*include .*cppdefs_dev/{d;}' "${COMPILE_DIR}/${croco_cppdefs}" 2>/dev/null || true
+    sed -i '/^#.*include .*set_global_definitions/{d;}' "${COMPILE_DIR}/${croco_cppdefs}" 2>/dev/null || true
     echo "CROCO standard cppdefs.h copied and modified"
     echo 
 
-    # Save CROCO's param.h as croco_ocean_param.h before variant files overwrite it.
+    # Save CROCO's param.h as croco_param.h before scale files overwrite it.
     # MS3DVAR includes this (with MS3DVAR_GRID_PARAMS guard) to get the physics/tracer
     # parameters from the real CROCO param.h, avoiding duplication in croco_extra_params.h.
-    \cp "${CROCO_SOURCE}/param.h" "${COMPILE_DIR}/croco_ocean_param.h"
+    \cp "${CROCO_SOURCE}/param.h" "${COMPILE_DIR}/croco_param.h"
 
     # Copy MS3DVAR common source files
     echo "Copying MS3DVAR common source files..."
@@ -338,14 +338,14 @@ function build_variant() {
     echo "MS3DVAR common sources copied"
     echo ""
 
-    # Copy variant Makefile to compilation directory
+    # Copy scale Makefile to compilation directory
     echo "Copying build system files..."
     \cp "${MS3DVAR_SOURCE}/${var_upper}/Makefile" "$COMPILE_DIR"
     echo "Build system copied"
     echo ""
 
     # Place modified Makefile.inc directly in Compile/.
-    # The variant Makefile uses "include Makefile.inc" (same directory).
+    # The scale Makefile uses "include Makefile.inc" (same directory).
     echo "Configuring Makefile.inc..."
     \cp "${MS3DVAR_SOURCE}/Makefile.inc" "${COMPILE_DIR}/Makefile.inc"
     sed -i 's|^COMMON_DIR = .*|COMMON_DIR = .|' "${COMPILE_DIR}/Makefile.inc" 2>/dev/null || true
@@ -354,8 +354,8 @@ function build_variant() {
     echo "Makefile.inc configured"
     echo ""
 
-    # Copy all variant-specific source files from MS3DVAR_SOURCE (the versioned source)
-    echo "Copying variant-specific files..."
+    # Copy all scale-specific source files from MS3DVAR_SOURCE (the versioned source)
+    echo "Copying scale-specific files..."
     ls "${MS3DVAR_SOURCE}/${var_upper}/"*.h   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.h   "$COMPILE_DIR"
     ls "${MS3DVAR_SOURCE}/${var_upper}/"*.F   > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.F   "$COMPILE_DIR"
     ls "${MS3DVAR_SOURCE}/${var_upper}/"*.F90 > /dev/null 2>&1 && \cp "${MS3DVAR_SOURCE}/${var_upper}/"*.F90 "$COMPILE_DIR"
@@ -472,7 +472,7 @@ function build_variant() {
     # Find the executable
     EXE=$(find . -maxdepth 1 -type f -executable -name "ms*" -o -name "da_*" 2>/dev/null | head -1)
 
-    # Copy executable back to variant directory
+    # Copy executable back to scale directory
     if [ -n "$EXE" ]; then
         \cp "$EXE" "${RUNDIR}/"
         echo ""
@@ -510,30 +510,30 @@ cd "$SCRIPT_DIR" || { echo "ERROR: Cannot access script directory"; exit 1; }
 echo "MS3DVAR directory: ${SCRIPT_DIR}"
 echo ""
 
-if [ ${#VARIANTS_TO_BUILD[@]} -gt 0 ]; then
-    # Build specific list of variants
-    echo "Building ${#VARIANTS_TO_BUILD[@]} variant(s): ${VARIANTS_TO_BUILD[*]}"
+if [ ${#SCALES_TO_BUILD[@]} -gt 0 ]; then
+    # Build specific list of scales
+    echo "Building ${#SCALES_TO_BUILD[@]} scale(s): ${SCALES_TO_BUILD[*]}"
     echo ""
 
-    FAILED_VARIANTS=""
+    FAILED_SCALES=""
 
-    for var in "${VARIANTS_TO_BUILD[@]}"; do
+    for var in "${SCALES_TO_BUILD[@]}"; do
         var_lower=$(echo "$var" | tr '[:upper:]' '[:lower:]')
         var_upper=$(echo "$var" | tr '[:lower:]' '[:upper:]')
 
-        # Validate variant
+        # Validate scale
         case "$var_lower" in
             lr|mr|filter|ms)
                 ;;
             *)
-                echo "ERROR: Invalid variant '$var'. Must be one of: lr, mr, filter, ms"
-                FAILED_VARIANTS="${FAILED_VARIANTS} ${var_upper}(invalid)"
+                echo "ERROR: Invalid scale '$var'. Must be one of: lr, mr, filter, ms"
+                FAILED_SCALES="${FAILED_SCALES} ${var_upper}(invalid)"
                 continue
                 ;;
         esac
 
-        if ! build_variant "$var_lower" "$var_upper"; then
-            FAILED_VARIANTS="${FAILED_VARIANTS} ${var_upper}"
+        if ! build_scale "$var_lower" "$var_upper"; then
+            FAILED_SCALES="${FAILED_SCALES} ${var_upper}"
         fi
     done
 
@@ -541,11 +541,11 @@ if [ ${#VARIANTS_TO_BUILD[@]} -gt 0 ]; then
     echo "========================================================================"
     echo "Build Summary"
     echo "========================================================================"
-    if [ -z "$FAILED_VARIANTS" ]; then
-        echo "All requested variants built successfully!"
+    if [ -z "$FAILED_SCALES" ]; then
+        echo "All requested scales built successfully!"
         echo ""
         echo "Executables:"
-        for var in "${VARIANTS_TO_BUILD[@]}"; do
+        for var in "${SCALES_TO_BUILD[@]}"; do
             var_upper=$(echo "$var" | tr '[:lower:]' '[:upper:]')
             EXE=$(find ${var_upper} -maxdepth 1 -type f -executable -name "ms*" -o -name "da_*" 2>/dev/null | head -1)
             if [ -n "$EXE" ]; then
@@ -554,20 +554,20 @@ if [ ${#VARIANTS_TO_BUILD[@]} -gt 0 ]; then
         done
         exit 0
     else
-        echo "Some variants failed to build:${FAILED_VARIANTS}"
+        echo "Some scales failed to build:${FAILED_SCALES}"
         exit 1
     fi
 elif [ $BUILD_ALL -eq 1 ]; then
-    # Build all 4 variants
-    echo "Building all 4 variants sequentially..."
+    # Build all 4 scales
+    echo "Building all 4 scales sequentially..."
     echo ""
 
-    FAILED_VARIANTS=""
+    FAILED_SCALES=""
 
     for var in lr mr filter ms; do
         var_upper=$(echo "$var" | tr '[:lower:]' '[:upper:]')
-        if ! build_variant "$var" "$var_upper"; then
-            FAILED_VARIANTS="${FAILED_VARIANTS} ${var_upper}"
+        if ! build_scale "$var" "$var_upper"; then
+            FAILED_SCALES="${FAILED_SCALES} ${var_upper}"
         fi
     done
 
@@ -575,8 +575,8 @@ elif [ $BUILD_ALL -eq 1 ]; then
     echo "========================================================================"
     echo "Build Summary"
     echo "========================================================================"
-    if [ -z "$FAILED_VARIANTS" ]; then
-        echo "All variants built successfully!"
+    if [ -z "$FAILED_SCALES" ]; then
+        echo "All scales built successfully!"
         echo ""
         echo "Executables:"
         for var in lr mr filter ms; do
@@ -588,14 +588,14 @@ elif [ $BUILD_ALL -eq 1 ]; then
         done
         exit 0
     else
-        echo "Some variants failed to build:${FAILED_VARIANTS}"
+        echo "Some scales failed to build:${FAILED_SCALES}"
         exit 1
     fi
 else
-    # Build single variant
-    if ! build_variant "$VARIANT_LOWER" "$VARIANT_UPPER"; then
+    # Build single scale
+    if ! build_scale "$SCALE_LOWER" "$SCALE_UPPER"; then
         echo ""
-        echo "Build failed for variant ${VARIANT_UPPER}"
+        echo "Build failed for scale ${SCALE_UPPER}"
         exit 1
     fi
     exit 0
