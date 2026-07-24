@@ -14,6 +14,9 @@
   "INNERSHELF_EKMAN": {
     "title": "INNERSHELF_EKMAN - (200 x 3 x 60 : 5760)",
     "case": "INNERSHELF_EKMAN",
+    "nml_file": "TEST_CASES/INNERSHELF/croco_INNERSHELF_EKMAN.nml",
+    "cppdefs_file": "TEST_CASES/INNERSHELF/cppdefs_INNERSHELF_EKMAN.h",
+    "param_file": "TEST_CASES/INNERSHELF/param_INNERSHELF_EKMAN.h",
     "plotphy": {
       "plotphy_script": "./TEST_CASES/INNERSHELF/plot_innershelf.py",
       "plotphy_script_input": "innershelf_avg.nc",
