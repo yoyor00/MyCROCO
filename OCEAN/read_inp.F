@@ -594,6 +594,8 @@ c        close(testunit)
 
 
 #if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
+      (defined DAS_DBLE_BKG)                          || \
+      (defined DAS_READ_INC)                          || \
       (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
       (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
       (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
@@ -2429,6 +2431,8 @@ c        close(testunit)
 
 
 #if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA) || \
+     (defined DAS_DBLE_BKG)                          || \
+     (defined DAS_READ_INC)                          || \
      (defined ZCLIMATOLOGY  && !defined ANA_SSH) || \
      (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA) || \
      (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)

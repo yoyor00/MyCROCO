@@ -9,11 +9,11 @@
 # CROCO website : http://www.croco-ocean.org
 #======================================================================
 #
-# Common Makefile for MS3DVAR variants
-# This file is included by each variant's Makefile
+# Common Makefile for MS3DVAR scales
+# This file is included by each scale's Makefile
 #
-# Required variables to be set by variant Makefile:
-#   VARIANT_NAME  - Name of variant (e.g., "lr", "mr", "filter", "ms")
+# Required variables to be set by scale Makefile:
+#   SCALE_NAME    - Name of scale (e.g., "lr", "mr", "filter", "ms")
 #   SBIN          - Executable name (e.g., "msda_lr")
 #
 #======================================================================
@@ -41,12 +41,12 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 # Model Configuration:
 #======================================================================
 # SRCS: source codes files
-# Variant-specific files are in current directory
+# Scale-specific files are in current directory
 # Common MS3DVAR files are in $(COMMON_DIR)
 # CROCO files are in $(CROCO_SRC)
 #======================================================================
 
- SRCS = main.F		read_inp.F\
+ SRCS = ms3dvar_main.F		read_inp.F\
 	init_scalars.F	init_arrays.F\
 	set_scoord.F	setup_grid1.F	setup_grid2.F\
 	ana_initial.F	analytical.F\
@@ -65,63 +65,63 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
 	wrt_grid.F      wrt_rst.F\
 	get_grid.F	get_initial.F\
 	get_ssh.F\
-	das_init_arrays.F  das_init_scalars.F\
-	das_setup1.F  das_setup2.F das_spline1d.F das_exchange.F\
-	das_MessPass2D.F das_s2z.F das_z2s.F das_analysis.F das_analysis_zeta.F\
-	das_ana_bvar.F das_costb.F das_vec.F das_adj_costb.F\
-    das_get_d2c.F\
-	das_get_tmi.F  das_get_mc.F das_get_goes.F das_lbfgs.F das_innov_sst.F\
-	das_cost_sst.F das_adj_csst.F das_ca2zero.F das_adj_zero.F\
-	das_adj_zero_s.F das_read_inp.F das_matvec.F das_adj_matvec.F\
-	das_get_corr.F das_varvec.F das_adj_varvec.F\
-	das_rho_eos9.F das_fill9.F das_extrapolate9.F das_geos_uv_p.F das_get_bvar.F\
-    das_diag_steric_sshb.F\
-	das_get_ssh_ref.F \
-	das_get_zeta_ubal_from_tot.F das_adj_get_zeta_ubal_from_tot.F\
+	ms3dvar_init_arrays.F  ms3dvar_init_scalars.F\
+	ms3dvar_setup1.F  ms3dvar_setup2.F ms3dvar_spline1d.F ms3dvar_exchange.F\
+	ms3dvar_MessPass2D.F ms3dvar_s2z.F ms3dvar_z2s.F ms3dvar_analysis.F ms3dvar_analysis_zeta.F\
+	ms3dvar_ana_bvar.F ms3dvar_costb.F ms3dvar_vec.F ms3dvar_adj_costb.F\
+    ms3dvar_get_d2c.F\
+	ms3dvar_get_tmi.F  ms3dvar_get_mc.F ms3dvar_get_goes.F ms3dvar_lbfgs.F ms3dvar_innov_sst.F\
+	ms3dvar_cost_sst.F ms3dvar_adj_csst.F ms3dvar_ca2zero.F ms3dvar_adj_zero.F\
+	ms3dvar_adj_zero_s.F ms3dvar_read_obs_filelist.F ms3dvar_matvec.F ms3dvar_adj_matvec.F\
+	ms3dvar_get_corr.F ms3dvar_varvec.F ms3dvar_adj_varvec.F\
+	ms3dvar_rho_eos9.F ms3dvar_fill9.F ms3dvar_extrapolate9.F ms3dvar_geos_uv_p.F ms3dvar_get_bvar.F\
+    ms3dvar_diag_steric_sshb.F\
+	ms3dvar_get_ssh_ref.F \
+	ms3dvar_get_zeta_ubal_from_tot.F ms3dvar_adj_get_zeta_ubal_from_tot.F\
 \
-	das_zeta_p_smooth.F das_zeta_p_smooth2.F das_diag_pressure.F\
-	das_adj_diag_p.F das_get_hfradar.F das_geo_ratio.F das_adj_geo_ratio.F\
-	das_cost_reg_uv.F das_adj_cost_reg_uv.F\
-    das_d2c_uv.F\
+	ms3dvar_zeta_p_smooth.F ms3dvar_zeta_p_smooth2.F ms3dvar_diag_pressure.F\
+	ms3dvar_adj_diag_p.F ms3dvar_get_hfradar.F ms3dvar_geo_ratio.F ms3dvar_adj_geo_ratio.F\
+	ms3dvar_cost_reg_uv.F ms3dvar_adj_cost_reg_uv.F\
+    ms3dvar_d2c_uv.F\
 \
-	das_get_js1.F das_get_swot.F das_innov_js1.F das_innov_swot.F das_rho_eos_lin.F\
-	das_get_tp.F das_innov_tp.F\
-	das_diag_ssh.F das_cost_js1.F das_cost_swot.F das_wrt.F das_adj_wrt.F \
-    das_theadj_wrt.F\
-	das_adj_rho_eos.F das_adj_diag_ssh.F das_adj_cjs1.F das_adj_cswot.F\
-	das_adj_diag_ssh_steric.F\
-	das_adj_geos_uv_p.F das_psichi_uv.F das_adj_psichi_uv.F\
-	das_cross_ts.F das_adj_cross_ts.F das_set_geo_ratio.F\
-	das_zetah_smooth.F das_adj_zetah_smooth.F das_copy_zetah_smooth.F\
-    das_zeta_h_smooth.F das_adj_zeta_h_smooth.F\
-	das_adj_copy_zeteh_smooth.F das_adj_glider_sio.F das_cost_glider_sio.F\
-	das_adj_glider_whoi.F das_cost_glider_whoi.F das_adj_map.F das_cost_map.F\
-	das_adj_glider_ptsur.F das_cost_glider_ptsur.F\
-	das_pressue_smooth.F das_adj_pressure_smooth.F\
-	das_copy_pressure_smooth.F das_adj_copy_pressure_smooth.F\
-	das_get_sats.F das_innov_sats.F das_cost_sats.F das_adj_csats.F\
+	ms3dvar_get_js1.F ms3dvar_get_swot.F ms3dvar_innov_js1.F ms3dvar_innov_swot.F ms3dvar_rho_eos_lin.F\
+	ms3dvar_get_tp.F ms3dvar_innov_tp.F\
+	ms3dvar_diag_ssh.F ms3dvar_cost_js1.F ms3dvar_cost_swot.F ms3dvar_wrt.F ms3dvar_adj_wrt.F \
+    ms3dvar_theadj_wrt.F\
+	ms3dvar_adj_rho_eos.F ms3dvar_adj_diag_ssh.F ms3dvar_adj_cjs1.F ms3dvar_adj_cswot.F\
+	ms3dvar_adj_diag_ssh_steric.F\
+	ms3dvar_adj_geos_uv_p.F ms3dvar_psichi_uv.F ms3dvar_adj_psichi_uv.F\
+	ms3dvar_cross_ts.F ms3dvar_adj_cross_ts.F ms3dvar_set_geo_ratio.F\
+	ms3dvar_zetah_smooth.F ms3dvar_adj_zetah_smooth.F ms3dvar_copy_zetah_smooth.F\
+    ms3dvar_zeta_h_smooth.F ms3dvar_adj_zeta_h_smooth.F\
+	ms3dvar_adj_copy_zeteh_smooth.F ms3dvar_adj_glider_sio.F ms3dvar_cost_glider_sio.F\
+	ms3dvar_adj_glider_whoi.F ms3dvar_cost_glider_whoi.F ms3dvar_adj_map.F ms3dvar_cost_map.F\
+	ms3dvar_adj_glider_ptsur.F ms3dvar_cost_glider_ptsur.F\
+	ms3dvar_pressue_smooth.F ms3dvar_adj_pressure_smooth.F\
+	ms3dvar_copy_pressure_smooth.F ms3dvar_adj_copy_pressure_smooth.F\
+	ms3dvar_get_sats.F ms3dvar_innov_sats.F ms3dvar_cost_sats.F ms3dvar_adj_csats.F\
 \
-	das_get_insitu.F das_innov_sio.F das_cost_glider.F das_adj_cglider.F\
-	das_innov_whoi.F das_innov_flight.F das_cost_flight.F das_adj_cflight.F\
-	das_innov_ptsur.F das_innov_martn.F das_innov_map.F\
-	das_get_auv.F das_innov_calauv.F das_cost_calauv.F das_adj_cauv.F\
-	das_innov_dorauv.F das_cost_dorauv.F das_adj_dauv.F\
-	das_innov_hfradar.F das_cost_hfradar.F das_adj_chfradar.F\
-	das_copy.F das_setup.F das_cost_reg.F das_adj_cost_reg.F\
-	das_add_lr_s.F das_add_zeta_lr_s.F das_ca2zero_s.F\
-	das_interp_lr.F das_nf_fread_lr.F\
+	ms3dvar_get_insitu.F ms3dvar_innov_sio.F ms3dvar_cost_glider.F ms3dvar_adj_cglider.F\
+	ms3dvar_innov_whoi.F ms3dvar_innov_flight.F ms3dvar_cost_flight.F ms3dvar_adj_cflight.F\
+	ms3dvar_innov_ptsur.F ms3dvar_innov_martn.F ms3dvar_innov_map.F\
+	ms3dvar_get_auv.F ms3dvar_innov_calauv.F ms3dvar_cost_calauv.F ms3dvar_adj_cauv.F\
+	ms3dvar_innov_dorauv.F ms3dvar_cost_dorauv.F ms3dvar_adj_dauv.F\
+	ms3dvar_innov_hfradar.F ms3dvar_cost_hfradar.F ms3dvar_adj_chfradar.F\
+	ms3dvar_copy.F ms3dvar_setup.F ms3dvar_cost_reg.F ms3dvar_adj_cost_reg.F\
+	ms3dvar_add_lr_s.F ms3dvar_add_zeta_lr_s.F ms3dvar_ca2zero_s.F\
+	ms3dvar_interp_lr.F ms3dvar_nf_fread_lr.F\
 \
-	das_nf_fread.F\
+	ms3dvar_nf_fread.F\
 \
-	das_copy_smooth.F das_innov_smooth.F das_diag_ssh_steric.F\
-	das_zeta_smooth.F das_copy_uv_smooth.F das_innov_uv_smooth.F\
-	das_zeta_s_smooth.F das_adj_zeta_s_smooth.F\
-	das_ts_s_smooth.F das_adj_ts_s_smooth.F\
-	das_copy_ts_s_smooth.F das_adj_copy_ts_s_smooth.F das_ts_das_smooth.F\
-	das_copy_zeta_smooth.F das_adj_copy_zeta_smooth.F\
-	das_zeta_das_smooth.F\
-	das_get_TS_profile.F das_innov_TS_profile.F das_cost_TS_profile.F\
-	das_adj_TS_profile.F\
+	ms3dvar_copy_smooth.F ms3dvar_innov_smooth.F ms3dvar_diag_ssh_steric.F\
+	ms3dvar_zeta_smooth.F ms3dvar_copy_uv_smooth.F ms3dvar_innov_uv_smooth.F\
+	ms3dvar_zeta_s_smooth.F ms3dvar_adj_zeta_s_smooth.F\
+	ms3dvar_ts_s_smooth.F ms3dvar_adj_ts_s_smooth.F\
+	ms3dvar_copy_ts_s_smooth.F ms3dvar_adj_copy_ts_s_smooth.F ms3dvar_ts_analysis_smooth.F\
+	ms3dvar_copy_zeta_smooth.F ms3dvar_adj_copy_zeta_smooth.F\
+	ms3dvar_zeta_analysis_smooth.F\
+	ms3dvar_get_TS_profile.F ms3dvar_innov_TS_profile.F ms3dvar_cost_TS_profile.F\
+	ms3dvar_adj_TS_profile.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F
 
@@ -149,7 +149,7 @@ VPATH = $(COMMON_DIR):$(CROCO_SRC)
  OBJS = $(RCS:.f=.o)
  OBJS90 = $(RCS90:.f90=.o)
 
-# SBIN is set by the variant Makefile
+# SBIN is set by the scale Makefile
 
 %.mod : %.o
 	@touch $@
@@ -208,7 +208,7 @@ checkdefs: check_switches1.F setup_kwds.F
 
 # Adding the newly included cppdefs file type
 check_switches1.F: cppcheck cppdefs.h
-	cat cppdefs_croco.h cppdefs.h cppdefs_ms3dvar.h cppdefs_dev.h > mergcpp.txt
+	cat croco_cppdefs.h cppdefs.h ms3dvar_cppdefs.h cppdefs_dev.h > mergcpp.txt
 	./cppcheck
 
 check_srcs.F: srcscheck Makefile
@@ -239,7 +239,7 @@ depend: checkdefs cross_matrix
 okmsg: $(SBIN)
 	@echo ""
 	@echo '********************************************'
-	@echo '****** MS3DVAR-$(VARIANT_NAME) Compilation Done ******'
+	@echo '****** MS3DVAR-$(SCALE_NAME) Compilation Done ******'
 	@echo '********************************************'
 	@echo ""
 

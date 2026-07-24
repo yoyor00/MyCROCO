@@ -1,14 +1,14 @@
 # MS3DVAR Root Makefile
 #
-# This Makefile helps build all MS3DVAR variants from the root directory
+# This Makefile helps build all MS3DVAR scales from the root directory
 #
 #======================================================================
 
-# All variants
-VARIANTS = LR MR FILTER MS
+# All scales
+SCALES = LR MR FILTER MS
 
-# Executables produced by each variant
-EXECUTABLES = $(VARIANTS:%=%/msda_$(subst da_,,$@))
+# Executables produced by each scale
+EXECUTABLES = $(SCALES:%=%/msda_$(subst da_,,$@))
 
 #======================================================================
 # Default target
@@ -28,66 +28,66 @@ help:
 	@echo ""
 	@echo "Available targets:"
 	@echo ""
-	@echo "  make all_variants    - Build all MS3DVAR variants"
-	@echo "  make lr              - Build Low Resolution variant only"
-	@echo "  make mr              - Build Medium Resolution variant only"
-	@echo "  make filter          - Build Filter variant only"
-	@echo "  make ms              - Build Multi-Scale variant only"
+	@echo "  make all_scales    - Build all MS3DVAR scales"
+	@echo "  make lr              - Build Low Resolution scale only"
+	@echo "  make mr              - Build Medium Resolution scale only"
+	@echo "  make filter          - Build Filter scale only"
+	@echo "  make ms              - Build Multi-Scale scale only"
 	@echo ""
-	@echo "  make clean           - Clean all variants"
-	@echo "  make clean_lr        - Clean Low Resolution variant"
-	@echo "  make clean_mr        - Clean Medium Resolution variant"
-	@echo "  make clean_filter    - Clean Filter variant"
-	@echo "  make clean_ms        - Clean Multi-Scale variant"
+	@echo "  make clean           - Clean all scales"
+	@echo "  make clean_lr        - Clean Low Resolution scale"
+	@echo "  make clean_mr        - Clean Medium Resolution scale"
+	@echo "  make clean_filter    - Clean Filter scale"
+	@echo "  make clean_ms        - Clean Multi-Scale scale"
 	@echo ""
 	@echo "  make clobber         - Remove all executables and build files"
 	@echo ""
-	@echo "  make status          - Show build status of all variants"
-	@echo "  make setup           - Setup Makedefs for all variants"
+	@echo "  make status          - Show build status of all scales"
+	@echo "  make setup           - Setup Makedefs for all scales"
 	@echo ""
 	@echo "Structure:"
-	@echo "  COMMON/           - Common code (164 files) shared by all variants"
-	@echo "  LR/               - Low Resolution variant"
-	@echo "  MR/               - Medium Resolution variant"
-	@echo "  FILTER/           - Filter variant"
-	@echo "  MS/               - Multi-Scale variant"
+	@echo "  COMMON/           - Common code (164 files) shared by all scales"
+	@echo "  LR/               - Low Resolution scale"
+	@echo "  MR/               - Medium Resolution scale"
+	@echo "  FILTER/           - Filter scale"
+	@echo "  MS/               - Multi-Scale scale"
 	@echo ""
 
 #======================================================================
-# Build all variants
+# Build all scales
 #======================================================================
 
-.PHONY: all_variants
-all_variants: $(VARIANTS)
+.PHONY: all_scales
+all_scales: $(SCALES)
 
 #======================================================================
-# Build individual variants
+# Build individual scales
 #======================================================================
 
 .PHONY: lr mr filter ms
 lr:
-	@echo "Building Low Resolution variant..."
+	@echo "Building Low Resolution scale..."
 	cd LR && $(MAKE)
 
 mr:
-	@echo "Building Medium Resolution variant..."
+	@echo "Building Medium Resolution scale..."
 	cd MR && $(MAKE)
 
 filter:
-	@echo "Building Filter variant..."
+	@echo "Building Filter scale..."
 	cd FILTER && $(MAKE)
 
 ms:
-	@echo "Building Multi-Scale variant..."
+	@echo "Building Multi-Scale scale..."
 	cd MS && $(MAKE)
 
 #======================================================================
-# Build targets for VARIANTS list
+# Build targets for SCALES list
 #======================================================================
 
-.PHONY: $(VARIANTS)
-$(VARIANTS):
-	@echo "Building variant: $@..."
+.PHONY: $(SCALES)
+$(SCALES):
+	@echo "Building scale: $@..."
 	cd $@ && $(MAKE)
 
 #======================================================================
@@ -178,22 +178,22 @@ status:
 
 .PHONY: clean clean_lr clean_mr clean_filter clean_ms
 clean: clean_lr clean_mr clean_filter clean_ms
-	@echo "All variants cleaned"
+	@echo "All scales cleaned"
 
 clean_lr:
-	@echo "Cleaning Low Resolution variant..."
+	@echo "Cleaning Low Resolution scale..."
 	cd LR && $(MAKE) clean
 
 clean_mr:
-	@echo "Cleaning Medium Resolution variant..."
+	@echo "Cleaning Medium Resolution scale..."
 	cd MR && $(MAKE) clean
 
 clean_filter:
-	@echo "Cleaning Filter variant..."
+	@echo "Cleaning Filter scale..."
 	cd FILTER && $(MAKE) clean
 
 clean_ms:
-	@echo "Cleaning Multi-Scale variant..."
+	@echo "Cleaning Multi-Scale scale..."
 	cd MS && $(MAKE) clean
 
 #======================================================================
@@ -202,22 +202,22 @@ clean_ms:
 
 .PHONY: clobber clobber_lr clobber_mr clobber_filter clobber_ms
 clobber: clobber_lr clobber_mr clobber_filter clobber_ms
-	@echo "All variants clobbered (executables removed)"
+	@echo "All scales clobbered (executables removed)"
 
 clobber_lr:
-	@echo "Clobbering Low Resolution variant..."
+	@echo "Clobbering Low Resolution scale..."
 	cd LR && $(MAKE) clobber
 
 clobber_mr:
-	@echo "Clobbering Medium Resolution variant..."
+	@echo "Clobbering Medium Resolution scale..."
 	cd MR && $(MAKE) clobber
 
 clobber_filter:
-	@echo "Clobbering Filter variant..."
+	@echo "Clobbering Filter scale..."
 	cd FILTER && $(MAKE) clobber
 
 clobber_ms:
-	@echo "Clobbering Multi-Scale variant..."
+	@echo "Clobbering Multi-Scale scale..."
 	cd MS && $(MAKE) clobber
 
 #======================================================================
@@ -234,10 +234,10 @@ info:
 	@echo "  Location: COMMON/"
 	@echo "  Files: $$(ls COMMON/*.F COMMON/*.h 2>/dev/null | wc -l) source files"
 	@echo ""
-	@echo "Variant-specific code:"
-	@for variant in $(VARIANTS); do \
-		count=$$(ls $$variant/*.F $$variant/*.h 2>/dev/null | wc -l); \
-		echo "  $$variant: $$count files"; \
+	@echo "Scale-specific code:"
+	@for scale in $(SCALES); do \
+		count=$$(ls $$scale/*.F $$scale/*.h 2>/dev/null | wc -l); \
+		echo "  $$scale: $$count files"; \
 	done
 	@echo ""
 	@echo "CROCO integration:"

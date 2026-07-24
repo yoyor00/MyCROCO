@@ -8,11 +8,11 @@
 ! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
-! param.h - MS3DVAR Low Resolution (LR) Variant Grid Parameters
+! param.h - MS3DVAR Low Resolution (LR) Scale Grid Parameters
 ! ==============================================================
 !
-! This is the parameter file for the MS3DVAR LR (Low Resolution) variant.
-! It includes the minimal param_ms3dvar.h and can add LR-specific settings.
+! This is the parameter file for the MS3DVAR LR (Low Resolution) scale.
+! It includes the minimal ms3dvar_param.h and can add LR-specific settings.
 !
 ! WHAT CHANGED (February 2026):
 ! -----------------------------
@@ -26,8 +26,8 @@
 !   - Lines 51-1155: Full CROCO param.h with all test cases
 !
 ! New structure: param.h (this file, ~120 lines)
-!   - Include ../COMMON/param_ms3dvar.h (minimal grid parameters)
-!   - Add LR variant-specific overrides below (if any)
+!   - Include ../COMMON/ms3dvar_param.h (minimal grid parameters)
+!   - Add LR scale-specific overrides below (if any)
 !
 ! BACKWARD COMPATIBILITY:
 ! -----------------------
@@ -53,25 +53,25 @@
 ! - Standard CROCO grid parameters (LLm, MMm, N, etc.)
 !----------------------------------------------------------------------
 
-#include "param_ms3dvar.h"
+#include "ms3dvar_param.h"
 
 !----------------------------------------------------------------------
-! LR VARIANT-SPECIFIC PARAMETER OVERRIDES
+! LR SCALE-SPECIFIC PARAMETER OVERRIDES
 !
-! If the LR variant needs different grid dimensions or tiling
-! from the defaults in param_ms3dvar.h, override them here.
+! If the LR scale needs different grid dimensions or tiling
+! from the defaults in ms3dvar_param.h, override them here.
 !
 ! THE PROPOSAL OF MAKING HEREAFTER SOME LOCAL MODIFICATION TO THE MS3DVAR 
-! SCALE-VARIANT GRID SIZE OR (OPENMP) TILE PARAMETERS (e.g., changing LLmH, MMmH
+! SCALE-SCALE GRID SIZE OR (OPENMP) TILE PARAMETERS (e.g., changing LLmH, MMmH
 ! or changing nratio or changing NSUB_XH, NSUB_EH or NSUB_XL, NSUB_EL)
 ! CANNOT WORK BECAUSE THESE NEW VALUE ASSIGNEMENTS COME AFTER THE STANDARD SEQUENCE 
-! OF INSTRUCTIONS DEFINED IN THE CROCO-LIKE param_ms3dvar.h WHICH CALCULATES
+! OF INSTRUCTIONS DEFINED IN THE CROCO-LIKE ms3dvar_param.h WHICH CALCULATES
 ! THE EFFECTIVE CROCO GRID SIZE (LLm0, MMm0,...), THE TILE VARIABLES (NSUB_X, NSUB_E)
 ! AND EVENTUALLY THE LOW-RESOLUTION GRID SIZE (nratio => nhalf => LLm_lr). 
 ! 
 !----------------------------------------------------------------------
 
-! Currently using defaults from param_ms3dvar.h:
+! Currently using defaults from ms3dvar_param.h:
 ! - LLmH=629, MMmH=537, NnH=50 (WMED high-resolution grid)
 ! - nratio=1 (no downsampling)
 ! - NSUB_XL=6, NSUB_EL=6 (6x6 tiling)
@@ -90,8 +90,8 @@
 !----------------------------------------------------------------------
 ! ADDITIONAL CROCO PARAMETERS (if needed)
 !
-! param_ms3dvar.h provides the minimal set of CROCO parameters.
-! If you need additional CROCO-specific parameters for your LR variant,
+! ms3dvar_param.h provides the minimal set of CROCO parameters.
+! If you need additional CROCO-specific parameters for your LR scale,
 ! define them here.
 !----------------------------------------------------------------------
 
@@ -104,8 +104,8 @@
 !     parameter (ntrc_bio=6)
 
 ! Most standard CROCO parameters are computed automatically
-! from LLm, MMm, N in param_ms3dvar.h
+! from LLm, MMm, N in ms3dvar_param.h
 
 !----------------------------------------------------------------------
-! END OF LR VARIANT PARAMETERS
+! END OF LR SCALE PARAMETERS
 !----------------------------------------------------------------------

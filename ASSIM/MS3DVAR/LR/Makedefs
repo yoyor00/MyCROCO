@@ -22,9 +22,9 @@
 	$(CFT) -c $(FFLAGS90) $*_.f90 -o $*.o
 
 .F:
-	$(LDR) -B/usr/bin -o $@ $(LDFLAGS) $<
+	$(LDR) -o $@ $(LDFLAGS) $<
 .f:
-	$(LDR) -B/usr/bin -o $@ $(LDFLAGS) $<
+	$(LDR) -o $@ $(LDFLAGS) $<
 
 # [2] Machine dependent definitions
 #==== ======= ========= ===========
@@ -35,15 +35,6 @@
 # LDR           Program to load the objects into an executable
 # LDFLAGS       Flags to the loader
 #
-# Compiler settings (requires: module load conda3/perso)
-     CPP1 = cpp -traditional -P
-CPPFLAGS1 = -I../../../OCEAN -I/local/home/sraynaud/Soft/conda3-perso/include
-     CFT1 = gfortran
-   FFLAGS1 = -O2 -fdefault-real-8 -fdefault-double-8 -ffree-form \
-             -fallow-argument-mismatch -fdollar-ok -B/usr/bin \
-             -I/local/home/sraynaud/Soft/conda3-perso/include
-  LDFLAGS1 = -L/local/home/sraynaud/Soft/conda3-perso/lib -lnetcdff -lnetcdf
-
       CPP = $(CPP1)
  CPPFLAGS = $(CPPFLAGS1)
       CFT = $(CFT1)

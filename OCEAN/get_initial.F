@@ -11,8 +11,13 @@
 !
 #include "cppdefs.h"
                                                 ! Read initial conditions for the
-      subroutine get_initial (req_rec, tindx)   ! primitive variables from NetCDF
-                                                ! initialization file.
+      subroutine get_initial (req_rec, tindx,   ! primitive variables from NetCDF
+#ifndef DAS                                     ! initialization file. 
+     & )
+#else
+     &  argname)
+
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -61,6 +66,10 @@
       character units*180
       CHARACTER(len=19)          :: tool_sectodat
       REAL(kind=8)               :: tool_datosec
+#ifdef DAS 
+      character(len=180), intent(in), optional :: argname
+      character(len=180) :: ininame_ori
+#endif
 #include "netcdf.inc"
 #define time illegal
 #define tdays illegal
@@ -80,6 +89,17 @@
 ! record is used.
 !
       if (may_day_flag.ne.0) return      !-->  EXIT
+#ifdef DAS 
+      if (PRESENT(argname)) then
+        MPI_master_only write(stdout,*)'get_initial in bef swap'
+        MPI_master_only write(stdout,*)'- ininame     ',TRIM(ininame)
+            ininame_ori = ininame
+            ininame = argname
+        MPI_master_only write(stdout,*)'get_initial in aft swap'
+        MPI_master_only write(stdout,*)'- ininame     ',TRIM(ininame)
+        MPI_master_only write(stdout,*)'- ininame_ori ',TRIM(ininame_ori)
+      endif
+#endif
       lstr=lenstr(ininame)
       ierr=nf_open(ininame(1:lstr), nf_nowrite, ncid)
       if (ierr .eq. nf_noerr) then
@@ -195,7 +215,7 @@
           if (ierr .eq. nf_noerr) then
             latt=lenstr(units)
             ! If use_calendar or xios, read origin time in ini file
-            ! units need to hate the format
+            ! units need to have the format
             ! seconds/days since YYYY/MM/DD hh:mm:ss
             if (units(1:6).eq.'second') then
               time_scale=1.
@@ -1313,6 +1333,17 @@
 #  endif /* TS_MIX_ISO_FILT */
 
 # endif  /* EXACT_RESTART */
+
+#ifdef DAS
+      if (PRESENT(argname)) then
+        MPI_master_only write(stdout,*)'get_initial out bef swap'
+        MPI_master_only write(stdout,*)'- ininame_ori ',TRIM(ininame_ori)
+        MPI_master_only write(stdout,*)'- ininame     ',TRIM(ininame)
+            ininame = ininame_ori
+        MPI_master_only write(stdout,*)'get_initial out aft swap'
+        MPI_master_only write(stdout,*)'- ininame     ',TRIM(ininame)
+      endif
+#endif
 
 !
 !  Close input NetCDF file.
