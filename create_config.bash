@@ -344,7 +344,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     if [[ ${options[@]} =~ "runcpl" ]]; then
         cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.
     else
-        cp -f ${CROCO_DIR}/TEST_CASES/croco_Regional.nml $MY_CROCO_DIR/croco.nml
+        cp -f ${CROCO_DIR}/TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml $MY_CROCO_DIR/croco.nml
     fi
     cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CROCO_DIR.
     # TEST_CASES
@@ -353,7 +353,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     fi
     # AGRIF
     if [[ ${options[@]} =~ "agrif" ]] ; then
-	cp -f ${CROCO_DIR}/TEST_CASES/croco_Regional.nml.1 $MY_CROCO_DIR/croco.nml.1
+	cp -f ${CROCO_DIR}/TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml.1 $MY_CROCO_DIR/croco.nml.1
 	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
     fi
     # INTER
