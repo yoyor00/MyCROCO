@@ -1,1 +1,1 @@
-cppdefs_Canyon.h
+cppdefs_CANYON.h
