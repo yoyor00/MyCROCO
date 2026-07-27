@@ -363,7 +363,8 @@ CONTAINS
          f_lag_hzm = 1.0_rsh
          f_lag_hz = 1.0_rsh
          CALL loc_h0(xpos, ypos, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, limin, limax, ljmin, ljmax)
-       CALL h_int_siggen(xe_lag, h0_lag, hc_sig_lag, xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, limin, limax, ljmin, ljmax)
+         CALL h_int_siggen(xe_lag, h0_lag, hc_sig_lag, xe, px, py, igg, idd, jbb, jhh, &
+                           hlb, hrb, hlt, hrt, limin, limax, ljmin, ljmax)
          CALL f_lag_sigz_uv(spos, kuvm, xe_lag, h0_lag, hc_sig_lag, f_lag_hzp, f_lag_hzm, f_lag_hz)
 
          uint = (f_lag_hzp*(sc_r(kuv) - spos)*uintm + f_lag_hzm*(spos - sc_r(kuvm))*uintp)/(f_lag_hz*dsigw(kuvm))
@@ -473,7 +474,8 @@ CONTAINS
          f_lag_hzm = 1.0_rsh
          f_lag_hz = 1.0_rsh
          CALL loc_h0(xpos, ypos, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, limin, limax, ljmin, jmax)
-       CALL h_int_siggen(xe_lag, h0_lag, hc_sig_lag, xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, limin, limax, ljmin, ljmax)
+         CALL h_int_siggen(xe_lag, h0_lag, hc_sig_lag, xe, px, py, igg, idd, jbb, jhh, &
+                           hlb, hrb, hlt, hrt, limin, limax, ljmin, ljmax)
          CALL f_lag_sigz_uv(spos, kuvm, xe_lag, h0_lag, hc_sig_lag, f_lag_hzp, f_lag_hzm, f_lag_hz)
 
          vint = (f_lag_hzp*(sc_r(kuv) - spos)*vintm + f_lag_hzm*(spos - sc_r(kuvm))*vintp)/(f_lag_hz*dsigw(kuvm))
@@ -1086,8 +1088,9 @@ CONTAINS
       kzsmth(kmax) = kzint(kmax)
 
       DO k = 1, kmax - 1
-         kzsmth(k) = (4.0_rsh/6.0_rsh)*kzint(k) + (2.0_rsh/6.0_rsh)*(kzint(k + 1)*(zpos(k) - zpos(k - 1)) + &
-                                                                   kzint(k - 1)*(zpos(k + 1) - zpos(k)))/(zpos(k + 1) - zpos(k - 1))
+         kzsmth(k) = (4.0_rsh/6.0_rsh)*kzint(k) + (2.0_rsh/6.0_rsh)* &
+                     (kzint(k + 1)*(zpos(k) - zpos(k - 1)) + &
+                      kzint(k - 1)*(zpos(k + 1) - zpos(k)))/(zpos(k + 1) - zpos(k - 1))
       END DO
 
       CALL spline(zpos(0:kmax), kzsmth, kmax + 1, big, big, dkz2)
@@ -1104,15 +1107,15 @@ CONTAINS
       !! * Modules used
 
       !! * Arguments
-      real(kind=rsh), INTENT(in)  :: yp1, ypn
-      real(kind=rsh), dimension(n), INTENT(in)  :: x, y
-      integer, INTENT(in)  :: n
+      real(kind=rsh), INTENT(in) :: yp1, ypn
+      real(kind=rsh), dimension(n), INTENT(in) :: x, y
+      integer, INTENT(in) :: n
       real(kind=rsh), dimension(n), INTENT(out) :: y2
 
       !! * Local declarations
-      integer                                       :: i, k
-      real(kind=rsh), dimension(n)                   :: u
-      real(kind=rsh)                                :: p, qn, sig, un
+      integer :: i, k
+      real(kind=rsh), dimension(n) :: u
+      real(kind=rsh) :: p, qn, sig, un
 
       ! executable statement
       !---------------------------------------------------------
@@ -1128,7 +1131,8 @@ CONTAINS
          sig = (x(i) - x(i - 1))/(x(i + 1) - x(i - 1))
          p = sig*y2(i - 1) + 2.0
          y2(i) = (sig - 1.0)/p
-     u(i) = (6.0*((y(i + 1) - y(i))/(x(i + 1) - x(i)) - (y(i) - y(i - 1))/(x(i) - x(i - 1)))/(x(i + 1) - x(i - 1)) - sig*u(i - 1))/p
+         u(i) = (6.0*((y(i + 1) - y(i))/(x(i + 1) - x(i)) &
+                      - (y(i) - y(i - 1))/(x(i) - x(i - 1)))/(x(i + 1) - x(i - 1)) - sig*u(i - 1))/p
       END DO
 
       IF (ypn > 0.99e30) THEN
@@ -1673,7 +1677,8 @@ CONTAINS
       is_local_position = (iminmpi <= NINT(xtemp) .AND. NINT(xtemp) <= imaxmpi .AND. &
                            jminmpi <= NINT(ytemp) .AND. NINT(ytemp) <= jmaxmpi)
 #else
-      is_local_position = (xtemp >= Istr .and. xtemp <= Iend .and. ytemp >= Jstr .and. ytemp <= Jend)
+      is_local_position = (Istr <= NINT(xtemp) .AND. NINT(xtemp) <= Iend .AND. &
+                           Jstr <= NINT(ytemp) .AND. NINT(ytemp) <= Jend)
 #endif
 
    END FUNCTION is_local_position

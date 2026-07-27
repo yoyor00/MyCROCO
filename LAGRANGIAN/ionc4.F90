@@ -3360,7 +3360,8 @@ contains
 ! *                        0 si t est illimite*
 ! *       - l_out_nc4par     : logique I/O parallel
 ! ***************************************************************
-      subroutine ionc4_write_zxyt_real(nom_fichier,var_name,var,imin,imax,jmin,jmax,kmin,kmax,nrec,fill_value,l_out_nc4par,sed)
+      subroutine ionc4_write_zxyt_real(nom_fichier, var_name, var, imin, imax, jmin, jmax, kmin, kmax, &
+                                       nrec, fill_value, l_out_nc4par, sed)
 
 ! ******** PARAMETRES DE LA SUBROUTINE *******
 
@@ -3515,7 +3516,8 @@ contains
 ! *       - nrec        :  numero d'enregistrement*
 ! *                        0 si t est illimite*
 ! ***************************************************************
-      subroutine ionc4_write_zxyt_double(nom_fichier,var_name,var,imin,imax,jmin,jmax,kmin,kmax,nrec,fill_value,l_out_nc4par,sed)
+      subroutine ionc4_write_zxyt_double(nom_fichier, var_name, var, imin, imax, jmin, jmax, kmin, kmax, &
+                                         nrec, fill_value, l_out_nc4par, sed)
 
 ! ******** PARAMETRES DE LA SUBROUTINE *******
 

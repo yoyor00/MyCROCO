@@ -615,8 +615,10 @@ CONTAINS
                               CALL define_pos(pos1)
                               DO k = kmin_patch, kmax_patch, kstep_patch
                                  IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > k) THEN
-                         CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                            xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                                    CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
+                                                hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                                    xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                                   hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                     h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                     d3 = h0_lag + xe_lag
                                     IF (d3 > k) nb_part = nb_part + nb_part_intro
@@ -652,8 +654,10 @@ CONTAINS
                                     ! Use position type for sequential/MPI compatibility
                                     CALL define_pos(pos2)
 
-                         CALL loc_h0(pos2%idx_r, pos2%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                            xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                                    CALL loc_h0(pos2%idx_r, pos2%idy_r, px, py, igg, idd, jbb, jhh, &
+                                                hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                                    xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                                   hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                     h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                     d3 = h0_lag + xe_lag
                                     IF (d3 > k) THEN
@@ -767,8 +771,10 @@ CONTAINS
                            CALL define_pos(pos)
                            DO k = kmin_patch, kmax_patch, kstep_patch
                               IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > k) THEN
-                           CALL loc_h0(pos%idx_r, pos%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                            xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                                 CALL loc_h0(pos%idx_r, pos%idy_r, px, py, igg, idd, jbb, jhh, &
+                                             hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                                 xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                                hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                  h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                  d3 = h0_lag + xe_lag
                                  IF (d3 > k) THEN
@@ -801,8 +807,10 @@ CONTAINS
                                  new_patch%particles(m1:m2)%xpos = pos1%idx_r   ! position at initial location
                                  new_patch%particles(m1:m2)%ypos = pos1%idy_r
                                  ! total depth at particle s location
-                         CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                            xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                                 CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
+                                             hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                                 xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                                hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                  h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                  d3 = h0_lag + xe_lag
                                  IF (d3 > k) THEN
@@ -944,8 +952,10 @@ CONTAINS
                         CALL define_pos(pos1)
 
                         IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > depth_nc(nn)) THEN
-                         CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                           xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                           CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
+                                       hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                           xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                          hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                            h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                            d3 = h0_lag + xe_lag
                            ! clara test : rustine pas propre, car different avec 2nd boucle
@@ -978,9 +988,10 @@ CONTAINS
                            new_patch%particles(m1:m2)%ypos = tool_latlon2j(lon_nc(nn), lat_nc(nn))
 
                            ! total depth at particle s location
-                           CALL loc_h0(pos%idx_r, pos%idy_r, &
-                                       px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                           xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                           CALL loc_h0(pos%idx_r, pos%idy_r, px, py, igg, idd, jbb, jhh, &
+                                       hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+                           xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                          hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                            h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                            d3 = h0_lag + xe_lag
                            IF (d3 < depth_nc(nn)) depth_nc(nn) = d3 - 0.1_rsh ! patch tempo pour restart (martin)
@@ -1158,7 +1169,8 @@ CONTAINS
                                                   fill_value=dg_valmanq_io, l_out_nc4par=l_out_nc4par)
                         CALL ionc4_createvar_traj(file_out, "DEPTH", "m", "depth", fill_value=-fillval, l_out_nc4par=l_out_nc4par)
                         CALL ionc4_createvar_traj(file_out, "H0", "m", "h0", fill_value=-fillval, l_out_nc4par=l_out_nc4par)
-                   CALL ionc4_createvar_traj(file_out, "NUM", "", "number of the particle", fill_value=0, l_out_nc4par=l_out_nc4par)
+                        CALL ionc4_createvar_traj(file_out, "NUM", "", "number of the particle", &
+                                                  fill_value=0, l_out_nc4par=l_out_nc4par)
                         CALL ionc4_createvar_traj(file_out, "flag", "nbr", "flag", fill_value=fillval, l_out_nc4par=l_out_nc4par)
                      END IF    ! (.NOT. patch%file_out_init)
 
