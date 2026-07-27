@@ -11,11 +11,11 @@
 !
 #include "cppdefs.h"
                                                 ! Read initial conditions for the
-      subroutine get_initial (req_rec, tindx,   ! primitive variables from NetCDF
-#ifndef DAS                                     ! initialization file. 
+      subroutine get_initial (req_rec, tindx    ! primitive variables from NetCDF
+#ifndef DAS                                     ! initialization file.
      & )
 #else
-     &  argname)
+     &  , argname)
 
 #endif
       implicit none
