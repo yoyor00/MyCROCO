@@ -198,7 +198,7 @@ CONTAINS
       !          Eradius,h,latr,lonu,latv,sc_r,sc_w,N
       USE trajectools, ONLY : h0int,xeint,loc_h0,update_htot,update_wz,compute_dsig_dcuds,&
          ztosiggen,hc_sigint,lonlat2ij,tool_latlon2i,tool_latlon2j,&
-         set_htot_bc, define_pos
+         set_htot_bc, define_pos, is_local_position
 #ifdef MPI
       USE toolmpi, ONLY : MPI_glob2loc,MPI_loc2glob
       USE comtraj, ONLY : init_mpi_type_particle
@@ -415,7 +415,7 @@ CONTAINS
          new_patch => patch_list_append(patches)
 
          ! Read name of patch
-         READ(49,'(a)',iostat=eof) ! name_patch
+         READ(49,'(a)',iostat=eof) new_patch%name
 
          ! Read starting date of trajectory
          READ(49,'(a)',iostat=eof) dateread
@@ -583,19 +583,14 @@ CONTAINS
             nn = INT(sqrt(4/pi*nbpart_patch)) + 1
             dl = 2*ray_patch/nn
 
-#ifdef MPI
-            IF ( iminmpi <= imin_patch .AND. imin_patch <= imaxmpi .AND. &
-               jminmpi <= jmin_patch .AND. jmin_patch <= jmaxmpi ) THEN
-#endif
+            IF ( is_local_position(REAL(imin_patch,rsh),REAL(jmin_patch,rsh),Istr,Iend,Jstr,Jend) ) THEN
                IF (h(imin_patch,jmin_patch) < kmin_patch) THEN
                   PRINT*,'Patch on land or too deep'
                   PRINT*,'Check patch number', new_patch%id, 'in file "',trim(file_trajec),'"'
                   PRINT*,'Simulation stopped.'
                   STOP
                END IF
-#ifdef MPI
             ENDIF
-#endif
 
             !send all the patch parameters to all procs
             !------------------------------------------
@@ -619,10 +614,7 @@ CONTAINS
                   IF ( sqrt(rx*rx + ry*ry) <= ray_patch ) THEN
                      xtemp = imin_patch + rx/dxc
                      ytemp = jmin_patch + ry/dyc
-#ifdef MPI
-                     IF ( iminmpi <= NINT(xtemp) .AND. NINT(xtemp) <= imaxmpi .AND. &
-                        jminmpi <= NINT(ytemp) .AND. NINT(ytemp) <= jmaxmpi ) THEN
-#endif
+                     IF ( is_local_position(xtemp,ytemp,Istr,Iend,Jstr,Jend) ) THEN
                         pos1%xp = xtemp; pos1%yp = ytemp
                         CALL define_pos(pos1)
                         DO k=kmin_patch,kmax_patch,kstep_patch
@@ -634,9 +626,7 @@ CONTAINS
                               IF (d3 > k) nb_part = nb_part + nb_part_intro
                            END IF
                         END DO
-#ifdef MPI
                      END IF
-#endif
                   END IF
                END DO
             END DO
@@ -651,10 +641,7 @@ CONTAINS
                      xtemp = imin_patch + rx/dxc
                      ytemp = jmin_patch + ry/dyc
                      pos%xp = xtemp ; pos%yp = ytemp
-#ifdef MPI
-                     IF( iminmpi <= NINT(xtemp) .AND. NINT(xtemp) <= imaxmpi .AND. &
-                        jminmpi <= NINT(ytemp) .AND. NINT(ytemp) <= jmaxmpi ) THEN
-#endif
+                     IF ( is_local_position(xtemp,ytemp,Istr,Iend,Jstr,Jend) ) THEN
                         CALL define_pos(pos)                ! Take local and global position of particle
                         DO k=kmin_patch,kmax_patch,kstep_patch
                            IF ( h(NINT(pos%idx_r),NINT(pos%idy_r)) > k ) THEN
@@ -691,9 +678,7 @@ CONTAINS
                               END IF
                            END IF
                         END DO
-#ifdef MPI
                      END IF
-#endif
                   END IF
                END DO
             END DO
@@ -961,10 +946,7 @@ CONTAINS
                xtemp = tool_latlon2i(lon_nc(nn),lat_nc(nn))
                ytemp = tool_latlon2j(lon_nc(nn),lat_nc(nn))
 
-#ifdef MPI
-               IF (iminmpi <= NINT(xtemp) .AND. NINT(xtemp) <= imaxmpi .AND. &
-                  jminmpi <= NINT(ytemp) .AND. NINT(ytemp) <= jmaxmpi) THEN
-#endif
+               IF ( is_local_position(xtemp,ytemp,Istr,Iend,Jstr,Jend) ) THEN
                   pos1%xp = xtemp; pos1%yp = ytemp
                   CALL define_pos(pos1)
 
@@ -979,9 +961,7 @@ CONTAINS
                         nb_part = nb_part + nb_part_intro
                      END IF
                   END IF
-#ifdef MPI
                END IF
-#endif
             END DO
             CALL init_patch(new_patch, nb_part)
             CALL indices_loc2glob(0, nb_part, idx_s, idx_e)
@@ -996,12 +976,7 @@ CONTAINS
                xtemp = tool_latlon2i(lon_nc(nn),lat_nc(nn))
                ytemp = tool_latlon2j(lon_nc(nn),lat_nc(nn))
                pos%xp = xtemp ; pos%yp = ytemp
-#ifdef MPI
-               IF (iminmpi <= NINT(xtemp) .AND. NINT(xtemp) <= imaxmpi .AND. &
-                  jminmpi <= NINT(ytemp) .AND. NINT(ytemp) <= jmaxmpi) THEN
-#else
-               IF ( xtemp>=Istr .and. xtemp<=Iend .and. ytemp>=Jstr .and. ytemp<=Jend ) THEN
-#endif
+               IF ( is_local_position(xtemp,ytemp,Istr,Iend,Jstr,Jend) ) THEN
                   CALL define_pos(pos)
 
                   IF ( h(NINT(pos%idx_r),NINT(pos%idy_r)) > depth_nc(nn) ) THEN
@@ -1132,7 +1107,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! * Modules used
       USE module_lagrangian
-      USE comtraj,     ONLY : patches, type_patch, type_particle
+      USE comtraj,     ONLY : patches, type_patch, type_particle, ierrorlog
       USE trajectools, ONLY : tool_ind2lat,tool_ind2lon
       !! * Arguments
 
@@ -1178,6 +1153,15 @@ CONTAINS
          IF ( .NOT. patch%file_out_init ) THEN
             patch%file_out_init = .TRUE.
             nb_part_nc = patch%nb_part_total
+
+            IF ( nb_part_nc <= 0 ) THEN
+               WRITE(ierrorlog,*) 'Function traj_save3d : patch number',patch%id,'("',trim(patch%name),  &
+                  '") has no particle inside the domain'
+               WRITE(ierrorlog,*) 'Check the patch definition and the input trajectory file :', trim(patch%file_inp)
+               WRITE(ierrorlog,*) 'The simulation is stopped'
+               STOP
+            END IF
+
             CALL ionc4_createfile_traj(file_out, nb_part_nc, 0, 0, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "latitude", "degrees_north","latitude",                     &
                fill_value=dg_valmanq_io, l_out_nc4par=l_out_nc4par)

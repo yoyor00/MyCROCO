@@ -146,6 +146,7 @@ MODULE comtraj
    TYPE, PUBLIC :: type_patch
 
       INTEGER                                         :: id = -1
+      CHARACTER(LEN=lchain)                           :: name                 ! Patch name (as read in the patch file)
 #ifdef DEB_IBM
       INTEGER                                         :: parent_id = -2
 #endif

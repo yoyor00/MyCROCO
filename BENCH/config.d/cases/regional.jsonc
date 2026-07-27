@@ -350,6 +350,36 @@
       "CROCO_FILES/croco_diags_pv.nc",
       "CROCO_FILES/croco_diags_eddy_avg.nc"],
   },
+  "BENGUELA_LR_LAGRANGIAN": {
+    "title": "BENGUELA_LR_LAGRANGIAN",
+    "case": "REGIONAL",
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "cppkeys": {
+      "USE_CALENDAR": true,
+      "LAGRANGIAN": true,
+    },
+    "patches": {},
+    "check_outputs": [
+      "CROCO_FILES/croco_his.nc", 
+      "CROCO_FILES/croco_avg.nc",],
+  },
+  "BENGUELA_LR_FOIL": {
+    "title": "BENGUELA_LR_FOIL",
+    "case": "REGIONAL",
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "cppkeys": {
+      "USE_CALENDAR": true,
+      "DEB-IBM": true,
+      "IBM_SPECIES": true,
+    },
+    "patches": {},
+    "check_outputs": [
+      "CROCO_FILES/croco_his.nc", 
+      "CROCO_FILES/croco_avg.nc",
+      "CROCO_FILES/croco_lagrangian_out.nc"],
+  },
   // TODO check runoff position and change croco.in accordingly
   // "BENGUELA_VHR_TIDES_BULK": {
   //   "title": "BENGUELA_VHR_TIDES_BULK",

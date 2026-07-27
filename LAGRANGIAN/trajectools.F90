@@ -15,8 +15,8 @@ MODULE trajectools
 #if defined LAGRANGIAN || defined DEB_IBM
 
    !! * Modules used
-   USE comtraj, ONLY       : imin,imax,jmin,jmax,kmax,rsh,rlg,riolg, &
-      htx,hty,hc_sig,dsigw,dsigu,valmanq,wz,&
+   USE comtraj, ONLY: imin,imax,jmin,jmax,kmax,rsh,rlg,riolg, &
+      htx,hty,hc_sig,dsigw,dsigu,valmanq,wz, &
       dcusds,dcwsds,lonwest,latsouth,dlonr,dlatr,type_position
    USE module_lagrangian !, ONLY : sc_r,sc_w,h,zeta,kstp,theta_s,theta_b,We
 
@@ -28,6 +28,7 @@ MODULE trajectools
    PUBLIC update_htot,compute_dsig_dcuds,update_wz,set_htot_bc
    PUBLIC siggentoz,ztosiggen,hc_sigint,h_int_siggen,define_pos,CSF
    PUBLIC tool_ind2lat,tool_ind2lon,lonlat2ij,tool_latlon2i,tool_latlon2j
+   PUBLIC is_local_position
 
 CONTAINS
 
@@ -1689,6 +1690,48 @@ CONTAINS
       tool_latlon2j = (REAL(latitude,rlg) - latsouth)/dlatr + 1.0_rlg
 
    END FUNCTION tool_latlon2j
+
+
+   !!======================================================================
+   FUNCTION is_local_position(xtemp,ytemp,Istr,Iend,Jstr,Jend)
+
+      !&E---------------------------------------------------------------------
+      !&E                 ***  FUNCTION is_local_position  ***
+      !&E
+      !&E ** Purpose : tell whether the (xtemp,ytemp) grid position belongs
+      !&E              to the subdomain handled by the calling process, so
+      !&E              that particle loops do not index arrays such as h(:,:)
+      !&E              out of their local bounds.
+      !&E              MPI: compared against the global subdomain bounds
+      !&E                   (iminmpi,imaxmpi,jminmpi,jmaxmpi).
+      !&E              Sequential: compared against the local tile bounds
+      !&E                   (Istr,Iend,Jstr,Jend), since iminmpi/imaxmpi/
+      !&E                   jminmpi/jmaxmpi are never set without MPI.
+      !&E
+      !&E ** Called by : LAGRANGIAN_init
+      !&E
+      !&E---------------------------------------------------------------------
+      !! * Modules used
+      IMPLICIT NONE
+
+      !! * Function declaration
+      LOGICAL :: is_local_position
+
+      !! * Arguments
+      REAL(kind=rsh),INTENT(in) :: xtemp,ytemp
+      INTEGER,INTENT(in)        :: Istr,Iend,Jstr,Jend
+
+      !!----------------------------------------------------------------------
+      !! * Executable part
+
+#ifdef MPI
+      is_local_position = ( iminmpi <= NINT(xtemp) .AND. NINT(xtemp) <= imaxmpi .AND. &
+         jminmpi <= NINT(ytemp) .AND. NINT(ytemp) <= jmaxmpi )
+#else
+      is_local_position = ( xtemp>=Istr .and. xtemp<=Iend .and. ytemp>=Jstr .and. ytemp<=Jend )
+#endif
+
+   END FUNCTION is_local_position
 
 #endif
 

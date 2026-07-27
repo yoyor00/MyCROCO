@@ -1,0 +1,26 @@
+FILE DEFINING CIRCULAR PATCHES
+
+name_patch : name of patch,
+tbegtraj : date of initialization of patch and start of its transport,
+tendtraj : date of end of transport for particles of this patch,
+dtsave_traj : time step for outputs,
+filetrajin : relative path and name of input netcdf file with locations of particles,
+filetrajout : name of output file,
+nb_part_intro : Number of particles set at each initial location,
+itypevert : Type of vertical transport of particles of the patch
+        =0 if constant depth (no vertical moving),
+        <0 if only vertical advection,
+        >0 if vertical diffusion with random walk (vertical turbulence)
+
+END FILE DESCRIPTION
+
+**************************************************************
+patch1                                        ,| 
+1900/01/01 00:00:00                           ,| tbegtraj
+2030/07/01 00:00:00                           ,| tendtraj
+24.d0                                         ,| dtsave_traj
+CROCO_FILES/lagrangian_init.nc                ,| filetrajin
+CROCO_FILES/croco_lagrangian_out.nc           ,| filetrajout
+1                                             ,| nb_part_intro
+1                                             ,| itypevert
+**************************************************************
