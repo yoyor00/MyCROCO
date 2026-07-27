@@ -21,7 +21,7 @@ MODULE toolmpi
 
 #if defined MPI && (defined LAGRANGIAN || defined DEB_IBM)
    !! * Modules used
-   USE comtraj,  ONLY : rsh,rlg
+   USE comtraj, ONLY: rsh, rlg
    USE mpi
    USE module_lagrangian !parametres mpi
    IMPLICIT NONE
@@ -43,19 +43,17 @@ MODULE toolmpi
       module procedure MPI_glob2loc_integer
    end interface MPI_glob2loc
 
-   PUBLIC :: ADD_ALL_MPI_INT,MPI_SETUP_LAG,MPI_loc2glob,MPI_glob2loc
+   PUBLIC :: ADD_ALL_MPI_INT, MPI_SETUP_LAG, MPI_loc2glob, MPI_glob2loc
    PUBLIC :: ADD_ALL_MPI_REAL
    INTEGER :: nprocs
-   INTEGER :: miniproc,minjproc,maxiproc,maxjproc
-   INTEGER :: myi_uproc,myj_uproc
-   INTEGER :: myi_dproc,myj_dproc
-   INTEGER :: myiproc,myjproc
-   INTEGER,ALLOCATABLE,DIMENSION(:,:) :: PROC_NUM
-   INTEGER,PARAMETER                  :: IGROUNDPOINT=-100
-   INTEGER,PARAMETER                  :: IWETPOINT=-2
+   INTEGER :: miniproc, minjproc, maxiproc, maxjproc
+   INTEGER :: myi_uproc, myj_uproc
+   INTEGER :: myi_dproc, myj_dproc
+   INTEGER :: myiproc, myjproc
+   INTEGER, ALLOCATABLE, DIMENSION(:, :) :: PROC_NUM
+   INTEGER, PARAMETER                  :: IGROUNDPOINT = -100
+   INTEGER, PARAMETER                  :: IWETPOINT = -2
 CONTAINS
-
-
 
    !!======================================================================
 
@@ -69,7 +67,7 @@ CONTAINS
       !&E       !  2014-12 (M. Honnorat) Refactor MPI routines
       !&E---------------------------------------------------------------------
       !! * Modules used
-      USE comtraj, ONLY : rsh, rlg,type_mpi_rsh,type_mpi_rlg
+      USE comtraj, ONLY: rsh, rlg, type_mpi_rsh, type_mpi_rlg
 
       IMPLICIT NONE
 
@@ -78,31 +76,29 @@ CONTAINS
 
       !!----------------------------------------------------------------------
       !! * Executable part
-      IF      ( rsh == 4 ) THEN
+      IF (rsh == 4) THEN
          type_mpi_rsh = MPI_REAL
-      ELSE IF ( rsh == 8 ) THEN
+      ELSE IF (rsh == 8) THEN
          type_mpi_rsh = MPI_DOUBLE_PRECISION
       ELSE
-         WRITE(*,*)'MPI exchange works only for rsh=4 and 8, you gave rsh=',rsh
-         CALL MPI_FINALIZE(ierr_mpi) ; STOP
-      ENDIF
+         WRITE (*, *) 'MPI exchange works only for rsh=4 and 8, you gave rsh=', rsh
+         CALL MPI_FINALIZE(ierr_mpi); STOP
+      END IF
 
-      IF      ( rlg == 4 ) THEN
+      IF (rlg == 4) THEN
          type_mpi_rlg = MPI_REAL
-      ELSE IF ( rlg == 8 ) THEN
+      ELSE IF (rlg == 8) THEN
          type_mpi_rlg = MPI_DOUBLE_PRECISION
       ELSE
-         WRITE(*,*)'MPI exchange works only for rlg=4 and 8, you gave rlg=',rlg
-         CALL MPI_FINALIZE(ierr_mpi) ; STOP
-      ENDIF
+         WRITE (*, *) 'MPI exchange works only for rlg=4 and 8, you gave rlg=', rlg
+         CALL MPI_FINALIZE(ierr_mpi); STOP
+      END IF
 
    END SUBROUTINE init_mpi_type_size
 
-
-
    !!======================================================================
 
-   SUBROUTINE MPI_loc2glob_real(idx,idy)
+   SUBROUTINE MPI_loc2glob_real(idx, idy)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE DEFINE_UDPROC  ***
       !&E
@@ -110,15 +106,13 @@ CONTAINS
       !&E
       !&E---------------------------------------------------------------------
       IMPLICIT NONE
-      REAL(kind=rsh),INTENT(inout) :: idx,idy
+      REAL(kind=rsh), INTENT(inout) :: idx, idy
 
-      idx = idx + REAL(iminmpi,kind=rsh) - 1.0_rsh
-      idy = idy + REAL(jminmpi,kind=rsh) - 1.0_rsh
+      idx = idx + REAL(iminmpi, kind=rsh) - 1.0_rsh
+      idy = idy + REAL(jminmpi, kind=rsh) - 1.0_rsh
    END SUBROUTINE
 
-
-
-   SUBROUTINE MPI_loc2glob_integer(idx,idy)
+   SUBROUTINE MPI_loc2glob_integer(idx, idy)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE DEFINE_UDPROC  ***
       !&E
@@ -126,15 +120,13 @@ CONTAINS
       !&E
       !&E---------------------------------------------------------------------
       IMPLICIT NONE
-      INTEGER,INTENT(inout)           :: idx,idy
+      INTEGER, INTENT(inout)           :: idx, idy
 
       idx = idx + iminmpi - 1
       idy = idy + jminmpi - 1
    END SUBROUTINE
 
-
-
-   SUBROUTINE MPI_glob2loc_real(idx,idy)
+   SUBROUTINE MPI_glob2loc_real(idx, idy)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE MPI_glob2loc_real  ***
       !&E
@@ -142,15 +134,13 @@ CONTAINS
       !&E
       !&E---------------------------------------------------------------------
       IMPLICIT NONE
-      REAL(kind=rsh),INTENT(inout)    :: idx,idy
+      REAL(kind=rsh), INTENT(inout)    :: idx, idy
 
-      idx = idx - REAL(iminmpi,kind=rsh) + 1.0_rsh
-      idy = idy - REAL(jminmpi,kind=rsh) + 1.0_rsh
+      idx = idx - REAL(iminmpi, kind=rsh) + 1.0_rsh
+      idy = idy - REAL(jminmpi, kind=rsh) + 1.0_rsh
    END SUBROUTINE
 
-
-
-   SUBROUTINE MPI_glob2loc_integer(idx,idy)
+   SUBROUTINE MPI_glob2loc_integer(idx, idy)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE MPI_glob2loc_integer  ***
       !&E
@@ -158,15 +148,13 @@ CONTAINS
       !&E
       !&E---------------------------------------------------------------------
       IMPLICIT NONE
-      INTEGER,INTENT(inout)           :: idx,idy
+      INTEGER, INTENT(inout)           :: idx, idy
 
       idx = idx - iminmpi + 1
       idy = idy - jminmpi + 1
    END SUBROUTINE
 
-
-
-   SUBROUTINE MPI_SETUP_LAG(ix,je)
+   SUBROUTINE MPI_SETUP_LAG(ix, je)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE MPI_SETUP_LAG  ***
       !&E
@@ -174,23 +162,21 @@ CONTAINS
       !&E
       !&E---------------------------------------------------------------------
       IMPLICIT NONE
-      INTEGER,INTENT(in) :: ix,je
+      INTEGER, INTENT(in) :: ix, je
       !!----------------------------------------------------------------------
       !! * Executable part
-      nprocs=nnodes
-      miniproc=0;minjproc=0
-      maxiproc=np_xi-1
-      maxjproc=np_eta-1
-      ALLOCATE(PROC_NUM(miniproc:maxiproc,minjproc:maxjproc))
-      CALL define_proc_num(proc_num,miniproc,maxiproc,minjproc,maxjproc)
+      nprocs = nnodes
+      miniproc = 0; minjproc = 0
+      maxiproc = np_xi - 1
+      maxjproc = np_eta - 1
+      ALLOCATE (PROC_NUM(miniproc:maxiproc, minjproc:maxjproc))
+      CALL define_proc_num(proc_num, miniproc, maxiproc, minjproc, maxjproc)
       CALL init_mpi_type_size()
       CALL DEFINE_UDPROC()
 
    END SUBROUTINE MPI_SETUP_LAG
 
-
-
-   SUBROUTINE define_proc_num(proc,mini,maxi,minj,maxj)
+   SUBROUTINE define_proc_num(proc, mini, maxi, minj, maxj)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE DEFINE_NUM_PROC  ***
       !&E
@@ -200,89 +186,87 @@ CONTAINS
       !! * Modules used
       use netcdf
       IMPLICIT NONE
-      INTEGER,DIMENSION(mini:maxi,minj:maxj),INTENT(inout) :: PROC
-      INTEGER,INTENT(in) :: mini,maxi,minj,maxj
-      REAL(KIND=rlg),DIMENSION(0:LLm+1,0:MMm+1)  ::   zmask
-      INTEGER :: i,j,nerr ,inu, inu2
-      INTEGER :: lbx,ubx,lby,uby
+      INTEGER, DIMENSION(mini:maxi, minj:maxj), INTENT(inout) :: PROC
+      INTEGER, INTENT(in) :: mini, maxi, minj, maxj
+      REAL(KIND=rlg), DIMENSION(0:LLm + 1, 0:MMm + 1)  ::   zmask
+      INTEGER :: i, j, nerr, inu, inu2
+      INTEGER :: lbx, ubx, lby, uby
       INTEGER :: ncid, varid, ierr
-      INTEGER :: Istrmpi,Iendmpi,Jstrmpi,Jendmpi, i_X,j_E
-      INTEGER :: chunk_size_X,margin_X,chunk_size_E,margin_E
+      INTEGER :: Istrmpi, Iendmpi, Jstrmpi, Jendmpi, i_X, j_E
+      INTEGER :: chunk_size_X, margin_X, chunk_size_E, margin_E
 # ifndef MP_3PTS
-      INTEGER,parameter  :: Npts=2
+      INTEGER, parameter  :: Npts = 2
 # else
-      INTEGER,parameter  :: Npts=3
+      INTEGER, parameter  :: Npts = 3
 # endif
       !!----------------------------------------------------------------------
       !! * Executable part
 
-      PROC(:,:)=MPI_PROC_NULL
+      PROC(:, :) = MPI_PROC_NULL
 
 #ifndef MPI_NOLAND
-      inu=0
-      do j=minj,maxj
-         do i=mini,maxi
-            PROC(i,j)=inu
-            inu=inu+1
+      inu = 0
+      do j = minj, maxj
+         do i = mini, maxi
+            PROC(i, j) = inu
+            inu = inu + 1
          end do
       end do
 #else
       ! read mask
-      nerr= nf90_open('croco_grd.nc', NF90_NOWRITE, ncid)
-      nerr= nf90_inq_varid(ncid, 'mask_rho', varid)
-      nerr= nf90_get_var(ncid, varid, zmask)
-      if(nerr /= nf90_noerr ) then
-         write(*,*) 'Reading mask file failed'
-         CALL MPI_FINALIZE(ierr) ; STOP
-      endif
-      nerr= nf90_close(ncid)
-      inu=0; inu2=0
-      do j=minj,maxj
-         do i=mini,maxi
+      nerr = nf90_open('croco_grd.nc', NF90_NOWRITE, ncid)
+      nerr = nf90_inq_varid(ncid, 'mask_rho', varid)
+      nerr = nf90_get_var(ncid, varid, zmask)
+      if (nerr /= nf90_noerr) then
+         write (*, *) 'Reading mask file failed'
+         CALL MPI_FINALIZE(ierr); STOP
+      end if
+      nerr = nf90_close(ncid)
+      inu = 0; inu2 = 0
+      do j = minj, maxj
+         do i = mini, maxi
             !
-            j_E=inu2/NP_XI
-            i_X=inu2-j_E*NP_XI
+            j_E = inu2/NP_XI
+            i_X = inu2 - j_E*NP_XI
             !
-            chunk_size_X=(LLm+NP_XI-1)/NP_XI
-            margin_X=(NP_XI*chunk_size_X-LLm)/2
-            chunk_size_E=(MMm+NP_ETA-1)/NP_ETA
-            margin_E=(NP_ETA*chunk_size_E-MMm)/2
+            chunk_size_X = (LLm + NP_XI - 1)/NP_XI
+            margin_X = (NP_XI*chunk_size_X - LLm)/2
+            chunk_size_E = (MMm + NP_ETA - 1)/NP_ETA
+            margin_E = (NP_ETA*chunk_size_E - MMm)/2
             !
-            istrmpi=1+i_X*chunk_size_X-margin_X !-Npts
-            iendmpi=istrmpi+chunk_size_X-1  ! +Npts
-            istrmpi=max(istrmpi,1)
-            iendmpi=min(iendmpi,LLm)
+            istrmpi = 1 + i_X*chunk_size_X - margin_X !-Npts
+            iendmpi = istrmpi + chunk_size_X - 1  ! +Npts
+            istrmpi = max(istrmpi, 1)
+            iendmpi = min(iendmpi, LLm)
             !
-            jstrmpi=1+j_E*chunk_size_E-margin_E !-NPTS
-            jendmpi=jstrmpi+chunk_size_E-1 !  +Npts
-            jstrmpi=max(jstrmpi,1)
-            jendmpi=min(jendmpi,Mmm)
+            jstrmpi = 1 + j_E*chunk_size_E - margin_E !-NPTS
+            jendmpi = jstrmpi + chunk_size_E - 1 !  +Npts
+            jstrmpi = max(jstrmpi, 1)
+            jendmpi = min(jendmpi, Mmm)
             !
-            lbx=max(istrmpi-Npts,1)
-            ubx=min(iendmpi+Npts,LLm)
-            lby=max(jstrmpi-Npts,1)
-            uby=min(jendmpi+Npts,Mmm)
-            if(sum(zmask(lbx:ubx,lby:uby))>0.)then
-               PROC(i,j)=inu
-               inu=inu+1
-            endif
-            inu2=inu2+1
+            lbx = max(istrmpi - Npts, 1)
+            ubx = min(iendmpi + Npts, LLm)
+            lby = max(jstrmpi - Npts, 1)
+            uby = min(jendmpi + Npts, Mmm)
+            if (sum(zmask(lbx:ubx, lby:uby)) > 0.) then
+               PROC(i, j) = inu
+               inu = inu + 1
+            end if
+            inu2 = inu2 + 1
          end do
       end do
 #endif
       ! i.e. each process have different value!!!
-      DO j=minj,maxj
-         DO i=mini,maxi
-            IF (proc(i,j).EQ.mynode) THEN
-               myiproc=i
-               myjproc=j
+      DO j = minj, maxj
+         DO i = mini, maxi
+            IF (proc(i, j) .EQ. mynode) THEN
+               myiproc = i
+               myjproc = j
             END IF
          END DO
       END DO
 
    END SUBROUTINE define_proc_num
-
-
 
    SUBROUTINE DEFINE_UDPROC
 
@@ -298,43 +282,41 @@ CONTAINS
       !!----------------------------------------------------------------------
       !! * Executable part
 
-      IF (myjproc==maxjproc) THEN
-         myj_uproc=MPI_PROC_NULL
-      ELSE IF (PROC_NUM(myiproc,myjproc+1).EQ.MPI_PROC_NULL) THEN
-         myj_uproc=MPI_PROC_NULL
+      IF (myjproc == maxjproc) THEN
+         myj_uproc = MPI_PROC_NULL
+      ELSE IF (PROC_NUM(myiproc, myjproc + 1) .EQ. MPI_PROC_NULL) THEN
+         myj_uproc = MPI_PROC_NULL
       ELSE
-         myj_uproc=PROC_NUM(myiproc,myjproc+1)
+         myj_uproc = PROC_NUM(myiproc, myjproc + 1)
       END IF
 
-      IF (myjproc==minjproc) THEN
-         myj_dproc=MPI_PROC_NULL
-      ELSE IF (PROC_NUM(myiproc,myjproc-1).EQ.MPI_PROC_NULL) THEN
-         myj_dproc=MPI_PROC_NULL
+      IF (myjproc == minjproc) THEN
+         myj_dproc = MPI_PROC_NULL
+      ELSE IF (PROC_NUM(myiproc, myjproc - 1) .EQ. MPI_PROC_NULL) THEN
+         myj_dproc = MPI_PROC_NULL
       ELSE
-         myj_dproc=PROC_NUM(myiproc,myjproc-1)
+         myj_dproc = PROC_NUM(myiproc, myjproc - 1)
       END IF
 
-      IF (myiproc==maxiproc) THEN
-         myi_uproc=MPI_PROC_NULL
-      ELSE IF (PROC_NUM(myiproc+1,myjproc).EQ.MPI_PROC_NULL) THEN
-         myi_uproc=MPI_PROC_NULL
+      IF (myiproc == maxiproc) THEN
+         myi_uproc = MPI_PROC_NULL
+      ELSE IF (PROC_NUM(myiproc + 1, myjproc) .EQ. MPI_PROC_NULL) THEN
+         myi_uproc = MPI_PROC_NULL
       ELSE
-         myi_uproc=PROC_NUM(myiproc+1,myjproc)
+         myi_uproc = PROC_NUM(myiproc + 1, myjproc)
       END IF
 
-      IF (myiproc==miniproc) THEN
-         myi_dproc=MPI_PROC_NULL
-      ELSE IF (PROC_NUM(myiproc-1,myjproc).EQ.MPI_PROC_NULL) THEN
-         myi_dproc=MPI_PROC_NULL
+      IF (myiproc == miniproc) THEN
+         myi_dproc = MPI_PROC_NULL
+      ELSE IF (PROC_NUM(myiproc - 1, myjproc) .EQ. MPI_PROC_NULL) THEN
+         myi_dproc = MPI_PROC_NULL
       ELSE
-         myi_dproc=PROC_NUM(myiproc-1,myjproc)
+         myi_dproc = PROC_NUM(myiproc - 1, myjproc)
       END IF
 
       RETURN
 
    END SUBROUTINE DEFINE_UDPROC
-
-
 
    SUBROUTINE exchange_vectcpu_int(A)
       !&E---------------------------------------------------------------------
@@ -344,7 +326,7 @@ CONTAINS
       !&E
       !&E---------------------------------------------------------------------
       !! * Arguments
-      INTEGER, DIMENSION(0:nprocs-1), INTENT(inout) :: A
+      INTEGER, DIMENSION(0:nprocs - 1), INTENT(inout) :: A
 
       !! * Local declarations
       INTEGER :: ierr_mpi
@@ -352,12 +334,10 @@ CONTAINS
 
       !!----------------------------------------------------------------------
       !! * Executable part
-      V=A(mynode)
-      CALL MPI_ALLGATHER(V,1,MPI_INTEGER,A,1,MPI_INTEGER,MPI_COMM_WORLD,ierr_mpi)
+      V = A(mynode)
+      CALL MPI_ALLGATHER(V, 1, MPI_INTEGER, A, 1, MPI_INTEGER, MPI_COMM_WORLD, ierr_mpi)
 
    END SUBROUTINE exchange_vectcpu_int
-
-
 
    SUBROUTINE ADD_ALL_MPI_INT(value)
       !&E---------------------------------------------------------------------
@@ -380,10 +360,10 @@ CONTAINS
       INTEGER :: value_temp
 
       !CALL MPI_ALLREDUCE(MPI_IN_PLACE,value,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr_mpi)
-      CALL MPI_ALLREDUCE(value,value_temp,1,MPI_INTEGER,MPI_SUM,MPI_COMM_WORLD,ierr_mpi)
+      CALL MPI_ALLREDUCE(value, value_temp, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr_mpi)
       value = value_temp
 
-   END SUBROUTINE  ADD_ALL_MPI_INT
+   END SUBROUTINE ADD_ALL_MPI_INT
 
    !!======================================================================
 
@@ -402,7 +382,7 @@ CONTAINS
       !&E ** History :
       !&E       !  2026-02 (C. Menu)  Adapted from ADD_ALL_MPI_INT
       !&E---------------------------------------------------------------------
-      USE comtraj, ONLY : rlg, type_mpi_rlg
+      USE comtraj, ONLY: rlg, type_mpi_rlg
       IMPLICIT NONE
       REAL(kind=rlg), INTENT(inout) :: value
 
@@ -448,8 +428,8 @@ CONTAINS
       IMPLICIT NONE
 
       !! * Arguments
-      INTEGER, INTENT(inout)   :: d_give,u_give
-      INTEGER, INTENT(inout)   :: r_give,l_give
+      INTEGER, INTENT(inout)   :: d_give, u_give
+      INTEGER, INTENT(inout)   :: r_give, l_give
 
       !! * Local declarations
       INTEGER  :: d_get, u_get
@@ -457,13 +437,13 @@ CONTAINS
 
       !!----------------------------------------------------------------------
       !! * Executable part
-      d_get = 0 ; u_get = 0
-      l_get = 0 ; r_get = 0
+      d_get = 0; u_get = 0
+      l_get = 0; r_get = 0
 
       ! Send number of outgoing particles to neighbors and reveive number of incoming particles
       !  . first with up & down domains
-      IF ( myj_uproc /= MPI_PROC_NULL ) CALL sendrecv_one_int(myj_uproc, u_give, u_get)
-      IF ( myj_dproc /= MPI_PROC_NULL ) CALL sendrecv_one_int(myj_dproc, d_give, d_get)
+      IF (myj_uproc /= MPI_PROC_NULL) CALL sendrecv_one_int(myj_uproc, u_give, u_get)
+      IF (myj_dproc /= MPI_PROC_NULL) CALL sendrecv_one_int(myj_dproc, d_give, d_get)
 
       ! Carry out the exchange with up & down domains...
       !  . first communicate from the top down
@@ -473,8 +453,8 @@ CONTAINS
 
       ! Send number of outgoing particles to neighbors and reveive number of incoming particles
       !  . then with left & right domains
-      IF ( myi_uproc /= MPI_PROC_NULL ) CALL sendrecv_one_int(myi_uproc, r_give, r_get)
-      IF ( myi_dproc /= MPI_PROC_NULL ) CALL sendrecv_one_int(myi_dproc, l_give, l_get)
+      IF (myi_uproc /= MPI_PROC_NULL) CALL sendrecv_one_int(myi_uproc, r_give, r_get)
+      IF (myi_dproc /= MPI_PROC_NULL) CALL sendrecv_one_int(myi_dproc, l_give, l_get)
 
       ! Carry out the exchange with left & right domains...
       !  . first communicate from right to left
@@ -508,12 +488,12 @@ CONTAINS
       !&E       !  2014-12 (M. Honnorat) Adapt for IBM upgrade
       !&E---------------------------------------------------------------------
       !! * Modules used
-      USE comtraj, ONLY : patches, get_patch, type_patch, type_particle, type_mpi_particle, enlarge_patch
+      USE comtraj, ONLY: patches, get_patch, type_patch, type_particle, type_mpi_particle, enlarge_patch
       IMPLICIT NONE
 
       !! * Arguments
       INTEGER, INTENT(in)      :: i_give, give_proc
-      INTEGER, INTENT(in)      :: i_get,  get_proc
+      INTEGER, INTENT(in)      :: i_get, get_proc
       INTEGER, INTENT(inout)   :: l_give, r_give
       INTEGER, INTENT(in)      :: limit_min, limit_max
 
@@ -523,40 +503,40 @@ CONTAINS
       INTEGER                                          :: index_give, index_get
       INTEGER                                          :: i, n, m
       TYPE(type_particle), ALLOCATABLE, DIMENSION(:)   :: get, give
-      INTEGER,             ALLOCATABLE, DIMENSION(:)   :: get_n, give_n
-      TYPE(type_patch),    POINTER                     :: patch
+      INTEGER, ALLOCATABLE, DIMENSION(:)   :: get_n, give_n
+      TYPE(type_patch), POINTER                     :: patch
       TYPE(type_particle), POINTER                     :: particle
 
       !!----------------------------------------------------------------------
       !! * Executable part
 
-      IF ( (i_give == 0) .and. (i_get == 0) ) RETURN   ! Nothing to exchange
+      IF ((i_give == 0) .and. (i_get == 0)) RETURN   ! Nothing to exchange
 
       l_give_proc = give_proc
-      l_get_proc  = get_proc
+      l_get_proc = get_proc
       ! mynode,l_give_proc,i_give,l_get_proc,i_get,limit_min,limit_max
-      IF ( i_get  == 0 ) l_get_proc  = MPI_PROC_NULL
-      IF ( i_give == 0 ) l_give_proc = MPI_PROC_NULL
+      IF (i_get == 0) l_get_proc = MPI_PROC_NULL
+      IF (i_give == 0) l_give_proc = MPI_PROC_NULL
 
-      ALLOCATE( give(i_give), give_n(i_give), get(i_get), get_n(i_get))
+      ALLOCATE (give(i_give), give_n(i_give), get(i_get), get_n(i_get))
 
-      IF ( i_give /= 0 ) THEN
+      IF (i_give /= 0) THEN
          ! We have some particles to send.
          ! First, we'll pack them in array 'give'.
          i = 0
 
-         loop_patches: DO n = 1,patches%nb
+         loop_patches: DO n = 1, patches%nb
             patch => get_patch(patches, n)
-            DO m = 1,patch % nb_part_alloc
-               particle => patch % particles(m)
+            DO m = 1, patch%nb_part_alloc
+               particle => patch%particles(m)
                ! Consider only particles leaving by the wright side
-               IF ( (particle%limitbye >= limit_min) .and.   &
-                  (particle%limitbye <= limit_max) ) THEN
-                  i = i+1
+               IF ((particle%limitbye >= limit_min) .and. &
+                   (particle%limitbye <= limit_max)) THEN
+                  i = i + 1
                   give_n(i) = n           ! patch number
-                  give(i)   = particle    ! particle data
-                  particle % active   = .FALSE.   ! particle is no more active for the current domain.
-                  particle % limitbye = 0
+                  give(i) = particle    ! particle data
+                  particle%active = .FALSE.   ! particle is no more active for the current domain.
+                  particle%limitbye = 0
                   IF (i == i_give) exit loop_patches
                END IF
             END DO
@@ -565,27 +545,27 @@ CONTAINS
       END IF   ! ( i_give /= 0 )
 
       index_give = 0
-      index_get  = 0
+      index_get = 0
 
       ! index = 1XXXYYYZ where XXX is id of sender proc, YYY is id of reciever proc, Z is limit_min
-      IF ( l_give_proc /= MPI_PROC_NULL ) index_give = 10000000 + 10000*mynode + 10*l_give_proc + limit_min
-      IF ( l_get_proc  /= MPI_PROC_NULL ) index_get  = 10000000 + 10000*l_get_proc  + 10*mynode + limit_min
+      IF (l_give_proc /= MPI_PROC_NULL) index_give = 10000000 + 10000*mynode + 10*l_give_proc + limit_min
+      IF (l_get_proc /= MPI_PROC_NULL) index_get = 10000000 + 10000*l_get_proc + 10*mynode + limit_min
 
       ! We can now exchange the data with the neighbors
       ! . first the patch numbers...
-      CALL MPI_SENDRECV(give_n, i_give, MPI_INTEGER,       l_give_proc, index_give,    &
-         get_n,  i_get,  MPI_INTEGER,       l_get_proc,  index_get,     &
-         MPI_COMM_WORLD, MPI_STATUS_IGNORE, ierr_mpi)
+      CALL MPI_SENDRECV(give_n, i_give, MPI_INTEGER, l_give_proc, index_give, &
+                        get_n, i_get, MPI_INTEGER, l_get_proc, index_get, &
+                        MPI_COMM_WORLD, MPI_STATUS_IGNORE, ierr_mpi)
 
       ! . then the  particle data...
-      CALL MPI_SENDRECV(give,   i_give, type_mpi_particle, l_give_proc, index_give,    &
-         get,    i_get,  type_mpi_particle, l_get_proc,  index_get,     &
-         MPI_COMM_WORLD, MPI_STATUS_IGNORE, ierr_mpi)
+      CALL MPI_SENDRECV(give, i_give, type_mpi_particle, l_give_proc, index_give, &
+                        get, i_get, type_mpi_particle, l_get_proc, index_get, &
+                        MPI_COMM_WORLD, MPI_STATUS_IGNORE, ierr_mpi)
 
-      IF ( i_get /= 0 ) THEN
+      IF (i_get /= 0) THEN
          ! Some particles are incoming :
          !  we can then unpack the data
-         DO i=1,i_get
+         DO i = 1, i_get
 
             ! get the patch number
             n = get_n(i)     ! patch number
@@ -594,46 +574,46 @@ CONTAINS
             ! find a place somewhere in memory to store this new particle
             m = 0
             particle => NULL()
-            DO WHILE ( .NOT. ASSOCIATED(particle) )
-               m = m+1
-               IF ( m > patch % nb_part_alloc ) THEN
-                  PRINT_DBG*,mynode, 'max number of particles reached. Increase patch % nb_part_alloc.', m, patch % nb_part_alloc
+            DO WHILE (.NOT. ASSOCIATED(particle))
+               m = m + 1
+               IF (m > patch%nb_part_alloc) THEN
+                  PRINT_DBG*, mynode, 'max number of particles reached. Increase patch % nb_part_alloc.', m, patch%nb_part_alloc
                   CALL enlarge_patch(patch, 1)
                END IF
-               IF ( .NOT. patch % particles(m) % active ) THEN
-                  particle => patch % particles(m)
+               IF (.NOT. patch%particles(m)%active) THEN
+                  particle => patch%particles(m)
                END IF
             END DO
 
             ! unpack particle data
             particle = get(i)
             ! update r_give, l_give and particle % limitbye (here we handle 'corner' cases).
-            SELECT CASE ( particle % limitbye )
-             CASE(1)
-               particle % limitbye = 8
-               l_give = l_give+1
-             CASE(2)
-               particle % limitbye = 0
-             CASE(3)
-               particle % limitbye = 4
-               r_give = r_give+1
-             CASE(4)
-               particle % limitbye = 0
-             CASE(5)
-               particle % limitbye = 4
-               r_give = r_give+1
-             CASE(6)
-               particle % limitbye = 0
-             CASE(7)
-               particle % limitbye = 8
-               l_give = l_give+1
-             CASE(8)
-               particle % limitbye = 0
+            SELECT CASE (particle%limitbye)
+            CASE (1)
+               particle%limitbye = 8
+               l_give = l_give + 1
+            CASE (2)
+               particle%limitbye = 0
+            CASE (3)
+               particle%limitbye = 4
+               r_give = r_give + 1
+            CASE (4)
+               particle%limitbye = 0
+            CASE (5)
+               particle%limitbye = 4
+               r_give = r_give + 1
+            CASE (6)
+               particle%limitbye = 0
+            CASE (7)
+               particle%limitbye = 8
+               l_give = l_give + 1
+            CASE (8)
+               particle%limitbye = 0
             END SELECT
          END DO
       END IF   ! ( i_get /= 0 )
 
-      DEALLOCATE(give, give_n, get, get_n)
+      DEALLOCATE (give, give_n, get, get_n)
 
    END SUBROUTINE ex_traj_1d
 
@@ -660,15 +640,14 @@ CONTAINS
       !!----------------------------------------------------------------------
       !! * Executable part
 
-      send_tag = 300*mynode+dest
-      recv_tag = 300*dest+mynode
+      send_tag = 300*mynode + dest
+      recv_tag = 300*dest + mynode
 
       CALL MPI_SENDRECV(give, 1, MPI_INTEGER, dest, send_tag, &
-         get,  1, MPI_INTEGER, dest, recv_tag, &
-         MPI_COMM_WORLD, MPI_STATUS_IGNORE, ierr_mpi)
+                        get, 1, MPI_INTEGER, dest, recv_tag, &
+                        MPI_COMM_WORLD, MPI_STATUS_IGNORE, ierr_mpi)
 
    END SUBROUTINE sendrecv_one_int
-
 
 #endif
 

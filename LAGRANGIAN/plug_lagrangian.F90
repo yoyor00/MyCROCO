@@ -11,9 +11,9 @@ MODULE plug_LAGRANGIAN
 
    USE module_lagrangian
    USE trajinitsave, ONLY: LAGRANGIAN_init
-   USE traject3d,ONLY : LAGRANGIAN_update
+   USE traject3d, ONLY: LAGRANGIAN_update
 #ifdef MPI
-   USE toolmpi,ONLY : MPI_SETUP_LAG
+   USE toolmpi, ONLY: MPI_SETUP_LAG
 #endif
 
    IMPLICIT NONE
@@ -33,7 +33,7 @@ contains
 
       INTEGER :: tile
 # include "compute_tile_bounds.h"
-      CALL LAGRANGIAN_update(zeta,u,v,Istr, Iend, Jstr, Jend)
+      CALL LAGRANGIAN_update(zeta, u, v, Istr, Iend, Jstr, Jend)
 
    END SUBROUTINE
 
@@ -42,7 +42,7 @@ contains
 
       INTEGER :: tile
 # include "compute_tile_bounds.h"
-      CALL LAGRANGIAN_init(Istr,Iend,Jstr,Jend)
+      CALL LAGRANGIAN_init(Istr, Iend, Jstr, Jend)
    END SUBROUTINE
 
 #ifdef MPI
@@ -53,7 +53,7 @@ contains
 # include "compute_tile_bounds.h"
       !init mpi params
       !----------------
-      CALL MPI_SETUP_LAG(i_X,j_E)
+      CALL MPI_SETUP_LAG(i_X, j_E)
 
    END SUBROUTINE
 #endif

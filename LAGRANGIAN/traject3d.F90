@@ -36,7 +36,7 @@ MODULE traject3d
 
 #if defined LAGRANGIAN || defined DEB_IBM
    !! * Modules used
-   USE comtraj,  ONLY : imin,imax,jmin,jmax,kmax,rsh,rlg,riosh,lchain,valmanq
+   USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, rsh, rlg, riosh, lchain, valmanq
 
    IMPLICIT NONE
    PRIVATE
@@ -53,7 +53,7 @@ CONTAINS
 
 !!======================================================================
 
-   SUBROUTINE LAGRANGIAN_update(xe,uz,vz,Istr,Iend,Jstr,Jend)
+   SUBROUTINE LAGRANGIAN_update(xe, uz, vz, Istr, Iend, Jstr, Jend)
 
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE traj_3d  ***
@@ -91,55 +91,54 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! * Modules used
       USE module_lagrangian ! sc_w,h,dt,time,om_r(dx),on_r(dy)
-      USE trajinitsave,   ONLY : traj_save3d
-      USE trajectools,    ONLY : h0int,xeint,ksupkinf,loc_h0,wint,dksdzint, &
-         splint,kzprofile,update_htot,update_wz,    &
-         siggentoz, ztosiggen, hc_sigint,set_htot_bc,define_pos
+      USE trajinitsave, ONLY: traj_save3d
+      USE trajectools, ONLY: h0int, xeint, ksupkinf, loc_h0, wint, dksdzint, &
+                             splint, kzprofile, update_htot, update_wz, &
+                             siggentoz, ztosiggen, hc_sigint, set_htot_bc, define_pos
 #ifdef MPI
-      USE toolmpi,        ONLY : ex_traj
-      USE comtraj,        ONLY : down_give, up_give, right_give, left_give
+      USE toolmpi, ONLY: ex_traj
+      USE comtraj, ONLY: down_give, up_give, right_give, left_give
 #endif
-      USE comtraj,        ONLY : patches, type_patch, type_particle, type_position,dtz,htx,hty,wz
+      USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, htx, hty, wz
 
       !! * Arguments
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,4),      INTENT( in )    :: xe
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax,3), INTENT( in )    :: uz,vz
-      INTEGER,                                           INTENT( in )    ::  Istr,Iend,Jstr,Jend
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 4), INTENT(in)    :: xe
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax, 3), INTENT(in)    :: uz, vz
+      INTEGER, INTENT(in)    ::  Istr, Iend, Jstr, Jend
 
       !! * Local declarations
       ! Indexes on number of patch and particles
-      INTEGER                                     :: npa,npart,ndt,nb_patch
+      INTEGER                                     :: npa, npart, ndt, nb_patch
 
       ! Old and intermediate position of particles, as bathymetry at old and intermediate position of particles
-      REAL(KIND=rsh)                              :: x_old,y_old,s_old,z_old,z_int,s_int,slag,     &
-         x_mid,y_mid,z_mid,d3_mid,xe_mid,h0_mid,       &
-         tir,dksdz,kzz,ds_adv,ds_dif,d3,d3_final,      &
-         xe_final,h0_final,d3avt,xeavt,hcavt,h0avt,    &
-         hc_sig_mid,hc_sig_final,zposf,zlag
+      REAL(KIND=rsh)                              :: x_old, y_old, s_old, z_old, z_int, s_int, slag, &
+                                                     x_mid, y_mid, z_mid, d3_mid, xe_mid, h0_mid, &
+                                                     tir, dksdz, kzz, ds_adv, ds_dif, d3, d3_final, &
+                                                     xe_final, h0_final, d3avt, xeavt, hcavt, h0avt, &
+                                                     hc_sig_mid, hc_sig_final, zposf, zlag
 
       ! For Random walk
-      REAL(KIND=rsh)                              :: lb,lt,lbs,lts,ds_bio,wbio
-      REAL(KIND=rsh), DIMENSION(0:kmax)           :: dkz2,kzsmth                  ! For spline
+      REAL(KIND=rsh)                              :: lb, lt, lbs, lts, ds_bio, wbio
+      REAL(KIND=rsh), DIMENSION(0:kmax)           :: dkz2, kzsmth                  ! For spline
       REAL(KIND=rsh), DIMENSION(0:kmax)           :: zpos
       INTEGER                                     :: kw, kwm
 
       ! To save a local and global position of particle for MPI and Sequential compatibility
-      TYPE(type_position)                         :: pos_old,pos_mid,pos_temp
+      TYPE(type_position)                         :: pos_old, pos_mid, pos_temp
 
       ! Integer for loops
       INTEGER                                     :: l
 
       ! Model time step
       REAL(KIND=rlg)                              :: dtm
-      INTEGER                                     :: time_step,ndtz
+      INTEGER                                     :: time_step, ndtz
 
-      TYPE(type_patch),                  POINTER  :: patch    => NULL()
-      TYPE(type_particle),               POINTER  :: particle => NULL()
-
+      TYPE(type_patch), POINTER  :: patch => NULL()
+      TYPE(type_particle), POINTER  :: particle => NULL()
 
       ! Parameters for interpolation at particle location
-      REAL(KIND=rsh)       :: px,py
-      INTEGER              :: igg,idd,jbb,jhh,hlb,hlt,hrb,hrt,ipos,jpos
+      REAL(KIND=rsh)       :: px, py
+      INTEGER              :: igg, idd, jbb, jhh, hlb, hlt, hrb, hrt, ipos, jpos
 
       ! Integer for MPI errors
       INTEGER              :: ierr_mpi
@@ -151,56 +150,56 @@ CONTAINS
       ! Initialization
       !------------
       dtm = dt
-      nb_patch = patches % nb
-      time_step=nrhs
+      nb_patch = patches%nb
+      time_step = nrhs
 
       !Update Htot
       !------------
-      call update_htot(Istr,Iend,Jstr,Jend,IstrU,JstrV)
-      call set_htot_bc(Istr,Iend,Jstr,Jend,IstrU,JstrV)
+      call update_htot(Istr, Iend, Jstr, Jend, IstrU, JstrV)
+      call set_htot_bc(Istr, Iend, Jstr, Jend, IstrU, JstrV)
 
       !Update wz
       !------------------
-      CALL update_wz(Istr,Iend,Jstr,Jend)
+      CALL update_wz(Istr, Iend, Jstr, Jend)
 #ifdef MPI
-      call exchange_w3d_tile (Istr,Iend,Jstr,Jend,wz(START_2D_ARRAY,0))
+      call exchange_w3d_tile(Istr, Iend, Jstr, Jend, wz(START_2D_ARRAY, 0))
 #endif
 
       ! Implement intermediate time step, for Random Walk
-      IF ( nb_patch /= 0 ) ndtz = MAX(1,NINT(dtm/dtz))  ! si dtz > dtm then diffusion timestep not subdivised
+      IF (nb_patch /= 0) ndtz = MAX(1, NINT(dtm/dtz))  ! si dtz > dtm then diffusion timestep not subdivised
 
       patch => patches%first
-      DO npa = 1,nb_patch
+      DO npa = 1, nb_patch
 
-         IF ( (time < patch % t_beg) .OR. (time > patch % t_end) ) THEN
-            patch => patch % next
+         IF ((time < patch%t_beg) .OR. (time > patch%t_end)) THEN
+            patch => patch%next
             CYCLE
          END IF
 
          ! We modify spos from zpos because it was first calculated at simulation intial time step with another xe...
          ! to be removed when reading of positions at debtraj time step and not beginning of run
-         IF ( (time-patch%t_beg) <= dtm ) THEN ! first pass for this patch
+         IF ((time - patch%t_beg) <= dtm) THEN ! first pass for this patch
 
             ! We modify spos from zpos because it was first calculated at simulation intial time step with another xe...
-            DO npart = 1, patch % nb_part_alloc
-               particle => patch % particles(npart)
+            DO npart = 1, patch%nb_part_alloc
+               particle => patch%particles(npart)
 
-               IF ( .NOT. particle % active ) CYCLE
+               IF (.NOT. particle%active) CYCLE
 
                ! Get local position if MPI, doesn't change anything in sequential
                pos_temp%xp = particle%xpos; pos_temp%yp = particle%ypos
                call define_pos(pos_temp)
 
                ! total depth at particle s location
-               CALL loc_h0(pos_temp%idx_r,pos_temp%idy_r,px,py,igg,idd,jbb,jhh, &
-                  hlb,hrb,hlt,hrt,Istr,Iend,Jstr,Jend)
-               particle%xe = xeint(xe(:,:,time_step),px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,&
-                  Istr,Iend,Jstr,Jend)
+               CALL loc_h0(pos_temp%idx_r, pos_temp%idy_r, px, py, igg, idd, jbb, jhh, &
+                           hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+               particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                                   Istr, Iend, Jstr, Jend)
                particle%d3 = particle%h0 + particle%xe
-               IF ( particle%d3 > particle%zpos ) THEN
+               IF (particle%d3 > particle%zpos) THEN
                   zlag = -(particle%zpos) + particle%xe ! switch from immersion to real z
                   CALL ztosiggen(zlag, slag, particle%xe, particle%h0, particle%hc)
-                  particle  % spos = slag
+                  particle%spos = slag
                ELSE
                   particle%zpos = particle%h0
                   particle%spos = -1.0_rsh
@@ -208,7 +207,7 @@ CONTAINS
             END DO
          END IF
 
-         patch => patch % next
+         patch => patch%next
 
       END DO
 
@@ -218,46 +217,46 @@ CONTAINS
       CALL traj_save3d
 
 #ifdef MPI
-      down_give  = 0
-      up_give    = 0
+      down_give = 0
+      up_give = 0
       right_give = 0
-      left_give  = 0
+      left_give = 0
 #endif
 
       !***************************
       ! Start loop on patches
       !***************************
-      patch => patches % first
-      DO npa = 1,nb_patch
+      patch => patches%first
+      DO npa = 1, nb_patch
 
-         IF ( (time < patch % t_beg) .OR. (time > patch % t_end) ) THEN
-            patch => patch % next
+         IF ((time < patch%t_beg) .OR. (time > patch%t_end)) THEN
+            patch => patch%next
             CYCLE
          END IF
 
-         DO npart = 1, patch % nb_part_alloc
-            particle => patch % particles(npart)
+         DO npart = 1, patch%nb_part_alloc
+            particle => patch%particles(npart)
             ! Skip if particle is inactive.
-            IF ( .NOT. particle % active ) CYCLE
+            IF (.NOT. particle%active) CYCLE
 #ifdef IBM_SPECIES
             ! Skip if species stage not appropriate
             ! Modif Clara
 #ifdef MPI
-            IF ( particle%stage >= 5 .OR. particle%super <= 0.0_rsh )  CYCLE
+            IF (particle%stage >= 5 .OR. particle%super <= 0.0_rsh) CYCLE
 #else
-            IF ( particle%stage >= 1 .OR. particle%super <= 0.0_rsh )  CYCLE
+            IF (particle%stage >= 1 .OR. particle%super <= 0.0_rsh) CYCLE
 #endif
 #endif
             ! Skip if flag is missing...
-            IF ( particle % flag == -valmanq )  CYCLE
+            IF (particle%flag == -valmanq) CYCLE
 
             ! Get local position if MPI, doesn't change anything in sequential
             pos_temp%xp = particle%xpos; pos_temp%yp = particle%ypos
             call define_pos(pos_temp)
 
             ! depth of cell in which particle is located
-            d3 = h(pos_temp%idx,pos_temp%idy) + xe(pos_temp%idx,pos_temp%idy,time_step)
-            IF ( d3 <= 0.0_rsh ) CYCLE
+            d3 = h(pos_temp%idx, pos_temp%idy) + xe(pos_temp%idx, pos_temp%idy, time_step)
+            IF (d3 <= 0.0_rsh) CYCLE
 
             !***************************
             ! horizontal advection
@@ -265,50 +264,50 @@ CONTAINS
 
             ! Save former position
             pos_old = pos_temp
-            s_old =   particle % spos
-            d3avt =   particle % d3
-            xeavt =   particle % xe
-            h0avt =   particle % h0
-            hcavt =   particle % hc
+            s_old = particle%spos
+            d3avt = particle%d3
+            xeavt = particle%xe
+            h0avt = particle%h0
+            hcavt = particle%hc
 
             ! along-sigma advection
-            CALL avance(uz(:,:,:,time_step),vz(:,:,:,time_step),xe(:,:,time_step),&
-               dtm,pos_temp,particle%spos,particle%flag,&
-               Istr,Iend,Jstr,Jend)
-            CALL loc_h0(pos_temp%idx_r,pos_temp%idy_r,px,py,igg,idd,jbb,jhh, &
-               hlb,hrb,hlt,hrt,Istr,Iend,Jstr,Jend)
-            xe_final = xeint(xe(:,:,time_step),px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,&
-               Istr,Iend,Jstr,Jend)
-            h0_final     = h0int(    px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
-            d3_final     = h0_final + xe_final
-            hc_sig_final = hc_sigint(px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
+            CALL avance(uz(:, :, :, time_step), vz(:, :, :, time_step), xe(:, :, time_step), &
+                        dtm, pos_temp, particle%spos, particle%flag, &
+                        Istr, Iend, Jstr, Jend)
+            CALL loc_h0(pos_temp%idx_r, pos_temp%idy_r, px, py, igg, idd, jbb, jhh, &
+                        hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+            xe_final = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                             Istr, Iend, Jstr, Jend)
+            h0_final = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+            d3_final = h0_final + xe_final
+            hc_sig_final = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
             ! Mid-position between old(s_old) and new (particle%xpos)
             pos_mid%xp = 0.5_rsh*(pos_temp%xp + pos_old%xp)
             pos_mid%yp = 0.5_rsh*(pos_temp%yp + pos_old%yp)
             call define_pos(pos_mid)
 
-            CALL loc_h0(pos_mid%idx_r,pos_mid%idy_r,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt, &
-               Istr,Iend,Jstr,Jend)
-            xe_mid = xeint(xe(:,:,time_step),px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,&
-               Istr,Iend,Jstr,Jend)
-            h0_mid     = h0int(    px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
-            d3_mid     = h0_mid + xe_mid
-            hc_sig_mid = hc_sigint(px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt)
+            CALL loc_h0(pos_mid%idx_r, pos_mid%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                        Istr, Iend, Jstr, Jend)
+            xe_mid = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                           Istr, Iend, Jstr, Jend)
+            h0_mid = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+            d3_mid = h0_mid + xe_mid
+            hc_sig_mid = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
             particle%xpos = pos_temp%xp; particle%ypos = pos_temp%yp
-            IF ( (d3_final > 0.0_rsh).AND.(d3_mid > 0.0_rsh) ) THEN
-               particle % d3 = d3_final
-               particle % xe = xe_final
-               particle % h0 = h0_final
-               particle % hc = hc_sig_final
+            IF ((d3_final > 0.0_rsh) .AND. (d3_mid > 0.0_rsh)) THEN
+               particle%d3 = d3_final
+               particle%xe = xe_final
+               particle%h0 = h0_final
+               particle%hc = hc_sig_final
             ELSE
-               write(*,*) 'WARNING: Particule a la cote'
-               write(*,*) d3_final,h0_final,d3_mid,h0_mid,npa,npart
-               particle % xpos = pos_old%xp ! on remet dans l eau
-               particle % ypos = pos_old%yp
+               write (*, *) 'WARNING: Particule a la cote'
+               write (*, *) d3_final, h0_final, d3_mid, h0_mid, npa, npart
+               particle%xpos = pos_old%xp ! on remet dans l eau
+               particle%ypos = pos_old%yp
                stop
-            endif
+            end if
 #ifdef MPI
             ! check if we need to exchange or not
             ! -----------------------------------
@@ -331,22 +330,22 @@ CONTAINS
             !       -----+-----+-----
             !         1  |  2  |  3
 
-            IF ( jpos < jminmpi ) THEN
-               particle % limitbye = 2
-               down_give = down_give+1
-               IF ( ipos < iminmpi ) particle % limitbye = 1
-               IF ( ipos > imaxmpi ) particle % limitbye = 3
-            ELSE IF ( jpos > jmaxmpi ) THEN
-               particle % limitbye = 6
-               up_give = up_give+1
-               IF ( ipos < iminmpi ) particle % limitbye = 7
-               IF ( ipos > imaxmpi ) particle % limitbye = 5
-            ELSE IF ( ipos < iminmpi ) THEN
-               particle % limitbye = 8
-               left_give = left_give+1
-            ELSE IF ( ipos > imaxmpi ) THEN
-               particle % limitbye = 4
-               right_give = right_give+1
+            IF (jpos < jminmpi) THEN
+               particle%limitbye = 2
+               down_give = down_give + 1
+               IF (ipos < iminmpi) particle%limitbye = 1
+               IF (ipos > imaxmpi) particle%limitbye = 3
+            ELSE IF (jpos > jmaxmpi) THEN
+               particle%limitbye = 6
+               up_give = up_give + 1
+               IF (ipos < iminmpi) particle%limitbye = 7
+               IF (ipos > imaxmpi) particle%limitbye = 5
+            ELSE IF (ipos < iminmpi) THEN
+               particle%limitbye = 8
+               left_give = left_give + 1
+            ELSE IF (ipos > imaxmpi) THEN
+               particle%limitbye = 4
+               right_give = right_give + 1
             END IF
 #endif
 
@@ -354,17 +353,17 @@ CONTAINS
             ! Vertical advection
             ! is estimated from the environment at the averaged location x_mid,y_mid
             !**********************************
-            IF ( (d3_final <= 0.0_rsh).OR.(d3_mid <= 0.0_rsh) )  CYCLE
+            IF ((d3_final <= 0.0_rsh) .OR. (d3_mid <= 0.0_rsh)) CYCLE
 
-            IF ( particle%itypevert == 0 ) THEN
+            IF (particle%itypevert == 0) THEN
 
                !**********************************
                ! No vertical advection (float trajectory at constant immersion)
                !**********************************
-               particle % zpos = MIN(particle%zpos,d3_final)   ! when particle wants to go in shallower areas than immersion
+               particle%zpos = MIN(particle%zpos, d3_final)   ! when particle wants to go in shallower areas than immersion
                zlag = -particle%zpos + xe_final                ! switch from immersion to real z
-               CALL ztosiggen(zlag,slag,xe_final,h0_final,hc_sig_final)
-               particle%spos = MAX(slag,-1.0_rsh)              ! when particle wants to go in shallower areas than immersion
+               CALL ztosiggen(zlag, slag, xe_final, h0_final, hc_sig_final)
+               particle%spos = MAX(slag, -1.0_rsh)              ! when particle wants to go in shallower areas than immersion
 
             ELSE
                !**************************************
@@ -372,10 +371,10 @@ CONTAINS
                !**************************************
 
                ! vertical displacement induced by advection : ds_adv
-               ds_adv = dtm*wint(s_old,xe_mid,h0_mid,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,&
-                  Istr,Iend,Jstr,Jend)
+               ds_adv = dtm*wint(s_old, xe_mid, h0_mid, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                                 Istr, Iend, Jstr, Jend)
 
-               IF ( particle%itypevert > 0 ) THEN ! Random walk (turbulent diffusion)
+               IF (particle%itypevert > 0) THEN ! Random walk (turbulent diffusion)
 
                   !*********************************************************
                   ! + Random walk (turbulent diffusion)
@@ -384,13 +383,13 @@ CONTAINS
                   ! allow gain in computing time when in siggen
                   ! because then no switch of coordinate in the RW loop
 
-                  DO l=0,kmax
-                     CALL siggentoz(zpos(l),sc_w(l),xe_mid,h0_mid,hc_sig_mid)
+                  DO l = 0, kmax
+                     CALL siggentoz(zpos(l), sc_w(l), xe_mid, h0_mid, hc_sig_mid)
                   END DO
 
                   ! smooth and spline the kz profile at x_mid,y_mid location
-                  CALL kzprofile(kzsmth,dkz2,zpos,px,py,igg,idd,jbb,jhh,hlb,hrb,hlt,hrt,&
-                     Istr,Iend,Jstr,Jend)
+                  CALL kzprofile(kzsmth, dkz2, zpos, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                                 Istr, Iend, Jstr, Jend)
 
                   ! vertical displacement induced by diffusion : ds_dif
                   ! displacement linked to kz intensity and structure
@@ -402,22 +401,22 @@ CONTAINS
                   ! s_int positions intermediaires successives
                   ! s_mid position mediane entre deplacement du centre de masse et s_int
 
-                  CALL siggentoz(z_old,s_old,xe_mid,h0_mid,hc_sig_mid)
+                  CALL siggentoz(z_old, s_old, xe_mid, h0_mid, hc_sig_mid)
                   z_int = z_old
 
-                  IF ( d3_mid > 5.0_rsh ) THEN   ! attention : lb+lt for boundary layers should
+                  IF (d3_mid > 5.0_rsh) THEN   ! attention : lb+lt for boundary layers should
                      ! be lower than criteria here
-                     DO ndt=1,ndtz
+                     DO ndt = 1, ndtz
                         ! get the first derivative of Kz at z_int location
-                        dksdz  = dksdzint(z_int, zpos, kzsmth, dkz2)
+                        dksdz = dksdzint(z_int, zpos, kzsmth, dkz2)
                         ds_dif = dksdz*dtz
 
                         z_mid = MIN(MAX(z_int + ds_dif*0.5_rsh, zpos(0)), zpos(kmax))
                         ! get the kz value at s_mid location entre son centre de masse et sa position initiale
                         ! ancien calcul         kzz=kzint(x_mid,y_mid,s_mid)
-                        CALL splint(zpos, kzsmth, dkz2, kmax+1, z_mid, kzz)
+                        CALL splint(zpos, kzsmth, dkz2, kmax + 1, z_mid, kzz)
 
-                        IF ( kzz < 0.0 ) kzz = 0.0                  ! kzz should be > 0 but...
+                        IF (kzz < 0.0) kzz = 0.0                  ! kzz should be > 0 but...
 
                         ! random walk component of vertical diffusion (between 0 and 1)
                         CALL random_number(tir)
@@ -448,21 +447,21 @@ CONTAINS
                         lb = 2.0_rsh        ! distance in meters for the random boundary layer
                         lt = 2.0_rsh        ! twice the boundary layer should be ok
                         CALL random_number(tir)
-                        IF (z_int > zpos(kmax)-lt) z_int = zpos(kmax) - tir*lt
-                        IF (z_int < zpos(0)+lb)    z_int = zpos(0)    + tir*lb
+                        IF (z_int > zpos(kmax) - lt) z_int = zpos(kmax) - tir*lt
+                        IF (z_int < zpos(0) + lb) z_int = zpos(0) + tir*lb
 
                      END DO   ! end loop on RW time
-                  ENDIF  ! if d3_mid > 5.0
+                  END IF  ! if d3_mid > 5.0
 
                   ! back to sigma position
-                  kw  = kmax
+                  kw = kmax
                   kwm = 0
-                  CALL ksupkinf(z_int, zpos, kmax+1, kw, kwm, 2)
+                  CALL ksupkinf(z_int, zpos, kmax + 1, kw, kwm, 2)
 
-                  particle%spos = ((z_int-zpos(kwm))*sc_w(kw)+ &
-                     (zpos(kw)-z_int)*sc_w(kwm))/(zpos(kw)-zpos(kwm))  !! Interpolation lineaire
+                  particle%spos = ((z_int - zpos(kwm))*sc_w(kw) + &
+                                   (zpos(kw) - z_int)*sc_w(kwm))/(zpos(kw) - zpos(kwm))  !! Interpolation lineaire
 
-               ENDIF ! end of RW (itypevert > 0)
+               END IF ! end of RW (itypevert > 0)
 
                !**************************************
                ! Vertical behavior (larval behavior)
@@ -480,16 +479,16 @@ CONTAINS
                !**************************************
 
                ! Estimate of the new vertical position
-               particle%spos = MIN(MAX(particle%spos + ds_adv + ds_bio, -1.0_rsh),0.0_rsh)
+               particle%spos = MIN(MAX(particle%spos + ds_adv + ds_bio, -1.0_rsh), 0.0_rsh)
                !particle%spos = MIN(MAX(particle%spos+ds_bio,-1.0_rsh),0.0_rsh)
 
-               CALL siggentoz(zposf,particle%spos, xe_final, h0_final, hc_sig_final)
+               CALL siggentoz(zposf, particle%spos, xe_final, h0_final, hc_sig_final)
                particle%zpos = -zposf + xe_final           ! immersion
             END IF     ! ends test on vertical movement (itypevert)
 
          END DO   ! ends loop on number of particles
 
-         patch => patch % next
+         patch => patch%next
 
       END DO   ! Ends loop on number of patches
 
@@ -497,12 +496,8 @@ CONTAINS
 
    END SUBROUTINE LAGRANGIAN_update
 
-
-
-
-
    !!======================================================================
-   SUBROUTINE avance(uz,vz,xe,deltat,pos,sig0,statp,Istr,Iend,Jstr,Jend)
+   SUBROUTINE avance(uz, vz, xe, deltat, pos, sig0, statp, Istr, Iend, Jstr, Jend)
 
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE avance  ***
@@ -529,54 +524,54 @@ CONTAINS
       !&E
       !&E---------------------------------------------------------------------
       !! * Modules used
-      USE comtraj,            ONLY : valmanq, type_position, hdiff
+      USE comtraj, ONLY: valmanq, type_position, hdiff
       USE module_lagrangian ! on_r,om_r
-      USE trajectools,        ONLY: uint,vint,define_pos
+      USE trajectools, ONLY: uint, vint, define_pos
 #ifdef MPI
-      USE toolmpi,            ONLY : MPI_glob2loc
+      USE toolmpi, ONLY: MPI_glob2loc
 #endif
 
       !! * Arguments
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY,kmax), INTENT( in )               :: uz,vz
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY),      INTENT( in )               :: xe
-      TYPE(type_position),                             INTENT( inout )            :: pos
-      REAL(KIND=rlg),                                  INTENT( in )               :: deltat
-      REAL(KIND=rsh),                                  INTENT( in )               :: sig0
-      INTEGER,                                         INTENT( in )               :: Istr,Iend,Jstr,Jend
-      REAL(KIND=rsh),                                  INTENT( inout ),OPTIONAL   :: statp
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax), INTENT(in)               :: uz, vz
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in)               :: xe
+      TYPE(type_position), INTENT(inout)            :: pos
+      REAL(KIND=rlg), INTENT(in)               :: deltat
+      REAL(KIND=rsh), INTENT(in)               :: sig0
+      INTEGER, INTENT(in)               :: Istr, Iend, Jstr, Jend
+      REAL(KIND=rsh), INTENT(inout), OPTIONAL   :: statp
 
       !! * Local declarations
-      INTEGER                                  :: j0,jst,i0,ist,i1,j1
-      REAL(KIND=rsh)                           :: uxp,uyp,ux0,uy0,xst,yst
+      INTEGER                                  :: j0, jst, i0, ist, i1, j1
+      REAL(KIND=rsh)                           :: uxp, uyp, ux0, uy0, xst, yst
 
       ! For randow movement
-      REAL(KIND=rsh)                           :: a,b,tir1,tir2
+      REAL(KIND=rsh)                           :: a, b, tir1, tir2
 
       REAL(KIND=rsh)                           :: dkx
-      REAL(KIND=rsh)                           :: dmaill,tetha
+      REAL(KIND=rsh)                           :: dmaill, tetha
 
-      TYPE(type_position)                      :: pos0,pos1,posint
+      TYPE(type_position)                      :: pos0, pos1, posint
 
       !!----------------------------------------------------------------------
       !! * Executable part
       dmaill = 0.01_rsh ! plus eleve plus jump en z, car advecte le long des sigmas, martin
-      pos0   = pos
+      pos0 = pos
 
       !interpolate current components on particle position
       !----------------------------------------------------
-      ux0=uint(pos0%idx_r,pos0%idy_r,sig0,uz,xe,Istr,Iend,Jstr,Jend)
-      uy0=vint(pos0%idx_r,pos0%idy_r,sig0,vz,xe,Istr,Iend,Jstr,Jend)
+      ux0 = uint(pos0%idx_r, pos0%idy_r, sig0, uz, xe, Istr, Iend, Jstr, Jend)
+      uy0 = vint(pos0%idx_r, pos0%idy_r, sig0, vz, xe, Istr, Iend, Jstr, Jend)
 
-      posint%xp = pos0%xp + ux0*deltat/om_r(nint(pos0%idx_r),nint(pos0%idy_r))
-      posint%yp = pos0%yp + uy0*deltat/on_r(nint(pos0%idx_r),nint(pos0%idy_r))
+      posint%xp = pos0%xp + ux0*deltat/om_r(nint(pos0%idx_r), nint(pos0%idy_r))
+      posint%yp = pos0%yp + uy0*deltat/on_r(nint(pos0%idx_r), nint(pos0%idy_r))
       CALL define_pos(posint)
-      uxp = uint(posint%idx_r,posint%idy_r,sig0,uz,xe,Istr,Iend,Jstr,Jend)
-      uyp = vint(posint%idx_r,posint%idy_r,sig0,vz,xe,Istr,Iend,Jstr,Jend)
+      uxp = uint(posint%idx_r, posint%idy_r, sig0, uz, xe, Istr, Iend, Jstr, Jend)
+      uyp = vint(posint%idx_r, posint%idy_r, sig0, vz, xe, Istr, Iend, Jstr, Jend)
 
-      pos1%xp = pos0%xp + 0.5_rsh*deltat*(ux0/om_r(nint(pos0%idx_r),nint(pos0%idy_r))+ &
-         uxp/om_r(nint(posint%idx_r),nint(posint%idy_r)))
-      pos1%yp = pos0%yp + 0.5_rsh*deltat*(uy0/on_r(nint(pos0%idx_r),nint(pos0%idy_r))+ &
-         uyp/on_r(nint(posint%idx_r),nint(posint%idy_r)))
+      pos1%xp = pos0%xp + 0.5_rsh*deltat*(ux0/om_r(nint(pos0%idx_r), nint(pos0%idy_r)) + &
+                                          uxp/om_r(nint(posint%idx_r), nint(posint%idy_r)))
+      pos1%yp = pos0%yp + 0.5_rsh*deltat*(uy0/on_r(nint(pos0%idx_r), nint(pos0%idy_r)) + &
+                                          uyp/on_r(nint(posint%idx_r), nint(posint%idy_r)))
       CALL define_pos(pos1)
 
       ! add random dispersion
@@ -584,34 +579,34 @@ CONTAINS
          call random_number(tir1)
          tetha = 2.0_rsh*pi*tir1
          call random_number(tir2)
-         dkx  = sqrt(2.0_rsh*hdiff*deltat*3.0_rsh)*tir2
-         IF (0.5_rsh*(ux0+uxp) /= 0.0_rsh .and. 0.5_rsh*(uy0+uyp) /= 0.0_rsh) THEN
-            pos1%xp = pos1%xp + dkx*cos(tetha)/om_r(nint(pos1%idx_r),nint(pos1%idy_r))
-            pos1%yp = pos1%yp + dkx*sin(tetha)/on_r(nint(pos1%idx_r),nint(pos1%idy_r))
+         dkx = sqrt(2.0_rsh*hdiff*deltat*3.0_rsh)*tir2
+         IF (0.5_rsh*(ux0 + uxp) /= 0.0_rsh .and. 0.5_rsh*(uy0 + uyp) /= 0.0_rsh) THEN
+            pos1%xp = pos1%xp + dkx*cos(tetha)/om_r(nint(pos1%idx_r), nint(pos1%idy_r))
+            pos1%yp = pos1%yp + dkx*sin(tetha)/on_r(nint(pos1%idx_r), nint(pos1%idy_r))
          END IF
-      ENDIF
+      END IF
 
       !     detection d un franchissement de mur hy
       !--------------------------------------------------
       j0 = nint(pos0%yp)
       j1 = nint(pos1%yp)
       IF (j0 /= j1) THEN
-         jst = min (j0,j1)
-         yst = real(jst,kind=rsh) + 0.5_rsh
+         jst = min(j0, j1)
+         yst = real(jst, kind=rsh) + 0.5_rsh
          xst = pos0%xp
          IF (pos1%xp /= pos0%xp) THEN
             a = (pos1%yp - pos0%yp)/(pos1%xp - pos0%xp)
-            b =  pos0%yp - a*pos0%xp
-            xst = (yst-b)/a
+            b = pos0%yp - a*pos0%xp
+            xst = (yst - b)/a
          END IF
          ist = nint(xst)
 
 #ifdef MPI
-         call MPI_glob2loc(ist,jst)
+         call MPI_glob2loc(ist, jst)
 #endif
          ! To catch the good v current in the croco grid.
          ! Otherwise it takes a v current not at the wall but the cell before on eta_rho
-         IF (vz(ist,jst+1,1) == 0.0_rsh) THEN
+         IF (vz(ist, jst + 1, 1) == 0.0_rsh) THEN
 
             !------------------------------------------------------------
             !    real(j1-j0) est juste la pour donner le signe
@@ -621,7 +616,7 @@ CONTAINS
             !    Reflection a la normale de la position finale sur terre
             !------------------------------------------------------------
 
-            pos1%yp = yst - dmaill*real((j1-j0),kind=rsh)
+            pos1%yp = yst - dmaill*real((j1 - j0), kind=rsh)
             !update index for pos1
             call define_pos(pos1)
             statp = statp + 1
@@ -634,21 +629,21 @@ CONTAINS
       i0 = nint(pos0%xp)
       i1 = nint(pos1%xp)
       IF (i0 /= i1) THEN
-         ist = min (i0,i1)
-         xst = real(ist,kind=rsh) + 0.5_rsh
+         ist = min(i0, i1)
+         xst = real(ist, kind=rsh) + 0.5_rsh
          yst = pos0%yp
          IF (pos1%yp /= pos0%yp) THEN
             a = (pos1%xp - pos0%xp)/(pos1%yp - pos0%yp)
-            b =  pos0%xp - a*pos0%yp
-            yst = (xst-b)/a
+            b = pos0%xp - a*pos0%yp
+            yst = (xst - b)/a
          END IF
          jst = nint(yst)
 #ifdef MPI
-         call MPI_glob2loc(ist,jst)
+         call MPI_glob2loc(ist, jst)
 #endif
          ! To catch the good u current in the croco grid.
          ! Otherwise it takes a u current not at the wall but the cell before on xi_rho
-         IF (uz(ist+1,jst,1) == 0.0_rsh) THEN
+         IF (uz(ist + 1, jst, 1) == 0.0_rsh) THEN
             !------------------------------------------------------------
             !    real(i1-i0) est juste la pour donner le signe
             !    et savoir si l on s arrete au-dessus ou au-dessous
@@ -656,26 +651,26 @@ CONTAINS
             !    Pourquoi yst n est-il pas modifie ?
             !------------------------------------------------------------
 
-            pos1%xp = xst - dmaill*real((i1-i0),kind=rsh)
+            pos1%xp = xst - dmaill*real((i1 - i0), kind=rsh)
             call define_pos(pos1)
             statp = statp + 1
          END IF
       END IF
 
       ! detection d un franchissement limite de domaine
-      IF (pos1%yp <= 1.0_rsh .or. pos1%yp >= real(jmax,kind=rsh)) THEN
+      IF (pos1%yp <= 1.0_rsh .or. pos1%yp >= real(jmax, kind=rsh)) THEN
          statp = -valmanq ! on prefere flagger la particule et la laisser ou elle est (ne bougera plus)
       END IF
-      IF (pos1%xp <= 1.0_rsh .or. pos1%xp >= real(imax,kind=rsh)) THEN
+      IF (pos1%xp <= 1.0_rsh .or. pos1%xp >= real(imax, kind=rsh)) THEN
          statp = -valmanq ! on prefere flagger la particule et la laisser ou elle est (ne bougera plus)
       END IF
 
       pos = pos1
 
-      IF (h(pos%idx,pos%idy) == -valmanq) THEN ! pour cas special ou passage exact sur coin de cellule, avec un mur unique partant de la section, tests precedents ne marche pas forcement
-         pos   = pos0
+      IF (h(pos%idx, pos%idy) == -valmanq) THEN ! pour cas special ou passage exact sur coin de cellule, avec un mur unique partant de la section, tests precedents ne marche pas forcement
+         pos = pos0
          statp = statp + 1
-      ENDIF
+      END IF
 
    END SUBROUTINE avance
 
