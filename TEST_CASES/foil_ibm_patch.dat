@@ -1,4 +1,4 @@
-FICHIER LIE A FICHIER NETCDF (itypetraj=3)
+FILE NETCDF (itypetraj=3)
 FILE DEFINING RECTANGULAR PATCHES
 
 name of patch
@@ -20,8 +20,8 @@ patch1                                                  ,| name of patch
 2000/01/01 00:00:00                                     ,| tbegtraj
 2004/12/31 00:00:00                                     ,| tendtraj
 24.d0                                                   ,| dtsave_traj
-../inputs/pos_init/release_25000_120_3D-1DV.nc          ,| filetrajin
-./anchovy_seapodym.nc                                   ,| filetrajout
+CROCO_FILES/lagrangian_init.nc                          ,| filetrajin
+anchovy_seapodym.nc                                     ,| filetrajout
 1                                                       ,| nb_part_intro
 1                                                       ,| itypevert
 anchovy                                                 ,| species

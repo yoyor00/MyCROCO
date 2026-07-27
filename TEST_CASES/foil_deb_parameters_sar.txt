@@ -14,7 +14,7 @@
 :       kap     : -, Fraction to growth + maintenance   
 :       Kx      : Assimilation efficiency  
 :       Hp      : J, maturity at puberty (Nisbet 2012)
-:       TA      : K, Arrhenius temperature ;  eggs devlpt -> 9800 = after Regner 1996; larval growth rate : 7500   
+:       TA      : K, Arrhenius temperature ;  eggs devlpt -> 9800 = after Regner 1996; larval growth rate : 7500
 :       K       : mgC.m3, half saturation constant            
 :       shapeb  : -, shape coefficient at birth (early larvae after correction for shrinking)
 :       lfactor : acceleration factor for larval growth

@@ -362,7 +362,8 @@
     "patches": {},
     "check_outputs": [
       "CROCO_FILES/croco_his.nc", 
-      "CROCO_FILES/croco_avg.nc",],
+      "CROCO_FILES/croco_avg.nc",
+      "CROCO_FILES/croco_lagrangian_out.nc"],
   },
   "BENGUELA_LR_FOIL": {
     "title": "BENGUELA_LR_FOIL",
@@ -371,14 +372,14 @@
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
       "USE_CALENDAR": true,
-      "DEB-IBM": true,
+      "DEB_IBM": true,
       "IBM_SPECIES": true,
     },
     "patches": {},
     "check_outputs": [
       "CROCO_FILES/croco_his.nc", 
       "CROCO_FILES/croco_avg.nc",
-      "CROCO_FILES/croco_lagrangian_out.nc"],
+      "CROCO_FILES/anchovy_seapodym.nc"],
   },
   // TODO check runoff position and change croco.in accordingly
   // "BENGUELA_VHR_TIDES_BULK": {

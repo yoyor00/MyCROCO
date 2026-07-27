@@ -102,6 +102,7 @@
       "BENGUELA_LR_GLS",
       "BENGUELA_LR_NBQ",
       "BENGUELA_LR_LAGRANGIAN",
+      "BENGUELA_LR_FOIL",
       "VILAINE",
     ],
     "@realist": [
