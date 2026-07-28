@@ -16,9 +16,9 @@
 :-----------------------------------------------------------------------------
 :
  &namibmin
-	file_trajec = 'ibm_patch.dat'
-	dir_pathout = '../output_foil/'
-	itypepatch = 3 /
+      file_trajec = 'ibm_patch.dat'
+      dir_pathout = '../output_foil/'
+      itypepatch = 3 /
 :
 :-----------------------------------------------------------------------------
 : namibmdiff        PARTICLE DIFFUSION SETTINGS
@@ -30,12 +30,12 @@
 :         (2004, Limnology and Oceanography) for a sensitivity analysis.
 : hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
 :         horizontal diffusion
-: 
+:
 :-----------------------------------------------------------------------------
 :
  &namibmdiff
-	dtz  = 3
-	hdiff = 5.0 /
+      dtz  = 3
+      hdiff = 5.0 /
 :
 :-----------------------------------------------------------------------------
 : namibmrestart     RESTART SETTINGS
@@ -48,8 +48,8 @@
 :-----------------------------------------------------------------------------
 :
  &namibmrestart
-	ibm_restart = .false.
-	ibm_l_time  = .false. /
+      ibm_restart = .false.
+      ibm_l_time  = .false. /
 :
 :-----------------------------------------------------------------------------
 : namibmbio         VERTICAL-BEHAVIOR SETTINGS
@@ -62,8 +62,8 @@
 :-----------------------------------------------------------------------------
 :
  &namibmbio
-	w_max = 0.0
-	alpha_w  = 0.8 /
+      w_max = 0.0
+      alpha_w  = 0.8 /
 :
 :-----------------------------------------------------------------------------
 : namibmpop         POPULATION, REPRODUCTION, AND FISHING SETTINGS
@@ -91,16 +91,16 @@
 :-----------------------------------------------------------------------------
 :
  &namibmpop
-    repro             = .true.
-	dt_spawn          = 72
-    dt_save           = 24
-	max_part          = 25000
-    duration_ibm_anc  = 1460
-    duration_ibm_sar  = 2250
-	fish_mort         = .true.
-	fishing_strategy  = 'historical'
-	multiplier_tac    = 0.8
-	density_dependent = .true./
+        repro             = .true.
+        dt_spawn          = 72
+        dt_save           = 24
+        max_part          = 25000
+        duration_ibm_anc  = 1460
+        duration_ibm_sar  = 2980
+        fish_mort         = .true.
+        fishing_strategy  = 'historical'
+        multiplier_tac    = 0.8
+        density_dependent = .false./
 :
 :-----------------------------------------------------------------------------
 : namibmdeb         DYNAMIC ENERGY BUDGET (DEB) SETTINGS
@@ -120,12 +120,12 @@
 :-----------------------------------------------------------------------------
 :
  &namibmdeb
-	debuse    =.true.
-	F_Fix     =.false.
-	ffix      = 0.8
-	file_NBSS ='../inputs/NBSS_manga.nc'
-	file_food ='ibm_zooc.nc' 
-	frac_deb_death = .false./
+      debuse    =.true.
+      F_Fix     =.false.
+      ffix      = 0.8
+      file_NBSS ='../inputs/NBSS_manga.nc'
+      file_food ='ibm_zooc.nc' 
+      frac_deb_death = .false./
 :
 :-----------------------------------------------------------------------------
 : namibmfrc         EXTERNAL FORCING FILES
@@ -144,13 +144,13 @@
 :-----------------------------------------------------------------------------
 :
  &namibmfrc
-	fileanchovy          = '../croco-mustang/FOIL_inputs/deb_parameters_anc.txt'
-	filesardine          = '../croco-mustang/FOIL_inputs/deb_parameters_sar.txt'
-	catch_anc_bob        = '../inputs/catch_anc_bob.txt'
-	catch_sar_bob        = '../inputs/catch_sar_bob.txt'
-	fileprobadistrib_anc = '../inputs/probadistrib_1_2.nc'
-	nbSizeClass_anc      = 36
-	sizemin_anc          = 3.5
-	fileprobadistrib_sar = '../inputs/probadistrib_1_2.nc'
-    nbSizeClass_sar      = 36
-    sizemin_sar          = 3.5/
+        fileanchovy          = '../croco-mustang/FOIL_inputs/deb_parameters_anc.txt'
+        filesardine          = '../croco-mustang/FOIL_inputs/deb_parameters_sar.txt'
+        catch_anc_bob        = '../inputs/catch_anc_bob.txt'
+        catch_sar_bob        = '../inputs/catch_sar_bob.txt'
+        fileprobadistrib_anc = '../inputs/probadistrib_1_2.nc'
+        nbSizeClass_anc      = 36
+        sizemin_anc          = 3.5
+        fileprobadistrib_sar = '../inputs/probadistrib_1_2.nc'
+        nbSizeClass_sar      = 36
+        sizemin_sar          = 3.5/
