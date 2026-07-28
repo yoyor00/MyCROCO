@@ -1,25 +1,36 @@
+:=============================================================================
+:                  LAGRANGIAN PARTICLE-TRACKING CONFIGURATION
+:=============================================================================
+:
 :-----------------------------------------------------------------------------
-:  namtraj
+: namtraj          TRAJECTORY AND DIFFUSION SETTINGS
 :-----------------------------------------------------------------------------
-: 
-: file_trajec : nom du fichier decrivant la position des taches et leurs
-:              caracteristiques
-: file_trajec : file where the "spots" position and characteristics
-:              are described.
-: itypepatch   : type of definition for patch initial position:
-:             1: circle, 2: rectangle, 3:netcdf
-: dtz        : time-step of the randow walk on the vertical, for consideration 
-:			 	of vertical diffusion
-:        See (Ross and Sharples, 2004, Limnol.Oceanogr.) for sensitivity analysis
-:        Few seconds make sure there are no accumulation in low diffusivity areas
-:			and near boundaries
-: hdiff		: Horizontal diffusion coefficient
-: 
+:
+: file_trajec : path to the patch initialization file containing the initial
+:               particle positions, trajectory dates, movement settings, and
+:               output filenames
+: dir_pathout : optional base directory for trajectory output and restart files;
+:               used by the DEB-IBM configuration and not required for the
+:               standalone LAGRANGIAN configuration shown below
+: itypepatch  : method used to define the initial patch positions:
+:               1 = circular patches
+:               2 = rectangular patches
+:               3 = positions read from a NetCDF file
+:               This value must match the format of file_trajec.
+: dtz         : time step (s) used by the vertical random-walk subloop when
+:               itypevert > 0 in file_trajec. In that case, vertical turbulent
+:               diffusion is applied in addition to vertical advection.
+:               A value of a few seconds helps prevent particle accumulation
+:               in low-diffusivity regions and near boundaries. See Ross and
+:               Sharples (2004, Limnology and Oceanography) for a sensitivity
+:               analysis.
+: hdiff       : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
+:               horizontal random dispersion
+:
 :-----------------------------------------------------------------------------
 :
  &namtraj
      file_trajec='../croco/LAGRANGIAN/LAGRANGIAN_INPUTS/traject3d_type1circ.dat'
      itypepatch = 1
-     dtz  = 3  
+     dtz = 3
      hdiff = 5.0 /
-

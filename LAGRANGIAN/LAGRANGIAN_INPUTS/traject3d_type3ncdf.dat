@@ -1,45 +1,48 @@
-FICHIER LIE A FICHIER NETCDF (itypetraj=3)
-FILE DEFINING RECTANGULAR PATCHES
+LAGRANGIAN NETCDF-BASED INITIALIZATION FILE (itypepatch = 3)
 
-name of patch
-date of initialization of patch (trajectory s beginning)
-date of trajectory s end
-frequency of outputs
-name of input netcdf file with locations of particles
-Number of particles set at each initial location
-itypevert: type of vertical moving at beginning of simulation (may be updated next)
-           =0 if constant depth (no vertical moving)
-           <0 if only vertical advection
-           >0 if vertical diffusion with random walk (vertical turbulence)
-name of output file
+Patch name
+Trajectory start date
+Trajectory end date
+Output interval (h)
+Input NetCDF file containing initial particle longitude, latitude, and depth
+Output trajectory file
+Number of particles released at each position read from the NetCDF file
+itypevert: vertical-transport scheme
+           = 0: constant depth (no vertical advection or turbulent diffusion)
+           < 0: vertical advection only
+           > 0: vertical advection and turbulent diffusion using a random walk
 
-FIN DESCRIPTIF FICHIER
+The input NetCDF file must contain the variables "longitude", "latitude", and
+"DEPTH". DEPTH is expressed in meters and must be positive downward. When the
+file has several time records, initial positions are read from the last record.
+
+END OF FILE DESCRIPTION
 
 **************************************************************
-patch1                          ,| 
-2009/01/01 00:00:00             ,| tbegtraj
-2011/12/31 23:59:59             ,| tendtraj
-24.d0                           ,| dtsave_traj
-../../inputs/trajectoire/T2.nc  ,| filetrajin
-./PlT2.nc                       ,| filetrajout
-1                               ,| nb_part_intro
-1                               ,| itypevert
+patch1                          ,| Patch name
+2009/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
+2011/12/31 23:59:59             ,| Trajectory end date (tendtraj)
+24.d0                           ,| Output interval in hours (dtsave_traj)
+../../inputs/trajectoire/T2.nc  ,| Input NetCDF file (filetrajin)
+./PlT2.nc                       ,| Output trajectory file (filetrajout)
+1                               ,| Particles released per NetCDF position (nb_part_intro)
+1                               ,| Vertical advection and turbulent diffusion (itypevert)
 **************************************************************
-patch2                          ,| 
-2009/01/01 00:00:00             ,| tbegtraj
-2011/12/31 23:59:59             ,| tendtraj
-24.d0                           ,| dtsave_traj
-../../inputs/trajectoire/T3.nc  ,| filetrajin
-./PlT3.nc                       ,| filetrajout
-1                               ,| nb_part_intro
-1                               ,| itypevert
+patch2                          ,| Patch name
+2009/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
+2011/12/31 23:59:59             ,| Trajectory end date (tendtraj)
+24.d0                           ,| Output interval in hours (dtsave_traj)
+../../inputs/trajectoire/T3.nc  ,| Input NetCDF file (filetrajin)
+./PlT3.nc                       ,| Output trajectory file (filetrajout)
+1                               ,| Particles released per NetCDF position (nb_part_intro)
+1                               ,| Vertical advection and turbulent diffusion (itypevert)
 **************************************************************
-patch3                          ,| 
-2009/01/01 00:00:00             ,| tbegtraj
-2011/12/31 23:59:59             ,| tendtraj
-24.d0                           ,| dtsave_traj
-../../inputs/trajectoire/T5.nc  ,| filetrajin
-./PlT5.nc                       ,| filetrajout
-1                               ,| nb_part_intro
-1                               ,| itypevert
+patch3                          ,| Patch name
+2009/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
+2011/12/31 23:59:59             ,| Trajectory end date (tendtraj)
+24.d0                           ,| Output interval in hours (dtsave_traj)
+../../inputs/trajectoire/T5.nc  ,| Input NetCDF file (filetrajin)
+./PlT5.nc                       ,| Output trajectory file (filetrajout)
+1                               ,| Particles released per NetCDF position (nb_part_intro)
+1                               ,| Vertical advection and turbulent diffusion (itypevert)
 **************************************************************

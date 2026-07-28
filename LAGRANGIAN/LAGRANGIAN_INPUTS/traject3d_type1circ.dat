@@ -1,52 +1,52 @@
-FICHIER DEFINISSANT DES TACHES CIRCULAIRES (itypetraj=1)
-FILE DEFINING CIRCULAR PATCHES
+LAGRANGIAN CIRCULAR-PATCH INITIALIZATION FILE (itypepatch = 1)
 
-name of patch
-date of initialization of patch (trajectory s beginning)
-date of trajectory s end
-time step for outputs
-location with indexes : imin,imax (.true.) 
-         or with longitudes and latitudes (.false.)
-location of initial patch
-ray of initial patch
-number of particle per layer of a patch (about)
-depth of the initial patch (min and max), as immersion
-step in z(m) for the initial patch starting at ktachemin 
-Number of particles set at each initial location
-itypevert: type of vertical moving at beginning of simulation (may be updated next)
-           =0 if constant depth (no vertical moving)
-           <0 if only vertical advection
-           >0 if vertical diffusion with random walk (vertical turbulence)
-name of output file
+Patch name
+Trajectory start date
+Trajectory end date
+Output interval (h)
+Coordinate-system selector for the patch center:
+           .true.  = CROCO grid indices (i, j)
+           .false. = geographic coordinates (longitude, latitude)
+Patch-center coordinates in the selected coordinate system
+Circular patch radius (m)
+Approximate target number of horizontal release locations per depth level
+Minimum and maximum release depths below the surface (m, positive downward)
+Vertical spacing between release depths (m)
+Number of particles released at each (horizontal position, depth) location
+itypevert: vertical-transport scheme
+           = 0: constant depth (no vertical advection or turbulent diffusion)
+           < 0: vertical advection only
+           > 0: vertical advection and turbulent diffusion using a random walk
+Output trajectory file
 
-FIN DESCRIPTIF FICHIER
+END OF FILE DESCRIPTION
 
 **************************************************************
-patch1                      ,| 
-2009/01/01 00:00:00         ,| tbegtraj
-2011/12/31 23:59:59         ,| tendtraj
-24.d0                       ,| dtsave_traj
-.true.                      ,| location in indexes
-90 90                       ,| center location
-20000                       ,| patch ray
-300                         ,| number of particle per level
-5 25                        ,| ktachemin,ktachemax
-1                           ,| kstep_patch
-3                           ,| nb_part_intro
-0                           ,| itypevert
-./circle1.nc                ,| filetrajout
+patch1                      ,| Patch name
+2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
+2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
+24.d0                       ,| Output interval in hours (dtsave_traj)
+.true.                      ,| Use CROCO grid indices for the patch center
+90 90                       ,| Center grid indices (i, j)
+20000                       ,| Patch radius (m)
+300                         ,| Approximate horizontal release locations per depth level
+5 25                        ,| Minimum and maximum release depths (m)
+1                           ,| Vertical spacing between release depths (m)
+3                           ,| Particles released at each location (nb_part_intro)
+0                           ,| Vertical-transport scheme (itypevert)
+./circle1.nc                ,| Output trajectory file
 **************************************************************
-patch2                      ,| 
-2009/01/01 00:00:00         ,| tbegtraj
-2011/12/31 23:59:59         ,| tendtraj
-24.d0                       ,| dtsave_traj
-.false.                     ,| location in indexes
-7 38                        ,| center location
-20000                       ,| patch ray
-300                         ,| number of particle per level
-5 25                        ,| ktachemin,ktachemax
-1                           ,| kstep_patch
-3                           ,| nb_part_intro
-0                           ,| itypevert
-./circle2.nc                ,| filetrajout
+patch2                      ,| Patch name
+2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
+2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
+24.d0                       ,| Output interval in hours (dtsave_traj)
+.false.                     ,| Use geographic coordinates for the patch center
+7 38                        ,| Center longitude and latitude (degrees east, degrees north)
+20000                       ,| Patch radius (m)
+300                         ,| Approximate horizontal release locations per depth level
+5 25                        ,| Minimum and maximum release depths (m)
+1                           ,| Vertical spacing between release depths (m)
+3                           ,| Particles released at each location (nb_part_intro)
+0                           ,| Vertical-transport scheme (itypevert)
+./circle2.nc                ,| Output trajectory file
 ************************************************************
