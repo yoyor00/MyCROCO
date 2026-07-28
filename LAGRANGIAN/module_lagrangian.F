@@ -1,3 +1,7 @@
+! Copyright (C) 2024-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_LAGRANGIAN_FOIL.txt
+
 #include "cppdefs.h"
 
 !!! give access to dimensions, variables, parameters from hydro model to lagrangian
@@ -6,7 +10,7 @@
 
       MODULE module_lagrangian
 
-   ! pass from fix (F) to free format (F90)
+         ! pass from fix (F) to free format (F90)
 
 #include "param.h"
 #include "ncscrum.h"
@@ -23,5 +27,5 @@
 #else
       MODULE module_lagrangian_empty
       END MODULE module_lagrangian_empty
-      
+
 #endif /* LAGRANGIAN */

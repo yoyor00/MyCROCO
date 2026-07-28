@@ -694,9 +694,9 @@ def create_vertical_section_plots(
             )
 
             if direction == "x":
-                ax.set_xlabel("Distance along longitude (km)")
+                ax.set_xlabel("Distance along longitude (grid point)")
             elif direction == "y":
-                ax.set_xlabel("Distance along latitude (km)")
+                ax.set_xlabel("Distance along latitude (grid point)")
 
             ax.set_ylabel("Depth (m)")
 

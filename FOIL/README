@@ -1,0 +1,10 @@
+FOIL is a mechanistic model to study population dynamics under
+environmental constraints. 
+
+FOIL is composed of two complementary modules, 
+the DEB (Dynamic Energy Budget) to model the bioenergetics 
+of anchovy and sardine, 
+and the IBM (Individual Based Model) to model the transport 
+and movement of individuals as well as the population dynamics. 
+
+Implementation in CROCO by : D.Gourves, M.Caillaud, M.Huret (2024-2026)

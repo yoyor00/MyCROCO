@@ -412,10 +412,22 @@ class Croco:
 
     def apply_debug_patches(self):
         filename = self.croco_inputfile
-        self.change_card_time_stepping_ntimes(filename, 6)
-        self.change_card_history_nwrt(filename)
-        self.change_card_dia_nwrt(filename)
-        self.change_card_diaM_nwrt(filename)
+        self.change_card(filename, card="time_stepping", value=6, position=0)
+        self.change_card(filename, card="history", value=1, position=1)
+        self.change_card(filename, card="diagnostics", value=1, position=1)
+        self.change_card(filename, card="diagnosticsM", value=1, position=1)
+        self.change_card(filename, card="diags_ek", value=1, position=1)
+        self.change_card(filename, card="diags_vrt", value=1, position=1)
+        self.change_card(filename, card="diags_pv", value=1, position=1)
+        #
+        self.change_card(filename, card="averages", value=3, position=1)
+        self.change_card(filename, card="diag_avg", value=3, position=2)
+        self.change_card(filename, card="diagM_avg", value=3, position=2)
+        self.change_card(filename, card="diags_ek_avg", value=3, position=2)
+        self.change_card(filename, card="diags_vrt_avg", value=3, position=2)
+        self.change_card(filename, card="diags_pv_avg", value=3, position=2)
+        self.change_card(filename, card="diags_eddy_avg", value=3, position=2)
+
         # and for USE_CALENDAR
         self.change_card_end_date(filename, 6)
         self.change_card_output_time_steps_dthis(filename, 6)
@@ -424,7 +436,32 @@ class Croco:
         filename = self.croco_inputfile
 
         # for all case (write/read), put ldefhis to F
-        self.change_card_history_ldefhis(filename)
+        # only for history for now... 
+        # T needed for avg and diag 
+        # because it is not the same behavior as history file
+
+        # cardnames = [
+        #     "history",
+        #     "diagnostics",
+        #     "diag_avg",
+        #     "diagnosticsM",
+        #     "diagM_avg",
+        #     "diags_vrt",
+        #     "diags_vrt_avg",
+        #     "diags_ek",
+        #     "diags_ek_avg",
+        #     "surf",
+        #     "surf_avg",
+        #     "diags_pv",
+        #     "diags_pv_avg",
+        #     "diagnostics_bio",
+        #     "diagbio_avg",
+        #     ]
+        cardnames = [
+            "history",
+        ]
+        for cardname in cardnames:
+            self.change_card(filename, card=cardname, value="F", position=0)
 
         if self.restarted:
             # prepare 2 files for the restarted run
@@ -435,11 +472,11 @@ class Croco:
             file_nc_rst = "croco_restart.nc"
 
             # first run with filename
-            self.change_card_time_stepping_ntimes(filename, 3)
+            self.change_card(filename, card="time_stepping", value=3, position=0)
             self.change_card_restart(filename, 3, file_nc_rst)
 
             # second run with filename_rst
-            self.change_card_time_stepping_ntimes(filename_rst, 3)
+            self.change_card(filename_rst, card="time_stepping", value=3, position=0)
             self.change_card_initial(filename_rst, file_nc_rst)
 
             # and for USE_CALENDAR
@@ -552,99 +589,23 @@ class Croco:
                 full_filename, "end_date", line_offset=2, num_lines=1
             )
 
-    def change_card_time_stepping_ntimes(self, filename, ntimes):
+    def change_card(self, filename, card: str, value, position: int):
         full_filename = os.path.join(self.dirname, filename)
-        # Check time_stepping is a card in this case
-        if len(extract_elements_from_file(full_filename, "time_stepping")) > 0:
-            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
-            NEW_TIME_LINE = copy_and_replace(TIME_LINE, 0, ntimes)
-            patches = {
-                filename: {
-                    "mode": "insert-after",
-                    "what": " time_stepping:",
-                    "insert": " ".join(map(str, NEW_TIME_LINE)),
-                    "descr": "change duration to NTIMES=%i" % ntimes,
-                }
-            }
-            self.apply_patches(patches)
-            delete_lines_from_file(
-                full_filename, "time_stepping", line_offset=2, num_lines=1
-            )
 
-    def change_card_history_nwrt(self, filename):
-        full_filename = os.path.join(self.dirname, filename)
-        # Check time_stepping is a card in this case
-        if len(extract_elements_from_file(full_filename, "history")) > 0:
-            HISTORY_LINE = extract_elements_from_file(full_filename, "history")
-            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
+        if len(extract_elements_from_file(full_filename, card)) > 0:
+            OLD_LINE = extract_elements_from_file(full_filename, card)
+            NEW_LINE = copy_and_replace(OLD_LINE, position, value)
             patches = {
                 filename: {
                     "mode": "insert-after",
-                    "what": " history:",
-                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
-                    "descr": "change output to NWRT=1",
+                    "what": f" {card}:",
+                    "insert": " ".join(map(str, NEW_LINE)),
+                    "descr": f"change {card} to {value} at position {position}",
                 }
             }
             self.apply_patches(patches)
             delete_lines_from_file(
-                full_filename, "history:", line_offset=2, num_lines=1
-            )
-
-    def change_card_dia_nwrt(self, filename):
-        full_filename = os.path.join(self.dirname, filename)
-        # Check time_stepping is a card in this case
-        if len(extract_elements_from_file(full_filename, "diagnostics")) > 0:
-            HISTORY_LINE = extract_elements_from_file(full_filename, "diagnostics")
-            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
-            patches = {
-                filename: {
-                    "mode": "insert-after",
-                    "what": " diagnostics:",
-                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
-                    "descr": "change output to NWRT=1",
-                }
-            }
-            self.apply_patches(patches)
-            delete_lines_from_file(
-                full_filename, "diagnostics:", line_offset=2, num_lines=1
-            )
-
-    def change_card_diaM_nwrt(self, filename):
-        full_filename = os.path.join(self.dirname, filename)
-        # Check time_stepping is a card in this case
-        if len(extract_elements_from_file(full_filename, "diagnosticsM")) > 0:
-            HISTORY_LINE = extract_elements_from_file(full_filename, "diagnosticsM")
-            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 1, 1)
-            patches = {
-                filename: {
-                    "mode": "insert-after",
-                    "what": " diagnosticsM:",
-                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
-                    "descr": "change output to NWRT=1",
-                }
-            }
-            self.apply_patches(patches)
-            delete_lines_from_file(
-                full_filename, "diagnosticsM:", line_offset=2, num_lines=1
-            )
-
-    def change_card_history_ldefhis(self, filename):
-        full_filename = os.path.join(self.dirname, filename)
-        # Check time_stepping is a card in this case
-        if len(extract_elements_from_file(full_filename, "history")) > 0:
-            HISTORY_LINE = extract_elements_from_file(full_filename, "history")
-            NEW_HISTORY_LINE = copy_and_replace(HISTORY_LINE, 0, "F")
-            patches = {
-                filename: {
-                    "mode": "insert-after",
-                    "what": " history:",
-                    "insert": " ".join(map(str, NEW_HISTORY_LINE)),
-                    "descr": "change output to LDEFHIS=F",
-                }
-            }
-            self.apply_patches(patches)
-            delete_lines_from_file(
-                full_filename, "history:", line_offset=2, num_lines=1
+                full_filename, f"{card}:", line_offset=2, num_lines=1
             )
 
     def setup_case(self):

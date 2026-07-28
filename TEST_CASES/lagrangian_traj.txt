@@ -1,0 +1,19 @@
+:-----------------------------------------------------------------------------
+:  namtraj
+:-----------------------------------------------------------------------------
+: 
+: file_trajec : relative path to the patch file containing the initial 
+:               position and other characteristics for each patch of 
+:               particles
+: itypepatch  : type of definition for patch initial position:
+:               1: circle, 2: rectangle, 3:netcdf
+: dtz        : intermediate time step for the Random Walk, which is the 
+:               most expensive process in time in the lagrangian module.
+:               dtz must always be a multiple of dt.
+:-----------------------------------------------------------------------------
+:
+ &namtraj
+     file_trajec = "TEST_CASES/lagrangian_traject3d_type3nc.dat"
+     itypepatch = 3
+     dtz = 30
+/

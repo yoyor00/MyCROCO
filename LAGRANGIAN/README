@@ -1,0 +1,21 @@
+The Lagrangian module is a Fortran module plugged into the Ocean model Croco 
+that allow to do particle tracking (in a Lagrangian framework).
+
+The lagrangian module is inherited from the Model for Applications at Regional 
+Scale (MARS 3D) developed at Ifremer (French Research Institute for the 
+Exploitation of the Sea).
+
+It computes the 3D transport by advection and diffusion of passive particles 
+using a lagrangian approach online within CROCO. Transport can be chosen among 
+fixed immersion (along a constant depth), advection only, and both advection 
+and diffusion.
+
+It can be used for a wide range of applications (physics and biology), from the 
+2D transport of surface drifting buoys, to the 3D transport of pelagic stages 
+of marine species such as early life stages (eggs a and larvae) of fish.
+
+When more complex biological (and behaviour) processes need to be considered, 
+the module FOIL (Fish Online IBM with Lagrangian) should be used, which calls 
+the Lagrangian module for the passive transport.
+
+Implementation in CROCO by : D.Gourves, M.Caillaud, M.Huret (2024-2026)

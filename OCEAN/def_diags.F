@@ -135,10 +135,26 @@
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifndef AVRH
-      create_new_file=ldefdia
+# ifdef DO_NOT_OVERWRITE
+      if (lvar.eq.total_rec-1) then
+#  ifndef AVRH
+        create_new_file=ldefdia
+#  else
+        create_new_file=ldefdia_avg
+# endif
+      else
+#  ifndef AVRH
+        create_new_file=.false.
+#  else
+        create_new_file=.false.
+#  endif
+      endif
 # else
+#  ifndef AVRH
+      create_new_file=ldefdia
+#  else
       create_new_file=ldefdia_avg
+#  endif
 # endif
 !
       if (ncid.ne.-1) create_new_file=.false.
@@ -222,9 +238,9 @@
       if (total_rec.le.1) then
 #  ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &        ,r3dgrd, w3dgrd)
+     &        ,r3dgrd, w3dgrd, NF_FOUT)
 #  else
-         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FOUT)
 #  endif
       endif
 # endif
@@ -1228,13 +1244,6 @@
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
       enddo
-!
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'DEF_DIAG -- Opened ',
-     &                     'existing file  from record =', rec
-     &                      MYID
-!
-!
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_DIAG -- Opened ',

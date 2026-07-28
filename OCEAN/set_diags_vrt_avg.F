@@ -60,12 +60,11 @@
 
 
       if (ilc.gt.ntsdiags_vrt_avg) then
-        if (mod(ilc-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).eq.1) then
+        if (mod(ilc-ntsdiags_vrt_avg,nwrtdiags_vrt_avg).eq.1
+     &                    .OR. nwrtdiags_vrt_avg.eq.1) then
 
           if (ZEROTH_TILE) then
             timediags_vrt_avg=time
-      MPI_master_only write(*,*) 'started averaging vrt',iic,
-     &                    ntsdiags_vrt_avg,nwrtdiags_vrt_avg
           endif
 
 
@@ -256,8 +255,6 @@
           cff=1./float(nwrtdiags_vrt_avg)
           if (ZEROTH_TILE) then
                         timediags_vrt_avg=cff*(timediags_vrt_avg+time)
-      MPI_master_only write(*,*) 'finish aver. vrt',iic,
-     &                       ntsdiags_vrt_avg,nwrtdiags_vrt_avg
           endif
 
 

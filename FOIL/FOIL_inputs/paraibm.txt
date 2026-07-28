@@ -76,10 +76,9 @@
 : fishing_strategy  : fishing strategy: 'historical' for historical time series; 'HCR' for harvest control rule; 'catch' for total allowable catch; or F_eval for ... ?
 : density_dependent : Logical (mortality on larval stage as Somarakis)
 : multiplier_tac    : multiplicative factor to regulate catches, between 0 and 1
-: month_sp_season   : month at which new spawning season starts, on which new patch creation depends
 :-----------------------------------------------------------------------------
 :
- &namibmout
+ &namibmpop
     repro             = .true.
 	dt_spawn          = 72
     dt_save           = 24
@@ -114,7 +113,7 @@
 	frac_deb_death = .true./
 :
 :-----------------------------------------------------------------------------
-: namibmparam	DEB PARAMETERS FOR THE IBM
+: namibmfrc	DEB FORCING FILE FOR FISH
 :-----------------------------------------------------------------------------
 :
 :	! Set file parameters for the DEB

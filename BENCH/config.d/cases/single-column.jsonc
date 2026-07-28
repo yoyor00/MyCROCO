@@ -5,7 +5,7 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "DIURNAL_CYCLE": true,
     },
     "plotphy": {
@@ -23,7 +23,7 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "FORCED_DBLEEK": true,
     },
     "plotphy": {
@@ -41,7 +41,7 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "FORCED_EKBBL": true,
     },
     "plotphy": {
@@ -59,7 +59,7 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "FORCED_NONROTBBL": true,
     },
     "plotphy": {
@@ -77,7 +77,7 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "FORCED_OSCNONROTBBL": true,
     },
     "plotphy": {
@@ -103,7 +103,7 @@
     },
     "splitting": {},
     "patches": {},
-    "input_file": "TEST_CASES/croco.in.KATO_PHILIPS",
+    "input_file": "TEST_CASES/croco.in.KATO_PHILLIPS",
     "check_outputs": ["scm_his.nc"],
     "unsupported": ["openmp", "mpi"],
   },
@@ -112,7 +112,7 @@
     "case": "SINGLE_COLUMN",
     "cppkeys": {
       "SINGLE_COLUMN": true,
-      "KATO_PHILIPS": false,
+      "KATO_PHILLIPS": false,
       "WILLIS_DEARDORFF": true,
     },
     "plotphy": {

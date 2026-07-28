@@ -1108,12 +1108,7 @@
 ! ---------------------------------
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_eddy: -- Opened ',
-     &                     'existing file  from record =', rec
-     &                      MYID
-!
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_eddy: -- Opened ',
+     &                     'DEF_DIAGS_EDDY -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
 !
