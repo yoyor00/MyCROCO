@@ -1,8 +1,8 @@
-nom de la tache
-latitude longitude de la tache en degre dixieme
-rayon de la tache en metre
-nombre de particule emise sur (un disque)
-coefficient de dispersion horizontal de ces particules en m2/s
+Patch name (legacy 2-D format; not read by the current LAGRANGIAN 3-D code)
+Patch-center latitude and longitude (decimal degrees)
+Circular patch radius (m)
+Number of particles released within the circular patch
+Horizontal diffusion coefficient applied to these particles (m2 s-1)
 **************************************************************
 bouee1
 47.20 -3.35
