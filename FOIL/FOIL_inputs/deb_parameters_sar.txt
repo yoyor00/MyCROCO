@@ -1,26 +1,30 @@
 :===============================================================================
-: Namelist
-: Inventory of all sardine DEB parameters
+: SARDINE DYNAMIC ENERGY BUDGET (DEB) PARAMETERS
+: Parameters are grouped into the two namelists read by debmodel.F90.
 :===============================================================================
 :
 :------------------------------------------------------------------------------
-: deb_para   
+: deb_para          SPECIES-SPECIFIC DEB AND REPRODUCTION PARAMETERS
 :------------------------------------------------------------------------------
 :
-:       pAm     : J/d.cm2, spec max assim rate {J_EAm} 
-:       pMi     : J/cm3/d, volume-spec maintenance costs
-:       EG      : J/cm3, volume-spec costs of structure
-:       vc      : cm/j, energy conductance 
-:       kap     : -, Fraction to growth + maintenance   
-:       Kx      : Assimilation efficiency  
-:       Hp      : J, maturity at puberty (Nisbet 2012)
-:       TA      : K, Arrhenius temperature ;  eggs devlpt -> 9800 = after Regner 1996; larval growth rate : 7500   
-:       K       : mgC.m3, half saturation constant            
-:       shapeb  : -, shape coefficient at birth (early larvae after correction for shrinking)
-:       lfactor : acceleration factor for larval growth
-:       E0      : J, Energy for one egg, after Valdes, 1993 (23800 J/DW pour 27.7 microg DW/egg)
-:       Rfbatch : eggs.cm-3, Relative batch fecundity (egg/g, Ganas Book)
-:       SF      : 1/(batch interval) = batch interval one batch every, 2.5  = min batch interval (at 20°C = T1)
+: pAm     : maximum surface-area-specific assimilation rate (J cm-2 d-1)
+: pMi     : volume-specific somatic maintenance cost (J cm-3 d-1)
+: EG      : volume-specific cost of structural growth (J cm-3)
+: vc      : energy conductance (cm d-1)
+: kap     : fraction of mobilized energy allocated to somatic maintenance
+:           and growth (dimensionless)
+: Kx      : assimilation efficiency (dimensionless); currently stored for each
+:           particle but not used by the active DEB equations
+: Hp      : maturity threshold at puberty (J; Nisbet, 2012)
+: TA      : Arrhenius temperature controlling metabolic-rate correction (K)
+: K       : half-saturation constant for food limitation (mg C m-3)
+: shapeb  : shape coefficient at birth, after correction for larval shrinkage
+:           (dimensionless structural length / physical length)
+: lfactor : minimum larval acceleration correction applied to assimilation
+:           (dimensionless)
+: E0      : energy content of one egg (J egg-1)
+: Rfbatch : relative batch fecundity (eggs g-1 body mass)
+: SF      : reference batch-spawning frequency (d-1)
 :--------------------------------------------------------------------------------
 :
  &deb_para
@@ -40,27 +44,29 @@
     SF      = 0.0840/
 :
 :------------------------------------------------------------------------------
-: deb_fixed_para   
+: deb_fixed_param  SHARED AND INITIALIZATION PARAMETERS
 :------------------------------------------------------------------------------
-:       kj      : 1/d, maturity maintenance rate coeff
-:       Hb      : J, maturity at birth (first feeding)(Nisbet 2012)
-:       Hj      : J, maturity at metamorphosis        
-:       T1      : K, Reference temperature
-:       TAL     : K, Arrhenius temperature at low temp {Kooy2000} 
-:       TL      : K, lower boundary temp range
-:       shape   : -, shape coefficient                
-:       d_V     : g/cm^3, specific density of structure (Dw)
-:       rho_V   : J/g, = mu_V / w_V; Energy density of structure (DW)
-:       rho_E   : J/g, = mu_E / w_E; Energy density of reserve (DW)
-:       rho_R   : J/g, = mu_E / w_E; Energy density of Repro buffer (DW)
-:       rho_Gam : J/g, = mu_E / w_E; Energy density of Gametes (DW)
-:       Kr      : Fraction of the Gamete buffer fixed into eggs
-:       Sizeb   : -cm, Length at first feeding (birth in DEB)
-:       Lj      : 
-:       TR      : K, temperature at start spawning
-:       Eb      : J/cm3, specific batch energy (Pethybridge), 0.15(E0)*550 (egg/cm3)
-:       E_i     : (Pethybridge 2011)
-:       R_i     : 
+: kj      : maturity-maintenance rate coefficient (d-1); currently read but
+:           not used by the active DEB equations
+: Hb      : maturity threshold at birth/first feeding (J; Nisbet, 2012)
+: Hj      : maturity threshold at metamorphosis (J)
+: T1      : reference temperature for metabolic rates (K)
+: TAL     : low-temperature Arrhenius parameter (K); currently read but unused
+: TL      : lower boundary of the tolerance range (K); currently read but unused
+: shape   : post-larval shape coefficient (dimensionless structural length /
+:           physical length)
+: d_V     : structural dry-mass density (g cm-3)
+: rho_V   : energy density of structural dry mass (J g-1)
+: rho_E   : energy density of reserve dry mass (J g-1)
+: rho_R   : energy density of reproduction-buffer dry mass (J g-1)
+: rho_Gam : energy density of gamete dry mass (J g-1)
+: Kr      : fraction of reproduction-buffer energy transferred to gametes
+:           (dimensionless)
+: Sizeb   : physical length at birth/first feeding (cm)
+: Lj      : physical length at the end of larval acceleration (cm)
+: TR      : spawning-onset temperature (K); currently read but unused
+: E_i     : initial reserve energy assigned to an egg (J)
+: R_i     : initial reproduction-buffer energy assigned to an egg (J)
 :--------------------------------------------------------------------------------
 :    
  &deb_fixed_param

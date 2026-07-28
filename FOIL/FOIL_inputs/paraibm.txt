@@ -1,35 +1,35 @@
 :=============================================================================
-:         ENREGISTREMENT DES PARAMETRES REGISSANT L IBM SOUS FORME DE NAMELIST
-:         INPUT PARAMETERS NAMELIST FOR IBM EQUATIONS
+:                 FOIL INDIVIDUAL-BASED MODEL CONFIGURATION
+:                 INPUT PARAMETERS GROUPED BY NAMELIST
 :=============================================================================
 :
 :-----------------------------------------------------------------------------
-: namibmin	        INPUT   
+: namibmin          GENERAL INPUT SETTINGS
 :-----------------------------------------------------------------------------
 :
-: file_trajec : name of patch file
-: dir_pathout : base name/path of the result files
-: itypepatch   : type of definition of patch initial position: 
-:  	      1: circle, 2: rectangle, 3:netcdf
-:	      choose depending on the file file_trajec you use in inputs directory
+: file_trajec : name of the patch initialization file
+: dir_pathout : directory used for trajectory output and restart files
+: itypepatch  : method used to define the initial patch positions:
+:               1 = circle, 2 = rectangle, 3 = NetCDF positions
+:               This value must match the format of file_trajec.
 :
 :-----------------------------------------------------------------------------
 :
  &namibmin
 	file_trajec = 'ibm_patch.dat'
 	dir_pathout = '../output_foil/'
-	itypepatch =   3 /
+	itypepatch = 3 /
 :
 :-----------------------------------------------------------------------------
-: namibmdiff	        INPUT   
+: namibmdiff        PARTICLE DIFFUSION SETTINGS
 :-----------------------------------------------------------------------------
 :
-: dtz        : time-step of the randow walk on the vertical, for consideration 
-:			 	of vertical diffusion
-:        See (Ross and Sharples, 2004, Limnol.Oceanogr.) for sensitivity analysis
-:        Few seconds make sure there are no accumulation in low diffusivity areas
-:			and near boundaries
-: hdiff		: Horizontal diffusion coefficient
+: dtz   : time step (s) used by the vertical random-walk subloop
+:         A value of a few seconds helps prevent particle accumulation in
+:         low-diffusivity regions and near boundaries. See Ross and Sharples
+:         (2004, Limnology and Oceanography) for a sensitivity analysis.
+: hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
+:         horizontal diffusion
 : 
 :-----------------------------------------------------------------------------
 :
@@ -38,11 +38,12 @@
 	hdiff = 5.0 /
 :
 :-----------------------------------------------------------------------------
-: namibmrestart	SAVE-RESTART CONDITIONS (Not ready yet)
+: namibmrestart     RESTART SETTINGS
 :-----------------------------------------------------------------------------
 :
-: ibm_restart     : patch is read from restart file
-: ibm_time        : use time of restart file
+: ibm_restart : if true, initialize particle properties from restart files
+: ibm_l_time  : if true, resume from the time stored in the restart file;
+:               otherwise, use the configured patch start time
 :
 :-----------------------------------------------------------------------------
 :
@@ -51,12 +52,13 @@
 	ibm_l_time  = .false. /
 :
 :-----------------------------------------------------------------------------
-: namibmbio	BIO PARAMETERS FOR THE IBM 
+: namibmbio         VERTICAL-BEHAVIOR SETTINGS
 :-----------------------------------------------------------------------------
 :
-: w_max   : maximum vertical velocity (m.s-1)
-: alpha_w : factor of convergence for the Hyperbolic tangent fonction used to 
-:  	    weight velocity to a target depth for migration
+: w_max   : nominal maximum vertical swimming speed (m s-1); the current
+:           life-stage routines replace it with stage-specific values
+: alpha_w : convergence factor in the hyperbolic-tangent function used to
+:           calculate swimming velocity toward the target depth
 :-----------------------------------------------------------------------------
 :
  &namibmbio
@@ -64,18 +66,28 @@
 	alpha_w  = 0.8 /
 :
 :-----------------------------------------------------------------------------
-: namibmpop	OUTPUT PARAMETERS FOR THE IBM
+: namibmpop         POPULATION, REPRODUCTION, AND FISHING SETTINGS
 :-----------------------------------------------------------------------------
 :
-: repro             : activate or deactivate reproduction of species
-: dt_spawn          : spawning interval (hours)
-: dt_save           : saving interval for new particles
-: max_part          : maximum number of particles in NetCDF output file
-: duration_ibm_sp   : number of max days each species can live,
-: fish_mort         : applying fishing mortality (true ou false)
-: fishing_strategy  : fishing strategy: 'historical' for historical time series; 'HCR' for harvest control rule; 'catch' for total allowable catch; or F_eval for ... ?
-: density_dependent : Logical (mortality on larval stage as Somarakis)
-: multiplier_tac    : multiplicative factor to regulate catches, between 0 and 1
+: repro             : enable or disable reproduction
+: dt_spawn          : interval (h) between spawning events
+: dt_save           : output interval (h) assigned to patches created through
+:                     reproduction; initial patches use the interval specified
+:                     in file_trajec
+: max_part          : maximum number of particles in each offspring patch and
+:                     its NetCDF trajectory file
+: duration_ibm_anc  : maximum anchovy lifespan (days)
+: duration_ibm_sar  : maximum sardine lifespan (days)
+: fish_mort         : enable or disable fishing mortality
+: fishing_strategy  : fishing-mortality method; accepted values are case-sensitive:
+:                     'historical' = prescribed historical mortality,
+:                     'HCR' = harvest control rule,
+:                     'Catch' = prescribed catch time series,
+:                     'F_eval' = fishing-mortality evaluation scenario
+: multiplier_tac    : intended TAC scaling factor between 0 and 1; currently
+:                     read from this file but not applied by the active code
+: density_dependent : intended switch for density-dependent larval mortality;
+:                     currently read from this file but not used by the active code
 :-----------------------------------------------------------------------------
 :
  &namibmpop
@@ -91,16 +103,19 @@
 	density_dependent = .true./
 :
 :-----------------------------------------------------------------------------
-: namibmdeb	DEB PARAMETERS FOR THE IBM (not ready yet)
+: namibmdeb         DYNAMIC ENERGY BUDGET (DEB) SETTINGS
 :-----------------------------------------------------------------------------
 :
-:	! Configuration parameters for the DEB
-:	debuse     : logical, if false - only larvae drifting, if true - whole life cycle
-:	F_Fix      : logical, if false then read food from a provided file
-:	f_fix      : f (f=X/X+K) for DEB if F_Fix = True
-:	file_NBSS  : file with slope and intercept for NBSS (from MARS, not linked with CROCO)
-:	file_food  : file with offline zooplankton food 
-:   frac_death : Logical. Fraction of individuals dying within a super individual (.true.) or all (.false.) 
+: debuse        : enable the DEB model and full life cycle; if false, particles
+:                 retain the simpler drifting-larvae behavior
+: F_Fix         : if true, use the constant functional response ffix; if false,
+:                 calculate food availability from file_food
+: ffix          : constant DEB functional response, f = X/(X + K), used when
+:                 F_Fix is true
+: file_NBSS     : NetCDF file containing NBSS slope and intercept fields (from MARS, not linked with CROCO yet)
+: file_food     : NetCDF file containing offline zooplankton food fields
+: frac_deb_death: if true, DEB starvation removes a fraction of the individuals
+:                 represented by a particle; if false, it removes the entire particle
 :
 :-----------------------------------------------------------------------------
 :
@@ -110,20 +125,22 @@
 	ffix      = 0.8
 	file_NBSS ='../inputs/NBSS_manga.nc'
 	file_food ='ibm_zooc.nc' 
-	frac_deb_death = .true./
+	frac_deb_death = .false./
 :
 :-----------------------------------------------------------------------------
-: namibmfrc	DEB FORCING FILE FOR FISH
+: namibmfrc         EXTERNAL FORCING FILES
 :-----------------------------------------------------------------------------
 :
-:	! Set file parameters for the DEB
-:   fileanchois      : file with DEB parameters for anchovy
-:   filesardine      : file with DEB parameters for sardine
-:   catch_anc_bob    : file with monthly anchovy catches in Bay of Biscaye 
-:   catch_sar_bob    : file with monthly sardine catches in Bay of Biscaye 
-:   fileprobadistrib : file with distribution probability of adults fish
-:   nbSizeClass      : number of fish size class in fileprobadistrib
-:   sizemin          : Minimal size of fish in fileprobadistrib
+: fileanchovy          : anchovy DEB parameter file
+: filesardine          : sardine DEB parameter file
+: catch_anc_bob        : monthly anchovy catch file for the Bay of Biscay
+: catch_sar_bob        : monthly sardine catch file for the Bay of Biscay
+: fileprobadistrib_anc : NetCDF file containing anchovy distribution probabilities
+: nbSizeClass_anc      : number of anchovy size classes in that file
+: sizemin_anc          : minimum anchovy length represented in that file (cm)
+: fileprobadistrib_sar : NetCDF file containing sardine distribution probabilities
+: nbSizeClass_sar      : number of sardine size classes in that file
+: sizemin_sar          : minimum sardine length represented in that file (cm)
 :-----------------------------------------------------------------------------
 :
  &namibmfrc
