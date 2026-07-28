@@ -43,6 +43,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   to WAVE_MAKER_DATA (#518)
 
 - SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
+- COUPLING : Corrects typo in WW3 modified function w3ogcmmd.ftn for BBL related variables (#537)
 
 - Fix time in surf average output file (#388)
 - Fix grid variables writing in average and diagnostic file (#522)
