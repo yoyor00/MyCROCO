@@ -241,7 +241,7 @@
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBX') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(TAUOX /= UNDEF) TMP(:)=TAUBBL(:,1)
+            WHERE(TAUBBL /= UNDEF) TMP(:)=TAUBBL(:,1)
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -250,7 +250,7 @@
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBY') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(TAUOY /= UNDEF) TMP(:)=TAUBBL(:,2)
+            WHERE(TAUBBL /= UNDEF) TMP(:)=TAUBBL(:,2)
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
@@ -259,7 +259,7 @@
          ! ---------------------------------------------------------------------
          IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FBB') THEN
             TMP(1:NSEAL) = 0.0
-            WHERE(PHIOC /= UNDEF) TMP(:)=PHIBBL(:)
+            WHERE(PHIBBL /= UNDEF) TMP(:)=PHIBBL(:)
             RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
             CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
          ENDIF
