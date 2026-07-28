@@ -11,7 +11,7 @@ Indented keys are only meaningful when their parent key is defined.
 
 ## Parallelization and I/O Server
 
-Only one of `OPENMP` / `MPI` may be defined at a time. 
+Only one of `OPENMP` / `MPI` / `OPENACC` may be defined at a time. 
 
 - `OPENMP` — Open-MP shared-memory parallelism
 - `MPI` — MPI distributed-memory parallelism
@@ -21,6 +21,10 @@ Only one of `OPENMP` / `MPI` may be defined at a time.
   - `MPI_TIME` — Time MPI communications
   - `XIOS` — Use the external XIOS I/O server (needs MPI)
 - `OPENACC` — OpenACC GPU 
+
+Output : 
+
+- `FILLVAL` — Write fill value in masked land points
 
 ---
 
@@ -119,7 +123,6 @@ Choose one scheme per variable class (M2, M3, T).
 - `SEDIMENT` — USGS sediment transport model
 - `BBL` — Bottom Boundary Layer parameterization
 - `OBSTRUCTION` — Sub-grid flow obstruction (e.g. seagrass)
-- `FILLVAL` — Write fill value in masked land points
 
 ---
 
@@ -151,8 +154,23 @@ Choose one scheme per variable class (M2, M3, T).
 - `NO_TEMPERATURE` — Suppress temperature tracer
 - `NO_TRACER` — Suppress all tracers (barotropic only)
 - `CONST_TRACERS` — Freeze tracers (hold T/S constant; no tracer advection or diffusion)
-- `M2FILTER_NONE` — Disable barotropic time filter; 
 - `ZONAL_NUDGING` — Zonal mean flow nudging (used with JET)
+
+Barotropic time filter (choose one; `M2FILTER_POWER` is the default):
+
+- `M2FILTER_POWER` — Power-law barotropic time filter _(default)_
+- `M2FILTER_COSINE` — Cosine-shaped barotropic time filter
+- `M2FILTER_FLAT` — Flat (top-hat) barotropic time filter
+- `M2FILTER_NONE` — Disable barotropic time filter
+
+Pressure gradient formulation (advanced; default is the density-Jacobian formulation with cubic
+polynomial fit, Shchepetkin & McWilliams 2003):
+
+- `PGF_BASIC_JACOBIAN` — Cheaper standard Jacobian formulation (for smooth topography)
+  - `WJ_GRADP` — Weighted-Jacobian formulation weight (e.g. `# define WJ_GRADP 0.125`); 
+    only used without `PGF_BASIC_JACOBIAN`
+- `PGF_FLAT_BOTTOM` — Cheaper pressure gradient for flat-bottom cases (drops z-grid x/y 
+  gradient terms; only used without `PGF_BASIC_JACOBIAN`)
 
 ---
 
@@ -205,6 +223,7 @@ Without `BULK_FLUX`: use prescribed flux fields + `QCORRECTION`.
   - `ONLINE` — Read native atm files and interpolate online to the CROCO grid (default: cubic)
     - `AROME` — AROME high-resolution atmospheric model input
     - `ERA_ECMWF` — ERA / ECMWF reanalysis input
+    - `BULK_MONTH_1DIGIT` — Use a single-digit month in online bulk forcing file names
   - `READ_PATM` — Read surface atmospheric pressure
     - `OBC_PATM` — Apply atm pressure gradient at open boundaries
   - `ABL1D` — 1D ABL model (column model coupled to ocean)
@@ -222,6 +241,7 @@ Without `BULK_FLUX`: use prescribed flux fields + `QCORRECTION`.
   - `SFLX_CORR_COEF` — Prescribed correction coefficient _(without BULK\_FLUX only)_
 - `SFLUX_CFB` — Current feedback on wind stress (standalone, without `BULK_FLUX`)
 - `SEA_ICE_NOFLUX` — Zero flux under sea ice
+- `RAIN_FLUX` — Add rain-induced E-P (evaporation minus precipitation) flux into the mass budget (requires `SALINITY`)
 
 ---
 
@@ -252,8 +272,9 @@ Choose exactly one horizontal advection scheme for momentum. Default (none defin
 
 ## Vertical Momentum Advection
 
-- `UV_VADV_SPLINES` — Splines vertical advection for momentum
+- `UV_VADV_SPLINES` — Splines vertical advection for momentum _(default)_
 - `UV_VADV_WENO5` — WENO5 vertical advection for momentum
+- `UV_VADV_C2` — 2nd-order centered vertical advection for momentum
 
 ---
 
@@ -262,8 +283,15 @@ Choose exactly one horizontal advection scheme for momentum. Default (none defin
 Only relevant with NBQ or wave-resolving simulations. 
 Set automatically by `cppdefs_dev.h` when `UV_HADV_WENO5` is defined.
 
-- `W_HADV_WENO5` — 5th-order WENOZ horizontal advection for W
-- `W_VADV_WENO5` — 5th-order WENOZ vertical advection for W
+- `W_HADV_WENO5` — 5th-order WENOZ horizontal advection for W _(default)_
+- `W_HADV_UP3` — 3rd-order upwind horizontal advection for W
+- `W_HADV_UP5` — 5th-order upwind horizontal advection for W
+- `W_HADV_C2` — 2nd-order centered horizontal advection for W
+- `W_HADV_C4` — 4th-order centered horizontal advection for W
+- `W_HADV_C6` — 6th-order centered horizontal advection for W
+- `W_VADV_WENO5` — 5th-order WENOZ vertical advection for W _(default)_
+- `W_VADV_SPLINES` — Splines vertical advection for W
+- `W_VADV_C2` — 2nd-order centered vertical advection for W
 
 ---
 
@@ -295,14 +323,17 @@ Choose exactly one horizontal advection scheme for tracers.
 
 ## Vertical Tracer Advection
 
-- `TS_VADV_SPLINES` — Splines vertical advection for tracers
+- `TS_VADV_SPLINES` — Splines vertical advection for tracers _(default)_
 - `TS_VADV_WENO5` — WENO5 vertical advection for tracers
+- `TS_VADV_C2` — 2nd-order centered vertical advection for tracers
 
 ---
 
 ## Semi-Implicit Vertical Advection
 
 - `VADV_ADAPT_IMP` — Adaptive semi-implicit vertical advection
+  - `VADV_ADAPT_PRED` — Apply the adaptive semi-implicit scheme to both the predictor and 
+    corrector steps (default: corrector step only)
 
 ---
 
@@ -312,6 +343,10 @@ Enhance viscosity and diffusivity near open boundaries to damp spurious reflecti
 
 - `SPONGE` — Sponge layers near lateral open boundaries;
   - `NO_SPONGE_GRID` — Disable reading sponge coefficients from the grid file (use analytical, used for INNERSHELF)
+  - `SPONGE_GRID` — Read sponge width/value from the grid file _(auto-derived: on by default unless `NO_SPONGE_GRID` is set)_
+  - `SPONGE_DIF2` — Enhanced tracer diffusivity in the sponge layer _(auto-derived, on by default)_
+  - `SPONGE_VIS2` — Enhanced momentum viscosity in the sponge layer _(auto-derived, on by default)_
+  - `SPONGE_SED` — Enhanced sediment diffusivity in the sponge layer _(auto-derived when SEDIMENT is defined)_
 
 ---
 
@@ -340,8 +375,19 @@ Choose exactly one of `LMD_MIXING` or `GLS_MIXING` (or neither for analytical).
   - `LMD_LANGMUIR` — Langmuir-cell parameterization
 - `GLS_MIXING` — Generic Length Scale turbulence scheme
   - `GLS_MIXING_3D` — Full 3D GLS (vs. columnar 1D version)
-  - `GLS_KOMEGA` — K-omega model (K-epsilon if not defined)
+  - `GLS_KOMEGA` — K-omega closure _(choose one of the two GLS closures below; K-epsilon is the default if neither is defined)_
+  - `GLS_KEPSILON` — K-epsilon closure _(default GLS closure)_
   - `GLS_COASTAL_ROUGHNESS` — Enhanced bottom roughness near coastal boundaries
+
+  Stability function for the GLS closure (choose one; `CANUTO_A` is the default):
+
+  - `CANUTO_A` — Canuto et al. (2001) stability function, version A _(default)_
+  - `CANUTO_B` — Canuto et al. (2001) stability function, version B
+  - `GibLau_78` — Gibson & Launder (1978) stability function
+  - `MelYam_82` — Mellor & Yamada (1982) stability function
+  - `KanCla_94` — Kantha & Clayson (1994) stability function
+  - `Luyten_96` — Luyten et al. (1996) stability function
+  - `Cheng_02` — Cheng et al. (2002) stability function
 
 ---
 
@@ -366,6 +412,8 @@ Wave breaking parameterization (used with `MRL_WCI` or `WKB_WWAVE`; choose one):
 - `WAVE_BREAK_CT93` — Thornton & Guza (1983) wave breaking _(default)_
 - `WAVE_BREAK_TG86` — Church & Thornton (1993) wave breaking
 - `WAVE_BREAK_TG86A` — Alternate Church-Thornton formulation
+- `WAVE_BREAK_R93` — Roelvink (1993) wave breaking formulation
+- `WAVE_BREAK_BJ78` — Battjes & Janssen (1978) wave breaking formulation
 
 Wave-current interaction model:
 
@@ -384,7 +432,8 @@ Wave-resolving internal wave generation (ideal cases, e.g. SANDBAR, SWASH, RIP).
 - `WAVE_MAKER` — Wave-maker boundary source
   - `WAVE_MAKER_SPECTRUM` — Multi-frequency spectrum input
   - `WAVE_MAKER_BICHROMATIC` — Bichromatic (two-frequency) wave input (e.g. SWASH GLOBEX B2/B3)
-  - `WAVE_MAKER_JONSWAP` — JONSWAP spectrum input
+  - `WAVE_MAKER_JONSWAP` — JONSWAP spectrum input _(default within WAVE\_MAKER\_SPECTRUM)_
+  - `WAVE_MAKER_GAUSSIAN` — Gaussian spectrum input
   - `WAVE_MAKER_DSPREAD` — Directional spreading
 - `WAVE_MAKER_INTERNAL` — Internal (immersed) wave maker
 
@@ -499,15 +548,30 @@ Exactly one biogeochemical model must be chosen when `BIOLOGY` is defined.
 - `SEDIMENT` — USGS sediment transport model
   - `SUSPLOAD` — Suspended load transport
   - `BEDLOAD` — Bedload transport
+
+    Bedload transport formula (choose one; default is `BEDLOAD_VANDERA` with wave forcing,
+    `BEDLOAD_WULIN` otherwise):
+
+    - `BEDLOAD_VANDERA` — Van der A formulation
+    - `BEDLOAD_MPM` — Meyer-Peter-Muller formulation
+    - `BEDLOAD_WULIN` — Wu & Lin formulation
+    - `BEDLOAD_MARIEU` — Marieu formulation
+
+    Bedload interpolation scheme (choose one; `BEDLOAD_UP1` is the default):
+
+    - `BEDLOAD_UP1` — 1st-order upwind interpolation _(default)_
+    - `BEDLOAD_UP5` — 5th-order upwind interpolation
+    - `BEDLOAD_WENO5` — 5th-order WENO interpolation
+
+    Avalanching (slope) scheme (choose one; `SLOPE_LESSER` is the default):
+
+    - `SLOPE_LESSER` — Avalanching formulation, Lesser et al. (2004) _(default)_
+    - `SLOPE_NEMETH` — Avalanching: Nemeth et al. (2006)
+    - `SLOPE_KIRWAN` — Avalanching: Kirwan formulation
+
   - `MORPHODYN` — Morphodynamics (bed evolution)
   - `ANA_SEDIMENT` — Analytical sediment ripple and bed parameters
   - `ANA_BPFLUX` — Analytical kinematic bottom flux of sediment
-  - `BEDLOAD_MPM` — Bedload: Meyer-Peter-Muller formulation _(mutually exclusive)_
-  - `BEDLOAD_WULIN` — Bedload: Wu & Lin formulation _(mutually exclusive)_
-  - `BEDLOAD_MARIEU` — Bedload: Marieu formulation _(mutually exclusive)_
-  - `BEDLOAD_WENO5` — Bedload: WENO 5th-order advection _(mutually exclusive)_
-  - `SLOPE_NEMETH` — Avalanching: Nemeth et al. (2006)
-  - `SLOPE_LESSER` — Avalanching: Lesser et al. (2004)
   - `COHESIVE_BED` — Purely cohesive (mud) bed
   - `MIXED_BED` — Mixed cohesive/non-cohesive bed
   - `SED_FLOCS` — Flocculation of cohesive particles _(requires COHESIVE\_BED or MIXED\_BED)_
@@ -516,17 +580,33 @@ Exactly one biogeochemical model must be chosen when `BIOLOGY` is defined.
   - `FLOC_BBL_DISS` — BBL dissipation of flocs
   - `SED_TAU_CD_CONST` — Constant drag coefficient for bed stress
   - `TAU_CRIT_WULIN` — Wu & Lin critical shear stress formulation
+  - `SED_DENS` — Activate the effect of suspended sediment on the density (Warner et al. 2008)
 
 ---
 
 ## MUSTANG Sediment Model
 
-- `MUSTANG` — MUSTANG sediment dynamics model
-  - `key_MUSTANG_V2` — MUSTANG version 2
-  - `key_MUSTANG_bedload` — MUSTANG bedload transport
+- `MUSTANG` — MUSTANG sediment dynamics model _(auto-activates SUBSTANCE, USE\_CALENDAR,
+  TEMPERATURE, SALINITY, key\_noTSdiss\_insed and key\_nofluxwat\_IWS)_
+  - `key_noTSdiss_insed` — Temperature, salinity and other dissolved variables are not
+    computed in the sediment: they keep constant values and no dissolved-variable fluxes
+    are exchanged between water and sediment _(auto-derived)_
+  - `key_nofluxwat_IWS` — No water flux exchange between water and sediment
+    (recommended together with `key_noTSdiss_insed`) _(auto-derived)_
+  - `key_MUSTANG_V2` — MUSTANG version 2 (without this key, version 1 is used)
+  - `key_MUSTANG_bedload` — MUSTANG bedload transport (requires `key_MUSTANG_V2`)
   - `key_MUSTANG_flocmod` — MUSTANG flocculation model
-  - `key_tauskin_c_upwind` — Upwind skin friction for MUSTANG
-  - `MORPHODYN` — Morphodynamics (usually off)
+  - `key_MUSTANG_slipdeposit` — Sliding (avalanching) fluxes for deposited sediment
+  - `key_MUSTANG_splitlayersurf` — Split surface sediment layers for a regular, precise
+    discretization at the surface
+  - `key_tauskin_c_upwind` — Upwind scheme for current-induced bottom shear stress
+    _(default; mutually exclusive with key\_tauskin\_c\_center)_
+  - `key_tauskin_c_center` — Compute bottom shear stress from the friction velocity
+    directly at the rho-point (cell centre) _(mutually exclusive with key\_tauskin\_c\_upwind)_
+  - `key_tauskin_c_ubar` — Use depth-averaged velocity in the bottom shear stress
+    computation (combinable with either scheme above)
+  - `MORPHODYN` — Morphodynamics (bed evolution)
+  - `SED_DENS` — Activate the effect of suspended sediment on the density
 
 ---
 

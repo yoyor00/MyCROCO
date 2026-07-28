@@ -527,7 +527,6 @@
 
 # if defined GLS_KOMEGA
 # elif defined GLS_KEPSILON
-# elif defined GLS_GEN
 # else
 #  define GLS_KEPSILON
 # endif
