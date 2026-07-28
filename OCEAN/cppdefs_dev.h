@@ -136,7 +136,7 @@
 #endif
 #if defined SALINITY       || defined TEMPERATURE || \
     defined PASSIVE_TRACER || defined SUBSTANCE   || \
-    defined SEDIMENTS      || defined BIOLOGY
+    defined SEDIMENT       || defined BIOLOGY
 # define TRACERS
 # define TEMPERATURE
 #endif
