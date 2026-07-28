@@ -222,7 +222,6 @@ CONTAINS
                              Istr, Iend, Jstr, Jend)
       dens_surf = w_dens(temp_surf, sal_surf)
 
-    ! Si temperature realiste a l'initialisation, on prend sa valeur, sinon on prend 0
     particle%temp    = temp_surf
     particle%density = dens_surf
 
