@@ -53,8 +53,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
            inconsistent with what done for calcite dissolution (#531)
            Big fix in the calculation of NEW primary productivity with XIOS (#535)
 
-- jobcomp : Allow FC and MPIF90 to be overridden from the environment; apply 
-  CROCO_CFT1 before compiler-branch selection
+- jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
+  Update BENCH accordingly.
 
 ### Changed
 
