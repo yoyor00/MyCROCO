@@ -71,7 +71,7 @@
 !       T(N)=D''(N)
 !       T(k)=D''(k)-C''(k)*T(k+1) for k=N-1,1,-1
 !
-#if !defined TS_MIX_IMP && defined MUSTANG && defined key_sand2D
+#if !defined TS_MIX_IMP && defined MUSTANG
          if (.not.l_subs2D(itrc-itsubs1+1)) then
 #endif
 
@@ -355,6 +355,6 @@
           enddo
 # endif /* DIAGNOSTICS_TS */
 #endif /* CONST_TRACERS */
-#    if !defined TS_MIX_IMP && defined MUSTANG && defined key_sand2D
+#    if !defined TS_MIX_IMP && defined MUSTANG
        endif
 #    endif
