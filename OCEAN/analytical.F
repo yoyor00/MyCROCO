@@ -134,9 +134,9 @@
 #   ifdef KATO_PHILLIPS
 #       if defined DYFAMED
             btflx(i,j,itemp)=0
-#  else
+#       else
             btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
-#   endif
+#       endif
 #   elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
             btflx(i,j,itemp)=-1.0e-5*0.01
 #    endif
@@ -420,7 +420,7 @@ C$    integer  trd, omp_get_thread_num
           sustr(i,j)=(0.01)**2  
         enddo
       enddo
-#endif
+#endif /* IN_REAL_WIND */
 # elif defined SINGLE_COLUMN && defined FORCED_DBLEEK
       do j=JstrR,JendR
         do i=IstrR,IendR

@@ -214,9 +214,9 @@
         if (total_rec.le.1) then
 # ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &                   ,r3dgrd, w3dgrd)
+     &                   ,r3dgrd, w3dgrd, NF_FTYPE)
 # else
-         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FTYPE)
 # endif
       endif
 #endif
@@ -598,15 +598,9 @@
 !
 # if defined TRACERS
         do itrc=1,NTot
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
           lvar=lenstr(vname(1,indxV+itrc))
-
           ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
-
 #  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
 #  endif
@@ -1081,7 +1075,6 @@
 !
 ! Sediment bed thickness
 !
-
         lvar=lenstr(vname(1,indxBTHK))
         ierr=nf_def_var (ncid, vname(1,indxBTHK)(1:lvar),
      &                              NF_DOUBLE, 4, b3dgrd, rstSed(1))
@@ -1104,7 +1097,6 @@
 !
 ! Sediment bed porosity
 !
-
         lvar=lenstr(vname(1,indxBPOR))
         ierr=nf_def_var (ncid, vname(1,indxBPOR)(1:lvar),
      &                              NF_DOUBLE, 4, b3dgrd, rstSed(2))
@@ -1561,10 +1553,6 @@
 !
 # if defined TRACERS
         do itrc=1,NTot
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                rstT(itrc))

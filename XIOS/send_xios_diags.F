@@ -2268,10 +2268,10 @@ C 				  endif
      &    var3Dksed_sed_rate, var3Dksed_sigmadjge, 
      &    var3Dksed_sigmapsg, var3Dksed_hinder, 
      &    var3Dksed_stateconsol, rouse2D_integral, rouse2D
+#endif
 
 # if defined ECO3M
       USE mod_eco3m, only : E_PARZ, VAR, nbvar
-#endif
 #endif
 # if defined BLOOM && defined DIAGNOSTICS_BIO
       USE comBIOLINK, ONLY : ndiag_2d, ndiag_3d_wat, ndiag_3d_sed
@@ -2323,7 +2323,7 @@ C 				  endif
 # if defined DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 # ifdef DIAGNOSTICS_PV
@@ -2868,9 +2868,6 @@ c !$acc wait
       endif
 # endif /* SALINITY */
 # if defined ECO3M
-      write(*,*) 'cmzy: send xios e_parz, shape=', shape(e_parz),
-     &                     ' ,var_eco3m_3D shape=', shape(var_eco3m_3D),
-     &                      istr,iend, jstr, jend, padd_X, padd_E
       var_eco3m_3D(istr:iend,jstr:jend,:)=e_parz(:,:,:)
       call xios_send_field("e_parz",var_eco3m_3D)
 
@@ -2879,7 +2876,6 @@ c !$acc wait
          name_XIOS_ECO3M=TRIM(ADJUSTL(VAR(ivar)%comp))//'_'
      &                 //TRIM(ADJUSTL(VAR(ivar)%scomp))//'_'
      &                 //TRIM(ADJUSTL(VAR(ivar)%elmt))
-         write(*,*) 'cmzy, write XIOS ', TRIM(ADJUSTL(name_XIOS_ECO3M))
          call xios_send_field(TRIM(ADJUSTL(name_XIOS_ECO3M)),var_eco3m_3D)
       end do
 
@@ -2921,7 +2917,7 @@ c !$acc wait
       call xios_send_field("omega",work)
       endif
 
-#  ifdef M3FAST
+#  ifdef NBQ
       if (xios_field_is_active("u_nbq")) then
         worknbq=0.
           do k=-N_sl+1,N-1
@@ -3011,7 +3007,7 @@ c !$acc wait
 #  endif
 
       if (xios_field_is_active("w")) then
-# ifndef M3FAST
+# ifndef NBQ
       call Wvlcty (tile, workr) 
       call xios_send_field("w",workr)
 # else        
@@ -3556,39 +3552,39 @@ c !$acc wait
 #  endif
 
 
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
 
       if (xios_field_is_active("ekrate")) then
-          call xios_send_field("ekrate", ekrate(:,:))
+          call xios_send_field("ekrate", ekrate(:,:,:))
       endif
       if (xios_field_is_active("ekadv")) then
-          call xios_send_field("ekadv", ekHadv(:,:) + ekVadv(:,:))
+          call xios_send_field("ekadv", ekHadv(:,:,:) + ekVadv(:,:,:))
       endif
       if (xios_field_is_active("ekCor")) then
-          call xios_send_field("ekCor",ekCor(:,:))
+          call xios_send_field("ekCor",ekCor(:,:,:))
       endif
       if (xios_field_is_active("ekPrsgrd")) then
-          call xios_send_field("ekPrsgrd",ekPrsgrd(:,:))
+          call xios_send_field("ekPrsgrd",ekPrsgrd(:,:,:))
       endif
       if (xios_field_is_active("ekHmix")) then
-          call xios_send_field("ekHmix",ekHmix(:,:))
+          call xios_send_field("ekHmix",ekHmix(:,:,:))
       endif
       if (xios_field_is_active("ekHdiff")) then
-          call xios_send_field("ekHdiff",ekHdiff(:,:))
+          call xios_send_field("ekHdiff",ekHdiff(:,:,:))
       endif
       if (xios_field_is_active("ekVmix")) then
-          call xios_send_field("ekVmix",ekVmix(:,:))
+          call xios_send_field("ekVmix",ekVmix(:,:,:))
       endif
       if (xios_field_is_active("ekVmix2")) then
-          call xios_send_field("ekVmix2",ekVmix2(:,:))
+          call xios_send_field("ekVmix2",ekVmix2(:,:,:))
       endif
 #  ifdef DIAGNOSTICS_BARO
       if (xios_field_is_active("ekBaro")) then
-          call xios_send_field("ekBaro",ekBaro(:,:))
+          call xios_send_field("ekBaro",ekBaro(:,:,:))
       endif
 #  endif
       if (xios_field_is_active("ekvol")) then
-          call xios_send_field("ekvol",ekvol(:,:))
+          call xios_send_field("ekvol",ekvol(:,:,:))
       endif
       if (xios_field_is_active("ekDrag")) then
           call xios_send_field("ekDrag",ekDrag(:,:))
@@ -3598,7 +3594,7 @@ c !$acc wait
       endif
 #  ifdef M3FAST
       if (xios_field_is_active("ekfast")) then
-          call xios_send_field("ekfast",ekfast(:,:))
+          call xios_send_field("ekfast",ekfast(:,:,:))
       endif
 #  endif
 #  endif

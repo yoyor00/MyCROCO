@@ -196,7 +196,6 @@ include Makedefs
 	eco3m_init.F90\
 	eco3m_rgb.F90\
 	eco3m_run.F90
-	
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
@@ -233,9 +232,9 @@ all: tools depend $(SBIN)
 # Executable file.
 # ========= =====
 #
-$(SBIN):   $(OBJS90) $(OBJS) 
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI) 
-	mv a.out $(SBIN)
+$(SBIN):   $(OBJS90) $(OBJS)
+	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI)
+	 mv a.out $(SBIN)
 
 #
 # Auxiliary utility programs and List of Dependecies:

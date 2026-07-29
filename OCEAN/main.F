@@ -518,24 +518,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
 #endif
 
+
 !----------------------------------------------------------------------
 !  SUBSTANCE : computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
-#ifdef SUBSTANCE 
+#ifdef SUBSTANCE
       call substance_surfcell
 #endif
-!
-!----------------------------------------------------------------------
-!  BIOLink : initialization
-!----------------------------------------------------------------------
-!
-
-#ifdef BIOLink
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-      CALL BIOLink_init_main(tile)
-      enddo
-#endif 
 !
 !----------------------------------------------------------------------
 !  STOGEN: initialization
@@ -548,17 +537,30 @@ C$OMP PARALLEL DO PRIVATE(tile)
       enddo
 #endif
 !
+
+!----------------------------------------------------------------------
+!  BIOLink : initialization
+!----------------------------------------------------------------------
+!
+
+#ifdef BIOLink
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+      CALL BIOLink_init_main(tile)
+      enddo
+#endif 
+
 !----------------------------------------------------------------------
 !  MUSTANG : initialization
 !----------------------------------------------------------------------
 !
-#ifdef MUSTANG 
+#ifdef MUSTANG
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call MUSTANG_init_main (tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
-#endif 
+#endif
 !
 !----------------------------------------------------------------------
 !  LAGRANGIAN : initialization

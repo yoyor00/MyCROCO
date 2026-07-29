@@ -589,7 +589,7 @@
         enddo
 #    endif /* TEMPERATURE */
 #   elif defined SINGLE_COLUMN && defined KATO_PHILLIPS && !defined DYFAMED
-#    ifdef TEMPERATURE        
+#    ifdef TEMPERATURE
         do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
@@ -1346,7 +1346,7 @@ C$OMP BARRIER
               if (.not.got_tini(iv)) then
 #  if defined REGIONAL && !defined ANA_PSOURCE
                 t(i,j,k,1,iv)=cini_wat(iv)
-#  elif defined SINGLE_COLUMN 
+#  elif defined DYFAMED 
                 t(i,j,k,1,iv)=cini_wat(iv)
 #  elif defined TIDAL_FLAT || defined ESTUARY
                 if (h(i,j).gt.0) then

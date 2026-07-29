@@ -662,9 +662,6 @@
 !                                                 (sed. and others)
 #   ifdef SUBSTANCE
 !
-            if (itrc.ge.itsubs1+nv_grav .and.
-     &          itrc.le.itsubs1+nvp) then        ! sediment tracers
-              if (.not.l_subs2D(itrc-itsubs1+1)) then
 #    undef TS_MIX_IMP
 #    define CD EC
 #    define NBSUBSTEP GC
@@ -672,12 +669,6 @@
 #    undef NBSUBSTEP
 #    undef CD
 #    define TS_MIX_IMP
-              endif
-            else                                 ! other tracers
-#    undef TS_MIX_IMP
-#    include "t3dmix_tridiagonal.h"
-#    define TS_MIX_IMP
-            endif
 !
 #   else  /* SUBSTANCE */
 !                                                ! passive tracers
@@ -703,18 +694,11 @@
 #    include "t3dmix_tridiagonal.h"
 !
 #   else
-          if (itrc.ge.itsubs1+nv_grav .and.
-     &        itrc.le.itsubs1+nvp) then          ! sediment tracers
-            if (.not.l_subs2D(itrc-itsubs1+1)) then
 #    define CD EC
 #    define NBSUBSTEP GC
 #    include "t3dmix_tridiagonal_substance.h"
 #    undef NBSUBSTEP
 #    undef CD
-            endif
-          else                                   ! all other tracers
-#    include "t3dmix_tridiagonal.h"
-          endif
 #   endif /* SUBSTANCE */
 
 #  endif /* TS_MIX_IMP */

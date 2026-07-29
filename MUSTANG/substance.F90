@@ -97,13 +97,14 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: D0_m0_r,D0_m1_r
 # endif
    LOGICAL, DIMENSION(ntrc_subs)              :: l_bedload_r
-   LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n,l_outsandrouse_n,l_bedload_n
+   LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n, l_outsandrouse_n, l_bedload_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: ws_free_opt_n, ws_hind_opt_n
+   REAL(KIND=rsh), DIMENSION(:,:),ALLOCATABLE :: ws_free_para_n, ws_hind_para_n
    INTEGER, DIMENSION(:),ALLOCATABLE          :: D0_funcT_opt_n
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: D0_m0_n,D0_m1_n
 
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: ws_free_opt_n,ws_hind_opt_n
-   REAL(KIND=rsh), DIMENSION(:,:),ALLOCATABLE :: ws_free_para_n,ws_hind_para_n
+
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
    LOGICAL                                    ::  l_ibedload1, l_ibedload2
 #endif
@@ -193,7 +194,7 @@ CONTAINS
 #if defined MUSTANG
    IF(nv_dis+nv_ncp+nv_grav+nv_sand+nv_mud+nv_sorb .NE. ntrc_subs) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the total number of substances read from the file'
-     MPI_master_only  WRITE(stdout,*) 'parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
+     MPI_master_only  WRITE(stdout,*)' parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
      MPI_master_only  WRITE(stdout,*)'  nv_dis ',nv_dis
@@ -682,8 +683,10 @@ CONTAINS
    ENDIF
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
+#ifdef MUSTANG
    ALLOCATE(l_outsandrouse(nvp))
    l_outsandrouse(:)=.false.
+#endif
 
 
 
@@ -722,7 +725,6 @@ CONTAINS
    ! ------------------------------------------------------------------------------------
    ALLOCATE(irkm_var_assoc(nvp))
    irkm_var_assoc(:)=0
-
 #ifdef MUSTANG
    DO iv=1,nv_sorb
      isubs=nvpc+nv_ncp+iv
@@ -947,6 +949,14 @@ CONTAINS
      ros(iv)=ros_r(irk_fil(iv))
      diam_sed(iv)=diam_r(irk_fil(iv))
    END DO
+# if ! defined key_noTSdiss_insed
+      DO iv=nvp+1,nvp+nv_dis
+       D0_funcT_opt(iv)=D0_funcT_opt_r(iv)
+       D0_m0(iv)=D0_m0_r(iv)
+       D0_m1(iv)=D0_m1_r(iv)
+      ENDDO
+# endif
+
    DO iv=igrav1,igrav2
      l_subs2D(iv)=.TRUE.
    ENDDO
