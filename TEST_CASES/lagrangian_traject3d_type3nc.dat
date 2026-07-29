@@ -1,0 +1,30 @@
+LAGRANGIAN NETCDF-BASED INITIALIZATION FILE (itypepatch = 3)
+
+Patch name
+Trajectory start date
+Trajectory end date
+Output interval (h)
+Input NetCDF file containing initial particle longitude, latitude, and depth
+Output trajectory file
+Number of particles released at each position read from the NetCDF file
+itypevert: vertical-transport scheme
+           = 0: constant depth (no vertical advection or turbulent diffusion)
+           < 0: vertical advection only
+           > 0: vertical advection and turbulent diffusion using a random walk
+
+The input NetCDF file must contain the variables "longitude", "latitude", and
+"DEPTH". DEPTH is expressed in meters and must be positive downward. When the
+file has several time records, initial positions are read from the last record.
+
+END OF FILE DESCRIPTION
+
+**************************************************************
+patch1                                        ,| Patch name
+1900/01/01 00:00:00                           ,| Trajectory start date (tbegtraj)
+2030/07/01 00:00:00                           ,| Trajectory end date (tendtraj)
+24.d0                                         ,| Output interval in hours (dtsave_traj)
+CROCO_FILES/lagrangian_init.nc                ,| Input NetCDF file (filetrajin)
+CROCO_FILES/croco_lagrangian_out.nc           ,| Output trajectory file (filetrajout)
+1                                             ,| Particles released per NetCDF position (nb_part_intro)
+1                                             ,| Vertical advection and turbulent diffusion (itypevert)
+**************************************************************

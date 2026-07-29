@@ -268,3 +268,10 @@ psource_ncfile:   Nsrc  Isrc  Jsrc  Dsrc qbardir  Lsrc  Tsrc   runoff file name
 online:    byear  bmonth recordsperday byearend bmonthend / data path
            2000   1      4             2000     3
     DATA/CFSR_Benguela_LR/
+
+
+lagrangian:
+    TEST_CASES/lagrangian_traj.txt
+
+deb_ibm:
+    TEST_CASES/foil_paraibm.txt

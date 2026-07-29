@@ -16,8 +16,8 @@
 :-----------------------------------------------------------------------------
 :
  &namibmin
-      file_trajec = 'ibm_patch.dat'
-      dir_pathout = '../output_foil/'
+      file_trajec = 'TEST_CASES/foil_ibm_patch.dat'
+      dir_pathout = 'CROCO_FILES/'
       itypepatch = 3 /
 :
 :-----------------------------------------------------------------------------
@@ -91,14 +91,14 @@
 :-----------------------------------------------------------------------------
 :
  &namibmpop
-        repro             = .true.
-        dt_spawn          = 72
-        dt_save           = 24
-        max_part          = 25000
+        repro          = .false.
+        dt_spawn       = 24
+        dt_save        = 24
+        max_part       = 1500
         duration_ibm_anc  = 1460
         duration_ibm_sar  = 2980
-        fish_mort         = .true.
-        fishing_strategy  = 'historical'
+        fish_mort         = .false.
+        fishing_strategy  = 'Catch'
         multiplier_tac    = 0.8
         density_dependent = .false./
 :
@@ -121,10 +121,10 @@
 :
  &namibmdeb
       debuse    =.true.
-      F_Fix     =.false.
+      F_Fix     =.true.
       ffix      = 0.8
-      file_NBSS ='../inputs/NBSS_manga.nc'
-      file_food ='ibm_zooc.nc' 
+      file_NBSS =''
+      file_food ='' 
       frac_deb_death = .false./
 :
 :-----------------------------------------------------------------------------
@@ -144,13 +144,16 @@
 :-----------------------------------------------------------------------------
 :
  &namibmfrc
-        fileanchovy          = '../croco-mustang/FOIL_inputs/deb_parameters_anc.txt'
-        filesardine          = '../croco-mustang/FOIL_inputs/deb_parameters_sar.txt'
-        catch_anc_bob        = '../inputs/catch_anc_bob.txt'
-        catch_sar_bob        = '../inputs/catch_sar_bob.txt'
-        fileprobadistrib_anc = '../inputs/probadistrib_1_2.nc'
+        fileanchovy          = 'TEST_CASES/foil_deb_parameters_anc.txt'
+        catch_anc_bob        = 'TEST_CASES/foil_catch_anc.txt'
+        fileprobadistrib_anc = 'CROCO_FILES/foil_probadistrib.nc'
         nbSizeClass_anc      = 36
         sizemin_anc          = 3.5
-        fileprobadistrib_sar = '../inputs/probadistrib_1_2.nc'
-        nbSizeClass_sar      = 36
-        sizemin_sar          = 3.5/
+        
+        filesardine          = 'TEST_CASES/foil_deb_parameters_sar.txt'
+        catch_sar_bob        = 'TEST_CASES/foil_catch_sar.txt'
+        fileprobadistrib_sar = 'CROCO_FILES/foil_probadistrib.nc'
+        nbSizeClass_sar      = 36 
+        sizemin_sar          = 3.5
+/
+

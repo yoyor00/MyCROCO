@@ -30,7 +30,8 @@
 :-----------------------------------------------------------------------------
 :
  &namtraj
-     file_trajec='../croco/LAGRANGIAN/LAGRANGIAN_INPUTS/traject3d_type1circ.dat'
-     itypepatch = 1
+     file_trajec = "TEST_CASES/lagrangian_traject3d_type3nc.dat"
+     itypepatch = 3
      dtz = 3
-     hdiff = 5.0 /
+     hdiff = 5.0
+/
