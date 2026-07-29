@@ -4,7 +4,7 @@
 
 #include "cppdefs.h"
 
-#if defined LAGRANGIAN || defined DEB_IBM
+#if defined LAGRANGIAN
 
 MODULE plug_LAGRANGIAN
    ! interface between croco and lagrangian module

@@ -4,7 +4,7 @@
 
 #include "cppdefs.h"
 
-#if defined DEB_IBM
+#if defined FOIL
 
 MODULE plug_ibm
    ! interface between croco and ibm module
@@ -49,4 +49,4 @@ END MODULE plug_ibm
 MODULE plug_ibm_empty
 END MODULE plug_ibm_empty
 
-#endif /* DEB_IBM */
+#endif /* FOIL */
