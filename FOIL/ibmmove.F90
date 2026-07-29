@@ -366,7 +366,9 @@ CONTAINS
          pos_n%xp = xpos_n; pos_n%yp = ypos_n
          CALL define_pos(pos_n)
 
-         IF (h(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) > 0.0_rsh .and. particle%flag /= -valmanq) THEN
+         IF (h(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) > 0.0_rsh .and. &
+            rmask(NINT(pos_n%idx_r),NINT(pos_n%idy_r)) > 0.5_rsh .and. &
+            particle%flag /= -valmanq) THEN
             ! test si on reste en mer (possibilite si incompatibilite de grille)
             IF ((NINT(pos_n%idx_r) > icells + 1) .or. (NINT(pos_n%idx_r) < icells - 1) .or. &
                 (NINT(pos_n%idy_r) > jcells + 1) .or. (NINT(pos_n%idy_r) < jcells - 1)) THEN
