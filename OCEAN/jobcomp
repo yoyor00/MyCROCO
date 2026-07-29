@@ -42,12 +42,12 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 # compiler options
 #
-FC="${FC:-gfortran}"
+FC=gfortran
 
 #
 # set MPI directories if needed
 #
-MPIF90="${MPIF90:-mpif90}"
+MPIF90="mpif90"
 MPILIB=""
 MPIINC=""
 

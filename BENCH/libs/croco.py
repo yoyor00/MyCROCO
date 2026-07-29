@@ -169,10 +169,9 @@ class Croco:
 
         # extract some needed vars
         croco_build = self.croco_build
-        make_jobs = f"-j{self.config.make_jobs}"
 
         # jump in & build
-        croco_build.make(make_jobs)
+        croco_build.make(self.config.make_jobs)
 
     def enable_cvtk_checking(self):
         # vars

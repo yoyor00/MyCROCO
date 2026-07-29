@@ -49,14 +49,14 @@ class AbstractCrocoSetup(ABC):
         raise Exception("Not provided by implementation !")
 
     @abstractmethod
-    def make(self, make_jobs: str) -> None:
+    def make(self, jobs: int) -> None:
         """
         Perform the compilation either with jobcomp of make.
 
         Parameters
         ----------
-        make_jobs: str
-            To pass the `-j8` option if wanted.
+        jobs: int
+            Number of parallel build jobs to use (e.g. for a `-j8` option).
         """
         raise Exception("Not provided by implementation !")
 

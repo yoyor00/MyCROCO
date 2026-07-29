@@ -267,12 +267,16 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         """
         self.croco_config.cppdef_h_set_key(key, status)
 
-    def handle_variables(self, arg_vars: list, is_mpi: bool, extra_vars: dict) -> dict:
+    def handle_variables(self, arg_vars: list, extra_vars: dict) -> dict:
         """
         Apply to ops required when getting some variables on the command line.
 
         Currently consider (exemple of values):
-         - FC=gfortran
+         - FC=gfortran : underlying compiler family, selects jobcomp's
+           --fc (which picks the FFLAGS/CPP branch).
+         - MPIF90=mpif90 : MPI compiler wrapper actually invoked to
+           compile/link, selects jobcomp's --mpif90. Only meaningful for
+           MPI variants.
          - FFLAGS=-march=native
         """
         vars = {}
@@ -296,9 +300,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             if var_name == "FFLAGS":
                 self.fflags = self.fflags + " " + var_value
             elif var_name == "FC":
-                if is_mpi:
-                    self.mpif90 = var_value
                 self.fc = var_value
+            elif var_name == "MPIF90":
+                self.mpif90 = var_value
             else:
                 raise Exception(f"Unsupported variable : {entry}")
 
@@ -355,7 +359,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             "VARS",
             nargs="*",
             type=str,
-            help="Extra variable definitions, like compilers : FC=gfortran.",
+            help="Extra variable definitions, like compilers : FC=gfortran, MPIF90=mpif90.",
         )
 
         # parser
@@ -408,7 +412,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
 
         # handle extra variables
         extra_vars = {"FFLAGS": [], "LDFLAGS": []}
-        self.handle_variables(options.VARS, self.use_mpi, extra_vars)
+        self.handle_variables(options.VARS, extra_vars)
 
     def configure_optimisation(self, options):
         """Handle the optimisation settings."""
@@ -455,7 +459,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
                 if key.startswith("+") or key.startswith("-"):
                     self.croco_config.cppdef_h_set_key(key[1:], status)
 
-    def make(self, make_jobs: str):
+    def make(self, jobs: int):
         """
         Perform the build with jobcomp.
         """
@@ -464,7 +468,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         with move_in_dir(self.builddir):
             run_shell_command(
                 "./jobcomp --fc %s --mpif90 %s --fflags '%s' --jobs %s"
-                % (self.fc, self.mpif90, self.fflags, self.config.make_jobs),
+                % (self.fc, self.mpif90, self.fflags, jobs),
                 logfilename="jobcomp.log",
                 capture=self.config.capture,
             )
