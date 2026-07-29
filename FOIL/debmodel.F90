@@ -455,9 +455,11 @@ CONTAINS
             patch%particles(m)%NRJ_g = NRJ_g
 
             ! -- Reproduction
-            patch%particles(m)%yearspawn = aaaa
-            patch%particles(m)%dayspawn = 500 ! pour etre sur d etre superieur a jjulien
-            patch%particles(m)%dayjuv = 0
+            IF (.NOT. restart) THEN
+               patch%particles(m)%yearspawn = aaaa
+               patch%particles(m)%dayspawn = 500 ! pour etre sur d etre superieur a jjulien
+               patch%particles(m)%dayjuv = 0
+            END IF
          END DO
 
          ! IF CATCH as fishing strategy
