@@ -6,7 +6,7 @@
 
 !!! give access to dimensions, variables, parameters from hydro model to ibm
 
-#if defined FOIL
+#ifdef FOIL
 
       MODULE module_ibm
 

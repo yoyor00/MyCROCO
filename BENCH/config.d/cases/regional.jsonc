@@ -372,8 +372,8 @@
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
     "cppkeys": {
       "USE_CALENDAR": true,
-      "DEB_IBM": true,
-      "IBM_SPECIES": true,
+      "LAGRANGIAN": true,
+      "FOIL": true,
     },
     "patches": {},
     "check_outputs": [

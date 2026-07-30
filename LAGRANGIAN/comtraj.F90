@@ -11,7 +11,7 @@ MODULE comtraj
    !!                   ***  MODULE comtraj  ***
    !!
    !!======================================================================
-#if defined LAGRANGIAN || defined DEB_IBM
+#ifdef LAGRANGIAN
 
    IMPLICIT NONE
    PUBLIC
@@ -90,7 +90,7 @@ MODULE comtraj
       REAL(KIND=rsh)          :: d3, h0, xe, hc
       REAL(KIND=rsh)          :: flag = 0.0_rsh   ! wet-drying flag
 
-#ifdef DEB_IBM
+#ifdef FOIL
       ! --- Population parameters
       REAL(KIND=rlg)          :: date_orig   ! date of release
       INTEGER                 :: stage = 0
@@ -102,12 +102,12 @@ MODULE comtraj
 
       REAL(KIND=rsh)          :: super    ! Number of individuals in particle (superindividual)
 
-#ifdef IBM_SPECIES
+      INTEGER                 :: hmove = 0 ! to manage frequence of horizontal movement
+
       ! DEB state variables and parameters (with default value)
       INTEGER                 :: dayjuv, yearspawn
       INTEGER                 :: dayspawn = 500
       LOGICAL                 :: season = .FALSE.
-      INTEGER                 :: hmove = 0
       REAL(KIND=rsh)          :: Hj, Hb, pAm, pMi, EG, vc, kap, Kx, Hp, TA, K, shapeb, lfactor, E0, Rfbatch, SF
       REAL(KIND=rsh)          :: zoom = 0.0_rsh
       REAL(KIND=rsh)          :: E, L, H, R, Wdebd, NRJd
@@ -128,7 +128,6 @@ MODULE comtraj
       REAL(KIND=rsh)          :: Death_FISH = 0.0_rsh
       REAL(KIND=rsh)          :: Death_NAT = 0.0_rsh
 #endif
-#endif
    END TYPE type_particle
 
    ! =====================================================================
@@ -140,7 +139,7 @@ MODULE comtraj
 
       INTEGER                                         :: id = -1
       CHARACTER(LEN=lchain)                           :: name                 ! Patch name (as read in the patch file)
-#ifdef DEB_IBM
+#ifdef FOIL
       INTEGER                                         :: parent_id = -2
 #endif
       INTEGER                                         :: nb_part_alloc = 0    ! Size of allocated data array for particles
@@ -149,7 +148,7 @@ MODULE comtraj
       INTEGER                                         :: nb_part_max = -1   ! Maximum allowed number of particles
       REAL(KIND=rlg)                                  :: t_beg, t_end
       REAL(KIND=rlg)                                  :: t_save, dt_save
-#ifdef DEB_IBM
+#ifdef FOIL
       REAL(KIND=rlg)                                  :: t_spawn, dt_spawn    !
       INTEGER                                         :: yearref              !
 #endif
@@ -157,9 +156,7 @@ MODULE comtraj
       CHARACTER(LEN=lchain)                           :: file_out             ! Output NetCDF file name
       LOGICAL                                         :: file_out_init = .FALSE.
       CHARACTER(LEN=lchain)                           :: run_id               ! id of one run (for output file indentation)
-#ifdef IBM_SPECIES
       CHARACTER(LEN=lchain)                           :: species              ! name of species
-#endif
       TYPE(type_particle)                             :: init_particle        ! Init values used for new particles
       TYPE(type_particle), ALLOCATABLE, DIMENSION(:)  :: particles
       TYPE(type_patch), POINTER                       :: next => NULL()       ! Next patch in the list
@@ -180,7 +177,7 @@ MODULE comtraj
    !----------------------------------------
    !! * Shared module variables
 
-   INTEGER, PARAMETER                       :: nb_species = 2       ! Number of species in DEB_IBM, for further developments
+   INTEGER, PARAMETER                       :: nb_species = 2       ! Number of species in FOIL, for further developments
    ! Species with index 1 : anchovy
    ! Species with index 2 : sardine
 
@@ -194,11 +191,10 @@ MODULE comtraj
    REAL(kind=rlg), PUBLIC          :: dtz                          ! time step division for vertical subloop for diffusion
    REAL(kind=rsh), PUBLIC          :: hdiff                        ! horizontal diffusion coefficient
 
-#ifdef DEB_IBM
+#ifdef FOIL
    LOGICAL, PUBLIC          :: ibm_restart                  ! Logical for ibm restart
 
-#ifdef IBM_SPECIES
-   INTEGER, DIMENSION(nb_species), PUBLIC  :: duration                     ! Duree de vie des individus selon leur espece
+   INTEGER, DIMENSION(nb_species), PUBLIC  :: duration                   ! Duree de vie des individus selon leur espece
    ! namibmdeb namelist parameters from paraibm
    LOGICAL, PUBLIC          :: debuse, F_Fix, frac_deb_death
    REAL(kind=rsh), PUBLIC          :: ffix
@@ -230,7 +226,6 @@ MODULE comtraj
    TYPE(type_particle)                             :: init_anchovy_egg     ! Init values used for new anchovy's particles
    TYPE(type_particle)                             :: init_sardine_egg     ! Init values used for new sardine's particles
 #endif
-#endif
 
 #if defined MPI
    ! For MPI exchange of particles betwreen procs
@@ -258,14 +253,10 @@ CONTAINS
 
       IMPLICIT NONE
       !! * Local declarations
-#ifdef DEB_IBM
-#ifdef IBM_SPECIES
-      INTEGER, PARAMETER   :: nb = 69     ! IBM_SPECIES and DEB_IBM
+#ifdef FOIL
+      INTEGER, PARAMETER   :: nb = 69     ! LAGRANGIAN and FOIL
 #else
-      INTEGER, PARAMETER   :: nb = 25     ! DEB_IBM only
-#endif
-#else
-      INTEGER, PARAMETER   :: nb = 13     ! key_MPI_2D only
+      INTEGER, PARAMETER   :: nb = 13     ! LAGRANGIAN only
 #endif
 
       INTEGER, DIMENSION(nb)    :: old_types, block_lengths
@@ -280,11 +271,10 @@ CONTAINS
                   MPI_LOGICAL, MPI_INTEGER, MPI_INTEGER, MPI_INTEGER, &
                   type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, &
                   type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh &
-#ifdef DEB_IBM
+#ifdef FOIL
                   , type_mpi_rlg, MPI_INTEGER, MPI_INTEGER, MPI_INTEGER, type_mpi_rsh, &
                   type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, &
                   type_mpi_rsh, type_mpi_rsh &
-#ifdef IBM_SPECIES
                   , MPI_INTEGER, MPI_INTEGER, MPI_INTEGER, MPI_LOGICAL, MPI_INTEGER, &
                   type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, &
                   type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, &
@@ -295,17 +285,14 @@ CONTAINS
                   type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, &
                   type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh &
 #endif
-#endif
                   /)
       block_lengths = (/ &
                       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 &
-#ifdef DEB_IBM
+#ifdef FOIL
                       , 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 &
-#ifdef IBM_SPECIES
                       , 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 &
                       , 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 &
                       , 1, 1, 1, 1 &
-#endif
 #endif
                       /)
 
@@ -323,7 +310,7 @@ CONTAINS
       CALL MPI_GET_ADDRESS(particle%xe, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%hc, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%flag, addresses(i), ierr_mpi); i = i + 1
-#ifdef DEB_IBM
+#ifdef FOIL
       CALL MPI_GET_ADDRESS(particle%date_orig, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%stage, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%AgeClass, addresses(i), ierr_mpi); i = i + 1
@@ -336,7 +323,6 @@ CONTAINS
       CALL MPI_GET_ADDRESS(particle%denspawn, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%temp, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%super, addresses(i), ierr_mpi); i = i + 1
-#ifdef IBM_SPECIES
       CALL MPI_GET_ADDRESS(particle%dayjuv, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%yearspawn, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%dayspawn, addresses(i), ierr_mpi); i = i + 1
@@ -381,7 +367,6 @@ CONTAINS
       CALL MPI_GET_ADDRESS(particle%DEATH_DEB, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%DEATH_FISH, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%DEATH_NAT, addresses(i), ierr_mpi); i = i + 1
-#endif
 #endif
 
       displacements(:) = addresses(:) - addresses(1)

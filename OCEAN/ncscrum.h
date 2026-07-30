@@ -2154,10 +2154,9 @@
 #if defined LAGRANGIAN
      &               ,    lagname
 #endif
-#if defined DEB_IBM
+#if defined FOIL
      &               ,    debibmname
 #endif
-
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
 #else
@@ -2274,7 +2273,7 @@
 #if defined LAGRANGIAN
      &               ,    lagname
 #endif
-#if defined DEB_IBM
+#if defined FOIL
      &               ,    debibmname
 #endif
 #ifdef BIOLOGY

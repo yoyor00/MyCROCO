@@ -4,40 +4,6 @@
 :=============================================================================
 :
 :-----------------------------------------------------------------------------
-: namibmin          GENERAL INPUT SETTINGS
-:-----------------------------------------------------------------------------
-:
-: file_trajec : name of the patch initialization file
-: dir_pathout : directory used for trajectory output and restart files
-: itypepatch  : method used to define the initial patch positions:
-:               1 = circle, 2 = rectangle, 3 = NetCDF positions
-:               This value must match the format of file_trajec.
-:
-:-----------------------------------------------------------------------------
-:
- &namibmin
-      file_trajec = 'ibm_patch.dat'
-      dir_pathout = '../output_foil/'
-      itypepatch = 3 /
-:
-:-----------------------------------------------------------------------------
-: namibmdiff        PARTICLE DIFFUSION SETTINGS
-:-----------------------------------------------------------------------------
-:
-: dtz   : time step (s) used by the vertical random-walk subloop
-:         A value of a few seconds helps prevent particle accumulation in
-:         low-diffusivity regions and near boundaries. See Ross and Sharples
-:         (2004, Limnology and Oceanography) for a sensitivity analysis.
-: hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
-:         horizontal diffusion
-:
-:-----------------------------------------------------------------------------
-:
- &namibmdiff
-      dtz  = 3
-      hdiff = 5.0 /
-:
-:-----------------------------------------------------------------------------
 : namibmrestart     RESTART SETTINGS
 :-----------------------------------------------------------------------------
 :

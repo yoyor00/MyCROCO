@@ -12,7 +12,7 @@ MODULE trajectools
 #include "cppdefs.h"
 #include "toolcpp.h"
 
-#if defined LAGRANGIAN
+#ifdef LAGRANGIAN
 
    !! * Modules used
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, rsh, rlg, riolg, &

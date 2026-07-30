@@ -55,7 +55,7 @@
           USE plug_OBSTRUCTIONS, ONLY : obst_init_main
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
 #endif
-#ifdef DEB_IBM
+#ifdef FOIL
             USE plug_ibm,        ONLY : ibm_init_main
 #ifdef MPI
             USE plug_LAGRANGIAN, ONLY : LAGRANGIAN_MPI_SETUP_main
@@ -534,15 +534,12 @@ CR      write(*,*)  ' -5' MYID0
 !
 
 !----------------------------------------------------------------------
-!  DEB_IBM : initialization
+!  FOIL : initialization
 !----------------------------------------------------------------------
 !
-#ifdef DEB_IBM 
+#ifdef FOIL 
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-#ifdef MPI
-        call LAGRANGIAN_MPI_SETUP_MAIN(tile)
-#endif
         call ibm_init_main (tile)
       enddo
 CR      write(*,*)  ' -5' MYID0

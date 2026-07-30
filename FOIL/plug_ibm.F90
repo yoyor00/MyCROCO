@@ -4,7 +4,7 @@
 
 #include "cppdefs.h"
 
-#if defined FOIL
+#ifdef FOIL
 
 MODULE plug_ibm
    ! interface between croco and ibm module

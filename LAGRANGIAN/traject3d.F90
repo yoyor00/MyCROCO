@@ -34,7 +34,7 @@ MODULE traject3d
    USE mpi
 #endif
 
-#if defined LAGRANGIAN || defined DEB_IBM
+#if defined LAGRANGIAN
    !! * Modules used
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, rsh, rlg, riosh, lchain, valmanq
 
@@ -99,7 +99,7 @@ CONTAINS
       USE toolmpi, ONLY: ex_traj
       USE comtraj, ONLY: down_give, up_give, right_give, left_give
 #endif
-      USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, htx, hty, wz
+      USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, wz
 
       !! * Arguments
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 4), INTENT(in)    :: xe
@@ -238,15 +238,15 @@ CONTAINS
             particle => patch%particles(npart)
             ! Skip if particle is inactive.
             IF (.NOT. particle%active) CYCLE
-#ifdef IBM_SPECIES
+
             ! Skip if species stage not appropriate
             ! Modif Clara
 #ifdef MPI
             IF (particle%stage >= 5 .OR. particle%super <= 0.0_rsh) CYCLE
 #else
-            IF (particle%stage >= 1 .OR. particle%super <= 0.0_rsh) CYCLE
+            IF (particle%stage >= 1 .OR. particle%super <= 0.0_rsh) CYCLE ! pour 3D_1DV
 #endif
-#endif
+
             ! Skip if flag is missing...
             IF (particle%flag == -valmanq) CYCLE
 
@@ -544,7 +544,7 @@ CONTAINS
       INTEGER                                  :: j0, jst, i0, ist, i1, j1
       REAL(KIND=rsh)                           :: uxp, uyp, ux0, uy0, xst, yst
 
-      ! For randow movement
+      ! For random movement
       REAL(KIND=rsh)                           :: a, b, tir1, tir2
 
       REAL(KIND=rsh)                           :: dkx

@@ -29,7 +29,7 @@ MODULE ibmtools
    USE mpi
 #endif
 
-#if defined DEB_IBM
+#ifdef FOIL
    !! * Module used
    USE module_ibm          ! time,sc_r,sc_w,Cs_r,h,hc,g,srflx,zeta
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, rsh, rlg, type_particle, lchain
@@ -39,10 +39,8 @@ MODULE ibmtools
 
    !! * Accessibility
    PUBLIC w_dens, ibm_buoy, ibm_traint, ibm_nycth_mig, ibm_proftraint, &
-#ifdef IBM_SPECIES
       ibm_parameter_init, death_by_fishing, selec_dome_or_asymp, &
       alpha_sel, beta_sel, &
-#endif
       ibm_profmean, ibm_loc_xyz, gasdev_s, tool_julien
    !ibm_profuint, ibm_profvint                                  ! non utilise
 
@@ -53,10 +51,8 @@ MODULE ibmtools
 
    INTEGER, PARAMETER                                  :: track = 1
 
-#ifdef IBM_SPECIES
    REAL(KIND=rsh), PARAMETER                           :: alpha_sel = 0.876931491863804146725_rsh
    REAL(KIND=rsh), PARAMETER                           :: beta_sel = 11.725820182044399686561_rsh
-#endif
 
    !!===================================================================================================================================
    !!===================================================================================================================================
@@ -135,7 +131,6 @@ CONTAINS
 
    END FUNCTION tool_julien
 
-#ifdef IBM_SPECIES
 
    !!======================================================================
    SUBROUTINE ibm_parameter_init(particle, species, xe, sal, temp, Istr, Iend, Jstr, Jend)
@@ -593,7 +588,6 @@ CONTAINS
       END IF ! fishing_strategy == historical
 
    END SUBROUTINE death_by_fishing
-#endif  /* IBM_SPECIES */
 
    !!===========================================================================
    FUNCTION w_dens(tempw, salw)
@@ -1654,6 +1648,6 @@ CONTAINS
    END SUBROUTINE ibm_opt_depth
 #endif /* key_ibm__unused */
 
-#endif  /* DEB_IBM */
+#endif  /* DEB_FOIL */
 
 END MODULE
