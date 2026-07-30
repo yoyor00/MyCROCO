@@ -1,3 +1,7 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 module flocmod
 !
 ! This module manage the flocculation distribution (in one cell "i,j,k").

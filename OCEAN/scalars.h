@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 ! This is include file "scalars.h"
@@ -227,7 +228,7 @@
       integer ntsdiags_vrt_avg, nwrtdiags_vrt_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       integer nwrtdiags_ek
 # ifdef AVERAGES
       integer ntsdiags_ek_avg, nwrtdiags_ek_avg
@@ -289,7 +290,7 @@
       logical ldefdiags_vrt_avg
 # endif
 #endif
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
       logical ldefdiags_ek
 # ifdef AVERAGES
       logical ldefdiags_ek_avg
@@ -406,7 +407,7 @@
      &                      , ntsdiags_vrt_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
      &                      , ldefdiags_ek, nwrtdiags_ek
 # ifdef AVERAGES
      &                      , ldefdiags_ek_avg

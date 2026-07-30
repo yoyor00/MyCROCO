@@ -25,7 +25,7 @@ fi
 ## ---------------------------
 
 # look for starting hour in input file
-module load ${ncomod}
+[[ -n ${ncomod} ]] && module load ${ncomod}
 if [[ ${RESTART_FLAG} == "FALSE" ]]; then
     YY=$( printf "%04d" ${YEAR_BEGIN_JOB} )
     MM=$( printf "%02d" ${MONTH_BEGIN_JOB} )
@@ -41,7 +41,7 @@ else
     fulldate=$( echo "$( ncdump -v Times ${file} )" | grep -m 2 "${YY}-${MM}-${DD}" | cut -d '{' -f 2 | cut -d '"' -f 2 )
     hh=$( echo ${fulldate} | cut -d '_' -f 2 | cut -d ':' -f 1 )
 fi
-module unload ${ncomod}
+[[ -n ${ncomod} ]] && module unload ${ncomod}
 #
 
 echo "Filling time section of the namelist"

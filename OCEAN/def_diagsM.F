@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifndef AVRH
@@ -134,10 +135,26 @@
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifndef AVRH
-      create_new_file=ldefdiaM
+# ifdef DO_NOT_OVERWRITE
+      if (lvar.eq.total_rec-1) then
+#  ifndef AVRH
+        create_new_file=ldefdiaM
+#  else
+        create_new_file=ldefdiaM_avg
+#  endif
+      else
+#  ifndef AVRH
+        create_new_file=.false.
+#  else
+        create_new_file=.false.
+#  endif
+      endif
 # else
+#  ifndef AVRH
+      create_new_file=ldefdiaM
+#  else
       create_new_file=ldefdiaM_avg
+#  endif
 # endif
 !
       if (ncid.ne.-1) create_new_file=.false.
@@ -221,9 +238,9 @@
       if (total_rec.le.1) then
 #  ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &                   ,r3dgrd, w3dgrd)
+     &                   ,r3dgrd, w3dgrd, NF_FOUT)
 #  else
-         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FOUT)
 #  endif
       endif
 # endif
@@ -322,14 +339,11 @@
 !
 ! indxMXadv
 !
-# ifndef TENDENCY
           if (itrc.eq.1) then
             r3dgrd=u3dgrd
           else
             r3dgrd=v3dgrd
           endif
-# endif
-
 !
           lvar=lenstr(vname(1,indxMXadv+itrc-1))
           ierr=nf_def_var (ncid, vname(1,indxMXadv+itrc-1)(1:lvar),

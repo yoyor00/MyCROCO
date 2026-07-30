@@ -1,6 +1,8 @@
-!------------------------------------------------------------------------------
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 MODULE initMUSTANG
-!------------------------------------------------------------------------------
 
 #include "cppdefs.h"
 

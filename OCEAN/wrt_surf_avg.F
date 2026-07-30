@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -110,7 +111,7 @@
 ! Time2
 !
       ierr=nf_put_var1_FTYPE (ncidsurf_avg, surfTime2_avg,
-     &                       record, time
+     &                       record, timesurf_avg
 # ifdef USE_CALENDAR
      &  - origin_date_in_sec
 # endif
@@ -231,4 +232,4 @@
 #else
       subroutine wrt_surf_avg_empty
       end
-#endif /* (DIAGNOSTICS_EK) */
+#endif /* (DIAGNOSTICS_KE) */

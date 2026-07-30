@@ -57,7 +57,7 @@ MODULE p4zprod
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p4zprod.F90 15459 2021-10-29 08:19:18Z cetlod $ 
-   !! Software governed by the CeCILL license (see ./LICENSE)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 CONTAINS
 
@@ -436,32 +436,32 @@ CONTAINS
           CALL iom_put( "tintpp"  , tpp * zfact )  !  global total integrated primary production molC/s
           ! new primary production by nano
           DO_3D( 0, 0, 0, 0, 1, jpk)
-             zw3d(ji,jj,jkR) = ( zprorcan(ji,jj,jk) + xnanono3(ji,jj,jk)  &
+             zw3d(ji,jj,jkR) = ( zprorcan(ji,jj,jk) * xnanono3(ji,jj,jk)  &
                 &              / ( xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk) + rtrn ) ) &
                 &           * zfact * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "PPNEWN", zw3d )  
           ! new primary production by diatomes
           DO_3D( 0, 0, 0, 0, 1, jpk)
-             zw3d(ji,jj,jkR) = ( zprorcad(ji,jj,jk) + xdiatno3(ji,jj,jk)  &
+             zw3d(ji,jj,jkR) = ( zprorcad(ji,jj,jk) * xdiatno3(ji,jj,jk)  &
                 &              / ( xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk) + rtrn ) ) &
                 &           * zfact * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "PPNEWD", zw3d )  
           ! total new production 
           DO_3D( 0, 0, 0, 0, 1, jpk)
-             zw3d(ji,jj,jkR) = ( ( zprorcan(ji,jj,jk) + xnanono3(ji,jj,jk)  &
+             zw3d(ji,jj,jkR) = ( ( zprorcan(ji,jj,jk) * xnanono3(ji,jj,jk)  &
                 &              / ( xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk) + rtrn ) ) &
-                &              +  ( zprorcad(ji,jj,jk) + xdiatno3(ji,jj,jk)  &
+                &              +  ( zprorcad(ji,jj,jk) * xdiatno3(ji,jj,jk)  &
                 &              / ( xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk) + rtrn ) ) ) &
                 &           * zfact * tmask(ji,jj,jk)
           END_3D
           CALL iom_put( "TPNEW", zw3d )  
           ! Regenerated production 
           DO_3D( 0, 0, 0, 0, 1, jpk)
-             zw3d(ji,jj,jkR) = ( ( zprorcan(ji,jj,jk) + xnanonh4(ji,jj,jk)  &
+             zw3d(ji,jj,jkR) = ( ( zprorcan(ji,jj,jk) * xnanonh4(ji,jj,jk)  &
                 &              / ( xnanono3(ji,jj,jk) + xnanonh4(ji,jj,jk) + rtrn ) ) &
-                &              +  ( zprorcad(ji,jj,jk) + xdiatnh4(ji,jj,jk)  &
+                &              +  ( zprorcad(ji,jj,jk) * xdiatnh4(ji,jj,jk)  &
                 &              / ( xdiatno3(ji,jj,jk) + xdiatnh4(ji,jj,jk) + rtrn ) ) ) &
                 &           * o2ut * zfact * tmask(ji,jj,jk)
           END_3D

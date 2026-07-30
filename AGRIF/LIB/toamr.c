@@ -75,13 +75,13 @@ void WARNING_CharSize(const variable *var)
 {
     if ( var->v_nbdim == 0 )
     {
-        if ( convert2int(var->v_dimchar) > 2400 )
+        if ( convert2int(var->v_dimchar) > 5000 )
         {
             printf("WARNING : The dimension of the character  %s   \n", var->v_nomvar);
-            printf("   is upper than 2400. You must change         \n");
+            printf("   is upper than 5000. You must change         \n");
             printf("   the dimension of carray0                    \n");
             printf("   in the file AGRIF/AGRIF_FILES/modtypes.F90  \n");
-            printf("   line 161. Replace 2400 with %d.              \n", convert2int(var->v_dimchar)+100);
+            printf("   line 161. Replace 5000 with %d.              \n", convert2int(var->v_dimchar)+100);
         }
         Save_Length_int(convert2int(var->v_dimchar),1);
     }
@@ -163,7 +163,12 @@ const char *vargridnametabvars (const variable * var, int iorindice)
     else if (!strcasecmp(var->v_typevar, "character"))
     {
         WARNING_CharSize(var);
+        if (!strcasecmp(var->v_dimchar  ,":") && var->v_nbdim == 0 )
+        {
+        sprintf (tname_2, "%% carrayu");
+        } else {
         sprintf (tname_2, "%% carray%d", var->v_nbdim);
+        }
     }
 
     strcat(tname_1, tname_2);
@@ -218,7 +223,19 @@ const char *vargridcurgridtabvars(const variable *var, int which_grid)
         {
             WARNING_CharSize(var);
             sprintf(tname_2, "carray%d", var->v_nbdim);
+      
+
+            if (!strcasecmp(var->v_dimchar  ,":") && var->v_nbdim == 0 )
+            {
+            sprintf (tname_2, "carrayu");
+            } else {
+            sprintf (tname_2, "carray%d", var->v_nbdim);
+            }
+
         }
+
+
+
         if (var->v_pointerdeclare)
         {
                 strcat(tname_1,"%p");
@@ -655,18 +672,10 @@ void write_allocation_Common_0()
                                         tofich(allocationagrif,ligne,1);
                                         IndiceMin = parcours->var->v_indicetabvars;
                                         IndiceMax = parcours->var->v_indicetabvars+compteur;
-                                        sprintf(ligne,"    if (.not. allocated(%s)) then", vargridnametabvars(v,1));
-                                        tofich(allocationagrif,ligne,1);
-                                        sprintf(ligne,"    allocate(%s", vargridnametabvars(v,1));
+                                        sprintf(ligne,"    if (.not. allocated(%s)) allocate(%s", vargridnametabvars(v,1), vargridnametabvars(v,1));
                                         sprintf(ligne2,"%s)", vargridparam(v));
                                         strcat(ligne,ligne2);
                                         tofich(allocationagrif,ligne,1);
-                                        if (!strcasecmp(parcours->var->v_typevar,"real") || !strcasecmp(parcours->var->v_typevar,"integer"))
-                                        {
-                                        sprintf(ligne,"    %s = 0", vargridnametabvars(v,1));
-                                        tofich(allocationagrif,ligne,1);
-                                        }
-                                        tofich(allocationagrif,"endif",1);
                                         tofich(allocationagrif,"enddo",1);
                                         i = parcours->var->v_indicetabvars;
                                         do
@@ -681,19 +690,10 @@ void write_allocation_Common_0()
                                     }
                                     else
                                     {
-                                        sprintf(ligne,"    if (.not. allocated(%s)) then", vargridnametabvars(v,0));
-                                        tofich(allocationagrif,ligne,1);
-                                        sprintf(ligne,"    allocate(%s", vargridnametabvars(v,0));
+                                        sprintf(ligne,"if (.not. allocated(%s)) allocate(%s", vargridnametabvars(v,0), vargridnametabvars(v,0));
                                         sprintf(ligne2,"%s)", vargridparam(v));
                                         strcat(ligne,ligne2);
                                         tofich(allocationagrif,ligne,1);
-                                        if (!strcasecmp(parcours->var->v_typevar,"real") || !strcasecmp(parcours->var->v_typevar,"integer"))
-                                        {
-                                        sprintf(ligne,"    %s = 0", vargridnametabvars(v,0));
-                                        tofich(allocationagrif,ligne,1);
-                                        }
-                                        tofich(allocationagrif,"endif",1);
-
                                         parcoursindic =  (listindice *) calloc(1,sizeof(listindice));
                                         parcoursindic -> i_indice = parcours->var->v_indicetabvars;
                                         parcoursindic -> suiv = list_indic[parcours->var->v_catvar];
@@ -916,35 +916,19 @@ void write_allocation_Global_0()
                                         tofich(allocationagrif,ligne,1);
                                         IndiceMin = parcours->var->v_indicetabvars;
                                         IndiceMax = parcours->var->v_indicetabvars+compteur;
-                                        sprintf(ligne,"    if (.not. allocated(%s)) then", vargridnametabvars(v,1));
-                                        tofich(allocationagrif,ligne,1);
-                                        sprintf(ligne,"    allocate(%s", vargridnametabvars(v,1));
+                                        sprintf(ligne,"    if (.not. allocated(%s)) allocate(%s", vargridnametabvars(v,1), vargridnametabvars(v,1));
                                         sprintf(ligne2,"%s)", vargridparam(v));
                                         strcat(ligne,ligne2);
                                         tofich(allocationagrif,ligne,1);
-                                        if (!strcasecmp(parcours->var->v_typevar,"real") || !strcasecmp(parcours->var->v_typevar,"integer"))
-                                        {
-                                        sprintf(ligne,"    %s = 0", vargridnametabvars(v,1));
-                                        tofich(allocationagrif,ligne,1);
-                                        }
-                                        tofich(allocationagrif,"endif",1);
                                         tofich(allocationagrif,"enddo",1);
                                         parcours = parcoursprec;
                                     }
                                     else
                                     {
-                                        sprintf(ligne,"    if (.not. allocated(%s)) then", vargridnametabvars(v,0));
-                                        tofich(allocationagrif,ligne,1);
-                                        sprintf(ligne,"    allocate(%s", vargridnametabvars(v,0));
+                                        sprintf(ligne,"if (.not. allocated(%s)) allocate(%s", vargridnametabvars(v,0), vargridnametabvars(v,0));
                                         sprintf(ligne2,"%s)", vargridparam(v));
                                         strcat(ligne,ligne2);
                                         tofich(allocationagrif,ligne,1);
-                                        if (!strcasecmp(parcours->var->v_typevar,"real") || !strcasecmp(parcours->var->v_typevar,"integer"))
-                                        {
-                                        sprintf(ligne,"    %s = 0", vargridnametabvars(v,0));
-                                        tofich(allocationagrif,ligne,1);
-                                        }
-                                        tofich(allocationagrif,"endif",1);
                                     }
                                 }
                             } /* end of the allocation part                                       */

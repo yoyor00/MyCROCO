@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -256,7 +257,7 @@
       wrtdiags_vrt_avg(3)=.false.
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
       wrtdiags_ek(3)=.false.
 # ifdef AVERAGES
       wrtdiags_ek_avg(3)=.false.
@@ -269,7 +270,6 @@
 # endif
 #endif
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
-      wrtdiags_eddy(3)=.false.
 # ifdef AVERAGES
       wrtdiags_eddy_avg(3)=.false.
 # endif
@@ -877,7 +877,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_VRT */
 
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
 !
 ! Diagnostics ek file name.
 !
@@ -913,7 +913,7 @@ c        close(testunit)
 #endif
 
 # endif
-#endif /*DIAGNOSTICS_EK */
+#endif /*DIAGNOSTICS_KE */
 
 #if defined DIAGNOSTICS_PV
 !
@@ -956,19 +956,6 @@ c        close(testunit)
 !
 ! Diagnostics eddy file name.
 !
-      elseif (keyword(1:kwlen).eq.'diags_eddy') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95) ldefdiags_eddy, nwrtdiags_eddy, nrpfdiags_eddy
-        if (nwrtdiags_eddy.eq.0) nwrtdiags_eddy = nwrt
-        read(input,'(A)',err=95) fname
-        lstr=lenstr(fname)
-# if defined MPI && defined PARALLEL_FILES
-        call insert_node (fname, lstr, mynode2, NNODES2, ierr)
-# endif
-        diags_eddyname=fname(1:lstr)
-#ifdef ENSEMBLE
-        diags_eddyname=cmember//diags_eddyname
-#endif
 !
 # ifdef AVERAGES
       elseif (keyword(1:kwlen).eq.'diags_eddy_avg') then
@@ -1702,7 +1689,7 @@ c        close(testunit)
 
 #endif /*DIAGNOSTICS_VRT */
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
 !
 ! Switches for fields to be saved into kinetic energy diagnostics file.
 !
@@ -1723,7 +1710,7 @@ c        close(testunit)
           if (wrtdiags_ek_avg(itrc)) wrtdiags_ek_avg(3)=.true.
        enddo
 # endif /* AVERAGES  */
-#endif /*DIAGNOSTICS_EK */
+#endif /*DIAGNOSTICS_KE */
 
 
 #if defined DIAGNOSTICS_PV
@@ -1755,17 +1742,6 @@ c        close(testunit)
 
 
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
-!
-! Switches for fields to be saved into eddy diagnostics file.
-!
-!!          wrtdiags_eddy=.true.
-      elseif (keyword(1:kwlen).eq.'diags_eddy_history_fields') then
-        call cancel_kwd (keyword(1:kwlen), ierr)
-        read(input,*,err=95)  wrtdiags_eddy(1)
-         do itrc=1,1
-           if (wrtdiags_eddy(itrc)) wrtdiags_eddy(3)=.true.
-        enddo
-
 # ifdef AVERAGES
 !!         wrtdiags_eddy_avg=.true.
       elseif (keyword(1:kwlen).eq.'diags_eddy_average_fields') then
@@ -2591,7 +2567,7 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_VRT */
 
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
           lstr=lenstr(diags_ekname)
           MPI_master_only write(stdout,
      &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
@@ -2609,7 +2585,7 @@ c        close(testunit)
      &    'Starting timestep = ',ntsdiags_ek_avg
 
 # endif
-#endif /*DIAGNOSTICS_EK */
+#endif /*DIAGNOSTICS_KE */
 
 #if defined DIAGNOSTICS_PV
           lstr=lenstr(diags_pvname)
@@ -2632,13 +2608,6 @@ c        close(testunit)
 #endif /*DIAGNOSTICS_PV */
 
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
-          lstr=lenstr(diags_eddyname)
-          MPI_master_only write(stdout,
-     &    '(5x,A,2x,A/,32x,A,1x,L1,2x,A,I4,2x,A,I3)')
-     &    'eddy Diag File:', diags_eddyname(1:lstr),
-     &    'Create new:', ldefdiags_eddy, 'nwrt =', nwrtdiags_eddy,
-     &    'rec/file =', nrpfdiags_eddy
-!
 # ifdef AVERAGES
           lstr=lenstr(diags_eddyname_avg)
           MPI_master_only write(stdout,
@@ -3117,7 +3086,7 @@ c        close(testunit)
 
 #endif /*DIAGNOSTICS_VRT */
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
           do itrc=1,1
           MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
      &         wrtdiags_ek(itrc),
@@ -3133,7 +3102,7 @@ c        close(testunit)
      &        ' Momentum of index', itrc
           enddo
 # endif /* AVERAGES  */
-#endif /*DIAGNOSTICS_EK */
+#endif /*DIAGNOSTICS_KE */
 
 
 #if defined DIAGNOSTICS_PV
@@ -3158,11 +3127,6 @@ c        close(testunit)
 
 
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
-          do itrc=1,1
-          MPI_master_only write(stdout, '(6x,L1,2x,A,2x,A,I2)')
-     &         wrtdiags_eddy(itrc),
-     &         'write Reynolds stress terms '
-          enddo
 
 # ifdef AVERAGES
           do itrc=1,1
