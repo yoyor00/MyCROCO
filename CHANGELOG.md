@@ -28,6 +28,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
+  
+- SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
 
 - BENCH : Fix report check status in case of several files (#498)
 - BENCH : Fix label in plot_realist.py (#494)
@@ -48,6 +50,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix grid variables writing in average and diagnostic file (#522)
 
 - Fix ABORT MPI when problem in reading netcdf (#167)
+
+- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
+           inconsistent with what done for calcite dissolution (#531)
+           Big fix in the calculation of NEW primary productivity with XIOS (#535)
 
 ### Changed
 
