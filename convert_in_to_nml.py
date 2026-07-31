@@ -5,17 +5,17 @@ convert_in_to_nml.py
 Convert a CROCO `croco.in` + `cppdefs.h` + `param.h` set into
 `croco.nml` + `cppdefs_config.h` + `param_config.h`.
 
-Takes these 3 inputs and an optional one to specified CROCO source path
-if the script is used elsewhere.
+Takes these 3 inputs.
+Optional inputs to specified name of outputs and
+CROCO source path if the script is used elsewhere.
 
 Usage
 -----
     python convert_in_to_nml.py croco.in cppdefs.h param.h
-    python convert_in_to_nml.py croco.in cppdefs.h param.h -o /path/to/rundir
 
-Outputs (written to --outdir, default: current directory)
------------------------------------------------------------
-    croco.nml          Fortran namelist.  Array variables (tnu2, Akt_bak, …)
+Outputs
+-------
+    croco.nml           Fortran namelist.  Array variables (tnu2, Akt_bak, …)
                         use compact Fortran repeat notation  NT*value  when
                         all values are equal, where NT is resolved from
                         param.h.
@@ -30,7 +30,7 @@ Outputs (written to --outdir, default: current directory)
                         keep the template's own value; expression-valued
                         lines and #include lines are left untouched.
 
-    cppdefs_config.h     The input cppdefs.h, copied through as-is.
+    cppdefs_config.h    The input cppdefs.h, copied through as-is.
 
 Extending the mapping
 ---------------------
@@ -1479,7 +1479,7 @@ def main():
         description="Convert a CROCO croco.in + cppdefs.h + param.h into croco.nml + cppdefs_config.h + param_config.h.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Takes these 3 inputs and an optional one to specified CROCO source path 
+Takes these 3 inputs and optional ones to specified output names and CROCO source path 
 if the script is used elsewhere.
 """,
     )
