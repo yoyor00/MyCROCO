@@ -13,7 +13,7 @@ import shutil
 import json
 
 # internal
-from ..helpers import Messaging, patch_lines, move_in_dir, run_shell_command
+from ..helpers import Messaging, patch_lines, move_in_dir, run_shell_command, normalize_line
 from .setup import AbstractCrocoSetup
 from ..config import Config
 
@@ -28,48 +28,9 @@ class JobcompCrocoConfig:
     def __init__(self, builddir: str):
         self.builddir = builddir
 
-    def cppdef_h_select_case(self, case_name: str):
-        """
-        Patch the cppdef.h to select the CASE to be used.
-        """
-
-        # progress
-        Messaging.step(f"Select case : {case_name}")
-        self.case = case_name
-
-        # set patching rules
-        rules = []
-
-        # disable REGIONAL
-        rules.append(
-            {
-                "mode": "replace",
-                "what": "#define REGIONAL        /* REGIONAL Applications */\n",
-                "by": "#undef REGIONAL        /* REGIONAL Applications */\n",
-                "descr": "Disable default REGIONAL case",
-            }
-        )
-
-        # insert the wanted one
-        rules.append(
-            {
-                "mode": "insert-after",
-                "what": "#undef REGIONAL        /* REGIONAL Applications */\n",
-                "insert": f"#define {case_name}\n",
-                "descr": f"Enabled wanted {case_name} case",
-            }
-        )
-
-        # apply
-        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
-
     def cppdef_h_set_key(self, key_name: str, status: bool):
         """
-        Force enabling or disabling some cppkeys in cppdefs.h. In order to
-        be applied to all cases without having to search the in case position.
-
-        We place it just after the cases and before inclusion of cppdefs_dev.h
-        which need to have everything well defined.
+        Force enabling or disabling some cppkeys in cppdefs.h.
 
         Note: It is necessary to put # undef before # define as some keys can be
               already defined.
@@ -83,36 +44,44 @@ class JobcompCrocoConfig:
             status_tochange = "define"
             status_wanted = "undef"
 
-        if self.case == "REGIONAL":
-            case_line_to_find = f"#if defined {self.case}"
-        else:
-            case_line_to_find = f"#elif defined {self.case}"
+        cppdefs_path = os.path.join(self.builddir, "cppdefs.h")
 
-        # First, change possible existant status to match the wanted one
-        # -------------------------------------------------------------------
-        # build the patch rule
+        # Check whether the key is mentioned at all (in either state)
+        # already, so we know whether the replace-rule below will actually
+        # do anything or whether we need to insert a fresh line instead -
+        # silently doing neither would leave the key unset.
+        with open(cppdefs_path, "r", encoding="utf-8") as f:
+            existing_lines = f.readlines()
+        key_exists = any(
+            normalize_line(line) in (f"# define {key_name}", f"# undef {key_name}")
+            for line in existing_lines
+        )
+
+        if key_exists:
+            # Change the existing status to match the wanted one, wherever
+            # the key currently is.
+            rules = [
+                {
+                    "mode": "replace",
+                    "what": f"# {status_tochange} {key_name}",
+                    "by": f"# {status_wanted} {key_name}",
+                    "descr": f"Set {key_name} to {status}",
+                }
+            ]
+            patch_lines(cppdefs_path, rules)
+            return
+
+        # cppdefs.h is always a pre-resolved, single-case file (no "#elif
+        # defined <CASE>" block to anchor on, but also no other case in the
+        # file to accidentally affect) - insert the missing key at begining
         rules = [
             {
-                "mode": "replace",
-                "what": f"# {status_tochange} {key_name}",
-                "by": f"# {status_wanted} {key_name}",
-                "descr": f"Set {key_name} to {status}",
-            }
-        ]
-        # apply
-        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
-        # Then, add wanted key and status in the right case place
-        # -------------------------------------------------------------------
-        rules = [
-            {
-                "mode": "insert-after",
-                "what": case_line_to_find,
+                "mode": "insert-at-begin",
                 "insert": f"# {status_wanted} {key_name}",
-                "descr": f"Set {key_name} to {status}",
+                "descr": f"Add missing key {key_name} = {status}",
             }
         ]
-        # apply
-        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
+        patch_lines(cppdefs_path, rules)
 
     def param_h_configure_openmp_split(self, splitting: str):
         """
@@ -131,8 +100,8 @@ class JobcompCrocoConfig:
         rules = [
             {
                 "mode": "replace",
-                "what": "      parameter (NPP=4)\n",
-                "by": f"      parameter (NPP={threads})\n",
+                "what": "      integer, parameter :: NPP = 4",
+                "by": f"      integer, parameter :: NPP = {threads}",
                 "descr": f"Set OPENMP threads = {threads}",
             }
         ]
@@ -144,9 +113,15 @@ class JobcompCrocoConfig:
         rules = [
             {
                 "mode": "replace",
-                "what": "      parameter (NSUB_X=1, NSUB_E=NPP)\n",
-                "by": f"      parameter (NSUB_X={np_x}, NSUB_E={np_eta})\n",
-                "descr": f"Set OPENMP splitting : {splitting} : ranks={threads}, np_xi={np_x}, np_eta={np_eta}",
+                "what": "      integer, parameter :: NSUB_X = 1 ",
+                "by": f"      integer, parameter :: NSUB_X = {np_x}",
+                "descr": f"Set OPENMP splitting : {splitting} : ranks={threads}, NSUB_X={np_x}",
+            },
+            {
+                "mode": "replace",
+                "what": "      integer, parameter :: NSUB_E = NPP",
+                "by": f"      integer, parameter :: NSUB_E = {np_eta}",
+                "descr": f"Set OPENMP splitting : {splitting} : ranks={threads}, NSUB_E={np_eta}",
             }
         ]
 
@@ -175,9 +150,15 @@ class JobcompCrocoConfig:
         rules = [
             {
                 "mode": "replace",
-                "what": "      parameter (NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA)\n",
-                "by": f"      parameter (NP_XI={np_x},  NP_ETA={np_eta},  NNODES=NP_XI*NP_ETA)\n",
-                "descr": f"Set MPI splitting : {splitting} : ranks={ranks}, np_xi={np_x}, np_eta={np_eta}",
+                "what": "      integer, parameter :: NP_XI = 1",
+                "by": f"      integer, parameter :: NP_XI = {np_x}",
+                "descr": f"Set MPI splitting : {splitting} : ranks={ranks}, np_xi={np_x}",
+            },
+            {
+                "mode": "replace",
+                "what": "      integer, parameter :: NP_ETA = 4",
+                "by": f"      integer, parameter :: NP_ETA = {np_eta}",
+                "descr": f"Set MPI splitting : {splitting} : ranks={ranks}, np_eta={np_eta}",
             }
         ]
 
@@ -378,7 +359,9 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
                 capture=self.config.capture,
             )
 
-    def configure(self, args: str) -> None:
+    def configure(
+        self, args: str, cppdefs_file: str = None, param_file: str = None
+    ) -> None:
         """
         Perform the configuration.
 
@@ -387,6 +370,11 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         args: str
             Arguments on the form normally passed to the
             script which will be translated in what is needed for CROCO.
+        cppdefs_file: str
+            Optional absolute path to a pre-resolved, single-case cppdefs.h
+            to use instead of patching the master cppdefs.h.
+        param_file: str
+            Same as cppdefs_file, but for param.h.
         """
 
         Messaging.step(f"jobcomp-configure {args}")
@@ -394,11 +382,19 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # get options
         options = self.emulate_cmd_line_parse_args(args)
 
-        # create build dir
+        # create build dir (copies the master cppdefs.h/param.h as a baseline)
         self.create_build_dir()
 
-        # set case
-        self.croco_config.cppdef_h_select_case(options.with_case)
+        # erase the just-copied master files with the pre-resolved, per-case
+        # ones if given, BEFORE any other patch is applied. Since the case is
+        # already selected in cppdefs_file, skip the case-selection patch.
+        if cppdefs_file is not None:
+            Messaging.step(f"Use pre-resolved cppdefs.h : {cppdefs_file}")
+            shutil.copyfile(cppdefs_file, os.path.join(self.builddir, "cppdefs.h"))
+
+        if param_file is not None:
+            Messaging.step(f"Use pre-resolved param.h : {param_file}")
+            shutil.copyfile(param_file, os.path.join(self.builddir, "param.h"))
 
         # configure optimization and set flags
         self.configure_optimisation(options)

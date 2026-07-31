@@ -392,6 +392,7 @@ C$OMP BARRIER
      &                          ,deallocate_tile_test_str
       use module_oa_variables, only : test_analysis
 
+      use croco_namelist, only: ndtfast, ntimes
 ! BLXD WARNING TESTING 
 ! use scalars => i) use param ii) include "scalars.h" 
 ! use param   => include "param.h"

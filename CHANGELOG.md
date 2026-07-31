@@ -28,8 +28,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
+  
+- SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
 
 - BENCH : Fix report check status in case of several files (#498)
+- BENCH : Fix label in plot_realist.py (#494)
 
 - NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
   2d and 3d U-momentum for northern open boundary conditions when 
@@ -41,10 +44,29 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   initialized in this case). This was done through key ROGUE_WAVES, now changed 
   to WAVE_MAKER_DATA (#518)
 
+- SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
+
 - Fix time in surf average output file (#388)
 - Fix grid variables writing in average and diagnostic file (#522)
 
+- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
+           inconsistent with what done for calcite dissolution (#531)
+           Big fix in the calculation of NEW primary productivity with XIOS (#535)
+
 ### Changed
+
+- Input file croco.in replace by a standard namelist (#497)
+  Replace the fixed-format croco.in reader with a Fortran namelist system
+  (croco.nml). All configuration parameters are now in structured &croco_*
+  namelists.
+  A convert_in_to_nml.py utility is provided to easily convert 
+  previous croco.in into croco.nml.
+
+- Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
+  with standardized uppercase filenames. Update all BENCH jsonc configs
+  and plot scripts accordingly, as well as production run scripts.
+
+- AGRIF : update conv version (#510)
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
   (Issue #347)
@@ -102,6 +124,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
 
+- Test cases CPP keys replace by namelist parameter (#497)
+  Remove all test-case CPP guards from the solver. Test-case selection is
+  now done at runtime via testcase_name in the namelist, not at compile
+  time. cppdefs.h and cppdefs_dev.h are cleaned of all per-case guards.
+  cppdefs.h and param.h are now provided by case in TEST_CASES. The regional 
+  Benguela example is also copied to OCEAN.
+
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
@@ -144,6 +173,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Support :
   - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
+  - use matrix capabilities in gitlab-ci (#519)
+  - avoid misnaming ifort/ifx in gitlab-ci (#492)
 
 ### Contributors on this release
 

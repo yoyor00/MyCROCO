@@ -10,6 +10,9 @@ MODULE plug_OBSTRUCTIONS
    ! interface between croco and obstruction module
 
    USE module_OBSTRUCTIONS
+# ifdef WET_DRY
+   USE croco_namelist, only: D_wetdry
+# endif
 
    USE init_OBSTRUCTIONS, ONLY: obst_init
    USE OBSTRUCTIONS, ONLY: obst_update

@@ -81,6 +81,7 @@
 !             model grid (must account for grid angle)
 !********************************************************************!
 !
+      use croco_namelist, only: dt, rho0, Cdb_min, Cdb_max
       implicit none
 # include "param.h"
 # include "bbl.h"
@@ -98,10 +99,6 @@
 # include "mixing.h"
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
-# endif
-# ifdef SANDBAR
-#  undef  BBL_WAVE_SKEWNESS
-#  define BBL_BREAKING_STIR
 # endif
       logical SAND, SILT
       integer Iend, Istr, Jend, Jstr, i, ised, j, k

@@ -15,6 +15,7 @@
       subroutine lmd_bkpp_tile (Istr,Iend,Jstr,Jend, Kv,Kt,Ks,
      &                     Gm1,dGm1dS, Gt1,dGt1dS, Gs1,dGs1dS,
      &                        wm,ws, my_hbbl,my_kbbl,wrk, Rib)
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "grid.h"

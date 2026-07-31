@@ -17,7 +17,7 @@
 !---------------------------------------------------------------
 !
       subroutine wrt_surf
-
+      use croco_namelist, only: surfname, nrpfsurf
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type

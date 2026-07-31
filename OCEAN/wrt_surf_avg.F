@@ -20,7 +20,7 @@
 !---------------------------------------------------------------
 !
       subroutine wrt_surf_avg
-
+      use croco_namelist, only: surfname_avg, nrpfsurf_avg
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
