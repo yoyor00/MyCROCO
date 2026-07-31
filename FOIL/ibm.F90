@@ -848,13 +848,15 @@ CONTAINS
             ! Add all eggs in mat_eggs, matrix for spawn, looking at the species
             IF (repro) THEN
                ! When time to spawn comes, particle releases all accumulated eggs (Neggs) in mat_eggs where it is
-               IF (time_to_spawn .and. particle%Neggs > 0.0_rsh) THEN
+               pos%xp = particle%xpos
+               pos%yp = particle%ypos
+               CALL define_pos(pos)
+               IF (time_to_spawn .and. particle%Neggs > 0.0_rsh .and.                         &
+                  rmask(NINT(pos%idx_r),NINT(pos%idy_r)) > 0.5_rsh) THEN
                   mat_eggs(NINT(particle%xpos), NINT(particle%ypos), ind_species) = particle%Neggs + &
-                                                                                    mat_eggs(NINT(particle%xpos), &
-                                                                                             NINT(particle%ypos), ind_species)
+                     mat_eggs(NINT(particle%xpos), NINT(particle%ypos), ind_species)
                   particle%Neggs = 0.0_rsh
                END IF
-
             END IF
 
             !--------------------------------------------------------------------------------

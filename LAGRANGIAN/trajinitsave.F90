@@ -439,6 +439,15 @@ CONTAINS
             t_traj_end = time_end
          END IF
 
+         ! Read output file
+         READ (49, '(a)', iostat=eof) rec
+         kk = index(rec, ',|')
+         IF (kk > 0) THEN
+            new_patch%file_out = trim(dir_pathout)//rec(1:kk - 1)
+         ELSE
+            new_patch%file_out = trim(dir_pathout)//rec
+         END IF
+
          new_patch%t_beg = t_traj_beg
          new_patch%t_end = t_traj_end
          new_patch%t_save = t_traj_beg
@@ -525,14 +534,6 @@ CONTAINS
             ! Type of vertical behavior (integer):
             READ (49, *, iostat=eof) new_patch%init_particle%itypevert
 
-            ! Read output file
-            READ (49, '(a)', iostat=eof) rec
-            kk = index(rec, ',|')
-            IF (kk > 0) THEN
-               new_patch%file_out = trim(dir_pathout)//rec(1:kk - 1)
-            ELSE
-               new_patch%file_out = trim(dir_pathout)//rec
-            END IF
             READ (49, *, iostat=eof)
             ! == End of file reading
 
@@ -729,14 +730,6 @@ CONTAINS
                   ! Type of vertical behavior (integer):
                   READ (49, *, iostat=eof) new_patch%init_particle%itypevert
 
-                  ! Read output file
-                  READ (49, '(a)', iostat=eof) rec
-                  kk = index(rec, ',|')
-                  IF (kk > 0) THEN
-                     new_patch%file_out = trim(dir_pathout)//rec(1:kk - 1)
-                  ELSE
-                     new_patch%file_out = trim(dir_pathout)//rec
-                  END IF
                   READ (49, *, iostat=eof)
                   ! == End of file reading
 
@@ -837,15 +830,6 @@ CONTAINS
 #ifdef FOIL
                      IF (ibm_restart) new_patch%file_inp = trim(dir_pathout)//rec
 #endif
-                  END IF
-
-                  ! Read output file
-                  READ (49, '(a)', iostat=eof) rec
-                  kk = index(rec, ',|')
-                  IF (kk > 0) THEN
-                     new_patch%file_out = trim(dir_pathout)//rec(1:kk - 1)
-                  ELSE
-                     new_patch%file_out = trim(dir_pathout)//rec
                   END IF
 
                   ! Number of particles set at each exact initial position (x,y,z)

@@ -241,10 +241,12 @@ CONTAINS
 
             ! Skip if species stage not appropriate
             ! Modif Clara
+#ifdef FOIL            
 #ifdef MPI
             IF (particle%stage >= 5 .OR. particle%super <= 0.0_rsh) CYCLE
 #else
             IF (particle%stage >= 1 .OR. particle%super <= 0.0_rsh) CYCLE ! pour 3D_1DV
+#endif
 #endif
 
             ! Skip if flag is missing...

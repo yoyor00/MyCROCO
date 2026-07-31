@@ -54,13 +54,13 @@
 :-----------------------------------------------------------------------------
 :
  &namibmpop
-        repro             = .true.
-        dt_spawn          = 72
-        max_part          = 25000
+        repro          = .true.
+        dt_spawn       = 24
+        max_part       = 1500
         duration_ibm_anc  = 1460
         duration_ibm_sar  = 2980
         fish_mort         = .true.
-        fishing_strategy  = 'historical'
+        fishing_strategy  = 'Catch'
         multiplier_tac    = 0.8
         density_dependent = .false./
 :
@@ -82,15 +82,15 @@
 :-----------------------------------------------------------------------------
 :
  &namibmdeb
-      debuse    =.true.
-      F_Fix     =.false.
-      ffix      = 0.8
-      file_NBSS ='../inputs/NBSS_manga.nc'
-      file_food ='ibm_zooc.nc' 
-      frac_deb_death = .false./
+	debuse    =.true.
+	F_Fix     =.true.
+	ffix      = 0.8
+	file_NBSS ='../inputs/NBSS_manga.nc'
+	file_food ='./inputs/init_FOIL/DEB_inputs/cmems_mod_glo_bgc_my_0.083deg-lmtl_P1D-i_1765190183327.nc' 
+	frac_deb_death = .false./
 :
 :-----------------------------------------------------------------------------
-: namibmfrc         EXTERNAL FORCING FILES
+: namibmfrc         EXTERNAL FORCING FILES 
 :-----------------------------------------------------------------------------
 :
 : fileanchovy          : anchovy DEB parameter file
@@ -106,13 +106,13 @@
 :-----------------------------------------------------------------------------
 :
  &namibmfrc
-        fileanchovy          = '../croco-mustang/FOIL_inputs/deb_parameters_anc.txt'
-        filesardine          = '../croco-mustang/FOIL_inputs/deb_parameters_sar.txt'
-        catch_anc_bob        = '../inputs/catch_anc_bob.txt'
-        catch_sar_bob        = '../inputs/catch_sar_bob.txt'
-        fileprobadistrib_anc = '../inputs/probadistrib_1_2.nc'
+        fileanchovy          = './inputs/init_FOIL/DEB_inputs/deb_parameters_anc.txt'
+        filesardine          = './inputs/init_FOIL/DEB_inputs/deb_parameters_sar.txt'
+        catch_anc_bob        = './inputs/init_FOIL/DEB_inputs/low_catch.txt'
+        catch_sar_bob        = './inputs/init_FOIL/DEB_inputs/low_catch.txt'
+        fileprobadistrib_anc = './inputs/init_FOIL/DEB_inputs/probadistrib_1_2_Benguela_LR.nc'
         nbSizeClass_anc      = 36
         sizemin_anc          = 3.5
-        fileprobadistrib_sar = '../inputs/probadistrib_1_2.nc'
-        nbSizeClass_sar      = 36
+        fileprobadistrib_sar = './inputs/init_FOIL/DEB_inputs/probadistrib_1_2_Benguela_LR.nc'
+        nbSizeClass_sar      = 36 
         sizemin_sar          = 3.5/

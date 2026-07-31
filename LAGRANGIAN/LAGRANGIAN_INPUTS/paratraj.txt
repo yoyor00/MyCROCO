@@ -12,18 +12,15 @@
 : dir_pathout : optional base directory for trajectory output, and restart files
 :               used by FOIL configuration
 : itypepatch  : method used to define the initial patch positions:
-:               1 = circular patches
-:               2 = rectangular patches
-:               3 = positions read from a NetCDF file
+:               1 = circle, 2 = rectangle, 3 = NetCDF positions
 :               This value must match the format of file_trajec.
-: dtsave_traj : Time step of traj output
 :
 :-----------------------------------------------------------------------------
 :
  &namtraj
- 	file_trajec = './'traject3d_type1circ.dat
-	dir_pathout = './output/'
-	itypepatch = 1 
+ 	file_trajec = './traject3d_type2rect.dat'
+	dir_pathout = './output/output_lag/'
+	itypepatch = 2
 	dtsave_traj = 24.d0 /
 :
 :-----------------------------------------------------------------------------
@@ -40,5 +37,5 @@
 :-----------------------------------------------------------------------------
 :
  &namtrajdiff
-    dtz  = 3
-    hdiff = 5.0 /
+      dtz  = 3
+      hdiff = 5.0 /

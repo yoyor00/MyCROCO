@@ -20,26 +20,26 @@ END OF FILE DESCRIPTION
 
 **************************************************************
 patch1                          ,| Patch name
-2009/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
-2011/12/31 23:59:59             ,| Trajectory end date (tendtraj)
-../../inputs/trajectoire/T2.nc  ,| Input NetCDF file (filetrajin)
-./PlT2.nc                       ,| Output trajectory file (filetrajout)
+2005/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
+2005/12/31 23:59:59             ,| Trajectory end date (tendtraj)
+Lagnc_fix.nc                    ,| Output trajectory file (filetrajout)
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| Input NetCDF file (filetrajin)
 1                               ,| Particles released per NetCDF position (nb_part_intro)
-1                               ,| Vertical advection and turbulent diffusion (itypevert)
+0                               ,| Vertical advection and turbulent diffusion (itypevert)
 **************************************************************
 patch2                          ,| Patch name
-2009/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
-2011/12/31 23:59:59             ,| Trajectory end date (tendtraj)
-../../inputs/trajectoire/T3.nc  ,| Input NetCDF file (filetrajin)
-./PlT3.nc                       ,| Output trajectory file (filetrajout)
+2005/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
+2005/12/31 23:59:59             ,| Trajectory end date (tendtraj)
+Lagnc_ad.nc                     ,| Output trajectory file (filetrajout)
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| Input NetCDF file (filetrajin)
 1                               ,| Particles released per NetCDF position (nb_part_intro)
-1                               ,| Vertical advection and turbulent diffusion (itypevert)
+-1                              ,| Vertical advection and turbulent diffusion (itypevert)
 **************************************************************
 patch3                          ,| Patch name
-2009/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
-2011/12/31 23:59:59             ,| Trajectory end date (tendtraj)
-../../inputs/trajectoire/T5.nc  ,| Input NetCDF file (filetrajin)
-./PlT5.nc                       ,| Output trajectory file (filetrajout)
+2005/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
+2005/12/31 23:59:59             ,| Trajectory end date (tendtraj)
+Lagnc_addif.nc                    ,| Output trajectory file (filetrajout)
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| Input NetCDF file (filetrajin)
 1                               ,| Particles released per NetCDF position (nb_part_intro)
 1                               ,| Vertical advection and turbulent diffusion (itypevert)
 **************************************************************
