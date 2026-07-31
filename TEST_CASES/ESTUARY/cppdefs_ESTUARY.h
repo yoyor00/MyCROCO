@@ -43,6 +43,7 @@
 # endif
 # ifdef MUSTANG
 #  undef  key_MUSTANG_V2
+#  define key_noTSdiss_insed
 # endif
 # define PSOURCE
 # define ANA_PSOURCE
