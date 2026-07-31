@@ -140,6 +140,7 @@
       USE comMUSTANG,  ONLY : flx_s2w_CROCO
 #   endif
 
+      use croco_namelist, only: dt
       implicit none
 #include "param.h"
 #include "ncscrum.h"

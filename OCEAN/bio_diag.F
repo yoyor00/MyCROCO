@@ -21,6 +21,7 @@
       end
 
       subroutine bio_diag_tile (Istr,Iend,Jstr,Jend)
+        use croco_namelist, only: ninfo
       implicit none
 # include "param.h"
 # include "grid.h"

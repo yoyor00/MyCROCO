@@ -9,7 +9,7 @@
       "SEDIMENT": false,
     },
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_tidal_flat.py",
+      "plotphy_script": "./TEST_CASES/TIDAL_FLAT/plot_tidal_flat.py",
       "plotphy_script_input": "tidal_flat_his.nc",
     },
     "patches": {},

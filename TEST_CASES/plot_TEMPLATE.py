@@ -8,10 +8,13 @@ TODO: describe what this test case does and what the plot shows.
 """
 
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import argparse
+# import croco_utils as cr  # uncomment if vertical coordinates are needed
 
 # ── CLI (standard BENCH-compatible interface) ────────────
 
