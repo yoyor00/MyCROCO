@@ -302,27 +302,24 @@ SUBROUTINE sed_skinstress(ifirst, ilast, jfirst, jlast)
 
 INTEGER, INTENT(IN) :: ifirst, ilast, jfirst, jlast
 
-REAL(KIND=rsh), DIMENSION(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1) :: Zr, Zref
+REAL(KIND=rsh), DIMENSION(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1) :: Zref
 REAL(KIND=rsh), DIMENSION(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1) :: ustar2_u, ustar2_v
 REAL(KIND=rsh), DIMENSION(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1) :: ux, vx
 REAL(KIND=rsh) :: z0_factor
-
-!--- Bottom cell height, clipped to z0sed + margin -----------------------
-    Zr = compute_zr(z_r(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1), &
-                    z_w(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 0), &
-                    z0sed(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1))
 
 #ifdef BBL
 !--- BBL branch : tauskin from wave-current bottom stress ----------------
 !    d50 is constant (160 microns) in bustrw/bvstrw — see bbl.F
 CALL compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
-    u(:, :, 1, nnew), v(:, :, 1, nnew), &
-    bustrw, bvstrw, rho0, &
-#  if defined WET_DRY && defined MASKING
-    rmask_wet, &
-#  endif
-    tauskin, tauskin_c, &
-    tauskin_x, tauskin_y)
+    u(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1, nnew), &
+    v(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1, nnew), &
+    bustrw(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+    bvstrw(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+    rho0, &
+    tauskin(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+    tauskin_c(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+    tauskin_x(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1), &
+    tauskin_y(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1))
 #else /* else BBL */
 !--- Select velocity field and log-argument numerator --------------------
 !    ubar / full depth if l_tauskin_ubar
@@ -336,7 +333,9 @@ CALL compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
     ELSE
         ux = u(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1, nnew)
         vx = v(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1, nnew)
-        Zref = Zr ! bottom cell height
+        Zref = compute_zr(z_r(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 1), &
+                          z_w(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1, 0), &
+                          z0sed(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)) ! bottom cell height
         z0_factor = 1.0_rsh
     END IF
 
@@ -377,12 +376,13 @@ CALL compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
     END IF
 
 !--- Wave + current combination (Soulsby 1995) ----------------------------
-#  ifdef WAVE_OFFLINE
-    CALL combine_wave_current(ifirst, ilast, jfirst, jlast, &
+! Note : tauskin direction is current direction (needed if bedload)
+# if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+    CALL combine_wave_current( &
         tauskin_c(ifirst:ilast, jfirst:jlast), &
-        Uwave(ifirst:ilast, jfirst:jlast), &
-        Dwave(ifirst:ilast, jfirst:jlast), &
-        Pwave(ifirst:ilast, jfirst:jlast), &
+        wave_orbital_velocity(ifirst, ilast, jfirst, jlast), &
+        wave_direction(ifirst, ilast, jfirst, jlast), &
+        wave_period(ifirst, ilast, jfirst, jlast), &
         ubar(ifirst:ilast, jfirst:jlast, nnew), &
         vbar(ifirst:ilast, jfirst:jlast, nnew), &
         z0sed(ifirst:ilast, jfirst:jlast), &
@@ -393,12 +393,20 @@ CALL compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
     tauskin(ifirst:ilast, jfirst:jlast) = tauskin_c(ifirst:ilast, jfirst:jlast)
 #  endif
 
-#  if defined WET_DRY && defined MASKING
-    tauskin(ifirst:ilast, jfirst:jlast) = tauskin(ifirst:ilast, jfirst:jlast)* &
-                                      rmask_wet(ifirst:ilast, jfirst:jlast)
-#  endif
-
 #endif  /* else BBL */
+
+!--- Wet/dry masking : applied identically whether BBL is active or not -----
+! (only the core range is valid for all four fields in every branch above)
+#  if defined WET_DRY && defined MASKING
+    tauskin(ifirst:ilast, jfirst:jlast) = &
+        tauskin(ifirst:ilast, jfirst:jlast)*rmask_wet(ifirst:ilast, jfirst:jlast)
+    tauskin_c(ifirst:ilast, jfirst:jlast) = &
+        tauskin_c(ifirst:ilast, jfirst:jlast)*rmask_wet(ifirst:ilast, jfirst:jlast)
+    tauskin_x(ifirst:ilast, jfirst:jlast) = &
+        tauskin_x(ifirst:ilast, jfirst:jlast)*rmask_wet(ifirst:ilast, jfirst:jlast)
+    tauskin_y(ifirst:ilast, jfirst:jlast) = &
+        tauskin_y(ifirst:ilast, jfirst:jlast)*rmask_wet(ifirst:ilast, jfirst:jlast)
+#  endif
 
     !--- Bottom friction velocity ---------------------------------------------
     WHERE (htot(ifirst:ilast, jfirst:jlast) > h0fond)
@@ -452,53 +460,6 @@ REAL(KIND=rsh), INTENT(IN) :: f_i, f_ip1, w_i, w_ip1
 REAL(KIND=rsh)             :: res
     res = (f_i*w_i + f_ip1*w_ip1)/(w_i + w_ip1 + epsilon_MUSTANG)
 END FUNCTION weighted_avg
-
-#ifdef WAVE_OFFLINE
-ELEMENTAL PURE FUNCTION compute_fws2(Uwave, Pwave, z0sed, &
-             l_fricwave, fws2_default) &
-RESULT(fws2ij)
-! Wave friction factor (Soulsby 1997).
-! Adjusted for significant waves when l_fricwave is true.
-! Falls back to fws2_default otherwise.
-REAL(KIND=rsh), INTENT(IN) :: Uwave, Pwave, z0sed, fws2_default
-LOGICAL, INTENT(IN) :: l_fricwave
-REAL(KIND=rsh)             :: fws2ij
-REAL(KIND=rsh), PARAMETER  :: uwave_min = 0.001_rsh
-REAL(KIND=rsh), PARAMETER  :: pwave_min = 0.001_rsh
-    fws2ij = fws2_default
-    IF (l_fricwave .AND. &
-        Uwave*Pwave > 0.0_rsh .AND. &
-        Pwave > pwave_min .AND. &
-        Uwave > uwave_min) THEN
-        fws2ij = 0.5_rsh*1.39_rsh &
-        *(Uwave*Pwave/REAL(2.0_rlg*pi*z0sed, rsh))**(-0.52_rsh)
-    END IF
-END FUNCTION compute_fws2
-
-ELEMENTAL PURE FUNCTION compute_tauskin_wc(tauskin_c, tauskin_w, &
-                   ubar, vbar, Dwave) &
-RESULT(tauskin)
-! Soulsby (1995) scalar wave+current stress at one rho point.
-! Current stress amplified by wave presence, then combined
-! with wave stress accounting for relative angle.
-! Falls back to simple addition if either stress vanishes.
-REAL(KIND=rsh), INTENT(IN) :: tauskin_c, tauskin_w
-REAL(KIND=rsh), INTENT(IN) :: ubar, vbar, Dwave
-REAL(KIND=rsh)             :: tauskin
-REAL(KIND=rsh)             :: speedbar, tauskin_cw, alpha, beta
-    speedbar = SQRT(ubar**2 + vbar**2)
-    IF (tauskin_c > 0.0_rsh .AND. tauskin_w > 0.0_rsh .AND. speedbar > 0.0_rsh) THEN
-        tauskin_cw = tauskin_c*(1.0_rsh + 1.2_rsh &
-            *(tauskin_w/(tauskin_w + tauskin_c))**3.2_rsh)
-        alpha = ACOS(vbar/speedbar)   ! current direction from north
-        beta = Dwave           ! wave direction from north
-        tauskin = SQRT((tauskin_cw + tauskin_w*ABS(COS(alpha - beta)))**2 &
-            + (tauskin_w*ABS(SIN(alpha - beta)))**2)
-    ELSE
-        tauskin = tauskin_w + tauskin_c
-    END IF
-END FUNCTION compute_tauskin_wc
-#endif
 
 PURE SUBROUTINE compute_ustar2_uv(ifirst, ilast, jfirst, jlast, &
           ux, vx, Zref, z0sed, z0_factor, &
@@ -656,15 +617,13 @@ END SUBROUTINE interpolate_tauskin_c
 PURE SUBROUTINE compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
             ux, vx, &
             bustrw, bvstrw, rho0_val, &
-#if defined WET_DRY && defined MASKING
-            rmask_wet, &
-#endif
             tauskin, tauskin_c, &
             tauskin_x, tauskin_y)
 ! BBL variant : tauskin from precomputed wave-current stresses.
 ! tauskin   = rho0 * sqrt(bustrw^2 + bvstrw^2)
 ! tauskin_c = tauskin (BBL: no wave/current separation)
 ! tauskin_x/y = tauskin_c * velocity direction unit vector (key_MUSTANG_bedload only)
+! WET_DRY/MASKING masking is applied by the caller, after this call.
 
 INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
 REAL(KIND=rsh), INTENT(IN)  :: ux(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
@@ -672,9 +631,6 @@ REAL(KIND=rsh), INTENT(IN)  :: vx(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(IN)  :: bustrw(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(IN)  :: bvstrw(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(IN)  :: rho0_val
-#if defined WET_DRY && defined MASKING
-REAL(KIND=rsh), INTENT(IN)  :: rmask_wet(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
-#endif
 REAL(KIND=rsh), INTENT(OUT) :: tauskin(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_c(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_x(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
@@ -686,9 +642,6 @@ REAL(KIND=rsh) :: urho, vrho, speed
 #endif
 
     tauskin = SQRT(bustrw**2 + bvstrw**2)*rho0_val
-#if defined WET_DRY && defined MASKING
-    tauskin = tauskin*rmask_wet
-#endif
     tauskin_c = tauskin
 
 #ifdef key_MUSTANG_bedload
@@ -708,9 +661,130 @@ REAL(KIND=rsh) :: urho, vrho, speed
 
 END SUBROUTINE compute_tauskin_bbl
 
-#ifdef WAVE_OFFLINE
-PURE SUBROUTINE combine_wave_current(ifirst, ilast, jfirst, jlast, &
-             tauskin_c, Uwave, Dwave, Pwave, &
+#if defined WAVE_OFFLINE || defined MRL_WCI || defined OW_COUPLING
+
+PURE ELEMENTAL REAL(KIND=rsh) FUNCTION compute_uorb(period, amplitude, depth)
+!---------------------------------------------------------------------
+! Compute bed wave orbital velocity (m/s)
+! from wind-induced waves (period and amplitude) and water depth.
+!
+! Use Dean & Dalrymple 1991 6th-degree polynomial to approximate
+! wavenumber on shoaling water.
+!---------------------------------------------------------------------
+implicit none
+! Arguments
+  REAL(KIND=rsh), INTENT(IN)  :: period, amplitude, depth
+
+  REAL(KIND=rsh)  :: Ab, Fwave, Kbh, Kbh2, Kdh
+  REAL(KIND=rsh), parameter :: eps   = 1.e-10
+  REAL(KIND=rsh), parameter :: K1 = 0.6666666666_rsh
+  REAL(KIND=rsh), parameter :: K2 = 0.3555555555_rsh
+  REAL(KIND=rsh), parameter :: K3 = 0.1608465608_rsh
+  REAL(KIND=rsh), parameter :: K4 = 0.0632098765_rsh
+  REAL(KIND=rsh), parameter :: K5 = 0.0217540484_rsh
+  REAL(KIND=rsh), parameter :: K6 = 0.0065407983_rsh
+
+  if (period > eps ) then
+    Fwave = 2.0_rlg * pi / period
+    Kdh = depth*Fwave*Fwave/g
+    Kbh2 = Kdh*Kdh+Kdh/(1.+Kdh*(K1+Kdh*(K2+Kdh*(K3+Kdh*(K4+Kdh*(K5+K6*Kdh))))))
+    Kbh = SQRT(Kbh2)
+    !  Compute excursion amplitude (m)
+    Ab = amplitude/SINH(Kbh) + eps
+  else
+    Ab = 0.
+    Fwave = 0.
+  endif
+
+  ! Compute bed wave orbital velocity (m/s)
+  compute_uorb = Fwave * Ab
+  
+END FUNCTION compute_uorb
+
+PURE FUNCTION wave_orbital_velocity(ifirst, ilast, jfirst, jlast) RESULT(Uw)
+! Wave orbital bottom velocity (m/s), from whichever wave forcing is active.
+INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
+REAL(KIND=rsh) :: Uw(ifirst:ilast, jfirst:jlast)
+#  if defined WAVE_OFFLINE
+    Uw = Uwave(ifirst:ilast, jfirst:jlast)
+#  elif defined OW_COUPLING
+    Uw = ubr(ifirst:ilast, jfirst:jlast)
+#  elif defined MRL_WCI
+    Uw = compute_uorb(Pwave(ifirst:ilast, jfirst:jlast), &
+                      Awave(ifirst:ilast, jfirst:jlast), &
+                        z_w(ifirst:ilast, jfirst:jlast, N) - &
+                        z_w(ifirst:ilast, jfirst:jlast, 0))
+#  endif
+END FUNCTION wave_orbital_velocity
+
+PURE FUNCTION wave_period(ifirst, ilast, jfirst, jlast) RESULT(Pw)
+! Wave period (s), from whichever wave forcing is active.
+INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
+REAL(KIND=rsh) :: Pw(ifirst:ilast, jfirst:jlast)
+#  if defined OW_COUPLING
+    Pw = 2.0_rsh*pi/MAX(wfrq(ifirst:ilast, jfirst:jlast), epsilon_MUSTANG)
+#  else
+    Pw = Pwave(ifirst:ilast, jfirst:jlast)
+#  endif
+END FUNCTION wave_period
+
+PURE FUNCTION wave_direction(ifirst, ilast, jfirst, jlast) RESULT(Dw)
+! Wave direction (rad), from whichever wave forcing is active.
+INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
+REAL(KIND=rsh) :: Dw(ifirst:ilast, jfirst:jlast)
+#  if defined OW_COUPLING
+    Dw = ATAN2(wdre(ifirst:ilast, jfirst:jlast), wdrx(ifirst:ilast, jfirst:jlast))
+#  else
+    Dw = Dwave(ifirst:ilast, jfirst:jlast)
+#  endif
+END FUNCTION wave_direction
+
+ELEMENTAL PURE FUNCTION compute_fws2(Uwave, Pwave, z0sed, &
+             l_fricwave, fws2_default) &
+RESULT(fws2ij)
+! Wave friction factor (Soulsby 1997).
+! Adjusted for significant waves when l_fricwave is true.
+! Falls back to fws2_default otherwise.
+REAL(KIND=rsh), INTENT(IN) :: Uwave, Pwave, z0sed, fws2_default
+LOGICAL, INTENT(IN) :: l_fricwave
+REAL(KIND=rsh)             :: fws2ij
+REAL(KIND=rsh), PARAMETER  :: uwave_min = 0.001_rsh
+REAL(KIND=rsh), PARAMETER  :: pwave_min = 0.001_rsh
+    fws2ij = fws2_default
+    IF (l_fricwave .AND. &
+        Uwave*Pwave > 0.0_rsh .AND. &
+        Pwave > pwave_min .AND. &
+        Uwave > uwave_min) THEN
+        fws2ij = 0.5_rsh*1.39_rsh &
+        *(Uwave*Pwave/REAL(2.0_rlg*pi*z0sed, rsh))**(-0.52_rsh)
+    END IF
+END FUNCTION compute_fws2
+
+ELEMENTAL PURE FUNCTION compute_tauskin_wc(tauskin_c, tauskin_w, &
+                   ubar, vbar, Dwave) &
+RESULT(tauskin)
+! Soulsby (1995) scalar wave+current stress at one rho point.
+! Current stress amplified by wave presence, then combined
+! with wave stress accounting for relative angle.
+! Falls back to simple addition if either stress vanishes.
+REAL(KIND=rsh), INTENT(IN) :: tauskin_c, tauskin_w
+REAL(KIND=rsh), INTENT(IN) :: ubar, vbar, Dwave
+REAL(KIND=rsh)             :: tauskin
+REAL(KIND=rsh)             :: speedbar, tauskin_cw, alpha, beta
+    speedbar = SQRT(ubar**2 + vbar**2)
+    IF (tauskin_c > 0.0_rsh .AND. tauskin_w > 0.0_rsh .AND. speedbar > 0.0_rsh) THEN
+        tauskin_cw = tauskin_c*(1.0_rsh + 1.2_rsh &
+            *(tauskin_w/(tauskin_w + tauskin_c))**3.2_rsh)
+        alpha = ACOS(vbar/speedbar)   ! current direction from north
+        beta = Dwave           ! wave direction from north
+        tauskin = SQRT((tauskin_cw + tauskin_w*ABS(COS(alpha - beta)))**2 &
+            + (tauskin_w*ABS(SIN(alpha - beta)))**2)
+    ELSE
+        tauskin = tauskin_w + tauskin_c
+    END IF
+END FUNCTION compute_tauskin_wc
+
+ELEMENTAL PURE SUBROUTINE combine_wave_current(tauskin_c, Uwave, Dwave, Pwave, &
              ubar, vbar, z0sed, &
              rho, rho0_val, l_fricwave, &
              fws2_default, &
@@ -719,27 +793,24 @@ PURE SUBROUTINE combine_wave_current(ifirst, ilast, jfirst, jlast, &
 ! tauskin direction follows current direction.
 ! If either current or wave stress vanishes, stresses are simply added.
 
-INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
-REAL(KIND=rsh), INTENT(IN)  :: tauskin_c(ifirst:ilast, jfirst:jlast)
-REAL(KIND=rsh), INTENT(IN)  :: Uwave(ifirst:ilast, jfirst:jlast)
-REAL(KIND=rsh), INTENT(IN)  :: Dwave(ifirst:ilast, jfirst:jlast)
-REAL(KIND=rsh), INTENT(IN)  :: Pwave(ifirst:ilast, jfirst:jlast)
-REAL(KIND=rsh), INTENT(IN)  :: ubar(ifirst:ilast, jfirst:jlast)
-REAL(KIND=rsh), INTENT(IN)  :: vbar(ifirst:ilast, jfirst:jlast)
-REAL(KIND=rsh), INTENT(IN)  :: z0sed(ifirst:ilast, jfirst:jlast)
-REAL(KIND=rsh), INTENT(IN)  :: rho(ifirst:ilast, jfirst:jlast)
+REAL(KIND=rsh), INTENT(IN)  :: tauskin_c
+REAL(KIND=rsh), INTENT(IN)  :: Uwave
+REAL(KIND=rsh), INTENT(IN)  :: Dwave
+REAL(KIND=rsh), INTENT(IN)  :: Pwave
+REAL(KIND=rsh), INTENT(IN)  :: ubar
+REAL(KIND=rsh), INTENT(IN)  :: vbar
+REAL(KIND=rsh), INTENT(IN)  :: z0sed
+REAL(KIND=rsh), INTENT(IN)  :: rho
 REAL(KIND=rsh), INTENT(IN)  :: rho0_val, fws2_default
 LOGICAL, INTENT(IN)  :: l_fricwave
-REAL(KIND=rsh), INTENT(OUT) :: tauskin(ifirst:ilast, jfirst:jlast)
-REAL(KIND=rsh), INTENT(OUT) :: tauskin_w(ifirst:ilast, jfirst:jlast)
+REAL(KIND=rsh), INTENT(OUT) :: tauskin
+REAL(KIND=rsh), INTENT(OUT) :: tauskin_w
 
-    ! tauskin_w : vectorised over full domain
-    tauskin_w = (rho + rho0_val)                                              &
+    tauskin_w = (rho + rho0_val) &
                 * compute_fws2(Uwave, Pwave, z0sed, l_fricwave, fws2_default) &
                 * Uwave**2
 
-    ! tauskin : wave + current combination at each rho point
-    tauskin = compute_tauskin_wc(tauskin_c, tauskin_w, ubar, vbar, Dwave)   
+    tauskin = compute_tauskin_wc(tauskin_c, tauskin_w, ubar, vbar, Dwave)
 END SUBROUTINE combine_wave_current
 #endif
 
