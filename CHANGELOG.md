@@ -81,6 +81,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
 
+- MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
+
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
@@ -122,6 +124,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
+  - remove key_tauskin_c_ubar key_tauskin_c_center key_tauskin_c_upwind
+    replace by booleans in namelist (Issue #348)
 
 - Test cases CPP keys replace by namelist parameter (#497)
   Remove all test-case CPP guards from the solver. Test-case selection is
