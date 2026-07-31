@@ -20,3 +20,5 @@ xarray
 cartopy
 scipy
 pandas
+# to treat nml
+f90nml

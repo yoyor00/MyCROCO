@@ -3,11 +3,14 @@
   "VILAINE": {
     "title": "VILAINE",
     "case": "COASTAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_COASTAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_COASTAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_COASTAL.h",
     "croco_files_path": "COASTAL_VILAINE_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2", "8": "2x4" },
     "patches": {},
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_realist.py",
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
       "plotphy_script_input": "croco_his.nc",
     },
     "check_outputs": ["croco_his.nc"],

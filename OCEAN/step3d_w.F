@@ -41,6 +41,7 @@
       SUBROUTINE step3d_w_tile (Istr,Iend,Jstr,Jend, rw, BC,CF,FC,DC)
 !----------------------------------------------------------------------
 !
+        use croco_namelist, only: dt
       IMPLICIT NONE
 # include "param.h"
 # include "grid.h"

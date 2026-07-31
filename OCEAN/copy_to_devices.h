@@ -112,10 +112,6 @@
 #if defined BIOLOGY && defined TRACERS
 !$acc&, global_sum
 #endif
-#ifdef SOLITON
-#else
-#endif
-
 !ocean3d.h
 #ifdef SOLVE3D
 !$acc&, u
