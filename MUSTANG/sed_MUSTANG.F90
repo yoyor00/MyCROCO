@@ -99,8 +99,9 @@ MODULE sed_MUSTANG
    USE comsubstance
    USE module_substance
 
-   USE comMUSTANG 
-   USE coupler_MUSTANG 
+   USE comMUSTANG
+   USE coupler_MUSTANG
+   USE croco_namelist, ONLY : rho0
 
    IMPLICIT NONE
    
@@ -380,20 +381,16 @@ MODULE sed_MUSTANG
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
        endif
-# if (!defined DUNE    || (defined DUNE    && defined DUNE3D))
        if (float(jfirst+jj*Mm) .EQ. 1) then
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
        endif
-# endif
 #endif
 #if (!defined MPI && defined key_MUSTANG_bedload)
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
-# if (!defined DUNE    || (defined DUNE    && defined DUNE3D))
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
-# endif
 #endif
 
 #if defined key_MUSTANG_bedload && defined MPI 
@@ -3709,9 +3706,9 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 !!! B.Mengual (17/09/2015): 
 !!! Le depot de la vase se fait en commencant a melanger depuis la surface
 !!! dans le cas ou un excedant de sables ou de graviers conduira forcement
-!!! a la creation dune nouvelle couche
+!!! a la creation d'une nouvelle couche
 !!! BUT : ne pas pieger de la vase par melange dans la couche ksmax-1 suite
-!!!       a la creation dune nouvelle couche
+!!!       a la creation d'une nouvelle couche
 
 
                 IF ((voldepgrv+voldepsan) .GT. 0.0_rsh) THEN
@@ -7517,9 +7514,6 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
         crel_mud_kij=ros(1)*((1.0_rsh- poro_gravsan)/poro_gravsan)*frac_mud/(1-frac_mud)
         poro_kij=poro_gravsan-(1-poro_gravsan)*frac_mud/(1-frac_mud)
        ! poro_mud_kij=1.0_rsh/ros(1)
-# if defined key_ANA_bedload ||  defined ANA_DUNE  ||  defined DUNE 
-        poro_kij=0.4
-# endif
       END IF
 
     ELSE 
@@ -7891,12 +7885,6 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
    !&E
    !&E--------------------------------------------------------------------------
 
-
-   !! * Modules used  
-# if defined key_ANA_bedload || defined ANA_DUNE
-#  include "ocean2d.h"
-# endif
-
    !! * Arguments
    INTEGER,INTENT(IN)                                      :: i, j, ksmax
    REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(out)             :: flx_bxij, flx_byij 
@@ -7946,7 +7934,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
        toce_loc(iv)=stresscri0(iv)
      END IF
 
-# if defined key_ANA_bedload || defined ANA_DUNE
+# if defined key_ANA_bedload
      phi_bed=0.001*ubar(i,j,nrhs)**3.0_rsh
      qb=phi_bed & !  m2/s
                   *ros(iv)*cv_sed(iv,ksmax,i,j)/(c_sedtot(ksmax,i,j)+epsilon_MUSTANG) ! kg/m/s
@@ -7961,10 +7949,6 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
      !qb_ini(iv,i,j)=qb !pour ecriture en sortie
 
      !============Projection sur x et y en fonction de la direction de la tension sur le fond ==============
-
-# if defined key_ANA_bedload || defined ANA_DUNE
-     flx_byij(iv)=0.
-#endif
 
      flx_bxij(iv) = qb * tauskin_x(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)
      flx_byij(iv) = qb * tauskin_y(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)

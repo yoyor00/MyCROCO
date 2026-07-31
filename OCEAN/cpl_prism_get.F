@@ -24,6 +24,7 @@
 # ifdef AGRIF
       use Agrif_Util
 # endif
+      use croco_namelist, only: rho0
       IMPLICIT NONE
 
 # include "cppdefs.h"

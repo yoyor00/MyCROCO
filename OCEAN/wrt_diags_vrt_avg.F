@@ -20,6 +20,7 @@
 !
       subroutine wrt_diags_vrt_avg
 
+      USE croco_namelist, ONLY: nrpfdiags_vrt_avg, diags_vrtname_avg
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type

@@ -26,6 +26,12 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+#ifdef DIAGNOSTICS_EDDY
+      use croco_namelist, only: ldefdiags_eddy_avg,
+     &     ntsdiags_eddy_avg, nwrtdiags_eddy_avg, nrpfdiags_eddy_avg,
+     &     diags_eddyname_avg
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"

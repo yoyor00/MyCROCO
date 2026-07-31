@@ -20,3 +20,7 @@ Run/amr.in
 .vscode
 
 OCEAN.bak/cpl_prism_getlistvals.F
+
+.venv
+BENCH/libs/__pycache__
+__pycache__

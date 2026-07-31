@@ -199,6 +199,8 @@
 !                                     the ETA-direction (m^2/s^2).
 !----------------------------------------------------------------
 !
+      use croco_namelist, only: dt, rdrg, rdrg2, Zobt, Cdb_min, Cdb_max,
+     &                          testcase_name
       USE debug
 #ifdef AGRIF
       use Agrif_Util
@@ -594,16 +596,18 @@
 !
         do j=Jstr,Jend
           do i=Istr,Iend
-#   ifdef DUNE
-            znots=Zobt
-#   else
-            znots=Ssize(i,j)/12.
-#   endif
+            if (trim(testcase_name) == 'DUNE' .or.
+     &          trim(testcase_name) == 'DUNE3D' .or.
+     &          trim(testcase_name) == 'ANA_DUNE') then
+              znots=Zobt
+            else
+              znots=Ssize(i,j)/12.
+            endif
             cff=vonKar/LOG((z_r(i,j,1)-z_w(i,j,0))/znots)
             cff=MIN(Cdb_max,MAX(Cdb_min,cff*cff))
             Ucur=0.5*(u(i,j,1,nrhs)+u(i+1,j,1,nrhs))
             Vcur=0.5*(v(i,j,1,nrhs)+v(i,j+1,1,nrhs))
-#   if defined GLS_MIXING && defined SANDBAR
+#   if defined GLS_MIXING && defined COASTAL_BSTRESS_TKE
             Utur=15.*SQRT(trb(i,j,1,nrhs,itke))
      &                           *exp(-0.01*(xr(i,j)-142.)**2)
 #   else
@@ -745,13 +749,11 @@
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,svstr(START_2D_ARRAY))
 #  endif
 #  ifdef TEMPERATURE
-#   ifndef BASIN
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      stflx(START_2D_ARRAY,itemp))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,srflx(START_2D_ARRAY))
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,
      &                                      btflx(START_2D_ARRAY,itemp))
-#   endif      
 #  endif
 #  ifdef SALINITY
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,

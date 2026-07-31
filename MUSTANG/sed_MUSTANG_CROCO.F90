@@ -33,9 +33,10 @@
     !! * Modules used
     USE comMUSTANG
     USE comsubstance
-   USE module_substance   ! provides Uwave, Dwave, Pwave when WAVE_OFFLINE
+    USE module_substance   ! provides Uwave, Dwave, Pwave when WAVE_OFFLINE
+    USE croco_namelist, ONLY : rho0
 # if defined key_MUSTANG_flocmod
-   USE flocmod, ONLY: f_ws
+    USE flocmod, ONLY: f_ws
 #endif
     IMPLICIT NONE
 
@@ -224,8 +225,8 @@ SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 !&E
 !&E--------------------------------------------------------------------------
 !! * Modules used
-#if defined key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
-    USE flocmod, ONLY : flocmod_comp_g
+#if defined key_MUSTANG_flocmod
+    USE flocmod, ONLY : flocmod_comp_g, l_0Dcase
 #endif
 #  include "mixing.h"
 #  include "ocean3d.h"
@@ -243,9 +244,11 @@ DO j = jfirst, jlast
 DO i = ifirst, ilast
     IF(htot(i, j) .GT. h0fond)  THEN
     DO k = 1, N
-#if defined key_MUSTANG_flocmod && defined SED_TOY_FLOC_0D
+#if defined key_MUSTANG_flocmod
+      IF (l_0Dcase) then
         call flocmod_comp_g(gradvit(k, i, j), time-time_start)
-#else
+      ELSE
+#endif
 #if defined GLS_MIXING
         !
         ! Dissipation from turbulence clossure
@@ -260,13 +263,15 @@ DO i = ifirst, ilast
         gradvit(k, i, j) = sqrt(diss/nuw)
 #else
     ! gradvit : G=sqrt( turbulence dissipation rate/ vertical viscosity coefficient)
-    ! if  turbulence dissipation rate has not been already evaluated: 
+    ! if  turbulence dissipation rate has not been already evaluated:
     ! use empirical formula from   Nezu and Nakawaga (1993)
     ! turbulence dissipation_rate = ustarbot**3 /Karman/Htot * (distance from surface/distance from bottom)
         dist_surf_on_bottom = ((z_w(i, j, N) - z_r(i, j, k)) / (z_r(i, j, k) - z_w(i, j, 0)))
         gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
-                        (nuw + epsilon_MUSTANG) * dist_surf_on_bottom) 
+                        (nuw + epsilon_MUSTANG) * dist_surf_on_bottom)
 #endif
+#if defined key_MUSTANG_flocmod
+      ENDIF
 #endif
     END DO
     ENDIF

@@ -24,6 +24,7 @@ MODULE coupler_MUSTANG
     USE comMUSTANG
     USE comsubstance
     USE module_substance
+    USE croco_namelist, ONLY : rho0
 
     IMPLICIT NONE
 

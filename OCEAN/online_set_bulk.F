@@ -39,6 +39,7 @@
 !
 !  In this subroutine the aformentioned steps are completed for every bulk
 !  forcing iterating on the various blkvar_id.
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "forces.h"
