@@ -36,7 +36,9 @@ class AbstractCrocoSetup(ABC):
         self.builddir = os.path.abspath(builddir)
 
     @abstractmethod
-    def configure(self, configure_args: str) -> None:
+    def configure(
+        self, configure_args: str, cppdefs_file: str = None, param_file: str = None
+    ) -> None:
         """
         Perform the configuration of CROCO to be ready to build.
 
@@ -45,6 +47,12 @@ class AbstractCrocoSetup(ABC):
         configure_args: str
             The arguments as a string parsed and transformed for compatibility
             translation.
+        cppdefs_file: str
+            Optional absolute path to a pre-resolved, single-case cppdefs.h
+            (e.g. TEST_CASES/cppdefs_<Case>.h) to use in place of patching
+            the master cppdefs.h. Applied before any other patch.
+        param_file: str
+            Same as cppdefs_file, but for param.h.
         """
         raise Exception("Not provided by implementation !")
 

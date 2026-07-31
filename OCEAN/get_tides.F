@@ -20,6 +20,7 @@
 #ifdef OPENACC
       use exchange_device_host
 #endif
+      use croco_namelist, only : frcname
       implicit none
 
 # ifndef TIDES_MAS

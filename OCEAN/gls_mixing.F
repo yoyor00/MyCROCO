@@ -94,6 +94,7 @@
 !
 !======================================================================
 
+      USE croco_namelist, only: dt
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
      &  obst_tau, obst_t, obst_c2turb
@@ -161,7 +162,7 @@
       REAL, PARAMETER ::  galp    =  0.53    ! parameter for Galperin
                                              ! mixing length limitation
       REAL, PARAMETER ::  chk     =  1400./g ! charnock coefficient
-# if defined SANDBAR || defined SHOREFACE
+# ifdef GLS_COASTAL_ROUGHNESS
       REAL, PARAMETER ::  Zosmin  =  1.e-2   ! min surface roughness length
       REAL, PARAMETER ::  Zobmin  =  5.e-2   ! min bottom  roughness length
 # else

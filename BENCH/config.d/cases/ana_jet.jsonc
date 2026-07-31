@@ -1,0 +1,15 @@
+{
+  // ANA_JET (analytical forcing variant of JET)
+  "ANA_JET": {
+    "title": "ANA_JET - (25 x 100 x 40 : 100000)",
+    "case": "ANA_JET",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "patches": {},
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/ANA_JET/plot_jet.py",
+      "plotphy_script_input": "jet_his.nc",
+    },
+    "check_outputs": ["jet_his.nc"],
+    "unsupported": ["restart", "openmp"],
+  },
+}

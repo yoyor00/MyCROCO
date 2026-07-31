@@ -17,6 +17,7 @@
      &                     Gm1,dGm1dS, Gt1,dGt1dS, Gs1,dGs1dS,
      &                                    wrk1,wrk2,wrk3, Rib,
      &                                                 my_kbl)
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "grid.h"

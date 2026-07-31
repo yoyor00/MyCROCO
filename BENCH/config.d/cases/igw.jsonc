@@ -1,15 +1,17 @@
 {
-  // IGW
+  // IGW — COMODO Internal Tide (878 x 3 x 40)
+  // Both cases share cppdefs_Igw.h and param_Igw.h; NBQ toggled via cppkeys.
+
   "IGW": {
     "title": "IGW - (878 x 3 x 40 : 105360)",
     "case": "IGW",
-    "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_IGW.py",
-      "plotphy_script_input": "igw_his.nc",
-    },
     "cppkeys": {
       "IGW": true,
       "NBQ": false,
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/IGW/plot_IGW.py",
+      "plotphy_script_input": "igw_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1", "6": "6x1", "8": "8x1" },
     "patches": {},
@@ -18,16 +20,16 @@
   "IGW_NBQ": {
     "title": "IGW - NBQ - (878 x 3 x 40 : 105360)",
     "case": "IGW",
-    "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_IGW.py",
-      "plotphy_script_input": "igw_his.nc",
-    },
     "cppkeys": {
       "NBQ": true,
     },
+    "nml_file": "TEST_CASES/IGW/croco_IGW_NBQ.nml",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/IGW/plot_IGW.py",
+      "plotphy_script_input": "igw_his.nc",
+    },
     "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
     "patches": {},
-    "input_file": "TEST_CASES/croco.in.Igw_nbq",
     "check_outputs": ["igw_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
