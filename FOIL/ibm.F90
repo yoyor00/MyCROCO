@@ -43,10 +43,10 @@ MODULE ibm
    !! * Shared module variables
 
    !! * Private variables
-   REAL(kind=rsh)                                  :: w_max, alpha_w                    ! From paraibm namibmbio namelist
+   REAL(kind=rsh)                                  :: w_max, alpha_w                   ! From paraibm namibmbio namelist
 
    LOGICAL                                         :: repro                            ! From paraibm namibmpop, activate or not repro
-   REAL(KIND=rlg)                                  :: dt_spawn, dt_save                ! From paraibm namibmpop, spawning interval in hours of patch
+   REAL(KIND=rlg)                                  :: dt_spawn                         ! From paraibm namibmpop, spawning interval in hours of patch
    ! From paraibm namibmpop namemist, time between two savings of data
    INTEGER                                         :: max_part                         ! From paraibm namibmpop, max nb of particles in a nc file
 
@@ -98,7 +98,7 @@ CONTAINS
 
       ! Import variables
       USE comtraj, ONLY: iscreenlog
-      USE comtraj, ONLY: type_particle, type_patch, patches, ibm_restart, file_trajec
+      USE comtraj, ONLY: type_particle, type_patch, patches, ibm_restart, dtsave_traj
       USE comtraj, ONLY: debuse, F_Fix, ffix, file_food, file_NBSS, frac_deb_death, &
                          fileanchovy, filesardine, fileprobadistrib_anc, nbSizeClass_anc, &
                          sizemin_anc, fileprobadistrib_sar, nbSizeClass_sar, sizemin_sar, &
@@ -137,7 +137,7 @@ CONTAINS
       ! Definition of namelists in paraibm
       NAMELIST /namibmrestart/ ibm_restart, ibm_l_time
       NAMELIST /namibmbio/ w_max, alpha_w
-      NAMELIST /namibmpop/ repro, dt_spawn, dt_save, max_part, duration_ibm_anc, duration_ibm_sar, &
+      NAMELIST /namibmpop/ repro, dt_spawn, max_part, duration_ibm_anc, duration_ibm_sar, &
          fish_mort, fishing_strategy, multiplier_tac, density_dependent
       NAMELIST /namibmdeb/ debuse, F_Fix, ffix, file_NBSS, file_food, frac_deb_death
       NAMELIST /namibmfrc/ fileanchovy, filesardine, catch_anc_bob, catch_sar_bob, fileprobadistrib_anc, &
@@ -178,8 +178,6 @@ CONTAINS
          patch%yearref = current_year - 1
          patch%t_spawn = patch%t_beg ! clara : why ???
          patch%dt_spawn = dt_spawn*3600.0_rlg
-         patch%dt_save = patch%dt_save ! clara : interet de cette ligne ? sauf si dt_save tout court
-
          ! -------------------------
          ! --- Restart
          IF (ibm_restart) THEN
@@ -272,7 +270,7 @@ CONTAINS
             IF (ibm_l_time) THEN
                !    CALL ionc4_read_time(trim(file_inp), 1, patch%t_beg)
                CALL ionc4_read_time(trim(file_inp), idimt, patch%t_beg)
-               patch%t_save = patch%t_beg + patch%dt_save*3600.0_rlg
+               patch%t_save = patch%t_beg + dtsave_traj*3600.0_rlg
             END IF
             CALL ionc4_close(file_inp)
 
@@ -916,7 +914,6 @@ CONTAINS
                child_patch%t_beg = time
                child_patch%t_end = child_patch%t_beg + duration(ind)*24.0_rlg*3600.0_rlg
                child_patch%t_save = time
-               child_patch%dt_save = dt_save
                child_patch%t_spawn = time
                child_patch%dt_spawn = dt_spawn*3600._rsh
                child_patch%parent_id = patches%nb + 1                ! keep track of the childs parent
@@ -1174,7 +1171,7 @@ CONTAINS
                                          ionc4_write_trajt, &
                                          ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
                                          ionc4_gatt_char_read, ionc4_open
-                        USE comtraj, ONLY: patches, type_patch, type_particle
+                        USE comtraj, ONLY: patches, type_patch, type_particle, dtsave_traj
 
                         USE trajinitsave, ONLY: indices_loc2glob
                         USE trajectools, ONLY: tool_ind2lat, tool_ind2lon
@@ -1456,7 +1453,7 @@ CONTAINS
                            DEALLOCATE (f_out)
                            DEALLOCATE (deaddeb_out, deadfishing_out, deadnatural_out)
 
-                           patch%t_save = time + patch%dt_save*3600.0_rlg
+                           patch%t_save = time + dtsave_traj*3600.0_rlg
                            patch => patch%next
 
                         END DO

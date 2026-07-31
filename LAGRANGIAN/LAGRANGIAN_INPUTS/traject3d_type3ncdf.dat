@@ -22,7 +22,6 @@ END OF FILE DESCRIPTION
 patch1                          ,| Patch name
 2009/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
 2011/12/31 23:59:59             ,| Trajectory end date (tendtraj)
-24.d0                           ,| Output interval in hours (dtsave_traj)
 ../../inputs/trajectoire/T2.nc  ,| Input NetCDF file (filetrajin)
 ./PlT2.nc                       ,| Output trajectory file (filetrajout)
 1                               ,| Particles released per NetCDF position (nb_part_intro)
@@ -31,7 +30,6 @@ patch1                          ,| Patch name
 patch2                          ,| Patch name
 2009/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
 2011/12/31 23:59:59             ,| Trajectory end date (tendtraj)
-24.d0                           ,| Output interval in hours (dtsave_traj)
 ../../inputs/trajectoire/T3.nc  ,| Input NetCDF file (filetrajin)
 ./PlT3.nc                       ,| Output trajectory file (filetrajout)
 1                               ,| Particles released per NetCDF position (nb_part_intro)
@@ -40,7 +38,6 @@ patch2                          ,| Patch name
 patch3                          ,| Patch name
 2009/01/01 00:00:00             ,| Trajectory start date (tbegtraj)
 2011/12/31 23:59:59             ,| Trajectory end date (tendtraj)
-24.d0                           ,| Output interval in hours (dtsave_traj)
 ../../inputs/trajectoire/T5.nc  ,| Input NetCDF file (filetrajin)
 ./PlT5.nc                       ,| Output trajectory file (filetrajout)
 1                               ,| Particles released per NetCDF position (nb_part_intro)

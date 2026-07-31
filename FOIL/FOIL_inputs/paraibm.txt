@@ -37,9 +37,6 @@
 :
 : repro             : enable or disable reproduction
 : dt_spawn          : interval (h) between spawning events
-: dt_save           : output interval (h) assigned to patches created through
-:                     reproduction; initial patches use the interval specified
-:                     in file_trajec
 : max_part          : maximum number of particles in each offspring patch and
 :                     its NetCDF trajectory file
 : duration_ibm_anc  : maximum anchovy lifespan (days)
@@ -59,7 +56,6 @@
  &namibmpop
         repro             = .true.
         dt_spawn          = 72
-        dt_save           = 24
         max_part          = 25000
         duration_ibm_anc  = 1460
         duration_ibm_sar  = 2980

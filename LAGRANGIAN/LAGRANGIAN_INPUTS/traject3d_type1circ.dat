@@ -25,7 +25,6 @@ END OF FILE DESCRIPTION
 patch1                      ,| Patch name
 2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
 2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
-24.d0                       ,| Output interval in hours (dtsave_traj)
 .true.                      ,| Use CROCO grid indices for the patch center
 90 90                       ,| Center grid indices (i, j)
 20000                       ,| Patch radius (m)
@@ -39,7 +38,6 @@ patch1                      ,| Patch name
 patch2                      ,| Patch name
 2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
 2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
-24.d0                       ,| Output interval in hours (dtsave_traj)
 .false.                     ,| Use geographic coordinates for the patch center
 7 38                        ,| Center longitude and latitude (degrees east, degrees north)
 20000                       ,| Patch radius (m)

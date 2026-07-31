@@ -28,12 +28,13 @@ MODULE comtraj
    ! -------------------------------------------------------------------------
    ! Definition of rsh, rlg, riosh, riolg, lchain
    ! -------------------------------------------------------------------------
-   INTEGER, PARAMETER                           :: riosh = 8, riolg = 8, rlg = 8, rsh = 8
+   INTEGER, PARAMETER                          :: riosh = 8, riolg = 8, rlg = 8, rsh = 8
    REAL(kind=rsh), PARAMETER                   :: valmanq = 999.0
-   REAL(kind=riosh), PARAMETER                  :: rg_valmanq_io = 999.0_riosh
-   REAL(kind=riolg), PARAMETER                  :: dg_valmanq_io = -1.7e+38
+   REAL(kind=riosh), PARAMETER                 :: rg_valmanq_io = 999.0_riosh
+   REAL(kind=riolg), PARAMETER                 :: dg_valmanq_io = -1.7e+38
    REAL(kind=riolg)                            :: time_start
-   INTEGER, PARAMETER                           :: lchain = 200
+   REAL(KIND=rlg)                              :: dtsave_traj
+   INTEGER, PARAMETER                          :: lchain = 200
    INTEGER                                     :: ierrorlog, iwarnlog, iscreenlog
    INTEGER                                     :: imin, imax, jmin, jmax, kmax
    INTEGER                                     :: jjulien
@@ -147,7 +148,7 @@ MODULE comtraj
       INTEGER                                         :: nb_part_batch = 10   ! Size of batch for new allocations
       INTEGER                                         :: nb_part_max = -1   ! Maximum allowed number of particles
       REAL(KIND=rlg)                                  :: t_beg, t_end
-      REAL(KIND=rlg)                                  :: t_save, dt_save
+      REAL(KIND=rlg)                                  :: t_save
 #ifdef FOIL
       REAL(KIND=rlg)                                  :: t_spawn, dt_spawn    !
       INTEGER                                         :: yearref              !

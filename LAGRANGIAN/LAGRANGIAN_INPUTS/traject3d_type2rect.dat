@@ -24,7 +24,6 @@ END OF FILE DESCRIPTION
 patch1                      ,| Patch name
 2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
 2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
-24.d0                       ,| Output interval in hours (dtsave_traj)
 .true.                      ,| Use CROCO grid indices for the patch boundaries
 80 100 80 100               ,| Boundary indices (i_min, i_max, j_min, j_max)
 1 1                         ,| Horizontal release spacing (i step, j step)
@@ -37,7 +36,6 @@ patch1                      ,| Patch name
 patch2                      ,| Patch name
 2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
 2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
-24.d0                       ,| Output interval in hours (dtsave_traj)
 .true.                      ,| Use CROCO grid indices for the patch boundaries
 80 100 80 100               ,| Boundary indices (i_min, i_max, j_min, j_max)
 1 1                         ,| Horizontal release spacing (i step, j step)
@@ -50,7 +48,6 @@ patch2                      ,| Patch name
 patch3                      ,| Patch name
 2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
 2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
-24.d0                       ,| Output interval in hours (dtsave_traj)
 .true.                      ,| Use CROCO grid indices for the patch boundaries
 80 100 80 100               ,| Boundary indices (i_min, i_max, j_min, j_max)
 1 1                         ,| Horizontal release spacing (i step, j step)

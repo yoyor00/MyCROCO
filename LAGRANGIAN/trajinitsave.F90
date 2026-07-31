@@ -200,7 +200,7 @@ CONTAINS
       USE comtraj, ONLY: init_mpi_type_particle
 #endif
       USE comtraj, ONLY: patch_list_append, patches, type_patch, file_trajec, &
-                         dir_pathout, itypepatch, dtz, hdiff
+                         dir_pathout, itypepatch, dtz, hdiff, dtsave_traj
 #ifdef FOIL
       USE comtraj, ONLY: ibm_restart
 #endif
@@ -222,7 +222,7 @@ CONTAINS
       TYPE(type_patch), POINTER                   :: new_patch, patch
 
       ! Time info of patches
-      REAL(KIND=rlg)                              :: t_traj_beg, t_traj_end, dt_traj
+      REAL(KIND=rlg)                              :: t_traj_beg, t_traj_end
       REAL(KIND=rlg)                              :: tool_datosec
 
       ! Indexes for loops
@@ -272,7 +272,7 @@ CONTAINS
 
       REAL(KIND=rlg), DIMENSION(5)                 :: buff_mpi
 
-      NAMELIST /namtraj/ file_trajec, dir_pathout, itypepatch
+      NAMELIST /namtraj/ file_trajec, dir_pathout, itypepatch, dtsave_traj
       NAMELIST /namtrajdiff/ dtz, hdiff
 
 # include "compute_auxiliary_bounds.h"
@@ -439,19 +439,15 @@ CONTAINS
             t_traj_end = time_end
          END IF
 
-         ! Read time step for outputs
-         READ (49, *, iostat=eof) dt_traj
-
          new_patch%t_beg = t_traj_beg
          new_patch%t_end = t_traj_end
          new_patch%t_save = t_traj_beg
-         new_patch%dt_save = dt_traj
 
          IF_MPI(MASTER) THEN
          WRITE (iscreenlog, *) 'PATCH NUMBER : ', npa, new_line(''), &
             '   trajectory from '//trim(tool_sectodat(t_traj_beg)), new_line(''), &
             '                to '//trim(tool_sectodat(t_traj_end)), new_line(''), &
-            '   with a ', dt_traj, 'hours time step.'
+            '   with a ', dtsave_traj, 'hours time step.'
          ENDIF_MPI
 
          ! Depending on itypepatch in paratraj, initialise patches with good patch
@@ -527,13 +523,6 @@ CONTAINS
             READ (49, *, iostat=eof) nb_part_intro
 
             ! Type of vertical behavior (integer):
-            ! itypevert = 0 if constant depth
-            ! itypevert < 0 if no random walk (vertical advection only)
-            ! itypevert > 0 if random walk (advection + diffusion)
-            ! abs(itypevert) = 1 if no vertical swimming
-            ! abs(itypevert) > 1 if vertical swimming (larval behavior):
-            !                     = 2 for nycthemeral migration
-            !                     = 3 for ontogenic migration (sakina), ...
             READ (49, *, iostat=eof) new_patch%init_particle%itypevert
 
             ! Read output file
@@ -738,13 +727,6 @@ CONTAINS
                   READ (49, *, iostat=eof) nb_part_intro
 
                   ! Type of vertical behavior (integer):
-                  ! itypevert = 0 if constant depth
-                  ! itypevert < 0 if no random walk (vertical advection only)
-                  ! itypevert > 0 if random walk (advection + diffusion)
-                  ! abs(itypevert) = 1 if no vertical swimming
-                  ! abs(itypevert) > 1 if vertical swimming (larval behavior):
-                  !                     = 2 for nycthemeral migration
-                  !                     = 3 for ontogenic migration (sakina), ...
                   READ (49, *, iostat=eof) new_patch%init_particle%itypevert
 
                   ! Read output file
@@ -870,13 +852,6 @@ CONTAINS
                   READ (49, *, iostat=eof) nb_part_intro
 
                   ! Type of vertical behavior (integer):
-                  ! itypevert = 0 if constant depth
-                  ! itypevert < 0 if no random walk (vertical advection only)
-                  ! itypevert > 0 if random walk (advection + diffusion)
-                  ! abs(itypevert) = 1 if no vertical swimming
-                  ! abs(itypevert) > 1 if vertical swimming (larval behavior):
-                  !                     = 2 for nycthemeral migration
-                  !                     = 3 for ontogenic migration (sakina), ...
                   READ (49, *, iostat=eof) new_patch%init_particle%itypevert
 
 #ifdef FOIL
@@ -1065,8 +1040,9 @@ CONTAINS
 
 #if defined LAGRANGIAN && !defined FOIL
                ! Save initialization only if LAGRANGIAN.
-               ! If we save here when DEB-IBM is activated, we will create a file with not
+               ! If we save here when FOIL is activated, we will create a file with not
                ! enough variables inside, which will create an error while calling ibm_save
+               ! First save done in ibm_init
                CALL traj_save3d
 #endif
 
@@ -1095,7 +1071,7 @@ CONTAINS
                   !&E---------------------------------------------------------------------
       !! * Modules used
                   USE module_lagrangian
-                  USE comtraj, ONLY: patches, type_patch, type_particle, ierrorlog
+                  USE comtraj, ONLY: patches, type_patch, type_particle, ierrorlog, dtsave_traj
                   USE trajectools, ONLY: tool_ind2lat, tool_ind2lon
       !! * Arguments
 
@@ -1214,7 +1190,7 @@ CONTAINS
                      DEALLOCATE (lat_out, lon_out, h0pos_out, flag_out, num_out)
 
                      ! Update of the save date
-                     patch%t_save = time + patch%dt_save*3600.0_rlg
+                     patch%t_save = time + dtsave_traj*3600.0_rlg
 
                      patch => patch%next
                   END DO

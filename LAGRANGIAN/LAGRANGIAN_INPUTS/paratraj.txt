@@ -16,13 +16,15 @@
 :               2 = rectangular patches
 :               3 = positions read from a NetCDF file
 :               This value must match the format of file_trajec.
+: dtsave_traj : Time step of traj output
 :
 :-----------------------------------------------------------------------------
 :
  &namtraj
  	file_trajec = './'traject3d_type1circ.dat
 	dir_pathout = './output/'
-	itypepatch = 1 /
+	itypepatch = 1 
+	dtsave_traj = 24.d0 /
 :
 :-----------------------------------------------------------------------------
 : namtrajdiff        PARTICLE DIFFUSION SETTINGS
