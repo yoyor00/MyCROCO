@@ -54,8 +54,17 @@ MPIINC=""
 #
 # set NETCDF directories
 #
-NETCDFLIB="$(nf-config --flibs)"
-NETCDFINC="-I$(nf-config --includedir)"
+if command -v nf-config >/dev/null 2>&1; then
+    NETCDFLIB="$(nf-config --flibs)"
+    NETCDFINC="-I$(nf-config --includedir)"
+else
+    NETCDFLIB=""
+    NETCDFINC=""
+fi
+if command -v nc-config >/dev/null 2>&1; then
+    NETCDFLIB="$NETCDFLIB -L$(nc-config --libdir) -lnetcdf"
+    NETCDFINC="$NETCDFINC -I$(nc-config --includedir)"
+fi
 
 #
 # set OASIS-MCT (or OASIS3) directories if needed
