@@ -49,6 +49,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix time in surf average output file (#388)
 - Fix grid variables writing in average and diagnostic file (#522)
 
+- Fix ABORT MPI when problem in reading netcdf (#167)
+
 - PISCES : Bug - Switch from relative to potential density for surface pH proxy,
            inconsistent with what done for calcite dissolution (#531)
            Big fix in the calculation of NEW primary productivity with XIOS (#535)
