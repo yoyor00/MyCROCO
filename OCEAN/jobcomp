@@ -250,6 +250,11 @@ LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
 CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
 
 #
+# take --fc/CROCO_CFT1 into account before selecting the compiler branch
+#
+FC="${CROCO_CFT1-$FC}"
+
+#
 # Set compilation options
 #
 if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX / MAC =====
