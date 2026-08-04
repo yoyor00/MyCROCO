@@ -30,9 +30,8 @@ END OF FILE DESCRIPTION%
 patch1                  ,| Patch name
 1900/01/01 00:00:00     ,| Trajectory start date (tbegtraj)
 2030/07/01 00:00:00     ,| Trajectory end date (tendtraj)
-24.d0                   ,| Output interval (dtsave_traj)
-init_pos.nc             ,| Input file containing initial particle positions (filetrajin)
 ./anchois.nc            ,| Output trajectory file (filetrajout)
+init_pos.nc             ,| Input file containing initial particle positions (filetrajin)
 1                       ,| Particles released per initial position (nb_part_intro)
 1                       ,| Initial vertical-movement scheme (itypevert)
 anchovy                 ,| Species

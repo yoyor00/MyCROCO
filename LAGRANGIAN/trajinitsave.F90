@@ -214,7 +214,7 @@ CONTAINS
       !! * Local declarations
       ! For reading input file
       INTEGER                                     :: idimt                    ! Read last time in restart file
-      LOGICAL                                     :: ex, l_posit
+      LOGICAL                                     :: ex, l_posit, traj3d
       INTEGER                                     :: lstr, lenstr
       CHARACTER(LEN=5)                            :: comment
       CHARACTER(LEN=19)                           :: dateread, tool_sectodat
@@ -273,7 +273,7 @@ CONTAINS
       REAL(KIND=rlg), DIMENSION(5)                 :: buff_mpi
 
       NAMELIST /namtraj/ file_trajec, dir_pathout, itypepatch, dtsave_traj
-      NAMELIST /namtrajdiff/ dtz, hdiff
+      NAMELIST /namtrajadiff/ traj3d, dtz, hdiff
 
 # include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
@@ -347,7 +347,7 @@ CONTAINS
       lstr = lenstr(lagname)
       OPEN (50, file=lagname(1:lstr), status='old', form='formatted', access='sequential')
       READ (50, namtraj)
-      READ (50, namtrajdiff)
+      READ (50, namtrajadiff)
 
       ! save into simu.log
       !-------------------
@@ -451,6 +451,8 @@ CONTAINS
          new_patch%t_beg = t_traj_beg
          new_patch%t_end = t_traj_end
          new_patch%t_save = t_traj_beg
+         
+         new_patch%init_particle%traj3d = traj3d  ! transport common to all particles, like itypevert. 
 
          IF_MPI(MASTER) THEN
          WRITE (iscreenlog, *) 'PATCH NUMBER : ', npa, new_line(''), &
@@ -715,6 +717,7 @@ CONTAINS
                         PRINT *, ' its northern latitude is :', jmax_patch
                      END IF
                   END IF
+
                   ! Read spatial dispersion of particles inside initial patch
                   READ (49, *, iostat=eof) istep_patch, jstep_patch
 

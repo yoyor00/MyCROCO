@@ -239,15 +239,8 @@ CONTAINS
             ! Skip if particle is inactive.
             IF (.NOT. particle%active) CYCLE
 
-            ! Skip if species stage not appropriate
-            ! Modif Clara
-#ifdef FOIL            
-#ifdef MPI
-            IF (particle%stage >= 5 .OR. particle%super <= 0.0_rsh) CYCLE
-#else
-            IF (particle%stage >= 1 .OR. particle%super <= 0.0_rsh) CYCLE ! pour 3D_1DV
-#endif
-#endif
+            ! Skip if configuration do not need transport or IBM biological stage not appropriate            
+            IF (.NOT. particle%traj3d) CYCLE
 
             ! Skip if flag is missing...
             IF (particle%flag == -valmanq) CYCLE

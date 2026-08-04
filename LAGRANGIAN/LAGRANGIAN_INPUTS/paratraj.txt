@@ -24,18 +24,23 @@
 	dtsave_traj = 24.d0 /
 :
 :-----------------------------------------------------------------------------
-: namtrajdiff        PARTICLE DIFFUSION SETTINGS
+: namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
 :-----------------------------------------------------------------------------
-:
+: 
+: traj3d : if FALSE, particles will not be transported in any direction, 
+: 			neither advection nor diffusion. 
+:			Usefull for some configuration (ex : 3D-1DV, but also 
+:			for some biological stages of the IBM)
 : dtz   : time step (s) used by the vertical random-walk subloop
 :         A value of a few seconds helps prevent particle accumulation in
 :         low-diffusivity regions and near boundaries. See Ross and Sharples
 :         (2004, Limnology and Oceanography) for a sensitivity analysis.
 : hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
-:         horizontal diffusion
+:         horizontal diffusion, when traj3d = .TRUE.
 :
 :-----------------------------------------------------------------------------
 :
- &namtrajdiff
-      dtz  = 3
+ &namtrajadiff
+      traj3d = .TRUE.
+	  dtz  = 3
       hdiff = 5.0 /

@@ -78,6 +78,7 @@ MODULE comtraj
    TYPE, PUBLIC :: type_particle
 
       LOGICAL :: active = .False. ! .True.  if particle actually active
+      LOGICAL :: traj3d = .True.  ! .True.  if particles are transported by advection/diffusion in traject3d
 #if defined MPI
       ! --- MPI managing
       INTEGER                 :: limitbye = 0     ! Specify the direction of the boundary crossing
@@ -158,7 +159,8 @@ MODULE comtraj
       LOGICAL                                         :: file_out_init = .FALSE.
       CHARACTER(LEN=lchain)                           :: run_id               ! id of one run (for output file indentation)
       CHARACTER(LEN=lchain)                           :: species              ! name of species
-      TYPE(type_particle)                             :: init_particle        ! Init values used for new particles
+      TYPE(type_particle)                             :: init_particle        ! Init values used for new particles 
+                                                                              ! (used at initialisation and reproduction)
       TYPE(type_particle), ALLOCATABLE, DIMENSION(:)  :: particles
       TYPE(type_patch), POINTER                       :: next => NULL()       ! Next patch in the list
 
@@ -255,9 +257,9 @@ CONTAINS
       IMPLICIT NONE
       !! * Local declarations
 #ifdef FOIL
-      INTEGER, PARAMETER   :: nb = 69     ! LAGRANGIAN and FOIL
+      INTEGER, PARAMETER   :: nb = 70     ! LAGRANGIAN and FOIL
 #else
-      INTEGER, PARAMETER   :: nb = 13     ! LAGRANGIAN only
+      INTEGER, PARAMETER   :: nb = 14     ! LAGRANGIAN only
 #endif
 
       INTEGER, DIMENSION(nb)    :: old_types, block_lengths
@@ -269,7 +271,7 @@ CONTAINS
 
       ! Create MPI type for particles
       old_types = (/ &
-                  MPI_LOGICAL, MPI_INTEGER, MPI_INTEGER, MPI_INTEGER, &
+                  MPI_LOGICAL, MPI_LOGICAL, MPI_INTEGER, MPI_INTEGER, MPI_INTEGER, &
                   type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, &
                   type_mpi_rsh, type_mpi_rsh, type_mpi_rsh, type_mpi_rsh &
 #ifdef FOIL
@@ -288,7 +290,7 @@ CONTAINS
 #endif
                   /)
       block_lengths = (/ &
-                      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 &
+                      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 &
 #ifdef FOIL
                       , 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 &
                       , 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 &
@@ -299,6 +301,7 @@ CONTAINS
 
       i = 1
       CALL MPI_GET_ADDRESS(particle%active, addresses(i), ierr_mpi); i = i + 1
+      CALL MPI_GET_ADDRESS(particle%traj3d, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%limitbye, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%itypevert, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%num, addresses(i), ierr_mpi); i = i + 1

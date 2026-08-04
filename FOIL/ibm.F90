@@ -260,7 +260,7 @@ CONTAINS
                patch%particles(m)%dayjuv = dayb_nc(index_num)
                patch%particles(m)%denspawn = dens_nc(index_num)
 
-               IF (patch%particles(m)%stage >= 5) patch%particles(m)%itypevert = 0
+               IF (patch%particles(m)%stage >= 5) patch%particles(m)%traj3d = .FALSE.
             END DO
 
             DEALLOCATE (flag_nc, temp_nc, size_nc, stage_nc, dens_nc, super_nc, drate_nc, dayb_nc)
@@ -455,7 +455,8 @@ CONTAINS
       ! Save particle properties (before any change for getting exact initial properties)
       CALL ibm_save
 
-      ! If advection, depend de itypevert passive transport
+      ! If transport not needed (e.g. juvenile/adult stage), 
+      ! this will be handled in LAGRANGIAN_update through particle%traj3d (True/False)
       CALL LAGRANGIAN_update(xe, uz, vz, Istr, Iend, Jstr, Jend)
 
       ! Save old year for reproduction
@@ -665,7 +666,8 @@ CONTAINS
                IF (debuse) CALL deb_cycle(particle, dtm, aaaa, mm_clock, jj, patch%species)
                IF (particle%H >= particle%Hj) THEN
                   particle%stage = 5
-                  particle%itypevert = 0 ! Stop vertical advection/diffusion from stage 5
+                  particle%traj3d = .FALSE. ! stop advection/diffusion in all direction from stage 5
+                  ! when better movement algorithm for adult better to only turn off vertical ad / diff
                   particle%zpos = 0.0_rsh
                   particle%w = 0.0_rsh
                   particle%dayjuv = jjulien

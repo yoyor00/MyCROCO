@@ -217,8 +217,8 @@ CONTAINS
                              Istr, Iend, Jstr, Jend)
       dens_surf = w_dens(temp_surf, sal_surf)
 
-    particle%temp    = temp_surf
-    particle%density = dens_surf
+      particle%temp    = temp_surf
+      particle%density = dens_surf
 
       ! Initialize particle's denspawn
       IF (species == "anchovy") THEN
