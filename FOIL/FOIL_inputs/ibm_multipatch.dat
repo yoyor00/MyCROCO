@@ -31,9 +31,9 @@ patch1                                  ,| name of patch
 2005/04/01 00:00:00                     ,| tbegtraj
 2005/12/31 00:00:00                     ,| tendtraj
 anchovy_2004_2005.nc                    ,| filetrajout
-./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
 1		                                ,| nb_part_intro
 1                                       ,| itypevert
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
 anchovy                                 ,| species	
 6                                       ,| stage
 12.13                                   ,| size (cm)
@@ -50,9 +50,9 @@ patch2                                  ,| name of patch
 2005/04/01 00:00:00                     ,| tbegtraj
 2005/12/31 00:00:00                     ,| tendtraj
 anchovy_2003_2005.nc                    ,| filetrajout
-./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
 1		                                ,| nb_part_intro
 1                                       ,| itypevert
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
 anchovy                                 ,| species	
 6                                       ,| stage
 16.20                                   ,| size (cm)
@@ -69,9 +69,9 @@ patch3                                  ,| name of patch
 2005/04/01 00:00:00                     ,| tbegtraj
 2005/12/31 00:00:00                     ,| tendtraj
 anchovy_2002_2005.nc                    ,| filetrajout
-./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
 1		                                ,| nb_part_intro
 1                                       ,| itypevert
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
 anchovy                                 ,| species	
 6                                       ,| stage
 17.21                                   ,| size (cm)
@@ -88,9 +88,9 @@ patch4                                  ,| name of patch
 2005/04/01 00:00:00                     ,| tbegtraj
 2005/12/31 00:00:00                     ,| tendtraj
 anchovy_2001_2005.nc                    ,| filetrajout
-./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
 1		                                ,| nb_part_intro
 1                                       ,| itypevert
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
 anchovy                                 ,| species	
 6                                       ,| stage
 17.56                                   ,| size (cm)

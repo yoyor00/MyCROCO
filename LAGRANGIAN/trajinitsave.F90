@@ -439,6 +439,10 @@ CONTAINS
             t_traj_end = time_end
          END IF
 
+         new_patch%t_beg = t_traj_beg
+         new_patch%t_end = t_traj_end
+         new_patch%t_save = t_traj_beg
+
          ! Read output file
          READ (49, '(a)', iostat=eof) rec
          kk = index(rec, ',|')
@@ -447,13 +451,15 @@ CONTAINS
          ELSE
             new_patch%file_out = trim(dir_pathout)//rec
          END IF
-
-         new_patch%t_beg = t_traj_beg
-         new_patch%t_end = t_traj_end
-         new_patch%t_save = t_traj_beg
          
-         new_patch%init_particle%traj3d = traj3d  ! transport common to all particles, like itypevert. 
+         ! Number of particles set at each exact initial position (x,y,z)
+         READ (49, *, iostat=eof) nb_part_intro
 
+         ! Type of vertical behavior (integer):
+         READ (49, *, iostat=eof) new_patch%init_particle%itypevert
+
+         new_patch%init_particle%traj3d = traj3d  ! type of transport common to all particles of a patch
+          
          IF_MPI(MASTER) THEN
          WRITE (iscreenlog, *) 'PATCH NUMBER : ', npa, new_line(''), &
             '   trajectory from '//trim(tool_sectodat(t_traj_beg)), new_line(''), &
@@ -529,12 +535,6 @@ CONTAINS
             kstep_patch = ABS(kstep_patch)
             kmin_patch = ABS(kmin_patch)
             kmax_patch = ABS(kmax_patch)
-
-            ! Number of particles set at each exact initial position (x,y,z)
-            READ (49, *, iostat=eof) nb_part_intro
-
-            ! Type of vertical behavior (integer):
-            READ (49, *, iostat=eof) new_patch%init_particle%itypevert
 
             READ (49, *, iostat=eof)
             ! == End of file reading
@@ -727,12 +727,6 @@ CONTAINS
                   ! Read resolution depth of initial patch
                   READ (49, *, iostat=eof) kstep_patch
 
-                  ! Number of particles set at each exact initial position (x,y,z)
-                  READ (49, *, iostat=eof) nb_part_intro
-
-                  ! Type of vertical behavior (integer):
-                  READ (49, *, iostat=eof) new_patch%init_particle%itypevert
-
                   READ (49, *, iostat=eof)
                   ! == End of file reading
 
@@ -834,12 +828,6 @@ CONTAINS
                      IF (ibm_restart) new_patch%file_inp = trim(dir_pathout)//rec
 #endif
                   END IF
-
-                  ! Number of particles set at each exact initial position (x,y,z)
-                  READ (49, *, iostat=eof) nb_part_intro
-
-                  ! Type of vertical behavior (integer):
-                  READ (49, *, iostat=eof) new_patch%init_particle%itypevert
 
 #ifdef FOIL
                   ! Read some parameters if FOIL module is used from init file
