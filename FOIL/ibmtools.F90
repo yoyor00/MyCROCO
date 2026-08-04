@@ -298,7 +298,7 @@ CONTAINS
       ! =====                     Fishing strategy : F_eval                    =====
       ! =====                                                                  =====
       ! Fishing of First Age Class
-      IF (particle%AgeClass >= 1 .and. fishing_strategy == 'F_eval') THEN !ageclass>=1 to be sure not to fish newborns
+      IF (particle%AgeClass >= 1 .and. fishing_strategy == 'F_eval') THEN ! AgeClass>=1 to be sure not to fish newborns
 
          IF (particle%stage == 6 .and. month < 7 .and. species == 'anchovy') THEN
             !IF (year < 1990) Zfishing = f_spin
@@ -405,7 +405,7 @@ CONTAINS
       ! =====                                                                  =====
       ! =====                     Fishing strategy : Catch                     =====
       ! =====                                                                  =====
-      IF (particle%stage >= 5 .and. fishing_strategy == 'Catch' .and. particle%AgeClass >= 1) THEN !ageclass>=1 to be sure not to fish newborns THEN
+      IF (particle%stage >= 5 .and. fishing_strategy == 'Catch' .and. particle%AgeClass >= 1) THEN ! AgeClass>=1 to be sure not to fish newborns THEN
 
          ! mat_catch is read in ibm_init routine
          IF (species == 'anchovy') id_species = 1

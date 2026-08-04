@@ -253,7 +253,7 @@ CONTAINS
 
       ! FOIL
 #ifdef FOIL
-      INTEGER                                     :: ageClass, stage
+      INTEGER                                     :: AgeClass, stage
       REAL(KIND=rlg)                              :: size, density, super, age
       REAL(KIND=rlg)                              :: E_deb, H_deb, R_deb, Gam_deb
 #endif
@@ -839,7 +839,7 @@ CONTAINS
                   READ (49, *, iostat=eof) super
                   READ (49, *, iostat=eof) density
                   READ (49, *, iostat=eof) age
-                  READ (49, *, iostat=eof) ageclass
+                  READ (49, *, iostat=eof) Ageclass
                   READ (49, *, iostat=eof) H_deb
                   READ (49, *, iostat=eof) E_deb
                   READ (49, *, iostat=eof) R_deb
@@ -976,7 +976,7 @@ CONTAINS
                         new_patch%particles(nn)%size = size
                         new_patch%particles(nn)%density = density
                         new_patch%particles(nn)%age = age
-                        new_patch%particles(nn)%ageClass = ageClass
+                        new_patch%particles(nn)%AgeClass = AgeClass
                         new_patch%particles(nn)%H = H_deb
                         new_patch%particles(nn)%E = E_deb
                         new_patch%particles(nn)%R = R_deb

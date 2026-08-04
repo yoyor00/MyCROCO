@@ -132,7 +132,7 @@ CONTAINS
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: flag_nc, temp_nc, super_nc
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: dens_nc, size_nc, drate_nc
       REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)       :: dayb_nc
-      INTEGER, ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, ageClass_nc, num_nc
+      INTEGER, ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, AgeClass_nc, num_nc
 
       ! Definition of namelists in paraibm
       NAMELIST /namibmrestart/ ibm_restart, ibm_l_time
@@ -189,7 +189,7 @@ CONTAINS
 
             ALLOCATE (flag_nc(nb_part_nc), temp_nc(nb_part_nc), size_nc(nb_part_nc), stage_nc(nb_part_nc))
             ALLOCATE (dens_nc(nb_part_nc), super_nc(nb_part_nc), drate_nc(nb_part_nc), dayb_nc(nb_part_nc))
-            ALLOCATE (age_nc(nb_part_nc), ageClass_nc(nb_part_nc), num_nc(nb_part_nc))
+            ALLOCATE (age_nc(nb_part_nc), AgeClass_nc(nb_part_nc), num_nc(nb_part_nc))
 
             ! CALL ionc4_openr(trim(file_inp), .false.)
             CALL ionc4_gatt_char_read(file_inp, 'run_id', patch%run_id)
@@ -204,7 +204,7 @@ CONTAINS
             CALL ionc4_read_trajt(file_inp, "DRATE", drate_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "DAYBIRTH", dayb_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGE", age_nc, 1, nb_part_nc, idimt)
-            CALL ionc4_read_trajt(file_inp, "AGECLASS", ageClass_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "AGECLASS", AgeClass_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM", num_nc, 1, nb_part_nc, idimt)
 
             DO m = 1, patch%nb_part_alloc
@@ -233,7 +233,7 @@ CONTAINS
                patch%particles(m)%Drate = drate_nc(index_num)
                patch%particles(m)%date_orig = dayb_nc(index_num)
                patch%particles(m)%age = age_nc(index_num)
-               patch%particles(m)%AgeClass = ageClass_nc(index_num)
+               patch%particles(m)%AgeClass = AgeClass_nc(index_num)
             END DO
 
             CALL ionc4_read_trajt(trim(file_inp), "DAYJUV", dayb_nc, 1, nb_part_nc, idimt)
@@ -264,7 +264,7 @@ CONTAINS
             END DO
 
             DEALLOCATE (flag_nc, temp_nc, size_nc, stage_nc, dens_nc, super_nc, drate_nc, dayb_nc)
-            DEALLOCATE (age_nc, ageClass_nc, num_nc)
+            DEALLOCATE (age_nc, AgeClass_nc, num_nc)
 
             ! update the date of restart, and savetraj is delayed not to have twice same time step in output
             IF (ibm_l_time) THEN
@@ -1192,7 +1192,7 @@ CONTAINS
                         REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: lat_out, lon_out, dateo_out
                         REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: temp_out, flag_out, spos_out, zpos_out, xpos_out, ypos_out
                         REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: h0pos_out, size_out, nb_out, dens_out, Drate_out
-                        INTEGER, ALLOCATABLE, DIMENSION(:)   :: age_out, ageClass_out
+                        INTEGER, ALLOCATABLE, DIMENSION(:)   :: age_out, AgeClass_out
                         REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out, f_out, Wdeb_out, Denspawn_out
                         REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_out, H_out, R_out, Neggs_out, NRJ_out, Gam_out
                         INTEGER, ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out, yearspawn_out, season_out
@@ -1328,14 +1328,14 @@ CONTAINS
                            ALLOCATE (temp_out(nb_part), Drate_out(nb_part))
                            ALLOCATE (size_out(nb_part), dateo_out(nb_part))
                            ALLOCATE (stage_out(nb_part), nb_out(nb_part))
-                           ALLOCATE (age_out(nb_part), ageClass_out(nb_part))
+                           ALLOCATE (age_out(nb_part), AgeClass_out(nb_part))
 
                            lat_out(:) = REAL(dg_valmanq_io, kind=out); lon_out(:) = REAL(dg_valmanq_io, kind=out)
                            dateo_out(:) = REAL(dg_valmanq_io, kind=out)
                            xpos_out(:) = fillval; ypos_out(:) = fillval; spos_out(:) = fillval; zpos_out(:) = -fillval
                            h0pos_out(:) = -fillval; flag_out(:) = fillval; num_out(:) = 0
                            size_out(:) = fillval; stage_out(:) = -1; dens_out(:) = fillval; Drate_out(:) = fillval
-                           temp_out(:) = fillval; nb_out(:) = fillval; age_out(:) = -1; ageClass_out(:) = -1
+                           temp_out(:) = fillval; nb_out(:) = fillval; age_out(:) = -1; AgeClass_out(:) = -1
 
                            ALLOCATE (dayjuv_out(nb_part), dayspawn_out(nb_part))
                            ALLOCATE (yearspawn_out(nb_part), season_out(nb_part))
@@ -1378,7 +1378,7 @@ CONTAINS
                               num_out(p) = REAL(particle%num, kind=out)
                               Drate_out(p) = REAL(particle%Drate, kind=out)
                               age_out(p) = REAL(particle%age, kind=out)
-                              ageClass_out(p) = REAL(particle%AgeClass, kind=out)
+                              AgeClass_out(p) = REAL(particle%AgeClass, kind=out)
                               food_out(p) = REAL(particle%X, kind=out)
                               f_out(p) = REAL(particle%f, kind=out)
                               E_out(p) = REAL(particle%E, kind=out)
@@ -1427,7 +1427,7 @@ CONTAINS
                            CALL ionc4_write_trajt(file_out, 'DAYBIRTH', dateo_out(1:nb_part), num1, num2, 0, &
                                                   REAL(dg_valmanq_io, kind=out))
                            CALL ionc4_write_trajt(file_out, 'AGE', age_out(1:nb_part), num1, num2, 0, -1)
-                           CALL ionc4_write_trajt(file_out, 'AGECLASS', ageClass_out(1:nb_part), num1, num2, 0, -1)
+                           CALL ionc4_write_trajt(file_out, 'AGECLASS', AgeClass_out(1:nb_part), num1, num2, 0, -1)
 
                            CALL ionc4_write_trajt(file_out, 'FOOD', food_out(1:nb_part), num1, num2, 0, fillval)
                            CALL ionc4_write_trajt(file_out, 'F', f_out(1:nb_part), num1, num2, 0, fillval)
@@ -1450,7 +1450,7 @@ CONTAINS
                            CALL ionc4_sync(file_out)
                            DEALLOCATE (lat_out, lon_out, xpos_out, ypos_out, spos_out, zpos_out)
                            DEALLOCATE (num_out, h0pos_out, flag_out, dens_out, temp_out, Drate_out)
-                           DEALLOCATE (size_out, dateo_out, stage_out, nb_out, age_out, ageClass_out)
+                           DEALLOCATE (size_out, dateo_out, stage_out, nb_out, age_out, AgeClass_out)
                            DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out)
                            DEALLOCATE (Denspawn_out, food_out, Wdeb_out, zoom_out)
                            DEALLOCATE (Gam_out, H_out, E_out, R_out, Neggs_out)!, NRJ_out)
