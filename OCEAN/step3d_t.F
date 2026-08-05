@@ -898,16 +898,29 @@
 !
 #  if defined TNUDGING && defined TCLIMATOLOGY
 #   ifdef ZONAL_NUDGING
-      do itrc=1,NT   !<-- itrc
-        if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
-          call zonavg_3d(istr,iend,jstr,jend,
-     &               t(START_2D_ARRAY,1,nnew,itrc),tzon(:,:,itrc))
-        endif
-        if (iic.eq.ntstart) then
-          call zonavg_3d(istr,iend,jstr,jend,
-     &              tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
-        endif
-      enddo   ! <-- itrc
+#     ifdef TCLM_BIO
+        do itrc=3,NT   !<-- itrc
+          if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
+            call zonavg_3d(istr,iend,jstr,jend,
+     &                 t(START_2D_ARRAY,1,nnew,itrc),tzon(:,:,itrc))
+          endif
+          if (iic.eq.ntstart) then
+            call zonavg_3d(istr,iend,jstr,jend,
+     &                tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
+          endif
+        enddo   ! <-- itrc
+      else /* TCLM_BIO */
+        do itrc=1,NT   !<-- itrc
+          if (iic.eq.ntstart .or. mod(iic,10).eq.0) then
+            call zonavg_3d(istr,iend,jstr,jend,
+     &                 t(START_2D_ARRAY,1,nnew,itrc),tzon(:,:,itrc))
+          endif
+          if (iic.eq.ntstart) then
+            call zonavg_3d(istr,iend,jstr,jend,
+     &                tclm(START_2D_ARRAY,1,itrc),tclmzon(:,:,itrc))
+          endif
+        enddo   ! <-- itrc
+#     endif /* TCLM_BIO */
 #   endif /* ZONAL_NUDGING */
 #  endif
 !$acc kernels if(compute_on_device) default(present)
