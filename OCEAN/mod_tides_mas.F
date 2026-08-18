@@ -11,12 +11,37 @@
       INTEGER,DIMENSION(nmarmax)                  :: nu
       INTEGER,DIMENSION(30,8)                     :: nomd
       REAL,DIMENSION(30,8)              :: fr1,fr2
-      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYETA,2)    :: rouest,gouest,rest,gest
-      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYXI,2)    :: rsud,gsud,rnord,gnord
-      REAL,DIMENSION(130,GLOBAL_1D_ARRAYXI,2)     :: hnnord,hnsud
-      REAL,DIMENSION(130,GLOBAL_1D_ARRAYETA,2)     :: hnouest,hnest
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYETA)    :: rouest,gouest,rest,gest
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYXI)     :: rsud,gsud,rnord,gnord
+
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYETA)    :: urouest,ugouest
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYETA)    :: vrouest,vgouest
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYETA)    :: urest,ugest
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYETA)    :: vrest,vgest
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYXI)     :: ursud,ugsud
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYXI)     :: vrsud,vgsud
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYXI)     :: urnord,ugnord
+      REAL,DIMENSION(30,8,GLOBAL_1D_ARRAYXI)     :: vrnord,vgnord
+
+
+      REAL,DIMENSION(130,GLOBAL_1D_ARRAYETA)     :: hnouest,hnest
+      REAL,DIMENSION(130,GLOBAL_1D_ARRAYXI)     :: hnnord,hnsud
+
+      REAL,DIMENSION(130,GLOBAL_1D_ARRAYETA)     :: unouest,vnouest
+      REAL,DIMENSION(130,GLOBAL_1D_ARRAYETA)     :: unest,vnest
+      REAL,DIMENSION(130,GLOBAL_1D_ARRAYXI)      :: unnord,vnnord
+      REAL,DIMENSION(130,GLOBAL_1D_ARRAYXI)      :: unsud,vnsud
+
+
       REAL,DIMENSION(30,8):: rr,gg
       REAL,DIMENSION(130) :: hn
+
+      REAL :: Tmajor,Tminor,Tphase
+      COMPLEX,DIMENSION(GLOBAL_2D_ARRAY,Ntides):: u_cmplx,v_cmplx
+
+      INTEGER,DIMENSION(Ntides) :: k_of   ! species index for harmonic i
+      INTEGER,DIMENSION(Ntides) :: nn_of  ! rank within species for harmonic i
+
 
       CHARACTER(len=100),DIMENSION(nmarmax) :: nommar
 
@@ -125,5 +150,41 @@
      &  1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,
      &  1000,1000,1000,1000,1000,1000,1000,1000,1000,
      &  1000/)
+#endif
+
+# if defined UV_TIDES
+      CONTAINS
+        subroutine ep2ap(semi_major, semi_minor, inclination, phase,
+     &                    u_complex, v_complex)
+     !
+     ! Compute U/V amplitude and phase from ellipse parameters
+     !
+        implicit none
+        real(8), intent(in)  :: semi_major, semi_minor
+        real(8), intent(in)  :: inclination, phase
+        complex, intent(out) :: u_complex, v_complex 
+
+        complex(8) :: wp, wm
+        real(8) :: incl_rad, phase_rad
+
+        real pi, deg2rad, rad2deg
+        parameter (pi=3.14159265358979323846, deg2rad=pi/180.,
+     &                                      rad2deg=180./pi)
+
+        ! Convert to radians
+        incl_rad = inclination * deg2rad
+        phase_rad = phase * deg2rad
+
+        ! Decompose ellipse into counter-rotating circles
+        wp = (semi_major + semi_minor) / 2.0d0 *
+     &       exp(cmplx(0.0d0,-1.D0)*(incl_rad - phase_rad))
+        wm = (semi_major - semi_minor) / 2.0d0 *
+     &       exp(cmplx(0.0d0,-1.D0)*(incl_rad + phase_rad))
+
+        ! Reconstruct U and V components
+        u_complex = wp + conjg(wm)
+        v_complex = cmplx(0.0d0, 1.0d0) * (wp - conjg(wm))
+
+       end subroutine ep2ap
 #endif
       END MODULE MOD_TIDES_MAS
