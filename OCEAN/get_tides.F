@@ -206,12 +206,23 @@
           write(6,3) 'tide_Cmin',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
+#  ifndef TIDES_MAS
         do j=0,LOCALMM+1
           do i=0,LOCALLM+1
             UV_Tangle(i,j,itide)=UV_Tangle(i,j,itide)*deg2rad
             UV_Tphase(i,j,itide)=UV_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#  else
+        do j=0,LOCALMM+1
+          do i=0,LOCALLM+1
+            if (UV_Tangle(i,j,itide)<0.0)
+     &        UV_Tangle(i,j,itide)=UV_Tangle(i,j,itide)+360
+            if (UV_Tphase(i,j,itide)<0.0)
+     &        UV_Tphase(i,j,itide)=UV_Tphase(i,j,itide)+360
+          enddo
+        enddo
+#  endif
 #ifdef OPENACC
           call update_device(UV_Tangle(:,:,itide))
           call update_device(UV_Tphase(:,:,itide))
