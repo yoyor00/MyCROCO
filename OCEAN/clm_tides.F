@@ -343,7 +343,7 @@
 
                 vrsud(nn,k,i) = ABS(v_interp) * 100.0
                 vgsud(nn,k,i) = ATAN2(AIMAG(v_interp),
-     &                                    REAL(v_interp)) * rad2deg
+     &                                REAL(v_interp)) * rad2deg
                 if (vgsud(nn,k,i) < 0.0d0)
      &            vgsud(nn,k,i) = vgsud(nn,k,i) + 360.0d0
                 if(ir0 < 0) vgsud(nn,k,i)=vgsud(nn,k,i)+180.0
@@ -702,8 +702,8 @@
 #  if defined OBC_SOUTH
       if (SOUTHERN_EDGE) then
         do i=IstrR,IendR
-            call ma7(flag,tempis,unsud(:,j),Utide(i,Jstr),k)
-            call ma7(flag,tempis,vnsud(:,j),Vtide(i,JstrR),k)
+            call ma7(flag,tempis,unsud(:,i),Utide(i,JstrR),k)
+            call ma7(flag,tempis,vnsud(:,i),Vtide(i,Jstr),k)
         end do
       end if
 #  endif
