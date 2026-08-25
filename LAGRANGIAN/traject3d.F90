@@ -234,6 +234,7 @@ CONTAINS
          END IF
 
          DO npart = 1, patch%nb_part_alloc
+
             particle => patch%particles(npart)
             ! Skip if particle is inactive.
             IF (.NOT. particle%active) CYCLE
@@ -247,7 +248,10 @@ CONTAINS
 
             ! depth of cell in which particle is located
             d3 = h(pos_temp%idx, pos_temp%idy) + xe(pos_temp%idx, pos_temp%idy, time_step)
+
             IF (d3 <= 0.0_rsh) CYCLE
+
+            s_old = particle%spos
 
             !*************************************************
             ! horizontal advection (and potentially diffusion)
@@ -257,7 +261,6 @@ CONTAINS
 
                ! Save former position
                pos_old = pos_temp
-               s_old = particle%spos
 
                ! along-sigma advection (and potentially diffusion)
                CALL avance(uz(:, :, :, time_step), vz(:, :, :, time_step), xe(:, :, time_step), &
@@ -271,7 +274,7 @@ CONTAINS
                d3_final = h0_final + xe_final
                hc_sig_final = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
-               ! Mid-position between old(s_old) and new (particle%xpos)
+               ! Mid-position between old (pos_old) and new (pos_temp)
                pos_mid%xp = 0.5_rsh*(pos_temp%xp + pos_old%xp)
                pos_mid%yp = 0.5_rsh*(pos_temp%yp + pos_old%yp)
                call define_pos(pos_mid)
@@ -337,16 +340,20 @@ CONTAINS
                   right_give = right_give + 1
                END IF
 #endif
-            ELSE ! some variables still needed for vertical transport
+            ELSE  ! no advection but but some variables still needed for vertical transport, 
+                  ! and some were modified since last time step
 
-               d3_final = d3
-               h0_final = h(pos_temp%idx, pos_temp%idy)
-               xe_final = xe(pos_temp%idx, pos_temp%idy, time_step)
-               hc_sig_final = particle%hc
-               d3_mid = d3
+               CALL loc_h0(pos_temp%idx_r, pos_temp%idy_r, px, py, igg, idd, jbb, jhh, &
+                           hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
+               h0_final = particle%h0 ! not changed since last time step
+               xe_final = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                                   Istr, Iend, Jstr, Jend) ! change since last time step
+               d3_final = h0_final + xe_final
+               hc_sig_final = particle%hc ! not modified since last time step
+               d3_mid = d3_final
                h0_mid = h0_final
                xe_mid = xe_final
-               hc_sig_mid = particle%hc
+               hc_sig_mid = hc_sig_final
 
             END IF ! If horizontal transport
 
