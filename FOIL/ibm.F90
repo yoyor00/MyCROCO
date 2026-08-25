@@ -260,7 +260,11 @@ CONTAINS
                patch%particles(m)%dayjuv = dayb_nc(index_num)
                patch%particles(m)%denspawn = dens_nc(index_num)
 
-               IF (patch%particles(m)%stage >= 5) patch%particles(m)%traj3d = .FALSE.
+               IF (patch%particles(m)%stage >= 5) THEN
+                  patch%particles(m)%hadv = .FALSE.
+                  patch%particles(m)%itypevert = 0
+               END IF
+
             END DO
 
             DEALLOCATE (flag_nc, temp_nc, size_nc, stage_nc, dens_nc, super_nc, drate_nc, dayb_nc)
@@ -455,8 +459,8 @@ CONTAINS
       ! Save particle properties (before any change for getting exact initial properties)
       CALL ibm_save
 
-      ! If transport not needed (e.g. juvenile/adult stage), 
-      ! this will be handled in LAGRANGIAN_update through particle%traj3d (True/False)
+      ! If transport not needed (e.g. juvenile/adult stage), this will be handled in
+      ! LAGRANGIAN_update through particle%hadv and particle%itypevert (True/False)
       CALL LAGRANGIAN_update(xe, uz, vz, Istr, Iend, Jstr, Jend)
 
       ! Save old year for reproduction
@@ -666,8 +670,9 @@ CONTAINS
                IF (debuse) CALL deb_cycle(particle, dtm, aaaa, mm_clock, jj, patch%species)
                IF (particle%H >= particle%Hj) THEN
                   particle%stage = 5
-                  particle%traj3d = .FALSE. ! stop advection/diffusion in all direction from stage 5
+                  particle%hadv = .FALSE. ! stop advection/diffusion in the horizontal from stage 5
                   ! when better movement algorithm for adult better to only turn off vertical ad / diff
+                  particle%itypevert = 0 ! stop advection/diffusion in the vertical from stage 5
                   particle%zpos = 0.0_rsh
                   particle%w = 0.0_rsh
                   particle%dayjuv = jjulien
@@ -806,8 +811,14 @@ CONTAINS
                IF (hh == 0 .and. particle%hmove > 0) particle%hmove = particle%hmove - 24
             END IF
 
-            ! ===   Fin evolution stades de vie
-            ! ===================================
+            ! ==================================================================================
+            ! Vertical movement and check for bottom and surface boundaries
+            zlag = -particle%zpos + particle%xe                ! switch from immersion to real z
+            zlag = zlag + particle%w*dtm                       ! update position
+            zlag = MIN(MAX(zlag, -particle%h0), particle%xe)   ! check boundaries
+            particle%zpos = -zlag + particle%xe                ! immersion
+            CALL ztosiggen(zlag, slag, particle%xe, particle%h0, particle%hc)
+            particle%spos = slag
 
             ! ===========================================
             ! ===    Different sources of mortality
@@ -861,18 +872,6 @@ CONTAINS
                END IF
             END IF
 
-            !--------------------------------------------------------------------------------
-            ! Vertical movement and check for bottom and surface boundaries
-            zlag = -particle%zpos + particle%xe ! switch from immersion to real z
-
-            zlag = zlag + particle%w*dtm                       ! update position
-            zlag = MIN(MAX(zlag, -particle%h0), particle%xe)   ! check boundaries
-
-            particle%zpos = -zlag + particle%xe  ! immersion
-
-            !IF ( particle%stage <= 2 ) particle%zpos = min(particle%zpos, 40.0_rsh) !patch to avoid going too deep...
-            CALL ztosiggen(zlag, slag, particle%xe, particle%h0, particle%hc)
-            particle%spos = slag
          END DO ! particle
 
          patch => patch%next

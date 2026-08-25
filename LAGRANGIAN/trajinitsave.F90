@@ -214,7 +214,7 @@ CONTAINS
       !! * Local declarations
       ! For reading input file
       INTEGER                                     :: idimt                    ! Read last time in restart file
-      LOGICAL                                     :: ex, l_posit, traj3d
+      LOGICAL                                     :: ex, l_posit, hadv
       INTEGER                                     :: lstr, lenstr
       CHARACTER(LEN=5)                            :: comment
       CHARACTER(LEN=19)                           :: dateread, tool_sectodat
@@ -273,7 +273,7 @@ CONTAINS
       REAL(KIND=rlg), DIMENSION(5)                 :: buff_mpi
 
       NAMELIST /namtraj/ file_trajec, dir_pathout, itypepatch, dtsave_traj
-      NAMELIST /namtrajadiff/ traj3d, dtz, hdiff
+      NAMELIST /namtrajadiff/ hadv, dtz, hdiff
 
 # include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
@@ -458,7 +458,7 @@ CONTAINS
          ! Type of vertical behavior (integer):
          READ (49, *, iostat=eof) new_patch%init_particle%itypevert
 
-         new_patch%init_particle%traj3d = traj3d  ! type of transport common to all particles of a patch
+         new_patch%init_particle%hadv = hadv  ! type of transport common to all particles of a patch
           
          IF_MPI(MASTER) THEN
          WRITE (iscreenlog, *) 'PATCH NUMBER : ', npa, new_line(''), &

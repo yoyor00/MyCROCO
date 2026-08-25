@@ -78,7 +78,7 @@ MODULE comtraj
    TYPE, PUBLIC :: type_particle
 
       LOGICAL :: active = .False. ! .True.  if particle actually active
-      LOGICAL :: traj3d = .True.  ! .True.  if particles are transported by advection/diffusion in traject3d
+      LOGICAL :: hadv = .True.  ! .True.  if particles are transported on the horizontal
 #if defined MPI
       ! --- MPI managing
       INTEGER                 :: limitbye = 0     ! Specify the direction of the boundary crossing
@@ -301,7 +301,7 @@ CONTAINS
 
       i = 1
       CALL MPI_GET_ADDRESS(particle%active, addresses(i), ierr_mpi); i = i + 1
-      CALL MPI_GET_ADDRESS(particle%traj3d, addresses(i), ierr_mpi); i = i + 1
+      CALL MPI_GET_ADDRESS(particle%hadv, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%limitbye, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%itypevert, addresses(i), ierr_mpi); i = i + 1
       CALL MPI_GET_ADDRESS(particle%num, addresses(i), ierr_mpi); i = i + 1

@@ -27,8 +27,8 @@
 : namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
 :-----------------------------------------------------------------------------
 : 
-: traj3d : if FALSE, particles will not be transported in any direction, 
-: 			neither advection nor diffusion. 
+: hadv : if FALSE, particles will not be transported in the horizontal
+: 			direction, neither advection nor diffusion. 
 :			Usefull for some configuration (ex : 3D-1DV, but also 
 :			for some biological stages of the IBM)
 : dtz   : time step (s) used by the vertical random-walk subloop
@@ -41,6 +41,6 @@
 :-----------------------------------------------------------------------------
 :
  &namtrajadiff
-      traj3d = .TRUE.
+      hadv = .TRUE.
 	  dtz  = 3
       hdiff = 5.0 /
