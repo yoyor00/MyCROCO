@@ -242,7 +242,7 @@ CONTAINS
             ! Skip if configuration do not need transport or IBM biological stage not appropriate            
             IF (.NOT. particle%traj3d) CYCLE
 
-            ! Skip if flag is missing...
+            ! Skip if flag is activated (ex : at limit of domain, or inland - though should not be)
             IF (particle%flag == -valmanq) CYCLE
 
             ! Get local position if MPI, doesn't change anything in sequential
