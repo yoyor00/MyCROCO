@@ -950,7 +950,7 @@ CONTAINS
                                  new_patch%particles(m1 + l)%num = idx_s + m1 + l
 #ifdef FOIL
                                  ! if restart, we want to keep the original num from netcdf file
-                                 IF (ibm_restart) new_patch%particles(m1 + l)%num = num_nc(nn)  ! clara : should we add + idx_s + l ?
+                                 IF (ibm_restart) new_patch%particles(m1 + l)%num = num_nc(nn)
 #endif
                               END DO
                            ELSE

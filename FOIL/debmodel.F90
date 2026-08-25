@@ -235,8 +235,6 @@ CONTAINS
                IF (patch%nb_part_alloc == 0) CYCLE
                IF (.NOT. patch%particles(m)%active) CYCLE
                num = patch%particles(m)%num
-               ! CLARA, get index of num_nc
-               ! index_num = findloc(num_nc, num, dim=1)
                index_num = -1
                do il = 1, nb_part_nc
                   if (num_nc(il) == num) then
@@ -1063,8 +1061,7 @@ CONTAINS
       ! Definit les indices de lecture en fonction du proc mpi dans le fichier de forcage
       ! Lit sur tout le domaine en sequentiel sinon
       imin = 0; jmin = 0
-      valimin = 1; valjmin = 1 ! version initiale Denis
-      ! valimin = 0 ; valjmin = 0 ! version modifiée Clara
+      valimin = 1; valjmin = 1
 
 #ifdef MPI
       if (ii .gt. 0) then

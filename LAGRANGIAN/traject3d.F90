@@ -114,8 +114,7 @@ CONTAINS
       REAL(KIND=rsh)                              :: x_old, y_old, s_old, z_old, z_int, s_int, slag, &
                                                      x_mid, y_mid, z_mid, d3_mid, xe_mid, h0_mid, &
                                                      tir, dksdz, kzz, ds_adv, ds_dif, d3, d3_final, &
-                                                     xe_final, h0_final, d3avt, xeavt, hcavt, h0avt, &
-                                                     hc_sig_mid, hc_sig_final, zposf, zlag
+                                                     xe_final, h0_final, hc_sig_mid, hc_sig_final, zposf, zlag
 
       ! For Random walk
       REAL(KIND=rsh)                              :: lb, lt, lbs, lts
@@ -259,10 +258,6 @@ CONTAINS
                ! Save former position
                pos_old = pos_temp
                s_old = particle%spos
-               d3avt = particle%d3
-               xeavt = particle%xe
-               h0avt = particle%h0
-               hcavt = particle%hc
 
                ! along-sigma advection (and potentially diffusion)
                CALL avance(uz(:, :, :, time_step), vz(:, :, :, time_step), xe(:, :, time_step), &

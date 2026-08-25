@@ -176,7 +176,7 @@ CONTAINS
       DO n = 1, patches%nb
          ! Init patch general data
          patch%yearref = current_year - 1
-         patch%t_spawn = patch%t_beg ! clara : why ???
+         patch%t_spawn = patch%t_beg
          patch%dt_spawn = dt_spawn*3600.0_rlg
          ! -------------------------
          ! --- Restart
@@ -211,8 +211,6 @@ CONTAINS
                IF (patch%nb_part_alloc == 0) CYCLE ! To avoid an error because of a proc without any particle at restart
                IF (.NOT. patch%particles(m)%active) CYCLE
                num = patch%particles(m)%num
-               ! CLARA, get index of num_nc
-               ! index_num = findloc(num_nc, num, dim=1)
                index_num = -1
                do il = 1, nb_part_nc
                   if (num_nc(il) == num) then
@@ -244,8 +242,6 @@ CONTAINS
                IF (.NOT. patch%particles(m)%active) CYCLE
 
                num = patch%particles(m)%num
-               ! CLARA, get index of num_nc
-               ! index_num = findloc(num_nc, num, dim=1)
                index_num = -1
                do il = 1, nb_part_nc
                   if (num_nc(il) == num) then
