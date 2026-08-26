@@ -191,8 +191,8 @@ CONTAINS
       particle%w = 0.0_rsh
 
       ! Initialize particle's hadv
-      IF (particles%stage >= 5) THEN
-         particles%hadv = .FALSE.  ! in case hadv = TRUE in paratraj.txt and initial patches are juv/adult
+      IF (particle%stage >= 5) THEN
+         particle%hadv = .FALSE.  ! in case hadv = TRUE in paratraj.txt and initial patches are juv/adult
       END IF
 
       ! Initialize particle's size, checking at species

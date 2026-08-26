@@ -44,6 +44,7 @@ MODULE ibm
 
    !! * Private variables
    REAL(kind=rsh)                                  :: w_max, alpha_w                   ! From paraibm namibmbio namelist
+   LOGICAL                                         :: adult_move                       ! From paraibm namibmbio namelist
 
    LOGICAL                                         :: repro                            ! From paraibm namibmpop, activate or not repro
    REAL(KIND=rlg)                                  :: dt_spawn                         ! From paraibm namibmpop, spawning interval in hours of patch
@@ -60,7 +61,7 @@ MODULE ibm
    REAL(KIND=rsh)                                  :: multiplier_tac
 
    ! Variables pour la 2e methode de repro
-   REAL(KIND=rsh), DIMENSION(nb_species)            :: nb_indv_ponte
+   REAL(KIND=rsh), DIMENSION(nb_species)           :: nb_indv_ponte
 
    !!==============================================================================================
 
@@ -136,7 +137,7 @@ CONTAINS
 
       ! Definition of namelists in paraibm
       NAMELIST /namibmrestart/ ibm_restart, ibm_l_time
-      NAMELIST /namibmbio/ w_max, alpha_w
+      NAMELIST /namibmbio/ w_max, alpha_w, adult_move
       NAMELIST /namibmpop/ repro, dt_spawn, max_part, duration_ibm_anc, duration_ibm_sar, &
          fish_mort, fishing_strategy, multiplier_tac, density_dependent
       NAMELIST /namibmdeb/ debuse, F_Fix, ffix, file_NBSS, file_food, frac_deb_death
@@ -301,7 +302,7 @@ CONTAINS
 
       ! No need of loop to initialize DEB parameters
       IF (debuse) CALL deb_init(ibm_restart)      ! Init DEB
-      CALL fish_move_init(Istr, Iend, Jstr, Jend)    ! Init fish_move module
+      IF (adult_move) CALL fish_move_init(Istr, Iend, Jstr, Jend)    ! Init fish_move module
 
       yearclass = current_year + 1                ! Init yearclass to update fish's Ageclass
 
@@ -718,30 +719,34 @@ CONTAINS
                ! Growth
                IF (debuse) CALL deb_cycle(particle, dtm, aaaa, mm_clock, jj, patch%species)
 
-               ! Time step to calculate fish movement, depending on size of the fish
-               dh = NINT((100.0/(1.5*particle%size*3600.0))* &
+               ! Active MOVEMENT
+               IF (adult_move) THEN
+
+                  ! Time step to calculate fish movement, depending on size of the fish
+                  dh = NINT((100.0/(1.5*particle%size*3600.0))* &
                          MAX(om_r(nint(pos%idx_r), nint(pos%idy_r)), on_r(nint(pos%idx_r), nint(pos%idy_r))))
 
-               IF (hh >= particle%hmove + dh) THEN
-#ifdef MPI
-                  CALL fish_move(particle, ind_species)
-#endif
-                  particle%hmove = hh ! update of the saved hour
+                  IF (hh >= particle%hmove + dh) THEN
+      
+                     CALL fish_move(particle, ind_species)
+                     particle%hmove = hh ! update of the saved hour
 
-                  pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
-                  CALL define_pos(pos_ad)
+                     pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
+                     CALL define_pos(pos_ad)
 
-                  ! total depth at particle s location
-                  CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                     ! total depth at particle s location
+                     CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                               Istr, Iend, Jstr, Jend)
-                  particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                     particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                                       Istr, Iend, Jstr, Jend)
-                  particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
-                  particle%d3 = particle%h0 + particle%xe
-                  particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                     particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                     particle%d3 = particle%h0 + particle%xe
+                     particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
-               END IF
-               IF (hh == 0 .and. particle%hmove > 0) particle%hmove = particle%hmove - 24
+                  END IF
+                  IF (hh == 0 .and. particle%hmove > 0) particle%hmove = particle%hmove - 24
+
+               END IF ! MOVEMENT
 
                ! SI le super individu n'atteint pas le stade 6 et que jjulien = dayjuv,
                ! alors mindepth = maxdepth et l'interpolation de la temperature plante.
@@ -781,30 +786,35 @@ CONTAINS
 
                IF (debuse) CALL deb_cycle(particle, dtm, aaaa, mm_clock, jj, patch%species)
 
-               ! Time step to calculate fish movement, depending on size of the fish and size of the grid
-               dh = NINT((100.0/(1.5*particle%size*3600.0))* &
+               ! Active MOVEMENT
+               IF (adult_move) THEN
+
+                  ! Time step to calculate fish movement, depending on size of the fish
+                  dh = NINT((100.0/(1.5*particle%size*3600.0))* &
                          MAX(om_r(nint(pos%idx_r), nint(pos%idy_r)), on_r(nint(pos%idx_r), nint(pos%idy_r))))
 
-               IF (hh >= particle%hmove + dh) THEN
-#ifdef MPI
-                  CALL fish_move(particle, ind_species)
-#endif
-                  particle%hmove = hh ! update of the saved hour
+                  IF (hh >= particle%hmove + dh) THEN
+      
+                     CALL fish_move(particle, ind_species)
+                     particle%hmove = hh ! update of the saved hour
 
-                  pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
-                  CALL define_pos(pos_ad)
+                     pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
+                     CALL define_pos(pos_ad)
 
-                  ! total depth at particle s location
-                  CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                     ! total depth at particle s location
+                     CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                               Istr, Iend, Jstr, Jend)
-                  particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                     particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                                       Istr, Iend, Jstr, Jend)
-                  particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
-                  particle%d3 = particle%h0 + particle%xe
-                  particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                     particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                     particle%d3 = particle%h0 + particle%xe
+                     particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
-               END IF
-               IF (hh == 0 .and. particle%hmove > 0) particle%hmove = particle%hmove - 24
+                  END IF
+                  IF (hh == 0 .and. particle%hmove > 0) particle%hmove = particle%hmove - 24
+
+               END IF ! MOVEMENT
+
             END IF
 
             ! ==================================================================================
