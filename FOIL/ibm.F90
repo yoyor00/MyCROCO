@@ -43,8 +43,8 @@ MODULE ibm
    !! * Shared module variables
 
    !! * Private variables
-   REAL(kind=rsh)                                  :: w_max, alpha_w                   ! From paraibm namibmbio namelist
-   LOGICAL                                         :: adult_move                       ! From paraibm namibmbio namelist
+   REAL(kind=rsh)                                  :: w_max, alpha_w                   ! From paraibm namibmmove namelist
+   LOGICAL                                         :: adult_move                       ! From paraibm namibmmove namelist
 
    LOGICAL                                         :: repro                            ! From paraibm namibmpop, activate or not repro
    REAL(KIND=rlg)                                  :: dt_spawn                         ! From paraibm namibmpop, spawning interval in hours of patch
@@ -137,7 +137,7 @@ CONTAINS
 
       ! Definition of namelists in paraibm
       NAMELIST /namibmrestart/ ibm_restart, ibm_l_time
-      NAMELIST /namibmbio/ w_max, alpha_w, adult_move
+      NAMELIST /namibmmove/ w_max, alpha_w, adult_move
       NAMELIST /namibmpop/ repro, dt_spawn, max_part, duration_ibm_anc, duration_ibm_sar, &
          fish_mort, fishing_strategy, multiplier_tac, density_dependent
       NAMELIST /namibmdeb/ debuse, F_Fix, ffix, file_NBSS, file_food, frac_deb_death
@@ -153,7 +153,7 @@ CONTAINS
       lstr = lenstr(debibmname)
       OPEN (50, file=debibmname(1:lstr), status='old', form='formatted', access='sequential')
       READ (50, namibmrestart)
-      READ (50, namibmbio)
+      READ (50, namibmmove)
       READ (50, namibmpop)
       READ (50, namibmdeb)
       READ (50, namibmfrc)

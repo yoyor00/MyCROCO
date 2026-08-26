@@ -18,18 +18,20 @@
       ibm_l_time  = .false. /
 :
 :-----------------------------------------------------------------------------
-: namibmbio         VERTICAL-BEHAVIOR SETTINGS
+: namibmmove         MOVEMENT SETTINGS
 :-----------------------------------------------------------------------------
 :
 : w_max   : nominal maximum vertical swimming speed (m s-1); the current
 :           life-stage routines replace it with stage-specific values
 : alpha_w : convergence factor in the hyperbolic-tangent function used to
 :           calculate swimming velocity toward the target depth
+: adult_move : activate (or not) the movement on the horizontal for juv/adults 
 :-----------------------------------------------------------------------------
 :
  &namibmbio
       w_max = 0.0
-      alpha_w  = 0.8 /
+      alpha_w  = 0.8 
+      adult_move = .true. /
 :
 :-----------------------------------------------------------------------------
 : namibmpop         POPULATION, REPRODUCTION, AND FISHING SETTINGS
