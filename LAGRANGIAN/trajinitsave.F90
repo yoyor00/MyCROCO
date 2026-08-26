@@ -149,7 +149,8 @@ CONTAINS
       ! Allocation of particles of each patch
       ALLOCATE (patch%particles(patch%nb_part_alloc))
 
-      patch%particles(:) = patch%init_particle
+      patch%particles(:) = patch%init_particle  ! get the default value of comtraj, 
+                                                ! some were updated in LAGRANGIAN_init
       nb_part_total = nb_part
 
 #ifdef MPI
@@ -200,7 +201,7 @@ CONTAINS
       USE comtraj, ONLY: init_mpi_type_particle
 #endif
       USE comtraj, ONLY: patch_list_append, patches, type_patch, file_trajec, &
-                         dir_pathout, itypepatch, dtz, hdiff, dtsave_traj
+                         dir_pathout, itypepatch, dtz, hdiff, hadv, dtsave_traj
 #ifdef FOIL
       USE comtraj, ONLY: ibm_restart
 #endif
@@ -214,7 +215,7 @@ CONTAINS
       !! * Local declarations
       ! For reading input file
       INTEGER                                     :: idimt                    ! Read last time in restart file
-      LOGICAL                                     :: ex, l_posit, hadv
+      LOGICAL                                     :: ex, l_posit
       INTEGER                                     :: lstr, lenstr
       CHARACTER(LEN=5)                            :: comment
       CHARACTER(LEN=19)                           :: dateread, tool_sectodat
@@ -458,7 +459,8 @@ CONTAINS
          ! Type of vertical behavior (integer):
          READ (49, *, iostat=eof) new_patch%init_particle%itypevert
 
-         new_patch%init_particle%hadv = hadv  ! type of transport common to all particles of a patch
+         new_patch%init_particle%hadv = hadv  ! hor. transport (or not), 
+                                              ! common to all particles of a patch
           
          IF_MPI(MASTER) THEN
          WRITE (iscreenlog, *) 'PATCH NUMBER : ', npa, new_line(''), &

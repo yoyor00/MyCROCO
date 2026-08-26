@@ -380,7 +380,7 @@ CONTAINS
       USE debmodel, ONLY: readfood3d
       USE debmodel, ONLY: Zaa, Zas, Zea, Zes, za, zs
       USE comtraj, ONLY: type_particle, type_patch, patches, patch_list_append, resize_patch
-      USE comtraj, ONLY: dir_pathout
+      USE comtraj, ONLY: dir_pathout, hadv
       USE comtraj, ONLY: jjulien, struc_ad, struc_ad_dd_DEB
       USE comtraj, ONLY: debuse, F_Fix
       USE comtraj, ONLY: number_tot, weight_tot, biom_tot, Wdeb_mean
@@ -456,7 +456,7 @@ CONTAINS
       CALL ibm_save
 
       ! If transport not needed (e.g. juvenile/adult stage), this will be handled in
-      ! LAGRANGIAN_update through particle%hadv and particle%itypevert (True/False)
+      ! LAGRANGIAN_update through particle%hadv and particle%itypevert
       CALL LAGRANGIAN_update(xe, uz, vz, Istr, Iend, Jstr, Jend)
 
       ! Save old year for reproduction
@@ -1028,6 +1028,8 @@ CONTAINS
                                  new_particle%active = .True.
                                  new_particle%num = last_ind
                                  new_particle%date_orig = time
+                                 new_particle%hadv = hadv         ! hadv set in paratraj.txt constrain all particles of a simulation
+                                                                  ! except if modified within the IBM depending on stage
 
                                  ! Initialize spawn position of the particle randomly in the new cell
                                  CALL random_number(harvest)

@@ -24,9 +24,8 @@ MODULE comtraj
    PUBLIC    :: init_mpi_type_particle
 #endif
 
-   !! General parameters (use from comsubstance later)
    ! -------------------------------------------------------------------------
-   ! Definition of rsh, rlg, riosh, riolg, lchain
+   ! Definition of general variables for the module
    ! -------------------------------------------------------------------------
    INTEGER, PARAMETER                          :: riosh = 8, riolg = 8, rlg = 8, rsh = 8
    REAL(kind=rsh), PARAMETER                   :: valmanq = 999.0
@@ -78,13 +77,18 @@ MODULE comtraj
    TYPE, PUBLIC :: type_particle
 
       LOGICAL :: active = .False. ! .True.  if particle actually active
-      LOGICAL :: hadv = .True.  ! .True.  if particles are transported on the horizontal
+      LOGICAL :: hadv = .True.   ! .True. if particles are transported on the horizontal
+                                 ! Default value overidden by value in paratraj.txt, 
+                                 ! set for all patch/particles of a simulation, except if changed in IBM 
 #if defined MPI
       ! --- MPI managing
       INTEGER                 :: limitbye = 0     ! Specify the direction of the boundary crossing
       ! 1=SW, 2=S, 3=SE, 4=E, 5=NE, 6=N, 7=NW, 8=N
 #endif
-      INTEGER                 :: itypevert        ! type of trajectory (z=cst, random walk...)
+      INTEGER                 :: itypevert = 1    ! type of vertical transport (z=cst, advection, diffusion)
+                                                  ! by default for a new patch set to 1 for adv + diff
+                                                  ! For initial patches, default value replaced 
+                                                  ! by value in the patch file
       INTEGER                 :: num = 0          ! to keep track of particles when save/restart
 
       ! --- Location
@@ -191,8 +195,9 @@ MODULE comtraj
    CHARACTER(LEN=lchain), PUBLIC          :: dir_pathout                 ! name of output path
    INTEGER, PUBLIC          :: itypepatch                    ! initialisation type (circle, rectangle,netcdf)
 
-   REAL(kind=rlg), PUBLIC          :: dtz                          ! time step division for vertical subloop for diffusion
-   REAL(kind=rsh), PUBLIC          :: hdiff                        ! horizontal diffusion coefficient
+   REAL(kind=rlg), PUBLIC          :: dtz                    ! time step division for vertical subloop for diffusion
+   REAL(kind=rsh), PUBLIC          :: hdiff                  ! horizontal diffusion coefficient
+   LOGICAL                         :: hadv                   ! if horizontal transport or not, specified in paratraj.txt     
 
 #ifdef FOIL
    LOGICAL, PUBLIC          :: ibm_restart                  ! Logical for ibm restart
