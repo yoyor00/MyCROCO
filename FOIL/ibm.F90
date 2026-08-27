@@ -878,9 +878,9 @@ CONTAINS
             ! Some variables on whole population to calculate fishing
             IF (particle%stage >= 5 .and. particle%AgeClass >= 1) THEN
                IF (patch%species == 'anchovy') THEN
-               number_tot(ind_species) = number_tot(ind_species) + particle%super* &
+                  number_tot(ind_species) = number_tot(ind_species) + particle%super* &
                                             selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a)
-               weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)* &
+                  weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)* &
                                             selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a)
                ELSE IF (patch%species == 'sardine') THEN
                   number_tot(ind_species) = number_tot(ind_species) + particle%super* &
@@ -1034,7 +1034,7 @@ CONTAINS
                      IF (MAT_new_indv(i, j) .ne. 0.0_rsh) THEN
                         IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
                                               Istr, Iend, Jstr, Jend)) THEN
-                        nb_new_particle = nb_new_particle + MAT_new_indv(i, j)
+                           nb_new_particle = nb_new_particle + MAT_new_indv(i, j)
                         END IF
                      END IF
                   END DO
@@ -1065,477 +1065,477 @@ CONTAINS
                   DO j = 1, jmax + 2
                      IF (MAT_new_indv(i, j) .ne. 0.d0) THEN
                         ! Check if inside good MPI proc or if inside the domain (if not MPI)
-IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
+                        IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
                                               Istr, Iend, Jstr, Jend)) THEN
-                              ! Boucle sur le nombre d'indv a creer selon la valeur de MAT_new_indv
-                              DO k = 1, MAT_new_indv(i, j)
-                                 ! New particle number
-                                 part_num = part_num + 1
-                                 last_ind = idx_s + part_num
+                           ! Boucle sur le nombre d'indv a creer selon la valeur de MAT_new_indv
+                           DO k = 1, MAT_new_indv(i, j)
+                              ! New particle number
+                              part_num = part_num + 1
+                              last_ind = idx_s + part_num
 
-                                 ! Check if we have not reached the limit allowed by NetCDF output (+10%)
-                                 IF (child_patch%nb_part_total > child_patch%nb_part_max + child_patch%nb_part_max*0.1) THEN
-                                    PRINT *, " ERROR: Not enough space in NetCDF file to store additional particles."// &
-                                       " We have", child_patch%nb_part_max, " and need", child_patch%nb_part_total + &
-                                       child_patch%nb_part_total*0.1, &
-                                       " Please consider increasing nb_part_max."
-                                    CALL_MPI MPI_FINALIZE(ierr_mpi)
-                                    STOP
-                                 END IF
+                              ! Check if we have not reached the limit allowed by NetCDF output (+10%)
+                              IF (child_patch%nb_part_total > child_patch%nb_part_max + child_patch%nb_part_max*0.1) THEN
+                                 PRINT *, " ERROR: Not enough space in NetCDF file to store additional particles."// &
+                                    " We have", child_patch%nb_part_max, " and need", child_patch%nb_part_total + &
+                                    child_patch%nb_part_total*0.1, &
+                                    " Please consider increasing nb_part_max."
+                                 CALL_MPI MPI_FINALIZE(ierr_mpi)
+                                 STOP
+                              END IF
 
-                                 ! --- Initialize bio from patch save info
-                                 new_particle => child_patch%particles(last_ind)
-                                 new_particle = child_patch%init_particle
-                                 new_particle%active = .True.
-                                 new_particle%num = last_ind
-                                 new_particle%date_orig = time
+                              ! --- Initialize bio from patch save info
+                              new_particle => child_patch%particles(last_ind)
+                              new_particle = child_patch%init_particle
+                              new_particle%active = .True.
+                              new_particle%num = last_ind
+                              new_particle%date_orig = time
 
-                                 ! Initialize spawn position of the particle randomly in the new cell
-                                 CALL random_number(harvest)
-                                 new_particle%xpos = min(real(i, kind=rsh) + harvest - 0.49_rsh, real(i, kind=rsh) + 0.49_rsh)
-                                 CALL random_number(harvest)
-                                 new_particle%ypos = min(real(j, kind=rsh) + harvest - 0.49_rsh, real(j, kind=rsh) + 0.49_rsh)
+                              ! Initialize spawn position of the particle randomly in the new cell
+                              CALL random_number(harvest)
+                              new_particle%xpos = min(real(i, kind=rsh) + harvest - 0.49_rsh, real(i, kind=rsh) + 0.49_rsh)
+                              CALL random_number(harvest)
+                              new_particle%ypos = min(real(j, kind=rsh) + harvest - 0.49_rsh, real(j, kind=rsh) + 0.49_rsh)
 
-                                 ! Randomly place the particle in z betwee, 0 and 20m
-                                 CALL random_number(harvest)
-                                 new_particle%zpos = 20*abs(harvest)
+                              ! Randomly place the particle in z betwee, 0 and 20m
+                              CALL random_number(harvest)
+                              new_particle%zpos = 20*abs(harvest)
 
-                                 new_particle%stage = 1
+                              new_particle%stage = 1
 
-                                 new_pos%xp = new_particle%xpos; new_pos%yp = new_particle%ypos    ! New particle global position
-                                 call define_pos(new_pos)                                          ! Convert to local position inside proc if MPI, doesn't change anything in sequential
+                              new_pos%xp = new_particle%xpos; new_pos%yp = new_particle%ypos    ! New particle global position
+                              call define_pos(new_pos)                                          ! Convert to local position inside proc if MPI, doesn't change anything in sequential
 
-                                 ! Get bathymetry information for ztosiggen function
-                                 CALL loc_h0(new_pos%idx_r, new_pos%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
-                                             Istr, Iend, Jstr, Jend)
-                                 new_particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
-                                 new_particle%xe = xeint(xe(:, :, nrhs), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
-                                                         Istr, Iend, Jstr, Jend)
-                                 new_particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
-                                 new_particle%d3 = new_particle%xe + new_particle%h0
+                              ! Get bathymetry information for ztosiggen function
+                              CALL loc_h0(new_pos%idx_r, new_pos%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                                 Istr, Iend, Jstr, Jend)
+                              new_particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                              new_particle%xe = xeint(xe(:, :, nrhs), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                                 Istr, Iend, Jstr, Jend)
+                              new_particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                              new_particle%d3 = new_particle%xe + new_particle%h0
 
-                                 ! Init IBM parameters of the particle
-                                 IF (debuse) CALL ibm_parameter_init(new_particle, child_patch%species, xe, sal, temp, &
-                                                                     Istr, Iend, Jstr, Jend)
+                              ! Init IBM parameters of the particle
+                              IF (debuse) CALL ibm_parameter_init(new_particle, child_patch%species, xe, sal, temp, &
+                                                                  Istr, Iend, Jstr, Jend)
 
-                                 new_particle%super = new_super
+                              new_particle%super = new_super
 
-                                 ! Init DEB parameters
-                                 IF (debuse) CALL deb_egg_init(new_particle, child_patch%species)
+                              ! Init DEB parameters
+                              IF (debuse) CALL deb_egg_init(new_particle, child_patch%species)
 
-                                 ! Biological parameters
-                                 IF (debuse) new_particle%yearspawn = aaaa + 1  ! on ne pond qu'a 1 an minimum
-                                 CALL_MPI init_mpi_type_particle                   ! Init created particle for MPI
+                              ! Biological parameters
+                              IF (debuse) new_particle%yearspawn = aaaa + 1  ! on ne pond qu'a 1 an minimum
+                              CALL_MPI init_mpi_type_particle                   ! Init created particle for MPI
 
-                              END DO
-                           END IF   ! localisation in domain
-                        END IF   ! Mat_new_eggs
-                        END DO
-                     END DO   ! End do on new_eggs_sum matrix
+                           END DO
+                        END IF   ! localisation in domain
+                     END IF   ! Mat_new_eggs
+                  END DO
+               END DO   ! End do on new_eggs_sum matrix
 
-                     END IF      ! spawn
-                     spawn = .false.
-                     END DO   ! Nb species
+            END IF      ! spawn
+            spawn = .false.
+         END DO   ! Nb species
 
-                     ! Remise a 0 de la matrice des oeufs pondus avant fin de ce pas de temps
-                     mat_eggs = 0._rsh
+         ! Remise a 0 de la matrice des oeufs pondus avant fin de ce pas de temps
+         mat_eggs = 0._rsh
 
-                     END IF      ! repro
+      END IF      ! repro
 #endif /* IBM_SPECIES */
 
       !!! Partie commentee dans le code de Clara
-                     !IF (jjulien == 135 .and. fishing_strategy == 'HCR') THEN
-                     !
-                     !    IF (weight_tot <= 24000000000.0_rlg) THEN
-                     !       Zfishing =  0.0_rlg
-                     !    ENDIF
-                     !
-                     !    IF (weight_tot > 24000000000.0_rlg .AND. weight_tot <= 89000000000.0_rlg) THEN
-                     !       allowed_catch_g = (-2600000000.0_rlg + (0.40 * weight_tot)) / 365.0_rlg
-                     !       allowed_catch_g = allowed_catch_g * multiplier_tac
-                     !       mean_individual_weight = weight_tot / number_tot
-                     !       allowed_catch_n = allowed_catch_g / mean_individual_weight
-                     !       Zfishing = -log ( (number_tot - allowed_catch_n) / number_tot)
-                     !    ENDIF
-                     !
-                     !    IF (weight_tot > 89000000000.0_rlg) THEN
-                     !       allowed_catch_g = 33000000000.0_rlg / 365.0_rlg
-                     !       allowed_catch_g = allowed_catch_g * multiplier_tac
-                     !       mean_individual_weight = weight_tot / number_tot
-                     !       allowed_catch_n = allowed_catch_g / mean_individual_weight
-                     !       Zfishing = -log ( (number_tot - allowed_catch_n) / number_tot)
-                     !    ENDIF
-                     !
-                     !    print*, weight_tot, allowed_catch_n, number_tot, mean_individual_weight, Zfishing, situation, year
-                     !
-                     !ENDIF
+      !IF (jjulien == 135 .and. fishing_strategy == 'HCR') THEN
+      !
+      !    IF (weight_tot <= 24000000000.0_rlg) THEN
+      !       Zfishing =  0.0_rlg
+      !    ENDIF
+      !
+      !    IF (weight_tot > 24000000000.0_rlg .AND. weight_tot <= 89000000000.0_rlg) THEN
+      !       allowed_catch_g = (-2600000000.0_rlg + (0.40 * weight_tot)) / 365.0_rlg
+      !       allowed_catch_g = allowed_catch_g * multiplier_tac
+      !       mean_individual_weight = weight_tot / number_tot
+      !       allowed_catch_n = allowed_catch_g / mean_individual_weight
+      !       Zfishing = -log ( (number_tot - allowed_catch_n) / number_tot)
+      !    ENDIF
+      !
+      !    IF (weight_tot > 89000000000.0_rlg) THEN
+      !       allowed_catch_g = 33000000000.0_rlg / 365.0_rlg
+      !       allowed_catch_g = allowed_catch_g * multiplier_tac
+      !       mean_individual_weight = weight_tot / number_tot
+      !       allowed_catch_n = allowed_catch_g / mean_individual_weight
+      !       Zfishing = -log ( (number_tot - allowed_catch_n) / number_tot)
+      !    ENDIF
+      !
+      !    print*, weight_tot, allowed_catch_n, number_tot, mean_individual_weight, Zfishing, situation, year
+      !
+      !ENDIF
 
-                     ! Update current day and year once all particles were updated
-                     current_year = aaaa
-                     current_day = jj
-                     IF (yearclass == aaaa) yearclass = yearclass + 1
+      ! Update current day and year once all particles were updated
+      current_year = aaaa
+      current_day = jj
+      IF (yearclass == aaaa) yearclass = yearclass + 1
 
 #ifdef IBM_SPECIES
-                     ! To change if muliple species (add (ind_species))
+      ! To change if muliple species (add (ind_species))
 
-                     ! For catches
-                     DO i = 1, nb_species
+      ! For catches
+      DO i = 1, nb_species
 
-                        ! To get the total biomass for the whole domain, for mpi implementation
-                        CALL_MPI ADD_ALL_MPI_REAL(struc_ad(i))
-                        ! Parametre pour mortalite et densite-dependance
-                        struc_ad_dd_DEB(i) = struc_ad(i)
-                        struc_ad(i) = 0._rlg
+         ! To get the total biomass for the whole domain, for mpi implementation
+         CALL_MPI ADD_ALL_MPI_REAL(struc_ad(i))
+         ! Parametre pour mortalite et densite-dependance
+         struc_ad_dd_DEB(i) = struc_ad(i)
+         struc_ad(i) = 0._rlg
 
-                        ! To get the total number and weight of fish for the whole domain, for mpi implementation
-                        CALL_MPI ADD_ALL_MPI_REAL(number_tot(i))
-                        CALL_MPI ADD_ALL_MPI_REAL(weight_tot(i))
-                        IF (number_tot(i) > 0._rlg) THEN
-                           Wdeb_mean(i) = weight_tot(i)/number_tot(i)
-                           biom_tot(i) = weight_tot(i)
+         ! To get the total number and weight of fish for the whole domain, for mpi implementation
+         CALL_MPI ADD_ALL_MPI_REAL(number_tot(i))
+         CALL_MPI ADD_ALL_MPI_REAL(weight_tot(i))
+         IF (number_tot(i) > 0._rlg) THEN
+            Wdeb_mean(i) = weight_tot(i)/number_tot(i)
+            biom_tot(i) = weight_tot(i)
 
-                           weight_tot(i) = 0._rlg
-                           number_tot(i) = 0._rlg
-                        END IF
-                     END DO
+            weight_tot(i) = 0._rlg
+            number_tot(i) = 0._rlg
+         END IF
+      END DO
 
 #endif /* IBM_SPECIES*/
 
 #ifdef MPI
-                     ! Exchange particles if it changed proc domain, because of fish_move
-                     CALL ex_traj(down_give, up_give, right_give, left_give)
+      ! Exchange particles if it changed proc domain, because of fish_move
+      CALL ex_traj(down_give, up_give, right_give, left_give)
 #endif
 
-                     END SUBROUTINE ibm_3d
+   END SUBROUTINE ibm_3d
 
    !!======================================================================
-                     SUBROUTINE ibm_save
-                        !&E---------------------------------------------------------------------
-                        !&E                 ***  ROUTINE ibm_save  ***
-                        !&E
-                        !&E ** Purpose : Save trajectories and DEB-IBM variables
-                        !&E
-                        !&E ** Description    :
-                        !&E ** Called by      : ibm_init, ibm_3d
-                        !&E ** External calls : ionc4_createfile_traj,ionc4_createvar_traj
-                        !&E                     ionc4_write_trajt,ionc4_write_time,ionc4_sync
-                        !&E                     indices_loc2glob,tool_ind2lat,tool_ind2lon
-                        !&E ** Reference :
-                        !&E
-                        !&E ** History :
-                        !&E       !  2011-01 (M. Huret)
-                        !&E       !  2011-10 (M. Huret) Introduction of MPI
-                        !&E       !  2014-12 (M. Honnorat) Adapt for IBM upgrade
-                        !&E       !  2024    (M. Caillaud, D. Gourves, M. Huret) Coupled with CROCO
-                        !&E---------------------------------------------------------------------
+   SUBROUTINE ibm_save
+      !&E---------------------------------------------------------------------
+      !&E                 ***  ROUTINE ibm_save  ***
+      !&E
+      !&E ** Purpose : Save trajectories and DEB-IBM variables
+      !&E
+      !&E ** Description    :
+      !&E ** Called by      : ibm_init, ibm_3d
+      !&E ** External calls : ionc4_createfile_traj,ionc4_createvar_traj
+      !&E                     ionc4_write_trajt,ionc4_write_time,ionc4_sync
+      !&E                     indices_loc2glob,tool_ind2lat,tool_ind2lon
+      !&E ** Reference :
+      !&E
+      !&E ** History :
+      !&E       !  2011-01 (M. Huret)
+      !&E       !  2011-10 (M. Huret) Introduction of MPI
+      !&E       !  2014-12 (M. Honnorat) Adapt for IBM upgrade
+      !&E       !  2024    (M. Caillaud, D. Gourves, M. Huret) Coupled with CROCO
+      !&E---------------------------------------------------------------------
 
       !! * Modules used
-                        USE ionc4, ONLY: ionc4_createfile_traj, ionc4_createvar_traj, &
-                                         ionc4_write_trajt, &
-                                         ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
-                                         ionc4_gatt_char_read, ionc4_open
-                        USE comtraj, ONLY: patches, type_patch, type_particle
+      USE ionc4, ONLY: ionc4_createfile_traj, ionc4_createvar_traj, &
+                       ionc4_write_trajt, &
+                       ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
+                       ionc4_gatt_char_read, ionc4_open
+      USE comtraj, ONLY: patches, type_patch, type_particle
 
-                        USE trajinitsave, ONLY: indices_loc2glob
-                        USE trajectools, ONLY: tool_ind2lat, tool_ind2lon
+      USE trajinitsave, ONLY: indices_loc2glob
+      USE trajectools, ONLY: tool_ind2lat, tool_ind2lon
 
       !! * Arguments
 
       !! * Local declarations
-                        CHARACTER(LEN=lchain)                       :: file_out
-                        LOGICAL                                     :: l_out_nc4par
-                        INTEGER                                     :: n, m, num1, num2, nb_part, nb_part_nc, p
-                        REAL(kind=out)                              :: fillval
+      CHARACTER(LEN=lchain)                       :: file_out
+      LOGICAL                                     :: l_out_nc4par
+      INTEGER                                     :: n, m, num1, num2, nb_part, nb_part_nc, p
+      REAL(kind=out)                              :: fillval
 
-                        INTEGER, ALLOCATABLE, DIMENSION(:)   :: num_out, stage_out
-                        REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: lat_out, lon_out, dateo_out
-                        REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: temp_out, flag_out, spos_out, zpos_out, xpos_out, ypos_out
-                        REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: h0pos_out, size_out, nb_out, dens_out, Drate_out
-                        INTEGER, ALLOCATABLE, DIMENSION(:)   :: age_out, ageClass_out
+      INTEGER, ALLOCATABLE, DIMENSION(:)   :: num_out, stage_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: lat_out, lon_out, dateo_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: temp_out, flag_out, spos_out, zpos_out, xpos_out, ypos_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: h0pos_out, size_out, nb_out, dens_out, Drate_out
+      INTEGER, ALLOCATABLE, DIMENSION(:)   :: age_out, ageClass_out
 #ifdef IBM_SPECIES
-                        REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out, f_out, Wdeb_out, Denspawn_out
-                        REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_out, H_out, R_out, Neggs_out, NRJ_out, Gam_out
-                        INTEGER, ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out, yearspawn_out, season_out
-                        REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: deaddeb_out, deadfishing_out, deadnatural_out
-                        REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out, f_out, Wdeb_out, Denspawn_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_out, H_out, R_out, Neggs_out, NRJ_out, Gam_out
+      INTEGER, ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out, yearspawn_out, season_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: deaddeb_out, deadfishing_out, deadnatural_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_out
 #endif /*IBM_SPECIES*/
-                        TYPE(type_patch), POINTER    :: patch
-                        TYPE(type_particle), POINTER    :: particle
-                        INTEGER :: idx_s, idx_e
-                        LOGICAL                                     :: out_ex
-                        character(len=32)                           :: fileinfo_run_id
-                        character(len=64) :: run_id_out
+      TYPE(type_patch), POINTER    :: patch
+      TYPE(type_particle), POINTER    :: particle
+      INTEGER :: idx_s, idx_e
+      LOGICAL                                     :: out_ex
+      character(len=32)                           :: fileinfo_run_id
+      character(len=64) :: run_id_out
 
       !!----------------------------------------------------------------------
       !! * Executable part
 
-                        fillval = dg_valmanq_io
+      fillval = dg_valmanq_io
 #ifdef MPI
-                        l_out_nc4par = .true.
+      l_out_nc4par = .true.
 #else
-                        l_out_nc4par = .false.
+      l_out_nc4par = .false.
 #endif
 
-                        patch => patches%first
+      patch => patches%first
 
-                        DO n = 1, patches%nb
-                           IF ((time < patch%t_save) .OR. (time > patch%t_end)) THEN
-                              patch => patch%next
-                              CYCLE
-                           END IF
+      DO n = 1, patches%nb
+         IF ((time < patch%t_save) .OR. (time > patch%t_end)) THEN
+            patch => patch%next
+            CYCLE
+         END IF
 
-                           file_out = trim(patch%file_out)
+         file_out = trim(patch%file_out)
 
-                           CALL read_run_info(fileinfo_run_id)  ! read file FOIL.info
+         CALL read_run_info(fileinfo_run_id)  ! read file FOIL.info
 
-                           INQUIRE (file=file_out, exist=out_ex) ! does the file exist ?
-                           IF (out_ex .AND. .NOT. patch%file_out_init) THEN ! file exists but not yet opened, need to check run_id for restart
-                              patch%file_out_init = .TRUE.
-                              CALL ionc4_open(file_out, .false.)
-                              CALL ionc4_gatt_char_read(file_out, 'run_id', run_id_out)
+         INQUIRE (file=file_out, exist=out_ex) ! does the file exist ?
+         IF (out_ex .AND. .NOT. patch%file_out_init) THEN ! file exists but not yet opened, need to check run_id for restart
+            patch%file_out_init = .TRUE.
+            CALL ionc4_open(file_out, .false.)
+            CALL ionc4_gatt_char_read(file_out, 'run_id', run_id_out)
 
-                              ! Vérifier la cohérence du run_id
-                              IF (trim(run_id_out) /= trim(patch%run_id)) THEN
-                                 print *, 'ERROR: File ', trim(file_out), ' belongs to another run: ', trim(run_id_out)
-                                 print *, 'Current run_id is: ', trim(patch%run_id)
-                                 out_ex = .FALSE.  ! Force re-creation of the file
-                              END IF
-                           END IF !out_ex .and. .NOT. patch%file_out_init
+            ! Vérifier la cohérence du run_id
+            IF (trim(run_id_out) /= trim(patch%run_id)) THEN
+               print *, 'ERROR: File ', trim(file_out), ' belongs to another run: ', trim(run_id_out)
+               print *, 'Current run_id is: ', trim(patch%run_id)
+               out_ex = .FALSE.  ! Force re-creation of the file
+            END IF
+         END IF !out_ex .and. .NOT. patch%file_out_init
 
-                           IF (out_ex .AND. patch%file_out_init) THEN ! file has been already opened
-                              CALL ionc4_open(file_out, .false.)
-                           END IF
+         IF (out_ex .AND. patch%file_out_init) THEN ! file has been already opened
+            CALL ionc4_open(file_out, .false.)
+         END IF
 
-                           IF (.NOT. out_ex) THEN
-                              ! Create output file
-                              nb_part_nc = patch%nb_part_max
+         IF (.NOT. out_ex) THEN
+            ! Create output file
+            nb_part_nc = patch%nb_part_max
 
-                              CALL ionc4_createfile_traj(file_out, nb_part_nc, 0, 0, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_gatt_char(file_out, 'run_id', trim(patch%run_id)) ! Add a global attribute run_id
-                              CALL ionc4_createvar_traj(file_out, "latitude", "degrees_north", "latitude", &
-                                                        fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "longitude", "degrees_east", "longitude", &
-                                                        fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "DEPTH", "m", "depth as immersion", &
-                                                        fill_value=-fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "H0", "m", "h0", &
-                                                        fill_value=-fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "NUM", "", "number of the particle", &
-                                                        fill_value=0, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "flag", "nbr", "flag", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "TEMP", "degrees_Celsius", "temperature", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "SIZE", "Centimeters", "Size", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "STAGE", "", "Stage", &
-                                                        fill_value=-1, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "NUMBER", "Number", "Number of individuals", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "DENSITY", "sigma", "Density", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "DRATE", "", "Development rate of egg or larva", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "DAYBIRTH", "", "Date of birth", &
-                                                        fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "AGE", "", "Age in days", &
-                                                        fill_value=-1, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "AGECLASS", "", "Age in year of fish", &
-                                                        fill_value=-1, l_out_nc4par=l_out_nc4par)
-
-#ifdef IBM_SPECIES
-                              CALL ionc4_createvar_traj(file_out, "FOOD", "mg/m3", "food", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "F", "", "f", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "EDEB", "Joules", "Energy", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "HDEB", "Joules", "Maturity", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "RDEB", "Joules", "Repro", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "GAM", "Joules", "Energy gametes", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "WEIGHT", "g", "weight", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "NEGGS", "Number", "Number of eggs", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              !CALL ionc4_createvar_traj(file_out, "NRJ","J/g","Energy Density",                              &
-                              !                                    fill_value=fillval,  l_out_nc4par=l_out_nc4par)
-
-                              CALL ionc4_createvar_traj(file_out, "YEARSPAWN", "", "Year authorised to spawn", &
-                                                        fill_value=0, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "DAYSPAWN", "", "Julian day start spawning", &
-                                                        fill_value=0, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "DAYJUV", "", "Julien day at metamorphosis", &
-                                                        fill_value=0, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "ZOOM", "", "Zoom value", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
-                              !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "DENSPAWN", "sigma", "Density of egg at spawning", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "Death_DEB", "", "Number dead by starvation", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "Death_FISH", "", "Number dead by fishing", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-                              CALL ionc4_createvar_traj(file_out, "Death_NAT", "", "Number dead by natural mortality", &
-                                                        fill_value=fillval, l_out_nc4par=l_out_nc4par)
-#endif /*IBM_SPECIES*/
-                           END IF  ! (.NOT. out_ex)
-
-                           nb_part = patch%nb_part_alloc
-                           ALLOCATE (lat_out(nb_part), lon_out(nb_part))
-                           ALLOCATE (xpos_out(nb_part), ypos_out(nb_part))
-                           ALLOCATE (spos_out(nb_part), zpos_out(nb_part))
-                           ALLOCATE (num_out(nb_part), h0pos_out(nb_part))
-                           ALLOCATE (flag_out(nb_part), dens_out(nb_part))
-                           ALLOCATE (temp_out(nb_part), Drate_out(nb_part))
-                           ALLOCATE (size_out(nb_part), dateo_out(nb_part))
-                           ALLOCATE (stage_out(nb_part), nb_out(nb_part))
-                           ALLOCATE (age_out(nb_part), ageClass_out(nb_part))
-
-                           lat_out(:) = REAL(dg_valmanq_io, kind=out); lon_out(:) = REAL(dg_valmanq_io, kind=out)
-                           dateo_out(:) = REAL(dg_valmanq_io, kind=out)
-                           xpos_out(:) = fillval; ypos_out(:) = fillval; spos_out(:) = fillval; zpos_out(:) = -fillval
-                           h0pos_out(:) = -fillval; flag_out(:) = fillval; num_out(:) = 0
-                           size_out(:) = fillval; stage_out(:) = -1; dens_out(:) = fillval; Drate_out(:) = fillval
-                           temp_out(:) = fillval; nb_out(:) = fillval; age_out(:) = -1; ageClass_out(:) = -1
+            CALL ionc4_createfile_traj(file_out, nb_part_nc, 0, 0, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_gatt_char(file_out, 'run_id', trim(patch%run_id)) ! Add a global attribute run_id
+            CALL ionc4_createvar_traj(file_out, "latitude", "degrees_north", "latitude", &
+               fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "longitude", "degrees_east", "longitude", &
+               fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "DEPTH", "m", "depth as immersion", &
+               fill_value=-fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "H0", "m", "h0", &
+               fill_value=-fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "NUM", "", "number of the particle", &
+               fill_value=0, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "flag", "nbr", "flag", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "TEMP", "degrees_Celsius", "temperature", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "SIZE", "Centimeters", "Size", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "STAGE", "", "Stage", &
+               fill_value=-1, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "NUMBER", "Number", "Number of individuals", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "DENSITY", "sigma", "Density", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "DRATE", "", "Development rate of egg or larva", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "DAYBIRTH", "", "Date of birth", &
+               fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "AGE", "", "Age in days", &
+               fill_value=-1, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "AGECLASS", "", "Age in year of fish", &
+               fill_value=-1, l_out_nc4par=l_out_nc4par)
 
 #ifdef IBM_SPECIES
-                           ALLOCATE (dayjuv_out(nb_part), dayspawn_out(nb_part))
-                           ALLOCATE (yearspawn_out(nb_part), season_out(nb_part))
-                           ALLOCATE (zoom_out(nb_part))
-                           ALLOCATE (Denspawn_out(nb_part))
-                           ALLOCATE (food_out(nb_part))
-                           ALLOCATE (H_out(nb_part), E_out(nb_part), Gam_out(nb_part), R_out(nb_part))
-                           ALLOCATE (Wdeb_out(nb_part))
-                           ALLOCATE (Neggs_out(nb_part))
-                           ALLOCATE (f_out(nb_part))
-                           ALLOCATE (deaddeb_out(nb_part))
-                           ALLOCATE (deadfishing_out(nb_part))
-                           ALLOCATE (deadnatural_out(nb_part))
+            CALL ionc4_createvar_traj(file_out, "FOOD", "mg/m3", "food", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "F", "", "f", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "EDEB", "Joules", "Energy", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "HDEB", "Joules", "Maturity", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "RDEB", "Joules", "Repro", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "GAM", "Joules", "Energy gametes", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "WEIGHT", "g", "weight", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "NEGGS", "Number", "Number of eggs", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            !CALL ionc4_createvar_traj(file_out, "NRJ","J/g","Energy Density",                              &
+            !                                    fill_value=fillval,  l_out_nc4par=l_out_nc4par)
 
-                           dayjuv_out(:) = 0; dayspawn_out(:) = 0; yearspawn_out(:) = 0; season_out(:) = -1
-                           Denspawn_out(:) = fillval; food_out(:) = fillval; Wdeb_out(:) = fillval
-                           H_out(:) = fillval; E_out(:) = fillval; R_out(:) = fillval; Gam_out(:) = fillval
-                           f_out(:) = fillval; zoom_out(:) = 0; Neggs_out(:) = fillval
-                           deaddeb_out(:) = fillval; deadfishing_out(:) = fillval; deadnatural_out(:) = fillval
+            CALL ionc4_createvar_traj(file_out, "YEARSPAWN", "", "Year authorised to spawn", &
+               fill_value=0, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "DAYSPAWN", "", "Julian day start spawning", &
+               fill_value=0, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "DAYJUV", "", "Julien day at metamorphosis", &
+               fill_value=0, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "ZOOM", "", "Zoom value", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
+            !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "DENSPAWN", "sigma", "Density of egg at spawning", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "Death_DEB", "", "Number dead by starvation", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "Death_FISH", "", "Number dead by fishing", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "Death_NAT", "", "Number dead by natural mortality", &
+               fill_value=fillval, l_out_nc4par=l_out_nc4par)
 #endif /*IBM_SPECIES*/
+         END IF  ! (.NOT. out_ex)
 
-                           p = 0
-                           DO m = 1, nb_part
-                              particle => patch%particles(m)
-                              IF (.NOT. particle%active) CYCLE
-                              p = p + 1
-                              xpos_out(p) = REAL(particle%xpos, kind=out)
-                              ypos_out(p) = REAL(particle%ypos, kind=out)
-                              lat_out(p) = REAL(tool_ind2lat(particle%xpos, particle%ypos), kind=out)
-                              lon_out(p) = REAL(tool_ind2lon(particle%xpos, particle%ypos), kind=out)
-                              dateo_out(p) = REAL(particle%date_orig, kind=out)
-                              spos_out(p) = REAL(particle%spos, kind=out)
-                              zpos_out(p) = REAL(particle%zpos, kind=out) ! for output as immersion
-                              h0pos_out(p) = REAL(particle%d3, kind=out)
-                              flag_out(p) = REAL(particle%flag, kind=out)
-                              temp_out(p) = REAL(particle%temp, kind=out)
-                              size_out(p) = REAL(particle%size, kind=out)
-                              stage_out(p) = REAL(particle%stage, kind=out)
-                              dens_out(p) = REAL(particle%density, kind=out)
-                              nb_out(p) = REAL(particle%super, kind=out)
-                              num_out(p) = REAL(particle%num, kind=out)
-                              Drate_out(p) = REAL(particle%Drate, kind=out)
-                              age_out(p) = REAL(particle%age, kind=out)
-                              ageClass_out(p) = REAL(particle%AgeClass, kind=out)
+         nb_part = patch%nb_part_alloc
+         ALLOCATE (lat_out(nb_part), lon_out(nb_part))
+         ALLOCATE (xpos_out(nb_part), ypos_out(nb_part))
+         ALLOCATE (spos_out(nb_part), zpos_out(nb_part))
+         ALLOCATE (num_out(nb_part), h0pos_out(nb_part))
+         ALLOCATE (flag_out(nb_part), dens_out(nb_part))
+         ALLOCATE (temp_out(nb_part), Drate_out(nb_part))
+         ALLOCATE (size_out(nb_part), dateo_out(nb_part))
+         ALLOCATE (stage_out(nb_part), nb_out(nb_part))
+         ALLOCATE (age_out(nb_part), ageClass_out(nb_part))
+
+         lat_out(:) = REAL(dg_valmanq_io, kind=out); lon_out(:) = REAL(dg_valmanq_io, kind=out)
+         dateo_out(:) = REAL(dg_valmanq_io, kind=out)
+         xpos_out(:) = fillval; ypos_out(:) = fillval; spos_out(:) = fillval; zpos_out(:) = -fillval
+         h0pos_out(:) = -fillval; flag_out(:) = fillval; num_out(:) = 0
+         size_out(:) = fillval; stage_out(:) = -1; dens_out(:) = fillval; Drate_out(:) = fillval
+         temp_out(:) = fillval; nb_out(:) = fillval; age_out(:) = -1; ageClass_out(:) = -1
+
 #ifdef IBM_SPECIES
-                              food_out(p) = REAL(particle%X, kind=out)
-                              f_out(p) = REAL(particle%f, kind=out)
-                              E_out(p) = REAL(particle%E, kind=out)
-                              H_out(p) = REAL(particle%H, kind=out)
-                              R_out(p) = REAL(particle%R, kind=out)
-                              Gam_out(p) = REAL(particle%Gam, kind=out)
-                              Wdeb_out(p) = REAL(particle%Wdeb, kind=out)
-                              Neggs_out(p) = REAL(particle%Neggs, kind=out)
-                              yearspawn_out(p) = REAL(particle%yearspawn, kind=out)
-                              dayspawn_out(p) = REAL(particle%dayspawn, kind=out)
-                              dayjuv_out(p) = REAL(particle%dayjuv, kind=out)
-                              denspawn_out(p) = REAL(particle%denspawn, kind=out)
-                              zoom_out(p) = REAL(particle%zoom, kind=out)
-                              deaddeb_out(p) = REAL(particle%Death_DEB, kind=out)
-                              deadfishing_out(p) = REAL(particle%Death_FISH, kind=out)
-                              deadnatural_out(p) = REAL(particle%Death_NAT, kind=out)
+         ALLOCATE (dayjuv_out(nb_part), dayspawn_out(nb_part))
+         ALLOCATE (yearspawn_out(nb_part), season_out(nb_part))
+         ALLOCATE (zoom_out(nb_part))
+         ALLOCATE (Denspawn_out(nb_part))
+         ALLOCATE (food_out(nb_part))
+         ALLOCATE (H_out(nb_part), E_out(nb_part), Gam_out(nb_part), R_out(nb_part))
+         ALLOCATE (Wdeb_out(nb_part))
+         ALLOCATE (Neggs_out(nb_part))
+         ALLOCATE (f_out(nb_part))
+         ALLOCATE (deaddeb_out(nb_part))
+         ALLOCATE (deadfishing_out(nb_part))
+         ALLOCATE (deadnatural_out(nb_part))
+
+         dayjuv_out(:) = 0; dayspawn_out(:) = 0; yearspawn_out(:) = 0; season_out(:) = -1
+         Denspawn_out(:) = fillval; food_out(:) = fillval; Wdeb_out(:) = fillval
+         H_out(:) = fillval; E_out(:) = fillval; R_out(:) = fillval; Gam_out(:) = fillval
+         f_out(:) = fillval; zoom_out(:) = 0; Neggs_out(:) = fillval
+         deaddeb_out(:) = fillval; deadfishing_out(:) = fillval; deadnatural_out(:) = fillval
 #endif /*IBM_SPECIES*/
-                           END DO
 
-                           CALL ionc4_write_time(file_out, 0, time)
+         p = 0
+         DO m = 1, nb_part
+            particle => patch%particles(m)
+            IF (.NOT. particle%active) CYCLE
+            p = p + 1
+            xpos_out(p) = REAL(particle%xpos, kind=out)
+            ypos_out(p) = REAL(particle%ypos, kind=out)
+            lat_out(p) = REAL(tool_ind2lat(particle%xpos, particle%ypos), kind=out)
+            lon_out(p) = REAL(tool_ind2lon(particle%xpos, particle%ypos), kind=out)
+            dateo_out(p) = REAL(particle%date_orig, kind=out)
+            spos_out(p) = REAL(particle%spos, kind=out)
+            zpos_out(p) = REAL(particle%zpos, kind=out) ! for output as immersion
+            h0pos_out(p) = REAL(particle%d3, kind=out)
+            flag_out(p) = REAL(particle%flag, kind=out)
+            temp_out(p) = REAL(particle%temp, kind=out)
+            size_out(p) = REAL(particle%size, kind=out)
+            stage_out(p) = REAL(particle%stage, kind=out)
+            dens_out(p) = REAL(particle%density, kind=out)
+            nb_out(p) = REAL(particle%super, kind=out)
+            num_out(p) = REAL(particle%num, kind=out)
+            Drate_out(p) = REAL(particle%Drate, kind=out)
+            age_out(p) = REAL(particle%age, kind=out)
+            ageClass_out(p) = REAL(particle%AgeClass, kind=out)
+#ifdef IBM_SPECIES
+            food_out(p) = REAL(particle%X, kind=out)
+            f_out(p) = REAL(particle%f, kind=out)
+            E_out(p) = REAL(particle%E, kind=out)
+            H_out(p) = REAL(particle%H, kind=out)
+            R_out(p) = REAL(particle%R, kind=out)
+            Gam_out(p) = REAL(particle%Gam, kind=out)
+            Wdeb_out(p) = REAL(particle%Wdeb, kind=out)
+            Neggs_out(p) = REAL(particle%Neggs, kind=out)
+            yearspawn_out(p) = REAL(particle%yearspawn, kind=out)
+            dayspawn_out(p) = REAL(particle%dayspawn, kind=out)
+            dayjuv_out(p) = REAL(particle%dayjuv, kind=out)
+            denspawn_out(p) = REAL(particle%denspawn, kind=out)
+            zoom_out(p) = REAL(particle%zoom, kind=out)
+            deaddeb_out(p) = REAL(particle%Death_DEB, kind=out)
+            deadfishing_out(p) = REAL(particle%Death_FISH, kind=out)
+            deadnatural_out(p) = REAL(particle%Death_NAT, kind=out)
+#endif /*IBM_SPECIES*/
+         END DO
 
-                           nb_part = count(patch%particles(:)%active)
-                           CALL indices_loc2glob(1, nb_part, idx_s, idx_e)
+         CALL ionc4_write_time(file_out, 0, time)
+
+         nb_part = count(patch%particles(:)%active)
+         CALL indices_loc2glob(1, nb_part, idx_s, idx_e)
 
 #ifdef MPI
-                           num1 = idx_s
-                           num2 = idx_e
+         num1 = idx_s
+         num2 = idx_e
 #else
-                           num1 = 1
-                           num2 = nb_part
+         num1 = 1
+         num2 = nb_part
 #endif
 
-                           CALL ionc4_write_trajt(file_out, 'latitude', lat_out(1:nb_part), num1, num2, 0, &
-                                                  REAL(dg_valmanq_io, kind=out))
-                           CALL ionc4_write_trajt(file_out, 'longitude', lon_out(1:nb_part), num1, num2, 0, &
-                                                  REAL(dg_valmanq_io, kind=out))
-                           CALL ionc4_write_trajt(file_out, 'DEPTH', zpos_out(1:nb_part), num1, num2, 0, -fillval)
-                           CALL ionc4_write_trajt(file_out, 'H0', h0pos_out(1:nb_part), num1, num2, 0, -fillval)
-                           CALL ionc4_write_trajt(file_out, 'NUM', num_out(1:nb_part), num1, num2, 0, 0)
-                           CALL ionc4_write_trajt(file_out, 'flag', flag_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'TEMP', temp_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'STAGE', stage_out(1:nb_part), num1, num2, 0, -1)
-                           CALL ionc4_write_trajt(file_out, 'SIZE', size_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'NUMBER', nb_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'DENSITY', dens_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'DRATE', Drate_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'DAYBIRTH', dateo_out(1:nb_part), num1, num2, 0, &
-                                                  REAL(dg_valmanq_io, kind=out))
-                           CALL ionc4_write_trajt(file_out, 'AGE', age_out(1:nb_part), num1, num2, 0, -1)
-                           CALL ionc4_write_trajt(file_out, 'AGECLASS', ageClass_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'latitude', lat_out(1:nb_part), num1, num2, 0, &
+            REAL(dg_valmanq_io, kind=out))
+         CALL ionc4_write_trajt(file_out, 'longitude', lon_out(1:nb_part), num1, num2, 0, &
+            REAL(dg_valmanq_io, kind=out))
+         CALL ionc4_write_trajt(file_out, 'DEPTH', zpos_out(1:nb_part), num1, num2, 0, -fillval)
+         CALL ionc4_write_trajt(file_out, 'H0', h0pos_out(1:nb_part), num1, num2, 0, -fillval)
+         CALL ionc4_write_trajt(file_out, 'NUM', num_out(1:nb_part), num1, num2, 0, 0)
+         CALL ionc4_write_trajt(file_out, 'flag', flag_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'TEMP', temp_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'STAGE', stage_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'SIZE', size_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'NUMBER', nb_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'DENSITY', dens_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'DRATE', Drate_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'DAYBIRTH', dateo_out(1:nb_part), num1, num2, 0, &
+            REAL(dg_valmanq_io, kind=out))
+         CALL ionc4_write_trajt(file_out, 'AGE', age_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'AGECLASS', ageClass_out(1:nb_part), num1, num2, 0, -1)
 
 #ifdef IBM_SPECIES
-                           CALL ionc4_write_trajt(file_out, 'FOOD', food_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'F', f_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'EDEB', E_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'HDEB', H_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'RDEB', R_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'GAM', Gam_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'WEIGHT', Wdeb_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'NEGGS', Neggs_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'YEARSPAWN', yearspawn_out(1:nb_part), num1, num2, 0, -1)
-                           CALL ionc4_write_trajt(file_out, 'DAYSPAWN', dayspawn_out(1:nb_part), num1, num2, 0, -1)
-                           CALL ionc4_write_trajt(file_out, 'DAYJUV', dayjuv_out(1:nb_part), num1, num2, 0, -1)
-                           CALL ionc4_write_trajt(file_out, 'DENSPAWN', denspawn_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'ZOOM', zoom_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'Death_DEB', deaddeb_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'Death_FISH', deadfishing_out(1:nb_part), num1, num2, 0, fillval)
-                           CALL ionc4_write_trajt(file_out, 'Death_NAT', deadnatural_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'FOOD', food_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'F', f_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'EDEB', E_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'HDEB', H_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'RDEB', R_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'GAM', Gam_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'WEIGHT', Wdeb_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'NEGGS', Neggs_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'YEARSPAWN', yearspawn_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'DAYSPAWN', dayspawn_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'DAYJUV', dayjuv_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'DENSPAWN', denspawn_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'ZOOM', zoom_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'Death_DEB', deaddeb_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'Death_FISH', deadfishing_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'Death_NAT', deadnatural_out(1:nb_part), num1, num2, 0, fillval)
 #endif /*IBM_SPECIES*/
 
-                           ! To write the data on the disk and not loose data in case of run crash
-                           CALL ionc4_sync(file_out)
-                           DEALLOCATE (lat_out, lon_out, xpos_out, ypos_out, spos_out, zpos_out)
-                           DEALLOCATE (num_out, h0pos_out, flag_out, dens_out, temp_out, Drate_out)
-                           DEALLOCATE (size_out, dateo_out, stage_out, nb_out, age_out, ageClass_out)
+         ! To write the data on the disk and not loose data in case of run crash
+         CALL ionc4_sync(file_out)
+         DEALLOCATE (lat_out, lon_out, xpos_out, ypos_out, spos_out, zpos_out)
+         DEALLOCATE (num_out, h0pos_out, flag_out, dens_out, temp_out, Drate_out)
+         DEALLOCATE (size_out, dateo_out, stage_out, nb_out, age_out, ageClass_out)
 #ifdef IBM_SPECIES
-                           DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out)
-                           DEALLOCATE (Denspawn_out, food_out, Wdeb_out, zoom_out)
-                           DEALLOCATE (Gam_out, H_out, E_out, R_out, Neggs_out)!, NRJ_out)
-                           DEALLOCATE (f_out)
-                           DEALLOCATE (deaddeb_out, deadfishing_out, deadnatural_out)
+         DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out)
+         DEALLOCATE (Denspawn_out, food_out, Wdeb_out, zoom_out)
+         DEALLOCATE (Gam_out, H_out, E_out, R_out, Neggs_out)!, NRJ_out)
+         DEALLOCATE (f_out)
+         DEALLOCATE (deaddeb_out, deadfishing_out, deadnatural_out)
 #endif /*IBM_SPECIES*/
 
-                           patch%t_save = time + patch%dt_save*3600.0_rlg
-                           patch => patch%next
+         patch%t_save = time + patch%dt_save*3600.0_rlg
+         patch => patch%next
 
-                        END DO
+      END DO
 
-                     END SUBROUTINE ibm_save
+   END SUBROUTINE ibm_save
 
    !!======================================================================
 !&E-----------------------------------------------------------------------
@@ -1555,42 +1555,42 @@ IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
 !&E ** History :
 !&E     2025-10-21  (C. Menu)  First version
 !&E-----------------------------------------------------------------------
-                     FUNCTION generate_run_id() RESULT(run_id)
-                        implicit none
-                        !-----------------------------------------------------------------------
-                        !> Purpose:
-                        !>   Generate a unique run identifier based on current date, time,
-                        !>   and system clock count, ensuring uniqueness across runs.
-                        !>
-                        !> Output:
-                        !>   run_id : character string like 'RUN_20251023_070234_000123456789'
-                        !-----------------------------------------------------------------------
-                        character(len=64) :: run_id             ! generated run identifier
-                        character(len=8)  :: date_str           ! date string: YYYYMMDD
-                        character(len=10) :: time_str           ! time string: HHMMSS.SS
-                        character(len=12) :: count_str          ! formatted system clock count
-                        integer           :: count              ! system clock count (for uniqueness)
-                        integer           :: count_rate, count_max
-                        !-----------------------------------------------------------------------
-                        !> Get current system date and time
-                        call date_and_time(date=date_str, time=time_str)
+   FUNCTION generate_run_id() RESULT(run_id)
+      implicit none
+      !-----------------------------------------------------------------------
+      !> Purpose:
+      !>   Generate a unique run identifier based on current date, time,
+      !>   and system clock count, ensuring uniqueness across runs.
+      !>
+      !> Output:
+      !>   run_id : character string like 'RUN_20251023_070234_000123456789'
+      !-----------------------------------------------------------------------
+      character(len=64) :: run_id             ! generated run identifier
+      character(len=8)  :: date_str           ! date string: YYYYMMDD
+      character(len=10) :: time_str           ! time string: HHMMSS.SS
+      character(len=12) :: count_str          ! formatted system clock count
+      integer           :: count              ! system clock count (for uniqueness)
+      integer           :: count_rate, count_max
+      !-----------------------------------------------------------------------
+      !> Get current system date and time
+      call date_and_time(date=date_str, time=time_str)
 
-                        !-----------------------------------------------------------------------
-                        !> Get system clock counter for additional uniqueness
-                        call system_clock(count=count, count_rate=count_rate, count_max=count_max)
+      !-----------------------------------------------------------------------
+      !> Get system clock counter for additional uniqueness
+      call system_clock(count=count, count_rate=count_rate, count_max=count_max)
 
-                        !-----------------------------------------------------------------------
-                        !> Convert the clock count to string safely
-                        write (count_str, '(I12.12)') count
+      !-----------------------------------------------------------------------
+      !> Convert the clock count to string safely
+      write (count_str, '(I12.12)') count
 
-                        !-----------------------------------------------------------------------
-                        !> Build the RUN_ID string safely
-                        run_id = 'RUN_'//trim(date_str)//'_'//time_str(1:6)//'_'//trim(count_str)
+      !-----------------------------------------------------------------------
+      !> Build the RUN_ID string safely
+      run_id = 'RUN_'//trim(date_str)//'_'//time_str(1:6)//'_'//trim(count_str)
 
-                     END FUNCTION generate_run_id
+   END FUNCTION generate_run_id
    !!======================================================================
 
-                     !&E-----------------------------------------------------------------------
+   !&E-----------------------------------------------------------------------
 !&E                 ***  ROUTINE write_run_info  ***
 !&E
 !&E ** Purpose :
@@ -1603,19 +1603,19 @@ IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
 !&E ** History :
 !&E     2025-10-21  (C. Menu)  First version
 !&E-----------------------------------------------------------------------
-                     SUBROUTINE write_run_info(run_id, last_step)
-                        implicit none
-                        character(len=*), intent(in) :: run_id
-                        integer, intent(in), optional :: last_step
-                        integer :: unit
+   SUBROUTINE write_run_info(run_id, last_step)
+      implicit none
+      character(len=*), intent(in) :: run_id
+      integer, intent(in), optional :: last_step
+      integer :: unit
 
-                        open (newunit=unit, file='FOIL.info', status='replace', action='write')
+      open (newunit=unit, file='FOIL.info', status='replace', action='write')
 
-                        write (unit, '(A,1X,A)') 'RUN_ID=', trim(run_id)
-                        if (present(last_step)) write (unit, '(A,I10)') 'LAST_STEP=', last_step
+      write (unit, '(A,1X,A)') 'RUN_ID=', trim(run_id)
+      if (present(last_step)) write (unit, '(A,I10)') 'LAST_STEP=', last_step
 
-                        close (unit)
-                     END SUBROUTINE write_run_info
+      close (unit)
+   END SUBROUTINE write_run_info
 !&E-----------------------------------------------------------------------
 
 !&E-----------------------------------------------------------------------
@@ -1634,43 +1634,43 @@ IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
 !&E ** History :
 !&E     2025-10-21  (C. Menu)  First version
 !&E-----------------------------------------------------------------------
-                     SUBROUTINE read_run_info(run_id, last_step)
-                        implicit none
-                        !-----------------------------------------------------------------------
-                        !> Declarations
-                        character(len=*), intent(out) :: run_id
-                        integer, intent(out), optional :: last_step
-                        integer :: unit, ios
-                        character(len=128) :: line
-                        !-----------------------------------------------------------------------
-                        !> Try to open existing FOIL.info file
-                        open (newunit=unit, file='FOIL.info', status='old', action='read', iostat=ios)
-                        if (ios /= 0) then
-                           print *, 'No existing FOIL.info found.'
-                        end if
+   SUBROUTINE read_run_info(run_id, last_step)
+      implicit none
+      !-----------------------------------------------------------------------
+      !> Declarations
+      character(len=*), intent(out) :: run_id
+      integer, intent(out), optional :: last_step
+      integer :: unit, ios
+      character(len=128) :: line
+      !-----------------------------------------------------------------------
+      !> Try to open existing FOIL.info file
+      open (newunit=unit, file='FOIL.info', status='old', action='read', iostat=ios)
+      if (ios /= 0) then
+         print *, 'No existing FOIL.info found.'
+      end if
 
-                        !-----------------------------------------------------------------------
-                        !> Read RUN_ID
-                        read (unit, '(A)', iostat=ios) line
-                        if (ios == 0) then
-                           read (line, '(6X,A)', iostat=ios) run_id
-                        end if
+      !-----------------------------------------------------------------------
+      !> Read RUN_ID
+      read (unit, '(A)', iostat=ios) line
+      if (ios == 0) then
+         read (line, '(6X,A)', iostat=ios) run_id
+      end if
 
-                        !-----------------------------------------------------------------------
-                        !> Read LAST_STEP if available
-                        if (present(last_step)) then
-                           read (unit, '(A)', iostat=ios) line
-                           if (ios == 0) then
-                              read (line, '(10X,I10)', iostat=ios) last_step
-                              if (ios /= 0) last_step = 0
-                           else
-                              last_step = 0
-                           end if
-                        end if
+      !-----------------------------------------------------------------------
+      !> Read LAST_STEP if available
+      if (present(last_step)) then
+         read (unit, '(A)', iostat=ios) line
+         if (ios == 0) then
+            read (line, '(10X,I10)', iostat=ios) last_step
+            if (ios /= 0) last_step = 0
+         else
+            last_step = 0
+         end if
+      end if
 
-                        close (unit)
-                     END SUBROUTINE read_run_info
+      close (unit)
+   END SUBROUTINE read_run_info
 !&E-----------------------------------------------------------------------
 
 #endif /* DEB_IBM */
-                     END MODULE
+END MODULE
