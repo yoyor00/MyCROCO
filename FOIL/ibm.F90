@@ -464,7 +464,7 @@ CONTAINS
       ! To save a local and global position of particle for MPI and Sequential compatibility
       TYPE(type_position) :: pos, pos_ad
 
-      INTEGER  :: ierr_mpi ! Integer returned by MPI functions
+      INTEGER :: ierr_mpi ! Integer returned by MPI functions
       INTEGER :: ind_species, child_ind_species, nb_new_particle
 
 #ifdef IBM_SPECIES
