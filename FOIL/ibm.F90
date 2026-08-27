@@ -410,7 +410,8 @@ CONTAINS
       USE ibmtools, ONLY: tool_julien
 #ifdef IBM_SPECIES
       USE ibmtools, ONLY: ibm_nycth_mig, ibm_parameter_init
-      USE ibmtools, ONLY: death_by_fishing, selec_dome_or_asymp, alpha_sel, beta_sel
+      USE ibmtools, ONLY: death_by_fishing, selec_dome_or_asymp
+      USE ibmtools, ONLY: alpha_sel_a, beta_sel_a, alpha_sel_s, beta_sel_s
       USE ibmmove, ONLY: fish_move
       USE debmodel, ONLY: deb_egg_init, deb_cycle
       USE debmodel, ONLY: readfood3d
@@ -876,10 +877,17 @@ CONTAINS
 
             ! Some variables on whole population to calculate fishing
             IF (particle%stage >= 5 .and. particle%AgeClass >= 1) THEN
+               IF (patch%species == 'anchovy') THEN
                number_tot(ind_species) = number_tot(ind_species) + particle%super* &
-                                         selec_dome_or_asymp(particle%size, alpha_sel, beta_sel)
+                                            selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a)
                weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)* &
-                                         selec_dome_or_asymp(particle%size, alpha_sel, beta_sel)
+                                            selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a)
+               ELSE IF (patch%species == 'sardine') THEN
+                  number_tot(ind_species) = number_tot(ind_species) + particle%super* &
+                                            selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s)
+                  weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)* &
+                                            selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s)
+               END IF
             END IF
 
             IF (ind_species == 1 .and. jjulien == 135 .and. fishing_strategy == 'HCR' .and. particle%AgeClass >= 1) THEN
