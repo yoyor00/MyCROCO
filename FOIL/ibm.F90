@@ -399,7 +399,7 @@ CONTAINS
 #endif /* PASSIVE_TRACERS */
       USE traject3d, ONLY: LAGRANGIAN_update
       USE trajinitsave, ONLY: init_patch, indices_loc2glob
-      USE trajectools, ONLY: tool_latlon2i, tool_latlon2j
+      USE trajectools, ONLY: tool_latlon2i, tool_latlon2j, is_local_position
       USE trajectools, ONLY: loc_h0, define_pos, ztosiggen, h0int, xeint, hc_sigint
 #ifdef MPI
       USE toolmpi, ONLY: ex_traj, ADD_ALL_MPI_INT, ADD_ALL_MPI_REAL
@@ -1032,9 +1032,10 @@ CONTAINS
                DO i = 1, imax + 2
                   DO j = 1, jmax + 2
                      IF (MAT_new_indv(i, j) .ne. 0.0_rsh) THEN
-                        IF_MPI(iminmpi <= i .AND. i <= imaxmpi .AND. jminmpi <= j .AND. j <= jmaxmpi) THEN
+                        IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
+                                              Istr, Iend, Jstr, Jend)) THEN
                         nb_new_particle = nb_new_particle + MAT_new_indv(i, j)
-                        ENDIF_MPI
+                        END IF
                      END IF
                   END DO
                END DO
@@ -1064,13 +1065,8 @@ CONTAINS
                   DO j = 1, jmax + 2
                      IF (MAT_new_indv(i, j) .ne. 0.d0) THEN
                         ! Check if inside good MPI proc or if inside the domain (if not MPI)
-#ifdef MPI
-                        IF (iminmpi <= i .AND. i <= imaxmpi .AND. &
-                            jminmpi <= j .AND. j <= jmaxmpi) THEN
-#else
-                           IF (i >= Istr .AND. i <= Iend .AND. &
-                               j >= Jstr .AND. j <= Jend) THEN
-#endif
+IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
+                                              Istr, Iend, Jstr, Jend)) THEN
                               ! Boucle sur le nombre d'indv a creer selon la valeur de MAT_new_indv
                               DO k = 1, MAT_new_indv(i, j)
                                  ! New particle number
