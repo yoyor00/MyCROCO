@@ -951,7 +951,8 @@ CONTAINS
                         pos1%xp = xtemp; pos1%yp = ytemp
                         CALL define_pos(pos1)
 
-                        IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > depth_nc(nn)) THEN
+                        IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > depth_nc(nn) .AND. &
+                            rmask(NINT(pos1%idx_r), NINT(pos1%idy_r)) > 0.5_rsh) THEN
                            CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
                                        hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                            xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
@@ -981,7 +982,8 @@ CONTAINS
                      IF (is_local_position(xtemp, ytemp, Istr, Iend, Jstr, Jend)) THEN
                         CALL define_pos(pos)
 
-                        IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > depth_nc(nn)) THEN
+                        IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > depth_nc(nn) .AND. &
+                            rmask(NINT(pos%idx_r), NINT(pos%idy_r)) > 0.5_rsh) THEN
                            m1 = m2 + 1
                            m2 = m2 + nb_part_intro
                            new_patch%particles(m1:m2)%xpos = tool_latlon2i(lon_nc(nn), lat_nc(nn))
