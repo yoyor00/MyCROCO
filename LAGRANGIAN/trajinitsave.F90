@@ -762,11 +762,10 @@ CONTAINS
 
                   ! Estimate number of particle inside the rectangular patch
                   nb_part = 0
-                  DO j = MAX0(Jstr, jmin_patch), MIN0(Jend, jmax_patch), jstep_patch
-                     DO i = MAX0(Istr, imin_patch), MIN0(Iend, imax_patch), istep_patch
-#ifdef MPI
-                        IF (iminmpi <= i .AND. i <= imaxmpi .AND. jminmpi <= j .AND. j <= jmaxmpi) THEN
-#endif
+                  DO j = MAX0(jmin, jmin_patch), MIN0(jmax, jmax_patch), jstep_patch
+                     DO i = MAX0(imin, imin_patch), MIN0(imax, imax_patch), istep_patch
+                        IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
+                                              Istr, Iend, Jstr, Jend)) THEN
                            pos%xp = i; pos%yp = j
                            CALL define_pos(pos)
                            DO k = kmin_patch, kmax_patch, kstep_patch
@@ -782,9 +781,7 @@ CONTAINS
                                  END IF
                               END IF
                            END DO
-#ifdef MPI
                         END IF
-#endif
                      END DO
                   END DO
 
@@ -793,19 +790,18 @@ CONTAINS
 
                   ! Place particle at their location
                   m2 = 0
-                  DO j = MAX0(Jstr, jmin_patch), MIN0(Jend, jmax_patch), jstep_patch
-                     DO i = MAX0(Istr, imin_patch), MIN0(Iend, imax_patch), istep_patch
-#ifdef MPI
-                        IF (iminmpi <= i .AND. i <= imaxmpi .AND. jminmpi <= j .AND. j <= jmaxmpi) THEN
-#endif
+                  DO j = MAX0(jmin, jmin_patch), MIN0(jmax, jmax_patch), jstep_patch
+                     DO i = MAX0(imin, imin_patch), MIN0(imax, imax_patch), istep_patch
+                        IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
+                                              Istr, Iend, Jstr, Jend)) THEN
                            pos1%xp = i; pos1%yp = j
                            CALL define_pos(pos1)
                            DO k = kmin_patch, kmax_patch, kstep_patch
                               IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > k) THEN
                                  m1 = m2 + 1
                                  m2 = m2 + nb_part_intro
-                                 new_patch%particles(m1:m2)%xpos = pos1%idx_r   ! position at initial location
-                                 new_patch%particles(m1:m2)%ypos = pos1%idy_r
+                                 new_patch%particles(m1:m2)%xpos = pos1%xp   ! global initial position
+                                 new_patch%particles(m1:m2)%ypos = pos1%yp
                                  ! total depth at particle s location
                                  CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
                                              hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
@@ -832,9 +828,7 @@ CONTAINS
                                  END IF
                               END IF
                            END DO
-#ifdef MPI
                         END IF
-#endif
                      END DO
                   END DO
 
@@ -951,7 +945,8 @@ CONTAINS
                         pos1%xp = xtemp; pos1%yp = ytemp
                         CALL define_pos(pos1)
 
-                        IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > depth_nc(nn)) THEN
+                        IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > depth_nc(nn) .AND. &
+                            rmask(NINT(pos1%idx_r), NINT(pos1%idy_r)) > 0.5_rsh) THEN
                            CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
                                        hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                            xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
@@ -981,7 +976,8 @@ CONTAINS
                      IF (is_local_position(xtemp, ytemp, Istr, Iend, Jstr, Jend)) THEN
                         CALL define_pos(pos)
 
-                        IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > depth_nc(nn)) THEN
+                        IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > depth_nc(nn) .AND. &
+                            rmask(NINT(pos%idx_r), NINT(pos%idy_r)) > 0.5_rsh) THEN
                            m1 = m2 + 1
                            m2 = m2 + nb_part_intro
                            new_patch%particles(m1:m2)%xpos = tool_latlon2i(lon_nc(nn), lat_nc(nn))

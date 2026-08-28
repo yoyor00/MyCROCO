@@ -98,7 +98,8 @@ MODULE comtraj
       INTEGER                 :: Nbatch = 0
       REAL(KIND=rsh)          :: age = 0.0_rsh
       REAL(KIND=rsh)          :: Drate = 0.0_rsh
-      REAL(KIND=rsh)          :: temp, w, size, density, denspawn
+      REAL(KIND=rsh)          :: w = 0.0_rsh
+      REAL(KIND=rsh)          :: temp, size, density, denspawn
 
       REAL(KIND=rsh)          :: super    ! Number of individuals in particle (superindividual)
 

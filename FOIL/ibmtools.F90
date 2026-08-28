@@ -41,7 +41,7 @@ MODULE ibmtools
    PUBLIC w_dens, ibm_buoy, ibm_traint, ibm_nycth_mig, ibm_proftraint, &
 #ifdef IBM_SPECIES
       ibm_parameter_init, death_by_fishing, selec_dome_or_asymp, &
-      alpha_sel, beta_sel, &
+      alpha_sel_a, beta_sel_a, alpha_sel_s, beta_sel_s, &
 #endif
       ibm_profmean, ibm_loc_xyz, gasdev_s, tool_julien
    !ibm_profuint, ibm_profvint                                  ! non utilise
@@ -54,8 +54,10 @@ MODULE ibmtools
    INTEGER, PARAMETER                                  :: track = 1
 
 #ifdef IBM_SPECIES
-   REAL(KIND=rsh), PARAMETER                           :: alpha_sel = 0.876931491863804146725_rsh
-   REAL(KIND=rsh), PARAMETER                           :: beta_sel = 11.725820182044399686561_rsh
+   REAL(KIND=rsh), PARAMETER                           :: alpha_sel_a = 0.879_rsh
+   REAL(KIND=rsh), PARAMETER                           :: beta_sel_a  = 12.20_rsh
+   REAL(KIND=rsh), PARAMETER                           :: alpha_sel_s = 0.877_rsh
+   REAL(KIND=rsh), PARAMETER                           :: beta_sel_s  = 11.73_rsh
 #endif
 
    !!===================================================================================================================================
@@ -436,13 +438,25 @@ CONTAINS
 
             ! test to avoid negative super
             IF (year > 1970 .and. year < 2000) THEN
-               Zfishing = particle%Wdeb*mat_catch(1, month, id_species)* &
-                          selec_dome_or_asymp(particle%size, alpha_sel, beta_sel)/ &
-                          (Wdeb_mean(id_species)*biom_tot(id_species))
+               IF (species == 'anchovy') THEN
+                  Zfishing = particle%Wdeb*mat_catch(1, month, id_species)* &
+                     selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a) / &
+                     (Wdeb_mean(id_species)*biom_tot(id_species))
+               ELSE IF (species == 'sardine') THEN
+                  Zfishing = particle%Wdeb*mat_catch(1, month, id_species)*&
+                     selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s) / &
+                     (Wdeb_mean(id_species)*biom_tot(id_species))
+               END IF
             ELSE IF (year >= 2000) THEN
-               Zfishing = particle%Wdeb*mat_catch(year - 1999, month, id_species)* &
-                          selec_dome_or_asymp(particle%size, alpha_sel, beta_sel)/ &
-                          (Wdeb_mean(id_species)*biom_tot(id_species))
+               IF (species == 'anchovy') THEN
+                  Zfishing = particle%Wdeb*mat_catch(year-1999, month, id_species)* &
+                     selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a) / &
+                     (Wdeb_mean(id_species)*biom_tot(id_species))
+               ELSE IF (species == 'sardine') THEN
+                  Zfishing = particle%Wdeb*mat_catch(year-1999, month, id_species)* &
+                     selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s) / &
+                     (Wdeb_mean(id_species)*biom_tot(id_species))
+               END IF
             END IF
             particle%Death_FISH = particle%Death_FISH + particle%super*(1._rlg - exp(-Zfishing*coeff1))
             particle%super = particle%super*exp(-Zfishing*coeff1)

@@ -455,9 +455,11 @@ CONTAINS
             patch%particles(m)%NRJ_g = NRJ_g
 
             ! -- Reproduction
-            patch%particles(m)%yearspawn = aaaa
-            patch%particles(m)%dayspawn = 500 ! pour etre sur d etre superieur a jjulien
-            patch%particles(m)%dayjuv = 0
+            IF (.NOT. restart) THEN
+               patch%particles(m)%yearspawn = aaaa
+               patch%particles(m)%dayspawn = 500 ! pour etre sur d etre superieur a jjulien
+               patch%particles(m)%dayjuv = 0
+            END IF
          END DO
 
          ! IF CATCH as fishing strategy
@@ -1060,11 +1062,10 @@ CONTAINS
 
       CALL ionc4_openr(file_food, l_in_nc4par=.true.)
 
-      ! Definit les indices de lecture en fonction du proc mpi dans le fichier de forcage
-      ! Lit sur tout le domaine en sequentiel sinon
+      ! Set the local CROCO bounds (imin:imax, jmin:jmax) and the matching
+      ! global forcing-file bounds (valimin:valimax, valjmin:valjmax)
       imin = 0; jmin = 0
-      valimin = 1; valjmin = 1 ! version initiale Denis
-      ! valimin = 0 ; valjmin = 0 ! version modifiée Clara
+      valimin = 1; valjmin = 1
 
 #ifdef MPI
       if (ii .gt. 0) then
@@ -1095,7 +1096,6 @@ CONTAINS
       valjmax = jmax - jmin + valjmin
 
       ! Read food at first time step from file
-      ! IF( FIRST_TIME_STEP ) THEN
       IF (timestep_ibm) THEN
 
          ALLOCATE (biomassezoo(GLOBAL_2D_ARRAY))
@@ -1143,14 +1143,9 @@ CONTAINS
          CALL ionc4_read_subxyt(file_food, TRIM(name1_in_food), food1_1, valimin, valimax, valjmin, valjmax, ilecf, 1, 1)
          CALL ionc4_read_subxyt(file_food, TRIM(name1_in_food), food2_1, valimin, valimax, valjmin, valjmax, ilecf + 1, 1, 1)
 
-         ! Copie des lectures dans les bons indices pour CROCO, ie entre 0 et imax-1
-#ifdef MPI
-         food1(1:valimax - valimin + 1, 1:valjmax - valjmin + 1) = food1_1 ! version initiale Denis
-         food2(1:valimax - valimin + 1, 1:valjmax - valjmin + 1) = food2_1 ! version initiale Denis
-#else
-         food1(imin:imax, jmin:jmax) = food1_1(valimin:valimax, valjmin:valjmax) ! version modifiée Clara
-         food2(imin:imax, jmin:jmax) = food2_1(valimin:valimax, valjmin:valjmax) ! version modifiée Clara
-#endif
+         ! Map the forcing data from global file bounds to local CROCO bounds
+         food1(imin:imax, jmin:jmax) = food1_1
+         food2(imin:imax, jmin:jmax) = food2_1
 
          DEALLOCATE (food1_1, food2_1)
          ilecmemfood = ilecf
@@ -1185,17 +1180,13 @@ CONTAINS
             CALL ionc4_read_subxyt(file_food, TRIM(name1_in_food), food2_1, valimin, valimax, valjmin, valjmax, ilecf + 1, 1, 1)
 
             food1 = food2
-#ifdef MPI
-            food2(1:valimax - valimin + 1, 1:valjmax - valjmin + 1) = food2_1 ! version initiale Denis
-#else
-            food2(imin:imax, jmin:jmax) = food2_1(valimin:valimax, valjmin:valjmax) ! version modifiée Clara
-#endif
+            food2(imin:imax, jmin:jmax) = food2_1
 
             DEALLOCATE (food2_1)
             ilecmemfood = ilecf
          END IF
 
-      END IF   ! FIRST_TIME_STEP
+      END IF   ! timestep_ibm
 
       dt1 = (tncf2 - torigin - tfood)/(tncf2 - tncf1)
       dt2 = 1.0_rlg - dt1
