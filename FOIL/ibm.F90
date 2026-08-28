@@ -570,8 +570,16 @@ CONTAINS
          END IF
 
 #ifdef IBM_SPECIES
-         IF (patch%species == 'anchovy') ind_species = 1
-         IF (patch%species == 'sardine') ind_species = 2
+         SELECT CASE (TRIM(patch%species))
+         CASE ('anchovy')
+            ind_species = 1
+         CASE ('sardine')
+            ind_species = 2
+         CASE DEFAULT
+            PRINT *, 'ERROR: Unknown patch species: ', TRIM(patch%species)
+            CALL_MPI MPI_FINALIZE(ierr_mpi)
+            STOP
+         END SELECT
 
          ! Implement time_to_spawn for the patch and then update patch%t_spawn
          time_to_spawn = (time >= patch%t_spawn) .AND. (time <= patch%t_end) .AND. (hh == 0) .AND. (current_day /= jj)
@@ -1010,6 +1018,10 @@ CONTAINS
                child_patch%t_spawn = time
                child_patch%dt_spawn = dt_spawn*3600._rsh
                child_patch%parent_id = patches%nb + 1                ! keep track of the childs parent
+               ! Warning : could be a problem if spawning occurs in january:
+               ! At the first time step of a new year, current_year still contains the
+               ! previous year until it is updated at the end of ibm_3d. If spawning occurs
+               ! during this time step, yearref will not match aaaa in the patch search below.
                child_patch%yearref = current_year
                call read_run_info(child_patch%run_id)  ! read file FOIL.info
 
@@ -1037,19 +1049,36 @@ CONTAINS
             IF (spawn(ind)) THEN
                ! Look for the child patch
                child_patch => patches%first
-               IF (child_patch%species == 'anchovy') child_ind_species = 1
-               IF (child_patch%species == 'sardine') child_ind_species = 2
+               SELECT CASE (TRIM(child_patch%species))
+               CASE ('anchovy')
+                  child_ind_species = 1
+               CASE ('sardine')
+                  child_ind_species = 2
+               CASE DEFAULT
+                  PRINT *, 'ERROR: Unknown child patch species: ', TRIM(child_patch%species)
+                  CALL_MPI MPI_FINALIZE(ierr_mpi)
+                  STOP
+               END SELECT
 
                DO WHILE ((child_patch%yearref /= aaaa) .or. (child_ind_species /= ind))
                   child_patch => child_patch%next
-                  IF (child_patch%species == 'anchovy') child_ind_species = 1
-                  IF (child_patch%species == 'sardine') child_ind_species = 2
                   IF (.NOT. ASSOCIATED(child_patch)) THEN
                      ! This shall never happen !
-                     PRINT *, " ERROR: child patch not found !!! I am ", child_patch%id
+                     PRINT *, " ERROR: child patch not found."
                      CALL_MPI MPI_FINALIZE(ierr_mpi)
                      STOP
                   END IF
+
+                  SELECT CASE (TRIM(child_patch%species))
+                  CASE ('anchovy')
+                     child_ind_species = 1
+                  CASE ('sardine')
+                     child_ind_species = 2
+                  CASE DEFAULT
+                     PRINT *, 'ERROR: Unknown child patch species: ', TRIM(child_patch%species)
+                     CALL_MPI MPI_FINALIZE(ierr_mpi)
+                     STOP
+                  END SELECT
                END DO
 
                ! Determination du nombre d'individus qui vont apparaitre, selon le nombre vise et le nombre d'oeufs pondus
