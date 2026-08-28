@@ -96,7 +96,7 @@ CONTAINS
       USE trajinitsave, ONLY: LAGRANGIAN_init
       USE ionc4, ONLY: ionc4_openr, ionc4_read_trajt, &
                        ionc4_close, ionc4_read_time, ionc4_read_dimt, &
-                       ionc4_gatt_char_read, ionc4_read_dimtraj
+                       ionc4_gatt_char_read, ionc4_gatt_read, ionc4_read_dimtraj
 #ifdef IBM_SPECIES
       USE debmodel, ONLY: deb_init
       USE ibmmove, ONLY: fish_move_init
@@ -126,6 +126,7 @@ CONTAINS
       INTEGER :: num ! For restart loop to keep good num info
 
       LOGICAL :: ibm_l_time ! From paraibm in namibmrestart namelist, restart info
+      LOGICAL :: found_yearref, found_t_spawn
 
       INTEGER :: nb_part_nc ! Number of particles in netcdf for patch
       INTEGER :: duration_ibm_anc, duration_ibm_sar ! Life time of anchovy and sardine
@@ -201,10 +202,13 @@ CONTAINS
       patch => patches%first
       DO n = 1, patches%nb
          ! Init patch general data
-         patch%yearref = current_year - 1
-         patch%t_spawn = patch%t_beg ! clara : why ???
          patch%dt_spawn = dt_spawn*3600.0_rlg
          patch%dt_save = patch%dt_save ! clara : interet de cette ligne ? sauf si dt_save tout court
+
+         IF (.NOT. ibm_restart) THEN
+            patch%yearref = current_year - 1
+            patch%t_spawn = patch%t_beg
+         END IF
 
          ! -------------------------
          ! --- Restart
@@ -214,6 +218,11 @@ CONTAINS
             ! nb_part_nc = patch%nb_part_total ! denis
             CALL ionc4_openr(file_inp, .false.) ! clara
             CALL ionc4_read_dimtraj(file_inp, nb_part_nc) !clara
+            CALL ionc4_gatt_read(file_inp, 'yearref', patch%yearref, found_yearref)
+            CALL ionc4_gatt_read(file_inp, 't_spawn', patch%t_spawn, found_t_spawn)
+
+            ! Restart files created before these attributes were introduced.
+            IF (.NOT. found_yearref) patch%yearref = current_year - 1
 
             ALLOCATE (flag_nc(nb_part_nc), temp_nc(nb_part_nc), size_nc(nb_part_nc), stage_nc(nb_part_nc))
             ALLOCATE (dens_nc(nb_part_nc), super_nc(nb_part_nc), drate_nc(nb_part_nc), dayb_nc(nb_part_nc))
@@ -303,6 +312,14 @@ CONTAINS
                CALL ionc4_read_time(trim(file_inp), idimt, patch%t_beg)
                patch%t_save = patch%t_beg + patch%dt_save*3600.0_rlg
             END IF
+            IF (.NOT. found_t_spawn) THEN
+               patch%t_spawn = patch%t_beg
+               IF (patch%dt_spawn > 0.0_rlg) THEN
+                  DO WHILE (patch%t_spawn <= time)
+                     patch%t_spawn = patch%t_spawn + patch%dt_spawn
+                  END DO
+               END IF
+            END IF
             CALL ionc4_close(file_inp)
 
             ! -------------------------
@@ -346,6 +363,18 @@ CONTAINS
          newseason = .true.
          first_spawn = .false.
          spawn = .false.
+
+         ! A current-year patch means that the first spawning event already occurred.
+         IF (ibm_restart) THEN
+            patch => patches%first
+            DO n = 1, patches%nb
+               IF (patch%yearref == current_year) THEN
+                  IF (patch%species == 'anchovy') newseason(1) = .false.
+                  IF (patch%species == 'sardine') newseason(2) = .false.
+               END IF
+               patch => patch%next
+            END DO
+         END IF
 
          ! Contrainte du nombre de particules a chaque generation selon max_part
 
@@ -1000,7 +1029,7 @@ CONTAINS
                ! Allocate memory for new particles
                CALL init_patch(child_patch, 0)               ! No allocation yet
                child_patch%nb_part_max = max_part           ! Initialize max part allowed in patch
-               first_spawn(ind_species) = .FALSE.
+               first_spawn(ind) = .FALSE.
 
             END IF    ! first_spawn
 
@@ -1134,7 +1163,7 @@ CONTAINS
                END DO   ! End do on new_eggs_sum matrix
 
             END IF      ! spawn
-            spawn = .false.
+            spawn(ind) = .false.
          END DO   ! Nb species
 
          ! Remise a 0 de la matrice des oeufs pondus avant fin de ce pas de temps
@@ -1233,7 +1262,7 @@ CONTAINS
       USE ionc4, ONLY: ionc4_createfile_traj, ionc4_createvar_traj, &
                        ionc4_write_trajt, &
                        ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
-                       ionc4_gatt_char_read, ionc4_open
+                       ionc4_gatt_char_read, ionc4_gatt, ionc4_open
       USE comtraj, ONLY: patches, type_patch, type_particle
 
       USE trajinitsave, ONLY: indices_loc2glob
@@ -1383,6 +1412,10 @@ CONTAINS
                fill_value=fillval, l_out_nc4par=l_out_nc4par)
 #endif /*IBM_SPECIES*/
          END IF  ! (.NOT. out_ex)
+
+         ! Save the patch-level spawning schedule needed for an exact restart.
+         CALL ionc4_gatt(file_out, 'yearref', patch%yearref)
+         CALL ionc4_gatt(file_out, 't_spawn', REAL(patch%t_spawn, kind=8))
 
          nb_part = patch%nb_part_alloc
          ALLOCATE (lat_out(nb_part), lon_out(nb_part))
