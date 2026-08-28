@@ -215,10 +215,13 @@ module ionc4
    interface ionc4_gatt
       module procedure ionc4_gatt_char
       module procedure ionc4_gatt_int
+      module procedure ionc4_gatt_double
    end interface ionc4_gatt
 
    interface ionc4_gatt_read
       module procedure ionc4_gatt_char_read
+      module procedure ionc4_gatt_int_read
+      module procedure ionc4_gatt_double_read
    end interface ionc4_gatt_read
 
    interface ionc4_read_subzxyt
@@ -14111,6 +14114,30 @@ contains
          return
       end subroutine ionc4_gatt_int
 
+! ***************************************************************
+! * subroutine ionc4_gatt_double                                *
+! * Role : add a double precision global attribute              *
+! ***************************************************************
+      subroutine ionc4_gatt_double(nom_fichier, gatt_name, gatt_value)
+         character(len=*), intent(in) :: nom_fichier, gatt_name
+         real(kind=8), intent(in) :: gatt_value
+         integer :: nc_id, nc_err
+
+         ionc_rout = "ionc4_gatt_double"
+         call ionc4_corres(nom_fichier, nc_id)
+         if (nc_id .eq. 0) then
+            call ionc4_err(ionc_errfich, ionc_rout, ' ', nom_fichier)
+            stop
+         else
+            nc_err = nf90_redef(nc_id)
+            call ionc4_err(nc_err, ionc_rout, 'nf90_redef', ' ')
+            nc_err = nf90_put_att(nc_id, nf90_global, gatt_name, gatt_value)
+            call ionc4_err(nc_err, ionc_rout, 'nf90_put_att', gatt_name)
+            nc_err = nf90_enddef(nc_id)
+            call ionc4_err(nc_err, ionc_rout, 'nf90_enddef', gatt_name)
+         end if
+      end subroutine ionc4_gatt_double
+
       ! ***************************************************************
       ! * subroutine ionc4_gatt_char_read                              *
       ! *                                                             *
@@ -14152,6 +14179,52 @@ contains
 
          return
       end subroutine ionc4_gatt_char_read
+
+! ***************************************************************
+! * subroutine ionc4_gatt_int_read                              *
+! * Role : read an integer global attribute when available      *
+! ***************************************************************
+      subroutine ionc4_gatt_int_read(nom_fichier, gatt_name, gatt_value, found)
+         character(len=*), intent(in) :: nom_fichier, gatt_name
+         integer, intent(out) :: gatt_value
+         logical, intent(out), optional :: found
+         integer :: nc_id, nc_err
+
+         ionc_rout = "ionc4_gatt_int_read"
+         call ionc4_corres(nom_fichier, nc_id)
+         if (nc_id .eq. 0) then
+            call ionc4_err(ionc_errfich, ionc_rout, ' ', nom_fichier)
+            stop
+         else
+            nc_err = nf90_get_att(nc_id, nf90_global, trim(gatt_name), gatt_value)
+            if (present(found)) found = (nc_err .eq. nf90_noerr)
+            if (nc_err .ne. nf90_noerr .and. nc_err .ne. nf90_enotatt) &
+               call ionc4_err(nc_err, ionc_rout, 'nf90_get_att', gatt_name)
+         end if
+      end subroutine ionc4_gatt_int_read
+
+! ***************************************************************
+! * subroutine ionc4_gatt_double_read                           *
+! * Role : read a double precision global attribute when available *
+! ***************************************************************
+      subroutine ionc4_gatt_double_read(nom_fichier, gatt_name, gatt_value, found)
+         character(len=*), intent(in) :: nom_fichier, gatt_name
+         real(kind=8), intent(out) :: gatt_value
+         logical, intent(out), optional :: found
+         integer :: nc_id, nc_err
+
+         ionc_rout = "ionc4_gatt_double_read"
+         call ionc4_corres(nom_fichier, nc_id)
+         if (nc_id .eq. 0) then
+            call ionc4_err(ionc_errfich, ionc_rout, ' ', nom_fichier)
+            stop
+         else
+            nc_err = nf90_get_att(nc_id, nf90_global, trim(gatt_name), gatt_value)
+            if (present(found)) found = (nc_err .eq. nf90_noerr)
+            if (nc_err .ne. nf90_noerr .and. nc_err .ne. nf90_enotatt) &
+               call ionc4_err(nc_err, ionc_rout, 'nf90_get_att', gatt_name)
+         end if
+      end subroutine ionc4_gatt_double_read
 
 ! ***************************************************************
 ! * subroutine ionc4_gatt_conv                                   *
