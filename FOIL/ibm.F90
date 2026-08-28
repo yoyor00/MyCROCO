@@ -133,6 +133,8 @@ CONTAINS
 
       INTEGER :: i, j, n, m, il ! Integers for loops
       INTEGER :: index_num ! Integers for indexing in restart
+      INTEGER :: ierr_mpi
+      CHARACTER(LEN=lchain) :: current_run_id
       ! To convert date to seconds or seconds to date
       CHARACTER(len=19) :: tool_sectodat
       INTEGER :: mm_clock, hh, minu, sec ! jj and aaaa are saved as current_year/day for later
@@ -198,6 +200,19 @@ CONTAINS
       ENDIF_MPI
 
       CALL tool_decompdate(tool_sectodat(time), current_day, mm_clock, current_year, hh, minu, sec)
+
+      IF (.NOT. ibm_restart) THEN
+#ifdef MPI
+         IF (mynode == 0) THEN
+            current_run_id = generate_run_id()
+            CALL write_run_info(current_run_id)
+         END IF
+         CALL MPI_BCAST(current_run_id, LEN(current_run_id), MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr_mpi)
+#else
+         current_run_id = generate_run_id()
+         CALL write_run_info(current_run_id)
+#endif
+      END IF
 
       patch => patches%first
       DO n = 1, patches%nb
@@ -327,9 +342,7 @@ CONTAINS
          ELSE
             ! patch%particles(:)%date_orig = time
             nb_part_nc = patch%nb_part_alloc
-            patch%run_id = generate_run_id()
-            !--- Update FOIL.info file
-            call write_run_info(patch%run_id)
+            patch%run_id = current_run_id
 
             DO m = 1, nb_part_nc
                particle => patch%particles(m)
@@ -1306,7 +1319,7 @@ CONTAINS
       USE ionc4, ONLY: ionc4_createfile_traj, ionc4_createvar_traj, &
                        ionc4_write_trajt, &
                        ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
-                       ionc4_gatt_char_read, ionc4_gatt, ionc4_open
+                       ionc4_gatt_char_read, ionc4_gatt, ionc4_open, ionc4_close
       USE comtraj, ONLY: patches, type_patch, type_particle
 
       USE trajinitsave, ONLY: indices_loc2glob
@@ -1317,7 +1330,7 @@ CONTAINS
       !! * Local declarations
       CHARACTER(LEN=lchain)                       :: file_out
       LOGICAL                                     :: l_out_nc4par
-      INTEGER                                     :: n, m, num1, num2, nb_part, nb_part_nc, p
+      INTEGER                                     :: n, m, num1, num2, nb_part, nb_part_nc, p, ierr_mpi
       REAL(kind=out)                              :: fillval
 
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: num_out, stage_out
@@ -1336,7 +1349,6 @@ CONTAINS
       TYPE(type_particle), POINTER    :: particle
       INTEGER :: idx_s, idx_e
       LOGICAL                                     :: out_ex
-      character(len=32)                           :: fileinfo_run_id
       character(len=64) :: run_id_out
 
       !!----------------------------------------------------------------------
@@ -1357,34 +1369,42 @@ CONTAINS
             CYCLE
          END IF
 
-         file_out = trim(patch%file_out)
-
-         CALL read_run_info(fileinfo_run_id)  ! read file FOIL.info
-
-         INQUIRE (file=file_out, exist=out_ex) ! does the file exist ?
-         IF (out_ex .AND. .NOT. patch%file_out_init) THEN ! file exists but not yet opened, need to check run_id for restart
-            patch%file_out_init = .TRUE.
-            CALL ionc4_open(file_out, .false.)
-            CALL ionc4_gatt_char_read(file_out, 'run_id', run_id_out)
-
-            ! Vérifier la cohérence du run_id
-            IF (trim(run_id_out) /= trim(patch%run_id)) THEN
-               print *, 'ERROR: File ', trim(file_out), ' belongs to another run: ', trim(run_id_out)
-               print *, 'Current run_id is: ', trim(patch%run_id)
-               out_ex = .FALSE.  ! Force re-creation of the file
-            END IF
-         END IF !out_ex .and. .NOT. patch%file_out_init
-
-         IF (out_ex .AND. patch%file_out_init) THEN ! file has been already opened
-            CALL ionc4_open(file_out, .false.)
+         IF (patch%nb_part_total == 0) THEN
+            patch => patch%next
+            CYCLE
          END IF
 
-         IF (.NOT. out_ex) THEN
-            ! Create output file
-            nb_part_nc = patch%nb_part_max
+         file_out = trim(patch%file_out)
 
-            CALL ionc4_createfile_traj(file_out, nb_part_nc, 0, 0, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_gatt_char(file_out, 'run_id', trim(patch%run_id)) ! Add a global attribute run_id
+         IF (.NOT. patch%file_out_init) THEN
+#ifdef MPI
+            out_ex = .FALSE.
+            IF (mynode == 0) INQUIRE (file=file_out, exist=out_ex)
+            CALL MPI_BCAST(out_ex, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr_mpi)
+#else
+            INQUIRE (file=file_out, exist=out_ex)
+#endif
+
+            IF (out_ex) THEN
+               CALL ionc4_open(file_out, l_out_nc4par)
+               CALL ionc4_gatt_char_read(file_out, 'run_id', run_id_out)
+
+               IF (trim(run_id_out) /= trim(patch%run_id)) THEN
+                  IF_MPI(MASTER) THEN
+                  PRINT *, 'File ', trim(file_out), ' belongs to run ', trim(run_id_out)
+                  PRINT *, 'Recreating it for run ', trim(patch%run_id)
+                  ENDIF_MPI
+                  CALL ionc4_close(file_out)
+                  out_ex = .FALSE.
+               END IF
+            END IF
+
+            IF (.NOT. out_ex) THEN
+               ! Create output file
+               nb_part_nc = patch%nb_part_max
+
+               CALL ionc4_createfile_traj(file_out, nb_part_nc, 0, 0, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_gatt_char(file_out, 'run_id', trim(patch%run_id)) ! Add a global attribute run_id
             CALL ionc4_createvar_traj(file_out, "latitude", "degrees_north", "latitude", &
                fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "longitude", "degrees_east", "longitude", &
@@ -1455,7 +1475,10 @@ CONTAINS
             CALL ionc4_createvar_traj(file_out, "Death_NAT", "", "Number dead by natural mortality", &
                fill_value=fillval, l_out_nc4par=l_out_nc4par)
 #endif /*IBM_SPECIES*/
-         END IF  ! (.NOT. out_ex)
+            END IF  ! (.NOT. out_ex)
+
+            patch%file_out_init = .TRUE.
+         END IF  ! (.NOT. patch%file_out_init)
 
          ! Save the patch-level spawning schedule needed for an exact restart.
          CALL ionc4_gatt(file_out, 'yearref', patch%yearref)
@@ -1717,7 +1740,7 @@ CONTAINS
       !> Declarations
       character(len=*), intent(out) :: run_id
       integer, intent(out), optional :: last_step
-      integer :: unit, ios
+      integer :: unit, ios, separator
       character(len=128) :: line
       !-----------------------------------------------------------------------
       !> Try to open existing FOIL.info file
@@ -1730,7 +1753,12 @@ CONTAINS
       !> Read RUN_ID
       read (unit, '(A)', iostat=ios) line
       if (ios == 0) then
-         read (line, '(6X,A)', iostat=ios) run_id
+         separator = index(line, '=')
+         if (separator > 0) then
+            run_id = adjustl(line(separator + 1:))
+         else
+            ios = 1
+         end if
       end if
 
       !-----------------------------------------------------------------------
