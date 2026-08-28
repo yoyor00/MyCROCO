@@ -61,7 +61,7 @@ MODULE ibm
    REAL(KIND=rsh)                                  :: multiplier_tac
 
    ! Variables pour la 2e methode de repro
-   REAL(KIND=rsh), DIMENSION(nb_species)            :: nb_indv_ponte
+   INTEGER, DIMENSION(nb_species)                   :: target_particles_per_spawn
 
    REAL(KIND=rlg)                                  :: slope = 0.000001722786_rlg
 #endif
@@ -379,9 +379,9 @@ CONTAINS
          ! Contrainte du nombre de particules a chaque generation selon max_part
 
          ! Calcul nb particules a creer a chaque evenement de ponte
-         nb_indv_ponte(1) = NINT(max_part*(dt_spawn/24.d0)/(138.d0))
+         target_particles_per_spawn(1) = NINT(max_part*(dt_spawn/24.d0)/(138.d0))
          ! 138 = nb de jours de ponte pendant une annee pour l'anchois
-         nb_indv_ponte(2) = NINT(max_part*(dt_spawn/24.d0)/(122.d0))
+         target_particles_per_spawn(2) = NINT(max_part*(dt_spawn/24.d0)/(122.d0))
          ! 183 = nb de jours de ponte pendant une annee pour la sardine, si 2 saisons, sinon 122
       END IF
 #endif
