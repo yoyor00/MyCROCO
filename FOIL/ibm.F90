@@ -513,8 +513,11 @@ CONTAINS
       ! Variables for reproduction
       REAL(KIND=rsh), DIMENSION(imax + 2, jmax + 2, nb_species) :: mat_eggs, mat_all_eggs
       INTEGER, DIMENSION(imax + 2, jmax + 2) :: MAT_new_indv
+      REAL(KIND=rsh), DIMENSION(imax + 2, jmax + 2) :: MAT_particle_quota
       REAL(KIND=rsh) :: ratio
-      REAL(KIND=rsh)  :: new_super
+      REAL(KIND=rsh) :: new_super
+      INTEGER :: target_particles, remaining_particles
+      INTEGER, DIMENSION(2) :: remainder_location
 
       ! Mortality variables
       REAL(KIND=rlg), DIMENSION(nb_species) :: Z1, Z2
@@ -1082,8 +1085,20 @@ CONTAINS
                END DO
 
                ! Determination du nombre d'individus qui vont apparaitre, selon le nombre vise et le nombre d'oeufs pondus
-               ratio = nb_indv_ponte(ind)/SUM(mat_all_eggs(:, :, ind))
-               MAT_new_indv = NINT(mat_all_eggs(:, :, ind)*ratio)
+               target_particles = target_particles_per_spawn(ind)
+               ratio = REAL(target_particles, kind=rsh)/SUM(mat_all_eggs(:, :, ind))
+               MAT_particle_quota = mat_all_eggs(:, :, ind)*ratio
+               MAT_new_indv = FLOOR(MAT_particle_quota)
+
+               ! Assign the remaining particles to the largest fractional quotas
+               remaining_particles = target_particles - SUM(MAT_new_indv)
+               DO k = 1, remaining_particles
+                  remainder_location = MAXLOC(MAT_particle_quota - REAL(MAT_new_indv, kind=rsh), &
+                                              MASK=mat_all_eggs(:, :, ind) > 0.0_rsh)
+                  i = remainder_location(1)
+                  j = remainder_location(2)
+                  MAT_new_indv(i, j) = MAT_new_indv(i, j) + 1
+               END DO
 
                ! Recherche du nombre de particules a creer ( avec condition dans le domaine du proc si MPI)
                nb_new_particle = 0
