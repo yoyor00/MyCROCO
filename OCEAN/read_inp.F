@@ -2082,11 +2082,11 @@ c        close(testunit)
         read(input,'(A)',err=95) lagname
 #endif /* LAGRANGIAN */
 
-#if defined DEB_IBM
-      elseif (keyword(1:kwlen).eq.'deb_ibm') then
+#if defined FOIL
+      elseif (keyword(1:kwlen).eq.'foil') then
         call cancel_kwd (keyword(1:kwlen), ierr)
         read(input,'(A)',err=95) debibmname
-#endif /* DEB_IBM */
+#endif /* FOIL */
 
 #ifdef MRL_WCI
 !
@@ -3457,12 +3457,12 @@ c        close(testunit)
      &          lagname(1:lstr)
 #endif /* LAGRANGIAN */
 
-#if defined DEB_IBM
+#if defined FOIL
           lstr=lenstr(debibmname)
           MPI_master_only write(stdout,'(7x,A,12x,A)')
-     &         'Input file for DEB_IBM :' ,
+     &         'Input file for FOIL :' ,
      &          debibmname(1:lstr)
-#endif /* DEB_IBM */
+#endif /* FOIL */
 
 #ifdef MRL_WCI
           MPI_master_only write(stdout,'(/1x,A,3(/6x,l1,2x,A))')

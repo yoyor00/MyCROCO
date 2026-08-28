@@ -29,7 +29,7 @@ MODULE ibmtools
    USE mpi
 #endif
 
-#if defined DEB_IBM
+#ifdef FOIL
    !! * Module used
    USE module_ibm          ! time,sc_r,sc_w,Cs_r,h,hc,g,srflx,zeta
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, rsh, rlg, type_particle, lchain
@@ -39,10 +39,8 @@ MODULE ibmtools
 
    !! * Accessibility
    PUBLIC w_dens, ibm_buoy, ibm_traint, ibm_nycth_mig, ibm_proftraint, &
-#ifdef IBM_SPECIES
       ibm_parameter_init, death_by_fishing, selec_dome_or_asymp, &
       alpha_sel_a, beta_sel_a, alpha_sel_s, beta_sel_s, &
-#endif
       ibm_profmean, ibm_loc_xyz, gasdev_s, tool_julien
    !ibm_profuint, ibm_profvint                                  ! non utilise
 
@@ -53,12 +51,10 @@ MODULE ibmtools
 
    INTEGER, PARAMETER                                  :: track = 1
 
-#ifdef IBM_SPECIES
    REAL(KIND=rsh), PARAMETER                           :: alpha_sel_a = 0.879_rsh
    REAL(KIND=rsh), PARAMETER                           :: beta_sel_a  = 12.20_rsh
    REAL(KIND=rsh), PARAMETER                           :: alpha_sel_s = 0.877_rsh
    REAL(KIND=rsh), PARAMETER                           :: beta_sel_s  = 11.73_rsh
-#endif
 
    !!===================================================================================================================================
    !!===================================================================================================================================
@@ -137,7 +133,6 @@ CONTAINS
 
    END FUNCTION tool_julien
 
-#ifdef IBM_SPECIES
 
    !!======================================================================
    SUBROUTINE ibm_parameter_init(particle, species, xe, sal, temp, Istr, Iend, Jstr, Jend)
@@ -193,9 +188,14 @@ CONTAINS
                        px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, kp, km, &
                        Istr, Iend, Jstr, Jend)
 
-      ! Initialize particle's stage, Drate and w
+      ! Initialize particle's Drate and w
       particle%Drate = 0.0_rsh
       particle%w = 0.0_rsh
+
+      ! Initialize particle's hadv
+      IF (particle%stage >= 5) THEN
+         particle%hadv = .FALSE.  ! in case hadv = TRUE in paratraj.txt and initial patches are juv/adult
+      END IF
 
       ! Initialize particle's size, checking at species
       !Huret et al. 2016
@@ -224,7 +224,6 @@ CONTAINS
                              Istr, Iend, Jstr, Jend)
       dens_surf = w_dens(temp_surf, sal_surf)
 
-      ! Si temperature realiste a l'initialisation, on prend sa valeur, sinon on prend 0
       particle%temp = temp_surf
       particle%density = dens_surf
 
@@ -306,7 +305,7 @@ CONTAINS
       ! =====                     Fishing strategy : F_eval                    =====
       ! =====                                                                  =====
       ! Fishing of First Age Class
-      IF (particle%AgeClass >= 1 .and. fishing_strategy == 'F_eval') THEN !ageclass>=1 to be sure not to fish newborns
+      IF (particle%AgeClass >= 1 .and. fishing_strategy == 'F_eval') THEN ! AgeClass>=1 to be sure not to fish newborns
 
          IF (particle%stage == 6 .and. month < 7 .and. species == 'anchovy') THEN
             !IF (year < 1990) Zfishing = f_spin
@@ -413,7 +412,7 @@ CONTAINS
       ! =====                                                                  =====
       ! =====                     Fishing strategy : Catch                     =====
       ! =====                                                                  =====
-      IF (particle%stage >= 5 .and. fishing_strategy == 'Catch' .and. particle%AgeClass >= 1) THEN !ageclass>=1 to be sure not to fish newborns THEN
+      IF (particle%stage >= 5 .and. fishing_strategy == 'Catch' .and. particle%AgeClass >= 1) THEN ! AgeClass>=1 to be sure not to fish newborns THEN
 
          ! mat_catch is read in ibm_init routine
          IF (species == 'anchovy') id_species = 1
@@ -608,7 +607,6 @@ CONTAINS
       END IF ! fishing_strategy == historical
 
    END SUBROUTINE death_by_fishing
-#endif  /* IBM_SPECIES */
 
    !!===========================================================================
    FUNCTION w_dens(tempw, salw)
@@ -1669,6 +1667,6 @@ CONTAINS
    END SUBROUTINE ibm_opt_depth
 #endif /* key_ibm__unused */
 
-#endif  /* DEB_IBM */
+#endif  /* DEB_FOIL */
 
 END MODULE

@@ -19,7 +19,7 @@ MODULE toolmpi
    !!
    !!======================================================================
 
-#if defined MPI && (defined LAGRANGIAN || defined DEB_IBM)
+#if defined MPI && (defined LAGRANGIAN)
    !! * Modules used
    USE comtraj, ONLY: rsh, rlg
    USE mpi

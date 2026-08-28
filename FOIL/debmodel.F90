@@ -16,7 +16,7 @@ MODULE debmodel
    USE mpi
 #endif
 
-#if defined IBM_SPECIES
+#ifdef FOIL
 
    USE module_ibm         ! time,sc_w,h
    USE comtraj, ONLY: kmax, rsh, rlg, lchain, valmanq, &
@@ -235,8 +235,6 @@ CONTAINS
                IF (patch%nb_part_alloc == 0) CYCLE
                IF (.NOT. patch%particles(m)%active) CYCLE
                num = patch%particles(m)%num
-               ! CLARA, get index of num_nc
-               ! index_num = findloc(num_nc, num, dim=1)
                index_num = -1
                do il = 1, nb_part_nc
                   if (num_nc(il) == num) then
@@ -493,8 +491,8 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE deb_egg_init  ***
       !&E
-      !&E ** Purpose : Initialize DEB part of a given particle with default values, adding
-      !&E              adding inidividual variability. Only for reproduction routine !
+      !&E ** Purpose : Initialize DEB properties of new particles/SI from REPRODUCTION,
+      !&E              with default values adding inidividual variability.
       !&E
       !&E              Init Hj,pAm,pMi,EG,vc,kap,Kx,Hp,TA,K,shapeb,lfactor,E0,Rfbatch,SF,zoom
       !&E              L,H,E,R,WV,WE,WR,WG,NRJ_V,NRJ_G,Wdebd,NRJd,Wdeb,NRJ
@@ -1475,6 +1473,6 @@ CONTAINS
 
    END FUNCTION ESD2weight
 
-#endif /* IBM_SPECIES */
+#endif /* FOIL */
 
 END MODULE

@@ -1,0 +1,105 @@
+NETCDF-BASED INITIALIZATION FILE (itypetraj = 3)
+FOIL PATCH AND SUPER-INDIVIDUAL INITIAL CONDITIONS
+
+Patch name
+Patch initialization date (start of the trajectory)
+Trajectory end date
+Output interval
+Input NetCDF file containing the initial particle positions
+Output trajectory file
+Number of particles released at each initial position
+itypevert: initial vertical-movement scheme (may be updated later)
+           = 0: constant depth (no vertical advection or turbulent diffusion)
+           < 0: vertical advection only
+           > 0: vertical advection and turbulent diffusion using a random walk
+Species name (anchovy or sardine)
+Developmental stage of the individuals
+Individual length
+Number of individuals represented by each particle (super-individual abundance)
+Individual density
+Individual age
+Individual age class
+Maturity energy
+Reserve energy
+Energy allocated to reproduction (first-feeding model; Nisbet, 2012)
+Energy allocated to gametes
+
+END OF FILE DESCRIPTION%
+
+**************************************************************
+patch1                                  ,| name of patch    
+2005/04/01 00:00:00                     ,| tbegtraj
+2005/12/31 00:00:00                     ,| tendtraj
+anchovy_2004_2005.nc                    ,| filetrajout
+1		                                ,| nb_part_intro
+1                                       ,| itypevert
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
+anchovy                                 ,| species	
+6                                       ,| stage
+12.13                                   ,| size (cm)
+1971120.0                               ,| super
+1025.0                                  ,| density
+305                                     ,| age
+1                                       ,| age class (age at adult stage, 1 to 4 for anc)
+12026.0                                 ,| H
+20625.0                                 ,| E
+7548.4                                  ,| R
+0.0                                     ,| Gam
+**************************************************************
+patch2                                  ,| name of patch    
+2005/04/01 00:00:00                     ,| tbegtraj
+2005/12/31 00:00:00                     ,| tendtraj
+anchovy_2003_2005.nc                    ,| filetrajout
+1		                                ,| nb_part_intro
+1                                       ,| itypevert
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
+anchovy                                 ,| species	
+6                                       ,| stage
+16.20                                   ,| size (cm)
+226908.0                                ,| super 
+1025.0                                  ,| density
+670.0                                   ,| age
+2                                       ,| age class (age at adult stage, 1 to 4 for anc)
+12026.0	                                ,| H
+45958.5	                                ,| E
+20676.0		                            ,| R
+0.0			                            ,| Gam
+**************************************************************
+patch3                                  ,| name of patch    
+2005/04/01 00:00:00                     ,| tbegtraj
+2005/12/31 00:00:00                     ,| tendtraj
+anchovy_2002_2005.nc                    ,| filetrajout
+1		                                ,| nb_part_intro
+1                                       ,| itypevert
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
+anchovy                                 ,| species	
+6                                       ,| stage
+17.21                                   ,| size (cm)
+91680.0                                 ,| super 
+1025.0                                  ,| density
+1035.0                                  ,| age
+3                                       ,| age class (age at adult stage, 1 to 4 for anc)
+12026.0	                                ,| H
+50914.0	                                ,| E
+26693.15		                        ,| R
+0.0			                            ,| Gam
+**************************************************************
+patch4                                  ,| name of patch    
+2005/04/01 00:00:00                     ,| tbegtraj
+2005/12/31 00:00:00                     ,| tendtraj
+anchovy_2001_2005.nc                    ,| filetrajout
+1		                                ,| nb_part_intro
+1                                       ,| itypevert
+./inputs/pos_init/release_2500_120_Benguela_LR.nc   ,| filetrajin
+anchovy                                 ,| species	
+6                                       ,| stage
+17.56                                   ,| size (cm)
+2292.0                                  ,| super 
+1025.0                                  ,| density
+1400.0                                  ,| age
+4                                       ,| age class (age at adult stage, 1 to 4 for anc)
+12026.0	                                ,| H
+58395.0	                                ,| E
+34644.1		                            ,| R
+0.0			                            ,| Gam
+**************************************************************

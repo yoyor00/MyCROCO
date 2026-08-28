@@ -997,7 +997,7 @@ C$OMP END MASTER
 #ifdef LAGRANGIAN
       use plug_lagrangian, only: LAGRANGIAN_update_main
 #endif
-#ifdef DEB_IBM
+#ifdef FOIL
       USE plug_ibm,        ONLY : ibm_update_main
 #endif
 #ifdef MUSTANG
@@ -1153,13 +1153,14 @@ C$OMP BARRIER
 
 # endif
 
-#ifdef LAGRANGIAN
+#if defined LAGRANGIAN && !defined FOIL 
+! LAGRANGIAN directly updated by FOIL
       do tile=my_first,my_last
        call LAGRANGIAN_update_main(tile)
       end do
 #endif
 
-#ifdef DEB_IBM
+#ifdef FOIL
       do tile=my_first,my_last
             call ibm_update_main(tile)
       enddo

@@ -6,7 +6,7 @@
 
 !!! give access to dimensions, variables, parameters from hydro model to lagrangian
 
-#if defined LAGRANGIAN || defined DEB_IBM
+#if defined LAGRANGIAN
 
       MODULE module_lagrangian
 

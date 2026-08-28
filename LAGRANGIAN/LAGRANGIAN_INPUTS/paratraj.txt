@@ -3,34 +3,44 @@
 :=============================================================================
 :
 :-----------------------------------------------------------------------------
-: namtraj          TRAJECTORY AND DIFFUSION SETTINGS
+: namtraj          GENERAL INPUT SETTINGS
 :-----------------------------------------------------------------------------
 :
 : file_trajec : path to the patch initialization file containing the initial
 :               particle positions, trajectory dates, movement settings, and
 :               output filenames
-: dir_pathout : optional base directory for trajectory output and restart files;
-:               used by the DEB-IBM configuration and not required for the
-:               standalone LAGRANGIAN configuration shown below
+: dir_pathout : optional base directory for trajectory output, and restart files
+:               used by FOIL configuration
 : itypepatch  : method used to define the initial patch positions:
-:               1 = circular patches
-:               2 = rectangular patches
-:               3 = positions read from a NetCDF file
+:               1 = circle, 2 = rectangle, 3 = NetCDF positions
 :               This value must match the format of file_trajec.
-: dtz         : time step (s) used by the vertical random-walk subloop when
-:               itypevert > 0 in file_trajec. In that case, vertical turbulent
-:               diffusion is applied in addition to vertical advection.
-:               A value of a few seconds helps prevent particle accumulation
-:               in low-diffusivity regions and near boundaries. See Ross and
-:               Sharples (2004, Limnology and Oceanography) for a sensitivity
-:               analysis.
-: hdiff       : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
-:               horizontal random dispersion
 :
 :-----------------------------------------------------------------------------
 :
  &namtraj
-     file_trajec='../croco/LAGRANGIAN/LAGRANGIAN_INPUTS/traject3d_type1circ.dat'
-     itypepatch = 1
-     dtz = 3
-     hdiff = 5.0 /
+ 	file_trajec = './traject3d_type2rect.dat'
+	dir_pathout = './output/output_lag/'
+	itypepatch = 2
+	dtsave_traj = 24.d0 /
+:
+:-----------------------------------------------------------------------------
+: namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
+:-----------------------------------------------------------------------------
+: 
+: hadv : if FALSE, particles will not be transported in the horizontal
+: 			direction, neither advection nor diffusion. 
+:			Usefull for some configuration (ex : 3D-1DV, but also 
+:			for some biological stages of the IBM)
+: dtz   : time step (s) used by the vertical random-walk subloop
+:         A value of a few seconds helps prevent particle accumulation in
+:         low-diffusivity regions and near boundaries. See Ross and Sharples
+:         (2004, Limnology and Oceanography) for a sensitivity analysis.
+: hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
+:         horizontal diffusion, when traj3d = .TRUE.
+:
+:-----------------------------------------------------------------------------
+:
+ &namtrajadiff
+      hadv = .TRUE.
+	  dtz  = 3
+      hdiff = 5.0 /

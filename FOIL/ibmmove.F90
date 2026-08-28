@@ -19,7 +19,7 @@ MODULE ibmmove
 #include "cppdefs.h"
 #include "toolcpp.h"
 
-#if defined DEB_IBM && defined IBM_SPECIES
+#ifdef FOIL
 
    USE module_ibm         ! time,h,om_r,on_r
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, &
@@ -406,6 +406,6 @@ CONTAINS
    END SUBROUTINE fish_move
    !!======================================================================
 
-#endif /* DEB_IBM */
+#endif /* FOIL */
 
 END MODULE
