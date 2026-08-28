@@ -646,6 +646,7 @@ CONTAINS
                         END IF
                      END DO
                   END DO
+
                   CALL init_patch(new_patch, nb_part)
                   m2 = 0
                   DO j = 1, nn
@@ -774,7 +775,11 @@ CONTAINS
                   DO j = MAX0(jmin, jmin_patch), MIN0(jmax, jmax_patch), jstep_patch
                      DO i = MAX0(imin, imin_patch), MIN0(imax, imax_patch), istep_patch
                         IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
+<<<<<<< HEAD
                                              Istr, Iend, Jstr, Jend)) THEN                  
+=======
+                                          Istr, Iend, Jstr, Jend)) THEN                  
+>>>>>>> 1fdf25c9 (debug de itypetraj=2 dans trajinitsave)
                            pos%xp = REAL(i, rlg); pos%yp = REAL(j,rlg)
                            CALL define_pos(pos)
                            DO k = kmin_patch, kmax_patch, kstep_patch
@@ -799,11 +804,17 @@ CONTAINS
                   ! Place particle at their location
                   m2 = 0
                   DO j = MAX0(jmin, jmin_patch), MIN0(jmax, jmax_patch), jstep_patch
+<<<<<<< HEAD
                      j_index = (j - MAX0(jmin, jmin_patch))/jstep_patch
                      DO i = MAX0(imin, imin_patch), MIN0(imax, imax_patch), istep_patch
                         i_index = (i - MAX0(imin, imin_patch))/istep_patch
                         IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
                                              Istr, Iend, Jstr, Jend)) THEN
+=======
+                     DO i = MAX0(imin, imin_patch), MIN0(imax, imax_patch), istep_patch
+                        IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
+                                          Istr, Iend, Jstr, Jend)) THEN  
+>>>>>>> 1fdf25c9 (debug de itypetraj=2 dans trajinitsave)
                            pos1%xp = REAL(i, rlg); pos1%yp = REAL(j,rlg)
                            CALL define_pos(pos1)
                            DO k = kmin_patch, kmax_patch, kstep_patch
@@ -811,7 +822,11 @@ CONTAINS
                               IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > k) THEN
                                  m1 = m2 + 1
                                  m2 = m2 + nb_part_intro
+<<<<<<< HEAD
                                  new_patch%particles(m1:m2)%xpos = pos1%xp   ! global initial position
+=======
+                                 new_patch%particles(m1:m2)%xpos = pos1%xp   ! position at initial location
+>>>>>>> 1fdf25c9 (debug de itypetraj=2 dans trajinitsave)
                                  new_patch%particles(m1:m2)%ypos = pos1%yp
                                  ! total depth at particle s location
                                  CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
