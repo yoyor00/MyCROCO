@@ -78,7 +78,7 @@ CONTAINS
 
       !! * Local declarations
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:, :, :)   :: fish1
-      INTEGER                                         :: idimt, t
+      INTEGER                                         :: idimt, t, k
       INTEGER                                         :: valimin, valimax, valjmin, valjmax
       INTEGER                                         :: imin, jmin, imax, jmax
       INTEGER                                         :: lstr, lenstr
@@ -136,6 +136,11 @@ CONTAINS
          CALL ionc4_read_subzxyt(file_fish1, TRIM(name_in_fish), fish1, valimin, valimax, valjmin, &
                                  valjmax, 1, nbSizeClass_anc, t, 1, 1, 1)
          fish_anc(imin:imax, jmin:jmax, :, t) = fish1
+#ifdef MPI
+         DO k = 1, nbSizeClass_anc
+            CALL exchange_r2d_1pts_tile(limin, limax, ljmin, ljmax, fish_anc(START_2D_ARRAY, k, t))
+         END DO
+#endif
       END DO
 
       CALL ionc4_close(file_fish1)
@@ -155,7 +160,11 @@ CONTAINS
          CALL ionc4_read_subzxyt(file_fish2, TRIM(name_in_fish), fish1, valimin, valimax, valjmin, &
                                  valjmax, 1, nbSizeClass_sar, t, 1, 1, 1)
          fish_sar(imin:imax, jmin:jmax, :, t) = fish1
-
+#ifdef MPI
+         DO k = 1, nbSizeClass_sar
+            CALL exchange_r2d_1pts_tile(limin, limax, ljmin, ljmax, fish_sar(START_2D_ARRAY, k, t))
+         END DO
+#endif
       END DO
 
       CALL ionc4_close(file_fish2)
