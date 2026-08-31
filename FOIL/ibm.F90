@@ -96,7 +96,8 @@ CONTAINS
       USE trajinitsave, ONLY: LAGRANGIAN_init
       USE ionc4, ONLY: ionc4_openr, ionc4_read_trajt, &
                        ionc4_close, ionc4_read_time, ionc4_read_dimt, &
-                       ionc4_gatt_char_read, ionc4_gatt_read, ionc4_read_dimtraj
+                       ionc4_gatt_char_read, ionc4_gatt_read, ionc4_read_dimtraj, &
+                       ionc4_var_exists
 #ifdef IBM_SPECIES
       USE debmodel, ONLY: deb_init
       USE ibmmove, ONLY: fish_move_init
@@ -127,6 +128,7 @@ CONTAINS
 
       LOGICAL :: ibm_l_time ! From paraibm in namibmrestart namelist, restart info
       LOGICAL :: found_yearref, found_t_spawn
+      LOGICAL :: found_hmove
 
       INTEGER :: nb_part_nc ! Number of particles in netcdf for patch
       INTEGER :: duration_ibm_anc, duration_ibm_sar ! Life time of anchovy and sardine
@@ -151,6 +153,7 @@ CONTAINS
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: dens_nc, size_nc, drate_nc
       REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)       :: dayb_nc
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, ageClass_nc, num_nc
+      INTEGER, ALLOCATABLE, DIMENSION(:)       :: hmove_nc
 
       ! Definition of namelists in paraibm
       NAMELIST /namibmin/ file_trajec, dir_pathout, itypepatch
@@ -242,6 +245,7 @@ CONTAINS
             ALLOCATE (flag_nc(nb_part_nc), temp_nc(nb_part_nc), size_nc(nb_part_nc), stage_nc(nb_part_nc))
             ALLOCATE (dens_nc(nb_part_nc), super_nc(nb_part_nc), drate_nc(nb_part_nc), dayb_nc(nb_part_nc))
             ALLOCATE (age_nc(nb_part_nc), ageClass_nc(nb_part_nc), num_nc(nb_part_nc))
+            ALLOCATE (hmove_nc(nb_part_nc))
 
             ! CALL ionc4_openr(trim(file_inp), .false.)
             CALL ionc4_gatt_char_read(file_inp, 'run_id', patch%run_id)
@@ -258,6 +262,19 @@ CONTAINS
             CALL ionc4_read_trajt(file_inp, "AGE", age_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGECLASS", ageClass_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM", num_nc, 1, nb_part_nc, idimt)
+
+            ! To be removed in future versions of IBM, when HMOVE is always present in restart files
+            ! Initialize the movement clock if HMOVE is missing
+            found_hmove = ionc4_var_exists(file_inp, "HMOVE")
+            IF (found_hmove) THEN
+               CALL ionc4_read_trajt(file_inp, "HMOVE", hmove_nc, 1, nb_part_nc, idimt)
+            ELSE
+               hmove_nc(:) = FLOOR(time/3600.0_rlg)
+               IF_MPI(MASTER) THEN
+               WRITE (iscreenlog, *) &
+                  'WARNING: HMOVE absent from restart; movement clocks reinitialised.'
+               ENDIF_MPI
+            END IF
 
             DO m = 1, patch%nb_part_alloc
                IF (patch%nb_part_alloc == 0) CYCLE ! To avoid an error because of a proc without any particle at restart
@@ -286,6 +303,7 @@ CONTAINS
                patch%particles(m)%date_orig = dayb_nc(index_num)
                patch%particles(m)%age = age_nc(index_num)
                patch%particles(m)%AgeClass = ageClass_nc(index_num)
+               patch%particles(m)%hmove = hmove_nc(index_num)
             END DO
 
 #ifdef IBM_SPECIES
@@ -319,7 +337,7 @@ CONTAINS
 #endif /*IBM_SPECIES*/
 
             DEALLOCATE (flag_nc, temp_nc, size_nc, stage_nc, dens_nc, super_nc, drate_nc, dayb_nc)
-            DEALLOCATE (age_nc, ageClass_nc, num_nc)
+            DEALLOCATE (age_nc, ageClass_nc, num_nc, hmove_nc)
 
             ! update the date of restart, and savetraj is delayed not to have twice same time step in output
             IF (ibm_l_time) THEN
@@ -1325,7 +1343,8 @@ CONTAINS
       USE ionc4, ONLY: ionc4_createfile_traj, ionc4_createvar_traj, &
                        ionc4_write_trajt, &
                        ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
-                       ionc4_gatt_char_read, ionc4_gatt, ionc4_open, ionc4_close
+                       ionc4_gatt_char_read, ionc4_gatt, ionc4_open, ionc4_close, &
+                       ionc4_var_exists
       USE comtraj, ONLY: patches, type_patch, type_particle
 
       USE trajinitsave, ONLY: indices_loc2glob
@@ -1345,6 +1364,7 @@ CONTAINS
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: h0pos_out, size_out, nb_out, dens_out, Drate_out
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: age_out, ageClass_out
 #ifdef IBM_SPECIES
+      INTEGER, ALLOCATABLE, DIMENSION(:)   :: hmove_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out, f_out, Wdeb_out, Denspawn_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_out, H_out, R_out, Neggs_out, NRJ_out, Gam_out
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out, yearspawn_out, season_out
@@ -1403,6 +1423,15 @@ CONTAINS
                   CALL ionc4_close(file_out)
                   out_ex = .FALSE.
                END IF
+
+               ! To be removed in future versions of IBM, when HMOVE is always present in restart files
+               ! Add HMOVE to an older output file before appending new records
+               IF (out_ex .AND. .NOT. ionc4_var_exists(file_out, "HMOVE")) THEN
+                  CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
+                     "Absolute model hour of the previous fish movement", &
+                     fill_value=-1, l_out_nc4par=l_out_nc4par)
+               END IF
+
             END IF
 
             IF (.NOT. out_ex) THEN
@@ -1443,6 +1472,9 @@ CONTAINS
                fill_value=-1, l_out_nc4par=l_out_nc4par)
 
 #ifdef IBM_SPECIES
+            CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
+               "Absolute model hour of the previous fish movement", &
+               fill_value=-1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "FOOD", "mg/m3", "food", &
                fill_value=fillval, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "F", "", "f", &
@@ -1509,6 +1541,7 @@ CONTAINS
          temp_out(:) = fillval; nb_out(:) = fillval; age_out(:) = -1; ageClass_out(:) = -1
 
 #ifdef IBM_SPECIES
+         ALLOCATE (hmove_out(nb_part))
          ALLOCATE (dayjuv_out(nb_part), dayspawn_out(nb_part))
          ALLOCATE (yearspawn_out(nb_part), season_out(nb_part))
          ALLOCATE (zoom_out(nb_part))
@@ -1527,6 +1560,7 @@ CONTAINS
          H_out(:) = fillval; E_out(:) = fillval; R_out(:) = fillval; Gam_out(:) = fillval
          f_out(:) = fillval; zoom_out(:) = 0; Neggs_out(:) = fillval
          deaddeb_out(:) = fillval; deadfishing_out(:) = fillval; deadnatural_out(:) = fillval
+         hmove_out(:) = -1
 #endif /*IBM_SPECIES*/
 
          p = 0
@@ -1553,6 +1587,7 @@ CONTAINS
             age_out(p) = REAL(particle%age, kind=out)
             ageClass_out(p) = REAL(particle%AgeClass, kind=out)
 #ifdef IBM_SPECIES
+            hmove_out(p) = particle%hmove
             food_out(p) = REAL(particle%X, kind=out)
             f_out(p) = REAL(particle%f, kind=out)
             E_out(p) = REAL(particle%E, kind=out)
@@ -1605,6 +1640,7 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'AGECLASS', ageClass_out(1:nb_part), num1, num2, 0, -1)
 
 #ifdef IBM_SPECIES
+         CALL ionc4_write_trajt(file_out, 'HMOVE', hmove_out(1:nb_part), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'FOOD', food_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'F', f_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'EDEB', E_out(1:nb_part), num1, num2, 0, fillval)
@@ -1629,6 +1665,7 @@ CONTAINS
          DEALLOCATE (num_out, h0pos_out, flag_out, dens_out, temp_out, Drate_out)
          DEALLOCATE (size_out, dateo_out, stage_out, nb_out, age_out, ageClass_out)
 #ifdef IBM_SPECIES
+         DEALLOCATE (hmove_out)
          DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out)
          DEALLOCATE (Denspawn_out, food_out, Wdeb_out, zoom_out)
          DEALLOCATE (Gam_out, H_out, E_out, R_out, Neggs_out)!, NRJ_out)
