@@ -265,7 +265,7 @@ CONTAINS
 
             ! To be removed in future versions of IBM, when HMOVE is always present in restart files
             ! Initialize the movement clock if HMOVE is missing
-            found_hmove = ionc4_var_exists(file_inp, "HMOVE")
+            CALL ionc4_var_exists(file_inp, "HMOVE", found_hmove)
             IF (found_hmove) THEN
                CALL ionc4_read_trajt(file_inp, "HMOVE", hmove_nc, 1, nb_part_nc, idimt)
             ELSE
@@ -1374,7 +1374,7 @@ CONTAINS
       TYPE(type_patch), POINTER    :: patch
       TYPE(type_particle), POINTER    :: particle
       INTEGER :: idx_s, idx_e
-      LOGICAL                                     :: out_ex
+      LOGICAL                                     :: out_ex, found_hmove
       character(len=64) :: run_id_out
 
       !!----------------------------------------------------------------------
@@ -1426,10 +1426,13 @@ CONTAINS
 
                ! To be removed in future versions of IBM, when HMOVE is always present in restart files
                ! Add HMOVE to an older output file before appending new records
-               IF (out_ex .AND. .NOT. ionc4_var_exists(file_out, "HMOVE")) THEN
-                  CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
-                     "Absolute model hour of the previous fish movement", &
-                     fill_value=-1, l_out_nc4par=l_out_nc4par)
+               IF (out_ex) THEN
+                  CALL ionc4_var_exists(file_out, "HMOVE", found_hmove)
+                  IF (.NOT. found_hmove) THEN
+                     CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
+                        "Absolute model hour of the previous fish movement", &
+                        fill_value=-1, l_out_nc4par=l_out_nc4par)
+                  END IF
                END IF
 
             END IF
