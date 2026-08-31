@@ -286,9 +286,6 @@ CONTAINS
          fpos_y = fpos_y + 1
       END IF
 
-      icell = MIN(MAX(icell, imin), imax) ! check IF in boundaries
-      jcell = MIN(MAX(jcell, jmin), jmax)
-
       ! Get the probability at this new cell
       IF (ind_species == 1) Pj = fish_anc(icell, jcell, index, saison)
       IF (ind_species == 2) Pj = fish_sar(icell, jcell, index, saison)
