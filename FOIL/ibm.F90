@@ -519,7 +519,7 @@ CONTAINS
       REAL(KIND=rsh) :: tempo, sal_part
       REAL(KIND=rsh) :: new_posx, new_posy ! Eggs spawn position
       REAL(KIND=rsh) :: sal_surf, temp_surf, dens_surf ! Physical variables at particle's location
-      REAL(KIND=rsh) :: dh
+      INTEGER :: dh, current_hour
 
       REAL(KIND=rsh) :: harvest, rx, ry
 
@@ -550,6 +550,9 @@ CONTAINS
       CALL tool_decompdate(tool_sectodat(time), jj, mm_clock, aaaa, hh, minu, sec)
 
 #ifdef IBM_SPECIES
+      ! Absolute model hour for fish movement
+      current_hour = FLOOR(time/3600.0_rlg)
+
       jjulien = tool_julien(jj, mm_clock, aaaa) - tool_julien(1, 1, aaaa) + 1
       IF (debuse .AND. .NOT. F_Fix) THEN
          CALL readfood3d(Istr, Iend, Jstr, Jend, first_timestep_ibm)
@@ -820,11 +823,14 @@ CONTAINS
                dh = NINT((100.0/(1.5*particle%size*3600.0))* &
                          MAX(om_r(nint(pos%idx_r), nint(pos%idy_r)), on_r(nint(pos%idx_r), nint(pos%idy_r))))
 
-               IF (hh >= particle%hmove + dh) THEN
+               ! Initialize the movement clock
+               IF (particle%hmove == 0) particle%hmove = current_hour
+
+               IF (current_hour >= particle%hmove + dh) THEN
 #ifdef MPI
                   CALL fish_move(particle, ind_species)
 #endif
-                  particle%hmove = hh ! update of the saved hour
+                  particle%hmove = current_hour
 
                   pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
                   CALL define_pos(pos_ad)
@@ -839,8 +845,6 @@ CONTAINS
                   particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
                END IF
-               IF (hh == 0 .and. particle%hmove > 0) particle%hmove = particle%hmove - 24
-
                ! SI le super individu n'atteint pas le stade 6 et que jjulien = dayjuv,
                ! alors mindepth = maxdepth et l'interpolation de la temperature plante.
                IF (particle%H >= particle%Hp .or. particle%age == 364) THEN
@@ -883,11 +887,14 @@ CONTAINS
                dh = NINT((100.0/(1.5*particle%size*3600.0))* &
                          MAX(om_r(nint(pos%idx_r), nint(pos%idy_r)), on_r(nint(pos%idx_r), nint(pos%idy_r))))
 
-               IF (hh >= particle%hmove + dh) THEN
+               ! Initialize the movement clock
+               IF (particle%hmove == 0) particle%hmove = current_hour
+
+               IF (current_hour >= particle%hmove + dh) THEN
 #ifdef MPI
                   CALL fish_move(particle, ind_species)
 #endif
-                  particle%hmove = hh ! update of the saved hour
+                  particle%hmove = current_hour
 
                   pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
                   CALL define_pos(pos_ad)
@@ -902,7 +909,6 @@ CONTAINS
                   particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
                END IF
-               IF (hh == 0 .and. particle%hmove > 0) particle%hmove = particle%hmove - 24
             END IF
 
             ! ===   Fin evolution stades de vie
