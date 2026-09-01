@@ -813,24 +813,26 @@ CONTAINS
                   IF (particle%hmove == 0) particle%hmove = current_hour
 
                   IF (current_hour >= particle%hmove + dh) THEN
+
                      CALL fish_move(particle, ind_species)
                      particle%hmove = current_hour
 
-                        pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
-                        CALL define_pos(pos_ad)
+                     pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
+                     CALL define_pos(pos_ad)
 
-                        ! total depth at particle s location
-                        CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
-                                 Istr, Iend, Jstr, Jend)
-                        particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                     ! total depth at particle s location
+                     CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                              Istr, Iend, Jstr, Jend)
+                     particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                                        Istr, Iend, Jstr, Jend)
-                        particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
-                        particle%d3 = particle%h0 + particle%xe
-                        particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                     particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                     particle%d3 = particle%h0 + particle%xe
+                     particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
                   END IF
+
                END IF ! adult_move
-               
+
                ! SI le super individu n'atteint pas le stade 6 et que jjulien = dayjuv,
                ! alors mindepth = maxdepth et l'interpolation de la temperature plante.
                IF (particle%H >= particle%Hp .or. particle%age == 364) THEN
@@ -880,6 +882,7 @@ CONTAINS
                   IF (particle%hmove == 0) particle%hmove = current_hour
 
                   IF (current_hour >= particle%hmove + dh) THEN
+
                      CALL fish_move(particle, ind_species)
                      particle%hmove = current_hour
 
@@ -896,6 +899,7 @@ CONTAINS
                      particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
                   END IF
+
                END IF ! adult_move
 
             END IF ! end of stage 6
@@ -1248,8 +1252,6 @@ CONTAINS
       current_day = jj
       IF (yearclass == aaaa) yearclass = yearclass + 1
 
-      ! To change if muliple species (add (ind_species))
-
       ! For catches
       DO i = 1, nb_species
 
@@ -1307,7 +1309,6 @@ CONTAINS
                        ionc4_gatt_char_read, ionc4_gatt, ionc4_open, ionc4_close, &
                        ionc4_var_exists
       USE comtraj, ONLY: patches, type_patch, type_particle, dtsave_traj
-
       USE trajinitsave, ONLY: indices_loc2glob
       USE trajectools, ONLY: tool_ind2lat, tool_ind2lon
 
@@ -1323,7 +1324,7 @@ CONTAINS
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: lat_out, lon_out, dateo_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: temp_out, flag_out, spos_out, zpos_out, xpos_out, ypos_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: h0pos_out, size_out, nb_out, dens_out, Drate_out
-      INTEGER, ALLOCATABLE, DIMENSION(:)   :: age_out, ageClass_out
+      INTEGER, ALLOCATABLE, DIMENSION(:)   :: age_out, AgeClass_out
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: hmove_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out, f_out, Wdeb_out, Denspawn_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_out, H_out, R_out, Neggs_out, NRJ_out, Gam_out
@@ -1402,75 +1403,78 @@ CONTAINS
 
                CALL ionc4_createfile_traj(file_out, nb_part_nc, 0, 0, l_out_nc4par=l_out_nc4par)
                CALL ionc4_gatt_char(file_out, 'run_id', trim(patch%run_id)) ! Add a global attribute run_id
-            CALL ionc4_createvar_traj(file_out, "latitude", "degrees_north", "latitude", &
-               fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "longitude", "degrees_east", "longitude", &
-               fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "DEPTH", "m", "depth as immersion", &
-               fill_value=-fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "H0", "m", "h0", &
-               fill_value=-fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "NUM", "", "number of the particle", &
-               fill_value=0, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "flag", "nbr", "flag", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "TEMP", "degrees_Celsius", "temperature", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "SIZE", "Centimeters", "Size", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "STAGE", "", "Stage", &
-               fill_value=-1, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "NUMBER", "Number", "Number of individuals", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "DENSITY", "sigma", "Density", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "DRATE", "", "Development rate of egg or larva", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "DAYBIRTH", "", "Date of birth", &
-               fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "AGE", "", "Age in days", &
-               fill_value=-1, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "AGECLASS", "", "Age in year of fish", &
-               fill_value=-1, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
-               "Absolute model hour of the previous fish movement", &
-               fill_value=-1, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "FOOD", "mg/m3", "food", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "F", "", "f", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "EDEB", "Joules", "Energy", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "HDEB", "Joules", "Maturity", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "RDEB", "Joules", "Repro", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "GAM", "Joules", "Energy gametes", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "WEIGHT", "g", "weight", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "NEGGS", "Number", "Number of eggs", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            !CALL ionc4_createvar_traj(file_out, "NRJ","J/g","Energy Density",                              &
-            !                                    fill_value=fillval,  l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "YEARSPAWN", "", "Year authorised to spawn", &
-               fill_value=0, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "DAYSPAWN", "", "Julian day start spawning", &
-               fill_value=0, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "DAYJUV", "", "Julien day at metamorphosis", &
-               fill_value=0, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "ZOOM", "", "Zoom value", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
-            !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "DENSPAWN", "sigma", "Density of egg at spawning", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "Death_DEB", "", "Number dead by starvation", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "Death_FISH", "", "Number dead by fishing", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
-            CALL ionc4_createvar_traj(file_out, "Death_NAT", "", "Number dead by natural mortality", &
-               fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "latitude", "degrees_north", "latitude", &
+                  fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "longitude", "degrees_east", "longitude", &
+                  fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "DEPTH", "m", "depth as immersion", &
+                  fill_value=-fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "H0", "m", "h0", &
+                  fill_value=-fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "NUM", "", "number of the particle", &
+                  fill_value=0, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "flag", "nbr", "flag", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "TEMP", "degrees_Celsius", "temperature", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "SIZE", "Centimeters", "Size", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "STAGE", "", "Stage", &
+                  fill_value=-1, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "NUMBER", "Number", "Number of individuals", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "DENSITY", "sigma", "Density", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "DRATE", "", "Development rate of egg or larva", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "DAYBIRTH", "", "Date of birth", &
+                  fill_value=REAL(dg_valmanq_io, kind=out), l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "AGE", "", "Age in days", &
+                  fill_value=-1, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "AGECLASS", "", "Age in year of fish", &
+                  fill_value=-1, l_out_nc4par=l_out_nc4par)
+
+               CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
+                  "Absolute model hour of the previous fish movement", &
+                  fill_value=-1, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "FOOD", "mg/m3", "food", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "F", "", "f", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "EDEB", "Joules", "Energy", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "HDEB", "Joules", "Maturity", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "RDEB", "Joules", "Repro", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "GAM", "Joules", "Energy gametes", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "WEIGHT", "g", "weight", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "NEGGS", "Number", "Number of eggs", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               !CALL ionc4_createvar_traj(file_out, "NRJ","J/g","Energy Density",                              &
+               !                                    fill_value=fillval,  l_out_nc4par=l_out_nc4par)
+
+               CALL ionc4_createvar_traj(file_out, "YEARSPAWN", "", "Year authorised to spawn", &
+                  fill_value=0, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "DAYSPAWN", "", "Julian day start spawning", &
+                  fill_value=0, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "DAYJUV", "", "Julien day at metamorphosis", &
+                  fill_value=0, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "ZOOM", "", "Zoom value", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
+               !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "DENSPAWN", "sigma", "Density of egg at spawning", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "Death_DEB", "", "Number dead by starvation", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "Death_FISH", "", "Number dead by fishing", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "Death_NAT", "", "Number dead by natural mortality", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
+
             END IF  ! (.NOT. out_ex)
 
             patch%file_out_init = .TRUE.
@@ -1771,4 +1775,5 @@ CONTAINS
 !&E-----------------------------------------------------------------------
 
 #endif /* FOIL */
+
 END MODULE
