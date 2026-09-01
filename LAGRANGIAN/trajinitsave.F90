@@ -737,8 +737,8 @@ CONTAINS
                   DO j = MAX0(jmin, jmin_patch), MIN0(jmax, jmax_patch), jstep_patch
                      DO i = MAX0(imin, imin_patch), MIN0(imax, imax_patch), istep_patch
                         IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
-                                              Istr, Iend, Jstr, Jend)) THEN
-                           pos%xp = i; pos%yp = j
+                                             Istr, Iend, Jstr, Jend)) THEN                  
+                           pos%xp = REAL(i, rlg); pos%yp = REAL(j,rlg)
                            CALL define_pos(pos)
                            DO k = kmin_patch, kmax_patch, kstep_patch
                               IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > k) THEN
@@ -765,8 +765,8 @@ CONTAINS
                   DO j = MAX0(jmin, jmin_patch), MIN0(jmax, jmax_patch), jstep_patch
                      DO i = MAX0(imin, imin_patch), MIN0(imax, imax_patch), istep_patch
                         IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
-                                              Istr, Iend, Jstr, Jend)) THEN
-                           pos1%xp = i; pos1%yp = j
+                                             Istr, Iend, Jstr, Jend)) THEN  
+                           pos1%xp = REAL(i, rlg); pos1%yp = REAL(j,rlg)
                            CALL define_pos(pos1)
                            DO k = kmin_patch, kmax_patch, kstep_patch
                               IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > k) THEN
