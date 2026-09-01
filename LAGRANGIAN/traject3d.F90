@@ -174,6 +174,7 @@ CONTAINS
 
       patch => patches%first
       DO npa = 1, nb_patch
+         
          IF ((time < patch%t_beg) .OR. (time > patch%t_end)) THEN
             patch => patch%next
             CYCLE
