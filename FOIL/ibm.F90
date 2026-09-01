@@ -101,7 +101,8 @@ CONTAINS
       ! Import subroutines
       USE ionc4, ONLY: ionc4_openr, ionc4_read_trajt, &
                        ionc4_close, ionc4_read_time, ionc4_read_dimt, &
-                       ionc4_gatt_char_read, ionc4_gatt_read, ionc4_read_dimtraj
+                       ionc4_gatt_char_read, ionc4_gatt_read, ionc4_read_dimtraj, &
+                       ionc4_var_exists
       USE debmodel, ONLY: deb_init
       USE ibmmove, ONLY: fish_move_init
       USE ibmtools, ONLY: ibm_parameter_init
@@ -127,6 +128,7 @@ CONTAINS
 
       LOGICAL :: ibm_l_time ! From paraibm in namibmrestart namelist, restart info
       LOGICAL :: found_yearref, found_t_spawn
+      LOGICAL :: found_hmove
 
       INTEGER :: nb_part_nc ! Number of particles in netcdf for patch
       INTEGER :: duration_ibm_anc, duration_ibm_sar ! Life time of anchovy and sardine
@@ -146,6 +148,7 @@ CONTAINS
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: dens_nc, size_nc, drate_nc
       REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)       :: dayb_nc
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, AgeClass_nc, num_nc
+      INTEGER, ALLOCATABLE, DIMENSION(:)       :: hmove_nc
 
       ! Definition of namelists in paraibm
       NAMELIST /namibmrestart/ ibm_restart, ibm_l_time
@@ -225,6 +228,7 @@ CONTAINS
             ALLOCATE (flag_nc(nb_part_nc), temp_nc(nb_part_nc), size_nc(nb_part_nc), stage_nc(nb_part_nc))
             ALLOCATE (dens_nc(nb_part_nc), super_nc(nb_part_nc), drate_nc(nb_part_nc), dayb_nc(nb_part_nc))
             ALLOCATE (age_nc(nb_part_nc), AgeClass_nc(nb_part_nc), num_nc(nb_part_nc))
+            ALLOCATE (hmove_nc(nb_part_nc))
 
             ! CALL ionc4_openr(trim(file_inp), .false.)
             CALL ionc4_gatt_char_read(file_inp, 'run_id', patch%run_id)
@@ -241,6 +245,19 @@ CONTAINS
             CALL ionc4_read_trajt(file_inp, "AGE", age_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGECLASS", AgeClass_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM", num_nc, 1, nb_part_nc, idimt)
+
+            ! To be removed in future versions of IBM, when HMOVE is always present in restart files
+            ! Initialize the movement clock if HMOVE is missing
+            CALL ionc4_var_exists(file_inp, "HMOVE", found_hmove)
+            IF (found_hmove) THEN
+               CALL ionc4_read_trajt(file_inp, "HMOVE", hmove_nc, 1, nb_part_nc, idimt)
+            ELSE
+               hmove_nc(:) = FLOOR(time/3600.0_rlg)
+               IF_MPI(MASTER) THEN
+               WRITE (iscreenlog, *) &
+                  'WARNING: HMOVE absent from restart; movement clocks reinitialised.'
+               ENDIF_MPI
+            END IF
 
             DO m = 1, patch%nb_part_alloc
                IF (patch%nb_part_alloc == 0) CYCLE ! To avoid an error because of a proc without any particle at restart
@@ -267,6 +284,7 @@ CONTAINS
                patch%particles(m)%date_orig = dayb_nc(index_num)
                patch%particles(m)%age = age_nc(index_num)
                patch%particles(m)%AgeClass = AgeClass_nc(index_num)
+               patch%particles(m)%hmove = hmove_nc(index_num)
             END DO
 
             CALL ionc4_read_trajt(trim(file_inp), "DAYJUV", dayb_nc, 1, nb_part_nc, idimt)
@@ -299,7 +317,7 @@ CONTAINS
             END DO
 
             DEALLOCATE (flag_nc, temp_nc, size_nc, stage_nc, dens_nc, super_nc, drate_nc, dayb_nc)
-            DEALLOCATE (age_nc, AgeClass_nc, num_nc)
+            DEALLOCATE (age_nc, AgeClass_nc, num_nc, hmove_nc)
 
             ! update the date of restart, and savetraj is delayed not to have twice same time step in output
             IF (ibm_l_time) THEN
@@ -489,7 +507,7 @@ CONTAINS
       REAL(KIND=rsh) :: tempo, sal_part
       REAL(KIND=rsh) :: new_posx, new_posy ! Eggs spawn position
       REAL(KIND=rsh) :: sal_surf, temp_surf, dens_surf ! Physical variables at particle's location
-      REAL(KIND=rsh) :: dh
+      INTEGER :: dh, current_hour
 
       REAL(KIND=rsh) :: harvest, rx, ry
 
@@ -518,6 +536,9 @@ CONTAINS
 
       ! Save old year for reproduction
       CALL tool_decompdate(tool_sectodat(time), jj, mm_clock, aaaa, hh, minu, sec)
+
+      ! Absolute model hour for fish movement
+      current_hour = FLOOR(time/3600.0_rlg)
 
       jjulien = tool_julien(jj, mm_clock, aaaa) - tool_julien(1, 1, aaaa) + 1
       IF (debuse .AND. .NOT. F_Fix) THEN
@@ -790,35 +811,38 @@ CONTAINS
                   dh = NINT((100.0/(1.5*particle%size*3600.0))* &
                          MAX(om_r(nint(pos%idx_r), nint(pos%idy_r)), on_r(nint(pos%idx_r), nint(pos%idy_r))))
 
-                  IF (hh >= particle%hmove + dh) THEN
+                  ! Initialize the movement clock
+                  IF (particle%hmove == 0) particle%hmove = current_hour
 
+                  IF (current_hour >= particle%hmove + dh) THEN
                      CALL fish_move(particle, ind_species)
-                     particle%hmove = hh ! update of the saved hour
+                     particle%hmove = current_hour
 
-                     pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
-                     CALL define_pos(pos_ad)
+                        CALL fish_move(particle, ind_species)
+                        particle%hmove = hh ! update of the saved hour
 
-                     ! total depth at particle s location
-                     CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
-                              Istr, Iend, Jstr, Jend)
-                     particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
-                                      Istr, Iend, Jstr, Jend)
-                     particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
-                     particle%d3 = particle%h0 + particle%xe
-                     particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                        pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
+                        CALL define_pos(pos_ad)
+
+                        ! total depth at particle s location
+                        CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                                 Istr, Iend, Jstr, Jend)
+                        particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                                       Istr, Iend, Jstr, Jend)
+                        particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
+                        particle%d3 = particle%h0 + particle%xe
+                        particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
                   END IF
-                  IF (hh == 0 .and. particle%hmove > 0) particle%hmove = particle%hmove - 24
-
-               END IF ! MOVEMENT
-
+               END IF ! adult_move
+               
                ! SI le super individu n'atteint pas le stade 6 et que jjulien = dayjuv,
                ! alors mindepth = maxdepth et l'interpolation de la temperature plante.
                IF (particle%H >= particle%Hp .or. particle%age == 364) THEN
                   particle%stage = 6
                   update = .FALSE.
                END IF
-            END IF  ! end of stage 5
+            END IF ! end of stage 5
 
             ! -------------------------------------------------------------------------
             ! -----    STAGE 6  : Horizontal swimming, distribution from file     -----
@@ -857,7 +881,12 @@ CONTAINS
                   dh = NINT((100.0/(1.5*particle%size*3600.0))* &
                          MAX(om_r(nint(pos%idx_r), nint(pos%idy_r)), on_r(nint(pos%idx_r), nint(pos%idy_r))))
 
-                  IF (hh >= particle%hmove + dh) THEN
+                  ! Initialize the movement clock
+                  IF (particle%hmove == 0) particle%hmove = current_hour
+
+                  IF (current_hour >= particle%hmove + dh) THEN
+                     CALL fish_move(particle, ind_species)
+                     particle%hmove = current_hour
 
                      CALL fish_move(particle, ind_species)
                      particle%hmove = hh ! update of the saved hour
@@ -869,17 +898,15 @@ CONTAINS
                      CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                               Istr, Iend, Jstr, Jend)
                      particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
-                                      Istr, Iend, Jstr, Jend)
+                                    Istr, Iend, Jstr, Jend)
                      particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                      particle%d3 = particle%h0 + particle%xe
                      particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
 
                   END IF
-                  IF (hh == 0 .and. particle%hmove > 0) particle%hmove = particle%hmove - 24
+               END IF ! adult_move
 
-               END IF ! MOVEMENT
-
-            END IF
+            END IF ! end of stage 6
 
             ! ==================================================================================
             ! Vertical movement and check for bottom and surface boundaries
@@ -1285,7 +1312,8 @@ CONTAINS
       USE ionc4, ONLY: ionc4_createfile_traj, ionc4_createvar_traj, &
                        ionc4_write_trajt, &
                        ionc4_write_time, ionc4_sync, ionc4_gatt_char, &
-                       ionc4_gatt_char_read, ionc4_gatt, ionc4_open, ionc4_close
+                       ionc4_gatt_char_read, ionc4_gatt, ionc4_open, ionc4_close, &
+                       ionc4_var_exists
       USE comtraj, ONLY: patches, type_patch, type_particle, dtsave_traj
 
       USE trajinitsave, ONLY: indices_loc2glob
@@ -1304,6 +1332,7 @@ CONTAINS
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: temp_out, flag_out, spos_out, zpos_out, xpos_out, ypos_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: h0pos_out, size_out, nb_out, dens_out, Drate_out
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: age_out, ageClass_out
+      INTEGER, ALLOCATABLE, DIMENSION(:)   :: hmove_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out, f_out, Wdeb_out, Denspawn_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_out, H_out, R_out, Neggs_out, NRJ_out, Gam_out
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out, yearspawn_out, season_out
@@ -1312,8 +1341,8 @@ CONTAINS
       TYPE(type_patch), POINTER    :: patch
       TYPE(type_particle), POINTER    :: particle
       INTEGER :: idx_s, idx_e
-      LOGICAL                                     :: out_ex
-      CHARACTER(LEN=64) :: run_id_out
+      LOGICAL                                     :: out_ex, found_hmove
+      character(len=64) :: run_id_out
 
       !!----------------------------------------------------------------------
       !! * Executable part
@@ -1361,6 +1390,18 @@ CONTAINS
                   CALL ionc4_close(file_out)
                   out_ex = .FALSE.
                END IF
+
+               ! To be removed in future versions of IBM, when HMOVE is always present in restart files
+               ! Add HMOVE to an older output file before appending new records
+               IF (out_ex) THEN
+                  CALL ionc4_var_exists(file_out, "HMOVE", found_hmove)
+                  IF (.NOT. found_hmove) THEN
+                     CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
+                        "Absolute model hour of the previous fish movement", &
+                        fill_value=-1, l_out_nc4par=l_out_nc4par)
+                  END IF
+               END IF
+
             END IF
 
             IF (.NOT. out_ex) THEN
@@ -1398,6 +1439,9 @@ CONTAINS
             CALL ionc4_createvar_traj(file_out, "AGE", "", "Age in days", &
                fill_value=-1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "AGECLASS", "", "Age in year of fish", &
+               fill_value=-1, l_out_nc4par=l_out_nc4par)
+            CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
+               "Absolute model hour of the previous fish movement", &
                fill_value=-1, l_out_nc4par=l_out_nc4par)
             CALL ionc4_createvar_traj(file_out, "FOOD", "mg/m3", "food", &
                fill_value=fillval, l_out_nc4par=l_out_nc4par)
@@ -1462,6 +1506,7 @@ CONTAINS
          size_out(:) = fillval; stage_out(:) = -1; dens_out(:) = fillval; Drate_out(:) = fillval
          temp_out(:) = fillval; nb_out(:) = fillval; age_out(:) = -1; AgeClass_out(:) = -1
 
+         ALLOCATE (hmove_out(nb_part))
          ALLOCATE (dayjuv_out(nb_part), dayspawn_out(nb_part))
          ALLOCATE (yearspawn_out(nb_part), season_out(nb_part))
          ALLOCATE (zoom_out(nb_part))
@@ -1480,6 +1525,7 @@ CONTAINS
          H_out(:) = fillval; E_out(:) = fillval; R_out(:) = fillval; Gam_out(:) = fillval
          f_out(:) = fillval; zoom_out(:) = 0; Neggs_out(:) = fillval
          deaddeb_out(:) = fillval; deadfishing_out(:) = fillval; deadnatural_out(:) = fillval
+         hmove_out(:) = -1
 
          p = 0
          DO m = 1, nb_part
@@ -1504,6 +1550,7 @@ CONTAINS
             Drate_out(p) = REAL(particle%Drate, kind=out)
             age_out(p) = REAL(particle%age, kind=out)
             AgeClass_out(p) = REAL(particle%AgeClass, kind=out)
+            hmove_out(p) = particle%hmove
             food_out(p) = REAL(particle%X, kind=out)
             f_out(p) = REAL(particle%f, kind=out)
             E_out(p) = REAL(particle%E, kind=out)
@@ -1554,6 +1601,7 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'AGE', age_out(1:nb_part), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'AGECLASS', AgeClass_out(1:nb_part), num1, num2, 0, -1)
 
+         CALL ionc4_write_trajt(file_out, 'HMOVE', hmove_out(1:nb_part), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'FOOD', food_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'F', f_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'EDEB', E_out(1:nb_part), num1, num2, 0, fillval)
@@ -1576,6 +1624,7 @@ CONTAINS
          DEALLOCATE (lat_out, lon_out, xpos_out, ypos_out, spos_out, zpos_out)
          DEALLOCATE (num_out, h0pos_out, flag_out, dens_out, temp_out, Drate_out)
          DEALLOCATE (size_out, dateo_out, stage_out, nb_out, age_out, AgeClass_out)
+         DEALLOCATE (hmove_out)
          DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out)
          DEALLOCATE (Denspawn_out, food_out, Wdeb_out, zoom_out)
          DEALLOCATE (Gam_out, H_out, E_out, R_out, Neggs_out)!, NRJ_out)
