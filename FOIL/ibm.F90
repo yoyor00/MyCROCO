@@ -70,8 +70,6 @@ MODULE ibm
    ! Variables pour la 2e methode de repro
    INTEGER, DIMENSION(nb_species)                   :: target_particles_per_spawn
 
-   REAL(KIND=rlg)                                  :: slope = 0.000001722786_rlg
-
    !!==============================================================================================
 
 CONTAINS
@@ -818,9 +816,6 @@ CONTAINS
                      CALL fish_move(particle, ind_species)
                      particle%hmove = current_hour
 
-                        CALL fish_move(particle, ind_species)
-                        particle%hmove = hh ! update of the saved hour
-
                         pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
                         CALL define_pos(pos_ad)
 
@@ -887,9 +882,6 @@ CONTAINS
                   IF (current_hour >= particle%hmove + dh) THEN
                      CALL fish_move(particle, ind_species)
                      particle%hmove = current_hour
-
-                     CALL fish_move(particle, ind_species)
-                     particle%hmove = hh ! update of the saved hour
 
                      pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
                      CALL define_pos(pos_ad)
@@ -1692,18 +1684,18 @@ CONTAINS
    !!======================================================================
 
    !&E-----------------------------------------------------------------------
-!&E                 ***  ROUTINE write_run_info  ***
-!&E
-!&E ** Purpose :
-!&E     Creates or updates a 'FOIL.info' file in the working directory.
-!&E     Stores the RUN_ID and optionally the last model step written.
-!&E
-!&E ** Called by      : ibm_init
-!&E ** External calls : none
-!&E
-!&E ** History :
-!&E     2025-10-21  (C. Menu)  First version
-!&E-----------------------------------------------------------------------
+   !&E                 ***  ROUTINE write_run_info  ***
+   !&E
+   !&E ** Purpose :
+   !&E     Creates or updates a 'FOIL.info' file in the working directory.
+   !&E     Stores the RUN_ID and optionally the last model step written.
+   !&E
+   !&E ** Called by      : ibm_init
+   !&E ** External calls : none
+   !&E
+   !&E ** History :
+   !&E     2025-10-21  (C. Menu)  First version
+   !&E-----------------------------------------------------------------------
    SUBROUTINE write_run_info(run_id, last_step)
       implicit none
       character(len=*), intent(in) :: run_id
@@ -1717,24 +1709,24 @@ CONTAINS
 
       close (unit)
    END SUBROUTINE write_run_info
-!&E-----------------------------------------------------------------------
+   !&E-----------------------------------------------------------------------
 
-!&E-----------------------------------------------------------------------
-!&E                 ***  ROUTINE read_run_info  ***
-!&E
-!&E ** Purpose :
-!&E     Reads an existing 'FOIL.info' file if available, to retrieve
-!&E     the RUN_ID and (optionally) the last written model step.
-!&E
-!&E ** Called by      : ibm_init, ibm_3d
-!&E ** External calls : generate_run_id
-!&E
-!&E ** Output:
-!&E     run_id : character string like 'RUN_20251023_070234_000123456789'
-!&E
-!&E ** History :
-!&E     2025-10-21  (C. Menu)  First version
-!&E-----------------------------------------------------------------------
+   !&E-----------------------------------------------------------------------
+   !&E                 ***  ROUTINE read_run_info  ***
+   !&E
+   !&E ** Purpose :
+   !&E     Reads an existing 'FOIL.info' file if available, to retrieve
+   !&E     the RUN_ID and (optionally) the last written model step.
+   !&E
+   !&E ** Called by      : ibm_init, ibm_3d
+   !&E ** External calls : generate_run_id
+   !&E
+   !&E ** Output:
+   !&E     run_id : character string like 'RUN_20251023_070234_000123456789'
+   !&E
+   !&E ** History :
+   !&E     2025-10-21  (C. Menu)  First version
+   !&E-----------------------------------------------------------------------
    SUBROUTINE read_run_info(run_id, last_step)
       implicit none
       !-----------------------------------------------------------------------
