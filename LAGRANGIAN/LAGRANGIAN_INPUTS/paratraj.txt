@@ -14,6 +14,7 @@
 : itypepatch  : method used to define the initial patch positions:
 :               1 = circle, 2 = rectangle, 3 = NetCDF positions
 :               This value must match the format of file_trajec.
+: dtsave_traj : time step of LAGRANGIAN outputs
 :
 :-----------------------------------------------------------------------------
 :
