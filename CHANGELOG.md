@@ -33,6 +33,7 @@ WET_DRY :
 - PISCES : Bug - Switch from relative to potential density for surface pH proxy,
            inconsistent with what done for calcite dissolution (#531)
            Big fix in the calculation of NEW primary productivity with XIOS (#535)
+           Fix the calculation of nitrogen fixation rate with XIOS (#541)
 
 ### Changed
 
