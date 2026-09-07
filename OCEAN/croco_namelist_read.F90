@@ -185,7 +185,7 @@ contains
          nrpfdia_avg, dianame_avg
 #  endif
 #  if defined DIAGNOSTICS_TS_MLD && defined DIAGNOSTICS_TS_MLD_DENS
-      namelist /croco_diag_mld_dens/ mld_crit_D, mld_crit_T
+      namelist /croco_diag_mld_dens/ mld_crit_D, mld_crit_T, mld_depth_ref
 #  endif
 #endif
 #if defined DIAGNOSTICS_UV
