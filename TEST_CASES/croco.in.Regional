@@ -273,5 +273,5 @@ online:    byear  bmonth recordsperday byearend bmonthend / data path
 lagrangian:
     TEST_CASES/lagrangian_traj.txt
 
-deb_ibm:
+foil:
     TEST_CASES/foil_paraibm.txt
