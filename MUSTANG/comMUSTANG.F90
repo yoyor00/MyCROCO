@@ -129,8 +129,10 @@ MODULE comMUSTANG
         ! fluxes
     REAL(KIND=rsh) :: cvolmaxsort ! max volumic concentration of sorted sand
     REAL(KIND=rsh) :: cvolmaxmel ! maxvolumic concentration of mixed sediments
-    REAL(KIND=rsh) :: slopefac !slope effect multiplicative on deposit 
-        ! (only if key_MUSTANG_slipdeposit)
+    LOGICAL :: l_slipdeposit ! boolean to activate sliding (avalanching) of
+        ! deposited sediment on steep slopes
+    REAL(KIND=rsh) :: slopefac ! slope effect multiplicative on deposit
+        ! (used only if l_slipdeposit)
 
 
     ! namsedim_erosion
@@ -612,8 +614,8 @@ MODULE comMUSTANG
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
 
-! slipdeposit : **TODO** put under cpp key key_MUSTANG_slipdeposit
-   !  used in accretion (settling) only bud exchange and dimensions could depend on grid model 
+   ! slipdeposit fluxes (used only if l_slipdeposit)
+   !  used in accretion (settling) only bud exchange and dimensions could depend on grid model
    REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corin
    REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corim1
    REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corip1

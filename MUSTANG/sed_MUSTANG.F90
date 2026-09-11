@@ -481,7 +481,7 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-#if defined MPI  && defined key_MUSTANG_slipdeposit
+#if defined MPI
     USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_w2s
 #endif
    !! * Arguments
@@ -525,14 +525,12 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!! deposit slip if steep slope (slidepo)        !!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef key_MUSTANG_slipdeposit
-   IF(slopefac .NE. 0.0_rsh) THEN
+   IF(l_slipdeposit) THEN
      CALL sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
 #if defined MPI
     CALL sed_exchange_w2s(ifirst, ilast, jfirst, jlast)
 #endif
-   ENDIF 
-#endif
+   ENDIF
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!! effective deposit after variables transport and settling =>  sedimentation   !!!
@@ -4367,7 +4365,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
  
 !!==============================================================================
-#if defined key_MUSTANG_slipdeposit
   SUBROUTINE sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
    
    !&E--------------------------------------------------------------------------
@@ -4431,7 +4428,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    ENDDO
 
   END SUBROUTINE sed_MUSTANG_slipdepo
-#endif
     !!==============================================================================
 #if ! defined key_noTSdiss_insed
    SUBROUTINE sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast, dt_true, dtinv)

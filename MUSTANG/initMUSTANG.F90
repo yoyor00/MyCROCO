@@ -91,7 +91,8 @@ MODULE initMUSTANG
                                      z0_hydro_bed
 
     namelist /namsedim_deposition/ cfreshmud, csedmin, cmudcr, aref_sand,     &
-                                   l_corflux, cvolmaxsort, cvolmaxmel, slopefac
+                                   l_corflux, cvolmaxsort, cvolmaxmel,        &
+                                   l_slipdeposit, slopefac
 
     namelist /namsedim_lateral_erosion/ l_erolat, coef_erolat,&
                                         coef_tauskin_lat, l_erolat_wet_cell, &

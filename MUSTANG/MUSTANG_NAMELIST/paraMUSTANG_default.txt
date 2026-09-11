@@ -176,17 +176,20 @@
 :    l_corflux : boolean to activate correction on horizontal sand fluxes
 :    cvolmaxsort : real, maximum volumic concentration of sorted sand
 :    cvolmaxmel : real, maximum volumic concentration of mixed sediments
-:    slopefac : real, slope effect multiplicative on deposit 
-:               (only if key_MUSTANG_slipdeposit)
+:    l_slipdeposit : boolean to activate sliding (avalanching) of deposited
+:                    sediment on steep slopes
+:    slopefac : real, slope effect multiplicative on deposit
+:               (used only if l_slipdeposit)
 :------------------------------------------------------------------------------
 &namsedim_deposition
-   cfreshmud = 550.0 
-   csedmin = 100. 
-   cmudcr = 2000.     
-   aref_sand = 0.02 
+   cfreshmud = 550.0
+   csedmin = 100.
+   cmudcr = 2000.
+   aref_sand = 0.02
    l_corflux = .TRUE.
    cvolmaxsort = 0.58
    cvolmaxmel = 0.67
+   l_slipdeposit = .FALSE.
    slopefac = 0.01 /
 :
 :------------------------------------------------------------------------------

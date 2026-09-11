@@ -51,7 +51,7 @@
     PUBLIC sed_exchange_maskbedload
 #endif
 #endif
-#if defined MPI  && defined key_MUSTANG_slipdeposit
+#if defined MPI
     PUBLIC sed_exchange_w2s
 #endif
 
@@ -687,7 +687,7 @@ END SUBROUTINE sed_gradvit
 
 !!=============================================================================
 
-#if defined MPI && defined key_MUSTANG_slipdeposit
+#if defined MPI
     SUBROUTINE sed_exchange_w2s(ifirst, ilast, jfirst, jlast)
     !&E-------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_exchange_w2s ***
@@ -695,7 +695,7 @@ END SUBROUTINE sed_gradvit
     !&E ** Purpose : MPI exchange of slip deposit flux between processors
     !&E
     !&E ** Description : MPI exchange between processors
-    !&E      used only if slopefac .NE. 0 (slip deposit if steep slope)
+    !&E      used only if l_slipdeposit (slip deposit if steep slope)
     !&E
     !&E ** Called by : MUSTANG_update
     !&E-------------------------------------------------------------------------
@@ -734,7 +734,7 @@ END SUBROUTINE sed_gradvit
     enddo
   
     END SUBROUTINE sed_exchange_w2s
-#endif /* defined MPI && defined key_MUSTANG_slipdeposit */
+#endif /* defined MPI */
 !!=============================================================================
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI
