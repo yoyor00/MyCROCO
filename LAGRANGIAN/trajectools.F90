@@ -29,6 +29,7 @@ MODULE trajectools
    PUBLIC siggentoz, ztosiggen, hc_sigint, h_int_siggen, define_pos, CSF
    PUBLIC tool_ind2lat, tool_ind2lon, lonlat2ij, tool_latlon2i, tool_latlon2j
    PUBLIC is_local_position
+   PUBLIC lag_random_number
 
 CONTAINS
 
@@ -1682,6 +1683,123 @@ CONTAINS
 #endif
 
    END FUNCTION is_local_position
+
+   !!======================================================================
+
+   SUBROUTINE lag_random_number(l_repro, num, draw_id, tir)
+      !&E---------------------------------------------------------------------
+      !&E                 ***  ROUTINE  lag_random_number  ***
+      !&E
+      !&E ** Purpose : Draw a uniform random number in [0,1) for the Lagrangian
+      !&E              random walk.
+      !&E
+      !&E ** Description : When l_repro is .TRUE., the draw is a deterministic
+      !&E              function of (num, iic, draw_id) instead of the compiler's
+      !&E              intrinsic RANDOM_NUMBER stream, so a given particle's
+      !&E              random-walk draws no longer depend on which MPI rank
+      !&E              processes it or in what order, making trajectories
+      !&E              reproducible across MPI decompositions.
+      !&E                 num     : particle%num, the particle's unique global id,
+      !&E                           assigned once when the particle is created and
+      !&E                           stable for its whole life.
+      !&E                 iic     : the model's global time step counter (from
+      !&E                           scalars.h), so every time step hashes fresh
+      !&E                           instead of repeating the previous draw.
+      !&E                 draw_id : local counter, reset to 0 by the caller at the
+      !&E                           start of each particle's per-time-step processing.
+      !&E                           A single time step needs several independent
+      !&E                           draws per particle (vertical diffusion, boundary
+      !&E                           correction, horizontal diffusion angle/magnitude);
+      !&E                           this subroutine increments draw_id itself before
+      !&E                           each draw so those successive draws differ. It is
+      !&E                           purely a local tie-breaker, never persisted.
+      !&E              Together, (num, iic, draw_id) identify "which particle, which
+      !&E              time step, which draw within that time step" -- and nothing
+      !&E              about rank ownership or processing order, hence the
+      !&E              reproducibility across MPI decompositions.
+      !&E
+      !&E              An earlier version of this routine reseeded the compiler's
+      !&E              RANDOM_SEED/RANDOM_NUMBER on every draw instead of hashing
+      !&E              directly. That was simpler to read, but RANDOM_SEED(put=...)
+      !&E              re-initializes the generator's entire internal state -- a
+      !&E              much heavier operation than drawing the next value from an
+      !&E              already-initialized stream, unlike plain RANDOM_NUMBER calls
+      !&E              (cheap, which is why the non-reproducible path calling it
+      !&E              millions of times was never a problem). Doing that on every
+      !&E              diffusion sub-step of every particle measurably slowed FOIL
+      !&E              runs down (~10x), so this now hashes (num, iic, draw_id)
+      !&E              directly instead: pure integer arithmetic, no runtime-library
+      !&E              or heap calls at all.
+      !&E---------------------------------------------------------------------
+      IMPLICIT NONE
+      LOGICAL, INTENT(in)         :: l_repro
+      INTEGER, INTENT(in)         :: num
+      INTEGER, INTENT(inout)      :: draw_id
+      REAL(KIND=rsh), INTENT(out) :: tir
+
+      IF (l_repro) THEN
+         draw_id = draw_id + 1
+         tir = lag_hash_unit(num, iic, draw_id)
+      ELSE
+         CALL RANDOM_NUMBER(tir)
+      END IF
+
+   END SUBROUTINE lag_random_number
+
+   !!======================================================================
+
+   PURE FUNCTION lag_hash_unit(key1, key2, key3) RESULT(u)
+      !&E---------------------------------------------------------------------
+      !&E                 ***  FUNCTION  lag_hash_unit  ***
+      !&E
+      !&E ** Purpose : Deterministic pseudo-random value in [0,1), as a pure
+      !&E              function of three integer keys. Used by lag_random_number
+      !&E              for reproducible random-walk draws across MPI
+      !&E              decompositions, without the per-call RANDOM_SEED cost --
+      !&E              see lag_random_number's description.
+      !&E
+      !&E ** Reference : the mixing step below (from "x = x + golden-ratio
+      !&E              constant" down to the final IEOR) is the finalizer of
+      !&E              SplitMix64, a public-domain PRNG by Sebastiano Vigna and
+      !&E              Guy Steele ("Fast Splittable Pseudorandom Number
+      !&E              Generators", OOPSLA 2014; reference C code at
+      !&E              https://prng.di.unimi.it/splitmix64.c). Reused here only
+      !&E              for its finalizer (the well-tested xorshift/multiply
+      !&E              mixing that turns a plain integer into a well-scrambled
+      !&E              64-bit value), not the full generator. The combination of
+      !&E              key1/key2/key3 into a single x beforehand, and the
+      !&E              rescale to [0,1) afterwards, are local to this routine.
+      !&E---------------------------------------------------------------------
+      IMPLICIT NONE
+      INTEGER, INTENT(in) :: key1, key2, key3
+      REAL(KIND=rsh)       :: u
+
+      INTEGER(KIND=8) :: x
+      REAL(KIND=8)    :: r8
+
+      ! Combine the three keys into a single 64-bit x before mixing. 1000003
+      ! and 9973 are two arbitrary, distinct, largish primes used as
+      ! multipliers on key1 (num) and key2 (iic) -- their only job is to keep
+      ! different (key1, key2, key3) triples from summing to the same x (e.g.
+      ! without a multiplier, num=2,iic=0,draw_id=5 and num=0,iic=0,draw_id=7
+      ! could collide). key3 (draw_id) is left unscaled since it is always
+      ! small (a handful of draws per particle per time step) and the
+      ! following SplitMix64 mixing step below scrambles any residual
+      ! structure anyway -- the exact prime values carry no other meaning,
+      ! any two distinct odd primes here would work equally well.
+      x = INT(key1, KIND=8)*1000003_8 + INT(key2, KIND=8)*9973_8 + INT(key3, KIND=8)
+
+      ! SplitMix64 finalizer (Vigna & Steele, see Reference above)
+      x = x + INT(Z'9E3779B97F4A7C15', KIND=8)
+      x = IEOR(x, ISHFT(x, -30)); x = x*INT(Z'BF58476D1CE4E5B9', KIND=8)
+      x = IEOR(x, ISHFT(x, -27)); x = x*INT(Z'94D049BB133111EB', KIND=8)
+      x = IEOR(x, ISHFT(x, -31))
+
+      ! x spans the full signed 64-bit range ~uniformly; rescale to [0,1)
+      r8 = 0.5_8 + 0.5_8*(REAL(x, KIND=8)/REAL(HUGE(1_8), KIND=8))
+      u = REAL(MIN(MAX(r8, 0.0_8), 0.999999_8), KIND=rsh)
+
+   END FUNCTION lag_hash_unit
 
 #endif
 

@@ -8,12 +8,12 @@
 :
 : file_trajec : path to the patch initialization file containing the initial
 :               particle positions, trajectory dates, movement settings, and
-:               output filenames
+:               output filenames. Each patch declares its own type (1=circle,
+:               2=rectangle, 3=NetCDF positions) as the first field of its
+:               block, so a single file_trajec can mix patches of different
+:               types.
 : dir_pathout : optional base directory for trajectory output, and restart files
 :               used by FOIL configuration
-: itypepatch  : method used to define the initial patch positions:
-:               1 = circle, 2 = rectangle, 3 = NetCDF positions
-:               This value must match the format of file_trajec.
 : dtsave_traj : time step of LAGRANGIAN outputs
 :
 :-----------------------------------------------------------------------------
@@ -21,16 +21,15 @@
  &namtraj
  	file_trajec = './traject3d_type2rect.dat'
 	dir_pathout = './output/output_lag/'
-	itypepatch = 2
 	dtsave_traj = 24.d0 /
 :
 :-----------------------------------------------------------------------------
 : namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
 :-----------------------------------------------------------------------------
-: 
+:
 : hadv : if FALSE, particles will not be transported in the horizontal
-: 			direction, neither advection nor diffusion. 
-:			Usefull for some configuration (ex : 3D-1DV, but also 
+: 			direction, neither advection nor diffusion.
+:			Usefull for some configuration (ex : 3D-1DV, but also
 :			for some biological stages of the IBM)
 : dtz   : time step (s) used by the vertical random-walk subloop
 :         A value of a few seconds helps prevent particle accumulation in
@@ -38,10 +37,16 @@
 :         (2004, Limnology and Oceanography) for a sensitivity analysis.
 : hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
 :         horizontal diffusion, when traj3d = .TRUE.
+: l_repro_random : if .TRUE., random-walk draws are seeded deterministically
+:         per particle/time step (particle NUM, iic) instead of the compiler's
+:         intrinsic RANDOM_NUMBER stream, so trajectories are reproducible
+:         across different MPI decompositions. Default is .FALSE. (faster,
+:         but not decomposition-reproducible).
 :
 :-----------------------------------------------------------------------------
 :
  &namtrajadiff
       hadv = .TRUE.
 	  dtz  = 3
-      hdiff = 5.0 /
+      hdiff = 5.0
+      l_repro_random = .FALSE. /

@@ -151,7 +151,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! Modules used
       USE trajectools, ONLY: define_pos, ztosiggen
-      USE comtraj, ONLY: type_position
+      USE comtraj, ONLY: type_position, l_repro_random
 
       !! Arguments
       TYPE(type_particle), INTENT(inout)  :: particle
@@ -163,6 +163,9 @@ CONTAINS
       ! Local declaration
       ! To save a local and global position of particle for MPI and Sequential compatibility
       TYPE(type_position)                             :: pos
+
+      ! Counter to tell successive random draws apart for this particle (see lag_random_number)
+      INTEGER                                         :: draw_id
 
       ! Temporary indexes of particle's location
       INTEGER                                         :: igg, idd, jhh, jbb, kp, km
@@ -238,7 +241,8 @@ CONTAINS
       END IF
 
       ! -- Randomly modify denspawn and size of particles
-      CALL gasdev_s(tir)
+      draw_id = 0
+      CALL gasdev_s(tir, l_repro_random, particle%num, draw_id)
       particle%denspawn = particle%denspawn + tir*ec_type
       particle%density = particle%denspawn
       particle%size = particle%size + tir*ec_type_size
@@ -1093,29 +1097,56 @@ CONTAINS
    END SUBROUTINE ibm_loc_xyz
 
    !!====================================================================
-   SUBROUTINE gasdev_s(harvest)
+   SUBROUTINE gasdev_s(harvest, l_repro, num, draw_id)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE gasdev_s  ***
       !&E
       !&E ** Purpose : Returns in harvest a normally distributed deviate with zero mean and unit variance,
       !&E              using ran1 as the source of uniform deviates.
       !&E
-      !&E ** Description    :
+      !&E ** Description : Uses the Box-Muller transform, which produces two deviates
+      !&E              from two uniform draws. The non-reproducible branch below returns
+      !&E              one and caches the other (g/gaus_stored) for the *next* call --
+      !&E              but the next call may be for a different particle, so what a call
+      !&E              returns then depends on how many other calls happened before it.
+      !&E              When l_repro is .TRUE. this caching is bypassed entirely: both
+      !&E              underlying uniform draws come from lag_random_number, seeded
+      !&E              deterministically from (num, iic, draw_id), and only the first
+      !&E              deviate is used (the second is simply discarded rather than
+      !&E              cached), so harvest depends only on (num, draw_id) -- not on
+      !&E              call order -- making it reproducible across MPI decompositions.
+      !&E              See lag_random_number for what num/draw_id mean.
+      !&E
       !&E ** Called by      : ibm_parameter_init,deb_egg_init,deb_init
-      !&E ** External calls :
-      !&E ** Reference      :
+      !&E ** External calls : lag_random_number (from trajectools)
       !&E
       !&E ** History :
       !&E
       !&E---------------------------------------------------------------------
+      USE trajectools, ONLY: lag_random_number
 
       REAL(rsh), INTENT(OUT) :: harvest
+      LOGICAL, INTENT(in)    :: l_repro
+      INTEGER, INTENT(in)    :: num
+      INTEGER, INTENT(inout) :: draw_id
 
       REAL(rsh)              :: rsq, v1, v2
       REAL(rsh), SAVE        :: g
       LOGICAL, SAVE        :: gaus_stored = .false.
 
-      IF (gaus_stored) THEN       ! We have an extra deviate handy,
+      IF (l_repro) THEN
+         DO
+            CALL lag_random_number(.TRUE., num, draw_id, v1)
+            CALL lag_random_number(.TRUE., num, draw_id, v2)
+            v1 = 2.0_rsh*v1 - 1.0_rsh
+            v2 = 2.0_rsh*v2 - 1.0_rsh
+            rsq = v1**2 + v2**2
+            IF (rsq > 0.0 .and. rsq < 1.0) EXIT
+         END DO
+         rsq = sqrt(-2.0_rsh*log(rsq)/rsq)
+         harvest = v1*rsq
+
+      ELSE IF (gaus_stored) THEN       ! We have an extra deviate handy,
          harvest = g          ! so return it,
          gaus_stored = .false.    ! and unset the flag.
 
@@ -1127,7 +1158,7 @@ CONTAINS
             v2 = 2.0_rsh*v2 - 1.0_rsh
             rsq = v1**2 + v2**2         !see IF they are in the unit circle,
             IF (rsq > 0.0 .and. rsq < 1.0) EXIT
-         END Do       !otherwise try again.
+         END DO       !otherwise try again.
 
          !Now make the Box-Muller transformation to get two normal deviates. Return one and save the other for next time.
          rsq = sqrt(-2.0_rsh*log(rsq)/rsq)

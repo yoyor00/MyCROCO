@@ -194,11 +194,15 @@ MODULE comtraj
    ! From paraibm or paratraj file
    CHARACTER(LEN=lchain), PUBLIC          :: file_trajec                  ! name of configuration file
    CHARACTER(LEN=lchain), PUBLIC          :: dir_pathout                 ! name of output path
-   INTEGER, PUBLIC          :: itypepatch                    ! initialisation type (circle, rectangle,netcdf)
 
    REAL(kind=rlg), PUBLIC          :: dtz                    ! time step division for vertical subloop for diffusion
    REAL(kind=rsh), PUBLIC          :: hdiff                  ! horizontal diffusion coefficient
-   LOGICAL                         :: hadv                   ! if horizontal transport or not, specified in paratraj.txt     
+   LOGICAL                         :: hadv                   ! if horizontal transport or not, specified in paratraj.txt
+   LOGICAL, PUBLIC          :: l_repro_random = .FALSE.      ! if .TRUE., random-walk draws are seeded deterministically
+                                                             ! per particle/time step (particle%num, iic), so that
+                                                             ! trajectories are reproducible across MPI decompositions.
+                                                             ! If .FALSE. (default), uses the compiler's intrinsic
+                                                             ! RANDOM_NUMBER stream (faster, but decomposition-dependent).
 
 #ifdef FOIL
    LOGICAL, PUBLIC          :: ibm_restart                  ! Logical for ibm restart

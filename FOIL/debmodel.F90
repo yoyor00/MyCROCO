@@ -136,6 +136,7 @@ CONTAINS
       USE comtraj, ONLY: fileanchovy, filesardine, catch_anc_bob, catch_sar_bob
       USE comtraj, ONLY: mat_catch, fishing_strategy
       USE comtraj, ONLY: init_anchovy_egg, init_sardine_egg
+      USE comtraj, ONLY: l_repro_random
 
       !! * Arguments
       LOGICAL, intent(IN)                          :: restart
@@ -149,6 +150,7 @@ CONTAINS
 
       REAL(KIND=rsh) :: WV, WE, WR, WG, NRJ_V, NRJ_g, Wat, Wash, L, Wdeb, NRJ
       REAL(KIND=rsh) :: zoom
+      INTEGER :: draw_id ! Counter to tell successive random draws apart (see lag_random_number)
       INTEGER :: jj, mm_clock, aaaa, hh, minu, sec
       CHARACTER(len=19) :: tool_sectodat
 
@@ -414,7 +416,8 @@ CONTAINS
             IF (restart) THEN
                zoom = patch%particles(m)%zoom
             ELSE
-               CALL gasdev_s(zoom)
+               draw_id = 0
+               CALL gasdev_s(zoom, l_repro_random, patch%particles(m)%num, draw_id)
                zoom = 1 + zoom*0.2_rsh/3.0_rsh
             END IF
 
@@ -509,6 +512,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! * Modules used
       USE ibmtools, ONLY: gasdev_s
+      USE comtraj, ONLY: l_repro_random
 
       !! * Arguments
       TYPE(type_particle), INTENT(inout) :: particle
@@ -519,13 +523,15 @@ CONTAINS
       CHARACTER(len=19) :: tool_sectodat
       REAL(KIND=rsh) :: Wash, Wat
       REAL(KIND=rsh) :: zoom ! zoom factor for inter individual variability
+      INTEGER :: draw_id ! Counter to tell successive random draws apart (see lag_random_number)
 
       !!----------------------------------------------------------------------
       !! * Executable part
       CALL tool_decompdate(tool_sectodat(time), jj, mm_clock, aaaa, hh, minu, sec)
 
       ! Inter individual variability
-      CALL gasdev_s(zoom)
+      draw_id = 0
+      CALL gasdev_s(zoom, l_repro_random, particle%num, draw_id)
       zoom = 1 + zoom*0.2_rsh/3.0_rsh
 
       !   Affectation des paramètres

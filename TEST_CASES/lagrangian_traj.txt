@@ -8,20 +8,19 @@
 :
 : file_trajec : path to the patch initialization file containing the initial
 :               particle positions, trajectory dates, movement settings, and
-:               output filenames
+:               output filenames. Each patch declares its own type (1=circle,
+:               2=rectangle, 3=NetCDF positions) as the first field of its
+:               block, so a single file_trajec can mix patches of different
+:               types.
 : dir_pathout : optional base directory for trajectory output, and restart files
 :               used by FOIL configuration
-: itypepatch  : method used to define the initial patch positions:
-:               1 = circle, 2 = rectangle, 3 = NetCDF positions
-:               This value must match the format of file_trajec.
 : dtsave_traj : time step of LAGRANGIAN outputs
 :
 :-----------------------------------------------------------------------------
 :
  &namtraj
- 	file_trajec = "TEST_CASES/lagrangian_traject3d_type3nc.dat"
+ 	file_trajec = "TEST_CASES/lagrangian_traject3d_mixed.dat"
 	dir_pathout = "./"
-	itypepatch = 3
 	dtsave_traj = 1.d0 /
 :
 :-----------------------------------------------------------------------------
@@ -38,11 +37,17 @@
 :         (2004, Limnology and Oceanography) for a sensitivity analysis.
 : hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
 :         horizontal diffusion, when traj3d = .TRUE.
+: l_repro_random : if .TRUE., random-walk draws are seeded deterministically
+:         per particle/time step (particle NUM, iic) instead of the compiler's
+:         intrinsic RANDOM_NUMBER stream, so trajectories are reproducible
+:         across different MPI decompositions. Default is .FALSE. (faster,
+:         but not decomposition-reproducible).
 :
 :-----------------------------------------------------------------------------
 :
  &namtrajadiff
       hadv = .TRUE.
 	  dtz  = 3
-      hdiff = 5.0 /
+      hdiff = 5.0
+      l_repro_random = .TRUE. /
 

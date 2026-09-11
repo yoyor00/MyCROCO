@@ -1,9 +1,9 @@
 LAGRANGIAN CIRCULAR-PATCH INITIALIZATION FILE (itypepatch = 1)
 
+Patch type: 1 = circle, 2 = rectangle, 3 = NetCDF positions
 Patch name
 Trajectory start date
 Trajectory end date
-Output interval (h)
 Coordinate-system selector for the patch center:
            .true.  = CROCO grid indices (i, j)
            .false. = geographic coordinates (longitude, latitude)
@@ -22,6 +22,7 @@ Output trajectory file
 END OF FILE DESCRIPTION
 
 **************************************************************
+1                           ,| Patch type (1=circle)
 patch1                      ,| Patch name
 2005/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
 2005/12/31 23:59:59         ,| Trajectory end date (tendtraj)
@@ -35,6 +36,7 @@ circle1.nc                  ,| Output trajectory file
 5 20                        ,| Minimum and maximum release depths (m)
 1                           ,| Vertical spacing between release depths (m)
 **************************************************************
+1                           ,| Patch type (1=circle)
 patch2                      ,| Patch name
 2005/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
 2005/12/31 23:59:59         ,| Trajectory end date (tendtraj)

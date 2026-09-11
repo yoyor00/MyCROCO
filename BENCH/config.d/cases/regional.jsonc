@@ -350,6 +350,9 @@
       "CROCO_FILES/croco_diags_pv.nc",
       "CROCO_FILES/croco_diags_eddy_avg.nc"],
   },
+  // Exercises all three patch types (circle, rectangle, netcdf) mixed in a
+  // single file_trajec file (lagrangian_traject3d_mixed.dat) - patch type
+  // is now declared per-patch instead of once globally via itypepatch.
   "BENGUELA_LR_LAGRANGIAN": {
     "title": "BENGUELA_LR_LAGRANGIAN",
     "case": "REGIONAL",
@@ -361,9 +364,11 @@
     },
     "patches": {},
     "check_outputs": [
-      "CROCO_FILES/croco_his.nc", 
+      "CROCO_FILES/croco_his.nc",
       "CROCO_FILES/croco_avg.nc",
-      "CROCO_FILES/croco_lagrangian_out.nc"],
+      "CROCO_FILES/croco_lagrangian_patch_circle.nc",
+      "CROCO_FILES/croco_lagrangian_patch_rect.nc",
+      "CROCO_FILES/croco_lagrangian_patch_netcdf.nc"],
   },
   "BENGUELA_LR_FOIL": {
     "title": "BENGUELA_LR_FOIL",
@@ -384,7 +389,9 @@
     "check_outputs": [
       "CROCO_FILES/croco_his.nc",
       "CROCO_FILES/croco_avg.nc",
-      "CROCO_FILES/anchovy_seapodym.nc"],
+      "CROCO_FILES/anchovy_seapodym.nc",
+      "CROCO_FILES/anchovy_circle.nc",
+      "CROCO_FILES/anchovy_rect.nc"],
   },
   // TODO check runoff position and change croco.in accordingly
   // "BENGUELA_VHR_TIDES_BULK": {

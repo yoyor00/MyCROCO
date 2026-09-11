@@ -406,7 +406,7 @@ CONTAINS
       !&E
       !&E
       !&E ** Called by      : ibm_update_main
-      !&E ** External calls : LAGRANGIAN_update,init_patch,indices_loc2glob,tool_latlon2i,tool_latlon2j
+      !&E ** External calls : LAGRANGIAN_update,init_patch,MPI_gather_sort_counts,tool_latlon2i,tool_latlon2j
       !&E                     loc_h0,define_pos,ztosiggen,h0int,xeint,hc_sigint
       !&E                     ex_traj,ADD_ALL_MPI_INT,ADD_ALL_MPI_REAL,init_mpi_type_particle
       !&E                     ibm_loc_xyz,ibm_buoy,ibm_traint,ibm_proftraint,selec_dome_or_asymp,tool_julien
@@ -432,11 +432,11 @@ CONTAINS
       !USE parameters,   ONLY : nb_var
 #endif /* PASSIVE_TRACERS */
       USE traject3d, ONLY: LAGRANGIAN_update
-      USE trajinitsave, ONLY: init_patch, indices_loc2glob
+      USE trajinitsave, ONLY: init_patch
       USE trajectools, ONLY: tool_latlon2i, tool_latlon2j, is_local_position
       USE trajectools, ONLY: loc_h0, define_pos, ztosiggen, h0int, xeint, hc_sigint
 #ifdef MPI
-      USE toolmpi, ONLY: ex_traj, ADD_ALL_MPI_INT, ADD_ALL_MPI_REAL
+      USE toolmpi, ONLY: ex_traj, ADD_ALL_MPI_INT, ADD_ALL_MPI_REAL, MPI_gather_sort_counts
       USE comtraj, ONLY: init_mpi_type_particle
       USE comtraj, ONLY: down_give, up_give, right_give, left_give
 #endif
@@ -482,6 +482,13 @@ CONTAINS
       INTEGER :: idx_s, idx_e, new_size, part_num, last_ind
       LOGICAL :: time_to_spawn, has_spawn ! Logical for compliance with the reproduction time condition
 
+#ifdef MPI
+      ! Per-rank particle counts/displacements giving idx_s a private,
+      ! non-overlapping array-slot range per rank (see MPI_gather_sort_counts)
+      INTEGER, DIMENSION(0:NNODES - 1) :: counts, displs
+      INTEGER :: nb_part_total_dummy
+#endif
+
       CHARACTER(len=19) :: tool_sectodat
       CHARACTER(len=8) :: fileout_suffix
 
@@ -517,6 +524,16 @@ CONTAINS
       REAL(KIND=rsh) :: new_super
       INTEGER :: target_particles, remaining_particles
       INTEGER, DIMENSION(2) :: remainder_location
+
+      ! Used to derive a decomposition-independent NUM for newly spawned
+      ! particles: cum_before(i,j) = how many new particles are spawned at
+      ! cells before (i,j) in canonical (i,j) order. MAT_new_indv is
+      ! identical on every rank (built from mat_all_eggs, an MPI_ALLREDUCE'd
+      ! quantity), so this offset is too -- unlike idx_s, which only gives
+      ! each rank a non-overlapping array-index range and must stay
+      ! rank-dependent.
+      INTEGER, DIMENSION(imax + 2, jmax + 2) :: cum_before
+      INTEGER :: cum_running, nb_part_total_before
 
       ! Mortality variables
       REAL(KIND=rlg), DIMENSION(nb_species) :: Z1, Z2
@@ -1113,8 +1130,27 @@ CONTAINS
                   END DO
                END DO
 
-               !! Compute start index for numbering new particles
-               CALL indices_loc2glob(child_patch%nb_part_total, nb_new_particle, idx_s, idx_e)
+               !! Compute start index (array slot, per-rank, non-overlapping) for new particles
+#ifdef MPI
+               CALL MPI_gather_sort_counts(nb_new_particle, counts, displs, nb_part_total_dummy)
+               idx_s = child_patch%nb_part_total + displs(mynode)
+#else
+               idx_s = child_patch%nb_part_total
+#endif
+               idx_e = idx_s - 1 + nb_new_particle
+
+               ! Cumulative particle count before each (i,j) cell, in the same
+               ! canonical order used below to assign NUM -- see cum_before's
+               ! declaration comment.
+               nb_part_total_before = child_patch%nb_part_total
+               cum_running = 0
+               DO i = 1, imax + 2
+                  DO j = 1, jmax + 2
+                     cum_before(i, j) = cum_running
+                     cum_running = cum_running + MAT_new_indv(i, j)
+                  END DO
+               END DO
+
                ! Add number of new particles proc per proc if MPI, all at once otherwise
                CALL_MPI ADD_ALL_MPI_INT(nb_new_particle)
 
@@ -1160,7 +1196,14 @@ CONTAINS
                               new_particle => child_patch%particles(last_ind)
                               new_particle = child_patch%init_particle
                               new_particle%active = .True.
-                              new_particle%num = last_ind
+                              ! NUM is derived from (i, j, k), this particle's position in the
+                              ! spawn grid, rather than last_ind (a rank-cumulative array slot),
+                              ! so it does not depend on which MPI rank ends up owning the
+                              ! particle -- keeping NUM (and therefore trajectory identity)
+                              ! reproducible across MPI decompositions. last_ind itself must stay
+                              ! rank-dependent: it is this rank's private, non-overlapping slot in
+                              ! child_patch%particles, not a particle identity.
+                              new_particle%num = nb_part_total_before + cum_before(i, j) + k
                               new_particle%date_orig = time
                               ! hadv set in paratraj.txt constrain all particles of a simulation
                               ! except if modified within the IBM depending on stage
@@ -1292,7 +1335,9 @@ CONTAINS
       !&E ** Called by      : ibm_init, ibm_3d
       !&E ** External calls : ionc4_createfile_traj,ionc4_createvar_traj
       !&E                     ionc4_write_trajt,ionc4_write_time,ionc4_sync
-      !&E                     indices_loc2glob,tool_ind2lat,tool_ind2lon
+      !&E                     tool_ind2lat,tool_ind2lon
+      !&E                     MPI_gather_sort_counts,MPI_gather_sort_perm,
+      !&E                     MPI_gather_sort_var
       !&E ** Reference :
       !&E
       !&E ** History :
@@ -1309,8 +1354,10 @@ CONTAINS
                        ionc4_gatt_char_read, ionc4_gatt, ionc4_open, ionc4_close, &
                        ionc4_var_exists
       USE comtraj, ONLY: patches, type_patch, type_particle, dtsave_traj
-      USE trajinitsave, ONLY: indices_loc2glob
       USE trajectools, ONLY: tool_ind2lat, tool_ind2lon
+#ifdef MPI
+      USE toolmpi, ONLY: MPI_gather_sort_counts, MPI_gather_sort_perm, MPI_gather_sort_var
+#endif
 
       !! * Arguments
 
@@ -1333,9 +1380,27 @@ CONTAINS
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_out
       TYPE(type_patch), POINTER    :: patch
       TYPE(type_particle), POINTER    :: particle
-      INTEGER :: idx_s, idx_e
       LOGICAL                                     :: out_ex, found_hmove
       character(len=64) :: run_id_out
+#ifdef MPI
+      ! Used to gather all particles on MASTER, sorted by NUM, so that the
+      ! record order in the file does not depend on the MPI domain decomposition
+      ! and matches the sequential (non-MPI) output byte-for-byte.
+      INTEGER, DIMENSION(0:NNODES - 1)            :: counts, displs
+      INTEGER                                     :: nb_part_total
+      INTEGER, ALLOCATABLE, DIMENSION(:)          :: iperm
+      INTEGER, ALLOCATABLE, DIMENSION(:)          :: num_glob, stage_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: lat_glob, lon_glob, dateo_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: temp_glob, flag_glob, zpos_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: h0pos_glob, size_glob, nb_glob, dens_glob, Drate_glob
+      INTEGER, ALLOCATABLE, DIMENSION(:)          :: age_glob, AgeClass_glob
+      INTEGER, ALLOCATABLE, DIMENSION(:)          :: hmove_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_glob, f_glob, Wdeb_glob, Denspawn_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_glob, H_glob, R_glob, Neggs_glob, Gam_glob
+      INTEGER, ALLOCATABLE, DIMENSION(:)          :: dayjuv_glob, dayspawn_glob, yearspawn_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: deaddeb_glob, deadfishing_glob, deadnatural_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_glob
+#endif
 
       !!----------------------------------------------------------------------
       !! * Executable part
@@ -1568,15 +1633,102 @@ CONTAINS
          CALL ionc4_write_time(file_out, 0, time)
 
          nb_part = count(patch%particles(:)%active)
-         CALL indices_loc2glob(1, nb_part, idx_s, idx_e)
 
 #ifdef MPI
-         num1 = idx_s
-         num2 = idx_e
+         ! Gather all particles on MASTER, sorted by NUM, and write them from
+         ! MASTER only. Every other rank contributes an empty (zero-count) slab
+         ! to the collective write, so this keeps l_out_nc4par/collective I/O
+         ! and the file layout matches the sequential (non-MPI) output exactly.
+         CALL MPI_gather_sort_counts(nb_part, counts, displs, nb_part_total)
+         CALL MPI_gather_sort_perm(nb_part, num_out(1:nb_part), counts, displs, nb_part_total, iperm)
+
+         CALL MPI_gather_sort_var(nb_part, lat_out(1:nb_part), counts, displs, nb_part_total, iperm, lat_glob)
+         CALL MPI_gather_sort_var(nb_part, lon_out(1:nb_part), counts, displs, nb_part_total, iperm, lon_glob)
+         CALL MPI_gather_sort_var(nb_part, zpos_out(1:nb_part), counts, displs, nb_part_total, iperm, zpos_glob)
+         CALL MPI_gather_sort_var(nb_part, h0pos_out(1:nb_part), counts, displs, nb_part_total, iperm, h0pos_glob)
+         CALL MPI_gather_sort_var(nb_part, num_out(1:nb_part), counts, displs, nb_part_total, iperm, num_glob)
+         CALL MPI_gather_sort_var(nb_part, flag_out(1:nb_part), counts, displs, nb_part_total, iperm, flag_glob)
+         CALL MPI_gather_sort_var(nb_part, temp_out(1:nb_part), counts, displs, nb_part_total, iperm, temp_glob)
+         CALL MPI_gather_sort_var(nb_part, stage_out(1:nb_part), counts, displs, nb_part_total, iperm, stage_glob)
+         CALL MPI_gather_sort_var(nb_part, size_out(1:nb_part), counts, displs, nb_part_total, iperm, size_glob)
+         CALL MPI_gather_sort_var(nb_part, nb_out(1:nb_part), counts, displs, nb_part_total, iperm, nb_glob)
+         CALL MPI_gather_sort_var(nb_part, dens_out(1:nb_part), counts, displs, nb_part_total, iperm, dens_glob)
+         CALL MPI_gather_sort_var(nb_part, Drate_out(1:nb_part), counts, displs, nb_part_total, iperm, Drate_glob)
+         CALL MPI_gather_sort_var(nb_part, dateo_out(1:nb_part), counts, displs, nb_part_total, iperm, dateo_glob)
+         CALL MPI_gather_sort_var(nb_part, age_out(1:nb_part), counts, displs, nb_part_total, iperm, age_glob)
+         CALL MPI_gather_sort_var(nb_part, AgeClass_out(1:nb_part), counts, displs, nb_part_total, iperm, AgeClass_glob)
+         CALL MPI_gather_sort_var(nb_part, hmove_out(1:nb_part), counts, displs, nb_part_total, iperm, hmove_glob)
+         CALL MPI_gather_sort_var(nb_part, food_out(1:nb_part), counts, displs, nb_part_total, iperm, food_glob)
+         CALL MPI_gather_sort_var(nb_part, f_out(1:nb_part), counts, displs, nb_part_total, iperm, f_glob)
+         CALL MPI_gather_sort_var(nb_part, E_out(1:nb_part), counts, displs, nb_part_total, iperm, E_glob)
+         CALL MPI_gather_sort_var(nb_part, H_out(1:nb_part), counts, displs, nb_part_total, iperm, H_glob)
+         CALL MPI_gather_sort_var(nb_part, R_out(1:nb_part), counts, displs, nb_part_total, iperm, R_glob)
+         CALL MPI_gather_sort_var(nb_part, Gam_out(1:nb_part), counts, displs, nb_part_total, iperm, Gam_glob)
+         CALL MPI_gather_sort_var(nb_part, Wdeb_out(1:nb_part), counts, displs, nb_part_total, iperm, Wdeb_glob)
+         CALL MPI_gather_sort_var(nb_part, Neggs_out(1:nb_part), counts, displs, nb_part_total, iperm, Neggs_glob)
+         CALL MPI_gather_sort_var(nb_part, yearspawn_out(1:nb_part), counts, displs, nb_part_total, iperm, yearspawn_glob)
+         CALL MPI_gather_sort_var(nb_part, dayspawn_out(1:nb_part), counts, displs, nb_part_total, iperm, dayspawn_glob)
+         CALL MPI_gather_sort_var(nb_part, dayjuv_out(1:nb_part), counts, displs, nb_part_total, iperm, dayjuv_glob)
+         CALL MPI_gather_sort_var(nb_part, Denspawn_out(1:nb_part), counts, displs, nb_part_total, iperm, Denspawn_glob)
+         CALL MPI_gather_sort_var(nb_part, zoom_out(1:nb_part), counts, displs, nb_part_total, iperm, zoom_glob)
+         CALL MPI_gather_sort_var(nb_part, deaddeb_out(1:nb_part), counts, displs, nb_part_total, iperm, deaddeb_glob)
+         CALL MPI_gather_sort_var(nb_part, deadfishing_out(1:nb_part), counts, displs, nb_part_total, iperm, deadfishing_glob)
+         CALL MPI_gather_sort_var(nb_part, deadnatural_out(1:nb_part), counts, displs, nb_part_total, iperm, deadnatural_glob)
+
+         num1 = 1
+         IF (MASTER) THEN
+            num2 = nb_part_total
+         ELSE
+            num2 = 0
+         END IF
+
+         CALL ionc4_write_trajt(file_out, 'latitude', lat_glob(1:num2), num1, num2, 0, &
+            REAL(dg_valmanq_io, kind=out))
+         CALL ionc4_write_trajt(file_out, 'longitude', lon_glob(1:num2), num1, num2, 0, &
+            REAL(dg_valmanq_io, kind=out))
+         CALL ionc4_write_trajt(file_out, 'DEPTH', zpos_glob(1:num2), num1, num2, 0, -fillval)
+         CALL ionc4_write_trajt(file_out, 'H0', h0pos_glob(1:num2), num1, num2, 0, -fillval)
+         CALL ionc4_write_trajt(file_out, 'NUM', num_glob(1:num2), num1, num2, 0, 0)
+         CALL ionc4_write_trajt(file_out, 'flag', flag_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'TEMP', temp_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'STAGE', stage_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'SIZE', size_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'NUMBER', nb_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'DENSITY', dens_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'DRATE', Drate_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'DAYBIRTH', dateo_glob(1:num2), num1, num2, 0, &
+            REAL(dg_valmanq_io, kind=out))
+         CALL ionc4_write_trajt(file_out, 'AGE', age_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'AGECLASS', AgeClass_glob(1:num2), num1, num2, 0, -1)
+
+         CALL ionc4_write_trajt(file_out, 'HMOVE', hmove_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'FOOD', food_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'F', f_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'EDEB', E_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'HDEB', H_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'RDEB', R_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'GAM', Gam_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'WEIGHT', Wdeb_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'NEGGS', Neggs_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'YEARSPAWN', yearspawn_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'DAYSPAWN', dayspawn_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'DAYJUV', dayjuv_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'DENSPAWN', Denspawn_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'ZOOM', zoom_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'Death_DEB', deaddeb_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'Death_FISH', deadfishing_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'Death_NAT', deadnatural_glob(1:num2), num1, num2, 0, fillval)
+
+         DEALLOCATE (iperm)
+         DEALLOCATE (lat_glob, lon_glob, zpos_glob, h0pos_glob, num_glob, flag_glob)
+         DEALLOCATE (temp_glob, stage_glob, size_glob, nb_glob, dens_glob, Drate_glob)
+         DEALLOCATE (dateo_glob, age_glob, AgeClass_glob, hmove_glob)
+         DEALLOCATE (food_glob, f_glob, E_glob, H_glob, R_glob, Gam_glob, Wdeb_glob, Neggs_glob)
+         DEALLOCATE (yearspawn_glob, dayspawn_glob, dayjuv_glob, Denspawn_glob, zoom_glob)
+         DEALLOCATE (deaddeb_glob, deadfishing_glob, deadnatural_glob)
 #else
          num1 = 1
          num2 = nb_part
-#endif
 
          CALL ionc4_write_trajt(file_out, 'latitude', lat_out(1:nb_part), num1, num2, 0, &
             REAL(dg_valmanq_io, kind=out))
@@ -1614,6 +1766,7 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'Death_DEB', deaddeb_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'Death_FISH', deadfishing_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'Death_NAT', deadnatural_out(1:nb_part), num1, num2, 0, fillval)
+#endif
 
          ! To write the data on the disk and not loose data in case of run crash
          CALL ionc4_sync(file_out)

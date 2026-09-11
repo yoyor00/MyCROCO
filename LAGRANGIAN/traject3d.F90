@@ -94,12 +94,13 @@ CONTAINS
       USE trajinitsave, ONLY: traj_save3d
       USE trajectools, ONLY: h0int, xeint, ksupkinf, loc_h0, wint, dksdzint, &
                              splint, kzprofile, update_htot, update_wz, &
-                             siggentoz, ztosiggen, hc_sigint, set_htot_bc, define_pos
+                             siggentoz, ztosiggen, hc_sigint, set_htot_bc, define_pos, &
+                             lag_random_number
 #ifdef MPI
       USE toolmpi, ONLY: ex_traj
       USE comtraj, ONLY: down_give, up_give, right_give, left_give
 #endif
-      USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, wz
+      USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, wz, l_repro_random
 
       !! * Arguments
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 4), INTENT(in)    :: xe
@@ -141,6 +142,10 @@ CONTAINS
 
       ! Integer for MPI errors
       INTEGER              :: ierr_mpi
+
+      ! Counter to tell successive random draws apart for a given particle
+      ! within a time step, when l_repro_random is used (see lag_random_number)
+      INTEGER              :: draw_id
 
 # include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
@@ -239,6 +244,9 @@ CONTAINS
             ! Skip if particle is inactive.
             IF (.NOT. particle%active) CYCLE
 
+            ! Reset the random-draw counter for this particle's processing this time step
+            draw_id = 0
+
             ! Skip if flag is activated (ex : at limit of domain, or inland - though should not be)
             IF (particle%flag == -valmanq) CYCLE
 
@@ -265,7 +273,7 @@ CONTAINS
                ! along-sigma advection (and potentially diffusion)
                CALL avance(uz(:, :, :, time_step), vz(:, :, :, time_step), xe(:, :, time_step), &
                         dtm, pos_temp, particle%spos, particle%flag, &
-                        Istr, Iend, Jstr, Jend)
+                        Istr, Iend, Jstr, Jend, l_repro_random, particle%num, draw_id)
                CALL loc_h0(pos_temp%idx_r, pos_temp%idy_r, px, py, igg, idd, jbb, jhh, &
                         hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                xe_final = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
@@ -427,7 +435,7 @@ CONTAINS
                         IF (kzz < 0.0) kzz = 0.0                  ! kzz should be > 0 but...
 
                         ! random walk component of vertical diffusion (between 0 and 1)
-                        CALL random_number(tir)
+                        CALL lag_random_number(l_repro_random, particle%num, draw_id, tir)
 
                         ! s_int=s_int+ds_dif+(2.0_rsh*tir-1.0_rsh)*sqrt(2.0_rsh*dtz*kzz/(r*d3_mid*d3_mid))  en sigma
                         z_int = z_int + (ds_dif + (2.0_rsh*tir - 1.0_rsh)*sqrt(2.0_rsh*dtz*kzz/r))
@@ -454,7 +462,7 @@ CONTAINS
                         !! random mixed layer to avoid accumulation (see Ross and Sharples, 2004)
                         lb = 2.0_rsh        ! distance in meters for the random boundary layer
                         lt = 2.0_rsh        ! twice the boundary layer should be ok
-                        CALL random_number(tir)
+                        CALL lag_random_number(l_repro_random, particle%num, draw_id, tir)
                         IF (z_int > zpos(kmax) - lt) z_int = zpos(kmax) - tir*lt
                         IF (z_int < zpos(0) + lb) z_int = zpos(0) + tir*lb
 
@@ -489,7 +497,8 @@ CONTAINS
    END SUBROUTINE LAGRANGIAN_update
 
    !!======================================================================
-   SUBROUTINE avance(uz, vz, xe, deltat, pos, sig0, statp, Istr, Iend, Jstr, Jend)
+   SUBROUTINE avance(uz, vz, xe, deltat, pos, sig0, statp, Istr, Iend, Jstr, Jend, &
+                     l_repro_random, num, draw_id)
 
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE avance  ***
@@ -518,7 +527,7 @@ CONTAINS
       !! * Modules used
       USE comtraj, ONLY: valmanq, type_position, hdiff
       USE module_lagrangian ! on_r,om_r
-      USE trajectools, ONLY: uint, vint, define_pos
+      USE trajectools, ONLY: uint, vint, define_pos, lag_random_number
 #ifdef MPI
       USE toolmpi, ONLY: MPI_glob2loc
 #endif
@@ -531,6 +540,9 @@ CONTAINS
       REAL(KIND=rsh), INTENT(in)               :: sig0
       INTEGER, INTENT(in)               :: Istr, Iend, Jstr, Jend
       REAL(KIND=rsh), INTENT(inout), OPTIONAL   :: statp
+      LOGICAL, INTENT(in)               :: l_repro_random
+      INTEGER, INTENT(in)               :: num
+      INTEGER, INTENT(inout)            :: draw_id
 
       !! * Local declarations
       INTEGER                                  :: j0, jst, i0, ist, i1, j1
@@ -568,9 +580,9 @@ CONTAINS
 
       ! add random dispersion
       IF (hdiff /= 0.0_rsh) then
-         call random_number(tir1)
+         CALL lag_random_number(l_repro_random, num, draw_id, tir1)
          tetha = 2.0_rsh*pi*tir1
-         call random_number(tir2)
+         CALL lag_random_number(l_repro_random, num, draw_id, tir2)
          dkx = sqrt(2.0_rsh*hdiff*deltat*3.0_rsh)*tir2
          IF (0.5_rsh*(ux0 + uxp) /= 0.0_rsh .and. 0.5_rsh*(uy0 + uyp) /= 0.0_rsh) THEN
             pos1%xp = pos1%xp + dkx*cos(tetha)/om_r(nint(pos1%idx_r), nint(pos1%idy_r))
