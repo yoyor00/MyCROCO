@@ -11,6 +11,7 @@
       MODULE module_lagrangian
 
          ! pass from fix (F) to free format (F90)
+         USE croco_namelist, ONLY: theta_s, theta_b, hc, dt, lagrangianname
 
 #include "param.h"
 #include "ncscrum.h"

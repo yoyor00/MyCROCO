@@ -32,6 +32,7 @@ C$    integer omp_get_thread_num
 ! grid boxes.
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: hc
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp,htmp
@@ -275,6 +276,7 @@ C$    integer omp_get_thread_num
 
       subroutine set_depth_morphodyn_tile (Istr,Iend,Jstr,Jend)
 
+      use croco_namelist, only: hc
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp,htmp

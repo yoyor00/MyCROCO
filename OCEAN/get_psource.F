@@ -19,6 +19,7 @@
 !  Read in point or grided sea river runoff discharge
 !  the appropriate time from runoff NetCDF file.
 !
+      use croco_namelist, only: dt
 # define PSOURCE_DATA
       implicit none
 # include "param.h"
@@ -173,6 +174,7 @@ CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
 !
 ! Set-up river runoff discharge data for current tile.
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend,i, it1,it2
       real cff, cff1,cff2

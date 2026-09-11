@@ -163,8 +163,8 @@ CONTAINS
 
       ! namelists in paraibm.txt
       !--------------------------
-      lstr = lenstr(debibmname)
-      OPEN (50, file=debibmname(1:lstr), status='old', form='formatted', access='sequential')
+      lstr = lenstr(foilname)
+      OPEN (50, file=foilname(1:lstr), status='old', form='formatted', access='sequential')
       READ (50, namibmrestart)
       READ (50, namibmmove)
       READ (50, namibmpop)
@@ -406,7 +406,7 @@ CONTAINS
       !&E
       !&E
       !&E ** Called by      : ibm_update_main
-      !&E ** External calls : LAGRANGIAN_update,init_patch,MPI_gather_sort_counts,tool_latlon2i,tool_latlon2j
+      !&E ** External calls : LAGRANGIAN_update,init_patch,MPI_gather_sort_counts,
       !&E                     loc_h0,define_pos,ztosiggen,h0int,xeint,hc_sigint
       !&E                     ex_traj,ADD_ALL_MPI_INT,ADD_ALL_MPI_REAL,init_mpi_type_particle
       !&E                     ibm_loc_xyz,ibm_buoy,ibm_traint,ibm_proftraint,selec_dome_or_asymp,tool_julien
@@ -433,7 +433,7 @@ CONTAINS
 #endif /* PASSIVE_TRACERS */
       USE traject3d, ONLY: LAGRANGIAN_update
       USE trajinitsave, ONLY: init_patch
-      USE trajectools, ONLY: tool_latlon2i, tool_latlon2j, is_local_position
+      USE trajectools, ONLY: is_local_position
       USE trajectools, ONLY: loc_h0, define_pos, ztosiggen, h0int, xeint, hc_sigint
 #ifdef MPI
       USE toolmpi, ONLY: ex_traj, ADD_ALL_MPI_INT, ADD_ALL_MPI_REAL, MPI_gather_sort_counts

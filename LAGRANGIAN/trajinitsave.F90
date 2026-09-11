@@ -135,7 +135,7 @@ CONTAINS
       !! * Modules used
 
       USE module_lagrangian !,  ONLY : pi,stdout,start_time,time_end, &
-      !          Eradius,h,latr,lonu,latv,sc_r,sc_w,N
+      !          Eradius,h,latr,lonu,latv,sc_r,sc_w,N, lagrangianname
       USE trajectools, ONLY: h0int, xeint, loc_h0, update_htot, update_wz, compute_dsig_dcuds, &
                              ztosiggen, hc_sigint, lonlat2ij, tool_latlon2i, tool_latlon2j, &
                              set_htot_bc, define_pos, is_local_position
@@ -300,8 +300,8 @@ CONTAINS
 
       ! Open paratraj.dat file, given in croco.in file
       !------------------
-      lstr = lenstr(lagname)
-      OPEN (50, file=lagname(1:lstr), status='old', form='formatted', access='sequential')
+      lstr = lenstr(lagrangianname)
+      OPEN (50, file=lagrangianname(1:lstr), status='old', form='formatted', access='sequential')
       READ (50, namtraj)
       READ (50, namtrajadiff)
 

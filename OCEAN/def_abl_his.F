@@ -35,6 +35,12 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
+      USE croco_namelist, ONLY: ldefablhis
+# ifndef AVRH
+      USE croco_namelist, ONLY: ablname, nrpfablhis
+# else
+      USE croco_namelist, ONLY: ablname_avg, nrpfablavg
+# endif
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim

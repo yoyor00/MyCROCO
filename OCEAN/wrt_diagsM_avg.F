@@ -19,6 +19,10 @@
 !---------------------------------------------------------------
 !
       subroutine wrt_diagsM_avg
+#if defined DIAGNOSTICS_UV
+      use croco_namelist, only: nrpfdiaM_avg, dianameM_avg
+#endif
+
 
       implicit none
       integer ierr,  record, lstr, lvar, lenstr

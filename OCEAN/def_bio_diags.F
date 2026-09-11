@@ -22,6 +22,12 @@
                                  ! Create diag data NetCDF file:
                                  ! Define its variables, dimensions,
                                  ! and attributes
+#ifdef DIAGNOSTICS_BIO
+      use croco_namelist, only: ldefdiabio, nwrtdiabio, nrpfdiabio,
+     &     dianamebio, ldefdiabio_avg, ntsdiabio_avg,
+     &     nwrtdiabio_avg, nrpfdiabio_avg, dianamebio_avg
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"

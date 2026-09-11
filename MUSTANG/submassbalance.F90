@@ -8,6 +8,7 @@ module submassbalance
 
 #if defined SUBSTANCE
     USE module_substance
+    USE croco_namelist, only: dt
     USE comsubstance
 #ifdef MUSTANG
     USE comMUSTANG

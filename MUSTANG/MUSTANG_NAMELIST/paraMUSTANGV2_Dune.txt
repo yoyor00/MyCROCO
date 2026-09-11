@@ -54,7 +54,10 @@
    tau_cri_option = 1
 /
 &namsedim_poro
-   poro_option=2 
+   poro_option=2    
+   poro_min = 0.4    
+   Awooster = 0.4
+   Bwooster = 0. 
 /
 &namsedim_bedload
    l_peph_bedload=.FALSE. 
