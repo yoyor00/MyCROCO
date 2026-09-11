@@ -28,7 +28,7 @@
 : adult_move : activate (or not) the movement on the horizontal for juv/adults 
 :-----------------------------------------------------------------------------
 :
- &namibmbio
+ &namibmmove
       w_max = 0.0
       alpha_w  = 0.8 
       adult_move = .true. /

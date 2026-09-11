@@ -4,14 +4,13 @@ FOIL PATCH AND SUPER-INDIVIDUAL INITIAL CONDITIONS
 Patch name
 Patch initialization date (start of the trajectory)
 Trajectory end date
-Output interval
-Input NetCDF file containing the initial particle positions
 Output trajectory file
 Number of particles released at each initial position
 itypevert: initial vertical-movement scheme (may be updated later)
            = 0: constant depth (no vertical advection or turbulent diffusion)
            < 0: vertical advection only
            > 0: vertical advection and turbulent diffusion using a random walk
+Input NetCDF file containing the initial particle positions
 Species name (anchovy or sardine)
 Developmental stage of the individuals
 Individual length
@@ -24,17 +23,19 @@ Reserve energy
 Energy allocated to reproduction (first-feeding model; Nisbet, 2012)
 Energy allocated to gametes
 
+Note: the output interval is no longer read from this file: it is set once
+for all patches by dtsave_traj in the &namtraj namelist (paratraj.txt).
+
 END OF FILE DESCRIPTION%
 
 **************************************************************
 patch1                                                  ,| Patch name
 2000/01/01 00:00:00                                     ,| Trajectory start date (tbegtraj)
 2004/12/31 00:00:00                                     ,| Trajectory end date (tendtraj)
-24.d0                                                   ,| Output interval (dtsave_traj)
-CROCO_FILES/lagrangian_init.nc                          ,| Input file containing initial particle positions (filetrajin)
-anchovy_seapodym.nc                                     ,| Output trajectory file (filetrajout)
+CROCO_FILES/anchovy_seapodym.nc                         ,| Output trajectory file (filetrajout)
 1                                                       ,| Particles released per initial position (nb_part_intro)
 1                                                       ,| Initial vertical-movement scheme (itypevert)
+CROCO_FILES/lagrangian_init.nc                          ,| Input file containing initial particle positions (filetrajin)
 anchovy                                                 ,| Species
 6                                                       ,| Developmental stage
 12.13                                                   ,| Individual length (cm)
@@ -47,6 +48,3 @@ anchovy                                                 ,| Species
 7548.4                                                  ,| Reproduction energy, R (J)
 0.0                                                     ,| Gametes energy, Gam (J)
 **************************************************************
-
-
-

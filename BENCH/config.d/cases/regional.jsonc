@@ -370,6 +370,11 @@
     "case": "REGIONAL",
     "croco_files_path": "LR_CROCO_FILES_BCK",
     "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    // Own croco.in: same as croco.in.Regional, but "lagrangian:" points at
+    // foil_traj.txt (file_trajec = foil_ibm_patch.dat, which also carries
+    // the species/stage/size/... FOIL initial conditions) instead of
+    // lagrangian_traj.txt (the plain LAGRANGIAN patch file).
+    "input_file": "TEST_CASES/croco.in.Regional_foil",
     "cppkeys": {
       "USE_CALENDAR": true,
       "LAGRANGIAN": true,
@@ -377,7 +382,7 @@
     },
     "patches": {},
     "check_outputs": [
-      "CROCO_FILES/croco_his.nc", 
+      "CROCO_FILES/croco_his.nc",
       "CROCO_FILES/croco_avg.nc",
       "CROCO_FILES/anchovy_seapodym.nc"],
   },
