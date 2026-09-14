@@ -17,7 +17,7 @@ MODULE trajectools
    !! * Modules used
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, rsh, rlg, riolg, &
                       htx, hty, hc_sig, dsigw, dsigu, valmanq, wz, &
-                      dcusds, dcwsds, lonwest, latsouth, dlonr, dlatr, type_position
+                      dcusds, dcwsds, type_position
    USE module_lagrangian !, ONLY : sc_r,sc_w,h,zeta,kstp,theta_s,theta_b,We
 
    IMPLICIT NONE
@@ -27,7 +27,7 @@ MODULE trajectools
    PUBLIC h0int, xeint, ksupkinf, loc_h0, kzprofile, splint, uint, vint, wint, dksdzint, interpvit
    PUBLIC update_htot, compute_dsig_dcuds, update_wz, set_htot_bc
    PUBLIC siggentoz, ztosiggen, hc_sigint, h_int_siggen, define_pos, CSF
-   PUBLIC tool_ind2lat, tool_ind2lon, lonlat2ij, tool_latlon2i, tool_latlon2j
+   PUBLIC tool_ind2lat, tool_ind2lon, lonlat2ij, tool_latlon2ij
    PUBLIC is_local_position
    PUBLIC lag_random_number
 
@@ -313,10 +313,15 @@ CONTAINS
       jbb = int(ypos)
       jhh = jbb + 1
 
-      idd = min(max(idd, 0), imax)
-      igg = min(max(igg, 0), imax)
-      jbb = min(max(jbb, 0), jmax)
-      jhh = min(max(jhh, 0), jmax)
+      ! xpos/ypos are LOCAL indices (per-rank tile), so the clamp must use
+      ! the LOCAL tile bounds (limin/limax/ljmin/ljmax, passed in) - not the
+      ! GLOBAL domain bounds imin/imax/jmin/jmax (comtraj.F90), which under
+      ! MPI are much larger than this rank's actual valid/halo-exchanged
+      ! array range and so never actually clamp anything.
+      idd = min(max(idd, limin - 1), limax + 1)
+      igg = min(max(igg, limin - 1), limax + 1)
+      jbb = min(max(jbb, ljmin - 1), ljmax + 1)
+      jhh = min(max(jhh, ljmin - 1), ljmax + 1)
 
       ! calcul des positions px et py dans la maille U
       px = xpos - real(igg) - 0.5_rsh
@@ -424,10 +429,12 @@ CONTAINS
       jbb = nint(ypos)
       jhh = jbb + 1
 
-      idd = min(max(idd, 0), imax)
-      igg = min(max(igg, 0), imax)
-      jbb = min(max(jbb, 0), jmax)
-      jhh = min(max(jhh, 0), jmax)
+      ! see uint: clamp must use the LOCAL tile bounds (limin/limax/
+      ! ljmin/ljmax), not the GLOBAL domain bounds imin/imax/jmin/jmax.
+      idd = min(max(idd, limin - 1), limax + 1)
+      igg = min(max(igg, limin - 1), limax + 1)
+      jbb = min(max(jbb, ljmin - 1), ljmax + 1)
+      jhh = min(max(jhh, ljmin - 1), ljmax + 1)
 
       ! calcul des positions px et py dans la maille V
       px = xpos - real(igg, kind=rsh)
@@ -474,7 +481,7 @@ CONTAINS
          f_lag_hzp = 1.0_rsh
          f_lag_hzm = 1.0_rsh
          f_lag_hz = 1.0_rsh
-         CALL loc_h0(xpos, ypos, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, limin, limax, ljmin, jmax)
+         CALL loc_h0(xpos, ypos, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, limin, limax, ljmin, ljmax)
          CALL h_int_siggen(xe_lag, h0_lag, hc_sig_lag, xe, px, py, igg, idd, jbb, jhh, &
                            hlb, hrb, hlt, hrt, limin, limax, ljmin, ljmax)
          CALL f_lag_sigz_uv(spos, kuvm, xe_lag, h0_lag, hc_sig_lag, f_lag_hzp, f_lag_hzm, f_lag_hz)
@@ -1071,7 +1078,8 @@ CONTAINS
       kzint(kmax) = 0.0_rsh
 
       DO k = 1, kmax - 1
-         kzint(k) = interp(Akt(:, :, 0:kmax, nstp), k, i1, i2, j1, j2, px, py, rh11, rh21, rh12, rh22, &
+         ! Akt(:,:,:,itemp) - a particle diffuses like a passive tracer
+         kzint(k) = interp(Akt(:, :, 0:kmax, itemp), k, i1, i2, j1, j2, px, py, rh11, rh21, rh12, rh22, &
                            limin, limax, ljmin, ljmax)
       END DO
 
@@ -1492,9 +1500,14 @@ CONTAINS
       !&E
       !&E ** Called by : traj_save3d, ibm_save, eggs_grid
       !&E
+      !&E ** Description : reads the true curvilinear grid coordinate directly
+      !&E              (nearest rho-point, same convention as uint/vint's
+      !&E              igg=NINT(xpos))
+      !&E
       !&E ** History :
       !&E       !  (??)
       !&E       !  2024     (M. Caillaud)
+      !&E       !  2026     (S. Le Gac) update for curvilinear grid
       !&E
       !&E---------------------------------------------------------------------
       !! * Function declaration
@@ -1503,7 +1516,17 @@ CONTAINS
       !! * Arguments
       REAL(kind=rsh), INTENT(in)  :: x, y
 
-      tool_ind2lon = lonwest + (REAL(x, riolg) - 1.0_riolg)*dlonr
+      ! x,y are GLOBAL coordinates (like particle%xpos/%ypos), but lonr is
+      ! indexed LOCALLY per rank -- see define_pos's
+      ! pos%idx = INT(pos%xp) - iminmpi + 1, the same convention used
+      ! throughout this module. Using NINT(x) directly as a local array
+      ! index (as this function used to) is only correct on the rank whose
+      ! iminmpi/jminmpi happen to be 1 -- everywhere else it silently reads
+      ! the wrong (or edge-clamped) grid cell. Convert first, then clamp
+      ! only as a safety margin (e.g. a particle just past this rank's
+      ! ownership boundary that hasn't been handed off yet).
+      tool_ind2lon = lonr(MIN(MAX(NINT(x) - iminmpi + 1, LBOUND(lonr, 1)), UBOUND(lonr, 1)), &
+                          MIN(MAX(NINT(y) - jminmpi + 1, LBOUND(lonr, 2)), UBOUND(lonr, 2)))
 
    END FUNCTION tool_ind2lon
 
@@ -1516,8 +1539,12 @@ CONTAINS
       !&E
       !&E ** Called by : traj_save3d, ibm_save, eggs_grid
       !&E
+      !&E ** Description : see tool_ind2lon -- same rationale, reads latr
+      !&E              directly at the nearest rho-point 
+      !&E
       !&E ** History :
       !&E       !  2024     (M. Caillaud)
+      !&E       !  2026     (S. Le Gac) update for curvilinear grid
       !&E
       !&E---------------------------------------------------------------------
       !! * Function declaration
@@ -1526,7 +1553,10 @@ CONTAINS
       !! * Arguments
       REAL(kind=rsh), INTENT(in)  :: x, y
 
-      tool_ind2lat = latsouth + (REAL(y, riolg) - 1.0_riolg)*dlatr
+      ! See tool_ind2lon -- same global-to-local conversion, then clamp
+      ! against latr's own LBOUND/UBOUND as a safety margin only.
+      tool_ind2lat = latr(MIN(MAX(NINT(x) - iminmpi + 1, LBOUND(latr, 1)), UBOUND(latr, 1)), &
+                          MIN(MAX(NINT(y) - jminmpi + 1, LBOUND(latr, 2)), UBOUND(latr, 2)))
 
    END FUNCTION tool_ind2lat
 
@@ -1570,77 +1600,116 @@ CONTAINS
    END SUBROUTINE lonlat2ij
 
    !!======================================================================
-   FUNCTION tool_latlon2i(longitude, latitude)
+   SUBROUTINE tool_latlon2ij(longitude, latitude, i_out, j_out, found_local)
 
       !&E---------------------------------------------------------------------
-      !&E                 ***  FUNCTION tool_latlon2i  ***
+      !&E                 ***  SUBROUTINE tool_latlon2ij  ***
       !&E
-      !&E ** Purpose : convert the geographic coordinates into an i grid index
+      !&E ** Purpose : convert geographic coordinates into (i,j) grid indices.
+      !&E              i and j necessarily come from one shared search
       !&E
-      !&E ** Called by : ibm_3d, LAGRANGIAN_init
+      !&E ** Called by : LAGRANGIAN_init
       !&E
-      !&E ** Modified variables : tool_latlon2i
-      !&E
-      !&E ** Reference :
+      !&E ** Description : nearest-rho-point search over this rank's full
+      !&E              local array (including the halo shared with
+      !&E              neighbors), so a tie between two equidistant nodes
+      !&E              resolves the same way on every rank that can see both
+      !&E              candidates (deterministic iteration order) -- but
+      !&E              found additionally requires the winning node to lie
+      !&E              within this rank's OWNERSHIP (iminmpi/imaxmpi/
+      !&E              jminmpi/jmaxmpi under MPI, a non-overlapping
+      !&E              partition), so exactly one rank ever reports
+      !&E              found=.TRUE. for a given point.
       !&E
       !&E ** History :
-      !&E         !  2004-10-28
-      !&E         !  2024     (M. Caillaud)  Coupled with CROCO
+
+
+      !&E         !  2026     (S. Le Gac) Curvilinear nearest-point search;
+      !&E                     search the full local array but gate found on
+      !&E                     ownership, not the other way around -- an
+      !&E                     ownership-restricted search let two ranks each
+      !&E                     find a different "locally nearest" node for a
+      !&E                     particle near a true tie, duplicating it
       !&E
       !&E---------------------------------------------------------------------
       !! * Modules used
       IMPLICIT NONE
 
-      !! * Function declaration
-      REAL(kind=rsh)             :: tool_latlon2i
-
       !! * Arguments
-      REAL(kind=rlg), INTENT(in)  :: longitude, latitude
+      REAL(kind=rlg), INTENT(in)            :: longitude, latitude
+      REAL(kind=rsh), INTENT(out)           :: i_out, j_out
+      LOGICAL, INTENT(out), OPTIONAL        :: found_local
 
       !! * Local declarations
+      INTEGER        :: i, j, i0, j0
+      INTEGER        :: i_lo, i_hi, j_lo, j_hi
+      REAL(kind=rlg) :: dist2, dist2_min, dlon, coslat, cell_scale
+      LOGICAL        :: found
+      ! Comfortably outside any real domain's index range, but small enough
+      ! that NINT() of it never overflows a default INTEGER (unlike, say,
+      ! HUGE(1.0_rlg)) -- some callers do NINT(i_out) before ever checking
+      ! found_local.
+      REAL(kind=rsh), PARAMETER :: out_of_range = -1.0e6_rsh
       !!----------------------------------------------------------------------
       !! * Executable part
 
-      ! aie et comment fait on pour grilles non regulieres ????
-      tool_latlon2i = (REAL(longitude, rlg) - lonwest)/dlonr + 1.0_rlg
+      ! Search the FULL local array (including the halo), not just this
+      ! rank's ownership: near a tile boundary, two ranks then see the same
+      ! candidates and break ties the same way. Restricted to ownership,
+      ! they could disagree on the nearest node and create duplicate-NUM
+      ! particles.
+      i_lo = LBOUND(lonr, 1); i_hi = UBOUND(lonr, 1)
+      j_lo = LBOUND(lonr, 2); j_hi = UBOUND(lonr, 2)
+      coslat = COS(latitude*deg2rad)
 
-   END FUNCTION tool_latlon2i
+      ! --- nearest-node search over this rank's full local array ---
+      dist2_min = HUGE(1.0_rlg)
+      i0 = i_lo; j0 = j_lo
+      DO j = j_lo, j_hi
+         DO i = i_lo, i_hi
+            dlon = lonr(i, j) - longitude
+            dlon = dlon - 360.0_rlg*REAL(NINT(dlon/360.0_rlg), rlg)   ! dateline-safe
+            dist2 = (dlon*coslat)**2 + (latr(i, j) - latitude)**2
+            IF (dist2 < dist2_min) THEN
+               dist2_min = dist2
+               i0 = i; j0 = j
+            END IF
+         END DO
+      END DO
 
-   !!======================================================================
-   FUNCTION tool_latlon2j(longitude, latitude)
+      ! cell_scale sums one cell-width in lon (coslat-scaled) and one in
+      ! lat - a generous tolerance (roughly 2 cell-widths for an isotropic
+      ! grid), not a tight 1-cell radius. Must run before i0,j0 are
+      ! converted to global below, since lonr/latr are indexed by i0,j0.
+      cell_scale = ABS(lonr(MIN(i0 + 1, i_hi), j0) - lonr(MAX(i0 - 1, i_lo), j0))*coslat*0.5_rlg &
+                   + ABS(latr(i0, MIN(j0 + 1, j_hi)) - latr(i0, MAX(j0 - 1, j_lo)))*0.5_rlg
+      found = (dist2_min <= cell_scale**2)
 
-      !&E---------------------------------------------------------------------
-      !&E                 ***  FUNCTION tool_latlon2j  ***
-      !&E
-      !&E ** Purpose : convert the geographic coordinates into a j grid index
-      !&E
-      !&E ** Called by : ibm_3d, LAGRANGIAN_init
-      !&E
-      !&E ** Modified variables : tool_latlon2j
-      !&E
-      !&E ** Reference :
-      !&E
-      !&E ** History :
-      !&E         !  2004-10-28
-      !&E         !  2024     (M. Caillaud)  Coupled with CROCO
-      !&E
-      !&E---------------------------------------------------------------------
-      !! * Modules used
-      IMPLICIT NONE
+#ifdef MPI
+      ! lonr/latr are indexed LOCALLY (see define_pos), so i0,j0 from the
+      ! search are LOCAL - convert to GLOBAL (like i_out/j_out must be)
+      ! before using them outside this local array.
+      i0 = i0 + iminmpi - 1
+      j0 = j0 + jminmpi - 1
 
-      !! * Function declaration
-      REAL(kind=rsh)             :: tool_latlon2j
+      ! "found" also requires ownership - so exactly one rank ends up
+      ! with found=.TRUE. for a given node: whichever one owns it.
+      found = found .AND. (i0 >= iminmpi .AND. i0 <= imaxmpi .AND. j0 >= jminmpi .AND. j0 <= jmaxmpi)
+#endif
+      ! Sequential has no local/global distinction (the whole domain is
+      ! "owned", and lonr's own indexing already coincides with global
+      ! coordinates), so no conversion or ownership check is needed there.
 
-      !! * Arguments
-      REAL(kind=rlg), INTENT(in)  :: longitude, latitude
+      IF (found) THEN
+         i_out = REAL(i0, rsh)
+         j_out = REAL(j0, rsh)
+      ELSE
+         i_out = out_of_range
+         j_out = out_of_range
+      END IF
+      IF (PRESENT(found_local)) found_local = found
 
-      !!----------------------------------------------------------------------
-      !! * Executable part
-
-      ! aie et comment fait on pour grilles non regulieres ????
-      tool_latlon2j = (REAL(latitude, rlg) - latsouth)/dlatr + 1.0_rlg
-
-   END FUNCTION tool_latlon2j
+   END SUBROUTINE tool_latlon2ij
 
    !!======================================================================
    FUNCTION is_local_position(xtemp, ytemp, Istr, Iend, Jstr, Jend)

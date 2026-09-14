@@ -114,7 +114,7 @@ CONTAINS
                          catch_anc_bob, catch_sar_bob, fishing_strategy
 
       !! * Arguments
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 4), INTENT(in) :: xe
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax), INTENT(in) :: sal, temp
       INTEGER, INTENT(in) :: Istr, Iend, Jstr, Jend
 
@@ -459,9 +459,9 @@ CONTAINS
       USE comtraj, ONLY: init_anchovy_egg, init_sardine_egg
 
       !! * Arguments
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 4), INTENT(in) :: xe
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax), INTENT(in) :: sal, temp
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax, 3), INTENT(in) :: uz, vz
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax), INTENT(in) :: uz, vz
       INTEGER, INTENT(in) :: Istr, Iend, Jstr, Jend
 
       !! * Local declarations
@@ -470,7 +470,6 @@ CONTAINS
       INTEGER :: nb_part                  ! Number of particles inside a patch for loop
 
       REAL(KIND=rlg) :: dtm ! Model time step
-      INTEGER :: time_step
 
       ! Indexes for temporary particle position
       INTEGER :: igg, idd, jhh, jbb
@@ -568,7 +567,6 @@ CONTAINS
       ! Common part to all species
       !---------------------------------------------------------------
       dtm = dt   ! dt = CROCO time step
-      time_step = nrhs
 
 #ifdef MPI
       down_give = 0
@@ -840,7 +838,7 @@ CONTAINS
                      ! total depth at particle s location
                      CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                               Istr, Iend, Jstr, Jend)
-                     particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                     particle%xe = xeint(xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                                        Istr, Iend, Jstr, Jend)
                      particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                      particle%d3 = particle%h0 + particle%xe
@@ -909,7 +907,7 @@ CONTAINS
                      ! total depth at particle s location
                      CALL loc_h0(pos_ad%idx_r, pos_ad%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                               Istr, Iend, Jstr, Jend)
-                     particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                     particle%xe = xeint(xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                                     Istr, Iend, Jstr, Jend)
                      particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                      particle%d3 = particle%h0 + particle%xe
@@ -1230,7 +1228,7 @@ CONTAINS
                               CALL loc_h0(new_pos%idx_r, new_pos%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                                  Istr, Iend, Jstr, Jend)
                               new_particle%h0 = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
-                              new_particle%xe = xeint(xe(:, :, nrhs), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+                              new_particle%xe = xeint(xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                                  Istr, Iend, Jstr, Jend)
                               new_particle%hc = hc_sigint(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                               new_particle%d3 = new_particle%xe + new_particle%h0

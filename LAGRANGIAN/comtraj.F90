@@ -48,11 +48,6 @@ MODULE comtraj
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: dsigw, dsigu, dcusds, dcwsds
    REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: hc_sig
 
-   !----------------------------------------
-   ! Other variables to compute at beginning
-   !----------------------------------------
-   REAL(kind=rlg)                             :: lonwest, latsouth, dlonr, dlatr
-
    ! =====================================================================
    ! =====                                                           =====
    ! =====                     TYPE type_position                    =====

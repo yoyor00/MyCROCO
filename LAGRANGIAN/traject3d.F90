@@ -103,8 +103,8 @@ CONTAINS
       USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, wz, l_repro_random
 
       !! * Arguments
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 4), INTENT(in)    :: xe
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax, 3), INTENT(in)    :: uz, vz
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in)    :: xe
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax), INTENT(in)    :: uz, vz
       INTEGER, INTENT(in)    ::  Istr, Iend, Jstr, Jend
 
       !! * Local declarations
@@ -131,7 +131,7 @@ CONTAINS
 
       ! Model time step
       REAL(KIND=rlg)                              :: dtm
-      INTEGER                                     :: time_step, ndtz
+      INTEGER                                     :: ndtz
 
       TYPE(type_patch), POINTER  :: patch => NULL()
       TYPE(type_particle), POINTER  :: particle => NULL()
@@ -155,7 +155,6 @@ CONTAINS
       !------------
       dtm = dt
       nb_patch = patches%nb
-      time_step = nrhs
 
       !Update Htot
       !------------
@@ -197,7 +196,7 @@ CONTAINS
                ! total depth at particle s location
                CALL loc_h0(pos_temp%idx_r, pos_temp%idy_r, px, py, igg, idd, jbb, jhh, &
                            hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-               particle%xe = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+               particle%xe = xeint(xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                                    Istr, Iend, Jstr, Jend)
                particle%d3 = particle%h0 + particle%xe
                IF (particle%d3 > particle%zpos) THEN
@@ -255,7 +254,7 @@ CONTAINS
             call define_pos(pos_temp)
 
             ! depth of cell in which particle is located
-            d3 = h(pos_temp%idx, pos_temp%idy) + xe(pos_temp%idx, pos_temp%idy, time_step)
+            d3 = h(pos_temp%idx, pos_temp%idy) + xe(pos_temp%idx, pos_temp%idy)
 
             IF (d3 <= 0.0_rsh) CYCLE
 
@@ -271,12 +270,12 @@ CONTAINS
                pos_old = pos_temp
 
                ! along-sigma advection (and potentially diffusion)
-               CALL avance(uz(:, :, :, time_step), vz(:, :, :, time_step), xe(:, :, time_step), &
+               CALL avance(uz, vz, xe, &
                         dtm, pos_temp, particle%spos, particle%flag, &
                         Istr, Iend, Jstr, Jend, l_repro_random, particle%num, draw_id)
                CALL loc_h0(pos_temp%idx_r, pos_temp%idy_r, px, py, igg, idd, jbb, jhh, &
                         hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-               xe_final = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+               xe_final = xeint(xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                              Istr, Iend, Jstr, Jend)
                h0_final = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                d3_final = h0_final + xe_final
@@ -289,7 +288,7 @@ CONTAINS
 
                CALL loc_h0(pos_mid%idx_r, pos_mid%idy_r, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                         Istr, Iend, Jstr, Jend)
-               xe_mid = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+               xe_mid = xeint(xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                            Istr, Iend, Jstr, Jend)
                h0_mid = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                d3_mid = h0_mid + xe_mid
@@ -354,7 +353,7 @@ CONTAINS
                CALL loc_h0(pos_temp%idx_r, pos_temp%idy_r, px, py, igg, idd, jbb, jhh, &
                            hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                h0_final = particle%h0 ! not changed since last time step
-               xe_final = xeint(xe(:, :, time_step), px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
+               xe_final = xeint(xe, px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, &
                                    Istr, Iend, Jstr, Jend) ! change since last time step
                d3_final = h0_final + xe_final
                hc_sig_final = particle%hc ! not modified since last time step

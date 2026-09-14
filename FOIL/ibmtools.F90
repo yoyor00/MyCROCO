@@ -156,7 +156,7 @@ CONTAINS
       !! Arguments
       TYPE(type_particle), INTENT(inout)  :: particle
       CHARACTER(LEN=lchain), INTENT(in)     :: species
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 4), INTENT(in)     :: xe
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in)     :: xe
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax), INTENT(in)     :: sal, temp
       INTEGER, INTENT(in)     :: Istr, Iend, Jstr, Jend
 

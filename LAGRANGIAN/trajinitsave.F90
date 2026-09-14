@@ -105,7 +105,79 @@ CONTAINS
    END SUBROUTINE init_patch
 
    !!======================================================================
-   SUBROUTINE LAGRANGIAN_init(Istr, Iend, Jstr, Jend)
+   SUBROUTINE tool_latlon2ij_global(longitude, latitude, i_out, j_out)
+      !&E---------------------------------------------------------------------
+      !&E                 ***  SUBROUTINE tool_latlon2ij_global  ***
+      !&E
+      !&E ** Purpose : convert geographic coordinates into (i,j) grid indices,
+      !&E              precisely AND identically on every MPI rank -- for
+      !&E              patch-boundary/extent definitions (rectangle corners,
+      !&E              circle center), which unlike per-particle positions
+      !&E              must be the SAME on every rank (they drive the
+      !&E              decomposition-independent release grid every patch
+      !&E              type relies on).
+      !&E
+      !&E ** Called by : LAGRANGIAN_init
+      !&E
+      !&E ** Description : every rank runs tool_latlon2ij's precise local
+      !&E              search; exactly one rank's tile actually contains the
+      !&E              point (found_local=.TRUE. there), so that rank's exact
+      !&E              answer is broadcast to every other rank via MPI. If NO
+      !&E              rank finds it, the point is genuinely outside the
+      !&E              domain -- a patch-configuration error, not something
+      !&E              to silently paper over with an approximation, so this
+      !&E              stops the run with a clear message.
+      !&E
+      !&E---------------------------------------------------------------------
+      !! * Modules used
+      USE trajectools, ONLY: tool_latlon2ij
+      USE comtraj, ONLY: ierrorlog, file_trajec
+      IMPLICIT NONE
+
+      !! * Arguments
+      REAL(KIND=rlg), INTENT(in)  :: longitude, latitude
+      REAL(KIND=rsh), INTENT(out) :: i_out, j_out
+
+      !! * Local declarations
+      LOGICAL :: found_local, found_anywhere
+#ifdef MPI
+      INTEGER :: my_candidate, winner_rank, ierr_mpi
+#endif
+      !!----------------------------------------------------------------------
+      !! * Executable part
+
+      CALL tool_latlon2ij(longitude, latitude, i_out, j_out, found_local=found_local)
+
+#ifdef MPI
+      ! Lowest-numbered rank that actually found it, deterministically
+      ! (avoids any race if the point sits exactly on a tile boundary and
+      ! more than one rank's local search happens to claim it).
+      my_candidate = MERGE(mynode, HUGE(mynode), found_local)
+      CALL MPI_ALLREDUCE(my_candidate, winner_rank, 1, MPI_INTEGER, MPI_MIN, MPI_COMM_WORLD, ierr_mpi)
+      found_anywhere = (winner_rank /= HUGE(mynode))
+
+      IF (found_anywhere) THEN
+         ! i_out/j_out are REAL(kind=rsh) = double precision (rsh=8, see
+         ! comtraj.F90) -- MPI_DOUBLE_PRECISION, not MPI_REAL, to match.
+         CALL MPI_Bcast(i_out, 1, MPI_DOUBLE_PRECISION, winner_rank, MPI_COMM_WORLD, ierr_mpi)
+         CALL MPI_Bcast(j_out, 1, MPI_DOUBLE_PRECISION, winner_rank, MPI_COMM_WORLD, ierr_mpi)
+      END IF
+#else
+      found_anywhere = found_local
+#endif
+
+      IF (.NOT. found_anywhere) THEN
+         WRITE (ierrorlog, *) 'Function tool_latlon2ij_global : position (', longitude, ',', latitude, &
+            ') is outside the domain grid -- check the patch definition in file :', trim(file_trajec)
+         WRITE (ierrorlog, *) 'The simulation is stopped'
+         CALL_MPI MPI_FINALIZE(ierr_mpi)
+         STOP
+      END IF
+
+   END SUBROUTINE tool_latlon2ij_global
+
+   !!======================================================================
+   SUBROUTINE LAGRANGIAN_init(xe, Istr, Iend, Jstr, Jend)
 
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE traj_init3d  ***
@@ -119,7 +191,7 @@ CONTAINS
       !&E ** Called by :  LAGRANGIAN_init_main
       !&E
       !&E ** External calls : h0int,xeint,loc_h0,update_htot,update_wz,compute_dsig_dcuds
-      !&E                     ztosiggen,hc_sigint,lonlat2ij,tool_latlon2i,tool_latlon2j
+      !&E                     ztosiggen,hc_sigint,lonlat2ij,tool_latlon2ij,tool_latlon2ij_global
       !&E                     set_htot_bc,define_pos,patch_list_append,init_mpi_type_particle
       !&E                     init_patch
       !&E
@@ -137,7 +209,7 @@ CONTAINS
       USE module_lagrangian !,  ONLY : pi,stdout,start_time,time_end, &
       !          Eradius,h,latr,lonu,latv,sc_r,sc_w,N, lagrangianname
       USE trajectools, ONLY: h0int, xeint, loc_h0, update_htot, update_wz, compute_dsig_dcuds, &
-                             ztosiggen, hc_sigint, lonlat2ij, tool_latlon2i, tool_latlon2j, &
+                             ztosiggen, hc_sigint, lonlat2ij, tool_latlon2ij, &
                              set_htot_bc, define_pos, is_local_position
 #ifdef MPI
       USE toolmpi, ONLY: MPI_glob2loc, MPI_loc2glob
@@ -149,10 +221,13 @@ CONTAINS
       USE comtraj, ONLY: ibm_restart
 #endif
       USE comtraj, ONLY: dsigu, dsigw, kmax, ierrorlog, iscreenlog
-      USE comtraj, ONLY: lonwest, latsouth, dlonr, dlatr, wz
+      USE comtraj, ONLY: wz
       USE comtraj, ONLY: type_position
 
       !! * Arguments
+      ! xe already sliced to the correct zeta time level (knew) by the
+      ! caller (plug_lagrangian.F90) - see traject3d.F90's LAGRANGIAN_update.
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
       INTEGER, INTENT(in) :: Istr, Iend, Jstr, Jend
 
       !! * Local declarations
@@ -181,6 +256,7 @@ CONTAINS
 
       ! To read data from rectangular patch
       REAL(KIND=rlg)                              :: gmin, gmax
+      REAL(KIND=rsh)                              :: x_tmp, y_tmp
 
       ! Position indexes for particles and their number
       INTEGER                                     :: imin_patch, imax_patch, &
@@ -246,33 +322,6 @@ CONTAINS
       kmax = N
 
       time_start = start_time
-
-! start by exchange lonwest and latsouth for all procs
-#ifdef MPI
-      if (ii == 0 .and. jj == 0 .and. Istr == 1 .and. Jstr == 1) then
-         lonwest = lonr(1, 1)
-         latsouth = latr(1, 1)
-      end if
-      CALL MPI_Bcast(lonwest, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast(latsouth, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-#else
-      lonwest = lonr(1, 1)
-      latsouth = latr(1, 1)
-#endif
-
-      !calcul of lon,lat resolution
-      !----------------------------
-#ifdef MPI
-      IF (MASTER) THEN
-         dlonr = lonr(2, 1) - lonr(1, 1)
-         dlatr = latr(1, 2) - latr(1, 1)
-      END IF
-      CALL MPI_Bcast(dlonr, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast(dlatr, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-#else
-      dlonr = lonr(2, 1) - lonr(1, 1)
-      dlatr = latr(1, 2) - latr(1, 1)
-#endif
 
       !init ionc4
       !----------
@@ -442,8 +491,9 @@ CONTAINS
                READ (49, *, iostat=eof) imin_patch, jmin_patch
             ELSE
                READ (49, *, iostat=eof) gmin, phimin
-               imin_patch = NINT(tool_latlon2i(gmin, phimin))
-               jmin_patch = NINT(tool_latlon2j(gmin, phimin))
+               CALL tool_latlon2ij_global(gmin, phimin, x_tmp, y_tmp)
+               imin_patch = NINT(x_tmp)
+               jmin_patch = NINT(y_tmp)
                IF (imin_patch < imin .OR. imin_patch > imax) THEN
                   PRINT *, 'LOCATION OUT OF THE DOMAIN'
                   PRINT *, 'Have a look at file ', trim(file_trajec), ' patch number', new_patch%id
@@ -568,7 +618,7 @@ CONTAINS
                                  IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > k) THEN
                                     CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
                                                 hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                                    xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                    xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                                    hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                     h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                     d3 = h0_lag + xe_lag
@@ -607,7 +657,7 @@ CONTAINS
 
                                     CALL loc_h0(pos2%idx_r, pos2%idy_r, px, py, igg, idd, jbb, jhh, &
                                                 hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                                    xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                    xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                                    hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                     h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                     d3 = h0_lag + xe_lag
@@ -655,10 +705,12 @@ CONTAINS
                      READ (49, *, iostat=eof) imin_patch, imax_patch, jmin_patch, jmax_patch
                   ELSE
                      READ (49, *, iostat=eof) gmin, gmax, phimin, phimax
-                     imin_patch = NINT(tool_latlon2i(gmin, phimin))
-                     imax_patch = NINT(tool_latlon2i(gmax, phimax))
-                     jmin_patch = NINT(tool_latlon2j(gmin, phimin))
-                     jmax_patch = NINT(tool_latlon2j(gmax, phimax))
+                     CALL tool_latlon2ij_global(gmin, phimin, x_tmp, y_tmp)
+                     imin_patch = NINT(x_tmp)
+                     jmin_patch = NINT(y_tmp)
+                     CALL tool_latlon2ij_global(gmax, phimax, x_tmp, y_tmp)
+                     imax_patch = NINT(x_tmp)
+                     jmax_patch = NINT(y_tmp)
 
                      IF (imin_patch < imin .OR. imin_patch > imax) THEN
                         PRINT *, 'LOCATION OUT OF THE DOMAIN'
@@ -712,7 +764,7 @@ CONTAINS
                               IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > k) THEN
                                  CALL loc_h0(pos%idx_r, pos%idy_r, px, py, igg, idd, jbb, jhh, &
                                              hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                                 xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                 xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                                 hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                  h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                  d3 = h0_lag + xe_lag
@@ -747,7 +799,7 @@ CONTAINS
                                  ! total depth at particle s location
                                  CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
                                              hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                                 xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                 xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                                 hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                  h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                  d3 = h0_lag + xe_lag
@@ -837,8 +889,7 @@ CONTAINS
                         STOP
                      END IF
 
-                     xtemp = tool_latlon2i(lon_nc(nn), lat_nc(nn))
-                     ytemp = tool_latlon2j(lon_nc(nn), lat_nc(nn))
+                     CALL tool_latlon2ij(lon_nc(nn), lat_nc(nn), xtemp, ytemp)
 
                      IF (is_local_position(xtemp, ytemp, Istr, Iend, Jstr, Jend)) THEN
                         pos1%xp = xtemp; pos1%yp = ytemp
@@ -848,7 +899,7 @@ CONTAINS
                             rmask(NINT(pos1%idx_r), NINT(pos1%idy_r)) > 0.5_rsh) THEN
                            CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
                                        hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                           xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                           xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                           hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                            h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                            d3 = h0_lag + xe_lag
@@ -868,8 +919,7 @@ CONTAINS
                      ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
                      IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
 
-                     xtemp = tool_latlon2i(lon_nc(nn), lat_nc(nn))
-                     ytemp = tool_latlon2j(lon_nc(nn), lat_nc(nn))
+                     CALL tool_latlon2ij(lon_nc(nn), lat_nc(nn), xtemp, ytemp)
                      pos%xp = xtemp; pos%yp = ytemp
                      IF (is_local_position(xtemp, ytemp, Istr, Iend, Jstr, Jend)) THEN
                         CALL define_pos(pos)
@@ -878,13 +928,13 @@ CONTAINS
                             rmask(NINT(pos%idx_r), NINT(pos%idy_r)) > 0.5_rsh) THEN
                            m1 = m2 + 1
                            m2 = m2 + nb_part_intro
-                           new_patch%particles(m1:m2)%xpos = tool_latlon2i(lon_nc(nn), lat_nc(nn))
-                           new_patch%particles(m1:m2)%ypos = tool_latlon2j(lon_nc(nn), lat_nc(nn))
+                           new_patch%particles(m1:m2)%xpos = xtemp
+                           new_patch%particles(m1:m2)%ypos = ytemp
 
                            ! total depth at particle s location
                            CALL loc_h0(pos%idx_r, pos%idy_r, px, py, igg, idd, jbb, jhh, &
                                        hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                           xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                           xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                           hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                            h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                            d3 = h0_lag + xe_lag
