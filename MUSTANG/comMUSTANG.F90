@@ -217,8 +217,8 @@ MODULE comMUSTANG
         ! is stopped
 
 
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-    ! namsedim_bedload 
+#if defined key_MUSTANG_V2
+    ! namsedim_bedload
     LOGICAL :: l_peph_bedload ! set to .true. if hindering / exposure processes
         ! in critical shear stress estimate for bedload
     LOGICAL :: l_slope_effect_bedload ! set to .true. if accounting for slope 
@@ -532,15 +532,13 @@ MODULE comMUSTANG
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: stateconsol
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: permeab
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: E0_sand
-#ifdef  key_MUSTANG_bedload
-        REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_bx
-        REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_by
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdx
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdy
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: sedimask_h0plusxe
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_bx
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_by
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdx
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdy
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: sedimask_h0plusxe
 #if defined MORPHODYN
             INTEGER :: it_morphoYes
-#endif
 #endif
 #endif
 

@@ -33,7 +33,6 @@
 # endif
 # ifdef MUSTANG
 #  define key_MUSTANG_V2
-#  define key_MUSTANG_bedload
 #  define key_tauskin_c_upwind
 # endif
 # define GLS_MIXING

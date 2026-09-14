@@ -44,9 +44,9 @@
     PUBLIC sed_skinstress
     PUBLIC sed_gradvit
     PUBLIC sed_MUSTANG_settlveloc
-#ifdef key_MUSTANG_bedload
+#ifdef key_MUSTANG_V2
     PUBLIC sed_bottom_slope
-#if defined MPI 
+#if defined MPI
     PUBLIC sed_exchange_flxbedload
     PUBLIC sed_exchange_maskbedload
 #endif
@@ -353,7 +353,8 @@ END SUBROUTINE sed_gradvit
 #  ifdef WET_DRY AND MASKING
       tauskin(i, j) = tauskin(i, j) * rmask_wet(i, j)
 #  endif
-#  ifdef key_MUSTANG_bedload
+#  ifdef key_MUSTANG_V2
+      IF (l_bedload) THEN
       urho = 0.5 * (u(i, j, 1, nnew) + u(i+1, j, 1, nnew))
       vrho = 0.5 * (v(i, j, 1, nnew) + v(i, j+1, 1, nnew))
       speed = SQRT(urho**2 + vrho**2)
@@ -364,13 +365,14 @@ END SUBROUTINE sed_gradvit
         do i = ifirst, ilast+1
           raphbx(i, j) = ABS(u(i, j, 1, nnew)) / (ABS(u(i, j, 1, nnew)) + epsilon_MUSTANG)
         enddo
-      enddo  
+      enddo
       do j = jfirst , jlast+1
         do i = ifirst, ilast
           raphby(i, j) = ABS(v(i, j, 1, nnew)) / (ABS(v(i, j, 1, nnew)) + epsilon_MUSTANG)
         enddo
-      enddo 
-#  endif /* key_MUSTANG_bedload */
+      enddo
+      ENDIF
+#  endif /* key_MUSTANG_V2 */
 
 #  else /* else on #ifdef BBL */
 
@@ -407,19 +409,21 @@ END SUBROUTINE sed_gradvit
                     (z0sed(i, j))))**(-2) * speed**2                &
                     * (rho(i, j, 1) + rho0)
 # endif
-#  ifdef key_MUSTANG_bedload     
+#  ifdef key_MUSTANG_V2
+      IF (l_bedload) THEN
       tauskin_x(i, j) = urho / (speed + epsilon_MUSTANG) * tauskin_c(i, j)
       tauskin_y(i, j) = vrho / (speed + epsilon_MUSTANG) * tauskin_c(i, j)
       do j = jfirst, jlast
         do i = ifirst, ilast+1
           raphbx(i, j) = ABS(u(i, j, 1, nnew)) / (ABS(u(i, j, 1, nnew)) + epsilon_MUSTANG)
         enddo
-      enddo  
+      enddo
       do j = jfirst , jlast+1
         do i = ifirst, ilast
           raphby(i, j) = ABS(v(i, j, 1, nnew)) / (ABS(v(i, j, 1, nnew)) + epsilon_MUSTANG)
         enddo
-      enddo 
+      enddo
+      ENDIF
 # endif
 
 # else /* else on #ifdef key_tauskin_c_center */
@@ -585,7 +589,7 @@ END SUBROUTINE sed_gradvit
 
 
 !!==============================================================================
-#ifdef key_MUSTANG_bedload
+#ifdef key_MUSTANG_V2
   SUBROUTINE sed_bottom_slope(ifirst, ilast, jfirst, jlast, bathy)
    !&E--------------------------------------------------------------------------                         
    !&E                 ***  ROUTINE sed_bottom_slope  ***
@@ -657,11 +661,11 @@ END SUBROUTINE sed_gradvit
 
   END SUBROUTINE sed_exchange_flxbedload
 #endif /* MPI */
-#endif /* key_MUSTANG_bedload */
+#endif /* key_MUSTANG_V2 */
 
 !!=============================================================================
 
-#if defined MPI && defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+#if defined MPI && defined key_MUSTANG_V2
     SUBROUTINE sed_exchange_maskbedload(ifirst, ilast, jfirst, jlast)
     !&E-------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_exchange_maskbedload ***
@@ -683,7 +687,7 @@ END SUBROUTINE sed_gradvit
     sedimask_h0plusxe(:,:) = workexch(:,:)
 
     END SUBROUTINE sed_exchange_maskbedload
-#endif /* defined MPI && defined key_MUSTANG_V2 && defined key_MUSTANG_bedload */
+#endif /* defined MPI && defined key_MUSTANG_V2 */
 
 !!=============================================================================
 
