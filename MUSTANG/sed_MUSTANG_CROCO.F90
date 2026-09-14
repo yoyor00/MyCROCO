@@ -35,9 +35,7 @@
     USE comsubstance
     USE module_substance   ! provides Uwave, Dwave, Pwave when WAVE_OFFLINE
     USE croco_namelist, ONLY : rho0
-# if defined key_MUSTANG_flocmod
     USE flocmod, ONLY: f_ws
-#endif
     IMPLICIT NONE
 
     !! * Accessibility 
@@ -87,7 +85,7 @@ SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
 !&E  need to be know by code treated substance 
 !&E  (if not ==> coupler_MUSTANG.F90)
 !&E         imud1, nvpc, nvp, nv_adv, isand1, isand2
-!&E         f_ws(iv) (if key_MUSTANG_flocmod)
+!&E         f_ws(iv) (if l_flocmod)
 !&E         ws_free_opt, ws_free_para, ws_free_min, ws_free_max,
 !&E         ws_hind_opt, ws_hind_para   
 !&E     
@@ -125,10 +123,10 @@ DO i = ifirst, ilast
                 ws_part(i, j, k, itemp + ntrc_salt + iv) = ws_sand(iv)
             ENDDO
             
-            ! next mud settling velocity 
-#ifdef key_MUSTANG_flocmod   
-            ws_part(i, j, k, itemp + ntrc_salt + imud1 : itemp + ntrc_salt + imud2 ) = f_ws(1:nv_mud)  
-#else
+            ! next mud settling velocity
+            IF (l_flocmod) THEN
+            ws_part(i, j, k, itemp + ntrc_salt + imud1 : itemp + ntrc_salt + imud2 ) = f_ws(1:nv_mud)
+            ELSE
             DO iv = imud1, nvp
                 ! Free settling velocity - flocculation
                 IF(ws_free_opt(iv) == 0) THEN ! constant settling velocity
@@ -180,8 +178,7 @@ DO i = ifirst, ilast
                 ws_part(i, j, k, itemp + ntrc_salt + iv) = max(ws_free_min(iv), &
                     min(ws_free_max(iv), WSfree * Hind))
             ENDDO
-
-#endif  /* key_MUSTANG_flocmod */
+            ENDIF
 
             DO iv = nvpc+1, nvp
                 IF(irkm_var_assoc(iv) < imud1 .AND. irkm_var_assoc(iv) > 0) THEN    
@@ -225,9 +222,7 @@ SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 !&E
 !&E--------------------------------------------------------------------------
 !! * Modules used
-#if defined key_MUSTANG_flocmod
     USE flocmod, ONLY : flocmod_comp_g, l_0Dcase
-#endif
 #  include "mixing.h"
 #  include "ocean3d.h"
 
@@ -244,11 +239,9 @@ DO j = jfirst, jlast
 DO i = ifirst, ilast
     IF(htot(i, j) .GT. h0fond)  THEN
     DO k = 1, N
-#if defined key_MUSTANG_flocmod
-      IF (l_0Dcase) then
+      IF (l_flocmod .AND. l_0Dcase) then
         call flocmod_comp_g(gradvit(k, i, j), time-time_start)
       ELSE
-#endif
 #if defined GLS_MIXING
         !
         ! Dissipation from turbulence clossure
@@ -270,9 +263,7 @@ DO i = ifirst, ilast
         gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
                         (nuw + epsilon_MUSTANG) * dist_surf_on_bottom)
 #endif
-#if defined key_MUSTANG_flocmod
       ENDIF
-#endif
     END DO
     ENDIF
 ENDDO

@@ -23,7 +23,7 @@
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
 : namflocmod               : parameters using for FLOCMOD module 
-:                            (only if key_MUSTANG_flocmod)
+:                            (active only if l_flocmod)
 : namdredging              : parameters to activate dredging effect
 
 &namsedim_init

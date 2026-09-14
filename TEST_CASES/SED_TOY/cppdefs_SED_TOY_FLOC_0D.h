@@ -23,7 +23,6 @@
 # define MUSTANG
 
 # ifdef MUSTANG
-#   define key_MUSTANG_flocmod
 #   define GLS_MIXING
 #   define GLS_KOMEGA
 # endif

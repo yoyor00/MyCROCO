@@ -387,8 +387,9 @@ MODULE comMUSTANG
         ! an addition layer is an integrative layer till bottom
 
 
-#ifdef key_MUSTANG_flocmod
-    ! namflocmod  
+    ! namflocmod
+    LOGICAL :: l_flocmod ! set to .true. to activate the FLOCMOD flocculation
+        ! module for mud settling velocity
     LOGICAL :: l_ASH ! set to .true. if aggregation by shear
     LOGICAL :: l_ADS ! set to .true. if aggregation by differential settling
     LOGICAL :: l_COLLFRAG ! set to .true. if fragmentation by collision
@@ -422,9 +423,8 @@ MODULE comMUSTANG
         ! fragmentation (default 2.0 as binary fragmentation)
     REAL(KIND=rsh) :: f_nf ! fractal dimension (default 2.0, usual range from 
         ! 1.6 to 2.8)
-    REAL(KIND=rsh) :: f_clim ! min concentration below which flocculation 
+    REAL(KIND=rsh) :: f_clim ! min concentration below which flocculation
         !processes are not calculated
-#endif
 
     CHARACTER(len=lchain) :: dredging_location_file ! TODO DREDGING
     CHARACTER(len=lchain) :: dredging_settings_file ! TODO DREDGING

@@ -21,8 +21,8 @@
 :                            (only if !defined key_noTSdiss_insed)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
-: namflocmod               : parameters using for FLOCMOD module 
-:                            (only if key_MUSTANG_flocmod)
+: namflocmod               : parameters using for FLOCMOD module
+:                            (active only if l_flocmod)
 : namdredging              : parameters to activate dredging effect
 
 
@@ -659,9 +659,10 @@
    epmax_nivsed_out=0. / 
 :
 :------------------------------------------------------------------------------
-:  Namelist relative to module FLOCMOD 
-:  (key_flocmod only)
+:  Namelist relative to module FLOCMOD
 :------------------------------------------------------------------------------
+:    l_flocmod : boolean, set to .true. to activate the FLOCMOD flocculation
+:                module for mud settling velocity
 :    l_ADS : boolean, set to .true. if aggregation by differential settling
 :    l_ASH : boolean, set to .true. if aggregation by shear
 :    l_COLLFRAG : boolean, set to .true. if fragmentation by collision
@@ -695,7 +696,8 @@
 : 
 :------------------------------------------------------------------------------
 &namflocmod
-   l_ADS = .FALSE. 
+   l_flocmod = .FALSE.
+   l_ADS = .FALSE.
    l_ASH = .TRUE.
    l_COLLFRAG = .FALSE. 
    f_dp0 = 4.e-6  

@@ -174,9 +174,7 @@ MODULE sed_MUSTANG
    USE reactionsinsed,  ONLY : reactions_in_sed
    USE bioloinit,     ONLY : p_txfiltbenthmax
 #endif
-#if defined key_MUSTANG_flocmod
    USE flocmod,  ONLY : flocmod_main
-#endif
 #ifdef OBSTRUCTION
    USE OBSTRUCTIONS1DV, ONLY : o1dv_comp_z0sedim
    USE com_OBSTRUCTIONS, ONLY : obst_position, obst_height, obst_dens_inst, obst_width_inst
@@ -251,12 +249,12 @@ MODULE sed_MUSTANG
     call sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
                            WATER_CONCENTRATION)
 
-#ifdef key_MUSTANG_flocmod
+IF (l_flocmod) THEN
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! FLOCMOD :    compute aggregation /fragmentation processes  !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO j=jfirst,jlast
-        DO i=ifirst,ilast   
+        DO i=ifirst,ilast
             IF(htot(i,j) > h0fond) THEN
                 DO k=1,N
                     CALL flocmod_main( dt_true, &
@@ -267,7 +265,7 @@ MODULE sed_MUSTANG
         ENDDO
     ENDDO
 
-#endif
+ENDIF
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!! tendance au depot : deposit tendency   flx_w2s (m.s-1) !!!!!!!!!!

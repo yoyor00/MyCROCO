@@ -41,10 +41,8 @@ MODULE initMUSTANG
     USE comsubstance
     USE module_substance
     USE croco_namelist, ONLY : nrrec, sedname_must, rho0, testcase_name
-#ifdef key_MUSTANG_flocmod
     USE flocmod, ONLY : flocmod_alloc, flocmod_init
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass
-#endif
 
     IMPLICIT NONE
 
@@ -153,13 +151,11 @@ MODULE initMUSTANG
                                 alphabs, alphabn, hmin_bedload, l_fsusp
 #endif
 
-#ifdef key_MUSTANG_flocmod
-    namelist /namflocmod/ l_ADS, l_ASH, l_COLLFRAG,                           &
+    namelist /namflocmod/ l_flocmod, l_ADS, l_ASH, l_COLLFRAG,                &
                           f_dp0, f_nf, f_nb_frag, f_alpha, f_beta, f_ater,    &
                           f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
                           f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  &
                           f_clim
-#endif
 #if !defined key_noTSdiss_insed
     namelist /namtempsed/ mu_tempsed1, mu_tempsed2, mu_tempsed3,              &
                           epsedmin_tempsed,                                   &
@@ -220,9 +216,7 @@ CONTAINS
 #else
     REAL(KIND=rsh)                  :: somalp
 #endif
-#ifdef key_MUSTANG_flocmod
     LOGICAL :: l_0Dcase
-#endif
 
     ierrorlog = stdout
     iwarnlog = stdout
@@ -244,7 +238,7 @@ CONTAINS
     CALL MUSTANG_init_param()
 
     ! Floculation module
-#ifdef key_MUSTANG_flocmod
+    IF (l_flocmod) THEN
     CALL flocmod_alloc(nv_mud)
     l_0Dcase = (trim(testcase_name) == 'SED_TOY_FLOC_0D')
     CALL flocmod_init(l_ADS, l_ASH, l_COLLFRAG,             &
@@ -253,7 +247,7 @@ CONTAINS
         f_collfragparam, f_dmin_frag, f_cfcst, f_fp, f_fy,  &
         f_clim, diam_sed(imud1:nvpc), ros(imud1:nvpc),      &
         rho0, l_0Dcase, ierrorlog)
-#endif
+    ENDIF
 
     CALL dredging_init_param(ifirst,ilast,jfirst,jlast)
 
@@ -429,10 +423,8 @@ CONTAINS
     READ(50, namtempsed); rewind(50)
 #endif
     READ(50, namsedoutput); rewind(50)
-#ifdef key_MUSTANG_flocmod
     ! module FLOCULATION
     READ(50, namflocmod); rewind(50)
-#endif
     READ(50, namdredging); rewind(50)
 
     CLOSE(50) 
@@ -474,7 +466,7 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, namtempsed)
 #endif
 
-#ifdef key_MUSTANG_flocmod
+    IF (l_flocmod) THEN
     !! module floculation
     MPI_master_only WRITE(iscreenlog, *) ' '
     MPI_master_only WRITE(iscreenlog, *) '    FLOCMOD'
@@ -516,8 +508,8 @@ CONTAINS
     MPI_master_only WRITE(iscreenlog, *) &
         'Min concentration below which flocculation is not calculated : ', f_clim
     MPI_master_only WRITE(iscreenlog, *) ' '
-    MPI_master_only WRITE(iscreenlog, *) '*** END FLOCMOD INIT *** '    
-#endif
+    MPI_master_only WRITE(iscreenlog, *) '*** END FLOCMOD INIT *** '
+    ENDIF
    
     END SUBROUTINE MUSTANG_param_log
 !!===========================================================================
@@ -564,8 +556,7 @@ CONTAINS
         ' If you simulate dissolved variables in water AND in sediment, don t use key_nofluxwat_IWS '
 #endif
 
-#ifdef key_MUSTANG_flocmod
-    IF (.not.l_ADS .and. .not.l_ASH) THEN
+    IF (l_flocmod .AND. .not.l_ADS .and. .not.l_ASH) THEN
         MPI_master_only write(ierrorlog, *) 'CAUTION : incompatible flocculation kernel options : '
         MPI_master_only write(ierrorlog, *) '*****************************************************'
         MPI_master_only write(ierrorlog, *) 'l_ADS=', l_ADS
@@ -573,7 +564,6 @@ CONTAINS
         MPI_master_only write(ierrorlog, *) 'simulation stopped'
         STOP
     ENDIF
-#endif
 
     ! test compatibility tocd /consolidation
     IF (l_consolid) THEN
