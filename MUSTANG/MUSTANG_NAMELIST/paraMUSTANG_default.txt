@@ -92,9 +92,14 @@
 :                  from dzsmaxuni to dzsmaxuni/100 depending on water depth
 :    dzsmaxuni : real, uniform maximum thickness for the superficial sediment 
 :                layer (m), must be >0 
-:    nlayer_surf_sed : integer, number of layers below the sediment surface 
+:    nlayer_surf_sed : integer, number of layers below the sediment surface
 :                      that can not be melted (max thickness = dzsmax)
-:    k1HW97: real, ref value k1HW97 = 0.07, parameter to compute active layer 
+:    l_splitlayersurf : boolean, set to .true. to split surface sediment
+:                       layers for a regular, precise discretization at the
+:                       surface when too thick (over nlayer_surf_sed layers
+:                       below the surface) ; if .false., the excess is simply
+:                       moved into one new layer above
+:    k1HW97: real, ref value k1HW97 = 0.07, parameter to compute active layer
 :            thickness (Harris and Wiberg, 1997) 
 :            (key_MUSTANG_V2 only)
 :    k2HW97 : real, ref value k2HW97 = 6.0, parameter to compute active layer 
@@ -114,8 +119,9 @@
    dzsmax_bottom = 2.0 
    l_dzsmaxuni = .TRUE. 
    dzsmaxuni = 2.0e-2
-   nlayer_surf_sed = 5 
-   k1HW97 = 0.07      
+   nlayer_surf_sed = 5
+   l_splitlayersurf = .FALSE.
+   k1HW97 = 0.07
    k2HW97 = 6.0  
    fusion_para_activlayer = 1. /  
 :

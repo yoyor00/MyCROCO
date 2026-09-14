@@ -82,8 +82,12 @@ MODULE comMUSTANG
         ! 0 : no fusion, 
         ! = 1 : frmudcr1, 
         ! > 1 : between frmudcr1 & frmudcr2
-    INTEGER :: nlayer_surf_sed ! number of layers below the sediment surface 
+    INTEGER :: nlayer_surf_sed ! number of layers below the sediment surface
         ! that can not be melted (max thickness = dzsmax)
+    LOGICAL :: l_splitlayersurf ! set to .true. to split surface sediment
+        ! layers for a regular, precise discretization at the surface when
+        ! too thick (over nlayer_surf_sed layers below the surface) ; if
+        ! .false., the excess is simply moved into one new layer above
 
 
     ! namsedim_bottomstress

@@ -65,7 +65,7 @@ MODULE initMUSTANG
     namelist /namsedim_layer/ l_dzsminuni, dzsminuni,                         &
                               l_dzsmaxuni, dzsmaxuni,                         &
                               dzsmax_bottom, dzsmin,                          &
-                              nlayer_surf_sed,                                &
+                              nlayer_surf_sed, l_splitlayersurf,              &
                               k1HW97, k2HW97,                                 &
                               fusion_para_activlayer
 
@@ -191,9 +191,7 @@ CONTAINS
     USE dredging, ONLY : dredging_init_param
     USE coupler_MUSTANG,  ONLY : coupl_conv2MUSTANG
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_comp_z0hydro
-#ifdef key_MUSTANG_splitlayersurf
     USE sed_MUSTANG,  ONLY : sed_MUSTANG_split_surflayer
-#endif
 #ifdef key_MUSTANG_V2
     USE sed_MUSTANG,  ONLY : MUSTANGV2_comp_poro_mixsed
     USE sed_MUSTANG_CROCO,  ONLY : sed_bottom_slope
@@ -299,7 +297,7 @@ CONTAINS
         DO i = ifirst, ilast
           IF (ksma(i,j) .NE. 0) THEN
 
-#ifdef key_MUSTANG_splitlayersurf
+            IF (l_splitlayersurf) THEN
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             !! Splitting surface layers if too thick
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -309,10 +307,10 @@ CONTAINS
                     IF (dzs(k,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) isplit=1
                 ENDIF
             ENDDO
-            IF(isplit == 1) THEN            
+            IF(isplit == 1) THEN
                 CALL sed_MUSTANG_split_surflayer(i,j,ksma(i,j))
             ENDIF
-#endif
+            ENDIF
 
             DO k=ksmi(i,j),ksma(i,j)
 #ifdef key_MUSTANG_V2

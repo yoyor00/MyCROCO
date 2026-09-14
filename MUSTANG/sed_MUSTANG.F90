@@ -116,9 +116,7 @@ MODULE sed_MUSTANG
 #if defined key_MUSTANG_V2
    PUBLIC MUSTANGV2_comp_poro_mixsed
 #endif
-#ifdef key_MUSTANG_splitlayersurf
    PUBLIC sed_MUSTANG_split_surflayer
-#endif
 
    PRIVATE
    
@@ -1720,7 +1718,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                 !END IF ! IF(tauskin(i,j).GT.toce)
 
-#ifdef key_MUSTANG_splitlayersurf
+                IF (l_splitlayersurf) THEN
                 !! Splitting surface layers if too thick
                 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 isplit=0
@@ -1732,8 +1730,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 IF(isplit==1 ) then
                  CALL sed_MUSTANG_split_surflayer(i,j,ksmax)
                 ENDIF
-#else
-                ! to avoid increasing the thickness of the surface layer 
+                ELSE
+                ! to avoid increasing the thickness of the surface layer
                 IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
                     IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
                        dzs(ksmax+1,i,j)=MIN(dzs(ksmax,i,j)-dzsmax(i,j),dzsmax(i,j))
@@ -1746,7 +1744,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                        ksmax=ksmax+1
                     ENDIF
                 ENDIF
-#endif
+                ENDIF
 
               ENDIF  ! no erosion (non cohesive sediment)
 
@@ -2474,7 +2472,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ksmax=ksmax+1
                ENDIF
             ENDIF
-#ifdef key_MUSTANG_splitlayersurf
+           IF (l_splitlayersurf) THEN
            !! Splitting surface layers if too thick
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
            isplit=0
@@ -2486,7 +2484,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
            IF(isplit==1 ) then
              CALL sed_MUSTANG_split_surflayer(i,j,ksmax)
            ENDIF
-#endif
+           ENDIF
           ENDIF  ! ero>0
 
           ! to find an erosion flux in .../m2/s (for particulates only):
@@ -5593,7 +5591,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
   END SUBROUTINE sed_MUSTANG_consol_diff_bioturb
 
 !!==============================================================================
-#ifdef key_MUSTANG_splitlayersurf
   SUBROUTINE sed_MUSTANG_split_surflayer(i,j,ksmax)
 ! 
    !&E--------------------------------------------------------------------------
@@ -5621,8 +5618,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    INTEGER                          :: nlayer_a_fusion, nlayer_splitt
    INTEGER ,DIMENSION(ksdmax)       :: nlayer_splitk
    REAL(KIND=rsh)                   :: dzsa,poroa,cvolp,zz
-   REAL(KIND=rsh)                   :: thick_surf_new ,thick_surf_old,stcvsed_surf_new,stcvsed_surf_old
-   REAL(KIND=rsh)                   :: stcsedtot_new,stcsedtot_old
 #if ! defined key_noTSdiss_insed
 !#ifdef key_MUSTANG_V2
 !   REAL(KIND=rsh)                   :: porowater_new,porowater1,porowater2
@@ -5665,17 +5660,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ks_split_min=ks_split_min-nlayer_a_fusion
              ENDIF
                
-#ifdef key_test_conservativity_splitsurf
-             ! to test conservativity
-             thick_surf_old=0.0_rsh
-             !stcvsed_surf_old=0.0_rsh
-             stcsedtot_old=0.0_rsh
-             DO kk=MAX(1,ks_split_min-2),ks_surf
-               thick_surf_old=thick_surf_old+dzs(kk,i,j)
-              ! stcvsed_surf_old=stcvsed_surf_old+cv_sed(3,kk,i,j)*dzs(kk,i,j)
-               stcsedtot_old=stcsedtot_old+c_sedtot(kk,i,j)*dzs(kk,i,j)
-             ENDDO
-#endif
              
              ! splitting surface layer first above ks_surf
              k=ks_surf  
@@ -5861,37 +5845,12 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
              
              ksma(i,j)=ksmax
             
-#ifdef key_test_conservativity_splitsurf
-             ! Verification of the conservativity of thicknesses and concentrations
-             thick_surf_new=0.0_rsh
-            ! stcvsed_surf_new=0.0_rsh
-             stcsedtot_new=0.0_rsh
-             DO k= MAX(1,ks_split_min-2), ksma(i,j)
-               thick_surf_new=thick_surf_new+dzs(k,i,j)
-               !stcvsed_surf_new=stcvsed_surf_new+cv_sed(3,k,i,j)*dzs(k,i,j)
-               stcsedtot_new=stcsedtot_new+c_sedtot(k,i,j)*dzs(k,i,j)
-             ENDDO          
-             IF((thick_surf_new-thick_surf_old)/thick_surf_old*100 > 1.e-3 ) THEN
-                write(*,*)'Probleme thick ',t,i,j,ksma(i,j),thick_surf_new,thick_surf_old, &
-                          'diff %=',(thick_surf_new-thick_surf_old)/thick_surf_old*100
-              ! write(*,*)'dzs old',j,ks_split_min,ks_surf,dzs_old(ks_split_min-2:ks_surf)
-               write(*,*)'dzs new',j,dzs(ks_split_min-2:ksma(i,j),i,j)
-             ENDIF
-             !IF((stcvsed_surf_new-stcvsed_surf_old)/stcvsed_surf_old*100 > 1.e-3) THEN
-             !   write(*,*)'Probleme cvsed ',i,j,ksma(i,j),stcvsed_surf_new,stcvsed_surf_old, &
-             !              'diff %=',(stcvsed_surf_new-stcvsed_surf_old)/stcvsed_surf_old*100
-             !ENDIF
-             IF((stcsedtot_new-stcsedtot_old)/stcsedtot_old*100 > 1.e-3) THEN
-                write(*,*)'Probleme csedtot ',i,j,ksma(i,j),stcsedtot_new,stcsedtot_old, &
-                            'diff %=',(stcsedtot_new-stcsedtot_old)/stcsedtot_old*100
-             ENDIF
-#endif 
+
           
            ENDIF   ! if nlayer_splitt > 0                
          ENDIF   ! if ks_surf > 0 
 
   END SUBROUTINE sed_MUSTANG_split_surflayer
-#endif
 !!===========================================================================================
 !
       SUBROUTINE sed_MUSTANG_coefbioturb_part(i,j,difbio)
