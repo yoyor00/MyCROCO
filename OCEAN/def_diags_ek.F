@@ -25,6 +25,11 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+      use croco_namelist, only: ldefdiags_ek, nwrtdiags_ek,
+     &     nrpfdiags_ek, diags_ekname, ldefdiags_ek_avg,
+     &     ntsdiags_ek_avg, nwrtdiags_ek_avg, nrpfdiags_ek_avg,
+     &     diags_ekname_avg
+
       implicit none
 # include "param.h"
 # include "mixing.h"

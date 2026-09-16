@@ -17,6 +17,7 @@ MODULE substance
    USE module_substance
    USE comsubstance
    USE submassbalance, ONLY :  submassbalance_readdomain
+   USE croco_namelist, ONLY : subsfilename
 
 # if defined BIOLink
    USE comBIOLink

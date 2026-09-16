@@ -40,6 +40,7 @@ MODULE initMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
     USE comsubstance
     USE module_substance
+    USE croco_namelist, ONLY : nrrec, sedname_must, rho0, testcase_name
 #ifdef key_MUSTANG_flocmod
     USE flocmod, ONLY : flocmod_alloc, flocmod_init
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass
@@ -82,7 +83,8 @@ MODULE initMUSTANG
 
     namelist /namsedim_bottomstress/ l_z0seduni,                              &
                                      z0seduni, z0sedmud, z0sedbedrock,        &
-                                     l_fricwave, fricwav,                     &
+                                     l_tauskin_center,l_tauskin_ubar,         &
+                                     l_tauskin_upwind, l_fricwave, fricwav,   &
                                      l_z0hydro_coupl_init,                    & 
                                      l_z0hydro_coupl,                         &
                                      coef_z0_coupl,                           &
@@ -249,12 +251,7 @@ CONTAINS
     ! Floculation module
 #ifdef key_MUSTANG_flocmod
     CALL flocmod_alloc(nv_mud)
-#ifdef SED_TOY_FLOC_0D
-    ! for 0D test case, we need to suppress all settling process
-    l_0Dcase = .true.
-#else
-    l_0Dcase = .false.
-#endif
+    l_0Dcase = (trim(testcase_name) == 'SED_TOY_FLOC_0D')
     CALL flocmod_init(l_ADS, l_ASH, l_COLLFRAG,             &
         f_dp0, f_nf, f_nb_frag, f_alpha, f_beta, f_ater,    &
         f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &

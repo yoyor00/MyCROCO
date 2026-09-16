@@ -13,6 +13,8 @@
                                ! Writes requested model
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
+      USE croco_namelist, only: dt, rho0
+      USE croco_namelist, ONLY: nrpfhis, hisname
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat, nvpc, nvp
 #endif
@@ -1535,18 +1537,13 @@ CR      write(*,*) 'wrt_his var3D_SAL'  MYID
           do k=1,nk_nivsed_out
 #           if defined BLOOM && defined key_BLOOM_insed
               if (itrc .gt. nvpc .AND. itrc .le. nvp) then
-                do j=0,Mm+1
-                  do i=0,Lm+1
-                    if(rmask_wet(i,j).eq.1) then
-                      if(c_sedtot(k,i,j) .gt. 0.0) then
-!                     ... in the sediment, writes the particulate variables in mmole/kgSed
-                        workrsed(i,j,k)=var3D_cvsed(k,i,j,itrc)/c_sedtot(k,i,j)
-                      endif
-                    else
-                      workrsed(i,j,k)=0.0
-                    endif
-                  enddo
-                enddo
+!                no need of wet_dry rmask_wet as we are in sediment
+!                ... writes the particulate variables in mmole/kgSed
+                where(c_sedtot(k,:,:).gt.0.)
+                  workrsed(:,:,k) = var3D_cvsed(k,:,:,itrc) / c_sedtot(k,:,:)
+                elsewhere
+                  workrsed(:,:,k) = 0.0
+                endwhere
               else
                 workrsed(:,:,k)=var3D_cvsed(k,:,:,itrc)
               endif

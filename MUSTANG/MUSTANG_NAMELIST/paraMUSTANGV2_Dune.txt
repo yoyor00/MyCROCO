@@ -45,6 +45,7 @@
 &namsedim_bottomstress 
    l_z0seduni=.TRUE.  
    z0seduni = 0.0001 
+   l_tauskin_upwind = .TRUE. 
 /
 &namsedim_deposition
 /
@@ -54,7 +55,10 @@
    tau_cri_option = 1
 /
 &namsedim_poro
-   poro_option=2 
+   poro_option=2    
+   poro_min = 0.4    
+   Awooster = 0.4
+   Bwooster = 0. 
 /
 &namsedim_bedload
    l_peph_bedload=.FALSE. 

@@ -70,6 +70,10 @@
 !
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: dt, rho0, Zobt, wave_ramp_duration
+# ifdef WAVE_ROLLER
+      use croco_namelist, only: wkb_roller
+# endif
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -209,11 +213,7 @@
 ! initial ramping coefficients
 
 # if defined WAVE_RAMP
-#  if defined RIP_TOPO_2D
-      wave_ramp = tanh(192.*dt*sec2day*float(iic-ntstart))
-#  else
-      wave_ramp = tanh(12.*dt*sec2day*float(iic-ntstart))
-#  endif
+      wave_ramp = tanh(wave_ramp_duration*dt*sec2day*float(iic-ntstart))
 # else
       wave_ramp = 1.
 # endif
@@ -1211,12 +1211,8 @@
 ! Open boundary condition (valid only for idealized situations)
 ! =============================================================
 !
-# if defined ANA_BRY && !defined REGIONAL && !defined COASTAL
-#  ifndef SHOREFACE
+# if defined ANA_BRY
       z_tide=0.0 !wkb_tide
-#  else
-      z_tide=0.0
-#  endif
 #  if defined OBC_WEST && (defined Z_FRC_BRY || defined M2_FRC_BRY \
                                              || defined M3_FRC_BRY)
       if (WESTERN_EDGE) then
@@ -1225,7 +1221,7 @@
           zetabry_west(j)=z_tide + sup(istrR,j)
 #   endif
 #   ifdef M2_FRC_BRY
-#    ifdef SHOREFACE
+#    ifdef WKB_SHORELIKE_BRY
           ubarbry_west(j)=ubar(istr,j,knew)
 #    else
           ubarbry_west(j)=-ust2d(istrR,j)    ! Stokes drift (xi)

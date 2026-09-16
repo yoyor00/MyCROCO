@@ -9,7 +9,7 @@ MODEL=croco
 # Scratch directory where the model is run
 SCRATCHDIR=`pwd`/SCRATCH
 
-# Input directory where the croco_inter.in input file is located
+# Input directory where the croco_inter.nml input file is located
 INPUTDIR=`pwd`/CROCO_IN  # prod architecture
 #INPUTDIR=`pwd`          # dev architecture
 
@@ -46,7 +46,7 @@ KMP_DUPLICATE_LIB_OK=TRUE
 
 # Model time step [seconds]
 DT=3600
-# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.in
+# Number of barotropic time steps within one baroclinic time step [number], NDTFAST in croco.nml
 NFAST=60
 
 # number total of grid levels
@@ -174,13 +174,13 @@ while [[ $LEVEL != $NLEVEL ]]; do
     $CP -f $MSSOUT/${RSTFILE}${ENDF} $SCRATCHDIR
     $CP -f ${RSTFILE}${ENDF} ${MODEL}_ini.nc${ENDF}
   fi
-  echo "Getting ${MODEL}_inter.in${ENDF} from $INPUTDIR"
-  $CP -f $INPUTDIR/${MODEL}_inter.in${ENDF} ${MODEL}_inter.in${ENDF}
+  echo "Getting ${MODEL}_inter.nml${ENDF} from $INPUTDIR"
+  $CP -f $INPUTDIR/${MODEL}_inter.nml${ENDF} ${MODEL}_inter.nml${ENDF}
 
   LEVEL=$((LEVEL + 1))
 done
 #
-# Put the number of time steps in the .in files
+# Put the number of time steps in the .nml files
 #
 NUMTIMES=0
 NUMTIMES=$((NDAYS * 24 * 3600))
@@ -211,7 +211,7 @@ while [[ $LEVEL != $NLEVEL ]]; do
     NUMRST=$NUMTIMES
   fi
   echo " "
-  echo "Writing in ${MODEL}_inter.in${ENDF}"
+  echo "Writing in ${MODEL}_inter.nml${ENDF}"
   echo "USING DT       = $DT"
   echo "USING NFAST    = $NFAST"
   echo "USING NUMTIMES = $NUMTIMES"
@@ -219,17 +219,17 @@ while [[ $LEVEL != $NLEVEL ]]; do
   echo "USING NUMHIS   = $NUMHIS"
   echo "USING NUMRST   = $NUMRST"
 
-  if [ ! -f ${MODEL}_inter.in${ENDF} ]; then
+  if [ ! -f ${MODEL}_inter.nml${ENDF} ]; then
     echo "=="
-    echo "=> ERROR : miss the ${MODEL}_inter.in${ENDF} file"
+    echo "=> ERROR : miss the ${MODEL}_inter.nml${ENDF} file"
     echo "=="
     exit 1
   fi
   sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
     -e 's/\bNUMAVG\b/'$NUMAVG'/' \
     -e 's/\bNUMHIS\b/'$NUMHIS'/' \
-    -e 's/\bNUMRST\b/'$NUMRST'/' < ${MODEL}_inter.in${ENDF} > ${MODEL}_inter.in${ENDF}.tmp1 \
-  && mv ${MODEL}_inter.in${ENDF}.tmp1 ${MODEL}.in${ENDF}
+    -e 's/\bNUMRST\b/'$NUMRST'/' < ${MODEL}_inter.nml${ENDF} > ${MODEL}_inter.nml${ENDF}.tmp1 \
+  && mv ${MODEL}_inter.nml${ENDF}.tmp1 ${MODEL}.nml${ENDF}
 
   LEVEL=$((LEVEL + 1))
 done
@@ -292,15 +292,15 @@ while [[ $NY != $NY_END ]]; do
       #
       sed -e 's/NUMRECINI/'$NUMRECINI'/' \
           -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
-          < ${MODEL}.in${ENDF} > ${MODEL}.in${ENDF}.tmp1 \
-      && mv ${MODEL}.in${ENDF}.tmp1 ${MODEL}.in${ENDF}
+          < ${MODEL}.nml${ENDF} > ${MODEL}.nml${ENDF}.tmp1 \
+      && mv ${MODEL}.nml${ENDF}.tmp1 ${MODEL}.nml${ENDF}
       #
       LEVEL=$((LEVEL + 1))
     done
     #
     #  COMPUTE
     #
-    ${RUNCMD}$CODFILE  ${MODEL}.in > ${MODEL}_${TIME}.out
+    ${RUNCMD}$CODFILE  ${MODEL}.nml > ${MODEL}_${TIME}.out
     date
     #
     # Test if the month has finised properly

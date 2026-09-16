@@ -14,15 +14,14 @@
                                    ! Writes requested model
       subroutine wrt_bio_diags     ! fields at requested levels
                                    ! into diagnostics netCDF file.
-
 # if defined BIOLink && defined BLOOM && defined BIOLink_PAR_eval
       USE comBIOLink_helping, ONLY : PAR
-      USE comBIOLINK, ONLY : ndiag_3d_wat, ndiag_3d_sed
+      USE comBIOLink, ONLY : ndiag_3d_wat, ndiag_3d_sed
 #  if defined MUSTANG && defined key_BLOOM_insed
       USE comMUSTANG, ONLY : nk_nivsed_out
 #  endif
 # endif
-
+      use croco_namelist, only: dianamebio, nrpfdiabio
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), ibuff(4), nf_fwrite

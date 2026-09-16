@@ -14,8 +14,9 @@
       subroutine wrt_rst      ! variables into restart
                               ! netCDF file.
 #if defined SUBSTANCE
-        USE comsubstance, only:cvfix_wat
+      USE comsubstance, only:cvfix_wat
 #endif
+      USE croco_namelist, ONLY: rstname, nrpfrst
 #if defined MUSTANG
       USE comMUSTANG, only: rstMust, vname_rstMust, ksmi, ksma, cv_sed, dzs
       USE dredging, ONLY : l_dredging, dredg_hsed_init
