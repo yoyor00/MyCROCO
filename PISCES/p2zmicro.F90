@@ -55,7 +55,7 @@ MODULE p2zmicro
    !!----------------------------------------------------------------------
    !! NEMO/TOP 4.0 , NEMO Consortium (2018)
    !! $Id: p2zmicro.F90 15459 2021-10-29 08:19:18Z cetlod $ 
-   !! Software governed by the CeCILL license (see ./LICENSE)
+   !! Software governed by the CeCILL license (see ../LICENSES/LICENSE_PISCES.txt)
    !!----------------------------------------------------------------------
 CONTAINS
 

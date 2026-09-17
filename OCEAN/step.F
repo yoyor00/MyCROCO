@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !
@@ -15,6 +16,9 @@
 !
 #include "cppdefs.h"
       subroutine step()
+# if defined OA_COUPLING || defined OW_COUPLING
+      use croco_namelist, only: ntimes, dt
+# endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -106,6 +110,7 @@ C$OMP END PARALLEL
 !====================================================================
 !
       subroutine prestep3D_thread()
+      use croco_namelist
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS
@@ -120,6 +125,9 @@ C$OMP END PARALLEL
 #endif
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
+#endif
+#ifdef STOGEN
+          USE stomod   ! stochastic module
 #endif
       implicit none
 #include "param.h"
@@ -343,6 +351,10 @@ C$OMP END MASTER
 #  endif
 # endif
 
+#ifdef STOGEN
+      call sto_mod(iic) ! update stochastic fields 
+#endif
+
 # ifdef BULK_FLUX
       do tile=my_first,my_last
         call bulk_flux (tile)
@@ -500,9 +512,6 @@ C$OMP BARRIER
 # if defined DIAGNOSTICS_VRT
         call set_diags_vrt (tile)
 # endif
-# if defined DIAGNOSTICS_EK
-        call set_diags_ek (tile)
-# endif
 # if defined DIAGNOSTICS_PV
         call set_diags_pv (tile)
 # endif
@@ -526,7 +535,7 @@ C$OMP BARRIER
         if (ldefdiags_vrt_avg .and. wrtdiags_vrt_avg(indxTime))
      &      call set_diags_vrt_avg (tile)
 #  endif
-#  if defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_KE
         if (ldefdiags_ek_avg .and. wrtdiags_ek_avg(indxTime))
      &      call set_diags_ek_avg (tile)
 #  endif
@@ -948,6 +957,13 @@ C$OMP BARRIER
 # endif
       enddo
 C$OMP BARRIER
+
+      do tile=my_first,my_last
+# if defined DIAGNOSTICS_KE
+        ! located at the end of step3d_uv because we need u(:::,nstp)
+        call set_diags_ek (tile)
+# endif
+      enddo
 
 #endif /* SOLVE3D */
 !

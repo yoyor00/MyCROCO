@@ -1,6 +1,8 @@
-!------------------------------------------------------------------------------
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 MODULE initMUSTANG
-!------------------------------------------------------------------------------
 
 #include "cppdefs.h"
 
@@ -38,6 +40,7 @@ MODULE initMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
     USE comsubstance
     USE module_substance
+    USE croco_namelist, ONLY : nrrec, sedname_must, rho0, testcase_name
 #ifdef key_MUSTANG_flocmod
     USE flocmod, ONLY : flocmod_alloc, flocmod_init
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass
@@ -80,7 +83,8 @@ MODULE initMUSTANG
 
     namelist /namsedim_bottomstress/ l_z0seduni,                              &
                                      z0seduni, z0sedmud, z0sedbedrock,        &
-                                     l_fricwave, fricwav,                     &
+                                     l_tauskin_center,l_tauskin_ubar,         &
+                                     l_tauskin_upwind, l_fricwave, fricwav,   &
                                      l_z0hydro_coupl_init,                    & 
                                      l_z0hydro_coupl,                         &
                                      coef_z0_coupl,                           &
@@ -88,7 +92,7 @@ MODULE initMUSTANG
                                      z0_hydro_bed
 
     namelist /namsedim_deposition/ cfreshmud, csedmin, cmudcr, aref_sand,     &
-                                   cvolmaxsort, cvolmaxmel, slopefac
+                                   l_corflux, cvolmaxsort, cvolmaxmel, slopefac
 
     namelist /namsedim_lateral_erosion/ l_erolat, coef_erolat,&
                                         coef_tauskin_lat, l_erolat_wet_cell, &
@@ -247,12 +251,7 @@ CONTAINS
     ! Floculation module
 #ifdef key_MUSTANG_flocmod
     CALL flocmod_alloc(nv_mud)
-#ifdef SED_TOY_FLOC_0D
-    ! for 0D test case, we need to suppress all settling process
-    l_0Dcase = .true.
-#else
-    l_0Dcase = .false.
-#endif
+    l_0Dcase = (trim(testcase_name) == 'SED_TOY_FLOC_0D')
     CALL flocmod_init(l_ADS, l_ASH, l_COLLFRAG,             &
         f_dp0, f_nf, f_nb_frag, f_alpha, f_beta, f_ater,    &
         f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
@@ -1062,7 +1061,7 @@ CONTAINS
  !  DZS
        ierr=nf_inq_varid (ncid,'DZS', varid)
        if (ierr .eq. nf_noerr) then
-         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
           do k=ksdmin,ksdmax
              dzs(k,:,:)=tmp3d(:,:,k)
           enddo
@@ -1092,7 +1091,7 @@ CONTAINS
  
         ierr=nf_inq_varid (ncid,nomcv, varid)
         if (ierr .eq. nf_noerr) then
-         ierr=nf_fread (tmp3d, ncid, varid, indx, 12)
+         ierr=nf_fread (tmp3d, ncid, varid, indx, 24)
  
          do k=ksdmin,ksdmax
              cv_sed(iv,k,:,:)=tmp3d(:,:,k)
@@ -1806,18 +1805,6 @@ CONTAINS
 
         ! HIS file
 
-#ifdef MORPHODYN
-        indx=indxHm
-        wrthis(indx)=.TRUE.
-        vname(1,indx) = 'Hm'
-        vname(2,indx) = 'evolving bathymetry'
-        vname(3,indx) = 'meter'
-        vname(4,indx) = 'evolving_bathymetry, scalar, series'
-        vname(5,indx) = ' '
-        vname(6,indx) = ' '
-        vname(7,indx) = ' '
-#endif
-
         indx = 1
         vname_Must(1,indx) = 'NB_LAY_SED'
         vname_Must(2,indx) = 'number of sediment layers'
@@ -2521,12 +2508,12 @@ CONTAINS
     ALLOCATE(psi_sed(nvp))
     psi_sed(1:nvp) = 0.0_rsh
 #endif
-#ifdef key_sand2D
+
     ALLOCATE(rouse2D(nv_adv,GLOBAL_2D_ARRAY))
-    ALLOCATE(sum_tmp(nv_adv,GLOBAL_2D_ARRAY))
+    ALLOCATE(rouse2D_integral(nv_adv,GLOBAL_2D_ARRAY))
     rouse2D(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-    sum_tmp(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
-#endif
+    rouse2D_integral(1:nv_adv,GLOBAL_2D_ARRAY) = 0.0_rsh
+
     
     ALLOCATE(cv_sed(-1:nv_tot,ksdmin:ksdmax,GLOBAL_2D_ARRAY))
     ALLOCATE(c_sedtot(ksdmin:ksdmax,GLOBAL_2D_ARRAY))

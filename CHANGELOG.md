@@ -5,101 +5,148 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 ## [x.x.x] - xxxx-xx-xx
 
 ### Added
-- Issue #361 : Integration of slight reformulation of zooplankton grazing 
-  according to prey size done in PISCES standard version (#340) into quota version
+
+- LICENSE : Clarify license (#7)
+
+- STOGEN : add stochastic parametrizations (Issue #301)
 
 - BENCH : Add performance tracking (Issue #378 and #423)
+- BENCH : Add missing plot scripts for test cases (#379)
 
-- SCRIPTS: in run_croco_inter add TIDE_FILES and ONLINE (Freq, path) missing information 
+- STATION : Add TEMPERATURE cppkey for stations (#445)
 
 ### Fixed
 
-- BOTTOM STRESS : Incorrect definition of loop indices for calculating 
-  the bottom stress components in the case rdrg2>0 (Issue #441)
-
-- COUPLING : fixes to prevent runtime crash when compiled in full debug mode (Issue #376)
-- COUPLING : patm2D was declared twice in case of OW_COUPLING and READ_PATM (Issue #383)
-- COUPLING : undef TIDES_MAS in oce_compile.sh, as it does not work without USE_CALENDAR 
-             (link with #233)
-- COUPLING : update croco.in.base accordingly to original croco.in (solve #366)
-- COUPLING : path to local myenv_mypath in job dir (solve #421)
-- COUPLING : add "if" conditions for cpl restart file path definitions to avoid issues when
-             one of the model was not requested in create_config (solve issue #428)
-- COUPLING and XIOS : correct path and  requested copy of cppdefs_dev (solve #364)
-- COUPLING and EXACT RESTART : manage EXACT_RESTART option in coupling scripts (solve #92)
-- BENCH : do not put report status to True for reference variant to avoid
-  to mark test passed even if not (Issue #342)
-- BENCH : put jobcomp.log in results directory even if build fail (Issue #341)
-- BENCH : remove openmp reproducibility check on SHOREFACE case (Incident #358)
-- BENCH : fix typo AGRIF_2W to AGRIF_2WAY in realist and vortex json files (Issue #368)
-
-- PISCES : Fix dummy line (kt variable) at end in p4zche.F90  (Issue #420)
-- PISCES : Fixed error on diagnostic ligands and add Fe2+ oxydation rate (Issue #371)
-
-- DIAGNOSTICS_EDDY & not XIOS : fix double comma in ncscrum.h (Issue #362)
-
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
-- MUSTANG : error in case of SAND only type and key_MUSTANG_V2 
-  not defined (Issue #451)
-
-- SUBSTANCE: submassbalance error if no closed border (Issue #449)
-
+- MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 
+  non equal to 1 and initialisation from file and restart (Issue #469)
+- MUSTANG : removed the redefinition of Hm in initMUSTANG to prevent silent 
+  restart inconsistencies with MORPHODYN, update testcase plot script 
+  accordingly (#470)
 
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
 - Cleaning : remove unused variable time_mars and change writting 
              in log file when using USE_CALENDAR (#452)
+  
+- SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
 
-- Compilation : fix cat "croco_ascii.txt" command in case of relative path
+- BENCH : Fix report check status in case of several files (#498)
+- BENCH : Fix label in plot_realist.py (#494)
 
-- Wavemaker : Fix boundary forcing in case of eastern boundary (Issue #432)
+- NBQ : Fix index when computing total depth cff2 while enforcing consistency between 
+  2d and 3d U-momentum for northern open boundary conditions when 
+  QDM_OBC_TANG_CORRECT is activated (#508).
 
-- AGRIF : incompatibility of AGRIF with cppkeys
-  BULK_ECUMEV0 or BULK_ECUMEV6 (Issue #422)
-- AGRIF and psource_ncfile : in croco.in.1 file should be croco_runoff.nc.1 (solve #436)
-- AGRIF: sponge keyword missing: put it back (even if theoretically useless, 
-  it creates a read_inp error), path for online corrected in croco_inter.in,
-  AGRIF_Fixed.in not copied from the right directory: corrected, copy croco_frc for all domains for tides  (solve #438)
+- XIOS : fix wrong name for mask_rho in field_def_croco.xml_full_withcpp (#513)
 
+- WAVEMAKER : fix use of wavemaker spectrum from data (bulk wave parameters not 
+  initialized in this case). This was done through key ROGUE_WAVES, now changed 
+  to WAVE_MAKER_DATA (#518)
 
-- OUTPUT : incompatibility when activating 
-  PISCES + PSOURCE_NCFILE_TS + DIURNAL_INPUT_SRFLX (Issue #435)
+- SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
+
+- Fix time in surf average output file (#388)
+- Fix grid variables writing in average and diagnostic file (#522)
+
+- Fix ABORT MPI when problem in reading netcdf (#167)
+
+- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
+           inconsistent with what done for calcite dissolution (#531)
+           Big fix in the calculation of NEW primary productivity with XIOS (#535)
+           Fix the calculation of nitrogen fixation rate with XIOS (#541)
+
+- jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
+  Update BENCH accordingly.
 
 ### Changed
 
+- Input file croco.in replace by a standard namelist (#497)
+  Replace the fixed-format croco.in reader with a Fortran namelist system
+  (croco.nml). All configuration parameters are now in structured &croco_*
+  namelists.
+  A convert_in_to_nml.py utility is provided to easily convert 
+  previous croco.in into croco.nml.
+
+- Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
+  with standardized uppercase filenames. Update all BENCH jsonc configs
+  and plot scripts accordingly, as well as production run scripts.
+
+- AGRIF : update conv version (#510)
+
 - SUBSTANCE : submassbalance feature is now activated only by namelist
   (Issue #347)
+
 - Compilation : update on jobcomp (support for ifx and different version of gfortran, 
-  cleaning exit status, see !172 and Issue#176)
+  cleaning exit status, see !172 and Issue#176), 
+  update NETCDF paths default from nf-config and nc-config (Issue #473)
+
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
+
 - MUSTANG : review lateral erosion feature (Issue #349)
+
+- MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
+
+- MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
+
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
-- SCRIPTS : create_config now allows to deal with 2 new options for preprocessing scripts: 
-            pytools and mattools (instead of prepro) - solve issue #295 
-            and 2 distinct options for run scripts (either inter for Plurimonth_scripts type: 
-            run_croco_inter, or runcpl for SCRIPTS_COUPLING type: submitjob, mynamelist...)
+
+- DIAGNOSTICS : 
+	- cleaning, simplifications and updates of momentum-based diagnostics (DIAGNOSTICS\_KE, DIAGNOSTICS\_VRT, DIAGNOSTICS\_M) (Issue #388)
+	- kinetic energy budget is now 3d
+	- momentum and energy diagnostics are saved as cell-volume integrals
+
+- BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
+
+- WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
+  and not in cppdefs_dev.h (#465)
+
+- BULK_FLUX : Update wasp bulk flux parametrization, 
+  cppkey BULK_WASP (Issue #453)
+
+- RIVER test case updated to pass PSOURCE_MASS with an EXP_SHAPE vertical 
+  distribution of flow, enabling a transition from the AKIMA scheme to 
+  SPLINES (#478)
+
+- OMEGA : Add a condition on the NBQ_MASS key for some terms of the first 
+  part of the computation of omega (#447)
+
+- BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
 
 ### Deprecated
 
 
 ### Removed
 
-
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
 - MUSTANG : 
   - remove key_MUSTANG_lateralerosion replace by a boolean in 
     namelist (Issue #349)
+  - remove key_sand2D, activation only by a boolean in 
+    namelist (Issue #351 and #525)
+  - remove MUSTANG_CORFLUX replace by a boolean in 
+    namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
+  - remove key_tauskin_c_ubar key_tauskin_c_center key_tauskin_c_upwind
+    replace by booleans in namelist (Issue #348)
+
+- Test cases CPP keys replace by namelist parameter (#497)
+  Remove all test-case CPP guards from the solver. Test-case selection is
+  now done at runtime via testcase_name in the namelist, not at compile
+  time. cppdefs.h and cppdefs_dev.h are cleaned of all per-case guards.
+  cppdefs.h and param.h are now provided by case in TEST_CASES. The regional 
+  Benguela example is also copied to OCEAN.
 
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
   - TS_VADV_FCT was always undef, never used (#390)
+  - WET_DRY0 (#393) never used 
   - UV_HADV_TVD, UV_VADV_TVD, W_HADV_TVD, W_VADV_TVD (#391)
   - BVF_MIXING (#398)
   - LMD_NUW_GARGETT, obsolete (#402)
@@ -114,21 +161,41 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - DEBUG_ARMOR, DEBUG, DIAGNOSTICS_DEBUG, NBQ_HZCORR_DEBUG (#415)
   - PP_MIXING, MY2_MIXING, MY25_MIXING (#418)
   - XCOMM_FORMAT (#419)
+  - TR (#395)
+  - LMD_SKPP_MONOB never define (#400)
+  - LIMIT_UNSTABLE_ONLY is always define (#401)
+  - MLCONVEC (#399)
+  - TS_VADV_AKIMA and TS_HADV_AKIMA (#392)
+  - TENDENCY, DIAGNOSTICS_EK_FULL, DIAGNOSTICS_EK_MLD (Issue #388)
 
 ### Other
 
 - Cleaning :
+  - remove TEST_CASES/IGW_OA directory with PDFs, namelist, XIOS XML files, and README  (#337)
   - remove files dynparam_f77.h, agrif_ext.h, diag_vars.h, not used (Issue #386)
   - remove files parameter.passivetrc.pisces.h, not used (Issue #387)
   - comments refering to BASIN in step2D.F (#409)
   - remove routine set_HUV1, not used (#410)
+  - remove ZETA_DRY_IO cpp key and avoid modifying zeta with bathymetry in output (#406 and #384)
+  - typo in diag.F CALENDAR instead of USE_CALENDAR (#412)
+  - avoid hard coded define of RI_[H/V]SMOOTH in code moved 
+    in cppdefs_dev.h (#403)
+  - remove hard coded keys in mpc.F (#404)
+  - typo and file mode (#499)
 
+- Support :
+  - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
+  - use matrix capabilities in gitlab-ci (#519)
+  - avoid misnaming ifort/ifx in gitlab-ci (#492)
 
 ### Contributors on this release
 
 - Contributors already on board : 
-  R. Benshila, M. Caillaud, G.Cambon, S. Jullien, S. Le Gac, 
-  P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou
+  R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
+  S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
+  J. Gula, C. Mazoyer
 
 - New contributors : 
-  M. Plus, M. Schreiber, A. Zribi  
+  J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
+  M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
+  S. Theetten

@@ -1,3 +1,7 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 #include "cppdefs.h"
 !----------------------------------------------------------------------------
 MODULE coupler_MUSTANG
@@ -20,6 +24,7 @@ MODULE coupler_MUSTANG
     USE comMUSTANG
     USE comsubstance
     USE module_substance
+    USE croco_namelist, ONLY : rho0
 
     IMPLICIT NONE
 

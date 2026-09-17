@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -45,7 +46,6 @@
 !==================================================================================
 !
 #define HBL_SMOOTH
-#define LIMIT_UNSTABLE_ONLY
 
       implicit none
 #include "param.h"
@@ -395,11 +395,8 @@
 
 #include "lmd_wscale_wm_and_ws.h"
 
-#ifdef LIMIT_UNSTABLE_ONLY
+
           f1=5.0 * max(0., Bfsfc) * vonKar/(ustar(i,j)**4+eps)
-#else
-          f1=0.
-#endif
           cff=1./(z_w(i,j,k)-z_w(i,j,k-1))
           cff_up=cff*(z_bl -z_w(i,j,k-1))
           cff_dn=cff*(z_w(i,j,k)   -z_bl)
@@ -489,20 +486,6 @@
               ghats(i,j,k)=Cg * sigma*(1.-sigma)**2
             else
               ghats(i,j,k)=0.
-            endif
-#endif
-#if defined MLCONVEC
-!
-!  Add convective adjustment in the ML for unresolved convective cells
-!
-            if (bvf(i,j,k).lt.0.) then
-              Kv(i,j,k)=Kv(i,j,k) + nu0c
-# ifdef TEMPERATURE
-              Kt(i,j,k)=Kt(i,j,k) + nu0c
-# endif
-# ifdef SALINITY
-              Ks(i,j,k)=Ks(i,j,k) + nu0c
-# endif
             endif
 #endif
           enddo

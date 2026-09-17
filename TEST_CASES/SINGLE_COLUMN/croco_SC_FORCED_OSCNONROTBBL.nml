@@ -1,0 +1,128 @@
+&croco_title
+  title = "SCM TEST MODEL"
+/
+
+&croco_testcase
+  testcase_name = 'SC_FORCED_OSCNONROTBBL'
+/
+
+
+&croco_time_stepping
+  ntimes = 7200
+  dt = 30
+  ndtfast = 60
+  ninfo = 1
+/
+
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  hc = 1.0d16
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "fileini"
+/
+
+&croco_forcing
+  frcname = "fileforc"
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 120
+  nrpfhis = 0
+  hisname = "scm_his.nc"
+/
+
+&croco_restart
+  nrst = 3600
+  nrpfrst = -1
+  rstname = "scm_rst.nc"
+/
+
+&croco_rho0
+  rho0 = 1024.d0
+/
+
+&croco_bottom_drag
+  rdrg = 0.
+  rdrg2 = 0.
+  Zobt = 0.01
+  Cdb_min = 0.
+  Cdb_max = 1.e7
+/
+
+&croco_gamma2
+  gamma2 = 1.d0
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 1*0.d0
+/
+
+&croco_tracer_diff4
+  tnu4 = 1*0.d11
+/
+
+&croco_lin_eos
+  R0 = 24
+  T0 = 16.
+  S0 = 0.
+  Tcoef = 0.2
+  Scoef = 0.
+/
+
+&croco_primary_history_fields
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  out_his_u = .true.
+  out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 1*.true.
+/
+
+&croco_auxiliary_history_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .false.
+  out_his_akv = .true.
+  out_his_bostr = .false.
+  out_his_bustr = .true.
+  out_his_bvstr = .true.
+  out_his_wstr = .false.
+  out_his_ustr = .false.
+  out_his_vstr = .false.
+/
+
+&croco_temperature_history_fields
+  out_his_akt = .true.
+  out_his_shflx = .false.
+  out_his_shflx_rsw = .false.
+/
+
+&croco_hbl_history_fields
+  out_his_hbl = .false.
+/
+
+&croco_gls_history_fields
+  out_his_tke = .false.
+  out_his_gls = .false.
+  out_his_lscale = .false.
+/
+
+
+
+! End of namelist

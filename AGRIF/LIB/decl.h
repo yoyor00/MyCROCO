@@ -109,6 +109,7 @@ typedef struct variable
    int  v_c_star;
    int  v_indicetabvars;
    int  v_pointerdeclare;
+   int  v_contiguousdeclare;
    int  v_optionaldeclare;
    int  v_allocatable;
    int  v_target;
@@ -275,6 +276,7 @@ typedef struct listindice
  int SaveDeclare;
  int functiondeclarationisdone;
  int pointerdeclare;
+ int contiguousdeclare;
  int optionaldeclare;
  int inside_type_declare;
  int VariableIsParameter;
@@ -292,6 +294,9 @@ typedef struct listindice
  char CharacterSize[LONG_VNAME];
  char vallengspec[LONG_VNAME];
  int isrecursive;
+ int ispure;
+ int isimpure;
+ int iselemental;
  int is_result_present;
 
 /******************************************************************************/
@@ -661,7 +666,7 @@ extern void WriteScalarDeclaration(variable *v,char ligne[LONG_M]);
 extern void WriteTableDeclaration(variable * v,char ligne[LONG_M],int tmpok);
 extern void WriteVarDeclaration( variable *v, FILE *fileout, int value, int visibility );
 extern void WriteLocalParamDeclaration(FILE* tofile);
-extern void WriteFunctionDeclaration(FILE* tofile, int value);
+extern void WriteFunctionDeclaration(FILE* tofile, int value, int inloop);
 extern void WriteSubroutineDeclaration(int value);
 extern void WriteArgumentDeclaration_beforecall();
 extern void WriteArgumentDeclaration_Sort(FILE* tofile);

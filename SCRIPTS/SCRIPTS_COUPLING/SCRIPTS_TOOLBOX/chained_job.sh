@@ -124,5 +124,12 @@ done
 #
 cd ${JOBDIR_ROOT}
 
-[ ${MACHINE} == "DATARMOR" ] && { jobid=$( echo $( qselect -N ${ROOT_NAME_1}) | cut -d "." -f 1 ) ; qrls ${jobid} ; }
-[ ${MACHINE} == "JEANZAY" ]  || [ ${MACHINE} == "NEA" ] && { scontrol release ${firstjobid} ; }
+if [ "${MACHINE}" == "DATARMOR" ]; then
+    jobid=$( echo $( qselect -N ${ROOT_NAME_1}) | cut -d "." -f 1 )
+    qrls ${jobid}
+elif [ "${MACHINE}" == "JEANZAY" ] || [ "${MACHINE}" == "NEA" ]; then
+    scontrol release ${firstjobid}
+else
+    printf "\n\n Chained job for your machine ${MACHINE} is not set up yet, we stop...\n\n" && exit 1
+fi
+

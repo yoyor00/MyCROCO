@@ -132,6 +132,13 @@ class Config:
             default=False,
         )
         parser.add_argument(
+            "--force-ref",
+            help="Overwrite an existing reference directory (used with --build-ref). "
+            "Without this flag, build-ref stops with an error if the ref already exists.",
+            action="store_true",
+            default=False,
+        )
+        parser.add_argument(
             "-u",
             "--use-ref",
             help="Use the reference directory as source of compare instead of seq run.",
@@ -224,8 +231,13 @@ class Config:
         self.title = self.args.title
         self.auto_skip = self.args.auto_skip
         self.no_previous = self.args.no_previous
-        self.build_ref = self.args.build_ref
-        self.use_ref = self.args.use_ref
+        self.build_ref = (
+            os.path.abspath(self.args.build_ref) if self.args.build_ref else False
+        )
+        self.force_ref = self.args.force_ref
+        self.use_ref = (
+            os.path.abspath(self.args.use_ref) if self.args.use_ref else False
+        )
         self.use_host_config = self.args.host
         self.variant_ref_name = self.args.compare_to
         self.cvtk = self.args.cvtk
@@ -285,6 +297,19 @@ class Config:
             raise Exception(
                 f"You gave --build-ref={self.use_ref}, but not using the required '{self.variant_ref_name}' variant !"
             )
+        # check ref dirs existence before starting any run
+        if self.build_ref and not self.force_ref:
+            existing = [
+                f"{self.build_ref}/{case_name}"
+                for case_name in self.case_names
+                if os.path.isdir(f"{self.build_ref}/{case_name}")
+            ]
+            if existing:
+                dirs = "\n  ".join(existing)
+                raise Exception(
+                    f"Reference director{'y' if len(existing) == 1 else 'ies'} already exist:\n  {dirs}\n"
+                    f"Use --force-ref to overwrite."
+                )
 
     def filter_variant_ressources(self):
         # extract needed vars
@@ -420,4 +445,8 @@ class Config:
     def html_global_report(self):
         # global html
         if self.globalhtml:
-            generate_global_html(self.args.results)
+            generate_global_html(
+                self.args.results,
+                ref_name=self.variant_ref_name,
+                use_ref_path=self.use_ref if self.use_ref else None,
+            )

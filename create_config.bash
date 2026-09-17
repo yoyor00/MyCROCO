@@ -98,6 +98,7 @@ LIST_OPTIONS=$(cat << EOF
  # -- CROCO built-in codes -- #
  oce-dev    : croco all-in (classic) architecture
  oce-prod   : croco production architecture => croco files and namelists in CROCO_IN directory
+ stogen     : stogen inputs
  pisces     : pisces inputs
  agrif      : inputs for nests
  sediment   : inputs for sediment 
@@ -117,9 +118,9 @@ LIST_OPTIONS=$(cat << EOF
  wav        : scripts for coupling with WW3          ( oce-prod needed )
 
  # -- All options :
- # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
- # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools)
- # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
+ # all-dev      => equivalent to a (oce-dev  xios test_cases agrif inter forc stogen pisces sediment mustang oanalysis mattools pytools)
+ # all-prod     => equivalent to a (oce-prod xios test_cases agrif inter forc stogen pisces sediment mustang oanalysis mattools pytools)
+ # all-prod-cpl => equivalent to a (oce-prod xios test_cases agrif runcpl stogen pisces sediment mustang oanalysis mattools pytools cpl wav atm toy)
 
 EOF
 	    )
@@ -127,9 +128,9 @@ EOF
 # END USER MODIFICATIONS
 #==========================================================================================
 
-allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
-allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc pisces sediment mustang oanalysis mattools pytools )
-allmodels_cpl=( oce-prod xios test_cases agrif runcpl pisces sediment mustang oanalysis mattools pytools cpl wav atm toy )
+allmodels_incroco_dev=( oce-dev xios test_cases agrif inter forc stogen pisces sediment mustang oanalysis mattools pytools )
+allmodels_incroco_prod=( oce-prod xios test_cases agrif inter forc stogen pisces sediment mustang oanalysis mattools pytools )
+allmodels_cpl=( oce-prod xios test_cases agrif runcpl stogen pisces sediment mustang oanalysis mattools pytools cpl wav atm toy )
 
 x_f=0
 
@@ -341,9 +342,9 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     chmod +x $MY_CROCO_DIR/jobcomp
 
     if [[ ${options[@]} =~ "runcpl" ]]; then
-        cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.        
+        cp -r ${CROCO_DIR}/SCRIPTS/SCRIPTS_COUPLING/CROCO_IN/* $MY_CROCO_DIR.
     else
-        cp -f ${CROCO_DIR}/OCEAN/croco.in $MY_CROCO_DIR.
+        cp -f ${CROCO_DIR}/TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml $MY_CROCO_DIR/croco.nml
     fi
     cp -f ${CROCO_DIR}/OCEAN/croco_stations.in $MY_CROCO_DIR.
     # TEST_CASES
@@ -352,16 +353,20 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     fi
     # AGRIF
     if [[ ${options[@]} =~ "agrif" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/croco.in.1 $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml.1 $MY_CROCO_DIR/croco.nml.1
 	cp -f ${CROCO_DIR}/OCEAN/AGRIF_FixedGrids.in $MY_CROCO_DIR.
     fi
     # INTER
     if [[ ${options[@]} =~ "inter" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/croco_inter.in* $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/croco_inter.nml* $MY_CROCO_DIR.
     fi
     # FORECAST
     if [[ ${options[@]} =~ "forc" ]] ; then
-	cp -f ${CROCO_DIR}/OCEAN/croco_forecast.in $MY_CROCO_DIR.
+	cp -f ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/croco_forecast.nml $MY_CROCO_DIR.
+    fi
+    # STOGEN
+    if [[ ${options[@]} =~ "stogen" ]] ; then
+	cp -f ${CROCO_DIR}/STOGEN/*namelist* $MY_CROCO_DIR.
     fi
     # PISCES
     if [[ ${options[@]} =~ "pisces" ]] ; then
@@ -419,7 +424,7 @@ if [[ ${options[@]} =~ "oce-dev" ]] || [[ ${options[@]} =~ "oce-prod" ]] ; then
     # SCRIPTS FOR RUNNING
     if [[ ${options[@]} =~ "inter" ]] ; then
 	cp -Rf ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/*.bash $MY_CONFIG_HOME/
-        cp -Rf ${CROCO_DIR}/SCRIPTS/example_job* $MY_CONFIG_HOME/
+        cp -Rf ${CROCO_DIR}/SCRIPTS/Plurimonths_scripts/example_job* $MY_CONFIG_HOME/
     fi
 fi
 

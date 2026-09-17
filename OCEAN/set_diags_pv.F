@@ -32,7 +32,7 @@
 # ifdef DIAGNOSTICS_UV
 #  include "diagnostics.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 

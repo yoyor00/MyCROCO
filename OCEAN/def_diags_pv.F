@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifndef AVRH
@@ -24,6 +25,13 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+#ifdef DIAGNOSTICS_PV
+      use croco_namelist, only: ldefdiags_pv, nwrtdiags_pv,
+     &     nrpfdiags_pv, diags_pvname, ldefdiags_pv_avg,
+     &     ntsdiags_pv_avg, nwrtdiags_pv_avg, nrpfdiags_pv_avg,
+     &     diags_pvname_avg
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -667,15 +675,9 @@
 
 ! ---------------------------------
 
-
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_pv: -- Opened ',
-     &                     'existing file  from record =', rec
-     &                      MYID
-!
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_pv: -- Opened ',
+     &                     'DEF_DIAGS_PV -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
 !

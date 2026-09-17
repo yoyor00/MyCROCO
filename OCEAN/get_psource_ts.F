@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -15,7 +16,8 @@
 !     Read in point or grided sea river runoff tracer
 !     concentration the appropriate time from runoff NetCDF file.
 !
-      implicit none
+        use croco_namelist, only: dt
+        implicit none
 # include "param.h"
 # include "forces.h"
 # include "scalars.h"
@@ -844,6 +846,7 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 !
 !     Set-up river runoff concentration data for current tile.
 !
+      use croco_namelist, only: dt
       implicit none
       integer itrc,Istr,Iend,Jstr,Jend,i, it1,it2
       real cff, cff1,cff2

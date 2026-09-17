@@ -1,3 +1,7 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 #include "cppdefs.h"
 
 MODULE comsubstance
@@ -73,10 +77,7 @@ MODULE comsubstance
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
     INTEGER  :: ibedload1, ibedload2
 #endif /* if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload */
-#ifdef key_sand2D
     LOGICAL, DIMENSION(:), ALLOCATABLE :: l_outsandrouse
-#endif /* ifdef key_sand2D */
-
 #endif /* ifdef MUSTANG */
 
     ! -------------------------------------------------------------------------

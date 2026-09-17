@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -14,6 +15,10 @@
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
                               ! time from forcing NetCDF file.
+      use croco_namelist, only: dt, frcname, testcase_name
+# ifdef MUSTANG  
+      use croco_namelist, only: wave_file
+# endif
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -455,6 +460,7 @@
 !  Set-up wave amplitude, direction, period for current tile.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
       implicit none
 
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2
@@ -641,24 +647,32 @@
 !          the direction where the waves travel to,
 !          measured clockwise from geographic North.
 !
-# if defined CURVGRID || !defined SHOREFACE
+# ifdef CURVGRID
 !$acc parallel loop if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
-#  if !defined SHOREFACE && !defined MUSTANG
-!         Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
-          Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
+#  ifndef MUSTANG
+          if (trim(testcase_name) /= 'SHOREFACE') &
+            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
 #  endif
-#  ifdef CURVGRID
-#   ifdef MUSTANG
+#  ifdef MUSTANG
           Dwave(i,j)=Dwave(i,j)-angler(i,j)*rad2deg
-#   else
+#  else
           Dwave(i,j)=Dwave(i,j)-angler(i,j)
-#   endif
 #  endif
         enddo
       enddo
-# endif /* CURVGRID || !SHOREFACE */
+# else
+      if (trim(testcase_name) /= 'SHOREFACE') then
+!$acc parallel loop if(compute_on_device) default(present)
+        do j=jstrR,jendR
+          do i=istrR,iendR
+!           Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
+            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
+          enddo
+        enddo
+      endif
+# endif /* CURVGRID */
 !
 !--------------------------------------------------------------------
 ! Simulate nearshore modifications for low resolution data

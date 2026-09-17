@@ -147,8 +147,6 @@
 #if defined MUSTANG
 # ifdef WAVE_OFFLINE
 # endif
-#ifdef key_sand2D
-#endif
 #endif
 #if defined MUSTANG
 #endif
@@ -162,7 +160,7 @@
 # endif
 # if defined DIAGNOSTICS_VRT
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 # endif
 # ifdef DIAGNOSTICS_PV
 # endif
@@ -870,7 +868,7 @@ c       endif
       endif
 #  endif
 #  endif
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
       if (xios_field_is_active("ekrate")) then
 !$acc update host( ekrate ) 
       endif
@@ -1048,9 +1046,6 @@ c       endif
 #   endif
 #  endif /* SEDIMENT */
 # ifdef MUSTANG
-#if defined key_sand2D
-#else
-#endif
       if (xios_field_is_active("tauskin")) then
 !$acc update host( tauskin ) 
       endif

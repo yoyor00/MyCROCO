@@ -1,0 +1,181 @@
+&croco_testcase
+  testcase_name = 'BISCA'
+/
+
+&croco_title
+  title = "RIP Example"
+/
+
+&croco_time_stepping
+  ntimes = 1800
+  dt = 4
+  ndtfast = 20
+  ninfo = 10
+/
+
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  hc = 1.e16
+/
+
+&croco_initial
+  nrrec = 0
+/
+
+&croco_wetdry
+  D_wetdry = 0.2
+/
+
+&croco_nudging
+  tauT_in = 1.
+  tauT_out = 30.
+  tauM_in = 0.1
+  tauM_out = 100.
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 300
+  nrpfhis = 0
+  hisname = "rip_his.nc"
+/
+
+&croco_restart
+  nrst = 1800
+  nrpfrst = -1
+  rstname = "rip_rst.nc"
+/
+
+&croco_rho0
+  rho0 = 1024.4
+/
+
+&croco_bottom_drag
+  rdrg = 0.0e-04
+  rdrg2 = 0.0e-3
+  Zobt = 1.e-3
+  Cdb_min = 1.d-4
+  Cdb_max = 1.d-1
+/
+
+&croco_gamma2
+  gamma2 = 1.
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 1*0.d0
+/
+
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
+/
+
+&croco_wkb_wwave
+  wkb_amp = 0.5
+  wkb_ang = 0.
+  wkb_prd = 10.
+  wkb_tide = 0.0
+  wkb_btg = 1.3
+  wkb_gam = 0.38
+/
+
+&croco_wkb_roller
+  wkb_rsb = 0.1
+  wkb_roller = 0.5
+/
+
+&croco_primary_history_fields
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  out_his_u = .true.
+  out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 1*.true.
+/
+
+&croco_auxiliary_history_fields
+  out_his_rho = .true.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
+  out_his_bostr = .false.
+  out_his_bustr = .false.
+  out_his_bvstr = .false.
+  out_his_wstr = .false.
+  out_his_ustr = .false.
+  out_his_vstr = .false.
+/
+
+&croco_temperature_history_fields
+  out_his_akt = .true.
+  out_his_shflx = .false.
+  out_his_shflx_rsw = .false.
+/
+
+&croco_hbl_history_fields
+  out_his_hbl = .false.
+/
+
+&croco_lmd_bkpp_history_fields
+  out_his_hbbl = .false.
+/
+
+&croco_vis_coef_history_fields
+  out_his_visc3d = .false.
+/
+
+&croco_wci_history_fields
+  out_his_sup = .true.
+  out_his_ust2d = .true.
+  out_his_vst2d = .true.
+/
+
+&croco_wci_history_3d_fields
+  out_his_ust = .true.
+  out_his_vst = .true.
+  out_his_wst = .true.
+  out_his_akb = .true.
+  out_his_akw = .true.
+  out_his_kvf = .true.
+  out_his_calp = .true.
+  out_his_kaps = .true.
+/
+
+&croco_wave_history_fields
+  out_his_hrm = .true.
+  out_his_frq = .true.
+  out_his_action = .true.
+  out_his_k_xi = .true.
+  out_his_k_eta = .true.
+  out_his_eps_b = .true.
+  out_his_eps_d = .true.
+  out_his_erol = .true.
+  out_his_eps_r = .true.
+/
+
+
+
+&croco_wave_maker
+  wmaker_amp = 0.4
+  wmaker_prd = 11.
+  wmaker_dir = -10.
+  wmaker_dsp = 30.
+/
+
+! End of namelist

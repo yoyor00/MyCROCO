@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -116,6 +117,10 @@
 #  ifdef MUSTANG
       USE comsubstance, ONLY : ros, nvpc, l_subs2D
 #  endif
+#  if !defined NONLIN_EOS
+      USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
+#  endif
+      USE croco_namelist, ONLY: rho0
       implicit none
 
 #  include "param.h"
@@ -321,6 +326,7 @@
       end
 
       subroutine rho_eos_tile (Istr,Iend,Jstr,Jend)
+      USE croco_namelist, ONLY: rho0, R0, T0, S0, Tcoef, Scoef
       implicit none
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
@@ -496,15 +502,11 @@
 
 #  elif defined MUSTANG /* MUSTANG */
             do iv=1,nvpc
-#    if defined key_sand2D
               if (.not.l_subs2D(iv)) then
-#    endif
                 itrc=iv+itsubs1-1
                 cff=cff+t(i,j,k,nrhs,itrc)*
      &                (ros(iv)-rho(i,j,k)-rho0)/ros(iv)
-#    if defined key_sand2D
               endif
-#    endif
             enddo
 
 #  endif /* SEDMENT or MUSTANG */
@@ -614,6 +616,10 @@ c #  endif
       end
 
       subroutine reset_rho0_tile (Istr,Iend,Jstr,Jend)
+      USE croco_namelist, ONLY: rho0
+#  if !defined NONLIN_EOS
+      USE croco_namelist, ONLY: R0, T0, S0, Tcoef, Scoef
+#  endif
       implicit none
 #  include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, NSUB

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA,
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 /*
@@ -34,13 +35,20 @@
 # define SINGLE NSUB_X*NSUB_E,NSUB_X*NSUB_E !!!
 #endif
 
+
 /*
-    Constant tracer option (for debugging)
+======================================================================
+   Set ENSEMBLE options:
+   Define MPI
+   Change the generic name of MPI communicator MPI_COMM_WORLD
+   to communicator used for individual member
+======================================================================
 */
-#ifdef KILPATRICK
-# define CONST_TRACERS
-#else
-# undef CONST_TRACERS
+#ifdef ENSEMBLE
+# define MPI
+# define MPI_COMM_WORLD ocean_grid_comm
+# define MPI_COMM_ALL MPI_COMM_WORLD
+# define LOGFILE
 #endif
 
 /*
@@ -128,7 +136,7 @@
 #endif
 #if defined SALINITY       || defined TEMPERATURE || \
     defined PASSIVE_TRACER || defined SUBSTANCE   || \
-    defined SEDIMENTS      || defined BIOLOGY
+    defined SEDIMENT       || defined BIOLOGY
 # define TRACERS
 # define TEMPERATURE
 #endif
@@ -148,9 +156,6 @@
 # undef  NBQ_FREESLIP
 # undef  NBQ_HZ_PROGNOSTIC
 # undef  M3FAST_REINIT
-# ifdef TANK
-#  define NOT_NBQ_AM4
-# endif
 # undef  TRACETXT
 # undef  DIAG_CFL
 # define HZR Hzr
@@ -260,8 +265,7 @@
 */
 #if defined SOLVE3D
 # define VAR_RHO_2D
-# if !defined NONLIN_EOS && !defined INNERSHELF \
-                         && !defined MOVING_BATHY
+# if !defined NONLIN_EOS && !defined NO_RESET_RHO0
 #  define RESET_RHO0
 # endif
 #endif
@@ -281,17 +285,10 @@
    as the weight value.
 ======================================================================
 */
-#if defined BASIN || defined EQUATOR  || defined GRAV_ADJ \
-                  || defined SOLITON  || defined JET \
-                  || defined ACOUSTIC || defined VORTEX \
-                  || defined THACKER  || defined TANK \
-                  || defined KH_INST  || defined TS_HADV_TEST
-# define PGF_FLAT_BOTTOM
-#elif defined RIP || defined FLASH_RIP
-# define PGF_BASIC_JACOBIAN
-# define WJ_GRADP 0.125
-#elif defined PGF_BASIC_JACOBIAN
-# define WJ_GRADP 0.125
+#ifdef PGF_BASIC_JACOBIAN
+# ifndef WJ_GRADP
+#  define WJ_GRADP 0.125
+# endif
 #endif
 
 /*
@@ -355,7 +352,7 @@
 /*
    Set UP3 scheme in barotropic equations for 2DH applications
 */
-#if !defined SOLVE3D && !defined SOLITON
+#if !defined SOLVE3D && !defined NO_M2_HADV_UP3
 # define M2_HADV_UP3
 #endif
 /*
@@ -490,19 +487,16 @@
 ======================================================================
 */
 #ifdef TS_VADV_SPLINES  /* Check if options are defined in cppdefs.h */
-#elif defined TS_VADV_AKIMA
 #elif defined TS_VADV_WENO5
 #elif defined TS_VADV_C2
 #else
-# undef  TS_VADV_SPLINES   /* Splines vertical advection            */
-# define TS_VADV_AKIMA     /* 4th-order Akima vertical advection    */
+# define  TS_VADV_SPLINES   /* Splines vertical advection            */
 # undef  TS_VADV_WENO5     /* 5th-order WENOZ vertical advection    */
 # undef  TS_VADV_C2        /* 2nd-order centered vertical advection */
 #endif
 
 #ifdef VADV_ADAPT_IMP
 # define TS_VADV_SPLINES
-# undef   TS_VADV_AKIMA
 # undef   TS_VADV_WENO5
 # undef   TS_VADV_C2
 #endif
@@ -514,7 +508,7 @@
 ======================================================================
 */
 #ifdef SPONGE
-# ifndef INNERSHELF
+# ifndef NO_SPONGE_GRID
 #  define SPONGE_GRID
 # endif
 # define SPONGE_DIF2
@@ -533,7 +527,6 @@
 
 # if defined GLS_KOMEGA
 # elif defined GLS_KEPSILON
-# elif defined GLS_GEN
 # else
 #  define GLS_KEPSILON
 # endif
@@ -710,10 +703,6 @@
 # endif
 # define WKB_ADD_DIFF
 # define WKB_ADD_DIFFRACTION
-# if defined SHOREFACE || defined SANDBAR \
-                       || (defined RIP && !defined BISCA)
-#  define ANA_BRY_WKB
-# endif
 #endif
 
 #ifdef MRL_WCI
@@ -729,9 +718,6 @@
          || (defined WAVE_OFFLINE && defined MRL_WCI) \
          || defined ANA_WWAVE
 # define WAVE_IO
-# if !defined WAVE_ROLLER || !defined WKB_WWAVE
-#  define wepb0 wepb
-# endif
 #endif
 
 /*
@@ -747,7 +733,10 @@
 # undef LMD_BKPP2005  /*<- unresolved problems with bkpp2005 at depth
                            default: lmd_bkpp1994 */
 #endif
-
+# ifdef LMD_RIMIX
+#  define RI_HSMOOTH
+#  define RI_VSMOOTH
+# endif
 /*
 ======================================================================
                 Biogeochemical models
@@ -793,21 +782,23 @@
 #endif
 /*
 ======================================================================
-    Bottom stress option:
+    Bottom stress :
 
-    LIMIT_BSTRESS: Set limiting factor for bottom stress and avoid
-    numerical instability associated with reversing bottom flow
-    NOW replaced by BSTRESS_FAST option
+    LIMIT_BSTRESS: Set limiting factor to avoid numerical instability 
+    associated with the Euler explicit treatment of the bottom stress
+    BSTRESS_FAST is an alternative with computation at fast time step
 ======================================================================
 */
-/*
 #ifndef BSTRESS_FAST
-# define  LIMIT_BSTRESS
+# ifndef NO_LIMIT_BSTRESS
+#  define LIMIT_BSTRESS
+# endif
 #endif
+/*
+======================================================================
+    BBL :
+======================================================================
 */
-#ifdef INNERSHELF
-# undef  LIMIT_BSTRESS
-#endif
 #ifdef BBL
 # ifdef OW_COUPLING
 # elif defined WAVE_OFFLINE
@@ -871,11 +862,6 @@
 #   define SLOPE_LESSER        /* default: Lesser        */
 #  endif
 # endif /* BEDLOAD */
-# ifdef DUNE
-#  ifdef ANA_DUNE
-#   undef SLOPE_LESSER
-#  endif
-# endif /* DUNE */
 #endif /* SEDIMENT */
 
 /*

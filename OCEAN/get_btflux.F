@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers Universit (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -16,6 +17,7 @@
 !  time from forcing NetCDF file.
 !
 !
+      use croco_namelist, only: dt, rho0, btfname
 # define BTFLUX_DATA
       implicit none
 # include "param.h"
@@ -191,6 +193,7 @@ c**        call opencdf (btfname,N)
 ! Set-up surface tracer flux for current tile.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt
 # define BTFLUX_DATA
       implicit none
       integer Istr,Iend,Jstr,Jend, itrc, i,j, it1,it2

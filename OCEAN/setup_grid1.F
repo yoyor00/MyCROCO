@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -21,6 +22,16 @@ C$    integer omp_get_thread_num
       end
 
       subroutine setup_grid1_tile (Istr,Iend,Jstr,Jend)
+      use croco_namelist, ONLY: gamma2
+#ifdef WKB_WWAVE
+      use croco_namelist, ONLY: wkb_tide
+#endif
+#ifdef WET_DRY
+      use croco_namelist, ONLY: D_wetdry
+#endif
+#ifdef WAVE_DRY
+      use croco_namelist, ONLY: D_wavedry
+#endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
 #ifdef WET_DRY
@@ -261,9 +272,7 @@ C$    integer omp_get_thread_num
 !$acc end kernels
 
 #ifdef BD_EXCHANGE
-# ifndef BASIN      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   zob)
-# endif      
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   om_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend,   on_r)
       call exchange_r2d_tile (Istr,Iend,Jstr,Jend, pnom_r)

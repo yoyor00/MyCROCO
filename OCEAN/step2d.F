@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -97,6 +98,7 @@ C$    trd=omp_get_thread_num()
 !======================================================================
 !
       USE debug
+      USE croco_namelist, only: dt, rdrg, rdrg2, m2filter_alpha ! needed when AGRIF_CONSERV_VOL
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,
@@ -152,7 +154,7 @@ C$    trd=omp_get_thread_num()
 #  include "zoom.h"
         integer irhox, irhoy, irhot
 # endif
-# if defined INTERNAL || defined BODYTIDE
+# ifdef BODYTIDE
       real U0, omega
 # endif
 # ifdef WET_DRY
@@ -187,11 +189,7 @@ C$    trd=omp_get_thread_num()
 ! momentum equations.
 !
 # ifdef M2FILTER_NONE
-#  ifdef TANK
-         myalpha   = 0.01
-#  else
-         myalpha   = 0.25
-#  endif
+         myalpha   = m2filter_alpha
          mybeta    = 0.281105
          myepsilon = 0.00976186 - 0.13451357*myalpha
          mygamma   = 0.08344500 - 0.51358400*myalpha
@@ -760,9 +758,6 @@ C$OMP END MASTER
 #   ifdef MASKING
      &                                 *pmask(i+1,j)
 #   endif
-#   ifdef WET_DRY0
-     &                                 *pmask_wet(i+1,j)
-#   endif
         enddo
       enddo
       do j=Jstr-1,Jend
@@ -774,9 +769,6 @@ C$OMP END MASTER
      &                   *(urhs(i,j+1)+urhs(i,j))
 #   ifdef MASKING
      &                                 *pmask(i,j+1)
-#   endif
-#   ifdef WET_DRY0
-     &                                 *pmask_wet(i,j+1)
 #   endif
         enddo
       enddo
@@ -1551,7 +1543,7 @@ C$OMP END MASTER
 !  Body force for the Internal Tide test case
 !-----------------------------------------------------------------------
 !
-# if defined INTERNAL || defined BODYTIDE
+# ifdef BODYTIDE
       omega=2.*pi/(12.4*3600.)
       U0=0.02
       do j=Jstr,Jend
