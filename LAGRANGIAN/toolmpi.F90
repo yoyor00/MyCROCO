@@ -19,7 +19,7 @@ MODULE toolmpi
    !!
    !!======================================================================
 
-#if defined MPI && (defined LAGRANGIAN || defined DEB_IBM)
+#if defined MPI && (defined LAGRANGIAN)
    !! * Modules used
    USE comtraj, ONLY: rsh, rlg
    USE mpi
@@ -29,10 +29,7 @@ MODULE toolmpi
    PRIVATE
 
    !! * Accessibility
-   PUBLIC :: exchange_vectcpu_int
-#if defined MPI
    PUBLIC :: ex_traj
-#endif
 
    interface MPI_loc2glob
       module procedure MPI_loc2glob_real
@@ -42,9 +39,15 @@ MODULE toolmpi
       module procedure MPI_glob2loc_real
       module procedure MPI_glob2loc_integer
    end interface MPI_glob2loc
+   interface MPI_gather_sort_var
+      module procedure MPI_gather_sort_int_var
+      module procedure MPI_gather_sort_real4_var
+      module procedure MPI_gather_sort_real8_var
+   end interface MPI_gather_sort_var
 
    PUBLIC :: ADD_ALL_MPI_INT, MPI_SETUP_LAG, MPI_loc2glob, MPI_glob2loc
    PUBLIC :: ADD_ALL_MPI_REAL
+   PUBLIC :: MPI_gather_sort_counts, MPI_gather_sort_perm, MPI_gather_sort_var
    INTEGER :: nprocs
    INTEGER :: miniproc, minjproc, maxiproc, maxjproc
    INTEGER :: myi_uproc, myj_uproc
@@ -318,27 +321,6 @@ CONTAINS
 
    END SUBROUTINE DEFINE_UDPROC
 
-   SUBROUTINE exchange_vectcpu_int(A)
-      !&E---------------------------------------------------------------------
-      !&E                 ***  ROUTINE EXCHANGE_VECTCPU_INT ***
-      !&E
-      !&E ** Purpose : exchange vector of integer between procs
-      !&E
-      !&E---------------------------------------------------------------------
-      !! * Arguments
-      INTEGER, DIMENSION(0:nprocs - 1), INTENT(inout) :: A
-
-      !! * Local declarations
-      INTEGER :: ierr_mpi
-      INTEGER :: V
-
-      !!----------------------------------------------------------------------
-      !! * Executable part
-      V = A(mynode)
-      CALL MPI_ALLGATHER(V, 1, MPI_INTEGER, A, 1, MPI_INTEGER, MPI_COMM_WORLD, ierr_mpi)
-
-   END SUBROUTINE exchange_vectcpu_int
-
    SUBROUTINE ADD_ALL_MPI_INT(value)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE  ADD_ALL_MPI_INT  ***
@@ -393,6 +375,212 @@ CONTAINS
       CALL MPI_ALLREDUCE(value, value_temp, 1, type_mpi_rlg, MPI_SUM, MPI_COMM_WORLD, ierr_mpi)
       value = value_temp
    END SUBROUTINE ADD_ALL_MPI_REAL
+
+   !!======================================================================
+
+   SUBROUTINE MPI_gather_sort_counts(nb_part_local, counts, displs, nb_part_total)
+      !&E---------------------------------------------------------------------
+      !&E                 ***  ROUTINE  MPI_gather_sort_counts  ***
+      !&E
+      !&E ** Purpose : Compute, on every rank, the per-rank particle counts,
+      !&E              the Gatherv displacements and the total particle count,
+      !&E              as a preliminary step to MPI_gather_sort_perm/MPI_gather_sort_var.
+      !&E
+      !&E---------------------------------------------------------------------
+      IMPLICIT NONE
+      INTEGER, INTENT(in)                            :: nb_part_local
+      INTEGER, DIMENSION(0:NNODES - 1), INTENT(out)  :: counts, displs
+      INTEGER, INTENT(out)                           :: nb_part_total
+
+      INTEGER :: ierr_mpi, i
+
+      counts = 0
+      CALL MPI_ALLGATHER(nb_part_local, 1, MPI_INTEGER, counts, 1, MPI_INTEGER, MPI_COMM_WORLD, ierr_mpi)
+
+      displs(0) = 0
+      DO i = 1, NNODES - 1
+         displs(i) = displs(i - 1) + counts(i - 1)
+      END DO
+      nb_part_total = SUM(counts)
+
+   END SUBROUTINE MPI_gather_sort_counts
+
+   !!======================================================================
+
+   SUBROUTINE MPI_gather_sort_perm(nb_part_local, num_local, counts, displs, nb_part_total, iperm)
+      !&E---------------------------------------------------------------------
+      !&E                 ***  ROUTINE  MPI_gather_sort_perm  ***
+      !&E
+      !&E ** Purpose : Gather the local NUM values onto MASTER and build the
+      !&E              permutation (valid on MASTER only) that orders the
+      !&E              gathered particles by ascending NUM. counts/displs/
+      !&E              nb_part_total must come from a prior call to
+      !&E              MPI_gather_sort_counts.
+      !&E
+      !&E ** Description : particle%num is assumed to be a unique key >= 1
+      !&E              (never reused), so gathered particles can be placed
+      !&E              directly by index instead of being comparison-sorted.
+      !&E              The upper bound on NUM is computed here as a collective
+      !&E              MAX over every rank's local particles, rather than taken
+      !&E              from the caller, since NUM's range is not necessarily
+      !&E              the same as the current active particle count (e.g. some
+      !&E              NUM values may never come active, e.g. when particles are
+      !&E              numbered from their position in an input file that some
+      !&E              particles get filtered out of).
+      !&E
+      !&E---------------------------------------------------------------------
+      IMPLICIT NONE
+      INTEGER, INTENT(in)                             :: nb_part_local
+      INTEGER, DIMENSION(nb_part_local), INTENT(in)   :: num_local
+      INTEGER, DIMENSION(0:NNODES - 1), INTENT(in)    :: counts, displs
+      INTEGER, INTENT(in)                             :: nb_part_total
+      INTEGER, DIMENSION(:), ALLOCATABLE, INTENT(out) :: iperm
+
+      INTEGER, DIMENSION(:), ALLOCATABLE :: num_glob, pos_of_num
+      INTEGER :: ierr_mpi, i, k, nb_part_max, local_max
+
+      local_max = 0
+      IF (nb_part_local > 0) local_max = MAXVAL(num_local)
+      CALL MPI_ALLREDUCE(local_max, nb_part_max, 1, MPI_INTEGER, MPI_MAX, MPI_COMM_WORLD, ierr_mpi)
+
+      IF (MASTER) THEN
+         ALLOCATE (num_glob(nb_part_total))
+      ELSE
+         ALLOCATE (num_glob(0))
+      END IF
+
+      CALL MPI_GATHERV(num_local, nb_part_local, MPI_INTEGER, &
+                        num_glob, counts, displs, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr_mpi)
+
+      IF (MASTER) THEN
+         ALLOCATE (pos_of_num(nb_part_max))
+         pos_of_num = 0
+         DO i = 1, nb_part_total
+            pos_of_num(num_glob(i)) = i
+         END DO
+
+         ALLOCATE (iperm(nb_part_total))
+         k = 0
+         DO i = 1, nb_part_max
+            IF (pos_of_num(i) /= 0) THEN
+               k = k + 1
+               iperm(k) = pos_of_num(i)
+            END IF
+         END DO
+         DEALLOCATE (pos_of_num)
+      ELSE
+         ALLOCATE (iperm(0))
+      END IF
+
+      DEALLOCATE (num_glob)
+
+   END SUBROUTINE MPI_gather_sort_perm
+
+   !!======================================================================
+
+   SUBROUTINE MPI_gather_sort_int_var(nb_part_local, var_local, counts, displs, nb_part_total, iperm, var_glob)
+      !&E---------------------------------------------------------------------
+      !&E                 ***  ROUTINE  MPI_gather_sort_int_var  ***
+      !&E
+      !&E ** Purpose : Gather one INTEGER particle field onto MASTER and
+      !&E              reorder it with the permutation from MPI_gather_sort_perm.
+      !&E              var_glob is only meaningful (size nb_part_total) on
+      !&E              MASTER; it is a zero-size array on every other rank.
+      !&E
+      !&E---------------------------------------------------------------------
+      IMPLICIT NONE
+      INTEGER, INTENT(in)                             :: nb_part_local
+      INTEGER, DIMENSION(nb_part_local), INTENT(in)   :: var_local
+      INTEGER, DIMENSION(0:NNODES - 1), INTENT(in)    :: counts, displs
+      INTEGER, INTENT(in)                             :: nb_part_total
+      INTEGER, DIMENSION(:), INTENT(in)               :: iperm
+      INTEGER, DIMENSION(:), ALLOCATABLE, INTENT(out) :: var_glob
+
+      INTEGER, DIMENSION(:), ALLOCATABLE :: var_raw
+      INTEGER :: ierr_mpi, i
+
+      IF (MASTER) THEN
+         ALLOCATE (var_raw(nb_part_total), var_glob(nb_part_total))
+      ELSE
+         ALLOCATE (var_raw(0), var_glob(0))
+      END IF
+
+      CALL MPI_GATHERV(var_local, nb_part_local, MPI_INTEGER, &
+                        var_raw, counts, displs, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr_mpi)
+
+      IF (MASTER) THEN
+         DO i = 1, nb_part_total
+            var_glob(i) = var_raw(iperm(i))
+         END DO
+      END IF
+
+      DEALLOCATE (var_raw)
+
+   END SUBROUTINE MPI_gather_sort_int_var
+
+   SUBROUTINE MPI_gather_sort_real4_var(nb_part_local, var_local, counts, displs, nb_part_total, iperm, var_glob)
+      !&E ** Purpose : Same as MPI_gather_sort_int_var, for REAL(kind=4) fields.
+      IMPLICIT NONE
+      INTEGER, INTENT(in)                                  :: nb_part_local
+      REAL(kind=4), DIMENSION(nb_part_local), INTENT(in)   :: var_local
+      INTEGER, DIMENSION(0:NNODES - 1), INTENT(in)         :: counts, displs
+      INTEGER, INTENT(in)                                  :: nb_part_total
+      INTEGER, DIMENSION(:), INTENT(in)                    :: iperm
+      REAL(kind=4), DIMENSION(:), ALLOCATABLE, INTENT(out) :: var_glob
+
+      REAL(kind=4), DIMENSION(:), ALLOCATABLE :: var_raw
+      INTEGER :: ierr_mpi, i
+
+      IF (MASTER) THEN
+         ALLOCATE (var_raw(nb_part_total), var_glob(nb_part_total))
+      ELSE
+         ALLOCATE (var_raw(0), var_glob(0))
+      END IF
+
+      CALL MPI_GATHERV(var_local, nb_part_local, MPI_REAL, &
+                        var_raw, counts, displs, MPI_REAL, 0, MPI_COMM_WORLD, ierr_mpi)
+
+      IF (MASTER) THEN
+         DO i = 1, nb_part_total
+            var_glob(i) = var_raw(iperm(i))
+         END DO
+      END IF
+
+      DEALLOCATE (var_raw)
+
+   END SUBROUTINE MPI_gather_sort_real4_var
+
+   SUBROUTINE MPI_gather_sort_real8_var(nb_part_local, var_local, counts, displs, nb_part_total, iperm, var_glob)
+      !&E ** Purpose : Same as MPI_gather_sort_int_var, for REAL(kind=8) fields.
+      IMPLICIT NONE
+      INTEGER, INTENT(in)                                  :: nb_part_local
+      REAL(kind=8), DIMENSION(nb_part_local), INTENT(in)   :: var_local
+      INTEGER, DIMENSION(0:NNODES - 1), INTENT(in)         :: counts, displs
+      INTEGER, INTENT(in)                                  :: nb_part_total
+      INTEGER, DIMENSION(:), INTENT(in)                    :: iperm
+      REAL(kind=8), DIMENSION(:), ALLOCATABLE, INTENT(out) :: var_glob
+
+      REAL(kind=8), DIMENSION(:), ALLOCATABLE :: var_raw
+      INTEGER :: ierr_mpi, i
+
+      IF (MASTER) THEN
+         ALLOCATE (var_raw(nb_part_total), var_glob(nb_part_total))
+      ELSE
+         ALLOCATE (var_raw(0), var_glob(0))
+      END IF
+
+      CALL MPI_GATHERV(var_local, nb_part_local, MPI_DOUBLE_PRECISION, &
+                        var_raw, counts, displs, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr_mpi)
+
+      IF (MASTER) THEN
+         DO i = 1, nb_part_total
+            var_glob(i) = var_raw(iperm(i))
+         END DO
+      END IF
+
+      DEALLOCATE (var_raw)
+
+   END SUBROUTINE MPI_gather_sort_real8_var
 
    !!======================================================================
 

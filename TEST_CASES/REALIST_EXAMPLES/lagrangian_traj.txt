@@ -19,17 +19,17 @@
 :-----------------------------------------------------------------------------
 :
  &namtraj
- 	file_trajec = './traject3d_type2rect.dat'
-	dir_pathout = './output/output_lag/'
-	dtsave_traj = 24.d0 /
+ 	file_trajec = "TEST_CASES/REALIST_EXAMPLES/lagrangian_traject3d_mixed.dat"
+	dir_pathout = "./"
+	dtsave_traj = 1.d0 /
 :
 :-----------------------------------------------------------------------------
 : namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
 :-----------------------------------------------------------------------------
-:
+: 
 : hadv : if FALSE, particles will not be transported in the horizontal
-: 			direction, neither advection nor diffusion.
-:			Usefull for some configuration (ex : 3D-1DV, but also
+: 			direction, neither advection nor diffusion. 
+:			Usefull for some configuration (ex : 3D-1DV, but also 
 :			for some biological stages of the IBM)
 : dtz   : time step (s) used by the vertical random-walk subloop
 :         A value of a few seconds helps prevent particle accumulation in
@@ -49,4 +49,5 @@
       hadv = .TRUE.
 	  dtz  = 3
       hdiff = 5.0
-      l_repro_random = .FALSE. /
+      l_repro_random = .TRUE. /
+

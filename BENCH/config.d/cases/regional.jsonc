@@ -404,7 +404,55 @@
       "CROCO_FILES/croco_diags_pv.nc",
       "CROCO_FILES/croco_diags_eddy_avg.nc"],
   },
-  // TODO check runoff position and change croco.nml accordingly
+  // Exercises all three patch types (circle, rectangle, netcdf) mixed in a
+  // single file_trajec file (lagrangian_traject3d_mixed.dat) - patch type
+  // is now declared per-patch instead of once globally via itypepatch.
+  "BENGUELA_LR_LAGRANGIAN": {
+    "title": "BENGUELA_LR_LAGRANGIAN",
+    "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    "cppkeys": {
+      "USE_CALENDAR": true,
+      "LAGRANGIAN": true,
+    },
+    "patches": {},
+    "check_outputs": [
+      "CROCO_FILES/croco_his.nc",
+      "CROCO_FILES/croco_avg.nc",
+      "CROCO_FILES/croco_lagrangian_patch_circle.nc",
+      "CROCO_FILES/croco_lagrangian_patch_rect.nc",
+      "CROCO_FILES/croco_lagrangian_patch_netcdf.nc"],
+  },
+  "BENGUELA_LR_FOIL": {
+    "title": "BENGUELA_LR_FOIL",
+    "case": "REGIONAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_REGIONAL_foil.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_REGIONAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_REGIONAL.h",
+    "croco_files_path": "LR_CROCO_FILES_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2" },
+    // Own croco.in: same as croco.in.Regional, but "lagrangian:" points at
+    // foil_traj.txt (file_trajec = foil_ibm_patch.dat, which also carries
+    // the species/stage/size/... FOIL initial conditions) instead of
+    // lagrangian_traj.txt (the plain LAGRANGIAN patch file).
+    "cppkeys": {
+      "USE_CALENDAR": true,
+      "LAGRANGIAN": true,
+      "FOIL": true,
+    },
+    "patches": {},
+    "check_outputs": [
+      "CROCO_FILES/croco_his.nc",
+      "CROCO_FILES/croco_avg.nc",
+      "CROCO_FILES/anchovy_seapodym.nc",
+      "CROCO_FILES/anchovy_circle.nc",
+      "CROCO_FILES/anchovy_rect.nc"],
+  },
+  // TODO check runoff position and change croco.in accordingly
   // "BENGUELA_VHR_TIDES_BULK": {
   //   "title": "BENGUELA_VHR_TIDES_BULK",
   //   "case": "REGIONAL",

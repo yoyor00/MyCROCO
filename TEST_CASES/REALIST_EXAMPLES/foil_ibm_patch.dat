@@ -1,0 +1,106 @@
+NETCDF-BASED INITIALIZATION FILE (itypetraj = 3)
+FOIL PATCH AND SUPER-INDIVIDUAL INITIAL CONDITIONS
+
+Patch type: 1 = circle, 2 = rectangle, 3 = NetCDF positions
+Patch name
+Patch initialization date (start of the trajectory)
+Trajectory end date
+Output trajectory file
+Number of particles released at each initial position
+itypevert: initial vertical-movement scheme (may be updated later)
+           = 0: constant depth (no vertical advection or turbulent diffusion)
+           < 0: vertical advection only
+           > 0: vertical advection and turbulent diffusion using a random walk
+[then the fields specific to the patch type declared above -- for type 3,
+just the input NetCDF file; see traject3d_type1circ.dat/type2rect.dat for
+what a circle/rectangle patch expects here instead]
+Input NetCDF file containing the initial particle positions (type 3 only)
+
+The fields below are common to every patch type (FOIL initial conditions):
+Species name (anchovy or sardine)
+Developmental stage of the individuals
+Individual length
+Number of individuals represented by each particle (super-individual abundance)
+Individual density
+Individual age
+Individual age class
+Maturity energy
+Reserve energy
+Energy allocated to reproduction (first-feeding model; Nisbet, 2012)
+Energy allocated to gametes
+
+Note: the output interval is no longer read from this file: it is set once
+for all patches by dtsave_traj in the &namtraj namelist (paratraj.txt).
+
+END OF FILE DESCRIPTION%
+
+**************************************************************
+1                                                       ,| Patch type (1=circle)
+patch_circle                                            ,| Patch name
+2000/01/01 00:00:00                                     ,| Trajectory start date (tbegtraj)
+2004/12/31 00:00:00                                     ,| Trajectory end date (tendtraj)
+CROCO_FILES/anchovy_circle.nc                           ,| Output trajectory file (filetrajout)
+1                                                       ,| Particles released at each location (nb_part_intro)
+1                                                       ,| Initial vertical-movement scheme (itypevert)
+.true.                                                  ,| Use CROCO grid indices for the patch center
+25 15                                                   ,| Center grid indices (i, j)
+50000                                                   ,| Patch radius (m)
+4                                                       ,| Approximate horizontal release locations per depth level
+10 10                                                   ,| Minimum and maximum release depths (m)
+1                                                       ,| Vertical spacing between release depths (m)
+anchovy                                                 ,| Species
+6                                                       ,| Developmental stage
+12.13                                                   ,| Individual length (cm)
+148387.688684                                           ,| Individuals represented by each particle (super-individual abundance)
+1025.0                                                  ,| Individual density
+305                                                     ,| Individual age
+1                                                       ,| Adult age class (1 to 4 for anchovy)
+12026.0                                                 ,| Maturity energy, H (J)
+20625.0                                                 ,| Reserve energy, E (J)
+7548.4                                                  ,| Reproduction energy, R (J)
+0.0                                                     ,| Gametes energy, Gam (J)
+**************************************************************
+2                                                       ,| Patch type (2=rectangle)
+patch_rect                                              ,| Patch name
+2000/01/01 00:00:00                                     ,| Trajectory start date (tbegtraj)
+2004/12/31 00:00:00                                     ,| Trajectory end date (tendtraj)
+CROCO_FILES/anchovy_rect.nc                             ,| Output trajectory file (filetrajout)
+1                                                       ,| Particles released at each location (nb_part_intro)
+1                                                       ,| Initial vertical-movement scheme (itypevert)
+.true.                                                  ,| Use CROCO grid indices for the patch boundaries
+20 24 20 24                                             ,| Boundary indices (i_min, i_max, j_min, j_max)
+2 2                                                     ,| Horizontal release spacing (i step, j step)
+5 5                                                     ,| Minimum and maximum release depths (m)
+1                                                       ,| Vertical spacing between release depths (m)
+anchovy                                                 ,| Species
+6                                                       ,| Developmental stage
+12.13                                                   ,| Individual length (cm)
+148387.688684                                           ,| Individuals represented by each particle (super-individual abundance)
+1025.0                                                  ,| Individual density
+305                                                     ,| Individual age
+1                                                       ,| Adult age class (1 to 4 for anchovy)
+12026.0                                                 ,| Maturity energy, H (J)
+20625.0                                                 ,| Reserve energy, E (J)
+7548.4                                                  ,| Reproduction energy, R (J)
+0.0                                                     ,| Gametes energy, Gam (J)
+**************************************************************
+3                                                       ,| Patch type (3=netcdf)
+patch_netcdf                                            ,| Patch name
+2000/01/01 00:00:00                                     ,| Trajectory start date (tbegtraj)
+2004/12/31 00:00:00                                     ,| Trajectory end date (tendtraj)
+CROCO_FILES/anchovy_seapodym.nc                         ,| Output trajectory file (filetrajout)
+1                                                       ,| Particles released per initial position (nb_part_intro)
+1                                                       ,| Initial vertical-movement scheme (itypevert)
+CROCO_FILES/lagrangian_init.nc                          ,| Input file containing initial particle positions (filetrajin)
+anchovy                                                 ,| Species
+6                                                       ,| Developmental stage
+12.13                                                   ,| Individual length (cm)
+148387.688684                                           ,| Individuals represented by each particle (super-individual abundance)
+1025.0                                                  ,| Individual density
+305                                                     ,| Individual age
+1                                                       ,| Adult age class (1 to 4 for anchovy)
+12026.0                                                 ,| Maturity energy, H (J)
+20625.0                                                 ,| Reserve energy, E (J)
+7548.4                                                  ,| Reproduction energy, R (J)
+0.0                                                     ,| Gametes energy, Gam (J)
+**************************************************************

@@ -1,9 +1,9 @@
 LAGRANGIAN RECTANGULAR-PATCH INITIALIZATION FILE (itypepatch = 2)
 
+Patch type: 1 = circle, 2 = rectangle, 3 = NetCDF positions
 Patch name
 Trajectory start date
 Trajectory end date
-Output interval (h)
 Coordinate-system selector for the patch boundaries:
            .true.  = CROCO grid indices (i_min, i_max, j_min, j_max)
            .false. = geographic coordinates (lon_min, lon_max, lat_min, lat_max)
@@ -21,42 +21,42 @@ Output trajectory file
 END OF FILE DESCRIPTION
 
 **************************************************************
+2                           ,| Patch type (2=rectangle)
 patch1                      ,| Patch name
-2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
-2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
-24.d0                       ,| Output interval in hours (dtsave_traj)
-.true.                      ,| Use CROCO grid indices for the patch boundaries
-80 100 80 100               ,| Boundary indices (i_min, i_max, j_min, j_max)
-1 1                         ,| Horizontal release spacing (i step, j step)
-1 10                        ,| Minimum and maximum release depths (m)
-1                           ,| Vertical spacing between release depths (m)
+2005/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
+2005/12/31 23:59:59         ,| Trajectory end date (tendtraj)
+patch1_rect.nc              ,| Output trajectory file
 1                           ,| Particles released at each location (nb_part_intro)
 -1                          ,| Vertical advection only (itypevert)
-./rectvert.nc               ,| Output trajectory file
-**************************************************************
-patch2                      ,| Patch name
-2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
-2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
-24.d0                       ,| Output interval in hours (dtsave_traj)
 .true.                      ,| Use CROCO grid indices for the patch boundaries
-80 100 80 100               ,| Boundary indices (i_min, i_max, j_min, j_max)
+5 25 5 25                   ,| Boundary indices (i_min, i_max, j_min, j_max)
 1 1                         ,| Horizontal release spacing (i step, j step)
 1 10                        ,| Minimum and maximum release depths (m)
 1                           ,| Vertical spacing between release depths (m)
+**************************************************************
+2                           ,| Patch type (2=rectangle)
+patch2                      ,| Patch name
+2005/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
+2005/12/31 23:59:59         ,| Trajectory end date (tendtraj)
+patch2_rect.nc              ,| Output trajectory file
 1                           ,| Particles released at each location (nb_part_intro)
 1                           ,| Vertical advection and turbulent diffusion (itypevert)
-./rectrw.nc                 ,| Output trajectory file
-**************************************************************
-patch3                      ,| Patch name
-2009/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
-2011/12/31 23:59:59         ,| Trajectory end date (tendtraj)
-24.d0                       ,| Output interval in hours (dtsave_traj)
 .true.                      ,| Use CROCO grid indices for the patch boundaries
-80 100 80 100               ,| Boundary indices (i_min, i_max, j_min, j_max)
+5 25 5 25                   ,| Boundary indices (i_min, i_max, j_min, j_max)
 1 1                         ,| Horizontal release spacing (i step, j step)
 1 10                        ,| Minimum and maximum release depths (m)
 1                           ,| Vertical spacing between release depths (m)
+**************************************************************
+2                           ,| Patch type (2=rectangle)
+patch3                      ,| Patch name
+2005/01/01 00:00:00         ,| Trajectory start date (tbegtraj)
+2005/12/31 23:59:59         ,| Trajectory end date (tendtraj)
+patch3_rect.nc              ,| Output trajectory file
 1                           ,| Particles released at each location (nb_part_intro)
 0                           ,| Constant depth (itypevert)
-./rectfix.nc                ,| Output trajectory file
+.true.                      ,| Use CROCO grid indices for the patch boundaries
+5 25 5 25                   ,| Boundary indices (i_min, i_max, j_min, j_max)
+1 1                         ,| Horizontal release spacing (i step, j step)
+1 10                        ,| Minimum and maximum release depths (m)
+1                           ,| Vertical spacing between release depths (m)
 **************************************************************

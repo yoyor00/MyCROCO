@@ -536,6 +536,12 @@ contains
 #ifdef OBSTRUCTION
       namelist /croco_obstruction/ obstname
 #endif
+#ifdef LAGRANGIAN
+      namelist /croco_lagrangian/ lagrangianname
+#endif
+#ifdef FOIL
+      namelist /croco_foil/ foilname
+#endif
 #ifdef XIOS
       namelist /croco_xios_origin_date/ xios_origin_date
 #endif
@@ -2047,6 +2053,30 @@ contains
       end if
 #endif
 
+#ifdef LAGRANGIAN
+      ! --- croco_lagrangian (optional) ---
+      call check_nml_presence(nmlunit, "croco_lagrangian", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_lagrangian, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_lagrangian (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
+#ifdef FOIL
+      ! --- croco_foil (optional) ---
+      call check_nml_presence(nmlunit, "croco_foil", .false., found, ierr)
+      if (found) then
+         read (nmlunit, nml=croco_foil, iostat=ios); rewind (nmlunit)
+         if (ios /= 0) then
+            call fatal_nml_error("croco_foil (parse error)")
+            ierr = ierr + 1; close (nmlunit); return
+         end if
+      end if
+#endif
+
 #ifdef XIOS
       ! --- croco_xios_origin_date (optional) ---
       call check_nml_presence(nmlunit, "croco_xios_origin_date", .false., found, ierr)
@@ -2469,6 +2499,12 @@ contains
 #endif
 #ifdef OBSTRUCTION
       MPI_master_only WRITE (stdout, nml=croco_obstruction)
+#endif
+#ifdef LAGRANGIAN
+      MPI_master_only WRITE (stdout, nml=croco_lagrangian)
+#endif
+#ifdef FOIL
+      MPI_master_only WRITE (stdout, nml=croco_foil)
 #endif
 #ifdef XIOS
       MPI_master_only WRITE (stdout, nml=croco_xios_origin_date)

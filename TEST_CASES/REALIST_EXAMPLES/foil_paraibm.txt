@@ -4,40 +4,6 @@
 :=============================================================================
 :
 :-----------------------------------------------------------------------------
-: namibmin          GENERAL INPUT SETTINGS
-:-----------------------------------------------------------------------------
-:
-: file_trajec : name of the patch initialization file
-: dir_pathout : directory used for trajectory output and restart files
-: itypepatch  : method used to define the initial patch positions:
-:               1 = circle, 2 = rectangle, 3 = NetCDF positions
-:               This value must match the format of file_trajec.
-:
-:-----------------------------------------------------------------------------
-:
- &namibmin
-      file_trajec = 'TEST_CASES/foil_ibm_patch.dat'
-      dir_pathout = 'CROCO_FILES/'
-      itypepatch = 3 /
-:
-:-----------------------------------------------------------------------------
-: namibmdiff        PARTICLE DIFFUSION SETTINGS
-:-----------------------------------------------------------------------------
-:
-: dtz   : time step (s) used by the vertical random-walk subloop
-:         A value of a few seconds helps prevent particle accumulation in
-:         low-diffusivity regions and near boundaries. See Ross and Sharples
-:         (2004, Limnology and Oceanography) for a sensitivity analysis.
-: hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
-:         horizontal diffusion
-:
-:-----------------------------------------------------------------------------
-:
- &namibmdiff
-      dtz  = 3
-      hdiff = 5.0 /
-:
-:-----------------------------------------------------------------------------
 : namibmrestart     RESTART SETTINGS
 :-----------------------------------------------------------------------------
 :
@@ -52,18 +18,20 @@
       ibm_l_time  = .false. /
 :
 :-----------------------------------------------------------------------------
-: namibmbio         VERTICAL-BEHAVIOR SETTINGS
+: namibmmove         MOVEMENT SETTINGS
 :-----------------------------------------------------------------------------
 :
 : w_max   : nominal maximum vertical swimming speed (m s-1); the current
 :           life-stage routines replace it with stage-specific values
 : alpha_w : convergence factor in the hyperbolic-tangent function used to
 :           calculate swimming velocity toward the target depth
+: adult_move : activate (or not) the movement on the horizontal for juv/adults 
 :-----------------------------------------------------------------------------
 :
- &namibmbio
+ &namibmmove
       w_max = 0.0
-      alpha_w  = 0.8 /
+      alpha_w  = 0.8 
+      adult_move = .true. /
 :
 :-----------------------------------------------------------------------------
 : namibmpop         POPULATION, REPRODUCTION, AND FISHING SETTINGS
@@ -71,9 +39,6 @@
 :
 : repro             : enable or disable reproduction
 : dt_spawn          : interval (h) between spawning events
-: dt_save           : output interval (h) assigned to patches created through
-:                     reproduction; initial patches use the interval specified
-:                     in file_trajec
 : max_part          : maximum number of particles in each offspring patch and
 :                     its NetCDF trajectory file
 : duration_ibm_anc  : maximum anchovy lifespan (days)
@@ -91,17 +56,17 @@
 :-----------------------------------------------------------------------------
 :
  &namibmpop
-        repro          = .false.
+        repro          = .true.
         dt_spawn       = 24
-        dt_save        = 24
         max_part       = 1500
         duration_ibm_anc  = 1460
         duration_ibm_sar  = 2980
-        fish_mort         = .false.
+        fish_mort         = .true.
         fishing_strategy  = 'Catch'
         multiplier_tac    = 0.8
         density_dependent = .false./
 :
+
 :-----------------------------------------------------------------------------
 : namibmdeb         DYNAMIC ENERGY BUDGET (DEB) SETTINGS
 :-----------------------------------------------------------------------------
@@ -144,16 +109,17 @@
 :-----------------------------------------------------------------------------
 :
  &namibmfrc
-        fileanchovy          = 'TEST_CASES/foil_deb_parameters_anc.txt'
-        catch_anc_bob        = 'TEST_CASES/foil_catch_anc.txt'
+        fileanchovy          = 'TEST_CASES/REALIST_EXAMPLES/foil_deb_parameters_anc.txt'
+        catch_anc_bob        = 'TEST_CASES/REALIST_EXAMPLES/foil_catch_anc.txt'
         fileprobadistrib_anc = 'CROCO_FILES/foil_probadistrib.nc'
         nbSizeClass_anc      = 36
         sizemin_anc          = 3.5
         
-        filesardine          = 'TEST_CASES/foil_deb_parameters_sar.txt'
-        catch_sar_bob        = 'TEST_CASES/foil_catch_sar.txt'
+        filesardine          = 'TEST_CASES/REALIST_EXAMPLES/foil_deb_parameters_sar.txt'
+        catch_sar_bob        = 'TEST_CASES/REALIST_EXAMPLES/foil_catch_sar.txt'
         fileprobadistrib_sar = 'CROCO_FILES/foil_probadistrib.nc'
         nbSizeClass_sar      = 36 
         sizemin_sar          = 3.5
 /
+
 

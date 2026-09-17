@@ -16,7 +16,7 @@ MODULE debmodel
    USE mpi
 #endif
 
-#if defined IBM_SPECIES
+#ifdef FOIL
 
    USE module_ibm         ! time,sc_w,h
    USE comtraj, ONLY: kmax, rsh, rlg, lchain, valmanq, &
@@ -136,6 +136,7 @@ CONTAINS
       USE comtraj, ONLY: fileanchovy, filesardine, catch_anc_bob, catch_sar_bob
       USE comtraj, ONLY: mat_catch, fishing_strategy
       USE comtraj, ONLY: init_anchovy_egg, init_sardine_egg
+      USE comtraj, ONLY: l_repro_random
 
       !! * Arguments
       LOGICAL, intent(IN)                          :: restart
@@ -149,6 +150,7 @@ CONTAINS
 
       REAL(KIND=rsh) :: WV, WE, WR, WG, NRJ_V, NRJ_g, Wat, Wash, L, Wdeb, NRJ
       REAL(KIND=rsh) :: zoom
+      INTEGER :: draw_id ! Counter to tell successive random draws apart (see lag_random_number)
       INTEGER :: jj, mm_clock, aaaa, hh, minu, sec
       CHARACTER(len=19) :: tool_sectodat
 
@@ -235,8 +237,6 @@ CONTAINS
                IF (patch%nb_part_alloc == 0) CYCLE
                IF (.NOT. patch%particles(m)%active) CYCLE
                num = patch%particles(m)%num
-               ! CLARA, get index of num_nc
-               ! index_num = findloc(num_nc, num, dim=1)
                index_num = -1
                do il = 1, nb_part_nc
                   if (num_nc(il) == num) then
@@ -416,7 +416,8 @@ CONTAINS
             IF (restart) THEN
                zoom = patch%particles(m)%zoom
             ELSE
-               CALL gasdev_s(zoom)
+               draw_id = 0
+               CALL gasdev_s(zoom, l_repro_random, patch%particles(m)%num, draw_id)
                zoom = 1 + zoom*0.2_rsh/3.0_rsh
             END IF
 
@@ -455,9 +456,11 @@ CONTAINS
             patch%particles(m)%NRJ_g = NRJ_g
 
             ! -- Reproduction
-            patch%particles(m)%yearspawn = aaaa
-            patch%particles(m)%dayspawn = 500 ! pour etre sur d etre superieur a jjulien
-            patch%particles(m)%dayjuv = 0
+            IF (.NOT. restart) THEN
+               patch%particles(m)%yearspawn = aaaa
+               patch%particles(m)%dayspawn = 500 ! pour etre sur d etre superieur a jjulien
+               patch%particles(m)%dayjuv = 0
+            END IF
          END DO
 
          ! IF CATCH as fishing strategy
@@ -491,8 +494,8 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE deb_egg_init  ***
       !&E
-      !&E ** Purpose : Initialize DEB part of a given particle with default values, adding
-      !&E              adding inidividual variability. Only for reproduction routine !
+      !&E ** Purpose : Initialize DEB properties of new particles/SI from REPRODUCTION,
+      !&E              with default values adding inidividual variability.
       !&E
       !&E              Init Hj,pAm,pMi,EG,vc,kap,Kx,Hp,TA,K,shapeb,lfactor,E0,Rfbatch,SF,zoom
       !&E              L,H,E,R,WV,WE,WR,WG,NRJ_V,NRJ_G,Wdebd,NRJd,Wdeb,NRJ
@@ -509,6 +512,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! * Modules used
       USE ibmtools, ONLY: gasdev_s
+      USE comtraj, ONLY: l_repro_random
 
       !! * Arguments
       TYPE(type_particle), INTENT(inout) :: particle
@@ -519,13 +523,15 @@ CONTAINS
       CHARACTER(len=19) :: tool_sectodat
       REAL(KIND=rsh) :: Wash, Wat
       REAL(KIND=rsh) :: zoom ! zoom factor for inter individual variability
+      INTEGER :: draw_id ! Counter to tell successive random draws apart (see lag_random_number)
 
       !!----------------------------------------------------------------------
       !! * Executable part
       CALL tool_decompdate(tool_sectodat(time), jj, mm_clock, aaaa, hh, minu, sec)
 
       ! Inter individual variability
-      CALL gasdev_s(zoom)
+      draw_id = 0
+      CALL gasdev_s(zoom, l_repro_random, particle%num, draw_id)
       zoom = 1 + zoom*0.2_rsh/3.0_rsh
 
       !   Affectation des paramètres
@@ -1060,11 +1066,10 @@ CONTAINS
 
       CALL ionc4_openr(file_food, l_in_nc4par=.true.)
 
-      ! Definit les indices de lecture en fonction du proc mpi dans le fichier de forcage
-      ! Lit sur tout le domaine en sequentiel sinon
+      ! Set the local CROCO bounds (imin:imax, jmin:jmax) and the matching
+      ! global forcing-file bounds (valimin:valimax, valjmin:valjmax)
       imin = 0; jmin = 0
-      valimin = 1; valjmin = 1 ! version initiale Denis
-      ! valimin = 0 ; valjmin = 0 ! version modifiée Clara
+      valimin = 1; valjmin = 1
 
 #ifdef MPI
       if (ii .gt. 0) then
@@ -1095,7 +1100,6 @@ CONTAINS
       valjmax = jmax - jmin + valjmin
 
       ! Read food at first time step from file
-      ! IF( FIRST_TIME_STEP ) THEN
       IF (timestep_ibm) THEN
 
          ALLOCATE (biomassezoo(GLOBAL_2D_ARRAY))
@@ -1143,14 +1147,9 @@ CONTAINS
          CALL ionc4_read_subxyt(file_food, TRIM(name1_in_food), food1_1, valimin, valimax, valjmin, valjmax, ilecf, 1, 1)
          CALL ionc4_read_subxyt(file_food, TRIM(name1_in_food), food2_1, valimin, valimax, valjmin, valjmax, ilecf + 1, 1, 1)
 
-         ! Copie des lectures dans les bons indices pour CROCO, ie entre 0 et imax-1
-#ifdef MPI
-         food1(1:valimax - valimin + 1, 1:valjmax - valjmin + 1) = food1_1 ! version initiale Denis
-         food2(1:valimax - valimin + 1, 1:valjmax - valjmin + 1) = food2_1 ! version initiale Denis
-#else
-         food1(imin:imax, jmin:jmax) = food1_1(valimin:valimax, valjmin:valjmax) ! version modifiée Clara
-         food2(imin:imax, jmin:jmax) = food2_1(valimin:valimax, valjmin:valjmax) ! version modifiée Clara
-#endif
+         ! Map the forcing data from global file bounds to local CROCO bounds
+         food1(imin:imax, jmin:jmax) = food1_1
+         food2(imin:imax, jmin:jmax) = food2_1
 
          DEALLOCATE (food1_1, food2_1)
          ilecmemfood = ilecf
@@ -1185,17 +1184,13 @@ CONTAINS
             CALL ionc4_read_subxyt(file_food, TRIM(name1_in_food), food2_1, valimin, valimax, valjmin, valjmax, ilecf + 1, 1, 1)
 
             food1 = food2
-#ifdef MPI
-            food2(1:valimax - valimin + 1, 1:valjmax - valjmin + 1) = food2_1 ! version initiale Denis
-#else
-            food2(imin:imax, jmin:jmax) = food2_1(valimin:valimax, valjmin:valjmax) ! version modifiée Clara
-#endif
+            food2(imin:imax, jmin:jmax) = food2_1
 
             DEALLOCATE (food2_1)
             ilecmemfood = ilecf
          END IF
 
-      END IF   ! FIRST_TIME_STEP
+      END IF   ! timestep_ibm
 
       dt1 = (tncf2 - torigin - tfood)/(tncf2 - tncf1)
       dt2 = 1.0_rlg - dt1
@@ -1484,6 +1479,6 @@ CONTAINS
 
    END FUNCTION ESD2weight
 
-#endif /* IBM_SPECIES */
+#endif /* FOIL */
 
 END MODULE

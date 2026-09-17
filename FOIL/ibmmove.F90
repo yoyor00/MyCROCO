@@ -19,7 +19,7 @@ MODULE ibmmove
 #include "cppdefs.h"
 #include "toolcpp.h"
 
-#if defined DEB_IBM && defined IBM_SPECIES
+#ifdef FOIL
 
    USE module_ibm         ! time,h,om_r,on_r
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, &
@@ -78,7 +78,7 @@ CONTAINS
 
       !! * Local declarations
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:, :, :)   :: fish1
-      INTEGER                                         :: idimt, t
+      INTEGER                                         :: idimt, t, k
       INTEGER                                         :: valimin, valimax, valjmin, valjmax
       INTEGER                                         :: imin, jmin, imax, jmax
       INTEGER                                         :: lstr, lenstr
@@ -132,22 +132,14 @@ CONTAINS
 
       ALLOCATE (fish_anc(GLOBAL_2D_ARRAY, nbSizeClass_anc, idimt))
 
-      ! ! Vérifie que la taille du bloc à lire ne dépasse pas fish_anc
-      ! ! Modif Clara, pas sur pourquoi les indices de fish_anc commencent à 0 et fish1 à 1 dans 3D-1DV
-      ! ! Attention : si fish1 plus petit que fish_anc, pas de message d'erreur
-      ! if ((valimax-valimin+1 > UBOUND(fish_anc,1)-LBOUND(fish_anc,1)+1) .or. &
-      !     (valjmax-valjmin+1 > UBOUND(fish_anc,2)-LBOUND(fish_anc,2)+1)) then
-      !     WRITE(*,*) 'Erreur : le bloc à lire dépasse les dimensions de fish_anc'
-      !     STOP
-      ! endif !Fin modif Clara
-
       DO t = 1, idimt
          CALL ionc4_read_subzxyt(file_fish1, TRIM(name_in_fish), fish1, valimin, valimax, valjmin, &
                                  valjmax, 1, nbSizeClass_anc, t, 1, 1, 1)
+         fish_anc(imin:imax, jmin:jmax, :, t) = fish1
 #ifdef MPI
-         fish_anc(1:valimax - valimin + 1, 1:valjmax - valjmin + 1, :, t) = fish1 ! version initiale Denis
-#else
-         fish_anc(0:valimax - valimin, 0:valjmax - valjmin, :, t) = fish1 ! version modifiée Clara
+         DO k = 1, nbSizeClass_anc
+            CALL exchange_r2d_1pts_tile(limin, limax, ljmin, ljmax, fish_anc(START_2D_ARRAY, k, t))
+         END DO
 #endif
       END DO
 
@@ -164,24 +156,15 @@ CONTAINS
       ALLOCATE (fish_sar(GLOBAL_2D_ARRAY, nbSizeClass_sar, idimt))
       ALLOCATE (fish1(valimin:valimax, valjmin:valjmax, nbSizeClass_sar))
 
-      ! ! Vérifie que la taille du bloc à lire ne dépasse pas fish_sar
-      ! ! Modif Clara, pas sur pourquoi les indices de fish_sar commencent à 0 et fish1 à 1 dans 3D-1DV
-      ! ! Attention : si fish1 plus petit que fish_sar, pas de message d'erreur
-      ! if ((valimax-valimin+1 > UBOUND(fish_sar,1)-LBOUND(fish_sar,1)+1) .or. &
-      !     (valjmax-valjmin+1 > UBOUND(fish_sar,2)-LBOUND(fish_sar,2)+1)) then
-      !     WRITE(*,*) 'Erreur : le bloc à lire dépasse les dimensions de fish_sar'
-      !     STOP
-      ! endif !Fin modif Clara
-
       DO t = 1, idimt
          CALL ionc4_read_subzxyt(file_fish2, TRIM(name_in_fish), fish1, valimin, valimax, valjmin, &
                                  valjmax, 1, nbSizeClass_sar, t, 1, 1, 1)
+         fish_sar(imin:imax, jmin:jmax, :, t) = fish1
 #ifdef MPI
-         fish_sar(1:valimax - valimin + 1, 1:valjmax - valjmin + 1, :, t) = fish1 ! version initiale Denis
-#else
-         fish_sar(0:valimax - valimin, 0:valjmax - valjmin, :, t) = fish1 ! version modifiée Clara
+         DO k = 1, nbSizeClass_sar
+            CALL exchange_r2d_1pts_tile(limin, limax, ljmin, ljmax, fish_sar(START_2D_ARRAY, k, t))
+         END DO
 #endif
-
       END DO
 
       CALL ionc4_close(file_fish2)
@@ -303,9 +286,6 @@ CONTAINS
          fpos_y = fpos_y + 1
       END IF
 
-      icell = MIN(MAX(icell, imin), imax) ! check IF in boundaries
-      jcell = MIN(MAX(jcell, jmin), jmax)
-
       ! Get the probability at this new cell
       IF (ind_species == 1) Pj = fish_anc(icell, jcell, index, saison)
       IF (ind_species == 2) Pj = fish_sar(icell, jcell, index, saison)
@@ -366,7 +346,9 @@ CONTAINS
          pos_n%xp = xpos_n; pos_n%yp = ypos_n
          CALL define_pos(pos_n)
 
-         IF (h(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) > 0.0_rsh .and. particle%flag /= -valmanq) THEN
+         IF (h(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) > 0.0_rsh .and. &
+            rmask(NINT(pos_n%idx_r),NINT(pos_n%idy_r)) > 0.5_rsh .and. &
+            particle%flag /= -valmanq) THEN
             ! test si on reste en mer (possibilite si incompatibilite de grille)
             IF ((NINT(pos_n%idx_r) > icells + 1) .or. (NINT(pos_n%idx_r) < icells - 1) .or. &
                 (NINT(pos_n%idy_r) > jcells + 1) .or. (NINT(pos_n%idy_r) < jcells - 1)) THEN
@@ -430,7 +412,6 @@ CONTAINS
    END SUBROUTINE fish_move
    !!======================================================================
 
-#endif /* DEB_IBM */
+#endif /* FOIL */
 
 END MODULE
-

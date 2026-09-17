@@ -4,7 +4,7 @@
 
 #include "cppdefs.h"
 
-#if defined DEB_IBM
+#ifdef FOIL
 
 MODULE plug_ibm
    ! interface between croco and ibm module
@@ -27,7 +27,10 @@ CONTAINS
       INTEGER :: tile
 # include "compute_tile_bounds.h"
 
-      CALL ibm_init(zeta, t(:, :, :, nstp, isalt), t(:, :, :, nstp, itemp), Istr, Iend, Jstr, Jend)
+      ! zeta(:,:,knew), NOT Zt_avg1: at init time (main.F) Zt_avg1 is still
+      ! stale ("zeta=0" placeholder) until the next set_depth call, unlike
+      ! per-timestep below where pre_step3d has just refreshed it.
+      CALL ibm_init(zeta(:, :, knew), t(:, :, :, nstp, isalt), t(:, :, :, nstp, itemp), Istr, Iend, Jstr, Jend)
 
    END SUBROUTINE
 
@@ -37,7 +40,12 @@ CONTAINS
       INTEGER :: tile
 # include "compute_tile_bounds.h"
 
-      CALL ibm_3d(zeta, u, v, t(:, :, :, nstp, isalt), t(:, :, :, nstp, itemp), Istr, Iend, Jstr, Jend)
+      ! Zt_avg1 (fresh here, see ibm_init_main above) and u/v at nstp
+      ! (same instant as `time`, see plug_lagrangian.F90), sliced once so
+      ! ibm_3d and everything it calls only see already-time-correct
+      ! 2D/3D fields, never a raw multi-slot array.
+      CALL ibm_3d(Zt_avg1, u(:, :, :, nstp), v(:, :, :, nstp), &
+                  t(:, :, :, nstp, isalt), t(:, :, :, nstp, itemp), Istr, Iend, Jstr, Jend)
 
    END SUBROUTINE
 
@@ -49,4 +57,4 @@ END MODULE plug_ibm
 MODULE plug_ibm_empty
 END MODULE plug_ibm_empty
 
-#endif /* DEB_IBM */
+#endif /* FOIL */

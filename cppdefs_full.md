@@ -594,6 +594,17 @@ Exactly one biogeochemical model must be chosen when `BIOLOGY` is defined.
 
 ---
 
+## Lagrangian Particle Tracking
+
+- `LAGRANGIAN` — Offline Lagrangian particle tracking (advection/diffusion of
+  drifters released from patches defined in a separate parameter file, see
+  `croco_lagrangian`)
+  - `FOIL` — Fish individual-based model (IBM) built on top of
+    `LAGRANGIAN` particles (growth, mortality, reproduction; parameters in a
+    separate file, see `croco_foil`) _(requires `LAGRANGIAN`)_
+
+---
+
 ## USGS Sediment Model
 
 - `SEDIMENT` — USGS sediment transport model

@@ -29,7 +29,7 @@ MODULE ibmtools
    USE mpi
 #endif
 
-#if defined DEB_IBM
+#ifdef FOIL
    !! * Module used
    USE module_ibm          ! time,sc_r,sc_w,Cs_r,h,hc,g,srflx,zeta
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, rsh, rlg, type_particle, lchain
@@ -39,10 +39,8 @@ MODULE ibmtools
 
    !! * Accessibility
    PUBLIC w_dens, ibm_buoy, ibm_traint, ibm_nycth_mig, ibm_proftraint, &
-#ifdef IBM_SPECIES
       ibm_parameter_init, death_by_fishing, selec_dome_or_asymp, &
-      alpha_sel, beta_sel, &
-#endif
+      alpha_sel_a, beta_sel_a, alpha_sel_s, beta_sel_s, &
       ibm_profmean, ibm_loc_xyz, gasdev_s, tool_julien
    !ibm_profuint, ibm_profvint                                  ! non utilise
 
@@ -53,10 +51,10 @@ MODULE ibmtools
 
    INTEGER, PARAMETER                                  :: track = 1
 
-#ifdef IBM_SPECIES
-   REAL(KIND=rsh), PARAMETER                           :: alpha_sel = 0.876931491863804146725_rsh
-   REAL(KIND=rsh), PARAMETER                           :: beta_sel = 11.725820182044399686561_rsh
-#endif
+   REAL(KIND=rsh), PARAMETER                           :: alpha_sel_a = 0.879_rsh
+   REAL(KIND=rsh), PARAMETER                           :: beta_sel_a  = 12.20_rsh
+   REAL(KIND=rsh), PARAMETER                           :: alpha_sel_s = 0.877_rsh
+   REAL(KIND=rsh), PARAMETER                           :: beta_sel_s  = 11.73_rsh
 
    !!===================================================================================================================================
    !!===================================================================================================================================
@@ -135,7 +133,6 @@ CONTAINS
 
    END FUNCTION tool_julien
 
-#ifdef IBM_SPECIES
 
    !!======================================================================
    SUBROUTINE ibm_parameter_init(particle, species, xe, sal, temp, Istr, Iend, Jstr, Jend)
@@ -154,18 +151,21 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! Modules used
       USE trajectools, ONLY: define_pos, ztosiggen
-      USE comtraj, ONLY: type_position
+      USE comtraj, ONLY: type_position, l_repro_random
 
       !! Arguments
       TYPE(type_particle), INTENT(inout)  :: particle
       CHARACTER(LEN=lchain), INTENT(in)     :: species
-      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, 4), INTENT(in)     :: xe
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in)     :: xe
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, kmax), INTENT(in)     :: sal, temp
       INTEGER, INTENT(in)     :: Istr, Iend, Jstr, Jend
 
       ! Local declaration
       ! To save a local and global position of particle for MPI and Sequential compatibility
       TYPE(type_position)                             :: pos
+
+      ! Counter to tell successive random draws apart for this particle (see lag_random_number)
+      INTEGER                                         :: draw_id
 
       ! Temporary indexes of particle's location
       INTEGER                                         :: igg, idd, jhh, jbb, kp, km
@@ -191,9 +191,14 @@ CONTAINS
                        px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt, kp, km, &
                        Istr, Iend, Jstr, Jend)
 
-      ! Initialize particle's stage, Drate and w
+      ! Initialize particle's Drate and w
       particle%Drate = 0.0_rsh
       particle%w = 0.0_rsh
+
+      ! Initialize particle's hadv
+      IF (particle%stage >= 5) THEN
+         particle%hadv = .FALSE.  ! in case hadv = TRUE in paratraj.txt and initial patches are juv/adult
+      END IF
 
       ! Initialize particle's size, checking at species
       !Huret et al. 2016
@@ -222,7 +227,6 @@ CONTAINS
                              Istr, Iend, Jstr, Jend)
       dens_surf = w_dens(temp_surf, sal_surf)
 
-      ! Si temperature realiste a l'initialisation, on prend sa valeur, sinon on prend 0
       particle%temp = temp_surf
       particle%density = dens_surf
 
@@ -237,7 +241,8 @@ CONTAINS
       END IF
 
       ! -- Randomly modify denspawn and size of particles
-      CALL gasdev_s(tir)
+      draw_id = 0
+      CALL gasdev_s(tir, l_repro_random, particle%num, draw_id)
       particle%denspawn = particle%denspawn + tir*ec_type
       particle%density = particle%denspawn
       particle%size = particle%size + tir*ec_type_size
@@ -304,7 +309,7 @@ CONTAINS
       ! =====                     Fishing strategy : F_eval                    =====
       ! =====                                                                  =====
       ! Fishing of First Age Class
-      IF (particle%AgeClass >= 1 .and. fishing_strategy == 'F_eval') THEN !ageclass>=1 to be sure not to fish newborns
+      IF (particle%AgeClass >= 1 .and. fishing_strategy == 'F_eval') THEN ! AgeClass>=1 to be sure not to fish newborns
 
          IF (particle%stage == 6 .and. month < 7 .and. species == 'anchovy') THEN
             !IF (year < 1990) Zfishing = f_spin
@@ -411,7 +416,7 @@ CONTAINS
       ! =====                                                                  =====
       ! =====                     Fishing strategy : Catch                     =====
       ! =====                                                                  =====
-      IF (particle%stage >= 5 .and. fishing_strategy == 'Catch' .and. particle%AgeClass >= 1) THEN !ageclass>=1 to be sure not to fish newborns THEN
+      IF (particle%stage >= 5 .and. fishing_strategy == 'Catch' .and. particle%AgeClass >= 1) THEN ! AgeClass>=1 to be sure not to fish newborns THEN
 
          ! mat_catch is read in ibm_init routine
          IF (species == 'anchovy') id_species = 1
@@ -436,13 +441,25 @@ CONTAINS
 
             ! test to avoid negative super
             IF (year > 1970 .and. year < 2000) THEN
-               Zfishing = particle%Wdeb*mat_catch(1, month, id_species)* &
-                          selec_dome_or_asymp(particle%size, alpha_sel, beta_sel)/ &
-                          (Wdeb_mean(id_species)*biom_tot(id_species))
+               IF (species == 'anchovy') THEN
+                  Zfishing = particle%Wdeb*mat_catch(1, month, id_species)* &
+                     selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a) / &
+                     (Wdeb_mean(id_species)*biom_tot(id_species))
+               ELSE IF (species == 'sardine') THEN
+                  Zfishing = particle%Wdeb*mat_catch(1, month, id_species)*&
+                     selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s) / &
+                     (Wdeb_mean(id_species)*biom_tot(id_species))
+               END IF
             ELSE IF (year >= 2000) THEN
-               Zfishing = particle%Wdeb*mat_catch(year - 1999, month, id_species)* &
-                          selec_dome_or_asymp(particle%size, alpha_sel, beta_sel)/ &
-                          (Wdeb_mean(id_species)*biom_tot(id_species))
+               IF (species == 'anchovy') THEN
+                  Zfishing = particle%Wdeb*mat_catch(year-1999, month, id_species)* &
+                     selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a) / &
+                     (Wdeb_mean(id_species)*biom_tot(id_species))
+               ELSE IF (species == 'sardine') THEN
+                  Zfishing = particle%Wdeb*mat_catch(year-1999, month, id_species)* &
+                     selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s) / &
+                     (Wdeb_mean(id_species)*biom_tot(id_species))
+               END IF
             END IF
             particle%Death_FISH = particle%Death_FISH + particle%super*(1._rlg - exp(-Zfishing*coeff1))
             particle%super = particle%super*exp(-Zfishing*coeff1)
@@ -594,7 +611,6 @@ CONTAINS
       END IF ! fishing_strategy == historical
 
    END SUBROUTINE death_by_fishing
-#endif  /* IBM_SPECIES */
 
    !!===========================================================================
    FUNCTION w_dens(tempw, salw)
@@ -1081,29 +1097,56 @@ CONTAINS
    END SUBROUTINE ibm_loc_xyz
 
    !!====================================================================
-   SUBROUTINE gasdev_s(harvest)
+   SUBROUTINE gasdev_s(harvest, l_repro, num, draw_id)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE gasdev_s  ***
       !&E
       !&E ** Purpose : Returns in harvest a normally distributed deviate with zero mean and unit variance,
       !&E              using ran1 as the source of uniform deviates.
       !&E
-      !&E ** Description    :
+      !&E ** Description : Uses the Box-Muller transform, which produces two deviates
+      !&E              from two uniform draws. The non-reproducible branch below returns
+      !&E              one and caches the other (g/gaus_stored) for the *next* call --
+      !&E              but the next call may be for a different particle, so what a call
+      !&E              returns then depends on how many other calls happened before it.
+      !&E              When l_repro is .TRUE. this caching is bypassed entirely: both
+      !&E              underlying uniform draws come from lag_random_number, seeded
+      !&E              deterministically from (num, iic, draw_id), and only the first
+      !&E              deviate is used (the second is simply discarded rather than
+      !&E              cached), so harvest depends only on (num, draw_id) -- not on
+      !&E              call order -- making it reproducible across MPI decompositions.
+      !&E              See lag_random_number for what num/draw_id mean.
+      !&E
       !&E ** Called by      : ibm_parameter_init,deb_egg_init,deb_init
-      !&E ** External calls :
-      !&E ** Reference      :
+      !&E ** External calls : lag_random_number (from trajectools)
       !&E
       !&E ** History :
       !&E
       !&E---------------------------------------------------------------------
+      USE trajectools, ONLY: lag_random_number
 
       REAL(rsh), INTENT(OUT) :: harvest
+      LOGICAL, INTENT(in)    :: l_repro
+      INTEGER, INTENT(in)    :: num
+      INTEGER, INTENT(inout) :: draw_id
 
       REAL(rsh)              :: rsq, v1, v2
       REAL(rsh), SAVE        :: g
       LOGICAL, SAVE        :: gaus_stored = .false.
 
-      IF (gaus_stored) THEN       ! We have an extra deviate handy,
+      IF (l_repro) THEN
+         DO
+            CALL lag_random_number(.TRUE., num, draw_id, v1)
+            CALL lag_random_number(.TRUE., num, draw_id, v2)
+            v1 = 2.0_rsh*v1 - 1.0_rsh
+            v2 = 2.0_rsh*v2 - 1.0_rsh
+            rsq = v1**2 + v2**2
+            IF (rsq > 0.0 .and. rsq < 1.0) EXIT
+         END DO
+         rsq = sqrt(-2.0_rsh*log(rsq)/rsq)
+         harvest = v1*rsq
+
+      ELSE IF (gaus_stored) THEN       ! We have an extra deviate handy,
          harvest = g          ! so return it,
          gaus_stored = .false.    ! and unset the flag.
 
@@ -1115,7 +1158,7 @@ CONTAINS
             v2 = 2.0_rsh*v2 - 1.0_rsh
             rsq = v1**2 + v2**2         !see IF they are in the unit circle,
             IF (rsq > 0.0 .and. rsq < 1.0) EXIT
-         END Do       !otherwise try again.
+         END DO       !otherwise try again.
 
          !Now make the Box-Muller transformation to get two normal deviates. Return one and save the other for next time.
          rsq = sqrt(-2.0_rsh*log(rsq)/rsq)
@@ -1655,6 +1698,6 @@ CONTAINS
    END SUBROUTINE ibm_opt_depth
 #endif /* key_ibm__unused */
 
-#endif  /* DEB_IBM */
+#endif  /* DEB_FOIL */
 
 END MODULE

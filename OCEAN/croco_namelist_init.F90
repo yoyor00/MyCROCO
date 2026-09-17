@@ -180,6 +180,12 @@ contains
 #ifdef OBSTRUCTION
       call init_obstruction(ierr)
 #endif
+#ifdef LAGRANGIAN
+      call init_lagrangian(ierr)
+#endif
+#ifdef FOIL
+      call init_foil(ierr)
+#endif
 #ifdef XIOS
       call init_xios_origin_date()
 #endif
@@ -923,6 +929,58 @@ contains
       end if
 
    end subroutine init_obstruction
+#endif
+
+#ifdef LAGRANGIAN
+   !---------------------------------------------------------------------
+   !  init_lagrangian
+   !---------------------------------------------------------------------
+   subroutine init_lagrangian(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: lagrangianname
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      open (testunit, file=trim(lagrangianname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open lagrangian file ', trim(lagrangianname)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_lagrangian
+#endif
+
+#ifdef FOIL
+   !---------------------------------------------------------------------
+   !  init_foil
+   !---------------------------------------------------------------------
+   subroutine init_foil(ierr)
+      use param, ONLY: stdout
+      use croco_namelist, ONLY: foilname
+#if defined MPI
+      use scalars, ONLY: mynode
+#endif
+      implicit none
+      integer, intent(inout) :: ierr
+      integer :: ios
+
+      open (testunit, file=trim(foilname), status='old', iostat=ios)
+      if (ios == 0) then
+         close (testunit)
+      else
+         MPI_master_only write (stdout, *) &
+            'Error: cannot open foil file ', trim(foilname)
+         ierr = ierr + 1
+      end if
+
+   end subroutine init_foil
 #endif
 
 #if !defined ANA_BRY && defined FRC_BRY

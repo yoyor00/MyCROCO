@@ -6,11 +6,12 @@
 
 !!! give access to dimensions, variables, parameters from hydro model to lagrangian
 
-#if defined LAGRANGIAN || defined DEB_IBM
+#if defined LAGRANGIAN
 
       MODULE module_lagrangian
 
          ! pass from fix (F) to free format (F90)
+         USE croco_namelist, ONLY: theta_s, theta_b, hc, dt, lagrangianname
 
 #include "param.h"
 #include "ncscrum.h"

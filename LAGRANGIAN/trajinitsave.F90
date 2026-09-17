@@ -24,7 +24,7 @@ MODULE trajinitsave
    !!======================================================================
 #include "cppdefs.h"
 #include "toolcpp.h"
-#if defined LAGRANGIAN || defined DEB_IBM
+#ifdef LAGRANGIAN
 
    !! * Modules used
 #ifdef MPI
@@ -44,69 +44,12 @@ MODULE trajinitsave
    !! * Accessibility
    PUBLIC   :: LAGRANGIAN_init          ! routine called by LAGRANGIAN_init_main, ibm_init
    PUBLIC   :: traj_save3d              ! routine called by LAGRANGIAN_update
-   PUBLIC   :: indices_loc2glob
    PUBLIC   :: init_patch
 
    !! * Shared module variables
    !! * Private variables
 
 CONTAINS
-
-   !!======================================================================
-
-   SUBROUTINE indices_loc2glob(in_start, nb_part, out_start, out_end)
-
-      !&E---------------------------------------------------------------------
-      !&E                 ***  ROUTINE indices_loc2glob  ***
-      !&E
-      !&E ** Purpose : Gather indexes of all particles in a patch, especially for MPI purpose
-      !&E
-      !&E ** Description :
-      !&E
-      !&E ** Called by : LAGRANGIAN_init, traj_save3d, ibm_save, ibm_3d
-      !&E
-      !&E ** External calls : exchange_vectcpu_int
-      !&E
-      !&E ** Reference :
-      !&E
-      !&E ** History :
-      !&E       !  2015-01  (M. Honnorat) IBM upgrade
-      !&E       !  2024    (M. Caillaud, D. Gourves) Coupled with CROCO
-      !&E---------------------------------------------------------------------
-      !! * Modules used
-
-#ifdef MPI
-      USE toolmpi, ONLY: exchange_vectcpu_int
-#endif
-
-      !! * Arguments
-      INTEGER, INTENT(in)  :: in_start
-      INTEGER, INTENT(in)  :: nb_part
-      INTEGER, INTENT(out) :: out_start
-      INTEGER, INTENT(out) :: out_end
-
-      !! * Local declarations
-#ifdef MPI
-      INTEGER, DIMENSION(0:NNODES - 1)   :: nb_part_percpu
-#endif
-
-      !!----------------------------------------------------------------------
-      !! * Executable part
-
-      out_start = in_start
-#ifdef MPI
-      ! Init nb_part_percpu
-      nb_part_percpu = 0
-      nb_part_percpu(mynode) = nb_part
-      CALL exchange_vectcpu_int(nb_part_percpu)
-
-      IF (mynode /= 0) THEN
-         out_start = out_start + SUM(nb_part_percpu(0:mynode - 1))
-      END IF
-#endif
-      out_end = out_start - 1 + nb_part
-
-   END SUBROUTINE indices_loc2glob
 
    !!======================================================================
    SUBROUTINE init_patch(patch, nb_part)
@@ -149,7 +92,8 @@ CONTAINS
       ! Allocation of particles of each patch
       ALLOCATE (patch%particles(patch%nb_part_alloc))
 
-      patch%particles(:) = patch%init_particle
+      patch%particles(:) = patch%init_particle  ! get the default value of comtraj, 
+                                                ! some were updated in LAGRANGIAN_init
       nb_part_total = nb_part
 
 #ifdef MPI
@@ -161,12 +105,84 @@ CONTAINS
    END SUBROUTINE init_patch
 
    !!======================================================================
-   SUBROUTINE LAGRANGIAN_init(Istr, Iend, Jstr, Jend)
+   SUBROUTINE tool_latlon2ij_global(longitude, latitude, i_out, j_out)
+      !&E---------------------------------------------------------------------
+      !&E                 ***  SUBROUTINE tool_latlon2ij_global  ***
+      !&E
+      !&E ** Purpose : convert geographic coordinates into (i,j) grid indices,
+      !&E              precisely AND identically on every MPI rank -- for
+      !&E              patch-boundary/extent definitions (rectangle corners,
+      !&E              circle center), which unlike per-particle positions
+      !&E              must be the SAME on every rank (they drive the
+      !&E              decomposition-independent release grid every patch
+      !&E              type relies on).
+      !&E
+      !&E ** Called by : LAGRANGIAN_init
+      !&E
+      !&E ** Description : every rank runs tool_latlon2ij's precise local
+      !&E              search; exactly one rank's tile actually contains the
+      !&E              point (found_local=.TRUE. there), so that rank's exact
+      !&E              answer is broadcast to every other rank via MPI. If NO
+      !&E              rank finds it, the point is genuinely outside the
+      !&E              domain -- a patch-configuration error, not something
+      !&E              to silently paper over with an approximation, so this
+      !&E              stops the run with a clear message.
+      !&E
+      !&E---------------------------------------------------------------------
+      !! * Modules used
+      USE trajectools, ONLY: tool_latlon2ij
+      USE comtraj, ONLY: ierrorlog, file_trajec
+      IMPLICIT NONE
+
+      !! * Arguments
+      REAL(KIND=rlg), INTENT(in)  :: longitude, latitude
+      REAL(KIND=rsh), INTENT(out) :: i_out, j_out
+
+      !! * Local declarations
+      LOGICAL :: found_local, found_anywhere
+#ifdef MPI
+      INTEGER :: my_candidate, winner_rank, ierr_mpi
+#endif
+      !!----------------------------------------------------------------------
+      !! * Executable part
+
+      CALL tool_latlon2ij(longitude, latitude, i_out, j_out, found_local=found_local)
+
+#ifdef MPI
+      ! Lowest-numbered rank that actually found it, deterministically
+      ! (avoids any race if the point sits exactly on a tile boundary and
+      ! more than one rank's local search happens to claim it).
+      my_candidate = MERGE(mynode, HUGE(mynode), found_local)
+      CALL MPI_ALLREDUCE(my_candidate, winner_rank, 1, MPI_INTEGER, MPI_MIN, MPI_COMM_WORLD, ierr_mpi)
+      found_anywhere = (winner_rank /= HUGE(mynode))
+
+      IF (found_anywhere) THEN
+         ! i_out/j_out are REAL(kind=rsh) = double precision (rsh=8, see
+         ! comtraj.F90) -- MPI_DOUBLE_PRECISION, not MPI_REAL, to match.
+         CALL MPI_Bcast(i_out, 1, MPI_DOUBLE_PRECISION, winner_rank, MPI_COMM_WORLD, ierr_mpi)
+         CALL MPI_Bcast(j_out, 1, MPI_DOUBLE_PRECISION, winner_rank, MPI_COMM_WORLD, ierr_mpi)
+      END IF
+#else
+      found_anywhere = found_local
+#endif
+
+      IF (.NOT. found_anywhere) THEN
+         WRITE (ierrorlog, *) 'Function tool_latlon2ij_global : position (', longitude, ',', latitude, &
+            ') is outside the domain grid -- check the patch definition in file :', trim(file_trajec)
+         WRITE (ierrorlog, *) 'The simulation is stopped'
+         CALL_MPI MPI_FINALIZE(ierr_mpi)
+         STOP
+      END IF
+
+   END SUBROUTINE tool_latlon2ij_global
+
+   !!======================================================================
+   SUBROUTINE LAGRANGIAN_init(xe, Istr, Iend, Jstr, Jend)
 
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE traj_init3d  ***
       !&E
-      !&E ** Purpose : Read file traject.dat or ibm.dat to initialize trajectories variables.
+      !&E ** Purpose : Read file traject.dat to initialize trajectories variables.
       !&E              There are three type of inputs patches : circle patch, rectangular patch
       !&E              and a netcdf patch. Depending on Lagrangian or Foil to fulfill patch info
       !&E
@@ -175,9 +191,9 @@ CONTAINS
       !&E ** Called by :  LAGRANGIAN_init_main
       !&E
       !&E ** External calls : h0int,xeint,loc_h0,update_htot,update_wz,compute_dsig_dcuds
-      !&E                     ztosiggen,hc_sigint,lonlat2ij,tool_latlon2i,tool_latlon2j
+      !&E                     ztosiggen,hc_sigint,lonlat2ij,tool_latlon2ij,tool_latlon2ij_global
       !&E                     set_htot_bc,define_pos,patch_list_append,init_mpi_type_particle
-      !&E                     init_patch,indices_loc2glob
+      !&E                     init_patch
       !&E
       !&E
       !&E ** History :
@@ -191,24 +207,27 @@ CONTAINS
       !! * Modules used
 
       USE module_lagrangian !,  ONLY : pi,stdout,start_time,time_end, &
-      !          Eradius,h,latr,lonu,latv,sc_r,sc_w,N
+      !          Eradius,h,latr,lonu,latv,sc_r,sc_w,N, lagrangianname
       USE trajectools, ONLY: h0int, xeint, loc_h0, update_htot, update_wz, compute_dsig_dcuds, &
-                             ztosiggen, hc_sigint, lonlat2ij, tool_latlon2i, tool_latlon2j, &
+                             ztosiggen, hc_sigint, lonlat2ij, tool_latlon2ij, &
                              set_htot_bc, define_pos, is_local_position
 #ifdef MPI
       USE toolmpi, ONLY: MPI_glob2loc, MPI_loc2glob
       USE comtraj, ONLY: init_mpi_type_particle
 #endif
       USE comtraj, ONLY: patch_list_append, patches, type_patch, file_trajec, &
-                         dir_pathout, itypepatch, dtz, hdiff
-#ifdef DEB_IBM
+                         dir_pathout, dtz, hdiff, hadv, dtsave_traj, l_repro_random
+#ifdef FOIL
       USE comtraj, ONLY: ibm_restart
 #endif
       USE comtraj, ONLY: dsigu, dsigw, kmax, ierrorlog, iscreenlog
-      USE comtraj, ONLY: lonwest, latsouth, dlonr, dlatr, htx, hty, wz
+      USE comtraj, ONLY: wz
       USE comtraj, ONLY: type_position
 
       !! * Arguments
+      ! xe already sliced to the correct zeta time level (knew) by the
+      ! caller (plug_lagrangian.F90) - see traject3d.F90's LAGRANGIAN_update.
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
       INTEGER, INTENT(in) :: Istr, Iend, Jstr, Jend
 
       !! * Local declarations
@@ -222,7 +241,7 @@ CONTAINS
       TYPE(type_patch), POINTER                   :: new_patch, patch
 
       ! Time info of patches
-      REAL(KIND=rlg)                              :: t_traj_beg, t_traj_end, dt_traj
+      REAL(KIND=rlg)                              :: t_traj_beg, t_traj_end
       REAL(KIND=rlg)                              :: tool_datosec
 
       ! Indexes for loops
@@ -237,6 +256,7 @@ CONTAINS
 
       ! To read data from rectangular patch
       REAL(KIND=rlg)                              :: gmin, gmax
+      REAL(KIND=rsh)                              :: x_tmp, y_tmp
 
       ! Position indexes for particles and their number
       INTEGER                                     :: imin_patch, imax_patch, &
@@ -247,17 +267,27 @@ CONTAINS
       CHARACTER(LEN=19)                           :: species
       INTEGER                                     :: nb_part
 
+      ! Type of the current patch (1=circle, 2=rectangle, 3=netcdf), read at
+      ! the start of each patch block -- patches of different types can be
+      ! mixed within a single file_trajec file.
+      INTEGER                                     :: itypepatch
+
+      ! Used to derive a decomposition-independent NUM for circle/rectangle
+      ! patches, from a particle's (i, j, k) position in the patch's release
+      ! grid instead of a rank-cumulative offset -- see the comments at each
+      ! assignment of particles(...)%num below.
+      INTEGER                                     :: n_i_total, n_depth_levels
+      INTEGER                                     :: i_index, j_index, k_index
+
       ! Variables to fix horizontal and vertical position
       REAL(KIND=rsh)                              :: xtemp, ytemp, xe_lag, h0_lag
       REAL(KIND=rsh)                              :: d3, kint, spos, hc_sig_lag
 
-      ! DEB-IBM and SPECIES
-#ifdef DEB_IBM
-      INTEGER                                     :: ageClass, stage
+      ! FOIL
+#ifdef FOIL
+      INTEGER                                     :: AgeClass, stage
       REAL(KIND=rlg)                              :: size, density, super, age
-#ifdef IBM_SPECIES
       REAL(KIND=rlg)                              :: E_deb, H_deb, R_deb, Gam_deb
-#endif
 #endif
       ! To read data from netcdf patch
       REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)   :: lon_nc, lat_nc, depth_nc, num_nc
@@ -265,7 +295,7 @@ CONTAINS
       !  parameters for interpolation at particle location
       REAL(KIND=rsh)                              :: px, py
       INTEGER                                     :: igg, idd, jbb, jhh, hlb, hlt, hrb, hrt
-      INTEGER                                     :: idx_s, idx_e, ierr
+      INTEGER                                     :: ierr
       ! To save a local and global position of particle for MPI and Sequential compatibility
       TYPE(type_position)                         :: pos, pos1, pos2
 
@@ -274,7 +304,8 @@ CONTAINS
 
       REAL(KIND=rlg), DIMENSION(5)                 :: buff_mpi
 
-      NAMELIST /namtraj/ file_trajec, dir_pathout, itypepatch, dtz, hdiff
+      NAMELIST /namtraj/ file_trajec, dir_pathout, dtsave_traj
+      NAMELIST /namtrajadiff/ hadv, dtz, hdiff, l_repro_random
 
 # include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
@@ -291,33 +322,6 @@ CONTAINS
       kmax = N
 
       time_start = start_time
-
-! start by exchange lonwest and latsouth for all procs
-#ifdef MPI
-      if (ii == 0 .and. jj == 0 .and. Istr == 1 .and. Jstr == 1) then
-         lonwest = lonr(1, 1)
-         latsouth = latr(1, 1)
-      end if
-      CALL MPI_Bcast(lonwest, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast(latsouth, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-#else
-      lonwest = lonr(1, 1)
-      latsouth = latr(1, 1)
-#endif
-
-      !calcul of lon,lat resolution
-      !----------------------------
-#ifdef MPI
-      IF (MASTER) THEN
-         dlonr = lonr(2, 1) - lonr(1, 1)
-         dlatr = latr(1, 2) - latr(1, 1)
-      END IF
-      CALL MPI_Bcast(dlonr, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-      CALL MPI_Bcast(dlatr, 1, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
-#else
-      dlonr = lonr(2, 1) - lonr(1, 1)
-      dlatr = latr(1, 2) - latr(1, 1)
-#endif
 
       !init ionc4
       !----------
@@ -343,13 +347,12 @@ CONTAINS
       CALL exchange_w3d_tile(Istr, Iend, Jstr, Jend, wz(START_2D_ARRAY, 0))
 #endif
 
-#ifdef LAGRANGIAN
-      ! Open paratraj.dat file, given in croco.in file if LAGRANGIAN key is defined
-      ! Otherwise, file is given in ibm_init subroutine and we skip this part of the code
-      lstr = lenstr(lagname)
-      OPEN (50, file=lagname(1:lstr), status='old', form='formatted', access='sequential')
+      ! Open paratraj.dat file, given in croco.in file
+      !------------------
+      lstr = lenstr(lagrangianname)
+      OPEN (50, file=lagrangianname(1:lstr), status='old', form='formatted', access='sequential')
       READ (50, namtraj)
-#endif
+      READ (50, namtrajadiff)
 
       ! save into simu.log
       !-------------------
@@ -368,15 +371,7 @@ CONTAINS
       INQUIRE (file=file_trajec, exist=ex)
       IF (.NOT. ex) THEN
          PRINT *, "Trajectory file '"//trim(file_trajec)//"' does not exist."
-         PRINT *, "Check in 'paraspec.txt' or 'paraibm.txt' if you use key_ibm."
-         PRINT *, "Simulation stopped."
-         CALL_MPI MPI_FINALIZE(ierr_mpi)
-         STOP
-      END IF
-
-      IF (itypepatch /= 1 .AND. itypepatch /= 2 .AND. itypepatch /= 3) THEN
-         PRINT *, "Type of trajectory is not defined correctly."
-         PRINT *, "Must be 1 (circle patch), 2 (rectangle patch) or 3 (Netcdf)"
+         PRINT *, "Check in 'paratraj.txt' "
          PRINT *, "Simulation stopped."
          CALL_MPI MPI_FINALIZE(ierr_mpi)
          STOP
@@ -410,6 +405,17 @@ CONTAINS
          ! Create new patch data structure
          new_patch => patch_list_append(patches)
 
+         ! Read type of this patch (1=circle, 2=rectangle, 3=netcdf) -- patches
+         ! of different types can be mixed within a single file_trajec file.
+         READ (49, *, iostat=eof) itypepatch
+         IF (itypepatch /= 1 .AND. itypepatch /= 2 .AND. itypepatch /= 3) THEN
+            PRINT *, "Type of trajectory is not defined correctly for patch number", npa
+            PRINT *, "Must be 1 (circle patch), 2 (rectangle patch) or 3 (Netcdf)"
+            PRINT *, "Simulation stopped."
+            CALL_MPI MPI_FINALIZE(ierr_mpi)
+            STOP
+         END IF
+
          ! Read name of patch
          READ (49, '(a)', iostat=eof) new_patch%name
 
@@ -441,22 +447,36 @@ CONTAINS
             t_traj_end = time_end
          END IF
 
-         ! Read time step for outputs
-         READ (49, *, iostat=eof) dt_traj
-
          new_patch%t_beg = t_traj_beg
          new_patch%t_end = t_traj_end
          new_patch%t_save = t_traj_beg
-         new_patch%dt_save = dt_traj
 
+         ! Read output file
+         READ (49, '(a)', iostat=eof) rec
+         kk = index(rec, ',|')
+         IF (kk > 0) THEN
+            new_patch%file_out = trim(dir_pathout)//rec(1:kk - 1)
+         ELSE
+            new_patch%file_out = trim(dir_pathout)//rec
+         END IF
+         
+         ! Number of particles set at each exact initial position (x,y,z)
+         READ (49, *, iostat=eof) nb_part_intro
+
+         ! Type of vertical behavior (integer):
+         READ (49, *, iostat=eof) new_patch%init_particle%itypevert
+
+         new_patch%init_particle%hadv = hadv  ! hor. transport (or not), 
+                                              ! common to all particles of a patch
+          
          IF_MPI(MASTER) THEN
          WRITE (iscreenlog, *) 'PATCH NUMBER : ', npa, new_line(''), &
             '   trajectory from '//trim(tool_sectodat(t_traj_beg)), new_line(''), &
             '                to '//trim(tool_sectodat(t_traj_end)), new_line(''), &
-            '   with a ', dt_traj, 'hours time step.'
+            '   with a ', dtsave_traj, 'hours time step.'
          ENDIF_MPI
 
-         ! Depending on itypepatch in paratraj or paraibm, initialise patches with good patch
+         ! Depending on this patch's type, initialise it with the right method
          IF (itypepatch == 1) THEN
 
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -471,8 +491,9 @@ CONTAINS
                READ (49, *, iostat=eof) imin_patch, jmin_patch
             ELSE
                READ (49, *, iostat=eof) gmin, phimin
-               imin_patch = NINT(tool_latlon2i(gmin, phimin))
-               jmin_patch = NINT(tool_latlon2j(gmin, phimin))
+               CALL tool_latlon2ij_global(gmin, phimin, x_tmp, y_tmp)
+               imin_patch = NINT(x_tmp)
+               jmin_patch = NINT(y_tmp)
                IF (imin_patch < imin .OR. imin_patch > imax) THEN
                   PRINT *, 'LOCATION OUT OF THE DOMAIN'
                   PRINT *, 'Have a look at file ', trim(file_trajec), ' patch number', new_patch%id
@@ -525,29 +546,9 @@ CONTAINS
             kmin_patch = ABS(kmin_patch)
             kmax_patch = ABS(kmax_patch)
 
-            ! Number of particles set at each exact initial position (x,y,z)
-            READ (49, *, iostat=eof) nb_part_intro
-
-            ! Type of vertical behavior (integer):
-            ! itypevert = 0 if constant depth
-            ! itypevert < 0 if no random walk (vertical advection only)
-            ! itypevert > 0 if random walk (advection + diffusion)
-            ! abs(itypevert) = 1 if no vertical swimming
-            ! abs(itypevert) > 1 if vertical swimming (larval behavior):
-            !                     = 2 for nycthemeral migration
-            !                     = 3 for ontogenic migration (sakina), ...
-            READ (49, *, iostat=eof) new_patch%init_particle%itypevert
-
-            ! Read output file
-            READ (49, '(a)', iostat=eof) rec
-            kk = index(rec, ',|')
-            IF (kk > 0) THEN
-               new_patch%file_out = rec(1:kk - 1)
-            ELSE
-               new_patch%file_out = rec
-            END IF
-            READ (49, *, iostat=eof)
-            ! == End of file reading
+            ! Number of depth levels in the release grid, used below to
+            ! derive a decomposition-independent NUM
+            n_depth_levels = (kmax_patch - kmin_patch)/kstep_patch + 1
 
             ! Estimate number of particle inside the circle patch
             ! mean spatial size of the cell
@@ -617,7 +618,7 @@ CONTAINS
                                  IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > k) THEN
                                     CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
                                                 hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                                    xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                    xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                                    hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                     h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                     d3 = h0_lag + xe_lag
@@ -629,7 +630,6 @@ CONTAINS
                      END DO
                   END DO
                   CALL init_patch(new_patch, nb_part)
-                  CALL indices_loc2glob(0, nb_part, idx_s, idx_e)
                   m2 = 0
                   DO j = 1, nn
                      DO i = 1, nn
@@ -642,6 +642,7 @@ CONTAINS
                            IF (is_local_position(xtemp, ytemp, Istr, Iend, Jstr, Jend)) THEN
                               CALL define_pos(pos)                ! Take local and global position of particle
                               DO k = kmin_patch, kmax_patch, kstep_patch
+                                 k_index = (k - kmin_patch)/kstep_patch
                                  IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > k) THEN
                                     m1 = m2 + 1
                                     m2 = m2 + nb_part_intro
@@ -656,7 +657,7 @@ CONTAINS
 
                                     CALL loc_h0(pos2%idx_r, pos2%idy_r, px, py, igg, idd, jbb, jhh, &
                                                 hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                                    xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                    xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                                    hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                     h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                     d3 = h0_lag + xe_lag
@@ -672,7 +673,14 @@ CONTAINS
                                        new_patch%particles(m1:m2)%h0 = h0_lag
                                        new_patch%particles(m1:m2)%xe = xe_lag
                                        DO l = 0, nb_part_intro - 1
-                                          new_patch%particles(m1 + l)%num = idx_s + m1 + l
+                                          ! NUM is derived from (i, j, k_index), this particle's
+                                          ! position in the patch's release grid, rather than a
+                                          ! rank-cumulative offset, so it does not depend on which
+                                          ! MPI rank ends up owning the particle -- keeping NUM
+                                          ! (and therefore trajectory identity) reproducible
+                                          ! across MPI decompositions.
+                                          new_patch%particles(m1 + l)%num = &
+                                             (((j - 1)*nn + (i - 1))*n_depth_levels + k_index)*nb_part_intro + l + 1
                                        END DO
                                     ELSE
                                        m2 = m2 - nb_part_intro
@@ -697,10 +705,12 @@ CONTAINS
                      READ (49, *, iostat=eof) imin_patch, imax_patch, jmin_patch, jmax_patch
                   ELSE
                      READ (49, *, iostat=eof) gmin, gmax, phimin, phimax
-                     imin_patch = NINT(tool_latlon2i(gmin, phimin))
-                     imax_patch = NINT(tool_latlon2i(gmax, phimax))
-                     jmin_patch = NINT(tool_latlon2j(gmin, phimin))
-                     jmax_patch = NINT(tool_latlon2j(gmax, phimax))
+                     CALL tool_latlon2ij_global(gmin, phimin, x_tmp, y_tmp)
+                     imin_patch = NINT(x_tmp)
+                     jmin_patch = NINT(y_tmp)
+                     CALL tool_latlon2ij_global(gmax, phimax, x_tmp, y_tmp)
+                     imax_patch = NINT(x_tmp)
+                     jmax_patch = NINT(y_tmp)
 
                      IF (imin_patch < imin .OR. imin_patch > imax) THEN
                         PRINT *, 'LOCATION OUT OF THE DOMAIN'
@@ -727,6 +737,7 @@ CONTAINS
                         PRINT *, ' its northern latitude is :', jmax_patch
                      END IF
                   END IF
+
                   ! Read spatial dispersion of particles inside initial patch
                   READ (49, *, iostat=eof) istep_patch, jstep_patch
 
@@ -736,44 +747,24 @@ CONTAINS
                   ! Read resolution depth of initial patch
                   READ (49, *, iostat=eof) kstep_patch
 
-                  ! Number of particles set at each exact initial position (x,y,z)
-                  READ (49, *, iostat=eof) nb_part_intro
-
-                  ! Type of vertical behavior (integer):
-                  ! itypevert = 0 if constant depth
-                  ! itypevert < 0 if no random walk (vertical advection only)
-                  ! itypevert > 0 if random walk (advection + diffusion)
-                  ! abs(itypevert) = 1 if no vertical swimming
-                  ! abs(itypevert) > 1 if vertical swimming (larval behavior):
-                  !                     = 2 for nycthemeral migration
-                  !                     = 3 for ontogenic migration (sakina), ...
-                  READ (49, *, iostat=eof) new_patch%init_particle%itypevert
-
-                  ! Read output file
-                  READ (49, '(a)', iostat=eof) rec
-                  kk = index(rec, ',|')
-                  IF (kk > 0) THEN
-                     new_patch%file_out = rec(1:kk - 1)
-                  ELSE
-                     new_patch%file_out = rec
-                  END IF
-                  READ (49, *, iostat=eof)
-                  ! == End of file reading
+                  ! Size of the release grid, used below to derive a
+                  ! decomposition-independent NUM
+                  n_i_total = (MIN0(imax, imax_patch) - MAX0(imin, imin_patch))/istep_patch + 1
+                  n_depth_levels = (kmax_patch - kmin_patch)/kstep_patch + 1
 
                   ! Estimate number of particle inside the rectangular patch
                   nb_part = 0
-                  DO j = MAX0(Jstr, jmin_patch), MIN0(Jend, jmax_patch), jstep_patch
-                     DO i = MAX0(Istr, imin_patch), MIN0(Iend, imax_patch), istep_patch
-#ifdef MPI
-                        IF (iminmpi <= i .AND. i <= imaxmpi .AND. jminmpi <= j .AND. j <= jmaxmpi) THEN
-#endif
-                           pos%xp = i; pos%yp = j
+                  DO j = MAX0(jmin, jmin_patch), MIN0(jmax, jmax_patch), jstep_patch
+                     DO i = MAX0(imin, imin_patch), MIN0(imax, imax_patch), istep_patch
+                        IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
+                                             Istr, Iend, Jstr, Jend)) THEN                  
+                           pos%xp = REAL(i, rlg); pos%yp = REAL(j,rlg)
                            CALL define_pos(pos)
                            DO k = kmin_patch, kmax_patch, kstep_patch
                               IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > k) THEN
                                  CALL loc_h0(pos%idx_r, pos%idy_r, px, py, igg, idd, jbb, jhh, &
                                              hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                                 xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                 xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                                 hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                  h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                  d3 = h0_lag + xe_lag
@@ -782,34 +773,33 @@ CONTAINS
                                  END IF
                               END IF
                            END DO
-#ifdef MPI
                         END IF
-#endif
                      END DO
                   END DO
 
                   CALL init_patch(new_patch, nb_part)
-                  CALL indices_loc2glob(0, nb_part, idx_s, idx_e)
 
                   ! Place particle at their location
                   m2 = 0
-                  DO j = MAX0(Jstr, jmin_patch), MIN0(Jend, jmax_patch), jstep_patch
-                     DO i = MAX0(Istr, imin_patch), MIN0(Iend, imax_patch), istep_patch
-#ifdef MPI
-                        IF (iminmpi <= i .AND. i <= imaxmpi .AND. jminmpi <= j .AND. j <= jmaxmpi) THEN
-#endif
-                           pos1%xp = i; pos1%yp = j
+                  DO j = MAX0(jmin, jmin_patch), MIN0(jmax, jmax_patch), jstep_patch
+                     j_index = (j - MAX0(jmin, jmin_patch))/jstep_patch
+                     DO i = MAX0(imin, imin_patch), MIN0(imax, imax_patch), istep_patch
+                        i_index = (i - MAX0(imin, imin_patch))/istep_patch
+                        IF (is_local_position(REAL(i, rsh), REAL(j, rsh), &
+                                             Istr, Iend, Jstr, Jend)) THEN
+                           pos1%xp = REAL(i, rlg); pos1%yp = REAL(j,rlg)
                            CALL define_pos(pos1)
                            DO k = kmin_patch, kmax_patch, kstep_patch
+                              k_index = (k - kmin_patch)/kstep_patch
                               IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > k) THEN
                                  m1 = m2 + 1
                                  m2 = m2 + nb_part_intro
-                                 new_patch%particles(m1:m2)%xpos = pos1%idx_r   ! position at initial location
-                                 new_patch%particles(m1:m2)%ypos = pos1%idy_r
+                                 new_patch%particles(m1:m2)%xpos = pos1%xp   ! global initial position
+                                 new_patch%particles(m1:m2)%ypos = pos1%yp
                                  ! total depth at particle s location
                                  CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
                                              hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                                 xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                                 xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                                 hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                                  h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                                  d3 = h0_lag + xe_lag
@@ -825,16 +815,21 @@ CONTAINS
                                     new_patch%particles(m1:m2)%h0 = h0_lag
                                     new_patch%particles(m1:m2)%xe = xe_lag
                                     DO l = 0, nb_part_intro - 1
-                                       new_patch%particles(m1 + l)%num = idx_s + m1 + l
+                                       ! NUM is derived from (i_index, j_index, k_index), this
+                                       ! particle's position in the patch's release grid, rather
+                                       ! than a rank-cumulative offset, so it does not depend on
+                                       ! which MPI rank ends up owning the particle -- keeping
+                                       ! NUM (and therefore trajectory identity) reproducible
+                                       ! across MPI decompositions.
+                                       new_patch%particles(m1 + l)%num = &
+                                          ((j_index*n_i_total + i_index)*n_depth_levels + k_index)*nb_part_intro + l + 1
                                     END DO
                                  ELSE
                                     m2 = m2 - nb_part_intro
                                  END IF
                               END IF
                            END DO
-#ifdef MPI
                         END IF
-#endif
                      END DO
                   END DO
 
@@ -848,66 +843,16 @@ CONTAINS
                   kk = index(rec, ',|')
                   IF (kk > 0) THEN
                      new_patch%file_inp = rec(1:kk - 1)
-#ifdef DEB_IBM
+#ifdef FOIL
                      IF (ibm_restart) new_patch%file_inp = trim(dir_pathout)//rec(1:kk - 1)
 #endif
 
                   ELSE
                      new_patch%file_inp = rec
-#ifdef DEB_IBM
+#ifdef FOIL
                      IF (ibm_restart) new_patch%file_inp = trim(dir_pathout)//rec
 #endif
                   END IF
-
-                  ! Read output file
-                  READ (49, '(a)', iostat=eof) rec
-                  kk = index(rec, ',|')
-                  IF (kk > 0) THEN
-                     new_patch%file_out = rec(1:kk - 1)
-#ifdef DEB_IBM
-                     new_patch%file_out = trim(dir_pathout)//rec(1:kk - 1)
-#endif
-                  ELSE
-                     new_patch%file_out = rec
-#ifdef DEB_IBM
-                     new_patch%file_out = trim(dir_pathout)//rec
-#endif
-                  END IF
-
-                  ! Number of particles set at each exact initial position (x,y,z)
-                  READ (49, *, iostat=eof) nb_part_intro
-
-                  ! Type of vertical behavior (integer):
-                  ! itypevert = 0 if constant depth
-                  ! itypevert < 0 if no random walk (vertical advection only)
-                  ! itypevert > 0 if random walk (advection + diffusion)
-                  ! abs(itypevert) = 1 if no vertical swimming
-                  ! abs(itypevert) > 1 if vertical swimming (larval behavior):
-                  !                     = 2 for nycthemeral migration
-                  !                     = 3 for ontogenic migration (sakina), ...
-                  READ (49, *, iostat=eof) new_patch%init_particle%itypevert
-
-#ifdef DEB_IBM
-                  ! Read some parameters if DEB_IBM module is used from init file
-                  ! Done here because starting values are given in patch file which
-                  ! is read in this routine
-                  READ (49, '(a)', iostat=eof) species
-                  READ (49, *, iostat=eof) stage
-                  READ (49, *, iostat=eof) size
-                  READ (49, *, iostat=eof) super
-                  READ (49, *, iostat=eof) density
-                  READ (49, *, iostat=eof) age
-                  READ (49, *, iostat=eof) ageclass
-#ifdef IBM_SPECIES
-                  READ (49, *, iostat=eof) H_deb
-                  READ (49, *, iostat=eof) E_deb
-                  READ (49, *, iostat=eof) R_deb
-                  READ (49, *, iostat=eof) Gam_deb
-                  new_patch%species = species
-#endif
-#endif
-                  READ (49, *, iostat=eof)
-                  ! == End of file reading
 
                   ! Estimate/correct number of particle inside the patch
 
@@ -916,7 +861,7 @@ CONTAINS
                   CALL ionc4_read_dimtraj(trim(new_patch%file_inp), nb_part_nc)
 
                   ALLOCATE (lon_nc(nb_part_nc), lat_nc(nb_part_nc), depth_nc(nb_part_nc))
-#ifdef DEB_IBM
+#ifdef FOIL
                   IF (ibm_restart) ALLOCATE (num_nc(nb_part_nc))
 #endif
 
@@ -926,7 +871,7 @@ CONTAINS
                   CALL ionc4_read_trajt(trim(new_patch%file_inp), "longitude", lon_nc, 1, nb_part_nc, idimt)
                   CALL ionc4_read_trajt(trim(new_patch%file_inp), "latitude", lat_nc, 1, nb_part_nc, idimt)
                   CALL ionc4_read_trajt(trim(new_patch%file_inp), "DEPTH", depth_nc, 1, nb_part_nc, idimt)
-#ifdef DEB_IBM
+#ifdef FOIL
                   IF (ibm_restart) CALL ionc4_read_trajt(trim(new_patch%file_inp), "NUM", num_nc, 1, nb_part_nc, idimt)
 #endif
 
@@ -944,17 +889,17 @@ CONTAINS
                         STOP
                      END IF
 
-                     xtemp = tool_latlon2i(lon_nc(nn), lat_nc(nn))
-                     ytemp = tool_latlon2j(lon_nc(nn), lat_nc(nn))
+                     CALL tool_latlon2ij(lon_nc(nn), lat_nc(nn), xtemp, ytemp)
 
                      IF (is_local_position(xtemp, ytemp, Istr, Iend, Jstr, Jend)) THEN
                         pos1%xp = xtemp; pos1%yp = ytemp
                         CALL define_pos(pos1)
 
-                        IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > depth_nc(nn)) THEN
+                        IF (h(NINT(pos1%idx_r), NINT(pos1%idy_r)) > depth_nc(nn) .AND. &
+                            rmask(NINT(pos1%idx_r), NINT(pos1%idy_r)) > 0.5_rsh) THEN
                            CALL loc_h0(pos1%idx_r, pos1%idy_r, px, py, igg, idd, jbb, jhh, &
                                        hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                           xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                           xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                           hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                            h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                            d3 = h0_lag + xe_lag
@@ -967,7 +912,6 @@ CONTAINS
                      END IF
                   END DO
                   CALL init_patch(new_patch, nb_part)
-                  CALL indices_loc2glob(0, nb_part, idx_s, idx_e)
 
                   m2 = 0
                   DO nn = 1, nb_part_nc
@@ -975,22 +919,22 @@ CONTAINS
                      ! Filtrer les valeurs manquantes NetCDF, Modif Clara 07/10/2025
                      IF (lon_nc(nn) < -1.0e+30_rsh .OR. lat_nc(nn) < -1.0e+30_rsh) CYCLE
 
-                     xtemp = tool_latlon2i(lon_nc(nn), lat_nc(nn))
-                     ytemp = tool_latlon2j(lon_nc(nn), lat_nc(nn))
+                     CALL tool_latlon2ij(lon_nc(nn), lat_nc(nn), xtemp, ytemp)
                      pos%xp = xtemp; pos%yp = ytemp
                      IF (is_local_position(xtemp, ytemp, Istr, Iend, Jstr, Jend)) THEN
                         CALL define_pos(pos)
 
-                        IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > depth_nc(nn)) THEN
+                        IF (h(NINT(pos%idx_r), NINT(pos%idy_r)) > depth_nc(nn) .AND. &
+                            rmask(NINT(pos%idx_r), NINT(pos%idy_r)) > 0.5_rsh) THEN
                            m1 = m2 + 1
                            m2 = m2 + nb_part_intro
-                           new_patch%particles(m1:m2)%xpos = tool_latlon2i(lon_nc(nn), lat_nc(nn))
-                           new_patch%particles(m1:m2)%ypos = tool_latlon2j(lon_nc(nn), lat_nc(nn))
+                           new_patch%particles(m1:m2)%xpos = xtemp
+                           new_patch%particles(m1:m2)%ypos = ytemp
 
                            ! total depth at particle s location
                            CALL loc_h0(pos%idx_r, pos%idy_r, px, py, igg, idd, jbb, jhh, &
                                        hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
-                           xe_lag = xeint(zeta(:, :, nstp), px, py, igg, idd, jbb, jhh, &
+                           xe_lag = xeint(xe, px, py, igg, idd, jbb, jhh, &
                                           hlb, hrb, hlt, hrt, Istr, Iend, Jstr, Jend)
                            h0_lag = h0int(px, py, igg, idd, jbb, jhh, hlb, hrb, hlt, hrt)
                            d3 = h0_lag + xe_lag
@@ -1007,10 +951,15 @@ CONTAINS
                               new_patch%particles(m1:m2)%h0 = h0_lag
                               new_patch%particles(m1:m2)%xe = xe_lag
                               DO l = 0, nb_part_intro - 1
-                                 new_patch%particles(m1 + l)%num = idx_s + m1 + l
-#ifdef DEB_IBM
+                                 ! NUM is derived from (nn, l), the particle's position in the
+                                 ! input NetCDF file, rather than from a rank-cumulative offset,
+                                 ! so it does not depend on which MPI rank ends up owning the
+                                 ! particle -- keeping NUM (and therefore trajectory identity)
+                                 ! reproducible across MPI decompositions.
+                                 new_patch%particles(m1 + l)%num = (nn - 1)*nb_part_intro + l + 1
+#ifdef FOIL
                                  ! if restart, we want to keep the original num from netcdf file
-                                 IF (ibm_restart) new_patch%particles(m1 + l)%num = num_nc(nn)  ! clara : should we add + idx_s + l ?
+                                 IF (ibm_restart) new_patch%particles(m1 + l)%num = num_nc(nn)
 #endif
                               END DO
                            ELSE
@@ -1020,34 +969,52 @@ CONTAINS
                      END IF
                   END DO
                   DEALLOCATE (lon_nc, lat_nc, depth_nc)
-#ifdef DEB_IBM
+#ifdef FOIL
                   IF (ibm_restart) DEALLOCATE (num_nc)
 #endif
 
                   ! close netcdf file
                   CALL ionc4_close(new_patch%file_inp)
 
-#ifdef DEB_IBM
-                  IF (.not. ibm_restart) THEN
-                     DO nn = 1, new_patch%nb_part_alloc
-                        ! Init some variables from ibm.dat file for fish
-                        new_patch%particles(nn)%super = super
-                        new_patch%particles(nn)%stage = stage
-                        new_patch%particles(nn)%size = size
-                        new_patch%particles(nn)%density = density
-                        new_patch%particles(nn)%age = age
-                        new_patch%particles(nn)%ageClass = ageClass
-#ifdef IBM_SPECIES
-                        new_patch%particles(nn)%H = H_deb
-                        new_patch%particles(nn)%E = E_deb
-                        new_patch%particles(nn)%R = R_deb
-                        new_patch%particles(nn)%Gam = Gam_deb
-
-                     END DO
-                  END IF
-#endif
-#endif
                END IF  ! end test on itypepatch
+
+#ifdef FOIL
+               ! Read FOIL/DEB initial conditions for this patch. Common to all
+               ! patch types (circle, rectangle, netcdf): starting values are
+               ! given right after each type's own fields, in the same patch
+               ! file, and applied uniformly to every particle created for this
+               ! patch regardless of how it was created.
+               READ (49, '(a)', iostat=eof) species
+               READ (49, *, iostat=eof) stage
+               READ (49, *, iostat=eof) size
+               READ (49, *, iostat=eof) super
+               READ (49, *, iostat=eof) density
+               READ (49, *, iostat=eof) age
+               READ (49, *, iostat=eof) Ageclass
+               READ (49, *, iostat=eof) H_deb
+               READ (49, *, iostat=eof) E_deb
+               READ (49, *, iostat=eof) R_deb
+               READ (49, *, iostat=eof) Gam_deb
+               new_patch%species = species
+
+               IF (.not. ibm_restart) THEN
+                  DO nn = 1, new_patch%nb_part_alloc
+                     ! Init some variables from ibm.dat file for fish
+                     new_patch%particles(nn)%super = super
+                     new_patch%particles(nn)%stage = stage
+                     new_patch%particles(nn)%size = size
+                     new_patch%particles(nn)%density = density
+                     new_patch%particles(nn)%age = age
+                     new_patch%particles(nn)%AgeClass = AgeClass
+                     new_patch%particles(nn)%H = H_deb
+                     new_patch%particles(nn)%E = E_deb
+                     new_patch%particles(nn)%R = R_deb
+                     new_patch%particles(nn)%Gam = Gam_deb
+                  END DO
+               END IF
+#endif
+               ! Consume the "**********" separator ending this patch block
+               READ (49, *, iostat=eof)
 
                END DO  ! loop on patches
 
@@ -1075,10 +1042,11 @@ CONTAINS
 
                CALL_MPI init_mpi_type_particle
 
-#ifdef LAGRANGIAN
+#if defined LAGRANGIAN && !defined FOIL
                ! Save initialization only if LAGRANGIAN.
-               ! If we save here when DEB-IBM is activated, we will create a file with not
+               ! If we save here when FOIL is activated, we will create a file with not
                ! enough variables inside, which will create an error while calling ibm_save
+               ! First save done in ibm_init
                CALL traj_save3d
 #endif
 
@@ -1095,7 +1063,8 @@ CONTAINS
                   !&E
                   !&E ** Called by : LAGRANGIAN_init, LAGRANGIAN_update
                   !&E
-                  !&E ** External calls : tool_ind2lat,tool_ind2lon, indices_loc2glob
+                  !&E ** External calls : tool_ind2lat,tool_ind2lon
+                  !&E                     MPI_gather_sort_counts,MPI_gather_sort_perm,MPI_gather_sort_var
                   !&E                     ionc4 library
                   !&E
                   !&E ** History :
@@ -1107,8 +1076,11 @@ CONTAINS
                   !&E---------------------------------------------------------------------
       !! * Modules used
                   USE module_lagrangian
-                  USE comtraj, ONLY: patches, type_patch, type_particle, ierrorlog
+                  USE comtraj, ONLY: patches, type_patch, type_particle, ierrorlog, dtsave_traj
                   USE trajectools, ONLY: tool_ind2lat, tool_ind2lon
+#ifdef MPI
+                  USE toolmpi, ONLY: MPI_gather_sort_counts, MPI_gather_sort_perm, MPI_gather_sort_var
+#endif
       !! * Arguments
 
       !! * Local declarations
@@ -1121,7 +1093,16 @@ CONTAINS
                   REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: xpos_out, ypos_out, spos_out, zpos_out, h0pos_out, flag_out
                   TYPE(type_patch), POINTER                :: patch
                   TYPE(type_particle), POINTER                :: particle
-                  INTEGER                                     :: idx_s, idx_e
+#ifdef MPI
+                  ! Used to gather all particles on MASTER, sorted by NUM, so that the
+                  ! record order in the file does not depend on the MPI domain decomposition
+                  ! and matches the sequential (non-MPI) output byte-for-byte.
+                  INTEGER, DIMENSION(0:NNODES - 1)            :: counts, displs
+                  INTEGER                                     :: nb_part_total
+                  INTEGER, ALLOCATABLE, DIMENSION(:)          :: iperm, num_glob
+                  REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)   :: lat_glob, lon_glob
+                  REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)   :: zpos_glob, h0pos_glob, flag_glob
+#endif
 
       !!----------------------------------------------------------------------
       !! * Executable part
@@ -1204,31 +1185,56 @@ CONTAINS
                      CALL ionc4_write_time(file_out, 0, time)
 
                      nb_part = p
-                     CALL indices_loc2glob(1, nb_part, idx_s, idx_e)
 
 #ifdef MPI
-                     num1 = idx_s
-                     num2 = idx_e
+                     ! Gather all particles on MASTER, sorted by NUM, and write them from
+                     ! MASTER only. Every other rank contributes an empty (zero-count) slab
+                     ! to the collective write, so this keeps l_out_nc4par/collective I/O
+                     ! and the file layout matches the sequential (non-MPI) output exactly.
+                     CALL MPI_gather_sort_counts(nb_part, counts, displs, nb_part_total)
+                     CALL MPI_gather_sort_perm(nb_part, num_out(1:nb_part), counts, displs, nb_part_total, iperm)
+
+                     CALL MPI_gather_sort_var(nb_part, lat_out(1:nb_part), counts, displs, nb_part_total, iperm, lat_glob)
+                     CALL MPI_gather_sort_var(nb_part, lon_out(1:nb_part), counts, displs, nb_part_total, iperm, lon_glob)
+                     CALL MPI_gather_sort_var(nb_part, zpos_out(1:nb_part), counts, displs, nb_part_total, iperm, zpos_glob)
+                     CALL MPI_gather_sort_var(nb_part, h0pos_out(1:nb_part), counts, displs, nb_part_total, iperm, h0pos_glob)
+                     CALL MPI_gather_sort_var(nb_part, num_out(1:nb_part), counts, displs, nb_part_total, iperm, num_glob)
+                     CALL MPI_gather_sort_var(nb_part, flag_out(1:nb_part), counts, displs, nb_part_total, iperm, flag_glob)
+
+                     num1 = 1
+                     IF (MASTER) THEN
+                        num2 = nb_part_total
+                     ELSE
+                        num2 = 0
+                     END IF
+
+                     CALL ionc4_write_trajt(file_out, 'latitude', lat_glob(1:num2), num1, num2, 0, dg_valmanq_io)
+                     CALL ionc4_write_trajt(file_out, 'longitude', lon_glob(1:num2), num1, num2, 0, dg_valmanq_io)
+                     CALL ionc4_write_trajt(file_out, 'DEPTH', zpos_glob(1:num2), num1, num2, 0, -fillval)
+                     CALL ionc4_write_trajt(file_out, 'H0', h0pos_glob(1:num2), num1, num2, 0, -fillval)
+                     CALL ionc4_write_trajt(file_out, 'NUM', num_glob(1:num2), num1, num2, 0, 0)
+                     CALL ionc4_write_trajt(file_out, 'flag', flag_glob(1:num2), num1, num2, 0, fillval)
+
+                     DEALLOCATE (iperm, num_glob, lat_glob, lon_glob, zpos_glob, h0pos_glob, flag_glob)
 #else
                      num1 = 1
                      num2 = nb_part
-#endif
                      CALL ionc4_write_trajt(file_out, 'latitude', lat_out(1:nb_part), num1, num2, 0, dg_valmanq_io)
                      CALL ionc4_write_trajt(file_out, 'longitude', lon_out(1:nb_part), num1, num2, 0, dg_valmanq_io)
                      CALL ionc4_write_trajt(file_out, 'DEPTH', zpos_out(1:nb_part), num1, num2, 0, -fillval)
                      CALL ionc4_write_trajt(file_out, 'H0', h0pos_out(1:nb_part), num1, num2, 0, -fillval)
                      CALL ionc4_write_trajt(file_out, 'NUM', num_out(1:nb_part), num1, num2, 0, 0)
                      CALL ionc4_write_trajt(file_out, 'flag', flag_out(1:nb_part), num1, num2, 0, fillval)
+#endif
 
                      ! To write the data on the disk and not loose data in case of run crash
                      CALL ionc4_sync(file_out)
                      DEALLOCATE (xpos_out, ypos_out, zpos_out, spos_out)
                      DEALLOCATE (lat_out, lon_out, h0pos_out, flag_out, num_out)
 
-#ifdef LAGRANGIAN
-                     ! Only if LAGRANGIAN, so we are not interfering with ibm_save when using DEB_IBM key
-                     patch%t_save = time + patch%dt_save*3600.0_rlg
-#endif
+                     ! Update of the save date
+                     patch%t_save = time + dtsave_traj*3600.0_rlg
+
                      patch => patch%next
                   END DO
 
@@ -1244,8 +1250,7 @@ CONTAINS
                   !&E
                   !&E ** Called by : LAGRANGIAN_init
                   !&E
-                  !&E ** External calls : tool_ind2lat,tool_ind2lon, indices_loc2glob
-                  !&E                     ionc4 library
+                  !&E ** External calls : none
                   !&E
                   !&E ** History :
                   !&E       !  2024    (M. Caillaud) Added for CROCO purpose

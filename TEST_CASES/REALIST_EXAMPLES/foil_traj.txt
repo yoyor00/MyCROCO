@@ -1,5 +1,5 @@
 :=============================================================================
-:                  LAGRANGIAN PARTICLE-TRACKING CONFIGURATION
+:                  LAGRANGIAN PARTICLE-TRACKING CONFIGURATION (FOIL)
 :=============================================================================
 :
 :-----------------------------------------------------------------------------
@@ -10,8 +10,9 @@
 :               particle positions, trajectory dates, movement settings, and
 :               output filenames. Each patch declares its own type (1=circle,
 :               2=rectangle, 3=NetCDF positions) as the first field of its
-:               block, so a single file_trajec can mix patches of different
-:               types.
+:               block. When FOIL is active, every patch (of any type) also
+:               carries the FOIL/DEB initial conditions (species, stage,
+:               size, ...) as trailing fields, e.g. foil_ibm_patch.dat.
 : dir_pathout : optional base directory for trajectory output, and restart files
 :               used by FOIL configuration
 : dtsave_traj : time step of LAGRANGIAN outputs
@@ -19,9 +20,9 @@
 :-----------------------------------------------------------------------------
 :
  &namtraj
- 	file_trajec = './traject3d_type2rect.dat'
-	dir_pathout = './output/output_lag/'
-	dtsave_traj = 24.d0 /
+ 	file_trajec = "TEST_CASES/REALIST_EXAMPLES/foil_ibm_patch.dat"
+	dir_pathout = "./"
+	dtsave_traj = 1.d0 /
 :
 :-----------------------------------------------------------------------------
 : namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
@@ -49,4 +50,5 @@
       hadv = .TRUE.
 	  dtz  = 3
       hdiff = 5.0
-      l_repro_random = .FALSE. /
+      l_repro_random = .TRUE. /
+

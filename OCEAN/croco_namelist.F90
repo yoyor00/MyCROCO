@@ -434,6 +434,18 @@ MODULE croco_namelist
    !! Sub-grid obstruction module parameters input file
 #endif
 
+#ifdef LAGRANGIAN
+   ! &croco_lagrangian
+   character(len=180) :: lagrangianname = "lagrangian_traj.txt"
+   !! Lagrangian parameters input file.
+#endif
+
+#ifdef FOIL
+   ! &croco_foil
+   character(len=180) :: foilname = "foil_paraibm.txt"
+   !! FOIL parameters input file
+#endif
+
 #ifdef XIOS
    ! &croco_xios_origin_date
    character(len=80) :: xios_origin_date = "1900-01-01 00:00:00"

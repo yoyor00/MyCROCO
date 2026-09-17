@@ -4,7 +4,7 @@
 
 #include "cppdefs.h"
 
-#if defined LAGRANGIAN || defined DEB_IBM
+#if defined LAGRANGIAN
 
 MODULE plug_LAGRANGIAN
    ! interface between croco and lagrangian module
@@ -33,7 +33,11 @@ contains
 
       INTEGER :: tile
 # include "compute_tile_bounds.h"
-      CALL LAGRANGIAN_update(zeta, u, v, Istr, Iend, Jstr, Jend)
+      ! Zt_avg1: by this point pre_step3d has set zeta(:,:,knew)=Zt_avg1
+      ! nstp for u/v: `time` (used below and by traj_save3d for
+      ! the output timestamp) is still t here - iic only increments after
+      ! this call (step.F) - same instant as nstp, not t+dt (nnew).
+      CALL LAGRANGIAN_update(Zt_avg1, u(:, :, :, nstp), v(:, :, :, nstp), Istr, Iend, Jstr, Jend)
 
    END SUBROUTINE
 
@@ -42,7 +46,10 @@ contains
 
       INTEGER :: tile
 # include "compute_tile_bounds.h"
-      CALL LAGRANGIAN_init(Istr, Iend, Jstr, Jend)
+      ! zeta(:,:,knew), NOT Zt_avg1: LAGRANGIAN_init runs once at init time,
+      ! before Zt_avg1 is refreshed from the real initial conditions - see
+      ! LAGRANGIAN_update_main's counterpart in FOIL/plug_ibm.F90.
+      CALL LAGRANGIAN_init(zeta(:, :, knew), Istr, Iend, Jstr, Jend)
    END SUBROUTINE
 
 #ifdef MPI

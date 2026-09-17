@@ -21,7 +21,7 @@
 !   11. Optional modules         – ABL1D, OUTPUTS_SURFACE, ONLINE,
 !                                  WAVE (WKB/WCI/WAVE_MAKER), biology
 !                                  (BIOLOGY, PISCES, DIAGNOSTICS_BIO),
-!                                  STOGEN,
+!                                  STOGEN, LAGRANGIAN, FOIL,
 !                                  sediment (SEDIMENT/MUSTANG), BBL,
 !                                  BODYFORCE, PSOURCE, OBSTRUCTION,
 !                                  SUBSTANCE, ASSIMILATION, XIOS
@@ -803,6 +803,22 @@
   ! CPP: OBSTRUCTION
   ! Path to the sub-grid obstruction parameters file.
   obstname = "obstruction.in"
+/
+
+! --- Lagrangian module  (CPP: LAGRANGIAN) ---
+
+&croco_lagrangian
+  ! CPP: LAGRANGIAN
+  ! Path to the lagrangian parameters file.
+  lagrangianname = "lagrangian_traj.txt"
+/
+
+! --- FOIL (Fish Online IBM-Lagrangian) module  (CPP: FOIL) ---
+
+&croco_foil
+  ! CPP: FOIL
+  ! Path to the foil parameters file.
+  foilname = "foil_paraibm.txt"
 /
 
 ! --- XIOS I/O server  (CPP: XIOS) ---
