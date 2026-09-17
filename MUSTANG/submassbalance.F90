@@ -8,6 +8,7 @@ module submassbalance
 
 #if defined SUBSTANCE
     USE module_substance
+    USE croco_namelist, only: dt
     USE comsubstance
 #ifdef MUSTANG
     USE comMUSTANG
@@ -669,11 +670,9 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
     !Called by : sub_budget_main
     !----------------------------------------------------------------------
 # ifdef MPI
-      include 'mpif.h'
+      include "mpif.h"
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif
 # endif
 
     ! Arguments

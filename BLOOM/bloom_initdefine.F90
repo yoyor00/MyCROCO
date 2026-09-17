@@ -265,8 +265,8 @@ IF(rw == 'r')THEN
      filepc=REPFICNAMELIST2//'/parabloom_opt2.txt'
      IF_AGRIF (.NOT. Agrif_Root()) filepc='./parabloom_opt2'//TRIM(Agrif_Cfixed())//'.txt'
 #else
-     lstr = lenstr(parafilename)
-     filepc = parafilename(1:lstr)
+     lstr = lenstr(bloomfilename)
+     filepc = bloomfilename(1:lstr)
      !IF_AGRIF (.NOT. Agrif_Root()) filepc='./para_BLOOM'//TRIM(Agrif_Cfixed())//'.txt'
      IF_AGRIF (.NOT. Agrif_Root()) filepc=filepc//TRIM(Agrif_Cfixed())//'.txt'
 #endif

@@ -57,6 +57,7 @@
      & ,nzc_oa, swt_wfpf_oa, nper_sclg
       !use module_oa_space,      only : ptij_oa
       use scalars
+      use croco_namelist, only: testcase_name
       implicit none
 ! >> Include with variable declaration
 ! # include "param.h"
@@ -125,9 +126,9 @@
 
 
 #ifdef OA_TRACES
-#if defined MILES || defined IGW
+      if (trim(testcase_name) == 'IGW') then
         call traces_oa1(verbose_oa)
-#endif
+      endif
 #endif
 
                   ! iv <-> ONE SCALOGRAM 
@@ -197,12 +198,12 @@
 #endif
 
 #ifdef OA_TRACES
-#if defined MILES || defined IGW
+      if (trim(testcase_name) == 'IGW') then
                        if(verbose_oa>=verbl) then
-                       call traces2_oa_scal0d(ip) 
-                       !call traces_oa_scal0d(ip) 
+                       call traces2_oa_scal0d(ip)
+                       !call traces_oa_scal0d(ip)
                        endif
-#endif
+      endif
 #endif
 
         enddo loop_for_per_axis

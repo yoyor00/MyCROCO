@@ -49,11 +49,28 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix time in surf average output file (#388)
 - Fix grid variables writing in average and diagnostic file (#522)
 
+- Fix ABORT MPI when problem in reading netcdf (#167)
+
 - PISCES : Bug - Switch from relative to potential density for surface pH proxy,
            inconsistent with what done for calcite dissolution (#531)
            Big fix in the calculation of NEW primary productivity with XIOS (#535)
+           Fix the calculation of nitrogen fixation rate with XIOS (#541)
+
+- jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
+  Update BENCH accordingly.
 
 ### Changed
+
+- Input file croco.in replace by a standard namelist (#497)
+  Replace the fixed-format croco.in reader with a Fortran namelist system
+  (croco.nml). All configuration parameters are now in structured &croco_*
+  namelists.
+  A convert_in_to_nml.py utility is provided to easily convert 
+  previous croco.in into croco.nml.
+
+- Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
+  with standardized uppercase filenames. Update all BENCH jsonc configs
+  and plot scripts accordingly, as well as production run scripts.
 
 - AGRIF : update conv version (#510)
 
@@ -61,7 +78,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   (Issue #347)
 
 - Compilation : update on jobcomp (support for ifx and different version of gfortran, 
-  cleaning exit status, see !172 and Issue#176)
+  cleaning exit status, see !172 and Issue#176), 
+  update NETCDF paths default from nf-config and nc-config (Issue #473)
 
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
@@ -69,6 +87,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : review lateral erosion feature (Issue #349)
 
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
+
+- MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
@@ -111,6 +131,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
+  - remove key_tauskin_c_ubar key_tauskin_c_center key_tauskin_c_upwind
+    replace by booleans in namelist (Issue #348)
+
+- Test cases CPP keys replace by namelist parameter (#497)
+  Remove all test-case CPP guards from the solver. Test-case selection is
+  now done at runtime via testcase_name in the namelist, not at compile
+  time. cppdefs.h and cppdefs_dev.h are cleaned of all per-case guards.
+  cppdefs.h and param.h are now provided by case in TEST_CASES. The regional 
+  Benguela example is also copied to OCEAN.
 
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)

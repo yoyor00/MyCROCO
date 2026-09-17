@@ -25,108 +25,99 @@
 ! Set vertical mixing coefficients for momentum "Akv"
 ! and tracers "Akt" [m^2/s] using analytical expressions.
 !
+      USE croco_namelist, ONLY: Akv_bak, Akt_bak, testcase_name
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
-      real cff, kappustr
-# ifdef SED_TOY
-      real ustar0
-# endif
+      real cff, kappustr, ustar0
 # include "param.h"
 # include "grid.h"
 # include "ocean3d.h"
+# include "ocean2d.h"
+# include "forces.h"
 # include "mixing.h"
 # include "scalars.h"
-# ifdef MRL_WCI
-#  include "ocean2d.h"
-#  include "forces.h"
-# endif
-# ifdef SED_TOY
-#  include "ocean2d.h"
-#  include "forces.h"
-# endif
-
 # include "compute_auxiliary_bounds.h"
 
-# ifdef CANYON_STRAT
-      cff=1./50.                    ! Setup both top and bottom
-      do k=1,N-1                    ! boundary layers.
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            Akv(i,j,k)=0.001+0.0095*(
-     &                      exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
-     &                     +exp(cff*(z_w(i,j,0)-z_w(i,j,k)))
-     &                                                     )
+      select case (trim(testcase_name))
+      case ('CANYON_STRAT')
+        cff=1./50.                    ! Setup both top and bottom
+        do k=1,N-1                    ! boundary layers.
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              Akv(i,j,k)=0.001+0.0095*(
+     &                        exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
+     &                       +exp(cff*(z_w(i,j,0)-z_w(i,j,k)))
+     &                                                       )
 #  ifdef TEMPERATURE
-            Akt(i,j,k,itemp)=Akt_bak(itemp)
+              Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  endif
+            enddo
           enddo
         enddo
-      enddo
-# elif defined UPWELLING
-      cff=1./150.
-      do k=1,N-1
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            Akv(i,j,k)=0.002+0.008*exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
-#  ifdef TEMPERATURE
-            Akt(i,j,k,itemp)=Akt_bak(itemp)
-#  endif
-#  ifdef SALINITY
-            Akt(i,j,k,isalt)=Akt_bak(isalt)
-#  endif
-          enddo
-        enddo
-      enddo
-# elif defined SHOREFACE
-      do k=1,N-1
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            Akv(i,j,k)=0.011*(h(i,j)+z_w(i,j,k))*
-     &                 (1.0-(h(i,j)+z_w(i,j,k))/
-     &                  (h(i,j)+zeta(i,j,knew)))
-#  ifdef TEMPERATURE
-            Akt(i,j,k,itemp)=Akv(i,j,k)
-#  endif
-#  ifdef SALINITY
-            Akt(i,j,k,isalt)=Akv(i,j,k)
-#  endif
-          enddo
-        enddo
-      enddo
-# elif defined SED_TOY && (defined SED_TOY_ROUSE \
-      || defined SED_TOY_FLOC_0D || defined SED_TOY_FLOC_1D)
-      do k=1,N-1
-        do j=Jstr,Jend
-          do i=Istr,Iend
+      case ('SED_TOY', 'SED_TOY_ROUSE', 'SED_TOY_FLOC_0D', 'SED_TOY_FLOC_1D')
+        do k=1,N-1
+          do j=Jstr,Jend
+            do i=Istr,Iend
               ustar0=sqrt(
      &                  sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
      &                       +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2  )
      &                 )
-              Akv(i,j,k)=0.41*ustar0 *(h(i,j)+z_w(i,j,k))*
+              Akv(i,j,k)=0.41*ustar0*(h(i,j)+z_w(i,j,k))*
      &                (1.0-(h(i,j)+z_w(i,j,k))/
      &                (h(i,j)+zeta(i,j,knew)))
               Akt(i,j,k,itemp)=Akv(i,j,k)
 #  ifdef SALINITY
               Akt(i,j,k,isalt)=Akv(i,j,k)
 #  endif
+            enddo
           enddo
         enddo
-      enddo
-# else
-      do k=1,N-1
-        do j=Jstr,Jend
-          do i=Istr,Iend
-            Akv(i,j,k)=Akv_bak
+      case ('UPWELLING')
+        cff=1./150.
+        do k=1,N-1
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              Akv(i,j,k)=0.002+0.008*exp(cff*(z_w(i,j,k)-z_w(i,j,N)))
 #  ifdef TEMPERATURE
-            Akt(i,j,k,itemp)=Akt_bak(itemp)
+              Akt(i,j,k,itemp)=Akt_bak(itemp)
 #  endif
 #  ifdef SALINITY
-            Akt(i,j,k,isalt)=Akt_bak(isalt)
+              Akt(i,j,k,isalt)=Akt_bak(isalt)
 #  endif
+            enddo
           enddo
         enddo
-      enddo
-# endif /* CANYON_STRAT */
+      case ('SHOREFACE')
+        do k=1,N-1
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              Akv(i,j,k)=0.011*(h(i,j)+z_w(i,j,k))*
+     &                   (1.0-(h(i,j)+z_w(i,j,k))/
+     &                    (h(i,j)+zeta(i,j,knew)))
+#  ifdef TEMPERATURE
+              Akt(i,j,k,itemp)=Akv(i,j,k)
+#  endif
+#  ifdef SALINITY
+              Akt(i,j,k,isalt)=Akv(i,j,k)
+#  endif
+            enddo
+          enddo
+        enddo
+      case default
+        do k=1,N-1
+          do j=Jstr,Jend
+            do i=Istr,Iend
+              Akv(i,j,k)=Akv_bak
+#  ifdef TEMPERATURE
+              Akt(i,j,k,itemp)=Akt_bak(itemp)
+#  endif
+#  ifdef SALINITY
+              Akt(i,j,k,isalt)=Akt_bak(isalt)
+#  endif
+            enddo
+          enddo
+        enddo
+      end select
 
 # if defined BD_EXCHANGE
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, Akv)

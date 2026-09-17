@@ -24,6 +24,7 @@
      ! CROCO : il y a acces grace au  module substance acces  aux donnees fixes
      !         par des include de  param.h , ncscrum.h 
       USE module_substance
+      USE croco_namelist
 
 #if defined BLOOM && defined GLS_MIXING
 #include "mixing.h"

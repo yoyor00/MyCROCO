@@ -20,6 +20,7 @@
 !
       subroutine wrt_diags_eddy_avg
 
+      USE croco_namelist, ONLY: nrpfdiags_eddy_avg, diags_eddyname_avg
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type

@@ -15,8 +15,6 @@
       common /nbq_M2bc/ M2bc_nbq_flag
 
 !**********************************************************************
-      integer iteration_nbq_max
-      common /nbq_var1/ iteration_nbq_max
       integer iteration_nbq
       common /nbq_var2/ iteration_nbq
       integer ifl_nbq
@@ -42,15 +40,9 @@
       common /nbq_param7/ ifl_imp_nbq
 
 !**********************************************************************
-      integer ndtnbq
-      common /time_nbq1/ ndtnbq
+
       real dtnbq
       common /time_nbq2/ dtnbq
-      real csound_nbq
-      common /nbq_csound/ csound_nbq
-      real visc2_nbq
-      common /nbq_visc2/ visc2_nbq
-
       real dtgrid_nbq
       common /nbq_dtgrid/ dtgrid_nbq
 
@@ -253,7 +245,7 @@
 # endif
 
 !**********************************************************************
-# ifdef ACOUSTIC
+# ifdef ACOUSTIC_FORCING
       real  period_exp
       common/ACOUS1/period_exp
       real  for_a_exp

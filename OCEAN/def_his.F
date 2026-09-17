@@ -35,6 +35,10 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
+      USE croco_namelist, ONLY: nrpfhis, ldefhis, hisname
+#ifdef AVERAGES
+      USE croco_namelist, ONLY: nrpfavg, avgname
+#endif
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
       USE comMUSTANG, ONLY : hisMust, avgMust, outMust, outMust_nbvar,
@@ -42,7 +46,7 @@
 #endif
 
 #if defined BLOOM
-      USE comBIOLINK, ONLY :ndiag_1d,ndiag_2d,ndiag_3d_wat,ndiag_3d_sed
+      USE comBIOLink, ONLY :ndiag_1d,ndiag_2d,ndiag_3d_wat,ndiag_3d_sed
 #endif
 
 #if defined OBSTRUCTION

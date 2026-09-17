@@ -23,10 +23,18 @@
                                  ! Define its variables, dimensions,
                                  ! and attributes
 # if defined BIOLink && defined BLOOM
-      USE comBIOLINK, ONLY : ndiag_2d, ndiag_3d_wat, ndiag_3d_sed
+      USE comBIOLink, ONLY : ndiag_2d, ndiag_3d_wat, ndiag_3d_sed
 # endif
 #ifdef MUSTANG
       USE comMUSTANG, ONLY :nk_nivsed_out
+#endif
+#ifdef DIAGNOSTICS_BIO
+      use croco_namelist, only: ldefdiabio, nwrtdiabio, nrpfdiabio,
+     &     dianamebio
+# ifdef AVERAGES
+      use croco_namelist, only: ldefdiabio_avg, ntsdiabio_avg,
+     &     nwrtdiabio_avg, nrpfdiabio_avg, dianamebio_avg
+# endif
 #endif
 
       implicit none

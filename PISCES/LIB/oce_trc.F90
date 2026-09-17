@@ -4,6 +4,7 @@ MODULE oce_trc
 
 #if defined key_pisces
 
+   use croco_namelist
    use scalars
    use ncscrum
    USE par_pisces
