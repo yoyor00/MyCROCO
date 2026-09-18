@@ -3778,7 +3778,7 @@ c !$acc wait
 
 
 # ifdef MUSTANG
-      do itrc=3,NT
+      do itrc=itsubs1,itsubs1+nvpc-1
          write(nametrc,'(a)') TRIM(name_var(itrc-2))
          workr=t(:,:,:,nstp,itrc)
          if (itrc .ge. itsubs1+nv_grav .and.
