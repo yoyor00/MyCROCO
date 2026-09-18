@@ -53,10 +53,6 @@
       common /xyz/ buff
 #endif
 
-#ifdef USE_CALENDAR
-       character*19 :: tool_sectodat
-#endif
-
 #ifdef DIAG_CFL
       real my_Cu_Adv, my_Cu_W, ciV, cx, cw
 # ifdef NBQ
