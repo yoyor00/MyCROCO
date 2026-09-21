@@ -409,11 +409,9 @@ C$OMP BARRIER
       tdays=time*sec2day        ! is set by get_initial or analytically
                                 ! --> copy it into threadprivate "time"
 
-      time_end=tool_datosec(end_date)
-      ntimes=int((time_end-time)/dt)
+      ntimes=int((tool_datosec(end_date)-time)/dt)+ntstart
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
-      ntimes=ntimes+ntstart
 !
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file

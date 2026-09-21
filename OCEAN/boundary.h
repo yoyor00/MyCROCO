@@ -27,7 +27,9 @@
 
 # if defined BIOLOGY || defined PISCES
       real bry_time1(2,NT)
-      common /bry_indices_array1/ bry_time1
+      REAL(kind=8) :: bryt_origin_date_in_sec(NT)
+      common /bry_indices_array1/ bry_time1,
+     &        bryt_origin_date_in_sec
       real bry_cycle1(NT)
       common /bry_indices_real1/ bry_cycle1
       integer bry_tid(NT), bry_ncycle1(NT),

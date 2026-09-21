@@ -1,4 +1,5 @@
 # include "cppdefs.h"
+!$AGRIF_DO_NOT_TREAT
 MODULE tools_calendar
 !!---------------------------------------------------------------------
 !!                 ***  MODULE tools_calendar  ***
@@ -8,7 +9,6 @@ MODULE tools_calendar
 !!
 !!---------------------------------------------------------------------
 
-   USE croco_namelist, ONLY: calendar_type, start_date
    IMPLICIT NONE
    PRIVATE
 
@@ -36,7 +36,13 @@ MODULE tools_calendar
                                         (/0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334/)
 
    PUBLIC :: tool_sectodat, tool_datosec, tool_datetosec, &
-             tool_decompdate, tool_origindate
+             tool_decompdate, tool_origindate, init_tools_calendar
+
+   ! Module-level copies of namelist calendar settings.
+   ! Set once via init_tools_calendar (called from init_calendar).
+   ! Stored here so this module does not depend on AGRIF-managed croco_namelist.
+   character(len=20) :: calendar_type = 'gregorian'
+   character(len=19) :: start_date    = '                   '
 
 CONTAINS
 
@@ -46,7 +52,7 @@ CONTAINS
    !!              to a date string "yyyy-mm-dd hh:mm:ss".
 
       IMPLICIT NONE
-      REAL, INTENT(in) :: time
+      REAL(kind=rlg), INTENT(in) :: time
 
       LOGICAL               :: is_leap
       CHARACTER(len=19)     :: date
@@ -154,10 +160,13 @@ CONTAINS
    !====================================================================
    REAL(kind=rlg) FUNCTION tool_datosec(date)
    !! ** Purpose : return seconds elapsed since the year-1900 epoch
-   !!              for a date string "yyyy-mm-dd hh:mm:ss".
+   !!              for a date string. Accepts partial strings:
+   !!              "yyyy", "yyyy-mm", "yyyy-mm-dd", "yyyy-mm-dd hh:mm",
+   !!              "yyyy-mm-dd hh:mm:ss". Missing fields default to 1 (day/month)
+   !!              or 0 (hour/minute/second).
 
       IMPLICIT NONE
-      CHARACTER(len=19), INTENT(in) :: date
+      CHARACTER(len=*), INTENT(in) :: date
 
       INTEGER        :: year, month, day, hour, minute, second
       REAL(kind=rlg) :: total_secs
@@ -195,39 +204,43 @@ CONTAINS
 
    !====================================================================
    SUBROUTINE tool_decompdate(date, dd, mm, yyyy, hh, minu, sec)
-   !! ** Purpose : decompose a 19-character date string "yyyy-mm-dd hh:mm:ss"
-   !!              into integer components.
+   !! ** Purpose : decompose a date string into integer components.
+   !!              Accepts partial strings; missing fields default to
+   !!              1 (month/day) or 0 (hour/minute/second).
+   !!              Supported formats (n = LEN_TRIM):
+   !!                n >= 4  : "yyyy"
+   !!                n >= 7  : "yyyy-mm"
+   !!                n >= 10 : "yyyy-mm-dd"
+   !!                n >= 16 : "yyyy-mm-dd hh:mm"
+   !!                n >= 19 : "yyyy-mm-dd hh:mm:ss"
 
       IMPLICIT NONE
-      CHARACTER(len=19), INTENT(in)   :: date
-      INTEGER, INTENT(out)  :: dd, mm, yyyy, hh, minu, sec
+      CHARACTER(len=*), INTENT(in)  :: date
+      INTEGER, INTENT(out) :: dd, mm, yyyy, hh, minu, sec
 
-      LOGICAL                        :: cont
-      CHARACTER(len=2)               :: month_str
-      CHARACTER(len=2), DIMENSION(12) :: tab_months = (/'01', '02', '03', '04', '05', '06', &
-                                                        '07', '08', '09', '10', '11', '12'/)
-      INTEGER                        :: i
+      INTEGER :: n
 
-      READ (date, 800) yyyy, month_str, dd, hh, minu, sec
-      cont = .TRUE.
-      i = 1
+      ! Defaults for optional fields
+      mm = 1; dd = 1; hh = 0; minu = 0; sec = 0
 
-      DO WHILE (cont .AND. i <= 12)
-         IF (tab_months(i) == month_str) THEN
-            cont = .FALSE.
-         ELSE
-            i = i + 1
-         END IF
-      END DO
+      n = LEN_TRIM(date)
 
-      IF (i <= 12) THEN
-         mm = i
-      ELSE
-         PRINT *, 'tool_decompdate error: cannot determine month'
+      IF (n < 4) THEN
+         PRINT *, 'tool_decompdate error: date string too short: "', TRIM(date), '"'
          STOP
       END IF
 
-800   FORMAT(i4, 1x, a2, 1x, i2, 1x, 2(i2, 1x), i2)
+      READ (date(1:4),   '(i4)') yyyy
+      IF (n >= 7)  READ (date(6:7),   '(i2)') mm
+      IF (n >= 10) READ (date(9:10),  '(i2)') dd
+      IF (n >= 13) READ (date(12:13), '(i2)') hh
+      IF (n >= 16) READ (date(15:16), '(i2)') minu
+      IF (n >= 19) READ (date(18:19), '(i2)') sec
+
+      IF (mm < 1 .OR. mm > 12) THEN
+         PRINT *, 'tool_decompdate error: invalid month in date: "', TRIM(date), '"'
+         STOP
+      END IF
 
    END SUBROUTINE tool_decompdate
 
@@ -298,11 +311,43 @@ CONTAINS
       CHARACTER*180 :: units
       CHARACTER*40  :: file_calendar
       CHARACTER*19  :: date_str
-      INTEGER       :: lenstr, luni, indst, ierr, ierr2
+      INTEGER       :: lenstr, luni, indst, ierr, ierr2, iw
+      LOGICAL       :: first_warn
+
+      ! Track which ncids have already issued a warning (once per file)
+      INTEGER, PARAMETER :: max_open_nc = 256
+      INTEGER, SAVE :: warned_ids(max_open_nc)
+      INTEGER, SAVE :: n_warned = 0
+      DATA warned_ids /256*-1/
+
+      first_warn = .true.
+      do iw = 1, n_warned
+         if (warned_ids(iw) == netcdfid) then
+            first_warn = .false.
+            exit
+         end if
+      end do
+      if (first_warn) then
+         if (n_warned < max_open_nc) then
+            n_warned = n_warned + 1
+            warned_ids(n_warned) = netcdfid
+         else
+            MPI_master_only write (*, '(/1x,A,I0,A/)') &
+               'TOOL_ORIGINDATE WARNING: warning deduplication limit reached (', &
+               max_open_nc, ' files). Warnings will repeat for this file.'
+         end if
+      end if
 
       ierr = nf90_get_att(netcdfid, varid, 'units', units)
       if (ierr .eq. nf90_noerr) then
          luni = lenstr(units)
+         if (index(units(1:luni), 'since') == 0) then
+            if (first_warn) MPI_master_only write (*, '(/1x,A/6x,2A/)') &
+               'TOOL_ORIGINDATE WARNING: no ''since'' keyword in time units.', &
+               'Assuming time axis is relative to start_date: ', TRIM(start_date)
+            date_in_sec = tool_datosec(start_date)
+            RETURN
+         end if
          if (units(1:6) .eq. 'second') then
             indst = 15
          elseif (units(1:3) .eq. 'day') then
@@ -316,7 +361,7 @@ CONTAINS
             STOP
          end if
       else
-         MPI_master_only write (*, '(/1x,A/6x,2A/)') &
+         if (first_warn) MPI_master_only write (*, '(/1x,A/6x,2A/)') &
             'TOOL_ORIGINDATE WARNING: no units attribute in forcing file.', &
             'Assuming time axis is relative to start_date: ', TRIM(start_date)
          date_in_sec = tool_datosec(start_date)
@@ -324,7 +369,7 @@ CONTAINS
       end if
 
       if (luni < indst) then
-         MPI_master_only write (*, '(/1x,A/6x,A/10x,A/6x,2A/)') &
+         if (first_warn) MPI_master_only write (*, '(/1x,A/6x,A/10x,A/6x,2A/)') &
             'TOOL_ORIGINDATE WARNING: no date found in time var units.', &
             'Time variable should follow Netcdf CF format: ', &
             '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
@@ -384,8 +429,34 @@ CONTAINS
          end if
       end if
 
+      ! Reject non-standard date strings (must start with 4-digit year YYYY-)
+      if (date_str(1:1) < '0' .or. date_str(1:1) > '9' .or. &
+          date_str(2:2) < '0' .or. date_str(2:2) > '9' .or. &
+          date_str(3:3) < '0' .or. date_str(3:3) > '9' .or. &
+          date_str(4:4) < '0' .or. date_str(4:4) > '9') then
+         if (first_warn) MPI_master_only write (*, '(/1x,2A/6x,2A/)') &
+            'TOOL_ORIGINDATE WARNING: non-standard date format in time units: ', &
+            TRIM(date_str), &
+            'Assuming time axis is relative to start_date: ', TRIM(start_date)
+         date_in_sec = tool_datosec(start_date)
+         RETURN
+      end if
+
       date_in_sec = tool_datosec(date_str)
 
    END SUBROUTINE tool_origindate
 
+   !====================================================================
+   SUBROUTINE init_tools_calendar(cal_type, s_date)
+   !! ** Purpose : initialise module-level calendar settings from croco_namelist.
+   !!              Must be called once during setup (from init_calendar).
+
+      IMPLICIT NONE
+      CHARACTER(len=*), INTENT(in) :: cal_type, s_date
+      calendar_type = cal_type
+      start_date    = s_date
+
+   END SUBROUTINE init_tools_calendar
+
 END MODULE tools_calendar
+!$AGRIF_END_DO_NOT_TREAT

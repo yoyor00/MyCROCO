@@ -19,7 +19,7 @@
 !
       use croco_namelist, only: dt, rho0, btfname
 # define BTFLUX_DATA
-      use tools_calendar, only: tool_sectodat
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"

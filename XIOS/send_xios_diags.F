@@ -1309,15 +1309,11 @@ C 				  endif
       TYPE(xios_duration)   ::   output_freq
       !!----------------------------------------------------------------------
       !
-# if !defined USE_CALENDAR
       ! start_date with format yyyy-mm-dd
        READ(xios_origin_date(1:4),fmt='(i4)') iyear
        READ(xios_origin_date(6:7),fmt='(i2)') imonth
        READ(xios_origin_date(9:10),fmt='(i2)') iday
        CALL ymds2ju( iyear, imonth,iday, 0., jday0 )
-# else
-       CALL ymds2ju(1900, 1, 1, 0., jday0 ) 
-# endif
       DO jn = 1,2
 
          IF( jn == 1 )   CALL iom_get_file_attr( cdid, name 
@@ -1804,7 +1800,7 @@ C 				  endif
      &                               ,if_xios_dom_grid
 
 #endif
-      !    
+      !
       IMPLICIT NONE
       !
 # include "param.h"
@@ -1832,14 +1828,9 @@ C 				  endif
       TYPE(xios_variable) :: var_hdl
       LOGICAL ok
       !
-      CHARACTER(len=19) :: cldate
       CHARACTER(len=10) :: clname
       CHARACTER(len=10) :: cdname
       INTEGER           :: imd
-      INTEGER iday,imonth,iyear,ihour,iminute,isec
-#ifdef USE_CALENDAR
-      CHARACTER (len=19)    :: tool_sectodat
-#endif
 
       !!---------------------------------------------------------------------
       !  
@@ -1875,20 +1866,6 @@ C 				  endif
 # endif
       CALL iom_swap( cdname )
 
-      ! calendar parameters
-
-# if !defined USE_CALENDAR
-! start_date with format yyyy-mm-dd
-      READ(xios_origin_date(1:4),fmt='(i4)') iyear
-      READ(xios_origin_date(6:7),fmt='(i2)') imonth
-      READ(xios_origin_date(9:10),fmt='(i2)') iday
-      ihour=0
-      iminute=0
-      isec=0
-# else
-      cldate = tool_sectodat(time)
-      CALL tool_decompdate(cldate,iday,imonth,iyear,ihour,iminute,isec)
-# endif
       CALL xios_define_calendar( TYPE = "Gregorian", 
      &      start_date  = xios_date(start_year,start_month,start_day,
      &                    start_hour,start_minute,start_second),

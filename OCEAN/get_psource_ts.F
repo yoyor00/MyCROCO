@@ -17,7 +17,7 @@
 !     concentration the appropriate time from runoff NetCDF file.
 !
         use croco_namelist, only: dt
-      use tools_calendar, only: tool_sectodat
+      use tools_calendar, only: tool_origindate, tool_sectodat
         implicit none
 # include "param.h"
 # include "forces.h"

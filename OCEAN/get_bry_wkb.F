@@ -14,7 +14,7 @@
 
       subroutine get_bry_wkb        ! Read side boundary forcing
        use croco_namelist, only: dt, brywkb_file
-      use tools_calendar, only: tool_sectodat
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none                 ! fields from boundary file
 
 # define wac_west 'cdir_west'

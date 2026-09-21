@@ -7,10 +7,15 @@
 /
 
 &croco_time_stepping
-  ntimes = 1
   dt = 960
   ndtfast = 50
   ninfo = 1
+/
+
+&croco_calendar
+  start_date    = "2000-01-01 00:00:00"
+  end_date      = "2000-01-21 00:00:00"
+  calendar_type = "gregorian"
 /
 
 &croco_time_stepping_nbq

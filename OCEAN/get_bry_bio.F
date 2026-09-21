@@ -15,7 +15,7 @@
 
       subroutine get_bry_bio    ! Read side boundary forcing
       use croco_namelist, only: dt, bry_file
-      use tools_calendar, only: tool_sectodat
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none             ! fields from boundary file
 # include "param.h"
 # include "scalars.h"

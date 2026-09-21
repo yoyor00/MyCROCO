@@ -20,7 +20,7 @@
       use exchange_device_host
 # endif
 # define SRFLUX_DATA
-      use tools_calendar, only: tool_sectodat
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"

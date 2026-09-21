@@ -397,14 +397,12 @@ CONTAINS
     !&E
     !&E ** Called by :  MUSTANG_init
     !&E
-    !&E ** External calls : tool_datosec()
-    !&E
     !&E--------------------------------------------------------------------------
+    USE tools_calendar, ONLY: tool_datosec
     !! * Arguments
     CHARACTER(len=lchain), INTENT(IN) :: filein
 
     !! * Local declarations
-    REAL(KIND=rlg)        :: tool_datosec
 
     !! * Executable part
     OPEN(unit = 50, file = filein, status = 'old', action = 'read')
@@ -709,31 +707,31 @@ CONTAINS
     !&E--------------------------------------------------------------------------
     !&E                 ***  ROUTINE MUSTANG_init_param  ***
     !&E
-    !&E ** Purpose : initialize MUSTANG parameters  
+    !&E ** Purpose : initialize MUSTANG parameters
     !&E
-    !&E ** Description : 
-    !&E    - compute for each sand and gravel (for 1 to isand2)  
+    !&E ** Description :
+    !&E    - compute for each sand and gravel (for 1 to isand2)
     !&E       * diamstar
     !&E       * ws_sand
     !&E       * tetacri0
     !&E       * stresscri0
     !&E       * psi_sed (in V2)
-    !&E    - compute for each sand (for isand1 to isand2) 
+    !&E    - compute for each sand (for isand1 to isand2)
     !&E       * E0_sand (in V2)
-    !&E    - compute for each gravel, dans and mud (for 1 to imud2) 
+    !&E    - compute for each gravel, dans and mud (for 1 to imud2)
     !&E       * rosmrowsros
     !&E    - ros_sand_homogen = ros(isand1) if there is sand (isand1 > 0)
     !&E
-    !&E ** Note : g and rho0 must be known 
+    !&E ** Note : g and rho0 must be known
     !&E
     !&E ** Called by :  MUSTANG_init
     !&E
     !&E--------------------------------------------------------------------------
+    USE tools_calendar, ONLY: tool_datosec
 
     !! * Local declarations
     INTEGER        :: iv
     REAL(KIND=rlg) :: dtsedc, dtsedd, dtsedb  ! to compute consolidation subdt_consol
-    REAL(KIND=rlg) :: tool_datosec
     REAL(KIND=rsh),PARAMETER :: shield_cri_wu = 0.03_rsh          
 
     !!--------------------------------------------------------------------------

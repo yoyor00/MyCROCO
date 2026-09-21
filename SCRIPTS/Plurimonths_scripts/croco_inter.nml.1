@@ -7,18 +7,14 @@
 /
 
 &croco_time_stepping
-  ntimes = 1
   dt = TIMESTEP
   ndtfast = NFAST
   ninfo = 1
 /
 
-&croco_use_calendar
-  start_date = "Ystart-Mstart-01"
-  end_date = "Yend-Mend-01"
-  dt_his = NHHIS
-  dt_avg = NHAVG
-  dt_rst = NHRST
+&croco_calendar
+  start_date = "Ystart-Mstart-01 00:00:00"
+  end_date = "Yend-Mend-01 00:00:00"
 /
 
 &croco_s_coord

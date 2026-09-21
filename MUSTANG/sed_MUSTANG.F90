@@ -4693,7 +4693,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    REAL(KIND=rsh),DIMENSION(0:nv_adv-nvp)                :: conc_bottom
 #endif
 #ifdef key_MUSTANG_V2
-   CHARACTER(len=19)                :: tool_sectodat
    REAL(KIND=rsh)                   :: cv_sed_tot,mass_tot,sommud,cvolgrvsan
    REAL(KIND=rsh),DIMENSION(1:nvpc) :: frac_sed
    REAL(KIND=rsh),DIMENSION(1:nvp)  :: mass_sed

@@ -1053,6 +1053,7 @@ contains
    !---------------------------------------------------------------------
    subroutine init_calendar(ierr)
       use croco_namelist, ONLY: start_date, end_date, calendar_type, nrrec
+      use tools_calendar, ONLY: init_tools_calendar
       use scalars, ONLY: start_time
       use ncscrum, ONLY: origin_year, origin_month, origin_day, &
                          origin_hour, origin_minute, origin_second, &
@@ -1077,6 +1078,8 @@ contains
          ierr = ierr + 1
       end if
       if (ierr /= 0) return
+
+      call init_tools_calendar(calendar_type, start_date)
 
       ! Validate calendar_type
       if (TRIM(calendar_type) /= 'gregorian'  .AND. &

@@ -18,7 +18,7 @@
 !
 !
       use croco_namelist, only: dt, bulkname, rho0
-      use tools_calendar, only: tool_sectodat
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"

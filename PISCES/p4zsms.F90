@@ -29,6 +29,7 @@ MODULE p4zsms
    USE sedmodel        ! Sediment model
 !   USE lbclnk          ! ocean lateral boundary conditions (or mpp link)
    USE prtctl          ! print control for debugging
+   USE tools_calendar, ONLY: tool_sectodat
 
    IMPLICIT NONE
    PRIVATE
@@ -785,9 +786,7 @@ CONTAINS
       &      , csize,cmode           &
 #endif
       &      , r3dgrd(4)
-#ifdef USE_CALENDAR
-      CHARACTER (len=19)    :: cdate,tool_sectodat
-#endif
+      CHARACTER (len=19)    :: cdate
       CHARACTER(len=20) :: cltra, cltrs, cltru
 
 !
@@ -807,7 +806,6 @@ CONTAINS
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (cn_pisrst_out, lstr, lvar, ierr)
-#ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           cn_pisrst_out=TRIM(cn_pisrst_out(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
@@ -815,7 +813,6 @@ CONTAINS
           cn_pisrst_out=TRIM(cn_pisrst_out)//cdate(18:19)//'.nc'
           lstr=lenstr(cn_pisrst_out)
         end if
-#endif
         if (ierr .ne. 0) goto 99
       endif
 

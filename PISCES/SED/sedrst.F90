@@ -18,6 +18,7 @@ MODULE sedrst
    !! * Modules used
    USE oce_sed
    USE sed
+   USE tools_calendar, ONLY: tool_sectodat
 #ifdef AGRIF
       USE param, ONLY : Lmmpi,Mmmpi
 #endif
@@ -47,9 +48,7 @@ CONTAINS
       &      , csize,cmode           &
 #endif
       &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), jn
-#ifdef USE_CALENDAR
-      CHARACTER (len=19)    :: cdate,tool_sectodat
-#endif
+      CHARACTER (len=19)    :: cdate
       CHARACTER(len=20) :: cltra, cvar
 
 !
@@ -69,7 +68,6 @@ CONTAINS
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (cn_sedrst_out, lstr, lvar, ierr)
-#ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           cn_sedrst_out=TRIM(cn_sedrst_out(1:lstr-9))//'.'//cdate(7:10)//cdate(4:5)
@@ -77,7 +75,6 @@ CONTAINS
           cn_sedrst_out=TRIM(cn_sedrst_out)//cdate(18:19)//'.nc'
           lstr=lenstr(cn_sedrst_out)
         end if
-#endif
         if (ierr .ne. 0) goto 99
       endif
 
