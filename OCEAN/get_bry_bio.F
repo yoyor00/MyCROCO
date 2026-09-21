@@ -15,6 +15,7 @@
 
       subroutine get_bry_bio    ! Read side boundary forcing
       use croco_namelist, only: dt, bry_file
+      use tools_calendar, only: tool_sectodat
       implicit none             ! fields from boundary file
 # include "param.h"
 # include "scalars.h"
@@ -22,7 +23,6 @@
 # include "netcdf.inc"
 # include "boundary.h"
       real cff
-      character*19 tool_sectodat
       integer  lstr,lvar,lvar2,lenstr, ierr, ierr_all, itrc
       integer  nf_read_bry_EW, nf_read_bry_NS
       character*60 text

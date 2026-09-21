@@ -14,6 +14,7 @@
 
       subroutine get_bry_wkb        ! Read side boundary forcing
        use croco_namelist, only: dt, brywkb_file
+      use tools_calendar, only: tool_sectodat
       implicit none                 ! fields from boundary file
 
 # define wac_west 'cdir_west'
@@ -26,7 +27,6 @@
 #  include "sediment.h"
 # endif
       real cff
-      character*19 tool_sectodat
       integer  lstr,lvar,lenstr, ierr, ierr_all
       integer  nf_read_bry_EW, nf_read_bry_NS
 !

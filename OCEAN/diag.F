@@ -24,6 +24,7 @@
 
       subroutine diag_tile (Istr,Iend,Jstr,Jend, ke2d,pe2d)
         use croco_namelist, only: ninfo, dt, rho0
+        use tools_calendar, only: tool_sectodat
       implicit none
 #include "param.h"
 #include "grid.h"
@@ -43,7 +44,6 @@
      &     pe2d(PRIVATE_2D_SCRATCH_ARRAY)
       real*QUAD cff, my_avgke, my_avgpe, my_volume
       character echar*8
-       character*19 :: tool_sectodat
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr

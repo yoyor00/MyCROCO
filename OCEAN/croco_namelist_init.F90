@@ -22,6 +22,7 @@
 !=======================================================================
 
 MODULE croco_namelist_init
+   use tools_calendar, only: tool_datosec
    implicit none
    private
 
@@ -1063,7 +1064,6 @@ contains
       implicit none
       integer, intent(inout) :: ierr
 
-      real(kind=8), external :: tool_datosec
 
       ! Validate mandatory fields
       if (TRIM(start_date) == '' .OR. start_date == '                   ') then

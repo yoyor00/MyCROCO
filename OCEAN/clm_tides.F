@@ -45,6 +45,7 @@
       USE MOD_TIDES_MAS
 # endif
       USE croco_namelist, only:dt
+      use tools_calendar, only: tool_decompdate, tool_sectodat
       implicit none
 # ifndef TIDES_MAS
 #  include "param.h"
@@ -56,7 +57,7 @@
 # include "boundary.h"
 !
 # ifdef TIDES_MAS
-      CHARACTER (len=19)    :: cdate,tool_sectodat
+      CHARACTER (len=19)    :: cdate
       logical :: flag=.false.
       INTEGER               :: ian,imois,ijour,iheure,iminu,isec,jjulien
       integer :: nn,l,k,kk

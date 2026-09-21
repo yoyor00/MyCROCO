@@ -28,8 +28,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
-- Cleaning : remove unused variable time_mars and change writting 
-             in log file when using USE_CALENDAR (#452)
   
 - SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
 
@@ -62,6 +60,24 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   Update BENCH accordingly.
 
 ### Changed
+
+- CALENDAR : Remove `USE_CALENDAR` CPP key.
+  Calendar support is now always active and controlled at runtime via `calendar_type` in the namelist (#452).
+  Supported values: `gregorian` (default), `360_day`, `365_day`/`no_leap`.
+  The five standalone calendar utility files (`toolsectodat.F90`, `tooldatosec.F90`,
+  `tooldecompdat.F90`, `tooldatetosec.F90`, `toolorigindate.F90`) are replaced by a
+  single Fortran module `tools_calendar.F90`, which:
+    - provides explicit interfaces (eliminates scattered `character*19 tool_sectodat`
+      external declarations in all `get_*.F` forcing readers);
+    - fixes an AGRIF wrapper compilation failure caused by `rlg` scoping in
+      auto-generated `tooldatosec.F90`;
+    - extends `tool_datetosec` to support all calendar types (was Gregorian-only);
+    - uses `use netcdf` / `nf90_*` API in `tool_origindate` (was `netcdf.inc`);
+    - renames all French variable names to English throughout in this module.
+  All `get_*.F` forcing readers now log dates as `yyyy-mm-dd hh:mm:ss` strings
+  (was raw floating-point days since origin).
+  Remove unused variable `time_mars` 
+  Fix typo "writting" in log messages.
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system

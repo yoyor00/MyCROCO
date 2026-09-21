@@ -18,6 +18,7 @@
 !
 !
       use croco_namelist, only: dt, bulkname, rho0
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -29,7 +30,6 @@
       integer nabl_id, N_abl_nc
 # endif
       real    cff
-      character*19 tool_sectodat
       integer i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:

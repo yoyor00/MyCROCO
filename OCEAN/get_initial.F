@@ -14,6 +14,7 @@
       subroutine get_initial (req_rec, tindx)   ! primitive variables from NetCDF
                                                 ! initialization file.
       use croco_namelist
+      use tools_calendar, only: tool_datosec, tool_origindate, tool_sectodat
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -60,8 +61,6 @@
      &        indx, varid,  ierr, lstr, lvar, latt, lenstr,
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
       character units*180
-      CHARACTER(len=19)          :: tool_sectodat
-      REAL(kind=8)               :: tool_datosec
 #include "netcdf.inc"
 #define time illegal
 #define tdays illegal

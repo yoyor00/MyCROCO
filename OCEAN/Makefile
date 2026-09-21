@@ -162,8 +162,7 @@ include Makedefs
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
 	module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
 	tools_string.F90\
-	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
-	toolorigindate.F90 \
+	tools_calendar.F90\
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\

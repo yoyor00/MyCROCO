@@ -18,6 +18,7 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -25,7 +26,6 @@
 # include "forces.h"
 # include "netcdf.inc"
       real cff
-      character*19 tool_sectodat
       integer i, ierr, lstr,lvar, lenstr, nf_fread, advance_cycle
 !
 ! Initialization: Inquire about the contents of forcing netCDF file:

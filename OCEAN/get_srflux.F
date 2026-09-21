@@ -20,13 +20,13 @@
       use exchange_device_host
 # endif
 # define SRFLUX_DATA
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
 # include "scalars.h"
 # include "ncscrum.h"
       real cff
-      character*19 tool_sectodat
       integer i,ierr, lstr,lvar, lenstr, nf_fread, advance_cycle
 # include "netcdf.inc"
 !

@@ -20,13 +20,13 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
 # include "climat.h"
       real cff
-      character*19 tool_sectodat
       integer i, lstr,lvar,lenstr, ierr, nf_fread, advance_cycle
 # include "netcdf.inc"
 !

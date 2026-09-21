@@ -28,6 +28,7 @@
       use exchange_device_host
 # endif
 # define SST_DATA
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -35,7 +36,6 @@
 # include "netcdf.inc"
 # include "ncscrum.h"
       real cff
-      character*19 tool_sectodat
       integer i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:

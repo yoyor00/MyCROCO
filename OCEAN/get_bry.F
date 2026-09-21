@@ -19,6 +19,7 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -29,7 +30,6 @@
       character*180 units
       integer  lstr,lvar,lenstr, latt, lorig, ierr, ierr_all, itrc
       integer  nf_read_bry_EW, nf_read_bry_NS
-      character*19 tool_sectodat
 !
 ! Initialization: Check, whether boundary forcing file is already
 !================ opened, and if not, open it.  Find and save netCDF

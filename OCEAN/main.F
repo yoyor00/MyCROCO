@@ -70,6 +70,7 @@
       use openacc
 #endif
       use buffer, only: init_buffer
+      use tools_calendar, only: tool_datosec, tool_sectodat
 !     implicit none
       integer tile, subs, trd, ierr
 #include "param.h"
@@ -93,7 +94,6 @@
 # include "sta.h"
 # include "nc_sta.h"
 #endif
-       character*19 :: tool_sectodat
 #ifdef AGRIF
       Type(Agrif_pgrid),pointer  :: parcours
 #endif

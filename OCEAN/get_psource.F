@@ -21,6 +21,7 @@
 !
       use croco_namelist, only: dt
 # define PSOURCE_DATA
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -30,7 +31,6 @@
 # include "sources.h"
 
       real cff
-      character*19 tool_sectodat
       integer is,i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle,
      &        itrc
       integer s(2),c(2)

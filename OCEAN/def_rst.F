@@ -19,6 +19,7 @@
      &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
      &   rstMust_nbvar
 #endif
+      use tools_calendar, only: tool_sectodat
       implicit none
       logical create_new_file
       integer ncid, total_rec, ierr, rec, lstr,lvar,lenstr, timedim
@@ -39,7 +40,7 @@
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
-      CHARACTER (len=19)    :: cdate,tool_sectodat
+      CHARACTER (len=19)    :: cdate
 
 #include "param.h"
 #include "scalars.h"

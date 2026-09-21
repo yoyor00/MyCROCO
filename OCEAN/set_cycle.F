@@ -30,6 +30,7 @@
 !
 !         i n p u t     o u t p u t      i n t e r n a l
 !
+      use tools_calendar, only: tool_origindate
       implicit none
       real              cycle_length,      tend,     cff
       integer ncid,     icycle,          tshift,  vartype,  lvar,

@@ -46,6 +46,7 @@
       USE croco_namelist, only: dt, rho0,
      &                          yearend, monthend, recordsperday
       USE tools_string, ONLY : to_uppercase
+      use tools_calendar, only: tool_origindate, tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -73,7 +74,6 @@
       real(kind=8), dimension(:,:,:), allocatable :: var3d
 # endif
       character*16 dimname
-      character*19 :: tool_sectodat
 !
 ! Time of the current model step
 !

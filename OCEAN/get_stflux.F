@@ -21,6 +21,7 @@
       use exchange_device_host
 # endif
 # define STFLUX_DATA
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -28,7 +29,6 @@
 # include "ncscrum.h"
 # include "netcdf.inc"
       real cff
-      character*19 tool_sectodat
       integer itrc, i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:
@@ -56,7 +56,7 @@ c**        call opencdf (frcname,N)
             write(stdout,3) 'shf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-          call tool_origindate(ncidfrc,stf_tid,
+          call tool_origindate(ncidfrc,stf_tid(itrc),
      &                         stf_origin_date_in_sec(itrc))
         endif
 # endif
@@ -67,7 +67,7 @@ c**        call opencdf (frcname,N)
             write(stdout,3) 'swf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-          call tool_origindate(ncidfrc,stf_tid,
+          call tool_origindate(ncidfrc,stf_tid(itrc),
      &                         stf_origin_date_in_sec(itrc))
         endif
 # endif

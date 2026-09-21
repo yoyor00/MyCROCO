@@ -19,6 +19,7 @@
       use exchange_device_host
 # endif
 # define SSH_DATA
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -26,7 +27,6 @@
 # include "climat.h"
 # include "netcdf.inc"
       real cff
-      character*19 tool_sectodat
       integer i, lstr,lvar, lenstr,
      &      ierr, nf_fread, advance_cycle
 !

@@ -19,6 +19,7 @@
 !
       use croco_namelist, only: dt, rho0, btfname
 # define BTFLUX_DATA
+      use tools_calendar, only: tool_sectodat
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -26,7 +27,6 @@
 # include "ncscrum.h"
 # include "netcdf.inc"
       real cff
-      character*19 tool_sectodat
       integer itrc, i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:

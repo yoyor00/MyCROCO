@@ -145,16 +145,9 @@
 
       endif
 
-
       lvar=lenstr(title)
       ierr=nf_put_att_text(ncid, nf_global, 'title',   lvar,
      &                                         title(1:lvar))
-
-!# ifdef USE_CALENDAR || XIOS
-!      lvar=lenstr(origin_date)
-!      ierr=nf_put_att_text(ncid, nf_global, 'origin_date',lvar,
-!     &                                     origin_date(1:lvar))
-!# endif
       lvar=lenstr(rstname)
       ierr=nf_put_att_text(ncid, nf_global, 'rst_file',lvar,
      &                                       rstname(1:lvar))
