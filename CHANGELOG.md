@@ -138,6 +138,14 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   - remove file scalars_F90.h, not used (Issue #382)
   - remove key_tauskin_c_ubar key_tauskin_c_center key_tauskin_c_upwind
     replace by booleans in namelist (Issue #348)
+  - remove key_MUSTANG_slipdeposit replace by boolean l_slipdeposit in
+    namelist (Issue #350)
+  - remove key_MUSTANG_bedload, bedload transport (l_bedload_n()) now only
+    conditioned by key_MUSTANG_V2 (Issue #385)
+  - remove key_MUSTANG_splitlayersurf replace by boolean l_splitlayersurf
+    in namelist (Issue #350)
+  - remove key_MUSTANG_flocmod replace by boolean l_flocmod in namelist
+    (Issue #350)
 
 - Test cases CPP keys replace by namelist parameter (#497)
   Remove all test-case CPP guards from the solver. Test-case selection is
