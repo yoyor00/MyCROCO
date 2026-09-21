@@ -32,6 +32,7 @@
 # endif
 # ifdef MUSTANG
 #  define key_MUSTANG_V2
+#  define key_noTSdiss_insed
 # endif
 # define GLS_MIXING
 # define NO_FRCFILE
