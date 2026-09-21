@@ -52,8 +52,7 @@
 # undef  XIOS
                      /* Custion IO */
 # undef  FILLVAL
-                      /* Calendar */
-                      /* dedicated croco.log file */
+                      /* Dedicated croco.log file */
 # undef  LOGFILE
 /*
 !-------------------------------------------------
