@@ -58,8 +58,10 @@
 #endif
       integer ncid, req_rec, tindx, record, max_rec,
      &        indx, varid,  ierr, lstr, lvar, latt, lenstr,
-     &        start(2), count(2), ibuff(6),   nf_fread, checkdims
-      character units*180
+     &        start(2), count(2), ibuff(6),   nf_fread, checkdims,
+     &        vtransform_value, vt_rec, ierr_vt
+      logical old_vt
+      character*180  units, transf
       CHARACTER(len=19)          :: tool_sectodat
       REAL(kind=8)               :: tool_datosec
 #include "netcdf.inc"
@@ -114,6 +116,46 @@
      &               'Cannot open netCDF file ''',   ininame(1:lstr),
      &                                  '''.',     nf_strerror(ierr)
         goto 99                                           !--> ERROR
+      endif
+!
+! Check the vertical s-coordinate transformation used to create
+! the inifile: stop if VertCoordType=OLD or Vtransform=1.
+! If neither VertCoordType nor Vtransform is present, the file is
+! assumed to be valid (tools write Vtransform=2 by default).
+!
+      old_vt=.false.
+      transf=' '
+      ierr_vt=nf_get_att_text(ncid, nf_global, 'VertCoordType', transf)
+      if (ierr_vt.eq.nf_noerr) then
+        if (trim(transf).eq.'OLD') old_vt=.true.
+      endif
+
+      vtransform_value=0
+      ierr_vt=nf_inq_varid(ncid, 'Vtransform', varid)
+      if (ierr_vt.eq.nf_noerr) then
+        vt_rec=1
+        ierr_vt=nf_get_var1_int(ncid, varid, vt_rec, vtransform_value)
+      else
+        ierr_vt=nf_get_att_int(ncid, nf_global, 'Vtransform',
+     &                                          vtransform_value)
+      endif
+      if (ierr_vt.eq.nf_noerr .and. vtransform_value.eq.1)
+     &                                             old_vt=.true.
+
+      if (old_vt) then
+        MPI_master_only write(stdout,'(/1x,A/(20x,A))')
+     &  'GET_INITIAL ERROR: Old Vtransform is obsolete.',
+     &  'From now on, CROCO uses only one vertical',
+     &  's-coordinate transformation (Vtransform=2).',
+     &  'Two possibilities:',
+     &  '1) keep these input files and use croco <= v2.1.3',
+     &  '   (with the NEW_S_COORD cppkey deactivated)',
+     &  '2) regenerate the input files with croco_tools',
+     &  '   or croco_pytools (Vtransform=2).',
+     &  'Newer versions of the tools no longer support',
+     &  'the old Vtransform.',
+     &  'For details, see the documentation.'
+        goto 99                                          !--> ERROR
       endif
 !
 ! Read in evolving model variables:

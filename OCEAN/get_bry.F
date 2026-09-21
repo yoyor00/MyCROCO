@@ -26,9 +26,11 @@
 # include "netcdf.inc"
 # include "boundary.h"
       real cff
-      character*180 units
-      integer  lstr,lvar,lenstr, latt, lorig, ierr, ierr_all, itrc
+      character*180 units, transf
+      integer  lstr,lvar,lenstr, latt, lorig, ierr, ierr_all, itrc,
+     &         varid, vtransform_value, vt_rec, ierr_vt
       integer  nf_read_bry_EW, nf_read_bry_NS
+      logical  old_vt
 !
 ! Initialization: Check, whether boundary forcing file is already
 !================ opened, and if not, open it.  Find and save netCDF
@@ -49,6 +51,49 @@
      &                                   bry_file(1:lstr),   '''.'
         endif
         if (ierr.eq.nf_noerr) then
+!
+! Check the vertical s-coordinate transformation used to create
+! the boundary file: stop if VertCoordType=OLD or Vtransform=1.
+! If neither VertCoordType nor Vtransform is present, the file is
+! assumed to be valid (tools write Vtransform=2 by default).
+!
+          old_vt=.false.
+          transf=' '
+          ierr_vt=nf_get_att_text(bry_id, nf_global,
+     &                            'VertCoordType', transf)
+          if (ierr_vt.eq.nf_noerr) then
+            if (trim(transf).eq.'OLD') old_vt=.true.
+          endif
+!
+          vtransform_value=0
+          ierr_vt=nf_inq_varid(bry_id, 'Vtransform', varid)
+          if (ierr_vt.eq.nf_noerr) then
+            vt_rec=1
+            ierr_vt=nf_get_var1_int(bry_id, varid, vt_rec,
+     &                                         vtransform_value)
+          else
+            ierr_vt=nf_get_att_int(bry_id, nf_global, 'Vtransform',
+     &                                         vtransform_value)
+          endif
+          if (ierr_vt.eq.nf_noerr .and. vtransform_value.eq.1)
+     &                                         old_vt=.true.
+!
+          if (old_vt) then
+            MPI_master_only write(stdout,'(/1x,A/(16x,A))')
+     &  'GET_BRY ERROR: Old Vtransform is obsolete.',
+     &  'From now on, CROCO uses only one vertical',
+     &  's-coordinate transformation (Vtransform=2).',
+     &  'Two possibilities:',
+     &  '1) keep these input files and use croco <= v2.1.3',
+     &  '   (with the NEW_S_COORD cppkey deactivated)',
+     &  '2) regenerate the input files with croco_tools',
+     &  '   or croco_pytools (Vtransform=2).',
+     &  'Newer versions of the tools no longer support',
+     &  'the old Vtransform.',
+     &  'For details, see the documentation.'
+            goto 99                                      !--> ERROR
+          endif
+!
           ierr_all=0
           ierr=nf_inq_varid (bry_id, 'bry_time',  bry_time_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'bry_time'
