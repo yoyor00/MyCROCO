@@ -26,6 +26,7 @@
 # include "climat.h"
 # include "netcdf.inc"
       real cff
+      character*19 tool_sectodat
       integer i, lstr,lvar, lenstr,
      &      ierr, nf_fread, advance_cycle
 !
@@ -50,10 +51,8 @@
           write(stdout,3) 'ssh_time', clmname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
         call tool_origindate(ncidclm,ssh_tid,
      &                       ssh_origin_date_in_sec)
-# endif
 
         lvar=lenstr(vname(1,indxSSH))
         ierr=nf_inq_varid (ncidclm, vname(1,indxSSH)(1:lvar), ssh_id)
@@ -95,9 +94,7 @@
           write(stdout,6) 'ssh_time', ssh_rec
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
         cff=cff+ssh_origin_date_in_sec*sec2day
-# endif
 
         ssh_time(i)=cff*day2sec+ssh_cycle*ssh_ncycle
         if (ssh_time(itssh).eq.-1.E+20) ssh_time(itssh)=ssh_time(i)
@@ -112,11 +109,9 @@
           goto 99                                         !--> ERROR
         endif
 !!     MPI_master_only write(stdout,2) cff
-        MPI_master_only write(stdout,'(6x,A,1x,g12.4,1x,I4)')
-     &       'GET_SSH -- Read SSH climatology      for time =', cff
-# ifdef USE_CALENDAR
-     &  -ssh_origin_date_in_sec*sec2day
-# endif
+        MPI_master_only write(stdout,'(6x,A,1x,A19,1x,I4)')
+     &       'GET_SSH -- Read SSH climatology      for time =',
+     &       tool_sectodat(cff*day2sec)
 # ifdef MPI
      &                                                      , mynode
 #endif
@@ -141,9 +136,7 @@
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) ssh_rec, ntssh, frcname(1:lstr), tdays,
      &                                      ssh_time(itssh)*sec2day
-# ifdef USE_CALENDAR
      &  -ssh_origin_date_in_sec*sec2day
-# endif
   8   format(/,' GET_SSH - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available',  /,  11x,'record ',I4,
      &       1x,'in forcing NetCDF file: ', a, /,   11x,'TDAYS = ',
@@ -222,9 +215,7 @@ C$    integer  trd, omp_get_thread_num
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'ssh_time', tdays, ssh_time(it2)*sec2day
-# ifdef USE_CALENDAR
      &  -ssh_origin_date_in_sec*sec2day
-# endif
   1       format(/,' SET_SSH - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
      &           2x,'TEND = ',g12.4)

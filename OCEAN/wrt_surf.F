@@ -89,9 +89,7 @@
 ! Time
 !
       ierr=nf_put_var1_FTYPE (ncidsurf, surfTime, record, time
-# ifdef USE_CALENDAR
      &  - origin_date_in_sec
-# endif
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
@@ -103,9 +101,7 @@
 ! Time2
 !
       ierr=nf_put_var1_FTYPE (ncidsurf, surfTime2, record, time
-# ifdef USE_CALENDAR
      &  - origin_date_in_sec
-# endif
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))

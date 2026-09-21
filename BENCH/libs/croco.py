@@ -471,7 +471,6 @@ class Croco:
 
     def apply_debug_patches(self):
         filename_nml = self.croco_nmlfile
-        self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 6)
         self.change_nml(filename_nml, "croco_history", "nwrt", 1)
         self.change_nml(filename_nml, "croco_diagnostics_ts", "nwrtdia", 1)
         self.change_nml(filename_nml, "croco_diagnosticsm", "nwrtdiam", 1)
@@ -487,9 +486,8 @@ class Croco:
         self.change_nml(filename_nml, "croco_diags_pv_avg", "nwrtdiags_pv_avg", 3)
         self.change_nml(filename_nml, "croco_diags_eddy_avg", "nwrtdiags_eddy_avg", 3)
 
-        # and for USE_CALENDAR
+        # end_date drives ntimes (computed at runtime)
         self.change_nml_end_date(filename_nml, 6)
-        self.change_nml_output_time_steps_dthis(filename_nml, 6)
 
     def apply_restart_patches(self):
         filename_nml = self.croco_nmlfile
@@ -509,52 +507,45 @@ class Croco:
             file_nc_rst = "croco_restart.nc"
 
             # first run with filename
-            self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 3)
             self.change_nml(filename_nml, "croco_restart", "nrst", 3)
             self.change_nml(filename_nml, "croco_restart", "nrpfrst", 0)
             self.change_nml(filename_nml, "croco_restart", "rstname", file_nc_rst)
+            # end_date drives ntimes (computed at runtime)
+            self.change_nml_end_date(filename_nml, 3)
 
             # second run with filename_rst
-            self.change_nml(filename_nml_rst , "croco_time_stepping", "ntimes", 3)
             self.change_nml(filename_nml_rst , "croco_initial", "nrrec", 2)
             self.change_nml(filename_nml_rst , "croco_initial", "ininame", file_nc_rst)
-
-            # and for USE_CALENDAR
-            self.change_nml_end_date(filename_nml, 3)
-            self.change_nml_output_time_steps_dtrst(filename_nml, 3)
-            # no need to change end_date or dtrsr for filename_rst
+            # no need to change end_date for filename_rst
 
     def change_nml_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
         nml = f90nml.read(full_filename)
-        # Check section exists
-        if "croco_use_calendar" in nml:
+        if "croco_calendar" in nml:
             dt = nml["croco_time_stepping"]["dt"]
             duration = math.ceil(max(dt * ntimes, min_dt))
-            dt_his_hours = max(dt / 3600.0, duration / (ntimes * 3600))
-            self.change_nml(filename, "croco_use_calendar", "dt_his", dt_his_hours)
+            nwrt = max(1, int(round(max(dt, duration / ntimes) / dt)))
+            self.change_nml(filename, "croco_history", "nwrt", nwrt)
 
     def change_nml_output_time_steps_dtrst(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
         nml = f90nml.read(full_filename)
-        # Check section exists
-        if "croco_use_calendar" in nml:
+        if "croco_calendar" in nml:
             dt = nml["croco_time_stepping"]["dt"]
             duration = math.ceil(max(dt * ntimes, min_dt))
-            dt_rst_hours = duration / 3600.0
-            self.change_nml(filename, "croco_use_calendar", "dt_rst", dt_rst_hours)
+            nrst = max(1, int(round(duration / dt)))
+            self.change_nml(filename, "croco_restart", "nrst", nrst)
 
     def change_nml_end_date(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
         nml = f90nml.read(full_filename)
-        # Check section exists
-        if "croco_use_calendar" in nml:
+        if "croco_calendar" in nml:
             dt = nml["croco_time_stepping"]["dt"]
             duration = math.ceil(max(dt * ntimes, min_dt))
-            datetime_start = parse_datetime(nml["croco_use_calendar"]["start_date"])
+            datetime_start = parse_datetime(nml["croco_calendar"]["start_date"])
             datetime_end = datetime_start + timedelta(seconds=duration)
             end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
-            self.change_nml(filename, "croco_use_calendar", "end_date", end_date)
+            self.change_nml(filename, "croco_calendar", "end_date", end_date)
 
     def change_nml(self, filename, nml_section_name, nml_param_name, values):
         """Change value in a CROCO namelist file."""

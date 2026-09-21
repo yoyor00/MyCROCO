@@ -39,9 +39,7 @@
 #ifdef SOLVE3D
      &      , r3dgrd(4),  u3dgrd(4), v3dgrd(4),  w3dgrd(4), itrc
 #endif
-#ifdef USE_CALENDAR
       CHARACTER (len=19)    :: cdate,tool_sectodat
-#endif
 
 #include "param.h"
 #include "scalars.h"
@@ -68,7 +66,6 @@
       if (nrpfrst.gt.0) then
         lvar=total_rec - (1+mod(total_rec-1, nrpfrst))
         call insert_time_index (rstname, lstr, lvar, ierr)
-#ifdef USE_CALENDAR
         if (nrpfrst.eq.1) then
           cdate = tool_sectodat(time)
           rstname=TRIM(rstname(1:lstr-9))//'.'//cdate(1:4)//cdate(6:7)
@@ -76,7 +73,6 @@
           rstname=TRIM(rstname)//cdate(18:19)//'.nc'
           lstr=lenstr(rstname)
         end if
-#endif
         if (ierr .ne. 0) goto 99
       endif
 !

@@ -101,9 +101,7 @@
 !
       ierr=nf_put_var1_FTYPE (nciddia_avg, diaTime_avg, record,
      &                                              timedia_avg
-# ifdef USE_CALENDAR
      &  - origin_date_in_sec
-# endif
      & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
@@ -116,9 +114,7 @@
 !
       ierr=nf_put_var1_FTYPE (nciddia_avg, diaTime2_avg, record,
      &                                              timedia_avg
-# ifdef USE_CALENDAR
      &  - origin_date_in_sec
-# endif
      & )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))

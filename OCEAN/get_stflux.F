@@ -28,6 +28,7 @@
 # include "ncscrum.h"
 # include "netcdf.inc"
       real cff
+      character*19 tool_sectodat
       integer itrc, i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:
@@ -55,10 +56,8 @@ c**        call opencdf (frcname,N)
             write(stdout,3) 'shf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-#  ifdef USE_CALENDAR
           call tool_origindate(ncidfrc,stf_tid,
      &                         stf_origin_date_in_sec(itrc))
-#  endif
         endif
 # endif
 # ifdef SALINITY
@@ -68,10 +67,8 @@ c**        call opencdf (frcname,N)
             write(stdout,3) 'swf_time', frcname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-#  ifdef USE_CALENDAR
           call tool_origindate(ncidfrc,stf_tid,
      &                         stf_origin_date_in_sec(itrc))
-#  endif
         endif
 # endif
         lvar=lenstr(vname(1,indxShflx+itrc-1))
@@ -141,9 +138,7 @@ c**        call opencdf (frcname,N)
           write(stdout,6) 'stf_time', stf_rec(i)
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
         cff=cff+stf_origin_date_in_sec(itrc)*sec2day
-# endif
         stf_time(i,itrc)=cff*day2sec+stf_cycle(itrc)*stf_ncycle(itrc)
         if (stf_time(itstf(itrc),itrc).eq.-1.E+20)
      &      stf_time(itstf(itrc),itrc)=stf_time(i,itrc)
@@ -163,12 +158,10 @@ c**        call opencdf (frcname,N)
           goto 99                                         !--> ERROR
         endif
        itstf(itrc)=i
-       MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,A19,1x,I4)')
      &            'GET_STFLUX -- Read surface flux of tracer', itrc,
-     &                                             'for time =', cff
-# ifdef USE_CALENDAR
-     &  -stf_origin_date_in_sec(itrc)*sec2day
-# endif
+     &                                             'for time =',
+     &            tool_sectodat(cff*day2sec)
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -188,9 +181,7 @@ c**        call opencdf (frcname,N)
      &                                a,' at TIME index = ',i4)
   7   write(stdout,8) stf_rec(itrc),ntstf(itrc),frcname(1:lstr),
      &                tdays, stf_time(itstf(itrc),itrc)*sec2day
-# ifdef USE_CALENDAR
      &  -stf_origin_date_in_sec(itrc)*sec2day
-# endif
   8   format(/,' GET_STFLUX - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in forcing file: ', a,/,14x,'TDAYS = ',
@@ -281,9 +272,7 @@ c**        call opencdf (frcname,N)
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'stf_time',tdays,stf_time(it2,itrc)*sec2day
-# ifdef USE_CALENDAR
      &  -stf_origin_date_in_sec(itrc)*sec2day
-# endif
   1       format(/,' SET_STFLUX_TILE - current model time exceeds',
      &          1x,'ending value for variable: ',A8,/,14x,'TDAYS = ',
      &                                    g12.4, 2x, 'TSTF = ',g12.4)

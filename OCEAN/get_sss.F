@@ -36,6 +36,7 @@
 # include "netcdf.inc"
 # include "ncscrum.h"
       real cff
+      character*19 tool_sectodat
       integer i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:
@@ -59,10 +60,8 @@
           write(stdout,3) 'sss_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
         call tool_origindate(ncidfrc,sss_tid,
      &                       sss_origin_date_in_sec)
-# endif
 
         lvar=lenstr(vname(1,indxSSS))
         ierr=nf_inq_varid (ncidfrc, vname(1,indxSSS)(1:lvar), sss_id)
@@ -129,9 +128,7 @@
           write(stdout,6) 'sss_time', sss_rec
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
         cff=cff+sss_origin_date_in_sec*sec2day
-# endif
         sss_time(i)=cff*day2sec+sss_cycle*sss_ncycle
         if (sss_time(itsss).eq.-1.E+20) sss_time(itsss)=sss_time(i)
 
@@ -166,18 +163,15 @@
 # endif
        itsss=i
 # if defined SFLX_CORR && !defined SFLX_CORR_COEF && !defined QCORRECTION
-      MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+      MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &              'GET_SSS    --',
-     &              'Read SSS and dQdSST fields     for time =', cff
+     &              'Read SSS and dQdSST fields     for time =',
+     &              tool_sectodat(cff*day2sec)
 # else
-      MPI_master_only write(stdout,'(6x,A,16x,A,1x,g12.4,1x,I4)')
+      MPI_master_only write(stdout,'(6x,A,16x,A,1x,A19,1x,I4)')
      &                  'GET_SSS    -- Read SSS fields',
-     &                                     'for time =', cff
+     &                  'for time =', tool_sectodat(cff*day2sec)
 # endif
-# ifdef USE_CALENDAR
-     &  -sss_origin_date_in_sec*sec2day
-# endif
-
 # ifdef MPI
      &                                                 , mynode
 # endif

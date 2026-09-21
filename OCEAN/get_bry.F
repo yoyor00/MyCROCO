@@ -29,9 +29,7 @@
       character*180 units
       integer  lstr,lvar,lenstr, latt, lorig, ierr, ierr_all, itrc
       integer  nf_read_bry_EW, nf_read_bry_NS
-# ifdef USE_CALENDAR
       character*19 tool_sectodat
-# endif
 !
 ! Initialization: Check, whether boundary forcing file is already
 !================ opened, and if not, open it.  Find and save netCDF
@@ -56,10 +54,8 @@
           ierr=nf_inq_varid (bry_id, 'bry_time',  bry_time_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'bry_time'
           ierr_all=ierr_all+ierr
-# ifdef USE_CALENDAR
           call tool_origindate(bry_id,bry_time_id,
      &                         bry_origin_date_in_sec)
-# endif
 
 # ifdef OBC_WEST
 #  ifdef Z_FRC_BRY
@@ -237,9 +233,7 @@
         if (ierr.eq.nf_noerr) then
           ierr=nf_get_var1_FTYPE (bry_id, bry_time_id, bry_rec, cff)
           if (ierr.eq.nf_noerr) then
-# ifdef USE_CALENDAR
               cff=cff+bry_origin_date_in_sec*sec2day
-# endif
             itbry=min(3-itbry,ntbry)
             bry_time(itbry)=cff*day2sec + bry_cycle*bry_ncycle
             ierr_all=0
@@ -461,15 +455,9 @@
 # endif
             ierr=ierr_all
             if (ierr.eq.0) then
-# ifdef USE_CALENDAR
               MPI_master_only write(stdout,'(6x,A,9x,A,1x,A19,1x,I4)')
      &       'GET_BRY    -- Read all boundary data',
      &                                 'for time =', tool_sectodat(cff*day2sec)
-# else
-              MPI_master_only write(stdout,'(6x,A,9x,A,1x,F10.4,1x,I4)')
-     &       'GET_BRY    -- Read all boundary data',
-     &                                 'for time =', cff
-# endif
 # ifdef MPI
      &                                             , mynode
 # endif
@@ -489,9 +477,7 @@
      &    'file ''',   bry_file(1:lstr),  '''',  'tdays = ', tdays,
      &    '  but the last available  bry_time =',
      &                                   bry_time(itbry)*sec2day
-# ifdef USE_CALENDAR
      &  -bry_origin_date_in_sec*sec2day
-# endif
         endif
       enddo
   2   format(' ERROR in get_bry: cannot read variable ''',A,'''')

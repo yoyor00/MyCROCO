@@ -121,11 +121,9 @@
       ierr=nf_get_var1_FTYPE(ncid, varid, 1, tstart)
 
       if (ierr .ne. nf_noerr) goto 10                     !--> ERROR
-#ifdef USE_CALENDAR
-            call tool_origindate(ncid, varid,
-     &                           cycle_origin_date_in_sec)
-              tstart=tstart+cycle_origin_date_in_sec*sec2day
-#endif
+      call tool_origindate(ncid, varid,
+     &                     cycle_origin_date_in_sec)
+      tstart=tstart+cycle_origin_date_in_sec*sec2day
       tstart=tstart*day2sec
 
       if (cycle_length.gt.0.) then
@@ -149,9 +147,7 @@
           ierr=nf_get_var1_FTYPE(ncid, varid, irec, tend)
           if (ierr .ne. nf_noerr) goto 10                 !--> ERROR
 
-#ifdef USE_CALENDAR
           tend=tend+cycle_origin_date_in_sec*sec2day
-#endif
 
           tend=tend*day2sec+tshift*cycle_length
           if (tstart.le.time .and. time.lt.tend) then

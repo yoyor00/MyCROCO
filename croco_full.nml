@@ -8,7 +8,7 @@
 ! STRUCTURE
 !   1.  General                  – title, logfile
 !   2.  Time stepping            – baroclinic, NBQ sub-stepping
-!   3.  Calendar                 – USE_CALENDAR absolute-date mode
+!   3.  Calendar                 – date parameters
 !   4.  Vertical grid            – S-coordinate stretching
 !   5.  Initial conditions       – IC file / restart record
 !   6.  Grid and forcing files   – grid, forcing, bulk, clim, bry, ...
@@ -114,8 +114,6 @@
 &croco_time_stepping
   ! Baroclinic (3-D) time step [s].
   dt      = 3600.0
-  ! Total number of baroclinic time steps for this run.
-  ntimes  = 720
   ! Number of barotropic (2-D) sub-steps per baroclinic step.
   ! Set ndtfast = 1 for pure 2-D configurations.
   ndtfast = 60
@@ -136,22 +134,25 @@
 
 
 ! ======================================================================
-! 3.  CALENDAR  (CPP: USE_CALENDAR)
+! 3.  CALENDAR
 ! ======================================================================
 
-&croco_use_calendar
-  ! CPP: USE_CALENDAR
-  ! Use absolute calendar dates instead of step counters for output.
-  ! Start and end dates in format "YYYY-MM-DD HH:MM:SS".
+&croco_calendar
+  ! Start and end dates (MANDATORY) in format "YYYY-MM-DD HH:MM:SS".
   start_date = "2000-01-01 00:00:00"
   end_date   = "2000-02-01 00:00:00"
-  ! Output intervals expressed in hours (real values allowed).
-  ! Time interval between history records [hours].
-  dt_his = 1.0
-  ! Time interval between averages records [hours].
-  dt_avg = 6.0
-  ! Time interval between restart records [hours].
-  dt_rst = 12.0
+  ! Calendar type: controls 
+  ! - ntimes (days per month differ, for example, 
+  !   Jan 1 to Feb 1 gives 31 days with gregorian but 30 days with 
+  !   360_day.) 
+  ! - calendar attribute written to output NetCDF files
+  ! Allowed values: gregorian, 360_day, 365_day, no_leap
+  ! Note : For climatological runs (cyclic forcing), the seasonal 
+  ! phase is determined solely by the cycle_length attribute in your 
+  ! forcing files. Calendar_type does not affect the cycle, only the 
+  ! output.  Ensure cycle_length matches your intended annual period 
+  ! (360 or 365 days or no cycle)
+  calendar_type = "gregorian"
 /
 
 
@@ -788,14 +789,6 @@
   ! CPP: OBSTRUCTION
   ! Path to the sub-grid obstruction parameters file.
   obstname = "obstruction.in"
-/
-
-! --- XIOS I/O server  (CPP: XIOS) ---
-
-&croco_xios_origin_date
-  ! CPP: XIOS
-  ! Time origin for XIOS output (format: "YYYY-MM-DD HH:MM:SS").
-  xios_origin_date = "1900-01-01 00:00:00"
 /
 
 ! --- Data assimilation  (CPP: ASSIMILATION) ---

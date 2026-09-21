@@ -215,9 +215,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     Time
 !
       ierr=nf_put_var1_FTYPE (ncidhis, hisTime, record, time
-#ifdef USE_CALENDAR
      &  - origin_date_in_sec
-#endif
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))
@@ -231,9 +229,7 @@ CR      write(*,*) 'wrt_his:  time  ' MYID
 !     Time2
 !
       ierr=nf_put_var1_FTYPE (ncidhis, hisTime2, record, time
-#ifdef USE_CALENDAR
      &  - origin_date_in_sec
-#endif
      &  )
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime2))

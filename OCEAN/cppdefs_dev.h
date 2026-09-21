@@ -571,9 +571,6 @@
 #ifdef TIDES_MAS
 # define MASKING
 #endif
-#if defined TIDES_MAS  && !defined USE_CALENDAR
-#error "TIDES with TIDES_MAS requires USE_CALENDAR "
-#endif
 
 /*
 ======================================================================
@@ -871,7 +868,6 @@
 #ifdef MUSTANG
 # undef  SEDIMENT
 # define SUBSTANCE
-# define USE_CALENDAR
 # define TEMPERATURE
 # define SALINITY
 # define key_noTSdiss_insed

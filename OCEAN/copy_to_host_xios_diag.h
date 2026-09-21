@@ -88,15 +88,11 @@
 # ifdef MPI
 # else
 # endif
-# ifdef USE_CALENDAR
-# endif
 #if defined MUSTANG
 # endif
 #if defined ONLINE_ANALYSIS
 #ifdef MPI
 #endif
-#endif
-#ifdef USE_CALENDAR
 #endif
 # ifdef EW_PERIODIC
 #  define IU_RANGE Istr,Iend
@@ -116,8 +112,6 @@
 # endif
 # if defined MPI
 # else
-# endif
-# ifdef USE_CALENDAR
 # endif
 # ifdef SPHERICAL
 # else

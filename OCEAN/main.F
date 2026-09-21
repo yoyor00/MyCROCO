@@ -30,9 +30,7 @@
 #if defined ABL1D && !defined XIOS
           USE croco_namelist, ONLY : ldefablhis
 #endif
-#ifdef USE_CALENDAR
           USE croco_namelist, ONLY : end_date
-#endif
 #if defined OA_COUPLING || defined OW_COUPLING
           USE mod_prism
 #endif
@@ -95,9 +93,7 @@
 # include "sta.h"
 # include "nc_sta.h"
 #endif
-#ifdef USE_CALENDAR
        character*19 :: tool_sectodat
-#endif
 #ifdef AGRIF
       Type(Agrif_pgrid),pointer  :: parcours
 #endif
@@ -413,13 +409,11 @@ C$OMP BARRIER
       tdays=time*sec2day        ! is set by get_initial or analytically
                                 ! --> copy it into threadprivate "time"
 
-#ifdef USE_CALENDAR
       time_end=tool_datosec(end_date)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
       ntimes=ntimes+ntstart
-#endif
 !
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file
@@ -916,9 +910,7 @@ CR      write(*,*) '  0' MYID
      &                'MAIN: started time-stepping.'
       next_kstp=kstp
       time_start=time
-#ifdef USE_CALENDAR
       time_end=tool_datosec(end_date)
-#endif
 
 ! XIOS (
 !  Clean log output a bit
@@ -953,9 +945,7 @@ CR      write(*,*) '  0' MYID
         start_time1_1=PMPI_Wtime()
 #endif
 
-#ifdef USE_CALENDAR
         if (time .gt. time_end) goto 99
-#endif
 
 #ifdef SOLVE3D
 # ifndef AGRIF

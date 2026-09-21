@@ -195,9 +195,9 @@
           ierr=nf_get_att_text(ncid, varid, 'units', units)
           if (ierr .eq. nf_noerr) then
             latt=lenstr(units)
-            ! If use_calendar or xios, read origin time in ini file
-            ! units need to hate the format
-            ! seconds/days since YYYY/MM/DD hh:mm:ss
+            ! Read origin time from ini file units attribute
+            ! units must have the format
+            ! seconds/days since YYYY-MM-DD hh:mm:ss
             if (units(1:6).eq.'second') then
               time_scale=1.
             elseif (units(1:3).eq.'day') then
@@ -212,24 +212,7 @@
             endif
             start_time=start_time*time_scale
 
-# if defined XIOS && !defined USE_CALENDAR
-      start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
-      READ(start_date_run(1:4),fmt='(i4)') start_year
-      READ(start_date_run(6:7),fmt='(i2)') start_month
-      READ(start_date_run(9:10),fmt='(i2)') start_day
-      READ(start_date_run(12:13),fmt='(i2)') start_hour
-      READ(start_date_run(15:16),fmt='(i2)') start_minute
-      READ(start_date_run(18:19),fmt='(i2)') start_second
-      !
-      READ(xios_origin_date(1:4),fmt='(i4)') origin_year
-      READ(xios_origin_date(6:7),fmt='(i2)') origin_month
-      READ(xios_origin_date(9:10),fmt='(i2)') origin_day
-      READ(xios_origin_date(12:13),fmt='(i2)') origin_hour
-      READ(xios_origin_date(15:16),fmt='(i2)') origin_minute
-      READ(xios_origin_date(18:19),fmt='(i2)') origin_second
-#endif
 
-#if defined USE_CALENDAR
       call tool_origindate(ncid,varid,origin_date_in_sec)
       MPI_master_only write(stdout,'(/2x,A,1x,A/)')
      &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
@@ -241,26 +224,6 @@
       READ(origin_date(12:13),fmt='(i2)') origin_hour
       READ(origin_date(15:16),fmt='(i2)') origin_minute
       READ(origin_date(18:19),fmt='(i2)') origin_second
-      ! Modify units when using USE_CALENDAR
-      vname(3,indxTime)='seconds since '
-     &                     //tool_sectodat(origin_date_in_sec)
-              ! Modify units when using USE_CALENDAR
-      vname(3,indxTime2)='seconds since '
-     &                     //tool_sectodat(origin_date_in_sec)
-# if defined XIOS
-      MPI_master_only write(stdout,'(/3x,A,/)')
-     &    '!!! WARNING: Using XIOS with USE_CALENDAR.',
-     &    ' USING USE_CALENDAR origin date for XIOS ',
-     &    ' (instead of xios_origin_date)'
-
-      READ(origin_date(1:4),fmt='(i4)') start_year
-      READ(origin_date(6:7),fmt='(i2)') start_month
-      READ(origin_date(9:10),fmt='(i2)') start_day
-      READ(origin_date(12:13),fmt='(i2)') start_hour
-      READ(origin_date(15:16),fmt='(i2)') start_minute
-      READ(origin_date(18:19),fmt='(i2)') start_second
-# endif
-#endif
 
 #ifdef EXACT_RESTART
             if (tindx.eq.2) then
@@ -323,11 +286,9 @@
      &                                , nf_strerror(ierr)
         goto 99                                           !--> ERROR
       endif
-#ifdef USE_CALENDAR
       start_time = start_time + origin_date_in_sec
-#endif
 #ifdef XIOS
-      start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
+      start_date_run = tool_sectodat(start_time)
       READ(start_date_run(1:4),fmt='(i4)') start_year
       READ(start_date_run(6:7),fmt='(i2)') start_month
       READ(start_date_run(9:10),fmt='(i2)') start_day
@@ -424,21 +385,13 @@
 
             if (forw_start.eq.1) then
               MPI_master_only write(stdout,6)
-# ifdef USE_CALENDAR
      &            tool_sectodat(start_time),
-# else
-     &             start_time*sec2day,
-# endif
      &             record,
      &             ntstart, nrecrst, nrechis
             else
 #endif
               MPI_master_only  write(stdout,7)
-#ifdef USE_CALENDAR
      &            tool_sectodat(start_time),
-#else
-     &             start_time*sec2day,
-#endif
      &             record,
      &             ntstart, nrecrst, nrechis
 #ifdef EXACT_RESTART
@@ -479,17 +432,10 @@
 #ifdef AVERAGES
         nrecavg=0
 #endif
-#ifdef USE_CALENDAR
         MPI_master_only write(stdout,'(/1x,2A,A19,1x,A,I4)')
      &          'GET_INITIAL -- ',
      &       'Processing data for time =', tool_sectodat(start_time),
      &                                      'record =', record
-#else
-        MPI_master_only write(stdout,'(/1x,2A,G12.4,1x,A,I4)')
-     &          'GET_INITIAL -- ',
-     &       'Processing data for time =', start_time*sec2day,
-     &                                      'record =', record
-#endif
       endif
 #ifdef EXACT_RESTART
       if (tindx.eq.1 .and. forw_start.eq.0) forw_start=ntstart
@@ -1380,17 +1326,10 @@
      &         'i.e from a restart file produced by this code ',
      &    /21x'      => problem: run is not restartable ',
      &    /21x'      => check your initial file')
-#ifdef USE_CALENDAR
   6   format(/6x,'GET_INITIAL: Exact restart from day =',A19,
      &     '  rec =',I4,'(',I8,',',I4,','I4,').')
   7   format(/6x,'GET_INITIAL: Restarted from day =',A19,
      &     ' rec=',I4,'(',I8,',',I4,','I4').')
-#else
-  6   format(/6x,'GET_INITIAL: Exact restart from day =',F12.4,
-     &     '  rec =',I4,'(',I8,',',I4,','I4,').')
-  7   format(/6x,'GET_INITIAL: Restarted from day =',F12.4,
-     &     ' rec=',I4,'(',I8,',',I4,','I4').')
-#endif
       return
   99  may_day_flag=2
       return

@@ -156,7 +156,7 @@ contains
    !---------------------------------------------------------------------
    subroutine check_time_stepping(ierr)
       use param, ONLY: stdout, NWEIGHT
-      use croco_namelist, ONLY: dt, ntimes, ndtfast
+      use croco_namelist, ONLY: dt, ndtfast
 #if defined MPI
       use scalars, ONLY: mynode
 #endif
@@ -166,12 +166,6 @@ contains
       if (dt == 0.0) then
          MPI_master_only write (stdout, '(a,f10.1)') &
             'Error - Null baroclinic time step dt: ', dt
-         ierr = ierr + 1
-      end if
-
-      if (ntimes == 0) then
-         MPI_master_only write (stdout, '(a,i0)') &
-            'Error - Null number of time steps ntimes: ', ntimes
          ierr = ierr + 1
       end if
 

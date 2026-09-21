@@ -43,9 +43,7 @@
      &     pe2d(PRIVATE_2D_SCRATCH_ARRAY)
       real*QUAD cff, my_avgke, my_avgpe, my_volume
       character echar*8
-#ifdef USE_CALENDAR
        character*19 :: tool_sectodat
-#endif
 #ifdef MPI
       include 'mpif.h'
       integer size, step, status(MPI_STATUS_SIZE), ierr
@@ -331,24 +329,14 @@ C$OMP CRITICAL (diag_cr_rgn)
 
               if (first_time.eq.0) then
                 first_time=1
-#ifdef USE_CALENDAR
                 write(stdout,2) 'STEP','DATE','KINETIC_ENRG',
      &                  'POTEN_ENRG','TOTAL_ENRG','NET_VOLUME','trd'
    2            format(1x,A4,10x,A4,10x,A12,4x,A10,4x,A10,4x,A10,3x,A3)
-#else
-                write(stdout,2) 'STEP','time[DAYS]','KINETIC_ENRG',
-     &                  'POTEN_ENRG','TOTAL_ENRG','NET_VOLUME','trd'
-   2            format(1x,A4,3x,A10,1x,A12,4x,A10,4x,A10,4x,A10,3x,A3)
-#endif
               endif
               trd=omp_get_thread_num()
-#ifdef USE_CALENDAR
-              write(stdout,3)iic-1,tool_sectodat(time),avgke,avgpe,avgkp,volume,trd
+              write(stdout,3)iic-1,tool_sectodat(time),avgke,
+     &                       avgpe,avgkp,volume,trd
    3          format(I8,1x, A19, 1PE16.9, 3(1PE14.7), I3)
-#else
-              write(stdout,3)iic-1,tdays,avgke,avgpe,avgkp,volume,trd
-   3          format(I8, F12.5, 1PE16.9, 3(1PE14.7), I3)
-#endif
 
 #ifdef DIAG_CFL
               if (mod(iic-1,ninfo).eq.0) then

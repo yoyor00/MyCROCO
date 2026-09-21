@@ -3,38 +3,26 @@
    !&E---------------------------------------------------------------------
    !&E                 ***  FUNCTION tool_sectodat  ***
    !&E
-   !&E ** Purpose : convert a time expressed in seconds elapsed since date_ref
-   !&E              (set in para.*****) into a date of the tool_julien calendar,
-   !&E              returned as a 19-character string ("yyyy/mm/dd hh:mm:ss")
-   !&E
-   !&E ** Description :
-   !&E
-   !&E ** Called by : main, step, sflx_rad (meteosat case)
-   !&E
-   !&E ** External calls : 
-   !&E
-   !&E ** Used ij-arrays : 
-   !&E
-   !&E ** Modified variables : tool_sectodat
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2004-08-20
+   !&E ** Purpose : convert a time expressed in seconds (relative to calendar
+   !&E              epoch ~year 1900) into a date string "yyyy-mm-dd hh:mm:ss".
+   !&E              Supports: gregorian (default), 360_day, 365_day/no_leap.
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-!  USE parameters
+   USE croco_namelist, ONLY: calendar_type
    IMPLICIT NONE
    INTEGER,PARAMETER     :: rlg=8
-   REAL(kind=rlg),PARAMETER :: tref = 59958230400_rlg
+   ! Gregorian epoch offset
+   REAL(kind=rlg),PARAMETER :: tref     = 59958230400_rlg
+   ! Non-Gregorian epoch offsets (must match tooldatosec.F90)
+   REAL(kind=rlg),PARAMETER :: tref_360 = 1900_rlg * 360.0_rlg * 86400.0_rlg
+   REAL(kind=rlg),PARAMETER :: tref_365 = 1900_rlg * 365.0_rlg * 86400.0_rlg
 
    !! * Declarations function
    CHARACTER(len=19)          :: tool_sectodat
 
    !! * Arguments
-   !REAL(kind=rlg),INTENT(in)  :: time
    real :: time
+
    !! * Local declarations
    LOGICAL               :: bissext
    CHARACTER(len=19)     :: date
@@ -55,67 +43,93 @@
    !!----------------------------------------------------------------------
    !! * Executable part
 
-   total_secs = time+tref
-   annee      = 0
-   bissext = (MOD(3,2) == 0)
+   IF (TRIM(calendar_type) == '360_day') THEN
+     ! 360-day calendar: 12 months of 30 days, no leap years
+     total_secs = REAL(time,rlg) + tref_360
 
-   ! **** on determine l annee recherchee  *****
+     annee      = INT(total_secs / (360.0_rlg * secs_in_jour))
+     total_secs = total_secs - REAL(annee,rlg) * 360.0_rlg * secs_in_jour
 
-   ! on verifie que l annee recherchee n est pas l annee d origine (0000)
+     mois       = INT(total_secs / (30.0_rlg * secs_in_jour)) + 1
+     total_secs = total_secs - REAL(mois-1,rlg) * 30.0_rlg * secs_in_jour
 
-   IF(total_secs  >=  (secs_in_annee+secs_in_jour)) THEN
-     total_secs = total_secs - (secs_in_annee+secs_in_jour)
-     nb_4siecles= INT(total_secs/secs_in_4siecles)         ! on determine le siecle
-     total_secs = MOD(total_secs,secs_in_4siecles)
-     nb_siecles = INT(total_secs/secs_in_siecle)
+     jour       = INT(total_secs / secs_in_jour) + 1
+     total_secs = MOD(total_secs, secs_in_jour)
 
-     ! on fait le test sur le 31 decembre des siecles bissextiles (ie :2000,2400...)
+     heure      = INT(total_secs / secs_in_heure)
+     total_secs = MOD(total_secs, secs_in_heure)
+     minute     = INT(total_secs / secs_in_minute)
+     seconde    = INT(MOD(total_secs, secs_in_minute))
 
-     IF(nb_siecles==4 .AND. total_secs >= secs_in_4siecles-secs_in_jour) nb_siecles = 3
-     total_secs = total_secs - nb_siecles*secs_in_siecle
-     annee      = 400*nb_4siecles + 100*nb_siecles
-     nb_4annees = INT(total_secs/secs_in_4annees)  ! on determine l annee exacte
-     total_secs = MOD(total_secs,secs_in_4annees)
-     nb_annees  = INT(total_secs/secs_in_annee)
+   ELSE IF (TRIM(calendar_type) == '365_day' .OR. &
+            TRIM(calendar_type) == 'no_leap') THEN
+     ! 365-day calendar: standard month lengths, no leap years
+     total_secs = REAL(time,rlg) + tref_365
 
-     ! on fait le test sur le 31 decembre des annees bissextiles (annees 0,4,8,12...)
+     annee      = INT(total_secs / secs_in_annee)
+     total_secs = total_secs - REAL(annee,rlg) * secs_in_annee
 
-     IF(nb_annees==4 .AND. total_secs >= secs_in_4annees-secs_in_jour) nb_annees=3
-     total_secs = total_secs - nb_annees*secs_in_annee
-     annee      = annee + 4*nb_4annees + nb_annees + 1
+     tot_jours  = INT(total_secs / secs_in_jour)
+     total_secs = MOD(total_secs, secs_in_jour)
 
-   ENDIF
-
-   ! **** annee bissextile ? (seuls les siecles divisibles par 400 le sont)
-
-   bissext =(MOD(annee,400) == 0 .OR. (MOD(annee,4) == 0 .AND. MOD(annee,100) /= 0))
-
-   ! **** on determine le nombre de jours dans l annee
-
-   tot_jours  = INT(total_secs/secs_in_jour)  ! nombre de jours dans l annee
-   total_secs = MOD(total_secs,secs_in_jour)
-
-   ! **** on determine le mois et le jour exact
-
-   IF (bissext .AND. tot_jours >= 59) THEN
-     mois = mois_from_jour(tot_jours)
-   ELSE
-     mois = mois_from_jour(tot_jours+1)
-   ENDIF
-
-   IF (bissext .AND. mois>2) THEN
-     jour = tot_jours - jours_avt_mois(mois)
-   ELSE
+     ! Find month (no leap year, use standard month lengths)
+     mois = mois_from_jour(MIN(tot_jours+1, 365))
      jour = tot_jours - jours_avt_mois(mois) + 1
-   ENDIF
 
-   heure      = INT(total_secs/secs_in_heure)  ! **** on calcule l heure exacte
-   total_secs = MOD(total_secs,secs_in_heure)
-   minute     = INT(total_secs/secs_in_minute) ! **** on calcule les minutes exactes
-   total_secs = MOD(total_secs,secs_in_minute)
-   seconde = total_secs                        ! **** ce qui reste = les secondes.
+     heure      = INT(total_secs / secs_in_heure)
+     total_secs = MOD(total_secs, secs_in_heure)
+     minute     = INT(total_secs / secs_in_minute)
+     seconde    = INT(MOD(total_secs, secs_in_minute))
 
-   ! on peut alors construire la chaine de caracteres resultante
+   ELSE
+     ! Default: proleptic Gregorian calendar (original implementation)
+     total_secs = time+tref
+     annee      = 0
+     bissext = (MOD(3,2) == 0)
+
+     IF(total_secs  >=  (secs_in_annee+secs_in_jour)) THEN
+       total_secs = total_secs - (secs_in_annee+secs_in_jour)
+       nb_4siecles= INT(total_secs/secs_in_4siecles)
+       total_secs = MOD(total_secs,secs_in_4siecles)
+       nb_siecles = INT(total_secs/secs_in_siecle)
+
+       IF(nb_siecles==4 .AND. total_secs >= secs_in_4siecles-secs_in_jour) nb_siecles = 3
+       total_secs = total_secs - nb_siecles*secs_in_siecle
+       annee      = 400*nb_4siecles + 100*nb_siecles
+       nb_4annees = INT(total_secs/secs_in_4annees)
+       total_secs = MOD(total_secs,secs_in_4annees)
+       nb_annees  = INT(total_secs/secs_in_annee)
+
+       IF(nb_annees==4 .AND. total_secs >= secs_in_4annees-secs_in_jour) nb_annees=3
+       total_secs = total_secs - nb_annees*secs_in_annee
+       annee      = annee + 4*nb_4annees + nb_annees + 1
+
+     ENDIF
+
+     bissext =(MOD(annee,400) == 0 .OR. (MOD(annee,4) == 0 .AND. MOD(annee,100) /= 0))
+
+     tot_jours  = INT(total_secs/secs_in_jour)
+     total_secs = MOD(total_secs,secs_in_jour)
+
+     IF (bissext .AND. tot_jours >= 59) THEN
+       mois = mois_from_jour(tot_jours)
+     ELSE
+       mois = mois_from_jour(tot_jours+1)
+     ENDIF
+
+     IF (bissext .AND. mois>2) THEN
+       jour = tot_jours - jours_avt_mois(mois)
+     ELSE
+       jour = tot_jours - jours_avt_mois(mois) + 1
+     ENDIF
+
+     heure      = INT(total_secs/secs_in_heure)
+     total_secs = MOD(total_secs,secs_in_heure)
+     minute     = INT(total_secs/secs_in_minute)
+     total_secs = MOD(total_secs,secs_in_minute)
+     seconde = total_secs
+
+   END IF
 
    WRITE (date,800) annee,mois,jour,heure,minute,seconde
    tool_sectodat = date

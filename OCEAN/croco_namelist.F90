@@ -51,8 +51,9 @@ MODULE croco_namelist
    ! &croco_time_stepping
    real    :: dt = 3600.0
    !! Baroclinic time step [s]
-   integer :: ntimes = 720
-   !! Number of time-steps required for the simulation
+   integer :: ntimes = 0
+   !! Total number of baroclinic time steps — derived at runtime from end_date - start_date.
+   !! Not read from the namelist; kept here for internal use only.
    integer :: ndtfast = 60
    !! Number of barotropic time-steps between each baroclinic time step.
    !! For 2D configurations, ndtfast should be unity.
@@ -119,19 +120,14 @@ MODULE croco_namelist
    !! Kept for backward-compatible NetCDF global attribute; initialized to hc after read
 #endif
 
-#ifdef USE_CALENDAR
-   ! &croco_use_calendar
-   character(len=19) :: start_date = '2000-01-01 00:00:00'
-   !! Run start date, format `YYYY-MM-DD HH:MM:SS` (used with `USE_CALENDAR`)
-   character(len=19) :: end_date = '2000-02-01 00:00:00'
-   !! Run end date, format `YYYY-MM-DD HH:MM:SS` (used with `USE_CALENDAR`)
-   real :: dt_his = 1.0
-   !! Time interval between history output records [hours] (used with `USE_CALENDAR`)
-   real :: dt_avg = 6.0
-   !! Time interval between averages output records [hours] (used with `USE_CALENDAR`)
-   real :: dt_rst = 12.0
-   !! Time interval between restart output records [hours] (used with `USE_CALENDAR`)
-#endif
+   ! &croco_calendar
+   character(len=19) :: start_date = '                   '
+   !! Run start date, format `YYYY-MM-DD HH:MM:SS` (mandatory)
+   character(len=19) :: end_date = '                   '
+   !! Run end date, format `YYYY-MM-DD HH:MM:SS` (mandatory)
+   character(len=20) :: calendar_type = 'gregorian'
+   !! CF-convention calendar type written to output files and used for time arithmetic.
+   !! Allowed values: 'gregorian' (default), '360_day', '365_day', 'no_leap'.
 
 #ifndef ANA_GRID
    ! &croco_grid
@@ -423,11 +419,6 @@ MODULE croco_namelist
    !! Sub-grid obstruction module parameters input file
 #endif
 
-#ifdef XIOS
-   ! &croco_xios_origin_date
-   character(len=80) :: xios_origin_date = "1900-01-01 00:00:00"
-   !! XIOS time origin date (format: `YYYY-MM-DD HH:MM:SS`)
-#endif
 
 #ifdef ASSIMILATION
    ! &croco_assimilation

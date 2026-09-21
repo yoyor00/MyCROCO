@@ -52,9 +52,7 @@ contains
 #ifdef NBQ
       call init_time_stepping_nbq()
 #endif
-#ifdef USE_CALENDAR
-      call init_calendar()
-#endif
+      call init_calendar(ierr)
       call init_history(ierr)
       call init_initial(ierr)
       call init_restart(ierr)
@@ -170,9 +168,6 @@ contains
 #endif
 #ifdef OBSTRUCTION
       call init_obstruction(ierr)
-#endif
-#ifdef XIOS
-      call init_xios_origin_date()
 #endif
 #ifdef ASSIMILATION
       call init_assimilation(ierr)
@@ -416,27 +411,15 @@ contains
 
    !---------------------------------------------------------------------
    !  init_history
-   !  Adjust hisname for MPI/ENSEMBLE and derive nwrt from dt_his
-   !  when USE_CALENDAR is active.
+   !  Adjust hisname for MPI/ENSEMBLE.
    !---------------------------------------------------------------------
    subroutine init_history(ierr)
-      use croco_namelist, ONLY: hisname, nwrt
-#ifdef USE_CALENDAR
-      ! Two separate use statements on croco_namelist are intentional:
-      ! a Fortran continuation line (&) cannot span a CPP directive,
-      ! so the conditional dt_his/dt cannot be merged into the block above.
-      use croco_namelist, ONLY: dt_his, dt
-#endif
+      use croco_namelist, ONLY: hisname
       implicit none
       integer, intent(inout) :: ierr
 
       call adjust_filename_parallel(hisname, "hisname", ierr)
       call adjust_filename_ensemble(hisname)
-      if (ierr /= 0) return
-
-#ifdef USE_CALENDAR
-      nwrt = ceiling((dt_his*3600.0)/dt)
-#endif
 
    end subroutine init_history
 
@@ -477,24 +460,15 @@ contains
 
    !---------------------------------------------------------------------
    !  init_restart
-   !  Adjust rstname for MPI/ENSEMBLE and derive nrst from dt_rst
-   !  when USE_CALENDAR is active.
+   !  Adjust rstname for MPI/ENSEMBLE.
    !---------------------------------------------------------------------
    subroutine init_restart(ierr)
-      use croco_namelist, ONLY: rstname, nrst
-#ifdef USE_CALENDAR
-      use croco_namelist, ONLY: dt_rst, dt
-#endif
+      use croco_namelist, ONLY: rstname
       implicit none
       integer, intent(inout) :: ierr
 
       call adjust_filename_parallel(rstname, "rstname", ierr)
       call adjust_filename_ensemble(rstname)
-      if (ierr /= 0) return
-
-#ifdef USE_CALENDAR
-      nrst = ceiling((dt_rst*3600.0)/dt)
-#endif
 
    end subroutine init_restart
 
@@ -918,24 +892,15 @@ contains
 #ifdef AVERAGES
    !---------------------------------------------------------------------
    !  init_averages
-   !  Adjust avgname for MPI/ENSEMBLE and derive navg from dt_avg
-   !  when USE_CALENDAR is active.
+   !  Adjust avgname for MPI/ENSEMBLE.
    !---------------------------------------------------------------------
    subroutine init_averages(ierr)
-      use croco_namelist, ONLY: avgname, navg
-#  ifdef USE_CALENDAR
-      use croco_namelist, ONLY: dt_avg, dt
-#  endif
+      use croco_namelist, ONLY: avgname
       implicit none
       integer, intent(inout) :: ierr
 
       call adjust_filename_parallel(avgname, "avgname", ierr)
       call adjust_filename_ensemble(avgname)
-      if (ierr /= 0) return
-
-#  ifdef USE_CALENDAR
-      navg = ceiling((dt_avg*3600.0)/dt)
-#  endif
 
    end subroutine init_averages
 #endif
@@ -1080,21 +1045,51 @@ contains
    end subroutine init_time_stepping_nbq
 #endif /* NBQ */
 
-#ifdef USE_CALENDAR
    !---------------------------------------------------------------------
    !  init_calendar
-   !  Parse start_date string and populate ncscrum origin variables.
-   !  Only active when nrrec == 0 (ANA_INITIAL).
+   !  Validate mandatory start_date/end_date, validate calendar_type,
+   !  and (for ANA_INITIAL) populate ncscrum origin variables.
    !---------------------------------------------------------------------
-   subroutine init_calendar()
-      use croco_namelist, ONLY: start_date, nrrec
+   subroutine init_calendar(ierr)
+      use croco_namelist, ONLY: start_date, end_date, calendar_type, nrrec
       use scalars, ONLY: start_time
       use ncscrum, ONLY: origin_year, origin_month, origin_day, &
                          origin_hour, origin_minute, origin_second, &
                          origin_date, origin_date_in_sec
+      use param, ONLY: stdout
+#ifdef MPI
+      use scalars, ONLY: mynode
+#endif
       implicit none
+      integer, intent(inout) :: ierr
 
       real(kind=8), external :: tool_datosec
+
+      ! Validate mandatory fields
+      if (TRIM(start_date) == '' .OR. start_date == '                   ') then
+         MPI_master_only write(stdout,'(/1x,A/)') &
+           'INIT_CALENDAR ERROR: start_date is mandatory in &croco_calendar'
+         ierr = ierr + 1
+      end if
+      if (TRIM(end_date) == '' .OR. end_date == '                   ') then
+         MPI_master_only write(stdout,'(/1x,A/)') &
+           'INIT_CALENDAR ERROR: end_date is mandatory in &croco_calendar'
+         ierr = ierr + 1
+      end if
+      if (ierr /= 0) return
+
+      ! Validate calendar_type
+      if (TRIM(calendar_type) /= 'gregorian'  .AND. &
+          TRIM(calendar_type) /= '360_day'    .AND. &
+          TRIM(calendar_type) /= '365_day'    .AND. &
+          TRIM(calendar_type) /= 'no_leap') then
+         MPI_master_only write(stdout,'(/1x,2A/)') &
+           'INIT_CALENDAR ERROR: unknown calendar_type: ', TRIM(calendar_type)
+         MPI_master_only write(stdout,'(1x,A/)') &
+           '  Allowed values: gregorian, 360_day, 365_day, no_leap'
+         ierr = ierr + 1
+         return
+      end if
 
 #ifdef ANA_INITIAL
       if (nrrec == 0) then
@@ -1111,7 +1106,6 @@ contains
 #endif
 
    end subroutine init_calendar
-#endif /* USE_CALENDAR */
 
    !---------------------------------------------------------------------
    !  adjust_filename_parallel  (private helper)
@@ -1162,22 +1156,6 @@ contains
 
    end subroutine adjust_filename_ensemble
 
-#ifdef XIOS
-   !---------------------------------------------------------------------
-   !  init_xios_origin_date
-   !  Compute xios_origin_date_in_sec from the date string.
-   !---------------------------------------------------------------------
-   subroutine init_xios_origin_date()
-      use croco_namelist, ONLY: xios_origin_date
-      use ncscrum, ONLY: xios_origin_date_in_sec
-      implicit none
-
-      real(kind=8), external :: tool_datosec
-
-      xios_origin_date_in_sec = tool_datosec(xios_origin_date)
-
-   end subroutine init_xios_origin_date
-#endif
 
 #ifdef ASSIMILATION
    !---------------------------------------------------------------------

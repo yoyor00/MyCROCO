@@ -25,6 +25,7 @@
 # include "ncscrum.h"
 # include "sources.h"
       real cff
+      character*19 tool_sectodat
       integer is,i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle,
      &     itrc
       integer s(2),c(2)
@@ -717,10 +718,8 @@ C     R          write(*,*)'ITRC=',itrc
 C     R          write(*,*)'indxTsrc+itrc-1=',indxTsrc+itrc-1
 C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
           if (got_tsrc(itrc)) then
-# ifdef USE_CALENDAR
             call tool_origindate(ncidqbar,tsrc_tid(itrc),
      &                       tsrc_origin_date_in_sec(itrc))
-# endif
             lvar=lenstr(vname(1,indxTsrc+itrc-1))
             ierr=nf_inq_varid (ncidqbar,vname(1,indxTsrc+itrc-1)
      &           (1:lvar),tsrc_id(itrc))
@@ -786,9 +785,7 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 
           ierr=nf_get_var1_FTYPE (ncidqbar, tsrc_tid(itrc),
      &         tsrc_rec(itrc),  cff)
-# ifdef USE_CALENDAR
         cff=cff+tsrc_origin_date_in_sec(itrc)*sec2day
-# endif
 
           if (ierr .ne. nf_noerr) then
             write(stdout,6) 'Xtsrc_time', tsrc_rec(itrc)
@@ -807,12 +804,9 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 
           ittsrc(itrc)=i
           MPI_master_only write(stdout,
-     &         '(6x,A,2x,I2,1x,A,1x,g12.4,1x,I4)')
+     &         '(6x,A,2x,I2,1x,A,1x,A19,1x,I4)')
      &         'GET_PSOURCE_TS -- Read conc fields of tracer ',itrc,
-     &         'for time =', cff
-# ifdef USE_CALENDAR
-     &  -tsrc_origin_date_in_sec(itrc)*sec2day
-# endif
+     &         'for time =', tool_sectodat(cff*day2sec)
 # ifdef MPI
      &         , mynode
 # endif
@@ -897,9 +891,7 @@ C     R    &                  'Tsrc0(i,itrc)=',Tsrc0(i,itrc)
 !
           elseif (ZEROTH_TILE) then
             write(stdout,1) 'qbar_time', tdays, qbar_time(it2)*sec2day
-# ifdef USE_CALENDAR
      &  -tsrc_origin_date_in_sec(itrc)*sec2day
-# endif
  1          format(/,' SET_PSOURCE_TS -- ',
      &           ' current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,

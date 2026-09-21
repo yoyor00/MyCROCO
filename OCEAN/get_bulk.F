@@ -29,6 +29,7 @@
       integer nabl_id, N_abl_nc
 # endif
       real    cff
+      character*19 tool_sectodat
       integer i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:
@@ -54,10 +55,8 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,3) 'bulk_time', bulkname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
         call tool_origindate(ncidbulk,bulk_tid,
      &                       blk_origin_date_in_sec)
-# endif
 !
 ! Check N_abl value and possible inconstitency between N_abl in param.h
 ! and N_abl in netcdf.
@@ -410,9 +409,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,6) 'bulk_time', bulk_rec
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
         cff=cff+blk_origin_date_in_sec*sec2day
-# endif
 
         bulk_time(i)=cff*day2sec+bulk_cycle*bulk_ncycle
         if (bulk_time(itbulk).eq.-1.E+20)
@@ -625,12 +622,10 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         endif
 # endif
        itbulk=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,F10.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &              'GET_BULK   --',
-     &              'Read fields for bulk formula   for time =', cff
-# ifdef USE_CALENDAR
-     &  -blk_origin_date_in_sec*sec2day
-# endif
+     &              'Read fields for bulk formula   for time =',
+     &              tool_sectodat(cff*day2sec)
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -650,9 +645,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) bulk_rec, ntbulk, bulkname(1:lstr), tdays,
      &                                     bulk_time(itbulk)*sec2day
-# ifdef USE_CALENDAR
      &  -blk_origin_date_in_sec*sec2day
-# endif
 
   8   format(/,' GET_BULK - ERROR: requested time record ',I4,
      &       1x,'exceeds the last available',  /,  11x,'record ',I4,
@@ -1205,9 +1198,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'bulk_time',tdays,bulk_time(it2)*sec2day
-# ifdef USE_CALENDAR
      &  -blk_origin_date_in_sec*sec2day
-# endif
  1        format(/,' SET_BULK - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
      &         2x,'TEND = ',g12.4)

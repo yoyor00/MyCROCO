@@ -35,6 +35,7 @@
 # include "netcdf.inc"
 # include "ncscrum.h"
       real cff
+      character*19 tool_sectodat
       integer i,ierr, lstr,lvar,lenstr, nf_fread, advance_cycle
 !
 ! Initialization: Inquire about the contents of forcing NetCDF file:
@@ -60,10 +61,8 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,3) 'sst_time', frcname(1:lstr)
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
         call tool_origindate(ncidfrc,sst_tid,
      &                       sst_origin_date_in_sec)
-# endif
 
         lvar=lenstr(vname(1,indxSST))
         ierr=nf_inq_varid (ncidfrc, vname(1,indxSST)(1:lvar), sst_id)
@@ -126,9 +125,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,6) 'sst_time', sst_rec
           goto 99                                         !--> ERROR
         endif
-# ifdef USE_CALENDAR
         cff=cff+sst_origin_date_in_sec*sec2day
-# endif
 
         sst_time(i)=cff*day2sec+sst_cycle*sst_ncycle
         if (sst_time(itsst).eq.-1.E+20) sst_time(itsst)=sst_time(i)
@@ -161,12 +158,10 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
        itsst=i
-       MPI_master_only write(stdout,'(6x,A,1x,A,1x,g12.4,1x,I4)')
+       MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &              'GET_SST    --',
-     &              'Read SST and dQdSST fields     for time =', cff
-# ifdef USE_CALENDAR
-     &  -sst_origin_date_in_sec*sec2day
-# endif
+     &              'Read SST and dQdSST fields     for time =',
+     &              tool_sectodat(cff*day2sec)
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -186,9 +181,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
      &                                      ' at TIME index = ',i4)
   7   write(stdout,8) sst_rec, ntsst, frcname(1:lstr), tdays,
      &                                      sst_time(itsst)*sec2day
-# ifdef USE_CALENDAR
      &  -sst_origin_date_in_sec*sec2day
-# endif
   8   format(/,' GET_SST - ERROR: requested time record ',I4,
      &       1x,'exeeds the last available',  /,  11x,'record ',I4,
      &       1x,'in forcing NetCDF file: ', a, /,   11x,'TDAYS = ',
@@ -285,9 +278,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
       else
         if (ZEROTH_TILE) then
           write(stdout,1) 'sst_time', tdays, sst_time(it2)*sec2day
-# ifdef USE_CALENDAR
      &  -sst_origin_date_in_sec*sec2day
-# endif
   1       format(/,' SET_SST - current model time exceeds ending',
      &           1x,'value for variable: ',a,/,11x,'TDAYS = ',g12.4,
      &           2x,'TEND = ',g12.4)

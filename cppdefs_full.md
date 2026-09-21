@@ -26,11 +26,6 @@ Output :
 
 - `FILLVAL` — Write fill value in masked land points
 
----
-
-## Calendar
-
-- `USE_CALENDAR` — Absolute date/time mode
 
 ---
 
@@ -108,7 +103,7 @@ Choose one scheme per variable class (M2, M3, T).
     `M2_FRC_BRY` is already set, auto-activates `M2CLIMATOLOGY` + `ANA_M2CLIMA` as the default
   - `POT_TIDES` — Include tidal potential forcing
   - `TIDES_MAS` — Harmonic composition to build tide elevation from SHOM (Simon method);
-    requires `USE_CALENDAR`; auto-activates `MASKING`
+    auto-activates `MASKING`
   - `TIDERAMP` — Ramp tidal forcing over 1 day at start
   - `OBC_REDUCED_PHYSICS` — Compute tidal velcocity from tidal elevation in case of 
     tidal current is not available (undef `UV_TIDES`)

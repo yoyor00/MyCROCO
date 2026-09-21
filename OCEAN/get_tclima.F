@@ -26,6 +26,7 @@
 # include "ncscrum.h"
 # include "climat.h"
       real cff
+      character*19 tool_sectodat
       integer i,itrc, lstr,lvar,lenstr, ierr, nf_fread, advance_cycle
 # include "netcdf.inc"
 !
@@ -622,10 +623,8 @@ c              goto 99                                     !--> ERROR
 
 #  endif
 # endif /* BIOLOGY */
-# ifdef USE_CALENDAR
           call tool_origindate(ncidclm,tclm_tid(itrc),
      &                       tclm_origin_date_in_sec(itrc))
-# endif
 
           if (got_tclm(itrc)) then
             lvar=lenstr(vname(1,indxV+itrc))
@@ -683,9 +682,7 @@ c              goto 99                                     !--> ERROR
            write(stdout,6) 'Xclm_time', tclm_rec(itrc)
            goto 99                                        !--> ERROR
          endif
-# ifdef USE_CALENDAR
         cff=cff+tclm_origin_date_in_sec(itrc)*sec2day
-# endif
          tclm_time(i,itrc)=cff*day2sec+tclm_cycle(itrc)
      &                                *tclm_ncycle(itrc)
          if (tclm_time(ittclm(itrc),itrc).eq.-1.E+20)
@@ -704,12 +701,10 @@ c              goto 99                                     !--> ERROR
            goto 99                                        !--> ERROR
          endif
         ittclm(itrc)=i
-        MPI_master_only write(stdout,'(6x,A,2x,I2,1x,A,1x,g12.4,1x,I4)')
+        MPI_master_only write(stdout,'(6x,A,2x,I2,1x,A,1x,A19,1x,I4)')
      &             'GET_TCLIMA -- Read climatology of tracer', itrc,
-     &                                             'for time =', cff
-# ifdef USE_CALENDAR
-     &  -tclm_origin_date_in_sec(itrc)*sec2day
-# endif
+     &                                             'for time =',
+     &             tool_sectodat(cff*day2sec)
 # ifdef MPI
      &                                                      , mynode
 # endif
@@ -817,9 +812,7 @@ C$    integer  trd, omp_get_thread_num
      &            'bounds of ''tclm_time''.', 'TCLM_TSTART=',
      &             tclm_time(it1,itrc)*sec2day,     'TDAYS=',  tdays,
      &            'TCLM_TEND=',   tclm_time(it2,itrc)*sec2day
-# ifdef USE_CALENDAR
      &  -tclm_origin_date_in_sec(itrc)*sec2day
-# endif
           may_day_flag=2
         endif
        endif  !got_tclm

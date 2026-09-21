@@ -53,7 +53,6 @@
                      /* Custion IO */
 # undef  FILLVAL
                       /* Calendar */
-# undef  USE_CALENDAR
                       /* dedicated croco.log file */
 # undef  LOGFILE
 /*

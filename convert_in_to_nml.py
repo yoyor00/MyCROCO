@@ -69,7 +69,6 @@ import subprocess
 MAPPINGS = [
     ("title", 0, 0, "str_line", "&croco_title", "title"),
     ("logfile", 0, 0, "str", "&croco_logfile", "logname"),
-    ("time_stepping", 0, 0, "int", "&croco_time_stepping", "ntimes"),
     ("time_stepping", 0, 1, "float", "&croco_time_stepping", "dt"),
     ("time_stepping", 0, 2, "int", "&croco_time_stepping", "ndtfast"),
     ("time_stepping", 0, 3, "int", "&croco_time_stepping", "ninfo"),
@@ -78,11 +77,8 @@ MAPPINGS = [
     ("S-coord", 0, 0, "float", "&croco_s_coord", "theta_s"),
     ("S-coord", 0, 1, "float", "&croco_s_coord", "theta_b"),
     ("S-coord", 0, 2, "float", "&croco_s_coord", "hc"),
-    ("start_date", 0, 0, "str", "&croco_use_calendar", "start_date"),
-    ("end_date", 0, 0, "str", "&croco_use_calendar", "end_date"),
-    ("output_time_steps", 0, 0, "float", "&croco_use_calendar", "dt_his"),
-    ("output_time_steps", 0, 1, "float", "&croco_use_calendar", "dt_avg"),
-    ("output_time_steps", 0, 2, "float", "&croco_use_calendar", "dt_rst"),
+    ("start_date", 0, 0, "str", "&croco_calendar", "start_date"),
+    ("end_date", 0, 0, "str", "&croco_calendar", "end_date"),
     ("history", 0, 0, "bool", "&croco_history", "ldefhis"),
     ("history", 0, 1, "int", "&croco_history", "nwrt"),
     ("history", 0, 2, "int", "&croco_history", "nrpfhis"),
@@ -121,7 +117,6 @@ MAPPINGS = [
     ("sediments_mustang", 0, 0, "str", "&croco_sediments_mustang", "sedname_must"),
     ("substance", 0, 0, "str", "&croco_substance", "subsfilename"),
     ("obstruction", 0, 0, "str", "&croco_obstruction", "obstname"),
-    ("xios_origin_date", 0, 0, "str_line", "&croco_xios_origin_date", "xios_origin_date"),
     ("assimilation", 0, 0, "str", "&croco_assimilation", "aparnam"),
     ("assimilation", 1, 0, "str", "&croco_assimilation", "assname"),
     ("rho0", 0, 0, "float", "&croco_rho0", "rho0"),
@@ -467,7 +462,7 @@ CANONICAL_BLOCK_ORDER = (
     "&croco_testcase",
     "&croco_time_stepping",
     "&croco_time_stepping_nbq",
-    "&croco_use_calendar",
+    "&croco_calendar",
     "&croco_s_coord",
     "&croco_initial",
     "&croco_grid",
@@ -528,7 +523,6 @@ CANONICAL_BLOCK_ORDER = (
     "&croco_sediments_mustang",
     "&croco_substance",
     "&croco_obstruction",
-    "&croco_xios_origin_date",
     "&croco_assimilation",
     "&croco_primary_history_fields",
     "&croco_primary_history_3d_fields",
@@ -1364,6 +1358,61 @@ def _build_testcase_block(params):
     return {"&croco_testcase": [f"  testcase_name = '{name}'"]}
 
 
+def _build_calendar_blocks(cards):
+    """Return {nml_name: [entry_lines]} for calendar-derived values.
+
+    - Always adds calendar_type = "gregorian" to &croco_calendar when start_date
+      is present (the MAPPINGS table maps start_date/end_date; we just supply the
+      default for calendar_type).
+    - If the old output_time_steps card is present (USE_CALENDAR .in file), compute
+      nwrt/navg/nrst from dt_his/dt_avg/dt_rst (hours) and dt (seconds) and add
+      them to &croco_history / &croco_averages / &croco_restart.  These entries
+      appear AFTER the direct nwrt/navg/nrst entries from the history/averages/
+      restart cards, so the Fortran namelist reader picks the last value (correct).
+    """
+    blocks = {}
+
+    if "start_date" in cards or "end_date" in cards:
+        blocks.setdefault("&croco_calendar", []).append(
+            '  calendar_type = "gregorian"'
+        )
+
+    # output_time_steps only existed in USE_CALENDAR croco.in files;
+    # its presence is the reliable proxy for "this was a calendar run".
+    if "output_time_steps" not in cards:
+        return blocks
+    if "time_stepping" not in cards:
+        return blocks
+
+    ts_lines = [l for l in cards["time_stepping"] if l.strip()]
+    ots_lines = [l for l in cards["output_time_steps"] if l.strip()]
+    if not ts_lines or not ots_lines:
+        return blocks
+
+    ts_toks = expand_repeat(ts_lines[0].split())
+    ots_toks = expand_repeat(ots_lines[0].split())
+
+    try:
+        dt = float(ts_toks[1])  # pos 1: dt in seconds (pos 0 is ntimes)
+        dt_his = float(ots_toks[0])
+        dt_avg = float(ots_toks[1]) if len(ots_toks) > 1 else dt_his
+        dt_rst = float(ots_toks[2]) if len(ots_toks) > 2 else dt_his
+    except (IndexError, ValueError):
+        return blocks
+
+    if dt <= 0:
+        return blocks
+
+    nwrt = max(1, int(round(dt_his * 3600.0 / dt)))
+    navg  = max(1, int(round(dt_avg  * 3600.0 / dt)))
+    nrst  = max(1, int(round(dt_rst  * 3600.0 / dt)))
+
+    blocks.setdefault("&croco_history",  []).append(f"  nwrt = {nwrt}")
+    blocks.setdefault("&croco_averages", []).append(f"  navg = {navg}")
+    blocks.setdefault("&croco_restart",  []).append(f"  nrst = {nrst}")
+    return blocks
+
+
 def build_nml(cards, headers, mappings, params):
     NT = params.get("NT", None)
     nml_entries = {}
@@ -1443,6 +1492,9 @@ def build_nml(cards, headers, mappings, params):
         for entry_line in entry_lines:
             add_entry(nml_name, entry_line)
     for nml_name, entry_lines in _build_labeled_bool_fallback_blocks(cards, headers, params, mappings).items():
+        for entry_line in entry_lines:
+            add_entry(nml_name, entry_line)
+    for nml_name, entry_lines in _build_calendar_blocks(cards).items():
         for entry_line in entry_lines:
             add_entry(nml_name, entry_line)
     for nml_name, entry_lines in _build_testcase_block(params).items():

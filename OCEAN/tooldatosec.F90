@@ -3,30 +3,19 @@
    !&E---------------------------------------------------------------------
    !&E                 ***  FUNCTION tool_datosec  ***
    !&E
-   !&E ** Purpose : return the number of seconds elapsed since the origin date date_ref
-   !&E
-   !&E ** Description :
-   !&E
-   !&E ** Called by : sflx_rad (cas meteosat), tide_calcoef, init, meteo
-   !&E
-   !&E ** External calls : tool_decompdate
-   !&E
-   !&E ** Used ij-arrays : 
-   !&E
-   !&E ** Modified variables :
-   !&E
-   !&E ** Reference :
-   !&E
-   !&E ** History :
-   !&E       !  2004-08-16
+   !&E ** Purpose : return the number of seconds elapsed since a calendar
+   !&E              epoch (~year 1900) for the current calendar_type.
+   !&E              Supports: gregorian (default), 360_day, 365_day/no_leap.
    !&E
    !&E---------------------------------------------------------------------
-   !! * Modules used
-!  USE parameters
-!  USE comvars2d
+   USE croco_namelist, ONLY: calendar_type
    IMPLICIT NONE
    INTEGER,PARAMETER     :: rlg=8
-   REAL(kind=rlg),PARAMETER :: tref = 59958230400_rlg
+   ! Gregorian epoch offset (~year 1900 in Gregorian seconds from year 0)
+   REAL(kind=rlg),PARAMETER :: tref     = 59958230400_rlg
+   ! Non-Gregorian epoch offsets centred near year 1900 for single-precision accuracy
+   REAL(kind=rlg),PARAMETER :: tref_360 = 1900_rlg * 360.0_rlg * 86400.0_rlg
+   REAL(kind=rlg),PARAMETER :: tref_365 = 1900_rlg * 365.0_rlg * 86400.0_rlg
 
    !! * Declaration function
    REAL(kind=rlg)             :: tool_datosec
@@ -47,44 +36,68 @@
 
    CALL tool_decompdate(date,jour,mois,annee,heure,minute,seconde)
 
-   ! on ajoute le nombre de secondes pour chaque siecle depuis l origine
-   total_secs = secs_in_siecle * INT(annee/100)
+   IF (TRIM(calendar_type) == '360_day') THEN
+     ! 360-day calendar: 12 months of 30 days, no leap years
+     total_secs = REAL(annee,rlg) * 360.0_rlg * secs_in_jour
+     total_secs = total_secs + REAL(mois-1,rlg) * 30.0_rlg * secs_in_jour
+     total_secs = total_secs + REAL(jour-1,rlg) * secs_in_jour
+     total_secs = total_secs + REAL(heure,rlg)  * secs_in_heure
+     total_secs = total_secs + REAL(minute,rlg) * secs_in_minute
+     total_secs = total_secs + REAL(seconde,rlg)
+     tool_datosec = total_secs - tref_360
 
-   ! on ajoute un jour tous les 400 ans (siecle bissextile)
-   ! remarque : 0.9975 = (1 - 1/400) pour l annee 0 qui est bissextile
-   total_secs = total_secs + secs_in_jour*INT(DBLE(annee)/400.0_rlg+0.9975_rlg)
+   ELSE IF (TRIM(calendar_type) == '365_day' .OR. &
+            TRIM(calendar_type) == 'no_leap') THEN
+     ! 365-day calendar: standard month lengths, no leap years ever
+     total_secs = REAL(annee,rlg) * secs_in_annee
+     total_secs = total_secs + REAL(jours_avt_mois(mois),rlg) * secs_in_jour
+     total_secs = total_secs + REAL(jour-1,rlg) * secs_in_jour
+     total_secs = total_secs + REAL(heure,rlg)  * secs_in_heure
+     total_secs = total_secs + REAL(minute,rlg) * secs_in_minute
+     total_secs = total_secs + REAL(seconde,rlg)
+     tool_datosec = total_secs - tref_365
 
-   ! on ajoute chaque annee depuis le debut du dernier siecle
-   total_secs = total_secs + secs_in_annee*MOD(annee,100)
+   ELSE
+     ! Default: proleptic Gregorian calendar (original implementation)
 
-   ! on ajoute un jour pour chaque annee bissextile depuis le dernier siecle
-   total_secs = total_secs + secs_in_jour*INT((MOD(annee,100)-1)/4)
+     ! on ajoute le nombre de secondes pour chaque siecle depuis l origine
+     total_secs = secs_in_siecle * INT(annee/100)
 
-   ! on ajoute chaque mois depuis le debut de l annee
-   total_secs = total_secs + jours_avt_mois(mois)*secs_in_jour
+     ! on ajoute un jour tous les 400 ans (siecle bissextile)
+     total_secs = total_secs + secs_in_jour*INT(DBLE(annee)/400.0_rlg+0.9975_rlg)
 
-   ! on ajoute un jour si on est apres fevrier et que l annee est bissextile
+     ! on ajoute chaque annee depuis le debut du dernier siecle
+     total_secs = total_secs + secs_in_annee*MOD(annee,100)
 
-   IF(mois > 2) THEN
-     IF(MOD(annee,400) == 0) THEN
-       total_secs = total_secs + secs_in_jour
-     ELSE
-       IF ((MOD(annee,4) == 0) .AND. (MOD(annee,100) /= 0)) &
+     ! on ajoute un jour pour chaque annee bissextile depuis le dernier siecle
+     total_secs = total_secs + secs_in_jour*INT((MOD(annee,100)-1)/4)
+
+     ! on ajoute chaque mois depuis le debut de l annee
+     total_secs = total_secs + jours_avt_mois(mois)*secs_in_jour
+
+     ! on ajoute un jour si on est apres fevrier et que l annee est bissextile
+     IF(mois > 2) THEN
+       IF(MOD(annee,400) == 0) THEN
          total_secs = total_secs + secs_in_jour
+       ELSE
+         IF ((MOD(annee,4) == 0) .AND. (MOD(annee,100) /= 0)) &
+           total_secs = total_secs + secs_in_jour
+       ENDIF
      ENDIF
-   ENDIF
 
-   ! on ajoute le nombre de jours entres en parametre
-   total_secs = total_secs + secs_in_jour*(jour-1)
+     ! on ajoute le nombre de jours entres en parametre
+     total_secs = total_secs + secs_in_jour*(jour-1)
 
-   ! on ajoute le nombre d heures entrees en parametre
-   total_secs = total_secs + secs_in_heure*(heure)
+     ! on ajoute le nombre d heures entrees en parametre
+     total_secs = total_secs + secs_in_heure*(heure)
 
-   ! on ajoute le nombre de minutes entrees en parametre
-   total_secs = total_secs + secs_in_minute*(minute)
+     ! on ajoute le nombre de minutes entrees en parametre
+     total_secs = total_secs + secs_in_minute*(minute)
 
-   ! on ajoute le nombre de secondes entrees en parametre
-   total_secs = total_secs + seconde
-   tool_datosec = total_secs-tref
+     ! on ajoute le nombre de secondes entrees en parametre
+     total_secs = total_secs + seconde
+     tool_datosec = total_secs - tref
+
+   END IF
 
   END FUNCTION tool_datosec
