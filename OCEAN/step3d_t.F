@@ -190,7 +190,7 @@
 #   elif defined TEMPERATURE || defined SALINITY
         if (itrc .eq. 1) then
 #   else 
-          if (itrc.le.0) then
+        if (itrc.le.0) then
 #   endif
 #  endif
 !

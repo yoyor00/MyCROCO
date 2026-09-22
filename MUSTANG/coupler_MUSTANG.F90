@@ -97,7 +97,8 @@ MODULE coupler_MUSTANG
            ! extraction of  concentrations in the bottom of the water column
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! CROCO vecteur au temps 1, 2 ou 3 ????
-! Fdufois 2024/07/03 : à vérifier mais je pense que c'est mieux comme ça. Par contre pas sur que l'appel avec iappel=1 soit vraiment util à part à l'initialisation
+! iappel 1 : before mixing, index has to be nstp
+! iappel 2 : after mixing, index has to be nnew
             IF (iappel.eq.1) THEN
                 niter=nstp
             ELSE IF (iappel.eq.2) THEN

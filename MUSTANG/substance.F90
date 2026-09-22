@@ -58,13 +58,13 @@ CONTAINS
       !!                    *** ROUTINE substance_read_alloc ***
       !!-------------------------------------------------------------------
       !
- 
+   
 #if defined BLOOM
 # if defined key_N_tracer || key_P_tracer
     USE bloom_initdefine , ONLY : bloom_create_vartracer
 # endif
 #endif
- 
+   
    !! Argument
    INTEGER,INTENT(INOUT)                     ::  may_day_flag
    INTEGER,INTENT(IN)                        ::  indxT, indxTsrc
@@ -190,7 +190,7 @@ CONTAINS
    nv_sand=0
    nv_mud=0
 #endif
-   
+
 #if !defined PEPTIC && ! defined key_N_tracer && ! defined key_P_tracer
 #if defined MUSTANG
    IF(nv_dis+nv_ncp+nv_grav+nv_sand+nv_mud+nv_sorb .NE. ntrc_subs) THEN
@@ -198,13 +198,12 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)' parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
-     MPI_master_only  WRITE(stdout,*)'  nv_dis ',nv_dis
-     MPI_master_only  WRITE(stdout,*)'+ nv_ncp ',nv_ncp
-     MPI_master_only  WRITE(stdout,*)'+ nv_grav ',nv_grav
-     MPI_master_only  WRITE(stdout,*)'+ nv_sand ',nv_sand
-     MPI_master_only  WRITE(stdout,*)'+ nv_mud ',nv_mud
-     MPI_master_only  WRITE(stdout,*)'+ nv_sorb ',nv_sorb
-
+     MPI_master_only  WRITE(stdout,*)'  nv_dis read in parasubstance.txt ',nv_dis
+     MPI_master_only  WRITE(stdout,*)'+ nv_ncp read in parasubstance.txt ',nv_ncp
+     MPI_master_only  WRITE(stdout,*)'+ nv_grav read in parasubstance.txt ',nv_grav
+     MPI_master_only  WRITE(stdout,*)'+ nv_sand read in parasubstance.txt ',nv_sand
+     MPI_master_only  WRITE(stdout,*)'+ nv_mud read in parasubstance.txt ',nv_mud
+     MPI_master_only  WRITE(stdout,*)'+ nv_sorb read in parasubstance.txt ',nv_sorb
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
      goto 99
@@ -215,10 +214,9 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
-     MPI_master_only  WRITE(stdout,*)'  nv_dis ',nv_dis
-     MPI_master_only  WRITE(stdout,*)'+ nv_ncp ',nv_ncp
-     MPI_master_only  WRITE(stdout,*)'+ nv_sorb ',nv_sorb
-
+     MPI_master_only  WRITE(stdout,*)'  nv_dis read in parasubstance.txt ',nv_dis
+     MPI_master_only  WRITE(stdout,*)'+ nv_ncp read in parasubstance.txt ',nv_ncp
+     MPI_master_only  WRITE(stdout,*)'+ nv_sorb read in parasubstance.txt ',nv_sorb
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
      goto 99
@@ -231,8 +229,7 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'parasubstance.txt is DIFFERENT from the ntfix parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntfix in param.h = ',ntfix
-     MPI_master_only  WRITE(stdout,*)' nv_fix ',nv_fix
-
+     MPI_master_only  WRITE(stdout,*)'  nv_fix read in parasubstance.txt ',nv_fix
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
      goto 99
@@ -338,7 +335,11 @@ CONTAINS
                    ws_hind_opt_n,ws_hind_para_n,tocd_n,diam_n,ros_n)
    ENDIF
 
-#endif /* MUSTANG*/
+#else  /* MUSTANG*/
+    nv_grav=0
+    nv_sand=0
+    nv_mud=0
+#endif
 
    ! reading non constitutive particulate variables
    !----------------------------------------------- 
@@ -611,8 +612,7 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
-     MPI_master_only  WRITE(stdout,*)'nv_adv',nv_adv
-
+     MPI_master_only  WRITE(stdout,*)'nv_adv read in parasubstance.txt ',nv_adv
      MPI_master_only  WRITE(stdout,*)'The simulation is stopped'
      may_day_flag=77
      goto 99
@@ -1092,9 +1092,9 @@ CONTAINS
      !!                    *** ROUTINE substance_surfcell ***
      !!-------------------------------------------------------------------
      !
-     ! evaluation of cell surface if not known in hydro model
-     ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
-     surf_cell(:,:)=om_r(:,:)*on_r(:,:)
+! evaluation of cell surface if not known in hydro model
+    ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
+    surf_cell(:,:)=om_r(:,:)*on_r(:,:)
 
  END SUBROUTINE substance_surfcell
 
