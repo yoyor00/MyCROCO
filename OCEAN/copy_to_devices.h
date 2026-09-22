@@ -12,8 +12,15 @@
 #endif
 
 !scalars.h
+# if defined OA_COUPLING || defined OW_COUPLING
+# endif
+# if defined OA_COUPLING || defined OW_COUPLING
+# endif
 #ifdef SOLVE3D
+# if !defined M3FAST_SEDLAYERS && !defined K3FAST_SEDLAYERS
 !$acc&, sc_w, Cs_w, sc_r, Cs_r
+# else
+# endif
 # ifdef TRACERS
 !$acc&, tnu2, tnu4
 # endif
@@ -73,6 +80,9 @@
 #endif
 #ifdef DIAGNOSTICS_BIO
 #endif
+#if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD && \
+     defined DIAGNOSTICS_TS_MLD_CRIT)
+#endif
 #ifdef SOLVE3D
 #endif
 #if defined SPONGE || \
@@ -85,6 +95,9 @@
      defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
      defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
      defined WCLIMATOLOGY
+#endif
+#if (defined DIAGNOSTICS_TS && defined DIAGNOSTICS_TS_MLD && \
+     defined DIAGNOSTICS_TS_MLD_CRIT)
 #endif
 #if defined DIAGNOSTICS_TS
 #endif
@@ -112,25 +125,37 @@
 #if defined BIOLOGY && defined TRACERS
 !$acc&, global_sum
 #endif
+#ifdef SOLITON
+#else
+#endif
+
 !ocean3d.h
 #ifdef SOLVE3D
 !$acc&, u
 !$acc&, v
 !$acc&, t
+# ifndef K3FAST_SEDLAYERS
 !$acc&, Hz
 !$acc&, Hz_bak
 !$acc&, z_r
 !$acc&, z_w
+#   else
+#   endif
 !$acc&, Huon
 !$acc&, Hvom
 !$acc&, We
-# ifdef VADV_ADAPT_IMP
+#  ifdef VADV_ADAPT_IMP
 !$acc&, Wi
-# endif
-# ifdef NBQ
+#  endif
+# if defined NBQ || defined K3FAST 
+#  if defined NBQ || defined K3SLOW_W
 !$acc&, wz
+#  endif
 #  ifdef NBQ_MASS
+#   ifndef K3FAST_SEDLAYERS
 !$acc&, Hzr
+#   else
+#   endif
 #  else
 #   define Hzr Hz
 #  endif
@@ -169,6 +194,15 @@
 #ifdef MORPHODYN
 !$acc&, dh
 #endif
+# ifdef MVB
+!$acc&, x_mvb
+!$acc&, y_mvb
+!$acc&, u_mvb
+!$acc&, v_mvb
+!$acc&, w_mvb
+!$acc&, dh_mvb
+!$acc&, h0_mvb
+# endif
 #ifdef CURVGRID
 !$acc&, angler
 #endif
@@ -264,11 +298,22 @@
 #endif
 
 !private_scratch.h
-!$acc&, A2d, A3d
-#if defined SEDIMENT || defined LMD_MIXING
+#ifdef AUTOTILING
+!$acc&, A2d, A3d, A3dHz
+# if defined SEDIMENT || defined LMD_MIXING
 !$acc&, B2d
-#endif
-#if defined ABL1D
+# endif
+# if defined ABL1D
+!$acc&, T1d
+!$acc&, T2d,T3d
+# endif
+#else
+!$acc&, A2d, A3d
+!$acc&, A3dHz
+# if defined SEDIMENT || defined LMD_MIXING
+!$acc&, B2d
+# endif
+# if defined ABL1D
 !$acc&, T1d
 !$acc&, T2d, T3d
 #endif
@@ -301,6 +346,10 @@
 !$acc&, diff4_sponge
 !$acc&, diff4
 #endif
+#ifdef W_VIS_SMAGO_3D
+!$acc&, visc3dW_r
+!$acc&, defrateW
+#endif     
 #ifdef VIS_COEF_3D
 !$acc&, visc3d_r
 !$acc&, visc3d_p
@@ -308,7 +357,7 @@
 #ifdef DIF_COEF_3D
 !$acc&, diff3d_u
 !$acc&, diff3d_v
-# if defined TS_DIF_SMAGO || defined GLS_MIXING_3D
+# if defined TS_DIF_SMAGO || defined GLS_MIXING_3D || defined TKE3D_MIXING
 !$acc&, diff3d_r
 # endif
 #endif
@@ -327,9 +376,12 @@
 !$acc&, Akv_old
 !$acc&, Akt_old
 # endif
-# if defined ANA_VMIX   || defined LMD_MIXING \
-  || defined LMD_SKPP   || defined LMD_BKPP \
-  || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
+# ifdef RANDOM_WALK
+!$acc&, dAktdz
+# endif
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined UV_VIS_SMAGO_3D || defined TKE3D_MIXING
 !$acc&, bvf
 # endif
 # ifdef BIOLOGY
@@ -359,7 +411,13 @@
 !$acc&, Eps_gls
 !$acc&, kbl
 !$acc&, hbl
-# endif /* GLS_MIXING */
+# elif defined TKE3D_MIXING
+!$acc&, tke
+!$acc&, Lscale
+!$acc&, Sprod3d
+!$acc&, 0667, 1
+!$acc&, 4, 1
+# endif /* MIXING */
 #else
 # define u(i,j,k,nrhs) ubar(i,j,kstp)
 # define v(i,j,k,nrhs) vbar(i,j,kstp)
@@ -459,6 +517,9 @@
 #   undef SSS_DATA
 #  endif /* !ANA_SSS */
 # endif /* SALINITY && SFLX_CORR */
+# if defined RAIN_FLUX
+!$acc&, EmP
+#  endif
 # if defined BULK_FLUX
 !$acc&, tair
 !$acc&, rhum
@@ -540,6 +601,9 @@
 !$acc&, wlm
 # ifdef WAVE_ROLLER
 !$acc&, wepr
+#  ifdef WKB_WWAVE
+!$acc&, wepb0
+#  endif
 # endif
 !$acc&, brk2dx
 !$acc&, brk2de
@@ -609,13 +673,13 @@
 # endif /* WAVE_OFFLINE */
 #endif /* BBL || MRL_WCI */
 #ifdef WAVE_MAKER
-!$acc&, wf_bry, wk_bry, wa_bry
-!$acc&, wd_bry, wa_bry_d
 # ifdef WAVE_MAKER_DSPREAD
-!$acc&, wpha_bry
 # else
-!$acc&, wpha_bry
 # endif
+!$acc&, wf_bry, wk_bry, wa_bry
+!$acc&, wd_bry, wa_bry_d, wa_bry_f
+!$acc&, wkx_bry, wky_bry
+!$acc&, wpha_bry
 #endif
 
 !work.h
@@ -631,6 +695,9 @@
 
 !ncscrum.h
 #ifdef SOLVE3D
+#  ifdef K3FAST_HIS
+#  else
+#  endif
 # ifdef TRACERS
 #  ifdef PASSIVE_TRACER
 !$acc&, indxTPAS
@@ -654,8 +721,12 @@
 !$acc&, indxMUD
 # endif
 # ifdef DIAGNOSTICS_TS
+#  if defined DIAGNOSTICS_TS_MLD
+#  endif
 #  ifdef DIAGNOSTICS_TSVAR
 #  else
+#  endif
+#  ifdef DIAGNOSTICS_TS_MLD
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
@@ -670,8 +741,6 @@
 # endif
 # if defined BIOLOGY && defined DIAGNOSTICS_BIO
 # endif /* BIOLOGY && DIAGNOSTICS_BIO */
-# ifdef MUSTANG
-# endif
 # ifdef BIOLOGY
 #  ifdef BIO_BioEBUS
 #  endif
@@ -701,12 +770,12 @@
 # else
 # endif
 #endif /* SOLVE3D */
-#if defined ANA_VMIX  || defined LMD_MIXING \
-  || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
 #endif
 #ifdef EXACT_RESTART
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  ifdef TS_MIX_ISO_FILT
 #  else
 #  endif
@@ -779,15 +848,12 @@
 # if defined TRACERS
 !$acc&, rstT
 # endif
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 # endif
 # ifdef SEDIMENT
 !$acc&, rstSed
-# endif
-# ifdef MUSTANG
-!$acc&, rstMUS
 # endif
 #endif
 #ifdef EXACT_RESTART
@@ -804,9 +870,9 @@
 !$acc&, hisBBL
 #endif
 #ifdef SOLVE3D
-# if defined ANA_VMIX || defined LMD_MIXING \
-  || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
 # endif
 # ifdef BIOLOGY
 #  ifdef BIO_NChlPZD
@@ -816,8 +882,6 @@
 !$acc&, hisT
 # ifdef SEDIMENT
 # endif /* SEDIMENT */
-# ifdef MUSTANG
-# endif /* MUSTANG */
 # if defined DIAGNOSTICS_TS
 !$acc&, diaTXadv, diaTYadv, diaTVadv
 !$acc&, diaTHmix, diaTVmix
@@ -829,6 +893,10 @@
 !$acc&, diaTXadv_mld, diaTYadv_mld, diaTVadv_mld
 !$acc&, diaTHmix_mld, diaTVmix_mld
 !$acc&, diaTForc_mld, diaTrate_mld, diaTentr_mld
+!$acc&, diaTaver_mld
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+!$acc&, diaTcrit_mld
+# endif
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
@@ -839,7 +907,7 @@
 #  ifdef DIAGNOSTICS_BARO
 !$acc&, diaMBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !$acc&, diaMfast
 #  endif
 #  ifdef MRL_WCI
@@ -856,7 +924,7 @@
 #  ifdef DIAGNOSTICS_BARO
 !$acc&, diags_vrtBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !$acc&, diags_vrtfast
 #  endif
 # endif
@@ -868,7 +936,7 @@
 #  ifdef DIAGNOSTICS_BARO
 !$acc&, diags_ekBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !$acc&, diags_ekfast
 #  endif
 #  ifdef DIAGNOSTICS_KE_MLD
@@ -913,9 +981,9 @@
 #endif /* SOLVE3D */
 #ifdef AVERAGES
 # ifdef SOLVE3D
-#  if defined ANA_VMIX || defined LMD_MIXING \
-   || defined LMD_SKPP || defined LMD_BKPP \
-   || defined GLS_MIXING
+#  if defined ANA_VMIX || defined BVF_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+ || defined GLS_MIXING || defined TKE3D_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -927,9 +995,6 @@
 #  endif
 #  ifdef SEDIMENT
 #  endif
-#  ifdef MUSTANG
-!$acc&, avgMust
-#  endif
 # endif /* SOLVE3D */
 # ifdef BBL
 !$acc&, avgBBL
@@ -939,7 +1004,7 @@
 # endif
 # ifdef MRL_WCI
 # endif
-# if defined SOLVE3D && defined TRACERS
+# ifdef SOLVE3D
 #  if defined DIAGNOSTICS_TS && defined TRACERS
 !$acc&, diaTXadv_avg, diaTYadv_avg, diaTVadv_avg
 !$acc&, diaTHmix_avg, diaTVmix_avg
@@ -952,7 +1017,10 @@
 !$acc&, diaTVadv_mld_avg
 !$acc&, diaTHmix_mld_avg, diaTVmix_mld_avg
 !$acc&, diaTForc_mld_avg, diaTrate_mld_avg
-!$acc&, diaTentr_mld_avg
+!$acc&, diaTentr_mld_avg, diaTaver_mld_avg
+# if defined DIAGNOSTICS_TS_MLD_CRIT
+!$acc&, diaTcrit_mld_avg
+# endif
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_UV
@@ -963,19 +1031,22 @@
 #   ifdef DIAGNOSTICS_BARO
 !$acc&, diaMBaro_avg
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 !$acc&, diaMfast_avg
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
-!$acc&, diags_vrtXadv_avg, diags_vrtYadv_avg, diags_vrtHdiff_avg
-!$acc&, diags_vrtCor_avg, diags_vrtPrsgrd_avg, diags_vrtHmix_avg
+!$acc&, diags_vrtXadv_avg, diags_vrtYadv_avg
+!$acc&, diags_vrtHdiff_avg
+!$acc&, diags_vrtCor_avg, diags_vrtPrsgrd_avg
+!$acc&, diags_vrtHmix_avg
 !$acc&, diags_vrtVmix_avg, diags_vrtrate_avg
-!$acc&, diags_vrtVmix2_avg, diags_vrtWind_avg, diags_vrtDrag_avg
+!$acc&, diags_vrtVmix2_avg, diags_vrtWind_avg
+!$acc&, diags_vrtDrag_avg
 #   ifdef DIAGNOSTICS_BARO
 !$acc&, diags_vrtBaro_avg
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 !$acc&, diags_vrtfast_avg
 #   endif
 #  endif
@@ -987,7 +1058,7 @@
 #   ifdef DIAGNOSTICS_BARO
 !$acc&, diags_ekBaro_avg
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 !$acc&, diags_ekfast_avg
 #   endif
 #   ifdef DIAGNOSTICS_KE_MLD
@@ -1009,8 +1080,10 @@
 #  endif
 #  if defined DIAGNOSTICS_EDDY && ! defined XIOS
 !$acc&, diags_eddyzz_avg
-!$acc&, diags_eddyuu_avg, diags_eddyvv_avg, diags_eddyuv_avg
-!$acc&, diags_eddyub_avg, diags_eddyvb_avg, diags_eddywb_avg
+!$acc&, diags_eddyuu_avg, diags_eddyvv_avg
+!$acc&, diags_eddyuv_avg
+!$acc&, diags_eddyub_avg, diags_eddyvb_avg
+!$acc&, diags_eddywb_avg
 !$acc&, diags_eddyuw_avg, diags_eddyvw_avg
 !$acc&, diags_eddyubu_avg, diags_eddyvbv_avg
 !$acc&, diags_eddyusu_avg, diags_eddyvsv_avg
@@ -1102,17 +1175,17 @@
 # endif
 #endif
 #ifdef SOLVE3D
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 # endif
 # ifdef EXACT_RESTART
 # endif
 #endif
 #ifdef SOLVE3D
-# if defined ANA_VMIX || defined LMD_MIXING \
-  || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
 # endif
 # ifdef BIOLOGY
 #  ifdef BIO_NChlPZD
@@ -1121,7 +1194,11 @@
 # endif  /* BIOLOGY */
 #endif
 #ifdef DIAGNOSTICS_TS
+# if defined DIAGNOSTICS_TS_MLD
+# endif
 # ifdef AVERAGES
+#  ifdef DIAGNOSTICS_TS_MLD
+#  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV
@@ -1152,9 +1229,9 @@
 #endif
 #ifdef AVERAGES
 # ifdef SOLVE3D
-#  if defined ANA_VMIX || defined LMD_MIXING \
-  || defined LMD_SKPP  || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined BVF_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+ || defined GLS_MIXING || defined TKE3D_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -1262,20 +1339,20 @@
 !$acc&, v_avg
 !$acc&, t_avg
 !$acc&, rho_avg
-#  if defined ANA_VMIX || defined LMD_MIXING \
-   || defined LMD_SKPP || defined LMD_BKPP \
-   || defined GLS_MIXING
+#  if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
 !$acc&, bvf_avg
 #  endif
 !$acc&, omega_avg
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, w_avg
 #  else
 !$acc&, w_avg
 #  endif
-#  if defined ANA_VMIX || defined LMD_MIXING \
-   || defined LMD_SKPP || defined LMD_BKPP \
-   || defined GLS_MIXING
+#  if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
 #  endif
 !$acc&, stflx_avg
 !$acc&, btflx_avg
@@ -1286,6 +1363,11 @@
 !$acc&, hbbl_avg
 #  endif
 #  ifdef GLS_MIXING
+!$acc&, tke_avg
+!$acc&, gls_avg
+!$acc&, Lscale_avg
+#  endif
+#  ifdef TKE3D_MIXING
 !$acc&, tke_avg
 !$acc&, gls_avg
 !$acc&, Lscale_avg
@@ -1355,7 +1437,7 @@
 #endif /* AVERAGES */
 
 !lmd_kpp.h
-#if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING
+#if defined LMD_SKPP || defined LMD_BKPP || defined GLS_MIXING || defined TKE3D_MIXING
 !$acc&, Jwtype
 #endif
 
@@ -1400,6 +1482,9 @@
                         (defined AGRIF && !defined M3_FRC_BRY))
 !$acc&, uclm
 !$acc&, vclm
+# ifdef K3SLOW_W
+!$acc&, wclm
+# endif
 #endif
 #ifdef M2CLIMATOLOGY
 # ifdef M2NUDGING
@@ -1440,124 +1525,214 @@
 # endif
 # undef GLOBAL_1D_ETA
 #endif
-#if defined M3FAST && (defined NBQCLIMATOLOGY || \
+#if (defined M3FAST || defined K3FAST) && (defined NBQCLIMATOLOGY || \
                    (defined AGRIF && !defined NBQ_FRC_BRY))
 !$acc&, unbqclm
 !$acc&, vnbqclm
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 !$acc&, wnbqclm
 !$acc&, rnbqclm
 # endif
 #endif
 
 !nbq.h
-#ifdef M3FAST
+# define NSLP1N -N_sl+1:N
+# define NSLN -N_sl:N
+# ifdef K3FAST
+#  ifndef K3FAST_CSVISC2K
+#  else
 !$acc&, soundspeed_nbq
 !$acc&, soundspeed2_nbq
+#  endif
+#  ifdef NBQ_RCSOUND
+!$acc&, rcsound2_nbq
+#  endif
+#  ifndef K3FAST_CSVISC2K
+#  else
+!$acc&, visc2_nbq
+!$acc&, visc2v_nbq
+#  endif
+#  ifdef NBQ_SPONGE
+!$acc&, visc2_nbq_sponge
+#  endif
+#  if defined NBQ_FREESLIP && ! defined K3FAST_SEDLAYERS
+!$acc&, qdmw0_nbq
+#  endif
+#  if defined K3FAST_DUVNBQ || defined K3FAST_DUVNBQ2 || defined PSOURCE || defined WET_DRY
+!$acc&, DU_nbq
+!$acc&, DV_nbq
+#  endif
+#  if defined K3FAST_ZETAW || defined PSOURCE || defined WET_DRY || defined KNHINT_ZETAW
+!$acc&, dzeta_nbq
+!$acc&, wsurf_nbq
+!$acc&, usurf_nbq
+!$acc&, vsurf_nbq
+#   ifdef K3FAST_AB3
+!$acc&, usurf_nbq_bak
+!$acc&, vsurf_nbq_bak
+!$acc&, wsurf_nbq_bak
+#    endif
+#  endif
+#  ifdef NBQ_NUDGING
+!$acc&, NBQnudgcof
+#  endif
+#  ifdef K3FAST_UV
+#   ifdef NBQ_GRID_SLOW
+!$acc&, dthetadiv_nbqdz
+#   else
+!$acc&, dthetadiv_nbqdz
+#   endif /* NBQ_GRID_SLOW */
+#  endif
 !$acc&, qdmu_nbq
 !$acc&, qdmv_nbq
-# ifdef NBQ
 !$acc&, qdmw_nbq
-# endif
-# ifdef NBQ
+#     ifdef NBQ_THETAIMP
+!$acc&, qdmwold_nbq
+#     endif
+#  ifdef K3FAST_UV
+!$acc&, dZdxq_w
+!$acc&, dZdyq_w
+#  endif 
 !$acc&, thetadiv_nbq
+#  ifdef K3FAST_AM4b
+!$acc&, thetadiv_nbq_bak
+#  endif
+#  ifdef K3FAST_AM4
+!$acc&, thetadiv_nbq_bak2
+#  endif
+#  if defined NBQ_HZ_PROGNOSTIC 
 !$acc&, thetadiv2_nbq
-!$acc&, thetadiv3_nbq
-# endif
+#  endif  
+#  if defined K3FAST_C3D_UVSF &&  defined K3FAST_COUPLING3D
+!$acc&, ru_int2d_nbq_bak
+!$acc&, rv_int2d_nbq_bak
+#  endif
 !$acc&, ru_int_nbq
 !$acc&, rv_int_nbq
+#  ifdef K3FAST_COUPLING_SCH1
+!$acc&, ru_intt_nbq
+!$acc&, rv_intt_nbq
+#  elif defined K3FAST_COUPLING_SCH2
+!$acc&, ru_intt_nbq
+!$acc&, rv_intt_nbq
+#  endif
 !$acc&, ru_nbq
 !$acc&, rv_nbq
 !$acc&, ru_nbq_avg2
 !$acc&, rv_nbq_avg2
-# ifdef NBQ
+!$acc&, Hzw_nbq
 !$acc&, rw_int_nbq
+#  ifdef K3FAST_COUPLINGW_SCH1
+!$acc&, rw_intt_nbq
+#  elif defined K3FAST_COUPLINGW_SCH2
+!$acc&, rw_intt_nbq
+#  endif
 !$acc&, rw_nbq
 !$acc&, rw_nbq_avg2
 !$acc&, rho_nbq
-# endif
-!$acc&, DU_nbq
-!$acc&, DV_nbq
-!$acc&, ru_int_nbq_2d
-!$acc&, rv_int_nbq_2d
-# ifdef NBQ
+#  ifdef K3FAST_DIAGACOUS
+!$acc&, p_nbq
+!$acc&, p_nbq_max
+#  endif
+#  ifdef ONLINE_ANALYSIS
+!$acc&, mvoa1
+!$acc&, mvoa2
+#  endif
+#  ifdef NBQ_GRAV
+!$acc&, rho_nh
+#   ifdef CONVECT
+!$acc&, rhoi_nh
+#   endif
+#  endif
 !$acc&, rho_grd
-!$acc&, rho_bak
 #  ifdef NBQ_MASS
 !$acc&, rho_nbq_avg1
 !$acc&, rhobar_nbq
 !$acc&, rhobar_nbq_avg1
 #  endif
-# else
-!$acc&, rubar_nbq
-!$acc&, rvbar_nbq
-!$acc&, rubar_sum
-!$acc&, rvbar_sum
-# endif
-!$acc&, Hzw_half_nbq
-# ifdef NBQ
 !$acc&, zw_nbq
-# endif
 # ifdef NBQ_HZCORRECT
 !$acc&, Hz_correct
 # endif
-# ifdef NBQ_HZ_PROGNOSTIC
+#  ifdef NBQ_HZ_PROGNOSTIC
+#   ifndef K3FAST_SEDLAYERS
 !$acc&, Hz_bak2
+#   else
+!$acc&, Hz_bak2
+#   endif
+#  endif
+!$acc&, FC3D
+!$acc&, DC3D
+!$acc&, CF3D
+#  ifdef ANA_MVB
+!$acc&, rhoi_nbq
+#  endif
+#  ifdef KNHINT_WH
+!$acc&, wzh_nbq
+#  endif
+# ifdef XIOS
+!$acc&, worknbq
 # endif
-# ifdef NBQ
-#  ifdef NBQ_GRID_SLOW
-!$acc&, dthetadiv_nbqdz
-!$acc&, dZdxq_w
-!$acc&, dZdyq_w
-#  else
-!$acc&, dthetadiv_nbqdz
-!$acc&, dZdxq_w
-!$acc&, dZdyq_w
-#  endif /* NBQ_GRID_SLOW */
-# endif
-# ifdef NBQ
-!$acc&, wsurf_nbq
-!$acc&, usurf_nbq
-!$acc&, vsurf_nbq
-# endif
-# if defined OBC_NBQ && defined OBC_NBQORLANSKI
-#  ifdef OBC_COM_WEST
+#  if defined OBC_NBQ 
+#   ifdef OBC_COM_WEST
 !$acc&, qdmu_nbq_west
 !$acc&, qdmv_nbq_west
-#   ifdef NBQ
+#    ifdef K3FAST_W
 !$acc&, qdmw_nbq_west
 !$acc&, rho_nbq_west
+#    endif
 #   endif
-#  endif
-#  ifdef OBC_COM_EAST
+#   ifdef OBC_COM_EAST
 !$acc&, qdmu_nbq_east
 !$acc&, qdmv_nbq_east
-#   ifdef NBQ
+#    ifdef K3FAST_W
 !$acc&, qdmw_nbq_east
 !$acc&, rho_nbq_east
+#    endif
 #   endif
-#  endif
-#  ifdef OBC_COM_SOUTH
+#   ifdef OBC_COM_SOUTH
 !$acc&, qdmu_nbq_south
 !$acc&, qdmv_nbq_south
-#   ifdef NBQ
+#    ifdef K3FAST_W
 !$acc&, qdmw_nbq_south
 !$acc&, rho_nbq_south
+#    endif
 #   endif
-#  endif
-#  ifdef OBC_COM_NORTH
+#   ifdef OBC_COM_NORTH
 !$acc&, qdmu_nbq_north
 !$acc&, qdmv_nbq_north
-#   ifdef NBQ
+#    ifdef K3FAST_W
 !$acc&, qdmw_nbq_north
 !$acc&, rho_nbq_north
+#    endif
 #   endif
+#  endif    
+#  ifdef K3FAST_NOBPG
+!$acc&, rho_bpg
 #  endif
+# endif /* K3FAST */
+# ifdef CENTRIFUGE
+!$acc&, ray
+!$acc&, cosr
+!$acc&, sinr
 # endif
-# ifdef NBQ_NUDGING
-!$acc&, NBQnudgcof
-# endif
-#endif /* M3FAST */
+#ifdef CUVE_BATHY
+!$acc&, hd
+!$acc&, hd2
+!$acc&, hd3
+!$acc&, hd3u
+!$acc&, hd3v
+!$acc&, hd4
+#endif
+#ifdef BATHY_SLOPE
+!$acc&, myslope
+!$acc&, myslope2
+#endif
+#ifdef K3FAST_AB3
+!$acc&, rhsu_bak
+!$acc&, rhsv_bak
+!$acc&, rhsw_bak
+#endif
 
 !sources.h
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
@@ -1811,11 +1986,11 @@
 !$acc&, warbry_north_dt
 # endif
 #endif  /* WKB_WWAVE */
-#if defined M3FAST && defined NBQ_FRC_BRY
+#if (defined M3FAST || defined K3FAST) && defined NBQ_FRC_BRY
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
 !$acc&, unbqbry_west
 !$acc&, vnbqbry_west
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, wnbqbry_west
 !$acc&, rnbqbry_west
 #  endif
@@ -1823,7 +1998,7 @@
 # if defined OBC_EAST || defined AGRIF_OBC_EAST
 !$acc&, unbqbry_east
 !$acc&, vnbqbry_east
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, wnbqbry_east
 !$acc&, rnbqbry_east
 #  endif
@@ -1831,7 +2006,7 @@
 # if defined OBC_SOUTH || defined AGRIF_OBC_SOUTH
 !$acc&, unbqbry_south
 !$acc&, vnbqbry_south
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, wnbqbry_south
 !$acc&, rnbqbry_south
 #  endif
@@ -1839,13 +2014,13 @@
 # if defined OBC_NORTH || defined AGRIF_OBC_NORTH
 !$acc&, unbqbry_north
 !$acc&, vnbqbry_north
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 !$acc&, wnbqbry_north
 !$acc&, rnbqbry_north
 #  endif
 # endif
-#endif /* M3FAST */
-#if defined NBQ && (defined W_FRC_BRY || defined AGRIF )
+#endif /* M3FAST || K3FAST */
+#if (defined NBQ || defined K3FAST) && (defined W_FRC_BRY || defined AGRIF )
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
 !$acc&, wbry_west
 # endif
@@ -1858,7 +2033,7 @@
 # if defined OBC_NORTH || defined AGRIF_OBC_NORTH
 !$acc&, wbry_north
 # endif
-#endif /* NBQ */
+#endif /* NBQ || defined K3FAST */
 
 !tides.h
 #if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES

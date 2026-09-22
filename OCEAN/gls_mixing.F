@@ -42,13 +42,14 @@
       call gls_mixing_tile ( Istr, Iend, Jstr, Jend,
      &                    A3d(1, 1,trd), A3d(1, 2,trd), A3d(1, 3,trd),
      &                    A3d(1, 4,trd), A3d(1, 5,trd), A2d(1, 2,trd),
-     &                    A2d(1, 3,trd), A2d(1, 4,trd), 
 #ifndef OPENACC     
+     &                    A2d(1, 3,trd), A2d(1, 4,trd), 
      &                    A2d(1, 5,trd),
      &                    A2d(1, 6,trd), A2d(1, 7,trd), A2d(1, 8,trd))
 #else
-     &                    A3d(1, 6,trd),
-     &                    A3d(1, 7,trd), A3d(1, 8,trd), A3d(1, 9,trd))
+     &                    A3d(1, 6,trd), A3d(1, 7,trd), 
+     &                    A3d(1, 8,trd),
+     &                    A3d(1, 9,trd), A3d(1, 10,trd), A3d(1, 11,trd))
 #endif
       RETURN
       END
@@ -94,7 +95,6 @@
 !
 !======================================================================
 
-      USE croco_namelist, only: dt
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_a3d, obst_nbvar, 
      &  obst_tau, obst_t, obst_c2turb
@@ -121,14 +121,16 @@
       REAL            ::  shear2      (PRIVATE_2D_SCRATCH_ARRAY,0:N-1)
       REAL            ::  vort2       (PRIVATE_2D_SCRATCH_ARRAY,0:N-1)
       REAL            ::  diss        (PRIVATE_1D_SCRATCH_ARRAY,1:N-1)
+#ifndef OPENACC      
       REAL            ::  ustar_sfc_sq(PRIVATE_2D_SCRATCH_ARRAY      )
       REAL            ::  ustar_bot_sq(PRIVATE_2D_SCRATCH_ARRAY      )
-#ifndef OPENACC      
       REAL            ::  DC          (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
       REAL            ::  FC          (PRIVATE_1D_SCRATCH_ARRAY,0:N  )
       REAL            ::  CF          (PRIVATE_1D_SCRATCH_ARRAY,1:N-1)
       REAL            ::  RH          (PRIVATE_1D_SCRATCH_ARRAY,1:N-1)
 #else
+      REAL            ::  ustar_sfc_sq(PRIVATE_2D_SCRATCH_ARRAY,0:N  )
+      REAL            ::  ustar_bot_sq(PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL            ::  DC3D        (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL            ::  FC3D        (PRIVATE_2D_SCRATCH_ARRAY,0:N  )
       REAL            ::  CF3D        (PRIVATE_2D_SCRATCH_ARRAY,1:N-1)
@@ -162,7 +164,7 @@
       REAL, PARAMETER ::  galp    =  0.53    ! parameter for Galperin
                                              ! mixing length limitation
       REAL, PARAMETER ::  chk     =  1400./g ! charnock coefficient
-# ifdef GLS_COASTAL_ROUGHNESS
+# if defined SANDBAR || defined SHOREFACE
       REAL, PARAMETER ::  Zosmin  =  1.e-2   ! min surface roughness length
       REAL, PARAMETER ::  Zobmin  =  5.e-2   ! min bottom  roughness length
 # else
@@ -347,6 +349,7 @@
 !--------------------------------------------------------------------
 !
 
+!$acc update device( trb_min )
 !$acc kernels if(compute_on_device) default(present)
 !$acc& copyin( trb_min, gls_min, cff, itke )
       
@@ -354,12 +357,16 @@
 #  define FX ustar_sfc_sq
 #  define FE ustar_bot_sq
       ig=itke         ! <-- TKE
-!$acc loop private(ustar_bot_sq,ustar_sfc_sq)
+!!!$acc loop private(ustar_bot_sq,ustar_sfc_sq,HUon_w)
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
             HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1)) SWITCH umask(i,j)
+#ifndef OPENACC      
             FX(i,j)=
+#else
+            FX(i,j,k)=
+#endif              
      &            trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
      &           +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)
           ENDDO
@@ -367,7 +374,11 @@
         DO j=jmin,jmax+1
           DO i=imin,imax
             HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1)) SWITCH vmask(i,j)
+#ifndef OPENACC      
             FE(i,j)=
+#else
+            FE(i,j,k)=
+#endif              
      &            trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
      &           +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
           ENDDO
@@ -377,19 +388,28 @@
             cff    = 2. / ( Hz(i,j,k)+ Hz(i,j,k+1) )
             tke_new(i,j,k)= trb(i,j,k,nstp,ig)
      &                     -dt*cff*pm(i,j)*pn(i,j)
+#ifndef OPENACC      
      &                       *(  FX(i+1,j)-FX(i,j)
      &                         + FE(i,j+1)-FE(i,j) )
+#else
+     &                       *(  FX(i+1,j,k)-FX(i,j,k)
+     &                         + FE(i,j+1,k)-FE(i,j,k) )
+#endif              
           ENDDO
         ENDDO
       ENDDO
 !
       ig=igls         ! <-- GLS
-!$acc loop private(ustar_bot_sq,ustar_sfc_sq)
+!!!!$acc loop private(ustar_bot_sq,ustar_sfc_sq,HUon_w)
       DO k=1,N-1
         DO j=jmin,jmax
           DO i=imin,imax+1
             HUon_w = 0.5*(Huon(i,j,k)+Huon(i,j,k+1)) SWITCH umask(i,j)
+#ifndef OPENACC      
             FX(i,j)=
+#else
+            FX(i,j,k)=
+#endif              
      &            trb(i-1,j,k,nstp,ig)*max(HUon_w,0.)
      &           +trb(i  ,j,k,nstp,ig)*min(HUon_w,0.)
           ENDDO
@@ -397,7 +417,11 @@
         DO j=jmin,jmax+1
           DO i=imin,imax
             HVom_w = 0.5*(Hvom(i,j,k)+Hvom(i,j,k+1)) SWITCH vmask(i,j)
+#ifndef OPENACC      
             FE(i,j)=
+#else
+            FE(i,j,k)=
+#endif              
      &            trb(i,j-1,k,nstp,ig)*max(HVom_w,0.)
      &           +trb(i,j  ,k,nstp,ig)*min(HVom_w,0.)
           ENDDO
@@ -407,8 +431,13 @@
             cff    = 2. / ( Hz(i,j,k)+ Hz(i,j,k+1) )
             gls_new(i,j,k)= trb(i,j,k,nstp,ig)
      &                     -dt*cff*pm(i,j)*pn(i,j)
+#ifndef OPENACC      
      &                       *(  FX(i+1,j)-FX(i,j)
      &                         + FE(i,j+1)-FE(i,j) )
+#else
+     &                       *(  FX(i+1,j,k)-FX(i,j,k)
+     &                         + FE(i,j+1,k)-FE(i,j,k) )
+#endif              
           ENDDO
         ENDDO
       ENDDO
@@ -496,7 +525,7 @@
      &                    -v(i, j, k  ,tind)-v(i, j+1, k  ,tind))
 
 # ifdef GLS_SHEAR_3D
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
                dw  = 0.5*pm(i,j)
      &                  *( wz(i+1,j,k,tind)-wz(i-1,j,k,tind))        ! dwdx
                shear2(i,j,k) = (du+dw)*(du+dw)
@@ -521,7 +550,7 @@
                dv  = 0.5*pn(i,j)
      &                  *( v(i, j+1, k+1,tind)-v(i, j, k+1,tind)     ! dvdy
      &                    +v(i, j+1, k  ,tind)-v(i, j, k  ,tind))
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
                dw  = cff*( wz(i,j,k+1,tind)-wz(i,j,k-1,tind))        ! dwdz
 #  else
                dw = 0.
@@ -555,6 +584,7 @@
 !  Compute ustar squared at the surface and at the bottom
 !--------------------------------------------------------------------
 !
+      k = 0 !! OpenACC array from 2D to 3D
       DO j=jmin,jmax
          DO i=imin,imax
 # ifdef OA_COUPLING
@@ -567,9 +597,17 @@
             su_r=0.5*(sustr(i,j)+sustr(i+1,j))
             sv_r=0.5*(svstr(i,j)+svstr(i,j+1))
 #  endif
+#  ifndef OPENACC      
             ustar_sfc_sq( i, j ) = sqrt(su_r**2+sv_r**2)
+#  else
+            ustar_sfc_sq( i, j, k ) = sqrt(su_r**2+sv_r**2)
+#  endif
 # endif
+# ifndef OPENACC      
             ustar_bot_sq( i, j ) =
+# else
+            ustar_bot_sq( i, j, k ) =
+# endif
      &                        sqrt( (0.5*(bustr(i,j)+bustr(i+1,j)))**2
      &                             +(0.5*(bvstr(i,j)+bvstr(i,j+1)))**2 )
          ENDDO
@@ -687,6 +725,7 @@
             ENDDO
 
             ! Boundary conditions
+            k = 0  !! OpenACC array are 3D
             IF( ig == itke ) THEN
                DO i=imin,imax
                   ! surface
@@ -695,11 +734,19 @@
      &                                       (zalp*wepb(i,j))**(2./3.) )
                   flux_top=zalp*wepb(i,j)
 # else
+#ifndef OPENACC      
                   trb_sfc = MAX( tke_min, cm0inv2*ustar_sfc_sq(i,j) )
+#else
+                  trb_sfc = MAX( tke_min, cm0inv2*ustar_sfc_sq(i,j,k) )
+#endif              
                   flux_top = 0.
 # endif
                   ! bottom
+#ifndef OPENACC      
                   trb_bot = MAX( tke_min, cm0inv2*ustar_bot_sq(i,j) )
+#else
+                  trb_bot = MAX( tke_min, cm0inv2*ustar_bot_sq(i,j,k) )
+#endif              
                   flux_bot = 0.
                   ! finalize
                   RHI1 = RHI1 + dt*flux_bot
@@ -713,7 +760,11 @@
 # ifdef MRL_WCI
                   z0_s=MAX( Zosmin , 0.5*whrm(i,j) )
 # else
+#  ifndef OPENACC      
                   z0_s=MAX( Zosmin , chk*ustar_sfc_sq(i,j) )   !<-- Charnock
+#  else
+                  z0_s=MAX( Zosmin , chk*ustar_sfc_sq(i,j,k) )   !<-- Charnock
+#  endif              
 # endif
                   cff = 0.5*(tke_new(i,j,N-1)+tke_new(i,j,N))
                   lgthsc = vonKar*(0.5*Hz(i,j,N)+z0_s)

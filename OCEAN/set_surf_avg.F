@@ -34,7 +34,6 @@
 ! data, when mod(iic-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
-      use croco_namelist, only: ntssurf_avg, nwrtsurf_avg
       implicit none
       integer istr,iend,jstr,jend, i,j, ilc, iflux
 # ifdef SOLVE3D

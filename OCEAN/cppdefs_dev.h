@@ -35,6 +35,14 @@
 # define SINGLE NSUB_X*NSUB_E,NSUB_X*NSUB_E !!!
 #endif
 
+/*
+    Constant tracer option (for debugging)
+*/
+#ifdef KILPATRICK
+# define CONST_TRACERS
+#else
+# undef CONST_TRACERS
+#endif
 
 /*
 ======================================================================
@@ -136,17 +144,18 @@
 #endif
 #if defined SALINITY       || defined TEMPERATURE || \
     defined PASSIVE_TRACER || defined SUBSTANCE   || \
-    defined SEDIMENT       || defined BIOLOGY
+    defined SEDIMENTS      || defined BIOLOGY
 # define TRACERS
 # define TEMPERATURE
 #endif
 
 /*
 ======================================================================
-   Activate NBQ choices for non-hydrostatic simulations
+   Activate NBQ choices for non-hydrostatic simulations (KNBQ2)
 ======================================================================
 */
 #ifdef NBQ              /* General options */
+# define KNBQ2
 # define M3FAST
 # define SOLVE3D
 # define M2FILTER_NONE  /* no filter with NBQ */
@@ -156,9 +165,12 @@
 # undef  NBQ_FREESLIP
 # undef  NBQ_HZ_PROGNOSTIC
 # undef  M3FAST_REINIT
+# ifdef TANK
+#  define NOT_NBQ_AM4
+# endif
 # undef  TRACETXT
 # undef  DIAG_CFL
-# define HZR Hzr
+# define HZR Hzr  /* KH3D: HZR -> Hz as all hydrostatic cases treated above. */
 /*
    NBQ Precise or Performance options (default: NBQ_PERF)
 */
@@ -174,22 +186,171 @@
 #  undef  NBQ_GRID_SLOW
 #  define NBQ_HZCORRECT
 # endif
+
+#elif !defined KNBQ && !defined KNHINT && !defined KHCOMP   /* Hydrostatic mode */
+
+# define HZR Hz
+
+#endif /* NBQ */
+
+/*
+======================================================================
+   Activate NBQ choices for non-hydrostatic simulations (KNBQ3)
+======================================================================
+*/   
+#if defined KNBQ || defined KH3D || defined KNHINT || defined KHCOMP
+# define KNBQ3
+# undef  K3FAST        
+# undef  K3FAST_UV
+# undef  K3SLOW_W
+# undef  K3FAST_W
+# undef  K3FAST_RHO
+# undef  K3FAST_ZETAW
+# undef  K3FAST_DUVNBQ
+# undef  K3FAST_C3D_UVSF
+# undef  K3FAST_C3D_UVFS
+# undef  K3FAST_C3D_WSF
+# undef  K3FAST_C3D_WFS
+# undef  NBQ_GRID_SLOW
+# undef  NBQ_HZCORRECT
+# undef  K3FAST_AM4 
+# undef  K3FAST_COUPLING2D
+# undef  K3FAST_COUPLING3D
+# undef  K3FAST_BOTH
+# undef  K3FAST_COUPLING_SCH0
+# undef  K3FAST_COUPLING_SCH1
+# undef  K3FAST_COUPLING_SCH2
+# undef  K3FAST_COUPLINGW_SCH0
+# undef  K3FAST_COUPLINGW_SCH1
+# undef  K3FAST_COUPLINGW_SCH2
+# undef  KNHINT_3M
+# undef  K3FAST_AVG_CLASSIC
+# undef  K3FAST_PG2
+# undef  UV_VADV_WENO5_INTC6    
+# ifdef KNBQ    
+#   define K3FAST        
+#   define K3FAST_UV
+#   define K3SLOW_W
+#   define K3FAST_W
+#   define K3FAST_RHO
+#   define K3FAST_ZETAW
+#   define K3FAST_DUVNBQ
+#   define K3FAST_C3D_UVSF
+#   define K3FAST_C3D_UVFS
+#   define K3FAST_C3D_WSF
+#   define K3FAST_C3D_WFS
+#   define NBQ_HZCORRECT
+#   define NBQ_HZCORRECT_ZETA
+#   define K3FAST_AM4 
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLINGW_SCH0
+#   undef  K3FAST_PG2
+# elif defined KH3D
+#   define K3FAST   
+#   define K3FAST_AM4
+#   define NBQ_GRID_SLOW
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLINGW_SCH0
+#   define K3FAST_AVG_CLASSIC
+# elif defined KHCOMP
+#   define K3FAST        
+#   define K3FAST_UV
+#   define K3FAST_W
+#   define K3FAST_RHO
+#   define K3FAST_C3D_UVSF
+#   define K3FAST_AM4
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH1
+#   define K3FAST_COUPLINGW_SCH1
+#   define K3FAST_AVG_CLASSIC
+# elif defined KNHINT
+#   define K3FAST        
+#   define K3FAST_BOTH
+#   define K3FAST_UV
+#   define K3SLOW_W
+#   define K3FAST_W
+#   define K3FAST_RHO
+#   define K3FAST_C3D_UVSF
+#   define K3FAST_C3D_UVFS
+#   define K3FAST_C3D_WSF
+#   define K3FAST_C3D_WFS
+#   define K3FAST_AM4
+#   define  KNHINT_WH
+#   undef  KNHINT_ZETAW
+#   define  K3FAST_DUVNBQ2
+#   ifdef KNHINT_ZETAW
+#    define NBQ_HZCORRECT
+#    define NBQ_HZCORRECT_ZETA
+#   endif
+#   define K3FAST_COUPLING2D
+#   define K3FAST_COUPLING_SCH0
+#   define K3FAST_COUPLINGW_SCH0
+#   define KNHINT_3M
+#   define KNHINT_CORR
+#   define K3FAST_AVG_CLASSIC
+#   define K3FAST_PG2
+# endif
+!# ifdef NOT_NBQ_AM4
+!#   undef K3FAST_AM4
+!# endif
+/*
+   General options (all kernels)
+*/
+# define K3FAST_HIS
+# if defined KH3D
+#  define M2FILTER_NONE  /* no filter with NBQ */
+#  undef  M2FILTER_POWER
+# endif
+/*
+   All keys but KH3D 
+*/
+# if defined KNBQ || defined KHCOMP  || defined KNHINT   
+#  define SOLVE3D
+#  define M2FILTER_NONE  /* no filter with KNBQ */
+#  undef  M2FILTER_POWER
+#  define NBQ_IMP
+#  undef  NBQ_THETAIMP
+#  ifdef SPONGE
+#   define  NBQ_SPONGE
+#  endif
+#  undef  NBQ_FREESLIP
+#  undef  NBQ_HZ_PROGNOSTIC
+#  undef  K3FAST_REINIT
+#  undef  TRACETXT
+#  define HZR Hzr
+/*
+    KNBQ Precise or Performance options (default: NBQ_PERF) 
+*/
+#  ifndef NBQ_PRECISE
+#   define NBQ_PERF
+#  endif
+#  ifdef NBQ_PERF
+#   undef  NBQ_MASS
+#   define NBQ_GRID_SLOW
+#  else
+#   define NBQ_MASS
+#   undef  NBQ_GRID_SLOW
+#  endif
+# endif  /* KNBQ || KNHINT || KHCOMP */
+#endif  /* KNBQ || KNHINT || KHCOMP || KH3D */
+
+#if defined NBQ || defined KNBQ || defined KHCOMP  || defined KNHINT || defined KH3D
 /*
    Options for wz HADV numerical schemes (default C4)
 */
-# ifdef W_HADV_UP5  /* Check if options are defined in cppdefs.h */
+# ifdef W_HADV_SPLINES  /* Check if options are defined in cppdefs.h */
+# elif defined W_HADV_TVD
 # elif defined W_HADV_WENO5
-# elif defined W_HADV_UP3
-# elif defined W_HADV_C2
 # elif defined W_HADV_C4
-# elif defined W_HADV_C6
+#  elif defined W_HADV_C2
 # else
-#  undef  W_HADV_UP5      /* 5th-order upwind horizontal advection  */
-#  define W_HADV_WENO5    /* 5th-order WENOZ horizontal advection     */
-#  undef  W_HADV_UP3      /* 3rd-order upwind horizontal advection  */
-#  undef  W_HADV_C2       /* 2nd-order centered horizontal advection  */
-#  undef  W_HADV_C4       /* 4th-order centered horizontal advection  */
-#  undef  W_HADV_C6       /* 6th-order centered horizontal advection  */
+#  undef  W_HADV_SPLINES  /* Splines vertical advection             */
+#  undef  W_HADV_TVD      /* TVD vertical advection                 */
+#  define W_HADV_WENO5    /* 5th-order WENOZ vertical advection     */
+#  undef  W_HADV_C4       /* 2nd-order centered vertical advection  */
+#  undef  W_HADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
    Options for wz VADV numerical schemes (default SPLINES)
@@ -203,7 +364,7 @@
 #  undef  W_VADV_C2       /* 2nd-order centered vertical advection  */
 # endif
 /*
-   NBQ Open boundary conditions
+   NBQ Open boundary conditions (Recall "all but H3D")
 */
 # if defined OBC_WEST  || defined OBC_EAST  || \
      defined OBC_NORTH || defined OBC_SOUTH
@@ -214,26 +375,32 @@
 #  undef  OBC_NBQSPECIFIED   /*  NBQ Specified conditions       */
 #  define OBC_WORLANSKI      /*  W Radiative conditions         */
 #  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
-#  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  undef NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  undef NBQ_NUDGING_W      /* interior/bdy forcing/nudging (W)*/
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
 # endif
-
-#else                /* Hydrostatic mode */
-
-# define HZR Hz
-
-#endif  /* NBQ */
-
+/* 
+   SACOUS 
+*/
+# ifdef K3FAST_SACOUS
+#  undef NBQ_IMP
+# endif
+# ifdef K3FAST_SOFAR
+#  define K3FAST_CSVISC2K
+# endif
+#endif  /* NBQ || KNBQ || KNHINT || KHCOMP || KH3D */
 /*
 ======================================================================
    Activate FAST timestep 3D dynamics for hydrostatic simulations
    -- Fast friction BSTRESS_FAST --
 ======================================================================
 */
-#ifdef BSTRESS_FAST
+#if defined BSTRESS_FAST && defined KNBQ2
 # define M3FAST
+#elif defined BSTRESS_FAST && defined KNBQ3
+# define K3FAST
 #endif
 #if !defined NBQ && defined M3FAST       /* General options */
 # define SOLVE3D
@@ -265,7 +432,8 @@
 */
 #if defined SOLVE3D
 # define VAR_RHO_2D
-# if !defined NONLIN_EOS && !defined NO_RESET_RHO0
+# if !defined NONLIN_EOS && !defined INNERSHELF \
+                         && !defined MOVING_BATHY
 #  define RESET_RHO0
 # endif
 #endif
@@ -285,10 +453,18 @@
    as the weight value.
 ======================================================================
 */
-#ifdef PGF_BASIC_JACOBIAN
-# ifndef WJ_GRADP
-#  define WJ_GRADP 0.125
-# endif
+#if defined BASIN || defined EQUATOR  || defined GRAV_ADJ \
+                  || defined SOLITON  || defined JET \
+                  || defined ACOUSTIC || defined VORTEX \
+                  || defined THACKER  || defined TANK \
+                  || defined KH_INST  || defined TS_HADV_TEST \
+                  || defined AgAc
+# define PGF_FLAT_BOTTOM
+#elif defined RIP || defined FLASH_RIP
+# define PGF_BASIC_JACOBIAN
+# define WJ_GRADP 0.125
+#elif defined PGF_BASIC_JACOBIAN
+# define WJ_GRADP 0.125
 #endif
 
 /*
@@ -352,7 +528,7 @@
 /*
    Set UP3 scheme in barotropic equations for 2DH applications
 */
-#if !defined SOLVE3D && !defined NO_M2_HADV_UP3
+#if !defined SOLVE3D && !defined SOLITON
 # define M2_HADV_UP3
 #endif
 /*
@@ -468,7 +644,7 @@
    If BIO_HADV_WENO5 is chosen, the advection scheme for passive tracers is
    independent from that selected for the two active tracers (TS_HADV)
 */
-#if defined BIO_HADV_WENO5 || defined SUBSTANCE
+#ifdef BIO_HADV_WENO5
 # if defined TEMPERATURE && defined SALINITY
 #  define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
 # elif defined TEMPERATURE || defined SALINITY
@@ -508,7 +684,7 @@
 ======================================================================
 */
 #ifdef SPONGE
-# ifndef NO_SPONGE_GRID
+# ifndef INNERSHELF
 #  define SPONGE_GRID
 # endif
 # define SPONGE_DIF2
@@ -527,6 +703,7 @@
 
 # if defined GLS_KOMEGA
 # elif defined GLS_KEPSILON
+# elif defined GLS_GEN
 # else
 #  define GLS_KEPSILON
 # endif
@@ -703,6 +880,10 @@
 # endif
 # define WKB_ADD_DIFF
 # define WKB_ADD_DIFFRACTION
+# if defined SHOREFACE || defined SANDBAR \
+                       || (defined RIP && !defined BISCA)
+#  define ANA_BRY_WKB
+# endif
 #endif
 
 #ifdef MRL_WCI
@@ -790,9 +971,10 @@
 ======================================================================
 */
 #ifndef BSTRESS_FAST
-# ifndef NO_LIMIT_BSTRESS
-#  define LIMIT_BSTRESS
-# endif
+# define LIMIT_BSTRESS
+#endif
+#ifdef INNERSHELF
+# undef LIMIT_BSTRESS
 #endif
 /*
 ======================================================================
@@ -862,6 +1044,11 @@
 #   define SLOPE_LESSER        /* default: Lesser        */
 #  endif
 # endif /* BEDLOAD */
+# ifdef DUNE
+#  ifdef ANA_DUNE
+#   undef SLOPE_LESSER
+#  endif
+# endif /* DUNE */
 #endif /* SEDIMENT */
 
 /*
@@ -874,6 +1061,7 @@
 # define USE_CALENDAR
 # define TEMPERATURE
 # define SALINITY
+# define key_noTSdiss_insed
 # define key_nofluxwat_IWS
 #endif /* MUSTANG */
 
@@ -980,7 +1168,7 @@
 #  define AGRIF_OBC_M3ORLANSKI
 #  define AGRIF_OBC_TORLANSKI
 # endif
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  define AGRIF_OBC_WSPECIFIED
 #  define AGRIF_OBC_NBQSPECIFIED
 # endif
@@ -1100,3 +1288,10 @@
 #else
 #define DOLOOP2D_R(irange,jrange) DOLOOP2D(irange,jrange)
 #endif
+
+#if defined CVTK_DEBUG
+#define POW(x,exponent) (exp((exponent)*log(x)))
+#else
+#define POW(x,exponent) ((x)**exponent)
+#endif
+

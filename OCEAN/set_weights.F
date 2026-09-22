@@ -15,9 +15,7 @@ c--# define TEST_WEIGHTS
 
 
       subroutine set_weights
-      use croco_namelist, only: ndtfast, dt
       implicit none
-      
 # include "param.h"
 # include "scalars.h"
       integer i,j, iter
@@ -334,7 +332,6 @@ c**     write(*,*) shft/sum, ndtfast
 
 
       subroutine step2d_imitator (zeta, DUon, Zt_avg1, DU_avg2)
-      use croco_namelist, only: ndtfast
       implicit none
       real zeta(3), DUon, Zt_avg1, DU_avg2, zeta_new
 #  include "param.h"

@@ -52,7 +52,6 @@ MODULE init_OBSTRUCTIONS
    !! * Modules used
    USE com_OBSTRUCTIONS
    USE OBSTRUCTIONS1DV
-   USE croco_namelist, ONLY : obstname
 
    IMPLICIT NONE
 

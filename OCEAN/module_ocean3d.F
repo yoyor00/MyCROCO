@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
       module module_ocean3d
 # include "param.h"
 # include "ocean3d.h"

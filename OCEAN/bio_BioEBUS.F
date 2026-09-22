@@ -73,7 +73,6 @@
 ! nitrous oxide (N2O)
 
 
-      use croco_namelist, only: dt, rho0
       implicit none
 
       integer Istr,Iend,Jstr,Jend

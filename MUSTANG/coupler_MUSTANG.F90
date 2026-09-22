@@ -24,7 +24,6 @@ MODULE coupler_MUSTANG
     USE comMUSTANG
     USE comsubstance
     USE module_substance
-    USE croco_namelist, ONLY : rho0
 
     IMPLICIT NONE
 
@@ -87,7 +86,7 @@ MODULE coupler_MUSTANG
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast, iappel       
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN) :: WATER_CONCENTRATION   
    !! * Local declarations
-   INTEGER  :: iv, i, j, niter
+   INTEGER  :: iv, i, j
 
    !! * Executable part
    DO j=jfirst,jlast
@@ -97,26 +96,17 @@ MODULE coupler_MUSTANG
            ! extraction of  concentrations in the bottom of the water column
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! CROCO vecteur au temps 1, 2 ou 3 ????
-! iappel 1 : before mixing, index has to be nstp
-! iappel 2 : after mixing, index has to be nnew
-            IF (iappel.eq.1) THEN
-                niter=nstp
-            ELSE IF (iappel.eq.2) THEN
-                niter=nnew
-            ELSE
-                niter=1
-            ENDIF
 # ifdef SALINITY
-            sal_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,niter,itemp+1)
+            sal_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,1,itemp+1)
 # else
             sal_bottom_MUSTANG(i,j)=35.
 # endif
 # ifdef TEMPERATURE
-            temp_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,niter,itemp)
+            temp_bottom_MUSTANG(i,j)=WATER_CONCENTRATION(i,j,1,1,itemp)
 # else
             temp_bottom_MUSTANG(i,j)=15.
 # endif
-            cw_bottom_MUSTANG(1:nv_adv,i,j)=WATER_CONCENTRATION(i,j,1,niter,itsubs1:itsubs2)
+            cw_bottom_MUSTANG(1:nv_adv,i,j)=WATER_CONCENTRATION(i,j,1,1,itsubs1:itsubs2)
 
             ! thickness of the bottom water layer or altitude at the top of the bottom layer
             ! + water density in the bottom water layer

@@ -45,9 +45,8 @@
 #  endif
      &  )
 
-      use croco_namelist, only: dt, lts_hadv
 #  ifdef SUBSTANCE
-      USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
+      USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand
 #   ifdef MUSTANG
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
@@ -186,8 +185,6 @@
         if (itrc .le. 2) then
 #   elif defined TEMPERATURE || defined SALINITY
         if (itrc .eq. 1) then
-#   else 
-        if (itrc.le.0) then
 #   endif
 #  endif
 !
@@ -509,11 +506,11 @@
 #  undef PREDICTOR
 #  include "compute_vert_tracer_fluxes.h"
 
-        if (lts_hadv) then
-          do i=Istr,Iend
-            FC(i,0:N)=0.
-          enddo
-        endif
+#  ifdef TS_HADV_TEST
+        do i=Istr,Iend
+          FC(i,0:N)=0.
+        enddo
+#  endif
 
 !
 !----------------------------------------------------------
@@ -658,17 +655,26 @@
             enddo
           else                                   ! passive tracers
 !                                                 (sed. and others)
-#   ifdef SUBSTANCE
+#   ifdef MUSTANG
 !
+            if (itrc.ge.itsubs1+nv_grav .and.
+     &          itrc.le.itsubs1+nvp) then        ! sediment tracers
+              if (.not.l_subs2D(itrc-itsubs1+1)) then
 #    undef TS_MIX_IMP
 #    define CD EC
 #    define NBSUBSTEP GC
-#    include "t3dmix_tridiagonal_substance.h"
+#    include "t3dmix_tridiagonal_settling.h"
 #    undef NBSUBSTEP
 #    undef CD
 #    define TS_MIX_IMP
+              endif
+            else                                 ! other tracers
+#    undef TS_MIX_IMP
+#    include "t3dmix_tridiagonal.h"
+#    define TS_MIX_IMP
+            endif
 !
-#   else  /* SUBSTANCE */
+#   else  /* MUSTANG */
 !                                                ! passive tracers
 #    ifdef BIO_HADV_WENO5
 #     undef TS_MIX_IMP
@@ -681,24 +687,30 @@
               enddo
             enddo
 #    endif /* BIO_HADV_WENO5 */
-#   endif  /* SUBSTANCE */
+#   endif  /* MUSTANG */
 !
           endif ! itrc <= 2
 !
 #  else /* TS_MIX_IMP */
 
-#   ifndef SUBSTANCE
+#   ifndef MUSTANG
 !                                                ! all tracers
 #    include "t3dmix_tridiagonal.h"
 !
 #   else
+          if (itrc.ge.itsubs1+nv_grav .and.
+     &        itrc.le.itsubs1+nvp) then          ! sediment tracers
+            if (.not.l_subs2D(itrc-itsubs1+1)) then
 #    define CD EC
 #    define NBSUBSTEP GC
-#    include "t3dmix_tridiagonal_substance.h"
+#    include "t3dmix_tridiagonal_settling.h"
 #    undef NBSUBSTEP
 #    undef CD
-
-#   endif /* SUBSTANCE */
+            endif
+          else                                   ! all other tracers
+#    include "t3dmix_tridiagonal.h"
+          endif
+#   endif /* MUSTANG */
 
 #  endif /* TS_MIX_IMP */
 

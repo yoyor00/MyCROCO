@@ -32,6 +32,8 @@
 # include "ncscrum.h"
 # include "netcdf.inc"
 !
+!
+
 ! Grid type switch: Spherical or Cartesian.
 !
       ierr=nf_def_var (ncid, 'spherical', nf_char, 0, 0, varid)

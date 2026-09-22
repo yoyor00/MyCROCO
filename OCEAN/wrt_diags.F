@@ -18,10 +18,6 @@
 !---------------------------------------------------------------
 !
       subroutine wrt_diags
-#if defined DIAGNOSTICS_TS
-      use croco_namelist, only: nrpfdia, dianame
-#endif
-
 
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type

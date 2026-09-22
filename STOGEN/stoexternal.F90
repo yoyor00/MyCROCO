@@ -15,7 +15,6 @@ MODULE stoexternal
 
    ! include parameters from CROCO
 #include "cppdefs.h"
-   USE croco_namelist, only: dt
    USE scalars
    IMPLICIT NONE
    PRIVATE

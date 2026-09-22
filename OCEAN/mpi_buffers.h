@@ -1,7 +1,7 @@
 #if defined MPI
 # undef NP1
 # define NP1 N+1
-#ifdef M3FAST_SEDLAYERS
+#ifdef K3FAST_SEDLAYERS
 # undef  NP1
 # define NP1 N+N_sl+1
 #endif 

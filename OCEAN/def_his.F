@@ -35,10 +35,6 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
-      USE croco_namelist, ONLY: nrpfhis, ldefhis, hisname
-#ifdef AVERAGES
-      USE croco_namelist, ONLY: nrpfavg, avgname
-#endif
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
       USE comMUSTANG, ONLY : hisMust, avgMust, outMust, outMust_nbvar,
@@ -248,14 +244,19 @@
 # define vidObst avgObst
 #endif
 
-# ifdef M3FAST_HIS
+# ifdef K3FAST_HIS
 #  define vidRnbq hisRnbq
 #  define vidUnbq hisUnbq
 #  define vidVnbq hisVnbq
 #  define vidWnbq hisWnbq
 #  define vidCnbq hisCnbq
+
+#ifdef XIOS
+        return
+#endif
+
 !
-! M3FAST-kernel related variables:
+! K3FAST-kernel related variables:
 !
 !****** Init parameters ******
 !
@@ -263,7 +264,11 @@
         wrt(indxUnbq)=.true.
         wrt(indxVnbq)=.true.
         wrt(indxWnbq)=.true.
+#   ifdef K3FAST_CSVISC2K 
         wrt(indxCnbq)=.true.
+#   else
+        wrt(indxCnbq)=.false.
+#   endif  
         
         vname(1,indxRnbq)="Rnbq"
         vname(2,indxRnbq)=vname(2,indxR)
@@ -886,8 +891,9 @@
 ! Brunt Vaisala Frequency.
 !-----------------------------------------------------------------------
 !
-# if defined ANA_VMIX || defined GLS_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
         if (wrt(indxbvf)) then
           lvar=lenstr(vname(1,indxbvf))
           ierr=nf_def_var (ncid, vname(1,indxbvf)(1:lvar),
@@ -1017,7 +1023,7 @@
 !
         if (wrt(indxW)) then
           lvar=lenstr(vname(1,indxW))
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
           ierr=nf_def_var (ncid, vname(1,indxW)(1:lvar),
      &                               NF_FOUT, 4, w3dgrd, vidW)
 # else
@@ -1048,7 +1054,7 @@
      &        5, NF_FOUT, ierr)
         endif
         
-#ifdef M3FAST_HIS
+#ifdef K3FAST_HIS
 
 !****** Rho *****
 !
@@ -1603,14 +1609,19 @@
         endif
 # endif
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 ! Turbulent Kinetic Energy.
 !
         if (wrt(indxTke)) then
           lvar=lenstr(vname(1,indxTke))
+#  ifdef GLS_MIXING
           ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidTke)
+#  else
+          ierr=nf_def_var (ncid, vname(1,indxTke)(1:lvar),
+     &                              NF_FOUT, 4, r3dgrd, vidTke)
+#  endif
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTke,nf_collective)
 #  endif
@@ -1639,8 +1650,13 @@
 !
         if (wrt(indxGls)) then
           lvar=lenstr(vname(1,indxGls))
+#  ifdef GLS_MIXING
           ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidGls)
+#  else
+          ierr=nf_def_var (ncid, vname(1,indxGls)(1:lvar),
+     &                              NF_FOUT, 4, r3dgrd, vidGls)
+#  endif
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidGls,nf_collective)
 #  endif
@@ -1669,8 +1685,13 @@
 !
         if (wrt(indxLsc)) then
           lvar=lenstr(vname(1,indxLsc))
+#  ifdef GLS_MIXING
           ierr=nf_def_var (ncid, vname(1,indxLsc)(1:lvar),
      &                              NF_FOUT, 4, w3dgrd, vidLsc)
+#  else
+          ierr=nf_def_var (ncid, vname(1,indxLsc)(1:lvar),
+     &                              NF_FOUT, 4, r3dgrd, vidLsc)
+#  endif
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidLsc,nf_collective)
 #  endif
@@ -2930,9 +2951,9 @@
 !
 ! 3D momenta in XI- and ETA-directions.
 !
-#ifdef M3FAST_HIS
+#ifdef K3FAST_HIS
 !
-! M3FAST-kernel related variables:
+! K3FAST-kernel related variables:
 !
         if (wrt(indxRnbq)) then
           lvar=lenstr(vname(1,indxRnbq))
@@ -3076,8 +3097,9 @@
           ierr=nf_var_par_access(ncid,vidR,nf_collective)
 # endif
         endif
-# if defined ANA_VMIX || defined GLS_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
 !-----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.
@@ -3265,7 +3287,7 @@
         endif
 # endif
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 ! Turbulent Kinetic Energy.
 !

@@ -77,8 +77,7 @@ void WriteBeginof_SubLoop()
       writesub_loopdeclaration_scalar(List_UsedInSubroutine_Var,fortran_out);
       writesub_loopdeclaration_tab(List_UsedInSubroutine_Var,fortran_out);
       WriteArgumentDeclaration_Sort(fortran_out);
-      /* Here we are in the subloop, we need intent attribute for function name */
-      WriteFunctionDeclaration(fortran_out, 1, 1);
+      WriteFunctionDeclaration(fortran_out, 1);
    }
    else
    {
@@ -90,8 +89,7 @@ void WriteBeginof_SubLoop()
       WriteLocalParamDeclaration(fortran_out);
       WriteArgumentDeclaration_beforecall();
       if (todebug == 1) fprintf(fortran_out,"      !DEBUG: Avant WriteFunctionDeclaration\n");
-      /* Here we are in the function itself, no need for intent attribute for function name */
-      if ( functiondeclarationisdone == 0 ) WriteFunctionDeclaration(fortran_out, 1, 0);
+      if ( functiondeclarationisdone == 0 ) WriteFunctionDeclaration(fortran_out, 1);
 /*    writesub_loopdeclaration_scalar(List_SubroutineArgument_Var,fortran_out);
       writesub_loopdeclaration_tab(List_SubroutineArgument_Var,fortran_out);*/
    }
@@ -308,12 +306,8 @@ void WriteHeadofSubroutineLoop()
    sprintf(ligne,"Sub_Loop_%s.h",subroutinename);
    subloop = open_for_write(ligne);
    /*                                                                         */
-   strcpy(ligne, "");
-   if (isrecursive) strcat(ligne, "recursive ");
-   if (     ispure) strcat(ligne, "pure ");
-   if (   isimpure) strcat(ligne, "impure ");
-   if (iselemental) strcat(ligne, "elemental ");
-   sprintf(ligne,"%s subroutine Sub_Loop_%s(", ligne, subroutinename);	
+   if (isrecursive) sprintf(ligne,"recursive subroutine Sub_Loop_%s(",subroutinename);
+   else             sprintf(ligne,"subroutine Sub_Loop_%s(",subroutinename);
 
    /*                                                                         */
    if (todebug == 1) fprintf(subloop,"      !DEBUG: Avant WriteVariablelist_subloop\n");
@@ -377,8 +371,7 @@ void closeandcallsubloopandincludeit_0(int suborfun)
       WriteArgumentDeclaration_beforecall();
       if (todebug == 1) fprintf(fortran_out,"      !DEBUG: Avant WriteFunctionDeclaration\n");
 
-      /* we are in the function */
-      if ( functiondeclarationisdone == 0 ) WriteFunctionDeclaration(fortran_out, 0, 0);
+      if ( functiondeclarationisdone == 0 ) WriteFunctionDeclaration(fortran_out, 0);
       if ( !strcasecmp(subofagrifinitgrids,subroutinename) )
             fprintf(fortran_out,"      call Agrif_Init_Grids()\n");
       /* Now we add the call af the new subroutine                            */
@@ -431,8 +424,7 @@ void closeandcallsubloop_contains_0()
             printf("ICI3\n");
       WriteArgumentDeclaration_beforecall();
       if (todebug == 1) fprintf(fortran_out,"      !DEBUG: Avant WriteFunctionDeclaration\n");
-      /* not totally sure here, this routine is never called */
-      if ( functiondeclarationisdone == 0 ) WriteFunctionDeclaration(fortran_out, 0, 0);
+      if ( functiondeclarationisdone == 0 ) WriteFunctionDeclaration(fortran_out, 0);
 /*      WriteSubroutineDeclaration(0);*/
       if ( !strcasecmp(subofagrifinitgrids,subroutinename) )
           fprintf(fortran_out,"      call Agrif_Init_Grids()\n");

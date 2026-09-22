@@ -71,7 +71,6 @@
      & ,tupd_oa, tv_sclg_oa, cnb_oa
       use module_oa_periode,    only : begc_oa, tvc_oa, tc_oa, nzc_oa
      & ,swt_wfpf_oa
-      use croco_namelist, only: testcase_name
       implicit none
 !
 #include "param.h"
@@ -160,9 +159,10 @@
         end if oa_stop2
       
 #ifdef OA_TRACES
-      if (trim(testcase_name) == 'IGW' .or. trim(testcase_name) == 'TANK') then
+#if defined MILES || defined IGW || define TANK
+
         call traces_oa1(verbose_oa)
-      endif
+#endif
 #endif
 
         

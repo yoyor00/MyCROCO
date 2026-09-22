@@ -31,7 +31,7 @@
       real ekBaro(GLOBAL_2D_ARRAY,N)
 !CSDISTRIBUTE_RESHAPE ekBaro(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
       real ekfast(GLOBAL_2D_ARRAY,N)
 !CSDISTRIBUTE_RESHAPE ekfast(BLOCK_PATTERN,*) BLOCK_CLAUSE
 # endif
@@ -70,7 +70,7 @@
       real ekBaro_avg(GLOBAL_2D_ARRAY,N)
 !CSDISTRIBUTE_RESHAPE ekBaro_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
       real ekfast_avg(GLOBAL_2D_ARRAY,N)
 !CSDISTRIBUTE_RESHAPE ekfast_avg(BLOCK_PATTERN,*) BLOCK_CLAUSE
 #  endif
@@ -91,7 +91,7 @@
 # if defined DIAGNOSTICS_BARO
      &       /diag_ekBaro/ekBaro
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
      &       /diag_ekfast/ekfast
 # endif
      &       /diag_ekwrkwind/ekwrkwind
@@ -113,10 +113,11 @@
 #  if defined DIAGNOSTICS_BARO
      &       /diag_ekBaro_avg/ekBaro_avg
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
      &       /diag_ekfast_avg/ekfast_avg
 #  endif
 # endif  /* AVERAGES */
+
 
 
 #endif /* DIAGNOSTICS_KE */

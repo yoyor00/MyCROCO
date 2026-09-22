@@ -30,11 +30,15 @@ all: conv
 #	@echo ===================================================
 #	$(MAKE) -f Makefile.lex fortran.c
 
+# Check if CC supports -Wno-implicit-function-declaration
+WNO_IMPLICIT := $(shell $(CC) -Wno-implicit-function-declaration -E -x c /dev/null >/dev/null 2>&1 && echo "-Wno-implicit-function-declaration" || echo "")
+
 conv: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o ./$@
 
 %.o: %.c
-	$(CC) -Wno-implicit-function-declaration $(CFLAGS) -c $< -o $@
+	$(CC) $(WNO_IMPLICIT) $(CFLAGS) -c $< -o $@
+
 
 main.o : main.c
 fortran.o : fortran.c	

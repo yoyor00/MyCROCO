@@ -25,8 +25,6 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
-      use croco_namelist, only: ldefsurf, nrpfsurf, surfname, &
-                               ldefsurf_avg, nrpfsurf_avg, surfname_avg
       implicit none
 # include "param.h"
 # include "mixing.h"

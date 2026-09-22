@@ -32,6 +32,11 @@ variables:
   tags: [ci.inria.fr, large_more_disk]
   image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev
 
+.nvhpc: &nvhpc
+  stage: bench
+  tags: [ci.inria.fr, large]
+  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_nvidia_parallel:dev
+
 # ─── gfortran (always-on) ─────────────────────────────────────────────────
 
 gfortran:
@@ -40,6 +45,7 @@ gfortran:
     matrix:
       - { CASES: "@base",             VARIANTS: "@debug",           TITLE: "debug_base",             OPTIONS: "--debug" }
       - { CASES: "@nbq",              VARIANTS: "@debug",           TITLE: "debug_nbq",              OPTIONS: "--debug" }
+      - { CASES: "@nbq3",             VARIANTS: "@debug",           TITLE: "debug_nbq3",             OPTIONS: "--debug" }
       - { CASES: "@sediment_mustang", VARIANTS: "@debug",           TITLE: "debug_sediment_mustang", OPTIONS: "--debug" }
       - { CASES: "@other",            VARIANTS: "@debug",           TITLE: "debug_other",            OPTIONS: "--debug" }
       - { CASES: "VORTEX*",           VARIANTS: "sequential,mpi-4", TITLE: "debug_vortex",           OPTIONS: "--debug" }
@@ -123,12 +129,30 @@ ifx_schedule:
     matrix:
       - { CASES: "@base",             VARIANTS: "@debug-ifx", TITLE: "debug_ifx-base",             OPTIONS: "--debug --compare-to sequential-ifx" }
       - { CASES: "@nbq",              VARIANTS: "@debug-ifx", TITLE: "debug_ifx-nbq",              OPTIONS: "--debug --compare-to sequential-ifx" }
+      - { CASES: "@nbq3",             VARIANTS: "@debug-ifx", TITLE: "debug_ifx-nbq3",             OPTIONS: "--debug --compare-to sequential-ifx" }
       - { CASES: "@sediment_mustang", VARIANTS: "@debug-ifx", TITLE: "debug_ifx-sediment_mustang", OPTIONS: "--debug --compare-to sequential-ifx" }
       - { CASES: "@other",            VARIANTS: "@debug-ifx", TITLE: "debug_ifx-other",            OPTIONS: "--debug --compare-to sequential-ifx" }
       - { CASES: "@realist",          VARIANTS: "@debug-ifx", TITLE: "debug_ifx-realist",          OPTIONS: "--debug --compare-to sequential-ifx" }
       - { CASES: "@agrif_realist",    VARIANTS: "@debug-ifx", TITLE: "debug_ifx-agrif_realist",    OPTIONS: "--debug --compare-to sequential-ifx" }
   script:
     - ulimit -s unlimited
+    - cd $CI_PROJECT_DIR/BENCH
+    - |
+      ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
+      --rebuild --host host_ci --data-root-path $DATAROOTPATH --html -N --report --no_date_in_result_dir
+  artifacts:
+    <<: *artifacts
+    reports:
+      junit: BENCH/results/$TITLE-host_ci/junit_report.xml
+
+# ─── nvhpc (schedule) ─────────────────────────────────────────────────────
+
+nvhpc_schedule:
+  <<: [*nvhpc, *schedule]
+  parallel:
+    matrix:
+      - { CASES: "@nbq3-nvfortran", VARIANTS: "@debug-nvfortran", TITLE: "debug_nvhpc-nbq3", OPTIONS: "--debug --compare-to sequential-nvfortran" }
+  script:
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \
@@ -179,7 +203,7 @@ track_perf:
 pages:
   stage: report
   tags: [ci.inria.fr]
-  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_nml
   script:
     - mkdir -p $CI_PROJECT_DIR/public
     - cd $CI_PROJECT_DIR/BENCH && source /venv/bin/activate

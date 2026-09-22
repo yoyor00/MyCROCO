@@ -21,7 +21,6 @@ public :: flocmod_alloc
 public :: flocmod_init
 public :: flocmod_main
 public :: flocmod_comp_g
-public :: l_0Dcase
 
 ! Declaration
 

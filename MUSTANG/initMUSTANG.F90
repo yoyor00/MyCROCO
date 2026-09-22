@@ -40,7 +40,6 @@ MODULE initMUSTANG
     USE sed_MUSTANG,  ONLY : MUSTANG_E0sand
     USE comsubstance
     USE module_substance
-    USE croco_namelist, ONLY : nrrec, sedname_must, rho0, testcase_name
 #ifdef key_MUSTANG_flocmod
     USE flocmod, ONLY : flocmod_alloc, flocmod_init
     USE flocmod, ONLY : f_ws, f_diam, f_vol, f_rho, f_mass
@@ -83,8 +82,7 @@ MODULE initMUSTANG
 
     namelist /namsedim_bottomstress/ l_z0seduni,                              &
                                      z0seduni, z0sedmud, z0sedbedrock,        &
-                                     l_tauskin_center,l_tauskin_ubar,         &
-                                     l_tauskin_upwind, l_fricwave, fricwav,   &
+                                     l_fricwave, fricwav,                     &
                                      l_z0hydro_coupl_init,                    & 
                                      l_z0hydro_coupl,                         &
                                      coef_z0_coupl,                           &
@@ -251,7 +249,12 @@ CONTAINS
     ! Floculation module
 #ifdef key_MUSTANG_flocmod
     CALL flocmod_alloc(nv_mud)
-    l_0Dcase = (trim(testcase_name) == 'SED_TOY_FLOC_0D')
+#ifdef SED_TOY_FLOC_0D
+    ! for 0D test case, we need to suppress all settling process
+    l_0Dcase = .true.
+#else
+    l_0Dcase = .false.
+#endif
     CALL flocmod_init(l_ADS, l_ASH, l_COLLFRAG,             &
         f_dp0, f_nf, f_nb_frag, f_alpha, f_beta, f_ater,    &
         f_ero_frac, f_ero_nbfrag, f_ero_iv, f_mneg_param,   &
@@ -440,8 +443,8 @@ CONTAINS
 #endif
     READ(50, namdredging); rewind(50)
 
-    CLOSE(50)
-    
+    CLOSE(50) 
+   
     END SUBROUTINE MUSTANG_readnml
 !!===========================================================================
 
@@ -1079,7 +1082,7 @@ CONTAINS
  ! CVSED
   
        c_sedtot(:,:,:)=0.0_rsh
-       do iv=-1,nv_adv ! no fix substance in sed
+       do iv=-1,nv_tot 
  
         if (iv == -1) then
            nomcv='temp_sed'
@@ -1495,12 +1498,13 @@ CONTAINS
     !&E ** Purpose : prepare needed output arrays
     !&E--------------------------------------------------------------------------
 
+#if defined key_BLOOM_insed
+        USE bioloinit,  ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
 
-#if defined BLOOM && defined key_BLOOM_insed
-    USE comBIOLink , ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
-    ALLOCATE(var2D_diagsed(GLOBAL_2D_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
-    ALLOCATE(var3D_diagsed(nk_nivsed_out,GLOBAL_2D_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
+        ALLOCATE(var2D_diagsed(GLOBAL_2D_ARRAY,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d))
+        ALLOCATE(var3D_diagsed(nk_nivsed_out,GLOBAL_2D_ARRAY,ndiag_tot-ndiag_3d_sed+1:ndiag_tot))
 #endif
+
         IF (l_outsed_hsed) THEN
             ALLOCATE(var2D_hsed(GLOBAL_2D_ARRAY))
             var2D_hsed(GLOBAL_2D_ARRAY) = 0.0_rsh
@@ -1918,11 +1922,6 @@ CONTAINS
             vname_Must(1,indx) = TRIM(name_var(isubs))//'_sed'
             vname_Must(2,indx) = TRIM(long_name_var(isubs))//'_sed'
             vname_Must(3,indx) = unit_var(isubs)
-#           if defined BLOOM && defined key_BLOOM_insed
-             if(isubs .gt. nvpc .and. isubs .le. nvp) then
-               vname_Must(3,indx) = "mmol/kgSed"
-             endif
-#           endif
             vname_Must(4,indx) = TRIM(ADJUSTL(ADJUSTR(standard_name_var(isubs))))//', scalar, series'
             vname_Must(5,indx) = ' '
             vname_Must(6,indx) = ' '
@@ -2621,14 +2620,6 @@ CONTAINS
     DO iv = 1, nv_adv-nvp
         ivdiss(iv) = iv + nvp
     ENDDO  
-#endif
-#if defined key_noTSdiss_insed
-    ALLOCATE(D0_funcT_opt(nv_state))
-    D0_funcT_opt(:)=1
-    ALLOCATE(D0_m0(nv_state))
-    D0_m0(:)=1.0_rsh
-    ALLOCATE(D0_m1(nv_state))
-    D0_m1(:)=0.0_rsh
 #endif
 #endif
 

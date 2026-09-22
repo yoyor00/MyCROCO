@@ -38,29 +38,91 @@
 !
 !  Set configuration parameters or get from croco.in file
 !
-#ifdef WAVE_MAKER_DATA
+#ifdef ROGUE_WAVE
 # define WAVE_MAKER_SPECTRUM
 
+#elif defined RIP && !defined MRL_WCI
+# ifdef WAVE_MAKER_SPECTRUM
+#  define WAVE_MAKER_JONSWAP
+#  undef  WAVE_MAKER_GAUSSIAN
+# else
+#  undef  WAVE_MAKER_BICHROMATIC
+#  undef  STOKES_WAVES
+# endif
+        wp=11.            ! period
+        wa=0.4            ! amplitude
+        wd=-10.           ! incidence angle (deg)
+        wds=30.           ! directional spread (deg)
+                          !  -> crest length = wl/(2*sin(wds))
+#elif defined SWASH
+# ifdef SWASH_GLOBEX_B2
+#  define WAVE_MAKER_BICHROMATIC
+        wf1=2*pi*0.42     ! GLOBEX B2
+        wf2=2*pi*0.462
+        wa1=0.09
+        wa2=0.01
+# elif defined SWASH_GLOBEX_B3
+#  define WAVE_MAKER_BICHROMATIC
+        wf1=2*pi*0.42     ! GLOBEX B3
+        wf2=2*pi*0.462
+        wa1=0.07
+        wa2=0.03
+# elif defined SWASH_GLOBEX_A3
+#  define WAVE_MAKER_JONSWAP
+        wp=2.25           ! period
+        wa=0.0354         ! amplitude
+        gamma=20.         ! JONSWAP peakedness parameter
+# else
+        wp=2.
+        wa=0.0442
+# endif
+        wd=0.
+        wds=0.
+#elif defined SANDBAR && !defined MRL_WCI
+# define WAVE_MAKER_JONSWAP
+# ifdef SANDBAR_OFFSHORE
+        wp=5.             ! period
+        wa=0.49           ! amplitude
+        gamma=3.3         ! JONSWAP peakedness parameter
+# else
+        wp=8.             ! period
+        wa=0.21           ! amplitude
+        gamma=3.3         ! JONSWAP peakedness parameter
+# endif
+        wd=0.
+        wds=0.
+#elif defined DUCK3D
+# define WAVE_MAKER_JONSWAP
+        wp=14.            ! period
+        wa=0.5            ! amplitude
+        gamma=3.3         ! JONSWAP peakedness parameter
+        wd=-10.           ! incidence angle (deg)
+        wds=30.           ! directional spread (deg)
+                          !  -> crest length = wl/(2*sin(wds))
 #else
 !
 !  get parameters from croco.in
 !
-        wa=wmaker_amp        ! amplitude
-        wp=wmaker_prd        ! period
-        wd=wmaker_dir        ! incidence angle
-        wds=wmaker_dsp       ! directional spread
-        gamma=wmaker_fsp     ! JONSWAP peakedness parameter
-        wf1=2*pi*wmaker_wf1  ! bichromatic: first frequency [rad/s]
-        wf2=2*pi*wmaker_wf2  ! bichromatic: second frequency [rad/s]
-        wa1=wmaker_wa1       ! bichromatic: first amplitude [m]
-        wa2=wmaker_wa2       ! bichromatic: second amplitude [m]
+        wa=wmaker_amp     ! amplitude
+        wp=wmaker_prd     ! period
+        wd=wmaker_dir     ! incidence angle
+        wds=wmaker_dsp    ! directional spread
+        gamma=wmaker_fsp  ! JONSWAP peakedness parameter
 #endif
+!
+        wf=2*pi/wp        ! frequency
 !
 !  Time & space origins
 !
+#ifdef ROGUE_WAVE
+        x0=14.1
+        y0=0.
+        time0=64.
+#else
         x0=xr(IB0,0)
         y0=0.
         time0=0.
+#endif
 !
 !  Convert angles to rad
 !
@@ -77,13 +139,11 @@
 !
 !  Peak frequency and wavenumber
 !
-#ifndef WAVE_MAKER_DATA
         h0=h(IB0,1)
         wf=2*pi/wp          ! peak frequency
         khd=h0*wf*wf/g      ! peak wavenumber
         wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                   khd*(K5+K6*khd)))))) )/h0
-#endif
 !
 #if defined WAVE_MAKER_JONSWAP || defined WAVE_MAKER_GAUSSIAN
 # define WAVE_MAKER_SPECTRUM
@@ -93,21 +153,21 @@
 !  Initialisation
 !--------------------------------------------------------------------
 !
-#ifdef WAVE_MAKER_DATA
+#ifdef ROGUE_WAVE
 !
 !  Read file
 !
         if (FIRST_TIME_STEP) then
+!         open(117,file='datwaves_CORR1.txt',form='formatted',status='old')
           open(117,file='datwaves.txt',form='formatted',status='old')
-          do iw=1,Nfrq  !--> forces.h
-            read(117,*) wa_bry(iw),wf_bry(iw),wpha_bry(iw),wk_bry(iw)
-!            khd=h0*wf_bry(iw)**2/g  ! compute wavenumber if not given
+          do k=1,Nfrq !--> Nfrq=320 in forces.h
+            read(117,*) wa_bry(k), wf_bry(k), wpha_bry(k), wk_bry(k)
+            wa_bry(k)=wa_bry(k)*0.154/0.05  ! correct amplitude
+            ! wpha_bry(k)=wpha_bry(k) + 1.5*pi
+!            khd=h0*wf_bry(k)**2/g      ! recompute wavenumber
 !            kh=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
 !     &                                       khd*(K5+K6*khd)))))) )
-!            wk_bry(iw)=kh/h0
-             wd=0.
-             wkx_bry(iw)=wk_bry(iw)*cos(wd)
-             wky_bry(iw)=wk_bry(iw)*sin(wd)
+!            wk_bry(k)=kh/h0
           enddo
         endif
         ramp=tanh(dt/2.*float(iic-ntstart))
@@ -285,7 +345,7 @@
 !
         ramp=tanh(dt/wp*float(iic-ntstart))
         wa=wa*ramp
-#endif /* WAVE_MAKER_DATA ... */
+#endif /* ROGUE_WAVE ... */
 !
 !--------------------------------------------------------------------
 !  Sea level zetabry
@@ -341,7 +401,7 @@
      &                   (4.*sigma**3)*cos(2.*theta)
 #  endif
      &                     )*cff_spread
-# endif /* WAVE_MAKER_DATA ... */
+# endif /* ROGUE_WAVE ... */
         enddo  ! j loop
 #endif /* Z_FRC_BRY */
 !
@@ -353,7 +413,7 @@
         do j=JstrR,JendR
           h0=0.5*(h(IB0,j)+h(IB1,j))
           Du=h0
-# ifdef WAVE_MAKER_DATA
+# ifdef ROGUE_WAVE
           do k=1,N
             UBRY(j,k)=0.
             Zu=Du+0.5*(z_r(IB0,j,k)+z_r(IB1,j,k))
@@ -412,11 +472,10 @@
      &              +cff2*cosh(2*wk*Zu)
 #  endif
           enddo
-# endif /* WAVE_MAKER_DATA */
+# endif /* ROGUE_WAVE */
 
         enddo  ! j loop
 
-# ifndef WAVE_MAKER_DATA
         do j=JstrR,JendR                  ! compensation flow
           Du=0.5*(h(IB0,j)+h(IB1,j))
           cff1=0.5*g*wa*wa*wk/(wf*Du)
@@ -424,7 +483,6 @@
             UBRY(j,k)=UBRY(j,k) - cff1
           enddo
         enddo
-# endif
 
 #endif /* M3_FRC_BRY */
 
@@ -449,7 +507,7 @@
         do j=JstrV,JendR
           h0=0.5*(h(IB0,j)+h(IB0,j-1))
           Dv=h0
-# ifdef WAVE_MAKER_DATA
+# if defined ROGUE_WAVE || defined SWASH || defined SANDBAR
           do k=1,N
             VBRY(j,k)=0.
           enddo
@@ -465,11 +523,6 @@
           enddo
 
 # else
-          if (trim(testcase_name) == 'SWASH') then
-            do k=1,N
-              VBRY(j,k)=0.
-            enddo
-          else
           xv=0.5*(xr(IB0,j)+xr(IB0,j-1))-x0
           yv=0.5*(yr(IB0,j)+yr(IB0,j-1))-y0
           theta=xv*coswd*coswds*wk
@@ -489,7 +542,6 @@
      &              +cff2*cosh(2*wk*Zv)
 #  endif
           enddo
-          endif ! SWASH
 # endif /* WAVE_MAKER_SPECTRUM */
         enddo  ! j loop
 #endif /* M3_FRC_BRY */

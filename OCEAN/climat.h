@@ -61,8 +61,8 @@
       real tclm(GLOBAL_2D_ARRAY,N,NT)
       common /climat_tclm/tclm
 # endif
-# if defined TRACERS && defined TCLIMATOLOGY
-#  ifdef TNUDGING
+# if defined TRACERS && (defined TCLIMATOLOGY || defined CANARY) /* Potential pb */
+#  if defined TNUDGING || defined CANARY
       real Tnudgcof(GLOBAL_2D_ARRAY,N,NT)
       common /climat_Tnudgcof/Tnudgcof
 #  endif
@@ -109,6 +109,10 @@
       real uclm(GLOBAL_2D_ARRAY,N)
       real vclm(GLOBAL_2D_ARRAY,N)
       common /climat_uclm/uclm /climat_vclm/vclm
+# ifdef K3SLOW_W
+      real wclm(GLOBAL_2D_ARRAY,0:N)
+      common /climat_wclm/wclm
+# endif
 #endif
 #ifdef M2CLIMATOLOGY
 # ifdef M2NUDGING
@@ -180,13 +184,13 @@
 # undef GLOBAL_1D_ETA
 #endif
 
-#if defined M3FAST && (defined NBQCLIMATOLOGY || \
+#if (defined M3FAST || defined K3FAST) && (defined NBQCLIMATOLOGY || \
                    (defined AGRIF && !defined NBQ_FRC_BRY))
       real unbqclm(GLOBAL_2D_ARRAY,N)
       real vnbqclm(GLOBAL_2D_ARRAY,N)
       common /climat_unbqclm/unbqclm
       common /climat_vnbqclm/vnbqclm
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
       real wnbqclm(GLOBAL_2D_ARRAY,0:N)
       real rnbqclm(GLOBAL_2D_ARRAY,N)
       common /climat_wnbqclm/wnbqclm

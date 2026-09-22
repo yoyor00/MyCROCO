@@ -1,10 +1,10 @@
+! $Id: get_initial.F 1458 2014-02-03 15:01:25Z gcambon $
+!
 !======================================================================
-! CROCO is derived from the ROMS-AGRIF branch of ROMS.
-! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
-! from the UCLA branch (Shchepetkin et al.) and the Rutgers
-! University branch (Arango et al.), both under MIT/X style license.
-! Copyright (C) 2005-2026 CROCO Development Team
-! License: CeCILL-2.1 - see LICENSE.txt
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! The two other branches from UCLA (Shchepetkin et al)
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 !
 ! CROCO website : https://www.croco-ocean.org
 !======================================================================
@@ -13,7 +13,6 @@
                                                 ! Read initial conditions for the
       subroutine get_initial (req_rec, tindx)   ! primitive variables from NetCDF
                                                 ! initialization file.
-      use croco_namelist
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -33,14 +32,14 @@
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
 #endif
-#if defined NBQ || defined MORPHODYN
+#if defined NBQ || defined MORPHODYN || defined K3FAST
 # include "grid.h"
 #endif
 #include "mixing.h"
 
 #if defined EXACT_RESTART
 # include "coupling.h"
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 #  include "nbq.h"
 # endif
 #endif
@@ -212,7 +211,7 @@
             endif
             start_time=start_time*time_scale
 
-# if defined XIOS && !defined USE_CALENDAR
+#if defined XIOS && !defined USE_CALENDAR
       start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
       READ(start_date_run(6:7),fmt='(i2)') start_month
@@ -230,7 +229,7 @@
 #endif
 
 #if defined USE_CALENDAR
-      call tool_origindate(ncid,varid,origin_date_in_sec)
+            call tool_origindate(ncid,varid,origin_date_in_sec)
       MPI_master_only write(stdout,'(/2x,A,1x,A/)')
      &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
      &    tool_sectodat(origin_date_in_sec)
@@ -849,6 +848,25 @@
         goto 99                                           !--> ERROR
       endif
 !
+! 3D momentum component in the vertical direction.	(NEW)
+!
+# ifdef K3SLOW_W
+      ierr=nf_inq_varid (ncid, 'w', varid)
+      if (ierr .eq. nf_noerr) then
+        ierr=nf_fread (wz(START_2D_ARRAY,1,tindx), ncid, varid,
+     &                                         record, w3dvar)
+        if (ierr .ne. nf_noerr) then
+          MPI_master_only write(stdout,2) 'w'
+     &                                 , record, ininame(1:lstr)
+          goto 99                                         !--> ERROR
+        endif
+      else
+        MPI_master_only write(stdout,1) 'w'
+     &                                ,ininame(1:lstr)
+!        goto 99                                           !--> ERROR
+      endif
+# endif
+!
 ! Tracer variables.
 !
 # ifdef TRACERS
@@ -984,15 +1002,20 @@
 #  endif /* LMD_BKPP */
 # endif /* LMD_MIXING */
 
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 !  turbulent kinetic energy.
 !
         lvar=lenstr(vname(1,indxTke))
         ierr=nf_inq_varid (ncid, vname(1,indxTke)(1:lvar), varid)
         if (ierr .eq. nf_noerr) then
+#  ifdef GLS_MIXING
           ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,itke), ncid,
      &                                    varid, record, w3dvar)
+#  else
+          ierr=nf_fread (tke(START_2D_ARRAY,1,tindx), ncid,
+     &                                    varid, record, r3dvar)
+#  endif
           if (ierr .ne. nf_noerr) then
             MPI_master_only write(stdout,2) vname(1,indxTke)(1:lvar)
      &                                     , record, ininame(1:lstr)
@@ -1009,8 +1032,13 @@
         lvar=lenstr(vname(1,indxGls))
         ierr=nf_inq_varid (ncid, vname(1,indxGls)(1:lvar), varid)
         if (ierr .eq. nf_noerr) then
+#  ifdef GLS_MIXING                
           ierr=nf_fread (trb(START_2D_ARRAY,0,tindx,igls), ncid,
      &                                    varid, record, w3dvar)
+#  else 
+          ierr=nf_fread (Sprod3d(START_2D_ARRAY,1), ncid,
+     &                                    varid, record, r3dvar)
+#  endif           
           if (ierr .ne. nf_noerr) then
             MPI_master_only write(stdout,2) vname(1,indxGls)(1:lvar)
      &                                     , record, ininame(1:lstr)
@@ -1082,7 +1110,7 @@
 # endif  /* GLS_MIXING */
 
 # if defined LMD_MIXING
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
 !
 !  bustr
 !
@@ -1156,7 +1184,7 @@
      &                                  , ininame(1:lstr)
         endif
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !
 ! ru_nbq.
 !
@@ -1272,7 +1300,7 @@
      &                                 ,ininame(1:lstr)
       endif
 
-#  endif  /* M3FAST */
+#  endif  /* M3FAST || K3FAST */
 
 #  ifdef TS_MIX_ISO_FILT
 !
@@ -1330,7 +1358,7 @@
         call cpl_prism_define
         oasis_time = 0
         MPI_master_only write(*,*)'CPL-CROCO: OASIS_TIME',oasis_time
-#  if defined EXACT_RESTART   
+# if defined EXACT_RESTART   
       endif
 # endif
 #endif

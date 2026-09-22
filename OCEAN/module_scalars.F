@@ -1,5 +1,5 @@
 #include "cppdefs.h"
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
       module module_scalars
 # include "param.h"
 # include "scalars.h"

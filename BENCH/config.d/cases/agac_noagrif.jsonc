@@ -1,0 +1,37 @@
+{
+  // AgAc_KNBQ_noAGRIF - AGRIF-Acoustic Example with KNBQ (no AGRIF)
+  "AgAc_KNBQ_noAGRIF": {
+    "title": "AgAc (AGRIF-Acoustic) KNBQ no AGRIF (80x80m)",
+    "case": "AgAc",
+    "input_file": "TEST_CASES/croco.in.AgAc_KNBQ",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+      "4": "4x1"
+    },
+    "patches": {
+      "cppdefs.h": [
+        {
+          "mode": "replace",
+          "what": "# define AGRIF\n",
+          "by": "# undef AGRIF\n",
+          "descr": "Disable AGRIF for noAGRIF variant"
+        },
+        {
+          "mode": "replace",
+          "what": "# define AGRIF_2WAY\n",
+          "by": "# undef AGRIF_2WAY\n",
+          "descr": "Disable AGRIF_2WAY for noAGRIF variant"
+        },
+        {
+          "mode": "replace",
+          "what": "# define NC4PAR\n",
+          "by": "# undef NC4PAR\n",
+          "descr": "Disable NC4PAR for sequential variant"
+        }
+      ]
+    },
+    "check_outputs": ["AgAc_his.nc"],
+    "unsupported": ["openmp"]
+  }
+}

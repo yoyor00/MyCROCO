@@ -21,8 +21,6 @@
 !                                                                    !
 !=====================================================================
 !
-          use croco_namelist, only: ldefsta, nsta, nrpfsta,
-     &                              staname, staposname
           implicit none
 # include "param.h"
 # include "mixing.h"

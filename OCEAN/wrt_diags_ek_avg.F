@@ -20,7 +20,6 @@
 !
       subroutine wrt_diags_ek_avg
 
-      USE croco_namelist, ONLY: nrpfdiags_ek_avg, diags_ekname_avg
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
@@ -246,7 +245,7 @@
      &                      record,r3dvar,type)
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxekfast
 !
@@ -260,6 +259,37 @@
 
         endif
 !
+# ifdef DEBUG
+      i=5
+      j=5
+      write(*,*) 'Write diag ek his at : i='
+     &                      ,i,' j=',j
+      write(*,*) 'ekHadv_avg(i,j)   ',ekHadv_avg(i,j)
+      write(*,*) 'ekHdiff_avg(i,j)   ',ekHdiff_avg(i,j)
+      write(*,*) 'ekVadv_avg(i,j)   ',ekVadv_avg(i,j)
+      write(*,*) 'ekCor_avg(i,j)    ',ekCor_avg(i,j)
+      write(*,*) 'ekPrsgrd_avg(i,j) ',ekPrsgrd_avg(i,j)
+      write(*,*) 'ekHmix_avg(i,j)   ',ekHmix_avg(i,j)
+      write(*,*) 'ekVmix_avg(i,j)   ',ekVmix_avg(i,j)
+      write(*,*) 'ekvol_avg(i,j)   ',ekvol_avg(i,j)
+#  if defined DIAGNOSTICS_BARO
+      write(*,*) 'ekBaro_avg(i,j) ',ekBaro_avg(i,j)
+#  endif
+#  if defined M3FAST || defined K3FAST
+      write(*,*) 'ekfast_avg(i,j) ',ekfast_avg(i,j)
+#  endif
+      write(*,*) 'ekrate_avg(i,j)   ',ekrate_avg(i,j)
+
+      write(*,*) 'SumUVhis_avg(i,j) = ',ekHadv_avg(i,j)
+     &                                  +  ekVadv_avg(i,j)
+     &                                  +  ekCor_avg(i,j)
+     &                                  +  ekPrsgrd_avg(i,j)
+     &                                  +  ekHmix_avg(i,j)
+     &                                  +  ekVmix_avg(i,j)
+     &                                  +  ekvol_avg(i,j)
+     &                                  -  ekrate_avg(i,j)
+      write(*,*) '-----------------------------------------'
+# endif /* DEBUG */
 
   1   format(/1x,'WRT_DIAGS_EK_AVG ERROR while writing variable ''', A,
      &          ''' into diag file.', /11x, 'Time record:',

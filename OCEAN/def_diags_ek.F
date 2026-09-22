@@ -25,11 +25,6 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
-      use croco_namelist, only: ldefdiags_ek, nwrtdiags_ek,
-     &     nrpfdiags_ek, diags_ekname, ldefdiags_ek_avg,
-     &     ntsdiags_ek_avg, nwrtdiags_ek_avg, nrpfdiags_ek_avg,
-     &     diags_ekname_avg
-
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -75,7 +70,7 @@
 #  ifdef DIAGNOSTICS_BARO
 #   define viddiags_ekBaro diags_ekBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 #   define viddiags_ekfast diags_ekfast
 #  endif
 
@@ -103,7 +98,7 @@
 #  ifdef DIAGNOSTICS_BARO
 #   define viddiags_ekBaro diags_ekBaro_avg
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 #   define viddiags_ekfast diags_ekfast_avg
 #  endif
 
@@ -729,7 +724,7 @@
      &                          NF_FOUT, ierr)
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !------------------------------
 !
 ! indxekfast
@@ -1084,7 +1079,7 @@
 #  endif
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxekfast
 !
@@ -1162,7 +1157,7 @@
 # if defined DIAGNOSTICS_BARO
 #  undef viddiags_ekBaro
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 #  undef viddiags_ekfast
 # endif
 

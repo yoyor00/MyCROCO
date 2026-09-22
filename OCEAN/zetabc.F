@@ -48,6 +48,9 @@ c        call zetabc_interp_tile(Istr,Iend,Jstr,Jend)
 !
 #include "set_obc_definitions.h"
 !
+#ifdef CVTK_DEBUG
+      use my_functions
+#endif      
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j
       real cff,cx,dft,dfx, eps
@@ -84,6 +87,8 @@ C$    trd=omp_get_thread_num()
 #endif
 ! 
 !$acc kernels if(compute_on_device) default(present) async(1)
+!! async(1)
+!! a priori ce async pose problème, pas de wait associé
 
 #ifndef EW_COM_PERIODIC
 !

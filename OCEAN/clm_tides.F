@@ -44,7 +44,9 @@
 # ifdef TIDES_MAS
       USE MOD_TIDES_MAS
 # endif
-      USE croco_namelist, only:dt
+#ifdef CVTK_DEBUG
+      use my_functions
+#endif      
       implicit none
 # ifndef TIDES_MAS
 #  include "param.h"
@@ -66,6 +68,7 @@
      &     Iend, Istr, Jend, Jstr, i, j, itide
       real
      &     angle, phase, omega_loc, ramp, cff
+!$acc declare create( angle, phase, omega_loc, ramp, cff )     
       real
      &        Cangle(PRIVATE_2D_SCRATCH_ARRAY),
      &        Cphase(PRIVATE_2D_SCRATCH_ARRAY),
@@ -91,6 +94,7 @@
       ramp=TANH(dt*sec2day*float(iic-1))
 # endif
       cff=2.*pi*time
+!$acc update device( ramp, cff, angle, phase)
 !
 # if defined SSH_TIDES
 #  ifdef TIDES_MAS
@@ -445,6 +449,8 @@
 # endif /* SSH_TIDES */
 !
 # if defined UV_TIDES
+!acc update device(phase,  omega_loc, angle )       
+
 !$acc kernels if(compute_on_device) default(present)
 !
 !---------------------------------------------------------------------

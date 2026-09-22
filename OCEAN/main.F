@@ -21,18 +21,6 @@
 !
 !======================================================================
 !
-          USE croco_namelist_read, ONLY : read_nml, read_nml_fname
-          USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
-          USE croco_namelist, ONLY : ldefhis, nrrec
-#ifdef STATIONS
-          USE croco_namelist, ONLY : ldefsta
-#endif
-#if defined ABL1D && !defined XIOS
-          USE croco_namelist, ONLY : ldefablhis
-#endif
-#ifdef USE_CALENDAR
-          USE croco_namelist, ONLY : end_date
-#endif
 #if defined OA_COUPLING || defined OW_COUPLING
           USE mod_prism
 #endif
@@ -76,7 +64,9 @@
       integer tile, subs, trd, ierr
 #include "param.h"
 #include "private_scratch.h"
-#include "nbq.h"
+#if defined M3FAST || defined K3FAST 
+# include "nbq.h"
+#endif
 #include "scalars.h"
 #include "ncscrum.h"
 #include "grid.h"
@@ -112,6 +102,8 @@
 #ifdef AGRIF
       integer size_XI,size_ETA,se,sse, sz,ssz
       external :: step
+      integer iic_nbq
+      real csound0_nbq
 # include "zoom.h"
 # include "dynparam.h"
 #endif
@@ -192,12 +184,9 @@
       call init_buffer
 !
 !----------------------------------------------------------------------
-!  Read in tunable model parameters from croco namelist file
+!  Read in tunable model parameters in roms.in file
 !----------------------------------------------------------------------
 !
-      call read_nml_fname ()
-      call read_nml (ierr)
-      if (ierr.ne.0) goto 100
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !
@@ -205,7 +194,7 @@
 !  Initialize global model parameters
 !----------------------------------------------------------------------
 !
-!  Global scalar variables
+!  Gobal scalar variables
 !
       call init_scalars (ierr)
       if (ierr.ne.0) goto 100
@@ -818,7 +807,7 @@ C$OMP END MASTER
 !  Set initial non-Boussinesq (or fast 3D) parameters and variables
 !----------------------------------------------------------------------
 !
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # ifdef NBQ_MASS
 !
 ! Re-evaluate Hz and Huon,Hvom using
@@ -837,10 +826,20 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 ! Set initial NBQ param. & var.
 !
+      iic_nbq=iic
+      iic=ninfo+1
+      csound0_nbq=csound_nbq
+      csound_nbq=1.
+      soundspeed_nbq=1.
+      do tile=0,NSUB_X*NSUB_E-1
+        call diag(tile)
+      enddo
+      csound_nbq=csound0_nbq
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile)
       enddo
+      iic=iic_nbq
 #endif
 !
 !----------------------------------------------------------------------
@@ -965,6 +964,8 @@ CR      write(*,*) '  0' MYID
         do iifroot = 0,nfast+2
 # else
         nbtimes = 0
+        nbmaxprttime = ntimes+1
+        nbprttime = iicroot
         do while (nbtimes.LE.nbmaxtimes)
 # endif
 #endif
@@ -981,7 +982,7 @@ CR      write(*,*) '  0' MYID
 #ifdef MPI_TIME
         start_time1_2=PMPI_Wtime()
         exe_time_1 = start_time1_2 - start_time1_1
-          if (mynode.eq.0) write(97,*) exe_time_1
+        !  if (mynode.eq.0) write(97,*) exe_time_1
 #endif
         if (may_day_flag.ne.0) goto 99     !-->  EXIT
       enddo                                !-->  end of time step
@@ -993,7 +994,11 @@ CR      write(*,*) '  0' MYID
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
 #endif
-      ! close netCDF files.
+!$acc update host(zeta)
+C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
+      do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
+        call stop_timers()
+      enddo
       call closecdf
 #ifdef STOGEN
       call sto_mod_finalize
@@ -1018,8 +1023,6 @@ CR      write(*,*) '  0' MYID
 
  100  continue
 
-      if (may_day_flag.ne.0) ierr=1
-
 #ifdef MPI
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)
       call MPI_Barrier(MPI_COMM_WORLD, ierr)  ! XIOS
@@ -1034,7 +1037,8 @@ CR      write(*,*) '  0' MYID
       call xios_finalize()      !      > if OASIS, finalize is done by XIOS
                                 !      > if AGRIF : done using iom_context_finalize
 !!!#   if !defined AGRIF
-!!!      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
+!!!      call MPI_Finalize (ierr)  
+!       if No AGRIF : MPI_Finalize is needed
 !!!#   endif
 
 #  if !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF

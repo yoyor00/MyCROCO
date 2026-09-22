@@ -182,7 +182,7 @@
       parameter (indxHm=5)
 #endif
 #ifdef SOLVE3D
-#  ifdef M3FAST_HIS
+#  ifdef K3FAST_HIS
       integer indxRnbq, indxUnbq, indxVnbq, indxWnbq, indxCnbq
       parameter  (indxUnbq=6, indxVnbq=7, indxWnbq=8,
      &  indxCnbq=9, indxRnbq=10)
@@ -414,7 +414,7 @@
       integer indxMBaro
       parameter (indxMBaro=indxMrate+2)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       integer indxMfast
       parameter (indxMfast=indxMrate+4)
 #  endif
@@ -441,7 +441,7 @@
       integer indxvrtBaro
       parameter (indxvrtBaro=indxvrtDrag+1)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       integer indxvrtfast
       parameter (indxvrtfast=indxvrtDrag+2)
 #  endif
@@ -469,7 +469,7 @@
       integer indxekBaro
       parameter (indxekBaro=indxekDrag+1)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       integer indxekfast
       parameter (indxekfast=indxekDrag+2)
 #  endif
@@ -608,7 +608,7 @@
       integer indxHbbl
       parameter (indxHbbl=indxAkv+ntrc_temp+6)
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
       integer indxTke
       parameter (indxTke=indxAkv+ntrc_temp+7)
       integer indxGls
@@ -671,8 +671,9 @@
 # endif
 #endif /* SOLVE3D */
 
-#if defined ANA_VMIX || defined GLS_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+#if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
       integer indxbvf
       parameter (indxbvf=indxSSH+1)
 #endif
@@ -686,7 +687,7 @@
 # ifdef TS_MIX_ISO_FILT
       integer indxdRdx,indxdRde
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       integer indxru_nbq,indxrv_nbq
       integer indxru_nbq_avg2,indxrv_nbq_avg2
       integer indxqdmu_nbq,indxqdmv_nbq
@@ -1046,7 +1047,7 @@
       integer nttclm(NT), ntstf(NT), nttsrc(NT)
      &       , ntbtf(NT)
 #endif
-      integer ncidrst, nrecrst
+      integer ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
      &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
@@ -1064,15 +1065,15 @@
 # ifdef LMD_BKPP
       integer rstHbbl
 # endif
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
       integer rstAkv,rstAkt
 #  if defined SALINITY
       integer rstAks
 #  endif
       integer rstTke,rstGls
 # endif
-# ifdef M3FAST
-#  if defined LMD_MIXING || defined GLS_MIXING
+# if defined M3FAST || defined K3FAST
+#  if defined LMD_MIXING || defined GLS_MIXING || defined TKE3D_MIXING
       integer rstBustr, rstBvstr
 #  endif
 # endif
@@ -1082,11 +1083,11 @@
 #endif
 #ifdef EXACT_RESTART
       integer rstrufrc,rstrvfrc
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       integer rstru_nbq,rstrv_nbq
       integer rstru_nbq_avg2,rstrv_nbq_avg2
       integer rstqdmu_nbq,rstqdmv_nbq
-# endif  /* M3FAST */
+# endif  /* M3FAST || K3FAST */
 # ifdef TS_MIX_ISO_FILT
       integer rstdRdx,rstdRde
 # endif
@@ -1112,7 +1113,12 @@
 # endif
 #endif
 
-      integer  ncidhis, nrechis
+#ifdef STOGEN
+      integer hisXIsto1d, hisXIsto2d, hisXIsto3d
+      common /ncvars/ hisXIsto1d, hisXIsto2d, hisXIsto3d
+#endif
+
+      integer  ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
@@ -1142,14 +1148,12 @@
      &      , hisU,   hisV,   hisR,    hisHbl, hisHbbl
      &      , hisO,   hisW,   hisVisc, hisDiff
      &      , hisAkv, hisAkt, hisAks
-# ifdef STOGEN
-     &      , hisXIsto1d, hisXIsto2d, hisXIsto3d
-# endif
-# if defined ANA_VMIX || defined GLS_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &      , hisbvf
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -1186,7 +1190,7 @@
 # endif /* SEDIMENT */
 
 # if defined DIAGNOSTICS_TS
-      integer nciddia, nrecdia
+      integer nciddia, nrecdia, nrpfdia
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv(NT), diaTYadv(NT), diaTVadv(NT)
      &      , diaTHmix(NT), diaTVmix(NT)
@@ -1205,7 +1209,7 @@
 #  endif
 # endif
 # ifdef DIAGNOSTICS_UV
-        integer nciddiaM, nrecdiaM
+        integer nciddiaM, nrecdiaM, nrpfdiaM
      &      , diaTimeM,diaTime2M, diaTstepM
      &      , diaMXadv(2), diaMYadv(2), diaMVadv(2)
      &      , diaMCor(2), diaMPrsgrd(2), diaMHmix(2)
@@ -1214,7 +1218,7 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diaMBaro(2)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diaMfast(2)
 #  endif
 #  ifdef MRL_WCI
@@ -1224,7 +1228,7 @@
 #  endif
 # endif
 # ifdef DIAGNOSTICS_VRT
-      integer nciddiags_vrt, nrecdiags_vrt
+      integer nciddiags_vrt, nrecdiags_vrt, nrpfdiags_vrt
      &      , diags_vrtTime, diags_vrtTime2, diags_vrtTstep
      &      , diags_vrtXadv(2), diags_vrtYadv(2), diags_vrtHdiff(2)
      &      , diags_vrtCor(2), diags_vrtPrsgrd(2), diags_vrtHmix(2)
@@ -1233,12 +1237,12 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro(2)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diags_vrtfast(2)
 #  endif
 # endif
 # ifdef DIAGNOSTICS_KE
-      integer nciddiags_ek, nrecdiags_ek
+      integer nciddiags_ek, nrecdiags_ek, nrpfdiags_ek
      &      , diags_ekTime, diags_ekTime2, diags_ekTstep
      &      , diags_ekHadv(2), diags_ekHdiff(2),  diags_ekVadv(2)
      &      , diags_ekCor(2), diags_ekPrsgrd(2), diags_ekHmix(2)
@@ -1247,7 +1251,7 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro(2)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diags_ekfast(2)
 #  endif
 #  ifdef DIAGNOSTICS_KE_MLD
@@ -1262,7 +1266,7 @@
 #  endif
 # endif
 # ifdef DIAGNOSTICS_PV
-      integer nciddiags_pv, nrecdiags_pv
+      integer nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
      &      , diags_pvTime, diags_pvTime2, diags_pvTstep
 #  ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv(2), diags_pvpvd(2)
@@ -1283,13 +1287,13 @@
 # endif
 
 # if defined OUTPUTS_SURFACE && ! defined XIOS
-      integer ncidsurf, nrecsurf
+      integer ncidsurf, nrecsurf, nrpfsurf
      &      , surfTime, surfTime2, surfTstep
      &      , surf_surft(2), surf_surfs(2),  surf_surfz(2)
      &      , surf_surfu(2), surf_surfv(2)
 # endif
 # ifdef DIAGNOSTICS_BIO
-      integer nciddiabio, nrecdiabio
+      integer nciddiabio, nrecdiabio, nrpfdiabio
      &      , diaTimebio, diaTime2bio, diaTstepbio
      &      , diabioFlux(NumFluxTerms)
      &      , diabioVSink(NumVSinkTerms)
@@ -1303,7 +1307,7 @@
 #endif /* SOLVE3D */
 
 #ifdef AVERAGES
-      integer ncidavg, nrecavg
+      integer ncidavg, nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ, avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUwstr, avgVwstr
      &      , avgBustr, avgBvstr
@@ -1330,11 +1334,12 @@
      &      , avgU,   avgV,   avgR,    avgHbl, avgHbbl
      &      , avgO,   avgW,   avgVisc, avgDiff
      &      , avgAkv, avgAkt, avgAks
-#  if defined ANA_VMIX || defined GLS_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+#  if defined ANA_VMIX || defined BVF_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+ || defined GLS_MIXING || defined TKE3D_MIXING
      &      , avgbvf
 #  endif
-#  ifdef GLS_MIXING
+#  if defined GLS_MIXING || defined TKE3D_MIXING
      &      , avgTke, avgGls, avgLsc
 #  endif
 
@@ -1392,7 +1397,7 @@
 # endif
 # ifdef SOLVE3D
 #  if defined DIAGNOSTICS_TS && defined TRACERS
-      integer nciddia_avg, nrecdia_avg
+      integer nciddia_avg, nrecdia_avg, nrpfdia_avg
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg(NT), diaTYadv_avg(NT), diaTVadv_avg(NT)
      &      , diaTHmix_avg(NT), diaTVmix_avg(NT)
@@ -1412,7 +1417,7 @@
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_UV
-       integer nciddiaM_avg, nrecdiaM_avg
+       integer nciddiaM_avg, nrecdiaM_avg, nrpfdiaM_avg
      &      , diaTimeM_avg, diaTime2M_avg, diaTstepM_avg
      &      , diaMXadv_avg(2), diaMYadv_avg(2), diaMVadv_avg(2)
      &      , diaMCor_avg(2), diaMPrsgrd_avg(2), diaMHmix_avg(2)
@@ -1421,12 +1426,12 @@
 #   ifdef DIAGNOSTICS_BARO
      &      , diaMBaro_avg(2)
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
      &      , diaMfast_avg(2)
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_VRT
-       integer nciddiags_vrt_avg, nrecdiags_vrt_avg
+       integer nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg
      &      , diags_vrtTime_avg, diags_vrtTime2_avg, diags_vrtTstep_avg
      &      , diags_vrtXadv_avg(2), diags_vrtYadv_avg(2)
      &      , diags_vrtHdiff_avg(2)
@@ -1438,12 +1443,12 @@
 #   ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg(2)
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
      &      , diags_vrtfast_avg(2)
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_KE
-       integer nciddiags_ek_avg, nrecdiags_ek_avg
+       integer nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
      &      , diags_ekHadv_avg(2), diags_ekHdiff_avg(2)
      &      , diags_ekVadv_avg(2)
@@ -1456,12 +1461,12 @@
 #   ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg(2)
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
      &      , diags_ekfast_avg(2)
 #   endif
 #  endif
 #  ifdef DIAGNOSTICS_PV
-       integer nciddiags_pv_avg, nrecdiags_pv_avg
+       integer nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
 #   ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv_avg(2), diags_pvpvd_avg(2)
@@ -1470,7 +1475,7 @@
 #  endif
 #  if defined DIAGNOSTICS_EDDY && ! defined XIOS
        integer nciddiags_eddy_avg, nrecdiags_eddy_avg
-     &      
+     &      , nrpfdiags_eddy_avg
      &      , diags_eddyTime_avg, diags_eddyTime2_avg
      &      , diags_eddyTstep_avg
      &      , diags_eddyzz_avg(2)
@@ -1484,13 +1489,13 @@
      &      , diags_eddyugsu_avg(2), diags_eddyvgsv_avg(2)
 #  endif
 #  if defined OUTPUTS_SURFACE && ! defined XIOS
-       integer ncidsurf_avg, nrecsurf_avg
+       integer ncidsurf_avg, nrecsurf_avg, nrpfsurf_avg
      &      , surfTime_avg, surfTime2_avg, surfTstep_avg
      &      , surf_surft_avg(2), surf_surfs_avg(2), surf_surfz_avg(2)
      &      , surf_surfu_avg(2), surf_surfv_avg(2)
 #  endif
 #  ifdef DIAGNOSTICS_BIO
-      integer nciddiabio_avg, nrecdiabio_avg
+      integer nciddiabio_avg, nrecdiabio_avg, nrpfdiabio_avg
      &      , diaTimebio_avg, diaTime2bio_avg, diaTstepbio_avg
      &      , diabioFlux_avg(NumFluxTerms)
      &      , diabioVSink_avg(NumVSinkTerms)
@@ -1596,7 +1601,7 @@
      &     ,  nttclm, ntstf, nttsrc, ntbtf
 
 #endif
-     &      , ncidrst, nrecrst
+     &      , ncidrst, nrecrst,  nrpfrst
      &      , rstTime, rstTime2, rstTstep, rstZ,    rstUb,  rstVb
 #ifdef ABL1D
      &      , rstAblTke, rstAblU, rstAblV, rstAblT, rstAblQ
@@ -1614,25 +1619,25 @@
 # ifdef LMD_BKPP
      &      , rstHbbl
 # endif
-# if defined GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
      &      , rstAkv,rstAkt
 #  if defined SALINITY
      &      , rstAks
 #  endif
      &      , rstTke,rstGls
 # endif
-# ifdef M3FAST
-#  if defined GLS_MIXING || defined LMD_MIXING
+# if defined M3FAST || defined K3FAST
+#  if defined GLS_MIXING || defined LMD_MIXING || defined TKE3D_MIXING
      &      , rstBustr,rstBvstr
 #  endif
 # endif
 # ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , rstru_nbq,rstrv_nbq
      &      , rstru_nbq_avg2,rstrv_nbq_avg2
      &      , rstqdmu_nbq,rstqdmv_nbq
-#  endif  /* M3FAST */
+#  endif  /* M3FAST || K3FAST */
 #  ifdef TS_MIX_ISO_FILT
      &      , rstdRdx,rstdRde
 #  endif
@@ -1648,7 +1653,7 @@
 #ifdef BBL
      &                         , rstBBL
 #endif
-     &      , ncidhis, nrechis
+     &      , ncidhis, nrechis,  nrpfhis
      &      , hisTime, hisTime2, hisTstep, hisZ,    hisUb,  hisVb
      &      , hisBostr, hisWstr, hisUWstr, hisVWstr
      &      , hisBustr, hisBvstr
@@ -1677,14 +1682,12 @@
      &      , hisO,    hisW,     hisVisc, hisDiff
      &      , hisAkv,  hisAkt,   hisAks
      &      , hisHbl,  hisHbbl
-# ifdef STOGEN
-     &      , hisXIsto1d, hisXIsto2d, hisXIsto3d
-# endif
-# if defined ANA_VMIX || defined GLS_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &      , hisbvf
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
      &      , hisTke, hisGls, hisLsc
 # endif
 # ifdef BULK_FLUX
@@ -1713,7 +1716,7 @@
      &      , hisBBL
 #endif
 #ifdef DIAGNOSTICS_TS
-     &      , nciddia, nrecdia
+     &      , nciddia, nrecdia, nrpfdia
      &      , diaTime, diaTime2, diaTstep
      &      , diaTXadv, diaTYadv, diaTVadv, diaTHmix
      &      , diaTVmix, diaTForc, diaTrate
@@ -1729,7 +1732,7 @@
 #   endif
 # endif
 # ifdef AVERAGES
-     &      , nciddia_avg, nrecdia_avg
+     &      , nciddia_avg, nrecdia_avg, nrpfdia_avg
      &      , diaTime_avg, diaTime2_avg, diaTstep_avg
      &      , diaTXadv_avg, diaTYadv_avg, diaTVadv_avg
      &      , diaTHmix_avg, diaTVmix_avg, diaTForc_avg
@@ -1748,7 +1751,7 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_UV
-     &      , nciddiaM, nrecdiaM
+     &      , nciddiaM, nrecdiaM, nrpfdiaM
      &      , diaTimeM, diaTime2M, diaTstepM
      &      , diaMXadv, diaMYadv, diaMVadv, diaMCor
      &      , diaMPrsgrd, diaMHmix, diaMVmix, diaMVmix2, diaMrate
@@ -1756,7 +1759,7 @@
 # ifdef DIAGNOSTICS_BARO
      &      , diaMBaro
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
      &      , diaMfast
 # endif
 # ifdef MRL_WCI
@@ -1765,7 +1768,7 @@
      &      , diaMbwf, diaMfrc
 # endif
 # ifdef AVERAGES
-     &      , nciddiaM_avg, nrecdiaM_avg
+     &      , nciddiaM_avg, nrecdiaM_avg, nrpfdiaM_avg
      &      , diaTimeM_avg, diaTime2M_avg, diaTstepM_avg
      &      , diaMXadv_avg, diaMYadv_avg, diaMVadv_avg
      &      , diaMCor_avg, diaMPrsgrd_avg, diaMHmix_avg
@@ -1774,7 +1777,7 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diaMBaro_avg
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diaMfast_avg
 #  endif
 #  ifdef MRL_WCI
@@ -1785,7 +1788,7 @@
 # endif
 #endif
 #ifdef DIAGNOSTICS_VRT
-     &      , nciddiags_vrt, nrecdiags_vrt
+     &      , nciddiags_vrt, nrecdiags_vrt, nrpfdiags_vrt
      &      , diags_vrtTime, diags_vrtTime2, diags_vrtTstep
      &      , diags_vrtXadv, diags_vrtYadv, diags_vrtHdiff
      &      , diags_vrtCor
@@ -1795,11 +1798,11 @@
 # ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
      &      , diags_vrtfast
 # endif
 # ifdef AVERAGES
-     &      , nciddiags_vrt_avg, nrecdiags_vrt_avg
+     &      , nciddiags_vrt_avg, nrecdiags_vrt_avg, nrpfdiags_vrt_avg
      &      , diags_vrtTime_avg, diags_vrtTime2_avg, diags_vrtTstep_avg
      &      , diags_vrtXadv_avg, diags_vrtYadv_avg, diags_vrtHdiff_avg
      &      , diags_vrtCor_avg, diags_vrtPrsgrd_avg, diags_vrtHmix_avg
@@ -1808,13 +1811,13 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diags_vrtfast_avg
 #  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_KE
-     &      , nciddiags_ek, nrecdiags_ek
+     &      , nciddiags_ek, nrecdiags_ek, nrpfdiags_ek
      &      , diags_ekTime, diags_ekTime2, diags_ekTstep
      &      , diags_ekHadv, diags_ekHdiff,  diags_ekVadv
      &      , diags_ekCor, diags_ekPrsgrd, diags_ekHmix
@@ -1823,11 +1826,11 @@
 # ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
      &      , diags_ekfast
 # endif
 # ifdef AVERAGES
-     &      , nciddiags_ek_avg, nrecdiags_ek_avg
+     &      , nciddiags_ek_avg, nrecdiags_ek_avg, nrpfdiags_ek_avg
      &      , diags_ekTime_avg, diags_ekTime2_avg, diags_ekTstep_avg
      &      , diags_ekHadv_avg, diags_ekHdiff_avg, diags_ekVadv_avg
      &      , diags_ekCor_avg, diags_ekPrsgrd_avg, diags_ekHmix_avg
@@ -1836,20 +1839,20 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diags_ekfast_avg
 #  endif
 # endif
 #endif
 #ifdef DIAGNOSTICS_PV
-     &      , nciddiags_pv, nrecdiags_pv
+     &      , nciddiags_pv, nrecdiags_pv, nrpfdiags_pv
      &      , diags_pvTime, diags_pvTime2, diags_pvTstep
 # ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv, diags_pvpvd
 # endif
      &      , diags_pvTrhs, diags_pvMrhs
 # ifdef AVERAGES
-     &      , nciddiags_pv_avg, nrecdiags_pv_avg
+     &      , nciddiags_pv_avg, nrecdiags_pv_avg, nrpfdiags_pv_avg
      &      , diags_pvTime_avg, diags_pvTime2_avg, diags_pvTstep_avg
 #  ifdef DIAGNOSTICS_PV_FULL
      &      , diags_pvpv_avg, diags_pvpvd_avg
@@ -1858,7 +1861,7 @@
 # endif
 #endif
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
-     &      , nciddiags_eddy, nrecdiags_eddy
+     &      , nciddiags_eddy, nrecdiags_eddy, nrpfdiags_eddy
      &      , diags_eddyTime, diags_eddyTstep
      &      , diags_eddyzz
      &      , diags_eddyuu, diags_eddyvv, diags_eddyuv, diags_eddyub
@@ -1868,7 +1871,7 @@
      &      , diags_eddyugsu, diags_eddyvgsv
 # ifdef AVERAGES
      &      , nciddiags_eddy_avg, nrecdiags_eddy_avg
-     &      
+     &      , nrpfdiags_eddy_avg
      &      , diags_eddyTime_avg, diags_eddyTime2_avg
      &      , diags_eddyTstep_avg
      &      , diags_eddyzz_avg
@@ -1881,24 +1884,24 @@
 # endif
 #endif
 #if defined OUTPUTS_SURFACE && ! defined XIOS
-     &      , ncidsurf, nrecsurf
+     &      , ncidsurf, nrecsurf, nrpfsurf
      &      , surfTime, surfTime2, surfTstep
      &      , surf_surft, surf_surfs,  surf_surfz
      &      , surf_surfu, surf_surfv
 # ifdef AVERAGES
-     &      , ncidsurf_avg, nrecsurf_avg
+     &      , ncidsurf_avg, nrecsurf_avg, nrpfsurf_avg
      &      , surfTime_avg, surfTime2_avg, surfTstep_avg
      &      , surf_surft_avg, surf_surfs_avg,  surf_surfz_avg
      &      , surf_surfu_avg, surf_surfv_avg
 # endif
 #endif
 #ifdef DIAGNOSTICS_BIO
-     &      , nciddiabio, nrecdiabio
+     &      , nciddiabio, nrecdiabio, nrpfdiabio
      &      , diaTimebio, diaTime2bio, diaTstepbio, diabioFlux
      &      , diabioVSink
      &      , diabioGasExc
 # ifdef AVERAGES
-     &      , nciddiabio_avg, nrecdiabio_avg
+     &      , nciddiabio_avg, nrecdiabio_avg, nrpfdiabio_avg
      &      , diaTimebio_avg, diaTime2bio_avg, diaTstepbio_avg
      &      , diabioFlux_avg
      &      , diabioVSink_avg
@@ -1907,7 +1910,7 @@
 #endif
 
 #ifdef AVERAGES
-     &      , ncidavg,  nrecavg
+     &      , ncidavg,  nrecavg,  nrpfavg
      &      , avgTime, avgTime2, avgTstep, avgZ,    avgUb,  avgVb
      &      , avgBostr, avgWstr, avgUWstr, avgVWstr
      &      , avgBustr, avgBvstr
@@ -1939,11 +1942,12 @@
      &      , avgO,    avgW,     avgVisc,  avgDiff
      &      , avgAkv,  avgAkt,   avgAks
      &      , avgHbl,  avgHbbl
-#  if defined ANA_VMIX || defined GLS_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+#  if defined ANA_VMIX || defined BVF_MIXING \
+ || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+ || defined GLS_MIXING || defined TKE3D_MIXING
      &      , avgbvf
 #  endif
-#  ifdef GLS_MIXING
+#  if defined GLS_MIXING || defined TKE3D_MIXING
      &      , avgTke, avgGls, avgLsc
 #  endif
 #  ifdef BIOLOGY
@@ -2046,7 +2050,8 @@
      &      , wrtdiabioGasExc_avg
 # endif
 #endif
-      character*80 origin_date, start_date_run
+      character*80 title
+      character*80 origin_date, start_date_run, xios_origin_date
       integer      start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year
@@ -2054,11 +2059,103 @@
 
       REAL(kind=8) :: origin_date_in_sec, xios_origin_date_in_sec
 
-      character*180 usrname
+      character*180 ininame,  grdname,  hisname
+     &         ,   rstname,  frcname,  bulkname,  usrname
      &         ,   qbarname, tsrcname
+     &         ,   btfname
+#ifdef LOGFILE
+     &         ,  logname
+#endif
+#ifdef AVERAGES
+     &                                ,  avgname
+#endif
+#ifdef ABL1D
+     &                                 , ablname
+# ifdef AVERAGES
+     &                                 , ablname_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_TS
+     &                                ,  dianame
+# ifdef AVERAGES
+     &                                ,  dianame_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_UV
+     &                                ,  dianameM
+# ifdef AVERAGES
+     &                                ,  dianameM_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_VRT
+     &                                ,  diags_vrtname
+# ifdef AVERAGES
+     &                                ,  diags_vrtname_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_KE
+     &                                ,  diags_ekname
+# ifdef AVERAGES
+     &                                ,  diags_ekname_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_PV
+     &                                ,  diags_pvname
+# ifdef AVERAGES
+     &                                ,  diags_pvname_avg
+# endif
+#endif
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                                ,  diags_eddyname
+# ifdef AVERAGES
+     &                                ,  diags_eddyname_avg
+# endif
 #endif
+#if defined OUTPUTS_SURFACE && ! defined XIOS
+     &                                ,  surfname
+# ifdef AVERAGES
+     &                                ,  surfname_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+     &                                ,  dianamebio
+# ifdef AVERAGES
+     &                                ,  dianamebio_avg
+# endif
+#endif
+#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA)\
+ || (defined ZCLIMATOLOGY  && !defined ANA_SSH)\
+ || (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA)\
+ || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+     &                                ,   clmname
+#endif
+#ifdef FRC_BRY
+     &                                ,   bry_file
+#endif
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+     &                                ,   brywkb_file
+#endif
+#ifdef WAVE_OFFLINE
+     &                                ,   wave_file
+#endif
+#ifdef ASSIMILATION
+     &                     ,   aparnam,   assname
+#endif
+#ifdef BIOLOGY
+     &                                ,   bioname
+#endif
+#ifdef SEDIMENT
+     &                                ,   sedname
+#elif defined MUSTANG
+     &               ,   sedname_must
+#endif
+#if defined SUBSTANCE
+     &               ,    subsfilename
+#endif
+#if defined OBSTRUCTION
+     &               ,    obstname
+#endif
+
 #ifdef SOLVE3D
       character*75  vname(20, 1000)
 #else
@@ -2070,18 +2167,110 @@
 ! 26 abl1d var + 1 var Time
 #endif
 
-      common /cncscrum/
-     &             origin_date, start_date_run
-     &         ,   origin_date_in_sec
-     &         ,   xios_origin_date_in_sec
-     &         ,   usrname
+      common /cncscrum/   title
+     &         ,   origin_date, start_date_run
+     &         ,   xios_origin_date
+     &         ,   ininame,  grdname, hisname
+     &         ,   rstname,  frcname, bulkname,  usrname
      &         ,   qbarname, tsrcname
+     &         ,   btfname, origin_date_in_sec
+     &         ,   xios_origin_date_in_sec
      &         ,   start_day, start_month, start_year
      &         ,   start_hour, start_minute, start_second
      &         ,   origin_day, origin_month, origin_year
      &         ,   origin_hour, origin_minute, origin_second
+#ifdef LOGFILE
+     &         ,  logname
+#endif
+
+#ifdef AVERAGES
+     &                                ,  avgname
+#endif
+#ifdef ABL1D
+     &                                ,  ablname
+# ifdef AVERAGES
+     &                                ,  ablname_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_TS
+     &                                ,  dianame
+# ifdef AVERAGES
+     &                                ,  dianame_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_UV
+     &                                ,  dianameM
+# ifdef AVERAGES
+     &                                ,  dianameM_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_VRT
+     &                                ,  diags_vrtname
+# ifdef AVERAGES
+     &                                ,  diags_vrtname_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_KE
+     &                                ,  diags_ekname
+# ifdef AVERAGES
+     &                                ,  diags_ekname_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_PV
+     &                                ,  diags_pvname
+# ifdef AVERAGES
+     &                                ,  diags_pvname_avg
+# endif
+#endif
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                                ,  diags_eddyname
+# ifdef AVERAGES
+     &                                ,  diags_eddyname_avg
+# endif
+#endif
+#if defined OUTPUTS_SURFACE && ! defined XIOS
+     &                                ,  surfname
+# ifdef AVERAGES
+     &                                ,  surfname_avg
+# endif
+#endif
+#ifdef DIAGNOSTICS_BIO
+     &                                ,  dianamebio
+# ifdef AVERAGES
+     &                                ,  dianamebio_avg
+# endif
+#endif
+#if (defined TCLIMATOLOGY  && !defined ANA_TCLIMA)\
+ || (defined ZCLIMATOLOGY  && !defined ANA_SSH)\
+ || (defined M2CLIMATOLOGY && !defined ANA_M2CLIMA)\
+ || (defined M3CLIMATOLOGY && !defined ANA_M3CLIMA)
+     &                                ,   clmname
+#endif
+#ifdef FRC_BRY
+     &                                ,   bry_file
+#endif
+#if defined WKB_WWAVE && !defined ANA_BRY_WKB
+     &                                ,   brywkb_file
+#endif
+#ifdef WAVE_OFFLINE
+     &                                ,   wave_file
+#endif
+#ifdef ASSIMILATION
+     &                     ,   aparnam,   assname
+#endif
+#ifdef SEDIMENT
+     &                                ,   sedname
+#elif defined MUSTANG
+     &               ,   sedname_must
+#endif
+#if defined SUBSTANCE
+     &               ,    subsfilename
+#endif
+#if defined OBSTRUCTION
+     &               ,    obstname
+#endif
+#ifdef BIOLOGY
+     &                                ,   bioname
 #endif
      &                                ,   vname
 #ifdef ABL1D

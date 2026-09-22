@@ -1,0 +1,17 @@
+{
+  // CANON2D_HWI - Kelvin-Helmholtz instability with KNBQ (HWI variant)
+  "CANON2D_HWI": {
+    "title": "Canonical 2D HWI - KNBQ (503x1x128)",
+    "case": "CANON2D",
+    "input_file": "TEST_CASES/croco.in.CANON2D_HWI",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+      "4": "4x1",
+      "8": "8x1"
+    },
+    "patches": {},
+    "check_outputs": ["khinst_his.nc"],
+    "unsupported": ["openmp"]
+  }
+}

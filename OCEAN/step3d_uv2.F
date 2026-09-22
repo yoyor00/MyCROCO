@@ -59,7 +59,6 @@
 ! using implicit backward time step.
 !--------------------------------------------------------------------
 !
-      use croco_namelist, only: dt, ntimes, lts_hadv, lts_rot_or_diag, lts_per
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -206,9 +205,16 @@
 
         do k=1,N-1
           do i=IstrU,Iend
+# ifdef TKE3D_MIXING
+            cff = 2./( z_r(i,j,k+1)+z_r(i-1,j,k+1)
+     &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
+            FC(i,k)=-cff*dt*0.25*(Akv(i,j,k  )+Akv(i-1,j,k  )
+     &                          + Akv(i,j,k+1)+Akv(i-1,j,k+1))
+# else             
             FC(i,k)=-dt*(Akv(i,j,k)+Akv(i-1,j,k))
      &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
      &                   -z_r(i,j,k  )-z_r(i-1,j,k  ))
+# endif
 # ifdef VADV_ADAPT_IMP
             WC(i,k)=DC(i,0)*0.5*(Wi(i,j,k)+Wi(i-1,j,k))
 # endif
@@ -319,9 +325,12 @@
 ! ------- ------------- ------ ------ - -----
       do k=1,N-1
         do i=IstrU,Iend
-
+#  ifdef TKE3D_MIXING
+            FC(i,k)= 0.25*(Akv(i,j,k  )+Akv(i-1,j,k  )
+     &                   + Akv(i,j,k+1)+Akv(i-1,j,k+1) )       
+#  else
             FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i-1,j,k))
-
+#  endif
             cff1= 2.* (2.*MVmix(i,j,k+1,1) / (Hz(i,j,k+1)+Hz(i-1,j,k+1))
      &               - 2.*MVmix(i,j,k,1) / (Hz(i,j,k  )+Hz(i-1,j,k  )) )
      &                 /( z_r(i,j,k+1)+z_r(i-1,j,k+1)
@@ -432,9 +441,16 @@
 
           do k=1,N-1
             do i=Istr,Iend
+# ifdef TKE3D_MIXING
+              cff = 2./( z_r(i,j,k+1)+z_r(i,j-1,k+1)
+     &                     -z_r(i,j,k  )-z_r(i,j-1,k  ))
+              FC(i,k)=-cff*dt*0.25*(Akv(i,j,k  )+Akv(i,j-1,k  )
+     &                             +Akv(i,j,k+1)+Akv(i,j-1,k+1))       
+# else              
               FC(i,k)=-dt*(Akv(i,j,k)+Akv(i,j-1,k))
      &                   /( z_r(i,j,k+1)+z_r(i,j-1,k+1)
      &                     -z_r(i,j,k  )-z_r(i,j-1,k  ))
+# endif              
 # ifdef VADV_ADAPT_IMP
               WC(i,k)=DC(i,0)*0.5*(Wi(i,j,k)+Wi(i,j-1,k))
 # endif
@@ -550,9 +566,12 @@
 ! ------- ------------- ------ ------ - -----
       do k=1,N-1
         do i=Istr,Iend
-
+#  ifdef TKE3D_MIXING
+            FC(i,k)= 0.25*(Akv(i,j,k  )+Akv(i,j-1,k  ) 
+     &                   + Akv(i,j,k+1)+Akv(i,j-1,k+1))       
+#  else        
             FC(i,k)= 0.5*(Akv(i,j,k)+Akv(i,j-1,k))
-
+#  endif
             cff1= 2.* (2.*MVmix(i,j,k+1,2)/(Hz(i,j,k+1)+Hz(i,j-1,k+1))
      &               - 2.*MVmix(i,j,k  ,2)/(Hz(i,j,k  )+Hz(i,j-1,k  )) )
      &                 /( z_r(i,j,k+1)+z_r(i,j-1,k+1)
@@ -1000,65 +1019,67 @@
 !
 !--------------------------------------------------------------------
 !
-      if (lts_hadv) then
-        if (lts_rot_or_diag) then
-          do k=1,N
-            do j=jstrR,jendR
-              do i=IstrR,iendR
-                u(i,j,k,nnew) = u(i,j,k,nstp)
-              enddo
-            enddo
-            do j=jstrR,jendR
-              do i=IstrR,iendR
-                v(i,j,k,nnew) = v(i,j,k,nstp)
-              enddo
-            enddo
-          enddo
-        elseif (lts_per) then
-          cff = cos(2.*pi*(time+dt)/(float(ntimes)*dt))
-          do k=1,N
-            do j=jstrR,jendR
-              do i=IstrR,iendR
-                 u(i,j,k,nnew) = u(i,j,k,nstp) * cff
-                 u(i,j,k,nrhs) = u(i,j,k,nstp)
-              enddo
-            enddo
-            do j=JstrR,jendR
-              do i=istrR,iendR
-                v(i,j,k,nnew) = v(i,j,k,nstp) * cff
-                v(i,j,k,nrhs) = v(i,j,k,nstp)
-              enddo
-            enddo
-          enddo
-        endif
-#  if defined BD_EXCHANGE
-#   ifdef THREE_GHOST_POINTS_UV
-        call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                               u(START_2D_ARRAY,1,nrhs))
-        call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                               v(START_2D_ARRAY,1,nrhs))
-#   else
-        call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                          u(START_2D_ARRAY,1,nrhs))
-        call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                          v(START_2D_ARRAY,1,nrhs))
-#   endif
-#  endif
-        do j=Jstr,Jend
-          do k=1,N
-            do i=Istr,Iend
-              Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
-     &                                           *u(i,j,k,nnew)
-            enddo
-            do i=Istr,Iend
-              if (j.ge.JstrV) then
-                Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
-     &                                             *v(i,j,k,nnew)
-              end if
-            enddo
+# if defined TS_HADV_TEST
+#  if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
+      do k=1,N
+        do j=jstrR,jendR
+          do i=IstrR,iendR
+            u(i,j,k,nnew) = u(i,j,k,nstp)
           enddo
         enddo
-      endif
+        do j=jstrR,jendR
+          do i=IstrR,iendR
+            v(i,j,k,nnew) = v(i,j,k,nstp)
+          enddo
+        enddo
+      enddo
+#  endif
+#  if defined SOLID_BODY_PER
+      cff = cos(2.*pi*(time+dt)/(float(ntimes)*dt))
+      do k=1,N
+        do j=jstrR,jendR
+          do i=IstrR,iendR
+             u(i,j,k,nnew) = u(i,j,k,nstp) * cff
+             u(i,j,k,nrhs) = u(i,j,k,nstp)
+          enddo
+        enddo
+        do j=JstrR,jendR
+          do i=istrR,iendR
+            v(i,j,k,nnew) = v(i,j,k,nstp) * cff
+            v(i,j,k,nrhs) = v(i,j,k,nstp)
+          enddo
+        enddo
+      enddo
+#  endif
+#  if defined BD_EXCHANGE
+#   ifdef THREE_GHOST_POINTS_UV
+      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             u(START_2D_ARRAY,1,nrhs))
+      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                             v(START_2D_ARRAY,1,nrhs))
+#   else
+      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                        u(START_2D_ARRAY,1,nrhs))
+      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                        v(START_2D_ARRAY,1,nrhs))
+#   endif
+#  endif
+
+      do j=Jstr,Jend
+        do k=1,N
+          do i=Istr,Iend
+            Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+     &                                         *u(i,j,k,nnew)
+          enddo
+          do i=Istr,Iend
+            if (j.ge.JstrV) then
+              Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+     &                                           *v(i,j,k,nnew)
+            end if
+          enddo
+        enddo
+      enddo
+# endif
 !
 !--------------------------------------------------------------------
 ! Apply mass point sources
@@ -1141,6 +1162,9 @@
 #  ifdef WET_DRY
      &                                       *umask_wet(i,j)
 #  endif
+#   if defined CVTK_DEBUG && defined IGW
+            u(i,j,k,nnew) = real( u(i,j,k,nnew), kind=4 )
+#   endif          
           enddo
         enddo
       enddo
@@ -1158,6 +1182,9 @@
 #  endif
 #  ifdef WET_DRY
      &                                        *vmask_wet(i,j)
+#  endif
+#   if defined CVTK_DEBUG && defined IGW
+            v(i,j,k,nnew) = real( v(i,j,k,nnew), kind=4 )
 #  endif
           enddo
         enddo
@@ -1179,6 +1206,7 @@
      &                                           *om_u(i,j)*on_u(i,j)/dt
      &                                           - Mrate(i,j,k,1)
             Mrate(i,j,k,1)= MVmix2(i,j,k,1) + Mrate(i,j,k,1)
+
           enddo
         enddo
 
@@ -1189,11 +1217,542 @@
      &                                           *om_v(i,j)*on_v(i,j)/dt
      &                                           - Mrate(i,j,k,2)
             Mrate(i,j,k,2)= MVmix2(i,j,k,2) + Mrate(i,j,k,2)
+
           enddo
         enddo
       enddo
 
 # endif
+
+# if defined DIAGNOSTICS_VRT && ! defined DIAGNOSTICS_UV
+
+        do j=JU_RANGE
+          do i=IU_RANGE
+           k=1
+           wrkrate(i,j,1)=(0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
+     &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp))
+     &                                       *om_u(i,j)*on_u(i,j)/dt
+            do k=2,N
+                wrkrate(i,j,1) = wrkrate(i,j,1) +
+     &           ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)
+     &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp))
+     &                                       *om_u(i,j)*on_u(i,j)/dt
+            enddo
+
+! Divide u-diagnostic terms by (1/pn).
+! There after the unit of these terms are :
+! m 3 s-2
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!            cff=0.25*(pm(i,j)+pm(i-1,j))
+!     &             *(pn(i,j)+pn(i-1,j))
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            cff=0.5*(pn(i,j)+pn(i-1,j))
+
+            wrkXadv(i,j,1)=wrkXadv(i,j,1)*cff
+            wrkYadv(i,j,1)=wrkYadv(i,j,1)*cff
+            wrkHdiff(i,j,1)=wrkHdiff(i,j,1)*cff
+            wrkCor(i,j,1)=wrkCor(i,j,1)*cff
+            wrkPrsgrd(i,j,1)=wrkPrsgrd(i,j,1)*cff
+            wrkHmix(i,j,1,3-nstp)=wrkHmix(i,j,1,3-nstp)*cff
+            wrkVmix(i,j,1)=wrkVmix(i,j,1)*cff
+            wrkVmix2(i,j,1)=wrkVmix2(i,j,1)*cff
+            wrkrate(i,j,1)=wrkrate(i,j,1)*cff
+#  if defined DIAGNOSTICS_BARO
+            wrkBaro(i,j,1)=wrkBaro(i,j,1)*cff
+#  endif
+#  if defined M3FAST || defined K3FAST
+            wrkfast(i,j,1)=wrkfast(i,j,1)*cff
+#  endif
+          enddo
+        enddo
+        do j=JV_RANGE
+          do i=IV_RANGE
+           k=1
+           wrkrate(i,j,2)=(0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
+     &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp))
+     &                                       *om_v(i,j)*on_v(i,j)/dt
+            do k=2,N
+           wrkrate(i,j,2) = wrkrate(i,j,2) +
+     &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)
+     &           -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp))
+     &                                       *om_v(i,j)*on_v(i,j)/dt
+            enddo
+
+! Divide v-diagnostic terms by (1/pm).
+! There after the unit of these terms are :
+! m 3 s-2
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!            cff=0.25*(pm(i,j)+pm(i,j-1))
+!     &             *(pn(i,j)+pn(i,j-1))
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            cff=0.5*(pm(i,j)+pm(i,j-1))
+
+            wrkXadv(i,j,2)=wrkXadv(i,j,2)*cff
+            wrkYadv(i,j,2)=wrkYadv(i,j,2)*cff
+            wrkHdiff(i,j,2)=wrkHdiff(i,j,2)*cff
+            wrkCor(i,j,2)=wrkCor(i,j,2)*cff
+            wrkPrsgrd(i,j,2)=wrkPrsgrd(i,j,2)*cff
+            wrkHmix(i,j,2,3-nstp)=wrkHmix(i,j,2,3-nstp)*cff
+            wrkVmix(i,j,2)=wrkVmix(i,j,2)*cff
+            wrkVmix2(i,j,2)=wrkVmix2(i,j,2)*cff
+            wrkrate(i,j,2)=wrkrate(i,j,2)*cff
+#  if defined DIAGNOSTICS_BARO
+            wrkBaro(i,j,2)=wrkBaro(i,j,2)*cff
+#  endif
+#  if defined M3FAST || defined K3FAST
+            wrkfast(i,j,2)=wrkfast(i,j,2)*cff
+#  endif
+          enddo
+        enddo
+# endif /* DIAGNOSTICS_VRT */
+
+# if defined DIAGNOSTICS_EK_FULL
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            ekwrkHadv(i,j,1) = 0.
+            ekwrkVadv(i,j,1) = 0.
+            ekwrkCor(i,j,1) = 0.
+            ekwrkPrsgrd(i,j,1) = 0.
+            ekwrkVmix(i,j,1) = 0.
+            ekwrkHmix(i,j,1,3-nstp) = 0.
+!            ekwrkVmix2(i,j,1) = 0.
+            ekwrkHdiff(i,j,1) = 0.
+#  if defined DIAGNOSTICS_BARO
+            ekwrkBaro(i,j,1) = 0.
+#  endif
+#  if defined M3FAST || defined K3FAST
+            ekwrkfast(i,j,1) = 0.
+#  endif
+            ekwrkHadv(i,j,2) = 0.
+            ekwrkVadv(i,j,2) = 0.
+            ekwrkCor(i,j,2) = 0.
+            ekwrkPrsgrd(i,j,2) = 0.
+            ekwrkVmix(i,j,2) = 0.
+            ekwrkHmix(i,j,2,3-nstp) = 0.
+!            ekwrkVmix2(i,j,2) = 0.
+            ekwrkHdiff(i,j,2) = 0.
+#  if defined DIAGNOSTICS_BARO
+            ekwrkBaro(i,j,2) = 0.
+#  endif
+#  if defined M3FAST || defined K3FAST
+            ekwrkfast(i,j,2) = 0.
+#  endif
+
+#  if defined DIAGNOSTICS_EK_MLD
+            ekwrkHadv_mld(i,j,1) = 0.
+            ekwrkVadv_mld(i,j,1) = 0.
+            ekwrkCor_mld(i,j,1) = 0.
+            ekwrkPrsgrd_mld(i,j,1) = 0.
+            ekwrkVmix_mld(i,j,1) = 0.
+            ekwrkHmix_mld(i,j,1,3-nstp) = 0.
+!            ekwrkVmix2_mld(i,j,1) = 0.
+            ekwrkHdiff_mld(i,j,1) = 0.
+#   if defined DIAGNOSTICS_BARO
+            ekwrkBaro_mld(i,j,1) = 0.
+#   endif
+            ekwrkHadv_mld(i,j,2) = 0.
+            ekwrkVadv_mld(i,j,2) = 0.
+            ekwrkCor_mld(i,j,2) = 0.
+            ekwrkPrsgrd_mld(i,j,2) = 0.
+            ekwrkVmix_mld(i,j,2) = 0.
+            ekwrkHmix_mld(i,j,2,3-nstp) = 0.
+!            ekwrkVmix2_mld(i,j,2) = 0.
+            ekwrkHdiff_mld(i,j,2) = 0.
+#   if defined DIAGNOSTICS_BARO
+            ekwrkBaro_mld(i,j,2) = 0.
+#   endif
+#  endif
+        enddo
+      enddo
+
+        do j=JU_RANGE
+          do i=IU_RANGE
+            do k=1,N
+#  if defined DIAGNOSTICS_UV  || defined DIAGNOSTICS_PV
+            cff=(Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
+     &          * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+#  else
+            cff= 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+#  endif
+#  ifdef MASKING
+     &                     *umask(i,j)
+#  endif
+            ekwrkHadv(i,j,1) = ekwrkHadv(i,j,1)
+     &        + (MXadv(i,j,k,1) + MYadv(i,j,k,1)) * cff
+            ekwrkVmix(i,j,1) = ekwrkVmix(i,j,1)
+     &        + MVmix(i,j,k,1)  * cff
+            ekwrkHmix(i,j,1,3-nstp) = ekwrkHmix(i,j,1,3-nstp)
+     &        + MHmix(i,j,k,1,3-nstp)  * cff
+!            ekwrkVmix2(i,j,1) = ekwrkVmix2(i,j,1)
+!     &        + MVmix2(i,j,k,1)  * cff
+            ekwrkHdiff(i,j,1) = ekwrkHdiff(i,j,1)
+     &        + MHdiff(i,j,k,1) * cff
+
+#  ifdef DIAGNOSTICS_UV
+            cff=(Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
+     &          * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+#  else
+            cff= 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+#  endif
+#  ifdef MASKING
+     &                     *umask(i,j)
+#  endif
+            ekwrkVadv(i,j,1) = ekwrkVadv(i,j,1)
+     &        + MVadv(i,j,k,1)  * cff
+            ekwrkCor(i,j,1) = ekwrkCor(i,j,1)
+     &        + MCor(i,j,k,1)  * cff
+            ekwrkPrsgrd(i,j,1) = ekwrkPrsgrd(i,j,1)
+     &        + MPrsgrd(i,j,k,1)  * cff
+#  if defined DIAGNOSTICS_BARO
+            ekwrkBaro(i,j,1) = ekwrkBaro(i,j,1)
+     &        + MBaro(i,j,k,1)  * cff
+#  endif
+#  if defined M3FAST || defined K3FAST
+            ekwrkfast(i,j,1) = ekwrkfast(i,j,1)
+     &        + Mfast(i,j,k,1)  * cff
+#  endif
+          enddo
+
+#  if defined DIAGNOSTICS_EK_MLD
+
+          do k=kbl(i,j),N
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_PV
+            cff=(Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
+     &          * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+#   else
+            cff= 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+#   endif
+#   ifdef MASKING
+     &                     *umask(i,j)
+#   endif
+            ekwrkHadv_mld(i,j,1) = ekwrkHadv_mld(i,j,1)
+     &        + (MXadv(i,j,k,1) + MYadv(i,j,k,1)) * cff
+
+            ekwrkVmix_mld(i,j,1) = ekwrkVmix_mld(i,j,1)
+     &        + MVmix(i,j,k,1)  * cff
+            ekwrkHmix_mld(i,j,1,3-nstp) = ekwrkHmix_mld(i,j,1,3-nstp)
+     &        + MHmix(i,j,k,1,3-nstp)  * cff
+!            ekwrkVmix2_mld(i,j,1) = ekwrkVmix2_mld(i,j,1)
+!     &        + MVmix2(i,j,k,1)  * cff
+            ekwrkHdiff_mld(i,j,1) = ekwrkHdiff_mld(i,j,1)
+     &        + MHdiff(i,j,k,1) * cff
+#   ifdef DIAGNOSTICS_UV
+            cff=(Hz(i,j,k)+Hz(i-1,j,k))/(2.*pm_u(i,j)*pn_u(i,j))
+     &          * 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+#   else
+            cff= 0.5*(u(i,j,k,nstp)+u(i,j,k,nnew))
+#   endif
+#   ifdef MASKING
+     &                     *umask(i,j)
+#   endif
+            ekwrkVadv_mld(i,j,1) = ekwrkVadv_mld(i,j,1)
+     &        + MVadv(i,j,k,1)  * cff
+            ekwrkCor_mld(i,j,1) = ekwrkCor_mld(i,j,1)
+     &        + MCor(i,j,k,1)  * cff
+            ekwrkPrsgrd_mld(i,j,1) = ekwrkPrsgrd_mld(i,j,1)
+     &        + MPrsgrd(i,j,k,1)  * cff
+#   if defined DIAGNOSTICS_BARO
+            ekwrkBaro_mld(i,j,1) = ekwrkBaro_mld(i,j,1)
+     &        + MBaro(i,j,k,1)  * cff
+#   endif
+          enddo
+#  endif
+        enddo
+      enddo
+
+      do j=JV_RANGE
+        do i=IV_RANGE
+            do k=1,N
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_PV
+            cff=(Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
+     &          * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+#  else
+            cff= 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+#  endif
+#  ifdef MASKING
+     &                     *vmask(i,j)
+#  endif
+            ekwrkHadv(i,j,2) = ekwrkHadv(i,j,2)
+     &        + (MXadv(i,j,k,2) + MYadv(i,j,k,2)) * cff
+            ekwrkVmix(i,j,2) = ekwrkVmix(i,j,2)
+     &        + MVmix(i,j,k,2)  * cff
+            ekwrkHmix(i,j,2,3-nstp) = ekwrkHmix(i,j,2,3-nstp)
+     &        + MHmix(i,j,k,2,3-nstp)  * cff
+!            ekwrkVmix2(i,j,2) = ekwrkVmix2(i,j,2)
+!     &        + MVmix2(i,j,k,2)  * cff
+            ekwrkHdiff(i,j,2) = ekwrkHdiff(i,j,2)
+     &        + MHdiff(i,j,k,2) * cff
+#  ifdef DIAGNOSTICS_UV
+            cff=(Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
+     &          * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+#  else
+            cff= 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+#  endif
+#  ifdef MASKING
+     &                     *vmask(i,j)
+#  endif
+            ekwrkVadv(i,j,2) = ekwrkVadv(i,j,2)
+     &        + MVadv(i,j,k,2)  * cff
+            ekwrkCor(i,j,2) = ekwrkCor(i,j,2)
+     &        + MCor(i,j,k,2)  * cff
+            ekwrkPrsgrd(i,j,2) = ekwrkPrsgrd(i,j,2)
+     &        + MPrsgrd(i,j,k,2)  * cff
+#  if defined DIAGNOSTICS_BARO
+            ekwrkBaro(i,j,2) = ekwrkBaro(i,j,2)
+     &        + MBaro(i,j,k,2)  * cff
+#  endif
+#  if defined M3FAST || defined K3FAST
+            ekwrkfast(i,j,2) = ekwrkfast(i,j,2)
+     &        + Mfast(i,j,k,2)  * cff
+#  endif
+            enddo
+
+#  if defined DIAGNOSTICS_EK_MLD
+          do k=kbl(i,j),N
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_PV
+            cff=(Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
+     &          * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+#   else
+            cff= 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+#   endif
+#   ifdef MASKING
+     &                     *vmask(i,j)
+#   endif
+            ekwrkHadv_mld(i,j,2) = ekwrkHadv_mld(i,j,2)
+     &        + (MXadv(i,j,k,2) + MYadv(i,j,k,2)) * cff
+            ekwrkVmix_mld(i,j,2) = ekwrkVmix_mld(i,j,2)
+     &        + MVmix(i,j,k,2)  * cff
+            ekwrkHmix_mld(i,j,2,3-nstp) = ekwrkHmix_mld(i,j,2,3-nstp)
+     &        + MHmix(i,j,k,2,3-nstp)  * cff
+!            ekwrkVmix2_mld(i,j,2) = ekwrkVmix2_mld(i,j,2)
+!     &        + MVmix2(i,j,k,2)  * cff
+            ekwrkHdiff_mld(i,j,2) = ekwrkHdiff_mld(i,j,2)
+     &        + MHdiff(i,j,k,2) * cff
+#   ifdef DIAGNOSTICS_UV
+            cff=(Hz(i,j,k)+Hz(i,j-1,k))/(2.*pm_v(i,j)*pn_v(i,j))
+     &          * 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+#   else
+            cff= 0.5*(v(i,j,k,nstp)+v(i,j,k,nnew))
+#   endif
+#   ifdef MASKING
+     &                     *vmask(i,j)
+#   endif
+            ekwrkVadv_mld(i,j,2) = ekwrkVadv_mld(i,j,2)
+     &        + MVadv(i,j,k,2)  * cff
+            ekwrkCor_mld(i,j,2) = ekwrkCor_mld(i,j,2)
+     &        + MCor(i,j,k,2)  * cff
+            ekwrkPrsgrd_mld(i,j,2) = ekwrkPrsgrd_mld(i,j,2)
+     &        + MPrsgrd(i,j,k,2)  * cff
+#   if defined DIAGNOSTICS_BARO
+            ekwrkBaro_mld(i,j,2) = ekwrkBaro_mld(i,j,2)
+     &        + MBaro(i,j,k,2)  * cff
+#   endif
+          enddo
+#  endif
+          enddo
+        enddo
+# endif /* DIAGNOSTICS_EK */
+
+# if defined DIAGNOSTICS_EK
+
+        do j=JU_RANGE
+          do i=IU_RANGE
+
+            ekwrkrate(i,j,1) = 0.
+            ekwrkvol(i,j,1) = 0.
+
+            do k=1,N
+
+                ekwrkrate(i,j,1) = ekwrkrate(i,j,1) + 0.5*
+     &            ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
+     &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
+     &                                        *om_u(i,j)*on_u(i,j)/dt
+#  ifdef MASKING
+     &                     *umask(i,j)
+#  endif
+            ekwrkvol(i,j,1) = ekwrkvol(i,j,1)
+     &                  + (0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
+     &                  - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))      )
+     &                  * ((Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
+     &                  / (Hz(i,j,k)+Hz(i-1,j,k))
+     &                  * 0.5 * u(i,j,k,nstp)**2
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+     &                  + u(i,j,k,nstp) * (
+     &                    MXadv(i,j,k,1)
+     &                  + MYadv(i,j,k,1)
+     &                  + MVadv(i,j,k,1)
+     &                  + MCor(i,j,k,1)
+     &                  + MPrsgrd(i,j,k,1)
+     &                  + MHmix(i,j,k,1,3-nstp)
+     &                  + MVmix(i,j,k,1)
+#   if defined M3FAST || defined K3FAST
+     &                  + Mfast(i,j,k,1)
+#   endif
+#   if defined DIAGNOSTICS_UV
+     &                  + MVmix2(i,j,k,1))
+#   else
+     &                  ) / (Hz(i,j,k)+Hz(i-1,j,k))
+     &                    * (2.*pm_u(i,j)*pn_u(i,j))
+#   endif
+#  endif
+     &                                     )  *om_u(i,j)*on_u(i,j)/dt
+#  ifdef MASKING
+     &                     *umask(i,j)
+#  endif
+            enddo
+
+            ekwrkVmix2(i,j,1) = ekwrkrate(i,j,1) - ekwrkVmix2(i,j,1)
+
+
+#  if defined DIAGNOSTICS_EK_MLD
+
+            ekwrkrate_mld(i,j,1) = 0.
+            ekwrkvol_mld(i,j,1) = 0.
+
+            do k=kbl(i,j),N
+
+                ekwrkrate_mld(i,j,1) = ekwrkrate_mld(i,j,1) + 0.5*
+     &            ( 0.5*(Hz(i,j,k)+Hz(i-1,j,k))*u(i,j,k,nnew)**2
+     &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))*u(i,j,k,nstp)**2)
+     &                                        *om_u(i,j)*on_u(i,j)/dt
+#   ifdef MASKING
+     &                     *umask(i,j)
+#   endif
+
+            ekwrkvol_mld(i,j,1) = ekwrkvol_mld(i,j,1)
+     &                  + (0.5*(Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
+     &                  - 0.5*(Hz(i,j,k)+Hz(i-1,j,k))      )
+     &                  * ((Hz_bak(i,j,k)+Hz_bak(i-1,j,k))
+     &                  / (Hz(i,j,k)+Hz(i-1,j,k))
+     &                  * 0.5 * u(i,j,k,nstp)**2
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+     &                  + u(i,j,k,nstp) * (
+     &                    MXadv(i,j,k,1)
+     &                  + MYadv(i,j,k,1)
+     &                  + MVadv(i,j,k,1)
+     &                  + MCor(i,j,k,1)
+     &                  + MPrsgrd(i,j,k,1)
+     &                  + MHmix(i,j,k,1,3-nstp)
+     &                  + MVmix(i,j,k,1)
+#    if defined DIAGNOSTICS_UV
+     &                  + MVmix2(i,j,k,1))
+#    else
+     &                  ) / (Hz(i,j,k)+Hz(i-1,j,k))
+     &                    * (2.*pm_u(i,j)*pn_u(i,j))
+#    endif
+#   endif
+     &                                     )  *om_u(i,j)*on_u(i,j)/dt
+#   ifdef MASKING
+     &                     *umask(i,j)
+#   endif
+
+            enddo
+
+            ekwrkVmix2_mld(i,j,1) = ekwrkrate_mld(i,j,1) - ekwrkVmix2_mld(i,j,1)
+#  endif
+
+          enddo
+        enddo
+
+        do j=JV_RANGE
+          do i=IV_RANGE
+
+            ekwrkrate(i,j,2)= 0.
+            ekwrkvol(i,j,2) = 0.
+
+            do k=1,N
+
+              ekwrkrate(i,j,2) = ekwrkrate(i,j,2) + 0.5*
+     &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
+     &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
+     &                                        *om_v(i,j)*on_v(i,j)/dt
+#  ifdef MASKING
+     &                     *vmask(i,j)
+#  endif
+            ekwrkvol(i,j,2) = ekwrkvol(i,j,2)
+     &                  + (0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))
+     &                  - 0.5*(Hz(i,j,k)+Hz(i,j-1,k))      )
+     &                  * ((Hz_bak(i,j,k)+Hz_bak(i,j-1,k))
+     &                  / (Hz(i,j,k)+Hz(i,j-1,k))
+     &                  * 0.5 * v(i,j,k,nstp)**2
+#  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+     &                  + v(i,j,k,nstp) * (
+     &                    MXadv(i,j,k,2)
+     &                  + MYadv(i,j,k,2)
+     &                  + MVadv(i,j,k,2)
+     &                  + MCor(i,j,k,2)
+     &                  + MPrsgrd(i,j,k,2)
+     &                  + MHmix(i,j,k,2,3-nstp)
+     &                  + MVmix(i,j,k,2)
+#   if defined M3FAST || defined K3FAST
+     &                  + Mfast(i,j,k,2)
+#   endif
+#   if defined DIAGNOSTICS_UV
+     &                  + MVmix2(i,j,k,2))
+#   else
+     &                  ) / (Hz(i,j,k)+Hz(i,j-1,k))
+     &                    * (2.*pm_v(i,j)*pn_v(i,j))
+#   endif
+#  endif
+     &                                     )   *om_v(i,j)*on_v(i,j)/dt
+#  ifdef MASKING
+     &                     *vmask(i,j)
+#  endif
+            enddo
+
+            ekwrkVmix2(i,j,2) = ekwrkrate(i,j,2) - ekwrkVmix2(i,j,2)
+
+#  if defined DIAGNOSTICS_EK_MLD
+
+            ekwrkrate_mld(i,j,2)= 0.
+            ekwrkvol_mld(i,j,2) = 0.
+
+            do k=kbl(i,j),N
+
+              ekwrkrate_mld(i,j,2) = ekwrkrate_mld(i,j,2) + 0.5*
+     &           ( 0.5*(Hz(i,j,k)+Hz(i,j-1,k))*v(i,j,k,nnew)**2
+     &         -0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))*v(i,j,k,nstp)**2)
+     &                                        *om_v(i,j)*on_v(i,j)/dt
+#   ifdef MASKING
+     &                     *vmask(i,j)
+#   endif
+
+            ekwrkvol_mld(i,j,2) = ekwrkvol_mld(i,j,2)
+     &                  + (0.5*(Hz_bak(i,j,k)+Hz_bak(i,j-1,k))
+     &                  - 0.5*(Hz(i,j,k)+Hz(i,j-1,k))      )
+     &                  * ((Hz_bak(i,j,k)+Hz_bak(i,j-1,k))
+     &                  / (Hz(i,j,k)+Hz(i,j-1,k))
+     &                  * 0.5 * v(i,j,k,nstp)**2
+#   if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_EK_FULL
+     &                  + v(i,j,k,nstp) * (
+     &                    MXadv(i,j,k,2)
+     &                  + MYadv(i,j,k,2)
+     &                  + MVadv(i,j,k,2)
+     &                  + MCor(i,j,k,2)
+     &                  + MPrsgrd(i,j,k,2)
+     &                  + MHmix(i,j,k,2,3-nstp)
+     &                  + MVmix(i,j,k,2)
+#    if defined DIAGNOSTICS_UV
+     &                  + MVmix2(i,j,k,2))
+#    else
+     &                  ) / (Hz(i,j,k)+Hz(i,j-1,k))
+     &                    * (2.*pm_v(i,j)*pn_v(i,j))
+#    endif
+#   endif
+     &                                     )   *om_v(i,j)*on_v(i,j)/dt
+#   ifdef MASKING
+     &                     *vmask(i,j)
+#   endif
+            enddo
+
+            ekwrkVmix2_mld(i,j,2) = ekwrkrate_mld(i,j,2) - ekwrkVmix2_mld(i,j,2)
+#  endif
+          enddo
+        enddo
+# endif /* DIAGNOSTICS_EK */
+
 
 
 
@@ -1211,7 +1770,7 @@
 #  if defined DIAGNOSTICS_BARO
      &                            - MBaro(i,j,k,1)
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
      &                            + Mfast(i,j,k,1)
 #  endif
      &                            + MHmix(i,j,k,1,3-nstp)
@@ -1238,7 +1797,7 @@
 #  if defined DIAGNOSTICS_BARO
      &                            - MBaro(i,j,k,2)
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
      &                            + Mfast(i,j,k,2)
 #  endif
      &                            + MHmix(i,j,k,2,3-nstp)
@@ -1322,7 +1881,7 @@
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,1))
 #   endif
-#   if defined M3FAST
+#   if defined M3FAST || defined K3FAST
       call exchange_u3d_tile (istr,iend,jstr,jend,
      &                                 Mfast(START_2D_ARRAY,1,1))
 #   endif
@@ -1332,14 +1891,15 @@
      &                                 wrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 wrkDrag(START_2D_ARRAY,1))
-#   endif
+#  endif
 #  if defined DIAGNOSTICS_KE
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkWind(START_2D_ARRAY,1))
       call exchange_u2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkDrag(START_2D_ARRAY,1))
-#   endif
+#  endif
 
+#  if defined DIAGNOSTICS_VRT
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MXadv(START_2D_ARRAY,1,2))
       call exchange_v3d_tile (istr,iend,jstr,jend,
@@ -1364,11 +1924,11 @@
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 MBaro(START_2D_ARRAY,1,2))
 #   endif
-#   if defined M3FAST
+#   if defined M3FAST || defined K3FAST
       call exchange_v3d_tile (istr,iend,jstr,jend,
      &                                 Mfast(START_2D_ARRAY,1,2))
 #   endif
-#  if defined DIAGNOSTICS_VRT
+
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 wrkWind(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
@@ -1379,6 +1939,7 @@
      &                                 ekwrkWind(START_2D_ARRAY,2))
       call exchange_v2d_tile (istr,iend,jstr,jend,
      &                                 ekwrkDrag(START_2D_ARRAY,2))
+
 #   endif
 #  endif
 

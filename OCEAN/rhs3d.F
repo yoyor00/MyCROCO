@@ -38,9 +38,10 @@
 #ifdef OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : obst_fuz, obst_fvz
 #endif
-#ifdef BODYFORCE
-      USE croco_namelist, ONLY: levsfrc, levbfrc
-#endif
+# ifdef CVTK_DEBUG
+        use debug
+        use my_functions
+# endif
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
      &       ,imin,imax,jmin,jmax
@@ -100,7 +101,7 @@
 # include "forces.h"
 # include "scalars.h"
 # include "weno_interfaces.h"
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
 #  include "nbq.h"
 # endif
 # ifdef MRL_WCI
@@ -465,7 +466,7 @@
 !    RV = +e W sin(a) * dV
 !  with e = 2 Omega cos(Phi) horizontal Coriolis parameter
 !       a = angle between North and meridional grid axis
-!  If NBQ --> done in fast mode
+!  If NBQ || K3FAST --> done in fast mode
 !--------------------------------------------------------------------
 !
 ! Add to We contributions due to (quasi-)horizontal motions
@@ -493,6 +494,24 @@
           enddo
         enddo
 #  endif
+#  if defined CENTRIFUGE
+!--------------------------------------------------------------------
+!  Compute Centrifugal Om^Om^r force
+!  If NBQ --> done in fast mode
+!--------------------------------------------------------------------
+!
+! Add to We contributions due to (quasi-)horizontal motions
+! along S=const surfaces
+        do j=JstrV-1,Jend
+          do i=IstrU-1,Iend
+            UFx(i,j)=UFx(i,j) + cosr(i,j)*Hz(i,j,k)
+!    &     * (1.+tanh((real(iic)-100.)/200.))/2.
+            VFe(i,j)=VFe(i,j) - sinr(i,j)*Hz(i,j,k)
+!    &     * (1.+tanh((real(iic)-100.)/200.))/2.
+          enddo
+        enddo
+#  endif
+
 
         do j=Jstr,Jend
           do i=IstrU,Iend
@@ -1551,6 +1570,9 @@
 !
 !======================================================================
 !
+!# ifdef K3FAST_COUPLING_SCH1
+!      if (iif.ne.0) then
+!# endif
        do j=Jstr,Jend
         do i=IstrU,Iend
           rufrc(i,j)=ru(i,j,1)
@@ -1592,6 +1614,9 @@
         endif
 
       enddo      !<-- j loop
+!# ifdef K3FAST_COUPLING_SCH1
+!      endif
+!# endif
 
 !$acc end kernels
 

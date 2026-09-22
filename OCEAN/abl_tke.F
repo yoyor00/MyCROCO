@@ -29,7 +29,6 @@
 !======================================================================
       subroutine abl_tke_tile(Istr,Iend,Jstr,Jend,bn2,sh2,
      &                           elem_a,elem_b,elem_c,CF,ikbl)
-      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "scalars.h"

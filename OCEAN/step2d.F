@@ -11,7 +11,7 @@
 !
 #include "cppdefs.h"
 
-#if !defined M3FAST || (defined AGRIF && defined NBQ_CHILD_ONLY)
+#if (!defined M3FAST && !defined K3FAST) || (defined AGRIF && defined NBQ_CHILD_ONLY)
 
       subroutine step2d (tile)
       implicit none
@@ -98,7 +98,6 @@ C$    trd=omp_get_thread_num()
 !======================================================================
 !
       USE debug
-      USE croco_namelist, only: dt, rdrg, rdrg2, m2filter_alpha ! needed when AGRIF_CONSERV_VOL
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, kbak, kold,
@@ -154,7 +153,7 @@ C$    trd=omp_get_thread_num()
 #  include "zoom.h"
         integer irhox, irhoy, irhot
 # endif
-# ifdef BODYTIDE
+# if defined INTERNAL || defined BODYTIDE
       real U0, omega
 # endif
 # ifdef WET_DRY
@@ -189,7 +188,11 @@ C$    trd=omp_get_thread_num()
 ! momentum equations.
 !
 # ifdef M2FILTER_NONE
-         myalpha   = m2filter_alpha
+#  ifdef TANK
+         myalpha   = 0.01
+#  else
+         myalpha   = 0.25
+#  endif
          mybeta    = 0.281105
          myepsilon = 0.00976186 - 0.13451357*myalpha
          mygamma   = 0.08344500 - 0.51358400*myalpha
@@ -611,6 +614,9 @@ C$OMP END MASTER
 !-----------------------------------------------------------------------
 !
       call zetabc_tile (Istr,Iend,Jstr,Jend)
+# ifdef OPENACC
+!$acc wait     
+# endif 
 !
 !----------------------------------------------------------------------
 ! Compute time averaged fields over all short timesteps.
@@ -1543,7 +1549,7 @@ C$OMP END MASTER
 !  Body force for the Internal Tide test case
 !-----------------------------------------------------------------------
 !
-# ifdef BODYTIDE
+# if defined INTERNAL || defined BODYTIDE
       omega=2.*pi/(12.4*3600.)
       U0=0.02
       do j=Jstr,Jend

@@ -15,10 +15,6 @@
                               ! Read point or gridded wind wave
       subroutine get_wwave    ! height, direction, period at approp.
                               ! time from forcing NetCDF file.
-      use croco_namelist, only: dt, frcname, testcase_name
-# ifdef MUSTANG  
-      use croco_namelist, only: wave_file
-# endif
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -458,7 +454,6 @@
 !  Set-up wave amplitude, direction, period for current tile.
 !--------------------------------------------------------------------
 !
-      use croco_namelist, only: dt
       implicit none
 
       integer Istr,Iend,Jstr,Jend, i,j,k, it1,it2
@@ -645,32 +640,24 @@
 !          the direction where the waves travel to,
 !          measured clockwise from geographic North.
 !
-# ifdef CURVGRID
+# if defined CURVGRID || !defined SHOREFACE
 !$acc parallel loop if(compute_on_device) default(present)
       do j=jstrR,jendR
         do i=istrR,iendR
-#  ifndef MUSTANG
-          if (trim(testcase_name) /= 'SHOREFACE') &
-            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
+#  if !defined SHOREFACE && !defined MUSTANG
+!         Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
+          Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
 #  endif
-#  ifdef MUSTANG
+#  ifdef CURVGRID
+#   ifdef MUSTANG
           Dwave(i,j)=Dwave(i,j)-angler(i,j)*rad2deg
-#  else
+#   else
           Dwave(i,j)=Dwave(i,j)-angler(i,j)
+#   endif
 #  endif
         enddo
       enddo
-# else
-      if (trim(testcase_name) /= 'SHOREFACE') then
-!$acc parallel loop if(compute_on_device) default(present)
-        do j=jstrR,jendR
-          do i=istrR,iendR
-!           Dwave(i,j)=0.5*pi+Dwave(i,j) ! Dwave=0 when waves to N (oceano)
-            Dwave(i,j)=1.5*pi-Dwave(i,j) ! Dwave=0 when waves from N (meteo)
-          enddo
-        enddo
-      endif
-# endif /* CURVGRID */
+# endif /* CURVGRID || !SHOREFACE */
 !
 !--------------------------------------------------------------------
 ! Simulate nearshore modifications for low resolution data

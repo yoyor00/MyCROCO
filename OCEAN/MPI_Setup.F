@@ -230,19 +230,27 @@
             j_E=j
             jj=j_e
 
+#ifndef EW_PERIODIC
             if(i==0 ) WEST_INTER2=.false.
+#endif
             if(myproc(im1,j)==mpi_proc_null )WEST_INTER2=.false.
             p_W=myproc(im1,j)
 
+#ifndef EW_PERIODIC
             if(i==NP_XI-1) EAST_INTER2=.false.
+#endif
             if(myproc(ip1,j)==mpi_proc_null ) EAST_INTER2=.false.
             p_E=myproc(ip1,j)
 
-            if(j==0.) SOUTH_INTER2=.false.
+#ifndef NS_PERIODIC
+            if(j==0 ) SOUTH_INTER2=.false.
+#endif
             if(myproc(i,jm1) ==mpi_proc_null ) SOUTH_INTER2=.false.
             p_S=myproc(i,jm1)
 
+#ifndef NS_PERIODIC
             if(j==NP_ETA-1) NORTH_INTER2=.false.
+#endif
             if(myproc(i,jp1)==mpi_proc_null ) NORTH_INTER2=.false.
             p_N=myproc(i,jp1)
 

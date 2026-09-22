@@ -42,8 +42,6 @@ c********************************************************************
       subroutine prsgrd_tile (Istr,Iend,Jstr,Jend, ru,rv, P,
      &                                       dR,dZ, FC,dZx,rx,dRx)
 !
-      USE croco_namelist, ONLY: rho0, lekman_apg, lnonrot, UG_forced
-      USE croco_namelist, ONLY: lts_hadv, loscnonrot
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, imin,imax,jmin,jmax
 #  include "param.h"
@@ -62,7 +60,22 @@ c********************************************************************
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
-       real apg_forced, gdzetady, omega
+#  ifdef INNERSHELF_APG
+! Impose alongshore pressure gradient balancing
+! a constant cross-shore geostrophic flow UG (m/s)
+       real UG
+       parameter (UG=0.02)
+#  elif defined FORCED_EKBBL
+       real UG
+       parameter (UG=10.0)
+#  elif defined  FORCED_DBLEEK
+       real UG
+       parameter (UG=0.0015)
+#  elif defined FORCED_OSCNONROTBBL || defined FORCED_NONROTBBL
+       real gdzetady, omega
+       parameter (gdzetady=2.e-6*9.81)
+       parameter (omega=2.*pi/(12.4*3600.))
+#  endif
 #  if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
                              || defined DIAGNOSTICS_VRT
 #   include "diagnostics.h"
@@ -78,6 +91,15 @@ c********************************************************************
 #  endif
 #  ifdef POT_TIDES
 #   include "tides.h"
+#  endif
+#  ifdef NBQ_GRAV
+#   include "nbq.h"
+#  endif
+# ifdef POT_CUVE
+#  include "tides.h"
+# endif
+#  ifdef SED_TOY
+#   include "forces.h"
 #  endif
 #  include "openacc_work.h"
 !
@@ -134,12 +156,30 @@ c********************************************************************
 ! Preliminary step (same for XI- and ETA-components:
 !------------ ---- ----- --- --- --- ---------------
 !
+!$acc kernels if(compute_on_device) default(present)
+# ifdef K3FAST_NOBPG
+        do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*g*(
+     &                                z_w(i-1,j,N)-z_w(i,j,N)   )
+            enddo
+          enddo
+        enddo
+        do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*on_v(i,j)*g*(
+     &                                z_w(i,j-1,N)-z_w(i,j,N)   )
+            enddo
+          enddo
+        enddo
+# else      
+#  if defined NBQ_GRAV 
+      rho=rho-rho_nh
+#  endif
       GRho=g/rho0
       HalfGRho=0.5*GRho
-      gdzetady = 2.e-6*9.81
-      omega    = 2.*pi/(12.4*3600.)
-
-!$acc kernels if(compute_on_device) default(present)
       !do j=JstrV-1,Jend
       DOLOOP2D(IstrU-1,Iend,JstrV-1,Jend)
         do k=1,N-1
@@ -186,8 +226,11 @@ c********************************************************************
      &              /(z_r(i,j,N)-z_r(i,j,N-1)) )*(z_w(i,j,N)-z_r(i,j,N))
 #  ifdef POT_TIDES
           P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
-#  endif
-#  ifdef READ_PATM
+# endif
+# ifdef POT_CUVE
+          P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
+# endif
+#  ifdef READ_PATM 
          P(i,j,N) = P(i,j,N) + patm2d(i,j)/rho0
 #  endif
         enddo
@@ -206,9 +249,10 @@ c********************************************************************
         ENDDOLOOP2D   !<-- j
 
 
-        do k=N-1,1,-1
           do j=JstrV-1,Jend
             do i=IstrU-1,Iend
+!$acc loop seq
+            do k=N-1,1,-1
               P(i,j,k)=P(i,j,k)+P(i,j,k+1)
             enddo
           enddo
@@ -408,17 +452,15 @@ c********************************************************************
 
         do j=JstrV,Jend
           do i=Istr,Iend
-            if (lekman_apg) then
-              apg_forced = on_v(i,j)*f(i,j)*UG_forced
-            elseif (loscnonrot) then
-              apg_forced = -gdzetady*cos(omega*time)*on_v(i,j)
-            elseif (lnonrot) then
-              apg_forced = -gdzetady*on_v(i,j)
-            else
-              apg_forced = 0.
-            endif
             rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*om_v(i,j)*(
-     &                apg_forced +
+
+#  if defined  INNERSHELF_APG || defined FORCED_EKBBL || defined FORCED_DBLEEK
+     &                on_v(i,j)*f(i,j)*UG +  ! specified alongshore PG
+#  elif defined FORCED_OSCNONROTBBL
+     &     -gdzetady*cos(omega*time)*on_v(i,j)+
+#  elif defined FORCED_NONROTBBL
+     &     -gdzetady*on_v(i,j)+
+#  endif
      &                                             P(i,j-1,k)-P(i,j,k)
 #  ifndef PGF_FLAT_BOTTOM
      &                           -HalfGRho*( (rho(i,j,k)+rho(i,j-1,k))
@@ -440,6 +482,7 @@ c********************************************************************
           enddo
         enddo
       enddo   ! k loop
+# endif
 !
 !======================================================================
 !
@@ -502,7 +545,6 @@ c********************************************************************
 #  endif
      &                                           )
 !
-      USE croco_namelist, ONLY: rho0, lts_hadv
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 #  include "param.h"
@@ -517,6 +559,10 @@ c********************************************************************
 #  include "grid.h"
 #  include "ocean3d.h"
 #  include "scalars.h"
+#  ifdef NBQ_GRAV
+#   include "nbq.h"
+#  endif
+
 #  ifdef DIAGNOSTICS_UV
 #   include "diagnostics.h"
 #  else
@@ -550,6 +596,10 @@ c********************************************************************
 ! the number of operations relatively to any other form.
 !
 !$acc kernels if(compute_on_device) default(present)
+# if defined NBQ_GRAV 
+       rho=rho-rho_nh
+# endif
+
       do j=JstrV-1,Jend
         do i=IstrU-1,Iend
           rsurf(i,j)=rho(i,j,N) + (rho(i,j,N)-rho(i,j,N-1))
@@ -568,6 +618,9 @@ c********************************************************************
      &                                                              )
 
 #  ifdef POT_TIDES
+     &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
+#  endif
+#  ifdef POT_CUVE
      &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
 #  endif
 #  ifdef READ_PATM
@@ -643,6 +696,9 @@ c********************************************************************
      &                                                              )
 
 #  ifdef POT_TIDES
+     &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
+#  endif
+#  ifdef POT_CUVE
      &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
 #  endif
 #  ifdef READ_PATM
@@ -772,25 +828,27 @@ c********************************************************************
 !
 !--------------------------------------------------------------------
 !
-      if (lts_hadv) then
-        do k=1,N
-          do j=Jstr,Jend
-            do i=IstrU,Iend
-              ru(i,j,k)  = 0.d0
-            enddo
-          enddo
-          do j=JstrV,Jend
-            do i=Istr,Iend
-              rv(i,j,k)  = 0.d0
-            enddo
+# ifdef TS_HADV_TEST
+      do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            ru(i,j,k)  = 0.d0
           enddo
         enddo
-      endif
-!$acc end kernels
-
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            rv(i,j,k)  = 0.d0
+          enddo
+        enddo
+      enddo
+# endif
 !
 !--------------------------------------------------------------------
 !
+# if defined NBQ_GRAV && !defined K3FAST_NOBPG
+      rho=rho+rho_nh
+# endif
+!$acc end kernels
       return
       end
 #else

@@ -13,8 +13,6 @@
                                ! Writes requested model
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
-      USE croco_namelist, only: dt, rho0
-      USE croco_namelist, ONLY: nrpfhis, hisname
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat, nvpc
 #endif
@@ -109,7 +107,7 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
-#ifdef NBQ
+#if defined NBQ || defined K3FAST || defined K3FAST_HIS
 # include "nbq.h"
 #endif
 #include "work.h"
@@ -767,8 +765,9 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
      &        record,r3dvar,type)
 CR      write(*,*) 'wrt_his:  wrtRHO' MYID
       endif
-# if defined ANA_VMIX || defined GLS_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+# if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
 !
 !     Brunt vaisala frequency.
 !
@@ -811,7 +810,8 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !
       if (wrthis(indxW)) then
-# ifdef NBQ
+# if defined NBQ || defined K3FAST 
+#  if defined NBQ || defined K3SLOW_W
 !$acc update if(compute_on_device) host(wz(:,:,:))
         do k=0,N
           do j=0,Mm+1
@@ -822,6 +822,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
         enddo
         call fillvalue3d(work,ncidhis,hisW,
      &      vname(1,indxW),record,w3dvar,type)
+#  endif        
 # else
         do tile=0,NSUB_X*NSUB_E-1
           call Wvlcty (tile, workr)
@@ -876,7 +877,7 @@ CR      write(*,*) 'wrt_his:  wrtVisc' MYID
 #   ifdef TEMPERATURE
      &                 diff2(i,j,itemp)
 #   endif
-#   ifdef TS_DIF_SMAGO
+#   if defined TS_DIF_SMAGO || defined TKE3D_MIXING
      &              +diff3d_r(i,j,k)
 #   endif
 #  elif defined TS_DIF4
@@ -959,35 +960,56 @@ CR      write(*,*) 'wrt_his:  wrtHBL' MYID
 CR      write(*,*) 'wrt_his:  wrtHBBL' MYID
       endif
 # endif
-# ifdef GLS_MIXING
+# if defined GLS_MIXING || defined TKE3D_MIXING
 !
 !     Write out turbulent kinetic energy.
 !
       if (wrthis(indxTke)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(trb(:,:,:,nstp,itke))
         work=trb(:,:,:,nstp,itke)
         call fillvalue3d_w(work,ncidhis,hisTke,vname(1,indxTke),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(tke(:,:,:,nstp))
+        workr=tke(:,:,:,nstp)
+        call fillvalue3d(workr,ncidhis,hisTke,vname(1,indxTke),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtTke' MYID
       endif
 !
 !     Write out generic length scale
 !
       if (wrthis(indxGls)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(trb(:,:,:,nstp,igls))
         work=trb(:,:,:,nstp,igls)
         call fillvalue3d_w(work,ncidhis,hisGls,vname(1,indxGls),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(Sprod3d(:,:,:))
+        workr=Sprod3d
+        call fillvalue3d(workr,ncidhis,hisGls,vname(1,indxGls),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtGls' MYID
       endif
 !
 !     Write out vertical mixing length scale
 !
       if (wrthis(indxLsc)) then
+#  ifdef GLS_MIXING
 !$acc update if(compute_on_device) host(Lscale(:,:,:))
         work=Lscale
         call fillvalue3d_w(work,ncidhis,hisLsc,vname(1,indxLsc),
      &        record,w3dvar,type)
+#  else
+!$acc update if(compute_on_device) host(Lscale(:,:,:))
+        workr=Lscale
+        call fillvalue3d(workr,ncidhis,hisLsc,vname(1,indxLsc),
+     &        record,r3dvar,type)
+#  endif
 CR      write(*,*) 'wrt_his:  wrtLsc' MYID
       endif
 # endif
@@ -1386,6 +1408,130 @@ CR        write(*,*) 'wrt_his:  bostrw' MYID
       endif
 !
 # endif /* BBL */
+! ! *******************************************************************
+! ! NBQ variables
+! ! *******************************************************************
+# ifdef K3FAST_HIS
+!     
+!     Rho_nbq
+!     
+#     ifndef M3FAST_SEDLAYERS
+      ksl=0
+#     else
+     ! ksl=N_sl/2
+      ksl=0
+#     endif
+      if (wrthis(indxRnbq)) then
+!$acc update if(compute_on_device) host(rho_nbq)
+        workr=0.
+        do k=1,N
+          do j=1,Mm 
+            do i=1,Lm  
+            workr(i,j,k)=rho_nbq(i,j,k-ksl)
+          enddo
+         enddo
+        enddo
+         call fillvalue3d(workr,ncidhis,hisRnbq,vname(1,indxRnbq),
+     &        record,r3dvar,type)           
+CR      write(*,*) 'wrt_his:  wrtRnbq' MYID
+      endif
+!     
+!     Unbq
+!     
+      if (wrthis(indxUnbq)) then
+!       workr=qdmu_nbq
+!$acc update if(compute_on_device) host(qdmu_nbq)
+        workr=0.
+        do k=1,N
+          do j=0,Mm+1
+            do i=1,Lm+1
+            workr(i,j,k)=2.*qdmu_nbq(i,j,k-ksl)
+     &               /(Hz(i,j,k-ksl)+Hz(i-1,j,k-ksl))
+          enddo
+         enddo
+        enddo
+        call fillvalue3d(workr,ncidhis,hisUnbq,vname(1,indxUnbq),
+     &        record,u3dvar,type)   
+CR      write(*,*) 'wrt_his:  wrtUnbq  ' MYID
+      endif
+!     
+!     Vnbq
+!     
+      if (wrthis(indxVnbq)) then
+!       workr=qdmv_nbq
+!$acc update if(compute_on_device) host(qdmv_nbq)
+        workr=0.
+        do k=1,N
+          do j=1,Mm+1
+            do i=0,Lm+1
+            workr(i,j,k)=2.*qdmv_nbq(i,j,k)/(Hz(i,j,k)+Hz(i,j-1,k))
+          enddo
+         enddo
+        enddo
+         call fillvalue3d(workr,ncidhis,hisVnbq,vname(1,indxVnbq),
+     &        record,v3dvar,type)   
+CR      write(*,*) 'wrt_his:  wrtVnbq  ' MYID
+      endif
+!     
+!     Wnbq
+!     
+      if (wrthis(indxWnbq)) then
+!$acc update if(compute_on_device) host(qdmw_nbq)
+        work=0.
+        if (ksl.eq.0) then
+          do k=1,N-1
+          do j=0,Mm+1
+            do i=0,Lm+1
+            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
+     &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
+            enddo
+          enddo
+          enddo
+          k=0
+          do j=0,Mm+1
+            do i=0,Lm+1
+#   ifndef M3FAST_SEDLAYERS
+            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/Hz(i,j,k+1-ksl)
+#   else
+            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
+     &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
+#   endif
+            enddo
+          enddo
+          k=N
+          do j=0,Mm+1
+            do i=0,Lm+1
+            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/Hz(i,j,k-ksl)
+            enddo
+          enddo
+         else
+          do k=0,N
+          do j=0,Mm
+            do i=0,Lm
+            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
+     &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
+            enddo
+          enddo
+         enddo
+         endif
+         call fillvalue3d(work,ncidhis,hisWnbq
+     &       ,vname(1,indxWnbq),record,w3dvar
+     &        ,type)
+CR      write(*,*) 'wrt_his:  wrtWnbq  ' MYID
+      endif
+!     
+!     Cnbq
+!     
+#  ifdef K3FAST_CSVISC2K 
+      if (wrthis(indxCnbq)) then
+!!$acc update if(compute_on_device) host(soundspeed_nbq)
+         workr=soundspeed_nbq(:,:,1-ksl:N-ksl)
+         call fillvalue3d(workr,ncidhis,hisCnbq,vname(1,indxCnbq),
+     &        record,r3dvar,type)           
+CR      write(*,*) 'wrt_his:  wrtCnbq' MYID
+      endif
+#  endif
+# endif
 
 !
 !     Tracer variables.

@@ -12,7 +12,7 @@
 #include "cppdefs.h"
 #ifdef SOLVE3D
 
-      subroutine set_scoord     ! Input:   hmin, hc,
+      subroutine set_scoord     ! Input:   hmin,   Tcline,
 !                               !          theta_s, theta_b
 ! Define S-coordinate system.   !
 !                               ! Output:  hc, sc_w(0:N), Cs_w(0:N)
@@ -20,13 +20,8 @@
 # ifdef OPENACC
       use exchange_device_host
 # endif
-      use croco_namelist, only: ndtfast, dt, Zobt,
-     &                          rdrg, rdrg2, Cdb_min, Cdb_max
-#ifdef SOLVE3D
-      use croco_namelist, only: theta_s, theta_b, hc
-#endif
-# ifdef WET_DRY
-      use croco_namelist, only: D_wetdry
+# ifdef CVTK_DEBUG
+      use my_functions
 # endif
       implicit none
 # include "param.h"
@@ -41,7 +36,7 @@
 ! Set S-Curves in domain [-1 < sc < 0] at vertical W- and RHO-points.
 !
 # ifndef NEW_S_COORD
-      hc=min(hmin,hc)
+      hc=min(hmin,Tcline)
       cff1=1./sinh(theta_s)
       cff2=0.5/tanh(0.5*theta_s)
 
@@ -58,7 +53,7 @@
         Cs_r(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(k))
      &             +theta_b*(cff2*tanh(theta_s*(sc_r(k)+0.5))-0.5)
       enddo
-#  ifdef M3FAST_SEDLAYERS
+#  ifdef K3FAST_SEDLAYERS
       if (N_sl.gt.0) then
         sc_r(0)=cff*(float(0-N)-0.5)
         Cs_r(0)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(0))
@@ -81,10 +76,11 @@
       endif
 #  endif
 # else
+      hc= Tcline
       ds=1./float(N)
       do k=1,N,+1
         sc     = ds*(float(k-N)-0.5)
-        Cs_r(k)=CSF(sc, theta_s,theta_b)
+        Cs_r(k)=CSF(sc, theta_s,theta_b,hc)
         sc_r(k)=sc
       enddo
 
@@ -92,22 +88,22 @@
       sc_w(N) =  0.
       Cs_w(0) = -1.0
       Cs_w(N) =  0.
-#  ifdef M3FAST_SEDLAYERS
+#  ifdef K3FAST_SEDLAYERS
       do k=-N_sl+1,0
         sc     = ds*(float(k-N)-0.5)
-        Cs_r(k)=CSF(sc, theta_s,theta_b)
+        Cs_r(k)=CSF(sc, theta_s,theta_b,hc)
         sc_r(k)=sc      
       enddo
 #  endif
       do k=1,N-1,+1
         sc     = ds*float(k-N)
-        Cs_w(k)=CSF(sc, theta_s,theta_b)
+        Cs_w(k)=CSF(sc, theta_s,theta_b,hc)
         sc_w(k)=sc
       enddo
-#  ifdef M3FAST_SEDLAYERS
+#  ifdef K3FAST_SEDLAYERS
       do k=-N_sl,-1,+1
         sc     = ds*float(k-N)
-        Cs_w(k)=CSF(sc, theta_s,theta_b)
+        Cs_w(k)=CSF(sc, theta_s,theta_b,hc)
         sc_w(k)=sc      
       enddo    
 #  endif     
@@ -155,8 +151,9 @@
       else if (rdrg.gt.0.0) then
         r_D=rdrg
       endif
-      inc_faststep=MAX(1,MIN(inc_faststep_max,
-     &                       INT(ndtfast*MIN(0.5, Hz0/(r_D*dt) ))))
+!     inc_faststep=MAX(1,MIN(inc_faststep_max,
+!    &                       INT(ndtfast*MIN(0.5, Hz0/(r_D*dt) ))))
+      inc_faststep=1
 #  endif
       MPI_master_only write(stdout,'(/1x,A,I3)')
      &         'Friction 3D Fast Timestep Increment: inc_faststep = ',
@@ -174,20 +171,25 @@
 !======================================================================
 # ifdef NEW_S_COORD
                                             ! NOTE: Mathematical
-      function CSF (sc, theta_s,theta_b)    ! limits of CSF,csrf for
+      function CSF (sc, theta_s,theta_b,hc) ! limits of CSF,csrf for
       implicit none                         ! theta_s, theta_b --> 0
       real CSF, sc, theta_s,theta_b,csrf    ! match that under "else"
-                                            ! logical branches.
+      real hc
+#  ifndef NEW_S_COORD_POLY
       if (theta_s.gt.0.D0) then
-        csrf=(1.D0-cosh(theta_s*sc))/(cosh(theta_s)-1.D0)
+         csrf=(1.D0-cosh(theta_s*sc))/(cosh(theta_s)-1.D0)
       else
-        csrf=-sc**2
+         csrf=-sc**2
       endif
       if (theta_b.gt.0.D0) then
         CSF=(exp(theta_b*csrf)-1.D0)/(1.D0-exp(-theta_b))
       else
         CSF=csrf
       endif
+#  else /* NEW_S_COORD_POLY */
+       CSF=sc*((theta_b+theta_s-2.)*sc**2
+     &     +(theta_b+2.*theta_s-3.)*sc+theta_s)
+#  endif /* NEW_S_COORD_POLY */
       return
       end
 # endif /* NEW_S_COORD */

@@ -50,7 +50,7 @@ fi
 
 echo "Boundary and forcing file list is : $filelist"
 
-[[ -n ${ncomod} ]] && module load ${ncomod}
+module load ${ncomod}
 
 for file in ${filelist}; do
 
@@ -108,4 +108,4 @@ for file in ${filelist}; do
     fi
 done
 
-[[ -n ${ncomod} ]] && module unload ${ncomod}
+module unload ${ncomod}

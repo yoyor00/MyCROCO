@@ -49,10 +49,10 @@
 ! Common Code
 !
 #include "set_obc_definitions.h"
-      USE croco_namelist, ONLY: gamma2
-#if defined M2_FRC_BRY || defined M2CLIMATOLOGY
-      USE croco_namelist, ONLY: tauM_in, tauM_out
-#endif
+!
+#ifdef CVTK_DEBUG
+      use my_functions
+#endif      
       implicit none
 #include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j
@@ -78,7 +78,7 @@ C$    integer omp_get_thread_num
 #include "scalars.h"
 #include "forces.h"
 #include "zoom.h"
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
 # include "nbq.h"
 #endif
 !
@@ -89,7 +89,7 @@ C$    integer omp_get_thread_num
 !
 #ifdef CHILD
 # ifdef SOLVE3D
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
       if (M2bc_nbq_flag) then
 #  endif
       trd=0
@@ -103,7 +103,7 @@ C$    trd=omp_get_thread_num()
      &                    ,A1dXI(1,2+NWEIGHT)
      &                    ,A1dXI(1,3+2*NWEIGHT)
      &                    ,A1dXI(1,4+2*NWEIGHT))
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
       endif
 #  endif
 # else
@@ -118,7 +118,7 @@ C$    trd=omp_get_thread_num()
       tau_out=dtfast*tauM_out
 #endif
 !
-#if defined OBC_COM_M2CHARACT || defined OBC_COM_M2CHARACT_WEST || defined OBC_COM_M2CHARACT_EAST
+#if defined OBC_COM_M2ORLANSKI
       grad = 1.
 # if defined OBC_COM_SOUTH && defined OBC_COM_WEST
       if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
@@ -789,7 +789,7 @@ C$    trd=omp_get_thread_num()
 #endif
 
 !------------------------------------------------------------
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
        if (M2bc_nbq_flag) then
 #endif
 !------------------------------------------------------------
@@ -877,9 +877,9 @@ C$    trd=omp_get_thread_num()
 # endif
 #endif  /* WET_DRY */
 
-#ifdef NBQ
+#if defined NBQ || defined K3FAST_ZETAW
 !=======================================================================
-!  Computes normal boundary values of DV_nbq for NBQ OBCs
+!  Computes normal boundary values of DU_nbq for NBQ OBCs
 !=======================================================================
 !
 # ifndef NS_COM_PERIODIC
@@ -959,6 +959,47 @@ C$    trd=omp_get_thread_num()
       endif
 # endif /* EW_COM_PERIODIC */
 !
+                           ! Corners between adjacent open boundaries
+                           ! ======= ======= ======== ==== ==========
+
+# if defined OBC_COM_SOUTH && defined OBC_COM_WEST
+      if (WESTERN_EDGE .and. SOUTHERN_EDGE) then
+        DV_nbq(Istr-1,Jstr)=0.5*( DV_nbq(Istr-1,Jstr+1)
+     &                           +DV_nbq(Istr  ,Jstr  ))
+#  ifdef MASKING
+     &                         *vmask(Istr-1,Jstr)
+#  endif
+      endif
+# endif
+# if defined OBC_COM_SOUTH && defined OBC_COM_EAST
+      if (EASTERN_EDGE .and. SOUTHERN_EDGE) then
+        DV_nbq(Iend+1,Jstr)=0.5*( DV_nbq(Iend+1,Jstr+1)
+     &                           +DV_nbq(Iend  ,Jstr  ))
+#  ifdef MASKING
+     &                         *vmask(Iend+1,Jstr)
+#  endif
+      endif
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_WEST
+      if (WESTERN_EDGE .and. NORTHERN_EDGE) then
+        DV_nbq(Istr-1,Jend+1)=0.5*( DV_nbq(Istr-1,Jend)
+     &                             +DV_nbq(Istr,Jend+1))
+#  ifdef MASKING
+     &                         *vmask(Istr-1,Jend+1)
+#  endif
+      endif
+# endif
+# if defined OBC_COM_NORTH && defined OBC_COM_EAST
+      if (EASTERN_EDGE .and. NORTHERN_EDGE) then
+        DV_nbq(Iend+1,Jend+1)=0.5*( DV_nbq(Iend+1,Jend)
+     &                             +DV_nbq(Iend,Jend+1))
+#  ifdef MASKING
+     &                         *vmask(Iend+1,Jend+1)
+#  endif
+      endif
+# endif
+#endif /* M3FAST_ZETAW */
+# if defined NBQ || defined K3FAST
       endif ! M2bc_nbq_flag
 !
 #endif /* NBQ */

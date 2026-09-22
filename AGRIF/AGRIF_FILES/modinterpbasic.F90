@@ -220,8 +220,8 @@ subroutine Linear1dAfterCompute ( x, y, np, nc, dir )
 !CDIR ALTCODE
 !CDIR NODEP
     do i = 1,nc
-        y(i) = coeffparent(i,dir)  * x(MAX(indparent(i,dir),1)) + &
-           (1.-coeffparent(i,dir)) * x(indparent(i,dir)+1)
+        y(i) = coeffparent(i,dir)  * x(MAX(1, MIN(indparent(i,dir), np))) + &
+           (1.-coeffparent(i,dir)) * x(MAX(1, MIN(indparent(i,dir)+1, np)))
     enddo
 !---------------------------------------------------------------------------------------------------
 end subroutine Linear1dAfterCompute
@@ -595,12 +595,14 @@ subroutine PPM1d ( x, y, np, nc, s_parent, s_child, ds_parent, ds_child )
 !CDIR ALTCODE
 !CDIR SHORTLOOP
     do i = nmin,nmax
-        slope(i) = x(i) - x(i-1)
+        slope(i) = x(i) - x(MAX(1, i-1))
     enddo
 !
+    xl(1) = x(1)
+    xl(np) = x(np)
 !CDIR ALTCODE
 !CDIR SHORTLOOP
-    do i = nmin+1,nmax-1
+    do i = MAX(2, nmin+1), MIN(np-1, nmax-1)
         xl(i)= 0.5*(x(i-1)+x(i))-0.08333333333333*(slope(i+1)-slope(i-1))
     enddo
 !
@@ -608,8 +610,8 @@ subroutine PPM1d ( x, y, np, nc, s_parent, s_child, ds_parent, ds_child )
 !CDIR ALTCODE
 !CDIR SHORTLOOP
     do i = locind_parent_left,locind_parent_last
-        delta(i) = xl(i+1) - xl(i)
-        a6(i) = 6.*x(i)-3.*(xl(i) +xl(i+1))
+        delta(i) = xl(MIN(np, i+1)) - xl(i)
+        a6(i) = 6.*x(i)-3.*(xl(i) +xl(MIN(np, i+1)))
     enddo
 !
     diffmod = 0
@@ -869,14 +871,15 @@ subroutine PPM1dAfterCompute ( x, y, np, nc, dir )
     integer,             intent(in)     :: np, nc
     integer,             intent(in)     :: dir
 !
-    integer :: i
+    integer :: i, idx
 !
     do i = 1,nc
-        y(i) = tabppm(1,indchildppm(i,dir),dir) * x(indparentppm(i,dir)  ) + &
-               tabppm(2,indchildppm(i,dir),dir) * x(indparentppm(i,dir)+1) + &
-               tabppm(3,indchildppm(i,dir),dir) * x(indparentppm(i,dir)+2) + &
-               tabppm(4,indchildppm(i,dir),dir) * x(indparentppm(i,dir)+3) + &
-               tabppm(5,indchildppm(i,dir),dir) * x(indparentppm(i,dir)+4)
+        idx = indparentppm(i,dir)
+        y(i) = tabppm(1,indchildppm(i,dir),dir) * x(MAX(1, MIN(idx,   np))) + &
+               tabppm(2,indchildppm(i,dir),dir) * x(MAX(1, MIN(idx+1, np))) + &
+               tabppm(3,indchildppm(i,dir),dir) * x(MAX(1, MIN(idx+2, np))) + &
+               tabppm(4,indchildppm(i,dir),dir) * x(MAX(1, MIN(idx+3, np))) + &
+               tabppm(5,indchildppm(i,dir),dir) * x(MAX(1, MIN(idx+4, np)))
     enddo
 !---------------------------------------------------------------------------------------------------
 end subroutine PPM1dAfterCompute

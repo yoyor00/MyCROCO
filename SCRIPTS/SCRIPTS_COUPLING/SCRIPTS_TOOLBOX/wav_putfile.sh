@@ -12,10 +12,10 @@ month=$( printf "%02d"  ${MONTH_BEGIN_JOB} )
   echo "${SERIAL_LAUNCH_WAV}ww3_ounf &> ounf.out"
   ${SERIAL_LAUNCH_WAV}ww3_ounf &> ounf.out 
 
-  #[[ -n ${ncomod} ]] && module load ${ncomod}
+  #module load $ncomod
   #ncrcat -O ww3.??????.nc ww3.${year}${month}.nc #Concatenate all ww3*.nc file before exporting to OUTPUTDIR
   #ncrcat -O -F -d time,1,-2 ww3.${year}${month}.nc ww3.${year}${month}.nc
-  #[[ -n ${ncomod} ]] && module unload ${ncomod}
+  #module unload $ncomod
 
   #${io_putfile} ww3.${year}${month}.nc ${OUTPUTDIR}/ww3_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc
 
@@ -31,10 +31,10 @@ month=$( printf "%02d"  ${MONTH_BEGIN_JOB} )
   echo "${SERIAL_LAUNCH_WAV}ww3_ounp &> ounp.out"
   ${SERIAL_LAUNCH_WAV}ww3_ounp &> ounp.out
 
-  #[[ -n ${ncomod} ]] && module load ${ncomod}
+  #module load $ncomod
   #ncrcat -O ww3.??????_spec.nc ww3.${year}${month}_spec.nc #Concatenate all ww3*.nc file before exporting to OUTPUTDIR
   #ncrcat -O -F -d time,1,-2 ww3.${year}${month}_spec.nc ww3.${year}${month}_spec.nc
-  #[[ -n ${ncomod} ]] && module unload ${ncomod}
+  #module unload $ncomod
 
   #${io_putfile} ww3.${year}${month}_spec.nc ${OUTPUTDIR}/ww3_${DATE_BEGIN_JOB}_${DATE_END_JOB}_spec.nc
 

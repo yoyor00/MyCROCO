@@ -428,7 +428,7 @@ C$OMP BARRIER
         isize = (j2-j1+1)*(i2-i1+1)
         IF (iif == 1) THEN
           IF (.NOT.allocated(coarsevaluesinterp)) THEN
-            Allocate(coarsevaluesinterp(isize,0:nfast))
+            Allocate(coarsevaluesinterp(isize,0:nfast+1))
           ELSE
             CALL checksizeinterp(indinterp+isize)
           ENDIF
@@ -442,27 +442,29 @@ C$OMP BARRIER
      &                         *on_u(i,j)*ubar(i,j,kstp)
             enddo
           enddo
-        ENDIF
-        oldindinterp = indinterp
-        do j=j1,j2
-          do i=i1,i2
-            oldindinterp=oldindinterp+1
-            coarsevaluesinterp(oldindinterp,iif) =
+         ENDIF
+         IF (iif >= 1) THEN
+           oldindinterp = indinterp
+           do j=j1,j2
+             do i=i1,i2
+               oldindinterp=oldindinterp+1
+               coarsevaluesinterp(oldindinterp,iif) =
      &                  0.5*(h(i-1,j)+zeta(i-1,j,knew)+
      &                       h(i  ,j)+zeta(i  ,j,knew))
      &                       *on_u(i,j)*ubar(i,j,knew)
-          enddo
-        enddo
-        do iter=0,iif
-          cff1 = weight2(iif,iter)
-          call copy1d(tabres,coarsevaluesinterp(indinterp+1,iter),
-     &                cff1,isize)
-        enddo
-        indinterp = oldindinterp
+             enddo
+           enddo
+           do iter=0,iif
+             cff1 = weight2(iif,iter)
+             call copy1d(tabres,coarsevaluesinterp(indinterp+1,iter),
+     &                   cff1,isize)
+           enddo
+           indinterp = oldindinterp
+         ENDIF
 
-      else
+       else
 
-        if (common_index == 1) then
+         if (common_index == 1) then
           dUinterp(i1:i2,j1:j2) = tabres
 # ifdef WET_DRY
         elseif (common_index == 2) then
@@ -892,7 +894,7 @@ C$OMP BARRIER
         isize = (j2-j1+1)*(i2-i1+1)
         IF (iif == 1) THEN
           IF (.NOT.allocated(coarsevaluesinterp)) THEN
-            Allocate(coarsevaluesinterp(isize,0:nfast))
+            Allocate(coarsevaluesinterp(isize,0:nfast+1))
           ELSE
             CALL checksizeinterp(indinterp+isize)
           ENDIF
@@ -906,28 +908,30 @@ C$OMP BARRIER
      &                     *om_v(i,j)*vbar(i,j,kstp)
             enddo
           enddo
-        ENDIF
-        oldindinterp = indinterp
-        do j=j1,j2
-          do i=i1,i2
-            oldindinterp=oldindinterp+1
-            coarsevaluesinterp(oldindinterp,iif) =
+         ENDIF
+         IF (iif >= 1) THEN
+           oldindinterp = indinterp
+           do j=j1,j2
+             do i=i1,i2
+               oldindinterp=oldindinterp+1
+               coarsevaluesinterp(oldindinterp,iif) =
      &                    0.5*(h(i,j-1)+zeta(i,j-1,knew)+
      &                         h(i,j  )+zeta(i,j  ,knew))
      &                         *om_v(i,j)*vbar(i,j,knew)
-          enddo
-        enddo
-        do iter=0,iif
-          cff1 = weight2(iif,iter)
-          call copy1d(tabres,coarsevaluesinterp(indinterp+1,iter),
-     &                cff1,isize)
-        enddo
-        indinterp = oldindinterp
+             enddo
+           enddo
+           do iter=0,iif
+             cff1 = weight2(iif,iter)
+             call copy1d(tabres,coarsevaluesinterp(indinterp+1,iter),
+     &                   cff1,isize)
+           enddo
+           indinterp = oldindinterp
+         ENDIF
 
-      else
+       else
 
-        if (common_index == 1) then
-          dVinterp(i1:i2,j1:j2) = tabres
+         if (common_index == 1) then
+           dVinterp(i1:i2,j1:j2) = tabres
 # ifdef WET_DRY
         elseif (common_index == 2) then
 !   Take the result of a constant interpolation
@@ -980,11 +984,11 @@ C$OMP BARRIER
       IF (size(coarsevaluesinterp,1).LT.(isize)) THEN
 
         n1 = size(coarsevaluesinterp,1)
-        allocate(tempvalues(n1,0:nfast))
-        tempvalues=coarsevaluesinterp(1:n1,0:nfast)
+        allocate(tempvalues(n1,0:nfast+1))
+        tempvalues=coarsevaluesinterp(1:n1,0:nfast+1)
         deallocate(coarsevaluesinterp)
-        allocate(coarsevaluesinterp(isize,0:nfast))
-        coarsevaluesinterp(1:n1,0:nfast) = tempvalues
+        allocate(coarsevaluesinterp(isize,0:nfast+1))
+        coarsevaluesinterp(1:n1,0:nfast+1) = tempvalues
         deallocate(tempvalues)
 
       ENDIF
@@ -1391,7 +1395,7 @@ C$OMP BARRIER
          isize = (j2-j1+1)*(i2-i1+1)
          IF (iif == 1) THEN
            IF (.NOT.allocated(coarsevaluesinterp)) THEN
-             Allocate(coarsevaluesinterp(isize,0:nfast))
+             Allocate(coarsevaluesinterp(isize,0:nfast+1))
            ELSE
              CALL checksizeinterp(indinterp+isize)
            ENDIF
@@ -1402,24 +1406,26 @@ C$OMP BARRIER
                coarsevaluesinterp(oldindinterp,0) = zeta(i,j,kstp)
              enddo
            enddo
-         ENDIF
-         oldindinterp = indinterp
-         do j=j1,j2
-           do i=i1,i2
-             oldindinterp=oldindinterp+1
-             coarsevaluesinterp(oldindinterp,iif) = zeta(i,j,knew)
-           enddo
-         enddo
-         do iter=0,iif
-           cff1 = weight2(iif,iter)
-           call copy1d(tabres,coarsevaluesinterp(indinterp+1,iter),
-     &                 cff1,isize)
-         enddo
-         indinterp = oldindinterp
+          ENDIF
+          IF (iif >= 1) THEN
+            oldindinterp = indinterp
+            do j=j1,j2
+              do i=i1,i2
+                oldindinterp=oldindinterp+1
+                coarsevaluesinterp(oldindinterp,iif) = zeta(i,j,knew)
+              enddo
+            enddo
+            do iter=0,iif
+              cff1 = weight2(iif,iter)
+              call copy1d(tabres,coarsevaluesinterp(indinterp+1,iter),
+     &                    cff1,isize)
+            enddo
+            indinterp = oldindinterp
+          ENDIF
 
-      else
+       else
 
-        dZtinterp(i1:i2,j1:j2) = tabres
+         dZtinterp(i1:i2,j1:j2) = tabres
 
       endif
       return

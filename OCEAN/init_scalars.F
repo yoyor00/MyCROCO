@@ -19,12 +19,6 @@
 ! summation counters, etc; NONE of the physical parameters of
 ! the model is set here.
 !
-      use croco_namelist, only: dt
-# ifdef USE_CALENDAR
-      use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
-     &                          dt_rst
-# endif
-
       implicit none
       integer ierr, i,j,itrc, lvar, lenstr
 #if defined ONLINE
@@ -308,7 +302,11 @@ C$OMP END PARALLEL
 
 !#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
+#ifdef MILES
+      vname(1,indxTime)='ocean_time'
+#else
       vname(1,indxTime)='scrum_time'
+#endif
       vname(2,indxTime)='time since initialization'
 #if defined USE_CALENDAR && defined ANA_INITIAL
       vname(3,indxTime)='seconds since '//start_date
@@ -1873,9 +1871,9 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
       vname(5,indxR)='sea_water_sigma_t                           '
       vname(7,indxR)='                                            '
 
-# if defined ANA_VMIX || defined LMD_MIXING \
-      || defined LMD_SKPP || defined LMD_BKPP \
-      || defined GLS_MIXING
+# if defined ANA_VMIX || defined BVF_MIXING \
+      || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+      || defined GLS_MIXING || defined TKE3D_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                       '
       vname(2,indxbvf)='Brunt Vaisala Frequency                   '
@@ -2001,6 +1999,36 @@ CR      write(stdout,'(1x,A,I3)') 'indxLsc =',indxLsc
       vname(7,indxLsc)='                                          '
 # endif /* GLS_MIXING */
 
+# ifdef TKE3D_MIXING
+CR      write(stdout,'(1x,A,I3)') 'indxTke =',indxTke
+      vname(1,indxTke)='tke                                       '
+      vname(2,indxTke)='turbulent kinetic energy                  '
+      vname(3,indxTke)='meter2 second-2                           '
+      vname(4,indxTke)='tke, scalar, series                       '
+      vname(5,indxTke)='ocean_turbulent_kinetic_energy'
+     &                                       // '_at_rho_location '
+      vname(6,indxTke)='lat_rho lon_rho                           '
+      vname(7,indxTke)='                                          '
+CR      write(stdout,'(1x,A,I3)') 'indxGls =',indxGls
+      vname(1,indxGls)='Sprod3d                                   '
+      vname(2,indxGls)='3D shear multiplied by eddy-viscosity     '
+      vname(3,indxGls)='meter3 second-2                           '
+      vname(4,indxGls)='Sprod3d, scalar, series                   '
+      vname(5,indxGls)='ocean_tke_shear_production_term'
+     &                                       // '_at_rho_location '
+      vname(6,indxGls)='lat_rho lon_rho                           '
+      vname(7,indxGls)='                                          '
+CR      write(stdout,'(1x,A,I3)') 'indxLsc =',indxLsc
+      vname(1,indxLsc)='Lscale                                    '
+      vname(2,indxLsc)='mixing turbulent length scale             '
+      vname(3,indxLsc)='meter                                     '
+      vname(4,indxLsc)='Lscale, scalar, series                    '
+      vname(5,indxLsc)='ocean_turbulent_length_scale'
+     &                                       // '_at_rho_location '
+      vname(6,indxLsc)='lat_rho lon_rho                           '
+      vname(7,indxLsc)='                                          '
+# endif /* TKE3D_MIXING */
+
 # if defined BIOLOGY && !defined PISCES
 CR      write(stdout,'(1x,A,I3)') 'indxHel =',indxHel
       vname(1,indxHel)='hel                                       '
@@ -2072,7 +2100,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxrvfrc =',indxrvfrc
       vname(6,indxrvfrc)='lat_v lon_v                             '
       vname(7,indxrvfrc)='                                        '
 
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST 
 
 CR      write(stdout,'(1x,A,I3)') 'indxru_nbq =',indxru_nbq
       vname(1,indxru_nbq)='ru_nbq                                 '
@@ -2128,7 +2156,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxqdmv_nbq =',indxqdmv_nbq
       vname(6,indxqdmv_nbq)='lat_v lon_v                          '
       vname(7,indxqdmv_nbq)='                                     '
 
-# endif  /* M3FAST */
+# endif  /* M3FAST || K3FAST */
 
 # ifdef TS_MIX_ISO_FILT
 
@@ -3152,7 +3180,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxMBaro+itrc-1)
        vname(7,indxMBaro+itrc-1)='                                '
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 CR      write(stdout,'(1x,A,I3)') 'indxMfast = ',indxMfast+itrc-1
        nametrc=vname(1,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_fast                       '
@@ -3402,7 +3430,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtBaro)
        vname(3,indxvrtBaro)=vname3
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 CR       write(stdout,'(1x,A,I3)') 'indxvrtfast = ',indxvrtfast+itrc-1
        nametrc='vrt'
        write(vname1,*) trim(nametrc),'_fast                       '
@@ -3527,7 +3555,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
        vname(3,indxekBaro)=vname3
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 CR       write(stdout,'(1x,A,I3)') 'indxekfast = ',indxekfast+itrc-1
        write(vname1,*) trim(nametrc),'_fast                       '
        vname(1,indxekfast)=vname1

@@ -1,0 +1,66 @@
+{
+  // AgAc_KAGRIF - AGRIF-Acoustic Example with KNBQ (KAGRIF variant)
+  "AgAc_KAGRIF": {
+    "title": "AgAc (AGRIF-Acoustic) KAGRIF with AGRIF (35x45x1)",
+    "case": "AgAc",
+    "input_file": "TEST_CASES/croco.in.AgAc_KAGRIF",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+      "4": "4x1"
+    },
+    "patches": {
+      "cppdefs.h": [
+        {
+          "mode": "replace",
+          "what": "# define MPI\n",
+          "by": "# undef MPI\n",
+          "descr": "Disable MPI for sequential variant"
+        },
+        {
+          "mode": "replace",
+          "what": "# define NC4PAR\n",
+          "by": "# undef NC4PAR\n",
+          "descr": "Disable NC4PAR for sequential variant"
+        },
+        {
+          "mode": "replace",
+          "what": "# define KXX\n",
+          "by": "# undef KXX\n",
+          "descr": "Disable KXX (files not available in CROCO source)"
+        },
+        {
+          "mode": "replace",
+          "what": "# define UV_ADV\n",
+          "by": "# undef UV_ADV\n",
+          "descr": "Disable UV_ADV for acoustic case"
+        },
+        {
+          "mode": "replace",
+          "what": "# define SPONGE\n",
+          "by": "# undef SPONGE\n",
+          "descr": "Disable SPONGE for acoustic case"
+        }
+      ],
+      "param.h": [
+        {
+          "mode": "replace",
+          "what": "NP_XI=1,  NP_ETA=4,  NNODES=NP_XI*NP_ETA",
+          "by": "NP_XI=2,  NP_ETA=2,  NNODES=NP_XI*NP_ETA",
+          "descr": "Set MPI splitting to 2x2 for KAGRIF case"
+        }
+      ],
+      "AGRIF_FixedGrids.in": [
+        {
+          "mode": "replace",
+          "what": "17    33     13    27   3  3  3  3",
+          "by": "35 45 35 45  1 1 1 1",
+          "descr": "Set grid dimensions for KAGRIF (35x45)"
+        }
+      ],
+      "agrif": true
+    },
+    "check_outputs": ["AgAc_his.nc"],
+    "unsupported": ["openmp"]
+  }
+}

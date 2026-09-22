@@ -11,10 +11,6 @@
       end
 
       subroutine set_diags_vrt_avg_tile (istr,iend,jstr,jend)
-# ifdef DIAGNOSTICS_VRT
-      use croco_namelist, only: ldefdiags_vrt_avg, ntsdiags_vrt_avg,
-     &     nwrtdiags_vrt_avg
-# endif
 !
 ! Compute time-averaged fields within a tile.
 ! ------- ------------- ------ ------ - -----
@@ -140,7 +136,7 @@
           enddo
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
              do j=JstrR,JendR
                 do i=IstrR,IendR
                   vrtfast_avg(i,j)=vrtfast(i,j)
@@ -244,7 +240,7 @@
           enddo
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
              do j=JstrR,JendR
                 do i=IstrR,IendR
                   vrtfast_avg(i,j) =
@@ -353,7 +349,7 @@
           enddo
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
               do j=JstrR,JendR
                 do i=IstrR,IendR
                   vrtfast_avg(i,j) = cff *

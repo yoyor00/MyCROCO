@@ -4,8 +4,29 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ## [x.x.x] - xxxx-xx-xx
 
+  ####  ### Added                                                                                                  
+                                                                                                                   
+    - KNBQ3 : Ajout d'une documentation détaillée (`DOC_KNBQ3.md`) sur le solveur non-hydrostatique compressible   
+  KNBQ3.
+    - BENCH : Ajout des configurations et cas tests pour AgAc (`AgAc_KNBQ`, `AgAc_KAGRIF`, `AgAc_KABGRIF`) et      
+  Canon2D (`CANON2D_HWI`, `CANON2D_KHI`, `CANON2D_TCI`).
+    - BENCH : Ajout d'un nouveau guide pratique (`BENCH/Guide_Ajout_Cas_Tests.md`) et d'une variante de compilation
+  `mpi-nvfortran`.
+  
+  ####  ### Fixed 
+  
+    - KNBQ3 : Correction de l'échange périodique/MPI pour la densité `rho_nbq` dans `k3fast_mass_update.h`.        
+    - OCEAN : Correction d'une division par zéro potentielle dans `set_nudgcof.F` (relaxation et éponge) lorsque le
+  nombre de points `isp <= 0`.
+    - jobcomp : Lancement automatique du script `prepro_KXX.py` lors de la compilation avec AGRIF et les noyaux KXX.
+    - BENCH : Prise en charge des patches booléens (ex: activation d'AGRIF) et transmission de l'option AGRIF à    
+  `create_config.bash`.
+  
+
 ### Added
 
+- MERGE : Fusion de la branche `dev2026_NBQ3_merge` comprenant l'intégration du nouveau noyau non-hydrostatique KNBQ3 (K3FAST), l'archivage du solveur historique KNBQ2, l'ajout du mélange vertical TKE3D, et de nouvelles configurations physiques (LES, CANON2D, ISOLITON_DJL).
+- NBQ : Integrate new non-hydrostatic kernel (KNBQ3) and archive old KNBQ baseline to KNBQ2.
 - LICENSE : Clarify license (#7)
 
 - STOGEN : add stochastic parametrizations (Issue #301)
@@ -17,6 +38,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- NBQ : Fix compilation errors of the Adams-Bashforth 3 scheme (correction of `K3FAST_AB3` macros in `nbq.h`, `k3fast_qdmuv_update.h` and `k3fast_qdmw_update.h`).
+- OMEGA : Resolve vertical velocity differences in `omega.F` by making grid respiration calculation unconditional (not restricted to `#ifdef NBQ_MASS`).
+- XIOS : Fix runtime XIOS crashes by adding missing XML field definitions (`Cs_rho`, `Cs_rho_total`, `rho_surf`, `wN`) and correcting grid reference for vertical velocity `w` (from `w_3D` to `rho_3D`) in XML templates.
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
 - MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 
@@ -28,8 +52,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
-  
-- SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
 
 - BENCH : Fix report check status in case of several files (#498)
 - BENCH : Fix label in plot_realist.py (#494)
@@ -44,42 +66,15 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   initialized in this case). This was done through key ROGUE_WAVES, now changed 
   to WAVE_MAKER_DATA (#518)
 
-- SCRIPTS_COUPLING : Fix NCO module load/unload handling when module is not available (#529)
-
 - Fix time in surf average output file (#388)
-- Fix grid variables writing in average and diagnostic file (#522)
-
-- Fix ABORT MPI when problem in reading netcdf (#167)
-
-- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
-           inconsistent with what done for calcite dissolution (#531)
-           Big fix in the calculation of NEW primary productivity with XIOS (#535)
-           Fix the calculation of nitrogen fixation rate with XIOS (#541)
-
-- jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
-  Update BENCH accordingly.
 
 ### Changed
-
-- Input file croco.in replace by a standard namelist (#497)
-  Replace the fixed-format croco.in reader with a Fortran namelist system
-  (croco.nml). All configuration parameters are now in structured &croco_*
-  namelists.
-  A convert_in_to_nml.py utility is provided to easily convert 
-  previous croco.in into croco.nml.
-
-- Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
-  with standardized uppercase filenames. Update all BENCH jsonc configs
-  and plot scripts accordingly, as well as production run scripts.
-
-- AGRIF : update conv version (#510)
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
   (Issue #347)
 
 - Compilation : update on jobcomp (support for ifx and different version of gfortran, 
-  cleaning exit status, see !172 and Issue#176), 
-  update NETCDF paths default from nf-config and nc-config (Issue #473)
+  cleaning exit status, see !172 and Issue#176)
 
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
@@ -87,8 +82,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : review lateral erosion feature (Issue #349)
 
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
-
-- MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
@@ -114,11 +107,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   part of the computation of omega (#447)
 
 - BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
-- XIOS : Align density anomaly computation with native netCDF writer,
-  now with respect to 1000 kg m-3 (Issue #484)
-
-- XIOS : Unmask output grid/geometry variables so that they keep valid
-  values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
 ### Deprecated
 
@@ -136,15 +124,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
-  - remove key_tauskin_c_ubar key_tauskin_c_center key_tauskin_c_upwind
-    replace by booleans in namelist (Issue #348)
-
-- Test cases CPP keys replace by namelist parameter (#497)
-  Remove all test-case CPP guards from the solver. Test-case selection is
-  now done at runtime via testcase_name in the namelist, not at compile
-  time. cppdefs.h and cppdefs_dev.h are cleaned of all per-case guards.
-  cppdefs.h and param.h are now provided by case in TEST_CASES. The regional 
-  Benguela example is also copied to OCEAN.
 
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
@@ -188,15 +167,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - Support :
   - upgrade ci env (ubuntu, hdf5, netcdf versions, ifx compilers) (#463)
-  - use matrix capabilities in gitlab-ci (#519)
-  - avoid misnaming ifort/ifx in gitlab-ci (#492)
 
 ### Contributors on this release
 
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer
+  J. Gula
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,

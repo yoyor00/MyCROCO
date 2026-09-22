@@ -83,12 +83,16 @@
 #  ifdef ABL_NUDGING_DYN
       real alp0_dyn, alp1_dyn
       real alp2_dyn, alp3_dyn
-      common /abl_nudging_dyn/alp0_dyn, alp1_dyn, alp2_dyn, alp3_dyn
+      real ldyn_min,ldyn_max
+      common /abl_nudging_dyn/alp0_dyn, alp1_dyn,
+     &                        alp2_dyn, alp3_dyn, ldyn_min,ldyn_max
 #  endif
 #  ifdef ABL_NUDGING_TRA
       real alp0_tra, alp1_tra
       real alp2_tra, alp3_tra
-      common /abl_nudging_tra/alp0_tra, alp1_tra, alp2_tra, alp3_tra
+      real ltra_min,ltra_max
+      common /abl_nudging_tra/alp0_tra, alp1_tra,
+     &                        alp2_tra, alp3_tra, ltra_min,ltra_max
 #  endif
 # endif
 

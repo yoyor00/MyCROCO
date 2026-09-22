@@ -1,0 +1,58 @@
+{
+  // AgAc_KNBQ - AGRIF-Acoustic Example with KNBQ (with AGRIF)
+  "AgAc_KNBQ": {
+    "title": "AgAc (AGRIF-Acoustic) KNBQ with AGRIF (35x45x1)",
+    "case": "AgAc",
+    "input_file": "TEST_CASES/croco.in.AgAc_KNBQ",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+      "4": "4x1"
+    },
+    "patches": {
+      "cppdefs.h": [
+        {
+          "mode": "replace",
+          "what": "# define MPI\n",
+          "by": "# undef MPI\n",
+          "descr": "Disable MPI for sequential variant"
+        },
+        {
+          "mode": "replace",
+          "what": "# define NC4PAR\n",
+          "by": "# undef NC4PAR\n",
+          "descr": "Disable NC4PAR for sequential variant"
+        },
+        {
+          "mode": "replace",
+          "what": "# define KXX\n",
+          "by": "# undef KXX\n",
+          "descr": "Disable KXX for AGRIF variant"
+        },
+        {
+          "mode": "replace",
+          "what": "# define UV_ADV\n",
+          "by": "# undef UV_ADV\n",
+          "descr": "Disable UV_ADV for AGRIF variant"
+        },
+        {
+          "mode": "replace",
+          "what": "# define SPONGE\n",
+          "by": "# undef SPONGE\n",
+          "descr": "Disable SPONGE for AGRIF variant"
+        }
+      ],
+      "AGRIF_FixedGrids.in": [
+        {
+          "mode": "replace",
+          "what": "17    33     13    27   3  3  3  3",
+          "by": "35 45 35 45  1 1 1 1",
+          "descr": "Set grid dimensions for KNBQ (35x45)"
+        }
+      ],
+      "agrif": true
+    },
+    "check_outputs": ["AgAc_his.nc"],
+    "unsupported": ["openmp"]
+  }
+}

@@ -8,7 +8,6 @@ module submassbalance
 
 #if defined SUBSTANCE
     USE module_substance
-    USE croco_namelist, only: dt
     USE comsubstance
 #ifdef MUSTANG
     USE comMUSTANG
@@ -670,9 +669,11 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
     !Called by : sub_budget_main
     !----------------------------------------------------------------------
 # ifdef MPI
-      include "mpif.h"
-#     include "mpi_cpl.h"
+      include 'mpif.h'
       integer status(MPI_STATUS_SIZE), blank, ierr
+#  ifdef XIOS
+#include "mpi_cpl.h"
+#  endif
 # endif
 
     ! Arguments
@@ -731,17 +732,14 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
                     enddo     
                 enddo     
                 if(nv_fix > 0) then
-                  do k = 1, N
-                    voltot = real( surf_cell(i,j) * Hz(i,j,k) ,rlg)
                     do iv = 1, nv_fix
                         itrc = nv_adv+iv+itsubs1-1
                         do iz = 1, submassbalance_nb_close
                             submassbalance_stok_wat_fix(iz,iv) = submassbalance_stok_wat_fix(iz,iv) + &
                                     real(submassbalance_mask_bud_in(iz,i,j), rlg) *  &
-                                    real(cvfix_wat(i,j,k,iv) * voltot, rlg)     
+                                    real(t(i,j,1,nnew,itrc) * surf_cell(i,j), rlg)     
                         enddo
-                    enddo    
-                  enddo 
+                    enddo     
                 endif
             endif ! htot
 
@@ -1218,7 +1216,7 @@ subroutine submassbalance_def_outnc()
         allocate(tracer_fix_name(nv_fix))
         do j=1,nv_fix
             tracer_fix_var(j) = j
-            tracer_fix_name(j) = name_var_fix(j)
+            tracer_fix_name(j) = name_var(irk_fil(j+nv_adv))
         enddo
         call submassbalance_check( nf90_put_var(submassbalance_ncid, submassbalance_tracer_fix_varid, tracer_fix_var(:), &
             start=(/1/), count=(/nv_fix/)) )

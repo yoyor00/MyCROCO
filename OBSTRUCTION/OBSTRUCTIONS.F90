@@ -52,6 +52,9 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(obst_kmax)   :: obst_zc
       REAL(KIND=rsh), DIMENSION(obst_kmax)   :: obst_dz
       INTEGER :: i, j, k
+#ifdef MPI
+      REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: tmp_a3d_ex
+#endif
 
       ! ******************************
       ! * READING CHARACTERISTICS FILE
@@ -137,6 +140,29 @@ CONTAINS
 #ifdef MPI /* exchange needed to retrieve fuz/fvz at cells edges */
       CALL exchange_r3d_tile(limin, limax, ljmin, ljmax, obst_fuz(START_2D_ARRAY, 1))
       CALL exchange_r3d_tile(limin, limax, ljmin, ljmax, obst_fvz(START_2D_ARRAY, 1))
+      CALL exchange_r3d_tile(limin, limax, ljmin, ljmax, obst_t(START_2D_ARRAY, 1))
+      CALL exchange_r3d_tile(limin, limax, ljmin, ljmax, obst_tau(START_2D_ARRAY, 1))
+      CALL exchange_r2d_tile(limin, limax, ljmin, ljmax, zob)
+
+      ALLOCATE(tmp_a3d_ex(GLOBAL_2D_ARRAY, obst_kmax))
+      do k = 1, obst_kmax
+         do j = lbound(tmp_a3d_ex, 2), ubound(tmp_a3d_ex, 2)
+            do i = lbound(tmp_a3d_ex, 1), ubound(tmp_a3d_ex, 1)
+               tmp_a3d_ex(i, j, k) = obst_a3d(obst_nbvar+2, k, i, j)
+            end do
+         end do
+      end do
+
+      CALL exchange_r3d_tile(limin, limax, ljmin, ljmax, tmp_a3d_ex(START_2D_ARRAY, 1))
+
+      do k = 1, obst_kmax
+         do j = lbound(tmp_a3d_ex, 2), ubound(tmp_a3d_ex, 2)
+            do i = lbound(tmp_a3d_ex, 1), ubound(tmp_a3d_ex, 1)
+               obst_a3d(obst_nbvar+2, k, i, j) = tmp_a3d_ex(i, j, k)
+            end do
+         end do
+      end do
+      DEALLOCATE(tmp_a3d_ex)
 #endif /* MPI */
 
    END SUBROUTINE obst_update

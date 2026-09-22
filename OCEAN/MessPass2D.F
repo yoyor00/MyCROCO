@@ -45,6 +45,14 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 # ifdef  BAND_DEBUG         
       real,dimension(Npts)        :: checksum
 # endif
+!!!$acc declare present(ibuf_sndN_3D, ibuf_revN_3D,
+!!!$acc&          ibuf_sndS_3D, ibuf_revS_3D)
+!!!$acc declare present(jbuf_sndW_3D, jbuf_revW_3D,
+!!!$acc&          jbuf_sndE_3D, jbuf_revE_3D)
+!!!$acc declare present(buf_snd1_3D, buf_rev1_3D,
+!!!$acc&          buf_snd2_3D, buf_rev2_3D)
+!!!$acc declare present(buf_snd3_3D, buf_rev3_3D,
+!!!$acc&          buf_snd4_3D, buf_rev4_3D)
 !
 # include "compute_message_bounds.h"
 
@@ -52,20 +60,21 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
          sub_X=Lm
          size_X=MAXNPTS*(sub_X+2*MAXNPTS)-1  !7+Npts*sub_X
          sub_E=Mm
-         size_E=MAXNPTS*(sub_E+2*MAXNPTS)-1  !7+Npts*sub_E
-         if (.not. allocated(ibuf_sndN)) then
+         size_E=Npts*(sub_E+2*Npts)-1  !7+Npts*sub_E
+!         if (.not. allocated(ibuf_sndN)) then
          Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
      &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),
      &     jbuf_sndW(0:size_E), jbuf_sndE(0:size_E),
      &     jbuf_revW(0:size_E), jbuf_revE(0:size_E))
 
-         endif
+!         endif
 # endif
 !
       ksize=Npts*Npts
       isize=Npts*ishft                  ! sizes for side messages
       jsize=Npts*jshft                  ! in XI and ETA directions
 
+!$acc wait      
 # define write !
 c*      write(*,'(2(6x,A3,I2,2x,A5,I3,2x,A5,I3))')
 c*     &        'ii=',ii,'imin=',imin,'imax=',imax,
@@ -505,6 +514,12 @@ c          endif
 
 c      write(*,*) 'MessPass2D:    ', mynode,' exit'
 
+#if defined AGRIF
+         DeAllocate(ibuf_sndN, ibuf_revN, 
+     &     ibuf_sndS, ibuf_revS,
+     &     jbuf_sndW, jbuf_sndE,
+     &     jbuf_revW, jbuf_revE)
+#endif
 
       return
       end

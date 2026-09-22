@@ -1,12 +1,11 @@
 !======================================================================
-! CROCO is derived from the ROMS-AGRIF branch of ROMS.
-! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
-! from the UCLA branch (Shchepetkin et al.) and the Rutgers
-! University branch (Arango et al.), both under MIT/X style license.
-! Copyright (C) 2005-2026 CROCO Development Team
-! License: CeCILL-2.1 - see LICENSE.txt
+! CROCO is a branch of ROMS developped at IRD, INRIA, 
+! Ifremer, CNRS and Univ. Toulouse III  in France
+! The two other branches from UCLA (Shchepetkin et al)
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 !
-! CROCO website : https://www.croco-ocean.org
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 /* This is include file "averages.h": time-averaged fields
@@ -42,20 +41,22 @@
       real v_avg(GLOBAL_2D_ARRAY,N)
       real t_avg(GLOBAL_2D_ARRAY,N,NT)
       real rho_avg(GLOBAL_2D_ARRAY,N)
-#  if defined ANA_VMIX || defined GLS_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+#  if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
       real bvf_avg(GLOBAL_2D_ARRAY,0:N)
 #  endif
       real omega_avg(GLOBAL_2D_ARRAY,0:N)
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
       real w_avg(GLOBAL_2D_ARRAY,0:N)
 #  else
       real w_avg(GLOBAL_2D_ARRAY,N)
 #  endif
       common /avg_u/u_avg /avg_v/v_avg /avg_t/t_avg
      &       /avg_rho/rho_avg /avg_omega/omega_avg
-#  if defined ANA_VMIX || defined GLS_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+#  if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
      &       /avg_bvf/bvf_avg
 #  endif
      &       /avg_w/w_avg
@@ -75,6 +76,14 @@
       real tke_avg(GLOBAL_2D_ARRAY,0:N)
       real gls_avg(GLOBAL_2D_ARRAY,0:N)
       real Lscale_avg(GLOBAL_2D_ARRAY,0:N)
+      common /avg_tke/tke_avg
+      common /avg_gls/gls_avg
+      common /avg_Lscale/Lscale_avg
+#  endif
+#  ifdef TKE3D_MIXING
+      real tke_avg(GLOBAL_2D_ARRAY,1:N)
+      real gls_avg(GLOBAL_2D_ARRAY,1:N)
+      real Lscale_avg(GLOBAL_2D_ARRAY,1:N)
       common /avg_tke/tke_avg
       common /avg_gls/gls_avg
       common /avg_Lscale/Lscale_avg

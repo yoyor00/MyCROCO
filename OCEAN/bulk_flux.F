@@ -32,11 +32,14 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
-# ifdef STOGEN
-      USE stoarray        ! Stochastic arrays and options
-      USE stoalloc        ! Stochastic working arrays
+# ifdef CVTK_DEBUG
+	use debug
+	use my_functions
 # endif
-      use croco_namelist, only: rho0
+# ifdef STOGEN
+      use stoarray
+      use stoalloc
+# endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -61,23 +64,18 @@
 !++ Local scalars
       REAL           :: cff  , cff2
       REAL           :: rho0i, cpi  , RH   , Hlv     , wspd0
-      REAL           :: TseaC, TseaK, Qsea , spec_hum, Tvstar
+      REAL           :: TseaC, TseaK, Qsea , Tvstar
       REAL           :: TairC, TairK, Q    , rhoAir  , Bf
       REAL           :: delW(2) , delT , delQ , ddelW(2) , ddelT , ddelQ
-      REAL           :: Cd   , Ch   , Ce   , qsat    , iexns , iexna
+      REAL           :: Cd   , Ch   , Ce   , iexns
       REAL           :: Wstar(2), Tstar, Qstar, Wstar0  , Tstar0, Qstar0
-      REAL           :: psi_u(2), ZoLu(2) , psi_t, ZoLt    , patm
+      REAL           :: psi_u(2), ZoLu(2) , psi_t, ZoLt
       REAL           :: hfsen, hflat, hflw , upvel   , evap
-!$acc declare create( cff  , cff2
-!$acc&               ,rho0i, cpi  , RH   , Hlv     , wspd0
-!$acc&               ,TseaC, TseaK, Qsea , Tvstar
-!$acc&               ,TairC, TairK, Q    , rhoAir  , Bf
-!$acc&               ,delW , delT , delQ , ddelW , ddelT , ddelQ
-!$acc&               ,Cd   , Ch   , Ce   , iexns , iexna
-!$acc&               ,Wstar, Tstar, Qstar, Wstar0  , Tstar0, Qstar0
-!$acc&               ,psi_u, ZoLu, psi_t, ZoLt    , patm
-!$acc&               ,hfsen, hflat, hflw , upvel   , evap
-!$acc&               )
+
+      REAL           ::  patm(PRIVATE_2D_SCRATCH_ARRAY)
+      REAL           ::  iexna(PRIVATE_2D_SCRATCH_ARRAY)
+!$acc declare create(iexna,patm)
+
 # ifdef CFB_WIND_TRA
       REAL           :: wspd0_cfb
 # endif
@@ -105,18 +103,17 @@
       REAL            ::  logus10,logts10
 # if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
 #  ifndef ABL1D
-      PARAMETER ( logus10   = LOG(blk_ZW/10.0) )
-      PARAMETER ( logts10   = LOG(blk_ZT/10.0) )
+      PARAMETER ( logus10   = DLOG(blk_ZW/10.0) )
+      PARAMETER ( logts10   = DLOG(blk_ZT/10.0) )
 #  endif
       REAL           :: bulk_psiu_ecume, bulk_psit_ecume
       REAL           :: deltau10n(2), deltat10n, deltaq10n
 # else
       REAL           :: Log10oLogZw
 #  ifndef ABL1D
-      PARAMETER ( Log10oLogZw = LOG(  10.0*10000.)/
-     &                          LOG(blk_ZW*10000.) )
+      PARAMETER ( Log10oLogZw = DLOG(  10.0*10000.)/
+     &                          DLOG(blk_ZW*10000.) )
 #  endif
-      REAL           :: bulk_psiu_coare, bulk_psit_coare, air_visc
       REAL           :: iZoW , iZoT  , CC, Ch10, Ribcu , charn
       REAL           :: iZo10, iZoT10, Ri, Rr  , VisAir
 # endif
@@ -126,6 +123,60 @@
 # ifdef CFB_STRESS
       REAL           ::  stau(PRIVATE_2D_SCRATCH_ARRAY)
 # endif
+      INTERFACE
+!=======================================================================
+      PURE FUNCTION spec_hum (RH,psfc,TairC)
+!$acc routine(spec_hum) seq
+            IMPLICIT NONE
+            REAL, VALUE ::  RH , TairC , psfc
+      REAL       :: spec_hum
+      END FUNCTION spec_hum
+
+      PURE FUNCTION qsat (TairK, patm, coeff)
+!$acc routine(qsat) seq
+      IMPLICIT NONE
+      REAL                 ::  qsat
+      REAL,INTENT(in), VALUE  ::  TairK, patm, coeff
+      END FUNCTION qsat
+
+      PURE SUBROUTINE exner_patm_from_tairabs(iexn,pair,q,
+     &  tairabs,z,psfc)
+!$acc routine(exner_patm_from_tairabs) seq
+      IMPLICIT NONE
+      REAL,INTENT(  out)   :: iexn,pair
+      REAL,VALUE   :: q, tairabs, z, psfc
+      END SUBROUTINE exner_patm_from_tairabs
+      
+      PURE FUNCTION bulk_psiu_ecume (ZoL)
+!$acc routine(bulk_psiu_ecume) seq
+      REAL                 ::  bulk_psiu_ecume
+      REAL,INTENT(in)      ::  ZoL      
+      END FUNCTION bulk_psiu_ecume   
+      
+      PURE FUNCTION bulk_psit_ecume (ZoL)
+!$acc routine(bulk_psit_ecume) seq
+      REAL                 ::  bulk_psit_ecume
+      REAL,INTENT(in)      ::  ZoL      
+      END FUNCTION bulk_psit_ecume
+      
+      PURE FUNCTION air_visc(TairC)
+!$acc routine(air_visc) seq
+      REAL,INTENT(in), VALUE :: TairC
+      REAL                 :: air_visc
+      END FUNCTION air_visc
+      
+      PURE FUNCTION bulk_psiu_coare (ZoL)
+!$acc routine(bulk_psiu_coare) seq
+      REAL                 ::  bulk_psiu_coare
+      REAL,INTENT(in)      ::  ZoL
+      END FUNCTION bulk_psiu_coare
+ 
+      PURE FUNCTION bulk_psit_coare (ZoL)
+!$acc routine(bulk_psit_coare) seq
+      REAL                 ::  bulk_psit_coare
+      REAL,INTENT(in), VALUE  ::  ZoL
+      END FUNCTION bulk_psit_coare
+      END INTERFACE
 !======================================================================
 ! Extended range  (needed for subgrid scale closures)
 !======================================================================
@@ -181,13 +232,14 @@
 # ifndef READ_PATM
 !++  Inverse of exner function at the surface
       iexns  = (psurf*ip00)**(-rdocpd)
-!$acc update device( iexns, iexna, rho0i, hfsen, cpi )     
 # endif
-!$acc kernels if(compute_on_device) default(present)
+
 !----------------------
-!$acc loop seq
+
+!$acc kernels if(compute_on_device) default(present)
+
+!$acc loop collapse(2) private(delw,ddelw,wstar,zolu,psi_u)
       DO j=jmin,jmax
-!$acc loop seq
         DO i=imin,imax
 !----------------------
 !======================================================================
@@ -213,11 +265,11 @@
           Q        = spec_hum (RH,psurf,TairC)
 # else
           uwnd_r   = u_abl(i,j,2,nt_n)
-#  ifndef ABL_NO_OCEAN_FEEDBACK
+#  ifndef KILPATRICK
      &             - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
 #  endif
           vwnd_r   = v_abl(i,j,2,nt_n)
-#  ifndef ABL_NO_OCEAN_FEEDBACK
+#  ifndef KILPATRICK
      &             - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
 #  endif
           wspd0    = SQRT ( uwnd_r*uwnd_r+vwnd_r*vwnd_r )
@@ -234,14 +286,14 @@
 # endif
           TseaK = TseaC + CtoK
 !
-          CALL exner_patm_from_tairabs(iexna,patm,Q,TairK,blk_ZT,psurf)
+          CALL exner_patm_from_tairabs(iexna(i,j),patm(i,j),Q,TairK,blk_ZT,psurf)
 !++  Air density
-          rhoAir = patm*(1.+Q) / ( blk_Rgas*TairK*(1.+MvoMa*Q) )
+          rhoAir = patm(i,j)*(1.+Q) / ( blk_Rgas*TairK*(1.+MvoMa*Q) )
 !++  Specific humidity at saturation
           Qsea   = qsat(TseaK,psurf,0.98)
 # ifdef ABL1D
           sst_abl(i,j) = TseaK*iexns
-#  ifdef ABL_NO_OCEAN_FEEDBACK
+#  ifdef KILPATRICK
           ssq_abl(i,j) = 0.0
 #  else
           ssq_abl(i,j) = Qsea
@@ -260,13 +312,13 @@
           delW(2) = wspd0_cfb
 #  endif
 # endif
-# ifdef ABL_NO_OCEAN_FEEDBACK
+# ifdef KILPATRICK
           delQ = 0.0
 # else
           delQ = Q-Qsea
 # endif
-          cff  = CtoK*(iexna-iexns)
-          delT = TairC*iexna - TseaC*iexns + cff
+          cff  = CtoK*(iexna(i,j)-iexns)
+          delT = TairC*iexna(i,j) - TseaC*iexns + cff
 
 # if defined BULK_ECUMEV0 || defined BULK_ECUMEV6
 !
@@ -290,11 +342,10 @@
 !  ITERATIVE LOOP TO COMPUTE U*, T*, Q*.
 !======================================================================
 !----------------------
-!$acc loop seq
+
           DO Iter=1,IterFl
 !----------------------
 #  ifdef BULK_ECUMEV0
-!$acc loop seq
             DO m=1,mb
               cff    = deltau10n(m)*deltau10n(m)
 !++  Neutral coefficient for wind speed cdn (ECUME_v0 formulation)
@@ -332,7 +383,6 @@
             Tstar       = Chn/SQRT(Cdn(mb))*deltat10n
             Qstar       = Cen/SQRT(Cdn(mb))*deltaq10n
 #  else
-!$acc loop seq
             DO m=1,mb
               cff    = deltau10n(m)*deltau10n(m)
               cff2   = 1./deltau10n(m)
@@ -364,7 +414,6 @@
             Qstar = parqn*deltaq10n*cff2
 #  endif
 ! !++ Obukhovs stability param. z/l
-!$acc loop seq
             DO m=1,mb
               ZoLu(m)  = blk_ZW*g*vonKar*(Tstar*(1.+cpvir*Q)
      &                   +cpvir*TairK*Qstar)/
@@ -437,9 +486,8 @@
           VisAir = air_visc ( TairC )       ! Molecular viscosity
           charn  = 0.011                    ! Charnock parameter
           Ch10   = 0.00115                                                ! 10m exchange coefficient for heat
-          Ribcu  = -    blk_ZW / ( blk_Zabl * 0.004 * blk_beta**3 )
-          
-!$acc loop seq
+          Ribcu  = -    blk_ZW / ( blk_Zabl * 0.004 * POW(blk_beta,3.))
+
           DO m=1,mb
             iZo10  = g*Wstar(m) /
      &               (charn*Wstar(m)*Wstar(m)*Wstar(m)+0.11*g*VisAir)    ! inverse of roughness length
@@ -541,10 +589,8 @@
 !  ITERATIVE LOOP TO COMPUTE U*, T*, Q*.
 !======================================================================
 !----------------------
-!$acc loop seq
           DO Iter=1,IterFl
 !----------------------
-!$acc loop seq
             DO m=1,mb
 !++  Inverse of roughness length
               iZoW    = g*Wstar(m) / ( charn*Wstar(m)*Wstar(m)*Wstar(m)
@@ -554,8 +600,8 @@
               iZoT    = EXP(vonKar*vonKar/(Ch10*LOG(blk_ZW*iZoW)) )/
      &                      blk_ZW
 #  else
-              Rr      = Wstar(m)/(iZow*VisAir)
-              iZoT    = MAX(8695.65,18181.8*(Rr**0.6))
+              Rr      = Wstar(m)/(iZow*VisAir) 
+              iZoT    = MAX(8695.65,18181.8*(POW(Rr,0.6)))
 #  endif
 !++  Obukhovs stability param. z/l
               ZoLu(m)    = vonKar*g*blk_ZW*
@@ -583,7 +629,7 @@
 #  ifdef BULK_GUSTINESS
               Bf=-g/TairK*Wstar(1)*(Tstar+cpvir*TairK*Qstar)
               if (Bf.gt.0.0) then
-                cff=blk_beta*(Bf*blk_Zabl)**r3
+                cff=blk_beta*POW(Bf*blk_Zabl,r3)
               else
                 cff=0.2
               endif
@@ -625,7 +671,7 @@
 !   @@@@@@@@   @@      @@      @@         @@@@@@@@@@   @@@@@@@@@@   @@      @@
 !===============================================================================
 # ifdef ABL1D
-          Cd          = (Wstar(1)/ddelW(1))**2
+          Cd          = POW(Wstar(1)/ddelW(1),2.)
           Cd_du(i,j)  =                  Cd  * delW(1)
           Ch_du(i,j)  =  chosqrcd * SQRT(Cd) * delW(1)
           Ce_du(i,j)  =  chosqrcd * SQRT(Cd) * delW(1)
@@ -666,17 +712,9 @@
 !++  Total surface heat flux
           stflx(i,j,itemp)=srflx(i,j)+hflw+hflat+hfsen
 #  ifdef SALINITY
-          ! evap from latent heat flux
+!++  Total surface salt flux
           evap=-cp*hflat/Hlv
-#   ifdef RAIN_FLUX
-          ! E-P bilan in m/s
-          EmP(i,j)=evap-prate(i,j) 
-          ! add temperature flux from rain
-          stflx(i,j,itemp)=stflx(i,j,itemp)+prate(i,j)*t(i,j,N,nrhs,itemp)
-#   else
-          !++  Total surface salt flux
           stflx(i,j,isalt)=(evap-prate(i,j))*t(i,j,N,nrhs,isalt)
-#   endif
 #  endif
 !
 #  ifdef MASKING
@@ -689,7 +727,7 @@
 #  endif
 !++  Save for the calculation of wind stress
           aer(i,j)  = rhoAir*delW(1)
-          Cd        = (Wstar(1)/ddelW(1))**2
+          Cd        = POW(Wstar(1)/ddelW(1),2.)
           cer(i,j)  = Cd
 #  ifdef STOGEN
           if (ln_stogen .and. ln_stobulk) then
@@ -718,9 +756,7 @@
 !  SWITCH OFF shortwave radiation over "sea-ice"
 !======================================================================
 #  ifdef SEA_ICE_NOFLUX
-!$acc loop seq
       do j=jmin,jmax
-!$acc loop seq
         do i=imin,imax
               if( t(i,j,N,nrhs,itemp) .le. -1.8 ) then
                    stflx(i,j,itemp)=0.
@@ -731,16 +767,15 @@
         enddo
       enddo
 #  endif
-!$acc loop seq
+
 #  ifndef WAVE_SMFLUX
 !
 !======================================================================
 !  Compute kinematic, surface wind stress (m2/s2).
 !======================================================================
 !
-!$acc loop seq
+!$acc loop collapse(2)
       do j=jmin,jmax
-!$acc loop seq
         do i=imin+1,imax
           cff =0.5*(cer(i-1,j)+cer(i,j))
           cff2=0.5*(aer(i-1,j)+aer(i,j))
@@ -757,12 +792,9 @@
 #   endif
         enddo
       enddo
-!$acc end kernels      
-!
-!$acc kernels if(compute_on_device) default(present)
-!$acc loop seq
+
+!$acc loop collapse(2)
       do j=jmin+1,jmax
-!$acc loop seq
         do i=imin,imax
           cff =0.5*(cer(i,j-1)+cer(i,j))
           cff2=0.5*(aer(i,j-1)+aer(i,j))
@@ -794,13 +826,17 @@
 !=======================================================================
 !   Compute specific humidity from relative humidity
 !=======================================================================
-      FUNCTION spec_hum (RH,psfc,TairC)
+      PURE FUNCTION spec_hum (RH,psfc,TairC)
 !$acc routine(spec_hum) seq
+# ifdef CVTK_DEBUG
+	use debug
+	use my_functions
+# endif
       IMPLICIT NONE
 # include "params_bulk.h"
-      REAL       ::  RH   , spec_hum , cff
-      REAL       ::  psfc, TairC
-!$acc declare create(  RH,psfc,TairC )     
+      REAL,VALUE ::  RH , TairC , psfc
+      REAL       ::  cff, spec_hum
+
 ! !++  Compute air saturation vapor pressure (mb), using Teten formula.
       cff=(1.0007+3.46e-6*0.01*psfc)*6.1121*
      &        exp(17.502*TairC/(240.97+TairC))
@@ -815,20 +851,34 @@
 !=======================================================================
 !    Compute Exner function from absolute air temperature
 !=======================================================================
-      SUBROUTINE exner_patm_from_tairabs (iexn,pair,q,tairabs,z,psfc)
+      PURE SUBROUTINE exner_patm_from_tairabs(iexn,pair,q,
+     &  tairabs,z,psfc)
 !$acc routine(exner_patm_from_tairabs) seq
-      IMPLICIT NONE
+# ifdef CVTK_DEBUG
+	use debug
+	use my_functions
+# endif
+      IMPLICIT NONE 
 # include "params_bulk.h"
       REAL,INTENT(  out)   :: iexn,pair
-      REAL,INTENT(in   )   :: q, tairabs, z, psfc
+      REAL,VALUE  :: q, tairabs, z, psfc
 !++  Local variable declarations.
-      REAL                 :: xm,q_sat,qsat
+      REAL                 :: xm,q_sat
       REAL, PARAMETER      ::  g    = 9.80665
       INTEGER              :: iter
       INTEGER, PARAMETER   :: Niter = 3
+
+      INTERFACE
+      PURE FUNCTION qsat (TairK, patm, coeff)
+!$acc routine(qsat) seq
+      IMPLICIT NONE
+      REAL                 ::  qsat
+      REAL,INTENT(in), VALUE  ::  TairK, patm, coeff
+      END FUNCTION qsat
+      END INTERFACE
 !
       pair = psfc
-!$acc loop seq
+
       DO Iter = 1, Niter
         q_sat = qsat(tairabs, pair, 1.)
         xm    =  mm_dryair + (q/q_sat) * ( mm_water - mm_dryair )
@@ -844,12 +894,16 @@
 !=======================================================================
 !    Compute Saturation humidity
 !=======================================================================
-      FUNCTION qsat (TairK, patm, coeff)
+      PURE FUNCTION qsat (TairK, patm, coeff)
 !$acc routine(qsat) seq
+# ifdef CVTK_DEBUG
+	use debug
+	use my_functions
+# endif
       IMPLICIT NONE
 # include "params_bulk.h"
       REAL                 ::  qsat
-      REAL                 ::  TairK, patm, coeff
+      REAL,INTENT(in), VALUE  ::  TairK, patm, coeff
 !++  Local variables declarations.
       REAL                 ::  psat
       REAL, PARAMETER      ::  alpw    = 60.2227554
@@ -867,9 +921,6 @@
       psat = coeff * psat
 !++ Compute Saturation Humidity
       qsat = (MvoMa*psat)/(patm+(MvoMa-1.0)*psat)
-#ifdef OPENACCNUMERIC
-      qsat = real(qsat,kind=4)
-#endif
       return
       END FUNCTION qsat
 
@@ -877,12 +928,16 @@
 !=======================================================================
 !    Ecume stability function for velocity
 !=======================================================================
-      FUNCTION bulk_psiu_ecume (ZoL)
+      PURE FUNCTION bulk_psiu_ecume (ZoL)
 !$acc routine(bulk_psiu_ecume) seq
+# ifdef CVTK_DEBUG
+	use debug
+	use my_functions
+# endif
       IMPLICIT NONE
 #  include "params_bulk.h"
       REAL                 ::  bulk_psiu_ecume
-      REAL                 ::  ZoL
+      REAL,INTENT(in)      ::  ZoL
 !++  Local variables declarations.
       REAL                 ::  chik, psik
       REAL                 ::  chic, psic
@@ -906,12 +961,16 @@
 !=======================================================================
 !    Ecume stability function for tracers
 !=======================================================================
-      FUNCTION bulk_psit_ecume (ZoL)
+      PURE FUNCTION bulk_psit_ecume (ZoL)
 !$acc routine(bulk_psit_ecume) seq
+# ifdef CVTK_DEBUG
+	use debug
+	use my_functions
+# endif
       IMPLICIT NONE
 #  include "params_bulk.h"
       REAL                 ::  bulk_psit_ecume
-      REAL                 ::  ZoL
+      REAL,INTENT(in)      ::  ZoL
       !  Local variables declarations.
       REAL                 ::  chik, psik
       REAL                 ::  chic, psic
@@ -934,9 +993,11 @@
 !=======================================================================
 !    Compute molecular viscosity as a function of air temperature
 !=======================================================================
-      FUNCTION air_visc(TairC)
+      PURE FUNCTION air_visc(TairC)
 !$acc routine(air_visc) seq
-      REAL                 :: air_visc,cff
+      REAL,INTENT(in), VALUE :: TairC
+      REAL                 :: air_visc
+      REAL                 :: cff
       REAL, PARAMETER      :: c0 = 1.326E-5
       REAL, PARAMETER      :: c1 = 6.542E-3
       REAL, PARAMETER      :: c2 = 8.301E-6
@@ -948,64 +1009,64 @@
 !=======================================================================
 !    Coare stability function for velocity
 !=======================================================================
-      FUNCTION bulk_psiu_coare (ZoL)
+      PURE FUNCTION bulk_psiu_coare (ZoL)
 !$acc routine(bulk_psiu_coare) seq
+# ifdef CVTK_DEBUG
+	use debug
+	use my_functions
+# endif
       IMPLICIT NONE
 #  include "params_bulk.h"
       REAL                 ::  bulk_psiu_coare
-      REAL                 ::  ZoL
+      REAL,INTENT(in)      ::  ZoL
 !  Local variables declarations.
       REAL                 ::  chik, psik
       REAL                 ::  chic, psic
 !
       IF (ZoL <= 0.0) then  !  Unstable conditions.
         chik = (1.0-15.0*ZoL)**0.25
-        psik = 2.0*LOG(0.5*(1.0+chik))+LOG(0.5*(1.0+chik**2))
+        psik = 2.0*LOG(0.5*(1.0+chik))+LOG(0.5*(1.0+chik*chik))
      &                                  -2.0*ATAN(chik)+pis2
-        chic = (1.0-10.15*ZoL)**r3
+        chic = POW(1.0-10.15*ZoL,r3)
         psic  = 1.5*LOG(r3*(chic**2+chic+1.0))
      &          - sqr3*ATAN((2.0*chic+1.0)/sqr3)+2.*pis2osqr3
-        bulk_psiu_coare=psic+(psik-psic)/(1.0+ZoL**2)
+        bulk_psiu_coare=psic+(psik-psic)/(1.0+ZoL*Zol)
       ELSE                    !  Stable conditions
         chic=-MIN(50.0,0.35*ZoL)
         bulk_psiu_coare=-((1.0+ZoL)+0.6667*(ZoL-14.28)*EXP(chic)+8.525)
       ENDIF
-#ifdef OPENACCNUMERIC
-       bulk_psiu_coare = real( bulk_psiu_coare, kind=4 )
-#endif
+
       return
       END FUNCTION bulk_psiu_coare
 !=======================================================================
 !    Coare stability function for tracers
 !=======================================================================
-      FUNCTION bulk_psit_coare (ZoL)
+      PURE FUNCTION bulk_psit_coare (ZoL)
 !$acc routine(bulk_psit_coare) seq
+# ifdef CVTK_DEBUG
+	use debug
+	use my_functions
+# endif
       IMPLICIT NONE
 #  include "params_bulk.h"
       REAL                 ::  bulk_psit_coare
-      REAL                 ::  ZoL
+      REAL,INTENT(in), VALUE ::  ZoL
 !  Local variables declarations.
       REAL                 ::  chik, psik
       REAL                 ::  chic, psic
 !
       IF (ZoL < 0.0) THEN
-        chik  = (1.0-15.0*ZoL)**0.25
-        psik  = 2.0*LOG(0.5*(1.0+chik**2))
-        chic  = (1.0-34.15*ZoL)**r3     !for very unstable conditions
+        chik  = POW((1.0-15.0*ZoL),0.25)
+        psik  = 2.0*LOG(0.5*(1.0+chik*chik))
+        chic  = POW((1.0-34.15*ZoL),r3)     !for very unstable conditions
         psic  = 1.5*LOG((chic**2+chic+1.0)*r3)
      &               -sqr3*ATAN((2.0*chic+1.0)/sqr3)
      &               +2.*pis2osqr3
-        bulk_psit_coare = psic+(psik-psic)/(1.0+ZoL**2) !match Kansas & free-conv. forms
-#ifdef OPENACCNUMERIC        
-        bulk_psit_coare = real(bulk_psit_coare,kind=4)
-#endif        
+        bulk_psit_coare = psic+(psik-psic)/(1.0+ZoL*Zol) !match Kansas & free-conv. forms   
       ELSE
         chic=-MIN(50.0,0.35*ZoL)
-        bulk_psit_coare = -((1.0+2.0*ZoL/3.0)**1.5+
+        bulk_psit_coare = -(POW((1.0+2.0*ZoL/3.0),1.5)+
      &            0.6667*(ZoL-14.28)*EXP(chic)+8.525)
-#ifdef OPENACCNUMERIC        
-        bulk_psit_coare = real(bulk_psit_coare,kind=4)
-#endif        
       ENDIF
       return
       END FUNCTION bulk_psit_coare

@@ -16,9 +16,6 @@
 !
 #include "cppdefs.h"
       subroutine step()
-# if defined OA_COUPLING || defined OW_COUPLING
-      use croco_namelist, only: ntimes, dt
-# endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -110,7 +107,6 @@ C$OMP END PARALLEL
 !====================================================================
 !
       subroutine prestep3D_thread()
-      use croco_namelist
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS
@@ -133,7 +129,7 @@ C$OMP END PARALLEL
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # include "nbq.h"
 #endif
 #include "ocean2d.h"
@@ -313,7 +309,7 @@ C$OMP BARRIER
 C$OMP BARRIER
       do tile=my_first,my_last
         call set_vbc (tile)
-# if defined  BBL && !defined M3FAST
+# if defined  BBL && !defined M3FAST && !defined K3FAST
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN
 #  endif
@@ -327,6 +323,13 @@ C$OMP BARRIER
         IF (Agrif_Root()) call clm_tides (tile)
 #  else
         call clm_tides (tile)
+#  endif
+# endif
+# if defined POT_CUVE
+#  ifdef AGRIF
+        IF (Agrif_Root()) call pot_cuve (tile)
+#  else
+        call pot_cuve (tile)
 #  endif
 # endif
       enddo
@@ -481,7 +484,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef NBQ
+# if defined NBQ || defined K3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -563,7 +566,7 @@ C$OMP MASTER
 # if defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST
       do itrc=1,NT
         write(cltra,"('( t prestep3d tracer nb ', i2')')")  itrc
-        call check_tab3d(t(:,:,:,nnew,itrc),trim(cltra),'r',
+        call check_tab3d(t(:,:,:,nnew,itrc),trim(cltra),'rint',
      &  ondevice=.TRUE.)
       enddo
       call check_tab3d(u(:,:,:,nnew),'u prestep3d','u',
@@ -587,10 +590,10 @@ C$OMP MASTER
 C$OMP END MASTER
 C$OMP PARALLEL DO PRIVATE(tile)
          do tile=my_first,my_last
-           ! BLXD call croco_oa(0)
-           call online_spectral_diags(tile,1)
+! BLXD online_spectral_diags/output_oa 1st argument is the model mode 0/1 = Slow/Fast mode
+           call online_spectral_diags(tile,0)
          enddo
-         call output_oa
+         call output_oa(0)
 C$OMP MASTER
       endif
 # endif
@@ -622,6 +625,9 @@ C$OMP BARRIER
 #ifdef CVTK_DEBUG
       use debug
 #endif
+#ifdef ONLINE_ANALYSIS
+      use module_interface_oa, only : if_oa, if_oa_fast_mode
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -635,7 +641,7 @@ C$OMP BARRIER
 #endif
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
-#elif ( defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST ) && defined M3FAST
+#elif ( defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST ) && (defined M3FAST || defined K3FAST)
 # include "nbq.h"
 #endif
 #if defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST
@@ -650,6 +656,9 @@ C$OMP BARRIER
       common /sta_step/ sta_str
 #endif
       integer omp_get_num_threads, omp_get_thread_num
+#if defined AGRIF && defined KXX
+       integer level
+#endif
 
       ntrds=omp_get_num_threads()
       trd=omp_get_thread_num()
@@ -657,6 +666,16 @@ C$OMP BARRIER
       range=(NSUB_X*NSUB_E+ntrds-1)/ntrds
       my_first=trd*range
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
+
+#if defined AGRIF && defined KXX
+       !! Lecture de AGRIF_FixedGrids.in kernels/niveaux
+       if ((FIRST_TIME_STEP).and.(FIRST_FAST_STEP)
+     &				.and.(kxxnb==0)) then
+            call getlistekernels('./AGRIF_FixedGrids.in',
+     &      tabkernel,kxxnb) 
+       endif
+#endif
+
 
 !
 ! Solve the 2D primitive equations for the barotropic mode.
@@ -750,6 +769,13 @@ C$OMP BARRIER
           call clm_tides (tile)
 #  endif
 # endif
+# if defined POT_CUVE
+#   ifdef AGRIF
+          IF (Agrif_Root()) call pot_cuve (tile)
+#   else
+          call pot_cuve (tile)
+#   endif
+# endif
 # ifdef AVERAGES
           call set_avg (tile)
 # endif
@@ -781,7 +807,7 @@ C$OMP BARRIER
                   ! tile-processing sequence.
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # if defined AGRIF && defined NBQ_CHILD_ONLY
             if (Agrif_Root()) then
               call   step2d (tile)
@@ -789,7 +815,32 @@ C$OMP BARRIER
               call   step3d_fast (tile)
             endif
 # else
+#  if defined AGRIF && defined KXX   
+            level=Agrif_Fixed()
+!            print *,"grille numero :",Agrif_Fixed()
+!     &             ," AGRIF_Root=",AGRIF_Root(),level
+!            print *,"tabkernel(level+1)="
+!     &             ,tabkernel(level+1)
+!     &             ,":",tabkernel(1:kxxnb)
+            
+            select case (trim(tabkernel(level+1)))
+                case ("KNBQ")
+                  call   step3d_fast_KNBQ (tile)
+                case ("KNHINT")
+                  call   step3d_fast_KNHINT (tile)
+                case ("KH3D")
+                   call   step3d_fast_KH3D (tile)
+                case ("KHCOMP")
+                   call   step3d_fast_KHCOMP (tile)            
+                case default
+                   print *,"kernel:",trim(tabkernel(level+1))
+     &  ," not recognize",level,tabkernel
+                    stop
+            end select
+            
+#  else
             call   step3d_fast (tile)
+# endif
 # endif
 #else
             call     step2d (tile)
@@ -797,7 +848,7 @@ C$OMP BARRIER
           enddo
         else
           do tile=my_first,my_last
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # if defined AGRIF && defined NBQ_CHILD_ONLY
             if (Agrif_Root()) then
               call   step2d (tile)
@@ -805,13 +856,51 @@ C$OMP BARRIER
               call   step3d_fast (tile)
             endif
 # else
+#  if defined AGRIF && defined KXX   
+            level=Agrif_Fixed()
+            
+            select case (tabkernel(level+1))
+                case ("KNBQ")
+                  call   step3d_fast_KNBQ (tile)
+                case ("KNHINT")
+                  call   step3d_fast_KNHINT (tile)
+                case ("KH3D")
+                   call   step3d_fast_KH3D (tile)
+                case ("KHCOMP")
+                   call   step3d_fast_KHCOMP (tile)            
+                case default
+                   print *,"kernel:",tabkernel(level+1)
+     &  ," not recognize"
+                    stop
+                
+            end select
+                            
+#  else
             call   step3d_fast (tile)
+#  endif
 # endif
 #else
             call     step2d (tile)
 #endif
           enddo
         endif
+
+! BLXD Possible place where to call ONLINE ANALYSIS for fast mode
+!      Would work both for the fast model mode step2d and step3d_fast
+#ifdef ONLINE_ANALYSIS
+      if ( if_oa.eqv..true. .and. 
+     & if_oa_fast_mode.eqv..true.) then
+C$OMP PARALLEL DO PRIVATE(tile)
+         do tile=my_first,my_last
+! BLXD online_spectral_diags/output_oa 1st argument is the model mode 0/1 = Slow/Fast mode
+           call online_spectral_diags(tile,1)
+         enddo
+! BLXD output_oa source now set to be only called within the slow mode
+!      even when the spectral online diagnostics have been calculated in the fast mode  
+       call output_oa(1)
+      endif
+#endif
+
 
 #if defined AGRIF && defined AGRIF_2WAY
         if (.not.agrif_root()) then
@@ -822,7 +911,7 @@ C$OMP BARRIER
 #ifdef CVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
        call check_tab2d(zeta(:,:,knew),'zeta step3d_fast','r',
      &    ondevice=.TRUE.)
        call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u',
@@ -862,7 +951,7 @@ C$OMP END MASTER
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # include "nbq.h"
 #endif
 #ifdef STATIONS
@@ -901,13 +990,14 @@ C$OMP BARRIER
 C$OMP BARRIER
 
 #ifdef SOLVE3D
-# if defined NBQ && defined AGRIF && defined NBQ_CHILD_ONLY
+# if (defined NBQ && defined AGRIF && defined NBQ_CHILD_ONLY)\
+  || (defined K3FAST && defined AGRIF && defined NBQ_CHILD_ONLY) 
       if (Agrif_Root()) then
         do tile=my_first,my_last
           call set_depth (tile)
         enddo
       endif
-# elif !defined NBQ
+# elif !defined NBQ && !defined K3FAST
       do tile=my_first,my_last
         call set_depth (tile)
       enddo
@@ -932,7 +1022,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef NBQ
+# if defined NBQ || defined K3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -940,7 +1030,7 @@ C$OMP BARRIER
 #  endif
 # endif
         call step3d_uv1 (tile)
-# ifdef NBQ
+# if defined NBQ || defined K3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call step3d_w (tile)
 #  else
@@ -1067,7 +1157,9 @@ C$OMP BARRIER
         call mustang_update_main (tile)
 # endif
         call step3d_t (tile)
-
+# if defined TKE3D_MIXING
+        CALL tke3d_mixing (tile)
+# endif 
 # ifdef MUSTANG
         call mustang_deposition_main (tile)
 # endif

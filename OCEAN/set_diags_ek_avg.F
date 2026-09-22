@@ -11,10 +11,6 @@
       end
 
       subroutine set_diags_ek_avg_tile (istr,iend,jstr,jend)
-# ifdef DIAGNOSTICS_KE
-      use croco_namelist, only: ldefdiags_ek_avg, ntsdiags_ek_avg,
-     &     nwrtdiags_ek_avg
-# endif
 !
 ! Compute time-averaged fields within a tile.
 ! ------- ------------- ------ ------ - -----
@@ -90,7 +86,7 @@
 # if defined DIAGNOSTICS_BARO
                 ekBaro_avg(i,j,k)=ekBaro(i,j,k)
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
                 ekfast_avg(i,j,k)=ekfast(i,j,k)
 # endif
               enddo
@@ -136,7 +132,7 @@
      &                      ekBaro_avg(i,j,k) +
      &                      ekBaro(i,j,k)
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
                   ekfast_avg(i,j,k) =
      &                      ekfast_avg(i,j,k) +
      &                      ekfast(i,j,k)
@@ -207,7 +203,7 @@
      &                       ( ekBaro_avg(i,j,k) +
      &                         ekBaro(i,j,k) )
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
                   ekfast_avg(i,j,k) = cff *
      &                       ( ekfast_avg(i,j,k) +
      &                         ekfast(i,j,k) )

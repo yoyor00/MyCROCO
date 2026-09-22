@@ -24,12 +24,6 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
-#if defined DIAGNOSTICS_UV
-      use croco_namelist, only: ldefdiaM, nwrtdiaM, nrpfdiaM,
-     &     dianameM, ldefdiaM_avg, ntsdiaM_avg, nwrtdiaM_avg,
-     &     nrpfdiaM_avg, dianameM_avg
-#endif
-
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -74,7 +68,7 @@
 #  if defined DIAGNOSTICS_BARO
 #   define vidMBaro diaMBaro
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
 #   define vidMfast diaMfast
 #  endif
 #  if defined MRL_WCI
@@ -110,7 +104,7 @@
 #  if defined DIAGNOSTICS_BARO
 #   define vidMBaro diaMBaro_avg
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
 #   define vidMfast diaMfast_avg
 #  endif
 #  if defined MRL_WCI
@@ -640,7 +634,7 @@
      &                        vname(:,indxMBaro+itrc-1), 5,
      &                        NF_FOUT, ierr)
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxMfast
 !
@@ -1201,7 +1195,7 @@
 #  endif
 
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxMfast
 !
@@ -1418,7 +1412,7 @@
 # if defined DIAGNOSTICS_BARO
 #  undef vidMBaro
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 #  undef vidMfast
 # endif
 !

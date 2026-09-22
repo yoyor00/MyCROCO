@@ -11,7 +11,7 @@ mdy=$( valid_date ${MONTH_END_JOB} $(( ${DAY_END_JOB} + 1 )) ${YEAR_END_JOB} )
 LOCAL_MTH_END=$( echo $mdy | cut -d " " -f 1 )
 
 for k in `seq 0 $(( ${lengthforc} - 1))` ; do
-    [[ -n ${ncomod} ]]  && module load ${ncomod}
+    module load ${ncomod}
     if [[ ${JOB_DUR_MTH} -eq 1 || ${LOCAL_MTH_END} -eq ${cur_M} ]]; then # Case 1 month or less
         echo "Job is one month long or less ---> Using netcdf of the current month"
         cur_Y=$( echo $DATE_BEGIN_JOB | cut -c 1-4 )
@@ -38,7 +38,7 @@ for k in `seq 0 $(( ${lengthforc} - 1))` ; do
             fi
         done
     fi
-    [[ -n ${ncomod} ]] && module unload ${ncomod}
+    module unload ${ncomod}
 done
 
 if [ ! -z $bouncin ]; then

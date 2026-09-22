@@ -1,10 +1,10 @@
+! $Id: set_nudgcof.F 1458 2014-02-03 15:01:25Z gcambon $
+!
 !======================================================================
-! CROCO is derived from the ROMS-AGRIF branch of ROMS.
-! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
-! from the UCLA branch (Shchepetkin et al.) and the Rutgers
-! University branch (Arango et al.), both under MIT/X style license.
-! Copyright (C) 2005-2026 CROCO Development Team
-! License: CeCILL-2.1 - see LICENSE.txt
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! The two other branches from UCLA (Shchepetkin et al)
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
 !
 ! CROCO website : https://www.croco-ocean.org
 !======================================================================
@@ -25,14 +25,6 @@
       end
 !
       subroutine set_nudgcof_tile (Istr,Iend,Jstr,Jend, wrk)
-      use croco_namelist, only: dt, tauT_in, tauT_out, testcase_name
-#if defined M2NUDGING || defined M3NUDGING || defined ZNUDGING \
-    || defined NBQ_NUDGING
-      use croco_namelist, only: tauM_in, tauM_out
-#endif
-# if (defined SPONGE && !defined SPONGE_GRID)
-      use croco_namelist, only: x_sponge
-# endif    
 !     implicit none
       integer ierr
 # if defined MPI
@@ -63,11 +55,11 @@
 !--------------------------------------------------------------------
 !
 # if defined SPONGE_GRID || !defined SPONGE
-      if (trim(testcase_name) == 'IGW') then
-        isp=155
-      else
-        isp=10
-      endif
+#  ifdef IGW
+      isp=155
+#  else
+      isp=10
+#  endif
 # else
 !$acc update host(pm(1,1))
 #  ifdef MPI
@@ -114,23 +106,29 @@
 #  endif
 # endif
 
-          if (trim(testcase_name) == 'IGW') then
-            if (ibnd .ge. isp) then
-              wrk(i,j)=0.
-            else
-              wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
-            endif
+# ifdef IGW
+          if (ibnd .ge. isp) then
+            wrk(i,j)=0.
           else
-            wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
-!           wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
+            wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
           endif
-#ifdef OPENACCNUMERIC
-          wrk(i,j)=real(wrk(i,j), kind=4)
-#endif
+# else
+          if (isp .gt. 0) then
+            wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
+          else
+            wrk(i,j)=0.
+          endif
+!         wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
+# endif
 
 # ifdef SPONGE_SED
-          if (i.gt.0 .and. j.gt.0)
-     &      sed_sponge(i,j)=float(ibnd)/float(isp)
+          if (i.gt.0 .and. j.gt.0) then
+            if (isp .gt. 0) then
+              sed_sponge(i,j)=float(ibnd)/float(isp)
+            else
+              sed_sponge(i,j)=0.
+            endif
+          endif
 # endif
         enddo
       enddo
@@ -154,7 +152,7 @@
           M3nudgcof(i,j)=tauM_out*wrk(i,j)
 # endif
 # ifdef NBQ_NUDGING
-          NBQnudgcof(i,j)=dtfast*tauM_out*wrk(i,j) ! nudg. to internal modes (dim. less)
+          NBQnudgcof(i,j)=tauM_out*wrk(i,j) ! nudg. to internal modes (dim. less) ! TBC
 # endif
         enddo
       enddo
@@ -198,22 +196,21 @@
         enddo
       enddo
 #  endif /* TNUDGING */
-      if (trim(testcase_name) == 'JET' .or.
-     &    trim(testcase_name) == 'ANA_JET') then
-        do j=JstrR,JendR
-          do i=IstrR,IendR
+#  ifdef JET
+      do j=JstrR,JendR
+        do i=IstrR,IendR
 #   ifdef ZNUDGING
-            Znudgcof(i,j)=tauM_out
+          Znudgcof(i,j)=tauM_out
 #   endif
 #   ifdef M2NUDGING
-            M2nudgcof(i,j)=tauM_out
+          M2nudgcof(i,j)=tauM_out
 #   endif
 #   ifdef M3NUDGING
-            M3nudgcof(i,j)=tauM_out
+          M3nudgcof(i,j)=tauM_out
 #   endif
-          enddo
         enddo
-      endif
+      enddo
+#  endif /* JET */
 # endif /* ROBUST_DIAG */
 
 # ifdef SPONGE
@@ -228,7 +225,7 @@
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-          visc2_sponge_r(i,j)=(0.01 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
+          visc2_sponge_r(i,j)=(0.001 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
 #   ifdef UV_VIS4
           visc4_sponge_r(i,j)=visc2_sponge_r(i,j)/(pm(i,j)*pn(i,j))
 #   endif
@@ -239,7 +236,7 @@
 !
       do j=Jstr,JendR
         do i=Istr,IendR
-          visc2_sponge_p(i,j)=0.25*(0.01 /(pm(i,j)*pn(i,j)*dt))*
+          visc2_sponge_p(i,j)=0.025*(0.01 /(pm(i,j)*pn(i,j)*dt))*
      &                              ( wrk(i,j  )+wrk(i-1,j  )
      &                               +wrk(i,j-1)+wrk(i-1,j-1) )
 #   ifdef UV_VIS4
@@ -256,7 +253,7 @@
        do itrc=1,NT
         do j=JstrR,JendR
           do i=IstrR,IendR
-            diff2_sponge(i,j)=(0.01 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
+            diff2_sponge(i,j)=(0.001 /(pm(i,j)*pn(i,j)*dt))*wrk(i,j)
 #   ifdef TS_DIF4
             diff4_sponge(i,j)=diff2_sponge(i,j)/(pm(i,j)*pn(i,j))
 #   endif
@@ -274,7 +271,7 @@
 !
       do j=JstrR,JendR
         do i=IstrR,IendR
-          visc2_nbq_sponge(i,j)=10.*wrk(i,j)
+          visc2_nbq_sponge(i,j)=0.*wrk(i,j)
         enddo
       enddo
 # endif /* NBQ_SPONGE */

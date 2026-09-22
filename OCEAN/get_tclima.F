@@ -15,7 +15,6 @@
                              ! Read tracer(s) climatology
       subroutine get_tclima  ! fields from climatology file
                              ! at appropriate time.
-      use croco_namelist, only: dt, clmname
 # ifdef OPENACC
       use exchange_device_host
 # endif
@@ -756,7 +755,6 @@ C$    integer  trd, omp_get_thread_num
 !  Set-up tracer climatology for current tile.
 !--------------------------------------------------------------------
 !
-      USE croco_namelist, only: dt
 # define TCLIMA_DATA
       implicit none
 # include "param.h"

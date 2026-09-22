@@ -69,15 +69,15 @@
 !
 !======================================================================
 !
-      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
 # ifdef PSOURCE_MASS
       integer is,iis,jjs
 # endif
 # include "param.h"
-
-# include "nbq.h" 
+# if defined M3FAST || defined K3FAST
+#  include "nbq.h" 
+# endif
       real DC    (PRIVATE_1D_SCRATCH_ARRAY,0:N    )
       real FC  (PRIVATE_1D_SCRATCH_ARRAY,0:N    )
       real CF  (PRIVATE_2D_SCRATCH_ARRAY    )
@@ -168,10 +168,10 @@
             !FC(i,k)=FC(i,k-1) + romega(i,j,k)
             FC(i,k)=FC(i,k-1) -Huon(i+1,j,k)+Huon(i,j,k)
      &                        -Hvom(i,j+1,k)+Hvom(i,j,k)
-# ifdef NBQ_MASS
+!# ifdef NBQ_MASS    ! Check that !!!!
      &                       -((Hz(i,j,k)-Hz_bak(i,j,k))/dt)
      &                                  *om_r(i,j)*on_r(i,j)
-# endif
+!# endif
             DC(i,k)=DC(i,k-1) + Hz(i,j,k)
 !
 !---------------------------------------------------------

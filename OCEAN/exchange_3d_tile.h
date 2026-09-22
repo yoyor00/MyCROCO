@@ -27,7 +27,7 @@
 !
 #include "compute_auxiliary_bounds.h"
 !
-!$acc kernels if(compute_on_device) default(present)  
+!$acc kernels if(compute_on_device) default(present) async(1) 
 #ifdef EW_PERIODIC
 # ifdef NS_PERIODIC
 #  define J_RANGE Jstr,Jend
@@ -139,17 +139,18 @@
 # endif
 #endif
 !$acc end kernels		   
+!$acc wait
 #ifdef MPI
       k=N-KSTART+1
 # ifndef MP_3PTS
-#   ifndef MP_M3FAST_SEDLAYERS
+#   ifndef MP_K3FAST_SEDLAYERS
       call MessPass3D_tile (Istr,Iend,Jstr,Jend,  A,k)
 #   else
       call MessPass3D_sl_tile (Istr,Iend,Jstr,Jend,  A,k)
 #   endif      
 #  else
 !!  MP_3PTS        
-#   ifndef MP_M3FAST_SEDLAYERS       
+#   ifndef MP_K3FAST_SEDLAYERS       
       call MessPass3D_3pts_tile (Istr,Iend,Jstr,Jend,  A,k)
 #   else
       call MessPass3D_3pts_sl_tile (Istr,Iend,Jstr,Jend,  A,k)      

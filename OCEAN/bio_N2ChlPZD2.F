@@ -21,7 +21,6 @@
 ! NO3, NH4, Chlorophyl, PHYTOplankton, ZOOplanknton, Small Detritus,
 ! and Large Detritus.
 !
-      use croco_namelist, only: dt, rho0
       implicit none
       integer Istr,Iend,Jstr,Jend
 # include "param.h"

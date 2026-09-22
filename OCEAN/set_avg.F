@@ -26,7 +26,7 @@ C$    integer omp_get_thread_num
 # ifdef MRL_WCI
       call wstokes (tile)
 # endif
-# if defined SOLVE3D && !defined NBQ
+# if defined SOLVE3D && (!defined NBQ && !defined K3FAST)
       if (wrtavg(indxW)) then
         call Wvlcty (tile, workr)
       endif
@@ -58,7 +58,6 @@ C$    integer omp_get_thread_num
 ! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
-      use croco_namelist, only: ntsavg, navg, rho0
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, ilc, iout, indxWrk
@@ -291,8 +290,9 @@ C$    integer omp_get_thread_num
             enddo
           enddo
         endif
-#  if defined ANA_VMIX || defined GLS_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
+#  if defined ANA_VMIX || defined BVF_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+  || defined GLS_MIXING || defined TKE3D_MIXING
         if (wrtavg(indxbvf)) then
           do k=0,N
             do j=JstrR,JendR
@@ -318,7 +318,7 @@ C$    integer omp_get_thread_num
           enddo
         endif
         if (wrtavg(indxW)) then
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
           do k=0,N
             do j=JstrR,JendR
               do i=IstrR,IendR
@@ -384,6 +384,38 @@ C$    integer omp_get_thread_num
         endif
         if (wrtavg(indxLsc)) then
           do k=0,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                Lscale_avg(i,j,k)=cff*(cff1*Lscale_avg(i,j,k)
+     &                                     +Lscale(i,j,k))
+              enddo
+            enddo
+          enddo
+        endif
+#  endif
+#  ifdef TKE3D_MIXING
+        if (wrtavg(indxTke)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                tke_avg(i,j,k)=cff*(cff1*tke_avg(i,j,k)
+     &                                  +tke(i,j,k,nstp))
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxGls)) then
+          do k=1,N
+            do j=JstrR,JendR
+              do i=IstrR,IendR
+                gls_avg(i,j,k)=cff*( cff1*gls_avg(i,j,k)
+     &                                   +Sprod3d(i,j,k) )
+              enddo
+            enddo
+          enddo
+        endif
+        if (wrtavg(indxLsc)) then
+          do k=1,N
             do j=JstrR,JendR
               do i=IstrR,IendR
                 Lscale_avg(i,j,k)=cff*(cff1*Lscale_avg(i,j,k)
@@ -756,7 +788,7 @@ C$    integer omp_get_thread_num
         if (wrtavg(indxEPB)) then
           do j=jstrR,jendR
             do i=istrR,iendR
-              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb0(i,j) )
+              wepb_avg(i,j) = cff*( cff1*wepb_avg(i,j)+wepb(i,j) )
             enddo
           enddo
         endif

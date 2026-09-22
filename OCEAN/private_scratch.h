@@ -9,7 +9,17 @@
 ! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
-      real A2d(N2d,NSA,0:NPP-1), A3d(N3d,9,0:NPP-1)
+#ifdef AUTOTILING
+      real,dimension(:,:,:), pointer :: A2d, A3d, A3dHz
+# if defined SEDIMENT || defined LMD_MIXING
+      integer,dimension(:,:),pointer :: B2d
+# endif
+# if defined ABL1D
+      integer,dimension(:,:), pointer :: T1d
+      real,dimension(:,:,:) , pointer :: T2d,T3d
+# endif
+#else
+      real A2d(N2d,NSA,0:NPP-1), A3d(N3d,11,0:NPP-1)
      &    ,A3dHz(N3dHz,4,0:NPP-1)
 #if defined SEDIMENT || defined LMD_MIXING
       integer B2d(N2d,0:NPP-1)
@@ -18,8 +28,11 @@
       integer T1d(size_XI,0:NPP-1)
       real    T2d(N2dabl,7,0:NPP-1),T3d(N3dabl,7,0:NPP-1)
 #endif
+#endif
 
       common/private_scratch/ A2d,A3d,A3dHz
+c c !$acc declare create( A2d,A3d,A3dHz )
+!bug fix create copie needed fo first pass en rhs3d, go to see copi
 #if defined SEDIMENT || defined LMD_MIXING
       common/private_scratch_bis/ B2d
 #endif

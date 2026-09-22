@@ -24,7 +24,6 @@
 # ifdef AGRIF
       USE Agrif_Util
 # endif
-      use croco_namelist, only: nrpfsta, staname
       implicit none
 # include "param.h"
 # include "scalars.h"

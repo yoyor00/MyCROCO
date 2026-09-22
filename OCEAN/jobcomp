@@ -42,8 +42,7 @@ echo "OPERATING SYSTEM IS: $OS"
 #
 # compiler options
 #
-FC=gfortran
-
+FC=${CROCO_FC:-gfortran}
 #
 # set MPI directories if needed
 #
@@ -54,17 +53,8 @@ MPIINC=""
 #
 # set NETCDF directories
 #
-if command -v nf-config >/dev/null 2>&1; then
-    NETCDFLIB="$(nf-config --flibs)"
-    NETCDFINC="-I$(nf-config --includedir)"
-else
-    NETCDFLIB=""
-    NETCDFINC=""
-fi
-if command -v nc-config >/dev/null 2>&1; then
-    NETCDFLIB="$NETCDFLIB -L$(nc-config --libdir) -lnetcdf"
-    NETCDFINC="$NETCDFINC -I$(nc-config --includedir)"
-fi
+NETCDFLIB="$(nf-config --flibs)"
+NETCDFINC="-I$(nf-config --includedir)"
 
 #
 # set OASIS-MCT (or OASIS3) directories if needed
@@ -195,6 +185,8 @@ ls "${SOURCE}/"*.h               > /dev/null  2>&1 && \cp "${SOURCE}/"*.h   "$SC
 ls "${SOURCE}/"*.py              > /dev/null  2>&1 && \cp "${SOURCE}/"*.py   "$SCRDIR"
 ls "${SOURCE}/"Make*             > /dev/null  2>&1 && \cp "${SOURCE}/"Make* "$SCRDIR"
 ls "${SOURCE}/"amr.in            > /dev/null  2>&1 && \cp "${SOURCE}/"amr.in "$SCRDIR"
+ls "${ROOT_DIR}/"KNBQ2/*         > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"KNBQ2 "$SCRDIR"
+ls "${ROOT_DIR}/"KNBQ3/*         > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"KNBQ3 "$SCRDIR"
 ls "${AGRIF_SRC}"                > /dev/null  2>&1 && \cp -r "${AGRIF_SRC}" "$SCRDIR"
 ls "${ROOT_DIR}/"XIOS/*.F        > /dev/null  2>&1 && \cp "${ROOT_DIR}/"XIOS/*.F "$SCRDIR"
 ls "${ROOT_DIR}/"PISCES/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/* "$SCRDIR"
@@ -250,11 +242,6 @@ LDFLAGS1="${CROCO_NETCDFLIB-$NETCDFLIB}"
 CPPFLAGS1="${CROCO_NETCDFINC-$NETCDFINC} -ICROCOFILES/AGRIF_INC"
 
 #
-# take --fc/CROCO_CFT1 into account before selecting the compiler branch
-#
-FC="${CROCO_CFT1-$FC}"
-
-#
 # Set compilation options
 #
 if [[ $OS == Linux || $OS == Darwin ]] ; then           # ===== LINUX / MAC =====
@@ -306,6 +293,35 @@ fi
 FFLAGS1="${CROCO_FFLAGS1-$FFLAGS1}"
 CFT1="${CROCO_CFT1-$CFT1}"
 
+# determine if KNBQ3 sources is needed
+#
+echo "Checking KNBQ3..."
+if $($CPP1 testkeys.F | grep -i -q knbq3isdefined) ; then
+        echo " => KNBQ3 activated"
+        cp KNBQ3/*  .
+        #
+        # overwrite with local files
+        #
+        ls ../*.F90   > /dev/null  2>&1 && \cp -f ../*.F90 .
+        ls ../*.F     > /dev/null  2>&1 && \cp -f ../*.F .
+        ls ../*.h     > /dev/null  2>&1 && \cp -f ../*.h .
+        ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
+        ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
+        ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
+else
+        echo " => KNBQ2 activated"
+        cp KNBQ2/*  .
+        #
+        # overwrite with local files
+        #
+        ls ../*.F90   > /dev/null  2>&1 && \cp -f ../*.F90 .
+        ls ../*.F     > /dev/null  2>&1 && \cp -f ../*.F .
+        ls ../*.h     > /dev/null  2>&1 && \cp -f ../*.h .
+        ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
+        ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
+        ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
+fi
+
 # PISCES Business
 if $($CPP1 testkeys.F | grep -i -q p2zisdefined) ; then
         echo "Simple version of PISCES is defined: copy the appropriate namelist"
@@ -333,6 +349,12 @@ if $($CPP1 testkeys.F | grep -i -q agrifisdefined) ; then
    LDFLAGS1="-LAGRIF -lagrif $LDFLAGS1"
 # we use the AGRIF Makedefs.generic definition
    cp -f Makedefs.generic.AGRIF Makedefs.generic
+# prepro Generic NBQ (depends on ../AGRIF_FixedGrids.in)
+### if $($CPP1 testkeys.F | grep -i -q kxxxisdefined) ; then
+    if $($CPP1 testkeys.F | grep -i -q kxxisdefined) ; then
+        echo " => AGRIF + KXX_kernels activated"
+        python prepro_KXX.py
+    fi 
 fi
 
 #
@@ -399,15 +421,25 @@ if [[ $COMPILEAGRIF ]] ; then
 # if True add '-fcommon' to CFLAGS
     if command -v "$CC1" >/dev/null && "$CC1" -v 2>&1 | grep -q "gcc version"; then
    echo "Using the GNU C compiler. Adding -fcommon to CFLAGS"
-   CFLAGS1="$CFLAGS1 -fcommon -std=gnu11"
+   CFLAGS1="$CFLAGS1 -fcommon"
     fi
 #
 # compile the AGRIF librairy
 #
+   AGRIF_FFLAGS="$FFLAGS1"
+   IS_NVIDIA=false
+   if [[ $FC == pgfortran || $FC == nvfortran || $CFT1 == pgfortran || $CFT1 == nvfortran || $CROCO_CFT1 == pgfortran || $CROCO_CFT1 == nvfortran ]] ; then
+      IS_NVIDIA=true
+   elif command -v "$CFT1" >/dev/null 2>&1 && "$CFT1" -V 2>&1 | grep -q -E "nvfortran|pgfortran|NVIDIA" ; then
+      IS_NVIDIA=true
+   fi
+   if [[ $IS_NVIDIA == true ]] ; then
+      AGRIF_FFLAGS="-g -O0 -r8 -i4 -mcmodel=medium -Mbackslash"
+   fi
    if [[ $COMPILEMPI ]] ; then
-      $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
+      $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$AGRIF_FFLAGS" CFLAGS="$CFLAGS1"
    else
-      $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
+      $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" FFLAGS="$AGRIF_FFLAGS" CFLAGS="$CFLAGS1"
    fi
    if [[ $OS == Darwin ]] ; then          # DARWIN
 # run RANLIB on Darwin system
@@ -492,5 +524,4 @@ $MAKE -j ${NPROCS} || exit 1
 
 cat "croco_ascii.txt"
 echo "CROCO is OK"
-
 #

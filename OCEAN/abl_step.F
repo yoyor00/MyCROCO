@@ -34,7 +34,6 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
-      use croco_namelist, only: dt, rho0
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -219,7 +218,7 @@
           elem_c(i,2) = - dt * Avm_abl(i,j,2,nt_a) / Hzw_abl(2)
            !
           cff1  = cd_du(i,j)
-# ifdef ABL_NO_OCEAN_FEEDBACK
+# ifdef KILPATRICK
           cff2  = 0.
 # else
           cff2  = Cd_du(i,j) * 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
@@ -275,7 +274,7 @@
           elem_a(i,2) = 0.
           elem_c(i,2) = - dt * Avm_abl(i,j,2,nt_a) / Hzw_abl(2)
           cff1        = cd_du(i,j)
-# ifdef ABL_NO_OCEAN_FEEDBACK
+# ifdef KILPATRICK
           cff2        = 0.
 # else
           cff2        = Cd_du(i, j) * 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
@@ -419,11 +418,11 @@
 !======================================================================
           cff        = rhoAir*rho0i
           uwnd_r     = u_abl(i,j,2,nt_a)
-# ifndef ABL_NO_OCEAN_FEEDBACK
+# ifndef KILPATRICK
      &               - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
 # endif
           vwnd_r     = v_abl(i,j,2,nt_a)
-# ifndef ABL_NO_OCEAN_FEEDBACK
+# ifndef KILPATRICK
      &               - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
 # endif
           sustr(i,j) = cff*Cd_du(i,j) * uwnd_r

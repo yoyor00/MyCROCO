@@ -1,0 +1,53 @@
+title:
+	AgAc Example
+time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO
+		100      0.0005      4      1
+time_stepping_nbq: NDTNBQ    CSOUND_NBQ    VISC2_NBQ
+		4         1500.           0.e-6 
+S-coord: THETA_S,   THETA_B,    Hc (m)
+           0      0      1.e16
+start_date:
+17/09/2017 00:01:00
+origin_date:
+01/01/1950 00:00:00
+output_time_steps: DT_HIS(H), DT_AVG(H), DT_RST(H)
+                   1       6       12
+
+initial: NRREC  filename
+           0 
+AgAc_rst.nc
+restart:          NRST, NRPFRST / filename
+                   100000     -1
+AgAc_rst.nc
+
+history: LDEFHIS, NWRT, NRPFHIS / filename 
+             T      1         0 
+AgAc_his.nc
+
+primary_history_fields: zeta UBAR VBAR  U  V   wrtT(1:NT)
+                           T    T   T    T  T    30*F
+auxiliary_history_fields:   rho Omega W  Akv  Akt  Aks Visc3d Diff3d  HBL HBBL Bostr Wstr Ustr Vstr Shfl rsw rlw lat sen Hm HEL BIOL
+                              T   F    T   F    F    F   F      F       F   F    F     F  F 20*F
+
+rho0:
+      1024.4
+bottom_drag:     RDRG(m/s), RDRG2,  Zob [m],  Cdb_min, Cdb_max
+                   0.         0.      0.        0.       0. 
+gamma2:
+                  1.
+lin_EOS_cff:  R0 [kg/m3], T0 [Celsius], S0 [PSU], TCOEF [1/Celsius], SCOEF [1/PSU]
+               30.          0.            0.        0.28                0.
+
+vertical_mixing: Akv_bak, Akt_bak [m^2/sec]
+                   0.      0. 0.
+lateral_visc:   VISC2,    VISC4    [m^2/sec for all]
+                   0.       0.
+
+tracer_diff2: TNU2         [m^2/sec]
+               0. 0.
+
+nudg_cof:    TauT_in, TauT_out, TauM_in, TauM_out  [days for all]
+                 1.      360.      3.      1.e-5
+
+sponge:          X_SPONGE [m],    V_SPONGE [m^2/sec]
+                   0.1   1.e-3

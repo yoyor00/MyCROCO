@@ -22,12 +22,6 @@
 !            ncname  netCDF file name (used only in error messages)
 !            lstr    length of ncname
 !
-#ifdef SOLVE3D
-      use croco_namelist, only: hc
-#endif
-#ifdef WET_DRY
-      use croco_namelist, only: D_wetdry
-#endif
       implicit none
       character*(*) ncname
       integer i, j, k, ncid, lstr, varid, ierr, nf_fwrite,

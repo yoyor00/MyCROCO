@@ -110,7 +110,6 @@
 ! ******************************Common Code***************************
 !---------------------------------------------------------------------
 !
-      use croco_namelist, only: dt, gamma2
       implicit none
 #include "param.h"
 #include "grid.h"

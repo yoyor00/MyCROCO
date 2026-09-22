@@ -16,7 +16,6 @@
 
 !      USE param
 
-
       implicit none
       integer tile
 # include "param.h"
@@ -53,7 +52,6 @@
 ! data, when mod(ilc-1,nwrtdiaM_avg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
-      use croco_namelist, only: navg, ntsdiaM_avg, nwrtdiaM_avg
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, iflux, k, ilc
       real    cff, cff1
@@ -144,7 +142,7 @@
      &                     ( cff1*MBaro_avg(i,j,k,iflux) +
      &                            MBaro(i,j,k,iflux) )
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
                 Mfast_avg(i,j,k,iflux) = cff *
      &                     ( cff1*Mfast_avg(i,j,k,iflux) +
      &                            Mfast(i,j,k,iflux) )

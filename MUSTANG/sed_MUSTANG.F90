@@ -99,9 +99,8 @@ MODULE sed_MUSTANG
    USE comsubstance
    USE module_substance
 
-   USE comMUSTANG
-   USE coupler_MUSTANG
-   USE croco_namelist, ONLY : rho0
+   USE comMUSTANG 
+   USE coupler_MUSTANG 
 
    IMPLICIT NONE
    
@@ -173,7 +172,8 @@ MODULE sed_MUSTANG
 #endif
 
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
-   USE bloom,  ONLY : bloom_reactions_in_sed, p_txfiltbenthmax
+   USE reactionsinsed,  ONLY : reactions_in_sed
+   USE bioloinit,     ONLY : p_txfiltbenthmax
 #endif
 #if defined key_MUSTANG_flocmod
    USE flocmod,  ONLY : flocmod_main
@@ -315,22 +315,20 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! TEMERATURE in SEDIMENT                             !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     CALL sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast,dt_true, dtinv)
+   CALL sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast,  &
+                                                dt_true, dtinv)
 #endif
                            
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! BIO PROCESSES in SEDIMENT                                        !!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     CALL bloom_reactions_in_sed(ifirst,ilast,jfirst,jlast,dt_true)
+    CALL reactions_in_sed(ifirst, ilast, jfirst, jlast, h, dt_true, dtinv)
 
-! #if defined key_MARS && defined key_MPI_2D
-!     IF(p_txfiltbenthmax .NE. 0.0_rsh) THEN
-!      CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION)
-!     ENDIF
-! #else
-!             !! To Program
-! #endif
+    !**TODO** : create sed_exchange_cvwat in sed_MUSTANG_CROCO
+    !IF(p_txfiltbenthmax .NE. 0.0_rsh) THEN
+    ! CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION)
+    !ENDIF
 
 #endif
 
@@ -382,16 +380,20 @@ MODULE sed_MUSTANG
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
        endif
+# if (!defined DUNE    || (defined DUNE    && defined DUNE3D))
        if (float(jfirst+jj*Mm) .EQ. 1) then
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
        endif
+# endif
 #endif
 #if (!defined MPI && defined key_MUSTANG_bedload)
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
+# if (!defined DUNE    || (defined DUNE    && defined DUNE3D))
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
+# endif
 #endif
 
 #if defined key_MUSTANG_bedload && defined MPI 
@@ -446,8 +448,8 @@ MODULE sed_MUSTANG
 !    due to erosion and consolidation                                                                !!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  !! WATER_FLUX_INPUT_BOTCELL = WATER_FLUX_INPUTS (k,i,j) in bottom cell = phieau(1,:,:)
-    !phieau_CROCO(:,:,1)=phieau_CROCO(:,:,1)+phieau_s2w(:,:)/dt_true
-    !phieau_s2w(:,:)=0.0_rlg
+    phieau_CROCO(:,:,1)=phieau_CROCO(:,:,1)+phieau_s2w(:,:)/dt_true
+    phieau_s2w(:,:)=0.0_rlg
 #endif
 
   END SUBROUTINE MUSTANG_update
@@ -619,7 +621,7 @@ MODULE sed_MUSTANG
    !&E--------------------------------------------------------------------------
    !! * Modules used
 #ifdef key_BLOOM_insed
-   USE comBIOLink,  ONLY :  ndiag_tot,ndiag_3d_sed,diag_3d_sed,diag_2d_sed,ndiag_1d,ndiag_2d,ndiag_2d_sed
+   USE bioloinit,  ONLY :  ndiag_tot,ndiag_3d_sed,diag_3d_sed,diag_2d_sed,ndiag_1d,ndiag_2d,ndiag_2d_sed
 #endif
 
    !! * Arguments
@@ -670,8 +672,7 @@ MODULE sed_MUSTANG
             ENDIF
 #ifdef key_BLOOM_insed
            IF (l_out_subs_diag_sed) THEN
-             var2D_diagsed(i,j,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d) = &
-                diag_2d_sed(ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d,i,j)
+             var2D_diagsed(i,j,ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d) = diag_2D_sed(ndiag_1d+ndiag_2d-ndiag_2d_sed+1:ndiag_1d+ndiag_2d,i,j)
            ENDIF
 #endif
         ENDIF
@@ -2504,22 +2505,11 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
           !    and the flux which results from the expulsion of interstitial water by consolidation:
           DO iv=nvp+1,nv_adv
             flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
-          ! Modif Martin : no water fluxes coded yet in CROCO ! => generates conservativity problems
-          !                for dissolved subs
-          !  => removal of all substances fluxes linked to erosion and consolidation,
-          !     we keep only diffusion
-            IF(htot(i,j) .GT. h0fond) THEN
-              flx_s2w(iv,i,j)=-fludif(iv,i,j)*dtinv
-            ELSE
-              flx_s2w(iv,i,j)=0.0_rsh
-            ENDIF
           ENDDO
 #endif
 
           DO iv=-1,0
             flx_s2w(iv,i,j)=(flx_s2w(iv,i,j)-flx_w2s(iv,i,j)+fluconsol(iv,i,j)-fludif(iv,i,j))*dtinv
-          ! Modif Martin : no water fluxes coded yet in CROCO ! => generates conservativity problems
-            flx_s2w(iv,i,j)=0.0_rsh
           ENDDO
 #endif
           ! updating ksma (as ksmax can be modified in the routine)
@@ -3719,9 +3709,9 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 !!! B.Mengual (17/09/2015): 
 !!! Le depot de la vase se fait en commencant a melanger depuis la surface
 !!! dans le cas ou un excedant de sables ou de graviers conduira forcement
-!!! a la creation d'une nouvelle couche
+!!! a la creation dune nouvelle couche
 !!! BUT : ne pas pieger de la vase par melange dans la couche ksmax-1 suite
-!!!       a la creation d'une nouvelle couche
+!!!       a la creation dune nouvelle couche
 
 
                 IF ((voldepgrv+voldepsan) .GT. 0.0_rsh) THEN
@@ -4452,7 +4442,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE sed_MUSTANG_Temperatur_in_sed ***
    !&E
-   !&E ** Purpose : dynamic in sediment : processes of Temperature diffusion in sediment 
+   !&E ** Purpose : dynamic in sediment : processes of Tempertur diffusion in sediment 
    !&E
    !&E ** Description :
    !&E        arguments IN :
@@ -4460,7 +4450,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E            parameters : 
    !&E
    !&E        variales OUT :
-   !&E            fludiff : temperature flux at the water/sediment interface due to diffusion
+   !&E            fludiff : substance flux de temperature at the  interface water/sediment due to diffusion
    !&E
    !&E ** Called by :  MUSTANG_update
    !&E
@@ -4468,7 +4458,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-!    USE cometemp,  ONLY : chp
+    USE cometemp,  ONLY : chp
+
 
    !! * Arguments
    INTEGER, INTENT(IN)            :: ifirst,ilast,jfirst,jlast                           
@@ -4533,8 +4524,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             ! utiliser diffusivite thermique dans l eau et non dans le sediment
             ! eta : conductivite thermique de l eau = 0.8
             ! chp = capacite calorifique de l eau 
-!         disvi(ksmax)=0.8_rsh/(min(epdifi,htot(i,j))+epsilon_MUSTANG)/(chp*roswat_bot(i,j))
-         disvi(ksmax)=0.8_rsh/(min(epdifi,htot(i,j))+epsilon_MUSTANG)/(Cp*roswat_bot(i,j))
+         disvi(ksmax)=0.8_rsh/(min(epdifi,htot(i,j))+epsilon_MUSTANG)/(chp*roswat_bot(i,j))
          disvi(ksmax)=disvi(ksmax)*hcrit/(hcrit+epsilon_MUSTANG)
          hsedloc=0.0_rsh
          DO k=ksmin,ksmax-1
@@ -4561,9 +4551,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
          hsedloc=hsedloc+dzs(ksmax,i,j)
          phi_surfsed=phitemp_s(i,j)*dtinv
-         IF(hsedloc > 0.0_rsh) phi_bottsed=MAX(0.0_rsh, &
-                                           MIN(phi_surfsed, &
-                                           phi_surfsed*(epsedmax_tempsed-hsedloc)*(epsedmin_tempsed/hsedloc)))
+         IF(hsedloc > 0.0_rsh)phi_bottsed=MAX(0.0_rsh,MIN(phi_surfsed,phi_surfsed*(epsedmax_tempsed-hsedloc)*(epsedmin_tempsed/hsedloc)))
          ! end of cumul : reset phitemp_s (si pas le meme pas de temps , mais ici on a le meme dt_true)
          phitemp_s(i,j)=0.0_rsh
        
@@ -4644,10 +4632,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
        !!!!!!!!!!!!   END OF DYNAMIC PROCESS IN SEDIMENT                !!
        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-       ! Modif Martin : temperature du sediment = temperature de la maille de fond
-        cv_sed(-1,:,i,j)=temp_bottom_MUSTANG(i,j)
-        fludif(-1,i,j)=0
-       ! ---------
       ENDDO
     ENDDO
    
@@ -4806,7 +4790,9 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
          ! even if there is consolidation processes with varying concentrations 
          IF(l_bioturb) THEN
            ksmax_turb_part=ksmax 
+          ! if(j==5 .OR. j==20)write(*,*)'avt 1',t,j,difbio(ksma(i,j)-5:ksma(i,j),-1)
            CALL sed_MUSTANG_coefbioturb_part(i,j,difbio) !  To review to differentiate particulate mixing coef
+          ! if(j==5 .OR. j==20)write(*,*)'aprs 1',t,j,difbio(ksma(i,j)-5:ksma(i,j),-1)
          ENDIF
 #if ! defined key_noTSdiss_insed
          IF(l_biodiffs) THEN
@@ -5288,7 +5274,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                               -(difbio(k,iv)*dzsiin(k)+difbio(k-1,iv)*dzsiin(k-1))*cv_sed(iv,k,i,j) &
                               + difbio(k-1,iv)*dzsiin(k-1)*cv_sed(iv,k-1,i,j))                                     
                 ENDDO 
-#if ! defined key_noTSdiss_insed
+#if ! defined key_noTSdiss_insed             
                 cvsednew(nvp+1,k)= cv_sed(-1,k,i,j) + dtsdzs*(   &
                                 difbio(k,iv)*dzsiin(k)*cv_sed(-1,k+1,i,j)  &
                               -(difbio(k,iv)*dzsiin(k)+difbio(k-1,iv)*dzsiin(k-1))*cv_sed(-1,k,i,j) &
@@ -5444,48 +5430,40 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   Sc = 1000.0_rsh
                 ELSE              ! Modif Martin, Schmidt number for all subs excepted T and S : Sc= nu/D (Sideman & Pinczewski,1975)
                   p = 0.0_rsh     ! No impact of pressure (for now)
-                  ! mu = dynamic viscosity in centipoise 10-2 g/cm/s (Kulkula et al. 1987, in Boudreau p.94)
-                  mu = 0.01 * ( 1.791_rsh - 6.144e-02_rsh*temp_bottom_MUSTANG(i,j) + 1.451e-03_rsh*temp_bottom_MUSTANG(i,j)**2 &
-                     - 1.6826e-05_rsh*temp_bottom_MUSTANG(i,j)**3 - 1.529e-04_rsh*p + 8.3885e-08_rsh*p*p &
-                     + 2.4727e-03_rsh*sal_bottom_MUSTANG(i,j) &
-                     + temp_bottom_MUSTANG(i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
-                     + sal_bottom_MUSTANG(i,j)*(4.8429e-05_rsh*temp_bottom_MUSTANG(i,j) &
-                     - 4.7172e-06_rsh*temp_bottom_MUSTANG(i,j)**2 &
-                     + 7.5986e-08_rsh*temp_bottom_MUSTANG(i,j)**3))
-                  nu = mu*rowinv*100                               ! 1/roro or rowinv in cm3/g and nu = cinematic viscosity in cm2/s
-                  IF(D0_funcT_opt(iv) == 1) THEN
-                    D0=(D0_m0(iv)+D0_m1(iv)*temp_bottom_MUSTANG(i,j))*1e-06_rsh     ! D0 in cm2/s
-                  ELSEIF(D0_funcT_opt(iv) == 2) THEN
-                    D0=(D0_m0(iv)+D0_m1(iv)*(temp_bottom_MUSTANG(i,j)+273.15_rsh)/mu)*1e-05_rsh
-                  ENDIF
+                  ! mu = dynamic viscosity in g/cm/s (Kulkula et al. 1987, in Boudreau p.94)
+                  mu = 0.01*(1.791_rsh - 6.144e-02_rsh*temp_bottom_MUSTANG(i,j) + 1.451e-03_rsh*temp_bottom_MUSTANG(i,j)**2 &
+                       - 1.6826e-05_rsh*temp_bottom_MUSTANG(i,j)**3 - 1.529e-04_rsh*p + 8.3885e-08_rsh*p*p &
+                       + 2.4727e-03_rsh*sal_bottom_MUSTANG(i,j) + temp_bottom_MUSTANG(i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
+                       + sal_bottom_MUSTANG(i,j)*(4.8429e-05_rsh*temp_bottom_MUSTANG(i,j) - 4.7172e-06_rsh*temp_bottom_MUSTANG(i,j)**2 &
+                       + 7.5986e-08_rsh*temp_bottom_MUSTANG(i,j)**3))
+                  nu = mu*rowinv*1000                                ! 1/roro or rowinv in cm3/g and nu = cinematic viscosity in cm2/s
+                  IF(D0_funcT_opt(iv) == 1) D0=(D0_m0(iv)+D0_m1(iv)*temp_bottom_MUSTANG(i,j))/1000000_rsh     ! D0 in cm2/s    
+                  IF(D0_funcT_opt(iv) == 2) D0=(D0_m0(iv)+D0_m1(iv)*(temp_bottom_MUSTANG(i,j)+273.15_rsh)/(mu*100.0_rsh))/100000_rsh
                   Sc = nu/D0
                 ENDIF
                 disvi(k,ivv)=0.0889*ustarbot(i,j)*Sc**(-0.704)
                 !write(*,*)'Beta mass transfert coef at the interface =',disvi(k)
               ENDIF
               disvi(k,ivv)=disvi(k,ivv)*hcrit/(hcrit+epsilon_MUSTANG)
-              DO k=ksmax-1,ksmin,-1
-                IF(iv<1) THEN     ! xdifd1 unchanged for Temp and Sal for now (defined in paraMUSTANG)
+              DO k=ksmin,ksmax-1
+                IF(iv<1) THEN     ! xdifd1 unchanged for Temp and Sal for now
                ! formulation according to the tortuosity Dsed=Dpure/Tortuosite^2
                ! tortuosity function of porosity (eq 4.120)
                ! in Boudreau 1997 p 132 ! tortuosity^2=1-log(poro^2)
                !disvi(k,ivv)=xdifs1*dzsiin(k,i,j)/(1-LOG(poro(k,i,j)**2))
                   disvi(k,ivv)=(xdifs1/(1.0_rsh-2.0_rsh*LOG(poro(k,i,j)))+difbio(k,iv))*dzsiin(k)
                 ELSE              ! Modif Martin, diffusion for all substances excepted T,S
-                  IF(D0_funcT_opt(iv) == 1) THEN
-                    D0=(D0_m0(iv)+D0_m1(iv)*cv_sed(-1,k,i,j))*1e-06_rsh     ! D0 in cm2/s
-                  ELSEIF(D0_funcT_opt(iv) == 2) THEN
-                    p = 0.0_rsh     ! No impact of the pressure (for now)
-                    ! mu = dynamic viscosivity in centipoise 10-2 g/cm/s (Kulkula et al. 1987, in Boudreau p.94)
-                    mu = 0.01 * (1.791_rsh - 6.144e-02_rsh*cv_sed(-1,k,i,j) + 1.451e-03_rsh*cv_sed(-1,k,i,j)**2 &
+                  p = 0.0_rsh     ! No impact of the pressure (for now)  
+                  ! mu = dynamic viscosivity in g/cm/s (Kulkula et al. 1987, in Boudreau p.94)
+                  mu = 0.01*(1.791_rsh - 6.144e-02_rsh*cv_sed(-1,k,i,j) + 1.451e-03_rsh*cv_sed(-1,k,i,j)**2 &
                        - 1.6826e-05_rsh*cv_sed(-1,k,i,j)**3 - 1.529e-04_rsh*p + 8.3885e-08_rsh*p*p &
                        + 2.4727e-03_rsh*cv_sed(0,k,i,j) + cv_sed(-1,k,i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
                        + cv_sed(0,k,i,j)*(4.8429e-05_rsh*cv_sed(-1,k,i,j) - 4.7172e-06_rsh*cv_sed(-1,k,i,j)**2 &
                        + 7.5986e-08_rsh*cv_sed(-1,k,i,j)**3))
-                    D0=(D0_m0(iv)+D0_m1(iv)*(cv_sed(-1,k,i,j)+273.15_rsh)/mu)*1e-05_rsh
-                  ENDIF
-                  xdifs1b = D0*0.94_rsh  ! convertion from 'infinite-dilution' into 'porewater' diff (Li&Gregory, 1974 in Boudreau p.125)
-                  xdifs1b = xdifs1b/10000.0_rsh      ! from cm2/s to m2/s
+                  IF(D0_funcT_opt(iv) == 1) D0=(D0_m0(iv)+D0_m1(iv)*cv_sed(-1,k,i,j))/1000000_rsh     ! D0 in cm2/s    
+                  IF(D0_funcT_opt(iv) == 2) D0=(D0_m0(iv)+D0_m1(iv)*(cv_sed(-1,k,i,j)+273.15_rsh)/(mu*100.0_rsh))/100000_rsh
+                  xdifs1b = D0*0.94_rsh  ! convertion from 'infinite-dilution' diff into 'porewater' diff (Li & Gregory, 1974; in Boudreau p.125)
+                  xdifs1b=xdifs1b/10000.0_rsh      ! from cm2/s to m2/s
                   disvi(k,ivv)=(xdifs1b/(1.0_rsh-2.0_rsh*LOG(poro(k,i,j)))+difbio(k,iv))*dzsiin(k)
                 ENDIF
               ENDDO
@@ -7539,6 +7517,9 @@ END SUBROUTINE MUSTANGV2_manage_small_mass_in_ksmax
         crel_mud_kij=ros(1)*((1.0_rsh- poro_gravsan)/poro_gravsan)*frac_mud/(1-frac_mud)
         poro_kij=poro_gravsan-(1-poro_gravsan)*frac_mud/(1-frac_mud)
        ! poro_mud_kij=1.0_rsh/ros(1)
+# if defined key_ANA_bedload ||  defined ANA_DUNE  ||  defined DUNE 
+        poro_kij=0.4
+# endif
       END IF
 
     ELSE 
@@ -7910,6 +7891,12 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
    !&E
    !&E--------------------------------------------------------------------------
 
+
+   !! * Modules used  
+# if defined key_ANA_bedload || defined ANA_DUNE
+#  include "ocean2d.h"
+# endif
+
    !! * Arguments
    INTEGER,INTENT(IN)                                      :: i, j, ksmax
    REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(out)             :: flx_bxij, flx_byij 
@@ -7959,7 +7946,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
        toce_loc(iv)=stresscri0(iv)
      END IF
 
-# if defined key_ANA_bedload
+# if defined key_ANA_bedload || defined ANA_DUNE
      phi_bed=0.001*ubar(i,j,nrhs)**3.0_rsh
      qb=phi_bed & !  m2/s
                   *ros(iv)*cv_sed(iv,ksmax,i,j)/(c_sedtot(ksmax,i,j)+epsilon_MUSTANG) ! kg/m/s
@@ -7974,6 +7961,10 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
      !qb_ini(iv,i,j)=qb !pour ecriture en sortie
 
      !============Projection sur x et y en fonction de la direction de la tension sur le fond ==============
+
+# if defined key_ANA_bedload || defined ANA_DUNE
+     flx_byij(iv)=0.
+#endif
 
      flx_bxij(iv) = qb * tauskin_x(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)
      flx_byij(iv) = qb * tauskin_y(i, j) / (tauskin_c(i, j) + epsilon_MUSTANG)
