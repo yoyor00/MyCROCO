@@ -342,9 +342,11 @@ CONTAINS
       if (ierr .eq. nf90_noerr) then
          luni = lenstr(units)
          if (index(units(1:luni), 'since') == 0) then
-            if (first_warn) MPI_master_only write (*, '(/1x,A/6x,2A/)') &
-               'TOOL_ORIGINDATE WARNING: no ''since'' keyword in time units.', &
-               'Assuming time axis is relative to start_date: ', TRIM(start_date)
+            if (first_warn) then
+               MPI_master_only write (*, '(/1x,A/6x,2A/)') &
+                  'TOOL_ORIGINDATE WARNING: no ''since'' keyword in time units.', &
+                  'Assuming time axis is relative to start_date: ', TRIM(start_date)
+            end if
             date_in_sec = tool_datosec(start_date)
             RETURN
          end if
@@ -361,19 +363,23 @@ CONTAINS
             STOP
          end if
       else
-         if (first_warn) MPI_master_only write (*, '(/1x,A/6x,2A/)') &
-            'TOOL_ORIGINDATE WARNING: no units attribute in forcing file.', &
-            'Assuming time axis is relative to start_date: ', TRIM(start_date)
+         if (first_warn) then
+            MPI_master_only write (*, '(/1x,A/6x,2A/)') &
+               'TOOL_ORIGINDATE WARNING: no units attribute in forcing file.', &
+               'Assuming time axis is relative to start_date: ', TRIM(start_date)
+         end if
          date_in_sec = tool_datosec(start_date)
          RETURN
       end if
 
       if (luni < indst) then
-         if (first_warn) MPI_master_only write (*, '(/1x,A/6x,A/10x,A/6x,2A/)') &
-            'TOOL_ORIGINDATE WARNING: no date found in time var units.', &
-            'Time variable should follow Netcdf CF format: ', &
-            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
-            'Assuming time axis is relative to start_date: ', TRIM(start_date)
+         if (first_warn) then
+            MPI_master_only write (*, '(/1x,A/6x,A/10x,A/6x,2A/)') &
+               'TOOL_ORIGINDATE WARNING: no date found in time var units.', &
+               'Time variable should follow Netcdf CF format: ', &
+               '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+               'Assuming time axis is relative to start_date: ', TRIM(start_date)
+         end if
          date_in_sec = tool_datosec(start_date)
          RETURN
       elseif (luni - indst .eq. 3) then
@@ -434,10 +440,12 @@ CONTAINS
           date_str(2:2) < '0' .or. date_str(2:2) > '9' .or. &
           date_str(3:3) < '0' .or. date_str(3:3) > '9' .or. &
           date_str(4:4) < '0' .or. date_str(4:4) > '9') then
-         if (first_warn) MPI_master_only write (*, '(/1x,2A/6x,2A/)') &
-            'TOOL_ORIGINDATE WARNING: non-standard date format in time units: ', &
-            TRIM(date_str), &
-            'Assuming time axis is relative to start_date: ', TRIM(start_date)
+         if (first_warn) then
+            MPI_master_only write (*, '(/1x,2A/6x,2A/)') &
+               'TOOL_ORIGINDATE WARNING: non-standard date format in time units: ', &
+               TRIM(date_str), &
+               'Assuming time axis is relative to start_date: ', TRIM(start_date)
+         end if
          date_in_sec = tool_datosec(start_date)
          RETURN
       end if
