@@ -173,9 +173,7 @@ MODULE sed_MUSTANG
 #endif
 
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
-   USE bloom,  ONLY : bloom_reactions_in_sed
-   USE comBIOLink,     ONLY : p_txfiltbenthmax
-
+   USE bloom,  ONLY : bloom_reactions_in_sed, p_txfiltbenthmax
 #endif
 #if defined key_MUSTANG_flocmod
    USE flocmod,  ONLY : flocmod_main
@@ -326,13 +324,13 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      CALL bloom_reactions_in_sed(ifirst,ilast,jfirst,jlast,dt_true)
 
-#if defined key_MARS && defined key_MPI_2D
-    IF(p_txfiltbenthmax .NE. 0.0_rsh) THEN
-     CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION)
-    ENDIF
-#else
-            !! To Program
-#endif
+! #if defined key_MARS && defined key_MPI_2D
+!     IF(p_txfiltbenthmax .NE. 0.0_rsh) THEN
+!      CALL sed_exchange_cvwat_MARS(WATER_CONCENTRATION)
+!     ENDIF
+! #else
+!             !! To Program
+! #endif
 
 #endif
 
@@ -5447,14 +5445,14 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ELSE              ! Modif Martin, Schmidt number for all subs excepted T and S : Sc= nu/D (Sideman & Pinczewski,1975)
                   p = 0.0_rsh     ! No impact of pressure (for now)
                   ! mu = dynamic viscosity in centipoise 10-2 g/cm/s (Kulkula et al. 1987, in Boudreau p.94)
-                  mu = 1.791_rsh - 6.144e-02_rsh*temp_bottom_MUSTANG(i,j) + 1.451e-03_rsh*temp_bottom_MUSTANG(i,j)**2 &
+                  mu = 0.01 * ( 1.791_rsh - 6.144e-02_rsh*temp_bottom_MUSTANG(i,j) + 1.451e-03_rsh*temp_bottom_MUSTANG(i,j)**2 &
                      - 1.6826e-05_rsh*temp_bottom_MUSTANG(i,j)**3 - 1.529e-04_rsh*p + 8.3885e-08_rsh*p*p &
                      + 2.4727e-03_rsh*sal_bottom_MUSTANG(i,j) &
                      + temp_bottom_MUSTANG(i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
                      + sal_bottom_MUSTANG(i,j)*(4.8429e-05_rsh*temp_bottom_MUSTANG(i,j) &
                      - 4.7172e-06_rsh*temp_bottom_MUSTANG(i,j)**2 &
-                     + 7.5986e-08_rsh*temp_bottom_MUSTANG(i,j)**3)
-                  nu = mu*rowinv*1000                                ! 1/roro or rowinv in cm3/g and nu = cinematic viscosity in cm2/s
+                     + 7.5986e-08_rsh*temp_bottom_MUSTANG(i,j)**3))
+                  nu = mu*rowinv*100                               ! 1/roro or rowinv in cm3/g and nu = cinematic viscosity in cm2/s
                   IF(D0_funcT_opt(iv) == 1) THEN
                     D0=(D0_m0(iv)+D0_m1(iv)*temp_bottom_MUSTANG(i,j))*1e-06_rsh     ! D0 in cm2/s
                   ELSEIF(D0_funcT_opt(iv) == 2) THEN
@@ -5479,11 +5477,11 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                   ELSEIF(D0_funcT_opt(iv) == 2) THEN
                     p = 0.0_rsh     ! No impact of the pressure (for now)
                     ! mu = dynamic viscosivity in centipoise 10-2 g/cm/s (Kulkula et al. 1987, in Boudreau p.94)
-                    mu = 1.791_rsh - 6.144e-02_rsh*cv_sed(-1,k,i,j) + 1.451e-03_rsh*cv_sed(-1,k,i,j)**2 &
+                    mu = 0.01 * (1.791_rsh - 6.144e-02_rsh*cv_sed(-1,k,i,j) + 1.451e-03_rsh*cv_sed(-1,k,i,j)**2 &
                        - 1.6826e-05_rsh*cv_sed(-1,k,i,j)**3 - 1.529e-04_rsh*p + 8.3885e-08_rsh*p*p &
                        + 2.4727e-03_rsh*cv_sed(0,k,i,j) + cv_sed(-1,k,i,j)*(6.0574e-06_rsh*p - 2.676e-09_rsh*p*p) &
                        + cv_sed(0,k,i,j)*(4.8429e-05_rsh*cv_sed(-1,k,i,j) - 4.7172e-06_rsh*cv_sed(-1,k,i,j)**2 &
-                       + 7.5986e-08_rsh*cv_sed(-1,k,i,j)**3)
+                       + 7.5986e-08_rsh*cv_sed(-1,k,i,j)**3))
                     D0=(D0_m0(iv)+D0_m1(iv)*(cv_sed(-1,k,i,j)+273.15_rsh)/mu)*1e-05_rsh
                   ENDIF
                   xdifs1b = D0*0.94_rsh  ! convertion from 'infinite-dilution' into 'porewater' diff (Li&Gregory, 1974 in Boudreau p.125)

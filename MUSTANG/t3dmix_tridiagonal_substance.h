@@ -1,5 +1,3 @@
-! $Id: t3dmix_tridiagonal.h 1458 2014-02-03 15:01:25Z gcambon $
-!
 !======================================================================
 ! CROCO is derived from the ROMS-AGRIF branch of ROMS.
 ! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
@@ -75,24 +73,23 @@
          if (.not.l_subs2D(itrc-itsubs1+1)) then
 #endif
 
-#ifdef SALINITY
+# ifdef SALINITY
           indx=min(itrc,isalt)
-#else
+# else
           indx=min(itrc,itemp)
-#endif
-#if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+# endif
+# if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                TVmix(i,j,k,itrc)=t(i,j,k,nnew,itrc)
             enddo
           enddo
-#endif /* DIAGNOSTICS_TS */
-
+# endif /* DIAGNOSTICS_TS */
 
 !++
 !++ Explicit vertical Laplacian
 !++
-#ifdef TS_MIX_IMP
+# ifdef TS_MIX_IMP
           do i=istr,iend
             do k=1,N-1
               CD(i,k) = Akz(i,j,k)*(
@@ -100,31 +97,31 @@
      &           )  / ( z_r(i,j,k+1)-z_r(i,j,k) )
             enddo
 
-# if defined MUSTANG && !defined key_noTSdiss_insed
+#  if defined MUSTANG && !defined key_noTSdiss_insed
             CD(i,0) = flx_s2w_CROCO(i,j,itrc)
-# else
+#  else
             CD(i,0) = 0.
-#endif
+#  endif
             CD(i,N) = 0.
           enddo
-#endif
+# endif
 
 !++
 !++ Start sub-timestep loop
 !++
 
-#ifndef TS_MIX_IMP
+# ifndef TS_MIX_IMP
 
           if (itrc.ge.itsubs1+nv_grav .and.
      &        itrc.le.itsubs1+nvp) then          ! particulate tracers
 
           do i=istr,iend
             dz_cflm=Hz(i,j,1)
-# if defined MUSTANG
+#  if defined MUSTANG
             ws_cflm=MAX(1e-6,flx_w2s_CROCO(i,j,itrc))
-# else
+#  else
             ws_cflm=MAX(1e-6,ws_part(i,j,1,itrc)) /*MUSTANG cas substance with ws but not MUSTANG, no flx_w2s and flx_s2w*/
-# endif
+#  endif
             cflm=MAX(0.,ws_cflm*dt/dz_cflm)
             do k=2,N
               cfl_loc=MAX(cflm,ws_part(i,j,k,itrc)*dt/Hz(i,j,k))
@@ -181,7 +178,6 @@
 # endif
          endif
 # endif
-
 !++
 !++ Implicit Part
 !++
@@ -191,37 +187,36 @@
 ! the implicit vertical diffusion terms at future time step,
 ! located at horizontal RHO-points and vertical W-points.
 !
-
-#ifdef TS_MIX_IMP
+# ifdef TS_MIX_IMP
             FC(i,1)=dt*(Akt(i,j,1,indx)+Akz(i,j,1))
-#else
+# else
             FC(i,1)=dt* Akt(i,j,1,indx)
-#endif
-     &                               /((z_r(i,j,2)-z_r(i,j,1))*nbsubstep)
-#ifdef VADV_ADAPT_IMP
+# endif
+     &                      /((z_r(i,j,2)-z_r(i,j,1))*nbsubstep)
+# ifdef VADV_ADAPT_IMP
             BC(i,1)=DC(i,0)*Wi(i,j,1)
-            cff=1./(Hz(i,j,1)      +FC(i,1)+max(BC(i,1),0.))    !<- 1/b(1)
-            CF(i,1)=cff*(           FC(i,1)-min(BC(i,1),0.))    !<- q(1) = c(1) / b(1)
-#else
+            cff=1./(Hz(i,j,1) +FC(i,1)+max(BC(i,1),0.))    !<- 1/b(1)
+            CF(i,1)=cff*(      FC(i,1)-min(BC(i,1),0.))    !<- q(1) = c(1) / b(1)
+# else
             cff=1./(Hz(i,j,1)+FC(i,1))
             CF(i,1)= cff*FC(i,1)
-#endif
+# endif
 
-#if defined TS_MIX_IMP || defined SUBSTANCE
+# if defined TS_MIX_IMP || defined SUBSTANCE
             DC(i,1)= cff*(t(i,j,1,nnew,itrc)-dt*(CD(i,1)-CD(i,0)))
-#else
+# else
             DC(i,1)= cff* t(i,j,1,nnew,itrc)
-#endif
+# endif
 
           do k=2,N-1,+1
-#ifdef TS_MIX_IMP
+# ifdef TS_MIX_IMP
               FC(i,k)=dt*(Akt(i,j,k,indx)+Akz(i,j,k))
-#else
+# else
               FC(i,k)=dt* Akt(i,j,k,indx)
-#endif
-     &                              /((z_r(i,j,k+1)-z_r(i,j,k))*nbsubstep)
+# endif
+     &                   /((z_r(i,j,k+1)-z_r(i,j,k))*nbsubstep)
 
-#ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
               BC(i,k)=DC(i,0)*Wi(i,j,k)
               cff=1./(      Hz(i,j,k) +FC(i,k)+max(BC(i,k),0.)
      &                              +FC(i,k-1)-min(BC(i,k-1),0.)
@@ -235,48 +230,46 @@
               CF(i,k)=cff*FC(i,k)
               DC(i,k)=cff*(t(i,j,k,nnew,itrc)+FC(i,k-1)*DC(i,k-1)
 #endif
-#if defined TS_MIX_IMP || defined SUBSTANCE
+# if defined TS_MIX_IMP || defined SUBSTANCE
      &                                    -dt*(CD(i,k)-CD(i,k-1))
-#endif
+# endif
      &                                                          )
             enddo
 !
 ! Second pass: back-substitution
 !
-#ifdef VADV_ADAPT_IMP
+# ifdef VADV_ADAPT_IMP
             t(i,j,N,nnew,itrc)=( t(i,j,N,nnew,itrc)
-#if defined TS_MIX_IMP || defined SUBSTANCE
+#  if defined TS_MIX_IMP || defined SUBSTANCE
      &                           -dt*(CD(i,N)-CD(i,N-1))
-#endif
+#  endif
      &                                           +DC(i,N-1)*(        !<- f(j) = f(j) +
      &                                FC(i,N-1)+max(BC(i,N-1),0.) )
      &               )/( Hz(i,j,N) +FC(i,N-1)-min(BC(i,N-1),0.)
      &                      -CF(i,N-1)*(FC(i,N-1)+max(BC(i,N-1),0.))
      &                                                            )
-#else
+# else
              t(i,j,N,nnew,itrc)=( t(i,j,N,nnew,itrc)
-# if defined TS_MIX_IMP || defined SUBSTANCE
+#  if defined TS_MIX_IMP || defined SUBSTANCE
      &                           -dt*(CD(i,N)-CD(i,N-1))
-# endif
+#  endif
      &                           +FC(i,N-1)*DC(i,N-1) )
      &                        /(Hz(i,j,N)+FC(i,N-1)*(1.-CF(i,N-1)))
-#endif          
+# endif          
  
               do k=N-1,1,-1
                 t(i,j,k,nnew,itrc)=DC(i,k)+CF(i,k)*t(i,j,k+1,nnew,itrc)
               enddo           !--> discard FC,CF,DC
-
-
               do k=1,N
                 t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)*Hz(i,j,k)
               enddo           !--> discard FC,CF,DC
 
             enddo      ! <== end loop subtime step
 
-
             do k=1,N
                t(i,j,k,nnew,itrc)=t(i,j,k,nnew,itrc)/Hz(i,j,k)
             enddo
+
           enddo      ! <---- end loop i
 
 
@@ -323,38 +316,38 @@
 #endif
 !###########################
 
-#if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+# if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
               TVmix(i,j,k,itrc) =
      &            -(TVmix(i,j,k,itrc)-t(i,j,k,nnew,itrc)*Hz(i,j,k))
      &                                        /(dt*pm(i,j)*pn(i,j))
-# ifdef MASKING
+#  ifdef MASKING
      &                                                 * rmask(i,j)
-# endif
+#  endif
             enddo
           enddo
-#endif /* DIAGNOSTICS_TS */
+# endif /* DIAGNOSTICS_TS */
 !
 ! CONSTANT TRACERS
 !
-#ifdef CONST_TRACERS
+# ifdef CONST_TRACERS
           do k=1,N
             do i=istr,iend
               t(i,j,k,nnew,itrc)=t(i,j,k,nstp,itrc)
             enddo
           enddo
-# if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
+#  if defined DIAGNOSTICS_TS || defined DIAGNOSTICS_PV
           do k=1,N
             do i=Istr,Iend
                TVmix(i,j,k,itrc)=0.0
-#  ifdef MASKING
+#   ifdef MASKING
      &              * rmask(i,j)
-#  endif
+#   endif
             enddo
           enddo
-# endif /* DIAGNOSTICS_TS */
-#endif /* CONST_TRACERS */
+#  endif /* DIAGNOSTICS_TS */
+# endif /* CONST_TRACERS */
 #    if !defined TS_MIX_IMP && defined MUSTANG
        endif
 #    endif

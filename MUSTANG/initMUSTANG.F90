@@ -440,7 +440,8 @@ CONTAINS
 #endif
     READ(50, namdredging); rewind(50)
 
-    CLOSE(50) 
+    CLOSE(50)
+    
     END SUBROUTINE MUSTANG_readnml
 !!===========================================================================
 
@@ -1078,7 +1079,7 @@ CONTAINS
  ! CVSED
   
        c_sedtot(:,:,:)=0.0_rsh
-       do iv=-1,nv_tot 
+       do iv=-1,nv_adv ! no fix substance in sed
  
         if (iv == -1) then
            nomcv='temp_sed'
@@ -1634,17 +1635,6 @@ CONTAINS
     !&E
     !&E ** Purpose : check parameters and prepare needed arrays
     !&E--------------------------------------------------------------------------
-    !! * Modules used
-#if defined BLOOM && defined key_BLOOM_insed
-    USE comBIOLink , ONLY : ndiag_tot, ndiag_3d_sed, ndiag_2d_sed, ndiag_1d, ndiag_2d
-#endif
-
-    !! * Local declarations
-    INTEGER        :: k, nk_nivsed_outlu, nv_out
-    REAL(KIND=rsh) :: dzs_estim
-                        
-    !!--------------------------------------------------------------------------
-    !! * Executable part
 
     MPI_master_only WRITE(iscreenlog, *)
     MPI_master_only WRITE(iscreenlog, *) '***************************************************************'
