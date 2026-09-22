@@ -106,7 +106,7 @@ CONTAINS
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: D0_m0_n,D0_m1_n
 
 
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+#if defined key_MUSTANG_V2
    LOGICAL                                    ::  l_ibedload1, l_ibedload2
 #endif
 
