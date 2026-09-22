@@ -89,7 +89,7 @@ include Makedefs
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
-	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
+	mod_tides_mas.F                 get_tides.F\
 	clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F get_btflux.F\
@@ -296,6 +296,13 @@ plotter: plotter.F
 #
 my_barrier.o: my_barrier.f
 	$(CFT) -c -O0 my_barrier.f
+#
+# cross_matrix's auto-generated dependency scan unreliably misses
+# mod_tides_mas.o as a prerequisite of these (needed so their
+# "USE mod_tides_mas" finds mod_tides_mas.mod already built), so
+# pin it here instead of relying on Make.depend for it.
+#
+step.o clm_tides.o get_tides.o: mod_tides_mas.o
 #
 # Include automatically generated dependency list:
 #

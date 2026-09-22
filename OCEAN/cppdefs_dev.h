@@ -570,12 +570,6 @@
 #endif
 #ifdef TIDES_MAS
 # define MASKING
-# if defined SSH_TIDES && defined ZCLIMATOLOGY
-#error "TIDES_MAS with SSH_TIDES not available for ZCLIMATOLOGY. Please specify Z_FRC_BRY"
-# endif
-# if defined UV_TIDES && defined M2CLIMATOLOGY
-#error "TIDES_MAS with UV_TIDES not available for M2CLIMATOLOGY. Please specify M2_FRC_BRY"
-# endif
 #endif
 #if defined TIDES_MAS  && !defined USE_CALENDAR
 #error "TIDES with TIDES_MAS requires USE_CALENDAR "

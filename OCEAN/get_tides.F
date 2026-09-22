@@ -15,7 +15,7 @@
                               ! Scale them.
 #if defined SSH_TIDES || defined UV_TIDES
 # ifdef TIDES_MAS
-      USE MOD_TIDES_MAS
+      USE mod_tides_mas
 # endif
 #ifdef OPENACC
       use exchange_device_host
@@ -24,6 +24,9 @@
       implicit none
 
 # ifndef TIDES_MAS
+!  Otherwise already use-associated from MOD_TIDES_MAS, which
+!  includes param.h itself; a second include here would redeclare
+!  Ntides/Lm/Mm/... and fail to compile.
 #  include "param.h"
 # endif
 # include "scalars.h"
@@ -262,6 +265,8 @@
       enddo !Ntides
 # ifdef TIDES_MAS
       Tperiod=Tperiod*3600.0
+!  Called once here rather than per-tile in clm_tide
+      call mas_init_waves(Ntides,k_of,nn_of)
 # endif
 
 
