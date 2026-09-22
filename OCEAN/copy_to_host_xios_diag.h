@@ -39,8 +39,6 @@
 #ifdef ASSIMILATION
 #endif
 #ifdef SOLVE3D
-# ifdef  NEW_S_COORD
-# endif
 # ifdef  LMD_SKPP2005
 # endif
 #endif

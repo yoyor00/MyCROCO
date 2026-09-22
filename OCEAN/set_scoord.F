@@ -40,47 +40,6 @@
 !
 ! Set S-Curves in domain [-1 < sc < 0] at vertical W- and RHO-points.
 !
-# ifndef NEW_S_COORD
-      hc=min(hmin,hc)
-      cff1=1./sinh(theta_s)
-      cff2=0.5/tanh(0.5*theta_s)
-
-      sc_w(0)=-1.0
-      Cs_w(0)=-1.0
-
-      cff=1./float(N)
-      do k=1,N,+1
-        sc_w(k)=cff*float(k-N)
-        Cs_w(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_w(k))
-     &             +theta_b*(cff2*tanh(theta_s*(sc_w(k)+0.5))-0.5)
-
-        sc_r(k)=cff*(float(k-N)-0.5)
-        Cs_r(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(k))
-     &             +theta_b*(cff2*tanh(theta_s*(sc_r(k)+0.5))-0.5)
-      enddo
-#  ifdef M3FAST_SEDLAYERS
-      if (N_sl.gt.0) then
-        sc_r(0)=cff*(float(0-N)-0.5)
-        Cs_r(0)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(0))
-     &             +theta_b*(cff2*tanh(theta_s*(sc_r(0)+0.5))-0.5)
-     
-       do k=-N_sl+1,-1,+1
-        sc_w(k)=cff*float(k-N)
-        Cs_w(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_w(k))
-     &             +theta_b*(cff2*tanh(theta_s*(sc_w(k)+0.5))-0.5)
-
-        sc_r(k)=cff*(float(k-N)-0.5)
-        Cs_r(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_r(k))
-     &             +theta_b*(cff2*tanh(theta_s*(sc_r(k)+0.5))-0.5)
-       enddo
-       k=-N_sl
-       sc_w(k)=cff*float(k-N)
-       Cs_w(k)=(1.-theta_b)*cff1*sinh(theta_s*sc_w(k))
-     &             +theta_b*(cff2*tanh(theta_s*(sc_w(k)+0.5))-0.5)
-     
-      endif
-#  endif
-# else
       ds=1./float(N)
       do k=1,N,+1
         sc     = ds*(float(k-N)-0.5)
@@ -111,7 +70,6 @@
         sc_w(k)=sc      
       enddo    
 #  endif     
-# endif
 !
 ! Report information about vertical S-levels.
 !
@@ -124,16 +82,10 @@
      &                       'at_hmin  over_slope     at_hmax'
 
       do k=N,-N_sl,-1
-# ifdef NEW_S_COORD
         sc=ds*(k-N)
         cff1 = hmin*(hc*sc + hmin*Cs_w(k))/(hc+hmin)
         cff2 = 0.5*hmax*(hc*sc + 0.5*hmax*Cs_w(k))/(hc+0.5*hmax)
         cff3 = hmax*(hc*sc + hmax*Cs_w(k))/(hc+hmax)
-# else
-        cff1=sc_w(k)*hc+(hmin-hc)*Cs_w(k)
-        cff2=sc_w(k)*hc+(0.5*(hmin+hmax)-hc)*Cs_w(k)
-        cff3=sc_w(k)*hc+(hmax-hc)*Cs_w(k)
-# endif
         MPI_master_only write(stdout,'(I6,2F12.7,4x,3F12.3)')
      &                     k, sc_w(k),Cs_w(k), cff1,cff2,cff3
       enddo
@@ -143,9 +95,7 @@
       inc_faststep=1
 #  else
       Hz0=(hc*(Sc_r(1)-Sc_w(0))+hmin*(Cs_r(1)-Cs_w(0)))
-#   ifdef NEW_S_COORD
      &                                  *hmin/(hc+hmin)
-#   endif
       umag=0.5
       if (Zobt.ne.0.) then
         cff=vonKar/log(max(Hz0,Zobt+1.e-4)/Zobt)
@@ -172,7 +122,6 @@
       return
       end
 !======================================================================
-# ifdef NEW_S_COORD
                                             ! NOTE: Mathematical
       function CSF (sc, theta_s,theta_b)    ! limits of CSF,csrf for
       implicit none                         ! theta_s, theta_b --> 0
@@ -190,7 +139,6 @@
       endif
       return
       end
-# endif /* NEW_S_COORD */
 !======================================================================
 #else
       subroutine set_scoord_empty

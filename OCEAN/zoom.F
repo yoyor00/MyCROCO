@@ -1879,16 +1879,8 @@ CR      write(*,*) '  0' MYID
 
          do j=j1,j2
            do i=i1,i2
-# ifdef NEW_S_COORD
              h(i,j)=max(tabres(i,j),hmin)
-# else
-             h(i,j)=max(tabres(i,j),hc)
-# endif
-# ifdef NEW_S_COORD
              hinv(i,j)=1./(h(i,j)+hc)
-# else
-             hinv(i,j)=1./h(i,j)
-# endif
            enddo
          enddo
 
@@ -1897,29 +1889,17 @@ CR      write(*,*) '  0' MYID
              z_w(i,j,0) = -h(i,j)
            enddo
            do k=1,N,+1
-# ifdef NEW_S_COORD
              cff_w =hc*sc_w(k)
              cff_r =hc*sc_r(k)
              cff1_w=Cs_w(k)
              cff1_r=Cs_r(k)
-# else
-             cff_w =hc*(sc_w(k)-Cs_w(k))
-             cff_r =hc*(sc_r(k)-Cs_r(k))
-             cff1_w=Cs_w(k)
-             cff1_r=Cs_r(k)
-# endif
              do i=i1,i2
                z_w0=cff_w+cff1_w*h(i,j)
                z_r0=cff_r+cff1_r*h(i,j)
-# ifdef NEW_S_COORD
                z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+Zt_avg1(i,j)
      &                                          *(1.+z_w0*hinv(i,j))
                z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+Zt_avg1(i,j)
      &                                          *(1.+z_r0*hinv(i,j))
-# else
-               z_w(i,j,k)=z_w0+Zt_avg1(i,j)*(1.+z_w0*hinv(i,j))
-               z_r(i,j,k)=z_r0+Zt_avg1(i,j)*(1.+z_r0*hinv(i,j))
-# endif
                Hz_bak(i,j,k)=Hz(i,j,k)
                Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
              enddo
@@ -2043,22 +2023,14 @@ CR      write(*,*) '  0' MYID
            if ( western_side ) then
              do j=j1,j2
                h(0,j) = 2.*tabres(1,j)-h(1,j)
-# ifdef NEW_S_COORD
                hinv(0,j) = 1./(h(0,j)+hc)
-# else
-               hinv(0,j) = 1./h(0,j)
-# endif
              enddo
            endif
 
            if ( eastern_side ) then
              do j=j1,j2
                h(LOCALLM+1,j) = 2.*tabres(LOCALLM+1,j)-h(LOCALLM,j)
-# ifdef NEW_S_COORD
                hinv(LOCALLM+1,j) = 1./(h(LOCALLM+1,j)+hc)
-# else
-               hinv(LOCALLM+1,j) = 1./h(LOCALLM+1,j)
-# endif
              enddo
            endif
 
@@ -2066,22 +2038,14 @@ CR      write(*,*) '  0' MYID
            if ( southern_side ) then
              do i=i1,i2
                h(i,0) = 2.*tabres(i,1)-h(i,1)
-# ifdef NEW_S_COORD
                hinv(i,0) = 1./(h(i,0)+hc)
-# else
-               hinv(i,0) = 1./h(i,0)
-# endif
              enddo
            endif
 
            if ( northern_side ) then
              do i=i1,i2
                h(i,LOCALMM+1) = 2.*tabres(i,LOCALMM+1)-h(i,LOCALMM)
-# ifdef NEW_S_COORD
                hinv(i,LOCALMM+1) = 1./(h(i,LOCALMM+1)+hc)
-# else
-               hinv(i,LOCALMM+1) = 1./h(i,LOCALMM+1)
-# endif
              enddo
            endif
          endif ! <- endif isens

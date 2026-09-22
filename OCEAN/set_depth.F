@@ -97,11 +97,7 @@ C$    integer omp_get_thread_num
             rmask_wet(i,j)=wetdry(i,j)
 # endif
 # ifdef SOLVE3D
-#  ifdef NEW_S_COORD
             hinv(i,j)=1./(abs(h(i,j))+hc)
-#  else
-            hinv(i,j)=1./h(i,j)
-#  endif
             Zt_avg1(i,j)=zeta(i,j,knew)  ! knew=1 unless modified
                                          ! in ana_initial (JET)
 # endif /* SOLVE3D */
@@ -157,17 +153,10 @@ C$    integer omp_get_thread_num
         enddo
 
         do k=1,N,+1
-#  ifdef NEW_S_COORD
           cff_w =hc*sc_w(k)
           cff_r =hc*sc_r(k)
           cff1_w=Cs_w(k)
           cff1_r=Cs_r(k)
-#  else
-          cff_w =hc*(sc_w(k)-Cs_w(k))
-          cff_r =hc*(sc_r(k)-Cs_r(k))
-          cff1_w=Cs_w(k)
-          cff1_r=Cs_r(k)
-#  endif
           do i=I_RANGE
 #  ifdef M3FAST
             zetatmp=zeta(i,j,knew)
@@ -177,22 +166,13 @@ C$    integer omp_get_thread_num
 #  if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #  endif
-#  ifdef NEW_S_COORD
             htmp=abs(h(i,j))
-#  else
-            htmp=h(i,j)
-#  endif
             z_w0=cff_w+cff1_w*htmp
             z_r0=cff_r+cff1_r*htmp
-#  ifdef NEW_S_COORD
             z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_r0*hinv(i,j))
-#  else
-            z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
-            z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
-#  endif
           enddo
         enddo
       enddo
@@ -318,44 +298,27 @@ C$    integer omp_get_thread_num
         enddo
 
         do k=1,N,+1
-#   ifdef NEW_S_COORD
           cff_w =hc*sc_w(k)
           cff_r =hc*sc_r(k)
           cff1_w=Cs_w(k)
           cff1_r=Cs_r(k)
-#   else
-          cff_w =hc*(sc_w(k)-Cs_w(k))
-          cff_r =hc*(sc_r(k)-Cs_r(k))
-          cff1_w=Cs_w(k)
-          cff1_r=Cs_r(k)
-#   endif
           do i=I_RANGE
 #   ifdef M3FAST
             zetatmp=zeta(i,j,knew)
 #   else
             zetatmp=Zt_avg1(i,j)
 #   endif
-#  ifdef NEW_S_COORD
             htmp=abs(h(i,j))
             hinv(i,j)=1./(htmp+hc)
-#  else
-            htmp=h(i,j)
-            hinv(i,j)=1./htmp
-#  endif
 #   if defined MASKING && !defined WET_DRY
             zetatmp=zetatmp*rmask(i,j)
 #   endif
             z_w0=cff_w+cff1_w*htmp
             z_r0=cff_r+cff1_r*htmp
-#   ifdef NEW_S_COORD
             z_w(i,j,k)=z_w0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_w0*hinv(i,j))
             z_r(i,j,k)=z_r0*h(i,j)*hinv(i,j)+zetatmp
      &                                       *(1.+z_r0*hinv(i,j))
-#   else
-            z_w(i,j,k)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
-            z_r(i,j,k)=z_r0+zetatmp*(1.+z_r0*hinv(i,j))
-#   endif
             Hz(i,j,k)=z_w(i,j,k)-z_w(i,j,k-1)
 #   ifdef NBQ_MASS
             Hzr(i,j,k)=Hz(i,j,k)

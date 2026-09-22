@@ -847,11 +847,9 @@ C ass_file
 C apar_file
 #endif
 #ifdef SOLVE3D
-# ifdef  NEW_S_COORD
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='VertCoordType', value='NEW')
-# endif
-# ifdef  LMD_SKPP2005
+# ifdef LMD_SKPP2005
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='skpp', value='2005')
 # endif

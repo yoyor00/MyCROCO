@@ -91,7 +91,8 @@
      &  'Newer versions of the tools no longer support',
      &  'the old Vtransform.',
      &  'For details, see the documentation.'
-            goto 99                                      !--> ERROR
+            may_day_flag=2
+            return                                       !--> ERROR
           endif
 !
           ierr_all=0
