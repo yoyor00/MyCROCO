@@ -34,7 +34,7 @@ include Makedefs
 #        analysis routines
 #======================================================================
 
- SRCS = main.F		step.F		read_inp.F\
+ SRCS = main.F		step.F		read_inp.F	trigolow.F\
 	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
@@ -55,18 +55,19 @@ include Makedefs
 \
 	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
-	ana_vmix.F	lmd_vmix.F 	gls_mixing.F\
+	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
+	tke3d_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
-	bio_diag.F	check_srcs.F\
+	bio_diag.F	setup_kwds.F    check_kwds.F	check_srcs.F\
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
 	param.F    ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
-	lenstr.F	closecdf.F	insert_node.F\
+	get_date.F	lenstr.F	closecdf.F	insert_node.F\
 	fillvalue.F	nf_add_attribute.F		set_cycle.F\
 	def_grid_2d.F   def_grid_3d.F   def_his.F       def_rst.F\
 	def_diags.F	def_diagsM.F	def_bio_diags.F\
@@ -90,7 +91,7 @@ include Makedefs
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
 	mod_tides_mas.F tidedata.F      mas.F         get_tides.F\
-	clm_tides.F     get_bulk.F      bulk_flux.F\
+        clm_tides.F  	pot_cuve.F 	get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F get_btflux.F\
 \
@@ -98,7 +99,11 @@ include Makedefs
 \
 	online_bulk_var.F		online_get_bulk.F\
 	online_interp.F			online_interpolate_bulk.F\
-	online_set_bulk.F		online_interpolate_3d_bulk.F\
+	online_set_bulk.F               online_interpolate_3d_bulk.F\
+\
+	init_floats.F	wrt_floats.F	step_floats.F	rhs_floats.F\
+	interp_rho.F	def_floats.F	init_arrays_floats.F\
+	random_walk.F	get_initial_floats.F\
 \
 	init_sta.F	wrt_sta.F	step_sta.F	interp_sta.F\
 	def_sta.F	init_arrays_sta.F\
@@ -125,7 +130,10 @@ include Makedefs
 	online_spectral_diags.F var3d_oa_out.F var2d_oa_out.F\
 	scal0d_oa_out_loc.F scal0d_oa_out_full.F\
 	output_oa.F\
-	copy_to_devices.F exchange_device_host.F init_acc.F
+        copy_to_devices.F exchange_device_host.F init_acc.F\
+\
+	read_kxxagrif_in.F
+
 
 
 
@@ -160,7 +168,7 @@ include Makedefs
 	module_parameter_oa.F90 module_grd_oa.F90\
 	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
-	module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
+	module_oa_level.F90 module_interface_oa.F90 var_oa.F90\
 	tools_string.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
 	toolorigindate.F90 \
@@ -176,7 +184,7 @@ AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
-TOOLS = mpc cross_matrix cppcheck srcscheck partit ncjoin ncrename
+ TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
 
 
 RCS = $(SRCS:.F=.f)
@@ -237,6 +245,11 @@ srcscheck: mpc srcscheck.F
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
 	rm -f check_srcs.F
 
+checkkwds: mpc checkkwds.F
+	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
+	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o
+	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
+	rm -f setup_kwds.F
 
 checkdefs: check_switches1.F
 
@@ -247,6 +260,12 @@ check_switches1.F: cppcheck cppdefs.h
 check_srcs.F: srcscheck Makefile
 	./srcscheck
 
+setup_kwds.F: checkkwds read_inp.F
+	./checkkwds
+
+oasrc:  oasrc1 module_oa_time.o module_tile_oa.o module_oa_space.o module_oa_level.o module_oa_periode.o  module_oa_interface.o
+
+oasrc1: param.o scalars.o module_grd_oa.o module_parameter_oa.o module_oa_type.o module_oa_variables.o
 
 partit: partit.F insert_node.o lenstr.o
 	$(CPP) -P $(CPPFLAGS) partit.F > partit._.f

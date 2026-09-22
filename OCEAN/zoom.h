@@ -27,7 +27,7 @@
       real V_west(0:0,-1:Mm+2+padd_E,N,4)
       common/zoom3D_VW/V_west
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       real Unbq_west(1:1,-1:Mm+2+padd_E,N,2)
       common/zoom3Dnbq_UW/Unbq_west
       real Vnbq_west(0:0,-1:Mm+2+padd_E,N,2)
@@ -51,7 +51,7 @@
       real V_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,N,4)
       common/zoom3D_VE/V_east
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       real Unbq_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,N,2)
       common/zoom3Dnbq_UE/Unbq_east
       real Vnbq_east(LOCALLM+1:LOCALLM+1,-1:Mm+2+padd_E,N,2)
@@ -75,7 +75,7 @@
       real V_south(-1:Lm+2+padd_X,1:1,N,4)
       common/zoom3D_VS/V_south
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       real Unbq_south(-1:Lm+2+padd_X,0:0,N,2)
       common/zoom3Dnbq_US/Unbq_south
       real Vnbq_south(-1:Lm+2+padd_X,1:1,N,2)
@@ -99,7 +99,7 @@
       real V_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,N,4)
       common/zoom3D_VN/V_north
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       real Unbq_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,N,2)
       common/zoom3Dnbq_UN/Unbq_north
       real Vnbq_north(-1:Lm+2+padd_X,LOCALMM+1:LOCALMM+1,N,2)
@@ -265,7 +265,7 @@
 
       integer hid, zetaid,ubarid,vbarid,uid,vid,tid
       integer rmaskid
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       integer qdmunbqid, qdmvnbqid
 #  ifdef NBQ
       integer qdmwnbqid, rhonbqid, wzid, wzspongeid
@@ -287,7 +287,7 @@
 # ifdef WET_DRY
      &        ,rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
      &        ,qdmunbqid,qdmvnbqid
 #  ifdef NBQ
      &        ,qdmwnbqid,rhonbqid,wzid,wzspongeid
@@ -309,7 +309,7 @@
       integer updatetid, updateuid, updatevid
       integer updatemyfxid, updatemyfyid
       integer updatehuonid, updatehvomid
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       integer updateunbqid, updatevnbqid
 #  ifdef NBQ
       integer updatewid, updatewnbqid, updaterhonbqid
@@ -319,7 +319,7 @@
      &       updateduavg2id, updatedvavg2id,
      &       updatetid, updateuid, updatevid, updatemyfxid,
      &       updatemyfyid,updatehuonid, updatehvomid
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
      &      ,updateunbqid, updatevnbqid
 #  ifdef NBQ
      &      ,updatewid, updatewnbqid, updaterhonbqid

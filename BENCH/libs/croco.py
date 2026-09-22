@@ -14,7 +14,6 @@ import platform
 import subprocess
 from datetime import timedelta
 import math
-import f90nml
 
 
 # internal
@@ -25,6 +24,9 @@ from .helpers import (
     Messaging,
     patch_lines,
     copy_tree_with_absolute_symlinks,
+    extract_elements_from_file,
+    copy_and_replace,
+    delete_lines_from_file,
     parse_datetime,
 )
 from .hyperfine import run_hyperfine
@@ -58,66 +60,14 @@ class Croco:
         self.case = config.config["cases"][case_name]
         self.variant = config.config["variants"][variant_name]
 
-        # namelist file: must exist, but kept relative (consumed later as a
-        # CLI arg to ./croco run from the builddir, and patched in-place
-        # there - an absolute source-tree path would point at the wrong copy)
-        #
-        # Convention: TEST_CASES/<CASE>/croco_<CASE>.nml
-        _case = self.case["case"]
-        self.croco_nmlfile = self.resolve_case_file(
-            "nml_file",
-            "TEST_CASES/%s/croco_%s.nml" % (_case, _case),
-            absolute=False,
-            must_exist=True,
-        )
-
-        # pre-resolved, single-case cppdefs.h/param.h
-        # Convention: TEST_CASES/<CASE>/cppdefs_<CASE>.h  TEST_CASES/<CASE>/param_<CASE>.h
-        self.croco_cppdefsfile = self.resolve_case_file(
-            "cppdefs_file",
-            "TEST_CASES/%s/cppdefs_%s.h" % (_case, _case),
-        )
-        self.croco_paramfile = self.resolve_case_file(
-            "param_file",
-            "TEST_CASES/%s/param_%s.h" % (_case, _case),
-        )
+        # input file
+        self.croco_inputfile = "croco.nml"
+        if "input_file" in self.case and len(self.case["input_file"]) > 0:
+            self.croco_inputfile = self.case["input_file"]
 
         self.croco_build = JobcompCrocoSetup(
             self.config, self.dirname, self.variant["tuning_familly"]
         )
-
-    def resolve_case_file(
-        self,
-        override_key: str,
-        default_relpath: str,
-        absolute: bool = True,
-        must_exist: bool = False,
-    ) -> str:
-        """
-        Resolve an optional per-case file override (e.g. "cppdefs_file" /
-        "param_file" / "nml_file"), falling back to a default relative path
-        under croco_source_dir.
-
-        absolute: return the absolute path (for files copied as a source,
-        e.g. cppdefs_file/param_file) or the relative path as given/derived
-        (for files consumed relative to the build dir, e.g. nml_file).
-
-        must_exist: if True, a missing file is always an error, whether it
-        came from an explicit override or the auto-derived default (e.g.
-        nml_file, which should always exist). If False (default), a
-        missing AUTO-DERIVED default silently returns None (expected for
-        cases with no matching file - caller falls back to legacy
-        behavior); an explicit override is still always an error if
-        missing.
-        """
-        explicit = self.case.get(override_key)
-        relpath = explicit or default_relpath
-        abspath = os.path.join(self.config.croco_source_dir, relpath)
-        if os.path.isfile(abspath):
-            return abspath if absolute else relpath
-        if explicit or must_exist:
-            raise Exception(f"Case '{self.case_name}': {override_key} '{relpath}' not found.")
-        return None
 
     def calc_rundir(self, variant_name, case_name, restarted):
         if restarted:
@@ -183,6 +133,9 @@ class Croco:
         configure_compiler_option = ""
         if tuning_flags != "":
             configure_compiler_option = f'FFLAGS="{tuning_flags} {tuning_flags_extra}"'
+        
+        # store case patches for use in create_build_dir
+        self.croco_build.case_patches = self.case.get("patches", {})
 
         # Add cppkeys
         configure_cppkeys_options = ""
@@ -210,11 +163,7 @@ class Croco:
         )
 
         # jump in & configure
-        self.croco_build.configure(
-            command,
-            cppdefs_file=self.croco_cppdefsfile,
-            param_file=self.croco_paramfile,
-        )
+        self.croco_build.configure(command)
 
     def compile(self):
         # display
@@ -222,9 +171,10 @@ class Croco:
 
         # extract some needed vars
         croco_build = self.croco_build
+        make_jobs = f"-j{self.config.make_jobs}"
 
         # jump in & build
-        croco_build.make(self.config.make_jobs)
+        croco_build.make(make_jobs)
 
     def enable_cvtk_checking(self):
         # vars
@@ -251,6 +201,8 @@ class Croco:
             try:
                 self.build_internal(extra_info, force_rebuild)
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 Messaging.step_error("Fail to build !")
                 build_error = True
                 build_error_details = e
@@ -360,20 +312,13 @@ class Croco:
         command = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
             env_line,
             command_prefix,
-            self.croco_nmlfile,
+            self.croco_inputfile,
         )
-        command = command.rstrip()
         if restart:
-            command_rst = "%s ../../../scripts/correct_end.sh %s ./croco %s" % (
-                env_line,
-                command_prefix,
-                "%s_rst" % self.croco_nmlfile,
-            )
-            command_rst = command_rst.rstrip()
             # execute twice one without restart and one with
-            command = "%s && %s" % (
+            command = "%s && %s_rst" % (
                 command.replace("../../../scripts/correct_end.sh", "").strip(),
-                command_rst,
+                command,
             )
 
         with move_in_dir(dirname):
@@ -461,6 +406,10 @@ class Croco:
         # loop
         with move_in_dir(self.dirname):
             for file, changes in patches.items():
+                # skip boolean values (used for agrif flag, etc.)
+                if isinstance(changes, bool):
+                    continue
+                    
                 # convert to list if needed
                 if isinstance(changes, dict):
                     changes = [changes]
@@ -470,110 +419,267 @@ class Croco:
                     patch_lines(file, [change])
 
     def apply_debug_patches(self):
-        filename_nml = self.croco_nmlfile
-        self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 6)
-        self.change_nml(filename_nml, "croco_history", "nwrt", 1)
-        self.change_nml(filename_nml, "croco_diagnostics_ts", "nwrtdia", 1)
-        self.change_nml(filename_nml, "croco_diagnosticsm", "nwrtdiam", 1)
-
-        self.change_nml(filename_nml, "croco_diags_ek", "nwrtdiags_ek", 1)
-        self.change_nml(filename_nml, "croco_diags_vrt", "nwrtdiags_vrt", 1)
-        self.change_nml(filename_nml, "croco_diags_pv", "nwrtdiags_pv", 1)
-        self.change_nml(filename_nml, "croco_averages", "navg", 3)
-        self.change_nml(filename_nml, "croco_diag_avg", "nwrtdia_avg", 3)
-        self.change_nml(filename_nml, "croco_diagM_avg", "nwrtdiaM_avg", 3)
-        self.change_nml(filename_nml, "croco_diags_ek_avg", "nwrtdiags_ek_avg", 3)
-        self.change_nml(filename_nml, "croco_diags_vrt_avg", "nwrtdiags_vrt_avg", 3)
-        self.change_nml(filename_nml, "croco_diags_pv_avg", "nwrtdiags_pv_avg", 3)
-        self.change_nml(filename_nml, "croco_diags_eddy_avg", "nwrtdiags_eddy_avg", 3)
+        filename = self.croco_inputfile
+        self.change_card(filename, card="time_stepping", value=6, position=0)
+        self.change_card(filename, card="history", value=1, position=1)
+        self.change_card(filename, card="diagnostics", value=1, position=1)
+        self.change_card(filename, card="diagnosticsM", value=1, position=1)
+        self.change_card(filename, card="diags_ek", value=1, position=1)
+        self.change_card(filename, card="diags_vrt", value=1, position=1)
+        self.change_card(filename, card="diags_pv", value=1, position=1)
+        #
+        self.change_card(filename, card="averages", value=3, position=1)
+        self.change_card(filename, card="diag_avg", value=3, position=2)
+        self.change_card(filename, card="diagM_avg", value=3, position=2)
+        self.change_card(filename, card="diags_ek_avg", value=3, position=2)
+        self.change_card(filename, card="diags_vrt_avg", value=3, position=2)
+        self.change_card(filename, card="diags_pv_avg", value=3, position=2)
+        self.change_card(filename, card="diags_eddy_avg", value=3, position=2)
 
         # and for USE_CALENDAR
-        self.change_nml_end_date(filename_nml, 6)
-        self.change_nml_output_time_steps_dthis(filename_nml, 6)
+        self.change_card_end_date(filename, 6)
+        self.change_card_output_time_steps_dthis(filename, 6)
 
     def apply_restart_patches(self):
-        filename_nml = self.croco_nmlfile
+        filename = self.croco_inputfile
 
         # for all case (write/read), put ldefhis to F
-        self.change_nml(filename_nml, "croco_history", "ldefhis", False)
         # only for history for now... 
         # T needed for avg and diag 
         # because it is not the same behavior as history file
 
+        # cardnames = [
+        #     "history",
+        #     "diagnostics",
+        #     "diag_avg",
+        #     "diagnosticsM",
+        #     "diagM_avg",
+        #     "diags_vrt",
+        #     "diags_vrt_avg",
+        #     "diags_ek",
+        #     "diags_ek_avg",
+        #     "surf",
+        #     "surf_avg",
+        #     "diags_pv",
+        #     "diags_pv_avg",
+        #     "diagnostics_bio",
+        #     "diagbio_avg",
+        #     ]
+        cardnames = [
+            "history",
+        ]
+        for cardname in cardnames:
+            self.change_card(filename, card=cardname, value="F", position=0)
+
         if self.restarted:
             # prepare 2 files for the restarted run
-            full_filename_nml = os.path.join(self.dirname, filename_nml)
-            filename_nml_rst = filename_nml + "_rst"
-            full_filename_nml_rst = os.path.join(self.dirname, filename_nml_rst)
-            shutil.copy(full_filename_nml, full_filename_nml_rst)
+            full_filename = os.path.join(self.dirname, filename)
+            filename_rst = filename + "_rst"
+            full_filename_rst = os.path.join(self.dirname, filename_rst)
+            shutil.copy(full_filename, full_filename_rst)
             file_nc_rst = "croco_restart.nc"
 
             # first run with filename
-            self.change_nml(filename_nml, "croco_time_stepping", "ntimes", 3)
-            self.change_nml(filename_nml, "croco_restart", "nrst", 3)
-            self.change_nml(filename_nml, "croco_restart", "nrpfrst", 0)
-            self.change_nml(filename_nml, "croco_restart", "rstname", file_nc_rst)
+            self.change_card(filename, card="time_stepping", value=3, position=0)
+            self.change_card_restart(filename, 3, file_nc_rst)
 
             # second run with filename_rst
-            self.change_nml(filename_nml_rst , "croco_time_stepping", "ntimes", 3)
-            self.change_nml(filename_nml_rst , "croco_initial", "nrrec", 2)
-            self.change_nml(filename_nml_rst , "croco_initial", "ininame", file_nc_rst)
+            self.change_card(filename_rst, card="time_stepping", value=3, position=0)
+            self.change_card_initial(filename_rst, file_nc_rst)
 
             # and for USE_CALENDAR
-            self.change_nml_end_date(filename_nml, 3)
-            self.change_nml_output_time_steps_dtrst(filename_nml, 3)
+            self.change_card_end_date(filename, 3)
+            self.change_card_output_time_steps_dtrst(filename, 3)
             # no need to change end_date or dtrsr for filename_rst
 
-    def change_nml_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
+    def change_card_restart(self, filename, nrst, file_nc_rst):
         full_filename = os.path.join(self.dirname, filename)
-        nml = f90nml.read(full_filename)
-        # Check section exists
-        if "croco_use_calendar" in nml:
-            dt = nml["croco_time_stepping"]["dt"]
+        patches = {
+            filename: {
+                "file": filename,
+                "mode": "insert-after",
+                "what": "restart:",
+                "insert": ["%i   0" % nrst, file_nc_rst],
+                "descr": "change restart NRST=3",
+            }
+        }
+        self.apply_patches(patches)
+        delete_lines_from_file(full_filename, "restart", line_offset=3, num_lines=2)
+
+    def change_card_initial(self, filename, file_nc_rst):
+        full_filename = os.path.join(self.dirname, filename)
+        patches = {
+            filename: {
+                "mode": "insert-after",
+                "what": "initial:",
+                "insert": ["     2", file_nc_rst],
+                "descr": "change restart for reading step to NRREC=2 and file=%s"
+                % file_nc_rst,
+            }
+        }
+        self.apply_patches(patches)
+        delete_lines_from_file(full_filename, "initial", line_offset=3, num_lines=2)
+
+    def change_card_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
+        full_filename = os.path.join(self.dirname, filename)
+        # Check end_date is a card in this case
+        if len(extract_elements_from_file(full_filename, "output_time_steps")) > 0:
+            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
+            OUTPUT_TIME_STEPS = extract_elements_from_file(
+                full_filename, "output_time_steps"
+            )
+            dt = float(TIME_LINE[1])
             duration = math.ceil(max(dt * ntimes, min_dt))
             dt_his_hours = max(dt / 3600.0, duration / (ntimes * 3600))
-            self.change_nml(filename, "croco_use_calendar", "dt_his", dt_his_hours)
+            # in case of very small dt put put a minimum
+            NEW_OUTPUT_TIME_STEPS = copy_and_replace(OUTPUT_TIME_STEPS, 0, dt_his_hours)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " output_time_steps:",
+                    "insert": " ".join(map(str, NEW_OUTPUT_TIME_STEPS)),
+                    "descr": f"change output_time_steps to DT_HIS(H)={dt_his_hours}",
+                }
+            }
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "output_time_steps", line_offset=2, num_lines=1
+            )
 
-    def change_nml_output_time_steps_dtrst(self, filename, ntimes, min_dt=1.0):
+    def change_card_output_time_steps_dtrst(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
-        nml = f90nml.read(full_filename)
-        # Check section exists
-        if "croco_use_calendar" in nml:
-            dt = nml["croco_time_stepping"]["dt"]
+        # Check end_date is a card in this case
+        if len(extract_elements_from_file(full_filename, "output_time_steps")) > 0:
+            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
+            OUTPUT_TIME_STEPS = extract_elements_from_file(
+                full_filename, "output_time_steps"
+            )
+            dt = float(TIME_LINE[1])
             duration = math.ceil(max(dt * ntimes, min_dt))
             dt_rst_hours = duration / 3600.0
-            self.change_nml(filename, "croco_use_calendar", "dt_rst", dt_rst_hours)
+            # in case of very small dt put put a minimum
+            NEW_OUTPUT_TIME_STEPS = copy_and_replace(OUTPUT_TIME_STEPS, 2, dt_rst_hours)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " output_time_steps:",
+                    "insert": " ".join(map(str, NEW_OUTPUT_TIME_STEPS)),
+                    "descr": f"change output_time_steps to DT_RST(H)={dt_rst_hours}",
+                }
+            }
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "output_time_steps", line_offset=2, num_lines=1
+            )
 
-    def change_nml_end_date(self, filename, ntimes, min_dt=1.0):
+    def change_card_end_date(self, filename, ntimes, min_dt=1.0):
         full_filename = os.path.join(self.dirname, filename)
-        nml = f90nml.read(full_filename)
-        # Check section exists
-        if "croco_use_calendar" in nml:
-            dt = nml["croco_time_stepping"]["dt"]
+        # Check end_date is a card in this case
+        if len(extract_elements_from_file(full_filename, "end_date")) > 0:
+            TIME_LINE = extract_elements_from_file(full_filename, "time_stepping")
+            START_DATE = extract_elements_from_file(full_filename, "start_date")
+            dt = float(TIME_LINE[1])
             duration = math.ceil(max(dt * ntimes, min_dt))
-            datetime_start = parse_datetime(nml["croco_use_calendar"]["start_date"])
+            # in case of very small dt put a minimum
+            datetime_start = parse_datetime(START_DATE[0] + " " + START_DATE[1])
             datetime_end = datetime_start + timedelta(seconds=duration)
             end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
-            self.change_nml(filename, "croco_use_calendar", "end_date", end_date)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": " end_date:",
+                    "insert": end_date,
+                    "descr": f"change end_date to {end_date}",
+                }
+            }
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, "end_date", line_offset=2, num_lines=1
+            )
 
-    def change_nml(self, filename, nml_section_name, nml_param_name, values):
-        """Change value in a CROCO namelist file."""
+    def change_card(self, filename, card: str, value, position: int):
         full_filename = os.path.join(self.dirname, filename)
-        Messaging.step(
-            f"Patching {full_filename} [ Set {nml_section_name}/{nml_param_name} to {values} ]"
-        )
-        nml = f90nml.read(full_filename)
-        nml.setdefault(nml_section_name, f90nml.Namelist())
-        nml[nml_section_name][nml_param_name] = values
-        nml.write(full_filename, force=True)
 
+        if len(extract_elements_from_file(full_filename, card)) > 0:
+            OLD_LINE = extract_elements_from_file(full_filename, card)
+            NEW_LINE = copy_and_replace(OLD_LINE, position, value)
+            patches = {
+                filename: {
+                    "mode": "insert-after",
+                    "what": f" {card}:",
+                    "insert": " ".join(map(str, NEW_LINE)),
+                    "descr": f"change {card} to {value} at position {position}",
+                }
+            }
+            self.apply_patches(patches)
+            delete_lines_from_file(
+                full_filename, f"{card}:", line_offset=2, num_lines=1
+            )
 
     def setup_case(self):
-        # apply the case paches
+        # copy case-specific cppdefs.h, param.h, croco.nml, AGRIF_FixedGrids.in if they exist in TEST_CASES
+        c_name = self.case.get("case", self.case_name)
+        src_dir = self.croco_build.sourcedir
+        c_dir = os.path.join(src_dir, "TEST_CASES", c_name)
+        
+        cppdefs_src = self.case.get("cppdefs_file", os.path.join("TEST_CASES", c_name, f"cppdefs_{c_name}.h"))
+        full_cppdefs_src = os.path.join(src_dir, cppdefs_src)
+        if os.path.exists(full_cppdefs_src):
+            shutil.copyfile(full_cppdefs_src, os.path.join(self.dirname, "cppdefs.h"))
+
+        param_src = self.case.get("param_file", os.path.join("TEST_CASES", c_name, f"param_{c_name}.h"))
+        full_param_src = os.path.join(src_dir, param_src)
+        if os.path.exists(full_param_src):
+            shutil.copyfile(full_param_src, os.path.join(self.dirname, "param.h"))
+
+        nml_src = self.case.get("nml_file", os.path.join("TEST_CASES", c_name, f"croco_{c_name}.nml"))
+        full_nml_src = os.path.join(src_dir, nml_src)
+        if os.path.exists(full_nml_src):
+            shutil.copyfile(full_nml_src, os.path.join(self.dirname, "croco.nml"))
+
+        agrif_src = os.path.join(c_dir, "AGRIF_FixedGrids.in")
+        if os.path.exists(agrif_src):
+            shutil.copyfile(agrif_src, os.path.join(self.dirname, "AGRIF_FixedGrids.in"))
+            nml1_src = os.path.join(c_dir, f"croco_{c_name}.nml.1")
+            if os.path.exists(nml1_src):
+                shutil.copyfile(nml1_src, os.path.join(self.dirname, "croco.nml.1"))
+
+        # apply the case patches
         case_name = self.case_name
 
         Messaging.step(f"Apply case config : {case_name}")
-        patches = self.case.get("patches", {})
+        patches = self.case.get("patches", {}).copy()
+
+        # If this is an MPI variant, do not apply case patches that disable MPI or NC4PAR
+        if "mpi" in self.variant_name.lower():
+            if "cppdefs.h" in patches:
+                cppdefs_patches = patches["cppdefs.h"]
+                if isinstance(cppdefs_patches, list):
+                    filtered = []
+                    for patch in cppdefs_patches:
+                        is_mpi_or_nc4_patch = (
+                            isinstance(patch, dict) and
+                            patch.get("mode") == "replace" and
+                            (
+                                "MPI" in patch.get("what", "") or
+                                "NC4PAR" in patch.get("what", "")
+                            )
+                        )
+                        if not is_mpi_or_nc4_patch:
+                            filtered.append(patch)
+                    patches["cppdefs.h"] = filtered
+                elif isinstance(cppdefs_patches, dict):
+                    patch = cppdefs_patches
+                    is_mpi_or_nc4_patch = (
+                        patch.get("mode") == "replace" and
+                        (
+                            "MPI" in patch.get("what", "") or
+                            "NC4PAR" in patch.get("what", "")
+                        )
+                    )
+                    if is_mpi_or_nc4_patch:
+                        del patches["cppdefs.h"]
+
         self.apply_patches(patches)
 
         if self.config.debug or self.config.restart:
@@ -719,12 +825,8 @@ class Croco:
                 if script_options:
                     command.extend(script_options.split())
 
-                env = os.environ.copy()
-                tc_path = os.path.join(self.config.croco_source_dir, "TEST_CASES")
-                env["PYTHONPATH"] = tc_path + (":" + env["PYTHONPATH"] if "PYTHONPATH" in env else "")
-
                 try:
-                    subprocess.run(command, check=True, env=env)  # Exécute la commande
+                    subprocess.run(command, check=True)  # Exécute la commande
                     Messaging.step(
                         "Successfully executed %s with arguments --no-show --makepng"
                         % self.plot_diag_script
@@ -818,10 +920,14 @@ class Croco:
         # also copy the config
         self.croco_build.copy_config(refdir_case, case_name, patches_and_keys)
 
-        # add the case namelist file
-        nml_file = self.croco_nmlfile
+        # add the case config files
+        case_file = self.croco_inputfile
         os.makedirs(f"{refdir}/{case_name}/TEST_CASES", exist_ok=True)
-        shutil.copyfile(f"{dirname}/{nml_file}", f"{refdir}/{case_name}/{nml_file}")
+        shutil.copyfile(f"{dirname}/{case_file}", f"{refdir}/{case_name}/{case_file}")
+
+        # copy the case file under croco.in
+        if not os.path.exists(f"{refdir}/{case_name}/croco.in"):
+            os.symlink(case_file, f"{refdir}/{case_name}/croco.in")
 
         # dump case info
         with open(f"{refdir}/{case_name}/case.json", "w+") as fp:

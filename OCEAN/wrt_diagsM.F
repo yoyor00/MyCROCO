@@ -208,7 +208,7 @@
 !
 ! indxMfast
 !
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
            workr=Mfast(:,:,:,itrc)
            call fillvalue3d(workr,nciddiaM,diaMfast(itrc),
      &                      vname(1,indxMfast+itrc-1),

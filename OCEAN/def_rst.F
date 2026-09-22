@@ -879,7 +879,7 @@
       call nf_add_attribute(ncid, rstrvfrc,
      &                      vname(:,indxrvfrc), 5, NF_DOUBLE, ierr)
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !
 ! 3D rhs for M3FAST in XI- and ETA-directions.
 !
@@ -1002,7 +1002,7 @@
 
         call nf_add_attribute(ncid, rstqdmv_nbq, 
      &       vname(:,indxqdmv_nbq), 5, NF_DOUBLE, ierr)
-#  endif  /* M3FAST */
+#  endif  /* M3FAST || K3FAST */
 
 #  ifdef TRACERS
 #   ifdef TS_MIX_ISO_FILT
@@ -1655,7 +1655,7 @@
 # endif /* GLS_MIXING */
 
 
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  if defined LMD_MIXING
 !
 ! Bottom stress u component
@@ -1712,7 +1712,7 @@
         ierr=nf_var_par_access(ncid,rstrvfrc,nf_collective)
 #  endif
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 
 !
 ! 3D rhs for M3FAST in XI- and ETA-directions.
@@ -1799,7 +1799,7 @@
 #   ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstqdmv_nbq,nf_collective)
 #   endif
-#  endif  /* M3FAST */
+#  endif  /* M3FAST || K3FAST */
 
 #  ifdef TRACERS
 #   ifdef TS_MIX_ISO_FILT

@@ -99,10 +99,10 @@ MODULE croco_namelist
    character(len=180) :: rstname = "CROCO_FILES/croco_rst.nc"
    !! Name of restart file
 
-#ifdef NBQ
+#ifdef NBQ || defined K3FAST
    real    :: csound_nbq = 1000.0
    !! Speed of sound used in the NBQ solver [m/s]
-   real    :: visc2_nbq = 0.01
+   real    :: visc2read_nbq = 0.01
    !! Laplacian viscosity coefficient for the NBQ pressure solver [m2/s]
 #endif
 

@@ -222,7 +222,7 @@ C$    integer omp_get_thread_num
             MBaro(i,j,k,1)=init
             MBaro(i,j,k,2)=init
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
             Mfast(i,j,k,1)=init
             Mfast(i,j,k,2)=init
 #  endif
@@ -284,7 +284,7 @@ C$    integer omp_get_thread_num
             MBaro_avg(i,j,k,1)=init
             MBaro_avg(i,j,k,2)=init
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
             Mfast_avg(i,j,k,1)=init
             Mfast_avg(i,j,k,2)=init
 #   endif
@@ -571,7 +571,7 @@ C$    integer omp_get_thread_num
 #  if defined DIAGNOSTICS_BARO
           vrtBaro(i,j)=init
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
           vrtfast(i,j)=init
 #  endif
 #  ifdef AVERAGES
@@ -589,7 +589,7 @@ C$    integer omp_get_thread_num
 #   if defined DIAGNOSTICS_BARO
           vrtBaro_avg(i,j)=init
 #   endif
-#   if defined M3FAST
+#   if defined M3FAST || defined K3FAST
           vrtfast_avg(i,j)=init
 #   endif
 #  endif /* AVERAGES */
@@ -626,7 +626,7 @@ C$    integer omp_get_thread_num
 #  if defined DIAGNOSTICS_BARO
             ekBaro(i,j,k)=init
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
             ekfast(i,j,k)=init
 #  endif
 #  ifdef AVERAGES
@@ -643,7 +643,7 @@ C$    integer omp_get_thread_num
 #   ifdef DIAGNOSTICS_BARO
             ekBaro_avg(i,j,k)=init
 #   endif
-#   if defined M3FAST
+#   if defined M3FAST || defined K3FAST
             ekfast_avg(i,j,k)=init
 #   endif
 #  endif /* AVERAGES */
@@ -1507,7 +1507,7 @@ C$    integer omp_get_thread_num
       enddo
 # endif
 
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       do j=JstrR,JendR
         do i=IstrR,IendR
 #  ifdef NBQ_MASS
@@ -1560,7 +1560,7 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 #  endif/* NBQ */
-# endif /* M3FAST */
+# endif /* M3FAST || K3FAST */
 
 #endif /* SOLVE3D */
 

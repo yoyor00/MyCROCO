@@ -4,7 +4,7 @@
 
 #include "cppdefs.h"
 
-!!! give access to dimensions, variables, parameters from hydro model to OBSTRUCTIONS
+!! give access to dimensions, variables, parameters from hydro model to OBSTRUCTIONS
 
 #if defined OBSTRUCTION
 

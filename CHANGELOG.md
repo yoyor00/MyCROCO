@@ -4,8 +4,29 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ## [x.x.x] - xxxx-xx-xx
 
+  ####  ### Added                                                                                                  
+                                                                                                                   
+    - KNBQ3 : Ajout d'une documentation détaillée (`DOC_KNBQ3.md`) sur le solveur non-hydrostatique compressible   
+  KNBQ3.
+    - BENCH : Ajout des configurations et cas tests pour AgAc (`AgAc_KNBQ`, `AgAc_KAGRIF`, `AgAc_KABGRIF`) et      
+  Canon2D (`CANON2D_HWI`, `CANON2D_KHI`, `CANON2D_TCI`).
+    - BENCH : Ajout d'un nouveau guide pratique (`BENCH/Guide_Ajout_Cas_Tests.md`) et d'une variante de compilation
+  `mpi-nvfortran`.
+  
+  ####  ### Fixed 
+  
+    - KNBQ3 : Correction de l'échange périodique/MPI pour la densité `rho_nbq` dans `k3fast_mass_update.h`.        
+    - OCEAN : Correction d'une division par zéro potentielle dans `set_nudgcof.F` (relaxation et éponge) lorsque le
+  nombre de points `isp <= 0`.
+    - jobcomp : Lancement automatique du script `prepro_KXX.py` lors de la compilation avec AGRIF et les noyaux KXX.
+    - BENCH : Prise en charge des patches booléens (ex: activation d'AGRIF) et transmission de l'option AGRIF à    
+  `create_config.bash`.
+  
+
 ### Added
 
+- MERGE : Fusion de la branche `dev2026_NBQ3_merge` comprenant l'intégration du nouveau noyau non-hydrostatique KNBQ3 (K3FAST), l'archivage du solveur historique KNBQ2, l'ajout du mélange vertical TKE3D, et de nouvelles configurations physiques (LES, CANON2D, ISOLITON_DJL).
+- NBQ : Integrate new non-hydrostatic kernel (KNBQ3) and archive old KNBQ baseline to KNBQ2.
 - LICENSE : Clarify license (#7)
 
 - STOGEN : add stochastic parametrizations (Issue #301)
@@ -17,6 +38,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Fixed
 
+- NBQ : Fix compilation errors of the Adams-Bashforth 3 scheme (correction of `K3FAST_AB3` macros in `nbq.h`, `k3fast_qdmuv_update.h` and `k3fast_qdmw_update.h`).
+- OMEGA : Resolve vertical velocity differences in `omega.F` by making grid respiration calculation unconditional (not restricted to `#ifdef NBQ_MASS`).
+- XIOS : Fix runtime XIOS crashes by adding missing XML field definitions (`Cs_rho`, `Cs_rho_total`, `rho_surf`, `wN`) and correcting grid reference for vertical velocity `w` (from `w_3D` to `rho_3D`) in XML templates.
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
   water concentration and last index of current was wrong (Issue #349)
 - MUSTANG : fix vertical axis in sediment bed mismatch when using choice_nivsed_out 

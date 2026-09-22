@@ -140,7 +140,7 @@
           enddo
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
              do j=JstrR,JendR
                 do i=IstrR,IendR
                   vrtfast_avg(i,j)=vrtfast(i,j)
@@ -244,7 +244,7 @@
           enddo
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
              do j=JstrR,JendR
                 do i=IstrR,IendR
                   vrtfast_avg(i,j) =
@@ -353,7 +353,7 @@
           enddo
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
               do j=JstrR,JendR
                 do i=IstrR,IendR
                   vrtfast_avg(i,j) = cff *

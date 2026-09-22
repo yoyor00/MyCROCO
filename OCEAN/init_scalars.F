@@ -2072,7 +2072,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxrvfrc =',indxrvfrc
       vname(6,indxrvfrc)='lat_v lon_v                             '
       vname(7,indxrvfrc)='                                        '
 
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 
 CR      write(stdout,'(1x,A,I3)') 'indxru_nbq =',indxru_nbq
       vname(1,indxru_nbq)='ru_nbq                                 '
@@ -2128,7 +2128,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxqdmv_nbq =',indxqdmv_nbq
       vname(6,indxqdmv_nbq)='lat_v lon_v                          '
       vname(7,indxqdmv_nbq)='                                     '
 
-# endif  /* M3FAST */
+# endif  /* M3FAST || K3FAST */
 
 # ifdef TS_MIX_ISO_FILT
 
@@ -3152,7 +3152,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxMBaro+itrc-1)
        vname(7,indxMBaro+itrc-1)='                                '
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 CR      write(stdout,'(1x,A,I3)') 'indxMfast = ',indxMfast+itrc-1
        nametrc=vname(1,indxU+itrc-1)
        write(vname1,*) trim(nametrc),'_fast                       '
@@ -3402,7 +3402,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxvrtBaro)
        vname(3,indxvrtBaro)=vname3
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 CR       write(stdout,'(1x,A,I3)') 'indxvrtfast = ',indxvrtfast+itrc-1
        nametrc='vrt'
        write(vname1,*) trim(nametrc),'_fast                       '
@@ -3527,7 +3527,7 @@ CR       write(stdout,'(20x,A)') vname(1,indxekBaro)
        vname(3,indxekBaro)=vname3
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 CR       write(stdout,'(1x,A,I3)') 'indxekfast = ',indxekfast+itrc-1
        write(vname1,*) trim(nametrc),'_fast                       '
        vname(1,indxekfast)=vname1

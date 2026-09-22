@@ -133,7 +133,7 @@ C$OMP END PARALLEL
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # include "nbq.h"
 #endif
 #include "ocean2d.h"
@@ -313,7 +313,7 @@ C$OMP BARRIER
 C$OMP BARRIER
       do tile=my_first,my_last
         call set_vbc (tile)
-# if defined  BBL && !defined M3FAST
+# if defined  BBL && (!defined M3FAST && !defined K3FAST)
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN
 #  endif
@@ -615,7 +615,7 @@ C$OMP BARRIER
 !====================================================================
 !
       subroutine step2D_thread()
-
+      use croco_namelist, only: dt
 #ifdef AGRIF
       use Agrif_Util
 #endif
@@ -635,7 +635,7 @@ C$OMP BARRIER
 #endif
 #if defined BBL && defined BSTRESS_FAST
 # include "nbq.h"
-#elif ( defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST ) && defined M3FAST
+#elif ( defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST ) && (defined M3FAST || defined K3FAST)
 # include "nbq.h"
 #endif
 #if defined CVTK_DEBUG || defined  CVTK_DEBUG_PERFRST
@@ -781,7 +781,7 @@ C$OMP BARRIER
                   ! tile-processing sequence.
         if (mod(knew,2).eq.0) then
           do tile=my_first,my_last
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # if defined AGRIF && defined NBQ_CHILD_ONLY
             if (Agrif_Root()) then
               call   step2d (tile)
@@ -797,7 +797,7 @@ C$OMP BARRIER
           enddo
         else
           do tile=my_first,my_last
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # if defined AGRIF && defined NBQ_CHILD_ONLY
             if (Agrif_Root()) then
               call   step2d (tile)
@@ -822,7 +822,7 @@ C$OMP BARRIER
 #ifdef CVTK_DEBUG
 C$OMP BARRIER
 C$OMP MASTER
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
        call check_tab2d(zeta(:,:,knew),'zeta step3d_fast','r',
      &    ondevice=.TRUE.)
        call check_tab2d(ubar(:,:,knew),'ubar step3d_fast','u',
@@ -862,7 +862,7 @@ C$OMP END MASTER
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # include "nbq.h"
 #endif
 #ifdef STATIONS

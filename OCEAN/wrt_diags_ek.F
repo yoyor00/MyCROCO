@@ -234,7 +234,7 @@
 !
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxekfast
 !

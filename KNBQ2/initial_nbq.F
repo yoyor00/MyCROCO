@@ -54,7 +54,7 @@
 !
       use croco_namelist, only: dt, rho0
 # ifdef NBQ
-      use croco_namelist, only: csound_nbq
+      use croco_namelist, only: csound_nbq, visc2read_nbq
 # endif
       implicit none
       integer  Istr, Iend, Jstr, Jend
@@ -124,6 +124,10 @@
         soundspeed_nbq =csound_nbq
         soundspeed2_nbq=csound_nbq**2
 !$acc end kernels
+
+        visc2_nbq=visc2read_nbq
+        visc2v_nbq=visc2read_nbq   
+
 !
 !  Grid update time-step
 !

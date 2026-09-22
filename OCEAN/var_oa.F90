@@ -63,7 +63,7 @@
 # include "ocean2d.h"
 # include "ocean3d.h"
 # include "grid.h"
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 # include "nbq.h"
 # endif
 
@@ -93,7 +93,7 @@
          var_oa = u(i_v,j_v,k_v,nstp)-ubar(i_v,j_v,fast_indx_out)
       elseif (ivar_v.eq.2) then
          var_oa = v(i_v,j_v,k_v,nstp)-vbar(i_v,j_v,fast_indx_out)
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       elseif (ivar_v.eq.3) then
          var_oa = wz(i_v,j_v,k_v,nstp) 
 #  endif
@@ -117,12 +117,12 @@
          pst => st(tile)
          var_oa = pst%wlev_oa(v2lev_oa(lv_v))%z(ls1_v)
          pst => null()
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
       elseif (ivar_v.eq.21) then
          var_oa = rho_nbq(i_v,j_v,k_v)
 #endif
 ! Scalogram >>>
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
       elseif (ivar_v.eq.51) then
          var_oa = rho_nbq(i_v,j_v,k_v)
       elseif (ivar_v.eq.52) then

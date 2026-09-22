@@ -5,11 +5,21 @@
     "case": "ISOLITON",
     "plotphy": {
       "plotphy_script": "./TEST_CASES/ISOLITON/plot_isoliton.py",
-      "plotphy_script_input": "isoliton_his.nc",
+      "plotphy_script_input": "isoliton_his.nc"
     },
     "splitting": { "1": "1x1", "2": "2x1" },
     "patches": {},
     "check_outputs": ["isoliton_his.nc"],
-    "unsupported": ["restart", "openmp"],
+    "unsupported": ["restart", "openmp"]
   },
+  // ISOLITON_DJL with KNBQ3
+  "ISOLITON_DJL": {
+    "title": "ISOLITON DJL - KNBQ (500 x 1 x 64)",
+    "case": "ISOLITON_DJL",
+    "input_file": "croco.nml",
+    "splitting": { "1": "1x1", "2": "2x1", "4": "4x1" },
+    "patches": {},
+    "check_outputs": ["isoliton_his.nc"],
+    "unsupported": ["restart", "openmp"]
+  }
 }

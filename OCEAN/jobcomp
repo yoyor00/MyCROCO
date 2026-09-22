@@ -195,6 +195,8 @@ ls "${SOURCE}/"*.h               > /dev/null  2>&1 && \cp "${SOURCE}/"*.h   "$SC
 ls "${SOURCE}/"*.py              > /dev/null  2>&1 && \cp "${SOURCE}/"*.py   "$SCRDIR"
 ls "${SOURCE}/"Make*             > /dev/null  2>&1 && \cp "${SOURCE}/"Make* "$SCRDIR"
 ls "${SOURCE}/"amr.in            > /dev/null  2>&1 && \cp "${SOURCE}/"amr.in "$SCRDIR"
+ls "${ROOT_DIR}/"KNBQ2/*         > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"KNBQ2 "$SCRDIR"
+ls "${ROOT_DIR}/"KNBQ3/*         > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"KNBQ3 "$SCRDIR"
 ls "${AGRIF_SRC}"                > /dev/null  2>&1 && \cp -r "${AGRIF_SRC}" "$SCRDIR"
 ls "${ROOT_DIR}/"XIOS/*.F        > /dev/null  2>&1 && \cp "${ROOT_DIR}/"XIOS/*.F "$SCRDIR"
 ls "${ROOT_DIR}/"PISCES/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/* "$SCRDIR"
@@ -306,6 +308,41 @@ fi
 FFLAGS1="${CROCO_FFLAGS1-$FFLAGS1}"
 CFT1="${CROCO_CFT1-$CFT1}"
 
+# determine if KNBQ3 sources is needed
+#
+echo "Checking KNBQ3..."
+if $($CPP1 testkeys.F | grep -i -q knbq3isdefined) ; then
+        echo " => KNBQ3 activated"
+	echo "-------------------------------------"
+	echo "-------------------------------------"
+	echo "-------------------------------------"
+	echo "-------------------------------------"
+	echo "-------------------------------------"
+	echo "-------------------------------------"
+        cp KNBQ3/*  .
+        #
+        # overwrite with local files
+        #
+        ls ../*.F90   > /dev/null  2>&1 && \cp -f ../*.F90 .
+        ls ../*.F     > /dev/null  2>&1 && \cp -f ../*.F .
+        ls ../*.h     > /dev/null  2>&1 && \cp -f ../*.h .
+        ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
+        ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
+        ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
+elif [ -d KNBQ2 ]; then
+        echo " => KNBQ2 activated"
+        cp KNBQ2/*  .
+        #
+        # overwrite with local files
+        #
+        ls ../*.F90   > /dev/null  2>&1 && \cp -f ../*.F90 .
+        ls ../*.F     > /dev/null  2>&1 && \cp -f ../*.F .
+        ls ../*.h     > /dev/null  2>&1 && \cp -f ../*.h .
+        ls ../*.h90   > /dev/null  2>&1 && \cp -f ../*.h90 .
+        ls ../Make*   > /dev/null  2>&1 && \cp -f ../Make* .
+        ls ../jobcomp > /dev/null  2>&1 && \cp -f ../jobcomp .
+fi
+
 # PISCES Business
 if $($CPP1 testkeys.F | grep -i -q p2zisdefined) ; then
         echo "Simple version of PISCES is defined: copy the appropriate namelist"
@@ -333,6 +370,12 @@ if $($CPP1 testkeys.F | grep -i -q agrifisdefined) ; then
    LDFLAGS1="-LAGRIF -lagrif $LDFLAGS1"
 # we use the AGRIF Makedefs.generic definition
    cp -f Makedefs.generic.AGRIF Makedefs.generic
+# prepro Generic NBQ (depends on ../AGRIF_FixedGrids.in)
+### if $($CPP1 testkeys.F | grep -i -q kxxxisdefined) ; then
+    if $($CPP1 testkeys.F | grep -i -q kxxisdefined) ; then
+        echo " => AGRIF + KXX_kernels activated"
+        python prepro_KXX.py
+    fi 
 fi
 
 #

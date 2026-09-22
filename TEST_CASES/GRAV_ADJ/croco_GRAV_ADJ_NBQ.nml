@@ -15,7 +15,7 @@
 
 &croco_time_stepping_nbq
   csound_nbq = 10
-  visc2_nbq = 1.e-2
+  visc2read_nbq = 1.e-2
 /
 
 &croco_s_coord

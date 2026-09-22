@@ -59,7 +59,11 @@
       common /work3dnbq/ worknbq
 #  endif     
 # endif
-
+      real visc2_nbq
+      common /nbq_visc2/ visc2_nbq
+      real visc2v_nbq
+      common /test_visc2v/ visc2v_nbq
+#
 !**********************************************************************
 # ifdef NBQ
       real thetadiv_nbq(GLOBAL_2D_ARRAY,N)

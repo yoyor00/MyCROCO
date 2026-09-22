@@ -1,0 +1,22 @@
+{
+  // AgAc_KNBQ_noAGRIF - AGRIF-Acoustic test case without AGRIF
+  "AgAc_KNBQ_noAGRIF": {
+    "title": "AgAc KNBQ without AGRIF (35x45x1)",
+    "case": "AgAc_KNBQ",
+    "input_file": "croco.nml",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+      "4": "4x1"
+    },
+    "patches": {
+      "cppdefs.h": {
+        "mode": "replace",
+        "what": "#define AGRIF",
+        "by": "#undef AGRIF"
+      }
+    },
+    "check_outputs": ["AgAc_his.nc"],
+    "unsupported": ["openmp"]
+  }
+}

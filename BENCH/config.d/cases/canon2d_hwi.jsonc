@@ -1,0 +1,16 @@
+{
+  // CANON2D_HWI - Internal Wave Instability with KNBQ
+  "CANON2D_HWI": {
+    "title": "Canonical 2D HWI - KNBQ (503x1x128)",
+    "case": "CANON2D_HWI",
+    "input_file": "croco.nml",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+      "4": "4x1"
+    },
+    "patches": {},
+    "check_outputs": ["khinst_his.nc"],
+    "unsupported": ["openmp"]
+  }
+}

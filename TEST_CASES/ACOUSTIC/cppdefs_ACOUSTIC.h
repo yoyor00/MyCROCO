@@ -1,8 +1,16 @@
-# define ACOUSTIC_FORCING
+# define ACOUSTIC
 # undef  MPI
-# define NBQ
+# undef  NBQ
+# define KNBQ3
+# define KNBQ
 # ifdef NBQ
 #  undef  NBQ_PRECISE
+# endif
+# ifdef KNBQ
+#  define K3FAST_SACOUS
+#  define K3FAST_DIAGACOUS
+#  undef  K3FAST_SEDLAYERS
+#  define K3FAST_CSVISC2K
 # endif
 # undef  UV_VIS2
 # define SOLVE3D
@@ -14,7 +22,8 @@
 # define ANA_SRFLUX
 # define ANA_BTFLUX
 # define NO_FRCFILE
-# define PGF_FLAT_BOTTOM
+# undef  RVTK_DEBUG
+
 
 #include "cppdefs_dev.h"
 #include "set_global_definitions.h"

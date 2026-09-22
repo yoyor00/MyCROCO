@@ -13,7 +13,7 @@ import shutil
 import json
 
 # internal
-from ..helpers import Messaging, patch_lines, move_in_dir, run_shell_command, normalize_line
+from ..helpers import Messaging, patch_lines, move_in_dir, run_shell_command
 from .setup import AbstractCrocoSetup
 from ..config import Config
 
@@ -28,9 +28,48 @@ class JobcompCrocoConfig:
     def __init__(self, builddir: str):
         self.builddir = builddir
 
+    def cppdef_h_select_case(self, case_name: str):
+        """
+        Patch the cppdef.h to select the CASE to be used.
+        """
+
+        # progress
+        Messaging.step(f"Select case : {case_name}")
+        self.case = case_name
+
+        # set patching rules
+        rules = []
+
+        # disable REGIONAL
+        rules.append(
+            {
+                "mode": "replace",
+                "what": "#define REGIONAL        /* REGIONAL Applications */\n",
+                "by": "#undef REGIONAL        /* REGIONAL Applications */\n",
+                "descr": "Disable default REGIONAL case",
+            }
+        )
+
+        # insert the wanted one
+        rules.append(
+            {
+                "mode": "insert-after",
+                "what": "#undef REGIONAL        /* REGIONAL Applications */\n",
+                "insert": f"#define {case_name}\n",
+                "descr": f"Enabled wanted {case_name} case",
+            }
+        )
+
+        # apply
+        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
+
     def cppdef_h_set_key(self, key_name: str, status: bool):
         """
-        Force enabling or disabling some cppkeys in cppdefs.h.
+        Force enabling or disabling some cppkeys in cppdefs.h. In order to
+        be applied to all cases without having to search the in case position.
+
+        We place it just after the cases and before inclusion of cppdefs_dev.h
+        which need to have everything well defined.
 
         Note: It is necessary to put # undef before # define as some keys can be
               already defined.
@@ -45,43 +84,43 @@ class JobcompCrocoConfig:
             status_wanted = "undef"
 
         cppdefs_path = os.path.join(self.builddir, "cppdefs.h")
+        case_line_to_find = '#include "cppdefs_dev.h"'
+        if os.path.exists(cppdefs_path):
+            with open(cppdefs_path, "r") as f:
+                cppdefs_content = f.read()
+            if f"#elif defined {self.case}" in cppdefs_content:
+                case_line_to_find = f"#elif defined {self.case}"
+            elif f"#if defined {self.case}" in cppdefs_content:
+                case_line_to_find = f"#if defined {self.case}"
+            elif f"#define {self.case}" in cppdefs_content:
+                case_line_to_find = f"#define {self.case}"
 
-        # Check whether the key is mentioned at all (in either state)
-        # already, so we know whether the replace-rule below will actually
-        # do anything or whether we need to insert a fresh line instead -
-        # silently doing neither would leave the key unset.
-        with open(cppdefs_path, "r", encoding="utf-8") as f:
-            existing_lines = f.readlines()
-        key_exists = any(
-            normalize_line(line) in (f"# define {key_name}", f"# undef {key_name}")
-            for line in existing_lines
-        )
-
-        if key_exists:
-            # Change the existing status to match the wanted one, wherever
-            # the key currently is.
-            rules = [
-                {
-                    "mode": "replace",
-                    "what": f"# {status_tochange} {key_name}",
-                    "by": f"# {status_wanted} {key_name}",
-                    "descr": f"Set {key_name} to {status}",
-                }
-            ]
-            patch_lines(cppdefs_path, rules)
-            return
-
-        # cppdefs.h is always a pre-resolved, single-case file (no "#elif
-        # defined <CASE>" block to anchor on, but also no other case in the
-        # file to accidentally affect) - insert the missing key at begining
+        # First, change possible existant status to match the wanted one
+        # -------------------------------------------------------------------
+        # build the patch rule
         rules = [
             {
-                "mode": "insert-at-begin",
-                "insert": f"# {status_wanted} {key_name}",
-                "descr": f"Add missing key {key_name} = {status}",
+                "mode": "replace",
+                "what": f"# {status_tochange} {key_name}",
+                "by": f"# {status_wanted} {key_name}",
+                "descr": f"Set {key_name} to {status}",
             }
         ]
-        patch_lines(cppdefs_path, rules)
+        # apply
+        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
+        # Then, add wanted key and status in the right case place
+        # -------------------------------------------------------------------
+        mode = "insert-before" if case_line_to_find == '#include "cppdefs_dev.h"' else "insert-after"
+        rules = [
+            {
+                "mode": mode,
+                "what": case_line_to_find,
+                "insert": f"# {status_wanted} {key_name}",
+                "descr": f"Set {key_name} to {status}",
+            }
+        ]
+        # apply
+        patch_lines(os.path.join(self.builddir, "cppdefs.h"), rules)
 
     def param_h_configure_openmp_split(self, splitting: str):
         """
@@ -248,16 +287,12 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         """
         self.croco_config.cppdef_h_set_key(key, status)
 
-    def handle_variables(self, arg_vars: list, extra_vars: dict) -> dict:
+    def handle_variables(self, arg_vars: list, is_mpi: bool, extra_vars: dict) -> dict:
         """
         Apply to ops required when getting some variables on the command line.
 
         Currently consider (exemple of values):
-         - FC=gfortran : underlying compiler family, selects jobcomp's
-           --fc (which picks the FFLAGS/CPP branch).
-         - MPIF90=mpif90 : MPI compiler wrapper actually invoked to
-           compile/link, selects jobcomp's --mpif90. Only meaningful for
-           MPI variants.
+         - FC=gfortran
          - FFLAGS=-march=native
         """
         vars = {}
@@ -281,6 +316,8 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             if var_name == "FFLAGS":
                 self.fflags = self.fflags + " " + var_value
             elif var_name == "FC":
+                if is_mpi:
+                    self.mpif90 = var_value
                 self.fc = var_value
             elif var_name == "MPIF90":
                 self.mpif90 = var_value
@@ -340,7 +377,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
             "VARS",
             nargs="*",
             type=str,
-            help="Extra variable definitions, like compilers : FC=gfortran, MPIF90=mpif90.",
+            help="Extra variable definitions, like compilers : FC=gfortran.",
         )
 
         # parser
@@ -358,14 +395,18 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         with move_in_dir(self.sourcedir):
             # because this !**ù$$m script does not like getting a full path
             rel_path = os.path.relpath(self.builddir)
+            
+            # check if case requires agrif
+            agrif_option = ""
+            if hasattr(self, 'case_patches') and self.case_patches.get("agrif", False):
+                agrif_option = "agrif "
+            
             run_shell_command(
-                f"./create_config.bash -f -n {rel_path}",
+                f"./create_config.bash -f -n {rel_path} {agrif_option}",
                 capture=self.config.capture,
             )
 
-    def configure(
-        self, args: str, cppdefs_file: str = None, param_file: str = None
-    ) -> None:
+    def configure(self, args: str) -> None:
         """
         Perform the configuration.
 
@@ -374,11 +415,6 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         args: str
             Arguments on the form normally passed to the
             script which will be translated in what is needed for CROCO.
-        cppdefs_file: str
-            Optional absolute path to a pre-resolved, single-case cppdefs.h
-            to use instead of patching the master cppdefs.h.
-        param_file: str
-            Same as cppdefs_file, but for param.h.
         """
 
         Messaging.step(f"jobcomp-configure {args}")
@@ -386,19 +422,11 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
         # get options
         options = self.emulate_cmd_line_parse_args(args)
 
-        # create build dir (copies the master cppdefs.h/param.h as a baseline)
+        # create build dir
         self.create_build_dir()
 
-        # erase the just-copied master files with the pre-resolved, per-case
-        # ones if given, BEFORE any other patch is applied. Since the case is
-        # already selected in cppdefs_file, skip the case-selection patch.
-        if cppdefs_file is not None:
-            Messaging.step(f"Use pre-resolved cppdefs.h : {cppdefs_file}")
-            shutil.copyfile(cppdefs_file, os.path.join(self.builddir, "cppdefs.h"))
-
-        if param_file is not None:
-            Messaging.step(f"Use pre-resolved param.h : {param_file}")
-            shutil.copyfile(param_file, os.path.join(self.builddir, "param.h"))
+        # set case
+        self.croco_config.cppdef_h_select_case(options.with_case)
 
         # configure optimization and set flags
         self.configure_optimisation(options)
@@ -408,7 +436,7 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
 
         # handle extra variables
         extra_vars = {"FFLAGS": [], "LDFLAGS": []}
-        self.handle_variables(options.VARS, extra_vars)
+        self.handle_variables(options.VARS, self.use_mpi, extra_vars)
 
     def configure_optimisation(self, options):
         """Handle the optimisation settings."""
@@ -455,19 +483,51 @@ class JobcompCrocoSetup(AbstractCrocoSetup):
                 if key.startswith("+") or key.startswith("-"):
                     self.croco_config.cppdef_h_set_key(key[1:], status)
 
-    def make(self, jobs: int):
+    def make(self, make_jobs: str):
         """
         Perform the build with jobcomp.
         """
+        # Save the current environment to restore it later
+        old_path = os.environ.get("PATH", "")
+        
+        # Filter out conda environment bin directories from PATH to avoid conflict 
+        # with system/module compilers (e.g. gfortran 7.5.0)
+        path_dirs = old_path.split(os.pathsep)
+        cleaned_dirs = []
+        for d in path_dirs:
+            is_conda_path = False
+            if "conda" in d.lower() or "anaconda" in d.lower() or "miniconda" in d.lower():
+                if d.endswith("/bin") or d.endswith("/condabin"):
+                    is_conda_path = True
+            if not is_conda_path:
+                cleaned_dirs.append(d)
+        
+        # Also temporarily remove any compiler environment variables pointing to conda paths
+        saved_vars = {}
+        for var in ["CC", "FC", "CXX", "LD", "LDFLAGS", "CFLAGS", "FFLAGS"]:
+            if var in os.environ:
+                val = os.environ[var]
+                if "conda" in val.lower() or "anaconda" in val.lower() or "miniconda" in val.lower():
+                    saved_vars[var] = val
+                    del os.environ[var]
 
-        # move in dir & call jobcomp
-        with move_in_dir(self.builddir):
-            run_shell_command(
-                "./jobcomp --fc %s --mpif90 %s --fflags '%s' --jobs %s"
-                % (self.fc, self.mpif90, self.fflags, jobs),
-                logfilename="jobcomp.log",
-                capture=self.config.capture,
-            )
+        os.environ["PATH"] = os.pathsep.join(cleaned_dirs)
+
+        try:
+            # move in dir & call jobcomp
+            with move_in_dir(self.builddir):
+                run_shell_command(
+                    "./jobcomp --fc %s --mpif90 %s --fflags '%s' --jobs %s"
+                    % (self.fc, self.mpif90, self.fflags, self.config.make_jobs),
+                    logfilename="jobcomp.log",
+                    capture=self.config.capture,
+                )
+        finally:
+            # Restore original environment
+            os.environ["PATH"] = old_path
+            for var, val in saved_vars.items():
+                os.environ[var] = val
+
 
     def copy_config(
         self, refdir_case: str, case_name: str, patches_and_keys: dict

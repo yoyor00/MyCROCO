@@ -90,7 +90,7 @@
 # if defined DIAGNOSTICS_BARO
                 ekBaro_avg(i,j,k)=ekBaro(i,j,k)
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
                 ekfast_avg(i,j,k)=ekfast(i,j,k)
 # endif
               enddo
@@ -136,7 +136,7 @@
      &                      ekBaro_avg(i,j,k) +
      &                      ekBaro(i,j,k)
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
                   ekfast_avg(i,j,k) =
      &                      ekfast_avg(i,j,k) +
      &                      ekfast(i,j,k)
@@ -207,7 +207,7 @@
      &                       ( ekBaro_avg(i,j,k) +
      &                         ekBaro(i,j,k) )
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
                   ekfast_avg(i,j,k) = cff *
      &                       ( ekfast_avg(i,j,k) +
      &                         ekfast(i,j,k) )

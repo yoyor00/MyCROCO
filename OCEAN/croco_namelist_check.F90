@@ -102,9 +102,11 @@ contains
             'IGW', &
             'INNERSHELF', 'INNERSHELF_EKMAN', &
             'INTERNAL', &
-            'ISOLITON', &
+            'ISOLITON', 'ISOLITON_DJL', &
             'ANA_JET', &
             'KH_INST', 'KH_INST3D', 'KH_INSTY', &
+            'CANON2D_KHI', 'CANON2D_TCI', 'CANON2D_HWI', &
+            'AgAc_KNBQ', 'AgAc_KAGRIF', 'AgAc_KABGRIF', &
             'KILPATRICK', &
             'MOVING_BATHY', &
             'OVERFLOW', &
@@ -191,7 +193,7 @@ contains
    !---------------------------------------------------------------------
    subroutine check_time_stepping_nbq(ierr)
       use param, ONLY: stdout
-      use croco_namelist, ONLY: csound_nbq, visc2_nbq
+      use croco_namelist, ONLY: csound_nbq, visc2read_nbq
 #  if defined MPI
       use scalars, ONLY: mynode
 #  endif
@@ -205,9 +207,9 @@ contains
          ierr = ierr + 1
       end if
 
-      if (visc2_nbq < 0.0) then
+      if (visc2read_nbq < 0.0) then
          MPI_master_only write (stdout, '(a,f12.4,a)') &
-            'Error - NBQ bulk viscosity visc2_nbq = ', visc2_nbq, &
+            'Error - NBQ bulk viscosity visc2read_nbq = ', visc2read_nbq, &
             ' must be positive.'
          ierr = ierr + 1
       end if

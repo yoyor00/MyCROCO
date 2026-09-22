@@ -182,7 +182,7 @@
       parameter (indxHm=5)
 #endif
 #ifdef SOLVE3D
-#  ifdef M3FAST_HIS
+#  if defined M3FAST_HIS || defined K3FAST_HIS
       integer indxRnbq, indxUnbq, indxVnbq, indxWnbq, indxCnbq
       parameter  (indxUnbq=6, indxVnbq=7, indxWnbq=8,
      &  indxCnbq=9, indxRnbq=10)
@@ -414,7 +414,7 @@
       integer indxMBaro
       parameter (indxMBaro=indxMrate+2)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       integer indxMfast
       parameter (indxMfast=indxMrate+4)
 #  endif
@@ -441,7 +441,7 @@
       integer indxvrtBaro
       parameter (indxvrtBaro=indxvrtDrag+1)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       integer indxvrtfast
       parameter (indxvrtfast=indxvrtDrag+2)
 #  endif
@@ -469,7 +469,7 @@
       integer indxekBaro
       parameter (indxekBaro=indxekDrag+1)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       integer indxekfast
       parameter (indxekfast=indxekDrag+2)
 #  endif
@@ -686,7 +686,7 @@
 # ifdef TS_MIX_ISO_FILT
       integer indxdRdx,indxdRde
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       integer indxru_nbq,indxrv_nbq
       integer indxru_nbq_avg2,indxrv_nbq_avg2
       integer indxqdmu_nbq,indxqdmv_nbq
@@ -1071,7 +1071,7 @@
 #  endif
       integer rstTke,rstGls
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  if defined LMD_MIXING || defined GLS_MIXING
       integer rstBustr, rstBvstr
 #  endif
@@ -1082,11 +1082,11 @@
 #endif
 #ifdef EXACT_RESTART
       integer rstrufrc,rstrvfrc
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       integer rstru_nbq,rstrv_nbq
       integer rstru_nbq_avg2,rstrv_nbq_avg2
       integer rstqdmu_nbq,rstqdmv_nbq
-# endif  /* M3FAST */
+# endif  /* M3FAST || K3FAST */
 # ifdef TS_MIX_ISO_FILT
       integer rstdRdx,rstdRde
 # endif
@@ -1214,7 +1214,7 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diaMBaro(2)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diaMfast(2)
 #  endif
 #  ifdef MRL_WCI
@@ -1233,7 +1233,7 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro(2)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diags_vrtfast(2)
 #  endif
 # endif
@@ -1247,7 +1247,7 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro(2)
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diags_ekfast(2)
 #  endif
 #  ifdef DIAGNOSTICS_KE_MLD
@@ -1421,7 +1421,7 @@
 #   ifdef DIAGNOSTICS_BARO
      &      , diaMBaro_avg(2)
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
      &      , diaMfast_avg(2)
 #   endif
 #  endif
@@ -1438,7 +1438,7 @@
 #   ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg(2)
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
      &      , diags_vrtfast_avg(2)
 #   endif
 #  endif
@@ -1456,7 +1456,7 @@
 #   ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg(2)
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
      &      , diags_ekfast_avg(2)
 #   endif
 #  endif
@@ -1621,18 +1621,18 @@
 #  endif
      &      , rstTke,rstGls
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  if defined GLS_MIXING || defined LMD_MIXING
      &      , rstBustr,rstBvstr
 #  endif
 # endif
 # ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , rstru_nbq,rstrv_nbq
      &      , rstru_nbq_avg2,rstrv_nbq_avg2
      &      , rstqdmu_nbq,rstqdmv_nbq
-#  endif  /* M3FAST */
+#  endif  /* M3FAST || K3FAST */
 #  ifdef TS_MIX_ISO_FILT
      &      , rstdRdx,rstdRde
 #  endif
@@ -1756,7 +1756,7 @@
 # ifdef DIAGNOSTICS_BARO
      &      , diaMBaro
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
      &      , diaMfast
 # endif
 # ifdef MRL_WCI
@@ -1774,7 +1774,7 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diaMBaro_avg
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diaMfast_avg
 #  endif
 #  ifdef MRL_WCI
@@ -1795,7 +1795,7 @@
 # ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
      &      , diags_vrtfast
 # endif
 # ifdef AVERAGES
@@ -1808,7 +1808,7 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diags_vrtBaro_avg
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diags_vrtfast_avg
 #  endif
 # endif
@@ -1823,7 +1823,7 @@
 # ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
      &      , diags_ekfast
 # endif
 # ifdef AVERAGES
@@ -1836,7 +1836,7 @@
 #  ifdef DIAGNOSTICS_BARO
      &      , diags_ekBaro_avg
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
      &      , diags_ekfast_avg
 #  endif
 # endif

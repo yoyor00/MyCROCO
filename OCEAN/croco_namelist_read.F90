@@ -99,8 +99,8 @@ contains
       namelist /croco_history/ ldefhis, nwrt, nrpfhis, hisname
       namelist /croco_initial/ nrrec, ininame
       namelist /croco_restart/ nrst, nrpfrst, rstname
-#ifdef NBQ
-      namelist /croco_time_stepping_nbq/ csound_nbq, visc2_nbq
+#if defined NBQ || defined K3FAST
+      namelist /croco_time_stepping_nbq/ csound_nbq, visc2read_nbq
 #endif
 #ifdef SOLVE3D
       namelist /croco_s_coord/ theta_s, theta_b, hc
@@ -705,7 +705,9 @@ contains
          end if
       end if
 
-#ifdef NBQ
+
+#if defined NBQ || defined K3FAST      
+
       ! --- croco_time_stepping_nbq (mandatory if NBQ) ---
       call check_nml_presence(nmlunit, "croco_time_stepping_nbq", .true., found, ierr)
       if (found) then

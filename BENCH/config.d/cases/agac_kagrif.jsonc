@@ -1,0 +1,17 @@
+{
+  // AgAc_KAGRIF - AGRIF-Acoustic test case with KAGRIF
+  "AgAc_KAGRIF": {
+    "title": "AgAc KAGRIF with AGRIF (35x45x1)",
+    "case": "AgAc_KAGRIF",
+    "input_file": "croco.nml",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+    },
+    "patches": {
+      "agrif": true
+    },
+    "check_outputs": ["AgAc_his.nc"],
+    "unsupported": ["openmp"]
+  }
+}

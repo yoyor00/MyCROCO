@@ -231,7 +231,7 @@
      &                       + MBaro(i  ,j+1,k,2) * work2d2(i,j+1)
      &                      )
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
             ekfast(i,j,k) = 0.5 * (
      &                         Mfast(i  ,j  ,k,1) * work2d(i  ,j)
      &                       + Mfast(i+1,j  ,k,1) * work2d(i+1,j)

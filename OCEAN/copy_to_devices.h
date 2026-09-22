@@ -706,7 +706,7 @@
   || defined GLS_MIXING
 #endif
 #ifdef EXACT_RESTART
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  ifdef TS_MIX_ISO_FILT
 #  else
 #  endif
@@ -781,7 +781,7 @@
 # endif
 # if defined GLS_MIXING
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 # endif
 # ifdef SEDIMENT
 !$acc&, rstSed
@@ -839,7 +839,7 @@
 #  ifdef DIAGNOSTICS_BARO
 !$acc&, diaMBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !$acc&, diaMfast
 #  endif
 #  ifdef MRL_WCI
@@ -856,7 +856,7 @@
 #  ifdef DIAGNOSTICS_BARO
 !$acc&, diags_vrtBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !$acc&, diags_vrtfast
 #  endif
 # endif
@@ -868,7 +868,7 @@
 #  ifdef DIAGNOSTICS_BARO
 !$acc&, diags_ekBaro
 #  endif
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !$acc&, diags_ekfast
 #  endif
 #  ifdef DIAGNOSTICS_KE_MLD
@@ -963,7 +963,7 @@
 #   ifdef DIAGNOSTICS_BARO
 !$acc&, diaMBaro_avg
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 !$acc&, diaMfast_avg
 #   endif
 #  endif
@@ -975,7 +975,7 @@
 #   ifdef DIAGNOSTICS_BARO
 !$acc&, diags_vrtBaro_avg
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 !$acc&, diags_vrtfast_avg
 #   endif
 #  endif
@@ -987,7 +987,7 @@
 #   ifdef DIAGNOSTICS_BARO
 !$acc&, diags_ekBaro_avg
 #   endif
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
 !$acc&, diags_ekfast_avg
 #   endif
 #   ifdef DIAGNOSTICS_KE_MLD
@@ -1104,7 +1104,7 @@
 #ifdef SOLVE3D
 # if defined GLS_MIXING
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 # endif
 # ifdef EXACT_RESTART
 # endif
@@ -1440,7 +1440,7 @@
 # endif
 # undef GLOBAL_1D_ETA
 #endif
-#if defined M3FAST && (defined NBQCLIMATOLOGY || \
+#if (defined M3FAST || defined K3FAST) && (defined NBQCLIMATOLOGY || \
                    (defined AGRIF && !defined NBQ_FRC_BRY))
 !$acc&, unbqclm
 !$acc&, vnbqclm
@@ -1451,7 +1451,7 @@
 #endif
 
 !nbq.h
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 !$acc&, soundspeed_nbq
 !$acc&, soundspeed2_nbq
 !$acc&, qdmu_nbq
@@ -1557,7 +1557,7 @@
 # ifdef NBQ_NUDGING
 !$acc&, NBQnudgcof
 # endif
-#endif /* M3FAST */
+#endif /* M3FAST || K3FAST */
 
 !sources.h
 #if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
@@ -1811,7 +1811,7 @@
 !$acc&, warbry_north_dt
 # endif
 #endif  /* WKB_WWAVE */
-#if defined M3FAST && defined NBQ_FRC_BRY
+#if (defined M3FAST || defined K3FAST) && defined NBQ_FRC_BRY
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
 !$acc&, unbqbry_west
 !$acc&, vnbqbry_west
@@ -1844,7 +1844,7 @@
 !$acc&, rnbqbry_north
 #  endif
 # endif
-#endif /* M3FAST */
+#endif /* M3FAST || K3FAST */
 #if defined NBQ && (defined W_FRC_BRY || defined AGRIF )
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
 !$acc&, wbry_west

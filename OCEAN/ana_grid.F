@@ -100,6 +100,10 @@ C$    integer omp_get_thread_num
                      depth=256.
                      f0=0.
                      beta=0.
+      case ('CANON2D_KHI', 'CANON2D_TCI', 'CANON2D_HWI')
+                     depth=2.
+                     f0=0.
+                     beta=0.
       case ('GRAV_ADJ')
 #  ifdef NBQ
                      depth=0.3
@@ -108,12 +112,16 @@ C$    integer omp_get_thread_num
 #  endif
                      f0=0.
                      beta=0.
-      case ('ISOLITON')
+      case ('ISOLITON', 'ISOLITON_DJL')
                      depth=0.29 ! Horn et al. (2001)
                      f0=0.
                      beta=0.
       case ('ACOUSTIC')
                      depth=128.
+                     f0=0.
+                     beta=0.
+      case ('AgAc', 'AgAc_KNBQ', 'AgAc_KAGRIF')
+                     depth=80.
                      f0=0.
                      beta=0.
       case ('INNERSHELF', 'INNERSHELF_EKMAN')
@@ -296,9 +304,21 @@ C$    integer omp_get_thread_num
       case ('KH_INST', 'KH_INSTY', 'KH_INST3D')
                      Length_XI =256.0
                      Length_ETA=Length_ETA_ISO_GRID
+      case ('CANON2D_KHI')
+                     Length_XI =2.
+                     Length_ETA=Length_ETA_ISO_GRID
+      case ('CANON2D_HWI')
+                     Length_XI =2.*pi/(4./3.)
+                     Length_ETA=Length_ETA_ISO_GRID
+      case ('CANON2D_TCI')
+                     Length_XI =2.*pi/0.8
+                     Length_ETA=Length_ETA_ISO_GRID
       case ('ACOUSTIC')
                      Length_XI =128.0
                      Length_ETA=Length_ETA_ISO_GRID
+      case ('AgAc', 'AgAc_KNBQ', 'AgAc_KAGRIF')
+                     Length_XI =80.0
+                     Length_ETA=80.0
       case ('GRAV_ADJ')
 #  ifdef NBQ
                      Length_XI =3.0
@@ -308,6 +328,9 @@ C$    integer omp_get_thread_num
                      Length_ETA=Length_ETA_ISO_GRID
       case ('ISOLITON')
                      Length_XI =6.0
+                     Length_ETA=Length_ETA_ISO_GRID
+      case ('ISOLITON_DJL')
+                     Length_XI =25.e+3
                      Length_ETA=Length_ETA_ISO_GRID
       case ('INNERSHELF', 'INNERSHELF_EKMAN')
                      Length_XI =200.0e+3
@@ -555,8 +578,10 @@ C$    integer omp_get_thread_num
       select case (trim(testcase_name))
       case ('BASIN', 'EQUATOR', 'GRAV_ADJ', 'SOLITON', 'ISOLITON',
      &      'KH_INST', 'KH_INSTY', 'KH_INST3D',
+     &      'CANON2D_KHI', 'CANON2D_TCI', 'CANON2D_HWI',
      &      'TS_HADV_TEST', 'TS_HADV_TEST_DIAG', 'TS_HADV_TEST_ROT',
-     &      'TS_HADV_TEST_PER', 'ACOUSTIC', 'JET', 'ANA_JET', 'TANK', 'TANKY',
+     &      'TS_HADV_TEST_PER', 'ACOUSTIC', 'AgAc', 'AgAc_KNBQ',
+     &	    'AgAc_KAGRIF', 'JET', 'ANA_JET', 'TANK', 'TANKY',
      &      'SC_KATO_PHILLIPS',
      &      'SC_WILLIS_DEARDORFF',
      &      'SC_DIURNAL_CYCLE',
@@ -605,7 +630,8 @@ C$    integer omp_get_thread_num
           cff=dy*float(j)
 # endif
           if (cff.gt.Length_ETA/2.) cff=Length_ETA-cff+dy
-          cff=min(depth,84.5+66.526*tanh(0.00015*(cff-0.125*Length_ETA)))
+          cff=min(depth,84.5+66.526*tanh(
+     &          0.00015*(cff-0.125*Length_ETA)))
           do i=IstrR,IendR
             h(i,j)=cff
           enddo

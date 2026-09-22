@@ -221,7 +221,7 @@
      &                      record,ivar,type)
 # endif
 
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxvrtfast
 !

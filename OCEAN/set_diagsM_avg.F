@@ -144,7 +144,7 @@
      &                     ( cff1*MBaro_avg(i,j,k,iflux) +
      &                            MBaro(i,j,k,iflux) )
 #  endif
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
                 Mfast_avg(i,j,k,iflux) = cff *
      &                     ( cff1*Mfast_avg(i,j,k,iflux) +
      &                            Mfast(i,j,k,iflux) )

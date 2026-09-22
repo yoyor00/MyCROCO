@@ -121,16 +121,25 @@
               wrk(i,j)=exp(-5.d-5*float(ibnd)*grdmax)       ! exp. profile
             endif
           else
-            wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
-!           wrk(i,j)=float(isp-ibnd)/float(isp)             ! linear profile
+            if (isp .gt. 0) then
+              wrk(i,j)=.5*(cos(pi*float(ibnd)/float(isp))+1.) ! cosine profile
+!           wrk(i,j)=float(isp-ibnd)/float(isp)               ! linear profile
+            else
+              wrk(i,j)=0.
+            endif
           endif
 #ifdef OPENACCNUMERIC
           wrk(i,j)=real(wrk(i,j), kind=4)
 #endif
 
 # ifdef SPONGE_SED
-          if (i.gt.0 .and. j.gt.0)
-     &      sed_sponge(i,j)=float(ibnd)/float(isp)
+          if (i.gt.0 .and. j.gt.0) then
+            if (isp .gt. 0) then
+              sed_sponge(i,j)=float(ibnd)/float(isp)
+            else
+              sed_sponge(i,j)=0.
+            endif
+          endif
 # endif
         enddo
       enddo

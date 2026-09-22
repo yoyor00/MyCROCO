@@ -37,7 +37,7 @@
 # ifdef MRL_WCI
 #  include "forces.h"
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  include "nbq.h"
 # endif
 # if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
@@ -69,7 +69,7 @@
         enddo
         do k=1,N
           do i=IstrU,Iend
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
             u(i,j,k,nnew)=u(i,j,k,nnew)+DC(i,0)*(ru(i,j,k)+
      &                                           ru_nbq_avg2(i,j,k))
 
@@ -97,7 +97,7 @@
           enddo
           do k=1,N
             do i=Istr,Iend
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
               v(i,j,k,nnew)=v(i,j,k,nnew)+DC(i,0)*(rv(i,j,k)+
      &                                             rv_nbq_avg2(i,j,k))
 

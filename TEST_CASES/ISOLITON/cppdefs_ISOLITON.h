@@ -22,4 +22,15 @@
 
 
 #include "cppdefs_dev.h"
+
+/*
+! Retour au schema de couplage stable SCH0 et desactivation de UV_VADV_WENO5_INTC6
+! specifiquement pour ISOLITON afin d'eviter l'explosion (blow-up) du modele.
+*/
+# undef  UV_VADV_WENO5_INTC6
+# undef  K3FAST_COUPLING_SCH1
+# undef  K3FAST_COUPLINGW_SCH1
+# define K3FAST_COUPLING_SCH0
+# define K3FAST_COUPLINGW_SCH0
+
 #include "set_global_definitions.h"

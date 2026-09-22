@@ -97,6 +97,14 @@
 # if defined SEDIMENT && defined AGRIF
       integer, parameter :: Agrif_lev_sedim = 0
 # endif
+#ifdef AGRIF
+# ifdef KXX
+      !integer,parameter :: kxxnbmax = 2
+      integer :: kxxnb=0
+      character(len=10),dimension( 1000 ) :: tabkernel
+      common /kxx_param/kxxnb,tabkernel
+# endif
+# endif
 
 #endif /* SOLVE3D */
 

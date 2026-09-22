@@ -131,7 +131,7 @@
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 #  include "nbq.h"
 # endif
 
@@ -162,7 +162,7 @@
       external hinterp, updateh, updatermask
       external initzeta,initubar,initvbar,inith
       external initu,initv,initt
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
        external initunbq, initvnbq
 #  ifdef NBQ
        external initwz, initwnbq, initrhonbq
@@ -412,7 +412,7 @@ C$OMP BARRIER
         call Agrif_Init_Variable(uid,procname=initu)
         call Agrif_Init_Variable(vid,procname=initv)
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
         call Agrif_Set_bc(qdmunbqid,(/0,0/))
         call Agrif_Set_bc(qdmvnbqid,(/0,0/))
         call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_linear,
@@ -578,7 +578,7 @@ CR      write(*,*)  ' -5' MYID
 !  Set initial Non-boussinesq variables - Part I
 !----------------------------------------------------------------------
 !
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,1)
@@ -606,7 +606,7 @@ CR      write(*,*)  ' -3' MYID
 !  Set initial Non-boussinesq density field: rhobar_nbq - Part II
 !----------------------------------------------------------------------
 !
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,2)
@@ -782,7 +782,7 @@ CR      write(*,*) ' -1' MYID
 !  Set initial Non-boussinesq variables PART III
 !----------------------------------------------------------------------
 !
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call initial_nbq(tile,3)
@@ -839,7 +839,7 @@ CR      write(*,*) '  0' MYID
 
                 T_south(0:LOCALLM+1,0:1,1:N,4,1:NT)=
      &                t(0:LOCALLM+1,0:1,1:N,1,1:NT)
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
                 Unbq_south(0:LOCALLM+1,0:0,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,0:0,1:N)
 
@@ -871,7 +871,7 @@ CR      write(*,*) '  0' MYID
                 T_north(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,4,1:NT)=
      &                t(0:LOCALLM+1,LOCALMM:LOCALMM+1,1:N,1,1:NT)
 
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
                 Unbq_north(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N,2)=
      &            qdmu_nbq(0:LOCALLM+1,LOCALMM+1:LOCALMM+1,1:N)
 
@@ -902,7 +902,7 @@ CR      write(*,*) '  0' MYID
 
                 T_west(0:1,0:LOCALMM+1,1:N,4,1:NT)=
      &               t(0:1,0:LOCALMM+1,1:N,1,1:NT)
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
                 Unbq_west(1:1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(1:1,0:LOCALMM+1,1:N)
 
@@ -933,7 +933,7 @@ CR      write(*,*) '  0' MYID
 
                 T_east(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,4,1:NT)=
      &               t(LOCALLM:LOCALLM+1,0:LOCALMM+1,1:N,1,1:NT)
-#   ifdef M3FAST
+#   if defined M3FAST || defined K3FAST
                 Unbq_east(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N,2)=
      &           qdmu_nbq(LOCALLM+1:LOCALLM+1,0:LOCALMM+1,1:N)
 
@@ -1388,7 +1388,7 @@ CR      write(*,*) '  0' MYID
      &update=Agrif_Update_Average)
 # endif
 
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
 ! ----------------------  unbq / vnbq  ---------------------
 
       call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
@@ -1508,7 +1508,7 @@ CR      write(*,*) '  0' MYID
 #   endif
 
 #  endif /* NBQ */
-# endif /* M3FAST */
+# endif /* M3FAST || K3FAST */
 
 ! ====================   DECLARE VARIABLES   =====================
 
@@ -1602,7 +1602,7 @@ CR      write(*,*) '  0' MYID
      &   (/'x','y','N'/),(/i1t,j1v,1/),
      &   (/i2t,j2v,N/),vspongeid)
 
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
         call Agrif_Declare_Variable((/1,2,0/),(/1,1,0/),
      &   (/'x','y','N'/),(/i1u,j1t,1/),
      &   (/i2u,j2t,N/),qdmunbqid)
@@ -1627,7 +1627,7 @@ CR      write(*,*) '  0' MYID
      &   (/'x','y','N'/),(/i1t,j1t,0/),
      &   (/i2t,j2t,N/),wspongeid)
 #  endif
-# endif /* M3FAST */
+# endif /* M3FAST || K3FAST */
 
 ! ====================   SET BC / INTERP  =====================
 
@@ -1702,7 +1702,7 @@ CR      write(*,*) '  0' MYID
         call Agrif_Set_bc(umask_wetid,(/0,0/))
         call Agrif_Set_bc(vmask_wetid,(/0,0/))
 # endif
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
         call Agrif_Set_bc(qdmunbqid,(/0,0/))
         call Agrif_Set_bc(qdmvnbqid,(/0,0/))
 #  ifdef NBQ
@@ -1741,7 +1741,7 @@ CR      write(*,*) '  0' MYID
      &                                    interp2=Agrif_ppm)
         call Agrif_Set_bcinterp(vspongeid,interp1=Agrif_ppm,
      &                                    interp2=Agrif_lagrange)
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
         call Agrif_Set_bcinterp(qdmunbqid,interp1=Agrif_lagrange,
      &                                    interp2=Agrif_ppm)
         call Agrif_Set_bcinterp(qdmvnbqid,interp1=Agrif_ppm,
@@ -2785,7 +2785,7 @@ CR      write(*,*) '  0' MYID
 
 !======================================================================
 
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       subroutine initunbq(tabres,i1,i2,j1,j2,k1,k2,before)
 
       implicit none
@@ -2881,7 +2881,7 @@ CR      write(*,*) '  0' MYID
       end
 
 #  endif /* NBQ */
-# endif /* M3FAST */
+# endif /* M3FAST || K3FAST */
 
 !======================================================================
 

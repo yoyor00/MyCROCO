@@ -818,7 +818,7 @@ C$OMP END MASTER
 !  Set initial non-Boussinesq (or fast 3D) parameters and variables
 !----------------------------------------------------------------------
 !
-#ifdef M3FAST
+#if defined M3FAST || defined K3FAST
 # ifdef NBQ_MASS
 !
 ! Re-evaluate Hz and Huon,Hvom using
@@ -1033,9 +1033,9 @@ CR      write(*,*) '  0' MYID
                                 !      > MPI finalize done by XIOS
       call xios_finalize()      !      > if OASIS, finalize is done by XIOS
                                 !      > if AGRIF : done using iom_context_finalize
-!!!#   if !defined AGRIF
-!!!      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
-!!!#   endif
+#   if !defined AGRIF
+      call MPI_Finalize (ierr)  !       if No AGRIF : MPI_Finalize is needed
+#   endif
 
 #  if !defined OA_COUPLING && !defined OW_COUPLING  && !defined AGRIF
        call MPI_Finalize (ierr)      !  if No coupling + No AGRIF : MPI_Finalize is needed

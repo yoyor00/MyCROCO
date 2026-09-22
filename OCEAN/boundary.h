@@ -344,7 +344,7 @@
 #endif  /* WKB_WWAVE */
 
 
-#if defined M3FAST && defined NBQ_FRC_BRY
+#if (defined M3FAST || defined K3FAST) && defined NBQ_FRC_BRY
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
       real unbqbry_west(GLOBAL_1D_ARRAYETA,N),
      &     vnbqbry_west(GLOBAL_1D_ARRAYETA,N)
@@ -393,7 +393,7 @@
      &                        rnbqbry_north
 #  endif
 # endif
-#endif /* M3FAST */
+#endif /* M3FAST || K3FAST */
 
 #if defined NBQ && (defined W_FRC_BRY || defined AGRIF )
 # if defined OBC_WEST || defined AGRIF_OBC_WEST

@@ -209,7 +209,7 @@
      &                      vname(1,indxMBaro+itrc-1),
      &                      record,ivar,type)
 # endif
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 !
 ! indxMfast
 !

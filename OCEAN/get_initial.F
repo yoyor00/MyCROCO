@@ -40,7 +40,7 @@
 
 #if defined EXACT_RESTART
 # include "coupling.h"
-# if defined M3FAST
+# if defined M3FAST || defined K3FAST
 #  include "nbq.h"
 # endif
 #endif
@@ -1082,7 +1082,7 @@
 # endif  /* GLS_MIXING */
 
 # if defined LMD_MIXING
-#  if defined M3FAST
+#  if defined M3FAST || defined K3FAST
 !
 !  bustr
 !
@@ -1156,7 +1156,7 @@
      &                                  , ininame(1:lstr)
         endif
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !
 ! ru_nbq.
 !
@@ -1272,7 +1272,7 @@
      &                                 ,ininame(1:lstr)
       endif
 
-#  endif  /* M3FAST */
+#  endif  /* M3FAST || K3FAST */
 
 #  ifdef TS_MIX_ISO_FILT
 !

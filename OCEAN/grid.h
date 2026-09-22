@@ -229,8 +229,9 @@
       common /reduc_u/ureduc
       common /reduc_v/vreduc
 #endif
-      real zob(GLOBAL_2D_ARRAY)
-      common /Z0B_VAR/zob
+      real zob(GLOBAL_2D_ARRAY),maxvalzob
+      common /Z0B_VAR/zob,maxvalzob
+	
 
 #if defined UV_COR_NT || defined CROCO_QH
       real e(GLOBAL_2D_ARRAY)

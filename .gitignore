@@ -24,3 +24,13 @@ OCEAN.bak/cpl_prism_getlistvals.F
 .venv
 BENCH/libs/__pycache__
 __pycache__
+
+# Build artifacts
+*.exe
+!KNBQ3/common2device.exe
+*.o
+*.mod
+*.a
+*.so
+__pycache__/
+*.pyc

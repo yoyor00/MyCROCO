@@ -52,6 +52,9 @@
 # include "grid.h"
 # include "ocean2d.h"
 # include "scalars.h"
+# if defined K3FAST_SACOUS || defined CONVECT || defined NBQ
+#  include "nbq.h"
+# endif
       integer Istr,Iend,Jstr,Jend, i,j
       real fac, x, y, x0, y0
       real cff, cff1, cff2, cff3
@@ -85,8 +88,48 @@
 !----------------------------------------------------------------------
 !
       if (nrrec.eq.0) then
+# ifdef K3FAST_SACOUS
+        sacous_nbq = -1
+        period_exp = 1./50./2.
+        for_a_exp  = 0.5
+        amp_exp    = 1.e-4
+        hmax_exp   = 128.
+        dg_exp     = 2.
+        time_nbq   = 0. 
+        rx_exp     = 2. 
+        ry_exp     = 2. 
+        rz_exp     = 2.
+# endif
 !
         select case (trim(testcase_name))
+        case ('AgAc', 'AgAc_KNBQ', 'AgAc_KAGRIF')
+          ETA0=0.D0
+          Lt=10.
+          do j=JR_RANGE
+            do i=IR_RANGE
+              zeta(i,j,1)=ETA0*cos(pi*xr(i,j)/Lt)
+              ubar(i,j,1)=0.
+              vbar(i,j,1)=0.
+              zeta(i,j,2)=zeta(i,j,1)
+              ubar(i,j,2)=ubar(i,j,1)
+              vbar(i,j,2)=vbar(i,j,1)
+            enddo
+          enddo
+
+#  ifdef K3FAST_SACOUS
+          if (nrrec.eq.0) then
+            period_exp = 1./25.
+            for_a_exp  = 2.D0
+            amp_exp    = 1.e-6
+            hmax_exp   = 80.
+            dg_exp     = 2.
+            time_nbq   = 0. 
+            rx_exp     = 4. 
+            ry_exp     = 2. 
+            rz_exp     = 2.
+          endif
+#  endif
+
         case ('SOLITON')
 #  ifdef AGRIF
           if (Agrif_Root()) then
@@ -95,8 +138,8 @@
             y0=el/2.
 #  ifdef AGRIF
           else
-            x0=2.*Agrif_Parent_xl/3.
-            y0=Agrif_Parent_el/2.
+            x0=2.*Agrif_Parent(xl)/3.
+            y0=Agrif_Parent(el)/2.
           endif
 #  endif
           cff1=0.395
@@ -534,6 +577,58 @@
               enddo
             enddo
           enddo
+
+        case ('CANON2D_KHI')
+          du     = 1.0
+          hu0    = 0.1
+          eps3D  = 0.
+!
+!$acc loop private (hint,hintu)
+          do j=JR_RANGE
+            do i=IU_RANGE
+              depth=h(i,j)
+              zu0=-0.5*depth
+              hup0=0.15*depth
+              hint = 0.
+              hintu = 0.
+              do k=1,N
+                u(i,j,k,1)  = du*tanh((z_r(1,1,k)-zu0)/hu0)
+                u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *
+     &                        (1. -tanh((z_r(1,1,k)-zu0
+     &                    +depth/10.*sin(2.*pi/xl*xr(i,j))
+     &                        )/hup0)**2.)
+                u(i,j,k,1)  = u(i,j,k,1) + 0.01*du *
+     &                        (1. -tanh((z_r(1,1,k)-zu0
+     &                    -depth/10.*cos(2.*pi/xl*xr(i,j))
+     &                        )/hup0)**2.)
+                u(i,j,k,2)  = u(i,j,k,1)
+                hintu = hintu + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+     &                            * u(i,j,k,1)
+                hint = hint   + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+              enddo
+              hintu = hintu / hint
+              do k=1,N
+                  u(i,j,k,1) = u(i,j,k,1) - hintu
+                  u(i,j,k,2) = u(i,j,k,1)
+              enddo
+              ubar(i,j,:) = 0.
+            enddo
+          enddo
+          do j=JR_RANGE
+            do i=IR_RANGE
+              depth=h(i,j)
+              zu0=-0.5*depth
+              hup0=0.15*depth
+              do k=1,N
+                v(i,j,k,1)  = 0.
+                v(i,j,k,2)  = 0.
+#   ifdef NBQ
+                wz(i,j,k,1) = 0.
+                wz(i,j,k,2) = 0.
+#   endif
+              enddo
+            enddo
+          enddo
 #   ifdef NBQ
           do j=JR_RANGE
             do i=IR_RANGE
@@ -739,7 +834,7 @@
           enddo
 # endif /* TEMPERATURE */
 
-        case ('TANK', 'TANKY')
+        case ('TANK', 'TANKY', 'AgAc', 'AgAc_KNBQ', 'AgAc_KAGRIF')
 # ifdef TEMPERATURE
           do k=1,N
             do j=JR_RANGE
@@ -809,6 +904,74 @@
               enddo
             enddo
           enddo
+
+        case ('CANON2D_KHI')
+# ifdef TEMPERATURE
+          htemp0 = 1./30.
+          drho   = 5.22
+          do j=JR_RANGE
+            do i=IR_RANGE
+              depth=h(i,j)
+              zr0=-0.5*depth
+              do k=1,N
+                t(i,j,k,1,itemp) = 13.+ 1.*drho * (
+     &             dtanh( (z_r(1,1,k)-zr0)/htemp0)
+     &                                          )  / Tcoef
+                t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+              enddo
+            enddo
+          enddo
+# endif
+
+        case ('CANON2D_HWI')
+# ifdef TEMPERATURE
+          htemp0 = 1./30.
+          drho   = 20.8
+          do j=JR_RANGE
+            do i=IR_RANGE
+              depth=h(i,j)
+              zr0=-0.5*depth
+              do k=1,N
+                t(i,j,k,1,itemp) = 13.+ 1.*drho * (
+     &             dtanh( (z_r(1,1,k)-zr0+1./8.)/htemp0)
+     &                                          )  / Tcoef
+                t(i,j,k,1,itemp) = t(i,j,k,1,itemp)+1.*drho * (
+     &             0.1*dtanh( (z_r(1,1,k)-zr0+1./8.
+     &                   +depth/10.*cos(2.*pi/xl*xr(i,j))
+     &                      )/htemp0)
+     &                                          )  / Tcoef
+                t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+              enddo
+            enddo
+          enddo
+# endif
+
+        case ('CANON2D_TCI')
+# ifdef TEMPERATURE
+          htemp0 = 1./30.
+          drho   = 14.6
+          do j=JR_RANGE
+            do i=IR_RANGE
+              depth=h(i,j)
+              zr0=-0.5*depth
+              do k=1,N
+                t(i,j,k,1,itemp) = 13.+ 1.*drho * (
+     &             0.5*dtanh( (z_r(1,1,k)-zr0-1./4.)/htemp0)
+     &            +0.5*dtanh( (z_r(1,1,k)-zr0+1./4.)/htemp0)
+     &                                          )  / Tcoef
+                t(i,j,k,1,itemp) = t(i,j,k,1,itemp)+1.*drho * (
+     &            0.05*dtanh( (z_r(1,1,k)+(-zr0-1./4.)
+     &                       +depth/10.*sin(2.*pi/xl*xr(i,j)))
+     &                       /htemp0)
+     &           +0.05*dtanh( (z_r(1,1,k)+(-zr0+1./4.)
+     &                       +depth/10.*cos(2.*pi/xl*xr(i,j)))
+     &                       /htemp0)
+     &                                          )  / Tcoef
+                t(i,j,k,2,itemp) = t(i,j,k,1,itemp)
+              enddo
+            enddo
+          enddo
+# endif
 
         case ('ISOLITON')
 !  Horn, D.A., J. Imberger, & G.N. Ivey, (2001).

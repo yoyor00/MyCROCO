@@ -1,0 +1,17 @@
+{
+  // AgAc - AGRIF-Acoustic test case with KNBQ3
+  "AgAc_KNBQ": {
+    "title": "AgAc KNBQ with AGRIF (35x45x1)",
+    "case": "AgAc_KNBQ",
+    "input_file": "croco.nml",
+    "splitting": {
+      "1": "1x1",
+      "2": "2x1",
+    },
+    "patches": {
+      "agrif": true
+    },
+    "check_outputs": ["AgAc_his.nc"],
+    "unsupported": ["openmp"]
+  }
+}

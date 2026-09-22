@@ -12,7 +12,7 @@
 !
 #include "cppdefs.h"
 
-#if defined AGRIF && defined M3FAST
+#if defined AGRIF && (defined M3FAST || defined K3FAST)
 !
 !====================================================================
 !                   subroutine unbq_bc_interp_tile
@@ -984,4 +984,4 @@
       subroutine zoombc_3Dfast_empty()
       return
       end
-#endif /* AGRIF && M3FAST */
+#endif /* AGRIF && M3FAST || K3FAST */

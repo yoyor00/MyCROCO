@@ -34,7 +34,7 @@
 # include "coupling.h"
       external updateubar,updatevbar,updatezeta
       external updateduavg2, updatedvavg2
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       external updateunbq, updatevnbq
 #  ifdef NBQ
       external updatewnbq, updaterhonbq
@@ -121,7 +121,7 @@ C$OMP MASTER
      &     locupdate1=(/1,4/),locupdate2=(/0,3/),
      &     procname = updatevbar)
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       Call Agrif_Update_Variable(updateunbqid,
      &     locupdate1=(/0,3/),locupdate2=(/1,4/),
      &     procname = updateunbq)
@@ -160,7 +160,7 @@ C$OMP MASTER
      &     locupdate1=(/0,1/),locupdate2=(/0,1/),
      &     procname = updatevbar)
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
       Call Agrif_Update_Variable(updateunbqid,
      &     locupdate1=(/0,3/),locupdate2=(/0,3/),
      &     procname = updateunbq)
@@ -209,7 +209,7 @@ C$OMP MASTER
      &         locupdate1=(/1,-2/),locupdate2=(/0,-1/),
      &         procname = updatevbar)
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
           Call Agrif_Update_Variable(updateunbqid,
      &         locupdate1=(/0,-1/),locupdate2=(/1,-2/),
      &         procname = updateunbq)
@@ -244,7 +244,7 @@ C$OMP MASTER
           Call Agrif_Update_Variable(updatevbarid,
      &         procname = updatevbar)
 
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
           Call Agrif_Update_Variable(updateunbqid,
      &         procname = updateunbq)
 
@@ -299,9 +299,10 @@ C$OMP END MASTER
 
 !********************************************************************
 
-# ifdef M3FAST
+# if defined M3FAST || defined K3FAST
       Subroutine Updateunbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
+      use croco_namelist, only: dt
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -328,6 +329,7 @@ C$OMP END MASTER
 
       Subroutine Updatevnbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
+      use croco_namelist, only: dt
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -425,7 +427,7 @@ C$OMP END MASTER
       end
 
 #  endif /* NBQ */
-# endif /* M3FAST */
+# endif /* M3FAST || K3FAST */
 
 !=====================================================================
 
