@@ -199,6 +199,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   J. Gula, C. Mazoyer
 
 - New contributors : 
-  J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
+  M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
   S. Theetten
