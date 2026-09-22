@@ -297,11 +297,7 @@ plotter: plotter.F
 my_barrier.o: my_barrier.f
 	$(CFT) -c -O0 my_barrier.f
 #
-# cross_matrix's auto-generated dependency scan unreliably misses
-# mod_tides_mas.o as a prerequisite of these (needed so their
-# "USE mod_tides_mas" finds mod_tides_mas.mod already built), so
-# pin it here instead of relying on Make.depend for it.
-#
+# mod_tides_mas needs to be compiled before step.
 step.o clm_tides.o get_tides.o: mod_tides_mas.o
 #
 # Include automatically generated dependency list:

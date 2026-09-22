@@ -24,9 +24,6 @@
       implicit none
 
 # ifndef TIDES_MAS
-!  Otherwise already use-associated from MOD_TIDES_MAS, which
-!  includes param.h itself; a second include here would redeclare
-!  Ntides/Lm/Mm/... and fail to compile.
 #  include "param.h"
 # endif
 # include "scalars.h"
@@ -252,11 +249,20 @@
           write(6,3) 'tide_Pphase',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
+#  ifndef TIDES_MAS
         do j=0,LOCALMM+1
           do i=0,LOCALLM+1
             POT_Tphase(i,j,itide)=POT_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#  else
+        do j=0,LOCALMM+1
+          do i=0,LOCALLM+1
+            if (POT_Tphase(i,j,itide)<0.0)
+     &        POT_Tphase(i,j,itide)=POT_Tphase(i,j,itide)+360.
+          enddo
+        enddo
+#  endif
 #ifdef OPENACC
           call update_device(POT_Tphase(:,:,itide))
 #endif

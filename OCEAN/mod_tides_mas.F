@@ -1525,7 +1525,7 @@
 
         subroutine mas_init_ssh(Istr,Iend,Jstr,Jend,IstrR,IendR,
      &                          JstrR,JendR,Ntides,k_of,nn_of,
-     &                          SSH_Tamp,SSH_Tphase,rssh,gssh,hssh)
+     &                          SSH_Tamp,SSH_Tphase,mrssh,mgssh,mhssh)
 !
 !  Convert the standard SSH_Tamp/SSH_Tphase harmonic amplitude/phase
 !  into SHOM reduced amplitude/phase tables, at every grid point.
@@ -1536,12 +1536,12 @@
         integer, intent(in) :: k_of(:),nn_of(:)
         real, intent(in)    :: SSH_Tamp(GLOBAL_2D_ARRAY,Ntides)
         real, intent(in)    :: SSH_Tphase(GLOBAL_2D_ARRAY,Ntides)
-        real, intent(inout)   :: rssh(30,8,GLOBAL_2D_ARRAY)
-        real, intent(inout)   :: gssh(30,8,GLOBAL_2D_ARRAY)
-        real, intent(inout)   :: hssh(130,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mrssh(30,8,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mgssh(30,8,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mhssh(130,GLOBAL_2D_ARRAY)
         integer :: i,j,ht,k,nn,ir0
 
-        hssh(129,:,:) = -999.0
+        mhssh(129,:,:) = -999.0
         DO ht=1,Ntides
           IF (l_presence(nu(ht))) THEN
             ir0=rr0(nu(ht))
@@ -1549,9 +1549,9 @@
             nn=nn_of(ht)
             do j=JstrR,JendR
               do i=IstrR,IendR
-                rssh(nn,k,i,j)=SSH_Tamp(i,j,ht)*100.0
-                gssh(nn,k,i,j)=SSH_Tphase(i,j,ht)
-                if (ir0 < 0) gssh(nn,k,i,j)=gssh(nn,k,i,j)+180.0
+                mrssh(nn,k,i,j)=SSH_Tamp(i,j,ht)*100.0
+                mgssh(nn,k,i,j)=SSH_Tphase(i,j,ht)
+                if (ir0 < 0) mgssh(nn,k,i,j)=mgssh(nn,k,i,j)+180.0
               enddo
             enddo
           ENDIF
@@ -1559,12 +1559,32 @@
         end subroutine mas_init_ssh
 
 
+        subroutine mas_init_pot(Istr,Iend,Jstr,Jend,IstrR,IendR,
+     &                          JstrR,JendR,Ntides,k_of,nn_of,
+     &                          POT_Tamp,POT_Tphase,mrpot,mgpot,mhpot)
+!
+        implicit none
+        integer, intent(in) :: Istr,Iend,Jstr,Jend,IstrR,IendR,
+     &                          JstrR,JendR,Ntides
+        integer, intent(in) :: k_of(:),nn_of(:)
+        real, intent(in)    :: POT_Tamp(GLOBAL_2D_ARRAY,Ntides)
+        real, intent(in)    :: POT_Tphase(GLOBAL_2D_ARRAY,Ntides)
+        real, intent(inout)   :: mrpot(30,8,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mgpot(30,8,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mhpot(130,GLOBAL_2D_ARRAY)
+
+        call mas_init_ssh(Istr,Iend,Jstr,Jend,IstrR,IendR,
+     &                     JstrR,JendR,Ntides,k_of,nn_of,
+     &                     POT_Tamp,POT_Tphase,mrpot,mgpot,mhpot)
+        end subroutine mas_init_pot
+
+
 # if defined UV_TIDES
         subroutine mas_init_uv(Istr,Iend,Jstr,Jend,IstrR,IendR,
      &                         JstrR,JendR,Ntides,k_of,nn_of,
      &                         UV_Tmajor,UV_Tminor,UV_Tangle,UV_Tphase,
-     &                         angler,ru,gu,rv,gv,
-     &                         hu,hv)
+     &                         angler,mru,mgu,mrv,mgv,
+     &                         mhu,mhv)
 !
 !  Decompose the U/V tidal ellipses into complex U/V harmonics
 !  (ep2ap), then convert their rho-to-u/v averages into SHOM
@@ -1579,12 +1599,12 @@
         real, intent(in)    :: UV_Tangle(GLOBAL_2D_ARRAY,Ntides)
         real, intent(in)    :: UV_Tphase(GLOBAL_2D_ARRAY,Ntides)
         real, intent(in)    :: angler(GLOBAL_2D_ARRAY)
-        real, intent(inout)   :: ru(30,8,GLOBAL_2D_ARRAY)
-        real, intent(inout)   :: gu(30,8,GLOBAL_2D_ARRAY)
-        real, intent(inout)   :: rv(30,8,GLOBAL_2D_ARRAY)
-        real, intent(inout)   :: gv(30,8,GLOBAL_2D_ARRAY)
-        real, intent(inout)   :: hu(130,GLOBAL_2D_ARRAY)
-        real, intent(inout)   :: hv(130,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mru(30,8,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mgu(30,8,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mrv(30,8,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mgv(30,8,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mhu(130,GLOBAL_2D_ARRAY)
+        real, intent(inout)   :: mhv(130,GLOBAL_2D_ARRAY)
         complex :: u_cmplx(GLOBAL_2D_ARRAY,Ntides)
         complex :: v_cmplx(GLOBAL_2D_ARRAY,Ntides)
         integer :: i,j,ht,k,nn,ir0
@@ -1594,11 +1614,11 @@
 !  reference behavior) private rad2deg: this atan2-to-degrees step
 !  used to run in the caller against scalars.h's full-precision
 !  rad2deg before this code moved into the module, and needs that
-!  same precision to avoid a last-digit drift in gu/gv.
+!  same precision to avoid a last-digit drift in mgu/mgv.
         real(8), parameter :: rad2deg=180.0d0/3.14159265358979323846d0
 
-        hu(129,Istr:,:) = -999.0
-        hv(129,:,Jstr:) = -999.0
+        mhu(129,Istr:,:) = -999.0
+        mhv(129,:,Jstr:) = -999.0
  
         DO ht=1,Ntides
           IF (l_presence(nu(ht))) THEN
@@ -1620,23 +1640,23 @@
             do j=JstrR,JendR
               do i=Istr,IendR
                 U_interp = 0.5*(u_cmplx(i,j,ht)+u_cmplx(i-1,j,ht))
-                ru(nn,k,i,j) = abs(U_interp)*100.0
-                gu(nn,k,i,j) = atan2(aimag(U_interp),real(U_interp))
+                mru(nn,k,i,j) = abs(U_interp)*100.0
+                mgu(nn,k,i,j) = atan2(aimag(U_interp),real(U_interp))
      &                         *rad2deg
-                if (gu(nn,k,i,j) < 0.0) gu(nn,k,i,j)=gu(nn,k,i,j)
+                if (mgu(nn,k,i,j) < 0.0) mgu(nn,k,i,j)=mgu(nn,k,i,j)
      &                                                +360.0
-                if (ir0 < 0) gu(nn,k,i,j)=gu(nn,k,i,j)+180.0
+                if (ir0 < 0) mgu(nn,k,i,j)=mgu(nn,k,i,j)+180.0
               enddo
             enddo
             do j=Jstr,JendR
               do i=IstrR,IendR
                 V_interp = 0.5*(v_cmplx(i,j,ht)+v_cmplx(i,j-1,ht))
-                rv(nn,k,i,j) = abs(V_interp)*100.0
-                gv(nn,k,i,j) = atan2(aimag(V_interp),real(V_interp))
+                mrv(nn,k,i,j) = abs(V_interp)*100.0
+                mgv(nn,k,i,j) = atan2(aimag(V_interp),real(V_interp))
      &                         *rad2deg
-                if (gv(nn,k,i,j) < 0.0) gv(nn,k,i,j)=gv(nn,k,i,j)
+                if (mgv(nn,k,i,j) < 0.0) mgv(nn,k,i,j)=mgv(nn,k,i,j)
      &                                                +360.0
-                if (ir0 < 0) gv(nn,k,i,j)=gv(nn,k,i,j)+180.0
+                if (ir0 < 0) mgv(nn,k,i,j)=mgv(nn,k,i,j)+180.0
               enddo
             enddo
           ENDIF
@@ -1674,7 +1694,7 @@
 !
 !  Once per new day, rebuild the 128-heights/day reduced-tide table
 !  (ma1) at every grid point, for a single (r,g,h) field family
-!  (e.g. rssh/gssh/hssh, or ru/gu/hu). Call once per active field.
+!  (e.g. mrssh/mgssh/mhssh, or mru/mgu/mhu). Call once per active field.
 !
         implicit none
         integer, intent(in) :: imin,imax,jmin,jmax
@@ -1701,7 +1721,7 @@
 !
 !  Interpolate the current 128-heights/day table to the current time
 !  of day (ma7), at every grid point, for a single h/X field pair
-!  (e.g. hssh/Etide, or hu/Utide). Call once per active field.
+!  (e.g. mhssh/Etide, or mhu/Utide). Call once per active field.
 !
 !  X is a per-tile PRIVATE_2D_SCRATCH_ARRAY (Istr-2:Iend+2,Jstr-2:
 !  Jend+2), unlike h which is a persistent GLOBAL_2D_ARRAY: its

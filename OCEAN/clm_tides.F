@@ -32,13 +32,14 @@
       call clm_tides_tile (Istr,Iend,Jstr,Jend,
      &                     A2d(1,1,trd),A2d(1,2,trd),A2d(1,3,trd),
      &                     A2d(1,4,trd),A2d(1,5,trd),A2d(1,6,trd),
-     &                                               A2d(1,7,trd))
+     &                     A2d(1,7,trd),A2d(1,8,trd))
       return
       end
 !
 !*********************************************************************
       subroutine clm_tides_tile (Istr,Iend,Jstr,Jend,Cangle,Sangle,
-     &                           Cphase,Sphase,Etide,Utide,Vtide)
+     &                           Cphase,Sphase,Etide,Utide,Vtide,
+     &                           Ptide_loc)
 !*********************************************************************
 !
 # ifdef TIDES_MAS
@@ -47,9 +48,6 @@
       USE croco_namelist, only:dt
       implicit none
 # ifndef TIDES_MAS
-!  Otherwise already use-associated from MOD_TIDES_MAS, which
-!  includes param.h itself; a second include here would redeclare
-!  Ntides/Lm/Mm/... and fail to compile.
 #  include "param.h"
 # endif
 # include "climat.h"
@@ -74,7 +72,8 @@
      &        Sphase(PRIVATE_2D_SCRATCH_ARRAY),
      &        Etide(PRIVATE_2D_SCRATCH_ARRAY),
      &        Utide(PRIVATE_2D_SCRATCH_ARRAY),
-     &        Vtide(PRIVATE_2D_SCRATCH_ARRAY)
+     &        Vtide(PRIVATE_2D_SCRATCH_ARRAY),
+     &        Ptide_loc(PRIVATE_2D_SCRATCH_ARRAY)
 !
 # include "compute_auxiliary_bounds.h"
 # ifdef MPI
@@ -102,13 +101,18 @@
 #  if defined SSH_TIDES
         call mas_init_ssh(Istr,Iend,Jstr,Jend,IstrR,IendR,JstrR,JendR,
      &                     Ntides,k_of,nn_of,
-     &                     SSH_Tamp,SSH_Tphase,rssh,gssh,hssh)
+     &                     SSH_Tamp,SSH_Tphase,mrssh,mgssh,mhssh)
 #  endif
 #  if defined UV_TIDES
         call mas_init_uv(Istr,Iend,Jstr,Jend,IstrR,IendR,JstrR,JendR,
      &                    Ntides,k_of,nn_of,
      &                    UV_Tmajor,UV_Tminor,UV_Tangle,UV_Tphase,
-     &                    angler,ru,gu,rv,gv,hu,hv)
+     &                    angler,mru,mgu,mrv,mgv,mhu,mhv)
+#  endif
+#  if defined POT_TIDES
+        call mas_init_pot(Istr,Iend,Jstr,Jend,IstrR,IendR,JstrR,JendR,
+     &                     Ntides,k_of,nn_of,
+     &                     POT_Tamp,POT_Tphase,mrpot,mgpot,mhpot)
 #  endif
 !$acc end kernels
       ENDIF ! FIRST TIME STEP
@@ -123,19 +127,25 @@
 !$acc kernels if(compute_on_device) default(present)
 #  if defined SSH_TIDES
       call mas_daily_update(IstrR,IendR,JstrR,JendR,new_day,
-     &                       ijour,imois,ian,rssh,gssh,hssh)
+     &                       ijour,imois,ian,mrssh,mgssh,mhssh)
       call mas_interpolate(IstrR,IendR,JstrR,JendR,
-     &                      Istr,Iend,Jstr,Jend,tempis,hssh,Etide)
+     &                      Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
 #  endif
 #  if defined UV_TIDES
       call mas_daily_update(Istr,IendR,JstrR,JendR,new_day,
-     &                       ijour,imois,ian,ru,gu,hu)
+     &                       ijour,imois,ian,mru,mgu,mhu)
       call mas_daily_update(IstrR,IendR,Jstr,JendR,new_day,
-     &                       ijour,imois,ian,rv,gv,hv)
+     &                       ijour,imois,ian,mrv,mgv,mhv)
       call mas_interpolate(IstrR,IendR,JstrR,JendR,
-     &                      Istr,Iend,Jstr,Jend,tempis,hu,Utide)
+     &                      Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
       call mas_interpolate(IstrR,IendR,JstrR,JendR,
-     &                      Istr,Iend,Jstr,Jend,tempis,hv,Vtide)
+     &                      Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+#  endif
+#  if defined POT_TIDES
+      call mas_daily_update(IstrR,IendR,JstrR,JendR,new_day,
+     &                       ijour,imois,ian,mrpot,mgpot,mhpot)
+      call mas_interpolate(IstrR,IendR,JstrR,JendR,
+     &                      Istr,Iend,Jstr,Jend,tempis,mhpot,Ptide_loc)
 #  endif
 #  if defined SSH_TIDES && defined MASKING
       do j=JRANGE
@@ -153,6 +163,13 @@
       do j=Jstr,JendR
         do i=IstrR,IendR
           Vtide(i,j)=Vtide(i,j)*ramp*vmask(i,j)
+        enddo
+      enddo
+#  endif
+#  if defined POT_TIDES && defined MASKING
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          Ptide_loc(i,j)=Ptide_loc(i,j)*ramp*rmask(i,j)
         enddo
       enddo
 #  endif
@@ -395,13 +412,7 @@
 
 # if defined POT_TIDES
 !$acc kernels if(compute_on_device) default(present)
-!
-!-----------------------------------------------------------------------
-!  Compute tidal potential (m)
-!  -- > to be applied as a pressure-gradient force
-!       in prsgrd (if SOLVE3D) or step2d (if not SOLVE3D)
-!-----------------------------------------------------------------------
-!
+#  ifndef TIDES_MAS
       do j=JstrR,JendR
         do i=IstrR,IendR
           Ptide(i,j)=0.
@@ -415,13 +426,20 @@
               Ptide(i,j)=Ptide(i,j)+
      &                   ramp*POT_Tamp(i,j,itide)*
      &                   COS(omega_loc-POT_Tphase(i,j,itide))
-#  ifdef MASKING
+#   ifdef MASKING
               Ptide(i,j)=Ptide(i,j)*rmask(i,j)
-#  endif
+#   endif
             enddo
           enddo
         endif
       enddo
+#  else
+      do j=JstrR,JendR
+        do i=IstrR,IendR
+          Ptide(i,j)=Ptide_loc(i,j)
+        enddo
+      enddo
+#  endif
 
 !$acc end kernels
 #  if defined EW_PERIODIC || defined NS_PERIODIC || defined  MPI
