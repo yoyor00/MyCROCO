@@ -356,7 +356,6 @@
                       /*   MUSTANG Sediment model     */
 # ifdef MUSTANG
 #  undef  key_MUSTANG_V2
-#  undef  key_MUSTANG_bedload
 #  undef  MORPHODYN
 #  undef  WAVE_OFFLINE
 #  define key_noTSdiss_insed

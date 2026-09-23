@@ -49,7 +49,7 @@
 :    tocd_n() : real, critical stress of deposition (N/m2)
 :    ros_n()  : real, density of particle (kg/m3)
 :    l_bedload_n() : boolean, allow bedload transport (used only if 
-:                    key_MUSTANG_V2 and key_MUSTANG_bedload)
+:                    key_MUSTANG_V2)
 :    diam_n() : real, diameter of particles (m)
 :   
  &nmlgravels
@@ -91,7 +91,7 @@
 :    tocd_n() : real, critical stress of deposition (N/m2) 
 :    ros_n()  : real, density of particle (kg/m3)
 :    l_bedload_n() : boolean, allow bedload transport (used only if 
-:                    key_MUSTANG_V2 and key_MUSTANG_bedload)
+:                    key_MUSTANG_V2)
 :    diam_n() : diameter of particles
 :    l_sand2D() : boolean, to treat sand variable as 2D variable
 :    l_outsandrouse()  : boolean, to use a reconstitution of a ROUSE profil 
@@ -159,7 +159,7 @@
 :    cobc_wat_n() : real, boundaries uniform and constant concentration 
 :                   (kg/m3)
 :    tocd_n() : real, critical stress of deposition (N/m2) 
-:    diam_n() : real, diameter (m), used only if key_MUSTANG_flocmod
+:    diam_n() : real, diameter (m), used only if l_flocmod
 :    ros_n()  : real, density of particle (kg/m3)
 :    ws_free_opt_n() : integer, choice of free settling formulation : 
 :                      0 constant, 1 Van Leussen, 2 Winterwerp, 3 Wolanski

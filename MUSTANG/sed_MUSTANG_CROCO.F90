@@ -35,23 +35,21 @@
     USE comsubstance
     USE module_substance   ! provides Uwave, Dwave, Pwave when WAVE_OFFLINE
     USE croco_namelist, ONLY : rho0
-# if defined key_MUSTANG_flocmod
     USE flocmod, ONLY: f_ws
-#endif
     IMPLICIT NONE
 
     !! * Accessibility 
     PUBLIC sed_skinstress
     PUBLIC sed_gradvit
     PUBLIC sed_MUSTANG_settlveloc
-#ifdef key_MUSTANG_bedload
+#ifdef key_MUSTANG_V2
     PUBLIC sed_bottom_slope
-#if defined MPI 
+#if defined MPI
     PUBLIC sed_exchange_flxbedload
     PUBLIC sed_exchange_maskbedload
 #endif
 #endif
-#if defined MPI  && defined key_MUSTANG_slipdeposit
+#if defined MPI
     PUBLIC sed_exchange_w2s
 #endif
 
@@ -87,7 +85,7 @@ SUBROUTINE sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
 !&E  need to be know by code treated substance 
 !&E  (if not ==> coupler_MUSTANG.F90)
 !&E         imud1, nvpc, nvp, nv_adv, isand1, isand2
-!&E         f_ws(iv) (if key_MUSTANG_flocmod)
+!&E         f_ws(iv) (if l_flocmod)
 !&E         ws_free_opt, ws_free_para, ws_free_min, ws_free_max,
 !&E         ws_hind_opt, ws_hind_para   
 !&E     
@@ -125,10 +123,10 @@ DO i = ifirst, ilast
                 ws_part(i, j, k, itemp + ntrc_salt + iv) = ws_sand(iv)
             ENDDO
             
-            ! next mud settling velocity 
-#ifdef key_MUSTANG_flocmod   
-            ws_part(i, j, k, itemp + ntrc_salt + imud1 : itemp + ntrc_salt + imud2 ) = f_ws(1:nv_mud)  
-#else
+            ! next mud settling velocity
+            IF (l_flocmod) THEN
+            ws_part(i, j, k, itemp + ntrc_salt + imud1 : itemp + ntrc_salt + imud2 ) = f_ws(1:nv_mud)
+            ELSE
             DO iv = imud1, nvp
                 ! Free settling velocity - flocculation
                 IF(ws_free_opt(iv) == 0) THEN ! constant settling velocity
@@ -180,8 +178,7 @@ DO i = ifirst, ilast
                 ws_part(i, j, k, itemp + ntrc_salt + iv) = max(ws_free_min(iv), &
                     min(ws_free_max(iv), WSfree * Hind))
             ENDDO
-
-#endif  /* key_MUSTANG_flocmod */
+            ENDIF
 
             DO iv = nvpc+1, nvp
                 IF(irkm_var_assoc(iv) < imud1 .AND. irkm_var_assoc(iv) > 0) THEN    
@@ -225,9 +222,7 @@ SUBROUTINE sed_gradvit(ifirst, ilast, jfirst, jlast)
 !&E
 !&E--------------------------------------------------------------------------
 !! * Modules used
-#if defined key_MUSTANG_flocmod
     USE flocmod, ONLY : flocmod_comp_g, l_0Dcase
-#endif
 #  include "mixing.h"
 #  include "ocean3d.h"
 
@@ -244,11 +239,9 @@ DO j = jfirst, jlast
 DO i = ifirst, ilast
     IF(htot(i, j) .GT. h0fond)  THEN
     DO k = 1, N
-#if defined key_MUSTANG_flocmod
-      IF (l_0Dcase) then
+      IF (l_flocmod .AND. l_0Dcase) then
         call flocmod_comp_g(gradvit(k, i, j), time-time_start)
       ELSE
-#endif
 #if defined GLS_MIXING
         !
         ! Dissipation from turbulence clossure
@@ -270,9 +263,7 @@ DO i = ifirst, ilast
         gradvit(k, i, j) = sqrt(ustarbot(i, j)**3._rsh / 0.4_rsh / htot(i, j) / &
                         (nuw + epsilon_MUSTANG) * dist_surf_on_bottom)
 #endif
-#if defined key_MUSTANG_flocmod
       ENDIF
-#endif
     END DO
     ENDIF
 ENDDO
@@ -627,7 +618,7 @@ PURE SUBROUTINE compute_tauskin_bbl(ifirst, ilast, jfirst, jlast, &
 ! BBL variant : tauskin from precomputed wave-current stresses.
 ! tauskin   = rho0 * sqrt(bustrw^2 + bvstrw^2)
 ! tauskin_c = tauskin (BBL: no wave/current separation)
-! tauskin_x/y = tauskin_c * velocity direction unit vector (key_MUSTANG_bedload only)
+! tauskin_x/y = tauskin_c * velocity direction unit vector
 ! WET_DRY/MASKING masking is applied by the caller, after this call.
 
 INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast
@@ -641,15 +632,12 @@ REAL(KIND=rsh), INTENT(OUT) :: tauskin_c(ifirst - 1:ilast + 1, jfirst - 1:jlast 
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_x(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 REAL(KIND=rsh), INTENT(OUT) :: tauskin_y(ifirst - 1:ilast + 1, jfirst - 1:jlast + 1)
 
-#ifdef key_MUSTANG_bedload
 INTEGER        :: i, j
 REAL(KIND=rsh) :: urho, vrho, speed
-#endif
 
     tauskin = SQRT(bustrw**2 + bvstrw**2)*rho0_val
     tauskin_c = tauskin
 
-#ifdef key_MUSTANG_bedload
     DO j = jfirst, jlast
     DO i = ifirst, ilast
         urho = 0.5_rsh*(ux(i, j) + ux(i + 1, j))
@@ -659,10 +647,6 @@ REAL(KIND=rsh) :: urho, vrho, speed
         tauskin_y(i, j) = vrho/(speed + epsilon_MUSTANG)*tauskin_c(i, j)
     END DO
     END DO
-#else
-    tauskin_x = 0.0_rsh
-    tauskin_y = 0.0_rsh
-#endif
 
 END SUBROUTINE compute_tauskin_bbl
 
@@ -821,7 +805,7 @@ END SUBROUTINE combine_wave_current
 
 
 !!==============================================================================
-#ifdef key_MUSTANG_bedload
+#ifdef key_MUSTANG_V2
   SUBROUTINE sed_bottom_slope(ifirst, ilast, jfirst, jlast, bathy)
    !&E--------------------------------------------------------------------------                         
    !&E                 ***  ROUTINE sed_bottom_slope  ***
@@ -893,11 +877,11 @@ END SUBROUTINE combine_wave_current
 
   END SUBROUTINE sed_exchange_flxbedload
 #endif /* MPI */
-#endif /* key_MUSTANG_bedload */
+#endif /* key_MUSTANG_V2 */
 
 !!=============================================================================
 
-#if defined MPI && defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+#if defined MPI && defined key_MUSTANG_V2
     SUBROUTINE sed_exchange_maskbedload(ifirst, ilast, jfirst, jlast)
     !&E-------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_exchange_maskbedload ***
@@ -919,11 +903,11 @@ END SUBROUTINE combine_wave_current
     sedimask_h0plusxe(:,:) = workexch(:,:)
 
     END SUBROUTINE sed_exchange_maskbedload
-#endif /* defined MPI && defined key_MUSTANG_V2 && defined key_MUSTANG_bedload */
+#endif /* defined MPI && defined key_MUSTANG_V2 */
 
 !!=============================================================================
 
-#if defined MPI && defined key_MUSTANG_slipdeposit
+#if defined MPI
     SUBROUTINE sed_exchange_w2s(ifirst, ilast, jfirst, jlast)
     !&E-------------------------------------------------------------------------
     !&E                 ***  ROUTINE sed_exchange_w2s ***
@@ -931,7 +915,7 @@ END SUBROUTINE combine_wave_current
     !&E ** Purpose : MPI exchange of slip deposit flux between processors
     !&E
     !&E ** Description : MPI exchange between processors
-    !&E      used only if slopefac .NE. 0 (slip deposit if steep slope)
+    !&E      used only if l_slipdeposit (slip deposit if steep slope)
     !&E
     !&E ** Called by : MUSTANG_update
     !&E-------------------------------------------------------------------------
@@ -970,7 +954,7 @@ END SUBROUTINE combine_wave_current
     enddo
   
     END SUBROUTINE sed_exchange_w2s
-#endif /* defined MPI && defined key_MUSTANG_slipdeposit */
+#endif /* defined MPI */
 !!=============================================================================
 
 #if defined EW_PERIODIC || defined NS_PERIODIC || defined MPI

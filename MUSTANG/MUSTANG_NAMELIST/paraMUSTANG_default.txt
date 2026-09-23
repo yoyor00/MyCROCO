@@ -21,8 +21,8 @@
 :                            (only if !defined key_noTSdiss_insed)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
-: namflocmod               : parameters using for FLOCMOD module 
-:                            (only if key_MUSTANG_flocmod)
+: namflocmod               : parameters using for FLOCMOD module
+:                            (active only if l_flocmod)
 : namdredging              : parameters to activate dredging effect
 
 
@@ -92,9 +92,14 @@
 :                  from dzsmaxuni to dzsmaxuni/100 depending on water depth
 :    dzsmaxuni : real, uniform maximum thickness for the superficial sediment 
 :                layer (m), must be >0 
-:    nlayer_surf_sed : integer, number of layers below the sediment surface 
+:    nlayer_surf_sed : integer, number of layers below the sediment surface
 :                      that can not be melted (max thickness = dzsmax)
-:    k1HW97: real, ref value k1HW97 = 0.07, parameter to compute active layer 
+:    l_splitlayersurf : boolean, set to .true. to split surface sediment
+:                       layers for a regular, precise discretization at the
+:                       surface when too thick (over nlayer_surf_sed layers
+:                       below the surface) ; if .false., the excess is simply
+:                       moved into one new layer above
+:    k1HW97: real, ref value k1HW97 = 0.07, parameter to compute active layer
 :            thickness (Harris and Wiberg, 1997) 
 :            (key_MUSTANG_V2 only)
 :    k2HW97 : real, ref value k2HW97 = 6.0, parameter to compute active layer 
@@ -114,8 +119,9 @@
    dzsmax_bottom = 2.0 
    l_dzsmaxuni = .TRUE. 
    dzsmaxuni = 2.0e-2
-   nlayer_surf_sed = 5 
-   k1HW97 = 0.07      
+   nlayer_surf_sed = 5
+   l_splitlayersurf = .FALSE.
+   k1HW97 = 0.07
    k2HW97 = 6.0  
    fusion_para_activlayer = 1. /  
 :
@@ -186,17 +192,20 @@
 :    l_corflux : boolean to activate correction on horizontal sand fluxes
 :    cvolmaxsort : real, maximum volumic concentration of sorted sand
 :    cvolmaxmel : real, maximum volumic concentration of mixed sediments
-:    slopefac : real, slope effect multiplicative on deposit 
-:               (only if key_MUSTANG_slipdeposit)
+:    l_slipdeposit : boolean to activate sliding (avalanching) of deposited
+:                    sediment on steep slopes
+:    slopefac : real, slope effect multiplicative on deposit
+:               (used only if l_slipdeposit)
 :------------------------------------------------------------------------------
 &namsedim_deposition
-   cfreshmud = 550.0 
-   csedmin = 100. 
-   cmudcr = 2000.     
-   aref_sand = 0.02 
+   cfreshmud = 550.0
+   csedmin = 100.
+   cmudcr = 2000.
+   aref_sand = 0.02
    l_corflux = .TRUE.
    cvolmaxsort = 0.58
    cvolmaxmel = 0.67
+   l_slipdeposit = .FALSE.
    slopefac = 0.01 /
 :
 :------------------------------------------------------------------------------
@@ -650,9 +659,10 @@
    epmax_nivsed_out=0. / 
 :
 :------------------------------------------------------------------------------
-:  Namelist relative to module FLOCMOD 
-:  (key_flocmod only)
+:  Namelist relative to module FLOCMOD
 :------------------------------------------------------------------------------
+:    l_flocmod : boolean, set to .true. to activate the FLOCMOD flocculation
+:                module for mud settling velocity
 :    l_ADS : boolean, set to .true. if aggregation by differential settling
 :    l_ASH : boolean, set to .true. if aggregation by shear
 :    l_COLLFRAG : boolean, set to .true. if fragmentation by collision
@@ -686,7 +696,8 @@
 : 
 :------------------------------------------------------------------------------
 &namflocmod
-   l_ADS = .FALSE. 
+   l_flocmod = .FALSE.
+   l_ADS = .FALSE.
    l_ASH = .TRUE.
    l_COLLFRAG = .FALSE. 
    f_dp0 = 4.e-6  

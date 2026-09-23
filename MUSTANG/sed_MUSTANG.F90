@@ -116,9 +116,7 @@ MODULE sed_MUSTANG
 #if defined key_MUSTANG_V2
    PUBLIC MUSTANGV2_comp_poro_mixsed
 #endif
-#ifdef key_MUSTANG_splitlayersurf
    PUBLIC sed_MUSTANG_split_surflayer
-#endif
 
    PRIVATE
    
@@ -158,9 +156,9 @@ MODULE sed_MUSTANG
     USE sed_MUSTANG_CROCO,    ONLY :  sed_MUSTANG_settlveloc
     USE sed_MUSTANG_CROCO,    ONLY :  sed_skinstress
     USE sed_MUSTANG_CROCO,    ONLY :  sed_gradvit
-#ifdef key_MUSTANG_bedload
+#ifdef key_MUSTANG_V2
     USE sed_MUSTANG_CROCO,    ONLY :  sed_bottom_slope
-#if defined MPI 
+#if defined MPI
       USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_flxbedload
       USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_maskbedload
 #endif
@@ -175,9 +173,7 @@ MODULE sed_MUSTANG
 #if defined key_BLOOM_insed && defined key_oxygen && ! defined key_biolo_opt2
    USE bloom,  ONLY : bloom_reactions_in_sed, p_txfiltbenthmax
 #endif
-#if defined key_MUSTANG_flocmod
    USE flocmod,  ONLY : flocmod_main
-#endif
 #ifdef OBSTRUCTION
    USE OBSTRUCTIONS1DV, ONLY : o1dv_comp_z0sedim
    USE com_OBSTRUCTIONS, ONLY : obst_position, obst_height, obst_dens_inst, obst_width_inst
@@ -252,12 +248,12 @@ MODULE sed_MUSTANG
     call sed_MUSTANG_settlveloc(ifirst, ilast, jfirst, jlast,   &
                            WATER_CONCENTRATION)
 
-#ifdef key_MUSTANG_flocmod
+IF (l_flocmod) THEN
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!! FLOCMOD :    compute aggregation /fragmentation processes  !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO j=jfirst,jlast
-        DO i=ifirst,ilast   
+        DO i=ifirst,ilast
             IF(htot(i,j) > h0fond) THEN
                 DO k=1,N
                     CALL flocmod_main( dt_true, &
@@ -268,7 +264,7 @@ MODULE sed_MUSTANG
         ENDDO
     ENDDO
 
-#endif
+ENDIF
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!! tendance au depot : deposit tendency   flx_w2s (m.s-1) !!!!!!!!!!
@@ -347,8 +343,9 @@ MODULE sed_MUSTANG
 
    IF (l_erolat) CALL lateral_erosion_reset()
    
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-! initialization BEDLOAD fluxes and masks 
+#ifdef key_MUSTANG_V2
+   IF (l_bedload) THEN
+! initialization BEDLOAD fluxes and masks
    flx_bx(:,:,:)=0.0_rsh
    flx_by(:,:,:)=0.0_rsh
 
@@ -365,19 +362,21 @@ MODULE sed_MUSTANG
 #endif
 
 
-#if defined MORPHODYN  
+#if defined MORPHODYN
      IF (l_slope_effect_bedload .AND. it_morphoYes==1 ) THEN
         CALL sed_bottom_slope(ifirst, ilast, jfirst, jlast, h)
         it_morphoYes = 0
      ENDIF
-#endif   
-
-#endif  /*end key_MUSTANG_bedload (version V2)*/
+#endif
+   ENDIF
+#endif  /* key_MUSTANG_V2 */
 
    CALL sed_MUSTANG_erosion(ifirst, ilast, jfirst, jlast, dtinv,     &
                            ubar, vbar, dt_true)
 
-#if defined MPI && defined key_MUSTANG_bedload
+#ifdef key_MUSTANG_V2
+   IF (l_bedload) THEN
+#if defined MPI
        if (float(ifirst+ii*Lm) .EQ. 1) then
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
@@ -386,17 +385,18 @@ MODULE sed_MUSTANG
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
        endif
-#endif
-#if (!defined MPI && defined key_MUSTANG_bedload)
+#else
         flx_bx(:,ifirst-1,:)=flx_bx(:,ifirst,:)
         flx_by(:,ifirst-1,:)=flx_by(:,ifirst,:)
         flx_bx(:,:,jfirst-1)=flx_bx(:,:,jfirst)
         flx_by(:,:,jfirst-1)=flx_by(:,:,jfirst)
 #endif
 
-#if defined key_MUSTANG_bedload && defined MPI 
+#if defined MPI
     call sed_exchange_flxbedload(ifirst, ilast, jfirst, jlast)
-#endif                             
+#endif
+   ENDIF
+#endif  /* key_MUSTANG_V2 */
                            
   IF (l_erolat) CALL lateral_erosion_apply(ifirst, ilast, jfirst, jlast, dtinv)
 
@@ -482,7 +482,7 @@ MODULE sed_MUSTANG
    !&E
    !&E--------------------------------------------------------------------------
    !! * Modules used
-#if defined MPI  && defined key_MUSTANG_slipdeposit
+#if defined MPI
     USE sed_MUSTANG_CROCO,    ONLY :  sed_exchange_w2s
 #endif
    !! * Arguments
@@ -526,14 +526,12 @@ MODULE sed_MUSTANG
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!! deposit slip if steep slope (slidepo)        !!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef key_MUSTANG_slipdeposit
-   IF(slopefac .NE. 0.0_rsh) THEN
+   IF(l_slipdeposit) THEN
      CALL sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
 #if defined MPI
     CALL sed_exchange_w2s(ifirst, ilast, jfirst, jlast)
 #endif
-   ENDIF 
-#endif
+   ENDIF
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!! effective deposit after variables transport and settling =>  sedimentation   !!!
@@ -566,7 +564,7 @@ MODULE sed_MUSTANG
     !! * Executable part
 
 ! **TODO** keep these lines commented?? create a specific subroutine for zero gradient boundaries??
- ! if key_MUSTANG_bedload : choice of zero gradient at boundaries or no flux 
+ ! if l_bedload : choice of zero gradient at boundaries or no flux
  ! if zero gradient at one open boundary : remove comment at this boundary
    ! south boundary
    !    IF (jfirst == 1) hsed(:,jfirst)=hsed(:,jfirst+1)
@@ -594,7 +592,7 @@ MODULE sed_MUSTANG
 
     t_morpho = t_morpho + dt_morpho
 
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
+#ifdef key_MUSTANG_V2
 !   bottom slope must be updated for bedload
     it_morphoYes = 1
 #endif
@@ -1613,22 +1611,20 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
               dzs_ini=dzs(ksmax,i,j)
               cv_sed_ini(:)=cv_sed(:,ksmax,i,j)
 
-#ifdef key_MUSTANG_bedload 
-              ! IN : i,j,ksmax / OUT : flx_bxij,flx_byij (bedload Flux in kg/m/s)
-              CALL MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)  
-#else
-              flx_bxij(:) = 0.0_rsh
-              flx_byij(:) = 0.0_rsh
-#endif
+              IF (l_bedload) THEN
+                ! IN : i,j,ksmax / OUT : flx_bxij,flx_byij (bedload Flux in kg/m/s)
+                CALL MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
+              ELSE
+                flx_bxij(:) = 0.0_rsh
+                flx_byij(:) = 0.0_rsh
+              ENDIF
 
               ! On calcule un flux derosion pour chaque classe (en kg/m2/s)
               ! IN : i,j,ksmax / OUT : sed_eros_flx_class_by_class(iv)
 
               CALL MUSTANGV2_comp_eros_flx_indep(i,j,ksmax,        &
-#ifdef key_MUSTANG_bedload
                                         om_r,on_r,flx_bxij,flx_byij,       &
                                         ubar,vbar, &
-#endif
                                         sed_eros_flx_class_by_class)
 
               IF (l_erolat) THEN
@@ -1694,16 +1690,16 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 #endif
 
 
-#ifdef key_MUSTANG_bedload
-                DO iv=1,nvp
-                  flx_bx(iv,i,j) = flx_bx(iv,i,j) + flx_bxij(iv)/MF ! in kg
-                  flx_by(iv,i,j) = flx_by(iv,i,j) + flx_byij(iv)/MF
-                  IF (l_outsed_bedload) THEN
-                    var2D_flx_bx(iv,i,j) = flx_bx(iv,i,j) 
-                    var2D_flx_by(iv,i,j) = flx_by(iv,i,j)
-                  ENDIF
-                END DO
-#endif
+                IF (l_bedload) THEN
+                  DO iv=1,nvp
+                    flx_bx(iv,i,j) = flx_bx(iv,i,j) + flx_bxij(iv)/MF ! in kg
+                    flx_by(iv,i,j) = flx_by(iv,i,j) + flx_byij(iv)/MF
+                    IF (l_outsed_bedload) THEN
+                      var2D_flx_bx(iv,i,j) = flx_bx(iv,i,j)
+                      var2D_flx_by(iv,i,j) = flx_by(iv,i,j)
+                    ENDIF
+                  END DO
+                ENDIF
 
 
                 dt_ero_max=maxval(dt_ero)
@@ -1722,7 +1718,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
                 !END IF ! IF(tauskin(i,j).GT.toce)
 
-#ifdef key_MUSTANG_splitlayersurf
+                IF (l_splitlayersurf) THEN
                 !! Splitting surface layers if too thick
                 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 isplit=0
@@ -1734,8 +1730,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 IF(isplit==1 ) then
                  CALL sed_MUSTANG_split_surflayer(i,j,ksmax)
                 ENDIF
-#else
-                ! to avoid increasing the thickness of the surface layer 
+                ELSE
+                ! to avoid increasing the thickness of the surface layer
                 IF(ksmax .LT. ksdmax .AND. ksmax > ksmi(i,j)) THEN
                     IF(dzs(ksmax,i,j) > dzsmax(i,j) + 5.0_rsh* dzsmin) THEN
                        dzs(ksmax+1,i,j)=MIN(dzs(ksmax,i,j)-dzsmax(i,j),dzsmax(i,j))
@@ -1748,7 +1744,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                        ksmax=ksmax+1
                     ENDIF
                 ENDIF
-#endif
+                ENDIF
 
               ENDIF  ! no erosion (non cohesive sediment)
 
@@ -2476,7 +2472,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ksmax=ksmax+1
                ENDIF
             ENDIF
-#ifdef key_MUSTANG_splitlayersurf
+           IF (l_splitlayersurf) THEN
            !! Splitting surface layers if too thick
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
            isplit=0
@@ -2488,7 +2484,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
            IF(isplit==1 ) then
              CALL sed_MUSTANG_split_surflayer(i,j,ksmax)
            ENDIF
-#endif
+           ENDIF
           ENDIF  ! ero>0
 
           ! to find an erosion flux in .../m2/s (for particulates only):
@@ -2862,9 +2858,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                  
    REAL(KIND=rsh),DIMENSION(nvp) :: mass_sed
    REAL(KIND=rsh),DIMENSION(nvpc):: frac_sed_dep, cv_sed_dep, frac_sed, frac_seda,frac_sed_depa
-#ifdef key_MUSTANG_bedload
    REAL(KIND=rsh),DIMENSION(nvp):: flx_bedload_in
-#endif
    !!----------------------------------------------------------------------
    !! * Executable part
 
@@ -2883,8 +2877,8 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
             frdep(:)=0.0_rsh
             frac_sed_depa(:)=0.0_rsh
 
-#ifdef key_MUSTANG_bedload
             flx_bedload_in(:)=0.0_rsh
+            IF (l_bedload) THEN
             ! bedload fluxes
             !   ATTENTION : need to know fls_bx in i+1,J+1,i-1,j-1
             !               have been exchanged with the neighboring processors  in sedim_MUSTANG_update after erosion
@@ -2898,7 +2892,7 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ! bil_bedload(iv,i,j) a mettre a 0 en debut de run --> cumule tout au long de la simu
                 IF (l_outsed_bedload) THEN
                     var2D_bil_bedload(iv,i,j) = var2D_bil_bedload(iv,i,j) + ( (flx_bedload_in(iv)  &
-                                - ABS(flx_bx(iv,i,j)) - ABS(flx_by(iv,i,j)))/surf_cell(i,j) ) ! cumul des bilans en kg/m2 
+                                - ABS(flx_bx(iv,i,j)) - ABS(flx_by(iv,i,j)))/surf_cell(i,j) ) ! cumul des bilans en kg/m2
                 ENDIF
 
                 ! in kg/m2
@@ -2915,17 +2909,17 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ! in kg/m2
                 flx_bedload_in(iv)=flx_bedload_in(iv)/surf_cell(i,j)
 
-                flx_w2s_sum(iv,i,j)=flx_w2s_sum(iv,i,j)+flx_bedload_in(iv) 
+                flx_w2s_sum(iv,i,j)=flx_w2s_sum(iv,i,j)+flx_bedload_in(iv)
 
             END DO
-            
+
 
             !bil_bedload_int
             IF (l_outsed_bedload) THEN
               var2D_bil_bedload_int(i,j)=SUM(var2D_bil_bedload(ibedload1:ibedload2,i,j))
             ENDIF
 
-#endif
+            ENDIF
            
             ! updating effective deposition :  (flx_w2s) is implicit in the vertical advection scheme
             !      flux exprime en Masse/m2 integre sur le  pas de temps vrai (demi pas de temps dans MARS)
@@ -2959,23 +2953,15 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
               !flx_w2s_save
               IF (l_outsed_flx_s2w_w2s) THEN
-#ifdef key_MUSTANG_bedload
               var2D_flx_w2s(iv,i,j)=var2D_flx_w2s(iv,i,j)  &
                                        +flx_w2s_loc(iv) -flx_bedload_in(iv)
-#else
-              var2D_flx_w2s(iv,i,j)=var2D_flx_w2s(iv,i,j)+flx_w2s_loc(iv)
-#endif
               ENDIF
             ENDDO
 
             IF (l_outsed_flx_s2w_w2s) THEN
             DO iv=isand1,isand2
-#ifdef key_MUSTANG_bedload
               var2D_flx_w2s_noncoh(i,j)=var2D_flx_w2s_noncoh(i,j)  &
                                        +flx_w2s_loc(iv)-flx_bedload_in(iv)  ! flx_w2s_noncoh
-#else
-              var2D_flx_w2s_noncoh(i,j)=var2D_flx_w2s_noncoh(i,j)+flx_w2s_loc(iv)
-#endif
             END DO
             ENDIF
             IF (l_outsed_flx_s2w_w2s) THEN
@@ -4380,7 +4366,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
 
  
 !!==============================================================================
-#if defined key_MUSTANG_slipdeposit
   SUBROUTINE sed_MUSTANG_slipdepo(ifirst, ilast, jfirst, jlast)
    
    !&E--------------------------------------------------------------------------
@@ -4444,7 +4429,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    ENDDO
 
   END SUBROUTINE sed_MUSTANG_slipdepo
-#endif
     !!==============================================================================
 #if ! defined key_noTSdiss_insed
    SUBROUTINE sed_MUSTANG_Temperatur_in_sed(ifirst, ilast, jfirst, jlast, dt_true, dtinv)
@@ -5630,7 +5614,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
   END SUBROUTINE sed_MUSTANG_consol_diff_bioturb
 
 !!==============================================================================
-#ifdef key_MUSTANG_splitlayersurf
   SUBROUTINE sed_MUSTANG_split_surflayer(i,j,ksmax)
 ! 
    !&E--------------------------------------------------------------------------
@@ -5658,8 +5641,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
    INTEGER                          :: nlayer_a_fusion, nlayer_splitt
    INTEGER ,DIMENSION(ksdmax)       :: nlayer_splitk
    REAL(KIND=rsh)                   :: dzsa,poroa,cvolp,zz
-   REAL(KIND=rsh)                   :: thick_surf_new ,thick_surf_old,stcvsed_surf_new,stcvsed_surf_old
-   REAL(KIND=rsh)                   :: stcsedtot_new,stcsedtot_old
 #if ! defined key_noTSdiss_insed
 !#ifdef key_MUSTANG_V2
 !   REAL(KIND=rsh)                   :: porowater_new,porowater1,porowater2
@@ -5702,17 +5683,6 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
                 ks_split_min=ks_split_min-nlayer_a_fusion
              ENDIF
                
-#ifdef key_test_conservativity_splitsurf
-             ! to test conservativity
-             thick_surf_old=0.0_rsh
-             !stcvsed_surf_old=0.0_rsh
-             stcsedtot_old=0.0_rsh
-             DO kk=MAX(1,ks_split_min-2),ks_surf
-               thick_surf_old=thick_surf_old+dzs(kk,i,j)
-              ! stcvsed_surf_old=stcvsed_surf_old+cv_sed(3,kk,i,j)*dzs(kk,i,j)
-               stcsedtot_old=stcsedtot_old+c_sedtot(kk,i,j)*dzs(kk,i,j)
-             ENDDO
-#endif
              
              ! splitting surface layer first above ks_surf
              k=ks_surf  
@@ -5898,37 +5868,12 @@ END SUBROUTINE MUSTANG_reconstruct_rouse2D_profile
              
              ksma(i,j)=ksmax
             
-#ifdef key_test_conservativity_splitsurf
-             ! Verification of the conservativity of thicknesses and concentrations
-             thick_surf_new=0.0_rsh
-            ! stcvsed_surf_new=0.0_rsh
-             stcsedtot_new=0.0_rsh
-             DO k= MAX(1,ks_split_min-2), ksma(i,j)
-               thick_surf_new=thick_surf_new+dzs(k,i,j)
-               !stcvsed_surf_new=stcvsed_surf_new+cv_sed(3,k,i,j)*dzs(k,i,j)
-               stcsedtot_new=stcsedtot_new+c_sedtot(k,i,j)*dzs(k,i,j)
-             ENDDO          
-             IF((thick_surf_new-thick_surf_old)/thick_surf_old*100 > 1.e-3 ) THEN
-                write(*,*)'Probleme thick ',t,i,j,ksma(i,j),thick_surf_new,thick_surf_old, &
-                          'diff %=',(thick_surf_new-thick_surf_old)/thick_surf_old*100
-              ! write(*,*)'dzs old',j,ks_split_min,ks_surf,dzs_old(ks_split_min-2:ks_surf)
-               write(*,*)'dzs new',j,dzs(ks_split_min-2:ksma(i,j),i,j)
-             ENDIF
-             !IF((stcvsed_surf_new-stcvsed_surf_old)/stcvsed_surf_old*100 > 1.e-3) THEN
-             !   write(*,*)'Probleme cvsed ',i,j,ksma(i,j),stcvsed_surf_new,stcvsed_surf_old, &
-             !              'diff %=',(stcvsed_surf_new-stcvsed_surf_old)/stcvsed_surf_old*100
-             !ENDIF
-             IF((stcsedtot_new-stcsedtot_old)/stcsedtot_old*100 > 1.e-3) THEN
-                write(*,*)'Probleme csedtot ',i,j,ksma(i,j),stcsedtot_new,stcsedtot_old, &
-                            'diff %=',(stcsedtot_new-stcsedtot_old)/stcsedtot_old*100
-             ENDIF
-#endif 
+
           
            ENDIF   ! if nlayer_splitt > 0                
          ENDIF   ! if ks_surf > 0 
 
   END SUBROUTINE sed_MUSTANG_split_surflayer
-#endif
 !!===========================================================================================
 !
       SUBROUTINE sed_MUSTANG_coefbioturb_part(i,j,difbio)
@@ -6655,10 +6600,8 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
   !!==============================================================================
   
   SUBROUTINE MUSTANGV2_comp_eros_flx_indep(i, j, ksmax,                            &
-#ifdef key_MUSTANG_bedload
                                       om_r, on_r, flx_bxij, flx_byij,         &
                                       ubar, vbar,   &
-#endif
                                       sed_eros_flx_class_by_class)
 
    !&E--------------------------------------------------------------------------
@@ -6684,15 +6627,13 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
 
    !! * Arguments
    INTEGER, INTENT(IN) :: i, j, ksmax
-   REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(OUT) :: sed_eros_flx_class_by_class 
-#ifdef key_MUSTANG_bedload
-   REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(IN)              :: flx_bxij 
+   REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(OUT) :: sed_eros_flx_class_by_class
+   REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(IN)              :: flx_bxij
    REAL(KIND=rsh),DIMENSION(1:nvp),INTENT(IN)              :: flx_byij
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)      :: om_r
    REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY),INTENT(IN)      :: on_r
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: ubar                       
-   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: vbar                         
-#endif
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: ubar
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,1:4),INTENT(IN)   :: vbar
 
    !! * Local declaration
    INTEGER                  :: iv, jiv
@@ -6754,21 +6695,19 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
 
      IF (tauskin(i,j) .GT. toce_loc(iv)) THEN
 
-#ifdef key_MUSTANG_bedload
-       ! fsusp is the suspension part of the whole iv transport (suspension + bedload) according to Wu and Lin (2014) 
+       ! fsusp is the suspension part of the whole iv transport (suspension + bedload) according to Wu and Lin (2014)
        ! It is applied to E0_sand parameter to prevent any overestimation of sediment transport in the event that
        !      bedload & suspension are accounted for
        ! Warning tauskin suspension = tauskin bedload while different in Wu and Lin
 
-       IF (l_fsusp .and. iv.le.ibedload2) THEN
-         speed = SQRT( ubar(i+1,j,3)**2+ vbar(i,j+1,3)**2) 
+       IF (l_bedload .and. l_fsusp .and. iv.le.ibedload2) THEN
+         speed = SQRT( ubar(i+1,j,3)**2+ vbar(i,j+1,3)**2)
          fsusp= (0.0000262_rsh*((speed/ws_sand(iv))**1.74_rsh)) /  &
                 ( (0.0000262_rsh*((speed/ws_sand(iv))**1.74_rsh))  &
                 + (0.0053_rsh*(tauskin(i,j)/toce_loc(iv)-1.0_rsh)**0.46_rsh) )
          E0_sand_loc(iv)=fsusp*E0_sand_loc(iv)
           IF (l_outsed_fsusp) var2D_fsusp(iv,i,j)=fsusp ! check output
        END IF
-#endif
 
        !!! Compute of erosion flux sed_eros_flx_class_by_class in kg/m2/s
        ! As already mentioned in paraMUSTANG, if E0_sand_option == 3, 
@@ -6794,12 +6733,8 @@ END SUBROUTINE MUSTANGV2_fusion_with_poro
       sed_eros_flxsand=0.0_rsh 
       frac_sand=0.0_rsh  
       DO iv=isand1,isand2
-#ifdef key_MUSTANG_bedload
          sed_eros_flxsand=sed_eros_flxsand+sed_eros_flx_class_by_class(iv)       &
                       +ABS(flx_bxij(iv)/om_r(i,j))+ABS(flx_byij(iv)/on_r(i,j))
-#else
-         sed_eros_flxsand=sed_eros_flxsand+sed_eros_flx_class_by_class(iv)
-#endif
          frac_sand=frac_sand+frac_sed(iv)
       ENDDO
 
@@ -7008,18 +6943,14 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 
          sed_eros_flx_class_by_class(iv)=sed_eros_flx_class_by_class(iv)*surf_cell(i,j)*dt_ero(iv) ! in kg
 
-#ifdef key_MUSTANG_bedload
          flx_bxij(iv)=dt_ero(iv)*flx_bxij(iv)*on_r(i,j) ! in kg
          flx_byij(iv)=dt_ero(iv)*flx_byij(iv)*om_r(i,j) ! in kg
-#endif
 
 
-         ! Updating masses in active layer according to divergence of actual (limited or not) erosion/bedload fluxes 
+         ! Updating masses in active layer according to divergence of actual (limited or not) erosion/bedload fluxes
 
            ero_tot(iv)=sed_eros_flx_class_by_class(iv)
-#ifdef key_MUSTANG_bedload
            ero_tot(iv)=ero_tot(iv)+ABS(flx_bxij(iv))+ABS(flx_byij(iv))
-#endif
          IF (.NOT. l_empty(iv)) THEN
            massinactivlayer(iv)=(cv_sed(iv,ksmax,i,j)*dzsa) - (ero_tot(iv)/surf_cell(i,j))
          ELSE
@@ -7157,10 +7088,8 @@ END SUBROUTINE MUSTANGV2_comp_eros_flx_indep
 ! To see later
 !     DO iv=imud2+1,nvp
 !       ivp_assoc=irkm_var_assoc(iv)
-!#ifdef key_MUSTANG_bedload
 !       flx_bxij(iv)=flx_bxij(ivp_assoc)*cv_sed(iv,ksmax,i,j)/cv_sed(ivp_assoc,ksmax,i,j)
 !       flx_byij(iv)=flx_byij(ivp_assoc)*cv_sed(iv,ksmax,i,j)/cv_sed(ivp_assoc,ksmax,i,j)
-!#endif
 !       sed_eros_flx_class_by_class(iv)=sed_eros_flx_class_by_class(ivp_assoc)*cv_sed(iv,ksmax,i,j)/cv_sed(ivp_assoc,ksmax,i,j)
 !     END DO
 
@@ -7886,9 +7815,9 @@ END SUBROUTINE MUSTANGV2_eval_dissvar_IWSflux
    !!===========================================================================
  
 
-#if defined key_MUSTANG_bedload
-  !!============================================================================== 
-SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij) 
+#if defined key_MUSTANG_V2
+  !!==============================================================================
+SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
    !&E--------------------------------------------------------------------------
    !&E                 ***  ROUTINE MUSTANGV2_eval_bedload  ***
@@ -8042,7 +7971,7 @@ SUBROUTINE MUSTANGV2_eval_bedload(i, j, ksmax, flx_bxij, flx_byij)
 
 END SUBROUTINE MUSTANGV2_eval_bedload
 
-! end key_MUSTANG_bedload
+! end key_MUSTANG_V2
 #endif
 
 !!===========================================================================

@@ -1553,7 +1553,6 @@ CR      write(*,*) 'wrt_his var2D_flx_w2s'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_pephm_fcor'  MYID
             endif
-#ifdef key_MUSTANG_bedload
             indx=indx+1
             if (outMust(indx)) then
             work2d=var2D_flx_bx(itrc,:,:)
@@ -1582,7 +1581,6 @@ CR      write(*,*) 'wrt_his var2D_bil_bedload'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_fsusp'  MYID
             endif
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
       enddo
 
@@ -1685,7 +1683,6 @@ CR      write(*,*) 'wrt_his var2D_pct_iter_coh'  MYID
      &                   vname_Must(1,indx),record,r2dvar,type)
 CR      write(*,*) 'wrt_his var2D_niter_ero'  MYID
       endif
-#ifdef key_MUSTANG_bedload
       indx=indx+1
       if (outMust(indx)) then
       work2d=var2D_flx_bx_int(:,:)
@@ -1708,7 +1705,6 @@ CR      write(*,*) 'wrt_his var2D_flx_by_int'  MYID
 CR      write(*,*) 'wrt_his var2D_bil_bedload_int'  MYID
       endif
 
-# endif /* key_MUSTANG_bedload */
 # endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN
