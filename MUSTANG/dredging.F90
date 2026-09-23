@@ -685,10 +685,10 @@ CONTAINS
 
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif /* XIOS */
+
+
 
       INTEGER :: iz, ierror
       REAL(KIND=rsh) :: tmp
@@ -717,11 +717,8 @@ CONTAINS
 
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif /* XIOS */
-
       INTEGER :: iv, iz, ierror
       REAL(KIND=rsh) :: tmp
 
@@ -755,11 +752,8 @@ CONTAINS
 
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif
-
       INTEGER :: itrc
 
       do itrc = 1, NT
