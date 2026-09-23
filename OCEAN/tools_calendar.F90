@@ -1,5 +1,4 @@
 # include "cppdefs.h"
-!$AGRIF_DO_NOT_TREAT
 MODULE tools_calendar
 !!---------------------------------------------------------------------
 !!                 ***  MODULE tools_calendar  ***
@@ -8,7 +7,6 @@ MODULE tools_calendar
 !!              Supports gregorian (default), 360_day, 365_day/no_leap.
 !!
 !!---------------------------------------------------------------------
-
    IMPLICIT NONE
    PRIVATE
 
@@ -41,8 +39,11 @@ MODULE tools_calendar
    ! Module-level copies of namelist calendar settings.
    ! Set once via init_tools_calendar (called from init_calendar).
    ! Stored here so this module does not depend on AGRIF-managed croco_namelist.
+   ! AGRIF conv can't handle character(len=N)
+!$AGRIF_DO_NOT_TREAT
    character(len=20) :: calendar_type = 'gregorian'
    character(len=19) :: start_date    = '                   '
+!$AGRIF_END_DO_NOT_TREAT
 
 CONTAINS
 
@@ -299,11 +300,12 @@ CONTAINS
    !! ** Purpose : read origin date from a NetCDF time variable 'units'
    !!              attribute and return it as seconds since epoch.
 
-#ifdef MPI
+#if defined MPI
       USE scalars, ONLY: mynode
 #endif
       USE netcdf
       IMPLICIT NONE
+
 
       INTEGER, INTENT(in)  :: netcdfid, varid
       REAL(kind=rlg), INTENT(out) :: date_in_sec
@@ -311,42 +313,15 @@ CONTAINS
       CHARACTER*180 :: units
       CHARACTER*40  :: file_calendar
       CHARACTER*19  :: date_str
-      INTEGER       :: lenstr, luni, indst, ierr, ierr2, iw
-      LOGICAL       :: first_warn
-
-      ! Track which ncids have already issued a warning (once per file)
-      INTEGER, PARAMETER :: max_open_nc = 256
-      INTEGER, SAVE :: warned_ids(max_open_nc)
-      INTEGER, SAVE :: n_warned = 0
-      DATA warned_ids /256*-1/
-
-      first_warn = .true.
-      do iw = 1, n_warned
-         if (warned_ids(iw) == netcdfid) then
-            first_warn = .false.
-            exit
-         end if
-      end do
-      if (first_warn) then
-         if (n_warned < max_open_nc) then
-            n_warned = n_warned + 1
-            warned_ids(n_warned) = netcdfid
-         else
-            MPI_master_only write (*, '(/1x,A,I0,A/)') &
-               'TOOL_ORIGINDATE WARNING: warning deduplication limit reached (', &
-               max_open_nc, ' files). Warnings will repeat for this file.'
-         end if
-      end if
+      INTEGER       :: lenstr, luni, indst, ierr, ierr2
 
       ierr = nf90_get_att(netcdfid, varid, 'units', units)
       if (ierr .eq. nf90_noerr) then
          luni = lenstr(units)
          if (index(units(1:luni), 'since') == 0) then
-            if (first_warn) then
-               MPI_master_only write (*, '(/1x,A/6x,2A/)') &
-                  'TOOL_ORIGINDATE WARNING: no ''since'' keyword in time units.', &
-                  'Assuming time axis is relative to start_date: ', TRIM(start_date)
-            end if
+            MPI_master_only write (*, '(/1x,A/6x,2A/)') &
+               'TOOL_ORIGINDATE WARNING: no ''since'' keyword in time units.', &
+               'Assuming time axis is relative to start_date: ', TRIM(start_date)
             date_in_sec = tool_datosec(start_date)
             RETURN
          end if
@@ -363,23 +338,19 @@ CONTAINS
             STOP
          end if
       else
-         if (first_warn) then
-            MPI_master_only write (*, '(/1x,A/6x,2A/)') &
-               'TOOL_ORIGINDATE WARNING: no units attribute in forcing file.', &
-               'Assuming time axis is relative to start_date: ', TRIM(start_date)
-         end if
+         MPI_master_only write (*, '(/1x,A/6x,2A/)') &
+            'TOOL_ORIGINDATE WARNING: no units attribute in forcing file.', &
+            'Assuming time axis is relative to start_date: ', TRIM(start_date)
          date_in_sec = tool_datosec(start_date)
          RETURN
       end if
 
       if (luni < indst) then
-         if (first_warn) then
-            MPI_master_only write (*, '(/1x,A/6x,A/10x,A/6x,2A/)') &
-               'TOOL_ORIGINDATE WARNING: no date found in time var units.', &
-               'Time variable should follow Netcdf CF format: ', &
-               '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
-               'Assuming time axis is relative to start_date: ', TRIM(start_date)
-         end if
+         MPI_master_only write (*, '(/1x,A/6x,A/10x,A/6x,2A/)') &
+            'TOOL_ORIGINDATE WARNING: no date found in time var units.', &
+            'Time variable should follow Netcdf CF format: ', &
+            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            'Assuming time axis is relative to start_date: ', TRIM(start_date)
          date_in_sec = tool_datosec(start_date)
          RETURN
       elseif (luni - indst .eq. 3) then
@@ -440,12 +411,10 @@ CONTAINS
           date_str(2:2) < '0' .or. date_str(2:2) > '9' .or. &
           date_str(3:3) < '0' .or. date_str(3:3) > '9' .or. &
           date_str(4:4) < '0' .or. date_str(4:4) > '9') then
-         if (first_warn) then
-            MPI_master_only write (*, '(/1x,2A/6x,2A/)') &
-               'TOOL_ORIGINDATE WARNING: non-standard date format in time units: ', &
-               TRIM(date_str), &
-               'Assuming time axis is relative to start_date: ', TRIM(start_date)
-         end if
+         MPI_master_only write (*, '(/1x,2A/6x,2A/)') &
+            'TOOL_ORIGINDATE WARNING: non-standard date format in time units: ', &
+            TRIM(date_str), &
+            'Assuming time axis is relative to start_date: ', TRIM(start_date)
          date_in_sec = tool_datosec(start_date)
          RETURN
       end if
@@ -467,4 +436,3 @@ CONTAINS
    END SUBROUTINE init_tools_calendar
 
 END MODULE tools_calendar
-!$AGRIF_END_DO_NOT_TREAT
