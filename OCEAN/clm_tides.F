@@ -126,12 +126,48 @@
       new_day = mas_is_new_day
 !$acc kernels if(compute_on_device) default(present)
 #  if defined SSH_TIDES
+#   if defined ZCLIMATOLOGY
       call mas_daily_update(IstrR,IendR,JstrR,JendR,new_day,
      &                       ijour,imois,ian,mrssh,mgssh,mhssh)
       call mas_interpolate(IstrR,IendR,JstrR,JendR,
      &                      Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+#   else /* Z_FRC_BRY only*/
+#    ifdef OBC_WEST
+      if (WESTERN_EDGE) then
+        call mas_daily_update(Istr-1,Istr-1,JstrR,JendR,new_day,
+     &                         ijour,imois,ian,mrssh,mgssh,mhssh)
+        call mas_interpolate(Istr-1,Istr-1,JstrR,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+      endif
+#    endif
+#    ifdef OBC_EAST
+      if (EASTERN_EDGE) then
+        call mas_daily_update(Iend+1,Iend+1,JstrR,JendR,new_day,
+     &                         ijour,imois,ian,mrssh,mgssh,mhssh)
+        call mas_interpolate(Iend+1,Iend+1,JstrR,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+      endif
+#    endif
+#    ifdef OBC_SOUTH
+      if (SOUTHERN_EDGE) then
+        call mas_daily_update(IstrR,IendR,Jstr-1,Jstr-1,new_day,
+     &                         ijour,imois,ian,mrssh,mgssh,mhssh)
+        call mas_interpolate(IstrR,IendR,Jstr-1,Jstr-1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+      endif
+#    endif
+#    ifdef OBC_NORTH
+      if (NORTHERN_EDGE) then
+        call mas_daily_update(IstrR,IendR,Jend+1,Jend+1,new_day,
+     &                         ijour,imois,ian,mrssh,mgssh,mhssh)
+        call mas_interpolate(IstrR,IendR,Jend+1,Jend+1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhssh,Etide)
+      endif
+#    endif
+#   endif
 #  endif
 #  if defined UV_TIDES
+#   if defined M2CLIMATOLOGY
       call mas_daily_update(Istr,IendR,JstrR,JendR,new_day,
      &                       ijour,imois,ian,mru,mgu,mhu)
       call mas_daily_update(IstrR,IendR,Jstr,JendR,new_day,
@@ -140,6 +176,56 @@
      &                      Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
       call mas_interpolate(IstrR,IendR,JstrR,JendR,
      &                      Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+#   else /* M2_FRC_BRY only */
+#    ifdef OBC_WEST
+      if (WESTERN_EDGE) then
+        call mas_daily_update(Istr,Istr,JstrR,JendR,new_day,
+     &                         ijour,imois,ian,mru,mgu,mhu)
+        call mas_interpolate(Istr,Istr,JstrR,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
+        call mas_daily_update(Istr-1,Istr-1,Jstr,JendR,new_day,
+     &                         ijour,imois,ian,mrv,mgv,mhv)
+        call mas_interpolate(Istr-1,Istr-1,Jstr,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+      endif
+#    endif
+#    ifdef OBC_EAST
+      if (EASTERN_EDGE) then
+        call mas_daily_update(Iend+1,Iend+1,JstrR,JendR,new_day,
+     &                         ijour,imois,ian,mru,mgu,mhu)
+        call mas_interpolate(Iend+1,Iend+1,JstrR,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
+        call mas_daily_update(Iend+1,Iend+1,Jstr,JendR,new_day,
+     &                         ijour,imois,ian,mrv,mgv,mhv)
+        call mas_interpolate(Iend+1,Iend+1,Jstr,JendR,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+      endif
+#    endif
+#    ifdef OBC_SOUTH
+      if (SOUTHERN_EDGE) then
+        call mas_daily_update(Istr,IendR,Jstr-1,Jstr-1,new_day,
+     &                         ijour,imois,ian,mru,mgu,mhu)
+        call mas_interpolate(Istr,IendR,Jstr-1,Jstr-1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
+        call mas_daily_update(IstrR,IendR,Jstr,Jstr,new_day,
+     &                         ijour,imois,ian,mrv,mgv,mhv)
+        call mas_interpolate(IstrR,IendR,Jstr,Jstr,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+      endif
+#    endif
+#    ifdef OBC_NORTH
+      if (NORTHERN_EDGE) then
+        call mas_daily_update(Istr,IendR,Jend+1,Jend+1,new_day,
+     &                         ijour,imois,ian,mru,mgu,mhu)
+        call mas_interpolate(Istr,IendR,Jend+1,Jend+1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhu,Utide)
+        call mas_daily_update(IstrR,IendR,Jend+1,Jend+1,new_day,
+     &                         ijour,imois,ian,mrv,mgv,mhv)
+        call mas_interpolate(IstrR,IendR,Jend+1,Jend+1,
+     &                        Istr,Iend,Jstr,Jend,tempis,mhv,Vtide)
+      endif
+#    endif
+#   endif
 #  endif
 #  if defined POT_TIDES
       call mas_daily_update(IstrR,IendR,JstrR,JendR,new_day,
