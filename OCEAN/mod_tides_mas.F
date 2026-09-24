@@ -1605,8 +1605,8 @@
         real, intent(inout)   :: mgv(30,8,GLOBAL_2D_ARRAY)
         real, intent(inout)   :: mhu(130,GLOBAL_2D_ARRAY)
         real, intent(inout)   :: mhv(130,GLOBAL_2D_ARRAY)
-        complex :: u_cmplx(GLOBAL_2D_ARRAY,Ntides)
-        complex :: v_cmplx(GLOBAL_2D_ARRAY,Ntides)
+        complex :: u_cmplx(GLOBAL_2D_ARRAY)
+        complex :: v_cmplx(GLOBAL_2D_ARRAY)
         integer :: i,j,ht,k,nn,ir0
         real    :: angle
         complex :: U_interp,V_interp
@@ -1626,20 +1626,20 @@
             k =k_of(ht)
             nn=nn_of(ht)
 
-            do j=JstrR,JendR
-              do i=IstrR,IendR
+            do j=Jstr-1,JendR
+              do i=Istr-1,IendR
                 angle=UV_Tangle(i,j,ht)
 #  ifdef CURVGRID
      &                -angler(i,j)*rad2deg
 #  endif
                 call ep2ap(UV_Tmajor(i,j,ht),UV_Tminor(i,j,ht),
      &                     angle,UV_Tphase(i,j,ht),
-     &                     u_cmplx(i,j,ht),v_cmplx(i,j,ht))
+     &                     u_cmplx(i,j),v_cmplx(i,j))
               enddo
             enddo
             do j=JstrR,JendR
               do i=Istr,IendR
-                U_interp = 0.5*(u_cmplx(i,j,ht)+u_cmplx(i-1,j,ht))
+                U_interp = 0.5*(u_cmplx(i,j)+u_cmplx(i-1,j))
                 mru(nn,k,i,j) = abs(U_interp)*100.0
                 mgu(nn,k,i,j) = atan2(aimag(U_interp),real(U_interp))
      &                         *rad2deg
@@ -1650,7 +1650,7 @@
             enddo
             do j=Jstr,JendR
               do i=IstrR,IendR
-                V_interp = 0.5*(v_cmplx(i,j,ht)+v_cmplx(i,j-1,ht))
+                V_interp = 0.5*(v_cmplx(i,j)+v_cmplx(i,j-1))
                 mrv(nn,k,i,j) = abs(V_interp)*100.0
                 mgv(nn,k,i,j) = atan2(aimag(V_interp),real(V_interp))
      &                         *rad2deg
