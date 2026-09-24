@@ -89,7 +89,7 @@ include Makedefs
 	get_grid.F	get_initial.F	get_vbc.F	get_wwave.F\
 	get_tclima.F    get_uclima.F    get_ssh.F       get_sss.F\
 	get_smflux.F    get_stflux.F    get_srflux.F    get_sst.F\
-	mod_tides_mas.F                 get_tides.F\
+	get_tides.F\
 	clm_tides.F     get_bulk.F      bulk_flux.F\
 	get_bry.F       get_bry_bio.F	sstskin.F\
 	get_psource.F   get_psource_ts.F get_btflux.F\
@@ -131,6 +131,7 @@ include Makedefs
 
  SRCS90 = \
 	croco_namelist.F90\
+	mod_tides_mas.F90\
 	croco_namelist_read.F90 croco_namelist_init.F90 croco_namelist_check.F90\
 	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	storng_testmpi.F90\
 	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90	stowhite.F90\
@@ -297,8 +298,6 @@ plotter: plotter.F
 my_barrier.o: my_barrier.f
 	$(CFT) -c -O0 my_barrier.f
 #
-# mod_tides_mas needs to be compiled before step.
-step.o clm_tides.o get_tides.o: mod_tides_mas.o
 #
 # Include automatically generated dependency list:
 #
