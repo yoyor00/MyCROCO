@@ -59,6 +59,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
 
+- VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
+
 ### Changed
 
 - Input file croco.in replace by a standard namelist (#497)
