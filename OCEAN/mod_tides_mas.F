@@ -1981,12 +1981,10 @@
           a(i)=t
          end if
          k=nv2
-    6    continue
-         if(k < j) then
+         do while (k < j)
           j=j-k
           k=k/2
-          goto 6
-         end if
+         end do
          j=j+k
         end do
 
@@ -2114,9 +2112,8 @@
         do i=1,12
          mois=12-i+1
          jour=jou-jo(mois,ibs)
-         if(jour > 0) goto 20
+         if(jour > 0) exit
         end do
-   20   continue
         end if
 
         a=ia+mois/100.0+jour/10000.0
