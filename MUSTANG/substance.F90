@@ -1,3 +1,7 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 #include "cppdefs.h"
 
 MODULE substance
@@ -12,9 +16,8 @@ MODULE substance
 
    USE module_substance
    USE comsubstance
-#ifdef SUBSTANCE_SUBMASSBALANCE 
    USE submassbalance, ONLY :  submassbalance_readdomain
-#endif
+   USE croco_namelist, ONLY : subsfilename
 
 # if defined BIOLink
    USE comBIOLink
@@ -55,13 +58,13 @@ CONTAINS
       !!                    *** ROUTINE substance_read_alloc ***
       !!-------------------------------------------------------------------
       !
- 
+   
 #if defined BLOOM
 # if defined key_N_tracer || key_P_tracer
     USE bloom_initdefine , ONLY : bloom_create_vartracer
 # endif
 #endif
- 
+   
    !! Argument
    INTEGER,INTENT(INOUT)                     ::  may_day_flag
    INTEGER,INTENT(IN)                        ::  indxT, indxTsrc
@@ -71,6 +74,8 @@ CONTAINS
    INTEGER                                   :: ivpc, ivp, iv, iv0, indx, ivTS
    INTEGER                                   :: isubs, nballoc, ivr, it, ntypvar
    INTEGER                                   :: lstr, lenstr
+   INTEGER :: rc
+   CHARACTER(LEN=lchain) :: msg
 
 !! tables (_n) sized to read in namelist by number of substances of such and such a type
 !! tables (_r) intermediates sized to the number of substances, will then be copied into the final 
@@ -93,24 +98,22 @@ CONTAINS
       REAL(KIND=rsh), DIMENSION(ntrc_subs)    :: D0_m0_r,D0_m1_r
 # endif
    LOGICAL, DIMENSION(ntrc_subs)              :: l_bedload_r
-   LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n,l_outsandrouse_n,l_bedload_n
+   LOGICAL, DIMENSION(:),ALLOCATABLE          :: l_sand2D_n, l_outsandrouse_n, l_bedload_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
+   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: ws_free_opt_n, ws_hind_opt_n
+   REAL(KIND=rsh), DIMENSION(:,:),ALLOCATABLE :: ws_free_para_n, ws_hind_para_n
    INTEGER, DIMENSION(:),ALLOCATABLE          :: D0_funcT_opt_n
    REAL(KIND=rsh),DIMENSION(:),ALLOCATABLE    :: D0_m0_n,D0_m1_n
 
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: tocd_n,ros_n,diam_n
-   REAL(KIND=rsh), DIMENSION(:),ALLOCATABLE   :: ws_free_opt_n,ws_hind_opt_n
-   REAL(KIND=rsh), DIMENSION(:,:),ALLOCATABLE :: ws_free_para_n,ws_hind_para_n
+
 #if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
    LOGICAL                                    ::  l_ibedload1, l_ibedload2
 #endif
-#if defined key_sand2D
+
    LOGICAL, DIMENSION(ntrc_subs)              :: l_outsandrouse_r, l_sand2D_r
 #endif
-#endif
 
-#ifdef SUBSTANCE_SUBMASSBALANCE 
    REAL(KIND=rlg)        :: tool_datosec
-#endif
                                     
    !! *  define namelists reading in parasubstance.txt
 #ifdef MUSTANG
@@ -162,11 +165,9 @@ CONTAINS
    NAMELIST/nmlvarbent/name_var_bent, long_name_var_bent, standard_name_var_bent, unit_var_bent, &
                        cini_bent, l_out_subs_bent
 #endif 
-#ifdef SUBSTANCE_SUBMASSBALANCE 
    NAMELIST/nmlsubmassbalance/submassbalance_l, submassbalance_nb_border, &
                     submassbalance_input_file, submassbalance_output_file, &
                     submassbalance_dtout, submassbalance_date_start
-#endif 
 
    !!----------------------------------------------------------------------
    !! * Executable part
@@ -180,7 +181,6 @@ CONTAINS
    MPI_master_only   WRITE(stdout,*) ' '
 
 
- 
    lstr=lenstr(subsfilename)
    MPI_master_only  WRITE(stdout,*),'SUBS:',subsfilename(1:lstr)
    OPEN(500,file=subsfilename(1:lstr),status='old',form='formatted',access='sequential')
@@ -190,21 +190,20 @@ CONTAINS
    nv_sand=0
    nv_mud=0
 #endif
-   
+
 #if !defined PEPTIC && ! defined key_N_tracer && ! defined key_P_tracer
 #if defined MUSTANG
    IF(nv_dis+nv_ncp+nv_grav+nv_sand+nv_mud+nv_sorb .NE. ntrc_subs) THEN
      MPI_master_only  WRITE(stdout,*)'WARNING - the total number of substances read from the file'
-     MPI_master_only  WRITE(stdout,*) 'parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
+     MPI_master_only  WRITE(stdout,*)' parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
-     MPI_master_only  WRITE(stdout,*)'  nv_dis ',nv_dis
-     MPI_master_only  WRITE(stdout,*)'+ nv_ncp ',nv_ncp
-     MPI_master_only  WRITE(stdout,*)'+ nv_grav ',nv_grav
-     MPI_master_only  WRITE(stdout,*)'+ nv_sand ',nv_sand
-     MPI_master_only  WRITE(stdout,*)'+ nv_mud ',nv_mud
-     MPI_master_only  WRITE(stdout,*)'+ nv_sorb ',nv_sorb
-
+     MPI_master_only  WRITE(stdout,*)'  nv_dis read in parasubstance.txt ',nv_dis
+     MPI_master_only  WRITE(stdout,*)'+ nv_ncp read in parasubstance.txt ',nv_ncp
+     MPI_master_only  WRITE(stdout,*)'+ nv_grav read in parasubstance.txt ',nv_grav
+     MPI_master_only  WRITE(stdout,*)'+ nv_sand read in parasubstance.txt ',nv_sand
+     MPI_master_only  WRITE(stdout,*)'+ nv_mud read in parasubstance.txt ',nv_mud
+     MPI_master_only  WRITE(stdout,*)'+ nv_sorb read in parasubstance.txt ',nv_sorb
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
      goto 99
@@ -215,10 +214,9 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
-     MPI_master_only  WRITE(stdout,*)'  nv_dis ',nv_dis
-     MPI_master_only  WRITE(stdout,*)'+ nv_ncp ',nv_ncp
-     MPI_master_only  WRITE(stdout,*)'+ nv_sorb ',nv_sorb
-
+     MPI_master_only  WRITE(stdout,*)'  nv_dis read in parasubstance.txt ',nv_dis
+     MPI_master_only  WRITE(stdout,*)'+ nv_ncp read in parasubstance.txt ',nv_ncp
+     MPI_master_only  WRITE(stdout,*)'+ nv_sorb read in parasubstance.txt ',nv_sorb
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
      goto 99
@@ -231,8 +229,7 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'parasubstance.txt is DIFFERENT from the ntfix parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntfix in param.h = ',ntfix
-     MPI_master_only  WRITE(stdout,*)' nv_fix ',nv_fix
-
+     MPI_master_only  WRITE(stdout,*)'  nv_fix read in parasubstance.txt ',nv_fix
      MPI_master_only  WRITE(stdout,*)'The simulation will stop'
      may_day_flag=77
      goto 99
@@ -297,10 +294,8 @@ CONTAINS
      diam_r(ivp)=diam_n(ivr)
      ros_r(ivp)=ros_n(ivr)
      l_bedload_r(ivp)=l_bedload_n(ivr)
-#ifdef key_sand2D
      l_sand2D_r(ivp)=l_sand2D_n(ivr)
      l_outsandrouse_r(ivp)=l_outsandrouse_n(ivr)
-#endif
      itypv_r(iv0+ivr)=2
     ENDDO
     DEALLOCATE(tocd_n,diam_n,ros_n,l_sand2D_n,l_outsandrouse_n,l_bedload_n)
@@ -340,7 +335,11 @@ CONTAINS
                    ws_hind_opt_n,ws_hind_para_n,tocd_n,diam_n,ros_n)
    ENDIF
 
-#endif /* MUSTANG*/
+#else  /* MUSTANG*/
+    nv_grav=0
+    nv_sand=0
+    nv_mud=0
+#endif
 
    ! reading non constitutive particulate variables
    !----------------------------------------------- 
@@ -457,15 +456,17 @@ CONTAINS
    nv_state=nv_adv+nv_fix
    nv_tot=nv_state ! ntrc_substot
 
-#ifdef SUBSTANCE_SUBMASSBALANCE 
-    READ(500, nmlsubmassbalance)
+    READ (500, nmlsubmassbalance, iostat=rc); REWIND (500)
+    IF (rc /= 0) THEN
+       msg = "WARNING : nmlsubmassbalance, namelist not found, default values are used :"
+       MPI_master_only  WRITE(stdout,*) msg
+       MPI_master_only  WRITE(stdout,nml=nmlsubmassbalance)
+    END IF
+
     if (submassbalance_l) then
         submassbalance_tdeb = tool_datosec(submassbalance_date_start)
         CALL submassbalance_readdomain()
     endif
-#endif 
-
-
 
     !******************************************
     !    create new variables 
@@ -611,8 +612,7 @@ CONTAINS
      MPI_master_only  WRITE(stdout,*)'parasubstance.txt is DIFFERENT from the ntrc_subs parameter'
      MPI_master_only  WRITE(stdout,*)'in param.h  '
      MPI_master_only  WRITE(stdout,*)'ntrc_subs in param.h = ',ntrc_subs
-     MPI_master_only  WRITE(stdout,*)'nv_adv',nv_adv
-
+     MPI_master_only  WRITE(stdout,*)'nv_adv read in parasubstance.txt ',nv_adv
      MPI_master_only  WRITE(stdout,*)'The simulation is stopped'
      may_day_flag=77
      goto 99
@@ -684,7 +684,7 @@ CONTAINS
    ENDIF
    ALLOCATE(l_subs2D(-1:nv_adv))
    l_subs2D(:)=.false.
-#if defined key_sand2D
+#ifdef MUSTANG
    ALLOCATE(l_outsandrouse(nvp))
    l_outsandrouse(:)=.false.
 #endif
@@ -726,7 +726,6 @@ CONTAINS
    ! ------------------------------------------------------------------------------------
    ALLOCATE(irkm_var_assoc(nvp))
    irkm_var_assoc(:)=0
-
 #ifdef MUSTANG
    DO iv=1,nv_sorb
      isubs=nvpc+nv_ncp+iv
@@ -846,11 +845,13 @@ CONTAINS
          TRIM(ADJUSTL(ADJUSTR(obc_cv_name_r(isubs))))
     END DO
 
-    DO isubs=1,nv_fix
-     MPI_master_only WRITE(stdout,*)' '
-     MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(ADJUSTL(ADJUSTR(name_var_fix(isubs))))
-     MPI_master_only WRITE(stdout,*)'uniform initial conc. in water column  : ',cini_wat_fix(isubs)
-    END DO
+    IF (nv_fix > 0) THEN
+      DO isubs=1,nv_fix
+      MPI_master_only WRITE(stdout,*)' '
+      MPI_master_only WRITE(stdout,*)'FIXED VARIABLE NAME : ',TRIM(ADJUSTL(ADJUSTR(name_var_fix(isubs))))
+      MPI_master_only WRITE(stdout,*)'uniform initial conc. in water column  : ',cini_wat_fix(isubs)
+      END DO
+    END IF
 #ifdef key_benthic
     DO isubs=1,nv_bent
      MPI_master_only WRITE(stdout,*)' '
@@ -897,20 +898,22 @@ CONTAINS
          wrthis(indx) = .FALSE. !! no output in water for gravel
      ENDIF
    ENDDO
-   DO isubs=1,nv_fix
-     indx=indxT+ntrc_salt+ntrc_subs+isubs
-   !  write(*,*)'fix, indice vname',indx
-     vname(1,indx)=name_var_fix(isubs)
-     MPI_master_only write(*,*)'vname(1,',indx,')=', vname(1,indx)
-     vname(2,indx)=long_name_var_fix(isubs)
-     vname(3,indx)=unit_var_fix(isubs)
-     vname(4,indx)=TRIM(ADJUSTL(ADJUSTR(standard_name_var_fix(isubs))))//', scalar, series'
-     vname(5,indx)=' '
-     vname(6,indx)=' '
-     vname(7,indx)=' '
-     wrthis(indx)=l_out_subs_fix(isubs) 
-    ! MPI_master_only write(*,*)'fix, indice wrthis fixed variables',indx,wrthis(indx),name_var_fix(isubs)
-   ENDDO
+   IF (nv_fix>0) THEN
+      DO isubs=1,nv_fix
+      indx=indxT+ntrc_salt+ntrc_subs+isubs
+      !  write(*,*)'fix, indice vname',indx
+      vname(1,indx)=name_var_fix(isubs)
+      MPI_master_only write(*,*)'vname(1,',indx,')=', vname(1,indx)
+      vname(2,indx)=long_name_var_fix(isubs)
+      vname(3,indx)=unit_var_fix(isubs)
+      vname(4,indx)=TRIM(ADJUSTL(ADJUSTR(standard_name_var_fix(isubs))))//', scalar, series'
+      vname(5,indx)=' '
+      vname(6,indx)=' '
+      vname(7,indx)=' '
+      wrthis(indx)=l_out_subs_fix(isubs) 
+      ! MPI_master_only write(*,*)'fix, indice wrthis fixed variables',indx,wrthis(indx),name_var_fix(isubs)
+      ENDDO
+   END IF
      
 
 #ifdef PSOURCE_NCFILE_TS
@@ -955,7 +958,6 @@ CONTAINS
       ENDDO
 # endif
 
-#ifdef key_sand2D
    DO iv=igrav1,igrav2
      l_subs2D(iv)=.TRUE.
    ENDDO
@@ -963,7 +965,6 @@ CONTAINS
      l_subs2D(iv)=l_sand2D_r(irk_fil(iv))
      l_outsandrouse(iv)=l_outsandrouse_r(irk_fil(iv))
    ENDDO
-#endif
 #else
    DO iv=1,nvp
      ws_free_min(iv)=ws_free_min_r(irk_fil(iv))
@@ -1091,9 +1092,9 @@ CONTAINS
      !!                    *** ROUTINE substance_surfcell ***
      !!-------------------------------------------------------------------
      !
-     ! evaluation of cell surface if not known in hydro model
-     ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
-     surf_cell(:,:)=om_r(:,:)*on_r(:,:)
+! evaluation of cell surface if not known in hydro model
+    ALLOCATE(surf_cell(GLOBAL_2D_ARRAY))
+    surf_cell(:,:)=om_r(:,:)*on_r(:,:)
 
  END SUBROUTINE substance_surfcell
 

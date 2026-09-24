@@ -15,6 +15,7 @@ include Makefile.conf_1DV
 OBJ_BIO  = ${OBJ_BIO_DIR}/eco3m_string.o\
 	${OBJ_BIO_DIR}/eco3m_vartypes.o\
 	 ${OBJ_BIO_DIR}/eco3m_files.o\
+	 ${OBJ_BIO_DIR}/eco3m_irrad.o\
 	 ${OBJ_BIO_DIR}/eco3m.o \
 	 ${OBJ_BIO_DIR}/eco3m_user.o \
 	 ${OBJ_BIO_DIR}/eco3m_var.o\

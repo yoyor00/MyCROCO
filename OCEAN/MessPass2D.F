@@ -50,9 +50,9 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 
 # ifdef AGRIF
          sub_X=Lm
-         size_X=Npts*(sub_X+2*Npts)-1  !7+Npts*sub_X
+         size_X=MAXNPTS*(sub_X+2*MAXNPTS)-1  !7+Npts*sub_X
          sub_E=Mm
-         size_E=Npts*(sub_E+2*Npts)-1  !7+Npts*sub_E
+         size_E=MAXNPTS*(sub_E+2*MAXNPTS)-1  !7+Npts*sub_E
          if (.not. allocated(ibuf_sndN)) then
          Allocate(ibuf_sndN(0:size_X), ibuf_revN(0:size_X), 
      &     ibuf_sndS(0:size_X), ibuf_revS(0:size_X),

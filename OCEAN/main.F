@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -20,6 +21,21 @@
 !
 !======================================================================
 !
+          USE croco_namelist_read, ONLY : read_nml, read_nml_fname
+          USE croco_namelist, ONLY : dt, ndtfast, ntimes, ninfo
+          USE croco_namelist, ONLY : ldefhis, nrrec
+#ifdef STATIONS
+          USE croco_namelist, ONLY : ldefsta
+#endif
+#if defined ABL1D && !defined XIOS
+          USE croco_namelist, ONLY : ldefablhis
+#endif
+#ifdef DIAGNOSTICS_BIO
+          USE croco_namelist, ONLY : ldefdiabio
+#endif
+#ifdef USE_CALENDAR
+          USE croco_namelist, ONLY : end_date
+#endif
 #if defined OA_COUPLING || defined OW_COUPLING
           USE mod_prism
 #endif
@@ -29,6 +45,13 @@
 #ifdef PISCES
           USE pisces_ini     ! PISCES modules
           USE trcnam_pisces
+#endif
+#ifdef STOGEN
+          USE stomod         ! Stochastic module
+          USE stoexternal    ! Provide parameters to stochastic modules
+#endif
+#ifdef ENSEMBLE
+          USE ensmpi         ! Ensemble module
 #endif
 #ifdef SUBSTANCE
           USE substance, ONLY : substance_read_alloc
@@ -80,10 +103,6 @@
 # include "work.h"
 #endif
 #include "mpi_cpl.h"
-#ifdef FLOATS
-# include "floats.h"
-# include "ncscrum_floats.h"
-#endif
 #ifdef STATIONS
 # include "sta.h"
 # include "nc_sta.h"
@@ -110,11 +129,6 @@
 #endif
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
-#endif
-#ifdef AUTOTILING
-! Initial values of NSUB_X, NSUB_E
-      NSUB_X = 1
-      NSUB_E = NPP
 #endif
 !
 #include "dynderivparam.h"
@@ -149,6 +163,17 @@
 # elif defined AGRIF
       call Agrif_MPI_Init(MPI_COMM_WORLD)
 # endif
+!                                            
+!  ENSEMBLE: further split CROCO communicator
+!                                           
+# if defined ENSEMBLE                      
+#  if defined XIOS                       
+      mpi_comm_all = MPI_COMM_WORLD      
+#  else                                
+      mpi_comm_all = mpi_comm_world   ! true world communicator (keep lowercase to avoid cpp replacement!)
+#  endif                                                   
+      call ens_comm_set ( )                                  
+# endif
 #endif /* MPI */
 !
 !  Initialize AGRIF nesting
@@ -156,12 +181,6 @@
 #ifdef AGRIF
       call Agrif_Init_Grids()
       call declare_zoom_variables()
-#endif
-!
-!  Initialize automatic tiling
-!
-#ifdef AUTOTILING
-      call init_auto_tiling
 #endif
 !
 !  Setup MPI domain decomposition
@@ -185,9 +204,12 @@
       call init_buffer
 !
 !----------------------------------------------------------------------
-!  Read in tunable model parameters in roms.in file
+!  Read in tunable model parameters from croco namelist file
 !----------------------------------------------------------------------
 !
+      call read_nml_fname ()
+      call read_nml (ierr)
+      if (ierr.ne.0) goto 100
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !
@@ -195,7 +217,7 @@
 !  Initialize global model parameters
 !----------------------------------------------------------------------
 !
-!  Gobal scalar variables
+!  Global scalar variables
 !
       call init_scalars (ierr)
       if (ierr.ne.0) goto 100
@@ -267,14 +289,13 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !
 !----------------------------------------------------------------------
-!  Create parallel threads; start timers for each thread;
+!  Create parallel threads; 
 !  initialize (FIRST-TOUCH) model global arrays (most of them
 !  are just set to to zero).
 !----------------------------------------------------------------------
 !
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
-        call start_timers()
         call init_arrays (tile)
       enddo
 CR      write(*,*) '-11' MYID
@@ -417,12 +438,6 @@ C$OMP BARRIER
                                 ! --> copy it into threadprivate "time"
 
 #ifdef USE_CALENDAR
-      ! compute start time and ntimes
-      time=start_time +origin_date_in_sec
-!# ifdef ANA_INITIAL
-!      ! if no initial file set start_date from croco.in
-!      if (nrrec.eq.0) time=tool_datosec(start_date)
-!# endif
       time_end=tool_datosec(end_date)
       ntimes=int((time_end-time)/dt)
       MPI_master_only write(stdout,*)
@@ -442,7 +457,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !  Set initial conditions analytically for ideal cases
 !  or for tracer variables not present in NetCDF file
 !
-!#if defined BIOLink
 #if defined BIOLink && defined ECO3M && defined DYFAMED
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
@@ -510,13 +524,26 @@ C$OMP PARALLEL DO PRIVATE(tile)
 # endif
 #endif
 
+
 !----------------------------------------------------------------------
 !  SUBSTANCE : computing cell surfaces need for MUSTANG and BIOLink
 !----------------------------------------------------------------------
-#ifdef SUBSTANCE 
+#ifdef SUBSTANCE
       call substance_surfcell
 #endif
 !
+!----------------------------------------------------------------------
+!  STOGEN: initialization
+!----------------------------------------------------------------------
+!
+#ifdef STOGEN
+      do tile=0,NSUB_X*NSUB_E-1
+        call ocean_2_stogen (tile)    ! provide parameters to STOGEN module
+        call sto_mod_init             ! initialize STOGEN module
+      enddo
+#endif
+!
+
 !----------------------------------------------------------------------
 !  BIOLink : initialization
 !----------------------------------------------------------------------
@@ -528,18 +555,18 @@ C$OMP PARALLEL DO PRIVATE(tile)
       CALL BIOLink_init_main(tile)
       enddo
 #endif 
-!
+
 !----------------------------------------------------------------------
 !  MUSTANG : initialization
 !----------------------------------------------------------------------
 !
-#ifdef MUSTANG 
+#ifdef MUSTANG
 C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call MUSTANG_init_main (tile)
       enddo
 CR      write(*,*)  ' -5' MYID0
-#endif 
+#endif
 !
 !----------------------------------------------------------------------
 ! OBSTRUCTION : initialization
@@ -720,37 +747,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
         call abl_ini (tile)
       enddo
 #endif
-!
-!----------------------------------------------------------------------
-!  Initialization for Lagrangian floats
-!
-!  It is done here and not in init_scalars since it must be done only
-!  once (whether child levels exist or not)
-!----------------------------------------------------------------------
-!
-#ifdef FLOATS
-      nrecflt=0
-      ncidflt=-1
-      flopspval=1.E15  ! spval is the nodata flag for float variables
-      deltac2p=2.3     ! distance from the boundary at which a float
-                       ! is transferred from child to parent
-      deltap2c=2.5     ! same for transfer from parent to child
 
-      call init_arrays_floats
-      call init_floats
-# ifdef SPHERICAL
-      call interp_r2d_type_ini (lonr(START_2D_ARRAY), iflon)
-      call interp_r2d_type_ini (latr(START_2D_ARRAY), iflat)
-# else
-      call interp_r2d_type_ini (  xr(START_2D_ARRAY), iflon)
-      call interp_r2d_type_ini (  yr(START_2D_ARRAY), iflat)
-# endif
-# ifdef SOLVE3D
-      call fill_ini ! fills in trackaux for ixgrd,iygrd,izgrd
-                    ! and ifld (either izgrd or ifld is meaningful)
-# endif
-      if (ldefflt) call wrt_floats
-#endif /* FLOATS */
 !
 !----------------------------------------------------------------------
 !  Initialization for stations
@@ -971,7 +968,6 @@ CR      write(*,*) '  0' MYID
       next_kstp=kstp
       time_start=time
 #ifdef USE_CALENDAR
-      time_mars=time
       time_end=tool_datosec(end_date)
 #endif
 
@@ -1010,7 +1006,7 @@ CR      write(*,*) '  0' MYID
 
 #ifdef USE_CALENDAR
         if (mod(iicroot-1,ninfo) .eq. 0) then
-          MPI_master_only write(stdout,'(a)') tool_sectodat(time_mars)
+          MPI_master_only write(stdout,'(a)') tool_sectodat(time)
         endif
         if (time .gt. time_end) goto 99
 #endif
@@ -1048,11 +1044,11 @@ CR      write(*,*) '  0' MYID
       MPI_master_only write(stdout,*) 'time time-stepping : ',exe_time
       MPI_master_only write(stdout,*) '*******************************'
 #endif
-C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
-      do tile=0,NSUB_X*NSUB_E-1            ! close netCDF files.
-        call stop_timers()
-      enddo
+      ! close netCDF files.
       call closecdf
+#ifdef STOGEN
+      call sto_mod_finalize
+#endif
 #ifdef XIOS
       call iom_context_finalize( "crocox")   ! needed for XIOS+AGRIF
 #endif
@@ -1072,6 +1068,8 @@ C$OMP PARALLEL DO PRIVATE(tile)            ! Stop timers and
 #endif
 
  100  continue
+
+      if (may_day_flag.ne.0) ierr=1
 
 #ifdef MPI
       if (ierr.ne.0) call mpi_abort (MPI_COMM_WORLD, ierr)

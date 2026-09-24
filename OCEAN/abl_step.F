@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -33,6 +34,7 @@
       !  air-sea fluxes for the specification of surface boundary conditions
       !=======================================================================
       !
+      use croco_namelist, only: dt, rho0
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -217,7 +219,7 @@
           elem_c(i,2) = - dt * Avm_abl(i,j,2,nt_a) / Hzw_abl(2)
            !
           cff1  = cd_du(i,j)
-# ifdef KILPATRICK
+# ifdef ABL_NO_OCEAN_FEEDBACK
           cff2  = 0.
 # else
           cff2  = Cd_du(i,j) * 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
@@ -273,7 +275,7 @@
           elem_a(i,2) = 0.
           elem_c(i,2) = - dt * Avm_abl(i,j,2,nt_a) / Hzw_abl(2)
           cff1        = cd_du(i,j)
-# ifdef KILPATRICK
+# ifdef ABL_NO_OCEAN_FEEDBACK
           cff2        = 0.
 # else
           cff2        = Cd_du(i, j) * 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
@@ -417,11 +419,11 @@
 !======================================================================
           cff        = rhoAir*rho0i
           uwnd_r     = u_abl(i,j,2,nt_a)
-# ifndef KILPATRICK
+# ifndef ABL_NO_OCEAN_FEEDBACK
      &               - 0.5*( u(i+1,j,N,nrhs)+u(i,j,N,nrhs) )
 # endif
           vwnd_r     = v_abl(i,j,2,nt_a)
-# ifndef KILPATRICK
+# ifndef ABL_NO_OCEAN_FEEDBACK
      &               - 0.5*( v(i,j+1,N,nrhs)+v(i,j,N,nrhs) )
 # endif
           sustr(i,j) = cff*Cd_du(i,j) * uwnd_r

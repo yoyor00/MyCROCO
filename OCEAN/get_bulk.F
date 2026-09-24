@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -16,7 +17,7 @@
 !  Read in wind speed and surface air temperature
 !
 !
-
+      use croco_namelist, only: dt, bulkname, rho0
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -668,6 +669,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
 !
 ! Set-up bulk data for current tile.
 !
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "forces.h"

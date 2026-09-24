@@ -1,16 +1,17 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !  This is include file "online.h"
 !------------------------------------------------------------------------------
-!  This file contains all the declarations regarding the online NCEP/CFSR tool:
+!  This file contains all the declarations regarding the ONLINE tool:
 !------------------------------------------------------------------------------
 #ifdef ONLINE
       ! ------------------------ !
@@ -33,7 +34,7 @@
       ! --------------------- !
       ! Bulk variable''s names !
       ! --------------------- !
-      character*250 pathbulk, bulkfilename(nblkvrs),
+      character*250 bulkfilename(nblkvrs),
      &              blk_vname(4, nblkvrs)
       ! ---------------------- !
       ! Bulk variable''s tables !
@@ -44,9 +45,7 @@
       ! ------------------------------- !
       ! Bulk variable''s time parameters !
       ! ------------------------------- !
-      integer bulkyearnum(nblkvrs), bulkmonthnum(nblkvrs),
-     &        yearnum, monthnum, yearend, monthend,
-     &        recordsperday
+      integer bulkyearnum(nblkvrs), bulkmonthnum(nblkvrs)
       integer bulk_recO(nblkvrs), bulk_ncycleO(nblkvrs),
      &        bulk_tidO(nblkvrs), ntbulkO(nblkvrs)
       real    bulk_timeO(2,nblkvrs), bulk_cycleO(nblkvrs)
@@ -63,13 +62,12 @@
 
       common /bulkonline_integer/
      &        itbulkO, bulk_varid, ncidbulkO,
-     &        bulkyearnum, bulkmonthnum, yearnum, monthnum,
-     &        yearend, monthend, recordsperday,
+     &        bulkyearnum, bulkmonthnum,
      &        bulk_recO, bulk_ncycleO, bulk_tidO, ntbulkO,
      &        NX0, NY0
 
       common /bulkonline_character/
-     &        pathbulk, bulkfilename, blk_vname
+     &        bulkfilename, blk_vname
 
       common /bulkonline_logical/
      &        newbulk

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifndef AVRH
@@ -34,6 +35,10 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
+      USE croco_namelist, ONLY: nrpfhis, ldefhis, hisname
+#ifdef AVERAGES
+      USE croco_namelist, ONLY: nrpfavg, avgname
+#endif
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
       USE comMUSTANG, ONLY : hisMust, avgMust, outMust, outMust_nbvar,
@@ -41,14 +46,17 @@
 #endif
 
 #if defined BLOOM
-      USE comBIOLINK, ONLY :ndiag_1d,ndiag_2d,ndiag_3d_wat,ndiag_3d_sed
+      USE comBIOLink, ONLY :ndiag_1d,ndiag_2d,ndiag_3d_wat,ndiag_3d_sed
 #endif
 
 #if defined OBSTRUCTION
       USE com_OBSTRUCTIONS, ONLY : hisObst, avgObst, 
      &     obst_nbvar, outObst, out2DObst, vname_obst
 #endif
-
+#ifdef STOGEN
+      USE stoarray        ! Stochastic arrays and options
+      USE stoalloc        ! Stochastic working arrays
+#endif
 
       implicit none
       logical create_new_file
@@ -137,6 +145,11 @@
 # define vidUWstr hisUWstr
 # define vidVWstr hisVWstr
 # define vidShflx hisShflx
+# ifdef STOGEN
+#  define vidXIsto1d hisXIsto1d
+#  define vidXIsto2d hisXIsto2d
+#  define vidXIsto3d hisXIsto3d
+# endif
 # ifdef SALINITY
 #  define vidSwflx hisSwflx
 # endif
@@ -226,6 +239,11 @@
 # define vidShflx avgShflx
 # define vidSwflx avgSwflx
 # define vidShflx_rsw avgShflx_rsw
+# ifdef STOGEN
+#  define vidXIsto1d hisXIsto1d
+#  define vidXIsto2d hisXIsto2d
+#  define vidXIsto3d hisXIsto3d
+# endif
 # if defined BULK_FLUX
 #  define vidShflx_rlw avgShflx_rlw
 #  define vidShflx_lat avgShflx_lat
@@ -310,6 +328,8 @@
         lvar=total_rec-(1+mod(total_rec-1, rec_per_file))
         call insert_time_index (ncname, lstr, lvar, ierr)
         if (ierr .ne. 0) goto 99
+      else
+        lvar=0
       endif
 !
 ! Decide whether to create a new file, or open existing one.
@@ -450,9 +470,9 @@
         if (total_rec.le.1) then
 # ifdef SOLVE3D
           call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &                                  ,r3dgrd, w3dgrd)
+     &                                  ,r3dgrd, w3dgrd, NF_FOUT)
 # else
-          call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+          call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FOUT)
 # endif
         endif
 #endif
@@ -726,6 +746,97 @@
      &         5, NF_FOUT, ierr)
         endif
 !
+!---------------------------------------
+! STOGEN stochastic variables.
+!---------------------------------------
+!
+# ifdef STOGEN
+        if (ln_stogen.AND.wrt(indxXIsto1d)) then
+          lvar=lenstr(vname(1,indxXIsto1d))
+!QJ: not sure aout the def of ierr here ...
+          ierr=nf_def_var (ncid, vname(1,indxXIsto1d)(1:lvar),
+     &                             NF_FOUT, 1, timedim, vidXIsto1d)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto1d,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxXIsto1d))
+          ierr=nf_put_att_text (ncid, vidXIsto1d, 'long_name', lvar,
+     &                                  vname(2,indxXIsto1d)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxXIsto1d)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidXIsto1d, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxXIsto1d))
+          ierr=nf_put_att_text (ncid, vidXIsto1d, 'units',     lvar,
+     &                                  vname(3,indxXIsto1d)(1:lvar))
+          lvar=lenstr(vname(4,indxXIsto1d))
+          ierr=nf_put_att_text (ncid, vidXIsto1d, 'field',     lvar,
+     &                                  vname(4,indxXIsto1d)(1:lvar))
+
+          call nf_add_attribute(ncid, vidXIsto1d, vname(:,indxXIsto1d),
+     &         5, NF_FOUT, ierr)
+        endif
+!
+        if (ln_stogen.AND.wrt(indxXIsto2d)) then
+          lvar=lenstr(vname(1,indxXIsto2d))
+          ierr=nf_def_var (ncid, vname(1,indxXIsto2d)(1:lvar),
+     &                             NF_FOUT, 3, r2dgrd, vidXIsto2d)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto2d,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxXIsto2d))
+          ierr=nf_put_att_text (ncid, vidXIsto2d, 'long_name', lvar,
+     &                                  vname(2,indxXIsto2d)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxXIsto2d)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidXIsto2d, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxXIsto2d))
+          ierr=nf_put_att_text (ncid, vidXIsto2d, 'units',     lvar,
+     &                                  vname(3,indxXIsto2d)(1:lvar))
+          lvar=lenstr(vname(4,indxXIsto2d))
+          ierr=nf_put_att_text (ncid, vidXIsto2d, 'field',     lvar,
+     &                                  vname(4,indxXIsto2d)(1:lvar))
+
+          call nf_add_attribute(ncid, vidXIsto2d, vname(:,indxXIsto2d),
+     &         5, NF_FOUT, ierr)
+        endif
+!
+        if (ln_stogen.AND.wrt(indxXIsto3d)) then
+          lvar=lenstr(vname(1,indxXIsto3d))
+          ierr=nf_def_var (ncid, vname(1,indxXIsto3d)(1:lvar),
+     &                             NF_FOUT, 4, r3dgrd, vidXIsto3d)
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto3d,nf_collective)
+# endif
+# ifndef AVRH
+          lvar=lenstr(vname(2,indxXIsto3d))
+          ierr=nf_put_att_text (ncid, vidXIsto3d, 'long_name', lvar,
+     &                                  vname(2,indxXIsto3d)(1:lvar))
+# else
+          text='averaged '/ /vname(2,indxXIsto3d)
+          lvar=lenstr(text)
+          ierr=nf_put_att_text (ncid, vidXIsto3d, 'long_name', lvar,
+     &                                            text(1:lvar))
+# endif
+          lvar=lenstr(vname(3,indxXIsto3d))
+          ierr=nf_put_att_text (ncid, vidXIsto3d, 'units',     lvar,
+     &                                  vname(3,indxXIsto3d)(1:lvar))
+          lvar=lenstr(vname(4,indxXIsto3d))
+          ierr=nf_put_att_text (ncid, vidXIsto3d, 'field',     lvar,
+     &                                  vname(4,indxXIsto3d)(1:lvar))
+
+          call nf_add_attribute(ncid, vidXIsto3d, vname(:,indxXIsto3d),
+     &         5, NF_FOUT, ierr)
+        endif
+# endif /* STOGEN */
+!
 !-----------------------------------------------------------------------
 ! Tracer variables.
 !-----------------------------------------------------------------------
@@ -763,10 +874,6 @@
             call nf_add_attribute(ncid,vidT(itrc),vname(:,indxV+itrc),5,
      &           NF_FOUT, ierr)
           endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-        endif
-# endif
-
         enddo
 # endif
 !
@@ -806,9 +913,8 @@
 ! Brunt Vaisala Frequency.
 !-----------------------------------------------------------------------
 !
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
         if (wrt(indxbvf)) then
           lvar=lenstr(vname(1,indxbvf))
           ierr=nf_def_var (ncid, vname(1,indxbvf)(1:lvar),
@@ -3047,6 +3153,46 @@
 # endif
         endif
 !
+! STOGEN stochastic variables.
+!
+# ifdef STOGEN
+        if (wrt(indxXIsto1d)) then
+          lvar=lenstr(vname(1,indxXIsto1d))
+          ierr=nf_inq_varid (ncid, vname(1,indxXIsto1d)(1:lvar), vidXIsto1d)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxXIsto1d)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto1d,nf_collective)
+# endif
+        endif
+!
+        if (wrt(indxXIsto2d)) then
+          lvar=lenstr(vname(1,indxXIsto2d))
+          ierr=nf_inq_varid (ncid, vname(1,indxXIsto2d)(1:lvar), vidXIsto2d)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxXIsto2d)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto2d,nf_collective)
+# endif
+        endif
+!
+        if (wrt(indxXIsto3d)) then
+          lvar=lenstr(vname(1,indxXIsto3d))
+          ierr=nf_inq_varid (ncid, vname(1,indxXIsto3d)(1:lvar), vidXIsto3d)
+          if (ierr .ne. nf_noerr) then
+            write(stdout,1) vname(1,indxXIsto3d)(1:lvar), ncname(1:lstr)
+            goto 99                                       !--> ERROR
+          endif
+# ifdef NC4PAR
+          ierr=nf_var_par_access(ncid,vidXIsto3d,nf_collective)
+# endif
+        endif
+# endif /* STOGEN */
+!
 ! Tracer variables.
 !
 # ifdef TRACERS
@@ -3068,9 +3214,6 @@
             ierr=nf_var_par_access(ncid,vidT(itrc),nf_collective)
 #  endif
           endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-        endif
-# endif
         enddo
 # endif
 
@@ -3168,9 +3311,8 @@
           ierr=nf_var_par_access(ncid,vidR,nf_collective)
 # endif
         endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+# if defined ANA_VMIX || defined GLS_MIXING \
+  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP
 !-----------------------------------------------------------------------------
 !
 ! Brunt Vaisala Frequency.
@@ -3894,7 +4036,6 @@
 # endif  /* SOLVE3D */
 #endif   /* MRL_WCI */
 
-#
       MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_HIS/AVG -- Opened ',
      &                     'existing file  from record =', rec
@@ -4014,6 +4155,12 @@
 
 #undef vidMust
 #undef vidObst
+#ifdef STOGEN
+# undef vidXIsto1d
+# undef vidXIsto2d
+# undef vidXIsto3d
+#endif
+
 
 #ifdef AVERAGES
 # ifndef AVRH

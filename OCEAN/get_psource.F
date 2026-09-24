@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 ! Marine HERRMANN (IRD/LEGOS) : 2013
@@ -18,6 +19,7 @@
 !  Read in point or grided sea river runoff discharge
 !  the appropriate time from runoff NetCDF file.
 !
+      use croco_namelist, only: dt
 # define PSOURCE_DATA
       implicit none
 # include "param.h"
@@ -172,6 +174,7 @@ CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
 !
 ! Set-up river runoff discharge data for current tile.
 !
+      use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend,i, it1,it2
       real cff, cff1,cff2

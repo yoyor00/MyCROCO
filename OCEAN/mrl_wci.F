@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -69,6 +70,10 @@
 !
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: dt, rho0, Zobt, wave_ramp_duration
+# ifdef WAVE_ROLLER
+      use croco_namelist, only: wkb_roller
+# endif
       implicit none
 # include "param.h"
 # include "forces.h"
@@ -96,7 +101,7 @@
      &   bconst,tauc,tauw,ka_f00,hz0,z_tide,
      &   dtinv,inv_zb,a_brk,a_kv,c1o3,c4o3,inv_k,dd,ust_ker,intfb,
      &   fbsrf,fn1,fn2,khmax,bz1,bz2,beta,abot,delta,ks,
-     &   a_frc,kfrc,Hrms,urms,fw, maxwac, twopi,otwopi,sqrtpi,
+     &   a_frc,kfrc,Hrms,urms,fw, maxwac, twopi,otwopi,sqrtpi,arg_fw,
      &             wh(PRIVATE_2D_SCRATCH_ARRAY),
      &             fr(PRIVATE_2D_SCRATCH_ARRAY),
      &             kw(PRIVATE_2D_SCRATCH_ARRAY),
@@ -208,11 +213,7 @@
 ! initial ramping coefficients
 
 # if defined WAVE_RAMP
-#  if defined RIP_TOPO_2D
-      wave_ramp = tanh(192.*dt*sec2day*float(iic-ntstart))
-#  else
-      wave_ramp = tanh(12.*dt*sec2day*float(iic-ntstart))
-#  endif
+      wave_ramp = tanh(wave_ramp_duration*dt*sec2day*float(iic-ntstart))
 # else
       wave_ramp = 1.
 # endif
@@ -424,12 +425,22 @@
 #   else
           abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
           urms=fr(i,j)*abot
-          fw=1.39*(Zob(i,j)/max(abot,eps))**0.52    ! Soulsby (1995)
+          ! safe fw
+          if (Zob_my(i,j).ge.0.D0 .and. abot.gt.0.D0) then
+            arg_fw=Zob_my(i,j)/abot
+            if (arg_fw.gt.0.D0 .and. arg_fw.eq.arg_fw) then
+              fw=1.39D0*(arg_fw)**0.52D0                ! Soulsby (1995)
+            else
+              fw=1.39D0
+            endif
+          else
+            fw=1.39D0
+          endif
 #   endif
           cff=0.5/sqrtpi*fw*urms**3                 ! ep_d/rho
           frc(i,j)=wramp2*cff*kw(i,j)*inv_f(i,j)    ! 2DH friction term
 #  else
-          frc(i,j)=0.
+          frc(i,j)=max(0.,eps)
 #  endif
 !
 ! --- Wave action ---
@@ -501,7 +512,7 @@
 # ifdef WKB_WWAVE
           cff = wramp2*wfc(i,j,wnew)
 # else
-          cff = wramp2*frc(i,j)/kw(i,j)
+          cff = wramp2*frc(i,j)/(max(kw(i,j),eps))
 # endif
           wepd(i,j)=cff*fr(i,j)       ! epsilon_d (m3/s3)
 # ifdef MASKING
@@ -1137,7 +1148,7 @@
 #   else
           abot=wh(i,j)/max(2.*sinh(min(kD(i,j),khmax)),eps)
 #   endif
-          delta=0.09*ks*(abot/ks)**0.82                ! WBL thickness
+          delta=0.09*ks*(abot/max(ks,eps))**0.82       ! WBL thickness
           kfrc=1./min(max(a_frc*delta,eps),Dstp(i,j))  ! friction scale
           frc2d(i,j)=0.
           fb1=1. -exp(-2.*kfrc*Dstp(i,j))
@@ -1200,12 +1211,8 @@
 ! Open boundary condition (valid only for idealized situations)
 ! =============================================================
 !
-# if defined ANA_BRY && !defined REGIONAL && !defined COASTAL
-#  ifndef SHOREFACE
+# if defined ANA_BRY
       z_tide=0.0 !wkb_tide
-#  else
-      z_tide=0.0
-#  endif
 #  if defined OBC_WEST && (defined Z_FRC_BRY || defined M2_FRC_BRY \
                                              || defined M3_FRC_BRY)
       if (WESTERN_EDGE) then
@@ -1214,7 +1221,7 @@
           zetabry_west(j)=z_tide + sup(istrR,j)
 #   endif
 #   ifdef M2_FRC_BRY
-#    ifdef SHOREFACE
+#    ifdef WKB_SHORELIKE_BRY
           ubarbry_west(j)=ubar(istr,j,knew)
 #    else
           ubarbry_west(j)=-ust2d(istrR,j)    ! Stokes drift (xi)

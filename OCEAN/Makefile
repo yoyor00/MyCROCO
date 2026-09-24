@@ -35,7 +35,7 @@ include Makedefs
 #======================================================================
 
  SRCS = main.F		step.F		read_inp.F\
-	timers_roms.F	init_scalars.F	init_arrays.F	set_weights.F\
+	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
 \
@@ -55,18 +55,18 @@ include Makedefs
 \
 	rho_eos.F	ab_ratio.F	alfabeta.F      alfabeta_k.F\
 \
-	ana_vmix.F	bvf_mix.F	lmd_vmix.F 	gls_mixing.F\
+	ana_vmix.F	lmd_vmix.F 	gls_mixing.F\
 	lmd_skpp.F	lmd_bkpp.F	lmd_swfrac.F	lmd_wscale.F\
 \
 	diag.F		wvlcty.F	checkdims.F	grid_stiffness.F\
-	bio_diag.F	setup_kwds.F    check_kwds.F	check_srcs.F\
+	bio_diag.F	check_srcs.F\
 	check_switches1.F		check_switches2.F\
 	debug.F\
 \
 	param.F    ncscrum.F   scalars.F\
 	output.F	put_global_atts.F\
 	nf_fread.F	nf_fread_x.F	nf_fread_y.F	nf_read_bry.F\
-	get_date.F	lenstr.F	closecdf.F	insert_node.F\
+	lenstr.F	closecdf.F	insert_node.F\
 	fillvalue.F	nf_add_attribute.F		set_cycle.F\
 	def_grid_2d.F   def_grid_3d.F   def_his.F       def_rst.F\
 	def_diags.F	def_diagsM.F	def_bio_diags.F\
@@ -100,17 +100,12 @@ include Makedefs
 	online_interp.F			online_interpolate_bulk.F\
 	online_set_bulk.F		online_interpolate_3d_bulk.F\
 \
-	init_floats.F	wrt_floats.F	step_floats.F	rhs_floats.F\
-	interp_rho.F	def_floats.F	init_arrays_floats.F\
-	random_walk.F	get_initial_floats.F\
-\
 	init_sta.F	wrt_sta.F	step_sta.F	interp_sta.F\
 	def_sta.F	init_arrays_sta.F\
 \
 	biology.F	o2sato.F	sediment.F	bbl.F\
 \
 	MPI_Setup.F	MessPass2D.F	MessPass3D.F	exchange.F\
-	autotiling.F\
 \
 	zoom.F		update2D.F	set_nudgcof_fine.F\
 	zoombc_2D.F	zoombc_3D.F	uv3dpremix.F\
@@ -122,8 +117,7 @@ include Makedefs
 	cpl_prism_define.F	cpl_prism_put.F 	cpl_prism_init.F\
 	cpl_prism_get.F 	cpl_prism_getvar.F      cpl_prism_grid.F\
 \
-	module_substance.F module_BIOLink.F module_MUSTANG.F\
-	module_OBSTRUCTIONS.F\
+	module_substance.F  module_BIOLink.F module_OBSTRUCTIONS.F\
 	abl_step.F  abl_ini.F  abl_tke.F\
 	wrt_abl_his.F  def_abl_his.F\
 	wrt_abl_avg.F set_abl_avg.F\
@@ -136,6 +130,12 @@ include Makedefs
 
 
  SRCS90 = \
+	croco_namelist.F90\
+	croco_namelist_read.F90 croco_namelist_init.F90 croco_namelist_check.F90\
+	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	storng_testmpi.F90\
+	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90	stowhite.F90\
+	stobulk.F90	stomarginal.F90	storst.F90	stopar.F90	stomod.F90\
+	ensmpi.F90	stostress.F90   stoalloc.F90    stogls.F90\
 	buffer.F90\
 	par_pisces.F90	oce_trc.F90	trc.F90		sms_pisces.F90\
 	in_out_manager.F90	iom.F90	lib_mpp.F90		prtctl.F90\
@@ -161,6 +161,7 @@ include Makedefs
 	module_oa_time.F90	module_oa_space.F90 module_oa_periode.F90\
 	module_oa_variables.F90	module_oa_type.F90 module_tile_oa.F90\
 	module_oa_level.F90 module_oa_interface.F90 var_oa.F90\
+	tools_string.F90\
 	tooldatosec.F90	toolsectodat.F90 tooldecompdat.F90 tooldatetosec.F90 \
 	toolorigindate.F90 \
 	flocmod.F90 comsubstance.F90 submassbalance.F90 substance.F90\
@@ -169,22 +170,21 @@ include Makedefs
 	coupleur_BIOLink_physics.F90 coupleur_BIOLink_helping.F90 coupleur_BIOLink.F90 \
 	OBSTRUCTIONS1DV.F90 com_OBSTRUCTIONS.F90 init_OBSTRUCTIONS.F90\
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
-	comMUSTANG.F90 dredging.F90 coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
-	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
-
-SRCECO3M1 = \
-	eco3m_string.F90\
-	eco3m_vartypes.F90\
-	eco3m_files.F90\
-	eco3m.F90\
+	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
+	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
+	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
+        eco3m_string.F90\
+	mod_eco3m_vartypes.F90\
+	mod_eco3m_files.F90\
+	mod_eco3m_irrad.F90\
+	mod_eco3m.F90\
 	eco3m_mod.F90\
-
-SRCECO3M2 = \
-	eco3m_id.F90\
+	mod_eco3m_id_extract.F90\
 	eco3m_chl.F90\
-	eco3m_user.F90\
-	eco3m_fprocess.F90\
+	mod_eco3m_user.F90\
+	mod_eco3m_fprocess.F90\
 	eco3m_co2.F90\
+	mod_eco3m_outputs.F90\
 	eco3m_outputs.F90\
 	eco3m_sms.F90\
 	eco3m_var.F90\
@@ -192,32 +192,28 @@ SRCECO3M2 = \
 	eco3m_flux.F90\
 	eco3m_init.F90\
 	eco3m_rgb.F90\
-	eco3m_run.F90\
+	eco3m_run.F90
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES
 
 #======================================================================
 
- TOOLS = mpc cross_matrix cppcheck srcscheck checkkwds partit ncjoin ncrename
+TOOLS = mpc cross_matrix cppcheck srcscheck partit ncjoin ncrename
 
 
- RCS = $(SRCS:.F=.f)
+RCS = $(SRCS:.F=.f)
 
- RCS90 = $(SRCS90:.F90=.f90)
- RCECO3M1 = $(SRCECO3M1:.F90=.f90)
- RCECO3M2 = $(SRCECO3M2:.F90=.f90)
+RCS90 = $(SRCS90:.F90=.f90)
 
- OBJS = $(RCS:.f=.o)
- OBJS90 = $(RCS90:.f90=.o)
- OBJSECO3M1 = $(RCECO3M1:.f90=.o)
- OBJSECO3M2 = $(RCECO3M2:.f90=.o)
+OBJS = $(RCS:.f=.o)
+OBJS90 = $(RCS90:.f90=.o)
 
- SBIN = croco
+SBIN = croco
 
- AMRRCS=$(AMRSRCS:.F=.f)
+AMRRCS=$(AMRSRCS:.F=.f)
 
- AMROBJS=$(AMRRCS:.f=.o)
+AMROBJS=$(AMRRCS:.f=.o)
 
 
 %.mod : %.o
@@ -233,9 +229,9 @@ all: tools depend $(SBIN)
 # Executable file.
 # ========= =====
 #
-$(SBIN):   $(OBJSECO3M1) $(OBJS90) $(OBJSECO3M2) $(OBJS) 
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJSECO3M1) $(OBJS90) $(OBJSECO3M2) $(OBJS) $(LCDF) $(LMPI) 
-	mv a.out $(SBIN)
+$(SBIN):   $(OBJS90) $(OBJS)
+	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI)
+	 mv a.out $(SBIN)
 
 #
 # Auxiliary utility programs and List of Dependecies:
@@ -264,13 +260,8 @@ srcscheck: mpc srcscheck.F
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o srcscheck srcscheck.o
 	rm -f check_srcs.F
 
-checkkwds: mpc checkkwds.F
-	$(CPP) -P $(CPPFLAGS) checkkwds.F | ./mpc > checkkwds_.f
-	$(CFT) -c $(FFLAGS) checkkwds_.f -o checkkwds.o
-	$(LDR) $(FFLAGS) $(LDFLAGS) -o checkkwds checkkwds.o
-	rm -f setup_kwds.F
 
-checkdefs: check_switches1.F setup_kwds.F
+checkdefs: check_switches1.F
 
 check_switches1.F: cppcheck cppdefs.h
 	cat cppdefs.h cppdefs_dev.h > mergcpp.txt
@@ -279,8 +270,6 @@ check_switches1.F: cppcheck cppdefs.h
 check_srcs.F: srcscheck Makefile
 	./srcscheck
 
-setup_kwds.F: checkkwds read_inp.F
-	./checkkwds
 
 partit: partit.F insert_node.o lenstr.o
 	$(CPP) -P $(CPPFLAGS) partit.F > partit._.f
@@ -307,7 +296,7 @@ mymodules: $(MOBJS) $(AMROBJS)
 # ====== == ====== === =====
 #
 tarfile:
-	tar cvf croco.tar Make* *.h *.F *.F90 *.in *.in.*
+	tar cvf croco.tar Make* *.h *.F *.F90 *.nml *.nml.*
 #
 # Cleaning:
 # =========

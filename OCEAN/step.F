@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !
@@ -15,6 +16,9 @@
 !
 #include "cppdefs.h"
       subroutine step()
+# if defined OA_COUPLING || defined OW_COUPLING
+      use croco_namelist, only: ntimes, dt
+# endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -106,6 +110,7 @@ C$OMP END PARALLEL
 !====================================================================
 !
       subroutine prestep3D_thread()
+      use croco_namelist
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS
@@ -121,15 +126,15 @@ C$OMP END PARALLEL
 #ifdef OBSTRUCTION
           USE plug_OBSTRUCTIONS, ONLY : obst_update_main
 #endif
+#ifdef STOGEN
+          USE stomod   ! stochastic module
+#endif
       implicit none
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #ifdef M3FAST
 # include "nbq.h"
-#endif
-#ifdef FLOATS
-# include "floats.h"
 #endif
 #include "ocean2d.h"
 #include "ocean3d.h"
@@ -156,10 +161,6 @@ C$OMP END PARALLEL
       integer itrc
       character(len=30) cltra
 
-#ifdef FLOATS
-      integer chunk_size_flt, Lstr,Lend, flt_str
-      common /floats_step/ flt_str
-#endif
 #ifdef STATIONS
       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
       common /sta_step/ sta_str
@@ -174,14 +175,11 @@ C$OMP BARRIER
       my_last=min(my_first + range-1, NSUB_X*NSUB_E-1)
 
 C$OMP MASTER
-#ifdef AUTOTILING
-      call begin_timing
-#endif
       time=time_start+dt*float(iic-ntstart)
-      tdays=time*sec2day
 #ifdef USE_CALENDAR
-      time_mars=time_mars+dt
-      tdays=(time_mars-time_start)*sec2day
+      tdays=(time-time_start)*sec2day
+#else
+      tdays=time*sec2day
 #endif
 
 #ifdef SOLVE3D
@@ -198,14 +196,6 @@ C$OMP MASTER
 # endif
 #endif
 
-#ifdef FLOATS
-      nfp1=MOD(nfp1+1,NFT+1)  ! Shift time indices
-      nf  =MOD(nf  +1,NFT+1)  ! for floats
-      nfm1=MOD(nfm1+1,NFT+1)
-      nfm2=MOD(nfm2+1,NFT+1)
-      nfm3=MOD(nfm3+1,NFT+1)
-      flt_str=0
-#endif
 #ifdef STATIONS
       sta_str=0
 #endif
@@ -361,6 +351,10 @@ C$OMP END MASTER
 #  endif
 # endif
 
+#ifdef STOGEN
+      call sto_mod(iic) ! update stochastic fields 
+#endif
+
 # ifdef BULK_FLUX
       do tile=my_first,my_last
         call bulk_flux (tile)
@@ -476,8 +470,6 @@ C$OMP END MASTER
         call ana_vmix (tile)
 # elif defined LMD_MIXING
         call lmd_vmix (tile)
-# elif defined BVF_MIXING
-        call bvf_mix (tile)
 # endif
         call omega (tile)
 # ifdef VIS_COEF_3D
@@ -520,9 +512,6 @@ C$OMP BARRIER
 # if defined DIAGNOSTICS_VRT
         call set_diags_vrt (tile)
 # endif
-# if defined DIAGNOSTICS_EK
-        call set_diags_ek (tile)
-# endif
 # if defined DIAGNOSTICS_PV
         call set_diags_pv (tile)
 # endif
@@ -546,7 +535,7 @@ C$OMP BARRIER
         if (ldefdiags_vrt_avg .and. wrtdiags_vrt_avg(indxTime))
      &      call set_diags_vrt_avg (tile)
 #  endif
-#  if defined DIAGNOSTICS_EK
+#  if defined DIAGNOSTICS_KE
         if (ldefdiags_ek_avg .and. wrtdiags_ek_avg(indxTime))
      &      call set_diags_ek_avg (tile)
 #  endif
@@ -641,9 +630,6 @@ C$OMP BARRIER
 !#if ( defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST ) && defined MRL_WCI
 !# include "forces.h"
 !#endif
-#ifdef FLOATS
-# include "floats.h"
-#endif
 #ifdef STATIONS
 # include "sta.h"
 #endif
@@ -659,10 +645,6 @@ C$OMP BARRIER
       integer ntrds,trd,
      &        my_first,my_last, tile, my_iif
 
-#ifdef FLOATS
-      integer chunk_size_flt, Lstr,Lend, flt_str
-      common /floats_step/ flt_str
-#endif
 #ifdef STATIONS
       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
       common /sta_step/ sta_str
@@ -883,9 +865,6 @@ C$OMP END MASTER
 #ifdef M3FAST
 # include "nbq.h"
 #endif
-#ifdef FLOATS
-# include "floats.h"
-#endif
 #ifdef STATIONS
 # include "sta.h"
 #endif
@@ -893,9 +872,6 @@ C$OMP END MASTER
 #include "ocean3d.h"
 #include "ocean2d.h"
 #include "coupling.h"
-#ifdef AUTOTILING
-# include "autotiling.h"
-#endif
 #if defined LMD_MIXING
 # include "mixing.h"
 #elif defined CVTK_DEBUG_PERFRST && defined TS_MIX_ISO_FILT
@@ -906,10 +882,6 @@ C$OMP END MASTER
      &        my_first,my_last, tile, my_iif
       integer i,j,k
 
-#ifdef FLOATS
-      integer chunk_size_flt, Lstr,Lend, flt_str
-      common /floats_step/ flt_str
-#endif
 #ifdef STATIONS
       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
       common /sta_step/ sta_str
@@ -986,6 +958,13 @@ C$OMP BARRIER
       enddo
 C$OMP BARRIER
 
+      do tile=my_first,my_last
+# if defined DIAGNOSTICS_KE
+        ! located at the end of step3d_uv because we need u(:::,nstp)
+        call set_diags_ek (tile)
+# endif
+      enddo
+
 #endif /* SOLVE3D */
 !
 #if defined AGRIF && defined AGRIF_2WAY
@@ -1016,7 +995,7 @@ C$OMP END MASTER
 #ifdef CVTK_DEBUG
       use debug
 #endif
-#   ifdef SUBSTANCE_SUBMASSBALANCE
+#   ifdef SUBSTANCE
       USE submassbalance, ONLY :  submassbalance_main
 #   endif
 #ifdef MUSTANG
@@ -1039,9 +1018,6 @@ C$OMP END MASTER
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef FLOATS
-# include "floats.h"
-#endif
 #ifdef STATIONS
 # include "sta.h"
 #endif
@@ -1050,9 +1026,6 @@ C$OMP END MASTER
 #include "ocean2d.h"
 #include "coupling.h"
 #include "grid.h"
-#ifdef AUTOTILING
-# include "autotiling.h"
-#endif
 #if ( defined CVTK_DEBUG || defined CVTK_DEBUG_PERFRST )
 # include "mixing.h"
 #endif
@@ -1061,10 +1034,6 @@ C$OMP END MASTER
      &        my_first,my_last, tile, my_iif
       integer i,j,k
 
-#ifdef FLOATS
-      integer chunk_size_flt, Lstr,Lend, flt_str
-      common /floats_step/ flt_str
-#endif
 #ifdef STATIONS
       integer chunk_size_sta, Mcpstr,Mcpend, sta_str
       common /sta_step/ sta_str
@@ -1103,7 +1072,7 @@ C$OMP BARRIER
         call mustang_deposition_main (tile)
 # endif
 
-# ifdef SUBSTANCE_SUBMASSBALANCE
+# ifdef SUBSTANCE
        call submassbalance_main(tile)
 #endif
 
@@ -1184,19 +1153,6 @@ C$OMP BARRIER
 
 #endif /* SOLVE3D */
 
-#ifdef FLOATS
-      chunk_size_flt=32
-      do while (flt_str.lt.nfloats)
-C$OMP CRITICAL
-        Lstr=flt_str+1
-        flt_str=Lstr+chunk_size_flt-1
-C$OMP END CRITICAL
-        Lend=min(Lstr+chunk_size_flt-1,nfloats)
-        call step_floats (Lstr,Lend)
-      enddo
-c        call step_floats (1,nfloats) ! serial version for debugging
-#endif /*FLOATS*/
-
 #ifdef STATIONS
       chunk_size_sta=32
       do while (sta_str.lt.nstas)
@@ -1240,10 +1196,6 @@ C$OMP END MASTER
 #endif
 
 C$OMP MASTER
-#ifdef AUTOTILING
-      call end_timing
-      if (iic-lastiic == nbsampling) call auto_tiling
-#endif
 
       iic=iic + 1
 

@@ -4,7 +4,7 @@
 
 if [[ ${RESTART_FLAG} == "FALSE" ]]; then
 
-    module load $ncomod
+    [[ -n ${ncomod} ]] && module load $ncomod
 #
     if [ ${USE_ATM} -eq 1 ] ; then
         maxatmdom=$( echo $wrfcpldom | wc -w )
@@ -41,7 +41,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
 
                     for ocedom in $loopoce; do
                         domoce="d0$(( ${ocedom} + 1 ))"
-                        varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUE WRF_${domatm}_EXT_${domoce}_TAUN WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_PSFC WRF_${domatm}_EXT_${domoce}_WINDE_01 WRF_${domatm}_EXT_${domoce}_WINDN_01  WRF_${domatm}_EXT_${domoce}_WND_E_01 WRF_${domatm}_EXT_${domoce}_WND_N_01 "
+                        varlist="${varlist}WRF_${domatm}_EXT_${domoce}_SURF_NET_SOLAR WRF_${domatm}_EXT_${domoce}_EVAP-PRECIP WRF_${domatm}_EXT_${domoce}_SURF_NET_NON-SOLAR WRF_${domatm}_EXT_${domoce}_TAUX WRF_${domatm}_EXT_${domoce}_TAUY  WRF_${domatm}_EXT_${domoce}_TAUE WRF_${domatm}_EXT_${domoce}_TAUN WRF_${domatm}_EXT_${domoce}_TAUMOD WRF_${domatm}_EXT_${domoce}_PSFC WRF_${domatm}_EXT_${domoce}_WINDE_01 WRF_${domatm}_EXT_${domoce}_WINDN_01  WRF_${domatm}_EXT_${domoce}_WND_E_01 WRF_${domatm}_EXT_${domoce}_WND_N_01 "
                     done
 
                     if [ ${domatm} == "d01" ]; then
@@ -109,7 +109,7 @@ if [[ ${RESTART_FLAG} == "FALSE" ]]; then
             . ${SCRIPTDIR}/OASIS_SCRIPTS/create_oasis_restart_from_calm_conditions.sh ${toyfile[$k]} ${toytype[$k]}.nc ${model_to_toy[$k]} "$varlist"  >> cpl_getrst.log
         done
     fi
-    module unload $ncomod
+    [[ -n ${ncomod} ]] && module unload $ncomod
 
 else   
 

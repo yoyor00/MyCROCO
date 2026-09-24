@@ -1,24 +1,23 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
                                                   ! Create/open
       subroutine def_rst (ncid, total_rec, ierr)  ! restart netCDF
                                                   ! file.
+        USE croco_namelist, ONLY: ldefhis, nrpfrst, rstname
 #if defined MUSTANG
         USE comMUSTANG, ONLY : rstMust, vname_rstMust, 
      &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
      &   rstMust_nbvar
-#endif
-#if defined FLOATS && defined AGRIF
-        USE Agrif_Util
 #endif
       implicit none
       logical create_new_file
@@ -43,20 +42,11 @@
 #ifdef USE_CALENDAR
       CHARACTER (len=19)    :: cdate,tool_sectodat
 #endif
-#ifdef FLOATS
-      integer fltdim, NFVdim, Tinfovardim, NFTdim
-     & , dim_Tinfo(3), dim_track(4), dim_fltgrd(2)
-      character*65 vinfo(4)
-#endif
 
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
 #include "netcdf.inc"
-#ifdef FLOATS
-# include "floats.h"
-# include "ncscrum_floats.h"
-#endif
 #ifdef NC4PAR
 # include "mpi_cpl.h"
       include 'mpif.h'
@@ -216,31 +206,6 @@
         w3dgrd(2)=r2dgrd(2)         ! 3D W-type
         w3dgrd(4)=timedim           !
 #endif
-#ifdef FLOATS
-# ifdef AGRIF
-       if (Agrif_Root()) then
-# endif
-          ierr=nf_def_dim(ncid,'drifter',nfloats,fltdim)
-          ierr=nf_def_dim(ncid,'Tinfovar',5,Tinfovardim)
-          ierr=nf_def_dim(ncid,'NFV',6,NFVdim)
-          ierr=nf_def_dim(ncid,'NFT',NFT+1,NFTdim)
-
-          dim_Tinfo(1)=Tinfovardim
-          dim_Tinfo(2)=fltdim
-          dim_Tinfo(3)=timedim
-
-          dim_track(1)=NFVdim
-          dim_track(2)=NFTdim
-          dim_track(3)=fltdim
-          dim_track(4)=timedim
-
-          dim_fltgrd(1)=fltdim
-          dim_fltgrd(2)=timedim
-
-# ifdef AGRIF
-       endif
-# endif
-#endif /* FLOATS */
 
 #ifdef PUT_GRID_INTO_RESTART
 !
@@ -250,9 +215,9 @@
         if (total_rec.le.1) then
 # ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &                   ,r3dgrd, w3dgrd)
+     &                   ,r3dgrd, w3dgrd, NF_FTYPE)
 # else
-         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FTYPE)
 # endif
       endif
 #endif
@@ -634,15 +599,9 @@
 !
 # if defined TRACERS
         do itrc=1,NTot
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
           lvar=lenstr(vname(1,indxV+itrc))
-
           ierr=nf_def_var (ncid, vname(1,indxV+itrc)(1:lvar),
      &         NF_DOUBLE, 4, r3dgrd, rstT(itrc))
-
 #  ifdef NC4PAR
         ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
 #  endif
@@ -658,9 +617,6 @@
 
           call nf_add_attribute(ncid, rstT(itrc), 
      &         vname(:,indxV+itrc), 5, NF_DOUBLE,ierr)
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-        endif
-# endif
         enddo
 # endif
 
@@ -1120,7 +1076,6 @@
 !
 ! Sediment bed thickness
 !
-
         lvar=lenstr(vname(1,indxBTHK))
         ierr=nf_def_var (ncid, vname(1,indxBTHK)(1:lvar),
      &                              NF_DOUBLE, 4, b3dgrd, rstSed(1))
@@ -1143,7 +1098,6 @@
 !
 ! Sediment bed porosity
 !
-
         lvar=lenstr(vname(1,indxBPOR))
         ierr=nf_def_var (ncid, vname(1,indxBPOR)(1:lvar),
      &                              NF_DOUBLE, 4, b3dgrd, rstSed(2))
@@ -1298,78 +1252,12 @@
      &       NF_DOUBLE, ierr)
 #endif /* BBL */
 
-
-#ifdef FLOATS
-# ifdef AGRIF
-      if (Agrif_Root()) then
-# endif
-
-           vinfo(1)='nfloats'
-           vinfo(2)='total number of floats'
-
-           lvar=lenstr(vinfo(1))
-           ierr=nf_def_var(ncid,vinfo(1)(1:lvar),nf_int,
-     &                    1,timedim,rstnfloats)
-# ifdef NC4PAR
-           ierr=nf_var_par_access(ncid,rstnfloats,nf_collective)
-# endif
-           lvar=lenstr(vinfo(2))
-           ierr=nf_put_att_text(ncid,rstnfloats,'long_name',lvar,
-     &                         vinfo(2)(1:lvar))
-
-! define Tinfo
-
-           vinfo(1)='Tinfo'
-           vinfo(2)='initial float release information array'
-
-           lvar=lenstr(vinfo(1))
-           ierr=nf_def_var(ncid,vinfo(1)(1:lvar),NF_DOUBLE,
-     &                    3,dim_Tinfo,rstTinfo)
-# ifdef NC4PAR
-           ierr=nf_var_par_access(ncid,rstTinfo,nf_collective)
-# endif
-           lvar=lenstr(vinfo(2))
-           ierr=nf_put_att_text(ncid,rstTinfo,'long_name',lvar,
-     &                         vinfo(2)(1:lvar))
-
-! define grid level
-
-           vinfo(1)='grid_level'
-           vinfo(2)='float position in nested grids hierarchy'
-
-           lvar=lenstr(vinfo(1))
-           ierr=nf_def_var(ncid,vinfo(1)(1:lvar),nf_int,
-     &                    2,dim_fltgrd,rstfltgrd)
-           lvar=lenstr(vinfo(2))
-           ierr=nf_put_att_text(ncid,rstfltgrd,'long_name',lvar,
-     &                         vinfo(2)(1:lvar))
-
-! define track
-
-           vinfo(1)='track'
-           vinfo(2)='Position and velocity array for released floats'
-           vinfo(3)='x,y,z,u,v,w in this order'
-           lvar=lenstr(vinfo(1))
-           ierr=nf_def_var(ncid,vinfo(1)(1:lvar),NF_DOUBLE,
-     &                    4,dim_track,rsttrack)
-           lvar=lenstr(vinfo(2))
-           ierr=nf_put_att_text(ncid,rsttrack,'long_name',lvar,
-     &                         vinfo(2)(1:lvar))
-           lvar=lenstr(vinfo(3))
-           ierr=nf_put_att_text(ncid,rsttrack,'Content',lvar,
-     &                         vinfo(3)(1:lvar))
-
-# ifdef AGRIF
-      endif
-# endif
-#endif /* FLOATS */
-
 !
 ! Leave definition mode.                  Also initialize record
 ! ----- ---------- -----                  dimension size to zero.
 !
         ierr=nf_enddef(ncid)
-        MPI_master_only write(*,'(6x,4A,1x,A,i4)')
+        MPI_master_only write(stdout,'(6x,4A,1x,A,i4)')
      &              'DEF_RST - Created new ',
      &              'netCDF file ''', rstname(1:lstr), '''.'
      &               MYID
@@ -1666,10 +1554,6 @@
 !
 # if defined TRACERS
         do itrc=1,NTot
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-         if (itrc.ne.iCRT2 .and. itrc.ne.iCRT3
-     &   .and. itrc.ne.iCRT4) then
-# endif
           lvar=lenstr(vname(1,indxV+itrc))
           ierr=nf_inq_varid (ncid, vname(1,indxV+itrc)(1:lvar),
      &                                                rstT(itrc))
@@ -1681,9 +1565,6 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,rstT(itrc),nf_collective)
 #  endif
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-        endif
-# endif
         enddo
 # endif
 
@@ -2093,7 +1974,7 @@
 # endif
 #endif /* BBL */
 !
-      MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
+      MPI_master_only write(stdout,'(6x,2A,i4,1x,A,i4)')
      &             'DEF_RST -- Opened ',
      &             'existing restart file,  record =', rec
      &              MYID

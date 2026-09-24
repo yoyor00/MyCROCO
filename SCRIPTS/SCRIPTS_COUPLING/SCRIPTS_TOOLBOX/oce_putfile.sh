@@ -8,7 +8,7 @@ if [ ${USE_XIOS_OCE} -eq 1 ]; then
         mv ${file}* ${OUTPUTDIR}/
     done
 else
-    module load $ncomod
+    [[ -n ${ncomod} ]] && module load $ncomod
     for nn in $( seq 0 ${AGRIFZ} ); do
         if [ ${nn} -gt 0 ];    then
             agrif_ext=".${nn}"
@@ -23,7 +23,7 @@ else
             #mvfile2 ${ff} ${OUTPUTDIR}/${name}_${DATE_BEGIN_JOB}_${DATE_END_JOB}.nc${agrif_ext}
         done
     done
-   module unload $ncomod
+   [[ -n ${ncomod} ]] && module unload $ncomod
 fi
 
 #o------------------------------------------------------------------------------

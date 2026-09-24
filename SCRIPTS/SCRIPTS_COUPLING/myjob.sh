@@ -95,7 +95,7 @@ export io_putfile="mvfile"
 #  Which Computer?
 #-------------------------------------------------------------------------------
 # Machine you are working on 
-# Known machines: Linux DATARMOR IRENE JEANZAY LEFTRARU
+# Known machines: Linux DATARMOR IRENE JEANZAY LEFTRARU NEA
 # If your machine is not already known, you can add it by creating a few files (hearder, myenv, launch) 
 # in a dedicated directory under: SCRIPTS/SCRIPTS_COUPLING/SCRIPTS_TOOLBOX/MACHINE/ and add a case in 
 # SCRIPTS/SCRIPTS_COUPLING/myjob.sh (after l.95)
@@ -103,7 +103,7 @@ if [ ${MACHINE} == "Linux" ]; then
    export QSUB="./"
 elif [ ${MACHINE} == "IRENE" ]; then
    export QSUB="ccc_msub -m work,store,scratch "
-elif [ ${MACHINE} == "JEANZAY" ] || [ ${MACHINE} == "LEFTRARU" ]; then
+elif [ ${MACHINE} == "JEANZAY" ] || [ ${MACHINE} == "LEFTRARU" ] || [ ${MACHINE} == "NEA" ]; then
    export QSUB="sbatch "
 elif [ ${MACHINE} == "DATARMOR" ] || [ ${MACHINE} == "WCHPC" ]; then
    export QSUB="qsub "

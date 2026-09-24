@@ -1,13 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! This routine belongs to the specific CROCO package.
-!
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 !====================================================================
@@ -326,12 +325,6 @@ C$OMP BARRIER
 #  ifdef MASKING
      &                  *umask(Istr,j)
 #  endif
-#  ifdef WET_DRY0
-          cff1=ABS(ABS(umask_wet(Istr,j))-1.)
-          cff2=0.5+SIGN(0.5,ubclm(Istr,j))*umask_wet(Istr,j)
-          cff3=0.5*umask_wet(Istr,j)*cff1+cff2*(1.-cff1)
-          ubclm(Istr,j)=ubclm(Istr,j)*cff3
-#  endif
          enddo
       endif
 # endif /* AGRIF_OBC_WEST */
@@ -357,12 +350,6 @@ C$OMP BARRIER
 #  ifdef MASKING
      &                      *umask(Iend+1,j)
 #  endif
-#  ifdef WET_DRY0
-          cff1=ABS(ABS(umask_wet(Iend+1,j))-1.)
-          cff2=0.5+SIGN(0.5,ubclm(Iend+1,j))*umask_wet(Iend+1,j)
-          cff3=0.5*umask_wet(Iend+1,j)*cff1+cff2*(1.-cff1)
-          ubclm(Iend+1,j)=ubclm(Iend+1,j)*cff3
-#  endif
         enddo
       endif
 # endif /* AGRIF_OBC_EAST */
@@ -385,12 +372,6 @@ C$OMP BARRIER
 #  ifdef MASKING
      &                  *umask(i,Jstr-1)
 #  endif
-#  ifdef WET_DRY0
-          cff1=ABS(ABS(umask_wet(i,Jstr-1))-1.)
-          cff2=0.5+SIGN(0.5,ubclm(i,Jstr-1))*umask_wet(i,Jstr-1)
-          cff3=0.5*umask_wet(i,Jstr-1)*cff1+cff2*(1.-cff1)
-          ubclm(i,Jstr-1)=ubclm(i,Jstr-1)*cff3
-#  endif
         enddo
       endif
 # endif /* AGRIF_OBC_SOUTH */
@@ -412,12 +393,6 @@ C$OMP BARRIER
 #  endif
 #  ifdef MASKING
      &                *umask(i,Jend+1)
-#  endif
-#  if defined WET_DRY0
-          cff1=ABS(ABS(umask_wet(i,Jend+1))-1.)
-          cff2=0.5+SIGN(0.5,ubclm(i,Jend+1))*umask_wet(i,Jend+1)
-          cff3=0.5*umask_wet(i,Jend+1)*cff1+cff2*(1.-cff1)
-          ubclm(i,Jend+1)=ubclm(i,Jend+1)*cff3
 #  endif
         enddo
       endif
@@ -815,12 +790,6 @@ C$OMP BARRIER
 #  ifdef MASKING
      &                  *vmask(i,Jstr)
 #  endif
-#  ifdef WET_DRY0
-          cff1=ABS(ABS(vmask_wet(i,Jstr))-1.)
-          cff2=0.5+SIGN(0.5,vbclm(i,Jstr))*vmask_wet(i,Jstr)
-          cff3=0.5*vmask_wet(i,Jstr)*cff1+cff2*(1.-cff1)
-          vbclm(i,Jstr)=vbclm(i,Jstr)*cff3
-#  endif
         enddo
       endif
 # endif /* AGRIF_OBC_SOUTH */
@@ -846,12 +815,6 @@ C$OMP BARRIER
 #  ifdef MASKING
      &                  *vmask(i,Jend+1)
 #  endif
-#  ifdef WET_DRY0
-          cff1=ABS(ABS(vmask_wet(i,Jend+1))-1.)
-          cff2=0.5+SIGN(0.5,vbclm(i,Jend+1))*vmask_wet(i,Jend+1)
-          cff3=0.5*vmask_wet(i,Jend+1)*cff1+cff2*(1.-cff1)
-          vbclm(i,Jend+1)=vbclm(i,Jend+1)*cff3
-#  endif
         enddo
       endif
 # endif /* AGRIF_OBC_NORTH */
@@ -874,12 +837,6 @@ C$OMP BARRIER
 #  ifdef MASKING
      &                 *vmask(Iend+1,j)
 #  endif
-#  ifdef WET_DRY0
-          cff1=ABS(ABS(vmask_wet(Iend+1,j))-1.)
-          cff2=0.5+SIGN(0.5,vbclm(Iend+1,j))*vmask_wet(Iend+1,j)
-          cff3=0.5*vmask_wet(Iend+1,j)*cff1+cff2*(1.-cff1)
-          vbclm(Iend+1,j)=vbclm(Iend+1,j)*cff3
-#  endif
         enddo
       endif
 # endif /* AGRIF_OBC_EAST */
@@ -901,12 +858,6 @@ C$OMP BARRIER
 #  endif
 #  ifdef MASKING
      &                  *vmask(Istr-1,j)
-#  endif
-#  ifdef WET_DRY0
-          cff1=ABS(ABS(vmask_wet(Istr-1,j))-1.)
-          cff2=0.5+SIGN(0.5,vbclm(Istr-1,j))*vmask_wet(Istr-1,j)
-          cff3=0.5*vmask_wet(Istr-1,j)*cff1+cff2*(1.-cff1)
-          vbclm(Istr-1,j)=vbclm(Istr-1,j)*cff3
 #  endif
         enddo
       endif

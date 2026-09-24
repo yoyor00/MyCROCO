@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 ! This is include file "diagnostics.h": tracer equation terms
@@ -34,9 +35,9 @@
       real Trate_mld(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld(GLOBAL_2D_ARRAY,NT)
       real Taver_mld(GLOBAL_2D_ARRAY,NT)
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
       real Tcrit_mld(GLOBAL_2D_ARRAY,NT)
-# endif
+#  endif
       integer kbl_nstp(GLOBAL_2D_ARRAY)
 # endif
 # ifdef AVERAGES
@@ -62,9 +63,9 @@
       real Trate_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Tentr_mld_avg(GLOBAL_2D_ARRAY,NT)
       real Taver_mld_avg(GLOBAL_2D_ARRAY,NT)
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
       real Tcrit_mld_avg(GLOBAL_2D_ARRAY,NT)
-# endif
+#   endif
 #  endif
 # endif
       common /diag_TXadv/TXadv
@@ -88,9 +89,9 @@
       common /diag_Trate_mld/Trate_mld
       common /diag_Tentr_mld/Tentr_mld
       common /diag_Taver_mld/Taver_mld
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
       common /diag_Tcrit_mld/Tcrit_mld
-# endif
+#  endif
       common /diag_kbl_nstp/kbl_nstp
 # endif
 # ifdef AVERAGES
@@ -116,14 +117,16 @@
       common /diag_Trate_mld_avg/Trate_mld_avg
       common /diag_Tentr_mld_avg/Tentr_mld_avg
       common /diag_Taver_mld_avg/Taver_mld_avg
-# ifdef DIAGNOSTICS_TS_MLD_CRIT  
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
       common /diag_Tcrit_mld_avg/Tcrit_mld_avg
-# endif
+#   endif
 #  endif
 # endif
 #endif /* DIAGNOSTICS_TS */
 !
-#ifdef DIAGNOSTICS_UV
+
+# if defined DIAGNOSTICS_UV || defined DIAGNOSTICS_KE \
+                            || defined DIAGNOSTICS_VRT
       real MXadv(GLOBAL_2D_ARRAY,N,2)
       real MYadv(GLOBAL_2D_ARRAY,N,2)
       real MVadv(GLOBAL_2D_ARRAY,N,2)
@@ -134,13 +137,38 @@
       real MVmix(GLOBAL_2D_ARRAY,N,2)
       real MVmix2(GLOBAL_2D_ARRAY,N,2)
       real Mrate(GLOBAL_2D_ARRAY,N,2)
+# if defined BODYFORCE
       real Mbody(GLOBAL_2D_ARRAY,N,2)
+# endif
 # if defined DIAGNOSTICS_BARO
       real MBaro(GLOBAL_2D_ARRAY,N,2)
 # endif
 # if defined M3FAST
       real Mfast(GLOBAL_2D_ARRAY,N,2)
 # endif
+      common /diag_MXadv/MXadv
+      common /diag_MYadv/MYadv
+      common /diag_MHdiff/MHdiff
+      common /diag_MVadv/MVadv
+      common /diag_MCor/MCor
+      common /diag_MPrsgrd/MPrsgrd
+      common /diag_MHmix/MHmix
+      common /diag_MVmix/MVmix
+      common /diag_MVmix2/MVmix2
+      common /diag_Mrate/Mrate
+# if defined BODYFORCE
+      common /diag_Mbody/Mbody
+# endif
+# if defined DIAGNOSTICS_BARO
+      common /diag_MBaro/MBaro
+# endif
+# if defined M3FAST
+      common /diag_Mfast/Mfast
+# endif
+# endif /* defined DIAGNOSTICS_UV || VRT || EK */
+
+
+#ifdef DIAGNOSTICS_UV
 # ifdef MRL_WCI
       real Mvf(GLOBAL_2D_ARRAY,N,2)
       real Mbrk(GLOBAL_2D_ARRAY,N,2)
@@ -179,23 +207,6 @@
       real Mbwf_avg(GLOBAL_2D_ARRAY,N,2)
       real Mfrc_avg(GLOBAL_2D_ARRAY,N,2)
 #  endif
-# endif
-      common /diag_MXadv/MXadv
-      common /diag_MYadv/MYadv
-      common /diag_MHdiff/MHdiff
-      common /diag_MVadv/MVadv
-      common /diag_MCor/MCor
-      common /diag_MPrsgrd/MPrsgrd
-      common /diag_MHmix/MHmix
-      common /diag_MVmix/MVmix
-      common /diag_MVmix2/MVmix2
-      common /diag_Mrate/Mrate
-      common /diag_Mbody/Mbody
-# if defined DIAGNOSTICS_BARO
-      common /diag_MBaro/MBaro
-# endif
-# if defined M3FAST
-      common /diag_Mfast/Mfast
 # endif
 # ifdef MRL_WCI
       common /diag_Mvf/Mvf

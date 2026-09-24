@@ -1,3 +1,7 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 #include "cppdefs.h"
 
 MODULE comMUSTANG
@@ -16,8 +20,6 @@ MODULE comMUSTANG
 
     ! default
     public
-
-#include "coupler_define_MUSTANG.h"
   
     !! * Shared or public variables for MUSTANG 
 
@@ -92,6 +94,9 @@ MODULE comMUSTANG
         ! (used only if l_unised is false)
     REAL(KIND=rsh) :: z0sedbedrock ! bed roughness for bedrock (no sediment) (m) 
         ! (used only if l_unised is false)
+    LOGICAL :: l_tauskin_center ! boolean, to compute tauskin_c at rho point directly
+    LOGICAL :: l_tauskin_ubar ! boolean, to use depth-averaged velocity instead of u(k=1)
+    LOGICAL :: l_tauskin_upwind ! boolean, to use upwind interpolation for tauskin_x/y
     LOGICAL :: l_fricwave ! boolean, set to .true. if using wave related friction 
         ! factor for bottom shear stress (from wave orbital velocity and period)
         ! if .false. then fricwav namelist value is used
@@ -123,6 +128,8 @@ MODULE comMUSTANG
         ! column and correct sand transport, value by default = 0.02 
         ! correspond to Van Rijn experiments 
         ! DO NOT CHANGED IF NOT EXPERT
+    LOGICAL :: l_corflux ! boolean to activate correction on horizontal sand 
+        ! fluxes
     REAL(KIND=rsh) :: cvolmaxsort ! max volumic concentration of sorted sand
     REAL(KIND=rsh) :: cvolmaxmel ! maxvolumic concentration of mixed sediments
     REAL(KIND=rsh) :: slopefac !slope effect multiplicative on deposit 
@@ -230,9 +237,9 @@ MODULE comMUSTANG
         ! h0+ssh <= hmin_bedload in neighbouring cells
 #endif
 
+    ! namsedim_lateral_erosion
 
-!**TODO** put under cpp key #ifdef key_MUSTANG_lateralerosion
-    ! namsedim_lateral_erosion 
+    LOGICAL        :: l_erolat ! set to .true to activate lateral erosion
     REAL(KIND=rsh) :: htncrit_eros ! critical water height so as to prevent 
         ! erosion under a given threshold (the threshold value is different for
         ! flooding or ebbing, cf. Hibma's PhD, 2004, page 78)
@@ -242,8 +249,6 @@ MODULE comMUSTANG
         ! vertical
     LOGICAL        :: l_erolat_wet_cell ! set to .true in order to take 
         ! into account wet cells lateral erosion
-!**TODO** put under cpp key #key_MUSTANG_lateralerosion
-
 
     ! namsedim_consolidation 
     LOGICAL        :: l_consolid ! set to .true. if sediment consolidation is 
@@ -376,23 +381,6 @@ MODULE comMUSTANG
         ! an addition layer is an integrative layer till bottom
 
 
-#if defined key_MUSTANG_debug && defined key_MUSTANG_V2
-    ! namsedim_debug 
-    LOGICAL        :: l_debug_effdep ! set to .true. if print some 
-        ! informations for debugging MUSTANG deposition
-    LOGICAL        :: l_debug_erosion ! set to .true. if  print 
-        ! informations for debugging  in erosion routines
-    REAL(kind=rlg)   :: lon_debug, lat_debug ! define mesh location 
-        ! where we print these informations
-    INTEGER          :: i_MUSTANG_debug, j_MUSTANG_debug ! indexes 
-        ! of the mesh where we print these informations 
-        ! (only if lon_debug and lat_debug = 0.)
-    CHARACTER(len=19):: date_start_debug ! starting date for write 
-        ! debugging informations 
-#endif
-
-
-
 #ifdef key_MUSTANG_flocmod
     ! namflocmod  
     LOGICAL :: l_ASH ! set to .true. if aggregation by shear
@@ -456,9 +444,9 @@ MODULE comMUSTANG
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_sum
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: EROS_FLUX_s2w
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUX_w2s
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: SETTL_FLUXSUM_w2s
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_CROCO
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_CROCO
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_sum_CROCO
 
     ! Sediment parameters
     REAL(KIND=rsh)            :: ros_sand_homogen 
@@ -510,14 +498,11 @@ MODULE comMUSTANG
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: ws3_bottom_MUSTANG ! settling velocities in  bottom cell (m/s)
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE   :: roswat_bot
 
-!**TODO** put under cppkey MUSTANG_CORFLUX
-    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corflux
-    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE     :: corfluy
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: corflux
+    REAL(KIND=rsh),DIMENSION(:,:,:),ALLOCATABLE   :: corfluy
 
-#ifdef key_sand2D
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: rouse2D ! Rouse2D number
-    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: sum_tmp ! SUM(dzcche*((htot-hzed)/hzed)**rouse) 
-#endif
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: rouse2D_integral ! see integrate_rouse_profile
 
 
     ! Dynamic in sediment (consolidation/diffusion/bioturbation)
@@ -557,9 +542,6 @@ MODULE comMUSTANG
 #if defined MORPHODYN
             INTEGER :: it_morphoYes
 #endif
-#endif
-#ifdef key_MUSTANG_debug
-        REAL(KIND=rlg)   :: t_start_debug
 #endif
 #endif
 
@@ -623,19 +605,15 @@ MODULE comMUSTANG
     REAL(KIND=riosh), DIMENSION(:,:,:), ALLOCATABLE  :: var2D_diagsed
 #endif
 
-!**TODO** put under cpp key #if defined key_MUSTANG_lateralerosion
-!  used in erosion only but exchange and dimensions could depend on grid model 
+!  used in lateral_erosion only 
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corim1
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corip1
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjm1
     REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE :: flx_s2w_corjp1
-!**TODO** put under cpp key #if ! defined key_nofluxwat_IWS
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corim1
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corip1
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
-!**TODO** put under cpp key #endif
-!**TODO** put under cpp key #endif
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corim1
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corip1
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
 
 ! slipdeposit : **TODO** put under cpp key key_MUSTANG_slipdeposit
    !  used in accretion (settling) only bud exchange and dimensions could depend on grid model 

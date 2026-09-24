@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -80,6 +81,7 @@
 !             model grid (must account for grid angle)
 !********************************************************************!
 !
+      use croco_namelist, only: dt, rho0, Cdb_min, Cdb_max
       implicit none
 # include "param.h"
 # include "bbl.h"
@@ -98,10 +100,6 @@
 # ifdef WKB_WWAVE
 #  include "wkb_wwave.h"
 # endif
-# ifdef SANDBAR
-#  undef  BBL_WAVE_SKEWNESS
-#  define BBL_BREAKING_STIR
-# endif
       logical SAND, SILT
       integer Iend, Istr, Jend, Jstr, i, ised, j, k
       integer ISTRm,ISTRp,IENDp,JSTRm,JSTRp,JENDp
@@ -112,12 +110,13 @@
      &        tau_w, tau_ws, tau_c, tau_cs, tau_cw, tau_cws,
      &        thetw, twopi, Ucur, Vcur, Ubc, visk,
      &        znots, znot, znota, znot_bl, znot_rip,
-     &        eps, zomin, zomax, depth, Ut
+     &        eps, zomin, zomax, depth, Ut, sinh_maxarg
       parameter
      &       (Ubc   = 1.e-2,  ! minimum orbital velocity for waves
      &        eps   = 1.e-10, ! small number to avoid zero division
      &        zomin = 1.e-5,  ! minimum roughness
-     &        zomax = 3.e-2)  ! maximum roughness
+     &        zomax = 3.e-2,   ! maximum roughness
+     &        sinh_maxarg = 700) ! SINH maximum arg value
 # ifdef Z0_RIP
       real    rhgt, rlen, rhmax, rhmin, rlmin, psi,
      &        rhbio, rlbio, rhbiomax, rhfac
@@ -238,7 +237,7 @@
 !
 !  Compute bed wave orbital velocity and excursion amplitude.
 !
-          Ab=Awave(i,j)/SINH(Kbh) + eps
+          Ab=Awave(i,j)/(max(SINH(min(Kbh,sinh_maxarg)),eps)) + eps
 # ifdef OW_COUPLING_FULL
           Ub(i,j) = ubr(i,j) SWITCH rmask(i,j)
      &                       SWITCH_WET rmask_wet(i,j)

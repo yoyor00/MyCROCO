@@ -73,6 +73,7 @@ class Config:
             "  By default, comparison is made over netcdf results file. \n"
             "  A more precise option is available through --cvtk.\n"
             "- plotperf : plot runtime of each variant\n"
+            "- trackperf : track runtime of each case and variant in one file\n"
             "- plotphy : physical plot using python script specified in case config in plot_diag_script.\n"
             "- plotraw : plot raw map of variables at start/middle/end of simulation.\n"
             "- animraw : same plot as plotraw with an animation over the simulation.\n"
@@ -100,6 +101,13 @@ class Config:
             default="1",
         )
         parser.add_argument(
+            "-l",
+            "--load-perf",
+            help="Load previous runtime tracking",
+            type=str,
+            default="",
+        )
+        parser.add_argument(
             "-j",
             "--jobs",
             help="Make -j option value to build \n(default=4)",
@@ -121,6 +129,13 @@ class Config:
             "--build-ref",
             help="Build the reference directory to be stored once somewhere for validation.",
             type=str,
+            default=False,
+        )
+        parser.add_argument(
+            "--force-ref",
+            help="Overwrite an existing reference directory (used with --build-ref). "
+            "Without this flag, build-ref stops with an error if the ref already exists.",
+            action="store_true",
             default=False,
         )
         parser.add_argument(
@@ -211,12 +226,18 @@ class Config:
         self.workdir = os.path.abspath(self.args.workdir)
         self.rebuild = self.args.rebuild
         self.runs = int(self.args.runs)
+        self.load_perf = self.args.load_perf
         self.make_jobs = int(self.args.jobs)
         self.title = self.args.title
         self.auto_skip = self.args.auto_skip
         self.no_previous = self.args.no_previous
-        self.build_ref = self.args.build_ref
-        self.use_ref = self.args.use_ref
+        self.build_ref = (
+            os.path.abspath(self.args.build_ref) if self.args.build_ref else False
+        )
+        self.force_ref = self.args.force_ref
+        self.use_ref = (
+            os.path.abspath(self.args.use_ref) if self.args.use_ref else False
+        )
         self.use_host_config = self.args.host
         self.variant_ref_name = self.args.compare_to
         self.cvtk = self.args.cvtk
@@ -234,17 +255,16 @@ class Config:
 
         # compute clean result subdir name
         use_host_config = self.use_host_config
-        if self.args.no_date_in_result_dir:
-            if self.title is not None:
-                folder_name = f"{self.title}-{use_host_config}"
-            else:
-                folder_name = f"{use_host_config}"
+        if self.title is not None:
+            folder_name_base = f"{self.title}-{use_host_config}"
         else:
-            run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            if self.title is not None:
-                folder_name = f"{self.title}-{use_host_config}-{run_date}"
-            else:
-                folder_name = f"{use_host_config}-{run_date}"
+            folder_name_base = f"{use_host_config}"
+
+        self.run_date = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        if self.args.no_date_in_result_dir:
+            folder_name = f"{folder_name_base}"
+        else:
+            folder_name = f"{folder_name_base}-{self.run_date}"
         self.results = os.path.join(
             self.args.results,
             folder_name,
@@ -258,7 +278,7 @@ class Config:
         else:
             self.results_pattern = os.path.join(
                 self.args.results,
-                f"{self.title}-{use_host_config}-*",
+                f"{folder_name_base}-*",
             )
 
         # extract some many time used paths
@@ -277,6 +297,19 @@ class Config:
             raise Exception(
                 f"You gave --build-ref={self.use_ref}, but not using the required '{self.variant_ref_name}' variant !"
             )
+        # check ref dirs existence before starting any run
+        if self.build_ref and not self.force_ref:
+            existing = [
+                f"{self.build_ref}/{case_name}"
+                for case_name in self.case_names
+                if os.path.isdir(f"{self.build_ref}/{case_name}")
+            ]
+            if existing:
+                dirs = "\n  ".join(existing)
+                raise Exception(
+                    f"Reference director{'y' if len(existing) == 1 else 'ies'} already exist:\n  {dirs}\n"
+                    f"Use --force-ref to overwrite."
+                )
 
     def filter_variant_ressources(self):
         # extract needed vars
@@ -412,4 +445,8 @@ class Config:
     def html_global_report(self):
         # global html
         if self.globalhtml:
-            generate_global_html(self.args.results)
+            generate_global_html(
+                self.args.results,
+                ref_name=self.variant_ref_name,
+                use_ref_path=self.use_ref if self.use_ref else None,
+            )

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ${SCRIPTDIR}/../PREPRO/XIOS
+cd ${CHOME}/PREPRO/XIOS
 
 if [[ ${USE_XIOS_OCE} == 1 ]]; then
      sed -e "s/OCE_XIOS=.*/OCE_XIOS=\"TRUE\"/g" process_xios_xml.sh > process_xios_xml.tmp

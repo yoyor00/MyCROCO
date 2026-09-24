@@ -1,32 +1,22 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
-#ifdef AUTOTILING
-      real,dimension(:,:,:), pointer :: A2d, A3d, A3dHz
-# if defined SEDIMENT || defined LMD_MIXING
-      integer,dimension(:,:),pointer :: B2d
-# endif
-# if defined ABL1D
-      integer,dimension(:,:), pointer :: T1d
-      real,dimension(:,:,:) , pointer :: T2d,T3d
-# endif
-#else
       real A2d(N2d,NSA,0:NPP-1), A3d(N3d,9,0:NPP-1)
      &    ,A3dHz(N3dHz,4,0:NPP-1)
-# if defined SEDIMENT || defined LMD_MIXING
+#if defined SEDIMENT || defined LMD_MIXING
       integer B2d(N2d,0:NPP-1)
-# endif
-# if defined ABL1D
+#endif
+#if defined ABL1D
       integer T1d(size_XI,0:NPP-1)
       real    T2d(N2dabl,7,0:NPP-1),T3d(N3dabl,7,0:NPP-1)
-# endif
 #endif
 
       common/private_scratch/ A2d,A3d,A3dHz

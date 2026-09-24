@@ -5,7 +5,11 @@
     "case": "SHOREFACE",
     "splitting": { "1": "1x1", "2": "2x1" },
     "patches": {},
-    "input_file": "TEST_CASES/croco.in.ShoreFace",
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/SHOREFACE/plot_shoreface.py",
+      "plotphy_script_input": "shoreface_his.nc",
+    },
     "check_outputs": ["shoreface_his.nc"],
+    "unsupported": ["openmp"],
   },
 }

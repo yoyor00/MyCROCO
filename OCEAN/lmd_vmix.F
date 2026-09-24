@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -139,11 +140,7 @@ C$OMP BARRIER
      &     lmd_sdd2=1.85,    ! (Fedorov, 1988).
      &     lmd_sdd3=0.85)    !
 
-# undef  LMD_NUW_GARGETT
-
 # ifdef LMD_RIMIX
-#  define RI_HSMOOTH
-#  define RI_VSMOOTH
       real Ri, ratio, dudz,dvdz,shear2
 # endif
 # ifdef LMD_BOTEK
@@ -354,17 +351,10 @@ C$OMP BARRIER
 
 !
 !  Compute interior diffusivity due to wave breaking
-!  (choose constant values as in Large et al. or
-!   Gargett and Holloway parameterization)
+!  (constant values as in Large et al.)
 !
-# ifdef LMD_NUW_GARGETT
-           cff=1./SQRT(MAX(bvf(i,j,k),1.e-7))
-           lmd_iwm=1.e-6*cff
-           lmd_iws=1.e-7*cff
-# else
            lmd_iwm=lmd_nuwm
            lmd_iws=lmd_nuws
-# endif
 !
 ! Compute interior convective diffusivity due to
 ! static instability mixing.

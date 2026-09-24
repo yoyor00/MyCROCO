@@ -1,6 +1,6 @@
 #!/bin/bash
 
-module load $ncomod
+[[ -n ${ncomod} ]] && module load $ncomod
 
 if [[ ${bdy_ext} == *'clm'* ]]; then
     echo 'CROCO boundary is CLM'
@@ -94,4 +94,4 @@ else
         exit 1
     fi
 fi
-module unload $ncomod
+[[ -n ${ncomod} ]] &&  module unload $ncomod

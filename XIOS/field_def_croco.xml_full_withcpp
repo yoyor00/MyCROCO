@@ -34,29 +34,25 @@
 #endif
   <!-- T grid -->
   <field_group id="rho" grid_ref="rho_2D">
-    <field id="h" long_name="bathymetry at RHO-points" unit="meter" />
+    <field id="h" long_name="bathymetry at RHO-points" unit="meter" grid_ref="rho_2D_unmasked"/>
 #ifdef WET_DRY
-    <field id="Dcrit" long_name="Critical Depth for Drying cells" unit="meter" />
+    <field id="Dcrit" long_name="Critical Depth for Drying cells" unit="meter" grid_ref="rho_2D_unmasked"/>
 #endif
-    <field id="f" long_name="Coriolis parameter at RHO-points" unit="second-1" />
-    <field id="pm" long_name="curvilinear coordinates metric in XI" unit="meter-1" />
-    <field id="pn" long_name="curvilinear coordinates metric in ETA" unit="meter-1" />
+    <field id="f" long_name="Coriolis parameter at RHO-points" unit="second-1" grid_ref="rho_2D_unmasked"/>
+    <field id="pm" long_name="curvilinear coordinates metric in XI" unit="meter-1" grid_ref="rho_2D_unmasked"/>
+    <field id="pn" long_name="curvilinear coordinates metric in ETA" unit="meter-1" grid_ref="rho_2D_unmasked"/>
 #ifdef SPHERICAL
-    <field id="lon_rho" long_name="longitude of RHO-points" unit="degree_east" />
-    <field id="lat_rho" long_name="latitude of RHO-points" unit="degree_north" />
-    <field id="lon_u" long_name="longitude of U-points" unit="degree_east" />
-    <field id="lat_u" long_name="latitude of U-points" unit="degree_north" />
-    <field id="lon_v" long_name="longitude of V-points" unit="degree_east" />
-    <field id="lat_v" long_name="latitude of V-points" unit="degree_north" />
+    <field id="lon_rho" long_name="longitude of RHO-points" unit="degree_east" grid_ref="rho_2D_unmasked"/>
+    <field id="lat_rho" long_name="latitude of RHO-points" unit="degree_north" grid_ref="rho_2D_unmasked"/>
 #else
-     <field id="x_rho" long_name="x-locations of RHO-points" unit="meter" />
-     <field id="y_rho" long_name="y-locations of RHO-points" unit="none" />
+     <field id="x_rho" long_name="x-locations of RHO-points" unit="meter" grid_ref="rho_2D_unmasked"/>
+     <field id="y_rho" long_name="y-locations of RHO-points" unit="none" grid_ref="rho_2D_unmasked"/>
 #endif
 #ifdef CURVGRID
-     <field id="angle" long_name="angle between XI-axis and EAST" unit="radians" />
+     <field id="angle" long_name="angle between XI-axis and EAST" unit="radians" grid_ref="rho_2D_unmasked"/>
 #endif
 #ifdef MASKING
-     <field id="mask_rho" long_name="angle between XI-axis and EAST" unit="radians" />
+     <field id="mask_rho" long_name="land/sea mask along rho points" unit="--" grid_ref="rho_2D_unmasked"/>
 #endif
      <field id="zeta" long_name="free-surface" unit="meter" />
      <field id="bostr" long_name="Kinematic bottom stress" unit="N/m2" />
@@ -70,7 +66,7 @@
     <!-- SALINITY --> 
     <field id="salt" long_name="salinity" unit="PSU" grid_ref="rho_3D" />
     <field id="salt_surf" long_name="surface salinity" unit="PSU" />
-    <field id="rho_surf" long_name="surface density" unit="kg/m3" />
+    <field id="rho_surf" standard_name="sea_water_sigma_t" long_name="surface density anomaly" unit="kg m-3" />
     <field id="swflx" long_name="surface freshwater flux (E-P)" unit="centimeter day-1"  />
     <field id="prate" long_name="precipitation" unit="centimeter day-1"  />
     <!--  END SALINITY --> 
@@ -93,10 +89,10 @@
 #endif
 #ifdef MOVING_BATHY
     <!-- MOVING_BATHY -->
-    <field id="hmorph" long_name="moving bathymetry" unit="meter" />
+    <field id="hmorph" long_name="moving bathymetry" unit="meter" grid_ref="rho_2D_unmasked"/>
     <!-- END MOVING_BATHY -->
 #endif
-    <field id="rho" long_name="density anomaly" unit="kilogram meter-3" grid_ref="rho_3D"/>
+    <field id="rho" long_name="density anomaly"  standard_name="sea_water_sigma_t" unit="kg m-3" grid_ref="rho_3D"/>
     <field id="bvf" long_name="Brunt Vaisala frequency" unit="second-2" grid_ref="w_3D"/>
 #ifdef VIS_COEF_3D
 <!-- VIS_COEF_3D -->
@@ -119,6 +115,9 @@
     <field id="shflx_sen" long_name="Sensible surface heat flux" unit="Watts meter-2" />
     <field id="tair" long_name="Air temperature" unit="C" />
     <field id="rhum" long_name="Air specific humidity" unit="kg.kg-1" />
+# ifdef READ_PATM
+    <field id="patm" long_name="Mean sea level pressure" unit="Pa" />
+# endif
 <!-- END BULK_FLUX -->  
 #endif
 #ifdef SST_SKIN
@@ -476,8 +475,8 @@
 <!-- U grid -->
     <field_group id="u" grid_ref="u_2D">
 #ifdef SPHERICAL
-      <field id="lon_u" long_name="longitude of U-points" unit="degree_east" />
-      <field id="lat_u" long_name="latitude of U-points" unit="degree_north" />
+      <field id="lon_u" long_name="longitude of U-points" unit="degree_east" grid_ref="u_2D_unmasked"/>
+      <field id="lat_u" long_name="latitude of U-points" unit="degree_north" grid_ref="u_2D_unmasked"/>
 #endif
       <field id="ubar" long_name="vertically integrated u-momentum component" unit="meter second-1"/>
       <field id="sustr" long_name="surface u-momentum stress" unit="N/m2" />
@@ -486,7 +485,7 @@
       <field id="u_surf" long_name="u-momentum component" unit="meter second-1" />
       <field id="uwnd" long_name="surface u-momentum wind" unit="meter second-1" />
 #ifdef MASKING
-      <field id="mask_u" long_name="land/sea mask along u points" unit="--" />
+      <field id="mask_u" long_name="land/sea mask along u points" unit="--" grid_ref="u_2D_unmasked"/>
 #endif
 #ifdef MRL_WCI
 <!-- MRL_WCI -->
@@ -501,15 +500,15 @@
 <!-- END SEDIMENT -->
 #endif
 #ifdef WET_DRY
-     <field id="umask_wet" long_name="" unit=""  />
+     <field id="umask_wet" long_name="" unit=""/>
 #endif
     </field_group>
     
 <!-- V grid -->
     <field_group id="v" grid_ref="v_2D">
 #ifdef SPHERICAL
-      <field id="lon_v" long_name="longitude of V-points" unit="degree_east" />
-      <field id="lat_v" long_name="latitude of V-points" unit="degree_north" />
+      <field id="lon_v" long_name="longitude of V-points" unit="degree_east" grid_ref="v_2D_unmasked"/>
+      <field id="lat_v" long_name="latitude of V-points" unit="degree_north" grid_ref="v_2D_unmasked"/>
 #endif
       <field id="vbar" long_name="vertically integrated v-momentum component" unit="meter second-1"/>
       <field id="svstr" long_name="surface v-momentum stress" unit="N/m2" />
@@ -518,7 +517,7 @@
       <field id="v_surf" long_name="v-momentum component" unit="meter second-1" />
       <field id="vwnd" long_name="surface v-momentum wind" unit="meter second-1" />
 #ifdef MASKING
-       <field id="mask_v" long_name="land/sea mask along v points" unit="--" />
+       <field id="mask_v" long_name="land/sea mask along v points" unit="--" grid_ref="v_2D_unmasked"/>
 #endif
 #ifdef MRL_WCI
 <!-- MRL_WCI -->
@@ -614,9 +613,37 @@
        <field id="S_Forc" long_name="S Forc" unit="PSU second-1" grid_ref="rho_3D"/>
 #  endif
     </field_group>
+#  ifdef DIAGNOSTICS_TS_MLD
+    <field_group id="TS_dia" grid_ref="rho_2D"> 
+#  if defined TEMPERATURE
+       <field id="T_rate_mld" long_name="T rate mld" unit="Celsius second-1" grid_ref="rho_2D"/>
+       <field id="T_adv_mld" long_name="T adv mld" unit="Celsius second-1" grid_ref="rho_2D"/>
+       <field id="T_Hmix_mld" long_name="T Hmix mld" unit="Celsius second-1" grid_ref="rho_2D"/>
+       <field id="T_Vmix_mld" long_name="T Vmix mld" unit="Celsius second-1" grid_ref="rho_2D"/>
+       <field id="T_Forc_mld" long_name="T Forc mld" unit="Celsius second-1" grid_ref="rho_2D"/>
+       <field id="T_entr_mld" long_name="T entr mld" unit="Celsius second-1" grid_ref="rho_2D"/>
+       <field id="T_aver_mld" long_name="T aver mld" unit="Celsius second-1" grid_ref="rho_2D"/>
+#   if defined DIAGNOSTICS_TS_MLD_DENS
+       <field id="D_depth_mld" long_name="Mixed layer depth (density criterion)" unit="Meter" grid_ref="rho_2D"/>
+#   endif
+#  endif
+#  ifdef SALINITY
+       <field id="S_rate_mld" long_name="S rate mld" unit="PSU second-1" grid_ref="rho_2D"/>
+       <field id="S_adv_mld" long_name="S adv mld" unit="PSU second-1" grid_ref="rho_2D"/>
+       <field id="S_Hmix_mld" long_name="S Hmix mld" unit="PSU second-1" grid_ref="rho_2D"/>
+       <field id="S_Vmix_mld" long_name="S Vmix mld" unit="PSU second-1" grid_ref="rho_2D"/>
+       <field id="S_Forc_mld" long_name="S Forc mld" unit="PSU second-1" grid_ref="rho_2D"/>
+       <field id="S_entr_mld" long_name="S entr mld" unit="PSU second-1" grid_ref="rho_2D"/>
+       <field id="S_aver_mld" long_name="S aver mld" unit="PSU second-1" grid_ref="rho_2D"/>
+#   if defined DIAGNOSTICS_TS_MLD_DENS
+       <field id="T_depth_mld" long_name="Isothermal layer depth (T criterion)" unit="Meter" grid_ref="rho_2D"/>
+#   endif
+#  endif
+    </field_group>
+#  endif
 #endif
 
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
     <field_group id="ek" grid_ref="rho_2D">
       <field id="ekrate" long_name="ek rate" unit="meter2 second-3"/>
       <field id="ekadv" long_name="ek adv" unit="meter2 second-3"/>

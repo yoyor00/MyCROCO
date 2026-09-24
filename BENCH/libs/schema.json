@@ -141,8 +141,10 @@
             "type": "object",
             "properties": {
               "plotphy_script": { "type": "string" },
-              "plotphy_script_input": { "type": "string" }
-            }
+              "plotphy_script_input": { "type": "string" },
+              "plotphy_script_options": { "type": "string" }
+            },
+            "required": ["plotphy_script", "plotphy_script_input"]
           },
           "cppkeys": {
             "type": "object",
@@ -171,7 +173,9 @@
               "type": "string"
             }
           },
-          "input_file": { "type": "string" }
+          "nml_file": { "type": "string" },
+          "cppdefs_file": { "type": "string" },
+          "param_file": { "type": "string" }
         },
         "required": ["title", "case", "splitting", "patches", "check_outputs"]
       }

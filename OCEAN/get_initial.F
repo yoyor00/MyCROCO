@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -14,6 +15,7 @@
 #if defined SUBSTANCE      
       USE comsubstance, ONLY : cvfix_wat
 #endif
+      use croco_namelist
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -230,7 +232,7 @@
 #endif
 
 #if defined USE_CALENDAR
-            call tool_origindate(ncid,varid,origin_date_in_sec)
+      call tool_origindate(ncid,varid,origin_date_in_sec)
       MPI_master_only write(stdout,'(/2x,A,1x,A/)')
      &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
      &    tool_sectodat(origin_date_in_sec)
@@ -323,7 +325,9 @@
      &                                , nf_strerror(ierr)
         goto 99                                           !--> ERROR
       endif
-
+#ifdef USE_CALENDAR
+      start_time = start_time + origin_date_in_sec
+#endif
 #ifdef XIOS
       start_date_run = tool_sectodat(start_time+xios_origin_date_in_sec)
       READ(start_date_run(1:4),fmt='(i4)') start_year
@@ -361,7 +365,7 @@
           nrecdiags_vrt_avg=ibuff(4)
 #  endif
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
           nrecdiags_ek=ibuff(3)
 #  ifdef AVERAGES
           nrecdiags_ek_avg=ibuff(4)
@@ -494,7 +498,7 @@
 # ifdef DIAGNOSTICS_VRT
           ntsdiags_vrt_avg = ntsavg
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
           ntsdiags_ek_avg = ntsavg
 # endif
 # ifdef DIAGNOSTICS_TS

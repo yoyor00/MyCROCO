@@ -1,13 +1,16 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 #include "cppdefs.h"
 
 module submassbalance
 
 #if defined SUBSTANCE
-#if defined SUBSTANCE_SUBMASSBALANCE
     USE module_substance
+    USE croco_namelist, only: dt
     USE comsubstance
 #ifdef MUSTANG
-    USE module_MUSTANG
     USE comMUSTANG
 #endif
 !======================================================================
@@ -687,11 +690,9 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
     !Called by : sub_budget_main
     !----------------------------------------------------------------------
 # ifdef MPI
-      include 'mpif.h'
+      include "mpif.h"
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif
 # endif
 
     ! Arguments
@@ -710,11 +711,13 @@ subroutine submassbalance_comp(Istr, Iend, Jstr, Jend)
     submassbalance_t_out = time + submassbalance_dtout
 
     ! initialisation to 0
-    if (submassbalance_nb_close > 0) submassbalance_stok_wat(:, 1:nv_adv) = 0.0_rlg
-    if(nv_fix > 0) submassbalance_stok_wat_fix(:, 1:nv_fix) = 0.0_rsh
+    if (submassbalance_nb_close > 0) then
+        submassbalance_stok_wat(:, 1:nv_adv) = 0.0_rlg
+        if(nv_fix > 0) submassbalance_stok_wat_fix(:, 1:nv_fix) = 0.0_rsh
 #ifdef MUSTANG
-    submassbalance_stok_sed(:, 1:nv_adv) = 0.0_rlg
+        submassbalance_stok_sed(:, 1:nv_adv) = 0.0_rlg
 #endif
+    endif
 
     do j = Jstr, Jend
         do i = Istr, Iend
@@ -1370,7 +1373,6 @@ subroutine submassbalance_wrt_outnc()
 end subroutine submassbalance_wrt_outnc
 
 !==========================================================================
-#endif /* ifdef SUBSTANCE_SUBMASSBALANCE */
 #endif /* ifdef SUBSTANCE */
 !!======================================================================
 end module submassbalance

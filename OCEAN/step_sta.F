@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -191,12 +192,13 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
      &                                      nfltmax, indx)
            endif
 
+#  ifdef TEMPERATURE
            if (wrtsta(indxstaTemp)) then
              itrc=1
              call interp_r3d_sta (t(START_2D_ARRAY,1,nnew,itrc),
      &                            istatem, nfltmax, indx)
            endif
-
+#  endif
 
 #  ifdef SALINITY
            if (wrtsta(indxstaSalt)) then
@@ -224,9 +226,11 @@ c       write(*,*) 'FLT# ',iflt, 'stazgrd= ', stainfo(istazgrd,iflt)
               staSigm(istau,iflt,k)=stadata(istau,iflt)
               staSigm(istav,iflt,k)=stadata(istav,iflt)
             endif
+#   ifdef TEMPERATURE
             if (wrtsta(indxstaTemp)) then
               staSigm(istatem,iflt,k)=stadata(istatem,iflt)
             endif
+#   endif
 #   ifdef SALINITY
             if (wrtsta(indxstaSalt)) then
               staSigm(istasal,iflt,k)=stadata(istasal,iflt)

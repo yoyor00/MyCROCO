@@ -1,0 +1,549 @@
+:===================================================================================================
+:         ENREGISTREMENT DES PARAMETRES REGISSANT LES EQUATIONS BIOLOGIQUES SOUS FORME DE NAMELIST
+:         INPUT PARAMETERS NAMELIST FOR BIOLOGICAL EQUATIONS
+:
+:         ATTENTION : This parabloom.txt is used with OPTION 1
+:                     Choose $HOMEMARS/../EXAMPLES/parabloom_opt2.txt if you are using OPTION 2
+:                     and rename it parabloom.txt in your $RDIR configuration
+:
+:===================================================================================================
+:
+:-----------------------------------------------------------------------------
+:  namBIOLink : common for all BIO modules
+:-----------------------------------------------------------------------------
+ &namBIOLink
+     l_bioretro_extinct = .false.   ! true if physical extinction depends on biological extinction
+     dt_bio_update =  120.0         ! time step for bio sources and sinks terms evaluation
+     l_waterdensity_known = .FALSE. ! .TRUE. if water density is already evaluated by hydro model and an array exist
+     i_BIOLink_verif = 2             ! coordinates i,j for choosen point of conservation verification
+     j_BIOLink_verif = 2             !
+     dt_conserv_BIO = 3600. /    ! time step for conservation verification at point i_BIOLink_verif,j_BIOLink_verif
+:
+:-----------------------------------------------------------------------------
+:  namoptions : OPTIONS
+:-----------------------------------------------------------------------------
+ &namoptions
+     l_physadaptation = .true.   ! 
+     l_filtbenthsinus = .false.  ! true if benthos grazing vary sinusoidally (annual)  
+     l_filtbenthmes   = .false.  ! true if benthos grazing depending on turbidity 
+     l_phyzoodeteffect_settle = .true. ! true if effect of detritus sources on settling velocity of detrital material
+     l_ChlNratio_var = .true.    ! true if ratio Chl/N function of extinction. If .false. : constant ratio=p_phyto_ChlNratio
+     l_SNeffect_settle = .true.  ! true if sels nuts effect on settling velocity of diatomees and Pseudonytschia
+     p_sali_thhold_bio = 5.00000 / ! seuil de salinite en dessous duquel on annule les reactions biologiques car supposees marines
+:
+:-----------------------------------------------------------------------------
+: namorgmat	MATIERE ORGANIQUE
+: namorgmat	ORGANIC MATTER
+:-----------------------------------------------------------------------------
+ &namorgmat
+     p_N_remin  =  0.006        ! Taux remineralisation de N detritique a 0"C                  | d-1
+     p_P_remin  =  0.006        ! Taux remineralisation de P detritique a 0"C                  | d-1
+     p_N_reminR  = 0.00006      ! Taux remineralisation de N detritique refractaire a 0"C      | d-1
+     p_P_reminR  = 0.00006      ! Taux remineralisation de P detritique refractaire a 0"C      | d-1
+     p_k_remin = 30.0            ! Taux de diminution de la remineralisation avec la prof (sed)   | m-1
+     p_xflimz = 0.0             ! facteur limite de diminution de la remineralisation avec la prof (sed)   | n.d.
+     p_nitrif = 0.3              ! Taux nitrification  a 0"C                                    | d-1
+     p_aging_MO = 0.001        ! Taux vieillissement MO labil devenant refractaire            | d-1
+     p_burried = 0.00001           ! Taux d'enfouissement des variables part dans la couche du fond | d-1
+     p_BSi_dissEau  = 0.07     ! Taux de redissolution de Si biogenique dans l'eau a 0"C      | d-1
+     p_BSi_dissSurfSed= 0.0002   ! Taux de dissolution de Si biogenique en surface du sed a 0"C | d-1
+     p_BSi_dissFondSed = 0.0     ! Taux de dissolution de Si biogenique en prof du sed a 0"C    | d-1
+     p_kSi = 50.0                ! Taux de diminution de la dissolution avec la prof (sed)      | m-1
+     p_T_effect = 0.07           ! Taux d augmentation thermique des vitesses                   | degre-1
+     p_T_effectSi = 0.082        ! Taux d augmentation thermique de la dissolution de la BSi    | degre-1
+     p_ODU_oxy = 5.              ! Taux max de reoxygenation de ODU a 0"C                       | d-1
+     p_ODU_precip = 0.0001       ! 0.000001        ! Taux max de precipitation (solidifcation) de ODU a 0"C       | d-1
+     p_kO2_reminO2 = 0.032    !2.0         ! Constante demi-sat limitation par O2 de minera aerobie       | mg.l-1 
+     p_kO2_nit= 0.032    ! 0.16   ! 2.0              ! Constante demi-sat limitation par O2 de nitrification        | mg.l-1 
+     p_kNO3_reminssO2 = 10.0  !30.0     ! Constante demi-sat limitation par NO3 minera sub-oxic        | micromol.l-1
+     p_kO2_reoxyd = 0.032        ! Constante demi-sat limitation par O2 de reoxyd de ODU        | mg.l-1
+     p_kiO2_remin0O2 = 0.16     ! Constante demi-sat inhibition par O2 minera anoxic           |mg.l-1
+     p_kiO2_denit    = 0.32     ! Constante demi-sat inhibition par O2 denitrification         |mg.l-1
+     p_kiNO3_remin0O2 = 10.0  ! 5.0     ! Constante demi-sat inhibition par NO3 minera anoxic          |mg.l-1
+     p_Si_Eq =800.0            ! CC de silicate a saturation dans e.i. pour dissolution       |micromol.l-1
+     p_Si_EqPrec = 200.0        ! CC de silicate a saturation dans e.i. pour precipitation     |micromol.l-1
+     p_Si_precip= 0.00084       ! Taux de precipitation de Si lithogenique a 0"C               | d-1
+     p_DNO3_denit =  0.9        ! Part de la denitrification dans la mineralisation due au NO3 | s.d.
+     p_GO2_Norg = 6.625            ! mol d O2 utilisee par mol de Norg mineralise                 | mol O2. mol Norg-1
+     p_GO2_NorgR = 7.5           ! mol d O2 utilisee par mol de Norg refractaire mineralisee    | mol O2. mol Norg-1
+     p_GODU_Norg = 6.625           ! mol d ODU produit par mol de Norg mineralise en anaerobie    | mol ODU. mol Norg-1
+     p_GODU_NorgR = 7.5          ! mol d ODU produit par mol de Norg refract miner en anaerobie | mol ODU. mol Norg-1
+     p_GNO3_Norg = 5.3           ! mol de NO3 utilise par mol de Norg denitrifie                  | mol NO3. mol Norg-1
+     p_GNO3_NorgR = 6.0          ! mol de NO3 produit par mol de Norg refract denitrifie           | mol NO3. mol Norg-1
+     p_GO2_NH4 =  2. /          ! mol d O2 utilisee par mol de NH4 nitrifie                    | mol O2. mol NH4-1
+:
+:-----------------------------------------------------------------------------
+: namphosphor	  PHOSPHORE
+:-----------------------------------------------------------------------------
+ &namphosphor
+     p_P_speedup_reminanaer  = 1.0      ! Coeff d acceleration de la mineralisation du P  sous anoxie  | s.d.
+     p_P_adsor       = 0.12     ! Coefficient d'adsorption du phosphate                        | l.micromolP-1.d-1
+     p_P_desor       = 2.400    ! Coefficient de desorption du phosphate                       | d-1
+     p_P_adsormaxspim  = 40.0   ! Capacite maxi d'adsorption du P sur particules               | micromolP.g-1
+     p_P_adsormaxsed = 5.00     ! 7.0   ! Capacite maxi d'adsorption du P sur sediment                 | micromolP.g-1
+     p_P_precFeO2 = 0.26        ! Taux de precipitation du P avec le fer du a l O2             | d-1
+     p_P_precFeNO3 =  0.26      ! Taux de precipitation du P avec le fer du a NO3              | d-1
+     p_P_dissFe =  0.00053      ! Taux de dissolution de P lie au Fer                          | d-1
+     p_kO2_precPFe = 0.032      ! Constante demi-sat limitation par O2 de precipitation PFe    | mg.l-1 
+     p_kNO3_precPFe= 30.0       ! Constante demi-sat limitation par NO3 de precipitation PFe   | micromol.l-1
+     p_kiO2_dissPFe = 0.32      ! Constante demi-sat inhibition par O2 de dissolution PFe      | mg.l-1
+     p_kiO2_desorP = 2.0        ! Constante demi-sat inhib par O2 de desorp Pads (inutilise)   | mg.l-1 
+     p_kiNO3_dissPFe = 5.0      ! Constante demi-sat inhibition par NO3 de dissolution PFe     | micromol.l-1
+     p_GO2_PFe = 0.250          ! mol d O2 utilisee par mol P precipite en PFe                 | mol O2. mol PFe-1
+     p_GNO3_PFe = 0.20  /       ! mol de NO3 utilisee par mol P precipite en PFe               | mol NO3. mol PFe-1
+:
+:-----------------------------------------------------------------------------
+: namgenphyto	PHYTOPLANCTON EN GENERAL
+:-----------------------------------------------------------------------------
+ &namgenphyto
+     p_phyto_ChlNratio = 1.5900         ! Rapport Chloro/N  (g.mole-1)                  | g chl.(mol N)-1
+     p_phyto_SiNratio  = 0.85           ! Rapport Si/N du phytoplancton                 | molSi.molN-1
+     p_phyto_NPratio   = 15.000000      ! Rapport N/P du phytoplancton                  | molN.molP-1
+     p_phyto_CNratio   = 6.625          ! Rapport C/N Redfield du phytoplancton         | molC.molN-1 (huret 2007)
+     p_phyto_ChlNratiomax = 2.5         ! Rapport Chloro/N max du phytoplancton         | g chl.(mol N)-1
+     p_phyto_ChlN_ksmithextinct = 1. / ! Valeur de l'extinction donnant 70% du rapport Chloro/N max | m-1
+:
+:-----------------------------------------------------------------------------
+: namnanophyto	NANOPHYTOPLANCTON
+:-----------------------------------------------------------------------------
+ &namnanophyto
+     p_nano_mumax   = 0.8         ! 0.8     ! Taux de croissance du nanophyto a O"C             | d-1
+     p_nano_kNO3    = 0.200000    ! Constante de Michaelis du nanophyto pour NO3      | micromol.l-1
+     p_nano_kNH4    = 0.400000    ! Constante de Michaelis du nanophyto pour NH4      | micromol.l-1
+     p_nano_kPO4    = 0.050000    ! Constante de Michaelis du nanophyto pour PO4      | micromol.l-1
+     p_nano_thhold_mort = 0.01    ! Concentration seuil: en dessous 0 mortalite    | micromolN.l-1 
+     p_nano_iksmith = 60.00000    ! Flux lumineux Ik de Smith du nanophyto(=70% Pmax) | W.m-2 !!!!ATTENTION valeur diff si pas cle key_physadaption
+     p_nano_mort    = 0.04  /    ! 0.05 /  ! Taux de mortalite du nanophyto                    | d-1
+:
+:-----------------------------------------------------------------------------
+: namdiatom	DIATOMEES
+:-----------------------------------------------------------------------------
+ &namdiatom
+     p_diat_mumax   = 0.65000     ! Taux de croissance maxi des Diatomees a 0"C       | d-1 
+     p_diat_kNO3    = 2.5         ! 1.5    ! Constante de Michaelis des Diatomees pour NO3     | micromolN.l-1
+     p_diat_kNH4    = 1.5         ! 0.5    ! Constante de Michaelis des Diatomees pour NH4     | micromolN.l-1
+     p_diat_kSi     = 1.000000    ! Constante de Michaelis des Diatomees pour Si      | micromolSi.l-1
+     p_diat_kPO4    = 0.10000     ! Constante de Michaelis des Diatomees pour P       | micromolP.l-1
+     p_diat_iksmith = 40.         ! Flux lumineux Ik de Smith des Diatomees(=70% Pmax)| W.m-2!!!!ATTENTION valeur diff si pas cle key_physadaption
+     p_diat_thhold_mort = 0.01    ! Concentration seuil: en dessous 0 mortalite       | micromolN.l-1 
+     p_diat_mort = 0.025000 /     ! Taux de mortalite des Diatomees                   | d-1
+:
+:-----------------------------------------------------------------------------
+: namdino       DINOFLAGELLES
+:-----------------------------------------------------------------------------
+ &namdino
+     p_dino_mumax   = 0.65        ! 0.350       ! Taux de croissance maxi des Dinoflagelles a 0"C        | d-1
+     p_dino_thhold_ect  = 0.002   ! Seuil d'ECT en-dessus duquel croissance=0
+     p_dino_kNO3    = 1.0         ! 5.0    ! Constante de Michaelis des Dinoflagelles pour NO3      | micromolN.l-1
+     p_dino_kNH4    = 3.0         ! 3.0    ! Constante de Michaelis des Dinoflagelles pour NH4      | micromolN.l-1
+     p_dino_kPO4    = 0.05        ! 0.1    ! 0.200       ! Constante de Michaelis des Dinoflagelles pour P        | micromol.l-1
+     p_dino_thhold_mort = 0.01    ! Concentration seuil: en dessous 0 mortalite            | micromolN.l-1                     
+     p_dino_iksmith = 55.0        ! Flux lumineux Ik de Smith des Dinoflagelles(=70% Pmax) | W.m-2 !!!!ATTENTION valeur diff si pas cle key_physadaption
+     p_dino_mort    = 0.020000  / ! Taux de mortalite des Dinoflagelles                    | d-1
+:
+:-----------------------------------------------------------------------------
+: nampsnz	PSEUDO-NITZSCHIA
+:-----------------------------------------------------------------------------
+ &nampsnz
+     p_psnz_mumax   = 1.600       ! Taux de croissance maximum absolu des Pseudo-Nitzschia           | d-1 
+     p_psnz_tempopt = 16.00000    ! Temperature optimale pour Pseudo-Nitzschia                       | degre C 
+     p_psnz_templethal= 21.000    ! Temperature letale pour Pseudo-nitzschia
+     p_psnz_beta    = 1.200000    ! 1.0 Parametre de forme de la courbe de Blanchard  
+     p_psnz_kNO3    = 3.000000    ! Constante de Michaelis des Pseudo-Nitzschia pour NO3             | micromolN.l-1
+     p_psnz_kNH4    = 0.800000    ! Constante de Michaelis des Pseudo-Nitzschia pour NH4             | micromolN.l-1
+     p_psnz_kPO4    = 0.10000     ! Constante de Michaelis des Pseudo-Nitzschia pour P               | micromolP.l-1
+     p_psnz_kSi     = 1.000000    ! Constante de Michaelis des Pseudo-Nitzschia pour Si              | micromolSi.l-1
+     p_psnz_vmaxSi  = 0.300000    ! Vitesse max de pompage de Si par les Pseudo-Nitzschia            | micromolSi.micromolN-1.d-1
+     p_psnz_kqSi    = 0.380000    ! Constante de Michaelis des Pseudo-Nitzschia pour la croissance   | micromolSi.micromolN-1
+     p_psnz_qminSi  = 0.850000    ! Quota minimum de silicium des Pseudo-Nitzschia                   | micromolSi.micromolN-1
+     p_psnz_thhold_Si  = 0.40000  ! Quota seuil de silicium des Pseudo-Nitzschia pour la toxicite    | micromolSi.micromolN-1
+     p_psnz_prod_domoic = 4.00    ! Taux de production d acide domoique par les Pseudo-Nitzschia     | microgDA.micromolN-1.d-1
+     p_psnz_decay_domoic = 0.30   ! Taux de destruction de l acide domoique
+     p_psnz_iksmith = 40.00000    ! Flux lumineux Ik de Smith des Pseudo-Nitzschia(=70% Pmax)        | W.m-2
+     p_mesz_captpsnz = 0.0        ! capturabilite mesozoo sur le pseudonitschia
+     p_psnz_mort    = 0.010000  /  ! Taux MAX de mortalite des Pseudo-Nitzschia (module par effets sels nuts)  | d-1 
+:
+:-----------------------------------------------------------------------------
+: namkarenia	KARENIA
+:-----------------------------------------------------------------------------
+ &namkarenia
+     p_karenia_mumax   = 1.4        ! Taux de croissance maximum absolu des Karenia           | d-1
+     p_karenia_thhold_ect  = 0.0002  ! Seuil d'ECT en-dessus duquel croissance=0               | m2.s-2 
+     p_karenia_tempopt = 15.0000     ! Temperature optimale pour Karenia                       | degre C 
+     p_karenia_templethal= 22.00     ! Ecart-type du preferendum de temperature pour Karenia   | degre C 
+     p_karenia_beta    = 1.00000     ! Parametre de forme de la courbe de Blanchard            | s.u 
+     p_karenia_vmaxN   = 0.10000     ! Vitesse max de pompage de N par les Karenia             | micromolN.micromolC-1.d-1
+     p_karenia_kqN     = 0.10000     ! Constante de Michaelis des Karenia pour la croissance   | micromolN.micromolC-1
+     p_karenia_qminN   = 0.15000     ! Quota minimum d azote des Karenia                       | micromolN.micromolC-1
+     p_karenia_kNO3    = 6.00000     ! Constante de Michaelis des Karenia pour NO3             | micromolN.l-1
+     p_karenia_kNH4    = 0.50000       ! Constante de Michaelis des Karenia pour NH4             | micromolN.l-1
+     p_karenia_vmaxP   = 0.01500      ! Vitesse max de pompage de P par les Karenia             | micromolP.micromolC-1.d-1
+     p_karenia_kqP     = 0.01000     ! Constante de Michaelis des Karenia pour la croissance   | micromolP.micromolC-1
+     p_karenia_qminP   = 0.01000     ! Quota minimum de phosphore des Karenia                  | micromolP.micromolC-1
+     p_karenia_kPO4    = 0.25000     ! Constante de Michaelis des Karenia pour P               | micromolP.l-1
+     p_karenia_iksmith = 10.0000    ! Flux lumineux Ik de Smith des Karenia(=70% Pmax)        | W.m-2
+     p_karenia_wmax    = 0.00020     ! 0.0002Vitesse verticale maximum des Karenia             | m.s-1
+     p_micz_captkarenia  = 0.        !  Capturabilite  Microzoo/Karenia                | s.d.
+     p_mesz_captkarenia = 0.000      ! Capturabilite  mesozoo sur le karenia
+     p_karenia_mort    = 0.020     / ! Taux de mortalite simple des Karenia                    | d-1            
+:
+:-----------------------------------------------------------------------------
+: namphaeocystis     PHAEOCYSTIS
+:-----------------------------------------------------------------------------
+ &namphaeocystis
+     p_phaeocystis_mumaxcolo  = 1.5000      ! Taux de croissance maximum des phaeocystis coloniaux        | d-1 
+     p_phaeocystis_mumaxcell  = 1.6000    ! Taux de croissance maximum des phaeocystis unicellulaires   | d-1 
+     p_phaeocystis_tempopt = 8.00000       ! Temperature optimale pour phaeocystis                       | degre C 
+     p_phaeocystis_templethal= 11.00000      ! Temperature letale pour phaeocystis                         | degre C 
+     p_phaeocystis_beta    = 0.70000        ! Parametre de forme de la courbe de Blanchard                | s.u
+     p_phaeocystis_kNO3colo  = 3.000000     ! Constante de Michaelis des phaeocystis pour NO3             | micromolN.l-1
+     p_phaeocystis_kNO3cell  = 1.500000     ! Constante de Michaelis des phaeocystis pour NO3             | micromolN.l-1
+     p_phaeocystis_kNH4    = 0.600000       ! Constante de Michaelis des phaeocystis pour NH4             | micromolN.l-1
+     p_phaeocystis_kPO4colo  = 0.20000      ! Constante de Michaelis des phaeocystis pour P               | micromolP.l-1
+     p_phaeocystis_kPO4cell  = 0.05000      ! Constante de Michaelis des phaeocystis pour P               | micromolP.l-1
+     p_phaeocystis_iksmith = 15.00000       ! Flux lumineux Ik de Smith des phaeocystis(=70% Pmax)        | W.m-2 !!!!ATTENTION valeur diff si pas cle key_physadaption
+     p_phaeocystis_mort    = 0.04           ! Taux de mortalite des phaeocystis                           | d-1
+     p_phaeocystis_lyse    = 0.02           ! Taux de lyse des colonies de phaeocystis                    | d-1
+     p_phaeocystis_coloinit  = 0.2          ! Taux de formation de colonie de phaeocystis                 | d-1
+     p_phaeocystis_coloseuil = 0.04         ! Seuil de formation de colonies de phaeocystis               | micromolN.l-1
+     p_phaeocystis_mucus_decay  = 0.1       ! Taux de degradation du mucus des phaeocystis                | d-1
+     p_mesz_captphaeocolo = 0.0    /        ! Capturabilite Macrozoo/phaeocystis coloniaux                | s.d.
+:            
+:-----------------------------------------------------------------------------
+: nammesozoo	MESOZOOPLANCTON
+:-----------------------------------------------------------------------------
+ &nammesozoo
+     p_mesz_thrN     = 0.1000       ! seuil d'azote phyto pour predation         | micromolN.l-1
+     p_mesz_kivlev   = 0.200      ! pente d'Ivlev du mesozoo                   | l.micromolN.l-1
+     p_mesz_thhold_mes_kivlev=5.0  ! MES seuil < 0 adaptation turbidite de Kivlev ! g.L-1 (used only key_physadaptation)
+     p_mesz_mumax    = 0.250000    ! Taux de croissance max a 0"C du mesozoo    | d-1
+     p_mesz_assim    = 0.600000    ! Taux d'assimilation du mesozoo             | s.u.
+     p_mesz_excret   = 0.030000    ! Pertes physiologiques a 0"C du mesozoo     | d-1
+     p_mesz_thhold_mort = 0.01     ! Concentration seuil: en dessous 0 mortalite      | micromolN.l-1
+     p_mesz_mort1    = 0.06        ! 0.03    ! Mortalite minimale a 0"C du mesozoo        | d-1
+     p_mesz_mort2    = 0.08        ! 0.04    ! Mortalite fonction de la biomasse a 0"C    | d-1.(micromolN-1.l)
+     p_zoo_CDWratio = 0.250000     ! Rapport C sur poids sec du mesozoo         | gC.gpdssec-1
+     p_zoo_CNratio  = 5.450000  /  ! Rapport molaire C sur N du mesozoo         | mole.mole-1
+:
+:-----------------------------------------------------------------------------
+: nammicrozoo	MICROZOOPLANCTON
+:-----------------------------------------------------------------------------
+ &nammicrozoo
+     p_micz_mumax   = 0.300000    ! Taux de croissance max a 0"C du microzoo   | d-1
+     p_micz_kgraz   = 0.700000    ! Constance de demi-saturation du microzoo   | micromolN.l-1
+     p_micz_assim   = 0.600000    ! Taux d'assimilation du microzoo            | s.u.
+     p_micz_excret  = 0.100000    ! Pertes physiologiques a 0"C du microzoo    | d-1
+     p_micz_thhold_mort = 0.01    ! Concentration seuil: en dessous 0 mortalite      | micromolN.l-1
+     p_micz_mort    = 0.04        ! 0.02     ! Taux de mortalite a 0"C du microzoo        | d-1
+     p_micz_thrnano = 0.100000  / ! seuil de nano pour predation du microzoo   | micromolN.l-1
+:
+:-----------------------------------------------------------------------------
+: namoxygen	OXYGENE
+:-----------------------------------------------------------------------------
+ &namoxygen
+     p_phyto_photoratio   = 1.200  ! Quotient photosynthetique                       | s.d.
+     p_phyto_resp   = 0.03000      ! Taux de respiration max du phytoplancton a 0"C  | mgO2.micromolN-1.d-1
+     p_zoo_resp	    = 0.05000    ! Taux de respiration du zooplancton              | mgO2.micromolN-1.d-1
+     p_KO2sed_aeration  = 0.1    ! Vitesse de reaeration de EI dans sediment surface si pas d eau            | d-1
+     p_Kzsed_aeration  = 2000.  /  ! facteur reduction aeration sur profondeur de sediment    | m-1
+:
+:-----------------------------------------------------------------------------
+: namoptics	PARAMETRES OPTIQUES
+:-----------------------------------------------------------------------------
+ &namoptics
+     p_extincwat   = 0.060000    ! Coeff.extinction de base                              | m-1
+     p_extincspim  = 0.050000    ! Coefficient des M.E.S dans l'absorption               | m-1.mg-1.l
+     p_extincChl1  = 0.050000    ! Coefficient de la chloro dans l'absorption            | m-1.mug-1.l
+     p_extincChl2  = 0.750000    ! Exposant de la chloro dans l'absorption               | s.d
+     p_parradratio = 0.430000  / ! Fraction du PAR dans l energie solaire incidente      | s.d
+:
+:-----------------------------------------------------------------------------
+: namsedbenthos	PARAMETRES SEDIMENTOLOGIQUES (if key_benthos)
+:-----------------------------------------------------------------------------
+ &namsedbenthos
+     p_erodflux	   = 0.000300    ! Flux d'erosion pour vitesse=2*erodvitcrit             | mmole.m-2.s-1
+     p_erodvitcrit = 0.20000     ! Vitesse critique d'erosion pour le sediment           | m.s-1
+     p_depovitcrit = 0.40000     ! Vitesse critique de depot pour le sediment            | m.s-1
+     p_detzoo_wsed  = 0.000500   ! Vitesse de chute moyenne du Detritique issu du zoo    | m.s-1
+     p_erodcrittau  = 0.         ! Tension critique d'erosion pour le sediment (non utilise)      | N.m-2
+     p_burial = 0.000            ! taux d'enfouissement utilise seulement si option 1 & key_benthos et key_PREVI_alain
+     p_reminbenth  = 0.10        ! ratio benthique:pelagique de remineralisation    | s.d    
+     p_detphy_wsed  = 0.00005 /  ! Vitesse de chute moyenne du Detritique issu du phyto  | m.s-1
+:
+:-----------------------------------------------------------------------------
+: namsediment	PARAMETRES SEDIMENTOLOGIQUES (if key_sedim && not key_nosedbio)
+:-----------------------------------------------------------------------------
+ &namsediment
+     p_diat_mort_sed  = 0.05         ! Taux max de mortalite des Diatomees dans le sediment   | d-1
+     p_detzoo_wsed  = 0.000500     ! Vitesse de chute moyenne du Detritique issu du zoo    | m.s-1
+     p_detphy_wsed  = 0.00004   /   ! Vitesse de chute moyenne du Detritique issu du phyto  | m.s-1
+:
+:-----------------------------------------------------------------------------
+: namgrazing	PARAMETRES DE PREDATION
+:-----------------------------------------------------------------------------
+ &namgrazing
+     p_mesz_captdiat = 1.0        !  Capturabilite  Macrozoo/diat                   | s.d.
+     p_mesz_captdino = 0.7        !  Capturabilite  Macrozoo/dino                   | s.d.
+     p_mesz_captmicz = 0.5        !  Capturabilite  Macrozoo/microzoo               | s.d.
+     p_micz_captdiat = 0.4        !  Capturabilite  Microzoo/diat                   | s.d.
+     p_micz_captnano = 1.0        !  Capturabilite  Microzoo/nano                   | s.d.
+     p_micz_captdino = 0.7        !  Capturabilite  Microzoo/dino                   | s.d.
+     p_micz_captdet  = 0.8        !  Capturabilite  Microzoo/det                    | s.d.
+     p_txfiltbenthmax  = 0.0  /   !  Taux maximum de filtration par le zoobenthos   | m3.d-1.m-2
+:
+: namtracerP	PARAMETRES pour tracer P
+:-----------------------------------------------------------------------------
+ &namtracerP
+    date_start_tracerP= '02/01/2009 00:00:00'
+    nb_source_river_tracerP    = 2      !  nombre de lieux (riviere source) oÃ¹ est injecte le traceur(4 max) 
+    nb_source_marin_tracerP     = 0    ! =1 si derniere source est placee sur la limite ouverte. 
+    p_source_river1_tracerP = 'GIRONDE_GARONNE;GIRONDE_DORDOGNE;SEINE'  ! nom de la premiere source de tracer (un nom de riviere ou 'marin' si derniere source est marine)
+    p_source_river2_tracerP = 'LOIRE'  ! nom de la premiere source de tracer (un nom de rivierei ou 'marin' si derniere source est marine)
+    p_source_river3_tracerP = 'SEINE'  ! nom de la premiere source de tracer (un nom de riviere ou 'marin' si derniere source est marine) 
+    p_source_river4_tracerP = ''  ! nom de la premiere source de tracer (un nom de riviere ou 'marin' si derniere source est marine)
+    p_marquePO4 = 1.0               ! =1 si NH4 marque a la source
+    p_marquePads = 1.0               ! =1 si NO3 marque a la source
+    p_marquenanoP = 0.0               ! =1 si nanophyto marque a la source
+    p_marquedinoP = 0.0               ! =1 si dinoflagelle marque a la source
+    p_marquediatP = 0.0               ! =1 si diatomees marque a la source
+    p_marquemicrP = 0.0               ! =1 si microzoo marque a la source
+    p_marquemesoP = 0.0               ! =1 si mesozoo marque a la source
+    p_marquedetP = 1.0     /          ! =1 si azote detritique marque a la source
+:
+:-----------------------------------------------------------------------------
+: namtracerN	PARAMETRES pour tracer N
+:-----------------------------------------------------------------------------
+ &namtracerN
+    date_start_tracerN= '02/03/1900 01:00:00'
+    nb_source_river_tracerN    = 1      !  nombre de lieux (riviere source) oÃ¹ est injecte le traceur(4 max) 
+    nb_source_marin_tracerN     = 0    ! =1 si derniere source est placee sur la limite ouverte. 
+    p_source_river1_tracerN = 'RIV1'  ! nom de la premiere source de tracer (un nom de riviere ou 'marin' si derniere source est marine)
+    p_source_river2_tracerN = 'marin'  ! nom de la premiere source de tracer (un nom de rivierei ou 'marin' si derniere source est marine)
+    p_source_river3_tracerN = 'LOIRE;GIRONDE_GARONNE;GIRONDE_DORDOGNE;SEINE'  ! nom de la premiere source de tracer (un nom de riviere ou 'marin' si derniere source est marine) 
+    p_source_river4_tracerN = ''  ! nom de la premiere source de tracer (un nom de riviere ou 'marin' si derniere source est marine)
+    p_marqueNH4 = 1.0               ! =1 si NH4 marque a la source
+    p_marqueNO3 = 1.0               ! =1 si NO3 marque a la source
+    p_marquenanoN = 0.0               ! =1 si nanophyto marque a la source
+    p_marquedinoN = 0.0               ! =1 si dinoflagelle marque a la source
+    p_marquediatN = 0.0               ! =1 si diatomees marque a la source
+    p_marquemicrN = 0.0               ! =1 si microzoo marque a la source
+    p_marquemesoN = 0.0               ! =1 si mesozoo marque a la source
+    p_marquedetN = 0.0     /          ! =1 si azote detritique marque a la source
+:
+:-----------------------------------------------------------------------------
+: namzostera    PARAMETRES LIES AUX ZOSTERES
+:-----------------------------------------------------------------------------
+ &namzostera
+    p_zost_klai            = 0.002       ! Rapport leaf area index (LAI) - biomasse des feuilles  | m2.mmolC-1
+    p_zost_leafabscoef     = 0.35        ! Coef. d'absorption de la lumiere par les feuilles      | s.d.
+    p_zost_Ik              = 50.0        ! Intensite de lumiere saturante pour les zosteres       | W.m-2
+    p_zost_maxprod0        = 0.00385     ! Production brute maximale a 0 deg                      | gO2.mmolC-1.j-1
+    p_zost_T_prod          = 0.06        ! Taux d'augmentation de la production avec la temp      | degre-1
+    p_zost_respf0          = 0.00028     ! Respiration des feuilles a 0 deg C                     | gO2.mmolC-1.j-1
+    p_zost_respr0          = 0.00013     ! Respiration des rhizomes a 0 deg C                     | gO2.mmolC-1.j-1
+    p_zost_T_respf         = 0.07        ! Taux d'augmentation de la resp feuilles avec la temp   | degre-1
+    p_zost_T_respr         = 0.05        ! pente d'augmentation de la resp rhizomes avec la temp  | degre-1
+    p_zost_qphotos         = 1.1         ! Quotient photosynthetique des zosteres                 | molO2.molC-1
+    p_zost_LNquotamin      = 0.011       ! Quota minimum en azote des feuilles                    | molN.molC-1
+    p_zost_LNquotamax      = 0.1         ! Quota maximum en azote des feuilles                    | molN.molC-1
+    p_zost_RNquotamin      = 0.02        ! Quota minimum en azote des rhizomes                    | molN.molC-1
+    p_zost_RNquotamax      = 0.09        ! Quota maximum en azote des rhizomes                    | molN.molC-1
+    p_zost_KNH4L           = 9.2         ! Coef. de 1/2 saturation pour l'ammonium (feuilles)     | mmolN.m-3
+    p_zost_KNH4R           = 104.0       ! Coef. de 1/2 saturation pour l'ammonium (rhizomes)     | mmolN.m-3
+    p_zost_KNO3L           = 23.0        ! Coef. de 1/2 saturation pour les nitrates (feuilles)   | mmolN.m-3
+    p_zost_delta1          = 0.25        ! Impact des quotas sur l'abs. des nutriments            | s.d.
+    p_zost_delta2          = 1.0         ! Impact des quotas sur la production et le recrutemt    | s.d.
+    p_zost_LNnh4maxabs     = 0.017       ! Taux d'absorption maximal de NH4 par les feuilles      | molN.molC-1.j-1
+    p_zost_LNno3maxabs     = 0.003       ! Taux d'absorption maximal de NO3 par les feuilles      | molN.molC-1.j-1
+    p_zost_RNmaxabs        = 0.045       ! Taux d'absorption maximal de NH4 par les rhizomes      | molN.molC-1.j-1
+    p_zost_LPquotamin      = 0.001       ! Quota minimum en phosphore des feuilles                | molP.molC-1
+    p_zost_LPquotamax      = 0.006       ! Quota maximum en phosphore des feuilles                | molP.molC-1
+    p_zost_RPquotamin      = 0.001       ! Quota minimum en phosphore des rhizomes                | molP.molC-1
+    p_zost_RPquotamax      = 0.006       ! Quota maximum en phosphore des rhizomes                | molP.molC-1
+    p_zost_KPL             = 12.1        ! Coef. de 1/2 saturation pour le phosphore (feuilles)   | mmolP.m-3
+    p_zost_KPR             = 3.1         ! Coef. de 1/2 saturation pour le phosphore (rhizomes)   | mmolP.m-3
+    p_zost_LPmaxabs        = 0.035       ! Taux d'absorption maximal du P par les feuilles        | molP.molC-1.j-1
+    p_zost_RPmaxabs        = 0.004       ! Taux d'absorption maximal du P par les rhizomes        | molP.molC-1.j-1
+    p_zost_K               = 0.4         ! Fraction de la croissance allouee aux rhizomes         | s.d.
+    p_zost_transfrate      = 0.1         ! Taux de transfert des nutriments par reallocation      | molNouP.molC-1.j-1
+    p_zost_reclamax        = 0.7         ! Conservation max de N et P dans la plante              | s.d.
+    p_zost_mort            = 0.028       ! Taux de motalite des feuilles et rhizomes a 20 deg C   |degre -1
+    p_zost_T_mort          = 0.07        ! Taux de variation de la mortalite avec la temp         | degre-1
+    p_zost_RECRmax         = 0.04        ! Taux de recrutement vegetatif maximal a 0 deg C        |degre-1
+    p_zost_T_recr          = 0.095       ! Taux de variation du recrutement avec la temp          | degre-1
+    p_zost_KREC1           = 4.0         ! lim. du recrut. par selfshading                        | W.m-2
+    p_zost_KREC2           = 100.0       ! Coef. de 1/2 sat. de la lim du recrut. par rhizomes    | mmolC.m-2
+    p_zost_SB1             = 0.02        ! Initial biomass of a new shoot (veget. recruitement)   | mmolC
+    p_zost_KGERM           = 1600.0      ! Coef. de lim. de la germination par biom. foliaire     | mmolC.m-2
+    p_zost_SB0             = 0.05        ! Seed weight                                            | mmolC
+    p_zost_ERSmax          = 0.02        ! Effort de reproduction sexuees maximal a 0 deg C       | sd
+    p_zost_seedprod        = 14.0        ! Nombre de graines par pied portant des inflorescences  | shoot-1
+    p_zost_GERmax          = 0.174       ! Taux de germination max a 0 deg C                      | j-1
+    p_zost_Smort           = 0.001   /   ! taux de mortalite des graines (constant)               | j-1
+:
+:-----------------------------------------------------------------------------
+: namoysterfiltbent  PARAMETRES HUITRE only filtrage benthique (sans croissance)
+:-----------------------------------------------------------------------------
+ &namoysterfiltbent
+    p_huitre_DW=1.4
+    p_huitre_thr_colmat=192.0
+    p_huitre_temp1=0.013
+    p_huitre_temp_opt=18.95
+    p_huitre_thr_mes=60.
+    p_huitre_loi_mes1=-0.0102
+    p_huitre_loi_mes2=5.4
+    p_huitre_filt_std=4.82
+    p_huitre_exp_allom=0.439
+    p_huitre_loi_colmat=0.07  /                     
+:
+:-----------------------------------------------------------------------------
+: namoysterDEB  PARAMETRES HUITRE modele DEB
+:-----------------------------------------------------------------------------
+ &namoysterDEB
+     p_oysDEB_TA = 5800                     ! 
+     p_oysDEB_TAL = 75000                   !
+     p_oysDEB_TAH = 30000                   !
+     p_oysDEB_TL =  281                     ! 276
+     p_oysDEB_THing = 300                   ! 298
+     p_oysDEB_THresp = 300                  ! 305 
+     p_oysDEB_Tseuilponte = 18.             ! 19
+     p_oysDEB_Eg = 3900                     ! 1900
+     p_oysDEB_Em = 4200                     ! 2200
+     p_oysDEB_Kappa = 0.45                  !
+     p_oysDEB_Vp = 0.4                      ! 0.4
+     p_oysDEB_kR = 0.75                      ! 0.7
+     p_oysDEB_shape = 0.175                 !
+     p_oysDEB_pxm0 = 1027                    ! 560
+     p_oysDEB_pammax = 770                  ! 420
+     p_oysDEB_ae = 0.75                     !
+     p_oysDEB_pm0 = 44.                     ! 24
+     p_oysDEB_ERlim = 40.                   !
+     p_oysDEB_kchl = 300.                    ! 300 ATTENTION : utilisé ici en Carbone µg C/l
+     p_oysDEB_muE = 19600. /                ! 17550
+:
+:-----------------------------------------------------------------------------
+: namoysterSFG	PARAMETRES HUITRE modele Scope for Growth de Barille
+:-----------------------------------------------------------------------------
+ &namoysterSFG
+   p_oys_absdet = 0.23              !         					     |[] 
+   p_oys_absmaxmop = 0.8            !                    			     |*100% 
+   p_oys_kreten = 0.00430           !                      			     |[] 
+   p_oys_allfiltr = 0.66            !            				     |[] 
+   p_oys_allres = 0.8               !          					     |[]
+   p_oys_yreten = 1.0               !              				     |[] 
+   p_oys_CtoDWratio = 0.38          !		                                     |mgC/mgMatseche 
+   p_oys_stdfiltr = 4.8             !		            			     |l.h-1.g-1 
+   p_oys_paramfiltr = 0.013         !                    			     |microC-2 
+   p_oys_tempopt_filtr = 19.0       !                             		     |microC 
+   p_oys_sestfiltr_thr = 60.0       !      					     |mg.l-1 
+   p_oys_yfilt = 5.4                !           				     |l.h-1.g-1 
+   p_oys_kfilt = 0.01               !              				     |[] 
+   p_oys_colmparam = 0.07           !                               		     |[] 
+   p_oys_pseufeci_exp = 0.07        !                    			     |[] 
+   p_oys_pseufeco_exp = 0.07        !                   			     |[] 
+   p_oys_prodpseufeci_lev = 0.74    !		            			     |[] 
+   p_oys_prodpseufeco_lev = 0.59    !		             			     |[] 
+   p_oys_retmin = 0.7               !                                    	     |[] 
+   p_oys_retmin_thr = 70            !                            		     |mg.l-1 
+   p_oys_prodpseufec_thr = 4.6      !                    			     |mg.l-1 
+   p_oys_subratio = 0.83            !            				     |[] 
+   p_oys_colmat_thr = 192.0 /       !	
+:
+:-----------------------------------------------------------------------------
+: nammeio	PARAMETRES DES BACTERIES + MEIOFAUNE
+:-----------------------------------------------------------------------------
+ &nammeio
+     p_meio_satur_proie = 0.004        !  Proie saturante pour bacteries+meiofaune       | molN.m-2
+     p_meio_capdet = 0.7        !  Affinite des bact.+meio. pour le detritique     | s.d
+     p_meio_thrdet = 0.0015        !  Seuil de predation du detritique par meiofaune     | molN.m-2
+     p_meio_capdiat = 0.3      !  Affinite des bact.+meio. pour les diatomes    | s.d
+     p_meio_thrdiat = 0.0015        !  Seuil de predation des bact.+meio. sur les diatomes     | molN.m-2
+     p_meio_mort = 0.005        ! Taux de mortalite des bact.+meio.     | jour-1
+     p_meio_pphysio = 0.035        ! Taux de pertes physiologiques des bact.+meio     | jour-1
+     p_meio_egest_det = 0.75     ! Taux d'egestion du detritique par les bact.+meio     | jour-1
+     p_meio_thrmax_inhib = 0.04   ! Seuil max d'autoinhibition des bact.+meio    | molN.m-2
+     p_meio_thrmin_inhib = 0.01   ! Seuil min d'autoinhibition des bact.+meio     | molN.m-2
+     p_meio_inges = 0.45     /     ! taux max d'ingestion des bact.+meio     | jour-1
+:-----------------------------------------------------------------------------
+: namdeposi	PARAMETRES DES DEPOSIVORES-HERBIVORES
+:-----------------------------------------------------------------------------
+ &namdeposi
+     p_deposi_satur_proie = 0.004        !  Proie saturante pour deposiv-herbiv       | molN.m-2
+     p_deposi_capdet = 0.65        !  Affinite des deposiv-herbiv pour le detritique     | s.d
+     p_deposi_thrdet = 0.0015        !  Seuil de predation du detritique par deposiv-herbiv     | molN.m-2
+     p_deposi_capdiat = 0.35      !  Affinite des deposiv-herbiv pour les diatomes    | s.d
+     p_deposi_capmeio = 0.2      !  Affinite des deposiv-herbiv pour les bact.+meio    | s.d
+     p_deposi_thrmeio = 0.0015        !  Seuil de predation des deposiv-herbiv sur le bact.+meio     | molN.m-2
+     p_deposi_mort = 0.0018        ! Taux de mortalite des deposiv-herbiv     | jour-1
+     p_deposi_pphysio = 0.0075        ! Taux de pertes physiologiques des deposiv-herbiv      | jour-1
+     p_deposi_egest_meio = 0.0     ! Taux d'egestion des bact+meio par les deposiv-herbiv    | jour-1
+     p_deposi_egest_det = 0.7     ! Taux d'egestion du detritique par les deposiv-herbiv    | jour-1
+     p_deposi_egest_diat = 0.5     ! Taux d'egestion des diatomes par les deposiv-herbiv    | jour-1
+     p_deposi_thrmax_inhib = 0.08   ! Seuil max d'autoinhibition des deposiv-herbiv    | molN.m-2
+     p_deposi_thrmin_inhib = 0.03   ! Seuil min d'autoinhibition des deposiv-herbiv     | molN.m-2
+     p_deposi_inges = 0.05     /     ! taux max d'ingestion des deposiv-herbiv     | jour-1
+:-----------------------------------------------------------------------------
+: namsuspens	PARAMETRES DES SUSPENSIVORES
+:-----------------------------------------------------------------------------
+ &namsuspens
+     p_susp_satur_proie = 2.0        !  3.0 Proie saturante pour les suspensivores       | micromolN.l-1
+     p_susp_capdet = 0.15        !  Affinite des suspensivores pour le detritique     | s.d
+     p_susp_thrdet = 1.0        !  Seuil de predation des suspensivores sur le detritique     | micromolN.l-1
+     p_susp_capphy = 0.7        ! 0.3 Affinite des suspensivores pour le phyto    | s.d
+     p_susp_thrphy = 0.5        !  1.5 Seuil de predation des suspensivores sur le phyto     | micromolN.l-1
+     p_susp_mort = 0.001        ! Taux de mortalite des suspensivores     | jour-1
+     p_susp_pphysio = 0.003    !0.007   Taux de pertes physiologiques des suspensivores     | jour-1
+     p_susp_egest_det = 0.8     ! Taux d'egestion du detritique par les suspensivores     | jour-1
+     p_susp_egest_phy = 0.4     ! Taux d'egestion du phyto par les suspensivores     | jour-1
+     p_susp_thrmax_inhib = 0.25   ! Seuil max d'autoinhibition des suspensivores     | molN.m-2
+     p_susp_thrmin_inhib = 0.06   ! Seuil min d'autoinhibition des suspensivores     | molN.m-2
+     p_susp_inges = 0.02     /     ! 0.035 taux max d'ingestion des suspensivores     | jour-1
+:-----------------------------------------------------------------------------
+: namcarn	PARAMETRES DES CARNIVORES + POISSONS
+:-----------------------------------------------------------------------------
+ &namcarn
+     p_carn_satur_proie = 0.019        !  Proie non-suspensivore saturante pour les carnivores       | molN.m-2
+     p_carn_capmeio = 0.15        !  Affinite des carnivores pour les bact.+meio.     | s.d
+     p_carn_thrmeio = 0.0        !  Seuil de predation de meiofaune par carnivores     | molN.m-2
+     p_carn_capdeposi = 0.25      !  Affinite des carnivores pour les deposiv-herbiv    | s.d
+     p_carn_thrdeposi = 0.0        !  Seuil de predation sur deposiv-herbiv par les carnivores     | molN.m-2
+     p_carn_satur_proie_susp = 0.09        !  Proie suspensivore saturante pour les carnivores       | molN.m-2
+     p_carn_capsusp = 0.6      !  Affinite des carnivores pour les suspensivores    | s.d
+     p_carn_thrsusp = 0.0        !  Seuil de predation sur suspensivores par les carnivores     | molN.m-2
+     p_carn_mort = 0.0008        ! Taux de mortalite des carnivores.     | jour-1
+     p_carn_pphysio = 0.0008        ! Taux de pertes physiologiques des carnivores     | jour-1
+     p_carn_egest = 0.25     ! Taux d'egestion des carnivores    | jour-1
+     p_carn_thrmax_inhib = 0.17   ! Seuil max d'autoinhibition des carnivores    | molN.m-2
+     p_carn_thrmin_inhib = 0.03   ! Seuil min d'autoinhibition des carnivores     | molN.m-2
+     p_carn_inges = 0.005     /     ! taux max d'ingestion des carnivores     | jour-1
+
+:-----------------------------------------------------------------------------
+: namulva	PARAMETRES ULVA
+:-----------------------------------------------------------------------------
+ &namulva
+     p_ulv_mumax  =   0.08000      ! Taux de croissance maximum a 0"C                 		   |d-1
+     p_ulv_iksmith  =   24.0000    ! Ik Smith pour la lumiere                         		   |W/m2
+     p_ulv_kNO3 =   30.0000        ! K michaelis pour N                               		   |mumoleN/l
+     p_ulv_kPO4 =    5.00000       ! K michaelis pour P                               		   |mumoleP/l
+     p_ulv_maxabsN   =  200.000    ! Vmax d'absorption de N                   			   |mumoleN/g.pds sec/h
+     p_ulv_maxabsP  =  30.0000     ! Vmax d'absorption de P                    			   |mumoleP/g.pds sec/h
+     p_ulv_minNWratio =    20.0000 ! Rapport N/Poids sec min                           		   |mg N/g.pds sec
+     p_ulv_maxNWratio  =  50.0000  ! Rapport N/Poids sec max                              	   |mg N/g.pds.sec
+     p_ulv_minPWratio  =   1.00000 ! Rapport P/Poids sec min                             	   |mg P/g.pds sec
+     p_ulv_maxPWratio  =  4.00000  ! Rapport P/Poids sec max                              	   |mg P/g.pds sec
+     p_ulv_dryfreshratio  = 0.160  ! Rapport Poids sec/Poids frais                    		   |su
+     p_ulv_susmort   =  0.010000   ! Taux de mortalite a 0"C des ulves en suspension 		   |jours-1
+     p_ulv_depmort   =  0.010000   ! Taux de mortalite a 0"C ulves en depot anoxique 		   |jours-1
+     p_ulv_extincwat  = 25.0000    ! Effet des ulves sur le coefficient extinction                 |g.pds-1.L.m-1
+     p_ulv_erodflux  = 0.0000001   ! Flux de remise en suspension a v=2*Vitesse critique d'erosion |kg/m2/s
+     p_ulv_erodcritv  = 0.07       ! Vitesse critique d'erosion 			           |m/s
+     p_ulv_settlcrittv  =  0.5 /   ! Vitesse critique de depot  			           |m/s	
+
+:-----------------------------------------------------------------------------
+: nammicrotrace	    PARAMETRES DE MICRO-TRACAGE
+:-----------------------------------------------------------------------------
+ &nammicrotrace
+     p_trace_debitinject = 0.001    !  Debit surfacique de la microinjection           | m.d-1.
+     p_trace_depth1inject = 0.0     !  Profondeur de microinjection du traceur 1       | m.
+     p_trace_depth2inject = 100.0   !  Profondeur de microinjection du traceur 2       | m.
+     p_trace_depth3inject = 500.0 / !  Profondeur de microinjection du traceur 3       | m.

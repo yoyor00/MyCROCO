@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -67,6 +68,7 @@
 ! mode) computations.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt, ntimes, lts_hadv, lts_rot_or_diag, lts_per
 #ifdef CVTK_DEBUG
       use debug
 #endif              
@@ -489,34 +491,33 @@
       enddo
 # endif
 
-# if defined TS_HADV_TEST && defined SOLID_BODY_PER
-      do k=1,N
-        do j=JstR,JendR
-          do i=IstrR,IendR
-             u(i,j,k,nstp) = u(i,j,k,nnew)
+      if (lts_per) then
+        do k=1,N
+          do j=JstR,JendR
+            do i=IstrR,IendR
+               u(i,j,k,nstp) = u(i,j,k,nnew)
+            enddo
+          enddo
+          do j=JstrR,JendR
+            do i=IstR,IendR
+               v(i,j,k,nstp) = v(i,j,k,nnew)
+            enddo
           enddo
         enddo
-        do j=JstrR,JendR
-          do i=IstR,IendR
-             v(i,j,k,nstp) = v(i,j,k,nnew)
-          enddo
-        enddo
-      enddo
-
 #  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,nstp))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,nstp))
+        call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                               u(START_2D_ARRAY,1,nstp))
+        call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                               v(START_2D_ARRAY,1,nstp))
 #   else
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                        u(START_2D_ARRAY,1,nstp))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                        v(START_2D_ARRAY,1,nstp))
+        call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                          u(START_2D_ARRAY,1,nstp))
+        call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                          v(START_2D_ARRAY,1,nstp))
 #   endif
 #  endif
-# endif
+      endif
 
 # ifdef TRACERS
         DOLOOP2D(Istr,Iend,Jstr,Jend)
@@ -545,9 +546,7 @@
 #  include "compute_vert_tracer_fluxes.h"
 #  undef PREDICTOR
 !
-#  ifdef TS_HADV_TEST
-      FC(istr:iend,0:N) = 0.d0
-#  endif
+      if (lts_hadv) FC(istr:iend,0:N) = 0.d0
 !
 !----------------------------------------------------------------------
 !++ Apply vertical advection for tracers (DC corresponds to 1/Hz_half)
@@ -974,35 +973,34 @@
 !--------------------------------------------------------------------
 !
 
-# if defined TS_HADV_TEST && ( defined DIAGONAL_ADV || defined SOLID_BODY_ROT )
-      do k=1,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            u(i,j,k,nnew) = u(i,j,k,nstp)
+      if (lts_rot_or_diag) then
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              u(i,j,k,nnew) = u(i,j,k,nstp)
+            enddo
+          enddo
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              v(i,j,k,nnew) = v(i,j,k,nstp)
+            enddo
           enddo
         enddo
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            v(i,j,k,nnew) = v(i,j,k,nstp)
+      elseif (lts_per) then
+        cff = cos(2.*pi*(time+dt/2.)/(float(ntimes)*dt))
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              u(i,j,k,nnew) = u(i,j,k,nstp) * cff
+            enddo
+          enddo
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              v(i,j,k,nnew) = v(i,j,k,nstp) * cff
+            enddo
           enddo
         enddo
-      enddo
-# endif
-# if defined TS_HADV_TEST && defined SOLID_BODY_PER
-      cff = cos(2.*pi*(time+dt/2.)/(float(ntimes)*dt))
-      do k=1,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            u(i,j,k,nnew) = u(i,j,k,nstp) * cff
-          enddo
-        enddo
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            v(i,j,k,nnew) = v(i,j,k,nstp) * cff
-          enddo
-        enddo
-      enddo
-# endif
+      endif
 !$acc end kernels
 !
 !--------------------------------------------------------------------

@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 /*
@@ -194,7 +195,6 @@
  or a tile. This switch is the same for MPI/nonMPI code.
 */
 #ifdef MPI
-# undef AUTOTILING
 # define SINGLE_TILE_MODE  Iend-Istr+Jend-Jstr.eq.Lmmpi+Mmmpi-2
 #else
 # define SINGLE_TILE_MODE  Iend-Istr+Jend-Jstr.eq.Lm+Mm-2
@@ -255,36 +255,6 @@
 #else
 # define QUAD 8
 # define QuadZero 0.D0
-#endif
-
-/*
-  The following definitions are machine dependent macros, compiler
- directives, etc. A proper set of definitions is activated by a
- proper choice C-preprocessor flag, i.e. -DSGI for an SGI computer
- or -DCRAY for a Cray shared memory architecture (Y-MP, C-90, J-90).
- Definitions for other shared memory platforms may be appended here.
-*/
-#if defined sgi || defined SGI
-# define CVECTOR CDIR$ IVDEP
-# define CSDOACROSS C$DOACROSS
-# define CAND C$&
-# define ENTER_CRITICAL_REGION SPACE call mp_setlock()
-# define EXIT_CRITICAL_REGION  SPACE call mp_unsetlock()
-# define CSDISTRIBUTE_RESHAPE !! c$distribute
-/* # define CSDISTRIBUTE_RESHAPE !! c$distribute_reshape */
-# define BLOCK_PATTERN block,block
-# define BLOCK_CLAUSE !! onto(2,*)
-#elif defined cray || defined CRAY
-# ifdef  DBLEPREC
-#  undef  DBLEPREC
-# endif
-# define CVECTOR CDIR$ IVDEP
-# define CSDOACROSS CMIC$ DO ALL
-# define SHARE SHARED
-# define LOCAL PRIVATE
-# define CAND CMIC$&
-# define ENTER_CRITICAL_REGION CMIC$ GUARD
-# define EXIT_CRITICAL_REGION CMIC$ END GUARD
 #endif
 
 /*

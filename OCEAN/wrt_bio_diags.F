@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -13,15 +14,14 @@
                                    ! Writes requested model
       subroutine wrt_bio_diags     ! fields at requested levels
                                    ! into diagnostics netCDF file.
-
 # if defined BIOLink && defined BLOOM && defined BIOLink_PAR_eval
       USE comBIOLink_helping, ONLY : PAR
-      USE comBIOLINK, ONLY : ndiag_3d_wat, ndiag_3d_sed
+      USE comBIOLink, ONLY : ndiag_3d_wat, ndiag_3d_sed
 #  if defined MUSTANG && defined key_BLOOM_insed
       USE comMUSTANG, ONLY : nk_nivsed_out
 #  endif
 # endif
-
+      use croco_namelist, only: dianamebio, nrpfdiabio
       implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), ibuff(4), nf_fwrite
@@ -101,7 +101,6 @@
 !
 ! Time
 !
-CDEBUG      write(*,*) 'Write Time'
       ierr=nf_put_var1_FTYPE (nciddiabio, diaTimebio, record, time)
       if (ierr .ne. nf_noerr) then
         lvar=lenstr(vname(1,indxTime))

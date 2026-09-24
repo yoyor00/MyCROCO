@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -16,9 +17,6 @@
 #include "param.h"
 #include "scalars.h"
 #include "ncscrum.h"
-#ifdef FLOATS
-# include "ncscrum_floats.h"
-#endif
 #ifdef STATIONS
 # include "nc_sta.h"
 #endif
@@ -28,9 +26,6 @@
       if (ncidhis.ne.-1) ierr=nf_close(ncidhis)
 #ifdef AVERAGES
       if (ncidavg.ne.-1) ierr=nf_close(ncidavg)
-#endif
-#ifdef FLOATS
-      if (ncidflt.ne.-1) ierr=nf_close(ncidflt)
 #endif
 #if defined ABL1D && ! defined XIOS
       if (ncidablhis.ne.-1) ierr=nf_close(ncidablhis)
@@ -58,7 +53,7 @@
 # endif
 #endif
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
       if (nciddiags_ek.ne.-1) ierr=nf_close(nciddiags_ek)
 # ifdef AVERAGES
       if (nciddiags_ek_avg.ne.-1) ierr=nf_close(nciddiags_ek_avg)
@@ -105,9 +100,6 @@
 #ifdef STATIONS
      &  ,'number of records written into station  file(s):', nrecsta
 #endif /* STATIONS */
-#ifdef FLOATS
-     &  ,'number of records written into floats   file(s):', nrecflt
-#endif /* FLOATS */
 #if defined ABL1D && ! defined XIOS
      &  ,'number of records written into abl history file(s):',
      &                                                    nrecablhis
@@ -138,14 +130,14 @@
      &                                                 nrecdiags_vrt_avg
 # endif
 #endif /* DIAGNOSTICS_VRT */
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
      &  ,'number of records written into diags_ek  file(s):',
      &                                                     nrecdiags_ek
 # ifdef AVERAGES
      &  ,'number of records written into avg diags_ek file(s):',
      &                                                 nrecdiags_ek_avg
 # endif
-#endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_KE */
 #if defined DIAGNOSTICS_PV
      &  ,'number of records written into diags_pv  file(s):',
      &                                                     nrecdiags_pv
@@ -166,6 +158,11 @@
       if (may_day_flag.eq.0) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'MAIN: DONE'
+#ifdef LOGFILE
+        ! ensure "MAIN: DONE" is written in 6 (real stdout) at the end to catch it in BENCH
+        MPI_master_only write(6,'(/1x,A/)')
+     &           'MAIN: DONE'
+#endif
       elseif (may_day_flag.eq.1) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'MAIN: Abnormal termination: BLOWUP'

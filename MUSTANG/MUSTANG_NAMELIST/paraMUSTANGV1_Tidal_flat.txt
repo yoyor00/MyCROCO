@@ -14,7 +14,6 @@
 : namsedim_bedload         : relative to sediment bedload
 :                            (only if key_MUSTANG_V2)
 : namsedim_lateral_erosion : relative to lateral sediment erosion
-:                            (only if key_MUSTANG_lateralerosion)
 : namsedim_consolidation   : relative to sediment consolidation
 : namsedim_diffusion       : relative to dissolved diffusion in sediment 
 : namsedim_bioturb         : relative to bioturbation in sediment 
@@ -23,8 +22,6 @@
 :                            (only if !defined key_noTSdiss_insed)
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
-: namsedim_debug           : output for debug
-:                            (only if key_MUSTANG_debug and key_MUSTANG_V2)
 : namflocmod               : parameters using for FLOCMOD module 
 :                            (only if key_MUSTANG_flocmod)
 : namdredging              : parameters to activate dredging effect

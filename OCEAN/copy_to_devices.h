@@ -38,7 +38,7 @@
 #endif
 #ifdef DIAGNOSTICS_VRT
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 #endif
 #ifdef DIAGNOSTICS_PV
 #endif
@@ -63,7 +63,7 @@
 #endif
 #if defined DIAGNOSTICS_VRT
 #endif
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
 #endif
 #if defined DIAGNOSTICS_PV
 #endif
@@ -92,7 +92,7 @@
 #endif
 #ifdef DIAGNOSTICS_VRT
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 #endif
 #ifdef DIAGNOSTICS_PV
 #endif
@@ -112,12 +112,6 @@
 #if defined BIOLOGY && defined TRACERS
 !$acc&, global_sum
 #endif
-!$acc&, CPU_time
-!$acc&, proc
-#ifdef SOLITON
-#else
-#endif
-
 !ocean3d.h
 #ifdef SOLVE3D
 !$acc&, u
@@ -270,24 +264,13 @@
 #endif
 
 !private_scratch.h
-#ifdef AUTOTILING
 !$acc&, A2d, A3d
-# if defined SEDIMENT || defined LMD_MIXING
+#if defined SEDIMENT || defined LMD_MIXING
 !$acc&, B2d
-# endif
-# if defined ABL1D
-!$acc&, T1d
-!$acc&, T2d,T3d
-# endif
-#else
-!$acc&, A2d, A3d
-# if defined SEDIMENT || defined LMD_MIXING
-!$acc&, B2d
-# endif
-# if defined ABL1D
+#endif
+#if defined ABL1D
 !$acc&, T1d
 !$acc&, T2d, T3d
-# endif
 #endif
 
 !mixing.h
@@ -344,11 +327,8 @@
 !$acc&, Akv_old
 !$acc&, Akt_old
 # endif
-# ifdef RANDOM_WALK
-!$acc&, dAktdz
-# endif
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX   || defined LMD_MIXING \
+  || defined LMD_SKPP   || defined LMD_BKPP \
   || defined GLS_MIXING || defined UV_VIS_SMAGO_3D
 !$acc&, bvf
 # endif
@@ -682,8 +662,8 @@
 # endif
 # ifdef DIAGNOSTICS_VRT
 # endif
-# ifdef DIAGNOSTICS_EK
-#  ifdef DIAGNOSTICS_EK_MLD
+# ifdef DIAGNOSTICS_KE
+#  ifdef DIAGNOSTICS_KE_MLD
 #  endif
 # endif
 # ifdef DIAGNOSTICS_PV
@@ -721,8 +701,8 @@
 # else
 # endif
 #endif /* SOLVE3D */
-#if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+#if defined ANA_VMIX  || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 #endif
 #ifdef EXACT_RESTART
@@ -824,8 +804,8 @@
 !$acc&, hisBBL
 #endif
 #ifdef SOLVE3D
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 # endif
 # ifdef BIOLOGY
@@ -880,7 +860,7 @@
 !$acc&, diags_vrtfast
 #  endif
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 !$acc&, diags_ekHadv, diags_ekHdiff, diags_ekVadv
 !$acc&, diags_ekCor, diags_ekPrsgrd, diags_ekHmix
 !$acc&, diags_ekVmix, diags_ekrate, diags_ekvol
@@ -891,7 +871,7 @@
 #  ifdef M3FAST
 !$acc&, diags_ekfast
 #  endif
-#  ifdef DIAGNOSTICS_EK_MLD
+#  ifdef DIAGNOSTICS_KE_MLD
 !$acc&, diags_ekHadv_mld, diags_ekHdiff_mld
 !$acc&, diags_ekVadv_mld, diags_ekCor_mld
 !$acc&, diags_ekPrsgrd_mld, diags_ekHmix_mld
@@ -933,9 +913,9 @@
 #endif /* SOLVE3D */
 #ifdef AVERAGES
 # ifdef SOLVE3D
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+   || defined LMD_SKPP || defined LMD_BKPP \
+   || defined GLS_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -999,7 +979,7 @@
 !$acc&, diags_vrtfast_avg
 #   endif
 #  endif
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
 !$acc&, diags_ekHadv_avg, diags_ekHdiff_avg, diags_ekVadv_avg
 !$acc&, diags_ekCor_avg, diags_ekPrsgrd_avg, diags_ekHmix_avg
 !$acc&, diags_ekVmix_avg, diags_ekrate_avg, diags_ekvol_avg
@@ -1010,7 +990,7 @@
 #   ifdef M3FAST
 !$acc&, diags_ekfast_avg
 #   endif
-#   ifdef DIAGNOSTICS_EK_MLD
+#   ifdef DIAGNOSTICS_KE_MLD
 !$acc&, diags_ekHadv_mld_avg, diags_ekHdiff_mld_avg
 !$acc&, diags_ekVadv_mld_avg, diags_ekCor_mld_avg
 !$acc&, diags_ekPrsgrd_mld_avg, diags_ekHmix_mld_avg
@@ -1087,7 +1067,7 @@
 !$acc&, wrtdiags_vrt_avg
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 !$acc&, wrtdiags_ek
 # ifdef AVERAGES
 !$acc&, wrtdiags_ek_avg
@@ -1130,8 +1110,8 @@
 # endif
 #endif
 #ifdef SOLVE3D
-# if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
+# if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP || defined LMD_BKPP \
   || defined GLS_MIXING
 # endif
 # ifdef BIOLOGY
@@ -1152,10 +1132,10 @@
 # ifdef AVERAGES
 # endif
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 # ifdef AVERAGES
 # endif
-# ifdef DIAGNOSTICS_EK_MLD
+# ifdef DIAGNOSTICS_KE_MLD
 #  ifdef AVERAGES
 #  endif
 # endif
@@ -1172,9 +1152,9 @@
 #endif
 #ifdef AVERAGES
 # ifdef SOLVE3D
-#  if defined ANA_VMIX || defined BVF_MIXING \
- || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
- || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+  || defined LMD_SKPP  || defined LMD_BKPP \
+  || defined GLS_MIXING
 #  endif
 #  ifdef BIOLOGY
 #   ifdef BIO_NChlPZD
@@ -1191,7 +1171,7 @@
 #endif
 #ifdef DIAGNOSTICS_VRT
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 #endif
 #ifdef DIAGNOSTICS_PV
 #endif
@@ -1209,7 +1189,7 @@
 #endif
 #ifdef DIAGNOSTICS_VRT
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 #endif
 #ifdef DIAGNOSTICS_PV
 #endif
@@ -1243,7 +1223,7 @@
 #endif
 #ifdef DIAGNOSTICS_VRT
 #endif
-#ifdef DIAGNOSTICS_EK
+#ifdef DIAGNOSTICS_KE
 #endif
 #ifdef DIAGNOSTICS_PV
 #endif
@@ -1282,9 +1262,9 @@
 !$acc&, v_avg
 !$acc&, t_avg
 !$acc&, rho_avg
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+   || defined LMD_SKPP || defined LMD_BKPP \
+   || defined GLS_MIXING
 !$acc&, bvf_avg
 #  endif
 !$acc&, omega_avg
@@ -1293,9 +1273,9 @@
 #  else
 !$acc&, w_avg
 #  endif
-#  if defined ANA_VMIX || defined BVF_MIXING \
-  || defined LMD_MIXING || defined LMD_SKPP || defined LMD_BKPP \
-  || defined GLS_MIXING
+#  if defined ANA_VMIX || defined LMD_MIXING \
+   || defined LMD_SKPP || defined LMD_BKPP \
+   || defined GLS_MIXING
 #  endif
 !$acc&, stflx_avg
 !$acc&, btflx_avg
@@ -1520,9 +1500,6 @@
 # endif
 # ifdef NBQ_HZCORRECT
 !$acc&, Hz_correct
-#  ifdef NBQ_HZCORR_DEBUG
-!$acc&, Hz_corr
-#  endif
 # endif
 # ifdef NBQ_HZ_PROGNOSTIC
 !$acc&, Hz_bak2

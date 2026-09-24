@@ -1,5 +1,6 @@
-! MUSTANG - This software is governed by the CeCILL-C license
-! see LICENSE_MUSTANG.txt
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
 
 MODULE dredging
    !============================================================================
@@ -9,7 +10,7 @@ MODULE dredging
    !! This is done by removing sediments in areas where a given sediment height
    !! is exceeded and optionnaly dumping them in other areas of the domain.
    !!
-   !! This module is linked to modules : module_substance, module_MUSTANG,
+   !! This module is linked to modules : module_substance, 
    !! comsubstance, comMUSTANG
    !! This module also use netcdf
    !!
@@ -34,21 +35,20 @@ MODULE dredging
    PUBLIC dredging_init_param ! called by initMUSTANG
    PUBLIC dredging_main ! called by MUSTANG_update
    PUBLIC l_dredging ! boolean , TRUE to activate dredging
-   PUBLIC dump_gravel_flx
-   PUBLIC dredg_hsed_init
+   PUBLIC dump_gravel_flx ! to put gravel directly in deposit (not in water)
+   PUBLIC dredg_hsed_init ! to keep initial state info
 
    ! Shared module variables
    LOGICAL :: l_dredging ! boolean , TRUE to activate dredging
+   REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: dump_gravel_flx
+   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: dredg_hsed_init
 
+   ! Local variables
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: dredg_mass_byclass
    REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: dredg_mass_byclass_byloc
    REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: dump_mass_byclass_byloc
    REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: dredg_mass_byclass_byloc_cum
-
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: dump_surface
-
-   REAL(KIND=rsh), DIMENSION(:, :, :), ALLOCATABLE :: dump_gravel_flx
-
    INTEGER, DIMENSION(:, :, :), ALLOCATABLE :: dredg_loc
    INTEGER, DIMENSION(:, :, :), ALLOCATABLE :: dump_loc
    CHARACTER(lchain), DIMENSION(:), ALLOCATABLE :: dredg_name
@@ -56,7 +56,6 @@ MODULE dredging
    INTEGER, DIMENSION(:, :), ALLOCATABLE :: dredg_flag
    INTEGER, DIMENSION(:), ALLOCATABLE :: dredg_dump_flag
    REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: dredg_depth
-   REAL(KIND=rsh), DIMENSION(:, :), ALLOCATABLE :: dredg_hsed_init
    INTEGER :: n_dredg_loc
    INTEGER :: n_dump_loc
    REAL(KIND=rsh) :: dredging_time
@@ -67,7 +66,6 @@ MODULE dredging
    INTEGER :: dredging_area_dimid, dredging_area_varid
    INTEGER :: dredging_class_dimid, dredging_class_varid
    INTEGER :: dredging_mass_varid
-
    INTEGER, DIMENSION(:), ALLOCATABLE :: dump_layer
 
 CONTAINS
@@ -369,13 +367,12 @@ CONTAINS
       END IF
 
       dump_layer(:) = dredging_dumping_layer
-#ifdef key_sand2D
+
       DO iv = isand1, isand2
          IF (l_subs2D(iv)) THEN
             dump_layer(iv) = 1
          END IF
       END DO
-#endif
 
    END SUBROUTINE dredging_init_var
    !============================================================================
@@ -688,10 +685,10 @@ CONTAINS
 
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif /* XIOS */
+
+
 
       INTEGER :: iz, ierror
       REAL(KIND=rsh) :: tmp
@@ -720,11 +717,8 @@ CONTAINS
 
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif /* XIOS */
-
       INTEGER :: iv, iz, ierror
       REAL(KIND=rsh) :: tmp
 
@@ -758,11 +752,8 @@ CONTAINS
 
 # ifdef MPI
       include 'mpif.h'
+#     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
-#  ifdef XIOS
-#include "mpi_cpl.h"
-#  endif
-
       INTEGER :: itrc
 
       do itrc = 1, NT

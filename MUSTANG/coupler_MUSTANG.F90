@@ -1,3 +1,7 @@
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
+
 #include "cppdefs.h"
 !----------------------------------------------------------------------------
 MODULE coupler_MUSTANG
@@ -17,12 +21,10 @@ MODULE coupler_MUSTANG
 !&E
 !&E==========================================================================
 
-#include "coupler_define_MUSTANG.h"
-
     USE comMUSTANG
     USE comsubstance
-    USE module_MUSTANG
     USE module_substance
+    USE croco_namelist, ONLY : rho0
 
     IMPLICIT NONE
 
@@ -72,7 +74,7 @@ MODULE coupler_MUSTANG
     !&E           column
     !&E       calculation of total water height    
     !&E       if not MARS : conversion to transmit to MUSTANG the hydro 
-    !&E           variables: SETTL_FLUXSUM_w2s: effective deposit flux  
+    !&E           variables: flx_w2s_sum_CROCO: effective deposit flux  
     !&E           of the particle variables during transport
     !&E    
     !&E ** Called by :  MUSTANG_init (iappel=0)
@@ -80,12 +82,10 @@ MODULE coupler_MUSTANG
     !&E                 sed_MUSTANG_deposition (iappel=2)
     !&E
     !&E----------------------------------------------------------------------
-   !! * Modules used
-#include "scalars_F90.h"
 
    !! * Arguments 
    INTEGER, INTENT(IN)  :: ifirst, ilast, jfirst, jlast, iappel       
-   REAL(KIND=rsh),DIMENSION(ARRAY_WATER_CONC), INTENT(IN) :: WATER_CONCENTRATION   
+   REAL(KIND=rsh),DIMENSION(GLOBAL_2D_ARRAY,N,3,NT), INTENT(IN) :: WATER_CONCENTRATION   
    !! * Local declarations
    INTEGER  :: iv, i, j, niter
 
@@ -97,7 +97,8 @@ MODULE coupler_MUSTANG
            ! extraction of  concentrations in the bottom of the water column
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! CROCO vecteur au temps 1, 2 ou 3 ????
-! Fdufois 2024/07/03 : à vérifier mais je pense que c'est mieux comme ça. Par contre pas sur que l'appel avec iappel=1 soit vraiment util à part à l'initialisation
+! iappel 1 : before mixing, index has to be nstp
+! iappel 2 : after mixing, index has to be nnew
             IF (iappel.eq.1) THEN
                 niter=nstp
             ELSE IF (iappel.eq.2) THEN
@@ -163,7 +164,7 @@ MODULE coupler_MUSTANG
 #else
          DO iv=-1,nv_adv
 #endif
-                flx_w2s_sum(iv,i,j)=SETTL_FLUXSUM_w2s(i,j,IV_HOSTMODEL) ! flux de depot cumule effectif apres transport
+                flx_w2s_sum(iv,i,j)=flx_w2s_sum_CROCO(i,j,itsubs1+iv-1) ! flux de depot cumule effectif apres transport
          ENDDO
      ENDDO
      ENDDO
@@ -180,8 +181,8 @@ MODULE coupler_MUSTANG
     !&E
     !&E ** Description : conversion for hydro code 
     !&E  arguments OUT: no because stored in comMUSTANG
-    !&E     SETTL_FLUX_w2s : deposit trends 
-    !&E     EROS_FLUX_s2w : erosion flux 
+    !&E     flx_w2s_CROCO : deposit trends 
+    !&E     flx_s2w_CROCO : erosion flux 
     !&E     EROS_FLUX_TEMP_s2w et eros_flix_SAL : erosion flux for 
     !&E                                           temperature, salinity
     !&E     
@@ -198,18 +199,18 @@ MODULE coupler_MUSTANG
     DO j = jfirst, jlast
         DO i = ifirst, ilast
             DO iv = 1, nvp
-                SETTL_FLUX_w2s(i, j, IV_HOSTMODEL) = flx_w2s(iv, i, j)
+                flx_w2s_CROCO(i, j, itsubs1+iv-1) = flx_w2s(iv, i, j)
             ENDDO
             DO iv = 1, nv_adv
-                EROS_FLUX_s2w(i, j, IV_HOSTMODEL) = flx_s2w(iv, i, j)
+                flx_s2w_CROCO(i, j, itsubs1+iv-1) = flx_s2w(iv, i, j)
             ENDDO
             ! temperature
-            EROS_FLUX_s2w(i, j, ITEMP_HOSTMODEL) = flx_s2w(-1, i, j)
+            flx_s2w_CROCO(i, j, itemp) = flx_s2w(-1, i, j)
             ! salinity
-            EROS_FLUX_s2w(i, j, ISAL_HOSTMODEL) = flx_s2w(0, i, j)
-        ! no transfer of SETTL_FLUX_w2s_TEMP et SAL and for dissolved subst. 
-        ! because they are merged in EROS_FLUX_s2w for dissolved variables
-        ! (EROS_FLUX_s2w=erosion-settling+consolidation-diffusion) 
+            flx_s2w_CROCO(i, j, itemp+1) = flx_s2w(0, i, j)
+        ! no transfer of flx_w2s_CROCO_TEMP et SAL and for dissolved subst. 
+        ! because they are merged in flx_s2w_CROCO for dissolved variables
+        ! (flx_s2w_CROCO=erosion-settling+consolidation-diffusion) 
         ENDDO
     ENDDO
 

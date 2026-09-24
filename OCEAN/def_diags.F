@@ -1,12 +1,14 @@
 ! $Id: def_diags.F 1571 2014-07-01 12:38:05Z gcambon $
 !
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD and INRIA, in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #ifndef AVRH
@@ -24,6 +26,12 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+#if defined DIAGNOSTICS_TS
+      use croco_namelist, only: ldefdia, nwrtdia, nrpfdia, dianame,
+     &     ldefdia_avg, ntsdia_avg, nwrtdia_avg, nrpfdia_avg,
+     &     dianame_avg
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -77,9 +85,9 @@
 #   define vidTrate_mld diaTrate_mld
 #   define vidTentr_mld diaTentr_mld
 #   define vidTaver_mld diaTaver_mld
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-#   define vidTcrit_mld diaTcrit_mld
-# endif
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+#    define vidTcrit_mld diaTcrit_mld 
+#   endif
 #  endif
 !
 # else /* AVRH */
@@ -113,9 +121,9 @@
 #   define vidTrate_mld diaTrate_mld_avg
 #   define vidTentr_mld diaTentr_mld_avg
 #   define vidTaver_mld diaTaver_mld_avg
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-#   define vidTcrit_mld diaTcrit_mld_avg
-# endif
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+#    define vidTcrit_mld diaTcrit_mld_avg 
+#   endif
 #  endif
 !
         character*60 text
@@ -135,10 +143,26 @@
 !  Create a new diagnostics data file.
 !-------------------------------------
 !
-# ifndef AVRH
-      create_new_file=ldefdia
+# ifdef DO_NOT_OVERWRITE
+      if (lvar.eq.total_rec-1) then
+#  ifndef AVRH
+        create_new_file=ldefdia
+#  else
+        create_new_file=ldefdia_avg
+# endif
+      else
+#  ifndef AVRH
+        create_new_file=.false.
+#  else
+        create_new_file=.false.
+#  endif
+      endif
 # else
+#  ifndef AVRH
+      create_new_file=ldefdia
+#  else
       create_new_file=ldefdia_avg
+#  endif
 # endif
 !
       if (ncid.ne.-1) create_new_file=.false.
@@ -222,9 +246,9 @@
       if (total_rec.le.1) then
 #  ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &        ,r3dgrd, w3dgrd)
+     &        ,r3dgrd, w3dgrd, NF_FOUT)
 #  else
-         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FOUT)
 #  endif
       endif
 # endif
@@ -775,8 +799,6 @@
 
        call nf_add_attribute(ncid,vidTentr_mld(itrc),
      &      vname(:,indxTentr_mld+itrc-1), 5, NF_FOUT, ierr)
-
-!
 !
 ! Taver indxTaver on MLD
 !
@@ -804,32 +826,27 @@
      &                     lvar, vname(4,indxTaver_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTaver_mld(itrc),
-     &      vname(:,indxTaver_mld+itrc-1), 5, NF_FOUT, ierr)
-
-
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-       if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     & .or. itrc.eq.iCRT4) then
+     &      vname(:,indxTaver_mld+itrc-1),5, NF_FOUT, ierr)
 !
-!
-! Tcrit indxTcrit on MLD
+#  if defined DIAGNOSTICS_TS_MLD_DENS
+!  Tcrit indxTcrit on MLD
 !
            lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
            ierr=nf_def_var (ncid, vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                           NF_FOUT, 3, r2dgrd, vidTcrit_mld(itrc))
-#  ifdef NC4PAR
+#   ifdef NC4PAR
            ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
-#  endif
-# ifndef AVRH
+#   endif
+#   ifndef AVRH
            lvar=lenstr(vname(2,indxTcrit_mld+itrc-1))
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc), 'long_name',
      &                     lvar, vname(2,indxTcrit_mld+itrc-1)(1:lvar))
-# else
+#   else
            text='averaged '/ /vname(2,indxTcrit_mld+itrc-1)
            lvar=lenstr(text)
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc), 'long_name',
      &                                          lvar, text(1:lvar))
-# endif
+#   endif
            lvar=lenstr(vname(3,indxTcrit_mld+itrc-1))
            ierr=nf_put_att_text (ncid, vidTcrit_mld(itrc),'units',
      &                     lvar, vname(3,indxTcrit_mld+itrc-1)(1:lvar))
@@ -838,16 +855,10 @@
      &                     lvar, vname(4,indxTcrit_mld+itrc-1)(1:lvar))
 
        call nf_add_attribute(ncid,vidTcrit_mld(itrc),
-     &      vname(:,indxTcrit_mld+itrc-1), 5, NF_FOUT, ierr)
-
-       endif
-
-#endif /* DIAGNOSTICS_TS_MLD_CRIT */
-
-         endif
-
-
+     &      vname(:,indxTcrit_mld+itrc-1),5, NF_FOUT, ierr)
+#  endif/* DIAGNOSTICS_TS_MLD_DENS */
 !
+        endif
 # endif /* DIAGNOSTICS_TS_MLD */
        enddo
 !
@@ -1205,9 +1216,6 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTentr_mld(itrc),nf_collective)
 #  endif
-
-
-!
 !
 ! indxTaver on MLD
 !
@@ -1222,43 +1230,28 @@
 #  ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTaver_mld(itrc),nf_collective)
 #  endif
-
-
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-        if (itrc.eq.itemp .or. itrc.eq.iCRT2 .or. itrc.eq.iCRT3
-     &  .or. itrc.eq.iCRT4) then
-!          
+#  if defined DIAGNOSTICS_TS_MLD_DENS
 !
-! indxTcrit on MLD
+!  indxTcrit on MLD
 !
-          lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
-          ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
+        lvar=lenstr(vname(1,indxTcrit_mld+itrc-1))
+        ierr=nf_inq_varid (ncid,vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                                        vidTcrit_mld(itrc))
           if (ierr .ne. nf_noerr) then
             write(stdout,1) vname(1,indxTcrit_mld+itrc-1)(1:lvar),
      &                                         ncname(1:lstr)
             goto 99                                       !--> ERROR
           endif
-#  ifdef NC4PAR
+#   ifdef NC4PAR
           ierr=nf_var_par_access(ncid,vidTcrit_mld(itrc),nf_collective)
-#  endif
+#   endif
+#  endif /*DIAGNOSTICS_TS_MLD_DENS*/
         endif
-!
-# endif /*DIAGNOSTICS_TS_MLD_CRIT*/
 
-!
-        endif
 !
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
       enddo
-!
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'DEF_DIAG -- Opened ',
-     &                     'existing file  from record =', rec
-     &                      MYID
-!
-!
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
      &                     'DEF_DIAG -- Opened ',
@@ -1279,7 +1272,6 @@
 !
       endif             !<--  create_new_file
 !
-
       ierr=nf_set_fill (ncid, nf_nofill, lvar)
       if (ierr .ne. nf_noerr) then
        write(*,'(6x,2A,i4,1x,A,i4)') 'DEF_DIAG ERROR: Cannot ',
@@ -1333,9 +1325,9 @@
 #  undef vidTrate_mld
 #  undef vidTentr_mld
 #  undef vidTaver_mld
-# ifdef DIAGNOSTICS_TS_MLD_CRIT
-#  undef vidTcrit_mld
-# endif
+#  ifdef DIAGNOSTICS_TS_MLD_DENS
+#   undef vidTcrit_mld
+#  endif
 # endif /*DIAGNOSTICS_TS_MLD*/
 !
 # ifdef AVERAGES

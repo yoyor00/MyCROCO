@@ -46,11 +46,10 @@
 :    ros_n()  : real, density of particle (kg/m3)
 :    l_bedload_n() : boolean, allow bedload transport
 :    diam_n() : diameter of particles
-:    l_sand2D() : boolean, to treat sand variable as 2D variable (used only if 
-:                 key_sand2D)
+:    l_sand2D() : boolean, to treat sand variable as 2D variable
 :    l_outsandrouse()  : boolean, to use a reconstitution of a ROUSE profil 
-:                        for output in water column (used only if key_sand2D 
-:                        and l_sand2D is TRUE for this variable)
+:                        for output in water column (used only if 
+:                        l_sand2D is TRUE for this variable)
 :
 :  WARNING if several sands: start with the coarser sands and continue more 
 :  and more finely

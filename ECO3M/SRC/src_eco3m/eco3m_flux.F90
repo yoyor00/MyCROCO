@@ -78,13 +78,17 @@
     write(file_call_id,*) 
 #endif
 ! Allocation of the FLUX_VAL matrix
-   if (.not. allocated (FLUX_VAL)) ALLOCATE(FLUX_VAL(nbvar, nbvar), STAT=istat)
+   !if (.not. allocated (FLUX_VAL)) ALLOCATE(FLUX_VAL(nbvar, nbvar), STAT=istat)
+   ! >> TODO pb with AGRIF and .not. allocated(FLUX_VAL) due to pointer ??
+   ALLOCATE(FLUX_VAL(nbvar, nbvar), STAT=istat)
    if (istat /= 0) write(*,*) 'pb with the allocation of FLUX_VAL'
+
 
 ! Desallocation of idproc pointers
    do jcol = 1, nbvar
        do ili = 1, nbvar
-           NULLIFY(FLUX_VAL(ili, jcol)%idproc)
+           ! >> TODO pb with AGRIF and NULLIFY, syntax error ??? use deallocate instead
+           DEALLOCATE(FLUX_VAL(ili, jcol)%idproc)
        enddo
    enddo
 
@@ -206,7 +210,9 @@
 
 ! Allocation of the FLUX_PAR matrix
 ! Note that the FLUX_VAL  matrix are initialised in the sub_init.F90 scipt
-         if (.not. allocated (FLUX_PAR)) Allocate(FLUX_PAR(nbproc_flux), STAT=istat)
+         !if (.not. allocated (FLUX_PAR)) Allocate(FLUX_PAR(nbproc_flux), STAT=istat)
+         ! >> TODO pb with AGRIF and .not. allocated(FLUX_PAR) due to pointer ??
+         Allocate(FLUX_PAR(nbproc_flux), STAT=istat)
          if (istat /= 0) write(*,*) 'pb with the allocation of FLUX_PAR'
          exit
   enddo
@@ -419,7 +425,10 @@
          & " Check that everything is fine."
    endif
 #endif
-   if (associated (FLUX_PAR(idproc_mat)%valpar)) NULLIFY(FLUX_PAR(idproc_mat)%valpar)
+   if (associated (FLUX_PAR(idproc_mat)%valpar)) then
+      ! >> TODO pb with AGRIF and NULLIFY, syntax error ??? use deallocate instead
+      DEALLOCATE(FLUX_PAR(idproc_mat)%valpar)
+   endif
 
    if (dim_param >=1) then  !case where the function has at least one parameter
 
@@ -499,6 +508,7 @@ END SUBROUTINE process_subflux
  use eco3m_string
  use mod_eco3m_id_extract, only: f_proc2id  ! Module for the identification of processes
  use mod_eco3m_files !  Module that contains the ID of files
+ use mod_eco3m_vartypes
  use mod_eco3m
  implicit none
  
