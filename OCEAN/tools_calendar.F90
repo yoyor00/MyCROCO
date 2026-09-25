@@ -4,7 +4,11 @@ MODULE tools_calendar
 !!                 ***  MODULE tools_calendar  ***
 !!
 !! ** Purpose : calendar conversion utilities for CROCO.
-!!              Supports gregorian (default), 360_day, 365_day/no_leap.
+!!              Supports gregorian/standard (default), 360_day,
+!!              365_day/no_leap.
+!!
+!! ** History : creation of a module from standalone functions and
+!!              subroutines, 2026, Croco Team
 !!
 !!---------------------------------------------------------------------
    IMPLICIT NONE
@@ -45,7 +49,140 @@ MODULE tools_calendar
    character(len=19) :: start_date    = '                   '
 !$AGRIF_END_DO_NOT_TREAT
 
+   ! (netCDF file id, variable id, warning kind) triples for which a
+   ! tool_origindate warning has already been issued, so that each kind of
+   ! warning (partial date, calendar mismatch, missing calendar attribute)
+   ! is only printed once per time variable (repeat reads/cycling of the
+   ! same variable are silenced, but distinct time variables sharing a
+   ! file, and distinct warning kinds for the same variable, each still
+   ! warn once). Grown dynamically (doubling) in first_origindate_warning:
+   ! no fixed cap on the number of distinct entries tracked.
+   INTEGER, DIMENSION(:), ALLOCATABLE, SAVE :: warned_ncid
+   INTEGER, DIMENSION(:), ALLOCATABLE, SAVE :: warned_varid
+   INTEGER, DIMENSION(:), ALLOCATABLE, SAVE :: warned_kind
+   INTEGER, SAVE :: n_warned_partial = 0
+
+   ! Warning-kind discriminators for first_origindate_warning, so that e.g.
+   ! a partial-date warning for a variable does not suppress a later,
+   ! genuinely first-time calendar warning for that same variable.
+   INTEGER, PARAMETER :: warn_partial_date = 1
+   INTEGER, PARAMETER :: warn_calendar     = 2
+
 CONTAINS
+
+   !====================================================================
+   LOGICAL FUNCTION first_origindate_warning(ncdfid, vid, kind)
+   !! ** Purpose : return .TRUE. only the first time it is called for a
+   !!              given (netCDF file id, variable id, warning kind)
+   !!              triple, so that a per-variable, per-warning-kind
+   !!              tool_origindate warning can be printed once instead of
+   !!              once per call (e.g. once per data-cycling re-read).
+
+      IMPLICIT NONE
+      INTEGER, INTENT(in) :: ncdfid, vid, kind
+      INTEGER :: i
+      INTEGER, DIMENSION(:), ALLOCATABLE :: grown
+
+      DO i = 1, n_warned_partial
+         IF (warned_ncid(i) == ncdfid .AND. &
+             warned_varid(i) == vid .AND. &
+             warned_kind(i) == kind) THEN
+            first_origindate_warning = .FALSE.
+            RETURN
+         END IF
+      END DO
+
+      first_origindate_warning = .TRUE.
+
+      IF (.NOT. ALLOCATED(warned_ncid)) THEN
+         ALLOCATE (warned_ncid(16))
+         ALLOCATE (warned_varid(16))
+         ALLOCATE (warned_kind(16))
+      ELSE IF (n_warned_partial == SIZE(warned_ncid)) THEN
+         ALLOCATE (grown(2*n_warned_partial))
+         grown(1:n_warned_partial) = warned_ncid(1:n_warned_partial)
+         CALL MOVE_ALLOC(grown, warned_ncid)
+
+         ALLOCATE (grown(2*n_warned_partial))
+         grown(1:n_warned_partial) = warned_varid(1:n_warned_partial)
+         CALL MOVE_ALLOC(grown, warned_varid)
+
+         ALLOCATE (grown(2*n_warned_partial))
+         grown(1:n_warned_partial) = warned_kind(1:n_warned_partial)
+         CALL MOVE_ALLOC(grown, warned_kind)
+      END IF
+
+      n_warned_partial = n_warned_partial + 1
+      warned_ncid(n_warned_partial) = ncdfid
+      warned_varid(n_warned_partial) = vid
+      warned_kind(n_warned_partial) = kind
+
+   END FUNCTION first_origindate_warning
+
+   !====================================================================
+   SUBROUTINE warn_if_partial_date(ncdfid, varid, date_str, context)
+   !! ** Purpose : called by tool_origindate: if date_str is a partial
+   !!              'yyyy[-mm[-dd[ hh[:mm[:ss]]]]]'
+   !!              string, warn once (per ncdfid/varid, via the same
+   !!              first_origindate_warning tracker/warn_partial_date
+   !!              kind) which fields are being defaulted. Does not
+   !!              rewrite date_str: tool_datosec/tool_decompdate already
+   !!              default missing fields on their own. A length that is
+   !!              not one of 4/7/10/13/16/19 is left for tool_decompdate
+   !!              to reject as malformed.
+
+#if defined MPI
+      USE scalars, ONLY: mynode
+#endif
+      IMPLICIT NONE
+      INTEGER, INTENT(in) :: ncdfid, varid
+      CHARACTER(len=*), INTENT(in) :: date_str, context
+
+      CHARACTER(len=16) :: filled
+      INTEGER :: dlen
+
+      dlen = LEN_TRIM(date_str)
+
+      SELECT CASE (dlen)
+      CASE (4)
+         filled = '-01-01 00:00:00'
+      CASE (7)
+         filled = '-01 00:00:00'
+      CASE (10)
+         filled = ' 00:00:00'
+      CASE (13)
+         filled = ':00:00'
+      CASE (16)
+         filled = ':00'
+      CASE DEFAULT
+         RETURN
+      END SELECT
+
+      IF (first_origindate_warning(ncdfid, varid, warn_partial_date)) THEN
+         MPI_master_only write (*, '(/1x,4A/1x)') &
+            'TOOL_CALENDAR WARNING: ', TRIM(context), &
+            ': partial date '//TRIM(date_str), &
+            ', assuming '//TRIM(date_str)//TRIM(filled)
+      END IF
+
+   END SUBROUTINE warn_if_partial_date
+
+   !====================================================================
+   SUBROUTINE tool_fatal_stop()
+   !! ** Purpose : abort the run on a fatal calendar error. Under MPI,
+   !!              aborts all ranks (mpi_abort) instead of relying on a
+   !!              plain STOP, which only terminates the calling process
+   !!              and can leave the other ranks hanging.
+
+      IMPLICIT NONE
+#if defined MPI
+      include 'mpif.h'
+
+      call mpi_abort (MPI_COMM_WORLD, 1)
+#endif
+      STOP
+
+   END SUBROUTINE tool_fatal_stop
 
    !====================================================================
    CHARACTER(len=19) FUNCTION tool_sectodat(time)
@@ -208,39 +345,44 @@ CONTAINS
    !! ** Purpose : decompose a date string into integer components.
    !!              Accepts partial strings; missing fields default to
    !!              1 (month/day) or 0 (hour/minute/second).
-   !!              Supported formats (n = LEN_TRIM):
-   !!                n >= 4  : "yyyy"
-   !!                n >= 7  : "yyyy-mm"
-   !!                n >= 10 : "yyyy-mm-dd"
-   !!                n >= 16 : "yyyy-mm-dd hh:mm"
-   !!                n >= 19 : "yyyy-mm-dd hh:mm:ss"
+   !!              Supported formats (dlen = LEN_TRIM):
+   !!                dlen >= 4  : "yyyy"
+   !!                dlen >= 7  : "yyyy-mm"
+   !!                dlen >= 10 : "yyyy-mm-dd"
+   !!                dlen >= 16 : "yyyy-mm-dd hh:mm"
+   !!                dlen >= 19 : "yyyy-mm-dd hh:mm:ss"
 
+#if defined MPI
+      USE scalars, ONLY: mynode
+#endif
       IMPLICIT NONE
       CHARACTER(len=*), INTENT(in)  :: date
       INTEGER, INTENT(out) :: dd, mm, yyyy, hh, minu, sec
 
-      INTEGER :: n
+      INTEGER :: dlen
 
       ! Defaults for optional fields
       mm = 1; dd = 1; hh = 0; minu = 0; sec = 0
 
-      n = LEN_TRIM(date)
+      dlen = LEN_TRIM(date)
 
-      IF (n < 4) THEN
-         PRINT *, 'tool_decompdate error: date string too short: "', TRIM(date), '"'
-         STOP
+      IF (dlen < 4) THEN
+         MPI_master_only write (*, '(/1x,3A/)') &
+            'TOOL_DECOMPDATE ERROR: date string too short: "', TRIM(date), '"'
+         call tool_fatal_stop()
       END IF
 
       READ (date(1:4),   '(i4)') yyyy
-      IF (n >= 7)  READ (date(6:7),   '(i2)') mm
-      IF (n >= 10) READ (date(9:10),  '(i2)') dd
-      IF (n >= 13) READ (date(12:13), '(i2)') hh
-      IF (n >= 16) READ (date(15:16), '(i2)') minu
-      IF (n >= 19) READ (date(18:19), '(i2)') sec
+      IF (dlen >= 7)  READ (date(6:7),   '(i2)') mm
+      IF (dlen >= 10) READ (date(9:10),  '(i2)') dd
+      IF (dlen >= 13) READ (date(12:13), '(i2)') hh
+      IF (dlen >= 16) READ (date(15:16), '(i2)') minu
+      IF (dlen >= 19) READ (date(18:19), '(i2)') sec
 
       IF (mm < 1 .OR. mm > 12) THEN
-         PRINT *, 'tool_decompdate error: invalid month in date: "', TRIM(date), '"'
-         STOP
+         MPI_master_only write (*, '(/1x,3A/)') &
+            'TOOL_DECOMPDATE ERROR: invalid month in date: "', TRIM(date), '"'
+         call tool_fatal_stop()
       END IF
 
    END SUBROUTINE tool_decompdate
@@ -306,85 +448,95 @@ CONTAINS
       USE netcdf
       IMPLICIT NONE
 
-
       INTEGER, INTENT(in)  :: netcdfid, varid
       REAL(kind=rlg), INTENT(out) :: date_in_sec
 
       CHARACTER*180 :: units
       CHARACTER*40  :: file_calendar
       CHARACTER*19  :: date_str
-      INTEGER       :: lenstr, luni, indst, ierr, ierr2
+      CHARACTER*40  :: varname
+      CHARACTER*250 :: ncfile
+      CHARACTER*120 :: fix_hint
+      CHARACTER*300 :: loc_info
+      INTEGER       :: lenstr, luni, indst, ierr, ierr2, ierr3, ierr4
+      INTEGER :: pathlen
+
+      ! netcdfid/varid alone are meaningless to a user reading an error or
+      ! warning message below: look up the actual file path and variable
+      ! name so every message can name what it is complaining about.
+      ! Defaults are kept if either lookup fails, so messages still make
+      ! sense (just less specific) rather than referencing an undefined
+      ! string.
+      varname = 'time'
+      ierr3 = nf90_inquire_variable(netcdfid, varid, name=varname)
+
+      ncfile = '(unknown file)'
+      ierr4 = nf90_inq_path(netcdfid, path=ncfile, pathlen=pathlen)
+
+      loc_info = 'netCDF file: '//TRIM(ncfile)//', variable: '//TRIM(varname)
+
+      ! Suggested fix for an existing but malformed 'units' attribute
+      fix_hint = 'ncatted -a units,'//TRIM(varname)// &
+                 ',o,c,''seconds since YYYY-MM-DD hh:mm:ss'' '//TRIM(ncfile)
 
       ierr = nf90_get_att(netcdfid, varid, 'units', units)
-      if (ierr .eq. nf90_noerr) then
-         luni = lenstr(units)
-         if (index(units(1:luni), 'since') == 0) then
-            MPI_master_only write (*, '(/1x,A/6x,2A/)') &
-               'TOOL_ORIGINDATE WARNING: no ''since'' keyword in time units.', &
-               'Assuming time axis is relative to start_date: ', TRIM(start_date)
-            date_in_sec = tool_datosec(start_date)
-            RETURN
-         end if
-         if (units(1:6) .eq. 'second') then
-            indst = 15
-         elseif (units(1:3) .eq. 'day') then
-            indst = 12
-         else
-            MPI_master_only write (*, '(/1x,2A/6x,A/10x,A)') &
-               'TOOL_ORIGINDATE ERROR: ', &
-               'unknown units for time variable', &
-               'Time variable should follow Netcdf CF format: ', &
-               '''seconds(days) since YYYY-MM-DD hh:mm:ss'''
-            STOP
-         end if
+      if (ierr .ne. nf90_noerr) then
+         MPI_master_only write (*, '(/1x,2A/6x,A/6x,A/10x,A/6x,A/10x,A/)') &
+            'TOOL_ORIGINDATE ERROR: ', &
+            'no ''units'' attribute found for the time variable.', &
+            TRIM(loc_info), &
+            'Time variable must follow Netcdf CF format: ', &
+            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            'You can add it with, e.g.: ', &
+            'ncatted -a units,'//TRIM(varname)// &
+            ',c,c,''seconds since YYYY-MM-DD hh:mm:ss'' '//TRIM(ncfile)
+         call tool_fatal_stop()
+      end if
+
+      luni = lenstr(units)
+      if (index(units(1:luni), 'since') == 0) then
+         MPI_master_only write (*, '(/1x,2A/6x,A/6x,A/6x,A/10x,A/6x,A/10x,A/)') &
+            'TOOL_ORIGINDATE ERROR: ', &
+            'no ''since'' keyword found in time variable units attribute.', &
+            TRIM(loc_info), &
+            'units attribute value: '//TRIM(units), &
+            'Time variable must follow Netcdf CF format: ', &
+            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            'You can fix it with, e.g.: ', &
+            TRIM(fix_hint)
+         call tool_fatal_stop()
+      end if
+
+      if (units(1:6) .eq. 'second') then
+         indst = 15
+      elseif (units(1:3) .eq. 'day') then
+         indst = 12
       else
-         MPI_master_only write (*, '(/1x,A/6x,2A/)') &
-            'TOOL_ORIGINDATE WARNING: no units attribute in forcing file.', &
-            'Assuming time axis is relative to start_date: ', TRIM(start_date)
-         date_in_sec = tool_datosec(start_date)
-         RETURN
+         MPI_master_only write (*, '(/1x,2A/6x,A/6x,A/6x,A/10x,A/6x,A/10x,A/)') &
+            'TOOL_ORIGINDATE ERROR: ', &
+            'unknown units for time variable.', &
+            TRIM(loc_info), &
+            'units attribute value: '//TRIM(units), &
+            'Time variable must follow Netcdf CF format: ', &
+            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            'You can fix it with, e.g.: ', &
+            TRIM(fix_hint)
+         call tool_fatal_stop()
       end if
 
       if (luni < indst) then
-         MPI_master_only write (*, '(/1x,A/6x,A/10x,A/6x,2A/)') &
-            'TOOL_ORIGINDATE WARNING: no date found in time var units.', &
-            'Time variable should follow Netcdf CF format: ', &
+         MPI_master_only write (*, '(/1x,2A/6x,A/6x,A/10x,A/6x,A/10x,A/)') &
+            'TOOL_ORIGINDATE ERROR: ', &
+            'no date found after ''since'' in time variable units attribute.', &
+            TRIM(loc_info), &
+            'Time variable must follow Netcdf CF format: ', &
             '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
-            'Assuming time axis is relative to start_date: ', TRIM(start_date)
-         date_in_sec = tool_datosec(start_date)
-         RETURN
-      elseif (luni - indst .eq. 3) then
-         MPI_master_only write (*, '(/1x,4A/1x)') &
-            'TOOL_ORIGINDATE: ', &
-            'Only origin year is specified, suppose it is ', units(indst:luni), &
-            '-01-01 00:00:00'
-         date_str = units(indst:luni)//'-01-01 00:00:00'
-      elseif (luni - indst .eq. 6) then
-         MPI_master_only write (*, '(/1x,4A/1x)') &
-            'TOOL_ORIGINDATE: ', &
-            'Only origin year and month are specified, suppose it is ', units(indst:luni), &
-            '/01 00:00:00'
-         date_str = units(indst:luni)//'-01 00:00:00'
-      elseif (luni - indst .eq. 9) then
-         MPI_master_only write (*, '(/1x,4A/1x)') &
-            'TOOL_ORIGINDATE: ', &
-            'Only origin year,month,day are specified, suppose it is ', units(indst:luni), &
-            ' 00:00:00'
-         date_str = units(indst:luni)//' 00:00:00'
-      elseif (luni - indst .eq. 12) then
-         MPI_master_only write (*, '(/1x,4A/1x)') &
-            'TOOL_ORIGINDATE: ', &
-            'Only origin year,month,day,hour are specified, suppose it is ', units(indst:luni), &
-            ':00:00'
-         date_str = units(indst:luni)//':00:00'
-      elseif (luni - indst .eq. 15) then
-         MPI_master_only write (*, '(/1x,4A/1x)') &
-            'TOOL_ORIGINDATE: ', &
-            'Only origin year,month,day,hour,minute are specified, suppose it is ', units(indst:luni), &
-            ':00'
-         date_str = units(indst:luni)//':00'
+            'You can fix it with, e.g.: ', &
+            TRIM(fix_hint)
+         call tool_fatal_stop()
       else
          date_str = units(indst:luni)
+         call warn_if_partial_date(netcdfid, varid, date_str, TRIM(loc_info))
       end if
 
       file_calendar = ' '
@@ -393,16 +545,22 @@ CONTAINS
          if (TRIM(file_calendar) /= TRIM(calendar_type) .AND. &
              .NOT. (TRIM(file_calendar) == 'gregorian' .AND. TRIM(calendar_type) == 'gregorian') .AND. &
              .NOT. (TRIM(file_calendar) == 'standard' .AND. TRIM(calendar_type) == 'gregorian')) then
-            MPI_master_only write (*, '(/1x,A/6x,A,A/6x,A,A/)') &
-               'TOOL_ORIGINDATE WARNING: calendar mismatch between file and model:', &
-               '  file calendar   = ', TRIM(file_calendar), &
-               '  model calendar_type = ', TRIM(calendar_type)
+            if (first_origindate_warning(netcdfid, varid, warn_calendar)) then
+               MPI_master_only write (*, '(/1x,A/6x,A/6x,A,A/6x,A,A/)') &
+                  'TOOL_ORIGINDATE WARNING: calendar mismatch between file and model:', &
+                  TRIM(loc_info), &
+                  '  file calendar   = ', TRIM(file_calendar), &
+                  '  model calendar_type = ', TRIM(calendar_type)
+            end if
          end if
       else
          if (TRIM(calendar_type) /= 'gregorian') then
-            MPI_master_only write (*, '(/1x,2A,A/)') &
-               'TOOL_ORIGINDATE WARNING: no calendar attribute in file,', &
-               ' assuming model calendar_type: ', TRIM(calendar_type)
+            if (first_origindate_warning(netcdfid, varid, warn_calendar)) then
+               MPI_master_only write (*, '(/1x,2A,A/6x,A/)') &
+                  'TOOL_ORIGINDATE WARNING: no calendar attribute in file,', &
+                  ' assuming model calendar_type: ', TRIM(calendar_type), &
+                  TRIM(loc_info)
+            end if
          end if
       end if
 
@@ -411,12 +569,16 @@ CONTAINS
           date_str(2:2) < '0' .or. date_str(2:2) > '9' .or. &
           date_str(3:3) < '0' .or. date_str(3:3) > '9' .or. &
           date_str(4:4) < '0' .or. date_str(4:4) > '9') then
-         MPI_master_only write (*, '(/1x,2A/6x,2A/)') &
-            'TOOL_ORIGINDATE WARNING: non-standard date format in time units: ', &
-            TRIM(date_str), &
-            'Assuming time axis is relative to start_date: ', TRIM(start_date)
-         date_in_sec = tool_datosec(start_date)
-         RETURN
+         MPI_master_only write (*, '(/1x,2A/6x,A/6x,A/6x,A/10x,A/6x,A/10x,A/)') &
+            'TOOL_ORIGINDATE ERROR: ', &
+            'non-standard date format in time variable units.', &
+            TRIM(loc_info), &
+            'origin date read: '//TRIM(date_str), &
+            'Time variable must follow Netcdf CF format: ', &
+            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            'You can fix it with, e.g.: ', &
+            TRIM(fix_hint)
+         call tool_fatal_stop()
       end if
 
       date_in_sec = tool_datosec(date_str)
@@ -427,11 +589,29 @@ CONTAINS
    SUBROUTINE init_tools_calendar(cal_type, s_date)
    !! ** Purpose : initialise module-level calendar settings from croco_namelist.
    !!              Must be called once during setup (from init_calendar).
+   !!              calendar_type is mandatory and must be one of the
+   !!              calendars this module implements: an unrecognized value
+   !!              is a fatal error rather than a silent fallback to
+   !!              gregorian.
 
+#if defined MPI
+      USE scalars, ONLY: mynode
+#endif
       IMPLICIT NONE
       CHARACTER(len=*), INTENT(in) :: cal_type, s_date
-      calendar_type = cal_type
-      start_date    = s_date
+
+      SELECT CASE (TRIM(cal_type))
+      CASE ('gregorian', 'standard', '360_day', '365_day', 'no_leap')
+         calendar_type = cal_type
+      CASE DEFAULT
+         MPI_master_only write (*, '(/1x,2A/6x,A/)') &
+            'INIT_TOOLS_CALENDAR ERROR: ', &
+            'unknown ''calendar_type'' in croco_calendar namelist: '''//TRIM(cal_type)//'''.', &
+            'Supported values: ''gregorian'', ''standard'', ''360_day'', ''365_day'', ''no_leap''.'
+         call tool_fatal_stop()
+      END SELECT
+
+      start_date = s_date
 
    END SUBROUTINE init_tools_calendar
 
