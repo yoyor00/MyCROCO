@@ -524,8 +524,6 @@ contains
 #ifdef OBSTRUCTION
       namelist /croco_obstruction/ obstname
 #endif
-#ifdef XIOS
-#endif
 #ifdef ASSIMILATION
       namelist /croco_assimilation/ aparnam, assname
 #endif

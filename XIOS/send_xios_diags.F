@@ -1309,11 +1309,12 @@ C 				  endif
       TYPE(xios_duration)   ::   output_freq
       !!----------------------------------------------------------------------
       !
-      ! start_date with format yyyy-mm-dd
-       READ(xios_origin_date(1:4),fmt='(i4)') iyear
-       READ(xios_origin_date(6:7),fmt='(i2)') imonth
-       READ(xios_origin_date(9:10),fmt='(i2)') iday
-       CALL ymds2ju( iyear, imonth,iday, 0., jday0 )
+      ! tdays (used below via tdays+jday0) is already expressed as
+      ! absolute days since tools_calendar's internal 1900 epoch, so jday0
+      ! must be the julian day of that same fixed epoch, not the run's
+      ! own configurable origin_date (using the run's origin here would
+      ! double-count it, since it is already folded into tdays/time).
+       CALL ymds2ju( 1900, 1, 1, 0., jday0 )
       DO jn = 1,2
 
          IF( jn == 1 )   CALL iom_get_file_attr( cdid, name 
