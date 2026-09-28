@@ -56,7 +56,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
         call tool_origindate(ncidbulk,bulk_tid,
-     &                       blk_origin_date_in_sec)
+     &                       blk_origin_date_in_sec, blk_secinunit)
 !
 ! Check N_abl value and possible inconstitency between N_abl in param.h
 ! and N_abl in netcdf.
@@ -409,9 +409,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,6) 'bulk_time', bulk_rec
           goto 99                                         !--> ERROR
         endif
-        cff=cff+blk_origin_date_in_sec*sec2day
+        cff=blk_origin_date_in_sec+cff*blk_secinunit
 
-        bulk_time(i)=cff*day2sec+bulk_cycle*bulk_ncycle
+        bulk_time(i)=cff+bulk_cycle*bulk_ncycle
         if (bulk_time(itbulk).eq.-1.E+20)
      &          bulk_time(itbulk)=bulk_time(i)
 !
@@ -625,7 +625,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
        MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &              'GET_BULK   --',
      &              'Read fields for bulk formula   for time =',
-     &              tool_sectodat(cff*day2sec)
+     &              tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif

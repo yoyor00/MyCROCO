@@ -624,7 +624,8 @@ c              goto 99                                     !--> ERROR
 #  endif
 # endif /* BIOLOGY */
           call tool_origindate(ncidclm,tclm_tid(itrc),
-     &                       tclm_origin_date_in_sec(itrc))
+     &                       tclm_origin_date_in_sec(itrc),
+     &                       tclm_secinunit(itrc))
 
           if (got_tclm(itrc)) then
             lvar=lenstr(vname(1,indxV+itrc))
@@ -682,8 +683,8 @@ c              goto 99                                     !--> ERROR
            write(stdout,6) 'Xclm_time', tclm_rec(itrc)
            goto 99                                        !--> ERROR
          endif
-        cff=cff+tclm_origin_date_in_sec(itrc)*sec2day
-         tclm_time(i,itrc)=cff*day2sec+tclm_cycle(itrc)
+        cff=tclm_origin_date_in_sec(itrc)+cff*tclm_secinunit(itrc)
+         tclm_time(i,itrc)=cff+tclm_cycle(itrc)
      &                                *tclm_ncycle(itrc)
          if (tclm_time(ittclm(itrc),itrc).eq.-1.E+20)
      &       tclm_time(ittclm(itrc),itrc)=tclm_time(i,itrc)
@@ -704,7 +705,7 @@ c              goto 99                                     !--> ERROR
         MPI_master_only write(stdout,'(6x,A,2x,I2,1x,A,1x,A19,1x,I4)')
      &             'GET_TCLIMA -- Read climatology of tracer', itrc,
      &                                             'for time =',
-     &             tool_sectodat(cff*day2sec)
+     &             tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif

@@ -52,7 +52,7 @@
           goto 99                                     !--> ERROR
         endif
         call tool_origindate(ncidclm,uclm_tid,
-     &                       uclm_origin_date_in_sec)
+     &                       uclm_origin_date_in_sec, uclm_secinunit)
 
 # ifdef M2CLIMATOLOGY
         lvar=lenstr(vname(1,indxUb))
@@ -127,9 +127,9 @@
         write(stdout,6) 'Xclm_time', uclm_rec
         goto 99                                        !--> ERROR
       endif
-        cff=cff+uclm_origin_date_in_sec*sec2day
+        cff=uclm_origin_date_in_sec+cff*uclm_secinunit
 
-      uclm_time(i)=cff*day2sec+uclm_cycle
+      uclm_time(i)=cff+uclm_cycle
      &                             *uclm_ncycle
       if (uclm_time(ituclm).eq.-1.E+20)
      &    uclm_time(ituclm)=uclm_time(i)
@@ -187,7 +187,7 @@
       ituclm=i
       MPI_master_only write(stdout,'(6x,A,1x,A19,1x,I4)')
      &'GET_UCLIMA -- Read momentum climatology      for time =',
-     &  tool_sectodat(cff*day2sec)
+     &  tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif

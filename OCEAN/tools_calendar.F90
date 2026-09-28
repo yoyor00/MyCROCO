@@ -4,8 +4,17 @@ MODULE tools_calendar
 !!                 ***  MODULE tools_calendar  ***
 !!
 !! ** Purpose : calendar conversion utilities for CROCO.
-!!              Supports gregorian/standard (default), 360_day,
-!!              365_day/no_leap.
+!!              Supports the CF calendars (case-insensitive):
+!!                - gregorian / standard / proleptic_gregorian (default,
+!!                  implemented as proleptic Gregorian: identical to
+!!                  CF 'standard' for all dates from 1582-10-15 on; a
+!!                  'standard'/'gregorian' start date or file origin date
+!!                  before 1582-10-15 is rejected, see
+!!                  before_gregorian_reform)
+!!                - 360_day
+!!                - noleap / 365_day (legacy non-CF alias: no_leap)
+!!                - all_leap / 366_day
+!!                - julian
 !!
 !! ** History : creation of a module from standalone functions and
 !!              subroutines, 2026, Croco Team
@@ -23,6 +32,9 @@ MODULE tools_calendar
    REAL(kind=rlg), PARAMETER :: tref = 59958230400_rlg
    REAL(kind=rlg), PARAMETER :: tref_360 = 1900_rlg*360.0_rlg*86400.0_rlg
    REAL(kind=rlg), PARAMETER :: tref_365 = 1900_rlg*365.0_rlg*86400.0_rlg
+   REAL(kind=rlg), PARAMETER :: tref_366 = 1900_rlg*366.0_rlg*86400.0_rlg
+   ! Julian: 1900 years of 365 days + 475 leap years (0, 4, ..., 1896)
+   REAL(kind=rlg), PARAMETER :: tref_jul = (1900.0_rlg*365.0_rlg + 475.0_rlg)*86400.0_rlg
 
    ! Time unit constants
    REAL(kind=rlg), PARAMETER :: secs_in_minute = 60.0_rlg
@@ -33,9 +45,21 @@ MODULE tools_calendar
    REAL(kind=rlg), PARAMETER :: secs_in_4years = secs_in_day*(3.0_rlg*365.0_rlg + 366.0_rlg)
    REAL(kind=rlg), PARAMETER :: secs_in_4centuries = 4.0_rlg*secs_in_century + secs_in_day
 
-   ! Days elapsed before each month in a non-leap year
+   ! Days elapsed before each month in a non-leap / leap year
    INTEGER, DIMENSION(12), PARAMETER :: days_before_month = &
                                         (/0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334/)
+   INTEGER, DIMENSION(12), PARAMETER :: days_before_month_leap = &
+                                        (/0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335/)
+
+   ! Canonical calendar identifiers: every CF name/alias maps to one of
+   ! these (see cf_calendar_id), so that equivalent names never trigger
+   ! a mismatch and branches test an integer instead of strings.
+   INTEGER, PARAMETER :: cal_unknown   = 0
+   INTEGER, PARAMETER :: cal_gregorian = 1
+   INTEGER, PARAMETER :: cal_360day    = 2
+   INTEGER, PARAMETER :: cal_noleap    = 3
+   INTEGER, PARAMETER :: cal_allleap   = 4
+   INTEGER, PARAMETER :: cal_julian    = 5
 
    PUBLIC :: tool_sectodat, tool_datosec, tool_datetosec, &
              tool_decompdate, tool_origindate, init_tools_calendar
@@ -44,9 +68,11 @@ MODULE tools_calendar
    ! Set once via init_tools_calendar (called from init_calendar).
    ! Stored here so this module does not depend on AGRIF-managed croco_namelist.
    ! AGRIF conv can't handle character(len=N)
+   ! model_cal is kept here too: the calendar is common to all grids.
 !$AGRIF_DO_NOT_TREAT
    character(len=20) :: calendar_type = 'gregorian'
    character(len=19) :: start_date    = '                   '
+   integer           :: model_cal     = cal_gregorian
 !$AGRIF_END_DO_NOT_TREAT
 
    ! (netCDF file id, variable id, warning kind) triples for which a
@@ -69,6 +95,122 @@ MODULE tools_calendar
    INTEGER, PARAMETER :: warn_calendar     = 2
 
 CONTAINS
+
+   !====================================================================
+   CHARACTER(len=40) FUNCTION normalize_calendar(str)
+   !! ** Purpose : return a calendar name lower-cased, left-adjusted and
+   !!              cut at the first NUL character (some tools write
+   !!              NUL-terminated netCDF string attributes, and TRIM
+   !!              does not remove NULs).
+
+      IMPLICIT NONE
+      CHARACTER(len=*), INTENT(in) :: str
+
+      CHARACTER(len=40) :: s
+      INTEGER :: i, c
+
+      s = str
+      DO i = 1, LEN(s)
+         c = IACHAR(s(i:i))
+         IF (c == 0) THEN
+            s(i:) = ' '
+            EXIT
+         ELSE IF (c >= IACHAR('A') .AND. c <= IACHAR('Z')) THEN
+            s(i:i) = ACHAR(c + 32)
+         END IF
+      END DO
+      normalize_calendar = ADJUSTL(s)
+
+   END FUNCTION normalize_calendar
+
+   !====================================================================
+   INTEGER FUNCTION cf_calendar_id(str)
+   !! ** Purpose : map a CF calendar name (or alias) to its canonical
+   !!              identifier; cal_unknown if not supported.
+
+      IMPLICIT NONE
+      CHARACTER(len=*), INTENT(in) :: str
+
+      SELECT CASE (TRIM(normalize_calendar(str)))
+      CASE ('gregorian', 'standard', 'proleptic_gregorian')
+         cf_calendar_id = cal_gregorian
+      CASE ('360_day')
+         cf_calendar_id = cal_360day
+      CASE ('noleap', '365_day', 'no_leap')
+         cf_calendar_id = cal_noleap
+      CASE ('all_leap', '366_day')
+         cf_calendar_id = cal_allleap
+      CASE ('julian')
+         cf_calendar_id = cal_julian
+      CASE DEFAULT
+         cf_calendar_id = cal_unknown
+      END SELECT
+
+   END FUNCTION cf_calendar_id
+
+   !====================================================================
+   LOGICAL FUNCTION is_mixed_gregorian(str)
+   !! ** Purpose : .TRUE. if str names the CF mixed Julian/Gregorian
+   !!              calendar ('standard' or its deprecated alias
+   !!              'gregorian'), which this module implements as
+   !!              proleptic Gregorian, i.e. exactly only from 1582-10-15.
+
+      IMPLICIT NONE
+      CHARACTER(len=*), INTENT(in) :: str
+
+      SELECT CASE (TRIM(normalize_calendar(str)))
+      CASE ('standard', 'gregorian')
+         is_mixed_gregorian = .TRUE.
+      CASE DEFAULT
+         is_mixed_gregorian = .FALSE.
+      END SELECT
+
+   END FUNCTION is_mixed_gregorian
+
+   !====================================================================
+   LOGICAL FUNCTION before_gregorian_reform(date_str)
+   !! ** Purpose : .TRUE. if date_str is before 1582-10-15, the first
+   !!              day of the Gregorian calendar. Before that date, CF
+   !!              'standard' is Julian and differs from the proleptic
+   !!              Gregorian arithmetic used here (by 10 days in 1582,
+   !!              2 days at year 1).
+
+      IMPLICIT NONE
+      CHARACTER(len=*), INTENT(in) :: date_str
+
+      INTEGER :: yyyy, mm, dd, hh, minu, sec
+
+      CALL tool_decompdate(date_str, dd, mm, yyyy, hh, minu, sec)
+      before_gregorian_reform = yyyy < 1582 .OR. &
+         (yyyy == 1582 .AND. (mm < 10 .OR. (mm == 10 .AND. dd < 15)))
+
+   END FUNCTION before_gregorian_reform
+
+   !====================================================================
+   SUBROUTINE doy_to_month_day(doy, is_leap, month, day)
+   !! ** Purpose : convert a 0-based day of year into month and day of
+   !!              month, for a 365- or 366-day year.
+
+      IMPLICIT NONE
+      INTEGER, INTENT(in)  :: doy
+      LOGICAL, INTENT(in)  :: is_leap
+      INTEGER, INTENT(out) :: month, day
+
+      INTEGER, DIMENSION(12) :: dbm
+
+      IF (is_leap) THEN
+         dbm = days_before_month_leap
+      ELSE
+         dbm = days_before_month
+      END IF
+
+      month = 12
+      DO WHILE (dbm(month) > doy)
+         month = month - 1
+      END DO
+      day = doy - dbm(month) + 1
+
+   END SUBROUTINE doy_to_month_day
 
    !====================================================================
    LOGICAL FUNCTION first_origindate_warning(ncdfid, vid, kind)
@@ -201,7 +343,9 @@ CONTAINS
 
       DATA month_from_day/31*01, 28*02, 31*03, 30*04, 31*05, 30*06, 31*07, 31*08, 30*09, 31*10, 30*11, 31*12/
 
-      IF (TRIM(calendar_type) == '360_day') THEN
+      SELECT CASE (model_cal)
+
+      CASE (cal_360day)
          ! 360-day calendar: 12 months of 30 days, no leap years
          total_secs = REAL(time, rlg) + tref_360
 
@@ -214,13 +358,7 @@ CONTAINS
          day = INT(total_secs/secs_in_day) + 1
          total_secs = MOD(total_secs, secs_in_day)
 
-         hour = INT(total_secs/secs_in_hour)
-         total_secs = MOD(total_secs, secs_in_hour)
-         minute = INT(total_secs/secs_in_minute)
-         second = INT(MOD(total_secs, secs_in_minute))
-
-      ELSE IF (TRIM(calendar_type) == '365_day' .OR. &
-               TRIM(calendar_type) == 'no_leap') THEN
+      CASE (cal_noleap)
          ! 365-day calendar: standard month lengths, no leap years
          total_secs = REAL(time, rlg) + tref_365
 
@@ -233,12 +371,39 @@ CONTAINS
          month = month_from_day(MIN(tot_days + 1, 365))
          day = tot_days - days_before_month(month) + 1
 
-         hour = INT(total_secs/secs_in_hour)
-         total_secs = MOD(total_secs, secs_in_hour)
-         minute = INT(total_secs/secs_in_minute)
-         second = INT(MOD(total_secs, secs_in_minute))
+      CASE (cal_allleap)
+         ! 366-day calendar: every year is a leap year
+         total_secs = REAL(time, rlg) + tref_366
 
-      ELSE
+         year = INT(total_secs/(366.0_rlg*secs_in_day))
+         total_secs = total_secs - REAL(year, rlg)*366.0_rlg*secs_in_day
+
+         tot_days = INT(total_secs/secs_in_day)
+         total_secs = MOD(total_secs, secs_in_day)
+
+         CALL doy_to_month_day(MIN(tot_days, 365), .TRUE., month, day)
+
+      CASE (cal_julian)
+         ! Julian calendar: leap year every 4 years, no century rule.
+         ! Year 0 is a leap year, so each 4-year cycle is 366+3*365 days.
+         total_secs = REAL(time, rlg) + tref_jul
+
+         tot_days = INT(total_secs/secs_in_day)
+         total_secs = total_secs - REAL(tot_days, rlg)*secs_in_day
+
+         nb_4years = tot_days/1461
+         tot_days = MOD(tot_days, 1461)
+         IF (tot_days < 366) THEN
+            nb_years = 0
+         ELSE
+            nb_years = 1 + (tot_days - 366)/365
+            tot_days = tot_days - 366 - 365*(nb_years - 1)
+         END IF
+         year = 4*nb_4years + nb_years
+
+         CALL doy_to_month_day(tot_days, nb_years == 0, month, day)
+
+      CASE DEFAULT
          ! Default: proleptic Gregorian calendar
          total_secs = time + tref
          year = 0
@@ -280,13 +445,13 @@ CONTAINS
             day = tot_days - days_before_month(month) + 1
          END IF
 
-         hour = INT(total_secs/secs_in_hour)
-         total_secs = MOD(total_secs, secs_in_hour)
-         minute = INT(total_secs/secs_in_minute)
-         total_secs = MOD(total_secs, secs_in_minute)
-         second = total_secs
+      END SELECT
 
-      END IF
+      ! total_secs now holds the seconds elapsed within the day
+      hour = INT(total_secs/secs_in_hour)
+      total_secs = MOD(total_secs, secs_in_hour)
+      minute = INT(total_secs/secs_in_minute)
+      second = INT(MOD(total_secs, secs_in_minute))
 
       WRITE (date, 800) year, month, day, hour, minute, second
       tool_sectodat = date
@@ -306,37 +471,49 @@ CONTAINS
       IMPLICIT NONE
       CHARACTER(len=*), INTENT(in) :: date
 
-      INTEGER        :: year, month, day, hour, minute, second
-      REAL(kind=rlg) :: total_secs
+      INTEGER        :: year, month, day, hour, minute, second, tot_days
+      REAL(kind=rlg) :: total_secs, secs_of_day
 
       CALL tool_decompdate(date, day, month, year, hour, minute, second)
 
-      IF (TRIM(calendar_type) == '360_day') THEN
+      secs_of_day = REAL(hour, rlg)*secs_in_hour &
+                    + REAL(minute, rlg)*secs_in_minute &
+                    + REAL(second, rlg)
+
+      SELECT CASE (model_cal)
+
+      CASE (cal_360day)
          ! 360-day calendar: 12 months of 30 days, no leap years
          total_secs = REAL(year, rlg)*360.0_rlg*secs_in_day
          total_secs = total_secs + REAL(month - 1, rlg)*30.0_rlg*secs_in_day
          total_secs = total_secs + REAL(day - 1, rlg)*secs_in_day
-         total_secs = total_secs + REAL(hour, rlg)*secs_in_hour
-         total_secs = total_secs + REAL(minute, rlg)*secs_in_minute
-         total_secs = total_secs + REAL(second, rlg)
-         tool_datosec = total_secs - tref_360
+         tool_datosec = total_secs + secs_of_day - tref_360
 
-      ELSE IF (TRIM(calendar_type) == '365_day' .OR. &
-               TRIM(calendar_type) == 'no_leap') THEN
+      CASE (cal_noleap)
          ! 365-day calendar: standard month lengths, no leap years ever
          total_secs = REAL(year, rlg)*secs_in_year
          total_secs = total_secs + REAL(days_before_month(month), rlg)*secs_in_day
          total_secs = total_secs + REAL(day - 1, rlg)*secs_in_day
-         total_secs = total_secs + REAL(hour, rlg)*secs_in_hour
-         total_secs = total_secs + REAL(minute, rlg)*secs_in_minute
-         total_secs = total_secs + REAL(second, rlg)
-         tool_datosec = total_secs - tref_365
+         tool_datosec = total_secs + secs_of_day - tref_365
 
-      ELSE
+      CASE (cal_allleap)
+         ! 366-day calendar: every year is a leap year
+         total_secs = REAL(year, rlg)*366.0_rlg*secs_in_day
+         total_secs = total_secs + REAL(days_before_month_leap(month), rlg)*secs_in_day
+         total_secs = total_secs + REAL(day - 1, rlg)*secs_in_day
+         tool_datosec = total_secs + secs_of_day - tref_366
+
+      CASE (cal_julian)
+         ! Julian calendar: (year+3)/4 leap years (0, 4, ...) before 'year'
+         tot_days = 365*year + (year + 3)/4 + days_before_month(month) + day - 1
+         IF (month > 2 .AND. MOD(year, 4) == 0) tot_days = tot_days + 1
+         tool_datosec = REAL(tot_days, rlg)*secs_in_day + secs_of_day - tref_jul
+
+      CASE DEFAULT
          ! Default: proleptic Gregorian calendar
          tool_datosec = gregorian_to_sec(day, month, year, hour, minute, second)
 
-      END IF
+      END SELECT
 
    END FUNCTION tool_datosec
 
@@ -391,8 +568,7 @@ CONTAINS
    SUBROUTINE tool_datetosec(day, month, year, hour, minute, second, datetosec)
    !! ** Purpose : return seconds elapsed since epoch for a date given as
    !!              integer components. Delegates to tool_datosec so that all
-   !!              calendar types (gregorian, 360_day, 365_day/no_leap) are
-   !!              supported automatically.
+   !!              supported calendar types are handled automatically.
    !! ** Called by : init_oa subroutine in module_oa_interface
 
       IMPLICIT NONE
@@ -409,7 +585,7 @@ CONTAINS
    !====================================================================
    REAL(kind=rlg) FUNCTION gregorian_to_sec(day, month, year, hour, minute, second)
       ! Private helper: proleptic Gregorian date components → seconds since tref.
-      ! Called by tool_datosec (Gregorian branch) and tool_datetosec.
+      ! Called by tool_datosec (Gregorian branch).
 
       IMPLICIT NONE
       INTEGER, INTENT(in) :: day, month, year, hour, minute, second
@@ -438,9 +614,16 @@ CONTAINS
    END FUNCTION gregorian_to_sec
 
    !====================================================================
-   SUBROUTINE tool_origindate(netcdfid, varid, date_in_sec)
+   SUBROUTINE tool_origindate(netcdfid, varid, date_in_sec, secs_per_unit)
    !! ** Purpose : read origin date from a NetCDF time variable 'units'
-   !!              attribute and return it as seconds since epoch.
+   !!              attribute ('<unit> since <date>') and return it as
+   !!              seconds since epoch.
+   !!              Supported <unit> (case-insensitive): seconds, minutes,
+   !!              hours, days, with their UDUNITS singular/short forms.
+   !!              Optional secs_per_unit returns the number of seconds
+   !!              in one <unit> (1, 60, 3600 or 86400), so that callers
+   !!              convert the time values themselves consistently:
+   !!                 time_in_sec = date_in_sec + value*secs_per_unit
 
 #if defined MPI
       USE scalars, ONLY: mynode
@@ -450,16 +633,24 @@ CONTAINS
 
       INTEGER, INTENT(in)  :: netcdfid, varid
       REAL(kind=rlg), INTENT(out) :: date_in_sec
+      REAL(kind=rlg), INTENT(out), OPTIONAL :: secs_per_unit
 
       CHARACTER*180 :: units
+      CHARACTER*180 :: units_lc
+      CHARACTER*20  :: unit_word
+      REAL(kind=rlg):: unit_factor
+      INTEGER       :: isince, i, ic
       CHARACTER*40  :: file_calendar
       CHARACTER*19  :: date_str
       CHARACTER*40  :: varname
       CHARACTER*250 :: ncfile
       CHARACTER*120 :: fix_hint
       CHARACTER*300 :: loc_info
-      INTEGER       :: lenstr, luni, indst, ierr, ierr2, ierr3, ierr4
+      INTEGER       :: lenstr, luni, ierr, ierr2, ierr3, ierr4
       INTEGER :: pathlen
+      INTEGER :: file_cal
+      LOGICAL :: file_is_mixed
+      CHARACTER*60 :: cal_desc
 
       ! netcdfid/varid alone are meaningless to a user reading an error or
       ! warning message below: look up the actual file path and variable
@@ -486,7 +677,7 @@ CONTAINS
             'no ''units'' attribute found for the time variable.', &
             TRIM(loc_info), &
             'Time variable must follow Netcdf CF format: ', &
-            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            '''seconds|minutes|hours|days since YYYY-MM-DD hh:mm:ss''', &
             'You can add it with, e.g.: ', &
             'ncatted -a units,'//TRIM(varname)// &
             ',c,c,''seconds since YYYY-MM-DD hh:mm:ss'' '//TRIM(ncfile)
@@ -494,57 +685,98 @@ CONTAINS
       end if
 
       luni = lenstr(units)
-      if (index(units(1:luni), 'since') == 0) then
+
+      ! Lower-cased copy for parsing ('Hours Since ...' is accepted);
+      ! the original is kept for messages.
+      units_lc = units
+      do i = 1, luni
+         ic = IACHAR(units_lc(i:i))
+         if (ic >= IACHAR('A') .AND. ic <= IACHAR('Z')) units_lc(i:i) = ACHAR(ic + 32)
+      end do
+
+      isince = index(units_lc(1:luni)//' ', ' since ')
+      if (isince == 0) then
          MPI_master_only write (*, '(/1x,2A/6x,A/6x,A/6x,A/10x,A/6x,A/10x,A/)') &
             'TOOL_ORIGINDATE ERROR: ', &
             'no ''since'' keyword found in time variable units attribute.', &
             TRIM(loc_info), &
             'units attribute value: '//TRIM(units), &
             'Time variable must follow Netcdf CF format: ', &
-            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            '''seconds|minutes|hours|days since YYYY-MM-DD hh:mm:ss''', &
             'You can fix it with, e.g.: ', &
             TRIM(fix_hint)
          call tool_fatal_stop()
       end if
 
-      if (units(1:6) .eq. 'second') then
-         indst = 15
-      elseif (units(1:3) .eq. 'day') then
-         indst = 12
-      else
+      ! Unit word: everything before ' since ', e.g. 'hours'
+      unit_word = ADJUSTL(units_lc(1:isince))
+      select case (TRIM(unit_word))
+      case ('seconds', 'second', 'secs', 'sec', 's')
+         unit_factor = 1.0_rlg
+      case ('minutes', 'minute', 'mins', 'min')
+         unit_factor = secs_in_minute
+      case ('hours', 'hour', 'hrs', 'hr', 'h')
+         unit_factor = secs_in_hour
+      case ('days', 'day', 'd')
+         unit_factor = secs_in_day
+      case default
          MPI_master_only write (*, '(/1x,2A/6x,A/6x,A/6x,A/10x,A/6x,A/10x,A/)') &
             'TOOL_ORIGINDATE ERROR: ', &
             'unknown units for time variable.', &
             TRIM(loc_info), &
             'units attribute value: '//TRIM(units), &
             'Time variable must follow Netcdf CF format: ', &
-            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            '''seconds|minutes|hours|days since YYYY-MM-DD hh:mm:ss''', &
             'You can fix it with, e.g.: ', &
             TRIM(fix_hint)
          call tool_fatal_stop()
-      end if
+      end select
 
-      if (luni < indst) then
+      ! Date: everything after ' since ' (7 characters), left-adjusted
+      if (LEN_TRIM(units(isince+7:luni)) == 0 .OR. isince + 7 > luni) then
          MPI_master_only write (*, '(/1x,2A/6x,A/6x,A/10x,A/6x,A/10x,A/)') &
             'TOOL_ORIGINDATE ERROR: ', &
             'no date found after ''since'' in time variable units attribute.', &
             TRIM(loc_info), &
             'Time variable must follow Netcdf CF format: ', &
-            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            '''seconds|minutes|hours|days since YYYY-MM-DD hh:mm:ss''', &
             'You can fix it with, e.g.: ', &
             TRIM(fix_hint)
          call tool_fatal_stop()
       else
-         date_str = units(indst:luni)
+         date_str = ADJUSTL(units(isince+7:luni))
          call warn_if_partial_date(netcdfid, varid, date_str, TRIM(loc_info))
       end if
 
+      ! Calendar check: names are compared through their canonical id, so
+      ! CF-equivalent names (e.g. 'standard' / 'proleptic_gregorian' /
+      ! 'gregorian', or 'noleap' / '365_day') never trigger a mismatch.
+      ! A missing attribute means 'standard' (CF default).
       file_calendar = ' '
       ierr2 = nf90_get_att(netcdfid, varid, 'calendar', file_calendar)
       if (ierr2 .eq. nf90_noerr) then
-         if (TRIM(file_calendar) /= TRIM(calendar_type) .AND. &
-             .NOT. (TRIM(file_calendar) == 'gregorian' .AND. TRIM(calendar_type) == 'gregorian') .AND. &
-             .NOT. (TRIM(file_calendar) == 'standard' .AND. TRIM(calendar_type) == 'gregorian')) then
+         file_calendar = normalize_calendar(file_calendar)
+         file_is_mixed = is_mixed_gregorian(file_calendar)
+         cal_desc = 'file calendar = '//TRIM(file_calendar)
+      else
+         ! CF default when the attribute is absent is 'standard'. Only
+         ! relevant if the model calendar is Gregorian-like: otherwise the
+         ! model calendar is assumed for the file (warning below).
+         file_is_mixed = (model_cal == cal_gregorian)
+         cal_desc = 'no calendar attribute (CF default: standard)'
+      end if
+
+      if (ierr2 .eq. nf90_noerr) then
+         file_cal = cf_calendar_id(file_calendar)
+         if (file_cal == cal_unknown) then
+            if (first_origindate_warning(netcdfid, varid, warn_calendar)) then
+               MPI_master_only write (*, '(/1x,A/6x,A/6x,A,A/6x,A,A/)') &
+                  'TOOL_ORIGINDATE WARNING: unrecognized calendar in file:', &
+                  TRIM(loc_info), &
+                  '  file calendar   = ', TRIM(file_calendar), &
+                  '  assuming model calendar_type = ', TRIM(calendar_type)
+            end if
+         else if (file_cal /= model_cal) then
             if (first_origindate_warning(netcdfid, varid, warn_calendar)) then
                MPI_master_only write (*, '(/1x,A/6x,A/6x,A,A/6x,A,A/)') &
                   'TOOL_ORIGINDATE WARNING: calendar mismatch between file and model:', &
@@ -554,7 +786,7 @@ CONTAINS
             end if
          end if
       else
-         if (TRIM(calendar_type) /= 'gregorian') then
+         if (model_cal /= cal_gregorian) then
             if (first_origindate_warning(netcdfid, varid, warn_calendar)) then
                MPI_master_only write (*, '(/1x,2A,A/6x,A/)') &
                   'TOOL_ORIGINDATE WARNING: no calendar attribute in file,', &
@@ -575,13 +807,33 @@ CONTAINS
             TRIM(loc_info), &
             'origin date read: '//TRIM(date_str), &
             'Time variable must follow Netcdf CF format: ', &
-            '''seconds(days) since YYYY-MM-DD hh:mm:ss''', &
+            '''seconds|minutes|hours|days since YYYY-MM-DD hh:mm:ss''', &
             'You can fix it with, e.g.: ', &
             TRIM(fix_hint)
          call tool_fatal_stop()
       end if
 
+      ! A 'standard' origin date before 1582-10-15 is a Julian date: the
+      ! proleptic Gregorian arithmetic of tool_datosec would shift it
+      ! (and every time value of the file) by up to ~10 days.
+      if (file_is_mixed) then
+         if (before_gregorian_reform(date_str)) then
+            MPI_master_only write (*, '(/1x,A/(6x,A))') &
+               'TOOL_ORIGINDATE ERROR: origin date before 1582-10-15 in a mixed Julian/Gregorian calendar.', &
+               TRIM(loc_info), &
+               'origin date read: '//TRIM(date_str)//', '//TRIM(cal_desc), &
+               'CROCO implements ''standard''/''gregorian'' as proleptic Gregorian,', &
+               'which differs from the CF mixed calendar before 1582-10-15.', &
+               'If the file times are really proleptic Gregorian, declare it with, e.g.:', &
+               '    ncatted -a calendar,'//TRIM(varname)//',o,c,proleptic_gregorian '//TRIM(ncfile), &
+               'Otherwise, rebase the time axis on an origin from 1582-10-15 on, e.g.:', &
+               '    cdo setreftime,1900-01-01,00:00:00 '//TRIM(ncfile)//' out.nc'
+            call tool_fatal_stop()
+         end if
+      end if
+
       date_in_sec = tool_datosec(date_str)
+      IF (PRESENT(secs_per_unit)) secs_per_unit = unit_factor
 
    END SUBROUTINE tool_origindate
 
@@ -590,9 +842,9 @@ CONTAINS
    !! ** Purpose : initialise module-level calendar settings from croco_namelist.
    !!              Must be called once during setup (from init_calendar).
    !!              calendar_type is mandatory and must be one of the
-   !!              calendars this module implements: an unrecognized value
-   !!              is a fatal error rather than a silent fallback to
-   !!              gregorian.
+   !!              calendars this module implements (CF names, case-
+   !!              insensitive): an unrecognized value is a fatal error
+   !!              rather than a silent fallback to gregorian.
 
 #if defined MPI
       USE scalars, ONLY: mynode
@@ -600,18 +852,38 @@ CONTAINS
       IMPLICIT NONE
       CHARACTER(len=*), INTENT(in) :: cal_type, s_date
 
-      SELECT CASE (TRIM(cal_type))
-      CASE ('gregorian', 'standard', '360_day', '365_day', 'no_leap')
-         calendar_type = cal_type
-      CASE DEFAULT
-         MPI_master_only write (*, '(/1x,2A/6x,A/)') &
+      CHARACTER(len=40) :: cal_norm
+
+      model_cal = cf_calendar_id(cal_type)
+
+      IF (model_cal == cal_unknown) THEN
+         MPI_master_only write (*, '(/1x,2A/6x,A/6x,A/)') &
             'INIT_TOOLS_CALENDAR ERROR: ', &
             'unknown ''calendar_type'' in croco_calendar namelist: '''//TRIM(cal_type)//'''.', &
-            'Supported values: ''gregorian'', ''standard'', ''360_day'', ''365_day'', ''no_leap''.'
+            'Supported values: ''gregorian'', ''standard'', ''proleptic_gregorian'', ''360_day'',', &
+            '''noleap'', ''365_day'', ''all_leap'', ''366_day'', ''julian''.'
          call tool_fatal_stop()
-      END SELECT
+      END IF
 
+      cal_norm = normalize_calendar(cal_type)
+      calendar_type = cal_norm(1:20)
       start_date = s_date
+
+      ! Model time axis starts at start_date and only moves forward: a
+      ! start date from 1582-10-15 on is enough for 'standard'/'gregorian'
+      ! to be computed exactly by the proleptic Gregorian arithmetic.
+      IF (is_mixed_gregorian(calendar_type) .AND. LEN_TRIM(s_date) >= 4) THEN
+         IF (before_gregorian_reform(s_date)) THEN
+            MPI_master_only write (*, '(/1x,A/(6x,A))') &
+               'INIT_TOOLS_CALENDAR ERROR: start_date before 1582-10-15 with calendar_type '''// &
+               TRIM(calendar_type)//'''.', &
+               'start_date = '//TRIM(s_date), &
+               'CROCO implements ''standard''/''gregorian'' as proleptic Gregorian,', &
+               'which differs from the CF mixed Julian/Gregorian calendar before 1582-10-15.', &
+               'Use calendar_type = ''proleptic_gregorian'' for such dates.'
+            call tool_fatal_stop()
+         END IF
+      END IF
 
    END SUBROUTINE init_tools_calendar
 

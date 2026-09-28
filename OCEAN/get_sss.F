@@ -61,7 +61,7 @@
           goto 99                                         !--> ERROR
         endif
         call tool_origindate(ncidfrc,sss_tid,
-     &                       sss_origin_date_in_sec)
+     &                       sss_origin_date_in_sec, sss_secinunit)
 
         lvar=lenstr(vname(1,indxSSS))
         ierr=nf_inq_varid (ncidfrc, vname(1,indxSSS)(1:lvar), sss_id)
@@ -128,8 +128,8 @@
           write(stdout,6) 'sss_time', sss_rec
           goto 99                                         !--> ERROR
         endif
-        cff=cff+sss_origin_date_in_sec*sec2day
-        sss_time(i)=cff*day2sec+sss_cycle*sss_ncycle
+        cff=sss_origin_date_in_sec+cff*sss_secinunit
+        sss_time(i)=cff+sss_cycle*sss_ncycle
         if (sss_time(itsss).eq.-1.E+20) sss_time(itsss)=sss_time(i)
 
         if (lsssgrd.eq.1) then
@@ -166,11 +166,11 @@
       MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &              'GET_SSS    --',
      &              'Read SSS and dQdSST fields     for time =',
-     &              tool_sectodat(cff*day2sec)
+     &              tool_sectodat(cff)
 # else
       MPI_master_only write(stdout,'(6x,A,16x,A,1x,A19,1x,I4)')
      &                  'GET_SSS    -- Read SSS fields',
-     &                  'for time =', tool_sectodat(cff*day2sec)
+     &                  'for time =', tool_sectodat(cff)
 # endif
 # ifdef MPI
      &                                                 , mynode

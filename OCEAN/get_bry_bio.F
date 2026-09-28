@@ -628,10 +628,12 @@ c     goto 99                                     !--> ERROR
             endif   !condition on itrc value
           if (itrc.eq.itemp .or. itrc.eq.isalt) then
             call tool_origindate(bry_id,bry_time_id,
-     &                           bryt_origin_date_in_sec(itrc))
+     &                           bryt_origin_date_in_sec(itrc),
+     &                           bryt_secinunit(itrc))
           else
             call tool_origindate(bry_id,bry_tid(itrc),
-     &                           bryt_origin_date_in_sec(itrc))
+     &                           bryt_origin_date_in_sec(itrc),
+     &                           bryt_secinunit(itrc))
           endif
 
           enddo   ! loop on itrc
@@ -753,9 +755,9 @@ c                goto 99         !--> ERROR
               ierr=nf_get_var1_FTYPE
      &          (bry_id, bry_tid(itrc), bry_rec1(itrc), cff)
               if (ierr.eq.nf_noerr) then
-                cff=cff+bryt_origin_date_in_sec(itrc)*sec2day
+                cff=bryt_origin_date_in_sec(itrc)+cff*bryt_secinunit(itrc)
                 itbry1(itrc)=min(3-itbry1(itrc),ntbry1(itrc))
-                bry_time1(itbry1(itrc),itrc)=cff*day2sec +
+                bry_time1(itbry1(itrc),itrc)=cff +
      &            bry_cycle1(itrc)*bry_ncycle1(itrc)
 !
                 ierr_all=0
@@ -796,7 +798,7 @@ c                goto 99         !--> ERROR
                   MPI_master_only  write(stdout,
      &              '(6x,A,9x,A,1x,A19,1x,I4)')
      &              'GET_BRY_BIO    -- Read all boundary data',
-     &              'for time =', tool_sectodat(cff*day2sec)
+     &              'for time =', tool_sectodat(cff)
 # ifdef MPI
      &              , mynode
 # endif

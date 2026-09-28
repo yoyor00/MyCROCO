@@ -53,7 +53,7 @@
           goto 99                                         !--> ERROR
         endif
         call tool_origindate(ncidfrc,srf_tid,
-     &                       srf_origin_date_in_sec)
+     &                       srf_origin_date_in_sec, srf_secinunit)
 
 !
 ! srflx
@@ -136,8 +136,8 @@
           write(stdout,6) 'srf_time', srf_rec
           goto 99                                         !--> ERROR
         endif
-        cff=cff+srf_origin_date_in_sec*sec2day
-        srf_time(i)=cff*day2sec+srf_cycle*srf_ncycle
+        cff=srf_origin_date_in_sec+cff*srf_secinunit
+        srf_time(i)=cff+srf_cycle*srf_ncycle
         if (srf_time(itsrf).eq.-1.E+20) srf_time(itsrf)=srf_time(i)
 !
 ! srflx
@@ -181,7 +181,7 @@
        MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &           'GET_SRFLUX --',
      &           'Read solar shortwave radiation for time =',
-     &           tool_sectodat(cff*day2sec)
+     &           tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif

@@ -16,9 +16,9 @@
 
 #ifndef ANA_BRY
       real bry_time(2)
-      REAL(kind=8) :: bry_origin_date_in_sec
+      REAL(kind=8) :: bry_origin_date_in_sec, bry_secinunit
       common /bry_indices_array/ bry_time,
-     &        bry_origin_date_in_sec
+     &        bry_origin_date_in_sec, bry_secinunit
       real bry_cycle
       common /bry_indices_real/ bry_cycle
       integer bry_id, bry_time_id, bry_ncycle, bry_rec, itbry, ntbry
@@ -27,9 +27,9 @@
 
 # if defined BIOLOGY || defined PISCES
       real bry_time1(2,NT)
-      REAL(kind=8) :: bryt_origin_date_in_sec(NT)
+      REAL(kind=8) :: bryt_origin_date_in_sec(NT), bryt_secinunit(NT)
       common /bry_indices_array1/ bry_time1,
-     &        bryt_origin_date_in_sec
+     &        bryt_origin_date_in_sec, bryt_secinunit
       real bry_cycle1(NT)
       common /bry_indices_real1/ bry_cycle1
       integer bry_tid(NT), bry_ncycle1(NT),
@@ -257,9 +257,9 @@
 #ifdef WKB_WWAVE
 # ifndef ANA_BRY_WKB
       real    brywkb_time(2)
-      REAL(kind=8) :: brywkb_origin_date_in_sec
+      REAL(kind=8) :: brywkb_origin_date_in_sec, brywkb_secinunit
       common /brywkb_indices_array/ brywkb_time,
-     &        brywkb_origin_date_in_sec
+     &        brywkb_origin_date_in_sec, brywkb_secinunit
       real    brywkb_cycle
       common /brywkb_indices_real/ brywkb_cycle
       integer brywkb_id, brywkb_time_id,

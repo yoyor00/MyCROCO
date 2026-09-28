@@ -49,7 +49,6 @@
 !
 !======================================================
 
-      real time_scale
       integer itrc
 #ifdef EXACT_RESTART
       real time_bak
@@ -58,9 +57,8 @@
      &      ,  indxWrk
 #endif
       integer ncid, req_rec, tindx, record, max_rec,
-     &        indx, varid,  ierr, lstr, lvar, latt, lenstr,
+     &        indx, varid,  ierr, lstr, lvar, lenstr,
      &        start(2), count(2), ibuff(6),   nf_fread, checkdims
-      character units*180
 #include "netcdf.inc"
 #define time illegal
 #define tdays illegal
@@ -191,88 +189,61 @@
       if (ierr .eq. nf_noerr) then
         ierr=nf_get_var1_FTYPE (ncid, varid, record, start_time)
         if (ierr .eq. nf_noerr) then
-          ierr=nf_get_att_text(ncid, varid, 'units', units)
-          if (ierr .eq. nf_noerr) then
-            latt=lenstr(units)
-            ! Read origin time from ini file units attribute
-            ! units must have the format
-            ! seconds/days since YYYY-MM-DD hh:mm:ss
-            if (units(1:6).eq.'second') then
-              time_scale=1.
-            elseif (units(1:3).eq.'day') then
-              time_scale=day2sec
-            else
-              MPI_master_only write(stdout,'(/1x,4A/8x,3A/)')
-     &              'GET_INITIAL ',
-     &              'ERROR: unknown units of for variable ''',
-     &                               vname(1,indxTime)(1:lvar), '''',
-     &                   'in netCDF file ''', ininame(1:lstr), '''.'
-              goto 99                                     !--> ERROR
-            endif
-            start_time=start_time*time_scale
-
-
-      call tool_origindate(ncid,varid,origin_date_in_sec)
-      MPI_master_only write(stdout,'(/2x,A,1x,A/)')
-     &    'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
-     &    tool_sectodat(origin_date_in_sec)
-      origin_date=tool_sectodat(origin_date_in_sec)
-      READ(origin_date(1:4),fmt='(i4)') origin_year
-      READ(origin_date(6:7),fmt='(i2)') origin_month
-      READ(origin_date(9:10),fmt='(i2)') origin_day
-      READ(origin_date(12:13),fmt='(i2)') origin_hour
-      READ(origin_date(15:16),fmt='(i2)') origin_minute
-      READ(origin_date(18:19),fmt='(i2)') origin_second
+          call tool_origindate(ncid,varid,origin_date_in_sec,
+     &                         origin_secinunit)
+          start_time=start_time*origin_secinunit
+          MPI_master_only write(stdout,'(/2x,A,1x,A/)')
+     &        'Origin date of time axis (YYYY-MM-DD hh:mm:ss) :',
+     &        tool_sectodat(origin_date_in_sec)
+          origin_date=tool_sectodat(origin_date_in_sec)
+          READ(origin_date(1:4),fmt='(i4)') origin_year
+          READ(origin_date(6:7),fmt='(i2)') origin_month
+          READ(origin_date(9:10),fmt='(i2)') origin_day
+          READ(origin_date(12:13),fmt='(i2)') origin_hour
+          READ(origin_date(15:16),fmt='(i2)') origin_minute
+          READ(origin_date(18:19),fmt='(i2)') origin_second
 
 #ifdef EXACT_RESTART
-            if (tindx.eq.2) then
-              forw_start=0
-              if (record.lt.max_rec) then
-                time_bak=start_time
-                ierr=nf_get_var1_FTYPE (ncid, varid, record+1,
-     &                                             start_time)
-                if (ierr .eq. nf_noerr) then
-                  start_time=start_time*time_scale
+          if (tindx.eq.2) then
+            forw_start=0
+            if (record.lt.max_rec) then
+              time_bak=start_time
+              ierr=nf_get_var1_FTYPE (ncid, varid, record+1,
+     &                                           start_time)
+              if (ierr .eq. nf_noerr) then
+                start_time=start_time*origin_secinunit
 !
 ! Here expression "abs(start_time-time_bak-dt).lt.0.001*dt" below is
 ! a roundoff-error tolerant version of "start_time.eq.time_bak+dt".
 !
-                  if (abs(start_time-time_bak-dt) .lt. 0.001*dt) then
-                    forw_start=1
-                  else
-              MPI_master_only write(stdout,'(/1x,2A,2I4/10x,4A/10x,A/)')
-     &                'WARNING: Exact restart is requested, but ',
-     &                'is not possible: records', record,record+1,
-     &                'in ''',   ininame(1:lstr),   ''' are not ',
-     &                'consecutive time steps ==> proceeding ',
-     &                          'with forward initial time step.'
-                  endif
+                if (abs(start_time-time_bak-dt) .lt. 0.001*dt) then
+                  forw_start=1
                 else
-                  MPI_master_only write(stdout,2)
-     &                       vname(1,indxTime)(1:lvar), record,
-     &                       ininame(1:lstr), nf_strerror(ierr)
-                  goto 99
-
+            MPI_master_only write(stdout,'(/1x,2A,2I4/10x,4A/10x,A/)')
+     &              'WARNING: Exact restart is requested, but ',
+     &              'is not possible: records', record,record+1,
+     &              'in ''',   ininame(1:lstr),   ''' are not ',
+     &              'consecutive time steps ==> proceeding ',
+     &                        'with forward initial time step.'
                 endif
               else
-                MPI_master_only write(stdout,'(/1x,2A/10x,4A,A/)')
-     &                  'WARNING: Exact restart ',
-     &                  'is requested, but is not possible: initial',
-     &                  'file ''',  ininame(1:lstr),  ''' does not ',
-     &                                 'contain sufficient records.'
+                MPI_master_only write(stdout,2)
+     &                     vname(1,indxTime)(1:lvar), record,
+     &                     ininame(1:lstr), nf_strerror(ierr)
+                goto 99
+
               endif
-              if (forw_start.ne.1) return
-              forw_start=0
+            else
+              MPI_master_only write(stdout,'(/1x,2A/10x,4A,A/)')
+     &                'WARNING: Exact restart ',
+     &                'is requested, but is not possible: initial',
+     &                'file ''',  ininame(1:lstr),  ''' does not ',
+     &                               'contain sufficient records.'
             endif
-#endif
-          else
-            MPI_master_only write (stdout,'(/1x,2A/8x,5A/)')
-     &             'GET_INITIAL ERROR: ',
-     &             'cannot read attribute ''units'' for variable',
-     &             '''', vname(1,indxTime)(1:lvar),
-     &             ''' in netCDF file ''',  ininame(1:lstr), '''.'
-            goto 99                                       !--> ERROR
+            if (forw_start.ne.1) return
+            forw_start=0
           endif
+#endif
         else
           MPI_master_only write(stdout,2) vname(1,indxTime)(1:lvar)
      &                                , record, ininame(1:lstr)

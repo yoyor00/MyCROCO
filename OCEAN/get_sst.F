@@ -62,7 +62,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
         call tool_origindate(ncidfrc,sst_tid,
-     &                       sst_origin_date_in_sec)
+     &                       sst_origin_date_in_sec, sst_secinunit)
 
         lvar=lenstr(vname(1,indxSST))
         ierr=nf_inq_varid (ncidfrc, vname(1,indxSST)(1:lvar), sst_id)
@@ -125,9 +125,9 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           write(stdout,6) 'sst_time', sst_rec
           goto 99                                         !--> ERROR
         endif
-        cff=cff+sst_origin_date_in_sec*sec2day
+        cff=sst_origin_date_in_sec+cff*sst_secinunit
 
-        sst_time(i)=cff*day2sec+sst_cycle*sst_ncycle
+        sst_time(i)=cff+sst_cycle*sst_ncycle
         if (sst_time(itsst).eq.-1.E+20) sst_time(itsst)=sst_time(i)
 
         if (lsstgrd.eq.1) then
@@ -161,7 +161,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
        MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &              'GET_SST    --',
      &              'Read SST and dQdSST fields     for time =',
-     &              tool_sectodat(cff*day2sec)
+     &              tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif

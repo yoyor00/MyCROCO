@@ -719,7 +719,8 @@ C     R          write(*,*)'indxTsrc+itrc-1=',indxTsrc+itrc-1
 C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
           if (got_tsrc(itrc)) then
             call tool_origindate(ncidqbar,tsrc_tid(itrc),
-     &                       tsrc_origin_date_in_sec(itrc))
+     &                       tsrc_origin_date_in_sec(itrc),
+     &                       tsrc_secinunit(itrc))
             lvar=lenstr(vname(1,indxTsrc+itrc-1))
             ierr=nf_inq_varid (ncidqbar,vname(1,indxTsrc+itrc-1)
      &           (1:lvar),tsrc_id(itrc))
@@ -785,13 +786,13 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
 
           ierr=nf_get_var1_FTYPE (ncidqbar, tsrc_tid(itrc),
      &         tsrc_rec(itrc),  cff)
-        cff=cff+tsrc_origin_date_in_sec(itrc)*sec2day
+        cff=tsrc_origin_date_in_sec(itrc)+cff*tsrc_secinunit(itrc)
 
           if (ierr .ne. nf_noerr) then
             write(stdout,6) 'Xtsrc_time', tsrc_rec(itrc)
             goto 99             !--> ERROR   ??
           endif
-          tsrc_time(i,itrc)=cff*day2sec+tsrc_cycle(itrc)*
+          tsrc_time(i,itrc)=cff+tsrc_cycle(itrc)*
      &         tsrc_ncycle(itrc)
           if (tsrc_time(ittsrc(itrc),itrc).eq.-1.E+20) then
             tsrc_time(ittsrc(itrc),itrc)=tsrc_time(i,itrc)
@@ -806,7 +807,7 @@ C     R          write(*,*)'vname(...)=',vname(1,indxTsrc+itrc-1)
           MPI_master_only write(stdout,
      &         '(6x,A,2x,I2,1x,A,1x,A19,1x,I4)')
      &         'GET_PSOURCE_TS -- Read conc fields of tracer ',itrc,
-     &         'for time =', tool_sectodat(cff*day2sec)
+     &         'for time =', tool_sectodat(cff)
 # ifdef MPI
      &         , mynode
 # endif

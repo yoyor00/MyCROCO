@@ -59,7 +59,7 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
           goto 99                                         !--> ERROR
         endif
         call tool_origindate(ncidqbar,qbar_tid,
-     &                       qbar_origin_date_in_sec)
+     &                       qbar_origin_date_in_sec, qbar_secinunit)
 
 !
 ! River flow
@@ -111,8 +111,8 @@ c*        if (may_day_flag.ne.0) return    !-->  EXIT
         write(stdout,6) 'qbar_time', qbar_rec
         goto 99                 !--> ERROR
       endif
-        cff=cff+qbar_origin_date_in_sec*sec2day
-      qbar_time(i)=cff*day2sec+qbar_cycle*qbar_ncycle
+        cff=qbar_origin_date_in_sec+cff*qbar_secinunit
+      qbar_time(i)=cff+qbar_cycle*qbar_ncycle
       if (qbar_time(itqbar).eq.-1.E+20) qbar_time(itqbar)=qbar_time(i)
 
       s=(/ qbar_rec,1 /)
@@ -130,7 +130,7 @@ CR      write(*,*)'cff',cff,' qbar_rec',qbar_rec,' qbarg(:)',qbarg(1,:)
       MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &     'GET_PSOURCE --',
      &     'Read Run-off flow fields      for time =',
-     &     tool_sectodat(cff*day2sec)
+     &     tool_sectodat(cff)
 !      OPEN(UNIT=114,file='roms_runoff.out',FORM='FORMATTED',
 !     &      access='append',status='OLD')
 !      WRITE(114,FMT=110)cff,qbar_rec,(qbarg(is,i),is=1,Nsrc)

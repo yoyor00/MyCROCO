@@ -63,7 +63,8 @@ c**        call opencdf (btfname,N)
 # endif
         endif
         call tool_origindate(ncidbtf,btf_tid(itrc),
-     &                       btf_origin_date_in_sec(itrc))
+     &                       btf_origin_date_in_sec(itrc),
+     &                       btf_secinunit(itrc))
         lvar=lenstr(vname(1,indxBhflx+itrc-1))
         ierr=nf_inq_varid (ncidbtf, vname(1,indxBhflx+itrc-1),
      &                                          btf_id(itrc))
@@ -126,12 +127,12 @@ c**        call opencdf (btfname,N)
 
         ierr=nf_get_var1_FTYPE(ncidbtf, btf_tid(itrc),
      &                             btf_rec(itrc), cff)
-        cff=cff+btf_origin_date_in_sec(itrc)*sec2day
+        cff=btf_origin_date_in_sec(itrc)+cff*btf_secinunit(itrc)
         if (ierr .ne. nf_noerr) then
           write(stdout,6) 'btf_time', btf_rec(i)
           goto 99                                         !--> ERROR
         endif
-        btf_time(i,itrc)=cff*day2sec+btf_cycle(itrc)*btf_ncycle(itrc)
+        btf_time(i,itrc)=cff+btf_cycle(itrc)*btf_ncycle(itrc)
         if (btf_time(itbtf(itrc),itrc).eq.-1.E+20)
      &      btf_time(itbtf(itrc),itrc)=btf_time(i,itrc)
 
@@ -150,7 +151,7 @@ c**        call opencdf (btfname,N)
        MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,A19,1x,I4)')
      &            'GET_BTFLUX -- Read surface flux of tracer', itrc,
      &                                             'for time =',
-     &            tool_sectodat(cff*day2sec)
+     &            tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif

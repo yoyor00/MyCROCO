@@ -57,7 +57,8 @@ c**        call opencdf (frcname,N)
             goto 99                                       !--> ERROR
           endif
           call tool_origindate(ncidfrc,stf_tid(itrc),
-     &                         stf_origin_date_in_sec(itrc))
+     &                         stf_origin_date_in_sec(itrc),
+     &                         stf_secinunit(itrc))
         endif
 # endif
 # ifdef SALINITY
@@ -68,7 +69,8 @@ c**        call opencdf (frcname,N)
             goto 99                                       !--> ERROR
           endif
           call tool_origindate(ncidfrc,stf_tid(itrc),
-     &                         stf_origin_date_in_sec(itrc))
+     &                         stf_origin_date_in_sec(itrc),
+     &                         stf_secinunit(itrc))
         endif
 # endif
         lvar=lenstr(vname(1,indxShflx+itrc-1))
@@ -138,8 +140,8 @@ c**        call opencdf (frcname,N)
           write(stdout,6) 'stf_time', stf_rec(i)
           goto 99                                         !--> ERROR
         endif
-        cff=cff+stf_origin_date_in_sec(itrc)*sec2day
-        stf_time(i,itrc)=cff*day2sec+stf_cycle(itrc)*stf_ncycle(itrc)
+        cff=stf_origin_date_in_sec(itrc)+cff*stf_secinunit(itrc)
+        stf_time(i,itrc)=cff+stf_cycle(itrc)*stf_ncycle(itrc)
         if (stf_time(itstf(itrc),itrc).eq.-1.E+20)
      &      stf_time(itstf(itrc),itrc)=stf_time(i,itrc)
 
@@ -161,7 +163,7 @@ c**        call opencdf (frcname,N)
        MPI_master_only write(stdout,'(6x,A,1x,I2,1x,A,1x,A19,1x,I4)')
      &            'GET_STFLUX -- Read surface flux of tracer', itrc,
      &                                             'for time =',
-     &            tool_sectodat(cff*day2sec)
+     &            tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif

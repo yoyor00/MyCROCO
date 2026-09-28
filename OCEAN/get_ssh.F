@@ -52,7 +52,7 @@
           goto 99                                         !--> ERROR
         endif
         call tool_origindate(ncidclm,ssh_tid,
-     &                       ssh_origin_date_in_sec)
+     &                       ssh_origin_date_in_sec, ssh_secinunit)
 
         lvar=lenstr(vname(1,indxSSH))
         ierr=nf_inq_varid (ncidclm, vname(1,indxSSH)(1:lvar), ssh_id)
@@ -94,9 +94,9 @@
           write(stdout,6) 'ssh_time', ssh_rec
           goto 99                                         !--> ERROR
         endif
-        cff=cff+ssh_origin_date_in_sec*sec2day
+        cff=ssh_origin_date_in_sec+cff*ssh_secinunit
 
-        ssh_time(i)=cff*day2sec+ssh_cycle*ssh_ncycle
+        ssh_time(i)=cff+ssh_cycle*ssh_ncycle
         if (ssh_time(itssh).eq.-1.E+20) ssh_time(itssh)=ssh_time(i)
 
         ierr=nf_fread(sshg(START_2D_ARRAY,i), ncidclm, ssh_id,
@@ -111,7 +111,7 @@
 !!     MPI_master_only write(stdout,2) cff
         MPI_master_only write(stdout,'(6x,A,1x,A19,1x,I4)')
      &       'GET_SSH -- Read SSH climatology      for time =',
-     &       tool_sectodat(cff*day2sec)
+     &       tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 #endif

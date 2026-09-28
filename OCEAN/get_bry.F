@@ -55,7 +55,7 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'bry_time'
           ierr_all=ierr_all+ierr
           call tool_origindate(bry_id,bry_time_id,
-     &                         bry_origin_date_in_sec)
+     &                         bry_origin_date_in_sec, bry_secinunit)
 
 # ifdef OBC_WEST
 #  ifdef Z_FRC_BRY
@@ -233,9 +233,9 @@
         if (ierr.eq.nf_noerr) then
           ierr=nf_get_var1_FTYPE (bry_id, bry_time_id, bry_rec, cff)
           if (ierr.eq.nf_noerr) then
-              cff=cff+bry_origin_date_in_sec*sec2day
+              cff=bry_origin_date_in_sec+cff*bry_secinunit
             itbry=min(3-itbry,ntbry)
-            bry_time(itbry)=cff*day2sec + bry_cycle*bry_ncycle
+            bry_time(itbry)=cff + bry_cycle*bry_ncycle
             ierr_all=0
 # ifdef OBC_WEST
 #  ifdef Z_FRC_BRY
@@ -457,7 +457,7 @@
             if (ierr.eq.0) then
               MPI_master_only write(stdout,'(6x,A,9x,A,1x,A19,1x,I4)')
      &       'GET_BRY    -- Read all boundary data',
-     &                                 'for time =', tool_sectodat(cff*day2sec)
+     &                                 'for time =', tool_sectodat(cff)
 # ifdef MPI
      &                                             , mynode
 # endif

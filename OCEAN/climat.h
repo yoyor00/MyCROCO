@@ -36,8 +36,9 @@
       real    ssh_time(2)
       real    ssh_cycle
       integer itssh, ssh_ncycle, ssh_rec, ssh_tid, ssh_id
-      REAL(kind=8) :: ssh_origin_date_in_sec
-      common /climat_zdat1/ ssh_time, ssh_origin_date_in_sec
+      REAL(kind=8) :: ssh_origin_date_in_sec, ssh_secinunit
+      common /climat_zdat1/ ssh_time, ssh_origin_date_in_sec,
+     &                      ssh_secinunit
       common /climat_zdat2/ ssh_cycle
       common /climat_zdat3/
      &        itssh, ssh_ncycle, ssh_rec, ssh_tid, ssh_id
@@ -75,12 +76,13 @@
       integer ittclm(NT), tclm_ncycle(NT), tclm_rec(NT),
      &        tclm_tid(NT), tclm_id(NT)
       logical got_tclm(NT)
-      REAL(kind=8) :: tclm_origin_date_in_sec(NT)
+      REAL(kind=8) :: tclm_origin_date_in_sec(NT), tclm_secinunit(NT)
       common /climat_tdat/  tclm_time,       tclm_cycle,
      &        ittclm,       tclm_ncycle,     tclm_rec,
      &                      tclm_tid,        tclm_id,
      &                                       got_tclm,
-     &                        tclm_origin_date_in_sec
+     &                        tclm_origin_date_in_sec,
+     &                        tclm_secinunit
 
 #   undef TCLIMA_DATA
 #  endif /* !ANA_TCLIMA */
@@ -139,8 +141,9 @@
       real     uclm_cycle
       integer ituclm, uclm_ncycle, uclm_rec, uclm_tid,
      &        ubclm_id, vbclm_id, uclm_id, vclm_id
-      REAL(kind=8) :: uclm_origin_date_in_sec
-      common /climat_udat1/  uclm_time, uclm_origin_date_in_sec
+      REAL(kind=8) :: uclm_origin_date_in_sec, uclm_secinunit
+      common /climat_udat1/  uclm_time, uclm_origin_date_in_sec,
+     &                       uclm_secinunit
       common /climat_udat2/  uclm_cycle
       common /climat_udat3/
      &             ituclm,   uclm_ncycle, uclm_rec,

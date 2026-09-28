@@ -190,9 +190,11 @@
 !
 ! Get origin date
           call tool_origindate(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id),
-     &                          blkO_origin_date_in_sec)
-          bulkstart=bulkstart+blkO_origin_date_in_sec*sec2day
-          bulkend=bulkend+blkO_origin_date_in_sec*sec2day
+     &                          blkO_origin_date_in_sec, blkO_secinunit)
+          bulkstart=bulkstart*blkO_secinunit*sec2day
+     &                       +blkO_origin_date_in_sec*sec2day
+          bulkend=bulkend*blkO_secinunit*sec2day
+     &                   +blkO_origin_date_in_sec*sec2day
 !
 ! Length of time vector in seconds
 !
@@ -297,8 +299,8 @@
 !
 ! Get origin date
           call tool_origindate(ncidbulkO(blkvar_id), bulk_tidO(blkvar_id),
-     &                          blkO_origin_date_in_sec)
-          daycfsr=daycfsr+blkO_origin_date_in_sec*sec2day
+     &                          blkO_origin_date_in_sec, blkO_secinunit)
+          daycfsr=blkO_origin_date_in_sec*sec2day+daycfsr*blkO_secinunit*sec2day
 !
 ! Computation of the time in seconds for time interpolation
 !

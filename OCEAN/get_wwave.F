@@ -63,7 +63,7 @@
           goto 99                                         !--> ERROR
         endif
         call tool_origindate(ncidwave,ww_tid,
-     &                       ww_origin_date_in_sec)
+     &                       ww_origin_date_in_sec, ww_secinunit)
 
 # ifndef MUSTANG
         ncidfrc=ncidwave
@@ -263,8 +263,8 @@
         write(stdout,6) 'wwv_time', ww_rec
         goto 99                                         !--> ERROR
       endif
-        cff=cff+ww_origin_date_in_sec*sec2day
-      wwv_time(i)=cff*day2sec+ww_cycle*ww_ncycle
+        cff=ww_origin_date_in_sec+cff*ww_secinunit
+      wwv_time(i)=cff+ww_cycle*ww_ncycle
       if (wwv_time(itww).eq.-1.E+20) wwv_time(itww)=wwv_time(i)
 
 ! Read wave amplitude
@@ -398,7 +398,7 @@
       itww=i
       MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &  'GET_WWAVE --','Read wind wave input data for time =',
-     &  tool_sectodat(cff*day2sec)
+     &  tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif

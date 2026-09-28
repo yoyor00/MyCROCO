@@ -55,7 +55,8 @@
           if (ierr.ne.nf_noerr) write(stdout,1) 'brywkb_time'
           ierr_all=ierr_all+ierr
           call tool_origindate(brywkb_id,brywkb_time_id,
-     &                           brywkb_origin_date_in_sec)
+     &                           brywkb_origin_date_in_sec,
+     &                           brywkb_secinunit)
 # ifdef WKB_OBC_WEST
           ierr=nf_inq_varid (brywkb_id, 'wac_west', wacbry_west_id)
           if (ierr.ne.nf_noerr) write(stdout,1) 'wac_west'
@@ -125,9 +126,9 @@
         if (ierr.eq.nf_noerr) then
           ierr=nf_get_var1_FTYPE (brywkb_id, brywkb_time_id, brywkb_rec, cff)
           if (ierr.eq.nf_noerr) then
-            cff=cff+brywkb_origin_date_in_sec*sec2day
+            cff=brywkb_origin_date_in_sec+cff*brywkb_secinunit
             itbrywkb=min(3-itbrywkb,ntbrywkb)
-            brywkb_time(itbrywkb)=cff*day2sec + brywkb_cycle*brywkb_ncycle
+            brywkb_time(itbrywkb)=cff + brywkb_cycle*brywkb_ncycle
 # ifdef SEDIMENT
             brywkb_time(itbrywkb)=brywkb_time(itbrywkb)/morph_fac
 # endif
@@ -192,7 +193,7 @@
             if (ierr.eq.0) then
               write(stdout,'(6x,A,9x,A,1x,A19,1x,I4)')
      &       'GET_BRY_WKB - Read wave boundary data',
-     &                                  'for time =', tool_sectodat(cff*day2sec)
+     &                                  'for time =', tool_sectodat(cff)
 # ifdef MPI
      &                                              , mynode
 # endif

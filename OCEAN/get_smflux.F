@@ -52,7 +52,7 @@ c**        call opencdf (frcname,N)
           goto 99                                         !--> ERROR
         endif
         call tool_origindate(ncidfrc,sms_tid,
-     &                       sms_origin_date_in_sec)
+     &                       sms_origin_date_in_sec, sms_secinunit)
         lvar=lenstr(vname(1,indxSUSTR))
         ierr=nf_inq_varid (ncidfrc,vname(1,indxSUSTR)(1:lvar),susid)
         if (ierr .eq. nf_noerr) then
@@ -122,8 +122,8 @@ c**        call opencdf (frcname,N)
           write(stdout,6) 'sms_time', sms_rec
           goto 99                                         !--> ERROR
         endif
-        cff=cff+sms_origin_date_in_sec*sec2day
-        sms_time(i)=cff*day2sec+sms_cycle*sms_ncycle
+        cff=sms_origin_date_in_sec+cff*sms_secinunit
+        sms_time(i)=cff+sms_cycle*sms_ncycle
         if (sms_time(itsms).eq.-1.E+20) sms_time(itsms)=sms_time(i)
 
         if (lsusgrd.eq.1) then
@@ -172,7 +172,7 @@ c**        call opencdf (frcname,N)
        MPI_master_only write(stdout,'(6x,A,1x,A,1x,A19,1x,I4)')
      &              'GET_SMFLUX --',
      &              'Read surface momentum stresses for time =',
-     &              tool_sectodat(cff*day2sec)
+     &              tool_sectodat(cff)
 # ifdef MPI
      &                                                      , mynode
 # endif
