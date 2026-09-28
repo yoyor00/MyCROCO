@@ -71,15 +71,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   single Fortran module `tools_calendar.F90`, which:
     - provides explicit interfaces (eliminates scattered `character*19 tool_sectodat`
       external declarations in all `get_*.F` forcing readers);
-    - fixes an AGRIF wrapper compilation failure caused by `rlg` scoping in
-      auto-generated `tooldatosec.F90`;
     - extends `tool_datetosec` to support all calendar types (was Gregorian-only);
-    - uses `use netcdf` / `nf90_*` API in `tool_origindate` (was `netcdf.inc`);
     - renames all French variable names to English throughout in this module.
   All `get_*.F` forcing readers now log dates as `yyyy-mm-dd hh:mm:ss` strings
   (was raw floating-point days since origin).
-  Remove unused variable `time_mars` 
-  Fix typo "writting" in log messages.
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
