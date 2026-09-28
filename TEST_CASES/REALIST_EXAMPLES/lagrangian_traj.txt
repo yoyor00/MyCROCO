@@ -24,12 +24,25 @@
 	dtsave_traj = 1.d0 /
 :
 :-----------------------------------------------------------------------------
+: namrestart     RESTART SETTINGS
+:-----------------------------------------------------------------------------
+:
+: particle_restart : if true, restore Lagrangian particles from the last time step
+:                    stored in the particle restart files, including DEB-IBM
+:                    properties when FOIL is enabled
+:
+:-----------------------------------------------------------------------------
+:
+ &namrestart
+      particle_restart = .false. /
+:
+:-----------------------------------------------------------------------------
 : namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
 :-----------------------------------------------------------------------------
-: 
+:
 : hadv : if FALSE, particles will not be transported in the horizontal
-: 			direction, neither advection nor diffusion. 
-:			Usefull for some configuration (ex : 3D-1DV, but also 
+: 			direction, neither advection nor diffusion.
+:			Usefull for some configuration (ex : 3D-1DV, but also
 :			for some biological stages of the IBM)
 : dtz   : time step (s) used by the vertical random-walk subloop
 :         A value of a few seconds helps prevent particle accumulation in
