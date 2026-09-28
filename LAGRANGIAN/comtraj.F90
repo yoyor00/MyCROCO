@@ -198,10 +198,9 @@ MODULE comtraj
                                                              ! trajectories are reproducible across MPI decompositions.
                                                              ! If .FALSE. (default), uses the compiler's intrinsic
                                                              ! RANDOM_NUMBER stream (faster, but decomposition-dependent).
+   LOGICAL, PUBLIC          :: particle_restart              ! Logical for lagrangian/ibm restart
 
 #ifdef FOIL
-   LOGICAL, PUBLIC          :: ibm_restart                  ! Logical for ibm restart
-
    INTEGER, DIMENSION(nb_species), PUBLIC  :: duration                   ! Duree de vie des individus selon leur espece
    ! namibmdeb namelist parameters from paraibm
    LOGICAL, PUBLIC          :: debuse, F_Fix, frac_deb_death

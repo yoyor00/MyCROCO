@@ -4,20 +4,6 @@
 :=============================================================================
 :
 :-----------------------------------------------------------------------------
-: namibmrestart     RESTART SETTINGS
-:-----------------------------------------------------------------------------
-:
-: ibm_restart : if true, initialize particle properties from restart files
-: ibm_l_time  : if true, resume from the time stored in the restart file;
-:               otherwise, use the configured patch start time
-:
-:-----------------------------------------------------------------------------
-:
- &namibmrestart
-      ibm_restart = .false.
-      ibm_l_time  = .false. /
-:
-:-----------------------------------------------------------------------------
 : namibmmove         MOVEMENT SETTINGS
 :-----------------------------------------------------------------------------
 :

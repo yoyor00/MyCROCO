@@ -25,6 +25,19 @@
 	dtsave_traj = 1.d0 /
 :
 :-----------------------------------------------------------------------------
+: namrestart     RESTART SETTINGS
+:-----------------------------------------------------------------------------
+:
+: particle_restart : if true, restore Lagrangian particles from the last time step
+:                    stored in the particle restart files, including DEB-IBM
+:                    properties when FOIL is enabled
+:
+:-----------------------------------------------------------------------------
+:
+ &namrestart
+      particle_restart = .false. /
+:
+:-----------------------------------------------------------------------------
 : namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
 :-----------------------------------------------------------------------------
 :

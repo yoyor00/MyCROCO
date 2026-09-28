@@ -107,7 +107,7 @@ CONTAINS
 
       ! Import variables
       USE comtraj, ONLY: iscreenlog
-      USE comtraj, ONLY: type_particle, type_patch, patches, ibm_restart, dtsave_traj
+      USE comtraj, ONLY: type_particle, type_patch, patches, particle_restart, dtsave_traj
       USE comtraj, ONLY: debuse, F_Fix, ffix, file_food, file_NBSS, frac_deb_death, &
                          fileanchovy, filesardine, fileprobadistrib_anc, nbSizeClass_anc, &
                          sizemin_anc, fileprobadistrib_sar, nbSizeClass_sar, sizemin_sar, &
@@ -124,7 +124,6 @@ CONTAINS
       INTEGER :: idimt ! Read last time in restart file
       INTEGER :: num ! For restart loop to keep good num info
 
-      LOGICAL :: ibm_l_time ! From paraibm in namibmrestart namelist, restart info
       LOGICAL :: found_yearref, found_t_spawn
       LOGICAL :: found_hmove
 
@@ -149,7 +148,6 @@ CONTAINS
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: hmove_nc
 
       ! Definition of namelists in paraibm
-      NAMELIST /namibmrestart/ ibm_restart, ibm_l_time
       NAMELIST /namibmmove/ w_max, alpha_w, adult_move
       NAMELIST /namibmpop/ repro, dt_spawn, max_part, duration_ibm_anc, duration_ibm_sar, &
          fish_mort, fishing_strategy, multiplier_tac, density_dependent
@@ -165,7 +163,6 @@ CONTAINS
       !--------------------------
       lstr = lenstr(foilname)
       OPEN (50, file=foilname(1:lstr), status='old', form='formatted', access='sequential')
-      READ (50, namibmrestart)
       READ (50, namibmmove)
       READ (50, namibmpop)
       READ (50, namibmdeb)
@@ -186,7 +183,7 @@ CONTAINS
 
       CALL tool_decompdate(tool_sectodat(time), current_day, mm_clock, current_year, hh, minu, sec)
 
-      IF (.NOT. ibm_restart) THEN
+      IF (.NOT. particle_restart) THEN
 #ifdef MPI
          IF (mynode == 0) THEN
             current_run_id = generate_run_id()
@@ -204,14 +201,14 @@ CONTAINS
          ! Init patch general data
          patch%dt_spawn = dt_spawn*3600.0_rlg
 
-         IF (.NOT. ibm_restart) THEN
+         IF (.NOT. particle_restart) THEN
             patch%yearref = current_year - 1
             patch%t_spawn = patch%t_beg
          END IF
 
          ! -------------------------
          ! --- Restart
-         IF (ibm_restart) THEN
+         IF (particle_restart) THEN
             file_inp = trim(patch%file_inp)
 
             ! nb_part_nc = patch%nb_part_total ! denis
@@ -318,11 +315,10 @@ CONTAINS
             DEALLOCATE (age_nc, AgeClass_nc, num_nc, hmove_nc)
 
             ! update the date of restart, and savetraj is delayed not to have twice same time step in output
-            IF (ibm_l_time) THEN
-               !    CALL ionc4_read_time(trim(file_inp), 1, patch%t_beg)
-               CALL ionc4_read_time(trim(file_inp), idimt, patch%t_beg)
-               patch%t_save = patch%t_beg + dtsave_traj*3600.0_rlg
-            END IF
+            ! CALL ionc4_read_time(trim(file_inp), 1, patch%t_beg)
+            CALL ionc4_read_time(trim(file_inp), idimt, patch%t_beg)
+            patch%t_save = patch%t_beg + dtsave_traj*3600.0_rlg
+               
             IF (.NOT. found_t_spawn) THEN
                patch%t_spawn = patch%t_beg
                IF (patch%dt_spawn > 0.0_rlg) THEN
@@ -357,7 +353,7 @@ CONTAINS
       duration = (/duration_ibm_anc, duration_ibm_sar/) ! Store in one variable life expectancy for both species
 
       ! No need of loop to initialize DEB parameters
-      IF (debuse) CALL deb_init(ibm_restart)      ! Init DEB
+      IF (debuse) CALL deb_init(particle_restart)      ! Init DEB
       IF (adult_move) CALL fish_move_init(Istr, Iend, Jstr, Jend)    ! Init fish_move module
 
       yearclass = current_year + 1                ! Init yearclass to update fish's Ageclass
@@ -371,7 +367,7 @@ CONTAINS
          spawn = .false.
 
          ! A current-year patch means that the first spawning event already occurred.
-         IF (ibm_restart) THEN
+         IF (particle_restart) THEN
             patch => patches%first
             DO n = 1, patches%nb
                IF (patch%yearref == current_year) THEN
