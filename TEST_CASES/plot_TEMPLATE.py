@@ -73,8 +73,6 @@ y = nc.variables["y_rho"][:] / 1000.0  # km
 theta_s = float(nc.theta_s)
 theta_b = float(nc.theta_b)
 N = len(nc.dimensions["s_rho"])
-vtrans_var = nc.variables.get("Vtransform", None)
-vtransform = int(np.squeeze(vtrans_var[:])) if vtrans_var is not None else 2
 hc_var = nc.variables.get("hc", None)
 hc = float(hc_var[:]) if hc_var is not None else float(nc.hc)
 
@@ -86,7 +84,7 @@ temp = nc.variables["temp"][tndx, -1, :, :]  # surface T
 # Optional: vertical section at mid-domain
 # j_sec = h.shape[0] // 2
 # zeta_sec = np.zeros_like(h)
-# zr = cr.zlevs(h, zeta_sec, theta_s, theta_b, hc, N, "r", vtransform)
+# zr = cr.zlevs(h, zeta_sec, theta_s, theta_b, hc, N, "r")
 # temp_sec = nc.variables["temp"][tndx, :, j_sec, :]
 # z_sec = zr[:, j_sec, :]
 # x_sec = x[j_sec, :]

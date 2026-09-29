@@ -66,7 +66,7 @@ for i, tndx in enumerate(args.tindex):
     temp[temp == 0] = np.nan
 
     # Compute depth
-    zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)
+    zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
     zr = np.squeeze(zr[:, 1, :])
     xr = np.tile(x, (N, 1))
 
@@ -94,7 +94,7 @@ if args.makepng:
         zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
         temp = np.squeeze(nc.variables["temp"][tndx, :, 1, :])
         temp[temp == 0] = np.nan
-        zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 2)
+        zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
         zr = np.squeeze(zr[:, 1, :])
         xr_loop = np.tile(x, (N, 1))
 

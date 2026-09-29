@@ -215,7 +215,8 @@
 ! and "hc" (written as global attributes).
 !
       ierr=nf_put_att_text (ncid, nf_global, 'VertCoordType',3,'NEW')
-      ierr=nf_put_att_text (ncid, nf_global, 'Vtransform',1, '2')
+      ierr=nf_put_att_FTYPE(ncid, nf_global, 'Vtransform', nf_ftype,
+     &                                                 1, Vtransform)
 # ifdef LMD_SKPP2005
       ierr=nf_put_att_text (ncid, nf_global, 'skpp',4,'2005')
 # endif

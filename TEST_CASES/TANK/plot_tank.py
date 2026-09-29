@@ -161,8 +161,8 @@ zw0 = np.zeros((tindex + 1, N + 1, L))
 
 for i in range(tindex + 1):
     zeta0 = np.squeeze(nc.variables["zeta"][i, args.yindex, :])
-    zr0[i, :, :] = np.squeeze(cr.zlevs(hr, zeta0, theta_s, theta_b, hc, N, "r", 2))
-    zw0[i, :, :] = np.squeeze(cr.zlevs(hr, zeta0, theta_s, theta_b, hc, N, "w", 2))
+    zr0[i, :, :] = np.squeeze(cr.zlevs(hr, zeta0, theta_s, theta_b, hc, N, "r"))
+    zw0[i, :, :] = np.squeeze(cr.zlevs(hr, zeta0, theta_s, theta_b, hc, N, "w"))
 
 zru0 = 0.5 * (zr0[:, :, :-1] + zr0[:, :, 1:])
 
@@ -288,9 +288,9 @@ for t in range(tstr, tend + 1):
 
     # Vertical grid
     zeta = np.squeeze(nc.variables["zeta"][t, args.yindex, :])
-    zr = np.squeeze(cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "r", 2))
+    zr = np.squeeze(cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "r"))
     zru = 0.5 * (zr[:, :-1] + zr[:, 1:])
-    zw = np.squeeze(cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "w", 2))
+    zw = np.squeeze(cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "w"))
     zwu = 0.5 * (zw[:, :-1] + zw[:, 1:])
 
     xr2d = np.tile(xr, (N, 1))

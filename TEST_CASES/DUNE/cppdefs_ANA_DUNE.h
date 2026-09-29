@@ -4,7 +4,6 @@
 # undef  MPI
 # define M2FILTER_NONE
 # define UV_ADV
-# define NEW_S_COORD
 # undef  UV_COR
 # define SOLVE3D
 # define ANA_GRID

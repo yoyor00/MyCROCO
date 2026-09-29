@@ -18,7 +18,6 @@
 # define W_VADV_WENO5
 # define GLS_MIXING_3D
 # define GLS_KOMEGA
-# define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX

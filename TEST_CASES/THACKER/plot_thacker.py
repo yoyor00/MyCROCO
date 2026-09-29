@@ -170,7 +170,7 @@ if is_2dv:
     # Vertical section: U error
     u_num = np.squeeze(nc.variables["u"][tindex, :, j0, :])
     zeta_for_z = np.squeeze(nc.variables["zeta"][tindex, j0, :])
-    zr = cr.zlevs(hr_1d, zeta_for_z, theta_s, theta_b, hc, N, "r", 2)
+    zr = cr.zlevs(hr_1d, zeta_for_z, theta_s, theta_b, hc, N, "r")
 
     u_ana_val = u_analytical(time_val, omega)
     u_ana_2d = np.full_like(u_num, u_ana_val)
@@ -387,7 +387,7 @@ else:
     zeta_sec_ana[zeta_sec_ana < -hr_1d] = np.nan
 
     # Vertical grid along section
-    zr_sec = cr.zlevs(hr_1d, zeta_sec_for_z, theta_s, theta_b, hc, N, "r", 2)
+    zr_sec = cr.zlevs(hr_1d, zeta_sec_for_z, theta_s, theta_b, hc, N, "r")
 
     # U velocity along section
     u_sec = np.squeeze(nc.variables["u"][tindex, :, j0, :])

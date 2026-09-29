@@ -25,8 +25,11 @@
 # include "scalars.h"
 # include "ncscrum.h"
 # include "climat.h"
+      character*180 transf
       real cff
-      integer i, lstr,lvar,lenstr, ierr, nf_fread, advance_cycle
+      integer i, lstr,lvar,lenstr, ierr, nf_fread, advance_cycle,
+     &        varid, vtransform_value, vt_rec, ierr_vt
+      logical  old_vt
 # include "netcdf.inc"
 !
 ! Initialization: Inquire about the contents of climatological file:
@@ -37,14 +40,45 @@
         lstr=lenstr(clmname)
 !
 ! If not opened yet, open climatological file for reading.
-! Check for availability of tracer climatology foelds in input
+! Check for availability of tracer climatology fields in input
 ! netCDF file and save their IDs. Signal to terminate, if not found.
 !
         if (ncidclm.eq.-1) then
           ierr=nf_open (clmname(1:lstr), nf_nowrite, ncidclm)
           if (ierr .ne. nf_noerr) goto 4                !--> ERROR
         endif
-
+!
+! Check the vertical s-coordinate transformation used to create
+! the boundary file: stop if VertCoordType=OLD or Vtransform=1.
+! If neither VertCoordType nor Vtransform is present, the file is
+! assumed to be valid (tools write Vtransform=2 by default).
+!
+        old_vt=.false.
+        transf=' '
+        ierr_vt=nf_get_att_text(ncidclm, nf_global,
+     &                            'VertCoordType', transf)
+        if (ierr_vt.eq.nf_noerr) then
+           if (trim(transf).eq.'OLD' .or.
+     &         trim(transf).eq.'SH94') old_vt=.true.
+        endif
+!
+        vtransform_value=0
+        ierr_vt=nf_inq_varid(ncidclm, 'Vtransform', varid)
+        if (ierr_vt.eq.nf_noerr) then
+          vt_rec=1
+          ierr_vt=nf_get_var1_int(ncidclm, varid, vt_rec,
+     &                                         vtransform_value)
+        else
+          ierr_vt=nf_get_att_int(ncidclm, nf_global, 'Vtransform',
+     &                                         vtransform_value)
+        endif
+        if (ierr_vt.eq.nf_noerr .and. vtransform_value.eq.1)
+     &                                         old_vt=.true.
+        if (old_vt) then
+          MPI_master_only write(stdout,8)
+          goto 99                                        !--> ERROR
+        endif
+!
         ierr=nf_inq_varid (ncidclm, 'uclm_time', uclm_tid)
         if (ierr .ne. nf_noerr) then
           write(stdout,3) 'uclm_time', clmname(1:lstr)
@@ -213,6 +247,20 @@
      &       1x,'exeeds the last available', /,14x,'record ',I4,
      &       1x,'in climatology file: ',a, /,14x,'TDAYS = ',
      &       g12.4,2x,'last available UCLM_TIME = ',g12.4)
+
+  8   format(/,' GET_UCLIMA - ERROR: Old Vtransform is obsolete.',
+     &      /14x,'From now on, CROCO uses only one vertical',
+     &      /14x,'s-coordinate transformation (Vtransform=2).',
+     &      /14x,'Two possibilities:',
+     &      /14x,'1) keep these input files and use croco <= v2.1.3',
+     &      /14x,'   (with the NEW_S_COORD cppkey deactivated)',
+     &      /14x,'2) regenerate the input files with croco_tools',
+     &      /14x,'   or croco_pytools (Vtransform=2).',
+     &      /14x,'Newer versions of the tools no longer support',
+     &      /14x,'the old Vtransform.',
+     &      /14x,'For details, see the documentation.')
+
+
 
   99  may_day_flag=2
       return

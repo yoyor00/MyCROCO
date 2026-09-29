@@ -75,8 +75,8 @@ for tindex in range(tstart, tend + 1):
 
     time = nc.variables["scrum_time"][tindex]
     zeta = np.squeeze(nc.variables["zeta"][tindex, yindex, :])
-    zr = cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "r", 2)
-    zw = cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "w", 2)
+    zr = cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "r")
+    zw = cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "w")
 
     zru = 0.5 * (zr[:, :-1] + zr[:, 1:])
     xr_u = 0.5 * (xr[:-1] + xr[1:])  # Grid shift for u

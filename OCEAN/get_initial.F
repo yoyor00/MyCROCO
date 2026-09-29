@@ -127,9 +127,9 @@
       transf=' '
       ierr_vt=nf_get_att_text(ncid, nf_global, 'VertCoordType', transf)
       if (ierr_vt.eq.nf_noerr) then
-        if (trim(transf).eq.'OLD') old_vt=.true.
+        if (trim(transf).eq.'OLD' .or.
+     &      trim(transf).eq.'SH94') old_vt=.true.
       endif
-
       vtransform_value=0
       ierr_vt=nf_inq_varid(ncid, 'Vtransform', varid)
       if (ierr_vt.eq.nf_noerr) then

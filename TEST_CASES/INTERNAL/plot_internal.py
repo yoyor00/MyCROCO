@@ -51,14 +51,13 @@ t0 = np.squeeze(nc.variables["rho"][0, :, j, :])
 theta_s = nc.theta_s
 theta_b = nc.theta_b
 hc = nc.hc
-vtransform = np.squeeze(nc.variables.get("Vtransform", 1))  # Default to 1 if not found
 nc.close()
 
 # Dimensions
 N, L = t.shape
 
 # Compute vertical levels
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtransform)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 xr = np.tile(x / 1000, (N, 1))  # Convert x to km
 
 # Create a custom colormap

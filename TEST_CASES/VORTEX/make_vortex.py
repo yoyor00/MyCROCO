@@ -46,12 +46,11 @@ lam = np.sqrt(2) * 60e3  # Vortex radius (m)
 g = 9.81  # Gravity (m/s²)
 N2_sq = (0.003) ** 2  # Brunt-Väisälä frequency squared (s⁻²)
 
-# Vertical grid (vtransform=2 = NEW_S_COORD)
+# Vertical grid (vtransform=2)
 N = 10
 theta_s = 1.0
 theta_b = 0.0
 hc = H0  # no hc=min(hmin,hc) constraint for vtransform=2
-vtransform = 2
 
 # Nesting
 refinecoeff = 3
@@ -102,14 +101,13 @@ def write_grd(fname, title, X, Y, h, f, dx, dy, *, grd_pos=None, refine_coef=Non
             ds.createVariable("refine_coef", "i4", ("one",))[:] = refine_coef
 
 
-def write_ini(fname, grd_fname, title, theta_s, theta_b, hc, N, vtransform):
+def write_ini(fname, grd_fname, title, theta_s, theta_b, hc, N):
     """Write a CROCO initial-conditions NetCDF file (fields initialised to zero)."""
     with nc4.Dataset(grd_fname, "r") as grd:
         Mp, Lp = grd.variables["h"].shape
 
     M, L = Mp - 1, Lp - 1
-    sc_r, Cs_r, _sc_w, _Cs_w = scoordinate(theta_s, theta_b, N, hc, vtransform)
-    Vstretching = 4 if vtransform == 2 else 1
+    sc_r, Cs_r, _sc_w, _Cs_w = scoordinate(theta_s, theta_b, N, hc)
 
     with nc4.Dataset(fname, "w") as ds:
         ds.title = title
@@ -167,7 +165,6 @@ def write_clm(
     N,
     clim_times,
     cycle_length,
-    vtransform,
 ):
     """Write a CROCO climatology NetCDF file (fields initialised to zero)."""
     with nc4.Dataset(grd_fname, "r") as grd:
@@ -175,8 +172,7 @@ def write_clm(
 
     M, L = Mp - 1, Lp - 1
     nt = len(clim_times)
-    sc_r, Cs_r, sc_w, Cs_w = scoordinate(theta_s, theta_b, N, hc, vtransform)
-    Vstretching = 4 if vtransform == 2 else 1
+    sc_r, Cs_r, sc_w, Cs_w = scoordinate(theta_s, theta_b, N, hc)
     times = np.asarray(clim_times, dtype=float)
 
     with nc4.Dataset(fname, "w") as ds:
@@ -323,7 +319,6 @@ def barocvortex(
     theta_b,
     hc,
     N,
-    vtransform,
     rho0,
     Pa,
     f0,
@@ -362,8 +357,8 @@ def barocvortex(
     rho1 = rho0 + a * np.exp(-r2 / lam**2)
     zeta = (P1 - Pa) / (g * rho1)
 
-    zw = zlevs(h0, zeta, theta_s, theta_b, hc, N, "w", vtransform)  # (N+1, Mp, Lp)
-    zr = zlevs(h0, zeta, theta_s, theta_b, hc, N, "r", vtransform)  # (N, Mp, Lp)
+    zw = zlevs(h0, zeta, theta_s, theta_b, hc, N, "w")  # (N+1, Mp, Lp)
+    zr = zlevs(h0, zeta, theta_s, theta_b, hc, N, "r")  # (N, Mp, Lp)
 
     xr = tridim(X, N)  # (N, Mp, Lp)
     yr = tridim(Y, N)
@@ -485,7 +480,6 @@ def main():
         theta_b,
         hc,
         N,
-        vtransform,
         rho0,
         Pa,
         f0,
@@ -497,8 +491,10 @@ def main():
         geostrophic=args.geostrophic,
     )
 
+    vtransform = 2
+
     # Parent ini
-    write_ini(parent_ini, parent_grd, title, theta_s, theta_b, hc, N, vtransform)
+    write_ini(parent_ini, parent_grd, title, theta_s, theta_b, hc, N)
     fill_ini(parent_ini, u, v, ubar, vbar, zeta, t)
 
     # Parent clm
@@ -512,7 +508,6 @@ def main():
         N,
         [25.0, 75.0],
         100,
-        vtransform,
     )
     fill_clm(parent_clm, u, v, ubar, vbar, zeta, t)
 
@@ -602,7 +597,6 @@ def main():
         theta_b,
         hc,
         N,
-        vtransform,
         rho0,
         Pa,
         f0,
@@ -614,7 +608,7 @@ def main():
         geostrophic=args.geostrophic,
     )
 
-    write_ini(child_ini, child_grd, title, theta_s, theta_b, hc, N, vtransform)
+    write_ini(child_ini, child_grd, title, theta_s, theta_b, hc, N)
     fill_ini(child_ini, u_c, v_c, ubar_c, vbar_c, zeta_c, t_c)
 
     write_clm(
@@ -627,7 +621,6 @@ def main():
         N,
         [25.0, 75.0],
         100,
-        vtransform,
     )
     fill_clm(child_clm, u_c, v_c, ubar_c, vbar_c, zeta_c, t_c)
 

@@ -67,11 +67,10 @@ rho = R0 - TCOEF * t
 N, M = t.shape
 theta_s = nc.theta_s
 theta_b = nc.theta_b
-vtrans = np.squeeze(nc.variables.get("Vtransform", None))
 hc = nc.hc
 nc.close()
 
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", vtrans)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 zr = zr[:, j, :]
 xr = np.tile(x / 1000, (N, 1))  # Convert to km
 

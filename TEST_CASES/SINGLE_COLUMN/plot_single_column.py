@@ -124,9 +124,6 @@ theta_s = float(nc.theta_s)
 theta_b = float(nc.theta_b)
 N = len(nc.dimensions["s_rho"])
 
-vtrans_var = nc.variables.get("Vtransform", None)
-vtransform = int(np.squeeze(vtrans_var[:])) if vtrans_var is not None else 2
-
 hc_var = nc.variables.get("hc", None)
 if hc_var is not None:
     hc = float(hc_var[:])
@@ -139,8 +136,8 @@ i0 = h.shape[1] // 2
 
 # Compute depths at rho and w points for central column
 zeta0 = np.zeros_like(h)
-zr = cr.zlevs(h, zeta0, theta_s, theta_b, hc, N, "r", vtransform)
-zw = cr.zlevs(h, zeta0, theta_s, theta_b, hc, N, "w", vtransform)
+zr = cr.zlevs(h, zeta0, theta_s, theta_b, hc, N, "r")
+zw = cr.zlevs(h, zeta0, theta_s, theta_b, hc, N, "w")
 z_col_r = zr[:, j0, i0]
 z_col_w = zw[:, j0, i0]
 

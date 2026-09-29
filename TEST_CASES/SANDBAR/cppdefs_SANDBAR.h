@@ -16,7 +16,6 @@
 # undef  NBQ
 # define SOLVE3D
 # define UV_ADV
-# define NEW_S_COORD
 # define ANA_GRID
 # define ANA_INITIAL
 # define ANA_SMFLUX

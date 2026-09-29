@@ -53,7 +53,7 @@
         if (ierr.eq.nf_noerr) then
 !
 ! Check the vertical s-coordinate transformation used to create
-! the boundary file: stop if VertCoordType=OLD or Vtransform=1.
+! the boundary file: stop if VertCoordType=OLD/SH94 or Vtransform/=2.
 ! If neither VertCoordType nor Vtransform is present, the file is
 ! assumed to be valid (tools write Vtransform=2 by default).
 !
@@ -62,7 +62,8 @@
           ierr_vt=nf_get_att_text(bry_id, nf_global,
      &                            'VertCoordType', transf)
           if (ierr_vt.eq.nf_noerr) then
-            if (trim(transf).eq.'OLD') old_vt=.true.
+            if (trim(transf).eq.'OLD' .or.
+     &          trim(transf).eq.'SH94') old_vt=.true.
           endif
 !
           vtransform_value=0
@@ -75,7 +76,7 @@
             ierr_vt=nf_get_att_int(bry_id, nf_global, 'Vtransform',
      &                                         vtransform_value)
           endif
-          if (ierr_vt.eq.nf_noerr .and. vtransform_value.eq.1)
+          if (ierr_vt.eq.nf_noerr .and. vtransform_value.ne.2)
      &                                         old_vt=.true.
 !
           if (old_vt) then

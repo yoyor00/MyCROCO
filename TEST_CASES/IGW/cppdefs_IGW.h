@@ -6,7 +6,6 @@
 # undef  MPI
  /* define NBQ for Boussinesq solver (IGW_NBQ in igw.jsonc) */
 # undef  NBQ
-# define NEW_S_COORD
 # define TIDES
 # define TIDERAMP
 # define SSH_TIDES

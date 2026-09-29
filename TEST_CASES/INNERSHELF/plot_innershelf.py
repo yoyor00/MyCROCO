@@ -106,11 +106,11 @@ with Dataset(fname, "r") as nc:
     zeta = np.squeeze(nc.variables["zeta"][tindex, yindex, xindex:])
 
     # Compute vertical coordinates
-    zr = cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "r", 1)
+    zr = cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "r")
     dzr = zr[1:, :] - zr[:-1, :]  # --> zw(2:N,:)
     zru = 0.5 * (zr[:, :-1] + zr[:, 1:])
     dzru = zru[1:, :] - zru[:-1, :]  # --> zwu(2:N,:)
-    zw = cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "w", 1)
+    zw = cr.zlevs(hr, zeta, theta_s, theta_b, hc, N, "w")
     dzw = zw[1:, :] - zw[:-1, :]  # --> zr
     zwu = 0.5 * (zw[:, :-1] + zw[:, 1:])
     dzwu = zwu[1:, :] - zwu[:-1, :]  # --> zru

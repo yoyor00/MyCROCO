@@ -100,7 +100,7 @@ with Dataset(fname, "r") as nc:
 
 print("Computing vertical coordinates...")
 # Compute vertical coordinates
-zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r", 1)
+zr = cr.zlevs(h, zeta, theta_s, theta_b, hc, N, "r")
 z2 = np.squeeze(np.mean(np.mean(zr[:, j : j + 2, i : i + 2], axis=2), axis=1))
 zr = np.squeeze(zr[:, j, :])
 xr = np.tile(x.reshape(1, L), (N, 1)) / 1e5
