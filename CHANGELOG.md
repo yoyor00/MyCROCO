@@ -65,7 +65,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - CALENDAR : Remove `USE_CALENDAR` CPP key.
   Calendar support is now always active and controlled at runtime via `calendar_type` in the namelist (#452).
-  Supported values: `gregorian` (default), `360_day`, `365_day`/`no_leap`.
+  Supported values (case-insensitive): `gregorian` (default) / `standard` /
+  `proleptic_gregorian`, `360_day`, `noleap`/`365_day`/`no_leap`,
+  `all_leap`/`366_day`, `julian`.
   The five standalone calendar utility files (`toolsectodat.F90`, `tooldatosec.F90`,
   `tooldecompdat.F90`, `tooldatetosec.F90`, `toolorigindate.F90`) are replaced by a
   single Fortran module `tools_calendar.F90`, which:

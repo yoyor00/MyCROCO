@@ -223,8 +223,7 @@
       integer itsst, sst_ncycle, sst_rec,  sst_tid,  sst_id
       integer dqdt_id,     lsstgrd,   sstunused
       REAL(kind=8) :: sst_origin_date_in_sec, sst_secinunit
-      common /sstdat1/ sstp, dqdtp, sst_time,sst_origin_date_in_sec,
-     &                 sst_secinunit
+      common /sstdat1/ sstp, dqdtp, sst_time,sst_origin_date_in_sec,sst_secinunit
       common /sstdat2/ sst_cycle, scldqdt
       common /sstdat3/ itsst, sst_ncycle, sst_rec, sst_tid, sst_id
       common /sstdat4/ dqdt_id, lsstgrd, sstunused
@@ -268,8 +267,7 @@
       integer itsss, sss_ncycle, sss_rec,  sss_tid,  sss_id
       integer lsssgrd,   sssunused
       REAL(kind=8) :: sss_origin_date_in_sec, sss_secinunit
-      common /sssdat1/sssp,  sss_time, sss_cycle,sss_origin_date_in_sec,
-     &                sss_secinunit
+      common /sssdat1/sssp,  sss_time, sss_cycle,sss_origin_date_in_sec,sss_secinunit
       common /sssdat2/itsss, sss_ncycle, sss_rec,  sss_tid, sss_id
       common /sssdat3/lsssgrd,   sssunused
 #   if !defined QCORRECTION
@@ -419,8 +417,7 @@
 #  endif
 
       common /bulkdat2_for/ tairp,rhump,pratep,radlwp,radswp
-      common /bulkdat2_tim/ bulk_time, bulk_cycle, blk_origin_date_in_sec,
-     &                      blk_secinunit
+      common /bulkdat2_tim/ bulk_time, bulk_cycle, blk_origin_date_in_sec,blk_secinunit
 #  ifdef READ_PATM
       common /bulkdat2_patm/ patmp
 #  endif
@@ -696,8 +693,7 @@
 #  ifdef BBL
       integer wwu_id
 #  endif
-      common /wwdat/ ww_cycle, wwv_time,ww_origin_date_in_sec,
-     &               ww_secinunit
+      common /wwdat/ ww_cycle, wwv_time,ww_origin_date_in_sec,ww_secinunit
       common /wwdat/ wwap,wwdp,wwpp
       common /wwdat/ wwebp,wwedp,wwerp
       common /wwdat/ wwa_scale,wwd_scale,wwp_scale

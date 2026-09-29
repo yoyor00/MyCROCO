@@ -630,7 +630,7 @@ c     goto 99                                     !--> ERROR
             call tool_origindate(bry_id,bry_time_id,
      &                           bryt_origin_date_in_sec(itrc),
      &                           bryt_secinunit(itrc))
-          else
+          else if (got_tbry(itrc)) then
             call tool_origindate(bry_id,bry_tid(itrc),
      &                           bryt_origin_date_in_sec(itrc),
      &                           bryt_secinunit(itrc))

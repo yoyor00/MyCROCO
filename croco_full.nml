@@ -146,7 +146,9 @@
   !   Jan 1 to Feb 1 gives 31 days with gregorian but 30 days with 
   !   360_day.) 
   ! - calendar attribute written to output NetCDF files
-  ! Allowed values: gregorian, 360_day, 365_day, no_leap
+  ! Allowed values (case-insensitive): gregorian / standard / 
+  ! proleptic_gregorian, 360_day, noleap / 365_day / no_leap, 
+  ! all_leap / 366_day, julian
   ! Note : For climatological runs (cyclic forcing), the seasonal 
   ! phase is determined solely by the cycle_length attribute in your 
   ! forcing files. Calendar_type does not affect the cycle, only the 

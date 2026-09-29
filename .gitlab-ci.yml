@@ -21,19 +21,19 @@ variables:
   stage: bench
   tags: [ci.inria.fr, large]
   # dev_foil contains USE_CALENDAR compatible files
-  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev_foil
+  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
 
 .gfortran_parallel: &gfortran_parallel
   stage: bench
   tags: [ci.inria.fr, large]
   # dev_foil contains USE_CALENDAR compatible files
-  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev_foil
+  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_gfortran_parallel:dev_calendar
 
 .ifx: &ifx
   stage: bench
   tags: [ci.inria.fr, large_more_disk]
   # dev_foil contains USE_CALENDAR compatible files
-  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev_foil
+  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev_calendar
 
 # ─── gfortran (always-on) ─────────────────────────────────────────────────
 

@@ -126,8 +126,10 @@ MODULE croco_namelist
    character(len=19) :: end_date = '                   '
    !! Run end date, format `YYYY-MM-DD HH:MM:SS` (mandatory)
    character(len=20) :: calendar_type = 'gregorian'
-   !! CF-convention calendar type written to output files and used for time arithmetic.
-   !! Allowed values: 'gregorian' (default), '360_day', '365_day', 'no_leap'.
+   !! CF-convention calendar type written to output files and used for time arithmetic
+   !! (case-insensitive). Allowed values: 'gregorian' (default) / 'standard' /
+   !! 'proleptic_gregorian', '360_day', 'noleap' / '365_day' / 'no_leap',
+   !! 'all_leap' / '366_day', 'julian'.
 
 #ifndef ANA_GRID
    ! &croco_grid

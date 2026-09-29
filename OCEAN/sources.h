@@ -71,8 +71,7 @@
       real    qbar_cycle
       integer itqbar, qbar_ncycle, qbar_rec,  qbar_tid,  qbar_id
       REAL(kind=8) :: qbar_origin_date_in_sec, qbar_secinunit
-      common /qbardat1/ qbar_time, qbar_origin_date_in_sec,
-     &                  qbar_secinunit
+      common /qbardat1/ qbar_time, qbar_origin_date_in_sec,qbar_secinunit
       common /qbardat2/ qbar_cycle
       common /qbardat3/ itqbar, qbar_ncycle, qbar_rec, qbar_tid, qbar_id
 
@@ -87,8 +86,7 @@
       integer ittsrc(NT), tsrc_ncycle(NT), tsrc_rec(NT),  tsrc_tid(NT),
      &        tsrc_id(NT)
       REAL(kind=8) :: tsrc_origin_date_in_sec(NT), tsrc_secinunit(NT)
-      common /tsrcdat1/ tsrc_time, tsrc_origin_date_in_sec,
-     &                  tsrc_secinunit
+      common /tsrcdat1/ tsrc_time, tsrc_origin_date_in_sec,tsrc_secinunit
       common /tsrcdat2/ tsrc_cycle
       common /tsrcdat3/ ittsrc, tsrc_ncycle, tsrc_rec, tsrc_tid, tsrc_id
 

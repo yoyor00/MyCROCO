@@ -623,11 +623,10 @@ c              goto 99                                     !--> ERROR
 
 #  endif
 # endif /* BIOLOGY */
-          call tool_origindate(ncidclm,tclm_tid(itrc),
+          if (got_tclm(itrc)) then
+            call tool_origindate(ncidclm,tclm_tid(itrc),
      &                       tclm_origin_date_in_sec(itrc),
      &                       tclm_secinunit(itrc))
-
-          if (got_tclm(itrc)) then
             lvar=lenstr(vname(1,indxV+itrc))
             ierr=nf_inq_varid(ncidclm, vname(1,indxV+itrc)(1:lvar),
      &                                                tclm_id(itrc))

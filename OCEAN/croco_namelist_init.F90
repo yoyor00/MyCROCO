@@ -1079,20 +1079,9 @@ contains
       end if
       if (ierr /= 0) return
 
+      ! calendar_type is validated inside init_tools_calendar (fatal abort
+      ! on an unrecognized value)
       call init_tools_calendar(calendar_type, start_date)
-
-      ! Validate calendar_type
-      if (TRIM(calendar_type) /= 'gregorian'  .AND. &
-          TRIM(calendar_type) /= '360_day'    .AND. &
-          TRIM(calendar_type) /= '365_day'    .AND. &
-          TRIM(calendar_type) /= 'no_leap') then
-         MPI_master_only write(stdout,'(/1x,2A/)') &
-           'INIT_CALENDAR ERROR: unknown calendar_type: ', TRIM(calendar_type)
-         MPI_master_only write(stdout,'(1x,A/)') &
-           '  Allowed values: gregorian, 360_day, 365_day, no_leap'
-         ierr = ierr + 1
-         return
-      end if
 
 #ifdef ANA_INITIAL
       if (nrrec == 0) then
