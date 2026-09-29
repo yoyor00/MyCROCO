@@ -71,7 +71,7 @@ MODULE tools_calendar
    ! model_cal is kept here too: the calendar is common to all grids.
 !$AGRIF_DO_NOT_TREAT
    character(len=20) :: calendar_type = 'gregorian'
-   character(len=19) :: start_date    = '                   '
+   character(len=26) :: start_date    = '                          '
    integer           :: model_cal     = cal_gregorian
 !$AGRIF_END_DO_NOT_TREAT
 
@@ -465,16 +465,18 @@ CONTAINS
    !! ** Purpose : return seconds elapsed since the year-1900 epoch
    !!              for a date string. Accepts partial strings:
    !!              "yyyy", "yyyy-mm", "yyyy-mm-dd", "yyyy-mm-dd hh:mm",
-   !!              "yyyy-mm-dd hh:mm:ss". Missing fields default to 1 (day/month)
-   !!              or 0 (hour/minute/second).
+   !!              "yyyy-mm-dd hh:mm:ss", "yyyy-mm-dd hh:mm:ss.ffff...".
+   !!              Missing fields default to 1 (day/month) or 0
+   !!              (hour/minute/second); a trailing ".ffff..." after the
+   !!              whole seconds is an optional fractional-second part.
 
       IMPLICIT NONE
       CHARACTER(len=*), INTENT(in) :: date
 
       INTEGER        :: year, month, day, hour, minute, second, tot_days
-      REAL(kind=rlg) :: total_secs, secs_of_day
+      REAL(kind=rlg) :: total_secs, secs_of_day, frac_sec
 
-      CALL tool_decompdate(date, day, month, year, hour, minute, second)
+      CALL tool_decompdate(date, day, month, year, hour, minute, second, frac_sec)
 
       secs_of_day = REAL(hour, rlg)*secs_in_hour &
                     + REAL(minute, rlg)*secs_in_minute &
@@ -515,10 +517,12 @@ CONTAINS
 
       END SELECT
 
+      tool_datosec = tool_datosec + frac_sec
+
    END FUNCTION tool_datosec
 
    !====================================================================
-   SUBROUTINE tool_decompdate(date, dd, mm, yyyy, hh, minu, sec)
+   SUBROUTINE tool_decompdate(date, dd, mm, yyyy, hh, minu, sec, frac_sec)
    !! ** Purpose : decompose a date string into integer components.
    !!              Accepts partial strings; missing fields default to
    !!              1 (month/day) or 0 (hour/minute/second).
@@ -528,6 +532,13 @@ CONTAINS
    !!                dlen >= 10 : "yyyy-mm-dd"
    !!                dlen >= 16 : "yyyy-mm-dd hh:mm"
    !!                dlen >= 19 : "yyyy-mm-dd hh:mm:ss"
+   !!                dlen >  19 : "yyyy-mm-dd hh:mm:ss.ffff..." -- a '.' right
+   !!                             after the whole seconds, followed by any
+   !!                             number of fractional-second digits, returned
+   !!                             via the optional frac_sec (0 if absent/not
+   !!                             requested). Needed for calendar_type
+   !!                             sub-second precision (e.g. NBQ/acoustic test
+   !!                             cases with dt well under 1 second).
 
 #if defined MPI
       USE scalars, ONLY: mynode
@@ -535,13 +546,23 @@ CONTAINS
       IMPLICIT NONE
       CHARACTER(len=*), INTENT(in)  :: date
       INTEGER, INTENT(out) :: dd, mm, yyyy, hh, minu, sec
+      REAL(kind=rlg), INTENT(out), OPTIONAL :: frac_sec
 
       INTEGER :: dlen
+      REAL(kind=rlg) :: frac_local
 
       ! Defaults for optional fields
       mm = 1; dd = 1; hh = 0; minu = 0; sec = 0
+      frac_local = 0.0_rlg
 
       dlen = LEN_TRIM(date)
+
+      ! Accept a trailing ISO-8601 UTC 'Z' designator (e.g. a NetCDF units
+      ! attribute such as "seconds since 2000-01-01T00:00:00Z"): CROCO has
+      ! no other timezone handling, so it is equivalent to no suffix at all.
+      IF (dlen > 0) THEN
+         IF (date(dlen:dlen) == 'Z' .OR. date(dlen:dlen) == 'z') dlen = dlen - 1
+      END IF
 
       IF (dlen < 4) THEN
          MPI_master_only write (*, '(/1x,3A/)') &
@@ -555,6 +576,15 @@ CONTAINS
       IF (dlen >= 13) READ (date(12:13), '(i2)') hh
       IF (dlen >= 16) READ (date(15:16), '(i2)') minu
       IF (dlen >= 19) READ (date(18:19), '(i2)') sec
+      IF (dlen > 19) THEN
+         IF (date(20:20) /= '.') THEN
+            MPI_master_only write (*, '(/1x,3A/)') &
+               'TOOL_DECOMPDATE ERROR: invalid trailing characters after seconds in date: "', TRIM(date), '"'
+            call tool_fatal_stop()
+         END IF
+         READ (date(20:dlen), *) frac_local
+      END IF
+      IF (PRESENT(frac_sec)) frac_sec = frac_local
 
       IF (mm < 1 .OR. mm > 12) THEN
          MPI_master_only write (*, '(/1x,3A/)') &
@@ -641,7 +671,7 @@ CONTAINS
       REAL(kind=rlg):: unit_factor
       INTEGER       :: isince, i, ic
       CHARACTER*40  :: file_calendar
-      CHARACTER*19  :: date_str
+      CHARACTER*26  :: date_str
       CHARACTER*40  :: varname
       CHARACTER*250 :: ncfile
       CHARACTER*120 :: fix_hint

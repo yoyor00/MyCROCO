@@ -121,10 +121,12 @@ MODULE croco_namelist
 #endif
 
    ! &croco_calendar
-   character(len=19) :: start_date = '                   '
-   !! Run start date, format `YYYY-MM-DD HH:MM:SS` (mandatory)
-   character(len=19) :: end_date = '                   '
-   !! Run end date, format `YYYY-MM-DD HH:MM:SS` (mandatory)
+   character(len=26) :: start_date = '                          '
+   !! Run start date, format `YYYY-MM-DD HH:MM:SS[.ffff...]` (mandatory).
+   !! The optional fractional-second suffix is for sub-second dt test cases.
+   character(len=26) :: end_date = '                          '
+   !! Run end date, format `YYYY-MM-DD HH:MM:SS[.ffff...]` (mandatory).
+   !! The optional fractional-second suffix is for sub-second dt test cases.
    character(len=20) :: calendar_type = 'gregorian'
    !! CF-convention calendar type written to output files and used for time arithmetic
    !! (case-insensitive). Allowed values: 'gregorian' (default) / 'standard' /

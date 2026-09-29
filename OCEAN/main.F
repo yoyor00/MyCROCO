@@ -409,7 +409,12 @@ C$OMP BARRIER
       tdays=time*sec2day        ! is set by get_initial or analytically
                                 ! --> copy it into threadprivate "time"
 
-      ntimes=int((tool_datosec(end_date)-time)/dt)+ntstart
+      ! NINT (not int) to absorb float rounding noise on this division.
+      ! ntimes keeps its historical meaning here (the loop below runs
+      ! ntstart..ntimes+1, i.e. ntimes real steps after the initial
+      ! report-only pass), hence the -1: NINT(...) alone would count the
+      ! target iic value, one more than the number of steps needed.
+      ntimes=NINT((tool_datosec(end_date)-time)/dt)+ntstart-1
       MPI_master_only write(stdout,*)
      &     'Ntimes from date_start and date_end:',ntimes
 !
@@ -908,7 +913,6 @@ CR      write(*,*) '  0' MYID
      &                'MAIN: started time-stepping.'
       next_kstp=kstp
       time_start=time
-      time_end=tool_datosec(end_date)
 
 ! XIOS (
 !  Clean log output a bit
@@ -942,8 +946,6 @@ CR      write(*,*) '  0' MYID
 #ifdef MPI_TIME
         start_time1_1=PMPI_Wtime()
 #endif
-
-        if (time .gt. time_end) goto 99
 
 #ifdef SOLVE3D
 # ifndef AGRIF

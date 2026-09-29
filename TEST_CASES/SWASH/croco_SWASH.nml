@@ -14,7 +14,7 @@
 
 &croco_calendar
   start_date    = "2000-01-01 00:00:00"
-  end_date      = "2000-01-01 00:03:29"
+  end_date      = "2000-01-01 00:03:28.41470925"
   calendar_type = "gregorian"
 /
 

@@ -13,7 +13,6 @@ import shutil
 import platform
 import subprocess
 from datetime import timedelta
-import math
 import f90nml
 
 
@@ -518,33 +517,18 @@ class Croco:
             self.change_nml(filename_nml_rst , "croco_initial", "ininame", file_nc_rst)
             # no need to change end_date for filename_rst
 
-    def change_nml_output_time_steps_dthis(self, filename, ntimes, min_dt=1.0):
+    def change_nml_end_date(self, filename, ntimes):
         full_filename = os.path.join(self.dirname, filename)
         nml = f90nml.read(full_filename)
         if "croco_calendar" in nml:
             dt = nml["croco_time_stepping"]["dt"]
-            duration = math.ceil(max(dt * ntimes, min_dt))
-            nwrt = max(1, int(round(max(dt, duration / ntimes) / dt)))
-            self.change_nml(filename, "croco_history", "nwrt", nwrt)
-
-    def change_nml_output_time_steps_dtrst(self, filename, ntimes, min_dt=1.0):
-        full_filename = os.path.join(self.dirname, filename)
-        nml = f90nml.read(full_filename)
-        if "croco_calendar" in nml:
-            dt = nml["croco_time_stepping"]["dt"]
-            duration = math.ceil(max(dt * ntimes, min_dt))
-            nrst = max(1, int(round(duration / dt)))
-            self.change_nml(filename, "croco_restart", "nrst", nrst)
-
-    def change_nml_end_date(self, filename, ntimes, min_dt=1.0):
-        full_filename = os.path.join(self.dirname, filename)
-        nml = f90nml.read(full_filename)
-        if "croco_calendar" in nml:
-            dt = nml["croco_time_stepping"]["dt"]
-            duration = math.ceil(max(dt * ntimes, min_dt))
+            duration = dt * ntimes
             datetime_start = parse_datetime(nml["croco_calendar"]["start_date"])
             datetime_end = datetime_start + timedelta(seconds=duration)
-            end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
+            if datetime_end.microsecond:
+                end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S.%f")
+            else:
+                end_date = datetime_end.strftime("%Y-%m-%d %H:%M:%S")
             self.change_nml(filename, "croco_calendar", "end_date", end_date)
 
     def change_nml(self, filename, nml_section_name, nml_param_name, values):
