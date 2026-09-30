@@ -119,7 +119,7 @@
       endif
 !
 ! Check the vertical s-coordinate transformation used to create
-! the inifile: stop if VertCoordType=OLD or Vtransform=1.
+! the inifile: stop if VertCoordType=OLD/SH94 or Vtransform/=2.
 ! If neither VertCoordType nor Vtransform is present, the file is
 ! assumed to be valid (tools write Vtransform=2 by default).
 !

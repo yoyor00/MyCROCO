@@ -49,7 +49,7 @@
         endif
 !
 ! Check the vertical s-coordinate transformation used to create
-! the boundary file: stop if VertCoordType=OLD or Vtransform=1.
+! the boundary file: stop if VertCoordType=OLD/SH94 or Vtransform/=2.
 ! If neither VertCoordType nor Vtransform is present, the file is
 ! assumed to be valid (tools write Vtransform=2 by default).
 !
@@ -72,7 +72,7 @@
           ierr_vt=nf_get_att_int(ncidclm, nf_global, 'Vtransform',
      &                                         vtransform_value)
         endif
-        if (ierr_vt.eq.nf_noerr .and. vtransform_value.eq.1)
+        if (ierr_vt.eq.nf_noerr .and. vtransform_value.ne.2)
      &                                         old_vt=.true.
         if (old_vt) then
           MPI_master_only write(stdout,8)
