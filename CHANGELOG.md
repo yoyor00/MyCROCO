@@ -60,6 +60,19 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   Update BENCH accordingly.
 
 ### Changed
+- Vertical coordinate : only the new s-coordinate (Vtransform = 2,
+  Shchepetkin & McWilliams 2009) is kept (#396).
+  Input files (initial, boundary, climatology) are checked when opened:
+  CROCO stops with an explicit error if VertCoordType is OLD/SH94 or if
+  Vtransform /= 2. Files without VertCoordType nor Vtransform are assumed
+  to use Vtransform = 2. Old input files must be regenerated with the
+  current croco_tools or croco_pytools, or used with croco <= v2.1.3.
+  See also croco_tools #69 and croco_pytools #118.
+  Test cases that previously ran with the old s-coordinate (ANA_JET,
+  BASIN, CANYON, EQUATOR, INNERSHELF, INTERNAL, KILPATRICK, OVERFLOW,
+  RIVER, SEAMOUNT, SHELFRONT, SOLITON, UPWELLING, VORTEX) now use the new
+  one: their results differ from previous versions. VORTEX input files
+  have been regenerated with Vtransform = 2.
 
 - Input file croco.in replace by a standard namelist (#497)
   Replace the fixed-format croco.in reader with a Fortran namelist system
@@ -124,7 +137,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 
 ### Removed
-
+- NEW_S_COORD, cpp key has been removed (if deactivated, old s-coordinate (Vtransform = 1, 
+    Song & Haidvogel 1994) was chosen , Now Vtransform=2 is used by default (Shchepetkin & McWilliams 2009))
+    the key has also been removed from all TEST_CASES cppdefs (#396)
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
 - MUSTANG : 
@@ -196,7 +211,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer
+  J. Gula, C. Mazoyer, G. Morvan
 
 - New contributors : 
   J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
