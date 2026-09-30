@@ -1008,10 +1008,10 @@ C$OMP END MASTER
 # if defined CVTK_DEBUG && defined SOLVE3D
       use comMUSTANG, only : c_sedtot
       use comMUSTANG, only : dzs
-#  if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+#  if defined key_MUSTANG_V2
       use comMUSTANG , only : flx_bx, flx_by
       use comsubstance, only : ibedload1, ibedload2
-#  endif /* key_MUSTANG_bedload  key_MUSTANG_V2 */
+#  endif /* key_MUSTANG_V2 */
 # endif /* CVTK_DEBUG_AVANCED  SOLVE3D */
 #endif /* MUSTANG */
       implicit none
@@ -1111,7 +1111,7 @@ C$OMP MASTER
             call check_tab2d(c_sedtot(ilay, :, :),'c_sedtot step3d_t','rint')
             call check_tab2d(dzs(ilay, :, :),'dzs step3d_t','rint')
         enddo
-#   if defined key_MUSTANG_bedload && defined key_MUSTANG_V2
+#   if defined key_MUSTANG_V2
         do itrc = ibedload1, ibedload2
             call check_tab2d(flx_bx(itrc, :, :),'flx_bx step3d_t','r')
             call check_tab2d(flx_by(itrc, :, :),'flx_by step3d_t','r')

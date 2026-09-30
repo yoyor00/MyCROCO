@@ -82,8 +82,12 @@ MODULE comMUSTANG
         ! 0 : no fusion, 
         ! = 1 : frmudcr1, 
         ! > 1 : between frmudcr1 & frmudcr2
-    INTEGER :: nlayer_surf_sed ! number of layers below the sediment surface 
+    INTEGER :: nlayer_surf_sed ! number of layers below the sediment surface
         ! that can not be melted (max thickness = dzsmax)
+    LOGICAL :: l_splitlayersurf ! set to .true. to split surface sediment
+        ! layers for a regular, precise discretization at the surface when
+        ! too thick (over nlayer_surf_sed layers below the surface) ; if
+        ! .false., the excess is simply moved into one new layer above
 
 
     ! namsedim_bottomstress
@@ -132,8 +136,10 @@ MODULE comMUSTANG
         ! fluxes
     REAL(KIND=rsh) :: cvolmaxsort ! max volumic concentration of sorted sand
     REAL(KIND=rsh) :: cvolmaxmel ! maxvolumic concentration of mixed sediments
-    REAL(KIND=rsh) :: slopefac !slope effect multiplicative on deposit 
-        ! (only if key_MUSTANG_slipdeposit)
+    LOGICAL :: l_slipdeposit ! boolean to activate sliding (avalanching) of
+        ! deposited sediment on steep slopes
+    REAL(KIND=rsh) :: slopefac ! slope effect multiplicative on deposit
+        ! (used only if l_slipdeposit)
 
 
     ! namsedim_erosion
@@ -218,8 +224,8 @@ MODULE comMUSTANG
         ! is stopped
 
 
-#if defined key_MUSTANG_V2 && defined key_MUSTANG_bedload
-    ! namsedim_bedload 
+#if defined key_MUSTANG_V2
+    ! namsedim_bedload
     LOGICAL :: l_peph_bedload ! set to .true. if hindering / exposure processes
         ! in critical shear stress estimate for bedload
     LOGICAL :: l_slope_effect_bedload ! set to .true. if accounting for slope 
@@ -381,8 +387,9 @@ MODULE comMUSTANG
         ! an addition layer is an integrative layer till bottom
 
 
-#ifdef key_MUSTANG_flocmod
-    ! namflocmod  
+    ! namflocmod
+    LOGICAL :: l_flocmod ! set to .true. to activate the FLOCMOD flocculation
+        ! module for mud settling velocity
     LOGICAL :: l_ASH ! set to .true. if aggregation by shear
     LOGICAL :: l_ADS ! set to .true. if aggregation by differential settling
     LOGICAL :: l_COLLFRAG ! set to .true. if fragmentation by collision
@@ -416,9 +423,8 @@ MODULE comMUSTANG
         ! fragmentation (default 2.0 as binary fragmentation)
     REAL(KIND=rsh) :: f_nf ! fractal dimension (default 2.0, usual range from 
         ! 1.6 to 2.8)
-    REAL(KIND=rsh) :: f_clim ! min concentration below which flocculation 
+    REAL(KIND=rsh) :: f_clim ! min concentration below which flocculation
         !processes are not calculated
-#endif
 
     CHARACTER(len=lchain) :: dredging_location_file ! TODO DREDGING
     CHARACTER(len=lchain) :: dredging_settings_file ! TODO DREDGING
@@ -533,15 +539,13 @@ MODULE comMUSTANG
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: stateconsol
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: permeab
     REAL(KIND=rsh), DIMENSION(:), ALLOCATABLE :: E0_sand
-#ifdef  key_MUSTANG_bedload
-        REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_bx
-        REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_by
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdx
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdy
-        REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: sedimask_h0plusxe
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_bx
+    REAL(KIND=rsh), DIMENSION(:,:,:), ALLOCATABLE  :: flx_by
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdx
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: slope_dhdy
+    REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE    :: sedimask_h0plusxe
 #if defined MORPHODYN
             INTEGER :: it_morphoYes
-#endif
 #endif
 #endif
 
@@ -615,8 +619,8 @@ MODULE comMUSTANG
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjm1
     REAL(KIND=rsh), DIMENSION(:,:), ALLOCATABLE :: phieau_s2w_corjp1
 
-! slipdeposit : **TODO** put under cpp key key_MUSTANG_slipdeposit
-   !  used in accretion (settling) only bud exchange and dimensions could depend on grid model 
+   ! slipdeposit fluxes (used only if l_slipdeposit)
+   !  used in accretion (settling) only bud exchange and dimensions could depend on grid model
    REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corin
    REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corim1
    REAL(KIND=rsh),DIMENSION(:,:,:), ALLOCATABLE :: flx_w2s_corip1
