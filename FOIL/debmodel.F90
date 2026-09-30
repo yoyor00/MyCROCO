@@ -113,7 +113,7 @@ CONTAINS
       USE ionc4, ONLY: ionc4_openr, ionc4_read_trajt, ionc4_close, &
                        ionc4_read_dimt, ionc4_read_dimtraj, ionc4_var_exists
       USE ibmtools, ONLY: gasdev_s, selec_dome_or_asymp
-      USE ibmtools, ONLY: alpha_sel_a, beta_sel_a, alpha_sel_s, beta_sel_s
+      USE ibmtools, ONLY: alpha_sel, beta_sel
 #ifdef MPI
       USE toolmpi, ONLY: ADD_ALL_MPI_REAL
 #endif
@@ -516,16 +516,16 @@ CONTAINS
                    patch%particles(m)%AgeClass >= 1) THEN
                   IF (id_species == 1) THEN
                      number_tot(id_species) = number_tot(id_species) + patch%particles(m)%super* &
-                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel_a, beta_sel_a)
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel(id_species), beta_sel(id_species))
                      weight_tot(id_species) = weight_tot(id_species) + &
                         patch%particles(m)%Wdeb*patch%particles(m)%super* &
-                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel_a, beta_sel_a)
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel(id_species), beta_sel(id_species))
                   ELSE
                      number_tot(id_species) = number_tot(id_species) + patch%particles(m)%super* &
-                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel_s, beta_sel_s)
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel(id_species), beta_sel(id_species))
                      weight_tot(id_species) = weight_tot(id_species) + &
                         patch%particles(m)%Wdeb*patch%particles(m)%super* &
-                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel_s, beta_sel_s)
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel(id_species), beta_sel(id_species))
                   END IF
                END IF
 

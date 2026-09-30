@@ -45,6 +45,20 @@
     z_decay = 0.136 /
 :
 :-------------------------------------------------------------------------------
+: ibm_fishing   SPECIES-SPECIFIC FISHING SELECTIVITY PARAMETERS
+:-------------------------------------------------------------------------------
+:
+: Used only when fish_mort = .TRUE. and fishing_strategy = 'Catch'.
+:
+: alpha_sel : slope of the logistic size-selectivity curve (cm-1)
+: beta_sel  : body length at 50% selectivity (cm)
+:-------------------------------------------------------------------------------
+:
+ &ibm_fishing
+    alpha_sel = 0.879
+    beta_sel  = 12.20 /
+:
+:-------------------------------------------------------------------------------
 : ibm_density_dependency   DENSITY-DEPENDENT FEEDING PARAMETERS
 :-------------------------------------------------------------------------------
 :

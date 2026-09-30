@@ -107,6 +107,7 @@ CONTAINS
       USE debmodel, ONLY: deb_init
       USE ibmmove, ONLY: fish_move_init
       USE ibmtools, ONLY: ibm_parameter_init
+      USE ibmtools, ONLY: alpha_sel_values => alpha_sel, beta_sel_values => beta_sel
 
       ! Import variables
       USE comtraj, ONLY: iscreenlog
@@ -142,6 +143,7 @@ CONTAINS
       INTEGER :: ierr_mpi
       CHARACTER(LEN=lchain) :: current_run_id
       REAL(KIND=rsh) :: Z0, Ze, z_decay
+      REAL(KIND=rsh) :: alpha_sel, beta_sel
       ! To convert date to seconds or seconds to date
       CHARACTER(len=19) :: tool_sectodat
       INTEGER :: mm_clock, hh, minu, sec ! jj and aaaa are saved as current_year/day for later
@@ -165,6 +167,7 @@ CONTAINS
       NAMELIST /ibm_species/ duration_ibm
       NAMELIST /ibm_external_forcing/ catch, fileprobadistrib, nbSizeClass, sizemin
       NAMELIST /ibm_mortality/ Z0, Ze, z_decay
+      NAMELIST /ibm_fishing/ alpha_sel, beta_sel
 
 #include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
@@ -185,6 +188,7 @@ CONTAINS
       READ (51, ibm_species)
       READ (51, ibm_external_forcing)
       READ (51, ibm_mortality)
+      READ (51, ibm_fishing)
       CLOSE (51)
       duration(1) = duration_ibm
       catch_anc = catch
@@ -194,12 +198,15 @@ CONTAINS
       Z0_species(1) = Z0
       Ze_species(1) = Ze
       z_decay_species(1) = z_decay
+      alpha_sel_values(1) = alpha_sel
+      beta_sel_values(1) = beta_sel
 
       lstr = lenstr(filesardine)
       OPEN (51, file=filesardine(1:lstr), status='old', form='formatted', access='sequential')
       READ (51, ibm_species)
       READ (51, ibm_external_forcing)
       READ (51, ibm_mortality)
+      READ (51, ibm_fishing)
       CLOSE (51)
       duration(2) = duration_ibm
       catch_sar = catch
@@ -209,6 +216,8 @@ CONTAINS
       Z0_species(2) = Z0
       Ze_species(2) = Ze
       z_decay_species(2) = z_decay
+      alpha_sel_values(2) = alpha_sel
+      beta_sel_values(2) = beta_sel
 
       ! save into simu.log
       !-------------------
@@ -509,7 +518,7 @@ CONTAINS
       USE ibmtools, ONLY: tool_julien
       USE ibmtools, ONLY: ibm_nycth_mig, ibm_parameter_init
       USE ibmtools, ONLY: death_by_fishing, selec_dome_or_asymp
-      USE ibmtools, ONLY: alpha_sel_a, beta_sel_a, alpha_sel_s, beta_sel_s
+      USE ibmtools, ONLY: alpha_sel, beta_sel
       USE ibmmove, ONLY: fish_move
       USE debmodel, ONLY: deb_egg_init, deb_cycle
       USE debmodel, ONLY: readfood3d
@@ -1020,14 +1029,18 @@ CONTAINS
             IF (particle%stage >= 5 .and. particle%AgeClass >= 1) THEN
                IF (patch%species == 'anchovy') THEN
                   number_tot(ind_species) = number_tot(ind_species) + particle%super* &
-                                            selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a)
+                                            selec_dome_or_asymp(particle%size, alpha_sel(ind_species), &
+                                                                beta_sel(ind_species))
                   weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)* &
-                                            selec_dome_or_asymp(particle%size, alpha_sel_a, beta_sel_a)
+                                            selec_dome_or_asymp(particle%size, alpha_sel(ind_species), &
+                                                                beta_sel(ind_species))
                ELSE IF (patch%species == 'sardine') THEN
                   number_tot(ind_species) = number_tot(ind_species) + particle%super* &
-                                            selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s)
+                                            selec_dome_or_asymp(particle%size, alpha_sel(ind_species), &
+                                                                beta_sel(ind_species))
                   weight_tot(ind_species) = weight_tot(ind_species) + (particle%Wdeb*particle%super)* &
-                                            selec_dome_or_asymp(particle%size, alpha_sel_s, beta_sel_s)
+                                            selec_dome_or_asymp(particle%size, alpha_sel(ind_species), &
+                                                                beta_sel(ind_species))
                END IF
             END IF
 
