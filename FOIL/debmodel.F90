@@ -91,7 +91,7 @@ MODULE debmodel
 CONTAINS
 
    !!======================================================================
-   SUBROUTINE deb_init(restart)
+   SUBROUTINE deb_init(restart, initialize_catch)
       !&E------------------------------------------------------------------
       !&E                 ***  ROUTINE deb_init  ***
       !&E
@@ -112,15 +112,22 @@ CONTAINS
       !! * Modules used
       USE ionc4, ONLY: ionc4_openr, ionc4_read_trajt, ionc4_close, &
                        ionc4_read_dimt, ionc4_read_dimtraj, ionc4_var_exists
-      USE ibmtools, ONLY: gasdev_s
+      USE ibmtools, ONLY: gasdev_s, selec_dome_or_asymp
+      USE ibmtools, ONLY: alpha_sel_a, beta_sel_a, alpha_sel_s, beta_sel_s
+#ifdef MPI
+      USE toolmpi, ONLY: ADD_ALL_MPI_REAL
+#endif
       USE comtraj, ONLY: fileanchovy, filesardine, catch_anc, catch_sar
       USE comtraj, ONLY: mat_catch, fishing_strategy
       USE comtraj, ONLY: init_anchovy_egg, init_sardine_egg
       USE comtraj, ONLY: reproducibility
       USE comtraj, ONLY: iscreenlog
+      USE comtraj, ONLY: struc_ad, struc_ad_dd_DEB
+      USE comtraj, ONLY: number_tot, weight_tot, biom_tot, Wdeb_mean
 
       !! * Arguments
       LOGICAL, intent(IN)                          :: restart
+      LOGICAL, intent(IN)                          :: initialize_catch
 
       !! * Local declarations
       CHARACTER(LEN=lchain) :: file_inp
@@ -128,7 +135,7 @@ CONTAINS
       INTEGER :: m, n, num, nb_part_nc, is, ie, il, index_num, ivar, ierr_mpi
       INTEGER :: lstr, lenstr
       LOGICAL :: found_restart_var
-      CHARACTER(LEN=16), DIMENSION(10) :: required_restart_vars
+      CHARACTER(LEN=16), DIMENSION(13) :: required_restart_vars
       TYPE(type_patch), POINTER :: patch
 
       REAL(KIND=rsh) :: WV, WE, WR, WG, NRJ_V, NRJ_g, Wat, Wash, L, Wdeb, NRJ
@@ -138,9 +145,9 @@ CONTAINS
       INTEGER :: jj, mm_clock, aaaa, hh, minu, sec
       CHARACTER(len=19) :: tool_sectodat
 
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: daysp_nc, yearsp_nc, season_nc, num_nc
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: daysp_nc, yearsp_nc, season_nc, nbatch_nc, num_nc
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:) :: edeb_nc, hdeb_nc, rdeb_nc, gam_nc
-      REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:) :: neggs_nc, wdeb_nc, zoom_nc
+      REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:) :: neggs_nc, neggs_tot_nc, wdeb_nc, zoom_nc
 
       CHARACTER(len=lchain) :: file_catch
       INTEGER :: id_species
@@ -177,9 +184,16 @@ CONTAINS
 
       CALL tool_decompdate(tool_sectodat(time), jj, mm_clock, aaaa, hh, minu, sec)
 
+      IF (restart) THEN
+         struc_ad = 0.0_rsh
+         number_tot = 0.0_rlg
+         weight_tot = 0.0_rlg
+      END IF
+
       patch => patches%first
       DO n = 1, patches%nb
          IF (patch%species == 'anchovy') THEN
+            id_species = 1
             lstr = lenstr(fileanchovy)
             OPEN (52, file=fileanchovy(1:lstr), status='old', form='formatted', access='sequential')
             READ (52, deb_para)
@@ -188,6 +202,7 @@ CONTAINS
          END IF
 
          IF (patch%species == 'sardine') THEN
+            id_species = 2
             lstr = lenstr(filesardine)
             OPEN (51, file=filesardine(1:lstr), status='old', form='formatted', access='sequential')
             READ (51, deb_para)
@@ -206,11 +221,19 @@ CONTAINS
             file_inp = trim(patch%file_inp)
             CALL ionc4_openr(file_inp, .false.)
 
-            required_restart_vars = (/ 'EDEB           ', 'HDEB           ', &
-                                       'RDEB           ', 'GAM            ', &
-                                       'NEGGS          ', 'WEIGHT         ', &
-                                       'NUM            ', 'DAYSPAWN       ', &
-                                       'YEARSPAWN      ', 'ZOOM           ' /)
+            required_restart_vars(1) = 'EDEB'
+            required_restart_vars(2) = 'HDEB'
+            required_restart_vars(3) = 'RDEB'
+            required_restart_vars(4) = 'GAM'
+            required_restart_vars(5) = 'NEGGS'
+            required_restart_vars(6) = 'WEIGHT'
+            required_restart_vars(7) = 'NUM'
+            required_restart_vars(8) = 'DAYSPAWN'
+            required_restart_vars(9) = 'YEARSPAWN'
+            required_restart_vars(10) = 'ZOOM'
+            required_restart_vars(11) = 'SEASON'
+            required_restart_vars(12) = 'NBATCH'
+            required_restart_vars(13) = 'NEGGS_TOT'
             DO ivar = 1, UBOUND(required_restart_vars, 1)
                CALL ionc4_var_exists(file_inp, trim(required_restart_vars(ivar)), found_restart_var)
                IF (.NOT. found_restart_var) THEN
@@ -233,8 +256,9 @@ CONTAINS
             ALLOCATE (edeb_nc(nb_part_nc), hdeb_nc(nb_part_nc), rdeb_nc(nb_part_nc), &
                       gam_nc(nb_part_nc), wdeb_nc(nb_part_nc))
             ALLOCATE (neggs_nc(nb_part_nc), daysp_nc(nb_part_nc), yearsp_nc(nb_part_nc), &
-                      season_nc(nb_part_nc))
+                      season_nc(nb_part_nc), nbatch_nc(nb_part_nc))
             ALLOCATE (num_nc(nb_part_nc), zoom_nc(nb_part_nc))
+            ALLOCATE (neggs_tot_nc(nb_part_nc))
 
             ! CALL ionc4_openr(trim(file_inp), .false.)
             ! Read time dimension in input file to open last time in restart file
@@ -251,7 +275,9 @@ CONTAINS
             CALL ionc4_read_trajt(file_inp, "DAYSPAWN", daysp_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "YEARSPAWN", yearsp_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "ZOOM", zoom_nc, 1, nb_part_nc, idimt)
-            !CALL ionc4_read_trajt (file_inp, "SEASON",    season_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "SEASON", season_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "NBATCH", nbatch_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "NEGGS_TOT", neggs_tot_nc, 1, nb_part_nc, idimt)
             CALL ionc4_close(file_inp)
 
             DO m = 1, patch%nb_part_alloc
@@ -280,10 +306,13 @@ CONTAINS
                patch%particles(m)%dayspawn = daysp_nc(index_num)
                patch%particles(m)%yearspawn = yearsp_nc(index_num)
                patch%particles(m)%zoom = zoom_nc(index_num)
+               patch%particles(m)%season = season_nc(index_num) == 1
+               patch%particles(m)%Nbatch = nbatch_nc(index_num)
+               patch%particles(m)%Neggs_tot = neggs_tot_nc(index_num)
             END DO
 
-            DEALLOCATE (edeb_nc, hdeb_nc, rdeb_nc, gam_nc, wdeb_nc, neggs_nc, daysp_nc, yearsp_nc, season_nc)
-            DEALLOCATE (num_nc, zoom_nc)
+            DEALLOCATE (edeb_nc, hdeb_nc, rdeb_nc, gam_nc, wdeb_nc, neggs_nc, daysp_nc, yearsp_nc)
+            DEALLOCATE (season_nc, nbatch_nc, num_nc, zoom_nc, neggs_tot_nc)
          END IF  ! Restart
 
          ! Les caracteristiques des oeufs d'une meme espece proviennent d'un seul et meme fichier de forcage.
@@ -476,6 +505,32 @@ CONTAINS
             patch%particles(m)%NRJ_V = NRJ_V
             patch%particles(m)%NRJ_g = NRJ_g
 
+            ! Rebuild restart aggregates
+            IF (restart .AND. patch%particles(m)%super > 1.0_rsh .AND. &
+                patch%particles(m)%flag /= -valmanq) THEN
+               IF (patch%particles(m)%stage >= 3) &
+                  struc_ad(id_species) = struc_ad(id_species) + &
+                     patch%particles(m)%WV*patch%particles(m)%super
+
+               IF (initialize_catch .AND. patch%particles(m)%stage >= 5 .AND. &
+                   patch%particles(m)%AgeClass >= 1) THEN
+                  IF (id_species == 1) THEN
+                     number_tot(id_species) = number_tot(id_species) + patch%particles(m)%super* &
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel_a, beta_sel_a)
+                     weight_tot(id_species) = weight_tot(id_species) + &
+                        patch%particles(m)%Wdeb*patch%particles(m)%super* &
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel_a, beta_sel_a)
+                  ELSE
+                     number_tot(id_species) = number_tot(id_species) + patch%particles(m)%super* &
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel_s, beta_sel_s)
+                     weight_tot(id_species) = weight_tot(id_species) + &
+                        patch%particles(m)%Wdeb*patch%particles(m)%super* &
+                        selec_dome_or_asymp(patch%particles(m)%size, alpha_sel_s, beta_sel_s)
+                  END IF
+               END IF
+
+            END IF
+
             ! -- Reproduction
             IF (.NOT. restart) THEN
                patch%particles(m)%yearspawn = aaaa
@@ -506,6 +561,31 @@ CONTAINS
          patch => patch%next
 
       END DO  ! loop on patch (n)
+
+      IF (restart) THEN
+         DO is = 1, nb_species
+            CALL_MPI ADD_ALL_MPI_REAL(struc_ad(is))
+            struc_ad_dd_DEB(is) = struc_ad(is)
+            struc_ad(is) = 0.0_rsh
+
+            IF (initialize_catch) THEN
+               CALL_MPI ADD_ALL_MPI_REAL(number_tot(is))
+               CALL_MPI ADD_ALL_MPI_REAL(weight_tot(is))
+               IF (number_tot(is) > 0.0_rlg) THEN
+                  Wdeb_mean(is) = weight_tot(is)/number_tot(is)
+                  biom_tot(is) = weight_tot(is)
+               ELSE
+                  Wdeb_mean(is) = 0.0_rlg
+                  biom_tot(is) = 0.0_rlg
+               END IF
+            ELSE
+               Wdeb_mean(is) = 0.0_rlg
+               biom_tot(is) = 0.0_rlg
+            END IF
+            number_tot(is) = 0.0_rlg
+            weight_tot(is) = 0.0_rlg
+         END DO
+      END IF
 
    END SUBROUTINE deb_init
 

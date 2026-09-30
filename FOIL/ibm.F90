@@ -130,7 +130,7 @@ CONTAINS
 
       LOGICAL :: found_yearref, found_t_spawn
       LOGICAL :: found_restart_var
-      CHARACTER(LEN=16), DIMENSION(14) :: required_restart_vars
+      CHARACTER(LEN=16), DIMENSION(17) :: required_restart_vars
 
       INTEGER :: nb_part_nc ! Number of particles in netcdf for patch
       INTEGER :: duration_ibm, nbSizeClass
@@ -151,6 +151,7 @@ CONTAINS
       ! Temporary arrays to read data from netcdf if restart
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: flag_nc, temp_nc, super_nc
       REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: dens_nc, size_nc, drate_nc
+      REAL(KIND=rsh), ALLOCATABLE, DIMENSION(:)       :: death_deb_nc, death_fish_nc, death_nat_nc
       REAL(KIND=rlg), ALLOCATABLE, DIMENSION(:)       :: dayb_nc
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, AgeClass_nc, num_nc
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: hmove_nc
@@ -254,13 +255,23 @@ CONTAINS
             ! nb_part_nc = patch%nb_part_total ! denis
             CALL ionc4_openr(file_inp, .false.) ! clara
 
-            required_restart_vars = (/ 'flag            ', 'TEMP            ', &
-                                       'SIZE            ', 'DENSITY         ', &
-                                       'STAGE           ', 'NUMBER          ', &
-                                       'DRATE           ', 'DAYBIRTH        ', &
-                                       'AGE             ', 'AGECLASS        ', &
-                                       'NUM             ', 'DAYJUV          ', &
-                                       'DENSPAWN        ', 'HMOVE           ' /)
+            required_restart_vars(1) = 'flag'
+            required_restart_vars(2) = 'TEMP'
+            required_restart_vars(3) = 'SIZE'
+            required_restart_vars(4) = 'DENSITY'
+            required_restart_vars(5) = 'STAGE'
+            required_restart_vars(6) = 'NUMBER'
+            required_restart_vars(7) = 'DRATE'
+            required_restart_vars(8) = 'DAYBIRTH'
+            required_restart_vars(9) = 'AGE'
+            required_restart_vars(10) = 'AGECLASS'
+            required_restart_vars(11) = 'NUM'
+            required_restart_vars(12) = 'DAYJUV'
+            required_restart_vars(13) = 'DENSPAWN'
+            required_restart_vars(14) = 'HMOVE'
+            required_restart_vars(15) = 'Death_DEB'
+            required_restart_vars(16) = 'Death_FISH'
+            required_restart_vars(17) = 'Death_NAT'
             DO ivar = 1, UBOUND(required_restart_vars, 1)
                CALL ionc4_var_exists(file_inp, trim(required_restart_vars(ivar)), found_restart_var)
                IF (.NOT. found_restart_var) THEN
@@ -288,6 +299,7 @@ CONTAINS
             ALLOCATE (dens_nc(nb_part_nc), super_nc(nb_part_nc), drate_nc(nb_part_nc), dayb_nc(nb_part_nc))
             ALLOCATE (age_nc(nb_part_nc), AgeClass_nc(nb_part_nc), num_nc(nb_part_nc))
             ALLOCATE (hmove_nc(nb_part_nc))
+            ALLOCATE (death_deb_nc(nb_part_nc), death_fish_nc(nb_part_nc), death_nat_nc(nb_part_nc))
 
             ! CALL ionc4_openr(trim(file_inp), .false.)
             CALL ionc4_gatt_char_read(file_inp, 'run_id', patch%run_id)
@@ -305,6 +317,9 @@ CONTAINS
             CALL ionc4_read_trajt(file_inp, "AGECLASS", AgeClass_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM", num_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "HMOVE", hmove_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "Death_DEB", death_deb_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "Death_FISH", death_fish_nc, 1, nb_part_nc, idimt)
+            CALL ionc4_read_trajt(file_inp, "Death_NAT", death_nat_nc, 1, nb_part_nc, idimt)
 
             DO m = 1, patch%nb_part_alloc
                IF (patch%nb_part_alloc == 0) CYCLE ! To avoid an error because of a proc without any particle at restart
@@ -332,6 +347,9 @@ CONTAINS
                patch%particles(m)%age = age_nc(index_num)
                patch%particles(m)%AgeClass = AgeClass_nc(index_num)
                patch%particles(m)%hmove = hmove_nc(index_num)
+               patch%particles(m)%Death_DEB = death_deb_nc(index_num)
+               patch%particles(m)%Death_FISH = death_fish_nc(index_num)
+               patch%particles(m)%Death_NAT = death_nat_nc(index_num)
             END DO
 
             CALL ionc4_read_trajt(trim(file_inp), "DAYJUV", dayb_nc, 1, nb_part_nc, idimt)
@@ -365,6 +383,7 @@ CONTAINS
 
             DEALLOCATE (flag_nc, temp_nc, size_nc, stage_nc, dens_nc, super_nc, drate_nc, dayb_nc)
             DEALLOCATE (age_nc, AgeClass_nc, num_nc, hmove_nc)
+            DEALLOCATE (death_deb_nc, death_fish_nc, death_nat_nc)
 
             ! update the date of restart, and savetraj is delayed not to have twice same time step in output
             ! CALL ionc4_read_time(trim(file_inp), 1, patch%t_beg)
@@ -403,7 +422,7 @@ CONTAINS
       END DO         ! loop on patches%nb
 
       ! No need of loop to initialize DEB parameters
-      IF (debuse) CALL deb_init(lagrangian_restart)      ! Init DEB
+      IF (debuse) CALL deb_init(lagrangian_restart, fish_mort .AND. fishing_strategy == 'Catch') ! Init DEB
       IF (adult_move) CALL fish_move_init(Istr, Iend, Jstr, Jend)    ! Init fish_move module
 
       yearclass = current_year + 1                ! Init yearclass to update fish's Ageclass
@@ -1422,7 +1441,8 @@ CONTAINS
       INTEGER, ALLOCATABLE, DIMENSION(:)   :: hmove_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_out, f_out, Wdeb_out, Denspawn_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_out, H_out, R_out, Neggs_out, NRJ_out, Gam_out
-      INTEGER, ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out, yearspawn_out, season_out
+      INTEGER, ALLOCATABLE, DIMENSION(:)   :: dayjuv_out, dayspawn_out, yearspawn_out, season_out, nbatch_out
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: neggs_tot_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: deaddeb_out, deadfishing_out, deadnatural_out
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_out
       TYPE(type_patch), POINTER    :: patch
@@ -1443,8 +1463,8 @@ CONTAINS
       INTEGER, ALLOCATABLE, DIMENSION(:)          :: age_glob, AgeClass_glob
       INTEGER, ALLOCATABLE, DIMENSION(:)          :: hmove_glob
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: food_glob, f_glob, Wdeb_glob, Denspawn_glob
-      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_glob, H_glob, R_glob, Neggs_glob, Gam_glob
-      INTEGER, ALLOCATABLE, DIMENSION(:)          :: dayjuv_glob, dayspawn_glob, yearspawn_glob
+      REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: E_glob, H_glob, R_glob, Neggs_glob, Neggs_tot_glob, Gam_glob
+      INTEGER, ALLOCATABLE, DIMENSION(:)          :: dayjuv_glob, dayspawn_glob, yearspawn_glob, season_glob, nbatch_glob
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: deaddeb_glob, deadfishing_glob, deadnatural_glob
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_glob
 #endif
@@ -1554,6 +1574,8 @@ CONTAINS
                   fill_value=fillval, l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "NEGGS", "Number", "Number of eggs", &
                   fill_value=fillval, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "NEGGS_TOT", "Number", "Cumulative number of spawned eggs", &
+                  fill_value=fillval, l_out_nc4par=l_out_nc4par)
                !CALL ionc4_createvar_traj(file_out, "NRJ","J/g","Energy Density",                              &
                !                                    fill_value=fillval,  l_out_nc4par=l_out_nc4par)
 
@@ -1565,8 +1587,10 @@ CONTAINS
                   fill_value=0, l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "ZOOM", "", "Zoom value", &
                   fill_value=fillval, l_out_nc4par=l_out_nc4par)
-               !CALL ionc4_createvar_traj(file_out, "SEASON","","Wether within spawning season",               &
-               !                                    fill_value=-1, ndims=1, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "SEASON", "", "Whether within spawning season", &
+                  fill_value=-1, l_out_nc4par=l_out_nc4par)
+               CALL ionc4_createvar_traj(file_out, "NBATCH", "", "Cumulative number of spawned batches", &
+                  fill_value=-1, l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "DENSPAWN", "sigma", "Density of egg at spawning", &
                   fill_value=fillval, l_out_nc4par=l_out_nc4par)
                CALL ionc4_createvar_traj(file_out, "Death_DEB", "", "Number dead by starvation", &
@@ -1605,7 +1629,8 @@ CONTAINS
 
          ALLOCATE (hmove_out(nb_part))
          ALLOCATE (dayjuv_out(nb_part), dayspawn_out(nb_part))
-         ALLOCATE (yearspawn_out(nb_part), season_out(nb_part))
+         ALLOCATE (yearspawn_out(nb_part), season_out(nb_part), nbatch_out(nb_part))
+         ALLOCATE (neggs_tot_out(nb_part))
          ALLOCATE (zoom_out(nb_part))
          ALLOCATE (Denspawn_out(nb_part))
          ALLOCATE (food_out(nb_part))
@@ -1617,7 +1642,8 @@ CONTAINS
          ALLOCATE (deadfishing_out(nb_part))
          ALLOCATE (deadnatural_out(nb_part))
 
-         dayjuv_out(:) = 0; dayspawn_out(:) = 0; yearspawn_out(:) = 0; season_out(:) = -1
+         dayjuv_out(:) = 0; dayspawn_out(:) = 0; yearspawn_out(:) = 0
+         season_out(:) = -1; nbatch_out(:) = -1; neggs_tot_out(:) = fillval
          Denspawn_out(:) = fillval; food_out(:) = fillval; Wdeb_out(:) = fillval
          H_out(:) = fillval; E_out(:) = fillval; R_out(:) = fillval; Gam_out(:) = fillval
          f_out(:) = fillval; zoom_out(:) = 0; Neggs_out(:) = fillval
@@ -1656,8 +1682,11 @@ CONTAINS
             Gam_out(p) = REAL(particle%Gam, kind=out)
             Wdeb_out(p) = REAL(particle%Wdeb, kind=out)
             Neggs_out(p) = REAL(particle%Neggs, kind=out)
+            Neggs_tot_out(p) = REAL(particle%Neggs_tot, kind=out)
             yearspawn_out(p) = REAL(particle%yearspawn, kind=out)
             dayspawn_out(p) = REAL(particle%dayspawn, kind=out)
+            season_out(p) = MERGE(1, 0, particle%season)
+            nbatch_out(p) = particle%Nbatch
             dayjuv_out(p) = REAL(particle%dayjuv, kind=out)
             denspawn_out(p) = REAL(particle%denspawn, kind=out)
             zoom_out(p) = REAL(particle%zoom, kind=out)
@@ -1702,8 +1731,11 @@ CONTAINS
          CALL MPI_gather_sort_var(nb_part, Gam_out(1:nb_part), counts, displs, nb_part_total, iperm, Gam_glob)
          CALL MPI_gather_sort_var(nb_part, Wdeb_out(1:nb_part), counts, displs, nb_part_total, iperm, Wdeb_glob)
          CALL MPI_gather_sort_var(nb_part, Neggs_out(1:nb_part), counts, displs, nb_part_total, iperm, Neggs_glob)
+         CALL MPI_gather_sort_var(nb_part, Neggs_tot_out(1:nb_part), counts, displs, nb_part_total, iperm, Neggs_tot_glob)
          CALL MPI_gather_sort_var(nb_part, yearspawn_out(1:nb_part), counts, displs, nb_part_total, iperm, yearspawn_glob)
          CALL MPI_gather_sort_var(nb_part, dayspawn_out(1:nb_part), counts, displs, nb_part_total, iperm, dayspawn_glob)
+         CALL MPI_gather_sort_var(nb_part, season_out(1:nb_part), counts, displs, nb_part_total, iperm, season_glob)
+         CALL MPI_gather_sort_var(nb_part, nbatch_out(1:nb_part), counts, displs, nb_part_total, iperm, nbatch_glob)
          CALL MPI_gather_sort_var(nb_part, dayjuv_out(1:nb_part), counts, displs, nb_part_total, iperm, dayjuv_glob)
          CALL MPI_gather_sort_var(nb_part, Denspawn_out(1:nb_part), counts, displs, nb_part_total, iperm, Denspawn_glob)
          CALL MPI_gather_sort_var(nb_part, zoom_out(1:nb_part), counts, displs, nb_part_total, iperm, zoom_glob)
@@ -1746,8 +1778,11 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'GAM', Gam_glob(1:num2), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'WEIGHT', Wdeb_glob(1:num2), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'NEGGS', Neggs_glob(1:num2), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'NEGGS_TOT', Neggs_tot_glob(1:num2), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'YEARSPAWN', yearspawn_glob(1:num2), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DAYSPAWN', dayspawn_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'SEASON', season_glob(1:num2), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'NBATCH', nbatch_glob(1:num2), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DAYJUV', dayjuv_glob(1:num2), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DENSPAWN', Denspawn_glob(1:num2), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'ZOOM', zoom_glob(1:num2), num1, num2, 0, fillval)
@@ -1759,8 +1794,9 @@ CONTAINS
          DEALLOCATE (lat_glob, lon_glob, zpos_glob, h0pos_glob, num_glob, flag_glob)
          DEALLOCATE (temp_glob, stage_glob, size_glob, nb_glob, dens_glob, Drate_glob)
          DEALLOCATE (dateo_glob, age_glob, AgeClass_glob, hmove_glob)
-         DEALLOCATE (food_glob, f_glob, E_glob, H_glob, R_glob, Gam_glob, Wdeb_glob, Neggs_glob)
-         DEALLOCATE (yearspawn_glob, dayspawn_glob, dayjuv_glob, Denspawn_glob, zoom_glob)
+         DEALLOCATE (food_glob, f_glob, E_glob, H_glob, R_glob, Gam_glob, Wdeb_glob, Neggs_glob, Neggs_tot_glob)
+         DEALLOCATE (yearspawn_glob, dayspawn_glob, season_glob, nbatch_glob)
+         DEALLOCATE (dayjuv_glob, Denspawn_glob, zoom_glob)
          DEALLOCATE (deaddeb_glob, deadfishing_glob, deadnatural_glob)
 #else
          num1 = 1
@@ -1794,8 +1830,11 @@ CONTAINS
          CALL ionc4_write_trajt(file_out, 'GAM', Gam_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'WEIGHT', Wdeb_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'NEGGS', Neggs_out(1:nb_part), num1, num2, 0, fillval)
+         CALL ionc4_write_trajt(file_out, 'NEGGS_TOT', Neggs_tot_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'YEARSPAWN', yearspawn_out(1:nb_part), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DAYSPAWN', dayspawn_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'SEASON', season_out(1:nb_part), num1, num2, 0, -1)
+         CALL ionc4_write_trajt(file_out, 'NBATCH', nbatch_out(1:nb_part), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DAYJUV', dayjuv_out(1:nb_part), num1, num2, 0, -1)
          CALL ionc4_write_trajt(file_out, 'DENSPAWN', denspawn_out(1:nb_part), num1, num2, 0, fillval)
          CALL ionc4_write_trajt(file_out, 'ZOOM', zoom_out(1:nb_part), num1, num2, 0, fillval)
@@ -1810,9 +1849,9 @@ CONTAINS
          DEALLOCATE (num_out, h0pos_out, flag_out, dens_out, temp_out, Drate_out)
          DEALLOCATE (size_out, dateo_out, stage_out, nb_out, age_out, AgeClass_out)
          DEALLOCATE (hmove_out)
-         DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out)
+         DEALLOCATE (dayjuv_out, dayspawn_out, yearspawn_out, season_out, nbatch_out)
          DEALLOCATE (Denspawn_out, food_out, Wdeb_out, zoom_out)
-         DEALLOCATE (Gam_out, H_out, E_out, R_out, Neggs_out)!, NRJ_out)
+         DEALLOCATE (Gam_out, H_out, E_out, R_out, Neggs_out, Neggs_tot_out)!, NRJ_out)
          DEALLOCATE (f_out)
          DEALLOCATE (deaddeb_out, deadfishing_out, deadnatural_out)
 
