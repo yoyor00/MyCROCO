@@ -176,7 +176,8 @@ C$OMP BARRIER
 
 C$OMP MASTER
       time=time_start+dt*float(iic-ntstart)
-      tdays=(time-time_start)*sec2day
+      ! tdays: elapsed days since the run's true start (restart-invariant)
+      tdays=(time-time_start+dt*float(ntstart-1))*sec2day
 
 #ifdef SOLVE3D
       nstp=1+mod(iic-ntstart,2)
