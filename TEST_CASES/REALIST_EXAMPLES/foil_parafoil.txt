@@ -27,8 +27,6 @@
 : dt_spawn          : interval (h) between spawning events
 : max_part          : maximum number of particles in each offspring patch and
 :                     its NetCDF trajectory file
-: duration_ibm_anc  : maximum anchovy lifespan (days)
-: duration_ibm_sar  : maximum sardine lifespan (days)
 : fish_mort         : enable or disable fishing mortality
 : fishing_strategy  : fishing-mortality method; accepted values are case-sensitive:
 :                     'historical' = prescribed historical mortality,
@@ -45,8 +43,6 @@
         repro          = .true.
         dt_spawn       = 24
         max_part       = 1500
-        duration_ibm_anc  = 1460
-        duration_ibm_sar  = 2980
         fish_mort         = .true.
         fishing_strategy  = 'Catch'
         multiplier_tac    = 0.8
@@ -78,33 +74,14 @@
       frac_deb_death = .false./
 :
 :-----------------------------------------------------------------------------
-: namibmfrc         EXTERNAL FORCING FILES
+: namibmfiles       SPECIES PARAMETER FILES
 :-----------------------------------------------------------------------------
 :
-: fileanchovy          : anchovy DEB parameter file
-: filesardine          : sardine DEB parameter file
-: catch_anc_bob        : monthly anchovy catch file for the Bay of Biscay
-: catch_sar_bob        : monthly sardine catch file for the Bay of Biscay
-: fileprobadistrib_anc : NetCDF file containing anchovy distribution probabilities
-: nbSizeClass_anc      : number of anchovy size classes in that file
-: sizemin_anc          : minimum anchovy length represented in that file (cm)
-: fileprobadistrib_sar : NetCDF file containing sardine distribution probabilities
-: nbSizeClass_sar      : number of sardine size classes in that file
-: sizemin_sar          : minimum sardine length represented in that file (cm)
+: fileanchovy : anchovy parameter file
+: filesardine : sardine parameter file
 :-----------------------------------------------------------------------------
 :
- &namibmfrc
-        fileanchovy          = 'TEST_CASES/REALIST_EXAMPLES/foil_deb_parameters_anc.txt'
-        catch_anc_bob        = 'TEST_CASES/REALIST_EXAMPLES/foil_catch_anc.txt'
-        fileprobadistrib_anc = 'CROCO_FILES/foil_probadistrib.nc'
-        nbSizeClass_anc      = 36
-        sizemin_anc          = 3.5
-        
-        filesardine          = 'TEST_CASES/REALIST_EXAMPLES/foil_deb_parameters_sar.txt'
-        catch_sar_bob        = 'TEST_CASES/REALIST_EXAMPLES/foil_catch_sar.txt'
-        fileprobadistrib_sar = 'CROCO_FILES/foil_probadistrib.nc'
-        nbSizeClass_sar      = 36 
-        sizemin_sar          = 3.5
-/
-
+ &namibmfiles
+        fileanchovy = 'TEST_CASES/REALIST_EXAMPLES/foil_parameters_anchovy.txt'
+        filesardine = 'TEST_CASES/REALIST_EXAMPLES/foil_parameters_sardine.txt'/
 

@@ -43,15 +43,15 @@ MODULE ibm
    !! * Shared module variables
 
    !! * Private variables
-   ! From paraibm namibmmove namelist
+   ! From parafoil namibmmove namelist
    REAL(kind=rsh)                                  :: w_max, alpha_w
-   ! From paraibm namibmmove namelist
+   ! From parafoil namibmmove namelist
    LOGICAL                                         :: adult_move
-   ! From paraibm namibmpop, activate or not repro
+   ! From parafoil namibmpop, activate or not repro
    LOGICAL                                         :: repro
-   ! From paraibm namibmpop, spawning interval in hours of patch
+   ! From parafoil namibmpop, spawning interval in hours of patch
    REAL(KIND=rlg)                                  :: dt_spawn
-   ! From paraibm namibmpop, max nb of particles in a nc file
+   ! From parafoil namibmpop, max nb of particles in a nc file
    INTEGER                                         :: max_part
 
    ! Logicals to manage spawn
@@ -63,9 +63,12 @@ MODULE ibm
    ! Type of reals in IBM output
    INTEGER, PARAMETER                              :: out = 4
 
-   ! From paraibm, namibmpop namelist arguments
+   ! From parafoil, namibmpop namelist arguments
    LOGICAL                                         :: fish_mort, density_dependent
    REAL(KIND=rsh)                                  :: multiplier_tac
+
+   ! Species-specific IBM parameters
+   REAL(KIND=rsh), DIMENSION(nb_species)            :: Z0_species, Ze_species, z_decay_species
 
    ! Variables pour la 2e methode de repro
    INTEGER, DIMENSION(nb_species)                   :: target_particles_per_spawn
@@ -109,9 +112,10 @@ CONTAINS
       USE comtraj, ONLY: iscreenlog
       USE comtraj, ONLY: type_particle, type_patch, patches, particle_restart, dtsave_traj
       USE comtraj, ONLY: debuse, F_Fix, ffix, file_food, file_NBSS, frac_deb_death, &
-                         fileanchovy, filesardine, fileprobadistrib_anc, nbSizeClass_anc, &
+                         fileanchovy, filesardine, &
+                         fileprobadistrib_anc, nbSizeClass_anc, &
                          sizemin_anc, fileprobadistrib_sar, nbSizeClass_sar, sizemin_sar, &
-                         catch_anc_bob, catch_sar_bob, fishing_strategy
+                         catch_anc, catch_sar, fishing_strategy
 
       !! * Arguments
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
@@ -120,7 +124,7 @@ CONTAINS
 
       !! * Local declarations
       CHARACTER(LEN=lchain) :: file_inp ! Name of netcdf restart file with data
-      INTEGER :: lstr, lenstr ! To read paraibm file
+      INTEGER :: lstr, lenstr ! To read parafoil file
       INTEGER :: idimt ! Read last time in restart file
       INTEGER :: num ! For restart loop to keep good num info
 
@@ -128,12 +132,15 @@ CONTAINS
       LOGICAL :: found_hmove
 
       INTEGER :: nb_part_nc ! Number of particles in netcdf for patch
-      INTEGER :: duration_ibm_anc, duration_ibm_sar ! Life time of anchovy and sardine
+      INTEGER :: duration_ibm, nbSizeClass
+      REAL(KIND=rlg) :: sizemin
+      CHARACTER(LEN=lchain) :: catch, fileprobadistrib
 
       INTEGER :: i, j, n, m, il ! Integers for loops
       INTEGER :: index_num ! Integers for indexing in restart
       INTEGER :: ierr_mpi
       CHARACTER(LEN=lchain) :: current_run_id
+      REAL(KIND=rsh) :: Z0, Ze, z_decay
       ! To convert date to seconds or seconds to date
       CHARACTER(len=19) :: tool_sectodat
       INTEGER :: mm_clock, hh, minu, sec ! jj and aaaa are saved as current_year/day for later
@@ -147,27 +154,59 @@ CONTAINS
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: stage_nc, age_nc, AgeClass_nc, num_nc
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: hmove_nc
 
-      ! Definition of namelists in paraibm
+      ! Definition of namelists in parafoil
       NAMELIST /namibmmove/ w_max, alpha_w, adult_move
-      NAMELIST /namibmpop/ repro, dt_spawn, max_part, duration_ibm_anc, duration_ibm_sar, &
-         fish_mort, fishing_strategy, multiplier_tac, density_dependent
+      NAMELIST /namibmpop/ repro, dt_spawn, max_part, fish_mort, fishing_strategy, &
+         multiplier_tac, density_dependent
       NAMELIST /namibmdeb/ debuse, F_Fix, ffix, file_NBSS, file_food, frac_deb_death
-      NAMELIST /namibmfrc/ fileanchovy, filesardine, catch_anc_bob, catch_sar_bob, fileprobadistrib_anc, &
-         nbSizeClass_anc, sizemin_anc, fileprobadistrib_sar, nbSizeClass_sar, sizemin_sar
+      NAMELIST /namibmfiles/ fileanchovy, filesardine
+      NAMELIST /ibm_species/ duration_ibm
+      NAMELIST /ibm_external_forcing/ catch, fileprobadistrib, nbSizeClass, sizemin
+      NAMELIST /ibm_mortality/ Z0, Ze, z_decay
 
 #include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
       !! * Executable part
 
-      ! namelists in paraibm.txt
+      ! namelists in parafoil.txt
       !--------------------------
       lstr = lenstr(foilname)
       OPEN (50, file=foilname(1:lstr), status='old', form='formatted', access='sequential')
       READ (50, namibmmove)
       READ (50, namibmpop)
       READ (50, namibmdeb)
-      READ (50, namibmfrc)
+      READ (50, namibmfiles)
       CLOSE (50)
+
+      lstr = lenstr(fileanchovy)
+      OPEN (51, file=fileanchovy(1:lstr), status='old', form='formatted', access='sequential')
+      READ (51, ibm_species)
+      READ (51, ibm_external_forcing)
+      READ (51, ibm_mortality)
+      CLOSE (51)
+      duration(1) = duration_ibm
+      catch_anc = catch
+      fileprobadistrib_anc = fileprobadistrib
+      nbSizeClass_anc = nbSizeClass
+      sizemin_anc = sizemin
+      Z0_species(1) = Z0
+      Ze_species(1) = Ze
+      z_decay_species(1) = z_decay
+
+      lstr = lenstr(filesardine)
+      OPEN (51, file=filesardine(1:lstr), status='old', form='formatted', access='sequential')
+      READ (51, ibm_species)
+      READ (51, ibm_external_forcing)
+      READ (51, ibm_mortality)
+      CLOSE (51)
+      duration(2) = duration_ibm
+      catch_sar = catch
+      fileprobadistrib_sar = fileprobadistrib
+      nbSizeClass_sar = nbSizeClass
+      sizemin_sar = sizemin
+      Z0_species(2) = Z0
+      Ze_species(2) = Ze
+      z_decay_species(2) = z_decay
 
       ! save into simu.log
       !-------------------
@@ -350,8 +389,6 @@ CONTAINS
          patch => patch%next
       END DO         ! loop on patches%nb
 
-      duration = (/duration_ibm_anc, duration_ibm_sar/) ! Store in one variable life expectancy for both species
-
       ! No need of loop to initialize DEB parameters
       IF (debuse) CALL deb_init(particle_restart)      ! Init DEB
       IF (adult_move) CALL fish_move_init(Istr, Iend, Jstr, Jend)    ! Init fish_move module
@@ -444,7 +481,6 @@ CONTAINS
       USE ibmmove, ONLY: fish_move
       USE debmodel, ONLY: deb_egg_init, deb_cycle
       USE debmodel, ONLY: readfood3d
-      USE debmodel, ONLY: Zaa, Zas, Zea, Zes, za, zs
       USE comtraj, ONLY: type_particle, type_patch, patches, patch_list_append, resize_patch
       USE comtraj, ONLY: dir_pathout, hadv
       USE comtraj, ONLY: jjulien, struc_ad, struc_ad_dd_DEB
@@ -930,9 +966,13 @@ CONTAINS
             ! Natural Mortality - size dependent (Menu et al.)
             Z1(ind_species) = 0.0_rlg
             IF (patch%species == 'anchovy') THEN        ! Equivalent to (ind_species == 1)
-               Z1(ind_species) = (Zaa + (Zea - Zaa)*exp(-za*(particle%size - 0.0855_rlg))) ! size egg EN DUR
+               Z1(ind_species) = Z0_species(ind_species) + &
+                  (Ze_species(ind_species) - Z0_species(ind_species))* &
+                  exp(-z_decay_species(ind_species)*(particle%size - 0.0855_rlg)) ! size egg EN DUR
             ELSE IF (patch%species == 'sardine') THEN   ! Equivalent to (ind_species == 2)
-               Z1(ind_species) = (Zas + (Zes - Zas)*exp(-zs*(particle%size - 0.1608_rlg))) ! size egg EN DUR
+               Z1(ind_species) = Z0_species(ind_species) + &
+                  (Ze_species(ind_species) - Z0_species(ind_species))* &
+                  exp(-z_decay_species(ind_species)*(particle%size - 0.1608_rlg)) ! size egg EN DUR
             END IF
 
             ! The mortality of Somarakis is daily, so 86400 is OK

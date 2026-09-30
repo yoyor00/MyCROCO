@@ -1,7 +1,63 @@
 :===============================================================================
-: ANCHOVY DYNAMIC ENERGY BUDGET (DEB) PARAMETERS
-: Parameters are grouped into the two namelists read by debmodel.F90.
+: ANCHOVY SPECIES PARAMETERS
+: Parameters are grouped into the namelists read by ibm.F90 and debmodel.F90.
 :===============================================================================
+:
+:------------------------------------------------------------------------------
+: ibm_species      SPECIES-SPECIFIC IBM SETTINGS
+:------------------------------------------------------------------------------
+:
+: duration_ibm : maximum lifespan (days)
+:------------------------------------------------------------------------------
+:
+ &ibm_species
+    duration_ibm = 1460 /
+:
+:------------------------------------------------------------------------------
+: ibm_external_forcing   SPECIES-SPECIFIC EXTERNAL FORCING FILES
+:------------------------------------------------------------------------------
+:
+: catch            : monthly catch file
+: fileprobadistrib : NetCDF file containing distribution probabilities
+: nbSizeClass      : number of size classes in the distribution file
+: sizemin          : minimum length represented in the distribution file (cm)
+:------------------------------------------------------------------------------
+:
+ &ibm_external_forcing
+    catch            = './inputs/init_FOIL/DEB_inputs/low_catch.txt'
+    fileprobadistrib = './inputs/init_FOIL/DEB_inputs/probadistrib_1_2_Benguela_LR.nc'
+    nbSizeClass      = 36
+    sizemin          = 3.5 /
+:
+:-------------------------------------------------------------------------------
+: ibm_mortality   SPECIES-SPECIFIC NATURAL-MORTALITY PARAMETERS
+:-------------------------------------------------------------------------------
+:
+: Z0      : asymptotic natural-mortality rate at large body size (d-1)
+: Ze      : natural-mortality rate at egg size (d-1)
+: z_decay : exponential decay coefficient controlling the decrease in mortality
+:           with increasing body length (cm-1)
+:-------------------------------------------------------------------------------
+:
+ &ibm_mortality
+    Z0      = 0.0
+    Ze      = 0.056
+    z_decay = 0.136 /
+:
+:-------------------------------------------------------------------------------
+: ibm_density_dependency   DENSITY-DEPENDENT FEEDING PARAMETERS
+:-------------------------------------------------------------------------------
+:
+: gamma     : exponent controlling the effect of individual structural dry mass
+:             on density dependence (dimensionless)
+: K_biomass : biomass-scaling coefficient converting total structural dry mass
+:             into a food-equivalent density term
+:             (g^(1-gamma) m3 (mg C)-1, in the model formulation)
+:-------------------------------------------------------------------------------
+:
+ &ibm_density_dependency
+    gamma     = 0.384
+    K_biomass = 6.156 /
 :
 :------------------------------------------------------------------------------
 : deb_para          SPECIES-SPECIFIC DEB AND REPRODUCTION PARAMETERS
@@ -87,7 +143,7 @@
     Lj      = 4.0
     TR      = 286.0
     E_i     = 0.110
-    R_i     = 0.0/
+    R_i     = 0.0 /
 :
 :===============================================================================
 :===============================================================================

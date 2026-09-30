@@ -19,7 +19,7 @@ MODULE debmodel
 #ifdef FOIL
 
    USE module_ibm         ! time,sc_w,h
-   USE comtraj, ONLY: kmax, rsh, rlg, lchain, valmanq, &
+   USE comtraj, ONLY: kmax, rsh, rlg, lchain, valmanq, nb_species, &
                       type_particle, type_patch, patches
 
    IMPLICIT NONE
@@ -82,29 +82,9 @@ MODULE debmodel
    REAL(kind=rsh)                  :: Rfbatch
    REAL(kind=rsh)                  :: SF
 
-   ! Mortality and density-dependency parameters (Menu et al. 2023)
-   ! REAL(KIND=rsh)                  :: gammaA     = 0.447_rsh ! with selectivity
-   ! REAL(KIND=rsh)                  :: K_biomassA = 10.670_rlg ! with selectivity
-   ! REAL(KIND=rsh)                  :: gammaS     = 0.703343166175024681053_rsh ! with selectivity
-   ! REAL(KIND=rsh)                  :: K_biomassS = 85.315712187958894219264_rlg ! with selectivity
-   ! REAL(KIND=rsh), PUBLIC          :: Zea       = 0.063 ! with selectivity
-   ! REAL(KIND=rsh), PUBLIC          :: Zes       = 0.072 ! with selectivity
-   ! REAL(KIND=rsh), PUBLIC          :: za        = 0.154 ! with selectivity
-   ! REAL(KIND=rsh), PUBLIC          :: zs        = 0.179 ! with selectivity
-
-   REAL(KIND=rsh), PUBLIC          :: Zaa = 0.0_rsh
-   REAL(KIND=rsh), PUBLIC          :: Zas = 0.0_rsh
+   ! Density-dependency parameters (Menu et al. 2023)
    REAL(KIND=rsh)                  :: frac_deb = 0.000999999_rsh
-
-   ! without selectivity
-   REAL(KIND=rsh)                  :: gammaA = 0.384_rsh
-   REAL(KIND=rsh)                  :: K_biomassA = 6.156_rsh
-   REAL(KIND=rsh), PUBLIC          :: Zea = 0.056_rsh
-   REAL(KIND=rsh), PUBLIC          :: za = 0.136_rsh
-   REAL(KIND=rsh)                  :: gammaS = 0.387_rsh
-   REAL(KIND=rsh)                  :: K_biomassS = 3.626_rsh
-   REAL(KIND=rsh), PUBLIC          :: Zes = 0.075_rsh
-   REAL(KIND=rsh), PUBLIC          :: zs = 0.201_rsh
+   REAL(KIND=rsh), DIMENSION(nb_species) :: gamma_species, K_biomass_species
 
    !!==============================================================================================
 
@@ -133,7 +113,7 @@ CONTAINS
       USE ionc4, ONLY: ionc4_openr, ionc4_read_trajt, ionc4_close, &
                        ionc4_read_dimt, ionc4_read_dimtraj
       USE ibmtools, ONLY: gasdev_s
-      USE comtraj, ONLY: fileanchovy, filesardine, catch_anc_bob, catch_sar_bob
+      USE comtraj, ONLY: fileanchovy, filesardine, catch_anc, catch_sar
       USE comtraj, ONLY: mat_catch, fishing_strategy
       USE comtraj, ONLY: init_anchovy_egg, init_sardine_egg
       USE comtraj, ONLY: l_repro_random
@@ -150,6 +130,7 @@ CONTAINS
 
       REAL(KIND=rsh) :: WV, WE, WR, WG, NRJ_V, NRJ_g, Wat, Wash, L, Wdeb, NRJ
       REAL(KIND=rsh) :: zoom
+      REAL(KIND=rsh) :: gamma, K_biomass
       INTEGER :: draw_id ! Counter to tell successive random draws apart (see lag_random_number)
       INTEGER :: jj, mm_clock, aaaa, hh, minu, sec
       CHARACTER(len=19) :: tool_sectodat
@@ -175,6 +156,21 @@ CONTAINS
       NAMELIST /deb_para/ pAm, pMi, EG, vc, kap, Kx, Hp, TA, K, shapeb, lfactor, E0, Rfbatch, SF
       NAMELIST /deb_fixed_param/ kj, Hb, Hj, T1, TAL, TL, shape, d_V, rho_V, rho_E, &
          rho_R, rho_Gam, Kr, Sizeb, Lj, TR, E_i, R_i
+      NAMELIST /ibm_density_dependency/ gamma, K_biomass
+
+      lstr = lenstr(fileanchovy)
+      OPEN (51, file=fileanchovy(1:lstr), status='old', form='formatted', access='sequential')
+      READ (51, ibm_density_dependency)
+      CLOSE (51)
+      gamma_species(1) = gamma
+      K_biomass_species(1) = K_biomass
+
+      lstr = lenstr(filesardine)
+      OPEN (51, file=filesardine(1:lstr), status='old', form='formatted', access='sequential')
+      READ (51, ibm_density_dependency)
+      CLOSE (51)
+      gamma_species(2) = gamma
+      K_biomass_species(2) = K_biomass
 
       CALL tool_decompdate(tool_sectodat(time), jj, mm_clock, aaaa, hh, minu, sec)
 
@@ -466,10 +462,10 @@ CONTAINS
          ! IF CATCH as fishing strategy
          IF (fishing_strategy == 'Catch') THEN
             IF (patch%species == 'anchovy') THEN
-               file_catch = catch_anc_bob
+               file_catch = catch_anc
                id_species = 1
             ELSE IF (patch%species == 'sardine') THEN
-               file_catch = catch_sar_bob
+               file_catch = catch_sar
                id_species = 2
             END IF
 
@@ -654,7 +650,7 @@ CONTAINS
       REAL(kind=rsh) :: dR, dH, dE, dL, dGam
       REAL(KIND=rsh) :: Wat, Wash
       LOGICAL :: lastbatch
-      INTEGER :: ierr_mpi
+      INTEGER :: ierr_mpi, ind_species
 
       !!----------------------------------------------------------------------
       !! * Executable part
@@ -698,25 +694,26 @@ CONTAINS
       X = 0.0_rsh
       K_food = K !  + L * 10; % account for changes in preference
       f = ffix
+      ind_species = 0
+      IF (species == 'anchovy') ind_species = 1
+      IF (species == 'sardine') ind_species = 2
 
       IF (.not. F_Fix .and. particle%size > 0.0_rsh) THEN
          X = get_Xdeb(particle%xpos, particle%ypos, particle%spos, particle%size, 0.0_rsh, 0.0_rsh, particle%num)
 
          ! -- Densite-dependance  (Menu et al. 2023)
          IF (particle%WV > 0) THEN
-            IF (species == 'anchovy') THEN
-               f = X/(X + K_food + struc_ad_dd_DEB(1)/(K_biomassA*10d8*particle%WV**gammaA)) !BD weight effect
-            END IF
-            IF (species == 'sardine') THEN
-               f = X/(X + K_food + struc_ad_dd_DEB(2)/(K_biomassS*10d8*particle%WV**gammaS)) !BD weight effect
-            END IF
+            IF (ind_species > 0) f = X/(X + K_food + struc_ad_dd_DEB(ind_species)/ &
+               (K_biomass_species(ind_species)*10d8* &
+                particle%WV**gamma_species(ind_species))) ! BD weight effect
          ELSE
             f = X/(X + K_food)
          END IF
 
          IF (X < 0) THEN
             WRITE (*, *) "w_dry", particle%Wdebd, "size", particle%size, "L", particle%L, "f", f, &
-               "nb", particle%super, "strc", struc_ad, "Kbiom", K_biomassA, "Kfood", K_food, "X", X
+               "nb", particle%super, "strc", struc_ad, "Kbiom", K_biomass_species, &
+               "Kfood", K_food, "X", X
             CALL_MPI MPI_FINALIZE(ierr_mpi)
             STOP
          END IF

@@ -255,7 +255,7 @@
 /
 
 &croco_foil
-  foilname = "TEST_CASES/REALIST_EXAMPLES/foil_paraibm.txt"
+  foilname = "TEST_CASES/REALIST_EXAMPLES/foil_parafoil.txt"
 /
 
 &croco_primary_history_fields

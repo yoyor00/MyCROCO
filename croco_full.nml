@@ -803,7 +803,7 @@
 &croco_foil
   ! CPP: FOIL
   ! Path to the foil parameters file.
-  foilname = "foil_paraibm.txt"
+  foilname = "foil_parafoil.txt"
 /
 
 ! --- XIOS I/O server  (CPP: XIOS) ---

@@ -284,7 +284,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !&E Calculate death by fishing of a patch
 
-      USE comtraj, ONLY: catch_anc_bob, catch_sar_bob, fishing_strategy
+      USE comtraj, ONLY: catch_anc, catch_sar, fishing_strategy
       USE comtraj, ONLY: mat_catch, number_tot, weight_tot, biom_tot, Wdeb_mean
 
       !! Arguments
