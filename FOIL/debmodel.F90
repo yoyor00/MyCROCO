@@ -116,7 +116,7 @@ CONTAINS
       USE comtraj, ONLY: fileanchovy, filesardine, catch_anc, catch_sar
       USE comtraj, ONLY: mat_catch, fishing_strategy
       USE comtraj, ONLY: init_anchovy_egg, init_sardine_egg
-      USE comtraj, ONLY: l_repro_random
+      USE comtraj, ONLY: reproducibility
 
       !! * Arguments
       LOGICAL, intent(IN)                          :: restart
@@ -413,7 +413,7 @@ CONTAINS
                zoom = patch%particles(m)%zoom
             ELSE
                draw_id = 0
-               CALL gasdev_s(zoom, l_repro_random, patch%particles(m)%num, draw_id)
+               CALL gasdev_s(zoom, reproducibility, patch%particles(m)%num, draw_id)
                zoom = 1 + zoom*0.2_rsh/3.0_rsh
             END IF
 
@@ -508,7 +508,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! * Modules used
       USE ibmtools, ONLY: gasdev_s
-      USE comtraj, ONLY: l_repro_random
+      USE comtraj, ONLY: reproducibility
 
       !! * Arguments
       TYPE(type_particle), INTENT(inout) :: particle
@@ -527,7 +527,7 @@ CONTAINS
 
       ! Inter individual variability
       draw_id = 0
-      CALL gasdev_s(zoom, l_repro_random, particle%num, draw_id)
+      CALL gasdev_s(zoom, reproducibility, particle%num, draw_id)
       zoom = 1 + zoom*0.2_rsh/3.0_rsh
 
       !   Affectation des paramètres

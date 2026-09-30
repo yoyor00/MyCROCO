@@ -50,7 +50,7 @@
 :         (2004, Limnology and Oceanography) for a sensitivity analysis.
 : hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
 :         horizontal diffusion, when traj3d = .TRUE.
-: l_repro_random : if .TRUE., random-walk draws are seeded deterministically
+: reproducibility : if .TRUE., random-walk draws are seeded deterministically
 :         per particle/time step (particle NUM, iic) instead of the compiler's
 :         intrinsic RANDOM_NUMBER stream, so trajectories are reproducible
 :         across different MPI decompositions. Default is .FALSE. (faster,
@@ -62,4 +62,4 @@
       hadv = .TRUE.
 	  dtz  = 3
       hdiff = 5.0
-      l_repro_random = .TRUE. /
+      reproducibility = .TRUE. /

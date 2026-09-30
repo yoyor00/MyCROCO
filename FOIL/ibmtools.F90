@@ -151,7 +151,7 @@ CONTAINS
       !&E---------------------------------------------------------------------
       !! Modules used
       USE trajectools, ONLY: define_pos, ztosiggen
-      USE comtraj, ONLY: type_position, l_repro_random
+      USE comtraj, ONLY: type_position, reproducibility
 
       !! Arguments
       TYPE(type_particle), INTENT(inout)  :: particle
@@ -242,7 +242,7 @@ CONTAINS
 
       ! -- Randomly modify denspawn and size of particles
       draw_id = 0
-      CALL gasdev_s(tir, l_repro_random, particle%num, draw_id)
+      CALL gasdev_s(tir, reproducibility, particle%num, draw_id)
       particle%denspawn = particle%denspawn + tir*ec_type
       particle%density = particle%denspawn
       particle%size = particle%size + tir*ec_type_size

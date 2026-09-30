@@ -193,7 +193,7 @@ MODULE comtraj
    REAL(kind=rlg), PUBLIC          :: dtz                    ! time step division for vertical subloop for diffusion
    REAL(kind=rsh), PUBLIC          :: hdiff                  ! horizontal diffusion coefficient
    LOGICAL                         :: hadv                   ! if horizontal transport or not, specified in paratraj.txt
-   LOGICAL, PUBLIC          :: l_repro_random = .FALSE.      ! if .TRUE., random-walk draws are seeded deterministically
+   LOGICAL, PUBLIC          :: reproducibility = .FALSE.     ! if .TRUE., random-walk draws are seeded deterministically
                                                              ! per particle/time step (particle%num, iic), so that
                                                              ! trajectories are reproducible across MPI decompositions.
                                                              ! If .FALSE. (default), uses the compiler's intrinsic

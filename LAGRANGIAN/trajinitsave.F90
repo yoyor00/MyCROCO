@@ -216,7 +216,7 @@ CONTAINS
       USE comtraj, ONLY: init_mpi_type_particle
 #endif
       USE comtraj, ONLY: patch_list_append, patches, type_patch, file_trajec, &
-                         dir_pathout, dtz, hdiff, hadv, dtsave_traj, l_repro_random
+                         dir_pathout, dtz, hdiff, hadv, dtsave_traj, reproducibility
       USE comtraj, ONLY: lagrangian_restart
       USE comtraj, ONLY: dsigu, dsigw, kmax, ierrorlog, iscreenlog
       USE comtraj, ONLY: wz
@@ -304,7 +304,7 @@ CONTAINS
 
       NAMELIST /namtraj/ file_trajec, dir_pathout, dtsave_traj
       NAMELIST /namrestart/ lagrangian_restart
-      NAMELIST /namtrajadiff/ hadv, dtz, hdiff, l_repro_random
+      NAMELIST /namtrajadiff/ hadv, dtz, hdiff, reproducibility
 
 # include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
