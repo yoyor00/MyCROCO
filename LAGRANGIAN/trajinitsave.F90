@@ -881,7 +881,7 @@ CONTAINS
                      required_restart_vars = (/ 'longitude       ', 'latitude        ', &
                                                 'DEPTH           ', 'NUM             ', &
                                                 'time            ' /)
-                     DO ivar = 1, SIZE(required_restart_vars)
+                     DO ivar = 1, UBOUND(required_restart_vars, 1)
                         CALL ionc4_var_exists(trim(new_patch%file_inp), &
                                               trim(required_restart_vars(ivar)), found_restart_var)
                         IF (.NOT. found_restart_var) THEN

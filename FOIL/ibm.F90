@@ -261,7 +261,7 @@ CONTAINS
                                        'AGE             ', 'AGECLASS        ', &
                                        'NUM             ', 'DAYJUV          ', &
                                        'DENSPAWN        ', 'HMOVE           ' /)
-            DO ivar = 1, SIZE(required_restart_vars)
+            DO ivar = 1, UBOUND(required_restart_vars, 1)
                CALL ionc4_var_exists(file_inp, trim(required_restart_vars(ivar)), found_restart_var)
                IF (.NOT. found_restart_var) THEN
                   IF_MPI(MASTER) THEN
