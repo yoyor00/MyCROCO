@@ -304,7 +304,8 @@ CONTAINS
 
       NAMELIST /namtraj/ file_trajec, dir_pathout, dtsave_traj
       NAMELIST /namrestart/ lagrangian_restart
-      NAMELIST /namtrajadiff/ hadv, dtz, hdiff, reproducibility
+      NAMELIST /namreproducibility/ reproducibility
+      NAMELIST /namtrajadiff/ hadv, dtz, hdiff
 
 # include "compute_auxiliary_bounds.h"
       !!----------------------------------------------------------------------
@@ -352,6 +353,7 @@ CONTAINS
       OPEN (50, file=lagrangianname(1:lstr), status='old', form='formatted', access='sequential')
       READ (50, namtraj)
       READ (50, namrestart)
+      READ (50, namreproducibility)
       READ (50, namtrajadiff)
 
       ! save into simu.log

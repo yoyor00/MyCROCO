@@ -38,6 +38,22 @@
       lagrangian_restart = .false. /
 :
 :-----------------------------------------------------------------------------
+: namreproducibility   RANDOM-NUMBER REPRODUCIBILITY SETTINGS
+:-----------------------------------------------------------------------------
+:
+: reproducibility : if .TRUE., stochastic draws are seeded deterministically
+:                   from stable particle and time identifiers. This applies to
+:                   Lagrangian random walks and, when FOIL is enabled, to
+:                   individual variability. Results are therefore reproducible
+:                   across MPI decompositions. If .FALSE., the intrinsic random
+:                   stream is used instead (faster, but decomposition-dependent).
+:
+:-----------------------------------------------------------------------------
+:
+ &namreproducibility
+      reproducibility = .TRUE. /
+:
+:-----------------------------------------------------------------------------
 : namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
 :-----------------------------------------------------------------------------
 :
@@ -51,16 +67,9 @@
 :         (2004, Limnology and Oceanography) for a sensitivity analysis.
 : hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
 :         horizontal diffusion, when traj3d = .TRUE.
-: reproducibility : if .TRUE., random-walk draws are seeded deterministically
-:         per particle/time step (particle NUM, iic) instead of the compiler's
-:         intrinsic RANDOM_NUMBER stream, so trajectories are reproducible
-:         across different MPI decompositions. Default is .FALSE. (faster,
-:         but not decomposition-reproducible).
-:
 :-----------------------------------------------------------------------------
 :
  &namtrajadiff
       hadv = .TRUE.
 	  dtz  = 3
-      hdiff = 5.0
-      reproducibility = .TRUE. /
+      hdiff = 5.0 /
