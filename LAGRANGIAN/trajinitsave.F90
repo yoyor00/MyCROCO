@@ -36,7 +36,8 @@ MODULE trajinitsave
    USE ionc4, ONLY: ionc4_createfile_traj, ionc4_createvar_traj, &
                     ionc4_write_time, ionc4_sync, ionc4_close, &
                     ionc4_write_trajt, ionc4_read_dimtraj, &
-                    ionc4_read_trajt, ionc4_openr, ionc4_init, ionc4_read_dimt
+                    ionc4_read_trajt, ionc4_openr, ionc4_init, ionc4_read_dimt, &
+                    ionc4_var_exists
 
    IMPLICIT NONE
    PRIVATE
@@ -231,7 +232,7 @@ CONTAINS
       !! * Local declarations
       ! For reading input file
       INTEGER                                     :: idimt                    ! Read last time in restart file
-      LOGICAL                                     :: ex, l_posit
+      LOGICAL                                     :: ex, l_posit, found_restart_var
       INTEGER                                     :: lstr, lenstr
       CHARACTER(LEN=5)                            :: comment
       CHARACTER(LEN=19)                           :: dateread, tool_sectodat
@@ -244,7 +245,8 @@ CONTAINS
 
       ! Indexes for loops
       CHARACTER(LEN=lchain)                       :: rec
-      INTEGER                                     :: eof, i, j, k, nn, npa, m1, m2, kk, l
+      INTEGER                                     :: eof, i, j, k, nn, npa, m1, m2, kk, l, ivar
+      CHARACTER(LEN=16), DIMENSION(5)             :: required_restart_vars
 
       ! For circle patch, center of the circle patch
       REAL(KIND=rsh)                              :: dxc, dyc
@@ -414,6 +416,19 @@ CONTAINS
             PRINT *, "Type of trajectory is not defined correctly for patch number", npa
             PRINT *, "Must be 1 (circle patch), 2 (rectangle patch) or 3 (Netcdf)"
             PRINT *, "Simulation stopped."
+            CALL_MPI MPI_FINALIZE(ierr_mpi)
+            STOP
+         END IF
+
+         IF (lagrangian_restart .AND. itypepatch /= 3) THEN
+            IF_MPI(MASTER) THEN
+            WRITE (iscreenlog, *) ' '
+            WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', npa
+            WRITE (iscreenlog, *) 'lagrangian_restart = .TRUE. is only supported for NetCDF patches (type 3).'
+            WRITE (iscreenlog, *) 'Current patch type is ', itypepatch, ' (1=circle, 2=rectangle).'
+            WRITE (iscreenlog, *) 'Set lagrangian_restart to .FALSE. or use a type-3 restart patch.'
+            WRITE (iscreenlog, *) 'Simulation stopped.'
+            ENDIF_MPI
             CALL_MPI MPI_FINALIZE(ierr_mpi)
             STOP
          END IF
@@ -860,6 +875,30 @@ CONTAINS
 
                   ! Open input file and read number of particles
                   CALL ionc4_openr(trim(new_patch%file_inp), .false.)
+
+#ifdef FOIL
+                  IF (lagrangian_restart) THEN
+                     required_restart_vars = (/ 'longitude       ', 'latitude        ', &
+                                                'DEPTH           ', 'NUM             ', &
+                                                'time            ' /)
+                     DO ivar = 1, SIZE(required_restart_vars)
+                        CALL ionc4_var_exists(trim(new_patch%file_inp), &
+                                              trim(required_restart_vars(ivar)), found_restart_var)
+                        IF (.NOT. found_restart_var) THEN
+                           IF_MPI(MASTER) THEN
+                           WRITE (iscreenlog, *) ' '
+                           WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', npa
+                           WRITE (iscreenlog, *) 'Restart variable ', &
+                              trim(required_restart_vars(ivar)), ' is missing from ', trim(new_patch%file_inp)
+                           WRITE (iscreenlog, *) 'The file cannot be used for a Lagrangian restart.'
+                           WRITE (iscreenlog, *) 'Simulation stopped.'
+                           ENDIF_MPI
+                           CALL_MPI MPI_FINALIZE(ierr_mpi)
+                           STOP
+                        END IF
+                     END DO
+                  END IF
+#endif
                   CALL ionc4_read_dimtraj(trim(new_patch%file_inp), nb_part_nc)
 
                   ALLOCATE (lon_nc(nb_part_nc), lat_nc(nb_part_nc), depth_nc(nb_part_nc))

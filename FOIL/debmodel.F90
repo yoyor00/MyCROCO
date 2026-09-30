@@ -111,12 +111,13 @@ CONTAINS
       !&E------------------------------------------------------------------
       !! * Modules used
       USE ionc4, ONLY: ionc4_openr, ionc4_read_trajt, ionc4_close, &
-                       ionc4_read_dimt, ionc4_read_dimtraj
+                       ionc4_read_dimt, ionc4_read_dimtraj, ionc4_var_exists
       USE ibmtools, ONLY: gasdev_s
       USE comtraj, ONLY: fileanchovy, filesardine, catch_anc, catch_sar
       USE comtraj, ONLY: mat_catch, fishing_strategy
       USE comtraj, ONLY: init_anchovy_egg, init_sardine_egg
       USE comtraj, ONLY: reproducibility
+      USE comtraj, ONLY: iscreenlog
 
       !! * Arguments
       LOGICAL, intent(IN)                          :: restart
@@ -124,8 +125,10 @@ CONTAINS
       !! * Local declarations
       CHARACTER(LEN=lchain) :: file_inp
       INTEGER :: idimt
-      INTEGER :: m, n, num, nb_part_nc, is, ie, il, index_num
+      INTEGER :: m, n, num, nb_part_nc, is, ie, il, index_num, ivar, ierr_mpi
       INTEGER :: lstr, lenstr
+      LOGICAL :: found_restart_var
+      CHARACTER(LEN=16), DIMENSION(10) :: required_restart_vars
       TYPE(type_patch), POINTER :: patch
 
       REAL(KIND=rsh) :: WV, WE, WR, WG, NRJ_V, NRJ_g, Wat, Wash, L, Wdeb, NRJ
@@ -202,6 +205,28 @@ CONTAINS
             ! Initialize array with content of NetCDF input file
             file_inp = trim(patch%file_inp)
             CALL ionc4_openr(file_inp, .false.)
+
+            required_restart_vars = (/ 'EDEB           ', 'HDEB           ', &
+                                       'RDEB           ', 'GAM            ', &
+                                       'NEGGS          ', 'WEIGHT         ', &
+                                       'NUM            ', 'DAYSPAWN       ', &
+                                       'YEARSPAWN      ', 'ZOOM           ' /)
+            DO ivar = 1, SIZE(required_restart_vars)
+               CALL ionc4_var_exists(file_inp, trim(required_restart_vars(ivar)), found_restart_var)
+               IF (.NOT. found_restart_var) THEN
+                  IF_MPI(MASTER) THEN
+                  WRITE (iscreenlog, *) ' '
+                  WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', n
+                  WRITE (iscreenlog, *) 'Restart variable ', trim(required_restart_vars(ivar)), &
+                     ' is missing from ', trim(file_inp)
+                  WRITE (iscreenlog, *) 'The file cannot be used for a DEB restart.'
+                  WRITE (iscreenlog, *) 'Simulation stopped.'
+                  ENDIF_MPI
+                  CALL_MPI MPI_FINALIZE(ierr_mpi)
+                  STOP
+               END IF
+            END DO
+
             CALL ionc4_read_dimtraj(file_inp, nb_part_nc) !clara
 
             ! nb_part_nc = patch%nb_part_total ! denis

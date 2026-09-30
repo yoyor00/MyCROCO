@@ -129,14 +129,15 @@ CONTAINS
       INTEGER :: num ! For restart loop to keep good num info
 
       LOGICAL :: found_yearref, found_t_spawn
-      LOGICAL :: found_hmove
+      LOGICAL :: found_restart_var
+      CHARACTER(LEN=16), DIMENSION(14) :: required_restart_vars
 
       INTEGER :: nb_part_nc ! Number of particles in netcdf for patch
       INTEGER :: duration_ibm, nbSizeClass
       REAL(KIND=rlg) :: sizemin
       CHARACTER(LEN=lchain) :: catch, fileprobadistrib
 
-      INTEGER :: i, j, n, m, il ! Integers for loops
+      INTEGER :: i, j, n, m, il, ivar ! Integers for loops
       INTEGER :: index_num ! Integers for indexing in restart
       INTEGER :: ierr_mpi
       CHARACTER(LEN=lchain) :: current_run_id
@@ -252,6 +253,30 @@ CONTAINS
 
             ! nb_part_nc = patch%nb_part_total ! denis
             CALL ionc4_openr(file_inp, .false.) ! clara
+
+            required_restart_vars = (/ 'flag            ', 'TEMP            ', &
+                                       'SIZE            ', 'DENSITY         ', &
+                                       'STAGE           ', 'NUMBER          ', &
+                                       'DRATE           ', 'DAYBIRTH        ', &
+                                       'AGE             ', 'AGECLASS        ', &
+                                       'NUM             ', 'DAYJUV          ', &
+                                       'DENSPAWN        ', 'HMOVE           ' /)
+            DO ivar = 1, SIZE(required_restart_vars)
+               CALL ionc4_var_exists(file_inp, trim(required_restart_vars(ivar)), found_restart_var)
+               IF (.NOT. found_restart_var) THEN
+                  IF_MPI(MASTER) THEN
+                  WRITE (iscreenlog, *) ' '
+                  WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', n
+                  WRITE (iscreenlog, *) 'Restart variable ', trim(required_restart_vars(ivar)), &
+                     ' is missing from ', trim(file_inp)
+                  WRITE (iscreenlog, *) 'The file cannot be used for an IBM restart.'
+                  WRITE (iscreenlog, *) 'Simulation stopped.'
+                  ENDIF_MPI
+                  CALL_MPI MPI_FINALIZE(ierr_mpi)
+                  STOP
+               END IF
+            END DO
+
             CALL ionc4_read_dimtraj(file_inp, nb_part_nc) !clara
             CALL ionc4_gatt_read(file_inp, 'yearref', patch%yearref, found_yearref)
             CALL ionc4_gatt_read(file_inp, 't_spawn', patch%t_spawn, found_t_spawn)
@@ -279,19 +304,7 @@ CONTAINS
             CALL ionc4_read_trajt(file_inp, "AGE", age_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "AGECLASS", AgeClass_nc, 1, nb_part_nc, idimt)
             CALL ionc4_read_trajt(file_inp, "NUM", num_nc, 1, nb_part_nc, idimt)
-
-            ! To be removed in future versions of IBM, when HMOVE is always present in restart files
-            ! Initialize the movement clock if HMOVE is missing
-            CALL ionc4_var_exists(file_inp, "HMOVE", found_hmove)
-            IF (found_hmove) THEN
-               CALL ionc4_read_trajt(file_inp, "HMOVE", hmove_nc, 1, nb_part_nc, idimt)
-            ELSE
-               hmove_nc(:) = FLOOR(time/3600.0_rlg)
-               IF_MPI(MASTER) THEN
-               WRITE (iscreenlog, *) &
-                  'WARNING: HMOVE absent from restart; movement clocks reinitialised.'
-               ENDIF_MPI
-            END IF
+            CALL ionc4_read_trajt(file_inp, "HMOVE", hmove_nc, 1, nb_part_nc, idimt)
 
             DO m = 1, patch%nb_part_alloc
                IF (patch%nb_part_alloc == 0) CYCLE ! To avoid an error because of a proc without any particle at restart
@@ -1414,7 +1427,7 @@ CONTAINS
       REAL(KIND=out), ALLOCATABLE, DIMENSION(:)   :: zoom_out
       TYPE(type_patch), POINTER    :: patch
       TYPE(type_particle), POINTER    :: particle
-      LOGICAL                                     :: out_ex, found_hmove
+      LOGICAL                                     :: out_ex
       character(len=64) :: run_id_out
 #ifdef MPI
       ! Used to gather all particles on MASTER, sorted by NUM, so that the
@@ -1481,17 +1494,6 @@ CONTAINS
                   ENDIF_MPI
                   CALL ionc4_close(file_out)
                   out_ex = .FALSE.
-               END IF
-
-               ! To be removed in future versions of IBM, when HMOVE is always present in restart files
-               ! Add HMOVE to an older output file before appending new records
-               IF (out_ex) THEN
-                  CALL ionc4_var_exists(file_out, "HMOVE", found_hmove)
-                  IF (.NOT. found_hmove) THEN
-                     CALL ionc4_createvar_traj(file_out, "HMOVE", "model hour", &
-                        "Absolute model hour of the previous fish movement", &
-                        fill_value=-1, l_out_nc4par=l_out_nc4par)
-                  END IF
                END IF
 
             END IF
