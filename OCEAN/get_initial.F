@@ -139,7 +139,7 @@
         ierr_vt=nf_get_att_int(ncid, nf_global, 'Vtransform',
      &                                          vtransform_value)
       endif
-      if (ierr_vt.eq.nf_noerr .and. vtransform_value.eq.1)
+      if (ierr_vt.eq.nf_noerr .and. vtransform_value.ne.2)
      &                                             old_vt=.true.
 
       if (old_vt) then

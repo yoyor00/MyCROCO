@@ -141,7 +141,6 @@ Choose one scheme per variable class (M2, M3, T).
 - `SPHERICAL` — Longitude/latitude grid positioning
 - `MASKING` — Land masking
 - `WET_DRY` — Wetting-and-drying scheme
-- `NEW_S_COORD` — New (Song & Haidvogel 1994) vertical S-coord
 - `EW_PERIODIC` — East-West periodic boundary conditions
 - `NS_PERIODIC` — North-South periodic boundary conditions
 
