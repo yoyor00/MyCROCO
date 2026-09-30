@@ -51,6 +51,7 @@ N = 10
 theta_s = 1.0
 theta_b = 0.0
 hc = H0  # no hc=min(hmin,hc) constraint for vtransform=2
+vtransform=2
 
 # Nesting
 refinecoeff = 3
@@ -490,8 +491,6 @@ def main():
         H,
         geostrophic=args.geostrophic,
     )
-
-    vtransform = 2
 
     # Parent ini
     write_ini(parent_ini, parent_grd, title, theta_s, theta_b, hc, N)
