@@ -217,7 +217,7 @@ CONTAINS
 #endif
       USE comtraj, ONLY: patch_list_append, patches, type_patch, file_trajec, &
                          dir_pathout, dtz, hdiff, hadv, dtsave_traj, l_repro_random
-      USE comtraj, ONLY: particle_restart
+      USE comtraj, ONLY: lagrangian_restart
       USE comtraj, ONLY: dsigu, dsigw, kmax, ierrorlog, iscreenlog
       USE comtraj, ONLY: wz
       USE comtraj, ONLY: type_position
@@ -303,7 +303,7 @@ CONTAINS
       REAL(KIND=rlg), DIMENSION(5)                 :: buff_mpi
 
       NAMELIST /namtraj/ file_trajec, dir_pathout, dtsave_traj
-      NAMELIST /namrestart/ particle_restart
+      NAMELIST /namrestart/ lagrangian_restart
       NAMELIST /namtrajadiff/ hadv, dtz, hdiff, l_repro_random
 
 # include "compute_auxiliary_bounds.h"
@@ -844,13 +844,13 @@ CONTAINS
                   IF (kk > 0) THEN
                      new_patch%file_inp = rec(1:kk - 1)
 #ifdef FOIL
-                     IF (particle_restart) new_patch%file_inp = trim(dir_pathout)//rec(1:kk - 1)
+                     IF (lagrangian_restart) new_patch%file_inp = trim(dir_pathout)//rec(1:kk - 1)
 #endif
 
                   ELSE
                      new_patch%file_inp = rec
 #ifdef FOIL
-                     IF (particle_restart) new_patch%file_inp = trim(dir_pathout)//rec
+                     IF (lagrangian_restart) new_patch%file_inp = trim(dir_pathout)//rec
 #endif
                   END IF
 
@@ -862,7 +862,7 @@ CONTAINS
 
                   ALLOCATE (lon_nc(nb_part_nc), lat_nc(nb_part_nc), depth_nc(nb_part_nc))
 #ifdef FOIL
-                  IF (particle_restart) ALLOCATE (num_nc(nb_part_nc))
+                  IF (lagrangian_restart) ALLOCATE (num_nc(nb_part_nc))
 #endif
 
                   ! Read time dimension in input file to open last time in restart file
@@ -872,7 +872,7 @@ CONTAINS
                   CALL ionc4_read_trajt(trim(new_patch%file_inp), "latitude", lat_nc, 1, nb_part_nc, idimt)
                   CALL ionc4_read_trajt(trim(new_patch%file_inp), "DEPTH", depth_nc, 1, nb_part_nc, idimt)
 #ifdef FOIL
-                  IF (particle_restart) CALL ionc4_read_trajt(trim(new_patch%file_inp), "NUM", num_nc, 1, nb_part_nc, idimt)
+                  IF (lagrangian_restart) CALL ionc4_read_trajt(trim(new_patch%file_inp), "NUM", num_nc, 1, nb_part_nc, idimt)
 #endif
 
                   nb_part = 0
@@ -959,7 +959,7 @@ CONTAINS
                                  new_patch%particles(m1 + l)%num = (nn - 1)*nb_part_intro + l + 1
 #ifdef FOIL
                                  ! if restart, we want to keep the original num from netcdf file
-                                 IF (particle_restart) new_patch%particles(m1 + l)%num = num_nc(nn)
+                                 IF (lagrangian_restart) new_patch%particles(m1 + l)%num = num_nc(nn)
 #endif
                               END DO
                            ELSE
@@ -970,7 +970,7 @@ CONTAINS
                   END DO
                   DEALLOCATE (lon_nc, lat_nc, depth_nc)
 #ifdef FOIL
-                  IF (particle_restart) DEALLOCATE (num_nc)
+                  IF (lagrangian_restart) DEALLOCATE (num_nc)
 #endif
 
                   ! close netcdf file
@@ -997,7 +997,7 @@ CONTAINS
                READ (49, *, iostat=eof) Gam_deb
                new_patch%species = species
 
-               IF (.not. particle_restart) THEN
+               IF (.not. lagrangian_restart) THEN
                   DO nn = 1, new_patch%nb_part_alloc
                      ! Init some variables from ibm.dat file for fish
                      new_patch%particles(nn)%super = super

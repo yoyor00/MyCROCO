@@ -110,7 +110,7 @@ CONTAINS
 
       ! Import variables
       USE comtraj, ONLY: iscreenlog
-      USE comtraj, ONLY: type_particle, type_patch, patches, particle_restart, dtsave_traj
+      USE comtraj, ONLY: type_particle, type_patch, patches, lagrangian_restart, dtsave_traj
       USE comtraj, ONLY: debuse, F_Fix, ffix, file_food, file_NBSS, frac_deb_death, &
                          fileanchovy, filesardine, &
                          fileprobadistrib_anc, nbSizeClass_anc, &
@@ -222,7 +222,7 @@ CONTAINS
 
       CALL tool_decompdate(tool_sectodat(time), current_day, mm_clock, current_year, hh, minu, sec)
 
-      IF (.NOT. particle_restart) THEN
+      IF (.NOT. lagrangian_restart) THEN
 #ifdef MPI
          IF (mynode == 0) THEN
             current_run_id = generate_run_id()
@@ -240,14 +240,14 @@ CONTAINS
          ! Init patch general data
          patch%dt_spawn = dt_spawn*3600.0_rlg
 
-         IF (.NOT. particle_restart) THEN
+         IF (.NOT. lagrangian_restart) THEN
             patch%yearref = current_year - 1
             patch%t_spawn = patch%t_beg
          END IF
 
          ! -------------------------
          ! --- Restart
-         IF (particle_restart) THEN
+         IF (lagrangian_restart) THEN
             file_inp = trim(patch%file_inp)
 
             ! nb_part_nc = patch%nb_part_total ! denis
@@ -390,7 +390,7 @@ CONTAINS
       END DO         ! loop on patches%nb
 
       ! No need of loop to initialize DEB parameters
-      IF (debuse) CALL deb_init(particle_restart)      ! Init DEB
+      IF (debuse) CALL deb_init(lagrangian_restart)      ! Init DEB
       IF (adult_move) CALL fish_move_init(Istr, Iend, Jstr, Jend)    ! Init fish_move module
 
       yearclass = current_year + 1                ! Init yearclass to update fish's Ageclass
@@ -404,7 +404,7 @@ CONTAINS
          spawn = .false.
 
          ! A current-year patch means that the first spawning event already occurred.
-         IF (particle_restart) THEN
+         IF (lagrangian_restart) THEN
             patch => patches%first
             DO n = 1, patches%nb
                IF (patch%yearref == current_year) THEN

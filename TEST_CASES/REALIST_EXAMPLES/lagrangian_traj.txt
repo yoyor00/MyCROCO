@@ -27,14 +27,14 @@
 : namrestart     RESTART SETTINGS
 :-----------------------------------------------------------------------------
 :
-: particle_restart : if true, restore Lagrangian particles from the last time step
+: lagrangian_restart : if true, restore Lagrangian particles from the last time step
 :                    stored in the particle restart files, including DEB-IBM
 :                    properties when FOIL is enabled
 :
 :-----------------------------------------------------------------------------
 :
  &namrestart
-      particle_restart = .false. /
+      lagrangian_restart = .false. /
 :
 :-----------------------------------------------------------------------------
 : namtrajadiff        PARTICLE ADVECTION/DIFFUSION SETTINGS
@@ -63,4 +63,3 @@
 	  dtz  = 3
       hdiff = 5.0
       l_repro_random = .TRUE. /
-
