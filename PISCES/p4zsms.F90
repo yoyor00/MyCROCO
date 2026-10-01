@@ -1328,7 +1328,9 @@ CONTAINS
 !
 ! Time.
 !
-      ierr = nf_put_var1_FTYPE (ncidpisrst, rstpistime, record, time)
+      ierr = nf_put_var1_FTYPE (ncidpisrst, rstpistime, record, time   &
+     &  - origin_date_in_sec                                          &
+     &  )
       IF (ierr .NE. nf_noerr) THEN
          lvar = lenstr(vname(1,indxTime))
          WRITE(stdout,1) vname(1,indxTime)(1:lvar), record, ierr
