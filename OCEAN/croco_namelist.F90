@@ -99,7 +99,7 @@ MODULE croco_namelist
    character(len=180) :: rstname = "CROCO_FILES/croco_rst.nc"
    !! Name of restart file
 
-#ifdef NBQ || defined K3FAST
+#if defined NBQ || defined K3FAST   /* H1-fix 2026-08-26: directive invalide (#ifdef NBQ || ...) */
    real    :: csound_nbq = 1000.0
    !! Speed of sound used in the NBQ solver [m/s]
    real    :: visc2read_nbq = 0.01

@@ -150,7 +150,7 @@ C$    trd=omp_get_thread_num()
 ! !*********************************************************************
 ! !*********************************************************************
 ! !
-      use croco_namelist, only: dt, rho0, rdrg, rdrg2, Cdb_min, Cdb_max
+      use croco_namelist, only: dt, rho0, rdrg, rdrg2, Cdb_min, Cdb_max, ndtfast
 # ifdef NBQ
       use croco_namelist, only: csound_nbq, visc2read_nbq
 # endif
@@ -311,6 +311,11 @@ C$    trd=omp_get_thread_num()
 # include "mixing.h"
 # include "climat.h"
 # include "scalars.h"
+# ifdef K3FAST_RAMP
+      common /baro_ramp/ r_ramp_baro, n_ramp_baro
+      real r_ramp_baro
+      integer n_ramp_baro
+# endif
 # ifdef OPENACC
 #  include "boundary.h"
 #endif
@@ -648,6 +653,11 @@ C$    trd=omp_get_thread_num()
 ! ! PART C.2: Compute "Pressure - Viscosity" component (theta)
 ! !********************************************************************
 ! ! 
+! !
+! !--------------------------------------------------------------------
+! !      Compute thetadiv
+! !--------------------------------------------------------------------
+! !
 # ifdef K3FAST_RHO 
 !      if (FIRST_TIME_STEP.and.FIRST_FAST_STEP) then
 ! !
@@ -759,6 +769,11 @@ C$    trd=omp_get_thread_num()
          enddo
        enddo
       endif
+! !
+! !--------------------------------------------------------------------
+! !      Compute AM4 interpolation of thetadiv
+! !--------------------------------------------------------------------
+! !
 #   ifdef K3FAST_AM4b
 #    ifdef K3FAST_2DCONT
       if (FIRST_FAST_STEP .and. FIRST_TIME_STEP) then
@@ -851,53 +866,51 @@ C$    trd=omp_get_thread_num()
 #  ifdef NBQ_IMP
 #   include "k3fast_qdmw_implicit.h"
 #  endif  
+
 ! !
-! !................................
-! !  Nudging
-! !................................
-! !   
-#  if (defined NBQ_NUDGING_W ) || defined KNHINT_CORR
-!$acc kernels if(compute_on_device) default(present) async(1)    
+! !....................................................
+! !  W-momentum Sponge Nudging at Open Boundaries
+! !....................................................
+! !
+# if defined NBQ_NUDGING_W && defined NBQ_NUDGING
+!$acc kernels if(compute_on_device) default(present) async(1)
         do j=Jstr,Jend
           do i=Istr,Iend
-#  ifndef K3FAST_SEDLAYERS        
+            cff = NBQnudgcof(i,j)
+#  ifndef K3FAST_SEDLAYERS
             do k=0,N
-#  else   
+#  else
             do k=-N_sl,N
 #  endif
-#  ifdef NBQ_NUDGING 
-               cff=NBQnudgcof(i,j)
-#  elif defined KNHINT_CORR
-               cff=0
-#  endif
-#  ifdef KNHINT_CORR 
-               cff=cff+alphaw_nbq
-     &                *exp(-(z_w(i,j,k)            -z_w(i,j,N))
-     &                     /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N)))
-#  endif
-               qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)*(1.-cff)           
+               qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * (1.D0 - cff)
 #  ifdef MASKING
-     &                         *rmask(i,j)  
-#  endif       
-#  ifndef KNHINT_CORR
-!     &                        +wz(i,j,k,nrhs)
-!     &                         *0.5*(Hzr(i,j,k)+Hzr(i,j,min(N,k+1)))
-!     &                         *cff
-#   ifdef MASKING
-!     &                         *rmask(i,j)
-#   endif  
-#  else
-     &                        -qdmw_nbq(i,j,N)
-     &                         *cff
-#   ifdef MASKING
-     &                         *rmask(i,j)
-#   endif  
-#  endif  
-             enddo
-           enddo
-         enddo
+               qdmw_nbq(i,j,k) = qdmw_nbq(i,j,k) * rmask(i,j)
+#  endif
+            enddo
+          enddo
+        enddo
 !$acc end kernels
-#   endif /* All NUDGING  */
+# endif /* NBQ_NUDGING_W */
+# ifdef KNHINT_CORR
+#  if !defined OBC_EAST && !defined OBC_WEST && !defined TIDES
+!$acc kernels if(compute_on_device) default(present) async(1)
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            cff1 = qdmw_nbq(i,j,N)
+            do k=0,N
+              cff = alphaw_nbq
+     &             *exp(-(z_w(i,j,k)            -z_w(i,j,N))**2
+     &                  /(z_w(i,j,N-alphaNw_nbq)-z_w(i,j,N))**2)
+              qdmw_nbq(i,j,k) = (qdmw_nbq(i,j,k) - cff1 * cff)
+#  ifdef MASKING
+     &                         * rmask(i,j)
+#  endif
+            enddo
+          enddo
+        enddo
+!$acc end kernels
+#  endif
+# endif
 ! !
 ! !--------------------------------------------------------------------
 ! !  W-momentum open boundary conditions
@@ -1070,13 +1083,13 @@ C$    trd=omp_get_thread_num()
           cff1=ubar(i,j,knew)
           cff2=vbar(i,j,knew)
           cff=max(abs(cff1),abs(cff2))
-# ifdef K3FAST_RHO
-          do k=1,N
-           cff1=rho_nbq(i,j,k)
-           cff2=rho_nbq(i,j,k)
-           cff=max(cff,abs(cff1),abs(cff2))
-          enddo
-# endif
+! # ifdef K3FAST_RHO
+!          do k=1,N
+!           cff1=rho_nbq(i,j,k)
+!           cff2=rho_nbq(i,j,k)
+!           cff=max(cff,abs(cff1),abs(cff2))
+!          enddo
+!# endif
           IF (cff.GE.VMAX .or. cff1.ne.cff1 .or. cff2.ne.cff2) THEN
             IF (cff.GE.VMAX .and. cff1.eq.cff1 .and. cff2.eq.cff2) THEN 
               VMAX=cff

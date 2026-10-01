@@ -57,6 +57,9 @@
 #if defined NBQ_FRC_BRY || defined NBQ_NUDGING
       USE croco_namelist, ONLY: tauM_in, tauM_out
 #endif
+#if defined NBQ_FRC_BRY || defined NBQ_NUDGING
+      USE croco_namelist, ONLY: tauM_in, tauM_out
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -312,7 +315,7 @@
                                                     
              qdmw_nbq(Iend+1,j,k)=gamma2*qdmw_nbq(Iend,j,k)
 #   ifdef MASKING
-     &                                    *vmask(Iend+1,j)
+     &                                    *rmask(Iend+1,j)
 #   endif
           enddo
         enddo

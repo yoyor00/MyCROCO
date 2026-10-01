@@ -80,9 +80,9 @@
           do i=Istr,Iend+1
                 dZdxq_w(i,j,k )= Hzw_nbq_inv_u(i,j,k)
      &                          *(dZdxq_u(i,j,k-1)+dZdxq_u(i,j,k)) 
-!#    ifdef MASKING
-!     &                          *umask(i,j)
-!#    endif
+#    ifdef MASKING
+     &                          *umask(i,j)
+#    endif
           enddo 
          enddo
        enddo
@@ -99,9 +99,9 @@
                 dZdxq_w(i,j,N)= (z_w(i,j,N)-z_w(i-1,j,N))
      &                           *qdmu_nbq(i,j,N)
      &                           /(Hz(i,j,N)+Hz(i-1,j,N)) 
-!#    ifdef MASKING
-!     &                           *umask(i,j)
-!#    endif
+#    ifdef MASKING
+     &                           *umask(i,j)
+#    endif
              enddo
         enddo  
 #   ifdef NBQ_GRID_SLOW
@@ -134,9 +134,9 @@
 !    &           +u_mvb(i,j,knew2)   ! MVBFA to be finished
 #    endif
      &           )
-!#    ifdef MASKING
-!     &                           *umask(i,j)
-!#    endif
+#    ifdef MASKING
+     &                           *umask(i,j)
+#    endif
               enddo
             enddo
 #   else /* ! NBQ_FREESLIP */
@@ -145,9 +145,9 @@
 #    ifdef MVB
                 dZdxq_w(i,j,k)=0.5*(z_w(i,j,k)-z_w(i-1,j,k))
      &                            *u_mvb(i,j,knew2) 
-!#    ifdef MASKING
-!     &              *umask(i,j)
-!#    endif
+#    ifdef MASKING
+     &              *umask(i,j)
+#    endif
 #    else   /* ! MVB */
                 dZdxq_w(i,j,k)=0.  
 #    endif  /* MVB */    
@@ -313,9 +313,9 @@
           do i=Istr,Iend
                 dZdyq_w(i,j,k )=Hzw_nbq_inv_v(i,j,k)
      &                *(dZdyq_v(i,j,k-1)+dZdyq_v(i,j,k)) 
-!    ifdef MASKING
-!     &              *vmask(i,j)
-!#    endif
+#    ifdef MASKING
+     &              *vmask(i,j)
+#    endif
           enddo 
          enddo
        enddo
@@ -331,9 +331,9 @@
                 dZdyq_w(i,j,N )= (z_w(i,j,N)-z_w(i,j-1,N))
      &                          *qdmv_nbq(i,j,N)
      &                          /(Hz(i,j,N)+Hz(i,j-1,N))
-!#    ifdef MASKING
-!     &              *vmask(i,j)
-!#    endif
+#    ifdef MASKING
+     &              *vmask(i,j)
+#    endif
               enddo  
             enddo
 #   ifdef NBQ_GRID_SLOW
@@ -355,16 +355,16 @@
 !     &              -2.*v_mvb(i,j)
 #    endif
 !     &            +qdmv_nbq(i,j,k+1)/(Hzr(i,j,k+1)+Hzr(i,j-1,k+1)))
-!#    ifdef MASKING
+#    ifdef MASKING
 !     &              *vmask(i,j)
-!#    endif
+#    endif
                  dZdyq_w(i,j,k) = 
      &           (z_w(i,j,k)-z_w(i,j-1,k))
      &           *qdmv_nbq(i,j,k+1)
      &           /(Hz(i,j,k+1)+Hz(i,j-1,k+1))
-!#    ifdef MASKING
-!     &              *vmask(i,j)
-!#    endif
+#    ifdef MASKING
+     &              *vmask(i,j)
+#    endif
               enddo
             enddo
 #   else /* ! NBQ_FREESLIP */
@@ -373,9 +373,9 @@
 #    ifdef MVB
                 dZdyq_w(i,j,k)=0.5*(z_w(i,j,k)-z_w(i,j-1,k))
      &                            *v_mvb(i,j,knew2) 
-!#    ifdef MASKING
-!     &              *vmask(i,j)
-!#    endif
+#    ifdef MASKING
+     &              *vmask(i,j)
+#    endif
 #    else   /* ! MVB */
                 dZdyq_w(i,j,k)=0.  
 #    endif  /* MVB */    

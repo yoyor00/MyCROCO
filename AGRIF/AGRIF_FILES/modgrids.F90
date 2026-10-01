@@ -87,7 +87,7 @@ type Agrif_Grid
     integer                             :: level    !< level of the grid in the hierarchy
     logical                             :: allocation_is_done = .false.
     logical                             :: grand_mother_grid = .false.
-    integer                             :: KNHINT_tcoef 
+    integer                             :: KNHINT_tcoef = 0   ! sentinelle d'init (0 = non defini), evite la divergence MPI
 !---------------------------------------------------------------------------------------------------
 end type Agrif_Grid
 !===================================================================================================

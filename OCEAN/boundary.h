@@ -350,7 +350,8 @@
      &     vnbqbry_west(GLOBAL_1D_ARRAYETA,N)
       common /bry_nbq_west1/ unbqbry_west,
      &                       vnbqbry_west
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST   /* H1-fix 2026-08-26 */
+!#  ifdef NBQ
       real wnbqbry_west(GLOBAL_1D_ARRAYETA,0:N),
      &     rnbqbry_west(GLOBAL_1D_ARRAYETA,N)
       common /bry_nbq_west2/ wnbqbry_west,
@@ -362,7 +363,8 @@
      &     vnbqbry_east(GLOBAL_1D_ARRAYETA,N)
       common /bry_nbq_east1/ unbqbry_east,
      &                       vnbqbry_east
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST   /* H1-fix 2026-08-26 */
+!#  ifdef NBQ
       real wnbqbry_east(GLOBAL_1D_ARRAYETA,0:N),
      &     rnbqbry_east(GLOBAL_1D_ARRAYETA,N)
       common /bry_nbq_east2/ wnbqbry_east,
@@ -374,7 +376,8 @@
      &     vnbqbry_south(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_south1/ unbqbry_south,
      &                        vnbqbry_south
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST   /* H1-fix 2026-08-26 */
+!#  ifdef NBQ
       real wnbqbry_south(GLOBAL_1D_ARRAYXI,0:N),
      &     rnbqbry_south(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_sout2h/ wnbqbry_south,
@@ -386,7 +389,8 @@
      &     vnbqbry_north(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_north1/ unbqbry_north,
      &                        vnbqbry_north
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST   /* H1-fix 2026-08-26 */
+!#  ifdef NBQ
       real wnbqbry_north(GLOBAL_1D_ARRAYXI,0:N),
      &     rnbqbry_north(GLOBAL_1D_ARRAYXI,N)
       common /bry_nbq_north2/ wnbqbry_north,
@@ -395,7 +399,7 @@
 # endif
 #endif /* M3FAST || K3FAST */
 
-#if defined NBQ && (defined W_FRC_BRY || defined AGRIF )
+#if (defined NBQ || defined K3FAST) && (defined W_FRC_BRY || defined AGRIF )   /* H1-fix 2026-08-26 comme REF */
 # if defined OBC_WEST || defined AGRIF_OBC_WEST
       real wbry_west(GLOBAL_1D_ARRAYETA,0:N)
       common /bry_w_west/ wbry_west

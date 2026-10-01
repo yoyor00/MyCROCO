@@ -88,9 +88,9 @@
                 dthetadiv_nbqdz_u(i,j,k)=Hzw_nbq_inv_u(i,j,k)*
      &                                   ( dthetadiv_nbqdz_ij
      &                                    +dthetadiv_nbqdz_im1j )
-!#   ifdef MASKING
-!     &              *umask(i,j)
-!#   endif
+#   ifdef MASKING
+     &              *umask(i,j)
+#   endif
               enddo
             enddo
             do j=Jstr,Jend
@@ -98,9 +98,9 @@
                  dthetadiv_nbqdz_v(i,j,k)=Hzw_nbq_inv_v(i,j,k)*
      &                                    ( dthetadiv_nbqdz_ij
      &                                     +dthetadiv_nbqdz_ijm1 )
-!#   ifdef MASKING
-!     &              *vmask(i,j)
-!#   endif
+#   ifdef MASKING
+     &              *vmask(i,j)
+#   endif
               enddo
             enddo    
           endif   
@@ -891,27 +891,12 @@ c C$OMP END MASTER
 ! !   boundary conditions
 ! !********************************
 ! !
-      do j=Jstr,Jend
-        do i=IstrU,Iend
-          ubar(i,j,knew)=urhs(i,j)
-        enddo
-      enddo
-      do j=JstrV,Jend
-        do i=Istr,Iend
-          vbar(i,j,knew)=vrhs(i,j)
-        enddo
-      enddo
-
 # if defined CVTK_DEBUG_ADV1 && defined KNBQ
       call check_tab3d(qdmu_nbq,'3d_fast (1) uvupd qdmu_nbq',
      &  'r',ondevice=.TRUE.)
       call check_tab3d(qdmv_nbq,'3d_fast (1) uvupd qdmv_nbq',
      &  'r',ondevice=.TRUE.)
 # endif    
-      M2bc_nbq_flag=.true.
-      call u2dbc_tile   (Istr,Iend,Jstr,Jend, work)
-      call v2dbc_tile   (Istr,Iend,Jstr,Jend, work)
-
       call unbq_bc_tile (Istr,Iend,Jstr,Jend, work)
       call vnbq_bc_tile (Istr,Iend,Jstr,Jend, work)
 # if defined CVTK_DEBUG_ADV1 && defined KNBQ

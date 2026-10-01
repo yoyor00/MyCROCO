@@ -56,6 +56,9 @@
 #if defined W_FRC_BRY || defined WCLIMATOLOGY
       USE croco_namelist, ONLY: dt, tauM_in, tauM_out
 #endif
+#if defined W_FRC_BRY || defined WCLIMATOLOGY
+      USE croco_namelist, ONLY: dt, tauM_in, tauM_out
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"

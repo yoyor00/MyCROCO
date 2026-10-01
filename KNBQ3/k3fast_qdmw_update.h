@@ -215,7 +215,7 @@
      &           *(Hz(i,j,k-1)+Hz(i,j,k))/2.
               endif
 #endif
-#  ifdef K3FAST_AB3
+#  ifdef K3FAST_AB3b
 	      cff=dum_s
               dum_s=
      &     +cff1*cff
@@ -228,8 +228,11 @@
 ! !--------------------------------
 ! !  Update qdmw_nh 
 ! ! (fast and slow components)
-! !--------------------------------
-! !
+ ! !--------------------------------
+ ! !
+#  ifdef K3FAST_RAMP
+            dum_s = r_ramp_baro * dum_s
+#  endif
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)   
      &                      + dtfast * ( dum_s 
 #   ifdef K3FAST_C3D_WSF
@@ -261,13 +264,16 @@
 #   else
             dum_s = FC3D(i,j,k) - FC3D(i,j,k+1)
 #   endif
-#  ifdef K3FAST_AB3
+#  ifdef K3FAST_AB3b
 	      cff=dum_s
               dum_s=
      &     +cff1*cff
      &     +cff2*rhsw_bak(i,j,k,kab3_2)
      &     +cff3*rhsw_bak(i,j,k,kab3_1)
               rhsw_bak(i,j,k,kab3_1)=cff
+#  endif
+#  ifdef K3FAST_RAMP
+            dum_s = r_ramp_baro * dum_s
 #  endif
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k) + dtfast * dum_s 
           enddo
@@ -300,13 +306,16 @@
 !     &      -(cff-abs(cff))*rho_nbq(i,j,k+1)*Hzr_nbq_inv(i,j,k+1)
 !     &                                  )
 #   endif
-#  ifdef K3FAST_AB3
+#  ifdef K3FAST_AB3b
               cff=dum_s
               dum_s=
      &     +cff1*cff
      &     +cff2*rhsw_bak(i,j,k,kab3_2)
      &     +cff3*rhsw_bak(i,j,k,kab3_1)
               rhsw_bak(i,j,k,kab3_1)=cff
+#  endif
+#  ifdef K3FAST_RAMP
+            dum_s = r_ramp_baro * dum_s
 #  endif
             qdmw_nbq(i,j,k)=qdmw_nbq(i,j,k)   
      &                      + dtfast * ( dum_s 
@@ -465,7 +474,7 @@
      &           *Hz(i,j,k)/2.
              endif
 #endif
-#  ifdef K3FAST_AB3
+#  ifdef K3FAST_AB3b
 	      cff=dum_s
               dum_s=
      &     +cff1*cff

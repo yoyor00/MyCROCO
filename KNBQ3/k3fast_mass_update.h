@@ -67,13 +67,15 @@ C$OMP END MASTER
             rho_nbq(i,j,k) = rho_nbq(i,j,k)  
      &                       - dtfast*thetadiv_nbq(i,j,k)
 #  endif     
-#  ifdef KNHINT_CORR 
-	               cff=alphaw_nbq*0.5
-     &                *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
-     &                     /(z_r(i,j,N-10)-z_r(i,j,N))**2)
-               rho_nbq(i,j,k)=rho_nbq(i,j,k)
-     &                        -rho_nbq(i,j,k)*cff
-#  endif
+! Conservation of mass: no artificial rho damping
+!#  ifdef KNHINT_CORR 
+!	               cff=alphaw_nbq*0.5
+!     &                *exp(-(z_r(i,j,k)            -z_r(i,j,N))**2
+!     &                     /(z_r(i,j,N-alphaw_nbq)-z_r(i,j,N))**2)
+!               rho_nbq(i,j,k)=rho_nbq(i,j,k)
+!     &                        -rho_nbq(i,j,k)*cff
+!#  endif
+!! <= genère un blow-up car modification de la masse ???
           enddo
         enddo
       enddo
