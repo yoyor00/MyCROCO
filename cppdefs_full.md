@@ -107,8 +107,9 @@ Choose one scheme per variable class (M2, M3, T).
   - `UV_TIDES` — Read and apply tidal current data; if neither `M2CLIMATOLOGY` nor
     `M2_FRC_BRY` is already set, auto-activates `M2CLIMATOLOGY` + `ANA_M2CLIMA` as the default
   - `POT_TIDES` — Include tidal potential forcing
-  - `TIDES_MAS` — Harmonic composition to build tide elevation from SHOM (Simon method);
-    requires `USE_CALENDAR`; auto-activates `MASKING`
+  - `TIDES_MAS` — Online harmonic prediction (SHOM Simon method) of tidal elevation,
+    currents and potential from raw amplitude/phase constituents. no nodal (f/u) corrections needed in the input; requires `USE_CALENDAR` and auto-activates `MASKING`. 
+    Works with either `ZCLIMATOLOGY`/`M2CLIMATOLOGY` or `Z_FRC_BRY`/`M2_FRC_BRY`
   - `TIDERAMP` — Ramp tidal forcing over 1 day at start
   - `OBC_REDUCED_PHYSICS` — Compute tidal velcocity from tidal elevation in case of 
     tidal current is not available (undef `UV_TIDES`)

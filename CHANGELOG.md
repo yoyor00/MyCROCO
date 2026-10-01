@@ -15,7 +15,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - STATION : Add TEMPERATURE cppkey for stations (#445)
 
-- TIDES_MAS : Add online tidal prediction at boundary for currents (#471)
+- TIDES_MAS : Add online tidal prediction (SHOM Simon method) for currents and
+  potential, in addition to elevation; works now with both
+  ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
 
 ### Fixed
 
