@@ -2884,7 +2884,9 @@ contains
    !---------------------------------------------------------------------
    subroutine fatal_nml_error(nml_name, nmlunit, ios, iomsg)
       use param, ONLY: stdout, NT
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
       use croco_namelist, ONLY: psource_Nsrc
+#endif
       use tools_string, ONLY: to_lowercase
 #if defined MPI
       use scalars, ONLY: mynode
@@ -2948,12 +2950,21 @@ contains
       rewind (nmlunit)
 
       if (looks_like_array) then
-         MPI_master_only write (stdout, '(a,i0,a,i0,a)') &
-            '  -> this assigns an array: common sizes in this file are '// &
-            'per-tracer NT = ', NT, ' (e.g. tnu2, tnu4, Akt_bak), '// &
-            'per river/point-source psource_Nsrc = ', psource_Nsrc, &
-            ' (e.g. psource_Isrc, psource_Qbar; from the croco_psource '// &
-            'section), or NT*psource_Nsrc if both apply (e.g. psource_Tsrc0).'
+         MPI_master_only write (stdout, '(a)') &
+            '  -> this assigns an array'
+         MPI_master_only write (stdout, '(a,i0,a)') &
+            '  -> if it is sized per-tracer '// &
+            '(like tnu2, tnu4, Akt_bak), it must have exactly NT = ', NT, &
+            ' values.'
+#if defined PSOURCE || defined PSOURCE_MASS || defined PSOURCE_NCFILE
+         MPI_master_only write (stdout, '(a,i0,a)') &
+            '  -> if it is sized per river/point-source '// &
+            'it must have exactly psource_Nsrc = ', psource_Nsrc, &
+            ' values.'
+         MPI_master_only write (stdout, '(a)') &
+            '  -> if it is sized per river/point-source and per-tracer '// &
+            'it must have exactly NT*psource_Nsrc values (e.g. psource_Tsrc0).'
+#endif
       end if
 
       MPI_master_only write (stdout, '(a)') &
