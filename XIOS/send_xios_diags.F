@@ -1786,7 +1786,6 @@ C 				  endif
       !
       USE xios     ! XIOS library
       USE xios_module
-      use croco_namelist, only: dt, xios_origin_date
 
 #if defined MUSTANG
       USE comMUSTANG, only: nk_nivsed_out
@@ -2243,7 +2242,6 @@ C 				  endif
 
           USE xios     ! XIOS io
           USE xios_module
-          use croco_namelist, only: theta_s, theta_b, Tcline, hc, rho0
 #if defined BIOLOGY && defined PISCES
           USE trcwri_pisces
 #endif
