@@ -71,11 +71,11 @@ except FileNotFoundError:
 
 # Get dimensions and time info
 print("Reading grid and time information...")
-scrum_time = nc.variables["scrum_time"][:]
+time = nc.variables["time"][:]
 if args.tindex is None:
-    tindex = len(scrum_time) - 1  # Last record
+    tindex = len(time) - 1  # Last record
 else:
-    tindex = min(args.tindex, len(scrum_time) - 1)
+    tindex = min(args.tindex, len(time) - 1)
 
 # Read grid data
 hr = np.squeeze(nc.variables["h"][args.yindex, :])
@@ -143,7 +143,7 @@ print("Creating time series plots...")
 
 # Read time series data
 kk = round(N / 2)  # for w
-t0 = scrum_time[: tindex + 1]
+t0 = time[: tindex + 1]
 zeta01 = 100 * np.squeeze(
     nc.variables["zeta"][: tindex + 1, args.yindex, -1]
 )  # Last point
@@ -284,7 +284,7 @@ print("Creating animation/snapshot plots...")
 for t in range(tstr, tend + 1):
     print(f"Processing time index: {t}")
 
-    time = scrum_time[t]
+    tcur = time[t]
 
     # Vertical grid
     zeta = np.squeeze(nc.variables["zeta"][t, args.yindex, :])
@@ -316,13 +316,13 @@ for t in range(tstr, tend + 1):
 
     if args.nbq:  # Non-hydrostatic
         # Compute on rho-grid first, then convert to u-grid
-        zeta2, u2_rho, w2, sig = compute_analytical_solutions_nh(xr2d, zr, time, k, D0)
+        zeta2, u2_rho, w2, sig = compute_analytical_solutions_nh(xr2d, zr, tcur, k, D0)
         # Convert u2 to u-grid by averaging
         u2 = 0.5 * (u2_rho[:, :-1] + u2_rho[:, 1:])
         solution_type = "N-hydro"
     else:  # Hydrostatic
         # Compute on rho-grid first, then convert to u-grid
-        zeta2, u2_rho, w2, sig = compute_analytical_solutions_h(xr2d, zr, time, k, D0)
+        zeta2, u2_rho, w2, sig = compute_analytical_solutions_h(xr2d, zr, tcur, k, D0)
         # Convert u2 to u-grid by averaging
         u2 = 0.5 * (u2_rho[:, :-1] + u2_rho[:, 1:])
         solution_type = "hydro"
@@ -392,7 +392,7 @@ for t in range(tstr, tend + 1):
     plt.grid(True)
     plt.clim(cmin, cmax)
 
-    time_periods = time / T_lw
+    time_periods = tcur / T_lw
     plt.title(
         f"U error at Time {time_periods:.2f} periods ({solution_type})", fontsize=14
     )

@@ -52,7 +52,7 @@ end
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname,'r');
-tindex=length(nc{'scrum_time'}(:)); % reads last record
+tindex=length(nc{'time'}(:)); % reads last record
 
 %
 % horizontal grid
@@ -87,7 +87,7 @@ D2d=repmat(D,[N 1]);
 % ---------------------------------------------------------------------
 % --- read/compute numerical model fields (index 1) ---
 % --------------------------------------------------------------------
-time=nc{'scrum_time'}(tindex)/86400;
+time=nc{'time'}(tindex)/86400;
 
 zeta1=zeta;
 

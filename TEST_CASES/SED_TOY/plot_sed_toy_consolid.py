@@ -56,7 +56,7 @@ ntplot = len(tplot)
 
 h = nc.variables["h"][idy, idx]
 bostr = nc.variables["bostr"][:, idy, idx]
-Timeindays = nc.variables["scrum_time"][:] / 86400  # Convert to days
+Timeindays = nc.variables["time"][:] / 86400  # Convert to days
 nt = len(Timeindays)
 
 zbed = np.zeros((nl, 4))

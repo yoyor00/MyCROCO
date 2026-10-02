@@ -51,9 +51,9 @@ pm=nc{'pm'}(:,:);
 pn=nc{'pn'}(:,:);
 f=nc{'f'}(:,:);
 N=length(nc('s_rho'));
-tlen=length(nc{'scrum_time'}(:));
+tlen=length(nc{'time'}(:));
 tindex=min(tlen,tindex);
-time=round(nc{'scrum_time'}(tindex)/(24*3600));
+time=round(nc{'time'}(tindex)/(24*3600));
 disp(['Day : ',num2str(time),'  index:',num2str(tindex)])
 zeta=squeeze(nc{'zeta'}(tindex,:,:));
 u=squeeze(nc{'u'}(tindex,:,:,:));
@@ -196,7 +196,7 @@ if tindex>18
   if tndx==1
    ylabel('Y [km]')
   end
-  time=round(nc{'scrum_time'}(tindex(tndx))/(24*3600));
+  time=round(nc{'time'}(tindex(tndx))/(24*3600));
   title(['SST - day=',num2str(time)])
  end
  if makepdf

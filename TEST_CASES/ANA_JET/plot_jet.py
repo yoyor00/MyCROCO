@@ -56,11 +56,11 @@ f = nc.variables["f"][:, :]
 
 # Dimensions
 N = len(nc.dimensions["s_rho"])
-tlen = len(nc.variables["scrum_time"][:])
+tlen = len(nc.variables["time"][:])
 tindex = min(tlen - 1, args.tindex)  # Ensure valid index (0-based)
 
 # Time
-time = round(nc.variables["scrum_time"][tindex] / (24 * 3600))
+time = round(nc.variables["time"][tindex] / (24 * 3600))
 print(f"Day: {time}  index: {tindex}")
 
 # Read variables at specified time
@@ -278,7 +278,7 @@ if tindex > 17:
             if i == 0:
                 plt.ylabel("Y [km]", fontsize=12)
 
-            time_day = round(nc.variables["scrum_time"][tidx] / (24 * 3600))
+            time_day = round(nc.variables["time"][tidx] / (24 * 3600))
             plt.title(f"SST - day={time_day}", fontsize=12)
 
     # Add much larger colorbar with better positioning

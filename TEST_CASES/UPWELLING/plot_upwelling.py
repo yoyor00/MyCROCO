@@ -51,7 +51,7 @@ except FileNotFoundError:
     exit(1)
 
 # Variables from the NetCDF file
-time = nc.variables["scrum_time"][tndx] / (24 * 3600)  # Convert seconds to days
+time = nc.variables["time"][tndx] / (24 * 3600)  # Convert seconds to days
 h = nc.variables["h"][:]
 y = np.squeeze(nc.variables["y_rho"][:, 1])  # MATLAB's 2nd index -> Python's 1st
 zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])

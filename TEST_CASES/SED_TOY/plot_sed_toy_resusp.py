@@ -78,7 +78,7 @@ try:
     with Dataset(fname, "r") as nc:
         # Basic variables
         h = np.squeeze(nc.variables["h"][idy, idx])
-        T = np.squeeze(nc.variables["scrum_time"][:]) / 86400  # Convert to days
+        T = np.squeeze(nc.variables["time"][:]) / 86400  # Convert to days
         nt = len(T)
 
         # Bottom stress

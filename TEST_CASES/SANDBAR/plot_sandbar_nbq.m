@@ -69,10 +69,10 @@ makepdf    = 0;        % make pdf file
 yindex = 2; % Mm=1 with NS no-slip conditions
 %
 nc=netcdf(fname,'r');
-tindex=length(nc{'scrum_time'}(:)); % reads last record
+tindex=length(nc{'time'}(:)); % reads last record
 %tindex=3;
 %
-time=morph_fac*nc{'scrum_time'}(:)/3600; % time in hours
+time=morph_fac*nc{'time'}(:)/3600; % time in hours
 if mycase == '1B',
  [d,tindex0]=min(abs(time-8));     %  8h (1B)
 else
@@ -130,8 +130,8 @@ Du2d=repmat(Du,[N 1]);
 % ---------------------------------------------------------------------
 % --- read/compute 3D model fields (tindex) ---
 % --------------------------------------------------------------------
-time=morph_fac/86400*(nc{'scrum_time'}(tindex) - ...
-                      nc{'scrum_time'}(1)) +2/24;
+time=morph_fac/86400*(nc{'time'}(tindex) - ...
+                      nc{'time'}(1)) +2/24;
 
 % ... zonal velocity ...                         ---> xu,zu
 u=squeeze(nc{'u'}(tindex,:,yindex,:));
@@ -191,7 +191,7 @@ close(nch)
 
 % ... Hrms ...
 nc=netcdf(dianame,'r');
-time_eddy=morph_fac*nc{'scrum_time'}(:)/3600; % time in hours
+time_eddy=morph_fac*nc{'time'}(:)/3600; % time in hours
 if mycase == '1B',
  [d,tindex_eddy]=min(abs(time_eddy-8));     %  8h (1B)
 else

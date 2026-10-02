@@ -46,7 +46,7 @@ valid = 0;        % 1: valid against forcing data
 %
 
 nc=netcdf(hname,'r');
-tndx=length(nc{'scrum_time'}(:));
+tndx=length(nc{'time'}(:));
 h=nc{'h'}(:);
 hsec=squeeze(nc{'h'}(2,:));
 lonu=squeeze(nc{'lon_u'}(2,:));
@@ -66,7 +66,7 @@ wsec=squeeze(nc{'w'}(tndx,:,2,:));
 tsec=squeeze(nc{'temp'}(tndx,:,2,:));
 rsec=squeeze(nc{'rho'}(tndx,:,2,:));
 drsec=rsec-squeeze(nc{'rho'}(1,:,2,:));
-time=nc{'scrum_time'}(tndx)/86400;
+time=nc{'time'}(tndx)/86400;
 close(nc)
 
 zeta_u=rho2u_2d(zeta);

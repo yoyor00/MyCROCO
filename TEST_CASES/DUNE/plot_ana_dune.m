@@ -41,7 +41,7 @@ tndx=2; % half-hourly outputs
 %----------------------------------------------------------
 %
 nc=netcdf(fname);
-t0=nc{'scrum_time'}(:);
+t0=nc{'time'}(:);
 
 nt=size(t0);
 t=zeros(nt);

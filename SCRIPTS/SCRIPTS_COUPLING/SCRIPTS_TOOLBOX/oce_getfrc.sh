@@ -23,8 +23,8 @@ if [ ${interponline} -eq 1 ]; then
         else
             filefrom="${RESTDIR_IN}/croco_rst_${DATE_END_JOBm1}.nc"
         fi
-        # scrum_time of ini file
-        tstartinsec=$( echo $( ncdump -v scrum_time ${filefrom} | grep 'scrum_time =' | cut -d '=' -f 2| cut -d ' ' -f 2 ))
+        # time of ini file
+        tstartinsec=$( echo $( ncdump -v time ${filefrom} | grep 'time =' | cut -d '=' -f 2| cut -d ' ' -f 2 ))
         tstartinsec=`echo "scale=2; ${tstartinsec} + ${DT_OCE}*0.5" | bc ` # =0.5*dt like in croco 
         # Find first time value in forcing file
         fieldname=$( echo "$vnames" | awk '{print $1}' )

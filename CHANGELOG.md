@@ -127,6 +127,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 ### Removed
 
+- Remove duplicate `scrum_time` netCDF variable from history, restart, 
+  averages, diagnostics, surf and station output files; only `time` is 
+  written now (matches the `time` dimension name). get_initial.F still 
+  falls back to reading `scrum_time` when restarting from older files 
+  (Issue #189)
+
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
 - MUSTANG : 

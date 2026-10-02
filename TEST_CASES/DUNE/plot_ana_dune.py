@@ -74,7 +74,7 @@ print(f"Y-section index: {j + 1} (Matlab indexing)")
 print("Reading model data...")
 try:
     with Dataset(fname, "r") as nc:
-        t0 = nc.variables["scrum_time"][:]
+        t0 = nc.variables["time"][:]
 
         # Compute relative time
         nt = len(t0)

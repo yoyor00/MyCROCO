@@ -47,8 +47,8 @@ makepdf     = 0;  % make pdf file
 % ---------------------------------------------------------------------
 
 nc=netcdf(hisname);
-tindex=length(nc{'scrum_time'}(:)); % reads last record
-time=nc{'scrum_time'}(tindex)/60;
+tindex=length(nc{'time'}(:)); % reads last record
+time=nc{'time'}(tindex)/60;
 
 h=nc{'h'}(:);
 xl=nc{'xl'}(:);

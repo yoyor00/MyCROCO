@@ -308,7 +308,7 @@ C$OMP END PARALLEL
 
 !#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
-      vname(1,indxTime)='scrum_time'
+      vname(1,indxTime)='time'
       vname(2,indxTime)='time since initialization'
 #if defined USE_CALENDAR && defined ANA_INITIAL
       vname(3,indxTime)='seconds since '//start_date
@@ -321,25 +321,10 @@ CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
       vname(7,indxTime)='T'
       vname(8,indxTime)='.NO.'
       vname(9,indxTime)=' '
-#ifdef USE_CALENDAR 
+#ifdef USE_CALENDAR
       vname(10,indxTime)=start_date
-!     vname(11,indxTime)='Gregorian'
+      vname(11,indxTime)='Gregorian'
 #endif
-
-CR      write(stdout,'(1x,A,I3)') 'indxTime2 =',indxTime2
-      vname(1,indxTime2)='time'
-      vname(2,indxTime2)='time since initialization'
-#if defined USE_CALENDAR && defined ANA_INITIAL
-      vname(3,indxTime2)='seconds since '//start_date
-#else
-      vname(3,indxTime2)='second'
-#endif
-      vname(4,indxTime2)='time, scalar, series'
-      vname(5,indxTime2)='time'
-      vname(6,indxTime2)='  '
-      vname(7,indxTime2)='T '
-      vname(8,indxTime2)='.NO.'
-      vname(9,indxTime2)=' '
 
 CR      write(stdout,'(1x,A,I3)') 'indxZ =',indxZ
       vname(1,indxZ)='zeta                                        '

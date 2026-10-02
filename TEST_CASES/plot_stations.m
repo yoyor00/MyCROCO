@@ -6,7 +6,7 @@ nsta=2;
 for ista=1:nsta;
   T=squeeze(nc{'temp'}(:,ista,:));
   D=squeeze(nc{'depth'}(2,ista,:));
-  time=squeeze(nc{'scrum_time'}(:,ista))./86400;
+  time=squeeze(nc{'time'}(:,ista))./86400;
   T(1,:)=[];time(1)=[];
   N=length(D); Nt=length(time);
 

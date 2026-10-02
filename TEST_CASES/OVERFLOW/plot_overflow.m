@@ -36,7 +36,7 @@ tndx=6;
 %
 nc=netcdf('over_his.nc');
 h=nc{'h'}(:);
-time=nc{'scrum_time'}(tndx)/86400;
+time=nc{'time'}(tndx)/86400;
 y=squeeze(nc{'y_rho'}(:,2));
 zeta=squeeze(nc{'zeta'}(tndx,:,:));
 t0=squeeze(nc{'temp'}(1,:,:,2));

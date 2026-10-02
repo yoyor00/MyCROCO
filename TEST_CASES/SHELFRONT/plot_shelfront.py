@@ -40,7 +40,7 @@ except FileNotFoundError:
 
 # Parameters
 tndx = 10  # Adjusted for Python's 0-based indexing (MATLAB's tndx = 11)
-time = nc.variables["scrum_time"][tndx] / (24 * 3600)  # Convert time to days
+time = nc.variables["time"][tndx] / (24 * 3600)  # Convert time to days
 h = nc.variables["h"][:]
 y = np.squeeze(
     nc.variables["y_rho"][:, 1]
