@@ -21,10 +21,15 @@
    ln_rstseed  = .false.   ! read seed of RNG from restart file
    cn_storst_in  = "restart_sto_in.nc"  ! input restart file for stochastic parameters
    cn_storst_out = "restart_sto_out.nc" ! output restart file for stochastic parameters
-   cn_xi2d = "stress"   ! name of field to save as xi2d in history file (if requested in croco.in, options : bulk_cd, stress, gls_Sprod, gls_Bprod)
-   cn_xi3d = "gls_zlevs" ! name of field to save as xi3d in history file (if requested in croco.in, options : gls_zlevs, ics)
+   cn_xi2d = "stress"   ! name of field to save as xi2d in history file (if requested in croco.nml, options : bulk_cd, stress, gls_Sprod, gls_Bprod)
+   cn_xi3d = "gls_zlevs" ! name of field to save as xi3d in history file (if requested in croco.nml, options : gls_zlevs, ics)
    cn_rngtype = 'default'     ! name of random number generator to use (default, kiss32, kiss64, shr3, testmpi)
    cn_normal_algo = 'default' ! algorithm to obtain normal numbers (default, polar, ziggurat)
+/
+!-----------------------------------------------------------------------
+&namsto_ics     !   parameters for stochastic initial conditions
+!-----------------------------------------------------------------------
+   ln_strict_stoics  = .true.  ! ICs perturbation at cold start only (.true.) or to restart as well (.false.)
 /
 !-----------------------------------------------------------------------
 &namsto_bulk   !   parameters for stochastic bulk formulation

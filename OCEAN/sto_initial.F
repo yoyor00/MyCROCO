@@ -68,7 +68,7 @@
 !----------------------------------------------------------------------
 !
 
-# ifdef SOLVE3D
+#ifdef SOLVE3D
 !
 !----------------------------------------------------------------------
 !  Initial conditions for momentum components [m/s].
@@ -80,13 +80,26 @@
 !  salinity [PSU] and passive tracer
 !----------------------------------------------------------------------
 !
+      if (ntstart.eq.1) then
 #   if defined TEMPERATURE
+        MPI_master_only write(stdout,*)
+     &     'Apply stochastic perturbations on (temperature) ',
+     &     'cold start initial conditions'
         call sto_ics( t(:,:,:,1,itemp), sto_xi3d(:,:,:) )
 #   endif
+      else  !  ntstart.ne.1.
 !
-# endif /*SOLVE3D */
-
-# ifdef SOLVE3D
+!  Add perturbation to restart field, if ln_strict_stoics=.false.
+!
+#   if defined TEMPERATURE
+        if ( .not. ln_strict_stoics ) then
+          MPI_master_only write(stdout,*)
+     &       'Apply stochastic perturbations on (temperature) ',
+     &       'restart conditions '
+          call sto_ics( t(:,:,:,1,itemp), sto_xi3d(:,:,:) )
+        endif
+#   endif
+      endif
 !
 !--------------------------------------------------------------------
 !  Initial conditions for passive tracer
@@ -112,7 +125,7 @@
 !  Initial conditions for biology tracer variables.
 !--------------------------------------------------------------------
 !
-# endif /* SOLVE3D */
+#endif /* SOLVE3D */
 !
 !--------------------------------------------------------------------
 !  Exchange boundary information

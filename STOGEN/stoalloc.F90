@@ -43,6 +43,8 @@ MODULE stoalloc
    REAL(wp), PUBLIC, DIMENSION(:,:),   POINTER, contiguous :: sto_gls_s2d ! perturbation of production term
    REAL(wp), PUBLIC, DIMENSION(:,:),   POINTER, contiguous :: sto_gls_b2d ! perturbation of destruction term
    REAL(wp), PUBLIC, DIMENSION(:,:,:), POINTER, contiguous :: sto_gls_z3d ! perturbation of destruction term
+
+   ! Working arrays for the stochastic parameterization of initial conditions
    REAL(wp), PUBLIC, DIMENSION(:,:,:), POINTER, contiguous :: sto_3d_ics     ! perturbation of initial condition
 
    ! Value used to initialize working arrays
@@ -71,9 +73,10 @@ CONTAINS
         allocate(sto_stress_factor(GLOBAL_2D_ARRAY))
         sto_stress_factor(:,:) = init
       ENDIF
-	  
-	  IF (ln_stogen .AND. ln_stoics) THEN
-		 sto_3d_ics(GLOBAL_2D_ARRAY,1:N) => sto3d(:,:,:,jpidxlast3d,stofields(jstoics)%index)
+
+      ! define working arrays used for the stochastic initial conditions
+      IF (ln_stogen .AND. ln_stoics) THEN
+        sto_3d_ics(GLOBAL_2D_ARRAY,1:N) => sto3d(:,:,:,jpidxlast3d,stofields(jstoics)%index)
       ENDIF 
 
       ! define working arrays used for vertical mixing
@@ -100,7 +103,7 @@ CONTAINS
           IF (ln_stogls.AND.ln_Bprod) sto_xi2d(GLOBAL_2D_ARRAY) => sto_gls_b2d(:,:)
         END SELECT
         IF (.NOT.associated(sto_xi2d)) THEN
-          CALL ctl_stop('No valid array associated to requested xi2d output')
+          CALL ctl_stop('sto2dfield requested in croco.nml, but no valid array associated with it')
         ENDIF
       ENDIF
 
@@ -109,11 +112,11 @@ CONTAINS
         SELECT CASE (cn_xi3d)
         CASE('gls_zlevs')
           IF (ln_stogls.AND.ln_zlevs) sto_xi3d(GLOBAL_2D_ARRAY,1:N) => sto_gls_z3d(:,:,:)
-		CASE('ics')
-		  IF (ln_stoics)              sto_xi3d(GLOBAL_2D_ARRAY,1:N) => sto_3d_ics(:,:,:)
+        CASE('ics')
+          IF (ln_stoics)              sto_xi3d(GLOBAL_2D_ARRAY,1:N) => sto_3d_ics(:,:,:)
         END SELECT
         IF (.NOT.associated(sto_xi3d)) THEN
-          CALL ctl_stop('No valid array associated to requested xi3d output')
+          CALL ctl_stop('sto3dfield requested in croco.nml, but no valid array associated with it')
         ENDIF
       ENDIF
 
