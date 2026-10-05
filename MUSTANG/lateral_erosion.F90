@@ -1,5 +1,6 @@
-! MUSTANG - This software is governed by the CeCILL-C license
-! see LICENSE_MUSTANG.txt
+! Copyright (C) 2022-2026 IFREMER
+! License: CeCILL-C
+! See LICENSES/LICENSE_MUSTANG.txt
 
 MODULE lateral_erosion
    !============================================================================

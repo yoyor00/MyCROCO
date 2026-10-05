@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !   
 #include "cppdefs.h"
@@ -66,7 +67,7 @@
       !
       ! See ncscrum.h for r2dvar ...
       SELECT CASE (TRIM(cdgrd))
-      CASE ("rho")
+      CASE ("rho", "rho_unmasked")
          vtype=r2dvar
          nx_glo=LLm+2
          ny_glo=MMm+2
@@ -74,11 +75,11 @@
          vtype=r2dvar
          nx_glo=LLm+2
          ny_glo=MMm+2
-      CASE ("u")
+      CASE ("u", "u_unmasked")
          vtype=u2dvar
          nx_glo=LLm+1
          ny_glo=MMm+2
-      CASE ("v")
+      CASE ("v", "v_unmasked")
          vtype=v2dvar
          nx_glo=LLm+2
          ny_glo=MMm+1
@@ -789,6 +790,11 @@
 #endif  /* ONLINE_ANALYSIS */
 
       SUBROUTINE set_xml_global_att(cdid)
+         use croco_namelist, only: ntimes, dt, ndtfast,
+     &                              ininame, rstname, title, frcname
+#ifndef ANA_GRID
+         use croco_namelist, only: grdname
+#endif
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -962,17 +968,15 @@ C 				  endif
       CALL iom_set_file_global_attr_char   (cdid
      &     ,type='string',name='gamma2_expl', value=
      &          'Slipperiness parameter')
-# ifdef SPONGE
+#if (defined SPONGE && !defined SPONGE_GRID)
 !
 ! Sponge parameters
 !
       CALL iom_set_file_global_attr_float   (cdid
      &      ,type='float',name='x_sponge', value=x_sponge)
-      CALL iom_set_file_global_attr_float   (cdid
-     &     ,type='float',name='v_sponge', value=v_sponge)
       CALL iom_set_file_global_attr_char   (cdid,
      &     type='string',name='sponge_expl',value=
-     &     'Sponge parameters : extent (m) & viscosity (m2.s-1)')
+     &     'Sponge layer width [m]: x_sponge')
 # endif
 # ifdef SEDIMENT
 !
@@ -1901,6 +1905,9 @@ C 				  endif
       CALL set_grid( "v"  , lonv, latv )
       CALL set_grid( "w"  , lonr, latr )
       CALL set_grid( "psi", lonu, latv )
+      CALL set_grid( "rho_unmasked", lonr, latr )
+      CALL set_grid( "u_unmasked"  , lonu, latu )
+      CALL set_grid( "v_unmasked"  , lonv, latv )
 # else
       CALL set_grid( "rho", xr, yr )
       CALL set_grid( "b"  , xr, yr )
@@ -1908,6 +1915,9 @@ C 				  endif
       CALL set_grid( "v"  , xr, yp )
       CALL set_grid( "w"  , xr, yr )
       CALL set_grid( "psi", xp, yp )
+      CALL set_grid( "rho_unmasked", xr, yr )
+      CALL set_grid( "u_unmasked"  , xp, yr )
+      CALL set_grid( "v_unmasked"  , xr, yp )
 # endif
 
 # ifdef MASKING
@@ -2236,6 +2246,9 @@ C 				  endif
 #if defined MUSTANG
       USE comsubstance, ONLY : name_var, nvpc, ws_part, imud1, imud2
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
+#if defined key_MUSTANG_V2
+      USE comsubstance, ONLY : l_bedload
+#endif
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres, MUSTANG_reconstruct_rouse2D_profile
       USE comMUSTANG, only: nk_nivsed_out, l_outsed_hsed , 
      &    l_outsed_poro, l_outsed_dzs, l_outsed_temp_sed, l_outsed_salt_sed, 
@@ -2312,7 +2325,7 @@ C 				  endif
 # if defined DIAGNOSTICS_VRT
 #  include "diags_vrt.h"
 # endif
-# ifdef DIAGNOSTICS_EK
+# ifdef DIAGNOSTICS_KE
 #  include "diags_ek.h"
 # endif
 # ifdef DIAGNOSTICS_PV
@@ -2849,10 +2862,10 @@ c !$acc wait
 ! but I found it quiet ugly
 
       if (xios_field_is_active("rho")) then
-      call xios_send_field("rho",rho)
+      call xios_send_field("rho",rho+rho0-1000.)
       endif
       if (xios_field_is_active("rho_surf")) then
-      call xios_send_field("rho_surf",rho(:,:,N))
+      call xios_send_field("rho_surf",rho(:,:,N)+rho0-1000.)
       endif
 
 # if defined ANA_VMIX || defined LMD_MIXING \
@@ -2881,7 +2894,7 @@ c !$acc wait
       call xios_send_field("omega",work)
       endif
 
-#  ifdef M3FAST
+#  ifdef NBQ
       if (xios_field_is_active("u_nbq")) then
         worknbq=0.
           do k=-N_sl+1,N-1
@@ -2971,7 +2984,7 @@ c !$acc wait
 #  endif
 
       if (xios_field_is_active("w")) then
-# ifndef M3FAST
+# ifndef NBQ
       call Wvlcty (tile, workr) 
       call xios_send_field("w",workr)
 # else        
@@ -3516,39 +3529,39 @@ c !$acc wait
 #  endif
 
 
-#  ifdef DIAGNOSTICS_EK
+#  ifdef DIAGNOSTICS_KE
 
       if (xios_field_is_active("ekrate")) then
-          call xios_send_field("ekrate", ekrate(:,:))
+          call xios_send_field("ekrate", ekrate(:,:,:))
       endif
       if (xios_field_is_active("ekadv")) then
-          call xios_send_field("ekadv", ekHadv(:,:) + ekVadv(:,:))
+          call xios_send_field("ekadv", ekHadv(:,:,:) + ekVadv(:,:,:))
       endif
       if (xios_field_is_active("ekCor")) then
-          call xios_send_field("ekCor",ekCor(:,:))
+          call xios_send_field("ekCor",ekCor(:,:,:))
       endif
       if (xios_field_is_active("ekPrsgrd")) then
-          call xios_send_field("ekPrsgrd",ekPrsgrd(:,:))
+          call xios_send_field("ekPrsgrd",ekPrsgrd(:,:,:))
       endif
       if (xios_field_is_active("ekHmix")) then
-          call xios_send_field("ekHmix",ekHmix(:,:))
+          call xios_send_field("ekHmix",ekHmix(:,:,:))
       endif
       if (xios_field_is_active("ekHdiff")) then
-          call xios_send_field("ekHdiff",ekHdiff(:,:))
+          call xios_send_field("ekHdiff",ekHdiff(:,:,:))
       endif
       if (xios_field_is_active("ekVmix")) then
-          call xios_send_field("ekVmix",ekVmix(:,:))
+          call xios_send_field("ekVmix",ekVmix(:,:,:))
       endif
       if (xios_field_is_active("ekVmix2")) then
-          call xios_send_field("ekVmix2",ekVmix2(:,:))
+          call xios_send_field("ekVmix2",ekVmix2(:,:,:))
       endif
 #  ifdef DIAGNOSTICS_BARO
       if (xios_field_is_active("ekBaro")) then
-          call xios_send_field("ekBaro",ekBaro(:,:))
+          call xios_send_field("ekBaro",ekBaro(:,:,:))
       endif
 #  endif
       if (xios_field_is_active("ekvol")) then
-          call xios_send_field("ekvol",ekvol(:,:))
+          call xios_send_field("ekvol",ekvol(:,:,:))
       endif
       if (xios_field_is_active("ekDrag")) then
           call xios_send_field("ekDrag",ekDrag(:,:))
@@ -3558,7 +3571,7 @@ c !$acc wait
       endif
 #  ifdef M3FAST
       if (xios_field_is_active("ekfast")) then
-          call xios_send_field("ekfast",ekfast(:,:))
+          call xios_send_field("ekfast",ekfast(:,:,:))
       endif
 #  endif
 #  endif
@@ -3774,7 +3787,7 @@ c !$acc wait
 
 
 # ifdef MUSTANG
-      do itrc=3,NT
+      do itrc=itsubs1,itsubs1+nvpc-1
          write(nametrc,'(a)') TRIM(name_var(itrc-2))
          workr=t(:,:,:,nstp,itrc)
          if (itrc .ge. itsubs1+nv_grav .and.
@@ -3899,8 +3912,7 @@ c !$acc wait
      &                             var2D_pephm_fcor(itrc,:,:))
             endif
          ENDIF
-#ifdef key_MUSTANG_bedload
-         IF (l_outsed_bedload) then
+         IF (l_bedload .and. l_outsed_bedload) then
             write (nametrc, '(a,"_flx_bx")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),
@@ -3917,14 +3929,13 @@ c !$acc wait
      &                             var2D_bil_bedload(itrc,:,:))
             endif
          ENDIF
-         IF (l_outsed_fsusp) then
+         IF (l_bedload .and. l_outsed_fsusp) then
             write (nametrc, '(a,"_fsusp")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),
      &                             var2D_fsusp(itrc,:,:))
             endif
          ENDIF
-#endif /* key_MUSTANG_bedload */
 #endif /* key_MUSTANG_V2 */
       ENDDO
 
@@ -3987,8 +3998,7 @@ c !$acc wait
      &                        var2D_niter_ero)
             endif
       ENDIF
-#ifdef key_MUSTANG_bedload
-      IF (l_outsed_bedload) then
+      IF (l_bedload .and. l_outsed_bedload) then
             if (xios_field_is_active("flx_bx_int")) then
             call xios_send_field("flx_bx_int",
      &                        var2D_flx_bx_int)
@@ -4002,7 +4012,6 @@ c !$acc wait
      &                        var2D_bil_bedload_int)
             endif
       ENDIF
-#endif /* key_MUSTANG_bedload */
 #endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN

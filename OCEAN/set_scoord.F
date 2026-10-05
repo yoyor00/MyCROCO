@@ -1,23 +1,32 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
 #ifdef SOLVE3D
 
-      subroutine set_scoord     ! Input:   hmin,   Tcline,
+      subroutine set_scoord     ! Input:   hmin, hc,
 !                               !          theta_s, theta_b
 ! Define S-coordinate system.   !
 !                               ! Output:  hc, sc_w(0:N), Cs_w(0:N)
                                 !              sc_r(1:N), Cs_r(1:N)
 # ifdef OPENACC
       use exchange_device_host
+# endif
+      use croco_namelist, only: ndtfast, dt, Zobt,
+     &                          rdrg, rdrg2, Cdb_min, Cdb_max
+#ifdef SOLVE3D
+      use croco_namelist, only: theta_s, theta_b, hc
+#endif
+# ifdef WET_DRY
+      use croco_namelist, only: D_wetdry
 # endif
       implicit none
 # include "param.h"
@@ -32,7 +41,7 @@
 ! Set S-Curves in domain [-1 < sc < 0] at vertical W- and RHO-points.
 !
 # ifndef NEW_S_COORD
-      hc=min(hmin,Tcline)
+      hc=min(hmin,hc)
       cff1=1./sinh(theta_s)
       cff2=0.5/tanh(0.5*theta_s)
 
@@ -72,7 +81,6 @@
       endif
 #  endif
 # else
-      hc= Tcline
       ds=1./float(N)
       do k=1,N,+1
         sc     = ds*(float(k-N)-0.5)

@@ -1,0 +1,5 @@
+STOGEN (Stochastic parameterization)
+Copyright (C) J-M. Brankart
+
+This software is governed by the CeCILL license.
+Full license text: see LICENSES/LICENSE_CeCILL.txt or https://cecill.info

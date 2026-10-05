@@ -4,7 +4,7 @@
     "title": "SOLITON (96 x 32 x 10 : 1200)",
     "case": "SOLITON",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_soliton.py",
+      "plotphy_script": "./TEST_CASES/SOLITON/plot_soliton.py",
       "plotphy_script_input": "soliton_his.nc",
     },
     "splitting": { "1": "1x1", "2": "2x1", "4": "2x2" },
@@ -29,35 +29,39 @@
     },
     "patches": {
       // Change the size of the mesh
-      "param.h": {
-        "mode": "replace",
-        "after": "#elif defined SOLITON",
-        "what": "      parameter (LLm0=96,   MMm0=32,   N=10)",
-        "by": "      parameter (LLm0=960,  MMm0=320,  N=10)",
-        "descr": "Set mesh size to (960 x 320 x 10)",
-      },
+      "param.h": [
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: LLm0 = 96",
+          "by": "      integer, parameter :: LLm0 = 960",
+          "descr": "Set LLm0 = 960",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: MMm0 = 32",
+          "by": "      integer, parameter :: MMm0 = 320",
+          "descr": "Set MMm0 = 320",
+        },
+      ],
       // CHange the dt
-      "TEST_CASES/croco.in.Soliton": [
+      "TEST_CASES/SOLITON/croco_SOLITON.nml": [
         {
           "mode": "replace",
-          "after": "time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-          "what": "               1200     0.1      1        5",
-          "by": "               1200     0.01     1        5",
-          "descr": "Set stepping (steps=1200, dt=0.01, fast=1)",
+          "what": "dt = 0.1",
+          "by": "dt = 0.01",
+          "descr": "Set stepping (dt=0.01)",
         },
         {
           "mode": "replace",
-          "after": "history: LDEFHIS, NWRT, NRPFHIS / filename ",
-          "what": "            T      80      0 ",
-          "by": "            T    1200      0",
-          "descr": "Set History steps (steps=1200)",
+          "what": "nwrt = 80",
+          "by": "nwrt = 1200",
+          "descr": "Set History steps (nwrt=1200)",
         },
         {
           "mode": "replace",
-          "after": "averages: NTSAVG, NAVG, NRPFAVG / filename",
-          "what": "            1      80      0",
-          "by": "            1      1200    0",
-          "descr": "Set Average steps (steps=1200)",
+          "what": "navg = 80",
+          "by": "navg = 1200",
+          "descr": "Set Average steps (navg=1200)",
         },
       ],
     },

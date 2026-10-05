@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
-! 
-! CROCO website : http://www.croco-ocean.org
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
+!
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -117,6 +118,10 @@ C$    trd=omp_get_thread_num()
 !
 !***********************************************************************
 !
+      use croco_namelist, only: dt, rho0, rdrg, rdrg2, Cdb_min, Cdb_max
+# ifdef NBQ
+      use croco_namelist, only: csound_nbq, visc2_nbq
+# endif
 # ifdef CVTK_DEBUG
       USE debug
 # endif
@@ -219,11 +224,12 @@ C$    trd=omp_get_thread_num()
 #  include "zoom.h"
         integer irhox, irhoy, irhot
 # endif
-# if defined INTERNAL || defined BODYTIDE
+! BODYTIDE in INTERNAL test case
+# ifdef BODYTIDE
       real,parameter :: U0 = 0.02
       real,parameter :: omega = 2.*pi/(12.4*3600.)
 # endif
-# ifdef ACOUSTIC
+# ifdef ACOUSTIC_FORCING
       real dist_d  
 # endif
 # ifdef WET_DRY
@@ -1445,7 +1451,7 @@ C$OMP END MASTER
 !  Acoustic wave emission
 !-------------------------------------------------------------------
 !
-# ifdef ACOUSTIC 
+# ifdef ACOUSTIC_FORCING 
       if (FIRST_TIME_STEP .and. FIRST_FAST_STEP) then
         period_exp = 0.025/2.
         for_a_exp  = 2.5
@@ -1927,7 +1933,7 @@ C$OMP END MASTER
 #  ifdef UV_COR_NT
           dum_s=dum_s+ntcoru(i,j,k)
 #  endif
-#  if defined INTERNAL || defined BODYTIDE
+#  ifdef BODYTIDE
           dum_s=dum_s+0.5*omega*U0*cos(omega*time)
      &                       *(Hz(i-1,j,k)+Hz(i,j,k))
 #  endif
@@ -2071,7 +2077,7 @@ C$OMP END MASTER
 #  ifdef UV_COR_NT
               dum_s=dum_s+ntcorv(i,j,k)
 #  endif
-#  if defined INTERNAL || defined BODYTIDE
+#  ifdef BODYTIDE
               dum_s=dum_s+0.25*(f(i,j)+f(i,j-1))*
      &                       U0*sin(omega*time)*
      &                       (Hz(i,j,k)+Hz(i,j-1,k))
@@ -3085,7 +3091,7 @@ C$OMP END MASTER
 !  Acoustic wave emission
 !-------------------------------------------------------------------
 !
-#  ifdef ACOUSTIC
+#  ifdef ACOUSTIC_FORCING
         time_nbq = time_nbq + dtfast
         do k=1,N
           do j=JstrV-2,Jend+1
@@ -3188,7 +3194,7 @@ C$OMP END MASTER
           do j=Jstr,Jend              
             do i=Istr,Iend
               rw_nbq(i,j,k)=((qdmw_nbq(i,j,k)-rw_nbq(i,j,k))
-     &                              /dtnbq-ndtnbq*rw_int_nbq(i,j,k))
+     &                              /dtnbq-rw_int_nbq(i,j,k))
      &                                            /(pm(i,j)*pn(i,j))
             enddo
           enddo

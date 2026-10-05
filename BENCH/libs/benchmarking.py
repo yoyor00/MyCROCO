@@ -49,6 +49,7 @@ class Benchmarking:
         self.make_ref_variant_first()
 
         # Create croco instances
+        self.init_errors = []
         self.instances = self.create_croco_instances()
 
         # dump
@@ -97,6 +98,14 @@ class Benchmarking:
             res = res_splitting
         return res
 
+    def _try_create_instance(self, res, config, case_name, variant_name, restarted):
+        try:
+            res.append(Croco(config, case_name, variant_name, restarted))
+        except Exception as e:
+            msg = f"Case '{case_name}': failed to initialise — {e}"
+            Messaging.step_error(msg)
+            self.init_errors.append(msg)
+
     def create_croco_instances(self) -> Union[Croco]:
         # extract some
         config = self.config
@@ -115,26 +124,16 @@ class Benchmarking:
                     if config.restart:
                         if "restart" not in case_config.get("unsupported", []):
                             if variant_name == self.config.variant_ref_name:
-                                restarted = False
-                                res.append(
-                                    Croco(config, case_name, variant_name, restarted)
-                                )
-                                restarted = True
-                                res.append(
-                                    Croco(config, case_name, variant_name, restarted)
-                                )
+                                self._try_create_instance(res, config, case_name, variant_name, False)
+                                self._try_create_instance(res, config, case_name, variant_name, True)
                             else:
-                                restarted = True
-                                res.append(
-                                    Croco(config, case_name, variant_name, restarted)
-                                )
+                                self._try_create_instance(res, config, case_name, variant_name, True)
                         else:
                             Messaging.step(
                                 f"Skip unsupported restart option for {case_name}"
                             )
                     else:
-                        restarted = False
-                        res.append(Croco(config, case_name, variant_name, restarted))
+                        self._try_create_instance(res, config, case_name, variant_name, False)
                 else:
                     Messaging.step(f"Skip unsupported {case_name}/{variant_name}")
 
@@ -146,6 +145,11 @@ class Benchmarking:
         self.process_instances()
         self.perf_results()
         self.generate_reports()
+        if self.init_errors:
+            raise Exception(
+                f"{len(self.init_errors)} case(s) failed to initialise:\n"
+                + "\n".join(self.init_errors)
+            )
 
     def build_instances(self):
         """Handles the build step."""

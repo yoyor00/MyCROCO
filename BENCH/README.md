@@ -306,4 +306,12 @@ Authors
 
 - First implementation by Sébastien Valat (INRIA / LJK) - 2023 - 2024
 - Adaptation for CROCO gitlab-ci by Rachid Benshilla (CNRS), Gildas Cambon (IRD) 
-  and Solène Le Gac (IFREMER) - 2024 - 2025
+  and Solène Le Gac (IFREMER) - 2024 - 2026
+
+LICENSE
+-------
+
+Copyright (C) 2023-2026 S. Valat (INRIA/LJK)
+Adapted by R. Benshila (CNRS), G. Cambon (IRD), S. Le Gac (IFREMER)
+License: CeCILL-C
+See LICENSES/LICENSE_BENCH.txt

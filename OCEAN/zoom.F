@@ -1,13 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! This routine belongs to the specific CROCO package.
-!
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -105,6 +104,8 @@
 !====================================================================
 !
       subroutine Agrif_initvalues()
+      use croco_namelist, only: dt, ldefhis, nrrec
+      use croco_namelist_read, only: read_nml_fname, read_nml
       use AGRIF_UTIL
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules
@@ -202,6 +203,9 @@
 !  Read in tunable model parameters in roms.in file
 !----------------------------------------------------------------------
 !
+      call read_nml_fname ()
+      call read_nml (ierr)
+      if (ierr.ne.0) goto 100
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !
@@ -1786,6 +1790,7 @@ CR      write(*,*) '  0' MYID
 # ifdef MASKING
        recursive subroutine ResetMask()
        Use Agrif_Util
+       USE croco_namelist, ONLY: gamma2
 #  include "param.h"
 #  include "grid.h"
 #  include "scalars.h"
@@ -1846,6 +1851,7 @@ CR      write(*,*) '  0' MYID
 !====================================================================
 !
       Subroutine Updateh(tabres,i1,i2,j1,j2,before)
+      use croco_namelist, only: hc
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1986,6 +1992,7 @@ CR      write(*,*) '  0' MYID
 !====================================================================
 !
       subroutine hinterp(tabres,i1,i2,j1,j2,before,nb,ndir)
+      use croco_namelist, only: hc
       implicit none
 # include "param.h"
 # include "grid.h"

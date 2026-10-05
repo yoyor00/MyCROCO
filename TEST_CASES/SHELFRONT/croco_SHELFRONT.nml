@@ -1,0 +1,109 @@
+&croco_testcase
+  testcase_name = 'SHELFRONT'
+/
+
+&croco_title
+  title = "Shelf Front Example"
+/
+
+&croco_time_stepping
+  ntimes = 720
+  dt = 1200
+  ndtfast = 50
+  ninfo = 1
+/
+
+&croco_s_coord
+  theta_s = 1.0d0
+  theta_b = 0.0d0
+  hc = 10.d0
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "shelfront_rst.nc"
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 72
+  nrpfhis = 0
+  hisname = "shelfront_his.nc"
+/
+
+&croco_restart
+  nrst = 720
+  nrpfrst = -1
+  rstname = "shelfront_rst.nc"
+/
+
+&croco_rho0
+  rho0 = 1025.
+/
+
+&croco_bottom_drag
+  rdrg = 3.e-4
+  rdrg2 = 0.
+  Zobt = 0.
+  Cdb_min = 0.
+  Cdb_max = 0.
+/
+
+&croco_gamma2
+  gamma2 = 1.
+/
+
+&croco_vertical_mixing
+  Akv_bak = 1.e-4
+  Akt_bak = 2*1.e-6
+/
+
+&croco_lin_eos
+  R0 = 30.
+  T0 = 15.
+  S0 = 35.
+  Tcoef = 0.28d0
+  Scoef = 0.78d0
+/
+
+&croco_primary_history_fields
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  out_his_u = .true.
+  out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 2*.true.
+/
+
+&croco_auxiliary_history_fields
+  out_his_rho = .true.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
+  out_his_bostr = .false.
+  out_his_bustr = .false.
+  out_his_bvstr = .false.
+  out_his_wstr = .false.
+  out_his_ustr = .false.
+  out_his_vstr = .false.
+/
+
+&croco_temperature_history_fields
+  out_his_akt = .true.
+  out_his_shflx = .false.
+  out_his_shflx_rsw = .false.
+/
+
+&croco_salinity_history_fields
+  out_his_aks = .false.
+/
+
+
+
+! End of namelist

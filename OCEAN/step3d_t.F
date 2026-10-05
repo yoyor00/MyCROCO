@@ -1,11 +1,12 @@
 !======================================================================
-! CROCO is a branch of ROMS developped at IRD, INRIA, 
-! Ifremer, CNRS and Univ. Toulouse III  in France
-! The two other branches from UCLA (Shchepetkin et al)
-! and Rutgers University (Arango et al) are under MIT/X style license.
-! CROCO specific routines (nesting) are under CeCILL-C license.
+! CROCO is derived from the ROMS-AGRIF branch of ROMS.
+! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
+! from the UCLA branch (Shchepetkin et al.) and the Rutgers
+! University branch (Arango et al.), both under MIT/X style license.
+! Copyright (C) 2005-2026 CROCO Development Team
+! License: CeCILL-2.1 - see LICENSE.txt
 !
-! CROCO website : http://www.croco-ocean.org
+! CROCO website : https://www.croco-ocean.org
 !======================================================================
 !
 #include "cppdefs.h"
@@ -44,8 +45,9 @@
 #  endif
      &  )
 
+      use croco_namelist, only: dt, lts_hadv
 #  ifdef SUBSTANCE
-      USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand
+      USE comsubstance, ONLY : nv_grav, nvp, ws_part, nv_sand, cvfix_wat
 #   ifdef MUSTANG
       USE comMUSTANG,  ONLY : flx_s2w_CROCO, flx_w2s_CROCO
       USE comMUSTANG,  ONLY : flx_w2s_sum_CROCO
@@ -184,6 +186,8 @@
         if (itrc .le. 2) then
 #   elif defined TEMPERATURE || defined SALINITY
         if (itrc .eq. 1) then
+#   else 
+        if (itrc.le.0) then
 #   endif
 #  endif
 !
@@ -505,11 +509,11 @@
 #  undef PREDICTOR
 #  include "compute_vert_tracer_fluxes.h"
 
-#  ifdef TS_HADV_TEST
-        do i=Istr,Iend
-          FC(i,0:N)=0.
-        enddo
-#  endif
+        if (lts_hadv) then
+          do i=Istr,Iend
+            FC(i,0:N)=0.
+          enddo
+        endif
 
 !
 !----------------------------------------------------------
@@ -654,26 +658,17 @@
             enddo
           else                                   ! passive tracers
 !                                                 (sed. and others)
-#   ifdef MUSTANG
+#   ifdef SUBSTANCE
 !
-            if (itrc.ge.itsubs1+nv_grav .and.
-     &          itrc.le.itsubs1+nvp) then        ! sediment tracers
-              if (.not.l_subs2D(itrc-itsubs1+1)) then
 #    undef TS_MIX_IMP
 #    define CD EC
 #    define NBSUBSTEP GC
-#    include "t3dmix_tridiagonal_settling.h"
+#    include "t3dmix_tridiagonal_substance.h"
 #    undef NBSUBSTEP
 #    undef CD
 #    define TS_MIX_IMP
-              endif
-            else                                 ! other tracers
-#    undef TS_MIX_IMP
-#    include "t3dmix_tridiagonal.h"
-#    define TS_MIX_IMP
-            endif
 !
-#   else  /* MUSTANG */
+#   else  /* SUBSTANCE */
 !                                                ! passive tracers
 #    ifdef BIO_HADV_WENO5
 #     undef TS_MIX_IMP
@@ -686,30 +681,24 @@
               enddo
             enddo
 #    endif /* BIO_HADV_WENO5 */
-#   endif  /* MUSTANG */
+#   endif  /* SUBSTANCE */
 !
           endif ! itrc <= 2
 !
 #  else /* TS_MIX_IMP */
 
-#   ifndef MUSTANG
+#   ifndef SUBSTANCE
 !                                                ! all tracers
 #    include "t3dmix_tridiagonal.h"
 !
 #   else
-          if (itrc.ge.itsubs1+nv_grav .and.
-     &        itrc.le.itsubs1+nvp) then          ! sediment tracers
-            if (.not.l_subs2D(itrc-itsubs1+1)) then
 #    define CD EC
 #    define NBSUBSTEP GC
-#    include "t3dmix_tridiagonal_settling.h"
+#    include "t3dmix_tridiagonal_substance.h"
 #    undef NBSUBSTEP
 #    undef CD
-            endif
-          else                                   ! all other tracers
-#    include "t3dmix_tridiagonal.h"
-          endif
-#   endif /* MUSTANG */
+
+#   endif /* SUBSTANCE */
 
 #  endif /* TS_MIX_IMP */
 
