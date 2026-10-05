@@ -45,7 +45,7 @@ CONTAINS
       DO jn = jp_pcs0, jp_pcs1
          cltra = TRIM( ctrcnm(jn) )                  ! short title for tracer
          DO_3D( 0, 0, 0, 0, 1, jpk)
-            ztra(ji,jj,N+1-jk) = MAX( 0., tr(ji,jj,jk,jn,nnew) )
+            ztra(ji,jj,N+1-jk) = MAX( 0., tr(ji,jj,jk,jn,nstp) )
          END_3D   
          CALL iom_put( cltra, ztra )
       END DO
