@@ -96,6 +96,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 	- kinetic energy budget is now 3d
 	- momentum and energy diagnostics are saved as cell-volume integrals
 
+- DIAGNOSTICS : MLD reference depth changed from surface to 10 m, now set by the namelist parameter mld_depth_ref (Issue #545)
+
 - BIOLOGY : PISCES is now the default biogeochemical model (Issue #461)
 
 - WKB_WWAVE : variable name wepb0 or wepb directly manage in wrt_his 
