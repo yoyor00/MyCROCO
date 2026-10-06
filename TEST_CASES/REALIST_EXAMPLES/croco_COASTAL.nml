@@ -117,26 +117,26 @@
 /
 
 &croco_psource_tracer
-  psource_Lsrc(1,1) = T
-  psource_Lsrc(1,2) = T
-  psource_Lsrc(1,3) = T
-  psource_Lsrc(1,4) = T
-  psource_Lsrc(1,5) = T
+  psource_Lsrc(1,1) = T        ! Read temperature from file for river #1
+  psource_Lsrc(1,2) = T        ! Read salinity    from file for river #1
   psource_Lsrc(2,1) = T
   psource_Lsrc(2,2) = T
-  psource_Lsrc(2,3) = T
-  psource_Lsrc(2,4) = T
-  psource_Lsrc(2,5) = T
-  psource_Tsrc0(1,1) = 20.0
-  psource_Tsrc0(1,2) = 15.0
-  psource_Tsrc0(1,3) = 0.
-  psource_Tsrc0(1,4) = 0.
-  psource_Tsrc0(1,5) = 0.
-  psource_Tsrc0(2,1) = 20.0
-  psource_Tsrc0(2,2) = 15.0
-  psource_Tsrc0(2,3) = 0.
-  psource_Tsrc0(2,4) = 0.
-  psource_Tsrc0(2,5) = 0.
+  psource_Lsrc(3,1) = T
+  psource_Lsrc(3,2) = T
+  psource_Lsrc(4,1) = T
+  psource_Lsrc(4,2) = T
+  psource_Lsrc(5,1) = T
+  psource_Lsrc(5,2) = T
+  psource_Tsrc0(1,1) = 20.0    ! Temperature associated with river #1
+  psource_Tsrc0(1,2) = 15.0    ! Salinity    associated with river #1
+  psource_Tsrc0(2,1) = 0.
+  psource_Tsrc0(2,2) = 0.
+  psource_Tsrc0(3,1) = 0.
+  psource_Tsrc0(3,2) = 20.0
+  psource_Tsrc0(4,1) = 15.0
+  psource_Tsrc0(4,2) = 0.
+  psource_Tsrc0(5,1) = 0.
+  psource_Tsrc0(5,2) = 0.
 /
 
 &croco_sediments_mustang

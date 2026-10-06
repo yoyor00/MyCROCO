@@ -228,12 +228,12 @@
 /
 
 &croco_psource_tracer
-  psource_Lsrc(1,1) = T
-  psource_Lsrc(1,2) = T
+  psource_Lsrc(1,1) = T        ! Read temperature from file for river #1
+  psource_Lsrc(1,2) = T        ! Read salinity    from file for river #1
   psource_Lsrc(2,1) = T
   psource_Lsrc(2,2) = T
-  psource_Tsrc0(1,1) = 20.
-  psource_Tsrc0(1,2) = 15.
+  psource_Tsrc0(1,1) = 20.     ! Temperature associated with river #1
+  psource_Tsrc0(1,2) = 15.     ! Salinity    associated with river #1
   psource_Tsrc0(2,1) = 20.
   psource_Tsrc0(2,2) = 15.
 /
