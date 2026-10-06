@@ -636,17 +636,6 @@ Other:
   - `key_nofluxwat_IWS` — No water flux exchange between water and sediment
     (recommended together with `key_noTSdiss_insed`) _(auto-derived)_
   - `key_MUSTANG_V2` — MUSTANG version 2 (without this key, version 1 is used)
-  - `key_MUSTANG_bedload` — MUSTANG bedload transport (requires `key_MUSTANG_V2`)
-  - `key_MUSTANG_flocmod` — MUSTANG flocculation model
-  - `key_MUSTANG_slipdeposit` — Sliding (avalanching) fluxes for deposited sediment
-  - `key_MUSTANG_splitlayersurf` — Split surface sediment layers for a regular, precise
-    discretization at the surface
-  - `key_tauskin_c_upwind` — Upwind scheme for current-induced bottom shear stress
-
-  - `key_tauskin_c_center` — Compute bottom shear stress from the friction velocity
-    directly at the rho-point (cell centre)
-  - `key_tauskin_c_ubar` — Use depth-averaged velocity in the bottom shear stress
-    computation (combinable with either scheme above)
   - `MORPHODYN` — Morphodynamics (bed evolution)
   - `SED_DENS` — Activate the effect of suspended sediment on the density
 

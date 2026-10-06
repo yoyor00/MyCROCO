@@ -23,9 +23,9 @@
 # define MUSTANG
 
 # ifdef MUSTANG
-#   define key_MUSTANG_flocmod
-#   define GLS_MIXING
-#   define GLS_KOMEGA
+#  define GLS_MIXING
+#  define GLS_KOMEGA
+#  define key_noTSdiss_insed
 # endif
 
 # ifdef SEDIMENT

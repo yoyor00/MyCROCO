@@ -55,9 +55,12 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
            inconsistent with what done for calcite dissolution (#531)
            Big fix in the calculation of NEW primary productivity with XIOS (#535)
            Fix the calculation of nitrogen fixation rate with XIOS (#541)
+           Set XIOS write timestep for PISCES identical to ocean (#548)
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
+
+- VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
 
 ### Changed
 
@@ -88,6 +91,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
 
+- MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
+
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
 
@@ -114,6 +119,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   part of the computation of omega (#447)
 
 - BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
+- XIOS : Align density anomaly computation with native netCDF writer,
+  now with respect to 1000 kg m-3 (Issue #484)
+
+- XIOS : Unmask output grid/geometry variables so that they keep valid
+  values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
 ### Deprecated
 
@@ -131,6 +141,16 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
+  - remove key_tauskin_c_ubar key_tauskin_c_center key_tauskin_c_upwind
+    replace by booleans in namelist (Issue #348)
+  - remove key_MUSTANG_slipdeposit replace by boolean l_slipdeposit in
+    namelist (Issue #350)
+  - remove key_MUSTANG_bedload, bedload transport (l_bedload_n()) now only
+    conditioned by key_MUSTANG_V2 (Issue #385)
+  - remove key_MUSTANG_splitlayersurf replace by boolean l_splitlayersurf
+    in namelist (Issue #350)
+  - remove key_MUSTANG_flocmod replace by boolean l_flocmod in namelist
+    (Issue #350)
 
 - Test cases CPP keys replace by namelist parameter (#497)
   Remove all test-case CPP guards from the solver. Test-case selection is
@@ -192,6 +212,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   J. Gula, C. Mazoyer
 
 - New contributors : 
-  J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
+  M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
   S. Theetten
