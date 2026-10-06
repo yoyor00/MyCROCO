@@ -13,10 +13,10 @@
 &namsto        !   general parameters for stochastic parameterization
 !-----------------------------------------------------------------------
    ln_stogen  = .true.     ! activate/deactivate STOGEN (global switch)
-   ln_stobulk = .true.     ! stochastic bulk formulation for air-sea fluxes
-   ln_stostress = .false.  ! stochastic formulation of surface stress (non-bulk)
-   ln_stogls  = .false.     ! stochastic formulation of vertical mixing
-   ln_stoics  = .false.     ! stochastic initial condition perturbations
+   ln_stobulk = .false.    ! stochastic bulk formulation for air-sea fluxes
+   ln_stostress = .true.   ! stochastic formulation of surface stress (non-bulk)
+   ln_stogls  = .false.    ! stochastic formulation of vertical mixing
+   ln_stoics  = .false.    ! stochastic initial condition perturbations
    ln_rststo   = .false.   ! start from mean parameter (F) or from restart file (T)
    ln_rstseed  = .false.   ! read seed of RNG from restart file
    cn_storst_in  = "restart_sto_in.nc"  ! input restart file for stochastic parameters
