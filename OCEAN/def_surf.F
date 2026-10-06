@@ -27,6 +27,9 @@
 !
       use croco_namelist, only: ldefsurf, nrpfsurf, surfname, &
                                ldefsurf_avg, nrpfsurf_avg, surfname_avg
+# ifdef NC4PAR
+      use mpi
+# endif
       implicit none
 # include "param.h"
 # include "mixing.h"
