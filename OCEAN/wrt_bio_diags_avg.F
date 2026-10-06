@@ -14,7 +14,7 @@
 ! Write time-averaged diags flux fields into averages netCDF file
                                   ! Writes requested model
       subroutine wrt_bio_diags_avg    ! fields at requested levels
-
+                                      ! into diagnostics netCDF file.
 # if defined MPI & !defined PARALLEL_FILES
       use mpi
 # endif                                  ! into diagnostics netCDF file.
