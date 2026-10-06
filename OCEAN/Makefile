@@ -34,7 +34,7 @@ include Makedefs
 #        analysis routines
 #======================================================================
 
- SRCS = main.F		step.F		read_inp.F\
+ SRCS = step.F		read_inp.F\
 	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
@@ -130,6 +130,7 @@ include Makedefs
 
 
  SRCS90 = \
+	croco.F90	croco_init.F90	croco_finalize.F90\
 	croco_namelist.F90\
 	croco_namelist_read.F90 croco_namelist_init.F90 croco_namelist_check.F90\
 	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	storng_testmpi.F90\

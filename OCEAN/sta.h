@@ -35,22 +35,22 @@
 ! staSigm    Station data at all sigma levels
 ! diagsta    Flag taht determines if it is time step station
 
-      integer NSTAVARS,
-     &        istagrd,           istatstr,
-     &        istaxgrd,          istaygrd,        istazgrd,
-     &        istalon,           istalat,         istadpt,
-     &        istatem,           istasal,         istaden,
-     &        istau,             istav,           istaz
+      integer NSTAVARS
+      integer istagrd,           istatstr
+      integer istaxgrd,          istaygrd,        istazgrd
+      integer istalon,           istalat,         istadpt
+      integer istatem,           istasal,         istaden
+      integer istau,             istav,           istaz
 # ifdef MUSTANG
-      parameter (NSTAVARS=12+NT-2,
+      parameter (NSTAVARS=12+NT-2)
 # else
-      parameter (NSTAVARS=12,
+      parameter (NSTAVARS=12)
 # endif
-     &        istagrd=-1,        istatstr=0,
-     &        istaxgrd=1,        istaygrd=2,      istazgrd=3,
-     &        istalon=4,         istalat=5,       istadpt=6,
-     &        istatem=7,         istasal=8,       istaden=9,
-     &        istau=10,          istav=11,        istaz=12)
+      parameter (istagrd=-1,        istatstr=0)
+      parameter (istaxgrd=1,        istaygrd=2,      istazgrd=3)
+      parameter (istalon=4,         istalat=5,       istadpt=6)
+      parameter (istatem=7,         istasal=8,       istaden=9)
+      parameter (istau=10,          istav=11,        istaz=12)
 
       logical diagsta
       integer nstas0,nstas, stagrd(Msta)

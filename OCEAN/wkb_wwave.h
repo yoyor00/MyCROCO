@@ -20,9 +20,15 @@
       real wsb(GLOBAL_2D_ARRAY,2)
       real wvn(GLOBAL_2D_ARRAY,2)
       real wfc(GLOBAL_2D_ARRAY,2)
-      common /wkb_wkx/wkx /wkb_wke/wke /wkb_wac/wac
-     &       /wkb_hrm/hrm /wkb_frq/frq /wkb_wcg/wcg
-     &       /wkb_wsb/wsb /wkb_wvn/wvn /wkb_wfc/wfc
+      common /wkb_wkx/ wkx
+      common /wkb_wke/ wke
+      common /wkb_wac/ wac
+      common /wkb_hrm/ hrm
+      common /wkb_frq/ frq
+      common /wkb_wcg/ wcg
+      common /wkb_wsb/ wsb
+      common /wkb_wvn/ wvn
+      common /wkb_wfc/ wfc
 # ifdef WAVE_ROLLER
       real war(GLOBAL_2D_ARRAY,2)
       real wcr(GLOBAL_2D_ARRAY,2)

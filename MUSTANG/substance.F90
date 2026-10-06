@@ -53,21 +53,22 @@ CONTAINS
 
    !!======================================================================
 
-  SUBROUTINE substance_read_alloc(may_day_flag, indxT, indxTsrc)
+  SUBROUTINE substance_read_alloc()
       !!-------------------------------------------------------------------
       !!                    *** ROUTINE substance_read_alloc ***
       !!-------------------------------------------------------------------
       !
-   
+
 #if defined BLOOM
 # if defined key_N_tracer || key_P_tracer
     USE bloom_initdefine , ONLY : bloom_create_vartracer
 # endif
 #endif
-   
-   !! Argument
-   INTEGER,INTENT(INOUT)                     ::  may_day_flag
-   INTEGER,INTENT(IN)                        ::  indxT, indxTsrc
+    USE scalars, ONLY : may_day_flag
+    USE ncscrum, ONLY : indxT
+#ifdef PSOURCE_NCFILE_TS
+    USE ncscrum, ONLY : indxTsrc
+#endif
    
    !! Local declarations
    LOGICAL                                   :: l_varassoc

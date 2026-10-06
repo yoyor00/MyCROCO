@@ -163,7 +163,7 @@
 # endif
       common/zoombc2D/dZtinterp,dUinterp,dVinterp
 # ifdef WKB_WWAVE
-     &  ,dWactinterp,dWkxtinterp,dWketinterp,dWacinterp
+      common/zoombc2D/dWactinterp,dWkxtinterp,dWketinterp,dWartinterp
 # endif
 # ifdef ANA_GRID
       integer ha_id
@@ -190,7 +190,7 @@
 # endif
        common/huvagrif/Huonagrif,Hvomagrif
 # ifdef NBQ
-     &  ,Weagrif
+       common/huvagrif/Weagrif
 # endif
 
       real Zt_avg3(GLOBAL_2D_ARRAY,0:NWEIGHT)
@@ -247,8 +247,8 @@
 
       integer TspongeTimeindex, TspongeTimeindex2
       integer UVspongeTimeindex, UVspongeTimeindex2
-      common/zoom3D_sponge/TspongeTimeindex, UVspongeTimeindex,
-     &      TspongeTimeindex2, UVspongeTimeindex2
+      common/zoom3D_sponge/TspongeTimeindex, UVspongeTimeindex
+      common/zoom3D_sponge/TspongeTimeindex2, UVspongeTimeindex2
 
       real,dimension(:,:),allocatable :: finevalues
       real,dimension(:,:),allocatable :: coarsevalues
@@ -260,8 +260,8 @@
       integer j1t,i1t,i2t,j2t
       integer i1u,i2u,j1v,j2v
       integer common_index
-      common/arraysindices/i1t,j1t,i2t,j2t,
-     &     i1u,i2u,j1v,j2v,common_index
+      common/arraysindices/i1t,j1t,i2t,j2t
+      common/arraysindices/i1u,i2u,j1v,j2v,common_index
 
       integer hid, zetaid,ubarid,vbarid,uid,vid,tid
       integer rmaskid
@@ -282,22 +282,23 @@
       integer warid, wsrid,wcrid
 #  endif
 # endif
-      common/varids/hid,zetaid,ubarid,vbarid,uid,vid,tid,
-     &  tspongeid, uspongeid, vspongeid, rmaskid,wspongeid
+      common/varids/hid,zetaid,ubarid,vbarid,uid,vid,tid
+      common/varids/tspongeid, uspongeid, vspongeid, rmaskid,wspongeid
 # ifdef WET_DRY
-     &        ,rmask_wetid,umask_wetid, vmask_wetid,ubarwetid,vbarwetid
+      common/varids/rmask_wetid,umask_wetid, vmask_wetid
+      common/varids/ubarwetid,vbarwetid
 # endif
 # ifdef M3FAST
-     &        ,qdmunbqid,qdmvnbqid
+      common/varids/qdmunbqid,qdmvnbqid
 #  ifdef NBQ
-     &        ,qdmwnbqid,rhonbqid,wzid,wzspongeid
+      common/varids/qdmwnbqid,rhonbqid,wzid,wzspongeid
 #  endif
 # endif
 # ifdef WKB_WWAVE
-     &  ,wacid,wkxid,wkeid
-     &  ,hrmid,frqid,wsbid,wvnid,wcgid,wfcid
+      common/varids/wacid,wkxid,wkeid
+      common/varids/hrmid,frqid,wsbid,wvnid,wcgid,wfcid
 #  ifdef WAVE_ROLLER
-     & , warid, wsrid,wcrid
+      common/varids/warid, wsrid,wcrid
 #  endif
 # endif
 # ifdef WET_DRY
@@ -315,14 +316,14 @@
       integer updatewid, updatewnbqid, updaterhonbqid
 #  endif
 # endif
-      common/varidsupdate/updatezetaid, updateubarid, updatevbarid,
-     &       updateduavg2id, updatedvavg2id,
-     &       updatetid, updateuid, updatevid, updatemyfxid,
-     &       updatemyfyid,updatehuonid, updatehvomid
+      common/varidsupdate/updatezetaid, updateubarid, updatevbarid
+      common/varidsupdate/updateduavg2id, updatedvavg2id
+      common/varidsupdate/updatetid, updateuid, updatevid, updatemyfxid
+      common/varidsupdate/updatemyfyid,updatehuonid, updatehvomid
 # ifdef M3FAST
-     &      ,updateunbqid, updatevnbqid
+      common/varidsupdate/updateunbqid, updatevnbqid
 #  ifdef NBQ
-     &      ,updatewid, updatewnbqid, updaterhonbqid
+      common/varidsupdate/updatewid, updatewnbqid, updaterhonbqid
 #  endif
 # endif
 
@@ -334,9 +335,9 @@
       integer :: parent_grid(0:20)
       integer :: coeff_ref_time(0:20)
       integer :: nbtimes, nbmaxtimes
-      common/rootintegrate/nbtimes, nbmaxtimes,
-     &    iind,sortedint,whichstep,
-     &    grids_at_level,parent_grid,coeff_ref_time
+      common/rootintegrate/nbtimes, nbmaxtimes
+      common/rootintegrate/iind,sortedint,whichstep
+      common/rootintegrate/grids_at_level,parent_grid,coeff_ref_time
 !$AGRIF_END_DO_NOT_TREAT
 
 #endif

@@ -122,6 +122,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - XIOS : Unmask output grid/geometry variables so that they keep valid
   values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
+- OCEAN : split main.F into croco.F90 (driver), croco_init.F90
+  (initialization) and croco_finalize.F90 (shutdown) (#550)
+
 ### Deprecated
 
 
