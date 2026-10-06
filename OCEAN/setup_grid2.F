@@ -11,13 +11,14 @@
 !
 #include "cppdefs.h"
       subroutine setup_grid2 (tile)
+#ifdef MPI
+      use mpi
+#endif
 !     implicit none
       integer tile
 #include "param.h"
 #include "scalars.h"
 #include "mpi_cpl.h"
-#ifdef MPI
-#endif
 #include "compute_tile_bounds.h"
       call setup_grid2_tile (Istr,Iend,Jstr,Jend)
       return

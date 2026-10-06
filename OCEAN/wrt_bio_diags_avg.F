@@ -17,7 +17,7 @@
                                       ! into diagnostics netCDF file.
 # if defined MPI & !defined PARALLEL_FILES
       use mpi
-# endif                                  ! into diagnostics netCDF file.
+# endif                                  
       use croco_namelist, only: dianamebio_avg, nrpfdiabio_avg
       implicit none
       integer ierr,  record, lstr, lvar, lenstr

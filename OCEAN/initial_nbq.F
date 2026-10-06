@@ -52,6 +52,10 @@
 !
 !======================================================================
 !
+      use croco_namelist, only: dt, rho0
+# ifdef NBQ
+      use croco_namelist, only: csound_nbq
+# endif
 # ifdef MPI
       use mpi
 # endif
