@@ -19,7 +19,7 @@
 :
 : catch            : monthly catch file
 : fileprobadistrib : NetCDF file containing distribution probabilities
-: nbSizeClass      : number of size classes in the distribution file
+: nbSizeClass      : number of size classes in the distribution file (0.5 cm resolution)
 : sizemin          : minimum length represented in the distribution file (cm)
 :------------------------------------------------------------------------------
 :

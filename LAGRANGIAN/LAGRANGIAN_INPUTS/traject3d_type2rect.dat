@@ -4,6 +4,12 @@ Patch type: 1 = circle, 2 = rectangle, 3 = NetCDF positions
 Patch name
 Trajectory start date
 Trajectory end date
+Output trajectory file
+Number of particles released at same exact location, for ex. to assess diffusion
+itypevert: vertical-transport scheme
+           = 0: constant depth (no vertical advection or turbulent diffusion)
+           < 0: vertical advection only
+           > 0: vertical advection and turbulent diffusion using a random walk
 Coordinate-system selector for the patch boundaries:
            .true.  = CROCO grid indices (i_min, i_max, j_min, j_max)
            .false. = geographic coordinates (lon_min, lon_max, lat_min, lat_max)
@@ -12,11 +18,6 @@ Horizontal spacing between release locations (i step, j step; grid cells)
 Minimum and maximum release depths below the surface (m, positive downward)
 Vertical spacing between release depths (m)
 Number of particles released at each (horizontal position, depth) location
-itypevert: vertical-transport scheme
-           = 0: constant depth (no vertical advection or turbulent diffusion)
-           < 0: vertical advection only
-           > 0: vertical advection and turbulent diffusion using a random walk
-Output trajectory file
 
 END OF FILE DESCRIPTION
 

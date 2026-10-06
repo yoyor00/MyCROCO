@@ -4,6 +4,12 @@ Patch type: 1 = circle, 2 = rectangle, 3 = NetCDF positions
 Patch name
 Trajectory start date
 Trajectory end date
+Output trajectory file
+Number of particles released at same exact location, for ex. to assess diffusion
+itypevert: vertical-transport scheme
+           = 0: constant depth (no vertical advection or turbulent diffusion)
+           < 0: vertical advection only
+           > 0: vertical advection and turbulent diffusion using a random walk
 Coordinate-system selector for the patch center:
            .true.  = CROCO grid indices (i, j)
            .false. = geographic coordinates (longitude, latitude)
@@ -13,11 +19,6 @@ Approximate target number of horizontal release locations per depth level
 Minimum and maximum release depths below the surface (m, positive downward)
 Vertical spacing between release depths (m)
 Number of particles released at each (horizontal position, depth) location
-itypevert: vertical-transport scheme
-           = 0: constant depth (no vertical advection or turbulent diffusion)
-           < 0: vertical advection only
-           > 0: vertical advection and turbulent diffusion using a random walk
-Output trajectory file
 
 END OF FILE DESCRIPTION
 
@@ -31,7 +32,7 @@ circle1.nc                  ,| Output trajectory file
 0                           ,| Vertical-transport scheme (itypevert)
 .true.                      ,| Use CROCO grid indices for the patch center
 25 15                       ,| Center grid indices (i, j)
-50000                       ,| Patch radius (m)
+80000                       ,| Patch radius (m)
 100                         ,| Approximate horizontal release locations per depth level
 5 20                        ,| Minimum and maximum release depths (m)
 1                           ,| Vertical spacing between release depths (m)
@@ -45,7 +46,7 @@ circle2.nc                ,| Output trajectory file
 -1                           ,| Vertical-transport scheme (itypevert)
 .false.                     ,| Use geographic coordinates for the patch center
 16 -34                      ,| Center longitude and latitude (degrees east, degrees north)
-50000                       ,| Patch radius (m)
+80000                       ,| Patch radius (m)
 100                         ,| Approximate horizontal release locations per depth level
 5 20                        ,| Minimum and maximum release depths (m)
 1                           ,| Vertical spacing between release depths (m)
