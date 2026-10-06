@@ -201,7 +201,7 @@ C$OMP MASTER
 !------ ----- ------ ---- ------------------- ---- ---- ------ ------
 !
       if (synchro_flag) then
-        call get_vbc ! to read Patm before get_bry
+
 #ifdef AGRIF
         IF (Agrif_Root()) THEN
 #endif
@@ -215,6 +215,7 @@ C$OMP MASTER
 #if defined ZCLIMATOLOGY && !defined ANA_SSH
             call get_ssh
 #endif
+            call get_vbc ! to read Patm before get_bry
 #if defined FRC_BRY && !defined ANA_BRY
             call get_bry
 # ifdef BIOLOGY
