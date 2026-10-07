@@ -21,6 +21,7 @@ MODULE ibmmove
 
 #ifdef FOIL
 
+   USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_NAN
    USE module_ibm         ! time,h,om_r,on_r
    USE comtraj, ONLY: imin, imax, jmin, jmax, kmax, &
                       rsh, rlg, lchain, valmanq, type_particle
@@ -259,6 +260,16 @@ CONTAINS
 
       IF (ind_species == 1) Pi = fish_anc(icells, jcells, index, saison)
       IF (ind_species == 2) Pi = fish_sar(icells, jcells, index, saison)
+
+      ! The probability maps use NaN outside their distribution domain.
+      ! Juveniles and adults no longer undergo passive horizontal transport,
+      ! so a fish starting in such a cell cannot leave it. Remove every fish
+      ! subject to active movement whose current-cell probability is missing.
+      IF (IEEE_IS_NAN(Pi)) THEN
+         particle%flag = -valmanq
+         particle%super = 0.0_rsh
+         RETURN
+      END IF
 
       !Select a neighbouring cell j at random among the 4 neighbouring cells
       CALL random_number(v1)
