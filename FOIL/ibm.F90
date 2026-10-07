@@ -45,6 +45,7 @@ MODULE ibm
    !! * Private variables
    ! From parafoil namibmmove namelist
    REAL(kind=rsh)                                  :: w_max, alpha_w
+   REAL(kind=rsh)                                  :: active_move_min_depth = 0.0_rsh
    ! From parafoil namibmmove namelist
    LOGICAL                                         :: adult_move
    ! From parafoil namibmpop, activate or not repro
@@ -159,7 +160,7 @@ CONTAINS
       INTEGER, ALLOCATABLE, DIMENSION(:)       :: hmove_nc
 
       ! Definition of namelists in parafoil
-      NAMELIST /namibmmove/ w_max, alpha_w, adult_move
+      NAMELIST /namibmmove/ w_max, alpha_w, adult_move, active_move_min_depth
       NAMELIST /namibmpop/ repro, dt_spawn, max_part, fish_mort, fishing_strategy, &
          multiplier_tac, density_dependent
       NAMELIST /namibmdeb/ debuse, F_Fix, ffix, file_NBSS, file_food, frac_deb_death
@@ -902,7 +903,7 @@ CONTAINS
 
                   IF (current_hour >= particle%hmove + dh) THEN
 
-                     CALL fish_move(particle, ind_species)
+                     CALL fish_move(particle, ind_species, xe, active_move_min_depth)
                      particle%hmove = current_hour
 
                      pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos
@@ -971,7 +972,7 @@ CONTAINS
 
                   IF (current_hour >= particle%hmove + dh) THEN
 
-                     CALL fish_move(particle, ind_species)
+                     CALL fish_move(particle, ind_species, xe, active_move_min_depth)
                      particle%hmove = current_hour
 
                      pos_ad%xp = particle%xpos; pos_ad%yp = particle%ypos

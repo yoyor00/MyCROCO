@@ -175,7 +175,7 @@ CONTAINS
    END SUBROUTINE fish_move_init
 
    !!======================================================================
-   SUBROUTINE fish_move(particle, ind_species)
+   SUBROUTINE fish_move(particle, ind_species, xe, active_move_min_depth)
       !&E---------------------------------------------------------------------
       !&E                 ***  ROUTINE fish_move  ***
       !&E
@@ -202,6 +202,8 @@ CONTAINS
       !! * Arguments
       TYPE(type_particle), INTENT(inout)   :: particle
       INTEGER, INTENT(in)                  :: ind_species
+      REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in) :: xe
+      REAL(KIND=rsh), INTENT(in)           :: active_move_min_depth
 
       !! * Local declarations
       LOGICAL              :: move
@@ -359,6 +361,9 @@ CONTAINS
 
          IF (h(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) > 0.0_rsh .and. &
             rmask(NINT(pos_n%idx_r),NINT(pos_n%idy_r)) > 0.5_rsh .and. &
+            (active_move_min_depth <= 0.0_rsh .or. &
+             h(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) + xe(NINT(pos_n%idx_r), NINT(pos_n%idy_r)) &
+             >= active_move_min_depth) .and. &
             particle%flag /= -valmanq) THEN
             ! test si on reste en mer (possibilite si incompatibilite de grille)
             IF ((NINT(pos_n%idx_r) > icells + 1) .or. (NINT(pos_n%idx_r) < icells - 1) .or. &

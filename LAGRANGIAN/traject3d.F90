@@ -100,7 +100,8 @@ CONTAINS
       USE toolmpi, ONLY: ex_traj
       USE comtraj, ONLY: down_give, up_give, right_give, left_give
 #endif
-      USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, wz, reproducibility
+      USE comtraj, ONLY: patches, type_patch, type_particle, type_position, dtz, wz, reproducibility, &
+                         transport_min_depth
 
       !! * Arguments
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY), INTENT(in)    :: xe
@@ -296,6 +297,13 @@ CONTAINS
 
                particle%xpos = pos_temp%xp; particle%ypos = pos_temp%yp
                IF ((d3_final > 0.0_rsh) .AND. (d3_mid > 0.0_rsh)) THEN
+                  ! Reject a transported position in water shallower than the
+                  ! configured threshold. A zero threshold disables this test.
+                  IF (transport_min_depth > 0.0_rsh .AND. d3_final < transport_min_depth) THEN
+                     particle%xpos = pos_old%xp
+                     particle%ypos = pos_old%yp
+                     CYCLE
+                  END IF
                   particle%d3 = d3_final
                   particle%xe = xe_final
                   particle%h0 = h0_final

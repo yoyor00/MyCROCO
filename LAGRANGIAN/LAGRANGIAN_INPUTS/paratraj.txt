@@ -67,9 +67,13 @@
 :         (2004, Limnology and Oceanography) for a sensitivity analysis.
 : hdiff : horizontal diffusion coefficient (m2 s-1); set to 0 to disable
 :         horizontal diffusion, when traj3d = .TRUE.
+: transport_min_depth : minimum water depth (m) allowed for a new position
+:         produced by horizontal particle advection/diffusion. The movement is
+:         rejected below this depth. Set to 0 to disable this restriction.
 :-----------------------------------------------------------------------------
 :
  &namtrajadiff
       hadv = .TRUE.
-	  dtz  = 3
-      hdiff = 5.0 /
+	 dtz  = 3
+      hdiff = 5.0
+      transport_min_depth = 2.0 /

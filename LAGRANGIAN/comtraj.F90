@@ -192,6 +192,7 @@ MODULE comtraj
 
    REAL(kind=rlg), PUBLIC          :: dtz                    ! time step division for vertical subloop for diffusion
    REAL(kind=rsh), PUBLIC          :: hdiff                  ! horizontal diffusion coefficient
+   REAL(kind=rsh), PUBLIC          :: transport_min_depth = 0.0_rsh ! minimum water depth for horizontal transport; 0 disables
    LOGICAL                         :: hadv                   ! if horizontal transport or not, specified in paratraj.txt
    LOGICAL, PUBLIC          :: reproducibility = .FALSE.     ! if .TRUE., random-walk draws are seeded deterministically
                                                              ! per particle/time step (particle%num, iic), so that

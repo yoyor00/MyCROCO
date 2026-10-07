@@ -12,12 +12,15 @@
 : alpha_w : convergence factor in the hyperbolic-tangent function used to
 :           calculate swimming velocity toward the target depth
 : adult_move : activate (or not) the movement on the horizontal for juv/adults 
+: active_move_min_depth : minimum water depth (m) allowed for a cell proposed
+:           by active juvenile/adult movement. Set to 0 to disable this restriction.
 :-----------------------------------------------------------------------------
 :
  &namibmmove
       w_max = 0.0
       alpha_w  = 0.8 
-      adult_move = .true. /
+      adult_move = .true.
+      active_move_min_depth = 2.0 /
 :
 :-----------------------------------------------------------------------------
 : namibmpop         POPULATION, REPRODUCTION, AND FISHING SETTINGS
