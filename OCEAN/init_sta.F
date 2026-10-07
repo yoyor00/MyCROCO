@@ -20,6 +20,7 @@
 !                                                                    !
 !=====================================================================
 !
+      use croco_namelist, only: nsta, staposname
       implicit none
 # include "param.h"
 # include "grid.h"

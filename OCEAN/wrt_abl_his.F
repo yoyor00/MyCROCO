@@ -14,6 +14,7 @@
                                ! Writes requested model
       subroutine wrt_abl_his   ! fields at requested levels
                                ! into history netCDF file.
+      use croco_namelist, only: ablname, nrpfablhis
 !     implicit none
       integer ierr,  record, lstr, lvar, lenstr, type
      &   , start(2), count(2), nf_fwrite, cff,ik, varid

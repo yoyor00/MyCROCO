@@ -57,6 +57,10 @@
 !
 !
 !
+      USE croco_namelist, ONLY: gamma2
+#if defined NBQ_FRC_BRY || defined NBQ_NUDGING
+      USE croco_namelist, ONLY: tauM_in, tauM_out
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"

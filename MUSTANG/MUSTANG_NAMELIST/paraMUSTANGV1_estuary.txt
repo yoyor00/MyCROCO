@@ -23,7 +23,7 @@
 : namsedoutput             : parameters using for output results in the file 
 :                            sediment
 : namflocmod               : parameters using for FLOCMOD module 
-:                            (only if key_MUSTANG_flocmod)
+:                            (active only if l_flocmod)
 : namdredging              : parameters to activate dredging effect
 
 &namsedim_init
@@ -78,8 +78,8 @@
 &namflocmod
 /  
 &namdredging
-   dredging_location_file = 'TEST_CASES/estuary_dredging_areas.nc'
-   dredging_settings_file = 'TEST_CASES/estuary_dredging_settings.txt'
+   dredging_location_file = 'TEST_CASES/ESTUARY/estuary_dredging_areas.nc'
+   dredging_settings_file = 'TEST_CASES/ESTUARY/estuary_dredging_settings.txt'
    dredging_out_file = 'dredging_out.nc'
    dredging_dumping_layer = 1
    dredging_dt = 3600.

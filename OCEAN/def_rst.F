@@ -13,6 +13,7 @@
                                                   ! Create/open
       subroutine def_rst (ncid, total_rec, ierr)  ! restart netCDF
                                                   ! file.
+        USE croco_namelist, ONLY: ldefhis, nrpfrst, rstname
 #if defined MUSTANG
         USE comMUSTANG, ONLY : rstMust, vname_rstMust, 
      &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,

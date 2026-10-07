@@ -15,6 +15,7 @@
 #include "cppdefs.h"
 
       subroutine put_global_atts (ncid, ierr)
+            use croco_namelist
       implicit none
       integer ncid, ierr, nf_ftype, lvar,lenstr
 #include "param.h"
@@ -433,10 +434,8 @@
 #if (defined SPONGE && !defined SPONGE_GRID)
       ierr=nf_put_att_FTYPE(ncid,nf_global,'x_sponge',nf_ftype, 1,
      &                                                     x_sponge)
-      ierr=nf_put_att_FTYPE(ncid,nf_global,'v_sponge',nf_ftype, 1,
-     &                                                     v_sponge)
-      ierr=nf_put_att_text (ncid,nf_global,'sponge_expl', 51,
-     &        'Sponge parameters : extent (m) & viscosity (m2.s-1)')
+      ierr=nf_put_att_text (ncid,nf_global,'sponge_expl', 32,
+     &        'Sponge layer width [m]: x_sponge')
 #endif
 !
 ! Sediment parameters

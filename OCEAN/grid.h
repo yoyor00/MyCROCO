@@ -116,6 +116,11 @@
       common /grid_latr/latr /grid_lonr/lonr
       common /grid_latu/latu /grid_lonu/lonu
       common /grid_latv/latv /grid_lonv/lonv
+
+      ! always declare xr, yr, xp, yp because they are use in 
+      ! ana_initial for all non spherical case, they are 
+      ! allocatable but never allocated in this context
+      real, allocatable :: xr(:,:), yr(:,:), xp(:,:), yp(:,:)
 #else
 # ifdef STOGEN
       real, TARGET :: xr(GLOBAL_2D_ARRAY)

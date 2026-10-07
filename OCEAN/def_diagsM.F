@@ -24,6 +24,12 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+#if defined DIAGNOSTICS_UV
+      use croco_namelist, only: ldefdiaM, nwrtdiaM, nrpfdiaM,
+     &     dianameM, ldefdiaM_avg, ntsdiaM_avg, nwrtdiaM_avg,
+     &     nrpfdiaM_avg, dianameM_avg
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"

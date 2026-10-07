@@ -52,6 +52,10 @@
 !
 !======================================================================
 !
+      use croco_namelist, only: dt, rho0
+# ifdef NBQ
+      use croco_namelist, only: csound_nbq
+# endif
       implicit none
       integer  Istr, Iend, Jstr, Jend
 # ifdef MPI
@@ -111,7 +115,6 @@
 !
         ifl_nbq  = 1
         slip_nbq = 0
-        iteration_nbq_max=ndtnbq
 !
 !  Pseudoacoustic speed:
 !   should be around 5 times external phase speed sqrt(g*h)

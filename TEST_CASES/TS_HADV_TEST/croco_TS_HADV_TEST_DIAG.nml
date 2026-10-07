@@ -1,0 +1,123 @@
+&croco_testcase
+  testcase_name = 'TS_HADV_TEST_DIAG'
+/
+
+&croco_title
+  title = "TS_adv_body Example"
+/
+
+&croco_time_stepping
+  ntimes = 750
+  dt = 4
+  ndtfast = 1
+  ninfo = 1
+/
+
+&croco_s_coord
+  theta_s = 0.0d0
+  theta_b = 0.0d0
+  hc = 300000000.
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "croco_ini_diag_adv.nc"
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 10
+  nrpfhis = 0
+  hisname = "croco_his_diag_adv.nc"
+/
+
+&croco_restart
+  nrst = 720
+  nrpfrst = -1
+  rstname = "croco_rst_diag_adv.nc"
+/
+
+&croco_rho0
+  rho0 = 1024.d0
+/
+
+&croco_bottom_drag
+  rdrg = 0.0d-04
+  rdrg2 = 0.d-3
+  Zobt = 0.d-3
+  Cdb_min = 1.d-4
+  Cdb_max = 1.d-1
+/
+
+&croco_gamma2
+  gamma2 = 1.d0
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 2*0.d0
+/
+
+&croco_tracer_diff4
+  tnu4 = 2*0.d11
+/
+
+&croco_vertical_mixing
+  Akv_bak = 0.d0
+  Akt_bak = 2*0.d0
+/
+
+&croco_lin_eos
+  R0 = 0.
+  T0 = 16.
+  S0 = 0.
+  Tcoef = 0.2048
+  Scoef = 0.
+/
+
+&croco_primary_history_fields
+  out_his_zeta = .false.
+  out_his_ubar = .false.
+  out_his_vbar = .false.
+/
+
+&croco_primary_history_3d_fields
+  out_his_u = .true.
+  out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 2*.true.
+/
+
+&croco_auxiliary_history_fields
+  out_his_rho = .false.
+  out_his_omega = .false.
+  out_his_w = .false.
+  out_his_akv = .false.
+  out_his_bostr = .false.
+  out_his_bustr = .false.
+  out_his_bvstr = .false.
+  out_his_wstr = .false.
+  out_his_ustr = .false.
+  out_his_vstr = .false.
+/
+
+&croco_temperature_history_fields
+  out_his_akt = .false.
+  out_his_shflx = .false.
+  out_his_shflx_rsw = .false.
+/
+
+&croco_salinity_history_fields
+  out_his_aks = .false.
+  out_his_swflx = .false.
+/
+
+
+
+! End of namelist

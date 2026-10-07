@@ -19,6 +19,10 @@
 !---------------------------------------------------------------
 !
       subroutine wrt_diagsM
+#if defined DIAGNOSTICS_UV
+      use croco_namelist, only: nrpfdiaM, dianameM
+#endif
+
 
       implicit none
       integer ierr,  record, lstr, lvar, lenstr

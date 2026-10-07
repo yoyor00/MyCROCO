@@ -58,10 +58,24 @@
       character*32                        switch(max_switches)
       integer count, iocheck, i,k,n
       logical end_of_file, comment, word, command, new
+                                         ! True once a real "#elif defined
+                                         ! NAME" sibling of the FIRST top-
+                                         ! level conditional chain is seen
+      logical had_elif                  ! (genuine multi-way alternation,
+                                         ! as opposed to a plain unrelated
+                                         ! "#ifdef KEY ... #endif" toggle,
+                                         ! or some later/deeper #elif chain
+                                         ! unrelated to case selection).
+      logical first_chain_done          ! True once that first top-level
+                                         ! conditional chain has closed.
+      integer depth                     ! Nesting depth within it.
 
       write(*,'(/1x,A,1x,A/)') 'This is CPPCHECK: Creating',
      &                   'new version of check_switches1.F.'
       example=.true.
+      had_elif=.false.
+      first_chain_done=.false.
+      depth=0
       nexample=0                        !
       nswitches=0                       ! Initialize catalog.
       do i=1,max_switches               ! reset/blank out arrays
@@ -161,19 +175,37 @@ c**     enddo                           !
           elseif (ln.eq.2 .and. string(is:ie).eq.'if') then
             command=.true.
             example=.false.
+            if (.not.first_chain_done) depth=depth+1
           elseif (ln.eq.5 .and. string(is:ie).eq.'ifdef') then
             command=.true.
             example=.false.
+            if (.not.first_chain_done) depth=depth+1
           elseif (ln.eq.7 .and. string(is:ie).eq.'defined') then
             command=.true.
             example=.false.
           elseif (ln.eq.4 .and. string(is:ie).eq.'elif') then
             command=.true.
             example=.false.
+                                        ! Only count this #elif if it is a
+                                        ! sibling of the very FIRST top-
+                                        ! level conditional chain in the
+                                        ! file (depth.eq.1, chain not yet
+                                        ! closed) - this is what makes it
+                                        ! part of a genuine "pick one of
+                                        ! several named choices" selector,
+                                        ! as opposed to some unrelated
+                                        ! #elif chain appearing later/
+                                        ! deeper (e.g. inside cppdefs_dev.h,
+                                        ! merged in via #include).
+            if ((.not.first_chain_done) .and. depth.eq.1)
+     &                                              had_elif=.true.
           elseif (ln.eq.4 .and. string(is:ie).eq.'else') then
 
           elseif (ln.eq.5 .and. string(is:ie).eq.'endif') then
-
+            if (.not.first_chain_done) then
+              depth=depth-1
+              if (depth.eq.0) first_chain_done=.true.
+            endif
           elseif (ln.eq.7 .and. string(is:ie).eq.'include') then
 
           elseif (command) then
@@ -253,7 +285,8 @@ c**   enddo
       do i=1,nswitches
         ln=size(i)
         write(iout,'(A,1x,A)') '#ifdef', switch(i)(1:ln)
-        if (i.le.nexample) write(iout,'(6x,A)') 'iexample=iexample+1'
+        if (had_elif .and. i.le.nexample)
+     &                  write(iout,'(6x,A)') 'iexample=iexample+1'
         write(iout,'(6x,A,1x,A1,A,A1)')
      &         'MPI_master_only write(stdout,''(10x,A)'')',
      &                       '''', switch(i)(1:ln), ''''
@@ -262,16 +295,34 @@ c**   enddo
      &       'Coptions(is:ie)=''', switch(i)(1:ln), '''',
      &       'Coptions(ie+1:ie+1)='' ''', 'is=ie+2', '#endif'
       enddo
-      write(iout,'(6x,A/6x,A/8x,A/5x,A1,1x,A/8x,A/6x,A)')
-     &     'MPI_master_only write(stdout,''(/)'')',
-     &     'if (iexample.eq.0) then',
-     &     'MPI_master_only write(stdout,''(1x,A)'')', '&',
-     &   '''ERROR in "cppdefs.h": no configuration is specified.''',
-     &     'ierr=ierr+1',  'elseif (iexample.gt.1) then'
-      write(iout,'(8x,A/5x,A1,1x,A/8x,A/6x,A/6x,A)')
-     &     'MPI_master_only write(stdout,''(1x,A)'')', '&',
-     &   '''ERROR: more than one configuration in "cppdefs.h".''',
-     &     'ierr=ierr+1', 'endif', 'return'
+      write(iout,'(6x,A)') 'MPI_master_only write(stdout,''(/)'')'
+                                        ! No "#elif defined NAME" branch
+                                        ! was ever found in cppdefs.h, so
+                                        ! there is no genuine multi-way
+                                        ! choice to validate - either the
+                                        ! file is already a single, pre-
+                                        ! resolved configuration (e.g. a
+      if (had_elif) then               ! per-case file such as TEST_CASES/
+                                        ! cppdefs_<Case>.h, or a hand-
+                                        ! edited one like OCEAN/cppdefs.h
+                                        ! with only unrelated feature-
+                                        ! toggle "#ifdef KEY...#endif"
+                                        ! blocks and no "#elif" anywhere).
+        write(iout,'(6x,A)') 'if (iexample.eq.0) then'
+        write(iout,'(8x,A)')
+     &       'MPI_master_only write(stdout,''(1x,A)'')'
+        write(iout,'(5x,A1,1x,A)') '&',
+     &   '''ERROR in "cppdefs.h": no configuration is specified.'''
+        write(iout,'(8x,A)') 'ierr=ierr+1'
+        write(iout,'(6x,A)') 'elseif (iexample.gt.1) then'
+        write(iout,'(8x,A)')
+     &       'MPI_master_only write(stdout,''(1x,A)'')'
+        write(iout,'(5x,A1,1x,A)') '&',
+     &   '''ERROR: more than one configuration in "cppdefs.h".'''
+        write(iout,'(8x,A)') 'ierr=ierr+1'
+        write(iout,'(6x,A)') 'endif'
+      endif
+      write(iout,'(6x,A)') 'return'
       write(iout,'(2x,A/5x,A1,2x,A,1x,A/5x,A1,2x,A,1x,A)')
      &   '99  MPI_master_only write(stdout,''(/1x,A,A/14x,A)'')',
      &   '&', '''CHECKDEFS -- ERROR: Unsufficient size of string',

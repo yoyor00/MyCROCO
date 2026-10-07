@@ -28,6 +28,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Cleaning : typo in ncscrum.h SALINTY instead of SALINITY (#397)
 - Cleaning : remove module_qsort.F90 never used            (#394)
 - Cleaning : useless sponge option in croco.in.1 (#436)
+  
+- SCRIPTS: fix EXACT_RESTART handling in Plurimonths_scripts (#475)
 
 - BENCH : Fix report check status in case of several files (#498)
 - BENCH : Fix label in plot_realist.py (#494)
@@ -47,13 +49,42 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Fix time in surf average output file (#388)
 - Fix grid variables writing in average and diagnostic file (#522)
 
+- Fix ABORT MPI when problem in reading netcdf (#167)
+
+- PISCES : Bug - Switch from relative to potential density for surface pH proxy,
+           inconsistent with what done for calcite dissolution (#531)
+           Big fix in the calculation of NEW primary productivity with XIOS (#535)
+           Fix the calculation of nitrogen fixation rate with XIOS (#541)
+           Set XIOS write timestep for PISCES identical to ocean (#548)
+
+- jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
+  Update BENCH accordingly.
+
+- VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
+
 ### Changed
+
+- Input file croco.in replace by a standard namelist (#497)
+  Replace the fixed-format croco.in reader with a Fortran namelist system
+  (croco.nml). All configuration parameters are now in structured &croco_*
+  namelists.
+  A convert_in_to_nml.py utility is provided to easily convert 
+  previous croco.in into croco.nml.
+  A detailed error message (raw content, iostat/iomsg, expected array size)
+  is now written in case of a malformed namelist (#555)
+
+- Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
+  with standardized uppercase filenames. Update all BENCH jsonc configs
+  and plot scripts accordingly, as well as production run scripts.
+
+- AGRIF : update conv version (#510)
 
 - SUBSTANCE : submassbalance feature is now activated only by namelist
   (Issue #347)
 
 - Compilation : update on jobcomp (support for ifx and different version of gfortran, 
-  cleaning exit status, see !172 and Issue#176)
+  cleaning exit status, see !172 and Issue#176), 
+  update NETCDF paths default from nf-config and nc-config (Issue #473)
 
 - MUSTANG, SUBSTANCE : separate reading of substance and mustang
   namelist (Issue #354)
@@ -61,6 +92,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - MUSTANG : review lateral erosion feature (Issue #349)
 
 - MUSTANG : change activation of horizontal fluxes correction for sand (Issue #352)
+
+- MUSTANG : add MRL_WCI and OW_COUPLING handling (#348 and #464)
 
 - LOGFILE : Change LOGFILE cppkey behavior by enabling to choose filename in
   croco.in (Issue #330)
@@ -86,6 +119,11 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   part of the computation of omega (#447)
 
 - BIOLOGY : Improvements and bug fix (sedmat+sedinorg) in the PISCES sediment module (#468)
+- XIOS : Align density anomaly computation with native netCDF writer,
+  now with respect to 1000 kg m-3 (Issue #484)
+
+- XIOS : Unmask output grid/geometry variables so that they keep valid
+  values on land. Useful for offline diagnostics mimicking CROCO's way. 
 
 ### Deprecated
 
@@ -103,6 +141,23 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
     namelist (Issue #352)
   - remove key_MUSTANG_debug cppkey (Issue #346)
   - remove file scalars_F90.h, not used (Issue #382)
+  - remove key_tauskin_c_ubar key_tauskin_c_center key_tauskin_c_upwind
+    replace by booleans in namelist (Issue #348)
+  - remove key_MUSTANG_slipdeposit replace by boolean l_slipdeposit in
+    namelist (Issue #350)
+  - remove key_MUSTANG_bedload, bedload transport (l_bedload_n()) now only
+    conditioned by key_MUSTANG_V2 (Issue #385)
+  - remove key_MUSTANG_splitlayersurf replace by boolean l_splitlayersurf
+    in namelist (Issue #350)
+  - remove key_MUSTANG_flocmod replace by boolean l_flocmod in namelist
+    (Issue #350)
+
+- Test cases CPP keys replace by namelist parameter (#497)
+  Remove all test-case CPP guards from the solver. Test-case selection is
+  now done at runtime via testcase_name in the namelist, not at compile
+  time. cppdefs.h and cppdefs_dev.h are cleaned of all per-case guards.
+  cppdefs.h and param.h are now provided by case in TEST_CASES. The regional 
+  Benguela example is also copied to OCEAN.
 
 - Obsolete, unused or undocumented CPP keys : 
   - FLOATS, deprecated (#296)
@@ -157,6 +212,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   J. Gula, C. Mazoyer
 
 - New contributors : 
-  J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
+  M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
   S. Theetten
