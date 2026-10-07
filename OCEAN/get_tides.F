@@ -301,7 +301,7 @@
   5   format(/,' GET_TIDES - unable to open forcing netCDF file:',
      &                                                        1x,A)
   6   format(/,' GET_TIDES - error while reading variable: ',A,
-     &                                      ' at index = ',i4,2x,
+     &                          ' for tide component = ',i4,2x,
      &                        /14x,' in forcing netCDF file: ',A)
 
  99   may_day_flag=2
