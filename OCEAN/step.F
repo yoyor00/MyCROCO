@@ -201,7 +201,6 @@ C$OMP MASTER
 !------ ----- ------ ---- ------------------- ---- ---- ------ ------
 !
       if (synchro_flag) then
-
 #ifdef AGRIF
         IF (Agrif_Root()) THEN
 #endif
@@ -215,7 +214,6 @@ C$OMP MASTER
 #if defined ZCLIMATOLOGY && !defined ANA_SSH
             call get_ssh
 #endif
-            call get_vbc ! to read Patm before get_bry
 #if defined FRC_BRY && !defined ANA_BRY
             call get_bry
 # ifdef BIOLOGY
@@ -228,6 +226,7 @@ C$OMP MASTER
 #ifdef AGRIF
         ENDIF
 #endif
+        call get_vbc
         synchro_flag=.false.
       endif  !<-- synchro_flag
 C$OMP END MASTER
@@ -241,6 +240,13 @@ C$OMP BARRIER
 
 #ifdef SOLVE3D
 
+! set_vbc ahead of set_bry/ana_bry below which need patm2d 
+! (OBC_PATM inverse-barometer correction) already
+! up to date rather than lagging by one step
+      do tile=my_first,my_last
+        call set_vbc (tile)
+      enddo
+C$OMP BARRIER
       do tile=my_first,my_last
 # ifdef AGRIF
         IF (Agrif_Root()) THEN
@@ -306,10 +312,6 @@ C$OMP BARRIER
         call obst_update_main (tile)
 #endif
 
-      enddo
-C$OMP BARRIER
-      do tile=my_first,my_last
-        call set_vbc (tile)
 # if defined  BBL && !defined M3FAST
 #  ifdef AGRIF
         IF (Agrif_Fixed().GE.Agrif_lev_sedim) THEN

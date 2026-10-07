@@ -633,6 +633,14 @@ CR      write(*,*) ' -2' MYID
 !
 
       call get_vbc
+!
+! Interpolate the forcing fields just read above (sustr, stflx,
+! patm2d, ...) to the initial/restart time needed for OBC_PATM
+!
+C$OMP PARALLEL DO PRIVATE(tile)
+      do tile=0,NSUB_X*NSUB_E-1
+        call set_vbc (tile)
+      enddo
 
 
 !----------------------------------------------------------------------
