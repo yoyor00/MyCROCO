@@ -371,7 +371,7 @@ CONTAINS
       WRITE (iscreenlog, *) 'fichier definissant les caracteristiques des trajectoires : ', trim(file_trajec)
       ENDIF_MPI
 
-      ! Make sure the type of trajectory is correct
+      ! Make sure the trajectory file is correct
       INQUIRE (file=file_trajec, exist=ex)
       IF (.NOT. ex) THEN
          PRINT *, "Trajectory file '"//trim(file_trajec)//"' does not exist."
@@ -409,6 +409,9 @@ CONTAINS
          ! Create new patch data structure
          new_patch => patch_list_append(patches)
 
+         ! Read name of patch
+         READ (49, '(a)', iostat=eof) new_patch%name
+
          ! Read type of this patch (1=circle, 2=rectangle, 3=netcdf) -- patches
          ! of different types can be mixed within a single file_trajec file.
          READ (49, *, iostat=eof) itypepatch
@@ -432,9 +435,6 @@ CONTAINS
             CALL_MPI MPI_FINALIZE(ierr_mpi)
             STOP
          END IF
-
-         ! Read name of patch
-         READ (49, '(a)', iostat=eof) new_patch%name
 
          ! Read starting date of trajectory
          READ (49, '(a)', iostat=eof) dateread
