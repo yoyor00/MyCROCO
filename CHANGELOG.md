@@ -35,6 +35,7 @@ WET_DRY :
            Big fix in the calculation of NEW primary productivity with XIOS (#535)
            Fix the calculation of nitrogen fixation rate with XIOS (#541)
            Set XIOS write timestep for PISCES identical to ocean (#548)
+           Correct degree to radian conversion (#559)
 
 ### Changed
 
