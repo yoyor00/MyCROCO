@@ -29,7 +29,7 @@
 /
 
 &croco_grid
-  grdname = "croco_grd.nc"
+  grdname = "croco_grd_modif.nc"
 /
 
 &croco_forcing
