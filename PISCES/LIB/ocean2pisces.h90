@@ -74,7 +74,7 @@
 # define rdt           dt
 # define rn_Dt         dt
 # define rpi           pi
-# define rad           pi
+# define rad           pi/180._wp
 # define rtrn         0.5*EPSILON(1.e0) 
 # define neos         0 
 
