@@ -1,8 +1,8 @@
 NETCDF-BASED INITIALIZATION FILE (itypetraj = 3)
 FOIL PATCH AND SUPER-INDIVIDUAL INITIAL CONDITIONS
 
-Patch type: 1 = circle, 2 = rectangle, 3 = NetCDF positions
 Patch name
+Patch type: 1 = circle, 2 = rectangle, 3 = NetCDF positions
 Patch initialization date (start of the trajectory)
 Trajectory end date
 Output trajectory file
@@ -35,8 +35,8 @@ for all patches by dtsave_traj in the &namtraj namelist (paratraj.txt).
 END OF FILE DESCRIPTION%
 
 **************************************************************
-1                                                       ,| Patch type (1=circle)
 patch_circle                                            ,| Patch name
+1                                                       ,| Patch type (1=circle)
 2000/01/01 00:00:00                                     ,| Trajectory start date (tbegtraj)
 2004/12/31 00:00:00                                     ,| Trajectory end date (tendtraj)
 CROCO_FILES/anchovy_circle.nc                           ,| Output trajectory file (filetrajout)
@@ -60,8 +60,8 @@ anchovy                                                 ,| Species
 7548.4                                                  ,| Reproduction energy, R (J)
 0.0                                                     ,| Gametes energy, Gam (J)
 **************************************************************
-2                                                       ,| Patch type (2=rectangle)
 patch_rect                                              ,| Patch name
+2                                                       ,| Patch type (2=rectangle)
 2000/01/01 00:00:00                                     ,| Trajectory start date (tbegtraj)
 2004/12/31 00:00:00                                     ,| Trajectory end date (tendtraj)
 CROCO_FILES/anchovy_rect.nc                             ,| Output trajectory file (filetrajout)
@@ -84,8 +84,8 @@ anchovy                                                 ,| Species
 7548.4                                                  ,| Reproduction energy, R (J)
 0.0                                                     ,| Gametes energy, Gam (J)
 **************************************************************
-3                                                       ,| Patch type (3=netcdf)
 patch_netcdf                                            ,| Patch name
+3                                                       ,| Patch type (3=netcdf)
 2000/01/01 00:00:00                                     ,| Trajectory start date (tbegtraj)
 2004/12/31 00:00:00                                     ,| Trajectory end date (tendtraj)
 CROCO_FILES/anchovy_seapodym.nc                         ,| Output trajectory file (filetrajout)
