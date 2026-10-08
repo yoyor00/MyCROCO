@@ -1041,6 +1041,20 @@ CONTAINS
                ! file, and applied uniformly to every particle created for this
                ! patch regardless of how it was created.
                READ (49, '(a)', iostat=eof) species
+               
+               IF (species /= 'anchovy' .AND. species /= 'sardine') THEN
+                  IF_MPI(MASTER) THEN
+                     WRITE (iscreenlog, *) ' '
+                     WRITE (iscreenlog, *) 'WARNING : PATCH NUMBER : ', npa
+                     WRITE (iscreenlog, *) 'WARNING : species value is not good.'
+                     WRITE (iscreenlog, *) 'WARNING : Or you are using FOIL with' 
+                     WRITE (iscreenlog, *) 'WARNING : a patch file only suited for LAGRANGIAN'
+                     WRITE (iscreenlog, *) 'Simulation stopped.'
+                  ENDIF_MPI
+                  CALL_MPI MPI_FINALIZE(ierr_mpi)
+                  STOP
+                END IF  
+
                READ (49, *, iostat=eof) stage
                READ (49, *, iostat=eof) size
                READ (49, *, iostat=eof) super
