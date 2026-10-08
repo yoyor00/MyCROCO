@@ -446,7 +446,7 @@
 #if defined TS_MIX_ISO || (defined TS_DIF4 && defined TS_MIX_GEO)
 # define TS_MIX_IMP       /*  Implicit treatment of vertical fluxes  */
 #endif
-#if defined TS_MIX_ISO && defined SALINITY
+#ifdef TS_MIX_ISO
 # define TS_MIX_ISO_FILT  /*  neutral slope filtering */
 #endif
 /*

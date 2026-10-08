@@ -63,6 +63,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
 
+- RSUP3 : remove the condition on salinity for TS_MIX_ISO_FILT in cppdefs_dev.h
+
 ### Changed
 
 - Input file croco.in replace by a standard namelist (#497)
