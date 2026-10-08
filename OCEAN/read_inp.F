@@ -10,6 +10,8 @@
 !======================================================================
 !
 #include "cppdefs.h"
+                                       
+      subroutine read_inp (ierr)       
 
 !
 ! Check CPP-switches for consistency. This operation is split into
