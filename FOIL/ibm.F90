@@ -693,6 +693,16 @@ CONTAINS
 
             ! Update age of fish
             IF (current_day /= jj) particle%age = particle%age + 1
+
+            ! Maximum lifespan is an individual property: particles in the same
+            ! patch may have different ages, especially after a restart
+            ! warning : so far these individuals are not tracked in Death_NAT
+            IF (particle%age >= REAL(duration(ind_species), rsh)) THEN
+               particle%super = 0.0_rsh
+               particle%flag  = -valmanq
+               CYCLE
+            END IF
+
             IF (yearclass == aaaa .and. particle%age > 101.0_rlg) particle%AgeClass = particle%AgeClass + 1
 
             pos%xp = particle%xpos; pos%yp = particle%ypos
@@ -1180,6 +1190,12 @@ CONTAINS
                      STOP
                   END SELECT
                END DO
+
+               ! This yearly container receives newborns at several spawning
+               ! events. Keep it active until the youngest cohort reaches its
+               ! own maximum lifespan; death itself is handled per particle.
+               child_patch%t_end = MAX(child_patch%t_end, &
+                  time + REAL(duration(ind), rlg)*86400.0_rlg)
 
                ! Determination du nombre d'individus qui vont apparaitre, selon le nombre vise et le nombre d'oeufs pondus
                target_particles = target_particles_per_spawn(ind)
