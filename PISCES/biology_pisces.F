@@ -4,7 +4,7 @@
 ! from the UCLA branch (Shchepetkin et al.) and the Rutgers
 ! University branch (Arango et al.), both under MIT/X style license.
 ! Copyright (C) 2005-2026 CROCO Development Team
-! License: CeCILL-2.1 - see LICENSE.txt
+! License: CeCILL-2.1 - see ../LICENSES/LICENSE_PISCES.txt
 !
 ! CROCO website : https://www.croco-ocean.org
 !======================================================================
