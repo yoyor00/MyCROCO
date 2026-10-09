@@ -16,9 +16,7 @@
 # ifdef OPENACC
       use openacc
 # endif
-# ifdef MPI
       use mpi
-# endif
 !     implicit none
 # include "param.h"
       integer ierr, nsize, ii_W, ii_E, jj_S, jj_N
@@ -158,7 +156,7 @@
       nerr= nf_get_var_double(ncid, varid, zmask)
       if(nerr /= nf_noerr ) then
         write(*,*) 'Reading mask file failed'
-        call mpi_abort(MPI_COMM_WORLD, ierr)
+        call mpi_abort(MPI_COMM_WORLD, ierr, ierr)
       endif
       nerr= nf_close(ncid)
 
