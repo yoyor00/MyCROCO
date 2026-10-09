@@ -57,6 +57,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
            Fix the calculation of nitrogen fixation rate with XIOS (#541)
            Set XIOS write timestep for PISCES identical to ocean (#548)
            Correct degree to radian conversion (#559)
+           Add the read of pisces namelist for child grid with AGRIF (#561)
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
