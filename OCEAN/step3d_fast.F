@@ -134,7 +134,7 @@ C$    trd=omp_get_thread_num()
      &        imin,imax,jmin,jmax,
      &        k1, k2, kp1
 # ifdef MPI
-     &       ,err
+     &       ,err, ierr
 # endif
 # ifdef PSOURCE
      &       ,is
@@ -4197,7 +4197,7 @@ C$OMP END MASTER
 
         may_day_flag=1
 # ifdef MPI
-        call mpi_abort (MPI_COMM_WORLD, err)
+        call mpi_abort (MPI_COMM_WORLD, err, ierr)
 # else
         stop                            !-->  EXIT
 # endif
