@@ -140,11 +140,11 @@
 /
 
 &croco_sediments_mustang
-  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV1_vilaine.txt"
+  sedname_must = "TEST_CASES/REALIST_EXAMPLES/paraMUSTANG_COASTAL.nml"
 /
 
 &croco_substance
-  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_vilaine.txt"
+  subsfilename = "TEST_CASES/REALIST_EXAMPLES/parasubstance_COASTAL.nml"
 /
 
 &croco_primary_history_fields

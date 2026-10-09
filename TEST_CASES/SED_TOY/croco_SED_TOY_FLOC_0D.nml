@@ -75,11 +75,11 @@
 /
 
 &croco_sediments_mustang
-  sedname_must = "MUSTANG_NAMELIST/paraMUSTANGV1_Sed_toy_floc_0d.txt"
+  sedname_must = "TEST_CASES/SED_TOY/paraMUSTANG_SED_TOY_FLOC_0D.nml"
 /
 
 &croco_substance
-  subsfilename = "MUSTANG_NAMELIST/parasubstance_MUSTANG_Sed_toy_floc_0d.txt"
+  subsfilename = "TEST_CASES/SED_TOY/parasubstance_SED_TOY_FLOC_0D.nml"
 /
 
 &croco_primary_history_fields
