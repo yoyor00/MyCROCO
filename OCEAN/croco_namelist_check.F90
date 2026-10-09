@@ -293,7 +293,8 @@ contains
    !---------------------------------------------------------------------
    subroutine check_online(ierr)
       use param, ONLY: stdout
-      use croco_namelist, ONLY: pathbulk
+      use croco_namelist, ONLY: pathbulk, yearnum, monthnum, yearend, &
+                                 monthend, recordsperday
 #if defined MPI
       use scalars, ONLY: mynode
 #endif
@@ -303,6 +304,30 @@ contains
       if (len_trim(pathbulk) == 0) then
          MPI_master_only write (stdout, '(a)') &
             'Error - pathbulk is empty in &croco_online.'
+         ierr = ierr + 1
+      end if
+
+      if (monthnum < 1 .or. monthnum > 12) then
+         MPI_master_only write (stdout, '(a,i0,a)') &
+            'Error - monthnum = ', monthnum, ' must be in [1, 12] in &croco_online.'
+         ierr = ierr + 1
+      end if
+      if (monthend < 1 .or. monthend > 12) then
+         MPI_master_only write (stdout, '(a,i0,a)') &
+            'Error - monthend = ', monthend, ' must be in [1, 12] in &croco_online.'
+         ierr = ierr + 1
+      end if
+      if (recordsperday < 1) then
+         MPI_master_only write (stdout, '(a,i0,a)') &
+            'Error - recordsperday = ', recordsperday, ' must be >= 1 in &croco_online.'
+         ierr = ierr + 1
+      end if
+      if ((yearend < yearnum) .or. &
+          (yearend == yearnum .and. monthend < monthnum)) then
+         MPI_master_only write (stdout, '(a,i0,a,i0,a,i0,a,i0,a)') &
+            'Error - end date (', yearend, '/', monthend, &
+            ') is before start date (', yearnum, '/', monthnum, &
+            ') in &croco_online.'
          ierr = ierr + 1
       end if
 

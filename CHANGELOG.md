@@ -55,6 +55,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
            inconsistent with what done for calcite dissolution (#531)
            Big fix in the calculation of NEW primary productivity with XIOS (#535)
            Fix the calculation of nitrogen fixation rate with XIOS (#541)
+           Set XIOS write timestep for PISCES identical to ocean (#548)
+           Correct degree to radian conversion (#559)
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
@@ -69,6 +71,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   namelists.
   A convert_in_to_nml.py utility is provided to easily convert 
   previous croco.in into croco.nml.
+  A detailed error message (raw content, iostat/iomsg, expected array size)
+  is now written in case of a malformed namelist (#555)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -209,6 +213,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   J. Gula, C. Mazoyer
 
 - New contributors : 
-  J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
+  M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
   S. Theetten
