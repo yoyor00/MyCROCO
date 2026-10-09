@@ -12,7 +12,10 @@
 #include "cppdefs.h"
                                        
       subroutine read_inp (ierr)       
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2f8ff687dfd1a145cdbb8452f9beecfcd6939114
 !
 ! Check CPP-switches for consistency. This operation is split into
 ! two stages because the first subroutine, "check_switches1", is
