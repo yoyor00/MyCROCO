@@ -93,7 +93,7 @@ MODULE comtraj
 
 #ifdef FOIL
       ! --- Population parameters
-      REAL(KIND=rlg)          :: date_orig   ! date of release
+      REAL(KIND=rlg)          :: date_orig   ! date of birth
       INTEGER                 :: stage = 0
       INTEGER                 :: AgeClass = 0
       INTEGER                 :: Nbatch = 0

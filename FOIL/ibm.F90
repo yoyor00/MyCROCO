@@ -419,7 +419,7 @@ CONTAINS
 
             DO m = 1, nb_part_nc
                particle => patch%particles(m)
-               particle%date_orig = time - particle%age*24.0_rlg*3600.0_rlg
+               particle%date_orig = patch%t_beg - particle%age*24.0_rlg*3600.0_rlg
                IF (patch%nb_part_alloc == 0) CYCLE ! To avoid an error because of a proc without any particle at init
                IF (.NOT. particle%active) CYCLE
                ! Init some biological parameters if not a restart
