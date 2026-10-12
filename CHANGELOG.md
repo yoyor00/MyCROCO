@@ -64,6 +64,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
 
+- Restart : Fix restart with OBC_PATM (#496)
+
 ### Changed
 
 - Input file croco.in replace by a standard namelist (#497)
