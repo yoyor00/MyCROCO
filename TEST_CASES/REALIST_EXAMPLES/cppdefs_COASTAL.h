@@ -79,7 +79,7 @@
 # define CURVGRID
 # define SPHERICAL
 # define MASKING
-# undef WET_DRY
+# define WET_DRY
 # define NEW_S_COORD
                       /* Model dynamics */
 # define SOLVE3D
