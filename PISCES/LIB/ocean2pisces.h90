@@ -53,11 +53,15 @@
 #
 #    define  qsr(i,j)  max(1.e-10,rho0*Cp*srflx(i,j))
 #if defined DIURNAL_INPUT_SRFLX
-#    define l_trcdm2dc .true. 
+#    define l_trcdc2dm .true.
+#    ifdef BULK_FLUX
+#    define  qsr_mean(i,j)  max(1.e-10,rho0*Cp*radswbio(i,j))
+#    else
 #    define  qsr_mean(i,j)  max(1.e-10,rho0*Cp*srflxbio(i,j))
+#    endif
 #else
 #    define  qsr_mean(i,j)  max(1.e-10,rho0*Cp*srflx(i,j))
-#    define l_trcdm2dc .false.
+#    define l_trcdc2dm .false.
 #endif
 #
 #
