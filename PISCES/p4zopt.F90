@@ -566,7 +566,7 @@ CONTAINS
       ! Warning : activate the diurnal cycle with no diurnal cycle in the forcing fields makes no sense
       ! That does not produce a bug because the model does not use the flag but a warning is necessary
       ! ----------------------------------------------------------------------------------------------
-      IF ( ln_p4z_dcyc .AND. l_trcdm2dc ) THEN
+      IF ( ln_p4z_dcyc .AND. l_trcdc2dm ) THEN
          IF (lwp) WRITE(numout,*) 'No diurnal cycle in the PAR forcing field '
          IF (lwp) WRITE(numout,*) 'Activating the diurnal cycle in PISCES has no effect'
       ENDIF
