@@ -207,15 +207,14 @@
  Euler + trapezoidal correction is used for the initial step). If
  the run is interrupted and restarted from a single record, the use
  of forward step causes differences between the results obtained by
- a continuous run.  Macro EXACT_RESTART activates the option of
- saving two consecutive time steps into restart file allowing exact
- restart. */
+ a continuous run. To avoid this, two consecutive time steps are
+ always saved into the restart file and both are read back on
+ restart, allowing exact restart.  If the initial file does not
+ contain two consecutive records, the forward initial step is used. */
 
-#ifdef EXACT_RESTART
+
 # define FIRST_TIME_STEP iic.eq.forw_start
-#else
-# define FIRST_TIME_STEP iic.eq.ntstart
-#endif
+
 #define FIRST_RST_TIME_STEP iic.eq.ntstart
 /* First time step after initialisation, always equal to iic.eq.ntstart
    no dependence to EXACT_ or SOFT_RESTART */
@@ -246,12 +245,6 @@
 # define QUAD 16
 # define QuadZero 0.Q0
 /* # define QuadZero 0.0_16 */
-!! Gc remove because incompatibe with AGRIF
-!#elif defined DBLEPREC && defined Ifort
-!/* Ifort supports QUAD precision */
-!# define QUAD 16
-!# define QuadZero 0.Q0
-!! Gc remove because incompatibe with AGRIF
 #else
 # define QUAD 8
 # define QuadZero 0.D0

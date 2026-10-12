@@ -301,10 +301,6 @@ class Croco:
         if self.config.cvtk:
             self.enable_cvtk_checking()
 
-        if self.restarted:
-            croco_build = self.croco_build
-            croco_build.cppdef_h_set_key("EXACT_RESTART", True)
-
         # compile
         self.compile()
 

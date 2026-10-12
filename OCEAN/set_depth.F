@@ -223,17 +223,6 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
-#  if defined M3FAST && ! defined EXACT_RESTART
-      if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
-        do k=1,N,+1
-          do j=J_RANGE
-            do i=I_RANGE
-              Hz_bak(i,j,k)=Hz(i,j,k)
-            enddo
-          enddo
-        enddo
-      endif
-#  endif
 !$acc end kernels
 
 #  undef I_RANGE

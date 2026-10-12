@@ -387,7 +387,6 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #ifdef ANA_INITIAL
       if (nrrec.ne.0) then            ! read from NetCDF file
 #endif
-#ifdef EXACT_RESTART
         call get_initial (nrrec-1, 2) ! Set initial conditions
                                       ! in case of restart
 C$OMP BARRIER
@@ -397,7 +396,6 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
 # endif
-#endif
         call get_initial (nrrec, 1)   ! Set initial conditions
 #ifdef ANA_INITIAL
       else  ! nrrec.eq.0

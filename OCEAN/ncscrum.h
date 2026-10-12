@@ -677,7 +677,6 @@
       parameter (indxbvf=indxSSH+1)
 #endif
 
-#ifdef EXACT_RESTART
       integer indxrufrc
       parameter (indxrufrc=indxSSH+300)
       integer indxrvfrc
@@ -715,10 +714,6 @@
       parameter (indxSUSTR=indxrvfrc+1, indxSVSTR=indxrvfrc+2)
 #  endif
 # endif
-#else
-      integer indxSUSTR, indxSVSTR
-      parameter (indxSUSTR=indxSSH+2, indxSVSTR=indxSSH+3)
-#endif
 
       integer indxTime2
       parameter (indxTime2=indxSSH+4)
@@ -1080,7 +1075,6 @@
       integer rstSed(NST+2)
 # endif
 #endif
-#ifdef EXACT_RESTART
       integer rstrufrc,rstrvfrc
 # ifdef M3FAST
       integer rstru_nbq,rstrv_nbq
@@ -1090,7 +1084,6 @@
 # ifdef TS_MIX_ISO_FILT
       integer rstdRdx,rstdRde
 # endif
-#endif
 #ifdef MORPHODYN
       integer rstHm
 #endif
@@ -1626,7 +1619,6 @@
      &      , rstBustr,rstBvstr
 #  endif
 # endif
-# ifdef EXACT_RESTART
      &      , rstrufrc,rstrvfrc
 #  ifdef M3FAST
      &      , rstru_nbq,rstrv_nbq
@@ -1636,7 +1628,6 @@
 #  ifdef TS_MIX_ISO_FILT
      &      , rstdRdx,rstdRde
 #  endif
-# endif
 
 # ifdef SEDIMENT
      &                         , rstSed

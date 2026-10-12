@@ -521,12 +521,6 @@ Use these keys when running test cases without external NetCDF files. Each `ANA_
 
 ---
 
-## Restart
-
-- `EXACT_RESTART` — Write extra fields for exact bit-reproducible restart
-
----
-
 ## Diagnostics
 
 Budget diagnostics for tracers, momentum, vorticity, energy, etc.

@@ -987,9 +987,9 @@
 
 #endif /* AGRIF */
 
-#if defined AGRIF && defined EXACT_RESTART
-# error "AGRIF with EXACT_RESTART is not yet implemented"
-#endif
+! #if defined AGRIF && defined EXACT_RESTART
+! # error "AGRIF with EXACT_RESTART is not yet implemented"
+! #endif
 
 #if defined AGRIF && defined XIOS && \
       ( defined OA_COUPLING || defined OW_COUPLING )

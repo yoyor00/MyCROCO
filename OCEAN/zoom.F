@@ -333,11 +333,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !
 !  Read from NetCDF file
 !
-!! GC change for EXACT_RESTART
-!!        call get_initial
-!==================== FOR EXACT_RESTART as in main.F ====================
-#  ifdef EXACT_RESTART
-        call get_initial (nrrec-1, 2) ! Set initial conditions
+!==================== FOR RESTART as in main.F ====================
+      call get_initial (nrrec-1, 2) ! Set initial conditions
                                     ! in the case of restart run.
 C$OMP BARRIER
 #   ifdef SOLVE3D
@@ -346,7 +343,6 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
 #   endif
-#  endif
       call get_initial (nrrec, 1)   ! Set initial conditions
       time=start_time
       tdays=time*sec2day
@@ -442,9 +438,7 @@ C$OMP BARRIER
 #  endif
 
         if (Agrif_Parent_Nb_Step() == 0) then
-!!     call get_initial
-!==================== FOR EXACT_RESTART as in main.F ====================
-#  ifdef EXACT_RESTART
+!==================== FOR RESTART as in main.F ====================
           call get_initial (nrrec-1, 2) ! Set initial conditions
                                         ! in the case of restart run.
 C$OMP BARRIER
@@ -454,7 +448,6 @@ C$OMP BARRIER
         enddo
 C$OMP BARRIER
 #   endif
-#  endif
       call get_initial (nrrec, 1)   ! Set initial conditions
 !==================================================================
         endif

@@ -2052,7 +2052,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxO2sat =',indxO2sat
 #endif /* SOLVE3D */
 
 
-#ifdef EXACT_RESTART
 
 CR      write(stdout,'(1x,A,I3)') 'indxrufrc =',indxrufrc
       vname(1,indxrufrc)='rufrc                                   '
@@ -2155,8 +2154,6 @@ CR      write(stdout,'(1x,A,I3)') 'indxdRde =',indxdRde
 
 
 # endif
-
-#endif /* EXACT_RESTART */
 
 CR      write(stdout,'(1x,A,I3)') 'indxSSH =',indxSSH
       vname(1,indxSSH)='SSH                                       '

@@ -837,7 +837,6 @@
 #  endif /* M3FAST */
 # endif /* LMD_MIXING */
 
-# ifdef EXACT_RESTART
 !
 ! Forcing for barotropic equations in XI-direction.
 !
@@ -1049,7 +1048,6 @@
 
 #   endif /* TS_MIX_ISO_FILT */
 #  endif /* TRACERS */
-# endif  /* EXACT_RESTART */
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT
@@ -1685,7 +1683,6 @@
 #  endif
 # endif
 
-# ifdef EXACT_RESTART
 !
 ! Forcing for barotropic equations in XI-direction.
 !
@@ -1833,7 +1830,6 @@
 
 #   endif /* TS_MIX_ISO_FILT */
 #  endif /* TRACERS */
-# endif /* EXACT_RESTART */
 #endif /* SOLVE3D */
 
 #ifdef SEDIMENT

@@ -221,8 +221,6 @@
 !----------------------------------------------------------------------
 !
 !$acc kernels if(compute_on_device) default(present)
-# ifndef EXACT_RESTART
-! Note that if EXACT_RESTART CPP-switch is defined
 ! qdmu_nbq is read from rst file
 
         do k=1,N
@@ -240,7 +238,6 @@
             enddo
           enddo
         enddo
-# endif
 
 # ifdef NBQ
         do k=1,N-1

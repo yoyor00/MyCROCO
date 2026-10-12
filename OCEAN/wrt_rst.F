@@ -32,11 +32,9 @@
 #if defined GLS_MIXING || defined LMD_MIXING
 # include "mixing.h"
 #endif
-#if defined EXACT_RESTART
-# include "coupling.h"
-# if defined M3FAST
-#  include "nbq.h"
-# endif
+#include "coupling.h"
+#if defined M3FAST
+# include "nbq.h"
 #endif
 #ifdef SEDIMENT
 # include "sediment.h"
@@ -498,7 +496,6 @@
 #  endif
 # endif
 
-# ifdef EXACT_RESTART
 !
 ! Write out forcing for barotropic equations in XI-direction.
 !
@@ -636,7 +633,6 @@
        endif
 
 #  endif /* TS_MIX_ISO_FILT */
-# endif /* EXACT_RESTART */
 
 # ifdef SEDIMENT
 !

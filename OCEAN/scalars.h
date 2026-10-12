@@ -149,9 +149,7 @@
 #endif
       integer numthreads,     ntstart
      &      , nfast
-#ifdef EXACT_RESTART
      &     ,  forw_start
-#endif
 
 #if defined SOLVE3D && defined TRACERS
       logical got_tini(NT)
@@ -183,9 +181,7 @@
 #endif
      &      , numthreads,     ntstart
      &      , nfast
-#ifdef EXACT_RESTART
-     &       , forw_start
-#endif
+     &      , forw_start
 #if defined SOLVE3D && defined TRACERS
      &                      , got_tini
 #endif
