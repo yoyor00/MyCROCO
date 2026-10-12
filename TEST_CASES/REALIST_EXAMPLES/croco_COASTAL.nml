@@ -29,7 +29,7 @@
 /
 
 &croco_grid
-  grdname = "croco_grd_modif.nc"
+  grdname = "croco_grd.nc"
 /
 
 &croco_forcing
@@ -86,11 +86,11 @@
 /
 
 &croco_tracer_diff2
-  tnu2 = 2*0.d-2
+  tnu2 = 5*0.d-2
 /
 
 &croco_tracer_diff4
-  tnu4 = 2*0.d11
+  tnu4 = 5*0.d11
 /
 
 &croco_online
@@ -147,7 +147,7 @@
 /
 
 &croco_primary_history_tracer_fields
-  out_his_tracer = 2*.true.
+  out_his_tracer = 5*.true.
 /
 
 &croco_auxiliary_history_fields

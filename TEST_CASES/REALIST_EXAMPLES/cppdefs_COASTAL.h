@@ -42,7 +42,7 @@
 # undef  STATIONS
 # undef  PASSIVE_TRACER
 # undef  SUBSTANCE
-# undef MUSTANG
+# define MUSTANG
 # undef  SEDIMENT
 # undef  BBL
                       /* Stochastic and Ensemble */
