@@ -273,7 +273,7 @@ CSDISTRIBUTE_RESHAPE A(BLOCK_PATTERN) BLOCK_CLAUSE
 ! Wait for completion of receive and fill ghost points: sides...
 !
       if (WEST_INTER2) then
-        call MPI_Wait (req(1),status(1,1),ierr)
+        call MPI_Wait (req(1),status(:,1),ierr)
 !$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do j=jmin,jmax
@@ -320,7 +320,7 @@ c          endif
       endif
 
       if (EAST_INTER2) then
-        call MPI_Wait (req(2),status(1,2),ierr)
+        call MPI_Wait (req(2),status(:,2),ierr)
 # ifdef  BAND_DEBUG         
         checksum(:) = 0.
 # endif        
@@ -369,7 +369,7 @@ c          endif
 
 
       if (SOUTH_INTER2) then
-        call MPI_Wait (req(3),status(1,3),ierr)
+        call MPI_Wait (req(3),status(:,3),ierr)
 !$acc update device(ibuf_revS_3D(1:isize)) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) collapse(3) 
 # ifdef  BAND_DEBUG         
@@ -417,7 +417,7 @@ c          endif
       endif
 
       if (NORTH_INTER2) then
-        call MPI_Wait (req(4),status(1,4),ierr)
+        call MPI_Wait (req(4),status(:,4),ierr)
 !$acc update device(ibuf_revN_3D(1:isize)) if(.not.use_host_device)
 !$acc parallel loop if(compute_on_device) collapse(3)
 # ifdef  BAND_DEBUG         
@@ -467,7 +467,7 @@ c          endif
 ! ...corners:
 !
       if (CORNER_SW) then
-        call MPI_Wait (req(5),status(1,5),ierr)
+        call MPI_Wait (req(5),status(:,5),ierr)
 !$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do jpts=1,Npts
@@ -496,7 +496,7 @@ c          endif
        endif
 
       if (CORNER_NE) then
-        call MPI_Wait (req(6),status(1,6),ierr)
+        call MPI_Wait (req(6),status(:,6),ierr)
 !$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do jpts=1,Npts
@@ -522,7 +522,7 @@ c          endif
 
 
       if (CORNER_SE) then
-        call MPI_Wait (req(7),status(1,7),ierr)
+        call MPI_Wait (req(7),status(:,7),ierr)
 !$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do jpts=1,Npts
@@ -548,7 +548,7 @@ c          endif
 
 
       if (CORNER_NW) then
-        call MPI_Wait (req(8),status(1,8),ierr)
+        call MPI_Wait (req(8),status(:,8),ierr)
 !$acc parallel loop if(compute_on_device) collapse(3) 
         do k=1,nmax
           do jpts=1,Npts
