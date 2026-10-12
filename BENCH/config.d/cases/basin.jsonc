@@ -4,7 +4,7 @@
     "title": "BASIN (60 x 50 x 10 : 3240)",
     "case": "BASIN",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_basin.py",
+      "plotphy_script": "./TEST_CASES/BASIN/plot_basin.py",
       "plotphy_script_input": "basin_his.nc",
     },
     "splitting": {
@@ -28,7 +28,7 @@
     "title": "BASIN (60 x 50 x 10 : 3240)",
     "case": "BASIN",
     "plotphy": {
-      "plotphy_script": "./TEST_CASES/plot_basin.py",
+      "plotphy_script": "./TEST_CASES/BASIN/plot_basin.py",
       "plotphy_script_input": "basin_his.nc",
     },
     "splitting": {
@@ -69,6 +69,23 @@
     "check_outputs": ["basin_his.nc"],
     "unsupported": ["restart", "openmp"],
   },
+    // PARALLEL_FILES LOGFILE BASIN case
+    "BASIN_PARALLEL_FILES_LOGFILE": {
+      "title": "BASIN (60 x 50 x 10 : 3240)",
+      "case": "BASIN",
+      "cppkeys": {
+        "PARALLEL_FILES": true,
+        "LOGFILE": true,
+      },
+      "splitting": {
+        "1": "1x1",
+        "2": "1x2",
+        "4": "2x2"
+      },
+      "patches": {},
+      "check_outputs": [],
+      "unsupported": ["restart", "plotphy", "check"],
+    },
   // BASIN a bit larger
   "BASIN-LARGE": {
     "title": "BASIN - LARGE - (200 x 200 x 50 : 100)",
@@ -87,20 +104,33 @@
 
     "patches": {
       // Change the size of the mesh
-      "param.h": {
-        "mode": "replace",
-        "after": "#if defined BASIN",
-        "what": "      parameter (LLm0=60,   MMm0=50,   N=10)",
-        "by": "      parameter (LLm0=200,  MMm0=200,  N=50)",
-        "descr": "Set mesh size to (200 x 200 x 50)",
-      },
+      "param.h": [
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: LLm0 = 60",
+          "by": "      integer, parameter :: LLm0 = 200",
+          "descr": "Set LLm0 = 200",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: MMm0 = 50",
+          "by": "      integer, parameter :: MMm0 = 200",
+          "descr": "Set MMm0 = 200",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: N = 10",
+          "by": "      integer, parameter :: N = 50",
+          "descr": "Set N = 50",
+        },
+      ],
       // Change the dt
-      "TEST_CASES/croco.in.Basin": {
+      "TEST_CASES/BASIN/croco_BASIN.nml": {
         "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                3240     9600     65      1",
-        "by": "                100      2400     65      1",
-        "descr": "Set stepping (steps=100, dt=2400, fast=65)",
+        "after": "&croco_time_stepping",
+        "what": " dt = 9600",
+        "by": " dt = 2400",
+        "descr": "Set stepping (dt=2400)",
       },
     },
     "check_outputs": ["basin_his.nc"],
@@ -123,20 +153,33 @@
 
     "patches": {
       // Change the size of the mesh
-      "param.h": {
-        "mode": "replace",
-        "after": "#if defined BASIN",
-        "what": "      parameter (LLm0=60,   MMm0=50,   N=10)",
-        "by": "      parameter (LLm0=400,  MMm0=400,  N=100)",
-        "descr": "Set mesh size to (400 x 400 x 100)",
-      },
+      "param.h": [
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: LLm0 = 60",
+          "by": "      integer, parameter :: LLm0 = 400",
+          "descr": "Set LLm0 = 400",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: MMm0 = 50",
+          "by": "      integer, parameter :: MMm0 = 400",
+          "descr": "Set MMm0 = 400",
+        },
+        {
+          "mode": "replace",
+          "what": "      integer, parameter :: N = 10",
+          "by": "      integer, parameter :: N = 100",
+          "descr": "Set N = 100",
+        },
+      ],
       // CHange the dt
-      "TEST_CASES/croco.in.Basin": {
+      "TEST_CASES/BASIN/croco_BASIN.nml": {
         "mode": "replace",
-        "after": " time_stepping: NTIMES   dt[sec]  NDTFAST  NINFO",
-        "what": "                3240     9600     65      1",
-        "by": "                100      1200     65      1",
-        "descr": "Set stepping (steps=100, dt=1200, fast=65)",
+        "after": "&croco_time_stepping",
+        "what": " dt = 9600",
+        "by": " dt = 1200",
+        "descr": "Set stepping (dt=1200)",
       },
     },
     "check_outputs": ["basin_his.nc"],

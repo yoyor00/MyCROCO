@@ -22,6 +22,12 @@
                                  ! Create diag data NetCDF file:
                                  ! Define its variables, dimensions,
                                  ! and attributes
+#ifdef DIAGNOSTICS_BIO
+      use croco_namelist, only: ldefdiabio, nwrtdiabio, nrpfdiabio,
+     &     dianamebio, ldefdiabio_avg, ntsdiabio_avg,
+     &     nwrtdiabio_avg, nrpfdiabio_avg, dianamebio_avg
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -185,9 +191,9 @@
         if (total_rec.le.1) then
 #  ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &                   ,r3dgrd, w3dgrd)
+     &                   ,r3dgrd, w3dgrd, NF_FOUT)
 #  else
-         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FOUT)
 #  endif
       endif
 # endif

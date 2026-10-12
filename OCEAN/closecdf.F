@@ -53,7 +53,7 @@
 # endif
 #endif
 
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
       if (nciddiags_ek.ne.-1) ierr=nf_close(nciddiags_ek)
 # ifdef AVERAGES
       if (nciddiags_ek_avg.ne.-1) ierr=nf_close(nciddiags_ek_avg)
@@ -130,14 +130,14 @@
      &                                                 nrecdiags_vrt_avg
 # endif
 #endif /* DIAGNOSTICS_VRT */
-#if defined DIAGNOSTICS_EK
+#if defined DIAGNOSTICS_KE
      &  ,'number of records written into diags_ek  file(s):',
      &                                                     nrecdiags_ek
 # ifdef AVERAGES
      &  ,'number of records written into avg diags_ek file(s):',
      &                                                 nrecdiags_ek_avg
 # endif
-#endif /* DIAGNOSTICS_EK */
+#endif /* DIAGNOSTICS_KE */
 #if defined DIAGNOSTICS_PV
      &  ,'number of records written into diags_pv  file(s):',
      &                                                     nrecdiags_pv
@@ -158,6 +158,11 @@
       if (may_day_flag.eq.0) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'MAIN: DONE'
+#ifdef LOGFILE
+        ! ensure "MAIN: DONE" is written in 6 (real stdout) at the end to catch it in BENCH
+        MPI_master_only write(6,'(/1x,A/)')
+     &           'MAIN: DONE'
+#endif
       elseif (may_day_flag.eq.1) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'MAIN: Abnormal termination: BLOWUP'
@@ -183,6 +188,10 @@
       elseif (may_day_flag.eq.77) then
         MPI_master_only write(stdout,'(/1x,A/)')
      &           'ERROR: READ parasubstance.txt'
+      elseif (may_day_flag.eq.78) then
+        MPI_master_only write(stdout,'(/1x,A/,A/)')
+     &           'ERROR: READ parasubstance.txt',
+     &  ' - no associated particulate variable for a sorbed substance'
 #endif
       endif
 

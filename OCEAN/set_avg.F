@@ -58,6 +58,7 @@ C$    integer omp_get_thread_num
 ! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
+      use croco_namelist, only: ntsavg, navg, rho0
       implicit none
 # include "param.h"
       integer Istr,Iend,Jstr,Jend, i,j, ilc, iout, indxWrk
@@ -130,7 +131,7 @@ C$    integer omp_get_thread_num
 
       if (ilc.gt.ntsavg) then
 
-        if (mod(ilc-ntsavg,navg).eq.1) then
+        if (mod(ilc-ntsavg,navg).eq.1 .OR. navg.eq.1) then
           cff =1.0
           cff1=0.0
           if (ZEROTH_TILE) then

@@ -25,6 +25,13 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+#ifdef DIAGNOSTICS_PV
+      use croco_namelist, only: ldefdiags_pv, nwrtdiags_pv,
+     &     nrpfdiags_pv, diags_pvname, ldefdiags_pv_avg,
+     &     ntsdiags_pv_avg, nwrtdiags_pv_avg, nrpfdiags_pv_avg,
+     &     diags_pvname_avg
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"
@@ -668,15 +675,9 @@
 
 ! ---------------------------------
 
-
 !
         MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_pv: -- Opened ',
-     &                     'existing file  from record =', rec
-     &                      MYID
-!
-        MPI_master_only write(*,'(6x,2A,i4,1x,A,i4)')
-     &                     'def_diags_pv: -- Opened ',
+     &                     'DEF_DIAGS_PV -- Opened ',
      &                     'existing file  from record =', rec
      &                      MYID
 !

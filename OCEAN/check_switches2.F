@@ -11,6 +11,7 @@
 !
 #include "cppdefs.h"
       subroutine check_switches2 (ierr)
+      use croco_namelist, only: ndtfast
       implicit none
       integer ierr, iwest, ieast, isouth, inorth, iAk
 #include "param.h"

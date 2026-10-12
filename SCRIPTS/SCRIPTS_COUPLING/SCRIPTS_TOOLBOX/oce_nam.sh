@@ -37,14 +37,14 @@
 for nn in $( seq 0 ${AGRIFZ} ) 
 do
     if [ ${nn} -gt 0 ];    then
-	namfile=croco.in.${nn}
+	namfile=croco.nml.${nn}
         agrif_ext=".${nn}"
-	cpfile ${OCE_NAM_DIR}/croco.in.base.${nn} ${namfile}
+	cpfile ${OCE_NAM_DIR}/croco.nml.base.${nn} ${namfile}
 	SUBTIME=$( sed -n -e "$(( 2 * ${nn} )) p" AGRIF_FixedGrids.in | awk '{print $7 }' )
     else
-	namfile=croco.in
+	namfile=croco.nml
 	agrif_ext=""
-	cpfile ${OCE_NAM_DIR}/croco.in.base ${namfile}
+	cpfile ${OCE_NAM_DIR}/croco.nml.base ${namfile}
 	SUBTIME=1
     fi
     if [ ${nn} -gt 1 ];    then
@@ -135,7 +135,7 @@ if [[ ${interponline} -eq 1 ]]; then
     if [[ ${frc_ext} == *'AROME'* || ${frc_ext} == *'ARPEGE'* ]];then
         fieldname='AROME'
         online_frc=${frc_ext}
-        echo "Online bulk is ${frc_ext}; default value for records per day is 24. (Change in the croco.in if not)"
+        echo "Online bulk is ${frc_ext}; default value for records per day is 24. (Change in the croco.nml if not)"
         rpd=24
     else 
         if [[ ${frc_ext} == "ERA_ECMWF" ]]; then

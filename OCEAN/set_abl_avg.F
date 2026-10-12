@@ -45,6 +45,7 @@
 ! data, when mod(ilc-1,navg).gt.1; and (3) adding the last
 ! contribution and scaling.
 !
+      use croco_namelist, only: ntsablavg, nwrtablavg
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j, itrc, k, ilc
       real    cff,cff1

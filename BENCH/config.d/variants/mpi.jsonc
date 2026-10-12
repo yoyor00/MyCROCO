@@ -1,7 +1,7 @@
 {
   // mpi
   "mpi-{tasks}": {
-    "configure": "--with-optim=mpi --with-splitting={case.splitting.{tasks}} FC=mpif90",
+    "configure": "--with-optim=mpi --with-splitting={case.splitting.{tasks}} FC=gfortran MPIF90=mpif90",
     "tuning_familly": "gnu",
     "environ": {
       "OMP_NUM_THREADS": 1,
@@ -17,7 +17,7 @@
 
   // mpi-ifort
   "mpi-ifort-{tasks}": {
-    "configure": "--with-optim=mpi --with-splitting={case.splitting.{tasks}} FC=mpiifort",
+    "configure": "--with-optim=mpi --with-splitting={case.splitting.{tasks}} FC=ifort MPIF90=mpiifort",
     "tuning_familly": "intel",
     "tuning_fflags": "standard",
     "environ": {
@@ -34,7 +34,7 @@
 
   // mpi-ifx
   "mpi-ifx-{tasks}": {
-    "configure": "--with-optim=mpi --with-splitting={case.splitting.{tasks}} FC=mpiifx",
+    "configure": "--with-optim=mpi --with-splitting={case.splitting.{tasks}} FC=ifx MPIF90=mpiifx",
     "tuning_familly": "intel",
     "tuning_fflags": "standard",
     "environ": {

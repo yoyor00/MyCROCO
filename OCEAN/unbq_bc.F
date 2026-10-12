@@ -52,7 +52,10 @@
 ! Common Code
 !
 # include "set_obc_definitions.h"
-!
+      USE croco_namelist, ONLY: gamma2
+#if defined NBQ_FRC_BRY || defined NBQ_NUDGING
+      USE croco_namelist, ONLY: tauM_in, tauM_out
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -626,7 +629,7 @@
           do i=IstrU,Iend
             cff1=0.5*(Hz(i,Jend+1,k)+Hz(i-1,Jend+1,k))
             cff2=0.5*(h(i  ,Jend+1)+zeta(i  ,Jend+1,knew)
-     &               +h(i-1,Jstr-1)+zeta(i-1,Jend+1,knew))
+     &               +h(i-1,Jend+1)+zeta(i-1,Jend+1,knew))
             qdmu_nbq(i,Jend+1,k)=qdmu_nbq(i,Jend+1,k)
      &                           +(DU_nbq(i,Jend+1)
      &                              -usum(i,Jend+1))*cff1/cff2

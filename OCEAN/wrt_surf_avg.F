@@ -20,7 +20,7 @@
 !---------------------------------------------------------------
 !
       subroutine wrt_surf_avg
-
+      use croco_namelist, only: surfname_avg, nrpfsurf_avg
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type
@@ -111,7 +111,7 @@
 ! Time2
 !
       ierr=nf_put_var1_FTYPE (ncidsurf_avg, surfTime2_avg,
-     &                       record, time
+     &                       record, timesurf_avg
 # ifdef USE_CALENDAR
      &  - origin_date_in_sec
 # endif
@@ -232,4 +232,4 @@
 #else
       subroutine wrt_surf_avg_empty
       end
-#endif /* (DIAGNOSTICS_EK) */
+#endif /* (DIAGNOSTICS_KE) */

@@ -81,5 +81,3 @@
      &      , wrtsta
 
 
-      character*80  staname,   staposname
-      common /cncscrum_sta/ staname,   staposname

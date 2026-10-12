@@ -13,6 +13,7 @@
                                                   ! Create/open
       subroutine def_rst (ncid, total_rec, ierr)  ! restart netCDF
                                                   ! file.
+        USE croco_namelist, ONLY: ldefhis, nrpfrst, rstname
 #if defined MUSTANG
         USE comMUSTANG, ONLY : rstMust, vname_rstMust, 
      &   rstoutintegerMust, rstout2DMust, rstout3DsedMust,
@@ -214,9 +215,9 @@
         if (total_rec.le.1) then
 # ifdef SOLVE3D
          call def_grid_3d(ncid, r2dgrd, u2dgrd, v2dgrd
-     &                   ,r3dgrd, w3dgrd)
+     &                   ,r3dgrd, w3dgrd, NF_FTYPE)
 # else
-         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd)
+         call def_grid_2d(ncid, r2dgrd, u2dgrd, v2dgrd, NF_FTYPE)
 # endif
       endif
 #endif

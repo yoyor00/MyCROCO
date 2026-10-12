@@ -72,6 +72,7 @@ void Init_Variable(variable *var)
    var->v_c_star              = 0 ;
    var->v_indicetabvars       = 0 ;
    var->v_pointerdeclare      = 0 ;
+   var->v_contiguousdeclare   = 0 ;
    var->v_optionaldeclare     = 0 ;
    var->v_allocatable         = 0 ;
    var->v_target              = 0 ;
@@ -248,6 +249,7 @@ void addprecision_derivedfromkind(variable *curvar)
 //       tmpvar->v_c_star = parcours->var->v_c_star;
 //       tmpvar->v_catvar = parcours->var->v_catvar;
 //       tmpvar->v_pointerdeclare = parcours->var->v_pointerdeclare;
+//       tmpvar->v_contiguousdeclare = parcours->var->v_contiguousdeclare;
 //       tmpvar->v_optionaldeclare = parcours->var->v_optionaldeclare;
 //       tmpvar->v_allocatable = parcours->var->v_allocatable;
 //       tmpvar->v_target      = parcours->var->v_target;
@@ -393,6 +395,7 @@ variable * createvar(const char *nom, listdim *d)
         strcpy(var->v_nameinttypename,nameinttypename);
     }
 
+    if ( contiguousdeclare   == 1 ) var->v_contiguousdeclare = 1;
     if ( optionaldeclare     == 1 ) var->v_optionaldeclare = 1;
     if ( pointerdeclare      == 1 ) var->v_pointerdeclare = 1;
     if ( VariableIsParameter == 1 ) var->v_VariableIsParameter = 1 ;

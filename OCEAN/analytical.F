@@ -111,6 +111,7 @@
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
+      USE croco_namelist, ONLY: rho0, testcase_name, Tcoef
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -130,15 +131,14 @@
       if (itrc.eq.itemp) then
         do j=JstrR,JendR
           do i=IstrR,IendR
-#   if defined SINGLE_COLUMN
-#    ifdef KATO_PHILLIPS
-            btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
-#    elif defined WILLIS_DEARDORFF || defined DIURNAL_CYCLE
-            btflx(i,j,itemp)=-1.0e-5*0.01
-#    endif
-#   else
-            btflx(i,j,itemp)=0.
-#   endif
+            if (trim(testcase_name) == 'SC_KATO_PHILLIPS') then
+              btflx(i,j,itemp)=-1.0e-5*(0.01)**2/(g*Tcoef/rho0)
+            elseif (trim(testcase_name) == 'SC_WILLIS_DEARDORFF' .or.
+     &              trim(testcase_name) == 'SC_DIURNAL_CYCLE') then
+              btflx(i,j,itemp)=-1.0e-5*0.01
+            else
+              btflx(i,j,itemp)=0.
+            endif
           enddo
         enddo
       endif
@@ -213,6 +213,7 @@ C$    integer  trd, omp_get_thread_num
 !  example for SEAMOUNT test case
 !----------------------------------------------------------------------
 !
+      USE croco_namelist, ONLY: testcase_name
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -223,33 +224,32 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 !
-# ifdef SEAMOUNT
-      cff=(1./50.e3)**2
-      cff1=0.5*xl+time*1.
+      select case (trim(testcase_name))
+      case ('SEAMOUNT')
+        cff=(1./50.e3)**2
+        cff1=0.5*xl+time*1.
       ! 0.1m/s translation
       ! starting for mid-basin
       ! for example purpoe
       ! has to be coherent with initial bathymetry
       ! definition in ana_grid.F
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          dh(i,j)=4500*(1-0.6*exp(-cff*((xr(i,j)-cff1  )**2+
-     &                                  (yr(i,j)-0.5*el)**2)))
-     &                                                 -h(i,j)
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            dh(i,j)=4500*(1-0.6*exp(-cff*((xr(i,j)-cff1  )**2+
+     &                                    (yr(i,j)-0.5*el)**2)))
+     &                                                   -h(i,j)
+          enddo
         enddo
-      enddo
-# elif defined MOVING_BATHY
-      cff=1./(0.03686)**2
-      cff1=1.e-3*sin(2.*pi/10.05*time)
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2)
-     &                                           - h(i,j)
+      case ('MOVING_BATHY')
+        cff=1./(0.03686)**2
+        cff1=1.e-3*sin(2.*pi/10.05*time)
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            dh(i,j)=0.394 - 0.1*exp(-cff*(xr(i,j)-cff1)**2)
+     &                                             - h(i,j)
+          enddo
         enddo
-      enddo
-# else
-      dh(:,:) =???
-# endif
+      end select
       return
       end
 #endif /* ANA_MORPHODYN */
@@ -277,6 +277,7 @@ C$    integer  trd, omp_get_thread_num
 !  and density used in the bottom boundary formulation [kg/m^3].
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "bbl.h"
@@ -286,26 +287,6 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_extended_bounds.h"
 !
-# ifdef REGIONAL
-!
-! taucb=critical threshold stress for initiation of motion
-! (=bedload for coarse grains).
-! critical suspension stress: ustar_crit=0.8*w_set
-!
-! determine taucb from Shields curve, fit provided by
-! Soulsby & Whitehouse 1997, Threshold of sediment motion
-! in coastal environments, Proc. Pacific Coasts and Ports
-! '97 Conf., pp 149--154, Univ Canterbury, Nw Zealand.
-!
-! visk=1.3e-3/rhow; (kinem. visc., nu=mu/rhow)
-! D=d50*(g*(Sdens/rhow-1)/(visk^2))^0.33333
-! thetcr=0.3./(1+1.2*D) + 0.055*(1-exp(-0.02*D))
-! taucb=thetcr.*(g*(sdens-rhow).*d50);
-!
-! Souslby's (1997) estimate of settling velocity
-!   w_set = visk*(sqrt(10.36^2+1.049*D^3)-10.36)/d50 [m/s]
-! with D as above
-!
       do j=JstrR,JendR
         do i=IstrR,IendR
           Ssize(i,j)=1.5e-4     ! d50 [m]
@@ -316,19 +297,6 @@ C$    integer  trd, omp_get_thread_num
           Lripple(i,j)=0.10     ! analytical initial ripple length [m]
         enddo
       enddo
-# else
-      !ANA_BSEDIM: no values provided for SSIZE and SDENS.
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          Ssize(i,j)=1.5e-4     ! d50 [m]
-          Sdens(i,j)=2650.0     ! rho sediment [kg/m^3]
-          taucb(i,j)=0.16/rho0  ! critical bedload stress [m^2/s^2]
-          w_set(i,j)=0.013      ! analytical settling velocity [m/s]
-          Hripple(i,j)=0.01     ! analytical initial ripple height [m]
-          Lripple(i,j)=0.10     ! analytical initial ripple length [m]
-        enddo
-      enddo
-# endif
       return
       end
 #endif /* ANA_BSEDIM && BBL */
@@ -343,6 +311,7 @@ C$    integer  trd, omp_get_thread_num
 !  Sets kinematic surface momentum flux (wind stress) "sustr" and "svstr"
 !  [m^2/s^2] using an analytical expression.
 !
+        use croco_namelist, only: dt, rho0, testcase_name
 # ifdef AGRIF
       use Agrif_UTIL
 # endif
@@ -373,152 +342,156 @@ C$    integer  trd, omp_get_thread_num
       windamp = 0.
 
 !$acc kernels if(compute_on_device) default(present)
-# ifdef BASIN
-      cff1=0.0001 * 0.5*(1.+tanh((time-6.*86400.)/(3.*86400.)))
-      cff2=2.*pi/el
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sustr(i,j)=-cff1*cos(cff2*yr(i,j))
-        enddo
-      enddo
-#  ifdef STOGEN
-      if (ln_stogen .and. ln_stostress) then
-!       apply additive noise to wind stress
-!       First construct a structure fonction for the noise ...
+      select case (trim(testcase_name))
+      case ('BASIN')
+        cff1=0.0001 * 0.5*(1.+tanh((time-6.*86400.)/(3.*86400.)))
+        cff2=2.*pi/el
         do j=JstrR,JendR
           do i=IstrR,IendR
-            sto_stress_factor(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
+            sustr(i,j)=-cff1*cos(cff2*yr(i,j))
           enddo
         enddo
+#  ifdef STOGEN
+        if (ln_stogen .and. ln_stostress) then
+!       apply additive noise to wind stress
+!       First construct a structure fonction for the noise ...
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              sto_stress_factor(i,j)=0.05*(-cos(cff2*yr(i,j))+1.)
+            enddo
+          enddo
 !       ... then apply noise
-        call sto_stress( sustr, sto_stress_factor )
-      endif
+          call sto_stress( sustr, sto_stress_factor )
+        endif
 #  endif
-# elif defined SINGLE_COLUMN && defined KATO_PHILLIPS
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sustr(i,j)=(0.01)**2
+      case ('SC_KATO_PHILLIPS')
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sustr(i,j)=(0.01)**2
+          enddo
         enddo
-      enddo
-# elif defined SINGLE_COLUMN && defined FORCED_DBLEEK
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sustr(i,j)=-(0.0025)**2
+      case ('SC_FORCED_DBLEEK')
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sustr(i,j)=-(0.0025)**2
+          enddo
         enddo
-      enddo
-# elif defined CANYON
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sustr(i,j)=0.0001*0.5*sin(2.*pi*tdays/10.)*
-     &               (1.-tanh((yr(i,j)-0.5*el)/10000.))
+      case ('CANYON', 'CANYON_STRAT')
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sustr(i,j)=0.0001*0.5*sin(2.*pi*tdays/10.)*
+     &                 (1.-tanh((yr(i,j)-0.5*el)/10000.))
+          enddo
         enddo
-      enddo
-# elif defined EQUATOR
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sustr(i,j)=-0.05/rho0
+      case ('EQUATOR')
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sustr(i,j)=-0.05/rho0
+          enddo
         enddo
-      enddo
-# elif defined UPWELLING
-      if (tdays.le.2.) then
-        windamp=-0.1*sin(pi*tdays/4.)/rho0
-      else
-        windamp=-0.1/rho0
-      endif
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sustr(i,j)=windamp
+      case ('UPWELLING')
+        if (tdays.le.2.) then
+          windamp=-0.1*sin(pi*tdays/4.)/rho0
+        else
+          windamp=-0.1/rho0
+        endif
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sustr(i,j)=windamp
+          enddo
         enddo
-      enddo
-# elif defined SHOREFACE
+      case ('SHOREFACE')
 #  ifndef MRL_WCI
-      windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
-      wcos = cos(10.0/180.0*pi)
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
-          cff2  = h(i,j)+zeta(i,j,kstp)
-          cff1  = 0.05/sqrt(9.8*cff2)  ! 0.6 is epsilon_b/rho
-          sustr(i,j)=cff1*wcos*windamp
+        windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
+        wcos = cos(10.0/180.0*pi)
+        do j=jstr-1,jend+1
+          do i=istr-1,iend+1
+            cff2  = h(i,j)+zeta(i,j,kstp)
+            cff1  = 0.05/sqrt(9.8*cff2)
+            sustr(i,j)=cff1*wcos*windamp
+          enddo
         enddo
-      enddo
 #  else
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sustr(i,j)=0.
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sustr(i,j)=0.
+          enddo
         enddo
-      enddo
 #  endif
-
-# elif defined SED_TOY
-#  ifdef SED_TOY_ROUSE
-      cff1=0.001875
-#  elif defined SED_TOY_FLOC_0D
-      cff1=0.0
-#  elif defined SED_TOY_FLOC_1D
-      cff1=0.001875 * sin(2. * pi / (12.0*3600) * time)
-#  else
-#   if defined SED_TOY_RESUSP
-      if (tdays.lt.1.8) then
-        cff1=0.001
-      else if ((tdays.ge.3).and.(tdays.le.4.)) then
-        cff1=0.0005
-#   elif defined SED_TOY_CONSOLID
-      if ((tdays.ge.0.7).and.((tdays.le.37.))) then
-        cff1=0.001
-#   endif
-      else
-        cff1=0.
-      endif
-#  endif
-
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sustr(i,j)=cff1
+      case ('SED_TOY', 'SED_TOY_ROUSE', 'SED_TOY_FLOC_0D',
+     &      'SED_TOY_FLOC_1D', 'SED_TOY_RESUSP', 'SED_TOY_CONSOLID')
+        select case (trim(testcase_name))
+        case ('SED_TOY_ROUSE')
+          cff1=0.001875
+        case ('SED_TOY_FLOC_0D')
+          cff1=0.0
+        case ('SED_TOY_FLOC_1D')
+          cff1=0.001875 * sin(2. * pi / (12.0*3600) * time)
+        case ('SED_TOY_RESUSP')
+          if (tdays.lt.1.8) then
+            cff1=0.001
+          else if ((tdays.ge.3).and.(tdays.le.4.)) then
+            cff1=0.0005
+          else
+            cff1=0.
+          endif
+        case ('SED_TOY_CONSOLID')
+          if ((tdays.ge.0.7).and.((tdays.le.37.))) then
+            cff1=0.001
+          else
+            cff1=0.
+          endif
+        case default
+          cff1=0.
+        end select
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sustr(i,j)=cff1
+          enddo
         enddo
-      enddo
-
-# else
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sustr(i,j)=0.
+      case default
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sustr(i,j)=0.
+          enddo
         enddo
-      enddo
-# endif
+      end select
 !
 !  Set kinematic surface momentum flux (wind stress) component in the
 !  ETA-direction (m^2/s^2) at horizontal V-points.
 !
-# ifdef INNERSHELF
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          svstr(i,j)=0.07/rho0
+      select case (trim(testcase_name))
+      case ('INNERSHELF', 'INNERSHELF_EKMAN')
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            svstr(i,j)=0.07/rho0
+          enddo
         enddo
-      enddo
-# elif defined SHOREFACE
+      case ('SHOREFACE')
 #  ifndef MRL_WCI
-      windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
-      wsin = sin(10.0/180.0*pi)
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
-          cff2  = h(i,j)+zeta(i,j,kstp)
-          cff1  = 0.05/sqrt(9.8*cff2)  ! 0.6 is \epsilon_b/\rho
-          svstr(i,j)=cff1*wsin*windamp
+        windamp=tanh(24.0*dt*sec2day*float(iic-ntstart))
+        wsin = sin(10.0/180.0*pi)
+        do j=jstr-1,jend+1
+          do i=istr-1,iend+1
+            cff2  = h(i,j)+zeta(i,j,kstp)
+            cff1  = 0.05/sqrt(9.8*cff2)
+            svstr(i,j)=cff1*wsin*windamp
+          enddo
         enddo
-      enddo
 #  else
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          svstr(i,j)=0.
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            svstr(i,j)=0.
+          enddo
         enddo
-      enddo
 #  endif
-# else
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          svstr(i,j)=0.
+      case default
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            svstr(i,j)=0.
+          enddo
         enddo
-      enddo
-# endif
+      end select
 !$acc end kernels
       return
       end
@@ -536,6 +509,7 @@ C$    integer  trd, omp_get_thread_num
 !  flux "srflx" (degC m/s) using an analytical expression.
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: rho0, testcase_name
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -549,32 +523,35 @@ C$    integer  trd, omp_get_thread_num
 !  horizontal RHO-points.
 !
 !$acc kernels if(compute_on_device) default(present)
-# if defined INNERSHELF && !defined INNERSHELF_EKMAN
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          srflx(i,j)=264.91/(rho0*Cp)
+      if (trim(testcase_name) == 'INNERSHELF') then
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            srflx(i,j)=264.91/(rho0*Cp)
 #  ifdef DIURNAL_INPUT_SRFLX
-          srflxbio(i,j)=srflx(i,j)
+            srflxbio(i,j)=srflx(i,j)
 #  endif
-#  ifdef DIURNAL_CYCLE
-          srflx(i,j)=srflx(i,j)*max(cos(2.*pi*(time/86400.-0.5)),0.)
-#  endif
+          enddo
         enddo
-      enddo
-# else
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          srflx(i,j)=0.   ! default is 0.
+      elseif (trim(testcase_name) == 'SC_DIURNAL_CYCLE') then
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            srflx(i,j)=264.91/(rho0*Cp)
+     &                       *max(cos(2.*pi*(time/86400.-0.5)),0.)
 #  ifdef DIURNAL_INPUT_SRFLX
-          srflxbio(i,j)=srflx(i,j)
+            srflxbio(i,j)=srflx(i,j)
 #  endif
-#  ifdef DIURNAL_CYCLE
-          srflx(i,j)=264.91/(rho0*Cp)
-     &                     *max(cos(2.*pi*(time/86400.-0.5)),0.)
-#  endif
+          enddo
         enddo
-      enddo
-# endif /* INNERSHELF */
+      else
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            srflx(i,j)=0.   ! default is 0.
+#  ifdef DIURNAL_INPUT_SRFLX
+            srflxbio(i,j)=srflx(i,j)
+#  endif
+          enddo
+        enddo
+      end if
 !$acc end kernels
       return
       end
@@ -603,6 +580,7 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical sea surface height climatology [m].
 !----------------------------------------------------------------------
 !
+      USE croco_namelist, ONLY: testcase_name
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -611,10 +589,10 @@ C$    integer  trd, omp_get_thread_num
 # include "scalars.h"
 # include "coupling.h"
       integer Istr,Iend,Jstr,Jend, i,j
-# if defined INTERNAL || defined ANA_TIDES
+# if defined BODYTIDE || defined ANA_TIDES
       real U0,omega,kwave,ETA0
 # endif
-# if defined RIP && defined ANA_TIDES
+# ifdef ANA_TIDES
       real surelev,omega1,omega2
       real tide_ampli_moy,tide_ampli_var
       real*QUAD mssh,area,cff1
@@ -630,99 +608,107 @@ C$    integer  trd, omp_get_thread_num
 !
 !  Set sea surface height (meters).
 !
-# ifdef JET
-!
+      select case (trim(testcase_name))
+      case ('ANA_JET', 'JET')
 !    --> climatology computed in ana_initial
-!
 
-# elif defined RIP && defined ANA_TIDES
+      case ('RIP', 'RIP_TOPO_2D', 'BISCA', 'GRANDPOPO')
+# ifdef ANA_TIDES
 !
 ! Remove mean sea level (mssh)
 !
-      mssh=QuadZero
-      area=QuadZero
-      do j=Jstr,Jend
-        do i=Istr,Iend
-          cff1=1./(pm(i,j)*pn(i,j))
-          mssh=mssh+cff1*Zt_avg1(i,j)
-          area=area+cff1
+        mssh=QuadZero
+        area=QuadZero
+        do j=Jstr,Jend
+          do i=Istr,Iend
+            cff1=1./(pm(i,j)*pn(i,j))
+            mssh=mssh+cff1*Zt_avg1(i,j)
+            area=area+cff1
+          enddo
         enddo
-      enddo
-      mssh=mssh/area
+        mssh=mssh/area
 #  ifdef MPI
-      call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
-     &                allmssh,1,MPI_DOUBLE_PRECISION,
-     &                          MPI_COMM_WORLD,ierr)
-      call MPI_ALLGATHER(area,1,MPI_DOUBLE_PRECISION,
-     &                allarea,1,MPI_DOUBLE_PRECISION,
-     &                          MPI_COMM_WORLD,ierr)
-      mssh=QuadZero
-      area=QuadZero
-      do i=1,NNODES
-        mssh=mssh+allmssh(1,i)*allarea(1,i)
-        area=area+allarea(1,i)
-      enddo
-      mssh=mssh/area
+        call MPI_ALLGATHER(mssh,1,MPI_DOUBLE_PRECISION,
+     &                  allmssh,1,MPI_DOUBLE_PRECISION,
+     &                            MPI_COMM_WORLD,ierr)
+        call MPI_ALLGATHER(area,1,MPI_DOUBLE_PRECISION,
+     &                  allarea,1,MPI_DOUBLE_PRECISION,
+     &                            MPI_COMM_WORLD,ierr)
+        mssh=QuadZero
+        area=QuadZero
+        do i=1,NNODES
+          mssh=mssh+allmssh(1,i)*allarea(1,i)
+          area=area+allarea(1,i)
+        enddo
+        mssh=mssh/area
 #  endif
-      mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
-      omega1=2.*pi/(14.*86400.)
-      omega2=2.*pi/(12.*3600. )
-      tide_ampli_moy=1.
-      tide_ampli_var=30./70.
-      surelev=1.
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j)=zeta(i,j,knew)-mssh
-     &                +tide_ampli_moy*(1.+tide_ampli_var
-     &                *sin(time*omega1))
-     &                *sin(time*omega2)
-     &                    +time*surelev/31536000.
+        mssh=nint(mssh*1.d6,kind=8)/1.d6 ! round to 6 digits
+        omega1=2.*pi/(14.*86400.)
+        omega2=2.*pi/(12.*3600. )
+        tide_ampli_moy=1.
+        tide_ampli_var=30./70.
+        surelev=1.
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            ssh(i,j)=zeta(i,j,knew)-mssh
+     &                  +tide_ampli_moy*(1.+tide_ampli_var
+     &                  *sin(time*omega1))
+     &                  *sin(time*omega2)
+     &                      +time*surelev/31536000.
+          enddo
         enddo
-      enddo
+# endif /* ANA_TIDES */
 
-# elif (defined TIDAL_FLAT  || defined ESTUARY ) && defined ANA_TIDES
-      omega=2.*pi/(12.0*3600)
-      ETA0=2.0
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j)=ETA0*sin(omega*time)
+      case ('TIDAL_FLAT', 'ESTUARY', 'ESTUARY_SQUARE')
+# ifdef ANA_TIDES
+        omega=2.*pi/(12.0*3600)
+        ETA0=2.0
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            ssh(i,j)=ETA0*sin(omega*time)
+          enddo
         enddo
-      enddo
-#  if defined ESTUARY_TIDE
-      ! adding another wave to modulate tide
-      omega=2.*pi/((24.0+50./60.)/2.*3600)
-      ETA0=2.0
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j) = ssh(i,j) + ETA0*sin(omega*time)
-        enddo
-      enddo
-#  endif
+# endif /* ANA_TIDES */
 
-# elif defined INTERNAL || defined ANA_TIDES
-      U0=0.02
-      omega=2.*pi/(12.4*3600)
-      kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
-      ETA0=kwave*h(1,1)*U0/omega
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
+      case ('INTERNAL')
+# ifdef BODYTIDE
+        U0=0.02
+        omega=2.*pi/(12.4*3600)
+        kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
+        ETA0=kwave*h(1,1)*U0/omega
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
+          enddo
         enddo
-      enddo
+# endif /* BODYTIDE */
 
-# elif defined DUNE
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
+      case ('DUNE', 'DUNE3D', 'ANA_DUNE')
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            ssh(i,j)=0.0464+xr(i,j)*(0.0394-0.0464)/xl
+          enddo
         enddo
-      enddo
+
+      case default
+# ifdef ANA_TIDES
+        U0=0.02
+        omega=2.*pi/(12.4*3600)
+        kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
+        ETA0=kwave*h(1,1)*U0/omega
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            ssh(i,j)=ETA0*sin(omega*time-kwave*(xr(i,j)))
+          enddo
+        enddo
 # else
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ssh(i,j)=0.
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            ssh(i,j)=0.
+          enddo
         enddo
-      enddo
 # endif
+      end select
 
 # ifdef WET_DRY
 !
@@ -762,61 +748,57 @@ C$    integer  trd, omp_get_thread_num
 !       Q_model ~ Q + dQdSST * (T_model - SST)
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: rho0, testcase_name
       implicit none
 # include "param.h"
 # include "grid.h"
 # include "forces.h"
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j
-# ifdef EQUATOR
       real y1,y2,sst1,sst2
-# endif
 !
 # include "compute_auxiliary_bounds.h"
 !
-# ifdef EQUATOR
+!$acc kernels if(compute_on_device) default(present)
+      select case (trim(testcase_name))
+      case ('EQUATOR')
 ! SST = 25C and lineraly decreases to 10C 1200km from the Equator.
-      y1=1200.E+3
-      y2=1500.E+3
-      sst1=10.
-      sst2=25.
-!$acc kernels if(compute_on_device) default(present)
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sst(i,j)=sst1
-          if ((yr(i,j).gt.-y1).and.(yr(i,j).lt.y1)) then
-            sst(i,j)=sst2
-          else
-            if ((yr(i,j).gt.-y2).and.(yr(i,j).lt.-y1)) then
-              sst(i,j)=((sst2-sst1)*yr(i,j)-sst1*y1+y2*sst2)/(y2-y1)
+        y1=1200.E+3
+        y2=1500.E+3
+        sst1=10.
+        sst2=25.
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sst(i,j)=sst1
+            if ((yr(i,j).gt.-y1).and.(yr(i,j).lt.y1)) then
+              sst(i,j)=sst2
+            else
+              if ((yr(i,j).gt.-y2).and.(yr(i,j).lt.-y1)) then
+                sst(i,j)=((sst2-sst1)*yr(i,j)-sst1*y1+y2*sst2)/(y2-y1)
+              endif
+              if ((yr(i,j).gt.y1).and.(yr(i,j).lt.y2)) then
+                sst(i,j)=((sst2-sst1)*yr(i,j)+sst1*y1-y2*sst2)/(y1-y2)
+              endif
             endif
-            if ((yr(i,j).gt.y1).and.(yr(i,j).lt.y2)) then
-              sst(i,j)=((sst2-sst1)*yr(i,j)+sst1*y1-y2*sst2)/(y1-y2)
-            endif
-          endif
-          dqdt(i,j)=-50.0/(rho0*Cp)
+            dqdt(i,j)=-50.0/(rho0*Cp)
+          enddo
         enddo
-      enddo
-!$acc end kernels      
-# elif defined INNERSHELF
-!$acc kernels if(compute_on_device) default(present)
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sst(i,j)=24.
-          dqdt(i,j)=-50.0/(rho0*Cp)
+      case ('INNERSHELF', 'INNERSHELF_EKMAN')
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sst(i,j)=24.
+            dqdt(i,j)=-50.0/(rho0*Cp)
+          enddo
         enddo
-      enddo
+      case default
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            sst(i,j)=25
+            dqdt(i,j)=0.
+          enddo
+        enddo
+      end select
 !$acc end kernels
-# else
-!$acc kernels if(compute_on_device) default(present)
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          sst(i,j)=25
-          dqdt(i,j)=0.
-        enddo
-      enddo
-!$acc end kernels
-# endif
       return
       end
 #endif /* ANA_SST && QCORRECTION */
@@ -873,6 +855,7 @@ C$    integer  trd, omp_get_thread_num
 !     itrc      Tracer type array index.
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: rho0, testcase_name
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -892,13 +875,13 @@ c
 !
         do j=JstrR,JendR
           do i=IstrR,IendR
-#   if defined SINGLE_COLUMN && defined WILLIS_DEARDORFF
-            stflx(i,j,itemp)= - 100./(rho0*Cp)
-#   elif defined SINGLE_COLUMN && defined DIURNAL_CYCLE
-            stflx(i,j,itemp)= srflx(i,j) - 75./(rho0*Cp)
-#   else
-            stflx(i,j,itemp)=0.
-#   endif
+            if (trim(testcase_name) == 'SC_WILLIS_DEARDORFF') then
+              stflx(i,j,itemp)= - 100./(rho0*Cp)
+            elseif (trim(testcase_name) == 'SC_DIURNAL_CYCLE') then
+              stflx(i,j,itemp)= srflx(i,j) - 75./(rho0*Cp)
+            else
+              stflx(i,j,itemp)=0.
+            endif
           enddo
         enddo
       endif
@@ -977,6 +960,7 @@ C$    integer  trd, omp_get_thread_num
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
 # endif
+      USE croco_namelist, ONLY: testcase_name, R0, Tcoef
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -986,9 +970,7 @@ C$    integer  trd, omp_get_thread_num
 # include "sediment.h"
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    cff,cff1
-# ifdef IGW
       real    sig,rhom,depth
-# endif
 # if defined SUBSTANCE || defined SEDIMENT
       integer iv
 # endif
@@ -996,55 +978,55 @@ C$    integer  trd, omp_get_thread_num
 # include "compute_auxiliary_bounds.h"
 !
 # ifdef ANA_TCLIMA
-#  ifdef JET
-!
+      select case (trim(testcase_name))
+      case ('ANA_JET', 'JET')
 !        --> climatology computed in ana_initial
-!
-#  elif defined IGW
-      cff=((2.e-3)**2)/g
-      rhom=1027.037885
-      do k=1,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            depth = -z_r(i,j,k)
+
+      case ('IGW')
+        cff=((2.e-3)**2)/g
+        rhom=1027.037885
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              depth = -z_r(i,j,k)
 #   ifdef EXPERIMENT1
-            if(depth.le.50.) then
-              sig = 25.0
-            elseif( depth.gt.50. .and. depth.le.60.) then
-              sig = 26.2 + rhom*(depth-50.)*cff
-              sig = sig + 1.2*(depth-60.)/10.
-            else
-              sig = 26.2 + rhom*(depth-50.)*cff
-            endif
-            tclm(i,j,k,itemp)=(R0-sig)/Tcoef
+              if(depth.le.50.) then
+                sig = 25.0
+              elseif( depth.gt.50. .and. depth.le.60.) then
+                sig = 26.2 + rhom*(depth-50.)*cff
+                sig = sig + 1.2*(depth-60.)/10.
+              else
+                sig = 26.2 + rhom*(depth-50.)*cff
+              endif
+              tclm(i,j,k,itemp)=(R0-sig)/Tcoef
 #   elif defined EXPERIMENT2
-            if (depth.le.50.) then
-             sig = 25.8
-            else
-             sig = 27.0
-            endif
-            tclm(i,j,k,itemp)=(R0-sig)/Tcoef
+              if (depth.le.50.) then
+               sig = 25.8
+              else
+               sig = 27.0
+              endif
+              tclm(i,j,k,itemp)=(R0-sig)/Tcoef
 #   else /* default EXPERIMENT3 */
-            sig = 26.2 + rhom*(depth-50.)*cff
-            tclm(i,j,k,itemp)=(R0-sig)/Tcoef
+              sig = 26.2 + rhom*(depth-50.)*cff
+              tclm(i,j,k,itemp)=(R0-sig)/Tcoef
 #   endif
+            enddo
           enddo
         enddo
-      enddo
-#  else
-      do k=1,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
+      case default
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
 #   ifdef TEMPERATURE
-            tclm(i,j,k,itemp)=t(i,j,k,1,itemp)
+              tclm(i,j,k,itemp)=t(i,j,k,1,itemp)
 #   endif /* TEMPERATURE */
 #   ifdef SALINITY
-            tclm(i,j,k,isalt)=t(i,j,k,1,isalt)
+              tclm(i,j,k,isalt)=t(i,j,k,1,isalt)
 #   endif /* SALINITY */
+            enddo
           enddo
         enddo
-      enddo
-#  endif /* JET */
+      end select
 # endif
 
 # ifdef BIOLOGY
@@ -1386,6 +1368,7 @@ C$    integer  trd, omp_get_thread_num
 !  This routine sets analytical momentum climatology fields.
 !----------------------------------------------------------------------
 !
+      USE croco_namelist, ONLY: testcase_name
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1394,7 +1377,7 @@ C$    integer  trd, omp_get_thread_num
 # include "climat.h"
 # include "scalars.h"
       integer Istr,Iend,Jstr,Jend, i,j,k
-# if defined INTERNAL || defined ANA_TIDES
+# if defined BODYTIDE || defined ANA_TIDES
       real U0,omega,kwave,V0
 # endif
       real ramp
@@ -1418,44 +1401,63 @@ C$    integer  trd, omp_get_thread_num
 # endif
 !
 # if defined ANA_M2CLIMA && defined M2CLIMATOLOGY
-#  if defined INTERNAL || (defined ANA_TIDES && !defined RIP  && !defined TIDAL_FLAT && !defined ESTUARY)
-      U0=0.02
-      omega=2.*pi/(12.4*3600)
-      kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
-      V0=f(1,1)*U0/omega
-      do j=JU_RANGE
-        do i=IU_RANGE
-          ubclm(i,j)=U0*sin(omega*time-kwave*0.5*(xr(i,j)+xr(i-1,j)))
+      select case (trim(testcase_name))
+      case ('INTERNAL')
+# ifdef BODYTIDE
+        U0=0.02
+        omega=2.*pi/(12.4*3600)
+        kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
+        V0=f(1,1)*U0/omega
+        do j=JU_RANGE
+          do i=IU_RANGE
+            ubclm(i,j)=U0*sin(omega*time-kwave*0.5*(xr(i,j)+xr(i-1,j)))
+          enddo
         enddo
-      enddo
-      do j=JV_RANGE
-        do i=IV_RANGE
-          vbclm(i,j)=V0*cos(omega*time-kwave*0.5*(xr(i,j)+xr(i,j-1)))
+        do j=JV_RANGE
+          do i=IV_RANGE
+            vbclm(i,j)=V0*cos(omega*time-kwave*0.5*(xr(i,j)+xr(i,j-1)))
+          enddo
         enddo
-      enddo
-#  elif defined JET
-!
+# endif /* BODYTIDE */
+      case ('ANA_JET', 'JET')
 !       --> climatology computed in ana_initial
-!
-#  elif defined DUNE
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-#   ifdef ANA_DUNE
-          ubclm(i,j)=1.67
-#   else
-          ubclm(i,j)=0.58
-#   endif
-          vbclm(i,j)=0.
+
+      case ('DUNE', 'DUNE3D', 'ANA_DUNE')
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            if (trim(testcase_name) == 'ANA_DUNE') then
+              ubclm(i,j)=1.67
+            else
+              ubclm(i,j)=0.58
+            endif
+            vbclm(i,j)=0.
+          enddo
         enddo
-      enddo
-#  else
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          ubclm(i,j)=0.
-          vbclm(i,j)=0.
+      case default
+# ifdef ANA_TIDES
+        U0=0.02
+        omega=2.*pi/(12.4*3600)
+        kwave=sqrt(((omega*omega)-(f(1,1)*f(1,1)))/(g*h(1,1)))
+        V0=f(1,1)*U0/omega
+        do j=JU_RANGE
+          do i=IU_RANGE
+            ubclm(i,j)=U0*sin(omega*time-kwave*0.5*(xr(i,j)+xr(i-1,j)))
+          enddo
         enddo
-      enddo
-#  endif
+        do j=JV_RANGE
+          do i=IV_RANGE
+            vbclm(i,j)=V0*cos(omega*time-kwave*0.5*(xr(i,j)+xr(i,j-1)))
+          enddo
+        enddo
+# else
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            ubclm(i,j)=0.
+            vbclm(i,j)=0.
+          enddo
+        enddo
+# endif
+      end select
 #  if defined BD_EXCHANGE
       call exchange_u2d_tile (Istr,Iend,Jstr,Jend,  ubclm)
       call exchange_v2d_tile (Istr,Iend,Jstr,Jend,  vbclm)
@@ -1463,20 +1465,18 @@ C$    integer  trd, omp_get_thread_num
 # endif
 
 # if defined ANA_M3CLIMA && defined M3CLIMATOLOGY && defined SOLVE3D
-#  ifdef JET
-!
-!       --> climatology computed in ana_initial
-!
-#  else
-      do k=1,N
-        do j=JstrR,JendR
-          do i=IstrR,IendR
-            uclm(i,j,k)=0.
-            vclm(i,j,k)=0.
+      if (trim(testcase_name) /= 'ANA_JET' .and.
+     &    trim(testcase_name) /= 'JET') then
+        do k=1,N
+          do j=JstrR,JendR
+            do i=IstrR,IendR
+              uclm(i,j,k)=0.
+              vclm(i,j,k)=0.
+            enddo
           enddo
         enddo
-      enddo
-#  endif
+      end if
+!     else: --> climatology computed in ana_initial
 #  if defined BD_EXCHANGE
       call exchange_u3d_tile (Istr,Iend,Jstr,Jend,  uclm)
       call exchange_v3d_tile (Istr,Iend,Jstr,Jend,  vclm)
@@ -1627,6 +1627,7 @@ C$    integer  trd, omp_get_thread_num
 !  and period used in the bottom boundary layer formulation.
 !----------------------------------------------------------------------
 !
+      USE croco_namelist, ONLY: testcase_name
       implicit none
       real wamp,wdir,wprd,
      &     ho,khd,kh,kw,kr,ks,wday,ramp,cff,co,gamw,
@@ -1648,113 +1649,108 @@ C$    integer  trd, omp_get_thread_num
 !  Set wind induced wave amplitude (m), direction (radians) and
 !  period (s) at RHO-points.
 !
-# ifdef SHOREFACE
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          Awave(i,j)=0.707           ! wave amplitude (m)
-          Dwave(i,j)=-10.*deg2rad    ! wave direction (rad)
-          Pwave(i,j)=10.             ! wave period (s)
+      if (trim(testcase_name) == 'SHOREFACE') then
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            Awave(i,j)=0.707           ! wave amplitude (m)
+            Dwave(i,j)=-10.*deg2rad    ! wave direction (rad)
+            Pwave(i,j)=10.             ! wave period (s)
+          enddo
         enddo
-      enddo
-      wamp = Awave(i,j)
-      wdir = Dwave(i,j)
-      wprd = Pwave(i,j)
-      cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
-      ho=h(1,1)             ! offshore depth
+        wamp = Awave(i,j)
+        wdir = Dwave(i,j)
+        wprd = Pwave(i,j)
+        cfrq = 2.0*pi/wprd    ! peak wave frequency (rad/s)
+        ho=h(1,1)             ! offshore depth
 #  ifdef OBC_EAST
 #   ifdef MPI
-        ho=h(LLm/NP_XI,1)
-        call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
-     &                     NP_XI-1, MPI_COMM_WORLD, ierr)
+          ho=h(LLm/NP_XI,1)
+          call MPI_Bcast(ho, 1, MPI_DOUBLE_PRECISION,
+     &                       NP_XI-1, MPI_COMM_WORLD, ierr)
 #   else
-        ho=h(LLm,1)
+          ho=h(LLm,1)
 #   endif
 #  endif
-      khd = ho*cfrq*cfrq/g
-      kh  = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
-     &               +khd*(0.3555555555 + khd*(0.1608465608
-     &               +khd*(0.0632098765 + khd*(0.0217540484
-     &                               +khd*0.0065407983)))))) )
-      co=sqrt(g/kh*ho*tanh(kh))
-      cgo=co*0.5*(1.+2.*kh/sinh(2.*kh))
-      do j=jstrR,jendR
-        do i=istrR,iendR
-          dsup=0.
-          do k=1,4
-            dd = h(i,j) + z_w(i,j,N) + dsup
-            khd = dd*cfrq*cfrq/g
-            kh = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
-     &                    +khd*(0.3555555555 + khd*(0.1608465608
-     &                    +khd*(0.0632098765 + khd*(0.0217540484
-     &                                    +khd*0.0065407983)))))) )
-            kw=kh/max(dd,eps)
-            cw=sqrt(g/kw*tanh(kh))
-            nw=0.5*(1.+2.*kh/sinh(2.*kh))  ! n=Cg/C
-            ks=sqrt(cgo/(2.*nw*cw))        ! shoaling coefficient
-            kr=sqrt(cos(wdir)/cos(wdir))   ! refraction coefficient
-            cosw=cos(wdir)
-            sinw=sin(wdir)
-            gamw=0.55
-            cff1=gamw*dd
-            cff2=2.0*wamp*ks*kr
-            wh=min(cff1,cff2)
-            dsup=-0.125*(wh**2)*kw/sinh(2.*kw*dd) ! wave set-up
-          enddo
-!
-!  Fill global arrays
-!
-          whrm(i,j)=wh
-          wfrq(i,j)=sqrt(g*kw*tanh(kw*dd))
-          wdrx(i,j)=cosw
-          wdre(i,j)=sinw
+        khd = ho*cfrq*cfrq/g
+        kh  = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
+     &                 +khd*(0.3555555555 + khd*(0.1608465608
+     &                 +khd*(0.0632098765 + khd*(0.0217540484
+     &                                 +khd*0.0065407983)))))) )
+        co=sqrt(g/kh*ho*tanh(kh))
+        cgo=co*0.5*(1.+2.*kh/sinh(2.*kh))
+        do j=jstrR,jendR
+          do i=istrR,iendR
+            dsup=0.
+            do k=1,4
+              dd = h(i,j) + z_w(i,j,N) + dsup
+              khd = dd*cfrq*cfrq/g
+              kh = sqrt(    khd*khd + khd/(1.0 + khd*(0.6666666666
+     &                      +khd*(0.3555555555 + khd*(0.1608465608
+     &                      +khd*(0.0632098765 + khd*(0.0217540484
+     &                                      +khd*0.0065407983)))))) )
+              kw=kh/max(dd,eps)
+              cw=sqrt(g/kw*tanh(kh))
+              nw=0.5*(1.+2.*kh/sinh(2.*kh))  ! n=Cg/C
+              ks=sqrt(cgo/(2.*nw*cw))        ! shoaling coefficient
+              kr=sqrt(cos(wdir)/cos(wdir))   ! refraction coefficient
+              cosw=cos(wdir)
+              sinw=sin(wdir)
+              gamw=0.55
+              cff1=gamw*dd
+              cff2=2.0*wamp*ks*kr
+              wh=min(cff1,cff2)
+              dsup=-0.125*(wh**2)*kw/sinh(2.*kw*dd) ! wave set-up
+            enddo
+            whrm(i,j)=wh
+            wfrq(i,j)=sqrt(g*kw*tanh(kw*dd))
+            wdrx(i,j)=cosw
+            wdre(i,j)=sinw
 #  ifdef WET_DRY
-          if (h(i,j)+z_w(i,j,N).le.Dcrit(i,j)+eps) then
-            whrm(i,j)=0.
-            wfrq(i,j)=0.
-            wdrx(i,j)=0.
-            wdre(i,j)=0.
-          endif
+            if (h(i,j)+z_w(i,j,N).le.Dcrit(i,j)+eps) then
+              whrm(i,j)=0.
+              wfrq(i,j)=0.
+              wdrx(i,j)=0.
+              wdre(i,j)=0.
+            endif
 #  endif
+          enddo
         enddo
-      enddo
-
-# else
-      do j=JstrR,JendR
-        do i=IstrR,IendR
-          Awave(i,j)=0.707            ! wave amplitude (m)
-          Dwave(i,j)=-10.*deg2rad     ! wave direction (rad)
-          Pwave(i,j)=10.              ! wave period (s)
+      else
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            Awave(i,j)=0.707            ! wave amplitude (m)
+            Dwave(i,j)=-10.*deg2rad     ! wave direction (rad)
+            Pwave(i,j)=10.              ! wave period (s)
+          enddo
         enddo
-      enddo
 #  ifdef MRL_WCI
-      Hrms=2.*Awave(1,1)         ! offshore RMS wave height (m)
-      cfrq=2.*pi/Pwave(1,1)      ! peak wave frequency (rad/s)
-      wdir=Dwave(1,1)            ! wave direction (rad)
+        Hrms=2.*Awave(1,1)         ! offshore RMS wave height (m)
+        cfrq=2.*pi/Pwave(1,1)      ! peak wave frequency (rad/s)
+        wdir=Dwave(1,1)            ! wave direction (rad)
 !
 !  Fill global arrays
 !
-      do j=jstr-1,jend+1
-        do i=istr-1,iend+1
-          whrm(i,j)=Hrms
-          wfrq(i,j)=cfrq
-          wdrx(i,j)=cos(wdir)
-          wdre(i,j)=sin(wdir)
-!  limit Hrms in surfzone
-          gamw=0.55
-          dd=h(i,j)+z_w(i,j,N)
-          whrm(i,j)=min(whrm(i,j),gamw*dd)
+        do j=jstr-1,jend+1
+          do i=istr-1,iend+1
+            whrm(i,j)=Hrms
+            wfrq(i,j)=cfrq
+            wdrx(i,j)=cos(wdir)
+            wdre(i,j)=sin(wdir)
+            gamw=0.55
+            dd=h(i,j)+z_w(i,j,N)
+            whrm(i,j)=min(whrm(i,j),gamw*dd)
 #   ifdef WET_DRY
-          if (h(i,j)+z_w(i,j,N) .lt. Dcrit(i,j)+eps) then
-            whrm(i,j)=0.
-            wfrq(i,j)=0.
-            wdrx(i,j)=0.
-            wdre(i,j)=0.
-          endif
+            if (h(i,j)+z_w(i,j,N) .lt. Dcrit(i,j)+eps) then
+              whrm(i,j)=0.
+              wfrq(i,j)=0.
+              wdrx(i,j)=0.
+              wdre(i,j)=0.
+            endif
 #   endif
+          enddo
         enddo
-      enddo
 #  endif /* MRL_WCI */
-# endif /* SHOREFACE or else */
+      end if ! SHOREFACE or else
       return
       end
 #endif /* ANA_WWAVE */
@@ -1790,6 +1786,7 @@ C$    integer  trd, omp_get_thread_num
 !
 !----------------------------------------------------------------------
 !
+      use croco_namelist, only: testcase_name
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1955,13 +1952,14 @@ C$    integer  trd, omp_get_thread_num
         enddo
       enddo
 
-#  if defined SED_TOY_RESUSP || defined SED_TOY_CONSOLID
-      bed_bctr(:,:,:) = 5.2
-      bed_bctr(:,:,1) = 0.03
-      bed_bctr(:,:,2) = 0.0911460784453711
-      bed_bctr(:,:,3) = 0.918694902789539
-      bed_bctr(:,:,4) = 3.54929559677213
-#  endif
+      if (trim(testcase_name) == 'SED_TOY_RESUSP' .or.
+     &    trim(testcase_name) == 'SED_TOY_CONSOLID') then
+        bed_bctr(:,:,:) = 5.2
+        bed_bctr(:,:,1) = 0.03
+        bed_bctr(:,:,2) = 0.0911460784453711
+        bed_bctr(:,:,3) = 0.918694902789539
+        bed_bctr(:,:,4) = 3.54929559677213
+      endif
 
 # endif
 
@@ -2020,6 +2018,7 @@ C$    integer  trd, omp_get_thread_num
 !----------------------------------------------------------------------
 !
       subroutine ana_psource_tile (Istr,Iend,Jstr,Jend)
+      use croco_namelist, only: dt, testcase_name
       implicit none
 # include "param.h"
 # include "scalars.h"
@@ -2037,7 +2036,8 @@ C$    integer  trd, omp_get_thread_num
 !
 ! Set-up nondimensional shape Qshape, must add to unity
 !
-# ifdef RIVER
+      select case (trim(testcase_name))
+      case ('RIVER')
 
 #  ifdef PSOURCE_MASS
      !if the source is applied as volume vertical influx
@@ -2104,7 +2104,7 @@ C$    integer  trd, omp_get_thread_num
         enddo
 #  endif
 
-# elif defined SEAGRASS
+      case ('SEAGRASS')
 
         cff=1./float(N)
         do k=1,N                       ! Uniform vertical
@@ -2113,36 +2113,7 @@ C$    integer  trd, omp_get_thread_num
           enddo
         enddo
 
-# elif defined REGIONAL
-#  define EXP_SHAPE
-#  ifdef CST_SHAPE
-        cff=1./float(N)
-        do k=1,N                       ! Uniform vertical
-          do is=1,Nsrc                 ! distribution
-            Qshape(is,k)=cff
-          enddo
-        enddo
-#  elif defined EXP_SHAPE
-        do is=1,Nsrc
-#   ifdef MPI
-          i=Isrc_mpi(is,mynode)
-          j=Jsrc_mpi(is,mynode)
-#   else
-          i=Isrc(is)
-          j=Jsrc(is)
-#   endif
-#   ifdef MPI
-          if (IstrR.le.i .and. i.le.IendR .and.
-     &       JstrR.le.j .and. j.le.JendR) then
-#   endif
-             call get_qshape_exp(Qshape(is,:), h(i,j), hinv(i,j))
-#   ifdef MPI
-          endif
-#   endif 
-        enddo
-#  endif
-
-# else
+      case default
 #  define EXP_SHAPE
 #  ifdef CST_SHAPE
         cff=1./float(N)
@@ -2170,7 +2141,7 @@ C$    integer  trd, omp_get_thread_num
 #   endif
         enddo
 #  endif
-# endif /* RIVER || SEAGRASS || REGIONAL */
+      end select ! testcase_name
 
         do is=1,Nsrc
           Qbar0(is)=Qbar(is)
@@ -2212,11 +2183,12 @@ C$    integer  trd, omp_get_thread_num
 !  Set-up tracer (tracer units) point Sources/Sinks.
 !
 # ifdef SOLVE3D
-#  if defined RIVER || defined SEAGRASS
-      do k=1,N
-        do is=1,Nsrc
+      if (trim(testcase_name) == 'RIVER' .or.
+     &    trim(testcase_name) == 'SEAGRASS') then
+        do k=1,N
+          do is=1,Nsrc
 #   ifdef TEMPERATURE
-          Tsrc(is,k,itemp)=Tsrc0(is,itemp)
+            Tsrc(is,k,itemp)=Tsrc0(is,itemp)
 !          Tsrc(is,k,itemp)=4.+10.*exp(z_r(Isrc(is),Jsrc(is),k)/50.)
 #   endif
 #   ifdef SALINITY
@@ -2236,54 +2208,60 @@ C$    integer  trd, omp_get_thread_num
             Tsrc(is,k,itrc)=Tsrc0(is,itrc)
           enddo
 #   endif
+          enddo
         enddo
-      enddo
-#  elif defined REGIONAL
-      do k=1,N
-         do is=1,Nsrc
+      else
+        if (len_trim(testcase_name) == 0) then
+          do k=1,N
+            do is=1,Nsrc
 #   ifdef PSOURCE_NCFILE_TS
 #    ifdef TEMPERATURE
-           if (.not.got_tsrc(itemp)) then
-              Tsrc0(is,itemp)=5.
-           endif
+              if (.not.got_tsrc(itemp)) then
+                Tsrc0(is,itemp)=5.
+              endif
 #    endif
 #    ifdef SALINITY
-           if (.not.got_tsrc(isalt)) then
-              Tsrc0(is,isalt)=2.
-           endif
+              if (.not.got_tsrc(isalt)) then
+                Tsrc0(is,isalt)=2.
+              endif
 #    endif
 #   endif
-
 #   ifdef TRACERS
-           do itrc=1,NT
-             Tsrc(is,k,itrc)=Tsrc0(is,itrc)
-           enddo
+              do itrc=1,NT
+                Tsrc(is,k,itrc)=Tsrc0(is,itrc)
+              enddo
+#   endif
+#   ifdef SUBSTANCE
+          do itrc=itsubs1,itsubs2
+            Tsrc(is,k,itrc)=Tsrc0(is,itrc)
+          enddo
 #   endif
 #   ifdef PASSIVE_TRACER
 #    ifdef PSOURCE_NCFILE_TS
-           if (.not.got_tsrc(itpas)) then
-              Tsrc0(is,itpas)=1.
-           endif
+              if (.not.got_tsrc(itpas)) then
+                Tsrc0(is,itpas)=1.
+              endif
 #    endif
-           Tsrc(is,k,itpas)=Tsrc0(is,itpas)
+              Tsrc(is,k,itpas)=Tsrc0(is,itpas)
 #   endif
 #   ifdef SEDIMENT
-          do itrc=1,NST
-            ised=itrc_sed+itrc-1
-            Tsrc(is,k,ised)=Tsrc0(is,ised)
-          enddo
+              do itrc=1,NST
+                ised=itrc_sed+itrc-1
+                Tsrc(is,k,ised)=Tsrc0(is,ised)
+              enddo
 #   endif
-         enddo
-       enddo
-#  else
-      do k=1,N
-        do is=1,Nsrc
-          do itrc=1,NT
-            Tsrc(is,k,itrc)=Tsrc0(is,itrc)
+            enddo
           enddo
-        enddo
-      enddo
-#  endif /* RIVER || SEAGRASS || REGIONAL */
+        else
+          do k=1,N
+            do is=1,Nsrc
+              do itrc=1,NT
+                Tsrc(is,k,itrc)=Tsrc0(is,itrc)
+              enddo
+            enddo
+          enddo
+        end if
+      end if ! RIVER/SEAGRASS or else
 !
 !  Set-up biology tracer (tracer units) point Sources/Sinks.
 !
@@ -2564,6 +2542,7 @@ C$    integer  trd, omp_get_thread_num
       end
 
       subroutine get_qshape_exp(Qshapeij, hij, hinvij)
+        use croco_namelist, only: hc
         implicit none
 # include "param.h"
 # include "scalars.h"
@@ -2638,6 +2617,13 @@ C$    integer  trd, omp_get_thread_num
 !  Set analytical boundary forcing
 !----------------------------------------------------------------------
 !
+      USE croco_namelist, only: dt, testcase_name
+# ifdef WAVE_MAKER
+      USE croco_namelist, only: wmaker_amp, wmaker_prd, wmaker_dir,
+     &                          wmaker_dsp, wmaker_fsp,
+     &                          wmaker_wf1, wmaker_wf2,
+     &                          wmaker_wa1, wmaker_wa2
+# endif
 # ifdef SUBSTANCE
       USE comsubstance, ONLY: cobc_wat
 # endif
@@ -2645,6 +2631,7 @@ C$    integer  trd, omp_get_thread_num
       integer Istr,Iend,Jstr,Jend, i,j,k, itrc
       real    eps
       parameter (eps=1.e-10)
+      logical ltidal
 # if defined WAVE_MAKER || defined WAVE_MAKER_INTERNAL
       integer iw,jw, jwtt0,jwtt
       real    Du,Dv,Zu,Zv,Zr,Dr,xu,yu,xv,yv,x0,y0,time0,
@@ -2677,6 +2664,10 @@ C$    integer  trd, omp_get_thread_num
 !
 # include "compute_auxiliary_bounds.h"
 
+      ltidal = trim(testcase_name) == 'TIDAL_FLAT' .or.
+     &         trim(testcase_name) == 'ESTUARY' .or.
+     &         trim(testcase_name) == 'ESTUARY_SQUARE'
+
 # ifdef OBC_WEST
 !
 !================== WESTERN BOUNDARY ======================
@@ -2705,75 +2696,108 @@ C$    integer  trd, omp_get_thread_num
             zetabry_west(j)=zetabry_west(j)
      &                     -(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    if defined TIDAL_FLAT || defined ESTUARY
-            zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
-#     if defined ESTUARY_TIDE
-            ! adding another wave to modulate tide
-            zetabry_west(j) = zetabry_west(j) +
-     &          2.*sin(2.*pi*time/((24.0+50./60.)/2.*3600.0))
-#     endif
-#    endif
           enddo
+          if (ltidal) then
+            do j=JstrR,JendR
+              zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+            enddo
+          endif
 #   endif
 #   ifdef M2_FRC_BRY
-          do j=JstrR,JendR
-#    if defined TIDAL_FLAT || defined ESTUARY
-            ubarbry_west(j)=0.
-#    else
-            ubarbry_west(j)=ubar(1,j,1)
-#    endif
-            vbarbry_west(j)=vbar(0,j,1)
-          enddo
+          if (ltidal) then
+            do j=JstrR,JendR
+              ubarbry_west(j)=0.
+              vbarbry_west(j)=vbar(0,j,1)
+            enddo
+          else
+            do j=JstrR,JendR
+              ubarbry_west(j)=ubar(1,j,1)
+              vbarbry_west(j)=vbar(0,j,1)
+            enddo
+          endif
 #   endif
 #   if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
-          do k=1,N
-            do j=JstrR,JendR
 #    ifdef M3_FRC_BRY
-#     if defined TIDAL_FLAT || defined ESTUARY
-              ubry_west(j,k)=0.
-#     else
-              ubry_west(j,k)=u(1,j,k,1)
-#     endif
-              vbry_west(j,k)=v(0,j,k,1)
+          if (ltidal) then
+            do k=1,N
+              do j=JstrR,JendR
+                ubry_west(j,k)=0.
+                vbry_west(j,k)=v(0,j,k,1)
+              enddo
+            enddo
+          else
+            do k=1,N
+              do j=JstrR,JendR
+                ubry_west(j,k)=u(1,j,k,1)
+                vbry_west(j,k)=v(0,j,k,1)
+              enddo
+            enddo
+          endif
 #    endif
 #    ifdef W_FRC_BRY
+          do k=1,N
+            do j=JstrR,JendR
               wbry_west(j,k)=wz(0,j,k,1)
+            enddo
+          enddo
 #    endif
 #    if defined T_FRC_BRY && defined TRACERS
+          do k=1,N
+            do j=JstrR,JendR
               do itrc=1,NT
                 tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
               enddo
-#    endif
-#    ifdef SUBSTANCE
-#     if defined TIDAL_FLAT || defined ESTUARY
-            tbry_west(j,k,1)=10.
-            tbry_west(j,k,2)=35.5
-#     else
-            do itrc=1,itsubs1-1
-              tbry_west(j,k,itrc)=0.
-            enddo
-#     endif
-            do itrc=itsubs1,NT
-              tbry_west(j,k,itrc)=cobc_wat(itrc)
-            enddo
-#    else
-#     if defined TIDAL_FLAT
-            tbry_west(j,k,1)=10.
-            tbry_west(j,k,2)=35.5
-            tbry_west(j,k,3)=0.   ! tracer Coarse Sand
-            tbry_west(j,k,4)=0.   ! tracer Fine Sand
-            tbry_west(j,k,5)=0.02 ! tracer Mud
-#     endif
-#     if defined ESTUARY
-            tbry_west(j,k,1)=10.
-            tbry_west(j,k,2)=35.5
-            tbry_west(j,k,3)=0.0   ! tracer Fine Sand
-            tbry_west(j,k,4)=0.0   ! tracer Mud
-#     endif
-#    endif
             enddo
           enddo
+#    endif
+#    ifdef SUBSTANCE
+          if (ltidal) then
+            do k=1,N
+              do j=JstrR,JendR
+                tbry_west(j,k,1)=10.
+                tbry_west(j,k,2)=35.5
+              enddo
+            enddo
+          else
+            do k=1,N
+              do j=JstrR,JendR
+                do itrc=1,itsubs1-1
+                  tbry_west(j,k,itrc)=0.
+                enddo
+              enddo
+            enddo
+          endif
+          do k=1,N
+            do j=JstrR,JendR
+              do itrc=itsubs1,NT
+                tbry_west(j,k,itrc)=cobc_wat(itrc)
+              enddo
+            enddo
+          enddo
+#    else
+          if (trim(testcase_name) == 'TIDAL_FLAT') then
+            do k=1,N
+              do j=JstrR,JendR
+                tbry_west(j,k,1)=10.
+                tbry_west(j,k,2)=35.5
+                tbry_west(j,k,3)=0.   ! tracer Coarse Sand
+                tbry_west(j,k,4)=0.   ! tracer Fine Sand
+                tbry_west(j,k,5)=0.02 ! tracer Mud
+              enddo
+            enddo
+          elseif (trim(testcase_name) == 'ESTUARY' .or.
+     &            trim(testcase_name) == 'ESTUARY_SQUARE') then
+            do k=1,N
+              do j=JstrR,JendR
+                tbry_west(j,k,1)=10.
+                tbry_west(j,k,2)=35.5
+                tbry_west(j,k,3)=0.0   ! tracer Fine Sand
+                tbry_west(j,k,4)=0.0   ! tracer Mud
+              enddo
+            enddo
+          endif
+#    endif
 #   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
         else
 #   ifdef Z_FRC_BRY
@@ -2782,15 +2806,12 @@ C$    integer  trd, omp_get_thread_num
 #    ifdef OBC_PATM
             zetabry_west(j)=-(patm2d(Istr,j)-paref)/(g*rho0)
 #    endif
-#    if defined TIDAL_FLAT || defined ESTUARY
-            zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
-#     if defined ESTUARY_TIDE
-            ! adding another wave to modulate tide
-            zetabry_west(j) = zetabry_west(j) +
-     &          2.*sin(2.*pi*time/((24.0+50./60.)/2.*3600.0))
-#     endif
-#    endif
           enddo
+          if (ltidal) then
+            do j=JstrR,JendR
+              zetabry_west(j)=2.*sin(2.*pi*time/(12.0*3600.0))
+            enddo
+          endif
 #   endif
 #   ifdef M2_FRC_BRY
           do j=JstrR,JendR
@@ -2800,49 +2821,78 @@ C$    integer  trd, omp_get_thread_num
 #   endif
 #   if defined SOLVE3D && \
      (defined M3_FRC_BRY || defined W_FRC_BRY || defined T_FRC_BRY)
+#    ifdef M3_FRC_BRY
           do k=1,N
             do j=JstrR,JendR
-#    ifdef M3_FRC_BRY
               ubry_west(j,k)=0.0
               vbry_west(j,k)=0.0
+            enddo
+          enddo
 #    endif
 #    ifdef W_FRC_BRY
+          do k=1,N
+            do j=JstrR,JendR
               wbry_west(j,k)=wz(0,j,k,1)
+            enddo
+          enddo
 #    endif
 #    ifdef T_FRC_BRY
 #     ifdef SUBSTANCE
-#      if defined TIDAL_FLAT || defined ESTUARY
-             tbry_west(j,k,1)=10.
-             tbry_west(j,k,2)=35.5
-#      else
-             do itrc=1,itsubs1-1
-               tbry_west(j,k,itrc)=0.
-             enddo
-#      endif
-             do itrc=itsubs1,NT
-               tbry_west(j,k,itrc)=cobc_wat(itrc)
-             enddo
-#     else
-#      if defined TIDAL_FLAT
-             tbry_west(j,k,1)=10.
-             tbry_west(j,k,2)=35.
-             tbry_west(j,k,3)=0. ! tracer Coarse Sand
-             tbry_west(j,k,4)=0. ! tracer Fine Sand
-             tbry_west(j,k,5)=0.02 ! tracer Mud
-#      elif defined ESTUARY
-             tbry_west(j,k,1)=10.
-             tbry_west(j,k,2)=35.5
-             tbry_west(j,k,3)=0.0   ! tracer Fine Sand
-             tbry_west(j,k,4)=0.0   ! tracer Mud
-#      else
-             do itrc=1,NT
-               tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
-             enddo
-#      endif
-#     endif
-#    endif
+          if (ltidal) then
+            do k=1,N
+              do j=JstrR,JendR
+                tbry_west(j,k,1)=10.
+                tbry_west(j,k,2)=35.5
+              enddo
+            enddo
+          else
+            do k=1,N
+              do j=JstrR,JendR
+                do itrc=1,itsubs1-1
+                  tbry_west(j,k,itrc)=0.
+                enddo
+              enddo
+            enddo
+          endif
+          do k=1,N
+            do j=JstrR,JendR
+              do itrc=itsubs1,NT
+                tbry_west(j,k,itrc)=cobc_wat(itrc)
+              enddo
             enddo
           enddo
+#     else
+          if (trim(testcase_name) == 'TIDAL_FLAT') then
+            do k=1,N
+              do j=JstrR,JendR
+                tbry_west(j,k,1)=10.
+                tbry_west(j,k,2)=35.
+                tbry_west(j,k,3)=0. ! tracer Coarse Sand
+                tbry_west(j,k,4)=0. ! tracer Fine Sand
+                tbry_west(j,k,5)=0.02 ! tracer Mud
+              enddo
+            enddo
+          elseif (trim(testcase_name) == 'ESTUARY' .or.
+     &            trim(testcase_name) == 'ESTUARY_SQUARE') then
+            do k=1,N
+              do j=JstrR,JendR
+                tbry_west(j,k,1)=10.
+                tbry_west(j,k,2)=35.5
+                tbry_west(j,k,3)=0.0   ! tracer Fine Sand
+                tbry_west(j,k,4)=0.0   ! tracer Mud
+              enddo
+            enddo
+          else
+            do k=1,N
+              do j=JstrR,JendR
+                do itrc=1,NT
+                  tbry_west(j,k,itrc)=t(0,j,k,1,itrc)
+                enddo
+              enddo
+            enddo
+          endif
+#     endif
+#    endif
 #   endif    /* SOLVE3D && (M3_FRC_BRY || W_FRC_BRY || T_FRC_BRY)*/
 
         endif

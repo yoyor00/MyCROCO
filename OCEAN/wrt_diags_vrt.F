@@ -20,6 +20,7 @@
 !
       subroutine wrt_diags_vrt
 
+      USE croco_namelist, ONLY: nrpfdiags_vrt, diags_vrtname
       implicit none
       integer ierr,  record, lstr, lvar, lenstr
      &   , start(2), count(2), ibuff(4), nf_fwrite, type

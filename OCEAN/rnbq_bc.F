@@ -53,7 +53,9 @@
 !
 # include "set_obc_definitions.h"
 !
-!
+#if defined NBQ_FRC_BRY || defined NBQ_NUDGING
+      USE croco_namelist, ONLY: tauM_in, tauM_out
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
