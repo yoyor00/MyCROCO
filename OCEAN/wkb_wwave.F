@@ -74,6 +74,9 @@
 # ifdef WAVE_ROLLER
       use croco_namelist, ONLY: wkb_rsb, wkb_roller
 # endif
+# if defined MPI
+      use mpi
+# endif
       implicit none
 # include "param.h"
       integer istr,iend,jstr,jend, i, j, k, wprv, wbak, wold,
