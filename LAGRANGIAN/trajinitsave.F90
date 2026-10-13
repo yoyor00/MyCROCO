@@ -254,6 +254,12 @@ CONTAINS
       REAL(KIND=rsh)                              :: xpos_patch, ypos_patch
       REAL(KIND=rsh)                              :: rx, ry, dl
 
+      ! Decomposition-independent rank of a circle-patch grid cell
+      ! among only the cells that fall inside the circle, so every rank
+      ! computes the same values without any MPI communication.
+      INTEGER, ALLOCATABLE, DIMENSION(:, :)       :: circle_rank
+      INTEGER                                     :: n_circle_cells
+
       ! To read data from rectangular patch
       REAL(KIND=rlg)                              :: gmin, gmax
       REAL(KIND=rsh)                              :: x_tmp, y_tmp
@@ -597,6 +603,22 @@ CONTAINS
                   nn = INT(sqrt(4/pi*nbpart_patch)) + 1
                   dl = 2*ray_patch/nn
 
+                  ! Rank each cell of the nn x nn bounding square among only
+                  ! those inside the circle, in the same (j, i) scan order as
+                  ! the counting/placement loops below, so NUM starts at 1
+                  ALLOCATE (circle_rank(nn, nn))
+                  n_circle_cells = 0
+                  DO j = 1, nn
+                     DO i = 1, nn
+                        rx = -ray_patch + REAL(i - 1)*dl
+                        ry = -ray_patch + REAL(j - 1)*dl
+                        IF (sqrt(rx*rx + ry*ry) <= ray_patch) THEN
+                           circle_rank(i, j) = n_circle_cells
+                           n_circle_cells = n_circle_cells + 1
+                        END IF
+                     END DO
+                  END DO
+
                   IF (is_local_position(REAL(imin_patch, rsh), REAL(jmin_patch, rsh), Istr, Iend, Jstr, Jend)) THEN
                      IF (h(imin_patch, jmin_patch) < kmin_patch) THEN
                         PRINT *, 'Patch on land or too deep'
@@ -698,7 +720,7 @@ CONTAINS
                                           ! (and therefore trajectory identity) reproducible
                                           ! across MPI decompositions.
                                           new_patch%particles(m1 + l)%num = &
-                                             (((j - 1)*nn + (i - 1))*n_depth_levels + k_index)*nb_part_intro + l + 1
+                                             (circle_rank(i, j)*n_depth_levels + k_index)*nb_part_intro + l + 1
                                        END DO
                                     ELSE
                                        m2 = m2 - nb_part_intro
@@ -709,6 +731,7 @@ CONTAINS
                         END IF
                      END DO
                   END DO
+                  DEALLOCATE (circle_rank)
 
                ELSEIF (itypepatch == 2) THEN
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
