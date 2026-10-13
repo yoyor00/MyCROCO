@@ -44,6 +44,7 @@
 # ifdef TIDES_MAS
       USE MOD_TIDES_MAS
 # endif
+      USE croco_namelist, only:dt
       implicit none
 # ifndef TIDES_MAS
 #  include "param.h"

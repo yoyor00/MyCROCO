@@ -25,6 +25,14 @@
       end
 !
       subroutine set_nudgcof_fine_tile (Istr,Iend,Jstr,Jend, wrk)
+      use croco_namelist, only: dt, tauT_in, tauT_out
+#if defined M2NUDGING || defined M3NUDGING || defined ZNUDGING \
+    || defined NBQ_NUDGING
+      use croco_namelist, only: tauM_in, tauM_out
+#endif
+# if (defined SPONGE && !defined SPONGE_GRID)
+      use croco_namelist, only: x_sponge
+# endif  
 !     implicit none
       integer ierr
 # if defined MPI

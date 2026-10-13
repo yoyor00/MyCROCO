@@ -17,6 +17,7 @@
      &                     Gm1,dGm1dS, Gt1,dGt1dS, Gs1,dGs1dS,
      &                                    wrk1,wrk2,wrk3, Rib,
      &                                                 my_kbl)
+      use croco_namelist, only: rho0
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -291,8 +292,8 @@
      &                 +(v(i,j  ,N,tind)-v(i,j  ,k,tind)+
      &                   v(i,j+1,N,tind)-v(i,j+1,k,tind))**2)
 
-            Vtsq=Vtc*(z_r(i,j,N)-z_r(i,j,k))*ws(i,j)
-     &           *sqrt(max(0.,0.5*(bvf(i,j,k)+bvf(i,j,k-1))))
+            Vtsq=1.8*Vtc*(z_r(i,j,N)-z_r(i,j,k))*ws(i,j)
+     &           *sqrt(max(1.e-5,0.5*(bvf(i,j,k)+bvf(i,j,k-1))))
 
             Rib(i,j,ku)=Ritop/(dVsq+Vtsq+eps)
           enddo

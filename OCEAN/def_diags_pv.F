@@ -25,6 +25,13 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+#ifdef DIAGNOSTICS_PV
+      use croco_namelist, only: ldefdiags_pv, nwrtdiags_pv,
+     &     nrpfdiags_pv, diags_pvname, ldefdiags_pv_avg,
+     &     ntsdiags_pv_avg, nwrtdiags_pv_avg, nrpfdiags_pv_avg,
+     &     diags_pvname_avg
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"

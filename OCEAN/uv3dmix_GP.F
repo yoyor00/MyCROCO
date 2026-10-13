@@ -119,6 +119,7 @@
 ! ******************************Common Code***************************
 !---------------------------------------------------------------------
 !
+        use croco_namelist, only: dt
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k, k1,k2, indx
       real UFe(PRIVATE_2D_SCRATCH_ARRAY),

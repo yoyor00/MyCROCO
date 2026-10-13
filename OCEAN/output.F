@@ -19,6 +19,7 @@
 !                                                                      !
 !=======================================================================
 !
+      USE croco_namelist
 #ifdef AGRIF
       use Agrif_Util
 #endif

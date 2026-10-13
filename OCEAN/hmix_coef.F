@@ -33,6 +33,7 @@
 !
 !==================================================================
 !
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -48,9 +49,6 @@
       parameter (horcon=0.01, Ric=0.25, Pr=0.3)
 # else
       parameter (horcon=0.1)
-# endif
-# ifdef SWASH
-      real dZdt,dZdt0,Bbr
 # endif
       real defrate(PRIVATE_2D_SCRATCH_ARRAY,1:N)
 !

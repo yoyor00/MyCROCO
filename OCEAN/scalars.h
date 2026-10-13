@@ -30,15 +30,14 @@
 ! time        Time since initialization [seconds];
 ! time_start  Initialization time [seconds];
 ! tdays       Time since initialization [days];
-! dt          Time step for 3D primitive equations [seconds];
 ! dtfast      Time step for 2D (barotropic) mode [seconds];
 !
-      real dt, dtfast, time, time2, time_start, tdays, start_time
+      real dtfast, time, time2, time_start, tdays, start_time
 #ifdef USE_CALENDAR
       real time_end
-      character*19 date, end_date, start_date
+      character*19 date
 #endif
-      integer ndtfast, iic, kstp, krhs, knew, next_kstp
+      integer iic, kstp, krhs, knew, next_kstp
 #ifdef SOLVE3D
      &      , iif, nstp, nrhs, nnew, nbstep3d
 #endif
@@ -52,9 +51,9 @@
      &      , wstp, wnew
 #endif
       logical PREDICTOR_2D_STEP
-      common /time_indices/  dt,dtfast, time, time2,time_start, tdays,
-     &     ndtfast, iic, kstp, krhs, knew, next_kstp,
+      common /time_indices/  dtfast, time, time2,time_start, tdays,
      &     start_time,
+     &     iic, kstp, krhs, knew, next_kstp,
 #ifdef SOLVE3D
      &                       iif, nstp, nrhs, nnew, nbstep3d,
 #endif
@@ -70,7 +69,7 @@
      &                       PREDICTOR_2D_STEP
 #ifdef USE_CALENDAR
       common /time_indices2/ time_end,
-     &                       date, end_date, start_date
+     &                       date
 #endif
 
 !
@@ -80,11 +79,6 @@
 !
 ! xl, el   Physical size (m) of domain box in the XI-,ETA-directions.
 !
-! Tcline   Width (m) of surface or bottom boundary layer in which
-!          higher vertical resolution is required during stretching.
-! theta_s  S-coordinate surface control parameter, [0<theta_s<20].
-! theta_b  S-coordinate bottom control parameter, [0<theta_b<1].
-! hc       S-coordinate parameter, hc=min(hmin,Tcline).
 !
 ! sc_r     S-coordinate independent variable, [-1 < sc < 0] at
 !             vertical RHO-points
@@ -117,26 +111,12 @@
 !
 ! ntstart  Starting timestep in evolving the 3D primitive equations;
 !                              usually 1, if not a restart run.
-! ntimes   Number of timesteps for the 3D primitive equations in
-!                                                    the current run.
-! ndtfast  Number of timesteps for 2-D equations between each "dt".
-!
-! nrst     Number of timesteps between storage of restart fields.
-! nwrt     Number of timesteps between writing of fields into
-!                                                     history file.
-! ninfo    Number of timesteps between print of single line
-!                                   information to standard output.
 ! nsta     Number of timesteps between storage of station data.
 ! navg     Number of timesteps between storage of time-averaged
 !                                                           fields.
 ! ntsavg   Starting timestep for accumulation of output time-
 !                                                 averaged fields.
-! nrrec    Counter of restart time records to read from disk,
-!                   the last is used as the initial conditions.
 !
-! ldefhis  Logical switch used to create the history file.
-!             If TRUE, a new history file is created. If FALSE,
-!             data is appended to an existing history file.
 ! levsfrc  Deepest level to apply surface momentum stress as
 !                                                 bodyforce.
 ! levbfrc  Shallowest level to apply bottom momentum stress as
@@ -154,11 +134,9 @@
 !              If FALSE, the ripple var. is obtained from file (ifdef also SEDIMENT)
 !                        the ripple var. is set in ana_bsedim (ifndef SEDIMENT)
 !
-      real time_avg, time2_avg, rho0
-     &               , rdrg, rdrg2, Cdb_min, Cdb_max, Zobt
-     &               , xl, el, visc2, visc4, gamma2
+      real time_avg, time2_avg
+     &               , xl, el
 #ifdef SOLVE3D
-      real  theta_s,   theta_b,   Tcline,  hc
 # ifndef M3FAST_SEDLAYERS
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
 # else
@@ -166,103 +144,15 @@
      &    , sc_r(-N_sl+1:N), Cs_r(-N_sl+1:N)
 # endif
       real  rx0, rx1
-# ifdef TRACERS
-      real  tnu2(NT),tnu4(NT)
-# endif
-# if !defined NONLIN_EOS || defined MUSTANG
-      real R0,T0,S0, Tcoef, Scoef
-# endif
       real weight(6,0:NWEIGHT)
 
 #endif
-#if defined SPONGE || \
-     defined TNUDGING   || defined M2NUDGING  || \
-     defined M3NUDGING  || defined ZNUDGING
-      real  x_sponge,   v_sponge
-#endif
-#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined W_FRC_BRY     || defined NBQ_FRC_BRY   || \
-     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY  || defined NBQCLIMATOLOGY
-       real  tauT_in, tauT_out, tauM_in, tauM_out
-#endif
-      integer numthreads,     ntstart,   ntimes,  ninfo
-     &      , nfast,  nrrec,     nrst,    nwrt
+      integer numthreads,     ntstart
+     &      , nfast
 #ifdef EXACT_RESTART
      &     ,  forw_start
 #endif
-#ifdef AVERAGES
-     &                                 , ntsavg,  navg
-#endif
-#ifdef BODYFORCE
-     &                      , levbfrc,   levsfrc
-#endif
-#ifdef ABL1D
-      logical ldefablhis
-      integer nwrtablhis, nrpfablhis
-# ifdef AVERAGES
-      logical ldefablavg
-      integer ntsablavg, nrpfablavg, nwrtablavg
-# endif
-#endif
-#if defined DIAGNOSTICS_TS
-      integer nwrtdia
-# ifdef AVERAGES
-      integer ntsdia_avg, nwrtdia_avg
-# endif
-# ifdef DIAGNOSTICS_TS_MLD_DENS
-      real mld_crit_D, mld_crit_T
-# endif
-#endif
-#if defined DIAGNOSTICS_UV
-      integer nwrtdiaM
-# ifdef AVERAGES
-      integer ntsdiaM_avg, nwrtdiaM_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_VRT
-      integer nwrtdiags_vrt
-# ifdef AVERAGES
-      integer ntsdiags_vrt_avg, nwrtdiags_vrt_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_KE
-      integer nwrtdiags_ek
-# ifdef AVERAGES
-      integer ntsdiags_ek_avg, nwrtdiags_ek_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_PV
-      integer nwrtdiags_pv
-# ifdef AVERAGES
-      integer ntsdiags_pv_avg, nwrtdiags_pv_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_EDDY && ! defined XIOS
-      integer nwrtdiags_eddy
-# ifdef AVERAGES
-      integer ntsdiags_eddy_avg, nwrtdiags_eddy_avg
-# endif
-#endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-      integer nwrtsurf
-# ifdef AVERAGES
-      integer ntssurf_avg, nwrtsurf_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-      integer nwrtdiabio
-# ifdef AVERAGES
-      integer ntsdiabio_avg, nwrtdiabio_avg
-# endif
-#endif
-#ifdef STATIONS
-      integer nsta, nrpfsta
-#endif
 
-      logical ldefhis
 #if defined SOLVE3D && defined TRACERS
       logical got_tini(NT)
 #endif
@@ -272,104 +162,29 @@
 #ifdef BBL
       logical got_inibed(2)
 #endif
-#if defined DIAGNOSTICS_TS
-      logical ldefdia
-# ifdef AVERAGES
-      logical ldefdia_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_UV
-      logical ldefdiaM
-# ifdef AVERAGES
-      logical ldefdiaM_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_VRT
-      logical ldefdiags_vrt
-# ifdef AVERAGES
-      logical ldefdiags_vrt_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_KE
-      logical ldefdiags_ek
-# ifdef AVERAGES
-      logical ldefdiags_ek_avg
-# endif
-#endif
-#if defined DIAGNOSTICS_PV
-      logical ldefdiags_pv
-# ifdef AVERAGES
-      logical ldefdiags_pv_avg
-# endif
-#endif
+
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
+      integer nwrtdiags_eddy
       logical ldefdiags_eddy
-# ifdef AVERAGES
-      logical ldefdiags_eddy_avg
-# endif
 #endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-      logical ldefsurf
-# ifdef AVERAGES
-      logical ldefsurf_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-      logical ldefdiabio
-# ifdef AVERAGES
-      logical ldefdiabio_avg
-# endif
-#endif
-#ifdef STATIONS
-      logical ldefsta
-#endif
+
 
 #ifdef  BAND_DEBUG         
       character(len=50) :: chkbandname
       character(len=50) :: fileline
 #endif
       common /scalars_main/
-     &             time_avg, time2_avg,  rho0,      rdrg,    rdrg2
-     &           , Zobt,       Cdb_min,   Cdb_max
-     &           , xl, el,    visc2,     visc4,   gamma2
+     &             time_avg, time2_avg
+     &           , xl, el
 #ifdef SOLVE3D
-     &           , theta_s,   theta_b,   Tcline,  hc
      &           , sc_w,      Cs_w,      sc_r,    Cs_r
      &           , rx0,       rx1
-# ifdef TRACERS
-     &           ,       tnu2,    tnu4
-# endif
-# ifndef NONLIN_EOS
-     &                      , R0,T0,S0,  Tcoef,   Scoef
-# endif
      &                      , weight
 #endif
-#if defined SPONGE || \
-     defined TNUDGING   || defined M2NUDGING  || \
-     defined M3NUDGING  || defined ZNUDGING
-     &                      , x_sponge,   v_sponge
-#endif
-#if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
-     defined M3_FRC_BRY    || defined Z_FRC_BRY     || \
-     defined W_FRC_BRY     ||                          \
-     defined TCLIMATOLOGY  || defined M2CLIMATOLOGY || \
-     defined M3CLIMATOLOGY || defined ZCLIMATOLOGY  || \
-     defined WCLIMATOLOGY
-     &                      , tauT_in, tauT_out, tauM_in, tauM_out
-#endif
-     &      , numthreads,     ntstart,   ntimes,  ninfo
-     &      , nfast,  nrrec,     nrst,    nwrt
+     &      , numthreads,     ntstart
+     &      , nfast
 #ifdef EXACT_RESTART
      &       , forw_start
-#endif
-#ifdef AVERAGES
-     &                                 , ntsavg,  navg
-#endif
-#ifdef BODYFORCE
-     &                      , levbfrc,   levsfrc
-#endif
-#ifdef STATIONS
-     &                      , nsta, nrpfsta
 #endif
 #if defined SOLVE3D && defined TRACERS
      &                      , got_tini
@@ -380,100 +195,12 @@
 #ifdef BBL
      &                      , got_inibed
 #endif
-#if defined DIAGNOSTICS_TS
-     &                      , ldefdia, nwrtdia
-# ifdef AVERAGES
-     &                      , ldefdia_avg
-     &                      , nwrtdia_avg
-     &                      , ntsdia_avg
-# endif
-# ifdef DIAGNOSTICS_TS_MLD_DENS
-     &                      , mld_crit_D, mld_crit_T
-# endif
-#endif
-#if defined DIAGNOSTICS_UV
-     &                      , ldefdiaM, nwrtdiaM
-# ifdef AVERAGES
-     &                      , ldefdiaM_avg
-     &                      , nwrtdiaM_avg
-     &                      , ntsdiaM_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_VRT
-     &                      , ldefdiags_vrt, nwrtdiags_vrt
-# ifdef AVERAGES
-     &                      , ldefdiags_vrt_avg
-     &                      , nwrtdiags_vrt_avg
-     &                      , ntsdiags_vrt_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_KE
-     &                      , ldefdiags_ek, nwrtdiags_ek
-# ifdef AVERAGES
-     &                      , ldefdiags_ek_avg
-     &                      , nwrtdiags_ek_avg
-     &                      , ntsdiags_ek_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_PV
-     &                      , ldefdiags_pv, nwrtdiags_pv
-# ifdef AVERAGES
-     &                      , ldefdiags_pv_avg
-     &                      , nwrtdiags_pv_avg
-     &                      , ntsdiags_pv_avg
-# endif
-#endif
 #if defined DIAGNOSTICS_EDDY && ! defined XIOS
      &                      , ldefdiags_eddy, nwrtdiags_eddy
-# ifdef AVERAGES
-     &                      , ldefdiags_eddy_avg
-     &                      , nwrtdiags_eddy_avg
-     &                      , ntsdiags_eddy_avg
-# endif
-#endif
-#if defined OUTPUTS_SURFACE && ! defined XIOS
-     &                      , ldefsurf, nwrtsurf
-# ifdef AVERAGES
-     &                      , ldefsurf_avg
-     &                      , nwrtsurf_avg
-     &                      , ntssurf_avg
-# endif
-#endif
-#ifdef DIAGNOSTICS_BIO
-     &                      , ldefdiabio, nwrtdiabio
-# ifdef AVERAGES
-     &                      , ldefdiabio_avg
-     &                      , nwrtdiabio_avg
-     &                      , ntsdiabio_avg
-# endif
-#endif
-#ifdef STATIONS
-     &                      , ldefsta
-#endif
-     &                      , ldefhis
-#ifdef ABL1D
-     &                      , ldefablhis
-     &                      , nwrtablhis
-     &                      , nrpfablhis
-# ifdef AVERAGES
-     &                      , ldefablavg
-     &                      , ntsablavg
-     &                      , nrpfablavg
-     &                      , nwrtablavg
-# endif
-#endif
-
+#endif  
 #ifdef  BAND_DEBUG         
        common /scalchkbandname/ chkbandname
 #endif       
-#if defined SOLVE3D  && !defined LMD_MIXING
-      real Akv_bak
-      common /scalars_akv/ Akv_bak
-# ifdef TRACERS
-      real Akt_bak(NT)
-      common /scalars_akt/ Akt_bak
-# endif
-#endif
 !
 !-----------------------------------------------------------------------
 ! This following common block contains a set of globally accessable
@@ -596,13 +323,11 @@
      &           year2day=365.25, day2year=1./365.25,
      &           jul_off=2440000.)
 !
-! Acceleration of gravity (nondimensional for Soliton problem)
-!
-#ifdef SOLITON
-      parameter (g=1.)
-#else
-      parameter (g=9.81)
+! Acceleration of gravity [m/s^2] (overridable via param_*.h)
+#ifndef GRAVITY
+# define GRAVITY 9.81
 #endif
+      parameter (g=GRAVITY)
 !
 !  Specific heat [Joules/kg/degC] for seawater, it is approximately
 !  4000, and varies only slightly (see Gill, 1982, Appendix 3).

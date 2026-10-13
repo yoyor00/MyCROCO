@@ -15,6 +15,7 @@
       subroutine set_diags_ek_tile (istr,iend,jstr,jend,tile)
 !
 !
+      USE croco_namelist, ONLY: dt
       implicit none
 # include "param.h"
       integer istr,iend,jstr,jend, i,j, ilc, iflux,

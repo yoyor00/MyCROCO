@@ -24,6 +24,13 @@
 ! Define its variables, dimensions, and attributes
 !---------------------------------------------------------------
 !
+#ifdef DIAGNOSTICS_VRT
+      use croco_namelist, only: ldefdiags_vrt, nwrtdiags_vrt,
+     &     nrpfdiags_vrt, diags_vrtname, ldefdiags_vrt_avg,
+     &     ntsdiags_vrt_avg, nwrtdiags_vrt_avg, nrpfdiags_vrt_avg,
+     &     diags_vrtname_avg
+#endif
+
       implicit none
 # include "param.h"
 # include "mixing.h"

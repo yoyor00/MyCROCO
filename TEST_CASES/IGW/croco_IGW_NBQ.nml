@@ -1,0 +1,138 @@
+&croco_testcase
+  testcase_name = 'IGW'
+/
+
+&croco_title
+  title = "IGW TEST MODEL"
+/
+
+&croco_time_stepping
+  ntimes = 5
+  dt = 30.
+  ndtfast = 60
+  ninfo = 500
+/
+
+&croco_time_stepping_nbq
+  csound_nbq = 1500
+  visc2_nbq = 1.
+/
+
+&croco_s_coord
+  theta_s = 1
+  theta_b = 0
+  hc = 1.e3
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "igw_ini.nc"
+/
+
+&croco_grid
+  grdname = "TEST_CASES/IGW/igw_grd.nc"
+/
+
+&croco_forcing
+  frcname = "TEST_CASES/IGW/igw_frc.nc"
+/
+
+&croco_nudging
+  tauT_in = 0.1
+  tauT_out = 100
+  tauM_in = 0.1
+  tauM_out = 100
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 5
+  nrpfhis = 0
+  hisname = "igw_his.nc"
+/
+
+&croco_restart
+  nrst = 5
+  nrpfrst = -1
+  rstname = "igw_rst.nc"
+/
+
+&croco_rho0
+  rho0 = 1027.d0
+/
+
+&croco_bottom_drag
+  rdrg = 0.
+  rdrg2 = 0.
+  Zobt = 1.e-3
+  Cdb_min = 1.e-4
+  Cdb_max = 1.e-1
+/
+
+&croco_gamma2
+  gamma2 = 1.d0
+/
+
+&croco_lateral_visc
+  visc2 = 0.1
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 1*0.d0
+/
+
+&croco_tracer_diff4
+  tnu4 = 1*0.d11
+/
+
+&croco_vertical_mixing
+  Akv_bak = 1.d-05
+  Akt_bak = 1*1.d-05
+/
+
+&croco_lin_eos
+  R0 = 30.
+  T0 = 0.
+  S0 = 0.
+  Tcoef = 0.28
+  Scoef = 0.
+/
+
+&croco_primary_history_fields
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  out_his_u = .true.
+  out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 1*.true.
+/
+
+&croco_auxiliary_history_fields
+  out_his_rho = .true.
+  out_his_omega = .true.
+  out_his_w = .true.
+  out_his_akv = .false.
+  out_his_bostr = .false.
+  out_his_bustr = .false.
+  out_his_bvstr = .false.
+  out_his_wstr = .false.
+  out_his_ustr = .false.
+  out_his_vstr = .false.
+/
+
+&croco_temperature_history_fields
+  out_his_akt = .false.
+  out_his_shflx = .false.
+  out_his_shflx_rsw = .false.
+/
+
+
+
+! End of namelist

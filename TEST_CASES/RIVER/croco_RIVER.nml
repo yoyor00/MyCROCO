@@ -1,0 +1,133 @@
+&croco_testcase
+  testcase_name = 'RIVER'
+/
+
+&croco_title
+  title = "River run off  Example"
+/
+
+&croco_time_stepping
+  ntimes = 800
+  dt = 540
+  ndtfast = 60
+  ninfo = 1
+/
+
+&croco_s_coord
+  theta_s = 3.0d0
+  theta_b = 0.0d0
+  hc = 50.d0
+/
+
+&croco_initial
+  nrrec = 0
+  ininame = "river_rst.nc"
+/
+
+&croco_history
+  ldefhis = .true.
+  nwrt = 40
+  nrpfhis = 0
+  hisname = "river_his.nc"
+/
+
+&croco_restart
+  nrst = 800
+  nrpfrst = -1
+  rstname = "river_rst.nc"
+/
+
+&croco_rho0
+  rho0 = 1000.
+/
+
+&croco_bottom_drag
+  rdrg = 3.0E-04
+  rdrg2 = 0.
+  Zobt = 0.
+  Cdb_min = 0.
+  Cdb_max = 0.
+/
+
+&croco_gamma2
+  gamma2 = -1.
+/
+
+&croco_lateral_visc
+  visc2 = 0.
+  visc4 = 0.
+/
+
+&croco_tracer_diff2
+  tnu2 = 2*0.d0
+/
+
+&croco_psource
+  psource_Nsrc = 2
+/
+
+&croco_psource_data
+  psource_Isrc(   1) =     3, psource_Jsrc(   1) =    54, psource_Dsrc(   1) =     1, psource_Qbar(   1) =  200.
+  psource_Isrc(   2) =     3, psource_Jsrc(   2) =    40, psource_Dsrc(   2) =     0, psource_Qbar(   2) =  200.
+/
+
+&croco_psource_tracer
+  psource_Lsrc(1,1) = T
+  psource_Lsrc(1,2) = T
+  psource_Lsrc(2,1) = T
+  psource_Lsrc(2,2) = T
+  psource_Tsrc0(1,1) = 5.
+  psource_Tsrc0(1,2) = 0.
+  psource_Tsrc0(2,1) = 5.
+  psource_Tsrc0(2,2) = 0.
+/
+
+&croco_primary_history_fields
+  out_his_zeta = .true.
+  out_his_ubar = .true.
+  out_his_vbar = .true.
+/
+
+&croco_primary_history_3d_fields
+  out_his_u = .true.
+  out_his_v = .true.
+/
+
+&croco_primary_history_tracer_fields
+  out_his_tracer = 2*.true.
+/
+
+&croco_auxiliary_history_fields
+  out_his_rho = .true.
+  out_his_omega = .false.
+  out_his_w = .true.
+  out_his_akv = .false.
+  out_his_bostr = .false.
+  out_his_bustr = .true.
+  out_his_bvstr = .true.
+  out_his_wstr = .false.
+  out_his_ustr = .false.
+  out_his_vstr = .false.
+/
+
+&croco_temperature_history_fields
+  out_his_akt = .true.
+  out_his_shflx = .false.
+  out_his_shflx_rsw = .false.
+/
+
+&croco_salinity_history_fields
+  out_his_aks = .false.
+/
+
+&croco_hbl_history_fields
+  out_his_hbl = .false.
+/
+
+&croco_lmd_bkpp_history_fields
+  out_his_hbbl = .false.
+/
+
+
+
+! End of namelist

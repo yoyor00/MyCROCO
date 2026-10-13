@@ -19,6 +19,12 @@
 ! summation counters, etc; NONE of the physical parameters of
 ! the model is set here.
 !
+      use croco_namelist, only: dt
+# ifdef USE_CALENDAR
+      use croco_namelist, only: start_date, end_date, dt_his, dt_avg, 
+     &                          dt_rst
+# endif
+
       implicit none
       integer ierr, i,j,itrc, lvar, lenstr
 #if defined ONLINE
@@ -302,11 +308,7 @@ C$OMP END PARALLEL
 
 !#define CR
 CR      write(stdout,'(1x,A,I3)') 'indxTime =',indxTime
-#ifdef MILES
-      vname(1,indxTime)='ocean_time'
-#else
       vname(1,indxTime)='scrum_time'
-#endif
       vname(2,indxTime)='time since initialization'
 #if defined USE_CALENDAR && defined ANA_INITIAL
       vname(3,indxTime)='seconds since '//start_date

@@ -59,6 +59,7 @@
 ! using implicit backward time step.
 !--------------------------------------------------------------------
 !
+      use croco_namelist, only: dt, ntimes, lts_hadv, lts_rot_or_diag, lts_per
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -999,67 +1000,65 @@
 !
 !--------------------------------------------------------------------
 !
-# if defined TS_HADV_TEST
-#  if defined DIAGONAL_ADV || defined SOLID_BODY_ROT
-      do k=1,N
-        do j=jstrR,jendR
-          do i=IstrR,iendR
-            u(i,j,k,nnew) = u(i,j,k,nstp)
+      if (lts_hadv) then
+        if (lts_rot_or_diag) then
+          do k=1,N
+            do j=jstrR,jendR
+              do i=IstrR,iendR
+                u(i,j,k,nnew) = u(i,j,k,nstp)
+              enddo
+            enddo
+            do j=jstrR,jendR
+              do i=IstrR,iendR
+                v(i,j,k,nnew) = v(i,j,k,nstp)
+              enddo
+            enddo
           enddo
-        enddo
-        do j=jstrR,jendR
-          do i=IstrR,iendR
-            v(i,j,k,nnew) = v(i,j,k,nstp)
+        elseif (lts_per) then
+          cff = cos(2.*pi*(time+dt)/(float(ntimes)*dt))
+          do k=1,N
+            do j=jstrR,jendR
+              do i=IstrR,iendR
+                 u(i,j,k,nnew) = u(i,j,k,nstp) * cff
+                 u(i,j,k,nrhs) = u(i,j,k,nstp)
+              enddo
+            enddo
+            do j=JstrR,jendR
+              do i=istrR,iendR
+                v(i,j,k,nnew) = v(i,j,k,nstp) * cff
+                v(i,j,k,nrhs) = v(i,j,k,nstp)
+              enddo
+            enddo
           enddo
-        enddo
-      enddo
-#  endif
-#  if defined SOLID_BODY_PER
-      cff = cos(2.*pi*(time+dt)/(float(ntimes)*dt))
-      do k=1,N
-        do j=jstrR,jendR
-          do i=IstrR,iendR
-             u(i,j,k,nnew) = u(i,j,k,nstp) * cff
-             u(i,j,k,nrhs) = u(i,j,k,nstp)
-          enddo
-        enddo
-        do j=JstrR,jendR
-          do i=istrR,iendR
-            v(i,j,k,nnew) = v(i,j,k,nstp) * cff
-            v(i,j,k,nrhs) = v(i,j,k,nstp)
-          enddo
-        enddo
-      enddo
-#  endif
+        endif
 #  if defined BD_EXCHANGE
 #   ifdef THREE_GHOST_POINTS_UV
-      call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             u(START_2D_ARRAY,1,nrhs))
-      call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
-     &                             v(START_2D_ARRAY,1,nrhs))
+        call exchange_u3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                               u(START_2D_ARRAY,1,nrhs))
+        call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
+     &                               v(START_2D_ARRAY,1,nrhs))
 #   else
-      call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
-     &                        u(START_2D_ARRAY,1,nrhs))
-      call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
-     &                        v(START_2D_ARRAY,1,nrhs))
+        call exchange_u3d_tile (Istr,Iend,Jstr,Jend,
+     &                          u(START_2D_ARRAY,1,nrhs))
+        call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
+     &                          v(START_2D_ARRAY,1,nrhs))
 #   endif
 #  endif
-
-      do j=Jstr,Jend
-        do k=1,N
-          do i=Istr,Iend
-            Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
-     &                                         *u(i,j,k,nnew)
-          enddo
-          do i=Istr,Iend
-            if (j.ge.JstrV) then
-              Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
-     &                                           *v(i,j,k,nnew)
-            end if
+        do j=Jstr,Jend
+          do k=1,N
+            do i=Istr,Iend
+              Huon(i,j,k)=0.5*(Hz(i,j,k)+Hz(i-1,j,k))*on_u(i,j)
+     &                                           *u(i,j,k,nnew)
+            enddo
+            do i=Istr,Iend
+              if (j.ge.JstrV) then
+                Hvom(i,j,k)=0.5*(Hz(i,j,k)+Hz(i,j-1,k))*om_v(i,j)
+     &                                             *v(i,j,k,nnew)
+              end if
+            enddo
           enddo
         enddo
-      enddo
-# endif
+      endif
 !
 !--------------------------------------------------------------------
 ! Apply mass point sources

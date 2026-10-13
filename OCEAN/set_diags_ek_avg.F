@@ -11,6 +11,10 @@
       end
 
       subroutine set_diags_ek_avg_tile (istr,iend,jstr,jend)
+# ifdef DIAGNOSTICS_KE
+      use croco_namelist, only: ldefdiags_ek_avg, ntsdiags_ek_avg,
+     &     nwrtdiags_ek_avg
+# endif
 !
 ! Compute time-averaged fields within a tile.
 ! ------- ------------- ------ ------ - -----

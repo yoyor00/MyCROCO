@@ -15,7 +15,6 @@
       subroutine set_diags_pv_avg(tile)
 
 !      USE param
-
       implicit none
       integer tile
 # include "param.h"
@@ -25,6 +24,10 @@
       end
 
       subroutine set_diags_pv_avg_tile(Istr,Iend,Jstr,Jend)
+#ifdef DIAGNOSTICS_PV
+      use croco_namelist, only: ldefdiags_pv_avg, ntsdiags_pv_avg,
+     &     nwrtdiags_pv_avg
+#endif
 !
 ! Compute time-averaged fields within a tile.
 ! ------- ------------- ------ ------ - -----

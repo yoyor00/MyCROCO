@@ -104,6 +104,8 @@
 !====================================================================
 !
       subroutine Agrif_initvalues()
+      use croco_namelist, only: dt, ldefhis, nrrec
+      use croco_namelist_read, only: read_nml_fname, read_nml
       use AGRIF_UTIL
 # ifdef PISCES
       USE pisces_ini     ! PISCES modules
@@ -201,6 +203,9 @@
 !  Read in tunable model parameters in roms.in file
 !----------------------------------------------------------------------
 !
+      call read_nml_fname ()
+      call read_nml (ierr)
+      if (ierr.ne.0) goto 100
       call read_inp (ierr)
       if (ierr.ne.0) goto 100
 !
@@ -1785,6 +1790,7 @@ CR      write(*,*) '  0' MYID
 # ifdef MASKING
        recursive subroutine ResetMask()
        Use Agrif_Util
+       USE croco_namelist, ONLY: gamma2
 #  include "param.h"
 #  include "grid.h"
 #  include "scalars.h"
@@ -1845,6 +1851,7 @@ CR      write(*,*) '  0' MYID
 !====================================================================
 !
       Subroutine Updateh(tabres,i1,i2,j1,j2,before)
+      use croco_namelist, only: hc
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1985,6 +1992,7 @@ CR      write(*,*) '  0' MYID
 !====================================================================
 !
       subroutine hinterp(tabres,i1,i2,j1,j2,before,nb,ndir)
+      use croco_namelist, only: hc
       implicit none
 # include "param.h"
 # include "grid.h"
