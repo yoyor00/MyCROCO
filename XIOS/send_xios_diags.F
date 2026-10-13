@@ -18,6 +18,14 @@
 #ifdef key_pisces
       USE trc, ONLY : profsed
 #endif
+      use croco_namelist, only: ntimes, dt, ndtfast,
+     &                              ininame, rstname, title, frcname,
+     &                              theta_s, theta_b, Tcline, hc,
+     &                              nwrt, rdrg, rho0, gamma2, x_sponge,
+     &                              xios_origin_date
+#ifndef ANA_GRID
+      use croco_namelist, only: grdname
+#endif
       IMPLICIT NONE
 
       PUBLIC set_grid
@@ -790,11 +798,6 @@
 #endif  /* ONLINE_ANALYSIS */
 
       SUBROUTINE set_xml_global_att(cdid)
-         use croco_namelist, only: ntimes, dt, ndtfast,
-     &                              ininame, rstname, title, frcname
-#ifndef ANA_GRID
-         use croco_namelist, only: grdname
-#endif
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
@@ -2246,6 +2249,9 @@ C 				  endif
 #if defined MUSTANG
       USE comsubstance, ONLY : name_var, nvpc, ws_part, imud1, imud2
       USE comsubstance, ONLY : l_subs2D, nv_grav, nv_sand, l_outsandrouse, rsh
+#if defined key_MUSTANG_V2
+      USE comsubstance, ONLY : l_bedload
+#endif
       USE sed_MUSTANG,  ONLY : sed_MUSTANG_outres, MUSTANG_reconstruct_rouse2D_profile
       USE comMUSTANG, only: nk_nivsed_out, l_outsed_hsed , 
      &    l_outsed_poro, l_outsed_dzs, l_outsed_temp_sed, l_outsed_salt_sed, 
@@ -3909,8 +3915,7 @@ c !$acc wait
      &                             var2D_pephm_fcor(itrc,:,:))
             endif
          ENDIF
-#ifdef key_MUSTANG_bedload
-         IF (l_outsed_bedload) then
+         IF (l_bedload .and. l_outsed_bedload) then
             write (nametrc, '(a,"_flx_bx")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),
@@ -3927,14 +3932,13 @@ c !$acc wait
      &                             var2D_bil_bedload(itrc,:,:))
             endif
          ENDIF
-         IF (l_outsed_fsusp) then
+         IF (l_bedload .and. l_outsed_fsusp) then
             write (nametrc, '(a,"_fsusp")') TRIM(name_var(itrc))
             if (xios_field_is_active(TRIM(nametrc))) then
               call xios_send_field(TRIM(nametrc),
      &                             var2D_fsusp(itrc,:,:))
             endif
          ENDIF
-#endif /* key_MUSTANG_bedload */
 #endif /* key_MUSTANG_V2 */
       ENDDO
 
@@ -3997,8 +4001,7 @@ c !$acc wait
      &                        var2D_niter_ero)
             endif
       ENDIF
-#ifdef key_MUSTANG_bedload
-      IF (l_outsed_bedload) then
+      IF (l_bedload .and. l_outsed_bedload) then
             if (xios_field_is_active("flx_bx_int")) then
             call xios_send_field("flx_bx_int",
      &                        var2D_flx_bx_int)
@@ -4012,7 +4015,6 @@ c !$acc wait
      &                        var2D_bil_bedload_int)
             endif
       ENDIF
-#endif /* key_MUSTANG_bedload */
 #endif /* key_MUSTANG_V2 */
 
       IF (l_dyn_insed) THEN
