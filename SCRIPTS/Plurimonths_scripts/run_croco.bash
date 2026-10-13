@@ -228,8 +228,7 @@ while [[ $LEVEL != $NLEVEL ]]; do
   sed -e 's/NUMTIMES/'$NUMTIMES'/' -e 's/TIMESTEP/'$DT'/' -e 's/NFAST/'$NFAST'/' \
     -e 's/\bNUMAVG\b/'$NUMAVG'/' \
     -e 's/\bNUMHIS\b/'$NUMHIS'/' \
-    -e 's/\bNUMRST\b/'$NUMRST'/' < ${MODEL}_inter.nml${ENDF} > ${MODEL}_inter.nml${ENDF}.tmp1 \
-  && mv ${MODEL}_inter.nml${ENDF}.tmp1 ${MODEL}.nml${ENDF}
+    -e 's/\bNUMRST\b/'$NUMRST'/' < ${MODEL}_inter.nml${ENDF} > ${MODEL}_inter.nml${ENDF}.tmp1
 
   LEVEL=$((LEVEL + 1))
 done
@@ -292,8 +291,7 @@ while [[ $NY != $NY_END ]]; do
       #
       sed -e 's/NUMRECINI/'$NUMRECINI'/' \
           -e 's/<logfilename>/'${MODEL}_${TIME}.out'/' \
-          < ${MODEL}.nml${ENDF} > ${MODEL}.nml${ENDF}.tmp1 \
-      && mv ${MODEL}.nml${ENDF}.tmp1 ${MODEL}.nml${ENDF}
+          < ${MODEL}_inter.nml${ENDF}.tmp1 > ${MODEL}.nml${ENDF}
       #
       LEVEL=$((LEVEL + 1))
     done
