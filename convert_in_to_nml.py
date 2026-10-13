@@ -185,6 +185,7 @@ MAPPINGS = [
     ("diag_avg", 1, 0, "str", "&croco_diag_avg", "dianame_avg"),
     ("diag_mld_dens", 0, 0, "float", "&croco_diag_mld_dens", "mld_crit_D"),
     ("diag_mld_dens", 0, 1, "float", "&croco_diag_mld_dens", "mld_crit_T"),
+    ("diag_mld_dens", 0, 2, "float", "&croco_diag_mld_dens", "mld_depth_ref"),
     ("diagnosticsM", 0, 0, "bool", "&croco_diagnosticsM", "ldefdiaM"),
     ("diagnosticsM", 0, 1, "int", "&croco_diagnosticsM", "nwrtdiaM"),
     ("diagnosticsM", 0, 2, "int", "&croco_diagnosticsM", "nrpfdiaM"),
