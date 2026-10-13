@@ -125,10 +125,6 @@ RSTFLAG=0
 NY_COLDSTART=2005
 NM_COLDSTART=1
 
-#  Exact restart - EXACT_RST=0 --> Exact restart OFF
-#                - EXACT_RST=1 --> Exact restart ON
-EXACT_RST=1
-
 #unalias cp
 #unalias mv
 #limit coredumpsize unlimited
@@ -378,18 +374,12 @@ while [ $NY != $NY_END ]; do
           NHRST=$((NDAYS * 24))
         fi
       fi
-      if [[ $EXACT_RST == 1 ]]; then
-        echo "Exact restart defined"
-        if [[ $NY == $NY_COLDSTART && $NM == $NM_COLDSTART ]]; then
-          NUMRECINI=1
-          echo "Exact restart activated but COLD START: NY=$NY_COLDSTART NM=$NM_COLDSTART => USING NUMRECINI = $NUMRECINI"
-        else
-          NUMRECINI=2
-          echo "Exact restart activated => USING NUMRECINI = $NUMRECINI"
-        fi
-      else  # no exact restart
+      if [[ $NY == $NY_COLDSTART && $NM == $NM_COLDSTART ]]; then
         NUMRECINI=1
-        echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
+        echo "COLD START (NY=$NY NM=$NM) => only 1 record available => set NUMRECINI = $NUMRECINI"
+      else
+        NUMRECINI=2
+        echo "EXACT RESTART (NY=$NY NM=$NM) => 2 records needed => set NUMRECINI = $NUMRECINI"
       fi
 
       echo "Writing in ${MODEL}_inter.in${ENDF}"

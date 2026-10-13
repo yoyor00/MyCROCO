@@ -80,14 +80,6 @@ ND_HIS=-1
 #   restart (if = -1 set equal to NUMTIMES)
 ND_RST=-1
 
-# Flag for using exact restart - EXACT_RST=1 --> Exact restart ON
-EXACT_RST=1
-
-# Cold start Year and Month - define the Year and Month of the cold start ini file
-# (no leading zero, see WARNING above)
-NY_COLDSTART=1
-NM_COLDSTART=1
-
 #unalias cp
 #unalias mv
 #limit coredumpsize unlimited
@@ -284,18 +276,12 @@ while [[ $NY != $NY_END ]]; do
       else
         ENDF=.${LEVEL}
       fi
-      if [[ $NY == $NY_COLDSTART && $NM == $NM_COLDSTART ]]; then
+      if [[ $NY == 1 && $NM == 1 ]]; then
         NUMRECINI=1
-        [[ $EXACT_RST == 1 ]] && echo "Exact restart activated but COLD START: NY=$NY_COLDSTART NM=$NM_COLDSTART => USING NUMRECINI = $NUMRECINI"
-        [[ $EXACT_RST != 1 ]] && echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
+        echo "COLD START (NY=$NY NM=$NM) => only 1 record available => set NUMRECINI = $NUMRECINI"
       else
-        if [[ $EXACT_RST == 1 ]]; then
-          NUMRECINI=2
-          echo "Exact restart activated => USING NUMRECINI = $NUMRECINI"
-        else
-          NUMRECINI=1
-          echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
-        fi
+        NUMRECINI=2
+        echo "EXACT RESTART (NY=$NY NM=$NM) => 2 records needed => set NUMRECINI = $NUMRECINI"
       fi
       #
       sed -e 's/NUMRECINI/'$NUMRECINI'/' \
