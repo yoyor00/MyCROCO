@@ -85,19 +85,13 @@ do
     cur_M=$( echo $DATE_BEGIN_JOB | cut -c 5-6 ) 
     cur_D=$( echo $DATE_BEGIN_JOB | cut -c 7-8 )
 
-    if [[ ${EXACT_RESTART} == "TRUE" ]]; then
-        idx_rst=0
+    idx_rst=0
 	if [[ ${RESTART_FLAG} == "TRUE" ]]; then
-	    idx_ini=2
-            scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ',' -f 2 | cut -d ';' -f 1)
+        idx_ini=2
+        scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ',' -f 2 | cut -d ';' -f 1)
 	else
-            idx_ini=1
-	    scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-	fi
-    else
+        idx_ini=1
         scrumt=$( ncdump -v scrum_time croco_ini.nc${agrif_ext}| grep "scrum_time = " | cut -d '=' -f 2 | cut -d ' ' -f 2)
-	idx_ini=1
-	idx_rst=-1
     fi
     scrumtindays=$(( $scrumt/86400))
 

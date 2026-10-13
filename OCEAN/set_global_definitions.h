@@ -213,11 +213,12 @@
  contain two consecutive records, the forward initial step is used. */
 
 
-# define FIRST_TIME_STEP iic.eq.forw_start
+#define FIRST_TIME_STEP iic.eq.forw_start
 
 #define FIRST_RST_TIME_STEP iic.eq.ntstart
-/* First time step after initialisation, always equal to iic.eq.ntstart
-   no dependence to EXACT_ or SOFT_RESTART */
+/* First time step after initialisation, always equal to iic.eq.ntstart,
+   whether the restart is exact or not (unlike FIRST_TIME_STEP, which
+   is only true for a forward initial step) */
 #ifdef SOLVE3D
 # define FIRST_2D_STEP iif.eq.1
 # define LAST_2D_STEP iif.eq.nfast
