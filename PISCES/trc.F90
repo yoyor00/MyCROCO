@@ -74,6 +74,7 @@ MODULE trc
    LOGICAL             , PUBLIC ::   ln_trcais          !: Enable Antarctic Ice Sheet nutrient supply
    LOGICAL             , PUBLIC ::   ln_trcdmp          !: internal damping flag
    LOGICAL             , PUBLIC ::   ln_trcdmp_clo      !: internal damping flag on closed seas
+   LOGICAL             , PUBLIC ::   ln_trcdc2dm        !: Diurnal cycle for TOP
    INTEGER             , PUBLIC ::   nittrc000          !: first time step of passive tracers model
 
    !! Information for the ice module for tracers
