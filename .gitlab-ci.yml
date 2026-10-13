@@ -1,5 +1,6 @@
 # ci croco
 stages:
+  - test
   - bench
   - report
 
@@ -31,6 +32,20 @@ variables:
   stage: bench
   tags: [ci.inria.fr, large_more_disk]
   image: registry.gitlab.inria.fr/croco-ocean/croco_docker/ubuntu_intel_parallel:dev
+
+# ─── dependency generator (always-on, fast gate) ──────────────────────────
+#
+# regressions of OCEAN/make_depend.py, Make.depend generation.
+make_depend:
+  stage: test
+  tags: [ci.inria.fr, large]
+  image: registry.gitlab.inria.fr/croco-ocean/croco_docker/debian_gfortran:dev
+  script:
+    # make_depend.py tests
+    - cd $CI_PROJECT_DIR
+    - python3 -m unittest discover -s OCEAN/tests -v
+    # differential check make_depend.py vs cross_matrix
+    - python3 OCEAN/tests/check_differential.py
 
 # ─── gfortran (always-on) ─────────────────────────────────────────────────
 
