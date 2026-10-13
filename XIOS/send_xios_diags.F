@@ -18,6 +18,14 @@
 #ifdef key_pisces
       USE trc, ONLY : profsed
 #endif
+      use croco_namelist, only: ntimes, dt, ndtfast,
+     &                              ininame, rstname, title, frcname,
+     &                              theta_s, theta_b, Tcline, hc,
+     &                              nwrt, rdrg, rho0, gamma2, x_sponge,
+     &                              xios_origin_date
+#ifndef ANA_GRID
+      use croco_namelist, only: grdname
+#endif
       IMPLICIT NONE
 
       PUBLIC set_grid
@@ -790,11 +798,6 @@
 #endif  /* ONLINE_ANALYSIS */
 
       SUBROUTINE set_xml_global_att(cdid)
-         use croco_namelist, only: ntimes, dt, ndtfast,
-     &                              ininame, rstname, title, frcname
-#ifndef ANA_GRID
-         use croco_namelist, only: grdname
-#endif
 # include "param.h"
 # include "scalars.h"
 # include "ncscrum.h"
