@@ -54,7 +54,11 @@ NLEVEL=1
 # AGRIF nesting refinement coefficient
 AGRIF_REF=3
 
-# Start and End year 
+# WARNING: years and months must be given without leading zero (1, 2, ..., 9, 10, ...),
+#          not 01, 02, ..., 09 (bash arithmetic would interpret them as octal numbers).
+#          Use MTH_FORMAT below to get 2-digit months in the output file names.
+#
+# Start and End year
 NY_START=1
 NY_END=10
 # Start and End month
@@ -78,6 +82,11 @@ ND_RST=-1
 
 # Flag for using exact restart - EXACT_RST=1 --> Exact restart ON
 EXACT_RST=1
+
+# Cold start Year and Month - define the Year and Month of the cold start ini file
+# (no leading zero, see WARNING above)
+NY_COLDSTART=1
+NM_COLDSTART=1
 
 #unalias cp
 #unalias mv
@@ -275,9 +284,9 @@ while [[ $NY != $NY_END ]]; do
       else
         ENDF=.${LEVEL}
       fi
-      if [[ $NY == 1 && $NM == 1 ]]; then
+      if [[ $NY == $NY_COLDSTART && $NM == $NM_COLDSTART ]]; then
         NUMRECINI=1
-        [[ $EXACT_RST == 1 ]] && echo "Exact restart activated but COLD START: NY=1 NM=1 => USING NUMRECINI = $NUMRECINI"
+        [[ $EXACT_RST == 1 ]] && echo "Exact restart activated but COLD START: NY=$NY_COLDSTART NM=$NM_COLDSTART => USING NUMRECINI = $NUMRECINI"
         [[ $EXACT_RST != 1 ]] && echo "Exact restart not activated => USING NUMRECINI = $NUMRECINI"
       else
         if [[ $EXACT_RST == 1 ]]; then

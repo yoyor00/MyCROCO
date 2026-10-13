@@ -78,7 +78,11 @@ NLEVEL=1
 # AGRIF nesting refinement coefficient
 AGRIF_REF=3
 
-# Start and End year 
+# WARNING: months must be given without leading zero (1, 2, ..., 9, 10, ...),
+#          not 01, 02, ..., 09 (bash arithmetic would interpret them as octal numbers).
+#          Use MTH_FORMAT below to get 2-digit months in the output file names.
+#
+# Start and End year
 NY_START=2005
 NY_END=2005
 # Start and End month
@@ -117,6 +121,7 @@ NHRST_UC=-1
 RSTFLAG=0
 
 # Cold start Year and Month - define the Year and Month of the cold start ini file
+# (no leading zero, see WARNING above)
 NY_COLDSTART=2005
 NM_COLDSTART=1
 
