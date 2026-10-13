@@ -38,6 +38,7 @@ gfortran:
   <<: *gfortran
   parallel:
     matrix:
+      - { CASES: "THACKER",           VARIANTS: "sequential",       TITLE: "restart_wetdry",         OPTIONS: "--debug --restart" }
       - { CASES: "@base",             VARIANTS: "@debug",           TITLE: "debug_base",             OPTIONS: "--debug" }
       - { CASES: "@nbq",              VARIANTS: "@debug",           TITLE: "debug_nbq",              OPTIONS: "--debug" }
       - { CASES: "@sediment_mustang", VARIANTS: "@debug",           TITLE: "debug_sediment_mustang", OPTIONS: "--debug" }

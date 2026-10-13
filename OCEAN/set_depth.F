@@ -32,7 +32,8 @@ C$    integer omp_get_thread_num
 ! grid boxes.
 !----------------------------------------------------------------------
 !
-      use croco_namelist, only: hc
+      use croco_namelist, only: hc, nrrec
+
       implicit none
       integer Istr,Iend,Jstr,Jend, i,j,k
       real    cff_r,cff1_r,cff_w,cff1_w, z_r0,z_w0, zetatmp,htmp
@@ -88,7 +89,10 @@ C$    integer omp_get_thread_num
               h(i,j)=eps
             END IF
             IF (zeta(i,j,1) .lt. Dcrit(i,j)-h(i,j)) THEN
-              zeta(i,j,1)=Dcrit(i,j)-h(i,j)
+!  Clip only at true cold start: on restart zeta was just read from
+!  file and already holds the genuine (unclipped) dry-cell value,
+!  since the time-stepping loop itself never clips zeta for WET_DRY.
+              IF (nrrec.eq.0) zeta(i,j,1)=Dcrit(i,j)-h(i,j)
               zeta(i,j,2)=zeta(i,j,1)
               zeta(i,j,3)=zeta(i,j,1)
               zeta(i,j,4)=zeta(i,j,1)
