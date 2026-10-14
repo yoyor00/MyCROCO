@@ -59,9 +59,15 @@ gfortran_parallel:
   <<: *gfortran_parallel
   parallel:
     matrix:
+      - { CASES: "VILAINE_PATM",   VARIANTS: "mpi-4",            TITLE: "restart_realist_patm",  OPTIONS: "--restart --compare-to mpi-4" }
       - { CASES: "@realist_base",  VARIANTS: "sequential,mpi-4", TITLE: "debug_realist_base",  OPTIONS: "--debug" }
       - { CASES: "@agrif_realist", VARIANTS: "sequential,mpi-4", TITLE: "debug_agrif_realist", OPTIONS: "--debug" }
   script:
+    # VILAINE_PATM/VILAINE_NOPATM (OBC_PATM restart check, #496) need a
+    # bathymetry with no dry cells (WET_DRY is off for these two cases) -
+    # clamp h to hmin=10m from the original VILAINE grid. Requires nco
+    # (ncap2) in the image.
+    - ncap2 -O -s 'where(h<10.) h=10.' $DATAROOTPATH/COASTAL_VILAINE_BCK/croco_grd.nc $DATAROOTPATH/COASTAL_VILAINE_BCK/croco_grd_modif.nc
     - cd $CI_PROJECT_DIR/BENCH
     - |
       ./bench-croco.py --case "$CASES" --variants "$VARIANTS" --title "$TITLE" $OPTIONS \

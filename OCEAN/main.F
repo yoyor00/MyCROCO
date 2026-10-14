@@ -600,7 +600,7 @@ C$OMP PARALLEL DO PRIVATE(tile)
 !----------------------------------------------------------------------
 !  Read initial climatology fields from NetCDF file
 !  (or any external oceanic forcing data)
-!  in 3D interior
+!  in 3D interior or 2D boundary arrays
 !----------------------------------------------------------------------
 !
 #if defined TCLIMATOLOGY && !defined ANA_TCLIMA
@@ -613,7 +613,15 @@ C$OMP PARALLEL DO PRIVATE(tile)
 #if defined ZCLIMATOLOGY && !defined ANA_SSH
       call get_ssh
 #endif
-
+#if defined FRC_BRY && !defined ANA_BRY
+      call get_bry
+# ifdef BIOLOGY
+      call get_bry_bio
+# endif
+#endif
+#if !defined ANA_BRY_WKB && defined WKB_WWAVE
+      call get_bry_wkb
+#endif
 !
 !----------------------------------------------------------------------
 !  Set analytical initial climatology fields
@@ -648,30 +656,6 @@ CR      write(*,*) ' -2' MYID
 !
 
       call get_vbc
-!
-! Interpolate the forcing fields just read above (sustr, stflx,
-! patm2d, ...) to the initial/restart time needed for OBC_PATM
-!
-C$OMP PARALLEL DO PRIVATE(tile)
-      do tile=0,NSUB_X*NSUB_E-1
-        call set_vbc (tile)
-      enddo
-
-
-!----------------------------------------------------------------------
-!  Read initial climatology fields from NetCDF file
-!  (or any external oceanic forcing data)
-!  2D boundary arrays
-!----------------------------------------------------------------------
-#if defined FRC_BRY && !defined ANA_BRY
-      call get_bry
-# ifdef BIOLOGY
-      call get_bry_bio
-# endif
-#endif
-#if !defined ANA_BRY_WKB && defined WKB_WWAVE
-      call get_bry_wkb
-#endif
 !
 !----------------------------------------------------------------------
 !  Read tidal harmonics from NetCDF file

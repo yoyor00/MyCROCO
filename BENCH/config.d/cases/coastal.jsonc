@@ -22,4 +22,131 @@
     // >> prefer last solution, but for now restart option with bench is not
     // available with MUSTANG
   },
+  // VILAINE_PATM / VILAINE_NOPATM: restart-capable variants of VILAINE, used
+  // to check OBC_PATM exact-restartability (see #496). Both disable WET_DRY
+  // (the reason VILAINE itself can't be restart-tested, see note above) and
+  // MUSTANG (bench's restart check isn't support with MUSTANG yet), and use
+  // a bathymetry clamped at hmin=10m (croco_grd_modif.nc, generated in CI
+  // from the original croco_grd.nc - see .gitlab-ci.yml) so no cell ever
+  // dries, since WET_DRY is off. VILAINE_NOPATM is the same case with
+  // OBC_PATM itself turned back off, as a control.
+  "VILAINE_PATM": {
+    "title": "VILAINE_PATM",
+    "case": "COASTAL",
+    "nml_file": "TEST_CASES/REALIST_EXAMPLES/croco_COASTAL.nml",
+    "cppdefs_file": "TEST_CASES/REALIST_EXAMPLES/cppdefs_COASTAL.h",
+    "param_file": "TEST_CASES/REALIST_EXAMPLES/param_COASTAL.h",
+    "croco_files_path": "COASTAL_VILAINE_BCK",
+    "splitting": { "1": "1x1", "2": "1x2", "4": "2x2", "8": "2x4" },
+    "cppkeys": {
+      "WET_DRY": false,
+      "MUSTANG": false,
+    },
+    "patches": {
+      "TEST_CASES/REALIST_EXAMPLES/croco_COASTAL.nml": [
+        {
+          "mode": "replace",
+          "what": "grdname = \"croco_grd.nc\"",
+          "by": "grdname = \"croco_grd_modif.nc\"",
+          "descr": "Use bathymetry clamped at hmin=10m (no MUSTANG -> WET_DRY off)",
+        },
+        {
+          "mode": "replace",
+          "what": "tnu2 = 5*0.d-2",
+          "by": "tnu2 = 2*0.d-2",
+          "descr": "NT=2 (temp,salt) without MUSTANG",
+        },
+        {
+          "mode": "replace",
+          "what": "tnu4 = 5*0.d11",
+          "by": "tnu4 = 2*0.d11",
+          "descr": "NT=2 (temp,salt) without MUSTANG",
+        },
+        {
+          "mode": "replace",
+          "what": "out_his_tracer = 5*.true.",
+          "by": "out_his_tracer = 2*.true.",
+          "descr": "NT=2 (temp,salt) without MUSTANG",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Lsrc(1,3) = T",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Lsrc(1,4) = T",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Lsrc(1,5) = T",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Lsrc(2,3) = T",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Lsrc(2,4) = T",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Lsrc(2,5) = T",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Tsrc0(1,3) = 0.",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Tsrc0(1,4) = 0.",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Tsrc0(1,5) = 0.",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Tsrc0(2,3) = 0.",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Tsrc0(2,4) = 0.",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+        {
+          "mode": "replace",
+          "what": "psource_Tsrc0(2,5) = 0.",
+          "by": "",
+          "descr": "Drop MUSTANG tracer index (NT=2 without MUSTANG)",
+        },
+      ],
+    },
+    "plotphy": {
+      "plotphy_script": "./TEST_CASES/REALIST_EXAMPLES/plot_realist.py",
+      "plotphy_script_input": "croco_his.nc",
+    },
+    "check_outputs": ["croco_his.nc"],
+    "unsupported": ["openmp"],
+  },
 }
