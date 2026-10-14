@@ -15,6 +15,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - STATION : Add TEMPERATURE cppkey for stations (#445)
 
+- TIDES_MAS : Add online tidal prediction (SHOM Simon method) for currents and
+  potential, in addition to elevation; works now with both
+  ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
+
 ### Fixed
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
@@ -218,7 +222,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer
+  J. Gula, C. Mazoyer, M. Le Corre
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
