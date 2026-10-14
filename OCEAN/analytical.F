@@ -2660,6 +2660,8 @@ C$    integer  trd, omp_get_thread_num
 # include "mixing.h"
 # ifdef WAVE_MAKER
       real wd_bry_tmp(Nfrq)
+      real wmz(GLOBAL_1D_ARRAYETA), wmu(GLOBAL_1D_ARRAYETA),
+     &     wmv(GLOBAL_1D_ARRAYETA), wmw(GLOBAL_1D_ARRAYETA), wstokes
 # endif
 !
 # include "compute_auxiliary_bounds.h"
