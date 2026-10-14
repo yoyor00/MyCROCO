@@ -286,6 +286,39 @@
         ramp=tanh(dt/wp*float(iic-ntstart))
         wa=wa*ramp
 #endif /* WAVE_MAKER_DATA ... */
+#ifdef WAVE_MAKER_SPECTRUM
+!
+!--------------------------------------------------------------------
+!  Sum wave components at rho-points: sea surface elevation, 
+!  depth-averaged velocities, surface vertical velocity and
+!  XI-component of the Stokes transport (independent of j).
+!--------------------------------------------------------------------
+!
+        do j=JstrR,JendR
+          wmz(j)=0.
+          wmu(j)=0.
+          wmv(j)=0.
+          wmw(j)=0.
+          wstokes=0.
+          do iw=1,Nfrq
+            theta=(xr(IB0,j)-x0)*wkx_bry(iw)
+     &           +(yr(IB0,j)-y0)*wky_bry(iw)
+     &              -(time-time0)*wf_bry(iw)
+     &                         -wpha_bry(iw)
+            cff=ramp*wa_bry(iw)
+            cff1=wf_bry(iw)/wk_bry(iw)**2
+            cff2=cff*cos(theta)
+            wmz(j)=wmz(j)+cff2
+            wmu(j)=wmu(j)+cff2*cff1*wkx_bry(iw)
+            wmv(j)=wmv(j)+cff2*cff1*wky_bry(iw)
+# ifdef W_FRC_BRY
+            wmw(j)=wmw(j)+cff*wf_bry(iw)*sin(theta)
+# endif
+            wstokes=wstokes+cff*cff*wkx_bry(iw)/wf_bry(iw)
+          enddo
+        enddo
+        wstokes=0.5*g*wstokes
+#endif
 !
 !--------------------------------------------------------------------
 !  Sea level zetabry
@@ -300,14 +333,7 @@
 #  else
           ZBRY(j)=0.
 #  endif
-          do iw=1,Nfrq   ! frequency spread
-            theta=(xr(IB0,j)-x0)*wkx_bry(iw)
-     &           +(yr(IB0,j)-y0)*wky_bry(iw)
-     &              -(time-time0)*wf_bry(iw)
-     &                         -wpha_bry(iw)
-            ZBRY(j)=ZBRY(j) + ramp*wa_bry(iw)
-     &                            *cos(theta)
-          enddo
+          ZBRY(j)=ZBRY(j)+wmz(j)
 
 # elif defined WAVE_MAKER_BICHROMATIC /* eg GLOBEX B2/B3 */
           cff1=tanh(wk1*h0)
@@ -371,10 +397,11 @@
           khd=h0*wf*wf/g     ! compute mean wavenumber
           wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                     khd*(K5+K6*khd)))))) )/h0
+          cff=wmu(j)*wk/sinh(wk*Du)   ! depth-average wmu(j)/Du,
+                                      ! profile of peak frequency
           do k=1,N
             Zu=Du+0.5*(z_r(IB0,j,k)+z_r(IB1,j,k))
-            UBRY(j,k)=ZBRY(j)*wf*cos(wd)*cosh(wk*Zu)
-     &                                  /sinh(wk*Du)
+            UBRY(j,k)=cff*cosh(wk*Zu)
           enddo
 
 # elif defined WAVE_MAKER_BICHROMATIC
@@ -417,9 +444,14 @@
         enddo  ! j loop
 
 # ifndef WAVE_MAKER_DATA
-        do j=JstrR,JendR                  ! compensation flow
-          Du=0.5*(h(IB0,j)+h(IB1,j))
-          cff1=0.5*g*wa*wa*wk/(wf*Du)
+#  ifdef WAVE_MAKER_SPECTRUM
+        cff=wstokes                       ! sum over wave components
+#  else
+        cff=0.5*g*wa*wa*wk/wf*coswd       ! (coswd<0 for WAVE_MAKER_EAST)
+#  endif
+        do j=JstrR,JendR                  ! compensation flow:
+          Du=0.5*(h(IB0,j)+h(IB1,j))      ! opposes the XI-component
+          cff1=cff/Du                     ! of Stokes transport
           do k=1,N
             UBRY(j,k)=UBRY(j,k) - cff1
           enddo
@@ -454,7 +486,17 @@
             VBRY(j,k)=0.
           enddo
 
-# elif defined WAVE_MAKER_SPECTRUM || defined WAVE_MAKER_BICHROMATIC
+# elif defined WAVE_MAKER_SPECTRUM
+          khd=h0*wf*wf/g   ! compute mean wavenumber
+          wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
+     &                                     khd*(K5+K6*khd)))))) )/h0
+          cff=wmv(j)*wk/sinh(wk*Dv)   ! same as for UBRY
+          do k=1,N
+            Zv=Dv+0.5*(z_r(IB0,j,k)+z_r(IB0,j-1,k))
+            VBRY(j,k)=cff*cosh(wk*Zv)
+          enddo
+
+# elif defined WAVE_MAKER_BICHROMATIC
           khd=h0*wf*wf/g   ! compute mean wavenumber
           wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
      &                                     khd*(K5+K6*khd)))))) )/h0
@@ -513,21 +555,30 @@
 #ifdef W_FRC_BRY
         do j=JstrR,JendR
           Dr=h(IB0,j)
-# ifdef WAVE_MAKER_SPECTRUM
+# ifdef WAVE_MAKER_DATA
           do k=1,N
             WBRY(j,k)=0.
-#  ifndef WAVE_MAKER_DSPREAD
             Zr=Dr+z_w(IB0,j,k)
             do iw=1,Nfrq
               WBRY(j,k)=WBRY(j,k) + 
      &                    ramp*wa_bry(iw)*wf_bry(iw)*
      &                               sinh(wk_bry(iw)*Zr)/
      &                               sinh(wk_bry(iw)*Dr)
-     &                *sin((xr(IB0,j)-x0)*wk_bry(iw)
+     &                *sin((xr(IB0,j)-x0)*wkx_bry(iw)
+     &                    +(yr(IB0,j)-y0)*wky_bry(iw)
      &                      -(time-time0)*wf_bry(iw)
      &                                 -wpha_bry(iw))
             enddo
-#  endif
+          enddo
+
+# elif defined WAVE_MAKER_SPECTRUM
+          khd=Dr*wf*wf/g     ! compute mean wavenumber
+          wk=sqrt( khd*khd+khd/(1.+khd*(K1+khd*(K2+khd*(K3+khd*(K4+
+     &                                     khd*(K5+K6*khd)))))) )/Dr
+          cff=wmw(j)/sinh(wk*Dr)      ! surface value wmw(j),
+          do k=1,N                    ! profile of peak frequency
+            Zr=Dr+z_w(IB0,j,k)
+            WBRY(j,k)=cff*sinh(wk*Zr)
           enddo
 
 # elif defined WAVE_MAKER_BICHROMATIC
