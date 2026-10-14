@@ -60,6 +60,7 @@ gfortran_parallel:
   <<: *gfortran_parallel
   parallel:
     matrix:
+      - { CASES: "VILAINE",        VARIANTS: "mpi-4",            TITLE: "restart_realist_wetdry",     OPTIONS: "--restart --compare-to mpi-4" }
       - { CASES: "@realist_base",  VARIANTS: "sequential,mpi-4", TITLE: "debug_realist_base",  OPTIONS: "--debug" }
       - { CASES: "@agrif_realist", VARIANTS: "sequential,mpi-4", TITLE: "debug_agrif_realist", OPTIONS: "--debug" }
   script:

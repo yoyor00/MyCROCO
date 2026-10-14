@@ -33,7 +33,7 @@
 #if defined OA_COUPLING || defined OW_COUPLING
 # include "mpi_cpl.h"
 #endif
-#if defined NBQ || defined MORPHODYN
+#if defined NBQ || defined MORPHODYN || defined WET_DRY
 # include "grid.h"
 #endif
 #include "mixing.h"
@@ -543,6 +543,17 @@
 
         goto 99                                           !--> ERROR
       endif
+#ifdef WET_DRY
+!
+!  Only sanitize zeta against Dcrit when there is no prior run to
+!  trust: ntstart==1 means this record has no "time_step" history
+!
+      if (ntstart.eq.1) then
+        where (zeta(:,:,1) .lt. Dcrit(:,:)-h(:,:))
+          zeta(:,:,1) = Dcrit(:,:)-h(:,:)-1.e-14
+        endwhere
+      endif
+#endif
 !
 ! 2D momentum component in the XI-direction.
 !

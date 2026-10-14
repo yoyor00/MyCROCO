@@ -243,6 +243,19 @@
           enddo
         end select
 
+# ifdef WET_DRY
+!
+!  Ensure the analytical free surface above respects Dcrit
+!
+        do j=JR_RANGE
+          do i=IR_RANGE
+            if (zeta(i,j,1) .lt. Dcrit(i,j)-h(i,j)) then
+              zeta(i,j,1) = Dcrit(i,j)-h(i,j)-1.e-14
+            endif
+          enddo
+        enddo
+# endif
+
       else  !  nrrec.ne.0.
 
 !  Add perturbation to restart field for rip channel testcases

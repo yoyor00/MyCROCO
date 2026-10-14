@@ -42,7 +42,7 @@
 # undef  STATIONS
 # undef  PASSIVE_TRACER
 # undef  SUBSTANCE
-# define MUSTANG
+# undef  MUSTANG
 # undef  SEDIMENT
 # undef  BBL
                       /* Stochastic and Ensemble */
@@ -136,7 +136,7 @@
 #   define AROME
 #   undef  ERA_ECMWF
 #  endif
-#  define READ_PATM
+#  undef  READ_PATM
 #  ifdef READ_PATM
 #   define OBC_PATM
 #  endif
