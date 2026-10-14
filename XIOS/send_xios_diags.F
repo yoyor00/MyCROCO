@@ -1167,11 +1167,13 @@ C 				  endif
 
 
       SUBROUTINE dom_ngb( plon, plat, kii, kjj, cdgrid )
+# ifdef MPI
+      use mpi
+# endif
 # include "param.h"
 # include "grid.h"
 # ifdef MPI
 #      include "mpi_cpl.h"
-       include 'mpif.h'
 # endif
       !!----------------------------------------------------------------------
       !!                    ***  ROUTINE dom_ngb  ***

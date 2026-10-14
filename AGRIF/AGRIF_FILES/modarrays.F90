@@ -27,6 +27,9 @@ module Agrif_Arrays
 !
     use Agrif_Types
     use Agrif_Grids
+#if defined AGRIF_MPI
+    use mpi
+#endif
 !
     implicit none
 !
@@ -111,7 +114,6 @@ subroutine Agrif_get_var_global_bounds( var, lubglob, nbdim )
     integer,                     intent(in)  :: nbdim
 !
 #if defined AGRIF_MPI
-    include 'mpif.h'
     integer, dimension(nbdim)   :: lb, ub
     integer, dimension(nbdim,2) :: iminmaxg
     integer :: i, code, coord_i

@@ -681,10 +681,12 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+# ifdef MPI
+      use mpi
+# endif
       IMPLICIT NONE
 
 # ifdef MPI
-      include 'mpif.h'
 #     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
 
@@ -713,10 +715,12 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+# ifdef MPI
+      use mpi
+# endif
       IMPLICIT NONE
 
 # ifdef MPI
-      include 'mpif.h'
 #     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
       INTEGER :: iv, iz, ierror
@@ -744,6 +748,9 @@ CONTAINS
       !!
       !!------------------------------------------------------------------------
 
+# ifdef MPI
+      use mpi
+# endif
       IMPLICIT NONE
 
       REAL(KIND=rsh), DIMENSION(GLOBAL_2D_ARRAY, N, 3, NT), &
@@ -751,7 +758,6 @@ CONTAINS
       INTEGER, INTENT(IN) :: Istr, Iend, Jstr, Jend
 
 # ifdef MPI
-      include 'mpif.h'
 #     include "mpi_cpl.h"
       integer status(MPI_STATUS_SIZE), blank, ierr
       INTEGER :: itrc

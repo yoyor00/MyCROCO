@@ -29,6 +29,9 @@
 module Agrif_Boundary
 !
     use Agrif_Interpolation
+#if defined AGRIF_MPI
+    use mpi
+#endif
 !
     implicit none
 !
@@ -131,9 +134,6 @@ subroutine Agrif_Correctnd ( parent, child, pweight, weight,                    
                              s_Child, s_Parent, ds_Child, ds_Parent,                &
                              nbdim, procname )
 !---------------------------------------------------------------------------------------------------
-#if defined AGRIF_MPI
-    include 'mpif.h'
-#endif
 !
     TYPE(Agrif_Variable), pointer       :: parent       !< Variable on the parent grid
     TYPE(Agrif_Variable), pointer       :: child        !< Variable on the child grid

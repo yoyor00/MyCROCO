@@ -31,6 +31,7 @@ module Agrif_Interpolation
     use Agrif_CurgridFunctions
 #if defined AGRIF_MPI
     use Agrif_Mpp
+    use mpi
 #endif
 !
     implicit none
@@ -101,9 +102,6 @@ subroutine Agrif_InterpnD ( type_interp, parent, child, pttab, petab, pttab_Chil
                             s_Child, s_Parent, ds_Child, ds_Parent, restore, torestore,          &
                             nbdim, childarray, memberin, in_bc, procname, nb, ndir )
 !---------------------------------------------------------------------------------------------------
-#if defined AGRIF_MPI
-    include 'mpif.h'
-#endif
 !
     INTEGER, DIMENSION(6),     INTENT(in)   :: type_interp  !< Type of interpolation !    (linear,...)
     TYPE(Agrif_Variable),      pointer      :: parent       !< Variable of the parent grid

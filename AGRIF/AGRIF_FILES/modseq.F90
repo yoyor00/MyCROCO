@@ -3,6 +3,9 @@ module Agrif_seq
     use Agrif_Init
     use Agrif_Procs
     use Agrif_Arrays
+#if defined AGRIF_MPI
+    use mpi
+#endif
 !
     implicit none
 !
@@ -565,7 +568,6 @@ subroutine Agrif_seq_create_communicators ( grid )
 !---------------------------------------------------------------------------------------------------
     type(Agrif_Grid), intent(inout) :: grid
 !
-    include 'mpif.h'
     type(Agrif_Sequence_List), pointer  :: seqlist  ! List of child sequences
     type(Agrif_PGrid), pointer          :: gridp
     type(Agrif_Proc),  pointer          :: proc
