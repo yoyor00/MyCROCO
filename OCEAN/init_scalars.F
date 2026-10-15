@@ -1878,7 +1878,7 @@ CR      write(stdout,'(1x,A,I3)') 'indxR =',indxR
       || defined GLS_MIXING
 CR      write(stdout,'(1x,A,I3)') 'indxbvf =',indxbvf
       vname(1,indxbvf)='bvf                                       '
-      vname(2,indxbvf)='Squared Brunt Vaisala Frequency (N^2)     '
+      vname(2,indxbvf)='Square of Brunt Vaisala Frequency         '
       vname(3,indxbvf)='second-2                                  '
       vname(4,indxbvf)='bvf, scalar, series                       '
       vname(5,indxbvf)='square_of_brunt_vaisala_frequency_in_sea_water'
