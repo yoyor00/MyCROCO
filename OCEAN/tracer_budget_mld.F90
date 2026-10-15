@@ -103,19 +103,19 @@
         ! ----------------------------------------------------
           if (itrc.eq.1) then
 #  ifdef MASKING
-           Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbld(i,j)) &
+           Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kbld(i,j)-1) &
      &                     *rmask(i,j)
 #  else
-           Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kbld(i,j)) 
+           Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kbld(i,j)-1) 
      
 #  endif
         
           elseif (itrc.eq.2) then
 #  ifdef MASKING
-           Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kblt(i,j)) &
+           Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kblt(i,j)-1) &
      &                      *rmask(i,j)
 #  else
-           Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_r(i,j,kblt(i,j)) 
+           Tcrit_mld(i,j,itrc)=z_w(i,j,N)-z_w(i,j,kblt(i,j)-1) 
 #  endif
           endif
          enddo
