@@ -47,6 +47,7 @@ include Makedefs
 	uv3dmix.F	uv3dmix_spg.F	t3dmix.F	t3dmix_spg.F\
 	hmix_coef.F	wetdry.F	wavedry.F\
 	u3dbc.F		v3dbc.F		t3dbc.F\
+	tracer_budget_mld.F \
 \
 	step3d_fast.F\
 	step3d_w.F	rhs3d_w_nh.F	initial_nbq.F	grid_nbq.F\

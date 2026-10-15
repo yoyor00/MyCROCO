@@ -1445,7 +1445,7 @@ C$    integer omp_get_thread_num
 #  endif
           kbl(i,j)=init
 #  if defined DIAGNOSTICS_TS_MLD_DENS
-          kbl1(i,j)=init
+          kbld(i,j)=init
 #  endif
 #  ifdef AVERAGES
           hbl_avg(i,j)=init

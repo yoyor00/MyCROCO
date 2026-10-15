@@ -143,8 +143,8 @@
       common /lmd_kpp_hbl/ hbl
 #   endif
 #   ifdef DIAGNOSTICS_TS_MLD_DENS
-      integer kbl1(GLOBAL_2D_ARRAY)
-      common /kpp_kbl1/kbl1
+      integer kbld(GLOBAL_2D_ARRAY)
+      common /kpp_kbld/kbld
 #   endif
 #   ifdef LMD_NONLOCAL
       real ghats(GLOBAL_2D_ARRAY,0:N)
