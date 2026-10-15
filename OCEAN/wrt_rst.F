@@ -41,7 +41,7 @@
 #ifdef SEDIMENT
 # include "sediment.h"
 #endif
-#ifdef MORPHODYN
+#if defined MORPHODYN || defined WET_DRY
 # include "grid.h"
 #endif
 #ifdef BBL
@@ -636,6 +636,29 @@
        endif
 
 #  endif /* TS_MIX_ISO_FILT */
+
+#  ifdef WET_DRY
+!
+! Wetting/drying masks at u- and v-points.
+!
+      ierr=nf_fwrite(umask_wet(START_2D_ARRAY), ncidrst,
+     &                             rstumaskwet, record, u2dvar)
+      if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxumaskwet))
+          write(stdout,1) vname(1,indxumaskwet)(1:lvar), record,
+     &                  ierr MYID
+          goto 99                                         !--> ERROR
+      endif
+
+      ierr=nf_fwrite(vmask_wet(START_2D_ARRAY), ncidrst,
+     &                             rstvmaskwet, record, v2dvar)
+      if (ierr .ne. nf_noerr) then
+          lvar=lenstr(vname(1,indxvmaskwet))
+          write(stdout,1) vname(1,indxvmaskwet)(1:lvar), record,
+     &                  ierr MYID
+          goto 99                                         !--> ERROR
+      endif
+#  endif /* WET_DRY */
 # endif /* EXACT_RESTART */
 
 # ifdef SEDIMENT
