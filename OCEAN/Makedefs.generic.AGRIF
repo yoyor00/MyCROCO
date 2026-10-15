@@ -1,5 +1,8 @@
 # [1] Machine independent rules and definitions.
 #==== ======= =========== ===== === ============
+# clear builtins rules
+.SUFFIXES:
+# add croco suffixes
 .SUFFIXES: .o .f .i .F .F90 .f90
 
 .f.o:
