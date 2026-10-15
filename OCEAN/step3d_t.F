@@ -573,7 +573,7 @@
                         || defined GLS_MIXING
      &    +dt*srflx(i,j)*swdk(i,j,k)
 #    ifdef LMD_NONLOCAL
-     &    -dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
+     &    +dt*ghats(i,j,k)*(stflx(i,j,itemp)-srflx(i,j))
 #    endif
 #   endif
               enddo
@@ -587,7 +587,7 @@
                 FC(i,k)=0.
 #   if defined LMD_SKPP || defined LMD_BKPP
 #    ifdef LMD_NONLOCAL
-     &    -dt*ghats(i,j,k)*stflx(i,j,isalt)
+     &    +dt*ghats(i,j,k)*stflx(i,j,isalt)
 #    endif
 #   endif
               enddo
