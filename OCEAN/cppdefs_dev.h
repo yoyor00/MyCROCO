@@ -144,17 +144,16 @@
 #endif
 #if defined SALINITY       || defined TEMPERATURE || \
     defined PASSIVE_TRACER || defined SUBSTANCE   || \
-    defined SEDIMENT       || defined BIOLOGY
+    defined SEDIMENTS      || defined BIOLOGY
 # define TRACERS
 # define TEMPERATURE
 #endif
 
 /*
 ======================================================================
-   Activate NBQ choices for non-hydrostatic simulations
+   Activate NBQ choices for non-hydrostatic simulations (KNBQ2)
 ======================================================================
 */
-
 #ifdef NBQ              /* General options */
 # define KNBQ2
 # define M3FAST
@@ -201,7 +200,6 @@
 */   
 #if defined KNBQ || defined KH3D || defined KNHINT || defined KHCOMP
 # define KNBQ3
-# define NBQ
 # undef  K3FAST        
 # undef  K3FAST_UV
 # undef  K3SLOW_W
@@ -219,17 +217,30 @@
 # undef  K3FAST_COUPLING2D
 # undef  K3FAST_COUPLING3D
 # undef  K3FAST_BOTH
-# undef  K3FAST_COUPLING_SCH0
-# undef  K3FAST_COUPLING_SCH1
-# undef  K3FAST_COUPLING_SCH2
-# undef  K3FAST_COUPLINGW_SCH0
-# undef  K3FAST_COUPLINGW_SCH1
-# undef  K3FAST_COUPLINGW_SCH2
+# ifndef K3FAST_COUPLING_SCH0
+#   undef  K3FAST_COUPLING_SCH0
+# endif
+# ifndef K3FAST_COUPLING_SCH1
+#   undef  K3FAST_COUPLING_SCH1
+# endif
+# ifndef K3FAST_COUPLING_SCH2
+#   undef  K3FAST_COUPLING_SCH2
+# endif
+# ifndef K3FAST_COUPLINGW_SCH0
+#   undef  K3FAST_COUPLINGW_SCH0
+# endif
+# ifndef K3FAST_COUPLINGW_SCH1
+#   undef  K3FAST_COUPLINGW_SCH1
+# endif
+# ifndef K3FAST_COUPLINGW_SCH2
+#   undef  K3FAST_COUPLINGW_SCH2
+# endif
 # undef  KNHINT_3M
 # undef  K3FAST_AVG_CLASSIC
 # undef  K3FAST_PG2
-# undef  UV_VADV_WENO5_INTC6    
+# define UV_VADV_WENO5_INTC6    
 # ifdef KNBQ    
+#   define NBQ
 #   define K3FAST        
 #   define K3FAST_UV
 #   define K3SLOW_W
@@ -279,20 +290,18 @@
 #   define K3FAST_C3D_WSF
 #   define K3FAST_C3D_WFS
 #   define K3FAST_AM4
-#   define  KNHINT_WH
-#   undef  KNHINT_ZETAW
-#   define  K3FAST_DUVNBQ2
-#   ifdef KNHINT_ZETAW
-#    define NBQ_HZCORRECT
-#    define NBQ_HZCORRECT_ZETA
-#   endif
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH0
-#   define K3FAST_COUPLINGW_SCH0
+#   ifndef K3FAST_COUPLING_SCH0
+#     define K3FAST_COUPLING_SCH1
+#   endif
+#   ifndef K3FAST_COUPLINGW_SCH0
+#     define K3FAST_COUPLINGW_SCH1
+#   endif
 #   define KNHINT_3M
 #   define KNHINT_CORR
+#   define K3FAST_CSVISC2K
+#   define KNHINT_CORR_visc2
 #   define K3FAST_AVG_CLASSIC
-#   define K3FAST_PG2
 # endif
 !# ifdef NOT_NBQ_AM4
 !#   undef K3FAST_AM4
@@ -378,6 +387,7 @@
 #  define OBC_WORLANSKI      /*  W Radiative conditions         */
 #  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
 #  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
+#  undef NBQ_NUDGING_W      /* interior/bdy forcing/nudging (W)*/
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
@@ -458,22 +468,6 @@
                   || defined SOLITON  || defined JET \
                   || defined ACOUSTIC || defined VORTEX \
                   || defined THACKER  || defined TANK \
-                  || defined KH_INST  || defined TS_HADV_TEST \
-                  || defined AgAc
-# define PGF_FLAT_BOTTOM
-#elif defined RIP || defined FLASH_RIP
-# define PGF_BASIC_JACOBIAN
-# define WJ_GRADP 0.125
-#elif defined PGF_BASIC_JACOBIAN
-# define WJ_GRADP 0.125
-                  || defined KH_INST  || defined TS_HADV_TEST \
-                  || defined AgAc
-# define PGF_FLAT_BOTTOM
-#elif defined RIP || defined FLASH_RIP
-# define PGF_BASIC_JACOBIAN
-# define WJ_GRADP 0.125
-#elif defined PGF_BASIC_JACOBIAN
-# define WJ_GRADP 0.125
                   || defined KH_INST  || defined TS_HADV_TEST \
                   || defined AgAc
 # define PGF_FLAT_BOTTOM
@@ -661,7 +655,7 @@
    If BIO_HADV_WENO5 is chosen, the advection scheme for passive tracers is
    independent from that selected for the two active tracers (TS_HADV)
 */
-#if defined BIO_HADV_WENO5 || defined SUBSTANCE
+#ifdef BIO_HADV_WENO5
 # if defined TEMPERATURE && defined SALINITY
 #  define NTRA_T3DMIX 2    /* TS_HADV applied over the 2 active tracers */
 # elif defined TEMPERATURE || defined SALINITY
@@ -701,7 +695,7 @@
 ======================================================================
 */
 #ifdef SPONGE
-# ifndef NO_SPONGE_GRID
+# ifndef INNERSHELF
 #  define SPONGE_GRID
 # endif
 # define SPONGE_DIF2
@@ -720,7 +714,6 @@
 
 # if defined GLS_KOMEGA
 # elif defined GLS_KEPSILON
-# elif defined GLS_GEN
 # elif defined GLS_GEN
 # else
 #  define GLS_KEPSILON
@@ -1079,6 +1072,7 @@
 # define USE_CALENDAR
 # define TEMPERATURE
 # define SALINITY
+# define key_noTSdiss_insed
 # define key_nofluxwat_IWS
 #endif /* MUSTANG */
 

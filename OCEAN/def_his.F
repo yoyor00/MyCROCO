@@ -35,9 +35,11 @@
 ! routines, the second one is generated from the first entirely
 ! by CPP.
 !
+#ifdef CROCO_NAMELIST
       USE croco_namelist, ONLY: nrpfhis, ldefhis, hisname
 #ifdef AVERAGES
       USE croco_namelist, ONLY: nrpfavg, avgname
+#endif
 #endif
 #if defined MUSTANG
       USE comsubstance, ONLY : nvpc
@@ -1021,7 +1023,7 @@
 !
         if (wrt(indxW)) then
           lvar=lenstr(vname(1,indxW))
-# ifdef NBQ
+# if defined NBQ || defined K3FAST
           ierr=nf_def_var (ncid, vname(1,indxW)(1:lvar),
      &                               NF_FOUT, 4, w3dgrd, vidW)
 # else

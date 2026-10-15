@@ -17,6 +17,9 @@
 #ifdef key_pisces
       USE trc, ONLY : profsed
 #endif
+#ifdef CROCO_NAMELIST
+      USE croco_namelist
+#endif
       IMPLICIT NONE
 
       PUBLIC set_grid
@@ -1786,6 +1789,9 @@ C 				  endif
       USE xios     ! XIOS library
       USE xios_module
 
+      USE croco_namelist
+
+
 #if defined MUSTANG
       USE comMUSTANG, only: nk_nivsed_out
 # endif
@@ -2235,6 +2241,9 @@ C 				  endif
 
           USE xios     ! XIOS io
           USE xios_module
+
+          USE croco_namelist
+
 #if defined BIOLOGY && defined PISCES
           USE trcwri_pisces
 #endif

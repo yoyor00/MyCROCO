@@ -68,7 +68,9 @@
 ! mode) computations.
 !--------------------------------------------------------------------
 !
+#ifdef CROCO_NAMELIST
       use croco_namelist, only: dt, ntimes, lts_hadv, lts_rot_or_diag, lts_per
+#endif
 #ifdef CVTK_DEBUG
       use debug
 #endif              
@@ -1066,6 +1068,7 @@
 !--------------------------------------------------------------------
 !
 
+#ifdef CROCO_NAMELIST
       if (lts_rot_or_diag) then
         do k=1,N
           do j=JstrR,JendR
@@ -1094,6 +1097,37 @@
           enddo
         enddo
       endif
+#else
+# if defined TS_HADV_TEST && ( defined DIAGONAL_ADV || defined SOLID_BODY_ROT )
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            u(i,j,k,nnew) = u(i,j,k,nstp)
+          enddo
+        enddo
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            v(i,j,k,nnew) = v(i,j,k,nstp)
+          enddo
+        enddo
+      enddo
+# endif
+# if defined TS_HADV_TEST && defined SOLID_BODY_PER
+      cff = cos(2.*pi*(time+dt/2.)/(float(ntimes)*dt))
+      do k=1,N
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            u(i,j,k,nnew) = u(i,j,k,nstp) * cff
+          enddo
+        enddo
+        do j=JstrR,JendR
+          do i=IstrR,IendR
+            v(i,j,k,nnew) = v(i,j,k,nstp) * cff
+          enddo
+        enddo
+      enddo
+# endif
+#endif
 !$acc end kernels
 !
 !--------------------------------------------------------------------

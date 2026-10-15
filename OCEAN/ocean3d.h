@@ -1,12 +1,12 @@
-!======================================================================
-! CROCO is derived from the ROMS-AGRIF branch of ROMS.
-! ROMS-AGRIF was developed by IRD and Inria. CROCO also inherits
-! from the UCLA branch (Shchepetkin et al.) and the Rutgers
-! University branch (Arango et al.), both under MIT/X style license.
-! Copyright (C) 2005-2026 CROCO Development Team
-! License: CeCILL-2.1 - see LICENSE.txt
+! $Id: ocean3d.h 1458 2014-02-03 15:01:25Z gcambon $
 !
-! CROCO website : https://www.croco-ocean.org
+!======================================================================
+! CROCO is a branch of ROMS developped at IRD and INRIA, in France
+! The two other branches from UCLA (Shchepetkin et al)
+! and Rutgers University (Arango et al) are under MIT/X style license.
+! CROCO specific routines (nesting) are under CeCILL-C license.
+!
+! CROCO website : http://www.croco-ocean.org
 !======================================================================
 !
 /* This is include file "ocean3.h".
@@ -18,7 +18,7 @@
       real t(GLOBAL_2D_ARRAY,N,3,NT)
       common /ocean_u/u /ocean_v/v /ocean_t/t
 
-# ifndef M3FAST_SEDLAYERS
+# ifndef K3FAST_SEDLAYERS
       real Hz(GLOBAL_2D_ARRAY,N)
       real Hz_bak(GLOBAL_2D_ARRAY,N)
       real z_r(GLOBAL_2D_ARRAY,N)
@@ -38,18 +38,20 @@
 #  endif
 # endif
 
-# ifdef NBQ
+# if defined NBQ || defined K3FAST 
+#  if defined NBQ || defined K3SLOW_W
       real wz(GLOBAL_2D_ARRAY,0:N,3)
       common /ocean_wz/wz
+#  endif
 #  ifdef NBQ_MASS
-#   ifndef M3FAST_SEDLAYERS
+#   ifndef K3FAST_SEDLAYERS
       real Hzr(GLOBAL_2D_ARRAY,N)
 #   else
       real Hzr(GLOBAL_2D_ARRAY,-N_sl+1:N)
 #   endif
       common /grid_Hzr/Hzr
 #  else
-#   define Hzr Hz
+#   define Hzr Hz 
 #  endif
 # endif
 

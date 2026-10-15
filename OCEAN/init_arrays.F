@@ -31,6 +31,7 @@ C$    integer omp_get_thread_num
 ! distribution of the shared arrays accross the cluster, unless
 ! another distribution policy is specified to override the default.
 !
+#ifdef CROCO_NAMELIST
         USE croco_namelist, ONLY: visc2, visc4
 #ifdef SOLVE3D
 # ifdef TRACERS
@@ -40,6 +41,7 @@ C$    integer omp_get_thread_num
         USE croco_namelist, ONLY: Akv_bak, Akt_bak
 # endif
 # endif
+#endif
 !     implicit none
 #include "param.h"
 #include "ncscrum.h"
@@ -1537,12 +1539,14 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
       do k=0,N
         do j=JstrR,JendR
           do i=IstrR,IendR
+#   if defined NBQ || defined K3SLOW_W
             wz(i,j,k,1)  =init
             wz(i,j,k,2)  =init
+#   endif
             rw_nbq(i,j,k)=init
 #   if !defined M2FILTER_NONE
             rw_nbq_avg1(i,j,k)=init
@@ -1552,7 +1556,7 @@ C$    integer omp_get_thread_num
           enddo
         enddo
       enddo
-#  else
+#  elif defined M3FAST
       do j=JstrR,JendR
         do i=IstrR,IendR
           rubar_nbq(i,j)=init

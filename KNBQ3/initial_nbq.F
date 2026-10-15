@@ -38,8 +38,10 @@
 #  endif
 # endif
      &                         )
+#ifdef CROCO_NAMELIST
       USE croco_namelist, ONLY: dt, nrrec, rho0, 
      &                  visc2read_nbq, csound_nbq
+#endif
 !
 !======================================================================
 !
@@ -289,7 +291,7 @@ c c c !$acc update host( visc2_nbq, visc2v_nbq )
             rhobar_nbq(i,j,:)=0.
           enddo
         enddo
-        do k=1,N
+       do k=1,N
           do j=JR_RANGE
             do i=IR_RANGE
               work2d(i,j)      =work2d(i,j)+Hzr(i,j,k)

@@ -150,10 +150,12 @@ C$    trd=omp_get_thread_num()
 ! !*********************************************************************
 ! !*********************************************************************
 ! !
-      use croco_namelist, only: dt, rho0, rdrg, rdrg2, Cdb_min, Cdb_max, ndtfast
+#ifdef CROCO_NAMELIST
+      use croco_namelist, only: dt, rho0, rdrg, rdrg2, Cdb_min, Cdb_max, ndtfast, csound_nbq, visc2read_nbq
 # ifdef NBQ
       use croco_namelist, only: csound_nbq, visc2read_nbq
 # endif
+#endif
 # ifdef CVTK_DEBUG               
       use debug
       use my_functions
@@ -163,7 +165,9 @@ C$    trd=omp_get_thread_num()
       use module_oa_variables, only : tv_oa
       use module_oa_periode,   only : tvc_oa,tc_oa
 # endif
+#ifdef CROCO_NAMELIST
       USE croco_namelist, ONLY: dt, rho0, rdrg, rdrg2
+#endif
       implicit none
 ! ! 
 ! !*********************************************************************
@@ -201,8 +205,10 @@ C$    trd=omp_get_thread_num()
 
 # if defined K3FAST_PG2
       real,parameter :: gammau=0.45   ! NBQ pressure gradient scheme
-      real,parameter :: gammau_2=(1./3.)*(1.-gammau)
+# else
+      real,parameter :: gammau=1.  ! --> second-order
 # endif
+      real,parameter :: gammau_2=(1./3.)*(1.-gammau)
       real
      &                Dnew(PRIVATE_2D_SCRATCH_ARRAY),
      &               rubar(PRIVATE_2D_SCRATCH_ARRAY),
@@ -1083,13 +1089,13 @@ C$    trd=omp_get_thread_num()
           cff1=ubar(i,j,knew)
           cff2=vbar(i,j,knew)
           cff=max(abs(cff1),abs(cff2))
-! # ifdef K3FAST_RHO
-!          do k=1,N
-!           cff1=rho_nbq(i,j,k)
-!           cff2=rho_nbq(i,j,k)
-!           cff=max(cff,abs(cff1),abs(cff2))
-!          enddo
-!# endif
+# ifdef K3FAST_RHO
+          do k=1,N
+           cff1=rho_nbq(i,j,k)
+           cff2=rho_nbq(i,j,k)
+           cff=max(cff,abs(cff1),abs(cff2))
+          enddo
+# endif
           IF (cff.GE.VMAX .or. cff1.ne.cff1 .or. cff2.ne.cff2) THEN
             IF (cff.GE.VMAX .and. cff1.eq.cff1 .and. cff2.eq.cff2) THEN 
               VMAX=cff

@@ -49,7 +49,7 @@ contains
 #ifdef SOLVE3D
       call init_croco_s_coord()
 #endif
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
       call init_time_stepping_nbq()
 #endif
 #ifdef USE_CALENDAR
@@ -1060,25 +1060,46 @@ contains
    end subroutine init_logfile
 #endif /* LOGFILE */
 
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
    !---------------------------------------------------------------------
    !  init_time_stepping_nbq
-   !  Propagate dtfast into the NBQ common block.
-   !
-   !  NOTE : the COMMON block is legacy; it should eventually be replaced
-   !          by a proper module variable.
+   !  Propagate ndtnbq, nsdtnbq, and dtnbq into NBQ common blocks.
    !---------------------------------------------------------------------
    subroutine init_time_stepping_nbq()
       use scalars, ONLY: dtfast
+      use croco_namelist, ONLY: dt, ndtfast, ndtnbq_in, csound_nbq, visc2read_nbq
       implicit none
 
+      integer :: ndtnbq
+      common/time_nbq1/ndtnbq
       real :: dtnbq
-      common/time_nbq2/dtnbq   ! TODO: replace with module variable
+      common/time_nbq2/dtnbq
+      real :: visc2_nbq
+      common/nbq_visc2/visc2_nbq
+      integer :: nsdtnbq
+      common/nbq_nsdtnbq/nsdtnbq
 
-      dtnbq = dtfast
+      ndtnbq = ndtnbq_in
+
+# ifndef KNHINT_3M
+#  ifdef NBQ
+      visc2_nbq = visc2read_nbq
+      ndtnbq    = 1   
+#  else
+      ndtnbq    = ndtfast
+#  endif
+      nsdtnbq   = 1
+      dtnbq     = dtfast
+# else
+      if (int(ndtfast/ndtnbq).ne.ndtfast/ndtnbq) then
+        ndtnbq = ndtfast
+      endif
+      nsdtnbq = ndtfast/ndtnbq
+      dtnbq   = dt/float(ndtnbq)
+# endif
 
    end subroutine init_time_stepping_nbq
-#endif /* NBQ */
+#endif /* NBQ || K3FAST */
 
 #ifdef USE_CALENDAR
    !---------------------------------------------------------------------

@@ -100,7 +100,7 @@ contains
       namelist /croco_initial/ nrrec, ininame
       namelist /croco_restart/ nrst, nrpfrst, rstname
 #if defined NBQ || defined K3FAST
-      namelist /croco_time_stepping_nbq/ csound_nbq, visc2read_nbq
+      namelist /croco_time_stepping_nbq/ ndtnbq_in, csound_nbq, visc2read_nbq
 #endif
 #ifdef SOLVE3D
       namelist /croco_s_coord/ theta_s, theta_b, hc
@@ -2215,7 +2215,7 @@ contains
 
       MPI_master_only WRITE (stdout, *) "2.  TIME STEPPING ----------------------------------"
       MPI_master_only WRITE (stdout, nml=croco_time_stepping)
-#ifdef NBQ
+#if defined NBQ || defined K3FAST
       MPI_master_only WRITE (stdout, nml=croco_time_stepping_nbq)
 #endif
 

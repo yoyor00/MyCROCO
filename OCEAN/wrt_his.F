@@ -13,8 +13,10 @@
                                ! Writes requested model
       subroutine wrt_his       ! fields at requested levels
                                ! into history netCDF file.
+#ifdef CROCO_NAMELIST
       USE croco_namelist, only: dt, rho0
       USE croco_namelist, ONLY: nrpfhis, hisname
+#endif
 #ifdef SUBSTANCE
       USE comsubstance, ONLY : cvfix_wat, nvpc
 #endif
@@ -109,7 +111,7 @@
 #ifdef WKB_WWAVE
 # include "wkb_wwave.h"
 #endif
-#ifdef NBQ
+#if defined NBQ || defined K3FAST || defined K3FAST_HIS
 # include "nbq.h"
 #endif
 #include "work.h"
@@ -1431,8 +1433,8 @@ CR      write(*,*) 'wrt_his:  wrtT  ' MYID
 !$acc update if(compute_on_device) host(rho_nbq)
         workr=0.
         do k=1,N
-          do j=1,Mm 
-            do i=1,Lm  
+          do j=0,Mm+1
+            do i=0,Lm+1
             workr(i,j,k)=rho_nbq(i,j,k-ksl)
           enddo
          enddo
