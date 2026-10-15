@@ -71,6 +71,8 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - KPP : bug fix for the non-local term in surface KPP parameterisation
         wrong sign and + correction to recover the empirical free convection scaling of 0.2 
 
+- 
+
 ### Changed
 
 - Input file croco.in replace by a standard namelist (#497)
@@ -81,6 +83,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   previous croco.in into croco.nml.
   A detailed error message (raw content, iostat/iomsg, expected array size)
   is now written in case of a malformed namelist (#555)
+  (#568)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
