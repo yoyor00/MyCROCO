@@ -46,6 +46,7 @@
 #ifdef STOGEN
           USE stomod         ! Stochastic module
           USE stoexternal    ! Provide parameters to stochastic modules
+          USE stoarray
 #endif
 #ifdef ENSEMBLE
           USE ensmpi         ! Ensemble module
@@ -428,6 +429,8 @@ C$OMP PARALLEL DO PRIVATE(tile)
       do tile=0,NSUB_X*NSUB_E-1
         call ana_initial (tile)
       enddo
+
+
 !
 !----------------------------------------------------------------------
 !  Initialize specific PISCES variables
@@ -867,6 +870,19 @@ C$OMP PARALLEL DO PRIVATE(tile)
          call output_oa(1)
       endif
       endif if_online_analysis
+#endif
+!
+!----------------------------------------------------------------------
+!  Add stochastic perturbations to initial conditions
+!----------------------------------------------------------------------
+!
+#ifdef STOGEN
+      if (ln_stogen .and. ln_stoics) then
+        call sto_mod( ntstart ) ! update stochastic fields
+        do tile=0,NSUB_X*NSUB_E-1
+          call sto_initial (tile)
+        enddo
+      endif
 #endif
 !
 !----------------------------------------------------------------------

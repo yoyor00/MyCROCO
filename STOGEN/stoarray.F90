@@ -33,6 +33,7 @@ MODULE stoarray
    LOGICAL, PUBLIC           :: ln_stobulk = .FALSE.   ! stochastic bulk formulation for air-sea fluxes
    LOGICAL, PUBLIC           :: ln_stostress = .FALSE. ! stochastic formulation of surface stress (non-bulk)
    LOGICAL, PUBLIC           :: ln_stogls = .FALSE.    ! stochastic formulation of vertical mixing
+   LOGICAL, PUBLIC           :: ln_stoics = .FALSE.    ! stochastic initial condition perturbations
 
    LOGICAL, PUBLIC           :: ln_rststo = .FALSE.  ! restart stochastic parameters from restart file
    LOGICAL, PUBLIC           :: ln_rstseed = .FALSE. ! read seed of RNG from restart file
@@ -149,7 +150,7 @@ CONTAINS
       !!                initialize arrays with features of stochastic processes
       !!----------------------------------------------------------------------
       ! Namelist with general parameters for stochastic modules
-      NAMELIST/namsto/ ln_stogen, ln_stobulk, ln_stostress, ln_stogls, &
+      NAMELIST/namsto/ ln_stogen, ln_stobulk, ln_stostress, ln_stogls, ln_stoics, &
                      & ln_rststo, ln_rstseed, cn_storst_in, cn_storst_out, &
                      & cn_xi2d, cn_xi3d, cn_rngtype, cn_normal_algo
       !!----------------------------------------------------------------------
@@ -166,14 +167,15 @@ CONTAINS
          WRITE(numout,*) 'sto_param_init : stochastic parameterization'
          WRITE(numout,*) '~~~~~~~~~~~~~~'
          WRITE(numout,*) '   Namelist namsto : stochastic parameterization'
-         WRITE(numout,*) '      apply stochastic parameterization       ln_stogen      = ', ln_stogen
-         WRITE(numout,*) '            stochastic bulk fluxes            ln_stobulk     = ', ln_stobulk
-         WRITE(numout,*) '            stochastic wind stress (non-bulk) ln_stostress   = ', ln_stostress
-         WRITE(numout,*) '            stochastic vertical mixing        ln_stogls      = ', ln_stogls
-         WRITE(numout,*) '      restart stochastic parameters           ln_rststo      = ', ln_rststo
-         WRITE(numout,*) '      read seed of RNG from restart file      ln_rstseed     = ', ln_rstseed
-         WRITE(numout,*) '      suffix of sto restart name (input)      cn_storst_in   = ', trim(cn_storst_in)
-         WRITE(numout,*) '      suffix of sto restart name (output)     cn_storst_out  = ', trim(cn_storst_out)
+         WRITE(numout,*) '      apply stochastic parameterization       ln_stogen     = ', ln_stogen
+         WRITE(numout,*) '            stochastic bulk fluxes            ln_stobulk    = ', ln_stobulk
+         WRITE(numout,*) '            stochastic wind stress (non-bulk) ln_stostress  = ', ln_stostress
+         WRITE(numout,*) '            stochastic vertical mixing        ln_stogls     = ', ln_stogls
+         WRITE(numout,*) '            stochastic initial conditions     ln_stoics     = ', ln_stoics
+         WRITE(numout,*) '      restart stochastic parameters           ln_rststo     = ', ln_rststo
+         WRITE(numout,*) '      read seed of RNG from restart file      ln_rstseed    = ', ln_rstseed
+         WRITE(numout,*) '      suffix of sto restart name (input)      cn_storst_in  = ', trim(cn_storst_in)
+         WRITE(numout,*) '      suffix of sto restart name (output)     cn_storst_out = ', trim(cn_storst_out)
          WRITE(numout,*) '      name of field that is stored as xi2d    cn_xi2d        = ', trim(cn_xi2d)
          WRITE(numout,*) '      name of field that is stored as xi3d    cn_xi3d        = ', trim(cn_xi3d)
          WRITE(numout,*) '      name of random number generator used    cn_rngtype     = ', trim(cn_rngtype)
