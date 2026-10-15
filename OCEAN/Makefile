@@ -38,6 +38,7 @@ include Makedefs
 	init_scalars.F	init_arrays.F	set_weights.F\
 	set_scoord.F	ana_grid.F	setup_grid1.F	setup_grid2.F\
 	set_nudgcof.F	ana_initial.F	analytical.F	zonavg.F\
+	sto_initial.F\
 \
 	step2d.F 	u2dbc.F		v2dbc.F		zetabc.F\
 	obc_volcons.F\
@@ -136,7 +137,7 @@ include Makedefs
 	stoexternal.F90	storng_kiss.F90	storng_ziggurat.F90	storng_testmpi.F90\
 	stosobolseq.F90	stoarray.F90	stokernel.F90	stodiff.F90	stowhite.F90\
 	stobulk.F90	stomarginal.F90	storst.F90	stopar.F90	stomod.F90\
-	ensmpi.F90	stostress.F90   stoalloc.F90    stogls.F90\
+	ensmpi.F90	stostress.F90   stoalloc.F90    stogls.F90	stoics.F90\
 	buffer.F90\
 	par_pisces.F90	oce_trc.F90	trc.F90		sms_pisces.F90\
 	in_out_manager.F90	iom.F90	lib_mpp.F90		prtctl.F90\
