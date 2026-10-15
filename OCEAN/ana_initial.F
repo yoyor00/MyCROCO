@@ -637,6 +637,115 @@
           enddo
 #   endif
 
+        case ('CANON2D_HWI')
+          du     = 1.0
+          hu0    = 0.1
+          eps3D  = 0.
+!
+!$acc loop private (hint,hintu)
+          do j=JR_RANGE
+            do i=IU_RANGE
+              depth=h(i,j)
+              zu0=-0.5*depth
+              hup0=0.15*depth
+              hint = 0.
+              hintu = 0.
+              do k=1,N
+                u(i,j,k,1)  = 1.+4./135.*(
+     &            30.*(z_r(1,1,k)-zu0)-30.-log(cosh(30.*(
+     &            z_r(1,1,k)-zu0-1./8.))/cosh(105./4.)))
+                u(i,j,k,1)  = u(i,j,k,1) +
+     &                          4./135.*(
+     &          -0.1*log(cosh(30.*(z_r(1,1,k)-zu0-1./8.
+     &                   +depth/10.*sin(2.*pi/xl*xr(i,j))
+     &                   ))/cosh(105./4.)))
+                u(i,j,k,2)  = u(i,j,k,1)
+                hintu = hintu + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+     &                            * u(i,j,k,1)
+                hint = hint   + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+              enddo
+              hintu = hintu / hint
+              do k=1,N
+                  u(i,j,k,1) = u(i,j,k,1) - hintu
+                  u(i,j,k,2) = u(i,j,k,1)
+              enddo
+              ubar(i,j,:) = 0.
+            enddo
+          enddo
+          do j=JR_RANGE
+            do i=IR_RANGE
+              depth=h(i,j)
+              zu0=-0.5*depth
+              hup0=0.15*depth
+              do k=1,N
+                v(i,j,k,1)  = 0.
+                v(i,j,k,2)  = 0.
+#   ifdef NBQ
+                wz(i,j,k,1) = 0.
+                wz(i,j,k,2) = 0.
+#   endif
+              enddo
+            enddo
+          enddo
+#   ifdef NBQ
+          do j=JR_RANGE
+            do i=IR_RANGE
+                wz(i,j,0,:)=0.
+            enddo
+          enddo
+#   endif
+
+        case ('CANON2D_TCI')
+          du     = 1.0
+          hu0    = 0.1
+          eps3D  = 0.
+!
+!$acc loop private (hint,hintu)
+          do j=JR_RANGE
+            do i=IU_RANGE
+              depth=h(i,j)
+              zu0=-0.5*depth
+              hup0=0.15*depth
+              hint = 0.
+              hintu = 0.
+              do k=1,N
+                u(i,j,k,1)  = (z_r(1,1,k)-zu0)
+                u(i,j,k,2)  = u(i,j,k,1)
+                hintu = hintu + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+     &                            * u(i,j,k,1)
+                hint = hint   + 0.5*(Hz(i,j,k)+Hz(i-1,j,k))
+              enddo
+              hintu = hintu / hint
+              do k=1,N
+                  u(i,j,k,1) = u(i,j,k,1) - hintu
+                  u(i,j,k,2) = u(i,j,k,1)
+              enddo
+              ubar(i,j,:) = 0.
+            enddo
+          enddo
+          do j=JR_RANGE
+            do i=IR_RANGE
+              depth=h(i,j)
+              zu0=-0.5*depth
+              hup0=0.15*depth
+              do k=1,N
+                v(i,j,k,1)  = 0.
+                v(i,j,k,2)  = 0.
+#   ifdef NBQ
+                wz(i,j,k,1) = 0.
+                wz(i,j,k,2) = 0.
+#   endif
+              enddo
+            enddo
+          enddo
+#   ifdef NBQ
+          do j=JR_RANGE
+            do i=IR_RANGE
+                wz(i,j,0,:)=0.
+            enddo
+          enddo
+#   endif
+
         case default
           do k=1,N
             do j=JR_RANGE
