@@ -319,8 +319,8 @@
      &              0.25*(bvf(i,j,k)+bvf(i,j,k-1)) )
      &       - C_Ek*f(i,j)*f(i,j) )
 
-            Vtsq=Vtc*ws*sqrt(max(0., bvf(i,j,k-1)))
-
+            Vtsq=1.8*Vtc*ws*SQRT(max(1.e-5, bvf(i,j,k-1)))
+            
             Cr(i,k-1)=FC(i,k-1) +Vtsq
             if (my_kbl(i).eq.0 .and. Cr(i,k-1).lt.0.)
      &                          my_kbl(i)=k

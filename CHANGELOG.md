@@ -15,6 +15,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - STATION : Add TEMPERATURE cppkey for stations (#445)
 
+- TIDES_MAS : Add online tidal prediction (SHOM Simon method) for currents and
+  potential, in addition to elevation; works now with both
+  ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
+
 ### Fixed
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
@@ -63,6 +67,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   Update BENCH accordingly.
 
 - VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
+
+- KPP : bug fix for the non-local term in surface KPP parameterisation
+        wrong sign and + correction to recover the empirical free convection scaling of 0.2 
 
 ### Changed
 
@@ -211,7 +218,7 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer
+  J. Gula, C. Mazoyer, M. Le Corre
 
 - New contributors : 
   M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
