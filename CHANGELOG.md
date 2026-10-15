@@ -71,8 +71,6 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - KPP : bug fix for the non-local term in surface KPP parameterisation
         wrong sign and + correction to recover the empirical free convection scaling of 0.2 
 
-- 
-
 ### Changed
 
 - Input file croco.in replace by a standard namelist (#497)
