@@ -15,7 +15,7 @@
                               ! Scale them.
 #if defined SSH_TIDES || defined UV_TIDES
 # ifdef TIDES_MAS
-      USE MOD_TIDES_MAS
+      USE mod_tides_mas
 # endif
 #ifdef OPENACC
       use exchange_device_host
@@ -227,16 +227,27 @@
           write(stdout,6) 'tide_Cmin',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
-
 #ifdef OPENACC
           call update_device(UV_Tminor(:,:,itide))
 #endif
+
+#  ifndef TIDES_MAS
         do j=0,LOCALMM+1
           do i=0,LOCALLM+1
             UV_Tangle(i,j,itide)=UV_Tangle(i,j,itide)*deg2rad
             UV_Tphase(i,j,itide)=UV_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#  else
+        do j=0,LOCALMM+1
+          do i=0,LOCALLM+1
+            if (UV_Tangle(i,j,itide)<0.0)
+     &        UV_Tangle(i,j,itide)=UV_Tangle(i,j,itide)+360
+            if (UV_Tphase(i,j,itide)<0.0)
+     &        UV_Tphase(i,j,itide)=UV_Tphase(i,j,itide)+360
+          enddo
+        enddo
+#  endif
 #ifdef OPENACC
           call update_device(UV_Tangle(:,:,itide))
           call update_device(UV_Tphase(:,:,itide))
@@ -272,11 +283,20 @@
           write(stdout,6) 'tide_Pphase',itide,frcname(1:lstr)
           stop                           !-->  EXIT
         endif
+#  ifndef TIDES_MAS
         do j=0,LOCALMM+1
           do i=0,LOCALLM+1
             POT_Tphase(i,j,itide)=POT_Tphase(i,j,itide)*deg2rad
           enddo
         enddo
+#  else
+        do j=0,LOCALMM+1
+          do i=0,LOCALLM+1
+            if (POT_Tphase(i,j,itide)<0.0)
+     &        POT_Tphase(i,j,itide)=POT_Tphase(i,j,itide)+360.
+          enddo
+        enddo
+#  endif
 #ifdef OPENACC
           call update_device(POT_Tphase(:,:,itide))
 #endif
@@ -285,6 +305,8 @@
       enddo !Ntides
 # ifdef TIDES_MAS
       Tperiod=Tperiod*3600.0
+!  Called once here rather than per-tile in clm_tide
+      call mas_init_waves(Ntides,k_of,nn_of)
 # endif
 
 

@@ -78,3 +78,32 @@
       common /tides_Ptide/ Ptide
 #endif
 
+#ifdef TIDES_MAS
+      REAL,DIMENSION(30,8,GLOBAL_2D_ARRAY)       :: mrssh,mgssh
+      common /tides_mrssh/ mrssh
+      common /tides_mgssh/ mgssh
+
+      REAL,DIMENSION(30,8,GLOBAL_2D_ARRAY)       :: mru,mgu,mrv,mgv
+      common /tides_mru/ mru
+      common /tides_mgu/ mgu
+      common /tides_mrv/ mrv
+      common /tides_mgv/ mgv
+
+      REAL,DIMENSION(130,GLOBAL_2D_ARRAY)        :: mhssh,mhu,mhv
+      common /tides_mhssh/ mhssh
+      common /tides_mhu/ mhu
+      common /tides_mhv/ mhv
+
+      REAL,DIMENSION(30,8,GLOBAL_2D_ARRAY)       :: mrpot,mgpot
+      common /tides_mrpot/ mrpot
+      common /tides_mgpot/ mgpot
+
+      REAL,DIMENSION(130,GLOBAL_2D_ARRAY)        :: mhpot
+      common /tides_mhpot/ mhpot
+
+      INTEGER,DIMENSION(Ntides) :: k_of   ! species index for harmonic i
+      INTEGER,DIMENSION(Ntides) :: nn_of  ! rank within species for harmonic i
+      common /tides_k_of/ k_of
+      common /tides_nn_of/ nn_of
+#endif
+
