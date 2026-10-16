@@ -215,6 +215,10 @@ $(SBIN):   $(OBJS90) $(OBJS)
 	 $(LDR) $(FFLAGS) $(LDFLAGS) -o a.out $(OBJS90) $(OBJS) $(LCDF) $(LMPI)
 	 mv a.out $(SBIN)
 
+# a change of compiler or flags rebuilds everything (jobcomp only
+# rewrites Makedefs when its content changed)
+$(OBJS90) $(OBJS): Makedefs
+
 #
 # Auxiliary utility programs and List of Dependecies:
 # ========= ======= ======== === ==== == ============

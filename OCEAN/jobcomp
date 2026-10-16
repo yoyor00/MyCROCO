@@ -440,6 +440,16 @@ if [[ $COMPILEAGRIF ]] ; then
 #
 # compile the AGRIF librairy
 #
+# the flags are given on the command line, so make cannot see them change:
+# an incremental build (-u) cleans the library when they did. Not with
+# "make -C AGRIF clean": its clean-conv step needs LIB/Makefile.lex, which
+# is not distributed, and fails before anything is removed
+#
+   AGRIF_FLAGS="$CFT1|$CPP1|$COMPILEMPI $MPIINC|$FFLAGS1|$CFLAGS1"
+   if [[ -f AGRIF/.jobcomp_flags && "$AGRIF_FLAGS" != "$(cat AGRIF/.jobcomp_flags)" ]] ; then
+      rm -rf AGRIF/libagrif.a AGRIF/*.mod AGRIF/AGRIF_OBJS AGRIF/AGRIF_YOURFILES
+   fi
+   echo "$AGRIF_FLAGS" > AGRIF/.jobcomp_flags
    if [[ $COMPILEMPI ]] ; then
       $MAKE -C AGRIF FC="$CFT1" CPP="$CPP1" CPPFLAGS="-DAGRIF_MPI $MPIINC" FFLAGS="$FFLAGS1" CFLAGS="$CFLAGS1"
    else
@@ -516,31 +526,23 @@ fi
 # rewrite Makedefs according to previous flags
 # with openmp flags if needed
 #
-rm -f Makedefs
 echo 's?$(FFLAGS1)?'$FFLAGS1'?g' > flags.tmp
 echo 's?$(LDFLAGS1)?'$LDFLAGS1'?g' >> flags.tmp
 echo 's?$(CPP1)?'$CPP1'?g' >> flags.tmp
 echo 's?$(CFT1)?'$CFT1'?g' >> flags.tmp
 echo 's?$(CPPFLAGS1)?'$CPPFLAGS1'?g' >> flags.tmp
-sed -f flags.tmp Makedefs.generic > Makedefs
+sed -f flags.tmp Makedefs.generic > Makedefs.new
 rm -f flags.tmp
-
 #
-# incremental build: $SCRDIR is reused. make sees the sources and headers
-# through Make.depend, but nothing makes the objects depend on Makedefs: a
-# change of compiler, flags or include paths would silently relink stale
-# objects. cppdefs.h, cppdefs_dev.h and param.h are checked too, since a
-# change of CPP keys can switch AGRIF, MPI, XIOS... on or off
+# the objects depend on Makedefs (see Makefile): only replace it when its
+# content changed, so that an incremental build (-u) recompiles everything
+# after a change of compiler, flags or include paths, and nothing otherwise
 #
-CONFIG="$(cat Makedefs cppdefs.h cppdefs_dev.h param.h 2>/dev/null | cksum)"
-if [[ -n $INCREMENTAL ]] ; then
-   if [[ -f .jobcomp_config && "$CONFIG" != "$(cat .jobcomp_config)" ]] ; then
-      echo "Build configuration changed since the last build in $SCRDIR,"
-      echo "an incremental build (-u) cannot reuse it: run without -u instead."
-      exit 1
-   fi
+if cmp -s Makedefs.new Makedefs ; then
+   rm -f Makedefs.new
+else
+   mv -f Makedefs.new Makedefs
 fi
-echo "$CONFIG" > .jobcomp_config
 
 #
 # compile croco
