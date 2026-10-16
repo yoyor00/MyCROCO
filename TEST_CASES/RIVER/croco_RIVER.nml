@@ -72,14 +72,14 @@
 /
 
 &croco_psource_tracer
-  psource_Lsrc(1,1) = T
-  psource_Lsrc(1,2) = T
-  psource_Lsrc(2,1) = T
-  psource_Lsrc(2,2) = T
-  psource_Tsrc0(1,1) = 5.
-  psource_Tsrc0(1,2) = 0.
-  psource_Tsrc0(2,1) = 5.
-  psource_Tsrc0(2,2) = 0.
+  psource_Lsrc(1,1) = T        ! River #1, read (T/F) tracer #1 (temperature) from file
+  psource_Lsrc(1,2) = T        ! River #1, read (T/F) tracer #2 (salinity)    from file
+  psource_Lsrc(2,1) = T        ! River #2, read (T/F) tracer #1 (temperature) from file
+  psource_Lsrc(2,2) = T        ! River #2, read (T/F) tracer #2 (salinity)    from file
+  psource_Tsrc0(1,1) = 5.      ! River #1, temperature
+  psource_Tsrc0(1,2) = 0.      ! River #1, salinity
+  psource_Tsrc0(2,1) = 5.      ! River #2, temperature
+  psource_Tsrc0(2,2) = 0.      ! River #2, salinity
 /
 
 &croco_primary_history_fields
