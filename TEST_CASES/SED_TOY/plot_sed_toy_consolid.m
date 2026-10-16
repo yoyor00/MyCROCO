@@ -54,7 +54,7 @@ nc=netcdf(fname);
 h=squeeze(nc{'h'}(idy,idx));
 bostr=squeeze(nc{'bostr'}(:,idy,idx));
 
-T=squeeze(nc{'scrum_time'}(:,:))/86400;
+T=squeeze(nc{'time'}(:,:))/86400;
 [nt,t0]=size(T);
 
 zbed=zeros(nl,4);
