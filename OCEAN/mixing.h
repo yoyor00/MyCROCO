@@ -168,6 +168,10 @@
       common /gls_hbl/ hbl
       real cm0
       common /gls_cm0/ cm0
+#   ifdef DIAGNOSTICS_TS_MLD_DENS
+      integer kbl1(GLOBAL_2D_ARRAY)
+      common /kpp_kbl1/kbl1
+#   endif
 # endif /* GLS_MIXING */
 
 #else
