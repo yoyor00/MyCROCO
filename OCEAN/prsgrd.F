@@ -140,6 +140,24 @@ c********************************************************************
       omega    = 2.*pi/(12.4*3600.)
 
 !$acc kernels if(compute_on_device) default(present)
+# ifdef K3FAST_NOBPG
+        do k=1,N
+        do j=Jstr,Jend
+          do i=IstrU,Iend
+            ru(i,j,k)=0.5*(HZR(i,j,k)+HZR(i-1,j,k))*on_u(i,j)*g*(
+     &                                z_w(i-1,j,N)-z_w(i,j,N)   )
+            enddo
+          enddo
+        enddo
+        do k=1,N
+        do j=JstrV,Jend
+          do i=Istr,Iend
+            rv(i,j,k)=0.5*(HZR(i,j,k)+HZR(i,j-1,k))*on_v(i,j)*g*(
+     &                                z_w(i,j-1,N)-z_w(i,j,N)   )
+            enddo
+          enddo
+        enddo
+# else
       !do j=JstrV-1,Jend
       DOLOOP2D(IstrU-1,Iend,JstrV-1,Jend)
         do k=1,N-1
@@ -440,6 +458,7 @@ c********************************************************************
           enddo
         enddo
       enddo   ! k loop
+# endif /* K3FAST_NOBPG */
 !
 !======================================================================
 !

@@ -237,7 +237,9 @@
 # endif
 # undef  KNHINT_3M
 # undef  K3FAST_AVG_CLASSIC
-# undef  K3FAST_PG2
+# ifndef K3FAST_PG2
+#   undef  K3FAST_PG2
+# endif
 # define UV_VADV_WENO5_INTC6    
 # ifdef KNBQ    
 #   define NBQ
@@ -256,9 +258,15 @@
 #   define NBQ_HZCORRECT_ZETA
 #   define K3FAST_AM4 
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH1
-#   define K3FAST_COUPLINGW_SCH1
-#   undef  K3FAST_PG2
+#   ifndef K3FAST_COUPLING_SCH0
+#     define K3FAST_COUPLING_SCH1
+#   endif
+#   ifndef K3FAST_COUPLINGW_SCH0
+#     define K3FAST_COUPLINGW_SCH1
+#   endif
+#   ifndef K3FAST_PG2
+#     undef  K3FAST_PG2
+#   endif
 # elif defined KH3D
 #   define K3FAST   
 #   define K3FAST_AM4
@@ -322,7 +330,9 @@
 #  define M2FILTER_NONE  /* no filter with KNBQ */
 #  undef  M2FILTER_POWER
 #  define NBQ_IMP
-#  undef  NBQ_THETAIMP
+#  ifndef NBQ_THETAIMP
+#   undef  NBQ_THETAIMP
+#  endif
 #  ifdef SPONGE
 #   define  NBQ_SPONGE
 #  endif

@@ -17,7 +17,7 @@
 # define NEW_S_COORD
 # define UV_ADV
 # undef  NBQ
-# ifdef NBQ
+# if defined NBQ || defined KNBQ
 #  define NBQ_PRECISE
 #  define WAVE_MAKER
 #  define WAVE_MAKER_SPECTRUM

@@ -576,7 +576,7 @@ C$    integer omp_get_thread_num
 !
 !$acc kernels if(compute_on_device) default(present)
       select case (trim(testcase_name))
-      case ('BASIN', 'EQUATOR', 'GRAV_ADJ', 'SOLITON', 'ISOLITON',
+      case ('BASIN', 'EQUATOR', 'GRAV_ADJ', 'SOLITON', 'ISOLITON', 'ISOLITON_DJL',
      &      'KH_INST', 'KH_INSTY', 'KH_INST3D',
      &      'CANON2D_KHI', 'CANON2D_TCI', 'CANON2D_HWI',
      &      'TS_HADV_TEST', 'TS_HADV_TEST_DIAG', 'TS_HADV_TEST_ROT',

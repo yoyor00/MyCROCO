@@ -173,6 +173,10 @@
         soundspeed2_nbq =csound_nbq**2
 #  endif
 
+# ifdef NBQ_RCSOUND
+        rcsound2_nbq = 1.D0
+# endif
+
         
 #ifdef K3FAST_CSVISC2K        
 !$acc update device( visc2_nbq,  visc2v_nbq
