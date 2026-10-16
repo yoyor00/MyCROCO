@@ -103,6 +103,8 @@ function show_help() {
    echo "                              (default: if fc=nvfortran or pgfortran: '-g -fast -r8 -i4 -mcmodel=medium -Mbackslash' )."
    echo "  --jobs <flags>              Number of processes for compilation (default: 1)"
    echo "  --timings                   Enable wall-clock timing regions (Experimental feature)."
+   echo "  -u, --incremental           Incremental build: do not clean the scratch area and only"
+   echo "                              update the sources whose content changed (needs rsync)."
    echo "  --netcdf-inc <path>         Specify the NetCDF include directory. (default: nf-config --includedir)"
    echo "  --netcdf-lib <path>         Specify the NetCDF library directory. (default: nf-config --flibs)"
    echo "  --xios-dir <path>           Specify the XIOS root directory. (default: $HOME/xios)"
@@ -156,6 +158,10 @@ while [[ $# -gt 0 ]]; do
             CROCO_TIMINGS=1
             shift
             ;;
+        -u|--incremental)
+            INCREMENTAL=TRUE
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             show_help
@@ -167,6 +173,7 @@ done
 
 NPROCS="${NPROCS:-1}"
 CROCO_TIMINGS="${CROCO_TIMINGS:-0}"
+INCREMENTAL="${INCREMENTAL:-}"
 SOURCE="${CROCO_SRC-$SOURCE1}"
 SCRDIR="./Compile"
 RUNDIR="`pwd`"
@@ -183,8 +190,23 @@ which $MAKE > /dev/null 2>&1 || MAKE=make
 #
 # clean scratch area
 #
-rm -rf "$SCRDIR"
-mkdir "$SCRDIR"
+if [[ -z $INCREMENTAL ]] ; then
+   rm -rf "$SCRDIR"
+   mkdir "$SCRDIR"
+   DESTDIR="$SCRDIR"
+else
+   # incremental build: keep the objects in $SCRDIR, assemble the sources
+   # in $DESTDIR exactly as a full build would, then sync them into $SCRDIR
+   # by content (see below)
+   command -v rsync > /dev/null 2>&1 || {
+      echo "jobcomp -u needs rsync, which was not found: install it or run without -u"
+      exit 1
+   }
+   DESTDIR="./Compile.src"
+   rm -rf "$DESTDIR"
+   mkdir "$DESTDIR"
+   mkdir -p "$SCRDIR"
+fi
 
 #
 # AGRIF sources directory
@@ -194,23 +216,22 @@ AGRIF_SRC="${ROOT_DIR}/AGRIF"
 #
 # copy SOURCE code
 #
-
-ls "${SOURCE}/"*.F               > /dev/null  2>&1 && \cp "${SOURCE}/"*.F   "$SCRDIR"
-ls "${SOURCE}/"*.F90             > /dev/null  2>&1 && \cp "${SOURCE}/"*.F90 "$SCRDIR"
-ls "${SOURCE}/"*.h               > /dev/null  2>&1 && \cp "${SOURCE}/"*.h   "$SCRDIR"
-ls "${SOURCE}/"*.py              > /dev/null  2>&1 && \cp "${SOURCE}/"*.py   "$SCRDIR"
-ls "${SOURCE}/"Make*             > /dev/null  2>&1 && \cp "${SOURCE}/"Make* "$SCRDIR"
-ls "${SOURCE}/"amr.in            > /dev/null  2>&1 && \cp "${SOURCE}/"amr.in "$SCRDIR"
-ls "${AGRIF_SRC}"                > /dev/null  2>&1 && \cp -r "${AGRIF_SRC}" "$SCRDIR"
-ls "${ROOT_DIR}/"XIOS/*.F        > /dev/null  2>&1 && \cp "${ROOT_DIR}/"XIOS/*.F "$SCRDIR"
-ls "${ROOT_DIR}/"PISCES/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/* "$SCRDIR"
-ls "${ROOT_DIR}/"PISCES/LIB/*    > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/LIB/* "$SCRDIR"
-ls "${ROOT_DIR}/"PISCES/SED/*    > /dev/null  2>&1 && \cp "${ROOT_DIR}/"PISCES/SED/* "$SCRDIR"
+ls "${SOURCE}/"*.F               > /dev/null  2>&1 && \cp "${SOURCE}/"*.F   "$DESTDIR"
+ls "${SOURCE}/"*.F90             > /dev/null  2>&1 && \cp "${SOURCE}/"*.F90 "$DESTDIR"
+ls "${SOURCE}/"*.h               > /dev/null  2>&1 && \cp "${SOURCE}/"*.h   "$DESTDIR"
+ls "${SOURCE}/"*.py              > /dev/null  2>&1 && \cp "${SOURCE}/"*.py   "$DESTDIR"
+ls "${SOURCE}/"Make*             > /dev/null  2>&1 && \cp "${SOURCE}/"Make* "$DESTDIR"
+ls "${SOURCE}/"amr.in            > /dev/null  2>&1 && \cp "${SOURCE}/"amr.in "$DESTDIR"
+ls "${AGRIF_SRC}"                > /dev/null  2>&1 && \cp -r "${AGRIF_SRC}" "$DESTDIR"
+ls "${ROOT_DIR}/"XIOS/*.F        > /dev/null  2>&1 && \cp "${ROOT_DIR}/"XIOS/*.F "$DESTDIR"
+ls "${ROOT_DIR}/"PISCES/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/* "$DESTDIR"
+ls "${ROOT_DIR}/"PISCES/LIB/*    > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"PISCES/LIB/* "$DESTDIR"
+ls "${ROOT_DIR}/"PISCES/SED/*    > /dev/null  2>&1 && \cp "${ROOT_DIR}/"PISCES/SED/* "$DESTDIR"
 ls "${ROOT_DIR}/"PISCES/kRGB61*  > /dev/null  2>&1 && \cp "${ROOT_DIR}/"PISCES/kRGB61* $RUNDIR
-ls "${ROOT_DIR}/"MUSTANG/*       > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"MUSTANG/* "$SCRDIR"
-ls "${ROOT_DIR}/"OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"OBSTRUCTION/* "$SCRDIR"
-ls "${SOURCE}/"croco_ascii.txt   > /dev/null  2>&1 && \cp "${SOURCE}/"croco_ascii.txt "$SCRDIR"
-ls "${ROOT_DIR}/"STOGEN/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"STOGEN/* "$SCRDIR"
+ls "${ROOT_DIR}/"MUSTANG/*       > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"MUSTANG/* "$DESTDIR"
+ls "${ROOT_DIR}/"OBSTRUCTION/*   > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"OBSTRUCTION/* "$DESTDIR"
+ls "${SOURCE}/"croco_ascii.txt   > /dev/null  2>&1 && \cp "${SOURCE}/"croco_ascii.txt "$DESTDIR"
+ls "${ROOT_DIR}/"STOGEN/*        > /dev/null  2>&1 && \cp -r "${ROOT_DIR}/"STOGEN/* "$DESTDIR"
 
 if [[ -e "namelist_sto" ]] ; then
         echo "  file namelist_sto exist in Run directory"
@@ -232,11 +253,22 @@ fi
 # overwrite with local files
 #
 
-ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 "$SCRDIR"
-ls *.F     > /dev/null  2>&1 && \cp -f *.F "$SCRDIR"
-ls *.h     > /dev/null  2>&1 && \cp -f *.h "$SCRDIR"
-ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 "$SCRDIR"
-ls Make*   > /dev/null  2>&1 && \cp -f Make* "$SCRDIR"
+ls *.F90   > /dev/null  2>&1 && \cp -f *.F90 "$DESTDIR"
+ls *.F     > /dev/null  2>&1 && \cp -f *.F "$DESTDIR"
+ls *.h     > /dev/null  2>&1 && \cp -f *.h "$DESTDIR"
+ls *.h90   > /dev/null  2>&1 && \cp -f *.h90 "$DESTDIR"
+ls Make*   > /dev/null  2>&1 && \cp -f Make* "$DESTDIR"
+
+#
+# incremental build: -c compares content, not modification time, so only
+# the files whose content changed get a new mtime and are rebuilt by make;
+# a removed local file, or a source restored with an old mtime, is synced
+# too. No --delete: it would wipe the objects and modules in $SCRDIR
+#
+if [[ -n $INCREMENTAL ]] ; then
+   rsync -rc "$DESTDIR/" "$SCRDIR/" || exit 1
+   rm -rf "$DESTDIR"
+fi
 
 # Change directory
 #
@@ -492,6 +524,23 @@ echo 's?$(CFT1)?'$CFT1'?g' >> flags.tmp
 echo 's?$(CPPFLAGS1)?'$CPPFLAGS1'?g' >> flags.tmp
 sed -f flags.tmp Makedefs.generic > Makedefs
 rm -f flags.tmp
+
+#
+# incremental build: $SCRDIR is reused. make sees the sources and headers
+# through Make.depend, but nothing makes the objects depend on Makedefs: a
+# change of compiler, flags or include paths would silently relink stale
+# objects. cppdefs.h, cppdefs_dev.h and param.h are checked too, since a
+# change of CPP keys can switch AGRIF, MPI, XIOS... on or off
+#
+CONFIG="$(cat Makedefs cppdefs.h cppdefs_dev.h param.h 2>/dev/null | cksum)"
+if [[ -n $INCREMENTAL ]] ; then
+   if [[ -f .jobcomp_config && "$CONFIG" != "$(cat .jobcomp_config)" ]] ; then
+      echo "Build configuration changed since the last build in $SCRDIR,"
+      echo "an incremental build (-u) cannot reuse it: run without -u instead."
+      exit 1
+   fi
+fi
+echo "$CONFIG" > .jobcomp_config
 
 #
 # compile croco

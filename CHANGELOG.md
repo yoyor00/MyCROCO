@@ -73,6 +73,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - TIMINGS : add wall-clock timing regions in OCEAN/timings.F90 (nested regions,
   per-rank JSON output), enabled at build time with `jobcomp --timings`
 
+- CROCO : jobcomp gets an optional -u/--incremental mode, which keeps the
+  scratch area and only updates the sources whose content changed (rsync)
+
 ### Fixed
 - RAIN_FLUX : fix history and average outputs of freshwater flux when RAIN_FLUX is activated.
   Before the fix, the outputs were zero everywhere (Issue #549) 
