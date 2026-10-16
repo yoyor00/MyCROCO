@@ -42,7 +42,7 @@ except FileNotFoundError:
     exit(1)
 
 # Read variables
-time = nc.variables["scrum_time"][tndx] * T
+time = nc.variables["time"][tndx] * T
 x = nc.variables["x_rho"][:] * L
 y = nc.variables["y_rho"][:] * L
 z1 = np.squeeze(nc.variables["zeta"][tndx, :, :]) * H

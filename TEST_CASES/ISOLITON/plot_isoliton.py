@@ -56,7 +56,7 @@ N = len(nc.dimensions["s_rho"])
 
 # Loop on time
 for i, tndx in enumerate(args.tindex):
-    tndx = min(tndx, len(nc.variables["scrum_time"][:]) - 1)
+    tndx = min(tndx, len(nc.variables["time"][:]) - 1)
     print(f"Processing time index: {tndx}")
 
     # Read data
@@ -90,7 +90,7 @@ if args.makepdf:
 # Save in PNG (one file per time index, full figure)
 if args.makepng:
     for tndx in args.tindex:
-        tndx = min(tndx, len(nc.variables["scrum_time"][:]) - 1)
+        tndx = min(tndx, len(nc.variables["time"][:]) - 1)
         zeta = np.squeeze(nc.variables["zeta"][tndx, :, :])
         temp = np.squeeze(nc.variables["temp"][tndx, :, 1, :])
         temp[temp == 0] = np.nan

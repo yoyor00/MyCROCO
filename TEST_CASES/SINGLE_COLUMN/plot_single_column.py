@@ -116,7 +116,7 @@ except FileNotFoundError:
     exit(1)
 
 # Time in hours
-time = nc.variables["scrum_time"][:] / 3600.0
+time = nc.variables["time"][:] / 3600.0
 
 # Grid parameters
 h = nc.variables["h"][:]

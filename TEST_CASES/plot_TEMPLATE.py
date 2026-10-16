@@ -60,7 +60,7 @@ except FileNotFoundError:
     exit(1)
 
 # Time
-time = nc.variables["scrum_time"][:] / 86400.0  # in days
+time = nc.variables["time"][:] / 86400.0  # in days
 nt = len(time)
 tndx = -1  # last time step
 

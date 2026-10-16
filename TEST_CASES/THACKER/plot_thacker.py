@@ -105,8 +105,8 @@ except FileNotFoundError:
     print(f"Error: File '{args.file}' not found.")
     exit(1)
 
-scrum_time = nc.variables["scrum_time"][:]
-nt = len(scrum_time)
+time = nc.variables["time"][:]
+nt = len(time)
 if args.tindex is None:
     tindex = nt - 1
 else:
@@ -157,7 +157,7 @@ if is_2dv:
     xr_1d = xr[j0, :] / 1000.0  # km
     hr_1d = hr[j0, :]
 
-    time_val = scrum_time[tindex]
+    time_val = time[tindex]
 
     # Read fields
     zeta_num = np.squeeze(nc.variables["zeta"][tindex, j0, :])
@@ -209,7 +209,7 @@ if is_2dv:
     zeta_compare = []
     for ti in t_compare:
         zm = np.squeeze(nc.variables["zeta"][ti, j0, :])
-        time_ti = scrum_time[ti]
+        time_ti = time[ti]
         za = zeta_analytical_2dv(xr[j0, :], time_ti, omega)
         za[za < -hr_1d] = np.nan
         zm = mask_dry(zm, hr_1d, Dcrit)
@@ -317,7 +317,7 @@ else:
 
         if idx < npanels:
             ti = t_indices[idx]
-            time_val = scrum_time[ti]
+            time_val = time[ti]
 
             zeta_num = np.squeeze(nc_zeta[ti, :, :])
             zeta_num = mask_dry(zeta_num, hr, Dcrit)
@@ -376,7 +376,7 @@ else:
     j0 = Mm // 2
     xr_1d = xr[j0, :] / 1000.0  # km
     hr_1d = hr[j0, :]
-    time_sec = scrum_time[tindex]
+    time_sec = time[tindex]
 
     zeta_sec_num = np.squeeze(nc.variables["zeta"][tindex, j0, :])
     zeta_sec_for_z = zeta_sec_num.copy()
@@ -416,7 +416,7 @@ else:
     # ── Figure 1: Plan views ─────────────────────────────
 
     # Compute error at final time for suptitle
-    zeta_ana_final = zeta_analytical_3d(xr, yr, scrum_time[tindex], omega)
+    zeta_ana_final = zeta_analytical_3d(xr, yr, time[tindex], omega)
     valid = hr > Dcrit
     if np.sum(valid) > 0:
         err_l2 = np.sqrt(np.nanmean((zeta_final[valid] - zeta_ana_final[valid]) ** 2))

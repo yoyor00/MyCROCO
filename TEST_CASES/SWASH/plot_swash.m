@@ -51,7 +51,7 @@ g = 9.81;
 % ---------------------------------------------------------------------
 
 nc=netcdf(fname);
-tindex=length(nc{'scrum_time'}(:)); % reads last record
+tindex=length(nc{'time'}(:)); % reads last record
 
 if makemovie,
  movObj = QTWriter('swash.mov');
@@ -103,7 +103,7 @@ for tindex=tstr:tend % ---------------------------------------------
  % ---------------------------------------------------------------------
  % --- read/compute numerical model fields (index 1) ---
  % ---------------------------------------------------------------------
- time=nc{'scrum_time'}(tindex);
+ time=nc{'time'}(tindex);
 
  % ... zonal velocity ...                         ---> xu,zru
  u=squeeze(nc{'u'}(tindex,:,yindex,:));

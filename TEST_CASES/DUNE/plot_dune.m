@@ -39,7 +39,7 @@ tndx=3; % daily outputs
 % Read data
 %
 nc=netcdf(fname);
-time=nc{'scrum_time'}(:)./86400;
+time=nc{'time'}(:)./86400;
 tndx=min(tndx,length(time));
 disp([ 'tndx = ',num2str(tndx), ...
        ' - Time = ',num2str(time(tndx)),' days' ])

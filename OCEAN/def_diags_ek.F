@@ -58,7 +58,6 @@
 #  define rec_per_file nrpfdiags_ek
 #  define wrt wrtdiags_ek
 #  define vidTime diags_ekTime
-#  define vidTime2 diags_ekTime2
 #  define vidTstep diags_ekTstep
 #  define viddiags_ekHadv diags_ekHadv
 #  define viddiags_ekHdiff diags_ekHdiff
@@ -86,7 +85,6 @@
 #  define rec_per_file nrpfdiags_ek_avg
 #  define wrt wrtdiags_ek_avg
 #  define vidTime diags_ekTime_avg
-#  define vidTime2 diags_ekTime2_avg
 #  define vidTstep diags_ekTstep_avg
 #  define viddiags_ekHadv diags_ekHadv_avg
 #  define viddiags_ekHdiff diags_ekHdiff_avg
@@ -284,37 +282,6 @@
      &                                vname(4,indxTime)(1:lvar))
 
         call nf_add_attribute(ncid, vidTime, vname(:,indxTime), 5,
-     &                        NF_FOUT, ierr)
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_def_var (ncid, vname(1,indxTime2)(1:lvar),
-     &                          NF_DOUBLE, 1, timedim, vidTime2)
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid, vidTime2, nf_collective)
-# endif
-# ifndef AVRH
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &                        lvar, vname(2,indxTime)(1:lvar))
-# else
-        text='avg'/ /vname(2,indxTime2)
-        lvar=lenstr(text)
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name',
-     &                        lvar, text(1:lvar))
-# endif
-        lvar=lenstr(vname(2,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'long_name', lvar,
-     &                                vname(2,indxTime2)(1:lvar))
-        lvar=lenstr(vname(3,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'units',  lvar,
-     &                                vname(3,indxTime2)(1:lvar))
-        lvar=lenstr(vname(4,indxTime2))
-        ierr=nf_put_att_text (ncid, vidTime2, 'field',  lvar,
-     &                                vname(4,indxTime2)(1:lvar))
-
-        call nf_add_attribute(ncid, vidTime2, vname(:,indxTime2), 5,
      &                        NF_FOUT, ierr)
 
 ! Energy diagnostics variables.
@@ -864,18 +831,6 @@
 # ifdef NC4PAR
         ierr=nf_var_par_access(ncid, vidTime, nf_collective)
 # endif
-!
-! Time2.
-!
-        lvar=lenstr(vname(1,indxTime2))
-        ierr=nf_inq_varid (ncid,vname(1,indxTime2)(1:lvar),vidTime2)
-        if (ierr .ne. nf_noerr) then
-          write(stdout,1) vname(1,indxTime2)(1:lvar), ncname(1:lstr)
-          goto 99                                         !--> ERROR
-        endif
-# ifdef NC4PAR
-        ierr=nf_var_par_access(ncid, vidTime2, nf_collective)
-# endif
 
 
 ! momentum flux diagnostics variables :
@@ -1145,7 +1100,6 @@
 # undef rec_per_file
 # undef wrt
 # undef vidTime
-# undef vidTime2
 # undef vidTstep
 # undef viddiags_ekHadv
 # undef viddiags_ekHdiff

@@ -15,6 +15,10 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 
 - STATION : Add TEMPERATURE cppkey for stations (#445)
 
+- TIDES_MAS : Add online tidal prediction (SHOM Simon method) for currents and
+  potential, in addition to elevation; works now with both
+  ZCLIMATOLOGY/M2CLIMATOLOGY and Z_FRC_BRY/M2_FRC_BRY (#471)
+
 ### Fixed
 
 - MUSTANG : lateral erosion feature fluxes in "dry cell" were counting twice in 
@@ -55,11 +59,17 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
            inconsistent with what done for calcite dissolution (#531)
            Big fix in the calculation of NEW primary productivity with XIOS (#535)
            Fix the calculation of nitrogen fixation rate with XIOS (#541)
+           Set XIOS write timestep for PISCES identical to ocean (#548)
+           Correct degree to radian conversion (#559)
+           Add the read of pisces namelist for child grid with AGRIF (#561)
 
 - jobcomp : Apply CROCO_CFT1 before compiler-branch selection. 
   Update BENCH accordingly.
 
 - VADV_ADAPT_IMP : add a missing endif in pre_step (#554)
+
+- KPP : bug fix for the non-local term in surface KPP parameterisation
+        wrong sign and + correction to recover the empirical free convection scaling of 0.2 
 
 ### Changed
 - Vertical coordinate : only the new s-coordinate (Vtransform = 2,
@@ -82,6 +92,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
   namelists.
   A convert_in_to_nml.py utility is provided to easily convert 
   previous croco.in into croco.nml.
+  A detailed error message (raw content, iostat/iomsg, expected array size)
+  is now written in case of a malformed namelist (#555)
+  (#568, #570)
 
 - Test cases : Reorganize TEST_CASES/ into per-case subdirectories (TEST_CASES/<CASE>/)
   with standardized uppercase filenames. Update all BENCH jsonc configs
@@ -142,6 +155,13 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - NEW_S_COORD, cpp key has been removed (if deactivated, old s-coordinate (Vtransform = 1, 
     Song & Haidvogel 1994) was chosen , Now Vtransform=2 is used by default (Shchepetkin & McWilliams 2009))
     the key has also been removed from all TEST_CASES cppdefs (#396)
+
+- Remove duplicate `scrum_time` netCDF variable from history, restart, 
+  averages, diagnostics, surf and station output files; only `time` is 
+  written now (matches the `time` dimension name). get_initial.F still 
+  falls back to reading `scrum_time` when restarting from older files 
+  (Issue #189)
+
 - SUBSTANCE_SUBMASSBALANCE cpp key has been removed, feature is activated 
   by boolean in namelist (Issue #347)
 - MUSTANG : 
@@ -221,9 +241,9 @@ Release changelog are available here : https://gitlab.inria.fr/croco-ocean/croco
 - Contributors already on board : 
   R. Benshila, M. Caillaud, G. Cambon, N. Ducousso, F. Dufois, S. Jullien, 
   S. Le Gac, P. Marchesiello, C. Nguyen, R. Person, J. Pianezze, S. Treillou, 
-  J. Gula, C. Mazoyer, G. Morvan
+  J. Gula, C. Mazoyer, G. Morvan, M. Le Corre
 
 - New contributors : 
-  J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
+  M. Belharet, J.-M. Brankart, D. Gourves, Q. Jamet, L. Weiss,
   M. Plus, M. Schreiber, A. Zribi, B. Lemieux-Dudon, C. Menu, E. Le Bouedec
   S. Theetten

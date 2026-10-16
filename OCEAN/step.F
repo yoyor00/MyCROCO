@@ -111,6 +111,11 @@ C$OMP END PARALLEL
 !
       subroutine prestep3D_thread()
       use croco_namelist
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+      USE mod_tides_mas, ONLY : mas_update_calendar
+#  endif
+# endif
 #ifdef AGRIF
       use Agrif_Util
 # ifdef XIOS
@@ -311,6 +316,15 @@ C$OMP BARRIER
 
       enddo
 C$OMP BARRIER
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+!  Refreshed mas time once per step, ahead of the tile loop
+C$OMP MASTER
+      call mas_update_calendar(time)
+C$OMP END MASTER
+C$OMP BARRIER
+#  endif
+# endif
       do tile=my_first,my_last
         call set_vbc (tile)
 # if defined  BBL && !defined M3FAST
@@ -622,6 +636,11 @@ C$OMP BARRIER
 #ifdef CVTK_DEBUG
       use debug
 #endif
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+      USE mod_tides_mas, ONLY : mas_update_calendar
+#  endif
+# endif
       implicit none
 #include "param.h"
 #include "scalars.h"
@@ -738,6 +757,15 @@ C$OMP BARRIER
         ENDIF
 # endif
 C$OMP BARRIER
+# ifdef TIDES_MAS
+#  if defined SSH_TIDES || defined UV_TIDES || defined POT_TIDES
+!  Refreshed mas time once per step, ahead of the tile loop
+C$OMP MASTER
+        call mas_update_calendar(time)
+C$OMP END MASTER
+C$OMP BARRIER
+#  endif
+# endif
         do tile=my_first,my_last
           call set_vbc (tile)
 # ifdef BBL

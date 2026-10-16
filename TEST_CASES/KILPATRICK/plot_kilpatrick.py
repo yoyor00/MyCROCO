@@ -51,7 +51,7 @@ except FileNotFoundError:
     print(f"Error: File '{args.file}' not found.")
     exit(1)
 
-time = nc.variables["scrum_time"][tndx] / 86400
+time = nc.variables["time"][tndx] / 86400
 t_abl = nc.variables["t_abl"][tndx, :, 1, :] - 273.15
 
 plt.figure(figsize=(6, 4))

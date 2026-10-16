@@ -85,7 +85,7 @@ print("Reading data from CROCO file...")
 try:
     with Dataset(fname, "r") as nc:
         # Check time index
-        time = nc.variables["scrum_time"][:]
+        time = nc.variables["time"][:]
         tndx = min(tndx, len(time) - 1)  # Convert to 0-based and check bounds
         print(f"tndx = {tndx}")
 

@@ -109,17 +109,6 @@
      &                  MYID
         goto 99                                           !--> ERROR
       endif
-!
-! Averaged diag Time
-!
-      ierr=nf_put_var1_FTYPE (nciddiags_eddy_avg, diags_eddyTime2_avg,
-     &                       record, timediags_eddy_avg)
-      if (ierr .ne. nf_noerr) then
-        lvar=lenstr(vname(1,indxTime2))
-        write(stdout,1) vname(1,indxTime2)(1:lvar), record, ierr
-     &                  MYID
-        goto 99                                           !--> ERROR
-      endif
 
 !---------------------------------------------------------------
 ! PV diagnostic variables.
