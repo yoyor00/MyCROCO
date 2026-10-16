@@ -27,7 +27,9 @@
       contains
 
 !==========================================================================
-       subroutine idx_mld_density_and_temp(Istr,Iend,Jstr,Jend,itrc)
+       subroutine idx_mld_density_and_temp(Istr,Iend,Jstr,Jend,itrc, &
+                       mld_crit_D,mld_crit_T,mld_depth_ref, &
+                       kbld,Tcrit_mld)
 !----------------------------------------------------------------------
 ! Purposes : - compute the vertical indices corresponding to the mixed layer depth
 !              for both density (kbld) and temperature (kblt) criteria, using the reference
@@ -37,18 +39,16 @@
 !           
 ! Called by : step3d_t.F, t3dmix_ISO.F, t3dmix_S.F, t3dmix_spg.F
 !----------------------------------------------------------------------
-        use croco_namelist, only: mld_crit_D, mld_crit_T, mld_depth_ref
         use param
         use scalars
-#include "diagnostics.h" 
-#include "mixing.h"  
 #include "grid.h"  
-!#include "param.h" 
 #include "ocean3d.h"
      
         ! Arguments 
         integer, intent(in) :: Istr,Iend,Jstr,Jend,itrc
-     
+        real, intent(in) :: mld_crit_D,mld_crit_T,mld_depth_ref
+        integer :: kbld(GLOBAL_2D_ARRAY)
+        real :: Tcrit_mld(GLOBAL_2D_ARRAY,NT) 
         ! Local declarations
         integer :: kblt(PRIVATE_2D_SCRATCH_ARRAY),indx_depth, cff1,cff
         integer :: i,j,k

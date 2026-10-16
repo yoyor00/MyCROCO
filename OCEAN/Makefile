@@ -47,7 +47,6 @@ include Makedefs
 	uv3dmix.F	uv3dmix_spg.F	t3dmix.F	t3dmix_spg.F\
 	hmix_coef.F	wetdry.F	wavedry.F\
 	u3dbc.F		v3dbc.F		t3dbc.F\
-	tracer_budget_mld.F \
 \
 	step3d_fast.F\
 	step3d_w.F	rhs3d_w_nh.F	initial_nbq.F	grid_nbq.F\
@@ -170,7 +169,8 @@ include Makedefs
 	OBSTRUCTIONS.F90 plug_OBSTRUCTIONS.F90\
 	comMUSTANG.F90 dredging.F90 lateral_erosion.F90\
 	coupler_MUSTANG.F90 sed_MUSTANG_CROCO.F90\
-	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90
+	sed_MUSTANG.F90 initMUSTANG.F90 plug_MUSTANG_CROCO.F90\
+        tracer_budget_mld.F90
 
 
 AMRDIR = AGRIF/AGRIF_YOURFILES

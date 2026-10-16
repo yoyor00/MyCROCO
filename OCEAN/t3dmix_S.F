@@ -67,6 +67,7 @@
 !!   
       use croco_namelist, only: dt
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
+      use croco_namelist, only: mld_crit_D, mld_crit_T, mld_depth_ref
       use tracer_budget_mld, only: idx_mld_density_and_temp
 #  endif
       implicit none
@@ -497,7 +498,9 @@
 #  define T_mld_nnew FX
 #  define T_mld_nstp FE
 #  ifdef DIAGNOSTICS_TS_MLD_DENS
-      call idx_mld_density_and_temp(Istr,Iend,Jstr,Jend,itrc)
+      call idx_mld_density_and_temp(Istr,Iend,Jstr,Jend,itrc,
+     &       mld_crit_D,mld_crit_T,mld_depth_ref,
+     &       kbld,Tcrit_mld)
 #    endif /* DIAGNOSTICS_TS_MLD_DENS */
 
        do j=Jstr,Jend
