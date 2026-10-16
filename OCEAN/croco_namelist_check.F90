@@ -250,7 +250,7 @@ contains
             ' must be positive.'
          ierr = ierr + 1
       end if
-      if (hc < 0.d0) then
+      if (hc <= 0.d0) then
          MPI_master_only write (stdout, *) &
             'Error - S-coordinate surface/bottom layer width used in', &
             'vertical coordinate stretching hc = ', hc, &

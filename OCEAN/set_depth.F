@@ -84,9 +84,6 @@ C$    integer omp_get_thread_num
 #  ifdef AGRIF
             rmask_childs(i,j)=1.
 #  endif
-            IF (h(i,j).eq.0.) THEN
-              h(i,j)=eps
-            END IF
             IF (zeta(i,j,1) .lt. Dcrit(i,j)-h(i,j)) THEN
               zeta(i,j,1)=Dcrit(i,j)-h(i,j)
               zeta(i,j,2)=zeta(i,j,1)
