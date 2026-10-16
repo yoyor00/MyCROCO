@@ -791,7 +791,7 @@
 # endif /* GLS_MIXING */
 
 # if defined LMD_MIXING
-#  ifdef M3FAST
+#  if defined M3FAST || defined K3FAST
 !
 !  Bottom stress u component
 !
@@ -834,7 +834,7 @@
 
         call nf_add_attribute(ncid, rstBvstr, vname(:,indxBvstr), 5,
      &       NF_DOUBLE,ierr)
-#  endif /* M3FAST */
+#  endif /* M3FAST || K3FAST */
 # endif /* LMD_MIXING */
 
 # ifdef EXACT_RESTART

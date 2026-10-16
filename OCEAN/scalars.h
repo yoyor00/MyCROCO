@@ -137,7 +137,7 @@
       real time_avg, time2_avg
      &               , xl, el
 #ifdef SOLVE3D
-# ifndef M3FAST_SEDLAYERS
+# if !defined M3FAST_SEDLAYERS && !defined K3FAST_SEDLAYERS
       real  sc_w(0:N), Cs_w(0:N), sc_r(N), Cs_r(N)
 # else
       real  sc_w(-N_sl  :N), Cs_w(-N_sl  :N) 

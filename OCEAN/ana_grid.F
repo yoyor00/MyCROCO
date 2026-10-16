@@ -185,6 +185,14 @@ C$    integer omp_get_thread_num
                      depth=10.
                      f0=0.
                      beta=0.
+      case ('PEKERIS')
+# if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
+                     depth=100.
+# elif defined PEKERIS_ACOUS3
+                     depth=5000.
+# endif
+                     f0=0.
+                     beta=0.
       case ('MOVING_BATHY')
                      depth=0.394
                      f0=0.
@@ -378,6 +386,14 @@ C$    integer omp_get_thread_num
       case ('TANKY')
                      Length_XI =Length_XI_ISO_GRID
                      Length_ETA=10.0
+      case ('PEKERIS')
+# if defined PEKERIS_ACOUS1 || defined PEKERIS_ACOUS2
+                     Length_XI =1000.0
+                     Length_ETA=Length_ETA_ISO_GRID
+# elif defined PEKERIS_ACOUS3
+                     Length_XI =100000.0
+                     Length_ETA=Length_ETA_ISO_GRID
+# endif
       case ('MOVING_BATHY')
                      Length_XI =4.0
                      Length_ETA=Length_ETA_ISO_GRID
@@ -581,7 +597,7 @@ C$    integer omp_get_thread_num
      &      'CANON2D_KHI', 'CANON2D_TCI', 'CANON2D_HWI',
      &      'TS_HADV_TEST', 'TS_HADV_TEST_DIAG', 'TS_HADV_TEST_ROT',
      &      'TS_HADV_TEST_PER', 'ACOUSTIC', 'AgAc', 'AgAc_KNBQ',
-     &	    'AgAc_KAGRIF', 'JET', 'ANA_JET', 'TANK', 'TANKY',
+     &	    'AgAc_KAGRIF', 'JET', 'ANA_JET', 'TANK', 'TANKY', 'PEKERIS',
      &      'SC_KATO_PHILLIPS',
      &      'SC_WILLIS_DEARDORFF',
      &      'SC_DIURNAL_CYCLE',

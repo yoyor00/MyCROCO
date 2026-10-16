@@ -203,7 +203,8 @@ C$    trd=omp_get_thread_num()
       real,parameter :: thetaimp_nbq = 1.
 # endif
 
-# if defined K3FAST_PG2
+# if defined K3FAST_PG2 || defined SWASH || defined MOVING_BATHY || defined MILES\
+  || defined KH_INST || defined REGIONAL
       real,parameter :: gammau=0.45   ! NBQ pressure gradient scheme
 # else
       real,parameter :: gammau=1.  ! --> second-order
@@ -391,7 +392,9 @@ C$    trd=omp_get_thread_num()
 ! ! d./ds terms update frequency
 ! !---------------------------------------------------------------------
 ! !
-#  ifdef NBQ_GRID_SLOW
+#  if defined CUVE
+#   define NSTEP_DS float(iic)*dt.ge.0.1
+#  elif defined NBQ_GRID_SLOW
 #   define NSTEP_DS FIRST_FAST_STEP_3M 
 #  else
 #   define NSTEP_DS .true. 
@@ -413,6 +416,8 @@ C$    trd=omp_get_thread_num()
 ! !
 # if defined TANK || defined AgAc
          myalpha   = 0.01
+# elif defined CUVE
+         myalpha   = 0.25
 # else
          myalpha   = 0.1
 # endif
@@ -1142,6 +1147,13 @@ C$    trd=omp_get_thread_num()
      &                                       '  IMAX JMAX   =',imax,jmax
         write(stdout,'(A,2I6/)')
      &                                       '  IINT IFAST  =',iic,iif
+        write(stdout,'(A,3E14.6)') '  DEBUG ubar,vbar,cff=',
+     &     ubar(imax-iminmpi+1,jmax-jminmpi+1,knew),
+     &     vbar(imax-iminmpi+1,jmax-jminmpi+1,knew), VMAX
+# ifdef K3FAST_RHO
+        write(stdout,'(A,E14.6)') '  DEBUG rho_nbq(k=1)=',
+     &     rho_nbq(imax-iminmpi+1,jmax-jminmpi+1,1)
+# endif
 
 !     GC quik fix Comment this because it blocks the correct mpi_abort
 !     croco do not hang out  

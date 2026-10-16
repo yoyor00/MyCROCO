@@ -329,6 +329,13 @@ C$OMP BARRIER
         call clm_tides (tile)
 #  endif
 # endif
+# if defined POT_CUVE
+#  ifdef AGRIF
+        IF (Agrif_Root()) call pot_cuve (tile)
+#  else
+        call pot_cuve (tile)
+#  endif
+# endif
       enddo
 C$OMP BARRIER
 
@@ -481,7 +488,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef NBQ
+# if defined NBQ || defined K3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -766,6 +773,13 @@ C$OMP BARRIER
           call clm_tides (tile)
 #  endif
 # endif
+# if defined POT_CUVE
+#  ifdef AGRIF
+          IF (Agrif_Root()) call pot_cuve (tile)
+#  else
+          call pot_cuve (tile)
+#  endif
+# endif
 # ifdef AVERAGES
           call set_avg (tile)
 # endif
@@ -980,7 +994,7 @@ C$OMP BARRIER
           call set_depth (tile)
         enddo
       endif
-# elif !defined NBQ
+# elif !defined NBQ && !defined K3FAST
       do tile=my_first,my_last
         call set_depth (tile)
       enddo
@@ -1005,7 +1019,7 @@ C$OMP BARRIER
       do tile=my_first,my_last
         call prsgrd (tile)
         call rhs3d (tile)
-# ifdef NBQ
+# if defined NBQ || defined K3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call rhs3d_w_nh (tile)
 #  else
@@ -1013,7 +1027,7 @@ C$OMP BARRIER
 #  endif
 # endif
         call step3d_uv1 (tile)
-# ifdef NBQ
+# if defined NBQ || defined K3SLOW_W
 #  if defined AGRIF && defined NBQ_CHILD_ONLY
         if (.Not.Agrif_Root()) call step3d_w (tile)
 #  else

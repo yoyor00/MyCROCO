@@ -2441,13 +2441,13 @@ C 				  endif
 !
       if (xios_field_is_active("Cs_rho")) then
       call xios_send_field("Cs_rho",Cs_r(1:N))
-# ifdef M3FAST_SEDLAYERS   
+# if defined M3FAST_SEDLAYERS || defined K3FAST_SEDLAYERS   
       call xios_send_field("Cs_rho_total",Cs_r(-N_sl+1:N))
 # endif      
       endif
       if (xios_field_is_active("Cs_w")) then
       call xios_send_field("Cs_w",Cs_w(0:N))
-# ifdef M3FAST_SEDLAYERS   
+# if defined M3FAST_SEDLAYERS || defined K3FAST_SEDLAYERS   
       call xios_send_field("Cs_w_total",Cs_w(-N_sl:N))
 # endif      
       endif

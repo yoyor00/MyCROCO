@@ -76,7 +76,7 @@ c********************************************************************
 #  if defined MRL_WCI || defined READ_PATM
 #   include "forces.h"
 #  endif
-#  ifdef POT_TIDES
+#  if defined POT_TIDES || defined POT_CUVE
 #   include "tides.h"
 #  endif
 #  include "openacc_work.h"
@@ -202,7 +202,7 @@ c********************************************************************
           P(i,j,N)=g*z_w(i,j,N) + GRho*( rho(i,j,N)
      &            +0.5*(rho(i,j,N)-rho(i,j,N-1))*(z_w(i,j,N)-z_r(i,j,N))
      &              /(z_r(i,j,N)-z_r(i,j,N-1)) )*(z_w(i,j,N)-z_r(i,j,N))
-#  ifdef POT_TIDES
+#  if defined POT_TIDES || defined POT_CUVE
           P(i,j,N) = P(i,j,N) - g*Ptide(i,j)
 #  endif
 #  ifdef READ_PATM
@@ -586,7 +586,7 @@ c********************************************************************
      &           +(rsurf(i-1,j)-rho(i,j,N))*(z_w(i,j,N)-z_r(i-1,j,N))
      &                                                              )
 
-#  ifdef POT_TIDES
+#  if defined POT_TIDES || defined POT_CUVE
      &                                   - g*(Ptide(i,j)-Ptide(i-1,j))
 #  endif
 #  ifdef READ_PATM
@@ -661,7 +661,7 @@ c********************************************************************
      &           +(rsurf(i,j-1)-rho(i,j,N))*(z_w(i,j,N)-z_r(i,j-1,N))
      &                                                              )
 
-#  ifdef POT_TIDES
+#  if defined POT_TIDES || defined POT_CUVE
      &                                   - g*(Ptide(i,j)-Ptide(i,j-1))
 #  endif
 #  ifdef READ_PATM

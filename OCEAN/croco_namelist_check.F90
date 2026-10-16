@@ -103,13 +103,14 @@ contains
             'INNERSHELF', 'INNERSHELF_EKMAN', &
             'INTERNAL', &
             'ISOLITON', 'ISOLITON_DJL', &
-            'ANA_JET', &
+            'JET', 'ANA_JET', &
             'KH_INST', 'KH_INST3D', 'KH_INSTY', &
             'CANON2D_KHI', 'CANON2D_TCI', 'CANON2D_HWI', &
             'AgAc_KNBQ', 'AgAc_KAGRIF', 'AgAc_KABGRIF', &
             'KILPATRICK', &
             'MOVING_BATHY', &
             'OVERFLOW', &
+            'PEKERIS', &
             'SANDBAR', 'SANDBAR_OFFSHORE', 'SANDBAR_ONSHORE', &
             'SEAMOUNT', &
             'SHELFRONT', &

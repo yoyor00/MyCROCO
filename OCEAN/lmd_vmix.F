@@ -303,8 +303,8 @@ C$OMP BARRIER
 #   endif
         enddo
       enddo                     !--> discard  Rig(:,:,0)
-#  endif /* RI_HSMOOTH */
       enddo  !--> k loop
+#  endif /* RI_HSMOOTH */
 
 #  ifdef RI_VSMOOTH
 !

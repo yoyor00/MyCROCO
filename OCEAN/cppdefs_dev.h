@@ -240,16 +240,16 @@
 # ifndef K3FAST_PG2
 #   undef  K3FAST_PG2
 # endif
-# define UV_VADV_WENO5_INTC6    
+# undef  UV_VADV_WENO5_INTC6    
 # ifdef KNBQ    
-#   define NBQ
+#   undef  NBQ
 #   define K3FAST        
 #   define K3FAST_UV
 #   define K3SLOW_W
 #   define K3FAST_W
 #   define K3FAST_RHO
 #   define K3FAST_ZETAW
-#   define K3FAST_DUVNBQ
+#   undef  K3FAST_DUVNBQ
 #   define K3FAST_C3D_UVSF
 #   define K3FAST_C3D_UVFS
 #   define K3FAST_C3D_WSF
@@ -258,10 +258,10 @@
 #   define NBQ_HZCORRECT_ZETA
 #   define K3FAST_AM4 
 #   define K3FAST_COUPLING2D
-#   ifndef K3FAST_COUPLING_SCH0
+#   if !defined K3FAST_COUPLING_SCH0 && !defined K3FAST_COUPLING_SCH2
 #     define K3FAST_COUPLING_SCH1
 #   endif
-#   ifndef K3FAST_COUPLINGW_SCH0
+#   if !defined K3FAST_COUPLINGW_SCH0 && !defined K3FAST_COUPLINGW_SCH2
 #     define K3FAST_COUPLINGW_SCH1
 #   endif
 #   ifndef K3FAST_PG2
@@ -283,8 +283,12 @@
 #   define K3FAST_C3D_UVSF
 #   define K3FAST_AM4
 #   define K3FAST_COUPLING2D
-#   define K3FAST_COUPLING_SCH1
-#   define K3FAST_COUPLINGW_SCH1
+#   if !defined K3FAST_COUPLING_SCH0 && !defined K3FAST_COUPLING_SCH2
+#     define K3FAST_COUPLING_SCH1
+#   endif
+#   if !defined K3FAST_COUPLINGW_SCH0 && !defined K3FAST_COUPLINGW_SCH2
+#     define K3FAST_COUPLINGW_SCH1
+#   endif
 #   define K3FAST_AVG_CLASSIC
 # elif defined KNHINT
 #   define K3FAST        
@@ -299,16 +303,16 @@
 #   define K3FAST_C3D_WFS
 #   define K3FAST_AM4
 #   define K3FAST_COUPLING2D
-#   ifndef K3FAST_COUPLING_SCH0
+#   if !defined K3FAST_COUPLING_SCH0 && !defined K3FAST_COUPLING_SCH2
 #     define K3FAST_COUPLING_SCH1
 #   endif
-#   ifndef K3FAST_COUPLINGW_SCH0
+#   if !defined K3FAST_COUPLINGW_SCH0 && !defined K3FAST_COUPLINGW_SCH2
 #     define K3FAST_COUPLINGW_SCH1
 #   endif
 #   define KNHINT_3M
 #   define KNHINT_CORR
-#   define K3FAST_CSVISC2K
-#   define KNHINT_CORR_visc2
+#   undef  K3FAST_CSVISC2K
+#   undef  KNHINT_CORR_visc2
 #   define K3FAST_AVG_CLASSIC
 # endif
 !# ifdef NOT_NBQ_AM4
@@ -397,7 +401,11 @@
 #  define OBC_WORLANSKI      /*  W Radiative conditions         */
 #  undef  OBC_WSPECIFIED     /*  W Specified conditions         */
 #  define NBQ_NUDGING        /* interior/bdy forcing/nudging    */
-#  undef NBQ_NUDGING_W      /* interior/bdy forcing/nudging (W)*/
+#  ifndef KHCOMP
+#   define NBQ_NUDGING_W      /* interior/bdy forcing/nudging (W)*/
+#  else
+#   undef  NBQ_NUDGING_W
+#  endif
 #  define NBQCLIMATOLOGY     /* interior/bdy forcing/nudging    */
 #  define NBQ_FRC_BRY        /* bdy forcing/nudging             */
 #  define W_FRC_BRY          /* wz bdy forcing/nudging          */
@@ -444,6 +452,7 @@
 #  undef  W_FRC_BRY          /* wz bdy forcing/nudging          */
 # endif
 #endif  /* M3FAST */
+
 
 /*
 ======================================================================
@@ -936,7 +945,9 @@
                            default: lmd_bkpp1994 */
 #endif
 # ifdef LMD_RIMIX
-#  define RI_HSMOOTH
+#  ifndef S2DV
+#   define RI_HSMOOTH
+#  endif
 #  define RI_VSMOOTH
 # endif
 /*

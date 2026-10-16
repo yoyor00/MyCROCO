@@ -558,8 +558,10 @@ contains
 
 #if defined T_FRC_BRY     || defined M2_FRC_BRY    || \
    defined M3_FRC_BRY||defined Z_FRC_BRY||\
+   defined W_FRC_BRY||defined NBQ_FRC_BRY||\
    defined TCLIMATOLOGY||defined M2CLIMATOLOGY||\
-   defined M3CLIMATOLOGY||defined ZCLIMATOLOGY
+   defined M3CLIMATOLOGY||defined ZCLIMATOLOGY||\
+   defined WCLIMATOLOGY||defined NBQCLIMATOLOGY
    !---------------------------------------------------------------------
    !  init_nudging
    !  Convert nudging time-scales from days (namelist input) to sec^-1

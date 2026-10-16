@@ -81,7 +81,7 @@
 #else
      &   , ibuff(4)
 #endif
-      real eps
+      real eps, cff_nbq
       parameter (eps=1.D-20)
       real stf_cff
       parameter(stf_cff=86400./0.01)
@@ -822,7 +822,7 @@ CR      write(*,*) 'wrt_his:  wrtO  ' MYID
 !     Write out true vertical velocity (m/s).
 !
       if (wrthis(indxW)) then
-# ifdef NBQ
+# if defined NBQ || defined K3SLOW_W
 !$acc update if(compute_on_device) host(wz(:,:,:))
         do k=0,N
           do j=0,Mm+1
@@ -1462,10 +1462,14 @@ CR      write(*,*) 'wrt_his:  wrtRnbq' MYID
         do k=1,N
           do j=0,Mm+1
             do i=1,Lm+1
-            workr(i,j,k)=2.*qdmu_nbq(i,j,k-ksl)
-     &               /(Hz(i,j,k-ksl)+Hz(i-1,j,k-ksl))
+              cff_nbq=Hz(i,j,k-ksl)+Hz(i-1,j,k-ksl)
+              if (cff_nbq.gt.eps) then
+                workr(i,j,k)=2.*qdmu_nbq(i,j,k-ksl)/cff_nbq
+              else
+                workr(i,j,k)=0.
+              endif
+            enddo
           enddo
-         enddo
         enddo
         call fillvalue3d(workr,ncidhis,hisUnbq,vname(1,indxUnbq),
      &        record,u3dvar,type)   
@@ -1481,9 +1485,14 @@ CR      write(*,*) 'wrt_his:  wrtUnbq  ' MYID
         do k=1,N
           do j=1,Mm+1
             do i=0,Lm+1
-            workr(i,j,k)=2.*qdmv_nbq(i,j,k)/(Hz(i,j,k)+Hz(i,j-1,k))
+              cff_nbq=Hz(i,j,k)+Hz(i,j-1,k)
+              if (cff_nbq.gt.eps) then
+                workr(i,j,k)=2.*qdmv_nbq(i,j,k)/cff_nbq
+              else
+                workr(i,j,k)=0.
+              endif
+            enddo
           enddo
-         enddo
         enddo
          call fillvalue3d(workr,ncidhis,hisVnbq,vname(1,indxVnbq),
      &        record,v3dvar,type)   
@@ -1499,8 +1508,12 @@ CR      write(*,*) 'wrt_his:  wrtVnbq  ' MYID
           do k=1,N-1
           do j=0,Mm+1
             do i=0,Lm+1
-            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
-     &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
+              cff_nbq=Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl)
+              if (cff_nbq.gt.eps) then
+                work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/cff_nbq
+              else
+                work(i,j,k)=0.
+              endif
             enddo
           enddo
           enddo
@@ -1508,30 +1521,42 @@ CR      write(*,*) 'wrt_his:  wrtVnbq  ' MYID
           do j=0,Mm+1
             do i=0,Lm+1
 #   ifndef M3FAST_SEDLAYERS
-            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/Hz(i,j,k+1-ksl)
+              cff_nbq=Hz(i,j,k+1-ksl)
 #   else
-            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
-     &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
+              cff_nbq=Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl)
 #   endif
+              if (cff_nbq.gt.eps) then
+                work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/cff_nbq
+              else
+                work(i,j,k)=0.
+              endif
             enddo
           enddo
           k=N
           do j=0,Mm+1
             do i=0,Lm+1
 #   ifndef M3FAST_SEDLAYERS
-            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/Hz(i,j,k-ksl)
+              cff_nbq=Hz(i,j,k-ksl)
 #   else
-            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
-     &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
+              cff_nbq=Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl)
 #   endif
+              if (cff_nbq.gt.eps) then
+                work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/cff_nbq
+              else
+                work(i,j,k)=0.
+              endif
             enddo
           enddo
         else
           do k=0,N
           do j=0,Mm+1
             do i=0,Lm+1
-            work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)
-     &                /(Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl))
+              cff_nbq=Hz(i,j,k-ksl)+Hz(i,j,k+1-ksl)
+              if (cff_nbq.gt.eps) then
+                work(i,j,k)=2.*qdmw_nbq(i,j,k-ksl)/cff_nbq
+              else
+                work(i,j,k)=0.
+              endif
             enddo
           enddo
           enddo
@@ -1544,7 +1569,11 @@ CR      write(*,*) 'wrt_his:  wrtWnbq  ' MYID
 !     Cnbq
 !     
       if (wrthis(indxCnbq)) then
+# ifdef K3FAST_CSVISC2K
+        workr=soundspeed_nbq(:,:,1-ksl:N-ksl)
+# else
         workr=soundspeed_nbq
+# endif
         call fillvalue3d(workr,ncidhis,hisCnbq,vname(1,indxCnbq),
      &        record,r3dvar,type)   
 CR      write(*,*) 'wrt_his:  wrtCnbq  ' MYID

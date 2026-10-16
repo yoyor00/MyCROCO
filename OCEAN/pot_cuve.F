@@ -37,6 +37,7 @@
       subroutine pot_cuve_tile (Istr,Iend,Jstr,Jend)
 !*********************************************************************
 !
+      use croco_namelist, only: dt
       implicit none
 # include "param.h"
 # include "climat.h"
@@ -116,7 +117,7 @@ c     tempis =iheure*3600.0+iminu*60.0+isec
       ! =================
       P_stop = .False.             ! P_stop: True if you want to stop the plunger
                                   !         after a given time set by T_stop
-      if (P_stop == .True.) then
+      if (P_stop) then
         t_stop = 394.             ! in seconds
       end if
       ! -----------------
@@ -127,7 +128,7 @@ c     tempis =iheure*3600.0+iminu*60.0+isec
         do i=IstrR,IendR
 !     Force de gradient de pression apliquée sous la forme d'un cercle
           if (N_plunger == 1) then
-             if (P_stop == .False.) then
+             if (.not. P_stop) then
                 Ptide(i,j)=((amp_p*(1.+pi/4.))/(pi*rad_p**2.))
      &                      *exp(-((xr(i,j)-xrc)**2.+(yr(i,j)-
      &                      yrc)**2.)/rad_p**2.)*SIN(omega_loc)
@@ -141,7 +142,7 @@ c     tempis =iheure*3600.0+iminu*60.0+isec
                end if
              end if
           else if (N_plunger == 2) then
-             if (P_stop == .False.) then
+             if (.not. P_stop) then
                 Ptide(i,j)=((amp_p*(1.+pi/4.))/(pi*rad_p**2.))
      &                      *exp(-((xr(i,j)-xrc)**2.+(yr(i,j)-
      &                      yrc)**2.)/rad_p**2.)*SIN(omega_loc)+

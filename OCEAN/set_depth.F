@@ -109,7 +109,11 @@ C$    integer omp_get_thread_num
         enddo
 
 # ifdef NBQ_MASS
+#  ifndef K3FAST_SEDLAYERS
         do k=1,N
+#  else
+        do k=-N_sl+1,N
+#  endif
           do j=J_RANGE
             do i=I_RANGE
               rho_nbq(i,j,k)=0.
@@ -153,10 +157,36 @@ C$    integer omp_get_thread_num
 
       do j=J_RANGE              !!! WARNING: Setting must be consistent
         do i=I_RANGE            !!!          with omega.F
+#  ifndef K3FAST_SEDLAYERS
           z_w(i,j,0)=-h(i,j)
+#  else
+#   if defined M3FAST || defined K3FAST 
+          zetatmp=zeta(i,j,knew)*0.
+#   else
+          zetatmp=Zt_avg1(i,j)
+#   endif
+#   ifdef NEW_S_COORD
+          htmp=abs(h(i,j))
+          cff_w =hc*sc_w(-N_sl)
+          cff1_w=Cs_w(-N_sl)
+          z_w0=cff_w+cff1_w*htmp
+          z_w(i,j,-N_sl)=z_w0*h(i,j)*hinv(i,j)+zetatmp         
+     &                                       *(1.+z_w0*hinv(i,j))    
+#   else  
+          cff_w =hc*(sc_w(-N_sl)-Cs_w(-N_sl))
+          cff1_w=Cs_w(-N_sl)
+          z_w(i,j,-N_sl)=z_w0+zetatmp*(1.+z_w0*hinv(i,j))
+#   endif            
+          z_w0=cff_w+cff1_w*h(i,j) 
+          z_w(i,j,-N_sl)=z_w0*h(i,j)*hinv(i,j)+zetatmp
+#  endif
         enddo
 
+#  ifndef K3FAST_SEDLAYERS
         do k=1,N,+1
+#  else
+        do k=-N_sl+1,N,+1
+#  endif
 #  ifdef NEW_S_COORD
           cff_w =hc*sc_w(k)
           cff_r =hc*sc_r(k)
@@ -197,10 +227,14 @@ C$    integer omp_get_thread_num
         enddo
       enddo
 
+#  ifndef K3FAST_SEDLAYERS
       do k=1,N
+#  else
+      do k=-N_sl+1,N
+#  endif
         do j=J_RANGE
           do i=I_RANGE
-#  ifdef NBQ
+#  if defined NBQ || defined K3FAST
 #   ifdef NBQ_GRID_SLOW
             if (LAST_FAST_STEP)  Hz_bak(i,j,k)=Hz(i,j,k)
 #   else
@@ -225,7 +259,11 @@ C$    integer omp_get_thread_num
 
 #  if (defined M3FAST || defined K3FAST) && ! defined EXACT_RESTART
       if (iic.eq.0 .or. (FIRST_TIME_STEP .and. iif.eq.1)) then
+#   ifndef K3FAST_SEDLAYERS
         do k=1,N,+1
+#   else
+        do k=-N_sl+1,N,+1
+#   endif
           do j=J_RANGE
             do i=I_RANGE
               Hz_bak(i,j,k)=Hz(i,j,k)
@@ -240,6 +278,7 @@ C$    integer omp_get_thread_num
 #  undef J_RANGE
 
 #  if defined BD_EXCHANGE
+#   ifndef K3FAST_SEDLAYERS
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend, 
      &                        z_w(START_2D_ARRAY,0))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
@@ -248,9 +287,23 @@ C$    integer omp_get_thread_num
      &                        Hz(START_2D_ARRAY,1))
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hz_bak(START_2D_ARRAY,1))
-#   ifdef NBQ_MASS
+#    ifdef NBQ_MASS
       call exchange_r3d_tile (Istr,Iend,Jstr,Jend,
      &                        Hzr(START_2D_ARRAY,1))
+#    endif
+#   else
+      call exchange_w3d_sedlay_tile (Istr,Iend,Jstr,Jend, 
+     &                        z_w(START_2D_ARRAY,-N_sl))
+      call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
+     &                        z_r(START_2D_ARRAY,-N_sl+1))
+      call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz(START_2D_ARRAY,-N_sl+1))
+      call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
+     &                        Hz_bak(START_2D_ARRAY,-N_sl+1))
+#    ifdef NBQ_MASS
+      call exchange_r3d_sedlay_tile (Istr,Iend,Jstr,Jend,
+     &                        Hzr(START_2D_ARRAY,-N_sl+1))
+#    endif
 #   endif
 #  endif
       return

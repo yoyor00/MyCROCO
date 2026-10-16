@@ -23,6 +23,12 @@
       real Hz_bak(GLOBAL_2D_ARRAY,N)
       real z_r(GLOBAL_2D_ARRAY,N)
       real z_w(GLOBAL_2D_ARRAY,0:N)
+# else
+      real Hz(GLOBAL_2D_ARRAY,    -N_sl+1:N)
+      real Hz_bak(GLOBAL_2D_ARRAY,-N_sl+1:N)
+      real z_r(GLOBAL_2D_ARRAY,   -N_sl+1:N)
+      real z_w(GLOBAL_2D_ARRAY,   -N_sl  :N)
+# endif
       real Huon(GLOBAL_2D_ARRAY,N)
       real Hvom(GLOBAL_2D_ARRAY,N)
       common /grid_Hz_bak/Hz_bak /grid_zw/z_w /grid_Huon/Huon
@@ -36,7 +42,6 @@
 #  ifdef VADV_ADAPT_IMP
       common /grid_Wi/Wi
 #  endif
-# endif
 
 # if defined NBQ || defined K3FAST 
 #  if defined NBQ || defined K3SLOW_W

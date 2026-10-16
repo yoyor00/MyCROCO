@@ -30,7 +30,8 @@
       call ana_initial_3d_tile (Istr,Iend,Jstr,Jend)
 # endif
 # ifdef ANA_INITIAL
-      if (trim(testcase_name) == 'ANA_JET') then
+      if (trim(testcase_name) == 'ANA_JET' .or.
+     &    trim(testcase_name) == 'JET') then
         call ana_jet_initial_tile (Istr,Iend,Jstr,Jend)
       endif
 # endif
@@ -567,7 +568,7 @@
               do k=1,N
                 v(i,j,k,1)  = 0.
                 v(i,j,k,2)  = 0.
-#   ifdef NBQ
+#   if defined NBQ || defined K3SLOW_W
                 wz(i,j,k,1) = -0.01*du*hup0*
      &                                (1.-tanh((z_w(1,1,k)-zu0)/hup0)**2)
      &                                    *2.*2.*pi/xl*cos(2.*2.*pi/xl*xp(i,j))
@@ -577,6 +578,13 @@
               enddo
             enddo
           enddo
+#   if defined NBQ || defined K3SLOW_W
+          do j=JR_RANGE
+            do i=IR_RANGE
+                wz(i,j,0,:)=0.
+            enddo
+          enddo
+#   endif
 
         case ('CANON2D_KHI')
           du     = 1.0
@@ -943,7 +951,7 @@
           enddo
 # endif /* TEMPERATURE */
 
-        case ('TANK', 'TANKY', 'AgAc', 'AgAc_KNBQ', 'AgAc_KAGRIF')
+        case ('TANK', 'TANKY', 'AgAc', 'AgAc_KNBQ', 'AgAc_KAGRIF', 'PEKERIS')
 # ifdef TEMPERATURE
           do k=1,N
             do j=JR_RANGE
@@ -1334,7 +1342,7 @@
             enddo
           enddo
 
-        case ('ANA_JET')
+        case ('JET', 'ANA_JET')
           ! All fields set by ana_jet_initial_tile
 
         case ('TIDAL_FLAT')
@@ -1954,7 +1962,7 @@
         call exchange_v3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                               v(START_2D_ARRAY,1,3))
       endif
-#    ifdef NBQ
+#    if defined NBQ || defined K3SLOW_W
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
      &                             wz(START_2D_ARRAY,0,1))
       call exchange_w3d_3pts_tile (Istr,Iend,Jstr,Jend,
@@ -1975,7 +1983,7 @@
         call exchange_v3d_tile (Istr,Iend,Jstr,Jend,
      &                          v(START_2D_ARRAY,1,3))
       endif
-#    ifdef NBQ
+#    if defined NBQ || defined K3SLOW_W
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
      &                        wz(START_2D_ARRAY,0,1))
       call exchange_w3d_tile (Istr,Iend,Jstr,Jend,
