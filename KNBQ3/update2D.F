@@ -474,7 +474,11 @@ C$OMP MASTER
 # ifdef K3FAST
       Subroutine Updateunbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
+#  if defined AGRIF && defined CROCO_NAMELIST
+      use croco_namelist, only: agrif_nml_storage
+#  elif defined CROCO_NAMELIST
       use croco_namelist, only: dt
+#  endif
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -492,12 +496,18 @@ C$OMP MASTER
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
       integer :: nb, ndir
+      real    :: dt_cur
       
 ! Caution: ru_nbq*
     
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmu_nbq(i1:i2,j1:j2,k1:k2)
       else
+#  if defined AGRIF && defined CROCO_NAMELIST
+        dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
+#  else
+        dt_cur = dt
+#  endif
         !if (global_update_2d) then
         if (iif==nfast) then
           do k=1,N
@@ -508,7 +518,7 @@ C$OMP MASTER
      &                    )
      &                                       *on_u(i,j)*om_u(i,j)
                 ru_nbq_avg2(i,j,k)=ru_nbq_avg2(i,j,k)+
-     &                       ((tabres(i,j,k)-qdmu_nbq(i,j,k))/dt)!
+     &                       ((tabres(i,j,k)-qdmu_nbq(i,j,k))/dt_cur)!
      &                                       *on_u(i,j)*om_u(i,j)
               enddo
             enddo
@@ -529,7 +539,11 @@ C$OMP MASTER
 ! !
       Subroutine Updatevnbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
+#  if defined AGRIF && defined CROCO_NAMELIST
+      use croco_namelist, only: agrif_nml_storage
+#  elif defined CROCO_NAMELIST
       use croco_namelist, only: dt
+#  endif
       implicit none
 #  include "param.h"
 #  include "grid.h"
@@ -547,11 +561,17 @@ C$OMP MASTER
       real    :: tabres(i1:i2,j1:j2,k1:k2)
       logical :: before
       integer :: nb, ndir
+      real    :: dt_cur
       
 ! Caution: rv_nbq*
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmv_nbq(i1:i2,j1:j2,k1:k2)
       else
+#  if defined AGRIF && defined CROCO_NAMELIST
+        dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
+#  else
+        dt_cur = dt
+#  endif
         !if (global_update_2d) then
         if (iif==nfast) then
           do k=1,N
@@ -562,7 +582,7 @@ C$OMP MASTER
      &                    )
      &                                       *on_v(i,j)*om_v(i,j)
                 rv_nbq_avg2(i,j,k)=rv_nbq_avg2(i,j,k)+
-     &                       ((tabres(i,j,k)-qdmv_nbq(i,j,k))/dt)!
+     &                       ((tabres(i,j,k)-qdmv_nbq(i,j,k))/dt_cur)!
      &                                       *on_v(i,j)*om_v(i,j)
               enddo
             enddo
@@ -584,7 +604,11 @@ C$OMP MASTER
 #  ifdef K3FAST
       Subroutine Updatewnbq(tabres,i1,i2,j1,j2,k1,k2,before,nb,ndir)
 
+#  if defined AGRIF && defined CROCO_NAMELIST
+      use croco_namelist, only: agrif_nml_storage
+#  elif defined CROCO_NAMELIST
       use croco_namelist, only: dt
+#  endif
       implicit none
 #   include "param.h"
 #   include "grid.h"
@@ -602,10 +626,16 @@ C$OMP MASTER
       logical :: before
       integer :: nb, ndir
       integer :: i,j,k
+      real    :: dt_cur
 
       if (before) then
         tabres (i1:i2,j1:j2,k1:k2)=qdmw_nbq(i1:i2,j1:j2,k1:k2)
       else
+#  if defined AGRIF && defined CROCO_NAMELIST
+        dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
+#  else
+        dt_cur = dt
+#  endif
         !if (global_update_2d) then
         if (iif==nfast) then
           do k=0,N
@@ -616,7 +646,7 @@ C$OMP MASTER
      &                    )
      &                                       *on_r(i,j)*om_r(i,j)
                 rw_nbq_avg2(i,j,k)=rw_nbq_avg2(i,j,k)+
-     &                       ((tabres(i,j,k)-qdmw_nbq(i,j,k))/dt)
+     &                       ((tabres(i,j,k)-qdmw_nbq(i,j,k))/dt_cur)
      &                                       *on_r(i,j)*om_r(i,j)
               enddo
             enddo
@@ -1171,7 +1201,11 @@ C$OMP MASTER
 ! !
       Subroutine Updateduavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
+#if defined AGRIF && defined CROCO_NAMELIST
+      use croco_namelist, only: agrif_nml_storage
+#elif defined CROCO_NAMELIST
       use croco_namelist, only: dt
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1186,6 +1220,7 @@ C$OMP MASTER
       integer :: nb,ndir
       real    :: t1
       logical :: western_side, eastern_side
+      real    :: dt_cur
 
       IF (before) THEN
 
@@ -1194,6 +1229,11 @@ C$OMP MASTER
         tabres(i1:i2,j1:j2) = rrhoy * DU_avg1(i1:i2,j1:j2,4)
 
       ELSE
+#if defined AGRIF && defined CROCO_NAMELIST
+        dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
+#else
+        dt_cur = dt
+#endif
 
         western_side  = (nb == 1).AND.(ndir == 1)
         eastern_side  = (nb == 1).AND.(ndir == 2)
@@ -1220,7 +1260,7 @@ C$OMP MASTER
           enddo
         endif
 
-        DU_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt)
+        DU_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt_cur)
 # ifdef MASKING
      &                         * umask(i1:i2,j1:j2)
 # endif
@@ -1238,7 +1278,11 @@ C$OMP MASTER
 ! !
       Subroutine Updatedvavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
+#if defined AGRIF && defined CROCO_NAMELIST
+      use croco_namelist, only: agrif_nml_storage
+#elif defined CROCO_NAMELIST
       use croco_namelist, only: dt
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -1254,6 +1298,7 @@ C$OMP MASTER
       integer :: nb,ndir
       real    :: t1
       logical :: northern_side,southern_side
+      real    :: dt_cur
 
       IF (before) THEN
 
@@ -1262,6 +1307,11 @@ C$OMP MASTER
          tabres(i1:i2,j1:j2) = rrhox * DV_avg1(i1:i2,j1:j2,4)
 
        ELSE
+#if defined AGRIF && defined CROCO_NAMELIST
+         dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
+#else
+         dt_cur = dt
+#endif
 
          southern_side = (nb == 2).AND.(ndir == 1)
          northern_side = (nb == 2).AND.(ndir == 2)
@@ -1288,7 +1338,7 @@ C$OMP MASTER
            enddo
          endif
 
-         DV_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt)
+         DV_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt_cur)
 # ifdef MASKING
      &                          * vmask(i1:i2,j1:j2)
 # endif

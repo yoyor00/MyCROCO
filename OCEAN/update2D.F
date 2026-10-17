@@ -917,7 +917,11 @@ C$OMP END MASTER
 
       Subroutine Updateduavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
+#if defined AGRIF && defined CROCO_NAMELIST
+      use croco_namelist, only: agrif_nml_storage
+#elif defined CROCO_NAMELIST
       use croco_namelist, only: dt
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -932,6 +936,7 @@ C$OMP END MASTER
       integer :: nb,ndir
       real    :: t1
       logical :: western_side, eastern_side
+      real    :: dt_cur
 
       IF (before) THEN
 
@@ -940,6 +945,11 @@ C$OMP END MASTER
         tabres(i1:i2,j1:j2) = rrhoy * DU_avg1(i1:i2,j1:j2,4)
 
       ELSE
+#if defined AGRIF && defined CROCO_NAMELIST
+        dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
+#else
+        dt_cur = dt
+#endif
 
         western_side  = (nb == 1).AND.(ndir == 1)
         eastern_side  = (nb == 1).AND.(ndir == 2)
@@ -966,7 +976,7 @@ C$OMP END MASTER
           enddo
         endif
 
-        DU_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt)
+        DU_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt_cur)
 # ifdef MASKING
      &                         * umask(i1:i2,j1:j2)
 # endif
@@ -980,7 +990,11 @@ C$OMP END MASTER
 
       Subroutine Updatedvavg2(tabres,i1,i2,j1,j2,before,nb,ndir)
 
+#if defined AGRIF && defined CROCO_NAMELIST
+      use croco_namelist, only: agrif_nml_storage
+#elif defined CROCO_NAMELIST
       use croco_namelist, only: dt
+#endif
       implicit none
 # include "param.h"
 # include "grid.h"
@@ -996,6 +1010,7 @@ C$OMP END MASTER
       integer :: nb,ndir
       real    :: t1
       logical :: northern_side,southern_side
+      real    :: dt_cur
 
       IF (before) THEN
 
@@ -1004,6 +1019,11 @@ C$OMP END MASTER
          tabres(i1:i2,j1:j2) = rrhox * DV_avg1(i1:i2,j1:j2,4)
 
        ELSE
+#if defined AGRIF && defined CROCO_NAMELIST
+         dt_cur = agrif_nml_storage(max(0, Agrif_Fixed()))%dt
+#else
+         dt_cur = dt
+#endif
 
          southern_side = (nb == 2).AND.(ndir == 1)
          northern_side = (nb == 2).AND.(ndir == 2)
@@ -1030,7 +1050,7 @@ C$OMP END MASTER
            enddo
          endif
 
-         DV_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt)
+         DV_avg2(i1:i2,j1:j2) = (tabres(i1:i2,j1:j2)/dt_cur)
 # ifdef MASKING
      &                          * vmask(i1:i2,j1:j2)
 # endif
