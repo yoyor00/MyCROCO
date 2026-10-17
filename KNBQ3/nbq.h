@@ -27,10 +27,8 @@
       common /nbq_var3/ ifl_nbq     
       integer slip_nbq   
       common /nbq_var4/ slip_nbq    
-#  ifdef KNHINT_3M
       integer nsdtnbq 
       common /nbq_nsdtnbq/ nsdtnbq
-#  endif
       integer ndtnbq
       common /time_nbq1/ ndtnbq
       integer inc_faststep

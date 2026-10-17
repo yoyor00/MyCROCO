@@ -111,10 +111,14 @@ C$OMP END PARALLEL
 #if defined M3FAST || defined K3FAST || defined NBQ
       ndtnbq = ndtfast
       dtnbq  = dtfast
+# ifdef KNHINT_3M
       if (int(ndtfast/ndtnbq).ne.ndtfast/ndtnbq) then
         ndtnbq = ndtfast
       endif
       nsdtnbq = ndtfast/ndtnbq
+# else
+      nsdtnbq = 1
+# endif
 #endif
       PREDICTOR_2D_STEP=.FALSE.
       iic=0
